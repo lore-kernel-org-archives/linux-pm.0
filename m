@@ -1,109 +1,222 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from linux1587.grserver.gr (linux1587.grserver.gr [185.138.42.100])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5362710A3E;
-	Thu, 21 Nov 2024 17:28:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5309E1A9B5A;
+	Thu, 21 Nov 2024 17:28:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.138.42.100
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1732210088; cv=none; b=P80QbbvhhOef8k1VRdoXUmJGQ3UUZQYRXQNO8B0NmvFglUNTW6SkfKXUomuSuZkECypCDxbANRcpW/MVv7GJD26kmeXDmiwM2vKsQf9T2Yt7UlCJbm8zMmsvbBlHL58WlyJ5CoAzsG34zPkw26ZtDhLyTWE0qJ0TkbZ9Uew9XLY=
+	t=1732210090; cv=none; b=Lf4ZW0N5/DI4xLSiP+kNRpW7xHN+LANs/bWGil+K6r1g+4mHUTx6o5Vngk69tt2Yf07R0/+zsU+HgP8RGfyxnb3bkCFk/nuISciM00+7IlTIgcCfJLmeGtsABPVXmDyz7+0zick67RiLu8DkE2t/nJgyF3G4exJh7MbDMkQnG7E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1732210088; c=relaxed/simple;
-	bh=DqERNMBz329lndqZHu/SMyiXBkSfQFzFKltH7TcBJ0M=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=r21+9bsAPBR1NfhSmIO3POdKylRUuxG+SeWm4wvlAtpWBDZXEUkxkw11np82PVJIzysUDpccPBv2LX82fp+vAatvi1ZUEOrprppURMdmYIE1KUsDlUFc30YVxXpu9/OkFTY5vk/bnDNF01+DV55X3n4IjLvmYtJ7AHD3Rzi8pkU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=Sa2waNf2; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+	s=arc-20240116; t=1732210090; c=relaxed/simple;
+	bh=m8mpswy9ngo8vG4Z0jfZ+SmQfNrwPlPZQe7t5THnJMo=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=fkD7HnICzdZomnc0h5F22gnmcde4ccsSSzf90IIGIqGJCLKOdqcvLlZ+31uwgY7uw69UgN0+rqpDzB6d9ZTqEtvlyG8P+q89GOrMLyNvdvGeWa6Tao3W3id7+buX5lR8UVXosKlpqoxEeUVN27Ejfx7mXfnqpuDE/wyE+ihwcTE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=hakRoM8D; arc=none smtp.client-ip=185.138.42.100
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=antheas.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="Sa2waNf2"
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4ALGVpwT015515;
-	Thu, 21 Nov 2024 17:28:04 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	4f6hklYn6OIq3k1OiJK/ZZ6uV3QxdmOOd0G/AHzMhCg=; b=Sa2waNf2BsYeTtFw
-	Gf+k1laiH7okhHWpXllOH/qnC8KvyRyXy6SPDARy43GuOxXUbkSCytJf+o9bcWcn
-	rSOlfEvAvdzhRAN0WUjd4lpbFDtmcQzFEtAPayS2Up5dInB7cgejfca8z9gOv/n6
-	5HEo5TUyCK7SYvPg1qDnRsnsqIG7kLQCqXerTj6zQyQIsPo3VlBhxKKNqRd+ZNJ9
-	iLckggbP9kAixA/4xgctIs6FqenmFGz9T7NZW/xadp3NbISV56FA4zkhf5x0SJoB
-	uMC47+Q0bspg/I0ayuECaZB7ldOOU+xIh8VBWWGeZb+ZA5993HywpO+tdmGErxWC
-	6WQ9WQ==
-Received: from nasanppmta01.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4320y9hm72-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 21 Nov 2024 17:28:04 +0000 (GMT)
-Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
-	by NASANPPMTA01.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 4ALHS2D1008817
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 21 Nov 2024 17:28:02 GMT
-Received: from a629a2d9ebad.qualcomm.com (10.80.80.8) by
- nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.9; Thu, 21 Nov 2024 09:27:58 -0800
-From: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
-To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>
-CC: Odelu Kukatla <quic_okukatla@quicinc.com>,
-        Mike Tipton
-	<quic_mdtipton@quicinc.com>,
-        <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] dt-bindings: interconnect: qcom: drop QPIC_CORE IDs
-Date: Thu, 21 Nov 2024 17:27:36 +0000
-Message-ID: <20241121172737.255-2-quic_rlaggysh@quicinc.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20241121172737.255-1-quic_rlaggysh@quicinc.com>
-References: <20241121172737.255-1-quic_rlaggysh@quicinc.com>
+	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="hakRoM8D"
+Received: from localhost.localdomain (unknown [IPv6:2a05:f6c2:511b:0:cbc0:999f:73ad:33bd])
+	by linux1587.grserver.gr (Postfix) with ESMTPSA id ADE042E090EE;
+	Thu, 21 Nov 2024 19:22:44 +0200 (EET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=antheas.dev;
+	s=default; t=1732209766;
+	bh=aUbHP0EtNdItt/sKM4zDXlLhxrs7moMUJLm1B6QcYMk=; h=From:To:Subject;
+	b=hakRoM8D3hXlR1/1leIIPe2M2+V9M/uID4SexJPvMFiOE43FW1BK0UUS1/cCThZD6
+	 Wira/HO+4lCJprsaPd1cmGwwk1vPlMe9CxLGO4j9qVi3iBl5AlGSIN26mOGdxncJF8
+	 f//9NAIoXLfxZW9MFxQBRuM/T5ybU/G0IsXV1fEQ=
+Authentication-Results: linux1587.grserver.gr;
+	spf=pass (sender IP is 2a05:f6c2:511b:0:cbc0:999f:73ad:33bd) smtp.mailfrom=lkml@antheas.dev smtp.helo=localhost.localdomain
+Received-SPF: pass (linux1587.grserver.gr: connection is authenticated)
+From: Antheas Kapenekakis <lkml@antheas.dev>
+To: linux-pm@vger.kernel.org
+Cc: platform-driver-x86@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	Mario Limonciello <mario.limonciello@amd.com>,
+	Hans de Goede <hdegoede@redhat.com>,
+	Kyle Gospodnetich <me@kylegospodneti.ch>,
+	Antheas Kapenekakis <lkml@antheas.dev>
+Subject: [RFC 01/13] Documentation: PM: Add documentation for S0ix Standby
+ States
+Date: Thu, 21 Nov 2024 18:22:26 +0100
+Message-ID: <20241121172239.119590-2-lkml@antheas.dev>
+X-Mailer: git-send-email 2.47.0
+In-Reply-To: <20241121172239.119590-1-lkml@antheas.dev>
+References: <20241121172239.119590-1-lkml@antheas.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nasanex01b.na.qualcomm.com (10.46.141.250)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: M9uO_lV810raKFQSm8ieTi1TbQRzvBex
-X-Proofpoint-ORIG-GUID: M9uO_lV810raKFQSm8ieTi1TbQRzvBex
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
- definitions=2024-09-06_09,2024-09-06_01,2024-09-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- phishscore=0 impostorscore=0 suspectscore=0 lowpriorityscore=0
- mlxlogscore=901 spamscore=0 mlxscore=0 malwarescore=0 clxscore=1015
- adultscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2409260000 definitions=main-2411210132
+X-PPP-Message-ID: 
+ <173220976565.3777.6114218929171614883@linux1587.grserver.gr>
+X-PPP-Vhost: antheas.dev
+X-Virus-Scanned: clamav-milter 0.103.11 at linux1587.grserver.gr
+X-Virus-Status: Clean
 
-QPIC resources are modeled as clks, therefore remove corresponding
-defines from the binding as they're unused.
+Add documentation about the S0ix Standby States that will be exposed
+to userspace as part of this series.
 
-Signed-off-by: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
+Signed-off-by: Antheas Kapenekakis <lkml@antheas.dev>
 ---
- include/dt-bindings/interconnect/qcom,sdx75.h | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ .../admin-guide/pm/standby-states.rst         | 133 ++++++++++++++++++
+ Documentation/admin-guide/pm/system-wide.rst  |   1 +
+ 2 files changed, 134 insertions(+)
+ create mode 100644 Documentation/admin-guide/pm/standby-states.rst
 
-diff --git a/include/dt-bindings/interconnect/qcom,sdx75.h b/include/dt-bindings/interconnect/qcom,sdx75.h
-index e903f5f3dd8f..0746f1704ec0 100644
---- a/include/dt-bindings/interconnect/qcom,sdx75.h
-+++ b/include/dt-bindings/interconnect/qcom,sdx75.h
-@@ -6,10 +6,8 @@
- #ifndef __DT_BINDINGS_INTERCONNECT_QCOM_SDX75_H
- #define __DT_BINDINGS_INTERCONNECT_QCOM_SDX75_H
+diff --git a/Documentation/admin-guide/pm/standby-states.rst b/Documentation/admin-guide/pm/standby-states.rst
+new file mode 100644
+index 000000000000..96727574312d
+--- /dev/null
++++ b/Documentation/admin-guide/pm/standby-states.rst
+@@ -0,0 +1,133 @@
++.. SPDX-License-Identifier: GPL-2.0
++.. include:: <isonum.txt>
++
++=====================
++S0ix Standby States
++=====================
++
++:Copyright: |copy| 2024 Antheas Kapenekakis
++
++:Author: Antheas Kapenekakis <lkml@antheas.dev>
++
++With the advent of modern mobile devices, users have become accustomed to instant
++wake-up times and always-on connectivity. To meet these expectations, modern
++standby was created, which is a standard that allows the platform to seamlessly
++transition between an S3-like low-power idle state and a set of low power active
++states, where connectivity is maintained, and the system is responsive to user
++input. Current x86 hardware supports 5 different standby states, which are:
++"Deepest run-time idle platform state" or "DRIPS" (S3-like), "Sleep", "Resume",
++"Screen Off", and "Active".
++
++The system begins in the "Active" state. Either due to user inactivity or
++user action (e.g., pressing the power button), it transitions to the "Screen Off"
++state. Afterwards, it is free to transition between the "Sleep", "DRIPS", and
++"Screen Off" states until user action is received. Once that happens, the system
++begins to transition to the "Active" state. From "DRIPS" or "Sleep", it
++transitions to "Resume", where the Power Limit (PLx) is restored to its normal
++level, to speed up finishing "Sleep". Then, it transitions to "Screen Off".
++If on "Screen Off" or after the transition, the display is prepared to turn on
++and the system transitions to "Active" alongside turning it on.
++
++To maintain battery life, in the Windows implementation, the system is allocated
++a maximum percentage of battery and time it can use while staying in idle states.
++By default, this is 5% of battery or up to 2 days, where the system designer/OEM
++is able to tweak these values. If the system exceeds either the battery
++percentage or time limit, it enters Hibernation (S4), through a concept
++called "Adaptive Hibernate".
++
++
++S0ix Standby States
++==================================
++The following idle states are supported::
++
++                 ↓→  <Hibernate (S4)>
++    <DRIPS> ↔ <Sleep> ↔ <Screen Off> ↔ <Active>
++        →       →  <Resume>  ↑
++
++.. _s2idle_drips:
++
++DRIPS
++-----
++
++The "Deepest run-time idle platform state" or "DRIPS" is the lowest power idle
++state that the system can enter. It is similar to the S3 state, with the
++difference that the system may wake up faster than S3 and due to a larger number
++of interrupts (e.g., fingerprint sensor, touchpad, touchscreen). This state
++is entered when the system is told to suspend to idle, through conventional
++means (see :doc:`sleep states <sleep-states>`). The system can only transition
++to "DRIPS" while it is in the "Sleep" state. If it is not, the kernel will
++automatically transition to the "Sleep" state before beginning the suspend
++sequence and restore the previous state afterwards. After the kernel has
++suspended, the notifications LSP0 Entry and Exit are used.
++
++.. _s2idle_sleep:
++
++Sleep
++-----
++
++The "Sleep" state is a low power idle state where the kernel is fully active.
++However, userspace has been partially frozen, particularly desktop applications,
++and only essential "value adding" activities are allowed to run. This is not
++enforced by the kernel and is the responsibility of userspace (e.g., systemd).
++Hardware wise, the Sleep Entry and Exit firmware notifications are fired, which
++may lower the Power Limit (PLx), pulse the suspend light, turn off the keyboard
++lighting or disable a handheld device's gamepad. This state is associated with
++the firmware notifications "Sleep Entry" and "Sleep Exit".
++
++.. _s2idle_resume:
++
++Resume
++------
++
++The "Resume" state is a faux "Sleep" state that is used to fire the Turn On
++Display firmware notification when the system is in the "Sleep" state but
++intends to turn on the display. It solves the problem of system designers
++limiting the Power Limit (PLx) while the system is in the "Sleep" state causing
++the system to wake up slower than desired. This firmware notification is used
++to restore the normal Power Limit of the system, while having it stay in the
++"Sleep" state.  As such, the system can only transition to the "Resume" state
++while in the "Sleep" state and cannot re-transition to the "Sleep" state
++afterwards.
++
++.. _s2idle_screen_off:
++
++Screen Off
++----------
++
++The "Screen Off" state is the state the system enters when all its displays
++(virtual or real) turn off. It is used to signify the user is not actively
++using the system. The associated firmware notifications of "Display On" and
++"Display Off" are used by manufacturers to turn off certain hardware
++components that are associated with the display being on, e.g., a handheld
++device's controller and RGB. Windows implements a 5-second grace period
++before firing this callback when the screen turns off due to inactivity.
++
++.. _s2idle_active:
++
++Active
++------
++
++Finally, the "Active" state is the default state of the system and the one it
++has when it is turned on. It is the state where the system is fully operational,
++the displays of the device are on, and the user is actively interacting with
++the system.
++
++Basic ``sysfs`` Interface for S0ix Standby transitions
++=============================================================
++
++The file :file:`/sys/power/standby` can be used to transition the system between
++the different standby states. The file accepts the following values: ``active``,
++``screen_off``, ``sleep``, and ``resume``. File writes will block until the
++transition completes. It will return ``-EINVAL`` when asking for an unsupported
++state or, e.g., requesting ``resume`` when not in the ``sleep`` state. If there
++is an error during the transition, the transition will pause on the last
++error-free state and return an error. The file can be read to retrieve the
++current state (and potential ones) using the following format:
++``[active] screen_off sleep resume``. The state "DRIPS" is omitted, as it is
++entered through the conventional suspend to idle path and userspace will never
++be able to see its value due to being suspended.
++
++Before entering the "Screen Off" state or suspending, it is recommended that
++userspace marks all CRTCs as inactive (DPMS). Otherwise, there will be a split
++second where the display of the device is on, but the presentation of the system
++is inactive (e.g., the power button pulses), which is undesirable.
+\ No newline at end of file
+diff --git a/Documentation/admin-guide/pm/system-wide.rst b/Documentation/admin-guide/pm/system-wide.rst
+index 1a1924d71006..411775fae4ac 100644
+--- a/Documentation/admin-guide/pm/system-wide.rst
++++ b/Documentation/admin-guide/pm/system-wide.rst
+@@ -8,4 +8,5 @@ System-Wide Power Management
+    :maxdepth: 2
  
--#define MASTER_QPIC_CORE		0
--#define MASTER_QUP_CORE_0		1
--#define SLAVE_QPIC_CORE			2
--#define SLAVE_QUP_CORE_0		3
-+#define MASTER_QUP_CORE_0		0
-+#define SLAVE_QUP_CORE_0		1
- 
- #define MASTER_LLCC			0
- #define SLAVE_EBI1			1
+    sleep-states
++   standby-states
+    suspend-flows
 -- 
-2.39.2
+2.47.0
 
