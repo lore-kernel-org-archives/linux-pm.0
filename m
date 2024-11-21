@@ -1,45 +1,61 @@
-Received: from linux1587.grserver.gr (linux1587.grserver.gr [185.138.42.100])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 946271C242D;
-	Thu, 21 Nov 2024 17:28:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.138.42.100
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC47F1C82E2;
+	Thu, 21 Nov 2024 17:28:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1732210091; cv=none; b=B1hQ+6okCRcoHyf2xzek6rzUWw+y2N2IYHYdnBmlhm8E0j/qBHNKcRE+ywyhVA+wilLaGYAjkToYK5uy3IJUzAKNfNAvDtI2sOYhG5nhIyzXRIatwg3VMkYbAEYAAcynXe3O9lHXaqVFmYRQHNxYjeq0OCKti9qSa1hJkLpBXTY=
+	t=1732210093; cv=none; b=H4jMypis6M592UFmMQopf7bAseZSujmIv2AntvzBX+52McoFrdo/wik4ZdqHTAVAkNVE9FvzkKESXcVK9Pkm3c3q4CiTk52lQWA6twdZSPSufupw/qWg/Gj+/95M52ATgFJ4Nya3B4n0857r5zN0QkL9fvYQDRDLZvekTaj672w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1732210091; c=relaxed/simple;
-	bh=/s/tPRRCZ6ZmgqmDyBJMu09jYH9XvOskUisdrtP5Stc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=fIMB89noN48RbEzFCCoJIm7O3sUfrClXLTdybAD1Snvb4sOtaNqYqqGQXliW1Gw6ZdR+Sxeufz3NGUUMI2Dzp5SQhNupY1x6b+Yl/EnOEn21uCQnBRRBmWuA/d4rLy8/aHltFYoyiY+0T0d7nQSz5T+AcC19clXwYdkzoFUYXGo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=YLFIhJrU; arc=none smtp.client-ip=185.138.42.100
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=antheas.dev
+	s=arc-20240116; t=1732210093; c=relaxed/simple;
+	bh=jzi/XV+v10t0Tu+pou40m4qwzk2RQTjdzeDzGxXchgM=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=AtvmXRmgbfDwVzYwXz7Tbop6Nm3HxKY4IS0SQhPhvxJ2Pm+Bk8HgQiQaWT+HJtvYADEo2X+4MAhXevda/1Yqy5DvOzl7Z/XusdZCiHdJRVKVopjUNy1Z+jJ/MhXdU7Gbo7w60T737++IL5T5dNcjF9vP/LdBt/91veFuRM9rkMA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=WDvj6UBC; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="YLFIhJrU"
-Received: from localhost.localdomain (unknown [IPv6:2a05:f6c2:511b:0:cbc0:999f:73ad:33bd])
-	by linux1587.grserver.gr (Postfix) with ESMTPSA id AEFCE2E09012;
-	Thu, 21 Nov 2024 19:22:41 +0200 (EET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=antheas.dev;
-	s=default; t=1732209763;
-	bh=+Q+2Mqs0k1JVdUpxUseYqqPI8ZxtpPE5LUj7IgLfrEg=; h=From:To:Subject;
-	b=YLFIhJrUZBPV+wOjN6IMV2lRIwFTD8PmIiVDHX0vpktwIz6eDNK5IdbS9i/0W2EnI
-	 VYLm1n4vYfC8fMNShmGjFOQuoSa6A8aoILFRYJIxNsCNQvgWDBgnMKo7aWHW2AOAtC
-	 u5PWBJPfWIjbJCaOONnnOdnNBrPPT/1XonWglRik=
-Authentication-Results: linux1587.grserver.gr;
-	spf=pass (sender IP is 2a05:f6c2:511b:0:cbc0:999f:73ad:33bd) smtp.mailfrom=lkml@antheas.dev smtp.helo=localhost.localdomain
-Received-SPF: pass (linux1587.grserver.gr: connection is authenticated)
-From: Antheas Kapenekakis <lkml@antheas.dev>
-To: linux-pm@vger.kernel.org
-Cc: platform-driver-x86@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Hans de Goede <hdegoede@redhat.com>,
-	Kyle Gospodnetich <me@kylegospodneti.ch>,
-	Antheas Kapenekakis <lkml@antheas.dev>
-Subject: [RFC 00/13] acpi/x86: s2idle: implement Modern Standby transition
- states and expose to userspace
-Date: Thu, 21 Nov 2024 18:22:25 +0100
-Message-ID: <20241121172239.119590-1-lkml@antheas.dev>
-X-Mailer: git-send-email 2.47.0
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="WDvj6UBC"
+Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4ALGfo9q022204;
+	Thu, 21 Nov 2024 17:28:08 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	/8u/vNecc53IGxE3L/RjtRDJI6qPhOI2ZWyuk/XFR5Q=; b=WDvj6UBCcv56+oZg
+	ODLSqG2zxZTSjDJU3TK/fd9+33h2YFzBluGCstq7+ubat1A7D5eosJlV/7Cl6lx9
+	q+ICprJ9JpOs/Uo8Uhc1GC7M4JvpINSpDGFIPddKUu5WdeY10p23TQf7OWdyRToY
+	jT1o9cct8rwmL6Gim7mWb2KAGAlYj32bQci0MDeLte+Aj+Pek0oaawJwfHqpF20h
+	j+ay74SUyG7JP+d5JHdDkENeNikR/0AGZRR9WDTZzUnA8+TJZA/SAiNSXYvFU+6t
+	XCBop+yluOFwZZl0h44dgclh1QqtLvO6g9SBi1s1GCC9HLwzMoRJri92rcYV0EEi
+	21JpLQ==
+Received: from nasanppmta02.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4320wk1n8u-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 21 Nov 2024 17:28:07 +0000 (GMT)
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+	by NASANPPMTA02.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 4ALHS6cA005317
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 21 Nov 2024 17:28:06 GMT
+Received: from a629a2d9ebad.qualcomm.com (10.80.80.8) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.9; Thu, 21 Nov 2024 09:28:02 -0800
+From: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
+To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>
+CC: Odelu Kukatla <quic_okukatla@quicinc.com>,
+        Mike Tipton
+	<quic_mdtipton@quicinc.com>,
+        <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/2] interconnect: qcom: sdx75: Drop QP0 related interconnect and BCM nodes
+Date: Thu, 21 Nov 2024 17:27:37 +0000
+Message-ID: <20241121172737.255-3-quic_rlaggysh@quicinc.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20241121172737.255-1-quic_rlaggysh@quicinc.com>
+References: <20241121172737.255-1-quic_rlaggysh@quicinc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -47,162 +63,219 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-PPP-Message-ID: 
- <173220976267.3378.7329662143191227547@linux1587.grserver.gr>
-X-PPP-Vhost: antheas.dev
-X-Virus-Scanned: clamav-milter 0.103.11 at linux1587.grserver.gr
-X-Virus-Status: Clean
+Content-Type: text/plain
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: pULXLZK5eCVVCGS_y8Cx_4BQH9y6b3Z7
+X-Proofpoint-GUID: pULXLZK5eCVVCGS_y8Cx_4BQH9y6b3Z7
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
+ definitions=2024-09-06_09,2024-09-06_01,2024-09-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 impostorscore=0
+ malwarescore=0 lowpriorityscore=0 suspectscore=0 mlxlogscore=994
+ adultscore=0 mlxscore=0 bulkscore=0 clxscore=1015 priorityscore=1501
+ spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2409260000 definitions=main-2411210132
 
-The following series moves the _DSM 3,4,7,8 firmware notifications outside
-the suspend sequence, and makes them part of a transition function, where
-the system can transition freely between them when it is not suspended.
-This transition function is exposed to userspace, which now gains the
-ability to control the presentation of the device (e.g., pulse the suspend
-light) without forcing the kernel to suspend. In addition, it adds support
-for the _DSM 9 call Turn Display On, which was introduced in Windows 22H2
-and aims to speed up device wake-up while remaining in the "Sleep" state.
-If userspace is not standby aware, the kernel will bring the system into
-the "Sleep" state before beginning the suspend sequence.
+QP0 resource on sdx75 is managed by clk-rpmh.
+There are no interconnect clients voting for QP0, hence dropping the
+redundant nodes from topolgy to avoid the risk of overriding the vote
+placed on QP0 using clk-rpmh.
 
-This series requires a bit of background on how modern standby works in
-Windows. Windows has a concept of "Modern Standby" [1], where it performs
-an elaborate userspace and kernel suspend choreography while the device is
-inactive in order to maintain fast wake-up times and connectivity while the
-display of the device is off. This is done through 5 hardware states and
-the OS takes the liberty of transitioning between them, by following a set
-of rules (e.g., "Adaptive Hibernate").
+Signed-off-by: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
+---
+ drivers/interconnect/qcom/sdx75.c |  25 -------
+ drivers/interconnect/qcom/sdx75.h | 118 +++++++++++++++---------------
+ 2 files changed, 58 insertions(+), 85 deletions(-)
 
-```
-                                 \/-> "Hibernate (S4)"
-"Active" <-> "Screen Off" <-> "Sleep" <-> "DRIPS"
-                  /\-  "Resume"  <-         <-
-```
-
-When the display is on and the user is interacting with the device, it is
-in the "Active" state. The moment the display turns off, the device
-transitions to the "Screen Off" state, where hardware and userspace are
-fully active. Userspace will then decide when appropriate to freeze major
-components (such as the DE) and transition into the "Sleep" state, where
-the kernel is still active and connectivity is maintained. Finally, the
-conventional "Suspend-to-idle" path can be used to bring the system into
-the deepest runtime idle platform state (DRIPS) state, which is named
-"s2idle" in the Linux kernel.
-
-After wake-up, the system re-transitions into the "Sleep" state, where
-userspace can run housekeeping and/or hibernate if the wake-up was not user
-initiated (e.g., timer). If user-initiated, userspace can hasten the
-transition out of the "Sleep" state by transitioning into the state
-"Resume" that certain devices use to boost the Power Limit (PLx) while
-remaining in sleep (support for this new notification is rare). Then, it
-transitions back into "Screen Off" and "Active" to prepare for the user.
-
-All transitions between these states feature unique firmware notifications
-[3] that change the presentation of the device (e.g., pulse the suspend
-light, turn off RGB). For more information, see the docs in [8]. Making
-these transitions accessible from userspace moves them out of the suspend
-sequence and has them happen while the kernel is fully active, mirroring
-Windows.
-
-As a side effect, this patch series completely fixes the ROG Ally
-controller issue [5], which expects for .5s to lapse before its
-controller's USB hub goes into D3 and otherwise malfunctions. It also fixes
-an issue present in (allegedly only) older firmwares where they check the
-USB subsystem is not in D3 before allowing the controller to wake up while
-in powersave mode (for avoiding spurious wake-ups). As such, this patch
-series is also a universal fix for the ROG Ally controller.
-
-Moreover, this patch series allows turning off the controller and RGB of
-most Windows handhelds (OneXPlayer, Lenovo Legion Go, GPD, and Asus ROG
-Ally), opening the possibility of implementing suspend-then-hibernate and
-other standby features, such as background downloads, without waking up the
-RGB/controller of those devices. A Thinkpad T14 2021 was also tested, and
-it pulses its suspend light during sleep.
-
-There is still the question of where LSP0 entry/exit (_DSM 5,6) should be
-fired or whether they should be fired in the path to hibernation. However,
-as they cause no issues currently, and they fire when software activity has
-seized, they are fine where they are.
-
-It is important to note that the effects of these _DSMs persist during
-reboots. I.e., if the Legion Go reboots while in the "Sleep" state, it will
-boot into the "Sleep" state and have its controller disabled and suspend
-light pulsing. The reboot persistence is undesirable, so the reboot path
-will need to include a transition to active prior to reboot (not
-included in this series). This is not the case after shutdown and
-hibernation, where the device boots into the "Active" state.
-
-The issue of DPMS is still present. Currently, gamescope and KDE (at least)
-do not fire DPMS before suspending. This causes an undesirable frozen
-screen while the system is suspending and looks quite ugly in general. This
-is especially true if the firmware notifications fire earlier. Therefore,
-should the kernel fire DPMS before forcing the transition to sleep for
-backwards compat.? If yes, it will be quite the effort. Moreover, should
-the kernel allow graphics drivers hook the transition function and block
-transitions to "Screen Off" if there is an active CRTC? As that would be a
-significant undertaking, there should be proof that there exists such a
-device that has an issue firing the notifications with an active CRTC.
-
-A variant of this series has been tested by thousands of users by now,
-where the notifications fire around .5s before the CRTC is disabled and no
-ill-effects have found in regard to this quirk. AFAIK, it is a visual
-quirk. Making DPMS fire before the backwards compat. transition is a good
-idea in any case, as it will sync the 200ms between Display Off/Sleep Entry
-firing and the graphics driver turning off the display, but it might not be
-worth the effort.
-
-We are currently testing a DPMS patch for gamescope and it completely fixes
-this visual quirk while allowing for e.g., hibernation without turning on
-the screen. The DPMS gamescope patch + performing the transitions in
-userspace in such a way where it blends the Ally's suspend delay halves the
-user perceived delay to sleep and results in a very professional
-presentation. This presentation extends to other devices as well, such as
-the Legion Go.
-
-Link: https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/prepare-hardware-for-modern-standby [1]
-Link: https://learn.microsoft.com/en-us/windows-hardware/customize/power-settings/adaptive-hibernate [2]
-Link: https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/modern-standby-firmware-notifications [3]
-Link: https://github.com/hhd-dev/hwinfo/tree/master/devices [4]
-Link: https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git/log/?h=superm1/dsm-screen-on-off [5]
-Link: https://gitlab.freedesktop.org/drm/amd/-/issues/2719 [6]
-Link: https://dl.dell.com/manuals/all-products/esuprt_solutions_int/esuprt_solutions_int_solutions_resources/client-mobile-solution-resources_white-papers45_en-us.pdf [7]
-File: Documentation/admin-guide/pm/standby-states.rst [8]
-
-Changes from previous series (`acpi/x86: s2idle: move Display off/on calls
-  outside suspend (fixes ROG Ally suspend)`):
-  - Separate Display On/Off rename into its own commit (suggested by Hans)
-  - Move delay quirks into s2idle.c (suggested by Hans)
-  - Add documentation on Documentation/admin-guide/pm/standby-states.rst
-  - Callbacks are now static and a transition function is used
-  - Fixed all checkpatch warnings
-  - The rest of the series is completely re-written
-
-Antheas Kapenekakis (13):
-  Documentation: PM: Add documentation for S0ix Standby States
-  acpi/x86: s2idle: add support for Display Off and Display On callbacks
-  acpi/x86: s2idle: add support for Sleep Entry and Sleep Exit callbacks
-  acpi/x86: s2idle: add support for Turn On Display callback
-  acpi/x86: s2idle: add modern standby transition function
-  acpi/x86: s2idle: rename Screen On/Off to Display On/Off
-  acpi/x86: s2idle: call Display On/Off as part of callbacks
-  acpi/x86: s2idle: rename MS Exit/Entry to Sleep Exit/Entry
-  acpi/x86: s2idle: call Sleep Entry/Exit as part of callbacks
-  acpi/x86: s2idle: add Turn On Display and call as part of callback
-  acpi/x86: s2idle: add quirk table for modern standby delays
-  platform/x86: asus-wmi: remove Ally (1st gen) and Ally X suspend quirk
-  PM: standby: Add sysfs attribute for modern standby transitions
-
- Documentation/ABI/testing/sysfs-power         |  34 +++
- .../admin-guide/pm/standby-states.rst         | 133 ++++++++++
- Documentation/admin-guide/pm/system-wide.rst  |   1 +
- drivers/acpi/x86/s2idle.c                     | 249 ++++++++++++++----
- drivers/platform/x86/asus-wmi.c               |  54 ----
- include/linux/suspend.h                       |  16 ++
- kernel/power/main.c                           |  75 ++++++
- kernel/power/power.h                          |   1 +
- kernel/power/suspend.c                        | 154 +++++++++++
- 9 files changed, 616 insertions(+), 101 deletions(-)
- create mode 100644 Documentation/admin-guide/pm/standby-states.rst
-
+diff --git a/drivers/interconnect/qcom/sdx75.c b/drivers/interconnect/qcom/sdx75.c
+index 7ef1f17f3292..4afcdc5f25a7 100644
+--- a/drivers/interconnect/qcom/sdx75.c
++++ b/drivers/interconnect/qcom/sdx75.c
+@@ -16,15 +16,6 @@
+ #include "icc-rpmh.h"
+ #include "sdx75.h"
+ 
+-static struct qcom_icc_node qpic_core_master = {
+-	.name = "qpic_core_master",
+-	.id = SDX75_MASTER_QPIC_CORE,
+-	.channels = 1,
+-	.buswidth = 4,
+-	.num_links = 1,
+-	.links = { SDX75_SLAVE_QPIC_CORE },
+-};
+-
+ static struct qcom_icc_node qup0_core_master = {
+ 	.name = "qup0_core_master",
+ 	.id = SDX75_MASTER_QUP_CORE_0,
+@@ -375,14 +366,6 @@ static struct qcom_icc_node xm_usb3 = {
+ 	.links = { SDX75_SLAVE_A1NOC_CFG },
+ };
+ 
+-static struct qcom_icc_node qpic_core_slave = {
+-	.name = "qpic_core_slave",
+-	.id = SDX75_SLAVE_QPIC_CORE,
+-	.channels = 1,
+-	.buswidth = 4,
+-	.num_links = 0,
+-};
+-
+ static struct qcom_icc_node qup0_core_slave = {
+ 	.name = "qup0_core_slave",
+ 	.id = SDX75_SLAVE_QUP_CORE_0,
+@@ -831,12 +814,6 @@ static struct qcom_icc_bcm bcm_mc0 = {
+ 	.nodes = { &ebi },
+ };
+ 
+-static struct qcom_icc_bcm bcm_qp0 = {
+-	.name = "QP0",
+-	.num_nodes = 1,
+-	.nodes = { &qpic_core_slave },
+-};
+-
+ static struct qcom_icc_bcm bcm_qup0 = {
+ 	.name = "QUP0",
+ 	.keepalive = true,
+@@ -903,9 +880,7 @@ static struct qcom_icc_bcm * const clk_virt_bcms[] = {
+ };
+ 
+ static struct qcom_icc_node * const clk_virt_nodes[] = {
+-	[MASTER_QPIC_CORE] = &qpic_core_master,
+ 	[MASTER_QUP_CORE_0] = &qup0_core_master,
+-	[SLAVE_QPIC_CORE] = &qpic_core_slave,
+ 	[SLAVE_QUP_CORE_0] = &qup0_core_slave,
+ };
+ 
+diff --git a/drivers/interconnect/qcom/sdx75.h b/drivers/interconnect/qcom/sdx75.h
+index 24e887159920..3fd2bfcdce84 100644
+--- a/drivers/interconnect/qcom/sdx75.h
++++ b/drivers/interconnect/qcom/sdx75.h
+@@ -33,65 +33,63 @@
+ #define SDX75_MASTER_QDSS_ETR			24
+ #define SDX75_MASTER_QDSS_ETR_1			25
+ #define SDX75_MASTER_QPIC			26
+-#define SDX75_MASTER_QPIC_CORE			27
+-#define SDX75_MASTER_QUP_0			28
+-#define SDX75_MASTER_QUP_CORE_0			29
+-#define SDX75_MASTER_SDCC_1			30
+-#define SDX75_MASTER_SDCC_4			31
+-#define SDX75_MASTER_SNOC_CFG			32
+-#define SDX75_MASTER_SNOC_SF_MEM_NOC		33
+-#define SDX75_MASTER_SYS_TCU			34
+-#define SDX75_MASTER_USB3_0			35
+-#define SDX75_SLAVE_A1NOC_CFG			36
+-#define SDX75_SLAVE_ANOC_PCIE_GEM_NOC		37
+-#define SDX75_SLAVE_AUDIO			38
+-#define SDX75_SLAVE_CLK_CTL			39
+-#define SDX75_SLAVE_CRYPTO_0_CFG		40
+-#define SDX75_SLAVE_CNOC_MSS			41
+-#define SDX75_SLAVE_DDRSS_CFG			42
+-#define SDX75_SLAVE_EBI1			43
+-#define SDX75_SLAVE_ETH0_CFG			44
+-#define SDX75_SLAVE_ETH1_CFG			45
+-#define SDX75_SLAVE_GEM_NOC_CFG			46
+-#define SDX75_SLAVE_GEM_NOC_CNOC		47
+-#define SDX75_SLAVE_ICBDI_MVMSS_CFG		48
+-#define SDX75_SLAVE_IMEM			49
+-#define SDX75_SLAVE_IMEM_CFG			50
+-#define SDX75_SLAVE_IPA_CFG			51
+-#define SDX75_SLAVE_IPC_ROUTER_CFG		52
+-#define SDX75_SLAVE_LAGG_CFG			53
+-#define SDX75_SLAVE_LLCC			54
+-#define SDX75_SLAVE_MCCC_MASTER			55
+-#define SDX75_SLAVE_MEM_NOC_PCIE_SNOC		56
+-#define SDX75_SLAVE_PCIE_0			57
+-#define SDX75_SLAVE_PCIE_1			58
+-#define SDX75_SLAVE_PCIE_2			59
+-#define SDX75_SLAVE_PCIE_0_CFG			60
+-#define SDX75_SLAVE_PCIE_1_CFG			61
+-#define SDX75_SLAVE_PCIE_2_CFG			62
+-#define SDX75_SLAVE_PCIE_ANOC_CFG		63
+-#define SDX75_SLAVE_PCIE_RSC_CFG		64
+-#define SDX75_SLAVE_PDM				65
+-#define SDX75_SLAVE_PRNG			66
+-#define SDX75_SLAVE_QDSS_CFG			67
+-#define SDX75_SLAVE_QDSS_STM			68
+-#define SDX75_SLAVE_QPIC			69
+-#define SDX75_SLAVE_QPIC_CORE			70
+-#define SDX75_SLAVE_QUP_0			71
+-#define SDX75_SLAVE_QUP_CORE_0			72
+-#define SDX75_SLAVE_SDCC_1			73
+-#define SDX75_SLAVE_SDCC_4			74
+-#define SDX75_SLAVE_SERVICE_GEM_NOC		75
+-#define SDX75_SLAVE_SERVICE_PCIE_ANOC		76
+-#define SDX75_SLAVE_SERVICE_SNOC		77
+-#define SDX75_SLAVE_SNOC_CFG			78
+-#define SDX75_SLAVE_SNOC_GEM_NOC_SF		79
+-#define SDX75_SLAVE_SNOOP_BWMON			80
+-#define SDX75_SLAVE_SPMI_VGI_COEX		81
+-#define SDX75_SLAVE_TCSR			82
+-#define SDX75_SLAVE_TCU				83
+-#define SDX75_SLAVE_TLMM			84
+-#define SDX75_SLAVE_USB3			85
+-#define SDX75_SLAVE_USB3_PHY_CFG		86
++#define SDX75_MASTER_QUP_0			27
++#define SDX75_MASTER_QUP_CORE_0			28
++#define SDX75_MASTER_SDCC_1			29
++#define SDX75_MASTER_SDCC_4			30
++#define SDX75_MASTER_SNOC_CFG			31
++#define SDX75_MASTER_SNOC_SF_MEM_NOC		32
++#define SDX75_MASTER_SYS_TCU			33
++#define SDX75_MASTER_USB3_0			34
++#define SDX75_SLAVE_A1NOC_CFG			35
++#define SDX75_SLAVE_ANOC_PCIE_GEM_NOC		36
++#define SDX75_SLAVE_AUDIO			37
++#define SDX75_SLAVE_CLK_CTL			38
++#define SDX75_SLAVE_CRYPTO_0_CFG		39
++#define SDX75_SLAVE_CNOC_MSS			40
++#define SDX75_SLAVE_DDRSS_CFG			41
++#define SDX75_SLAVE_EBI1			42
++#define SDX75_SLAVE_ETH0_CFG			43
++#define SDX75_SLAVE_ETH1_CFG			44
++#define SDX75_SLAVE_GEM_NOC_CFG			45
++#define SDX75_SLAVE_GEM_NOC_CNOC		46
++#define SDX75_SLAVE_ICBDI_MVMSS_CFG		47
++#define SDX75_SLAVE_IMEM			48
++#define SDX75_SLAVE_IMEM_CFG			49
++#define SDX75_SLAVE_IPA_CFG			50
++#define SDX75_SLAVE_IPC_ROUTER_CFG		51
++#define SDX75_SLAVE_LAGG_CFG			52
++#define SDX75_SLAVE_LLCC			53
++#define SDX75_SLAVE_MCCC_MASTER			54
++#define SDX75_SLAVE_MEM_NOC_PCIE_SNOC		55
++#define SDX75_SLAVE_PCIE_0			56
++#define SDX75_SLAVE_PCIE_1			57
++#define SDX75_SLAVE_PCIE_2			58
++#define SDX75_SLAVE_PCIE_0_CFG			59
++#define SDX75_SLAVE_PCIE_1_CFG			60
++#define SDX75_SLAVE_PCIE_2_CFG			61
++#define SDX75_SLAVE_PCIE_ANOC_CFG		62
++#define SDX75_SLAVE_PCIE_RSC_CFG		63
++#define SDX75_SLAVE_PDM				64
++#define SDX75_SLAVE_PRNG			65
++#define SDX75_SLAVE_QDSS_CFG			66
++#define SDX75_SLAVE_QDSS_STM			67
++#define SDX75_SLAVE_QPIC			68
++#define SDX75_SLAVE_QUP_0			69
++#define SDX75_SLAVE_QUP_CORE_0			70
++#define SDX75_SLAVE_SDCC_1			71
++#define SDX75_SLAVE_SDCC_4			72
++#define SDX75_SLAVE_SERVICE_GEM_NOC		73
++#define SDX75_SLAVE_SERVICE_PCIE_ANOC		74
++#define SDX75_SLAVE_SERVICE_SNOC		75
++#define SDX75_SLAVE_SNOC_CFG			76
++#define SDX75_SLAVE_SNOC_GEM_NOC_SF		77
++#define SDX75_SLAVE_SNOOP_BWMON			78
++#define SDX75_SLAVE_SPMI_VGI_COEX		79
++#define SDX75_SLAVE_TCSR			80
++#define SDX75_SLAVE_TCU				81
++#define SDX75_SLAVE_TLMM			82
++#define SDX75_SLAVE_USB3			83
++#define SDX75_SLAVE_USB3_PHY_CFG		84
+ 
+ #endif
 -- 
-2.47.0
+2.39.2
 
