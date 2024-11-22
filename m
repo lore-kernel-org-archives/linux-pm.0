@@ -1,103 +1,129 @@
-Received: from mail-io1-f54.google.com (mail-io1-f54.google.com [209.85.166.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4458646434
-	for <linux-pm@vger.kernel.org>; Fri, 22 Nov 2024 18:02:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0FA0364A8F;
+	Fri, 22 Nov 2024 19:27:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1732298562; cv=none; b=N+r4JvacS/LmtZ5nIeSYrpui62PVXUnTeZxI/dFV8kDpFkeIKHTa2I4mgH6M07ukUW6xjB2TW1SL1/OYt9x6b7amGRQgW+pvc9ORG2hYjj0PkY1++e8huE4EGlVb6QA0PK1vLvwXMs88gdCqbBKf8qPOpLva2A2fpdEP4bgkByk=
+	t=1732303666; cv=none; b=g38kliOnTp5bjLr269E8gZBz5QLJQ9rPwhpOaJq2alUN8SHfiKQB6v13OR4sIAFuKbfCQCXMdj9Oqg8hwTJ1LTootFEK7ENEF1XWDxNsF0MMlsYl4excVfrBfjK8Mj14KbEnzSS8kUubvY51NUtyS/k7sQSeEnsAlqLJhU2C/vI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1732298562; c=relaxed/simple;
-	bh=ekCCgGqoPHo4zcbNwXZU0Fyaydg0OUHdYZ+WKARSEKY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ppqAQWOJY8oGeLnC6YO7qMMaMvi1zy/gK1yyUz0GKmYHRZzmEoY3v4dmW5eQaDOxHFxLJCjiRrixuOZItTTGyePNbG0W2B8pvslo6eevSg7y+q9z/anT6ZfZ8ZJeatOvIHBgdFXp8PPSL/cO+3mYh/3N3WurIixD9oEaJ4vmH5Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=LIqHSlgV; arc=none smtp.client-ip=209.85.166.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
+	s=arc-20240116; t=1732303666; c=relaxed/simple;
+	bh=yguWofAVWAk41J3X5cJbVOW9/dPsoPltgyhYgkTdtNs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=TpgKJFREWffzdCHpNEpv6jj0YZel0/eead/zSzj4dHqjTUXutIyc2lnkFT/uEXFLWw0i7Sv7V+qm3MdePZtyC5oTuhZOW6YTRad9BFwub182mqmZJNpw6wQvDzzn252w4g/MsPCMQjJUp59wXq/HkKlYRXnXAp+ajLdrguIS7nQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=O54sxMbF; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="LIqHSlgV"
-Received: by mail-io1-f54.google.com with SMTP id ca18e2360f4ac-83aac75fcceso80338739f.0
-        for <linux-pm@vger.kernel.org>; Fri, 22 Nov 2024 10:02:40 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google; t=1732298559; x=1732903359; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=1UKK6R6clrCso3TZBJx1KSDVNI3/xH6YnlT32kTkAIw=;
-        b=LIqHSlgV3JQ6Jp0OOGhUFdVUouIi0PUXOSpNMNRj4iucPInGBwttzzKFlEnDQsTcyV
-         FZ5BzCLvtt7Q6sdvDgzqh2Qh7+x434EBDh1UKTJQPcjDjA3uDRDqXRpBQ/adWiGibP7v
-         VogoGAKFYrF2Dh0O34BBhhpyUxHIytdN6Idz4=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1732298559; x=1732903359;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=1UKK6R6clrCso3TZBJx1KSDVNI3/xH6YnlT32kTkAIw=;
-        b=H5khbNNUtUQQcKTGf9wtu2mO8/rGmThM04x4jOzhjitR0McJx3Ihg5AQyEoXjEJjAj
-         YZTnWRIDGW1lCnAdBmMEuCtZ7O8ux0z575w7CBGDkvMA2YAuiTH/zwQTqQh937P+JGGq
-         IsUUR/wu8XYairXZB6y+qQKI/55Fh099qngi9diUBxRzVIsdmplKj4wM9EaOviy7yK+X
-         NbHJOal5js59IlknS8fFgHylutF4MdJ1Gh/TeFmbY/VLvRdRgaD0nD0b6QvtXH7k9/Bm
-         Q/jv9xMB6ptUnHX3dKQWLWJkGRHrkw7CO6Jn6hIc405Di/dcBpM19jgkGSji/0RvHQGI
-         cE5g==
-X-Gm-Message-State: AOJu0YzrT5EmUzZMfIhmIM2f8L7aU/a0Wn0S0vsil1KfJOhkyR2NBUxB
-	6JdliaZnbkxLG1IxZvesctxZWcQjCAAcILopz5deJTdOhoWfWZJ6XMcLVnIyHFk=
-X-Gm-Gg: ASbGncviE20Wgba/lSMk1rWZIl9HQCf0whJuEXTGkWHcYUU0nY/H/ckuIxeNzwW1Mvg
-	vLVJYcXmBArGZxm6/l0UNYEOpPK0qaVX3ivLAtnphZazY5WPYz/zFjoqOgco4d2673DzDain43g
-	b8+ZA63m7+T+kQQ6cUjNW8uQmlSY5VKf69WlCNENiDgVgVuyiy3xto5nFmN8yq+Hk5jni+1VMTh
-	tImjE5nddpjuBACZTRW0Y/p1Dx39ywHrWncSqHYcz8y8kXmEh1A5wjPwytT9A==
-X-Google-Smtp-Source: AGHT+IFWzkCdRFFv1WAJ4OhtVkdsgjqMg1uTPe5WFau1RnEd7XbEpWY5vU7jhdifNFmZIwph0mKcAA==
-X-Received: by 2002:a05:6602:164c:b0:83a:a9cc:69ff with SMTP id ca18e2360f4ac-83ecdd2ff2cmr388799539f.13.1732298559336;
-        Fri, 22 Nov 2024 10:02:39 -0800 (PST)
-Received: from [192.168.1.128] ([38.175.170.29])
-        by smtp.gmail.com with ESMTPSA id ca18e2360f4ac-83ecd3ea05dsm55605439f.37.2024.11.22.10.02.38
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 22 Nov 2024 10:02:38 -0800 (PST)
-Message-ID: <6546a78d-9989-417f-925c-c6422c28f2f2@linuxfoundation.org>
-Date: Fri, 22 Nov 2024 11:02:37 -0700
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="O54sxMbF"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DC52AC4CED7;
+	Fri, 22 Nov 2024 19:27:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1732303665;
+	bh=yguWofAVWAk41J3X5cJbVOW9/dPsoPltgyhYgkTdtNs=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=O54sxMbFoHRVAVs7VcZotltbPtUm1VGWvNoUHw4DPg2ODwVYY6QkpQjXfXQ7misB+
+	 nEJkikH25Ns40iQfM0Uqx4GYbnHXCOm9gRNgOZZHCbCqREAYXp09/TFt3YlCguevlr
+	 fPotLZEBu5myYOx48RSuIQ8Nv1Dw3c7bPNsXAug7D9OK5opCGlRmo+6Y2hoav09tuF
+	 CgLeh5qEVEI1LwvYWzjYB1dN+6kAg76xk6bkygmLhZnKWSyC/t/7viDYM/XAn7eogg
+	 YMojhZe5+fe8GpVmTHmFavGU7DOyuCB4IZFHwD776ru0Ae17WlOLzbmmtd/x1kCvV5
+	 ISelCto6yQe2A==
+Received: by mail-oa1-f54.google.com with SMTP id 586e51a60fabf-296994dd3bfso1642909fac.0;
+        Fri, 22 Nov 2024 11:27:45 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCVLJKQ260GdCYRS6uiAOH0WesXzBFAAx6r7tvieSHZNKxpgQTGN4VaocsbODZT3RUNm0j6s8CZRCws=@vger.kernel.org, AJvYcCWJb/X0vsy+pf9tD3l/3Km9MSUz29pWUjrk/L5CiBHxhD8Tngx5e2PhQLLuIX5k/wO0XE+LXnQrmgP4@vger.kernel.org, AJvYcCXtnPil95js2CklVPo9JysdSsXiw+ud0NuzO49uqQ+70rkBGeRZ427him6mI5iP4T+vmHPAsaEzADI7czrn@vger.kernel.org
+X-Gm-Message-State: AOJu0YyFUoQIBwjeMyUBfby4FJ6LBpj7yj07o9XvkMtUtKPMP+3DMSKU
+	c6Fe4+m58pIdfQ3w7Ts44N9ISgAYvOR0ZzYkooy7OwVJ8ID8hH/x5/K1vMxs9XfEdHH+xi+D55T
+	HKo3tviSChDZTYm7VL29owr9KqI8=
+X-Google-Smtp-Source: AGHT+IGB8hg7lTSwwMDovfIEQoAKW7Y09+fDewSPgzj/Id1opr5d05VkEngC9LnrhggJ31OIWfQcA8qPRZWvSPigA44=
+X-Received: by 2002:a05:6870:46a2:b0:296:cdee:f7de with SMTP id
+ 586e51a60fabf-29720c33a6fmr4725047fac.21.1732303665039; Fri, 22 Nov 2024
+ 11:27:45 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpupower: Fixing memory leaks
-To: liujing <liujing@cmss.chinamobile.com>, trenn@suse.com, shuah@kernel.org,
- jwyatt@redhat.com, jkacur@redhat.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Shuah Khan <skhan@linuxfoundation.org>
-References: <20241121133212.6809-1-liujing@cmss.chinamobile.com>
-Content-Language: en-US
-From: Shuah Khan <skhan@linuxfoundation.org>
-In-Reply-To: <20241121133212.6809-1-liujing@cmss.chinamobile.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <5839859.DvuYhMxLoT@rjwysocki.net> <e7ac7561-f9ff-406a-b2d7-6d9e31ed6e98@amd.com>
+In-Reply-To: <e7ac7561-f9ff-406a-b2d7-6d9e31ed6e98@amd.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 22 Nov 2024 20:27:32 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0jTxBt8+bc+EgUZmE84N+Vok_aM16D8HyLQUv=BSoqRCw@mail.gmail.com>
+Message-ID: <CAJZ5v0jTxBt8+bc+EgUZmE84N+Vok_aM16D8HyLQUv=BSoqRCw@mail.gmail.com>
+Subject: Re: [RFC/RFT][PATCH v0.1] ACPI: OSL: Use usleep_range() in acpi_os_sleep()
+To: Mario Limonciello <mario.limonciello@amd.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>, 
+	LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
+	Len Brown <len.brown@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, 
+	Pierre Gondois <pierre.gondois@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, 
+	Hans de Goede <hdegoede@redhat.com>, "Gautham R. Shenoy" <gautham.shenoy@amd.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 11/21/24 06:32, liujing wrote:
-> If execlp fails, page memory is not freed, so fix it.
+On Thu, Nov 21, 2024 at 11:27=E2=80=AFPM Mario Limonciello
+<mario.limonciello@amd.com> wrote:
+>
+> On 11/21/2024 07:15, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > As stated by Len in [1], the extra delay added by msleep() to the
+> > sleep time value passed to it can be significant, roughly between
+> > 1.5 ns on systems with HZ =3D 1000 and as much as 15 ms on systems with
+> > HZ =3D 100, which is hardly acceptable, at least for small sleep time
+> > values.
+> >
+> > Address this by using usleep_range() in acpi_os_sleep() instead of
+> > msleep().  For short sleep times this is a no-brainer, but even for
+> > long sleeps usleep_range() should be preferred because timer wheel
+> > timers are optimized for cancellation before they expire and this
+> > particular timer is not going to be canceled.
+> >
+> > Add at least 50 us on top of the requested sleep time in case the
+> > timer can be subject to coalescing, which is consistent with what's
+> > done in user space in this context [2], but for sleeps longer than 5 ms
+> > use 1% of the requested sleep time for this purpose.
+> >
+> > The rationale here is that longer sleeps don't need that much of a time=
+r
+> > precision as a rule and making the timer a more likely candidate for
+> > coalescing in these cases is generally desirable.  It starts at 5 ms so
+> > that the delta between the requested sleep time and the effective
+> > deadline is a contiuous function of the former.
+> >
+> > Link: https://lore.kernel.org/linux-pm/c7db7e804c453629c116d508558eaf46=
+477a2d73.1731708405.git.len.brown@intel.com/ [1]
+> > Link: https://lore.kernel.org/linux-pm/CAJvTdK=3DQ1kwWA6Wxn8Zcf0OicDEk6=
+cHYFAvQVizgA47mXu63+g@mail.gmail.com/ [2]
+> > Reported-by: Len Brown <lenb@kernel.org>
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> You probably should also pick up this tag from the earlier version.
+>
+> Closes: https://bugzilla.kernel.org/show_bug.cgi?id=3D216263
 
-How did you find the problem?
+Good point.
 
-> 
-> Signed-off-by: liujing <liujing@cmss.chinamobile.com>
-> 
-> diff --git a/tools/power/cpupower/utils/cpupower.c b/tools/power/cpupower/utils/cpupower.c
-> index 9ec973165af1..36d486199630 100644
-> --- a/tools/power/cpupower/utils/cpupower.c
-> +++ b/tools/power/cpupower/utils/cpupower.c
-> @@ -98,7 +98,7 @@ static int print_man_page(const char *subpage)
->   	}
->   
->   	execlp("man", "man", page, NULL);
-> -
-> +	free(page);
+> > ---
+> >
+> > This is a follow-up to the discussion started by [1] above and since
+> > the beginning of it I have changed my mind a bit, as you can see.
+> >
+> > Given Arjan's feedback, I've concluded that using usleep_range() for
+> > all sleep values is the right choice and that some slack should be
+> > used there.  I've taken 50 us as the minimum value of it because that's
+> > what is used in user space FWICT and I'm not convinced that shorter
+> > values would be suitable here.
+> >
+> > The other part, using 1% of the sleep time as the slack for longer
+> > sleeps, is likely more controversial.  It is roughly based on the
+> > observation that if one timer interrupt is sufficient for something,
+> > then using two of them will be wasteful even if this is just somewhat.
+> >
+> > Anyway, please let me know what you think.  I'd rather do whatever
+> > the majority of you are comfortable with.
+>
+> Generally I'm fine with this.
+>
+> I'm about to head on US holiday, but I will forward this to folks that
+> aren't and get some testing input on it to bring back later when I'm back=
+.
 
-The memory gets free'ed when process exits. Why do you need this?
-  
-  
->   	/* should not be reached */
->   	return -EINVAL;
->   }
-
-thanks,
--- Shuah
+Thanks!
