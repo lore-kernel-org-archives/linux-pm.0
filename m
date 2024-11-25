@@ -1,195 +1,229 @@
-Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from NAM04-DM6-obe.outbound.protection.outlook.com (mail-dm6nam04on2051.outbound.protection.outlook.com [40.107.102.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 08F171B3958;
-	Mon, 25 Nov 2024 15:14:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1732547644; cv=none; b=Pg450QhdqpUy/Hrvs0wrrAtoBN31kYnQX8gIklpyve2MUF5ddck2yrZJV4foUsh9jQlreXoT5JRz/TRN1ZBwydP4rethvV2Fx1KVUkdmVrgUfqhclVGc4GngesW6BDfFTtMMDNaggTB4c6lii8fDsiIpyy21tzn+hBI14HrgIjM=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1732547644; c=relaxed/simple;
-	bh=ZkVMLpzLhNcQRs+hYBFMGEpR1j3Q+8DIRycGutk5qFw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ClhMCeNUNhVk4PeSO5DU7a+XNlX3W1or13XrwbxBcroxyRnR3EkIZKH2LhPS0Uu3yymDSmHQofKddmgfeFc4DyHuajin3NwFVEN8TJpzs7KZ29StiPNAhRzW5o5SSmKMcF8PTkmViVTUhx6Dk05JzExUFQBovdsjbF4Xm5s9y44=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=TYVA6AMT; arc=none smtp.client-ip=209.85.128.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4421F1B4123;
+	Mon, 25 Nov 2024 15:14:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.102.51
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1732547683; cv=fail; b=En/IdL/dR/79u2JDGD7n4emKQwR9hOdTA8vlsgvVdkqVs9+vvtPaADfvtLHMK2dal/lpxEJWN1n67ZtbARvCSso1VI5wJe+boQASwexZ4PBuyJLUk65QmKPiQIStOjgNWJFZb21PzJ43BRmH4AaI6Ns3fYBNdRSK5JS7aTLkETE=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1732547683; c=relaxed/simple;
+	bh=YW4/Z2evo7jV8AxpDDcyLtYICwxcrE1BMAMCeM8EZOY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=pqosByd1O195JzYbS38y3E8hDnomzoEy3ZDroIzpaK54aBJ51P5bW1posAe5PkBE8wQbB6pRLqHhvWPMoPcHNtphe87koJKwUE1HFe9tg4q9bJLdZuWDWpDw/HYQhVfQBH09J2R5u6qJwk9ZCE0dhgoG8VgzVe/kWGfgBrNjHBE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=aWvkkIFC; arc=fail smtp.client-ip=40.107.102.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TYVA6AMT"
-Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-431616c23b5so25845855e9.0;
-        Mon, 25 Nov 2024 07:14:02 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1732547641; x=1733152441; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=aNqsWnnw8BGInX15AWtsvHkwZEzBkzeRqwkk8eEPsng=;
-        b=TYVA6AMT13Y2iZSJx28rs0xWcsZuO7kCR5EJS/IQcc7OnIhgQGFzkVlqn0hVleXar8
-         7iePNRgYGVAwULjc5Lc9s1i0u9LO6pAlKWsFl4C23DT+4eidAZ07zot0F2Ts+jEweKkI
-         Z7qWKScRMGfnw/iBAYko8DyIvG5Az8/elmiLdPqoBzI37Jsz45SIY9PGt3avzM14DS4o
-         D+Z1vsayaaObqWVtyTQtC3ddvAyOXJLtvuMTz4lp5QFuU/45g9UL9c8+Xmlx+gVHNLHg
-         cfhfPzTAy6xKyknOuJDwZAVH+lj9kbZQdbrI5AKu9L++/aFcffYxGGYxGtqYglbyN6v7
-         31ZA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1732547641; x=1733152441;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=aNqsWnnw8BGInX15AWtsvHkwZEzBkzeRqwkk8eEPsng=;
-        b=iVX+ERcRMd63IhpCYZjFzU1ifJaHbDTjm2HcRlhNsO65Plzs0vAnVxiUofNxhBq7XW
-         2VwveMvhF9sS7SLe0CxOoQJixBa6aV82UzaRu2HLKXd+DwgdD4Xk0v2kVF3j4fINiCb5
-         kajSz6hmQko65eCu9R8kXn0pCxsHYQYmrjmEuqNjwHmo0xJ4kADPytk6/Dg+/CPBlQW7
-         gZwoFsdL7NPLQpzrPFCjCvTEymrzv7mafw7bDhNxNn5iDaVyxUjeOWGZvoHncUkZd/Ed
-         fYCGnPS2ma60MOzOzgA+xDlCQJxoQy4nozZcmtRDO4qwiKOEdKDepQTHTekxsgJdz1pp
-         OJ1Q==
-X-Forwarded-Encrypted: i=1; AJvYcCVt8rIpfzCR2umBpNNsYnc3OswiWA6uwNlI8PpJ/rd0sTwSDUkCezv7kE3snMB+AKoz/B4QLCooGTMgN7o=@vger.kernel.org
-X-Gm-Message-State: AOJu0YwnpAF4hu09KZt8UlAD5MCPF9gJwNWNlG59lrd2RmPYn7q/hoqK
-	8Ad0ek3IplMZUSQBuyvPfEWYKpEV9ub9Nm0dAxYtD3QYXP4dC/4wnZOmL1zaWys=
-X-Gm-Gg: ASbGnctvBoccqgrTE58GC2+g1AVyVYJU/UzybW2r8EGDZI5hvOVMTDVZUpErfrV0fFH
-	kdur6p9xdvP4u1L8qY03bAQRZwn4cf6rAJxe7RyS/SBLyQAhaAu8z0zsZ8ixKsHQ/cQm4d33pz8
-	qZ0y46EB9kybcIycsuzi1acQ1YPC+wryhi2LIV2wE5dEiXWyUVyIvUQJlMhdKMDuWol3F2GsjDm
-	E5X4k9hXYo3Cit1R9Oqp//YbnTXYv2qBtSAcsxzO4a7kcINGA==
-X-Google-Smtp-Source: AGHT+IF6cah2hlbidazZqbUHsgc9CVqqI7DE8AJtVnzWIsk1Hvwwpb2oG/QsWZ/8OSrcgI4JmcuFUA==
-X-Received: by 2002:a05:600c:4f52:b0:434:9ff4:24a1 with SMTP id 5b1f17b1804b1-4349ff425c8mr30466125e9.13.1732547641053;
-        Mon, 25 Nov 2024 07:14:01 -0800 (PST)
-Received: from tpt440p.. ([69.63.64.50])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-433cde98988sm131219495e9.42.2024.11.25.07.13.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 25 Nov 2024 07:14:00 -0800 (PST)
-From: "Sicelo A. Mhlongo" <absicsz@gmail.com>
-To: linux-pm@vger.kernel.org
-Cc: pali@kernel.org,
-	sre@kernel.org,
-	linux-kernel@vger.kernel.org,
-	maemo-leste@lists.dyne.org,
-	"Sicelo A. Mhlongo" <absicsz@gmail.com>
-Subject: [PATCH] bq27xxx: add voltage min design for bq27000 and bq27200
-Date: Mon, 25 Nov 2024 17:12:58 +0200
-Message-ID: <20241125151321.45440-1-absicsz@gmail.com>
-X-Mailer: git-send-email 2.45.2
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="aWvkkIFC"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=YSevxh1QLJQHQo+78H0y7Kl06c2SimE/r0BKsr1hRBjYW+dIxGYn7RSuS332Zex16u+XqC9/KiAFKmad3to8JqM4klnHo/E11+jD9OfaVZZ9woYV+51LKA751yVgRAptDouiF6J+DmCDQGkO8U13t1M+T6P86WU+FeRnlNzliva3quzrwb2P2ETbUTcdxXonHQmSISPxP/Uiy4kpmCvFG/0giwGxPobnZN5zhWzeZdfOH9aGOujMUEbYI8YfD2veDxob2zyRU87KrYz7UMIsFQYTZd+3d8vs0NUwMpc6MkPNd84vXWZXoM7rkCZswW5774x7hQybDjVZEXoGeU0bcg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=752lBuNtbohIQsAXL+7Gk6REIz+6q6p5yCDpvzPQEbc=;
+ b=chN9/aVOQDUhmNF0+ghCcZGgXINf67/RXyzBovyotOMzqE55aqTEuKmBfBKKisElkoMIqPMQ/hXyg/OTu6FyZBFamjuqipO3LcKpoxuR80Q2N+n/O2vjQ+mQAaPvu9S+Jmd1FNjWQzE4fSaE37YpnTj3OJJWEH3flxDwN8KXc0KYL1v7gXCcL1WiYqfaFMbwBPRkTky2WjbT+iYUxlMljOJQJcgCr1gETGBln7vfeCrhY3f9vcNIzQecJ/FhkVPeJJOyhHT6CDepVrFzRx8adActr/DsipGPfGrKWDlS3zGjKsup96M6cJ37GZ1B3Jx/vkpSiAgn3NhNXR4YMzIGFA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=752lBuNtbohIQsAXL+7Gk6REIz+6q6p5yCDpvzPQEbc=;
+ b=aWvkkIFCaB0WVkDxs7GEbHMJ5wz9dUNmx60QDyBlsaP8lb4AMEzGD/eXLerHtn++CPNFJ0Z8XonJioPfjNGikc5XAJFGt9t2GfjBSGXLtFWHklDftI4oZ6SpveH1u5XEKatRwy8GMojXoJIahANhA1CGha6Gc1+bYr39XHtQvnA=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from DS7PR12MB8252.namprd12.prod.outlook.com (2603:10b6:8:ee::7) by
+ SA1PR12MB7317.namprd12.prod.outlook.com (2603:10b6:806:2ba::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8182.21; Mon, 25 Nov
+ 2024 15:14:38 +0000
+Received: from DS7PR12MB8252.namprd12.prod.outlook.com
+ ([fe80::2d0c:4206:cb3c:96b7]) by DS7PR12MB8252.namprd12.prod.outlook.com
+ ([fe80::2d0c:4206:cb3c:96b7%6]) with mapi id 15.20.8158.019; Mon, 25 Nov 2024
+ 15:14:38 +0000
+Date: Mon, 25 Nov 2024 20:44:27 +0530
+From: "Gautham R. Shenoy" <gautham.shenoy@amd.com>
+To: Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	rafael.j.wysocki@intel.com, len.brown@intel.com,
+	artem.bityutskiy@linux.intel.com, dave.hansen@linux.intel.com,
+	peterz@infradead.org, tglx@linutronix.de
+Subject: Re: [RFC PATCH v4 7/8] acpi_idle: Add FFH cstate handling
+Message-ID: <Z0SUU+dEeF5NqNBM@BLRRASHENOY1.amd.com>
+References: <20241125132029.7241-1-patryk.wlazlyn@linux.intel.com>
+ <20241125132029.7241-8-patryk.wlazlyn@linux.intel.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20241125132029.7241-8-patryk.wlazlyn@linux.intel.com>
+X-ClientProxiedBy: PN3PR01CA0074.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:c01:9a::18) To DS7PR12MB8252.namprd12.prod.outlook.com
+ (2603:10b6:8:ee::7)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS7PR12MB8252:EE_|SA1PR12MB7317:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7d49ebaf-5355-4dab-04a9-08dd0d63e08e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|376014|1800799024|366016|7053199007;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?IAiDN3r7lgnAzv8JWBHIUyRVzSViYBLuWBF8gAUrNmT2LnEgrTrscxsYE4ch?=
+ =?us-ascii?Q?tZLPKF6FP3vlqTNqBZXS67QNWI8zaFAMY3opPyIeCIadNpsnxuAuteBjwpfA?=
+ =?us-ascii?Q?hMICZr5xXwUbFyw2zUdiNotaGyogRXnNKjtIPYoXK0o8SG3cMlYkiOOAgXP8?=
+ =?us-ascii?Q?wBXIqY9BHmfuyHGBSj/q3MNoGkT9IZ+pJ45kNXidCxKfEoi197hUbj3rexGQ?=
+ =?us-ascii?Q?LzbnxY26llViU09P3AbJLH0nUplw0CVFzopz2Gzf5nh3B7+n1kAKQiVUC2tT?=
+ =?us-ascii?Q?PZdQB2tU0mZaSF471lqiLj8etY9nWCqHcesWmEwrWTWedf0Uwqf9PKlVxP1p?=
+ =?us-ascii?Q?u+U54XAsDNA4H9CkhLbB9YP3pI4rgHn0Ctz8SINir7l0e412t0HAyU4dSRWz?=
+ =?us-ascii?Q?rTzrkjhLnLwgYkVeCT1HGoLcssG813LIsyJNbj/zvfMd352ZLcCRtFJyUNV/?=
+ =?us-ascii?Q?eebYz6E/8vBpBSBATtOZxhewJcQp0gRYbnn73/siLJSauEbcjZMD34Apr6DF?=
+ =?us-ascii?Q?iE2/iZJTEqkkdEQcyiu9pmbmsyToG6tdwCNCstg6dnP9EQ0G3Kgjiv+gtgmo?=
+ =?us-ascii?Q?jX1hY65WXUTirtij3SDaFRN3oTrKhf2ckNqesJA+vExjFLfO7LDulz7UR9Ai?=
+ =?us-ascii?Q?tSQrxCo8IpSVlQGIwh6xUFMu7mUW/C44a3HlUvVNkDOPSzAE0FVYIhYYkSir?=
+ =?us-ascii?Q?vv8CD8YDfHzloTHrNCkRoiJRw92ssPJ6WiHzxB/EivU1sFZl0l9J/HF4YPBv?=
+ =?us-ascii?Q?kOwtq2WVNNRhwrfJ9LPTCXvQ3Fu0xS2uHGKdgFgUBpnaVnLylCXKbyOPhVWj?=
+ =?us-ascii?Q?+PaR2Di2oKpwFaGsdQZoPm6pkGeFcYjLlkrdDM+6hkOI6cxsmH2pTMb0dcoR?=
+ =?us-ascii?Q?D3SyBHE3/DTu264QqICvBhEr9YImooIr7duDcFA2YbT+s2d9cko+Fd6Mixk9?=
+ =?us-ascii?Q?F0NQsB6g5KlIgJ7WKhwR/vtzH0Su/OFNc+tjUMOaVstN8kzuD206PQrdRmPu?=
+ =?us-ascii?Q?SHVFbLsXJcQFHxVa7MH9pGgsNxmWby6j+Jm3F9lDM0dNiXWTVFwDqwG027QN?=
+ =?us-ascii?Q?MY+K0UHVRgrwjBuWgs6jUzsv5jW3y/PRBYMehjeiZDUas+d48ruShKxrDBYT?=
+ =?us-ascii?Q?GdAUYcrPol3eH6j1hUb/kNn9UZXUNITdOGqWm+vHfj+yHSDcwPj/sDY079e4?=
+ =?us-ascii?Q?KORFWEfEMSQHJmSABVsoqg3F1KChBbG1YAVwD66SDMdtPol4iOxvd/zX+J3T?=
+ =?us-ascii?Q?+rBCfOP4tWkP0bbaPVhKkPG4pdKm1hwBWS+aDU1taOyCcW72HYOaynM24w5E?=
+ =?us-ascii?Q?+A2gU1Bq3FS9Gx8fTbLrGEc3Dfil6EQiOIWmQzCJ0Mti+Q=3D=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR12MB8252.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(366016)(7053199007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?wm16YU9Fwobs1RZmmLNokpPPTgjvHJZp8HV8j7THbbfKYV15b392oNeiHIRO?=
+ =?us-ascii?Q?0ZjBiDm9IbtktztlcaHVYOU/PglLad/91/dVa1nDIHmCOuoY1B3pBud91f38?=
+ =?us-ascii?Q?jGdRBdeSdQum5UT3CrLkW+izEs4bLvVnHWvp+AuN4eQk1VFoW98NGIbBo8jj?=
+ =?us-ascii?Q?xaKml+c8SCU/uMdrvpi6SVc01tfDvOw3hUYb08Xixb4gvvaLCdPLfJZ9jVLp?=
+ =?us-ascii?Q?jmt2qhOihjf70Q+bxV0iBlJ1+sM3FS+d1LBCmAF9KTtt8lDH2ZhxFa9S7YBS?=
+ =?us-ascii?Q?d77gy94cEAsx8bVxbrC/dRz4jI3MgOP4IfSFGiEfSAAdbUXkPJIai8VFwWC2?=
+ =?us-ascii?Q?5X5VS0h7ItmP6icnctoY1CEVXOhXzrdeIpcTexgsSEP0k5ocGLJUlB/paKDm?=
+ =?us-ascii?Q?+XuT+22vqZtf4SobI+OmryGPfwxjkbTV8L1wSP4XQxsiLqdXT4tv1KQ7XGn1?=
+ =?us-ascii?Q?wnU5dhhwj1aeF8PlI1ff/4VSwCThn5Xszp680b8kJLfmk99YlHrNPXvOA9uE?=
+ =?us-ascii?Q?Wg0JJgACUDbmHPLcytDjPdeHC01GQ1DuF5uSMzIKQ1bbp87zSOAvQvC9emKa?=
+ =?us-ascii?Q?X2Qy5CGz3/ef66HtoQdlsI2TMMcrBdP61KuOkqSyOUWP03d2W2i3haEfF1p/?=
+ =?us-ascii?Q?9NaAySwgHAT4se8Nl2D73qDldQi9+z/QN9YGTm8R3cLvdAby1EHcFi3SdnHr?=
+ =?us-ascii?Q?zqpCMmX4khRMN98mQcdjPyLHL4BAis1dqdGVMXIbcHcpIsYnTDdUnqbUaXcr?=
+ =?us-ascii?Q?K+At66d7Mhl1Vgh95UPZQilWoQ+yLxHAtO60e2B4UOJdGXqcxex+6d3z30Ko?=
+ =?us-ascii?Q?eNRvtOmrBYC67T9vveB52b5aV3r9rrSANprg5B8pLKzX4jxMN03u7UGCeOui?=
+ =?us-ascii?Q?QHbkRIPYwYeEKVMvQPIxECPP3BaDeuSgTEXh9qDBRWXp3px723Rh/1WFk3Tv?=
+ =?us-ascii?Q?7Yr/yzVtXkWcEGRPHkmraRlBnxVdeLflaGPXeRjILmPjOc3HrtOavQFIJgTU?=
+ =?us-ascii?Q?7kfskYdoVXQyFDZN8zzYuV7RYNemdMR5MAvbCaxWDJzz0Dy6cxJVIgkCs2SN?=
+ =?us-ascii?Q?TZJ7dcOBEPpJctUDCp8owX1rGANA5JBEN2bWWTStYTgbAmi0KFzd7q5wxRx3?=
+ =?us-ascii?Q?oEuIUJfbIOwqYe2CxeiEyDKC3TChJYSO2TgpvwsagHbl3rBgCui57o8pTcId?=
+ =?us-ascii?Q?BA8CLRU0Zl9w6ZvJ4RM5h6eN6nI6GJ/bwP61/0BIb2eupTNtqdwFYsI6UFjH?=
+ =?us-ascii?Q?0roqazMzfCh36gmJU7797UTjrtakgtWxg9jMnfJCkg8jfGbpXIHwuS3nb6gC?=
+ =?us-ascii?Q?5k2Paccw32fKyiUcZNT6Y8ca+kCPPEg5WrOgArkS9rG3JWtqLgU9Du1iYPGm?=
+ =?us-ascii?Q?OC+1+oLZDXoS0iHTPXGspQOB2Ip7J4+WYiY0DZWYciGEUI7oUD8G3XZOpgRw?=
+ =?us-ascii?Q?cxIec+Md5xHYIc4X74Jcm+h8QspfyquLOWkk1RLXyRsgtpaYGzEEQPi22BLp?=
+ =?us-ascii?Q?vDoFuAhPSczrMPuwflJT8hielz7FmmIVBJjIwMjbK2eYkHNL2DKrDqAd4KjM?=
+ =?us-ascii?Q?28W0JOCKctNcVgv4RT2kMmo5mlGPJMi0v5XTGx5V?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7d49ebaf-5355-4dab-04a9-08dd0d63e08e
+X-MS-Exchange-CrossTenant-AuthSource: DS7PR12MB8252.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Nov 2024 15:14:38.0999
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: b9sg6Hp5h0OEPKsULr8WziNo64YvWWjABNVKCVCnfEKGWB7RQnx6bj5Vgx3z/C6RxgCwRV0K+zZVq8i/0Boxxg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB7317
 
-The bq27x00 gauges have an EEPROM register which contains the value of
-the voltage that should be considered to be zero battery capacity. Expose
-this to userspace using the VOLTAGE_MIN_DESIGN property.
+Hello Patryk,
 
-Tested on Nokia N900 with bq27200.
+On Mon, Nov 25, 2024 at 02:20:27PM +0100, Patryk Wlazlyn wrote:
+> Signed-off-by: Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>
 
-Signed-off-by: Sicelo A. Mhlongo <absicsz@gmail.com>
----
- drivers/power/supply/bq27xxx_battery.c | 39 +++++++++++++++++++++++++-
- include/linux/power/bq27xxx_battery.h  |  1 +
- 2 files changed, 39 insertions(+), 1 deletion(-)
+The patch looks good to me. But this needs a more detailed changelog.
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 40c5ac7a1118..90a5bccfc6b9 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -123,6 +123,7 @@ enum bq27xxx_reg_index {
- 	BQ27XXX_DM_BLOCK,	/* Data Block */
- 	BQ27XXX_DM_DATA,	/* Block Data */
- 	BQ27XXX_DM_CKSUM,	/* Block Data Checksum */
-+	BQ27XXX_REG_SEDVF,	/* End-of-discharge Voltage */
- 	BQ27XXX_REG_MAX,	/* sentinel */
- };
- 
-@@ -159,6 +160,7 @@ static u8
- 		[BQ27XXX_DM_BLOCK] = INVALID_REG_ADDR,
- 		[BQ27XXX_DM_DATA] = INVALID_REG_ADDR,
- 		[BQ27XXX_DM_CKSUM] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_SEDVF] = 0x77,
- 	},
- 	bq27010_regs[BQ27XXX_REG_MAX] = {
- 		[BQ27XXX_REG_CTRL] = 0x00,
-@@ -184,6 +186,7 @@ static u8
- 		[BQ27XXX_DM_BLOCK] = INVALID_REG_ADDR,
- 		[BQ27XXX_DM_DATA] = INVALID_REG_ADDR,
- 		[BQ27XXX_DM_CKSUM] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_SEDVF] = 0x77,
- 	},
- 	bq2750x_regs[BQ27XXX_REG_MAX] = {
- 		[BQ27XXX_REG_CTRL] = 0x00,
-@@ -579,6 +582,7 @@ static enum power_supply_property bq27000_props[] = {
- 	POWER_SUPPLY_PROP_POWER_AVG,
- 	POWER_SUPPLY_PROP_HEALTH,
- 	POWER_SUPPLY_PROP_MANUFACTURER,
-+	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
- };
- 
- static enum power_supply_property bq27010_props[] = {
-@@ -599,6 +603,7 @@ static enum power_supply_property bq27010_props[] = {
- 	POWER_SUPPLY_PROP_CYCLE_COUNT,
- 	POWER_SUPPLY_PROP_HEALTH,
- 	POWER_SUPPLY_PROP_MANUFACTURER,
-+	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
- };
- 
- #define bq2750x_props bq27510g3_props
-@@ -2039,6 +2044,36 @@ static int bq27xxx_battery_voltage(struct bq27xxx_device_info *di,
- 	return 0;
- }
- 
-+/*
-+ * Return the design minimum battery Voltage in microvolts
-+ * Or < 0 if something fails.
-+ */
-+static int bq27xxx_battery_read_dmin_volt(struct bq27xxx_device_info *di,
-+					  union power_supply_propval *val)
-+{
-+	int volt;
-+
-+	/* We only have to read design minimum voltage once */
-+	if (di->voltage_min_design > 0) {
-+		val->intval = di->voltage_min_design;
-+		return 0;
-+	}
-+
-+	volt = bq27xxx_read(di, BQ27XXX_REG_SEDVF, true);
-+	if (volt < 0) {
-+		dev_err(di->dev, "error reading design min voltage\n");
-+		return volt;
-+	}
-+
-+	/* SEDVF = Design EDVF / 8 - 256 */
-+	val->intval = volt * 8000 + 2048000;
-+
-+	/* Save for later reads */
-+	di->voltage_min_design = val->intval;
-+
-+	return 0;
-+}
-+
- static int bq27xxx_simple_value(int value,
- 				union power_supply_propval *val)
- {
-@@ -2119,8 +2154,10 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
- 	 * power_supply_battery_info visible in sysfs.
- 	 */
- 	case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
--	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
- 		return -EINVAL;
-+	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
-+		ret = bq27xxx_battery_read_dmin_volt(di, val);
-+		break;
- 	case POWER_SUPPLY_PROP_CYCLE_COUNT:
- 		ret = bq27xxx_battery_read_cyct(di, val);
- 		break;
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index 5180dc9f1706..6b190639b08e 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -61,6 +61,7 @@ struct bq27xxx_device_info {
- 	struct bq27xxx_access_methods bus;
- 	struct bq27xxx_reg_cache cache;
- 	int charge_design_full;
-+	int voltage_min_design;
- 	bool removed;
- 	unsigned long last_update;
- 	union power_supply_propval last_status;
--- 
-2.45.2
+--
+Thanks and Regards
+gautham.
 
+> ---
+>  arch/x86/include/asm/cpufeatures.h | 1 +
+>  arch/x86/kernel/acpi/cstate.c      | 9 +++++++++
+>  drivers/acpi/processor_idle.c      | 2 ++
+>  include/acpi/processor.h           | 5 +++++
+>  4 files changed, 17 insertions(+)
+> 
+> diff --git a/arch/x86/include/asm/cpufeatures.h b/arch/x86/include/asm/cpufeatures.h
+> index ea33439a5d00..1da5e08de257 100644
+> --- a/arch/x86/include/asm/cpufeatures.h
+> +++ b/arch/x86/include/asm/cpufeatures.h
+> @@ -236,6 +236,7 @@
+>  #define X86_FEATURE_PVUNLOCK		( 8*32+20) /* PV unlock function */
+>  #define X86_FEATURE_VCPUPREEMPT		( 8*32+21) /* PV vcpu_is_preempted function */
+>  #define X86_FEATURE_TDX_GUEST		( 8*32+22) /* "tdx_guest" Intel Trust Domain Extensions Guest */
+> +#define X86_FEATURE_NO_MWAIT_OFFLINE    ( 8*32+23) /* Don't use MWAIT states for offlined CPUs */
+>  
+>  /* Intel-defined CPU features, CPUID level 0x00000007:0 (EBX), word 9 */
+>  #define X86_FEATURE_FSGSBASE		( 9*32+ 0) /* "fsgsbase" RDFSBASE, WRFSBASE, RDGSBASE, WRGSBASE instructions*/
+> diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
+> index f3ffd0a3a012..c80a3e6dba5f 100644
+> --- a/arch/x86/kernel/acpi/cstate.c
+> +++ b/arch/x86/kernel/acpi/cstate.c
+> @@ -204,6 +204,15 @@ int acpi_processor_ffh_cstate_probe(unsigned int cpu,
+>  }
+>  EXPORT_SYMBOL_GPL(acpi_processor_ffh_cstate_probe);
+>  
+> +void acpi_processor_ffh_play_dead(struct acpi_processor_cx *cx)
+> +{
+> +	unsigned int cpu = smp_processor_id();
+> +	struct cstate_entry *percpu_entry;
+> +
+> +	percpu_entry = per_cpu_ptr(cpu_cstate_entry, cpu);
+> +	mwait_play_dead_with_hint(percpu_entry->states[cx->index].eax);
+> +}
+> +
+>  void __cpuidle acpi_processor_ffh_cstate_enter(struct acpi_processor_cx *cx)
+>  {
+>  	unsigned int cpu = smp_processor_id();
+> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+> index 698897b29de2..586cc7d1d8aa 100644
+> --- a/drivers/acpi/processor_idle.c
+> +++ b/drivers/acpi/processor_idle.c
+> @@ -590,6 +590,8 @@ static void acpi_idle_play_dead(struct cpuidle_device *dev, int index)
+>  			raw_safe_halt();
+>  		else if (cx->entry_method == ACPI_CSTATE_SYSTEMIO) {
+>  			io_idle(cx->address);
+> +		} else if (cx->entry_method == ACPI_CSTATE_FFH) {
+> +			acpi_processor_ffh_play_dead(cx);
+>  		} else
+>  			return;
+>  	}
+> diff --git a/include/acpi/processor.h b/include/acpi/processor.h
+> index a17e97e634a6..63a37e72b721 100644
+> --- a/include/acpi/processor.h
+> +++ b/include/acpi/processor.h
+> @@ -280,6 +280,7 @@ int acpi_processor_ffh_cstate_probe(unsigned int cpu,
+>  				    struct acpi_processor_cx *cx,
+>  				    struct acpi_power_register *reg);
+>  void acpi_processor_ffh_cstate_enter(struct acpi_processor_cx *cstate);
+> +void acpi_processor_ffh_play_dead(struct acpi_processor_cx *cx);
+>  #else
+>  static inline void acpi_processor_power_init_bm_check(struct
+>  						      acpi_processor_flags
+> @@ -300,6 +301,10 @@ static inline void acpi_processor_ffh_cstate_enter(struct acpi_processor_cx
+>  {
+>  	return;
+>  }
+> +static inline void acpi_processor_ffh_play_dead(struct acpi_processor_cx *cx)
+> +{
+> +	return;
+> +}
+>  #endif
+>  
+>  static inline int call_on_cpu(int cpu, long (*fn)(void *), void *arg,
+> -- 
+> 2.47.0
+> 
