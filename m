@@ -1,104 +1,380 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF03A1D4615;
-	Wed, 27 Nov 2024 10:53:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A30A1917F1;
+	Wed, 27 Nov 2024 11:51:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1732704834; cv=none; b=N34BY5HYkI6rcqcUgs+x+HjicXdYYJZqBlgfVRMFzGwy3DFqeonZXnGOSMIFh++mONXj0Uw3ovFh18o7xXbWL/T03PjSgrGNWxpab6S7pxmRgslH5bKY0ODam9iosEFGwquXf6c4vHSy85iWIU+JpBFn6x7db0MWfqrluH/tr8o=
+	t=1732708303; cv=none; b=NOtQvqchG+eo03T/iXY7GfATST1Eq1IHI2R53ocpDSFMLY+fxkSEpsSHpg4uugdm3PLgpOpWzUGjjxFBcdww3B8uB4oeJKmBdI/dji0MrInTyrGvsRBojEgLZQ2wj6Cj8xqRjWjrM4ZO2kFmCUufSqI+LYOJnNcKLSBVhiWIpkI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1732704834; c=relaxed/simple;
-	bh=6XoEF5skrr2YRZh0MLj7vFVwPVlrkVX9jwGWw17Wm00=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=C87t2lOdkKZMEppwbO2epz8aaeavh+hggwCCxojnv+GbJRrbl/wynf2Is3vghoTXc5TkwnKut1f1J0KJ0/tHAuEytAZ3kVcRHgXFGKA9gAVoIvjr0TV7CT4jkiZAmxfbf7oRfS0jgSzUW8ISCuTC0n4CGCBIrmHCM7KFo+eyZXQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cHLylw9L; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1732708303; c=relaxed/simple;
+	bh=XNcjXJ2Ie3hLm11kDF+lzwds13RJcEg/X9oUNaxCuA4=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=gDxKd1jZp3zgLnXWWA6pAAELQeJGsHuFGV5iJDOaGq4ifwKyVRSAAhUi2qPukWG0d+lZ/vAVg2+YNvL0/6BZJnobRZiA7sJ8U7vJ7A//QeuBiqA2Oj/AwPZ6Wh4/LkPAjUTNW9aaKgQJg4/xxNZJWCCfwcxxwER6MEIujTSwjVk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=nCaST0KG; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cHLylw9L"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8EE14C4CED9;
-	Wed, 27 Nov 2024 10:53:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1732704834;
-	bh=6XoEF5skrr2YRZh0MLj7vFVwPVlrkVX9jwGWw17Wm00=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=cHLylw9LQ/8bCzEd6Br88Jm0Hv7nwpA113HRIt/mySY1i4tdZxHOmIlwMh5MYpaAN
-	 DZcVtbhD57vF5UcOEV9o+HTl/9hql6RUyXtS+5nT1J96Xlin847e8HQVBNjnmDtPQf
-	 xUPy/P9haLxGBf5hcb+1QdxYMNApzgcPLQ1ItDtSqPZzYobRrcLIBxWUjlumo/rLIo
-	 Vv4C7kV55ckWw4bFqWXhW4YLu/ZAyswuBAqU9IgThPJs8AGU024nVBJXKatvuu/5z2
-	 WbT7MMvMceiapv5W/vFSbFzPnBI6ELyVQwbTR2T7mo/p/1vNwlQKbdo9yy7JWuIS1Y
-	 yuXpnwrBBvPig==
-Received: by mail-oa1-f44.google.com with SMTP id 586e51a60fabf-296bf028170so2491851fac.3;
-        Wed, 27 Nov 2024 02:53:54 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCVC1/5hbaNo1htoHSpHKyfDpHtWZoC+CVYjStxveMR6wljdNih1uFFm5rJHYB81QyV10uVGAOJeZrc=@vger.kernel.org, AJvYcCWMLU/6tQQxH6OCh9FFxcNfq74q5InlAeh/X/WoJsQBBOCmK3abdE8BumEL9hTiTuBxxjIjVkoYU+t8tSA=@vger.kernel.org
-X-Gm-Message-State: AOJu0YyIgsLgVBD/78Th8RnMfCRBumClWnObEa4KSz9lap/8QlAaVcw1
-	QCEamN/kV3Efu1D0wQZys8w6Q+1s4H/u43Fa1Pq2ycL0PVdcTVseHAn7zjAVynyGV67kRZ/57GK
-	dU+tHtP3PE7aTAGqoEu1ZkxRjJaI=
-X-Google-Smtp-Source: AGHT+IER75SAOZUHH5jMgPekx7s/nl0d2NiLpDAXLFD49Hq7D2LZdweUm8zIcuOpHYIh3SSebTpmW0OFlPr+jp9C5lo=
-X-Received: by 2002:a05:6870:1cf:b0:27d:10f5:347 with SMTP id
- 586e51a60fabf-29dc40098fdmr1834428fac.15.1732704833749; Wed, 27 Nov 2024
- 02:53:53 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="nCaST0KG"
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4ARAg0EL017247;
+	Wed, 27 Nov 2024 11:51:34 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=Y225L4jROYRtJ/8StcLSyEnT
+	M0rYsgkVn5k3JdinNow=; b=nCaST0KGZaw4mQWfJ4B6Qo/82OHlO1HxIt05DzPQ
+	2e25YBEXsloSs38bI6o7iofL3Av3GaMYTOWQgsD3Y/ZZIc6F4uIjDmg6oiI0C6d9
+	iTtJ0W4YJzAkI7RHlwHDIhzpLnuZilA1do1GSaqkpxn1+atbtWhQQ1C8qu0Izte7
+	ygzK592mp1f7TpDFr9WzyxxorsYuhU/Ncat/Eo8lzXvB1vgIIKIqD6zjxa2t5zZU
+	ppLErw28FC8IQ5/Z8paHHAoPhZWcGhHJSj1FG9qwg2AFt1W5EJ9Q7fM5V03viJ1c
+	OOgmlDtzO5q8slBX0AcRJzERs+PkEwIxLrS9HRon21z8TA==
+Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4361wcg7a6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 27 Nov 2024 11:51:34 +0000 (GMT)
+Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
+	by NALASPPMTA03.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 4ARBpX2n016589
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 27 Nov 2024 11:51:33 GMT
+Received: from hu-janathot-hyd.qualcomm.com (10.80.80.8) by
+ nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.9; Wed, 27 Nov 2024 03:51:27 -0800
+From: Janaki Ramaiah Thota <quic_janathot@quicinc.com>
+To: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+        "Rob
+ Herring" <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        "Conor
+ Dooley" <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        "Konrad Dybcio" <konradybcio@kernel.org>,
+        Marcel Holtmann
+	<marcel@holtmann.org>,
+        "Luiz Augusto von Dentz" <luiz.dentz@gmail.com>,
+        Bartosz Golaszewski <brgl@bgdev.pl>
+CC: <quic_mohamull@quicinc.com>, <quic_hbandi@quicinc.com>,
+        <quic_anubhavg@quicinc.com>,
+        Bartosz Golaszewski
+	<bartosz.golaszewski@linaro.org>,
+        <linux-arm-msm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-bluetooth@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>
+Subject: [PATCH v4 1/2] arm64: dts: qcom: qcs6490-rb3gen2: enable Bluetooth
+Date: Wed, 27 Nov 2024 17:21:06 +0530
+Message-ID: <20241127115107.11549-2-quic_janathot@quicinc.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20241127115107.11549-1-quic_janathot@quicinc.com>
+References: <20241127115107.11549-1-quic_janathot@quicinc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20241126201539.477448-1-patryk.wlazlyn@linux.intel.com>
- <20241126201539.477448-2-patryk.wlazlyn@linux.intel.com> <Z0a0JNRPuRYaVrcI@BLRRASHENOY1.amd.com>
- <9a918226-4f93-4ee5-8673-20d82802f126@linux.intel.com>
-In-Reply-To: <9a918226-4f93-4ee5-8673-20d82802f126@linux.intel.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 27 Nov 2024 11:53:41 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0io8+zHwE82Z2z-GiTKwT63aHhbzDUhmZYHF3VwzbNaFw@mail.gmail.com>
-Message-ID: <CAJZ5v0io8+zHwE82Z2z-GiTKwT63aHhbzDUhmZYHF3VwzbNaFw@mail.gmail.com>
-Subject: Re: [PATCH v5 1/3] x86/smp: Allow calling mwait_play_dead with an
- arbitrary hint
-To: Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>
-Cc: "Gautham R. Shenoy" <gautham.shenoy@amd.com>, x86@kernel.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, peterz@infradead.org, 
-	dave.hansen@linux.intel.com, tglx@linutronix.de, len.brown@intel.com, 
-	artem.bityutskiy@linux.intel.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
+X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
+ nalasex01a.na.qualcomm.com (10.47.209.196)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: 57l9K9AT0lbqxZU56J0-rbRHxXXduAbj
+X-Proofpoint-ORIG-GUID: 57l9K9AT0lbqxZU56J0-rbRHxXXduAbj
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
+ definitions=2024-09-06_09,2024-09-06_01,2024-09-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 mlxlogscore=999
+ malwarescore=0 priorityscore=1501 clxscore=1011 mlxscore=0 phishscore=0
+ lowpriorityscore=0 spamscore=0 impostorscore=0 adultscore=0 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2409260000
+ definitions=main-2411270097
 
-On Wed, Nov 27, 2024 at 9:33=E2=80=AFAM Patryk Wlazlyn
-<patryk.wlazlyn@linux.intel.com> wrote:
->
-> > Hello Patryk,
-> >
-> > Apologies for what may appear as bikeshedding, after this patch, the
-> > cpuidle code still won't call any mwait based play dead loop since the
-> > support for enter_dead for FFh based idle states in acpi_idle and
-> > intel_idle only gets added in Patches 2 and 3.
-> >
-> > Does it make sense to split this Patch 1 into 2 patches : 1/4 and 4/4
-> >
-> > 1/4 just introduces the mwait_play_dead_with_hint() helper which will
-> > be used by patches 2 and 3.
-> >
-> > 4/4 get rids of the of logic to find the deepest state from
-> > mwait_play_dead() and modifies native_play_dead() to call
-> > cpuidle_play_dead() followed by hlt_play_dead() thus removing any
-> > reference to mwait_play_dead(). Optionally you can even rename
-> > mwait_play_dead_with_hints() to mwait_play_dead().
-> >
-> > That way the changelog that you have for this patch can be used in 4/4
-> > since with the addition of play_dead support for FFh states in both
-> > acpi_idle and intel_idle via patches 2 and 3, the logic to find the
-> > deepest ffh state in mwait_play_dead() is no longer required.
-> >
-> > Thoughts ?
->
-> Yeah, makes sense. I just wanted to simplify, but at some point crossed m=
-y mind
-> that submitting it like you suggested may be better.
+Add a PMU node for the WCN6750 module present on the qcs6490-rb3gen board
+and use the power sequencer for the same.
 
-Not just it may be better, but this is the only way to do it or people
-who apply the first patch without the other two patches will likely
-have problems (and that may easily happen during bisection, for
-example).
+Signed-off-by: Janaki Ramaiah Thota <quic_janathot@quicinc.com>
+---
+ arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts | 174 ++++++++++++++++++-
+ drivers/bluetooth/hci_qca.c                  |   2 +-
+ drivers/power/sequencing/pwrseq-qcom-wcn.c   |  22 +++
+ 3 files changed, 196 insertions(+), 2 deletions(-)
 
-Things should always work between consecutive patches in a patch series.
-
-> I am going to split that if I don't see any objections.
-
-Yes, please!
+diff --git a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
+index 27695bd54220..6807bf347241 100644
+--- a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
++++ b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: BSD-3-Clause
+ /*
+- * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++ * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+  */
+ 
+ /dts-v1/;
+@@ -32,7 +32,9 @@
+ 	chassis-type = "embedded";
+ 
+ 	aliases {
++		bluetooth0 = &bluetooth;
+ 		serial0 = &uart5;
++		serial1 = &uart7;
+ 	};
+ 
+ 	chosen {
+@@ -217,6 +219,64 @@
+ 		regulator-min-microvolt = <3700000>;
+ 		regulator-max-microvolt = <3700000>;
+ 	};
++
++	 wcn6750-pmu {
++		compatible = "qcom,wcn6750-pmu";
++		pinctrl-names = "default";
++		pinctrl-0 = <&bt_en>, <&sw_ctrl>;
++		vddaon-supply = <&vreg_s7b_0p972>;
++		vddasd-supply = <&vreg_l11c_2p8>;
++		vddpmu-supply = <&vreg_s7b_0p972>;
++		vddrfa0p8-supply = <&vreg_s7b_0p972>;
++		vddrfa1p2-supply = <&vreg_s8b_1p272>;
++		vddrfa1p7-supply = <&vreg_s1b_1p872>;
++		vddrfa2p2-supply = <&vreg_s1c_2p19>;
++
++		bt-enable-gpios = <&tlmm 85 GPIO_ACTIVE_HIGH>;
++		wlan-enable-gpios = <&tlmm 86 GPIO_ACTIVE_HIGH>;
++
++		regulators {
++			vreg_pmu_rfa_cmn: ldo0 {
++				regulator-name = "vreg_pmu_rfa_cmn";
++			};
++
++			vreg_pmu_aon_0p59: ldo1 {
++				regulator-name = "vreg_pmu_aon_0p59";
++			};
++
++			vreg_pmu_wlcx_0p8: ldo2 {
++				regulator-name = "vreg_pmu_wlcx_0p8";
++			};
++
++			vreg_pmu_wlmx_0p85: ldo3 {
++				regulator-name = "vreg_pmu_wlmx_0p85";
++			};
++
++			vreg_pmu_btcmx_0p85: ldo4 {
++				regulator-name = "vreg_pmu_btcmx_0p85";
++			};
++
++			vreg_pmu_rfa_0p8: ldo5 {
++				regulator-name = "vreg_pmu_rfa_0p8";
++			};
++
++			vreg_pmu_rfa_1p2: ldo6 {
++				regulator-name = "vreg_pmu_rfa_1p2";
++			};
++
++			vreg_pmu_rfa_1p7: ldo7 {
++				regulator-name = "vreg_pmu_rfa_1p7";
++			};
++
++			vreg_pmu_pcie_0p9: ldo8 {
++				regulator-name = "vreg_pmu_pcie_0p9";
++			};
++
++			vreg_pmu_pcie_1p8: ldo9 {
++				regulator-name = "vreg_pmu_pcie_1p8";
++			};
++		};
++	};
+ };
+ 
+ &apps_rsc {
+@@ -758,6 +818,39 @@
+ 	status = "okay";
+ };
+ 
++&qup_uart7_cts {
++	/*
++	 * Configure a bias-bus-hold on CTS to lower power
++	 * usage when Bluetooth is turned off. Bus hold will
++	 * maintain a low power state regardless of whether
++	 * the Bluetooth module drives the pin in either
++	 * direction or leaves the pin fully unpowered.
++	 */
++	bias-bus-hold;
++};
++
++&qup_uart7_rts {
++	/* We'll drive RTS, so no pull */
++	drive-strength = <2>;
++	bias-disable;
++};
++
++&qup_uart7_rx {
++	/*
++	 * Configure a pull-up on RX. This is needed to avoid
++	 * garbage data when the TX pin of the Bluetooth module is
++	 * in tri-state (module powered off or not driving the
++	 * signal yet).
++	 */
++	bias-pull-up;
++};
++
++&qup_uart7_tx {
++	/* We'll drive TX, so no pull */
++	drive-strength = <2>;
++	bias-disable;
++};
++
+ &qupv3_id_0 {
+ 	status = "okay";
+ };
+@@ -801,12 +894,91 @@
+ &tlmm {
+ 	gpio-reserved-ranges = <32 2>, /* ADSP */
+ 			       <48 4>; /* NFC */
++	bt_en: bt-en-state {
++		pins = "gpio85";
++		function = "gpio";
++		output-low;
++		bias-disable;
++	};
++
++	qup_uart7_sleep_cts: qup-uart7-sleep-cts-state {
++		pins = "gpio28";
++		function = "gpio";
++		/*
++		 * Configure a bias-bus-hold on CTS to lower power
++		 * usage when Bluetooth is turned off. Bus hold will
++		 * maintain a low power state regardless of whether
++		 * the Bluetooth module drives the pin in either
++		 * direction or leaves the pin fully unpowered.
++		 */
++		bias-bus-hold;
++	};
++
++	qup_uart7_sleep_rts: qup-uart7-sleep-rts-state {
++		pins = "gpio29";
++		function = "gpio";
++		/*
++		 * Configure pull-down on RTS. As RTS is active low
++		 * signal, pull it low to indicate the BT SoC that it
++		 * can wakeup the system anytime from suspend state by
++		 * pulling RX low (by sending wakeup bytes).
++		 */
++		bias-pull-down;
++	};
++
++	qup_uart7_sleep_rx: qup-uart7-sleep-rx-state {
++		pins = "gpio31";
++		function = "gpio";
++		/*
++		 * Configure a pull-up on RX. This is needed to avoid
++		 * garbage data when the TX pin of the Bluetooth module
++		 * is floating which may cause spurious wakeups.
++		 */
++		bias-pull-up;
++	};
++
++	qup_uart7_sleep_tx: qup-uart7-sleep-tx-state {
++		pins = "gpio30";
++		function = "gpio";
++		/*
++		 * Configure pull-up on TX when it isn't actively driven
++		 * to prevent BT SoC from receiving garbage during sleep.
++		 */
++		bias-pull-up;
++	};
++
++	sw_ctrl: sw-ctrl-state {
++		pins = "gpio86";
++		function = "gpio";
++		bias-pull-down;
++	};
+ };
+ 
+ &uart5 {
+ 	status = "okay";
+ };
+ 
++&uart7 {
++	status = "okay";
++	/delete-property/interrupts;
++	interrupts-extended = <&intc GIC_SPI 608 IRQ_TYPE_LEVEL_HIGH>,
++				<&tlmm 31 IRQ_TYPE_EDGE_FALLING>;
++	pinctrl-names = "default", "sleep";
++	pinctrl-1 = <&qup_uart7_sleep_cts>, <&qup_uart7_sleep_rts>,
++			<&qup_uart7_sleep_tx>, <&qup_uart7_sleep_rx>;
++
++	bluetooth: bluetooth {
++		compatible = "qcom,wcn6750-bt";
++		vddrfacmn-supply = <&vreg_pmu_rfa_cmn>;
++		vddaon-supply = <&vreg_pmu_aon_0p59>;
++		vddbtcmx-supply = <&vreg_pmu_btcmx_0p85>;
++		vddrfa0p8-supply = <&vreg_pmu_rfa_0p8>;
++		vddrfa1p7-supply = <&vreg_pmu_rfa_1p7>;
++		vddrfa1p2-supply = <&vreg_pmu_rfa_1p2>;
++		max-speed = <3200000>;
++	};
++};
++
+ &usb_1 {
+ 	status = "okay";
+ };
+diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
+index 37129e6cb0eb..fbf8840fa534 100644
+--- a/drivers/bluetooth/hci_qca.c
++++ b/drivers/bluetooth/hci_qca.c
+@@ -2346,6 +2346,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
+ 	switch (qcadev->btsoc_type) {
+ 	case QCA_WCN6855:
+ 	case QCA_WCN7850:
++	case QCA_WCN6750:
+ 		if (!device_property_present(&serdev->dev, "enable-gpios")) {
+ 			/*
+ 			 * Backward compatibility with old DT sources. If the
+@@ -2365,7 +2366,6 @@ static int qca_serdev_probe(struct serdev_device *serdev)
+ 	case QCA_WCN3990:
+ 	case QCA_WCN3991:
+ 	case QCA_WCN3998:
+-	case QCA_WCN6750:
+ 		qcadev->bt_power->dev = &serdev->dev;
+ 		err = qca_init_regulators(qcadev->bt_power, data->vregs,
+ 					  data->num_vregs);
+diff --git a/drivers/power/sequencing/pwrseq-qcom-wcn.c b/drivers/power/sequencing/pwrseq-qcom-wcn.c
+index 682a9beac69e..e38da79f0ada 100644
+--- a/drivers/power/sequencing/pwrseq-qcom-wcn.c
++++ b/drivers/power/sequencing/pwrseq-qcom-wcn.c
+@@ -293,6 +293,24 @@ static const struct pwrseq_qcom_wcn_pdata pwrseq_wcn6855_of_data = {
+ 	.targets = pwrseq_qcom_wcn6855_targets,
+ };
+ 
++static const char *const pwrseq_wcn6750_vregs[] = {
++	"vddaon",
++	"vddasd",
++	"vddpmu",
++	"vddrfa0p8",
++	"vddrfa1p2",
++	"vddrfa1p7",
++	"vddrfa2p2",
++};
++
++static const struct pwrseq_qcom_wcn_pdata pwrseq_wcn6750_of_data = {
++	.vregs = pwrseq_wcn6750_vregs,
++	.num_vregs = ARRAY_SIZE(pwrseq_wcn6750_vregs),
++	.pwup_delay_ms = 50,
++	.gpio_enable_delay_ms = 5,
++	.targets = pwrseq_qcom_wcn_targets,
++};
++
+ static const char *const pwrseq_wcn7850_vregs[] = {
+ 	"vdd",
+ 	"vddio",
+@@ -431,6 +449,10 @@ static const struct of_device_id pwrseq_qcom_wcn_of_match[] = {
+ 		.compatible = "qcom,wcn7850-pmu",
+ 		.data = &pwrseq_wcn7850_of_data,
+ 	},
++	{
++		.compatible = "qcom,wcn6750-pmu",
++		.data = &pwrseq_wcn6750_of_data,
++	},
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(of, pwrseq_qcom_wcn_of_match);
+-- 
