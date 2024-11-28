@@ -1,30 +1,33 @@
-Received: from out30-98.freemail.mail.aliyun.com (out30-98.freemail.mail.aliyun.com [115.124.30.98])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A57F288DB;
-	Thu, 28 Nov 2024 09:50:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=115.124.30.98
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1923C192D66;
+	Thu, 28 Nov 2024 10:08:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1732787454; cv=none; b=lsDb4zFcKJCfUazmLVV5WLLqWDC6SRaNJEeiR/FeIJZSUT3DYxvqjtRSzM23OMIxQqKfUJaYwa9+dHCpe7EfZS/marZClX4T2ki+Xsvf6rpuieilBIInmFGhjSj120EXQPTdj57CPN7+GImzvAaXSTdGotc3u7F+wNrVjT7usfs=
+	t=1732788487; cv=none; b=dbvjtm8p/Rc1xvkbLWIRV7asCBS4G5gR7O9K7e2yajogCW2CQVGUW/aiT8DrHH5Phb7lPxzrU7Yoinv6OHypGL+TszCNlowJrMhXwweXx++Kit9DS6ow1aGvNuLn3Hy/cKAwvUPjSqQ4ANM09v9FbL/6yf8+8R5wDiDe8YlndfE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1732787454; c=relaxed/simple;
-	bh=yhUJak+aiRwd+DuRnOGIixGNrFSkXjoy8lNGqwYmHck=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:Content-Type; b=lz/3wEzKEyC6gRV3hvyTm72eqcwkVuUFCAYkFnVC/DN2iS9kzG3gH3TNLLEcbG23k8rZ7x1TDTTCDjGV4PU1/HkyDykfOGkx2Nnf41o3rjT4yWyItRH9QBAqZzbBqzGW0PVIdQQjUnYdQNRGOKKWYKpj+p+A/Ag3ZAdfoJjjWtI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; spf=pass smtp.mailfrom=linux.alibaba.com; dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b=RP6dXqr9; arc=none smtp.client-ip=115.124.30.98
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.alibaba.com
+	s=arc-20240116; t=1732788487; c=relaxed/simple;
+	bh=PWqBaAYspOm6oK1V36m2X/LXOKqrijcGRfviMI8GXB8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=q9DSB4csob25s6sbAmTkNG0c2xp4NKOyfmWILyQxDDuhH9UZmQuuDZ8Fj6Vn+CQWC6q3zBLZlSeJmfRPBVgM5mA7FgZIak2GmVQUTcNXJGll3nZP/qUw/ZbpHp4rF8HCtEQFey4HkNHun6lUI7v/xpv/It2YWAG0SX6WzINoRTk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ILR4SOSJ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b="RP6dXqr9"
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1732787446; h=Message-ID:Date:MIME-Version:From:Subject:To:Content-Type;
-	bh=CLgZI6pExZXq1orTPdpeKWc5Bi0ajupm/DC0JUti5JA=;
-	b=RP6dXqr9BRtkikRd60GP4P1cU8VX5zcXLWFh0e8Xx2whwlba8CdMiSYvoVAmYWA6LeD/4YX+3YwXBQ9DeUbbrrhbfILD5olpq79sgpLxVgmBGcAbYn5m3cqNVqOM6KTZjf5vKuLX7g5ovj7oEvWrKkh8qrC82WaoLE2VbjUgit0=
-Received: from 30.221.97.4(mailfrom:herongguang@linux.alibaba.com fp:SMTPD_---0WKPZXAe_1732787445 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Thu, 28 Nov 2024 17:50:45 +0800
-Message-ID: <269b8bb2-85b5-4cc9-9354-a1270f2eed35@linux.alibaba.com>
-Date: Thu, 28 Nov 2024 17:50:45 +0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ILR4SOSJ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D9DECC4CED3;
+	Thu, 28 Nov 2024 10:08:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1732788486;
+	bh=PWqBaAYspOm6oK1V36m2X/LXOKqrijcGRfviMI8GXB8=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=ILR4SOSJcIc74jRoVWUfA/DriYnxa8mfUFX3mewVJcDtvd8k9WXvM71vnQD/XjH5G
+	 wsYeQF3UWlxcJfudkIWVL6TMlRalEh4CsSYYq1WxaZ4PWZhnY1hdWHBzf1MrrL9Cgp
+	 byO/aNCO2Tqk8UYSo77R/D+U81yLI0Mc6fPNKgos8Jp4ZdQ7umdf6Ec2JJw50/Q827
+	 9KTgxWTQAFLvtCVl+/XTV+CD3to0CBq6qLSRTgjDBBCZFYpRLghtIw4Dpdwin77UC8
+	 UErz0IqdT8EbU9rYW2DMx0CDI5jAAhVhC5MBpaOva8AOKM1aSSffqixnlKz9ulh5kb
+	 mMaLpoMScxUyg==
+Message-ID: <3b0bafb5-602b-4d3e-a944-b290f9d011c7@kernel.org>
+Date: Thu, 28 Nov 2024 11:08:02 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -32,121 +35,84 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-From: He Rongguang <herongguang@linux.alibaba.com>
-Subject: [PATCH] cpupower: fix TSC MHz calculation for Mperf monitor
-To: trenn@suse.com, shuah@kernel.org, jwyatt@redhat.com, jkacur@redhat.com,
- wyes.karny@amd.com
-Cc: linux-kernel@vger.kernel.org, shannon.zhao@linux.alibaba.com,
- linux-pm@vger.kernel.org
+Subject: Re: [PATCH v4 1/2] dt-bindings: power: supply: Add STC3117 Fuel Gauge
+To: Bhavin Sharma <bhavin.sharma@siliconsignals.io>,
+ "sre@kernel.org" <sre@kernel.org>, "krzk+dt@kernel.org"
+ <krzk+dt@kernel.org>, "robh@kernel.org" <robh@kernel.org>,
+ "conor+dt@kernel.org" <conor+dt@kernel.org>
+Cc: Hardevsinh Palaniya <hardevsinh.palaniya@siliconsignals.io>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <20241127151953.29550-1-bhavin.sharma@siliconsignals.io>
+ <20241127151953.29550-2-bhavin.sharma@siliconsignals.io>
+ <3eb06a70-cafb-4d89-aa68-524ec91e3850@kernel.org>
+ <68e7f5cf-ff62-4184-8bf1-6338dc44fd2d@kernel.org>
+ <MA0P287MB11788D277E79E03B6C7E4126F2292@MA0P287MB1178.INDP287.PROD.OUTLOOK.COM>
+Content-Language: en-US
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 fv0=
+In-Reply-To: <MA0P287MB11788D277E79E03B6C7E4126F2292@MA0P287MB1178.INDP287.PROD.OUTLOOK.COM>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-Commit 'cpupower: Make TSC read per CPU for Mperf monitor' (c2adb1877b7)
-changes TSC counter reads to per cpu, but left time diff global (from
-start of all cpus to end of all cpus), thus diff(time) is too large for
-a cpu's tsc counting, resulting in far less than acutal TSC_Mhz and thus
-`cpupower monitor` showing far less than actual cpu realtime frequency.
+On 28/11/2024 10:22, Bhavin Sharma wrote:
+> 
+>> Explaining what you asked:
+>>
+>> Some of these are from monitored-battery. Sense resistor should be
+>> separate property. But different question is about missing resources,
+>> like supplies (VCC) and interrupts. Just look at datasheet.
+> 
+> since battery itself serves as the power supply for fuel gauge no additional supplies are required. 
+> 
+> Regarding interrupts yes, datasheet specifies an alarm pin that signals low State of Charge or
+> Voltage conditions. However, I haven’t incorporated interrupts in the driver to handle this. Should I
+> list the alarm pin as a resource in the device tree (or relevant configuration) even if it’s not 
+> implemented in the driver yet?
 
-Fix this by making timediff also per cpu.
-
-/proc/cpuinfo shows frequency:
-cat /proc/cpuinfo | egrep -e 'processor' -e 'MHz'
-...
-processor : 171
-cpu MHz   : 4108.498
-...
-
-before fix (System 100% busy):
-    | Mperf              || Idle_Stats
- CPU| C0   | Cx   | Freq  || POLL | C1   | C2
- 171|  0.77| 99.23|  2279||  0.00|  0.00|  0.00
-
-after fix (System 100% busy):
-    | Mperf              || Idle_Stats
- CPU| C0   | Cx   | Freq  || POLL | C1   | C2
- 171|  0.46| 99.54|  4095||  0.00|  0.00|  0.00
-
-Fixes: c2adb1877b76f ("cpupower: Make TSC read per CPU for Mperf monitor")
-Signed-off-by: He Rongguang <herongguang@linux.alibaba.com>
----
- .../cpupower/utils/idle_monitor/mperf_monitor.c   | 15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
-
-diff --git a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
-b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
-index ae6af354a81d..08a399b0be28 100644
---- a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
-+++ b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
-@@ -33,7 +33,7 @@ static int mperf_get_count_percent(unsigned int
-self_id, double *percent,
- 				   unsigned int cpu);
- static int mperf_get_count_freq(unsigned int id, unsigned long long *count,
- 				unsigned int cpu);
--static struct timespec time_start, time_end;
-+static struct timespec *time_start, *time_end;
-
- static cstate_t mperf_cstates[MPERF_CSTATE_COUNT] = {
- 	{
-@@ -174,7 +174,7 @@ static int mperf_get_count_percent(unsigned int id,
-double *percent,
- 		dprint("%s: TSC Ref - mperf_diff: %llu, tsc_diff: %llu\n",
- 		       mperf_cstates[id].name, mperf_diff, tsc_diff);
- 	} else if (max_freq_mode == MAX_FREQ_SYSFS) {
--		timediff = max_frequency * timespec_diff_us(time_start, time_end);
-+		timediff = max_frequency * timespec_diff_us(time_start[cpu],
-time_end[cpu]);
- 		*percent = 100.0 * mperf_diff / timediff;
- 		dprint("%s: MAXFREQ - mperf_diff: %llu, time_diff: %llu\n",
- 		       mperf_cstates[id].name, mperf_diff, timediff);
-@@ -207,7 +207,7 @@ static int mperf_get_count_freq(unsigned int id,
-unsigned long long *count,
- 	if (max_freq_mode == MAX_FREQ_TSC_REF) {
- 		/* Calculate max_freq from TSC count */
- 		tsc_diff = tsc_at_measure_end[cpu] - tsc_at_measure_start[cpu];
--		time_diff = timespec_diff_us(time_start, time_end);
-+		time_diff = timespec_diff_us(time_start[cpu], time_end[cpu]);
- 		max_frequency = tsc_diff / time_diff;
- 	}
-
-@@ -226,9 +226,8 @@ static int mperf_start(void)
- {
- 	int cpu;
-
--	clock_gettime(CLOCK_REALTIME, &time_start);
--
- 	for (cpu = 0; cpu < cpu_count; cpu++) {
-+		clock_gettime(CLOCK_REALTIME, &time_start[cpu]);
- 		mperf_get_tsc(&tsc_at_measure_start[cpu]);
- 		mperf_init_stats(cpu);
- 	}
-@@ -243,9 +242,9 @@ static int mperf_stop(void)
- 	for (cpu = 0; cpu < cpu_count; cpu++) {
- 		mperf_measure_stats(cpu);
- 		mperf_get_tsc(&tsc_at_measure_end[cpu]);
-+		clock_gettime(CLOCK_REALTIME, &time_end[cpu]);
- 	}
-
--	clock_gettime(CLOCK_REALTIME, &time_end);
- 	return 0;
- }
-
-@@ -349,6 +348,8 @@ struct cpuidle_monitor *mperf_register(void)
- 	aperf_current_count = calloc(cpu_count, sizeof(unsigned long long));
- 	tsc_at_measure_start = calloc(cpu_count, sizeof(unsigned long long));
- 	tsc_at_measure_end = calloc(cpu_count, sizeof(unsigned long long));
-+	time_start = calloc(cpu_count, sizeof(struct timespec));
-+	time_end = calloc(cpu_count, sizeof(struct timespec));
- 	mperf_monitor.name_len = strlen(mperf_monitor.name);
- 	return &mperf_monitor;
- }
-@@ -361,6 +362,8 @@ void mperf_unregister(void)
- 	free(aperf_current_count);
- 	free(tsc_at_measure_start);
- 	free(tsc_at_measure_end);
-+	free(time_start);
-+	free(time_end);
- 	free(is_valid);
- }
-
--- 
-2.43.0
+Yes, bindings should be complete.
+Best regards,
+Krzysztof
