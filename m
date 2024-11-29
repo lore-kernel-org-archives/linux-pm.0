@@ -1,40 +1,40 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E489D14C5B3;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B28A14E2E6;
 	Fri, 29 Nov 2024 16:28:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1732897711; cv=none; b=McruElrG1nyD4qqTqXNeN7xj2el/kFSgNJ4RLHfJlL3lXqzj768Ko7tfnLwkf2gHd3EL1RIIshM1YbxgVJwgKugziHkx/1SfRXJsCrPtV8YnuprAGifiuvD+1wlGkU4wx5duXDhzTHVSbgh/Ygxfr/QXixXxJFNpHeC/v7XmQq4=
+	t=1732897711; cv=none; b=hIrXiMEZKhrxgtu4V2jgIHl0IDhjQold0LxVx1IpMRBxx6fuqantVkq/6RC1Nyj3rFy244H9Ku+LeKb2vA7GFELfhVNCg1tcOVkwFojbdjwXUZL0DZZwzubbfAo3BMe5NPO7Welqvd586fwZ+HVzmk60b4a8xevwAsTVcoz+70o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1732897711; c=relaxed/simple;
-	bh=OYoXq9Htw15pDNwhKe3wmKi9nfDTgqvonQ9dTbuSg84=;
+	bh=HMGBZOXSMMvv1IfoZw8Sx2HA/3BEClrax5ORvrtMt1c=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=YOhYPIr40MFmlcX9VcHMXfFdn50SbYfebkApmPCiUYROzGiXkO5RvRruSZ8pzto4ptSIBI6Udd7FS87OnD3ZWXfNJ6Cz6TdGeEt0r6NsCH2M/uKHA8h345mzyohcAvxJjNTeMnxUbs/8dbpqDQTrKwN481Lt7oCy6XdVOZPndjs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=iyxU5GY/; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=uAm3EcpV4PPDpcHCkl/x8ucOHVpkE3RF9Ltn+lGa0XSdgQNke91A14g2aq0qVmhdVA5IRNqGJYb76yetJmKe9AYc/g3qPK2MOv8RjdDuIKxCizJ+lj7iG+V1sHE6bgTtHhigAOD26UQrs+ashtmR+t1DvLEcw8iB18wQve/0u8g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=WayB0odm; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="iyxU5GY/"
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="WayB0odm"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
- id 5f518de4bde3e1e6; Fri, 29 Nov 2024 17:28:21 +0100
+ id 62129d98bd018b2f; Fri, 29 Nov 2024 17:28:27 +0100
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id D5E56A47B8B;
-	Fri, 29 Nov 2024 17:28:20 +0100 (CET)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 9874DA47B8B;
+	Fri, 29 Nov 2024 17:28:26 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1732897701;
-	bh=OYoXq9Htw15pDNwhKe3wmKi9nfDTgqvonQ9dTbuSg84=;
+	s=dkim; t=1732897707;
+	bh=HMGBZOXSMMvv1IfoZw8Sx2HA/3BEClrax5ORvrtMt1c=;
 	h=From:Subject:Date;
-	b=iyxU5GY/ArKuU8HnZM+epBBnOro2bqsKPxWgzpzvZ8DNMNQFXXjnKY7X9OfmRwZrD
-	 2bOAQpi+XKBLJqrdArSchnvurDoSO19PUpBuNjoi822povcdACcdRuddwJIphl7PDj
-	 I1inSGuwhLDpRZngzTRwi05TL6nEVzTq1IxE+3jag6g4UrrW7uanGig/2S88LlP1jZ
-	 2a2Tdteh51I4/uVWWBtKF9KQgZY1RrCXI83NJ59CZZ87Vkpc3cewxr9Q6d6G8+/iDc
-	 +ESxhmkK76AxPu1PX+jHGVyFUOeENO8jvDPYv2OZw8q7gsLQQpMaJBLySnVVNl+nfw
-	 S4y/vzxX4XGeQ==
+	b=WayB0odmVKpfkTFhPGYu6Q3Jf/EApccNMChSPAFk/PcN4BVo+3wCyYfkE90EXoYkV
+	 a6wOAcs/KNaHSdajOFqvqLMdkdWZMGvCnz9AIJUB20Ccgmen/8UZIx08EcbeOefExH
+	 RLNMhXucYzeM/wOWUrhPwdx8hsohYkgraR2ltNI943v0/opq/ShyAxrmnHwroJ3mMI
+	 LoIPaZGZ9j3qKnS/8c9oQQsnrrySgd3isxqD40rYgBZNIzQGaYXU1UPj8GuPF6tJKG
+	 SgjSFs0ntyi2HJ3zp6MlGKW96HPpOHXhhljRzsi4+Rq7a8NOGye0EQvEU8mir7vnET
+	 9uWwRKPJfDyCw==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
@@ -46,10 +46,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
  Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
  Pierre Gondois <pierre.gondois@arm.com>
 Subject:
- [RFC][PATCH v021 7/9] PM: EM: Register perf domains with ho :active_power()
- callbacks
-Date: Fri, 29 Nov 2024 17:15:45 +0100
-Message-ID: <3278518.5fSG56mABF@rjwysocki.net>
+ [RFC][PATCH v021 1/9] cpufreq: intel_pstate: Use CPPC to get scaling factors
+Date: Fri, 29 Nov 2024 16:56:15 +0100
+Message-ID: <4992622.31r3eYUQgx@rjwysocki.net>
 In-Reply-To: <5861970.DvuYhMxLoT@rjwysocki.net>
 References: <5861970.DvuYhMxLoT@rjwysocki.net>
 Precedence: bulk
@@ -63,129 +62,132 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefuddrheefgdekjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopedutddprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtohepphgvthgvrhiisehinhhfrhgruggvrggurdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthg
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefuddrheefgdekjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedunecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopedutddprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtohepphgvthgvrhiisehinhhfrhgruggvrggurdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthg
 X-DCC--Metrics: v370.home.net.pl 1024; Body=10 Fuz1=10 Fuz2=10
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Allow em_dev_register_perf_domain() to register a cost-only perf domain
-with a one-element states table if the :active_power() callback is not
-provided.
+If the P-core hybrid scaling factor for the given processor model is not
+known, use CPPC to compute hybrid scaling factors for all CPUs.
 
-Subsequently, this will be used by the intel_pstate driver to register
-such perf domains for CPUs on hybrid systems.
-
-No intentional functional impact.
+Since the current default hybrid scaling factor is only suitable for a
+few early hybrid platforms, add intel_hybrid_scaling_factor[] entries
+for them and initialize the scaling factor to zero ("unknown") by
+default.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
+ drivers/cpufreq/intel_pstate.c |   59 +++++++++++++++++++++++------------------
+ 1 file changed, 34 insertions(+), 25 deletions(-)
 
-v0.1 -> v0.2:
-     * Do not add one more local variable to em_dev_register_perf_domain()
-       and make it skip the capacity check if the :active_power() callback
-       is NULL.  Add a comment explaining why it is correct to do so.
-
-For the time being, intel_pstate will only need to be able to say
-something like "this group of CPUs is preferred to that other group
-of CPUs for energy-efficiency reasons regardless of the required
-performance level" (and there may be multiple groups).
-
-For this purpose, it only needs a one-element states table in a perf
-domain for each of the groups and it only needs to set the cost value
-for each of them to reflect the preference.
-
-However, it may need to put CPUs of different capacity into the same
-group because of favored cores and this doesn't mean that one
-group will contain CPUs of different mincro-architectures.  Favored
-cores essentially follow the same power-performance curve as the
-other CPUs of the same type up to a certain point, but they can get
-beyond that point on the curve which the other CPUs of the same type
-cannot do.  Thus it would make sense to use the same states table
-for favored cores and the other CPUs of the same type even if there
-were multiple states in it, and em_pd_get_efficient_state() could
-easily take that into account by only using the states where
-"performance" is at most equal to the current CPU capacity.
-
-Unfortunately, this doesn't match the em_create_perf_table() code
-design and in particular em_init_performance() which scales the
-"performance" values the the current capacity of the "domain leader"
-CPU represented by "dev".
-
-IMV, it should instead scale them to the maximum possible capacity
-of the highest-capacity CPU in the domain (without requiring equal
-capacity at all).
-
-That would also help to handle the cases when CPU capacity changes,
-at least on Intel platforms, if it's necessary to worry about this some
-day.  Namely, when CPU capacity is reduced, say by the platform firmware
-(for thermal or power distribution reasons, for example), this effectively
-means chopping off the top-most section of the power-performance curve,
-but the rest of it remains intact, so the same states table as before
-can be used, only the current CPU capacity needs to be changed to
-prevent the top-most performance states from being taken into
-consideration (and analogously when CPU capacity increases).
-
-Turbo works pretty much in the same way: When it's enabled, the
-power-performance curve is effectively extended by adding some states to
-it and when turbo is disabled, the top-most part of the power-performance
-curve effectively gets chopped off.
-
-This observation may help to avoid having to update the energy model for
-a chip.
-
----
- kernel/power/energy_model.c |   23 ++++++++++++++++++++---
- 1 file changed, 20 insertions(+), 3 deletions(-)
-
-Index: linux-pm/kernel/power/energy_model.c
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
 ===================================================================
---- linux-pm.orig/kernel/power/energy_model.c
-+++ linux-pm/kernel/power/energy_model.c
-@@ -426,9 +426,11 @@ static int em_create_pd(struct device *d
- 	if (!em_table)
- 		goto free_pd;
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -28,6 +28,7 @@
+ #include <linux/pm_qos.h>
+ #include <linux/bitfield.h>
+ #include <trace/events/power.h>
++#include <linux/units.h>
  
--	ret = em_create_perf_table(dev, pd, em_table->state, cb, flags);
--	if (ret)
--		goto free_pd_table;
-+	if (cb->active_power) {
-+		ret = em_create_perf_table(dev, pd, em_table->state, cb, flags);
-+		if (ret)
-+			goto free_pd_table;
-+	}
+ #include <asm/cpu.h>
+ #include <asm/div64.h>
+@@ -302,11 +303,11 @@ static bool hwp_is_hybrid;
  
- 	ret = em_compute_costs(dev, em_table->state, cb, nr_states, flags);
- 	if (ret)
-@@ -566,6 +568,9 @@ int em_dev_register_perf_domain(struct d
- 	if (!dev || !nr_states || !cb)
- 		return -EINVAL;
+ static struct cpufreq_driver *intel_pstate_driver __read_mostly;
  
-+	if (!cb->active_power && (!cb->get_cost || nr_states > 1 || microwatts))
-+		return -EINVAL;
-+
+-#define HYBRID_SCALING_FACTOR		78741
++#define HYBRID_SCALING_FACTOR_ADL	78741
+ #define HYBRID_SCALING_FACTOR_MTL	80000
+ #define HYBRID_SCALING_FACTOR_LNL	86957
+ 
+-static int hybrid_scaling_factor = HYBRID_SCALING_FACTOR;
++static int hybrid_scaling_factor;
+ 
+ static inline int core_get_scaling(void)
+ {
+@@ -414,18 +415,15 @@ static int intel_pstate_get_cppc_guarant
+ static int intel_pstate_cppc_get_scaling(int cpu)
+ {
+ 	struct cppc_perf_caps cppc_perf;
+-	int ret;
+-
+-	ret = cppc_get_perf_caps(cpu, &cppc_perf);
+ 
  	/*
- 	 * Use a mutex to serialize the registration of performance domains and
- 	 * let the driver-defined callback functions sleep.
-@@ -594,7 +599,19 @@ int em_dev_register_perf_domain(struct d
- 			 * All CPUs of a domain must have the same
- 			 * micro-architecture since they all share the same
- 			 * table.
-+			 *
-+			 * If the :active_power() callback is present, the
-+			 * performance values for different states in the table
-+			 * computed by em_create_perf_table() depend on the CPU
-+			 * capacity which therefore must be the same for all
-+			 * CPUs in the domain.  However, if the :active_power()
-+			 * callback is not NULL, em_create_perf_table() doesn't
-+			 * run and there is no requirement regarding CPU
-+			 * capacity any more.
- 			 */
-+			if (!cb->active_power)
-+				continue;
+-	 * If the nominal frequency and the nominal performance are not
+-	 * zero and the ratio between them is not 100, return the hybrid
+-	 * scaling factor.
+-	 */
+-	if (!ret && cppc_perf.nominal_perf && cppc_perf.nominal_freq &&
+-	    cppc_perf.nominal_perf * 100 != cppc_perf.nominal_freq)
+-		return hybrid_scaling_factor;
++	 * Compute the perf-to-frequency scaling factor for the given CPU if
++	 * possible, unless it would be 0.
++	 */
++	if (!cppc_get_perf_caps(cpu, &cppc_perf) &&
++	    cppc_perf.nominal_perf && cppc_perf.nominal_freq)
++		return div_u64(cppc_perf.nominal_freq * KHZ_PER_MHZ,
++			       cppc_perf.nominal_perf);
+ 
+ 	return core_get_scaling();
+ }
+@@ -2211,24 +2209,30 @@ static void hybrid_get_type(void *data)
+ 
+ static int hwp_get_cpu_scaling(int cpu)
+ {
+-	u8 cpu_type = 0;
++	if (hybrid_scaling_factor) {
++		u8 cpu_type = 0;
 +
- 			cap = arch_scale_cpu_capacity(cpu);
- 			if (prev_cap && prev_cap != cap) {
- 				dev_err(dev, "EM: CPUs of %*pbl must have the same capacity\n",
++		smp_call_function_single(cpu, hybrid_get_type, &cpu_type, 1);
+ 
+-	smp_call_function_single(cpu, hybrid_get_type, &cpu_type, 1);
+-	/* P-cores have a smaller perf level-to-freqency scaling factor. */
+-	if (cpu_type == 0x40)
+-		return hybrid_scaling_factor;
++		/*
++		 * Return the hybrid scaling factor for P-cores and use the
++		 * default core scaling for E-cores.
++		 */
++		if (cpu_type == 0x40)
++			return hybrid_scaling_factor;
+ 
+-	/* Use default core scaling for E-cores */
+-	if (cpu_type == 0x20)
++		if (cpu_type == 0x20)
++			return core_get_scaling();
++	}
++
++	/* Use core scaling on non-hybrid systems. */
++	if (!cpu_feature_enabled(X86_FEATURE_HYBRID_CPU))
+ 		return core_get_scaling();
+ 
+ 	/*
+-	 * If reached here, this system is either non-hybrid (like Tiger
+-	 * Lake) or hybrid-capable (like Alder Lake or Raptor Lake) with
+-	 * no E cores (in which case CPUID for hybrid support is 0).
+-	 *
+-	 * The CPPC nominal_frequency field is 0 for non-hybrid systems,
+-	 * so the default core scaling will be used for them.
++	 * The system is hybrid, but the hybrid scaling factor is not known or
++	 * the CPU type is not one of the above, so use CPPC to compute the
++	 * scaling factor for this CPU.
+ 	 */
+ 	return intel_pstate_cppc_get_scaling(cpu);
+ }
+@@ -3665,6 +3669,11 @@ static const struct x86_cpu_id intel_epp
+ };
+ 
+ static const struct x86_cpu_id intel_hybrid_scaling_factor[] = {
++	X86_MATCH_VFM(INTEL_ALDERLAKE, HYBRID_SCALING_FACTOR_ADL),
++	X86_MATCH_VFM(INTEL_ALDERLAKE_L, HYBRID_SCALING_FACTOR_ADL),
++	X86_MATCH_VFM(INTEL_RAPTORLAKE, HYBRID_SCALING_FACTOR_ADL),
++	X86_MATCH_VFM(INTEL_RAPTORLAKE_P, HYBRID_SCALING_FACTOR_ADL),
++	X86_MATCH_VFM(INTEL_RAPTORLAKE_S, HYBRID_SCALING_FACTOR_ADL),
+ 	X86_MATCH_VFM(INTEL_METEORLAKE_L, HYBRID_SCALING_FACTOR_MTL),
+ 	X86_MATCH_VFM(INTEL_ARROWLAKE, HYBRID_SCALING_FACTOR_MTL),
+ 	X86_MATCH_VFM(INTEL_LUNARLAKE_M, HYBRID_SCALING_FACTOR_LNL),
 
 
 
