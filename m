@@ -1,40 +1,40 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC44414F9F9;
-	Fri, 29 Nov 2024 16:28:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BAA6319CC02;
+	Fri, 29 Nov 2024 16:28:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1732897712; cv=none; b=eaQJpNplpnlyJe+U6eWRkUeUPNjV//0pEv+sKxuJMzVe9pBJbnJ4xwWEFZ6O+FNlDOlQoFWfllSRv7dXx39zyStL2GwKH+7TEtxKWLdG32M0hGJj1uv6LkspViuC++OYTZJ+UkWKojulY0uKWAV1PRCh9imEzXmiAN9p0wDUVi8=
+	t=1732897712; cv=none; b=rdp0msrIp/MLdt+Ujy5qByQ6RcFFjGX9bnIYFUb+O72b/utiBZ4HoPjg7sOgKoKQMvfZ8k/0LSJ+64fUd+bR04SEQ9HZyTUJ4JbH3CFk18Ey/O7DdZ/2WjmY0qF26I/Aup6y1a8a8tQOzK4dSNmZUWug7DMj+RhavlyLZEGI8CY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1732897712; c=relaxed/simple;
-	bh=CoHMWva7c4OBH0vaKdTvFtpcFV5sbCOP/HbkqDCr2Vw=;
+	bh=wMEd2h7OudxO2dV+sTCknQbfUGqj+8oLnQbaSw+jLb0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=sSLNKzWZLLhGrjBOtxPvdUGadC3lQKRJMYMSbyaTevHgKs0iK+3fYHZCQtaaq6AsnkTQhlOlaV+FXSzbIk7AmnaZHcEn/u37+4URss9nBc+bR6UFsW0law/yCQTqt0KeUcsJCgqRBuG0/WuPg6PAWd4vbiQkMP23LCqTBbgGFOg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=c2ed2Rff; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=EJPrdy2zk9jPk2orWSyzV7eBw1UiY5k1K+l19ZQS6YdOQoFyfAnPpl3tROORVOPAKqGEBTHaoZbNkKpFwIar9dLcqzd/+mwVOHAazkYMARgYgKAXpCw7yf7dZSwYr+Fn43lm5apjczZezDJPtS4xVFrgfOPmRRyfcAOPsYqKh5A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=UI2HNgbG; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="c2ed2Rff"
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="UI2HNgbG"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
- id 9c33acf31241bace; Fri, 29 Nov 2024 17:28:22 +0100
+ id 2c1251ab29003005; Fri, 29 Nov 2024 17:28:23 +0100
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id C2718A47B8C;
-	Fri, 29 Nov 2024 17:28:21 +0100 (CET)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id E697EA47B8B;
+	Fri, 29 Nov 2024 17:28:22 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1732897702;
-	bh=CoHMWva7c4OBH0vaKdTvFtpcFV5sbCOP/HbkqDCr2Vw=;
+	s=dkim; t=1732897703;
+	bh=wMEd2h7OudxO2dV+sTCknQbfUGqj+8oLnQbaSw+jLb0=;
 	h=From:Subject:Date;
-	b=c2ed2RffCGnatxCZCe71yEGTndSOihyIqjmIl2FmrWtkAGDJCa9K51FFGD/SA7S3Y
-	 8GRSyBopH/eUp9rOWhLXM/wM+U1RSU5OrZkhkGBmGfJTcY2LZWzhnbz9RtrhDFzn+m
-	 Zd0a5UioeZWadeQckotiJfmfYav0x87Z9jZwRKFNqSoXssZFt4r0t3sN74SddoAt1p
-	 JYV/QuGn9s7UrbddDfF6N4vWutSqVztUsk6v5d+xJ1y2kMcQw9LabNXgXapiuUUziP
-	 hBtJJGZY6b4S7OIUlkiWAYDytlROhzYkot+GjEP7BpK+iNkSGt3FAaab3Yu+9OjfOe
-	 E7XQWsY/94d+Q==
+	b=UI2HNgbGTg30pamLeA7Hsr7h4WYRqDVBjilad9oCD3WQ78x69MuC0MjbNj/XjphdW
+	 7E5fDZBcFaU1oSeNbfxaUiOhAaZiF1uSLLV6aaxAveZD3sG8SDE9WPDJaa2kNb6DW8
+	 eBoNycHbR2A/tWIaiHuWGNWn8YnivEXtQgmZgUrlON8u52Vitf1XPh608M/WsR6Okt
+	 r+gLwLLbS3J1ci8gtaB6v5TrlUOlU2RYCIy0/XmxfzLjNJfCH15G4n6jvOW0mvFJkl
+	 AoMaHka/V25u6sYCP4rj9Ir8akmS9L2/ZqHD9DVV/NUCgbokqioDW0gPmGNGD8FoRH
+	 V7oFXb+q9sZpg==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
@@ -45,11 +45,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
  Vincent Guittot <vincent.guittot@linaro.org>,
  Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
  Pierre Gondois <pierre.gondois@arm.com>
-Subject:
- [RFC][PATCH v021 6/9] PM: EM: Call em_compute_costs() from
- em_create_perf_table()
-Date: Fri, 29 Nov 2024 17:06:52 +0100
-Message-ID: <2010024.PYKUYFuaPT@rjwysocki.net>
+Subject: [RFC][PATCH v021 5/9] PM: EM: Introduce em_dev_expand_perf_domain()
+Date: Fri, 29 Nov 2024 17:02:02 +0100
+Message-ID: <3353401.44csPzL39Z@rjwysocki.net>
 In-Reply-To: <5861970.DvuYhMxLoT@rjwysocki.net>
 References: <5861970.DvuYhMxLoT@rjwysocki.net>
 Precedence: bulk
@@ -68,51 +66,91 @@ X-DCC--Metrics: v370.home.net.pl 1024; Body=10 Fuz1=10 Fuz2=10
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-In preparation for subsequent changes, move the em_compute_costs()
-invocation from em_create_perf_table() to em_create_pd() which is its
-only caller.
+Introduce a helper function for adding a CPU to an existing EM perf
+domain.
 
-This helps to prepare the EM registration code for handling the case in
-which the :active_power() EM callback is NULL.
+Subsequently, this will be used by the intel_pstate driver to add new
+CPUs to existing perf domains when those CPUs go online for the first
+time after the initialization of the driver.
 
 No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
-v0.1 -> v0.2: Update changelog to explain what subsequent change depends
-              on this patch.
+v0.1 -> v0.2: No changes
 
 ---
- kernel/power/energy_model.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ include/linux/energy_model.h |    5 +++++
+ kernel/power/energy_model.c  |   32 ++++++++++++++++++++++++++++++++
+ 2 files changed, 37 insertions(+)
 
 Index: linux-pm/kernel/power/energy_model.c
 ===================================================================
 --- linux-pm.orig/kernel/power/energy_model.c
 +++ linux-pm/kernel/power/energy_model.c
-@@ -388,10 +388,6 @@ static int em_create_perf_table(struct d
- 
- 	em_init_performance(dev, pd, table, nr_states);
- 
--	ret = em_compute_costs(dev, table, cb, nr_states, flags);
--	if (ret)
--		return -EINVAL;
--
- 	return 0;
+@@ -676,6 +676,38 @@ void em_dev_unregister_perf_domain(struc
  }
+ EXPORT_SYMBOL_GPL(em_dev_unregister_perf_domain);
  
-@@ -434,6 +430,10 @@ static int em_create_pd(struct device *d
- 	if (ret)
- 		goto free_pd_table;
- 
-+	ret = em_compute_costs(dev, em_table->state, cb, nr_states, flags);
-+	if (ret)
-+		goto free_pd_table;
++/**
++ * em_dev_expand_perf_domain() - Expand CPU perf domain
++ * @dev: CPU device of a CPU in the perf domain.
++ * @new_cpu: CPU to add to the perf domain.
++ */
++int em_dev_expand_perf_domain(struct device *dev, int new_cpu)
++{
++	struct device *new_cpu_dev;
++	struct em_perf_domain *pd;
 +
- 	rcu_assign_pointer(pd->em_table, em_table);
- 
- 	if (_is_cpu_device(dev))
++	if (IS_ERR_OR_NULL(dev) || !_is_cpu_device(dev))
++		return -EINVAL;
++
++	new_cpu_dev = get_cpu_device(new_cpu);
++	if (!new_cpu_dev)
++		return -EINVAL;
++
++	guard(mutex)(&em_pd_mutex);
++
++	if (em_pd_get(new_cpu_dev))
++		return -EEXIST;
++
++	pd = em_pd_get(dev);
++	if (!pd)
++		return -EINVAL;
++
++	cpumask_set_cpu(new_cpu, em_span_cpus(pd));
++	new_cpu_dev->em_pd = pd;
++
++	return 0;
++}
++
+ static struct em_perf_table __rcu *em_table_dup(struct em_perf_domain *pd)
+ {
+ 	struct em_perf_table __rcu *em_table;
+Index: linux-pm/include/linux/energy_model.h
+===================================================================
+--- linux-pm.orig/include/linux/energy_model.h
++++ linux-pm/include/linux/energy_model.h
+@@ -172,6 +172,7 @@ int em_dev_register_perf_domain(struct d
+ 				struct em_data_callback *cb, cpumask_t *span,
+ 				bool microwatts);
+ void em_dev_unregister_perf_domain(struct device *dev);
++int em_dev_expand_perf_domain(struct device *dev, int new_cpu);
+ struct em_perf_table __rcu *em_table_alloc(struct em_perf_domain *pd);
+ void em_table_free(struct em_perf_table __rcu *table);
+ int em_dev_compute_costs(struct device *dev, struct em_perf_state *table,
+@@ -354,6 +355,10 @@ int em_dev_register_perf_domain(struct d
+ static inline void em_dev_unregister_perf_domain(struct device *dev)
+ {
+ }
++static inline int em_dev_expand_perf_domain(struct device *dev, int new_cpu)
++{
++	return -EINVAL;
++}
+ static inline struct em_perf_domain *em_cpu_get(int cpu)
+ {
+ 	return NULL;
 
 
 
