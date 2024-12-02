@@ -1,32 +1,31 @@
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 082681DE3D6;
-	Mon,  2 Dec 2024 19:02:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F070A1DE3CE;
+	Mon,  2 Dec 2024 19:02:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733166142; cv=none; b=oWkGknCaLR+rxaI7bQfI7OYpO7Gmxop8HvCzIfVUvQr6BD+UwlVwHVE6kN0RVL7nOXrNZsfU7BjumGLitCmv2YnXyvvVh5scs6A8gfoU9WiSf9A4XMIijdEh9WECcAc1yQGe83Yj0f6q4QglB2DFeLXjUaTXCAEvDpwUsfcpGVw=
+	t=1733166142; cv=none; b=iMbpnkOd+HeS379n4+Eq6piROQ38DQt3JwqqBzbIa/rIDf5qk/EyByHo5caDxTi95HLxKGFzW0u3f1KL5id4SmTLntPz43E3CrYt3K5E6s/Wit+b0nZDiDTP/MkqTJqGbjKP/XiEmrnPagY9ZGYpq5oF5snDZmfk0DZVq7XTanE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1733166142; c=relaxed/simple;
-	bh=A/SStIoFKy8kbXNZOyVWGy/f5MASnx/GCLKsixaNTdk=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=MU69b38tNgFE22p7XRZ6x86IqEwhjAW2QXiAwkOGHDLqWRvmlQKaEK9bTFkIDboAdMoqmdNpo/ZQelXugwR3HRY5jINzwLn09ruJ/mqWTfCLFvgCh8UV+RW5DeDLOxHiCv972lBEA2iQ/tC750Jauq7UZma5uYczgSJMEnhyK/Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=WWDfbsFE; arc=none smtp.client-ip=159.69.126.157
+	bh=Lw0cF1apHEYbyMDv0FlJULjHdocoRdy1EJZCufUNKiM=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=HBw0U9ncPgKT+Vlc/4b9Fk2OdtXb1uiJUItxiOEARt6nZ7xVsGO2WPkYPLi9G/DJOkiur3TCw0pchn8f1XaG6SleooT++WSAttxQCd8F2n6mmjm+URNJH2DBNbTJCkH24fxdt63bzHUBYECnwJOk2dDLDSQnP7x7A9m442z9PJ4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=tSf73ptz; arc=none smtp.client-ip=159.69.126.157
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="WWDfbsFE"
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="tSf73ptz"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1733166139;
-	bh=A/SStIoFKy8kbXNZOyVWGy/f5MASnx/GCLKsixaNTdk=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=WWDfbsFECbI5pH2MbvT8xeRBe7ZXOgSN9Q+EMIv464oqwsMZLyZ3JAXHyq2qlbIj1
-	 sG2RBqiaow0zHSGHvEIuKWr5b7gKmEvcj1CqHQtyGpcQXaQM02i3b7AWY+RItOIDhm
-	 z8MSZDTIU/QK2wun8gQfSjzsi7a5f4iKzXU6mZIw=
+	bh=Lw0cF1apHEYbyMDv0FlJULjHdocoRdy1EJZCufUNKiM=;
+	h=From:Subject:Date:To:Cc:From;
+	b=tSf73ptzoiI/IyAaxbLzcmgZum8vSUnezgdS9pFdaPTjEvG5wB0xn4zhpCXVFV63W
+	 JTXmhVQHJR298xHoX0BoP/tfZDScN3FIrsNtxSTXOEwwtYQuj8slPd3CwxqB8cHkrc
+	 70WbhdyG3xY5Q5Azye4A/nQLsTEAEmawXjqYHMq0=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Mon, 02 Dec 2024 20:02:22 +0100
-Subject: [PATCH 4/4] power: supply: olpc_battery: constify 'struct
- bin_attribute'
+Subject: [PATCH 0/4] power: supply: constify 'struct bin_attribute'
+Date: Mon, 02 Dec 2024 20:02:18 +0100
+Message-Id: <20241202-sysfs-const-bin_attr-psy-v1-0-f846430b8b66@weissschuh.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,18 +34,19 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241202-sysfs-const-bin_attr-psy-v1-4-f846430b8b66@weissschuh.net>
-References: <20241202-sysfs-const-bin_attr-psy-v1-0-f846430b8b66@weissschuh.net>
-In-Reply-To: <20241202-sysfs-const-bin_attr-psy-v1-0-f846430b8b66@weissschuh.net>
+X-B4-Tracking: v=1; b=H4sIADoETmcC/x3MQQqAIBBA0avErBtQqaiuEhFpU83GwpFIorsnL
+ d/i/weEApNAXzwQ6GLhw2fosgC3z34j5CUbjDKVNkqjJFkF3eElomU/zTEGPCWhbWxXV51yrbG
+ Q8zPQyve/Hsb3/QA2VixTagAAAA==
+X-Change-ID: 20241201-sysfs-const-bin_attr-psy-b6b95490c82b
 To: Sebastian Reichel <sre@kernel.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1733166139; l=2026;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1733166139; l=1142;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=A/SStIoFKy8kbXNZOyVWGy/f5MASnx/GCLKsixaNTdk=;
- b=FxrGRdi3lo6HqtQ+teIFEkVolU18SzAS9SKr08rAliQyG1mmV84tBdGLhCdtxwdOknZ3hu0BU
- /jd8ttqcCmFBxOg+V7nHbNOv/vgA45DPv/YUSJ/BxSVw3TTf+6Gg3ir
+ bh=Lw0cF1apHEYbyMDv0FlJULjHdocoRdy1EJZCufUNKiM=;
+ b=QjMIX/yWXf5++PynwpYtLyfcxFXlxY16K8Of46voEWBlIgmI8ZT6HF5a6Jm9UbfBepdetKvrF
+ UQwDnYuUGNPCVPihSTlLbNjtdQM4tMYr6OZLJzHElGhyEbx7h8Ibybh
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
@@ -54,59 +54,27 @@ The sysfs core now allows instances of 'struct bin_attribute' to be
 moved into read-only memory. Make use of that to protect them against
 accidental or malicious modifications.
 
+The usage of read_new/write_new/bin_attrs_new is a transition mechanism
+and will be reverted after the transition is complete.
+
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/power/supply/olpc_battery.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+Thomas Weißschuh (4):
+      power: supply: ds2760: constify 'struct bin_attribute'
+      power: supply: ds2780: constify 'struct bin_attribute'
+      power: supply: ds2781: constify 'struct bin_attribute'
+      power: supply: olpc_battery: constify 'struct bin_attribute'
 
-diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/olpc_battery.c
-index 9f60094a5599edd995588b2a7c3d753aaf8dd6ec..849f63e89ba09047bba30813723512780b9cdeb0 100644
---- a/drivers/power/supply/olpc_battery.c
-+++ b/drivers/power/supply/olpc_battery.c
-@@ -527,7 +527,7 @@ static enum power_supply_property olpc_xo15_bat_props[] = {
- #define EEPROM_SIZE	(EEPROM_END - EEPROM_START)
- 
- static ssize_t olpc_bat_eeprom_read(struct file *filp, struct kobject *kobj,
--		struct bin_attribute *attr, char *buf, loff_t off, size_t count)
-+		const struct bin_attribute *attr, char *buf, loff_t off, size_t count)
- {
- 	uint8_t ec_byte;
- 	int ret;
-@@ -547,13 +547,13 @@ static ssize_t olpc_bat_eeprom_read(struct file *filp, struct kobject *kobj,
- 	return count;
- }
- 
--static struct bin_attribute olpc_bat_eeprom = {
-+static const struct bin_attribute olpc_bat_eeprom = {
- 	.attr = {
- 		.name = "eeprom",
- 		.mode = S_IRUGO,
- 	},
- 	.size = EEPROM_SIZE,
--	.read = olpc_bat_eeprom_read,
-+	.read_new = olpc_bat_eeprom_read,
- };
- 
- /* Allow userspace to see the specific error value pulled from the EC */
-@@ -584,15 +584,14 @@ static struct attribute *olpc_bat_sysfs_attrs[] = {
- 	NULL
- };
- 
--static struct bin_attribute *olpc_bat_sysfs_bin_attrs[] = {
-+static const struct bin_attribute *const olpc_bat_sysfs_bin_attrs[] = {
- 	&olpc_bat_eeprom,
- 	NULL
- };
- 
- static const struct attribute_group olpc_bat_sysfs_group = {
- 	.attrs = olpc_bat_sysfs_attrs,
--	.bin_attrs = olpc_bat_sysfs_bin_attrs,
--
-+	.bin_attrs_new = olpc_bat_sysfs_bin_attrs,
- };
- 
- static const struct attribute_group *olpc_bat_sysfs_groups[] = {
+ drivers/power/supply/ds2760_battery.c |  8 ++++----
+ drivers/power/supply/ds2780_battery.c | 24 ++++++++++++------------
+ drivers/power/supply/ds2781_battery.c | 24 ++++++++++++------------
+ drivers/power/supply/olpc_battery.c   | 11 +++++------
+ 4 files changed, 33 insertions(+), 34 deletions(-)
+---
+base-commit: e70140ba0d2b1a30467d4af6bcfe761327b9ec95
+change-id: 20241201-sysfs-const-bin_attr-psy-b6b95490c82b
 
+Best regards,
 -- 
-2.47.1
+Thomas Weißschuh <linux@weissschuh.net>
 
