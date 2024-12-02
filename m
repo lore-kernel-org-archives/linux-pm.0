@@ -1,31 +1,31 @@
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D19D1DE3D8;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D10F1DE3CF;
 	Mon,  2 Dec 2024 19:02:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733166142; cv=none; b=OW6gExTtesXTRMQ/lEVk+Tbs6Ulj+4GnYhvkFMNs+V1+s84D2Ihy+GKCzLdN1YexEgtMLm10m3BcQsLsq8yO2W4h95SGTaIFCuYkAr8k+cVQFKhO9dcueMYtzZmfl76EzgqWg7LLpPhLiTSq61mTV7C+EbZcQnmiBWSeR5PSOOc=
+	t=1733166143; cv=none; b=CUSqxfTE8+wmEEs0L0SlXz9ETA2taId6SGYEXj9ZkGCgWTPo3tB+IQ6Focpr2eXfO71/HuhYoDM5Q+tiAvXIgraZ0e/Q472v9uqPOryvim1ed+C6A4hi9M1f/HsX7HalLYxNLvU/S460cd4Pe8oIzQ3D74fJ81YDCkfni0AV9ek=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733166142; c=relaxed/simple;
-	bh=vs237hxNCHuIOeDxAr5dea8fYVyVtnREj4eNa7u5ziw=;
+	s=arc-20240116; t=1733166143; c=relaxed/simple;
+	bh=jOCpitkzzO0ZkQxM2OTYcCXJhJbSo/7hpe8pbEOUS/c=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=gSxN51j6/v7x8J+hD0GFaF+dejI3j0kDgkV8U4wxw4K7xKCRASupIntLoaE0jkg2JDsUxJ6x33SJqXXIxMnAowkIIxmHJwOTiu+rR0zds2VQ3CehQsWSIdnVx8XXpPqrXXFIYxg4r5B5aRwGpWJD1defUevFNm5byMVgryng+8U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=HJHQ1cOp; arc=none smtp.client-ip=159.69.126.157
+	 In-Reply-To:To:Cc; b=gFsRP7nfv1tJuByuU6+ggpvathbEiQySPez7F17U7Yw0Z40+kcB4qv9pkQ6zUch/r0D9eSMsJQyRgjgzrbHVhpDweS9/eDLQaSPL649cX2d6NRxXSBRtI1R48JK8MZTzqyMbYa/SHNjfMrT07sHm5YgNdx2jZIbOJ6c+JkNTwO0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=pMhTNwMG; arc=none smtp.client-ip=159.69.126.157
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="HJHQ1cOp"
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="pMhTNwMG"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1733166139;
-	bh=vs237hxNCHuIOeDxAr5dea8fYVyVtnREj4eNa7u5ziw=;
+	bh=jOCpitkzzO0ZkQxM2OTYcCXJhJbSo/7hpe8pbEOUS/c=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=HJHQ1cOpqRRHj15C7dTKRxiEUyRQZHPeMmL/iv77nBqIrW85va1896BUPBl3BAtwx
-	 7xB0u8iQLrosdpZfcR+9yPCJxxcEBgtW4kOpy3YzxlLWhdCsFmrJbES2UPs941Ny14
-	 0tk3FwG2dSs3alUIIOqQn6PAukYk/0+B35dRQ0po=
+	b=pMhTNwMGcd/ilN99rbUEdZ1GFfY85DqAFIkt4KTUDTD10e4n7QUuY7FPvI3T0lfMC
+	 SIl23eX5IuMsSepuRVX/hl/dJSUoE8xE+VtcRJsQEzLA5+0PmsFQMbzpn+x0fc7X3r
+	 k5QrHnbU5q0YQ6OcszrLGJRi7fmjUpHGoMURb/3s=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Mon, 02 Dec 2024 20:02:19 +0100
-Subject: [PATCH 1/4] power: supply: ds2760: constify 'struct bin_attribute'
+Date: Mon, 02 Dec 2024 20:02:21 +0100
+Subject: [PATCH 3/4] power: supply: ds2781: constify 'struct bin_attribute'
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -34,18 +34,18 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241202-sysfs-const-bin_attr-psy-v1-1-f846430b8b66@weissschuh.net>
+Message-Id: <20241202-sysfs-const-bin_attr-psy-v1-3-f846430b8b66@weissschuh.net>
 References: <20241202-sysfs-const-bin_attr-psy-v1-0-f846430b8b66@weissschuh.net>
 In-Reply-To: <20241202-sysfs-const-bin_attr-psy-v1-0-f846430b8b66@weissschuh.net>
 To: Sebastian Reichel <sre@kernel.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1733166139; l=1541;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1733166139; l=3692;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=vs237hxNCHuIOeDxAr5dea8fYVyVtnREj4eNa7u5ziw=;
- b=FhfmEOx2XZpc+pfW3LjqcL+yoz3Mx/qIIYNe/k5GfKMq8H2PePGstWivVaV3cFEviHhaNwmjj
- wWAdeU3tiajAPSd9hjumOWZ96TrbZSM/Jueebh6w8p0sp59IarFqctx
+ bh=jOCpitkzzO0ZkQxM2OTYcCXJhJbSo/7hpe8pbEOUS/c=;
+ b=Vc8hxHsAvqJhhRvrlBH1eS0fbtbZdUrId1HlnxcERzGIYwnb8lWlDfpU380pSVO/G+fbvvott
+ TXaFyfrPknDDcpar24fr7+w5s3AJOujWtX+DBbO+zSUacF8KMaLenJD
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
@@ -55,40 +55,100 @@ accidental or malicious modifications.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/power/supply/ds2760_battery.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/power/supply/ds2781_battery.c | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/power/supply/ds2760_battery.c b/drivers/power/supply/ds2760_battery.c
-index 7cf4ea06b5003427ac9719043c9a5a4361cb5341..83bdec5a2bda901460e0a8618949baa7ecc11e46 100644
---- a/drivers/power/supply/ds2760_battery.c
-+++ b/drivers/power/supply/ds2760_battery.c
-@@ -195,22 +195,22 @@ static int w1_ds2760_recall_eeprom(struct device *dev, int addr)
- }
+diff --git a/drivers/power/supply/ds2781_battery.c b/drivers/power/supply/ds2781_battery.c
+index c4f8ccc687f919f58c85bae83d308b83297fc074..8a1f1f9835e09598dd9f9426e0b63a0c5a3b4cc1 100644
+--- a/drivers/power/supply/ds2781_battery.c
++++ b/drivers/power/supply/ds2781_battery.c
+@@ -623,7 +623,7 @@ static ssize_t ds2781_set_pio_pin(struct device *dev,
  
- static ssize_t w1_slave_read(struct file *filp, struct kobject *kobj,
--			     struct bin_attribute *bin_attr, char *buf,
-+			     const struct bin_attribute *bin_attr, char *buf,
- 			     loff_t off, size_t count)
+ static ssize_t ds2781_read_param_eeprom_bin(struct file *filp,
+ 				struct kobject *kobj,
+-				struct bin_attribute *bin_attr,
++				const struct bin_attribute *bin_attr,
+ 				char *buf, loff_t off, size_t count)
  {
  	struct device *dev = kobj_to_dev(kobj);
- 	return w1_ds2760_read(dev, buf, off, count);
+@@ -636,7 +636,7 @@ static ssize_t ds2781_read_param_eeprom_bin(struct file *filp,
+ 
+ static ssize_t ds2781_write_param_eeprom_bin(struct file *filp,
+ 				struct kobject *kobj,
+-				struct bin_attribute *bin_attr,
++				const struct bin_attribute *bin_attr,
+ 				char *buf, loff_t off, size_t count)
+ {
+ 	struct device *dev = kobj_to_dev(kobj);
+@@ -656,19 +656,19 @@ static ssize_t ds2781_write_param_eeprom_bin(struct file *filp,
+ 	return count;
  }
  
--static BIN_ATTR_RO(w1_slave, DS2760_DATA_SIZE);
-+static const BIN_ATTR_RO(w1_slave, DS2760_DATA_SIZE);
+-static struct bin_attribute ds2781_param_eeprom_bin_attr = {
++static const struct bin_attribute ds2781_param_eeprom_bin_attr = {
+ 	.attr = {
+ 		.name = "param_eeprom",
+ 		.mode = S_IRUGO | S_IWUSR,
+ 	},
+ 	.size = DS2781_PARAM_EEPROM_SIZE,
+-	.read = ds2781_read_param_eeprom_bin,
+-	.write = ds2781_write_param_eeprom_bin,
++	.read_new = ds2781_read_param_eeprom_bin,
++	.write_new = ds2781_write_param_eeprom_bin,
+ };
  
--static struct bin_attribute *w1_ds2760_bin_attrs[] = {
-+static const struct bin_attribute *const w1_ds2760_bin_attrs[] = {
- 	&bin_attr_w1_slave,
+ static ssize_t ds2781_read_user_eeprom_bin(struct file *filp,
+ 				struct kobject *kobj,
+-				struct bin_attribute *bin_attr,
++				const struct bin_attribute *bin_attr,
+ 				char *buf, loff_t off, size_t count)
+ {
+ 	struct device *dev = kobj_to_dev(kobj);
+@@ -682,7 +682,7 @@ static ssize_t ds2781_read_user_eeprom_bin(struct file *filp,
+ 
+ static ssize_t ds2781_write_user_eeprom_bin(struct file *filp,
+ 				struct kobject *kobj,
+-				struct bin_attribute *bin_attr,
++				const struct bin_attribute *bin_attr,
+ 				char *buf, loff_t off, size_t count)
+ {
+ 	struct device *dev = kobj_to_dev(kobj);
+@@ -702,14 +702,14 @@ static ssize_t ds2781_write_user_eeprom_bin(struct file *filp,
+ 	return count;
+ }
+ 
+-static struct bin_attribute ds2781_user_eeprom_bin_attr = {
++static const struct bin_attribute ds2781_user_eeprom_bin_attr = {
+ 	.attr = {
+ 		.name = "user_eeprom",
+ 		.mode = S_IRUGO | S_IWUSR,
+ 	},
+ 	.size = DS2781_USER_EEPROM_SIZE,
+-	.read = ds2781_read_user_eeprom_bin,
+-	.write = ds2781_write_user_eeprom_bin,
++	.read_new = ds2781_read_user_eeprom_bin,
++	.write_new = ds2781_write_user_eeprom_bin,
+ };
+ 
+ static DEVICE_ATTR(pmod_enabled, S_IRUGO | S_IWUSR, ds2781_get_pmod_enabled,
+@@ -729,7 +729,7 @@ static struct attribute *ds2781_sysfs_attrs[] = {
+ 	NULL
+ };
+ 
+-static struct bin_attribute *ds2781_sysfs_bin_attrs[] = {
++static const struct bin_attribute *const ds2781_sysfs_bin_attrs[] = {
+ 	&ds2781_param_eeprom_bin_attr,
+ 	&ds2781_user_eeprom_bin_attr,
  	NULL,
+@@ -737,7 +737,7 @@ static struct bin_attribute *ds2781_sysfs_bin_attrs[] = {
+ 
+ static const struct attribute_group ds2781_sysfs_group = {
+ 	.attrs = ds2781_sysfs_attrs,
+-	.bin_attrs = ds2781_sysfs_bin_attrs,
++	.bin_attrs_new = ds2781_sysfs_bin_attrs,
+ 
  };
  
- static const struct attribute_group w1_ds2760_group = {
--	.bin_attrs = w1_ds2760_bin_attrs,
-+	.bin_attrs_new = w1_ds2760_bin_attrs,
- };
- 
- static const struct attribute_group *w1_ds2760_groups[] = {
 
 -- 
 2.47.1
