@@ -1,155 +1,122 @@
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 024901DE3D5;
-	Mon,  2 Dec 2024 19:02:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A4A51DD88D;
+	Mon,  2 Dec 2024 20:11:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733166144; cv=none; b=TPt3ysl+ZjZOUsrlVM2QsOmDo3cAQwmlx6XcYXj3Lc4MeFMDgJ2pwtyT67ffBcj4HsDuaNwcUqG1vo+FUKhlfWF3L5SH+vWaUgLdm46HknFb2AK1AY7fJdTZn7AXGvZJ1bSvgeVqFgPXlkq+qZ8UyLwXdKuJEgZFJTz34qtDKwY=
+	t=1733170285; cv=none; b=WgcJUIAkH/uWWAN6tGyPU5x1yDugTr2P6pVxvCbyx2ZUFxzqUwixbs4rQhb6bO9Z/3NxI3TsegsIe4Kibbdn6avcRZCXBkyEVo0bJVlLzDielxIhuhsA26O3PEptJrep/hizv9ZYsDt9ycdPcfm2sYCE44ISPkOGmBIL3B5tO3E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733166144; c=relaxed/simple;
-	bh=Z0h4ZU5IdA8MLG7R/DevJ7HuP4dynhwfphEzIsEpgUE=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=UMrGfFNdtAGxS7b/u/qf3derzZcLa4aPYwiN8ZlH9dKcj/wie5eFKCdjPiD9Iy6oc9MY1To6E418y1kmmHzGei6L9SAwa1sxKR2MSfXvRoECPEyhC7v4PMdRq/xqXh4c7JnYSWoQfpT0JPrrkdPf2CNCjL0BiEtBLdK9UJdyCrU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=DnWALlZl; arc=none smtp.client-ip=159.69.126.157
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
+	s=arc-20240116; t=1733170285; c=relaxed/simple;
+	bh=SMljyBQ3PqMcQzJYaV9af8KGCbtNNS53Chu22Ncphq0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=nBBTfEMU7pc1EG/P29M7xnWlcdR2wtX+qJfs31L62hcMnp7YwEK/l1dYefteE8V1NGz52nLviGegUV23lVtgi7XPp4NzOpG6ePo4BgAwMTchdq5E8MNjabTgqjJqmQhlkKW1yqg9D1HrcyZZxN3ueKk5zjnG/mrQvUzsNyJfwLE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aeyRCeFl; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="DnWALlZl"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1733166139;
-	bh=Z0h4ZU5IdA8MLG7R/DevJ7HuP4dynhwfphEzIsEpgUE=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=DnWALlZlflbrMuJygvQRNC1ziGST2Zo9fMRojnXzCabB+tglAvqABG9/EDZmfVVza
-	 Zta2HnH6SEywXShidZGOLnwgnPUvnymJmRrpc6JQt3sCemLxH8gnE1Z4jQhCxJuidk
-	 q++R7xR5dJoH9MY0Hut0IhpwmhmsZ4Y+R/k6WScs=
-From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Mon, 02 Dec 2024 20:02:20 +0100
-Subject: [PATCH 2/4] power: supply: ds2780: constify 'struct bin_attribute'
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aeyRCeFl"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A2B6EC4CEE6;
+	Mon,  2 Dec 2024 20:11:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1733170284;
+	bh=SMljyBQ3PqMcQzJYaV9af8KGCbtNNS53Chu22Ncphq0=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=aeyRCeFlzS8BVSHsJ1b+Wqm7uKsDHPtpp5BmQzLo8+0KNkeKpRHJIs59Y0il0iCrq
+	 dEwXZ8hfPouIy3sUmjzuhaR1LlBNpGjWeUTwSVcr5Nw1WXl2QU33pnqmMStZfzmUrm
+	 rj5tg9siqJAhIVWlAqpeZVOUBcu8Mk05Srq1mu4r+8WpvDRch9XjOzJ+GceM5/2+RH
+	 td4YUnndtY4ZYj5AL0VXaTko9Nyx1yVkVVsLO46OMXo57qGs2rWTuwL8KMBcrgjrBI
+	 hS+euXWtZvXZ/ns2UH4+Vp4O3vlgLoKbA1BTvVB0sgqHcFiDJ2dv+9Aw1GCsDiP5gO
+	 u7OcueoOvow9w==
+Received: by mail-oa1-f42.google.com with SMTP id 586e51a60fabf-2967af48248so2600017fac.2;
+        Mon, 02 Dec 2024 12:11:24 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCUfhCb7VjkQ5EyUGB7f1QStaxZnx0kYcJ8c56vcRr5h1eJPgbLsUv0nos7kkFv578RPt1qhiH9/wjA=@vger.kernel.org, AJvYcCXa8ScyXwgXsD4k+aje8zDrErcFlBiHzWPOTXSUGbGHeowLmup5lfm4OZMvxs+Snw/7yq4X1he9g9N7+y4=@vger.kernel.org
+X-Gm-Message-State: AOJu0YzKdTgc5jIK4KEMFI3bmyJk4oPEOddlfQDQBeMDoigSHwIZbsoQ
+	2HiQv0xsNqy8RPMOKE0AjYLLFrc0h4LtoePRoweD+lQlp0qNxXgVFDfpGHqNlIcWzlO9GeA7RCR
+	ipHq9E+20p3D/c/RRa4QyK7/9Igk=
+X-Google-Smtp-Source: AGHT+IFgRh61253Oj6tSR3cf+ytz9ae5vuuPL6lnL20jDldovYzN50pkQ1A9DqEGHJ9D+fk+pbtH1TODhdDW9iX0f6E=
+X-Received: by 2002:a05:6871:4098:b0:288:49a5:7562 with SMTP id
+ 586e51a60fabf-29dc4387a54mr14650275fac.41.1733170283894; Mon, 02 Dec 2024
+ 12:11:23 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20241202-sysfs-const-bin_attr-psy-v1-2-f846430b8b66@weissschuh.net>
-References: <20241202-sysfs-const-bin_attr-psy-v1-0-f846430b8b66@weissschuh.net>
-In-Reply-To: <20241202-sysfs-const-bin_attr-psy-v1-0-f846430b8b66@weissschuh.net>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1733166139; l=3753;
- i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=Z0h4ZU5IdA8MLG7R/DevJ7HuP4dynhwfphEzIsEpgUE=;
- b=IlF5wI4owF498zfnb+j16PVNeEG8Qvr5mIy1b4ojXCInXQQhBXtRNMlKDuilGbPZpv583U5yr
- 9cItBx43RJxAaWXkbTNMjeavqGXcmEbdcXUL42dB7KsZeXap1q7pbNG
-X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
- pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
+References: <20241114220921.2529905-1-saravanak@google.com> <20241114220921.2529905-3-saravanak@google.com>
+In-Reply-To: <20241114220921.2529905-3-saravanak@google.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Mon, 2 Dec 2024 21:11:12 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0jPO24JR5um0gv5U5AwiR_RHx37x6DisG-nUxaZt9gfGA@mail.gmail.com>
+Message-ID: <CAJZ5v0jPO24JR5um0gv5U5AwiR_RHx37x6DisG-nUxaZt9gfGA@mail.gmail.com>
+Subject: Re: [PATCH v1 2/5] PM: sleep: Remove unnecessary mutex lock when
+ waiting on parent
+To: Saravana Kannan <saravanak@google.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, 
+	Peter Zijlstra <peterz@infradead.org>, Juri Lelli <juri.lelli@redhat.com>, 
+	Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, 
+	Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>, 
+	Valentin Schneider <vschneid@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Marek Vasut <marex@denx.de>, 
+	Bird@google.com, Tim <Tim.Bird@sony.com>, kernel-team@android.com, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The sysfs core now allows instances of 'struct bin_attribute' to be
-moved into read-only memory. Make use of that to protect them against
-accidental or malicious modifications.
+Sorry for the delay.
 
-Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
----
- drivers/power/supply/ds2780_battery.c | 24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+On Thu, Nov 14, 2024 at 11:09=E2=80=AFPM Saravana Kannan <saravanak@google.=
+com> wrote:
+>
+> Locking is not needed to do get_device(dev->parent). We either get a NULL
+> (if the parent was cleared) or the actual parent. Also, when a device is
+> deleted (device_del()) and removed from the dpm_list, its completion
+> variable is also complete_all()-ed. So, we don't have to worry about
+> waiting indefinitely on a deleted parent device.
 
-diff --git a/drivers/power/supply/ds2780_battery.c b/drivers/power/supply/ds2780_battery.c
-index 1e7f297f6cb181e6ab7dc8e47b638aa43db8db97..dd9ac7a3296716d8ab72db56c1d9c0e439c3b2a9 100644
---- a/drivers/power/supply/ds2780_battery.c
-+++ b/drivers/power/supply/ds2780_battery.c
-@@ -621,7 +621,7 @@ static ssize_t ds2780_set_pio_pin(struct device *dev,
- 
- static ssize_t ds2780_read_param_eeprom_bin(struct file *filp,
- 				struct kobject *kobj,
--				struct bin_attribute *bin_attr,
-+				const struct bin_attribute *bin_attr,
- 				char *buf, loff_t off, size_t count)
- {
- 	struct device *dev = kobj_to_dev(kobj);
-@@ -634,7 +634,7 @@ static ssize_t ds2780_read_param_eeprom_bin(struct file *filp,
- 
- static ssize_t ds2780_write_param_eeprom_bin(struct file *filp,
- 				struct kobject *kobj,
--				struct bin_attribute *bin_attr,
-+				const struct bin_attribute *bin_attr,
- 				char *buf, loff_t off, size_t count)
- {
- 	struct device *dev = kobj_to_dev(kobj);
-@@ -654,19 +654,19 @@ static ssize_t ds2780_write_param_eeprom_bin(struct file *filp,
- 	return count;
- }
- 
--static struct bin_attribute ds2780_param_eeprom_bin_attr = {
-+static const struct bin_attribute ds2780_param_eeprom_bin_attr = {
- 	.attr = {
- 		.name = "param_eeprom",
- 		.mode = S_IRUGO | S_IWUSR,
- 	},
- 	.size = DS2780_PARAM_EEPROM_SIZE,
--	.read = ds2780_read_param_eeprom_bin,
--	.write = ds2780_write_param_eeprom_bin,
-+	.read_new = ds2780_read_param_eeprom_bin,
-+	.write_new = ds2780_write_param_eeprom_bin,
- };
- 
- static ssize_t ds2780_read_user_eeprom_bin(struct file *filp,
- 				struct kobject *kobj,
--				struct bin_attribute *bin_attr,
-+				const struct bin_attribute *bin_attr,
- 				char *buf, loff_t off, size_t count)
- {
- 	struct device *dev = kobj_to_dev(kobj);
-@@ -679,7 +679,7 @@ static ssize_t ds2780_read_user_eeprom_bin(struct file *filp,
- 
- static ssize_t ds2780_write_user_eeprom_bin(struct file *filp,
- 				struct kobject *kobj,
--				struct bin_attribute *bin_attr,
-+				const struct bin_attribute *bin_attr,
- 				char *buf, loff_t off, size_t count)
- {
- 	struct device *dev = kobj_to_dev(kobj);
-@@ -699,14 +699,14 @@ static ssize_t ds2780_write_user_eeprom_bin(struct file *filp,
- 	return count;
- }
- 
--static struct bin_attribute ds2780_user_eeprom_bin_attr = {
-+static const struct bin_attribute ds2780_user_eeprom_bin_attr = {
- 	.attr = {
- 		.name = "user_eeprom",
- 		.mode = S_IRUGO | S_IWUSR,
- 	},
- 	.size = DS2780_USER_EEPROM_SIZE,
--	.read = ds2780_read_user_eeprom_bin,
--	.write = ds2780_write_user_eeprom_bin,
-+	.read_new = ds2780_read_user_eeprom_bin,
-+	.write_new = ds2780_write_user_eeprom_bin,
- };
- 
- static DEVICE_ATTR(pmod_enabled, S_IRUGO | S_IWUSR, ds2780_get_pmod_enabled,
-@@ -726,7 +726,7 @@ static struct attribute *ds2780_sysfs_attrs[] = {
- 	NULL
- };
- 
--static struct bin_attribute *ds2780_sysfs_bin_attrs[] = {
-+static const struct bin_attribute *const ds2780_sysfs_bin_attrs[] = {
- 	&ds2780_param_eeprom_bin_attr,
- 	&ds2780_user_eeprom_bin_attr,
- 	NULL
-@@ -734,7 +734,7 @@ static struct bin_attribute *ds2780_sysfs_bin_attrs[] = {
- 
- static const struct attribute_group ds2780_sysfs_group = {
- 	.attrs = ds2780_sysfs_attrs,
--	.bin_attrs = ds2780_sysfs_bin_attrs,
-+	.bin_attrs_new = ds2780_sysfs_bin_attrs,
- };
- 
- static const struct attribute_group *ds2780_sysfs_groups[] = {
+The device_pm_initialized(dev) check before get_device(dev->parent)
+doesn't make sense without the locking and that's the whole point of
+it.
 
--- 
-2.47.1
+> Signed-off-by: Saravana Kannan <saravanak@google.com>
+> ---
+>  drivers/base/power/main.c | 13 ++-----------
+>  1 file changed, 2 insertions(+), 11 deletions(-)
+>
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 86e51b9fefab..9b9b6088e56a 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -284,18 +284,9 @@ static bool dpm_wait_for_superior(struct device *dev=
+, bool async)
+>          * counting the parent once more unless the device has been delet=
+ed
+>          * already (in which case return right away).
+>          */
+> -       mutex_lock(&dpm_list_mtx);
+> -
+> -       if (!device_pm_initialized(dev)) {
+> -               mutex_unlock(&dpm_list_mtx);
+> -               return false;
+> -       }
+> -
+>         parent =3D get_device(dev->parent);
+> -
+> -       mutex_unlock(&dpm_list_mtx);
+> -
+> -       dpm_wait(parent, async);
+> +       if (device_pm_initialized(dev))
+> +               dpm_wait(parent, async);
 
+This is racy, so what's the point?
+
+You can just do
+
+parent =3D get_device(dev->parent);
+dpm_wait(parent, async);
+
+and please update the comment above this.
+
+>         put_device(parent);
+>
+>         dpm_wait_for_suppliers(dev, async);
+> --
