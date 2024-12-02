@@ -1,176 +1,151 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7B2B1DDA0C;
-	Mon,  2 Dec 2024 21:15:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 966D11DDA0C;
+	Mon,  2 Dec 2024 21:15:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733174109; cv=none; b=FfYMz2NJNRNBRDvfazLxDThu3F69TU/vj9wlulvdPivL3xS91Z2pJwEY+xwB7TFJROLWyzWkt9XJuHTJgHikBUk5+iye8PvDz8kT/jMHCFe/3wKjVZNA6UPNCCh58F1ccMVpJ1w6s4RkN4p/3RbaLzpE3E+gFQUp4gZ3chRcWPY=
+	t=1733174126; cv=none; b=CizumGd+Kbeux4k5py8H3F/31KqjQcdRZ/CyxJi5oXjK5gJTwLKgCHAoS0gykEcO/WDyCAzHq0zZ+atobq2WNc4iOl0IxVVK3y0DNY8fJwEe/RhKv2jWpV2uy2ZadZ7QXxlShB1ZDNk+yBNNhZsLlcp5jAJXzWjxBnFw5Ei5el0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733174109; c=relaxed/simple;
-	bh=SHAxs9fQV/eBIXPxu+3Jt7SAedFs0FjlleS9+0O7wSQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=YQyvqdbZv1EhQmujaJaSlg57YSKwDQ9kLiEervWU+zjBvh9XFOeyVFUwCA7mrR43z0s3iUVF1olIftddesgNEvSWcn3Zs27/Zz9rfE04lvaXU/UQpZTVhMFy19B+Xl4+op0QBuykyOKnwiS/A5pAW9/eEc9EEhrdCJy0sUYRUs0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=R3L8ihzS; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1733174126; c=relaxed/simple;
+	bh=3ncebkoMfB2c4jQJI85u71Oo6G7lqbdbWKatLiOZuBo=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=BJzs+rKLJ3o2GRHZsiS29aNKRHnICvSEmUXwSmn0SUebRPMmDwBdmlvfqNFzBKYAB2ghlqtkeP7/6Mo0Ik6m4RU4mhpCklsYFL3j4FrUs/jtb9eYkoU3E0oJ74FaqolRaY/YzAIafBlQhaw56U6Jg61UPPt7iNVHi+nQ+3t10Zc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=CxAuzfTS; arc=none smtp.client-ip=198.47.19.141
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="R3L8ihzS"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4668CC4CED2;
-	Mon,  2 Dec 2024 21:15:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1733174109;
-	bh=SHAxs9fQV/eBIXPxu+3Jt7SAedFs0FjlleS9+0O7wSQ=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=R3L8ihzS1S/yrHy8gD7aOsrncK3vhvBVo+4XlMkeTgi/J8r2/bCao8Yv5jTrlk9LP
-	 If/TXwEYUZOVFsk3rI4u0L5O4KbnQETjjecZhVy2OfEqMKsGLraJCgRJj28WbsHSM0
-	 Y0CkGI50f3tobmlNFBfZDkCExkBbDiaAR4fOZxueq3DkX+2CzY6+Joy40S4cqoYax1
-	 k5sqEFva9SqWmoc3GT6oxLH4KjaFuyfdCmu4UTxNlMT4hsFnvr/UD5/JCyYw4LcrcI
-	 hJT1U+8wJdXWfvt7OOy6WA+88nqjuL80TVwtuovi/ucea0B2W4O76+UUc1BYNDHa7F
-	 lhjdH91zD+aog==
-Received: by mail-oa1-f53.google.com with SMTP id 586e51a60fabf-29737adb604so2578391fac.1;
-        Mon, 02 Dec 2024 13:15:09 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCV/d15iiQPnKbqfrvsW0M3aTXGQ5A+1BKO9+lHhSHBn2VzFLgy8RncUbpzI48kQ3VQVKIE9+oRWFUq20ec=@vger.kernel.org, AJvYcCWfpC61ZIkLAY/OHp7Xwz2Ktr2Sj0jpR7j3IeNR4Z+8qAv69kyrzvWJ9EpV43NVuSp0/jBUx4PJUBY=@vger.kernel.org
-X-Gm-Message-State: AOJu0YxMQdGzRC7XOQtPoGfAJ7vglvArhdxo5rWLYcEUd0HFD7lGRatC
-	kywaaPst5UVhlRDMCD9J8vLxqi/k0wTfCk4ugTGclIEVReFZaPgRgeD1Yzdf4k7omHb0LnqCU7d
-	VgYYM8WwskOtABhyUOQa0kiwb1+M=
-X-Google-Smtp-Source: AGHT+IEzj7J5M5in46m+yKOUto4QjDW1GF6V1FXByl1UytxQkM6ePfkXX/gwUGianPCiT0bLJ1YG4ZoMv1ux+SOLnPo=
-X-Received: by 2002:a05:6870:5d88:b0:29e:5c37:a1c3 with SMTP id
- 586e51a60fabf-29e5c37ca25mr6585322fac.2.1733174108372; Mon, 02 Dec 2024
- 13:15:08 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="CxAuzfTS"
+Received: from lelv0265.itg.ti.com ([10.180.67.224])
+	by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 4B2LFLRm042457;
+	Mon, 2 Dec 2024 15:15:21 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+	s=ti-com-17Q1; t=1733174121;
+	bh=wzPxvMfl6rsFcnkrTUvkGRDue9AJCUJzhDr7f9CnFj0=;
+	h=From:To:CC:Subject:Date:In-Reply-To:References;
+	b=CxAuzfTSWrziMID/wm6ZmpPLNiod7vWoJ5fjaz/FCKM4564CXfkeUrdDXMoZJ0VQd
+	 vlsyY3tfUVc9UFMYEP7yiZTudPHCFivYZtoEtUlGuGL9EXasKV0qt5bm1Yxu92NGFy
+	 y0uQan1TX7DwZQVsuNMJNBh5mQesBBpNdzsF1EL4=
+Received: from DFLE109.ent.ti.com (dfle109.ent.ti.com [10.64.6.30])
+	by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 4B2LFL3Q010171
+	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+	Mon, 2 Dec 2024 15:15:21 -0600
+Received: from DFLE105.ent.ti.com (10.64.6.26) by DFLE109.ent.ti.com
+ (10.64.6.30) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Mon, 2
+ Dec 2024 15:15:20 -0600
+Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DFLE105.ent.ti.com
+ (10.64.6.26) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
+ Frontend Transport; Mon, 2 Dec 2024 15:15:21 -0600
+Received: from fllvsmtp7.itg.ti.com ([10.249.42.149])
+	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 4B2LFKgp099805;
+	Mon, 2 Dec 2024 15:15:20 -0600
+From: Andrew Davis <afd@ti.com>
+To: Sebastian Reichel <sre@kernel.org>
+CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        Andrew Davis
+	<afd@ti.com>
+Subject: [PATCH 2/5] power: supply: ds2782: Free IDA with devm action
+Date: Mon, 2 Dec 2024 15:15:16 -0600
+Message-ID: <20241202211519.199635-2-afd@ti.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20241202211519.199635-1-afd@ti.com>
+References: <20241202211519.199635-1-afd@ti.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20241114220921.2529905-1-saravanak@google.com>
- <20241114220921.2529905-3-saravanak@google.com> <CAJZ5v0jPO24JR5um0gv5U5AwiR_RHx37x6DisG-nUxaZt9gfGA@mail.gmail.com>
- <CAJZ5v0iLq9L5nMp13BrBmbWavFs1ZEAtJ-WeyRzv3D2GXPNuag@mail.gmail.com> <CAGETcx-9XSdXcuGQFSoS-mMPwp=UJ3_FfTJ1Cx+9jddyjYTKEg@mail.gmail.com>
-In-Reply-To: <CAGETcx-9XSdXcuGQFSoS-mMPwp=UJ3_FfTJ1Cx+9jddyjYTKEg@mail.gmail.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 2 Dec 2024 22:14:57 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0iWCWdjP9Gku2uV0Qz-Hp6ZEHDspaPVzHPPzHfvyREeWA@mail.gmail.com>
-Message-ID: <CAJZ5v0iWCWdjP9Gku2uV0Qz-Hp6ZEHDspaPVzHPPzHfvyREeWA@mail.gmail.com>
-Subject: Re: [PATCH v1 2/5] PM: sleep: Remove unnecessary mutex lock when
- waiting on parent
-To: Saravana Kannan <saravanak@google.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, 
-	Peter Zijlstra <peterz@infradead.org>, Juri Lelli <juri.lelli@redhat.com>, 
-	Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, 
-	Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>, 
-	Valentin Schneider <vschneid@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Marek Vasut <marex@denx.de>, 
-	Bird@google.com, Tim <Tim.Bird@sony.com>, kernel-team@android.com, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
 
-On Mon, Dec 2, 2024 at 9:46=E2=80=AFPM Saravana Kannan <saravanak@google.co=
-m> wrote:
->
-> On Mon, Dec 2, 2024 at 12:16=E2=80=AFPM Rafael J. Wysocki <rafael@kernel.=
-org> wrote:
-> >
-> > On Mon, Dec 2, 2024 at 9:11=E2=80=AFPM Rafael J. Wysocki <rafael@kernel=
-.org> wrote:
-> > >
-> > > Sorry for the delay.
-> > >
-> > > On Thu, Nov 14, 2024 at 11:09=E2=80=AFPM Saravana Kannan <saravanak@g=
-oogle.com> wrote:
-> > > >
-> > > > Locking is not needed to do get_device(dev->parent). We either get =
-a NULL
-> > > > (if the parent was cleared) or the actual parent. Also, when a devi=
-ce is
-> > > > deleted (device_del()) and removed from the dpm_list, its completio=
-n
-> > > > variable is also complete_all()-ed. So, we don't have to worry abou=
-t
-> > > > waiting indefinitely on a deleted parent device.
-> > >
-> > > The device_pm_initialized(dev) check before get_device(dev->parent)
-> > > doesn't make sense without the locking and that's the whole point of
-> > > it.
-> >
-> > Hmm, not really.
-> >
-> > How is the parent prevented from going away in get_device() right
-> > after the initial dev check without the locking?
->
-> Not sure what you mean by "go away"? But get_device() is going to keep
-> a non-zero refcount on the parent so that struct doesn't get freed.
+This helps prevent mistakes like freeing out of order in cleanup functions
+and forgetting to free on error paths.
 
-That's after it has returned.
+Signed-off-by: Andrew Davis <afd@ti.com>
+---
+ drivers/power/supply/ds2782_battery.c | 23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
 
-There is nothing to prevent dev from being freed in get_device()
-itself before the kobject_get(&dev->kobj) call.
+diff --git a/drivers/power/supply/ds2782_battery.c b/drivers/power/supply/ds2782_battery.c
+index 10428d781c18b..28ad11c8f82de 100644
+--- a/drivers/power/supply/ds2782_battery.c
++++ b/drivers/power/supply/ds2782_battery.c
+@@ -57,7 +57,6 @@ struct ds278x_info {
+ 	struct power_supply_desc	battery_desc;
+ 	const struct ds278x_battery_ops *ops;
+ 	struct delayed_work	bat_work;
+-	int			id;
+ 	int                     rsns;
+ 	int			capacity;
+ 	int			status;		/* State Of Charge */
+@@ -314,14 +313,11 @@ static void ds278x_power_supply_init(struct power_supply_desc *battery)
+ static void ds278x_battery_remove(struct i2c_client *client)
+ {
+ 	struct ds278x_info *info = i2c_get_clientdata(client);
+-	int id = info->id;
+ 
+ 	power_supply_unregister(info->battery);
+ 	cancel_delayed_work_sync(&info->bat_work);
+ 	kfree(info->battery_desc.name);
+ 	kfree(info);
+-
+-	ida_free(&battery_id, id);
+ }
+ 
+ #ifdef CONFIG_PM_SLEEP
+@@ -365,6 +361,13 @@ static const struct ds278x_battery_ops ds278x_ops[] = {
+ 	}
+ };
+ 
++static void ds278x_free_ida(void *data)
++{
++	int num = (uintptr_t)data;
++
++	ida_free(&battery_id, num);
++}
++
+ static int ds278x_battery_probe(struct i2c_client *client)
+ {
+ 	const struct i2c_device_id *id = i2c_client_get_device_id(client);
+@@ -387,12 +390,13 @@ static int ds278x_battery_probe(struct i2c_client *client)
+ 	num = ida_alloc(&battery_id, GFP_KERNEL);
+ 	if (num < 0)
+ 		return num;
++	ret = devm_add_action_or_reset(&client->dev, ds278x_free_ida, (void *)(uintptr_t)num);
++	if (ret)
++		return ret;
+ 
+ 	info = kzalloc(sizeof(*info), GFP_KERNEL);
+-	if (!info) {
+-		ret = -ENOMEM;
+-		goto fail_info;
+-	}
++	if (!info)
++		return -ENOMEM;
+ 
+ 	info->battery_desc.name = kasprintf(GFP_KERNEL, "%s-%d",
+ 					    client->name, num);
+@@ -406,7 +410,6 @@ static int ds278x_battery_probe(struct i2c_client *client)
+ 
+ 	i2c_set_clientdata(client, info);
+ 	info->client = client;
+-	info->id = num;
+ 	info->ops  = &ds278x_ops[id->driver_data];
+ 	ds278x_power_supply_init(&info->battery_desc);
+ 	psy_cfg.drv_data = info;
+@@ -432,8 +435,6 @@ static int ds278x_battery_probe(struct i2c_client *client)
+ 	kfree(info->battery_desc.name);
+ fail_name:
+ 	kfree(info);
+-fail_info:
+-	ida_free(&battery_id, num);
+ 	return ret;
+ }
+ 
+-- 
+2.39.2
 
-So when get_device() is called, there needs to be an active ref on the
-device already or something else to prevent the target device object
-from being freed.
-
-In this particular case it is the lock along with the
-device_pm_initialized(dev) check on the child.
-
-> The parent itself can still "go away" in terms of unbinding or
-> removing the children from the dpm_list(). But that's what the
-> device_pm_initialized() check is for. When a device_del() is called,
-> it's removed from the dpm_list. The actual freeing comes later. But we
-> aren't/weren't checking for that anyway.
->
-> >
-> > > > Signed-off-by: Saravana Kannan <saravanak@google.com>
-> > > > ---
-> > > >  drivers/base/power/main.c | 13 ++-----------
-> > > >  1 file changed, 2 insertions(+), 11 deletions(-)
-> > > >
-> > > > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> > > > index 86e51b9fefab..9b9b6088e56a 100644
-> > > > --- a/drivers/base/power/main.c
-> > > > +++ b/drivers/base/power/main.c
-> > > > @@ -284,18 +284,9 @@ static bool dpm_wait_for_superior(struct devic=
-e *dev, bool async)
-> > > >          * counting the parent once more unless the device has been=
- deleted
-> > > >          * already (in which case return right away).
-> > > >          */
-> > > > -       mutex_lock(&dpm_list_mtx);
-> > > > -
-> > > > -       if (!device_pm_initialized(dev)) {
-> > > > -               mutex_unlock(&dpm_list_mtx);
-> > > > -               return false;
-> > > > -       }
-> > > > -
-> > > >         parent =3D get_device(dev->parent);
-> > > > -
-> > > > -       mutex_unlock(&dpm_list_mtx);
-> > > > -
-> > > > -       dpm_wait(parent, async);
-> > > > +       if (device_pm_initialized(dev))
-> > > > +               dpm_wait(parent, async);
-> > >
-> > > This is racy, so what's the point?
-> > >
-> > > You can just do
-> > >
-> > > parent =3D get_device(dev->parent);
-> > > dpm_wait(parent, async);
->
-> Parent struct device being there isn't the same as whether this device
-> is in the dpm_list? So, shouldn't we still check this?
->
-> Also, is it really racy anymore with the new algorithm? We don't kick
-> off the subordinates until after the parent is done.
->
-> > >
-> > > and please update the comment above this.
->
-> Will do.
->
-> Thanks,
-> Saravana
-> > >
-> > > >         put_device(parent);
-> > > >
-> > > >         dpm_wait_for_suppliers(dev, async);
-> > > > --
