@@ -1,161 +1,122 @@
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Received: from coelho.fi (coelho.fi [88.99.146.29])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7DFF218FDC9
-	for <linux-pm@vger.kernel.org>; Tue,  3 Dec 2024 08:25:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 758081CCECC
+	for <linux-pm@vger.kernel.org>; Tue,  3 Dec 2024 08:26:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=88.99.146.29
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733214308; cv=none; b=UXBA8MUddN5KxNGwjl6eoMvSlM7AnSuaHo9NCeI/WIL9Rk3+4lcRoDpGtdGSXMha4FRx+wz0ZKiWoZ/oqZpN2u2DyeAm4iPPhfi/31Xl6BuwA+obwdqTxwGEk8ktVcMWtskzTlp3YWYx4H5MfKvdVPP5wZVq8/E+o4CnG0xTP8I=
+	t=1733214411; cv=none; b=RozdAE7uy6JwCf13MrfAJZ4Iyfa7hPj89Edc1t48LpI8m5HTO03bRvdqfDmuc5KaJS7Hs4nw2icJfCbcYELpB721GdWPIVV+ZoEnt7B72ptKNuvjeQtLTTf6jTV8jeH5b4ZlR7Sl5cTI8wRPmx32z5Td+bdSWrkHXFFFCrPb/Fs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733214308; c=relaxed/simple;
-	bh=teX4mb1jPQ2CVPW1mtArPbbk7sHjrq60MC03+FzvSAA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MzIbNiFZxkRN5lnXondolxAsMK+aTXba5ljFWEI/0R2e0Gd1CIXGQ//k/DEoZeKFAgt6M+tr7SzORSOuJm1wknMl/4BrWyg5LGlBx4CKDrJ6rh1edcEz1idJSaJvY1a8VkSC9kWErOrZDskLgBy0sFNA6t2FTASQIviz++ut6LA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=OcqWM21b; arc=none smtp.client-ip=159.69.126.157
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="OcqWM21b"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1733214301;
-	bh=teX4mb1jPQ2CVPW1mtArPbbk7sHjrq60MC03+FzvSAA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=OcqWM21bDQTqWp/lWSrqZBmsc3AdZWag5EgBmDRnR3lt/s3ufgUPU6axe3AwOlTc/
-	 CUmvNV/DDf2MXlGtn8OBYcu+au/hLNXHqZ8fnUbwig6Etvp9NPWAgdRx7XWCGPGSjH
-	 8/h2heoLpURJKUK+D5NZSol8kNxxfH0ig2RP2ozk=
-Date: Tue, 3 Dec 2024 09:25:00 +0100
-From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
-To: Luca Coelho <luca@coelho.fi>
-Cc: "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>, 
-	"Kurmi, Suresh Kumar" <suresh.kumar.kurmi@intel.com>, "Coelho, Luciano" <luciano.coelho@intel.com>, 
-	"Saarinen, Jani" <jani.saarinen@intel.com>, "Nikula, Jani" <jani.nikula@intel.com>, 
-	"De Marchi, Lucas" <lucas.demarchi@intel.com>, 
-	"intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>, 
-	"intel-xe@lists.freedesktop.org" <intel-xe@lists.freedesktop.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, 
-	Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: Regression on linux-next (next-20241120) and drm-tip
-Message-ID: <82f1c285-ae2c-4a41-af10-016b52c149c1@t-8ch.de>
-References: <SJ1PR11MB6129CCD82CD78D8EE6E27EF4B9362@SJ1PR11MB6129.namprd11.prod.outlook.com>
- <SJ1PR11MB612965ACA3E84745346F0400B9362@SJ1PR11MB6129.namprd11.prod.outlook.com>
- <5e405ad4-34d6-4507-978f-3d81d4af2455@t-8ch.de>
- <7a84d900879c555dab675605ba925bc91b02510d.camel@coelho.fi>
+	s=arc-20240116; t=1733214411; c=relaxed/simple;
+	bh=0ZY1G3tgW/X7ZuOB8dy9YU3yOMA3LpFGGJSuCzl8agI=;
+	h=Message-ID:From:To:Cc:Date:In-Reply-To:References:Content-Type:
+	 MIME-Version:Subject; b=VUXsKqeKdlxvcBi5bdXPXCzi1/LwOjGTCz+OPEdRJ5pWoFbxI0hKfocknVd+bahfiq9ewkw21tjbsXPnomiTvuBEBY/4Xh9nt2Q+dard3ezKC5UGkS+G7HEChLVA7F7FSrdLN1bgYVk+1Lze3P3Pc8LlZ4LudA8QVnQAQfp2vt8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=coelho.fi; spf=pass smtp.mailfrom=coelho.fi; arc=none smtp.client-ip=88.99.146.29
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=coelho.fi
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=coelho.fi
+Received: from 91-155-254-6.elisa-laajakaista.fi ([91.155.254.6] helo=[192.168.100.137])
+	by coelho.fi with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.97)
+	(envelope-from <luca@coelho.fi>)
+	id 1tINfb-00000002bL6-0JDg;
+	Tue, 03 Dec 2024 09:50:08 +0200
+Message-ID: <7a84d900879c555dab675605ba925bc91b02510d.camel@coelho.fi>
+From: Luca Coelho <luca@coelho.fi>
+To: Thomas =?ISO-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>, "Borah,
+ Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>
+Cc: "Kurmi, Suresh Kumar" <suresh.kumar.kurmi@intel.com>, "Coelho, Luciano"	
+ <luciano.coelho@intel.com>, "Saarinen, Jani" <jani.saarinen@intel.com>, 
+ "Nikula, Jani" <jani.nikula@intel.com>, "De Marchi, Lucas"
+ <lucas.demarchi@intel.com>,  "intel-gfx@lists.freedesktop.org"	
+ <intel-gfx@lists.freedesktop.org>, "intel-xe@lists.freedesktop.org"	
+ <intel-xe@lists.freedesktop.org>, "linux-pm@vger.kernel.org"	
+ <linux-pm@vger.kernel.org>, Sebastian Reichel
+ <sebastian.reichel@collabora.com>
+Date: Tue, 03 Dec 2024 09:50:05 +0200
+In-Reply-To: <5e405ad4-34d6-4507-978f-3d81d4af2455@t-8ch.de>
+References: 
+	<SJ1PR11MB6129CCD82CD78D8EE6E27EF4B9362@SJ1PR11MB6129.namprd11.prod.outlook.com>
+	 <SJ1PR11MB612965ACA3E84745346F0400B9362@SJ1PR11MB6129.namprd11.prod.outlook.com>
+	 <5e405ad4-34d6-4507-978f-3d81d4af2455@t-8ch.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.54.1-1 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <7a84d900879c555dab675605ba925bc91b02510d.camel@coelho.fi>
+X-Spam-Level: 
+Subject: Re: Regression on linux-next (next-20241120) and drm-tip
 
-On 2024-12-03 09:50:05+0200, Luca Coelho wrote:
-> On Tue, 2024-12-03 at 07:50 +0100, Thomas Weißschuh wrote:
-> > (+Cc Sebastian)
-> > 
-> > Hi Chaitanya,
-> > 
-> > On 2024-12-03 05:07:47+0000, Borah, Chaitanya Kumar wrote:
-> > > Hope you are doing well. I am Chaitanya from the linux graphics team in Intel.
-> > > 
-> > > This mail is regarding a regression we are seeing in our CI runs[1] on linux-next repository.
-> > 
-> > Thanks for the report.
-> > 
-> > > Since the version next-20241120 [2], we are seeing the following regression
-> > > 
-> > > `````````````````````````````````````````````````````````````````````````````````
-> > > <4>[   19.990743] Oops: general protection fault, probably for non-canonical address 0xb11675ef8d1ccbce: 0000 [#1] PREEMPT SMP NOPTI
-> > > <4>[   19.990760] CPU: 21 UID: 110 PID: 867 Comm: prometheus-node Not tainted 6.12.0-next-20241120-next-20241120-gac24e26aa08f+ #1
-> > > <4>[   19.990771] Hardware name: Intel Corporation Arrow Lake Client Platform/MTL-S UDIMM 2DPC EVCRB, BIOS MTLSFWI1.R00.4400.D85.2410100007 10/10/2024
-> > > <4>[   19.990782] RIP: 0010:power_supply_get_property+0x3e/0xe0
-> > > `````````````````````````````````````````````````````````````````````````````````
-> > > Details log can be found in [3]. 
-> > > 
-> > > After bisecting the tree, the following patch [4] seems to be the first "bad"
-> > > commit
-> > > 
-> > > `````````````````````````````````````````````````````````````````````````````````````````````````````````
-> > > Commit 49000fee9e639f62ba1f965ed2ae4c5ad18d19e2
-> > > Author:     Thomas Weißschuh <mailto:linux@weissschuh.net>
-> > > AuthorDate: Sat Oct 5 12:05:03 2024 +0200
-> > > Commit:     Sebastian Reichel <mailto:sebastian.reichel@collabora.com>
-> > > CommitDate: Tue Oct 15 22:22:20 2024 +0200
-> > >     power: supply: core: add wakeup source inhibit by power_supply_config    
-> > > `````````````````````````````````````````````````````````````````````````````````````````````````````````
-> > > 
-> > > This is now seen in our drm-tip runs as well. [5]
-> > > 
-> > > Could you please check why the patch causes this regression and provide a fix if necessary?
-> > 
-> > I don't see how this patch can lead to this error.
-> > Could you doublecheck the bisect?
-> 
-> FWIW I also bisected this and came to the same conclusion, this is the
-> first bad commit.  My guess is that some component is not yet setting
-> things up properly for the new feature.
+Hi,
 
-The thing is that at this point nothing is using this feature.
-And the new code runs during registration while the error happens later.
+On Tue, 2024-12-03 at 07:50 +0100, Thomas Wei=C3=9Fschuh wrote:
+> (+Cc Sebastian)
+>=20
+> Hi Chaitanya,
+>=20
+> On 2024-12-03 05:07:47+0000, Borah, Chaitanya Kumar wrote:
+> > Hope you are doing well. I am Chaitanya from the linux graphics team in=
+ Intel.
+> >=20
+> > This mail is regarding a regression we are seeing in our CI runs[1] on =
+linux-next repository.
+>=20
+> Thanks for the report.
+>=20
+> > Since the version next-20241120 [2], we are seeing the following regres=
+sion
+> >=20
+> > ```````````````````````````````````````````````````````````````````````=
+``````````
+> > <4>[=C2=A0=C2=A0 19.990743] Oops: general protection fault, probably fo=
+r non-canonical address 0xb11675ef8d1ccbce: 0000 [#1] PREEMPT SMP NOPTI
+> > <4>[=C2=A0=C2=A0 19.990760] CPU: 21 UID: 110 PID: 867 Comm: prometheus-=
+node Not tainted 6.12.0-next-20241120-next-20241120-gac24e26aa08f+ #1
+> > <4>[=C2=A0=C2=A0 19.990771] Hardware name: Intel Corporation Arrow Lake=
+ Client Platform/MTL-S UDIMM 2DPC EVCRB, BIOS MTLSFWI1.R00.4400.D85.2410100=
+007 10/10/2024
+> > <4>[=C2=A0=C2=A0 19.990782] RIP: 0010:power_supply_get_property+0x3e/0x=
+e0
+> > ```````````````````````````````````````````````````````````````````````=
+``````````
+> > Details log can be found in [3].=20
+> >=20
+> > After bisecting the tree, the following patch [4] seems to be the first=
+ "bad"
+> > commit
+> >=20
+> > ```````````````````````````````````````````````````````````````````````=
+``````````````````````````````````
+> > Commit 49000fee9e639f62ba1f965ed2ae4c5ad18d19e2
+> > Author: =C2=A0 =C2=A0 Thomas Wei=C3=9Fschuh <mailto:linux@weissschuh.ne=
+t>
+> > AuthorDate: Sat Oct 5 12:05:03 2024 +0200
+> > Commit: =C2=A0 =C2=A0 Sebastian Reichel <mailto:sebastian.reichel@colla=
+bora.com>
+> > CommitDate: Tue Oct 15 22:22:20 2024 +0200
+> > =C2=A0 =C2=A0 power: supply: core: add wakeup source inhibit by power_s=
+upply_config=C2=A0 =C2=A0=C2=A0
+> > ```````````````````````````````````````````````````````````````````````=
+``````````````````````````````````
+> >=20
+> > This is now seen in our drm-tip runs as well. [5]
+> >=20
+> > Could you please check why the patch causes this regression and provide=
+ a fix if necessary?
+>=20
+> I don't see how this patch can lead to this error.
+> Could you doublecheck the bisect?
 
-> This is very easily reproducible in our system, with vanila 6.13-rc1,
-> so if there's anything you want to try, let us know.
+FWIW I also bisected this and came to the same conclusion, this is the
+first bad commit.  My guess is that some component is not yet setting
+things up properly for the new feature.
 
-Can you try the following diffs, each alone on top of
-49000fee9e639f62ba1f965ed2ae4c5ad18d19e2?
+This is very easily reproducible in our system, with vanilla 6.13-rc1,
+so if there's anything you want to try, let us know.
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index a2005e3c6f38..c6e7ca5b1283 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -1411,7 +1411,7 @@ __power_supply_register(struct device *parent,
-                goto device_add_failed;
-
-        if (cfg && cfg->no_wakeup_source)
--               ws = false;
-+               ;
-
-        rc = device_init_wakeup(dev, ws);
-        if (rc)
-
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index a2005e3c6f38..5aefba2ddcda 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -1410,9 +1410,6 @@ __power_supply_register(struct device *parent,
-        if (rc)
-                goto device_add_failed;
-
--       if (cfg && cfg->no_wakeup_source)
--               ws = false;
--
-        rc = device_init_wakeup(dev, ws);
-        if (rc)
-                goto wakeup_init_failed;
-
-
-Could you also print the name of the device?
-
-
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index a2005e3c6f38..63e9e339cc01 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -1356,6 +1356,8 @@ __power_supply_register(struct device *parent,
-                pr_warn("%s: Expected proper parent device for '%s'\n",
-                        __func__, desc->name);
-
-+       pr_warn("PSY: name=%s\n", desc->name);
-+
-        psy = kzalloc(sizeof(*psy), GFP_KERNEL);
-        if (!psy)
-                return ERR_PTR(-ENOMEM);
-
-
-Also line numbers would be useful.
-Is this configuration running KASAN?
-
-
-Thanks a lot,
-Thomas
+--
+Cheers,
+Luca.
