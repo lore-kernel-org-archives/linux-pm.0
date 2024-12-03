@@ -1,185 +1,129 @@
-Received: from mail-lf1-f49.google.com (mail-lf1-f49.google.com [209.85.167.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 273271F76AE
-	for <linux-pm@vger.kernel.org>; Tue,  3 Dec 2024 15:36:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B2151F755B;
+	Tue,  3 Dec 2024 15:41:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733240213; cv=none; b=O3teNs6dLX5ss6DChe1G6c6LXCBpRyqWlKKx3wbPyvSqFZZBR9f5VIXNACX/r05JwLB+lj5rKOwwIno+Se//C5HoivY/Gn6xJi99LS05+L4P8S024CDGMn86BIaDpqckzVqsPxj1Uh07gXGQh+iYfAinshUh3e4PfhP30aykynI=
+	t=1733240513; cv=none; b=kKFW0wl88ysJFbRsLX0bJK7DUpQdkKTbRmNwC1s2RbygGg65rCx5RQE8pokCBp6nVtlAHAHJcj67jKOSbP38SVJ6fAsYuxpYToF1T4/YjBEuNNFTVIRQJTPaSKXo/4j2qT/Nl3eaewmLpzU4FcCL1HIzYxTTYQSFMDgqTVUAFDc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733240213; c=relaxed/simple;
-	bh=8cI36BzhHV8HgXQu/TVym++uvxOl9i6AEwSINrhZjEY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=DytggueFm/uyexVtxQvKOIBuS+k7f7ghcDYCxDBwDKP4HEEfExh7ghnt18tQ4ihcsfKywiphU8ZtYrGtsBbNIeo9qRoqu+4YESyhOITz8+M8QX3g5eGKgbWQbl/+3Jz2p2cU1b4aaDoqc9JnbrdESTvu+NKeZ76aIpzlf6kHyN4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=csie.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.167.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=csie.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-53df80eeeedso5876567e87.2
-        for <linux-pm@vger.kernel.org>; Tue, 03 Dec 2024 07:36:50 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1733240209; x=1733845009;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :reply-to:in-reply-to:references:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=Dh6O5hcOma4p8AZfLng5WyXnPkEX/xU+8B4IUyvO9lw=;
-        b=j5kgLFJLDG2pSrHlE8yT58OqeSJyPXW2PGNa0xDFbK9jOS6BSyzz3DUVLw3IP6D94B
-         yTDeM+b3Bn2wmowhE36UDFZo5XNbtPAupTZmRgFSARSV4ZzUUPB75InTaAO8zZwVDCdC
-         biBD3OylgyLZrmtamek/Uvs8XhrRRp1C/8DxXXoNnY9eKH44GURMzok6pdbxAiLq2x5o
-         12yWKOr4zd6k90CPZYeS3rLFENZSLyuR3n12j3GkyACWlZQpYV9Fb+T+OiV56WVjC5Yi
-         0qnmHviXPFWV8NWliKdFePntKO1qV/7gB0raiwpRBaTRBxmCxXoHvzCoMQ3JuD+wDigi
-         cOvQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXsJotkJCQ0aRuUg3VecawT0ffkojUZ3BWql2TdAYy3QJD2dtVLSretIYJ+ML51rRQFdCzEB7HAOQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx5FoY64FP+vIEWUh/58uyYub5bf2tW9ArRIfB09xdeCAVbAFZQ
-	EEGxqC5+SOxyhbGvvR+fkbxjt0Hi7sWhWTqm/UdY1VunJQXQeVCdfnZzi43z
-X-Gm-Gg: ASbGncvzdwBKDYSRKZZZZ7E04lzYia2wdZq5kIbohOn21AaBlQkF+27VMCIhLTENQHE
-	zn0YEVr8BbrOupYZe2sbYRkv9L8owXcp6LRLmrVaJX2RwxXptqIl+Am6H/AEM3mgDOnDWO8I3Ct
-	Vx0ysmpTFc48gD3F1HKA3GoE5F53Zwe/GTaUGij/2cTuBI7FQhlY1BVHlwGpd6OZa9jQiI4EtcY
-	5nG2L1y3DEExVsGdHwFWuTaoc17F3Bu/ewTrjzM5EichwXbb0Pt2vyCH6ZMBkzaCpM63ex8ElGx
-	qecbceo=
-X-Google-Smtp-Source: AGHT+IE+Wf9keFJpx6nSTScWO55cEngwZlrKSXVCpLy8rkukzvtKU6oUShnToXWQzTo8E/pJJneeRw==
-X-Received: by 2002:a05:6512:3c8c:b0:53d:ed63:4bdf with SMTP id 2adb3069b0e04-53e12a079fcmr1553903e87.34.1733240208644;
-        Tue, 03 Dec 2024 07:36:48 -0800 (PST)
-Received: from mail-lj1-f171.google.com (mail-lj1-f171.google.com. [209.85.208.171])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-53e1ba299dbsm44960e87.109.2024.12.03.07.36.48
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 03 Dec 2024 07:36:48 -0800 (PST)
-Received: by mail-lj1-f171.google.com with SMTP id 38308e7fff4ca-2ffdf564190so65724701fa.3
-        for <linux-pm@vger.kernel.org>; Tue, 03 Dec 2024 07:36:48 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCXOmNcDX8ILaFePMRif+L9iHe81+pmKuiS9UjPLnJP6m37SJ/pcy7wVeMGf3VP826bFCCYaAOWomg==@vger.kernel.org
-X-Received: by 2002:a2e:bc83:0:b0:2fb:955e:5c17 with SMTP id
- 38308e7fff4ca-30009cc52cfmr17349571fa.40.1733240208287; Tue, 03 Dec 2024
- 07:36:48 -0800 (PST)
+	s=arc-20240116; t=1733240513; c=relaxed/simple;
+	bh=VyAdMxSYG+cl45PhOpWPbrnYSr+SfukqYZMo12P6x78=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Y5FyychLDhCGB2EYtX6PtZypPzE07UAJ5KLY3XJi+fmCS+MVyHO7BttZjo1gGaLp4+8Eqmw0MzYUFAVPuf+Is1rPZE5pSFZ9Jsg/AJ4NuiaTb7M/PulTcu5bN4IGcGi4mNKPKjsM5TdIlGEfDDhpHPRuLnz/NvZz/GfVEWQ4Fpg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YvHU+quh; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YvHU+quh"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5B0B7C4CED6;
+	Tue,  3 Dec 2024 15:41:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1733240512;
+	bh=VyAdMxSYG+cl45PhOpWPbrnYSr+SfukqYZMo12P6x78=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=YvHU+quh/Q3xeeBQ3KUKeCqM8UWiDuQYe0SqnXFhj94mQ2T3rM2ELnQXjJJburTcH
+	 B8ngd0ILz4lRv5abztXP4x37jqbg4U/yqVxdNL2ib9d7/+Z62VHW998vYIawPO5MhG
+	 9Zty7IDG05pIHd3RiuWBGfzwaOgaJbxH87GmdkblKHN1J38XTnYP5qvN9CNNtBYvqR
+	 ETouzXeRIkebGiJhpSSAG6ICCt7jdCPKwM+R5O47ZNao8NhZe4yPYkaO+nZKg4HcVn
+	 CER1WGmX2q38uOrTf78XbytTRdE2NNt65a9NkL46lgYQeRFziUWG+eem9zMoCExiVe
+	 PQ/9uIc1eU4Yw==
+Message-ID: <1954a13a-6102-45cd-a8a4-0aa8939b7e0e@kernel.org>
+Date: Tue, 3 Dec 2024 16:41:41 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20241111112237.336310-2-u.kleine-koenig@baylibre.com>
-In-Reply-To: <20241111112237.336310-2-u.kleine-koenig@baylibre.com>
-Reply-To: wens@csie.org
-From: Chen-Yu Tsai <wens@csie.org>
-Date: Tue, 3 Dec 2024 23:36:35 +0800
-X-Gmail-Original-Message-ID: <CAGb2v65i=Ttij+pnK9nhdPzsk9kTdP0ZXS1MGboAud+QudbEDA@mail.gmail.com>
-Message-ID: <CAGb2v65i=Ttij+pnK9nhdPzsk9kTdP0ZXS1MGboAud+QudbEDA@mail.gmail.com>
-Subject: Re: [PATCH] PM / devfreq: sun8i-a33-mbus: Simplify by using more devm functions
-To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, 
-	Chanwoo Choi <cw00.choi@samsung.com>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
-	Samuel Holland <samuel@sholland.org>, linux-pm@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH v1 02/14] dt-bindings: clock: thead,th1520: Rename
+ header file
+To: Michal Wilczynski <m.wilczynski@samsung.com>, mturquette@baylibre.com,
+ sboyd@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+ drew@pdp7.com, guoren@kernel.org, wefu@redhat.com, jassisinghbrar@gmail.com,
+ paul.walmsley@sifive.com, palmer@dabbelt.com, aou@eecs.berkeley.edu,
+ frank.binns@imgtec.com, matt.coster@imgtec.com,
+ maarten.lankhorst@linux.intel.com, mripard@kernel.org, tzimmermann@suse.de,
+ airlied@gmail.com, simona@ffwll.ch, ulf.hansson@linaro.org,
+ jszhang@kernel.org, m.szyprowski@samsung.com
+Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+ dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org
+References: <20241203134137.2114847-1-m.wilczynski@samsung.com>
+ <CGME20241203134151eucas1p18edf7fb37cd8f30983a559d7481f560b@eucas1p1.samsung.com>
+ <20241203134137.2114847-3-m.wilczynski@samsung.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 fv0=
+In-Reply-To: <20241203134137.2114847-3-m.wilczynski@samsung.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Mon, Nov 11, 2024 at 7:22=E2=80=AFPM Uwe Kleine-K=C3=B6nig
-<u.kleine-koenig@baylibre.com> wrote:
->
-> Use devm allocators for enabling the bus clock and
-> clk_rate_exclusive_get(). This simplifies error handling and the remove
-> callback.
->
-> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@baylibre.com>
+On 03/12/2024 14:41, Michal Wilczynski wrote:
+> As support for clocks from new subsystems is being added to the T-Head
+> TH1520 SoC, the header file name should reflect this broader scope. The
 
-Reviewed-by: Chen-Yu Tsai <wens@csie.org>
+No, there is no such rule, so "should" is not appropriate.
 
+
+> existing header file 'thead,th1520-clk-ap.h' includes the '-ap' suffix,
+> indicating it's specific to the Application Processor (AP) subsystem.
+> 
+> Rename the header file to 'thead,th1520-clk.h' to generalize it for all
+> subsystems.  Update all references to this header file accordingly.
+> 
+> Signed-off-by: Michal Wilczynski <m.wilczynski@samsung.com>
 > ---
->  drivers/devfreq/sun8i-a33-mbus.c | 38 ++++++++------------------------
->  1 file changed, 9 insertions(+), 29 deletions(-)
->
-> diff --git a/drivers/devfreq/sun8i-a33-mbus.c b/drivers/devfreq/sun8i-a33=
--mbus.c
-> index bcf654f4ff96..5b630c6e602e 100644
-> --- a/drivers/devfreq/sun8i-a33-mbus.c
-> +++ b/drivers/devfreq/sun8i-a33-mbus.c
-> @@ -360,7 +360,7 @@ static int sun8i_a33_mbus_probe(struct platform_devic=
-e *pdev)
->         if (IS_ERR(priv->reg_mbus))
->                 return PTR_ERR(priv->reg_mbus);
->
-> -       priv->clk_bus =3D devm_clk_get(dev, "bus");
-> +       priv->clk_bus =3D devm_clk_get_enabled(dev, "bus");
->         if (IS_ERR(priv->clk_bus))
->                 return dev_err_probe(dev, PTR_ERR(priv->clk_bus),
->                                      "failed to get bus clock\n");
-> @@ -375,24 +375,15 @@ static int sun8i_a33_mbus_probe(struct platform_dev=
-ice *pdev)
->                 return dev_err_probe(dev, PTR_ERR(priv->clk_mbus),
->                                      "failed to get mbus clock\n");
->
-> -       ret =3D clk_prepare_enable(priv->clk_bus);
-> -       if (ret)
-> -               return dev_err_probe(dev, ret,
-> -                                    "failed to enable bus clock\n");
-> -
->         /* Lock the DRAM clock rate to keep priv->nominal_bw in sync. */
-> -       ret =3D clk_rate_exclusive_get(priv->clk_dram);
-> -       if (ret) {
-> -               err =3D "failed to lock dram clock rate\n";
-> -               goto err_disable_bus;
-> -       }
-> +       ret =3D devm_clk_rate_exclusive_get(dev, priv->clk_dram);
-> +       if (ret)
-> +               return dev_err_probe(dev, ret, "failed to lock dram clock=
- rate\n");
->
->         /* Lock the MBUS clock rate to keep MBUS_TMR_PERIOD in sync. */
-> -       ret =3D clk_rate_exclusive_get(priv->clk_mbus);
-> -       if (ret) {
-> -               err =3D "failed to lock mbus clock rate\n";
-> -               goto err_unlock_dram;
-> -       }
-> +       ret =3D devm_clk_rate_exclusive_get(priv->clk_mbus);
-> +       if (ret)
-> +               return dev_err_probe(dev, ret, "failed to lock mbus clock=
- rate\n");
->
->         priv->gov_data.upthreshold      =3D 10;
->         priv->gov_data.downdifferential =3D  5;
-> @@ -405,10 +396,8 @@ static int sun8i_a33_mbus_probe(struct platform_devi=
-ce *pdev)
->         priv->profile.max_state         =3D max_state;
->
->         ret =3D devm_pm_opp_set_clkname(dev, "dram");
-> -       if (ret) {
-> -               err =3D "failed to add OPP table\n";
-> -               goto err_unlock_mbus;
-> -       }
-> +       if (ret)
-> +               return dev_err_probe(dev, ret, "failed to add OPP table\n=
-");
->
->         base_freq =3D clk_get_rate(clk_get_parent(priv->clk_dram));
->         for (i =3D 0; i < max_state; ++i) {
-> @@ -448,12 +437,6 @@ static int sun8i_a33_mbus_probe(struct platform_devi=
-ce *pdev)
->
->  err_remove_opps:
->         dev_pm_opp_remove_all_dynamic(dev);
-> -err_unlock_mbus:
-> -       clk_rate_exclusive_put(priv->clk_mbus);
-> -err_unlock_dram:
-> -       clk_rate_exclusive_put(priv->clk_dram);
-> -err_disable_bus:
-> -       clk_disable_unprepare(priv->clk_bus);
->
->         return dev_err_probe(dev, ret, err);
->  }
-> @@ -472,9 +455,6 @@ static void sun8i_a33_mbus_remove(struct platform_dev=
-ice *pdev)
->                 dev_warn(dev, "failed to restore DRAM frequency: %d\n", r=
-et);
->
->         dev_pm_opp_remove_all_dynamic(dev);
-> -       clk_rate_exclusive_put(priv->clk_mbus);
-> -       clk_rate_exclusive_put(priv->clk_dram);
-> -       clk_disable_unprepare(priv->clk_bus);
->  }
->
->  static const struct sun8i_a33_mbus_variant sun50i_a64_mbus =3D {
->
-> base-commit: 6d59cab07b8d74d0f0422b750038123334f6ecc2
-> --
-> 2.45.2
->
->
+>  .../devicetree/bindings/clock/thead,th1520-clk-ap.yaml        | 4 ++--
+>  .../devicetree/bindings/mailbox/thead,th1520-mbox.yaml        | 2 +-
+>  MAINTAINERS                                                   | 2 +-
+>  arch/riscv/boot/dts/thead/th1520.dtsi                         | 2 +-
+>  drivers/clk/thead/clk-th1520.h                                | 2 +-
+>  .../clock/{thead,th1520-clk-ap.h => thead,th1520-clk.h}       | 0
+
+Don't mix driver, bindings and DTS. See checkpatch warning. Don't rename
+files just because you prefer other names.
+
+Best regards,
+Krzysztof
