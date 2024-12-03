@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A6B81F75B6;
-	Tue,  3 Dec 2024 15:48:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9E1B1F76AD;
+	Tue,  3 Dec 2024 15:49:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733240911; cv=none; b=M3qCmoDfpoSxFQy/79iZWNuiMwwW4UvteN2MHBNpu16D4X2VDJ01mHF597fNK8cwOus5Kn+FJeXLxGuIZ1yVVF6mrKQPWWAMUQH9fIn20tkymaQ8NWNM/bdrICYAx1fzGd2fKW/npJo+VMcm8062eOaCXWpksw01KPxYZF4qYxs=
+	t=1733240997; cv=none; b=S5FUBe+se3vINaRHNqgPV8caXYqFMR1dNmqAReWWWYPoH5/Q5O4g2kgGVA2G7n9+Z33QCGQxL8CFRRvdU2Lb8KbacXHNZKMgI6aIUGckied14h6p11NT7UU2jxMMZOJdUaGUTUgwaoY6ZbgvwSBFS/SG7sgxNWHBdVUERWfD5jU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733240911; c=relaxed/simple;
-	bh=09cm8DxTfRGPy1cHmrwjDq3tedMQqJBJD51px4SlHfA=;
+	s=arc-20240116; t=1733240997; c=relaxed/simple;
+	bh=mo2eNlwmx704hDWUW46aIuAMajnwh8WGQqvrFgIwYgc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=CzSvG/5geTlJD6ngmWpbQZp7gicV7RbS7L4gi0F0Dl7ob6SBy5oRKfYuc3P0hnC5vZaYu/TAyiDnQGwdqZ1RoswMdxkF8bvCRa7295osvCJAttv6DYvwMqiVnoNS2tYskFQ7sQzm9ahRJDtMXavjqjliNct1z1mOM6yuUbj0BMo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SDWDWe3p; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:Content-Type; b=eyXyB+EkvMhffRR20yttjzpAZnvhqmShA6yHjgK2jh+L8rfByqIxk46MY1FHoOd5cGFc8uF8YcrqZjQj53xe7WJjtRDJV10MKXMP2JlOOS/9pXvEJmfpU+6Z9Pl+1IO8IcBX8pWMQHerdDXWN7EzQwdmxYs+iWlzA7NhBItIkLo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=r1dypc95; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SDWDWe3p"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DC72EC4CECF;
-	Tue,  3 Dec 2024 15:48:21 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="r1dypc95"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2CDDDC4CECF;
+	Tue,  3 Dec 2024 15:49:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1733240910;
-	bh=09cm8DxTfRGPy1cHmrwjDq3tedMQqJBJD51px4SlHfA=;
+	s=k20201202; t=1733240997;
+	bh=mo2eNlwmx704hDWUW46aIuAMajnwh8WGQqvrFgIwYgc=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=SDWDWe3pWpl9SEY6EIx/nTRd9INAcofCe162CsaUchQXOQjXwrGfDop7Rmz81WKYm
-	 tUDI+TbvNUpF5P6TV8umf3Gd13W34QQAhdWoZh1Y4GnCpXQNEUapfceltSb9qOSiXi
-	 p+vdMCSZt5QiXxSc5wXkQcb8WuusGpVetS52lQu+MUuAudXQkXta99SKPVGQKKunt9
-	 H1a7UYwxGpjDFYLa4Og6AIt4r11NWfQ39WLZlTwj2w5KDLLhKc6/vdo/sL6qumcW45
-	 isUAi7kauWR+RW7V5q5DwI9+H/KvCrlZbJji8pTb61WjUcQ8HJo8HWm3gk+GpxCQ9Y
-	 qG40V6uyau05A==
-Message-ID: <e7af04b0-7c87-42da-9a3d-152a87aea81d@kernel.org>
-Date: Tue, 3 Dec 2024 16:48:19 +0100
+	b=r1dypc95hlsb7L7JFQUACDi2B9hUki7rh4OVT6W38L7/aN8P86pv0goz2IXeUaVwI
+	 QdByPHqG3MqS8xFenSsBFgerb/ms6TpLOlK8ANXXXdDSDNTX+dFxw8lRwkor7VxlMg
+	 yopbD7M8pzGCjddiK8cl9ETKROr3ziUo4DCs1bJ77FBaoNztkmjzag7ELSppU9jRa0
+	 +BGrH+F4e0dOqUS3KADCJLlp0LFoft5TOL4GEQw9RSXMhoqR6ms3CwqgvgUp+IjlD+
+	 N7GuNRLyNPns99c8cZT3ZuW0BI2PyRGHAJaFfAp3TgQVU91GBZOZL6uMQV7zLpQv8c
+	 GKcZ564Pvxmvw==
+Message-ID: <37b65029-8310-48d1-bb6e-de5e47b2a403@kernel.org>
+Date: Tue, 3 Dec 2024 16:49:45 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH v1 08/14] dt-bindings: power: thead,th1520: Add
- support for power domains
+Subject: Re: [RFC PATCH v1 10/14] drm/imagination: Add support for IMG
+ BXM-4-64 GPU
 To: Michal Wilczynski <m.wilczynski@samsung.com>, mturquette@baylibre.com,
  sboyd@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
  drew@pdp7.com, guoren@kernel.org, wefu@redhat.com, jassisinghbrar@gmail.com,
@@ -49,8 +49,8 @@ Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
  dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org
 References: <20241203134137.2114847-1-m.wilczynski@samsung.com>
- <CGME20241203134159eucas1p1eafefef0dfe7f2b6343a639733012bcf@eucas1p1.samsung.com>
- <20241203134137.2114847-9-m.wilczynski@samsung.com>
+ <CGME20241203134202eucas1p26bdcec486ee42440ded94ff801678ba0@eucas1p2.samsung.com>
+ <20241203134137.2114847-11-m.wilczynski@samsung.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -96,75 +96,47 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20241203134137.2114847-9-m.wilczynski@samsung.com>
+In-Reply-To: <20241203134137.2114847-11-m.wilczynski@samsung.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 03/12/2024 14:41, Michal Wilczynski wrote:
-> +
-> +title: T-HEAD TH1520 Power Domain Controller
-> +
-> +maintainers:
-> +  - Michal Wilczynski <m.wilczynski@samsung.com>
-> +
-> +description: |
-> +  The T-HEAD TH1520 SoC includes a power domain controller responsible for
-> +  managing the power states of various hardware domains such as the GPU.
-> +
-> +  This binding describes the power domain controller node, which can be used by
-
-Do not describe the binding. Describe the hardware. Entire paragraph
-feels pointless.
-
-> +  devices to manage their power domains.
-> +
-> +properties:
-> +  compatible:
-> +    const: "thead,th1520-pd"
+> The IMG BXM-4-64 GPU is integrated into the T-Head TH1520 SoC. This
+> commit adds the compatible string "img,img-bxm-4-64" to the device tree
+> match table in the drm/imagination driver, enabling support for this
+> GPU.
+> 
+> By including this GPU in the compatible devices list, the driver can
+> initialize and manage the BXM-4-64 GPU on the TH1520 SoC, providing
+> graphics acceleration capabilities upstream.
+> 
+> This commit doesn't touch the img,powervr-rogue.yaml on purpose, as the
+> new dt-bindings schema was proposed [1], but not merged yet.
 
 
-You never tested the code you sent. Drop quotes. Limited review follows.
+That's not related to the commit. This commit *cannot ever* touch the
+bindings.
 
-> +
-> +  thead,vosys-regmap:
+> 
+> Link: https://lore.kernel.org/all/20241118-sets-bxs-4-64-patch-v1-v2-1-3fd45d9fb0cf@imgtec.com/ [1]
+> 
+> Signed-off-by: Michal Wilczynski <m.wilczynski@samsung.com>
+> ---
+>  drivers/gpu/drm/imagination/pvr_drv.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/gpu/drm/imagination/pvr_drv.c b/drivers/gpu/drm/imagination/pvr_drv.c
+> index 85ee9abd1811..8633a3a315b7 100644
+> --- a/drivers/gpu/drm/imagination/pvr_drv.c
+> +++ b/drivers/gpu/drm/imagination/pvr_drv.c
+> @@ -1475,6 +1475,7 @@ static void pvr_remove(struct platform_device *plat_dev)
+>  
+>  static const struct of_device_id dt_match[] = {
+>  	{ .compatible = "img,img-axe", .data = NULL },
+> +	{ .compatible = "img,img-bxm-4-64", .data = NULL },
 
-NAK.
-
-'reg' is for this.
-
-
-> +    $ref: /schemas/types.yaml#/definitions/phandle
-> +    description: |
-> +      Phandle to a syscon node representing the shared register space of the VO (Video Output) subsystem.
-
-Please wrap code according to coding style (checkpatch is not a coding
-style description, but only a tool).
-
-
-> +      This register space includes both clock control registers and other control registers used for
-> +      operations like resetting the GPU. Since these registers reside in the same address space,
-> +      access to them is coordinated through a shared syscon regmap provided by the specified syscon node.
-> +
-> +  '#power-domain-cells':
-> +    const: 1
-> +
-> +required:
-> +  - compatible
-> +  - thead,vosys-regmap
-> +  - '#power-domain-cells'
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    vosys_regmap: vosys@ffef528000 {
-> +        compatible = "syscon";
-> +        reg = <0xff 0xef528000 0x0 0x1000>;
-> +    };
-
-Drop, not related.
-
-
+Undocumented compatible. Combine relevant patches into one patchsets, so
+we see entire picture.
 
 Best regards,
 Krzysztof
