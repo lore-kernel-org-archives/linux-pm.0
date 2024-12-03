@@ -1,49 +1,64 @@
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBCEF1E766E
-	for <linux-pm@vger.kernel.org>; Tue,  3 Dec 2024 16:07:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92BDC1F76D7;
+	Tue,  3 Dec 2024 16:10:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733242081; cv=none; b=kVM2Cc/ggNEfBYAVlrRfw62ijQK5deUqzC0vSZTnTwTNFEktO7gARWJlxdFZpfhobH4UJsyuvZoorIqiKuHa/AD7uLPoVOa3Sj3O+z+deJmPQx5lgYk1NITT8ldz9xvDhvTZ/7zmwyGFIh28WBKjcNNo83DoRdjLEww4nvyteuk=
+	t=1733242214; cv=none; b=JWDMWCPGEvM8Ycnm7lawalX/r761dWd3sNSoGViQTIc2AEMvAsMoEaoqXWy1bnwg6M+suoSIKYu930RtGJP1eSsn0QXyQrmdMAbEH/vpMNkJxbM7AL6Bg8xF70gFByr3waeLe9+1l5VBS/qor7BFB6DE4hH5dBkqrpJsjAdQSRU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733242081; c=relaxed/simple;
-	bh=/0y7SBDUVxqjtpxm9yML9VoV7Jgb8YxmRVDVpMdr7Rg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=O8qcbp4C71+aCb6LHig5Mzd+xx2aoqapUOLG5GIjHYdQ8QOPl4PyC352zqKgVIMvErHi+8dBkKN0PSJE25a0xRu0Isnr1NVeMYVRxCVk4umdtAkBS7PMwUflGfuTroezXTSbLJvCLRtn62FYJhnvLT2sf1STaWt87srwmP6R//U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=ZlfsdpYI; arc=none smtp.client-ip=159.69.126.157
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
+	s=arc-20240116; t=1733242214; c=relaxed/simple;
+	bh=fG2igQkn+4+8e57/uPhJs9Uh52Ls0xvv3KuRt0L7L8g=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=SMcTEb2cv+J0niaqMJ+sGWZ8LfKYn2FCL6MKRIoe9j1rMD3TK+0xqFR2dYF+SR0j7Q97TWuE/mYZHXAWWnnYVFeW3MxygiUga1kt9bjcsEkfiyDZSaHNrr9WObl0zmq/1h0TjOKR7317kQ9kOFLzY81dKL76yQPQHHILgeGyaHE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=Z+2ReGAd; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=JClbkhKx; arc=none smtp.client-ip=193.142.43.55
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="ZlfsdpYI"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1733242076;
-	bh=/0y7SBDUVxqjtpxm9yML9VoV7Jgb8YxmRVDVpMdr7Rg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ZlfsdpYIpCbGFb9Xe9niae1ebWeO2rflwuwZdET77yomETPT9XQ8u5bMa2WtxLThQ
-	 zRJcH9Z4dO6yDD5SYA4eZHulPnGbn+H61PhP9CE+D3G5G5QtWhZoTWVF3EAE1sfqWp
-	 yfs/HwCisMXUjLlOLYu6Ex058pgSDjcy3Jk07LVo=
-Date: Tue, 3 Dec 2024 17:07:55 +0100
-From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
-To: "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, 
-	"Kurmi, Suresh Kumar" <suresh.kumar.kurmi@intel.com>, "Coelho, Luciano" <luciano.coelho@intel.com>, 
-	"Saarinen, Jani" <jani.saarinen@intel.com>, "Nikula, Jani" <jani.nikula@intel.com>, 
-	"De Marchi, Lucas" <lucas.demarchi@intel.com>, 
-	"intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>, 
-	"intel-xe@lists.freedesktop.org" <intel-xe@lists.freedesktop.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, 
-	Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: Regression on linux-next (next-20241120) and drm-tip
-Message-ID: <886084c8-2f5e-4f89-bd10-e9c2a24b0aea@t-8ch.de>
-References: <SJ1PR11MB6129CCD82CD78D8EE6E27EF4B9362@SJ1PR11MB6129.namprd11.prod.outlook.com>
- <SJ1PR11MB612965ACA3E84745346F0400B9362@SJ1PR11MB6129.namprd11.prod.outlook.com>
- <5e405ad4-34d6-4507-978f-3d81d4af2455@t-8ch.de>
- <CAJZ5v0iXKvaxz-hmW2+qwTcSmtPJ23Hv04CMnmT=qPE0ytNwLg@mail.gmail.com>
- <56d574c6-6eab-4388-8cb8-70cd615a8941@t-8ch.de>
- <CAJZ5v0gFwu+6Cm7ORs7+TAc5jzXZRBO1uGcttBTTvK4OqT3Q6g@mail.gmail.com>
- <2ad31476-3f37-43cb-96cf-379d50d7b799@t-8ch.de>
- <SJ1PR11MB61295BDE8405A1A5FFC1CB7FB9362@SJ1PR11MB6129.namprd11.prod.outlook.com>
- <1ed0ba64-4e8d-416a-8718-34e7f045d443@t-8ch.de>
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="Z+2ReGAd";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="JClbkhKx"
+From: Thomas Gleixner <tglx@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1733242210;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ddk6G81ViUFgr4R1ETgTtudIxbjBUqRlwB5igRmXu4g=;
+	b=Z+2ReGAdXtDLEPMXg5raBwXetTEwjAfMflPPAVrOEfwrcGysNtb8Ptm4XzSqdf4ddJMGIq
+	ZZBqiBOgCOuNuIq7DGHEpXVU5Xu4jv5Ii0TG4PGQvsseXUozaeu5T5eRpVLSIubrfSBUZY
+	lFZrJk3uf2apYr8jS5FoEhfHHkKwHL1pNg0eQKunI6+PHruC3fqVPA0XwdV0EArk+NSne1
+	qRUQSW5+Hn6udBK6/6UYU3VD1Qvh1dzaS5h0bDf2GWTmtVuK2vdUqgTz4h/DjFGF7xoGyx
+	74YrDneOpK3BgwfyF7vv7CsmkugBesXXEbSgxcas7HUjervqVsUTsLXvAgoZEw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1733242210;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ddk6G81ViUFgr4R1ETgTtudIxbjBUqRlwB5igRmXu4g=;
+	b=JClbkhKx8PC6kkrMhZFXxilt17KHhS6wyGx8qQN8eby8jwpBXi3PGasAee6M7LJ+MvpgRm
+	h+JYswnTZp71zZAw==
+To: Masahiro Yamada <masahiroy@kernel.org>
+Cc: Sergey Senozhatsky <senozhatsky@chromium.org>,
+ 20241015061522.25288-1-rui.zhang@intel.com, Zhang Rui
+ <rui.zhang@intel.com>, hpa@zytor.com, peterz@infradead.org,
+ thorsten.blum@toblux.com, yuntao.wang@linux.dev, tony.luck@intel.com,
+ len.brown@intel.com, srinivas.pandruvada@intel.com,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org, mingo@redhat.com,
+ bp@alien8.de, dave.hansen@linux.intel.com, rafael.j.wysocki@intel.com,
+ x86@kernel.org, linux-pm@vger.kernel.org, Nathan Chancellor
+ <nathan@kernel.org>, Nicolas Schier <nicolas@fjasle.eu>,
+ linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH] modpost: Add .irqentry.text to OTHER_SECTIONS
+In-Reply-To: <CAK7LNARufW5wc=qBt5R=RJ9BkFirLKAgRgg_t=OmTTGbjLfsAg@mail.gmail.com>
+References: <20241128111844.GE10431@google.com> <87o71xvuf3.ffs@tglx>
+ <20241130114549.GI10431@google.com> <87iks3wt2t.ffs@tglx>
+ <CAK7LNARWpcbVsJFYCDN28vuuLfEibZmT+m5=qMEJcKD9Abzv4Q@mail.gmail.com>
+ <87iks1vlu5.ffs@tglx>
+ <CAK7LNARufW5wc=qBt5R=RJ9BkFirLKAgRgg_t=OmTTGbjLfsAg@mail.gmail.com>
+Date: Tue, 03 Dec 2024 17:10:09 +0100
+Message-ID: <87h67ku4ri.ffs@tglx>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -51,180 +66,33 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1ed0ba64-4e8d-416a-8718-34e7f045d443@t-8ch.de>
+Content-Transfer-Encoding: quoted-printable
 
-On 2024-12-03 16:57:21+0100, Thomas Weißschuh wrote:
-> On 2024-12-03 15:42:23+0000, Borah, Chaitanya Kumar wrote:
-> > 
-> > 
-> > > -----Original Message-----
-> > > From: Thomas Weißschuh <linux@weissschuh.net>
-> > > Sent: Tuesday, December 3, 2024 8:20 PM
-> > > To: Rafael J. Wysocki <rafael@kernel.org>
-> > > Cc: Borah, Chaitanya Kumar <chaitanya.kumar.borah@intel.com>; Kurmi,
-> > > Suresh Kumar <suresh.kumar.kurmi@intel.com>; Coelho, Luciano
-> > > <luciano.coelho@intel.com>; Saarinen, Jani <jani.saarinen@intel.com>;
-> > > Nikula, Jani <jani.nikula@intel.com>; De Marchi, Lucas
-> > > <lucas.demarchi@intel.com>; intel-gfx@lists.freedesktop.org; intel-
-> > > xe@lists.freedesktop.org; linux-pm@vger.kernel.org; Sebastian Reichel
-> > > <sebastian.reichel@collabora.com>
-> > > Subject: Re: Regression on linux-next (next-20241120) and drm-tip
-> > > 
-> > > On 2024-12-03 15:33:21+0100, Rafael J. Wysocki wrote:
-> > > > On Tue, Dec 3, 2024 at 1:04 PM Thomas Weißschuh
-> > > <linux@weissschuh.net> wrote:
-> > > > >
-> > > > > On 2024-12-03 12:54:54+0100, Rafael J. Wysocki wrote:
-> > > > > > On Tue, Dec 3, 2024 at 7:51 AM Thomas Weißschuh
-> > > <linux@weissschuh.net> wrote:
-> > > > > > >
-> > > > > > > (+Cc Sebastian)
-> > > > > > >
-> > > > > > > Hi Chaitanya,
-> > > > > > >
-> > > > > > > On 2024-12-03 05:07:47+0000, Borah, Chaitanya Kumar wrote:
-> > > > > > > > Hope you are doing well. I am Chaitanya from the linux graphics team
-> > > in Intel.
-> > > > > > > >
-> > > > > > > > This mail is regarding a regression we are seeing in our CI runs[1] on
-> > > linux-next repository.
-> > > > > > >
-> > > > > > > Thanks for the report.
-> > > > > > >
-> > > > > > > > Since the version next-20241120 [2], we are seeing the
-> > > > > > > > following regression
-> > > > > > > >
-> > > > > > > > `````````````````````````````````````````````````````````````````````````````````
-> > > > > > > > <4>[   19.990743] Oops: general protection fault, probably for non-
-> > > canonical address 0xb11675ef8d1ccbce: 0000 [#1] PREEMPT SMP NOPTI
-> > > > > > > > <4>[   19.990760] CPU: 21 UID: 110 PID: 867 Comm: prometheus-
-> > > node Not tainted 6.12.0-next-20241120-next-20241120-gac24e26aa08f+
-> > > #1
-> > > > > > > > <4>[   19.990771] Hardware name: Intel Corporation Arrow Lake
-> > > Client Platform/MTL-S UDIMM 2DPC EVCRB, BIOS
-> > > MTLSFWI1.R00.4400.D85.2410100007 10/10/2024
-> > > > > > > > <4>[   19.990782] RIP: 0010:power_supply_get_property+0x3e/0xe0
-> > > > > > > > ``````````````````````````````````````````````````````````````
-> > > > > > > > ``````````````````` Details log can be found in [3].
-> > > > > > > >
-> > > > > > > > After bisecting the tree, the following patch [4] seems to be the first
-> > > "bad"
-> > > > > > > > commit
-> > > > > > > >
-> > > > > > > > ``````````````````````````````````````````````````````````````
-> > > > > > > > ```````````````````````````````````````````
-> > > > > > > > Commit 49000fee9e639f62ba1f965ed2ae4c5ad18d19e2
-> > > > > > > > Author:     Thomas Weißschuh <mailto:linux@weissschuh.net>
-> > > > > > > > AuthorDate: Sat Oct 5 12:05:03 2024 +0200
-> > > > > > > > Commit:     Sebastian Reichel
-> > > <mailto:sebastian.reichel@collabora.com>
-> > > > > > > > CommitDate: Tue Oct 15 22:22:20 2024 +0200
-> > > > > > > >     power: supply: core: add wakeup source inhibit by
-> > > > > > > > power_supply_config
-> > > > > > > > ``````````````````````````````````````````````````````````````
-> > > > > > > > ```````````````````````````````````````````
-> > > > > > > >
-> > > > > > > > This is now seen in our drm-tip runs as well. [5]
-> > > > > > > >
-> > > > > > > > Could you please check why the patch causes this regression and
-> > > provide a fix if necessary?
-> > > > > > >
-> > > > > > > I don't see how this patch can lead to this error.
-> > > > > >
-> > > > > > It looks like the cfg->no_wakeup_source access reaches beyond the
-> > > > > > struct boundary for some reason.
-> > > > >
-> > > > > But the access to this field is only done in __power_supply_register().
-> > > > > The error reports however don't show this function at all, they come
-> > > > > from power_supply_uevent() and power_supply_get_property() by which
-> > > > > time the call to __power_supply_register() is long over.
-> > > > >
-> > > > > FWIW there is an uninitialized 'struct power_supply_config' in
-> > > > > drivers/hid/hid-corsair-void.c. But I highly doubt the test machines
-> > > > > are using that. (I'll send a patch later for it)
-> > > >
-> > > > So the only way I can think about in which the commit in question may
-> > > > lead to the reported issues is that changing the size of struct
-> > > > power_supply_config or its alignment makes an unexpected functional
-> > > > difference somewhere.
-> > > 
-> > > Indeed. I'd really like to see this issue reproduced with KASAN.
-> > > 
-> > > > AFAICS, this commit cannot be reverted by itself, so which commits on
-> > > > top of it need to be reverted in order to revert it cleanly?
-> > > 
-> > > All the other patches from this series:
-> > > https://lore.kernel.org/lkml/20241005-power-supply-no-wakeup-source-v1-
-> > > 0-1d62bf9bcb1d@weissschuh.net/
-> > > 
-> > > Could you point me to the full boot log in the drm-tip CI?
-> > 
-> > Here is the log for drm-tip CI
-> > 
-> > https://intel-gfx-ci.01.org/tree/drm-tip/IGT_8136/bat-arls-5/boot0.txt
-> 
-> Thanks!
-> 
-> > I carried out another bisect and it points to the following commit
-> > 
-> > commit 226ff2e681d006eada59a9693aa1976d4c15a7d4
-> > Author: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-> > Date:   Wed Nov 6 17:06:05 2024 +0200
-> > 
-> >     usb: typec: ucsi: Convert connector specific commands to bitmaps
-> > 
-> >     That allows the fields in those command data structures to
-> >     be easily validated. If an unsupported field is accessed, a
-> >     warning is generated.
-> 
-> Suspicous: The bitmaps introduced in this commit are right before the
-> psy and psy_desc members of 'struct ucsi_connector'.
-> So any out-of-bounds writes into these members would corrupt those
-> fields.
-> A corrupted power_supply_desc would fit both reported stacktraces.
+On Wed, Dec 04 2024 at 00:27, Masahiro Yamada wrote:
+> On Tue, Dec 3, 2024 at 6:03=E2=80=AFAM Thomas Gleixner <tglx@linutronix.d=
+e> wrote:
+>> > In this mainline kernel, DEFINE_IDTENTRY_SYSVEC()
+>> > expands to a normal .text function which is explicitly
+>> > annotated 'noinline'.
+>>
+>> It's not annotated noinline, it's annotated 'noinstr', which puts the
+>> code into the .noinstr.text section. That one is indeed covered.
+>
+> The callsite of local_apic_timer_interrupt() is annotated 'noinline'
+> if I correctly understand this line:
+>   https://github.com/torvalds/linux/blob/v6.13-rc1/arch/x86/include/asm/i=
+dtentry.h#L272
 
-struct ucsi_connector {
-	...
+You're right. I got lost in the macro maze and looked at the actual
+sysvec_...() part.
 
-        struct typec_capability typec_cap;
+>> So yes, the fix is only required for pre 5.8 kernels.
+>
+> This never occurs on x86 after commit f0178fc01fe46,
+> but theoretically this may occur for other architectures.
 
-       /* Cached command responses. */
-       DECLARE_BITMAP(cap, UCSI_GET_CONNECTOR_CAPABILITY_SIZE);
-       DECLARE_BITMAP(status, UCSI_GET_CONNECTOR_STATUS_SIZE);
+Correct.
 
-DECLARE_BITMAP() takes the size in number of *bits*
+Thanks,
 
-        struct power_supply *psy;
-        struct power_supply_desc psy_desc;
-        u32 rdo;
-
-	...
-}
-
-static int ucsi_get_connector_status(struct ucsi_connector *con, bool conn_ack)
-{
-	u64 command = UCSI_GET_CONNECTOR_STATUS | UCSI_CONNECTOR_NUMBER(con->num);
-	size_t size = min(UCSI_GET_CONNECTOR_STATUS_SIZE, UCSI_MAX_DATA_LENGTH(con->ucsi));
-	int ret;
-
-	ret = ucsi_send_command_common(con->ucsi, command, &con->status, size, conn_ack);
-
-ucsi_send_command_common() takes the size in number of *bytes*.
-This call corrupts psy and psy_desc in con.
-
-	return ret < 0 ? ret : 0;
-}
-
-> 
-> > Reverting it seems to help locally. However, to confirm I have sent out a patch to our "try-bot"
-> > 
-> > https://patchwork.freedesktop.org/series/142049/
-> > 
-> > We can wait for its results.
-> > 
-> > Regards
-> > 
-> > Chaitanya
-> > 
+        tglx
