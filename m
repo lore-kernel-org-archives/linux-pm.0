@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6512D1F9EAC;
-	Tue,  3 Dec 2024 15:46:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A6B81F75B6;
+	Tue,  3 Dec 2024 15:48:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733240770; cv=none; b=Xs5Fqkj9CfcjNFoMBMKu7Q1sdVhQm/DPChh0zUzMa2SwQKR7Pi9hjzouto8DkNTJoybMz+RahqhBGLVFLV7Ddr4stl9MwsxRNMs+EIH6HiQwZWtLugVIDYtJqKpRa//gI5v7clgUbF+iukM0OVcliW/Cv3SZheTBygMruvDpG0g=
+	t=1733240911; cv=none; b=M3qCmoDfpoSxFQy/79iZWNuiMwwW4UvteN2MHBNpu16D4X2VDJ01mHF597fNK8cwOus5Kn+FJeXLxGuIZ1yVVF6mrKQPWWAMUQH9fIn20tkymaQ8NWNM/bdrICYAx1fzGd2fKW/npJo+VMcm8062eOaCXWpksw01KPxYZF4qYxs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733240770; c=relaxed/simple;
-	bh=dn8LjBbhrt8WWvRtmZ7EWYAwQ3mVvCiOwBxFtAvZTX4=;
+	s=arc-20240116; t=1733240911; c=relaxed/simple;
+	bh=09cm8DxTfRGPy1cHmrwjDq3tedMQqJBJD51px4SlHfA=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=GuwfGT2TUQoYLUtRlCfoVJwu+b1VuBvMqDNOhk03jyo4jPlK/idUUTtGKx8VpFMIGMPks9S3R9XZsbis1WMY0u+ZmU+ZMmRLIzGr7CtEJ4U1t6LxN6O5PQYOf4EzN2z4GrtS2vw9ON8Udh6aAqDcgxpLWfyXvleM02Pa8bRNUqs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dHMpibXa; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:Content-Type; b=CzSvG/5geTlJD6ngmWpbQZp7gicV7RbS7L4gi0F0Dl7ob6SBy5oRKfYuc3P0hnC5vZaYu/TAyiDnQGwdqZ1RoswMdxkF8bvCRa7295osvCJAttv6DYvwMqiVnoNS2tYskFQ7sQzm9ahRJDtMXavjqjliNct1z1mOM6yuUbj0BMo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SDWDWe3p; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dHMpibXa"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 960D9C4CECF;
-	Tue,  3 Dec 2024 15:46:01 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SDWDWe3p"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DC72EC4CECF;
+	Tue,  3 Dec 2024 15:48:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1733240770;
-	bh=dn8LjBbhrt8WWvRtmZ7EWYAwQ3mVvCiOwBxFtAvZTX4=;
+	s=k20201202; t=1733240910;
+	bh=09cm8DxTfRGPy1cHmrwjDq3tedMQqJBJD51px4SlHfA=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=dHMpibXaqK0yq9OaoKSg9V16Zdq1zQ3wAMLefrf1cYqT7huFlQ+U3kiz/5KoJl1eU
-	 Go9vBhDJxi8arAFFrZG4QTojSLxGFvuB8Jh/JlFLTjZki6ZKgPYq+v879eAyePbtVT
-	 DXuQ1gq+ljCtJsUnlbNF6syZeE3Qe+feqpLSykxk5dIjE6WyIV92mD6d1Hmicj+FUv
-	 e8DZWuXUAidrrrIZuPrhTWZLAG6s4oM5IzYpU5K09GhcYBMwgbczGPBYSg9pBKUOmD
-	 rU5+cnxz/NpbjS+Uyu+M8goAFRk+wHN2U8mKljZT+BUYsxoOtTQMM4DByPsG6yMfaI
-	 GOH6bl1gm7bcg==
-Message-ID: <7d09f311-b9a2-4c40-9fca-4b5d0acc112d@kernel.org>
-Date: Tue, 3 Dec 2024 16:45:59 +0100
+	b=SDWDWe3pWpl9SEY6EIx/nTRd9INAcofCe162CsaUchQXOQjXwrGfDop7Rmz81WKYm
+	 tUDI+TbvNUpF5P6TV8umf3Gd13W34QQAhdWoZh1Y4GnCpXQNEUapfceltSb9qOSiXi
+	 p+vdMCSZt5QiXxSc5wXkQcb8WuusGpVetS52lQu+MUuAudXQkXta99SKPVGQKKunt9
+	 H1a7UYwxGpjDFYLa4Og6AIt4r11NWfQ39WLZlTwj2w5KDLLhKc6/vdo/sL6qumcW45
+	 isUAi7kauWR+RW7V5q5DwI9+H/KvCrlZbJji8pTb61WjUcQ8HJo8HWm3gk+GpxCQ9Y
+	 qG40V6uyau05A==
+Message-ID: <e7af04b0-7c87-42da-9a3d-152a87aea81d@kernel.org>
+Date: Tue, 3 Dec 2024 16:48:19 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH v1 06/14] dt-bindings: clock: thead,th1520: Rename
- YAML schema file
+Subject: Re: [RFC PATCH v1 08/14] dt-bindings: power: thead,th1520: Add
+ support for power domains
 To: Michal Wilczynski <m.wilczynski@samsung.com>, mturquette@baylibre.com,
  sboyd@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
  drew@pdp7.com, guoren@kernel.org, wefu@redhat.com, jassisinghbrar@gmail.com,
@@ -49,8 +49,8 @@ Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
  dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org
 References: <20241203134137.2114847-1-m.wilczynski@samsung.com>
- <CGME20241203134156eucas1p2326d84fcef2ee0914586122520b18dcc@eucas1p2.samsung.com>
- <20241203134137.2114847-7-m.wilczynski@samsung.com>
+ <CGME20241203134159eucas1p1eafefef0dfe7f2b6343a639733012bcf@eucas1p1.samsung.com>
+ <20241203134137.2114847-9-m.wilczynski@samsung.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -96,28 +96,75 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20241203134137.2114847-7-m.wilczynski@samsung.com>
+In-Reply-To: <20241203134137.2114847-9-m.wilczynski@samsung.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 03/12/2024 14:41, Michal Wilczynski wrote:
-> As support for clocks from new subsystems is being added to the T-Head
-> TH1520 SoC, the Device Tree binding YAML schema file name should reflect
-> this broader scope.  The existing schema file 'thead,th1520-clk-ap.yaml'
-> includes the '-ap' suffix, indicating it's specific to the Application
-> Processor (AP) subsystem.
-> 
-> Rename the YAML schema file to 'thead,th1520-clk.yaml' to generalize it
-> for all subsystems. Update all references to this schema file
-> accordingly.
-> 
-> Signed-off-by: Michal Wilczynski <m.wilczynski@samsung.com>
-> ---
->  .../clock/{thead,th1520-clk-ap.yaml => thead,th1520-clk.yaml}   | 2 +-
->  MAINTAINERS                                                     | 2 +-
+> +
+> +title: T-HEAD TH1520 Power Domain Controller
+> +
+> +maintainers:
+> +  - Michal Wilczynski <m.wilczynski@samsung.com>
+> +
+> +description: |
+> +  The T-HEAD TH1520 SoC includes a power domain controller responsible for
+> +  managing the power states of various hardware domains such as the GPU.
+> +
+> +  This binding describes the power domain controller node, which can be used by
 
-NAK, don't rename just because you added one more compatible (and anyway
-never a separate patch).
+Do not describe the binding. Describe the hardware. Entire paragraph
+feels pointless.
+
+> +  devices to manage their power domains.
+> +
+> +properties:
+> +  compatible:
+> +    const: "thead,th1520-pd"
+
+
+You never tested the code you sent. Drop quotes. Limited review follows.
+
+> +
+> +  thead,vosys-regmap:
+
+NAK.
+
+'reg' is for this.
+
+
+> +    $ref: /schemas/types.yaml#/definitions/phandle
+> +    description: |
+> +      Phandle to a syscon node representing the shared register space of the VO (Video Output) subsystem.
+
+Please wrap code according to coding style (checkpatch is not a coding
+style description, but only a tool).
+
+
+> +      This register space includes both clock control registers and other control registers used for
+> +      operations like resetting the GPU. Since these registers reside in the same address space,
+> +      access to them is coordinated through a shared syscon regmap provided by the specified syscon node.
+> +
+> +  '#power-domain-cells':
+> +    const: 1
+> +
+> +required:
+> +  - compatible
+> +  - thead,vosys-regmap
+> +  - '#power-domain-cells'
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    vosys_regmap: vosys@ffef528000 {
+> +        compatible = "syscon";
+> +        reg = <0xff 0xef528000 0x0 0x1000>;
+> +    };
+
+Drop, not related.
+
+
 
 Best regards,
 Krzysztof
