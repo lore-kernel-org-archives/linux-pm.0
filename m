@@ -1,103 +1,94 @@
-Received: from mail-ua1-f54.google.com (mail-ua1-f54.google.com [209.85.222.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 625834F218;
-	Tue,  3 Dec 2024 12:21:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 41F79224F0
+	for <linux-pm@vger.kernel.org>; Tue,  3 Dec 2024 13:03:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733228515; cv=none; b=iqK+/b9j5V3KoGPkIXvD2cqVOzSnKWtGbDQz4/Q0UCT6+SX67/NJxvgBZxBRHGmhSqpogQ7wSVsySxFt94feNwCSIYcBPQGsDNsmYEdWbXGjlujfTnswzdfjTmFmYgNW34LZw82EkwJD7K++mx0rU+UEdTpvFQTm3koWv8IXQRg=
+	t=1733230995; cv=none; b=K+hH8usqAw5jYdsMP1HRIrmtGcF9Po1icMvEcrn0euM920i0d9HCcYkfRQMRAUxWLT54OPfJZlCK0Jt+6AmBK5uqYV0TVnHZ6Jls1K0r3Hg8V8Fm2plccUjMqK+vY5fBOqFl9Bi0BNUHngGEaOHmq7gqer46kxGAtvJ+/1yICEk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733228515; c=relaxed/simple;
-	bh=MpIXVp6qOzjwdqyxitDOtzmLzxJa7XWFAuMvx362IEI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=WMD7td/PtxMYf0l1emoAbLv2hfwH4DPqWlSXfKQDDp6GVtjlJ4oxNhqFEFdGw5Dgq0IAsri8bUg0NpoX8TYo2BltNI/8zPiBWU4UtWR/C1NlGxbLH3ayaxjAE/8AvJC+CNF5NimOR/WNJsadilQ/hRLu+cOyq5G+cy1miOESWq0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BE355tkF; arc=none smtp.client-ip=209.85.222.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1733230995; c=relaxed/simple;
+	bh=HmhuEgvI3G1fDAwp//O6mHyy7iS37ogl3iDWsgEbDUM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=aXF6G3VUeTbaM6GWPmcBpKlPw5E9PzoXb8D7ga7/d0FaVBwoLOp+K/cYOSLgnt+Vyf/py3A2RrvBqtT+K2nE/ghUolPY9aD4rd1q4Xy+EGlOuBwcB684MIPtoocjrvjD4gnW2CICoK736n8+4KkXKfmy1xmQv748IVez7dbasec=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=NNz2uwYs; arc=none smtp.client-ip=192.198.163.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BE355tkF"
-Received: by mail-ua1-f54.google.com with SMTP id a1e0cc1a2514c-85b988ec4f0so559818241.1;
-        Tue, 03 Dec 2024 04:21:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1733228513; x=1733833313; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=MpIXVp6qOzjwdqyxitDOtzmLzxJa7XWFAuMvx362IEI=;
-        b=BE355tkFrSSVnuJuQQMWEtC2yOodZU+b7z0fhvFbvXv6q8EFgk/GgJnokwMHFLnMTl
-         z8Ce42MgXxAUz/KIAFejC7wsqaiEA3ZtbnMUl0+C71Puw8Qe6jClqJl/r+U3YG+VdUUB
-         9HrUdy2Ss15Go3Mh0HEDykJHgT9o5Jzn7t+oMI+YiCchwOpVnzU+1AVDsTE3mB+jFuOB
-         fMRxfHpP2f3a3It1ZuA+GprrKB5JHqfhpZ1tvEl0nmN/FJByu+zuBWNkhu6WMWM+aL0p
-         GOnv4B0Wh/oZmBhmymQY3hr3BMnK51glLdaBbxetSTQT6h/axQVtxUwMG1M8bYtjIRax
-         G/Og==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1733228513; x=1733833313;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=MpIXVp6qOzjwdqyxitDOtzmLzxJa7XWFAuMvx362IEI=;
-        b=dp8psN6VqofIF0Wv4pkdj0Ia963Pv2jp8aKJDu0GOUn6AaqRQdjiSeowNIX1lsGIX8
-         myWM2qOuX5C748ubcRtB1sMEu9SyPovH4E9/q2PQ56LLBWoUdPop/zowGdPtKwTx0+T0
-         Sblh7V7opL8BumjaIPDgTVP/E35dY8HPjxlk5gSAWKeeNVEPGIdd4toB4h3y3BLyH8Ne
-         Fs+c4b9SlG/DXZxTGgqjJxGYa3e3fLYoQQ3rGEkZrvRCkjG0NFf8W3Z3w45ZMBpy/13I
-         dxTcbiJxi9KJ4th6Vy+ws+GLXhgx7oqSi84MM0b0eoEe0xE5NB0A9kidv7b3xKMi/at/
-         B3bQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVKznPFiUQE7aVd3gyBY28Kun8Zm7Ua5Tf2BlJ4lE30BG8Nttzdn/qL0oA0Tqhz/nKGssGOhvCvEZHr@vger.kernel.org, AJvYcCVLsCv6B6JUbKrLcA2lXhaVeX7FPXrf5ptlutTzCYx7r/okvwI8yesylfgpUyJ/F7iwA3Rq9SWY2/m2Nw==@vger.kernel.org, AJvYcCViwbvQHH8nsWF6b32WnGfrve1NOun58cgMFwHfcWdVlKWAHWv6TYuNTxrbxEXk8OQSFH/HWAqBCMK4a6nS@vger.kernel.org, AJvYcCWKNGCjxmhmEymIE9XmwNsEu+Z6sX5L9E20TVAGxJfGsRQxSGymaL1POiNXat1anrQuyoSqIRCyQE8=@vger.kernel.org, AJvYcCXQcA9twTyMGLaRyPfHUNzv+1ynmbCNnLiHTBcwvePYYbxOsFHFtW7x/TqrTvyXschfFwlA2vToM19ie2A=@vger.kernel.org
-X-Gm-Message-State: AOJu0YwxE7ygWV5ZBMXwUDH+vGABc7LJaao2jQozeN7l/IcsGsLNxTno
-	xA18u+yfr8uaqBQ977JLaXeFpYjQb1xRZYvnH73nnNxnsARCMaSWI6OLx9yRuWAKORzX67w+IBE
-	b3sS7Dpm3V4255LjIWZ3OXLIdRmY=
-X-Gm-Gg: ASbGncuHLKnOtYJxjQLI+ympqPo4vwBEmjP9LiTPpXJ3FqI0yApalzkjHI2yx66rBx9
-	R5cTflgg9A0bq35qolhlCOS6hjJLk5w==
-X-Google-Smtp-Source: AGHT+IHvSfIxxZEFrMUMf9JkQ6m84tL4tuWoNpHCUoaLftm4kgpv9pueuEl2AvhcVOPltmicw6auZhK0Kuc4LSVYVTI=
-X-Received: by 2002:a05:6102:38d4:b0:4af:48a6:79d4 with SMTP id
- ada2fe7eead31-4af971fc9c4mr2434948137.6.1733228513292; Tue, 03 Dec 2024
- 04:21:53 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="NNz2uwYs"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1733230993; x=1764766993;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=HmhuEgvI3G1fDAwp//O6mHyy7iS37ogl3iDWsgEbDUM=;
+  b=NNz2uwYs9imaS7k61bMTRE4jTm8JMQdEan2hw9JFDci3ocRWnxj6uGL7
+   HSELJsridM10vLb8kP9AzR5xHd2yTm5sNXYpJB5MfkL1K+dirytkexDFB
+   Npa+mFV4a9tOO3ZXWz/6oNYrVPViqEExQ+5cncVWd0/KGEE9em2zQDlaZ
+   HlMK9RdPhxkfbeWC48PNFGS5CLVfFbcukxT+t9dH87BBqddtxhNurWFnL
+   gUKDDXSSM6ZYwZRBbO4nnfGL01ypPw/KkBDuB5b77bEMeSBxdCngC0wCp
+   ze4x/Ya1+ScpAUXo0VvbhiW63i0G2+roWRokVQ6pU0WOw2EDEDxoKIymy
+   Q==;
+X-CSE-ConnectionGUID: ZF0n0tN/TVOTBdlWNvVnUg==
+X-CSE-MsgGUID: MaFX2jlRR/qFK0RNW1S8EQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11274"; a="32800545"
+X-IronPort-AV: E=Sophos;i="6.12,205,1728975600"; 
+   d="scan'208";a="32800545"
+Received: from fmviesa001.fm.intel.com ([10.60.135.141])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Dec 2024 05:03:09 -0800
+X-CSE-ConnectionGUID: 6N5wxUjUS2Gz1KvHKAdQPA==
+X-CSE-MsgGUID: Rb1DQwAxQlOhWXvK5v1ONg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.12,205,1728975600"; 
+   d="scan'208";a="124370267"
+Received: from powerlab.fi.intel.com (HELO powerlab.backendnet) ([10.237.71.25])
+  by fmviesa001.fm.intel.com with ESMTP; 03 Dec 2024 05:03:07 -0800
+From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Linux PM Mailing List <linux-pm@vger.kernel.org>
+Cc: Artem Bityutskiy <dedekind1@gmail.com>
+Subject: [PATCH] intel_idle: add Clearwater Forest SoC support
+Date: Tue,  3 Dec 2024 15:03:06 +0200
+Message-ID: <20241203130306.1559024-1-artem.bityutskiy@linux.intel.com>
+X-Mailer: git-send-email 2.47.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20241202-starqltechn_integration_upstream-v9-0-a1adc3bae2b8@gmail.com>
- <20241202-starqltechn_integration_upstream-v9-9-a1adc3bae2b8@gmail.com> <b7e4162a-a7f7-462d-9dde-121eeb59d148@kernel.org>
-In-Reply-To: <b7e4162a-a7f7-462d-9dde-121eeb59d148@kernel.org>
-From: Dzmitry Sankouski <dsankouski@gmail.com>
-Date: Tue, 3 Dec 2024 15:21:42 +0300
-Message-ID: <CABTCjFDyoF7g-5tj_dr6k7ScB_313dwEmfdJ+49rwMYfN63x1Q@mail.gmail.com>
-Subject: Re: [PATCH v9 9/9] leds: max77705: Add LEDs support
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, Lee Jones <lee@kernel.org>, 
-	Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@ucw.cz>, 
-	Hans de Goede <hdegoede@redhat.com>, Marek Szyprowski <m.szyprowski@samsung.com>, 
-	Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, Purism Kernel Team <kernel@puri.sm>, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-input@vger.kernel.org, 
-	linux-leds@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-=D0=BF=D0=BD, 2 =D0=B4=D0=B5=D0=BA. 2024=E2=80=AF=D0=B3. =D0=B2 13:30, Krzy=
-sztof Kozlowski <krzk@kernel.org>:
->
-> On 02/12/2024 10:48, Dzmitry Sankouski wrote:
-> > This adds basic support for LEDs for the max77705 PMIC.
-> >
-> > Signed-off-by: Dzmitry Sankouski <dsankouski@gmail.com>
-> >
-> > ---
-> > Changes for v8:
-> > - join line where possible to fit in 100 chars
->
->
-> Coding style asks for 80. checkpatch is not a coding style, unless this
-> came from maintainer's review.
->
+Clearwater Forest (CWF) SoC has the same C-states as Sierra Forest (SRF)
+SoC.  Add CWF support by re-using the SRF C-states table.
 
-On v6 discussion, Lee Jones stated 'This is old guidance':
-https://patchwork.kernel.org/project/linux-input/patch/20241007-starqltechn=
-_integration_upstream-v6-7-0d38b5090c57@gmail.com/
+Note: it is expected that CWF C-states will have same or very similar
+characteristics as SRF C-states (latency and target residency). However,
+there is a possibility that the characteristics will end up being
+different enough when the CWF platform development is finished. In that
+case, a separate CWF C-states table will be created and populated with
+the CWF-specific characteristics (latency and target residency).
 
---=20
-Best regards and thanks for review,
-Dzmitry
+Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+---
+ drivers/idle/intel_idle.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+Note: the patch is against the 'linux-pm' gree.
+base-commit: e70140ba0d2b1a30467d4af6bcfe761327b9ec95
+
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index ac4d8faa3886..23d0cd27a581 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -1651,6 +1651,7 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
+ 	X86_MATCH_VFM(INTEL_ATOM_TREMONT_D,	&idle_cpu_snr),
+ 	X86_MATCH_VFM(INTEL_ATOM_CRESTMONT,	&idle_cpu_grr),
+ 	X86_MATCH_VFM(INTEL_ATOM_CRESTMONT_X,	&idle_cpu_srf),
++	X86_MATCH_VFM(INTEL_ATOM_DARKMONT_X,	&idle_cpu_srf),
+ 	{}
+ };
+ 
+
+-- 
+2.47.0
+
