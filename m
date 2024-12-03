@@ -1,167 +1,117 @@
-Received: from mail-lf1-f52.google.com (mail-lf1-f52.google.com [209.85.167.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5462D198A0E
-	for <linux-pm@vger.kernel.org>; Tue,  3 Dec 2024 08:13:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FA641BD9EB;
+	Tue,  3 Dec 2024 08:25:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733213590; cv=none; b=GKJiNFkX2Jg8SzFI2uexwZtwcqJPYsmb4mlO3Dq5CfzfFaxeB8LfWSFbchxX9qYrr7TXiwl+FaPlR3CLpIlmmkcV+q6sI+boFE5TSUgIEgz0e6TqCo7EkGoRQMV3mJAZN05y/s0jFXaFRfZVokrodnYdK1U2zqHdX2ck+aZ8VCc=
+	t=1733214307; cv=none; b=U1GDNIJM4l4a9a62akNAyzt8vAjRU0wkTnZY+ATfz8fX5r6D54uNNwE5YlGSHE4vFBGMd9sqJH4exxlfBUWg6XM2b03gBRDXcXo1FUpOPzI1G9hSnP0fXgr9J4ctT3PAmWNvXloZ2UY3Ui5VM4tFj/bLWFoJ6iok2yQz+4U5Ug0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733213590; c=relaxed/simple;
-	bh=GfIxjX3fUAG9xD0E7y4Y7LPGVwA/ovHOoj/JqoQo4b8=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ot43wjG2Ot0ZDxMu3V4VZ1uNzp99khPW68Iq+CC5aAU4OmTLOWKjWyGjHcarSqBWQT+hqmDco/tJxOWoF6L8NDmZCw8Twi5jodSE4YInHTtmPE/cAtu6IeGGIG03PJMTeQrfDFlE7QN1AC4HJNvXTITW2u5EfjZJjk2a8V4Gf+Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=O4BjREfV; arc=none smtp.client-ip=209.85.167.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1733214307; c=relaxed/simple;
+	bh=BTa+wgiNyFIm2OTLgqY7mmgwN8DZyO7pNyzVFgh+TMg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Gnufi+d/LAcR06WHRwA08R+abQCjqjxoWtL3lv/EhCb8L+hGpvu/6Bd1tl3PNbURxNPSX01kvoFVi14UYcsKSVoQpaNA1f1nb8SVWtNNznEGJvHWtxWbrsAcztXzbjCJhRuuJ5lbwrqggVOATYVasUPZj5d6Br8YhUyygbJ9ZFY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ckxK2dTU; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="O4BjREfV"
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-53df7f6a133so5513363e87.3
-        for <linux-pm@vger.kernel.org>; Tue, 03 Dec 2024 00:13:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1733213585; x=1733818385; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=2919edKa0scKH1VFTPp4m2/Qq3wOxmRVQ7yuQJSD4N0=;
-        b=O4BjREfVVVXTSe5ArYQqnCSlBSSLQdVhil3OvX8RF4iZ0bRgfrNQGTcXdkZL2FYNfV
-         GFBNNWtzGzEfOybCSOgI+gmmqu5Ovl8D/EjFx4iGDVQYCMPCv3LwJt9V4FjNpicqn+m9
-         cTgaPIbKbrFyPW0t7zeFwbw7z7xzs960gj1X5Q0v0t7oge2xj36/VZRmuySHz7NZpjnN
-         tRiPSJTx45hr67Y52zJtMqV73s+AilHOnBZJGF1CnjfrQONVok6mh8jjJiZaJlOcLJHv
-         06jcGYjaBauFSm3cfMUwvAQKvDFHdnPQnkk2lW2fQKG9FlzsNQsygLh27b3ZwcemBnA/
-         b1nQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1733213585; x=1733818385;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=2919edKa0scKH1VFTPp4m2/Qq3wOxmRVQ7yuQJSD4N0=;
-        b=A5y5o3KcYb+SFtsVkwHqS1uJGC+p5MAgKWbci3CCOdT0LHJcdmn63XDxmdMu73+MJt
-         6ZzKUYoFz8Bq3aJS0GKajN3d/ZsF10zFWcCHmbzICnI7KZoOstsrH4ksuOvUjrJ7Z3Ci
-         4BumOlp8x7zPo+iBOcwyVJdDMiPlcKLTyNm+RXG/x9/JB05JCBR7yrI1CgP4FTRJT6WS
-         OVFRvmQChSL4jH2h2I6bF1MxhdSuH//IHG2DSI4ZRjcgQr0wytHhRuYUjmZEcgCQny1w
-         EfbSiXs3NF+Whkb3NLiIwxUy1+TSTuO2fYw4De9kA6r8vCGh4C6byqT46cMQr4IgCPFj
-         2mNw==
-X-Forwarded-Encrypted: i=1; AJvYcCWIsBF9iCRbzjX+TkIsyCoBOdUmKIBLtqwIPTd2gCtDUo0DyAh/hMaBm1NfhXKiW023YnR1oTiI9Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YycbOj0n2g0JduRn0tC3HzgHiXDo3ak8rDI/jpoGGBbt3mXRHC/
-	Gow9y/iaka/EQMPnNgd1JqUzOZRY+oSjpmBaa2H61fVExh6AEKsvvNA+eZShJp4=
-X-Gm-Gg: ASbGncvI9jFvBZC2iMHMkdoofM0qvKT8rmrmbWpc3NsniA0zE/fqFU1qVTmkMBxLDaY
-	FGYsV1mHfVT9NXiBwLXFzQHccSZk/+SLU+Jh41/ixj7MSVFDwxgsnXFOcIs3BiIMp6cWv9MHhxc
-	K1+XLyiQIKcKCIIk0y1yIJTmTS/Gy0iVbOihaZyJ7X16ZC9u119vrBqDpt8tp01BdWaUHOokQhq
-	WLUmaAXunpVRqGFwznNxI3FQCpWhjmMsNvfl5ynnrAkha1MNVeUt7x0qqEZRRxL7hJkOvw=
-X-Google-Smtp-Source: AGHT+IF96tm1kW0L+6Eafet2kokvnQva3vx6OFst6liTSpf4L4XZltWOm8ICfrYv1DvfjDe/iDx2Pg==
-X-Received: by 2002:a05:6512:2810:b0:53d:e76b:5e6e with SMTP id 2adb3069b0e04-53e12a058a2mr876514e87.31.1733213585423;
-        Tue, 03 Dec 2024 00:13:05 -0800 (PST)
-Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-434aa74f2c7sm215212575e9.2.2024.12.03.00.13.04
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 Dec 2024 00:13:04 -0800 (PST)
-From: Neil Armstrong <neil.armstrong@linaro.org>
-Date: Tue, 03 Dec 2024 09:13:00 +0100
-Subject: [PATCH v3 2/2] OPP: fix dev_pm_opp_find_bw_*() when bandwidth
- table not initialized
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ckxK2dTU"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18C84C4CECF;
+	Tue,  3 Dec 2024 08:25:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1733214307;
+	bh=BTa+wgiNyFIm2OTLgqY7mmgwN8DZyO7pNyzVFgh+TMg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ckxK2dTUgLzQ2DQRimHhuFTZClvmg9v2v6qZS5ZW0HEZnEHX0Z9eN6C5SXg8A9DTz
+	 RwVg/W0dCHB+K9d5zC0zxTHlRp+jrc3LBuUREF8+/+7ZCaR0IqJMITxwZKu9AxPUBq
+	 juo6vTmP4pnjcH40huRrykLqxdvwUNlm0JrL0O0s7+dXX1aCrImZzWUCC7HwXFMvH+
+	 l8cqYI570GOD5Unw6DhAgn4RuuRPddA7Z5b7Yd9L+CEirC3AxjpL/hJ906pLS2HJGv
+	 uoGxRgeknk0X+D0bw6c5aoFF7bFixA/20M4dG/5SzmujY6Qqw8uwUPdgZuubr+T4yD
+	 gWv8VrbCKXxAA==
+Received: from johan by xi.lan with local (Exim 4.97.1)
+	(envelope-from <johan@kernel.org>)
+	id 1tIODN-0000000082S-3VtQ;
+	Tue, 03 Dec 2024 09:25:02 +0100
+Date: Tue, 3 Dec 2024 09:25:01 +0100
+From: Johan Hovold <johan@kernel.org>
+To: Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
+	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Cc: Johan Hovold <johan+linaro@kernel.org>,
+	Michael Turquette <mturquette@baylibre.com>,
+	linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org,
+	regressions@lists.linux.dev, Aishwarya TCV <aishwarya.tcv@arm.com>,
+	Chuan Liu <chuan.liu@amlogic.com>,
+	Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH] Revert "clk: Fix invalid execution of clk_set_rate"
+Message-ID: <Z07AXbQvvZwI8Ki6@hovoldconsulting.com>
+References: <20241202100621.29209-1-johan+linaro@kernel.org>
+ <3fd004add188460bf2bdd1a718387c7f.sboyd@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20241203-topic-opp-fix-assert-index-check-v3-2-1d4f6f763138@linaro.org>
-References: <20241203-topic-opp-fix-assert-index-check-v3-0-1d4f6f763138@linaro.org>
-In-Reply-To: <20241203-topic-opp-fix-assert-index-check-v3-0-1d4f6f763138@linaro.org>
-To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, 
- Stephen Boyd <sboyd@kernel.org>, 
- Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Neil Armstrong <neil.armstrong@linaro.org>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2351;
- i=neil.armstrong@linaro.org; h=from:subject:message-id;
- bh=GfIxjX3fUAG9xD0E7y4Y7LPGVwA/ovHOoj/JqoQo4b8=;
- b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBnTr2Ong2+ZytkxIK3MGstGfV86Kj9+CTp9OMCqeeK
- qFhNAI6JAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZ069jgAKCRB33NvayMhJ0Q+DEA
- CKQjhM+SeZZOaLtTPK/swZ1Re+qNDLT9wUIMuCZzOIjbuuoMQHa6PjyLiDt9KVK/9pmnoCMEPPo6y3
- BPw+JM37Mc+rzES+XO6axgc9gE80c6DpMLIpf00WLnOybpsYMz+OuRX8ElA9bY5Z/PH2cV9UO4sEQs
- wHPxccYfZaPy8hZn/w/OO+49SBfCPV2iTTFtyi3EQQLx97ZB9olfvnZvzND7QbV8Vs+PvDYXridrMl
- zLrnSmivO3ZkThQzBXXekIy9ADKUTGbQCJu3zoHp11zhXZbIZKe6Qy7pnWqgkQmgXjZ7mNnBHppqNd
- vGQDkGW57bl7U/Gfqa/BpVoU1e0BH0UVt78jUpW5k3MZ3/4FwDCQVKEGJWGhrDST9mdU3umhTFHMqR
- yhV2oHDMh771Z9YNP9a/xO3yA2AgDbcdezwRcouR6iTj0N9Vq2N9sKS3OK8B4DMF9EJ1j/U68J3ME1
- tiiLUvsFSQJe9XEnUUMsDm9oN/UG/QNwxcFNjlY3/UbMUZH1zjYDxzhG1/Hhveh0HttP0pUnTddILK
- a2+MUCWrQeibDF0ropeuGdyPAv6MlHfCpqviUjWqoX6553b17u6rm2ncFpWFDUrDVcNn4kdHV5JjW3
- XG43HgIQ+dxFCbvCJsfk6EJR6TDqkZV/AfR6DnKlgCj3r+Pv3X1rFuBBirsQ==
-X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
- fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3fd004add188460bf2bdd1a718387c7f.sboyd@kernel.org>
 
-If a driver calls dev_pm_opp_find_bw_ceil/floor() the retrieve bandwidth
-from the OPP table but the bandwidth table was not created because the
-interconnect properties were missing in the OPP consumer node, the
-kernel will crash with:
+[ +CC: Viresh and Sudeep ]
 
-Unable to handle kernel NULL pointer dereference at virtual address 0000000000000004
-...
-pc : _read_bw+0x8/0x10
-lr : _opp_table_find_key+0x9c/0x174
-...
-Call trace:
-  _read_bw+0x8/0x10 (P)
-  _opp_table_find_key+0x9c/0x174 (L)
-  _find_key+0x98/0x168
-  dev_pm_opp_find_bw_ceil+0x50/0x88
-...
+On Mon, Dec 02, 2024 at 05:20:06PM -0800, Stephen Boyd wrote:
+> Quoting Johan Hovold (2024-12-02 02:06:21)
+> > This reverts commit 25f1c96a0e841013647d788d4598e364e5c2ebb7.
+> > 
+> > The offending commit results in errors like
+> > 
+> >         cpu cpu0: _opp_config_clk_single: failed to set clock rate: -22
+> > 
+> > spamming the logs on the Lenovo ThinkPad X13s and other Qualcomm
+> > machines when cpufreq tries to update the CPUFreq HW Engine clocks.
+> > 
+> > As mentioned in commit 4370232c727b ("cpufreq: qcom-hw: Add CPU clock
+> > provider support"):
+> > 
+> >         [T]he frequency supplied by the driver is the actual frequency
+> >         that comes out of the EPSS/OSM block after the DCVS operation.
+> >         This frequency is not same as what the CPUFreq framework has set
+> >         but it is the one that gets supplied to the CPUs after
+> >         throttling by LMh.
+> > 
+> > which seems to suggest that the driver relies on the previous behaviour
+> > of clk_set_rate().
+> 
+> I don't understand why a clk provider is needed there. Is anyone looking
+> into the real problem?
 
-In order to fix the crash, create an assert function to check
-if the bandwidth table was created before trying to get a
-bandwidth with _read_bw().
+I mentioned this to Mani yesterday, but I'm not sure if he has had time
+to look into it yet. And I forgot to CC Viresh who was involved in
+implementing this. There is comment of his in the thread where this
+feature was added:
 
-Fixes: add1dc094a74 ("OPP: Use generic key finding helpers for bandwidth key")
-Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
----
- drivers/opp/core.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+	Most likely no one will ever do clk_set_rate() on this new
+	clock, which is fine, though OPP core will likely do
+	clk_get_rate() here.
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index ebe7887a27d3c1dd6c652c8bf9f5f9a285d7e74e..137764f2ac7c72585953d0928b6f917fb6f1fe7c 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -116,6 +116,15 @@ static bool assert_clk_index(struct opp_table *opp_table,
- 	return opp_table->clk_count > index;
- }
- 
-+/*
-+ * Returns true if bandwidth table is large enough to contain the bandwidth index.
-+ */
-+static bool assert_bandwidth_index(struct opp_table *opp_table,
-+				   unsigned int index)
-+{
-+	return opp_table->path_count > index;
-+}
-+
- /**
-  * dev_pm_opp_get_bw() - Gets the bandwidth corresponding to an opp
-  * @opp:	opp for which bandwidth has to be returned for
-@@ -915,7 +924,8 @@ struct dev_pm_opp *dev_pm_opp_find_bw_ceil(struct device *dev, unsigned int *bw,
- 	unsigned long temp = *bw;
- 	struct dev_pm_opp *opp;
- 
--	opp = _find_key_ceil(dev, &temp, index, true, _read_bw, NULL);
-+	opp = _find_key_ceil(dev, &temp, index, true, _read_bw,
-+			     assert_bandwidth_index);
- 	*bw = temp;
- 	return opp;
- }
-@@ -946,7 +956,8 @@ struct dev_pm_opp *dev_pm_opp_find_bw_floor(struct device *dev,
- 	unsigned long temp = *bw;
- 	struct dev_pm_opp *opp;
- 
--	opp = _find_key_floor(dev, &temp, index, true, _read_bw, NULL);
-+	opp = _find_key_floor(dev, &temp, index, true, _read_bw,
-+			      assert_bandwidth_index);
- 	*bw = temp;
- 	return opp;
- }
+which may suggest that some underlying assumption has changed. [1]
 
--- 
-2.34.1
+There are some more details in that thread that should explain why
+things were implemented the way they were:
 
+	https://lore.kernel.org/linux-arm-msm/20221117053145.10409-1-manivannan.sadhasivam@linaro.org/
+
+> > Since this affects many Qualcomm machines, let's revert for now.
+> > 
+> > Fixes: 25f1c96a0e84 ("clk: Fix invalid execution of clk_set_rate")
+> > Reported-by: Aishwarya TCV <aishwarya.tcv@arm.com>
+> > Link: https://lore.kernel.org/all/e2d83e57-ad07-411b-99f6-a4fc3c4534fa@arm.com/
+> > Cc: Chuan Liu <chuan.liu@amlogic.com>
+> > Cc: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+> > Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
+> > ---
+> 
+> Applied to clk-fixes
+
+Thanks.
+
+Johan
+
+[1] https://lore.kernel.org/linux-arm-msm/20221118055730.yrzpuih3zfko5c2q@vireshk-i7/
