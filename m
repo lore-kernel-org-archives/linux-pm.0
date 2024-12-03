@@ -1,146 +1,185 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f49.google.com (mail-lf1-f49.google.com [209.85.167.49])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 143071F7557;
-	Tue,  3 Dec 2024 15:28:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 273271F76AE
+	for <linux-pm@vger.kernel.org>; Tue,  3 Dec 2024 15:36:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733239695; cv=none; b=lbvj0p3GwI3J0fdl9Vv5QvVdTsBX0kI20RwkgvBF1kzPqfrPNhm1z43LVxsqPYxw2upmoR1kY6STJNuM+cMZa73XNC6h63AmDTWG+dZuxmg+iOwB828p7I5OoC0UuSPnmq/XpXClhU+/1+q4W5Uk4dE4sX4ZSTVKq3TVSp6/99g=
+	t=1733240213; cv=none; b=O3teNs6dLX5ss6DChe1G6c6LXCBpRyqWlKKx3wbPyvSqFZZBR9f5VIXNACX/r05JwLB+lj5rKOwwIno+Se//C5HoivY/Gn6xJi99LS05+L4P8S024CDGMn86BIaDpqckzVqsPxj1Uh07gXGQh+iYfAinshUh3e4PfhP30aykynI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733239695; c=relaxed/simple;
-	bh=N0BkY/ggH+tuVrewwwmwKP9Nf+Iv3TX+3MCwcoLII/4=;
+	s=arc-20240116; t=1733240213; c=relaxed/simple;
+	bh=8cI36BzhHV8HgXQu/TVym++uvxOl9i6AEwSINrhZjEY=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=gPPFvi5GdKIHomyy2kE0qlid+LhydfD6PmLezrXycZ/mjCa039heGOQoFC/mQOVP1QKd8ypoMTQOeWHRittlpfjumc4NQLGmfQKINdmODLRzd60jvL23SW0MmXOSyGrVBZPKSnB1p60tLJF3GGzXv9Mj87uPlLK0XBGudwOKYik=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kWl6IF+P; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kWl6IF+P"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C65CFC4CED8;
-	Tue,  3 Dec 2024 15:28:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1733239694;
-	bh=N0BkY/ggH+tuVrewwwmwKP9Nf+Iv3TX+3MCwcoLII/4=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=kWl6IF+PL/jW5gtC87aDjIqfmBIOq8mAVxVdB75oYAgao14c3KJmVPuAQsFCY7nCF
-	 Sj82YOBr1WLj9MoH0kwg8uMS4SggJAH74i4LLk8R8qA1aQwLgjduXPNdFbp1ZYGlEe
-	 692Tb1GdDXLLvXoowEQmJxhjjz0HSf0aLXHey4v6N2k5tXzSCZ4HUgb8mml2ZeNnvF
-	 pTjM/UjBeyuc162YLyE1Eet69iTtumlyCtzWHkv0fdH2XB96sHqFRynQMXRwhoY8Jb
-	 r7Er3eSyU3O992lF0Kup6xaEcnRq1zwgKmWADWLlQu8HJBNhoKPWn9fMqKmswInZ0i
-	 hDnDXxWNmiRzw==
-Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-53df19bf6a9so6525641e87.1;
-        Tue, 03 Dec 2024 07:28:14 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCW1pKz22fCcHWkH64z9gc/LXUl73TwN7Yv/7dmBF8l2j353Y5LZV+Oi5X5kMYNztUg2/48875r8@vger.kernel.org, AJvYcCWoQ2TY7rhJuL7kFWTqPp/WnGl90XoMY7yMTR0KOPTCONdCS1NCyU4LWUauQmLQLqgBa6C7VlxZHlw=@vger.kernel.org, AJvYcCX3P/n50Uc68le8rjdLMT4Aazct0IFvFpsmKJ1OT7y3E9RrwVjEwd8lNpM3YCNVdLozIH3tEfS6rZtoqtNd@vger.kernel.org, AJvYcCX3Vu+1xewLIBhoLoHN6tpcMpncmR0Ox5U+rRJxsb16mRx1DeJBsWOqLOq2Ft8YGXmjXZlGRdmXrn4Pr34=@vger.kernel.org
-X-Gm-Message-State: AOJu0YzGwTK01D/9VWKaQcshE3kiM09M2tfMVHqb99CQi4eu+IU8ONKS
-	8C2bk7bnCMnAEWdNgeI+4c6ZgpXSSL0rH7PFtUh/ckL0JINtZ3qUg7dJPasupJ67AODv0YsU10C
-	UPM8Od0a46NZofEbxPTm9lQHs/QY=
-X-Google-Smtp-Source: AGHT+IFbGc7Z55XjDY3dxgfRXS7E3uMfxtXjokd26/r3+Qtpz7UwIcGh3l41gXthpLrPGRCJfCAoo5M2nf1TrArtITU=
-X-Received: by 2002:a05:6512:3b12:b0:53d:a86e:42d7 with SMTP id
- 2adb3069b0e04-53e12a2e9dfmr1948992e87.49.1733239693443; Tue, 03 Dec 2024
- 07:28:13 -0800 (PST)
+	 To:Cc:Content-Type; b=DytggueFm/uyexVtxQvKOIBuS+k7f7ghcDYCxDBwDKP4HEEfExh7ghnt18tQ4ihcsfKywiphU8ZtYrGtsBbNIeo9qRoqu+4YESyhOITz8+M8QX3g5eGKgbWQbl/+3Jz2p2cU1b4aaDoqc9JnbrdESTvu+NKeZ76aIpzlf6kHyN4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=csie.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.167.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=csie.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-53df80eeeedso5876567e87.2
+        for <linux-pm@vger.kernel.org>; Tue, 03 Dec 2024 07:36:50 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1733240209; x=1733845009;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :reply-to:in-reply-to:references:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Dh6O5hcOma4p8AZfLng5WyXnPkEX/xU+8B4IUyvO9lw=;
+        b=j5kgLFJLDG2pSrHlE8yT58OqeSJyPXW2PGNa0xDFbK9jOS6BSyzz3DUVLw3IP6D94B
+         yTDeM+b3Bn2wmowhE36UDFZo5XNbtPAupTZmRgFSARSV4ZzUUPB75InTaAO8zZwVDCdC
+         biBD3OylgyLZrmtamek/Uvs8XhrRRp1C/8DxXXoNnY9eKH44GURMzok6pdbxAiLq2x5o
+         12yWKOr4zd6k90CPZYeS3rLFENZSLyuR3n12j3GkyACWlZQpYV9Fb+T+OiV56WVjC5Yi
+         0qnmHviXPFWV8NWliKdFePntKO1qV/7gB0raiwpRBaTRBxmCxXoHvzCoMQ3JuD+wDigi
+         cOvQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXsJotkJCQ0aRuUg3VecawT0ffkojUZ3BWql2TdAYy3QJD2dtVLSretIYJ+ML51rRQFdCzEB7HAOQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx5FoY64FP+vIEWUh/58uyYub5bf2tW9ArRIfB09xdeCAVbAFZQ
+	EEGxqC5+SOxyhbGvvR+fkbxjt0Hi7sWhWTqm/UdY1VunJQXQeVCdfnZzi43z
+X-Gm-Gg: ASbGncvzdwBKDYSRKZZZZ7E04lzYia2wdZq5kIbohOn21AaBlQkF+27VMCIhLTENQHE
+	zn0YEVr8BbrOupYZe2sbYRkv9L8owXcp6LRLmrVaJX2RwxXptqIl+Am6H/AEM3mgDOnDWO8I3Ct
+	Vx0ysmpTFc48gD3F1HKA3GoE5F53Zwe/GTaUGij/2cTuBI7FQhlY1BVHlwGpd6OZa9jQiI4EtcY
+	5nG2L1y3DEExVsGdHwFWuTaoc17F3Bu/ewTrjzM5EichwXbb0Pt2vyCH6ZMBkzaCpM63ex8ElGx
+	qecbceo=
+X-Google-Smtp-Source: AGHT+IE+Wf9keFJpx6nSTScWO55cEngwZlrKSXVCpLy8rkukzvtKU6oUShnToXWQzTo8E/pJJneeRw==
+X-Received: by 2002:a05:6512:3c8c:b0:53d:ed63:4bdf with SMTP id 2adb3069b0e04-53e12a079fcmr1553903e87.34.1733240208644;
+        Tue, 03 Dec 2024 07:36:48 -0800 (PST)
+Received: from mail-lj1-f171.google.com (mail-lj1-f171.google.com. [209.85.208.171])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-53e1ba299dbsm44960e87.109.2024.12.03.07.36.48
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 03 Dec 2024 07:36:48 -0800 (PST)
+Received: by mail-lj1-f171.google.com with SMTP id 38308e7fff4ca-2ffdf564190so65724701fa.3
+        for <linux-pm@vger.kernel.org>; Tue, 03 Dec 2024 07:36:48 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCXOmNcDX8ILaFePMRif+L9iHe81+pmKuiS9UjPLnJP6m37SJ/pcy7wVeMGf3VP826bFCCYaAOWomg==@vger.kernel.org
+X-Received: by 2002:a2e:bc83:0:b0:2fb:955e:5c17 with SMTP id
+ 38308e7fff4ca-30009cc52cfmr17349571fa.40.1733240208287; Tue, 03 Dec 2024
+ 07:36:48 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20241128111844.GE10431@google.com> <87o71xvuf3.ffs@tglx>
- <20241130114549.GI10431@google.com> <87iks3wt2t.ffs@tglx> <CAK7LNARWpcbVsJFYCDN28vuuLfEibZmT+m5=qMEJcKD9Abzv4Q@mail.gmail.com>
- <87iks1vlu5.ffs@tglx>
-In-Reply-To: <87iks1vlu5.ffs@tglx>
-From: Masahiro Yamada <masahiroy@kernel.org>
-Date: Wed, 4 Dec 2024 00:27:36 +0900
-X-Gmail-Original-Message-ID: <CAK7LNARufW5wc=qBt5R=RJ9BkFirLKAgRgg_t=OmTTGbjLfsAg@mail.gmail.com>
-Message-ID: <CAK7LNARufW5wc=qBt5R=RJ9BkFirLKAgRgg_t=OmTTGbjLfsAg@mail.gmail.com>
-Subject: Re: [PATCH] modpost: Add .irqentry.text to OTHER_SECTIONS
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Sergey Senozhatsky <senozhatsky@chromium.org>, 20241015061522.25288-1-rui.zhang@intel.com, 
-	Zhang Rui <rui.zhang@intel.com>, hpa@zytor.com, peterz@infradead.org, 
-	thorsten.blum@toblux.com, yuntao.wang@linux.dev, tony.luck@intel.com, 
-	len.brown@intel.com, srinivas.pandruvada@intel.com, 
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org, mingo@redhat.com, 
-	bp@alien8.de, dave.hansen@linux.intel.com, rafael.j.wysocki@intel.com, 
-	x86@kernel.org, linux-pm@vger.kernel.org, 
-	Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nicolas@fjasle.eu>, linux-kbuild@vger.kernel.org
+References: <20241111112237.336310-2-u.kleine-koenig@baylibre.com>
+In-Reply-To: <20241111112237.336310-2-u.kleine-koenig@baylibre.com>
+Reply-To: wens@csie.org
+From: Chen-Yu Tsai <wens@csie.org>
+Date: Tue, 3 Dec 2024 23:36:35 +0800
+X-Gmail-Original-Message-ID: <CAGb2v65i=Ttij+pnK9nhdPzsk9kTdP0ZXS1MGboAud+QudbEDA@mail.gmail.com>
+Message-ID: <CAGb2v65i=Ttij+pnK9nhdPzsk9kTdP0ZXS1MGboAud+QudbEDA@mail.gmail.com>
+Subject: Re: [PATCH] PM / devfreq: sun8i-a33-mbus: Simplify by using more devm functions
+To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, 
+	Chanwoo Choi <cw00.choi@samsung.com>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
+	Samuel Holland <samuel@sholland.org>, linux-pm@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Dec 3, 2024 at 6:03=E2=80=AFAM Thomas Gleixner <tglx@linutronix.de>=
- wrote:
+On Mon, Nov 11, 2024 at 7:22=E2=80=AFPM Uwe Kleine-K=C3=B6nig
+<u.kleine-koenig@baylibre.com> wrote:
 >
-> On Mon, Dec 02 2024 at 11:02, Masahiro Yamada wrote:
-> > On Sun, Dec 1, 2024 at 8:17=E2=80=AFPM Thomas Gleixner <tglx@linutronix=
-.de> wrote:
-> >>
-> >> The compiler can fully inline the actual handler function of an interr=
-upt
-> >> entry into the .irqentry.text entry point. If such a function contains=
- an
-> >> access which has an exception table entry, modpost complains about a
-> >> section mismatch:
-> >>
-> >>   WARNING: vmlinux.o(__ex_table+0x447c): Section mismatch in reference=
- ...
-> >>
-> >>   The relocation at __ex_table+0x447c references section ".irqentry.te=
-xt"
-> >>   which is not in the list of authorized sections.
-> >>
-> >> Add .irqentry.text to OTHER_SECTIONS to cure the issue.
-> >>
-> >> Reported-by: Sergey Senozhatsky <senozhatsky@chromium.org>
-> >
-> > I found the context in LKML.
-> > Closes: https://lore.kernel.org/all/20241128111844.GE10431@google.com/
-> >
-> > However, is this still relevant to the mainline kernel?
-> >
-> > In Linux 5.4.y, I agree this because smp_apic_timer_interrupt()
-> > is annotated as __irq_entry:
+> Use devm allocators for enabling the bus clock and
+> clk_rate_exclusive_get(). This simplifies error handling and the remove
+> callback.
 >
-> Correct.
+> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@baylibre.com>
+
+Reviewed-by: Chen-Yu Tsai <wens@csie.org>
+
+> ---
+>  drivers/devfreq/sun8i-a33-mbus.c | 38 ++++++++------------------------
+>  1 file changed, 9 insertions(+), 29 deletions(-)
 >
-> > In this mainline kernel, DEFINE_IDTENTRY_SYSVEC()
-> > expands to a normal .text function which is explicitly
-> > annotated 'noinline'.
+> diff --git a/drivers/devfreq/sun8i-a33-mbus.c b/drivers/devfreq/sun8i-a33=
+-mbus.c
+> index bcf654f4ff96..5b630c6e602e 100644
+> --- a/drivers/devfreq/sun8i-a33-mbus.c
+> +++ b/drivers/devfreq/sun8i-a33-mbus.c
+> @@ -360,7 +360,7 @@ static int sun8i_a33_mbus_probe(struct platform_devic=
+e *pdev)
+>         if (IS_ERR(priv->reg_mbus))
+>                 return PTR_ERR(priv->reg_mbus);
 >
-> It's not annotated noinline, it's annotated 'noinstr', which puts the
-> code into the .noinstr.text section. That one is indeed covered.
-
-
-The callsite of local_apic_timer_interrupt() is annotated 'noinline'
-if I correctly understand this line:
-  https://github.com/torvalds/linux/blob/v6.13-rc1/arch/x86/include/asm/idt=
-entry.h#L272
-
-
-It expands to:
-
-static noinline void __sysvec_apic_timer_interrupt(struct pt_regs *regs)
-{
-       [snip]
-       local_apic_timer_interrupt();
-       [snip]
-}
-
-
-
-> So yes, the fix is only required for pre 5.8 kernels.
-
-This never occurs on x86 after commit f0178fc01fe46,
-but theoretically this may occur for other architectures.
-
-Now applied to linux-kbuild.
-Thanks.
-
-
-
-
+> -       priv->clk_bus =3D devm_clk_get(dev, "bus");
+> +       priv->clk_bus =3D devm_clk_get_enabled(dev, "bus");
+>         if (IS_ERR(priv->clk_bus))
+>                 return dev_err_probe(dev, PTR_ERR(priv->clk_bus),
+>                                      "failed to get bus clock\n");
+> @@ -375,24 +375,15 @@ static int sun8i_a33_mbus_probe(struct platform_dev=
+ice *pdev)
+>                 return dev_err_probe(dev, PTR_ERR(priv->clk_mbus),
+>                                      "failed to get mbus clock\n");
 >
-> Thanks,
+> -       ret =3D clk_prepare_enable(priv->clk_bus);
+> -       if (ret)
+> -               return dev_err_probe(dev, ret,
+> -                                    "failed to enable bus clock\n");
+> -
+>         /* Lock the DRAM clock rate to keep priv->nominal_bw in sync. */
+> -       ret =3D clk_rate_exclusive_get(priv->clk_dram);
+> -       if (ret) {
+> -               err =3D "failed to lock dram clock rate\n";
+> -               goto err_disable_bus;
+> -       }
+> +       ret =3D devm_clk_rate_exclusive_get(dev, priv->clk_dram);
+> +       if (ret)
+> +               return dev_err_probe(dev, ret, "failed to lock dram clock=
+ rate\n");
 >
->         tglx
-
-
-
---=20
-Best Regards
-Masahiro Yamada
+>         /* Lock the MBUS clock rate to keep MBUS_TMR_PERIOD in sync. */
+> -       ret =3D clk_rate_exclusive_get(priv->clk_mbus);
+> -       if (ret) {
+> -               err =3D "failed to lock mbus clock rate\n";
+> -               goto err_unlock_dram;
+> -       }
+> +       ret =3D devm_clk_rate_exclusive_get(priv->clk_mbus);
+> +       if (ret)
+> +               return dev_err_probe(dev, ret, "failed to lock mbus clock=
+ rate\n");
+>
+>         priv->gov_data.upthreshold      =3D 10;
+>         priv->gov_data.downdifferential =3D  5;
+> @@ -405,10 +396,8 @@ static int sun8i_a33_mbus_probe(struct platform_devi=
+ce *pdev)
+>         priv->profile.max_state         =3D max_state;
+>
+>         ret =3D devm_pm_opp_set_clkname(dev, "dram");
+> -       if (ret) {
+> -               err =3D "failed to add OPP table\n";
+> -               goto err_unlock_mbus;
+> -       }
+> +       if (ret)
+> +               return dev_err_probe(dev, ret, "failed to add OPP table\n=
+");
+>
+>         base_freq =3D clk_get_rate(clk_get_parent(priv->clk_dram));
+>         for (i =3D 0; i < max_state; ++i) {
+> @@ -448,12 +437,6 @@ static int sun8i_a33_mbus_probe(struct platform_devi=
+ce *pdev)
+>
+>  err_remove_opps:
+>         dev_pm_opp_remove_all_dynamic(dev);
+> -err_unlock_mbus:
+> -       clk_rate_exclusive_put(priv->clk_mbus);
+> -err_unlock_dram:
+> -       clk_rate_exclusive_put(priv->clk_dram);
+> -err_disable_bus:
+> -       clk_disable_unprepare(priv->clk_bus);
+>
+>         return dev_err_probe(dev, ret, err);
+>  }
+> @@ -472,9 +455,6 @@ static void sun8i_a33_mbus_remove(struct platform_dev=
+ice *pdev)
+>                 dev_warn(dev, "failed to restore DRAM frequency: %d\n", r=
+et);
+>
+>         dev_pm_opp_remove_all_dynamic(dev);
+> -       clk_rate_exclusive_put(priv->clk_mbus);
+> -       clk_rate_exclusive_put(priv->clk_dram);
+> -       clk_disable_unprepare(priv->clk_bus);
+>  }
+>
+>  static const struct sun8i_a33_mbus_variant sun50i_a64_mbus =3D {
+>
+> base-commit: 6d59cab07b8d74d0f0422b750038123334f6ecc2
+> --
+> 2.45.2
+>
+>
