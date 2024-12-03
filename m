@@ -1,195 +1,279 @@
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B47E51F76D1
-	for <linux-pm@vger.kernel.org>; Tue,  3 Dec 2024 15:57:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61DD21F76AD;
+	Tue,  3 Dec 2024 15:58:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733241452; cv=none; b=JqRF+GiRfAO0Q8RQGr+VXydZ5trLtkl831+5mlXpCH8d5BFNVZ12/Cn0eoNCNBlSQG6+rD+n6wlbqtxN0dIlDKLnZAhMl6+b7HGlwRcyfTTHL3ybCPsXs2PpxLfk/d9tzl09Q7SkZeQO+hcS7yPWKwRYXFHJOj83zq5Q+at6PDw=
+	t=1733241523; cv=none; b=Mj9w6L4NnK5msbekpqVNRbe6kZ8I8mJUbz7mVCppDd/yD3Fwkx23DnfS+r/C0Kka+k6E7gYf8cUWrh3m22S4VLOM+ecF7egqsGx6vxae1LQj7Hw/eIHhJ1J0I0L484+gc0gSXVuWOWwMYRjW6Jepz3shfKAVrp6HTi0+rGBLEBc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733241452; c=relaxed/simple;
-	bh=lWshmFTdYstAW3YCoOcYWubqD2A/7hg/fVziz+vYBkM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=eQcv5Le7zatHrg63x+HMT4UXe2SI2WeEzV8Gs/W6sFxFWYv1i4dYif5M5GJREqcJTwPL9oj+8igu6AJN+u4Is01uzf2DoroHnCEk9x2h3DGCqT0kMzgGNVFdqLxIJG0Lwv1nhXYPBqfOxcN/IOCJ0XpjkcEy0R8mKtoOaSrihtQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=P/u6cjBp; arc=none smtp.client-ip=159.69.126.157
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
+	s=arc-20240116; t=1733241523; c=relaxed/simple;
+	bh=XIcKNOfiIWK3lnEygoZBuYhAOFl3mmPl+5JRrgpRj94=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=DCM72O9Q902CBgrvxc16U2TQ7Th03arIxEQeBqaKOqUK2aqANi/lxDfm7K1P7DPrDxC0kHj8aIAgLyho7Nyvzccniny46vBGYZsrCIBF4zutacb0MqF30O1oLW0lL6TGIDsRBD03c4jpcg1j+J+xdkagHheoAMac7dtIYe08EtE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UjXlOj3k; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="P/u6cjBp"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1733241441;
-	bh=lWshmFTdYstAW3YCoOcYWubqD2A/7hg/fVziz+vYBkM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=P/u6cjBpfkunkZT4AaQET8u/w6jGQ4GAtcekph/hkNIjPUQGv68AM9xI/t6/HR3nX
-	 MHP9ryCgSpsze98M74+fHzZVX6EASmAaqohmRyrwN0J5mROmxIJphagNMXSu73WYPg
-	 S2ng8k1mmmFk90+gCsaVQTKXg5uPJG5jz5YmIRU4=
-Date: Tue, 3 Dec 2024 16:57:21 +0100
-From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
-To: "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, 
-	"Kurmi, Suresh Kumar" <suresh.kumar.kurmi@intel.com>, "Coelho, Luciano" <luciano.coelho@intel.com>, 
-	"Saarinen, Jani" <jani.saarinen@intel.com>, "Nikula, Jani" <jani.nikula@intel.com>, 
-	"De Marchi, Lucas" <lucas.demarchi@intel.com>, 
-	"intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>, 
-	"intel-xe@lists.freedesktop.org" <intel-xe@lists.freedesktop.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, 
-	Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: Regression on linux-next (next-20241120) and drm-tip
-Message-ID: <1ed0ba64-4e8d-416a-8718-34e7f045d443@t-8ch.de>
-References: <SJ1PR11MB6129CCD82CD78D8EE6E27EF4B9362@SJ1PR11MB6129.namprd11.prod.outlook.com>
- <SJ1PR11MB612965ACA3E84745346F0400B9362@SJ1PR11MB6129.namprd11.prod.outlook.com>
- <5e405ad4-34d6-4507-978f-3d81d4af2455@t-8ch.de>
- <CAJZ5v0iXKvaxz-hmW2+qwTcSmtPJ23Hv04CMnmT=qPE0ytNwLg@mail.gmail.com>
- <56d574c6-6eab-4388-8cb8-70cd615a8941@t-8ch.de>
- <CAJZ5v0gFwu+6Cm7ORs7+TAc5jzXZRBO1uGcttBTTvK4OqT3Q6g@mail.gmail.com>
- <2ad31476-3f37-43cb-96cf-379d50d7b799@t-8ch.de>
- <SJ1PR11MB61295BDE8405A1A5FFC1CB7FB9362@SJ1PR11MB6129.namprd11.prod.outlook.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UjXlOj3k"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 060DBC4CED6;
+	Tue,  3 Dec 2024 15:58:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1733241523;
+	bh=XIcKNOfiIWK3lnEygoZBuYhAOFl3mmPl+5JRrgpRj94=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=UjXlOj3kmx95EVRr6poZcNT35j3F6GnAt6ahYy9BVBeUuYWKIvGzCuz7ebjkOgjmP
+	 xhYMZnp21cLCHWLwUHAuLe4U5s3st7DyUl09sBm6Qd/4wALJOxgSR2LT1qFzdDL0Yx
+	 thaq31UVv2cGr8+5T+qbgaEmzsIUWu6ezVpaiv8eeZNAarY6i6i1aV60dW+sebRNEx
+	 tLdigGZr/dFckxNmvsbvSypkg1zndloin8aQ+uQp6q669zsZK6xCg9BNi6sYFVD59Z
+	 8OvMYNh5Otd1dk+wmLLxt6Ufkdji5ziDHv75+ItCZxAzNwqUbXXeTnDg5pAOlAiDzh
+	 K9XY5KWJ/Xt0w==
+Message-ID: <62fa5594-6245-4dff-a1f0-99f2702f5826@kernel.org>
+Date: Tue, 3 Dec 2024 16:58:24 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <SJ1PR11MB61295BDE8405A1A5FFC1CB7FB9362@SJ1PR11MB6129.namprd11.prod.outlook.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH v1 07/14] soc: thead: power-domain: Add skeleton
+ power-domain driver for TH1520
+To: Michal Wilczynski <m.wilczynski@samsung.com>, mturquette@baylibre.com,
+ sboyd@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+ drew@pdp7.com, guoren@kernel.org, wefu@redhat.com, jassisinghbrar@gmail.com,
+ paul.walmsley@sifive.com, palmer@dabbelt.com, aou@eecs.berkeley.edu,
+ frank.binns@imgtec.com, matt.coster@imgtec.com,
+ maarten.lankhorst@linux.intel.com, mripard@kernel.org, tzimmermann@suse.de,
+ airlied@gmail.com, simona@ffwll.ch, ulf.hansson@linaro.org,
+ jszhang@kernel.org, m.szyprowski@samsung.com
+Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+ dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org
+References: <20241203134137.2114847-1-m.wilczynski@samsung.com>
+ <CGME20241203134158eucas1p1fae346180c0166570ea7e7723076225c@eucas1p1.samsung.com>
+ <20241203134137.2114847-8-m.wilczynski@samsung.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 fv0=
+In-Reply-To: <20241203134137.2114847-8-m.wilczynski@samsung.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On 2024-12-03 15:42:23+0000, Borah, Chaitanya Kumar wrote:
+On 03/12/2024 14:41, Michal Wilczynski wrote:
+> The T-Head TH1520 SoC contains multiple power islands that can be
+> programmatically turned on and off using the AON (Always-On) protocol
+> and a hardware mailbox [1]. The relevant mailbox driver has already been
+> merged into the mainline kernel in commit 5d4d263e1c6b ("mailbox:
+> Introduce support for T-head TH1520 Mailbox driver"); however, the AON
+> implementation is still under development.
 > 
+> This commit introduces a skeleton power-domain driver for the TH1520
+> SoC, designed to be easily extended to work with the AON protocol in the
+> future.  Currently, it only supports the GPU. Since there is no
+> mechanism yet to turn the GPU power island on, the driver will only set
+> the relevant registers to bring the GPU out of the reset state.  This
+> should be done after the power-up sequence requested through the mailbox
+> is completed.
 > 
-> > -----Original Message-----
-> > From: Thomas Weißschuh <linux@weissschuh.net>
-> > Sent: Tuesday, December 3, 2024 8:20 PM
-> > To: Rafael J. Wysocki <rafael@kernel.org>
-> > Cc: Borah, Chaitanya Kumar <chaitanya.kumar.borah@intel.com>; Kurmi,
-> > Suresh Kumar <suresh.kumar.kurmi@intel.com>; Coelho, Luciano
-> > <luciano.coelho@intel.com>; Saarinen, Jani <jani.saarinen@intel.com>;
-> > Nikula, Jani <jani.nikula@intel.com>; De Marchi, Lucas
-> > <lucas.demarchi@intel.com>; intel-gfx@lists.freedesktop.org; intel-
-> > xe@lists.freedesktop.org; linux-pm@vger.kernel.org; Sebastian Reichel
-> > <sebastian.reichel@collabora.com>
-> > Subject: Re: Regression on linux-next (next-20241120) and drm-tip
-> > 
-> > On 2024-12-03 15:33:21+0100, Rafael J. Wysocki wrote:
-> > > On Tue, Dec 3, 2024 at 1:04 PM Thomas Weißschuh
-> > <linux@weissschuh.net> wrote:
-> > > >
-> > > > On 2024-12-03 12:54:54+0100, Rafael J. Wysocki wrote:
-> > > > > On Tue, Dec 3, 2024 at 7:51 AM Thomas Weißschuh
-> > <linux@weissschuh.net> wrote:
-> > > > > >
-> > > > > > (+Cc Sebastian)
-> > > > > >
-> > > > > > Hi Chaitanya,
-> > > > > >
-> > > > > > On 2024-12-03 05:07:47+0000, Borah, Chaitanya Kumar wrote:
-> > > > > > > Hope you are doing well. I am Chaitanya from the linux graphics team
-> > in Intel.
-> > > > > > >
-> > > > > > > This mail is regarding a regression we are seeing in our CI runs[1] on
-> > linux-next repository.
-> > > > > >
-> > > > > > Thanks for the report.
-> > > > > >
-> > > > > > > Since the version next-20241120 [2], we are seeing the
-> > > > > > > following regression
-> > > > > > >
-> > > > > > > `````````````````````````````````````````````````````````````````````````````````
-> > > > > > > <4>[   19.990743] Oops: general protection fault, probably for non-
-> > canonical address 0xb11675ef8d1ccbce: 0000 [#1] PREEMPT SMP NOPTI
-> > > > > > > <4>[   19.990760] CPU: 21 UID: 110 PID: 867 Comm: prometheus-
-> > node Not tainted 6.12.0-next-20241120-next-20241120-gac24e26aa08f+
-> > #1
-> > > > > > > <4>[   19.990771] Hardware name: Intel Corporation Arrow Lake
-> > Client Platform/MTL-S UDIMM 2DPC EVCRB, BIOS
-> > MTLSFWI1.R00.4400.D85.2410100007 10/10/2024
-> > > > > > > <4>[   19.990782] RIP: 0010:power_supply_get_property+0x3e/0xe0
-> > > > > > > ``````````````````````````````````````````````````````````````
-> > > > > > > ``````````````````` Details log can be found in [3].
-> > > > > > >
-> > > > > > > After bisecting the tree, the following patch [4] seems to be the first
-> > "bad"
-> > > > > > > commit
-> > > > > > >
-> > > > > > > ``````````````````````````````````````````````````````````````
-> > > > > > > ```````````````````````````````````````````
-> > > > > > > Commit 49000fee9e639f62ba1f965ed2ae4c5ad18d19e2
-> > > > > > > Author:     Thomas Weißschuh <mailto:linux@weissschuh.net>
-> > > > > > > AuthorDate: Sat Oct 5 12:05:03 2024 +0200
-> > > > > > > Commit:     Sebastian Reichel
-> > <mailto:sebastian.reichel@collabora.com>
-> > > > > > > CommitDate: Tue Oct 15 22:22:20 2024 +0200
-> > > > > > >     power: supply: core: add wakeup source inhibit by
-> > > > > > > power_supply_config
-> > > > > > > ``````````````````````````````````````````````````````````````
-> > > > > > > ```````````````````````````````````````````
-> > > > > > >
-> > > > > > > This is now seen in our drm-tip runs as well. [5]
-> > > > > > >
-> > > > > > > Could you please check why the patch causes this regression and
-> > provide a fix if necessary?
-> > > > > >
-> > > > > > I don't see how this patch can lead to this error.
-> > > > >
-> > > > > It looks like the cfg->no_wakeup_source access reaches beyond the
-> > > > > struct boundary for some reason.
-> > > >
-> > > > But the access to this field is only done in __power_supply_register().
-> > > > The error reports however don't show this function at all, they come
-> > > > from power_supply_uevent() and power_supply_get_property() by which
-> > > > time the call to __power_supply_register() is long over.
-> > > >
-> > > > FWIW there is an uninitialized 'struct power_supply_config' in
-> > > > drivers/hid/hid-corsair-void.c. But I highly doubt the test machines
-> > > > are using that. (I'll send a patch later for it)
-> > >
-> > > So the only way I can think about in which the commit in question may
-> > > lead to the reported issues is that changing the size of struct
-> > > power_supply_config or its alignment makes an unexpected functional
-> > > difference somewhere.
-> > 
-> > Indeed. I'd really like to see this issue reproduced with KASAN.
-> > 
-> > > AFAICS, this commit cannot be reverted by itself, so which commits on
-> > > top of it need to be reverted in order to revert it cleanly?
-> > 
-> > All the other patches from this series:
-> > https://lore.kernel.org/lkml/20241005-power-supply-no-wakeup-source-v1-
-> > 0-1d62bf9bcb1d@weissschuh.net/
-> > 
-> > Could you point me to the full boot log in the drm-tip CI?
+> Link: https://openbeagle.org/beaglev-ahead/beaglev-ahead/-/blob/main/docs/TH1520%20System%20User%20Manual.pdf [1]
 > 
-> Here is the log for drm-tip CI
-> 
-> https://intel-gfx-ci.01.org/tree/drm-tip/IGT_8136/bat-arls-5/boot0.txt
+> Signed-off-by: Michal Wilczynski <m.wilczynski@samsung.com>
+> ---
+>  MAINTAINERS                                   |   2 +
+>  drivers/pmdomain/Kconfig                      |   1 +
+>  drivers/pmdomain/Makefile                     |   1 +
+>  drivers/pmdomain/thead/Kconfig                |  12 ++
+>  drivers/pmdomain/thead/Makefile               |   2 +
+>  drivers/pmdomain/thead/th1520-pm-domains.c    | 195 ++++++++++++++++++
+>  .../dt-bindings/power/thead,th1520-power.h    |  19 ++
+>  7 files changed, 232 insertions(+)
 
-Thanks!
 
-> I carried out another bisect and it points to the following commit
-> 
-> commit 226ff2e681d006eada59a9693aa1976d4c15a7d4
-> Author: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-> Date:   Wed Nov 6 17:06:05 2024 +0200
-> 
->     usb: typec: ucsi: Convert connector specific commands to bitmaps
-> 
->     That allows the fields in those command data structures to
->     be easily validated. If an unsupported field is accessed, a
->     warning is generated.
+Please run scripts/checkpatch.pl and fix reported warnings. Then please
+run `scripts/checkpatch.pl --strict` and (probably) fix more warnings.
 
-Suspicous: The bitmaps introduced in this commit are right before the
-psy and psy_desc members of 'struct ucsi_connector'.
-So any out-of-bounds writes into these members would corrupt those
-fields.
-A corrupted power_supply_desc would fit both reported stacktraces.
 
-> Reverting it seems to help locally. However, to confirm I have sent out a patch to our "try-bot"
+>  create mode 100644 drivers/pmdomain/thead/Kconfig
+>  create mode 100644 drivers/pmdomain/thead/Makefile
+>  create mode 100644 drivers/pmdomain/thead/th1520-pm-domains.c
+>  create mode 100644 include/dt-bindings/power/thead,th1520-power.h
 > 
-> https://patchwork.freedesktop.org/series/142049/
-> 
-> We can wait for its results.
-> 
-> Regards
-> 
-> Chaitanya
-> 
+
+
+...
+
+> +
+> +static int th1520_pd_power_off(struct generic_pm_domain *domain)
+> +{
+> +	struct th1520_power_domain *pd = to_th1520_power_domain(domain);
+> +
+> +	/* The missing component here is the call to E902 core through the
+
+Use Linux coding style comments (see coding style). This applies to
+multiple places in your code.
+
+> +	 * AON protocol using hardware mailbox.
+> +	 */
+> +
+> +	/* Put the GPU into reset state after powering it off */
+> +	th1520_rst_gpu_disable(pd->reg);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct generic_pm_domain *th1520_pd_xlate(const struct of_phandle_args *spec,
+> +						 void *data)
+> +{
+> +	struct generic_pm_domain *domain = ERR_PTR(-ENOENT);
+> +	struct genpd_onecell_data *pd_data = data;
+> +	unsigned int i;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(th1520_pd_ranges); i++) {
+> +		struct th1520_power_domain *pd;
+> +
+> +		pd = to_th1520_power_domain(pd_data->domains[i]);
+> +		if (pd->rsrc == spec->args[0]) {
+> +			domain = &pd->genpd;
+> +			break;
+> +		}
+> +	}
+> +
+> +	return domain;
+> +}
+> +
+> +static struct th1520_power_domain *
+> +th1520_add_pm_domain(struct device *dev, const struct th1520_power_info *pi)
+> +{
+> +	struct th1520_power_domain *pd;
+> +	int ret;
+> +
+> +	pd = devm_kzalloc(dev, sizeof(*pd), GFP_KERNEL);
+> +	if (!pd)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	pd->rsrc = pi->rsrc;
+> +	pd->genpd.power_on = th1520_pd_power_on;
+> +	pd->genpd.power_off = th1520_pd_power_off;
+> +	pd->genpd.name = pi->name;
+> +
+> +	ret = pm_genpd_init(&pd->genpd, NULL, true);
+> +	if (ret) {
+> +		devm_kfree(dev, pd);
+
+You should rather fail the probe. Failures of power domains are important.
+
+> +		return ERR_PTR(ret);
+> +	}
+> +
+> +	return pd;
+> +}
+> +
+> +static int th1520_pd_probe(struct platform_device *pdev)
+> +{
+> +	struct generic_pm_domain **domains;
+> +	struct genpd_onecell_data *pd_data;
+> +	struct device *dev = &pdev->dev;
+> +	struct device_node *np = dev->of_node;
+> +	struct regmap *reg;
+> +	int i;
+> +
+> +	reg = syscon_regmap_lookup_by_phandle(np, "thead,vosys-regmap");
+> +	if (IS_ERR(reg))
+> +		return PTR_ERR(reg);
+> +
+> +	domains = devm_kcalloc(dev, ARRAY_SIZE(th1520_pd_ranges),
+> +			       sizeof(*domains), GFP_KERNEL);
+> +	if (!domains)
+> +		return -ENOMEM;
+> +
+> +	pd_data = devm_kzalloc(dev, sizeof(*pd_data), GFP_KERNEL);
+> +	if (!pd_data)
+> +		return -ENOMEM;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(th1520_pd_ranges); i++) {
+> +		struct th1520_power_domain *pd;
+> +
+> +		pd = th1520_add_pm_domain(dev, &th1520_pd_ranges[i]);
+> +		if (IS_ERR_OR_NULL(pd))
+> +			continue;
+> +
+> +		pd->reg = reg;
+> +		domains[i] = &pd->genpd;
+> +		dev_dbg(dev, "added power domain %s\n", pd->genpd.name);
+> +	}
+> +
+> +	pd_data->domains = domains;
+> +	pd_data->num_domains = ARRAY_SIZE(th1520_pd_ranges);
+> +	pd_data->xlate = th1520_pd_xlate;
+> +
+> +	return of_genpd_add_provider_onecell(dev->of_node, pd_data);
+> +}
+> +
+> +static const struct of_device_id th1520_pd_match[] = {
+> +	{ .compatible = "thead,th1520-pd",},
+> +	{ /* sentinel */ }
+> +};
+> +
+
+
+Make the driver tristate and module. There is nothing here which
+prevents it being a module.
+
+
+> +builtin_platform_driver(th1520_pd_driver);
+> diff --git a/include/dt-bindings/power/thead,th1520-power.h b/include/dt-bindings/power/thead,th1520-power.h
+> new file mode 100644
+> index 000000000000..30fb4e9892e7
+> --- /dev/null
+> +++ b/include/dt-bindings/power/thead,th1520-power.h
+> @@ -0,0 +1,19 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+
+
+Wrong license. See checkpatch.
+
+
+
+Best regards,
+Krzysztof
