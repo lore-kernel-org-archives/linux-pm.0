@@ -1,228 +1,127 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 590233D0D5;
-	Wed,  4 Dec 2024 20:30:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED62E18FC9F;
+	Wed,  4 Dec 2024 21:26:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733344229; cv=none; b=hfNYp36piMC9nsLYyTkeT2kugHVYUXEa1ix7P7u3FN9wyufzFFkRkWSK01H+DF2yj1RONSiRRuVmBypBRzheX3XCukfpzDmfKytK36aw6IXnO064v1u5AmYJD36vMeIb9Cse4voX6r5kXANkwO7nzVQh+fATKI2Hcda652Q7ICc=
+	t=1733347585; cv=none; b=WGex3X4DFwebklzhTc7GyRNIfrDzW1FejZ3NqIAWOrXGv7Req4J9jVbwqzpnM0xLHNrBBRfgpyCHsmm28lZkZaqg6ZfkpT2FwGPMDBC6aavD/SZZNi/ws6pqEHZI93+hsbQa+U813rpRWiXBDA31K6Xhg4FS7/mAyCHilWWt3tA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733344229; c=relaxed/simple;
-	bh=0QZ2Q605tV7zZ2IXy/tej60uqsqxPcm8XwmDX7WT/RY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=cbtY66PdZpXjwpx8GEVrZVQ27rVp9Rb1WPNAsS28ootLPXTxBO4CJtUL4OWpCO58lGXQSg+SzIt6Da0sOJZz+Yn/J+kTluh7m8+b+eiPc+utZkwZS/28xgslh9ZKtu5h2k1CzSegm1bOzkSOlMAfVi0idsiaXCqeP2VzWhOj41A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VEVKOKZh; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1733347585; c=relaxed/simple;
+	bh=5G3TI8FG7sx1hTKz198fF2W7ZL8MBP0RnBOKm4yaOA4=;
+	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=gDxMalyGHSJ1JGnFaM7pVJeb+otbhfjZA+7fTAqkvyquXrN053ORIchPrdZWSiwVcBSU80Z+BylJzfWblsX+9+eLqMGHorAIiT5ZgekcpcOGzBNfOMwJzHbvgWhRRex9ANzNsFglvi6HG4ejbXAwtvGYFS7B8dO1Bq9El0CYMrw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=oT1t4ck+; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VEVKOKZh"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DB0BCC4CED1;
-	Wed,  4 Dec 2024 20:30:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1733344228;
-	bh=0QZ2Q605tV7zZ2IXy/tej60uqsqxPcm8XwmDX7WT/RY=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=VEVKOKZhKAH9PZHZqgjJeTokJEQknj1vdpSKMBaUsCXHxKM6p3GSIkgeH2hlDgk8a
-	 czKyZs8KuabDaRxqHH1necv0I4E9WfHxQNc+xdkpknN6Axz368ZPliAokHEdg3MAvV
-	 5ZFcx3zIe7x+f66xb9btT97p0TgEB/8kv2qHrFnfs6CWI1cPX1qonsvRPEAcaziIgK
-	 kymjrRph76Khlax6IwgiOAgKO5Rfjkrbw0iLupF07+75s4wsZ2veDuiHRN2ugIKERB
-	 MkGSy4xKWDE0ME18m2+f06ARSvzkolv02G8pkk9sxX8PNXhSR4IbPaxm59kzeub4Lx
-	 hAKoJRRHoMUrA==
-Received: by mail-yb1-f173.google.com with SMTP id 3f1490d57ef6-e3988fdb580so215943276.2;
-        Wed, 04 Dec 2024 12:30:28 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCUUp9Ez+1e5IgKwW0xTU2WMvA7U7cYz+vHLIRnqhS7JEolHga/9/4JtWcMQot5oBm03qWuGHR6nMWLS25eC@vger.kernel.org, AJvYcCUrhmyGkWTqllIoE8LEthz3s1jQZmS4NjRpW0yc93saTy7loUKWGd/1SPpef7oCyz2KZfGUQcsKweM=@vger.kernel.org, AJvYcCXBRki+RTev/EJdnYvPW6kld2IZ3YPWsB8N1CLe4HUe48v/Q+gvKGFMb/1KwiBYS3EBatTpk1U++iOA@vger.kernel.org
-X-Gm-Message-State: AOJu0YyNnKI6w407IEd5AEfvCniv6TXWyGc6fqEa51PogGGc5XSmJceR
-	u19wD7p99mGvVblN4KMJ+O76CC9vXZ7BrJ83tYMV9SAfQPfZ3EiaoFQicTdTDYkDen3l97c7UVb
-	127xOqiF8RnWKx9j2OUUwvK+jmw==
-X-Google-Smtp-Source: AGHT+IFvI3DCRl7+WTQJdlM4ndM6R3NZOhslGxmxHIxsC27/TWT0ruRSJxqNNdeEfNWAYZp4/cZ8qgTcVTq+Jr5aOFw=
-X-Received: by 2002:a05:6902:2304:b0:e39:7fe5:3b63 with SMTP id
- 3f1490d57ef6-e39d4374f06mr7331060276.40.1733344227993; Wed, 04 Dec 2024
- 12:30:27 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="oT1t4ck+"
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4B4FamBT023344;
+	Wed, 4 Dec 2024 21:26:19 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=wyOcFOKWssh3221kmAxkUj
+	HamyXIeCZqHEsBuUMyod0=; b=oT1t4ck+o3yyRmGVKFkbASCxbAzlFbJq9NHL0Z
+	QNravvUcxTBYMajP8hc7QZ7qPM15TPk5DGX3TAtXeI5OEKOj24tUuvIDHYcB50PI
+	y+pebh2LeFigkVGXP4Wr9mfO+DJU/n2LW48KEuBZLNnTBr167irXJ4GRY5HUHf9+
+	lXSvgSceNOW9L0hR0QotwYpg5Kqk60HC8s6FF3JQaGNxzEtyaoGBJA3gS++VOfAR
+	qNzN5/zu2tDMy3X4QieRTbzfqASuOu2Wc6aDJfFepKtjbVvTWztUJQWte2CgnH0x
+	KQC4btLrOsiF/TDoEBCrtAhFMV4Hnk8B2GJgPhqCygCObc5Q==
+Received: from nasanppmta03.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 43aj42a7bc-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 04 Dec 2024 21:26:19 +0000 (GMT)
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+	by NASANPPMTA03.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 4B4LQI5W023737
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 4 Dec 2024 21:26:18 GMT
+Received: from hu-molvera-lv.qualcomm.com (10.49.16.6) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.9; Wed, 4 Dec 2024 13:26:17 -0800
+From: Melody Olvera <quic_molvera@quicinc.com>
+Subject: [PATCH v3 0/2] interconnect: qcom: Introduce interconnects for
+ SM8750
+Date: Wed, 4 Dec 2024 13:26:04 -0800
+Message-ID: <20241204-sm8750_master_interconnects-v3-0-3d9aad4200e9@quicinc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20241203163158.580-1-ansuelsmth@gmail.com> <20241204184253.GA276662-robh@kernel.org>
- <6750a4c3.df0a0220.1ae5b6.7dfb@mx.google.com>
-In-Reply-To: <6750a4c3.df0a0220.1ae5b6.7dfb@mx.google.com>
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 4 Dec 2024 14:30:17 -0600
-X-Gmail-Original-Message-ID: <CAL_JsqJvotQ=QZKq+CHs4uW_DRegn02YoSbqmxyi__6RJ0wAuA@mail.gmail.com>
-Message-ID: <CAL_JsqJvotQ=QZKq+CHs4uW_DRegn02YoSbqmxyi__6RJ0wAuA@mail.gmail.com>
-Subject: Re: [PATCH v5 1/2] dt-bindings: cpufreq: Document support for Airoha
- EN7581 CPUFreq
-To: Christian Marangi <ansuelsmth@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, upstream@airoha.com, 
-	Ulf Hansson <ulf.hansson@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAOzIUGcC/x3MSwqAMAwA0atI1hZitfi5iohIjZqFUZoignh3i
+ 5uBt5kHlAKTQpc9EOhi5UMSyjwDv02ykuE5GSzaqrBYGd2b2uG4TxopjCyp/hAhH9U4bFrvWpw
+ XcpAOZ6CF7//eD+/7AaEvLVJtAAAA
+X-Change-ID: 20241204-sm8750_master_interconnects-5089c590dfe5
+To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Abel Vesa <abel.vesa@linaro.org>,
+        Neil Armstrong <neil.armstrong@linaro.org>,
+        Satya Durga Srinivasu Prabhala <quic_satyap@quicinc.com>,
+        Trilok Soni
+	<quic_tsoni@quicinc.com>
+CC: <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        Melody Olvera
+	<quic_molvera@quicinc.com>,
+        Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1733347577; l=1291;
+ i=quic_molvera@quicinc.com; s=20241204; h=from:subject:message-id;
+ bh=5G3TI8FG7sx1hTKz198fF2W7ZL8MBP0RnBOKm4yaOA4=;
+ b=icVDrlcbHKuXpmcJFvAOZXy8n1nhVtUGFHk/nLDyT/LcU8c1Dw8FzHkQs+9EF4kpix94/H1cl
+ pK5ii4xKoJ1CvHI0IFrdO/bBsLsgCe/pMIFk/yvXnNDmhbO5HvPJlHI
+X-Developer-Key: i=quic_molvera@quicinc.com; a=ed25519;
+ pk=1DGLp3zVYsHAWipMaNZZTHR321e8xK52C9vuAoeca5c=
+X-ClientProxiedBy: nalasex01b.na.qualcomm.com (10.47.209.197) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: B5wiJXMgj_mT11rTF0wxszeozJCdXf4H
+X-Proofpoint-ORIG-GUID: B5wiJXMgj_mT11rTF0wxszeozJCdXf4H
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
+ definitions=2024-09-06_09,2024-09-06_01,2024-09-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 bulkscore=0
+ mlxscore=0 mlxlogscore=638 lowpriorityscore=0 clxscore=1015 malwarescore=0
+ priorityscore=1501 spamscore=0 adultscore=0 suspectscore=0 impostorscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2411120000
+ definitions=main-2412040165
 
-On Wed, Dec 4, 2024 at 12:51=E2=80=AFPM Christian Marangi <ansuelsmth@gmail=
-.com> wrote:
->
-> On Wed, Dec 04, 2024 at 12:42:53PM -0600, Rob Herring wrote:
-> > On Tue, Dec 03, 2024 at 05:31:49PM +0100, Christian Marangi wrote:
-> > > Document required property for Airoha EN7581 CPUFreq .
-> > >
-> > > On newer Airoha SoC, CPU Frequency is scaled indirectly with SMCCC co=
-mmands
-> > > to ATF and no clocks are exposed to the OS.
-> > >
-> > > The SoC have performance state described by ID for each OPP, for this=
- a
-> > > Power Domain is used that sets the performance state ID according to =
-the
-> > > required OPPs defined in the CPU OPP tables.
-> > >
-> > > Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
-> > > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > > ---
-> > > Changes v5:
-> > > - Add Reviewed-by tag
-> > > - Fix OPP node name error
-> > > - Rename cpufreq node name to power-domain
-> > > - Rename CPU node power domain name to perf
-> > > - Add model and compatible to example
-> > > Changes v4:
-> > > - Add this patch
-> > >
-> > >  .../cpufreq/airoha,en7581-cpufreq.yaml        | 262 ++++++++++++++++=
-++
-> > >  1 file changed, 262 insertions(+)
-> > >  create mode 100644 Documentation/devicetree/bindings/cpufreq/airoha,=
-en7581-cpufreq.yaml
-> > >
-> > > diff --git a/Documentation/devicetree/bindings/cpufreq/airoha,en7581-=
-cpufreq.yaml b/Documentation/devicetree/bindings/cpufreq/airoha,en7581-cpuf=
-req.yaml
-> > > new file mode 100644
-> > > index 000000000000..7e36fa037e4b
-> > > --- /dev/null
-> > > +++ b/Documentation/devicetree/bindings/cpufreq/airoha,en7581-cpufreq=
-.yaml
-> > > @@ -0,0 +1,262 @@
-> > > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > > +%YAML 1.2
-> > > +---
-> > > +$id: http://devicetree.org/schemas/cpufreq/airoha,en7581-cpufreq.yam=
-l#
-> > > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > > +
-> > > +title: Airoha EN7581 CPUFreq
-> > > +
-> > > +maintainers:
-> > > +  - Christian Marangi <ansuelsmth@gmail.com>
-> > > +
-> > > +description: |
-> > > +  On newer Airoha SoC, CPU Frequency is scaled indirectly with SMCCC=
- commands
-> > > +  to ATF and no clocks are exposed to the OS.
-> > > +
-> > > +  The SoC have performance state described by ID for each OPP, for t=
-his a
-> > > +  Power Domain is used that sets the performance state ID according =
-to the
-> > > +  required OPPs defined in the CPU OPP tables.
-> > > +
-> > > +properties:
-> > > +  compatible:
-> > > +    const: airoha,en7581-cpufreq
-> > > +
-> > > +  '#clock-cells':
-> > > +    const: 0
-> >
-> > You just said no clocks are exposed to the OS.
-> >
->
-> Well we now simulate one due to request from cpufreq reviewers.
->
-> Everything is still handled by SMC that only report the current
-> frequency of the CPU.
->
-> > > +
-> > > +  '#power-domain-cells':
-> > > +    const: 0
-> > > +
-> > > +  operating-points-v2: true
-> > > +
-> > > +required:
-> > > +  - compatible
-> > > +  - '#clock-cells'
-> > > +  - '#power-domain-cells'
-> > > +  - operating-points-v2
-> > > +
-> > > +additionalProperties: false
-> > > +
-> > > +examples:
-> > > +  - |
-> > > +    / {
-> > > +        model =3D "Airoha EN7581 Evaluation Board";
-> > > +        compatible =3D "airoha,en7581-evb", "airoha,en7581";
-> > > +
-> > > +        #address-cells =3D <2>;
-> > > +           #size-cells =3D <2>;
-> >
-> > mixed tab and spaces.
-> >
-> > Can't I just go read the actual .dts files if I want to see
-> > *everything*? Examples should generally be just what the schema covers.
-> >
->
-> Idea here is to give example as both clock and power-domain property are
-> needed in the CPU nodes for the CPUFreq driver to correctly work.
+Add interconnect support for SM8750 SoC.
 
-If we want to do that, then we really should have a schema defining
-that. But since there's only 1 for cpus that doesn't really work.
+The Qualcomm Technologies, Inc. SM8750 SoC is the latest in the line of
+consumer mobile device SoCs. See more at:
+https://www.qualcomm.com/content/dam/qcomm-martech/dm-assets/images/company/news-media/media-center/press-kits/snapdragon-summit-2024/day-1/documents/Snapdragon8EliteProductBrief.pdf
 
-> Should I drop and just define the CPUFreq node?
+Changes in V3:
+- merged sm8750.h into sm8750.c
 
-Yes.
+Changes in V2:
+- updating style to be consistent with other interconnect drivers
+- removed dead code
 
-> > > +
-> > > +        cpus {
-> > > +            #address-cells =3D <1>;
-> > > +            #size-cells =3D <0>;
-> > > +
-> > > +            cpu0: cpu@0 {
-> > > +                device_type =3D "cpu";
-> > > +                compatible =3D "arm,cortex-a53";
-> > > +                reg =3D <0x0>;
-> > > +                operating-points-v2 =3D <&cpu_opp_table>;
-> > > +                enable-method =3D "psci";
-> > > +                clocks =3D <&cpu_pd>;
-> > > +                clock-names =3D "cpu";
-> > > +                power-domains =3D <&cpu_pd>;
-> > > +                power-domain-names =3D "perf";
-> > > +                next-level-cache =3D <&l2>;
-> > > +                #cooling-cells =3D <2>;
-> >
-> > I don't understand why you have clocks, power-domains and OPP?
-> > Certainly that's conceivable, but not with how you're abusing
-> > power-domains for performance points and you said clocks are not expose=
-d
-> > to the OS.
-> >
->
-> SMC scale based on index values not frequency. That really resembles a
-> power-domain.
+Signed-off-by: Melody Olvera <quic_molvera@quicinc.com>
+---
+Raviteja Laggyshetty (2):
+      dt-bindings: interconnect: add interconnect bindings for SM8750
+      interconnect: qcom: Add interconnect provider driver for SM8750
 
-So what is the point of the OPP table with frequency? You can set an
-OPP and read the frequency, right? So a table of frequencies is
-redundant.
+ .../bindings/interconnect/qcom,sm8750-rpmh.yaml    |  136 ++
+ drivers/interconnect/qcom/Kconfig                  |    9 +
+ drivers/interconnect/qcom/Makefile                 |    2 +
+ drivers/interconnect/qcom/sm8750.c                 | 1705 ++++++++++++++++++++
+ .../dt-bindings/interconnect/qcom,sm8750-rpmh.h    |  143 ++
+ 5 files changed, 1995 insertions(+)
+---
+base-commit: bcf2acd8f64b0a5783deeeb5fd70c6163ec5acd7
+change-id: 20241204-sm8750_master_interconnects-5089c590dfe5
 
-> SMC provide frequency in MHz tho so we model that as a
-> get-only clock.
->
-> At times with no clocks are exposed I intend that they SoC doesn't
-> provide any raw control on them in the normal way with a register, bits
-> to change and logic to apply for mux and divisor, this thing is very
-> special and works only with 2 command and nothing else so I'm trying my
-> best to model this in the most descriptive and complete way possible.
+Best regards,
+-- 
+Melody Olvera <quic_molvera@quicinc.com>
 
-Fair enough for the clock. Please clarify the description with what
-clock is provided. Just to make sure, all CPUs run at the same
-frequency?
-
-Rob
