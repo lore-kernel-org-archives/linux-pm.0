@@ -1,32 +1,31 @@
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4EB0A1B87ED;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4EA571B6D02;
 	Thu,  5 Dec 2024 20:47:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733431650; cv=none; b=HEisXthfj1ZKUxTHJPirY1ikNAh7C5fQPblOijSGi6gZ7ZeuQXHl46NnSKPGlOqDC6bt+3spbW1DR+EWWUDbzDUPhCFf8TeeJLb4T7nl09wQdeWXM+GDAZOsxmDYZSViNyeuM4yHuA4V/HyrU2ePvanBjceeNwTgxb4acZ8dIGQ=
+	t=1733431650; cv=none; b=gYkuR57eRMk8Wc4VClUdw1j5oNi0Rp3auifcVrM8PhwrUO61WDbG4Cn5PtaSn1kxmRcwGaQzsXsigKdCtbXleAKKUmQKxrt1u4lvYTfgDVGeq2iizh4YGzKzatBddt713jCSi7hLDG869SCw41LRhWouRM29P8+AJqmg7G26Hrk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1733431650; c=relaxed/simple;
-	bh=/qZLsNYmSP0RbFSEcx3FSjSAyL2XYa3JBbP1lSu7fxE=;
+	bh=C6VN2SfSZtFRpEOtEz6Y8lMjuWe2npGhF4x2o/bo8Ac=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=nBSgU+dy712Q0EcBctqBmFsUOk13L6QqS8S9yMKbIcnK60QVWBtn9L09i1At/8vrXD5yXyD2lDct0xioXvAPkkVPHnhQhu27vX++NMzc/BfCvOZKxQ2537+e8upxy83xl0jXj7gXnoZyj/2Fn0oXeBRAl6cWJs+4PAxQkcnrURY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=DdzmSGGk; arc=none smtp.client-ip=159.69.126.157
+	 In-Reply-To:To:Cc; b=B4mlCPlhbMzWKa3YaPJ95wdTJHXuTXbQgsPg6UUq5QMxKJhA7DCntlU3sETbNVxeiC95kOc5ZOwMIAuB8KLIbktSGf0GcxX/DAp3pav/q0Z2SEnKtbuS225yrmcL3/z8jrYgnWRymgpG4xVHVlEgkw3gp6jyv0MDYNGYmTMfOgw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=UNiG5ZmY; arc=none smtp.client-ip=159.69.126.157
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="DdzmSGGk"
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="UNiG5ZmY"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1733431639;
-	bh=/qZLsNYmSP0RbFSEcx3FSjSAyL2XYa3JBbP1lSu7fxE=;
+	bh=C6VN2SfSZtFRpEOtEz6Y8lMjuWe2npGhF4x2o/bo8Ac=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=DdzmSGGkilqJqEtbyjAqprtq6ZUifm+ks0KTuIrRJpUyteZMD/ynT8G5kXFlEX8fb
-	 TaEeX/7+/ELwVGN3aTKZZWwYceP34kvXhysxnbvO893Op8Nj06H3z6oztHTEZyWYIx
-	 /DFonlNr1YS8ioMlDbOCki1hy8gjFfwoz/BFP6Ow=
+	b=UNiG5ZmYonZ85SJ5v1gnES55wHPemHWxBYvQCE4+7Qeohb/mrgB6EnOVYEAA1jyVc
+	 w/hVevZtmuVkM0iEMu8ZAEIvAbDXgLNarXnwAm5/Vja5DYvHWmKOcGMxR7dEEIJ9bs
+	 B17/22wy8yJxNrgGvljwB53RuhMRWAbEPqK18t7k=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Thu, 05 Dec 2024 21:46:38 +0100
-Subject: [PATCH v5 4/4] power: supply: cros_charge-control: implement a
- power supply extension
+Date: Thu, 05 Dec 2024 21:46:36 +0100
+Subject: [PATCH v5 2/4] power: supply: core: implement extension API
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,7 +34,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241205-power-supply-extensions-v5-4-f0f996db4347@weissschuh.net>
+Message-Id: <20241205-power-supply-extensions-v5-2-f0f996db4347@weissschuh.net>
 References: <20241205-power-supply-extensions-v5-0-f0f996db4347@weissschuh.net>
 In-Reply-To: <20241205-power-supply-extensions-v5-0-f0f996db4347@weissschuh.net>
 To: Sebastian Reichel <sre@kernel.org>, Armin Wolf <W_Armin@gmx.de>, 
@@ -47,311 +46,438 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
  chrome-platform@lists.linux.dev, linux-acpi@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1733431638; l=10924;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1733431638; l=14289;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=/qZLsNYmSP0RbFSEcx3FSjSAyL2XYa3JBbP1lSu7fxE=;
- b=Q+SB1KiYOfK5fMUzp22GDlS0+2NwLllyAJmejPsxpFuziv3ry8qMJT5JkfgDG1rL+iSVAUDKZ
- pZPDF/cLRMVB5OcmVwG5WGyR86AuBvUL7sr48GDXemvtLjrJXZK/St1
+ bh=C6VN2SfSZtFRpEOtEz6Y8lMjuWe2npGhF4x2o/bo8Ac=;
+ b=8yDDctZB0Zv4cYQm5C1J3kGSjNX/cTFBFdPdQHUJAnrfwOdgk1y/DpIHG+DO8/Zrp1tGu6ZTn
+ eCgeIMbSJyOCur5nyUltJxDnoGxRdRiF1JDkXd791ayHd3T6HmKXiv+
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-Power supply extensions provide an easier mechanism to implement
-additional properties for existing power supplies.
-Use that instead of reimplementing the sysfs attributes manually.
+Various drivers, mostly in platform/x86 extend the ACPI battery driver
+with additional sysfs attributes to implement more UAPIs than are
+exposed through ACPI by using various side-channels, like WMI,
+nonstandard ACPI or EC communication.
+
+While the created sysfs attributes look similar to the attributes
+provided by the powersupply core, there are various deficiencies:
+
+* They don't show up in uevent payload.
+* They can't be queried with the standard in-kernel APIs.
+* They don't work with triggers.
+* The extending driver has to reimplement all of the parsing,
+formatting and sysfs display logic.
+* Writing a extension driver is completely different from writing a
+normal power supply driver.
+
+This extension API avoids all of these issues.
+An extension is just a "struct power_supply_ext" with the same kind of
+callbacks as in a normal "struct power_supply_desc".
+
+The API is meant to be used via battery_hook_register(), the same way as
+the current extensions.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/power/supply/cros_charge-control.c | 217 ++++++++++++-----------------
- 1 file changed, 88 insertions(+), 129 deletions(-)
+ drivers/power/supply/power_supply.h       |  14 +++
+ drivers/power/supply/power_supply_core.c  | 159 ++++++++++++++++++++++++++++--
+ drivers/power/supply/power_supply_sysfs.c |  26 ++++-
+ include/linux/power_supply.h              |  32 ++++++
+ 4 files changed, 221 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/power/supply/cros_charge-control.c b/drivers/power/supply/cros_charge-control.c
-index 17c53591ce197d08d97c94d3d4359a282026dd7d..7f914a65f88f8ea57bf01c334d25d9b8ebaa2de7 100644
---- a/drivers/power/supply/cros_charge-control.c
-+++ b/drivers/power/supply/cros_charge-control.c
-@@ -18,13 +18,6 @@
- 					 BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE)   | \
- 					 BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE))
+diff --git a/drivers/power/supply/power_supply.h b/drivers/power/supply/power_supply.h
+index 5dabbd895538003096b62d03fdd0201b82b090e6..4c3e602c416cec556173a8eb1a3114c13ded71b7 100644
+--- a/drivers/power/supply/power_supply.h
++++ b/drivers/power/supply/power_supply.h
+@@ -9,6 +9,8 @@
+  *  Modified: 2004, Oct     Szabolcs Gyurko
+  */
  
--enum CROS_CHCTL_ATTR {
--	CROS_CHCTL_ATTR_START_THRESHOLD,
--	CROS_CHCTL_ATTR_END_THRESHOLD,
--	CROS_CHCTL_ATTR_CHARGE_BEHAVIOUR,
--	_CROS_CHCTL_ATTR_COUNT
--};
--
- /*
-  * Semantics of data *returned* from the EC API and Linux sysfs differ
-  * slightly, also the v1 API can not return any data.
-@@ -41,13 +34,7 @@ struct cros_chctl_priv {
- 	struct power_supply *hooked_battery;
- 	u8 cmd_version;
- 
--	/* The callbacks need to access this priv structure.
--	 * As neither the struct device nor power_supply are under the drivers
--	 * control, embed the attributes within priv to use with container_of().
--	 */
--	struct device_attribute device_attrs[_CROS_CHCTL_ATTR_COUNT];
--	struct attribute *attributes[_CROS_CHCTL_ATTR_COUNT];
--	struct attribute_group group;
-+	const struct power_supply_ext *psy_ext;
- 
- 	enum power_supply_charge_behaviour current_behaviour;
- 	u8 current_start_threshold, current_end_threshold;
-@@ -114,124 +101,104 @@ static int cros_chctl_configure_ec(struct cros_chctl_priv *priv)
- 	return cros_chctl_send_charge_control_cmd(priv->cros_ec, priv->cmd_version, &req);
- }
- 
--static struct cros_chctl_priv *cros_chctl_attr_to_priv(struct attribute *attr,
--						       enum CROS_CHCTL_ATTR idx)
--{
--	struct device_attribute *dev_attr = container_of(attr, struct device_attribute, attr);
--
--	return container_of(dev_attr, struct cros_chctl_priv, device_attrs[idx]);
--}
-+static const enum power_supply_property cros_chctl_psy_ext_props[] = {
-+	POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR, /* has to be first for cros_chctl_psy_ext_v1 */
-+	POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD,
-+	POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD,
-+};
- 
--static ssize_t cros_chctl_store_threshold(struct device *dev, struct cros_chctl_priv *priv,
--					  int is_end_threshold, const char *buf, size_t count)
-+static int cros_chctl_psy_ext_get_prop(struct power_supply *psy,
-+				       const struct power_supply_ext *ext,
-+				       void *data,
-+				       enum power_supply_property psp,
-+				       union power_supply_propval *val)
- {
--	int ret, val;
-+	struct cros_chctl_priv *priv = data;
- 
--	ret = kstrtoint(buf, 10, &val);
--	if (ret < 0)
--		return ret;
--	if (val < 0 || val > 100)
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD:
-+		val->intval = priv->current_start_threshold;
-+		return 0;
-+	case POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD:
-+		val->intval = priv->current_end_threshold;
-+		return 0;
-+	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
-+		val->intval = priv->current_behaviour;
-+		return 0;
-+	default:
- 		return -EINVAL;
--
--	if (is_end_threshold) {
--		if (val <= priv->current_start_threshold)
--			return -EINVAL;
--		priv->current_end_threshold = val;
--	} else {
--		if (val >= priv->current_end_threshold)
--			return -EINVAL;
--		priv->current_start_threshold = val;
- 	}
--
--	if (priv->current_behaviour == POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO) {
--		ret = cros_chctl_configure_ec(priv);
--		if (ret < 0)
--			return ret;
--	}
--
--	return count;
--}
--
--static ssize_t charge_control_start_threshold_show(struct device *dev,
--						   struct device_attribute *attr,
--						   char *buf)
--{
--	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(&attr->attr,
--							       CROS_CHCTL_ATTR_START_THRESHOLD);
--
--	return sysfs_emit(buf, "%u\n", (unsigned int)priv->current_start_threshold);
--}
--
--static ssize_t charge_control_start_threshold_store(struct device *dev,
--						    struct device_attribute *attr,
--						    const char *buf, size_t count)
--{
--	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(&attr->attr,
--							       CROS_CHCTL_ATTR_START_THRESHOLD);
--
--	return cros_chctl_store_threshold(dev, priv, 0, buf, count);
--}
--
--static ssize_t charge_control_end_threshold_show(struct device *dev, struct device_attribute *attr,
--						 char *buf)
--{
--	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(&attr->attr,
--							       CROS_CHCTL_ATTR_END_THRESHOLD);
--
--	return sysfs_emit(buf, "%u\n", (unsigned int)priv->current_end_threshold);
--}
--
--static ssize_t charge_control_end_threshold_store(struct device *dev, struct device_attribute *attr,
--						  const char *buf, size_t count)
--{
--	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(&attr->attr,
--							       CROS_CHCTL_ATTR_END_THRESHOLD);
--
--	return cros_chctl_store_threshold(dev, priv, 1, buf, count);
- }
- 
--static ssize_t charge_behaviour_show(struct device *dev, struct device_attribute *attr, char *buf)
--{
--	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(&attr->attr,
--							       CROS_CHCTL_ATTR_CHARGE_BEHAVIOUR);
--
--	return power_supply_charge_behaviour_show(dev, EC_CHARGE_CONTROL_BEHAVIOURS,
--						  priv->current_behaviour, buf);
--}
- 
--static ssize_t charge_behaviour_store(struct device *dev, struct device_attribute *attr,
--				      const char *buf, size_t count)
-+static int cros_chctl_psy_ext_set_prop(struct power_supply *psy,
-+				       const struct power_supply_ext *ext,
-+				       void *data,
-+				       enum power_supply_property psp,
-+				       const union power_supply_propval *val)
- {
--	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(&attr->attr,
--							       CROS_CHCTL_ATTR_CHARGE_BEHAVIOUR);
-+	struct cros_chctl_priv *priv = data;
- 	int ret;
- 
--	ret = power_supply_charge_behaviour_parse(EC_CHARGE_CONTROL_BEHAVIOURS, buf);
--	if (ret < 0)
--		return ret;
--
--	priv->current_behaviour = ret;
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD:
-+	case POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD:
-+		if (val->intval < 0 || val->intval > 100)
-+			return -EINVAL;
- 
--	ret = cros_chctl_configure_ec(priv);
--	if (ret < 0)
--		return ret;
-+		if (psp == POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD) {
-+			if (val->intval <= priv->current_start_threshold)
-+				return -EINVAL;
-+			priv->current_end_threshold = val->intval;
-+		} else {
-+			if (val->intval >= priv->current_end_threshold)
-+				return -EINVAL;
-+			priv->current_start_threshold = val->intval;
-+		}
++#include <linux/lockdep.h>
 +
-+		if (priv->current_behaviour == POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO) {
-+			ret = cros_chctl_configure_ec(priv);
-+			if (ret < 0)
-+				return ret;
-+		}
+ struct device;
+ struct device_type;
+ struct power_supply;
+@@ -17,6 +19,18 @@ extern int power_supply_property_is_writeable(struct power_supply *psy,
+ 					      enum power_supply_property psp);
+ extern bool power_supply_has_property(struct power_supply *psy,
+ 				      enum power_supply_property psp);
++extern bool power_supply_ext_has_property(const struct power_supply_ext *ext,
++					  enum power_supply_property psp);
++
++struct power_supply_ext_registration {
++	struct list_head list_head;
++	const struct power_supply_ext *ext;
++	void *data;
++};
++
++#define power_supply_for_each_extension(pos, psy) \
++	lockdep_assert_held(&(psy)->extensions_sem); \
++	list_for_each_entry(pos, &(psy)->extensions, list_head)
  
--	return count;
-+		return 0;
-+	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
-+		priv->current_behaviour = val->intval;
-+		ret = cros_chctl_configure_ec(priv);
-+		if (ret < 0)
-+			return ret;
-+		return 0;
-+	default:
-+		return -EINVAL;
+ #ifdef CONFIG_SYSFS
+ 
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 502b07468b93dfb7f5a6c2092588d931a7d015f2..72d9205130d2ec9b7b401eddb7461a58e0be49e5 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -81,6 +81,7 @@ static int __power_supply_changed_work(struct device *dev, void *data)
+ 
+ static void power_supply_changed_work(struct work_struct *work)
+ {
++	int ret;
+ 	unsigned long flags;
+ 	struct power_supply *psy = container_of(work, struct power_supply,
+ 						changed_work);
+@@ -88,6 +89,16 @@ static void power_supply_changed_work(struct work_struct *work)
+ 	dev_dbg(&psy->dev, "%s\n", __func__);
+ 
+ 	spin_lock_irqsave(&psy->changed_lock, flags);
++
++	if (unlikely(psy->update_groups)) {
++		psy->update_groups = false;
++		spin_unlock_irqrestore(&psy->changed_lock, flags);
++		ret = sysfs_update_groups(&psy->dev.kobj, power_supply_dev_type.groups);
++		if (ret)
++			dev_warn(&psy->dev, "failed to update sysfs groups: %pe\n", ERR_PTR(ret));
++		spin_lock_irqsave(&psy->changed_lock, flags);
 +	}
++
+ 	/*
+ 	 * Check 'changed' here to avoid issues due to race between
+ 	 * power_supply_changed() and this routine. In worst case
+@@ -1196,15 +1207,34 @@ static bool psy_desc_has_property(const struct power_supply_desc *psy_desc,
+ 	return found;
  }
  
--static umode_t cros_chtl_attr_is_visible(struct kobject *kobj, struct attribute *attr, int n)
-+static int cros_chctl_psy_prop_is_writeable(struct power_supply *psy,
-+					    const struct power_supply_ext *ext,
-+					    void *data,
-+					    enum power_supply_property psp)
- {
--	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(attr, n);
-+	return true;
++bool power_supply_ext_has_property(const struct power_supply_ext *psy_ext,
++				   enum power_supply_property psp)
++{
++	int i;
++
++	for (i = 0; i < psy_ext->num_properties; i++)
++		if (psy_ext->properties[i] == psp)
++			return true;
++
++	return false;
 +}
- 
--	if (priv->cmd_version < 2) {
--		if (n == CROS_CHCTL_ATTR_START_THRESHOLD)
--			return 0;
--		if (n == CROS_CHCTL_ATTR_END_THRESHOLD)
--			return 0;
--	}
-+static const struct power_supply_ext cros_chctl_psy_ext = {
-+	.properties = cros_chctl_psy_ext_props,
-+	.num_properties = ARRAY_SIZE(cros_chctl_psy_ext_props),
-+	.charge_behaviours = EC_CHARGE_CONTROL_BEHAVIOURS,
-+	.get_property = cros_chctl_psy_ext_get_prop,
-+	.set_property = cros_chctl_psy_ext_set_prop,
-+	.property_is_writeable = cros_chctl_psy_prop_is_writeable,
-+};
- 
--	return attr->mode;
--}
-+static const struct power_supply_ext cros_chctl_psy_ext_v1 = {
-+	.properties = cros_chctl_psy_ext_props,
-+	.num_properties = 1,
-+	.charge_behaviours = EC_CHARGE_CONTROL_BEHAVIOURS,
-+	.get_property = cros_chctl_psy_ext_get_prop,
-+	.set_property = cros_chctl_psy_ext_set_prop,
-+	.property_is_writeable = cros_chctl_psy_prop_is_writeable,
-+};
- 
- static int cros_chctl_add_battery(struct power_supply *battery, struct acpi_battery_hook *hook)
++
+ bool power_supply_has_property(struct power_supply *psy,
+ 			       enum power_supply_property psp)
  {
-@@ -241,7 +208,7 @@ static int cros_chctl_add_battery(struct power_supply *battery, struct acpi_batt
- 		return 0;
++	struct power_supply_ext_registration *reg;
++
+ 	if (psy_desc_has_property(psy->desc, psp))
+ 		return true;
  
- 	priv->hooked_battery = battery;
--	return device_add_group(&battery->dev, &priv->group);
-+	return power_supply_register_extension(battery, priv->psy_ext, priv);
+ 	if (power_supply_battery_info_has_prop(psy->battery_info, psp))
+ 		return true;
+ 
++	power_supply_for_each_extension(reg, psy) {
++		if (power_supply_ext_has_property(reg->ext, psp))
++			return true;
++	}
++
+ 	return false;
  }
  
- static int cros_chctl_remove_battery(struct power_supply *battery, struct acpi_battery_hook *hook)
-@@ -249,7 +216,7 @@ static int cros_chctl_remove_battery(struct power_supply *battery, struct acpi_b
- 	struct cros_chctl_priv *priv = container_of(hook, struct cros_chctl_priv, battery_hook);
- 
- 	if (priv->hooked_battery == battery) {
--		device_remove_group(&battery->dev, &priv->group);
-+		power_supply_unregister_extension(battery, priv->psy_ext);
- 		priv->hooked_battery = NULL;
+@@ -1212,12 +1242,21 @@ int power_supply_get_property(struct power_supply *psy,
+ 			    enum power_supply_property psp,
+ 			    union power_supply_propval *val)
+ {
++	struct power_supply_ext_registration *reg;
++
+ 	if (atomic_read(&psy->use_cnt) <= 0) {
+ 		if (!psy->initialized)
+ 			return -EAGAIN;
+ 		return -ENODEV;
  	}
  
-@@ -275,7 +242,6 @@ static int cros_chctl_probe(struct platform_device *pdev)
- 	struct cros_ec_dev *ec_dev = dev_get_drvdata(dev->parent);
- 	struct cros_ec_device *cros_ec = ec_dev->ec_dev;
- 	struct cros_chctl_priv *priv;
--	size_t i;
- 	int ret;
- 
- 	ret = cros_chctl_fwk_charge_control_versions(cros_ec);
-@@ -305,18 +271,11 @@ static int cros_chctl_probe(struct platform_device *pdev)
- 	dev_dbg(dev, "Command version: %u\n", (unsigned int)priv->cmd_version);
- 
- 	priv->cros_ec = cros_ec;
--	priv->device_attrs[CROS_CHCTL_ATTR_START_THRESHOLD] =
--		(struct device_attribute)__ATTR_RW(charge_control_start_threshold);
--	priv->device_attrs[CROS_CHCTL_ATTR_END_THRESHOLD] =
--		(struct device_attribute)__ATTR_RW(charge_control_end_threshold);
--	priv->device_attrs[CROS_CHCTL_ATTR_CHARGE_BEHAVIOUR] =
--		(struct device_attribute)__ATTR_RW(charge_behaviour);
--	for (i = 0; i < _CROS_CHCTL_ATTR_COUNT; i++) {
--		sysfs_attr_init(&priv->device_attrs[i].attr);
--		priv->attributes[i] = &priv->device_attrs[i].attr;
--	}
--	priv->group.is_visible = cros_chtl_attr_is_visible;
--	priv->group.attrs = priv->attributes;
++	scoped_guard(rwsem_read, &psy->extensions_sem) {
++		power_supply_for_each_extension(reg, psy) {
++			if (power_supply_ext_has_property(reg->ext, psp))
++				return reg->ext->get_property(psy, reg->ext, reg->data, psp, val);
++		}
++	}
 +
-+	if (priv->cmd_version == 1)
-+		priv->psy_ext = &cros_chctl_psy_ext_v1;
-+	else
-+		priv->psy_ext = &cros_chctl_psy_ext;
+ 	if (psy_desc_has_property(psy->desc, psp))
+ 		return psy->desc->get_property(psy, psp, val);
+ 	else if (power_supply_battery_info_has_prop(psy->battery_info, psp))
+@@ -1231,7 +1270,24 @@ int power_supply_set_property(struct power_supply *psy,
+ 			    enum power_supply_property psp,
+ 			    const union power_supply_propval *val)
+ {
+-	if (atomic_read(&psy->use_cnt) <= 0 || !psy->desc->set_property)
++	struct power_supply_ext_registration *reg;
++
++	if (atomic_read(&psy->use_cnt) <= 0)
++		return -ENODEV;
++
++	scoped_guard(rwsem_read, &psy->extensions_sem) {
++		power_supply_for_each_extension(reg, psy) {
++			if (power_supply_ext_has_property(reg->ext, psp)) {
++				if (reg->ext->set_property)
++					return reg->ext->set_property(psy, reg->ext, reg->data,
++								      psp, val);
++				else
++					return -ENODEV;
++			}
++		}
++	}
++
++	if (!psy->desc->set_property)
+ 		return -ENODEV;
  
- 	priv->battery_hook.name = dev_name(dev);
- 	priv->battery_hook.add_battery = cros_chctl_add_battery;
+ 	return psy->desc->set_property(psy, psp, val);
+@@ -1241,7 +1297,22 @@ EXPORT_SYMBOL_GPL(power_supply_set_property);
+ int power_supply_property_is_writeable(struct power_supply *psy,
+ 					enum power_supply_property psp)
+ {
+-	return psy->desc->property_is_writeable && psy->desc->property_is_writeable(psy, psp);
++	struct power_supply_ext_registration *reg;
++
++	power_supply_for_each_extension(reg, psy) {
++		if (power_supply_ext_has_property(reg->ext, psp)) {
++			if (reg->ext->property_is_writeable)
++				return reg->ext->property_is_writeable(psy, reg->ext,
++								       reg->data, psp);
++			else
++				return -ENODEV;
++		}
++	}
++
++	if (!psy->desc->property_is_writeable)
++		return -ENODEV;
++
++	return psy->desc->property_is_writeable(psy, psp);
+ }
+ 
+ void power_supply_external_power_changed(struct power_supply *psy)
+@@ -1260,6 +1331,73 @@ int power_supply_powers(struct power_supply *psy, struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(power_supply_powers);
+ 
++static int power_supply_update_sysfs_and_hwmon(struct power_supply *psy)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&psy->changed_lock, flags);
++	psy->update_groups = true;
++	spin_unlock_irqrestore(&psy->changed_lock, flags);
++
++	power_supply_changed(psy);
++
++	power_supply_remove_hwmon_sysfs(psy);
++	return power_supply_add_hwmon_sysfs(psy);
++}
++
++int power_supply_register_extension(struct power_supply *psy, const struct power_supply_ext *ext,
++				    void *data)
++{
++	struct power_supply_ext_registration *reg;
++	size_t i;
++	int ret;
++
++	if (!psy || !ext || !ext->properties || !ext->num_properties)
++		return -EINVAL;
++
++	guard(rwsem_write)(&psy->extensions_sem);
++
++	for (i = 0; i < ext->num_properties; i++)
++		if (power_supply_has_property(psy, ext->properties[i]))
++			return -EEXIST;
++
++	reg = kmalloc(sizeof(*reg), GFP_KERNEL);
++	if (!reg)
++		return -ENOMEM;
++
++	reg->ext = ext;
++	reg->data = data;
++	list_add(&reg->list_head, &psy->extensions);
++
++	ret = power_supply_update_sysfs_and_hwmon(psy);
++	if (ret) {
++		list_del(&reg->list_head);
++		kfree(reg);
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(power_supply_register_extension);
++
++void power_supply_unregister_extension(struct power_supply *psy, const struct power_supply_ext *ext)
++{
++	struct power_supply_ext_registration *reg;
++
++	guard(rwsem_write)(&psy->extensions_sem);
++
++	power_supply_for_each_extension(reg, psy) {
++		if (reg->ext == ext) {
++			list_del(&reg->list_head);
++			kfree(reg);
++			power_supply_update_sysfs_and_hwmon(psy);
++			return;
++		}
++	}
++
++	dev_warn(&psy->dev, "Trying to unregister invalid extension");
++}
++EXPORT_SYMBOL_GPL(power_supply_unregister_extension);
++
+ static void power_supply_dev_release(struct device *dev)
+ {
+ 	struct power_supply *psy = to_power_supply(dev);
+@@ -1414,6 +1552,9 @@ __power_supply_register(struct device *parent,
+ 	}
+ 
+ 	spin_lock_init(&psy->changed_lock);
++	init_rwsem(&psy->extensions_sem);
++	INIT_LIST_HEAD(&psy->extensions);
++
+ 	rc = device_add(dev);
+ 	if (rc)
+ 		goto device_add_failed;
+@@ -1426,13 +1567,15 @@ __power_supply_register(struct device *parent,
+ 	if (rc)
+ 		goto register_thermal_failed;
+ 
+-	rc = power_supply_create_triggers(psy);
+-	if (rc)
+-		goto create_triggers_failed;
++	scoped_guard(rwsem_read, &psy->extensions_sem) {
++		rc = power_supply_create_triggers(psy);
++		if (rc)
++			goto create_triggers_failed;
+ 
+-	rc = power_supply_add_hwmon_sysfs(psy);
+-	if (rc)
+-		goto add_hwmon_sysfs_failed;
++		rc = power_supply_add_hwmon_sysfs(psy);
++		if (rc)
++			goto add_hwmon_sysfs_failed;
++	}
+ 
+ 	/*
+ 	 * Update use_cnt after any uevents (most notably from device_add()).
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index 99bfe1f03eb8326d38c4e2831c9670313b42e425..927ddb9d83bb7259809ba695cb9398d1ad654b46 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -268,6 +268,27 @@ static ssize_t power_supply_show_enum_with_available(
+ 	return count;
+ }
+ 
++static ssize_t power_supply_show_charge_behaviour(struct device *dev,
++						  struct power_supply *psy,
++						  union power_supply_propval *value,
++						  char *buf)
++{
++	struct power_supply_ext_registration *reg;
++
++	scoped_guard(rwsem_read, &psy->extensions_sem) {
++		power_supply_for_each_extension(reg, psy) {
++			if (power_supply_ext_has_property(reg->ext,
++							  POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR))
++				return power_supply_charge_behaviour_show(dev,
++						reg->ext->charge_behaviours,
++						value->intval, buf);
++		}
++	}
++
++	return power_supply_charge_behaviour_show(dev, psy->desc->charge_behaviours,
++						  value->intval, buf);
++}
++
+ static ssize_t power_supply_format_property(struct device *dev,
+ 					    bool uevent,
+ 					    struct device_attribute *attr,
+@@ -307,8 +328,7 @@ static ssize_t power_supply_format_property(struct device *dev,
+ 	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
+ 		if (uevent) /* no possible values in uevents */
+ 			goto default_format;
+-		ret = power_supply_charge_behaviour_show(dev, psy->desc->charge_behaviours,
+-							 value.intval, buf);
++		ret = power_supply_show_charge_behaviour(dev, psy, &value, buf);
+ 		break;
+ 	case POWER_SUPPLY_PROP_MODEL_NAME ... POWER_SUPPLY_PROP_SERIAL_NUMBER:
+ 		ret = sysfs_emit(buf, "%s\n", value.strval);
+@@ -385,6 +405,8 @@ static umode_t power_supply_attr_is_visible(struct kobject *kobj,
+ 	if (attrno == POWER_SUPPLY_PROP_TYPE)
+ 		return mode;
+ 
++	guard(rwsem_read)(&psy->extensions_sem);
++
+ 	if (power_supply_has_property(psy, attrno)) {
+ 		if (power_supply_property_is_writeable(psy, attrno) > 0)
+ 			mode |= S_IWUSR;
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index b98106e1a90f34bce5129317a099f363248342b9..016e44cb3eb5eb7ace01a032661f65a5d81a522f 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -15,6 +15,8 @@
+ #include <linux/device.h>
+ #include <linux/workqueue.h>
+ #include <linux/leds.h>
++#include <linux/rwsem.h>
++#include <linux/list.h>
+ #include <linux/spinlock.h>
+ #include <linux/notifier.h>
+ 
+@@ -281,6 +283,27 @@ struct power_supply_desc {
+ 	int use_for_apm;
+ };
+ 
++struct power_supply_ext {
++	u8 charge_behaviours;
++	const enum power_supply_property *properties;
++	size_t num_properties;
++
++	int (*get_property)(struct power_supply *psy,
++			    const struct power_supply_ext *ext,
++			    void *data,
++			    enum power_supply_property psp,
++			    union power_supply_propval *val);
++	int (*set_property)(struct power_supply *psy,
++			    const struct power_supply_ext *ext,
++			    void *data,
++			    enum power_supply_property psp,
++			    const union power_supply_propval *val);
++	int (*property_is_writeable)(struct power_supply *psy,
++				     const struct power_supply_ext *ext,
++				     void *data,
++				     enum power_supply_property psp);
++};
++
+ struct power_supply {
+ 	const struct power_supply_desc *desc;
+ 
+@@ -300,10 +323,13 @@ struct power_supply {
+ 	struct delayed_work deferred_register_work;
+ 	spinlock_t changed_lock;
+ 	bool changed;
++	bool update_groups;
+ 	bool initialized;
+ 	bool removing;
+ 	atomic_t use_cnt;
+ 	struct power_supply_battery_info *battery_info;
++	struct rw_semaphore extensions_sem; /* protects "extensions" */
++	struct list_head extensions;
+ #ifdef CONFIG_THERMAL
+ 	struct thermal_zone_device *tzd;
+ 	struct thermal_cooling_device *tcd;
+@@ -878,6 +904,12 @@ devm_power_supply_register(struct device *parent,
+ extern void power_supply_unregister(struct power_supply *psy);
+ extern int power_supply_powers(struct power_supply *psy, struct device *dev);
+ 
++extern int power_supply_register_extension(struct power_supply *psy,
++					   const struct power_supply_ext *ext,
++					   void *data);
++extern void power_supply_unregister_extension(struct power_supply *psy,
++					      const struct power_supply_ext *ext);
++
+ #define to_power_supply(device) container_of(device, struct power_supply, dev)
+ 
+ extern void *power_supply_get_drvdata(struct power_supply *psy);
 
 -- 
 2.47.1
