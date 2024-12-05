@@ -1,85 +1,89 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 456F81DFE16;
-	Thu,  5 Dec 2024 11:17:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 604C9207672;
+	Thu,  5 Dec 2024 11:40:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733397464; cv=none; b=kFOfGczrModmHTiQjSVwsKlIqOLdhDhi6evj8IpepLWG/Cr65n6GRIvAAXYv1f3MMJwLax14mY4SF7GWZFbUn+RzfSrMihueAIzJfTI5KX1vxmwuomc3KC4HTt1tuh/YymkzJaRKcrIG8mUUWjMMTdfksOHTzJidRJLqlSU/IwI=
+	t=1733398831; cv=none; b=KPMICkjCXjsx9qw1SJ7EYhNh0+Oxw7TVROI8ta4Z/6ln4OBXy37OeUz/vqZ1tqWrT1FepKUuH8J+Pm4B+vo9cw8vPQIXE176+hoAJ6KsuC5P/fBOqS9y2SCv+5kZj6n3kI1KqBDaYPa+yzVIIEcD6+MuP7EY/ZqPeKFNomBFnWM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733397464; c=relaxed/simple;
-	bh=u9mfEkwS/F0LXCkeBbReWFy8k6OGAUx7jGWeoTnvIqI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Mo3bYsfFjApFAQdC9akRrJoaN1+lnUjkgnjHADzrfDlFiibaq+SgYvGRvYCJ9yIjkCRoavOsfoFGLmp625rPucouPEkfgcfh8PdVxlkuy9bL7cnSLLiidBVa4CKtLRGNH22BkVkZPou2z8FhhwXX4ZiXhoxmUBbVbrcH76oWJls=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ioLKkfr9; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1733398831; c=relaxed/simple;
+	bh=EI/lxQaw3hKAdW8VAbz7As50feekjFVKCkI2lsa47OM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=XGAmgQ1h9c+Q7H9Guuk7WMnXy3itl/qCPCjCax+cINpHiFK0JiFxZ0eOyBBMxyowq1X1WLe2k0lanRMYMCBgy1zd39XsiO30/k0F2n+UK+UP2AFzIOtmY98kvZ/6pPa2R6fkq5OjRea2mComt9esO5ofqSAJ7H7tLPXu6NvROSo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=OsEkz/Rq; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ioLKkfr9"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B9CC9C4CEE2;
-	Thu,  5 Dec 2024 11:17:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1733397463;
-	bh=u9mfEkwS/F0LXCkeBbReWFy8k6OGAUx7jGWeoTnvIqI=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=ioLKkfr9r04+OwkcNMhG4NZ1LF0+oTrtJMPKJa2xRmougMtMOrz4xHERkrxvH7u2W
-	 ywAROKO8AtQJtwD0sbs1zrCW911gFcK7IE5/6blrm7oM7tFUQ8Q/+6XvT8QHHkd0eA
-	 C5zNQ7+W8hx0okL19P5jnXZa+tilXoDaiEGbYNn+glvl/1PnSglB8hy4glLkqi/Lbr
-	 PhhwF9jh2G+5Y+lV1WO+7T3nzVqJOZFJwuE8kM2/tcyF8YL3RBb2MHtYkl+wkyVwfj
-	 uc/QUeQad0/clgCn304DxyAH5ZGHnEdhGwnSH6SBUke68ahIGjX9y257QbRbYBlbnh
-	 aNMxBy/quDMQw==
-Received: by mail-oa1-f51.google.com with SMTP id 586e51a60fabf-29645a83b1bso472815fac.1;
-        Thu, 05 Dec 2024 03:17:43 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCXrtoIZ1koO8bAyO9lzDtrFElegQJpzn75WuekgG1lzj1OwFV9MLogK3zNHdaE2CfxBmdbHMB2qsA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyHW+jLzdYiht+6eRenhxB7QzMHamMhm7H1UoAaAihnVzs6RwRq
-	crbSLp3iBzzS/z40qqhVPBufIv+S7ogWMjyurx+ygZvjlA0Uf0yT9ItdfVJAa/KoUW0Aekwm3Q/
-	AKJJR9742LjWby4i6agDBTxUcDWU=
-X-Google-Smtp-Source: AGHT+IHu1YddXwtQKIAVMNtRYmCSeaH/o2sQ+KXE1+zg9Aj8K/DviKHsBiVJSHi2yFhUNS6ViQV2Quy4FsgA7NOyFs4=
-X-Received: by 2002:a05:6870:912b:b0:29e:8068:e089 with SMTP id
- 586e51a60fabf-29e9b1853b5mr4712672fac.19.1733397463016; Thu, 05 Dec 2024
- 03:17:43 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="OsEkz/Rq"
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
+ id d08b6202bb9225f0; Thu, 5 Dec 2024 12:40:26 +0100
+Received: from kreacher.localnet (unknown [195.136.19.94])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 8723B15F0421;
+	Thu,  5 Dec 2024 12:40:25 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1733398826;
+	bh=EI/lxQaw3hKAdW8VAbz7As50feekjFVKCkI2lsa47OM=;
+	h=From:Subject:Date;
+	b=OsEkz/Rq7XA477UC0KewWchzJAeHGMPXeWFyrON3cBNdsVuPBcvtbJTJecUpoBH4j
+	 5/OS0zUXj6c7gDkuP5NVuRExpAmmn3olPoh7kkk9fm5pFs0hopSUod+Uj43ym4GrEI
+	 jI/Fjc860pL9HYTEFXIoxBGialI3DjcGQ/jE+R5C+aKMNM2Dn4ay9WdnaueVdUNVcg
+	 +dSFR7czx/75PSZX0lcXIxmYdVvc02hj9PJmIJMWya9hX6qkGuCffLRhDWfgLRQofl
+	 BVr6A3osSM86ZBTdKW6nUU0Sp+1wPoRMmAjEFjRMD+KM3AQAVNz+7Wp64CCRUeKrJX
+	 hVb2HYmLzGlQg==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject:
+ [PATCH v1 2/2] cpufreq: intel_pstate: Drop Arrow Lake from "scaling factor"
+ list
+Date: Thu, 05 Dec 2024 12:40:19 +0100
+Message-ID: <2307515.iZASKD2KPV@rjwysocki.net>
+In-Reply-To: <1923452.tdWV9SEqCh@rjwysocki.net>
+References: <1923452.tdWV9SEqCh@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20241118072917.3853-1-wsa+renesas@sang-engineering.com> <20241118072917.3853-3-wsa+renesas@sang-engineering.com>
-In-Reply-To: <20241118072917.3853-3-wsa+renesas@sang-engineering.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 5 Dec 2024 12:17:30 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0iJgQuuHVbQxom6VLKHZvSnAzP75oQMDcr-3a1GAdzAFQ@mail.gmail.com>
-Message-ID: <CAJZ5v0iJgQuuHVbQxom6VLKHZvSnAzP75oQMDcr-3a1GAdzAFQ@mail.gmail.com>
-Subject: Re: [PATCH 02/15] drivers core: don't include 'pm_wakeup.h' directly
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: spam:low
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefuddrieejgddvlecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnegoufhprghmkfhpucdlfedttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucfuphgrmhfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeefpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=3 Fuz1=3 Fuz2=3
 
-On Mon, Nov 18, 2024 at 8:29=E2=80=AFAM Wolfram Sang
-<wsa+renesas@sang-engineering.com> wrote:
->
-> The header clearly states that it does not want to be included directly,
-> only via 'device.h'. 'platform_device.h' works equally well. Remove the
-> direct inclusion.
->
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-> ---
->  drivers/base/power/sysfs.c | 1 -
->  1 file changed, 1 deletion(-)
->
-> diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
-> index a1474fb67db9..82ce2d9f54e5 100644
-> --- a/drivers/base/power/sysfs.c
-> +++ b/drivers/base/power/sysfs.c
-> @@ -6,7 +6,6 @@
->  #include <linux/export.h>
->  #include <linux/pm_qos.h>
->  #include <linux/pm_runtime.h>
-> -#include <linux/pm_wakeup.h>
->  #include <linux/atomic.h>
->  #include <linux/jiffies.h>
->  #include "power.h"
-> --
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Applied as 6.14 material, thanks!
+Since HYBRID_SCALING_FACTOR_MTL is not going to be suitable for Arrow
+Lake in general, drop it from the "known hybrid scaling factors" list of
+platforms, so the scaling factor for it will be determined with the
+help of information provided by the platform firmware via CPPC.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -3675,7 +3675,6 @@ static const struct x86_cpu_id intel_hyb
+ 	X86_MATCH_VFM(INTEL_RAPTORLAKE_P, HYBRID_SCALING_FACTOR_ADL),
+ 	X86_MATCH_VFM(INTEL_RAPTORLAKE_S, HYBRID_SCALING_FACTOR_ADL),
+ 	X86_MATCH_VFM(INTEL_METEORLAKE_L, HYBRID_SCALING_FACTOR_MTL),
+-	X86_MATCH_VFM(INTEL_ARROWLAKE, HYBRID_SCALING_FACTOR_MTL),
+ 	X86_MATCH_VFM(INTEL_LUNARLAKE_M, HYBRID_SCALING_FACTOR_LNL),
+ 	{}
+ };
+
+
+
