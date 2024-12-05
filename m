@@ -1,37 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 392BB221463;
-	Thu,  5 Dec 2024 16:50:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45C4E22577F;
+	Thu,  5 Dec 2024 16:50:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733417449; cv=none; b=Yl+fC/QnkiN9257FRDCL3u8HEDwOV6i+OuO2l8G8wgzaMs8HfCoeJ/3vDR/355JsXJEjQhflpS43tjArVKfpGsH2aXhIXKgdV6+1akrIL5GE8sn64lsA8RnKRXwneKxoS9tM1Qqpq8YXQYutSGBoHrhzucHaG5q8+uKeTqQzWR4=
+	t=1733417450; cv=none; b=i3swu52MfnUGtCtGY6jLJAw8A7+KmgJbhJ1ysG+xLcXmQIITpbvsbklF5qLmsogbg04Msl0yvNG6u83a5kk2CTKOMz2NNFiN//Weja4ds7vljYcG/YYbNnJF7LUAH8j3ZqCd2zgKKq6hDzCl1APV8PltKNgxfLFttAu1Yjq0028=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733417449; c=relaxed/simple;
-	bh=eRPnmWYSQhSAftRfnhYQ4HXep5ZbnD5fgGUew/TmFlk=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=RxYnQN+a0UNOeoIc4RYsgeLgixuYspFJfOC7L4OiDhvtcO+HPF52F0jdXEPOdH3PnuDNreSjtK8ISFLxpb98yIqm5Sypv0HBiLQckIgw0qhdpb7rSXDNB5E9/nUxzprcHriw3HEOV/ZGwrz98lf0VSceDu7/n66/F4U/V1z+O4U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Clce7oIH; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1733417450; c=relaxed/simple;
+	bh=yAhSThl4omNIzqdvqVD2D/bE/H1pTTvDk5NNbO9mc2w=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=qipAyKyUreHAcJmvp1Dw08N5L1Bl/X5nyecySjG6sQKWLLy17W0TZbUN+kIjSfdCWd+Rd/IHGUiJiej8PZQoc19i+3tWPOELYt4678inI7imoq38+Vcwe6OchWiRXbwWi7qynpDfkYogLsxmwB5F00m578wEg/Ux/pCzFNRJkoM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iEjvSqPa; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Clce7oIH"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id B4C7FC4CED1;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iEjvSqPa"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id D8415C4CEDF;
 	Thu,  5 Dec 2024 16:50:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1733417448;
-	bh=eRPnmWYSQhSAftRfnhYQ4HXep5ZbnD5fgGUew/TmFlk=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=Clce7oIHQ8D58lkYxmHINUg+XNNoK/LhpP0LOOuhTb0Bxa44m+4NL5+0mFWvgkl2V
-	 rKNJozgLbbJtE+XvoWzSx7xBW+XrMYQHUKNdT/Dqi4oi+uSCpE+tdSyml1p+CT1NLr
-	 RA40iYXECF8WqKXnbLU6gQMS9x8cf7ouJA01YuhFG7FhxqomIhQu6XqheVjMfbIOMU
-	 +609M9hPhPFKilP3gRd78Qzc0aNkaJEOH+9bTl/OdAdrc2a0tOa66RewpEIvl7poe6
-	 c50dx9ebUyXD54lr2Jz7jLjQfQisxGkZQe7A3WV/y/Tqmf0KVoOpwJwC+lnFST61lx
-	 XTeeELDtC0L9A==
+	bh=yAhSThl4omNIzqdvqVD2D/bE/H1pTTvDk5NNbO9mc2w=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=iEjvSqPaZoOAlTu1AD0+FWzRgVIS5YXMVRbev0VhWqn07XgRgaHqoKB2DnL9tL88E
+	 C3DozHtwbDTbG/3v+JoFS1Vtc/hZs07fmE7YRtevjTxm/GfgVbRO1ETE3qqO+aS/S+
+	 m8O3g5Z78u4aCvxnnecP/FzTEUpFO3ijjse16891SUflsWdAkserinhBNyXYRNzrKm
+	 gc6OdBA6TrzPkADmFGkscopd1yya7eaTpZU5Q+TIZ4GhnEmZ35CROvLENWSTOgJ3Be
+	 l6Jm0Z6bTCe0yUlIWY0wjSPh83fHQK4eMJXpBy9i2nWK5IDUS3xjn0mgcP+eTfn6HX
+	 3Qx2KtbMrP5Aw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99FF3E77170;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7F0CE77179;
 	Thu,  5 Dec 2024 16:50:48 +0000 (UTC)
 From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.linaro.org@kernel.org>
-Subject: [PATCH 0/2] cpufreq: qcom: Clock provider fixes
-Date: Thu, 05 Dec 2024 22:20:27 +0530
-Message-Id: <20241205-qcom-cpufreq-clk-fix-v1-0-de46c82e0fe5@linaro.org>
+Date: Thu, 05 Dec 2024 22:20:29 +0530
+Subject: [PATCH 2/2] cpufreq: qcom: Implement clk_ops::determine_rate() for
+ qcom_cpufreq* clocks
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,9 +41,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIANPZUWcC/x2MSQqAMBDAviJzdqAWN/yKeKjtVAe3LiiC+HeLx
- wSSByIFpghd9kCgiyMfe4Iiz0DPap8I2SQGKWRZSFGh18eG2p02kEe9Lmj5RlULO1pjmrEtIaU
- uUNL/th/e9wNM/J98ZgAAAA==
+Message-Id: <20241205-qcom-cpufreq-clk-fix-v1-2-de46c82e0fe5@linaro.org>
+References: <20241205-qcom-cpufreq-clk-fix-v1-0-de46c82e0fe5@linaro.org>
+In-Reply-To: <20241205-qcom-cpufreq-clk-fix-v1-0-de46c82e0fe5@linaro.org>
 To: "Rafael J. Wysocki" <rafael@kernel.org>, 
  Viresh Kumar <viresh.kumar@linaro.org>, 
  Xiu Jianfeng <xiujianfeng@huawei.com>
@@ -51,16 +52,16 @@ Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
  Johan Hovold <johan+linaro@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
  Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 X-Mailer: b4 0.14.1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1286;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2276;
  i=manivannan.sadhasivam@linaro.org; h=from:subject:message-id;
- bh=eRPnmWYSQhSAftRfnhYQ4HXep5ZbnD5fgGUew/TmFlk=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBnUdnlN4Zr7BQSl7WojL2S8I1Hp6T7Kvw8mk7HT
- 09RtBftfCWJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCZ1HZ5QAKCRBVnxHm/pHO
- 9aA/CACJ/g/EEk/bHPAxG0CiFqR6jDDHBhVCpzWWDbQv+5L+cQDLw5GmgiiZ/sYzcHS3+pXS09p
- cDdXyDqQjZaN+up+agDGQc9EPzSuaE6I1PWoNJ/eyeR3UjB5/x7eBBAwmJdVTo4chS7AdYUv18V
- ghz7NBoCQvqFXKmEf2r3RbHn/D0lI9kTpxfs7SepHAqzifg8bHYq1gw+XWbYazjgzM8OBGAKb1c
- CUnWjysjDfvL/ilLiJgONqPH00Wzh6JBeZ5jtIovE+uwW0DTHSTEBbwegIWKIUMsx3Vyxh8bR4F
- NtA+Eqgc0IEKyNYa+NAYPmAstOnOjVPV91gWFt7/jw5OuL+A
+ bh=khSFbu3Z4tQbHex/WaQQeN/MsVZBUcID3RSSj5VHwnw=;
+ b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBnUdnlCmgQOzEeIEe7CpR9509WxbQACDzYr04S7
+ Essu7wEu3eJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCZ1HZ5QAKCRBVnxHm/pHO
+ 9W6OB/42xevWovBzxQUliFA1DFCKS9UZqAyGl84jmf7C/A8jhyBqy4qi66pl6EYQ9v9lOgFNpfJ
+ 8Fn0sZ1kTAChcnxc7sQ3qgirhCFlMBmnksdBIlCe2cQtjxXzWw/fiAHWjvxWrbxvyYih1MuUGxy
+ tXCEh8qPGlNiM8ks9mzllYqKLvQfDx9U1WEPbRXwglGaf5MsKpygOz4z5NOvRjbc3r8/XtABxOt
+ q12B9GZcUgjrimiOcN5uhvySVZsnQ4bi7JFcrNtTZaYLNIBewInhHxtGVrL0HhKfpNaFllwZJl1
+ BHjrm8py8bfbLCF9A2mQv0k3DKdr65edXdM/ckfJXd7C129P
 X-Developer-Key: i=manivannan.sadhasivam@linaro.org; a=openpgp;
  fpr=C668AEC3C3188E4C611465E7488550E901166008
 X-Endpoint-Received: by B4 Relay for
@@ -68,34 +69,62 @@ X-Endpoint-Received: by B4 Relay for
 X-Original-From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 Reply-To: manivannan.sadhasivam@linaro.org
 
-Hi,
+From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 
-This series has a couple of fixes for the Qcom CPUFreq clock provider.
-Patch 1 fixes an issue where incorrect rate might be reported if LMh IRQ is not
-available for a platform (issue identified based on code inspection). Patch 2
-fixes a regression reported for v6.13-rc1 [1]. The regression was triggered by
-commit 25f1c96a0e84 ("clk: Fix invalid execution of clk_set_rate"), which fixed
-the behavior of the clk_set_rate() API. Even though the commit got reverted now,
-patch 2 fixes the issue in the clock provider code.
+determine_rate() callback is used by the clk_set_rate() API to get the
+closest rate of the target rate supported by the clock. If this callback
+is not implemented (nor round_rate() callback), then the API will assume
+that the clock cannot set the requested rate. And since there is no parent,
+it will return -EINVAL.
 
-This series is tested on Qcom RB5 development board.
+This is not an issue right now as clk_set_rate() mistakenly compares the
+target rate with cached rate and bails out early. But once that is fixed
+to compare the target rate with the actual rate of the clock (returned by
+recalc_rate()), then clk_set_rate() for this clock will start to fail as
+below:
 
-[1] https://lore.kernel.org/all/20241202100621.29209-1-johan+linaro@kernel.org
+cpu cpu0: _opp_config_clk_single: failed to set clock rate: -22
 
+So implement the determine_rate() callback that just returns the actual
+rate at which the clock is passed to the CPUs in a domain.
+
+Fixes: 4370232c727b ("cpufreq: qcom-hw: Add CPU clock provider support")
+Reported-by: Johan Hovold <johan+linaro@kernel.org>
+Closes: https://lore.kernel.org/all/20241202100621.29209-1-johan+linaro@kernel.org
+Suggested-by: Stephen Boyd <sboyd@kernel.org>
 Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 ---
-Manivannan Sadhasivam (2):
-      cpufreq: qcom: Fix qcom_cpufreq_hw_recalc_rate() to query LUT if LMh IRQ is not available
-      cpufreq: qcom: Implement clk_ops::determine_rate() for qcom_cpufreq* clocks
+ drivers/cpufreq/qcom-cpufreq-hw.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
- drivers/cpufreq/qcom-cpufreq-hw.c | 34 ++++++++++++++++++++++++----------
- 1 file changed, 24 insertions(+), 10 deletions(-)
----
-base-commit: 40384c840ea1944d7c5a392e8975ed088ecf0b37
-change-id: 20241205-qcom-cpufreq-clk-fix-a60fbfdd7b84
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+index c145ab7b0bb2..b2e7e89feaac 100644
+--- a/drivers/cpufreq/qcom-cpufreq-hw.c
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -626,8 +626,21 @@ static unsigned long qcom_cpufreq_hw_recalc_rate(struct clk_hw *hw, unsigned lon
+ 	return __qcom_cpufreq_hw_get(data->policy) * HZ_PER_KHZ;
+ }
+ 
++/*
++ * Since we cannot determine the closest rate of the target rate, let's just
++ * return the actual rate at which the clock is running at. This is needed to
++ * make clk_set_rate() API work properly.
++ */
++static int qcom_cpufreq_hw_determine_rate(struct clk_hw *hw, struct clk_rate_request *req)
++{
++	req->rate = qcom_cpufreq_hw_recalc_rate(hw, 0);
++
++	return 0;
++}
++
+ static const struct clk_ops qcom_cpufreq_hw_clk_ops = {
+ 	.recalc_rate = qcom_cpufreq_hw_recalc_rate,
++	.determine_rate = qcom_cpufreq_hw_determine_rate,
+ };
+ 
+ static int qcom_cpufreq_hw_driver_probe(struct platform_device *pdev)
 
-Best regards,
 -- 
-Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+2.25.1
 
 
