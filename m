@@ -1,29 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E481513CF82;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E5F8E1422AB;
 	Thu,  5 Dec 2024 01:36:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733362615; cv=none; b=Xwxieq8PDoGnazRRU2UEPjOzeZT1mAHIZPqmZ91f7fQUWrBrQ8SEmKlHDgCYyFNNUdh16JMOB5y0aKTwgsV2EMlAEj+pB2RPkJhKPbIKBHNd8qd2kJj4fPR6DvDtUO7I6CsCx5hk4tcJAJnU0juaCFu4nBLPCrlbx9S3q4Kj+z4=
+	t=1733362615; cv=none; b=OknzCGzBrYI9fpBMM+/BdcKgZ+JE7W5ou4Df1eBKV91rHF82QQLqnqyIC0mLxmYCYT4/PrY1HBYWR1NiIXPV87YGAU9Pse6CWPxAdlQrIvJiJsr5iWnsyj/hFhSQA5YNmyMq9H+KrSdvo7Tgx566HBWZgr35JlivCDe+CJNLfAU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1733362615; c=relaxed/simple;
-	bh=fZdU6sxfoL3KazzzgG0IqRHXFBv4IkDKpRz3mvnAKks=;
+	bh=1Mjv9d0/DHrepgcPmPzR0ts/ogXRlZNwutiizS2SQ8s=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=ZnbW1AMoTPiw5SxPKlZgIIfpiOFMcWJ/c1vcO8k34nNIBw4c8fKynU+aF7gPylLJgGzKyzNCdpKzDw5YDUg6EpFDEq3EeI8SY1jsGoCURKTzLA26OtUaXD3WMb61lmjTlo/KN91DAH6OY5tobGTpYK18wC2nRYv7yx186IUIpVc=
+	 MIME-Version:Content-Type; b=JR+FYdoUPRV9VgXC8ehZPgJjGW8FjHIYpN/q13pxK84jKJel0PIDuuCjxhJh6bRf6PrlX9hTsm6PyKnCYDzQhfpFcjShWJ2pqsMMUb3sSbfVZ/K19BinFLMszROpiCO+DbaZfFaHVJRyi1JGHObwyW4zBbadTM0lmuYgX4wJPDY=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7705CC4AF0B;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7BDBDC4CEE0;
 	Thu,  5 Dec 2024 01:36:55 +0000 (UTC)
 Received: by mercury (Postfix, from userid 1000)
-	id 774511060500; Thu, 05 Dec 2024 02:36:52 +0100 (CET)
+	id 94C2D1060503; Thu, 05 Dec 2024 02:36:52 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, Andrew Davis <afd@ti.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20241202211519.199635-1-afd@ti.com>
-References: <20241202211519.199635-1-afd@ti.com>
-Subject: Re: [PATCH 1/5] power: supply: ds2782: Switch to simpler IDA
- interface
-Message-Id: <173336261246.1429662.16233834611899526698.b4-ty@collabora.com>
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ =?utf-8?q?Cs=C3=B3k=C3=A1s=2C_Bence?= <csokas.bence@prolan.hu>
+Cc: Samuel Holland <samuel@sholland.org>, 
+ Sebastian Reichel <sre@kernel.org>
+In-Reply-To: <20241119180741.2237692-1-csokas.bence@prolan.hu>
+References: <20241119180741.2237692-1-csokas.bence@prolan.hu>
+Subject: Re: (subset) [PATCH v5 1/8] power: ip5xxx_power: Use regmap_field
+ API
+Message-Id: <173336261259.1429662.11543418848764178684.b4-ty@collabora.com>
 Date: Thu, 05 Dec 2024 02:36:52 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -32,28 +34,25 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-Mailer: b4 0.14.2
 
 
-On Mon, 02 Dec 2024 15:15:15 -0600, Andrew Davis wrote:
-> We don't need to specify any ranges when allocating IDs so we can switch
-> to ida_alloc() and ida_free() instead of idr_*.
+On Tue, 19 Nov 2024 19:07:33 +0100, Csókás, Bence wrote:
+> The IP53xx series [1] has a much different register
+> layout than the 51xx/52xx [2] currently supported
+> by this driver. To accommodate supporting the former,
+> refactor the code to use the flexible regmap_field API.
 > 
+> [1] https://sharvielectronics.com/wp-content/uploads/2021/07/IP5306-I2C-registers.pdf
+> [2] https://www.windworkshop.cn/wp-content/uploads/2022/04/IP5209-IP5109-IP5207-IP5108-I2C-registers.pdf
 > 
+> [...]
 
 Applied, thanks!
 
-[1/5] power: supply: ds2782: Switch to simpler IDA interface
-      commit: bea4395a04d2602e72f550e795c15e98e557b779
-[2/5] power: supply: ds2782: Free IDA with devm action
-      commit: fd647cc2cb73e8a6403f9c59fd7956f68f2e6b35
-[3/5] power: supply: ds2782: Use devm based memory allocators
-      commit: 1481f9f39091b95aec52553a9652d84a827a6004
-[4/5] power: supply: ds2782: Use devm_power_supply_register() helper
-      commit: 8571178e9adf3128d70d14359b965f370cfd522d
-[5/5] power: supply: ds2782: Use devm_delayed_work_autocancel() helper
-      commit: 1c44832979a70570f2e652013877c7b15000494e
+[8/8] power: ip5xxx_power: Add support for IP5306
+      commit: 39f3bd9c9a27d526858da153090376decdf7bfea
 
 Best regards,
 -- 
