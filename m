@@ -1,154 +1,258 @@
-Received: from mail-lf1-f48.google.com (mail-lf1-f48.google.com [209.85.167.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from NAM11-CO1-obe.outbound.protection.outlook.com (mail-co1nam11on2064.outbound.protection.outlook.com [40.107.220.64])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 833941BD9CD
-	for <linux-pm@vger.kernel.org>; Thu,  5 Dec 2024 20:58:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.48
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733432316; cv=none; b=sHnsUQxBUwsYcaWY2keLKkPBF+gSLcFEA2lcv3ur3L0mV3XofnHv+euaAMKihIpEfZnEB15z5MqyPhjAk1+zQzhsavD0uG0go1l6/r5ZLsXQu1FeUYiJl71XUDco4IIDe6rCw8m3SUamdjExSRYIxZIg5gLmhqzHYHbUEQRJa+s=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733432316; c=relaxed/simple;
-	bh=bMicQtsMNQVm02WIs6cu0LU/nIJuALuKx/crjZaeWK8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ohUose4ZSvwrxSV7vDgN4HWhf4Ju32rHmCQl4+E+DI/cxPg5mj4Ohxe9YGZhmzvDDic9lhWvjksnfrdZnvAj1HXP2tGydoom//qs0rYnhr48N3fLLupj9kkAsQRSwyhggvrEUo1YXg7uj+4ATsrO9JDy7ZaR7SCHwNMg/mLGYS4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=UBXYARqy; arc=none smtp.client-ip=209.85.167.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3BFC71BBBF1;
+	Thu,  5 Dec 2024 22:29:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.220.64
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1733437749; cv=fail; b=ZBhn+ncEp+STjUJ0YcxWukUJON7IbZWAcKeEqSMF7jnDEzkg3k60ZI6z4zPVaStkLhOHg7/cuMdgMD1wCEu2XBLebhvZw4s2NRRrhSJNmZrcFqVX//HquUJGZy7PuxjJBq17zMsFGck0NYib1swe1I0OwFKPRmJsmxcHMiQTCc0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1733437749; c=relaxed/simple;
+	bh=rA/0wCJ4tg+aNsVFNFdCGU0Zt6oDuZsPcDV7xaK/KZw=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Zmp7XaHFmlWv8NLondO1HkxXymZBDcEhyPeqDN798anORa3fS5CBgBOvWGU+pU8S5J5cXy9oNYtOc3+4kVHmJAVfz6kzkY9s50xkuSQACubeusF56gOLOuHiDhQ98BhWAJvZoDWGBRbxyp6XnlL1RMGXQ5orrS8hYaKecRdfOI4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=VeONxHNI; arc=fail smtp.client-ip=40.107.220.64
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="UBXYARqy"
-Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-53de79c2be4so1493183e87.2
-        for <linux-pm@vger.kernel.org>; Thu, 05 Dec 2024 12:58:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1733432313; x=1734037113; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=WRmvhDyJMv49jiqonPHAeKnA3QIYKzHJY1yeXH6PQc4=;
-        b=UBXYARqyKSHcUfJbZu2d1EpKlM4/HsivD6dq+RUfAz8BOY6PNnTN8znhcpRqyaW8Y4
-         u8lK83CSR57JDbpAAHxlqMZmIeC7EUNEGNf2hXJfgfPjAyzqH9pqN6IcUFhxtW9yxm86
-         w/P6lHEPLejrpCzYR5MEtQgG7Olk64/NrTWKuU5VtzOhCOe6uo3D6cOHLWtJ4GnvzQGb
-         kzJAEsgdyIfxNPUtGSULyJsUG+lsF2IdG+wFYQKj3fwreHUd/XQRz1R+zO4c54rWvYI9
-         PbIQ8DJl4/RREj2qUDx5hW039oTUkTOIznct/OZTeMjgy7qMbfDqJ7hir2pzojQafNWy
-         N4nQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1733432313; x=1734037113;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=WRmvhDyJMv49jiqonPHAeKnA3QIYKzHJY1yeXH6PQc4=;
-        b=BbkEbhhP7InonXNwcklcxNHUeKuXLwxtZRz+m01uyqNedOm5ENzPhBJEwUlgH/FyId
-         s0fJ+yhxQwSqTifOvCap5dcqythdaPlhfRnKGhb/vgoMimLglA691oPRTC5/5Q/4dxDn
-         OPtmSryBGv8jaSgDdBa6lBN0tutxf1a9WVmfxOyMUNkCO7Uujk+pmz3BujKutLbv6aG4
-         JxLS5K93iOlcYG2r8HKxmtK0f9EkgPyoGGuMpGrA7i7Lv3sVwCDG24YjD5unSynEeQ1y
-         x4ILpy/0svROJrr1PhCGYmvYOh0dvt7bEF6tq1pfQ1B1eisamJZ00jscZmdFYlMp5zQe
-         g5Cg==
-X-Forwarded-Encrypted: i=1; AJvYcCU7J3Xw7GARN8yBLA8jqW2l5LTQ7ZmGpEuW0JOFjTE//tTuKVgD180+lcrykjRL0OuTkvGSL1kXIA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw1f3zSYlhVW2tExhkWwHB/TWqzpXUFSwQVS0OdDyKklvbw9PLC
-	VLs8ysTBiakIHR40ybM+HN8rlebT8Uuro5DGVb5e8lw1hB3Ufeaf63BcrPX+cawuuXhcFR0QOZT
-	YEHvfvw+ZPvboJcCCbY57Tv9PcAFuyvW7YLEb
-X-Gm-Gg: ASbGncstlFVHPUIJ6pHeoFCDNJYRVmrq0SORWH2iDTK6UjXUSkMsjbmnamupvTtKGYT
-	IvH/N9eRzM415JzTNaMsx9MFjRUDRlA==
-X-Google-Smtp-Source: AGHT+IGK1MAbWBO65ag8JQFr3JuHH7jl3Jlj6sjAdvMtG/HIraalYyXevkYEMF1iK+KsP8rtE3hLpD1JYNoji0HGzM8=
-X-Received: by 2002:a05:6512:2214:b0:53d:e41a:c182 with SMTP id
- 2adb3069b0e04-53e2c2c4b80mr111899e87.31.1733432312372; Thu, 05 Dec 2024
- 12:58:32 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="VeONxHNI"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=HUkY/OUMWvDVEeJRvB1nndJz0BX1eLjm39izxSnWgca9D4512z0ySUFM7b7JlL/KA/lu3GpxEXo2XMbeHcHYsaRs3IjdzwChPUqcZ0G7fAltEafSEQ5uqMgByhAPY3RO5AMBPwFCWakn7pKl/vXBbD4I2D36vu3Q92dEsKKUgpXxzEwiohCqa4sDbryE1X0Mg60ryN+GmQGTGXnJ67P2clU2C5OG3fsHif/XW+04huuslQ8/RnlGwBXbnbZzuxSMDjhz+nLNitoqaGBLAzp752+1MKBeS8ZtKrqwOEMilkmECcKubCdNR0Sbc88aOO/2uwrHPEqULV7YZALemeodbw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=4qMyCdPonk7jSP9EDxLgHKFrVNx7ZksOYmd8xbL1ziU=;
+ b=q9LTTO2YPoON1a5DP3cSMMqoELpj6Z3mW4gp+6Uo3zii+lXHaIYk4z7KbP7eNgSd32cmaJX73h6ehA+wjcWHXwCaFxmtONadfT+lN1caDNwQYF1Lo8QBLOavMPlS2j2F0W9qKtrHzHStACIeed80oETST/U54C6/Q1Ki3YpUskitQOto6OLA+niJRtbnBYmEHgYIMkmPJvCVlSWzCKYzwanMHpzUWFUlk8kj/NaSvqM2DbSC6OtW7M1t6n8c5Sd6i6bKA2I2mlMkYKzeyjNBLLW4fA9ACSvpe+wkSICSS6FpcsaAz0PIVI/vH4E8XCiOWiLqW9inT2LINmt3nR8DQw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=4qMyCdPonk7jSP9EDxLgHKFrVNx7ZksOYmd8xbL1ziU=;
+ b=VeONxHNIJICXbzpIEOkKJ84Koij6bNxnOUIDIQ0AOgRVSQqVo8kGtEZGX8ItugGRIYv4ttPT6et2Ug/dDMA4szo/JcOINB7I9G2mwpYlRWxTLI8KQFiCVHZSZqV1K2Ocuvla2tLjR1HnySGwHl2Q68FM6q7rLd2mRr1aPep/QAk=
+Received: from CH0PR03CA0220.namprd03.prod.outlook.com (2603:10b6:610:e7::15)
+ by PH7PR12MB6761.namprd12.prod.outlook.com (2603:10b6:510:1ab::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8207.18; Thu, 5 Dec
+ 2024 22:29:04 +0000
+Received: from CH1PEPF0000A349.namprd04.prod.outlook.com
+ (2603:10b6:610:e7:cafe::75) by CH0PR03CA0220.outlook.office365.com
+ (2603:10b6:610:e7::15) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.8230.10 via Frontend Transport; Thu,
+ 5 Dec 2024 22:29:04 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
+Received: from SATLEXMB04.amd.com (165.204.84.17) by
+ CH1PEPF0000A349.mail.protection.outlook.com (10.167.244.9) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.8230.7 via Frontend Transport; Thu, 5 Dec 2024 22:29:04 +0000
+Received: from AUS-P9-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
+ (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Thu, 5 Dec
+ 2024 16:29:01 -0600
+From: Mario Limonciello <mario.limonciello@amd.com>
+To: "Gautham R . Shenoy" <gautham.shenoy@amd.com>
+CC: Perry Yuan <perry.yuan@amd.com>, <linux-kernel@vger.kernel.org>,
+	<linux-pm@vger.kernel.org>, Dhananjay Ugwekar <Dhananjay.Ugwekar@amd.com>,
+	Mario Limonciello <mario.limonciello@amd.com>
+Subject: [PATCH 01/15] cpufreq/amd-pstate: Add trace event for EPP perf updates
+Date: Thu, 5 Dec 2024 16:28:33 -0600
+Message-ID: <20241205222847.7889-2-mario.limonciello@amd.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20241205222847.7889-1-mario.limonciello@amd.com>
+References: <20241205222847.7889-1-mario.limonciello@amd.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <08f3bd66d7fc8e218bb6958777f342786b2c3705.1731554471.git.len.brown@intel.com>
- <CAJZ5v0g1JwGRECd2JVKScWO9a=hmrY03YQx95JKZ+q5KisRb1w@mail.gmail.com>
- <f6621a09-d5e4-4d3b-9b5c-55294c22030f@rowland.harvard.edu>
- <CAPDyKFoJ45PZ_o6VdaCiyat+BC6XOZ5AMnxmsZVzk16cCxmDkw@mail.gmail.com>
- <CAJvTdKkqO5D8tZt3L_dbXkXftUOz+zijEjQiWHginn4t_o4gKQ@mail.gmail.com> <7c3c49e8-95fa-4382-a5bc-eccef6d89ed2@broadcom.com>
-In-Reply-To: <7c3c49e8-95fa-4382-a5bc-eccef6d89ed2@broadcom.com>
-From: Saravana Kannan <saravanak@google.com>
-Date: Thu, 5 Dec 2024 12:57:56 -0800
-Message-ID: <CAGETcx8gG1_rRrt1fSJpY8c-J6RYMo5e2h_TSzg1FExu0Ge1pQ@mail.gmail.com>
-Subject: Re: [RFC/RFT PATCH] PM: sleep: Ignore device driver suspend()
- callback return values
-To: Florian Fainelli <florian.fainelli@broadcom.com>
-Cc: Len Brown <lenb@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, 
-	Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
+ (10.181.40.145)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CH1PEPF0000A349:EE_|PH7PR12MB6761:EE_
+X-MS-Office365-Filtering-Correlation-Id: 8fa1b303-8fbc-4472-73f7-08dd157c397a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|82310400026|1800799024|36860700013;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?Tpazii3HfjdNUEsopnI7wb0CRKokURu7QEprF5Z38Ev4iT4+sXDPLaft9MRA?=
+ =?us-ascii?Q?0db8Iut7WrBat1pNzQP41xnSiCpSD8DRR0A9dOHG/hvapbK49EvUhytjM9hk?=
+ =?us-ascii?Q?Fgat2CN5PO6hCPZPUQ99y4GHeXbqmJFY3LgtaIj5H0Kwiuu7zfKbEQjXUIbn?=
+ =?us-ascii?Q?n4BeRdUWwx40k9aAl5xBcL7ffWIQp1Cf5AZ+SyUn8ZeTOiucw/7pp2MjOxpL?=
+ =?us-ascii?Q?K/Iz5ikrIag1FQmOMhVJd5ELx2gMsoWT7gzVQfNZvXcoyZnghIPsDw0pM/vJ?=
+ =?us-ascii?Q?Ka7MlMdo68VLhCpqL2fMpPDgSfvtwv4mEtMfdruDIA90l4cUxvgWpkbptN56?=
+ =?us-ascii?Q?U+gEC85c+Zbh0Ex8uJDSxzrxzE2x3K/xc+lhsE+WS0f5lzWFz2OsRVcWKwre?=
+ =?us-ascii?Q?HaOYpO6dBcO46havZdhrFdWeRWhRhRp47f+jncu1kT8yC4bEJrXPRMbPDnbk?=
+ =?us-ascii?Q?li6gSf4Bkmy43MnuYaEBZz58uIU5AKOmk5mj6dty2O89ci6G1JaSaQ3KLhwA?=
+ =?us-ascii?Q?YZaiLPhxYDAiJVfSxAzEU1RuSPWwWlrXMXaur+pNZ6zrVFJs3JdLuwkx6qCm?=
+ =?us-ascii?Q?Al/q75BEG/n8UzK+cfzHNEAYCVaA7Co8omKkd2tz6XBQgY7GvFix1aCxOiPk?=
+ =?us-ascii?Q?91lO9dxB6SHWxM4XTUl6j5fG6Ao0+MPAOjC35XF1WfRCx3YL5afs8xii9tb9?=
+ =?us-ascii?Q?Pnju1Jf+oCYbica5EtV7BewoHf2th+q1MEG56fNQeIqgDDlz/us6feLTSAYk?=
+ =?us-ascii?Q?SX1mNJ4ilSH2XytYwAn5yB/jIlhRvNPbdh5Qj2OB1XyBx64vjSOC60OrXrxI?=
+ =?us-ascii?Q?6lOK45WWDiCQXMphLLN77PQYjScwYWWMsyWPU7EhAKjSrZseuIF1h4ZZKD/1?=
+ =?us-ascii?Q?pLcSVj58IGgTpVGifFlZNBcfflAKsrnV41cZ6hMzxeI7yqm/sDXkLUrQ2GFY?=
+ =?us-ascii?Q?kCpfnKbZZz1/F5QSoM1aLpUv/VlrD6vWTkPt8ga0o7oZtbDcNjrfRa9H45Zo?=
+ =?us-ascii?Q?m6pR1HML4LE27vzBWhUzZrrLCWFWRSFk++6HvybhIJeSEoX2AjfIGZUnA2k+?=
+ =?us-ascii?Q?a0kTl9J0X2qnRjQiis2SpG24X/m+SDW9A8+lMlJi2APc9MdsVBK6HZGfIKbz?=
+ =?us-ascii?Q?RHBwY66JAmRuMNX9b1b7asHsLChPj83OGMXhD4ECoZxXulELO3aY/IU2Bh4g?=
+ =?us-ascii?Q?ev99nXCu2Kjp8zci8Tcq0UYwzxVJ5dNAWZSBwlQJ2B69iFUB2saRxYKm0G/N?=
+ =?us-ascii?Q?nW2YLmNvoBsS8+VcI4Z3dg51120lcP6RPjgjKxiv3wnLcmzJClXKEvtPTmd3?=
+ =?us-ascii?Q?QYivnKKYOTNbQfb+jna1tsMZgOXpTOhFqzf3M0jp+uq9TFeIx47y96v27MMG?=
+ =?us-ascii?Q?EngRt85boMSGohjCAcSwbagp1/yCf8FdpFRdFNjc2QwuNDTZQYIpfYjaaWCl?=
+ =?us-ascii?Q?kQqKvC57A0Jwj0ljHKSv7x6GwFXkuDHl?=
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(82310400026)(1800799024)(36860700013);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Dec 2024 22:29:04.0151
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8fa1b303-8fbc-4472-73f7-08dd157c397a
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	CH1PEPF0000A349.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB6761
 
-On Thu, Dec 5, 2024 at 9:57=E2=80=AFAM Florian Fainelli
-<florian.fainelli@broadcom.com> wrote:
->
-> On 12/5/24 09:36, Len Brown wrote:
-> > On Thu, Dec 5, 2024 at 10:33=E2=80=AFAM Ulf Hansson <ulf.hansson@linaro=
-.org> wrote:
-> >
-> >> ...I also think this looks a bit risky as the current behaviour
-> >> has really been there for a long time. Who knows what depends on this.
-> >
-> > If everything were working 100% of the time, no risk would be justified
-> > because no improvement is possible.
->  > > But we run over 1,000,000 suspend resume cycles per release in our l=
-ab,
-> > and this issue as a category, is the single most common failure.
->
-> But you are starting to enter the big number category here, eventually
-> something is going to fail with that many iterations.
->
-> How was this 1 million iterations determined to be a good pass/fail
-> criteria and just not an arbitrarily high number intended to shake off
-> issues? Surely with such a big number you start getting an idea of which
-> specific drivers within your test devices tend to fail to suspend?
->
-> FWIW, with the products I work with, which are mainly set-top-box
-> devices, we just set a pass/fail criteria at 100k which is essentially
-> assuming there will be 27 suspend/resume cycles per day for the next 10
-> years, given the lifespan of the products, that seemed way overboard,
-> realistically there is going to be more like 2-3 suspend/resume cycles
-> per day.
->
-> >
-> > Worse, there is a huge population of drivers, and we can't possibly tes=
-t
-> > them all into correctness.  Every release this issue crops when another
-> > driver hiccups in response to some device specific transient issue.
-> >
-> > The current implementation is not a viable design.
->
-> Neither is this approach because it assumes that drivers that need to
-> abort the system suspend call pm_system_wakeup(), which most do not,
+In "active" mode the most important thing for debugging whether
+an issue is hardware or software based is to look at what was the
+last thing written to the CPPC request MSR or shared memory region.
 
-Agree completely with Ulf and Florian. This patch series is way too
-optimistic in thinking that all drivers are/should be calling
-pm_system_wakeup().
+The 'amd_pstate_epp_perf' trace event shows the values being written
+for all CPUs.
 
-I'd argue it makes more sense and is intuitive to return an error if a
-device suspend fails and have the framework act on it immediately than
-setting some global flag and then looking at a later point in the
-framework.
+Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+---
+ drivers/cpufreq/amd-pstate-trace.h | 45 ++++++++++++++++++++++++++++++
+ drivers/cpufreq/amd-pstate.c       | 28 +++++++++++++++++++
+ 2 files changed, 73 insertions(+)
 
-Based on the rest of the emails in this thread, this seems more like a
-driver problem than a framework issue. If you see a driver that's
-returning an error when it shouldn't, fix it.
+diff --git a/drivers/cpufreq/amd-pstate-trace.h b/drivers/cpufreq/amd-pstate-trace.h
+index 35f38ae67fb13..e2221a4b6901c 100644
+--- a/drivers/cpufreq/amd-pstate-trace.h
++++ b/drivers/cpufreq/amd-pstate-trace.h
+@@ -88,6 +88,51 @@ TRACE_EVENT(amd_pstate_perf,
+ 		 )
+ );
+ 
++TRACE_EVENT(amd_pstate_epp_perf,
++
++	TP_PROTO(unsigned int cpu_id,
++		 unsigned int highest_perf,
++		 unsigned int epp,
++		 unsigned int min_perf,
++		 unsigned int max_perf,
++		 bool boost
++		 ),
++
++	TP_ARGS(cpu_id,
++		highest_perf,
++		epp,
++		min_perf,
++		max_perf,
++		boost),
++
++	TP_STRUCT__entry(
++		__field(unsigned int, cpu_id)
++		__field(unsigned int, highest_perf)
++		__field(unsigned int, epp)
++		__field(unsigned int, min_perf)
++		__field(unsigned int, max_perf)
++		__field(bool, boost)
++		),
++
++	TP_fast_assign(
++		__entry->cpu_id = cpu_id;
++		__entry->highest_perf = highest_perf;
++		__entry->epp = epp;
++		__entry->min_perf = min_perf;
++		__entry->max_perf = max_perf;
++		__entry->boost = boost;
++		),
++
++	TP_printk("cpu%u: [%u<->%u]/%u, epp=%u, boost=%u",
++		  (unsigned int)__entry->cpu_id,
++		  (unsigned int)__entry->min_perf,
++		  (unsigned int)__entry->max_perf,
++		  (unsigned int)__entry->highest_perf,
++		  (unsigned int)__entry->epp,
++		  (bool)__entry->boost
++		 )
++);
++
+ #endif /* _AMD_PSTATE_TRACE_H */
+ 
+ /* This part must be outside protection */
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index 66fb7aee95d24..4d1da49d345ec 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -324,6 +324,14 @@ static int amd_pstate_set_energy_pref_index(struct amd_cpudata *cpudata,
+ 		return -EBUSY;
+ 	}
+ 
++	if (trace_amd_pstate_epp_perf_enabled()) {
++		trace_amd_pstate_epp_perf(cpudata->cpu, cpudata->highest_perf,
++					  epp,
++					  AMD_CPPC_MIN_PERF(cpudata->cppc_req_cached),
++					  AMD_CPPC_MAX_PERF(cpudata->cppc_req_cached),
++					  cpudata->boost_state);
++	}
++
+ 	ret = amd_pstate_set_epp(cpudata, epp);
+ 
+ 	return ret;
+@@ -1596,6 +1604,13 @@ static int amd_pstate_epp_update_limit(struct cpufreq_policy *policy)
+ 
+ 	WRITE_ONCE(cpudata->cppc_req_cached, value);
+ 
++	if (trace_amd_pstate_epp_perf_enabled()) {
++		trace_amd_pstate_epp_perf(cpudata->cpu, cpudata->highest_perf, epp,
++					  cpudata->min_limit_perf,
++					  cpudata->max_limit_perf,
++					  cpudata->boost_state);
++	}
++
+ 	amd_pstate_update_perf(cpudata, cpudata->min_limit_perf, 0U,
+ 			       cpudata->max_limit_perf, false);
+ 
+@@ -1639,6 +1654,13 @@ static void amd_pstate_epp_reenable(struct amd_cpudata *cpudata)
+ 
+ 	max_perf = READ_ONCE(cpudata->highest_perf);
+ 
++	if (trace_amd_pstate_epp_perf_enabled()) {
++		trace_amd_pstate_epp_perf(cpudata->cpu, cpudata->highest_perf,
++					  cpudata->epp_cached,
++					  AMD_CPPC_MIN_PERF(cpudata->cppc_req_cached),
++					  max_perf, cpudata->boost_state);
++	}
++
+ 	amd_pstate_update_perf(cpudata, 0, 0, max_perf, false);
+ 	amd_pstate_set_epp(cpudata, cpudata->epp_cached);
+ }
+@@ -1667,6 +1689,12 @@ static int amd_pstate_epp_cpu_offline(struct cpufreq_policy *policy)
+ 
+ 	mutex_lock(&amd_pstate_limits_lock);
+ 
++	if (trace_amd_pstate_epp_perf_enabled()) {
++		trace_amd_pstate_epp_perf(cpudata->cpu, cpudata->highest_perf,
++					  AMD_CPPC_EPP_BALANCE_POWERSAVE,
++					  min_perf, min_perf, cpudata->boost_state);
++	}
++
+ 	amd_pstate_update_perf(cpudata, min_perf, 0, min_perf, false);
+ 	amd_pstate_set_epp(cpudata, AMD_CPPC_EPP_BALANCE_POWERSAVE);
+ 
+-- 
+2.43.0
 
-If you are testing this only on some specific set of hardware to claim
-it works without problems, then you can also just go fix the drivers
-for that specific set of hardware and call it a day. If that's "too
-many drivers to fix", then the amount of untested drivers surely is
-orders of magnitude more than that.
-
-At best this should be a driver specific flag (why not just fix the
-driver in that case) or a commandline arg that's default disabled.
-Then whoever wants to use this sledgehammer for their hardware can do
-so without affecting others.
-
--Saravana
-
-> they return -EBUSY or something like that. There is a total of 12 or so
-> drivers calling pm_system_wakeup(), that's not the majority.
->
-> How about you flipped the logic around, introduce an option that lets
-> you ignore the suspend callback return value gated by a Kconfig option?
-> --
-> Florian
->
