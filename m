@@ -1,150 +1,214 @@
-Received: from mail-pl1-f169.google.com (mail-pl1-f169.google.com [209.85.214.169])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazon11011038.outbound.protection.outlook.com [52.101.65.38])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 14652204564
-	for <linux-pm@vger.kernel.org>; Fri,  6 Dec 2024 22:13:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.169
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733523186; cv=none; b=Spuce11DtL63Xs+ddxnB90crxFLgYXWhiTO+SQay5hZgXoUmoRLTVHayVU+nbrkllPbI5EEaRCFmxw4FkiS3PWIA1EtLobxIxcTVXG+03omI/Hm2FznqZ/dY+InVOqC4J/+aFEWA008Tdw6BVtp96vpG3eWwoueZygejk2H6C+c=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733523186; c=relaxed/simple;
-	bh=UYKwDCjPt0Pb4J8LYvmA473uK8bBnXmKBatytxsKAXw=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=jEDCXQqE0Ouku1D0BiasQsf4GPMFHzQo7bEmncaKWR3cfpZgogb1QUOtNgsfygruiKJT9aLY7dJ9DV2VWQi0AMzG67WChaDBwYJQefT4Hj4yrAcQPgKkcQmpwoUhbgNBr8iMiQXnGxVwKJYG5n5thuDsHuM0lVauXHib7CB/SU4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=E17rPUO5; arc=none smtp.client-ip=209.85.214.169
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E132222C6D9;
+	Fri,  6 Dec 2024 22:56:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.65.38
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1733525816; cv=fail; b=mpIqVj26jdps8KCzV/T+pp0owgsrfTaSBuGnbHSxD+K8m+Iji6G+Gl/GvWUjrxQn6aMXivlHYy+mGM01OZGoo1U1GiwqvqQctEhZBXxnC8hgisg/ZgR9dSx52B8GGNC8K/3HT66mCQ16kl3YCvOUjAanTLjI0wz0D3tKPpihgTE=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1733525816; c=relaxed/simple;
+	bh=j7wOQdDYOjDgRutV9S6c0uBLOIXLM0FoulivhCdO1b0=;
+	h=From:To:Subject:Date:Message-Id:Content-Type:MIME-Version; b=TfVH0LmTdf775TEuTHZy2gjdOZkzCw7+VnwyrdG2ePuywNAuQZEmcwlxCwjtprbZ+Ds0r09zGdr6KynOgOa1wGG8UW9C+qFjBtE4koN4fHg3TRkccE7RNhuBDBJub/rRjXCHrQLVG2FZu0xBafEGTjYpukFfnQhy4vyMZVQ6VTI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com; spf=pass smtp.mailfrom=nxp.com; dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b=ZTD0oXxd; arc=fail smtp.client-ip=52.101.65.38
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="E17rPUO5"
-Received: by mail-pl1-f169.google.com with SMTP id d9443c01a7336-215d92702feso22246685ad.1
-        for <linux-pm@vger.kernel.org>; Fri, 06 Dec 2024 14:13:03 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1733523183; x=1734127983; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=gO297//2n/rgfagI213U6eCWKlgwMp68Rn9iCoz6hZE=;
-        b=E17rPUO52OOsS8h8eIj0qqMPydIHKDWtywMlgJUSVjgU0voEmwGl1ShzoAyr42HoLO
-         GjWeBKdLzg5rGUHQxzBEs5Pe4Z8cwlJn6vqZKKBt8bN2Y5DUJU61BGQynstE0SKdmxaB
-         PudlAA6UvPShVjhxYw2it9OnVGq7zYM/1bkiBoCxsl9uaf4TpJvQei1DXrEj1UI9hBMj
-         QpWYP41/e8PemK2gGBxLlqjuhMBRb/gLIeGD3RaDbQb4wd1w0ebc1dWSOZBpESrxOXc0
-         7RketTi76eBeieCqx74NKpD+Drq3DrQ1eHgNLBSiS0o+1aBmXFDZWNz/57YfuUJ4HE12
-         fVIw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1733523183; x=1734127983;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=gO297//2n/rgfagI213U6eCWKlgwMp68Rn9iCoz6hZE=;
-        b=CqIu7qsvfHpoB5/QKSXcL5Df+hldEm8fPlqK4FE7uEFp3WsjZiKxPSxsCQyGflsJf1
-         qEufe7fEDQhRiuJ7gUNXjDhEnaH1MNl2wKB5TibGAJWqjsJyx7h8wZ2QuWjH4WfUhbYf
-         pKBjwuyEDcB5ZSxBwVawpALifkaXlQLtFRNb3WZJce5sVZLVHbLsLftoQK6mB0WtyBmS
-         4/5oggz7LsJ63Q3KUPidUvrwMs9nGDnW52MZpUdho+MRGG/deHJ5k9vi21ftXZ4LYw89
-         bwnTfk3ZkEqJLikpuclEyaY5f0HaEfwebkL7p31Bg+fjI144LKOGBFWiNmgwYpnCCY2g
-         mN9g==
-X-Forwarded-Encrypted: i=1; AJvYcCXpHoJY3KKdjx2PqsV/YNKAliArJCbeKs3crZrBnzOtGvnRspJdLxCNj9PX0fecXypmac/rBISBWQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyeqVPrvR0znDweGM4KeHL81D18h1igu+lt+za/2hQS1I1cLRHc
-	cOFnLGeoGKZMPqLUKZuVuEkeRT8lPbx5ISzsEPpmWMbLX1Vh32CyqVq79jXBxVw=
-X-Gm-Gg: ASbGnct947wrYhWGSjWWb5l5zWlmeJ9ylnJLFNmMMiS3qcTV0CHcfI9kV2C6DN3x0tA
-	Cak6vVgFmXrhtJ/bG1JgrVYAxL+9pl6ho8etD3MAJgWRbyB2E+aCW1tgUwBqTpyS52AgnWF0hah
-	tiXQKYfnn8t16/JbAoJXfBdUkQF64j0Vk1PlSNLrvlk5TiZaDZ5NVNOUJblvUE0qL4+ro4OSEMx
-	WRax2e34nK4gtmOiNZsMHznGydf3Q06JrGYBND4dQGmpRMv
-X-Google-Smtp-Source: AGHT+IEV5xymYqZ1yJV9BrjFB0Nh2Eg2LOwsypkmTdkIep4O1iPhv+s2TJ3JIQRJlUDRcRjBY3qeBw==
-X-Received: by 2002:a17:902:f54d:b0:212:68e2:6c81 with SMTP id d9443c01a7336-21614d4ac70mr65378675ad.24.1733523183496;
-        Fri, 06 Dec 2024 14:13:03 -0800 (PST)
-Received: from localhost ([97.126.182.119])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-215f8f31a87sm33273575ad.268.2024.12.06.14.13.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 06 Dec 2024 14:13:03 -0800 (PST)
-From: Kevin Hilman <khilman@baylibre.com>
-Date: Fri, 06 Dec 2024 14:12:51 -0800
-Subject: [PATCH v6 2/3] pmdomain: ti_sci: add wakeup constraint management
+	dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b="ZTD0oXxd"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=v04o04LgItfRL27H0elOm7DcsBzMgvMwpLc8OCZ7ldUryk0/rt0Bu2d5DqlAO2UHxmxjqg17ZkJc2Zh9Pf1lFah8rWWMW4FWE+LKe+inoboxnNRNoQvadFbp6dxXDP+fbMvggOeuqJx/MkWg9Mxs0CwWElUUsfTgK1TdRVgz/Or47jw9fHzQxYeEA8gBulOkSNdKuiKz47yMTLoKFfPCiyg7wF/c3OHMLw5s0ovIq2JKflyWJu0McyQpzUb7ef93+mKioQ5CLeSoCaU7R/Ew6O+BgafrvuU6Eb4FPHaqILuB+7WrquoJYcj5PneNHkbaw7oYOyykOP7xppI20rAf3g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=/UbVjsUn25a7WNf1SKOR+2RGeSyON1LpUXM+9JfAea0=;
+ b=VeT4IGH+zsif8SV+VECK/jmuIYDcIa6gQ0LTJ+JtOjP/AYGoQpT5Z3adewMlieWB+m0B3IHy/x5/DcaNsqkANrtcESM0PK4mo+mcqY+Cwt07mSDcMkgqb5Qd50gJ9ZkJfT0icVKWTbOEDZb+ylzfF/Gig//B037Y9noRwYYEBb1/welDtLK1vOoelTiFZQcqPAMJBAs7kSGsilZB4+bgKduRxLvNRt28fhd2VspUySVDNGB/8ETcnN6HKo7Bs0/jiBeac7lwdCsii0dmWaZAtYXauBcKquTF+3PaVtlYmKCSUeKd/5RjEkqBXQbQDcF59wkbHt6gXmga/TS+znyY0g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=/UbVjsUn25a7WNf1SKOR+2RGeSyON1LpUXM+9JfAea0=;
+ b=ZTD0oXxdrm2XolA+RNK7CPhkP9tEyy8N8qevsqYAzo1J04PEKGUYGTFPz1IR++eySjyfX0agE3f8nyMuinQRI8KQlLBd4mkymz2cK1mua4916a3vZiJQVM7svJe8Xl99G4txzZ3AyY3w/CebRCWdrOZabCKDh+Kx2Th1lAzegAtUeu8vEcP3Pr+7BQX9m6vMOCj0gi58MInKyh3lVofh2khX/jcdUxJwqD45YCCVPiHzeAyK2iDNYVg7BJMH+47e/31bR2P6yxSKwGNKSafgTelUskQ9TOd0ZXxfSRakMqU+TUE30S8AXH8MYgBwa2iP7RqpxrOvYXpCrzDPMqRKQA==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from PAXPR04MB9642.eurprd04.prod.outlook.com (2603:10a6:102:240::14)
+ by VI0PR04MB10709.eurprd04.prod.outlook.com (2603:10a6:800:262::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8230.11; Fri, 6 Dec
+ 2024 22:56:50 +0000
+Received: from PAXPR04MB9642.eurprd04.prod.outlook.com
+ ([fe80::9126:a61e:341d:4b06]) by PAXPR04MB9642.eurprd04.prod.outlook.com
+ ([fe80::9126:a61e:341d:4b06%5]) with mapi id 15.20.8230.010; Fri, 6 Dec 2024
+ 22:56:50 +0000
+From: Frank Li <Frank.Li@nxp.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	linux-pm@vger.kernel.org (open list:THERMAL),
+	linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH 1/2] thermal/drivers/qoriq: Use dev_err_probe() simplify the code
+Date: Fri,  6 Dec 2024 17:56:21 -0500
+Message-Id: <20241206225624.3744880-1-Frank.Li@nxp.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SJ2PR07CA0007.namprd07.prod.outlook.com
+ (2603:10b6:a03:505::12) To PAXPR04MB9642.eurprd04.prod.outlook.com
+ (2603:10a6:102:240::14)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20241206-lpm-v6-10-constraints-pmdomain-v6-2-833980158c68@baylibre.com>
-References: <20241206-lpm-v6-10-constraints-pmdomain-v6-0-833980158c68@baylibre.com>
-In-Reply-To: <20241206-lpm-v6-10-constraints-pmdomain-v6-0-833980158c68@baylibre.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
-Cc: Nishanth Menon <nm@ti.com>, Dhruva Gole <d-gole@ti.com>, 
- Akashdeep Kaur <a-kaur@ti.com>, Sebin Francis <sebin.francis@ti.com>, 
- Markus Schneider-Pargmann <msp@baylibre.com>, 
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
- Kevin Hilman <khilman@baylibre.com>
-X-Mailer: b4 0.15-dev-355e8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1817; i=khilman@baylibre.com;
- h=from:subject:message-id; bh=UYKwDCjPt0Pb4J8LYvmA473uK8bBnXmKBatytxsKAXw=;
- b=owEBbQKS/ZANAwAIAVk3GJrT+8ZlAcsmYgBnU3bsqDLxWO2AWpws47wAA/jFbeDffWrz4qPsb
- SyYgMi7CCaJAjMEAAEIAB0WIQR7h0YOFpJ/qfW/8QxZNxia0/vGZQUCZ1N27AAKCRBZNxia0/vG
- ZRrND/4xtabQMPgyDLpYgMJPS1c2LUeKnOTWkJ83z8YH1AJs8pNydn7rBCna/HveiMWUjn7DPkE
- KKjuHB+QYLsgb94migpG4raM9BQZK3UVq5Vv08t7RT8UtHiwo7OTJj2DIPhXk/U+ic7dmaFjD5u
- yDFV0bFWqpRXJ9oHvLvS7yCWjQy/U7jJxQKVMUQT53bQ9rDXdewLkUzf5A6lwtPodtCArIZnYb0
- OhbDVEfLGmcRMBVjYsQKYXHRCbCsucsAvqB2quIcXCKrLewvW3dyfsCuJQ74kWnTjccm/hXToSo
- MQmwb2jaRhnuUDS2TYZq3y8pkiGM6obB910shrpH8UrZqdHwDlzhahtBnvbE0gk3tkC+LfUJIr9
- PE5ciY2YECShjBF4B33L5g+4cIngkCf+Em49mC8LJKf4ETH3rac8WXlgcMHS4NfaAbvzeXiphbH
- T+qnxrpBzYPUkTAmkj+Iffpmjf2oGsbILBNduO/ep9k87AbAoVe1W3jZxjUUiqa56o1rNN6JjS/
- Gfb+K9K6+UA9ipYUJc+bQDtSaeFArjOtcjDKKt+8NDeK6asdGBb0r6RiPId1HLPfe+IZcoxY1ay
- QeyzotFYL8gGZxyh3wpDySjl+gEVhMUHtI/AfAebsDjUEBM5fUE+puI97FJnlCZUo3fKYudUuqJ
- 4TCOKcNnemEYO8g==
-X-Developer-Key: i=khilman@baylibre.com; a=openpgp;
- fpr=7B87460E16927FA9F5BFF10C5937189AD3FBC665
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PAXPR04MB9642:EE_|VI0PR04MB10709:EE_
+X-MS-Office365-Filtering-Correlation-Id: 94b0d223-635a-4cad-9675-08dd164944e8
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|376014|52116014|366016|38350700014;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?vL+hbmKALdpITLiii7sy9q9AkbB7ZCXS27rpo4sIZBjVRcNJ2UrRRdqLhmyy?=
+ =?us-ascii?Q?CDH8g5eSPnKSOlnKMFmWC3omIRZ2ESqZopnZayyKX2mMlmpnerrfmA3tbq96?=
+ =?us-ascii?Q?vHDuei4jwGuE68THiMd5RHyLs4Y7GJb3h+4ZMNoRA9JMB9X61HKzpnlYjAUd?=
+ =?us-ascii?Q?N8pRMDytbuDUKohrCN/prbKfrFm8jWNNZHzniVBQc+rXGUfH6Yxxz7geZf45?=
+ =?us-ascii?Q?SSzk2SIMZDeOr7447PzlwCB4Z8sAareAnnw7HMzeZQp9sKGKr6VSChMstHLT?=
+ =?us-ascii?Q?sRx+WAK2lPxqYWpjwpY35Kag7O4W/8rpt8lpXqPTxIBjMjDoIhX9R9mCug21?=
+ =?us-ascii?Q?zUQgRRsR9QOXWJvYzkZ2AIfMX8LAjSc26c8GhG7TAVVINvQZFGwrG6HObCaT?=
+ =?us-ascii?Q?ddwgXBtwyszcpa5pYioy6VifgadM7v1yG/O9dwT0yvmeHrhnLLkQbxUZ+FF2?=
+ =?us-ascii?Q?JBdBIo545AtU9c1yrSp6v9APLwS55n0OMDUJrAFT9id7JvS/+jB+7gyGJh29?=
+ =?us-ascii?Q?BjoBAonZ/Z/R3sAqyH5TJMOCOkukEeWdo/eLwbmcnNIQiOrUgjdw+EovWZqt?=
+ =?us-ascii?Q?NYuYZ66YA8EfkG0wyrTgnW+lOMJGL0lxmk7ICugnznW92rAYziqQO1AJZPEn?=
+ =?us-ascii?Q?GN5hXHpEbJOhbi0ktNRtNLGrhv8FGT94VQFreLdOu/0od0L5EiJBmvIVec+s?=
+ =?us-ascii?Q?rvlsfwGeRK12EGcmTkxLaleMbmVdbd/E9cMdGvfKUhmnM965CrnXw1poLsoi?=
+ =?us-ascii?Q?sBiSOxKnvocYax9APTTGlZY6w99+KpqIqcvE1ZHjMjuz6XhkpgD3Ydx3oCa9?=
+ =?us-ascii?Q?o9K42anSnjWW4omKwm+4qS2mplv/JZaaQRkVc6F4HwnIh94vZJhxQcCApSBM?=
+ =?us-ascii?Q?iVNWP91cdtBIHL2hOJkgc850lrwPaOgtWKNV0ot5XUa/3EyyGuT4IV80HLds?=
+ =?us-ascii?Q?y1TUmeM0ubYqjU9HhExJs7BWyAo0TeqYO69rRIJSIGHSlZnGDzyvLZ7D0grF?=
+ =?us-ascii?Q?M44UJVTQqYE+I+TfCqVCYgHnTara2H3GCAGGAFuvB10LDa7AZhcNatNE9ePz?=
+ =?us-ascii?Q?bOPObToFA4LUv1gQqQtFpfpd0cGHcpwYFruDGDdRrHgMkTLRaThiL6zSFh52?=
+ =?us-ascii?Q?ytcj86Mw9XCqTDI7LvRkrUd0qs99jmfQnDugveWLs3RFhCN1+vGQm8eJ8nnS?=
+ =?us-ascii?Q?GIvj6bexx9HY4Nlvx26YduJb/LmUkQf5uJjPTeWaw9oQmk1r4uTFWz8Hnbh+?=
+ =?us-ascii?Q?Zw57RswHgB3aZrN135/Nn9ddF2OThPSoOVZw+Tpy4JLfrLreRwT42a7+4deI?=
+ =?us-ascii?Q?u8gsrs7dzQme6kTmPwAe7zJHhXDvlb0/lztV0jLM2/vAvTiDRNuExFtpHz4L?=
+ =?us-ascii?Q?FiTe2ft9KBMdYqkJkhAnu2fcTkf9ITCLOC05CdVHwGZMr7N0kw=3D=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB9642.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(52116014)(366016)(38350700014);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?kdiuvHAwFWNsVkCPR6R+E+mgd1fdLEiEPtrHPJJLzAFr/5Uo0ySKRlQDHH1q?=
+ =?us-ascii?Q?lo8qQi9XnP6mCwhpn26sGIsOGVhzXtLscxL1f2/HjaPF6T9wFWlNIwwcwj0W?=
+ =?us-ascii?Q?Ne1HHICwiaGTlWTFfj51brh3HlE0VxgSLgFgs850t5mYu4v+WR+wremKwSnS?=
+ =?us-ascii?Q?69Bv767M4st1/WhZUnoqRA+nb7hhfvRpru/kXe6If1s0CKDkC4G5+SC68pw8?=
+ =?us-ascii?Q?NYA7vWUwI3rwcMFXJtRXpiWHNmcmejB4kAHMxdmKIb/rsgH//WohtPvwJ97+?=
+ =?us-ascii?Q?2/dmw7/i98qccpeU3pWTzX09AwU51q3t/UYfPCWWZGIFUMw6N7gvpnjUh95D?=
+ =?us-ascii?Q?M5qdX6EhIxmXQoGDJ5fyv1WjdXrdK/n4AokguuMCW9pQ113bnvG188L69+Zo?=
+ =?us-ascii?Q?AcELIwZQqkSaN1yS7V0klf7orsVoSaeddmR1gHitTGjs38NzbZ781RUsLujV?=
+ =?us-ascii?Q?+zLMM92N8x5My74JcToO70du9HGtBstaYcjbyVwlNh5E8ZTEk/IgJy9++puH?=
+ =?us-ascii?Q?7W2nmIhUL7WvDwMsA25bven7gktS7OcBaWBQZ/WVeRAcJ2KQdXv9GLsPl3ge?=
+ =?us-ascii?Q?YWvpvBQIJ6trpXRdeEoHJCmu8i1Gljvi/F18X5kn0f8kSNnocXz0hXHLofKd?=
+ =?us-ascii?Q?Bq7nZ9Vp9riNcfq0q2M/p3BmR+nkC83O2bv189TCE2xUfWiysgWc7hMRbNek?=
+ =?us-ascii?Q?3PmSmEOnOytamIqtsCOPK7VWnYviLYTdOmfcZKULColIsgCTEKGh2JvMXZJK?=
+ =?us-ascii?Q?H6j9C2u5MJBlK9BvQ+9ytB3D009WS66lU2L1259NLrcWgat/Ch1eEFszuDkP?=
+ =?us-ascii?Q?/NDOyycEX8NhAghMGB+3JhCLJkbvmknBjyRdAa9Qa1/qcd8LyNSIjOIA+CSu?=
+ =?us-ascii?Q?kAsYxG4fu4e6zxtyWDKbDt8WutpnU2/8e0npbZsNl7PZVkN3asdmTaQOxIWN?=
+ =?us-ascii?Q?cLNmRlUtnYehD6GQswK3OfuSGJ7Ly1aHGUzd3fnWcz9YFUSJDFUZjfwOKKva?=
+ =?us-ascii?Q?XThdFg0vDp70k2RA/4KoebK3thqewBthotH6i/b3PI7Gk9MYt3Do3O/CJ7z7?=
+ =?us-ascii?Q?yJ3jjnJO1k76KmYbHNGp0IzQDuMJU4iZHTEAZdJPwPeKTwAdNzjj6WfRdP6p?=
+ =?us-ascii?Q?LL9xSUmoIFIstahwlqCx9JzMEBkZOcScFO6Mwin1AHI7wWiD3VPdE+TYQNb4?=
+ =?us-ascii?Q?wbWA33xxq0rCjhGBGzYzG8q9YrrOBAUrz/X1eg/n7dKcVJ++MZ+TN7I7G6SD?=
+ =?us-ascii?Q?IxOIRdHXos9CLSBNiPE4iqlL+t24cbige3hrJYbCo3+hqoxmR4wdclQQX/yD?=
+ =?us-ascii?Q?+qWzJ2HROMgPQr5GxskyQgIU2gTURgkF2ati8yu28YMW4q7av2A9s1mIPeG/?=
+ =?us-ascii?Q?Z8D04pmWNwWqx2UPp9ps4pVwa4LDDsDpEcWfzyhNQcM65XhJh8DhulC2WZ3j?=
+ =?us-ascii?Q?baL6oF8brnVjqjHwgqxbEu25yeunkpS6VIdbcvHaxFwFACEZLwzbUugilEhB?=
+ =?us-ascii?Q?2mhJozD6RtsGRnLW0ON4vKjaQ7Zsw+A6JIdpqaw9mcAmnnRJy1H0wYxdFR7C?=
+ =?us-ascii?Q?WnbxgLjh/waJnNG9FnQ4qnh/eUJ1A9qK3Bai80nj?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 94b0d223-635a-4cad-9675-08dd164944e8
+X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB9642.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Dec 2024 22:56:50.2292
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: WEyRjmZeSjdnHy4q2IThT2jNgnM/DLbnEZeDoz+fx/0YsWcqyMnD56ngDgBCPGt95GxeNiYv0w2PaXwc4e3epg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR04MB10709
 
-During system-wide suspend, check all devices connected to PM domain
-to see if they are wakeup-enabled.  If so, set a TI SCI device
-constraint.
+Use dev_err_probe() and devm_clk_get_optional_enabled() to simplify the
+code.
 
-Note: DM firmware clears all constraints on resume.
-
-Co-developed-by: Vibhore Vardhan <vibhore@ti.com>
-Signed-off-by: Vibhore Vardhan <vibhore@ti.com>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-Tested-by: Dhruva Gole <d-gole@ti.com>
-Signed-off-by: Kevin Hilman <khilman@baylibre.com>
+Signed-off-by: Frank Li <Frank.Li@nxp.com>
 ---
- drivers/pmdomain/ti/ti_sci_pm_domains.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ drivers/thermal/qoriq_thermal.c | 33 ++++++++++-----------------------
+ 1 file changed, 10 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/pmdomain/ti/ti_sci_pm_domains.c b/drivers/pmdomain/ti/ti_sci_pm_domains.c
-index 963fe1901c959197d5d8b5d34fd8420dfb180087..587961519dcc9e13c32efe76cdaf801281f72f67 100644
---- a/drivers/pmdomain/ti/ti_sci_pm_domains.c
-+++ b/drivers/pmdomain/ti/ti_sci_pm_domains.c
-@@ -79,6 +79,21 @@ static void ti_sci_pd_set_lat_constraint(struct device *dev, s32 val)
- }
- #endif
+diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
+index 52e26be8c53df..baf1b75b97cbe 100644
+--- a/drivers/thermal/qoriq_thermal.c
++++ b/drivers/thermal/qoriq_thermal.c
+@@ -296,38 +296,27 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
  
-+static inline void ti_sci_pd_set_wkup_constraint(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd = pd_to_genpd(dev->pm_domain);
-+	struct ti_sci_pm_domain *pd = genpd_to_ti_sci_pd(genpd);
-+	const struct ti_sci_handle *ti_sci = pd->parent->ti_sci;
-+	int ret;
-+
-+	if (device_may_wakeup(dev)) {
-+		ret = ti_sci->ops.pm_ops.set_device_constraint(ti_sci, pd->idx,
-+							       TISCI_MSG_CONSTRAINT_SET);
-+		if (!ret)
-+			dev_dbg(dev, "ti_sci_pd: ID:%d set device constraint.\n", pd->idx);
-+	}
-+}
-+
- /*
-  * ti_sci_pd_power_off(): genpd power down hook
-  * @domain: pointer to the powerdomain to power off
-@@ -121,6 +136,8 @@ static int ti_sci_pd_suspend(struct device *dev)
- 	if (ti_sci_pd_is_valid_constraint(val))
- 		ti_sci_pd_set_lat_constraint(dev, val);
+ 	base = devm_platform_ioremap_resource(pdev, 0);
+ 	ret = PTR_ERR_OR_ZERO(base);
+-	if (ret) {
+-		dev_err(dev, "Failed to get memory region\n");
+-		return ret;
+-	}
++	if (ret)
++		return dev_err_probe(dev, ret, "Failed to get memory region\n");
  
-+	ti_sci_pd_set_wkup_constraint(dev);
+ 	data->regmap = devm_regmap_init_mmio(dev, base, &regmap_config);
+ 	ret = PTR_ERR_OR_ZERO(data->regmap);
+-	if (ret) {
+-		dev_err(dev, "Failed to init regmap (%d)\n", ret);
+-		return ret;
+-	}
++	if (ret)
++		return dev_err_probe(dev, ret, "Failed to init regmap\n");
+ 
+-	data->clk = devm_clk_get_optional(dev, NULL);
++	data->clk = devm_clk_get_optional_enabled(dev, NULL);
+ 	if (IS_ERR(data->clk))
+ 		return PTR_ERR(data->clk);
+ 
+-	ret = clk_prepare_enable(data->clk);
+-	if (ret) {
+-		dev_err(dev, "Failed to enable clock\n");
+-		return ret;
+-	}
+-
+ 	ret = devm_add_action_or_reset(dev, qoriq_tmu_action, data);
+ 	if (ret)
+ 		return ret;
+ 
+ 	/* version register offset at: 0xbf8 on both v1 and v2 */
+ 	ret = regmap_read(data->regmap, REGS_IPBRR(0), &ver);
+-	if (ret) {
+-		dev_err(&pdev->dev, "Failed to read IP block version\n");
+-		return ret;
+-	}
++	if (ret)
++		return dev_err_probe(dev, ret,  "Failed to read IP block version\n");
 +
- 	return 0;
- }
- #else
-
+ 	data->ver = (ver >> 8) & 0xff;
+ 
+ 	qoriq_tmu_init_device(data);	/* TMU initialization */
+@@ -337,10 +326,8 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+ 		return ret;
+ 
+ 	ret = qoriq_tmu_register_tmu_zone(dev, data);
+-	if (ret < 0) {
+-		dev_err(dev, "Failed to register sensors\n");
+-		return ret;
+-	}
++	if (ret < 0)
++		return dev_err_probe(dev, ret, "Failed to register sensors\n");
+ 
+ 	platform_set_drvdata(pdev, data);
+ 
 -- 
-2.46.2
+2.34.1
 
