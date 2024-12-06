@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 236FE20C47C;
-	Fri,  6 Dec 2024 13:04:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F20C5207655;
+	Fri,  6 Dec 2024 13:04:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733490268; cv=none; b=OqLdFuUZbD9O2JUmEkVto3DbWm8mCx5N9rki83KaqiXvDCddsTLASE/AArciRbhBoLm5upqX0Dz0dY3tlyqWLqp9oMh1+3NCnHVKXHGxBb3dr7u5y7CDaUiBYLJD/Lu3tf/jT0GNP0V90iRA92DppeheMfyL8irYZXCF5tT9YqU=
+	t=1733490272; cv=none; b=UZzzq5LP2O0dpEwdk3Sh7e9ArdZ/93DMAVPkgNO3XvOnpiIfmdT5DZm3GcXMgDiBJrbsMZ0U8eGe/W7Cgy27WBtjfS1uUt0yOhqgH240XSFtYq4iRKMrRzt+PFByy2Ao2CJmMnamJa6HWUGFs8CRIJI3v+IrfwvimtVs5bmrwvg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733490268; c=relaxed/simple;
-	bh=3JoSvgVSyWPdcDhFxJbqeFmv3Z/rfrPtZzh7qZxBCX8=;
+	s=arc-20240116; t=1733490272; c=relaxed/simple;
+	bh=pAiIzXceRjp6FxVnLb+1NpJxcsd0OOyzRdXDgocx5VE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ZIVTXU5OfoULJWNWAT/e9Iz64iDHlwIzx4qGsD6akpVhwp8Uc3pg3INMQxU8sxw4MAVmuGazr+8OgLZCCFtKnHeG3X1omVwmsGQoftS101FTlOH2Gr+AU8MWdM4S764/YOENpNwYEGuY0FazckxRICjrltSk0VL6HVbDIZgDQbU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HaYTzm4W; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=q22fB8oeDS40I9e7QufRmlPePQXFNtbppjVpqezKQUtkrLqc3sWFYRgkbAoAzcdraf6XkWL5aVEam7QmBzm+1lTPGuUbwrpdFPWxPq5ncJDkRLnlNiMOjKc64KB4HdoDwIsnFAwZzc5bkao5uONlV4H2SahFMlTEVV3iOFeUMUY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=N79inSYl; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HaYTzm4W"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B5524C4CED2;
-	Fri,  6 Dec 2024 13:04:25 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="N79inSYl"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 69C48C4CEDF;
+	Fri,  6 Dec 2024 13:04:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1733490268;
-	bh=3JoSvgVSyWPdcDhFxJbqeFmv3Z/rfrPtZzh7qZxBCX8=;
+	s=k20201202; t=1733490270;
+	bh=pAiIzXceRjp6FxVnLb+1NpJxcsd0OOyzRdXDgocx5VE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=HaYTzm4WPezL5jQKIv/vqxlxcLlqC6eIqwMGZkUG0FOSlkx3/WTK2SMhFX1qdMzIf
-	 FRfCsoQfeKHWczjfmu2HXKzqy/KzYuf0EQ2buVIOiMQrEeShKQeucA/gkicmSyU3jE
-	 lnqyj3ybzFgvkfmT+gQxSPkHGR2UdWXxqtsV3HSR1oMSiY/Ew9KcY0U2zWX1Nh3wSn
-	 jK4PIFtwWTqA8xYaT4TYnCStsKk0d1MJ2FxhML4aUiKIGWhUTW32EJeUy9r163OJy5
-	 GUEDg4U+m4et5EeyTYz01pIVfBiyCA3/kJPi60SPVPgkp74MdV6alW8meR4L+p3zdz
-	 G2AUXR9VFd/Ow==
+	b=N79inSYl0xqIXhRAaoAt++wveZTGUUhPsc4QufIjsd9Y0vJJDA18ildfeplaCgt53
+	 xz/jK56qcPjZJDjcnXsVG4hbhG044d9zg9UtKUDTyj9EZwYD1skC7czsdoKCHhxE7k
+	 82BFwdKeBqyPf0THDhNPqqmdIpp1C6VkabdATuPlsIipAJ+Sr4WN8HGLd0oB8mCjGn
+	 GSnJjs1wXxhhBc6+7uHGCUSs9yIUn3fmLd7zDXsRhLQZ8VJr+te3MXeq5/geV9BxW1
+	 4enRbW5bAah1DdxihRA1HLWg6fCCIBoSqmC0M9whGkJni/3DVMdksJd0uPysZI1B7T
+	 TTBzffSAO5Gzw==
 From: Frederic Weisbecker <frederic@kernel.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Frederic Weisbecker <frederic@kernel.org>,
@@ -36,11 +36,10 @@ Cc: Frederic Weisbecker <frederic@kernel.org>,
 	Thomas Gleixner <tglx@linutronix.de>,
 	Ingo Molnar <mingo@redhat.com>,
 	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: [PATCH 4/5] cpuidle: Remove call_cpuidle_s2idle()
-Date: Fri,  6 Dec 2024 14:04:07 +0100
-Message-ID: <20241206130408.18690-5-frederic@kernel.org>
+	Dave Hansen <dave.hansen@linux.intel.com>
+Subject: [PATCH 5/5] cpuidle: Handle TIF_NR_POLLING on behalf of software polling idle states
+Date: Fri,  6 Dec 2024 14:04:08 +0100
+Message-ID: <20241206130408.18690-6-frederic@kernel.org>
 X-Mailer: git-send-email 2.46.0
 In-Reply-To: <20241206130408.18690-1-frederic@kernel.org>
 References: <20241206130408.18690-1-frederic@kernel.org>
@@ -52,56 +51,156 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This middle call is unecessary, especially now that its counterpart
-call_cpuidle() has been removed.
+Software polling idle states set again TIF_NR_POLLING and clear it upon
+exit. This involves error prone duplicated code and wasted cycles
+performing atomic operations, sometimes RmW fully ordered.
 
-Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+To avoid this, benefit instead from the same generic TIF_NR_POLLING
+handling that is currently in use for hardware monitoring states.
+
 Signed-off-by: Frederic Weisbecker <frederic@kernel.org>
 ---
- kernel/sched/idle.c | 23 ++++++-----------------
- 1 file changed, 6 insertions(+), 17 deletions(-)
+ drivers/cpuidle/cpuidle-powernv.c | 10 ----------
+ drivers/cpuidle/cpuidle-pseries.c | 11 -----------
+ drivers/cpuidle/cpuidle.c         |  2 +-
+ drivers/cpuidle/poll_state.c      | 30 ++++++++++++------------------
+ 4 files changed, 13 insertions(+), 40 deletions(-)
 
-diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-index 9eece3df1080..86b902eb24fe 100644
---- a/kernel/sched/idle.c
-+++ b/kernel/sched/idle.c
-@@ -126,19 +126,6 @@ void __cpuidle default_idle_call(void)
- 	instrumentation_end();
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 9ebedd972df0..1bf0d2234016 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -71,8 +71,6 @@ static int snooze_loop(struct cpuidle_device *dev,
+ {
+ 	u64 snooze_exit_time;
+ 
+-	set_thread_flag(TIF_POLLING_NRFLAG);
+-
+ 	local_irq_enable();
+ 
+ 	snooze_exit_time = get_tb() + get_snooze_timeout(dev, drv, index);
+@@ -81,21 +79,13 @@ static int snooze_loop(struct cpuidle_device *dev,
+ 	HMT_very_low();
+ 	while (!need_resched()) {
+ 		if (likely(snooze_timeout_en) && get_tb() > snooze_exit_time) {
+-			/*
+-			 * Task has not woken up but we are exiting the polling
+-			 * loop anyway. Require a barrier after polling is
+-			 * cleared to order subsequent test of need_resched().
+-			 */
+-			clear_thread_flag(TIF_POLLING_NRFLAG);
+ 			dev->poll_time_limit = true;
+-			smp_mb();
+ 			break;
+ 		}
+ 	}
+ 
+ 	HMT_medium();
+ 	ppc64_runlatch_on();
+-	clear_thread_flag(TIF_POLLING_NRFLAG);
+ 
+ 	local_irq_disable();
+ 
+diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
+index f68c65f1d023..704bb01d9e9e 100644
+--- a/drivers/cpuidle/cpuidle-pseries.c
++++ b/drivers/cpuidle/cpuidle-pseries.c
+@@ -40,8 +40,6 @@ int snooze_loop(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ {
+ 	u64 snooze_exit_time;
+ 
+-	set_thread_flag(TIF_POLLING_NRFLAG);
+-
+ 	pseries_idle_prolog();
+ 	raw_local_irq_enable();
+ 	snooze_exit_time = get_tb() + snooze_timeout;
+@@ -51,21 +49,12 @@ int snooze_loop(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 		HMT_low();
+ 		HMT_very_low();
+ 		if (likely(snooze_timeout_en) && get_tb() > snooze_exit_time) {
+-			/*
+-			 * Task has not woken up but we are exiting the polling
+-			 * loop anyway. Require a barrier after polling is
+-			 * cleared to order subsequent test of need_resched().
+-			 */
+ 			dev->poll_time_limit = true;
+-			clear_thread_flag(TIF_POLLING_NRFLAG);
+-			smp_mb();
+ 			break;
+ 		}
+ 	}
+ 
+ 	HMT_medium();
+-	clear_thread_flag(TIF_POLLING_NRFLAG);
+-
+ 	raw_local_irq_disable();
+ 
+ 	pseries_idle_epilog();
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 46c0a2726f67..fecc50c2860e 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -237,7 +237,7 @@ noinstr int cpuidle_enter_state(struct cpuidle_device *dev,
+ 		broadcast = false;
+ 	}
+ 
+-	polling = target_state->flags & CPUIDLE_FLAG_MWAIT;
++	polling = target_state->flags & (CPUIDLE_FLAG_MWAIT | CPUIDLE_FLAG_POLLING);
+ 
+ 	/*
+ 	 * If the target state doesn't poll on need_resched(), this is
+diff --git a/drivers/cpuidle/poll_state.c b/drivers/cpuidle/poll_state.c
+index 9b6d90a72601..d69936e2517e 100644
+--- a/drivers/cpuidle/poll_state.c
++++ b/drivers/cpuidle/poll_state.c
+@@ -13,35 +13,29 @@
+ static int __cpuidle poll_idle(struct cpuidle_device *dev,
+ 			       struct cpuidle_driver *drv, int index)
+ {
+-	u64 time_start;
+-
+-	time_start = local_clock_noinstr();
++	u64 time_start = local_clock_noinstr();
++	unsigned int loop_count = 0;
++	u64 limit;
+ 
+ 	dev->poll_time_limit = false;
+ 
+ 	raw_local_irq_enable();
+-	if (!current_set_polling_and_test()) {
+-		unsigned int loop_count = 0;
+-		u64 limit;
+ 
+-		limit = cpuidle_poll_time(drv, dev);
++	limit = cpuidle_poll_time(drv, dev);
+ 
+-		while (!need_resched()) {
+-			cpu_relax();
+-			if (loop_count++ < POLL_IDLE_RELAX_COUNT)
+-				continue;
++	while (!need_resched()) {
++		cpu_relax();
++		if (loop_count++ < POLL_IDLE_RELAX_COUNT)
++			continue;
+ 
+-			loop_count = 0;
+-			if (local_clock_noinstr() - time_start > limit) {
+-				dev->poll_time_limit = true;
+-				break;
+-			}
++		loop_count = 0;
++		if (local_clock_noinstr() - time_start > limit) {
++			dev->poll_time_limit = true;
++			break;
+ 		}
+ 	}
+ 	raw_local_irq_disable();
+ 
+-	current_clr_polling();
+-
+ 	return index;
  }
  
--static int call_cpuidle_s2idle(struct cpuidle_driver *drv,
--			       struct cpuidle_device *dev)
--{
--	int ret;
--
--	if (current_clr_polling_and_test())
--		return -EBUSY;
--
--	ret = cpuidle_enter_s2idle(drv, dev);
--	__current_set_polling();
--	return ret;
--}
--
- /**
-  * cpuidle_idle_call - the main idle function
-  *
-@@ -184,10 +171,12 @@ static void cpuidle_idle_call(void)
- 		u64 max_latency_ns;
- 
- 		if (idle_should_enter_s2idle()) {
--
--			entered_state = call_cpuidle_s2idle(drv, dev);
--			if (entered_state > 0)
--				goto exit_idle;
-+			if (!current_clr_polling_and_test()) {
-+				entered_state = cpuidle_enter_s2idle(drv, dev);
-+				__current_set_polling();
-+				if (entered_state > 0)
-+					goto exit_idle;
-+			}
- 
- 			max_latency_ns = U64_MAX;
- 		} else {
 -- 
 2.46.0
 
