@@ -1,99 +1,173 @@
-Received: from fw2.prolan.hu (fw2.prolan.hu [193.68.50.107])
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48FB95A4D5;
-	Sun,  8 Dec 2024 13:15:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.68.50.107
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37CF21482E7;
+	Sun,  8 Dec 2024 14:59:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733663751; cv=none; b=or3TyxR4Iyr1jNf1j1M1cx+okdwTh5H2Gr9ujx5QV8uCd5ydWv4I16Cp3N7tZo89GOnLlBlLY1OlOlPKSIKviyGgHvfh0ZoFzmf8Uk2y7p3QRNX8r1aYaeII58ebVyv3ncCIsfD5knx4M7X7K8ifbS8hVL36RKJbtlK93jSJ5is=
+	t=1733669977; cv=none; b=KlyACPmhmoE1vSaN5NjX1zyGHc3ovgjCJJKRU9V83Z1wUSLoFjp/kt7sB6f3R7MXmtf+3Gv4mxmxtrvEur4d56sKqqLsxUpnaYcts3rt+PKVpdvp9jE6sT7sKtXOAbSra7YzC1lzSc2d0gUQt9Pr7faBsgFc5HS+R3HifIrMI64=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733663751; c=relaxed/simple;
-	bh=Zy+BiXCgJkXzmbZKNg4JIOZSni09+NJt26bJv765OeE=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=DWOeGox8h0cHPuDEIWJ59AsyNQVy1hrmGql3dfF9E8YvDgoaT+aoeJuWjq7f/sP6zevhI2PKyT4m9X9mD29PSfsHN/Wcg0MOQWT2eh+89wRUjJDz0ncWvoao/V/q5VYrtGUfFFUpdbv1mlye7HLa9JEWz2UG7CXL7LgQj9hCpQ8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=prolan.hu; spf=pass smtp.mailfrom=prolan.hu; dkim=pass (4096-bit key) header.d=prolan.hu header.i=@prolan.hu header.b=YUnWpuGK; arc=none smtp.client-ip=193.68.50.107
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=prolan.hu
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=prolan.hu
+	s=arc-20240116; t=1733669977; c=relaxed/simple;
+	bh=3iA03vlkmk8eRVaaMnlEdEo46SKU6oHesbNcFaZ3nK8=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=fVYISuLQdF7d0w9ToaCTVNC4AL38j7vcpLq9ZrgJB+PmjOfpN02pRYNNXHrqaPDSUrTCJjW/4i4l7J9fPSFO5UHrQV6asUY92W/rS4Nq6SXk6GtD7VjwqJyYMf19YarhTUqk4o3BcT5PA5nqh8Kr1H4WlkuvNSmBR9aKdl6DctA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=oEZbeElD; arc=none smtp.client-ip=159.69.126.157
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (4096-bit key) header.d=prolan.hu header.i=@prolan.hu header.b="YUnWpuGK"
-Received: from proxmox-mailgw.intranet.prolan.hu (localhost.localdomain [127.0.0.1])
-	by proxmox-mailgw.intranet.prolan.hu (Proxmox) with ESMTP id D19C2A0ABF;
-	Sun,  8 Dec 2024 14:15:46 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=prolan.hu; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:from:from:message-id:mime-version:reply-to:subject:subject:to
-	:to; s=mail; bh=g0j7uEQzEdIZe0t6bf6kIsjV47fqKToNQDecUmLy4A8=; b=
-	YUnWpuGKYtOySFxuFCBGxvwcY0eX4vaufP/kui0yrTIQhYE7kcAq252q2WRwQWBn
-	BIhM9umwFUUGsZERIWKgOGaTIObhcf0awUs5aIQffKMlmKcWed0RnSnJz1J5M3Xn
-	qid6RiMAIRnMSwv5gwd3xYZ0fJoJJ1Ge8poRuM5AVW7bfMUg27HBJuSqmfGhB/3n
-	xs1GYGJqQEM9hMAfxSU8Cwem6cq6+VRIdPejTHwHrmqQKJWciWkgBWA155xLOnW/
-	G4/joorSMJmMJEm74bHNddGrdoK8O5Cg7QLoyiwF5HyDnBelq7QB6oBaJdsyjVuk
-	+Yng+17nOaaqau0O1ULqTGQZr84eadX4FC8oITMI6VGBx8WTNYNuzN4xLb4vvXi0
-	nT8hl5uyhHfOpJGehimpthAYsQgIjjztWEM2G9F6jZzpVMqGyk01aei9UPgtqsJr
-	BxcP1h/YXM5vpOcE6JU3rwS/e+X9oPBjdPF0LRi3OM8qq9s9/opc1Gk9itxDCVap
-	hBSWyzNwkqKZeV80JGKlKxIadU3VpU06CXiBWIhGJxUWyCT9QCB7pMhtTHFx7lnE
-	a4leoj/vzLkKTryY52b6sjz/W7tZ5qamAjkY1bjA4PtipH4bJgFdlAqFWpgpBmCE
-	D+pRytKQiRekhOC2PTnz8WrKnBAOrmRiEiKHE5HQa3s=
-From: =?UTF-8?q?Bence=20Cs=C3=B3k=C3=A1s?= <csokas.bence@prolan.hu>
-To: Sebastian Reichel <sebastian.reichel@collabora.com>,
-	=?UTF-8?q?Cs=C3=B3k=C3=A1s=2C=20Bence?= <csokas.bence@prolan.hu>,
-	<linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-CC: Kees Bakker <kees@ijzerbout.nl>, Samuel Holland <samuel@sholland.org>,
-	Sebastian Reichel <sre@kernel.org>
-Subject: [PATCH] power: ip5xxx_power: Fix uninitialized variable read
-Date: Sun, 8 Dec 2024 14:15:31 +0100
-Message-ID: <20241208131532.1028581-1-csokas.bence@prolan.hu>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="oEZbeElD"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
+	s=mail; t=1733669973;
+	bh=3iA03vlkmk8eRVaaMnlEdEo46SKU6oHesbNcFaZ3nK8=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=oEZbeElDCGXMIki3voW+rTCAMijAk4Pg7tP/cJmy49BgBYNfmoSFwdb3T64WRliAM
+	 9Pif9KkVO5W9Zwyq7Ji+00HKm9lpiRLOfL9NNzPj/IyYQvMTj5ByfvhLSWCRHEesw6
+	 tDbuiRnPeFWe3qxBYQlHNus7TLoyz4MXXaREyI9c=
+From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+Date: Sun, 08 Dec 2024 15:59:26 +0100
+Subject: [PATCH 1/3] power: supply: cros_charge-control: add mutex for
+ driver data
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-ESET-AS: R=OK;S=0;OP=CALC;TIME=1733663746;VERSION=7982;MC=3149856342;ID=289680;TRN=0;CRV=0;IPC=;SP=0;SIPS=0;PI=3;F=0
-X-ESET-Antispam: OK
-X-EsetResult: clean, is OK
-X-EsetId: 37303A29ACD9485562766B
+Message-Id: <20241208-cros_charge-control-v2-v1-1-8d168d0f08a3@weissschuh.net>
+References: <20241208-cros_charge-control-v2-v1-0-8d168d0f08a3@weissschuh.net>
+In-Reply-To: <20241208-cros_charge-control-v2-v1-0-8d168d0f08a3@weissschuh.net>
+To: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas@weissschuh.net>, 
+ Benson Leung <bleung@chromium.org>, Guenter Roeck <groeck@chromium.org>, 
+ Sebastian Reichel <sre@kernel.org>, Tzung-Bi Shih <tzungbi@kernel.org>
+Cc: Thomas Koch <linrunner@gmx.net>, 
+ Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ chrome-platform@lists.linux.dev, linux-pm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, 
+ stable@vger.kernel.org
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1733669972; l=4209;
+ i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
+ bh=3iA03vlkmk8eRVaaMnlEdEo46SKU6oHesbNcFaZ3nK8=;
+ b=k1t8pVBTjnSJ3XYByNz9U/4joMtP+VFz+aPp2WmWbAJ1oKmxP3gT2N221g5hbt0rmgNZGAnMl
+ /Tcy19aikYaDFyR/m+BSHIZ/o217xybOlC7YZF5WkY1eHhGITTd96yr
+X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
+ pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-The check for whether a charger supports the requested
-battery voltage was incorrectly added to the
-`ip5xxx_battery_get_voltage_max()` function, instead of
-`set_voltage_max()`. This commit fixes it.
+Concurrent accesses through sysfs may lead to inconsistent state in the
+priv data. Introduce a mutex to avoid this.
 
-Reported-by: Kees Bakker <kees@ijzerbout.nl>
-Closes: https://lore.kernel.org/linux-kernel/b547c228-df70-4137-9e96-175923f62404@ijzerbout.nl/
-Fixes: 8584bc5df539 ("power: ip5xxx_power: Allow for more parameters to be configured")
-Signed-off-by: Bence Csókás <csokas.bence@prolan.hu>
+Fixes: c6ed48ef5259 ("power: supply: add ChromeOS EC based charge control driver")
+Cc: stable@vger.kernel.org
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/power/supply/ip5xxx_power.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/power/supply/cros_charge-control.c | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/ip5xxx_power.c b/drivers/power/supply/ip5xxx_power.c
-index 46f8eb7100c1..d076b4e46194 100644
---- a/drivers/power/supply/ip5xxx_power.c
-+++ b/drivers/power/supply/ip5xxx_power.c
-@@ -367,9 +367,6 @@ static int ip5xxx_battery_get_voltage_max(struct ip5xxx *ip5xxx, int *val)
- 	if (ret)
+diff --git a/drivers/power/supply/cros_charge-control.c b/drivers/power/supply/cros_charge-control.c
+index 17c53591ce197d08d97c94d3d4359a282026dd7d..58ca6d9ed6132af63a36ea4c5bf212acf066936c 100644
+--- a/drivers/power/supply/cros_charge-control.c
++++ b/drivers/power/supply/cros_charge-control.c
+@@ -7,8 +7,10 @@
+ #include <acpi/battery.h>
+ #include <linux/container_of.h>
+ #include <linux/dmi.h>
++#include <linux/lockdep.h>
+ #include <linux/mod_devicetable.h>
+ #include <linux/module.h>
++#include <linux/mutex.h>
+ #include <linux/platform_data/cros_ec_commands.h>
+ #include <linux/platform_data/cros_ec_proto.h>
+ #include <linux/platform_device.h>
+@@ -49,6 +51,7 @@ struct cros_chctl_priv {
+ 	struct attribute *attributes[_CROS_CHCTL_ATTR_COUNT];
+ 	struct attribute_group group;
+ 
++	struct mutex lock; /* protects fields below and cros_ec */
+ 	enum power_supply_charge_behaviour current_behaviour;
+ 	u8 current_start_threshold, current_end_threshold;
+ };
+@@ -85,6 +88,8 @@ static int cros_chctl_configure_ec(struct cros_chctl_priv *priv)
+ {
+ 	struct ec_params_charge_control req = {};
+ 
++	lockdep_assert_held(&priv->lock);
++
+ 	req.cmd = EC_CHARGE_CONTROL_CMD_SET;
+ 
+ 	switch (priv->current_behaviour) {
+@@ -159,6 +164,7 @@ static ssize_t charge_control_start_threshold_show(struct device *dev,
+ 	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(&attr->attr,
+ 							       CROS_CHCTL_ATTR_START_THRESHOLD);
+ 
++	guard(mutex)(&priv->lock);
+ 	return sysfs_emit(buf, "%u\n", (unsigned int)priv->current_start_threshold);
+ }
+ 
+@@ -169,6 +175,7 @@ static ssize_t charge_control_start_threshold_store(struct device *dev,
+ 	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(&attr->attr,
+ 							       CROS_CHCTL_ATTR_START_THRESHOLD);
+ 
++	guard(mutex)(&priv->lock);
+ 	return cros_chctl_store_threshold(dev, priv, 0, buf, count);
+ }
+ 
+@@ -178,6 +185,7 @@ static ssize_t charge_control_end_threshold_show(struct device *dev, struct devi
+ 	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(&attr->attr,
+ 							       CROS_CHCTL_ATTR_END_THRESHOLD);
+ 
++	guard(mutex)(&priv->lock);
+ 	return sysfs_emit(buf, "%u\n", (unsigned int)priv->current_end_threshold);
+ }
+ 
+@@ -187,6 +195,7 @@ static ssize_t charge_control_end_threshold_store(struct device *dev, struct dev
+ 	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(&attr->attr,
+ 							       CROS_CHCTL_ATTR_END_THRESHOLD);
+ 
++	guard(mutex)(&priv->lock);
+ 	return cros_chctl_store_threshold(dev, priv, 1, buf, count);
+ }
+ 
+@@ -195,6 +204,7 @@ static ssize_t charge_behaviour_show(struct device *dev, struct device_attribute
+ 	struct cros_chctl_priv *priv = cros_chctl_attr_to_priv(&attr->attr,
+ 							       CROS_CHCTL_ATTR_CHARGE_BEHAVIOUR);
+ 
++	guard(mutex)(&priv->lock);
+ 	return power_supply_charge_behaviour_show(dev, EC_CHARGE_CONTROL_BEHAVIOURS,
+ 						  priv->current_behaviour, buf);
+ }
+@@ -210,6 +220,7 @@ static ssize_t charge_behaviour_store(struct device *dev, struct device_attribut
+ 	if (ret < 0)
  		return ret;
  
--	if (*val > ip5xxx->vbat_max)
--		return -EINVAL;
--
- 	/*
- 	 * It is not clear what this will return if
- 	 * IP5XXX_CHG_CTL4_BAT_TYPE_SEL_EN is not set...
-@@ -504,6 +501,9 @@ static int ip5xxx_battery_set_voltage_max(struct ip5xxx *ip5xxx, int val)
- 	unsigned int rval;
- 	int ret;
++	guard(mutex)(&priv->lock);
+ 	priv->current_behaviour = ret;
  
-+	if (val > ip5xxx->vbat_max)
-+		return -EINVAL;
+ 	ret = cros_chctl_configure_ec(priv);
+@@ -290,6 +301,10 @@ static int cros_chctl_probe(struct platform_device *pdev)
+ 	if (!priv)
+ 		return -ENOMEM;
+ 
++	ret = devm_mutex_init(dev, &priv->lock);
++	if (ret)
++		return ret;
 +
- 	switch (val) {
- 	case 4200000:
- 		rval = IP5XXX_BAT_TYPE_4_2V;
--- 
-2.34.1
+ 	ret = cros_ec_get_cmd_versions(cros_ec, EC_CMD_CHARGE_CONTROL);
+ 	if (ret < 0)
+ 		return ret;
+@@ -327,7 +342,8 @@ static int cros_chctl_probe(struct platform_device *pdev)
+ 	priv->current_end_threshold = 100;
+ 
+ 	/* Bring EC into well-known state */
+-	ret = cros_chctl_configure_ec(priv);
++	scoped_guard(mutex, &priv->lock)
++		ret = cros_chctl_configure_ec(priv);
+ 	if (ret < 0)
+ 		return ret;
+ 
 
+-- 
+2.47.1
 
