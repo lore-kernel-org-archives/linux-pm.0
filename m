@@ -1,31 +1,32 @@
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE7891531C5;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE740152E0C;
 	Sun,  8 Dec 2024 13:02:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733662965; cv=none; b=ZLErghnZzX7MoBoDwT6FnTuvr/exfoMXZ04mi890ppmmvcQ4N4v2Ncxona9MxsOqwqEkCNB3SM4XPEUaa8Bzh+XKiEH1VaUnInKnqxkZHCcBTLPovmTsnVJLCDBEhCxQaEnOCe48C5jSXDmtfCzq/AYMQUOaqvi/FthPGvvdj/Q=
+	t=1733662965; cv=none; b=DW9yOOVBe3bPfnG35CQvyugv4EmX+0HrXKcGVFhKUcEieOAU5tcfPhGe/3ynMdVLJkPRjGkTUBRoHJsuPGdWStNo4rHOH64bHpyLW6d44tbq2IYQqsJKJ7YxCP4OYBEfwhcvfp9toVq95/S0z1J5z9XUR0jK4/9wZEVNVFql1VM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1733662965; c=relaxed/simple;
-	bh=mi0udZzZbeywpP/vrlSR3292aKI49L4o1M7uXA1k4Mk=;
+	bh=wackexuuy/tX4Ge1IQFEEL57UViuMocgJIv7Eib30eg=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=lk4yO4jXvthXXQ0kvZND07iqRjMfwEalbKWjR0TGJZJvKTdtNWyuprcU6AWwEK+q0A91eXqj7J+M3YLD5thZ0U9UI1WkGDsOWSFzuOBRvXKhXIzWgnoKDtOy18lcET+KTymaSFYGXxYE8qFhzraCw14C47uPBZOh59K1JffDRXM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=e7cWGnmE; arc=none smtp.client-ip=159.69.126.157
+	 In-Reply-To:To:Cc; b=BTL5bzGmU1cO08NgM9eOhooOL/Nesmi4hRuxNgPBvCzan7dweQgk4hbtcHZaevhN2B7YD2ZOpSfCpTE4qSlL1EtD4KQLuk1U4W5Xn/A8GhW09Ir8w+AT10LO2TSl4dJHnA6Z8P8ektjHfgM6S2OzfO2y/9yJEdRxaX/SALceEA8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=qn2pEQut; arc=none smtp.client-ip=159.69.126.157
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="e7cWGnmE"
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="qn2pEQut"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1733662959;
-	bh=mi0udZzZbeywpP/vrlSR3292aKI49L4o1M7uXA1k4Mk=;
+	s=mail; t=1733662958;
+	bh=wackexuuy/tX4Ge1IQFEEL57UViuMocgJIv7Eib30eg=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=e7cWGnmEXr6CdyhYDkWhQM48HNsDQMxwTDMYFlvusWG4fGdAbSII6gL54B0FJUWxf
-	 qsUa5zFysI8DG+PVjL3PC0pLDI77nsfxy5qCgd4vSkSCBv3FVq/YGY7llMFtC0RdMp
-	 sbmSQlWplXo/yy5/hFxkW1KXkQ5z7co+p0U3+Xio=
+	b=qn2pEQut+iwY0mcH5jTK0fdwXJ+JUYKFeVVTW+SPw5lNu9IxSsZTqlpOY9LbQoWQ/
+	 wbtc+dNoPcUWwiPMOeib4r1qxaRJit4oFn7HGvaZOUh13tyJxD7ox+fJ77zvuOr+Wq
+	 IFnDJk6Jxtr9qQ4F+vQjD/MkHQ8WDW08jz+B0PmY=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Sun, 08 Dec 2024 14:02:40 +0100
-Subject: [PATCH 08/14] power: supply: core: use dev_to_psy()
+Date: Sun, 08 Dec 2024 14:02:36 +0100
+Subject: [PATCH 04/14] power: supply: ab8500: use
+ power_supply_for_each_psy()
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -34,7 +35,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241208-power-supply-dev_to_psy-v1-8-f95de9117558@weissschuh.net>
+Message-Id: <20241208-power-supply-dev_to_psy-v1-4-f95de9117558@weissschuh.net>
 References: <20241208-power-supply-dev_to_psy-v1-0-f95de9117558@weissschuh.net>
 In-Reply-To: <20241208-power-supply-dev_to_psy-v1-0-f95de9117558@weissschuh.net>
 To: Sebastian Reichel <sre@kernel.org>, 
@@ -46,62 +47,125 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
  platform-driver-x86@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1733662957; l=1730;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1733662957; l=4968;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=mi0udZzZbeywpP/vrlSR3292aKI49L4o1M7uXA1k4Mk=;
- b=u9hEDXkY/SamrSYZHHVvde1TzoAxrIdFpAs8oqwaeTqVOmsTN1NDrNdSnkjJqBKJFFMlgRQqC
- Rc/snHRW4V2CLGTLpo84jSWGoXCEmafK6snvxfHXqfX3TLEnYfkCzvA
+ bh=wackexuuy/tX4Ge1IQFEEL57UViuMocgJIv7Eib30eg=;
+ b=KKXkaIgt5BEtsKBwAMpRQ0UY+SrSVxTBffR13yya8XHVi/qPjrwPO5Khsmauiu+x2xczSxePZ
+ 6dFdbkNkUpGCA1dY7fV6JTMUmCDQRajZKZlIj9swcW215f3NPwh7VYC
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-Use the new, explicit accessor to go from a 'struct device' to its
-'struct power_supply'.
+Simplify the callbacks by removing the need to convert a 'struct device'
+into a 'struct power_supply'.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/power/supply/power_supply_core.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/power/supply/ab8500_btemp.c    | 5 ++---
+ drivers/power/supply/ab8500_chargalg.c | 5 ++---
+ drivers/power/supply/ab8500_charger.c  | 5 ++---
+ drivers/power/supply/ab8500_fg.c       | 5 ++---
+ 4 files changed, 8 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 0cdccfd585cb49b623027a3edaf2958777d2be8a..1db27afb7017c4428aa90372f7b9de03223671cf 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -123,7 +123,7 @@ struct psy_for_each_psy_cb_data {
- static int psy_for_each_psy_cb(struct device *dev, void *data)
- {
- 	struct psy_for_each_psy_cb_data *cb_data = data;
--	struct power_supply *psy = dev_get_drvdata(dev);
-+	struct power_supply *psy = dev_to_psy(dev);
- 
- 	return cb_data->fn(psy, cb_data->data);
+diff --git a/drivers/power/supply/ab8500_btemp.c b/drivers/power/supply/ab8500_btemp.c
+index 37039e28fc4bd27844e36ee69e700fed24d5ee8d..0c13867a33539d7f300965fe5543e09829f38b2b 100644
+--- a/drivers/power/supply/ab8500_btemp.c
++++ b/drivers/power/supply/ab8500_btemp.c
+@@ -540,10 +540,9 @@ static int ab8500_btemp_get_property(struct power_supply *psy,
+ 	return 0;
  }
-@@ -456,7 +456,7 @@ EXPORT_SYMBOL_GPL(power_supply_set_battery_charged);
- static int power_supply_match_device_by_name(struct device *dev, const void *data)
+ 
+-static int ab8500_btemp_get_ext_psy_data(struct device *dev, void *data)
++static int ab8500_btemp_get_ext_psy_data(struct power_supply_ext *ext, void *data)
  {
- 	const char *name = data;
--	struct power_supply *psy = dev_get_drvdata(dev);
-+	struct power_supply *psy = dev_to_psy(dev);
- 
- 	return strcmp(psy->desc->name, name) == 0;
+ 	struct power_supply *psy;
+-	struct power_supply *ext = dev_get_drvdata(dev);
+ 	const char **supplicants = (const char **)ext->supplied_to;
+ 	struct ab8500_btemp *di;
+ 	union power_supply_propval ret;
+@@ -617,7 +616,7 @@ static int ab8500_btemp_get_ext_psy_data(struct device *dev, void *data)
+  */
+ static void ab8500_btemp_external_power_changed(struct power_supply *psy)
+ {
+-	power_supply_for_each_device(psy, ab8500_btemp_get_ext_psy_data);
++	power_supply_for_each_psy(psy, ab8500_btemp_get_ext_psy_data);
  }
-@@ -479,7 +479,7 @@ struct power_supply *power_supply_get_by_name(const char *name)
- 					       power_supply_match_device_by_name);
  
- 	if (dev) {
--		psy = dev_get_drvdata(dev);
-+		psy = dev_to_psy(dev);
- 		atomic_inc(&psy->use_cnt);
+ /* ab8500 btemp driver interrupts and their respective isr */
+diff --git a/drivers/power/supply/ab8500_chargalg.c b/drivers/power/supply/ab8500_chargalg.c
+index 14e1b448bd39b286404f31509dbe006d16390877..3af92b1f9b1709e5929fee26cad7bd4de3b3417f 100644
+--- a/drivers/power/supply/ab8500_chargalg.c
++++ b/drivers/power/supply/ab8500_chargalg.c
+@@ -844,10 +844,9 @@ static void handle_maxim_chg_curr(struct ab8500_chargalg *di)
  	}
+ }
  
-@@ -536,7 +536,7 @@ struct power_supply *power_supply_get_by_phandle(struct device_node *np,
- 	of_node_put(power_supply_np);
+-static int ab8500_chargalg_get_ext_psy_data(struct device *dev, void *data)
++static int ab8500_chargalg_get_ext_psy_data(struct power_supply_ext *ext, void *data)
+ {
+ 	struct power_supply *psy;
+-	struct power_supply *ext = dev_get_drvdata(dev);
+ 	const char **supplicants = (const char **)ext->supplied_to;
+ 	struct ab8500_chargalg *di;
+ 	union power_supply_propval ret;
+@@ -1231,7 +1230,7 @@ static void ab8500_chargalg_algorithm(struct ab8500_chargalg *di)
+ 	int ret;
  
- 	if (dev) {
--		psy = dev_get_drvdata(dev);
-+		psy = dev_to_psy(dev);
- 		atomic_inc(&psy->use_cnt);
- 	}
+ 	/* Collect data from all power_supply class devices */
+-	power_supply_for_each_device(di->chargalg_psy, ab8500_chargalg_get_ext_psy_data);
++	power_supply_for_each_psy(di->chargalg_psy, ab8500_chargalg_get_ext_psy_data);
  
+ 	ab8500_chargalg_end_of_charge(di);
+ 	ab8500_chargalg_check_temp(di);
+diff --git a/drivers/power/supply/ab8500_charger.c b/drivers/power/supply/ab8500_charger.c
+index cece8d6753ac14f8970c13ce6b2d91e678733574..1042d37424f5b0351edd02b5c76e58dd447d1783 100644
+--- a/drivers/power/supply/ab8500_charger.c
++++ b/drivers/power/supply/ab8500_charger.c
+@@ -1894,10 +1894,9 @@ static int ab8500_charger_update_charger_current(struct ux500_charger *charger,
+ 	return ret;
+ }
+ 
+-static int ab8500_charger_get_ext_psy_data(struct device *dev, void *data)
++static int ab8500_charger_get_ext_psy_data(struct power_supply *ext, void *data)
+ {
+ 	struct power_supply *psy;
+-	struct power_supply *ext = dev_get_drvdata(dev);
+ 	const char **supplicants = (const char **)ext->supplied_to;
+ 	struct ab8500_charger *di;
+ 	union power_supply_propval ret;
+@@ -1961,7 +1960,7 @@ static void ab8500_charger_check_vbat_work(struct work_struct *work)
+ 	struct ab8500_charger *di = container_of(work,
+ 		struct ab8500_charger, check_vbat_work.work);
+ 
+-	power_supply_for_each_device(&di->usb_chg, ab8500_charger_get_ext_psy_data);
++	power_supply_for_each_psy(&di->usb_chg, ab8500_charger_get_ext_psy_data);
+ 
+ 	/* First run old_vbat is 0. */
+ 	if (di->old_vbat == 0)
+diff --git a/drivers/power/supply/ab8500_fg.c b/drivers/power/supply/ab8500_fg.c
+index 78871a2143de34c7e1a81882ab7105fbf19387ec..549403c6f73c1581d373c6df83cbc255ab1c2e82 100644
+--- a/drivers/power/supply/ab8500_fg.c
++++ b/drivers/power/supply/ab8500_fg.c
+@@ -2174,10 +2174,9 @@ static int ab8500_fg_get_property(struct power_supply *psy,
+ 	return 0;
+ }
+ 
+-static int ab8500_fg_get_ext_psy_data(struct device *dev, void *data)
++static int ab8500_fg_get_ext_psy_data(struct power_supply *ext, void *data)
+ {
+ 	struct power_supply *psy;
+-	struct power_supply *ext = dev_get_drvdata(dev);
+ 	const char **supplicants = (const char **)ext->supplied_to;
+ 	struct ab8500_fg *di;
+ 	struct power_supply_battery_info *bi;
+@@ -2402,7 +2401,7 @@ static int ab8500_fg_init_hw_registers(struct ab8500_fg *di)
+  */
+ static void ab8500_fg_external_power_changed(struct power_supply *psy)
+ {
+-	power_supply_for_each_device(psy, ab8500_fg_get_ext_psy_data);
++	power_supply_for_each_psy(psy, ab8500_fg_get_ext_psy_data);
+ }
+ 
+ /**
 
 -- 
 2.47.1
