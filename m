@@ -1,31 +1,32 @@
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1D1214B075;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C8D5814B077;
 	Sun,  8 Dec 2024 14:59:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733669977; cv=none; b=JYf+87NfWLT7m/CzfkKMgGNllE39tW/UiYPMTYeS7qPjzSAol8YFOZYjkf8t23FcIbjKlepxQ8udWxzwXj8YjXJ24h0HfYmtWZRYnR5S0BUSAXEfToA244qUEpBBSDsdNsNRJAKluM4lCKi5MgiUY79gxYGzGfja4EiAEOLk+AA=
+	t=1733669977; cv=none; b=IKpEOQyv+B9d/ym/UZ1jqsugxbQL8n008jOSk8MVKUn3uFpSsqFWsOfq51EBP8pURCyJPv10qYIq6WQDn75EQl51MtZ45WjTTSd5FlbVxMWZxUeNSuVO/8781gR7OUwZAa/GejjpUU2K0fkpFj2QgMuRxXUsduRTbKNSa63mvqE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1733669977; c=relaxed/simple;
-	bh=hnZUt8jI6i7KYAdP+J1MYleEfsI9apXEkwri5foNRCA=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=DlG7OwpZzBYh9OFyNk7BTd2cgvq8Hp+/BQ3PwGKV5Nd2ZtAQ3MV1ZLM692Mn2BhwGIiRxArPfOOam8ERbk80EqGxufayt5/GMtH6V3I/yG7cSecPTIqUc8+31Fi5bo7kkkF7n2RdOFGdJ/dJR/T1XrEwkyRmWPwQf/mWaZliVrY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=MRH2GOCI; arc=none smtp.client-ip=159.69.126.157
+	bh=xAKdt+XUPvyRkhE19c1Wd0o1p1dyMhTM02DujFoE+fc=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=kpqlmjTLzb4lzEhRs9yZBvO2lS3DdEfHsZE8Nanpz7FvGtSqxTcWvMRj5191v0Ppy/bzQvolaJ1f93WbpqtHF/p3hTQmQmxuPEEJWwrXcLTuCCpvuvYeMEeqatiRoAo6T+jXZibLIz+TkPgq7om8RBWUc+vR4gRIP12pCuibV0M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=DDSCvzVE; arc=none smtp.client-ip=159.69.126.157
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="MRH2GOCI"
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="DDSCvzVE"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1733669973;
-	bh=hnZUt8jI6i7KYAdP+J1MYleEfsI9apXEkwri5foNRCA=;
-	h=From:Subject:Date:To:Cc:From;
-	b=MRH2GOCIsAPRwvjnZ7KaYkHs7EIYB9V4Uv3h7nftbiE++o7f9pkdADnTRo6KMslEV
-	 3dmxZKlxMdNinQN3h2oq2nuKVlUcAn2IyYBCeSuEF+ugEA8VgSdSYQQi/lYaLdAZAq
-	 PPZON5CIYV3Z2Lz/fYRi4vXf+yooT7ViTOFuv4/8=
+	bh=xAKdt+XUPvyRkhE19c1Wd0o1p1dyMhTM02DujFoE+fc=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=DDSCvzVE9bT2Ixa+Xai9eHEsZ3Xu8HQ4iWxTGQnDLPfK66bSeLdV3ueHoExfhUuUp
+	 Fy3ZREPOmIVDtK0nKC3lBXoKjV8PZR8luFWoby91rL4WtfvwTFWiXBJSwvE1gXBQ5f
+	 FoTppeyT740usY9ZaKyTBO3N4pdbFn0sElEWN8C4=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Subject: [PATCH 0/3] power: supply: cros_charge-control: three fixes
-Date: Sun, 08 Dec 2024 15:59:25 +0100
-Message-Id: <20241208-cros_charge-control-v2-v1-0-8d168d0f08a3@weissschuh.net>
+Date: Sun, 08 Dec 2024 15:59:27 +0100
+Subject: [PATCH 2/3] power: supply: cros_charge-control: allow
+ start_threshold == end_threshold
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -34,10 +35,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAE20VWcC/x2MUQqAIBAFrxL7nZCmH3WViAjdaiE01pBAuntLP
- w+GYV6FjEyYYWwqMBbKlKKAbhvwxxp3VBSEwXTGahnlOeVFFIvyKd6cTlWMCto5PdjN9Z0FiS/
- GjZ7/eJrf9wPN/87LaAAAAA==
-X-Change-ID: 20241202-cros_charge-control-v2-d155194f5304
+Message-Id: <20241208-cros_charge-control-v2-v1-2-8d168d0f08a3@weissschuh.net>
+References: <20241208-cros_charge-control-v2-v1-0-8d168d0f08a3@weissschuh.net>
+In-Reply-To: <20241208-cros_charge-control-v2-v1-0-8d168d0f08a3@weissschuh.net>
 To: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas@weissschuh.net>, 
  Benson Leung <bleung@chromium.org>, Guenter Roeck <groeck@chromium.org>, 
  Sebastian Reichel <sre@kernel.org>, Tzung-Bi Shih <tzungbi@kernel.org>
@@ -48,34 +48,44 @@ Cc: Thomas Koch <linrunner@gmx.net>,
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, 
  stable@vger.kernel.org
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1733669972; l=860;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1733669972; l=1214;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=hnZUt8jI6i7KYAdP+J1MYleEfsI9apXEkwri5foNRCA=;
- b=J9bsBMBH9PRZYIFWU7n83aOZX2hgtjnfU0ere+oIQJArgusUYF+HGO/POZmaz5nYmmLy3kWUQ
- 8cXcJVhB7efCHPC/cTJANl8ooAcUBMnZD/gPv8Falq2YObfgsnrJXTh
+ bh=xAKdt+XUPvyRkhE19c1Wd0o1p1dyMhTM02DujFoE+fc=;
+ b=/m2irmWjCvb+/32Yh1ZuYvQFdD+iiny3bpW4IprRJA6kEJYthe1thZIcXseRJ3cNMvvSV97H4
+ drdxZrE/9IuDCOyJEmqUb4vMq+z0VCW3iYPlX1nB8FnhYU8k/kUl3w4
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-Three fixes I'd like to get into stable.
-These conflict with my psy extensions series [0],
-I'd like to apply the fixes first.
+Allow setting the start and stop thresholds to the same value.
+There is no reason to disallow it.
 
-[0] https://lore.kernel.org/lkml/20241205-power-supply-extensions-v5-0-f0f996db4347@weissschuh.net/
-
+Suggested-by: Thomas Koch <linrunner@gmx.net>
+Fixes: c6ed48ef5259 ("power: supply: add ChromeOS EC based charge control driver")
+Cc: stable@vger.kernel.org
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
-Thomas Weißschuh (3):
-      power: supply: cros_charge-control: add mutex for driver data
-      power: supply: cros_charge-control: allow start_threshold == end_threshold
-      power: supply: cros_charge-control: hide start threshold on v2 cmd
+ drivers/power/supply/cros_charge-control.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
- drivers/power/supply/cros_charge-control.c | 36 ++++++++++++++++++++++--------
- 1 file changed, 27 insertions(+), 9 deletions(-)
----
-base-commit: 7503345ac5f5e82fd9a36d6e6b447c016376403a
-change-id: 20241202-cros_charge-control-v2-d155194f5304
+diff --git a/drivers/power/supply/cros_charge-control.c b/drivers/power/supply/cros_charge-control.c
+index 58ca6d9ed6132af63a36ea4c5bf212acf066936c..108b121db4423187fb65548396fb9195b8801006 100644
+--- a/drivers/power/supply/cros_charge-control.c
++++ b/drivers/power/supply/cros_charge-control.c
+@@ -139,11 +139,11 @@ static ssize_t cros_chctl_store_threshold(struct device *dev, struct cros_chctl_
+ 		return -EINVAL;
+ 
+ 	if (is_end_threshold) {
+-		if (val <= priv->current_start_threshold)
++		if (val < priv->current_start_threshold)
+ 			return -EINVAL;
+ 		priv->current_end_threshold = val;
+ 	} else {
+-		if (val >= priv->current_end_threshold)
++		if (val > priv->current_end_threshold)
+ 			return -EINVAL;
+ 		priv->current_start_threshold = val;
+ 	}
 
-Best regards,
 -- 
-Thomas Weißschuh <linux@weissschuh.net>
+2.47.1
 
