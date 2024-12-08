@@ -1,31 +1,31 @@
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4133C15383E;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CCB2154426;
 	Sun,  8 Dec 2024 13:02:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733662966; cv=none; b=X/s+KMyLHJ3+la8zvdkD/3KdIaMkPTh7va6as/HyCkHhNLJyIURLmqqMz/avygXshUPSBWrv5tKAZ0JOQhm8z0P4COAdzxW68kU/NQ33g0Ko42AIR9xSsWZtQIzQaT6EYeHGg9vtBbdgwxBRQhHAmiDHjIsQqK75kJDs+vTKZ4E=
+	t=1733662966; cv=none; b=X64hrT5ueMrhcQVygLfi6ElQ0YwUHX2QkcYyR4SENvu9HuQKEaYeFc/b72tY6wVKBUFripFEW3w0OctjsNhAWjfxC7zJn2GM3aoceCZFPQkPy2S5svaJWTKZ/ut5UkM9S3oqWcohMs5rUtygSkqzZzKgwL9NJoEv47+YLOWvgdk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1733662966; c=relaxed/simple;
-	bh=4MUBctpjIhutpInrWEdlcQerzbKY4rDQAhCW3psko/c=;
+	bh=FhwKSD0svgWVmDIfiDfI4K9PqSyh7QPjCU6VOQVWlzw=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Jyj5+HFscZqo828KwNUYN0Tt4u86WSoOQ93jHzkmvL5Gv62NUOJE28LTTlZSNfcxWP1XnkWKnVBueMbR0HAx8J0qCu0O1g4dXHq4qHOAHRBhP0BoixhUpZYLFE7kgXfeFCO42SCRIHFHYyDsJTulsNtJRqtft9NwCgDcI6QVcyI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=M7UavA5q; arc=none smtp.client-ip=159.69.126.157
+	 In-Reply-To:To:Cc; b=UNqczwVnphd/EOM3SNl1UBq/nUAcD1iuBAMqeVyW5frl1ao0W/mZ/1HLLfXE6zdNMnGtv6y+k+U+PsamOAWMnPRMUpL3OIQEt1a41S/6A2QIepkKTKT5HGDFbMIvckiJDmrPY26uqM2KNUbFnpMlJzkgWnl8eTzPLZASuSlLIG4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=FkRwI4lO; arc=none smtp.client-ip=159.69.126.157
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="M7UavA5q"
+	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="FkRwI4lO"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1733662959;
-	bh=4MUBctpjIhutpInrWEdlcQerzbKY4rDQAhCW3psko/c=;
+	bh=FhwKSD0svgWVmDIfiDfI4K9PqSyh7QPjCU6VOQVWlzw=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=M7UavA5qy1QVu/RdE+YVP3x326BWMddRBIRo1IbW52B414OtIibpJFqMUayht8cV2
-	 NaydCyg08xVmFYvEVnL6t6cqnEMi7nwwB6VCw8/0B+6GghZ6e5NyhJjt/XjMIUP6uB
-	 CmpFGC/74XX0NR1QXA1hVKYW+2MYN1o8VCmnWcLA=
+	b=FkRwI4lOQB3Qc+iiQkkfmp4dOzbdU8bEK1PzJfAGMUCqwKef6GWFiQTO2tk6aip3+
+	 es6Tknr2MY2ViKOYLL9JvdsYyFvEs1Sl47s1vRWbCRSVWaDrF3AeIoUa9X6osS6012
+	 xFxnB6wAngXU8ijmv3ahcDBfVGWGqeNpG/JRtH0E=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Sun, 08 Dec 2024 14:02:39 +0100
-Subject: [PATCH 07/14] power: supply: core: introduce dev_to_psy()
+Date: Sun, 08 Dec 2024 14:02:41 +0100
+Subject: [PATCH 09/14] power: supply: sysfs: use dev_to_psy()
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -34,7 +34,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241208-power-supply-dev_to_psy-v1-7-f95de9117558@weissschuh.net>
+Message-Id: <20241208-power-supply-dev_to_psy-v1-9-f95de9117558@weissschuh.net>
 References: <20241208-power-supply-dev_to_psy-v1-0-f95de9117558@weissschuh.net>
 In-Reply-To: <20241208-power-supply-dev_to_psy-v1-0-f95de9117558@weissschuh.net>
 To: Sebastian Reichel <sre@kernel.org>, 
@@ -46,42 +46,62 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
  platform-driver-x86@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1733662957; l=1136;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1733662957; l=2083;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=4MUBctpjIhutpInrWEdlcQerzbKY4rDQAhCW3psko/c=;
- b=9bC2DRUJnma1H6cYOd5OGnAzZ/kZi++23PXSPscD+kPsui2MgUFNAvIgkL2RfXaXQIZ5dr1BC
- i0PAU5xCYGLCBIrByTHkR09w0aAt8Q83LNb3XSq5FWOhjNJgCQiO43X
+ bh=FhwKSD0svgWVmDIfiDfI4K9PqSyh7QPjCU6VOQVWlzw=;
+ b=XPfi4TNCjbFrPfYK0u8q/s3oI97RuLONHZYg1Y2upaAoMTQYYJSVGr/UoUnKBl4aBIC8apNQM
+ +O1YWRcRtXDAoFuFXdrNrK4Llvs/DW9Pm66UmAk8GdfBdAbK9J/hOnm
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-The psy core and drivers currently use dev_get_drvdata() to go from a
-'struct device' to its 'struct power_supply'.
-This is not typesafe and or documented.
-
-Introduce a new helper to make this pattern explicit.
-Instead of using dev_get_drvdata(), use container_of_const() which
-also preserves the constness.
-Furthermore 'dev' does need to be dereferenced anymore and at some point
-the drvdata could be reused for something else.
+Use the new, explicit accessor to go from a 'struct device' to its
+'struct power_supply'.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- include/linux/power_supply.h | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/power/supply/power_supply_sysfs.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 3d67f4a6a1c934f387adde12fc96a63a99299923..17fc383785bf5705ef3dbe5fdebf90843684b715 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -318,6 +318,8 @@ struct power_supply {
- #endif
- };
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index 99bfe1f03eb8326d38c4e2831c9670313b42e425..85b5134b8552cc573724e4cd5794a598192d3137 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -274,7 +274,7 @@ static ssize_t power_supply_format_property(struct device *dev,
+ 					    char *buf)
+ {
+ 	ssize_t ret;
+-	struct power_supply *psy = dev_get_drvdata(dev);
++	struct power_supply *psy = dev_to_psy(dev);
+ 	const struct power_supply_attr *ps_attr = to_ps_attr(attr);
+ 	enum power_supply_property psp = dev_attr_psp(attr);
+ 	union power_supply_propval value;
+@@ -337,7 +337,7 @@ static ssize_t power_supply_store_property(struct device *dev,
+ 					   struct device_attribute *attr,
+ 					   const char *buf, size_t count) {
+ 	ssize_t ret;
+-	struct power_supply *psy = dev_get_drvdata(dev);
++	struct power_supply *psy = dev_to_psy(dev);
+ 	const struct power_supply_attr *ps_attr = to_ps_attr(attr);
+ 	enum power_supply_property psp = dev_attr_psp(attr);
+ 	union power_supply_propval value;
+@@ -376,7 +376,7 @@ static umode_t power_supply_attr_is_visible(struct kobject *kobj,
+ 					   int attrno)
+ {
+ 	struct device *dev = kobj_to_dev(kobj);
+-	struct power_supply *psy = dev_get_drvdata(dev);
++	struct power_supply *psy = dev_to_psy(dev);
+ 	umode_t mode = S_IRUSR | S_IRGRP | S_IROTH;
  
-+#define dev_to_psy(__dev)	container_of_const(__dev, struct power_supply, dev)
-+
- /*
-  * This is recommended structure to specify static power supply parameters.
-  * Generic one, parametrizable for different power supplies. Power supply
+ 	if (!power_supply_attrs[attrno].prop_name)
+@@ -462,7 +462,7 @@ static int add_prop_uevent(const struct device *dev, struct kobj_uevent_env *env
+ 
+ int power_supply_uevent(const struct device *dev, struct kobj_uevent_env *env)
+ {
+-	struct power_supply *psy = dev_get_drvdata(dev);
++	const struct power_supply *psy = dev_to_psy(dev);
+ 	int ret = 0, j;
+ 	char *prop_buf;
+ 
 
 -- 
 2.47.1
