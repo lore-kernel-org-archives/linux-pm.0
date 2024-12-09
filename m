@@ -1,163 +1,99 @@
-Received: from mail-lf1-f49.google.com (mail-lf1-f49.google.com [209.85.167.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0064b401.pphosted.com (mx0a-0064b401.pphosted.com [205.220.166.238])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 307CF189BB0
-	for <linux-pm@vger.kernel.org>; Sun,  8 Dec 2024 17:15:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 914C83D76;
+	Mon,  9 Dec 2024 03:22:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.166.238
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733678105; cv=none; b=fel8pBXPjH0qH3EcLu7xbA3+zXoc+3O5AzFUj+pXd6ujU9QcerIb3cFHvRepN+NdA1jP/bY19E4GfC+kJRsGlp255MDcAikAE+KF28MADr6P89AlrVsHDhbiFl8DJFpO5r2be9UIgiTVCzrghvBpCyLOzSsw8uXTwEf7QhadEnw=
+	t=1733714560; cv=none; b=lXWeNh1P3bTGWpdMuapl3g4Irv7mPqbdzmjKAOMU6LTNkZePDqKhpg2jedr9jXst6HmTBuQVq/BzSnOFmUIBROIo5Zs4Hsb4IkVKm/b9oKbMj3U8KIrQy3w/B8EqH1hHBTBr6YIuIIG872MjK4hkhsfOefW8sPiw9eHKEUvSuh0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733678105; c=relaxed/simple;
-	bh=CNbRGW8g8fcfrwiNfo+C/cJDf1YMo9RhfdZTo8iq2f4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZshP6rv6hyLd1um5+Um3CGIzjKJJ6ZjxnQuoOTxxOYtA/fDs2vzFXX0JJmNCQSUyZkGNA0Sm4R3G6YcUqmhYBTAUsbSPlfrJ9nJU8JZgvfgAlAOxGZcn4AMRRSZa/qRWdMjsFr+T+YmEzbjrsIwQMXM1dLUuyFX8xU+4f/knkXU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Vyzlni3H; arc=none smtp.client-ip=209.85.167.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Vyzlni3H"
-Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-53e399e3310so1646412e87.1
-        for <linux-pm@vger.kernel.org>; Sun, 08 Dec 2024 09:15:02 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1733678101; x=1734282901; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=dqFplj0uMB8EInw65XscKncVTRnpYupnLVJWyaDnZYI=;
-        b=Vyzlni3HuXPl2eCGwnRBEuKwFbjlFI/vrgF8eNTCVYJycVrd/JUVoSEGQsTSi0yAlD
-         ylFdN/AiR1Q2ZVnQkypXxYeKcuvDkhfnwC9koj1IxOTUxB9J9/JaHGBaTqwkrpDL7PyZ
-         3qweteucYvi5cFNWRHrF0hE8fJPgz65MpcuYk84oSordFKr8/lvUG4BItSY/CBAxljOk
-         lnnw2NF/jwlgthtfz3RQnR/PUo2Oz7zT56988HtuvaR4dzkhwdXlIROEcma1MhvLc2vP
-         +mE0p9FirEA5nwu5RzhluLVxArLjDvW/R2XXrhGlLkphq8G20P8mqbN2wVEM+heHK1m1
-         jxXw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1733678101; x=1734282901;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=dqFplj0uMB8EInw65XscKncVTRnpYupnLVJWyaDnZYI=;
-        b=DLcbyx3Tyo0yUwR1kE6QbUJ9NpyUE2S+5Edny1ea8kVuViq2Ei6eNyipB25ISSrno0
-         nAUn6wekFc4k5HmAXvVt4ylJEroAMzzPITQR5pUK09RMR9qtf3owNdOerAAn915SKwO1
-         O9CFNzFH7zUH0a4mIJJzaNfHvacCvtqqVYTY0TaWrMM/kOlonvavbQLn63SCcG1OpWfH
-         FM213F0uHfDhCA/VspoXYV/3GVwu4qvLRCOcw0UB4DfsTSiEzM5ZaqhmsgvZWS3NlOGQ
-         w3RC3zo1sbPktBiT0KhQwa1ivm8Jcos5KRZATJpCmsM9PD6HU1i0TYKtNHs5Iz77V65T
-         WjuA==
-X-Forwarded-Encrypted: i=1; AJvYcCVcD3SPIYtiJP77GWS9mw7dqSPQyJri0DaqvqHxFHdVfScz9IKhijbqzAqpGVlVrt8WPvxx0cbGBg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy+vfCT9GMefrhRTrQ5sWz1cSXwXlJ8TnFQr1KCbtJlgKQANRfo
-	HpmbiQC5EzL3o3UxqyFsMw1n3rDbP+hxbjYebS5phJ09PEkWQV72Gi3rjml2i1KnV1YKUhmUTin
-	e+E2tzw==
-X-Gm-Gg: ASbGncvvfCPnODn6GnesgCvxBLWfYKKIrqu4+BvDyVyRO2vyMGolymhqD9CjTZ/L/6G
-	wqFjTDW7NjcOmemM6maLXySiJ9pd3BZkFsj2C/1WmnhwKcNKzRviLNiUrRBalZbThs4ldHWPSNP
-	YL9xuTNvXPODcihvB3yxr7Agg44U2DDxQtRSLA2GQMHzXJ2iYOG0oiyUYQGp72NmDq5WQhc8/UN
-	8KOvQD/lwPcPEXtLYBRrevwoVlZsjm/x0tK8CLahmrbMCs3HGHNDlEZCL85WwQD1Z0Riji43CdJ
-	9p4md88+ouazq8RnXNqioXleM2jA7A==
-X-Google-Smtp-Source: AGHT+IFkgC4CY00uHOEhGCDb+lElZAAae4ogeFkb0UE5GLOs3gylH/vk0xRefOvLftIPM6MTtA/XpQ==
-X-Received: by 2002:a05:6512:138f:b0:53e:1b94:7279 with SMTP id 2adb3069b0e04-53e2c2b9319mr3748035e87.23.1733678100986;
-        Sun, 08 Dec 2024 09:15:00 -0800 (PST)
-Received: from eriador.lumag.spb.ru (2001-14ba-a0c3-3a00--b8c.rev.dnainternet.fi. [2001:14ba:a0c3:3a00::b8c])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-53e33ac12fesm787746e87.108.2024.12.08.09.14.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 08 Dec 2024 09:15:00 -0800 (PST)
-Date: Sun, 8 Dec 2024 19:14:58 +0200
-From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To: Janaki Ramaiah Thota <quic_janathot@quicinc.com>
-Cc: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Bartosz Golaszewski <brgl@bgdev.pl>, quic_mohamull@quicinc.com, 
-	quic_hbandi@quicinc.com, quic_anubhavg@quicinc.com, 
-	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-bluetooth@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v4 2/4] arm64: dts: qcom: qcs6490-rb3gen: add and enable
- BT node
-Message-ID: <7y6mu2mtujloctxwi5voszmeo4ctheceiypbnbslyxv34jknm4@ewkooz5fi4w6>
-References: <20241204131706.20791-1-quic_janathot@quicinc.com>
- <20241204131706.20791-3-quic_janathot@quicinc.com>
- <pzkijkdswskaq6232uldapz3b6v6zplif7uah24iwq3ymlezft@skbcy2vod3c5>
- <53d44689-798e-4b5f-a0f1-8a39bea2f19b@quicinc.com>
- <hjui7cn4iuo4id2q4mmqx2i7c3eyu6ae43fcft6psflypb3aya@ia5i5s4ya45e>
- <d68907f0-15e4-486a-9077-31e8a8659e02@quicinc.com>
+	s=arc-20240116; t=1733714560; c=relaxed/simple;
+	bh=pxVjJM3xlHmqsLWloFW4wOs0kH3D8fuPRBOZEI5nH0Y=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=CBG1eaM/2aerDKEsEzYvHBqWA0Tb3bV5bKDW+xWeSt3xv4jxmysTSZCz29YO8KFoLwS33390tbtaI3Npo+TIpeq6meX1aT8O4z9+EfrbupewL0BCB/EL44U0T21Arx9MN55Zc0xPtggUyOBV6GmfYu+Bk1UHpZxecXIpHhrqtHE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=windriver.com; spf=pass smtp.mailfrom=windriver.com; arc=none smtp.client-ip=205.220.166.238
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=windriver.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=windriver.com
+Received: from pps.filterd (m0250809.ppops.net [127.0.0.1])
+	by mx0a-0064b401.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4B92mSeA022681;
+	Sun, 8 Dec 2024 19:22:01 -0800
+Received: from ala-exchng02.corp.ad.wrs.com (ala-exchng02.wrs.com [147.11.82.254])
+	by mx0a-0064b401.pphosted.com (PPS) with ESMTPS id 43cwy1rxan-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT);
+	Sun, 08 Dec 2024 19:22:01 -0800 (PST)
+Received: from ala-exchng01.corp.ad.wrs.com (147.11.82.252) by
+ ALA-EXCHNG02.corp.ad.wrs.com (147.11.82.254) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.43; Sun, 8 Dec 2024 19:22:00 -0800
+Received: from pek-lpg-core1.wrs.com (147.11.136.210) by
+ ala-exchng01.corp.ad.wrs.com (147.11.82.252) with Microsoft SMTP Server id
+ 15.1.2507.43 via Frontend Transport; Sun, 8 Dec 2024 19:21:58 -0800
+From: <jianqi.ren.cn@windriver.com>
+To: <abelova@astralinux.ru>, <gregkh@linuxfoundation.org>
+CC: <stable@vger.kernel.org>, <ray.huang@amd.com>, <rafael@kernel.org>,
+        <viresh.kumar@linaro.org>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+Subject: [PATCH 6.1.y] cpufreq: amd-pstate: add check for cpufreq_cpu_get's return value
+Date: Mon, 9 Dec 2024 12:19:51 +0800
+Message-ID: <20241209041951.3426114-1-jianqi.ren.cn@windriver.com>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d68907f0-15e4-486a-9077-31e8a8659e02@quicinc.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Proofpoint-ORIG-GUID: Sb_mQFmYe82WDyHr2viYZ8j8kk4LHgQw
+X-Authority-Analysis: v=2.4 cv=eePHf6EH c=1 sm=1 tr=0 ts=67566259 cx=c_pps a=K4BcnWQioVPsTJd46EJO2w==:117 a=K4BcnWQioVPsTJd46EJO2w==:17 a=RZcAm9yDv7YA:10 a=KP9VF9y3AAAA:8 a=HH5vDtPzAAAA:8 a=zd2uoN0lAAAA:8 a=KKAkSRfTAAAA:8 a=t7CeM3EgAAAA:8
+ a=T-_msMMreK8bA51VSmQA:9 a=4w0yzETBtB_scsjRCo-X:22 a=QM_-zKB-Ew0MsOlNKMB5:22 a=cvBusfyB2V15izCimMoJ:22 a=FdTzh2GWekK77mhwV6Dw:22
+X-Proofpoint-GUID: Sb_mQFmYe82WDyHr2viYZ8j8kk4LHgQw
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2024-12-08_11,2024-12-06_01,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011 impostorscore=0
+ lowpriorityscore=0 suspectscore=0 mlxlogscore=999 priorityscore=1501
+ spamscore=0 phishscore=0 malwarescore=0 mlxscore=0 adultscore=0
+ bulkscore=0 classifier=spam authscore=0 adjust=0 reason=mlx scancount=1
+ engine=8.21.0-2411120000 definitions=main-2412090025
 
-On Sun, Dec 08, 2024 at 09:42:21PM +0530, Janaki Ramaiah Thota wrote:
-> 
-> 
-> On 12/8/2024 5:35 PM, Dmitry Baryshkov wrote:
-> > On Fri, Dec 06, 2024 at 08:15:35PM +0530, Janaki Ramaiah Thota wrote:
-> > > 
-> > > 
-> > > On 12/5/2024 4:29 AM, Dmitry Baryshkov wrote:
-> > > > On Wed, Dec 04, 2024 at 06:47:04PM +0530, Janaki Ramaiah Thota wrote:
-> > > > > Add a node for the PMU module of the WCN6750 present on the
-> > > > > qcs6490-rb3gen board and assign its power outputs to the Bluetooth
-> > > > > module.
-> > > > > 
-> > > > > Signed-off-by: Janaki Ramaiah Thota <quic_janathot@quicinc.com>
-> > > > > ---
-> > > > >    arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts | 165 ++++++++++++++++++-
-> > > > >    1 file changed, 164 insertions(+), 1 deletion(-)
-> > > > > 
-> > > > > diff --git a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
-> > > > > index 27695bd54220..07650648214e 100644
-> > > > > --- a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
-> > > > > +++ b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
-> > > > > @@ -1,6 +1,6 @@
-> > > > >    // SPDX-License-Identifier: BSD-3-Clause
-> > > > >    /*
-> > > > > - * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
-> > > > > + * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
-> > > > >     */
-> > > > >    /dts-v1/;
-> > > > > @@ -33,6 +33,7 @@
-> > > > >    	aliases {
-> > > > >    		serial0 = &uart5;
-> > > > > +		serial1 = &uart7;
-> > > > >    	};
-> > > > >    	chosen {
-> > > > > @@ -217,6 +218,63 @@
-> > > > >    		regulator-min-microvolt = <3700000>;
-> > > > >    		regulator-max-microvolt = <3700000>;
-> > > > >    	};
-> > > > > +
-> > > > > +	wcn6750-pmu {
-> > > > > +		compatible = "qcom,wcn6750-pmu";
-> > > > > +		pinctrl-names = "default";
-> > > > > +		pinctrl-0 = <&bt_en>;
-> > > > > +		vddaon-supply = <&vreg_s7b_0p972>;
-> > > > > +		vddasd-supply = <&vreg_l11c_2p8>;
-> > > > > +		vddpmu-supply = <&vreg_s7b_0p972>;
-> > > > > +		vddrfa0p8-supply = <&vreg_s7b_0p972>;
-> > > > > +		vddrfa1p2-supply = <&vreg_s8b_1p272>;
-> > > > > +		vddrfa1p7-supply = <&vreg_s1b_1p872>;
-> > > > > +		vddrfa2p2-supply = <&vreg_s1c_2p19>;
-> > > > > +
-> > > > > +		bt-enable-gpios = <&tlmm 85 GPIO_ACTIVE_HIGH>;
-> > > > 
-> > > > Doesn't WCN6750 also have SW_CTRL and wifi-enable pins?
-> > > > 
-> > > 
-> > > For Bluetooth, these pins are not needed. We have verified Bluetooth
-> > > functionality, and it is working fine.
-> > 
-> > You are describing the hardware (PMU), not "a part of the PMU for the
-> > BT". Please check if there should be a wifi enable pin and adjust
-> > accordingly.
-> > 
-> 
-> We further checked with WiFi team. For wcn6750, sw_ctrl and wifi-enable pins
-> handled from WiFi firmware/controller. So it is not needed to handle in PMU.
+From: Anastasia Belova <abelova@astralinux.ru>
 
-Please mention that in the commit message and add a brief comment in the
-PMU node.
+[ Upstream commit 5493f9714e4cdaf0ee7cec15899a231400cb1a9f ]
 
+cpufreq_cpu_get may return NULL. To avoid NULL-dereference check it
+and return in case of error.
+
+Found by Linux Verification Center (linuxtesting.org) with SVACE.
+
+Signed-off-by: Anastasia Belova <abelova@astralinux.ru>
+Reviewed-by: Perry Yuan <perry.yuan@amd.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Jianqi Ren <jianqi.ren.cn@windriver.com>
+---
+ drivers/cpufreq/amd-pstate.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index 90dcf26f0973..106aef210003 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -309,9 +309,14 @@ static void amd_pstate_adjust_perf(unsigned int cpu,
+ 	unsigned long max_perf, min_perf, des_perf,
+ 		      cap_perf, lowest_nonlinear_perf, max_freq;
+ 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+-	struct amd_cpudata *cpudata = policy->driver_data;
++	struct amd_cpudata *cpudata;
+ 	unsigned int target_freq;
+ 
++	if (!policy)
++		return;
++
++	cpudata = policy->driver_data;
++
+ 	cap_perf = READ_ONCE(cpudata->highest_perf);
+ 	lowest_nonlinear_perf = READ_ONCE(cpudata->lowest_nonlinear_perf);
+ 	max_freq = READ_ONCE(cpudata->max_freq);
 -- 
-With best wishes
-Dmitry
+2.25.1
+
