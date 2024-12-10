@@ -1,102 +1,153 @@
-Received: from mail-io1-f43.google.com (mail-io1-f43.google.com [209.85.166.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A5892343DB
-	for <linux-pm@vger.kernel.org>; Tue, 10 Dec 2024 17:08:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F9DA23A591;
+	Tue, 10 Dec 2024 17:10:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733850535; cv=none; b=B1N2oiSE3YVTZgXicFrCbSFV1jKYB3T05K53Edz2E+5zSc2hxbfPtjR93X8/qo1gYqnaCjqxCmRLKT7W/W4hMaczG/kOBpCE3YK2OBCYBbhi3bve0ybpL0fCwrvsYqv5VEl8No3qaTW9YcNKRvc8Ywf/6FKT4jjQ1bITXrPjVH4=
+	t=1733850629; cv=none; b=Xndu/CY2iA5XCXf/wDrcwjHIk5svEvYwmXWCK6q5txO828Rz+r4mY+Vq3ZjI6H6915p/obmTZ10ZcF1g1Td9LGjF2v/WX2u4OLfe1gj8etI4rQT3nn7ihU7hQCPkgJoRoBKyRTXw11f/s+fZLLzQlLcYmr8FWMZPZeucFs1FlAA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733850535; c=relaxed/simple;
-	bh=vqnBy2TUzl5VEh6Ll+x+Xk8e1C2DbaIVDVhMQuQ/vzg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=QnIehm5sRRHPHMorTzOCxGOg92UqGJphnr2giowLEL+WuesxEUQp9UbtEzU2BDVKiWDyZLUw63qnOQMRqW5DhubQhATzXvKkM/QUJn2ZXEfvHHvKcMfz7aYnR0FGrIKjGWcu6guEfb7eBSxxGh0JyeHAquZZh5qsvLX03/tZjdg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=fbNc3w+K; arc=none smtp.client-ip=209.85.166.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
+	s=arc-20240116; t=1733850629; c=relaxed/simple;
+	bh=WdAfMwo/02oulaifUnF7xk8G7gAfYMpEJETO/isky1k=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=W5qRISftShdjojVS4gtzYFmu1489jr45/zOPBqFmV0X08dYtKIGA0SneilikXZhGSWrlR+eqXLAYbdLmmR0Br+9syzyNQGs+4UVR0qGeKEhKuuQEP8AEUOGoLPbGLdddBgl+sE1fSLl7wrsEmBcU6pXi/YgC7MS/lhROY7d5I/0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=BWzephFJ; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="fbNc3w+K"
-Received: by mail-io1-f43.google.com with SMTP id ca18e2360f4ac-84194e90c0fso411887239f.2
-        for <linux-pm@vger.kernel.org>; Tue, 10 Dec 2024 09:08:52 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google; t=1733850532; x=1734455332; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=B5PJ17q8lD7k4hVY6ctGVVWNwOwWO51bb5PDCcKGo6o=;
-        b=fbNc3w+Km/yqjUHcR4q0Yw23p971vs1gYm7T0EeLW8sDF0dExjAKQqp4P7N6RbF01X
-         XdNolJsaUKonfeSuqix2Vl9Ffb8nBSyISOmNcIQp0lggxp/U+YnhJXLhOacxHg8yxMX1
-         kikdLbqsPLEbWlgxEapR2IW52icNC9GE1/oUM=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1733850532; x=1734455332;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=B5PJ17q8lD7k4hVY6ctGVVWNwOwWO51bb5PDCcKGo6o=;
-        b=NoqWNcax9TAts5l9ROzDnaGrwwd5yu6Yz2P743Kvvlc/JY0WYDJMd3Z/8joBTbVjpX
-         PkY8SRhemoh9zpC4B+JgXLqgSwbj77al2d4IBOVHdzBnqxgc4kKBi3oWABZuzVwYeMCZ
-         CD45tLDYu05PfwMte0xWAvuFVmtRRMNN3lbe/X7Gik7QvdMcjs+kG4ARoJ53ONPrkZMx
-         tp8NGMt1/LRbfydiaNLMmlA/biMKJmOhGAmNTxkqPkfBFSOUU+DSIK5TaJXcjr8+oMD9
-         yukaEvhoO0Br9jl5hB89ffotjFuq8GpApsCgqN6YVSkjab1H1FpIw+WZD09lMSoFNQtm
-         Nx7Q==
-X-Forwarded-Encrypted: i=1; AJvYcCXLAyNBXyZ+6BxktEZhk4bEGuzjsWL7DiaBV2O5vbSHuaM0ROBLlNm4wnDWyzpBOGWqOOLVasCZNg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw3yLRLrntB6TdntFsSCm2/HVv8F6AK9VBKYQ7UUfdHBKP0xJQ/
-	smMYfKeFfFUNTcpj05vPe2DCuwFN7qhLyXlK8eiaBKtOe3SkLWGXxMSIgZeDRbk=
-X-Gm-Gg: ASbGncuengby2ViF06fPpd599j05TMkqcEgfoUtdS9HO5npXzUpuo/vaMifqNmhnfh0
-	w/rOc36dKicTwM+Dv40v6bvRsJUvNkEBOs4YxI/RGM1pHbim1iPK1x0yXXld2EE2km8kC+V2eK7
-	4vwrGG+qQ4dQ4f+RrDMqT1LEy3Fvi//lO/yBMmeICCLqPATlslcO97iF+0YuylrgVIq5gIuescN
-	b3p+VOiLZ+u2/E92gIz8YbwyV8RKcjuG4FruzbDL4iqG9DmvXpLDqtI62bgzBOZvg==
-X-Google-Smtp-Source: AGHT+IG/gkZmbkJxGMdHnI+Js79ydu8p5QIVfUBfMDkz2ZNcb9kT6//CIdURU7BGEZClLOWq6Kg11w==
-X-Received: by 2002:a05:6e02:1c8f:b0:3a7:dfe4:bd33 with SMTP id e9e14a558f8ab-3a811d98e10mr213572065ab.6.1733850532088;
-        Tue, 10 Dec 2024 09:08:52 -0800 (PST)
-Received: from [192.168.1.128] ([38.175.170.29])
-        by smtp.gmail.com with ESMTPSA id 8926c6da1cb9f-4e2ca310cfbsm701831173.152.2024.12.10.09.08.51
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 10 Dec 2024 09:08:51 -0800 (PST)
-Message-ID: <1e61303f-69b7-47e1-863f-1d52ac6c3ec7@linuxfoundation.org>
-Date: Tue, 10 Dec 2024 10:08:50 -0700
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="BWzephFJ"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1733850625;
+	bh=WdAfMwo/02oulaifUnF7xk8G7gAfYMpEJETO/isky1k=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=BWzephFJskl5FdC8gg5CbxrrVMkaWMPTRX0Lw9m8SDeHOvXWi3b7h3bSYlMmgaSw1
+	 MAWAlGy9S6dFKT/mwFHa75bhSJKlG5ZpOUX5gGjglUB7zRnG+raGXZwxbp/qqIf4vW
+	 Tr0aIa9kEMspodBEJmWJzU3o8S1la/0NHv3UHSG87cM0xFcJJP230xDIGPgEDoz4SV
+	 j9CYkU5t1RZtOl8E34DO9F1DSOPGllrUpE6Nd9CXlid6v3+MjPiDSkTo3XPmapLG2G
+	 gOFGEpIdgz6UcxQZXdv8eIndcyGY1mR7tNvaLBghODNo58K6p5ZbePNcCxs14r/8FD
+	 RvGNQw9XS7Nqg==
+Received: from jupiter.universe (dyndsl-091-248-190-127.ewe-ip-backbone.de [91.248.190.127])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: sre)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 2561117E37C4;
+	Tue, 10 Dec 2024 18:10:25 +0100 (CET)
+Received: by jupiter.universe (Postfix, from userid 1000)
+	id AB75048CC8E; Tue, 10 Dec 2024 18:10:24 +0100 (CET)
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+To: Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Ulf Hansson <ulf.hansson@linaro.org>,
+	Mark Brown <broonie@kernel.org>
+Cc: Liam Girdwood <lgirdwood@gmail.com>,
+	Elaine Zhang <zhangqing@rock-chips.com>,
+	=?UTF-8?q?Adri=C3=A1n=20Mart=C3=ADnez=20Larumbe?= <adrian.larumbe@collabora.com>,
+	Boris Brezillon <boris.brezillon@collabora.com>,
+	Chen-Yu Tsai <wens@csie.org>,
+	devicetree@vger.kernel.org,
+	linux-rockchip@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
+	kernel@collabora.com
+Subject: [PATCH v4 4/7] pmdomain: rockchip: reduce indentation in rockchip_pd_power
+Date: Tue, 10 Dec 2024 18:06:44 +0100
+Message-ID: <20241210171023.141162-5-sebastian.reichel@collabora.com>
+X-Mailer: git-send-email 2.45.2
+In-Reply-To: <20241210171023.141162-1-sebastian.reichel@collabora.com>
+References: <20241210171023.141162-1-sebastian.reichel@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH for-next v3] selftests/cpufreq: gitignore output files and
- clean them in make clean
-To: Viresh Kumar <viresh.kumar@linaro.org>, Li Zhijian <lizhijian@fujitsu.com>
-Cc: linux-kselftest@vger.kernel.org, shuah@kernel.org,
- linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
- linux-pm@vger.kernel.org, Shuah Khan <skhan@linuxfoundation.org>
-References: <20241122074757.1583002-1-lizhijian@fujitsu.com>
- <20241122081304.j2zbjvmgd2nnfca3@vireshk-i7>
-Content-Language: en-US
-From: Shuah Khan <skhan@linuxfoundation.org>
-In-Reply-To: <20241122081304.j2zbjvmgd2nnfca3@vireshk-i7>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 11/22/24 01:13, Viresh Kumar wrote:
-> On 22-11-24, 15:47, Li Zhijian wrote:
->> After `make run_tests`, the git status complains:
->> Untracked files:
->>      (use "git add <file>..." to include in what will be committed)
->>          cpufreq/cpufreq_selftest.dmesg_cpufreq.txt
->>          cpufreq/cpufreq_selftest.dmesg_full.txt
->>          cpufreq/cpufreq_selftest.txt
->>
->> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Cc: Shuah Khan <shuah@kernel.org>
->> Signed-off-by: Li Zhijian <lizhijian@fujitsu.com>
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
+Rework the logic, so that the function exits early when the
+power domain state is already correct to reduce code indentation.
 
-Applied to
+No functional change intended.
 
-https://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux.git/log/?h=cpupower
-for next pull request to Rafael.
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+Tested-by: Adrian Larumbe <adrian.larumbe@collabora.com> # On Rock 5B
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+---
+ drivers/pmdomain/rockchip/pm-domains.c | 49 +++++++++++++-------------
+ 1 file changed, 25 insertions(+), 24 deletions(-)
 
-thanks,
--- Shuah
+diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
+index 8f440f2883db..f4e555dac20a 100644
+--- a/drivers/pmdomain/rockchip/pm-domains.c
++++ b/drivers/pmdomain/rockchip/pm-domains.c
+@@ -582,39 +582,40 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
+ 
+ 	guard(mutex)(&pmu->mutex);
+ 
+-	if (rockchip_pmu_domain_is_on(pd) != power_on) {
+-		ret = clk_bulk_enable(pd->num_clks, pd->clks);
+-		if (ret < 0) {
+-			dev_err(pmu->dev, "failed to enable clocks\n");
+-			return ret;
+-		}
++	if (rockchip_pmu_domain_is_on(pd) == power_on)
++		return 0;
+ 
+-		rockchip_pmu_ungate_clk(pd, true);
++	ret = clk_bulk_enable(pd->num_clks, pd->clks);
++	if (ret < 0) {
++		dev_err(pmu->dev, "failed to enable clocks\n");
++		return ret;
++	}
+ 
+-		if (!power_on) {
+-			rockchip_pmu_save_qos(pd);
++	rockchip_pmu_ungate_clk(pd, true);
+ 
+-			/* if powering down, idle request to NIU first */
+-			rockchip_pmu_set_idle_request(pd, true);
+-		}
++	if (!power_on) {
++		rockchip_pmu_save_qos(pd);
+ 
+-		ret = rockchip_do_pmu_set_power_domain(pd, power_on);
+-		if (ret < 0) {
+-			clk_bulk_disable(pd->num_clks, pd->clks);
+-			return ret;
+-		}
++		/* if powering down, idle request to NIU first */
++		rockchip_pmu_set_idle_request(pd, true);
++	}
+ 
+-		if (power_on) {
+-			/* if powering up, leave idle mode */
+-			rockchip_pmu_set_idle_request(pd, false);
++	ret = rockchip_do_pmu_set_power_domain(pd, power_on);
++	if (ret < 0) {
++		clk_bulk_disable(pd->num_clks, pd->clks);
++		return ret;
++	}
+ 
+-			rockchip_pmu_restore_qos(pd);
+-		}
++	if (power_on) {
++		/* if powering up, leave idle mode */
++		rockchip_pmu_set_idle_request(pd, false);
+ 
+-		rockchip_pmu_ungate_clk(pd, false);
+-		clk_bulk_disable(pd->num_clks, pd->clks);
++		rockchip_pmu_restore_qos(pd);
+ 	}
+ 
++	rockchip_pmu_ungate_clk(pd, false);
++	clk_bulk_disable(pd->num_clks, pd->clks);
++
+ 	return 0;
+ }
+ 
+-- 
+2.45.2
+
