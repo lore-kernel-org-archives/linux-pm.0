@@ -1,170 +1,102 @@
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-io1-f43.google.com (mail-io1-f43.google.com [209.85.166.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A58C322FE17;
-	Tue, 10 Dec 2024 17:03:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A5892343DB
+	for <linux-pm@vger.kernel.org>; Tue, 10 Dec 2024 17:08:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733850224; cv=none; b=N14ovxuA4clr+I4LBF0HLG1WBRS9PWLrfSrQ/2rSWSrMOvs9zw9Qk/HbvhNOqc9k3KWX7V57AGfsza1Bkj7nxHVvqcRaDU5Lbqowlu0njEcKsMJiwVpnIV/IrusOHsMp7oVhVAt92qm6+6MEdEjuXclr2HgWwCjH9GInVqoXG/k=
+	t=1733850535; cv=none; b=B1N2oiSE3YVTZgXicFrCbSFV1jKYB3T05K53Edz2E+5zSc2hxbfPtjR93X8/qo1gYqnaCjqxCmRLKT7W/W4hMaczG/kOBpCE3YK2OBCYBbhi3bve0ybpL0fCwrvsYqv5VEl8No3qaTW9YcNKRvc8Ywf/6FKT4jjQ1bITXrPjVH4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733850224; c=relaxed/simple;
-	bh=Lp8Jhgg1qVhtZgXWwaHfbQ7G7Qq7eMQKR/S57j01VfQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RmiJf3BIMNDTqatXChSxtXQaLBtiJvpXSx5Td8jaz7qfsFdvMcdEYuIbWteFecDABw4qkZO2WVMyp9qBHY0GVBGnGnTu1pYY/jOi0Few2tYsTVklwUIuedUCpIk2T3gL98agISCy+IeSAxlvtB2RoHvQhHJPKhRLeOHldfOQyl4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=iSbNefuI; arc=none smtp.client-ip=159.69.126.157
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
+	s=arc-20240116; t=1733850535; c=relaxed/simple;
+	bh=vqnBy2TUzl5VEh6Ll+x+Xk8e1C2DbaIVDVhMQuQ/vzg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=QnIehm5sRRHPHMorTzOCxGOg92UqGJphnr2giowLEL+WuesxEUQp9UbtEzU2BDVKiWDyZLUw63qnOQMRqW5DhubQhATzXvKkM/QUJn2ZXEfvHHvKcMfz7aYnR0FGrIKjGWcu6guEfb7eBSxxGh0JyeHAquZZh5qsvLX03/tZjdg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=fbNc3w+K; arc=none smtp.client-ip=209.85.166.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="iSbNefuI"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1733850219;
-	bh=Lp8Jhgg1qVhtZgXWwaHfbQ7G7Qq7eMQKR/S57j01VfQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=iSbNefuI29Sm/0xB3x4crw7wYQYO1tRxmUoseWqSq0q1F97ZJWcaU3H4IOSPy4Ru0
-	 7lSQvPtp6qi8s4bIOC7/U4YDXkP4lwxA+EdwAVAKJBIMW5S/Q1Dci+IDXIb6/nJZuD
-	 nprgQJF/ZQR6zgcD5sC+aQsalkpxah3cDUWbgPJ4=
-Date: Tue, 10 Dec 2024 18:03:39 +0100
-From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>, 
-	Andy Shevchenko <andy@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
-	platform-driver-x86@vger.kernel.org, Jelle van der Waa <jelle@vdwaa.nl>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3 4/4] platform/x86: dell-laptop: Use
- power_supply_charge_types_show/_parse() helpers
-Message-ID: <f57031ce-8d5c-4601-87bc-2f1362a8de78@t-8ch.de>
-References: <20241209204051.8786-1-hdegoede@redhat.com>
- <20241209204051.8786-5-hdegoede@redhat.com>
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="fbNc3w+K"
+Received: by mail-io1-f43.google.com with SMTP id ca18e2360f4ac-84194e90c0fso411887239f.2
+        for <linux-pm@vger.kernel.org>; Tue, 10 Dec 2024 09:08:52 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linuxfoundation.org; s=google; t=1733850532; x=1734455332; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=B5PJ17q8lD7k4hVY6ctGVVWNwOwWO51bb5PDCcKGo6o=;
+        b=fbNc3w+Km/yqjUHcR4q0Yw23p971vs1gYm7T0EeLW8sDF0dExjAKQqp4P7N6RbF01X
+         XdNolJsaUKonfeSuqix2Vl9Ffb8nBSyISOmNcIQp0lggxp/U+YnhJXLhOacxHg8yxMX1
+         kikdLbqsPLEbWlgxEapR2IW52icNC9GE1/oUM=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1733850532; x=1734455332;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=B5PJ17q8lD7k4hVY6ctGVVWNwOwWO51bb5PDCcKGo6o=;
+        b=NoqWNcax9TAts5l9ROzDnaGrwwd5yu6Yz2P743Kvvlc/JY0WYDJMd3Z/8joBTbVjpX
+         PkY8SRhemoh9zpC4B+JgXLqgSwbj77al2d4IBOVHdzBnqxgc4kKBi3oWABZuzVwYeMCZ
+         CD45tLDYu05PfwMte0xWAvuFVmtRRMNN3lbe/X7Gik7QvdMcjs+kG4ARoJ53ONPrkZMx
+         tp8NGMt1/LRbfydiaNLMmlA/biMKJmOhGAmNTxkqPkfBFSOUU+DSIK5TaJXcjr8+oMD9
+         yukaEvhoO0Br9jl5hB89ffotjFuq8GpApsCgqN6YVSkjab1H1FpIw+WZD09lMSoFNQtm
+         Nx7Q==
+X-Forwarded-Encrypted: i=1; AJvYcCXLAyNBXyZ+6BxktEZhk4bEGuzjsWL7DiaBV2O5vbSHuaM0ROBLlNm4wnDWyzpBOGWqOOLVasCZNg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw3yLRLrntB6TdntFsSCm2/HVv8F6AK9VBKYQ7UUfdHBKP0xJQ/
+	smMYfKeFfFUNTcpj05vPe2DCuwFN7qhLyXlK8eiaBKtOe3SkLWGXxMSIgZeDRbk=
+X-Gm-Gg: ASbGncuengby2ViF06fPpd599j05TMkqcEgfoUtdS9HO5npXzUpuo/vaMifqNmhnfh0
+	w/rOc36dKicTwM+Dv40v6bvRsJUvNkEBOs4YxI/RGM1pHbim1iPK1x0yXXld2EE2km8kC+V2eK7
+	4vwrGG+qQ4dQ4f+RrDMqT1LEy3Fvi//lO/yBMmeICCLqPATlslcO97iF+0YuylrgVIq5gIuescN
+	b3p+VOiLZ+u2/E92gIz8YbwyV8RKcjuG4FruzbDL4iqG9DmvXpLDqtI62bgzBOZvg==
+X-Google-Smtp-Source: AGHT+IG/gkZmbkJxGMdHnI+Js79ydu8p5QIVfUBfMDkz2ZNcb9kT6//CIdURU7BGEZClLOWq6Kg11w==
+X-Received: by 2002:a05:6e02:1c8f:b0:3a7:dfe4:bd33 with SMTP id e9e14a558f8ab-3a811d98e10mr213572065ab.6.1733850532088;
+        Tue, 10 Dec 2024 09:08:52 -0800 (PST)
+Received: from [192.168.1.128] ([38.175.170.29])
+        by smtp.gmail.com with ESMTPSA id 8926c6da1cb9f-4e2ca310cfbsm701831173.152.2024.12.10.09.08.51
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 10 Dec 2024 09:08:51 -0800 (PST)
+Message-ID: <1e61303f-69b7-47e1-863f-1d52ac6c3ec7@linuxfoundation.org>
+Date: Tue, 10 Dec 2024 10:08:50 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20241209204051.8786-5-hdegoede@redhat.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH for-next v3] selftests/cpufreq: gitignore output files and
+ clean them in make clean
+To: Viresh Kumar <viresh.kumar@linaro.org>, Li Zhijian <lizhijian@fujitsu.com>
+Cc: linux-kselftest@vger.kernel.org, shuah@kernel.org,
+ linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
+ linux-pm@vger.kernel.org, Shuah Khan <skhan@linuxfoundation.org>
+References: <20241122074757.1583002-1-lizhijian@fujitsu.com>
+ <20241122081304.j2zbjvmgd2nnfca3@vireshk-i7>
+Content-Language: en-US
+From: Shuah Khan <skhan@linuxfoundation.org>
+In-Reply-To: <20241122081304.j2zbjvmgd2nnfca3@vireshk-i7>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On 2024-12-09 21:40:51+0100, Hans de Goede wrote:
-> Make battery_modes a map between tokens and enum power_supply_charge_type
-> values instead of between tokens and strings and use the new
-> power_supply_charge_types_show/_parse() helpers for show()/store()
-> to ensure that things are handled in the same way as in other drivers.
+On 11/22/24 01:13, Viresh Kumar wrote:
+> On 22-11-24, 15:47, Li Zhijian wrote:
+>> After `make run_tests`, the git status complains:
+>> Untracked files:
+>>      (use "git add <file>..." to include in what will be committed)
+>>          cpufreq/cpufreq_selftest.dmesg_cpufreq.txt
+>>          cpufreq/cpufreq_selftest.dmesg_full.txt
+>>          cpufreq/cpufreq_selftest.txt
+>>
+>> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>> Cc: Shuah Khan <shuah@kernel.org>
+>> Signed-off-by: Li Zhijian <lizhijian@fujitsu.com>
 > 
-> This also changes battery_supported_modes to be a bitmap of charge-types
-> (enum power_supply_charge_type values) rather then a bitmap of indices
-> into battery_modes[].
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
-This screams for power supply extensions.
+Applied to
 
-Reviewed-by: Thomas Weißschuh <linux@weissschuh.net>
+https://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux.git/log/?h=cpupower
+for next pull request to Rafael.
 
-> ---
->  drivers/platform/x86/dell/dell-laptop.c | 54 ++++++++++++-------------
->  1 file changed, 25 insertions(+), 29 deletions(-)
-> 
-> diff --git a/drivers/platform/x86/dell/dell-laptop.c b/drivers/platform/x86/dell/dell-laptop.c
-> index 5671bd0deee7..9a4cfcb8bbe0 100644
-> --- a/drivers/platform/x86/dell/dell-laptop.c
-> +++ b/drivers/platform/x86/dell/dell-laptop.c
-> @@ -103,15 +103,15 @@ static bool mute_led_registered;
->  
->  struct battery_mode_info {
->  	int token;
-> -	const char *label;
-> +	enum power_supply_charge_type charge_type;
->  };
->  
->  static const struct battery_mode_info battery_modes[] = {
-> -	{ BAT_PRI_AC_MODE_TOKEN,   "Trickle" },
-> -	{ BAT_EXPRESS_MODE_TOKEN,  "Fast" },
-> -	{ BAT_STANDARD_MODE_TOKEN, "Standard" },
-> -	{ BAT_ADAPTIVE_MODE_TOKEN, "Adaptive" },
-> -	{ BAT_CUSTOM_MODE_TOKEN,   "Custom" },
-> +	{ BAT_PRI_AC_MODE_TOKEN,   POWER_SUPPLY_CHARGE_TYPE_TRICKLE },
-> +	{ BAT_EXPRESS_MODE_TOKEN,  POWER_SUPPLY_CHARGE_TYPE_FAST },
-> +	{ BAT_STANDARD_MODE_TOKEN, POWER_SUPPLY_CHARGE_TYPE_STANDARD },
-> +	{ BAT_ADAPTIVE_MODE_TOKEN, POWER_SUPPLY_CHARGE_TYPE_ADAPTIVE },
-> +	{ BAT_CUSTOM_MODE_TOKEN,   POWER_SUPPLY_CHARGE_TYPE_CUSTOM },
->  };
->  static u32 battery_supported_modes;
->  
-> @@ -2261,46 +2261,42 @@ static ssize_t charge_types_show(struct device *dev,
->  		struct device_attribute *attr,
->  		char *buf)
->  {
-> -	ssize_t count = 0;
-> +	enum power_supply_charge_type charge_type;
->  	int i;
->  
->  	for (i = 0; i < ARRAY_SIZE(battery_modes); i++) {
-> -		bool active;
-> +		charge_type = battery_modes[i].charge_type;
->  
-> -		if (!(battery_supported_modes & BIT(i)))
-> +		if (!(battery_supported_modes & BIT(charge_type)))
->  			continue;
->  
-> -		active = dell_battery_mode_is_active(battery_modes[i].token);
-> -		count += sysfs_emit_at(buf, count, active ? "[%s] " : "%s ",
-> -				battery_modes[i].label);
-> +		if (!dell_battery_mode_is_active(battery_modes[i].token))
-> +			continue;
-> +
-> +		return power_supply_charge_types_show(dev, battery_supported_modes,
-> +						      charge_type, buf);
->  	}
->  
-> -	/* convert the last space to a newline */
-> -	if (count > 0)
-> -		count--;
-> -	count += sysfs_emit_at(buf, count, "\n");
-> -
-> -	return count;
-> +	/* No active mode found */
-> +	return -EIO;
->  }
->  
->  static ssize_t charge_types_store(struct device *dev,
->  		struct device_attribute *attr,
->  		const char *buf, size_t size)
->  {
-> -	bool matched = false;
-> -	int err, i;
-> +	int charge_type, err, i;
-> +
-> +	charge_type = power_supply_charge_types_parse(battery_supported_modes, buf);
-> +	if (charge_type < 0)
-> +		return charge_type;
->  
->  	for (i = 0; i < ARRAY_SIZE(battery_modes); i++) {
-> -		if (!(battery_supported_modes & BIT(i)))
-> -			continue;
-> -
-> -		if (sysfs_streq(battery_modes[i].label, buf)) {
-> -			matched = true;
-> +		if (battery_modes[i].charge_type == charge_type)
->  			break;
-> -		}
->  	}
-> -	if (!matched)
-> -		return -EINVAL;
-> +	if (i == ARRAY_SIZE(battery_modes))
-> +		return -EIO;
->  
->  	err = dell_battery_set_mode(battery_modes[i].token);
->  	if (err)
-> @@ -2430,7 +2426,7 @@ static u32 __init battery_get_supported_modes(void)
->  
->  	for (i = 0; i < ARRAY_SIZE(battery_modes); i++) {
->  		if (dell_smbios_find_token(battery_modes[i].token))
-> -			modes |= BIT(i);
-> +			modes |= BIT(battery_modes[i].charge_type);
->  	}
->  
->  	return modes;
-> -- 
-> 2.47.1
-> 
+thanks,
+-- Shuah
