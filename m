@@ -1,287 +1,172 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
+Received: from lelvem-ot01.ext.ti.com (lelvem-ot01.ext.ti.com [198.47.23.234])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8BEFE1AB533;
-	Wed, 11 Dec 2024 14:30:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C68824632A;
+	Wed, 11 Dec 2024 14:34:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.234
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733927455; cv=none; b=mY8jFIYYyQ7bfGQ7hHdgXSyQF4ZZRleR2Md3SuDo2vctieQOvUrcj2Dy+pxkJKEQ70PL+kyV9KGivZrgPfAuRJtbIzJq4EdUjniDTSByWMyIctosdLytgIiJ6uC5u0gi8muV2L3v/Y2+NwP017Xs8QvnhFMqnrEGNn8zLIJfNgQ=
+	t=1733927694; cv=none; b=MKW3wzd6WNarJJ6CnrPXhjSxzwrznVwk84BksXesFfJDTCucRZk03tnQ7D7ygyLYtY2GMqEsSYLVwvsBu1kZHR752Ugmtrs94duQKlOE69Hr2+1YtBTo3eSs8ZYFtnDc3DNKjwW4x9N4OEYgOFc+Uoai1my1LJhNiVGrvo/fLmo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733927455; c=relaxed/simple;
-	bh=dS+Z9hSyHNd7E2PNPV3byhFSLmg7UwMv7UmKoykDv6w=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=M4lL2ysofsQWPbcqe9la7j3IKGiB4GsLNjFY7a4oWZ1fDKQYKFTHShx6gEGWK5H0+kqlKLMmcxlVmkl6/ttMG2ekwtytMCqRyM+JnfIxtL5nEXvycAvddiaelaPEs2taJJUXCTx5Gvghu0+fXJtP8KM0aMGzlEAJyqTT9fYmyI0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=YczNwWRI; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1733927694; c=relaxed/simple;
+	bh=PjeEch/fWRIE1ieMm8WmubAeLB5sjfg3ePsAhVLH6rI=;
+	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jRRo7ne1RlTHCKlOx5Cc4qn7g3fe8bu2Xv0FTjdYf8chRZUwZE6R08pk+S5dedAELSAnpSD5G3A1jyEWgSv5uHOIfVx/g7oQWmOH7pY0DyPrm0w8X2TfMnw/qls+6KjW+gcv0oXeCuiZl+sowXBfK6kAHi7sz5kac7gbi2CNf4c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=Hxmncq2B; arc=none smtp.client-ip=198.47.23.234
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="YczNwWRI"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1733927446;
-	bh=dS+Z9hSyHNd7E2PNPV3byhFSLmg7UwMv7UmKoykDv6w=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=YczNwWRI45UlU2OziCVY6EoYmbUnvMh07oapxBp0cXxy5I6Ymai+B4FFW4QrKTxRo
-	 c5Ljp0ilaqY2j8/FsbRXVNfruH8LODHLF7Pt2po8U9FwHuF5XypH/nwyvzJUi6ooD8
-	 a0v5SUU37tSIvvtwzJ1PkuCiv6RJaHqqJBX9TNNslMdQCPEH9aJinGehC3PdMobHXM
-	 mKTiF1FEElnMYdVovhqYHMggavNsAqtPPC9Cg2rQR8XmrgpXoJugpf+S2Y8H2nIVBe
-	 bxkr4LGo+ojrreWeDGvIGQfvFjNFMbS1GrwySGsIvV7pD29YFr3KtKzWJ/QQJejPFl
-	 bFyDYWuH4Se+g==
-Received: from jupiter.universe (dyndsl-091-248-215-089.ewe-ip-backbone.de [91.248.215.89])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
-	(No client certificate requested)
-	(Authenticated sender: sre)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 971B817E3780;
-	Wed, 11 Dec 2024 15:30:46 +0100 (CET)
-Received: by jupiter.universe (Postfix, from userid 1000)
-	id 81D3748CC90; Wed, 11 Dec 2024 15:30:45 +0100 (CET)
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Heiko Stuebner <heiko@sntech.de>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	Mark Brown <broonie@kernel.org>
-Cc: Liam Girdwood <lgirdwood@gmail.com>,
-	Elaine Zhang <zhangqing@rock-chips.com>,
-	=?UTF-8?q?Adri=C3=A1n=20Mart=C3=ADnez=20Larumbe?= <adrian.larumbe@collabora.com>,
-	Boris Brezillon <boris.brezillon@collabora.com>,
-	Chen-Yu Tsai <wens@csie.org>,
-	devicetree@vger.kernel.org,
-	linux-rockchip@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	Sebastian Reichel <sebastian.reichel@collabora.com>,
-	kernel@collabora.com
-Subject: [PATCH v5 6/7] pmdomain: rockchip: add regulator support
-Date: Wed, 11 Dec 2024 15:26:51 +0100
-Message-ID: <20241211143044.9550-7-sebastian.reichel@collabora.com>
-X-Mailer: git-send-email 2.45.2
-In-Reply-To: <20241211143044.9550-1-sebastian.reichel@collabora.com>
-References: <20241211143044.9550-1-sebastian.reichel@collabora.com>
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="Hxmncq2B"
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+	by lelvem-ot01.ext.ti.com (8.15.2/8.15.2) with ESMTPS id 4BBEYUX83100973
+	(version=TLSv1.2 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+	Wed, 11 Dec 2024 08:34:30 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+	s=ti-com-17Q1; t=1733927670;
+	bh=09tWTzLXgMYVzmambtubWygnDCYSWR6GEUqpPaUWrbc=;
+	h=Date:From:To:CC:Subject:References:In-Reply-To;
+	b=Hxmncq2BDa8GLasoIUoLyn7fB7uhn0EstcLgRuxa7x0Hhl0xz0z0Bjrc7S8ty+XdO
+	 N0E9CdAOnzHzgQirTCjwtaeZnNozlXKnNkUjuMe3x43V+D3OHVTu+kM8EPYDib9YRj
+	 VmzfXm9hK48iEw3xcVMoirqoJNluC/4y5GE+CpF4=
+Received: from DFLE112.ent.ti.com (dfle112.ent.ti.com [10.64.6.33])
+	by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTP id 4BBEYTCH025829;
+	Wed, 11 Dec 2024 08:34:29 -0600
+Received: from DFLE105.ent.ti.com (10.64.6.26) by DFLE112.ent.ti.com
+ (10.64.6.33) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Wed, 11
+ Dec 2024 08:34:29 -0600
+Received: from lelvsmtp6.itg.ti.com (10.180.75.249) by DFLE105.ent.ti.com
+ (10.64.6.26) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
+ Frontend Transport; Wed, 11 Dec 2024 08:34:29 -0600
+Received: from localhost (lcpd911.dhcp.ti.com [172.24.227.226])
+	by lelvsmtp6.itg.ti.com (8.15.2/8.15.2) with ESMTP id 4BBEYSx6052706;
+	Wed, 11 Dec 2024 08:34:29 -0600
+Date: Wed, 11 Dec 2024 20:04:28 +0530
+From: Dhruva Gole <d-gole@ti.com>
+To: Sudeep Holla <sudeep.holla@arm.com>
+CC: Vivek yadav <linux.ninja23@gmail.com>, <linux-newbie@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <daniel.lezcano@linaro.org>,
+        <lpieralisi@kernel.org>, <krzk@kernel.org>, <christian.loehle@arm.com>,
+        <quic_sibis@quicinc.com>, <cristian.marussi@arm.com>,
+        <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+        <vigneshr@ti.com>, <khilman@ti.com>, <sebin.francis@ti.com>,
+        <khilman@baylibre.com>
+Subject: Re: Fwd: ARM64: CPUIdle driver is not select any Idle state other
+ then WFI
+Message-ID: <20241211143428.kaoovhiwar74dy6x@lcpd911>
+References: <CAO6a-9_aPLCx2CqecQBGbK78_=+-tT44RepPkrBjpkWSvjj4Tg@mail.gmail.com>
+ <CAO6a-98cdSvyd7jgAyGNmsC2nxmRSyr3GppxvZU9yHU1xqwz3g@mail.gmail.com>
+ <20241211055052.gbxnyqpui3t3zpw5@lcpd911>
+ <20241211121825.GA2054801@bogus>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20241211121825.GA2054801@bogus>
+X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
 
-Some power domains require extra voltages to be applied. For example
-trying to enable the GPU power domain on RK3588 fails when the SoC
-does not have VDD GPU enabled. The same is expected to happen for
-the NPU, which also has a dedicated supply line.
+On Dec 11, 2024 at 12:18:25 +0000, Sudeep Holla wrote:
+> On Wed, Dec 11, 2024 at 11:20:52AM +0530, Dhruva Gole wrote:
+[...]
+> > >
+> > >
+> > > Hi @all,
+> > >
+> > > I am working on one custom SoC. Where I add one CPUIdle state for
+> > > ``arm,cortex-a55`` processor.
+> >
+> > Any further luck on this?
+> >
+> > I have also been working on something similar[1] but on an A53 core on
+> > TI-K3 AM62x processor.
+> 
+> Does upstream DTS have support for this platform to understand it better ?
+> Even reference to any complete DT file for the platform will help.
 
-We get the regulator using devm_of_regulator_get(), so a missing
-dependency in the devicetree is handled gracefully by printing a warning
-and creating a dummy regulator. This is necessary, since existing DTs do
-not have the regulator described. They might still work if the regulator
-is marked as always-on. It is also working if the regulator is enabled
-at boot time and the GPU driver is probed before the kernel disables
-unused regulators.
+Yes, you can ref to the AM625 (CPU layout) DT here:
+https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tree/arch/arm64/boot/dts/ti/k3-am625.dtsi
 
-The regulator itself is not acquired at driver probe time, since that
-creates an unsolvable circular dependency. The power domain driver must
-be probed early, since SoC peripherals need it. Regulators on the other
-hand depend on SoC peripherals like SPI, I2C or GPIO. MediaTek does not
-run into this, since they have two power domain drivers.
+The board/starter kit DT is:
+https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tree/arch/arm64/boot/dts/ti/k3-am625-sk.dts
 
-Tested-by: Heiko Stuebner <heiko@sntech.de>
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- drivers/pmdomain/rockchip/pm-domains.c | 113 +++++++++++++++++--------
- 1 file changed, 79 insertions(+), 34 deletions(-)
+The patches for idle state are not upstream, and only exist in this
+patch of mine here:
+https://github.com/DhruvaG2000/v-linux/commit/0fd088d624276a2e72b8dc6660d261ab6d194f4b
 
-diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-index f4e555dac20a..31c71b6fddf1 100644
---- a/drivers/pmdomain/rockchip/pm-domains.c
-+++ b/drivers/pmdomain/rockchip/pm-domains.c
-@@ -18,6 +18,7 @@
- #include <linux/of_clk.h>
- #include <linux/clk.h>
- #include <linux/regmap.h>
-+#include <linux/regulator/consumer.h>
- #include <linux/mfd/syscon.h>
- #include <soc/rockchip/pm_domains.h>
- #include <dt-bindings/power/px30-power.h>
-@@ -44,6 +45,7 @@ struct rockchip_domain_info {
- 	int idle_mask;
- 	int ack_mask;
- 	bool active_wakeup;
-+	bool need_regulator;
- 	int pwr_w_mask;
- 	int req_w_mask;
- 	int clk_ungate_mask;
-@@ -92,6 +94,8 @@ struct rockchip_pm_domain {
- 	u32 *qos_save_regs[MAX_QOS_REGS_NUM];
- 	int num_clks;
- 	struct clk_bulk_data *clks;
-+	struct device_node *node;
-+	struct regulator *supply;
- };
- 
- struct rockchip_pmu {
-@@ -129,7 +133,7 @@ struct rockchip_pmu {
- 	.active_wakeup = wakeup,			\
- }
- 
--#define DOMAIN_M_O_R(_name, p_offset, pwr, status, m_offset, m_status, r_status, r_offset, req, idle, ack, wakeup)	\
-+#define DOMAIN_M_O_R(_name, p_offset, pwr, status, m_offset, m_status, r_status, r_offset, req, idle, ack, wakeup, regulator)	\
- {							\
- 	.name = _name,					\
- 	.pwr_offset = p_offset,				\
-@@ -145,6 +149,7 @@ struct rockchip_pmu {
- 	.idle_mask = (idle),				\
- 	.ack_mask = (ack),				\
- 	.active_wakeup = wakeup,			\
-+	.need_regulator = regulator,			\
- }
- 
- #define DOMAIN_M_O_R_G(_name, p_offset, pwr, status, m_offset, m_status, r_status, r_offset, req, idle, ack, g_mask, wakeup)	\
-@@ -303,8 +308,8 @@ void rockchip_pmu_unblock(void)
- }
- EXPORT_SYMBOL_GPL(rockchip_pmu_unblock);
- 
--#define DOMAIN_RK3588(name, p_offset, pwr, status, m_offset, m_status, r_status, r_offset, req, idle, wakeup)	\
--	DOMAIN_M_O_R(name, p_offset, pwr, status, m_offset, m_status, r_status, r_offset, req, idle, idle, wakeup)
-+#define DOMAIN_RK3588(name, p_offset, pwr, status, m_offset, m_status, r_status, r_offset, req, idle, wakeup, regulator)	\
-+	DOMAIN_M_O_R(name, p_offset, pwr, status, m_offset, m_status, r_status, r_offset, req, idle, idle, wakeup, regulator)
- 
- static bool rockchip_pmu_domain_is_idle(struct rockchip_pm_domain *pd)
- {
-@@ -619,18 +624,57 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
- 	return 0;
- }
- 
-+static int rockchip_pd_regulator_disable(struct rockchip_pm_domain *pd)
-+{
-+	return IS_ERR_OR_NULL(pd->supply) ? 0 : regulator_disable(pd->supply);
-+}
-+
-+static int rockchip_pd_regulator_enable(struct rockchip_pm_domain *pd)
-+{
-+	struct rockchip_pmu *pmu = pd->pmu;
-+
-+	if (!pd->info->need_regulator)
-+		return 0;
-+
-+	if (IS_ERR_OR_NULL(pd->supply)) {
-+		pd->supply = devm_of_regulator_get(pmu->dev, pd->node, "domain");
-+
-+		if (IS_ERR(pd->supply))
-+			return PTR_ERR(pd->supply);
-+	}
-+
-+	return regulator_enable(pd->supply);
-+}
-+
- static int rockchip_pd_power_on(struct generic_pm_domain *domain)
- {
- 	struct rockchip_pm_domain *pd = to_rockchip_pd(domain);
-+	int ret;
-+
-+	ret = rockchip_pd_regulator_enable(pd);
-+	if (ret) {
-+		dev_err(pd->pmu->dev, "Failed to enable supply: %d\n", ret);
-+		return ret;
-+	}
- 
--	return rockchip_pd_power(pd, true);
-+	ret = rockchip_pd_power(pd, true);
-+	if (ret)
-+		rockchip_pd_regulator_disable(pd);
-+
-+	return ret;
- }
- 
- static int rockchip_pd_power_off(struct generic_pm_domain *domain)
- {
- 	struct rockchip_pm_domain *pd = to_rockchip_pd(domain);
-+	int ret;
- 
--	return rockchip_pd_power(pd, false);
-+	ret = rockchip_pd_power(pd, false);
-+	if (ret)
-+		return ret;
-+
-+	rockchip_pd_regulator_disable(pd);
-+	return ret;
- }
- 
- static int rockchip_pd_attach_dev(struct generic_pm_domain *genpd,
-@@ -711,6 +755,7 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
- 
- 	pd->info = pd_info;
- 	pd->pmu = pmu;
-+	pd->node = node;
- 
- 	pd->num_clks = of_clk_get_parent_count(node);
- 	if (pd->num_clks > 0) {
-@@ -1174,35 +1219,35 @@ static const struct rockchip_domain_info rk3576_pm_domains[] = {
- };
- 
- static const struct rockchip_domain_info rk3588_pm_domains[] = {
--	[RK3588_PD_GPU]		= DOMAIN_RK3588("gpu",     0x0, BIT(0),  0,       0x0, 0,       BIT(1),  0x0, BIT(0),  BIT(0),  false),
--	[RK3588_PD_NPU]		= DOMAIN_RK3588("npu",     0x0, BIT(1),  BIT(1),  0x0, 0,       0,       0x0, 0,       0,       false),
--	[RK3588_PD_VCODEC]	= DOMAIN_RK3588("vcodec",  0x0, BIT(2),  BIT(2),  0x0, 0,       0,       0x0, 0,       0,       false),
--	[RK3588_PD_NPUTOP]	= DOMAIN_RK3588("nputop",  0x0, BIT(3),  0,       0x0, BIT(11), BIT(2),  0x0, BIT(1),  BIT(1),  false),
--	[RK3588_PD_NPU1]	= DOMAIN_RK3588("npu1",    0x0, BIT(4),  0,       0x0, BIT(12), BIT(3),  0x0, BIT(2),  BIT(2),  false),
--	[RK3588_PD_NPU2]	= DOMAIN_RK3588("npu2",    0x0, BIT(5),  0,       0x0, BIT(13), BIT(4),  0x0, BIT(3),  BIT(3),  false),
--	[RK3588_PD_VENC0]	= DOMAIN_RK3588("venc0",   0x0, BIT(6),  0,       0x0, BIT(14), BIT(5),  0x0, BIT(4),  BIT(4),  false),
--	[RK3588_PD_VENC1]	= DOMAIN_RK3588("venc1",   0x0, BIT(7),  0,       0x0, BIT(15), BIT(6),  0x0, BIT(5),  BIT(5),  false),
--	[RK3588_PD_RKVDEC0]	= DOMAIN_RK3588("rkvdec0", 0x0, BIT(8),  0,       0x0, BIT(16), BIT(7),  0x0, BIT(6),  BIT(6),  false),
--	[RK3588_PD_RKVDEC1]	= DOMAIN_RK3588("rkvdec1", 0x0, BIT(9),  0,       0x0, BIT(17), BIT(8),  0x0, BIT(7),  BIT(7),  false),
--	[RK3588_PD_VDPU]	= DOMAIN_RK3588("vdpu",    0x0, BIT(10), 0,       0x0, BIT(18), BIT(9),  0x0, BIT(8),  BIT(8),  false),
--	[RK3588_PD_RGA30]	= DOMAIN_RK3588("rga30",   0x0, BIT(11), 0,       0x0, BIT(19), BIT(10), 0x0, 0,       0,       false),
--	[RK3588_PD_AV1]		= DOMAIN_RK3588("av1",     0x0, BIT(12), 0,       0x0, BIT(20), BIT(11), 0x0, BIT(9),  BIT(9),  false),
--	[RK3588_PD_VI]		= DOMAIN_RK3588("vi",      0x0, BIT(13), 0,       0x0, BIT(21), BIT(12), 0x0, BIT(10), BIT(10), false),
--	[RK3588_PD_FEC]		= DOMAIN_RK3588("fec",     0x0, BIT(14), 0,       0x0, BIT(22), BIT(13), 0x0, 0,       0,       false),
--	[RK3588_PD_ISP1]	= DOMAIN_RK3588("isp1",    0x0, BIT(15), 0,       0x0, BIT(23), BIT(14), 0x0, BIT(11), BIT(11), false),
--	[RK3588_PD_RGA31]	= DOMAIN_RK3588("rga31",   0x4, BIT(0),  0,       0x0, BIT(24), BIT(15), 0x0, BIT(12), BIT(12), false),
--	[RK3588_PD_VOP]		= DOMAIN_RK3588("vop",     0x4, BIT(1),  0,       0x0, BIT(25), BIT(16), 0x0, BIT(13) | BIT(14), BIT(13) | BIT(14), false),
--	[RK3588_PD_VO0]		= DOMAIN_RK3588("vo0",     0x4, BIT(2),  0,       0x0, BIT(26), BIT(17), 0x0, BIT(15), BIT(15), false),
--	[RK3588_PD_VO1]		= DOMAIN_RK3588("vo1",     0x4, BIT(3),  0,       0x0, BIT(27), BIT(18), 0x4, BIT(0),  BIT(16), false),
--	[RK3588_PD_AUDIO]	= DOMAIN_RK3588("audio",   0x4, BIT(4),  0,       0x0, BIT(28), BIT(19), 0x4, BIT(1),  BIT(17), false),
--	[RK3588_PD_PHP]		= DOMAIN_RK3588("php",     0x4, BIT(5),  0,       0x0, BIT(29), BIT(20), 0x4, BIT(5),  BIT(21), false),
--	[RK3588_PD_GMAC]	= DOMAIN_RK3588("gmac",    0x4, BIT(6),  0,       0x0, BIT(30), BIT(21), 0x0, 0,       0,       false),
--	[RK3588_PD_PCIE]	= DOMAIN_RK3588("pcie",    0x4, BIT(7),  0,       0x0, BIT(31), BIT(22), 0x0, 0,       0,       true),
--	[RK3588_PD_NVM]		= DOMAIN_RK3588("nvm",     0x4, BIT(8),  BIT(24), 0x4, 0,       0,       0x4, BIT(2),  BIT(18), false),
--	[RK3588_PD_NVM0]	= DOMAIN_RK3588("nvm0",    0x4, BIT(9),  0,       0x4, BIT(1),  BIT(23), 0x0, 0,       0,       false),
--	[RK3588_PD_SDIO]	= DOMAIN_RK3588("sdio",    0x4, BIT(10), 0,       0x4, BIT(2),  BIT(24), 0x4, BIT(3),  BIT(19), false),
--	[RK3588_PD_USB]		= DOMAIN_RK3588("usb",     0x4, BIT(11), 0,       0x4, BIT(3),  BIT(25), 0x4, BIT(4),  BIT(20), true),
--	[RK3588_PD_SDMMC]	= DOMAIN_RK3588("sdmmc",   0x4, BIT(13), 0,       0x4, BIT(5),  BIT(26), 0x0, 0,       0,       false),
-+	[RK3588_PD_GPU]		= DOMAIN_RK3588("gpu",     0x0, BIT(0),  0,       0x0, 0,       BIT(1),  0x0, BIT(0),  BIT(0),  false, true),
-+	[RK3588_PD_NPU]		= DOMAIN_RK3588("npu",     0x0, BIT(1),  BIT(1),  0x0, 0,       0,       0x0, 0,       0,       false, true),
-+	[RK3588_PD_VCODEC]	= DOMAIN_RK3588("vcodec",  0x0, BIT(2),  BIT(2),  0x0, 0,       0,       0x0, 0,       0,       false, false),
-+	[RK3588_PD_NPUTOP]	= DOMAIN_RK3588("nputop",  0x0, BIT(3),  0,       0x0, BIT(11), BIT(2),  0x0, BIT(1),  BIT(1),  false, false),
-+	[RK3588_PD_NPU1]	= DOMAIN_RK3588("npu1",    0x0, BIT(4),  0,       0x0, BIT(12), BIT(3),  0x0, BIT(2),  BIT(2),  false, false),
-+	[RK3588_PD_NPU2]	= DOMAIN_RK3588("npu2",    0x0, BIT(5),  0,       0x0, BIT(13), BIT(4),  0x0, BIT(3),  BIT(3),  false, false),
-+	[RK3588_PD_VENC0]	= DOMAIN_RK3588("venc0",   0x0, BIT(6),  0,       0x0, BIT(14), BIT(5),  0x0, BIT(4),  BIT(4),  false, false),
-+	[RK3588_PD_VENC1]	= DOMAIN_RK3588("venc1",   0x0, BIT(7),  0,       0x0, BIT(15), BIT(6),  0x0, BIT(5),  BIT(5),  false, false),
-+	[RK3588_PD_RKVDEC0]	= DOMAIN_RK3588("rkvdec0", 0x0, BIT(8),  0,       0x0, BIT(16), BIT(7),  0x0, BIT(6),  BIT(6),  false, false),
-+	[RK3588_PD_RKVDEC1]	= DOMAIN_RK3588("rkvdec1", 0x0, BIT(9),  0,       0x0, BIT(17), BIT(8),  0x0, BIT(7),  BIT(7),  false, false),
-+	[RK3588_PD_VDPU]	= DOMAIN_RK3588("vdpu",    0x0, BIT(10), 0,       0x0, BIT(18), BIT(9),  0x0, BIT(8),  BIT(8),  false, false),
-+	[RK3588_PD_RGA30]	= DOMAIN_RK3588("rga30",   0x0, BIT(11), 0,       0x0, BIT(19), BIT(10), 0x0, 0,       0,       false, false),
-+	[RK3588_PD_AV1]		= DOMAIN_RK3588("av1",     0x0, BIT(12), 0,       0x0, BIT(20), BIT(11), 0x0, BIT(9),  BIT(9),  false, false),
-+	[RK3588_PD_VI]		= DOMAIN_RK3588("vi",      0x0, BIT(13), 0,       0x0, BIT(21), BIT(12), 0x0, BIT(10), BIT(10), false, false),
-+	[RK3588_PD_FEC]		= DOMAIN_RK3588("fec",     0x0, BIT(14), 0,       0x0, BIT(22), BIT(13), 0x0, 0,       0,       false, false),
-+	[RK3588_PD_ISP1]	= DOMAIN_RK3588("isp1",    0x0, BIT(15), 0,       0x0, BIT(23), BIT(14), 0x0, BIT(11), BIT(11), false, false),
-+	[RK3588_PD_RGA31]	= DOMAIN_RK3588("rga31",   0x4, BIT(0),  0,       0x0, BIT(24), BIT(15), 0x0, BIT(12), BIT(12), false, false),
-+	[RK3588_PD_VOP]		= DOMAIN_RK3588("vop",     0x4, BIT(1),  0,       0x0, BIT(25), BIT(16), 0x0, BIT(13) | BIT(14), BIT(13) | BIT(14), false, false),
-+	[RK3588_PD_VO0]		= DOMAIN_RK3588("vo0",     0x4, BIT(2),  0,       0x0, BIT(26), BIT(17), 0x0, BIT(15), BIT(15), false, false),
-+	[RK3588_PD_VO1]		= DOMAIN_RK3588("vo1",     0x4, BIT(3),  0,       0x0, BIT(27), BIT(18), 0x4, BIT(0),  BIT(16), false, false),
-+	[RK3588_PD_AUDIO]	= DOMAIN_RK3588("audio",   0x4, BIT(4),  0,       0x0, BIT(28), BIT(19), 0x4, BIT(1),  BIT(17), false, false),
-+	[RK3588_PD_PHP]		= DOMAIN_RK3588("php",     0x4, BIT(5),  0,       0x0, BIT(29), BIT(20), 0x4, BIT(5),  BIT(21), false, false),
-+	[RK3588_PD_GMAC]	= DOMAIN_RK3588("gmac",    0x4, BIT(6),  0,       0x0, BIT(30), BIT(21), 0x0, 0,       0,       false, false),
-+	[RK3588_PD_PCIE]	= DOMAIN_RK3588("pcie",    0x4, BIT(7),  0,       0x0, BIT(31), BIT(22), 0x0, 0,       0,       true, false),
-+	[RK3588_PD_NVM]		= DOMAIN_RK3588("nvm",     0x4, BIT(8),  BIT(24), 0x4, 0,       0,       0x4, BIT(2),  BIT(18), false, false),
-+	[RK3588_PD_NVM0]	= DOMAIN_RK3588("nvm0",    0x4, BIT(9),  0,       0x4, BIT(1),  BIT(23), 0x0, 0,       0,       false, false),
-+	[RK3588_PD_SDIO]	= DOMAIN_RK3588("sdio",    0x4, BIT(10), 0,       0x4, BIT(2),  BIT(24), 0x4, BIT(3),  BIT(19), false, false),
-+	[RK3588_PD_USB]		= DOMAIN_RK3588("usb",     0x4, BIT(11), 0,       0x4, BIT(3),  BIT(25), 0x4, BIT(4),  BIT(20), true, false),
-+	[RK3588_PD_SDMMC]	= DOMAIN_RK3588("sdmmc",   0x4, BIT(13), 0,       0x4, BIT(5),  BIT(26), 0x0, 0,       0,       false, false),
- };
- 
- static const struct rockchip_pmu_info px30_pmu = {
+[...]
+> > See this chunk in the kernel cpuidle driver:
+> > 	if (broadcast && tick_broadcast_enter()) {
+> >
+> > When I dug deeper into tick_broadcast_enter it always returns something
+> > non zero and hence in my case it was entering the if block and tried to
+> > find a deepest state. Then the deepest state would always return WFI and
+> > not the idle-state I had added.
+> >
+> > What we found out was on our kernel we end up using
+> >
+> > kernel/time/tick-broadcast-hrtimer.c
+> >
+> > This always seems to be keeping atleast 1 CPU busy and prevents idle.
+> > If we remove the local-timer-stop it was helping us, but we still need
+> > to dig into the full impact of what that entails and I am still
+> > interested in finding out how so many other users of similar idle-state
+> > implementation are able to do so without trouble.
+> >
+> 
+> Interesting. So if the platform is functional removing local-timer-stop,
+> I am bit confused. Either there is something else that is getting it out
+
+Yes it was interesting to us too, as to how the RCU didn't kick in and
+system continued to function as though nothing was wrong.
+
+> from the idle state so, it should be fine and it could be just some
+
+It's probably UART keypresses or some userspace processes that get
+scheduled that bring the CPUs back out of TF-A's cpu_standby.
+Is it possible that EL1 interrupts can bring EL3 out of WFI? Is yes then
+it explains the behaviour. The arch timer could also be continuing to
+tick and bringing the CPUs out of ATF WFI.
+
+> misconfiguration.
+> 
+> > Arm64 recommends to use arch_timer instead of external timers. Once we
+> > enter el3, timer interrupts to el1 is blocked and hence it's equivalent
+> > to local-timer-stop, so it does make sense to keep this property, but
+> > then how are others able to enter idle-states for all plugged CPUs at
+> > the same time?
+> >
+> 
+> Some systems have system timer that can take over as broadcast timer when
+> CPUs enter deeper idle states where the local timers are stopped.
+
+In CPUIdle we're not really clock gating anything so the timer does keep
+ticking. So in this particular case it might make sense to remove the
+local-timer-stop property from the idle-state.
+
+However we're looking into taking this further and putting interconnect
+and few other PLLs in bypass which could cause arch timer for eg. to
+tick slower. In this case would it still make sense to omit the
+property? We may even have some usecases planned where we may turn OFF
+the CPU once it is in TF-A cpu_standby/ WFI. What would be the right
+approach in such scenarios?
+
+Could you provide any examples where the local-timer-stop property is
+being used and an alternative timer can be configured once we enter the
+idle-state where CPU CTX maybe lost or clocks maybe bypass? It would be
+great if you could share some example implementation if you're aware.
+
+I took a look at QCom / NXP DT's but I couldn't exactly figure out how
+they were setting up alternate timers once CPU hit idle-state.
+
+PS. If it helps atall here's also my hack TF-A code where we enter just
+CPU RET state for now:
+https://github.com/DhruvaG2000/tfa-dev/commit/2d4b441d2f4c6d9ee0d6a62d93920ee8ab77dd42#diff-4fa4f4f6a5faa221390928a8079f76392536559f66e420a0182dba8e5966f4c6R232
+
 -- 
-2.45.2
-
+Best regards,
+Dhruva Gole
+Texas Instruments Incorporated
