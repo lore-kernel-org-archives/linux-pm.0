@@ -1,490 +1,353 @@
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Received: from EUR05-VI1-obe.outbound.protection.outlook.com (mail-vi1eur05on2075.outbound.protection.outlook.com [40.107.21.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD5C7209695;
-	Wed, 11 Dec 2024 19:58:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.69.126.157
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733947085; cv=none; b=TGMdXlVaOXy5IE0CjG2pWs8E+rFFbm2Tm87AuKhxQBkjZpgC9HBpy9VmAADThm3R70Hp9j8F02JQETmCI21MQNJFGYKTNOTpAq6DRXWzbFoFu9ZKb/XI68tIZcgpq4l5cC6toubVfO1Blu84XVRrTkCwR35aLCj0MK/Fottoo74=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733947085; c=relaxed/simple;
-	bh=iyUyfZE1P2N0ilcsd0OljtUAr5vM0MKz/GTm7OHWKuY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=IabbkMIZ8h8X31jW7/E5GZxZ7+xrvX+tAnjdEGje7b2gGcLuPJu5t3H8wGAt0BPAAtZTQ3Oa9niaJiLVL4NEsDoB/6ZUdfIKbQ+nRNqOv8a79g8X8MPhJFhLA2tFtmiPDz1flsf6SLninCYWg8NcsYflWlaSnVUVnp/DGLuBiOA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; spf=pass smtp.mailfrom=weissschuh.net; dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b=ooNcgZhy; arc=none smtp.client-ip=159.69.126.157
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=weissschuh.net
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78FE1209695;
+	Wed, 11 Dec 2024 20:39:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.21.75
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1733949590; cv=fail; b=F96XmLNeAOR6BLUkL78LkaZXdOTqm0CNEdy4+4b3BB3mPVPyp8wFsrAm01Ho1mQPAx+IQwHqA6Ofi6dXbTqDqXc+k9EMawrv4Aef91dDNsTNUoOUklPFjixOPtyakCr09JzSbnYOjgWl7yQUWrR0LEATfG5oIST76whoKIGa06E=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1733949590; c=relaxed/simple;
+	bh=LpdGjUFE7EGgmVT2o45GNXLPu7vCNSnE7cUQVWA0dMQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=eYmr0I9UT8tmI1Tfj7tCxavSAKuhaQUGI5FcXZJX8OI8hL/2aXkfmaDLIhTNJSXw3CuEaLA5foCCAe3I1c/6TaKdPFBbAHLFtMkAylah7+jJ8C+7c4bvZre2NwpOkQGJgAa1kckcz9PqEgfzDxgUe23bJbl9rxm5U5FpNgYmfFI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com; spf=pass smtp.mailfrom=nxp.com; dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b=mzQw18Bj; arc=fail smtp.client-ip=40.107.21.75
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=weissschuh.net header.i=@weissschuh.net header.b="ooNcgZhy"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1733947079;
-	bh=iyUyfZE1P2N0ilcsd0OljtUAr5vM0MKz/GTm7OHWKuY=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=ooNcgZhyhm2hjbzte7Z2euy4sDFjQM21+yx2MHkSnOsy/9wKudUwGCfYml5YSerGN
-	 fn2iQLxUUgceGm6EcQGRnKR0XRhVJT3+qWVHZzHa9fxhOQv+8S+WE+GqA6K8VC/q/x
-	 Y4+8JZu8eqri+8XD4+3YVzZ0W3BDMTFFH4K+DPDg=
-From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Wed, 11 Dec 2024 20:57:55 +0100
-Subject: [PATCH v6 1/4] power: supply: core: implement extension API
+	dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b="mzQw18Bj"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=G7xgpoeHkJOQRj3sfY62gGZMHp6b2BYW+b7j3s38nXaI8AjZkKA1H8ETELNXAgEppSZrk8yTIAbvk4BmWOKnnTqUEA2M5grNQ7rdWyOgPnWQ9U6ZgSqeWvB0CTIi7goR4d91yet+b+x39U2EOR+AqNhVJZjyXkI2T+7wabtnAy9M8wZCFNxkD+scgiEzb978u+G/W2Wbs4LEazIKSocrwyekb/3dWY+wQsAKwrlmi6vxEiMMMgOt6ByU4uN76aKuKS8BPjXjwjdtY3R3JJHeoe3sjrQR0FC64Nk/wED7ySlCon6e8BrpyCNL6hb8kyXHbB6dvv+gOQoCpNN1lGNoPw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=z2MGIfYEiZ5X6IvfTH4LzmPSce9oxpUumYii5EGevXo=;
+ b=t/p+URLiQA3phQsClrVMH7eJqCgHSE0v9zlB/CdpHh3uCipuh6GH1bHtuoONXjac+x3/6hxG0Nc+VtZ5gWha+hQ2P+zJot7MltslCn73ouyupfW9cdIo16M/xE+zM5BfnGg3NjABTn5zbTf0/4IgwBjhgq50AyMohaCLZ3/nB3UxQiCJJZjk+ll6NgwcszWCZZdnx/qfIgoKsShcvwISagAbTEAARZQQ9GEaunSzslMxkwlo4JfZdb79lGVg5PtoNSe/sBFNNRTiAEUrYWvNgqN9bC6Lklhj+habw9Ox37xrF4kGPqnb4RYL3jQj6ouvGKTdICsLi91w7esERLvcuw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=z2MGIfYEiZ5X6IvfTH4LzmPSce9oxpUumYii5EGevXo=;
+ b=mzQw18BjJLitNPul6gkiQWdPto+34v6fMIeIG7OfRLD6VOGKa1+dCPfJ2P99jvbHk6OBayvv46rMXiWMssIEQlfq05eOsUaR3R0BlNKBoX45tRjwNEnA3BtpdY2Latr/cjetCWrih5TJvSogGXlDo9UHKcrk7XPAtxgjjuOK8b5jraa5CJVrX8magZt38Bdppldd6yVDeFQ0iTbRAyUeEM+4hFrbLFbspOIOSZKnF2ORr7y0YL4Urnmt3dxe9FrtwEAWZBsx0OeRmrbI8bfg6dZC6nhXAwi/SNIicPDY020UDDuZLLzjVEBTe7/tM0PCzM7qUcx9aLQybz9Kb9mIRw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from PAXPR04MB9642.eurprd04.prod.outlook.com (2603:10a6:102:240::14)
+ by DU4PR04MB10313.eurprd04.prod.outlook.com (2603:10a6:10:56a::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8251.15; Wed, 11 Dec
+ 2024 20:39:45 +0000
+Received: from PAXPR04MB9642.eurprd04.prod.outlook.com
+ ([fe80::9126:a61e:341d:4b06]) by PAXPR04MB9642.eurprd04.prod.outlook.com
+ ([fe80::9126:a61e:341d:4b06%5]) with mapi id 15.20.8230.010; Wed, 11 Dec 2024
+ 20:39:45 +0000
+Date: Wed, 11 Dec 2024 15:39:35 -0500
+From: Frank Li <Frank.li@nxp.com>
+To: Marco Felsch <m.felsch@pengutronix.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Pengfei Li <pengfei.li_1@nxp.com>, linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org, imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	Peng Fan <peng.fan@nxp.com>
+Subject: Re: [PATCH v2 2/2] thermal: imx91: Add support for i.MX91 thermal
+ monitoring unit
+Message-ID: <Z1n4h/AxzthB0V9l@lizhi-Precision-Tower-5810>
+References: <20241210-imx91tmu-v2-0-5032aad4d88e@nxp.com>
+ <20241210-imx91tmu-v2-2-5032aad4d88e@nxp.com>
+ <20241211154622.f2jwwrqansk6il3o@pengutronix.de>
+ <Z1m+O1UV4HD+7Rr2@lizhi-Precision-Tower-5810>
+ <20241211185705.7b5uw26loobibzln@pengutronix.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20241211185705.7b5uw26loobibzln@pengutronix.de>
+X-ClientProxiedBy: SJ0PR13CA0175.namprd13.prod.outlook.com
+ (2603:10b6:a03:2c7::30) To PAXPR04MB9642.eurprd04.prod.outlook.com
+ (2603:10a6:102:240::14)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20241211-power-supply-extensions-v6-1-9d9dc3f3d387@weissschuh.net>
-References: <20241211-power-supply-extensions-v6-0-9d9dc3f3d387@weissschuh.net>
-In-Reply-To: <20241211-power-supply-extensions-v6-0-9d9dc3f3d387@weissschuh.net>
-To: Sebastian Reichel <sre@kernel.org>, Armin Wolf <W_Armin@gmx.de>, 
- Hans de Goede <hdegoede@redhat.com>, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas@weissschuh.net>, 
- Benson Leung <bleung@chromium.org>, Guenter Roeck <groeck@chromium.org>
-Cc: linux-kernel@vger.kernel.org, chrome-platform@lists.linux.dev, 
- linux-pm@vger.kernel.org, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1733947078; l=14451;
- i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=iyUyfZE1P2N0ilcsd0OljtUAr5vM0MKz/GTm7OHWKuY=;
- b=uZSqYN1UZlgKLp0u6HEcShTQDJGPTMuy9wuWE5whn+3gkWmtXdIXFOxVWqL8SwoIAOIihGZeR
- U9tTJHca4H7CORiYBl5+eWsiHuLDq2YhcYfUzZse1uJojviJBl7WNLw
-X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
- pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PAXPR04MB9642:EE_|DU4PR04MB10313:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1d3dfaf9-b0da-4873-e54f-08dd1a23f271
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|52116014|1800799024|7416014|376014|366016|38350700014;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?q7dtSP1XEhXuRLp5/oMFflGoiBIsQyhwhTGOreIFBSjHW6a7+RQjT2iWdSr1?=
+ =?us-ascii?Q?OBe85UWSB3p4RmW61wb5dIBsLn3afEkrlp9JjKBcM4ISsoQL0SUg6lyMx1VY?=
+ =?us-ascii?Q?9/vdkDhDr6zkqBXtvt1ihA/O/GhdggI9uKsxUhaR3y1zUH3ncFQq4cCmq0lG?=
+ =?us-ascii?Q?XmuiIzB92BcbTJTOMO/upNljO9gVUa7fA8+Hupz6ZRMaP1qlFLbRWK2+uvGq?=
+ =?us-ascii?Q?Gt3TfF1cgfPidzkVrg24ELoKf7kJHCToao+CBeUmbV+hLEYTRCv3G+xvAEcu?=
+ =?us-ascii?Q?EpT+COpvthWyx9+c9q76LO9Wc2qYpO8P4Ps8hjQShnF6ez/Gw33Wc7zU36GF?=
+ =?us-ascii?Q?t31OmnMwETnVQcn/SbExVURceeyWXDrlDm+hwP2xxhFnwM3jbOP14G2B8KLb?=
+ =?us-ascii?Q?lWL44kI0Ew8cMlKZWCn+OEx8MCBHoEnUj3pAcTaC+rTd92qgWF4gqUIC0ArJ?=
+ =?us-ascii?Q?CkhmE6tBtpPFPBKStA/kfcqo4xIVGq6EtxHhbgiMhfg2VpR3gSv8IJOiHsIo?=
+ =?us-ascii?Q?ihFER6ynmpRHP+zN3ZnfE9BanCgX0hdNZk/awlj7Vd6Fjhn7OHw6YeQQXLX6?=
+ =?us-ascii?Q?DwSM45bMGtVaVHcMuGKEhvTuKeSWpXi9B8T70DuFJPFm1ZdvYMGmRu6naAKo?=
+ =?us-ascii?Q?IU4W5PxskAv8mOy7vAhuKIMp16XnITj1hDkdbA0M4zVCNIRX3a71wmmj0jVN?=
+ =?us-ascii?Q?IrUwXxj0S2/D0zswyp9uttWsDNwL1Cf+u7+Rvv/Q9FfXC/Eds3Y6MggbuYXA?=
+ =?us-ascii?Q?xJQVdUicw1D690GVTiELcuILjhZyFwWmyyD2YQEroStm5mW0JJxPT8xUfFul?=
+ =?us-ascii?Q?McqaTN2rR+uKEYjZQ4e020LsmETauUvPeTWm+axv04KW3AKlnppR56Jhaqmj?=
+ =?us-ascii?Q?t8N0gIBuoYel+eJ38Bia9pJAZNccPel7qWvyv7xiXR+8Jwqu+tp6ZKAUBinx?=
+ =?us-ascii?Q?u9aeJqqRH9SePDbA7c0YgSG7Lf87D850r74x8cFKZ4srWRUMRtdtuMTdhHi7?=
+ =?us-ascii?Q?Vr5RSY5DMnje0+UQSihU2/L4nO+cnaL8HMgikiU2cPl/uH0tDwZyIBRzfo8C?=
+ =?us-ascii?Q?ZexFs4Z/YfJ7xxJinEgg0ETWeWOo19zZGVMeFY3lhF1YZ/g946VPCnofZ0DD?=
+ =?us-ascii?Q?z/fGNlC+MPmFhyWcN0yfCB77YYw6Tq3F4q38vk/lCLAANbhXcKaIWPZJjZ9a?=
+ =?us-ascii?Q?znnDd7Gy0zRhzlTSaSBh84e0V8JAW+JHOxtNzGFXUyiPSucaU6yXxYPzyMjR?=
+ =?us-ascii?Q?QNPSYlTlGcup0GIRSC9bsLSrxCK6nYk/Ky0t6XtkGKbAQIQXCZBLwgDml3WT?=
+ =?us-ascii?Q?Hga2Y7aMb4CdbWn0Wf5FnD3aoc64H45MghIWckL7vggbI/co3Zh95moIuzy0?=
+ =?us-ascii?Q?N70DxyWF4u3mybu519xwCl2wB4Rld7JC/635KjmJijokFvlLLg=3D=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB9642.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(52116014)(1800799024)(7416014)(376014)(366016)(38350700014);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?1REVnwsDtzVK2hHBxPRh4E8Enagb57zB6EJWC8aqVXldAK8ZWLSfrmmax04R?=
+ =?us-ascii?Q?sBHgc5WP0hmrCf5Vxb3ZnWpNWzDb2x7YtFpVYCcX1p/XuYQ86Exgeg55Nexm?=
+ =?us-ascii?Q?sEFa/AwLcMlOX8TXeLOc6bwWh3CRdZK98obxCN97QOGpFSzBHfVJ93qHWapM?=
+ =?us-ascii?Q?BGO6DcN6eA2tZCG8OK8Hdf+dWRbLACG5O9cEDpIQ8tvSPL5uxEiAR0/6pbkz?=
+ =?us-ascii?Q?4Y0J3rRjPtQmKba6MJPL15P2H+U0PcMoAT9Ck/Fg2iFWxtvLj/pYZqbiudH2?=
+ =?us-ascii?Q?4sat0pv+4qrXBxLxLQDDRXd6z/R4cPtRDMgRVQWcx3Yym5CISDUdNiIY7PLO?=
+ =?us-ascii?Q?AKDZQWA9bDAfMG/8pY7ACTWu88jE6ulv5f+BR38VlSe2Pbhqm8K7WZ7nLjUr?=
+ =?us-ascii?Q?HTMzeK2Fk50XhpB+XOv9fsCUEhVrBmqKnPrgWIl3I+CE5QL7yb9hJHEk0MBp?=
+ =?us-ascii?Q?C2yzkRibgNZRNJyzGPmK/lBOlzP/3A/tM0CVjQAgYZypnAP4a5ok8eHk5lqM?=
+ =?us-ascii?Q?4aP7tYb+QUOwOja+fxSM0UldyTj484H9SUMTTEB5kzs58BbB6NGL8OkRdPDe?=
+ =?us-ascii?Q?SAGM16XhKlI/si5TnlqNLlQg1huKdwOzWamANRfo6ZAx571fAbJzyYYvhnZ0?=
+ =?us-ascii?Q?B6ZivNHugR0z19mpgnPt7VnWvEVZJ8fchapjO8O05nDKxRbZfaJmxW7mPrgp?=
+ =?us-ascii?Q?UR0CP2R7xYh6j5y7WdecnqeG5C/LAkXHW3N2voRuxWo2TnO3kJaCqHewU+o7?=
+ =?us-ascii?Q?30Vqpknuy1SaEysym8aaVVqRS+zQFv8RsYwKcb+Aesfd9s1Gey3E1Cu6KzHi?=
+ =?us-ascii?Q?yb6ofK+8lmqVzhB0H34tLbdmXLR44my50tI7kqaFv5aW1o20COInnbxqGxLz?=
+ =?us-ascii?Q?pAFfH0BcgBnpyRI+wmb/97tnEVnXhdzUgtnCuPLqSlRhgHSCMej9LdvoJTaH?=
+ =?us-ascii?Q?6CyUYC7BLH8EitqMBHbPBeOPsDc5kW88EDAc2zonlkkazrLFMZYTmHV0keQa?=
+ =?us-ascii?Q?z0SRr780uoGpIGar7YAmMl4dk+OVfx+cFGcSrhvpCF4sQvGmhrElkLPcQxvR?=
+ =?us-ascii?Q?zfFQVes+dyhat4gHx9Q7deNXrvkpkwkG1wqF/geR42Ne2+lLzF4FWHeiYavA?=
+ =?us-ascii?Q?AlDZfqs0Tuc6v2uW2r6wB/ZzZSZihi0Fodj295q3ocXxeZxMoW150vKJramX?=
+ =?us-ascii?Q?fdXlnsROw0i6XnrTxGxUk29v8k0q7uLKNSLZkZsmyygkzki+eFZ10++XgWVC?=
+ =?us-ascii?Q?rDGOBjwfFwfRcx5mCQWALIPr90MhSMzqLfE6gqOSSl6vlDRplR1okwhYt+k6?=
+ =?us-ascii?Q?O4Ba9FV8cMuTJf4TfteEZRmIBTXI7+xfo9KFaAUAd0ylbPed3xJnNkRJsZFg?=
+ =?us-ascii?Q?HuprRRz5JuoPMYUgA2t79dwqNqOQdBTRVOURcIMnCnp6zRU2e0G31kUnZkl0?=
+ =?us-ascii?Q?Ye/aZ1poTAW/5gAbq3Q95bdioV5N9tu28oXNaBx23sTa9ZD4ucypyA5FAZwL?=
+ =?us-ascii?Q?w0aLYzxA3YWh7QCHlojGjDE3/9+GJCoPWJoiJAtpepxYCK/8DKXhwqaJJ4Yj?=
+ =?us-ascii?Q?LuDivOQtYowAFrx18t/SDiV8earF8Z9/DPiB2ydz?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1d3dfaf9-b0da-4873-e54f-08dd1a23f271
+X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB9642.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Dec 2024 20:39:45.2053
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: EHMuKwMFyTA0nBqILdVdXGxqurnhZeE5/5919TbQhq6u3K0NQQQc6h+U51pbegxhC7ewHTxCfGtoOoZcOEHJFw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU4PR04MB10313
 
-Various drivers, mostly in platform/x86 extend the ACPI battery driver
-with additional sysfs attributes to implement more UAPIs than are
-exposed through ACPI by using various side-channels, like WMI,
-nonstandard ACPI or EC communication.
+On Wed, Dec 11, 2024 at 07:57:05PM +0100, Marco Felsch wrote:
+> On 24-12-11, Frank Li wrote:
+> > On Wed, Dec 11, 2024 at 04:46:22PM +0100, Marco Felsch wrote:
+> > > On 24-12-10, Frank Li wrote:
+> > > > From: Pengfei Li <pengfei.li_1@nxp.com>
+> > > >
+> > > > Introduce support for the i.MX91 thermal monitoring unit, which features a
+> > > > single sensor for the CPU. The register layout differs from other chips,
+> > > > necessitating the creation of a dedicated file for this.
+> > > >
+> > > > Signed-off-by: Pengfei Li <pengfei.li_1@nxp.com>
+> > > > Signed-off-by: Peng Fan <peng.fan@nxp.com>
+> > > > Signed-off-by: Frank Li <Frank.Li@nxp.com>
+> > > > ---
+> > > > change from v1 to v2
+> > > > - use low case for hexvalue
+> > > > - combine struct imx91_tmu and tmu_sensor
+> > > > - simplify imx91_tmu_start() and imx91_tmu_enable()
+> > > > - use s16 for imx91_tmu_get_temp(), which may negative value
+> > > > - use reverse christmas tree style
+> > > > - use run time pm
+> > > > - use oneshot to sample temp
+> > > > - register thermal zone after hardware init
+> > > > ---
+> > > >  drivers/thermal/Kconfig         |  10 ++
+> > > >  drivers/thermal/Makefile        |   1 +
+> > > >  drivers/thermal/imx91_thermal.c | 265 ++++++++++++++++++++++++++++++++++++++++
+> > > >  3 files changed, 276 insertions(+)
+> > > >
 
-While the created sysfs attributes look similar to the attributes
-provided by the powersupply core, there are various deficiencies:
+[...]
 
-* They don't show up in uevent payload.
-* They can't be queried with the standard in-kernel APIs.
-* They don't work with triggers.
-* The extending driver has to reimplement all of the parsing,
-formatting and sysfs display logic.
-* Writing a extension driver is completely different from writing a
-normal power supply driver.
+> > > > +	platform_set_drvdata(pdev, tmu);
+> > > > +
+> > > > +	/* disable the monitor during initialization */
+> > > > +	imx91_tmu_enable(tmu, false);
+> > > > +	imx91_tmu_start(tmu, false);
+> > >
+> > > No need to disable it here since both bits (ENABLE and START) are 0
+> > > after a reset.
+> >
+> > Maybe uboot enable it. We can't depend on reset value without really set
+> > hardware reset bit.
+>
+> So the module can't be rested e.g. by disabling module power? Having a
+> dedicated reset mechanism would be much simpler instead of writing each
+> reg-field to the default value.
 
-This extension API avoids all of these issues.
-An extension is just a "struct power_supply_ext" with the same kind of
-callbacks as in a normal "struct power_supply_desc".
+Not all module can be power off individual. Normally, it should have sw
+reset bit in controller. but I have not find it in this module.
 
-The API is meant to be used via battery_hook_register(), the same way as
-the current extensions.
+>
+> > > > +	ret = imx91_init_from_nvmem_cells(tmu);
+> > > > +	if (ret) {
+> > > > +		writel_relaxed(DEFAULT_TRIM1_CONFIG, tmu->base + TRIM1);
+> > > > +		writel_relaxed(DEFAULT_TRIM2_CONFIG, tmu->base + TRIM2);
+> > > 			^
+> > > Can you please anwer if _relaxed API is sufficient? I don't know why you
+> > > making use of the _relaxed API here anyway. We have only a few MMIO
+> > > accesses here, so why can't we use the writel() instead? This applies to
+> > > the whole driver.
+> >
+> > There are not big difference writel_relaxed() or writel() for this driver.
+> > Just original owner pick one.
+>
+> NACK, the difference is that _relaxed() APIs don't guarantee the order
+> the register access is done.
 
-Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
----
- drivers/power/supply/power_supply.h       |  17 ++++
- drivers/power/supply/power_supply_core.c  | 162 ++++++++++++++++++++++++++++--
- drivers/power/supply/power_supply_sysfs.c |  26 ++++-
- include/linux/power_supply.h              |  33 ++++++
- 4 files changed, 228 insertions(+), 10 deletions(-)
+It is totally wrong. *_relexed() API can guarantee the register access
+order. Only can't guarantee order with other memory. such as
 
-diff --git a/drivers/power/supply/power_supply.h b/drivers/power/supply/power_supply.h
-index 5dabbd895538003096b62d03fdd0201b82b090e6..531785516d2ac31f9a7f73a58e15e64cb81820ed 100644
---- a/drivers/power/supply/power_supply.h
-+++ b/drivers/power/supply/power_supply.h
-@@ -9,6 +9,8 @@
-  *  Modified: 2004, Oct     Szabolcs Gyurko
-  */
- 
-+#include <linux/lockdep.h>
-+
- struct device;
- struct device_type;
- struct power_supply;
-@@ -17,6 +19,21 @@ extern int power_supply_property_is_writeable(struct power_supply *psy,
- 					      enum power_supply_property psp);
- extern bool power_supply_has_property(struct power_supply *psy,
- 				      enum power_supply_property psp);
-+extern bool power_supply_ext_has_property(const struct power_supply_ext *ext,
-+					  enum power_supply_property psp);
-+
-+struct power_supply_ext_registration {
-+	struct list_head list_head;
-+	const struct power_supply_ext *ext;
-+	void *data;
-+};
-+
-+/* Make sure that the macro is a single expression */
-+#define power_supply_for_each_extension(pos, psy)			\
-+	if ( ({ lockdep_assert_held(&(psy)->extensions_sem); 0; }) )	\
-+		;							\
-+	else								\
-+		list_for_each_entry(pos, &(psy)->extensions, list_head)	\
- 
- #ifdef CONFIG_SYSFS
- 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 502b07468b93dfb7f5a6c2092588d931a7d015f2..bc22edbd0e6a02c27500132075f5c98d814a7330 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -81,6 +81,7 @@ static int __power_supply_changed_work(struct device *dev, void *data)
- 
- static void power_supply_changed_work(struct work_struct *work)
- {
-+	int ret;
- 	unsigned long flags;
- 	struct power_supply *psy = container_of(work, struct power_supply,
- 						changed_work);
-@@ -88,6 +89,16 @@ static void power_supply_changed_work(struct work_struct *work)
- 	dev_dbg(&psy->dev, "%s\n", __func__);
- 
- 	spin_lock_irqsave(&psy->changed_lock, flags);
-+
-+	if (unlikely(psy->update_groups)) {
-+		psy->update_groups = false;
-+		spin_unlock_irqrestore(&psy->changed_lock, flags);
-+		ret = sysfs_update_groups(&psy->dev.kobj, power_supply_dev_type.groups);
-+		if (ret)
-+			dev_warn(&psy->dev, "failed to update sysfs groups: %pe\n", ERR_PTR(ret));
-+		spin_lock_irqsave(&psy->changed_lock, flags);
-+	}
-+
- 	/*
- 	 * Check 'changed' here to avoid issues due to race between
- 	 * power_supply_changed() and this routine. In worst case
-@@ -1196,15 +1207,34 @@ static bool psy_desc_has_property(const struct power_supply_desc *psy_desc,
- 	return found;
- }
- 
-+bool power_supply_ext_has_property(const struct power_supply_ext *psy_ext,
-+				   enum power_supply_property psp)
-+{
-+	int i;
-+
-+	for (i = 0; i < psy_ext->num_properties; i++)
-+		if (psy_ext->properties[i] == psp)
-+			return true;
-+
-+	return false;
-+}
-+
- bool power_supply_has_property(struct power_supply *psy,
- 			       enum power_supply_property psp)
- {
-+	struct power_supply_ext_registration *reg;
-+
- 	if (psy_desc_has_property(psy->desc, psp))
- 		return true;
- 
- 	if (power_supply_battery_info_has_prop(psy->battery_info, psp))
- 		return true;
- 
-+	power_supply_for_each_extension(reg, psy) {
-+		if (power_supply_ext_has_property(reg->ext, psp))
-+			return true;
-+	}
-+
- 	return false;
- }
- 
-@@ -1212,12 +1242,21 @@ int power_supply_get_property(struct power_supply *psy,
- 			    enum power_supply_property psp,
- 			    union power_supply_propval *val)
- {
-+	struct power_supply_ext_registration *reg;
-+
- 	if (atomic_read(&psy->use_cnt) <= 0) {
- 		if (!psy->initialized)
- 			return -EAGAIN;
- 		return -ENODEV;
- 	}
- 
-+	scoped_guard(rwsem_read, &psy->extensions_sem) {
-+		power_supply_for_each_extension(reg, psy) {
-+			if (power_supply_ext_has_property(reg->ext, psp))
-+				return reg->ext->get_property(psy, reg->ext, reg->data, psp, val);
-+		}
-+	}
-+
- 	if (psy_desc_has_property(psy->desc, psp))
- 		return psy->desc->get_property(psy, psp, val);
- 	else if (power_supply_battery_info_has_prop(psy->battery_info, psp))
-@@ -1231,7 +1270,24 @@ int power_supply_set_property(struct power_supply *psy,
- 			    enum power_supply_property psp,
- 			    const union power_supply_propval *val)
- {
--	if (atomic_read(&psy->use_cnt) <= 0 || !psy->desc->set_property)
-+	struct power_supply_ext_registration *reg;
-+
-+	if (atomic_read(&psy->use_cnt) <= 0)
-+		return -ENODEV;
-+
-+	scoped_guard(rwsem_read, &psy->extensions_sem) {
-+		power_supply_for_each_extension(reg, psy) {
-+			if (power_supply_ext_has_property(reg->ext, psp)) {
-+				if (reg->ext->set_property)
-+					return reg->ext->set_property(psy, reg->ext, reg->data,
-+								      psp, val);
-+				else
-+					return -ENODEV;
-+			}
-+		}
-+	}
-+
-+	if (!psy->desc->set_property)
- 		return -ENODEV;
- 
- 	return psy->desc->set_property(psy, psp, val);
-@@ -1241,7 +1297,22 @@ EXPORT_SYMBOL_GPL(power_supply_set_property);
- int power_supply_property_is_writeable(struct power_supply *psy,
- 					enum power_supply_property psp)
- {
--	return psy->desc->property_is_writeable && psy->desc->property_is_writeable(psy, psp);
-+	struct power_supply_ext_registration *reg;
-+
-+	power_supply_for_each_extension(reg, psy) {
-+		if (power_supply_ext_has_property(reg->ext, psp)) {
-+			if (reg->ext->property_is_writeable)
-+				return reg->ext->property_is_writeable(psy, reg->ext,
-+								       reg->data, psp);
-+			else
-+				return 0;
-+		}
-+	}
-+
-+	if (!psy->desc->property_is_writeable)
-+		return 0;
-+
-+	return psy->desc->property_is_writeable(psy, psp);
- }
- 
- void power_supply_external_power_changed(struct power_supply *psy)
-@@ -1260,6 +1331,76 @@ int power_supply_powers(struct power_supply *psy, struct device *dev)
- }
- EXPORT_SYMBOL_GPL(power_supply_powers);
- 
-+static int power_supply_update_sysfs_and_hwmon(struct power_supply *psy)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&psy->changed_lock, flags);
-+	psy->update_groups = true;
-+	spin_unlock_irqrestore(&psy->changed_lock, flags);
-+
-+	power_supply_changed(psy);
-+
-+	power_supply_remove_hwmon_sysfs(psy);
-+	return power_supply_add_hwmon_sysfs(psy);
-+}
-+
-+int power_supply_register_extension(struct power_supply *psy, const struct power_supply_ext *ext,
-+				    void *data)
-+{
-+	struct power_supply_ext_registration *reg;
-+	size_t i;
-+	int ret;
-+
-+	if (!psy || !ext || !ext->properties || !ext->num_properties)
-+		return -EINVAL;
-+
-+	guard(rwsem_write)(&psy->extensions_sem);
-+
-+	for (i = 0; i < ext->num_properties; i++)
-+		if (power_supply_has_property(psy, ext->properties[i]))
-+			return -EEXIST;
-+
-+	reg = kmalloc(sizeof(*reg), GFP_KERNEL);
-+	if (!reg)
-+		return -ENOMEM;
-+
-+	reg->ext = ext;
-+	reg->data = data;
-+	list_add(&reg->list_head, &psy->extensions);
-+
-+	ret = power_supply_update_sysfs_and_hwmon(psy);
-+	if (ret)
-+		goto sysfs_hwmon_failed;
-+
-+	return 0;
-+
-+sysfs_hwmon_failed:
-+	list_del(&reg->list_head);
-+	kfree(reg);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(power_supply_register_extension);
-+
-+void power_supply_unregister_extension(struct power_supply *psy, const struct power_supply_ext *ext)
-+{
-+	struct power_supply_ext_registration *reg;
-+
-+	guard(rwsem_write)(&psy->extensions_sem);
-+
-+	power_supply_for_each_extension(reg, psy) {
-+		if (reg->ext == ext) {
-+			list_del(&reg->list_head);
-+			kfree(reg);
-+			power_supply_update_sysfs_and_hwmon(psy);
-+			return;
-+		}
-+	}
-+
-+	dev_warn(&psy->dev, "Trying to unregister invalid extension");
-+}
-+EXPORT_SYMBOL_GPL(power_supply_unregister_extension);
-+
- static void power_supply_dev_release(struct device *dev)
- {
- 	struct power_supply *psy = to_power_supply(dev);
-@@ -1414,6 +1555,9 @@ __power_supply_register(struct device *parent,
- 	}
- 
- 	spin_lock_init(&psy->changed_lock);
-+	init_rwsem(&psy->extensions_sem);
-+	INIT_LIST_HEAD(&psy->extensions);
-+
- 	rc = device_add(dev);
- 	if (rc)
- 		goto device_add_failed;
-@@ -1426,13 +1570,15 @@ __power_supply_register(struct device *parent,
- 	if (rc)
- 		goto register_thermal_failed;
- 
--	rc = power_supply_create_triggers(psy);
--	if (rc)
--		goto create_triggers_failed;
-+	scoped_guard(rwsem_read, &psy->extensions_sem) {
-+		rc = power_supply_create_triggers(psy);
-+		if (rc)
-+			goto create_triggers_failed;
- 
--	rc = power_supply_add_hwmon_sysfs(psy);
--	if (rc)
--		goto add_hwmon_sysfs_failed;
-+		rc = power_supply_add_hwmon_sysfs(psy);
-+		if (rc)
-+			goto add_hwmon_sysfs_failed;
-+	}
- 
- 	/*
- 	 * Update use_cnt after any uevents (most notably from device_add()).
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index 99bfe1f03eb8326d38c4e2831c9670313b42e425..927ddb9d83bb7259809ba695cb9398d1ad654b46 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -268,6 +268,27 @@ static ssize_t power_supply_show_enum_with_available(
- 	return count;
- }
- 
-+static ssize_t power_supply_show_charge_behaviour(struct device *dev,
-+						  struct power_supply *psy,
-+						  union power_supply_propval *value,
-+						  char *buf)
-+{
-+	struct power_supply_ext_registration *reg;
-+
-+	scoped_guard(rwsem_read, &psy->extensions_sem) {
-+		power_supply_for_each_extension(reg, psy) {
-+			if (power_supply_ext_has_property(reg->ext,
-+							  POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR))
-+				return power_supply_charge_behaviour_show(dev,
-+						reg->ext->charge_behaviours,
-+						value->intval, buf);
-+		}
-+	}
-+
-+	return power_supply_charge_behaviour_show(dev, psy->desc->charge_behaviours,
-+						  value->intval, buf);
-+}
-+
- static ssize_t power_supply_format_property(struct device *dev,
- 					    bool uevent,
- 					    struct device_attribute *attr,
-@@ -307,8 +328,7 @@ static ssize_t power_supply_format_property(struct device *dev,
- 	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
- 		if (uevent) /* no possible values in uevents */
- 			goto default_format;
--		ret = power_supply_charge_behaviour_show(dev, psy->desc->charge_behaviours,
--							 value.intval, buf);
-+		ret = power_supply_show_charge_behaviour(dev, psy, &value, buf);
- 		break;
- 	case POWER_SUPPLY_PROP_MODEL_NAME ... POWER_SUPPLY_PROP_SERIAL_NUMBER:
- 		ret = sysfs_emit(buf, "%s\n", value.strval);
-@@ -385,6 +405,8 @@ static umode_t power_supply_attr_is_visible(struct kobject *kobj,
- 	if (attrno == POWER_SUPPLY_PROP_TYPE)
- 		return mode;
- 
-+	guard(rwsem_read)(&psy->extensions_sem);
-+
- 	if (power_supply_has_property(psy, attrno)) {
- 		if (power_supply_property_is_writeable(psy, attrno) > 0)
- 			mode |= S_IWUSR;
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index b98106e1a90f34bce5129317a099f363248342b9..e434516086f032cdb4698005bb1a99eda303a307 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -15,6 +15,8 @@
- #include <linux/device.h>
- #include <linux/workqueue.h>
- #include <linux/leds.h>
-+#include <linux/rwsem.h>
-+#include <linux/list.h>
- #include <linux/spinlock.h>
- #include <linux/notifier.h>
- 
-@@ -281,6 +283,27 @@ struct power_supply_desc {
- 	int use_for_apm;
- };
- 
-+struct power_supply_ext {
-+	u8 charge_behaviours;
-+	const enum power_supply_property *properties;
-+	size_t num_properties;
-+
-+	int (*get_property)(struct power_supply *psy,
-+			    const struct power_supply_ext *ext,
-+			    void *data,
-+			    enum power_supply_property psp,
-+			    union power_supply_propval *val);
-+	int (*set_property)(struct power_supply *psy,
-+			    const struct power_supply_ext *ext,
-+			    void *data,
-+			    enum power_supply_property psp,
-+			    const union power_supply_propval *val);
-+	int (*property_is_writeable)(struct power_supply *psy,
-+				     const struct power_supply_ext *ext,
-+				     void *data,
-+				     enum power_supply_property psp);
-+};
-+
- struct power_supply {
- 	const struct power_supply_desc *desc;
- 
-@@ -300,10 +323,13 @@ struct power_supply {
- 	struct delayed_work deferred_register_work;
- 	spinlock_t changed_lock;
- 	bool changed;
-+	bool update_groups;
- 	bool initialized;
- 	bool removing;
- 	atomic_t use_cnt;
- 	struct power_supply_battery_info *battery_info;
-+	struct rw_semaphore extensions_sem; /* protects "extensions" */
-+	struct list_head extensions;
- #ifdef CONFIG_THERMAL
- 	struct thermal_zone_device *tzd;
- 	struct thermal_cooling_device *tcd;
-@@ -878,6 +904,13 @@ devm_power_supply_register(struct device *parent,
- extern void power_supply_unregister(struct power_supply *psy);
- extern int power_supply_powers(struct power_supply *psy, struct device *dev);
- 
-+extern int __must_check
-+power_supply_register_extension(struct power_supply *psy,
-+				const struct power_supply_ext *ext,
-+				void *data);
-+extern void power_supply_unregister_extension(struct power_supply *psy,
-+					      const struct power_supply_ext *ext);
-+
- #define to_power_supply(device) container_of(device, struct power_supply, dev)
- 
- extern void *power_supply_get_drvdata(struct power_supply *psy);
+1 writel_related(A, 0)
+2. x = 3
+3 writel_related(B, 1)
 
--- 
-2.47.1
+Hardware/memory model, require B=1 must be after A=0, but not necessary
+after x=3, that's means (2) x=3 may happen after 3.
 
+if use writel(), guarantee 1, 2, 3 as order.  Here have not DMA involved.
+So not any impact if (2) after (3).
+
+Typically, only below case have to use writel().
+2 (update DMA descritpor), 3 start DMA,
+
+Additional, writel() also can't guarantee register access is done!!!!
+
+writel() just means you send a write command to bus. Not guarantee to reach
+target module. typical case is
+
+writel(A, 0);
+udelay(1);
+writel(A, 1);
+
+The interval between A=1 and A=0 may less than 1us if timer have not use
+MMIO register. (arm system counter).
+
+In this driver, the only valuable benefit by using writel() instead of
+writel_relexed() is "short function name".
+
+>
+> > > > +	}
+> > > > +
+> > > > +	/* The typical conv clk is 4MHz, the output freq is 'rate / (div + 1)' */
+> > > > +	rate = clk_get_rate(tmu->clk);
+> > > > +	div = (rate / 4000000) - 1;
+> > > > +	if (div > FIELD_GET(DIV_MASK, DIV_MASK))
+> > > 			^
+> > > This misuse the FIELD_GET() API. Instead please add a define e.g. DIV_MAX.
+> >
+> > I don't think so, It avoid define another macro DIV_MAX, which may miss
+> > defined, the related marco should come from one source.
+> >
+> > For example:
+> >
+> > DIV_MASK is GENMASK(23, 16),  DIV_MAX is 256. But if hardware upgrade,
+> > DIV_MASK to GENMASK(24, 16), DIV_MAX is quite easy to forget update it and
+> > hard to find such mis-match when div value < 256.
+>
+> We not talking about "possible" other HW. For now it's just this one and
+> using FIELD_GET() this way is seems odd, at least to me.
+
+If you look implement of FIELD_GET()
+(typeof(_mask))(((_reg) & (_mask)) >> __bf_shf(_mask));, it will be
+reasonable.
+
+Hardware IP may update in future, bitwidth of field may expand.
+
+>
+> > > > +		return -EINVAL;
+> > > 			^
+> > > 		dev_err_probe()
+> > > > +
+> > > > +	/* Set divider value and enable divider */
+> > > > +	writel_relaxed(DIV_EN | FIELD_PREP(DIV_MASK, div), tmu->base + REF_DIV);
+> > > > +
+> > > > +	/* Set max power up delay: 'Tpud(ms) = 0xFF * 1000 / 4000000' */
+> > > > +	writel_relaxed(FIELD_PREP(PUDL_MASK, 100U), tmu->base + PUD_ST_CTRL);
+> > > 		^
+> > > You dont need to repeat the default value, so this line can be dropped.
+> > >
+> > > > +
+> > > > +	/*
+> > > > +	 * Set resolution mode
+> > > > +	 * 00b - Conversion time = 0.59325 ms
+> > > > +	 * 01b - Conversion time = 1.10525 ms
+> > > > +	 * 10b - Conversion time = 2.12925 ms
+> > > > +	 * 11b - Conversion time = 4.17725 ms
+> > > > +	 */
+> > > > +	writel_relaxed(FIELD_PREP(CTRL1_RES_MASK, 0x3), tmu->base + CTRL1_CLR);
+> > > > +	writel_relaxed(FIELD_PREP(CTRL1_RES_MASK, 0x1), tmu->base + CTRL1_SET);
+> > >
+> > > Same here, you repeat the module default after reset, so please drop it.
+> > >
+> > > > +	writel_relaxed(CTRL1_MEAS_MODE_MASK, tmu->base + CTRL1_CLR);
+> > > > +	writel_relaxed(FIELD_PREP(CTRL1_MEAS_MODE_MASK, CTRL1_MEAS_MODE_SINGLE),
+> > > > +		       tmu->base + CTRL1_SET);
+> > > > +
+> > > > +	clk_disable_unprepare(tmu->clk);
+> > >
+> > > Drop this, and
+> > >
+> > > > +	pm_runtime_set_suspended(dev);
+> > >
+> > > replace this with: pm_runtime_set_active();
+> >
+> > No big difference, if set_active, we need add Enable TMU here. I can
+> > change to set_active.
+>
+> You don't need to manually disable the clock, it would be done by the
+> runtime-pm.
+
+Yes, runtime-pm can disable clock, but it need align harware and run time
+state before enable runtime pm.
+
+There are two options
+1 disable all hardware resources and pm_runtime_set_suspended()
+2. enable all hardware resources and set_active()
+
+After algned, use runtime pm API to controller it.
+
+I choose option1, you prefer option 2.
+
+Frank
+>
+> Regards,
+>   Marco
+>
+>
+[...]
+> > > > +
+> > > > +MODULE_AUTHOR("Peng Fan <peng.fan@nxp.com>");
+> > > > +MODULE_DESCRIPTION("i.MX91 Thermal Monitor Unit driver");
+> > > > +MODULE_LICENSE("GPL");
+> > > >
+> > > > --
+> > > > 2.34.1
+> > > >
+> > > >
+> >
