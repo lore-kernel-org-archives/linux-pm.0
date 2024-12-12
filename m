@@ -1,294 +1,117 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f169.google.com (mail-pf1-f169.google.com [209.85.210.169])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0633E204F6C;
-	Thu, 12 Dec 2024 06:58:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23DFF1632D9;
+	Thu, 12 Dec 2024 07:04:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.169
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733986695; cv=none; b=XEO+XQ21YXU5UFeAIYZwLVvZuIKSxGXhGa8rVERfJ/X3oivJJ2DBfvEu4CiH6wGs0DZlCbnuhUnmxetQjQvEvqPLs/0AbdCuh66bPGfx1HziK8wzBwD/gT/TWh27aQDgMllo4D9+YKO8yRFvCnouu+Al30FM/EfZrcvhdUfs5dM=
+	t=1733987081; cv=none; b=cfOQuPisugi+GOZEVR0AB5CtQ1zVzj6hQ8BES8+nLRpoE9Tle9fhdKKU08tqfapdkSONF9d9Th7zeYDz3nkuTg3Zw8SehSsvj73V0nBp184LqbQelcR5CWFRj8zk6UPiTfj5lNG3V3v31md3260j2Vk0HUNBP4zBUsbMlPRQbbI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733986695; c=relaxed/simple;
-	bh=Fx0ZCLqWOzQljs/MtxJYJD8s2HfC7ohosDnZj3Qo6xs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=eQsjzv3kEijDfzjBOwsVHGVgLE6s/0mve+nBNkpN0+wvOxE1BglulMFu76KHq167mSLy5RhouC6cEjg7yhmD4cGbkeKc/q0YsJq3+bIjt2tvn44eyU3DaFtDCnhvhQSceBHT10iCiqW5BnX6JpIXwNfL6UgZgUao3+uk7APqP4Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=nY/NKtq/; arc=none smtp.client-ip=192.198.163.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1733987081; c=relaxed/simple;
+	bh=2clUMBF+zfM0MT3b4JiMSxRP50eR+oc99K9vxRX3gc0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=gKWRQ+jYNKWqumI1YfGglBw4xZgUtFC02WqwFLCsUGpgIs6C97Qiwt/sc78+JieVRuxEhzqrhIY14K7NrCD8feeA4FqBT0wT7tQeG7llAZCUt+0GPME+OeHcOs8ar18tpcnW7FUZaTdB+c17XnRXbgbe5ajswdbF+mvHxYfaw0o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gK4wPw2D; arc=none smtp.client-ip=209.85.210.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="nY/NKtq/"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1733986694; x=1765522694;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=Fx0ZCLqWOzQljs/MtxJYJD8s2HfC7ohosDnZj3Qo6xs=;
-  b=nY/NKtq/CT5CKLtOeiOuDqIQPS+iGR/vZsNmC+wRfdGlY0pDaKhGztK8
-   vJJiogQGIa7Mwssid+3Aa1+zjHKwUpIyKyE4NpwABzzime7vKk6v2AeLQ
-   5C3v4oXYof95FfEylMfrJfkgSHVv6h88/RG8PMUhI4bneg5y24Dmsd+jh
-   sGYdXyCLb0Rj4f+cGAF3G7GqAy1CBBRZ/rQilxjFp9G1nrPjbgld21U77
-   6CEvHoQBgy7faiIjiWXb+I5/yucFq2E95hiNJlHZ8HONSiXgkkLJWw3Gz
-   hZpi66z9jsFYnovX6URE6MKEUg4Q7vqJHMtreX/bSk/MP6pjYJENOPWpb
-   w==;
-X-CSE-ConnectionGUID: KiNAfjsXSkWAPCOSggv2qA==
-X-CSE-MsgGUID: sd7jvndOSHC3PHVmHfP/mA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11282"; a="38323894"
-X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; 
-   d="scan'208";a="38323894"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Dec 2024 22:58:13 -0800
-X-CSE-ConnectionGUID: Uj89yObIStaidYR3fAgnOg==
-X-CSE-MsgGUID: M5YEAJM3QNeVxBYS36b0AQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,227,1728975600"; 
-   d="scan'208";a="126961270"
-Received: from unknown (HELO desk) ([10.125.145.3])
-  by orviesa002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Dec 2024 22:58:04 -0800
-Date: Wed, 11 Dec 2024 22:58:03 -0800
-From: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org
-Cc: daniel.sneddon@linux.intel.com, tony.luck@intel.com,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-perf-users@vger.kernel.org,
-	Josh Poimboeuf <jpoimboe@kernel.org>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
-	"Liang, Kan" <kan.liang@linux.intel.com>,
-	Andrew Cooper <andrew.cooper3@citrix.com>,
-	Brice Goglin <brice.goglin@gmail.com>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Perry Yuan <Perry.Yuan@amd.com>,
-	Dapeng Mi <dapeng1.mi@linux.intel.com>
-Subject: [PATCH v5 8/9] x86/bugs: Declutter vulnerable CPU list
-Message-ID: <20241211-add-cpu-type-v5-8-2ae010f50370@linux.intel.com>
-X-Mailer: b4 0.14.1
-References: <20241211-add-cpu-type-v5-0-2ae010f50370@linux.intel.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gK4wPw2D"
+Received: by mail-pf1-f169.google.com with SMTP id d2e1a72fcca58-728e81257bfso220132b3a.2;
+        Wed, 11 Dec 2024 23:04:39 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1733987079; x=1734591879; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=SIv08M5NuYFMrbLnuplDgqYvTP/RY0BpL7xzh6gruXQ=;
+        b=gK4wPw2DFDiJQy4ZyQryEGZ/8tuvEf5a+/kCyTjjH5XmVYXOZXEThq2reW7JMdHRbs
+         dSGlgnwaXOIPjJs8x/Mfjsn0iKVrpHpMnayuDBfjr/uBtMvFy2BnD/0wTEVWGguUhiTL
+         GKBtFYnHKOPPxjsHPfXNd4sq9v4bzNh5TY4SSCyU9/rGtbUHZ6TdVzpSSfUBuRDOXmqn
+         Nn1jQE4aONWTlfde5CX8yePooTNiIIDGsTA8TnvaEably+yK6JM8jp8qUu1kYNSwQavZ
+         4TqQpgs27nRl4xZS92me1WNRkgh5pUEQMBN5CBZUEgcLvuOSYW4p8mF/6e92bzoBNdwT
+         C+wg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1733987079; x=1734591879;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=SIv08M5NuYFMrbLnuplDgqYvTP/RY0BpL7xzh6gruXQ=;
+        b=ZFnyL+v4TCPFp+74HWRZbVMMiZbodR94BrJRhoxV5JzWMELUA/CA0QLW8DcQpiOJbi
+         xxS+WuQDVRiGkM/cAO4iVIH/mhuBQBzzvXq9insft///ursW4/hNwrE6qMxcCg134Xzh
+         0wEid6Vn2ItzjDHfdn3cVe6R47fWujhqlBSKGtUyBopYfKZZ+zrEA/3PahAxFkYMFeL2
+         Ao2ywud3NtVtem4zlu3/ZSfhJSk44IARqVnIyPlCTnv549agLMyQwmw3qCTH0Wc1WWfn
+         whQKqb2r9KxhJl3DXcvzEO0YfGwGOCC7tWXFGfMpOW+W6V527uTmQ+9T4G/5vrnaCq5u
+         lzww==
+X-Forwarded-Encrypted: i=1; AJvYcCVlpCyHSyncuSKpqe41GgXihiSfPvgzR5Eec7mChW66nMpiAJJxG0C4FxtBzegNPxiwaMVMuA07i7Q=@vger.kernel.org, AJvYcCX0h3n7R8+0sJDm5yiN0Vts9IqU2tp21cJ2kBAaNPWtCSi0l9NBqBI0HjAQ/GRm0fu6ow9Lw5zJGPv2QbPB@vger.kernel.org, AJvYcCXDXSpByIB+y+kZ7xWaggdB5HLfmOqEaJ/2XBrSzAU/88GhyvWO4kz/MaC4F3HNpmMOWRVz9pP9l3AL@vger.kernel.org
+X-Gm-Message-State: AOJu0YzNVT4TNwdYn5YbZW0aYWwjvyhLe0mLQ33jxmZtkIgcm5PWDWD6
+	UfJxhqRRd74Ln+cj9y/D15l7hsDiHvIiCXyjx0UxWexKTHvoH1r8Xke4UUM7
+X-Gm-Gg: ASbGnctyLPElWGwAp2N/XkhaTbdxvggeibXIGU+P9ppPR2Z+hmIuPb11J8JAsyHQVTl
+	yLNadJMqYS9G9Ia6aTs2RWp5TUKkkGSCk4c9sBrjTo9IXNMty5SiUbuA2VVwkjZslegy01lead0
+	NaKCCy78lv+iaPCxIDDLqkEJ5127wXrSH9K87Ntt/Ld9+6Ld8j+G6rs6+WmawbM6dRdeyOvJ5sf
+	CK80xfbDMVPMNov51w+QPy+ss8vQDQqIphVb4CS1itNS30TGeiblRAlpclGYL1yRWtUt7bs
+X-Google-Smtp-Source: AGHT+IE2taDr2+F/QNnwkBgUaYbLlW++dErTzZng9ixbTcmDK5lHBmPiyyr/YT2Yg8/ifsjbQynqqA==
+X-Received: by 2002:a05:6a20:7347:b0:1e0:d32f:24e2 with SMTP id adf61e73a8af0-1e1cebdfe8bmr3622509637.38.1733987079385;
+        Wed, 11 Dec 2024 23:04:39 -0800 (PST)
+Received: from localhost.localdomain ([59.188.211.160])
+        by smtp.googlemail.com with ESMTPSA id d2e1a72fcca58-725ee10f928sm6519386b3a.32.2024.12.11.23.04.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 11 Dec 2024 23:04:38 -0800 (PST)
+From: Nick Chan <towinchenmi@gmail.com>
+To: Hector Martin <marcan@marcan.st>,
+	Sven Peter <sven@svenpeter.dev>,
+	Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Asahi Linux <asahi@lists.linux.dev>,
+	Linux ARM Kernel Architecture <linux-arm-kernel@lists.infradead.org>,
+	Linux power management <linux-pm@vger.kernel.org>,
+	Devicetree <devicetree@vger.kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>
+Cc: Nick Chan <towinchenmi@gmail.com>
+Subject: [PATCH v2 0/7] Apple A7-A11, T2 SoC cpufreq support
+Date: Thu, 12 Dec 2024 15:02:59 +0800
+Message-ID: <20241212070344.3858-1-towinchenmi@gmail.com>
+X-Mailer: git-send-email 2.47.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20241211-add-cpu-type-v5-0-2ae010f50370@linux.intel.com>
+Content-Transfer-Encoding: 8bit
 
-The affected processor table has a lot of repetition and redundant
-information that can be omitted for brevity. Like:
+This series add driver support for cpufreq Apple A7-A11, T2 SoCs.
+Device Tree nodes will be included in another series.
 
-  VULNBL_INTEL_STEPPINGS(INTEL_IVYBRIDGE,		X86_STEPPING_ANY,		SRBDS),
+Changes since v1:
+- transition_latency is in ns, APPLE_DVFS_TRANSITION_TIMEOUT in us.
+Multiply APPLE_DVFS_TRANSITION_TIMEOUT by 1000 before setting it as
+transition_latency.
 
-can easily be simplified to:
+v1: https://lore.kernel.org/asahi/20241211112244.18393-1-towinchenmi@gmail.com/T
 
-  VULNBL_INTEL(IVYBRIDGE,	SRBDS),
-
-Apply this to all the entries in the affected processor table.
-
-No functional change.
-
-Disassembly of cpu_vuln_blacklist:
-
-  objdump -j .init.data --disassemble=cpu_vuln_blacklist vmlinux
-
-doesn't show any difference before and after the change.
-
-Acked-by: Dave Hansen <dave.hansen@linux.intel.com>
-Signed-off-by: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
+Nick Chan
 ---
- arch/x86/kernel/cpu/common.c | 143 ++++++++++++++++++++++---------------------
- 1 file changed, 73 insertions(+), 70 deletions(-)
+Hector Martin (1):
+  cpufreq: apple-soc: Drop setting the PS2 field on M2+
 
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index a5c28975c608..6c45b8bed9fc 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -1126,7 +1126,7 @@ static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
- 	X86_MATCH_VENDOR_FAM_MODEL(vendor, family, model, whitelist)
- 
- #define VULNWL_INTEL(vfm, whitelist)		\
--	X86_MATCH_VFM(vfm, whitelist)
-+	X86_MATCH_VFM(INTEL_##vfm, whitelist)
- 
- #define VULNWL_AMD(family, whitelist)		\
- 	VULNWL(AMD, family, X86_MODEL_ANY, whitelist)
-@@ -1143,32 +1143,32 @@ static const __initconst struct x86_cpu_id cpu_vuln_whitelist[] = {
- 	VULNWL(VORTEX,	6, X86_MODEL_ANY,	NO_SPECULATION),
- 
- 	/* Intel Family 6 */
--	VULNWL_INTEL(INTEL_TIGERLAKE,		NO_MMIO),
--	VULNWL_INTEL(INTEL_TIGERLAKE_L,		NO_MMIO),
--	VULNWL_INTEL(INTEL_ALDERLAKE,		NO_MMIO),
--	VULNWL_INTEL(INTEL_ALDERLAKE_L,		NO_MMIO),
-+	VULNWL_INTEL(TIGERLAKE,			NO_MMIO),
-+	VULNWL_INTEL(TIGERLAKE_L,		NO_MMIO),
-+	VULNWL_INTEL(ALDERLAKE,			NO_MMIO),
-+	VULNWL_INTEL(ALDERLAKE_L,		NO_MMIO),
- 
--	VULNWL_INTEL(INTEL_ATOM_SALTWELL,	NO_SPECULATION | NO_ITLB_MULTIHIT),
--	VULNWL_INTEL(INTEL_ATOM_SALTWELL_TABLET, NO_SPECULATION | NO_ITLB_MULTIHIT),
--	VULNWL_INTEL(INTEL_ATOM_SALTWELL_MID,	NO_SPECULATION | NO_ITLB_MULTIHIT),
--	VULNWL_INTEL(INTEL_ATOM_BONNELL,	NO_SPECULATION | NO_ITLB_MULTIHIT),
--	VULNWL_INTEL(INTEL_ATOM_BONNELL_MID,	NO_SPECULATION | NO_ITLB_MULTIHIT),
-+	VULNWL_INTEL(ATOM_SALTWELL,		NO_SPECULATION | NO_ITLB_MULTIHIT),
-+	VULNWL_INTEL(ATOM_SALTWELL_TABLET,	NO_SPECULATION | NO_ITLB_MULTIHIT),
-+	VULNWL_INTEL(ATOM_SALTWELL_MID,		NO_SPECULATION | NO_ITLB_MULTIHIT),
-+	VULNWL_INTEL(ATOM_BONNELL,		NO_SPECULATION | NO_ITLB_MULTIHIT),
-+	VULNWL_INTEL(ATOM_BONNELL_MID,		NO_SPECULATION | NO_ITLB_MULTIHIT),
- 
--	VULNWL_INTEL(INTEL_ATOM_SILVERMONT,	NO_SSB | NO_L1TF | MSBDS_ONLY | NO_SWAPGS | NO_ITLB_MULTIHIT),
--	VULNWL_INTEL(INTEL_ATOM_SILVERMONT_D,	NO_SSB | NO_L1TF | MSBDS_ONLY | NO_SWAPGS | NO_ITLB_MULTIHIT),
--	VULNWL_INTEL(INTEL_ATOM_SILVERMONT_MID,	NO_SSB | NO_L1TF | MSBDS_ONLY | NO_SWAPGS | NO_ITLB_MULTIHIT),
--	VULNWL_INTEL(INTEL_ATOM_AIRMONT,	NO_SSB | NO_L1TF | MSBDS_ONLY | NO_SWAPGS | NO_ITLB_MULTIHIT),
--	VULNWL_INTEL(INTEL_XEON_PHI_KNL,	NO_SSB | NO_L1TF | MSBDS_ONLY | NO_SWAPGS | NO_ITLB_MULTIHIT),
--	VULNWL_INTEL(INTEL_XEON_PHI_KNM,	NO_SSB | NO_L1TF | MSBDS_ONLY | NO_SWAPGS | NO_ITLB_MULTIHIT),
-+	VULNWL_INTEL(ATOM_SILVERMONT,		NO_SSB | NO_L1TF | MSBDS_ONLY | NO_SWAPGS | NO_ITLB_MULTIHIT),
-+	VULNWL_INTEL(ATOM_SILVERMONT_D,		NO_SSB | NO_L1TF | MSBDS_ONLY | NO_SWAPGS | NO_ITLB_MULTIHIT),
-+	VULNWL_INTEL(ATOM_SILVERMONT_MID,	NO_SSB | NO_L1TF | MSBDS_ONLY | NO_SWAPGS | NO_ITLB_MULTIHIT),
-+	VULNWL_INTEL(ATOM_AIRMONT,		NO_SSB | NO_L1TF | MSBDS_ONLY | NO_SWAPGS | NO_ITLB_MULTIHIT),
-+	VULNWL_INTEL(XEON_PHI_KNL,		NO_SSB | NO_L1TF | MSBDS_ONLY | NO_SWAPGS | NO_ITLB_MULTIHIT),
-+	VULNWL_INTEL(XEON_PHI_KNM,		NO_SSB | NO_L1TF | MSBDS_ONLY | NO_SWAPGS | NO_ITLB_MULTIHIT),
- 
--	VULNWL_INTEL(INTEL_CORE_YONAH,		NO_SSB),
-+	VULNWL_INTEL(CORE_YONAH,		NO_SSB),
- 
--	VULNWL_INTEL(INTEL_ATOM_AIRMONT_MID,	NO_SSB | NO_L1TF | NO_SWAPGS | NO_ITLB_MULTIHIT | MSBDS_ONLY),
--	VULNWL_INTEL(INTEL_ATOM_AIRMONT_NP,	NO_SSB | NO_L1TF | NO_SWAPGS | NO_ITLB_MULTIHIT),
-+	VULNWL_INTEL(ATOM_AIRMONT_MID,		NO_SSB | NO_L1TF | NO_SWAPGS | NO_ITLB_MULTIHIT | MSBDS_ONLY),
-+	VULNWL_INTEL(ATOM_AIRMONT_NP,		NO_SSB | NO_L1TF | NO_SWAPGS | NO_ITLB_MULTIHIT),
- 
--	VULNWL_INTEL(INTEL_ATOM_GOLDMONT,	NO_MDS | NO_L1TF | NO_SWAPGS | NO_ITLB_MULTIHIT | NO_MMIO),
--	VULNWL_INTEL(INTEL_ATOM_GOLDMONT_D,	NO_MDS | NO_L1TF | NO_SWAPGS | NO_ITLB_MULTIHIT | NO_MMIO),
--	VULNWL_INTEL(INTEL_ATOM_GOLDMONT_PLUS,	NO_MDS | NO_L1TF | NO_SWAPGS | NO_ITLB_MULTIHIT | NO_MMIO | NO_EIBRS_PBRSB),
-+	VULNWL_INTEL(ATOM_GOLDMONT,		NO_MDS | NO_L1TF | NO_SWAPGS | NO_ITLB_MULTIHIT | NO_MMIO),
-+	VULNWL_INTEL(ATOM_GOLDMONT_D,		NO_MDS | NO_L1TF | NO_SWAPGS | NO_ITLB_MULTIHIT | NO_MMIO),
-+	VULNWL_INTEL(ATOM_GOLDMONT_PLUS,	NO_MDS | NO_L1TF | NO_SWAPGS | NO_ITLB_MULTIHIT | NO_MMIO | NO_EIBRS_PBRSB),
- 
- 	/*
- 	 * Technically, swapgs isn't serializing on AMD (despite it previously
-@@ -1178,9 +1178,9 @@ static const __initconst struct x86_cpu_id cpu_vuln_whitelist[] = {
- 	 * good enough for our purposes.
- 	 */
- 
--	VULNWL_INTEL(INTEL_ATOM_TREMONT,	NO_EIBRS_PBRSB),
--	VULNWL_INTEL(INTEL_ATOM_TREMONT_L,	NO_EIBRS_PBRSB),
--	VULNWL_INTEL(INTEL_ATOM_TREMONT_D,	NO_ITLB_MULTIHIT | NO_EIBRS_PBRSB),
-+	VULNWL_INTEL(ATOM_TREMONT,	NO_EIBRS_PBRSB),
-+	VULNWL_INTEL(ATOM_TREMONT_L,	NO_EIBRS_PBRSB),
-+	VULNWL_INTEL(ATOM_TREMONT_D,	NO_ITLB_MULTIHIT | NO_EIBRS_PBRSB),
- 
- 	/* AMD Family 0xf - 0x12 */
- 	VULNWL_AMD(0x0f,	NO_MELTDOWN | NO_SSB | NO_L1TF | NO_MDS | NO_SWAPGS | NO_ITLB_MULTIHIT | NO_MMIO | NO_BHI),
-@@ -1201,8 +1201,11 @@ static const __initconst struct x86_cpu_id cpu_vuln_whitelist[] = {
- #define VULNBL(vendor, family, model, blacklist)	\
- 	X86_MATCH_VENDOR_FAM_MODEL(vendor, family, model, blacklist)
- 
--#define VULNBL_INTEL_STEPPINGS(vfm, steppings, issues)		   \
--	X86_MATCH_VFM_STEPPINGS(vfm, steppings, issues)
-+#define VULNBL_INTEL(vfm, issues)			\
-+	X86_MATCH_VFM(INTEL_##vfm, issues)
-+
-+#define VULNBL_INTEL_STEPPINGS(vfm, steppings, issues)	\
-+	X86_MATCH_VFM_STEPPINGS(INTEL_##vfm, steppings, issues)
- 
- #define VULNBL_AMD(family, blacklist)		\
- 	VULNBL(AMD, family, X86_MODEL_ANY, blacklist)
-@@ -1227,49 +1230,49 @@ static const __initconst struct x86_cpu_id cpu_vuln_whitelist[] = {
- #define RFDS		BIT(7)
- 
- static const struct x86_cpu_id cpu_vuln_blacklist[] __initconst = {
--	VULNBL_INTEL_STEPPINGS(INTEL_IVYBRIDGE,		X86_STEPPING_ANY,		SRBDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_HASWELL,		X86_STEPPING_ANY,		SRBDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_HASWELL_L,		X86_STEPPING_ANY,		SRBDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_HASWELL_G,		X86_STEPPING_ANY,		SRBDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_HASWELL_X,		X86_STEPPING_ANY,		MMIO),
--	VULNBL_INTEL_STEPPINGS(INTEL_BROADWELL_D,	X86_STEPPING_ANY,		MMIO),
--	VULNBL_INTEL_STEPPINGS(INTEL_BROADWELL_G,	X86_STEPPING_ANY,		SRBDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_BROADWELL_X,	X86_STEPPING_ANY,		MMIO),
--	VULNBL_INTEL_STEPPINGS(INTEL_BROADWELL,		X86_STEPPING_ANY,		SRBDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_SKYLAKE_X,		X86_STEPPING_ANY,		MMIO | RETBLEED | GDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_SKYLAKE_L,		X86_STEPPING_ANY,		MMIO | RETBLEED | GDS | SRBDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_SKYLAKE,		X86_STEPPING_ANY,		MMIO | RETBLEED | GDS | SRBDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_KABYLAKE_L,	X86_STEPPING_ANY,		MMIO | RETBLEED | GDS | SRBDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_KABYLAKE,		X86_STEPPING_ANY,		MMIO | RETBLEED | GDS | SRBDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_CANNONLAKE_L,	X86_STEPPING_ANY,		RETBLEED),
--	VULNBL_INTEL_STEPPINGS(INTEL_ICELAKE_L,		X86_STEPPING_ANY,		MMIO | MMIO_SBDS | RETBLEED | GDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_ICELAKE_D,		X86_STEPPING_ANY,		MMIO | GDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_ICELAKE_X,		X86_STEPPING_ANY,		MMIO | GDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_COMETLAKE,		X86_STEPPING_ANY,		MMIO | MMIO_SBDS | RETBLEED | GDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_COMETLAKE_L,	X86_STEPPINGS(0x0, 0x0),	MMIO | RETBLEED),
--	VULNBL_INTEL_STEPPINGS(INTEL_COMETLAKE_L,	X86_STEPPING_ANY,		MMIO | MMIO_SBDS | RETBLEED | GDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_TIGERLAKE_L,	X86_STEPPING_ANY,		GDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_TIGERLAKE,		X86_STEPPING_ANY,		GDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_LAKEFIELD,		X86_STEPPING_ANY,		MMIO | MMIO_SBDS | RETBLEED),
--	VULNBL_INTEL_STEPPINGS(INTEL_ROCKETLAKE,	X86_STEPPING_ANY,		MMIO | RETBLEED | GDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_ALDERLAKE,		X86_STEPPING_ANY,		RFDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_ALDERLAKE_L,	X86_STEPPING_ANY,		RFDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_RAPTORLAKE,	X86_STEPPING_ANY,		RFDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_RAPTORLAKE_P,	X86_STEPPING_ANY,		RFDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_RAPTORLAKE_S,	X86_STEPPING_ANY,		RFDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_ATOM_GRACEMONT,	X86_STEPPING_ANY,		RFDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_ATOM_TREMONT,	X86_STEPPING_ANY,		MMIO | MMIO_SBDS | RFDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_ATOM_TREMONT_D,	X86_STEPPING_ANY,		MMIO | RFDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_ATOM_TREMONT_L,	X86_STEPPING_ANY,		MMIO | MMIO_SBDS | RFDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_ATOM_GOLDMONT,	X86_STEPPING_ANY,		RFDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_ATOM_GOLDMONT_D,	X86_STEPPING_ANY,		RFDS),
--	VULNBL_INTEL_STEPPINGS(INTEL_ATOM_GOLDMONT_PLUS, X86_STEPPING_ANY,		RFDS),
--
--	VULNBL_AMD(0x15, RETBLEED),
--	VULNBL_AMD(0x16, RETBLEED),
--	VULNBL_AMD(0x17, RETBLEED | SMT_RSB | SRSO),
--	VULNBL_HYGON(0x18, RETBLEED | SMT_RSB | SRSO),
--	VULNBL_AMD(0x19, SRSO),
-+	VULNBL_INTEL(		IVYBRIDGE,		SRBDS),
-+	VULNBL_INTEL(		HASWELL,		SRBDS),
-+	VULNBL_INTEL(		HASWELL_L,		SRBDS),
-+	VULNBL_INTEL(		HASWELL_G,		SRBDS),
-+	VULNBL_INTEL(		HASWELL_X,		MMIO),
-+	VULNBL_INTEL(		BROADWELL_D,		MMIO),
-+	VULNBL_INTEL(		BROADWELL_G,		SRBDS),
-+	VULNBL_INTEL(		BROADWELL_X,		MMIO),
-+	VULNBL_INTEL(		BROADWELL,		SRBDS),
-+	VULNBL_INTEL(		SKYLAKE_X,		MMIO | RETBLEED | GDS),
-+	VULNBL_INTEL(		SKYLAKE_L,		MMIO | RETBLEED | GDS | SRBDS),
-+	VULNBL_INTEL(		SKYLAKE,		MMIO | RETBLEED | GDS | SRBDS),
-+	VULNBL_INTEL(		KABYLAKE_L,		MMIO | RETBLEED | GDS | SRBDS),
-+	VULNBL_INTEL(		KABYLAKE,		MMIO | RETBLEED | GDS | SRBDS),
-+	VULNBL_INTEL(		CANNONLAKE_L,		RETBLEED),
-+	VULNBL_INTEL(		ICELAKE_L,		MMIO | MMIO_SBDS | RETBLEED | GDS),
-+	VULNBL_INTEL(		ICELAKE_D,		MMIO | GDS),
-+	VULNBL_INTEL(		ICELAKE_X,		MMIO | GDS),
-+	VULNBL_INTEL(		COMETLAKE,		MMIO | MMIO_SBDS | RETBLEED | GDS),
-+	VULNBL_INTEL_STEPPINGS(	COMETLAKE_L,	X86_STEPPINGS(0x0, 0x0), MMIO | RETBLEED),
-+	VULNBL_INTEL(		COMETLAKE_L,		MMIO | MMIO_SBDS | RETBLEED | GDS),
-+	VULNBL_INTEL(		TIGERLAKE_L,		GDS),
-+	VULNBL_INTEL(		TIGERLAKE,		GDS),
-+	VULNBL_INTEL(		LAKEFIELD,		MMIO | MMIO_SBDS | RETBLEED),
-+	VULNBL_INTEL(		ROCKETLAKE,		MMIO | RETBLEED | GDS),
-+	VULNBL_INTEL(		ALDERLAKE,		RFDS),
-+	VULNBL_INTEL(		ALDERLAKE_L,		RFDS),
-+	VULNBL_INTEL(		RAPTORLAKE,		RFDS),
-+	VULNBL_INTEL(		RAPTORLAKE_P,		RFDS),
-+	VULNBL_INTEL(		RAPTORLAKE_S,		RFDS),
-+	VULNBL_INTEL(		ATOM_GRACEMONT,		RFDS),
-+	VULNBL_INTEL(		ATOM_TREMONT,		MMIO | MMIO_SBDS | RFDS),
-+	VULNBL_INTEL(		ATOM_TREMONT_D,		MMIO | RFDS),
-+	VULNBL_INTEL(		ATOM_TREMONT_L,		MMIO | MMIO_SBDS | RFDS),
-+	VULNBL_INTEL(		ATOM_GOLDMONT,		RFDS),
-+	VULNBL_INTEL(		ATOM_GOLDMONT_D,	RFDS),
-+	VULNBL_INTEL(		ATOM_GOLDMONT_PLUS,	RFDS),
-+
-+	VULNBL_AMD(		0x15,			RETBLEED),
-+	VULNBL_AMD(		0x16,			RETBLEED),
-+	VULNBL_AMD(		0x17,			RETBLEED | SMT_RSB | SRSO),
-+	VULNBL_HYGON(		0x18,			RETBLEED | SMT_RSB | SRSO),
-+	VULNBL_AMD(		0x19,			SRSO),
- 	{}
- };
- 
+Nick Chan (6):
+  dt-bindings: cpufreq: apple,cluster-cpufreq: Add A7-A11, T2
+    compatibles
+  cpufreq: apple-soc: Allow per-SoC configuration of APPLE_DVFS_CMD_PS1
+  cpufreq: apple-soc: Use 32-bit read for status register
+  cpufreq: apple-soc: Increase cluster switch timeout to 400us
+  cpufreq: apple-soc: Set fallback transition latency to
+    APPLE_DVFS_TRANSITION_TIMEOUT
+  cpufreq: apple-soc: Add Apple A7-A8X SoC cpufreq support
 
+ .../cpufreq/apple,cluster-cpufreq.yaml        | 10 +++-
+ drivers/cpufreq/apple-soc-cpufreq.c           | 56 +++++++++++++++----
+ 2 files changed, 54 insertions(+), 12 deletions(-)
+
+
+base-commit: fac04efc5c793dccbd07e2d59af9f90b7fc0dca4
 -- 
-2.34.1
-
+2.47.1
 
