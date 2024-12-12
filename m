@@ -1,94 +1,148 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6838D158DB1;
-	Thu, 12 Dec 2024 12:21:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CAAD20E339;
+	Thu, 12 Dec 2024 12:25:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.13
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734006115; cv=none; b=c7cC9oVcNUgAZWPBYmLC1VyvQ5NBU2dfH8t8GNXAqMp1cCbaM9RRCVBBb1YJEZ9uITOoKce9w6xqD3Dp5jVTIaSwl8CyskTdyunQ2IoiiqgRcUYW8/z+dzjqRciVQIp2lhH54qS311PAEyn1xrFGkgw4+VmmXv+uy5rMrQTjphM=
+	t=1734006326; cv=none; b=HcfncyttHt5IzdL3rU9evtRBrVN5iF21cZjrAmP+ML0+T6i1KtPLS97btLiHbiROo/amJhsP+kDQ2G6FuZPkV2Xi2b1nA2RvOLSaAGT1fjPWr05y6S2RtADsTWFLPdvNkoBhjck95tMk167mcAmSl5PTIdiE8ON+JN7h8E0VhQU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734006115; c=relaxed/simple;
-	bh=kWUPjvQaoxNBzOTT4VbNlf0Zq+E3gREB48uYjM0Jcyc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ldIfz69cO77JHRedD/JRv8KjRnVJKgWRrmYlKeNXun4uM30utbaGLac24grabrt9yQ6WNVB/ayhw20xyEUfabKnWZvw2TJ/gbZnXRtEJHlm+wz8uVbYJ9DsQFrVpr6dT2Hmmx/vdZS7586R/JPWP6IBoiMd4HKu6ZuaHYVoIexw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=X08qOiSZ; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1734006326; c=relaxed/simple;
+	bh=TX2+QvPqDpO+jay8TIwgEnTtFZtdEhXqRgMKYofMheY=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=mLbvWIJV4zcLzvc/XBgyN0gDwG80VFuWu5ror35UjSLjGIhrhZGCgOA/RWbwOgr25AvcB3rk/9xs7zFZlxuqQmqXo1hnrgYzrfVF3chI5i563dRCzyUFbDZsw+nAj+3LFFYG/XnbGVDtMNvoyZc0zB+DJT+PcLHBBlrtyPhS+3o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=AJXSxxVY; arc=none smtp.client-ip=192.198.163.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="X08qOiSZ"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
- id 9bd38cac647772b5; Thu, 12 Dec 2024 13:21:51 +0100
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id BBC377F5D85;
-	Thu, 12 Dec 2024 13:21:50 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1734006111;
-	bh=kWUPjvQaoxNBzOTT4VbNlf0Zq+E3gREB48uYjM0Jcyc=;
-	h=From:Subject:Date;
-	b=X08qOiSZDhFsu40YznaIwmRogZC0ucTkN/P6t6t7Oni4/pxdDDc6cvKFulHy/qPED
-	 6FNFLl2A9hywmOBg5RyN4qSSA1maGKhSCdB/LoiYVaEhNW2tXx2EfupwCFJypliYe6
-	 3ypuD9fMQ5dr97faASrG95dzZEj1e6foEMTRoGRGlB7AXIJUcJrg2g4SunoR2ggsda
-	 PEjHm+c7/mkD3JwjjAqCV3+liaoQ7R60dgG0iDwK0T0APd3+UtdS8dmEr6Cvg5rNF1
-	 DbTwbUnSw7iiF5Ju8ayK6U2peHwGvRebBjwUq6HG4QDSZqyluTFTtKCVkJdgW4dL5Z
-	 UROxHiBKNw6cw==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
- Christoph Hellwig <hch@lst.de>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, kbusch@kernel.org, axboe@kernel.dk,
- sagi@grimberg.me, linux-nvme@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
- andersson@kernel.org, konradybcio@kernel.org,
- Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>,
- linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>
-Subject:
- Re: [PATCH] nvme-pci: Shutdown the device if D3Cold is allowed by the user
-Date: Thu, 12 Dec 2024 13:21:50 +0100
-Message-ID: <13662231.uLZWGnKmhe@rjwysocki.net>
-In-Reply-To: <20241212055920.GB4825@lst.de>
-References:
- <20241205232900.GA3072557@bhelgaas>
- <20241209143821.m4dahsaqeydluyf3@thinkpad> <20241212055920.GB4825@lst.de>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="AJXSxxVY"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1734006324; x=1765542324;
+  h=date:from:to:cc:subject:message-id;
+  bh=TX2+QvPqDpO+jay8TIwgEnTtFZtdEhXqRgMKYofMheY=;
+  b=AJXSxxVYUAMg62wNhtgrqW2smzgTGB+f6vF///IaFhcuWtlJ8ZnkXhK3
+   NlrrBet0lPwaZRlMrZRrCPFDzq6/llm7uWku8hZ5DdZBxCcrmqq92/QnX
+   +KaW/1jDWyB7uGiZkaIR29CQJY2ag6152/v1WPxhM/ZFcH/2StBbkLR/m
+   YZVBD8e68lXIF8WrT05W2fSsUONipmFpvt+EjbXDy8J398kV4ifey7w6X
+   pUyFAw7nhWntSZD8YouLvH2PaIKJIwvS+mzumyVzAt1LmO2w9yaU1K7hF
+   C6mBy+wYoOVr/s8VeBX69qzd8KH6OpHlWmr7JE7R2YiJG3CL6F2Nw/+yH
+   g==;
+X-CSE-ConnectionGUID: amaiQve6QvCBYIveXpZ1hw==
+X-CSE-MsgGUID: +62wPAt1QDmyz0rGC8GaKQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11284"; a="37264008"
+X-IronPort-AV: E=Sophos;i="6.12,228,1728975600"; 
+   d="scan'208";a="37264008"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Dec 2024 04:25:24 -0800
+X-CSE-ConnectionGUID: wmVoHCABR2y1sr1rsbfd6w==
+X-CSE-MsgGUID: xd9AxA+wSde1HzVzhGctxw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; 
+   d="scan'208";a="97007914"
+Received: from lkp-server01.sh.intel.com (HELO 82a3f569d0cb) ([10.239.97.150])
+  by orviesa008.jf.intel.com with ESMTP; 12 Dec 2024 04:25:23 -0800
+Received: from kbuild by 82a3f569d0cb with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1tLiFs-0007pD-1G;
+	Thu, 12 Dec 2024 12:25:20 +0000
+Date: Thu, 12 Dec 2024 20:25:15 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, devel@acpica.org,
+ linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ 462078d3965b3550c1b4f7d01f0f80e142b55550
+Message-ID: <202412122009.Oh3E0ywX-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefuddrkeehgdefkecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeduhedprhgtphhtthhopehmrghnihhvrghnnhgrnhdrshgrughhrghsihhvrghmsehlihhnrghrohdrohhrghdprhgtphhtthhopehhtghhsehlshhtrdguvgdprhgtphhtthhopehhvghlghgrrghssehkvghrnhgvlhdrohhrghdprhgtphhtthhopehksghushgthheskhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprgigsghovgeskhgvrhhnvghlrdgukhdprhgtphhtthhopehsrghgihesghhrihhmsggvrhhgrdhmvgdprhgtphh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=15 Fuz1=15 Fuz2=15
 
-On Thursday, December 12, 2024 6:59:20 AM CET Christoph Hellwig wrote:
-> On Mon, Dec 09, 2024 at 08:08:21PM +0530, Manivannan Sadhasivam wrote:
-> > > 
-> > > The istory here is the the NVMe internal power states are significantly
-> > > better for the SSDs.  It avoid shutting down the SSD frequently, which
-> > > creates a lot of extra erase cycles and reduces life time.  It also
-> > > prevents the SSD from performing maintainance operations while the host
-> > > system is idle, which is the perfect time for them.  But the idea of
-> > > putting all periphals into D3 is gaining a lot of ground because it
-> > > makes the platform vendors life a lot simpler at the cost of others.
-> > 
-> > No, I disagree with the last comment. When the system goes to low power mode
-> > (like S2R/hibernate), it *does* makes a lot of sense to put the devices into
-> > D3Cold to save power.
-> 
-> Yes.  That's what the pm_suspend_via_firmware call in nvme_suspend is
-> supposed to catch.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: 462078d3965b3550c1b4f7d01f0f80e142b55550  Merge branch 'experimental/intel_pstate-testing' into bleeding-edge
 
-pm_suspend_via_firmware() is to distinguish different flavors of system
-suspend.
+elapsed time: 1465m
 
-For runtime-suspend, there are different callbacks, but it doesn't look
-like they are used by NVMe.  At least nvme_dev_pm_ops doesn't set them.
+configs tested: 70
+configs skipped: 0
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+tested configs:
+alpha                            allnoconfig    gcc-14.2.0
+arc                              allnoconfig    gcc-13.2.0
+arc                  randconfig-001-20241212    gcc-13.2.0
+arc                  randconfig-002-20241212    gcc-13.2.0
+arm                              allnoconfig    clang-17
+arm                  randconfig-001-20241212    gcc-14.2.0
+arm                  randconfig-002-20241212    clang-20
+arm                  randconfig-003-20241212    clang-19
+arm                  randconfig-004-20241212    clang-20
+arm64                            allnoconfig    gcc-14.2.0
+arm64                randconfig-002-20241212    clang-15
+csky                             allnoconfig    gcc-14.2.0
+csky                 randconfig-001-20241212    gcc-14.2.0
+csky                 randconfig-002-20241212    gcc-14.2.0
+hexagon              randconfig-001-20241212    clang-14
+hexagon              randconfig-002-20241212    clang-16
+i386       buildonly-randconfig-001-20241212    clang-19
+i386       buildonly-randconfig-002-20241212    clang-19
+i386       buildonly-randconfig-003-20241212    clang-19
+i386       buildonly-randconfig-004-20241212    clang-19
+i386       buildonly-randconfig-005-20241212    clang-19
+i386       buildonly-randconfig-006-20241212    gcc-12
+loongarch            randconfig-001-20241212    gcc-14.2.0
+loongarch            randconfig-002-20241212    gcc-14.2.0
+m68k                            allmodconfig    gcc-14.2.0
+m68k                            allyesconfig    gcc-14.2.0
+nios2                randconfig-001-20241212    gcc-14.2.0
+nios2                randconfig-002-20241212    gcc-14.2.0
+openrisc                         allnoconfig    gcc-14.2.0
+openrisc                        allyesconfig    gcc-14.2.0
+parisc                          allmodconfig    gcc-14.2.0
+parisc                           allnoconfig    gcc-14.2.0
+parisc                          allyesconfig    gcc-14.2.0
+parisc               randconfig-001-20241212    gcc-14.2.0
+parisc               randconfig-002-20241212    gcc-14.2.0
+powerpc                          allnoconfig    gcc-14.2.0
+powerpc              randconfig-001-20241212    gcc-14.2.0
+powerpc              randconfig-002-20241212    clang-20
+powerpc              randconfig-003-20241212    clang-15
+powerpc64            randconfig-001-20241212    clang-20
+powerpc64            randconfig-002-20241212    gcc-14.2.0
+powerpc64            randconfig-003-20241212    gcc-14.2.0
+riscv                            allnoconfig    gcc-14.2.0
+riscv                randconfig-001-20241212    clang-17
+riscv                randconfig-002-20241212    clang-20
+s390                            allmodconfig    clang-19
+s390                             allnoconfig    clang-20
+s390                            allyesconfig    gcc-14.2.0
+s390                 randconfig-001-20241212    clang-18
+s390                 randconfig-002-20241212    clang-20
+sh                              allmodconfig    gcc-14.2.0
+sh                              allyesconfig    gcc-14.2.0
+sh                   randconfig-001-20241212    gcc-14.2.0
+sh                   randconfig-002-20241212    gcc-14.2.0
+sparc                           allmodconfig    gcc-14.2.0
+sparc                randconfig-001-20241212    gcc-14.2.0
+sparc                randconfig-002-20241212    gcc-14.2.0
+sparc64              randconfig-001-20241212    gcc-14.2.0
+sparc64              randconfig-002-20241212    gcc-14.2.0
+um                               allnoconfig    clang-18
+um                   randconfig-001-20241212    gcc-12
+um                   randconfig-002-20241212    clang-20
+x86_64     buildonly-randconfig-001-20241212    clang-19
+x86_64     buildonly-randconfig-002-20241212    gcc-12
+x86_64     buildonly-randconfig-003-20241212    clang-19
+x86_64     buildonly-randconfig-004-20241212    clang-19
+x86_64     buildonly-randconfig-005-20241212    gcc-11
+x86_64     buildonly-randconfig-006-20241212    clang-19
+xtensa               randconfig-001-20241212    gcc-14.2.0
+xtensa               randconfig-002-20241212    gcc-14.2.0
 
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
