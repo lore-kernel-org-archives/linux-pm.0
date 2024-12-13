@@ -1,129 +1,112 @@
-Received: from smtp.smtpout.orange.fr (smtp-19.smtpout.orange.fr [80.12.242.19])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6026D13EFE3;
-	Fri, 13 Dec 2024 19:02:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.12.242.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 805E41AAC9;
+	Fri, 13 Dec 2024 19:32:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734116535; cv=none; b=S7wVyLwpA4oohe42FHGoMG3X72ipyfyXm9UuRekk0G21UDxoqMxgwi+Y8X3bgeC77GEyZ/0evUC6spJuuboLIzQdeD9VA9pb1d+lInR21w1ZD8Ceg1j02jZJaKpSRrSm6MS2utJpr9jxGfLnPz7nx+ubahaLtW0/lRDNYbmrTow=
+	t=1734118361; cv=none; b=gJbNnwRJ6NnUwHR+GjP+g3XWuIDZY6HGG0KriF1q2TnN7nXiDcnZnPnvU62jC/+2HnaWDw3lnK5FqkS/AvwcyGkTQ78lPIN58/VZ4phVLR48zIC7bJQHzLlKNEhk/oojlygFExf+Rhca7vPHcUSlUDPuNZP6OJYqT6eeIr8vsRU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734116535; c=relaxed/simple;
-	bh=lLhbmt5vXh5RoFcmVposeOIz63KPHh6DSFcAlP00RBY=;
-	h=Message-ID:Date:MIME-Version:Subject:References:From:To:Cc:
-	 In-Reply-To:Content-Type; b=DfvcsoHeKLV5TY6TIms9ZhVVOGs/lXhN73ajcTp5kCfz/uNWVyNE8Fl22pZ6KiTH0/1Z2fBXPkIkMLobBd4HvpJXnBuTuH/FNBd6sMZ/B+wL2TAjIBggLvNvbu3Lx+2TWwV8I8LLOTDGCFNwvQ/r0FN+YFjs56Aq/R3ZBgDiypc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr; spf=pass smtp.mailfrom=wanadoo.fr; dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b=plfdKrd5; arc=none smtp.client-ip=80.12.242.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wanadoo.fr
+	s=arc-20240116; t=1734118361; c=relaxed/simple;
+	bh=zBrEFzRF+ONq5p8sseXfBiRUhAhzsiBvv6Fdk5gxorU=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=GLQcuN+5oWiJ2DtJMOfsuDhRC/KYoJbvIrmQkvKHiBF3FpaykZVpitj+xGDBNOpv/1qrC02+rlyp9CuvhOL39rbF4h3ziI5pUmNwc5kS/gJLpJxP6VAy7aQh8IC03t/yKEwl9X8n/QmtSqHQ1E1WtfpB+XD/8/i12y+CBtlRBb8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=T37gwhN1; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b="plfdKrd5"
-Received: from [192.168.1.37] ([90.11.132.44])
-	by smtp.orange.fr with ESMTPA
-	id MAvLtTguSjBR6MAvLtk7X6; Fri, 13 Dec 2024 20:02:06 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
-	s=t20230301; t=1734116526;
-	bh=ta5vayNAQT1oijBjzQ9yIRe6BsxfdXYh4XTwMVpwURI=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To;
-	b=plfdKrd5v5EFz6BgXrzGP47+tZ7bUz6SkRfCI67s5XdiAH9+5Chh3rW5d21wCMYQJ
-	 N7wD2VLGmmDqZ7VkVIs4WQxVupupG/UOERTZJ8Z5iG8G7VTEO0uSbN1OO8x5g2rONJ
-	 SgcfAv+d00uHKX0xZOIMbWIo7FBhraOjZOxFAXwR+b3Id3CnQetXxngrFK5WmPngwe
-	 6pHb0X7/G4CtHNMSs/55Z4qGu/8IPe3SaBESwpLwyhRiFQQPBqhuux22jZ3YwFoy7x
-	 gB5q6MecbU3IDgvkpGl5+iPPzXVxJNx1CQeWfSzNUMQCrE3dKhYsf9DgCT0jREZ94u
-	 L8NuUC84TZUVg==
-X-ME-Helo: [192.168.1.37]
-X-ME-Auth: bWFyaW9uLmphaWxsZXRAd2FuYWRvby5mcg==
-X-ME-Date: Fri, 13 Dec 2024 20:02:06 +0100
-X-ME-IP: 90.11.132.44
-Message-ID: <f7f8f087-f3bb-4dbc-b95d-6a6edd6bf64c@wanadoo.fr>
-Date: Fri, 13 Dec 2024 20:02:02 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="T37gwhN1"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 44B6CC4CED4;
+	Fri, 13 Dec 2024 19:32:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1734118361;
+	bh=zBrEFzRF+ONq5p8sseXfBiRUhAhzsiBvv6Fdk5gxorU=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=T37gwhN1bWNQaHq3HZZN5AqU2jesP8K7thL5w1pDTl7OPKsxG84SwhfBmIawdUvdh
+	 JD5QXvCINvDMfsV3YxwouKi74wAOnTZGy3akih433lrG+XrX1aodKdK7rGYg65IVN0
+	 XGBJnXBj+0FuOrYZwm1T+1TEIxUIgjDTYTOsHqc7KxIZKo5Q3J9ZhVqPZZU9lZCcOn
+	 8xl0Tv54Y7Q3Tn6KOnabw5mVfAIJxZ0hBJQ/K3lxhROeIdx84aOHeUbjknQvmOkWKF
+	 l+vUjdKBY6iVcxjVv0chXxzExu9gqAx4mBSlkEqrcYvnSc3mOIOiP5v+ZlaOn/LRAN
+	 QLndXZ9xmz8rg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3481FE77180;
+	Fri, 13 Dec 2024 19:32:41 +0000 (UTC)
+From: Dimitri Fedrau via B4 Relay <devnull+dimitri.fedrau.liebherr.com@kernel.org>
+Date: Fri, 13 Dec 2024 20:32:33 +0100
+Subject: [PATCH v2 1/2] dt-bindings: power: supply: gpio-charger: add
+ support for default charge current limit
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v9 3/7] thermal/drivers/tsens: Add TSENS enable and
- calibration support for V2
-References: <20241125050728.3699241-1-quic_mmanikan@quicinc.com>
- <20241125050728.3699241-4-quic_mmanikan@quicinc.com>
-Content-Language: en-US, fr-FR
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
-Cc: quic_srichara@quicinc.com, quic_varada@quicinc.com,
- srinivas.kandagatla@linaro.org, robh@kernel.org, krzk+dt@kernel.org,
- conor+dt@kernel.org, amitk@kernel.org, thara.gopinath@gmail.com,
- rafael@kernel.org, daniel.lezcano@linaro.org, rui.zhang@intel.com,
- lukasz.luba@arm.com, andersson@kernel.org, konradybcio@kernel.org,
- linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-In-Reply-To: <20241125050728.3699241-4-quic_mmanikan@quicinc.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20241213-default-charge-current-limit-v2-1-45886fce905c@liebherr.com>
+References: <20241213-default-charge-current-limit-v2-0-45886fce905c@liebherr.com>
+In-Reply-To: <20241213-default-charge-current-limit-v2-0-45886fce905c@liebherr.com>
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, Dimitri Fedrau <dimitri.fedrau@liebherr.com>, 
+ Dimitri Fedrau <dima.fedrau@gmail.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1734118360; l=1819;
+ i=dimitri.fedrau@liebherr.com; s=20241202; h=from:subject:message-id;
+ bh=xPHOkmBcmrFBN+We7GCFKkiwe9/M3dsKAbtmh/lwHFg=;
+ b=a+kt/CXCxO2G8iYjWRUeIlxyp5qEnMyFfbg1FB9SJkhRxCdfad4zpt/3dNHTWpXhvm8ml5QsG
+ srVq9UZCk+BAodJ7SixLke3s+JwrIS3GxI1XGDBwLDfqROTbeIQOdqx
+X-Developer-Key: i=dimitri.fedrau@liebherr.com; a=ed25519;
+ pk=rT653x09JSQvotxIqQl4/XiI4AOiBZrdOGvxDUbb5m8=
+X-Endpoint-Received: by B4 Relay for dimitri.fedrau@liebherr.com/20241202
+ with auth_id=290
+X-Original-From: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
+Reply-To: dimitri.fedrau@liebherr.com
 
-Le 25/11/2024 à 06:07, Manikanta Mylavarapu a écrit :
-> From: Praveenkumar I <quic_ipkumar-jfJNa2p1gH1BDgjK7y7TUQ@public.gmane.org>
-> 
-> SoCs without RPM need to enable sensors and calibrate them from the kernel.
-> The IPQ5332 and IPQ5424 use the tsens v2.3.3 IP and do not have RPM.
-> Therefore, add a new calibration function for V2, as the tsens.c calib
-> function only supports V1. Also add new feature_config, ops and data for
-> IPQ5332, IPQ5424.
-> 
-> Although the TSENS IP supports 16 sensors, not all are used. The hw_id
-> is used to enable the relevant sensors.
+From: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
 
-...
+With DT properties charge-current-limit-gpios and
+charge-current-limit-mapping one can define charge current limits in uA
+using up to 32 GPIOs. Add property charge-current-limit-default-microamp
+which selects a default charge current limit that must be listed in
+charge-current-limit-mapping.
 
-> diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
-> index 0cb7301eca6e..836155fa9ab2 100644
-> --- a/drivers/thermal/qcom/tsens-v2.c
-> +++ b/drivers/thermal/qcom/tsens-v2.c
-> @@ -4,13 +4,32 @@
->    * Copyright (c) 2018, Linaro Limited
->    */
->   
-> +#include <linux/bitfield.h>
->   #include <linux/bitops.h>
->   #include <linux/regmap.h>
-> +#include <linux/nvmem-consumer.h>
+Signed-off-by: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
+---
+ Documentation/devicetree/bindings/power/supply/gpio-charger.yaml | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-If moved one line above, alphabetical order would be kept.
+diff --git a/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml b/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
+index 89f8e2bcb2d7836c6a4308aff51721bd83fa3ba1..25826bfc289c1c00c338fd0cee2ae6932529cfc3 100644
+--- a/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
++++ b/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
+@@ -58,6 +58,10 @@ properties:
+             charge-current-limit-gpios property. Bit 1 second to last
+             GPIO and so on.
+ 
++  charge-current-limit-default-microamp:
++    description: Default charge current limit. Must be listed in
++      charge-current-limit-mapping.
++
+ required:
+   - compatible
+ 
+@@ -72,6 +76,7 @@ anyOf:
+ dependencies:
+   charge-current-limit-gpios: [ charge-current-limit-mapping ]
+   charge-current-limit-mapping: [ charge-current-limit-gpios ]
++  charge-current-limit-default-microamp: [charge-current-limit-mapping]
+ 
+ additionalProperties: false
+ 
+@@ -91,4 +96,5 @@ examples:
+       charge-current-limit-mapping = <2500000 0x00>, // 2.5 A => both GPIOs low
+                                      <700000 0x01>, // 700 mA => GPIO A.12 high
+                                      <0 0x02>; // 0 mA => GPIO A.11 high
++      charge-current-limit-default-microamp = <700000>;
+     };
 
->   #include "tsens.h"
->   
->   /* ----- SROT ------ */
->   #define SROT_HW_VER_OFF	0x0000
+-- 
+2.39.5
 
-...
 
-> +static const struct tsens_ops ops_ipq5332 = {
-> +	.init		= init_tsens_v2_no_rpm,
-> +	.get_temp	= get_temp_tsens_valid,
-> +	.calibrate	= tsens_v2_calibration,
-> +};
-> +
-> +struct tsens_plat_data data_ipq5332 = {
-
-This could easily be made as const.
-
-> +	.num_sensors	= 5,
-> +	.ops		= &ops_ipq5332,
-> +	.hw_ids		= (unsigned int []){11, 12, 13, 14, 15},
-> +	.feat		= &ipq5332_feat,
-> +	.fields		= tsens_v2_regfields,
-> +};
-> +
-> +struct tsens_plat_data data_ipq5424 = {
-
-This could easily be made as const.
-
-> +	.num_sensors	= 7,
-> +	.ops		= &ops_ipq5332,
-> +	.hw_ids		= (unsigned int []){9, 10, 11, 12, 13, 14, 15},
-> +	.feat		= &ipq5332_feat,
-> +	.fields		= tsens_v2_regfields,
-> +};
-
-...
-
-CJ
