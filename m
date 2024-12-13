@@ -1,71 +1,68 @@
-Received: from mx0b-00128a01.pphosted.com (mx0a-00128a01.pphosted.com [148.163.135.77])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f178.google.com (mail-pl1-f178.google.com [209.85.214.178])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B90A136327;
-	Fri, 13 Dec 2024 02:38:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.135.77
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 148AB7DA62
+	for <linux-pm@vger.kernel.org>; Fri, 13 Dec 2024 03:52:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.178
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734057512; cv=none; b=mEDu+17jmZT7JwEJYXnV6vtHA0dyaHIImkSTr79j9iUcJbqaWv20Dz5AGYmQSmkHUJow9pupaGrhNV4C+ANmHl3ECsQgMFDdATjadjYVeVYL17cnTcBQhZeL6UD6TX40qV+7qnctrhh8qBSbYfPiOxtty8rTRk70fOOtAMs+6lg=
+	t=1734061964; cv=none; b=eRJet7l2VbW6OPjkcaBipEpohykKaT5OitgWwmX+epKlWSgNpGVySFaX1iV227diqQZtsv+JjtbBq/WFy/6fPzLd9TPHXCYZLspgzpDQPplHbPHtcV1G7RweQEA4il0E1jUxhOL+mOlo8I3I//e+UKFdfqJgn6SywxFUpxOGLjM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734057512; c=relaxed/simple;
-	bh=qRfNHr9Bz/rWaXCWHJtTl7H23dvMSdOgoYzIMh01orA=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=LIGWnZywYdbIvBtJe8aCFebrFICAqQQpwuGkv8y8Jck0oxgYCUx4D2y7TKvwrNCiWWgC3fPcxUj7rle58LQXhLTxUSVpEbOwUKOJMNUz9AmqhqVCiTy2wUgVgid9MLO9yHZag8qfqYCjY9KEown2+um5+lB1Ttpgo5b2b8ipyyc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=analog.com; spf=pass smtp.mailfrom=analog.com; dkim=pass (2048-bit key) header.d=analog.com header.i=@analog.com header.b=0cb4KMrj; arc=none smtp.client-ip=148.163.135.77
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=analog.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=analog.com
+	s=arc-20240116; t=1734061964; c=relaxed/simple;
+	bh=qt2dWCg+WCI06RbKMRyPPw37FqkbCiIVc2yPO471Tgg=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=LkDpyt5mHyQQY8fw0ftygVRppiwnXRiJW/EBJwA2PUdwjQQ6HfvJbhh1wTDJIn6vQmZ6PhnS3ljynJYN2b0S3AQaNYWsCyWDIEonTMRo230aeJM52H7kftLawVd05Zyt6QHhvbci1vpbReVI/sfhq4eAn3wnIg1sNZEXEIAYcGM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=pf.is.s.u-tokyo.ac.jp; spf=none smtp.mailfrom=pf.is.s.u-tokyo.ac.jp; dkim=pass (2048-bit key) header.d=pf-is-s-u-tokyo-ac-jp.20230601.gappssmtp.com header.i=@pf-is-s-u-tokyo-ac-jp.20230601.gappssmtp.com header.b=gkHqzMz5; arc=none smtp.client-ip=209.85.214.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=pf.is.s.u-tokyo.ac.jp
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=pf.is.s.u-tokyo.ac.jp
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=analog.com header.i=@analog.com header.b="0cb4KMrj"
-Received: from pps.filterd (m0375855.ppops.net [127.0.0.1])
-	by mx0b-00128a01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4BD0XtXq022176;
-	Thu, 12 Dec 2024 21:38:12 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=analog.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=DKIM; bh=ZtUBh
-	Q4tT6mmSjaBmqLtT7svgseEfCyA694dOGtPR1g=; b=0cb4KMrjcOlVEiTVO1nZk
-	KV3GcuNMslq1+g0piqtqQKSyY2TATLHzapFez/uCnNXIi+KUcubERnl5BVcz6HSc
-	MwWzCUGY0pYCZ+1O1ITqHY8fvEDGaNElsLei1GSBVAouuyt5RBliRRvrugpeBuvz
-	x5ZFoRyC6SCOoDwxSU6A+LJI0oGtLpEPM1bXygqcq9a+uXClgtfam3GDnIvK039s
-	AswlorLp1F4Yw8afY1CLkLMeliAjHa97/I+JLhvMw2TQfqZa7WMYcfdelP7bI2Ns
-	enjcxkAa8OS4FlHoEGTxCuZtVBJ/HxZGeOQ9bvcQpsc9sKH554xks5oONHENWDYv
-	g==
-Received: from nwd2mta3.analog.com ([137.71.173.56])
-	by mx0b-00128a01.pphosted.com (PPS) with ESMTPS id 43gagc0g0e-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 12 Dec 2024 21:38:12 -0500 (EST)
-Received: from ASHBMBX8.ad.analog.com (ASHBMBX8.ad.analog.com [10.64.17.5])
-	by nwd2mta3.analog.com (8.14.7/8.14.7) with ESMTP id 4BD2c91h024824
-	(version=TLSv1/SSLv3 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Thu, 12 Dec 2024 21:38:09 -0500
-Received: from ASHBCASHYB5.ad.analog.com (10.64.17.133) by
- ASHBMBX8.ad.analog.com (10.64.17.5) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.14; Thu, 12 Dec 2024 21:38:09 -0500
-Received: from ASHBMBX9.ad.analog.com (10.64.17.10) by
- ASHBCASHYB5.ad.analog.com (10.64.17.133) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.14; Thu, 12 Dec 2024 21:38:09 -0500
-Received: from zeus.spd.analog.com (10.66.68.11) by ashbmbx9.ad.analog.com
- (10.64.17.10) with Microsoft SMTP Server id 15.2.986.14 via Frontend
- Transport; Thu, 12 Dec 2024 21:38:09 -0500
-Received: from kim-VirtualBox.ad.analog.com (KPALLER2-L03.ad.analog.com [10.117.223.26])
-	by zeus.spd.analog.com (8.15.1/8.15.1) with ESMTP id 4BD2bsXs028303;
-	Thu, 12 Dec 2024 21:38:01 -0500
-From: Kim Seer Paller <kimseer.paller@analog.com>
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Mike Looijmans <mike.looijmans@topic.nl>
-CC: <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        Kim Seer Paller <kimseer.paller@analog.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH v6 1/2] dt-bindings: power/supply: Add ltc4162-f/s and ltc4015
-Date: Fri, 13 Dec 2024 10:37:45 +0800
-Message-ID: <20241213023746.34168-2-kimseer.paller@analog.com>
+	dkim=pass (2048-bit key) header.d=pf-is-s-u-tokyo-ac-jp.20230601.gappssmtp.com header.i=@pf-is-s-u-tokyo-ac-jp.20230601.gappssmtp.com header.b="gkHqzMz5"
+Received: by mail-pl1-f178.google.com with SMTP id d9443c01a7336-2166651f752so14144535ad.3
+        for <linux-pm@vger.kernel.org>; Thu, 12 Dec 2024 19:52:41 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=pf-is-s-u-tokyo-ac-jp.20230601.gappssmtp.com; s=20230601; t=1734061961; x=1734666761; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=xhIKXu39g0td2Hkm/h3BepPdiq0tmK4NBRl5M4ZCVAo=;
+        b=gkHqzMz5oNvgBVRftIrvE61V4a6LSUvgX+pWNxoXmTDiB/XzE2Cg41f5M3Yaem28Sh
+         BA7Njgd6ks1JroigWoddYDk/ykPra2LhjsuNQbv4OuX4/ABQeJGbfkE/ErdAuk6tgF3c
+         8/wNCRBTXBDGVEYpgjblvb/YlcfkM9QQFUg/CXKP2/TR8FTwOLjNkuF5Qd37ogrUJnGN
+         M5vin4UiHqcSLgA7LsC/j44nFRasVyMgvDy83mcXhky6mFYHh/wpEGXzuOOaOQ5s16Df
+         zf/PP9tn+XdO5xMgo1SR94e16OiygZvWqTKIITgnW/e8WT63GbCqAvUJ+d/2qbIEVSx3
+         SOjQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1734061961; x=1734666761;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=xhIKXu39g0td2Hkm/h3BepPdiq0tmK4NBRl5M4ZCVAo=;
+        b=Y3r1GZTNZg9DQ/w6iEY0K4hJeHszPqH6UDTJ0L1naNLZQkhbEHmwVnlZUe7ARgoRzh
+         TSgWxs3mEmy4OVWdmJ/k42YEiBBA3hcck6P9C0Dv+jZYXIFHGOqMQTlSPLQjqbIuVh/L
+         wClLVH5HsDDdBT9jHQTbArh2fdc0LsQoaqIIGj4G/kVRyxklPnNQ/oJfD+SGg+CxqIoc
+         DNfjxpHXRnqqVWpzgRef0oetSJ5MZuWdZzSUz6J/U0mZ8LlmMbjPH6KxM1ewJV6GU+Zx
+         70hGMhOa9eTbd9o50z7f4NRNa3SURoM5oAFw4ZzaFfeqCGlOeE69ODhw+7F42leW7cO/
+         qFAg==
+X-Gm-Message-State: AOJu0YzvHsSSdtqH1NPTC6Lb6I64/dv9gcPe2foHViQOfHGpkbA798MR
+	Qq39Gx+Y7+Z7KjC6PeM3nS+RLi5iXSuwlXplg/d5+4R49bGKVbiyitL/+4CiGM3zIKK30wTeQ2C
+	20ifwiA==
+X-Gm-Gg: ASbGnct1QUmZzO6Nx/vSalqT6q+YF2mWjkwXfBgz5U/R1dxAUvnQcjUKyMeie7Xtqjm
+	uriYizsCX0Noe3QY44kstdcoZ/76cyb9aWFvtKBTd67QqM67VGVamzgWMLjYCu26fuQ2dWUnPO5
+	MQ3sLV1B1sDgEcwAtf/G8R7snsZ9ssr1beNfVVIfvONKDUBCgF57bJhAQFZW8/MgPittsKS1qmn
+	rBwl34xlIkan149eH78TWLz/rWW5ZUgyu0ArIVIzKYDFwm8h6T/i6ag8Vtpegxc1AWMgnVG/GhN
+	rKj0yno3tHa1yH8DwRZStSP2gX5RgCYeHavJkDNTmgQ=
+X-Google-Smtp-Source: AGHT+IEUifAvbdOQ0IN1frQ+3irMvlrLBhDRn3jd7gprMcrt9+tV4qHZOHs1O6SM9lXKfL6SoeYSFA==
+X-Received: by 2002:a17:902:f648:b0:215:f1c2:fcc4 with SMTP id d9443c01a7336-21892a5d7e9mr16281655ad.41.1734061961067;
+        Thu, 12 Dec 2024 19:52:41 -0800 (PST)
+Received: from localhost.localdomain (133-32-227-190.east.xps.vectant.ne.jp. [133.32.227.190])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-21613079c56sm115564575ad.27.2024.12.12.19.52.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 12 Dec 2024 19:52:40 -0800 (PST)
+From: Joe Hattori <joe@pf.is.s.u-tokyo.ac.jp>
+To: rafael@kernel.org
+Cc: linux-pm@vger.kernel.org,
+	Joe Hattori <joe@pf.is.s.u-tokyo.ac.jp>
+Subject: [PATCH] PM: wakeup: implement devm_device_init_wakeup() helper
+Date: Fri, 13 Dec 2024 12:52:35 +0900
+Message-Id: <20241213035235.2479642-1-joe@pf.is.s.u-tokyo.ac.jp>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20241213023746.34168-1-kimseer.paller@analog.com>
-References: <20241213023746.34168-1-kimseer.paller@analog.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -73,59 +70,61 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ADIRuleOP-NewSCL: Rule Triggered
-X-Proofpoint-GUID: DqeUlJoOTRCVSiTujGWGaYVI5Y98ZsTJ
-X-Proofpoint-ORIG-GUID: DqeUlJoOTRCVSiTujGWGaYVI5Y98ZsTJ
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
- definitions=2024-09-06_09,2024-09-06_01,2024-09-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 spamscore=0
- bulkscore=0 phishscore=0 lowpriorityscore=0 adultscore=0 mlxlogscore=999
- impostorscore=0 mlxscore=0 suspectscore=0 malwarescore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2411120000 definitions=main-2412130019
 
-Add LTC4162-F/S and LTC4015 to the supported devices of LTC4162-L.
-They share a common set of registers. The only differences lie in the
-resolution value of the scaling factor for battery voltage and battery
-current measurement, input voltage, and input current for different
-battery chemistries. The differences also include the calculation of
-setting and getting the actual voltage applied to the charge voltage,
-as well as getting the die temperature.
+Some drivers that enable device wakeup fail to properly disable it
+during their cleanup, which results in a memory leak.
 
-This add compatible entries for ltc4162-f/s and ltc4015 and include
-datasheets for new devices.
+To address this, introduce devm_device_init_wakeup(), a managed variant
+of device_init_wakeup(dev, true). With this managed helper, wakeup
+functionality will be automatically disabled when the device is
+released, ensuring a more reliable cleanup process.
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Signed-off-by: Kim Seer Paller <kimseer.paller@analog.com>
+This need for this addition arose during a previous discussion [1].
+
+[1]:
+https://lore.kernel.org/linux-rtc/20241212100403.3799667-1-joe@pf.is.s.u-tokyo.ac.jp/
+
+Signed-off-by: Joe Hattori <joe@pf.is.s.u-tokyo.ac.jp>
 ---
- .../devicetree/bindings/power/supply/ltc4162-l.yaml         | 6 ++++++
- 1 file changed, 6 insertions(+)
+ include/linux/pm_wakeup.h | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/ltc4162-l.yaml b/Documentation/devicetree/bindings/power/supply/ltc4162-l.yaml
-index 29d536541152..06595a953659 100644
---- a/Documentation/devicetree/bindings/power/supply/ltc4162-l.yaml
-+++ b/Documentation/devicetree/bindings/power/supply/ltc4162-l.yaml
-@@ -17,12 +17,18 @@ description: |
-   panels, etc., and a rechargeable Lithium-Ion/Polymer battery.
+diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
+index 222f7530806c..baf4f982858a 100644
+--- a/include/linux/pm_wakeup.h
++++ b/include/linux/pm_wakeup.h
+@@ -240,4 +240,31 @@ static inline int device_init_wakeup(struct device *dev, bool enable)
+ 	return 0;
+ }
  
-   Specifications about the charger can be found at:
-+    https://www.analog.com/en/products/ltc4162-l.html
-+    https://www.analog.com/en/products/ltc4162-f.html
-     https://www.analog.com/en/products/ltc4162-s.html
-+    https://www.analog.com/en/products/ltc4015.html
- 
- properties:
-   compatible:
-     enum:
-+      - lltc,ltc4015
-+      - lltc,ltc4162-f
-       - lltc,ltc4162-l
-+      - lltc,ltc4162-s
- 
-   reg:
-     maxItems: 1
++static void devm_device_disable_wakeup(void *data)
++{
++	struct device *dev = data;
++
++	device_wakeup_disable(dev);
++	device_set_wakeup_capable(dev, false);
++}
++
++/**
++ * devm_device_init_wakeup - Resource managed device wakeup initialization.
++ * @dev: Device to handle.
++ *
++ * This function is the devm managed version of device_init_wakeup(dev, true).
++ */
++static inline int devm_device_init_wakeup(struct device *dev)
++{
++	int err;
++
++	device_set_wakeup_capable(dev, true);
++	err = device_wakeup_enable(dev);
++	if (err) {
++		device_set_wakeup_capable(dev, false);
++		return err;
++	}
++	return devm_add_action_or_reset(dev, devm_device_disable_wakeup, dev);
++}
++
+ #endif /* _LINUX_PM_WAKEUP_H */
 -- 
 2.34.1
 
