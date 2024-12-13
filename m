@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC3831E8839;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C424C1EC014;
 	Fri, 13 Dec 2024 19:32:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734118361; cv=none; b=ZeR2di/y3RtkwEcG+eDxkYSPu1C7+tvPc/MhPUDhg7jCxHP9jLVPUww9KsaZDy0h8GHofVCHI+Rl/eU8dEcPyhnNlwl+OYJ1zLSbjFbeocCvsRxNOfAWep/hgzK6fGZNcpXjGr9DpUga3GEULjIK+CsmG1PPdyt4dUm+w+yRQZs=
+	t=1734118362; cv=none; b=qoLdMBsYl2/XeuOGQ9FMChhRRf/9ikk7fE1l/g69ZiQBmkq08lBOKzcNEsyrUNN0PVK7z5qXYblwgOHbvJec8FVQ+lWfYfWMQPcLNnbs9Dy5l4H+Ntju4O2lvrojGY4YZq1BFUK1tFlD9zGXaRJunbtMnNjIroc2qbQQbfCpbq0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734118361; c=relaxed/simple;
-	bh=Ud2wCa8TSYVfpnac2gkRPt80w1+N1OzZr1JJXuVpSps=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=N8YBeG2GDc/oCBvinnKLvHHh6KgqGezjEdNOOAU6HyToAUgZeKlRHEJwztDrOw2+OEKrsT5jG5YetFuSG3e+0zlTpoldgwYyIh5B7AQPvds+BK1bejEEG5KIaHgCUeuB5ejdTWr049AMXLWA9KHUVJhJoik5KkA9C0n09SvmiiE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=I8YosRjS; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1734118362; c=relaxed/simple;
+	bh=hR2OWxnI4AiLexpWZFfBMDeP0lHpudXLW6rkM6ur0TU=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=vDvIz/RuOqX8ruPcQQaUxiz+/04IVGdXd83hWQprwFFERoGZ38h25EuUTUrrrdMiM3KwxB0dJCesRhpi3qg2er6b2Va8SS0ShIvRDxKhx30TKpawSftgPr4926u1qxoetYOxKys0gY7SSmnuYQDg58bxu4hP0kL4b+/gowPYUo8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NhNUIDKC; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="I8YosRjS"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 3B406C4CED0;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NhNUIDKC"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 56AD5C4CED6;
 	Fri, 13 Dec 2024 19:32:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1734118361;
-	bh=Ud2wCa8TSYVfpnac2gkRPt80w1+N1OzZr1JJXuVpSps=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=I8YosRjSmtSF1NqjJRGjx4HiqAwMLfQOv+bXjq9C6lacXhXPo3fthoCo9UzsvSIYZ
-	 EUMx18t5oPjh7WM2f3wJy/xZ0H5DUdgetoxmnf21bbQcKtF9PaX5rXfzZqS99vaCnr
-	 E03AJBu6jgi8riXWr5HgEWWuQzmBy9WnDvNSSk0tNysFc5rln3K4rXJfrvf2UyOKhs
-	 YM/rHDaW9gcuRNms4Lq7qIb25Vp6QX9JLELEGpxlzu5E1Okr74Qh7aoAdL24/5XaJX
-	 X8z5gfEm+iHfXVsYJCaY/Do985TU4U4c6LH4JNwhotI9Q48vTa7VPr3GTcRL2a/n4V
-	 Kg3HLlDq3ZwDw==
+	bh=hR2OWxnI4AiLexpWZFfBMDeP0lHpudXLW6rkM6ur0TU=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=NhNUIDKCSaOKqdoStmKMjeWWK/yO74LY2oC+mp8cMzGkuprfyRYCCXDclP5G+8y6q
+	 ixe4oTeAbE+iXcW48h53BiGjstJyVGcAz6884CA5GcIOum3OS1bgTj2n/8KqICuYtM
+	 ADTCj2QxjGWAHhTsLACcjsanoHZbakxXGOKqrkPpPXXyLgYQa8aJ6q1OFd/kbLPmJ6
+	 bHdHOzActpcMd06X7hHthttFqP5cLlBs/J2TrqWxBUod0GNxgPoWHk7zuwBjMeESm1
+	 3wtSBV/xmDUooNQlGdrMp3OvkK8cLmFASk6RshgmTcXYOHJkLr/ssmZ091W2UXGYAe
+	 HJirBo90lrCyQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 266E6E7717F;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4371BE77184;
 	Fri, 13 Dec 2024 19:32:41 +0000 (UTC)
 From: Dimitri Fedrau via B4 Relay <devnull+dimitri.fedrau.liebherr.com@kernel.org>
-Subject: [PATCH v2 0/2] power: supply: gpio-charger: add support for
+Date: Fri, 13 Dec 2024 20:32:34 +0100
+Subject: [PATCH v2 2/2] power: supply: gpio-charger: add support for
  default charge current limit
-Date: Fri, 13 Dec 2024 20:32:32 +0100
-Message-Id: <20241213-default-charge-current-limit-v2-0-45886fce905c@liebherr.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,11 +41,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIANCLXGcC/32Nyw6CMBBFf8XM2jGdBsG68j8MiwKDTMLDTAvRE
- P7dSly7PPck564QWIUDXA8rKC8SZBoT2OMB6s6PD0ZpEoM1NiNrHDbc+rmPmKwmW8+qPEbsZZC
- IufNcuOxscvKQEk/lVl57/l4m7iTESd/720Lf9Rcm+h9eCA0WF3KVNzmz9bdeuOpY9VRPA5Tbt
- n0AJHglm8sAAAA=
-X-Change-ID: 20241209-default-charge-current-limit-69ae7945061a
+Message-Id: <20241213-default-charge-current-limit-v2-2-45886fce905c@liebherr.com>
+References: <20241213-default-charge-current-limit-v2-0-45886fce905c@liebherr.com>
+In-Reply-To: <20241213-default-charge-current-limit-v2-0-45886fce905c@liebherr.com>
 To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>
@@ -53,17 +51,19 @@ Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, Dimitri Fedrau <dimitri.fedrau@liebherr.com>, 
  Dimitri Fedrau <dima.fedrau@gmail.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1734118360; l=1474;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1734118360; l=2214;
  i=dimitri.fedrau@liebherr.com; s=20241202; h=from:subject:message-id;
- bh=Ud2wCa8TSYVfpnac2gkRPt80w1+N1OzZr1JJXuVpSps=;
- b=zf9bjiGiLdqbtu5VANIqnr1BgtHuGTzqBJeXJABZGOjH1vn14TO6pLAItRzl13cm+iFqeMyXN
- pARni1WA2NiB/AmeCBXVFbGouit8cuSLzBriVeHs7EiBsgiuvyzmPeT
+ bh=8kkaeG3Fu8A0mMHCllTq6XlCfvacmcvVln/ePhFAfLE=;
+ b=l1eFTt5Hpnmk4r5m9dimQx/rMfKLcUx4nHVb3uN0U9n72cqYd4WKhxzux+t615DWImfJgTDb9
+ PbudIbCxdGEDfRoJiLC8J0+qokkTQ0ruJNf9krtZ2W4wtfsWA8lzBP6
 X-Developer-Key: i=dimitri.fedrau@liebherr.com; a=ed25519;
  pk=rT653x09JSQvotxIqQl4/XiI4AOiBZrdOGvxDUbb5m8=
 X-Endpoint-Received: by B4 Relay for dimitri.fedrau@liebherr.com/20241202
  with auth_id=290
 X-Original-From: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
 Reply-To: dimitri.fedrau@liebherr.com
+
+From: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
 
 With DT properties charge-current-limit-gpios and
 charge-current-limit-mapping one can define charge current limits in uA
@@ -75,28 +75,51 @@ devices.
 
 Signed-off-by: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
 ---
-Changes in v2:
-- renamed DT property charge-current-limit-default to
-  charge-current-limit-default-microamp
-- Added dependency on charge-current-limit-mapping
-- Added intention and use case to commit descriptions
-- Added charge-current-limit-default-microamp in bindings example
-- Link to v1: https://lore.kernel.org/r/20241211-default-charge-current-limit-v1-0-7819ba06ee2a@liebherr.com
+ drivers/power/supply/gpio-charger.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
----
-Dimitri Fedrau (2):
-      dt-bindings: power: supply: gpio-charger: add support for default charge current limit
-      power: supply: gpio-charger: add support for default charge current limit
+diff --git a/drivers/power/supply/gpio-charger.c b/drivers/power/supply/gpio-charger.c
+index 68212b39785beabfe5536a18fa15bc249f7b1eea..56149545a1dc6004b474cec44984c6dfad3413b5 100644
+--- a/drivers/power/supply/gpio-charger.c
++++ b/drivers/power/supply/gpio-charger.c
+@@ -187,6 +187,8 @@ static int init_charge_current_limit(struct device *dev,
+ {
+ 	int i, len;
+ 	u32 cur_limit = U32_MAX;
++	bool set_def_limit;
++	u32 def_limit;
+ 
+ 	gpio_charger->current_limit_gpios = devm_gpiod_get_array_optional(dev,
+ 		"charge-current-limit", GPIOD_OUT_LOW);
+@@ -220,6 +222,9 @@ static int init_charge_current_limit(struct device *dev,
+ 	if (len < 0)
+ 		return len;
+ 
++	set_def_limit = !device_property_read_u32(dev,
++						  "charge-current-limit-default-microamp",
++						  &def_limit);
+ 	for (i=0; i < gpio_charger->current_limit_map_size; i++) {
+ 		if (gpio_charger->current_limit_map[i].limit_ua > cur_limit) {
+ 			dev_err(dev, "charge-current-limit-mapping not sorted by current in descending order\n");
+@@ -227,8 +232,16 @@ static int init_charge_current_limit(struct device *dev,
+ 		}
+ 
+ 		cur_limit = gpio_charger->current_limit_map[i].limit_ua;
++		if (set_def_limit && def_limit == cur_limit) {
++			set_charge_current_limit(gpio_charger, cur_limit);
++			return 0;
++		}
+ 	}
+ 
++	if (set_def_limit)
++		dev_warn(dev, "charge-current-limit-default-microamp %u not listed in charge-current-limit-mapping\n",
++			 def_limit);
++
+ 	/* default to smallest current limitation for safety reasons */
+ 	len = gpio_charger->current_limit_map_size - 1;
+ 	set_charge_current_limit(gpio_charger,
 
- .../devicetree/bindings/power/supply/gpio-charger.yaml      |  6 ++++++
- drivers/power/supply/gpio-charger.c                         | 13 +++++++++++++
- 2 files changed, 19 insertions(+)
----
-base-commit: 57cb041f61d4abcf8dfa41259df27d081ab4cb6a
-change-id: 20241209-default-charge-current-limit-69ae7945061a
-
-Best regards,
 -- 
-Dimitri Fedrau <dimitri.fedrau@liebherr.com>
+2.39.5
 
 
