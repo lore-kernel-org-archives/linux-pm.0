@@ -1,100 +1,247 @@
-Received: from mail-pj1-f42.google.com (mail-pj1-f42.google.com [209.85.216.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F0F3881E
-	for <linux-pm@vger.kernel.org>; Sun, 15 Dec 2024 07:10:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6946546447;
+	Sun, 15 Dec 2024 11:15:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734246623; cv=none; b=gd0YtvFwaajvuWJOzq1VOG9Xifi0CkWSql/pNg3z4+lVIeo97T4OYYnl4/JyeWrNezI7dtv52rQIEx2STQuP37vNZ7Mk4yFgUO6ZO7U9bZDFyl/TSjgGHxqF7/JSVCSnfwAbGyP0z9Os/tZ0YBFFFNXjq6AmYt0UP3XfnIX2vm8=
+	t=1734261341; cv=none; b=QptPC2eVxlmE2LTU6TfKdZSfhBBnw337lO3E+ZyOiKBtGHhk5Uay48bV+Z7wYAkFcdMkldJYEWTs3n7utpu1YqUj7y9Is12tg0Wo72G7+/kNmLWjlFCcoWjp65LsbDGzwk4BdVZRbWwYHyQ86MXqq/XYs8pTumciJOFVX8cfryQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734246623; c=relaxed/simple;
-	bh=4y8pyZl0sDO4uolquMxdGIbrAQbmpwf4Sq00Vc2dSk4=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=LC7jRe4DPBSIZCKvVIkC+sCknG9N77QRxzAFxRHYOH4yyDaAqtEYxAnj7j8xs6oiL/i4vWB6Axv9Q1UTpg48/JjeXmxlBGH+nqHB9/6s4a24t8OeMMe9WWE0jSx4/i8K7kjNdP7FA8u+PLnjX09aQuIQ4igTDitB8pUDvDUUyvU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=pf.is.s.u-tokyo.ac.jp; spf=none smtp.mailfrom=pf.is.s.u-tokyo.ac.jp; dkim=pass (2048-bit key) header.d=pf-is-s-u-tokyo-ac-jp.20230601.gappssmtp.com header.i=@pf-is-s-u-tokyo-ac-jp.20230601.gappssmtp.com header.b=TemHNU3n; arc=none smtp.client-ip=209.85.216.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=pf.is.s.u-tokyo.ac.jp
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=pf.is.s.u-tokyo.ac.jp
+	s=arc-20240116; t=1734261341; c=relaxed/simple;
+	bh=Gkb8/KuT2/ey2XlnmvLYtTnKiL7D7tYacDyqH0ik4tk=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=ufz+dq+UeVOM5BRoaYop72KJV8YLNpU0WgwHiAzOMft4KvEXw+r0dwtlIpxCXkcYNWXpcxMGPVUpivRPADyCAGkuTk8alkP1O80NCQ8e4hSTgKkvJVE649d3uWTh9g1IrcDSr7987C7Mz8KQqDgs2yQJxYnW/PQ+l3Wopohqo2M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=rCM7rN9I; arc=none smtp.client-ip=5.75.144.95
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=pf-is-s-u-tokyo-ac-jp.20230601.gappssmtp.com header.i=@pf-is-s-u-tokyo-ac-jp.20230601.gappssmtp.com header.b="TemHNU3n"
-Received: by mail-pj1-f42.google.com with SMTP id 98e67ed59e1d1-2ef87d24c2dso2319893a91.1
-        for <linux-pm@vger.kernel.org>; Sat, 14 Dec 2024 23:10:20 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=pf-is-s-u-tokyo-ac-jp.20230601.gappssmtp.com; s=20230601; t=1734246620; x=1734851420; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=S4+Cu+jWnEpuv2bxfR77QO1MKzm+m0kZ0gvNUZL6BOc=;
-        b=TemHNU3n1upChBDmeL5rf5XGjw22/oNCAkoyCfvnSV4VjsR6itL/Rs/Zmi4fpeH4Ue
-         ZJnFZxx8EJR553wVuwcMhpweZazN+sIvKlhqK5oMghvrWinN/8bUX9yUXGSee369URF/
-         ujDVD+4cPG7DBL3Bt4SYPdW188WnBkR58WnQ2riZwp440TVIzudTiZc1MLJIEBzsavbr
-         mPCcD78CpO9Q2LgtLe/lOU1dQ+AQ8VozBecggbBnLUbSr6uJima8uQUk1fp7kgMc1c/z
-         muGYVCOxvWU4cbyZBJuZD0/bwInoq5nFWh6V72nPcflI6/tNWXSpzVbTeQV7RXWQ9e0l
-         eYsQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1734246620; x=1734851420;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=S4+Cu+jWnEpuv2bxfR77QO1MKzm+m0kZ0gvNUZL6BOc=;
-        b=wwjNXOkxvY/+xwz4+/Zg7Q6qXKBKB4/zzOEQnPs+r7jGEaEH37tYgdecOPmkGyjhT7
-         nhIAn/Yniu7v2T0BnqjCtsE4VA/eqM7JfIuB+KaE9ANh7T1s1D7CQW/Fli+lgMeiRVfq
-         +ThMcT8ABAK8/1J3nFH26koPg7cCr9edQII1peCxeu7BfZZ2U7ta6xH5eR+4jrN0SPnS
-         ZcMTkrgTGZP8d2m/axb+ZTDFKDGlz96Iirgj7WdzbNqbGrUNZ92SdgpbiBM9DjTeBJCh
-         YOguUR5KQFggzqV7HTyxGBworHxvq9uT6K43JGETSYm0eHVRyd/EmYv2c95y1P1ilJcI
-         HxQA==
-X-Gm-Message-State: AOJu0YxAlHlMKYtzbRol/hr/rryuwvZcscwtu3Iue3CV14YvxoWkHYnk
-	ECcmy4fv3Ixyo6HJN5ExiaA6Wo45DNnTzrq3e1oIsaEauq6yxjlzfz9g7cqIpki0D0LgkRrq1mY
-	ts+StGw==
-X-Gm-Gg: ASbGncs41S/kbbe8UBtNSRE4MAaEL2mbReaC2K55IzwLgoLVTz/mE8214W6Q4Jhbgdv
-	JQ1TJO/K8JRqc59WPgXPgz3f1txB/SKLvLGRcJdVjEbrxz9L8Y78r8S5knVl0QDMnjbTPwKnI27
-	mUrsLV2KaPhmG5qam3dxYB/CQi/l7rqwsvl3aQVcCVew9DFCbH6eemvXpReAhP7KeanRcyaiOjN
-	PU8gVxLEAda3EQeAdZWsO4ot9ZPh+puQT73st5WjsXr9jakz4JmNf432TEJrfi/nurT3IhYhAAE
-	+0CrMbGvkCB6ZfxR33jb8nEf99h3Nid14td7xvu6i4A=
-X-Google-Smtp-Source: AGHT+IG+DsXSN0bl8CWTYwEETCpDiFXAqw6pzdz5hUm44u15iXc5achy7KhSDOVyPHPM0d6rB5aF+A==
-X-Received: by 2002:a17:90b:1c05:b0:2ee:889b:b11e with SMTP id 98e67ed59e1d1-2f28ffa7df0mr12595803a91.30.1734246620309;
-        Sat, 14 Dec 2024 23:10:20 -0800 (PST)
-Received: from localhost.localdomain (133-32-227-190.east.xps.vectant.ne.jp. [133.32.227.190])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-218a1db7c82sm22269925ad.13.2024.12.14.23.10.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 14 Dec 2024 23:10:18 -0800 (PST)
-From: Joe Hattori <joe@pf.is.s.u-tokyo.ac.jp>
-To: rafael@kernel.org
-Cc: linux-pm@vger.kernel.org,
-	Joe Hattori <joe@pf.is.s.u-tokyo.ac.jp>
-Subject: [PATCH] powercap: balance device refcount in powercap_register_control_type()
-Date: Sun, 15 Dec 2024 16:10:12 +0900
-Message-Id: <20241215071012.59208-1-joe@pf.is.s.u-tokyo.ac.jp>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="rCM7rN9I"
+Received: from [192.168.0.220] (catv-176-63-31-221.catv.fixed.vodafone.hu [176.63.31.221])
+	by mail.mainlining.org (Postfix) with ESMTPSA id 4E376E482D;
+	Sun, 15 Dec 2024 11:15:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mainlining.org;
+	s=psm; t=1734261332;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=XTEzrWIojNicg5b3ndDyKHaaVkaDSYELJmjR/meFdL4=;
+	b=rCM7rN9Ikq2jh+dRw05CDJr5EeCYUnCzE+eQp+PrtIGE3YkTTsqRhWG2KirmgFQ7VGVkEr
+	wSNTiPk2/pBFXYriLUZlRkGknxwW25SbTn/MU6NoGxSOqixJccvKN5Gmcg5ityUQ9u9UTN
+	K0PWDujWQx3qUD3QUd3BUU2Vqji6FHM/5fgK9O77Djje29hOZZqBWMWUGlPTd8PqyVK/Rz
+	WFxKoYGiM06e7mr0xxjXijVzN6D1hzw4RAKsUq4p73OnkGV8HkFSBxGyYJFdW+fXU0vIYg
+	Sw/BPPQIJOa/QnQIzLxCKjWJyAW3ufpAeLs63xog3wjS3V3RO9p9SHfEshIuwg==
+From: =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
+Date: Sun, 15 Dec 2024 12:14:56 +0100
+Subject: [PATCH v9 1/8] arm64: dts: qcom: Add PM8937 PMIC
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+Message-Id: <20241215-msm8917-v9-1-bacaa26f3eef@mainlining.org>
+References: <20241215-msm8917-v9-0-bacaa26f3eef@mainlining.org>
+In-Reply-To: <20241215-msm8917-v9-0-bacaa26f3eef@mainlining.org>
+To: Bjorn Andersson <andersson@kernel.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Linus Walleij <linus.walleij@linaro.org>, Amit Kucheria <amitk@kernel.org>, 
+ Thara Gopinath <thara.gopinath@gmail.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Joerg Roedel <joro@8bytes.org>, 
+ Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>, 
+ Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, 
+ linux-pm@vger.kernel.org, iommu@lists.linux.dev, 
+ =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>, 
+ Dang Huynh <danct12@riseup.net>, 
+ Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1734261329; l=4019;
+ i=barnabas.czeman@mainlining.org; s=20240730; h=from:subject:message-id;
+ bh=9NnPuFhsH6Kz3BJW3UjnLFlUU4jRHYGk2eJlaqLX+Y0=;
+ b=RqdvIgPqFEgQuw9T5F4jyEqohMTliCpP52vjGIB7hkg7wvRBOf94XBFR8+vmdxrn4ZNeTgn3f
+ ElCP0SVRrbSD/0T5AWQUpmZy8bp+mb0w1ewYieTKn9uk+1tqFRhZGOF
+X-Developer-Key: i=barnabas.czeman@mainlining.org; a=ed25519;
+ pk=TWUSIGgwW/Sn4xnX25nw+lszj1AT/A3bzkahn7EhOFc=
 
-powercap_register_control_type() calls device_register(), but does not
-release the refcount of the device when it fails. Call put_device()
-before returning an error to balance the refcount.
+From: Dang Huynh <danct12@riseup.net>
 
-This bug was found by an experimental static analysis tool that I am
-developing.
+The PM8937 features integrated peripherals like ADC, GPIO controller,
+MPPs, PON keys and others.
 
-Signed-off-by: Joe Hattori <joe@pf.is.s.u-tokyo.ac.jp>
+Add the device tree so that any boards with this PMIC can use it.
+
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Signed-off-by: Dang Huynh <danct12@riseup.net>
+Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
 ---
- drivers/powercap/powercap_sys.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/arm64/boot/dts/qcom/pm8937.dtsi | 150 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 150 insertions(+)
 
-diff --git a/drivers/powercap/powercap_sys.c b/drivers/powercap/powercap_sys.c
-index 52c32dcbf7d8..c2d36dbe29e1 100644
---- a/drivers/powercap/powercap_sys.c
-+++ b/drivers/powercap/powercap_sys.c
-@@ -627,6 +627,7 @@ struct powercap_control_type *powercap_register_control_type(
- 	dev_set_name(&control_type->dev, "%s", name);
- 	result = device_register(&control_type->dev);
- 	if (result) {
-+		put_device(&control_type->dev);
- 		if (control_type->allocated)
- 			kfree(control_type);
- 		return ERR_PTR(result);
+diff --git a/arch/arm64/boot/dts/qcom/pm8937.dtsi b/arch/arm64/boot/dts/qcom/pm8937.dtsi
+new file mode 100644
+index 0000000000000000000000000000000000000000..42b3575b36ff4d37df11ccb5ed68e965e3716300
+--- /dev/null
++++ b/arch/arm64/boot/dts/qcom/pm8937.dtsi
+@@ -0,0 +1,150 @@
++// SPDX-License-Identifier: BSD-3-Clause
++/*
++ * Copyright (c) 2023, Dang Huynh <danct12@riseup.net>
++ */
++
++#include <dt-bindings/iio/qcom,spmi-vadc.h>
++#include <dt-bindings/input/linux-event-codes.h>
++#include <dt-bindings/spmi/spmi.h>
++
++/ {
++	thermal-zones {
++		pm8937-thermal {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8937_temp>;
++
++			trips {
++				trip0 {
++					temperature = <105000>;
++					hysteresis = <0>;
++					type = "passive";
++				};
++
++				trip1 {
++					temperature = <125000>;
++					hysteresis = <0>;
++					type = "hot";
++				};
++
++				trip2 {
++					temperature = <145000>;
++					hysteresis = <0>;
++					type = "critical";
++				};
++			};
++		};
++	};
++};
++
++&spmi_bus {
++	pmic@0 {
++		compatible = "qcom,pm8937", "qcom,spmi-pmic";
++		reg = <0x0 SPMI_USID>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		pon@800 {
++			compatible = "qcom,pm8916-pon";
++			reg = <0x800>;
++			mode-bootloader = <0x2>;
++			mode-recovery = <0x1>;
++
++			pm8937_pwrkey: pwrkey {
++				compatible = "qcom,pm8941-pwrkey";
++				interrupts = <0 0x8 0 IRQ_TYPE_EDGE_BOTH>;
++				debounce = <15625>;
++				bias-pull-up;
++				linux,code = <KEY_POWER>;
++			};
++
++			pm8937_resin: resin {
++				compatible = "qcom,pm8941-resin";
++				interrupts = <0 0x8 1 IRQ_TYPE_EDGE_BOTH>;
++				debounce = <15625>;
++				bias-pull-up;
++				status = "disabled";
++			};
++		};
++
++		pm8937_gpios: gpio@c000 {
++			compatible = "qcom,pm8937-gpio", "qcom,spmi-gpio";
++			reg = <0xc000>;
++			gpio-controller;
++			gpio-ranges = <&pm8937_gpios 0 0 8>;
++			#gpio-cells = <2>;
++			interrupt-controller;
++			#interrupt-cells = <2>;
++		};
++
++		pm8937_mpps: mpps@a000 {
++			compatible = "qcom,pm8937-mpp", "qcom,spmi-mpp";
++			reg = <0xa000>;
++			gpio-controller;
++			gpio-ranges = <&pm8937_mpps 0 0 4>;
++			#gpio-cells = <2>;
++			interrupt-controller;
++			#interrupt-cells = <2>;
++		};
++
++		pm8937_temp: temp-alarm@2400 {
++			compatible = "qcom,spmi-temp-alarm";
++			reg = <0x2400>;
++			interrupts = <0 0x24 0 IRQ_TYPE_EDGE_RISING>;
++			io-channels = <&pm8937_vadc VADC_DIE_TEMP>;
++			io-channel-names = "thermal";
++			#thermal-sensor-cells = <0>;
++		};
++
++		pm8937_vadc: adc@3100 {
++			compatible = "qcom,spmi-vadc";
++			reg = <0x3100>;
++			interrupts = <0 0x31 0 IRQ_TYPE_EDGE_RISING>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			#io-channel-cells = <1>;
++
++			channel@8 {
++				reg = <VADC_DIE_TEMP>;
++			};
++
++			channel@9 {
++				reg = <VADC_REF_625MV>;
++			};
++
++			channel@a {
++				reg = <VADC_REF_1250MV>;
++			};
++
++			channel@c {
++				reg = <VADC_SPARE1>;
++			};
++
++			channel@e {
++				reg = <VADC_GND_REF>;
++			};
++
++			channel@f {
++				reg = <VADC_VDD_VADC>;
++			};
++		};
++
++		rtc@6000 {
++			compatible = "qcom,pm8941-rtc";
++			reg = <0x6000>, <0x6100>;
++			reg-names = "rtc", "alarm";
++			interrupts = <0x0 0x61 0x1 IRQ_TYPE_EDGE_RISING>;
++		};
++	};
++
++	pmic@1 {
++		compatible = "qcom,pm8937", "qcom,spmi-pmic";
++		reg = <0x1 SPMI_USID>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		pm8937_spmi_regulators: regulators {
++			compatible = "qcom,pm8937-regulators";
++		};
++	};
++};
+
 -- 
-2.34.1
+2.47.1
 
