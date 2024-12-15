@@ -1,38 +1,39 @@
 Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 320231FDD;
-	Sun, 15 Dec 2024 11:15:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3DA28148FF2;
+	Sun, 15 Dec 2024 11:15:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734261342; cv=none; b=APPya0XhOrn2p/IxC3gCWPQ40IzVjVHGYgvfoIhnkJ8lcWyKCj9iFyLiG2uBM5y1RNawf8zcCbM6SYmt9EtMAb5+XTmA5ea1CIZDXAP/Wg//W7d4eOr03ccwIdqDsF/4rP6f/ToR6olSa15BmqdLWQrORYZ2RvN7i4ZYXQcf85k=
+	t=1734261343; cv=none; b=i99lXO7qtUvbUgMVH+vZq78TRA2l0PUmsPdgQzKMMnY4bDcqICdHvmGjpJ7jVlFP2D25c/cgDrOeDaKMwVT24xkor+OXERUX+t8rx07plrAe1SDlZwu3RDAVmQS+nnTM4+gBN1romOU1e7OTvCHnwfHUR5/0HChvdYWrQsUpcTI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734261342; c=relaxed/simple;
-	bh=ueQt5GwccAwwxJiXpF97XX3QBwSEJKPeC0KGi9CgjIM=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=e/BnV2XQ6Iiop7cY90xraKKFcpRNHbXwGRFe1DcI06Z/sYf1asmt+HKw5G5N76ezOzLkKlRJ4qePw3lJYP8iE28cCMJoOo3guM9RsL7S70WLlHLTQTMoqxiHYD9bW7ZYwZnZKDCK1XP8x6RaikJ5cLMv1ZdfRKzv2O+G+0CMO54=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=tUKwtUL8; arc=none smtp.client-ip=5.75.144.95
+	s=arc-20240116; t=1734261343; c=relaxed/simple;
+	bh=+vlEsRuRA90WjAUZ/WcMhrVJbW5wZW6c20Mptd1FCbw=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=sP3I8Nq0fx9+CrWgmpDRcuOdGkhZN0s5sUKNk2V5PHQRGoodynuxbeLf6JdBRa1ulgfNPfvUuB3o7XnyQag1Lv4chHG3OxAdBgw8l37q5qEjFlPcrbRAcBWeciViL/g4IpAaO13uo+w/LuzwUR3+Rx6tQpWn3QDh7e/5+GYgjug=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=TBYKmX9H; arc=none smtp.client-ip=5.75.144.95
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="tUKwtUL8"
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="TBYKmX9H"
 Received: from [192.168.0.220] (catv-176-63-31-221.catv.fixed.vodafone.hu [176.63.31.221])
-	by mail.mainlining.org (Postfix) with ESMTPSA id E53C4E450C;
-	Sun, 15 Dec 2024 11:15:29 +0000 (UTC)
+	by mail.mainlining.org (Postfix) with ESMTPSA id 8F537E482E;
+	Sun, 15 Dec 2024 11:15:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mainlining.org;
-	s=psm; t=1734261331;
+	s=psm; t=1734261333;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=+yiA/1ghe5hls2YFXRWo/fisaXESDHjsJbo7HIiQ4wI=;
-	b=tUKwtUL87+qNhrSB2H7rGx3H1UJ3DvbUMs9ZSnSHsI98MiMTacxpYONGYFufmfVDrAXloG
-	4EcWZ2Fs5f05s6S46oVfdgjNM38eW5qvvs7NHmSrd2uKboOfkEvNZw+i/y+FlDDzCYrv/G
-	cjZ407M5/X4r/1l776ZPhHxk6FJ7gqGKCzF1mfC0ZgU/XLUeg4tVo+dC78YfQbUpNvuSH3
-	rweqphol2fUWn3PLj61x82SjriB0OV6l2YTdhHqO4DoByvXKeVYEzX2K6BAU/mtfMkGxNv
-	pa5+4dhkIK6o8AXN6RVwwHpp5N/MJ2VUZ/MetzTegZ/lroeJFA4jCfpEFD4w8w==
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=JebZjIU/uQ7XPZxbJ6FIZkac76ADMpKJeJrX5Tck+VA=;
+	b=TBYKmX9HYo4xT1n0k9ij0GGwE9o0bsDquTP0vIDAyqCPFmNUj/ikUgMhadrSO9HnLhlgLh
+	sjFiExUe6aiGB+xMvgpA9Sg8sRzCg1dDPfMtDGCfjTjXMs5/0kuLykouojI9kwh79pFlaz
+	YzANbdTz/TXgSdHxPS9avAc3IvIorIY/V1O6DzU3xSimvsdBIuUDPACOHF56RlFNGglNoc
+	A0LWSKrnSq4uZn4SndU2Bo4g3Wvif805v5QEzU8piXdvrrq4E56VOa4YEJZjyJ1upkCP4v
+	noSESzhSl/TmpiI1CQypcLsrkKimpR9D34o7W72EAc9WW5PmOrz9g1kzPp74xw==
 From: =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
-Subject: [PATCH v9 0/8] Add MSM8917/PM8937/Redmi 5A
-Date: Sun, 15 Dec 2024 12:14:55 +0100
-Message-Id: <20241215-msm8917-v9-0-bacaa26f3eef@mainlining.org>
+Date: Sun, 15 Dec 2024 12:14:57 +0100
+Subject: [PATCH v9 2/8] dt-bindings: pinctrl: qcom: Add MSM8917 pinctrl
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,13 +42,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAC+6XmcC/23QTW7EIAwF4KuMWDcVtiHgrnqPqgvCTwapk1RJF
- bUa5e4lswFpsnyI74F9F2tcclzF2+UulrjlNc9TCfxyEf7qpjF2OZQsUKICCdzd1ptlMB0YT0G
- mpJxGUW5/LzHl30fTx2fJ17z+zMvfo3iD4/S5Y4NOdgkSeQfB2qjfby5PX3nK0/g6L6M4ijZsM
- EHFWLB10ujknOUBTjFVDNJUTAX3IXjtfGBjh1OsWtx8Wx0vD5FZKsPozrFuMGDFuuAyMKlABAz
- nuG8xVdwX7EnZNGjmFNMpNg1GVbE5ZgY0yJZUr/tTbCtGaLZtCwY2znupUNIz3vf9H/XZzC9OA
- gAA
-X-Change-ID: 20241019-msm8917-17c3d0ff4a52
+Message-Id: <20241215-msm8917-v9-2-bacaa26f3eef@mainlining.org>
+References: <20241215-msm8917-v9-0-bacaa26f3eef@mainlining.org>
+In-Reply-To: <20241215-msm8917-v9-0-bacaa26f3eef@mainlining.org>
 To: Bjorn Andersson <andersson@kernel.org>, 
  Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -63,115 +60,192 @@ Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, 
  linux-pm@vger.kernel.org, iommu@lists.linux.dev, 
  =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>, 
- Dang Huynh <danct12@riseup.net>, 
- Dmitry Baryshkov <dmitry.baryshkov@linaro.org>, 
- Krzysztof Kozlowski <krzk@kernel.org>, 
- =?utf-8?q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>, 
- Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, 
- Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+ Krzysztof Kozlowski <krzk@kernel.org>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1734261329; l=3901;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1734261329; l=6643;
  i=barnabas.czeman@mainlining.org; s=20240730; h=from:subject:message-id;
- bh=ueQt5GwccAwwxJiXpF97XX3QBwSEJKPeC0KGi9CgjIM=;
- b=JhHMPr0XuLwNjNgZJzMxdMA9wdY0yX8FIeM1K4zaedAMGucxz4G4eRF06Np3FkhElNgxw0s1U
- iLoiGhUAseCCKE91Xe86atdO2sSSS/kvtXlBzCxSIBkAPoR4T2/1yjd
+ bh=+vlEsRuRA90WjAUZ/WcMhrVJbW5wZW6c20Mptd1FCbw=;
+ b=fUpF8xH/BrSLRs4RZWrUFVTpc5LwSUSynzgb1pIVulmoUhEPaG2aeA3N31qwTJF53O2xJluYe
+ lvj0wYrh23FBlhbZ1Skuv0PCGVLNNrg70hCQjWmQif8gxpjEMLgpOEZ
 X-Developer-Key: i=barnabas.czeman@mainlining.org; a=ed25519;
  pk=TWUSIGgwW/Sn4xnX25nw+lszj1AT/A3bzkahn7EhOFc=
 
-This patch series add support for MSM8917 soc with PM8937 and
-Xiaomi Redmi 5A (riva).
+Add device tree bindings documentation for Qualcomm MSM8917
+pinctrl driver.
 
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
 Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
 ---
-Changes in v9:
-- msm8917:
- - add some empty lines for separating pins more
- - order compatible, reg, ranges properties
-- Link to v8: https://lore.kernel.org/r/20241211-msm8917-v8-0-197acc042036@mainlining.org
+ .../bindings/pinctrl/qcom,msm8917-pinctrl.yaml     | 160 +++++++++++++++++++++
+ 1 file changed, 160 insertions(+)
 
-Changes in v8:
-- pm8937, msm8917, msm8917-xiaomi-riva: remove unused includes
-- Link to v7: https://lore.kernel.org/r/20241124-msm8917-v7-0-612729834656@mainlining.org
+diff --git a/Documentation/devicetree/bindings/pinctrl/qcom,msm8917-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/qcom,msm8917-pinctrl.yaml
+new file mode 100644
+index 0000000000000000000000000000000000000000..16d0c010e5818f67bf73eecc36da23705382f121
+--- /dev/null
++++ b/Documentation/devicetree/bindings/pinctrl/qcom,msm8917-pinctrl.yaml
+@@ -0,0 +1,160 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/pinctrl/qcom,msm8917-pinctrl.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Qualcomm MSM8917 TLMM pin controller
++
++maintainers:
++  - Barnabas Czeman <barnabas.czeman@mainlining.org>
++
++description:
++  Top Level Mode Multiplexer pin controller in Qualcomm MSM8917 SoC.
++
++properties:
++  compatible:
++    const: qcom,msm8917-pinctrl
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  gpio-reserved-ranges:
++    minItems: 1
++    maxItems: 66
++
++  gpio-line-names:
++    maxItems: 134
++
++patternProperties:
++  "-state$":
++    oneOf:
++      - $ref: "#/$defs/qcom-msm8917-tlmm-state"
++      - patternProperties:
++          "-pins$":
++            $ref: "#/$defs/qcom-msm8917-tlmm-state"
++        additionalProperties: false
++
++$defs:
++  qcom-msm8917-tlmm-state:
++    type: object
++    description:
++      Pinctrl node's client devices use subnodes for desired pin configuration.
++      Client device subnodes use below standard properties.
++    $ref: qcom,tlmm-common.yaml#/$defs/qcom-tlmm-state
++    unevaluatedProperties: false
++
++    properties:
++      pins:
++        description:
++          List of gpio pins affected by the properties specified in this
++          subnode.
++        items:
++          oneOf:
++            - pattern: "^gpio([0-9]|[1-9][0-9]|1[0-2][0-9]|13[0-3])$"
++            - enum: [ sdc1_clk, sdc1_cmd, sdc1_data, sdc1_rclk, sdc2_clk,
++                      sdc2_cmd, sdc2_data, qdsd_clk, qdsd_cmd, qdsd_data0,
++                      qdsd_data1, qdsd_data2, qdsd_data3 ]
++        minItems: 1
++        maxItems: 16
++
++      function:
++        description:
++          Specify the alternative function to be configured for the specified
++          pins.
++
++        enum: [ accel_int, adsp_ext, alsp_int, atest_bbrx0, atest_bbrx1,
++                atest_char, atest_char0, atest_char1, atest_char2,
++                atest_char3, atest_combodac_to_gpio_native,
++                atest_gpsadc_dtest0_native, atest_gpsadc_dtest1_native,
++                atest_tsens, atest_wlan0, atest_wlan1, audio_ref,
++                audio_reset, bimc_dte0, bimc_dte1, blsp6_spi, blsp8_spi,
++                blsp_i2c1, blsp_i2c2, blsp_i2c3, blsp_i2c4, blsp_i2c5,
++                blsp_i2c6, blsp_i2c7, blsp_i2c8, blsp_spi1, blsp_spi2,
++                blsp_spi3, blsp_spi4, blsp_spi5, blsp_spi6, blsp_spi7,
++                blsp_spi8, blsp_uart1, blsp_uart2, blsp_uart3, blsp_uart4,
++                blsp_uart5, blsp_uart6, blsp_uart7, blsp_uart8, cam0_ldo,
++                cam1_rst, cam1_standby, cam2_rst, cam2_standby, cam_mclk,
++                cci_async, cci_i2c, cci_timer0, cci_timer1, cdc_pdm0,
++                codec_int1, codec_int2, codec_mad, coex_uart, cri_trng,
++                cri_trng0, cri_trng1, dbg_out, dmic0_clk, dmic0_data,
++                ebi_cdc, ebi_ch0, ext_lpass, forced_usb, fp_gpio, fp_int,
++                gcc_gp1_clk_a, gcc_gp1_clk_b, gcc_gp2_clk_a, gcc_gp2_clk_b,
++                gcc_gp3_clk_a, gcc_gp3_clk_b, gcc_plltest, gcc_tlmm, gpio,
++                gsm0_tx, key_focus, key_snapshot, key_volp, ldo_en,
++                ldo_update, lpass_slimbus, lpass_slimbus0, lpass_slimbus1,
++                m_voc, mag_int, mdp_vsync, mipi_dsi0, modem_tsync, nav_pps,
++                nav_pps_in_a, nav_pps_in_b, nav_tsync, nfc_pwr, ov_ldo,
++                pa_indicator, pbs0, pbs1, pbs2, pri_mi2s, pri_mi2s_mclk_a,
++                pri_mi2s_mclk_b, pri_mi2s_ws, prng_rosc,
++                pwr_crypto_enabled_a, pwr_crypto_enabled_b,
++                pwr_modem_enabled_a, pwr_modem_enabled_b, pwr_nav_enabled_a,
++                pwr_nav_enabled_b, qdss_cti_trig_in_a0, qdss_cti_trig_in_a1,
++                qdss_cti_trig_in_b0, qdss_cti_trig_in_b1,
++                qdss_cti_trig_out_a0, qdss_cti_trig_out_a1,
++                qdss_cti_trig_out_b0, qdss_cti_trig_out_b1, qdss_traceclk_a,
++                qdss_traceclk_b, qdss_tracectl_a, qdss_tracectl_b,
++                qdss_tracedata_a, qdss_tracedata_b, sd_write, sdcard_det,
++                sec_mi2s, sec_mi2s_mclk_a, sec_mi2s_mclk_b, sensor_rst,
++                smb_int, ssbi_wtr1, ts_resout, ts_sample, uim1_clk,
++                uim1_data, uim1_present, uim1_reset, uim2_clk, uim2_data,
++                uim2_present, uim2_reset, uim_batt, us_emitter, us_euro,
++                wcss_bt, wcss_fm, wcss_wlan, wcss_wlan0, wcss_wlan1,
++                wcss_wlan2, webcam_rst, webcam_standby, wsa_io, wsa_irq ]
++
++    required:
++      - pins
++
++allOf:
++  - $ref: /schemas/pinctrl/qcom,tlmm-common.yaml#
++
++required:
++  - compatible
++  - reg
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++
++    tlmm: pinctrl@1000000 {
++        compatible = "qcom,msm8917-pinctrl";
++        reg = <0x01000000 0x300000>;
++        interrupts = <GIC_SPI 208 IRQ_TYPE_LEVEL_HIGH>;
++        gpio-controller;
++        gpio-ranges = <&tlmm 0 0 134>;
++        #gpio-cells = <2>;
++        interrupt-controller;
++        #interrupt-cells = <2>;
++
++        blsp1-uart2-sleep-state {
++            pins = "gpio4", "gpio5";
++            function = "gpio";
++
++            drive-strength = <2>;
++            bias-pull-down;
++        };
++
++        spi1-default-state {
++            spi-pins {
++                pins = "gpio0", "gpio1", "gpio3";
++                function = "blsp_spi1";
++
++                drive-strength = <12>;
++                bias-disable;
++            };
++
++            cs-pins {
++                pins = "gpio2";
++                function = "gpio";
++
++                drive-strength = <16>;
++                bias-disable;
++                output-high;
++            };
++        };
++    };
 
-Changes in v7:
-- msm8917-xiaomi-riva:
-  - Add pinctrls for used GPIO pins.
-  - Use interrupts-extend for charger.
-  - Order properies.
-- Link to v6: https://lore.kernel.org/r/20241113-msm8917-v6-0-c348fb599fef@mainlining.org
-
-Changes in v6:
-- msm8917:
-  - Consolidate SDC pins, remove sdc2-cd-on/off pins.
-  - Remove cluster-sleep-0 and cluster-sleep-1
-  and rename cluster-sleep-2 to cluster-sleep-0.
-  - Fix spi, i2c and related pinctrl namings.
-- msm8917-xiaomi-riva: follow i2c name changes.
-- Link to v5: https://lore.kernel.org/r/20241112-msm8917-v5-0-3ca34d33191b@mainlining.org
-
-Changes in v5:
-- msm8917:
-  - Remove aliases.
-  - Rename spi, i2c labels and pins.
-  - Remove clock-frequency from timers
-  - Remove unused mpss_mem region.
-  - Use mboxes where it can be used, only smd-edge uses qcom,ipc.
-- msm8917-xiaomi-riva: Follow i2c label changes.
-- Link to v4: https://lore.kernel.org/r/20241109-msm8917-v4-0-8be9904792ab@mainlining.org
-
-Changes in v4:
-- msm8917 pinctrl: Fix gpio regexp in the schema.
-- msm8937 tsens: Rename ops_msm8976 to ops_common and use it for msm8937.
-- msm8917: fix address padding, naming and ordering, remove polling-delays.
-- Remove applied patches from the series.
-- Link to v3: https://lore.kernel.org/r/20241107-msm8917-v3-0-6ddc5acd978b@mainlining.org
-
-Changes in v3:
-- msm8917-xiaomi-riva: Fix issues addressed by Konrad.
-- msm8917: Fix node addresses, orders of some properties.
-- pm8937: simplify vadc channels.
-- msm8917 pinctrl: Fix schema issues addressed by Krzysztof. 
-- Remove applied tcsr patch from this series.
-- Reword some commit title.
-- Link to v2: https://lore.kernel.org/r/20241031-msm8917-v2-0-8a075faa89b1@mainlining.org
-
-Changes in v2:
-- Add msm8937 tsens support.
-- Fix issues addressed by reviews.
-- Link to v1: https://lore.kernel.org/r/20241019-msm8917-v1-0-f1f3ca1d88e5@mainlining.org
-
----
-Barnabás Czémán (5):
-      dt-bindings: pinctrl: qcom: Add MSM8917 pinctrl
-      dt-bindings: iommu: qcom,iommu: Add MSM8917 IOMMU to SMMUv1 compatibles
-      dt-bindings: nvmem: Add compatible for MS8917
-      dt-bindings: arm: qcom: Add Xiaomi Redmi 5A
-      arm64: dts: qcom: Add Xiaomi Redmi 5A
-
-Dang Huynh (1):
-      arm64: dts: qcom: Add PM8937 PMIC
-
-Otto Pflüger (2):
-      pinctrl: qcom: Add MSM8917 tlmm pinctrl driver
-      arm64: dts: qcom: Add initial support for MSM8917
-
- Documentation/devicetree/bindings/arm/qcom.yaml    |    7 +
- .../devicetree/bindings/iommu/qcom,iommu.yaml      |    1 +
- .../devicetree/bindings/nvmem/qcom,qfprom.yaml     |    1 +
- .../bindings/pinctrl/qcom,msm8917-pinctrl.yaml     |  160 ++
- arch/arm64/boot/dts/qcom/Makefile                  |    1 +
- arch/arm64/boot/dts/qcom/msm8917-xiaomi-riva.dts   |  333 ++++
- arch/arm64/boot/dts/qcom/msm8917.dtsi              | 1954 ++++++++++++++++++++
- arch/arm64/boot/dts/qcom/pm8937.dtsi               |  150 ++
- drivers/pinctrl/qcom/Kconfig.msm                   |    6 +
- drivers/pinctrl/qcom/Makefile                      |    1 +
- drivers/pinctrl/qcom/pinctrl-msm8917.c             | 1620 ++++++++++++++++
- 11 files changed, 4234 insertions(+)
----
-base-commit: 1b2ab8149928c1cea2d7eca30cd35bb7fe014053
-change-id: 20241019-msm8917-17c3d0ff4a52
-
-Best regards,
 -- 
-Barnabás Czémán <barnabas.czeman@mainlining.org>
+2.47.1
 
