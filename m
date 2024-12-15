@@ -1,2047 +1,658 @@
-Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC03717DE36;
-	Sun, 15 Dec 2024 11:15:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9CE717BB32;
+	Sun, 15 Dec 2024 13:47:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734261347; cv=none; b=HixN6G4BSCDWQb8hYBWK0d63ovjVzXA5yKoMhzA0yp/FtE28ROU0I7pp5R5xtM27S5gQBn+TcCTV+yewY4uhVUFT1x9GDVJsPNvWnfmee8c0SQgfvylzs88d23ovOPlNBSPcngZ0662S3eKtFolbOR3zjIt+nt00bujhTKQJui4=
+	t=1734270426; cv=none; b=lBbdVgpc43R9dStJ8qieqSPLWP1cBhi/d2P5U6a/jTEb5mNBDm16KBi8qAssVylYfmnInrwDDQHhRT+iZcg0NEz+ciLxrJHqQFbfWLXattxCBmdsMQm9Cvm73UFhaxykph7OQBaeruDlGX2PaROYBixWnF0T5Xp+znvmYkB4HJA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734261347; c=relaxed/simple;
-	bh=7TbHxoF6reLMMabaxK7+0fkGGpF6HE7uMEhREpnnZZY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=DHUKjqqeTufH9pjIEYaz/zOQYCX4/3XzkNoDB/XaLfLOzh5f6xvFBmbNDkyOuFMIDhOXnMwxoKUOjrMKSzBQUsVc0kArbU7HCaYPDFKfgiBjTyLIsui8jyRvE2AZZCoUHghmFQ21TPGSv6hqL2SQg2tSybe1NQ/5nquBr9+enYg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=biIVoYF6; arc=none smtp.client-ip=5.75.144.95
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
+	s=arc-20240116; t=1734270426; c=relaxed/simple;
+	bh=pwH3EgjUL0mx0RdiPeVfPZJwWiTo6jqn4Il7S5rZTWg=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=VUI6K84XLQGOTwm++9J/e7zjhWclvtq7zvmNoDWBlIllPHmuYFjA0k+DDJWh660SOlXu5GPgXGuSyOfB8pfb61OBNFrZLimolv8j7ZTMhx5CsEGLaf6ap41Rw5EJU1FQ/V3m8kd5Hf47jLnLfP+am041BMCaNSPExRpu50TAM4U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dfY2+Yhl; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="biIVoYF6"
-Received: from [192.168.0.220] (catv-176-63-31-221.catv.fixed.vodafone.hu [176.63.31.221])
-	by mail.mainlining.org (Postfix) with ESMTPSA id B82F6E4832;
-	Sun, 15 Dec 2024 11:15:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mainlining.org;
-	s=psm; t=1734261338;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uQRUenTDNIsnW4x0b28pbS+N772ZYc5497bOeZoHqmM=;
-	b=biIVoYF6sHMb/i8IzTu2rrOf3YqSjVbay+rPuebAQ4W6jXrosqciAFehKQ+4Iz/aDNDxiS
-	PyebjtFe8mZ4AixEEyMX1ZfO7WgAh2EadgRthimPbIUZhGf6D/97CTIgieIXoa5K2Z62CF
-	FEVDduzQQnaHcOwUlEF+BH7zgNPEa98aIHhuk8AQafgXnoWsM0p5VT3Jeb4g+nzzXdkmMw
-	wcQ22rkp6L4s+1HaMaW7k9+Uq8FEOxAsLQFGQhlX3dUrH0aID8ldml04mWm7QyrILkyjH/
-	IGrSusQ6cyFExwG4fIqB/sHXim6PCfxXf4TH1VQXfY16Y+KgPPbEnO3BBuOEqA==
-From: =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
-Date: Sun, 15 Dec 2024 12:15:01 +0100
-Subject: [PATCH v9 6/8] arm64: dts: qcom: Add initial support for MSM8917
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dfY2+Yhl"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1696EC4CECE;
+	Sun, 15 Dec 2024 13:46:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1734270424;
+	bh=pwH3EgjUL0mx0RdiPeVfPZJwWiTo6jqn4Il7S5rZTWg=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=dfY2+YhlguAs8EjWsuKb2wsBs9rvaKers/LTZlBmzIBELK+RU5nH4BvRvuO9LGiFO
+	 QHS1oRzjqLKz4BlgINjQHYni1KYMor31DrbqGsIctNICF71wwojLkeXeIHQn9XcpP8
+	 68uRhPBziJ6wzVsY/KRlsVcR05HI6DPTaXStnhzbDRQlzl4WCcSfGEzdJ7x8AAirgf
+	 jT1LnaUAGYAj0jV1fr6lQpTTfDi5LF/06Czkh1yVAH3wwvW1wGLKksUOTKg0f4vGHi
+	 MEaYKEt0rNd6mLLB31EKfcDqdydmcXky8uZXLvit6+k3DlMiX7hjRuGdpmpUFvq1g3
+	 hgba/93214vww==
+Date: Sun, 15 Dec 2024 13:46:54 +0000
+From: Jonathan Cameron <jic23@kernel.org>
+To: Andy Shevchenko <andriy.shevchenko@intel.com>
+Cc: Matteo Martelli <matteomartelli3@gmail.com>, Jonathan Cameron
+ <Jonathan.Cameron@huawei.com>, Lars-Peter Clausen <lars@metafoo.de>,
+ Michael Hennerich <Michael.Hennerich@analog.com>, Alisa-Dariana Roman
+ <alisa.roman@analog.com>, Christian Eggers <ceggers@arri.de>, Peter Rosin
+ <peda@axentia.se>, Paul Cercueil <paul@crapouillou.net>, Sebastian Reichel
+ <sre@kernel.org>, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mips@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v5 2/5] iio: consumers: copy/release available info from
+ producer to fix race
+Message-ID: <20241215134654.676e9020@jic23-huawei>
+In-Reply-To: <Z1rt2IGAtcRNm9n7@smile.fi.intel.com>
+References: <e56a8f3c81429c465e87a3abcccec1b4@gmail.com>
+	<Zztlz08Wm-mGdy7p@smile.fi.intel.com>
+	<65e16f628245a78da5c9d870d6c5c5a9@gmail.com>
+	<Zzx_C60W48ujpis9@smile.fi.intel.com>
+	<20241123141320.326b3340@jic23-huawei>
+	<9b2f3557dc93c4b75752f812e2645262@gmail.com>
+	<20241126174147.23fed403@jic23-huawei>
+	<9db64d227f70f016b614a9cff5469f2d@gmail.com>
+	<Z03xngKjNQYrKvgw@smile.fi.intel.com>
+	<ed7b48be0216bab2a81e74cf905814d2@gmail.com>
+	<Z1rt2IGAtcRNm9n7@smile.fi.intel.com>
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.43; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20241215-msm8917-v9-6-bacaa26f3eef@mainlining.org>
-References: <20241215-msm8917-v9-0-bacaa26f3eef@mainlining.org>
-In-Reply-To: <20241215-msm8917-v9-0-bacaa26f3eef@mainlining.org>
-To: Bjorn Andersson <andersson@kernel.org>, 
- Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Linus Walleij <linus.walleij@linaro.org>, Amit Kucheria <amitk@kernel.org>, 
- Thara Gopinath <thara.gopinath@gmail.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Joerg Roedel <joro@8bytes.org>, 
- Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>, 
- Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, 
- linux-pm@vger.kernel.org, iommu@lists.linux.dev, 
- =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>, 
- =?utf-8?q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1734261329; l=46426;
- i=barnabas.czeman@mainlining.org; s=20240730; h=from:subject:message-id;
- bh=8JAYabwNYcqupLqevlN3wAOJQSnyJQkh2HRmnhqBY7g=;
- b=0HVo9xS3xPUuLbJSbnCOp9q/gQWVBPxTZQMzoxTg5oN3M9XD0nMbLVHzdNpIPiVeSoKl/UW6t
- BQJlGcDSn8cA3mjeSZ6oeRiqNg7kMbND5XJ914Mu2jmBdOB3M6d0ycW
-X-Developer-Key: i=barnabas.czeman@mainlining.org; a=ed25519;
- pk=TWUSIGgwW/Sn4xnX25nw+lszj1AT/A3bzkahn7EhOFc=
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-From: Otto Pflüger <otto.pflueger@abscue.de>
+On Thu, 12 Dec 2024 16:06:16 +0200
+Andy Shevchenko <andriy.shevchenko@intel.com> wrote:
 
-Add initial support for MSM8917 SoC.
+> On Thu, Dec 12, 2024 at 10:46:04AM +0100, Matteo Martelli wrote:
+> > On Mon, 2 Dec 2024 19:42:54 +0200, Andy Shevchenko <andriy.shevchenko@intel.com> wrote:  
+> > > On Fri, Nov 29, 2024 at 05:04:54PM +0100, Matteo Martelli wrote:  
+> > > > On Tue, 26 Nov 2024 17:41:47 +0000, Jonathan Cameron <jic23@kernel.org> wrote:  
+> > > > > On Tue, 26 Nov 2024 17:31:16 +0100
+> > > > > Matteo Martelli <matteomartelli3@gmail.com> wrote:  
+> > > > > > On Sat, 23 Nov 2024 14:13:20 +0000, Jonathan Cameron <jic23@kernel.org> wrote:  
+> > > > > > > On Tue, 19 Nov 2024 14:05:31 +0200
+> > > > > > > Andy Shevchenko <andriy.shevchenko@intel.com> wrote:  
+> > > > > > > > On Tue, Nov 19, 2024 at 12:25:18PM +0100, Matteo Martelli wrote:    
+> > > > > > > > > On Mon, 18 Nov 2024 18:05:35 +0200, Andy Shevchenko <andriy.shevchenko@intel.com> wrote:      
+> > > > > > > > > > On Mon, Nov 18, 2024 at 03:45:25PM +0100, Matteo Martelli wrote:      
+> > > > > > > > > > > On Mon, 18 Nov 2024 12:21:44 +0200, Andy Shevchenko <andriy.shevchenko@intel.com> wrote:      
+> > > > > > > > > > > > On Fri, Nov 15, 2024 at 03:25:06PM +0100, Matteo Martelli wrote:      
+> > > > > > > > > > > > > On Thu, 31 Oct 2024 19:06:32 +0100, Matteo Martelli <matteomartelli3@gmail.com> wrote:      
+> > > > > > > > > > > > > > Quoting Jonathan Cameron (2024-10-31 15:31:29)      
+> > > > > > > > > > > > > > > On Thu, 31 Oct 2024 12:26:24 +0100
+> > > > > > > > > > > > > > > Matteo Martelli <matteomartelli3@gmail.com> wrote:      
+> > > > > > > > > > > > > > > > Quoting Jonathan Cameron (2024-10-30 21:30:50)      
+> > > > > > > > > > > > > > > > > On Wed, 30 Oct 2024 19:23:21 +0100
+> > > > > > > > > > > > > > > > > Matteo Martelli <matteomartelli3@gmail.com> wrote:      
+> > > > > > > > > > > > > > > > > > Quoting Andy Shevchenko (2024-10-30 15:47:50)        
+> > > > > > > > > > > > > > > > > > > On Mon, Oct 21, 2024 at 02:54:15PM +0200, Matteo Martelli wrote:          
+> > > > > > > >     
+> > > > > > > > > > > > > > > > > > > > Consumers need to call the producer's read_avail_release_resource()
+> > > > > > > > > > > > > > > > > > > > callback after reading producer's available info. To avoid a race
+> > > > > > > > > > > > > > > > > > > > condition with the producer unregistration, change inkern
+> > > > > > > > > > > > > > > > > > > > iio_channel_read_avail() so that it copies the available info from the
+> > > > > > > > > > > > > > > > > > > > producer and immediately calls its release callback with info_exists
+> > > > > > > > > > > > > > > > > > > > locked.
+> > > > > > > > > > > > > > > > > > > > 
+> > > > > > > > > > > > > > > > > > > > Also, modify the users of iio_read_avail_channel_raw() and
+> > > > > > > > > > > > > > > > > > > > iio_read_avail_channel_attribute() to free the copied available buffers
+> > > > > > > > > > > > > > > > > > > > after calling these functions. To let users free the copied buffer with
+> > > > > > > > > > > > > > > > > > > > a cleanup pattern, also add a iio_read_avail_channel_attr_retvals()
+> > > > > > > > > > > > > > > > > > > > consumer helper that is equivalent to iio_read_avail_channel_attribute()
+> > > > > > > > > > > > > > > > > > > > but stores the available values in the returned variable.          
+> > > > > > > > 
+> > > > > > > > ...
+> > > > > > > >     
+> > > > > > > > > > > > > > > > > > > > +static void dpot_dac_read_avail_release_res(struct iio_dev *indio_dev,
+> > > > > > > > > > > > > > > > > > > > +                                         struct iio_chan_spec const *chan,
+> > > > > > > > > > > > > > > > > > > > +                                         const int *vals, long mask)
+> > > > > > > > > > > > > > > > > > > > +{
+> > > > > > > > > > > > > > > > > > > > +     kfree(vals);
+> > > > > > > > > > > > > > > > > > > > +}
+> > > > > > > > > > > > > > > > > > > > +
+> > > > > > > > > > > > > > > > > > > >  static int dpot_dac_write_raw(struct iio_dev *indio_dev,
+> > > > > > > > > > > > > > > > > > > >                             struct iio_chan_spec const *chan,
+> > > > > > > > > > > > > > > > > > > >                             int val, int val2, long mask)
+> > > > > > > > > > > > > > > > > > > > @@ -125,6 +132,7 @@ static int dpot_dac_write_raw(struct iio_dev *indio_dev,
+> > > > > > > > > > > > > > > > > > > >  static const struct iio_info dpot_dac_info = {
+> > > > > > > > > > > > > > > > > > > >       .read_raw = dpot_dac_read_raw,
+> > > > > > > > > > > > > > > > > > > >       .read_avail = dpot_dac_read_avail,
+> > > > > > > > > > > > > > > > > > > > +     .read_avail_release_resource = dpot_dac_read_avail_release_res,
+> > > > > > > > > > > > > > > > > > > >       .write_raw = dpot_dac_write_raw,
+> > > > > > > > > > > > > > > > > > > >  };          
+> > > > > > > > > > > > > > > > > > > 
+> > > > > > > > > > > > > > > > > > > I have a problem with this approach. The issue is that we allocate
+> > > > > > > > > > > > > > > > > > > memory in one place and must clear it in another. This is not well
+> > > > > > > > > > > > > > > > > > > designed thingy in my opinion. I was thinking a bit of the solution and
+> > > > > > > > > > > > > > > > > > > at least these two comes to my mind:
+> > > > > > > > > > > > > > > > > > > 
+> > > > > > > > > > > > > > > > > > > 1) having a special callback for .read_avail_with_copy (choose better
+> > > > > > > > > > > > > > > > > > > name) that will dump the data to the intermediate buffer and clean it
+> > > > > > > > > > > > > > > > > > > after all;
+> > > > > > > > > > > > > > > > > > > 
+> > > > > > > > > > > > > > > > > > > 2) introduce a new type (or bit there), like IIO_AVAIL_LIST_ALLOC.          
+> > > > > > > > > > > > > > > > > > 
+> > > > > > > > > > > > > > > > > > Could you elaborate more about these potential solutions? Maybe with some
+> > > > > > > > > > > > > > > > > > usage examples?
+> > > > > > > > > > > > > > > > > > 
+> > > > > > > > > > > > > > > > > > If I get it correctly, in both cases you are suggesting to pass ownership
+> > > > > > > > > > > > > > > > > > of the vals buffer to the caller, iio_read_channel_info_avail() in this
+> > > > > > > > > > > > > > > > > > case, so that it would take care of freeing the buffer after calling
+> > > > > > > > > > > > > > > > > > iio_format_after_*(). We considered this approach during an initial
+> > > > > > > > > > > > > > > > > > discussion with Jonathan (see read_avail_ext() in [1]), where he suggested
+> > > > > > > > > > > > > > > > > > to let the driver keep the release control through a callback for two
+> > > > > > > > > > > > > > > > > > reasons:
+> > > > > > > > > > > > > > > > > > 
+> > > > > > > > > > > > > > > > > > 1) Apparently it's a bad pattern to pass the buffer ownership to the core,
+> > > > > > > > > > > > > > > > > >    maybe Jonathan can elaborate why? The risk I can think of is that the driver
+> > > > > > > > > > > > > > > > > >    could still keep the buffer copy in its private data after giving it away,
+> > > > > > > > > > > > > > > > > >    resulting in fact in a double ownership. However I think it would be clear
+> > > > > > > > > > > > > > > > > >    enough in this case that the copy should be handled by the caller, or maybe
+> > > > > > > > > > > > > > > > > >    not?        
+> > > > > > > > > > > > > > > > > Mostly the lack of desire to have to copy for the 95% of cases where it's
+> > > > > > > > > > > > > > > > > not needed and that it prevents any optimization like you mention.        
+> > > > > > > > > > > > > > > > 
+> > > > > > > > > > > > > > > > I think the suggestion here is to add an additional .read_avail_with_copy()
+> > > > > > > > > > > > > > > > without replacing the original .read_avail(), so all the current drivers that
+> > > > > > > > > > > > > > > > use a constant avail list would not be affected.      
+> > > > > > > >     
+> > > > > > > > > > > > Yes.      
+> > > > > > > >     
+> > > > > > > > > > > > > > > > And I think this was the same
+> > > > > > > > > > > > > > > > idea for the additional read_avail_ext() or the additional argument for the
+> > > > > > > > > > > > > > > > read_avail() we were considering in [1]. So I would think that
+> > > > > > > > > > > > > > > > iio_read_channel_info_avail() would do something like the following:
+> > > > > > > > > > > > > > > > 
+> > > > > > > > > > > > > > > >     if (indio_dev->info->read_avail_with_copy)
+> > > > > > > > > > > > > > > >         indio_dev->info->read_avail_with_copy(vals);
+> > > > > > > > > > > > > > > >     else
+> > > > > > > > > > > > > > > >         indio_dev->info->read_avail(vals);
+> > > > > > > > > > > > > > > > 
+> > > > > > > > > > > > > > > >     ...
+> > > > > > > > > > > > > > > >     iio_format_avail_list(vals);
+> > > > > > > > > > > > > > > >     ...
+> > > > > > > > > > > > > > > > 
+> > > > > > > > > > > > > > > >     if (indio_dev->info->read_avail_with_copy)
+> > > > > > > > > > > > > > > >         kfree(vals);      
+> > > > > > > > > > > > 
+> > > > > > > > > > > > Right. At least that's what I see can be done with the existing users.
+> > > > > > > > > > > >       
+> > > > > > > > > > > > > > > Ok, sure that would work, but...
+> > > > > > > > > > > > > > > 
+> > > > > > > > > > > > > > > I don't really see this as being much less fragile than
+> > > > > > > > > > > > > > > the existing solution + in cases that we do have where
+> > > > > > > > > > > > > > > only some available are not const we will have to copy them
+> > > > > > > > > > > > > > > all.
+> > > > > > > > > > > > > > > 
+> > > > > > > > > > > > > > > If anything it's more complex than making it a driver problem
+> > > > > > > > > > > > > > > to provide the release call however it wants to do it.      
+> > > > > > > > > > > > 
+> > > > > > > > > > > > ...but make a driver to allocate what's needed as well then.
+> > > > > > > > > > > >       
+> > > > > > > > > > > > > > > > And the drivers would choose whether to define the read_avail or the
+> > > > > > > > > > > > > > > > read_avail_with_copy.      
+> > > > > > > > > > > > 
+> > > > > > > > > > > > Either way drivers should know what to do with a data supplied to read_aval().
+> > > > > > > > > > > > In one case we assume the [simple] workflow in the core, in the other we all
+> > > > > > > > > > > > rely on the driver. Current approach makes a mix of these two. And that's what
+> > > > > > > > > > > > I don't like.      
+> > > > > > > > > > > 
+> > > > > > > > > > > If I understand your concern correctly, you are referring to the inkern
+> > > > > > > > > > > iio_channel_read_avail() that makes the allocation for the consumer's
+> > > > > > > > > > > buffer copy and you are suggesting that such copy should be done by the
+> > > > > > > > > > > consumer driver code itself, this to be consistent with the producer
+> > > > > > > > > > > drivers which directly handle the allocation of the copy.      
+> > > > > > > > > > 
+> > > > > > > > > > One of the options, yes.
+> > > > > > > > > >       
+> > > > > > > > > > > One thing to notice is that the inkern iio_channel_read_avail() does
+> > > > > > > > > > > together producer->read_avail() + copy + producer->read_avail_release()
+> > > > > > > > > > > with info_exists locked. Also, the consumer driver would need to know
+> > > > > > > > > > > the avail buffer size to allocate the buffer copy prior the
+> > > > > > > > > > > iio_channel_read_avail() call, but such size is unknown before calling
+> > > > > > > > > > > the actual producer's read_avail(). This would mean calling the
+> > > > > > > > > > > producer's read_avail() and read_avail_release() callbacks separately
+> > > > > > > > > > > without the lock held, with the risk of a memleak if the producer is
+> > > > > > > > > > > unregistered between those calls.      
+> > > > > > > > > > 
+> > > > > > > > > > Thanks for explaining this, but it even more makes me think that the design
+> > > > > > > > > > is broken and your approach is rather a hack. So, what's the problem to
+> > > > > > > > > > make IIO core to take care of the allocating and cleaning then without driver
+> > > > > > > > > > being involved? Yes, this might require a hint from the driver on what to copy
+> > > > > > > > > > if we want to avoid copying everything.      
+> > > > > > > > > 
+> > > > > > > > > I am not particularly against it, other than the concerns that have
+> > > > > > > > > emerged during this (and previous) discussion. Let me summarize them:      
+> > > > > > > > 
+> > > > > > > > Thank you for a very good summary and fix-N proposals. I think I have nothing
+> > > > > > > > to add and we should wait for Jonathan to finally choose (or propose a fix-N+1)
+> > > > > > > > here.    
+> > > > > > > Agreed. This is very useful enumeration of various options with plenty
+> > > > > > > of details!
+> > > > > > > 
+> > > > > > > One absolute key thing to note here is we should not care at all what
+> > > > > > > inkern does for it's handling internally of the available lists.  The big
+> > > > > > > ABI question is all about consumers drivers directly using the resulting list of
+> > > > > > > available values.  The use in the IIO core and the inkern helpers should
+> > > > > > > naturally follow.
+> > > > > > >   
+> > > > > > > > > fix-1) the current one. Your concerns are:
+> > > > > > > > >     * for consumers the copy allocation is taken care by the inkern API
+> > > > > > > > >       but the release is handled by the consumer driver code, making it
+> > > > > > > > >       a fragile design.    
+> > > > > > > 
+> > > > > > > So this was something I'm not sure I agree with.  There are plenty
+> > > > > > > of get / release patterns out there. This is just another one of those
+> > > > > > > but perhaps it doesn't 'smell' enough like that.
+> > > > > > > 
+> > > > > > > Perhaps think of it as
+> > > > > > > 
+> > > > > > > int *iio_channel_avail_get()
+> > > > > > > void iio_channel_avail_release()
+> > > > > > > 
+> > > > > > > We could perhaps make it look more standard using a cookie rather than
+> > > > > > > reconstructing the equivalent data at the release call.    
+> > > > > > 
+> > > > > > Would this imply that also the read_info callback provided by the
+> > > > > > iio_info struct should be replaced? Something like info->get_avail()
+> > > > > > returning a iio_avail_cookie instead of info->read_avail(const int **vals)?
+> > > > > > * If yes, that would be a big impact in the current code as all
+> > > > > > iio drivers defining read_avail would need to be changed (I am not
+> > > > > > against it but better consider it).
+> > > > > > * If no, then I find odd that iio_info->avail_release(cookie) gets a
+> > > > > > cookie that has been allocated outside the provider driver: the read
+> > > > > > functions gives something to the user and its corresponing release
+> > > > > > handle another type of object (even it's just a wrapper). Is this the
+> > > > > > usual pattern for cookies?  
+> > > > > 
+> > > > > I think the trick here is that the provider drivers wouldn't be involved
+> > > > > in the cookie handling. We might have done it differently if we
+> > > > > were starting from scratch, but the legacy is a pain as normal!
+> > > > > Consumers can stay the same as you have here as all the information in
+> > > > > the cookie would be gathered from existing read_avail plus the parameters.
+> > > > > Tricky bit is the provider_priv, but we may not even need that.  If that
+> > > > > becomes a useful thing we'd need a new optional get_avail_with_priv()
+> > > > > or something like that.  Might need to stash the channel info in the
+> > > > > cookie as well.
+> > > > > 
+> > > > > Provider wouldn't see the cookie at release either as we'd just
+> > > > > pass parameters from the cookie into the release callback then free
+> > > > > the cookie in the core code.  Technically ownership of the cookie
+> > > > > would lie with the consumer not the provider but we'd hide all that
+> > > > > away from the consumer.  
+> > > > 
+> > > > I see now that your suggestion to use the cookie would only affect
+> > > > consumers. What confused me is your example below where the producer's
+> > > > release would use the cookie as well:
+> > > > 
+> > > >             iio_dev->info->avail_release(cookie);
+> > > > 
+> > > > Anyway, if iio_info->read_avail and
+> > > > iio_info->read_avail_release_resource are not going to be changed, how
+> > > > could we address the case where the consumers simply forwards their
+> > > > providers avail data back to the core for sysfs print, like as follows?
+> > > > 
+> > > > static int dpot_dac_read_avail(struct iio_dev *indio_dev,
+> > > > 			       struct iio_chan_spec const *chan,
+> > > > 			       const int **vals, int *type, int *length,
+> > > > 			       long mask)
+> > > > {
+> > > > 	struct dpot_dac *dac = iio_priv(indio_dev);
+> > > > 
+> > > > 	switch (mask) {
+> > > > 	case IIO_CHAN_INFO_RAW:
+> > > > 		*type = IIO_VAL_INT;
+> > > > 		return iio_read_avail_channel_raw(dac->dpot, vals, length);
+> > > > 
+> > > > 		/* NOTE: Here we could call the cookie = iio_channel_avail_get() and
+> > > > 		  fill the return arguments with the content of the
+> > > > 		  cookie, but wouldn't the cookie be lost? How to return
+> > > > 		  it to caller? */
+> > > > 	}
+> > > > 
+> > > > 	return -EINVAL;
+> > > > }
+> > > > 
+> > > > static void dpot_dac_read_avail_release_res(struct iio_dev *indio_dev,
+> > > > 					    struct iio_chan_spec const *chan,
+> > > > 					    const int *vals, long mask)
+> > > > {
+> > > > 	kfree(vals);
+> > > > 	/* NOTE: Here the consumer should access the cookie to call
+> > > > 	 * iio_channel_avail_release(cookie), but how can it? */
+> > > > }
+> > > > ...
+> > > > static const struct iio_info dpot_dac_info = {
+> > > > 	.read_avail = dpot_dac_read_avail,
+> > > > 	.read_avail_release_resource = dpot_dac_read_avail_release_res,
+> > > > };
+> > > > 
+> > > >   
+> > > > > 
+> > > > > Whether we would use the cookie magic in the inkern code other
+> > > > > than the getter itself would depend a bit on what it looks like
+> > > > > 
+> > > > > We might need to do a global rename of read_avail to get_avail
+> > > > > though to make the relationship to release_avail obvious.
+> > > > > 
+> > > > >   
+> > > > > >   
+> > > > > > > 
+> > > > > > > struct iio_avail_cookie {
+> > > > > > > 	const int *avail;
+> > > > > > > 	void *provider_priv;
+> > > > > > > // see later for a maybe...
+> > > > > > > 	struct iio_dev *indio_dev;
+> > > > > > > };
+> > > > > > > 
+> > > > > > > const int *iio_avail_from_cookie(struct iio_avail_cookie *cookie)
+> > > > > > > {
+> > > > > > > 	return cookie->avail;
+> > > > > > > }
+> > > > > > >    
+> > > > > > 
+> > > > > > I suppose that struct iio_avail_cookie and their access functions like
+> > > > > > iio_avail_from_cookie would be define in iio.h as they are required for
+> > > > > > producer drivers too. Correct?  
+> > > > > 
+> > > > > Initially at least I'd try just making them visible to the consumer.
+> > > > >   
+> > > > > >   
+> > > > > > > 
+> > > > > > > struct iio_avail_cookie *iio_channel_avail_get(struct iio_dev, struct iio_chan_spec)
+> > > > > > > {
+> > > > > > > 	allocate a cookie and fill it in.
+> > > > > > > }
+> > > > > > > 
+> > > > > > > and code would always explicitly release after it is done with the cookie.
+> > > > > > > 
+> > > > > > > Something like
+> > > > > > > 
+> > > > > > > void iio_channel_avail_release(struct iio_dev *iio_dev, struct iio_avail_cookie *cookie)
+> > > > > > > // could even move the iio_dev pointer into the cookie, so it becomes
+> > > > > > > // iio_channel_avail_release(struct iio_avail_cookie *cookie) and suitable for __free magic.
+> > > > > > > {
+> > > > > > > 	if (iio_dev->info->avail_release)
+> > > > > > > 		iio_dev->info->avail_release(cookie);
+> > > > > > > 	kfree(cookie);
+> > > > > > > 	/*
+> > > > > > > 	 * Could add optimizations around cookie handling to avoid alloc + free in most cases
+> > > > > > > 	 * or use an object pool.
+> > > > > > > 	 */
+> > > > > > > }    
+> > > > > > 
+> > > > > > Do these two functions refer to inkern consumer APIs? Would
+> > > > > > iio_channel_avail_get() replace the current inkern
+> > > > > > iio_read_avail_channel_attribute()?   
+> > > > > 
+> > > > > Yes.
+> > > > >   
+> > > > > >In that case I think
+> > > > > > iio_channel_avail_get() would copy the cookie (and its inner avail
+> > > > > > buffer) from the provider driver, or allocate a new cookie with the
+> > > > > > copied avail buffer if info->read_avail() is kept unchanged, and
+> > > > > > immediately call the provider info->avail_release(cookie) to do
+> > > > > > copy+release with info_exist_lock locked.  
+> > > > > 
+> > > > > I don't think the provider ever explicitly deals with the cookie,
+> > > > > just data read from it in the inkern code.
+> > > > >   
+> > > > > > At that point
+> > > > > > iio_channel_avail_release() would only need to call
+> > > > > > kfree(iio_avail_from_cookie(cookie)) and kfree(cookie).  
+> > > > > 
+> > > > > 
+> > > > > Ah. I'm forgetting the issue with the provider device instance
+> > > > > going away. In that case it may well have to copy the avail data
+> > > > > to fill the cookie returned to the consumer driver much like we
+> > > > > copy it now.+ free it.  We could do something smarter with that
+> > > > > cookie though to avoid a free if it's static const stuff as the
+> > > > > provider module should be locked in place I think.
+> > > > >   
+> > > > > >   
+> > > > > > > 
+> > > > > > > The current proposal just avoid the need for a cookie as for all known cases so far
+> > > > > > > provider_priv could == the channel requested.
+> > > > > > > 
+> > > > > > >     
+> > > > > > > > >     * consumers and producers manage the allocation differently, the
+> > > > > > > > >       first handles it via the inkern API, the second one in the
+> > > > > > > > >       producer driver code, making it inconsistent.    
+> > > > > > > 
+> > > > > > > The inkern API changes are mostly an attempt to reduce boiler plate. The only
+> > > > > > > case we really should be worrying about to my mind is the consumer wanting
+> > > > > > > to access the full available list. 
+> > > > > > >     
+> > > > > > > > > 
+> > > > > > > > > fix-2) adding a read_avail_with_copy(): a driver with both const avail
+> > > > > > > > > lists and mutable avail lists would always return a copy for all of
+> > > > > > > > > them, including the const ones. Example above.    
+> > > > > > > 
+> > > > > > > Hmm. So this could work but with the firm rule that a provider must never
+> > > > > > > provide both options and a core check on drivers to enforce that probe.
+> > > > > > > Any existing consumers must be modified to try both paths
+> > > > > > > (read_avail_with_copy then read_avail) to avoid regressions.
+> > > > > > > 
+> > > > > > > For future code, if we miss a case that doesn't do this then the upshot
+> > > > > > > is that the call will fail and the consumer needs fixing but at least
+> > > > > > > it is not a regression because it will never have worked for that
+> > > > > > > particular consumer + producer pair.  Not too horrible, but I'm not
+> > > > > > > really seeing it as better than option 1.
+> > > > > > >     
+> > > > > > > > > 
+> > > > > > > > > fix-3) adding a release_avail return param to read_avail(): this would
+> > > > > > > > > require a change to all the drivers using it. Also it
+> > > > > > > > > looks to me an unusual pattern, are there other similar patterns around
+> > > > > > > > > the codebase? Example below.    
+> > > > > > > 
+> > > > > > > No advantage that I can see vs an explicit get / release where the
+> > > > > > > release may do nothing if there was no allocation.
+> > > > > > >     
+> > > > > > > > > 
+> > > > > > > > > fix-4) adding a new enum variant to the avail type like
+> > > > > > > > > IIO_AVAIL_LIST_ALLOC: to me this looks hacky as it mixes the logic type
+> > > > > > > > > of the data structure and how it is handled in memory. I think the
+> > > > > > > > > latter should better fit in a different field, however this modification
+> > > > > > > > > would have little impact in the current code. Example below.    
+> > > > > > > 
+> > > > > > > This one I really don't like. Needs non obvious / subtle handling in the
+> > > > > > > consumer drivers.
+> > > > > > >     
+> > > > > > > > > 
+> > > > > > > > > So far these alternatives only consider moving the release of the copy
+> > > > > > > > > buffer in the IIO core but not its allocation.    
+> > > > > > > 
+> > > > > > > I'm confused.  Moving it in, or out of the core?  What does this mean
+> > > > > > > for a consumer driver after the avail list?
+> > > > > > >     
+> > > > > > > > You also suggest to make    
+> > > > > > > > > the IIO core take care of the copy allocation. The problem I see with
+> > > > > > > > > this is that if the copy is handled outside the driver it could take
+> > > > > > > > > place concurrently with the modification of the original buffer since it
+> > > > > > > > > would not be locked by driver private mutex, thus making the copy
+> > > > > > > > > useless. This might be worked around by adding an additional optional
+> > > > > > > > > callback (e.g. read_avail_will_copy/read_avail_is_mutable) to just take
+> > > > > > > > > the size and check if a copy will be provided, so maybe something like:
+> > > > > > > > > 
+> > > > > > > > > fix-5) iio_read_channel_info_avail():    
+> > > > > > > 
+> > > > > > > This is picking on the wrong code for this discussion.  Use
+> > > > > > > iio_read_avail_channel_attribute() for example because that's the one
+> > > > > > > where ABI matters.  Anything within the IIO core is just a question of
+> > > > > > > 'niceness' it isn't important like a function called by a consumer driver.
+> > > > > > > 
+> > > > > > > Code of a consumer driver will be similar to this however.  A few things
+> > > > > > > would be needed to make this pattern work.
+> > > > > > >      
+> > > > > > > > > {
+> > > > > > > > >     ...
+> > > > > > > > >     int *vals;
+> > > > > > > > >     bool copy = false;
+> > > > > > > > >     if (indio_dev->info->read_avail_will_copy) {
+> > > > > > > > >         copy = indio_dev->info->read_avail_will_copy(..., &length, ...);    
+> > > > > > > 
+> > > > > > > return length as 0 can reasonably mean we don't need to allocate.
+> > > > > > > That value must be the maximum possible size that can ever be needed, not the
+> > > > > > > current one.
+> > > > > > >     
+> > > > > > > > >         if (copy) {
+> > > > > > > > >             vals = kcalloc(length, sizeof(int), GFP_KERNEL);
+> > > > > > > > >         }
+> > > > > > > > >     }
+> > > > > > > > > 
+> > > > > > > > >     indio_dev->info->read_avail(&vals, ...);    
+> > > > > > > 
+> > > > > > > For iio_read_avail_channel_attribute it will a little fiddlier but end result
+> > > > > > > is the same but done under the exist lock. If the device went away before this
+> > > > > > > call then we will get an error, otherwise this will fill vals and provide
+> > > > > > > the right length. 
+> > > > > > >     
+> > > > > > > > > 
+> > > > > > > > >     if (ret < 0)
+> > > > > > > > >             return ret;
+> > > > > > > > >     switch (ret) {
+> > > > > > > > >     case IIO_AVAIL_LIST:
+> > > > > > > > >             ret = iio_format_avail_list(buf, vals, type, length);
+> > > > > > > > >     case IIO_AVAIL_RANGE:
+> > > > > > > > >             ret = iio_format_avail_range(buf, vals, type);
+> > > > > > > > >     default:
+> > > > > > > > >             ret = -EINVAL;
+> > > > > > > > >     }
+> > > > > > > > > 
+> > > > > > > > >     if (copy)
+> > > > > > > > >         kfree(vals);
+> > > > > > > > > }
+> > > > > > > > > 
+> > > > > > > > > If I am not missing anything this could work and maybe it could also
+> > > > > > > > > avoid the double copy on the consumers but would require all of them to
+> > > > > > > > > wrap the read_avail_will_copy(). Also, I find it quite a weird pattern
+> > > > > > > > > that in some cases vals would be an input buffer to be filled and in
+> > > > > > > > > other cases it would be a return argument pointing to the const buffer
+> > > > > > > > > stored inside the driver. At least I wouldn't say it's more robust than
+> > > > > > > > > the current fix-1.    
+> > > > > > > Agreed. It works, but I'm not seeing the advantage and the multiple use
+> > > > > > > of the vals parameter is too subtle to be maintainable.
+> > > > > > >     
+> > > > > > > > > 
+> > > > > > > > > All these alternatives also prevents some potential optimization already
+> > > > > > > > > mentioned before. Reporting it again as it is now lost in the mess below:
+> > > > > > > > >     Some driver might want to avoid allocating a new copy of a big table if
+> > > > > > > > >     the race does not occur (e.g. with additional checks on buffer access
+> > > > > > > > >     code) and thus wouldn't call a free() in the release callback.
+> > > > > > > > > 
+> > > > > > > > > In the end I don't find any of the above alternatives to provide an
+> > > > > > > > > obvious better solution.    
+> > > > > > > 
+> > > > > > > Agreed.  My only question vs just taking the existing solution is whether
+> > > > > > > it makes sense to use a more explicit struct iio_avail_cookie
+> > > > > > > to hold all the info that we pass to release.  I don't particularly like
+> > > > > > > that we'll end up allocating that cookie structure but it would make it more
+> > > > > > > like a typical get / release and perhaps closer to what readers would
+> > > > > > > expect to see?
+> > > > > > > 
+> > > > > > > What do you think?    
+> > > > > > 
+> > > > > > I cannot answer about what readers would expect since I am quite new to
+> > > > > > kernel internals and I was not aware about the cookie pattern myself.
+> > > > > > However, I agree that it seems more clear than the current solution but
+> > > > > > only if it's going to replace the iio_info read_avail() callback,
+> > > > > > otherwise I think that only using the cookie on the release callback
+> > > > > > would make it even more confusing. It is worth noting that in that case
+> > > > > > all current provider drivers defining the read_avail callback should be
+> > > > > > changed.  
+> > > > > Key I think is we really don't need to be careful with what happens in inkern.c
+> > > > > (though obviously good to use infrastructure we invent for other things),
+> > > > > only what is presented by consumer.h interfaces to consumer drivers.
+> > > > > Those get and release the cookie.
+> > > > > 
+> > > > > That's a much smaller set of drivers to modify.
+> > > > > 
+> > > > > Or as Andy suggested, maybe it's just a question of naming and we need
+> > > > > a get and release but otherwise don't bother with the complexity of the cookie.
+> > > > > Maybe just rename read_avail to make it obvious.
+> > > > > 
+> > > > > Right now I'm thinking the cookie wrappers around get_avail / release_avail
+> > > > > to wrap up basically the parameters passed to get_avail + the output so
+> > > > > that we have a neat package to pass to release_avail will end up the neatest
+> > > > > solution but I may be wrong :(  
+> > > > 
+> > > > If there is a way to address my issue above I can see some benefits in
+> > > > terms of clarity. In general I think it's more clear to return a struct
+> > > > instead of using return arguments, it would also simplify the __free()
+> > > > cleanup as we wouldn't need the additional *_retvals wrapper for that
+> > > > purpose. Also, I think using an inkern helper for the release adds more
+> > > > clarity to the consumer drivers even if it's just a wrapper to kfree(),
+> > > > but that could be achieved without the cookie too.  
+> > > 
+> > > IIUC we need also new read_avail_alloc() which returns cookie structure,
+> > > in this case the read_aval_release() will take it as a parameter. It means
+> > > it will be the driver's responsibility to carry on the cookie.  
 
-Signed-off-by: Otto Pflüger <otto.pflueger@abscue.de>
-[reword commit, rebase, fix schema errors]
-Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
----
- arch/arm64/boot/dts/qcom/msm8917.dtsi | 1954 +++++++++++++++++++++++++++++++++
- 1 file changed, 1954 insertions(+)
+That's a no because of the cost in driver rework as any driver
+could have it's read_avail_alloc() call called if they provide
+a read_avail() today.  We could provide a default function but that's
+effectively the same as just doing the handling the IIO core and leaving
+the provider drivers alone.  I don't mind this approach if it makes it
+look more standard but I'm not seeing the advantage so far.
 
-diff --git a/arch/arm64/boot/dts/qcom/msm8917.dtsi b/arch/arm64/boot/dts/qcom/msm8917.dtsi
-new file mode 100644
-index 0000000000000000000000000000000000000000..b75c012420f4136455b11902c90766f441458a7c
---- /dev/null
-+++ b/arch/arm64/boot/dts/qcom/msm8917.dtsi
-@@ -0,0 +1,1954 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+
-+#include <dt-bindings/clock/qcom,gcc-msm8917.h>
-+#include <dt-bindings/clock/qcom,rpmcc.h>
-+#include <dt-bindings/interrupt-controller/arm-gic.h>
-+#include <dt-bindings/power/qcom-rpmpd.h>
-+#include <dt-bindings/thermal/thermal.h>
-+
-+/ {
-+	interrupt-parent = <&intc>;
-+
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+
-+	chosen { };
-+
-+	clocks {
-+		sleep_clk: sleep-clk {
-+			compatible = "fixed-clock";
-+			#clock-cells = <0>;
-+		};
-+
-+		xo_board: xo-board {
-+			compatible = "fixed-clock";
-+			#clock-cells = <0>;
-+		};
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		cpu0: cpu@100 {
-+			compatible = "arm,cortex-a53";
-+			reg = <0x100>;
-+			device_type = "cpu";
-+			next-level-cache = <&l2_0>;
-+			enable-method = "psci";
-+			clocks = <&apcs>;
-+			operating-points-v2 = <&cpu_opp_table>;
-+			#cooling-cells = <2>;
-+			power-domains = <&cpu_pd0>;
-+			power-domain-names = "psci";
-+
-+			l2_0: l2-cache {
-+				compatible = "cache";
-+				cache-level = <2>;
-+				cache-unified;
-+			};
-+		};
-+
-+		cpu1: cpu@101 {
-+			compatible = "arm,cortex-a53";
-+			reg = <0x101>;
-+			device_type = "cpu";
-+			next-level-cache = <&l2_0>;
-+			enable-method = "psci";
-+			clocks = <&apcs>;
-+			operating-points-v2 = <&cpu_opp_table>;
-+			#cooling-cells = <2>;
-+			power-domains = <&cpu_pd1>;
-+			power-domain-names = "psci";
-+		};
-+
-+		cpu2: cpu@102 {
-+			compatible = "arm,cortex-a53";
-+			reg = <0x102>;
-+			device_type = "cpu";
-+			next-level-cache = <&l2_0>;
-+			enable-method = "psci";
-+			clocks = <&apcs>;
-+			operating-points-v2 = <&cpu_opp_table>;
-+			#cooling-cells = <2>;
-+			power-domains = <&cpu_pd2>;
-+			power-domain-names = "psci";
-+		};
-+
-+		cpu3: cpu@103 {
-+			compatible = "arm,cortex-a53";
-+			reg = <0x103>;
-+			device_type = "cpu";
-+			next-level-cache = <&l2_0>;
-+			enable-method = "psci";
-+			clocks = <&apcs>;
-+			operating-points-v2 = <&cpu_opp_table>;
-+			#cooling-cells = <2>;
-+			power-domains = <&cpu_pd3>;
-+			power-domain-names = "psci";
-+		};
-+
-+		cpu-map {
-+			cluster0 {
-+				core0 {
-+					cpu = <&cpu0>;
-+				};
-+
-+				core1 {
-+					cpu = <&cpu1>;
-+				};
-+
-+				core2 {
-+					cpu = <&cpu2>;
-+				};
-+
-+				core3 {
-+					cpu = <&cpu3>;
-+				};
-+			};
-+		};
-+
-+		domain-idle-states {
-+			cluster_sleep_0: cluster-sleep-0 {
-+				compatible = "domain-idle-state";
-+				arm,psci-suspend-param = <0x41000053>;
-+				entry-latency-us = <700>;
-+				exit-latency-us = <1000>;
-+				min-residency-us = <6500>;
-+			};
-+		};
-+
-+		idle-states {
-+			entry-method = "psci";
-+
-+			cpu_sleep_0: cpu-sleep-0 {
-+				compatible = "arm,idle-state";
-+				idle-state-name = "standalone-power-collapse";
-+				arm,psci-suspend-param = <0x40000003>;
-+				entry-latency-us = <125>;
-+				exit-latency-us = <180>;
-+				min-residency-us = <595>;
-+				local-timer-stop;
-+			};
-+		};
-+
-+		cpu_opp_table: opp-table-cpu {
-+			compatible = "operating-points-v2";
-+			opp-shared;
-+
-+			opp-960000000 {
-+				opp-hz = /bits/ 64 <960000000>;
-+			};
-+
-+			opp-1094400000 {
-+				opp-hz = /bits/ 64 <1094400000>;
-+			};
-+
-+			opp-1248000000 {
-+				opp-hz = /bits/ 64 <1248000000>;
-+			};
-+
-+			opp-1401600000 {
-+				opp-hz = /bits/ 64 <1401600000>;
-+			};
-+		};
-+	};
-+
-+	firmware {
-+		scm: scm {
-+			compatible = "qcom,scm-msm8916", "qcom,scm";
-+			clocks = <&gcc GCC_CRYPTO_CLK>,
-+				 <&gcc GCC_CRYPTO_AXI_CLK>,
-+				 <&gcc GCC_CRYPTO_AHB_CLK>;
-+			clock-names = "core", "bus", "iface";
-+			#reset-cells = <1>;
-+
-+			qcom,dload-mode = <&tcsr 0x6100>;
-+		};
-+	};
-+
-+	memory@80000000 {
-+		/* We expect the bootloader to fill in the reg */
-+		reg = <0 0x80000000 0 0>;
-+		device_type = "memory";
-+	};
-+
-+	pmu {
-+		compatible = "arm,cortex-a53-pmu";
-+		interrupts = <GIC_PPI 7 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
-+	};
-+
-+	psci {
-+		compatible = "arm,psci-1.0";
-+		method = "smc";
-+
-+		cluster_pd: power-domain-cluster {
-+			#power-domain-cells = <0>;
-+			domain-idle-states = <&cluster_sleep_0>;
-+		};
-+
-+		cpu_pd0: power-domain-cpu0 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&cluster_pd>;
-+			domain-idle-states = <&cpu_sleep_0>;
-+		};
-+
-+		cpu_pd1: power-domain-cpu1 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&cluster_pd>;
-+			domain-idle-states = <&cpu_sleep_0>;
-+		};
-+
-+		cpu_pd2: power-domain-cpu2 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&cluster_pd>;
-+			domain-idle-states = <&cpu_sleep_0>;
-+		};
-+
-+		cpu_pd3: power-domain-cpu3 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&cluster_pd>;
-+			domain-idle-states = <&cpu_sleep_0>;
-+		};
-+	};
-+
-+	rpm: remoteproc {
-+		compatible = "qcom,msm8917-rpm-proc", "qcom,rpm-proc";
-+
-+		smd-edge {
-+			interrupts = <GIC_SPI 168 IRQ_TYPE_EDGE_RISING>;
-+			qcom,ipc = <&apcs 8 0>;
-+			qcom,smd-edge = <15>;
-+
-+			rpm_requests: rpm-requests {
-+				compatible = "qcom,rpm-msm8917", "qcom,smd-rpm";
-+				qcom,smd-channels = "rpm_requests";
-+
-+				rpmcc: clock-controller {
-+					compatible = "qcom,rpmcc-msm8917", "qcom,rpmcc";
-+					#clock-cells = <1>;
-+					clocks = <&xo_board>;
-+					clock-names = "xo";
-+				};
-+
-+				rpmpd: power-controller {
-+					compatible = "qcom,msm8917-rpmpd";
-+					#power-domain-cells = <1>;
-+					operating-points-v2 = <&rpmpd_opp_table>;
-+
-+					rpmpd_opp_table: opp-table {
-+						compatible = "operating-points-v2";
-+
-+						rpmpd_opp_ret: opp1 {
-+							opp-level = <RPM_SMD_LEVEL_RETENTION>;
-+						};
-+
-+						rpmpd_opp_ret_plus: opp2 {
-+							opp-level = <RPM_SMD_LEVEL_RETENTION_PLUS>;
-+						};
-+
-+						rpmpd_opp_min_svs: opp3 {
-+							opp-level = <RPM_SMD_LEVEL_MIN_SVS>;
-+						};
-+
-+						rpmpd_opp_low_svs: opp4 {
-+							opp-level = <RPM_SMD_LEVEL_LOW_SVS>;
-+						};
-+
-+						rpmpd_opp_svs: opp5 {
-+							opp-level = <RPM_SMD_LEVEL_SVS>;
-+						};
-+
-+						rpmpd_opp_svs_plus: opp6 {
-+							opp-level = <RPM_SMD_LEVEL_SVS_PLUS>;
-+						};
-+
-+						rpmpd_opp_nom: opp7 {
-+							opp-level = <RPM_SMD_LEVEL_NOM>;
-+						};
-+
-+						rpmpd_opp_nom_plus: opp8 {
-+							opp-level = <RPM_SMD_LEVEL_NOM_PLUS>;
-+						};
-+
-+						rpmpd_opp_turbo: opp9 {
-+							opp-level = <RPM_SMD_LEVEL_TURBO>;
-+						};
-+					};
-+				};
-+			};
-+		};
-+	};
-+
-+	reserved-memory {
-+		ranges;
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+
-+		qseecom_mem: qseecom@85b00000 {
-+			reg = <0x0 0x85b00000 0x0 0x800000>;
-+			no-map;
-+		};
-+
-+		smem@86300000 {
-+			compatible = "qcom,smem";
-+			reg = <0x0 0x86300000 0x0 0x100000>;
-+			no-map;
-+
-+			hwlocks = <&tcsr_mutex 3>;
-+			qcom,rpm-msg-ram = <&rpm_msg_ram>;
-+		};
-+
-+		reserved@86400000 {
-+			reg = <0x0 0x86400000 0x0 0x400000>;
-+			no-map;
-+		};
-+
-+		rmtfs@92100000 {
-+			compatible = "qcom,rmtfs-mem";
-+			reg = <0x0 0x92100000 0x0 0x180000>;
-+			no-map;
-+
-+			qcom,client-id = <1>;
-+		};
-+
-+		adsp_mem: adsp {
-+			size = <0x0 0x1100000>;
-+			alignment = <0x0 0x100000>;
-+			alloc-ranges = <0x0 0x86800000 0x0 0x8000000>;
-+			no-map;
-+			status = "disabled";
-+		};
-+
-+		mba_mem: mba {
-+			size = <0x0 0x100000>;
-+			alignment = <0x0 0x100000>;
-+			alloc-ranges = <0x0 0x86800000 0x0 0x8000000>;
-+			no-map;
-+			status = "disabled";
-+		};
-+
-+		venus_mem: venus {
-+			size = <0x0 0x400000>;
-+			alignment = <0x0 0x100000>;
-+			alloc-ranges = <0x0 0x86800000 0x0 0x8000000>;
-+			no-map;
-+			status = "disabled";
-+		};
-+
-+		wcnss_mem: wcnss {
-+			size = <0x0 0x700000>;
-+			alignment = <0x0 0x100000>;
-+			alloc-ranges = <0x0 0x86800000 0x0 0x8000000>;
-+			no-map;
-+			status = "disabled";
-+		};
-+	};
-+
-+	smp2p-adsp {
-+		compatible = "qcom,smp2p";
-+		qcom,smem = <443>, <429>;
-+
-+		interrupts = <GIC_SPI 291 IRQ_TYPE_EDGE_RISING>;
-+
-+		mboxes = <&apcs 10>;
-+
-+		qcom,local-pid = <0>;
-+		qcom,remote-pid = <2>;
-+
-+		adsp_smp2p_out: master-kernel {
-+			qcom,entry-name = "master-kernel";
-+
-+			#qcom,smem-state-cells = <1>;
-+		};
-+
-+		adsp_smp2p_in: slave-kernel {
-+			qcom,entry-name = "slave-kernel";
-+
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+		};
-+	};
-+
-+	smp2p-modem {
-+		compatible = "qcom,smp2p";
-+		qcom,smem = <435>, <428>;
-+
-+		interrupts = <GIC_SPI 27 IRQ_TYPE_EDGE_RISING>;
-+
-+		mboxes = <&apcs 14>;
-+
-+		qcom,local-pid = <0>;
-+		qcom,remote-pid = <1>;
-+
-+		modem_smp2p_out: master-kernel {
-+			qcom,entry-name = "master-kernel";
-+
-+			#qcom,smem-state-cells = <1>;
-+		};
-+
-+		modem_smp2p_in: slave-kernel {
-+			qcom,entry-name = "slave-kernel";
-+
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+		};
-+	};
-+
-+	smp2p-wcnss {
-+		compatible = "qcom,smp2p";
-+		qcom,smem = <451>, <431>;
-+
-+		interrupts = <GIC_SPI 143 IRQ_TYPE_EDGE_RISING>;
-+
-+		mboxes = <&apcs 18>;
-+
-+		qcom,local-pid = <0>;
-+		qcom,remote-pid = <4>;
-+
-+		wcnss_smp2p_out: master-kernel {
-+			qcom,entry-name = "master-kernel";
-+
-+			#qcom,smem-state-cells = <1>;
-+		};
-+
-+		wcnss_smp2p_in: slave-kernel {
-+			qcom,entry-name = "slave-kernel";
-+
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+		};
-+	};
-+
-+	smsm {
-+		compatible = "qcom,smsm";
-+
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		mboxes = <0>, <&apcs 13>, <0>, <&apcs 19>;
-+
-+		apps_smsm: apps@0 {
-+			reg = <0>;
-+
-+			#qcom,smem-state-cells = <1>;
-+		};
-+
-+		hexagon_smsm: hexagon@1 {
-+			reg = <1>;
-+			interrupts = <GIC_SPI 26 IRQ_TYPE_EDGE_RISING>;
-+
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+		};
-+
-+		wcnss_smsm: wcnss@6 {
-+			reg = <6>;
-+			interrupts = <GIC_SPI 144 IRQ_TYPE_EDGE_RISING>;
-+
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+		};
-+	};
-+
-+	soc: soc@0 {
-+		compatible = "simple-bus";
-+		ranges = <0 0 0 0xffffffff>;
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+
-+		rpm_msg_ram: sram@60000 {
-+			compatible = "qcom,rpm-msg-ram";
-+			reg = <0x00060000 0x8000>;
-+		};
-+
-+		usb_hs_phy: phy@6c000 {
-+			compatible = "qcom,usb-hs-28nm-femtophy";
-+			reg = <0x0006c000 0x200>;
-+			#phy-cells = <0>;
-+			clocks = <&xo_board>,
-+				 <&gcc GCC_USB_HS_PHY_CFG_AHB_CLK>,
-+				 <&gcc GCC_USB2A_PHY_SLEEP_CLK>;
-+			clock-names = "ref", "ahb", "sleep";
-+			resets = <&gcc GCC_QUSB2_PHY_BCR>,
-+				 <&gcc GCC_USB2_HS_PHY_ONLY_BCR>;
-+			reset-names = "phy", "por";
-+			status = "disabled";
-+		};
-+
-+		qfprom: qfprom@a4000 {
-+			compatible = "qcom,msm8917-qfprom", "qcom,qfprom";
-+			reg = <0x000a4000 0x1000>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+
-+			tsens_base1: base1@1d8 {
-+				reg = <0x1d8 1>;
-+				bits = <0 8>;
-+			};
-+
-+			tsens_s5_p1: s5-p1@1d9 {
-+				reg = <0x1d9 1>;
-+				bits = <0 6>;
-+			};
-+
-+			tsens_s5_p2: s5-p2@1d9 {
-+				reg = <0x1d9 2>;
-+				bits = <6 6>;
-+			};
-+
-+			tsens_s6_p1: s6-p1@1da {
-+				reg = <0x1da 2>;
-+				bits = <4 6>;
-+			};
-+
-+			tsens_s6_p2: s6-p2@1db {
-+				reg = <0x1db 1>;
-+				bits = <2 6>;
-+			};
-+
-+			tsens_s7_p1: s7-p1@1dc {
-+				reg = <0x1dc 1>;
-+				bits = <0 6>;
-+			};
-+
-+			tsens_s7_p2: s7-p2@1dc {
-+				reg = <0x1dc 2>;
-+				bits = <6 6>;
-+			};
-+
-+			tsens_s8_p1: s8-p1@1dd {
-+				reg = <0x1dd 2>;
-+				bits = <4 6>;
-+			};
-+
-+			tsens_s8_p2: s8-p2@1de {
-+				reg = <0x1de 1>;
-+				bits = <2 6>;
-+			};
-+
-+			tsens_base2: base2@1df {
-+				reg = <0x1df 1>;
-+				bits = <0 8>;
-+			};
-+
-+			tsens_mode: mode@210 {
-+				reg = <0x210 1>;
-+				bits = <0 3>;
-+			};
-+
-+			tsens_s0_p1: s0-p1@210 {
-+				reg = <0x210 2>;
-+				bits = <3 6>;
-+			};
-+
-+			tsens_s0_p2: s0-p2@211 {
-+				reg = <0x211 1>;
-+				bits = <1 6>;
-+			};
-+
-+			tsens_s1_p1: s1-p1@211 {
-+				reg = <0x211 2>;
-+				bits = <7 6>;
-+			};
-+
-+			tsens_s1_p2: s1-p2@212 {
-+				reg = <0x212 2>;
-+				bits = <5 6>;
-+			};
-+
-+			tsens_s2_p1: s2-p1@213 {
-+				reg = <0x213 2>;
-+				bits = <3 6>;
-+			};
-+
-+			tsens_s2_p2: s2-p2@214 {
-+				reg = <0x214 1>;
-+				bits = <1 6>;
-+			};
-+
-+			tsens_s3_p1: s3-p1@214 {
-+				reg = <0x214 2>;
-+				bits = <7 6>;
-+			};
-+
-+			tsens_s3_p2: s3-p2@215 {
-+				reg = <0x215 2>;
-+				bits = <5 6>;
-+			};
-+
-+			tsens_s4_p1: s4-p1@216 {
-+				reg = <0x216 2>;
-+				bits = <3 6>;
-+			};
-+
-+			tsens_s4_p2: s4-p2@217 {
-+				reg = <0x217 1>;
-+				bits = <1 6>;
-+			};
-+
-+			tsens_s9_p1: s9-p1@230{
-+				reg = <0x230 1>;
-+				bits = <0 6>;
-+			};
-+
-+			tsens_s9_p2: s9-p2@230 {
-+				reg = <0x230 2>;
-+				bits = <6 6>;
-+			};
-+
-+			tsens_s10_p1: s10-p1@231 {
-+				reg = <0x231 2>;
-+				bits = <4 6>;
-+			};
-+
-+			tsens_s10_p2: s10-p2@232 {
-+				reg = <0x232 1>;
-+				bits = <2 6>;
-+			};
-+		};
-+
-+		rng@e3000 {
-+			compatible = "qcom,prng";
-+			reg = <0x000e3000 0x1000>;
-+			clocks = <&gcc GCC_PRNG_AHB_CLK>;
-+			clock-names = "core";
-+		};
-+
-+		tsens: thermal-sensor@4a9000 {
-+			compatible = "qcom,msm8937-tsens", "qcom,tsens-v1";
-+			reg = <0x004a9000 0x1000>,
-+			      <0x004a8000 0x1000>;
-+			interrupts = <GIC_SPI 184 IRQ_TYPE_LEVEL_HIGH>;
-+			interrupt-names = "uplow";
-+			nvmem-cells = <&tsens_mode>,
-+				      <&tsens_base1>, <&tsens_base2>,
-+				      <&tsens_s0_p1>, <&tsens_s0_p2>,
-+				      <&tsens_s1_p1>, <&tsens_s1_p2>,
-+				      <&tsens_s2_p1>, <&tsens_s2_p2>,
-+				      <&tsens_s3_p1>, <&tsens_s3_p2>,
-+				      <&tsens_s4_p1>, <&tsens_s4_p2>,
-+				      <&tsens_s5_p1>, <&tsens_s5_p2>,
-+				      <&tsens_s6_p1>, <&tsens_s6_p2>,
-+				      <&tsens_s7_p1>, <&tsens_s7_p2>,
-+				      <&tsens_s8_p1>, <&tsens_s8_p2>,
-+				      <&tsens_s9_p1>, <&tsens_s9_p2>,
-+				      <&tsens_s10_p1>, <&tsens_s10_p2>;
-+			nvmem-cell-names = "mode",
-+					   "base1", "base2",
-+					   "s0_p1", "s0_p2",
-+					   "s1_p1", "s1_p2",
-+					   "s2_p1", "s2_p2",
-+					   "s3_p1", "s3_p2",
-+					   "s4_p1", "s4_p2",
-+					   "s5_p1", "s5_p2",
-+					   "s6_p1", "s6_p2",
-+					   "s7_p1", "s7_p2",
-+					   "s8_p1", "s8_p2",
-+					   "s9_p1", "s9_p2",
-+					   "s10_p1", "s10_p2";
-+			#qcom,sensors = <11>;
-+			#thermal-sensor-cells = <1>;
-+		};
-+
-+		restart@4ab000 {
-+			compatible = "qcom,pshold";
-+			reg = <0x004ab000 0x4>;
-+		};
-+
-+		tlmm: pinctrl@1000000 {
-+			compatible = "qcom,msm8917-pinctrl";
-+			reg = <0x01000000 0x300000>;
-+			interrupts = <GIC_SPI 208 IRQ_TYPE_LEVEL_HIGH>;
-+			gpio-controller;
-+			gpio-ranges = <&tlmm 0 0 134>;
-+			#gpio-cells = <2>;
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+
-+			blsp1_i2c2_default: blsp1-i2c2-default-state {
-+				pins = "gpio6", "gpio7";
-+				function = "blsp_i2c2";
-+				drive-strength = <2>;
-+				bias-disable;
-+			};
-+
-+			blsp1_i2c2_sleep: blsp1-i2c2-sleep-state {
-+				pins = "gpio6", "gpio7";
-+				function = "gpio";
-+				drive-strength = <2>;
-+				bias-disable;
-+			};
-+
-+			blsp1_i2c3_default: blsp1-i2c3-default-state {
-+				pins = "gpio10", "gpio11";
-+				function = "blsp_i2c3";
-+				drive-strength = <2>;
-+				bias-disable;
-+			};
-+
-+			blsp1_i2c3_sleep: blsp1-i2c3-sleep-state {
-+				pins = "gpio10", "gpio11";
-+				function = "gpio";
-+				drive-strength = <2>;
-+				bias-disable;
-+			};
-+
-+			blsp1_i2c4_default: blsp1-i2c4-default-state {
-+				pins = "gpio14", "gpio15";
-+				function = "blsp_i2c4";
-+				drive-strength = <2>;
-+				bias-disable;
-+			};
-+
-+			blsp1_i2c4_sleep: blsp1-i2c4-sleep-state {
-+				pins = "gpio14", "gpio15";
-+				function = "gpio";
-+				drive-strength = <2>;
-+				bias-disable;
-+			};
-+
-+			blsp2_i2c1_default: blsp2-i2c1-default-state {
-+				pins = "gpio18", "gpio19";
-+				function = "blsp_i2c5";
-+				drive-strength = <2>;
-+				bias-disable;
-+			};
-+
-+			blsp2_i2c1_sleep: blsp2-i2c1-sleep-state {
-+				pins = "gpio18", "gpio19";
-+				function = "gpio";
-+				drive-strength = <2>;
-+				bias-disable;
-+			};
-+
-+			blsp1_spi3_default: blsp1-spi3-default-state {
-+				cs-pins {
-+					pins = "gpio10";
-+					function = "blsp_spi3";
-+					drive-strength = <2>;
-+					bias-disable;
-+				};
-+
-+				spi-pins {
-+					pins = "gpio8", "gpio9", "gpio11";
-+					function = "blsp_spi3";
-+					drive-strength = <12>;
-+					bias-disable;
-+				};
-+			};
-+
-+			blsp1_spi3_sleep: blsp1-spi3-sleep-state {
-+				cs-pins {
-+					pins = "gpio10";
-+					function = "gpio";
-+					drive-strength = <2>;
-+					bias-disable;
-+				};
-+
-+				spi-pins {
-+					pins = "gpio8", "gpio9", "gpio11";
-+					function = "gpio";
-+					drive-strength = <2>;
-+					bias-pull-down;
-+				};
-+			};
-+
-+			blsp2_spi2_default: blsp2-spi2-default-state {
-+				cs0-pins {
-+					pins = "gpio47";
-+					function = "blsp_spi6";
-+					drive-strength = <16>;
-+					bias-disable;
-+				};
-+
-+				cs1-pins {
-+					pins = "gpio22";
-+					function = "blsp_spi6";
-+					drive-strength = <16>;
-+					bias-disable;
-+				};
-+
-+				spi-pins {
-+					pins = "gpio20", "gpio21", "gpio23";
-+					function = "blsp_spi6";
-+					drive-strength = <16>;
-+					bias-disable;
-+				};
-+			};
-+
-+			blsp2_spi2_sleep: blsp2-spi2-sleep-state {
-+				cs0-pins {
-+					pins = "gpio47";
-+					function = "gpio";
-+					drive-strength = <2>;
-+					bias-disable;
-+				};
-+
-+				cs1-pins {
-+					pins = "gpio22";
-+					function = "gpio";
-+					drive-strength = <2>;
-+					bias-disable;
-+				};
-+
-+				spi-pins {
-+					pins = "gpio20", "gpio21", "gpio23";
-+					function = "gpio";
-+					drive-strength = <2>;
-+					bias-pull-down;
-+				};
-+			};
-+
-+			blsp1_uart1_default: blsp1-uart1-default-state {
-+				pins = "gpio0", "gpio1", "gpio2", "gpio3";
-+				function = "blsp_uart1";
-+				drive-strength = <2>;
-+				bias-disable;
-+			};
-+
-+			blsp1_uart1_sleep: blsp1-uart1-sleep-state {
-+				pins = "gpio0", "gpio1", "gpio2", "gpio3";
-+				function = "gpio";
-+				drive-strength = <2>;
-+				bias-disable;
-+			};
-+
-+			blsp1_uart2_default: blsp1-uart2-default-state {
-+				pins = "gpio4", "gpio5";
-+				function = "blsp_uart2";
-+				drive-strength = <2>;
-+				bias-disable;
-+			};
-+
-+			blsp1_uart2_sleep: blsp1-uart2-sleep-state {
-+				pins = "gpio4", "gpio5";
-+				function = "gpio";
-+				drive-strength = <2>;
-+				bias-pull-down;
-+			};
-+
-+			sdc1_default: sdc1-default-state {
-+				clk-pins {
-+					pins = "sdc1_clk";
-+					bias-disable;
-+					drive-strength = <16>;
-+				};
-+
-+				cmd-pins {
-+					pins = "sdc1_cmd";
-+					bias-disable;
-+					drive-strength = <10>;
-+				};
-+
-+				data-pins {
-+					pins = "sdc1_data";
-+					bias-pull-up;
-+					drive-strength = <10>;
-+				};
-+
-+				rclk-pins {
-+					pins = "sdc1_rclk";
-+					bias-pull-down;
-+				};
-+			};
-+
-+			sdc1_sleep: sdc1-sleep-state {
-+				clk-pins {
-+					pins = "sdc1_clk";
-+					bias-disable;
-+					drive-strength = <2>;
-+				};
-+
-+				cmd-pins {
-+					pins = "sdc1_cmd";
-+					bias-disable;
-+					drive-strength = <2>;
-+				};
-+
-+				data-pins {
-+					pins = "sdc1_data";
-+					bias-pull-up;
-+					drive-strength = <2>;
-+				};
-+
-+				rclk-pins {
-+					pins = "sdc1_rclk";
-+					bias-pull-down;
-+				};
-+			};
-+
-+			sdc2_default: sdc2-default-state {
-+				clk-pins {
-+					pins = "sdc2_clk";
-+					bias-disable;
-+					drive-strength = <16>;
-+				};
-+
-+				cmd-pins {
-+					pins = "sdc2_cmd";
-+					bias-pull-up;
-+					drive-strength = <10>;
-+				};
-+
-+				data-pins {
-+					pins = "sdc2_data";
-+					bias-pull-up;
-+					drive-strength = <10>;
-+				};
-+			};
-+
-+			sdc2_sleep: sdc2-sleep-state {
-+				clk-pins {
-+					pins = "sdc2_clk";
-+					bias-disable;
-+					drive-strength = <2>;
-+				};
-+
-+				cmd-pins {
-+					pins = "sdc2_cmd";
-+					bias-pull-up;
-+					drive-strength = <2>;
-+				};
-+
-+				data-pins {
-+					pins = "sdc2_data";
-+					bias-pull-up;
-+					drive-strength = <2>;
-+				};
-+			};
-+
-+			wcnss_pin_a: wcnss-active-state {
-+				wcss-wlan-pins {
-+					pins = "gpio79", "gpio80";
-+					function = "wcss_wlan";
-+					drive-strength = <6>;
-+					bias-pull-up;
-+
-+				};
-+
-+				wcss-wlan0-pins {
-+					pins = "gpio78";
-+					function = "wcss_wlan0";
-+					drive-strength = <6>;
-+					bias-pull-up;
-+
-+				};
-+
-+				wcss-wlan1-pins {
-+					pins = "gpio77";
-+					function = "wcss_wlan1";
-+					drive-strength = <6>;
-+					bias-pull-up;
-+
-+				};
-+
-+				wcss-wlan2-pins {
-+					pins = "gpio76";
-+					function = "wcss_wlan2";
-+					drive-strength = <6>;
-+					bias-pull-up;
-+
-+				};
-+			};
-+		};
-+
-+		gcc: clock-controller@1800000 {
-+			compatible = "qcom,gcc-msm8917";
-+			reg = <0x01800000 0x80000>;
-+			#clock-cells = <1>;
-+			#reset-cells = <1>;
-+			#power-domain-cells = <1>;
-+			clocks = <&xo_board>,
-+				 <&sleep_clk>,
-+				 <&mdss_dsi0_phy 1>,
-+				 <&mdss_dsi0_phy 0>;
-+			clock-names = "xo",
-+				      "sleep_clk",
-+				      "dsi0pll",
-+				      "dsi0pllbyte";
-+		};
-+
-+		tcsr_mutex: hwlock@1905000 {
-+			compatible = "qcom,tcsr-mutex";
-+			reg = <0x01905000 0x20000>;
-+			#hwlock-cells = <1>;
-+		};
-+
-+		tcsr: syscon@1937000 {
-+			compatible = "qcom,tcsr-msm8917", "syscon";
-+			reg = <0x01937000 0x30000>;
-+		};
-+
-+		mdss: display-subsystem@1a00000 {
-+			compatible = "qcom,mdss";
-+			reg = <0x01a00000 0x1000>,
-+			      <0x01ab0000 0x1040>;
-+			reg-names = "mdss_phys", "vbif_phys";
-+			ranges;
-+
-+			power-domains = <&gcc MDSS_GDSC>;
-+
-+			clocks = <&gcc GCC_MDSS_AHB_CLK>,
-+				 <&gcc GCC_MDSS_AXI_CLK>,
-+				 <&gcc GCC_MDSS_VSYNC_CLK>;
-+			clock-names = "iface",
-+				      "bus",
-+				      "vsync";
-+
-+			interrupts = <GIC_SPI 72 IRQ_TYPE_LEVEL_HIGH>;
-+
-+			interrupt-controller;
-+			#interrupt-cells = <1>;
-+
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+
-+			status = "disabled";
-+
-+			mdp: display-controller@1a01000 {
-+				compatible = "qcom,msm8917-mdp5", "qcom,mdp5";
-+				reg = <0x01a01000 0x89000>;
-+				reg-names = "mdp_phys";
-+
-+				interrupt-parent = <&mdss>;
-+				interrupts = <0>;
-+
-+				power-domains = <&gcc MDSS_GDSC>;
-+
-+				clocks = <&gcc GCC_MDSS_AHB_CLK>,
-+					 <&gcc GCC_MDSS_AXI_CLK>,
-+					 <&gcc GCC_MDSS_MDP_CLK>,
-+					 <&gcc GCC_MDSS_VSYNC_CLK>;
-+				clock-names = "iface",
-+					      "bus",
-+					      "core",
-+					      "vsync";
-+
-+				iommus = <&apps_iommu 0x15>;
-+
-+				ports {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+
-+					port@0 {
-+						reg = <0>;
-+
-+						mdp5_intf1_out: endpoint {
-+							remote-endpoint = <&mdss_dsi0_in>;
-+						};
-+					};
-+				};
-+			};
-+
-+			mdss_dsi0: dsi@1a94000 {
-+				compatible = "qcom,mdss-dsi-ctrl";
-+				reg = <0x01a94000 0x300>;
-+				reg-names = "dsi_ctrl";
-+
-+				interrupt-parent = <&mdss>;
-+				interrupts = <4>;
-+
-+				assigned-clocks = <&gcc BYTE0_CLK_SRC>,
-+						  <&gcc PCLK0_CLK_SRC>;
-+				assigned-clock-parents = <&mdss_dsi0_phy 0>,
-+							 <&mdss_dsi0_phy 1>;
-+
-+				clocks = <&gcc GCC_MDSS_MDP_CLK>,
-+					 <&gcc GCC_MDSS_AHB_CLK>,
-+					 <&gcc GCC_MDSS_AXI_CLK>,
-+					 <&gcc GCC_MDSS_BYTE0_CLK>,
-+					 <&gcc GCC_MDSS_PCLK0_CLK>,
-+					 <&gcc GCC_MDSS_ESC0_CLK>;
-+				clock-names = "mdp_core",
-+					      "iface",
-+					      "bus",
-+					      "byte",
-+					      "pixel",
-+					      "core";
-+				phys = <&mdss_dsi0_phy>;
-+
-+				operating-points-v2 = <&mdss_dsi0_opp_table>;
-+				power-domains = <&rpmpd MSM8917_VDDCX>;
-+
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+
-+				ports {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+
-+					port@0 {
-+						reg = <0>;
-+
-+						mdss_dsi0_in: endpoint {
-+							remote-endpoint = <&mdp5_intf1_out>;
-+						};
-+					};
-+
-+					port@1 {
-+						reg = <1>;
-+
-+						mdss_dsi0_out: endpoint {
-+						};
-+					};
-+				};
-+
-+				mdss_dsi0_opp_table: opp-table {
-+					compatible = "operating-points-v2";
-+
-+					opp-125000000 {
-+						opp-hz = /bits/ 64 <125000000>;
-+						required-opps = <&rpmpd_opp_svs>;
-+					};
-+
-+					opp-187500000 {
-+						opp-hz = /bits/ 64 <187500000>;
-+						required-opps = <&rpmpd_opp_nom>;
-+					};
-+				};
-+			};
-+
-+			mdss_dsi0_phy: phy@1a94a00 {
-+				compatible = "qcom,dsi-phy-28nm-8937";
-+				reg = <0x01a94a00 0xd4>,
-+				      <0x01a94400 0x280>,
-+				      <0x01a94b80 0x30>;
-+				reg-names = "dsi_pll",
-+					    "dsi_phy",
-+					    "dsi_phy_regulator";
-+
-+				#clock-cells = <1>;
-+				#phy-cells = <0>;
-+
-+				clocks = <&gcc GCC_MDSS_AHB_CLK>,
-+					 <&xo_board>;
-+				clock-names = "iface", "ref";
-+			};
-+		};
-+
-+		apps_iommu: iommu@1e20000 {
-+			compatible = "qcom,msm8917-iommu", "qcom,msm-iommu-v1";
-+			ranges = <0 0x01e20000 0x20000>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			#iommu-cells = <1>;
-+
-+			clocks = <&gcc GCC_SMMU_CFG_CLK>,
-+				 <&gcc GCC_APSS_TCU_CLK>;
-+			clock-names = "iface", "bus";
-+
-+			qcom,iommu-secure-id = <17>;
-+
-+			/* VFE */
-+			iommu-ctx@14000 {
-+				compatible = "qcom,msm-iommu-v1-ns";
-+				reg = <0x14000 0x1000>;
-+				interrupts = <GIC_SPI 111 IRQ_TYPE_LEVEL_HIGH>;
-+			};
-+
-+			/* MDP_0 */
-+			iommu-ctx@15000 {
-+				compatible = "qcom,msm-iommu-v1-ns";
-+				reg = <0x15000 0x1000>;
-+				interrupts = <GIC_SPI 112 IRQ_TYPE_LEVEL_HIGH>;
-+			};
-+
-+			/* VENUS_NS */
-+			iommu-ctx@16000 {
-+				compatible = "qcom,msm-iommu-v1-ns";
-+				reg = <0x16000 0x1000>;
-+				interrupts = <GIC_SPI 113 IRQ_TYPE_LEVEL_HIGH>;
-+			};
-+		};
-+
-+		gpu_iommu: iommu@1f08000 {
-+			compatible = "qcom,msm8917-iommu", "qcom,msm-iommu-v1";
-+			ranges = <0 0x01f08000 0x10000>;
-+
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			#iommu-cells = <1>;
-+
-+			clocks = <&gcc GCC_SMMU_CFG_CLK>,
-+				 <&gcc GCC_GFX_TCU_CLK>;
-+			clock-names = "iface", "bus";
-+			qcom,iommu-secure-id = <18>;
-+
-+			iommu-ctx@0 {
-+				compatible = "qcom,msm-iommu-v2-ns";
-+				reg = <0 0x1000>;
-+				interrupts = <GIC_SPI 240 IRQ_TYPE_LEVEL_HIGH>;
-+			};
-+		};
-+
-+		gpu: gpu@1c00000 {
-+			compatible = "qcom,adreno-306.32", "qcom,adreno";
-+			reg = <0x01c00000 0x20000>;
-+			reg-names = "kgsl_3d0_reg_memory";
-+			interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
-+			interrupt-names = "kgsl_3d0_irq";
-+			clock-names = "core",
-+				      "iface",
-+				      "mem_iface",
-+				      "alt_mem_iface",
-+				      "gfx3d";
-+			clocks = <&gcc GCC_OXILI_GFX3D_CLK>,
-+				 <&gcc GCC_OXILI_AHB_CLK>,
-+				 <&gcc GCC_BIMC_GFX_CLK>,
-+				 <&gcc GCC_BIMC_GPU_CLK>,
-+				 <&gcc GFX3D_CLK_SRC>;
-+			power-domains = <&gcc OXILI_GX_GDSC>;
-+			operating-points-v2 = <&gpu_opp_table>;
-+			#cooling-cells = <2>;
-+
-+			iommus = <&gpu_iommu 0>;
-+
-+			status = "disabled";
-+
-+			gpu_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-598000000 {
-+					opp-hz = /bits/ 64 <598000000>;
-+				};
-+
-+				opp-523200000 {
-+					opp-hz = /bits/ 64 <523200000>;
-+				};
-+
-+				opp-484800000 {
-+					opp-hz = /bits/ 64 <484800000>;
-+				};
-+
-+				opp-400000000 {
-+					opp-hz = /bits/ 64 <400000000>;
-+				};
-+
-+				opp-270000000 {
-+					opp-hz = /bits/ 64 <270000000>;
-+				};
-+
-+				opp-19200000 {
-+					opp-hz = /bits/ 64 <19200000>;
-+				};
-+			};
-+		};
-+
-+		spmi_bus: spmi@200f000 {
-+			compatible = "qcom,spmi-pmic-arb";
-+			reg = <0x0200f000 0x001000>,
-+			      <0x02400000 0x800000>,
-+			      <0x02c00000 0x800000>,
-+			      <0x03800000 0x200000>,
-+			      <0x0200a000 0x002100>;
-+			reg-names = "core",
-+				    "chnls",
-+				    "obsrvr",
-+				    "intr",
-+				    "cnfg";
-+			interrupt-names = "periph_irq";
-+			interrupts = <GIC_SPI 190 IRQ_TYPE_LEVEL_HIGH>;
-+			qcom,ee = <0>;
-+			qcom,channel = <0>;
-+			#address-cells = <2>;
-+			#size-cells = <0>;
-+			interrupt-controller;
-+			#interrupt-cells = <4>;
-+		};
-+
-+		bam_dmux_dma: dma-controller@4044000 {
-+			compatible = "qcom,bam-v1.7.0";
-+			reg = <0x04044000 0x19000>;
-+			interrupts = <GIC_SPI 162 IRQ_TYPE_LEVEL_HIGH>;
-+			#dma-cells = <1>;
-+			qcom,ee = <0>;
-+
-+			num-channels = <6>;
-+			qcom,num-ees = <1>;
-+			qcom,powered-remotely;
-+
-+			status = "disabled";
-+		};
-+
-+		sdhc_1: mmc@7824900 {
-+			compatible = "qcom,sdhci-msm-v4";
-+			reg = <0x07824900 0x500>,
-+			      <0x07824000 0x800>;
-+			reg-names = "hc", "core";
-+
-+			interrupts = <GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 138 IRQ_TYPE_LEVEL_HIGH>;
-+			interrupt-names = "hc_irq", "pwr_irq";
-+			clocks = <&gcc GCC_SDCC1_AHB_CLK>,
-+				 <&gcc GCC_SDCC1_APPS_CLK>,
-+				 <&xo_board>;
-+			clock-names = "iface", "core", "xo";
-+			pinctrl-0 = <&sdc1_default>;
-+			pinctrl-1 = <&sdc1_sleep>;
-+			pinctrl-names = "default", "sleep";
-+			power-domains = <&rpmpd MSM8917_VDDCX>;
-+			mmc-hs200-1_8v;
-+			mmc-hs400-1_8v;
-+			mmc-ddr-1_8v;
-+			bus-width = <8>;
-+			non-removable;
-+			status = "disabled";
-+		};
-+
-+		sdhc_2: mmc@7864900 {
-+			compatible = "qcom,sdhci-msm-v4";
-+			reg = <0x07864900 0x500>,
-+			      <0x07864000 0x800>;
-+			reg-names = "hc", "core";
-+
-+			interrupts = <GIC_SPI 125 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 221 IRQ_TYPE_LEVEL_HIGH>;
-+			interrupt-names = "hc_irq", "pwr_irq";
-+			clocks = <&gcc GCC_SDCC2_AHB_CLK>,
-+				 <&gcc GCC_SDCC2_APPS_CLK>,
-+				 <&xo_board>;
-+			clock-names = "iface", "core", "xo";
-+			pinctrl-0 = <&sdc2_default>;
-+			pinctrl-1 = <&sdc2_sleep>;
-+			pinctrl-names = "default", "sleep";
-+			power-domains = <&rpmpd MSM8917_VDDCX>;
-+			bus-width = <4>;
-+			status = "disabled";
-+		};
-+
-+		blsp1_dma: dma-controller@7884000 {
-+			compatible = "qcom,bam-v1.7.0";
-+			reg = <0x07884000 0x1f000>;
-+			interrupts = <GIC_SPI 238 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&gcc GCC_BLSP1_AHB_CLK>;
-+			clock-names = "bam_clk";
-+			qcom,controlled-remotely;
-+			#dma-cells = <1>;
-+			num-channels = <12>;
-+			qcom,num-ees = <4>;
-+			qcom,ee = <0>;
-+		};
-+
-+		blsp2_dma: dma-controller@7ac4000 {
-+			compatible = "qcom,bam-v1.7.0";
-+			reg = <0x07ac4000 0x1d000>;
-+			interrupts = <GIC_SPI 239 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&gcc GCC_BLSP2_AHB_CLK>;
-+			clock-names = "bam_clk";
-+			qcom,controlled-remotely;
-+			#dma-cells = <1>;
-+			num-channels = <10>;
-+			qcom,num-ees = <4>;
-+			qcom,ee = <0>;
-+		};
-+
-+		blsp1_uart1: serial@78af000 {
-+			compatible = "qcom,msm-uartdm-v1.4", "qcom,msm-uartdm";
-+			reg = <0x078af000 0x200>;
-+			interrupts = <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&gcc GCC_BLSP1_UART1_APPS_CLK>,
-+				 <&gcc GCC_BLSP1_AHB_CLK>;
-+			clock-names = "core", "iface";
-+			dmas = <&blsp1_dma 0>, <&blsp1_dma 1>;
-+			dma-names = "tx", "rx";
-+			pinctrl-0 = <&blsp1_uart1_default>;
-+			pinctrl-1 = <&blsp1_uart1_sleep>;
-+			pinctrl-names = "default", "sleep";
-+			status = "disabled";
-+		};
-+
-+		blsp1_uart2: serial@78b0000 {
-+			compatible = "qcom,msm-uartdm-v1.4", "qcom,msm-uartdm";
-+			reg = <0x078b0000 0x200>;
-+			interrupts = <GIC_SPI 108 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&gcc GCC_BLSP1_UART2_APPS_CLK>,
-+				 <&gcc GCC_BLSP1_AHB_CLK>;
-+			clock-names = "core", "iface";
-+			dmas = <&blsp1_dma 2>, <&blsp1_dma 3>;
-+			dma-names = "tx", "rx";
-+			pinctrl-0 = <&blsp1_uart2_default>;
-+			pinctrl-1 = <&blsp1_uart2_sleep>;
-+			pinctrl-names = "default", "sleep";
-+			status = "disabled";
-+		};
-+
-+		blsp1_i2c2: i2c@78b6000 {
-+			compatible = "qcom,i2c-qup-v2.2.1";
-+			reg = <0x078b6000 0x600>;
-+			interrupts = <GIC_SPI 96 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&gcc GCC_BLSP1_QUP2_I2C_APPS_CLK>,
-+				 <&gcc GCC_BLSP1_AHB_CLK>;
-+			clock-names = "core", "iface";
-+			dmas = <&blsp1_dma 6>, <&blsp1_dma 7>;
-+			dma-names = "tx", "rx";
-+			pinctrl-0 = <&blsp1_i2c2_default>;
-+			pinctrl-1 = <&blsp1_i2c2_sleep>;
-+			pinctrl-names = "default", "sleep";
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			status = "disabled";
-+		};
-+
-+		blsp1_i2c3: i2c@78b7000 {
-+			compatible = "qcom,i2c-qup-v2.2.1";
-+			reg = <0x078b7000 0x600>;
-+			interrupts = <GIC_SPI 97 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&gcc GCC_BLSP1_QUP3_I2C_APPS_CLK>,
-+				 <&gcc GCC_BLSP1_AHB_CLK>;
-+			clock-names = "core", "iface";
-+			dmas = <&blsp1_dma 8>, <&blsp1_dma 9>;
-+			dma-names = "tx", "rx";
-+			pinctrl-0 = <&blsp1_i2c3_default>;
-+			pinctrl-1 = <&blsp1_i2c3_sleep>;
-+			pinctrl-names = "default", "sleep";
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			status = "disabled";
-+		};
-+
-+		blsp1_spi3: spi@78b7000 {
-+			compatible = "qcom,spi-qup-v2.2.1";
-+			reg = <0x078b7000 0x600>;
-+			interrupts = <GIC_SPI 97 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&gcc GCC_BLSP1_QUP3_SPI_APPS_CLK>,
-+				 <&gcc GCC_BLSP1_AHB_CLK>;
-+			clock-names = "core", "iface";
-+			dmas = <&blsp1_dma 8>, <&blsp1_dma 9>;
-+			dma-names = "tx", "rx";
-+			pinctrl-0 = <&blsp1_spi3_default>;
-+			pinctrl-1 = <&blsp1_spi3_sleep>;
-+			pinctrl-names = "default", "sleep";
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			status = "disabled";
-+		};
-+
-+		blsp1_i2c4: i2c@78b8000 {
-+			compatible = "qcom,i2c-qup-v2.2.1";
-+			reg = <0x078b8000 0x500>;
-+			interrupts = <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&gcc GCC_BLSP1_QUP4_I2C_APPS_CLK>,
-+				 <&gcc GCC_BLSP1_AHB_CLK>;
-+			clock-names = "core", "iface";
-+			dmas = <&blsp1_dma 10>, <&blsp1_dma 11>;
-+			dma-names = "tx", "rx";
-+			pinctrl-0 = <&blsp1_i2c4_default>;
-+			pinctrl-1 = <&blsp1_i2c4_sleep>;
-+			pinctrl-names = "default", "sleep";
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			status = "disabled";
-+		};
-+
-+		blsp2_i2c1: i2c@7af5000 {
-+			compatible = "qcom,i2c-qup-v2.2.1";
-+			reg = <0x07af5000 0x600>;
-+			interrupts = <GIC_SPI 299 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&gcc GCC_BLSP2_QUP1_I2C_APPS_CLK>,
-+				 <&gcc GCC_BLSP2_AHB_CLK>;
-+			clock-names = "core", "iface";
-+			dmas = <&blsp2_dma 4>, <&blsp2_dma 5>;
-+			dma-names = "tx", "rx";
-+			pinctrl-0 = <&blsp2_i2c1_default>;
-+			pinctrl-1 = <&blsp2_i2c1_sleep>;
-+			pinctrl-names = "default", "sleep";
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			status = "disabled";
-+		};
-+
-+		blsp2_spi2: spi@7af6000 {
-+			compatible = "qcom,spi-qup-v2.2.1";
-+			reg = <0x07af6000 0x600>;
-+			interrupts = <GIC_SPI 300 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&gcc GCC_BLSP2_QUP2_SPI_APPS_CLK>,
-+				 <&gcc GCC_BLSP2_AHB_CLK>;
-+			clock-names = "core", "iface";
-+			dmas = <&blsp2_dma 6>, <&blsp2_dma 7>;
-+			dma-names = "tx", "rx";
-+			pinctrl-0 = <&blsp2_spi2_default>;
-+			pinctrl-1 = <&blsp2_spi2_sleep>;
-+			pinctrl-names = "default", "sleep";
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			status = "disabled";
-+		};
-+
-+		usb: usb@78db000 {
-+			compatible = "qcom,ci-hdrc";
-+			reg = <0x078db000 0x200>,
-+			      <0x078db200 0x200>;
-+			interrupts = <GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 140 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&gcc GCC_USB_HS_AHB_CLK>,
-+				 <&gcc GCC_USB_HS_SYSTEM_CLK>;
-+			clock-names = "iface", "core";
-+			assigned-clocks = <&gcc GCC_USB_HS_SYSTEM_CLK>;
-+			assigned-clock-rates = <80000000>;
-+			resets = <&gcc GCC_USB_HS_BCR>;
-+			reset-names = "core";
-+			phy_type = "ulpi";
-+			dr_mode = "otg";
-+			hnp-disable;
-+			srp-disable;
-+			adp-disable;
-+			ahb-burst-config = <0>;
-+			phy-names = "usb-phy";
-+			phys = <&usb_hs_phy>;
-+			status = "disabled";
-+			#reset-cells = <1>;
-+		};
-+
-+		wcnss: remoteproc@a204000 {
-+			compatible = "qcom,pronto-v3-pil", "qcom,pronto";
-+			reg = <0x0a204000 0x2000>,
-+			      <0x0a202000 0x1000>,
-+			      <0x0a21b000 0x3000>;
-+			reg-names = "ccu", "dxe", "pmu";
-+
-+			memory-region = <&wcnss_mem>;
-+
-+			interrupts-extended = <&intc GIC_SPI 149 IRQ_TYPE_EDGE_RISING>,
-+					      <&wcnss_smp2p_in 0 IRQ_TYPE_EDGE_RISING>,
-+					      <&wcnss_smp2p_in 1 IRQ_TYPE_EDGE_RISING>,
-+					      <&wcnss_smp2p_in 2 IRQ_TYPE_EDGE_RISING>,
-+					      <&wcnss_smp2p_in 3 IRQ_TYPE_EDGE_RISING>;
-+			interrupt-names = "wdog", "fatal", "ready", "handover", "stop-ack";
-+
-+			power-domains = <&rpmpd MSM8917_VDDCX>,
-+					<&rpmpd MSM8917_VDDMX>;
-+			power-domain-names = "cx", "mx";
-+
-+			qcom,smem-states = <&wcnss_smp2p_out 0>;
-+			qcom,smem-state-names = "stop";
-+
-+			pinctrl-0 = <&wcnss_pin_a>;
-+			pinctrl-names = "default";
-+
-+			status = "disabled";
-+
-+			wcnss_iris: iris {
-+				clocks = <&rpmcc RPM_SMD_RF_CLK2>;
-+				clock-names = "xo";
-+			};
-+
-+			smd-edge {
-+				interrupts = <GIC_SPI 142 IRQ_TYPE_EDGE_RISING>;
-+
-+				mboxes = <&apcs 17>;
-+				qcom,smd-edge = <6>;
-+				qcom,remote-pid = <4>;
-+
-+				label = "pronto";
-+
-+				wcnss_ctrl: wcnss {
-+					compatible = "qcom,wcnss";
-+					qcom,smd-channels = "WCNSS_CTRL";
-+
-+					qcom,mmio = <&wcnss>;
-+
-+					wcnss_bt: bluetooth {
-+						compatible = "qcom,wcnss-bt";
-+					};
-+
-+					wcnss_wifi: wifi {
-+						compatible = "qcom,wcnss-wlan";
-+
-+						interrupts = <GIC_SPI 145 IRQ_TYPE_LEVEL_HIGH>,
-+							     <GIC_SPI 146 IRQ_TYPE_LEVEL_HIGH>;
-+						interrupt-names = "tx", "rx";
-+
-+						qcom,smem-states = <&apps_smsm 10>, <&apps_smsm 9>;
-+						qcom,smem-state-names = "tx-enable",
-+									"tx-rings-empty";
-+					};
-+				};
-+			};
-+		};
-+
-+		intc: interrupt-controller@b000000 {
-+			compatible = "qcom,msm-qgic2";
-+			reg = <0x0b000000 0x1000>,
-+			      <0x0b002000 0x1000>;
-+			interrupt-controller;
-+			#interrupt-cells = <3>;
-+		};
-+
-+		apcs: mailbox@b011000 {
-+			compatible = "qcom,msm8939-apcs-kpss-global", "syscon";
-+			reg = <0x0b011000 0x1000>;
-+			#mbox-cells = <1>;
-+			clocks = <&a53pll>, <&gcc GPLL0_EARLY>, <&rpmcc RPM_SMD_XO_CLK_SRC>;
-+			clock-names = "pll", "aux", "ref";
-+			#clock-cells = <0>;
-+		};
-+
-+		a53pll: clock@b016000 {
-+			compatible = "qcom,msm8939-a53pll";
-+			reg = <0x0b016000 0x40>;
-+			clocks = <&xo_board>;
-+			clock-names = "xo";
-+			#clock-cells = <0>;
-+			operating-points-v2 = <&pll_opp_table>;
-+
-+			pll_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-960000000 {
-+					opp-hz = /bits/ 64 <960000000>;
-+				};
-+
-+				opp-1094400000 {
-+					opp-hz = /bits/ 64 <1094400000>;
-+				};
-+
-+				opp-1248000000 {
-+					opp-hz = /bits/ 64 <1248000000>;
-+				};
-+
-+				opp-1401600000 {
-+				      opp-hz = /bits/ 64 <1401600000>;
-+				};
-+			};
-+		};
-+
-+		watchdog@b017000 {
-+			compatible = "qcom,apss-wdt-qcs404", "qcom,kpss-wdt";
-+			reg = <0x0b017000 0x1000>;
-+			clocks = <&sleep_clk>;
-+		};
-+
-+		timer@b120000 {
-+			compatible = "arm,armv7-timer-mem";
-+			reg = <0x0b120000 0x1000>;
-+			ranges;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+
-+			frame@b121000 {
-+				reg = <0x0b121000 0x1000>,
-+				      <0x0b122000 0x1000>;
-+				frame-number = <0>;
-+				interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>,
-+					     <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>;
-+			};
-+
-+			frame@b123000 {
-+				reg = <0x0b123000 0x1000>;
-+				frame-number = <1>;
-+				interrupts = <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>;
-+				status = "disabled";
-+			};
-+
-+			frame@b124000 {
-+				reg = <0x0b124000 0x1000>;
-+				frame-number = <2>;
-+				interrupts = <GIC_SPI 10 IRQ_TYPE_LEVEL_HIGH>;
-+				status = "disabled";
-+			};
-+
-+			frame@b125000 {
-+				reg = <0x0b125000 0x1000>;
-+				frame-number = <3>;
-+				interrupts = <GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>;
-+				status = "disabled";
-+			};
-+
-+			frame@b126000 {
-+				reg = <0x0b126000 0x1000>;
-+				frame-number = <4>;
-+				interrupts = <GIC_SPI 12 IRQ_TYPE_LEVEL_HIGH>;
-+				status = "disabled";
-+			};
-+
-+			frame@b127000 {
-+				reg = <0x0b127000 0x1000>;
-+				frame-number = <5>;
-+				interrupts = <GIC_SPI 13 IRQ_TYPE_LEVEL_HIGH>;
-+				status = "disabled";
-+			};
-+
-+			frame@b128000 {
-+				reg = <0x0b128000 0x1000>;
-+				frame-number = <6>;
-+				interrupts = <GIC_SPI 14 IRQ_TYPE_LEVEL_HIGH>;
-+				status = "disabled";
-+			};
-+		};
-+	};
-+
-+	timer {
-+		compatible = "arm,armv8-timer";
-+		interrupts = <GIC_PPI 2 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
-+			     <GIC_PPI 3 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
-+			     <GIC_PPI 4 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
-+			     <GIC_PPI 1 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
-+	};
-+
-+	thermal_zones: thermal-zones {
-+		aoss-thermal {
-+			polling-delay-passive = <250>;
-+
-+			thermal-sensors = <&tsens 0>;
-+
-+			trips {
-+				aoss_alert0: trip-point0 {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "hot";
-+				};
-+			};
-+		};
-+
-+		camera-thermal {
-+			polling-delay-passive = <250>;
-+
-+			thermal-sensors = <&tsens 3>;
-+
-+			trips {
-+				camera_alert0: trip-point0 {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "hot";
-+				};
-+			};
-+		};
-+
-+		cpuss1-thermal {
-+			polling-delay-passive = <250>;
-+
-+			thermal-sensors = <&tsens 4>;
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpuss1_alert0>;
-+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+
-+			trips {
-+				cpuss1_alert0: trip-point0 {
-+					temperature = <75000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				cpuss1_alert1: trip-point1 {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "hot";
-+				};
-+
-+				cpuss1_crit: cpuss1-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu0-thermal {
-+			polling-delay-passive = <250>;
-+
-+			thermal-sensors = <&tsens 5>;
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu0_alert1>;
-+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+
-+			trips {
-+				cpu0_alert0: trip-point0 {
-+					temperature = <75000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				cpu0_alert1: trip-point1 {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "hot";
-+				};
-+
-+				cpu0_crit: cpu-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu1-thermal {
-+			polling-delay-passive = <250>;
-+
-+			thermal-sensors = <&tsens 6>;
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu1_alert1>;
-+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+
-+			trips {
-+				cpu1_alert0: trip-point0 {
-+					temperature = <75000>;
-+					hysteresis = <2000>;
-+					type = "hot";
-+				};
-+
-+				cpu1_alert1: trip-point1 {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				cpu1_crit: cpu-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu2-thermal {
-+			polling-delay-passive = <250>;
-+
-+			thermal-sensors = <&tsens 7>;
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu2_alert1>;
-+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+
-+			trips {
-+				cpu2_alert0: trip-point0 {
-+					temperature = <75000>;
-+					hysteresis = <2000>;
-+					type = "hot";
-+				};
-+
-+				cpu2_alert1: trip-point1 {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				cpu2_crit: cpu-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu3-thermal {
-+			polling-delay-passive = <250>;
-+
-+			thermal-sensors = <&tsens 8>;
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu3_alert1>;
-+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+
-+			trips {
-+				cpu3_alert0: trip-point0 {
-+					temperature = <75000>;
-+					hysteresis = <2000>;
-+					type = "hot";
-+				};
-+
-+				cpu3_alert1: trip-point1 {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				cpu3_crit: cpu-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		gpu-thermal {
-+			polling-delay-passive = <250>;
-+
-+			thermal-sensors = <&tsens 9>;
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&gpu_alert>;
-+					cooling-device = <&gpu THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+
-+			trips {
-+				gpu_alert: trip-point0 {
-+					temperature = <70000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				gpu_crit: gpu-crit {
-+					temperature = <90000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+		};
-+
-+		mdm-core-thermal {
-+			polling-delay-passive = <250>;
-+
-+			thermal-sensors = <&tsens 1>;
-+
-+			trips {
-+				mdm_core_alert0: trip-point0 {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "hot";
-+				};
-+			};
-+		};
-+
-+		q6-thermal {
-+			polling-delay-passive = <250>;
-+
-+			thermal-sensors = <&tsens 2>;
-+
-+			trips {
-+				q6_alert0: trip-point0 {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "hot";
-+				};
-+			};
-+		};
-+	};
-+};
+> > 
+> > I think this would be in contrast of Jonathan's suggestion to keep the
+> > cookie pattern out of the provider drivers scope.  
+> 
+> In my understanding of cookies is that it's an opaque pointer / object,
+> so it is fine to pass it through the caller / user. We do cookies, e.g.,
+> in DMA engine subsystem and it's fine, the actual cookie's data is kept
+> out of the scope of the provider drivers.
+> 
+> Did I miss anything?
 
--- 
-2.47.1
+If we were starting from scratch, then pushing it all the way through would
+maybe be fine (with a bunch of helpers to avoid the pain for the really simple
+(and way more frequent) cases.
+
+The problem here is a big miss balance.  Lots of drivers c. 100 from a
+quick grep, provide the relevant available callbacks because they are
+mostly just used by the IIO core to provide data for sysfs functions. We could
+fix all those drivers up but in general I don't want to complicate
+that path (which doesn't have these lifetimes or ownership issues) or
+the vast majority of drivers that don't have this lifetime issue because
+the data they are providing is const.
+
+So to keep this simple, I think we can have cookies that only the consumer
+side (which is way smaller, just a few drivers) + the IIO core have to
+deal with.
+
+That also means they aren't exposed for the inkern calls that just grab
+one number from an array (we have min and max) and hence can manage
+the lifetime themselves.
+
+We only need them in the tiny fraction of cases where the array of
+data itself is passed to the consumer.  Therefore, if we create
+the cookies in the interface layer it all looks like the ideal situation
+for those consumers (nice opaque object + a few accessor calls) and
+keeps the complexity out of the provider drivers.  If later we need
+to provide alternative paths into the providers for when they do need
+to more directly manage the cookie (i.e. squirt more data in it for
+some reason) that is fine, because it only affects the providers
+that need it - not all of them.
+
+So in conclusion, I'm thinking we either:
+1) Push the cookie allocator to a default function that is used in all provider
+   drivers but in theory can be overridden - maybe it is worth overriding
+   for those cases that were modified in this set. I'm not sure we gain
+   anything but I haven't looked closely.
+
+2) For now just do the cookie allocator in the core with the option later
+   to push it to provider drivers where they want to do something different
+   from the provider.
+
+Perhaps have a play with doing option 1 and see how bad it is? I think
+it only makes sense if we end up with no special casing in the core
+and that means every iio_info structure with a read_avail needs the
+new callback set as well + runtime checks that we have done that.
+(whereas option 2 is basically just have the 'special' case code in the
+ core).
+
+Jonathan
 
