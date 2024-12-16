@@ -1,83 +1,74 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f180.google.com (mail-pl1-f180.google.com [209.85.214.180])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DB0914D2B7;
-	Mon, 16 Dec 2024 06:57:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.20
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1F2B1CEAC1
+	for <linux-pm@vger.kernel.org>; Mon, 16 Dec 2024 07:06:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734332249; cv=none; b=JgOK0LBLhDriyp9bm9Kb0PkTzkkswH8pgeE4x7MU6C1lrvG4Cz5CYCiYui0R4O2nyaJ3im055jTJq5iaMCOAmbisQZEf9/hrsZDJoTl2gVoDAXtqP+NN/S0RgZ6fgpni+NSNb2NamkmtQOlewyhfDbmEmWkQCVP7toVheJurTYs=
+	t=1734332770; cv=none; b=CmH9yY2xQIG8SkDbR5gEoiipO5466KpaUWG8bwdqduSP2g5N8I7h3yh23V80fxJj2Q7DJ+ovOzY8R8zPTYM/1Fym2lzAS8Y5pJPRUeVsnaG8dfkmygVaWLQCuQW+qoGRe5sRHwlvCl7DY0/xiZgUmXD5/cM46zfnV4BY0oq6UZA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734332249; c=relaxed/simple;
-	bh=mE6dYNIlY28OWcfnd/CJnogiqYFMZrcABGluAIq6/HE=;
+	s=arc-20240116; t=1734332770; c=relaxed/simple;
+	bh=I238hIWx+Cz/FYS1dqqAD1UvSMg2hrKOWPzfKgLdgzI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ooiTOf+ei0B1ld56YOdcufy8t54Uxq4kh1G/d3LJLz6gOrvPKfRYiVleM+cc8cmhTVf5jamFri71VqZion8n0+uaI1RNcqibYZR6Z1QrtyHXQGZ1Vmq+zIxBO8zC10U8QU3QzHSDJ7jfhESIo4M+pqi61xdo/YE/tHYfWGO28uc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Xv2Pc6jt; arc=none smtp.client-ip=198.175.65.20
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=JdxRF/h7YGbxxhL4qko+Lq9S6Gyl9Q2yMFZzbN02q0ee7YEgu7VN1HzfZmF6tRE89EPm1l2/bCbVs3OePAL8lxkSt6rP86IZua1cuYB78wh4lxvjFp8EZC1Teu1nNsIWaBO2xuLqu4wWNFHRw68rSw/qP9h+qa3i40dsBj63kDs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=W8a1cwRe; arc=none smtp.client-ip=209.85.214.180
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Xv2Pc6jt"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1734332248; x=1765868248;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=mE6dYNIlY28OWcfnd/CJnogiqYFMZrcABGluAIq6/HE=;
-  b=Xv2Pc6jtelsKUpMj34zbPafF6qMowxJ2bxo9u9t+frFc4uxTJe+h6ofl
-   4s35Yl3tGvfb8vpADXzyxeJhzB598LYOK0VdVokNnlseg4ohj5cy+bzpd
-   jcQ79B17IZhQLGZes3vSZNCa7wKV43n5SBHqLBm7kYA/7xXH0SNgQih1Y
-   TkZX3/2jqpJV3e680SWa2uxcpkPUmJxMrI0n/xfCz78V4ifqiHUP6HXIN
-   9lICjVGgAQPZrjPUrdMXExGVERuABbhDQiH0VpGZS1wyztiKNChMRlrKh
-   fuz+ilc3xkn1t8Fzl/ntDueyI18mMbrulV5QPvKWVOSPE/J927dmxrRGk
-   w==;
-X-CSE-ConnectionGUID: qpURufUXTBKSC9VxfogG/w==
-X-CSE-MsgGUID: f+vNz9FEQtaNarDfnpZsuQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11287"; a="34437845"
-X-IronPort-AV: E=Sophos;i="6.12,237,1728975600"; 
-   d="scan'208";a="34437845"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Dec 2024 22:57:26 -0800
-X-CSE-ConnectionGUID: rK+hPPh9QICvnGMn5ZMo5Q==
-X-CSE-MsgGUID: b8UfaVs6SniBj6Oqi74eFA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,237,1728975600"; 
-   d="scan'208";a="96859421"
-Received: from black.fi.intel.com ([10.237.72.28])
-  by fmviesa006.fm.intel.com with ESMTP; 15 Dec 2024 22:57:21 -0800
-Received: by black.fi.intel.com (Postfix, from userid 1001)
-	id 0E771329; Mon, 16 Dec 2024 08:57:19 +0200 (EET)
-Date: Mon, 16 Dec 2024 08:57:19 +0200
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Niklas Schnelle <niks@kernel.org>,
-	Niklas Schnelle <schnelle@linux.ibm.com>,
-	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
-	Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
-	Rob Herring <robh@kernel.org>, Krzysztof Wilczy??ski <kw@linux.com>,
-	"Maciej W . Rozycki" <macro@orcam.me.uk>,
-	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-	Alexandru Gagniuc <mr.nuke.me@gmail.com>,
-	Krishna chaitanya chundru <quic_krichai@quicinc.com>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	"Rafael J . Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
-	Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>
-Subject: Re: [PATCH] PCI/portdrv: Disable bwctrl service if port is fixed at
- 2.5 GT/s
-Message-ID: <20241216065719.GA3713119@black.fi.intel.com>
-References: <20241207-fix_bwctrl_thunderbolt-v1-1-b711f572a705@kernel.org>
- <Z1gSZCdv3fwnRRNk@wunner.de>
- <70829798889c6d779ca0f6cd3260a765780d1369.camel@kernel.org>
- <Z1lF468L8c84QJkD@wunner.de>
- <dc6e677f-4c19-dd25-8878-8eae9154cff4@linux.intel.com>
- <Z1qoDmF6urJDN5jh@wunner.de>
- <97bbbdecb8c65cfa2625b47aa2585a7417ddcb81.camel@linux.ibm.com>
- <Z1rX1BgdsPHIHOv4@wunner.de>
- <1dcc3ca74c3fbb3b4a1adcafb648dfd2501310f1.camel@kernel.org>
- <Z1vyLNW20RuVaZe5@wunner.de>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="W8a1cwRe"
+Received: by mail-pl1-f180.google.com with SMTP id d9443c01a7336-21631789fcdso30960485ad.1
+        for <linux-pm@vger.kernel.org>; Sun, 15 Dec 2024 23:06:08 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1734332768; x=1734937568; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=ziUY36k0W7WB4ux5sJzImTve/z2GKofoJlBRVwKWqug=;
+        b=W8a1cwReF3qGOL4xtCqxo8jmsIYarB4qqNJ/V+0dlpy5C4WbszUPEEg9qmvuLvHH95
+         1Vy+j+PmQc2ABj/K7N9XmmWjAsEQMLNxnaX8IZ0CUEgFJQ2L+KQ+4rhz6AZK/3uPnwaq
+         Ce1jwTduKGXbhf75oQtLYsT56+ADeA/wPsvEjIbMRLKT5gTWVByPA9GkUlLonJ9GErmN
+         VljnxRzfzdifaKvvsPQswuc9spy9uxHtFY2siapjqYb0EyxZnOB3HU3w9r/nKEWoUAF/
+         6FSeBAMvixfNY5JP8gRnMOar3iUoisA4CFvuqsgiSZa59ffAXDaKdlo7y+dsaPG3mr01
+         ioTw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1734332768; x=1734937568;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=ziUY36k0W7WB4ux5sJzImTve/z2GKofoJlBRVwKWqug=;
+        b=d6LXgep3DR+snbDD0JjU74y2gSfw9eGrtUSvE2J0WJ5qwyAK9t/pFJvz36llSPpYOC
+         g9jETum/2CWcDlizFZ3pC1e183pRAnVpTv6HfXGmR6gLdH9RPCUZXSz5yxzpOXLVmbx1
+         Of5Z8ZzTcFX5qbTRLgfwh/mss6SdxED0UMiFD0ISUqaJZuRf6qatd9dHze3UwtxVUSOB
+         ZbxUF9rcuCVSOR2iwqjtfg61UhVZqLOEwBgzNNLz/V9w7ehaf/qN2sk1Y8xOGDEr3nRv
+         JMfDyMkR5n6syUI0kRJjGL/6dTddE5bGopwU6TQygkRVHSyKIsn6OYLNTGpxk5TfqYC7
+         kxEg==
+X-Forwarded-Encrypted: i=1; AJvYcCXmZAmGnXPLkePzZn8qFzc3wrUxWMh1lcjFWX0kgKUvbkfle9Sx8ldpYiPGu930Q1i0iQNvEtrXLw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw2aSQpzOFSKXG2IHz+Y4iJ3iOoHeR2qzYFXLL8/d3+QbqKZb8H
+	4lPm+9/YeTlqPomwKAfehAQXjsQsavy0/Jntl4wOS77LdByfmfWPQICmOmzwP3TM4YSg2BL1XqI
+	=
+X-Gm-Gg: ASbGncsz2UfhJNy8Q/NQvhRibpYsYC38ohKubq6Fn6QWjLBuUEs69/O4mz5f5ezNRkK
+	8HgV0Q6kDKOs1KWq9YLTURIv3/91OROI5qEdsuXZ1pv5qKkfrV5YVOq9RctGVrLTQq9jyWL0V9A
+	1CZcgl0+ZXyc53JeLbNS6ur6GuWMvgjhqZVEQYp5v7Acbi8wdFifV9CV5QG7bPz0IV/tHX4aMoT
+	2+XlAOuiBygJslPaUnn018eYm7/s1UZcvpzOSNKPr5sjg4TCQK4rm+u6wcoZ5Dh0ng=
+X-Google-Smtp-Source: AGHT+IEfZZiyHGK/1Nx+GCELiO0Jo8KYv56K/wIilz36vVZ/8tAo3OmYY9U/N6lMaVPZU9l74zQh9Q==
+X-Received: by 2002:a17:903:230b:b0:216:3e87:ca00 with SMTP id d9443c01a7336-2178c893460mr217810835ad.28.1734332768003;
+        Sun, 15 Dec 2024 23:06:08 -0800 (PST)
+Received: from thinkpad ([120.60.56.176])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-218a1e64034sm36057015ad.231.2024.12.15.23.06.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 15 Dec 2024 23:06:07 -0800 (PST)
+Date: Mon, 16 Dec 2024 12:35:54 +0530
+From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+To: Stephan Gerhold <stephan.gerhold@linaro.org>
+Cc: Bartosz Golaszewski <brgl@bgdev.pl>,
+	Bjorn Helgaas <bhelgaas@google.com>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Subject: Re: [RFT PATCH] Revert "power: sequencing: request the WLAN enable
+ GPIO as-is"
+Message-ID: <20241216070554.ym54ozdw45zhveo7@thinkpad>
+References: <20241203141251.11735-1-brgl@bgdev.pl>
+ <Z1x6ti2KaMdKS1Hn@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -86,54 +77,69 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <Z1vyLNW20RuVaZe5@wunner.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Z1x6ti2KaMdKS1Hn@linaro.org>
 
-On Fri, Dec 13, 2024 at 09:37:00AM +0100, Lukas Wunner wrote:
-> On Thu, Dec 12, 2024 at 09:40:04PM +0100, Niklas Schnelle wrote:
-> > On Thu, 2024-12-12 at 13:32 +0100, Lukas Wunner wrote:
-> > > pcie_get_supported_speeds() is used to fill in the supported_speeds
-> > > field in struct pci_dev.
-> > > 
-> > > And that field is used in a number of places (exposure of the max link
-> > > speed in sysfs, delay handling in pci_bridge_wait_for_secondary_bus(),
-> > > link tuning in radeon/amdgpu drivers, etc).
+On Fri, Dec 13, 2024 at 07:19:34PM +0100, Stephan Gerhold wrote:
+> On Tue, Dec 03, 2024 at 03:12:51PM +0100, Bartosz Golaszewski wrote:
+> > From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 > > 
-> > Side question. If this is used in radeon/amdgpu could detecting the
-> > thunderbolt port's max link speed as 2.5 GT/s cause issues for external
-> > GPUs?
+> > This reverts commit a9aaf1ff88a8cb99a1335c9eb76de637f0cf8c10.
+> > 
+> > With the changes recently merged into the PCI/pwrctrl/ we now have
+> > correct ordering between the pwrseq provider and the PCI-pwrctrl
+> > consumers. With that, the pwrseq WCN driver no longer needs to leave the
+> > GPIO state as-is and we can remove the workaround.
+> > 
 > 
-> I don't think so:
+> Should probably revert commit d8b762070c3f ("power: sequencing:
+> qcom-wcn: set the wlan-enable GPIO to output") as well?
 > 
-> An attached Thunderbolt gadget (e.g. eGPU) is visible to the OS as a
-> PCIe switch.  A portion of the Switch Downstream Ports is used to
-> attach Endpoints (e.g. GPU) and the remainder is used for tunneling,
-> i.e. to extend the hierarchy further if multiple Thunderbolt devices
-> are daisy-chained.
+> > Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+> > ---
+> >  drivers/power/sequencing/pwrseq-qcom-wcn.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/power/sequencing/pwrseq-qcom-wcn.c b/drivers/power/sequencing/pwrseq-qcom-wcn.c
+> > index 682a9beac69eb..bb8c47280b7bc 100644
+> > --- a/drivers/power/sequencing/pwrseq-qcom-wcn.c
+> > +++ b/drivers/power/sequencing/pwrseq-qcom-wcn.c
+> > @@ -379,7 +379,7 @@ static int pwrseq_qcom_wcn_probe(struct platform_device *pdev)
+> >  				     "Failed to get the Bluetooth enable GPIO\n");
+> >  
+> >  	ctx->wlan_gpio = devm_gpiod_get_optional(dev, "wlan-enable",
+> > -						 GPIOD_ASIS);
+> > +						 GPIOD_OUT_LOW);
+> >  	if (IS_ERR(ctx->wlan_gpio))
+> >  		return dev_err_probe(dev, PTR_ERR(ctx->wlan_gpio),
+> >  				     "Failed to get the WLAN enable GPIO\n");
+> > -- 
+> > 2.30.2
+> > 
 > 
-> My expectation is that the Max Link Speed is 8 GT/s on those Downstream
-> Ports leading to Endpoints and 2.5 GT/s on those Downstream Ports used
-> for tunneling (to conform with the USB4/Thunderbolt spec).  In other words,
-> the Supported Link Speeds is the same on all of them, but Max Link Speed
-> is reduced to 2.5 GT/s on so-called PCIe Adapters (in USB4/Thunderbolt
-> terminology).
-> 
-> The PCIe Adapters encapsulate PCIe TLPs into Thunderbolt packets and
-> send them over the Thunderbolt fabric, and similarly decapsulate TLPs
-> received from the fabric.
-> 
-> There are some illustrations available here which explain the distinction
-> between the two types of Downstream Ports:
-> 
-> https://developer.apple.com/library/archive/documentation/HardwareDrivers/Conceptual/ThunderboltDevGuide/Basics/Basics.html
-> 
-> I'm hoping Mika or Ilpo can verify the above information.  I have
-> lspci dumps here of MeteorLake-P and BarlowRidge host controllers,
-> but without any attached USB4/Thunderbolt gadgets.
+> I'm not sure why but applying this patch brings back the error I had
+> before. It does seem like setting wlan-enable GPIO happens early enough,
+> but maybe some timing is still wrong.
+>
 
-That's right.
+There should be no room for timing issue now :/
+ 
+> [   17.132161] <gpiod_set_value_cansleep(ctx->wlan_gpio, 1);>
+> [   17.480619] ath12k_pci 0004:01:00.0: of_irq_parse_pci: failed with rc=134
+> [   17.491997] ath12k_pci 0004:01:00.0: pci device id mismatch: 0xffff 0x1107
+> [   17.492000] ath12k_pci 0004:01:00.0: failed to claim device: -5
+> [   17.492075] ath12k_pci 0004:01:00.0: probe with driver ath12k_pci failed with error -5
+> 
 
-The bandwidth in the PCIe tunnel is dynamic but the adapters announce Gen 1
-x 4 according to USB4 spec. You can get up to the 90% of the available
-TB/USB4 link bandwidth for PCIe depending what is being tunneled. Graphics
-drivers should not really look for these "virtual" PCIe links but instead
-the native link if they need to.
+Are you sure that this is the same error that you noticed before?
+
+> Any ideas/suggestions?
+> 
+
+Can you verify that the pwrctrl driver's probe is completed *before* ath12k
+driver starting to probe by adding the debug prints in both drivers?
+
+- Mani
+
+-- 
+மணிவண்ணன் சதாசிவம்
