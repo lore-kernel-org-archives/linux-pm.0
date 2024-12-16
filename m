@@ -1,88 +1,202 @@
-Received: from mail-lj1-f180.google.com (mail-lj1-f180.google.com [209.85.208.180])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E61EF1FFC41
-	for <linux-pm@vger.kernel.org>; Mon, 16 Dec 2024 08:37:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C5DD2200BAA;
+	Mon, 16 Dec 2024 09:16:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.188
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734338278; cv=none; b=o0FU9itc/cVBIbNkaWvJEHv7nagMViCdcBur9paZR/qC0lsp1kEou7srUiRrNdWfoWF8P73TFt88Xq1N8Xza7KU2k7eQGDyH6N9J0HPWUW/+LvG5ibfDzbTR426lGC0ZFHRLvI0Bh0KiYxuyD29b/wy16hEK0/jesK5ee+7b3H0=
+	t=1734340571; cv=none; b=LxM9uywwyInwvkjzeZaiNc+yPAUtMGwLLdG8d8CADqk0hGrZ/Mgp6I8/Xf9GAY8oPMkKxz4dHQsFi7zSU56dawu5+Y/5VIhC5cdfh9Yg01nmoRHCdkbqmWFPkTDv4qMALZwW/lffthKvJVrEq4yOqQEa1p/NjkRceKwN0rD8doc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734338278; c=relaxed/simple;
-	bh=dwL4oyCtuYrCZ6yF/bR5QHEDHgK3LUp6b+1GIr7tsfg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=t16h2/5yaRmoMMduQrk9+86YGQqHNCeJv5gufIYjm7KjkB13GMkV0QB+J/A5acgdj807foinG5iUOmGOk7yoFcYIvmJ+YW0PowVidSTQlayY7NdvT3Z/OzB8Y6WMVta1MqI3Q9fpjQ5GVXbUG0afyj5Ya9mDjIot8/3UpmUHvvA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; spf=none smtp.mailfrom=bgdev.pl; dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b=1lIz0zXr; arc=none smtp.client-ip=209.85.208.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bgdev.pl
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b="1lIz0zXr"
-Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-300479ca5c6so37697841fa.3
-        for <linux-pm@vger.kernel.org>; Mon, 16 Dec 2024 00:37:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1734338275; x=1734943075; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=PhuQsaT5H6o7+J7ElfZP8hf7dLA1Xda/1J2z/GHfUlo=;
-        b=1lIz0zXrxz2Bt+ACzNhoBTs3FLt82bLmCAH1FFEVb5mEbrHWyKrtzKOf3XMJMsxe7x
-         Ssq/KcYTCWCVmG8ntLAbrZVxwSFeQpAmALvxJxOb4L7alPYPKr3COq6PacxIA4fSsLmt
-         v0rm1ASu+hDoNnhX2z58UfH/t9xYraXG7eXc4oCTAQ1+8HecsSGBqo0TY74ypooJ92Pq
-         caelUONH7mdLP7TQh6REAVkHM4OUo4/TpFyyUAoobM5no8Fd2XUcUXFXgLxONlwrdb1A
-         yzwc1/J/qsag14rlb2xOKoEBfQQj3pm2OYqBVe4569zPAFFX+esaMmJELkYaMDPTJ/R0
-         UPvA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1734338275; x=1734943075;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=PhuQsaT5H6o7+J7ElfZP8hf7dLA1Xda/1J2z/GHfUlo=;
-        b=EnPsB2YkCvkrrF6KpFmd2a+U3CBzULs6CUbfqiE9b9QKEFjPHYjASZJGqrTNrIJBK+
-         Tv88586CO67aO5/glzp6rUO5BMv4g4/aWeRwre2dBNNmceUn4Ackv6glP/ptJIOJHX3g
-         c3tfV1/0uvUq90i8Ft/m5tPYs2QQwf53gdfUoD4Fzua5ZlZLfG3qGH7CPr8U0cQsy12T
-         Mbq65iZg9mkwqcfKoqO6YSSwv6PKzJNz4kKXIbFem6igmmH74s4zT6Qyb24JUVUoWLeJ
-         NTYWUyIUusUc5hSUl+LJZ9oDGMivuC4ozunc2+XHPzByySnVhyqjoGbYiaKRKqaiDvgB
-         WfIA==
-X-Gm-Message-State: AOJu0YwEzuJ9pSCYrlI07xAiJD/6uIRVXMLY3q6ES0zxt3A+kHaciDac
-	XAcwj+MpSIVGRCpwk5q98CJfMcT7voKhuQ/6g2DsZuJBNtwCXuovpXJWFvhtrVmQGzTsdFDssve
-	5aIczGa7u8U0r1+b0938X2AHeUTH0zVtkOZT6xw==
-X-Gm-Gg: ASbGncswxFxd0FjZ0B/fbbnEL8P7darCvV6aK+Z8UJmkmgGTmayx0PYwcmCwk7FCFIR
-	URmMn5v2Lj2WwLpaFqUS+nk+VrD4rGEz0ELuYeJCtVk56ZNWU8HUUAIyrdK6e4nou8uY1QQ==
-X-Google-Smtp-Source: AGHT+IHGoOBxZInoO9/bLGpfbpoKkckOqpofRNQ0i1v/Phpq4yTUAC0eZCfCprZDfuAMk0DaFCGKGOn7jaMLHHmiaik=
-X-Received: by 2002:a2e:a7c1:0:b0:302:1861:6de7 with SMTP id
- 38308e7fff4ca-3025448d109mr35383821fa.24.1734338274879; Mon, 16 Dec 2024
- 00:37:54 -0800 (PST)
+	s=arc-20240116; t=1734340571; c=relaxed/simple;
+	bh=xrRcITHs30H6z8klvR2ApPrxKy0KCqRxTfGYNpuCBp0=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=XCgqhnEpIiHnY6+klg9+CZzw0ZpR6XT8ZIsLVT5Oksev0vordkGHQ07mqp2DHM9zqAFOZUShYQ/wC6zD+G5sXAsum0gZX+T1PMAizWK4ZCPAKZlNRVS6QMEEv25ZhZebur9AbdREzNOy8mOCVHpnVluFH7e9BG/Y3N8uZR7JKwY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.188
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.19.163.48])
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4YBZ5762qyzqV1Z;
+	Mon, 16 Dec 2024 17:14:19 +0800 (CST)
+Received: from kwepemh100008.china.huawei.com (unknown [7.202.181.93])
+	by mail.maildlp.com (Postfix) with ESMTPS id 21BCE1802D0;
+	Mon, 16 Dec 2024 17:16:06 +0800 (CST)
+Received: from localhost.huawei.com (10.50.165.33) by
+ kwepemh100008.china.huawei.com (7.202.181.93) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Mon, 16 Dec 2024 17:16:05 +0800
+From: Lifeng Zheng <zhenglifeng1@huawei.com>
+To: <rafael@kernel.org>, <lenb@kernel.org>, <robert.moore@intel.com>,
+	<viresh.kumar@linaro.org>
+CC: <acpica-devel@lists.linux.dev>, <linux-acpi@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+	<linuxarm@huawei.com>, <pierre.gondois@arm.com>, <ionela.voinescu@arm.com>,
+	<jonathan.cameron@huawei.com>, <zhanjie9@hisilicon.com>,
+	<lihuisong@huawei.com>, <zhenglifeng1@huawei.com>, <hepeng68@huawei.com>,
+	<fanghao11@huawei.com>
+Subject: [PATCH v3 2/4] ACPI: CPPC: Refactor register value get and set ABIs
+Date: Mon, 16 Dec 2024 17:16:01 +0800
+Message-ID: <20241216091603.1247644-3-zhenglifeng1@huawei.com>
+X-Mailer: git-send-email 2.33.0
+In-Reply-To: <20241216091603.1247644-1-zhenglifeng1@huawei.com>
+References: <20241216091603.1247644-1-zhenglifeng1@huawei.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20241202165723.17292-1-brgl@bgdev.pl>
-In-Reply-To: <20241202165723.17292-1-brgl@bgdev.pl>
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 16 Dec 2024 09:37:44 +0100
-Message-ID: <CAMRc=MeNCj0kY8OGxyHMa9pOEtSeEysOhrP5cVcwyTUdF95dkA@mail.gmail.com>
-Subject: Re: [PATCH] interconnect: icc-clk: check return values of devm_kasprintf()
-To: Georgi Djakov <djakov@kernel.org>, Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
+ kwepemh100008.china.huawei.com (7.202.181.93)
 
-On Mon, Dec 2, 2024 at 5:57=E2=80=AFPM Bartosz Golaszewski <brgl@bgdev.pl> =
-wrote:
->
-> From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
->
-> devm_kasprintf() can fail and return NULL, add missing return value
-> checks.
->
-> Fixes: 0ac2a08f42ce ("interconnect: add clk-based icc provider support")
-> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-> ---
->  drivers/interconnect/icc-clk.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
+Refactor register value get and set ABIs by using cppc_get_reg_val() and
+cppc_set_reg_val().
 
-Gentle ping.
+Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+---
+ drivers/acpi/cppc_acpi.c | 111 +++------------------------------------
+ 1 file changed, 7 insertions(+), 104 deletions(-)
 
-Bart
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index bb5333a503a2..83c7fcad74ad 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -1602,44 +1602,14 @@ EXPORT_SYMBOL_GPL(cppc_set_epp_perf);
+  */
+ int cppc_get_auto_sel_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+ {
+-	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
+-	struct cpc_register_resource *auto_sel_reg;
+-	u64  auto_sel;
+-
+-	if (!cpc_desc) {
+-		pr_debug("No CPC descriptor for CPU:%d\n", cpunum);
+-		return -ENODEV;
+-	}
+-
+-	auto_sel_reg = &cpc_desc->cpc_regs[AUTO_SEL_ENABLE];
+-
+-	if (!CPC_SUPPORTED(auto_sel_reg))
+-		pr_warn_once("Autonomous mode is not unsupported!\n");
+-
+-	if (CPC_IN_PCC(auto_sel_reg)) {
+-		int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpunum);
+-		struct cppc_pcc_data *pcc_ss_data = NULL;
+-		int ret = 0;
+-
+-		if (pcc_ss_id < 0)
+-			return -ENODEV;
+-
+-		pcc_ss_data = pcc_data[pcc_ss_id];
+-
+-		down_write(&pcc_ss_data->pcc_lock);
+-
+-		if (send_pcc_cmd(pcc_ss_id, CMD_READ) >= 0) {
+-			cpc_read(cpunum, auto_sel_reg, &auto_sel);
+-			perf_caps->auto_sel = (bool)auto_sel;
+-		} else {
+-			ret = -EIO;
+-		}
+-
+-		up_write(&pcc_ss_data->pcc_lock);
++	u64 auto_sel;
++	int ret;
+ 
++	ret = cppc_get_reg_val(cpunum, AUTO_SEL_ENABLE, &auto_sel);
++	if (ret)
+ 		return ret;
+-	}
+ 
++	perf_caps->auto_sel = (bool)auto_sel;
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(cppc_get_auto_sel_caps);
+@@ -1651,43 +1621,7 @@ EXPORT_SYMBOL_GPL(cppc_get_auto_sel_caps);
+  */
+ int cppc_set_auto_sel(int cpu, bool enable)
+ {
+-	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
+-	struct cpc_register_resource *auto_sel_reg;
+-	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
+-	struct cppc_pcc_data *pcc_ss_data = NULL;
+-	int ret = -EINVAL;
+-
+-	if (!cpc_desc) {
+-		pr_debug("No CPC descriptor for CPU:%d\n", cpu);
+-		return -ENODEV;
+-	}
+-
+-	auto_sel_reg = &cpc_desc->cpc_regs[AUTO_SEL_ENABLE];
+-
+-	if (CPC_IN_PCC(auto_sel_reg)) {
+-		if (pcc_ss_id < 0) {
+-			pr_debug("Invalid pcc_ss_id\n");
+-			return -ENODEV;
+-		}
+-
+-		if (CPC_SUPPORTED(auto_sel_reg)) {
+-			ret = cpc_write(cpu, auto_sel_reg, enable);
+-			if (ret)
+-				return ret;
+-		}
+-
+-		pcc_ss_data = pcc_data[pcc_ss_id];
+-
+-		down_write(&pcc_ss_data->pcc_lock);
+-		/* after writing CPC, transfer the ownership of PCC to platform */
+-		ret = send_pcc_cmd(pcc_ss_id, CMD_WRITE);
+-		up_write(&pcc_ss_data->pcc_lock);
+-	} else {
+-		ret = -ENOTSUPP;
+-		pr_debug("_CPC in PCC is not supported\n");
+-	}
+-
+-	return ret;
++	return cppc_set_reg_val(cpu, AUTO_SEL_ENABLE, enable);
+ }
+ EXPORT_SYMBOL_GPL(cppc_set_auto_sel);
+ 
+@@ -1701,38 +1635,7 @@ EXPORT_SYMBOL_GPL(cppc_set_auto_sel);
+  */
+ int cppc_set_enable(int cpu, bool enable)
+ {
+-	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
+-	struct cpc_register_resource *enable_reg;
+-	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
+-	struct cppc_pcc_data *pcc_ss_data = NULL;
+-	int ret = -EINVAL;
+-
+-	if (!cpc_desc) {
+-		pr_debug("No CPC descriptor for CPU:%d\n", cpu);
+-		return -EINVAL;
+-	}
+-
+-	enable_reg = &cpc_desc->cpc_regs[ENABLE];
+-
+-	if (CPC_IN_PCC(enable_reg)) {
+-
+-		if (pcc_ss_id < 0)
+-			return -EIO;
+-
+-		ret = cpc_write(cpu, enable_reg, enable);
+-		if (ret)
+-			return ret;
+-
+-		pcc_ss_data = pcc_data[pcc_ss_id];
+-
+-		down_write(&pcc_ss_data->pcc_lock);
+-		/* after writing CPC, transfer the ownership of PCC to platfrom */
+-		ret = send_pcc_cmd(pcc_ss_id, CMD_WRITE);
+-		up_write(&pcc_ss_data->pcc_lock);
+-		return ret;
+-	}
+-
+-	return cpc_write(cpu, enable_reg, enable);
++	return cppc_set_reg_val(cpu, ENABLE, enable);
+ }
+ EXPORT_SYMBOL_GPL(cppc_set_enable);
+ 
+-- 
+2.33.0
+
