@@ -1,28 +1,29 @@
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6E1C20101E;
-	Mon, 16 Dec 2024 09:16:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.187
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A2B0A202F9F;
+	Mon, 16 Dec 2024 09:16:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.190
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734340576; cv=none; b=PwZMPV/9JiLNcrT1is9QPwd5NQ7F7RQc9tnPAmIdT6jD//5ig3dunMZEMHK2HqEk/qmbozvTTj/srHy0Ik27EnHEAHVpdvTKom3lJCvXNMRfQHu9sw1s7KKWkLsjagReHBSaWIB3TIW9/jRjjunTEaaqpFIqqoxqWrA+XvCi6hk=
+	t=1734340579; cv=none; b=am0XU6HApH1YiXWIkLIqfdCK5c6KRhs2UMfD0YGOWyEh5qpQnpg4emuVTehUJVawVsaogdkaQs0KyZLKw3bTD5CfcDZKsLs4/76Qhves8XgQWGvD0NmUYmHiqeO6RQOa3q4LXz3PMTkWxtOtqYgMvlms9l93XDeGyPydYJVgn5o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734340576; c=relaxed/simple;
-	bh=aX4HqyGzLzka94xiZImooBUJwmdy7RYEVbUgjk6BaS4=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=tMkjzFxv4JeDam1VgeWGjLq8acAYCXVMVIrhgcgR0GNyKc5EUg23OKw/NfJ5bR1AfTcMV31DlLSgR18CcPUTEfgMxbY5vsxpsfQ2pJ0cxcWytZpw32PUZJx4+BEVgk5GiC8TlNceXkfhnAhdTDxYPWElZVm/CXoT/7ysqvcVCf8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.187
+	s=arc-20240116; t=1734340579; c=relaxed/simple;
+	bh=DVbfO+bImgQLdojqzoZJCD0lmtLp8iIAPncop/S3X/Q=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=fpi618kseFOUJMCS6ZicDyxhGgAvp6TJuvhsB7wjppmca0mfCsVXIplrJEnqKUTbnjC4rE1c42L93aTd9jrE+LuJZq3nTcIucLxikwdYadBe6JJZiph6/caYObnXMlpTz3AV/Lsts8dtk+VmEElMkwY9/a3BzwNKHTpQ31fdAm0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.190
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.88.194])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4YBZ4H08G0zhZWW;
-	Mon, 16 Dec 2024 17:13:35 +0800 (CST)
+Received: from mail.maildlp.com (unknown [172.19.88.214])
+	by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4YBZ4G4V31z2Dj0L;
+	Mon, 16 Dec 2024 17:13:34 +0800 (CST)
 Received: from kwepemh100008.china.huawei.com (unknown [7.202.181.93])
-	by mail.maildlp.com (Postfix) with ESMTPS id F361F1400D5;
-	Mon, 16 Dec 2024 17:16:04 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id AE79D1A016C;
+	Mon, 16 Dec 2024 17:16:06 +0800 (CST)
 Received: from localhost.huawei.com (10.50.165.33) by
  kwepemh100008.china.huawei.com (7.202.181.93) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Mon, 16 Dec 2024 17:16:04 +0800
+ 15.2.1544.11; Mon, 16 Dec 2024 17:16:05 +0800
 From: Lifeng Zheng <zhenglifeng1@huawei.com>
 To: <rafael@kernel.org>, <lenb@kernel.org>, <robert.moore@intel.com>,
 	<viresh.kumar@linaro.org>
@@ -32,10 +33,12 @@ CC: <acpica-devel@lists.linux.dev>, <linux-acpi@vger.kernel.org>,
 	<jonathan.cameron@huawei.com>, <zhanjie9@hisilicon.com>,
 	<lihuisong@huawei.com>, <zhenglifeng1@huawei.com>, <hepeng68@huawei.com>,
 	<fanghao11@huawei.com>
-Subject: [PATCH v3 0/4] Support for autonomous selection in cppc_cpufreq
-Date: Mon, 16 Dec 2024 17:15:59 +0800
-Message-ID: <20241216091603.1247644-1-zhenglifeng1@huawei.com>
+Subject: [PATCH v3 3/4] ACPI: CPPC: Add autonomous selection ABIs
+Date: Mon, 16 Dec 2024 17:16:02 +0800
+Message-ID: <20241216091603.1247644-4-zhenglifeng1@huawei.com>
 X-Mailer: git-send-email 2.33.0
+In-Reply-To: <20241216091603.1247644-1-zhenglifeng1@huawei.com>
+References: <20241216091603.1247644-1-zhenglifeng1@huawei.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -47,51 +50,113 @@ Content-Type: text/plain
 X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
  kwepemh100008.china.huawei.com (7.202.181.93)
 
-Add sysfs interfaces for CPPC autonomous selection in the cppc_cpufreq
-driver.
+cppc_set_epp - write energy performance preference register
 
-The patch series is organized in two parts:
+cppc_get_auto_act_window - read autonomous activity window register
 
- - patch 1-2 refactor out the general CPPC register get and set functions
-   in cppc_acpi.c
+cppc_set_auto_act_window - write autonomous activity window register
 
- - patches 3-4 expose sysfs files for users to control CPPC autonomous
-   selection when supported
+cppc_get_auto_sel - read autonomous selection enable register
 
-Since Pierre and me have discussed about whether or not to show
-auto_act_window and energy_perf when auto_select is disabled. It seems
-like whether to show these two files has their own points. We'd like to
-ask for some advice.
+Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+---
+ drivers/acpi/cppc_acpi.c | 44 ++++++++++++++++++++++++++++++++++++++++
+ include/acpi/cppc_acpi.h | 20 ++++++++++++++++++
+ 2 files changed, 64 insertions(+)
 
-Relevant discussion:
-[1] https://lore.kernel.org/all/522721da-1a5c-439c-96a8-d0300dd0f906@huawei.com/
-
-Change since v2:
- - change cppc_get_reg() and cppc_set_reg() name to cppc_get_reg_val() and
-   cppc_set_reg_val()
- - extract cppc_get_reg_val_in_pcc() and cppc_set_reg_val_in_pcc()
- - return the result of cpc_read() in cppc_get_reg_val()
- - add pr_debug() in cppc_get_reg_val_in_pcc() when pcc_ss_id < 0
- - rename 'cpunum' to 'cpu' in cppc_get_reg_val()
- - move some macros from drivers/cpufreq/cppc_cpufreq.c to
-   include/acpi/cppc_acpi.h with a CPPC_XXX prefix
-
-Change since v1:
- - fix some incorrect placeholder
- - change kstrtoul to kstrtobool in store_auto_select
-
-Lifeng Zheng (4):
-  ACPI: CPPC: Add cppc_get_reg_val and cppc_set_reg_val function
-  ACPI: CPPC: Refactor register value get and set ABIs
-  ACPI: CPPC: Add autonomous selection ABIs
-  cpufreq: CPPC: Support for autonomous selection in cppc_cpufreq
-
- .../ABI/testing/sysfs-devices-system-cpu      |  54 ++++
- drivers/acpi/cppc_acpi.c                      | 266 +++++++++---------
- drivers/cpufreq/cppc_cpufreq.c                | 129 +++++++++
- include/acpi/cppc_acpi.h                      |  29 ++
- 4 files changed, 347 insertions(+), 131 deletions(-)
-
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index 83c7fcad74ad..645f2366c888 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -1595,6 +1595,50 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
+ }
+ EXPORT_SYMBOL_GPL(cppc_set_epp_perf);
+ 
++/**
++ * cppc_set_epp() - Write the EPP register.
++ * @cpu: CPU on which to write register.
++ * @epp_val: Value to write to the EPP register.
++ */
++int cppc_set_epp(int cpu, u64 epp_val)
++{
++	return cppc_set_reg_val(cpu, ENERGY_PERF, epp_val);
++}
++EXPORT_SYMBOL_GPL(cppc_set_epp);
++
++/**
++ * cppc_get_auto_act_window() - Read autonomous activity window register.
++ * @cpu: CPU from which to read register.
++ * @auto_act_window: Return address.
++ */
++int cppc_get_auto_act_window(int cpu, u64 *auto_act_window)
++{
++	return cppc_get_reg_val(cpu, AUTO_ACT_WINDOW, auto_act_window);
++}
++EXPORT_SYMBOL_GPL(cppc_get_auto_act_window);
++
++/**
++ * cppc_set_auto_act_window() - Write autonomous activity window register.
++ * @cpu: CPU on which to write register.
++ * @auto_act_window: Value to write to the autonomous activity window register.
++ */
++int cppc_set_auto_act_window(int cpu, u64 auto_act_window)
++{
++	return cppc_set_reg_val(cpu, AUTO_ACT_WINDOW, auto_act_window);
++}
++EXPORT_SYMBOL_GPL(cppc_set_auto_act_window);
++
++/**
++ * cppc_get_auto_sel() - Read autonomous selection register.
++ * @cpu: CPU from which to read register.
++ * @auto_sel: Return address.
++ */
++int cppc_get_auto_sel(int cpu, u64 *auto_sel)
++{
++	return cppc_get_reg_val(cpu, AUTO_SEL_ENABLE, auto_sel);
++}
++EXPORT_SYMBOL_GPL(cppc_get_auto_sel);
++
+ /**
+  * cppc_get_auto_sel_caps - Read autonomous selection register.
+  * @cpunum : CPU from which to read register.
+diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+index 62d368bcd9ec..134931b081a0 100644
+--- a/include/acpi/cppc_acpi.h
++++ b/include/acpi/cppc_acpi.h
+@@ -159,6 +159,10 @@ extern int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val);
+ extern int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val);
+ extern int cppc_get_epp_perf(int cpunum, u64 *epp_perf);
+ extern int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable);
++extern int cppc_set_epp(int cpu, u64 epp_val);
++extern int cppc_get_auto_act_window(int cpu, u64 *auto_act_window);
++extern int cppc_set_auto_act_window(int cpu, u64 auto_act_window);
++extern int cppc_get_auto_sel(int cpu, u64 *auto_sel);
+ extern int cppc_get_auto_sel_caps(int cpunum, struct cppc_perf_caps *perf_caps);
+ extern int cppc_set_auto_sel(int cpu, bool enable);
+ extern int amd_get_highest_perf(unsigned int cpu, u32 *highest_perf);
+@@ -225,6 +229,22 @@ static inline int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls,
+ {
+ 	return -EOPNOTSUPP;
+ }
++static inline int cppc_set_epp(int cpu, u64 epp_val)
++{
++	return -EOPNOTSUPP;
++}
++static inline int cppc_get_auto_act_window(int cpu, u64 *auto_act_window)
++{
++	return -EOPNOTSUPP;
++}
++static inline int cppc_set_auto_act_window(int cpu, u64 auto_act_window)
++{
++	return -EOPNOTSUPP;
++}
++static inline int cppc_get_auto_sel(int cpu, u64 *auto_sel)
++{
++	return -EOPNOTSUPP;
++}
+ static inline int cppc_get_epp_perf(int cpunum, u64 *epp_perf)
+ {
+ 	return -EOPNOTSUPP;
 -- 
 2.33.0
 
