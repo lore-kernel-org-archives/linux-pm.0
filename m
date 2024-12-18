@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1DFCF19CCEC;
-	Wed, 18 Dec 2024 23:36:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 510D71FD797;
+	Wed, 18 Dec 2024 23:45:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734565013; cv=none; b=XdQehd+ELcnybFRULWyTX4bKwg2cmiB9oihwsRBkwIQYizZAJZPpGmtCXAlMgKw4QUJPldf19WYjSw/zI4IJtqUcK8cwQSM1+HZCAnSwTM/Qao3Bxwnwppz0N8GyeUBfaXjqaugRmPRhlQzexXoC+bH3TqszZNG+IuKIjIZLoEg=
+	t=1734565545; cv=none; b=pXHV6+cGJ1uQXi60VXIrSrVm46s9GywKSh2ttsPTaEJoixc7EWX1AgcIDAJLz53W407Kq/dIn4XGtEHGff9PydmD5+4QETDSEf/xVsU3p5v2eDH641I+17Cdc6qwAsrCcDaYT7AdK5pMvyQJeD64VtM4IwE6yfe7Mp8nGtS/qww=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734565013; c=relaxed/simple;
-	bh=JRqMwUt13IUZIdFgku1ZTHb7PBdzVVQLWSjal1NN3HQ=;
+	s=arc-20240116; t=1734565545; c=relaxed/simple;
+	bh=31OncVWgw3S9MDtK0acw9Uvv9YdWo3BxabV9JAh3HRM=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=RONa1OEPej3U5saKGSEUr/kaUlv6ATiup2NoFqcw/MPOODhWFRVpR+4BZpT3eyTTTVT17HpTdutHfoZXfWqcHuFfTUkP8ZnaDr6QkHSXUMlTWB3vVKg8lEWKE3194XfYcaehfG5p+dxs8LgZMW8rq6Z+vDuyV7pa94QE3x/KDk8=
+	 MIME-Version:Content-Type; b=S7YmKOevpbK7CAGCHhqeLSTAxEXmMl3AKpqykRpd3DzMnwX8AvOqJJLsLJDHnilVHdV5hSBbj+Zl6WFMr7GQivShZfUazu9VQq/aCXHUwN0yMCLwV5UV+61hIOcePYUi6WPkBRTgAjvglnPqUK5h8H0XFJJElJXFdgx2acdp0Vc=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 71FB6C4CECD;
-	Wed, 18 Dec 2024 23:36:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C1085C4CED4;
+	Wed, 18 Dec 2024 23:45:44 +0000 (UTC)
 Received: by mercury (Postfix, from userid 1000)
-	id 5AD661060345; Thu, 19 Dec 2024 00:36:47 +0100 (CET)
+	id 1EB6E1060345; Thu, 19 Dec 2024 00:45:42 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Hans de Goede <hdegoede@redhat.com>
-Cc: Hermes Zhang <chenhuiz@axis.com>, linux-pm@vger.kernel.org, 
- devicetree@vger.kernel.org
-In-Reply-To: <20241116203648.169100-1-hdegoede@redhat.com>
-References: <20241116203648.169100-1-hdegoede@redhat.com>
-Subject: Re: (subset) [PATCH 1/3] dt-bindings: power: supply: bq24190: Add
- BQ24297 compatible
-Message-Id: <173456500732.3120615.6151094372116724323.b4-ty@collabora.com>
-Date: Thu, 19 Dec 2024 00:36:47 +0100
+To: Sebastian Reichel <sre@kernel.org>, 
+ Laxman Dewangan <ldewangan@nvidia.com>, 
+ Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Andrew Davis <afd@ti.com>
+In-Reply-To: <20241117053443.1148902-1-iwamatsu@nigauri.org>
+References: <20241117053443.1148902-1-iwamatsu@nigauri.org>
+Subject: Re: [PATCH v2] power: reset: as3722-poweroff: Remove unnecessary
+ return in as3722_poweroff_probe
+Message-Id: <173456554208.3125554.16126631564482305989.b4-ty@collabora.com>
+Date: Thu, 19 Dec 2024 00:45:42 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -39,20 +39,16 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.2
 
 
-On Sat, 16 Nov 2024 21:36:46 +0100, Hans de Goede wrote:
-> The BQ24297 is identical to the BQ24296 except that it uses USB D+ / D-
-> data-lines for charger-type (max. input-current) detection instead of
-> a PSEL input pin.
+On Sun, 17 Nov 2024 14:34:43 +0900, Nobuhiro Iwamatsu wrote:
+> The return is executed on the devm_register_sys_off_handler() line in
+> as3722_poweroff_probe, so the last return line is unnecessary. Remove it.
 > 
-> This is the same difference as between the already supported BQ24190
-> (D+ / D-) and the BQ24192 (PSEL).
 > 
-> [...]
 
 Applied, thanks!
 
-[2/3] power: supply: bq24190: Fix BQ24296 Vbus regulator support
-      commit: b3ded6072c5600704cfa3ce3a8dc8718d34bda66
+[1/1] power: reset: as3722-poweroff: Remove unnecessary return in as3722_poweroff_probe
+      commit: 156fb706f915ceb436200030e3730305bbf12f6c
 
 Best regards,
 -- 
