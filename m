@@ -1,16 +1,15 @@
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A5FC217673
-	for <linux-pm@vger.kernel.org>; Thu, 19 Dec 2024 07:32:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18A872185B9
+	for <linux-pm@vger.kernel.org>; Thu, 19 Dec 2024 07:32:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734593536; cv=none; b=UsYzUt5lEc4UBR8ihh2NhOj/jGqRrLWB7JWUXNEUqFpayyAgCjM5T3RDfnX+v6nWLCMa1NS5pM08pOK78ch1/aQQAqzvuaAKgY0oM8yIVcwFg5v5FA91iMC2nuDxFpPybLlxbapVN2RAM+DXjpRXEl6kKon0hlNgnzgRRFRpsxU=
+	t=1734593540; cv=none; b=rhSs7NIv8wKqKih32ne7EkwqP/f9aSBMLNhnH2et7z6tQougP1vHAdAuCwzSpLLJSivkgOchI9hori+9Zue5PO+8QaLSTGbunbVD4Cen5JWZyNaum1dOKO4+oQMrchCsj9cX+2fnsa4XZYvmwN59bswdEaS5jnvvyXB7og8MKyA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734593536; c=relaxed/simple;
-	bh=kYgKdKaP/JPHzEu3qpEwsNrhXqPcqBKY/KOWofPl+Ao=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=mrG/Pbk93OB8rGnro0DZBAKxc/8lLsp6Qg8b/J3gyCA3cnVZfUcIulcSFpULMV45aw9StPo1R6XsWBrSdUXRAozoQoHuvv5zFs2/Uyl0AIc4zRv8xhXBPFt/wkOCG1JPxjuSiQxvQzJD0vjLhx5Gedp9qOothj2naMlYg7bclZA=
+	s=arc-20240116; t=1734593540; c=relaxed/simple;
+	bh=7RTxGMyJEufyqyVhoa0s2MPskpvrfhslVr1jsWa99KE=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=POy2ZS59CESBFlCslX3Ac3KkMka6demKy9xvVqzXjyFwuWjqi3m/65LrxFLx67m47kr9GIODCNLgdg5vI7txrByag49jKIFYJxS4BI8mQrxeA8aRl12Jlnr3gZy0U3EbaT9bB/eVn/c19IcUX3G+OxSOb22xNoGuwFrBdM+e2XA=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
@@ -18,22 +17,23 @@ Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tOB0O-00088X-1Y; Thu, 19 Dec 2024 08:31:32 +0100
+	id 1tOB0O-00088T-1S; Thu, 19 Dec 2024 08:31:32 +0100
 Received: from dude05.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::54])
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.96)
 	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tOB0L-004APp-24;
+	id 1tOB0L-004APo-1p;
 	Thu, 19 Dec 2024 08:31:30 +0100
 Received: from localhost ([::1] helo=dude05.red.stw.pengutronix.de)
 	by dude05.red.stw.pengutronix.de with esmtp (Exim 4.96)
 	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tOB0M-00GkbH-0l;
+	id 1tOB0M-00GkbH-0j;
 	Thu, 19 Dec 2024 08:31:30 +0100
 From: Ahmad Fatoum <a.fatoum@pengutronix.de>
-Date: Thu, 19 Dec 2024 08:31:23 +0100
-Subject: [PATCH 02/11] reboot: reboot, not shutdown, on
- hw_protection_reboot timeout
+Subject: [PATCH 00/11] reboot: support runtime configuration of emergency
+ hw_protection action
+Date: Thu, 19 Dec 2024 08:31:21 +0100
+Message-Id: <20241219-hw_protection-reboot-v1-0-263a0c1df802@pengutronix.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -42,9 +42,10 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20241219-hw_protection-reboot-v1-2-263a0c1df802@pengutronix.de>
-References: <20241219-hw_protection-reboot-v1-0-263a0c1df802@pengutronix.de>
-In-Reply-To: <20241219-hw_protection-reboot-v1-0-263a0c1df802@pengutronix.de>
+X-B4-Tracking: v=1; b=H4sIAMnLY2cC/x2MQQ5AMBAAvyJ71kRbSn1FRKjFXlS2DRLxd43jJ
+ DPzQEAmDNBmDzCeFMjvCWSegdvGfUVBc2JQhSqlko3YruFgH9HFZArGyfsorLGVLq2ulRkhpQf
+ jQve/7fr3/QCZth26ZgAAAA==
+X-Change-ID: 20241218-hw_protection-reboot-96953493726a
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, 
  Fabio Estevam <festevam@denx.de>, "Rafael J. Wysocki" <rafael@kernel.org>, 
  Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
@@ -58,128 +59,78 @@ To: Daniel Lezcano <daniel.lezcano@linaro.org>,
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
  linux-doc@vger.kernel.org, linux-security-module@vger.kernel.org, 
  chrome-platform@lists.linux.dev, devicetree@vger.kernel.org, 
- kernel@pengutronix.de, Ahmad Fatoum <a.fatoum@pengutronix.de>
+ kernel@pengutronix.de, Ahmad Fatoum <a.fatoum@pengutronix.de>, 
+ Matteo Croce <mcroce@microsoft.com>
 X-Mailer: b4 0.14.2
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
 X-SA-Exim-Mail-From: a.fatoum@pengutronix.de
 X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
 X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-hw_protection_shutdown() will kick off an orderly shutdown and if that
-takes longer than a configurable amount of time, an emergency shutdown
-will occur.
+We currently leave the decision of whether to shutdown or reboot to
+protect hardware in an emergency situation to the individual drivers.
 
-Recently, hw_protection_reboot() was added for those systems that don't
-implement a proper shutdown and are better served by rebooting and
-having the boot firmware worry about doing something about the critical
-condition.
+This works out in some cases, where the driver detecting the critical
+failure has inside knowledge: It binds to the system management controller
+for example or is guided by hardware description that defines what to do.
 
-On timeout of the orderly reboot of hw_protection_reboot(), the system
-would go into shutdown, instead of reboot. This is not a good idea, as
-going into shutdown was explicitly not asked for.
+This is inadequate in the general case though as a driver reporting e.g.
+an imminent power failure can't know whether a shutdown or a reboot would
+be more appropriate for a given hardware platform.
 
-Fix this by always doing an emergency reboot if hw_protection_reboot()
-is called and the orderly reboot takes too long.
+To address this, this series adds a hw_protection kernel parameter and
+sysfs toggle that can be used to change the action from the shutdown
+default to reboot. A new hw_protection_trigger API then makes use of
+this default action.
 
-Fixes: 79fa723ba84c ("reboot: Introduce thermal_zone_device_critical_reboot()")
-Signed-off-by: Ahmad Fatoum <a.fatoum@pengutronix.de>
+My particular use case is unattended embedded systems that don't
+have support for shutdown and that power on automatically when power is
+supplied:
+
+  - A brief power cycle gets detected by the driver
+  - The kernel powers down the system and SoC goes into shutdown mode
+  - Power is restored
+  - The system remains oblivious to the restored power
+  - System needs to be manually power cycled for a duration long enough
+    to drain the capacitors
+
+With this series, such systems can configure the kernel with
+hw_protection=reboot to have the boot firmware worry about critical
+conditions.
+
 ---
- kernel/reboot.c | 46 +++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 35 insertions(+), 11 deletions(-)
+Ahmad Fatoum (11):
+      reboot: replace __hw_protection_shutdown bool action parameter with an enum
+      reboot: reboot, not shutdown, on hw_protection_reboot timeout
+      docs: thermal: sync hardware protection doc with code
+      reboot: rename now misleading hw_protection symbols
+      reboot: indicate whether it is a HARDWARE PROTECTION reboot or shutdown
+      reboot: add support for configuring emergency hardware protection action
+      regulator: allow user configuration of hardware protection action
+      platform/chrome: cros_ec_lpc: prepare for hw_protection_shutdown removal
+      dt-bindings: thermal: give OS some leeway in absence of critical-action
+      thermal: core: allow user configuration of hardware protection action
+      reboot: retire hw_protection_reboot and hw_protection_shutdown helpers
 
-diff --git a/kernel/reboot.c b/kernel/reboot.c
-index f92aa66cbfec0f57ded43ba352a39c54d0c24a25..8e3680d36654587b57db44806a3d7b0228b10f67 100644
---- a/kernel/reboot.c
-+++ b/kernel/reboot.c
-@@ -932,6 +932,20 @@ void orderly_reboot(void)
- }
- EXPORT_SYMBOL_GPL(orderly_reboot);
- 
-+static const char *hw_protection_action_str(enum hw_protection_action action)
-+{
-+	switch (action) {
-+	case HWPROT_ACT_SHUTDOWN:
-+		return "shutdown";
-+	case HWPROT_ACT_REBOOT:
-+		return "reboot";
-+	default:
-+		return "undefined";
-+	}
-+}
-+
-+static enum hw_protection_action hw_failure_emergency_action;
-+
- /**
-  * hw_failure_emergency_poweroff_func - emergency poweroff work after a known delay
-  * @work: work_struct associated with the emergency poweroff function
-@@ -941,21 +955,29 @@ EXPORT_SYMBOL_GPL(orderly_reboot);
-  */
- static void hw_failure_emergency_poweroff_func(struct work_struct *work)
- {
-+	const char *action_str = hw_protection_action_str(hw_failure_emergency_action);
-+
-+	pr_emerg("Hardware protection timed-out. Trying forced %s\n",
-+		 action_str);
-+
- 	/*
--	 * We have reached here after the emergency shutdown waiting period has
--	 * expired. This means orderly_poweroff has not been able to shut off
--	 * the system for some reason.
-+	 * We have reached here after the emergency action waiting period has
-+	 * expired. This means orderly_poweroff/reboot has not been able to
-+	 * shut off the system for some reason.
- 	 *
--	 * Try to shut down the system immediately using kernel_power_off
--	 * if populated
-+	 * Try to shut off the system immediately if possible
- 	 */
--	pr_emerg("Hardware protection timed-out. Trying forced poweroff\n");
--	kernel_power_off();
-+
-+	if (hw_failure_emergency_action == HWPROT_ACT_REBOOT)
-+		kernel_restart(NULL);
-+	else
-+		kernel_power_off();
- 
- 	/*
- 	 * Worst of the worst case trigger emergency restart
- 	 */
--	pr_emerg("Hardware protection shutdown failed. Trying emergency restart\n");
-+	pr_emerg("Hardware protection %s failed. Trying emergency restart\n",
-+		 action_str);
- 	emergency_restart();
- }
- 
-@@ -963,15 +985,17 @@ static DECLARE_DELAYED_WORK(hw_failure_emergency_poweroff_work,
- 			    hw_failure_emergency_poweroff_func);
- 
- /**
-- * hw_failure_emergency_poweroff - Trigger an emergency system poweroff
-+ * hw_failure_emergency_schedule - Schedule an emergency system shutdown or reboot
-  *
-  * This may be called from any critical situation to trigger a system shutdown
-  * after a given period of time. If time is negative this is not scheduled.
-  */
--static void hw_failure_emergency_poweroff(int poweroff_delay_ms)
-+static void hw_failure_emergency_schedule(enum hw_protection_action action,
-+					  int poweroff_delay_ms)
- {
- 	if (poweroff_delay_ms <= 0)
- 		return;
-+	hw_failure_emergency_action = action;
- 	schedule_delayed_work(&hw_failure_emergency_poweroff_work,
- 			      msecs_to_jiffies(poweroff_delay_ms));
- }
-@@ -1009,7 +1033,7 @@ void __hw_protection_shutdown(const char *reason, int ms_until_forced,
- 	 * Queue a backup emergency shutdown in the event of
- 	 * orderly_poweroff failure
- 	 */
--	hw_failure_emergency_poweroff(ms_until_forced);
-+	hw_failure_emergency_schedule(action, ms_until_forced);
- 	if (action == HWPROT_ACT_REBOOT)
- 		orderly_reboot();
- 	else
+ Documentation/ABI/testing/sysfs-kernel-reboot      |   8 ++
+ Documentation/admin-guide/kernel-parameters.txt    |   6 +
+ .../devicetree/bindings/thermal/thermal-zones.yaml |   5 +-
+ Documentation/driver-api/thermal/sysfs-api.rst     |  25 +++--
+ drivers/platform/chrome/cros_ec_lpc.c              |   2 +-
+ drivers/regulator/core.c                           |   4 +-
+ drivers/regulator/irq_helpers.c                    |  16 +--
+ drivers/thermal/thermal_core.c                     |  17 +--
+ drivers/thermal/thermal_core.h                     |   1 +
+ drivers/thermal/thermal_of.c                       |   7 +-
+ include/linux/reboot.h                             |  25 +++--
+ include/uapi/linux/capability.h                    |   1 +
+ kernel/reboot.c                                    | 122 ++++++++++++++++-----
+ 13 files changed, 173 insertions(+), 66 deletions(-)
+---
+base-commit: 78d4f34e2115b517bcbfe7ec0d018bbbb6f9b0b8
+change-id: 20241218-hw_protection-reboot-96953493726a
 
+Best regards,
 -- 
-2.39.5
+Ahmad Fatoum <a.fatoum@pengutronix.de>
 
