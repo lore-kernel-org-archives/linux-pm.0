@@ -1,15 +1,16 @@
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18A872185B9
-	for <linux-pm@vger.kernel.org>; Thu, 19 Dec 2024 07:32:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B845C2185B9
+	for <linux-pm@vger.kernel.org>; Thu, 19 Dec 2024 07:32:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734593540; cv=none; b=rhSs7NIv8wKqKih32ne7EkwqP/f9aSBMLNhnH2et7z6tQougP1vHAdAuCwzSpLLJSivkgOchI9hori+9Zue5PO+8QaLSTGbunbVD4Cen5JWZyNaum1dOKO4+oQMrchCsj9cX+2fnsa4XZYvmwN59bswdEaS5jnvvyXB7og8MKyA=
+	t=1734593545; cv=none; b=StldxzPyq197ASC3JMi3ZvZoS7hlge9jkjiQ9YiEz01HtxU3Of3/TCu07kwM22BxPhgACu/CfQ91G/5tJzaD2Wb/gKsq9AXme2C+b3bFn8bakpy6grbHLNoIBV8pIKDaYPm6bHYA4H/MvBuZBSSovpcgAsQ/8IEuLx3jIykcILU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734593540; c=relaxed/simple;
-	bh=7RTxGMyJEufyqyVhoa0s2MPskpvrfhslVr1jsWa99KE=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=POy2ZS59CESBFlCslX3Ac3KkMka6demKy9xvVqzXjyFwuWjqi3m/65LrxFLx67m47kr9GIODCNLgdg5vI7txrByag49jKIFYJxS4BI8mQrxeA8aRl12Jlnr3gZy0U3EbaT9bB/eVn/c19IcUX3G+OxSOb22xNoGuwFrBdM+e2XA=
+	s=arc-20240116; t=1734593545; c=relaxed/simple;
+	bh=e2IbsiOoO3EPFUAOqg25iHCtvCfjnHRVHByLTl6MTlI=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=gIfFCkEgBQQFJBcAA/Q5vkQBgjZUh5iAV5HeV22TJKmGFFnFiW2dIyBdgjXSxUigmRuIPrOLqlO/0jUAbeVOjp+wr3xTdwBL8ketQOLuXiuiupJTLYPoi2LWiIoUyibiVTNn4ITBLufvh4AfccKjZk1oQO0aZDbYSvpM/a287+o=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
@@ -17,23 +18,22 @@ Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tOB0O-00088T-1S; Thu, 19 Dec 2024 08:31:32 +0100
+	id 1tOB0O-00088Z-1R; Thu, 19 Dec 2024 08:31:32 +0100
 Received: from dude05.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::54])
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.96)
 	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tOB0L-004APo-1p;
+	id 1tOB0L-004APu-25;
 	Thu, 19 Dec 2024 08:31:30 +0100
 Received: from localhost ([::1] helo=dude05.red.stw.pengutronix.de)
 	by dude05.red.stw.pengutronix.de with esmtp (Exim 4.96)
 	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tOB0M-00GkbH-0j;
+	id 1tOB0M-00GkbH-0q;
 	Thu, 19 Dec 2024 08:31:30 +0100
 From: Ahmad Fatoum <a.fatoum@pengutronix.de>
-Subject: [PATCH 00/11] reboot: support runtime configuration of emergency
- hw_protection action
-Date: Thu, 19 Dec 2024 08:31:21 +0100
-Message-Id: <20241219-hw_protection-reboot-v1-0-263a0c1df802@pengutronix.de>
+Date: Thu, 19 Dec 2024 08:31:28 +0100
+Subject: [PATCH 07/11] regulator: allow user configuration of hardware
+ protection action
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -42,10 +42,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAMnLY2cC/x2MQQ5AMBAAvyJ71kRbSn1FRKjFXlS2DRLxd43jJ
- DPzQEAmDNBmDzCeFMjvCWSegdvGfUVBc2JQhSqlko3YruFgH9HFZArGyfsorLGVLq2ulRkhpQf
- jQve/7fr3/QCZth26ZgAAAA==
-X-Change-ID: 20241218-hw_protection-reboot-96953493726a
+Message-Id: <20241219-hw_protection-reboot-v1-7-263a0c1df802@pengutronix.de>
+References: <20241219-hw_protection-reboot-v1-0-263a0c1df802@pengutronix.de>
+In-Reply-To: <20241219-hw_protection-reboot-v1-0-263a0c1df802@pengutronix.de>
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, 
  Fabio Estevam <festevam@denx.de>, "Rafael J. Wysocki" <rafael@kernel.org>, 
  Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
@@ -59,31 +58,19 @@ To: Daniel Lezcano <daniel.lezcano@linaro.org>,
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
  linux-doc@vger.kernel.org, linux-security-module@vger.kernel.org, 
  chrome-platform@lists.linux.dev, devicetree@vger.kernel.org, 
- kernel@pengutronix.de, Ahmad Fatoum <a.fatoum@pengutronix.de>, 
- Matteo Croce <mcroce@microsoft.com>
+ kernel@pengutronix.de, Ahmad Fatoum <a.fatoum@pengutronix.de>
 X-Mailer: b4 0.14.2
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
 X-SA-Exim-Mail-From: a.fatoum@pengutronix.de
 X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
 X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-We currently leave the decision of whether to shutdown or reboot to
-protect hardware in an emergency situation to the individual drivers.
+When the core detects permanent regulator hardware failure or imminent
+power failure of a critical supply, it will call hw_protection_shutdown
+in an attempt to do a limited orderly shutdown followed by powering off
+the system.
 
-This works out in some cases, where the driver detecting the critical
-failure has inside knowledge: It binds to the system management controller
-for example or is guided by hardware description that defines what to do.
-
-This is inadequate in the general case though as a driver reporting e.g.
-an imminent power failure can't know whether a shutdown or a reboot would
-be more appropriate for a given hardware platform.
-
-To address this, this series adds a hw_protection kernel parameter and
-sysfs toggle that can be used to change the action from the shutdown
-default to reboot. A new hw_protection_trigger API then makes use of
-this default action.
-
-My particular use case is unattended embedded systems that don't
+This doesn't work out well for many unattended embedded systems that don't
 have support for shutdown and that power on automatically when power is
 supplied:
 
@@ -94,43 +81,77 @@ supplied:
   - System needs to be manually power cycled for a duration long enough
     to drain the capacitors
 
-With this series, such systems can configure the kernel with
-hw_protection=reboot to have the boot firmware worry about critical
-conditions.
+Allow users to fix this by calling the newly introduced
+hw_protection_trigger() instead: This way the hw_protection commandline
+or sysfs parameter is used to dictate the policy of dealing with the
+regulator fault.
 
+Signed-off-by: Ahmad Fatoum <a.fatoum@pengutronix.de>
 ---
-Ahmad Fatoum (11):
-      reboot: replace __hw_protection_shutdown bool action parameter with an enum
-      reboot: reboot, not shutdown, on hw_protection_reboot timeout
-      docs: thermal: sync hardware protection doc with code
-      reboot: rename now misleading hw_protection symbols
-      reboot: indicate whether it is a HARDWARE PROTECTION reboot or shutdown
-      reboot: add support for configuring emergency hardware protection action
-      regulator: allow user configuration of hardware protection action
-      platform/chrome: cros_ec_lpc: prepare for hw_protection_shutdown removal
-      dt-bindings: thermal: give OS some leeway in absence of critical-action
-      thermal: core: allow user configuration of hardware protection action
-      reboot: retire hw_protection_reboot and hw_protection_shutdown helpers
+ drivers/regulator/core.c        |  4 ++--
+ drivers/regulator/irq_helpers.c | 16 ++++++++--------
+ 2 files changed, 10 insertions(+), 10 deletions(-)
 
- Documentation/ABI/testing/sysfs-kernel-reboot      |   8 ++
- Documentation/admin-guide/kernel-parameters.txt    |   6 +
- .../devicetree/bindings/thermal/thermal-zones.yaml |   5 +-
- Documentation/driver-api/thermal/sysfs-api.rst     |  25 +++--
- drivers/platform/chrome/cros_ec_lpc.c              |   2 +-
- drivers/regulator/core.c                           |   4 +-
- drivers/regulator/irq_helpers.c                    |  16 +--
- drivers/thermal/thermal_core.c                     |  17 +--
- drivers/thermal/thermal_core.h                     |   1 +
- drivers/thermal/thermal_of.c                       |   7 +-
- include/linux/reboot.h                             |  25 +++--
- include/uapi/linux/capability.h                    |   1 +
- kernel/reboot.c                                    | 122 ++++++++++++++++-----
- 13 files changed, 173 insertions(+), 66 deletions(-)
----
-base-commit: 78d4f34e2115b517bcbfe7ec0d018bbbb6f9b0b8
-change-id: 20241218-hw_protection-reboot-96953493726a
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index 8cb948a91e60d958c6b5ec97d736e6e3bf4b47eb..74c8f1262f2cd4e796ba8f4f1bdf17b685a615c1 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -5137,8 +5137,8 @@ static void regulator_handle_critical(struct regulator_dev *rdev,
+ 	if (!reason)
+ 		return;
+ 
+-	hw_protection_shutdown(reason,
+-			       rdev->constraints->uv_less_critical_window_ms);
++	hw_protection_trigger(reason,
++			      rdev->constraints->uv_less_critical_window_ms);
+ }
+ 
+ /**
+diff --git a/drivers/regulator/irq_helpers.c b/drivers/regulator/irq_helpers.c
+index 0aa188b2bbb26797b7907cbfb581459ef41df286..5742faee8071dd8104c094587d66693f48fb0f9b 100644
+--- a/drivers/regulator/irq_helpers.c
++++ b/drivers/regulator/irq_helpers.c
+@@ -64,16 +64,16 @@ static void regulator_notifier_isr_work(struct work_struct *work)
+ reread:
+ 	if (d->fatal_cnt && h->retry_cnt > d->fatal_cnt) {
+ 		if (!d->die)
+-			return hw_protection_shutdown("Regulator HW failure? - no IC recovery",
+-						      REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
++			return hw_protection_trigger("Regulator HW failure? - no IC recovery",
++						     REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
+ 		ret = d->die(rid);
+ 		/*
+ 		 * If the 'last resort' IC recovery failed we will have
+ 		 * nothing else left to do...
+ 		 */
+ 		if (ret)
+-			return hw_protection_shutdown("Regulator HW failure. IC recovery failed",
+-						      REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
++			return hw_protection_trigger("Regulator HW failure. IC recovery failed",
++						     REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
+ 
+ 		/*
+ 		 * If h->die() was implemented we assume recovery has been
+@@ -263,14 +263,14 @@ static irqreturn_t regulator_notifier_isr(int irq, void *data)
+ 	if (d->fatal_cnt && h->retry_cnt > d->fatal_cnt) {
+ 		/* If we have no recovery, just try shut down straight away */
+ 		if (!d->die) {
+-			hw_protection_shutdown("Regulator failure. Retry count exceeded",
+-					       REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
++			hw_protection_trigger("Regulator failure. Retry count exceeded",
++					      REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
+ 		} else {
+ 			ret = d->die(rid);
+ 			/* If die() failed shut down as a last attempt to save the HW */
+ 			if (ret)
+-				hw_protection_shutdown("Regulator failure. Recovery failed",
+-						       REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
++				hw_protection_trigger("Regulator failure. Recovery failed",
++						      REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
+ 		}
+ 	}
+ 
 
-Best regards,
 -- 
-Ahmad Fatoum <a.fatoum@pengutronix.de>
+2.39.5
 
