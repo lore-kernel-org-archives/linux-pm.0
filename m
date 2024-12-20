@@ -1,39 +1,39 @@
 Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78D2F2236FF;
-	Fri, 20 Dec 2024 23:41:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9AA7E228C9E;
+	Fri, 20 Dec 2024 23:41:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734738072; cv=none; b=M3alveZ6obhMOqyCC9hiHm7Uu/0i0D/PUz92fSrJ3zxXCg5dCVNUOn7YWRkktU2+az0ui7qs/dz91V/0jhVWjfl6S3/psMh664xWQPRfTiY8c19p1sXOcOgL7Nq0VQ+Dycz53fEUhez0XUBl/Pn7XmD1Cv2hASCEzCOlEcT0BB4=
+	t=1734738076; cv=none; b=n4/leJmeKEQEMNE2bsfBjvXhj/CHXCjt0uY6VXDCY4euxoSHvRVXHPEuM+4X17SYdq0rNX/UpgmSgyR0AxAbSJa4tZJ+Y17eSHIJF+4cNaErgwU79GhJsuX/F9tncJxqw4qodov5TS+S4CM5Qu4DAgKTez/tMPtjk6NjD5Mkv7A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734738072; c=relaxed/simple;
-	bh=Gkb8/KuT2/ey2XlnmvLYtTnKiL7D7tYacDyqH0ik4tk=;
+	s=arc-20240116; t=1734738076; c=relaxed/simple;
+	bh=+8lEVMWw4obCV6Aj343SDrKXfcdizMCArJdr+FobTrc=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=LIY39YSV2HH16EjKOVmrgfbmCJ6YNVs8doj4sS6fXv+wlPzsTwX4kB4VniTmTz11COVKn+4Iq5G/KagO5/yXF/ysmVnD7L78f0YsMAJ3he72JADyupz9XRw+UereGYd4HFYLc47REw755gat2VD5Hf9tOhQ4L1Fwesi1Wfm4nSo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=g3N7hoIn; arc=none smtp.client-ip=5.75.144.95
+	 In-Reply-To:To:Cc; b=SpH2Vtj+czsZcJab0QwQhIftpkUKltJutQ/QfDX7UwbbWXW9fWFn/kg+N7K96+GV/HerlbPyZ+F8H0QL4X+bh5qr5qGMBzFkHJ4cnOoMtMaSIgNtU+TiOXFBMlNPo/1YdMBbBqV9XGNqm5VihJ/RDoBq9y6DEoJ/yI0L0CJHils=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=pn7WjGOt; arc=none smtp.client-ip=5.75.144.95
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="g3N7hoIn"
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="pn7WjGOt"
 Received: from [192.168.30.162] (254C14D2.nat.pool.telekom.hu [37.76.20.210])
-	by mail.mainlining.org (Postfix) with ESMTPSA id 23A4CE4838;
-	Fri, 20 Dec 2024 23:41:07 +0000 (UTC)
+	by mail.mainlining.org (Postfix) with ESMTPSA id AA64DE483A;
+	Fri, 20 Dec 2024 23:41:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mainlining.org;
-	s=psm; t=1734738068;
+	s=psm; t=1734738071;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=XTEzrWIojNicg5b3ndDyKHaaVkaDSYELJmjR/meFdL4=;
-	b=g3N7hoInsPxrt75qTxjWwv7VNcvg1/T2ORlXdARhX/ul1O62cIQgzlv9bkHreoBIq8xC4j
-	pGg4U3h0eB+O3TdDn1p5XT3Ukk3GJ6yVG+opXn7QzxUdFK//KFMoH5kodXJp+MFeyoztR1
-	6OiSReBfVgHEvmluSrWDVB3Qhpp9KaRTPZn81q1nqgb3F/v/V94ZxHmokEkaRlntDFg2Dc
-	pyET/0mTdzzyRPsrhl6PEOj8gXKm6n1r4W3d5NVoNaWsamlO1SfkY5+bU+HG4oFw9t7vwG
-	X7u4m0Zo5te3ciIxykk6G/IzdNzMkGKHjw21162kvdSnJ5aRrGAj6q4NrlLjNA==
+	bh=ZEZixsrVYC5N42npda3u434fskPdLWwrhKEK+WqDQl4=;
+	b=pn7WjGOtXXD6ck4f8n9SINk7sUqviIViDSs+GTEfK5Y+47Et768wMy4WVaxcAEKEVJpXJO
+	U8S+ntXDsY8d0P1xgcSB+0iogYnka22/GTciQfrQq2M8Xs2jwcoVOVqj/czJhylHIqD6lf
+	zwsCnrtg3P27v2+5LJ48B8AzSCWz7fYE1FiqITb5lgM8u8n/AdIqopDR/VBt4kQEEQkFA6
+	9+b+g5ZE+AaNlvlKes+tWX/SQpyGL05PIxPLmALeS1u8NJ7pW3HJUUmgMy/ufNJhxcwekE
+	iitNq9jiEDsYwYVV9RVx0xDXADkG3mLU5pD3x+cvooAkyowTAadIaVr6gOddgw==
 From: =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
-Date: Sat, 21 Dec 2024 00:40:48 +0100
-Subject: [PATCH v11 1/4] arm64: dts: qcom: Add PM8937 PMIC
+Date: Sat, 21 Dec 2024 00:40:50 +0100
+Subject: [PATCH v11 3/4] dt-bindings: arm: qcom: Add Xiaomi Redmi 5A
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -42,7 +42,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241221-msm8917-v11-1-901a74db4805@mainlining.org>
+Message-Id: <20241221-msm8917-v11-3-901a74db4805@mainlining.org>
 References: <20241221-msm8917-v11-0-901a74db4805@mainlining.org>
 In-Reply-To: <20241221-msm8917-v11-0-901a74db4805@mainlining.org>
 To: Bjorn Andersson <andersson@kernel.org>, 
@@ -60,187 +60,57 @@ Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, 
  linux-pm@vger.kernel.org, iommu@lists.linux.dev, 
  =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>, 
- Dang Huynh <danct12@riseup.net>, 
- Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1734738064; l=4019;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1734738064; l=1345;
  i=barnabas.czeman@mainlining.org; s=20240730; h=from:subject:message-id;
- bh=9NnPuFhsH6Kz3BJW3UjnLFlUU4jRHYGk2eJlaqLX+Y0=;
- b=BcV56QqR7/iVYK7w/aMLoIPUZKPEXwNJqaOuSLfc2swvix7mF/q2zoXRrZYOLV97AohAMP0Ff
- I++gZd1VPY6Dpb+BlJZSVV8AtuTOGRxXdGS/vG7/c+d864X1K7AlczO
+ bh=+8lEVMWw4obCV6Aj343SDrKXfcdizMCArJdr+FobTrc=;
+ b=tkGaLUewfKMYG0LYOl4ZhhdlZWu2uUu3bFUwbr2pVnAUXgXspmusIx7dLCXbCq9uP2WhAG8G7
+ S4lyJBBKno6Ch3tRt3VgVnqY/C+ItizkyJW+nsSZ+UqHGNzGzKQ6nW2
 X-Developer-Key: i=barnabas.czeman@mainlining.org; a=ed25519;
  pk=TWUSIGgwW/Sn4xnX25nw+lszj1AT/A3bzkahn7EhOFc=
 
-From: Dang Huynh <danct12@riseup.net>
+Document Xiaomi Remi 5A (riva).
+Add qcom,msm8917 for msm-id, board-id allow-list.
 
-The PM8937 features integrated peripherals like ADC, GPIO controller,
-MPPs, PON keys and others.
-
-Add the device tree so that any boards with this PMIC can use it.
-
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Signed-off-by: Dang Huynh <danct12@riseup.net>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
 ---
- arch/arm64/boot/dts/qcom/pm8937.dtsi | 150 +++++++++++++++++++++++++++++++++++
- 1 file changed, 150 insertions(+)
+ Documentation/devicetree/bindings/arm/qcom.yaml | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/qcom/pm8937.dtsi b/arch/arm64/boot/dts/qcom/pm8937.dtsi
-new file mode 100644
-index 0000000000000000000000000000000000000000..42b3575b36ff4d37df11ccb5ed68e965e3716300
---- /dev/null
-+++ b/arch/arm64/boot/dts/qcom/pm8937.dtsi
-@@ -0,0 +1,150 @@
-+// SPDX-License-Identifier: BSD-3-Clause
-+/*
-+ * Copyright (c) 2023, Dang Huynh <danct12@riseup.net>
-+ */
+diff --git a/Documentation/devicetree/bindings/arm/qcom.yaml b/Documentation/devicetree/bindings/arm/qcom.yaml
+index d394dffe3fba5a396b85a6093f34e9ef62b6f9cc..fa5e70cee0c6b7cc20f49005ebced0b9389ab910 100644
+--- a/Documentation/devicetree/bindings/arm/qcom.yaml
++++ b/Documentation/devicetree/bindings/arm/qcom.yaml
+@@ -37,6 +37,7 @@ description: |
+         msm8226
+         msm8660
+         msm8916
++        msm8917
+         msm8926
+         msm8929
+         msm8939
+@@ -264,6 +265,11 @@ properties:
+               - yiming,uz801-v3
+           - const: qcom,msm8916
+ 
++      - items:
++          - enum:
++              - xiaomi,riva
++          - const: qcom,msm8917
 +
-+#include <dt-bindings/iio/qcom,spmi-vadc.h>
-+#include <dt-bindings/input/linux-event-codes.h>
-+#include <dt-bindings/spmi/spmi.h>
-+
-+/ {
-+	thermal-zones {
-+		pm8937-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&pm8937_temp>;
-+
-+			trips {
-+				trip0 {
-+					temperature = <105000>;
-+					hysteresis = <0>;
-+					type = "passive";
-+				};
-+
-+				trip1 {
-+					temperature = <125000>;
-+					hysteresis = <0>;
-+					type = "hot";
-+				};
-+
-+				trip2 {
-+					temperature = <145000>;
-+					hysteresis = <0>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+	};
-+};
-+
-+&spmi_bus {
-+	pmic@0 {
-+		compatible = "qcom,pm8937", "qcom,spmi-pmic";
-+		reg = <0x0 SPMI_USID>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		pon@800 {
-+			compatible = "qcom,pm8916-pon";
-+			reg = <0x800>;
-+			mode-bootloader = <0x2>;
-+			mode-recovery = <0x1>;
-+
-+			pm8937_pwrkey: pwrkey {
-+				compatible = "qcom,pm8941-pwrkey";
-+				interrupts = <0 0x8 0 IRQ_TYPE_EDGE_BOTH>;
-+				debounce = <15625>;
-+				bias-pull-up;
-+				linux,code = <KEY_POWER>;
-+			};
-+
-+			pm8937_resin: resin {
-+				compatible = "qcom,pm8941-resin";
-+				interrupts = <0 0x8 1 IRQ_TYPE_EDGE_BOTH>;
-+				debounce = <15625>;
-+				bias-pull-up;
-+				status = "disabled";
-+			};
-+		};
-+
-+		pm8937_gpios: gpio@c000 {
-+			compatible = "qcom,pm8937-gpio", "qcom,spmi-gpio";
-+			reg = <0xc000>;
-+			gpio-controller;
-+			gpio-ranges = <&pm8937_gpios 0 0 8>;
-+			#gpio-cells = <2>;
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+		};
-+
-+		pm8937_mpps: mpps@a000 {
-+			compatible = "qcom,pm8937-mpp", "qcom,spmi-mpp";
-+			reg = <0xa000>;
-+			gpio-controller;
-+			gpio-ranges = <&pm8937_mpps 0 0 4>;
-+			#gpio-cells = <2>;
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+		};
-+
-+		pm8937_temp: temp-alarm@2400 {
-+			compatible = "qcom,spmi-temp-alarm";
-+			reg = <0x2400>;
-+			interrupts = <0 0x24 0 IRQ_TYPE_EDGE_RISING>;
-+			io-channels = <&pm8937_vadc VADC_DIE_TEMP>;
-+			io-channel-names = "thermal";
-+			#thermal-sensor-cells = <0>;
-+		};
-+
-+		pm8937_vadc: adc@3100 {
-+			compatible = "qcom,spmi-vadc";
-+			reg = <0x3100>;
-+			interrupts = <0 0x31 0 IRQ_TYPE_EDGE_RISING>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			#io-channel-cells = <1>;
-+
-+			channel@8 {
-+				reg = <VADC_DIE_TEMP>;
-+			};
-+
-+			channel@9 {
-+				reg = <VADC_REF_625MV>;
-+			};
-+
-+			channel@a {
-+				reg = <VADC_REF_1250MV>;
-+			};
-+
-+			channel@c {
-+				reg = <VADC_SPARE1>;
-+			};
-+
-+			channel@e {
-+				reg = <VADC_GND_REF>;
-+			};
-+
-+			channel@f {
-+				reg = <VADC_VDD_VADC>;
-+			};
-+		};
-+
-+		rtc@6000 {
-+			compatible = "qcom,pm8941-rtc";
-+			reg = <0x6000>, <0x6100>;
-+			reg-names = "rtc", "alarm";
-+			interrupts = <0x0 0x61 0x1 IRQ_TYPE_EDGE_RISING>;
-+		};
-+	};
-+
-+	pmic@1 {
-+		compatible = "qcom,pm8937", "qcom,spmi-pmic";
-+		reg = <0x1 SPMI_USID>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		pm8937_spmi_regulators: regulators {
-+			compatible = "qcom,pm8937-regulators";
-+		};
-+	};
-+};
+       - items:
+           - enum:
+               - motorola,potter
+@@ -1199,6 +1205,7 @@ allOf:
+               - qcom,apq8026
+               - qcom,apq8094
+               - qcom,apq8096
++              - qcom,msm8917
+               - qcom,msm8939
+               - qcom,msm8953
+               - qcom,msm8956
 
 -- 
 2.47.1
