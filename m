@@ -1,74 +1,86 @@
 Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B0C21C4A1C
-	for <linux-pm@vger.kernel.org>; Fri, 20 Dec 2024 16:48:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3BD821A45E
+	for <linux-pm@vger.kernel.org>; Fri, 20 Dec 2024 16:55:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734713312; cv=none; b=Ua5TfPq7kOqPnZ1UQarFC5hu3cnpluj9HL86eFfnIF5UILVS1jHiSc7tu3jmWi8g96mFbqfgufUEy/g1aUz0vNQKM10J+ceenQINgIuHZy0E30sVy+TDFe0IC1TudSOw7UomxhySaQxu02FBeYa/lLpI61+2LJHCEf46ZDcwRzk=
+	t=1734713751; cv=none; b=AbEjJFJvGv7YD0v5tINCKOjhCnc6XYD9PkIOKDJufcmrzR5TGJXR/L9n+e8n7et1Y4VEAanmyDJTNDXpnyYnsAxQxM3n/L3se88j+EADwKMxk6FwvSqOAZMGodM3+EBTeOYRRfKGI9vOn9tjV9idpqn3Gi8WIRC5LjiGUW8ClFo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734713312; c=relaxed/simple;
-	bh=+uqR5hchscqr6YR4+njrT8B11FtlYQSdI9WQuKB/H08=;
+	s=arc-20240116; t=1734713751; c=relaxed/simple;
+	bh=ZJ6BlFTh6Cd2QrVCVjLhtbcAD4DALAZMyCALpAZOwdY=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=renfBiKEWnrnrkyJqOpErCO1D3x9O+WwA4ayMsLcYrr1asEE8RHuH4vuKrd00v4KazScuoVUQ9/PiPCTAxOX9j00SOTvkyelPsksS8YY4P/td/nD5Sw7D3ZhXmbnzRHsilTGRtT1gDg7QuKdXZl6LIjR4XeMwYs1q4T5wZyI8Bk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=sFYDjqS5; arc=none smtp.client-ip=209.85.128.46
+	 MIME-Version:Content-Type; b=s2R5MngI0H6JuPhn8we5mx4ydReQNOhEwncJ6Ghq3uw9EK3qepUzaVRZDByK+tw+dONW+NdbXVtndLLZrGiLE+l2HWAFEiW1WADTGFEMjh1lpJrzdgQiMi4ZqyFrVUI8K5ReGW/+pvgfnzu1RoxhuKxcY0KhHXvwz2EKkiHHnHY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=CwFFs38L; arc=none smtp.client-ip=209.85.128.46
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="sFYDjqS5"
-Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-4361f796586so22987295e9.3
-        for <linux-pm@vger.kernel.org>; Fri, 20 Dec 2024 08:48:30 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="CwFFs38L"
+Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-4361e89b6daso14877175e9.3
+        for <linux-pm@vger.kernel.org>; Fri, 20 Dec 2024 08:55:49 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1734713309; x=1735318109; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1734713748; x=1735318548; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:date:message-id:subject
          :references:in-reply-to:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=cZByLX3qMcgSrvToNlDtUFTZ3GOi+oQgA3+Ql28cvCo=;
-        b=sFYDjqS5yjwuXZC0K6LnAquKTx4mlHki3gdpxtIfznhV4iiAGjeN/aoGQn99pmUjkX
-         s12MaNL8w/beLCKuqEVxo0tVivGK/xxrR/rLimzWH/wC+l4HZoNpuS54vhcAYOiZQU6d
-         v4aT3wesdUBAxsi4dsR5qyyBowYP96NNNNU1coxkfZs3Ta9ynTT4J/omK6VeOJX5pkYE
-         EftuzngZ4pcUsrlyGXK1Yr+HoVni2teec8zI/C1VqzANTIIkI7FxE/DmQhH6YurZw2xs
-         pv/4Ef4mgzQjD47WjyAmUDfZqQ22C6Rvu6qENbAm2XkznkM0IgUitQLxQcRgu0g3AgxB
-         xaEw==
+        bh=bRMVd2Ct+RJM9mKq4M10JLL1AVbRbgv8gECSUOI9cfA=;
+        b=CwFFs38LKnX2qjiKc6bbdAzbp+KdKtYBLIujleUiabOgYkHbqcGa0k2A/rafCQj8oG
+         zTm0dUnZMLWXNwoeaINUX8puistLCf+mec9B6KJg/Dd1/08WkBe5YDgz9zn/QUYmQKGB
+         oiRyBx/B/Yh+7Y2D6Rt1Pe4j1/Y/fu+ElvY0hmgyQqfz3TaqNTk+buN9T5tWZDaNQDDM
+         nhGemds2do3u37g1NHKApqv0C0o6rjWrC5j0kcSDQgxAIwawT8gXybXxafX9Fmd34x0L
+         JV40zfdMOszC3960x/BE44M4ycp+t6oWjo9DK4Zwh+F7GGW1lwc/f1KvMu3kKCkywWjt
+         OmLQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1734713309; x=1735318109;
+        d=1e100.net; s=20230601; t=1734713748; x=1735318548;
         h=content-transfer-encoding:mime-version:date:message-id:subject
          :references:in-reply-to:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=cZByLX3qMcgSrvToNlDtUFTZ3GOi+oQgA3+Ql28cvCo=;
-        b=JJL2gtEItBbPMt/b5lt9h/TR5av2v06mc3go3Uz7DJbswBkz60qvjH+BSLsBRod0qw
-         xZHfHkV8eZ0NLEXyvqo9goN69o+BIt7uBBLRplKgBiMyNYGnujwDqbytC17yNX0SL4Zg
-         2gl+iKlbpH/nGRcTJ01o4ZisMPLzzPDuPk7wPvrGiskuDhGNAWPqGuljSztBa4fOudPf
-         kd3ak2i5IUoBdiocdW6fvwwHGd0qlpCpiS6KkdeCC603RkYdKeGYuFo2Ucv2Ec16lHby
-         S5qwI9iQi+/gDIcNbWTYQKFw/kF1mcW1yW5PGPKo/EKPdKRV1esPSLdrJFoiZoix7BAq
-         UjJA==
-X-Forwarded-Encrypted: i=1; AJvYcCUeT2nMTfgoGSiS+rqXQk8MhPLBGZKHg/H13RSbWaGyyqaUmCdT0sJ5vDSeTiQ51/E6B7bA+9dLVw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz8V5Na9GPaGj+WLn8ORw9tV2bOJkITWhnHU5bBlMCsAY2fyery
-	xMq6aMMg/JjLmq7PnkLN3oFsjJN5S8oj7tqSevikoNSwpStAtHtYdOYJu7ApkJ/wTII+ipzM+3V
-	f
-X-Gm-Gg: ASbGncuFU9foaoyroYy027YhpCVa1yhSEYTl7nX/SfyrfGmWkUzOD9DPmfs/Pu3zaIN
-	GXrQSlwQ/CL+9UsZpw+MWLdovpTmEgRKmS+4ZyUegSxNZ0q8EPEmZ911ptmNQscRr+S+E9nTDX+
-	Rin/47CZoG98NVyVqR1OXvYLXi4PcexmWF0MUX4IhYDZ0FIbx5VHV/3KXmC9fX2aJTJd0hkCGzw
-	brQ5BICWCnMfYijN7ighIwD6jm7LMnn5SC1KCqzmzAfaDvy0v8NNoIUBzMo4YFaYsSaSAuixNE=
-X-Google-Smtp-Source: AGHT+IGOyrG86B94jpBWzvLbfbP0jGB+WqeEWTMrf9WizZonuQRh7h7657Bkk0qrhilsJg0W5yZdeQ==
-X-Received: by 2002:a05:600c:3b86:b0:434:f0df:9fd with SMTP id 5b1f17b1804b1-4366835c187mr33419095e9.2.1734713308965;
-        Fri, 20 Dec 2024 08:48:28 -0800 (PST)
+        bh=bRMVd2Ct+RJM9mKq4M10JLL1AVbRbgv8gECSUOI9cfA=;
+        b=kMX1tFSebChWqJeDwVqoD6kDR4KE3tdyDE091+hJiy2XbLWcuqFU6ZU2IqTCaTG/D4
+         gepwe7+vPGl6ICrYUu65qsnKZCdi4uvQQVpOyS1qniGUDoOolrsE+6dn7aNRxEsON9EV
+         lL68wUeJqFk0wOCuui8rS3FTUhh0ZHb2rCj23V4UOt2q2GmMMyUsTqZgVzUV3iRPGImg
+         ZrgTw46tc9xFboY42PIVjsYGPSL3LBU30g0sKnAsLNsXAY1AqNEi9DbzvAtS2yhheHrO
+         MGe3puzuHIpZ/8XbTE69nR6QPA/4MNubR0zQnqr2EKibGbraw+xSbzcSteK0dSIDwP+g
+         aP3g==
+X-Forwarded-Encrypted: i=1; AJvYcCXPYiMZ6myCdCQFmG3qGKWUf/OA8jrG8UmMdJNdhCwTnT53FP1pGCPbsSy9XtmLbAaujdxxGPvX9w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzJlEuGVCdcLWevMohTadzl4hE9eWY5FRr5+t30/Cq7+z3U+o1Y
+	Lx0T2CR78q91cp8iezfJrfj3XNGMmCAYNE6tFU86TcKmcHpMEm+p/MJQA+qmeVY=
+X-Gm-Gg: ASbGncuwxCnTW9mX8ZXwzp9rXlH9h4tNfwUSPM/evms7lvkJ9+JAgUelSntPl3kcnFd
+	b6J0XcZoUEdX+Wk4yZUQl0JIJ2Wr4TFMm1hSjYTNUkRfoqVQ657ehuVtwL5UDzLo0DjPFs/jhyf
+	7tTofXA7JLGQ55QaN0SNh1wvhMwli7rsnGP2SO3P4t3VRxYXZr2xvrWuIXwV13jMBoQmunM6AKM
+	r4J8Z8ZLNdPrrRSPdIZ6I9ln6LoN0e8Abaf4bOSbWI6uCNhI+Vi20cFmkhKyoUwcgrD989D2i8=
+X-Google-Smtp-Source: AGHT+IEdH/GxYvmGV9OhqkZ4EH1vTHNkVaouX931hJminJB7ZTbk13vFQOd2dc1W1czg+c63hAfImg==
+X-Received: by 2002:a05:600c:1c87:b0:434:a10f:c3 with SMTP id 5b1f17b1804b1-4366864320emr36500145e9.9.1734713748019;
+        Fri, 20 Dec 2024 08:55:48 -0800 (PST)
 Received: from [192.168.68.114] ([5.133.47.210])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4364a379d69sm102650455e9.0.2024.12.20.08.48.27
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-38a1c89e261sm4491454f8f.76.2024.12.20.08.55.46
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 20 Dec 2024 08:48:28 -0800 (PST)
+        Fri, 20 Dec 2024 08:55:47 -0800 (PST)
 From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-To: Sebastian Reichel <sre@kernel.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Maxime Ripard <mripard@kernel.org>, 
- Jennifer Berringer <jberring@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-In-Reply-To: <20241104152312.3813601-1-jberring@redhat.com>
-References: <20241104152312.3813601-1-jberring@redhat.com>
-Subject: Re: (subset) [PATCH v3 0/3] nvmem: fix out-of-bounds reboot-mode
- write
-Message-Id: <173471330771.223296.13009549390429951707.b4-ty@linaro.org>
-Date: Fri, 20 Dec 2024 16:48:27 +0000
+To: Bjorn Andersson <andersson@kernel.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Linus Walleij <linus.walleij@linaro.org>, Amit Kucheria <amitk@kernel.org>, 
+ Thara Gopinath <thara.gopinath@gmail.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Joerg Roedel <joro@8bytes.org>, 
+ Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>, 
+ =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, 
+ linux-pm@vger.kernel.org, iommu@lists.linux.dev, 
+ Dang Huynh <danct12@riseup.net>, 
+ Dmitry Baryshkov <dmitry.baryshkov@linaro.org>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, 
+ =?utf-8?q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>, 
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <20241220-msm8917-v10-0-35c27f704d34@mainlining.org>
+References: <20241220-msm8917-v10-0-35c27f704d34@mainlining.org>
+Subject: Re: (subset) [PATCH v10 0/5] Add MSM8917/PM8937/Redmi 5A
+Message-Id: <173471374655.224301.13708019576127725452.b4-ty@linaro.org>
+Date: Fri, 20 Dec 2024 16:55:46 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -76,31 +88,20 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-Mailer: b4 0.12.2
 
 
-On Mon, 04 Nov 2024 10:23:09 -0500, Jennifer Berringer wrote:
-> These patches fix a small out-of-bounds write when using the
-> nvmem-reboot-mode driver on Qualcomm SA8775P, such as by executing
-> "reboot bootloader" in a shell. Relevant error log:
+On Fri, 20 Dec 2024 12:26:13 +0100, Barnabás Czémán wrote:
+> This patch series add support for MSM8917 soc with PM8937 and
+> Xiaomi Redmi 5A (riva).
 > 
->   BUG: KASAN: slab-out-of-bounds in nvmem_cell_prepare_write_buffer+0x144/0x47c
->   Write of size 4 at addr ffff19dd8e1a37a0 by task systemd-shutdow/1
->   Hardware name: Qualcomm SA8775P Ride (DT)
->   Call trace:
->   nvmem_cell_prepare_write_buffer
->   nvmem_cell_write
->   nvmem_reboot_mode_write
->   The buggy address is located 0 bytes inside of
->    allocated 1-byte region
 > 
-> [...]
 
 Applied, thanks!
 
-[1/3] nvmem: core: improve range check for nvmem_cell_write()
-      commit: 27a3485271ed3e81dec1e51460dc671dae387a2a
+[2/5] dt-bindings: nvmem: Add compatible for MS8917
+      commit: be7eb69d5db54ac9ce794c4dc7d278890a78e0fe
 
 Best regards,
 -- 
