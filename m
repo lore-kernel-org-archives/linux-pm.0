@@ -1,160 +1,141 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E6BD22B8B0;
-	Fri, 20 Dec 2024 21:39:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF9531AAA00;
+	Fri, 20 Dec 2024 23:06:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734730767; cv=none; b=FP0D1tY4EOOd4a/mcJ6Ga2pR1vDBNGqhp157/mGfpPXhB1QlDqtPoUIsaliibCZEnig3Bfl34+g0a13TwYn9/MmpAATrIr4/BMNV+FLy/WXZcu6SBchLB0z8OKim7Ux0bppq79pry4LjK1+BNa17gDpWT6hHJPHryw9efyaPImw=
+	t=1734735989; cv=none; b=AEEhS997a/E77qiLD4RxVb7iX70rD009DOEiC1QndK4tleHmYBiaDGj8LLb9mO8BCmvAuni+KmNFGGk7heWDNa/Yx6gnZ2qF/d1YXj4Rn5K7sMFCNlZ3+rpXutqSFFey59rLjZruDKHGZmAEZBG9KGtXGe4RR12ACpsJ2BrPMOs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734730767; c=relaxed/simple;
-	bh=IY7m0pnKYc6827kwQJ/ud1WEARNr4WSixtaPdx1SIcw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=dv3mntVI+pWKS87YGDTc9JeDXxmb8Wilao0QqaQiSnIDGpZj+kPyc0n+VP2hujNrCwkus1+O+4/e6CaIFILLayt4wWF1Eo/5D0+X49epA24evwGFGiSveGVyYtnlxJl9/pj2mb/BrTdbIIv3aW7t8VA4Zu71/uLXbuR0V9QpgKA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=fB5rg8Tu; arc=none smtp.client-ip=198.175.65.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1734735989; c=relaxed/simple;
+	bh=rDnT4CiiEQHDei+WTY8t89wAldSK7/wzy9hzuNQ2FY0=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=mR9kqnewnuKbl4Z6HKX782zc6ZZY4ffOkl8y89IwF3ijfVzjD0RbX27USRLC159FaDuSuyd7NUSOJE8/OXSOBBawVmJms95i9/qtPJtetAe58F47wxu7KZXAN7QgK8e4bcHWohEozn+w06AOc3PBkG39JKGUGyQJBhltZ0C3u5I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b=ko0NoC85; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="fB5rg8Tu"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1734730766; x=1766266766;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=IY7m0pnKYc6827kwQJ/ud1WEARNr4WSixtaPdx1SIcw=;
-  b=fB5rg8Tuiwx7OHLjfYy3b2TBeHmATaVccBYlk8SLZ69u74grseCsWNnV
-   d4UJYr1GZW504o6nnCjKH7HQ6asOQjzcJ9hQOjxbhD8g9kiI3g9h2QcOv
-   Y/qvAg1Gm5ZnE3dmQMdZFUpNxQtZdjRVHgOi4Gq0FKiT33SQzX0iTVqnb
-   dnAT7kOXuBeTCfXUBzVLAsG8qZuMQBXbfnPdg4nvHVPxW05nOXBb19CnY
-   c8WBZ3aPt7GLiDA8HwmVDMtl+KEB/AbNkEtxf7M1mTi8MMjT4t/+oiiMu
-   gfNDY4mTbAYNlLQ6r3V3Uom9E0qPu6RjlGlhsqjU4KYCbfOSVXFESyIhV
-   Q==;
-X-CSE-ConnectionGUID: BJa2STe8SsegExI0dYY1fA==
-X-CSE-MsgGUID: V3sEdgYrSLGWYtZet2ZnIA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11292"; a="39070780"
-X-IronPort-AV: E=Sophos;i="6.12,251,1728975600"; 
-   d="scan'208";a="39070780"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Dec 2024 13:39:20 -0800
-X-CSE-ConnectionGUID: 7aXvm4FOS3aLBLKlNQfO5w==
-X-CSE-MsgGUID: yJSFAI3+RuGqA8CR4R0AaA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; 
-   d="scan'208";a="103223869"
-Received: from sohilmeh.sc.intel.com ([172.25.103.65])
-  by fmviesa005.fm.intel.com with ESMTP; 20 Dec 2024 13:39:19 -0800
-From: Sohil Mehta <sohil.mehta@intel.com>
-To: x86@kernel.org,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	Tony Luck <tony.luck@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Arnaldo Carvalho de Melo <acme@kernel.org>,
-	Namhyung Kim <namhyung@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Jiri Olsa <jolsa@kernel.org>,
-	Ian Rogers <irogers@google.com>,
-	Adrian Hunter <adrian.hunter@intel.com>,
-	Kan Liang <kan.liang@linux.intel.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Borislav Petkov <bp@alien8.de>,
-	"H . Peter Anvin" <hpa@zytor.com>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Andy Lutomirski <luto@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Fenghua Yu <fenghua.yu@intel.com>,
-	Jean Delvare <jdelvare@suse.com>,
-	Guenter Roeck <linux@roeck-us.net>,
-	Sohil Mehta <sohil.mehta@intel.com>,
-	Zhang Rui <rui.zhang@intel.com>,
-	linux-perf-users@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-acpi@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-hwmon@vger.kernel.org
-Subject: [RFC PATCH 14/15] perf/x86: Simplify p6_pmu_init()
-Date: Fri, 20 Dec 2024 21:37:09 +0000
-Message-ID: <20241220213711.1892696-15-sohil.mehta@intel.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20241220213711.1892696-1-sohil.mehta@intel.com>
-References: <20241220213711.1892696-1-sohil.mehta@intel.com>
+	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="ko0NoC85"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 51D4DC4CECD;
+	Fri, 20 Dec 2024 23:06:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
+	s=korg; t=1734735987;
+	bh=rDnT4CiiEQHDei+WTY8t89wAldSK7/wzy9hzuNQ2FY0=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=ko0NoC85TGcP1IppTBQ7r5GFZyBBTG2SpQ0tFrc/AJkG+/T9Itx2K+hPhmLUjOFT3
+	 W/JopMsDfKdWQ+Sgte/CaZu5u4oCC9X7AhqHTGt1/QNG5SKrdk/OmLPnondMcorXOq
+	 YK2sRjfqtNIqcRTWYGNAXSYWTaR7HQTBx80wOGXo=
+Date: Fri, 20 Dec 2024 15:06:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Guo Weikang <guoweikang.kernel@gmail.com>
+Cc: Mike Rapoport <rppt@kernel.org>, Dennis Zhou <dennis@kernel.org>, Tejun
+ Heo <tj@kernel.org>, Christoph Lameter <cl@linux.com>, Thomas Bogendoerfer
+ <tsbogend@alpha.franken.de>, Sam Creasey <sammy@sammy.net>, Geert
+ Uytterhoeven <geert@linux-m68k.org>, Huacai Chen <chenhuacai@kernel.org>,
+ Will Deacon <will@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
+ Oreoluwa Babatunde <quic_obabatun@quicinc.com>, rafael.j.wysocki@intel.com,
+ Palmer Dabbelt <palmer@rivosinc.com>, Hanjun Guo <guohanjun@huawei.com>,
+ Easwar Hariharan <eahariha@linux.microsoft.com>, Johannes Berg
+ <johannes.berg@intel.com>, Ingo Molnar <mingo@kernel.org>, Dave Hansen
+ <dave.hansen@intel.com>, Christian Brauner <brauner@kernel.org>, KP Singh
+ <kpsingh@kernel.org>, Richard Henderson <richard.henderson@linaro.org>,
+ Matt Turner <mattst88@gmail.com>, Russell King <linux@armlinux.org.uk>,
+ WANG Xuerui <kernel@xen0n.name>, Michael Ellerman <mpe@ellerman.id.au>,
+ Jonas Bonn <jonas@southpole.se>, Stefan Kristiansson
+ <stefan.kristiansson@saunalahti.fi>, Stafford Horne <shorne@gmail.com>,
+ Helge Deller <deller@gmx.de>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao
+ <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Geoff
+ Levand <geoff@infradead.org>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Andrey Ryabinin <ryabinin.a.a@gmail.com>, Alexander Potapenko
+ <glider@google.com>, Andrey Konovalov <andreyknvl@gmail.com>, Dmitry Vyukov
+ <dvyukov@google.com>, Vincenzo Frascino <vincenzo.frascino@arm.com>, Heiko
+ Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, Alexander
+ Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger
+ <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, Yoshinori
+ Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, John Paul
+ Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Andreas Larsson
+ <andreas@gaisler.com>, Richard Weinberger <richard@nod.at>, Anton Ivanov
+ <anton.ivanov@cambridgegreys.com>, Johannes Berg
+ <johannes@sipsolutions.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo
+ Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
+ <dave.hansen@linux.intel.com>, x86@kernel.org, Len Brown <lenb@kernel.org>,
+ Juergen Gross <jgross@suse.com>, Boris Ostrovsky
+ <boris.ostrovsky@oracle.com>, Chris Zankel <chris@zankel.net>, Max Filippov
+ <jcmvbkbc@gmail.com>, Tero Kristo <kristo@kernel.org>, Michael Turquette
+ <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Rob Herring
+ <robh@kernel.org>, Saravana Kannan <saravanak@google.com>, Pavel Machek
+ <pavel@ucw.cz>, Yury Norov <yury.norov@gmail.com>, Rasmus Villemoes
+ <linux@rasmusvillemoes.dk>, Marco Elver <elver@google.com>, Al Viro
+ <viro@zeniv.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
+ linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+ linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+ linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ kasan-dev@googlegroups.com, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-um@lists.infradead.org, linux-acpi@vger.kernel.org,
+ xen-devel@lists.xenproject.org, linux-omap@vger.kernel.org,
+ linux-clk@vger.kernel.org, devicetree@vger.kernel.org, linux-mm@kvack.org,
+ linux-pm@vger.kernel.org
+Subject: Re: [PATCH] mm/memblock: Add memblock_alloc_or_panic interface
+Message-Id: <20241220150623.278e8fa9f073b66dc81edfe6@linux-foundation.org>
+In-Reply-To: <20241220092638.2611414-1-guoweikang.kernel@gmail.com>
+References: <20241220092638.2611414-1-guoweikang.kernel@gmail.com>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-A switch case is unnecessary when only a single case matters. Also, the
-gaps in the case numbers are due to no CPU with those model numbers
-being released.
+On Fri, 20 Dec 2024 17:26:38 +0800 Guo Weikang <guoweikang.kernel@gmail.com> wrote:
 
-Avoid the switch case and combine the cases into simpler VFM checks.
-Also, this gets rid of one last few Intel x86_model comparisons. No
-functional change intended.
+> Before SLUB initialization, various subsystems used memblock_alloc to
+> allocate memory. In most cases, when memory allocation fails, an immediate
+> panic is required. To simplify this behavior and reduce repetitive checks,
+> introduce `memblock_alloc_or_panic`. This function ensures that memory
+> allocation failures result in a panic automatically, improving code
+> readability and consistency across subsystems that require this behavior.
+> 
 
-Signed-off-by: Sohil Mehta <sohil.mehta@intel.com>
----
- arch/x86/events/intel/p6.c | 28 +++++++---------------------
- 1 file changed, 7 insertions(+), 21 deletions(-)
+Seems nice.
 
-diff --git a/arch/x86/events/intel/p6.c b/arch/x86/events/intel/p6.c
-index a6cffb4f4ef5..37e3beb6d633 100644
---- a/arch/x86/events/intel/p6.c
-+++ b/arch/x86/events/intel/p6.c
-@@ -2,6 +2,8 @@
- #include <linux/perf_event.h>
- #include <linux/types.h>
- 
-+#include <asm/cpu_device_id.h>
-+
- #include "../perf_event.h"
- 
- /*
-@@ -244,35 +246,19 @@ static __init void p6_pmu_rdpmc_quirk(void)
- 	}
- }
- 
-+/* Only called for Family 6 CPUs without X86_FEATURE_ARCH_PERFMON */
- __init int p6_pmu_init(void)
- {
- 	x86_pmu = p6_pmu;
- 
--	switch (boot_cpu_data.x86_model) {
--	case  1: /* Pentium Pro */
--		x86_add_quirk(p6_pmu_rdpmc_quirk);
--		break;
--
--	case  3: /* Pentium II - Klamath */
--	case  5: /* Pentium II - Deschutes */
--	case  6: /* Pentium II - Mendocino */
--		break;
--
--	case  7: /* Pentium III - Katmai */
--	case  8: /* Pentium III - Coppermine */
--	case 10: /* Pentium III Xeon */
--	case 11: /* Pentium III - Tualatin */
--		break;
--
--	case  9: /* Pentium M - Banias */
--	case 13: /* Pentium M - Dothan */
--		break;
--
--	default:
-+	if (boot_cpu_data.x86_vfm >= INTEL_CORE_YONAH) {
- 		pr_cont("unsupported p6 CPU model %d ", boot_cpu_data.x86_model);
- 		return -ENODEV;
- 	}
- 
-+	if (boot_cpu_data.x86_vfm == INTEL_PENTIUM_PRO)
-+		x86_add_quirk(p6_pmu_rdpmc_quirk);
-+
- 	memcpy(hw_cache_event_ids, p6_hw_cache_event_ids,
- 		sizeof(hw_cache_event_ids));
- 
--- 
-2.43.0
+> ...
+>
+> --- a/include/linux/memblock.h
+> +++ b/include/linux/memblock.h
+> @@ -417,6 +417,19 @@ static __always_inline void *memblock_alloc(phys_addr_t size, phys_addr_t align)
+>  				      MEMBLOCK_ALLOC_ACCESSIBLE, NUMA_NO_NODE);
+>  }
+>  
+> +static __always_inline void *memblock_alloc_or_panic(phys_addr_t size, phys_addr_t align)
+
+We lost the printing of the function name, but it's easy to retain with
+something like
+
+#define memblock_alloc_or_panic(size, align)	\
+		__memblock_alloc_or_panic(size, align, __func__)
+
+> +{
+> +	void *addr = memblock_alloc(size, align);
+> +
+> +	if (unlikely(!addr))
+> +#ifdef CONFIG_PHYS_ADDR_T_64BIT
+> +		panic("%s: Failed to allocate %llu bytes\n", __func__, size);
+
+Won't this always print "memblock_alloc_or_panic: Failed ..."?  Not
+very useful.
+
+> +#else
+> +		panic("%s: Failed to allocate %u bytes\n", __func__, size);
+> +#endif
+
+We can avoid the ifdef with printk's "%pap"?
+
+> +	return addr;
+> +}
 
