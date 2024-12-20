@@ -1,46 +1,46 @@
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 588A42288D0;
-	Fri, 20 Dec 2024 21:39:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B3CF229130;
+	Fri, 20 Dec 2024 21:39:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1734730762; cv=none; b=YutwSDm6h1xfvmsBjostNyFC28TNMNhTFX9Dw7UjAKK7293UrWGZf2ruUyokaeJMPE/sH5RxxZN9HOh8bv9zT3R9k48IEspzEHZezVpc1oppqVkDRPbVpgEIWaq7/yKrZA6itv+vrMNQNYxy81c9ClcqmqlzdZ9niy3VCsSjowo=
+	t=1734730763; cv=none; b=rLsTxzb8B3ZAxgza79Xz1yTrdeQf0dKafgn7Yd34nyqp6PRY7ErFhsv+rTCbIVlz9yePJXCE+W1H6EFxAFo2OI+ASNIiPCYejPbJ+zZO+M/9iqjmBv3/MS7XNE8MHYgH5qMprmaTPpyWj5gR+vP8Hyy+i441tzprKj0EJInNugc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1734730762; c=relaxed/simple;
-	bh=mBOSa7vDktow9RtpDWMVAM+JsLjZGeJOv/UXCTAQnh8=;
+	s=arc-20240116; t=1734730763; c=relaxed/simple;
+	bh=khcbHN+6/uEv0zea4Ln5lsuwyhVArEvDUPEFThN18B0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WLmbFoZ6Q4K2XLtBNK+mB4hOqklSEnW75YyCd2cxJib8o1XhlCHVTgI9I8vyabHPKEbkftiUZlGNFon9W94gZk+NnVzJcZIn0A/M9l49XGsRMVLWsC51oEx+ikVvOp3BcdTz5KBeLmt+0R4adt29MlI0Uzz3eao5cV9pi8SgCTU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=WZp59ZRD; arc=none smtp.client-ip=198.175.65.14
+	 MIME-Version; b=EsUf3bPckbBVlRsyOryH0zNeez9NZU69rol4aT2RQch8CFPC4UcJthZDkcUan1a36AAZsfZX9WBF6fUzxslC9A9aBx6QeR6AR0nCPu97sXj9ViOxx70qqD+LHrDaSepPPCtyoE9GhCLePArrsjdHn9qe9AL1RsMmisslAlmt32s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Yw/lTK6w; arc=none smtp.client-ip=198.175.65.14
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="WZp59ZRD"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Yw/lTK6w"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1734730761; x=1766266761;
+  t=1734730762; x=1766266762;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=mBOSa7vDktow9RtpDWMVAM+JsLjZGeJOv/UXCTAQnh8=;
-  b=WZp59ZRDAWTQyYhBYGemsPH/QSR74X/I7377lHiR945Sl7Ct4PJTNWdn
-   OpDDjkrAc9GjbZNyXTrGIAPYxHYTP4xrSVpOfxKxsGXzqycrCXQKIrDWK
-   Tk3dPO+ZwuDkzBGp3gyxHA+O74g0pJVtFheP3SfnfzZ7c05d5CngSuaV8
-   U4SKwT7GH4lDCAO8pK72ozdBNsgXe3R730DnOYfM3B2M1A5679IE1pAJ/
-   923Fwhzl/+o/YOCeipdwAFzOdzXHL5kwCV47wBBHrxyxdr//uz9SEopXE
-   fEQ4vttuTWVWyLlDwVpFm82OVYt7YAWeVLOEoCTIC48UIOj5PTv/nz69W
+  bh=khcbHN+6/uEv0zea4Ln5lsuwyhVArEvDUPEFThN18B0=;
+  b=Yw/lTK6wQeOBcTnxpLi7jtElnDtFfKZ5gGoFL2OtDAPJ5+LD8KLEuT4L
+   ChuwgsgxPO22jDrYXdFnAv/x4obh6cHVsu6q+i1/cLVpZT+FKFMT8Hjcb
+   qQZzu4xJTFfpdQZ5jTR4oVYf35gW552dN0fTb82neuhR15Dflv+ZLujIo
+   wLsiNiLrjk+pkHGoZwhMEkSqKytbKYBWwblu8QUv3kMpFXLZ1BS0Qw4IU
+   xdZgR8SEbpi6b4+GJYroMOwUwj78/emwv3aF0K+VJku3ZYkOSlCJVwSGW
+   qEEr/bnzNf4obzve/T0BzV/eWIJghFq37A8arejjRv9cLoAezpbFWtGNY
    Q==;
-X-CSE-ConnectionGUID: DPJAckaOSB6GAB8iZROAQQ==
-X-CSE-MsgGUID: 85V2fY6/Tby6ErtMU8GSqg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11292"; a="39070678"
+X-CSE-ConnectionGUID: 670lzGn0Ro2sTBLnwheH8Q==
+X-CSE-MsgGUID: gB+bBP4xTRGaiz5XqMVPNg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11292"; a="39070701"
 X-IronPort-AV: E=Sophos;i="6.12,251,1728975600"; 
-   d="scan'208";a="39070678"
+   d="scan'208";a="39070701"
 Received: from fmviesa005.fm.intel.com ([10.60.135.145])
   by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Dec 2024 13:39:17 -0800
-X-CSE-ConnectionGUID: j7vMtVUiQe+fZBGZnTTYqQ==
-X-CSE-MsgGUID: oYZyDvjSRK2xHeqVxAOFuQ==
+X-CSE-ConnectionGUID: 5VroBSZYTgqwRrTN7cx7yQ==
+X-CSE-MsgGUID: GbSPoW/XRVSuVJcmu/w4LA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; 
-   d="scan'208";a="103223844"
+   d="scan'208";a="103223850"
 Received: from sohilmeh.sc.intel.com ([172.25.103.65])
   by fmviesa005.fm.intel.com with ESMTP; 20 Dec 2024 13:39:16 -0800
 From: Sohil Mehta <sohil.mehta@intel.com>
@@ -74,9 +74,9 @@ Cc: Peter Zijlstra <peterz@infradead.org>,
 	linux-acpi@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-hwmon@vger.kernel.org
-Subject: [RFC PATCH 06/15] x86/microcode: Update the Intel processor flag scan check
-Date: Fri, 20 Dec 2024 21:37:01 +0000
-Message-ID: <20241220213711.1892696-7-sohil.mehta@intel.com>
+Subject: [RFC PATCH 08/15] x86/cpu/intel: Replace early family 6 checks with VFM ones
+Date: Fri, 20 Dec 2024 21:37:03 +0000
+Message-ID: <20241220213711.1892696-9-sohil.mehta@intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20241220213711.1892696-1-sohil.mehta@intel.com>
 References: <20241220213711.1892696-1-sohil.mehta@intel.com>
@@ -88,34 +88,81 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The check whether to read IA32_PLATFORM_ID MSR is misleading. It doesn't
-seem to consider family while comparing the model number. This works
-because init_intel_microcode() bails out if the processor family is less
-than 6. It is better to update the current check to specifically include
-family 6.
-
-Ideally, a VFM check would make it more readable. But, there isn't a
-macro to derive VFM from sig.
+Introduce names for some old pentium models and replace with VFM based
+checks.
 
 Signed-off-by: Sohil Mehta <sohil.mehta@intel.com>
 ---
- arch/x86/kernel/cpu/microcode/intel.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/x86/include/asm/intel-family.h |  3 +++
+ arch/x86/kernel/cpu/intel.c         | 13 ++++++-------
+ 2 files changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/microcode/intel.c b/arch/x86/kernel/cpu/microcode/intel.c
-index f3d534807d91..734819a12d5f 100644
---- a/arch/x86/kernel/cpu/microcode/intel.c
-+++ b/arch/x86/kernel/cpu/microcode/intel.c
-@@ -74,7 +74,8 @@ void intel_collect_cpu_info(struct cpu_signature *sig)
- 	sig->pf = 0;
- 	sig->rev = intel_get_microcode_revision();
+diff --git a/arch/x86/include/asm/intel-family.h b/arch/x86/include/asm/intel-family.h
+index 6d7b04ffc5fd..41278093bcd4 100644
+--- a/arch/x86/include/asm/intel-family.h
++++ b/arch/x86/include/asm/intel-family.h
+@@ -46,6 +46,9 @@
+ #define INTEL_ANY			IFM(X86_FAMILY_ANY, X86_MODEL_ANY)
  
--	if (x86_model(sig->sig) >= 5 || x86_family(sig->sig) > 6) {
-+	/* TODO: Simplify this using a VFM check? */
-+	if ((x86_family(sig->sig) == 6 && x86_model(sig->sig) >= 5) || x86_family(sig->sig) > 6) {
- 		unsigned int val[2];
+ #define INTEL_PENTIUM_PRO		IFM(6, 0x01)
++#define INTEL_PENTIUM_II_KLAMATH	IFM(6, 0x03)
++#define INTEL_PENTIUM_III_TUALATIN	IFM(6, 0x0B)
++#define INTEL_PENTIUM_M_DOTHAN		IFM(6, 0x0D)
  
- 		/* get processor flags from MSR 0x17 */
+ #define INTEL_CORE_YONAH		IFM(6, 0x0E)
+ 
+diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
+index f44b2e618fb3..cde8f45ccd57 100644
+--- a/arch/x86/kernel/cpu/intel.c
++++ b/arch/x86/kernel/cpu/intel.c
+@@ -195,7 +195,7 @@ void intel_unlock_cpuid_leafs(struct cpuinfo_x86 *c)
+ 	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
+ 		return;
+ 
+-	if (c->x86 < 6 || (c->x86 == 6 && c->x86_model < 0xd))
++	if (c->x86_vfm < INTEL_PENTIUM_M_DOTHAN)
+ 		return;
+ 
+ 	/*
+@@ -301,7 +301,7 @@ static void early_init_intel(struct cpuinfo_x86 *c)
+ 	 * If fast string is not enabled in IA32_MISC_ENABLE for any reason,
+ 	 * clear the fast string and enhanced fast string CPU capabilities.
+ 	 */
+-	if (c->x86 > 6 || (c->x86 == 6 && c->x86_model >= 0xd)) {
++	if (c->x86_vfm >= INTEL_PENTIUM_M_DOTHAN) {
+ 		rdmsrl(MSR_IA32_MISC_ENABLE, misc_enable);
+ 		if (!(misc_enable & MSR_IA32_MISC_ENABLE_FAST_STRING)) {
+ 			pr_info("Disabled fast string operations\n");
+@@ -350,9 +350,7 @@ static void bsp_init_intel(struct cpuinfo_x86 *c)
+ int ppro_with_ram_bug(void)
+ {
+ 	/* Uses data from early_cpu_detect now */
+-	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL &&
+-	    boot_cpu_data.x86 == 6 &&
+-	    boot_cpu_data.x86_model == 1 &&
++	if (boot_cpu_data.x86_vfm == INTEL_PENTIUM_PRO &&
+ 	    boot_cpu_data.x86_stepping < 8) {
+ 		pr_info("Pentium Pro with Errata#50 detected. Taking evasive action.\n");
+ 		return 1;
+@@ -413,7 +411,8 @@ static void intel_workarounds(struct cpuinfo_x86 *c)
+ 	 * SEP CPUID bug: Pentium Pro reports SEP but doesn't have it until
+ 	 * model 3 mask 3
+ 	 */
+-	if ((c->x86<<8 | c->x86_model<<4 | c->x86_stepping) < 0x633)
++	if ((c->x86_vfm == INTEL_PENTIUM_II_KLAMATH && c->x86_stepping < 3) ||
++	    c->x86_vfm < INTEL_PENTIUM_II_KLAMATH)
+ 		clear_cpu_cap(c, X86_FEATURE_SEP);
+ 
+ 	/*
+@@ -620,7 +619,7 @@ static unsigned int intel_size_cache(struct cpuinfo_x86 *c, unsigned int size)
+ 	 * to determine which, so we use a boottime override
+ 	 * for the 512kb model, and assume 256 otherwise.
+ 	 */
+-	if ((c->x86 == 6) && (c->x86_model == 11) && (size == 0))
++	if (c->x86_vfm == INTEL_PENTIUM_III_TUALATIN && size == 0)
+ 		size = 256;
+ 
+ 	/*
 -- 
 2.43.0
 
