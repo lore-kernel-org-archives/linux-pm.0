@@ -1,29 +1,30 @@
 Received: from linux1587.grserver.gr (linux1587.grserver.gr [185.138.42.100])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55CA51B86F6;
-	Thu, 26 Dec 2024 11:27:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2C781D1F56;
+	Thu, 26 Dec 2024 11:27:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.138.42.100
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1735212477; cv=none; b=I6X743VzfhfdyaveYrY9XylADj27N0RrNA+oLKhdvRhreK7ZdbO2biLYaTrunFP9FetWPaZ0usPZHo0XqbnXj7vD9DZfXYkwkUOSdYnKF3GQpMYiQGKnl2dte9YADed2Aq0lxdvRHN2BypvfVcS7s8Efi5KFJXpoCsGluJnc1QA=
+	t=1735212478; cv=none; b=HcadNTrb6/6FgP146aF8gXsAozMrVpoSUDxxLGKo7uvp0Eo29+hWWbQ9FOvwdIf/mgxJ+X1xv2enU0heMiBSKb4QMmUTLa47d0Fer7DoK1C1H9JsQcccE8Vyra0Z0qHbaBDy3+Fwhb6DD+tWTIZmh8QY46JTb+7c8nK3OR7WeG4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1735212477; c=relaxed/simple;
-	bh=jk0VU4v1klmKX/2HLXtWmTQfpi1u60Ha3PA9FSqrB90=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=c7e/yrtwrtDg5Vefxn6zY7EzPtf7b5NB6q56TSV5+ugEyRFTwGUaqbOjtyULwSOnb+wNVeO9hIBLDDeHSUMEhSCD09+pYYvXrm+jcXIF6H1RIh8RZkDE53xKewtvilrbI75UvyiH4sg9tkBEFUY8hdKVopDkarqGep9b3jIWfro=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=dsYy7Ozz; arc=none smtp.client-ip=185.138.42.100
+	s=arc-20240116; t=1735212478; c=relaxed/simple;
+	bh=plg4ZibVA59qq19vWw9hnRhO7/5t8PtFai05KNK96rk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=pc3ct2mA1vZoNcfvbRwnnXLB2BJDYQvngR4mOEeqx6VLSkUnLHN2wIW0LI90heRN3r3JmY1Zp1DeisJCr7Qc90bMgxkCP4A4ECqaPB57fD6/omNhIzlqQG6Gqp7KcMOIh+OmTVpy3BzVwOcCdJnRTeV9Tcs6tR98AR+pdkCmXeI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=KvFUt3pP; arc=none smtp.client-ip=185.138.42.100
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=antheas.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="dsYy7Ozz"
+	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="KvFUt3pP"
 Received: from localhost.localdomain (unknown [IPv6:2a02:2149:8b14:7c00:7f68:a54:8871:387f])
-	by linux1587.grserver.gr (Postfix) with ESMTPSA id 78D802E005C1;
-	Thu, 26 Dec 2024 13:27:43 +0200 (EET)
+	by linux1587.grserver.gr (Postfix) with ESMTPSA id B69792E0061B;
+	Thu, 26 Dec 2024 13:27:45 +0200 (EET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=antheas.dev;
-	s=default; t=1735212464;
-	bh=9wtaZnw1xMpPN2Hpqu4lXlfFiLOEZHktcrPAz/pEEBA=; h=From:To:Subject;
-	b=dsYy7Ozz/z5AAVyZv52rFxhTszaZRu68azguySetM/6zMjANPm24e6TrKoy+JVfsX
-	 wjKaSOht5eOQ60uYSvzVE1Vm5LFgxmYnHGARVEnSB25gGhPPPuOROP5yg2ToL4JFW3
-	 N+HvOb25Ao9dK4WX1T2Sj9zu6oEVcCL5sJHnvcFc=
+	s=default; t=1735212467;
+	bh=FD84l6htK36yT/0kihWnvmL2XSFrny7gRNkn/G394Hs=; h=From:To:Subject;
+	b=KvFUt3pPjXyX5QFitlTtYIVXy0HxVlDdAFbdoFUnjxxQxhaHUmGXE2TYtxF0805oE
+	 0LA5uy7U0JZwDWWC+VLxGNRs/tRw+O1rWIcdqgLzTQQa5KBmLkQbml8KELOqzUqbHi
+	 lXBu3UM88kH9gbC9RIb9nbNhl/uC17sIXHJwJlbE=
 Authentication-Results: linux1587.grserver.gr;
 	spf=pass (sender IP is 2a02:2149:8b14:7c00:7f68:a54:8871:387f) smtp.mailfrom=lkml@antheas.dev smtp.helo=localhost.localdomain
 Received-SPF: pass (linux1587.grserver.gr: connection is authenticated)
@@ -41,11 +42,12 @@ Cc: linux-doc@vger.kernel.org,
 	Parth Menon <parthasarathymenon@gmail.com>,
 	Eileen <eileen@one-netbook.com>,
 	Antheas Kapenekakis <lkml@antheas.dev>
-Subject: [PATCH 00/10] hwmon: (oxpsensors) Add 2024 OneXPlayer line-up,
- add charge limiting and turbo LED, fix ABI
-Date: Thu, 26 Dec 2024 12:27:30 +0100
-Message-ID: <20241226112740.340804-1-lkml@antheas.dev>
+Subject: [PATCH 02/10] hwmon: (oxp-sensors) Add all OneXFly variants
+Date: Thu, 26 Dec 2024 12:27:32 +0100
+Message-ID: <20241226112740.340804-3-lkml@antheas.dev>
 X-Mailer: git-send-email 2.47.1
+In-Reply-To: <20241226112740.340804-1-lkml@antheas.dev>
+References: <20241226112740.340804-1-lkml@antheas.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -54,66 +56,80 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-PPP-Message-ID: 
- <173521246418.10748.1646876848026847725@linux1587.grserver.gr>
+ <173521246682.10841.6428492373330161823@linux1587.grserver.gr>
 X-PPP-Vhost: antheas.dev
 X-Virus-Scanned: clamav-milter 0.103.11 at linux1587.grserver.gr
 X-Virus-Status: Clean
 
-This three part series updates the oxpsensors module to bring it in line
-with its Windows OneXPlayer counterpart. First, it adds support for all
-2024 OneXPlayer handhelds and their special variants.
+Currently, the driver only has the F1 OneXFly variant, which was based
+on the 7000 AMD platform. Add its special editions: F1 EVA-01, F1 OLED.
+F1 OLED might have been a dev unit, but it is supported by OneXConsole
+with the same features so add it. Then add the F1L variant which is
+based on the 8000 AMD platform and the F1Pro and its special edition
+EVA-02.
 
-Then, it adds the new charge limiting and bypass features that were first
-introduced in the X1 and retrofit to older OneXFly variants and for
-controlling the turbo led found in the X1 models. For Bypass, it adds a new
-bypass variant BypassS0 that is only active while the device is in the S0
-state.
+One might ask why not just fuzzy match. Well, EVA-02 is a variant of
+F1Pro which is a Strix Point handheld, but does not have F1Pro in its
+name. This makes it risky to fuzzy match, as special variants in the
+future from different platforms might not have the same feature set
+or registers.
 
-Finally, it performs a minor refactor by moving around switch statements
-into their own functions, in order to allow for fixing the pwm1_enable ABI
-in the final patch. Currently, pwm1_enable sets the fan to auto with the
-value 0 and allows manual control with the value 1. This patch makes it
-so 0 sets the fan to full speed, 1 sets the fan to manual control, and
-2 sets the fan to auto. This requires both setting enable and the fan
-speed when the enable sysfs is written to as 0, hence the refactor.
+By happenstance, all current devices use the same registers. For the
+charge limitting feature on this series, only F1Pro/X1 (AMD) were
+released with it, but OneXPlayer is providing bios updates for F1, F1L,
+X1 Mini units that use the same register, so treat all of them the same.
 
-As this is a breaking ABI change and there is userspace software relying
-on this previous behavior, the last patch also changes the /name of the
-hwmon endpoint to "oxp_ec" from "oxpec" (mirroring WMI module conventions)
-such that userspace software that relied on the previous behavior can be
-retrofit to the new kernel while enabling correct functionality on old
-and new kernels. Failing that, software that is not updated will just
-stop controlling the fans, ensuring no malignant behavior.
+Signed-off-by: Antheas Kapenekakis <lkml@antheas.dev>
+---
+ drivers/hwmon/oxp-sensors.c | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
 
-As part of this series I also updated my userspace software [1] to work
-with this change and verified it works correctly on both 6.12.6 and when
-using this module on my X1.
-
-To make testing possible this patch series is rebased on top of the tag
-kernel-6.12.6 (hash e4cc9a13) on remote [2]. None of the files changed
-in-between master and this tag, but in case this does not apply clean,
-you can pull that remote or reference [3].
-
-[1] https://github.com/hhd-dev/adjustor/commit/4b02087ae39bef39288f26431af0ec221da089c4
-[2] https://gitlab.com/cki-project/kernel-ark
-[3] https://github.com/hhd-dev/patchwork/tree/upstream/oxpsensors
-
-Antheas Kapenekakis (10):
-  hwmon: (oxp-sensors) Distinguish the X1 variants
-  hwmon: (oxp-sensors) Add all OneXFly variants
-  ABI: testing: sysfs-class-power: add BypassS0 charge_type
-  hwmon: (oxp-sensors) Add charge threshold and bypass to OneXPlayer
-  hwmon: (oxp-sensors) Rename ec group to tt_toggle
-  hwmon: (oxp-sensors) Add turbo led support to X1 devices
-  hwmon: (oxp-sensors) Move pwm_enable read to its own function
-  hwmon: (oxp-sensors) Move pwm value read/write to separate functions
-  hwmon: (oxp-sensors) Move fan speed read to separate function
-  hwmon: (oxp-sensors) Adhere to sysfs-class-hwmon and enable pwm on 2
-
- Documentation/ABI/testing/sysfs-class-power |   6 +-
- drivers/hwmon/oxp-sensors.c                 | 647 ++++++++++++++++----
- 2 files changed, 523 insertions(+), 130 deletions(-)
-
+diff --git a/drivers/hwmon/oxp-sensors.c b/drivers/hwmon/oxp-sensors.c
+index 5cb0da3e5d54..6aed7b3c8674 100644
+--- a/drivers/hwmon/oxp-sensors.c
++++ b/drivers/hwmon/oxp-sensors.c
+@@ -188,6 +188,41 @@ static const struct dmi_system_id dmi_table[] = {
+ 		},
+ 		.driver_data = (void *)oxp_fly,
+ 	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER F1 EVA-01"),
++		},
++		.driver_data = (void *)oxp_fly,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER F1 OLED"),
++		},
++		.driver_data = (void *)oxp_fly,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER F1L"),
++		},
++		.driver_data = (void *)oxp_fly,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER F1Pro"),
++		},
++		.driver_data = (void *)oxp_fly,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER F1 EVA-02"),
++		},
++		.driver_data = (void *)oxp_fly,
++	},
+ 	{
+ 		.matches = {
+ 			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
 -- 
 2.47.1
 
