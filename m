@@ -1,113 +1,109 @@
-Received: from relay7-d.mail.gandi.net (relay7-d.mail.gandi.net [217.70.183.200])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from linux1587.grserver.gr (linux1587.grserver.gr [185.138.42.100])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC77B42A87;
-	Thu, 26 Dec 2024 08:13:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.70.183.200
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC9911D0DEC;
+	Thu, 26 Dec 2024 11:27:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.138.42.100
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1735200786; cv=none; b=qlh0KESG+Mj04pV8wugQQiHSV+ndgJSRo5wuTSSXK3dApdVANPvrIxUT1zjZs9zk6GNwB7iSYCi7OsYfea1oK1Df0FLzyEYD3TMc4DlXIgPfbd8zHUksliI39eB0zOB/ine/G0V0eMJ62pzc0ybfGCzBIjem4sCIuS/Cilrp9JA=
+	t=1735212476; cv=none; b=g1VfpYzPwBOCljzT9hYniQp0qt5EgXKye9kxscYIh+04Av4z6u146Ea591NIbRK8r1GvxxbngqYMcxVEaKCz1sZscAnnjz/Q3DolzwL0U5a7J75DEx2rb2s7mfM1s/NOj+zUz6UsFDV65og8MzfCjXTI3khz2tGoYti+xj2cySk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1735200786; c=relaxed/simple;
-	bh=2+EB8IfsdOAAITam7PIsQ7kX1XNi1VZH/Xtl0oSaYyE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Vie3KWdBxEjEuB5qeQQheu9nTADyDsLD/N4coOaJRLj/8XpwFiHnFOn+PnDYD2tfrARhnDAiEAyGHzngxXdCvwU/LGsgfud/CJTp++Ol5mN9TdX2plW1Vbq/Do+RVDpkkijEWY8yooFJME50ZVNZDBhRMsXZ9fV/XpsxCSOOlYo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=C795e/Nz; arc=none smtp.client-ip=217.70.183.200
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+	s=arc-20240116; t=1735212476; c=relaxed/simple;
+	bh=oFSjZVZojPLkVJ4Vu59k6TEXOmZFb/QUWrdEC0XgaXE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=fjCoVelN1++M0sMng4Oj8r2/zoGTV8gLMgVn+84wYF0oX+sfRpEK2hEWbIjoocoj53UBHRrCX0Tye/eekxiYpDTrsKtYCpLxMt4izHQv7j/zYiDMbEHQB2LssNCBeSaNaM/Q02Duy2JR+gVA9ztBCmCCMeaJHRI9maPmd0qPY8I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=evYl73Yf; arc=none smtp.client-ip=185.138.42.100
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=antheas.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="C795e/Nz"
-Received: by mail.gandi.net (Postfix) with ESMTPSA id F3FCE20003;
-	Thu, 26 Dec 2024 08:12:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1735200775;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jRLLDqrlbPXEKICsvAwtwaBpDU3ufkWk/NXlNBOvtWY=;
-	b=C795e/NznBHV8+JxDmoiOpaLAzDOSvu41rz1dgVWL3FkOaUy3+p0uED+cYFYy3TUEO5/J9
-	c9itEWdsMuDh0dwqjsw8CNKGz7YVrEMC3T9MY9MpnSjBJHRBBcSV9Q1k95PQH5ce/TSzV2
-	daelh+bTVEodiiilT4SOQfddBqbN9a5eKCdvfURt3M/FtVFs+ZjvyNGT6Z9k9M30thYfhf
-	41QrUjxKR0wYHAZtj+RxUbtL1i0MS4Ce+yFvwrdthPQzW8dSLqO+Mvk+Ia5Q1CHojtF/IO
-	82GEUfGLkf4rWs9riKTpk3bSByZNLZdM2wGAjyVw7kLyyR5kN/7uAzM6GrLUiA==
-Date: Thu, 26 Dec 2024 09:12:53 +0100
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-To: Val Packett <val@packett.cool>
-Cc: Fabien Parent <parent.f@gmail.com>, Rob Herring <robh@kernel.org>,
-	Lee Jones <lee.jones@linaro.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Sen Chu <sen.chu@mediatek.com>,
-	Sean Wang <sean.wang@mediatek.com>,
-	Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Eddie Huang <eddie.huang@mediatek.com>,
-	Javier Carrasco <javier.carrasco.cruz@gmail.com>,
-	Yassine Oudjana <y.oudjana@protonmail.com>,
-	Chen Zhong <chen.zhong@mediatek.com>, linux-input@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-mediatek@lists.infradead.org, linux-rtc@vger.kernel.org
-Subject: Re: [PATCH 1/9] dt-bindings: mfd: mt6397: Add bindings for MT6392
- PMIC
-Message-ID: <20241226081253fbc6285c@mail.local>
-References: <20241226050205.30241-1-val@packett.cool>
- <20241226050205.30241-2-val@packett.cool>
+	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="evYl73Yf"
+Received: from localhost.localdomain (unknown [IPv6:2a02:2149:8b14:7c00:7f68:a54:8871:387f])
+	by linux1587.grserver.gr (Postfix) with ESMTPSA id 971C22E0058F;
+	Thu, 26 Dec 2024 13:27:44 +0200 (EET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=antheas.dev;
+	s=default; t=1735212465;
+	bh=s41bXvIWLLG8V+CzanXSlCo59G8kSYLm4mQGMG4i7+I=; h=From:To:Subject;
+	b=evYl73Yft5pYMedTLWg9Wm2WiHPZ1rEa6Ei5pWZ4mjKRL00D+6sSCQ7vjlxpX2nSh
+	 uMlGIo81l30GRn61ASV8kcDpHEbW8mM1hbtJ0Wls0yWEhg2vlR+//feCtbmHOrd2ja
+	 lIIC33dAOlNiNsVFPmTX58GIp2Cl5YkOYIW61hhE=
+Authentication-Results: linux1587.grserver.gr;
+	spf=pass (sender IP is 2a02:2149:8b14:7c00:7f68:a54:8871:387f) smtp.mailfrom=lkml@antheas.dev smtp.helo=localhost.localdomain
+Received-SPF: pass (linux1587.grserver.gr: connection is authenticated)
+From: Antheas Kapenekakis <lkml@antheas.dev>
+To: linux-hwmon@vger.kernel.org
+Cc: linux-doc@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Guenter Roeck <linux@roeck-us.net>,
+	Jean Delvare <jdelvare@suse.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Joaquin Ignacio Aramendia <samsagax@gmail.com>,
+	Derek J Clark <derekjohn.clark@gmail.com>,
+	Kevin Greenberg <kdgreenberg234@protonmail.com>,
+	Joshua Tam <csinaction@pm.me>,
+	Parth Menon <parthasarathymenon@gmail.com>,
+	Eileen <eileen@one-netbook.com>,
+	Antheas Kapenekakis <lkml@antheas.dev>
+Subject: [PATCH 01/10] hwmon: (oxp-sensors) Distinguish the X1 variants
+Date: Thu, 26 Dec 2024 12:27:31 +0100
+Message-ID: <20241226112740.340804-2-lkml@antheas.dev>
+X-Mailer: git-send-email 2.47.1
+In-Reply-To: <20241226112740.340804-1-lkml@antheas.dev>
+References: <20241226112740.340804-1-lkml@antheas.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20241226050205.30241-2-val@packett.cool>
-X-GND-Sasl: alexandre.belloni@bootlin.com
+Content-Transfer-Encoding: 8bit
+X-PPP-Message-ID: 
+ <173521246528.10782.10935237896828499666@linux1587.grserver.gr>
+X-PPP-Vhost: antheas.dev
+X-Virus-Scanned: clamav-milter 0.103.11 at linux1587.grserver.gr
+X-Virus-Status: Clean
 
-Hello,
+Currently, the oxp-sensors driver fuzzy matches the X1 variants. Luckily,
+X1 and X1 mini share most hardware features so this works. However, they
+are completely different product lines, and there is an expectation that
+OneXPlayer will release more devices in the X1 line that may have
+differences.
 
-On 26/12/2024 01:58:01-0300, Val Packett wrote:
-> From: Fabien Parent <parent.f@gmail.com>
-> 
-> Add the currently supported bindings for the MT6392 PMIC.
-> 
-> Signed-off-by: Fabien Parent <parent.f@gmail.com>
-> Reviewed-by: Rob Herring <robh@kernel.org>
-> Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
+Therefore, distinguish the 3 devices that currently exist in the market.
+These are the OneXPlayer X1 AMD and Intel variants, and the X1 mini which
+only has an AMD variant. As far as registers go, all three support the
+current driver functionality.
 
-Your SoB is missing.
+Signed-off-by: Antheas Kapenekakis <lkml@antheas.dev>
+---
+ drivers/hwmon/oxp-sensors.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
-> ---
->  Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml b/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml
-> index 86451f151a6ae..73103922978f7 100644
-> --- a/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml
-> +++ b/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml
-> @@ -38,6 +38,7 @@ properties:
->            - mediatek,mt6331 # "mediatek,mt6331" for PMIC MT6331 and MT6332.
->            - mediatek,mt6358
->            - mediatek,mt6359
-> +          - mediatek,mt6392
->            - mediatek,mt6397
->        - items:
->            - enum:
-> @@ -66,6 +67,7 @@ properties:
->                - mediatek,mt6323-rtc
->                - mediatek,mt6331-rtc
->                - mediatek,mt6358-rtc
-> +              - mediatek,mt6392-rtc
->                - mediatek,mt6397-rtc
->            - items:
->                - enum:
-> -- 
-> 2.47.1
-> 
-
+diff --git a/drivers/hwmon/oxp-sensors.c b/drivers/hwmon/oxp-sensors.c
+index 83730d931824..5cb0da3e5d54 100644
+--- a/drivers/hwmon/oxp-sensors.c
++++ b/drivers/hwmon/oxp-sensors.c
+@@ -205,7 +205,21 @@ static const struct dmi_system_id dmi_table[] = {
+ 	{
+ 		.matches = {
+ 			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
+-			DMI_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1 A"),
++		},
++		.driver_data = (void *)oxp_x1,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1 i"),
++		},
++		.driver_data = (void *)oxp_x1,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1 mini"),
+ 		},
+ 		.driver_data = (void *)oxp_x1,
+ 	},
 -- 
-Alexandre Belloni, co-owner and COO, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+2.47.1
+
