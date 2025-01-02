@@ -1,162 +1,112 @@
-Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
+Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 286F41B0429;
-	Thu,  2 Jan 2025 11:31:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E12A1A8419
+	for <linux-pm@vger.kernel.org>; Thu,  2 Jan 2025 12:15:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1735817516; cv=none; b=qKs/QfNPQd1gjXsS01rM9SQnqG+ChVim7GdOhnDZrdpkraTxDpOPLek3pdJR7RwLP4r3FjnExxfak2Jkb0p6xoXpuTIgUHAM1eb1sqGH9JwjYaEfYDFaTbKJd1jR4vxO099VxGxHVrciwtFGspIcjujt6BdTU8uAlzqaS9cfQeY=
+	t=1735820138; cv=none; b=c29U/g8qX64YOWiOXsCFeJ/oZHFsWLHN5+9z0g/knn78MEXZ1TODdbnCRcAYwjdBkvPswuW8fxsc2WyVFEwD1vu8/JkS0O8qCYSaWQz2xbBFwYJ/L9jsPrAaetRAnCiVgMXF1ySVicW8q/xY1/7jeN4eY+RwYPt9B+tmAXajFLU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1735817516; c=relaxed/simple;
-	bh=Sy9qvv8oQoq/9h9qcBbWefVUptXmIhFXkPfMNNuFGtY=;
-	h=References:From:To:Cc:Subject:Date:In-reply-to:Message-ID:
-	 MIME-Version:Content-Type; b=UIlNykMIoVFEn4hiJVYPBJAz25aCIGv4d/LQUm80E7p3o9hvx50d11Ru11lbuBmP8AnlxrJ8MAo6KDwfBp0+XSZZvPjUJ/TLhHjigmBtFFsg4igkzUAWY9PDjouKRLYjJTTaIxGH06Ihh0yi/vf+0aEBfCP+AK01zRcBO3KdheQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=GRNZOcdt; arc=none smtp.client-ip=209.85.128.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1735820138; c=relaxed/simple;
+	bh=DXQ2A41Ak0f8c/Srx/US/xMIqRF+hrTTRWNqwbb/UY0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=TDxBkuRPtZe4Z9WLpDQUWRz+ZGbx8t9yrcmlSonZDq2S4crX3Izm/0s6TwelJBmHr7LygFMua6d4UIkbdAuXUCac9gjAYZwBr8PE38wCXKFm2KLsX/Yc3FaBK+VkCpw42nuqyhwQAcGrbNCkmDQ+nt3iRey9wfoJnbUS8mhgIsQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; spf=none smtp.mailfrom=bgdev.pl; dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b=DOjzHNj3; arc=none smtp.client-ip=209.85.221.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bgdev.pl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GRNZOcdt"
-Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-43622267b2eso119171235e9.0;
-        Thu, 02 Jan 2025 03:31:53 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b="DOjzHNj3"
+Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-385f06d0c8eso5848636f8f.0
+        for <linux-pm@vger.kernel.org>; Thu, 02 Jan 2025 04:15:34 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1735817512; x=1736422312; darn=vger.kernel.org;
-        h=mime-version:message-id:in-reply-to:date:subject:cc:to:from
-         :references:from:to:cc:subject:date:message-id:reply-to;
-        bh=6wcHiBkRkYS13bhGe02lr8rGk3XbGLMMM9eQ3HQy9pc=;
-        b=GRNZOcdthYgmDweW3FCjOcs1LRG4MQwbyo7astFLtv9qLjsAioHNYsPEekFFRRTcT+
-         NYFmcnJx+vBFCxhnYNwWyFhBaNF/6OjdCrue5K3wzmY3UtNofyKcugWO6rN0SsGkgc4y
-         5O8oIckw+JVrD3fxlCSkEz6gorKcyUR0NPseP4NDIQ8Mj8UVsySBBqJw0Q5h9Jvq+fwZ
-         SVODZLh2K1BTmwVBI1NW6heyMpYyhRcW30Snp77F99wzVbVDyNPBC5a6sM7EctU//Kb/
-         1vQfqqbK3xTQW5En7hAnu+7RaDusCh97Y8kZd+/jn68rO2f6sV/E0ktc3qX1PuylcQqg
-         pGKA==
+        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1735820133; x=1736424933; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=49Zbfez2Uv+GwEi9/KdRDU2/n1SiCvCfPSvq3xfobnQ=;
+        b=DOjzHNj3pXuc5qguM8G1DfSHc1qrwHMe8r2yB3hPjLv3MS3UW+Z9CiERhCTHWxOkCs
+         1djDjLtnEA9G0IpBsnF/ltuPT+bRIXaU/0jUH58ys6AWbbbEFhbxoKnSd7WeoKzQVZM+
+         jSAl7fMH5+ysJyMoSO1R9um+NdvSq91J7oXOWVvzSueYV4GLSenri959pZnRnrKnAgD4
+         8dVGdKhDMQEvWys8gpRGgb7XBGn5rzfJtUEK4ae6Th/r5ApZAtmV0VpD/o7+ua8ej3Z7
+         5bEOKCi/ajdVQHx4th2G863Cx2cCGKoWv+bDLT6Mh4CTBbRAF1GiW3nf9BydIFSURAyW
+         JIlA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1735817512; x=1736422312;
-        h=mime-version:message-id:in-reply-to:date:subject:cc:to:from
-         :references:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=1e100.net; s=20230601; t=1735820133; x=1736424933;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=6wcHiBkRkYS13bhGe02lr8rGk3XbGLMMM9eQ3HQy9pc=;
-        b=vsPvA5INGzafz/dzcA4o4u6Rgl2clb2fHQgdq+LKXuc0+pBW7rte2D0YPAGvncqyoe
-         F3Flrx2nLUutsxOHabgIg3yL/NGHX69HZ+X45Co5YGSGlSR2s5e8XQybvWbRMmXH6vQP
-         CsJdgKT/2KOt4cBwl8jtFVyCjMlGW0nP11QehN4UcwGH9qDoGg5rKxSYLH2ae9+03IrZ
-         w4ek/85scBXs5OPh/eRWi75ImNpzKjCy6/F6wCm5kslXAWaU/Fe0pGBnp+P5lwwD8Ae0
-         q7xIzNDJaLXtk24nrfsgpQpm0KpdY7hAK7+UUmesD0kKyYn1N3AzuSuFIOeozh4pObNl
-         Gymw==
-X-Forwarded-Encrypted: i=1; AJvYcCVXkEnWbq3nynlWsQG2lU6ddZSvpiDNfXaXStxX3yWXA24NVjL/icvfwY69Tb++s6HTP/WLTSRtiEM=@vger.kernel.org, AJvYcCW6Yu5VJtVA8G34aWE31NAXa0YzS/4rFdR7nVVFm+WEZgs5Q2rqMvap/45HE0VKGg5fCk3BDc3GnDMr@vger.kernel.org, AJvYcCWaCumiu4eb82vqAiQeyyrLSY/gU0U0TRCqLZ/vnPIqPreqsAU3fbJif5yvRYF8bXnasPPNy662HsfyucrD@vger.kernel.org, AJvYcCXSwQgl3D0Z9chRmLGoH82K1ffUu3X1dk8oTbr6h7oe6AabLvbjhJYv8bSIRdBm5t7BkXKmHWmHGxjV@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx8uPrlvwnItlf6qW6nBL0EX7lhBMoN7j4jsIQMSRwNJzl5qUuO
-	dBqdfSkXKQS+e7EpjnEkAxT8S3fRbR7h2P5zgrKFNuR4x98rgFdh
-X-Gm-Gg: ASbGnctmfBL84h78mCLJdNraEWAIXYDYndLNNsYp1mu2tWrS+Og7Ty0LZU7gqXuvyL0
-	g3RHSzQgt+dJfcoe6rTOCNkyXxAgZ0mfoY02ec1zFWxNG0AyTinzVAD+UUD1V55LGRy1CXXHKOV
-	0zSKY86YDLMbAcRjtxJWG8a2GmWQ7IXKYUvPIdq7N4Idw9cJXzHJRnWzVTiBTzOiDLREzVui6A8
-	yMUnoLqtvfxBUZSTr5qLNc2QMk5oOVanAhk+T6LtmsbSGJ5e8r5MMQa6hdqu9ZR
-X-Google-Smtp-Source: AGHT+IHV4jPTiUqrXA+3RgaNsECQZU0VOfvJYgGlt1bAEMcUljMwbh7ep6IPt0Qu2f8zTyeQYe/uOQ==
-X-Received: by 2002:a05:6000:470a:b0:385:f092:df2 with SMTP id ffacd0b85a97d-38a221faae4mr33240914f8f.34.1735817512042;
-        Thu, 02 Jan 2025 03:31:52 -0800 (PST)
-Received: from localhost ([167.98.27.226])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-38a1c832e74sm37384777f8f.30.2025.01.02.03.31.51
+        bh=49Zbfez2Uv+GwEi9/KdRDU2/n1SiCvCfPSvq3xfobnQ=;
+        b=pTY+QngpMQTjetbwU2tviGWmfq/T2B/1smEXrroyQpEcj4YknIj84u5qB6PnFmB2om
+         a2dftVe0MUhDjP25rWbsAekLqua2hDon1n3LxKOBcKC86plV2JKrnFivqdvkGbnOue2+
+         eY+sCWPJqMqF5IUkurHW4YIvVMV2A2dRzDN7V/HHtPYk802B7hg9IHGdKKP57GFSPBbF
+         J3nffkgaVsm8tRtHGRsVh+X0Bkfm+yRAWtAmxRVuNxrqu/JScj17sMdCgqDTEFNxi7rp
+         l0qeStXUxjisV5Q9czb+VB2/2e+Eh96dLh+zuAX093gMIjXdiHJS99DFftryIlTPg15J
+         9VgQ==
+X-Gm-Message-State: AOJu0YwbsEsimfmH7PW0H5eSjfbKBnVaRQNxhyXQ88+4Wx4mJarL5d7D
+	PfCnMgMrUAUJ1917e6Gzr8mnl9/O6Cf49SzQo8thNhPnuOFIIi7/zrLPbR1bl9E=
+X-Gm-Gg: ASbGncuXl5bTbYrR0njRbzpzD2Ncxg93kDq3Ng54LPa9Y/SoESmy8DOBYkehO12NbF7
+	LXtbphUKDYdMgB6UUWlMAEWTp+WMFfa1Z6cvD8nlx0ItmgfU79HqGFk4WVp7XNAoD1Tn7KF0ifS
+	1Sw/r2Fi+KAflQZBk9gQwfXJRaSgxXol8F8jrZ1l3wy7jSKyBrQtQ9REu6UIM2IooH32748bPkr
+	K6siirUEchf8I2CHHCn90QDjzSK7PvfUJTEmRI+tnsDodA790dCf/Nj
+X-Google-Smtp-Source: AGHT+IEQcymUaT5z7OHfgOJIsMrGBipMq4M5GLXMYW2IFgD9r2VMIYMv0E5DtI+X27G8zzsAsvqv/w==
+X-Received: by 2002:a05:6000:1fac:b0:385:eecb:6f02 with SMTP id ffacd0b85a97d-38a2220045bmr34868448f8f.28.1735820133226;
+        Thu, 02 Jan 2025 04:15:33 -0800 (PST)
+Received: from brgl-uxlite.home ([2a01:cb1d:dc:7e00:427d:f084:4f4e:ff78])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-38a1c832e74sm37475445f8f.30.2025.01.02.04.15.32
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 02 Jan 2025 03:31:51 -0800 (PST)
-References: <20221016234335.904212-1-aidanmacdonald.0x0@gmail.com>
- <1535049f-1e4c-446b-8070-6f51877b2649@gmail.com>
- <20240608141832.7fdc9eb8@jic23-huawei>
-From: Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
-To: Alex Bee <knaerzche@gmail.com>
-Cc: Jonathan Cameron <jic23@kernel.org>, robh+dt@kernel.org,
- krzysztof.kozlowski+dt@linaro.org, wens@csie.org, ee.jones@linaro.org,
- sre@kernel.org, lgirdwood@gmail.com, broonie@kernel.org, lars@metafoo.de,
- andy.shevchenko@gmail.com, linus.walleij@linaro.org, brgl@bgdev.pl,
- michael@walle.cc, samuel@sholland.org, linux-iio@vger.kernel.org,
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6 0/13] Add support for AXP192 PMIC
-Date: Thu, 02 Jan 2025 10:44:16 +0000
-In-reply-to: <20240608141832.7fdc9eb8@jic23-huawei>
-Message-ID: <cItZox1cacPR8zQiMUpDztLjYyVXenxO@localhost>
+        Thu, 02 Jan 2025 04:15:32 -0800 (PST)
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+To: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+	Stephan Gerhold <stephan.gerhold@linaro.org>
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Subject: [PATCH v2] power: sequencing: qcom-wcn: explain why we need the WLAN_EN GPIO hack
+Date: Thu,  2 Jan 2025 13:15:30 +0100
+Message-ID: <20250102121530.26993-1-brgl@bgdev.pl>
+X-Mailer: git-send-email 2.45.2
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-Hi Alex,
+With the recent rework of the PCI power control code, the workaround for
+the wlan-enable GPIO - where we don't set a default (low) state in the
+power sequencing driver, but instead request the pin as-is - should no
+longer be needed but some platforms still fail to probe the WLAN
+controller. This is caused by the Qcom PCIe controller and needs a
+workaround in the controller driver so add a FIXME to eventually remove
+the hack from this driver once this is done.
 
-Jonathan Cameron <jic23@kernel.org> writes:
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+---
+Changes in v2:
+- reword the FIXME comment as advised by Manivannan
 
-> On Fri, 7 Jun 2024 17:12:51 +0200
-> Alex Bee <knaerzche@gmail.com> wrote:
->
->> Hi Aidan,
->>
->> Am 17.10.22 um 01:43 schrieb Aidan MacDonald:
->> > This series adds support for the AXP192 PMIC to the AXP20x MFD driver
->> > framework, including support for regulators, ADCs, and AC/USB/battery
->> > power supplies.
->> >
->> > v6 is a resend of v5 from July -- the patches haven't changed at all
->> > but I've rebased them on the latest git master branch.
->> I'm not entirely sure if I've found the latest version of the patches - at
->> least b4 didn't find a newer. It looks a lot like only mfd and usb-power
->> patches have been applied for some reason. Are you planing to resend the
->> other ones?
+ drivers/power/sequencing/pwrseq-qcom-wcn.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-These patches were part of porting Linux to a music player I had, but I
-lost interest in the project and I'm not really paying attention to the
-mailing list anymore. As Jonathan already indicated, there were some
-cross-tree dependencies on mfd, and I think on regmap-irq as well.
-I didn't realize at first how much of a headache it was to deal with
-these things. :)
+diff --git a/drivers/power/sequencing/pwrseq-qcom-wcn.c b/drivers/power/sequencing/pwrseq-qcom-wcn.c
+index cc03b5aaa8f2..e8f5030f2639 100644
+--- a/drivers/power/sequencing/pwrseq-qcom-wcn.c
++++ b/drivers/power/sequencing/pwrseq-qcom-wcn.c
+@@ -396,6 +396,13 @@ static int pwrseq_qcom_wcn_probe(struct platform_device *pdev)
+ 		return dev_err_probe(dev, PTR_ERR(ctx->bt_gpio),
+ 				     "Failed to get the Bluetooth enable GPIO\n");
+ 
++	/*
++	 * FIXME: This should actually be GPIOD_OUT_LOW, but doing so would
++	 * cause the WLAN power to be toggled, resulting in PCIe link down.
++	 * Since the PCIe controller driver is not handling link down currently,
++	 * the device becomes unusable. So we need to keep this workaround until
++	 * the link down handling is implemented in the controller driver.
++	 */
+ 	ctx->wlan_gpio = devm_gpiod_get_optional(dev, "wlan-enable",
+ 						 GPIOD_ASIS);
+ 	if (IS_ERR(ctx->wlan_gpio))
+-- 
+2.45.2
 
-Eventually I resubmitted the mfd patch separately and did the same for
-the USB power patch (after removing the mfd dependency) so both of those
-got merged. Didn't get around to doing the other patches unfortunately.
-
-Regards,
-Aidan
-
->
-> This was delayed originally by a dependency on a header in mfd and that is
-> obviously resolved now.  I think everyone was expecting a resend
-> of the series or for Lee to pick up the dependent ones and so we all
-> stopped tracking it.
->
-> Anyhow, I had the two IIO cleanups already, but I've now picked up
-> the 3rd patch (where the dependency was) as well.
->
-> Thanks,
->
-> Jonathan
->
->>
->> Regards,
->> Alex
->>
->> > Aidan MacDonald (13):
->> >    dt-bindings: mfd: add bindings for AXP192 MFD device
->> >    dt-bindings: iio: adc: axp209: Add AXP192 compatible
->> >    dt-bindings: power: supply: axp20x: Add AXP192 compatible
->> >    dt-bindings: power: axp20x-battery: Add AXP192 compatible
->> >    mfd: axp20x: Add support for AXP192
->> >    regulator: axp20x: Add support for AXP192
->> >    iio: adc: axp20x_adc: Minor code cleanups
->> >    iio: adc: axp20x_adc: Replace adc_en2 flag with adc_en2_mask field
->> >    iio: adc: axp20x_adc: Add support for AXP192
->> >    power: supply: axp20x_usb_power: Add support for AXP192
->> >    power: axp20x_battery: Add constant charge current table
->> >    power: axp20x_battery: Support battery status without fuel gauge
->> >    power: axp20x_battery: Add support for AXP192
->> >
->> >   .../bindings/iio/adc/x-powers,axp209-adc.yaml |  18 +
->> >   .../bindings/mfd/x-powers,axp152.yaml         |   1 +
->> >   .../x-powers,axp20x-battery-power-supply.yaml |   1 +
->> >   .../x-powers,axp20x-usb-power-supply.yaml     |   1 +
->> >   drivers/iio/adc/axp20x_adc.c                  | 356 ++++++++++++++++--
->> >   drivers/mfd/axp20x-i2c.c                      |   2 +
->> >   drivers/mfd/axp20x.c                          | 141 +++++++
->> >   drivers/power/supply/axp20x_battery.c         | 142 ++++++-
->> >   drivers/power/supply/axp20x_usb_power.c       |  84 ++++-
->> >   drivers/regulator/axp20x-regulator.c          | 100 ++++-
->> >   include/linux/mfd/axp20x.h                    |  84 +++++
->> >   11 files changed, 856 insertions(+), 74 deletions(-)
->> >
