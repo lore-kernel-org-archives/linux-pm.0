@@ -1,77 +1,82 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
+Received: from bmailout2.hostsharing.net (bmailout2.hostsharing.net [83.223.78.240])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D91F1A8408;
-	Thu,  2 Jan 2025 10:34:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 01F9F1917CD;
+	Thu,  2 Jan 2025 10:38:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=83.223.78.240
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1735814075; cv=none; b=SWM58aRiGwPBzwXrohxWsPsVo1Mx2XDjKjFmgyh9ri7w/0MDTSE7mcnbGSZ/cI9TQ6Lo4lXMk/OQ00mZyAdu3TKOJV81VMXTy7p44qGfnVOJM+kqQ9tj2vcEqATtGn6OZn9u9RwMSFlUOskVKQ8HXvxgbq4Ax6PYG0tK5zl587E=
+	t=1735814319; cv=none; b=RBcS3ELOPF4RA+SX2pNEwyzhX6LpzH5qZR017zX2UqjbyfwUnjPQwR10p/4kIZvnS5ZU96qKJTwuqhnTFODHiBwKF1i7T481HntNbbJ3G50nBGdqLlgC4vN22zff6x5VbrBfoquG+rEDkDbW6Yin2jSNoV4lsGC641AKd0MZqgM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1735814075; c=relaxed/simple;
-	bh=g3uOhxGhdR27AA2G951/fppRBjpoR1zt9a4A7UgaIhY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=qe3oD8T3w9aXjaSMvT72XJplqVtJ70ToWkx6z1E344Z4bKjKsVjc+L3J0ljkEC+Cpkl5Brx74qg71+FD0HbNR7Bctom449Y39kFrh1W85myttjNwndx1cCUewc8D/9KMWf91gditNb4FYFYPOtIh4dMBb4Qmt8Fko82YvqHms/w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=oxOW8IWA; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="oxOW8IWA"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1735813558;
-	bh=g3uOhxGhdR27AA2G951/fppRBjpoR1zt9a4A7UgaIhY=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=oxOW8IWArLK9a2Gm/2Iq4bcXJGnL6Sx8Lua9oOfy4PKcP+LMTVliPd7qTDNSfeJib
-	 jLnVpTy5KhxGgRlK7MMbPnA1oDeCbX/thb8HmsSmHEpaedkPU87hx8sXb+bhs82Ui/
-	 bCSkctTgqpx2xVze2/uvibzY/11obQjdMGf7Q1cHQL3s3DYiOat4N0Lr+A38S7yS3C
-	 j7KS4xAVDlgqCEi+AoCOnRzjLVjKz33Uo1rC4xgl4rEvN1l8k95+9RTajNXBsX+DId
-	 Mhdm3uuUhwYfVuSNYinewJ4ha+65Yt53kMUBIzRgB9AZsIpnCMfUEWkTN2FkJD5KJa
-	 t9pbPoOz7XVrQ==
-Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 8AAFC17E154F;
-	Thu,  2 Jan 2025 11:25:57 +0100 (CET)
-Message-ID: <ad1a74e4-6714-480f-b516-feef8ea0f908@collabora.com>
-Date: Thu, 2 Jan 2025 11:25:56 +0100
+	s=arc-20240116; t=1735814319; c=relaxed/simple;
+	bh=LpUnQDiio+JlMiPsNZKiGTW5Zem5ne95MKjZGD+pFi8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=fp3vZwMPVoQ4BkGvCtjj+2eGLxtASkQsFFYcJ/aedJ4NBZs0iNR1YmzzuHgOF9XLggrn/jaE2GF7wbx/THDTEWKwmH0OluQ9oSKsgYR0yFDhk1415RcYqbGuN3wzn8otTj4c+Frz/OUJRmPmLxWG+h95+SQE54DRnSmqfDrQvhA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=none smtp.mailfrom=h08.hostsharing.net; arc=none smtp.client-ip=83.223.78.240
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=wunner.de
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=h08.hostsharing.net
+Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
+	 client-signature RSA-PSS (4096 bits) client-digest SHA256)
+	(Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
+	by bmailout2.hostsharing.net (Postfix) with ESMTPS id DE5572800B4B7;
+	Thu,  2 Jan 2025 11:38:27 +0100 (CET)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+	id C4A7B533CEB; Thu,  2 Jan 2025 11:38:27 +0100 (CET)
+Date: Thu, 2 Jan 2025 11:38:27 +0100
+From: Lukas Wunner <lukas@wunner.de>
+To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Cc: linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
+	Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+	Rob Herring <robh@kernel.org>, Krzysztof Wilczy??ski <kw@linux.com>,
+	"Maciej W . Rozycki" <macro@orcam.me.uk>,
+	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+	Alexandru Gagniuc <mr.nuke.me@gmail.com>,
+	Krishna chaitanya chundru <quic_krichai@quicinc.com>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	"Rafael J . Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
+	Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>,
+	linux-kernel@vger.kernel.org,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+	Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Subject: Re: [PATCH v9 7/9] PCI/bwctrl: Add API to set PCIe Link Speed
+Message-ID: <Z3Zso3vXrzR79s2o@wunner.de>
+References: <20241018144755.7875-1-ilpo.jarvinen@linux.intel.com>
+ <20241018144755.7875-8-ilpo.jarvinen@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 7/9] input: keyboard: mtk-pmic-keys: add MT6392 support
-To: Val Packett <val@packett.cool>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Rob Herring
- <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Sen Chu <sen.chu@mediatek.com>,
- Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>,
- Lee Jones <lee@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Eddie Huang <eddie.huang@mediatek.com>,
- Alexandre Belloni <alexandre.belloni@bootlin.com>,
- Javier Carrasco <javier.carrasco.cruz@gmail.com>,
- Fabien Parent <parent.f@gmail.com>,
- Yassine Oudjana <y.oudjana@protonmail.com>,
- Chen Zhong <chen.zhong@mediatek.com>, linux-input@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-mediatek@lists.infradead.org, linux-rtc@vger.kernel.org
-References: <20241226050205.30241-1-val@packett.cool>
- <20241226050205.30241-8-val@packett.cool>
-From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Content-Language: en-US
-In-Reply-To: <20241226050205.30241-8-val@packett.cool>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20241018144755.7875-8-ilpo.jarvinen@linux.intel.com>
 
-Il 26/12/24 05:58, Val Packett ha scritto:
-> Add support for the MT6392 PMIC to the keys driver.
-> 
-> Signed-off-by: Val Packett <val@packett.cool>
+On Fri, Oct 18, 2024 at 05:47:53PM +0300, Ilpo Järvinen wrote:
+> @@ -142,9 +304,11 @@ static int pcie_bwnotif_probe(struct pcie_device *srv)
+>  	if (ret)
+>  		return ret;
+>  
+> -	scoped_guard(rwsem_write, &pcie_bwctrl_lbms_rwsem) {
+> -		port->link_bwctrl = no_free_ptr(data);
+> -		pcie_bwnotif_enable(srv);
+> +	scoped_guard(rwsem_write, &pcie_bwctrl_setspeed_rwsem) {
+> +		scoped_guard(rwsem_write, &pcie_bwctrl_lbms_rwsem) {
+> +			port->link_bwctrl = no_free_ptr(data);
+> +			pcie_bwnotif_enable(srv);
+> +		}
+>  	}
 
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+The "data" pointer is allocated with devm_kzalloc().
+There's no __free(kfree) anywhere.
 
+So what's the motivation for the no_free_ptr()?
+Is this a remnant of an earlier version of the patch set that can be deleted
+or is there actually a purpose to it?
 
+Thanks,
+
+Lukas
