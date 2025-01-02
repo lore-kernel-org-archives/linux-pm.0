@@ -1,82 +1,95 @@
-Received: from bmailout2.hostsharing.net (bmailout2.hostsharing.net [83.223.78.240])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 01F9F1917CD;
-	Thu,  2 Jan 2025 10:38:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=83.223.78.240
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F15E1AD41F;
+	Thu,  2 Jan 2025 11:16:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1735814319; cv=none; b=RBcS3ELOPF4RA+SX2pNEwyzhX6LpzH5qZR017zX2UqjbyfwUnjPQwR10p/4kIZvnS5ZU96qKJTwuqhnTFODHiBwKF1i7T481HntNbbJ3G50nBGdqLlgC4vN22zff6x5VbrBfoquG+rEDkDbW6Yin2jSNoV4lsGC641AKd0MZqgM=
+	t=1735816564; cv=none; b=nv/1ixVpGLhAfTO8AFdRumUFXuXKqkCRpWaQn1CtxN0oqSCtLdvf+S7BNLCDndgzH2q24S9HzHmWUgeF30YuCys3XOzH9rjSGqvHFXHjom9k7TTxFJcGuwFPtnMQepTC/TeLrUvv+gQEa/VDJNnWzBbCOYcgWaX0GIN4dGItU2A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1735814319; c=relaxed/simple;
-	bh=LpUnQDiio+JlMiPsNZKiGTW5Zem5ne95MKjZGD+pFi8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fp3vZwMPVoQ4BkGvCtjj+2eGLxtASkQsFFYcJ/aedJ4NBZs0iNR1YmzzuHgOF9XLggrn/jaE2GF7wbx/THDTEWKwmH0OluQ9oSKsgYR0yFDhk1415RcYqbGuN3wzn8otTj4c+Frz/OUJRmPmLxWG+h95+SQE54DRnSmqfDrQvhA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=none smtp.mailfrom=h08.hostsharing.net; arc=none smtp.client-ip=83.223.78.240
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=h08.hostsharing.net
-Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
-	 client-signature RSA-PSS (4096 bits) client-digest SHA256)
-	(Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
-	by bmailout2.hostsharing.net (Postfix) with ESMTPS id DE5572800B4B7;
-	Thu,  2 Jan 2025 11:38:27 +0100 (CET)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id C4A7B533CEB; Thu,  2 Jan 2025 11:38:27 +0100 (CET)
-Date: Thu, 2 Jan 2025 11:38:27 +0100
-From: Lukas Wunner <lukas@wunner.de>
-To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Cc: linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
-	Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
-	Rob Herring <robh@kernel.org>, Krzysztof Wilczy??ski <kw@linux.com>,
-	"Maciej W . Rozycki" <macro@orcam.me.uk>,
-	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-	Alexandru Gagniuc <mr.nuke.me@gmail.com>,
-	Krishna chaitanya chundru <quic_krichai@quicinc.com>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	"Rafael J . Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
-	Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>,
-	linux-kernel@vger.kernel.org,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: Re: [PATCH v9 7/9] PCI/bwctrl: Add API to set PCIe Link Speed
-Message-ID: <Z3Zso3vXrzR79s2o@wunner.de>
-References: <20241018144755.7875-1-ilpo.jarvinen@linux.intel.com>
- <20241018144755.7875-8-ilpo.jarvinen@linux.intel.com>
+	s=arc-20240116; t=1735816564; c=relaxed/simple;
+	bh=TzjaYhY/z3XxXLGIN2R6r5WrYgQeVscsnkIXZorYgOQ=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=XlGJPnAoLgYO+TP9O0YnHCkGvtHS15DH2F8FDDERFuCkkVEXZ8gpHkh8uJiIxmt/qWOVsUMRc4q2wHm1Kx2la0Nx7mBGFleJzlupim9rk3nAFg6hhOxTJhB6NgyDF5Fm4kXtK7g34i5/DEaYuOEdtPLavjcsb9G3QbhWnmYQqn4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Tel1G9tD; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Tel1G9tD"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id DBB29C4CEDF;
+	Thu,  2 Jan 2025 11:16:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1735816563;
+	bh=TzjaYhY/z3XxXLGIN2R6r5WrYgQeVscsnkIXZorYgOQ=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=Tel1G9tDHbWDZKJA0yBm885Spi5Hv0lyWtvKOOeYMwHTURcTQMaoXl8s81R0ZRtoM
+	 iJmhF7GiURrp7P5zJmhhjPIe2Gjs654OAkSQDepm4v9ICVoPfixP6t46SFkvRTSxBG
+	 zoEr6iBi2T+ZP04eHVuein2/px8+IslsMqbJlDnDN7XxXw4m7oazWqgOyzFGM1yLGe
+	 DoyVHHbDEU0MiveeGVkZlDw2Wr5h8IBL+inL29Fo+ytxJGQKUXQtH3lQIr8kWU3qyh
+	 Z7voe7ZaGgzDqSRP2Ao2uaC31hsyQKfzCYyukGWwi3miHk1yPJjsMk7dBD8HdPd1oT
+	 2jvkBTvgPkuQg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0B5BE77188;
+	Thu,  2 Jan 2025 11:16:03 +0000 (UTC)
+From: Thomas Antoine via B4 Relay <devnull+t.antoine.uclouvain.be@kernel.org>
+Date: Thu, 02 Jan 2025 12:15:05 +0100
+Subject: [PATCH v2 3/4] arm64: defconfig: enable Maxim max1720x driver
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20241018144755.7875-8-ilpo.jarvinen@linux.intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250102-b4-gs101_max77759_fg-v2-3-87959abeb7ff@uclouvain.be>
+References: <20250102-b4-gs101_max77759_fg-v2-0-87959abeb7ff@uclouvain.be>
+In-Reply-To: <20250102-b4-gs101_max77759_fg-v2-0-87959abeb7ff@uclouvain.be>
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Dimitri Fedrau <dima.fedrau@gmail.com>, 
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+ Peter Griffin <peter.griffin@linaro.org>, 
+ Alim Akhtar <alim.akhtar@samsung.com>, 
+ =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-samsung-soc@vger.kernel.org, Thomas Antoine <t.antoine@uclouvain.be>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1735816515; l=716;
+ i=t.antoine@uclouvain.be; s=20241202; h=from:subject:message-id;
+ bh=4mcHoKDe8g9Cb02OHRiFohYMU9w9oiqZT1kzkWCs778=;
+ b=u0MDFhtyvDcPVMHQuoWVOLHGPzXV3ocxbaOLiaQom2uPtJRuCPR0HfSqrffKvygn/k6OgR/84
+ UQ452q5sO5HDwZZZ+qihb1/5ZRmhVbSBhf9AHV5ljOjW1yQ/N3jmcky
+X-Developer-Key: i=t.antoine@uclouvain.be; a=ed25519;
+ pk=sw7UYl31W1LTpgWRiX4xIF5x6ok7YWZ6XZnHqy/d3dY=
+X-Endpoint-Received: by B4 Relay for t.antoine@uclouvain.be/20241202 with
+ auth_id=289
+X-Original-From: Thomas Antoine <t.antoine@uclouvain.be>
+Reply-To: t.antoine@uclouvain.be
 
-On Fri, Oct 18, 2024 at 05:47:53PM +0300, Ilpo Järvinen wrote:
-> @@ -142,9 +304,11 @@ static int pcie_bwnotif_probe(struct pcie_device *srv)
->  	if (ret)
->  		return ret;
->  
-> -	scoped_guard(rwsem_write, &pcie_bwctrl_lbms_rwsem) {
-> -		port->link_bwctrl = no_free_ptr(data);
-> -		pcie_bwnotif_enable(srv);
-> +	scoped_guard(rwsem_write, &pcie_bwctrl_setspeed_rwsem) {
-> +		scoped_guard(rwsem_write, &pcie_bwctrl_lbms_rwsem) {
-> +			port->link_bwctrl = no_free_ptr(data);
-> +			pcie_bwnotif_enable(srv);
-> +		}
->  	}
+From: Thomas Antoine <t.antoine@uclouvain.be>
 
-The "data" pointer is allocated with devm_kzalloc().
-There's no __free(kfree) anywhere.
+Enable the Maxim max1720x as it is used by the gs101-oriole
+(Google Pixel 6) board.
 
-So what's the motivation for the no_free_ptr()?
-Is this a remnant of an earlier version of the patch set that can be deleted
-or is there actually a purpose to it?
+Signed-off-by: Thomas Antoine <t.antoine@uclouvain.be>
+---
+ arch/arm64/configs/defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-Thanks,
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index d13218d0c30f458d9c555ab9771a1fd9139ce1aa..7161387d1ebfea0d363e9413ef4350d83b581d96 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -676,6 +676,7 @@ CONFIG_BATTERY_QCOM_BATTMGR=m
+ CONFIG_BATTERY_SBS=m
+ CONFIG_BATTERY_BQ27XXX=y
+ CONFIG_BATTERY_MAX17042=m
++CONFIG_BATTERY_MAX1720X=m
+ CONFIG_CHARGER_MT6360=m
+ CONFIG_CHARGER_BQ25890=m
+ CONFIG_CHARGER_BQ25980=m
 
-Lukas
+-- 
+2.47.1
+
+
