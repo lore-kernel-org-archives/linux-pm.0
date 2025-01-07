@@ -1,257 +1,186 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id C1FED1E2009;
-	Tue,  7 Jan 2025 16:54:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com [209.85.214.177])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19C0D18B47D;
+	Tue,  7 Jan 2025 16:55:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1736268886; cv=none; b=Yb6jeB6uiXNiZKoatqOEfS0VzqfW1bdloTjsCZkz+ztOc7GJ2DkgosA4PIsCAyHs+XeaMx8fH9/0cPY1iEcayRZh350zjvnSq48mo3QOEfDL2p319Oz8QMM33/ZgEqslVUFHjpDhxbmx7PCmXizB4CBU7Gc2R8EC2dOHaqpse1A=
+	t=1736268911; cv=none; b=AYqrWbknV4JWF727QrOmH9J7a4kaXpNxetJLPKhyTEmC1k+0zPgTPIwX3ms5uUD4Xx+lfp8KnIKedzifH7+dMyvN65RPzN368SKszMos8zLOoOd3bacXwOkQ2vM6wKWl9d174xmEIGHDOS9wCTr5z5NxmDhGq439lfXDW8A9+64=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1736268886; c=relaxed/simple;
-	bh=v8BGuOfz3BqVzPbsyN4GIK0XcWMo9ZU08M8yMuRU/jY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Y/lidVVS7Vmi0RqccOyYjQdSoeTExcl9l10NbmCM1Yek/KSvh4aQDZJWXWeenZzpH8dYd2zgyMH28V3RcciWZ8qFUuV2AF/XCzt1dinf4Ia2Hdeekh0Psl1uH2mlyW0MW3EpXFdbpfQ2iD/dk8uaUkeaHFf/OSjsdThLn1KdCuo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 727651424;
-	Tue,  7 Jan 2025 08:55:10 -0800 (PST)
-Received: from [192.168.1.12] (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BF67E3F59E;
-	Tue,  7 Jan 2025 08:54:38 -0800 (PST)
-Message-ID: <a9574bab-3b85-4a33-b465-204687dabc98@arm.com>
-Date: Tue, 7 Jan 2025 17:54:36 +0100
+	s=arc-20240116; t=1736268911; c=relaxed/simple;
+	bh=DXrIQMQkgHSv+0fLXdyceFm3g8JVUnp0G5t3pqb49Xg=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=lRS98sPtF7+geBosPuUNYBOtaUMUm+MoIZn+WdVPUIUpYrT2kPC3t2oD0a1yIXq6hmgHdFWXbBZMim6HVC3QaYQYkRAUQRpMMXgiT7qRQhonUnHQnycejTgtcHesdvHmEfZzxYbw3W5sjIwmsomD9q5cwSpeQzLeCU0sRsCkBRo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gA9am919; arc=none smtp.client-ip=209.85.214.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gA9am919"
+Received: by mail-pl1-f177.google.com with SMTP id d9443c01a7336-216395e151bso169069175ad.0;
+        Tue, 07 Jan 2025 08:55:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1736268907; x=1736873707; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=nfSOyFtuyebrltRrlhkHEzWaX2hoPdohMq3C5Xp0dVo=;
+        b=gA9am919otTL6UYKpXCVqLVlFF5LCC8kPoDYHwu/c24R86vrJWFQddB47euFqo85SV
+         QW+9q3MaPALdQ+qjZYwm3TmmADhFMry2Phy7l04GcEYj6e/JPGwM48mvDy8GN39sORns
+         oEpVg6st5hM7PecCxSswXpHkRfo+h2gOx3JOUHV+tkp6OZy3Wl1v768CX22fWdgN5Du3
+         ClUIxWplgsozinWfiOSJRrrKXOZ7FGRPn1LAlVHSFgxQwwdSfafV2KbVnJZO5C0fmbna
+         UqwmLjhdqjbFzBMKsqk1QeNxYXxzRDKCQHl9U7J+ZEZ/yFCcCfcN9GP4nPLrAdBS5ro2
+         flvA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1736268907; x=1736873707;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=nfSOyFtuyebrltRrlhkHEzWaX2hoPdohMq3C5Xp0dVo=;
+        b=CbJrOXcMmyMYLFcEC9qa1GJEY3X/ZodlnvR6iLUxvb+OKxKmNcgSu7M/WHsQAxKP/3
+         ezik/7MCEgSGVZN75Z2QWco8JlRqhXwQmEQbeki2Pc1mKSDoWfv/C8+8Aiu49yfZoZTc
+         jnJv5PVOAaAZ4Nvl2P1VPeA+5rNf8fOxfxn+E4KJrfdf3qNscZh9WNa6QQrTk+bUlIs7
+         gma4lgWs0tNXbF1W2dfNXIyVpfoTafQ6IU5F4luKxZFxF7vVgATqFc1d8G7vJZ/+4I3p
+         DjlPif3kqFTQFPvMzCIQPR9PJpiNeUbNlCW0H8Unc26oAE4DgD1jRF/x+XGjJcuXQXtw
+         sy9Q==
+X-Forwarded-Encrypted: i=1; AJvYcCUhjjD3/TUb5bNdj8gIIOITSyFBC6abkk8CXpR9gWEjMTxS2DdP56EvtzKxAIJ9eC507kcIu1pXBW18@vger.kernel.org, AJvYcCUkt0KAOKZDLbKUQWBSoUFExwu+eWnaOLyCqXl6p/U32D535CvTnPnSiqu75KX///DLC3OYLp3VyerFr+JNTRoehMjWTQ==@vger.kernel.org, AJvYcCVWYDzsNATkDGi99juWKzip5yxt8mCAc827iIrSK+YlEIAnCNQdonlgEv5AMvk58dOSMrr2iXAlNXSDg92tVQ==@vger.kernel.org, AJvYcCWKkWKyom2ojjuNpGrnkE7pkbOF4oLF6BguJVEPgpSTAD8sHQ+iG1k9Gv4P/xKxCuHFCE4A6p34PyBAk+E=@vger.kernel.org, AJvYcCWf3jgfv/tY0dqfWR26KjCvlO9ABEiu40GiX5WPn/1wDyONH5Q8/FOd1yOS6HFnfMueTFS2eTYnbjk=@vger.kernel.org, AJvYcCWyMOWGqTt+sqvCiro2VyhDrspLN3vjRg3RelsnxOtH7sO9Ek+DEf4N5BkrNs9kxXvMFpG+7yVLa6HQV9Js@vger.kernel.org, AJvYcCXGAHfNlmvlTlRgniaKTiwYqcV92SqeW4vFRbg8sBGBs++AKdUqwDjZOB7mz+4S+1ld+qIUCMxbh2mc@vger.kernel.org
+X-Gm-Message-State: AOJu0YwJP3jHE2B6QD/KbrMUlIC3NlRLTgD1sIkFE9pdJROufYQAPZ5R
+	Ptm0K8hHeQ4PWi68aDi8SLkn9vwxNDX2N1DjzapQyC2uLDGmv+vV
+X-Gm-Gg: ASbGnctr7XhquulaQ2XBmy4jXlrgzD99n0tGAMKJr72D95iWy7m3zBpYdwa7sJLEtf9
+	crsTYVmQob3NBH25qI1euRwdNyGypLyJ3oac4EPgu06nHI2PujsZSPoceIB8sfvFeZMTYiaHfYa
+	UBnGkwzkeiAPTjDwDo0PqSIqmcZaKbcSz9iYOdKocfLrcQmQEEqRqf9pjJkgwOjemqTi2FvE65B
+	9S92FR94sRZG7/PCMFb+dswFJFdsYHAan9qoFpCJAEtZWGi5+hFpX4=
+X-Google-Smtp-Source: AGHT+IFQf/aoQlxwYLfyxmbzyaa9BZYMe4Fh/X3mXsfcJvMkVvWHVRFPHWBxNOWgVziFcNJLIeXBog==
+X-Received: by 2002:a17:903:1d2:b0:215:8847:4377 with SMTP id d9443c01a7336-21a7a2957dfmr62251775ad.15.1736268907329;
+        Tue, 07 Jan 2025 08:55:07 -0800 (PST)
+Received: from nuvole.. ([144.202.86.13])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-219dc970c8fsm313519145ad.60.2025.01.07.08.54.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Jan 2025 08:55:06 -0800 (PST)
+From: Pengyu Luo <mitltlatltl@gmail.com>
+To: heikki.krogerus@linux.intel.com
+Cc: andersson@kernel.org,
+	bryan.odonoghue@linaro.org,
+	conor+dt@kernel.org,
+	devicetree@vger.kernel.org,
+	dmitry.baryshkov@linaro.org,
+	gregkh@linuxfoundation.org,
+	hdegoede@redhat.com,
+	ilpo.jarvinen@linux.intel.com,
+	jdelvare@suse.com,
+	konradybcio@kernel.org,
+	krzk+dt@kernel.org,
+	linux-arm-msm@vger.kernel.org,
+	linux-hwmon@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-usb@vger.kernel.org,
+	linux@roeck-us.net,
+	mitltlatltl@gmail.com,
+	platform-driver-x86@vger.kernel.org,
+	robh@kernel.org,
+	sre@kernel.org
+Subject: Re: [PATCH v2 2/5] platform: arm64: add Huawei Matebook E Go EC driver
+Date: Wed,  8 Jan 2025 00:53:33 +0800
+Message-ID: <20250107165335.114744-1-mitltlatltl@gmail.com>
+X-Mailer: git-send-email 2.47.1
+In-Reply-To: <Z30dIRA4MdtCp63q@kuha.fi.intel.com>
+References: <Z30dIRA4MdtCp63q@kuha.fi.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/4] ACPI: CPPC: Add cppc_get_reg_val and
- cppc_set_reg_val function
-To: "zhenglifeng (A)" <zhenglifeng1@huawei.com>, rafael@kernel.org,
- lenb@kernel.org, robert.moore@intel.com, viresh.kumar@linaro.org
-Cc: acpica-devel@lists.linux.dev, linux-acpi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linuxarm@huawei.com,
- ionela.voinescu@arm.com, jonathan.cameron@huawei.com,
- zhanjie9@hisilicon.com, lihuisong@huawei.com, hepeng68@huawei.com,
- fanghao11@huawei.com
-References: <20241216091603.1247644-1-zhenglifeng1@huawei.com>
- <20241216091603.1247644-2-zhenglifeng1@huawei.com>
- <8e9c1ede-3277-458b-bd44-ca0c7615a4ab@arm.com>
- <74be38cf-8e18-44fc-995c-a5b734d9df29@huawei.com>
-Content-Language: en-US
-From: Pierre Gondois <pierre.gondois@arm.com>
-In-Reply-To: <74be38cf-8e18-44fc-995c-a5b734d9df29@huawei.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Hello Lifeng,
+On Tue, Jan 7, 2025 at 8:25 PM Heikki Krogerus <heikki.krogerus@linux.intel.com> wrote:
+>
+> Hi,
+>
+> > +/* -------------------------------------------------------------------------- */
+> > +/* API For UCSI */
+> > +
+> > +int gaokun_ec_ucsi_read(struct gaokun_ec *ec,
+> > +                     u8 resp[GAOKUN_UCSI_READ_SIZE])
+> > +{
+> > +     u8 req[] = MKREQ(0x03, 0xD5, 0);
+> > +     u8 _resp[] = MKRESP(GAOKUN_UCSI_READ_SIZE);
+> > +     int ret;
+> > +
+> > +     ret = gaokun_ec_read(ec, req, sizeof(_resp), _resp);
+> > +     if (ret)
+> > +             return ret;
+> > +
+> > +     extr_resp(resp, _resp, GAOKUN_UCSI_READ_SIZE);
+> > +     return 0;
+> > +}
+> > +EXPORT_SYMBOL_GPL(gaokun_ec_ucsi_read);
+> > +
+> > +int gaokun_ec_ucsi_write(struct gaokun_ec *ec,
+> > +                      const u8 req[GAOKUN_UCSI_WRITE_SIZE])
+> > +{
+> > +     u8 _req[] = MKREQ(0x03, 0xD4, GAOKUN_UCSI_WRITE_SIZE);
+> > +
+> > +
+> > +     refill_req(_req, req, GAOKUN_UCSI_WRITE_SIZE);
+> > +
+> > +     return gaokun_ec_write(ec, _req);
+> > +}
+> > +EXPORT_SYMBOL_GPL(gaokun_ec_ucsi_write);
+> > +
+> > +int gaokun_ec_ucsi_get_reg(struct gaokun_ec *ec, u8 *ureg)
+> > +{
+> > +     u8 req[] = MKREQ(0x03, 0xD3, 0);
+> > +     u8 _resp[] = MKRESP(UCSI_REG_SIZE);
+> > +     int ret;
+> > +
+> > +     ret = gaokun_ec_read(ec, req, sizeof(_resp), _resp);
+> > +     if (ret)
+> > +             return ret;
+> > +
+> > +     extr_resp(ureg, _resp, UCSI_REG_SIZE);
+> > +
+> > +     return 0;
+> > +}
+> > +EXPORT_SYMBOL_GPL(gaokun_ec_ucsi_get_reg);
+>
+> Why not just take struct gaokun_ucsi_reg as parameter? I did not see
+> this (or any of these) being used anywhere else except in your UCSI
+> glue driver. So the prototype would be:
+>
+> 	int gaokun_ec_ucsi_get_reg(struct gaokun_ec *ec,
+> 				struct gaokun_ucsi_reg *reg);
+>
 
-On 12/20/24 09:30, zhenglifeng (A) wrote:
-> On 2024/12/17 21:48, Pierre Gondois wrote:
->> Hello Lifeng,
->>
->> On 12/16/24 10:16, Lifeng Zheng wrote:
->>> Rename cppc_get_perf() to cppc_get_reg_val() as a generic function to read
->>> cppc registers, with four changes:
->>>
->>> 1. Change the error kind to "no such device" when pcc_ss_id < 0, which
->>> means that this cpu cannot get a valid pcc_ss_id.
->>>
->>> 2. Add a check to verify if the register is a cpc supported one before
->>> using it.
->>>
->>> 3. Extract the operations if register is in pcc out as
->>> cppc_get_reg_val_in_pcc().
->>>
->>> 4. Return the result of cpc_read() instead of 0.
->>>
->>> Add cppc_set_reg_val_in_pcc() and cppc_set_reg_val() as generic functions
->>> for setting cppc registers value. Unlike other set reg ABIs,
->>> cppc_set_reg_val() checks CPC_SUPPORTED right after getting the register,
->>> because the rest of the operations are meaningless if this register is not
->>> a cpc supported one.
->>>
->>> These functions can be used to reduce some existing code duplication.
->>>
->>> Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
->>> ---
->>>    drivers/acpi/cppc_acpi.c | 111 +++++++++++++++++++++++++++++----------
->>>    1 file changed, 84 insertions(+), 27 deletions(-)
->>>
->>> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
->>> index c1f3568d0c50..bb5333a503a2 100644
->>> --- a/drivers/acpi/cppc_acpi.c
->>> +++ b/drivers/acpi/cppc_acpi.c
->>> @@ -1179,43 +1179,100 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
->>>        return ret_val;
->>>    }
->>>    -static int cppc_get_perf(int cpunum, enum cppc_regs reg_idx, u64 *perf)
->>> +static int cppc_get_reg_val_in_pcc(int cpu, struct cpc_register_resource *reg, u64 *val)
->>>    {
->>> -    struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
->>> +    int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
->>> +    struct cppc_pcc_data *pcc_ss_data = NULL;
->>> +    int ret;
->>> +
->>> +    if (pcc_ss_id < 0) {
->>> +        pr_debug("Invalid pcc_ss_id\n");
->>> +        return -ENODEV;
->>> +    }
->>> +
->>> +    pcc_ss_data = pcc_data[pcc_ss_id];
->>> +
->>> +    down_write(&pcc_ss_data->pcc_lock);
->>> +
->>> +    if (send_pcc_cmd(pcc_ss_id, CMD_READ) >= 0)
->>> +        ret = cpc_read(cpu, reg, val);
->>> +    else
->>> +        ret = -EIO;
->>> +
->>> +    up_write(&pcc_ss_data->pcc_lock);
->>> +
->>> +    return ret;
->>> +}
->>> +
->>> +static int cppc_get_reg_val(int cpu, enum cppc_regs reg_idx, u64 *val)
->>> +{
->>> +    struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
->>>        struct cpc_register_resource *reg;
->>>          if (!cpc_desc) {
->>> -        pr_debug("No CPC descriptor for CPU:%d\n", cpunum);
->>> +        pr_debug("No CPC descriptor for CPU:%d\n", cpu);
->>>            return -ENODEV;
->>>        }
->>>          reg = &cpc_desc->cpc_regs[reg_idx];
->>>    -    if (CPC_IN_PCC(reg)) {
->>> -        int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpunum);
->>> -        struct cppc_pcc_data *pcc_ss_data = NULL;
->>> -        int ret = 0;
->>> -
->>> -        if (pcc_ss_id < 0)
->>> -            return -EIO;
->>> +    if (!CPC_SUPPORTED(reg)) {
->>> +        pr_debug("CPC register (reg_idx=%d) is not supported\n", reg_idx);
->>> +        return -EOPNOTSUPP;
->>> +    }
->>
->> I think this is only valid for optional fields. Meaning that:
->> - if the function is used one day for the mandatory 'Lowest Performance'
->> field, an integer value of 0 would be valid.
->> - if the function is used for a mandatory field containing a NULL Buffer,
->> it seems we would return -EFAULT currently, through cpc_read(). -EOPNOTSUPP
->> doesn't seem appropriate as the field would be mandatory.
->>
->> Maybe the function needs an additional 'bool optional' input parameter
->> to do these check conditionally.
-> 
-> Indeed, I should have judged the type before doing this check. But adding a
-> input parameter is not a really nice way to me. How about adding a bool
-> list of length MAX_CPC_REG_ENT in cppc_acpi.h to indicate wheter it is
-> optional?
+Understood
 
-Actually all these functions:
-- cppc_get_desired_perf
-- cppc_get_highest_perf
-- cppc_get_epp_perf
-- cppc_set_epp
-- cppc_get_auto_act_window
-- cppc_set_auto_act_window
-- cppc_get_auto_sel
-- cppc_get_nominal_perf
+> > +int gaokun_ec_ucsi_pan_ack(struct gaokun_ec *ec, int port_id)
+> > +{
+> > +     u8 req[] = MKREQ(0x03, 0xD2, 1);
+> > +     u8 data = 1 << port_id;
+> > +
+> > +     if (port_id == GAOKUN_UCSI_NO_PORT_UPDATE)
+> > +             data = 0;
+> > +
+> > +     refill_req(req, &data, 1);
+> > +
+> > +     return gaokun_ec_write(ec, req);
+> > +}
+> > +EXPORT_SYMBOL_GPL(gaokun_ec_ucsi_pan_ack);
+>
+> I think you should add proper kernel doc comments to these exported
+> functions.
+>
 
-and in general all the functions getting / setting one value at a time could
-be implemented by macros similars to show_cppc_data(). From what I see the
-input parameters required are:
-- name of the field
-- if the field is mandatory to have or not
-- if the field is writeable
-- if the field is implemented as an integer, register, or can be both
+Oh, I forgot some of them. gaokun_ec_ucsi_get_reg and
+gaokun_ec_ucsi_pan_ack deserve kernel doc comments. Judging from the name,
+others are obvious, should I comment all?
 
-This would avoid having numerous function definitions doing approximately the
-same thing.
+> thanks,
+>
+> --
+> heikki
 
-> 
->>
->>>    -        pcc_ss_data = pcc_data[pcc_ss_id];
->>> +    if (CPC_IN_PCC(reg))
->>> +        return cppc_get_reg_val_in_pcc(cpu, reg, val);
->>>    -        down_write(&pcc_ss_data->pcc_lock);
->>> +    return cpc_read(cpu, reg, val);
->>> +}
->>>    -        if (send_pcc_cmd(pcc_ss_id, CMD_READ) >= 0)
->>> -            cpc_read(cpunum, reg, perf);
->>> -        else
->>> -            ret = -EIO;
->>> +static int cppc_set_reg_val_in_pcc(int cpu, struct cpc_register_resource *reg, u64 val)
->>> +{
->>> +    int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
->>> +    struct cppc_pcc_data *pcc_ss_data = NULL;
->>> +    int ret;
->>>    -        up_write(&pcc_ss_data->pcc_lock);
->>> +    if (pcc_ss_id < 0) {
->>> +        pr_debug("Invalid pcc_ss_id\n");
->>> +        return -ENODEV;
->>> +    }
->>>    +    ret = cpc_write(cpu, reg, val);
->>> +    if (ret)
->>>            return ret;
->>> +
->>> +    pcc_ss_data = pcc_data[pcc_ss_id];
->>> +
->>> +    down_write(&pcc_ss_data->pcc_lock);
->>> +    /* after writing CPC, transfer the ownership of PCC to platform */
->>> +    ret = send_pcc_cmd(pcc_ss_id, CMD_WRITE);
->>> +    up_write(&pcc_ss_data->pcc_lock);
->>> +
->>> +    return ret;
->>> +}
->>> +
->>> +static int cppc_set_reg_val(int cpu, enum cppc_regs reg_idx, u64 val)
->>> +{
->>> +    struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
->>> +    struct cpc_register_resource *reg;
->>> +
->>> +    if (!cpc_desc) {
->>> +        pr_debug("No CPC descriptor for CPU:%d\n", cpu);
->>> +        return -ENODEV;
->>>        }
->>>    -    cpc_read(cpunum, reg, perf);
->>> +    reg = &cpc_desc->cpc_regs[reg_idx];
->>>    -    return 0;
->>> +    if (!CPC_SUPPORTED(reg)) {
->>> +        pr_debug("CPC register (reg_idx=%d) is not supported\n", reg_idx);
->>> +        return -EOPNOTSUPP;
->>> +    }
->>
->> Similarly to cppc_get_reg_val(), if a field is:
->> - mandatory + integer: currently doesn't exist. Not sure we should
->> try to detect that, but might be safer.
->> - mandatory + buffer: should not return -EOPNOTSUPP I think
->> - optional + integer: e.g.: 'Autonomous Selection Enable Register',
->> we should return -EOPNOTSUPP. It seems that currently, if the integer
->> value is 1, I get a 'write error: Bad address'
->> - optional + buffer:
->> should effectively return -EOPNOTSUPP if the buffer is NULL.
-> 
-> Actually, cpc_write() doesn't check field type and treats the field as a
-> buffer. That's why you get 'Bad address' error when the integer value is 1.
-> I think the existing code needs to be improved, otherwise there may be
-> unexpected problems.
-> 
-> Do you mean we should return -EOPNOTSUPP no matter what to be written if
-> this field is a optional + integer one?
-
-Yes exact
-
-  And what about a mandatory +
-> integer one. Should we directly write the int_value?
-
-I don't think it is possible to have this. Indeed, if a value is writeable,
-it must be a register, so mandatory + integer should not exist. I suggested
-a check in case someone made a mistake, but it is not sure the check is actually
-necessary.
-
-Regards,
-Pierre
+Best wishes,
+Pengyu
