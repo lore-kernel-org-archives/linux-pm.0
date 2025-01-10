@@ -1,118 +1,147 @@
-Received: from mta21.hihonor.com (mta21.hihonor.com [81.70.160.142])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BFE720C49F
-	for <linux-pm@vger.kernel.org>; Fri, 10 Jan 2025 11:27:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=81.70.160.142
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6031420C030;
+	Fri, 10 Jan 2025 11:30:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.8
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1736508451; cv=none; b=LmPF6MsAccuIyTGN5loMYHI1BFwMgJl36sslEuLiHAM8UqWTY+AXcMTLOsr18stE8GtDyo3UGAF1Wx+jCln7O0qT8rBuXp+39giZdqth2ixvTpQ8aK+7EzdvZksjqdWahpMO9dWn5Z8CuRNYeO06ucSPH34huDe2armDtGIG0fI=
+	t=1736508661; cv=none; b=EaqLkoPdsSxTYVFiP9RaEIT8RankgBZgWl0ZCOTLLL25yJP/y5Lx+GgT4oBujAypChkH2Sk+MTGzf12VCY3oWiuoZm2uS89hkmwSPupWurhPLiWDDxLbJcYUk403HVV+uWx+YzP0Vx3+uw5wJtLJHqTSrTxwEpFmV5RwBt4kCLQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1736508451; c=relaxed/simple;
-	bh=AuTHtZpdzWZFaWJ8xRjgtg2IfDRiTvj6Ov4rDR9gdow=;
-	h=From:To:CC:Subject:Date:Message-ID:Content-Type:MIME-Version; b=JLagVP6ZLcdmLXtYUOHcExOn9IasMcJIeMsQp4pvUkjY0QBOigqsWynYBa+zJiQyKz4THg1AHtPg2V5whtpzcMQ5o1wJOlKbVOm8hl64yc2QSyIQTsnwQXy5ecgEi2XR8QwwikuoTIdREvtqlHpIREx0eLHSdNTt1RLk2w8vzs4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=honor.com; spf=pass smtp.mailfrom=honor.com; arc=none smtp.client-ip=81.70.160.142
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=honor.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=honor.com
-Received: from w001.hihonor.com (unknown [10.68.25.235])
-	by mta21.hihonor.com (SkyGuard) with ESMTPS id 4YTzW14hHTzYlDhm;
-	Fri, 10 Jan 2025 19:11:41 +0800 (CST)
-Received: from a006.hihonor.com (10.68.23.242) by w001.hihonor.com
- (10.68.25.235) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Fri, 10 Jan
- 2025 19:12:09 +0800
-Received: from a004.hihonor.com (10.68.27.131) by a006.hihonor.com
- (10.68.23.242) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Fri, 10 Jan
- 2025 19:12:09 +0800
-Received: from a004.hihonor.com ([fe80::d0f4:9864:20bc:c407]) by
- a004.hihonor.com ([fe80::d0f4:9864:20bc:c407%4]) with mapi id 15.02.1544.011;
- Fri, 10 Jan 2025 19:12:09 +0800
-From: shichunyong <shichunyong@honor.com>
-To: "sre@kernel.org" <sre@kernel.org>
-CC: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, yuanzhen 00013066
-	<richard.yuan@honor.com>, yangyunmeng 00013317 <yangyunmeng@honor.com>,
-	gongxi 00013624 <gongxi4@honor.com>, yuxuesong 00013800
-	<xuesong.yu@honor.com>, shichunyong <shichunyong@honor.com>
-Subject: RE: [PATCH] power: supply: sysfs: Add
- manufacturing_date,first_usage_date
-Thread-Topic: [PATCH] power: supply: sysfs: Add
- manufacturing_date,first_usage_date
-Thread-Index: AdtjT/+X2mHP1I+8TI2PYcb16gLeKA==
-Date: Fri, 10 Jan 2025 11:12:09 +0000
-Message-ID: <ed82ec55afed40448c70831f1991f6c1@honor.com>
-Accept-Language: zh-CN, en-US
-Content-Language: zh-CN
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	s=arc-20240116; t=1736508661; c=relaxed/simple;
+	bh=nhDM8oTjak/yiOseC8GrWVflQYmBjouZ/MAMXIV9aug=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=qna4AVSfVshi47bdQYAzDdM8Zh+MnybY0jPetbMW2BN7MZyeUOCG3q1ObtKBsQ+ql75oJUSmuxD0XHblWJ0rEmyAHdI/zqXeXGhyHlqDb26lIHQ6iOKeyPIQe+iZu4RbRWiDujn57vJv4wIp5La7Nx4jHsUV6NJ/1Sp0PjMBDok=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=FlW9QK7B; arc=none smtp.client-ip=192.198.163.8
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="FlW9QK7B"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1736508659; x=1768044659;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=nhDM8oTjak/yiOseC8GrWVflQYmBjouZ/MAMXIV9aug=;
+  b=FlW9QK7BWi49pRJwNeKf+kSd7+lRGv1Mf31lJ8N4G7r434bs1sH0gZq1
+   b2bVXunGhLWj7wonxeoMorF7S1cQax+ppR9pU1FeSaPQgxRboki35+tRC
+   HTiV6JPwdinzliSqdG2CzmXxoujyuWZtiUW3oWsU6XvuYzhdfzjg/Gfge
+   oDE+3+S7SY7seNDxgLW/jakSZMpgEQ40kElsPuofNrTZ6MHTpPqdD92w+
+   r3XgsdgO4FIKDinoD6/QXAT8RsTfN5HOo+f05hbBXYOO4NCL3sAvrs/dS
+   llWjPIfvOHisa84+ZRWFtivD/83NO6nTrxM3ISsxW2GcRoFed60YC+iq8
+   A==;
+X-CSE-ConnectionGUID: U+cRFD61T9+2E8cUUkio4w==
+X-CSE-MsgGUID: 0PAM8qxlSvudGcuNue+gdw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11310"; a="54339711"
+X-IronPort-AV: E=Sophos;i="6.12,303,1728975600"; 
+   d="scan'208";a="54339711"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jan 2025 03:30:57 -0800
+X-CSE-ConnectionGUID: VDL7BhMfQtiwaAyRJ2w93Q==
+X-CSE-MsgGUID: jn3rzmYSTgSRB8AImm+w+g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; 
+   d="scan'208";a="103592383"
+Received: from apaszkie-mobl2.apaszkie-mobl2 (HELO localhost) ([10.245.244.158])
+  by orviesa010-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jan 2025 03:30:54 -0800
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Fri, 10 Jan 2025 13:30:50 +0200 (EET)
+To: Xi Pardee <xi.pardee@linux.intel.com>
+cc: rajvi0912@gmail.com, irenic.rajneesh@gmail.com, 
+    david.e.box@linux.intel.com, Hans de Goede <hdegoede@redhat.com>, 
+    platform-driver-x86@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
+    linux-pm@vger.kernel.org
+Subject: Re: [PATCH v4 2/6] platform/x86/intel/pmc: Remove duplicate enum
+In-Reply-To: <20250110002612.244782-3-xi.pardee@linux.intel.com>
+Message-ID: <6524a3c0-bc7e-c78e-4d99-fc5d41d99196@linux.intel.com>
+References: <20250110002612.244782-1-xi.pardee@linux.intel.com> <20250110002612.244782-3-xi.pardee@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="8323328-1476655922-1736508650=:1003"
 
-Please help to review, thanks.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
------Original Message-----
-From: shichunyong 00013399=20
-Sent: 2024-12-19 17:52
-To: 'sre@kernel.org' <sre@kernel.org>
-Cc: 'linux-pm@vger.kernel.org' <linux-pm@vger.kernel.org>; yuanzhen 0001306=
-6 <richard.yuan@honor.com>; yangyunmeng 00013317 <yangyunmeng@honor.com>; g=
-ongxi 00013624 <gongxi4@honor.com>; yuxuesong 00013800 <xuesong.yu@honor.co=
-m>
-Subject: [PATCH] power: supply: sysfs: Add manufacturing_date,first_usage_d=
-ate
+--8323328-1476655922-1736508650=:1003
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-manufacturing_date/first_usage_date/state_of_health are the battery data
-required by EU regulations that are accessible for end-users.
+On Thu, 9 Jan 2025, Xi Pardee wrote:
 
-manufacturing_date is the date of manufacturing of the battery.
-first_usage_date is the date of first use of the battery
-after the set-up of the device by the first user.
-Both dates are the seconds since the epoch (1970-01-01 UTC).
-state_of_health(SoH) is a figure of merit of the condition of a battery,
-compared to its ideal conditions. The unit of SoH is percent
-(100% =3D the battery's conditions match the battery's specifications).
+> Remove duplicate enum PMC_IDX_SOC. PMC_IDX_SOC has the same value
+> as PMC_IDX_MAIN. Replace it with PMC_IDX_MAIN to avoid confusion.
+>=20
+> Signed-off-by: Xi Pardee <xi.pardee@linux.intel.com>
 
-Signed-off-by: ShiChunyong <shichunyong@honor.com>
----
- drivers/power/supply/power_supply_sysfs.c | 3 +++
- include/linux/power_supply.h              | 3 +++
- 2 files changed, 6 insertions(+)
+Reviewed-by: Ilpo J=E4rvinen <ilpo.jarvinen@linux.intel.com>
 
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supp=
-ly/power_supply_sysfs.c
-index 571de43fcca9..0550073224f2 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -217,6 +217,9 @@ static struct power_supply_attr power_supply_attrs[] __=
-ro_after_init =3D {
- 	POWER_SUPPLY_ATTR(MANUFACTURE_YEAR),
- 	POWER_SUPPLY_ATTR(MANUFACTURE_MONTH),
- 	POWER_SUPPLY_ATTR(MANUFACTURE_DAY),
-+	POWER_SUPPLY_ATTR(MANUFACTURING_DATE),
-+	POWER_SUPPLY_ATTR(FIRST_USAGE_DATE),
-+	POWER_SUPPLY_ATTR(STATE_OF_HEALTH),
- 	/* Properties of type `const char *' */
- 	POWER_SUPPLY_ATTR(MODEL_NAME),
- 	POWER_SUPPLY_ATTR(MANUFACTURER),
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index b98106e1a90f..c8d8a8bfbf9f 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -170,6 +170,9 @@ enum power_supply_property {
- 	POWER_SUPPLY_PROP_MANUFACTURE_YEAR,
- 	POWER_SUPPLY_PROP_MANUFACTURE_MONTH,
- 	POWER_SUPPLY_PROP_MANUFACTURE_DAY,
-+	POWER_SUPPLY_PROP_MANUFACTURING_DATE,
-+	POWER_SUPPLY_PROP_FIRST_USAGE_DATE,
-+	POWER_SUPPLY_PROP_STATE_OF_HEALTH,
- 	/* Properties of type `const char *' */
- 	POWER_SUPPLY_PROP_MODEL_NAME,
- 	POWER_SUPPLY_PROP_MANUFACTURER,
 --=20
-2.17.1
+ i.
 
+> ---
+>  drivers/platform/x86/intel/pmc/arl.c  | 2 +-
+>  drivers/platform/x86/intel/pmc/core.h | 1 -
+>  drivers/platform/x86/intel/pmc/lnl.c  | 2 +-
+>  drivers/platform/x86/intel/pmc/mtl.c  | 2 +-
+>  4 files changed, 3 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/platform/x86/intel/pmc/arl.c b/drivers/platform/x86/=
+intel/pmc/arl.c
+> index 05dec4f5019f3..ad976cc83ecae 100644
+> --- a/drivers/platform/x86/intel/pmc/arl.c
+> +++ b/drivers/platform/x86/intel/pmc/arl.c
+> @@ -693,7 +693,7 @@ static int arl_resume(struct pmc_dev *pmcdev)
+> =20
+>  int arl_core_init(struct pmc_dev *pmcdev)
+>  {
+> -=09struct pmc *pmc =3D pmcdev->pmcs[PMC_IDX_SOC];
+> +=09struct pmc *pmc =3D pmcdev->pmcs[PMC_IDX_MAIN];
+>  =09int ret;
+>  =09int func =3D 0;
+>  =09bool ssram_init =3D true;
+> diff --git a/drivers/platform/x86/intel/pmc/core.h b/drivers/platform/x86=
+/intel/pmc/core.h
+> index a1886d8e1ef3e..a0f6cc427ddca 100644
+> --- a/drivers/platform/x86/intel/pmc/core.h
+> +++ b/drivers/platform/x86/intel/pmc/core.h
+> @@ -430,7 +430,6 @@ struct pmc_dev {
+> =20
+>  enum pmc_index {
+>  =09PMC_IDX_MAIN,
+> -=09PMC_IDX_SOC =3D PMC_IDX_MAIN,
+>  =09PMC_IDX_IOE,
+>  =09PMC_IDX_PCH,
+>  =09PMC_IDX_MAX
+> diff --git a/drivers/platform/x86/intel/pmc/lnl.c b/drivers/platform/x86/=
+intel/pmc/lnl.c
+> index be029f12cdf40..09b13df90d685 100644
+> --- a/drivers/platform/x86/intel/pmc/lnl.c
+> +++ b/drivers/platform/x86/intel/pmc/lnl.c
+> @@ -553,7 +553,7 @@ static int lnl_resume(struct pmc_dev *pmcdev)
+>  int lnl_core_init(struct pmc_dev *pmcdev)
+>  {
+>  =09int ret;
+> -=09struct pmc *pmc =3D pmcdev->pmcs[PMC_IDX_SOC];
+> +=09struct pmc *pmc =3D pmcdev->pmcs[PMC_IDX_MAIN];
+> =20
+>  =09lnl_d3_fixup();
+> =20
+> diff --git a/drivers/platform/x86/intel/pmc/mtl.c b/drivers/platform/x86/=
+intel/pmc/mtl.c
+> index 02949fed76e91..07687a3e436d5 100644
+> --- a/drivers/platform/x86/intel/pmc/mtl.c
+> +++ b/drivers/platform/x86/intel/pmc/mtl.c
+> @@ -992,7 +992,7 @@ static int mtl_resume(struct pmc_dev *pmcdev)
+> =20
+>  int mtl_core_init(struct pmc_dev *pmcdev)
+>  {
+> -=09struct pmc *pmc =3D pmcdev->pmcs[PMC_IDX_SOC];
+> +=09struct pmc *pmc =3D pmcdev->pmcs[PMC_IDX_MAIN];
+>  =09int ret;
+>  =09int func =3D 2;
+>  =09bool ssram_init =3D true;
+>=20
+--8323328-1476655922-1736508650=:1003--
