@@ -1,50 +1,49 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84DE81C3BF0;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CA04240251;
 	Mon, 13 Jan 2025 18:52:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1736794344; cv=none; b=OWDeuSyPOG+VOIOmN8y9GrWVhXCONClCbqxT0BwSqfD7t9Xw5TIxmh/WiaXy+FPXx4wflLz9ETegHxxkNwQKcl7Tz7e7ENwu5e4GtCDu/KZXIvznOiekb13cTw8aZv6ZdKEriP1XTgbol0pAb/6yYYwboBoxUMp1kIBfJ6zfv+A=
+	t=1736794344; cv=none; b=BoHMpZf1600dG3WJatvr/h4xJANQzQNyKd2PnN8sTnTl2KF0Ej1ymNPRq9GRqrTxCr6hR158RbfDxsbBWyp/hISstpKKCuSwQOU2nUSmQJk8hmCQAQE0wd0EPYEcFYU+IkkDb2VkFp0CsGH0TRNTXG6ZbO+OCy3wmvon6jh0xLo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1736794344; c=relaxed/simple;
-	bh=OGoFtC6JKRTQWneUVXdbJ9xSV+uQMbEiyGqw9nUFUFI=;
+	bh=w8yNobx/K7ISkJeO5Hp3sA9eQ1R1X90Mm4HGFIECRuU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=KjjfBEjriT5QA1jscwwg7lfsrUbWYtLfVmYnYdtHpQu5V5/q3LhVv14FPPhJXb75CR5w8GiygqF7VYH3oq/iQf6u0VVPGyqrV/RAHbA75VA51lZO7D6q3OGUQzoPoUDl6sfNE7UflrkBfpo9JXPI8YmvH/4GBTw9p5kqolOWmZo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=jyRwV7ej; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=azuC/M/zkwnEKnxRYHRW99F1lTwlVCMbsAlBFXauLhrk+pB5yvaoTSgtAipNkPKZwUmpPUZNPxtDBMTf9v8Z65VHMiKACG71lH7suPOWpjBh93SCG6H/ddD2t1seHSJzv/aNJA5qhOdxuoJd4k1jpjTkbKnhJTNTMD0BaithfAQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=grHyiRNm; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="jyRwV7ej"
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="grHyiRNm"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
- id bd7286f9a0bcf4f2; Mon, 13 Jan 2025 19:52:19 +0100
+ id eaaea6503d7afdc5; Mon, 13 Jan 2025 19:52:20 +0100
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id E21028E0A24;
-	Mon, 13 Jan 2025 19:52:18 +0100 (CET)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id DAE398E0A24;
+	Mon, 13 Jan 2025 19:52:19 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1736794339;
-	bh=OGoFtC6JKRTQWneUVXdbJ9xSV+uQMbEiyGqw9nUFUFI=;
+	s=dkim; t=1736794340;
+	bh=w8yNobx/K7ISkJeO5Hp3sA9eQ1R1X90Mm4HGFIECRuU=;
 	h=From:Subject:Date;
-	b=jyRwV7ejLGyh1lUpve5jEd8TwCofMMJ39Oy+VloAW+yMPBxHUokVQdtz1VTCM345t
-	 7t8MQEDIZHTSLQLmk5UASbdTlF97hRosXJxNikw1n+p+upoznpZWUM92NWvnv4ive8
-	 l01lVBZXW2SVa/mGlrsNP40FF2itl5DAyA6kV07Jvp7WYTlppH3tDIltBcNv+s+Dio
-	 ihFPREg51XgGAUP2qFM25c2iOdu9lMz+b8PmbFoH8xuPKQW2DoMhNPjWHhd2lRs/cD
-	 M33xz9kvANsZx+nfaxIiDn4n/ArDSP5SUgA5k/uJrlPUbBa83ywwu/Po9ZMEqo0CY/
-	 DwBK7kogtQm6g==
+	b=grHyiRNm/1hPcPd7WFZKvFfjLRqdoaZJE8yGRUW9L3AiPJMwcwft5DIU+4b3I9fbC
+	 zkSXT2NKD69DZuwQYX3etzMFRUUTOuukUxI5Yk/tiOoVtZ5JwxgyByUZZSFkrV0nG1
+	 wAY939TVoFPSlrqwpXlTfdOo5p738dFXTNRV9cKpv5cq7SMjloJG9q/UtlCTfSEyHk
+	 YdudFQvZoN3JG3AMDJi/5RubdSX9/8pFZzDMaYk4In5esM4P4mS1rkGla4+hwBuZ8k
+	 v3C/oyFlQrXNYGLWRllJcQyjBtLPzZwzz9Q/Ag86pKj8WOvANVLvG1BneO4uifesAH
+	 9r10ete+96ORg==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
  Daniel Lezcano <daniel.lezcano@linaro.org>,
  Christian Loehle <christian.loehle@arm.com>,
  Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
-Subject:
- [PATCH v1 3/9] cpuidle: teo: Combine candidate state index checks against 0
-Date: Mon, 13 Jan 2025 19:39:00 +0100
-Message-ID: <13676346.uLZWGnKmhe@rjwysocki.net>
+Subject: [PATCH v1 2/9] cpuidle: teo: Reorder candidate state index checks
+Date: Mon, 13 Jan 2025 19:36:57 +0100
+Message-ID: <1907276.tdWV9SEqCh@rjwysocki.net>
 In-Reply-To: <6116275.lOV4Wx5bFT@rjwysocki.net>
 References: <6116275.lOV4Wx5bFT@rjwysocki.net>
 Precedence: bulk
@@ -63,59 +62,52 @@ X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-There are two candidate state index checks against 0 in teo_select()
-that need not be separate, so combine them and update comments around
-them.
-
-No intentional functional impact.
+Since constraint_idx may be 0, the candidate state index may change to 0
+after assigning constraint_idx to it, so first check if it is greater
+than constraint_idx (and update it if so) and then check it against 0.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
 This is a rebased variant of
 
-https://lore.kernel.org/linux-pm/2296767.iZASKD2KPV@rjwysocki.net/
+https://lore.kernel.org/linux-pm/8476650.T7Z3S40VBb@rjwysocki.net/
 
 ---
- drivers/cpuidle/governors/teo.c |   23 +++++++++--------------
- 1 file changed, 9 insertions(+), 14 deletions(-)
+ drivers/cpuidle/governors/teo.c |   15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
 --- a/drivers/cpuidle/governors/teo.c
 +++ b/drivers/cpuidle/governors/teo.c
-@@ -436,24 +436,19 @@
- 	if (idx > constraint_idx)
- 		idx = constraint_idx;
- 
--	if (!idx && prev_intercept_idx) {
--		/*
--		 * We have to query the sleep length here otherwise we don't
--		 * know after wakeup if our guess was correct.
--		 */
--		duration_ns = tick_nohz_get_sleep_length(&delta_tick);
--		cpu_data->sleep_length_ns = duration_ns;
-+	if (!idx) {
-+		if (prev_intercept_idx) {
-+			/*
-+			 * Query the sleep length to be able to count the wakeup
-+			 * as a hit if it is caused by a timer.
-+			 */
-+			duration_ns = tick_nohz_get_sleep_length(&delta_tick);
-+			cpu_data->sleep_length_ns = duration_ns;
-+		}
- 		goto out_tick;
+@@ -428,6 +428,14 @@
+ 				break;
+ 		}
+ 	}
++
++	/*
++	 * If there is a latency constraint, it may be necessary to select an
++	 * idle state shallower than the current candidate one.
++	 */
++	if (idx > constraint_idx)
++		idx = constraint_idx;
++
+ 	if (!idx && prev_intercept_idx) {
+ 		/*
+ 		 * We have to query the sleep length here otherwise we don't
+@@ -439,13 +447,6 @@
  	}
  
  	/*
--	 * Skip the timers check if state 0 is the current candidate one,
--	 * because an immediate non-timer wakeup is expected in that case.
+-	 * If there is a latency constraint, it may be necessary to select an
+-	 * idle state shallower than the current candidate one.
 -	 */
--	if (!idx)
--		goto out_tick;
+-	if (idx > constraint_idx)
+-		idx = constraint_idx;
 -
 -	/*
- 	 * If state 0 is a polling one, check if the target residency of
- 	 * the current candidate state is low enough and skip the timers
- 	 * check in that case too.
+ 	 * Skip the timers check if state 0 is the current candidate one,
+ 	 * because an immediate non-timer wakeup is expected in that case.
+ 	 */
 
 
 
