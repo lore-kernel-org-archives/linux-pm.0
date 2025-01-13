@@ -1,158 +1,192 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f178.google.com (mail-pl1-f178.google.com [209.85.214.178])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C86320F094
-	for <linux-pm@vger.kernel.org>; Mon, 13 Jan 2025 16:25:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 917162297F1
+	for <linux-pm@vger.kernel.org>; Mon, 13 Jan 2025 16:25:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.178
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1736785559; cv=none; b=nza8F+meQS8Zm9GPbBCIT6bFEdv77sIpsZvvIHtvAelSgAVSbqhbNNJeRodd4k8VkHANMlZVJ7M2wJ7G5B4ByebP3NQK3z8S3/wEwy/WScW1M7WQzMWOYcSbS0KRPk+w0fj9Q5AWxpoVvNr9daW8kk/MtW/SM1CJhEvgkzumuFE=
+	t=1736785562; cv=none; b=slAHrLPR6FLuSUHVWFlWEc4P9/VvsdXxUHq+CF55NZW0MgcPtcekI5WP4NhKCiRYdu8XrK7K48/N9kTuWjYcfuzLjVLZvtGPJuahlTwJpvn28+2ZoGxZc3hOb0YbZ1j/oi4/aqVhDkrZs3pCqB/IJXm89nqFPyycN9XUpiFo85Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1736785559; c=relaxed/simple;
-	bh=e2IbsiOoO3EPFUAOqg25iHCtvCfjnHRVHByLTl6MTlI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ATHxHRUugTVz4XV08SDOvXarO4nvNjnAQ6vZn9d0mu7yXveq/4xNrfLC66aH0M2OSv518IaVrp3IFFug6O57KPCNrkZ3NUBOVQ1pG6iUMWTjR0x07odH0K5eUl88HHYRFopQH088o1TiuTM/IE46NjoHFdIamsDtpJ1CDWQQTqo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tXNFs-0000JI-8B; Mon, 13 Jan 2025 17:25:32 +0100
-Received: from dude05.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::54])
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tXNFp-000HzM-2p;
-	Mon, 13 Jan 2025 17:25:30 +0100
-Received: from localhost ([::1] helo=dude05.red.stw.pengutronix.de)
-	by dude05.red.stw.pengutronix.de with esmtp (Exim 4.96)
-	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tXNFq-007FQL-31;
-	Mon, 13 Jan 2025 17:25:30 +0100
-From: Ahmad Fatoum <a.fatoum@pengutronix.de>
-Date: Mon, 13 Jan 2025 17:25:33 +0100
-Subject: [PATCH v2 08/12] regulator: allow user configuration of hardware
- protection action
+	s=arc-20240116; t=1736785562; c=relaxed/simple;
+	bh=1kDW32MuSVAFdsYNImZqjgIN1GG6jDDnrmWQYE1QmXY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=buu7FnYpPlbT6DNe+fNztfmNJ8Mzc8PBhKDmy5JGLo/mFcxn/Ep39Lh2GvRpnDxmnt6sCJI5ZpaitOEWiukfc8jStZ60SQi5blqPjsp0qzHENqbqYu3u0GHmehcyRpBux9tKhZYLhIioq9tgpeAtPqFQlyKjPJQvkeuPYQkuaXQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=rDRweAaS; arc=none smtp.client-ip=209.85.214.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="rDRweAaS"
+Received: by mail-pl1-f178.google.com with SMTP id d9443c01a7336-216281bc30fso94248575ad.0
+        for <linux-pm@vger.kernel.org>; Mon, 13 Jan 2025 08:25:58 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1736785558; x=1737390358; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=aT4ZLTVIwGUtbe1QI6YLbzJoKdwXpUmQWKkHVbvrXoU=;
+        b=rDRweAaS1+mnvt/+zt085iHJ/Xo7Bw3gfXbfqwiZEYPL9qFl0VUxM7Wf8ObE7nFRTQ
+         swj98ew2928kxDNEZVpiyDOZAYLKC94VlqJ1B1ScfZfC+Ig2GLBi9JjSj6nhvGgzWc44
+         p043JrKUSgTn2xA6gZc8YigeLaawh3cUA5sgQaT+1BGm/yuePcbhFcQj5SuhgAnpxAxk
+         7KRTUtxoDWCFLZ6sprFnVD5x3fQdSdXQBlTmB6ec7eQcrLdeqZygDYT6ZaLIo0Qch0AM
+         ERnuyrR23uq2+WLDyG89RhHtnwBIyuWwGYkrf/qED6CXv/IV0OjPNk7UT4vS7SAf9ST1
+         W6/Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1736785558; x=1737390358;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=aT4ZLTVIwGUtbe1QI6YLbzJoKdwXpUmQWKkHVbvrXoU=;
+        b=Rtj/P6TV09/D52ykflqG3pdyGqZwL6ttYpgGkZtFcB+atP74eLy0SjMeiuJS9XTjv5
+         dk3EBhCQ4mW4wd6tOTHTTrDL9o/fm4Emq8BIY6i/1RjXD1QvPyZRn6melpEzJ7yn9/I/
+         lcjW1tXzhn7rf0KZceglLRT3cHsNEY7Qa4M/Ku3+pVKAbJwQ5f047wpbggaDrX4vNQRx
+         Tjvgz8i6uXW4AEZ6uYlvbsoVOlJGS5hVCJj0CZepQ5zjNTfrfjV8TbLZR/9a61eMXI9K
+         +yTC9neaJniduhP9kCZKhca7FWapG80SAyZdxNNVnAvdgmoEy0WDE+TKOrf2tgyZDFNv
+         GBww==
+X-Forwarded-Encrypted: i=1; AJvYcCXTKspvULYOg2WpLm+mBR9xgjefymhlTSvlh6ZsSct8eNM/rCqg+RJVm7CyWo+1htV2SKocsKw0jQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz5+8ApXrRwt6sGiljJWYu+Ntzcx2MLVrxN9y6VSmIRJNFja6OL
+	kH/DgqA33L5SJK6pOSctyAJEakcDcbX8vMqwbqsfkdvDBANNi7r9rv0UnjDcpg==
+X-Gm-Gg: ASbGncs7bqzGLjH8xxFoQmWi3XzrU02uvqI67aV4+aRuUe35An4oNrgD3Phl/bu5wHl
+	kN+JPYqyqRq1GJI2NyX9+NJnHpJ+WZXVAbKIk1Koux3obR5xQ/xfFqC5uYYgSue7deyzOS35m8X
+	aMoXZHDo9utiuu2xCWBzrkPgK3PowrFBVdgKrp/78uUPkX/2jcYwUveBVO/NvKL3q21SbvvSwaN
+	LqofgEGUnjH3WAS1fxEwiRumA8CA+nZt/aT/BSorp11kkm7RkEPdz3Mtweiphfz1VCkQQ==
+X-Google-Smtp-Source: AGHT+IEyDmGykdg1IhscNzCDFazeYHBoOZhp/2iBInjICsQGaz0Y3A6UzMlVkKTjV+xfYdDVDaQJPw==
+X-Received: by 2002:a17:903:234f:b0:216:1cfa:2bda with SMTP id d9443c01a7336-21a83fc3891mr365457255ad.43.1736785557828;
+        Mon, 13 Jan 2025 08:25:57 -0800 (PST)
+Received: from thinkpad ([117.213.100.189])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-21a9f219330sm55673625ad.132.2025.01.13.08.25.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 13 Jan 2025 08:25:57 -0800 (PST)
+Date: Mon, 13 Jan 2025 21:55:49 +0530
+From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+To: rafael@kernel.org, ulf.hansson@linaro.org,
+	Johan Hovold <johan@kernel.org>
+Cc: Krishna Chaitanya Chundru <quic_krichai@quicinc.com>,
+	Kevin Xie <kevin.xie@starfivetech.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
+	Rob Herring <robh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+	Markus.Elfring@web.de, quic_mrana@quicinc.com, rafael@kernel.org,
+	m.szyprowski@samsung.com, linux-pm@vger.kernel.org,
+	linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+	regressions@lists.linux.dev
+Subject: Re: [PATCH v7 2/2] PCI: Enable runtime pm of the host bridge
+Message-ID: <20250113162549.a2y7dlwnsfetryyw@thinkpad>
+References: <20241111-runtime_pm-v7-0-9c164eefcd87@quicinc.com>
+ <20241111-runtime_pm-v7-2-9c164eefcd87@quicinc.com>
+ <Z30p2Etwf3F2AUvD@hovoldconsulting.com>
+ <7882105f-93a3-fab9-70a2-2dc55d6becfc@quicinc.com>
+ <Z3057yuNjnn0NPqk@hovoldconsulting.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250113-hw_protection-reboot-v2-8-161d3fc734f0@pengutronix.de>
-References: <20250113-hw_protection-reboot-v2-0-161d3fc734f0@pengutronix.de>
-In-Reply-To: <20250113-hw_protection-reboot-v2-0-161d3fc734f0@pengutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, 
- Fabio Estevam <festevam@denx.de>, "Rafael J. Wysocki" <rafael@kernel.org>, 
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
- Jonathan Corbet <corbet@lwn.net>, Serge Hallyn <serge@hallyn.com>, 
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
- Matti Vaittinen <mazziesaccount@gmail.com>, 
- Benson Leung <bleung@chromium.org>, Tzung-Bi Shih <tzungbi@kernel.org>, 
- Guenter Roeck <groeck@chromium.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-doc@vger.kernel.org, linux-security-module@vger.kernel.org, 
- chrome-platform@lists.linux.dev, devicetree@vger.kernel.org, 
- kernel@pengutronix.de, Ahmad Fatoum <a.fatoum@pengutronix.de>
-X-Mailer: b4 0.14.2
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: a.fatoum@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Z3057yuNjnn0NPqk@hovoldconsulting.com>
 
-When the core detects permanent regulator hardware failure or imminent
-power failure of a critical supply, it will call hw_protection_shutdown
-in an attempt to do a limited orderly shutdown followed by powering off
-the system.
++ Ulf (for the runtime PM related question)
 
-This doesn't work out well for many unattended embedded systems that don't
-have support for shutdown and that power on automatically when power is
-supplied:
+On Tue, Jan 07, 2025 at 03:27:59PM +0100, Johan Hovold wrote:
+> On Tue, Jan 07, 2025 at 07:40:39PM +0530, Krishna Chaitanya Chundru wrote:
+> > On 1/7/2025 6:49 PM, Johan Hovold wrote:
+> 
+> > >> @@ -3106,6 +3106,17 @@ int pci_host_probe(struct pci_host_bridge *bridge)
+> > >>   		pcie_bus_configure_settings(child);
+> > >>   
+> > >>   	pci_bus_add_devices(bus);
+> > >> +
+> > >> +	/*
+> > >> +	 * Ensure pm_runtime_enable() is called for the controller drivers,
+> > >> +	 * before calling pci_host_probe() as pm frameworks expects if the
+> > >> +	 * parent device supports runtime pm then it needs to enabled before
+> > >> +	 * child runtime pm.
+> > >> +	 */
+> > >> +	pm_runtime_set_active(&bridge->dev);
+> > >> +	pm_runtime_no_callbacks(&bridge->dev);
+> > >> +	devm_pm_runtime_enable(&bridge->dev);
+> > >> +
+> > >>   	return 0;
+> > >>   }
+> > >>   EXPORT_SYMBOL_GPL(pci_host_probe);
+> > > 
+> > > I just noticed that this change in 6.13-rc1 is causing the following
+> > > warning on resume from suspend on machines like the Lenovo ThinkPad
+> > > X13s:
+> 
+> > Can you confirm if you are seeing this issue is seen in the boot-up
+> > case also. As this part of the code executes only at the boot time and
+> > will not have effect in resume from suspend.
+> 
+> No, I only see it during resume. And enabling runtime PM can (and in
+> this case, obviously does) impact system suspend as well. 
+> 
+> > > 	pci0004:00: pcie4: Enabling runtime PM for inactive device with active children
+> 
+> > I believe this is not causing any functional issues.
+> 
+> It still needs to be fixed.
+> 
+> > > which may have unpopulated ports (this laptop SKU does not have a modem).
+> 
+> > Can you confirm if this warning goes away if there is some endpoint
+> > connected to it.
+> 
+> I don't have anything to connect to the slot in this machine, but this
+> seems to be the case as I do not see this warning for the populated
+> slots, nor on the CRD reference design which has a modem on PCIe4.
+> 
 
-  - A brief power cycle gets detected by the driver
-  - The kernel powers down the system and SoC goes into shutdown mode
-  - Power is restored
-  - The system remains oblivious to the restored power
-  - System needs to be manually power cycled for a duration long enough
-    to drain the capacitors
+Yes, this is only happening for unpopulated slots and the warning shows up only
+if runtime PM is enabled for both PCI bridge and host bridge. This patch enables
+the runtime PM for host bridge and if the PCI bridge runtime PM is also enabled
+(only happens now for ACPI/BIOS based platforms), then the warning shows up only
+if the PCI bridge was RPM suspended (mostly happens if there was no device
+connected) during the system wide resume time.
 
-Allow users to fix this by calling the newly introduced
-hw_protection_trigger() instead: This way the hw_protection commandline
-or sysfs parameter is used to dictate the policy of dealing with the
-regulator fault.
+For the sake of reference, PCI host bridge is the parent of PCI bridge.
 
-Signed-off-by: Ahmad Fatoum <a.fatoum@pengutronix.de>
----
- drivers/regulator/core.c        |  4 ++--
- drivers/regulator/irq_helpers.c | 16 ++++++++--------
- 2 files changed, 10 insertions(+), 10 deletions(-)
+Looking at where the warning gets triggered (in pm_runtime_enable()), we have
+the below checks:
 
-diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index 8cb948a91e60d958c6b5ec97d736e6e3bf4b47eb..74c8f1262f2cd4e796ba8f4f1bdf17b685a615c1 100644
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -5137,8 +5137,8 @@ static void regulator_handle_critical(struct regulator_dev *rdev,
- 	if (!reason)
- 		return;
- 
--	hw_protection_shutdown(reason,
--			       rdev->constraints->uv_less_critical_window_ms);
-+	hw_protection_trigger(reason,
-+			      rdev->constraints->uv_less_critical_window_ms);
- }
- 
- /**
-diff --git a/drivers/regulator/irq_helpers.c b/drivers/regulator/irq_helpers.c
-index 0aa188b2bbb26797b7907cbfb581459ef41df286..5742faee8071dd8104c094587d66693f48fb0f9b 100644
---- a/drivers/regulator/irq_helpers.c
-+++ b/drivers/regulator/irq_helpers.c
-@@ -64,16 +64,16 @@ static void regulator_notifier_isr_work(struct work_struct *work)
- reread:
- 	if (d->fatal_cnt && h->retry_cnt > d->fatal_cnt) {
- 		if (!d->die)
--			return hw_protection_shutdown("Regulator HW failure? - no IC recovery",
--						      REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
-+			return hw_protection_trigger("Regulator HW failure? - no IC recovery",
-+						     REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
- 		ret = d->die(rid);
- 		/*
- 		 * If the 'last resort' IC recovery failed we will have
- 		 * nothing else left to do...
- 		 */
- 		if (ret)
--			return hw_protection_shutdown("Regulator HW failure. IC recovery failed",
--						      REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
-+			return hw_protection_trigger("Regulator HW failure. IC recovery failed",
-+						     REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
- 
- 		/*
- 		 * If h->die() was implemented we assume recovery has been
-@@ -263,14 +263,14 @@ static irqreturn_t regulator_notifier_isr(int irq, void *data)
- 	if (d->fatal_cnt && h->retry_cnt > d->fatal_cnt) {
- 		/* If we have no recovery, just try shut down straight away */
- 		if (!d->die) {
--			hw_protection_shutdown("Regulator failure. Retry count exceeded",
--					       REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
-+			hw_protection_trigger("Regulator failure. Retry count exceeded",
-+					      REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
- 		} else {
- 			ret = d->die(rid);
- 			/* If die() failed shut down as a last attempt to save the HW */
- 			if (ret)
--				hw_protection_shutdown("Regulator failure. Recovery failed",
--						       REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
-+				hw_protection_trigger("Regulator failure. Recovery failed",
-+						      REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
- 		}
- 	}
- 
+dev->power.runtime_status == RPM_SUSPENDED
+!dev->power.ignore_children
+atomic_read(&dev->power.child_count) > 0
+
+When pm_runtime_enable() gets called for PCI host bridge:
+
+dev->power.runtime_status = RPM_SUSPENDED
+dev->power.ignore_children = 0
+dev->power.child_count = 1
+
+First 2 passes seem legit, but the issue is with the 3rd one. Here, the
+child_count of 1 means that the PCI host bridge has an 'active' child (which is
+the PCI bridge). The PCI bridge was supposed to be RPM_SUSPENDED as the resume
+process should first resume the parent (PCI host bridge). But this is not the
+case here.
+
+Then looking at where the child_count gets incremented, it leads to
+pm_runtime_set_active() of device_resume_noirq(). pm_runtime_set_active() is
+only called for a device if dev_pm_skip_suspend() succeeds, which requires
+DPM_FLAG_SMART_SUSPEND flag to be set and the device to be runtime suspended.
+
+This criteria matches for PCI bridge. So its status was set to 'RPM_ACTIVE' even
+though the parent PCI host bridge was still in the RPM_SUSPENDED state. I don't
+think this is a valid condition as seen from the warning triggered for PCI host
+bridge when pm_runtime_enable() is called from device_resume_early():
+
+pci0004:00: pcie4: Enabling runtime PM for inactive device with active children
+
+I'm not sure of what the fix is in this case. But removing the
+DPM_FLAG_SMART_SUSPEND flag from PCI bridge driver (portdrv) makes the warning
+go away. This indicates that something is wrong with the DPM_FLAG_SMART_SUSPEND
+flag handling in PM core.
+
+Ulf/Rafael, thoughts?
+
+- Mani
 
 -- 
-2.39.5
-
+மணிவண்ணன் சதாசிவம்
