@@ -1,29 +1,29 @@
 Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66132237A38;
-	Mon, 13 Jan 2025 12:21:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A595A22AE7B;
+	Mon, 13 Jan 2025 12:21:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.190
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1736770880; cv=none; b=uWabq+Wi9lezTw3FCkKg4PZLN8zMK2oUM5L8wfUJIlHVaS2IDJmL8mjekqyZSDCMO6tikTkylJGHhV5TI49tn3W0vvfBIRsSuH2ZAKyavj9tI3xIeZxuC4SoAnFht7qxtPctBo8Oxz2URmFNmVimEHgTi8Id68MPho9Cf82qfmE=
+	t=1736770886; cv=none; b=qDVRrnLv4rak+lhEbQJ9PuE8dzPOuGNV8Uu+MmJJqKLci0zd/Fi5igPljyh3kSR2AQFzMUMpDZNM7LaV9HEXpZpLaLX9rN3ULiaFnEV+OwCzejS7x3aFADCt/bWj0P2lOfFx+utSGwma1wIsQATUXsKat0epI09b73h6reY7kfM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1736770880; c=relaxed/simple;
-	bh=i/VXOKlHN24K3aT7JmFKe3KAjVKXXypwpIPRo0RnR1Q=;
+	s=arc-20240116; t=1736770886; c=relaxed/simple;
+	bh=zekOdi6n3VYMxHGrckuhAG8bsTJ3kkcv6UwM1qs/lgI=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=V6zj4DgcU+zUvGNYwv9PF1HASZ7FoTChLoCDfjvueZWeS8bQHNjvgX/XKZH5lzK+PoSJsySi2kRDDrlLw0GiWI+AgLJgrfQiDoD1aiJb2PWS+LdCaUxWPAHKR0d0KHaTzyKRNOTMHw74/zSL+nbvs3NCKrV3tzHfTMsunYtOkdc=
+	 MIME-Version:Content-Type; b=T/4xxALigUsBsk7kfsRPSeg0OPWduJd+KVE6OWKPH050W16rN0YLqn82Gfyr9ozahM+hT28QDkxoQ/iVtTfQ53c4ojrC9uzjC1LEme2jywGF4euppvs9QoJHGzDDzn4cOrFCSXz30mVgdotLgUjhV/G5eLSpEPtaZBpE9R7FpOA=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.190
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.163.44])
-	by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4YWrrB6LZBz2DjgD;
-	Mon, 13 Jan 2025 20:18:02 +0800 (CST)
+Received: from mail.maildlp.com (unknown [172.19.88.234])
+	by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4YWrs24b89z22l71;
+	Mon, 13 Jan 2025 20:18:46 +0800 (CST)
 Received: from kwepemh100008.china.huawei.com (unknown [7.202.181.93])
-	by mail.maildlp.com (Postfix) with ESMTPS id B573F1400CB;
-	Mon, 13 Jan 2025 20:21:10 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 265111401F4;
+	Mon, 13 Jan 2025 20:21:07 +0800 (CST)
 Received: from localhost.huawei.com (10.50.165.33) by
  kwepemh100008.china.huawei.com (7.202.181.93) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Mon, 13 Jan 2025 20:21:09 +0800
+ 15.2.1544.11; Mon, 13 Jan 2025 20:21:06 +0800
 From: Lifeng Zheng <zhenglifeng1@huawei.com>
 To: <rafael@kernel.org>, <lenb@kernel.org>, <robert.moore@intel.com>,
 	<viresh.kumar@linaro.org>, <mario.limonciello@amd.com>,
@@ -33,9 +33,9 @@ CC: <acpica-devel@lists.linux.dev>, <linux-acpi@vger.kernel.org>,
 	<linuxarm@huawei.com>, <jonathan.cameron@huawei.com>,
 	<zhanjie9@hisilicon.com>, <lihuisong@huawei.com>, <zhenglifeng1@huawei.com>,
 	<hepeng68@huawei.com>, <fanghao11@huawei.com>
-Subject: [PATCH v4 6/6] cpufreq: CPPC: Support for autonomous selection in cppc_cpufreq
-Date: Mon, 13 Jan 2025 20:21:04 +0800
-Message-ID: <20250113122104.3870673-7-zhenglifeng1@huawei.com>
+Subject: [PATCH v4 1/6] ACPI: CPPC: Add IS_OPTIONAL_CPC_REG macro
+Date: Mon, 13 Jan 2025 20:20:59 +0800
+Message-ID: <20250113122104.3870673-2-zhenglifeng1@huawei.com>
 X-Mailer: git-send-email 2.33.0
 In-Reply-To: <20250113122104.3870673-1-zhenglifeng1@huawei.com>
 References: <20250113122104.3870673-1-zhenglifeng1@huawei.com>
@@ -50,204 +50,30 @@ Content-Type: text/plain
 X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
  kwepemh100008.china.huawei.com (7.202.181.93)
 
-Add sysfs interfaces for CPPC autonomous selection in the cppc_cpufreq
-driver.
+Add IS_OPTIONAL_CPC_REG macro to judge if a cpc_reg is an optional one.
 
 Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
 ---
- .../ABI/testing/sysfs-devices-system-cpu      |  54 +++++++++
- drivers/cpufreq/cppc_cpufreq.c                | 109 ++++++++++++++++++
- 2 files changed, 163 insertions(+)
+ drivers/acpi/cppc_acpi.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-index 206079d3bd5b..3d87c3bb3fe2 100644
---- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-+++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -268,6 +268,60 @@ Description:	Discover CPUs in the same CPU frequency coordination domain
- 		This file is only present if the acpi-cpufreq or the cppc-cpufreq
- 		drivers are in use.
- 
-+What:		/sys/devices/system/cpu/cpuX/cpufreq/auto_select
-+Date:		October 2024
-+Contact:	linux-pm@vger.kernel.org
-+Description:	Autonomous selection enable
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index f193e713825a..6454b469338f 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -129,6 +129,12 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr);
+ #define CPC_SUPPORTED(cpc) ((cpc)->type == ACPI_TYPE_INTEGER ?		\
+ 				!!(cpc)->cpc_entry.int_value :		\
+ 				!IS_NULL_REG(&(cpc)->cpc_entry.reg))
 +
-+		Read/write interface to control autonomous selection enable
-+			Read returns autonomous selection status:
-+				0: autonomous selection is disabled
-+				1: autonomous selection is enabled
++/* These indicate optional of the per-cpu cpc_regs[]. */
++#define REG_OPTIONAL (0b111111100011111010000)
 +
-+			Write 'y' or '1' or 'on' to enable autonomous selection.
-+			Write 'n' or '0' or 'off' to disable autonomous selection.
++#define IS_OPTIONAL_CPC_REG(reg_idx) (REG_OPTIONAL & (1U << (reg_idx)))
 +
-+		This file only presents if the cppc-cpufreq driver is in use.
-+
-+What:		/sys/devices/system/cpu/cpuX/cpufreq/auto_act_window
-+Date:		October 2024
-+Contact:	linux-pm@vger.kernel.org
-+Description:	Autonomous activity window
-+
-+		This file indicates a moving utilization sensitivity window to
-+		the platform's autonomous selection policy.
-+
-+		Read/write an integer represents autonomous activity window (in
-+		microseconds) from/to this file. The max value to write is
-+		1270000000 but the max significand is 127. This means that if 128
-+		is written to this file, 127 will be stored. If the value is
-+		greater than 130, only the first two digits will be saved as
-+		significand.
-+
-+		Writing a zero value to this file enable the platform to
-+		determine an appropriate Activity Window depending on the workload.
-+
-+		Writing to this file only has meaning when Autonomous Selection is
-+		enabled.
-+
-+		This file only presents if the cppc-cpufreq driver is in use.
-+
-+What:		/sys/devices/system/cpu/cpuX/cpufreq/energy_perf
-+Date:		October 2024
-+Contact:	linux-pm@vger.kernel.org
-+Description:	Energy performance preference
-+
-+		Read/write an 8-bit integer from/to this file. This file
-+		represents a range of values from 0 (performance preference) to
-+		0xFF (energy efficiency preference) that influences the rate of
-+		performance increase/decrease and the result of the hardware's
-+		energy efficiency and performance optimization policies.
-+
-+		Writing to this file only has meaning when Autonomous Selection is
-+		enabled.
-+
-+		This file only presents if the cppc-cpufreq driver is in use.
-+
- 
- What:		/sys/devices/system/cpu/cpu*/cache/index3/cache_disable_{0,1}
- Date:		August 2008
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index bd8f75accfa0..ea6c6a5bbd8c 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -814,10 +814,119 @@ static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
- 
- 	return cpufreq_show_cpus(cpu_data->shared_cpu_map, buf);
- }
-+
-+static ssize_t show_auto_select(struct cpufreq_policy *policy, char *buf)
-+{
-+	bool val;
-+	int ret;
-+
-+	ret = cppc_get_auto_sel(policy->cpu, &val);
-+
-+	/* show "<unsupported>" when this register is not supported by cpc */
-+	if (ret == -EOPNOTSUPP)
-+		return sysfs_emit(buf, "%s\n", "<unsupported>");
-+
-+	if (ret)
-+		return ret;
-+
-+	return sysfs_emit(buf, "%d\n", val);
-+}
-+
-+static ssize_t store_auto_select(struct cpufreq_policy *policy,
-+				 const char *buf, size_t count)
-+{
-+	bool val;
-+	int ret;
-+
-+	ret = kstrtobool(buf, &val);
-+	if (ret)
-+		return ret;
-+
-+	ret = cppc_set_auto_sel(policy->cpu, val);
-+	if (ret)
-+		return ret;
-+
-+	return count;
-+}
-+
-+static ssize_t show_auto_act_window(struct cpufreq_policy *policy, char *buf)
-+{
-+	u64 val;
-+	int ret;
-+
-+	ret = cppc_get_auto_act_window(policy->cpu, &val);
-+
-+	/* show "<unsupported>" when this register is not supported by cpc */
-+	if (ret == -EOPNOTSUPP)
-+		return sysfs_emit(buf, "%s\n", "<unsupported>");
-+
-+	if (ret)
-+		return ret;
-+
-+	return sysfs_emit(buf, "%llu\n", val);
-+}
-+
-+static ssize_t store_auto_act_window(struct cpufreq_policy *policy,
-+				     const char *buf, size_t count)
-+{
-+	u64 usec;
-+	int ret;
-+
-+	ret = kstrtou64(buf, 0, &usec);
-+	if (ret)
-+		return ret;
-+
-+	ret = cppc_set_auto_act_window(policy->cpu, usec);
-+	if (ret)
-+		return ret;
-+
-+	return count;
-+}
-+
-+static ssize_t show_energy_perf(struct cpufreq_policy *policy, char *buf)
-+{
-+	u64 val;
-+	int ret;
-+
-+	ret = cppc_get_epp_perf(policy->cpu, &val);
-+
-+	/* show "<unsupported>" when this register is not supported by cpc */
-+	if (ret == -EOPNOTSUPP)
-+		return sysfs_emit(buf, "%s\n", "<unsupported>");
-+
-+	if (ret)
-+		return ret;
-+
-+	return sysfs_emit(buf, "%llu\n", val);
-+}
-+
-+static ssize_t store_energy_perf(struct cpufreq_policy *policy,
-+				 const char *buf, size_t count)
-+{
-+	u64 val;
-+	int ret;
-+
-+	ret = kstrtou64(buf, 0, &val);
-+	if (ret)
-+		return ret;
-+
-+	ret = cppc_set_epp(policy->cpu, val);
-+	if (ret)
-+		return ret;
-+
-+	return count;
-+}
-+
- cpufreq_freq_attr_ro(freqdomain_cpus);
-+cpufreq_freq_attr_rw(auto_select);
-+cpufreq_freq_attr_rw(auto_act_window);
-+cpufreq_freq_attr_rw(energy_perf);
- 
- static struct freq_attr *cppc_cpufreq_attr[] = {
- 	&freqdomain_cpus,
-+	&auto_select,
-+	&auto_act_window,
-+	&energy_perf,
- 	NULL,
- };
- 
+ /*
+  * Arbitrary Retries in case the remote processor is slow to respond
+  * to PCC commands. Keeping it high enough to cover emulators where
 -- 
 2.33.0
 
