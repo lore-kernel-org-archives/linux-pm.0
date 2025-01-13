@@ -1,16 +1,16 @@
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B088B20AF8A
-	for <linux-pm@vger.kernel.org>; Mon, 13 Jan 2025 16:39:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4267A2297EB
+	for <linux-pm@vger.kernel.org>; Mon, 13 Jan 2025 16:39:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1736786389; cv=none; b=HymB8psG2TRKazU+DL+yY0GX6vvLwh2BZyb0jKeBXBhtWm4Y7SX94HRFqO0CuLrHDsSX/yRO3vhn3uGlsO6jTXHHSDNKyOB7Y68W6LdO7hbQPSkP72Npb53h0bTtoNxeq3G6jcG1rDl99FX9BQH5rKI39vmT+lxS90r6U3j40s4=
+	t=1736786395; cv=none; b=iYsdje0FFXDDl942hm6waWf3tCUKU79pbFC3l9s8OLL2dzowJMJ7NE5pJdFHX33MvX6OcrmUf22EEvSfeGHcwoutJbOUgxMjD5Bh3H9lPdOXTnqDZfhVAOhtKP/Rz1KNh9nPKNcum7TXI2xo2mO91xmtrNCLFUug9/mmeEZCDHk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1736786389; c=relaxed/simple;
-	bh=bIet0sSt0htpcx1JHEcCUyCD45/LA4jWGaGLBnQOx88=;
+	s=arc-20240116; t=1736786395; c=relaxed/simple;
+	bh=6U0fZiLclU/GxSD10ZX+ZSNjxettFMd+QmRMQdJG1vs=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=aYc/gfybi2jenIxukukzKHk3VZNqLUitVSyJ72iRTKZBnUoeq2uM6zPcJOvFREqoz89ZOK3MPbBc4M8jZGipoP1VjLoLnKrNQLUAGy8N3/DKQR+8TSrgZOIjOMWmr5BPUJHcVh07Gp05gIFKr3oLwj3AC+a8i0FXYWVk6UDNb7Q=
+	 In-Reply-To:To:Cc; b=YVSGPT/z+n3yBdzMUzDjrOPHwPbsyCvv+W23GdAAMM2ogETGUAo/7E3kdySWAgZYz3gTa/ISKe0tO9Owm4QpmzSAlhcsi8rzP8leaI3dm2uwTEEnTDN7ZErQ+bLtciahqnvz8OnqzfHoBajbArHGeY1SYFd2k/5D+KTr5zknjCo=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
@@ -18,22 +18,22 @@ Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tXNTL-0001hJ-Ks; Mon, 13 Jan 2025 17:39:27 +0100
+	id 1tXNTL-0001hI-Ks; Mon, 13 Jan 2025 17:39:27 +0100
 Received: from dude05.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::54])
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.96)
 	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tXNTJ-000I5l-29;
+	id 1tXNTJ-000I5i-1m;
 	Mon, 13 Jan 2025 17:39:26 +0100
 Received: from localhost ([::1] helo=dude05.red.stw.pengutronix.de)
 	by dude05.red.stw.pengutronix.de with esmtp (Exim 4.96)
 	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tXNFq-007FQL-33;
+	id 1tXNFq-007FQL-35;
 	Mon, 13 Jan 2025 17:25:30 +0100
 From: Ahmad Fatoum <a.fatoum@pengutronix.de>
-Date: Mon, 13 Jan 2025 17:25:35 +0100
-Subject: [PATCH v2 10/12] dt-bindings: thermal: give OS some leeway in
- absence of critical-action
+Date: Mon, 13 Jan 2025 17:25:37 +0100
+Subject: [PATCH v2 12/12] reboot: retire hw_protection_reboot and
+ hw_protection_shutdown helpers
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -42,7 +42,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250113-hw_protection-reboot-v2-10-161d3fc734f0@pengutronix.de>
+Message-Id: <20250113-hw_protection-reboot-v2-12-161d3fc734f0@pengutronix.de>
 References: <20250113-hw_protection-reboot-v2-0-161d3fc734f0@pengutronix.de>
 In-Reply-To: <20250113-hw_protection-reboot-v2-0-161d3fc734f0@pengutronix.de>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -66,38 +66,54 @@ X-SA-Exim-Mail-From: a.fatoum@pengutronix.de
 X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
 X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-An operating system may allow its user to configure the action to be
-undertaken on critical overtemperature events.
+The hw_protection_reboot and hw_protection_shutdown functions mix
+mechanism with policy: They let the driver requesting an emergency
+action for hardware protection also decide how to deal with it.
 
-However, the bindings currently mandate an absence of the critical-action
-property to be equal to critical-action = "shutdown", which would mean
-any differing user configuration would violate the bindings.
+This is inadequate in the general case as a driver reporting e.g. an
+imminent power failure can't know whether a shutdown or a reboot would
+be more appropriate for a given hardware platform.
 
-Resolve this by documenting the absence of the property to mean that the
-OS gets to decide.
+With the addition of the hw_protection parameter, it's now possible to
+configure at runtime the default emergency action and drivers are
+expected to use hw_protection_trigger to have this parameter dictate
+policy.
 
-Acked-by: Rob Herring (Arm) <robh@kernel.org>
+As no current users of either hw_protection_shutdown or
+hw_protection_shutdown helpers remain, remove them, as not to tempt
+driver authors to call them.
+
+Existing users now either defer to hw_protection_trigger or call
+__hw_protection_trigger with a suitable argument directly when
+they have inside knowledge on whether a reboot or shutdown would
+be more appropriate.
+
 Signed-off-by: Ahmad Fatoum <a.fatoum@pengutronix.de>
 ---
- Documentation/devicetree/bindings/thermal/thermal-zones.yaml | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ include/linux/reboot.h | 10 ----------
+ 1 file changed, 10 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-index 0f435be1dbd8cfb4502be9d198ed6d51058f453b..0de0a9757ccc201ebbb0c8c8efb9f8da662f8e9c 100644
---- a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-+++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-@@ -82,9 +82,8 @@ patternProperties:
-         $ref: /schemas/types.yaml#/definitions/string
-         description: |
-           The action the OS should perform after the critical temperature is reached.
--          By default the system will shutdown as a safe action to prevent damage
--          to the hardware, if the property is not set.
--          The shutdown action should be always the default and preferred one.
-+          If the property is not set, it is up to the system to select the correct
-+          action. The recommended and preferred default is shutdown.
-           Choose 'reboot' with care, as the hardware may be in thermal stress,
-           thus leading to infinite reboots that may cause damage to the hardware.
-           Make sure the firmware/bootloader will act as the last resort and take
+diff --git a/include/linux/reboot.h b/include/linux/reboot.h
+index 79e02876f2ba2b5508f6f26567cbcd5cbe97a277..aa08c3bbbf59a9dec65d775d280902b1455427c2 100644
+--- a/include/linux/reboot.h
++++ b/include/linux/reboot.h
+@@ -211,16 +211,6 @@ static inline void hw_protection_trigger(const char *reason, int ms_until_forced
+ 	__hw_protection_trigger(reason, ms_until_forced, HWPROT_ACT_DEFAULT);
+ }
+ 
+-static inline void hw_protection_reboot(const char *reason, int ms_until_forced)
+-{
+-	__hw_protection_trigger(reason, ms_until_forced, HWPROT_ACT_REBOOT);
+-}
+-
+-static inline void hw_protection_shutdown(const char *reason, int ms_until_forced)
+-{
+-	__hw_protection_trigger(reason, ms_until_forced, HWPROT_ACT_SHUTDOWN);
+-}
+-
+ /*
+  * Emergency restart, callable from an interrupt handler.
+  */
 
 -- 
 2.39.5
