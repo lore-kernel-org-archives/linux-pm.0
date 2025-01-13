@@ -1,121 +1,103 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-il1-f170.google.com (mail-il1-f170.google.com [209.85.166.170])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FAE5233524
-	for <linux-pm@vger.kernel.org>; Mon, 13 Jan 2025 16:26:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C30033A8D0
+	for <linux-pm@vger.kernel.org>; Mon, 13 Jan 2025 16:36:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.170
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1736785583; cv=none; b=iLQiW2pIw2viGiKzV69mpI0YcXwV8gat929p77YkopZsLySXCkcNNYfuhVoVboPrRdu2IzENEfbhvTlTJZm17jncT6EJtyC13QkIH637SEu8oJIBtV46cotoFnQrA2vu0qIX5OFeoaQnuERwsauCEBG6CWdGPOFa108uH8JfB3o=
+	t=1736786197; cv=none; b=mPmy/RP5zvgSSk2oOkiwT4SMBT1MnhI3ubqlMq2sS4yDVgTgfSOTTgwA5qL0qAFc5uUu5l4PH62hsrKMNvH8YKFUNEM01YFjj4ZN+J5bcWZMadT4C8arBM1aTTAjkSCdHAtHwfVnG3aWc8S+C57iFAogblHAcrHM/oi+TWf2r+A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1736785583; c=relaxed/simple;
-	bh=PGN16QmMe1LWFrGJXR91wUJh6Nw6XmzM1zRMS3Litmo=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=EDfMkRyZy8dzc5dyzxGeORus863x2R+JtK7w0Ap7Ikqbpl7mR9huG/IDeX+ZLwt5Xd7POix8NMMHVhf2gh5TQNVaTroO/QND1LwSIVmw6+sKvW/3gpDeYLGfA5D4RWn/GzMZlm8TgOXDhScpCDiGKT8FKFu2IONTns/lz5OlRDU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tXNFs-0000JL-8A; Mon, 13 Jan 2025 17:25:32 +0100
-Received: from dude05.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::54])
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tXNFp-000HzH-2q;
-	Mon, 13 Jan 2025 17:25:30 +0100
-Received: from localhost ([::1] helo=dude05.red.stw.pengutronix.de)
-	by dude05.red.stw.pengutronix.de with esmtp (Exim 4.96)
-	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tXNFq-007FQL-2w;
-	Mon, 13 Jan 2025 17:25:30 +0100
-From: Ahmad Fatoum <a.fatoum@pengutronix.de>
-Date: Mon, 13 Jan 2025 17:25:28 +0100
-Subject: [PATCH v2 03/12] docs: thermal: sync hardware protection doc with
- code
+	s=arc-20240116; t=1736786197; c=relaxed/simple;
+	bh=q9UKaurFTuhBnPZFCnQBR+mLk9QnRFoXkoVcvbEpr8o=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=LUzT7WUT4ioXvWJGcpVJYNPkqfqWIWAyAuPq6pQ/LYhorhAyECoj7EzLHAMiciqB2Bc7U9BpjldqnRbSXz406MsnPAIh5PJigQcmsEUo7xKE7sHtoXR215xw/Pzo1JMzsbMHanqEUd8MKjd49rbu6VCRp5V5muRI10zj77rKOFw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=DCmcKgVB; arc=none smtp.client-ip=209.85.166.170
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="DCmcKgVB"
+Received: by mail-il1-f170.google.com with SMTP id e9e14a558f8ab-3cdd57060acso14492595ab.0
+        for <linux-pm@vger.kernel.org>; Mon, 13 Jan 2025 08:36:35 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linuxfoundation.org; s=google; t=1736786195; x=1737390995; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=9fDlN2wR9lbXaBkAAjT1/4Mke1eVB5abZ4PdWHu4Z+8=;
+        b=DCmcKgVB/M6c8ipWhR0rlS5bkgoXmmp8JwIVE/mviVr0CFMYy83kLI8eHHe/u1dC1Y
+         W1+uygWnhgUVWVfZARWRnwUnZ5hgmfnSVzszAY0sUoyter8O5VUM0xVl+r4H5tS2/8UB
+         dHSII6zDcnhXBDBes6sTtgKz2YHHoRyoAYj5I=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1736786195; x=1737390995;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=9fDlN2wR9lbXaBkAAjT1/4Mke1eVB5abZ4PdWHu4Z+8=;
+        b=sUT3kUw6uygkCuvxyCHHXeHOgSKoc8/aneQhS8ntxXwbmRT7YNTxynTYiTW2uyasDE
+         +F5Kou1vxCAVZc4jlov7wgbQr5CYDN5qz8NKK4elfSYANbruIf7YF18hWuqmo1oA6EBF
+         qOHYfuYCohB8Aun/JILc/3DeQU+8rEaCCpZNlMI2tqZaOU27THEIySuSWOXvijCbNe2b
+         t5jfPism/2fVCQrzBEfpXR4zyhb1lTACVrDYKG7HaXPJxuj0ikt2LicaKH4zkjYVAsHS
+         evkdahDr3IJb7CcAT6KiuQzVJZrOtEpMJRG9SngR/xptTnjPmeQFyfy4fhQ5+GmrqKnm
+         TPRA==
+X-Gm-Message-State: AOJu0Ywx/LNElrWyLcTHwlbzmPOtty9PFh8sF5G0fpHpdjeYm0zeb89p
+	Zx+dzMYN+nhS3tq/HU7RpnLB555U9d4n/uqWsljwoMgbMAXGeCXncH/LJqTwaUY=
+X-Gm-Gg: ASbGncs+dmooi7Ia/O9iQYNnsP+67vgRfFdGCL2smayjRpYO2gJLAnTy+2hyH/wAtvk
+	/xRG/5iknbpf28onvFVSMM0l+6FNKL+kGNvQjMdXMgFsMeK2DXMVCG+sBzmEmdcwaIpYgCZfcJS
+	+WZWmdd8Oo9ALkjq2GY6icDB45S6gIYbRzQ5v1KYjsD6xOmvO4THTtA9WsZr6Yzw4JnJBCDAT0s
+	h6w10+F6eH+d+dREW+kvAeom5upKba69doVv6wgnDi0N0SzUmvIpf3qjWDQsE2aGII=
+X-Google-Smtp-Source: AGHT+IFsrZ22e17zJUtqpJryrtg55/98d5DNr3yDC4VfBtu8H6dbeQCPQ1bPQxqND1qK7H844dmM0g==
+X-Received: by 2002:a05:6e02:3dc1:b0:3ce:7852:129b with SMTP id e9e14a558f8ab-3ce785213f1mr12313055ab.20.1736786194798;
+        Mon, 13 Jan 2025 08:36:34 -0800 (PST)
+Received: from [192.168.1.14] ([38.175.170.29])
+        by smtp.gmail.com with ESMTPSA id e9e14a558f8ab-3ce4ad93a6bsm27396715ab.16.2025.01.13.08.36.33
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 13 Jan 2025 08:36:34 -0800 (PST)
+Message-ID: <4f4ad06c-b2e4-4e3b-8ec9-85cb81e61ae0@linuxfoundation.org>
+Date: Mon, 13 Jan 2025 09:36:33 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] pm: cpupower: Add missing residency header changes in
+ cpuidle.h to SWIG
+To: "John B. Wyatt IV" <jwyatt@redhat.com>, Thomas Renninger <trenn@suse.com>
+Cc: linux-pm@vger.kernel.org, Aboorva Devarajan <aboorvad@linux.ibm.com>,
+ Shuah Khan <shuah@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ linux-kernel@vger.kernel.org, John Kacur <jkacur@redhat.com>,
+ "John B. Wyatt IV" <sageofredondo@gmail.com>,
+ Shuah Khan <skhan@linuxfoundation.org>
+References: <20250108221852.30771-1-jwyatt@redhat.com>
+ <Z4UdWpRie1ZsJ4tk@thinkpad2024>
+Content-Language: en-US
+From: Shuah Khan <skhan@linuxfoundation.org>
+In-Reply-To: <Z4UdWpRie1ZsJ4tk@thinkpad2024>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250113-hw_protection-reboot-v2-3-161d3fc734f0@pengutronix.de>
-References: <20250113-hw_protection-reboot-v2-0-161d3fc734f0@pengutronix.de>
-In-Reply-To: <20250113-hw_protection-reboot-v2-0-161d3fc734f0@pengutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, 
- Fabio Estevam <festevam@denx.de>, "Rafael J. Wysocki" <rafael@kernel.org>, 
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
- Jonathan Corbet <corbet@lwn.net>, Serge Hallyn <serge@hallyn.com>, 
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
- Matti Vaittinen <mazziesaccount@gmail.com>, 
- Benson Leung <bleung@chromium.org>, Tzung-Bi Shih <tzungbi@kernel.org>, 
- Guenter Roeck <groeck@chromium.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-doc@vger.kernel.org, linux-security-module@vger.kernel.org, 
- chrome-platform@lists.linux.dev, devicetree@vger.kernel.org, 
- kernel@pengutronix.de, Ahmad Fatoum <a.fatoum@pengutronix.de>
-X-Mailer: b4 0.14.2
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: a.fatoum@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-Originally, the thermal framework's only hardware protection action was
-to trigger a shutdown. This has been changed a little over a year ago to
-also support rebooting as alternative hardware protection action.
+On 1/13/25 07:04, John B. Wyatt IV wrote:
+> Hello Shuah,
+> 
+> Did you have a chance to look at this? This is the second header change
+> that was missing from the bindings.
+> 
+> On Wed, Jan 08, 2025 at 05:18:44PM -0500, John B. Wyatt IV wrote:
+>> "tools/cpupower: display residency value in idle-info" added a new
+>> function to cpuidle.h. This patch adds them to the bindings.
+>>
+>> Link: https://lore.kernel.org/linux-pm/20240809083728.266697-1-aboorvad@linux.ibm.com/
+>>
+>> Tested by compiling both libcpupower and the headers; running the test
+>> script that does not use the functions as a basic sanity test.
+>>
+>> Signed-off-by: "John B. Wyatt IV" <jwyatt@redhat.com>
+>> Signed-off-by: "John B. Wyatt IV" <sageofredondo@gmail.com>
+>> ---
 
-Update the documentation to reflect this.
+Yes I did. Looks good to me. I am waiting for Rafael to pull my PR
+to apply the patch.
 
-Fixes: 62e79e38b257 ("thermal/thermal_of: Allow rebooting after critical temp")
-Signed-off-by: Ahmad Fatoum <a.fatoum@pengutronix.de>
----
- Documentation/driver-api/thermal/sysfs-api.rst | 25 ++++++++++++++-----------
- 1 file changed, 14 insertions(+), 11 deletions(-)
-
-diff --git a/Documentation/driver-api/thermal/sysfs-api.rst b/Documentation/driver-api/thermal/sysfs-api.rst
-index c803b89b7248f9f26ac24608b0144db5e9c2ddb4..6b481364457b8ec56302e80bb443291c2b4a94d5 100644
---- a/Documentation/driver-api/thermal/sysfs-api.rst
-+++ b/Documentation/driver-api/thermal/sysfs-api.rst
-@@ -413,18 +413,21 @@ This function serves as an arbitrator to set the state of a cooling
- device. It sets the cooling device to the deepest cooling state if
- possible.
- 
--5. thermal_emergency_poweroff
--=============================
-+5. Critical Events
-+==================
- 
--On an event of critical trip temperature crossing the thermal framework
--shuts down the system by calling hw_protection_shutdown(). The
--hw_protection_shutdown() first attempts to perform an orderly shutdown
--but accepts a delay after which it proceeds doing a forced power-off
--or as last resort an emergency_restart.
-+On an event of critical trip temperature crossing, the thermal framework
-+will trigger a hardware protection power-off (shutdown) or reboot,
-+depending on configuration.
-+
-+At first, the kernel will attempt an orderly power-off or reboot, but
-+accepts a delay after which it proceeds to do a forced power-off or
-+reboot, respectively. If this fails, ``emergency restart()`` is invoked
-+as last resort.
- 
- The delay should be carefully profiled so as to give adequate time for
--orderly poweroff.
-+orderly power-off or reboot.
- 
--If the delay is set to 0 emergency poweroff will not be supported. So a
--carefully profiled non-zero positive value is a must for emergency
--poweroff to be triggered.
-+If the delay is set to 0, the emergency action will not be supported. So a
-+carefully profiled non-zero positive value is a must for the emergency
-+action to be triggered.
-
--- 
-2.39.5
-
+thanks,
+-- Shuah
