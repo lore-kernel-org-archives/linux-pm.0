@@ -1,66 +1,87 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from relay.smtp-ext.broadcom.com (relay.smtp-ext.broadcom.com [192.19.144.207])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2054822FAD4;
-	Thu, 16 Jan 2025 19:32:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC27D14AD2B;
+	Thu, 16 Jan 2025 19:44:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.19.144.207
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1737055934; cv=none; b=a8EL8lk3zlf77ZzixMKMccUJDuO3U8lia9YUv2lFwPnqr/mtixB9Tm+w9glUDFMTX8NZ6O//lZwMGyoPYLLstuOez+baJe5dseSWNMmp5qs63UWL7/OTjc1kZ+lZIss/QAHaN8UqOuk4+uglGuk7MSsWzVXFeQwU0K6TqCQ89Ko=
+	t=1737056698; cv=none; b=VFq+TRJLJG6Y5YBaUY4gtakT2UiOTOnigGlvWsmOPQp8BEs21t/JZcelPmrPutISIRr6FewrKnIZRaD9r4uG6hs0j7oFRsd5h/9o8aHyS9j+lrM4mkskNVnYx6oCCS0Wjcd3Q/+epMZGVHTzChLQnXT0rC521fMC0hcJoDZdtB0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1737055934; c=relaxed/simple;
-	bh=Ww4vYJMoMXRciDk/dWUyiWfFFfvamQZfovoQ24UEu+s=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=eGaGXafC2aKeCBklb/57AH5dGI9ARfoyElTfCoqt0Ur9vDhMtHh+vshhusQgVaAiDcpUbG8wfQS8bqhCTUXiiCBmC5XWvD/Yp3ok31VSDica9/oGoVzlktNjJGFtmpHgDjvXcrNylbF/hPHpCmMN1MkcDOE16dX/Vf2gSWIMH4E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=nZSlPKU7; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1737056698; c=relaxed/simple;
+	bh=kn6/zBHCGJlt3wXOC8g6H3w523YCtAh1W1ztNmBm9Hs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=sB3EXudOZuBnwv6oV4Dx5yFq0vwxEp6HB/u9luQ0vCHAIlVLdqAzEo/Qr86ZHpO4II5ekjWVTJxQ/MQoelAMKyuXwMjD8rbJHTXRTzADzjXSFV9WqEaqhADEZ8GaStlQBjdPxBxSdNlqdwq5lgRAO8Grv39IK2VyA4R2n5gk6bs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com; spf=fail smtp.mailfrom=broadcom.com; dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b=MShopdcz; arc=none smtp.client-ip=192.19.144.207
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=broadcom.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="nZSlPKU7"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
- id 6aebaa1f6855e023; Thu, 16 Jan 2025 20:32:10 +0100
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="MShopdcz"
+Received: from mail-lvn-it-01.lvn.broadcom.net (mail-lvn-it-01.lvn.broadcom.net [10.36.132.253])
+	by relay.smtp-ext.broadcom.com (Postfix) with ESMTP id 2F909C002825;
+	Thu, 16 Jan 2025 11:44:50 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 relay.smtp-ext.broadcom.com 2F909C002825
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=broadcom.com;
+	s=dkimrelay; t=1737056690;
+	bh=kn6/zBHCGJlt3wXOC8g6H3w523YCtAh1W1ztNmBm9Hs=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=MShopdcz8biVW8zFqwZe0qtX6eNczDdICj2aaD4fXFOoD4/uVywuGvb0jUf7f51RQ
+	 C06deVf6pb9fiYdfsqMcwLa5o8x/3sEuJmJusmOyBDqs8vzUCLn4yvF5Cvt+aknL96
+	 /6sSIciEhRAuZ73J5eASsOSdKNqDOfchjdb79sPk=
+Received: from fainelli-desktop.igp.broadcom.net (fainelli-desktop.dhcp.broadcom.net [10.67.48.245])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 61B288E0B61;
-	Thu, 16 Jan 2025 20:32:09 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1737055929;
-	bh=Ww4vYJMoMXRciDk/dWUyiWfFFfvamQZfovoQ24UEu+s=;
-	h=From:Subject:Date;
-	b=nZSlPKU7/5DGWmgU7lkhXBz1f9zjE4K+pCI/26+j1jR+1C8ZcOJRgzrm0SGsmw6H7
-	 czN6gibmnkY505x2CywSXBYZYV9FZFVmY9AJ9jOBK+ynFd+MdiKiDHhhZaqrRNnvcD
-	 Rvitc0ZUi/UdfPPXP6LGIngp/xL4WLFpjC6akrfcvE7es+2IP2kH0XRZ1TLIQIKqLX
-	 OBNyYsFhsMgIkxbTqEd1Wjc+8huqStWl5R2Q5lmoFsF0c+JquBON3TtqSKhVuRaC+I
-	 1dBD6pprzYifXzZFr1Sz5S4t92S8Bi0IQoIhqRzXf7TMlhIQu4hnqZb1vNRO8wvnZO
-	 OARGSWAMH7jzg==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>, Lukasz Luba <lukasz.luba@arm.com>
-Subject: [PATCH v1 0/3] thermal: core: Cosmetic updates
-Date: Thu, 16 Jan 2025 20:29:39 +0100
-Message-ID: <2772026.mvXUDI8C0e@rjwysocki.net>
+	by mail-lvn-it-01.lvn.broadcom.net (Postfix) with ESMTPSA id B0C0218041CACA;
+	Thu, 16 Jan 2025 11:44:49 -0800 (PST)
+From: Florian Fainelli <florian.fainelli@broadcom.com>
+To: linux-kernel@vger.kernel.org
+Cc: Florian Fainelli <florian.fainelli@broadcom.com>,
+	Markus Mayer <mmayer@broadcom.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	linux-pm@vger.kernel.org (open list:BROADCOM STB AVS TMON DRIVER),
+	devicetree@vger.kernel.org (open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS),
+	linux-arm-kernel@lists.infradead.org (moderated list:BROADCOM BCM7XXX ARM ARCHITECTURE)
+Subject: [PATCH 1/2] dt-bindings: thermal: Update for BCM74110
+Date: Thu, 16 Jan 2025 11:38:41 -0800
+Message-ID: <20250116193842.758788-2-florian.fainelli@broadcom.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250116193842.758788-1-florian.fainelli@broadcom.com>
+References: <20250116193842.758788-1-florian.fainelli@broadcom.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefuddrudeiuddguddvfecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeffffffkefgheehffelteeiveeffeevhfelteejvddvieejjeelvdeiheeuveeuffenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeegpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
+Content-Transfer-Encoding: 8bit
 
-Hi Everyone,
+Update the binding with the BCM74110 compatible string which denotes the
+first device we need to support in a different process node requiring an
+updated thermal equation.
 
-The patches in this series just rename a few things in the thermal
-subsystem and relocate a comment.
+Signed-off-by: Florian Fainelli <florian.fainelli@broadcom.com>
+---
+ Documentation/devicetree/bindings/thermal/brcm,avs-tmon.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-Thanks!
-
-
+diff --git a/Documentation/devicetree/bindings/thermal/brcm,avs-tmon.yaml b/Documentation/devicetree/bindings/thermal/brcm,avs-tmon.yaml
+index 081486b44382..2f62551a49c1 100644
+--- a/Documentation/devicetree/bindings/thermal/brcm,avs-tmon.yaml
++++ b/Documentation/devicetree/bindings/thermal/brcm,avs-tmon.yaml
+@@ -18,6 +18,7 @@ properties:
+   compatible:
+     items:
+       - enum:
++          - brcm,avs-tmon-bcm74110
+           - brcm,avs-tmon-bcm7216
+           - brcm,avs-tmon-bcm7445
+       - const: brcm,avs-tmon
+-- 
+2.43.0
 
