@@ -1,31 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7FB51A83F1;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7F5233062;
 	Fri, 17 Jan 2025 21:35:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1737149757; cv=none; b=GknPCjkKOPl3Lxi5M34hNqexCJker8lBuoB7FewtUxTfKAuTKnvEhoRSaF4msD72vubX3nzfj1/lfbALtj9JDNUZLyy43AELlrwSk9/pM8PIg/lYNHaBWE4zaa5gcFtx8q3Cm2Jt5EXyvCN2ywu4f9cp3X+rmdqhBwq3zb/RrPs=
+	t=1737149757; cv=none; b=SfIBspheEweRbLtezrIy3xuqYZn5jOQG1rpeLC+PDDnrimpaEb6Q9nFA094hxckysO3NDLvPFwyATOIsYqGrA9oQVKihq8pnoylN9aZdnwpWefvvIr+CZHYaj4Mu4JmGycngJ1TBoRy1yld35tY3W8xgEvQ0eacXoyNNVcK0+2U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1737149757; c=relaxed/simple;
-	bh=c9R98bXyfUKgtuuqyFHG0av5YwJk/tL3jLpoP+4EnII=;
+	bh=5fElWjWZ7auM89capPbOgVvKPOoNRprjv3AKsfzBjrY=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=n2ZPpmscPfPIHpaSplpsArnkrwGf6uTIwCeiGtKS5N5LmR080/hu33v+kZBgWC/xYw/zKihTELyUhu3W4alRHeuRyVt8n4k/YsyZY7zZalJLS9rJGepuhQ0ppRyyz8Q51I60LXT2o5bgtuxoSba8/8gShIHdZTvXzeZV9wLAzwE=
+	 MIME-Version:Content-Type; b=BLBtmd1jouRzYC8C3DFSw5cstueiW2Qks7FjsmHacIMoBg53UwTQj1Qr62rS+eqlbUxfBy1roLSltSPXGPT1zhdi7STdIOAJ7edHx/ttZBGVPdsFnJ0fdxI8z1YIXR0jXJsspo02Btyy2nMSH9Jl5jYdF3rE8NQwbKDXQlNF2U0=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 331FCC4CEDD;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3655AC4CEE2;
 	Fri, 17 Jan 2025 21:35:57 +0000 (UTC)
 Received: by mercury (Postfix, from userid 1000)
-	id 864C51060350; Fri, 17 Jan 2025 22:35:54 +0100 (CET)
+	id 8C07E1060351; Fri, 17 Jan 2025 22:35:54 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
 To: Sebastian Reichel <sre@kernel.org>, 
- Kim Seer Paller <kimseer.paller@analog.com>
+ Dimitri Fedrau <dimitri.fedrau@liebherr.com>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Nuno Sa <nuno.sa@analog.com>
-In-Reply-To: <20250117024307.4119-1-kimseer.paller@analog.com>
-References: <20250117024307.4119-1-kimseer.paller@analog.com>
-Subject: Re: [PATCH v2] power: supply: ltc4162l: Use GENMASK macro in
- bitmask operation
-Message-Id: <173714975449.629224.3927234471683738424.b4-ty@collabora.com>
+ Dimitri Fedrau <dima.fedrau@gmail.com>, 
+ Thomas Antoine <t.antoine@uclouvain.be>
+In-Reply-To: <20250116-max1720x-temperature-v2-1-9638969d091a@liebherr.com>
+References: <20250116-max1720x-temperature-v2-1-9638969d091a@liebherr.com>
+Subject: Re: [PATCH v2] power: supply: max1720x: add support for reading
+ internal and thermistor temperatures
+Message-Id: <173714975455.629224.11887621606904491190.b4-ty@collabora.com>
 Date: Fri, 17 Jan 2025 22:35:54 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -38,16 +39,18 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.2
 
 
-On Fri, 17 Jan 2025 10:43:07 +0800, Kim Seer Paller wrote:
-> Replace the bitmask operation BIT(6) - 1 with GENMASK(5, 0) to make the
-> code clearer and readable.
+On Thu, 16 Jan 2025 09:04:29 +0100, Dimitri Fedrau wrote:
+> If enabled in the nPackCfg register, the Temp1, Temp2 and IntTemp registers
+> contain the temperature readings from the AIN1 thermistor, AIN2 thermistor
+> and internal die temperature respectively. Registers are shared between SBS
+> and normal IC functions and are always readable regardless of IC settings.
 > 
 > 
 
 Applied, thanks!
 
-[1/1] power: supply: ltc4162l: Use GENMASK macro in bitmask operation
-      commit: 92c71aa1a8942057e228c09d37f8513abbab5fea
+[1/1] power: supply: max1720x: add support for reading internal and thermistor temperatures
+      commit: b4a95b8fd3e67c1222c76bdd1078d43c9a11d132
 
 Best regards,
 -- 
