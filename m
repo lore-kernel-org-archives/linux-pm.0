@@ -1,38 +1,38 @@
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C90381FCD11;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8B541FCD1B;
 	Fri, 17 Jan 2025 10:15:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.188
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.190
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1737108909; cv=none; b=mHVLzn0FhBhULJuqCdOBYDqMZHVOH65aWlhTQjMRROkABFaZuajMJM18xz84G0dB+2s4CPgeQQ3yEdu8JkRSO7F0Df//Yedt0m2LdRRvV0drWBF4rJ1TNn7GlZLznVFlGEP7eYpgR2Ml3SVq8InWR4p4thonC02PIXW7E+xqAbc=
+	t=1737108909; cv=none; b=BsnQ64qgO0Y5rMEKCwYtqZT1CJVH3NTwr8zIkK9FgEClJfvoXAyB1alUD0r0YflYd2v4PGH+9BZ68dCaSEZuKTHCJiPDMsHJ8X6E6EA8Hefk4fmNnhDhr5d5HYSvy4rIpbTGkxVxMfojC7OHNaPbfy4u7Ez0JRDUTEKzsDgRs84=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1737108909; c=relaxed/simple;
-	bh=e3Gcz27LdmiI7DW4QRsg50MJZkXwaZaZET+S8ToWnm0=;
+	bh=cBALt8JHgJ3WAS/hFV28rhLE2UQ5Yup636KAW6SWzGA=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=biSH25skAt0ik8xNN/eGYYhRhL65xcpcJ+k4XsqdHdmLb4Wjrnup1j+i3aotvwb9/Lp6o9kluouKEC4hWXCHvzEpW2nq1WgX90DW48U3oh2rcyPY55PVLs/ti5XFTzpm7kCZOw27FMnw7+hH9y/VbUQmDf9KX4yi3c/d3t08gTE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.188
+	 MIME-Version:Content-Type; b=jhov8S5WpCKfJQZzkVLvYKPJV8MVitQ3QpPaVhSSmbbkkWHvAgkfVITYJiHfft7SZM18zRaryRpO5mevnuEiuBGvz7Oh1rG57fUkiMlLdt09ljTSIreCQAEKwZd6DpdE8b2HvgG+lyzJtczyPmo/0uyWSrWrjm07i2zL4kJ73ZY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.190
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.163.174])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4YZFtR56tczrRhc;
-	Fri, 17 Jan 2025 18:13:19 +0800 (CST)
+Received: from mail.maildlp.com (unknown [172.19.88.163])
+	by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4YZFrg3wKDz2DkXS;
+	Fri, 17 Jan 2025 18:11:47 +0800 (CST)
 Received: from kwepemh100008.china.huawei.com (unknown [7.202.181.93])
-	by mail.maildlp.com (Postfix) with ESMTPS id 87082140257;
-	Fri, 17 Jan 2025 18:14:59 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 5FE2F180214;
+	Fri, 17 Jan 2025 18:15:00 +0800 (CST)
 Received: from localhost.huawei.com (10.50.165.33) by
  kwepemh100008.china.huawei.com (7.202.181.93) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Fri, 17 Jan 2025 18:14:58 +0800
+ 15.2.1544.11; Fri, 17 Jan 2025 18:14:59 +0800
 From: Lifeng Zheng <zhenglifeng1@huawei.com>
 To: <rafael@kernel.org>, <viresh.kumar@linaro.org>
 CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
 	<linuxarm@huawei.com>, <jonathan.cameron@huawei.com>,
 	<zhanjie9@hisilicon.com>, <lihuisong@huawei.com>, <zhenglifeng1@huawei.com>,
 	<fanghao11@huawei.com>
-Subject: [PATCH v2 2/4] cpufreq: Introduce a more generic way to set default per-policy boost flag
-Date: Fri, 17 Jan 2025 18:14:55 +0800
-Message-ID: <20250117101457.1530653-3-zhenglifeng1@huawei.com>
+Subject: [PATCH v2 4/4] cpufreq: ACPI: Remove set_boost in acpi_cpufreq_cpu_init()
+Date: Fri, 17 Jan 2025 18:14:57 +0800
+Message-ID: <20250117101457.1530653-5-zhenglifeng1@huawei.com>
 X-Mailer: git-send-email 2.33.0
 In-Reply-To: <20250117101457.1530653-1-zhenglifeng1@huawei.com>
 References: <20250117101457.1530653-1-zhenglifeng1@huawei.com>
@@ -47,62 +47,31 @@ Content-Type: text/plain
 X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
  kwepemh100008.china.huawei.com (7.202.181.93)
 
-In cpufreq_online() of cpufreq.c, the per-policy boost flag is already set
-to mirror the cpufreq_driver boost during init but using freq_table to
-judge if the policy has boost frequency. There are two drawbacks to this
-approach:
-
-1. It doesn't work for the cpufreq drivers that do not use a frequency
-table. For now, acpi-cpufreq and amd-pstate have to enable boost in policy
-initialization. And cppc_cpufreq never set policy to boost when going
-online no matter what the cpufreq_driver boost flag is.
-
-2. If the cpu goes offline when cpufreq_driver boost enabled and then goes
-online when cpufreq_driver boost disabled, the per-policy boost flag will
-unreasonably remain true.
-
-Running set_boost at the end of the online process is a more generic way
-for all cpufreq drivers.
+At the end of cpufreq_online() in cpufreq.c, set_boost is executed and the
+per-policy boost flag is set to mirror the cpufreq_driver boost. So it is
+not necessary to run set_boost in acpi_cpufreq_cpu_init().
 
 Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
 ---
- drivers/cpufreq/cpufreq.c | 16 ++++++++++++----
- 1 file changed, 12 insertions(+), 4 deletions(-)
+ drivers/cpufreq/acpi-cpufreq.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 5882d7f5e3c1..5a3566c2eb8d 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1409,10 +1409,6 @@ static int cpufreq_online(unsigned int cpu)
- 			goto out_free_policy;
- 		}
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index c9ebacf5c88e..f4b5e455f173 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -891,11 +891,6 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	if (perf->states[0].core_frequency * 1000 != freq_table[0].frequency)
+ 		pr_warn(FW_WARN "P-state 0 is not max freq\n");
  
--		/* Let the per-policy boost flag mirror the cpufreq_driver boost during init */
--		if (cpufreq_boost_enabled() && policy_has_boost_freq(policy))
--			policy->boost_enabled = true;
+-	if (acpi_cpufreq_driver.set_boost) {
+-		set_boost(policy, acpi_cpufreq_driver.boost_enabled);
+-		policy->boost_enabled = acpi_cpufreq_driver.boost_enabled;
+-	}
 -
- 		/*
- 		 * The initialization has succeeded and the policy is online.
- 		 * If there is a problem with its frequency table, take it
-@@ -1573,6 +1569,18 @@ static int cpufreq_online(unsigned int cpu)
- 	if (new_policy && cpufreq_thermal_control_enabled(cpufreq_driver))
- 		policy->cdev = of_cpufreq_cooling_register(policy);
+ 	return result;
  
-+	/* Let the per-policy boost flag mirror the cpufreq_driver boost during init */
-+	if (policy->boost_enabled != cpufreq_boost_enabled()) {
-+		policy->boost_enabled = cpufreq_boost_enabled();
-+		ret = cpufreq_driver->set_boost(policy, policy->boost_enabled);
-+		if (ret) {
-+			/* If the set_boost fails, the online operation is not affected */
-+			pr_info("%s: CPU%d: Cannot %s BOOST\n", __func__, policy->cpu,
-+				policy->boost_enabled ? "enable" : "disable");
-+			policy->boost_enabled = !policy->boost_enabled;
-+		}
-+	}
-+
- 	pr_debug("initialization complete\n");
- 
- 	return 0;
+ err_unreg:
 -- 
 2.33.0
 
