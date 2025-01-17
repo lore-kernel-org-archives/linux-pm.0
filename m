@@ -1,58 +1,63 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7F5233062;
-	Fri, 17 Jan 2025 21:35:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A8561DED68;
+	Fri, 17 Jan 2025 23:45:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1737149757; cv=none; b=SfIBspheEweRbLtezrIy3xuqYZn5jOQG1rpeLC+PDDnrimpaEb6Q9nFA094hxckysO3NDLvPFwyATOIsYqGrA9oQVKihq8pnoylN9aZdnwpWefvvIr+CZHYaj4Mu4JmGycngJ1TBoRy1yld35tY3W8xgEvQ0eacXoyNNVcK0+2U=
+	t=1737157516; cv=none; b=mY6l/P786mGZ/WvrblFRxlMrw1hjzg3Y5t6ORTcRyB06T2/nqvDYMXCakJu+IIdv4Z+joi+jR1tCSvCZBDRagMQ8W/35cOO8pfD8VFCivn/+9WLp3u2SRlg8Le0jmkB1tTczbnIJq0syL79rZgHSldd37k/B+SSbbDsabx+SMXg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1737149757; c=relaxed/simple;
-	bh=5fElWjWZ7auM89capPbOgVvKPOoNRprjv3AKsfzBjrY=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=BLBtmd1jouRzYC8C3DFSw5cstueiW2Qks7FjsmHacIMoBg53UwTQj1Qr62rS+eqlbUxfBy1roLSltSPXGPT1zhdi7STdIOAJ7edHx/ttZBGVPdsFnJ0fdxI8z1YIXR0jXJsspo02Btyy2nMSH9Jl5jYdF3rE8NQwbKDXQlNF2U0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3655AC4CEE2;
-	Fri, 17 Jan 2025 21:35:57 +0000 (UTC)
-Received: by mercury (Postfix, from userid 1000)
-	id 8C07E1060351; Fri, 17 Jan 2025 22:35:54 +0100 (CET)
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, 
- Dimitri Fedrau <dimitri.fedrau@liebherr.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Dimitri Fedrau <dima.fedrau@gmail.com>, 
- Thomas Antoine <t.antoine@uclouvain.be>
-In-Reply-To: <20250116-max1720x-temperature-v2-1-9638969d091a@liebherr.com>
-References: <20250116-max1720x-temperature-v2-1-9638969d091a@liebherr.com>
-Subject: Re: [PATCH v2] power: supply: max1720x: add support for reading
- internal and thermistor temperatures
-Message-Id: <173714975455.629224.11887621606904491190.b4-ty@collabora.com>
-Date: Fri, 17 Jan 2025 22:35:54 +0100
+	s=arc-20240116; t=1737157516; c=relaxed/simple;
+	bh=E9IrZCNW5TNGtWQecUFDDhNAWcarWOpqvBph1gyQE58=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=nwogPCEePVanEDJwQ0F20idB5Nfes+xK0mi6cqb3PMcRb4SABAG8c9ZEGABlrU2142M0URsCes9GbGLkGia06ySK5vHow08pDMIPx+ruZNkyVUtAkHZiWLzsWUw2l8bxHG24xtr85xrgDt4rc/M6drDtvG3gVtbRvFmLcmd21c4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=oiDVQqUi; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="oiDVQqUi"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CAB3FC4CEDD;
+	Fri, 17 Jan 2025 23:45:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1737157515;
+	bh=E9IrZCNW5TNGtWQecUFDDhNAWcarWOpqvBph1gyQE58=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+	b=oiDVQqUiYilFo9xcKPBPyxOXsMAlrWkAvKDbzguH8buHQykPC5S8FO098aef6DLZ5
+	 A91GXVeRzAX7V06jFBPL/dwIv301VuMTpNsnQYOOwcXa6acsWX0RZLDq4Ep0mPANoY
+	 xfoPwWtjTZ/rH9OSvrt1fzhUSu37ZsMAjnANuxZM4dHEFlofkSJ+kllRYilw8ayUoI
+	 H0MJpBnHtTw0prOPUad5WsUtR28iFEFg0lXh6MyD/gVYViYWmkg2OoMe7ZcFotrgPF
+	 Fp4dpK9k8FF2j3q4+EuvT4LYqZRwft3IixHalbQXQvGItpE4+IfM9Ky5BkvWY9iSAw
+	 g+7tH22vGwAYw==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 70C19380AA62;
+	Fri, 17 Jan 2025 23:45:40 +0000 (UTC)
+Subject: Re: [GIT PULL] pmdomain fixes for v6.13-rc8
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <20250117115020.131731-1-ulf.hansson@linaro.org>
+References: <20250117115020.131731-1-ulf.hansson@linaro.org>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <20250117115020.131731-1-ulf.hansson@linaro.org>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v6.13-rc2-2
+X-PR-Tracked-Commit-Id: 726efa92e02b460811e8bc6990dd742f03b645ea
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 4b040f0abe6d19a14306d276a26a033f5087f2fa
+Message-Id: <173715753899.2291664.4937301036934590099.pr-tracker-bot@kernel.org>
+Date: Fri, 17 Jan 2025 23:45:38 +0000
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Linus <torvalds@linux-foundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, linux-arm-kernel@lists.infradead.org
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.14.2
 
+The pull request you sent on Fri, 17 Jan 2025 12:50:20 +0100:
 
-On Thu, 16 Jan 2025 09:04:29 +0100, Dimitri Fedrau wrote:
-> If enabled in the nPackCfg register, the Temp1, Temp2 and IntTemp registers
-> contain the temperature readings from the AIN1 thermistor, AIN2 thermistor
-> and internal die temperature respectively. Registers are shared between SBS
-> and normal IC functions and are always readable regardless of IC settings.
-> 
-> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v6.13-rc2-2
 
-Applied, thanks!
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/4b040f0abe6d19a14306d276a26a033f5087f2fa
 
-[1/1] power: supply: max1720x: add support for reading internal and thermistor temperatures
-      commit: b4a95b8fd3e67c1222c76bdd1078d43c9a11d132
+Thank you!
 
-Best regards,
 -- 
-Sebastian Reichel <sebastian.reichel@collabora.com>
-
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
