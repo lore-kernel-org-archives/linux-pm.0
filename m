@@ -1,104 +1,144 @@
-Received: from mx07-00178001.pphosted.com (mx08-00178001.pphosted.com [91.207.212.93])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f52.google.com (mail-pj1-f52.google.com [209.85.216.52])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2491F149DF0;
-	Mon, 20 Jan 2025 08:36:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.207.212.93
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A3831A073F
+	for <linux-pm@vger.kernel.org>; Mon, 20 Jan 2025 09:01:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1737362209; cv=none; b=Oj9pPyXsS/K4RNg3zG/F+JISsRj9vE7NT7O07rLjux29PRRIMVbB9WuDBOe/sgbm2fFQJh/+t++8k6fNepwE87rhegkqycDjeSYVjgaLPoQoh0F60hTzPfr72vBkt+cMbMYUqWrWtfVAktms9HQBitPn7wau5DRFhK7hOWrSwRc=
+	t=1737363667; cv=none; b=uJ1ao2yQA/LP0NSfunjZ4WJVouB6ClZkaxeFPhgOGPszS6DoTdQYK8aaHFU8n0oV2vSncy2qFvihQkP4eHCwGN3gg+J6rkcbkKorxhqh0Gh7o7OUGrc06aGIax9tgndDFc7PvywrsDHe9Yn75Z/AYZ9szJsUtrwpcF/Xsf1wqy8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1737362209; c=relaxed/simple;
-	bh=iPRD2KWoZvbHZFTPohaghCcVvZX1drMbrOqQgWvHJmg=;
-	h=Message-ID:Subject:From:To:CC:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=hfbYR/PCm7VOCHnlanjIvo8yEepwBG4gSJfZS+BjtZaoWkPtNk+mb/REk94u0peEB8ZbKoPvgoXYt3CH8/umT5NLXEm5HyPe21Zqh23ZGf6oBUmDANDrM96iKiJRJlDbcesp7OngPzRbqkdEsK0XYvnLqKhRUOQ8k+/Oljm/Ghk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=foss.st.com; spf=pass smtp.mailfrom=foss.st.com; dkim=pass (2048-bit key) header.d=foss.st.com header.i=@foss.st.com header.b=CXYXMxsV; arc=none smtp.client-ip=91.207.212.93
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=foss.st.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=foss.st.com
+	s=arc-20240116; t=1737363667; c=relaxed/simple;
+	bh=N38qZoCHcgqzJ2cloh8L9PRfDVNTtK1+A7StBJyL13w=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=fU7VJit91smojV6YDKhnimYpef5HXY0OT9Mk93RWVdcV9zEXKqAIki7rke8uahgoT2b8r1PN7ld/KaPyf+FCi279suZAReJwdfXzmJPvVm1piWr2hvOOjuTfvEG8eoNtw2Vd0ixA/Pr39wxl9IOX6JZ/hht/ci6inev/0ApJlmk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=HlOAU3WR; arc=none smtp.client-ip=209.85.216.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=foss.st.com header.i=@foss.st.com header.b="CXYXMxsV"
-Received: from pps.filterd (m0046660.ppops.net [127.0.0.1])
-	by mx07-00178001.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50K8VeAT027721;
-	Mon, 20 Jan 2025 09:36:03 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foss.st.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=selector1; bh=
-	iPRD2KWoZvbHZFTPohaghCcVvZX1drMbrOqQgWvHJmg=; b=CXYXMxsVof+3Wz47
-	pE44y6yoapWMYfryXmQmgwWCVrd1MV0ICGv6PCjjCMpIGQttUaApGosIU58zgpIy
-	vfdnQJxX6cGKfRGAp3ZpqnpIE7lZsFFFXHdLnyFbraBYqqeX3+/5oAX1Pbbh1H/g
-	Z1zTGqiGugZk7RQcr0gTqlv93umVokS7DlAb9sFO5hlHNEJSBXw0+ZY+mD6TTi8q
-	wd2UcMwGP0xxMcy1k29Bv3kXT/8msT6uHT/J0WL9iuUCn+QdGxedMk/pXBcccG5m
-	0McvNf2JQUoo1Ch89bbYfGv1cFMej52XR4TunA24staAgIpqHMkvR8bmpyyMAHax
-	nVGU9g==
-Received: from beta.dmz-ap.st.com (beta.dmz-ap.st.com [138.198.100.35])
-	by mx07-00178001.pphosted.com (PPS) with ESMTPS id 449jdf875u-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 20 Jan 2025 09:36:03 +0100 (CET)
-Received: from euls16034.sgp.st.com (euls16034.sgp.st.com [10.75.44.20])
-	by beta.dmz-ap.st.com (STMicroelectronics) with ESMTP id 1005640048;
-	Mon, 20 Jan 2025 09:33:58 +0100 (CET)
-Received: from Webmail-eu.st.com (shfdag1node1.st.com [10.75.129.69])
-	by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id 17DC127B404;
-	Mon, 20 Jan 2025 09:32:10 +0100 (CET)
-Received: from [192.168.8.15] (10.48.86.148) by SHFDAG1NODE1.st.com
- (10.75.129.69) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.37; Mon, 20 Jan
- 2025 09:32:09 +0100
-Message-ID: <98652dc2f29b172a9caafe55d04cb965768e2a66.camel@foss.st.com>
-Subject: Re: [Linux-stm32] [PATCH v2 06/12] rtc: stm32: Use resource managed
- API to simplify code
-From: Antonio Borneo <antonio.borneo@foss.st.com>
-To: "Peng Fan (OSS)" <peng.fan@oss.nxp.com>,
-        "Rafael J. Wysocki"
-	<rafael@kernel.org>,
-        Len Brown <len.brown@intel.com>, Pavel Machek
-	<pavel@ucw.cz>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Dmitry
- Torokhov" <dmitry.torokhov@gmail.com>,
-        Alexandre Belloni
-	<alexandre.belloni@bootlin.com>,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
-        Linus Walleij
-	<linus.walleij@linaro.org>,
-        Conor Dooley <conor.dooley@microchip.com>,
-        Daire
- McNamara <daire.mcnamara@microchip.com>
-CC: <linux-rtc@vger.kernel.org>, Peng Fan <peng.fan@nxp.com>,
-        <linux-pm@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <linux-input@vger.kernel.org>,
-        <linux-riscv@lists.infradead.org>,
-        <linux-stm32@st-md-mailman.stormreply.com>,
-        <linux-arm-kernel@lists.infradead.org>
-Date: Mon, 20 Jan 2025 09:32:07 +0100
-In-Reply-To: <20250103-wake_irq-v2-6-e3aeff5e9966@nxp.com>
-References: <20250103-wake_irq-v2-0-e3aeff5e9966@nxp.com>
-	 <20250103-wake_irq-v2-6-e3aeff5e9966@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.48.4 
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="HlOAU3WR"
+Received: by mail-pj1-f52.google.com with SMTP id 98e67ed59e1d1-2eed82ca5b4so7296617a91.2
+        for <linux-pm@vger.kernel.org>; Mon, 20 Jan 2025 01:01:05 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1737363665; x=1737968465; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=3Itnj3IOrEs6gi3JiCfTY/60+x3xztEOPRsyrRqJIyY=;
+        b=HlOAU3WRdAafNDndOnhfCPWSS0ujMirIp0E75WPnoB2oTrDg+Xd8m6FjJe8fqm40m2
+         8tzx1cQIww8JujUwLRuL5qYrGnzrfeiv0RRVXW0q1dRFlQAxV+g+FUHeyz0Q0J8+DdSX
+         YSWYnUHjyCqJO0F17p1vHazw3fWaR5DuB8zgJ8KEVyiq9u8g80izZ9utMeCoKQdu4zK4
+         sQpN9RWj4csmuwpc8OY+hOm36gx3hQGuDOmaTjlOnklbRTSDXVRwkib2nov/vF6KfKxv
+         WUp42/5yDpCvyg+60ZhBWF593+C0ANPiRa4paaSUA4A5dnSjFKZ3m7qD2D4LdL62WWQ/
+         N5zQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1737363665; x=1737968465;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=3Itnj3IOrEs6gi3JiCfTY/60+x3xztEOPRsyrRqJIyY=;
+        b=uXKecdwHp1SH3cYgvzMmbAwPAV3rifAmzyNokeKNCuHl2VGKUWSlL26eEaIbxYjiT2
+         llwlXrgY38WKzBRK0fTM4F5qglHlSy32YHhEPs9qYYbccVxyjwoE+9+tCUBBCjKPuLGo
+         +81qDOxoXwbRY/idEHEblqISbSu41y3fYT2pa3B4jug6AskisO2NB29jaYJz1G7DWevr
+         WiFIKt6pE/gOG9somhqv+0LXoSEmKlQJ0illQbAvjJa8Go6JU43M+7dKB1cHWZLjHMEG
+         uiewfhbMcHub7KDp9HTdly871ZIubkcNu190bHRC2RDPAgAvZrvpWi4IlYe4fdv/fk5G
+         yXDg==
+X-Forwarded-Encrypted: i=1; AJvYcCUnFQoL6H+8TRQMlbIHUz4dNJltGVf4zqawcTh+xnVYg6XzFvV+CwmeFVTYClaW4+m4JyzCF5YFMQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxY9bOjlENGD9pb6SzLwPUDSlLh5n9mAmdE0SJIEHBRc2ce1YtN
+	rzcORATW6JqGTmp1fAFV+7cOk+1LcZjkzBjBIMo40VhUnhb0xzIIFXfXnKDSAYA=
+X-Gm-Gg: ASbGncv08OnvXeL97LfiofM5ISRh1JwLdcmPKKQTsqTwaNNyZ4FRCkUe12YaPADqnz0
+	rdmGNuIMDAx7UNbofSBsKwQmo2sQnfEfphHrlvC9s9VeqDwHmfcTJwmrqT8U7vIk48tEhY/ZXPN
+	O2Je6mqQnQEQffIN339VmEZt0KCAUwHFSG0222elJeASmS596hJWztCFdoRFVXfwazM1fR+Hqgm
+	TY+gc5laCZtFDEdx8a/l0EjCKg8pVqqPhxGbVjWphAYwYLe6fp7+PO/AJ1T4SkMR4Iz2hvH
+X-Google-Smtp-Source: AGHT+IFALmijJfFaLhV1Mkvb2L6OTEoGi+Wz2LmZuokbQl05UuRJVPCcuD5yRIFcPpr2fW23WrgIOg==
+X-Received: by 2002:a05:6a00:3018:b0:725:df1a:275 with SMTP id d2e1a72fcca58-72dafbd97b0mr18464265b3a.23.1737363665248;
+        Mon, 20 Jan 2025 01:01:05 -0800 (PST)
+Received: from localhost ([122.172.84.139])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-72dabab64b8sm6557870b3a.166.2025.01.20.01.01.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 20 Jan 2025 01:01:04 -0800 (PST)
+Date: Mon, 20 Jan 2025 14:31:02 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Lifeng Zheng <zhenglifeng1@huawei.com>
+Cc: rafael@kernel.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxarm@huawei.com,
+	jonathan.cameron@huawei.com, zhanjie9@hisilicon.com,
+	lihuisong@huawei.com, fanghao11@huawei.com
+Subject: Re: [PATCH v2 2/4] cpufreq: Introduce a more generic way to set
+ default per-policy boost flag
+Message-ID: <20250120090102.erm2ffkbnwa5vraa@vireshk-i7>
+References: <20250117101457.1530653-1-zhenglifeng1@huawei.com>
+ <20250117101457.1530653-3-zhenglifeng1@huawei.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-ClientProxiedBy: EQNCAS1NODE3.st.com (10.75.129.80) To SHFDAG1NODE1.st.com
- (10.75.129.69)
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-01-20_01,2025-01-20_02,2024-11-22_01
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250117101457.1530653-3-zhenglifeng1@huawei.com>
 
-On Fri, 2025-01-03 at 16:41 +0800, Peng Fan (OSS) wrote:
-> From: Peng Fan <peng.fan@nxp.com>
->=20
-> Use devm_pm_set_wake_irq and devm_device_init_wakeup to cleanup the
-> error handling code and 'driver.remove()' hook.
->=20
-> Signed-off-by: Peng Fan <peng.fan@nxp.com>
+On 17-01-25, 18:14, Lifeng Zheng wrote:
+> In cpufreq_online() of cpufreq.c, the per-policy boost flag is already set
+> to mirror the cpufreq_driver boost during init but using freq_table to
+> judge if the policy has boost frequency. There are two drawbacks to this
+> approach:
+> 
+> 1. It doesn't work for the cpufreq drivers that do not use a frequency
+> table. For now, acpi-cpufreq and amd-pstate have to enable boost in policy
+> initialization. And cppc_cpufreq never set policy to boost when going
+> online no matter what the cpufreq_driver boost flag is.
+> 
+> 2. If the cpu goes offline when cpufreq_driver boost enabled and then goes
+> online when cpufreq_driver boost disabled, the per-policy boost flag will
+> unreasonably remain true.
+> 
+> Running set_boost at the end of the online process is a more generic way
+> for all cpufreq drivers.
+> 
+> Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
 > ---
+>  drivers/cpufreq/cpufreq.c | 16 ++++++++++++----
+>  1 file changed, 12 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 5882d7f5e3c1..5a3566c2eb8d 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1409,10 +1409,6 @@ static int cpufreq_online(unsigned int cpu)
+>  			goto out_free_policy;
+>  		}
+>  
+> -		/* Let the per-policy boost flag mirror the cpufreq_driver boost during init */
+> -		if (cpufreq_boost_enabled() && policy_has_boost_freq(policy))
+> -			policy->boost_enabled = true;
+> -
+>  		/*
+>  		 * The initialization has succeeded and the policy is online.
+>  		 * If there is a problem with its frequency table, take it
+> @@ -1573,6 +1569,18 @@ static int cpufreq_online(unsigned int cpu)
+>  	if (new_policy && cpufreq_thermal_control_enabled(cpufreq_driver))
+>  		policy->cdev = of_cpufreq_cooling_register(policy);
+>  
+> +	/* Let the per-policy boost flag mirror the cpufreq_driver boost during init */
+> +	if (policy->boost_enabled != cpufreq_boost_enabled()) {
+> +		policy->boost_enabled = cpufreq_boost_enabled();
+> +		ret = cpufreq_driver->set_boost(policy, policy->boost_enabled);
 
-Reviewed-by: Antonio Borneo <antonio.borneo@foss.st.com>
+I though you agreed to do some optimization here ?
 
-Thanks,
-Antonio
+> +		if (ret) {
+> +			/* If the set_boost fails, the online operation is not affected */
+> +			pr_info("%s: CPU%d: Cannot %s BOOST\n", __func__, policy->cpu,
+> +				policy->boost_enabled ? "enable" : "disable");
+> +			policy->boost_enabled = !policy->boost_enabled;
+> +		}
+> +	}
+> +
+>  	pr_debug("initialization complete\n");
+>  
+>  	return 0;
+> -- 
+> 2.33.0
+
+-- 
+viresh
