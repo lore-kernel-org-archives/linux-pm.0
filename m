@@ -1,206 +1,180 @@
-Received: from szxga06-in.huawei.com (szxga06-in.huawei.com [45.249.212.32])
+Received: from mail-m49234.qiye.163.com (mail-m49234.qiye.163.com [45.254.49.234])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 756EEDDC1;
-	Tue, 21 Jan 2025 02:42:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.32
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E5838831;
+	Tue, 21 Jan 2025 03:01:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.254.49.234
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1737427375; cv=none; b=Ial/14f21Qb3/ZIvZ2R2sP9RmRPg4aS+Gfq74313aXe6a2X2XvcJnsHR1jil/nxkpX3OjkxULp1dNb4DFEIJUi4AFXwK/aq7tVIULfJnOedzSAm5TKQSAn9n9Rvq6yKzkWpZv1ny0PyfJdBfRRnzZPrMf76rplINasnzn0+kc6s=
+	t=1737428494; cv=none; b=SO8f4gWi5+Yj4ylNqJEyYugSM5332MOVFKzPzEY0tlxd49fDtEwhh1VxcPoNUZQ6vLkbNLSngsiV8SwFvT8dr/Ma//IpSE598XS7yj3EPg1hZlbvwm68MLHyqd08wR0nPCK94zwZsAMZOcwxNUhWS+uRIVijJx7rO3xe+bhcc00=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1737427375; c=relaxed/simple;
-	bh=OMpGOF52bvWfrOjNisUs1HPTL0D/Q1uTGpG2nKnY3l4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=HATp/vFJSTw5ueFh5BYY6UnUIqnNTTtbRbLZWbZuSjYodfKw1XaJpuyNjX4SDo//tp48Xgtb6qUFzDQFLS2olpXDvIhPKpZZAVZlPZc9XcxQDa0bDDTc9fHALx+0/X9WkqdeL8ndLMdiubWCe+D9dAvtkrxW1g+dvcuYapqGYSc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.162.112])
-	by szxga06-in.huawei.com (SkyGuard) with ESMTP id 4YcWj81JNcz20pHN;
-	Tue, 21 Jan 2025 10:43:08 +0800 (CST)
-Received: from kwepemh100008.china.huawei.com (unknown [7.202.181.93])
-	by mail.maildlp.com (Postfix) with ESMTPS id 0C764140114;
-	Tue, 21 Jan 2025 10:42:43 +0800 (CST)
-Received: from [10.67.121.90] (10.67.121.90) by kwepemh100008.china.huawei.com
- (7.202.181.93) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 21 Jan
- 2025 10:42:42 +0800
-Message-ID: <eadd291e-c797-4d7d-b1f9-f8778fa58b23@huawei.com>
-Date: Tue, 21 Jan 2025 10:42:41 +0800
+	s=arc-20240116; t=1737428494; c=relaxed/simple;
+	bh=g/nwDZP9SLEI2Vjd99fwinnM0/MNyabMv89OXaCJVow=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=uawpQ6sphzpxvUcUSLH9PGZsO3fGyU6NV8WLcHxeXAQRaAaoFq4n8AVdikUjlsWZGqepqXuGS9o+sNFisG3A3nR+4WI3Xyd/0F+9hPuZBRP+jgbo+rkP/O/MmTqbwreJcRgXx1lQMN/ZR2yW3ytXIk9ikJMu5tfM/vo8WqpIGKY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=C+T0xur9; arc=none smtp.client-ip=45.254.49.234
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="C+T0xur9"
+Received: from localhost.localdomain (unknown [58.22.7.114])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 93fdcf00;
+	Tue, 21 Jan 2025 11:01:26 +0800 (GMT+08:00)
+From: Shawn Lin <shawn.lin@rock-chips.com>
+To: Rob Herring <robh+dt@kernel.org>,
+	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"Martin K . Petersen" <martin.petersen@oracle.com>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Ulf Hansson <ulf.hansson@linaro.org>,
+	Heiko Stuebner <heiko@sntech.de>,
+	"Rafael J . Wysocki" <rafael@kernel.org>
+Cc: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
+	Avri Altman <avri.altman@wdc.com>,
+	Bart Van Assche <bvanassche@acm.org>,
+	YiFeng Zhao <zyf@rock-chips.com>,
+	Liang Chen <cl@rock-chips.com>,
+	linux-scsi@vger.kernel.org,
+	linux-rockchip@lists.infradead.org,
+	devicetree@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Shawn Lin <shawn.lin@rock-chips.com>
+Subject: [PATCH v6 3/7] pmdomain: core: Introduce dev_pm_genpd_rpm_always_on()
+Date: Tue, 21 Jan 2025 11:00:23 +0800
+Message-Id: <1737428427-32393-4-git-send-email-shawn.lin@rock-chips.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1737428427-32393-1-git-send-email-shawn.lin@rock-chips.com>
+References: <1737428427-32393-1-git-send-email-shawn.lin@rock-chips.com>
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZQkMZGVZIQk9CGUoeQ0NKGBpWFRQJFh
+	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSUhCSE
+	NVSktLVUpCS0tZBg++
+X-HM-Tid: 0a9486cec7e909cckunm93fdcf00
+X-HM-MType: 1
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6NSo6STo*OTIRNDVNHgstEjEZ
+	KQswFExVSlVKTEhMT0lDT0NMTE9LVTMWGhIXVQgTGgwVVRcSFTsJFBgQVhgTEgsIVRgUFkVZV1kS
+	C1lBWU5DVUlJVUxVSkpPWVdZCAFZQUhDQk83Bg++
+DKIM-Signature:a=rsa-sha256;
+	b=C+T0xur92zfdXVdz9scdLgm4Aypk0CBcgFBWQD1SVlAhuFBgchP6VY9J7XQ8zkuGc3bCJEZhwevLSNuGWNm+Yzw+Ah0QPbCEN/cMuunFcWpnSMDJ9FCGI/wLyu+dA0+jOmerKBUQOUXyCs/uhDPe5qVYnWywuzE0ipqN3sVh9PQ=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
+	bh=S8k3+QF/U7BZrl92gLsmr2O43MinCweidYG2hgjh7D0=;
+	h=date:mime-version:subject:message-id:from;
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 6/6] cpufreq: CPPC: Support for autonomous selection in
- cppc_cpufreq
-To: Mario Limonciello <mario.limonciello@amd.com>, Pierre Gondois
-	<pierre.gondois@arm.com>, Russell Haley <yumpusamongus@gmail.com>,
-	<rafael@kernel.org>, <lenb@kernel.org>, <robert.moore@intel.com>,
-	<viresh.kumar@linaro.org>, <srinivas.pandruvada@linux.intel.com>
-CC: <acpica-devel@lists.linux.dev>, <linux-acpi@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-	<linuxarm@huawei.com>, <jonathan.cameron@huawei.com>,
-	<gautham.shenoy@amd.com>, <ray.huang@amd.com>, <zhanjie9@hisilicon.com>,
-	<lihuisong@huawei.com>, <hepeng68@huawei.com>, <fanghao11@huawei.com>
-References: <20250113122104.3870673-1-zhenglifeng1@huawei.com>
- <20250113122104.3870673-7-zhenglifeng1@huawei.com>
- <21654032-a394-4da9-8ee9-d7cb9df8c855@gmail.com>
- <6909eef3-20aa-4341-9177-a42323a0d5c6@huawei.com>
- <270a1cce-8afe-497a-b30b-56157d75a863@amd.com>
- <0705775a-1040-4564-b97b-2ed397803723@huawei.com>
- <256a7620-2d21-4474-b64d-b1e8effbc975@arm.com>
- <32d084f3-f114-420e-affa-2f7ba107de0d@amd.com>
-From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
-In-Reply-To: <32d084f3-f114-420e-affa-2f7ba107de0d@amd.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
- kwepemh100008.china.huawei.com (7.202.181.93)
 
-On 2025/1/21 1:44, Mario Limonciello wrote:
+From: Ulf Hansson <ulf.hansson@linaro.org>
 
-> On 1/20/2025 08:49, Pierre Gondois wrote:
->>
->>
->> On 1/20/25 04:15, zhenglifeng (A) wrote:
->>> On 2025/1/17 22:30, Mario Limonciello wrote:
->>>
->>>> On 1/16/2025 21:11, zhenglifeng (A) wrote:
->>>>> On 2025/1/16 19:39, Russell Haley wrote:
->>>>>
->>>>>> Hello,
->>>>>>
->>>>>> I noticed something here just as a user casually browsing the mailing list.
->>>>>>
->>>>>> On 1/13/25 6:21 AM, Lifeng Zheng wrote:
->>>>>>> Add sysfs interfaces for CPPC autonomous selection in the cppc_cpufreq
->>>>>>> driver.
->>>>>>>
->>>>>>> Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
->>>>>>> ---
->>>>>>>    .../ABI/testing/sysfs-devices-system-cpu      |  54 +++++++++
->>>>>>>    drivers/cpufreq/cppc_cpufreq.c                | 109 +++++++++++ +++++++
->>>>>>>    2 files changed, 163 insertions(+)
->>>>>>>
->>>>>>> diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/ Documentation/ABI/testing/sysfs-devices-system-cpu
->>>>>>> index 206079d3bd5b..3d87c3bb3fe2 100644
->>>>>>> --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
->>>>>>> +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
->>>>>>> @@ -268,6 +268,60 @@ Description:    Discover CPUs in the same CPU frequency coordination domain
->>>>>>>            This file is only present if the acpi-cpufreq or the cppc-cpufreq
->>>>>>>            drivers are in use.
->>>>>>
->>>>>> [...snip...]
->>>>>>
->>>>>>> +What:        /sys/devices/system/cpu/cpuX/cpufreq/energy_perf
->>>>>>> +Date:        October 2024
->>>>>>> +Contact:    linux-pm@vger.kernel.org
->>>>>>> +Description:    Energy performance preference
->>>>>>> +
->>>>>>> +        Read/write an 8-bit integer from/to this file. This file
->>>>>>> +        represents a range of values from 0 (performance preference) to
->>>>>>> +        0xFF (energy efficiency preference) that influences the rate of
->>>>>>> +        performance increase/decrease and the result of the hardware's
->>>>>>> +        energy efficiency and performance optimization policies.
->>>>>>> +
->>>>>>> +        Writing to this file only has meaning when Autonomous Selection is
->>>>>>> +        enabled.
->>>>>>> +
->>>>>>> +        This file only presents if the cppc-cpufreq driver is in use.
->>>>>>
->>>>>> In intel_pstate driver, there is file with near-identical semantics:
->>>>>>
->>>>>> /sys/devices/system/cpu/cpuX/cpufreq/energy_performance_preference
->>>>>>
->>>>>> It also accepts a few string arguments and converts them to integers.
->>>>>>
->>>>>> Perhaps the same name should be used, and the semantics made exactly
->>>>>> identical, and then it could be documented as present for either
->>>>>> cppc_cpufreq OR intel_pstate?
->>>>>>
->>>>>> I think would be more elegant if userspace tooling could Just Work with
->>>>>> either driver.
->>>>>>
->>>>>> One might object that the frequency selection behavior that results from
->>>>>> any particular value of the register itself might be different, but they
->>>>>> are *already* different between Intel's P and E-cores in the same CPU
->>>>>> package. (Ugh.)
->>>>>
->>>>> Yes, I should use the same name. Thanks.
->>>>>
->>>>> As for accepting string arguments and converting them to integers, I don't
->>>>> think it is necessary. It'll be a litte confused if someone writes a raw
->>>>> value and reads a string I think. I prefer to let users freely set this
->>>>> value.
->>>>>
->>>>> In addition, there are many differences between the implementations of
->>>>> energy_performance_preference in intel_pstate and cppc_cpufreq (and
->>>>> amd-pstate...). It is really difficult to explain all this differences in
->>>>> this document. So I'll leave it to be documented as present for
->>>>> cppc_cpufreq only.
->>>>
->>>> At least the interface to userspace I think we should do the best we can to be the same between all the drivers if possible.
->>>>
->>>> For example; I've got a patch that I may bring up in a future kernel cycle that adds raw integer writes to amd-pstates energy_performance_profile to behave the same way intel-pstate does.
->>>
->>> I agree that it's better to keep this interface consistent across different
->>> drivers. But in my opinion, the implementation of intel_pstate
->>> energy_performance_preference is not really nice. Someone may write a raw
->>> value but read a string, or read strings for some values and read raw
->>> values for some other values. It is inconsistent. It may be better to use
->>> some other implementation, such as seperating the operations of r/w strings
->>> and raw values into two files.
->>
->> I agree it would be better to be sure of the type to expect when reading the
->> energy_performance_preference file. The epp values in the range 0-255 with 0
->> being the performance value for all interfaces.
->>
->> In the current epp strings, it seems there is a big gap between the PERFORMANCE
->> and the BALANCE_PERFORMANCE strings. Maybe it would be good to complete it:
->> EPP_PERFORMANCE        0x00
->> EPP_BALANCE_PERFORMANCE    0x40      // state value changed
->> EPP_BALANCE        0x80      // new state
->> EPP_BALANCE_POWERSAVE    0xC0
->> EPP_POWERSAVE        0xFF
->>
->> NIT: The mapping seems to be slightly different for intel_pstate and amd-pstate
->> currently:
->> drivers/cpufreq/amd-pstate.c
->> #define AMD_CPPC_EPP_PERFORMANCE        0x00
->> #define AMD_CPPC_EPP_BALANCE_PERFORMANCE    0x80
->> #define AMD_CPPC_EPP_BALANCE_POWERSAVE        0xBF
->> #define AMD_CPPC_EPP_POWERSAVE            0xFF
->>
->> arch/x86/include/asm/msr-index.h
->> #define HWP_EPP_PERFORMANCE        0x00
->> #define HWP_EPP_BALANCE_PERFORMANCE    0x80
->> #define HWP_EPP_BALANCE_POWERSAVE    0xC0   <------ Different from AMD_CPPC_EPP_BALANCE_POWERSAVE
->> #define HWP_EPP_POWERSAVE        0xFF
->>
->>>
->>> I think it's better to consult Rafael and Viresh about how this should
->>> evolve.
->>
->> Yes indeed
-> 
-> Maybe it's best to discuss what the goal of raw EPP number writes is to decide what to do with it.
-> 
-> IE in intel-pstate is it for userspace to be able to actually utilize something besides the strings all the time?  Or is it just for debugging to find better values for strings in the future?
-> 
-> If the former maybe we're better off splitting to 'energy_performance_preference' and 'energy_performance_preference_int'.
-> 
-> If the latter maybe we're better off putting the integer writes and reads into debugfs instead and making 'energy_performance_preference' return -EINVAL while a non-predefined value is in use.
+For some usecases a consumer driver requires its device to remain power-on
+from the PM domain perspective during runtime. Using dev PM qos along with
+the genpd governors, doesn't work for this case as would potentially
+prevent the device from being runtime suspended too.
 
-I think it's the former. 
+To support these usecases, let's introduce dev_pm_genpd_rpm_always_on() to
+allow consumers drivers to dynamically control the behaviour in genpd for a
+device that is attached to it.
 
-I added the author of the patch that allows raw energy performance
-preference value in intel_pstate to ask about what the goal is and if this
-would be ok to do the modification mentioned above.
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
+---
 
-To see the patch from https://lore.kernel.org/all/20200626183401.1495090-3-srinivas.pandruvada@linux.intel.com/
+Changes in v6:
+- export dev_pm_genpd_rpm_always_on()
 
-Anyway, the purpose of this patch is to allow users write and read raw EPP
-number. So maybe I can just rename the file to
-'energy_performance_preference_int'?
+Changes in v5: None
+Changes in v4: None
+Changes in v3: None
+Changes in v2: None
+
+ drivers/pmdomain/core.c   | 35 +++++++++++++++++++++++++++++++++++
+ include/linux/pm_domain.h |  7 +++++++
+ 2 files changed, 42 insertions(+)
+
+diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+index a6c8b85..b44c300 100644
+--- a/drivers/pmdomain/core.c
++++ b/drivers/pmdomain/core.c
+@@ -697,6 +697,37 @@ bool dev_pm_genpd_get_hwmode(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_genpd_get_hwmode);
+ 
++/**
++ * dev_pm_genpd_rpm_always_on() - Control if the PM domain can be powered off.
++ *
++ * @dev: Device for which the PM domain may need to stay on for.
++ * @on: Value to set or unset for the condition.
++ *
++ * For some usecases a consumer driver requires its device to remain power-on
++ * from the PM domain perspective during runtime. This function allows the
++ * behaviour to be dynamically controlled for a device attached to a genpd.
++ *
++ * It is assumed that the users guarantee that the genpd wouldn't be detached
++ * while this routine is getting called.
++ *
++ * Return: Returns 0 on success and negative error values on failures.
++ */
++int dev_pm_genpd_rpm_always_on(struct device *dev, bool on)
++{
++	struct generic_pm_domain *genpd;
++
++	genpd = dev_to_genpd_safe(dev);
++	if (!genpd)
++		return -ENODEV;
++
++	genpd_lock(genpd);
++	dev_gpd_data(dev)->rpm_always_on = on;
++	genpd_unlock(genpd);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(dev_pm_genpd_rpm_always_on);
++
+ static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
+ {
+ 	unsigned int state_idx = genpd->state_idx;
+@@ -868,6 +899,10 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
+ 		if (!pm_runtime_suspended(pdd->dev) ||
+ 			irq_safe_dev_in_sleep_domain(pdd->dev, genpd))
+ 			not_suspended++;
++
++		/* The device may need its PM domain to stay powered on. */
++		if (to_gpd_data(pdd)->rpm_always_on)
++			return -EBUSY;
+ 	}
+ 
+ 	if (not_suspended > 1 || (not_suspended == 1 && !one_dev_on))
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 45646bf..d4c4a7c 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -260,6 +260,7 @@ struct generic_pm_domain_data {
+ 	unsigned int rpm_pstate;
+ 	unsigned int opp_token;
+ 	bool hw_mode;
++	bool rpm_always_on;
+ 	void *data;
+ };
+ 
+@@ -292,6 +293,7 @@ ktime_t dev_pm_genpd_get_next_hrtimer(struct device *dev);
+ void dev_pm_genpd_synced_poweroff(struct device *dev);
+ int dev_pm_genpd_set_hwmode(struct device *dev, bool enable);
+ bool dev_pm_genpd_get_hwmode(struct device *dev);
++int dev_pm_genpd_rpm_always_on(struct device *dev, bool on);
+ 
+ extern struct dev_power_governor simple_qos_governor;
+ extern struct dev_power_governor pm_domain_always_on_gov;
+@@ -375,6 +377,11 @@ static inline bool dev_pm_genpd_get_hwmode(struct device *dev)
+ 	return false;
+ }
+ 
++static inline int dev_pm_genpd_rpm_always_on(struct device *dev, bool on)
++{
++	return -EOPNOTSUPP;
++}
++
+ #define simple_qos_governor		(*(struct dev_power_governor *)(NULL))
+ #define pm_domain_always_on_gov		(*(struct dev_power_governor *)(NULL))
+ #endif
+-- 
+2.7.4
+
