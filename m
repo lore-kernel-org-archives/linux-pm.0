@@ -1,123 +1,106 @@
-Received: from mail-pj1-f53.google.com (mail-pj1-f53.google.com [209.85.216.53])
+Received: from mail-pl1-f176.google.com (mail-pl1-f176.google.com [209.85.214.176])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 472672144C0;
-	Wed, 22 Jan 2025 14:35:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21D66145A18
+	for <linux-pm@vger.kernel.org>; Wed, 22 Jan 2025 14:38:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1737556506; cv=none; b=t2VfsncPb/pr1PpcmmksHFtTESmctBzoeUINgmteq0LX8elrUk2quvZVnQeB2NZDtzvooptFPP+xjTRQ1CSGo/N+rwkHdzjM+xP7RoKCHR+/fiXrB6Z/f7mJdmyXNrhSFDaO4T4dtZTQkbdI90k5A49bYMwyHnDdri6zaF1RJsc=
+	t=1737556695; cv=none; b=YAEio+w8mPIxcbs7KgTqmoJhBMhYgKs+NbIoIPkOZt8NDmGvbBMa+orhOnjPd98ScdZnZMHWi+Tgxr7itiNJCp7q1mlmpYg4OWfipHYOQmV9ZBC3wqkxj6//gLKvWKkcwKwvE0K1Z/izacxmvMUQ8hmWhiLOGB5hQG9/rzylm6c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1737556506; c=relaxed/simple;
-	bh=J4YCNhjzRigTVeF91bO9CWOB5TBbIWJrhq9Bz5UxP7w=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=aKI1b7K4RB4OBzeQh9LrTTQcd8hQLwogmlYBwRJKTATiB1AZB9segyjsdQYs/EvmD50eaf97SctX21YwgCxSLUXUOaFclazrJkPBx8gBtIiIzo/aSsC5GPG039P/bcTNIGvx9d1HIC54KKVQFeAH1Eif4GL/QZRZBPnblvYr6d0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=CirrlU9o; arc=none smtp.client-ip=209.85.216.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1737556695; c=relaxed/simple;
+	bh=mmUxMJ6D295FPfIkByhKohQ5sM9At8FovJKGVVwBaOI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=AkXlCCF5lSVrQlUted31ySuLK3LcbcgPWqN6pPchzP5YPcAU8DZ4iPL5SGE2RGz3SOfVgDj97TL1mGlhd9a7MfMlhbjDI9JUYEekau3x7vgG3BKaln9KPJVyRAiahV4hVaFQFn2x54ndBclMYdbb7rfYnFTRiL+Ry+pKkgzwJYU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=wZ9kE0R/; arc=none smtp.client-ip=209.85.214.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CirrlU9o"
-Received: by mail-pj1-f53.google.com with SMTP id 98e67ed59e1d1-2ee76befe58so12004234a91.2;
-        Wed, 22 Jan 2025 06:35:05 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="wZ9kE0R/"
+Received: by mail-pl1-f176.google.com with SMTP id d9443c01a7336-21669fd5c7cso125903175ad.3
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jan 2025 06:38:13 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1737556504; x=1738161304; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ExI6PFCsF9i13/QhbBlPnnrsT656rvvJkTyXY/Jd5OE=;
-        b=CirrlU9oJtkSYleeQhHdjhHl8+p7B6IBye0XRXmp5TkERyg80IypxIeAjEuSDA1o/5
-         rPiYFPY5meU7v369dcEIF3IAwge+XMp6toyEwHyaTEBJL12zWr8L0pWfjB/uyBJY34N9
-         g/Q9b3L9VQzkIyfioAJVDZmvrhIQpwUnBjWZBVw24CUNlxCJ4YyFzfdU5NwZ/IayuTde
-         Tmrl+t860tp+ipPWjOqY/MwKCJ0pctHjNmhZklHe1VUpH0yZr/UNom1bh3fNCLzAwQGT
-         XuyL4JOngdqGN/JHN22s9IGZcBDDxOZ5zCfANbcIi+irXMryKZCwwUbIxLB7s9D1mV3f
-         Rh6g==
+        d=linaro.org; s=google; t=1737556693; x=1738161493; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=A7oe3oxBlbNLrA51+/iZ7xTjxkXjstCHhMW3t6qQe5M=;
+        b=wZ9kE0R/Pdx6Tk8fvq7mEhNXk0hTodv14JHu5dInJXksM3ozOyt6ppoTxaofn33mA/
+         UT69l6AQxjRJ7EBJjP0bqJf+l0V/8DlzPSNA/B8oKdkmSwSfc/6H6Makdwb2222QSoLY
+         Au6thnBJ/EjMZKd9+SFKBwZXLOnX7beWIXO/4dckMMBYo7MgGjrMJw9siGyu6gY5JyfK
+         iqw/+mDzzcGeAiEzjjrlEdwaQj2CCxawaXyEbrzBAo+JW8CSkmKtCkNPrHm5DOLSipuh
+         /G+owxqr6ta6gr8gnmLpn7wB6X39MRjfgFR0ak2DwHlgOHTk+ukkDEb2Agyx4yIOukV+
+         RVOQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1737556504; x=1738161304;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ExI6PFCsF9i13/QhbBlPnnrsT656rvvJkTyXY/Jd5OE=;
-        b=pCzOkY/W2srfhT9ah/gVVWTvSvFkJdLg/1BsoW5KfrliC89exKGHtHc//rw5wqY9tW
-         Syad7AAtnSrkM7IC/dmuptBCNT9Z0zZXcQsvgyLo9uSZR09J08KTlfhyvdh4GR1VQh3b
-         2SNFV4mUhCETprUW65tfkCXKQQLovwb4l5Aac5k7JjdTj9lCCTVxJyPZuO/N5KtkKig8
-         s7bV6ZWsidmhOQvpVn9BcmjGz3NmnUNqRHYBqVlJ8Ql/Kb1p9LFvY7K1nY7+AvQXqnhC
-         xZpO+Suu853crBg+fCSOunObpMyPF6IzF8B6P7HiUGLJ0lL8r18EbiPX9Gt0LcBNK/yi
-         YyEw==
-X-Forwarded-Encrypted: i=1; AJvYcCU0roqsqAfnjSM6S0IpajlFjzgnX0PD35awZnTIA//g56RWz3jG9ofUG7Cr1rSkmc3rBFp69Mxc69A=@vger.kernel.org, AJvYcCV7DncMsT4/9XkNQt5yfhCUInwEk3UVQ6zTcgYiEJ+D+Co/nQX1i/rarJvEsSKfyXTzuhWoDF6tspdjr73j@vger.kernel.org, AJvYcCVyUv5k4jWYj08LtcLT4Qdq2EilXhUiWKjuX5zVeAW6ShEXV6rYr0jiGV/K9cBTCTKKZ1MY2wYypFmy@vger.kernel.org, AJvYcCXpnjiYRL+1Wcqcmh21PtLCtS+/Hlxe9q9klLC+TE8CJLX2rqw7qv3kLx/d3234cIGtcV0AAZ6JWvLPCQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwzX8ctSujNVBAiPSqROZmVJII1IQofhvhKVWy4e6pbBaK8SDZs
-	fwY/083iAUjSd9n95mVSY28KBgK1wsDGeL7fa+s32lSnTl1Y7oPc
-X-Gm-Gg: ASbGncsx50abM7JSJcbUip82H4V94inAFvKBkT96Di1q6nMcr+KvzFeOfaoi1qRlGsg
-	GQKEPOjwWk9PSIcy3v7K7L/EL3t/eUIYfCv/63PafQjfGaLFRWZI6QzTvN4X3A/wA/GNfoqmymW
-	RILAcACBPeM5vnoyVhuMfFcecwiy2qKkfu1b4lKRoCtGwlU4DtUJkCUCNdZUy1S8yioropoC5YG
-	3ueTOrZqzHBkixkuyB6oMXvG5UkOt0qioPzLxHWP2Sh/2R2FS1RbNt+meXqDHLeIMJuHA==
-X-Google-Smtp-Source: AGHT+IG/qGJgCN09y0M/h2JakVGEvnk9yLNn7E9Kh6ZREODnOxE81Xo82L7B9/Vtt1FSjB/bkpckUw==
-X-Received: by 2002:a05:6a00:9087:b0:725:f1ca:fd75 with SMTP id d2e1a72fcca58-72daf9a5514mr30249346b3a.2.1737556504349;
-        Wed, 22 Jan 2025 06:35:04 -0800 (PST)
-Received: from archie.me ([103.124.138.155])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-72db5ccfd53sm10715126b3a.144.2025.01.22.06.35.01
+        d=1e100.net; s=20230601; t=1737556693; x=1738161493;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=A7oe3oxBlbNLrA51+/iZ7xTjxkXjstCHhMW3t6qQe5M=;
+        b=TqTlhvemrhjM3cZuSlgoxFr666ClRnVTn2IUV5gy0DrA0Xo55iH59aNddvmYa1tHcD
+         1reUihiXSwvyoofBdeMJvS40JhSj/lX/twHKm/ti7BRGGalYu8a4YeIUjfwPk9xx1joz
+         Wmq5ioVZEYmqm3lcuLQEgDn9cdcZmnB6oQB/h9XDp3VaWpEzoEqMx67FScgFC7YWtEsw
+         8pOhrLxsqSvMoX+VyXu6Sx+LoBASOcirYsCQTkEyyw0qSHIAMKFYqu8ae7audOVvFP5W
+         gO0C1I4KoaCA+l1lTUNvwPAFn3rvIYMbZI8ZG3s+FiTTb7RyuWy27cm4ACQExBAxESQD
+         NMwQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWtR1slNQV5RN3k8cUDwGMzHFOaO++XD4R6hvjy+3Zz/KGsEXjZLQM1AmIRPVXGd2US/edAikwRqQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxMKA43NAOq3IuS51863XcpuBtRzTOFjlprwHeAQ2GZbcbQEPDr
+	WAbVQfFZYaMqUyvogrZBBcgj7grci34VcZjuxbSmBPl7ROtARwa4xoDZmfxZCMQ=
+X-Gm-Gg: ASbGncvpszKCdUcwUhMdQqZiR7B6lUlXcDLFTEB3X5tbqbchZ+u58msWuSRd7qb6X6H
+	6E/bj3nHFljUMP3OyPPu/TpIFmQB1yaKVxSB1XlOhKO82QNaKfuCdk2dLXRDP6zggpH9JdGksxj
+	bjVqMxJK5NJZzMJ09wiaH1ymhTXseH4cyrxPqAgZxaNR2Qw8yaDrej4TfnYe03XvK3VJBJXm6Bd
+	BSqp7RvcJhmbnp4gSkbdrAL6SGKV+hkRLdH2t4nxkuyy8SYDmoUMYWvJgkbSe+XXB3pxtwu
+X-Google-Smtp-Source: AGHT+IFEZnS24okXDcrrm/sT/fH0xlL4+dFvMOfgSXuD/OhLXvOPTny09cOpOIKKCXBB/6EhI64J0g==
+X-Received: by 2002:a17:902:ec8f:b0:216:6d48:9177 with SMTP id d9443c01a7336-21c352c7976mr318465665ad.11.1737556693318;
+        Wed, 22 Jan 2025 06:38:13 -0800 (PST)
+Received: from localhost ([122.172.84.139])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-a9bdf0b43aasm10668624a12.66.2025.01.22.06.38.12
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 22 Jan 2025 06:35:02 -0800 (PST)
-Received: by archie.me (Postfix, from userid 1000)
-	id 09D8A41E8D11; Wed, 22 Jan 2025 21:34:58 +0700 (WIB)
-From: Bagas Sanjaya <bagasdotme@gmail.com>
-To: Linux Media <linux-media@vger.kernel.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Linux Block Devices <linux-block@vger.kernel.org>,
-	Linux Documentation <linux-doc@vger.kernel.org>,
-	Linux Power Management <linux-pm@vger.kernel.org>
-Cc: Sakari Ailus <sakari.ailus@linux.intel.com>,
-	Bingbu Cao <bingbu.cao@intel.com>,
-	Tianshu Qiu <tian.shu.qiu@intel.com>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Ming Lei <ming.lei@redhat.com>,
-	Jens Axboe <axboe@kernel.dk>,
-	Jonathan Corbet <corbet@lwn.net>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Len Brown <len.brown@intel.com>,
-	Pavel Machek <pavel@ucw.cz>,
-	Bagas Sanjaya <bagasdotme@gmail.com>,
-	Stefan Hajnoczi <stefanha@redhat.com>
-Subject: [PATCH 2/3] Documentation: ublk: Drop Stefan Hajnoczi's message footnote
-Date: Wed, 22 Jan 2025 21:34:55 +0700
-Message-ID: <20250122143456.68867-3-bagasdotme@gmail.com>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20250122143456.68867-1-bagasdotme@gmail.com>
-References: <20250122143456.68867-1-bagasdotme@gmail.com>
+        Wed, 22 Jan 2025 06:38:12 -0800 (PST)
+Date: Wed, 22 Jan 2025 20:08:09 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Anisse Astier <anisse@astier.eu>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
+	Miguel Ojeda <ojeda@kernel.org>,
+	Alex Gaynor <alex.gaynor@gmail.com>,
+	Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>,
+	=?utf-8?B?QmrDtnJu?= Roy Baron <bjorn3_gh@protonmail.com>,
+	Benno Lossin <benno.lossin@proton.me>,
+	Andreas Hindborg <a.hindborg@kernel.org>,
+	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
+	linux-pm@vger.kernel.org,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org
+Subject: Re: [PATCH v2] rust: macros: enable use of hyphens in module names
+Message-ID: <20250122143809.gpbhvz4tz3j547pn@vireshk-i7>
+References: <20250122131812.466080-1-anisse@astier.eu>
+ <20250122133952.501055-1-anisse@astier.eu>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1118; i=bagasdotme@gmail.com; h=from:subject; bh=J4YCNhjzRigTVeF91bO9CWOB5TBbIWJrhq9Bz5UxP7w=; b=owGbwMvMwCX2bWenZ2ig32LG02pJDOkTGfXbU55w/fdWygk16WzNCZz7fM6ErokejbevRLSWf elmFuXvKGVhEONikBVTZJmUyNd0epeRyIX2tY4wc1iZQIYwcHEKwEQcJzH8d9cIeqK062aaLOdc +3Kx2979/y4Vcf8WFth7dFnQxgVSjIwMVyMM1odLP3c5uYy7KH/3RVX3pORpy94dbDxRuyW/T7O NBwA=
-X-Developer-Key: i=bagasdotme@gmail.com; a=openpgp; fpr=701B806FDCA5D3A58FFB8F7D7C276C64A5E44A1D
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250122133952.501055-1-anisse@astier.eu>
 
-Sphinx reports unreferenced footnote warning pointing to ubd-control
-message by Stefan Hajnoczi [1]:
+On 22-01-25, 14:39, Anisse Astier wrote:
+> Some modules might need naming that contains hyphens "-" to match the
+> auto-probing by name in the platform devices that comes from the device
+> tree.
+> 
+> But rust identifiers cannot contain hyphens, so replace the module name
+> by an underscore anywhere we'd use it as an identifier.
+> 
+> Signed-off-by: Anisse Astier <anisse@astier.eu>
+> ---
+> Hello,
+> 
+> Change since v1:
+>  - rebase on branch rfl/staging/dev
 
-Documentation/block/ublk.rst:336: WARNING: Footnote [#] is not referenced. [ref.footnote]
+Tested-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Drop the footnote to squash above warning.
+Thanks for the fix.
 
-Cc: Stefan Hajnoczi <stefanha@redhat.com>
-Fixes: 7a3d2225f1ae ("Documentation: document ublk")
-Link: https://lore.kernel.org/linux-block/YoOr6jBfgVm8GvWg@stefanha-x1.localdomain/ [1]
-Signed-off-by: Bagas Sanjaya <bagasdotme@gmail.com>
----
- Documentation/block/ublk.rst | 2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/Documentation/block/ublk.rst b/Documentation/block/ublk.rst
-index 51665a3e6a50cd..1e0e7358e14a96 100644
---- a/Documentation/block/ublk.rst
-+++ b/Documentation/block/ublk.rst
-@@ -333,6 +333,4 @@ References
- 
- .. [#userspace_readme] https://github.com/ming1/ubdsrv/blob/master/README
- 
--.. [#stefan] https://lore.kernel.org/linux-block/YoOr6jBfgVm8GvWg@stefanha-x1.localdomain/
--
- .. [#xiaoguang] https://lore.kernel.org/linux-block/YoOr6jBfgVm8GvWg@stefanha-x1.localdomain/
 -- 
-An old man doll... just what I always wanted! - Clara
-
+viresh
