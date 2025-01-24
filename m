@@ -1,135 +1,125 @@
-Received: from mail-pl1-f179.google.com (mail-pl1-f179.google.com [209.85.214.179])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from fw2.prolan.hu (fw2.prolan.hu [193.68.50.107])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F83121A428
-	for <linux-pm@vger.kernel.org>; Fri, 24 Jan 2025 08:58:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D10421A424;
+	Fri, 24 Jan 2025 08:58:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.68.50.107
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1737709119; cv=none; b=TeZspBaGX+Xn4EpYe6p1lrxVB1NhMECWcbQAM8jr0oPgHh24zY1F8ffFu9cryyoYC8GPi0A4FsYOBSaSU0Wh361Ta4t0vqjFYadRvT6KaZjs6Hl4kgvQSoIcWjvhfRSgWQjtkh/o8nO4seqeRhDjd4AxUmknWNjIL4Uobq8ubEk=
+	t=1737709120; cv=none; b=evIoaBi/gECFiA6iE9nQla50RZ2/hz8Y9AU5CSLp543dSN585FTcVufiCz1iwvf1iEacRdyEFMn2qqZaY8dBNg6n5Ou0V2dEYNVwjXaJ8tTTYkADPoX2pJpwVF7W+YF3DqnoqEQlrNejtKwcyVsso2tg/kCF+NIcVmX2QcbDbEE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1737709119; c=relaxed/simple;
-	bh=Mh+lJKZyh+KkyabU155CrYHrGrHw881vMoEak+KHpyk=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=X4ArX6YjVwSyWgDiAC03c253xbYuS/XOcbFEek5MmpqvvXRGS8CVOVxkPvP1ae881GLujmQfPuKYuRp2Rrlf2xOQ3Otwuq3PD92EneZxv2b6r3Gae8DPyFoJxRo3TMQm3W1Pr/bvcSmpKFJke37JQUMYmLVpwinxDRrJoA3bggY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Taddr+L4; arc=none smtp.client-ip=209.85.214.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1737709120; c=relaxed/simple;
+	bh=00BIKWjEFdesAJiVHawtYMPiLZHbdAdarr4Sl8y0DgI=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=uVEM10RjCzsbnq4fjBmTcPqn3gjTfsuXjVoVHhl8WzADKvk+Xo9C3RzNS1gFKIMnuqSL/I6EH2ha2W8wtT14EeoB61q1RVKpOUi4Da55OIT6EOqyzt/p3zrOl+58ENGU5iSFGjm+RU/+1Oh2w3vUFEGgwFRbyPv1LGWR+TPjOSY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=prolan.hu; spf=pass smtp.mailfrom=prolan.hu; dkim=pass (4096-bit key) header.d=prolan.hu header.i=@prolan.hu header.b=bWYdEBiI; arc=none smtp.client-ip=193.68.50.107
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=prolan.hu
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=prolan.hu
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Taddr+L4"
-Received: by mail-pl1-f179.google.com with SMTP id d9443c01a7336-2167141dfa1so34201035ad.1
-        for <linux-pm@vger.kernel.org>; Fri, 24 Jan 2025 00:58:38 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1737709117; x=1738313917; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=+cSIv9AP4YVY8II7Ap2oNu0OryQ4xRNmR3tG5lkJHKs=;
-        b=Taddr+L4rf9IgMrgf8BrEXk1JhXP63t/YJmSl3FeOsHolFWpipkO4x9yybDmxp8Zsn
-         LaLLRQb6k7GC+bLCWjA6f0ADN5SCjsHW/SPelSb4I9LLa3Rsi3WQeO09xoUqOYLqKINk
-         6TehgtiSaqsVkRywIqAKurO//gISjCemI4mPXCj0J/Xzwf2bPdQ/CxCTP2R02LsTm+PY
-         KzBvK9Wi8dvV20H7hg3VD6aUltNJZwVb2Fw2bVG0xto/XD0S1Hlx+ODoJ8N6P7xyQ7Yu
-         ZJsDuCcTQDVzPG9ESxYRPDrsmQR9+cLdENxmjiBSDklELLi/snkWPpEBeyV8gGBQwAHV
-         fEPA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1737709117; x=1738313917;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=+cSIv9AP4YVY8II7Ap2oNu0OryQ4xRNmR3tG5lkJHKs=;
-        b=SKH6Kn4mbOa8JbPU/bKMxmRrFSYqv01CEC9vfBSnflnOn0AE7tsKOLG9K8XTMsEOjP
-         Phn24J636w2NO5+rPHTXDwj7LtNGGHwqfzrwkQIhPOu3maNwfM0r83yVcaUbraR79e0u
-         OEL8CFWdOesai0T2OPwGyZ4KJqpzLwV1sqbOoxQU7MMnuV53B3VEepadsI6QsVxkwHuY
-         4OYaQGdG6QfDdO6CK8cdyeCTGFbSbmFbs84Mzuv4tsuWoQS0tmxb0uPpVkKJD+J3EtDP
-         xY0Ab3IvFDUo3K+Hjo6d626v+exw5P0ZerlT1W9L2vc1oZ0+r165aqMVFCHcYyrD0OQQ
-         IktA==
-X-Gm-Message-State: AOJu0YxJrYBKn1C7L350D+Yiu3t4dNlTPMdfBGWu1vW4hx3VpIHr1oOc
-	GDyRk/IwGcmUAQsh/LXal1d6WkhHownZ+AH+Kd0ZLbtSBQT/PKMH5UxyW/DVWT8=
-X-Gm-Gg: ASbGncvzyyJp7KYn4mzobWk/M+oHvA0p4IItEP/gPPw/VTcJeq4dRE+pyzebtetxs8l
-	2R5Qq/cUm8SzPbNo1JXUi/0m9S4bs5s23ueK2Y/z5LUKFX7McZh5XlmQNU8auluc/1LlG10tpJo
-	fzBntXpK88uPcKex1sGsqaVw2/tbQUqTM+ON+/SeGKFN2ptg2zGBtiOvJAPF3PiGP+fFF+4Shc/
-	lDCbftPZpT2xeJvqMC2BYmS2ElrNjxXW/+DyVgrxbzLoenMcmSrFVQolyAUDuwm2CfJ9GkKQ781
-	gbWcDF0=
-X-Google-Smtp-Source: AGHT+IFdQFEMk3CcgOdQGVEgE0iH+83SO6Gdqu0lR5PqUhFZ6mg4COOnw41rl14vZoxm0ZQ+NOESiA==
-X-Received: by 2002:a17:903:1206:b0:215:2d2c:dd0c with SMTP id d9443c01a7336-21da4a54381mr47881155ad.14.1737709117666;
-        Fri, 24 Jan 2025 00:58:37 -0800 (PST)
-Received: from localhost ([122.172.84.139])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-21da414edb3sm11472525ad.202.2025.01.24.00.58.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 24 Jan 2025 00:58:37 -0800 (PST)
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	Lifeng Zheng <zhenglifeng1@huawei.com>,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 02/15] cpufreq: Export cpufreq_boost_set_sw()
-Date: Fri, 24 Jan 2025 14:28:06 +0530
-Message-Id: <bd30aeea7ab0d6bdb5fce90241b00798d6e1fbdb.1737707712.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
-In-Reply-To: <cover.1737707712.git.viresh.kumar@linaro.org>
-References: <cover.1737707712.git.viresh.kumar@linaro.org>
+	dkim=pass (4096-bit key) header.d=prolan.hu header.i=@prolan.hu header.b="bWYdEBiI"
+Received: from proxmox-mailgw.intranet.prolan.hu (localhost.localdomain [127.0.0.1])
+	by proxmox-mailgw.intranet.prolan.hu (Proxmox) with ESMTP id 67C1FA09FF;
+	Fri, 24 Jan 2025 09:58:36 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=prolan.hu; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:from:from:in-reply-to:message-id:mime-version:references
+	:reply-to:subject:subject:to:to; s=mail; bh=91vGKH59fvOB6uF7f30s
+	PCflWM08DH4/8R/h6OH+xOk=; b=bWYdEBiIDfkr5t2LBwXOpExJcaNdyEpjr3q2
+	ujGRpZDepB+Fx3X3FYnLbdlDmMxfY3wHv0NYj6BUtLajCg44fS555JfAKXu/+f49
+	qu9A574fniGVyIevXemx7T1caMjd6NJr+sZSb/2sW315WOaAuQMgB9x2MqhTNkU5
+	On4CKaM4B/ep3/QMX9gY8i9nJJSoKN8pajGpyixUlc5blKLnoIFkc4lHc3rmBIdg
+	rQWc+cKNU99krC1xf8pOMHpVXaRbB7XDlK55Ek5GU1uS9GieGzhqx0PRzduawBUU
+	sgr59jdZzZHacGyk9t0Tyr6zLp1tYoHB1trhaDB4UnsWhaKoirFEwnHtvhntNpTG
+	7k/APjH6FD3pfQWHiG78iYXuFVQ9r0gdCZ4sE/Vz98Vv/lUpemkky1sKAYu0XjkS
+	TVBNa2Z7F8vb1MgrF3DMe3hBUvgl8R9TtNM+FAvBBNayDlgrroxxA/FKQO/BXh3e
+	3aljHpxEVc0tyUJx1t+gu78iZTUPVELAE3NbEk1ncS/zoilz1InQAfMz7oaQSFZE
+	VKZ+lXImIMm4fM2U542tYqr6Er0Ni1im0U9lzAJuycrW88k4LVyM/zEpPYA7DV0J
+	86WA0YFH+JE9KQkZfJw2C9vdjQrmup3iGmI+qNdrOump5JWjQLZlIIAm+UpK1VIq
+	yTsUm3g=
+From: =?UTF-8?q?Bence=20Cs=C3=B3k=C3=A1s?= <csokas.bence@prolan.hu>
+To: =?UTF-8?q?Cs=C3=B3k=C3=A1s=2C=20Bence?= <csokas.bence@prolan.hu>, "Mark
+ Brown" <broonie@kernel.org>, Varshini Rajendran
+	<varshini.rajendran@microchip.com>, Tudor Ambarus <tudor.ambarus@linaro.org>,
+	<linux-spi@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-kernel@vger.kernel.org>
+CC: Vinod Koul <vkoul@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>, <dmaengine@vger.kernel.org>,
+	<linux-pm@vger.kernel.org>, Alexander Dahl <ada@thorsis.com>, Nicolas Ferre
+	<nicolas.ferre@microchip.com>, Alexandre Belloni
+	<alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>
+Subject: [PATCH v2 4/4] spi: atmel-quadspi: Fix unbalanced pm_runtime by using devm_ API
+Date: Fri, 24 Jan 2025 09:52:27 +0100
+Message-ID: <20250124085221.766303-15-csokas.bence@prolan.hu>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250124085221.766303-4-csokas.bence@prolan.hu>
+References: <20250124085221.766303-4-csokas.bence@prolan.hu>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
+X-ESET-AS: R=OK;S=0;OP=CALC;TIME=1737709115;VERSION=7984;MC=139577634;ID=70505;TRN=0;CRV=0;IPC=;SP=0;SIPS=0;PI=3;F=0
+X-ESET-Antispam: OK
+X-EsetResult: clean, is OK
+X-EsetId: 37303A29ACD94852677063
 
-This will be used directly by cpufreq driver going forward, export it.
+Fix unbalanced PM in error path of `atmel_qspi_probe()`
+by using `devm_pm_runtime_*()` functions.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Reported-by: Alexander Dahl <ada@thorsis.com>
+Closes: https://lore.kernel.org/linux-spi/20250110-paycheck-irregular-bcddab1276c7@thorsis.com/
+Fixes: 5af42209a4d2 ("spi: atmel-quadspi: Add support for sama7g5 QSPI")
+Signed-off-by: Bence Csókás <csokas.bence@prolan.hu>
 ---
- drivers/cpufreq/cpufreq.c | 3 ++-
- include/linux/cpufreq.h   | 6 ++++++
- 2 files changed, 8 insertions(+), 1 deletion(-)
+ drivers/spi/atmel-quadspi.c | 18 +++++-------------
+ 1 file changed, 5 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 0782a6d89df2..8b0754b506fa 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2786,7 +2786,7 @@ EXPORT_SYMBOL_GPL(cpufreq_update_limits);
- /*********************************************************************
-  *               BOOST						     *
-  *********************************************************************/
--static int cpufreq_boost_set_sw(struct cpufreq_policy *policy, int state)
-+int cpufreq_boost_set_sw(struct cpufreq_policy *policy, int state)
- {
- 	int ret;
+diff --git a/drivers/spi/atmel-quadspi.c b/drivers/spi/atmel-quadspi.c
+index b1fb4426c78d..f2164685d3d5 100644
+--- a/drivers/spi/atmel-quadspi.c
++++ b/drivers/spi/atmel-quadspi.c
+@@ -1426,22 +1426,18 @@ static int atmel_qspi_probe(struct platform_device *pdev)
  
-@@ -2805,6 +2805,7 @@ static int cpufreq_boost_set_sw(struct cpufreq_policy *policy, int state)
+ 	pm_runtime_set_autosuspend_delay(&pdev->dev, 500);
+ 	pm_runtime_use_autosuspend(&pdev->dev);
+-	pm_runtime_set_active(&pdev->dev);
+-	pm_runtime_enable(&pdev->dev);
+-	pm_runtime_get_noresume(&pdev->dev);
++	devm_pm_runtime_set_active(&pdev->dev);
++	devm_pm_runtime_enable(&pdev->dev);
++	devm_pm_runtime_get_noresume(&pdev->dev);
  
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(cpufreq_boost_set_sw);
+ 	err = atmel_qspi_init(aq);
+ 	if (err)
+ 		return err;
  
- static int cpufreq_boost_trigger_state(int state)
- {
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 0e708830d30d..c7d1fe5ebf7a 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -781,6 +781,7 @@ ssize_t cpufreq_show_cpus(const struct cpumask *mask, char *buf);
- bool cpufreq_boost_enabled(void);
- int cpufreq_enable_boost_support(void);
- bool policy_has_boost_freq(struct cpufreq_policy *policy);
-+int cpufreq_boost_set_sw(struct cpufreq_policy *policy, int state);
- 
- /* Find lowest freq at or above target in a table in ascending order */
- static inline int cpufreq_table_find_index_al(struct cpufreq_policy *policy,
-@@ -1164,6 +1165,11 @@ static inline bool policy_has_boost_freq(struct cpufreq_policy *policy)
- 	return false;
- }
- 
-+static inline int cpufreq_boost_set_sw(struct cpufreq_policy *policy, int state)
-+{
-+	return -EOPNOTSUPP;
-+}
+ 	err = spi_register_controller(ctrl);
+-	if (err) {
+-		pm_runtime_put_noidle(&pdev->dev);
+-		pm_runtime_disable(&pdev->dev);
+-		pm_runtime_set_suspended(&pdev->dev);
+-		pm_runtime_dont_use_autosuspend(&pdev->dev);
++	if (err)
+ 		return err;
+-	}
 +
- static inline int
- cpufreq_table_set_inefficient(struct cpufreq_policy *policy,
- 			      unsigned int frequency)
+ 	pm_runtime_mark_last_busy(&pdev->dev);
+ 	pm_runtime_put_autosuspend(&pdev->dev);
+ 
+@@ -1511,10 +1507,6 @@ static void atmel_qspi_remove(struct platform_device *pdev)
+ 		 */
+ 		dev_warn(&pdev->dev, "Failed to resume device on remove\n");
+ 	}
+-
+-	pm_runtime_disable(&pdev->dev);
+-	pm_runtime_dont_use_autosuspend(&pdev->dev);
+-	pm_runtime_put_noidle(&pdev->dev);
+ }
+ 
+ static int __maybe_unused atmel_qspi_suspend(struct device *dev)
 -- 
-2.31.1.272.g89b43f80a514
+2.48.1
+
 
