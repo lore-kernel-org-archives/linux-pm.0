@@ -1,125 +1,130 @@
-Received: from fw2.prolan.hu (fw2.prolan.hu [193.68.50.107])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f173.google.com (mail-pl1-f173.google.com [209.85.214.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D10421A424;
-	Fri, 24 Jan 2025 08:58:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.68.50.107
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B141D21A45A
+	for <linux-pm@vger.kernel.org>; Fri, 24 Jan 2025 08:58:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1737709120; cv=none; b=evIoaBi/gECFiA6iE9nQla50RZ2/hz8Y9AU5CSLp543dSN585FTcVufiCz1iwvf1iEacRdyEFMn2qqZaY8dBNg6n5Ou0V2dEYNVwjXaJ8tTTYkADPoX2pJpwVF7W+YF3DqnoqEQlrNejtKwcyVsso2tg/kCF+NIcVmX2QcbDbEE=
+	t=1737709123; cv=none; b=Hv694M0yyt3r9U8OggLdl9MucQdIfc4YpQtx4XRIqZ7mml1EhtrrLWC/Dhog2BV5cMp7aNJwX4LdPN4vzPs/FpE3ehK2suJTEwt33JVvsuwW7zImyx4N0WZi2Fw0JFmejjkInb+JlrBTfQhDA/bKJYNNtZcF6JQ7y9vnAVZ93cE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1737709120; c=relaxed/simple;
-	bh=00BIKWjEFdesAJiVHawtYMPiLZHbdAdarr4Sl8y0DgI=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=uVEM10RjCzsbnq4fjBmTcPqn3gjTfsuXjVoVHhl8WzADKvk+Xo9C3RzNS1gFKIMnuqSL/I6EH2ha2W8wtT14EeoB61q1RVKpOUi4Da55OIT6EOqyzt/p3zrOl+58ENGU5iSFGjm+RU/+1Oh2w3vUFEGgwFRbyPv1LGWR+TPjOSY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=prolan.hu; spf=pass smtp.mailfrom=prolan.hu; dkim=pass (4096-bit key) header.d=prolan.hu header.i=@prolan.hu header.b=bWYdEBiI; arc=none smtp.client-ip=193.68.50.107
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=prolan.hu
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=prolan.hu
+	s=arc-20240116; t=1737709123; c=relaxed/simple;
+	bh=znSW+w1v4+BqQtTVGnLiRgqkgsqi1gEv9fB8ofPO/uU=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=hxfSEUAoO5SbSORpSYrcTEwuWT0bfVGy5WWbaDElTh7e5V47Ga3EEOHWhRexT8ZnTTAw9jzWXJYBPHScMSi7ci1Ay71cz+p5FLYX9ZR7v6hwQJkus5+VQL06BXs8X/ScrVW6gbCWt48CHeoZTAVZFGSBR3WxsZ/xvuVmiAaVu2I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=QUvWnzG2; arc=none smtp.client-ip=209.85.214.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (4096-bit key) header.d=prolan.hu header.i=@prolan.hu header.b="bWYdEBiI"
-Received: from proxmox-mailgw.intranet.prolan.hu (localhost.localdomain [127.0.0.1])
-	by proxmox-mailgw.intranet.prolan.hu (Proxmox) with ESMTP id 67C1FA09FF;
-	Fri, 24 Jan 2025 09:58:36 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=prolan.hu; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:from:from:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=mail; bh=91vGKH59fvOB6uF7f30s
-	PCflWM08DH4/8R/h6OH+xOk=; b=bWYdEBiIDfkr5t2LBwXOpExJcaNdyEpjr3q2
-	ujGRpZDepB+Fx3X3FYnLbdlDmMxfY3wHv0NYj6BUtLajCg44fS555JfAKXu/+f49
-	qu9A574fniGVyIevXemx7T1caMjd6NJr+sZSb/2sW315WOaAuQMgB9x2MqhTNkU5
-	On4CKaM4B/ep3/QMX9gY8i9nJJSoKN8pajGpyixUlc5blKLnoIFkc4lHc3rmBIdg
-	rQWc+cKNU99krC1xf8pOMHpVXaRbB7XDlK55Ek5GU1uS9GieGzhqx0PRzduawBUU
-	sgr59jdZzZHacGyk9t0Tyr6zLp1tYoHB1trhaDB4UnsWhaKoirFEwnHtvhntNpTG
-	7k/APjH6FD3pfQWHiG78iYXuFVQ9r0gdCZ4sE/Vz98Vv/lUpemkky1sKAYu0XjkS
-	TVBNa2Z7F8vb1MgrF3DMe3hBUvgl8R9TtNM+FAvBBNayDlgrroxxA/FKQO/BXh3e
-	3aljHpxEVc0tyUJx1t+gu78iZTUPVELAE3NbEk1ncS/zoilz1InQAfMz7oaQSFZE
-	VKZ+lXImIMm4fM2U542tYqr6Er0Ni1im0U9lzAJuycrW88k4LVyM/zEpPYA7DV0J
-	86WA0YFH+JE9KQkZfJw2C9vdjQrmup3iGmI+qNdrOump5JWjQLZlIIAm+UpK1VIq
-	yTsUm3g=
-From: =?UTF-8?q?Bence=20Cs=C3=B3k=C3=A1s?= <csokas.bence@prolan.hu>
-To: =?UTF-8?q?Cs=C3=B3k=C3=A1s=2C=20Bence?= <csokas.bence@prolan.hu>, "Mark
- Brown" <broonie@kernel.org>, Varshini Rajendran
-	<varshini.rajendran@microchip.com>, Tudor Ambarus <tudor.ambarus@linaro.org>,
-	<linux-spi@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-kernel@vger.kernel.org>
-CC: Vinod Koul <vkoul@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>, <dmaengine@vger.kernel.org>,
-	<linux-pm@vger.kernel.org>, Alexander Dahl <ada@thorsis.com>, Nicolas Ferre
-	<nicolas.ferre@microchip.com>, Alexandre Belloni
-	<alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>
-Subject: [PATCH v2 4/4] spi: atmel-quadspi: Fix unbalanced pm_runtime by using devm_ API
-Date: Fri, 24 Jan 2025 09:52:27 +0100
-Message-ID: <20250124085221.766303-15-csokas.bence@prolan.hu>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20250124085221.766303-4-csokas.bence@prolan.hu>
-References: <20250124085221.766303-4-csokas.bence@prolan.hu>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="QUvWnzG2"
+Received: by mail-pl1-f173.google.com with SMTP id d9443c01a7336-21c2f1b610dso40079455ad.0
+        for <linux-pm@vger.kernel.org>; Fri, 24 Jan 2025 00:58:41 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1737709121; x=1738313921; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=LvdbY4/AKo15uXXJkPA6XTvZrqE667hU3K6CfKEA8Zo=;
+        b=QUvWnzG2uRk7llsHOmyqcxSpgNSLVNjh9lV6T3MJgOzcc5z512u/JtKBunB2lZL0av
+         h15w8m736r2Bd6RAPw8IfF2Y482Z+bv87+21D/T5zk4Ef21DnizuThdOhM9qJaMLJH6i
+         k8MMJUuDgcj7xn/GWmSdMIYrJtyYwRLDx7dNCeFPaXBxZZEXDPJ4jotGZLRjlZdUmWTl
+         X8mTyqUB7wgMPeXnqVTWQcMJbuvbRrQlUvk/j/EWWllpQvvqJKf4FYOb4wyxqXVl4P91
+         NgnPVda/bxTFRBix06jWp3o7qDtdc1SXBvW4+NgtDZeccOID3hiA8t+LanmDqueUJppJ
+         ZtSA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1737709121; x=1738313921;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=LvdbY4/AKo15uXXJkPA6XTvZrqE667hU3K6CfKEA8Zo=;
+        b=ghfYTfK48AzqAGSFRNQ57EHx8++8oE6eecOXp8DFygr9ZCfTlC3RJ32Tw88liRotJv
+         3jxq96V32BT+jIuNySNLyqS6vTftEcfBgp6tV3capx8RiMICGFalKNOyrLf/tQuS2Fre
+         /d2aAT2G+S8WeKg+vfqDzTDD51mNuI06BJR2COGfJRIiJJZ56tadNw+gvegI7whyAdGh
+         KT0yHKprGJ07ku8TQBTNGVtW7R3se2cRQUTe7U6ym1N81pNxocZKPvcIfZVNXSY+Ui9q
+         pSbps1UbRH5Q551/SJmXnqS0riXv7leCx5KFj+kCjzYgYUVaGcGZTUbHqN259nOV9JSX
+         T22A==
+X-Gm-Message-State: AOJu0YxlgrZS8dahX12NmJKy5NyKer+sAQEiBEM6gaNaO7wd5DZvIjL1
+	sdtGWZeZNy1Ggl7fG4zxj+3Ltdt06wQi4MHA2RA/RRAsSy3Etw+oUo9ZgzXkOhQ=
+X-Gm-Gg: ASbGnct3rhAR/HyDi4jUjwfVSmGc90WfJW4R9eTtY/HgCefCmvk3zjRMaEt4zlLBEv1
+	d1/vyf/qsFkI27mVO+Vd6cwtLo8MXozmcwiPO78s5+w9ggDQ/uLoE+n3uRxPWy8SNm6pgoDtDCB
+	dsbOzbbB1/C517LY2DlKvwhrK6Colw95f0jI9yUSU0kbNogL8hz+9mxNtH6UtryvflK1ISwA5Sp
+	q+FMVaitKTaF/Xq6pmWGXt9WMPm1lc7MHn5YX/rath8CqKX7nPJt68lt4sV0W30fNFzZrydbu0D
+	ym8rhDM=
+X-Google-Smtp-Source: AGHT+IHuCYPoMveSKfSnW64isYzqBc1It/cW98VCzyz0WynpxJ9l951hdasMB8SxE5p49YNv5MjiQA==
+X-Received: by 2002:a05:6a20:734e:b0:1e1:ac4f:d322 with SMTP id adf61e73a8af0-1eb214a0817mr46368460637.14.1737709121060;
+        Fri, 24 Jan 2025 00:58:41 -0800 (PST)
+Received: from localhost ([122.172.84.139])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-72f8a69fb24sm1322219b3a.8.2025.01.24.00.58.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 24 Jan 2025 00:58:40 -0800 (PST)
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Lifeng Zheng <zhenglifeng1@huawei.com>,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH 03/15] cpufreq: Introduce policy->boost_supported flag
+Date: Fri, 24 Jan 2025 14:28:07 +0530
+Message-Id: <97f0694fc5a3b408251ec5456b17bd8692938f02.1737707712.git.viresh.kumar@linaro.org>
+X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
+In-Reply-To: <cover.1737707712.git.viresh.kumar@linaro.org>
+References: <cover.1737707712.git.viresh.kumar@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-X-ESET-AS: R=OK;S=0;OP=CALC;TIME=1737709115;VERSION=7984;MC=139577634;ID=70505;TRN=0;CRV=0;IPC=;SP=0;SIPS=0;PI=3;F=0
-X-ESET-Antispam: OK
-X-EsetResult: clean, is OK
-X-EsetId: 37303A29ACD94852677063
 
-Fix unbalanced PM in error path of `atmel_qspi_probe()`
-by using `devm_pm_runtime_*()` functions.
+It is possible to have a scenario where not all cpufreq policies support
+boost frequencies. And letting sysfs (or other parts of the kernel)
+enable boost feature for that policy isn't correct.
 
-Reported-by: Alexander Dahl <ada@thorsis.com>
-Closes: https://lore.kernel.org/linux-spi/20250110-paycheck-irregular-bcddab1276c7@thorsis.com/
-Fixes: 5af42209a4d2 ("spi: atmel-quadspi: Add support for sama7g5 QSPI")
-Signed-off-by: Bence Csókás <csokas.bence@prolan.hu>
+Add a new flag, boost_supported, which will be set to true by the
+cpufreq core only if the freq table contains valid boost frequencies.
+
+Some cpufreq drivers though don't have boost frequencies in the
+freq-table, they can set this flag from their ->init() callbacks.
+
+Once all the drivers are updated to set the flag correctly, we can check
+it before enabling boost feature for a policy.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/spi/atmel-quadspi.c | 18 +++++-------------
- 1 file changed, 5 insertions(+), 13 deletions(-)
+ drivers/cpufreq/freq_table.c | 4 ++++
+ include/linux/cpufreq.h      | 3 +++
+ 2 files changed, 7 insertions(+)
 
-diff --git a/drivers/spi/atmel-quadspi.c b/drivers/spi/atmel-quadspi.c
-index b1fb4426c78d..f2164685d3d5 100644
---- a/drivers/spi/atmel-quadspi.c
-+++ b/drivers/spi/atmel-quadspi.c
-@@ -1426,22 +1426,18 @@ static int atmel_qspi_probe(struct platform_device *pdev)
+diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
+index 16e56f2fcee4..185070052b41 100644
+--- a/drivers/cpufreq/freq_table.c
++++ b/drivers/cpufreq/freq_table.c
+@@ -359,6 +359,10 @@ int cpufreq_table_validate_and_sort(struct cpufreq_policy *policy)
+ 	if (ret)
+ 		return ret;
  
- 	pm_runtime_set_autosuspend_delay(&pdev->dev, 500);
- 	pm_runtime_use_autosuspend(&pdev->dev);
--	pm_runtime_set_active(&pdev->dev);
--	pm_runtime_enable(&pdev->dev);
--	pm_runtime_get_noresume(&pdev->dev);
-+	devm_pm_runtime_set_active(&pdev->dev);
-+	devm_pm_runtime_enable(&pdev->dev);
-+	devm_pm_runtime_get_noresume(&pdev->dev);
- 
- 	err = atmel_qspi_init(aq);
- 	if (err)
- 		return err;
- 
- 	err = spi_register_controller(ctrl);
--	if (err) {
--		pm_runtime_put_noidle(&pdev->dev);
--		pm_runtime_disable(&pdev->dev);
--		pm_runtime_set_suspended(&pdev->dev);
--		pm_runtime_dont_use_autosuspend(&pdev->dev);
-+	if (err)
- 		return err;
--	}
++	/* Driver's may have set this field already */
++	if (policy_has_boost_freq(policy))
++		policy->boost_supported = true;
 +
- 	pm_runtime_mark_last_busy(&pdev->dev);
- 	pm_runtime_put_autosuspend(&pdev->dev);
- 
-@@ -1511,10 +1507,6 @@ static void atmel_qspi_remove(struct platform_device *pdev)
- 		 */
- 		dev_warn(&pdev->dev, "Failed to resume device on remove\n");
- 	}
--
--	pm_runtime_disable(&pdev->dev);
--	pm_runtime_dont_use_autosuspend(&pdev->dev);
--	pm_runtime_put_noidle(&pdev->dev);
+ 	return set_freq_table_sorted(policy);
  }
  
- static int __maybe_unused atmel_qspi_suspend(struct device *dev)
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index c7d1fe5ebf7a..b017af4398b9 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -144,6 +144,9 @@ struct cpufreq_policy {
+ 	/* Per policy boost enabled flag. */
+ 	bool			boost_enabled;
+ 
++	/* Per policy boost supported flag. */
++	bool			boost_supported;
++
+ 	 /* Cached frequency lookup from cpufreq_driver_resolve_freq. */
+ 	unsigned int cached_target_freq;
+ 	unsigned int cached_resolved_idx;
 -- 
-2.48.1
-
+2.31.1.272.g89b43f80a514
 
