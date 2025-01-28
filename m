@@ -1,33 +1,33 @@
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id D19C51F667A;
-	Tue, 28 Jan 2025 18:22:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 93D351F78E6;
+	Tue, 28 Jan 2025 18:22:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738088525; cv=none; b=Nwc555yHtL8zYYdSOf///71xKgwTuDPg+YcEX0LkXNHiAb+kXDCxaz/QxxwL6da8YRrk2TPzM769J0geQNcDgdd96dEGobOBAC9Dsml951nMGvCOZQV2a7GXSSUzFpf8BRogtLtvzPCJuWbhnaJoAj3xLiGTxrsfKHVgnFCVLa0=
+	t=1738088526; cv=none; b=qMBPJsMKjK1pq5L1+e3eJVCXguIvb5se9t+S+j/L458543BAhdIMygqp4v6T0qJBDDTqfmPuf+uorLseusFzPADt2KczgtW8xCP8aKY01+RTeQar711LPIJysFgMMgIeDBBy8PQpgyokMxyv+XZQo9pDV/2RtjGx7bR9lEl0y1c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738088525; c=relaxed/simple;
-	bh=/FXWK0n3siVRo/xV5fNEKJe6vhBZrxP7iSjz3SuPHsM=;
+	s=arc-20240116; t=1738088526; c=relaxed/simple;
+	bh=CLfhMWMTls81fldJlgdOHYuSb53h9V9zAXCK22tn3uE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Ihnt390y2uv76ZcuAtEbaGU/oBo0qaUMR1Tw+Aq0xzExs6+WmSXLCEVlOSM/5thHq2SCCFQDsC7Kz4bxVRYwkBDGVqUAbA42Yzew454N2qqoU9yy2Cwr7C1zfiKs20cugRbHvPT0x4QdtWdg0W8PZdhjgaf6jMn/oFlDlFW/9XM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=i1P5CteI; arc=none smtp.client-ip=13.77.154.182
+	 In-Reply-To:To:Cc; b=XnjjS/NSjR1y3mM3R7IyCDuuoixov41sonUhcjmfVqVFCacoLRlFs+EfMoFbjWdeVIvKJeTzeuhN/ITJHjHn22La1SmwgRlYsHMTafAOQoA2HkWQ+VC8d3VDS+T0iYYIun8LFew8e7shTXNunqRfGOUnWc0sooK3KoW0BIUytFU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=ZOuwdqaZ; arc=none smtp.client-ip=13.77.154.182
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="i1P5CteI"
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="ZOuwdqaZ"
 Received: from eahariha-devbox.internal.cloudapp.net (unknown [40.91.112.99])
-	by linux.microsoft.com (Postfix) with ESMTPSA id 367E92037182;
+	by linux.microsoft.com (Postfix) with ESMTPSA id 7B8912037183;
 	Tue, 28 Jan 2025 10:21:59 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 367E92037182
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 7B8912037183
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
 	s=default; t=1738088519;
-	bh=cIG2dfkqcecUU0JqZpchlOURAaCdxgZkNT0UTt4bvLA=;
+	bh=VqcHpB+vyGTp1RMX3+WFTH5f5bCj+Q9J8OolxUskrKo=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=i1P5CteIH6opQQHIehVjxxbMtebMN7rXuNwBXMSI0asiaK5CTudtXAgtKgnK6I75c
-	 1ngX/e4Oyj1B1vWMI4mQPUPmJ8cuPN3FTRVbcAp1DyhUYo8gGu4rDV59iA6QKrL9uC
-	 BkxdKeiMaFW1YdRdBrMCMMVni2EQgoLc5InCNfZg=
+	b=ZOuwdqaZhug0KNQQ21Ohb30BhgvBJyo55qHRaa7MGqCb8wONCvj3jN/bLp9sKWWM6
+	 8bC+bT63Hpx0+HHlZCeQeaR75fGVzJRRwDfMPixaFz8dfRqI1843e4U/m+evk1P+Me
+	 /+O0qMwZndCMTYuy618bWJRmYRUItE1KI26PeEM4=
 From: Easwar Hariharan <eahariha@linux.microsoft.com>
-Date: Tue, 28 Jan 2025 18:21:57 +0000
-Subject: [PATCH 12/16] spi: spi-fsl-lpspi: convert timeouts to
+Date: Tue, 28 Jan 2025 18:21:59 +0000
+Subject: [PATCH 14/16] platform/x86/amd/pmf: convert timeouts to
  secs_to_jiffies()
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -37,7 +37,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250128-converge-secs-to-jiffies-part-two-v1-12-9a6ecf0b2308@linux.microsoft.com>
+Message-Id: <20250128-converge-secs-to-jiffies-part-two-v1-14-9a6ecf0b2308@linux.microsoft.com>
 References: <20250128-converge-secs-to-jiffies-part-two-v1-0-9a6ecf0b2308@linux.microsoft.com>
 In-Reply-To: <20250128-converge-secs-to-jiffies-part-two-v1-0-9a6ecf0b2308@linux.microsoft.com>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -98,22 +98,23 @@ expression E;
 
 Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
 ---
- drivers/spi/spi-fsl-lpspi.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/platform/x86/amd/pmf/acpi.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/spi/spi-fsl-lpspi.c b/drivers/spi/spi-fsl-lpspi.c
-index 40f5c8fdba765a1334710a696966232a459316e6..5e381844523440c03b1d0bbe4a044f28fbfbc738 100644
---- a/drivers/spi/spi-fsl-lpspi.c
-+++ b/drivers/spi/spi-fsl-lpspi.c
-@@ -572,7 +572,7 @@ static int fsl_lpspi_calculate_timeout(struct fsl_lpspi_data *fsl_lpspi,
- 	timeout += 1;
+diff --git a/drivers/platform/x86/amd/pmf/acpi.c b/drivers/platform/x86/amd/pmf/acpi.c
+index dd5780a1d06e1dc979fcff5bafd6729bc4937eab..6b7effe80b78b7389b320ee65fa5d2373f782a2f 100644
+--- a/drivers/platform/x86/amd/pmf/acpi.c
++++ b/drivers/platform/x86/amd/pmf/acpi.c
+@@ -220,7 +220,8 @@ static void apmf_sbios_heartbeat_notify(struct work_struct *work)
+ 	if (!info)
+ 		return;
  
- 	/* Double calculated timeout */
--	return msecs_to_jiffies(2 * timeout * MSEC_PER_SEC);
-+	return secs_to_jiffies(2 * timeout);
+-	schedule_delayed_work(&dev->heart_beat, msecs_to_jiffies(dev->hb_interval * 1000));
++	schedule_delayed_work(&dev->heart_beat,
++			      secs_to_jiffies(dev->hb_interval));
+ 	kfree(info);
  }
  
- static int fsl_lpspi_dma_transfer(struct spi_controller *controller,
 
 -- 
 2.43.0
