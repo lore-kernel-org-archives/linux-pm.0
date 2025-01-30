@@ -1,122 +1,97 @@
-Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.153.233])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f180.google.com (mail-pl1-f180.google.com [209.85.214.180])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB8C91F0E4B;
-	Thu, 30 Jan 2025 17:36:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=68.232.153.233
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 480391F12E7
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jan 2025 17:36:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738258604; cv=none; b=iZOct9GkjScCuCNZljpxJbRcftiWsTzPn7C7Ly5PRKH2ODST1Xscea3q82sjxOWRaNZP2FUtL1btFlr2J1BqZYP6x+3PJFvxL5MaKPOrXYmqLN9Q2X+6LMYJkA8rSWhPcFwb5G/xkA2Z7t5Ih6yZOAxwwcbAXzWfZG4JKYxzjbM=
+	t=1738258608; cv=none; b=sS9OLKEAMKh1YS7boevOpLqeV0btAVbOpvEqFM7o95HVibDKzVHSBDrGjvvo6xO7sa6WShwZkIBwSEZfETSKPfwexvazxtXCmgH4vfG23Xzoba/y/RDZumHh/zTCOSSWfRBCKL0Xx97itTCYcE31O4aFM3FeL9qZ4PrcR4H7Qiw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738258604; c=relaxed/simple;
-	bh=p3Cyb/cPLZ7SgIXfTGUhQyszzRIzj7nYuKwg8Xj4+eM=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=jiH0BfzYaZ8YdmQEnDBRNfClZu6PzJShfQz09ifyHVHXgyPZN4zZmlYav1l6Ef7sE6Vv9RySatnXzTDwXJZF0gxz/hCTc9n1GuO++8fPIo8th4TxKIZbrpX1ja82qPglTbAwUdzQ5BUhrSO6IL4Yf+29ASnXvbvOJc8+ypuy+Cw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com; spf=pass smtp.mailfrom=microchip.com; dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b=J7fq2C8Z; arc=none smtp.client-ip=68.232.153.233
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=microchip.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b="J7fq2C8Z"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1738258602; x=1769794602;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=p3Cyb/cPLZ7SgIXfTGUhQyszzRIzj7nYuKwg8Xj4+eM=;
-  b=J7fq2C8ZJaMwe2U7Vu94xAbBr9xmz1c+CF3y0OXGz2eE2vT9FeRXft9X
-   NOuUnnhQU9mYWj9TjAd4uuBykc1/LKYhtAU3rID0gxSFISswmEY0eZSVr
-   0lms3LHt4hsBsrpkIkdf1605Ooehsr+SuN6My/iIzVirolYCj97oLr75a
-   Oddt2zT7dCPP2U7+olblECDaAO2+loOIC6R2vs7S1oTRZplnxImh7Z8mI
-   zNi82mxV1UvJponukFb5UtK0VqzrSGiNykqQ8BSOBn7+s8WVqqLMJD1Zh
-   jw7lApsYNo5VFVFJVn8zVLpXMA8SMdtstmh1qm3Pbc7jzKlzxj00wfisr
-   A==;
-X-CSE-ConnectionGUID: GO3KDPJbR/uA3pTmQtIuSA==
-X-CSE-MsgGUID: E/30LreORoCEnjpkpG7qjg==
-X-IronPort-AV: E=Sophos;i="6.13,246,1732604400"; 
-   d="scan'208";a="41090068"
-X-Amp-Result: SKIPPED(no attachment in message)
-Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
-  by esa1.microchip.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 30 Jan 2025 10:36:41 -0700
-Received: from chn-vm-ex04.mchp-main.com (10.10.85.152) by
- chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35; Thu, 30 Jan 2025 10:35:41 -0700
-Received: from ryan-Precision-3630-Tower.microchip.com (10.10.85.11) by
- chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server id
- 15.1.2507.35 via Frontend Transport; Thu, 30 Jan 2025 10:35:41 -0700
-From: <Ryan.Wanner@microchip.com>
-To: <lee@kernel.org>, <robh@kernel.org>, <krzk+dt@kernel.org>,
-	<conor+dt@kernel.org>, <claudiu.beznea@tuxon.dev>, <sre@kernel.org>,
-	<nicolas.ferre@microchip.com>, <alexandre.belloni@bootlin.com>,
-	<p.zabel@pengutronix.de>, <linux@armlinux.org.uk>
-CC: <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-rtc@vger.kernel.org>, Ryan Wanner <Ryan.Wanner@microchip.com>
-Subject: [PATCH 11/16] ARM: at91: pm: add DT compatible support for sama7d65
-Date: Thu, 30 Jan 2025 10:33:51 -0700
-Message-ID: <fb9f89b8c1a050d3600a073c31b34601e0e4a87e.1738257860.git.Ryan.Wanner@microchip.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <cover.1738257860.git.Ryan.Wanner@microchip.com>
-References: <cover.1738257860.git.Ryan.Wanner@microchip.com>
+	s=arc-20240116; t=1738258608; c=relaxed/simple;
+	bh=fEvX637Z7c33Zk5WCEhwiVVgzZ0aKNk8OcHlF0sVoOk=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=Pf6dUsg0DX08lNz8V2r1aidXfTbsb2jlt8WWF86u1v+9a89uC8OmhFbDGDpgBLNonlbw/vhDn93vBzP4lW/YWL6VOuz4owOHqY2iIircMx3kxRaRB0D5oAP2U+2QJnf7rcDHvnwyBgIxLN4Mp2VfAsSKBrBVJSOSivGjRww+yUY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=kernel.org; spf=pass smtp.mailfrom=baylibre.com; arc=none smtp.client-ip=209.85.214.180
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+Received: by mail-pl1-f180.google.com with SMTP id d9443c01a7336-21669fd5c7cso19108425ad.3
+        for <linux-pm@vger.kernel.org>; Thu, 30 Jan 2025 09:36:46 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1738258605; x=1738863405;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Wba71lrlJHRpHNYwCSUOMwjfSnFCdMmwKcitB9A/Re8=;
+        b=kq9cguoFEJiFCz5GNTtWy0R9lrJnCKcSUVyuIudjCY1WHHZYIc9/2d4XlrlgNNWzvz
+         9ZZ/cupVfSam3M6pG/Igk198CC/pEruUhqqPnK4hMEE8NSbwOIyWb4Q4H1rrxTBlGRPJ
+         wcYXTtdNazAFhubNXn0SxPddE54YAtFVBa/RDisoU0f8WpfB8JxAJ8jd29if0/vO8Ek7
+         g8CE3GsOoiF6vNsXWnP1t1IhP9Ik0Oqi/AXNW7PdXVFKyH6Cd/zKPZz8neVozd+SeGWg
+         VYEWVzgHX/gh7yTwfeWalzzoshl7mTE35CLqUXvXOZFlknl78hGIURZ5yN6/kWa6FXit
+         5seA==
+X-Forwarded-Encrypted: i=1; AJvYcCWR5JMC9KpTbUZdryAhjU6BvoP7m9JrriRKWk3wxtCp6vL0+q3bmB4DOBmPcBhB0UEHJfrAjoczJw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwMMdsPaN917DH5q+edp4p3ke4nKd9DwGx8EbiML4+EAiMCg0L9
+	E8ikDZh3A/tkREcLJftFWTBBWOCbSQ0vnCN0jdWMU4HW1L1/4bA+TL62lJpDyls=
+X-Gm-Gg: ASbGncsWIaig/eTB6x8GTX7zH3Ji0lvPdYi2t/D7mF1YhMxCgb1Hfo6UzxiZTqN+dNS
+	Bc7jRvO+1jWcwK61lBSgP1UbGoLPHJs3BP+AHt6ngKvYLFgCoVe5v0dsHKqSMI+72hHG3rIgEZ1
+	tINH36Jnui4usRZpukvhxZTxAMYPsocrEDoltGuI2B669jtLo18n39xf37vpUfM29tLPkZgWKUi
+	AExBk7hRY57ivQ0SUtjNFmVoELPa67SGRchF7h3xV7U1WKkuZtAAcPA6xzxLnB12Gazfwz7nl/z
+	xN4j6cvg+kakzw==
+X-Google-Smtp-Source: AGHT+IHPgtyksfxV717Ovby5/EZ85xi1T/C77gVscvPLkijnPA2Hto/kR8guWoggO+GeixLtqrCFiA==
+X-Received: by 2002:a05:6a20:7345:b0:1e1:c03c:b420 with SMTP id adf61e73a8af0-1ed7a6b820dmr14182766637.31.1738258605613;
+        Thu, 30 Jan 2025 09:36:45 -0800 (PST)
+Received: from localhost ([97.126.182.119])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-acebe384272sm1423838a12.18.2025.01.30.09.36.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 30 Jan 2025 09:36:45 -0800 (PST)
+From: Kevin Hilman <khilman@kernel.org>
+To: Keita Morisaki <keyz@google.com>, rostedt@goodmis.org,
+ mhiramat@kernel.org, mathieu.desnoyers@efficios.com,
+ linux-kernel@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+ lpieralisi@kernel.org, sudeep.holla@arm.com, rafael@kernel.org,
+ daniel.lezcano@linaro.org, linux-pm@vger.kernel.org
+Cc: aarontian@google.com, yimingtseng@google.com, Keita Morisaki
+ <keyz@google.com>
+Subject: Re: [PATCH v3] cpuidle: psci: Add trace for PSCI domain idle
+In-Reply-To: <20250125013145.1664062-1-keyz@google.com>
+References: <20250125012734.1661860-1-keyz@google.com>
+ <20250125013145.1664062-1-keyz@google.com>
+Date: Thu, 30 Jan 2025 09:36:44 -0800
+Message-ID: <7hy0ysi4pf.fsf@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 
-From: Ryan Wanner <Ryan.Wanner@microchip.com>
+Keita Morisaki <keyz@google.com> writes:
 
-Add support for SAMA7D65 new compatible strings in pm.c file for wakeup source
-IDs and PMC.
-This is the first bits of PM for this new SoC. PM depends on other patches.
+> The trace event cpu_idle provides insufficient information for debugging
+> PSCI requests due to lacking access to determined PSCI domain idle
+> states. The cpu_idle usually only shows -1, 0, or 1 regardless how many
+> idle states the power domain has.
+>
+> Add new trace events namely psci_domain_idle_enter and
+> psci_domain_idle_exit to trace enter and exit events with a determined
+> idle state.
+>
+> These new trace events will help developers debug CPUidle issues on ARM
+> systems using PSCI by providing more detailed information about the
+> requested idle states.
+>
+> Signed-off-by: Keita Morisaki <keyz@google.com>
+> Reviewed-by: Steven Rostedt (Google) <rostedt@goodmis.org>
 
-Signed-off-by: Ryan Wanner <Ryan.Wanner@microchip.com>
-[nicolas.ferre@microchip.com: split patch and address only the pm.c changes]
-Signed-off-by: Nicolas Ferre <nicolas.ferre@microchip.com>
----
- arch/arm/mach-at91/pm.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+Tested-by: Kevin Hilman <khilman@baylibre.com>
 
-diff --git a/arch/arm/mach-at91/pm.c b/arch/arm/mach-at91/pm.c
-index 32b8354738752..a8cd1300a8f33 100644
---- a/arch/arm/mach-at91/pm.c
-+++ b/arch/arm/mach-at91/pm.c
-@@ -222,12 +222,14 @@ static const struct of_device_id sam9x60_ws_ids[] = {
- 	{ /* sentinel */ }
- };
- 
--static const struct of_device_id sama7g5_ws_ids[] = {
--	{ .compatible = "microchip,sama7g5-rtc",	.data = &ws_info[1] },
-+static const struct of_device_id sama7_ws_ids[] = {
-+	{ .compatible = "microchip,sama7d65-rtc",	.data = &ws_info[1] },
-+	{ .compatible = "microchip,sama7g5-rtc",        .data = &ws_info[1] },
- 	{ .compatible = "microchip,sama7g5-ohci",	.data = &ws_info[2] },
- 	{ .compatible = "usb-ohci",			.data = &ws_info[2] },
- 	{ .compatible = "atmel,at91sam9g45-ehci",	.data = &ws_info[2] },
- 	{ .compatible = "usb-ehci",			.data = &ws_info[2] },
-+	{ .compatible = "microchip,sama7d65-sdhci",	.data = &ws_info[3] },
- 	{ .compatible = "microchip,sama7g5-sdhci",	.data = &ws_info[3] },
- 	{ .compatible = "microchip,sama7g5-rtt",	.data = &ws_info[4] },
- 	{ /* sentinel */ }
-@@ -1379,6 +1381,7 @@ static const struct of_device_id atmel_pmc_ids[] __initconst = {
- 	{ .compatible = "atmel,sama5d2-pmc", .data = &pmc_infos[1] },
- 	{ .compatible = "microchip,sam9x60-pmc", .data = &pmc_infos[4] },
- 	{ .compatible = "microchip,sam9x7-pmc", .data = &pmc_infos[4] },
-+	{ .compatible = "microchip,sama7d65-pmc", .data = &pmc_infos[4] },
- 	{ .compatible = "microchip,sama7g5-pmc", .data = &pmc_infos[5] },
- 	{ /* sentinel */ },
- };
-@@ -1672,7 +1675,7 @@ void __init sama7_pm_init(void)
- 	at91_pm_modes_init(iomaps, ARRAY_SIZE(iomaps));
- 	at91_pm_init(NULL);
- 
--	soc_pm.ws_ids = sama7g5_ws_ids;
-+	soc_pm.ws_ids = sama7_ws_ids;
- 	soc_pm.config_pmc_ws = at91_sam9x60_config_pmc_ws;
- 
- 	soc_pm.sfrbu_regs.pswbu.key = (0x4BD20C << 8);
--- 
-2.43.0
+I've been using some local trace_printk() to do exactly this, so I fully
+support having some official tracepoints here. 
 
+For my local hacks, I was trackin the state index as well as the state
+value since for quick debug, I find the index to more human readable
+than the state value, which I have to compare with the
+arm,psci-suspend-pararm from the DT.
+
+Anyways, thanks for submitting this!
+
+Kevin
