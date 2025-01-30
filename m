@@ -1,43 +1,43 @@
-Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
+Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.153.233])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7FD351F2C3D;
-	Thu, 30 Jan 2025 17:36:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=68.232.154.123
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB8C91F0E4B;
+	Thu, 30 Jan 2025 17:36:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=68.232.153.233
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738258589; cv=none; b=kdoA2r78UHKIl7GzaTDwq7m1lhU218yIkdQK9ScgKPBgvp8sGZRJqK5nE1PT5/3ZjdK8WWh9EemT2pxhmYGLIoN9ku7qhQ1HnUlvLmfxVpRbkSnKchn50X7Km6OgYJV2BQCNGj2hdNI0CIS/J7giI/kQv50PbC9G5lEVFWPQn78=
+	t=1738258604; cv=none; b=iZOct9GkjScCuCNZljpxJbRcftiWsTzPn7C7Ly5PRKH2ODST1Xscea3q82sjxOWRaNZP2FUtL1btFlr2J1BqZYP6x+3PJFvxL5MaKPOrXYmqLN9Q2X+6LMYJkA8rSWhPcFwb5G/xkA2Z7t5Ih6yZOAxwwcbAXzWfZG4JKYxzjbM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738258589; c=relaxed/simple;
-	bh=tr+5ctybWd1qXbabAXHiNSfhGJo/z7RoiOi9HQGyK+g=;
+	s=arc-20240116; t=1738258604; c=relaxed/simple;
+	bh=p3Cyb/cPLZ7SgIXfTGUhQyszzRIzj7nYuKwg8Xj4+eM=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=BRjTcOl8tUxuNkbshcVX3FG6D3EY3W+G1m9H6wXmU/Bh/NcNEOJQIl/ouZfBFlQpSgR/j3acB0zAY8J9taqtT6OBjTHdx5V5M6jmB8gtuRuSi32pD7nO1n9fgO13K5iD2Nwp3MgLGgpdwvvpTLeuoea4sMG1HQwwgR3Rrrd+mug=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com; spf=pass smtp.mailfrom=microchip.com; dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b=Ab3k73GA; arc=none smtp.client-ip=68.232.154.123
+	 MIME-Version:Content-Type; b=jiH0BfzYaZ8YdmQEnDBRNfClZu6PzJShfQz09ifyHVHXgyPZN4zZmlYav1l6Ef7sE6Vv9RySatnXzTDwXJZF0gxz/hCTc9n1GuO++8fPIo8th4TxKIZbrpX1ja82qPglTbAwUdzQ5BUhrSO6IL4Yf+29ASnXvbvOJc8+ypuy+Cw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com; spf=pass smtp.mailfrom=microchip.com; dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b=J7fq2C8Z; arc=none smtp.client-ip=68.232.153.233
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=microchip.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b="Ab3k73GA"
+	dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b="J7fq2C8Z"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1738258587; x=1769794587;
+  t=1738258602; x=1769794602;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=tr+5ctybWd1qXbabAXHiNSfhGJo/z7RoiOi9HQGyK+g=;
-  b=Ab3k73GAQTThsKIIdQ1Hjmmtvu0j+KRSw2LNusR8VwaJF7RFeq80ne48
-   XTzt1efMKLKOo3PPbLnCYCxg78zv78Gx7xavCsk8iFRGkiv+BVQWB/PBr
-   bArLxvx8OTFagzyXlxYA67ZjJauiC88UoY4ttRCDLkbuFZEyPLLxVR2Xq
-   NyhMhP/u2SmWU0d42BmzYrOs7kViZNBFNzDzP7c0ZRBez5qh8C3+Nq06n
-   hZkO7uygFyi5EG7YEvK9CMO3QznEaibm6UgFxYQztgaNGVar24kfLenOr
-   w+FvBwO8a9y9ASxX96Cdd4FRz28yFMHMcqyqjoo8CHAFEkil3hBFf7Wox
-   g==;
-X-CSE-ConnectionGUID: Qux6TnwtQkq+U6Cg6JCAlA==
-X-CSE-MsgGUID: QG7KiDv0SXmpwDdFB//Xow==
+  bh=p3Cyb/cPLZ7SgIXfTGUhQyszzRIzj7nYuKwg8Xj4+eM=;
+  b=J7fq2C8ZJaMwe2U7Vu94xAbBr9xmz1c+CF3y0OXGz2eE2vT9FeRXft9X
+   NOuUnnhQU9mYWj9TjAd4uuBykc1/LKYhtAU3rID0gxSFISswmEY0eZSVr
+   0lms3LHt4hsBsrpkIkdf1605Ooehsr+SuN6My/iIzVirolYCj97oLr75a
+   Oddt2zT7dCPP2U7+olblECDaAO2+loOIC6R2vs7S1oTRZplnxImh7Z8mI
+   zNi82mxV1UvJponukFb5UtK0VqzrSGiNykqQ8BSOBn7+s8WVqqLMJD1Zh
+   jw7lApsYNo5VFVFJVn8zVLpXMA8SMdtstmh1qm3Pbc7jzKlzxj00wfisr
+   A==;
+X-CSE-ConnectionGUID: GO3KDPJbR/uA3pTmQtIuSA==
+X-CSE-MsgGUID: E/30LreORoCEnjpkpG7qjg==
 X-IronPort-AV: E=Sophos;i="6.13,246,1732604400"; 
-   d="scan'208";a="204623018"
+   d="scan'208";a="41090068"
 X-Amp-Result: SKIPPED(no attachment in message)
 Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
-  by esa6.microchip.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 30 Jan 2025 10:36:22 -0700
+  by esa1.microchip.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 30 Jan 2025 10:36:41 -0700
 Received: from chn-vm-ex04.mchp-main.com (10.10.85.152) by
- chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server
+ chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
  15.1.2507.35; Thu, 30 Jan 2025 10:35:41 -0700
 Received: from ryan-Precision-3630-Tower.microchip.com (10.10.85.11) by
@@ -51,9 +51,9 @@ To: <lee@kernel.org>, <robh@kernel.org>, <krzk+dt@kernel.org>,
 CC: <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
 	<linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-rtc@vger.kernel.org>, Ryan Wanner <Ryan.Wanner@microchip.com>
-Subject: [PATCH 09/16] ARM: at91: Add PM support to sama7d65
-Date: Thu, 30 Jan 2025 10:33:49 -0700
-Message-ID: <9a57da4b20f5fa7ec84af7353cfcdb43efbff29c.1738257860.git.Ryan.Wanner@microchip.com>
+Subject: [PATCH 11/16] ARM: at91: pm: add DT compatible support for sama7d65
+Date: Thu, 30 Jan 2025 10:33:51 -0700
+Message-ID: <fb9f89b8c1a050d3600a073c31b34601e0e4a87e.1738257860.git.Ryan.Wanner@microchip.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1738257860.git.Ryan.Wanner@microchip.com>
 References: <cover.1738257860.git.Ryan.Wanner@microchip.com>
@@ -68,25 +68,55 @@ Content-Type: text/plain
 
 From: Ryan Wanner <Ryan.Wanner@microchip.com>
 
-Add PM support to SAMA7D65 SoC.
+Add support for SAMA7D65 new compatible strings in pm.c file for wakeup source
+IDs and PMC.
+This is the first bits of PM for this new SoC. PM depends on other patches.
 
 Signed-off-by: Ryan Wanner <Ryan.Wanner@microchip.com>
+[nicolas.ferre@microchip.com: split patch and address only the pm.c changes]
+Signed-off-by: Nicolas Ferre <nicolas.ferre@microchip.com>
 ---
- arch/arm/mach-at91/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ arch/arm/mach-at91/pm.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/mach-at91/Kconfig b/arch/arm/mach-at91/Kconfig
-index 04bd91c72521c..f3ff1220c0fb0 100644
---- a/arch/arm/mach-at91/Kconfig
-+++ b/arch/arm/mach-at91/Kconfig
-@@ -65,6 +65,7 @@ config SOC_SAMA7D65
- 	select HAVE_AT91_SAM9X60_PLL
- 	select HAVE_AT91_USB_CLK
- 	select HAVE_AT91_UTMI
-+	select PM_OPP
- 	select SOC_SAMA7
- 	help
- 	  Select this if you are using one of Microchip's SAMA7D65 family SoC.
+diff --git a/arch/arm/mach-at91/pm.c b/arch/arm/mach-at91/pm.c
+index 32b8354738752..a8cd1300a8f33 100644
+--- a/arch/arm/mach-at91/pm.c
++++ b/arch/arm/mach-at91/pm.c
+@@ -222,12 +222,14 @@ static const struct of_device_id sam9x60_ws_ids[] = {
+ 	{ /* sentinel */ }
+ };
+ 
+-static const struct of_device_id sama7g5_ws_ids[] = {
+-	{ .compatible = "microchip,sama7g5-rtc",	.data = &ws_info[1] },
++static const struct of_device_id sama7_ws_ids[] = {
++	{ .compatible = "microchip,sama7d65-rtc",	.data = &ws_info[1] },
++	{ .compatible = "microchip,sama7g5-rtc",        .data = &ws_info[1] },
+ 	{ .compatible = "microchip,sama7g5-ohci",	.data = &ws_info[2] },
+ 	{ .compatible = "usb-ohci",			.data = &ws_info[2] },
+ 	{ .compatible = "atmel,at91sam9g45-ehci",	.data = &ws_info[2] },
+ 	{ .compatible = "usb-ehci",			.data = &ws_info[2] },
++	{ .compatible = "microchip,sama7d65-sdhci",	.data = &ws_info[3] },
+ 	{ .compatible = "microchip,sama7g5-sdhci",	.data = &ws_info[3] },
+ 	{ .compatible = "microchip,sama7g5-rtt",	.data = &ws_info[4] },
+ 	{ /* sentinel */ }
+@@ -1379,6 +1381,7 @@ static const struct of_device_id atmel_pmc_ids[] __initconst = {
+ 	{ .compatible = "atmel,sama5d2-pmc", .data = &pmc_infos[1] },
+ 	{ .compatible = "microchip,sam9x60-pmc", .data = &pmc_infos[4] },
+ 	{ .compatible = "microchip,sam9x7-pmc", .data = &pmc_infos[4] },
++	{ .compatible = "microchip,sama7d65-pmc", .data = &pmc_infos[4] },
+ 	{ .compatible = "microchip,sama7g5-pmc", .data = &pmc_infos[5] },
+ 	{ /* sentinel */ },
+ };
+@@ -1672,7 +1675,7 @@ void __init sama7_pm_init(void)
+ 	at91_pm_modes_init(iomaps, ARRAY_SIZE(iomaps));
+ 	at91_pm_init(NULL);
+ 
+-	soc_pm.ws_ids = sama7g5_ws_ids;
++	soc_pm.ws_ids = sama7_ws_ids;
+ 	soc_pm.config_pmc_ws = at91_sam9x60_config_pmc_ws;
+ 
+ 	soc_pm.sfrbu_regs.pswbu.key = (0x4BD20C << 8);
 -- 
 2.43.0
 
