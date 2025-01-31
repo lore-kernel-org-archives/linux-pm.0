@@ -1,474 +1,616 @@
-Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx07-00376f01.pphosted.com (mx07-00376f01.pphosted.com [185.132.180.163])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A2474171092
-	for <linux-pm@vger.kernel.org>; Fri, 31 Jan 2025 10:19:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738318802; cv=none; b=dRZNvVN9xdVUlgEdJpiHfpjpWF0A2KIylWxp+FzycvdLq9FJMh983cwYKlp9UmgJJ/c7TMGvw+DvGA+cfEehYWb7BpWaNn+FOyHvHN409iu2a6mp/mQvKRVkndFe8gw6PBIhwc6L5axd4oaJHKYBXVotm4VlOj1UnmPZxB5t7F0=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738318802; c=relaxed/simple;
-	bh=/Xqen7OPlPRa4hIDxkny6+bzhunAkw/3xPpAzO5ip58=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ryI1Cq9FzN1CIiu8ud1VNpciD6DN/988w6SX4lYtgityLvaoZN9r3Ad4T9X0RTOdrROg+rmTgvW72VQzZ0NW67CKtYiaGcF98PmitW71HHS0u9YheAiRebKHVgUj1i88jCbohKVg+MP0L7tTowfvQyjdkcbN3Ebdb3aTxqK3YLA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=yy2JWT2z; arc=none smtp.client-ip=209.85.128.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04F0714B092;
+	Fri, 31 Jan 2025 15:40:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=185.132.180.163
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1738338011; cv=fail; b=h5GRmpU2VIAX17D8x8sIXIKgJWJjnTzq2xz6ZRELpWHH1l7nVHTp/ZirLQgB9o6leAagPn+1BvjDNAkRufeH1shA2p2MGLDG4ONSSacUGkGL9oJ0KTgT0gPgfZvn218NUKJtuI7gNgX78zzjDYAObhIJAQcH5w7iNiV4ZXue9iQ=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1738338011; c=relaxed/simple;
+	bh=oJAgaZR/NvR/atxgZhxcgYQU0qtgrJGyuT/BASuwIrQ=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=F0HwCHPJouzhZbKwmcYVc/R6hvMaY7tR75U92qav74nfDdaS8xy6HGwnbxY9ldJw6pBzHOrHkWKrOnwl3RCmiLvQ+5ZVyWflJmpm+PevQpbZADjeXve4j0YiONuG23C2myEzww4gjYDQz4PIoC6pBILePFH0Q383Z36vdq4gTVQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=imgtec.com; spf=pass smtp.mailfrom=imgtec.com; dkim=pass (2048-bit key) header.d=imgtec.com header.i=@imgtec.com header.b=ARsGUDcn; dkim=pass (1024-bit key) header.d=IMGTecCRM.onmicrosoft.com header.i=@IMGTecCRM.onmicrosoft.com header.b=k1b/cUWI; arc=fail smtp.client-ip=185.132.180.163
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=imgtec.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=imgtec.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="yy2JWT2z"
-Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-436249df846so12283285e9.3
-        for <linux-pm@vger.kernel.org>; Fri, 31 Jan 2025 02:19:59 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=imgtec.com header.i=@imgtec.com header.b="ARsGUDcn";
+	dkim=pass (1024-bit key) header.d=IMGTecCRM.onmicrosoft.com header.i=@IMGTecCRM.onmicrosoft.com header.b="k1b/cUWI"
+Received: from pps.filterd (m0168889.ppops.net [127.0.0.1])
+	by mx07-00376f01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50VF56W1028214;
+	Fri, 31 Jan 2025 15:39:25 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=imgtec.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=dk201812; bh=DMHJHtFARTRcNs/xTMQWU5YFs
+	/AQNFi+ikCg3usARSk=; b=ARsGUDcn5/MaZ8DbRyPJKFumER4dFhB7vlvxGeMde
+	/bcSEW3P8DtvTirMp4euxL827dVrX1GCqIrRKHqaB/B8+lWSg4mrVww14SF6LoCR
+	7RRXEWOIu8Z0Ou2SAC478lgx9BKpjH++45eNu14TJM15l8HF3TMoFSXySNGQFBX6
+	z39PYmMzrwTR4ZMorJo7espDd0EWVgWtUlgkip+SrmYWYqT6/MvACigYmPzjrwBL
+	e4bxQOoYEQGGcMlWiNQjLKMID5v2Y21EItRzbbPwRkvuom1jX1Wa1cSSv5I2lM+a
+	MaiBuRDJaxnfwjAAnWVtU6jtFi0S25GOce3SWfNZas9RA==
+Received: from lo2p265cu024.outbound.protection.outlook.com (mail-uksouthazlp17011029.outbound.protection.outlook.com [40.93.67.29])
+	by mx07-00376f01.pphosted.com (PPS) with ESMTPS id 44ep3c302s-2
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 31 Jan 2025 15:39:23 +0000 (GMT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Sg5GdLe1SnhyZBXwtyaYKdLRbGySkdMjK5+gf1U81PLtTH2uRFRdCDO+nRJ3j1SQRGJ+/u2uhgAc8ScJfqH72HS4hAwuW771lU6jzbIPX73qsj0r7p6AWLueky+7ac0nvnu5aTjh9qorYNfOYlnlf7ZHdZbgcpX1KEE12KNutaMGkGmOnzt9DhpkAAU0q8dV3TpXTk8siPjit+8r4jJQ4h9OfLt1BGUt+c1kezqPDhV7DNH0Usl3Q9luh6AQhbQgbNEbw0f0RguSi8Z9T9HXm2kv6WL8NC5h174XxPduSFKbGEAMy690GYW9RXVBXMlT7ViDy366PDq9YRrS6t3Zbg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=DMHJHtFARTRcNs/xTMQWU5YFs/AQNFi+ikCg3usARSk=;
+ b=r7TLK6Io3+023We+ccx+i0+OE5md0Tl1rqEAZ5ZSlnslsQ+5qLwbegxcTUXEQaSDEVmCcTCebRqpgRhfpBRPc+23kW3mSdQi96IPztqVJQg+qK8Nqd5utFazCHEkuaa8PvSff53Aainc7qkXmZVAVkonAJFlGOzjHfaPrJLLl7NwKGxfjhVe9Wm/M+Il6a+KnmGBaNRZ2qabwZi40kJuojmkAQz0J4VcHD1RV2TRWPJUF98T7PlJ+OnkzmYNTjVYyp2GiXSlJ0mz3vUX2nSaDy7sN0xW2mea4iVRzMnxeZO78C3J7dXOhi7yTcPh1snT73jtJfckFlJQma4pmT0ZhQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=imgtec.com; dmarc=pass action=none header.from=imgtec.com;
+ dkim=pass header.d=imgtec.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1738318798; x=1738923598; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=sMKEFp2iY1ooXPFXuah13Z2j8Gd6Pr/iXVngt99gS+c=;
-        b=yy2JWT2z+O0A/ewKdY2+AQJcHR32C/QUK2M1Lj/F7BHibNoY3Rt0rsxW24aPAZ66X7
-         CAJC6OzYNae8FlM3ZD2NqfwUAsOhLaPkRYQxbh/kkMhz8lM2P+oS1vcIIaf9e8sQbAd8
-         jBl7OAXqOaQteezRbp0Z8SymdLgx5k8BMyMAXOrJ16NwAPCEWMsrxaJ33cwAKmlV/YU2
-         3QjcwnNBOtNkSAT9r/hJtIex6w1OMr0Vpe17G2jQ51NDhvuziC+eknVpt57mw5NXQ2GP
-         mG25AIsHS03FBwrIjSsUj0JRr62jYpztaQPgo3uBr/B4wTjpKevlfmUxs9dmzUHxCNWv
-         jq6Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1738318798; x=1738923598;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=sMKEFp2iY1ooXPFXuah13Z2j8Gd6Pr/iXVngt99gS+c=;
-        b=hHQ4i7sNSTjBT4wbA4EqkciYo9tXAt4TB/Qs/RZWOiGfyYe7FqUaIY7NaslTOdBIbf
-         7jLtnBes7GsRfld3TDyiriGo26rUIcUK/lnab8thOYKK6W22IwQGn39TweojjXPr3vOu
-         O5GZ1B4oi9Ih5mpIGsK5ECcnmZGGUXxWliRmHRwFHEiPPsCmxlcTTLcNqqmyvRkXYXvW
-         X2LzPFXEjTIsK08cyzSwQENxxPNH31A0a1OlqM7vvfLdCU8dnoKXLYYN6hTK+cI5E5EB
-         6iB6+fOK85PMEKPCfzN2+nwKVGyaAOpLNvPW3tbgEjvmg837lkj5CiHmtW8TaePivA1z
-         l8XA==
-X-Gm-Message-State: AOJu0Yzmhj02QyGEu7MHpqUXxm3dAkQcbdEdDDrUbKwWGO6NB3MvVOBQ
-	bl1Qx0UriYxTru1co++l1lUH4h/55l1DOa2O+TB+9ng1qdUz72AId7oJYrVN7bU=
-X-Gm-Gg: ASbGncsoJ0uO+k8FYvGmi7yna0f88BzLFOBwnMqJ6GZMtBx8uvV/8khsH8GA4oEYrHK
-	hP6bDURM1p9D+ZekdPeJCvU12Vp8cmAG6im5hQuDfVYztwGL9JwFh5uPYJf/VBcQXBfGaYWiei2
-	YJ0Hp0TllCGNXlnGmYOvZ2gDyYuHNRgelK0odzk5fsakFlBlK8+TaHCRb8klzNZmWevDgv0aDJJ
-	V25Kc5ScOYmLg3rkj1v78dVpG1evtFGXjjiW2s46zcp4x/BNcIdmtf7sLPmoUhbTObcanKIa0WQ
-	9r96CqG23gvvEFCacVNqJxuT+xGxnKiRtIowQ3d5aDywDspo7KeKKP8=
-X-Google-Smtp-Source: AGHT+IFZNXsQuum6x6xRWf12F8+xm9RtbvKoDUhlQmJkPtJJdDXPK7wmN6KvRldwONlJY8dd+oDrNA==
-X-Received: by 2002:a05:6000:1563:b0:385:ee40:2d75 with SMTP id ffacd0b85a97d-38c51960d9amr8876284f8f.20.1738318796298;
-        Fri, 31 Jan 2025 02:19:56 -0800 (PST)
-Received: from [192.168.10.46] (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-438dcc2c4ddsm85201155e9.17.2025.01.31.02.19.55
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 31 Jan 2025 02:19:55 -0800 (PST)
-Message-ID: <b69fe059-5aff-4fbd-879e-166d67310563@linaro.org>
-Date: Fri, 31 Jan 2025 11:19:54 +0100
+ d=IMGTecCRM.onmicrosoft.com; s=selector2-IMGTecCRM-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=DMHJHtFARTRcNs/xTMQWU5YFs/AQNFi+ikCg3usARSk=;
+ b=k1b/cUWI8IrCGIkdq+omQYyduAtErHObBACbh69hG0zwTgP9f3u9cPx3WGyJAqcc40EfzV8KpReFme/nthfXdGa8K7wZ84DkB8rpc+bpoocYn2Ci8MwzlMwWDsIbk8cdo81PQaWtgGYuKrQiJZmJ7BB2VkgsH9yEsJdbyShHOJE=
+Received: from CWXP265MB3397.GBRP265.PROD.OUTLOOK.COM (2603:10a6:400:e7::8) by
+ LO0P265MB5503.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:287::8) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.8398.20; Fri, 31 Jan 2025 15:39:22 +0000
+Received: from CWXP265MB3397.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::8e9d:6b2f:9881:1e15]) by CWXP265MB3397.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::8e9d:6b2f:9881:1e15%6]) with mapi id 15.20.8398.020; Fri, 31 Jan 2025
+ 15:39:22 +0000
+From: Matt Coster <Matt.Coster@imgtec.com>
+To: Michal Wilczynski <m.wilczynski@samsung.com>,
+        "mturquette@baylibre.com"
+	<mturquette@baylibre.com>,
+        "sboyd@kernel.org" <sboyd@kernel.org>,
+        "robh@kernel.org" <robh@kernel.org>,
+        "krzk+dt@kernel.org"
+	<krzk+dt@kernel.org>,
+        "conor+dt@kernel.org" <conor+dt@kernel.org>,
+        "drew@pdp7.com" <drew@pdp7.com>,
+        "guoren@kernel.org" <guoren@kernel.org>,
+        "wefu@redhat.com" <wefu@redhat.com>,
+        "jassisinghbrar@gmail.com"
+	<jassisinghbrar@gmail.com>,
+        "paul.walmsley@sifive.com"
+	<paul.walmsley@sifive.com>,
+        "palmer@dabbelt.com" <palmer@dabbelt.com>,
+        "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>,
+        Frank Binns
+	<Frank.Binns@imgtec.com>,
+        "maarten.lankhorst@linux.intel.com"
+	<maarten.lankhorst@linux.intel.com>,
+        "mripard@kernel.org"
+	<mripard@kernel.org>,
+        "tzimmermann@suse.de" <tzimmermann@suse.de>,
+        "airlied@gmail.com" <airlied@gmail.com>,
+        "simona@ffwll.ch" <simona@ffwll.ch>,
+        "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>,
+        "jszhang@kernel.org"
+	<jszhang@kernel.org>,
+        "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
+        "m.szyprowski@samsung.com" <m.szyprowski@samsung.com>
+CC: "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH v4 02/18] clk: thead: Add clock support for VO subsystem
+ in T-Head TH1520 SoC
+Thread-Topic: [PATCH v4 02/18] clk: thead: Add clock support for VO subsystem
+ in T-Head TH1520 SoC
+Thread-Index: AQHbc/ZMZNoZego2hUqkbD0QP2EI2w==
+Date: Fri, 31 Jan 2025 15:39:22 +0000
+Message-ID: <cf668998-4f86-4a85-8137-7a8f689c2aa9@imgtec.com>
+References: <20250128194816.2185326-1-m.wilczynski@samsung.com>
+ <CGME20250128194827eucas1p25db822456e223563b8b411f77754c760@eucas1p2.samsung.com>
+ <20250128194816.2185326-3-m.wilczynski@samsung.com>
+In-Reply-To: <20250128194816.2185326-3-m.wilczynski@samsung.com>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator:
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: CWXP265MB3397:EE_|LO0P265MB5503:EE_
+x-ms-office365-filtering-correlation-id: 82e63df7-6bb1-44a2-3eb9-08dd420d6f1d
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|376014|7416014|366016|1800799024|38070700018|921020;
+x-microsoft-antispam-message-info:
+ =?utf-8?B?Um5hWHNrSEc3NXNVdzJVbE40MlpQVFRaeUxuUlMrZjd3RjZVY1RPdDR5UUdG?=
+ =?utf-8?B?TEc1Nm9FWVFMdmJ2dkpJMzlpb2pmQ1pGSWVUVUt6SEFZYWxWd0JjSlJLckdr?=
+ =?utf-8?B?ZzhjMFVDcEZVUFQyQlVEVEJnUEU0V0g5OVJ0S3gxZUNUaGFTb24vYTdvL0tR?=
+ =?utf-8?B?S0VZWTl1U0Y5b3NkN3UvSXFJaXR5T0JiM1llNDlzbms5SFh0LzUxbTBDdGt2?=
+ =?utf-8?B?OVhVNlltVDhSVnJHYnhabnZxZnRhUGU3ckE5YWRIdjV1Z25aZlprWE4rV0xy?=
+ =?utf-8?B?ZjhzNFF5MC9GVG9XMnp5QXk3OEpMbE9BMk5mRkd3SEhBZDdGS0pyZ0RSbUFl?=
+ =?utf-8?B?dEkwbGM3ZWV3NktMVzhvVmxvaWxuOVluRlhvUVNyTXVKNHRtMUY1b3NhVHU2?=
+ =?utf-8?B?QisraGVFT3JrcGg4SCtveW5MejJLTFltc0EyZ2k0a1hQT3czRDkrTTlXYmEz?=
+ =?utf-8?B?NTROeHhpSkwzRlRBdWtrRGtuOThLYW1Tc3cyYVRLMEhZdElZcGVCbkJUMzNU?=
+ =?utf-8?B?QnBySk1MWDFYNk42ZzdhUkQ1Vyt0d1RDaDJhaEp6djBHTkl0Mk5xQmtrWlpR?=
+ =?utf-8?B?eDE1d005TDJCSzF1RDcwMUtEbzMrWnBkU3o2NjM4bWlYaGxUZVNhaXczNWpm?=
+ =?utf-8?B?TTJWL0tZck9MZktlVjFsRjNBcXl4dkg4V3czOHlkWnprZEVBV29tYzcra25K?=
+ =?utf-8?B?bTNDZXFFdGREWkpNOGZtTnFaeDBoZ0VzQ2lWWU5xbWNqTEdjSXAzWkd5OTJK?=
+ =?utf-8?B?cEJBb2Q0TXVNQjhJZlpWdmhUWCtwWGgrRlNpRnVRdXF6cGIrT1NDbmdwTTdP?=
+ =?utf-8?B?amtsN0RJMFNSKzVFOFhjSXR3cnZXMThEWm9lcnVGWlp1VksydG5YQU9NYVFm?=
+ =?utf-8?B?UjFLY3YrN0xONGp1Mzlwc25zUVJyVjRucFRLL2NvMU45M3g0NU8xVFU5UGFJ?=
+ =?utf-8?B?RWp0UVU2SDZsMnZyV2FzOGN2bEVrSGVNdWppYUViNXU0dEVwd1R1VHFPNTdJ?=
+ =?utf-8?B?aWRXNTZQWUtoSXJlcEMzVlFxVzdnb2djU3paSTZVZGtJQmZidHl1bVdHajQy?=
+ =?utf-8?B?UkZPWU1VeitjY09zVFRDdVdjdTFHZ2JZZFZhZEd6SUk4ZEs2K1hBUWE1blhq?=
+ =?utf-8?B?akFhWm9SSytMZ1dFbnFoaFR0Um1BVVV5N2hGRUczczU1Z21zWS9uc0FmcUln?=
+ =?utf-8?B?cFVFa1dJOGNRYWIyYzRIblJnRmhubVN0RXIwN3NMUDJ1NHRKVWl1QlRMMEF6?=
+ =?utf-8?B?Z1BYYTRrditVYVNnSzJBRWJ3U0Y3ZzNPYTdUaEExaGdBRDAyVG9DZ0NqWDBV?=
+ =?utf-8?B?UGF4akVldmVySGJ5ZW5mdFp6Wi9HSnpUMzZBTEpsWW1pK2FDOUptRmlVeFAy?=
+ =?utf-8?B?TVNpdG9xRUdMMUp0dlpOSnVEbjI1OGhWS1lNaDF6RmdqaUN4SVMrUnVHUHA3?=
+ =?utf-8?B?YXdkcnJla3F4U2JwWCtRMzdMUzFXaGE0RXpxMlZCbWhlck5qbm81OG5xaDQy?=
+ =?utf-8?B?OGRXbWNTbmp6S0FyZFNIZkZLRjZFWGZpWUtnNXpQUGtIVHk4dlorZmtwOUlV?=
+ =?utf-8?B?alc2akNWZE9FeHVIMGtOQnR5eWRSelBibDRSbGpWV2lMcis0d0YycTdvL2lL?=
+ =?utf-8?B?eVhJcUFhQWhWeG1VcmRNU0djS2c5UkN4c3A5c0N6UXgvZEZWUnJEM1VPNEdM?=
+ =?utf-8?B?cEU5NWlPYUNZQnBleHVWeTNtT2NLcFFzWHNLcklvNjVtWjQ0SWx1bDJIeGVN?=
+ =?utf-8?B?RzFBaE14YTVzSUhnd2VNSFdyYlFRS0dmOUVXVUNIenVuQWlVV08rTUpZRGNP?=
+ =?utf-8?B?M3ZtczBZSGFuUTNFSDZYRVhUZlNpdW9pYnlPT3VWRnNVeDZaYmRPbk1jR3Y3?=
+ =?utf-8?B?dnJ5U1hSNGZEdTFMajJEbmlxVzV5SFNyd3F1K01KTDNySEZMTTZ2d0JTZVhU?=
+ =?utf-8?Q?uC2Xy9+5La0=3D?=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CWXP265MB3397.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024)(38070700018)(921020);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?utf-8?B?VDFqTkxvMHdJZjdGQ3BhOGVBZlp3K21kQ0tPQ1pBZ2lQVmdxSUdtcGxxU3By?=
+ =?utf-8?B?bVBzMFFOL0t4RGRnYXBPUkdyb1g0U0NFOHRva2IwMjhRaUk4b21KTlY2M0NO?=
+ =?utf-8?B?STZWNjBKbVNCUkFuUll4WUsrNUZkbzNKMlB3SytZNzNQSGRJd3U3alVTSDNV?=
+ =?utf-8?B?UGhvd1loRCszOVhueGNKYmNOYzRHU2djMWlXbHJRanh2WXJieUdtYTZMRkNr?=
+ =?utf-8?B?QXJBR2labDUxWnYyOU0rcWlheVdnSkQ0eVFhRG8zMjE0aEJwOUZwdGNEOWNy?=
+ =?utf-8?B?RHNscHhxMEVlZVRZQ25TSEtENnVMZXRvVVg1TnNPNFB0ZVBiOXhVQVFlMC9V?=
+ =?utf-8?B?MEhpTkk4amtSZ0xxR3IyN1NpcDRMNHp2dVNFdzBPRVg4WTc3WDQ2SUoyRHJZ?=
+ =?utf-8?B?ayt6SFlkSEJIYUd4STdLVHRFOXNoRzkreU83eXpBZXVSMTk0SHFWYThiOUZ5?=
+ =?utf-8?B?OVFCbmxzQjdEaG1ZZTdlM1h6aFdJVXlFVFZrWVE2T0RqcHRZclhwOFljdkxU?=
+ =?utf-8?B?RmNsb0tTbDhMbXlPR1JGMFdSMHpIQ0JWVHJQSVZzQ0hXY2QyTDlpVlhpYXZz?=
+ =?utf-8?B?WlhnT1JSbWIzZ3V4RjdmOEJldkJ0aHVNSjdkTWRLOEkzNzQwUXBzc3ZSR3ZW?=
+ =?utf-8?B?MStxTVpyOWVLN2dRM0tJcThOYVN4ZzZ4cE5XRlh6elNzYWhtRXNQaE5NUVFE?=
+ =?utf-8?B?T0NTTjdxZmJIK01Eb3RYR29BYUtaQzkxQk81UEdaZStZa0kydEZiWG9lZmF1?=
+ =?utf-8?B?ODFxekU1UDJ4ZUZpS0hyMERuaXpDNVBVWkdkVkpIVEprcElrMllwL1N5Mlky?=
+ =?utf-8?B?UFgzbGZZWkZLd1NIdSs3ai9MaFNmSHlyVUtSbGtwNlJoUmVkdGQ2VFVWb3hT?=
+ =?utf-8?B?bGlTcVhZMkhQSXhYTlNCL2pKWVZoSWRyMktLK2ZaN2kvZlhaWUtCVitnbE04?=
+ =?utf-8?B?SjZLWEhrSEZXUExkcGVXOWRDZk42b1BIeDA4Rm1hMXgzTUJ4akg3c2wreWtj?=
+ =?utf-8?B?UDhaSzFlbmkzU0gvMlorN2ViRnB4V1FmMTFvN0h6cVJoeVFoZnRUZnZFMXBE?=
+ =?utf-8?B?THZjMUwzdzA2Z3daMy9RZEZMOGJBTGROc0pXYlcyeHhrbVI2ZFJVY0piQkRJ?=
+ =?utf-8?B?N3lFbDV2ajVyWFVMWEJmbi95WmZpY0pERTNiV0pobWM5bnZ0empJUDFiT3Mz?=
+ =?utf-8?B?V1djck1jMDVMSU0xaHNBYXVoZzBPUFVoZ3pwNXNFbGhDWGd5SGxYemszRktj?=
+ =?utf-8?B?VnZ1WG5ubXlGZys1RzlrNSsyc0pzSUlKMWVmckNjREwya1p4aFlCcFdNcFNL?=
+ =?utf-8?B?QmFqOUR1SEo3VkliVWlrb0xPNVpjQVZKd0NCK1lMdzlpODBVUGJpVmdNelpG?=
+ =?utf-8?B?K2NNSHBHdXY0TFVnR2ZHWWE0Z2dWN3RjQVVBeUpGU1VmYnUxc2xoV0V0a1N2?=
+ =?utf-8?B?T3V5ZjJrY1E0WlJSa3lVVXdKa1lkVTJ0TWp4Q1dTRlhLNjlYZERRdzdzYVkx?=
+ =?utf-8?B?R3A0ajd0NytBZkxPMW95TjZPaUpvYk1QWEo1UzR3MTk5aUI0d1ErV040bWYy?=
+ =?utf-8?B?dEgwcEJaam5HV3hEbE95dXl1VnVGZ0V6QzNXYm1pOEtQZjkyc0x4K1dWaTIx?=
+ =?utf-8?B?bnhiaGJlN1hwMUlYWk9VUGh3K2ZPa0xXc0hFejB2YXVVMHBxTTBac29FRzVu?=
+ =?utf-8?B?SUdpYWI0d2E0NXV0OFpyQjFMZFRwNDVacnZtZjY0aVd2RFJXdDRwK0h0ZVow?=
+ =?utf-8?B?cDlvbnVldkdtZjhqd245OUFhYm94MVlwMVh1NGVrMjlZdGtpVmZyKzU3SVFa?=
+ =?utf-8?B?bWJqN3MvNHJkWjFaTnRzM2NWTXhmYitzM2o5RDQzbytnS2FHVC9yMTN6dmdI?=
+ =?utf-8?B?eXZMdCtma0JMZ1hQRGh5bjNjZFphVGZNbU1ydUUzRThDbzNVM2MwbVRiOGZn?=
+ =?utf-8?B?djFtdUxjUytDZUgzTEZPM3Y4VHNjUUJJY2JpRmZTcnpwL0ViMHFieFBpNyts?=
+ =?utf-8?B?b1dyWDNsU1dpcGpNTzlncFAxK095YVQ4MUsvOG5XQVA4eG52VytGNjNwR01U?=
+ =?utf-8?B?cXNCUVVCelk4bUluc1JtNGZuTVB0dU9DSUFBeXY5dG0yR1JJNDlGcmJCMUJT?=
+ =?utf-8?B?TGkyZUM3L3cxRlRnekRCdnpPRzJnZ21nMFBZZTBnczJkVFcwMDRFaW1CTzZv?=
+ =?utf-8?B?eXc9PQ==?=
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="------------jkuz8klicTr03P3PrhKep0KO"
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 2/2] thermal: imx91: Add support for i.MX91 thermal
- monitoring unit
-To: Frank Li <Frank.Li@nxp.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
- Sascha Hauer <s.hauer@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>, Pengfei Li <pengfei.li_1@nxp.com>,
- Marco Felsch <m.felsch@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, Peng Fan <peng.fan@nxp.com>
-References: <20241216-imx91tmu-v4-0-75caef7481b8@nxp.com>
- <20241216-imx91tmu-v4-2-75caef7481b8@nxp.com>
-Content-Language: en-US
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <20241216-imx91tmu-v4-2-75caef7481b8@nxp.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+X-OriginatorOrg: imgtec.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: CWXP265MB3397.GBRP265.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: 82e63df7-6bb1-44a2-3eb9-08dd420d6f1d
+X-MS-Exchange-CrossTenant-originalarrivaltime: 31 Jan 2025 15:39:22.2487
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 0d5fd8bb-e8c2-4e0a-8dd5-2c264f7140fe
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 8+SSvVV0JZfWFGinSxUxvp99Br4zHitvulIuNklIcCnVcRPQOqtCG1BWlxxjLJYuSk9Za/RAMf0ifTrzNJ36OA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LO0P265MB5503
+X-Proofpoint-GUID: inlET9cWfCZ5wqKY4zeUFlg1coGWmucq
+X-Authority-Analysis: v=2.4 cv=PoBpbxM3 c=1 sm=1 tr=0 ts=679ceeac cx=c_pps a=mRJfeTHGti1YOx0CH8CfHg==:117 a=wKuvFiaSGQ0qltdbU6+NXLB8nM8=:19 a=Ol13hO9ccFRV9qXi2t6ftBPywas=:19 a=xqWC_Br6kY4A:10 a=VdSt8ZQiCzkA:10 a=WnR_qW7rlZcA:10 a=NgoYpvdbvlAA:10
+ a=xVOUUHzFAAAA:8 a=hD80L64hAAAA:8 a=r_1tXGB3AAAA:8 a=3yQmnoH8_tkYcm3O6ZwA:9 a=QEXdDO2ut3YA:10 a=ISgEDxiQpJvkg5DMPToA:9 a=FfaGCDsud1wA:10 a=BFkDlhTjP3qpOTzr41qL:22 a=t8nPyN_e6usw4ciXM-Pk:22
+X-Proofpoint-ORIG-GUID: inlET9cWfCZ5wqKY4zeUFlg1coGWmucq
 
-On 16/12/2024 20:25, Frank Li wrote:
-> From: Pengfei Li <pengfei.li_1@nxp.com>
-> 
-> Introduce support for the i.MX91 thermal monitoring unit, which features a
-> single sensor for the CPU. The register layout differs from other chips,
-> necessitating the creation of a dedicated file for this.
+--------------jkuz8klicTr03P3PrhKep0KO
+Content-Type: multipart/mixed; boundary="------------KMUnNqRXVfTSk0ZKCUXePycU";
+ protected-headers="v1"
+From: Matt Coster <matt.coster@imgtec.com>
+To: Michal Wilczynski <m.wilczynski@samsung.com>, mturquette@baylibre.com,
+ sboyd@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+ drew@pdp7.com, guoren@kernel.org, wefu@redhat.com, jassisinghbrar@gmail.com,
+ paul.walmsley@sifive.com, palmer@dabbelt.com, aou@eecs.berkeley.edu,
+ frank.binns@imgtec.com, maarten.lankhorst@linux.intel.com,
+ mripard@kernel.org, tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch,
+ ulf.hansson@linaro.org, jszhang@kernel.org, p.zabel@pengutronix.de,
+ m.szyprowski@samsung.com
+Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+ dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org
+Message-ID: <cf668998-4f86-4a85-8137-7a8f689c2aa9@imgtec.com>
+Subject: Re: [PATCH v4 02/18] clk: thead: Add clock support for VO subsystem
+ in T-Head TH1520 SoC
+References: <20250128194816.2185326-1-m.wilczynski@samsung.com>
+ <CGME20250128194827eucas1p25db822456e223563b8b411f77754c760@eucas1p2.samsung.com>
+ <20250128194816.2185326-3-m.wilczynski@samsung.com>
+In-Reply-To: <20250128194816.2185326-3-m.wilczynski@samsung.com>
 
-Please a bit more information about the sensor (eg. resolution, I guess 1°C)
+--------------KMUnNqRXVfTSk0ZKCUXePycU
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> Signed-off-by: Pengfei Li <pengfei.li_1@nxp.com>
-> Signed-off-by: Peng Fan <peng.fan@nxp.com>
-> Reviewed-by: Marco Felsch <m.felsch@pengutronix.de>
-> Signed-off-by: Frank Li <Frank.Li@nxp.com>
+On 28/01/2025 19:48, Michal Wilczynski wrote:
+> The T-Head TH1520 SoC integrates a variety of clocks for its subsystems=
+,
+> including the Application Processor (AP) and the Video Output (VO) [1].=
+
+> Up until now, the T-Head clock driver only supported AP clocks.
+>=20
+> This commit extends the driver to provide clock functionality for the V=
+O
+> subsystem. At this stage, the focus is on implementing the VO clock
+> gates, as these are currently the most relevant and required components=
+
+> for enabling and disabling the VO subsystem functionality.  Future
+> enhancements may introduce additional VO-related clocks as necessary.
+>=20
+> Link: https://openbeagle.org/beaglev-ahead/beaglev-ahead/-/blob/main/do=
+cs/TH1520%20System%20User%20Manual.pdf  [1]
+>=20
+> Signed-off-by: Michal Wilczynski <m.wilczynski@samsung.com>
 > ---
-> Change from v3 to v4
-> - Add Macro's review tag
-> - Use devm_add_action()
-> - Move pm_runtim_put before thermal_of_zone_register()
-> 
-> change from v2 to v3
-> - add IMX91_TMU_ prefix for register define
-> - remove unused register define
-> - fix missed pm_runtime_put() at error path in imx91_tmu_get_temp()
-> - use dev variable in probe function
-> - use pm_runtime_set_active() in probe
-> - move START to imx91_tmu_get_temp()
-> - use DEFINE_RUNTIME_DEV_PM_OPS()
-> - keep set reset value because there are not sw "reset" bit in controller,
-> uboot may change and enable tmu.
-> 
-> change from v1 to v2
-> - use low case for hexvalue
-> - combine struct imx91_tmu and tmu_sensor
-> - simplify imx91_tmu_start() and imx91_tmu_enable()
-> - use s16 for imx91_tmu_get_temp(), which may negative value
-> - use reverse christmas tree style
-> - use run time pm
-> - use oneshot to sample temp
-> - register thermal zone after hardware init
-> ---
->   drivers/thermal/Kconfig         |  10 ++
->   drivers/thermal/Makefile        |   1 +
->   drivers/thermal/imx91_thermal.c | 263 ++++++++++++++++++++++++++++++++++++++++
->   3 files changed, 274 insertions(+)
-> 
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index d3f9686e26e71..da403ed86aeb1 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -296,6 +296,16 @@ config IMX8MM_THERMAL
->   	  cpufreq is used as the cooling device to throttle CPUs when the passive
->   	  trip is crossed.
->   
-> +config IMX91_THERMAL
-> +	tristate "Temperature sensor driver for NXP i.MX91 SoC"
-> +	depends on ARCH_MXC || COMPILE_TEST
-> +	depends on OF
+>  drivers/clk/thead/clk-th1520-ap.c | 197 +++++++++++++++++++++++++-----=
 
-s/OF/THERMAL_OF/
+>  1 file changed, 169 insertions(+), 28 deletions(-)
+>=20
+> diff --git a/drivers/clk/thead/clk-th1520-ap.c b/drivers/clk/thead/clk-=
+th1520-ap.c
+> index 4c9555fc6184..57972589f120 100644
+> --- a/drivers/clk/thead/clk-th1520-ap.c
+> +++ b/drivers/clk/thead/clk-th1520-ap.c
+> @@ -847,6 +847,67 @@ static CCU_GATE(CLK_SRAM1, sram1_clk, "sram1", axi=
+_aclk_pd, 0x20c, BIT(3), 0);
+>  static CCU_GATE(CLK_SRAM2, sram2_clk, "sram2", axi_aclk_pd, 0x20c, BIT=
+(2), 0);
+>  static CCU_GATE(CLK_SRAM3, sram3_clk, "sram3", axi_aclk_pd, 0x20c, BIT=
+(1), 0);
+> =20
+> +static CCU_GATE(CLK_AXI4_VO_ACLK, axi4_vo_aclk, "axi4-vo-aclk",
+> +		video_pll_clk_pd, 0x0, BIT(0), 0);
+> +static CCU_GATE(CLK_GPU_CORE, gpu_core_clk, "gpu-core-clk", video_pll_=
+clk_pd,
+> +		0x0, BIT(3), 0);
+> +static CCU_GATE(CLK_GPU_CFG_ACLK, gpu_cfg_aclk, "gpu-cfg-aclk",
+> +		video_pll_clk_pd, 0x0, BIT(4), 0);
 
-> +	help
-> +	  Support for Temperature sensor found on NXP i.MX91 SoC.
-> +	  It supports one critical trip point and one passive trip point. The
-> +	  cpufreq is used as the cooling device to throttle CPUs when the passive
-> +	  trip is crossed.
+I see CORE and CFG clocks here; what about MEM? It's listed in the
+linked TRM as BIT(2).
 
-This help message is inaccurate. It should describe the sensor not the 
-thermal configuration which is coming from the device tree for a 
-specific platform.
+Cheers,
+Matt
 
->   config K3_THERMAL
->   	tristate "Texas Instruments K3 thermal support"
->   	depends on ARCH_K3 || COMPILE_TEST
-> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> index 9abf43a74f2bb..08da241e6a598 100644
-> --- a/drivers/thermal/Makefile
-> +++ b/drivers/thermal/Makefile
-> @@ -50,6 +50,7 @@ obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
->   obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
->   obj-$(CONFIG_IMX_SC_THERMAL)	+= imx_sc_thermal.o
->   obj-$(CONFIG_IMX8MM_THERMAL)	+= imx8mm_thermal.o
-> +obj-$(CONFIG_IMX91_THERMAL)	+= imx91_thermal.o
->   obj-$(CONFIG_MAX77620_THERMAL)	+= max77620_thermal.o
->   obj-$(CONFIG_QORIQ_THERMAL)	+= qoriq_thermal.o
->   obj-$(CONFIG_DA9062_THERMAL)	+= da9062-thermal.o
-> diff --git a/drivers/thermal/imx91_thermal.c b/drivers/thermal/imx91_thermal.c
-> new file mode 100644
-> index 0000000000000..ef5e8e181dd0f
-> --- /dev/null
-> +++ b/drivers/thermal/imx91_thermal.c
-> @@ -0,0 +1,263 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright 2024 NXP.
-> + */
+> +static CCU_GATE(CLK_DPU_PIXELCLK0, dpu0_pixelclk, "dpu0-pixelclk",
+> +		video_pll_clk_pd, 0x0, BIT(5), 0);
+> +static CCU_GATE(CLK_DPU_PIXELCLK1, dpu1_pixelclk, "dpu1-pixelclk",
+> +		video_pll_clk_pd, 0x0, BIT(6), 0);
+> +static CCU_GATE(CLK_DPU_HCLK, dpu_hclk, "dpu-hclk", video_pll_clk_pd, =
+0x0,
+> +		BIT(7), 0);
+> +static CCU_GATE(CLK_DPU_ACLK, dpu_aclk, "dpu-aclk", video_pll_clk_pd, =
+0x0,
+> +		BIT(8), 0);
+> +static CCU_GATE(CLK_DPU_CCLK, dpu_cclk, "dpu-cclk", video_pll_clk_pd, =
+0x0,
+> +		BIT(9), 0);
+> +static CCU_GATE(CLK_HDMI_SFR, hdmi_sfr_clk, "hdmi-sfr-clk", video_pll_=
+clk_pd,
+> +		0x0, BIT(10), 0);
+> +static CCU_GATE(CLK_HDMI_PCLK, hdmi_pclk, "hdmi-pclk", video_pll_clk_p=
+d, 0x0,
+> +		BIT(11), 0);
+> +static CCU_GATE(CLK_HDMI_CEC, hdmi_cec_clk, "hdmi-cec-clk", video_pll_=
+clk_pd,
+> +		0x0, BIT(12), 0);
+> +static CCU_GATE(CLK_MIPI_DSI0_PCLK, mipi_dsi0_pclk, "mipi-dsi0-pclk",
+> +		video_pll_clk_pd, 0x0, BIT(13), 0);
+> +static CCU_GATE(CLK_MIPI_DSI1_PCLK, mipi_dsi1_pclk, "mipi-dsi1-pclk",
+> +		video_pll_clk_pd, 0x0, BIT(14), 0);
+> +static CCU_GATE(CLK_MIPI_DSI0_CFG, mipi_dsi0_cfg_clk, "mipi-dsi0-cfg-c=
+lk",
+> +		video_pll_clk_pd, 0x0, BIT(15), 0);
+> +static CCU_GATE(CLK_MIPI_DSI1_CFG, mipi_dsi1_cfg_clk, "mipi-dsi1-cfg-c=
+lk",
+> +		video_pll_clk_pd, 0x0, BIT(16), 0);
+> +static CCU_GATE(CLK_MIPI_DSI0_REFCLK, mipi_dsi0_refclk, "mipi-dsi0-ref=
+clk",
+> +		video_pll_clk_pd, 0x0, BIT(17), 0);
+> +static CCU_GATE(CLK_MIPI_DSI1_REFCLK, mipi_dsi1_refclk, "mipi-dsi1-ref=
+clk",
+> +		video_pll_clk_pd, 0x0, BIT(18), 0);
+> +static CCU_GATE(CLK_HDMI_I2S, hdmi_i2s_clk, "hdmi-i2s-clk", video_pll_=
+clk_pd,
+> +		0x0, BIT(19), 0);
+> +static CCU_GATE(CLK_X2H_DPU1_ACLK, x2h_dpu1_aclk, "x2h-dpu1-aclk",
+> +		video_pll_clk_pd, 0x0, BIT(20), 0);
+> +static CCU_GATE(CLK_X2H_DPU_ACLK, x2h_dpu_aclk, "x2h-dpu-aclk",
+> +		video_pll_clk_pd, 0x0, BIT(21), 0);
+> +static CCU_GATE(CLK_AXI4_VO_PCLK, axi4_vo_pclk, "axi4-vo-pclk",
+> +		video_pll_clk_pd, 0x0, BIT(22), 0);
+> +static CCU_GATE(CLK_IOPMP_VOSYS_DPU_PCLK, iopmp_vosys_dpu_pclk,
+> +		"iopmp-vosys-dpu-pclk", video_pll_clk_pd, 0x0, BIT(23), 0);
+> +static CCU_GATE(CLK_IOPMP_VOSYS_DPU1_PCLK, iopmp_vosys_dpu1_pclk,
+> +		"iopmp-vosys-dpu1-pclk", video_pll_clk_pd, 0x0, BIT(24), 0);
+> +static CCU_GATE(CLK_IOPMP_VOSYS_GPU_PCLK, iopmp_vosys_gpu_pclk,
+> +		"iopmp-vosys-gpu-pclk", video_pll_clk_pd, 0x0, BIT(25), 0);
+> +static CCU_GATE(CLK_IOPMP_DPU1_ACLK, iopmp_dpu1_aclk, "iopmp-dpu1-aclk=
+",
+> +		video_pll_clk_pd, 0x0, BIT(27), 0);
+> +static CCU_GATE(CLK_IOPMP_DPU_ACLK, iopmp_dpu_aclk, "iopmp-dpu-aclk",
+> +		video_pll_clk_pd, 0x0, BIT(28), 0);
+> +static CCU_GATE(CLK_IOPMP_GPU_ACLK, iopmp_gpu_aclk, "iopmp-gpu-aclk",
+> +		video_pll_clk_pd, 0x0, BIT(29), 0);
+> +static CCU_GATE(CLK_MIPIDSI0_PIXCLK, mipi_dsi0_pixclk, "mipi-dsi0-pixc=
+lk",
+> +		video_pll_clk_pd, 0x0, BIT(30), 0);
+> +static CCU_GATE(CLK_MIPIDSI1_PIXCLK, mipi_dsi1_pixclk, "mipi-dsi1-pixc=
+lk",
+> +		video_pll_clk_pd, 0x0, BIT(31), 0);
+> +static CCU_GATE(CLK_HDMI_PIXCLK, hdmi_pixclk, "hdmi-pixclk", video_pll=
+_clk_pd,
+> +		0x4, BIT(0), 0);
 > +
-> +#include <linux/bitfield.h>
-> +#include <linux/clk.h>
-> +#include <linux/err.h>
-> +#include <linux/iopoll.h>
-> +#include <linux/nvmem-consumer.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/of_device.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_runtime.h>
-> +#include <linux/thermal.h>
+>  static CLK_FIXED_FACTOR_HW(gmac_pll_clk_100m, "gmac-pll-clk-100m",
+>  			   &gmac_pll_clk.common.hw, 10, 1, 0);
+> =20
+> @@ -963,7 +1024,38 @@ static struct ccu_common *th1520_gate_clks[] =3D =
+{
+>  	&sram3_clk.common,
+>  };
+> =20
+> -#define NR_CLKS	(CLK_UART_SCLK + 1)
+> +static struct ccu_common *th1520_vo_gate_clks[] =3D {
+> +	&axi4_vo_aclk.common,
+> +	&gpu_core_clk.common,
+> +	&gpu_cfg_aclk.common,
+> +	&dpu0_pixelclk.common,
+> +	&dpu1_pixelclk.common,
+> +	&dpu_hclk.common,
+> +	&dpu_aclk.common,
+> +	&dpu_cclk.common,
+> +	&hdmi_sfr_clk.common,
+> +	&hdmi_pclk.common,
+> +	&hdmi_cec_clk.common,
+> +	&mipi_dsi0_pclk.common,
+> +	&mipi_dsi1_pclk.common,
+> +	&mipi_dsi0_cfg_clk.common,
+> +	&mipi_dsi1_cfg_clk.common,
+> +	&mipi_dsi0_refclk.common,
+> +	&mipi_dsi1_refclk.common,
+> +	&hdmi_i2s_clk.common,
+> +	&x2h_dpu1_aclk.common,
+> +	&x2h_dpu_aclk.common,
+> +	&axi4_vo_pclk.common,
+> +	&iopmp_vosys_dpu_pclk.common,
+> +	&iopmp_vosys_dpu1_pclk.common,
+> +	&iopmp_vosys_gpu_pclk.common,
+> +	&iopmp_dpu1_aclk.common,
+> +	&iopmp_dpu_aclk.common,
+> +	&iopmp_gpu_aclk.common,
+> +	&mipi_dsi0_pixclk.common,
+> +	&mipi_dsi1_pixclk.common,
+> +	&hdmi_pixclk.common
+> +};
+> =20
+>  static const struct regmap_config th1520_clk_regmap_config =3D {
+>  	.reg_bits =3D 32,
+> @@ -972,8 +1064,44 @@ static const struct regmap_config th1520_clk_regm=
+ap_config =3D {
+>  	.fast_io =3D true,
+>  };
+> =20
+> +struct th1520_plat_data {
+> +	struct ccu_common **th1520_pll_clks;
+> +	struct ccu_common **th1520_div_clks;
+> +	struct ccu_common **th1520_mux_clks;
+> +	struct ccu_common **th1520_gate_clks;
 > +
-> +#define IMX91_TMU_STAT0				0x10
-> +#define IMX91_TMU_STAT0_DRDY0_IF_MASK		BIT(16)
-> +
-> +#define IMX91_TMU_DATA0				0x20
-> +
-> +#define IMX91_TMU_CTRL1_SET			0x204
-> +#define IMX91_TMU_CTRL1_CLR			0x208
-> +#define IMX91_TMU_CTRL1_EN			BIT(31)
-> +#define IMX91_TMU_CTRL1_START			BIT(30)
-> +#define IMX91_TMU_CTRL1_STOP			BIT(29)
-> +#define IMX91_TMU_CTRL1_RES_MASK		GENMASK(19, 18)
-> +#define IMX91_TMU_CTRL1_MEAS_MODE_MASK		GENMASK(25, 24)
-> +#define   IMX91_TMU_CTRL1_MEAS_MODE_SINGLE	0
-> +#define   IMX91_TMU_CTRL1_MEAS_MODE_CONTINUES	1
-> +#define   IMX91_TMU_CTRL1_MEAS_MODE_PERIODIC	2
-> +
-> +#define IMX91_TMU_REF_DIV			0x280
-> +#define IMX91_TMU_DIV_EN			BIT(31)
-> +#define IMX91_TMU_DIV_MASK			GENMASK(23, 16)
-> +#define IMX91_TMU_DIV_MAX			255
-> +
-> +#define IMX91_TMU_PUD_ST_CTRL			0x2b0
-> +#define IMX91_TMU_PUDL_MASK			GENMASK(23, 16)
-> +
-> +#define IMX91_TMU_TRIM1				0x2e0
-> +#define IMX91_TMU_TRIM2				0x2f0
-> +
-> +#define IMX91_TMU_TEMP_LOW_LIMIT		-40000
-> +#define IMX91_TMU_TEMP_HIGH_LIMIT		125000
-> +
-> +#define IMX91_TMU_DEFAULT_TRIM1_CONFIG		0xb561bc2d
-> +#define IMX91_TMU_DEFAULT_TRIM2_CONFIG		0x65d4
-> +
-> +struct imx91_tmu {
-> +	void __iomem *base;
-> +	struct clk *clk;
-> +	struct device *dev;
-> +	struct thermal_zone_device *tzd;
-
-This field is pointless because used only in the probe function.
-
+> +	int nr_clks;
+> +	int nr_pll_clks;
+> +	int nr_div_clks;
+> +	int nr_mux_clks;
+> +	int nr_gate_clks;
 > +};
 > +
-> +static void imx91_tmu_start(struct imx91_tmu *tmu, bool start)
-> +{
-> +	u32 val = start ? IMX91_TMU_CTRL1_START : IMX91_TMU_CTRL1_STOP;
+> +static const struct th1520_plat_data th1520_ap_platdata =3D {
+> +	.th1520_pll_clks =3D th1520_pll_clks,
+> +	.th1520_div_clks =3D th1520_div_clks,
+> +	.th1520_mux_clks =3D th1520_mux_clks,
+> +	.th1520_gate_clks =3D th1520_gate_clks,
 > +
-> +	writel_relaxed(val, tmu->base + IMX91_TMU_CTRL1_SET);
-> +}
+> +	.nr_clks =3D CLK_UART_SCLK + 1,
 > +
-> +static void imx91_tmu_enable(struct imx91_tmu *tmu, bool enable)
-> +{
-> +	u32 reg = enable ? IMX91_TMU_CTRL1_SET : IMX91_TMU_CTRL1_CLR;
+> +	.nr_pll_clks =3D ARRAY_SIZE(th1520_pll_clks),
+> +	.nr_div_clks =3D ARRAY_SIZE(th1520_div_clks),
+> +	.nr_mux_clks =3D ARRAY_SIZE(th1520_mux_clks),
+> +	.nr_gate_clks =3D ARRAY_SIZE(th1520_gate_clks),
+> +};
 > +
-> +	writel_relaxed(IMX91_TMU_CTRL1_EN, tmu->base + reg);
-> +}
+> +static const struct th1520_plat_data th1520_vo_platdata =3D {
+> +	.th1520_gate_clks =3D th1520_vo_gate_clks,
 > +
-> +static int imx91_tmu_get_temp(struct thermal_zone_device *tz, int *temp)
-> +{
-> +	struct imx91_tmu *tmu = thermal_zone_device_priv(tz);
-> +	s16 data;
-> +	int ret;
-> +	u32 val;
+> +	.nr_clks =3D CLK_HDMI_PIXCLK + 1,
 > +
-> +	ret = pm_runtime_resume_and_get(tmu->dev);
-> +	if (ret < 0)
-> +		return ret;
+> +	.nr_gate_clks =3D ARRAY_SIZE(th1520_vo_gate_clks),
+> +};
 > +
-> +	imx91_tmu_start(tmu, true);
-
-Same question as [1]
-
-Do you really want to start and stop the sensor between two reads ?
-
-> +	ret = readl_relaxed_poll_timeout(tmu->base + IMX91_TMU_STAT0, val,
-> +					 val & IMX91_TMU_STAT0_DRDY0_IF_MASK, 1000, 40000);
-> +	if (ret) {
-> +		ret = -EAGAIN;
-> +		goto out;
+>  static int th1520_clk_probe(struct platform_device *pdev)
+>  {
+> +	const struct th1520_plat_data *plat_data;
+>  	struct device *dev =3D &pdev->dev;
+>  	struct clk_hw_onecell_data *priv;
+> =20
+> @@ -982,11 +1110,17 @@ static int th1520_clk_probe(struct platform_devi=
+ce *pdev)
+>  	struct clk_hw *hw;
+>  	int ret, i;
+> =20
+> -	priv =3D devm_kzalloc(dev, struct_size(priv, hws, NR_CLKS), GFP_KERNE=
+L);
+> +	plat_data =3D device_get_match_data(&pdev->dev);
+> +	if (!plat_data) {
+> +		dev_err(&pdev->dev, "Error: No device match data found\n");
+> +		return -ENODEV;
 > +	}
 > +
-> +	/* DATA0 is 16bit signed number */
-> +	data = readw_relaxed(tmu->base + IMX91_TMU_DATA0);
-> +	*temp = data * 1000 / 64;
-
-cf units.h
-
-	*temp = (data * MILLIDEGREE_PER_DEGREE) / A_LITERAL;
-
-> +	if (*temp < IMX91_TMU_TEMP_LOW_LIMIT || *temp > IMX91_TMU_TEMP_HIGH_LIMIT)
-> +		ret = -EAGAIN;
-> +
-> +out:
-> +	pm_runtime_put(tmu->dev);
-> +
-> +	return ret;
-> +}
-> +
-> +static struct thermal_zone_device_ops tmu_tz_ops = {
-> +	.get_temp = imx91_tmu_get_temp,
-
-Why not add the change_mode ops ?
-
-> +};
-> +
-> +static int imx91_init_from_nvmem_cells(struct imx91_tmu *tmu)
-> +{
-> +	struct device *dev = tmu->dev;
-> +	u32 trim1, trim2;
-> +	int ret;
-> +
-> +	ret = nvmem_cell_read_u32(dev, "trim1", &trim1);
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret = nvmem_cell_read_u32(dev, "trim2", &trim2);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if (trim1 == 0 || trim2 == 0)
-> +		return -EINVAL;
-> +
-> +	writel_relaxed(trim1, tmu->base + IMX91_TMU_TRIM1);
-> +	writel_relaxed(trim2, tmu->base + IMX91_TMU_TRIM2);
-> +
-> +	return 0;
-> +}
-> +
-> +static void imx91_tmu_action_remove(void *data)
-> +{
-> +	struct imx91_tmu *tmu = data;
-> +
-> +	/* disable tmu */
-> +	imx91_tmu_enable(tmu, false);
-> +}
-> +
-> +static int imx91_tmu_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct imx91_tmu *tmu;
-> +	unsigned long rate;
-> +	u32 div;
-> +	int ret;
-> +
-> +	tmu = devm_kzalloc(dev, sizeof(struct imx91_tmu), GFP_KERNEL);
-> +	if (!tmu)
-> +		return -ENOMEM;
-> +
-> +	tmu->dev = dev;
-> +
-> +	tmu->base = devm_platform_ioremap_resource(pdev, 0);
-> +	if (IS_ERR(tmu->base))
-> +		return dev_err_probe(dev, PTR_ERR(tmu->base), "failed to get io resource");
-> +
-> +	tmu->clk = devm_clk_get_enabled(dev, NULL);
-> +	if (IS_ERR(tmu->clk))
-> +		return dev_err_probe(dev, PTR_ERR(tmu->clk), "failed to get tmu clock\n");
-> +
-> +	platform_set_drvdata(pdev, tmu);
-> +
-> +	/* disable the monitor during initialization */
-> +	imx91_tmu_enable(tmu, false);
-> +	imx91_tmu_start(tmu, false);
-> +
-> +	ret = imx91_init_from_nvmem_cells(tmu);
-> +	if (ret) {
-> +		writel_relaxed(IMX91_TMU_DEFAULT_TRIM1_CONFIG, tmu->base + IMX91_TMU_TRIM1);
-> +		writel_relaxed(IMX91_TMU_DEFAULT_TRIM2_CONFIG, tmu->base + IMX91_TMU_TRIM2);
+> +	priv =3D devm_kzalloc(dev, struct_size(priv, hws, plat_data->nr_clks)=
+, GFP_KERNEL);
+>  	if (!priv)
+>  		return -ENOMEM;
+> =20
+> -	priv->num =3D NR_CLKS;
+> +	priv->num =3D plat_data->nr_clks;
+> =20
+>  	base =3D devm_platform_ioremap_resource(pdev, 0);
+>  	if (IS_ERR(base))
+> @@ -996,35 +1130,35 @@ static int th1520_clk_probe(struct platform_devi=
+ce *pdev)
+>  	if (IS_ERR(map))
+>  		return PTR_ERR(map);
+> =20
+> -	for (i =3D 0; i < ARRAY_SIZE(th1520_pll_clks); i++) {
+> -		struct ccu_pll *cp =3D hw_to_ccu_pll(&th1520_pll_clks[i]->hw);
+> +	for (i =3D 0; i < plat_data->nr_pll_clks; i++) {
+> +		struct ccu_pll *cp =3D hw_to_ccu_pll(&plat_data->th1520_pll_clks[i]-=
+>hw);
+> =20
+> -		th1520_pll_clks[i]->map =3D map;
+> +		plat_data->th1520_pll_clks[i]->map =3D map;
+> =20
+> -		ret =3D devm_clk_hw_register(dev, &th1520_pll_clks[i]->hw);
+> +		ret =3D devm_clk_hw_register(dev, &plat_data->th1520_pll_clks[i]->hw=
+);
+>  		if (ret)
+>  			return ret;
+> =20
+>  		priv->hws[cp->common.clkid] =3D &cp->common.hw;
+>  	}
+> =20
+> -	for (i =3D 0; i < ARRAY_SIZE(th1520_div_clks); i++) {
+> -		struct ccu_div *cd =3D hw_to_ccu_div(&th1520_div_clks[i]->hw);
+> +	for (i =3D 0; i < plat_data->nr_div_clks; i++) {
+> +		struct ccu_div *cd =3D hw_to_ccu_div(&plat_data->th1520_div_clks[i]-=
+>hw);
+> =20
+> -		th1520_div_clks[i]->map =3D map;
+> +		plat_data->th1520_div_clks[i]->map =3D map;
+> =20
+> -		ret =3D devm_clk_hw_register(dev, &th1520_div_clks[i]->hw);
+> +		ret =3D devm_clk_hw_register(dev, &plat_data->th1520_div_clks[i]->hw=
+);
+>  		if (ret)
+>  			return ret;
+> =20
+>  		priv->hws[cd->common.clkid] =3D &cd->common.hw;
+>  	}
+> =20
+> -	for (i =3D 0; i < ARRAY_SIZE(th1520_mux_clks); i++) {
+> -		struct ccu_mux *cm =3D hw_to_ccu_mux(&th1520_mux_clks[i]->hw);
+> +	for (i =3D 0; i < plat_data->nr_mux_clks; i++) {
+> +		struct ccu_mux *cm =3D hw_to_ccu_mux(&plat_data->th1520_mux_clks[i]-=
+>hw);
+>  		const struct clk_init_data *init =3D cm->common.hw.init;
+> =20
+> -		th1520_mux_clks[i]->map =3D map;
+> +		plat_data->th1520_mux_clks[i]->map =3D map;
+>  		hw =3D devm_clk_hw_register_mux_parent_data_table(dev,
+>  								init->name,
+>  								init->parent_data,
+> @@ -1040,10 +1174,10 @@ static int th1520_clk_probe(struct platform_dev=
+ice *pdev)
+>  		priv->hws[cm->common.clkid] =3D hw;
+>  	}
+> =20
+> -	for (i =3D 0; i < ARRAY_SIZE(th1520_gate_clks); i++) {
+> -		struct ccu_gate *cg =3D hw_to_ccu_gate(&th1520_gate_clks[i]->hw);
+> +	for (i =3D 0; i < plat_data->nr_gate_clks; i++) {
+> +		struct ccu_gate *cg =3D hw_to_ccu_gate(&plat_data->th1520_gate_clks[=
+i]->hw);
+> =20
+> -		th1520_gate_clks[i]->map =3D map;
+> +		plat_data->th1520_gate_clks[i]->map =3D map;
+> =20
+>  		hw =3D devm_clk_hw_register_gate_parent_data(dev,
+>  							   cg->common.hw.init->name,
+> @@ -1057,19 +1191,21 @@ static int th1520_clk_probe(struct platform_dev=
+ice *pdev)
+>  		priv->hws[cg->common.clkid] =3D hw;
+>  	}
+> =20
+> -	ret =3D devm_clk_hw_register(dev, &osc12m_clk.hw);
+> -	if (ret)
+> -		return ret;
+> -	priv->hws[CLK_OSC12M] =3D &osc12m_clk.hw;
+> +	if (plat_data =3D=3D &th1520_ap_platdata) {
+> +		ret =3D devm_clk_hw_register(dev, &osc12m_clk.hw);
+> +		if (ret)
+> +			return ret;
+> +		priv->hws[CLK_OSC12M] =3D &osc12m_clk.hw;
+> =20
+> -	ret =3D devm_clk_hw_register(dev, &gmac_pll_clk_100m.hw);
+> -	if (ret)
+> -		return ret;
+> -	priv->hws[CLK_PLL_GMAC_100M] =3D &gmac_pll_clk_100m.hw;
+> +		ret =3D devm_clk_hw_register(dev, &gmac_pll_clk_100m.hw);
+> +		if (ret)
+> +			return ret;
+> +		priv->hws[CLK_PLL_GMAC_100M] =3D &gmac_pll_clk_100m.hw;
+> =20
+> -	ret =3D devm_clk_hw_register(dev, &emmc_sdio_ref_clk.hw);
+> -	if (ret)
+> -		return ret;
+> +		ret =3D devm_clk_hw_register(dev, &emmc_sdio_ref_clk.hw);
+> +		if (ret)
+> +			return ret;
 > +	}
-> +
-> +	/* The typical conv clk is 4MHz, the output freq is 'rate / (div + 1)' */
-> +	rate = clk_get_rate(tmu->clk);
-> +	div = (rate / 4000000) - 1;
-
-Use literals please (eg. 4 * HZ_PER_MHZ)
-
-> +	if (div > IMX91_TMU_DIV_MAX)
-> +		return dev_err_probe(dev, -EINVAL, "clock divider exceed hardware limitation");
-> +
-> +	/* Set divider value and enable divider */
-> +	writel_relaxed(IMX91_TMU_DIV_EN | FIELD_PREP(IMX91_TMU_DIV_MASK, div),
-> +		       tmu->base + IMX91_TMU_REF_DIV);
-> +
-> +	/* Set max power up delay: 'Tpud(ms) = 0xFF * 1000 / 4000000' */
-> +	writel_relaxed(FIELD_PREP(IMX91_TMU_PUDL_MASK, 100U), tmu->base + IMX91_TMU_PUD_ST_CTRL);
-> +
-> +	/*
-> +	 * Set resolution mode
-> +	 * 00b - Conversion time = 0.59325 ms
-> +	 * 01b - Conversion time = 1.10525 ms
-> +	 * 10b - Conversion time = 2.12925 ms
-> +	 * 11b - Conversion time = 4.17725 ms
-> +	 */
-> +	writel_relaxed(FIELD_PREP(IMX91_TMU_CTRL1_RES_MASK, 0x3), tmu->base + IMX91_TMU_CTRL1_CLR);
-> +	writel_relaxed(FIELD_PREP(IMX91_TMU_CTRL1_RES_MASK, 0x1), tmu->base + IMX91_TMU_CTRL1_SET);
-> +
-> +	writel_relaxed(IMX91_TMU_CTRL1_MEAS_MODE_MASK, tmu->base + IMX91_TMU_CTRL1_CLR);
-> +	writel_relaxed(FIELD_PREP(IMX91_TMU_CTRL1_MEAS_MODE_MASK, IMX91_TMU_CTRL1_MEAS_MODE_SINGLE),
-> +		       tmu->base + IMX91_TMU_CTRL1_SET);
-> +
-> +	pm_runtime_set_active(dev);
-> +	devm_pm_runtime_enable(dev);
-> +	pm_runtime_put(dev);
-> +
-> +	tmu->tzd = devm_thermal_of_zone_register(dev, 0, tmu, &tmu_tz_ops);
-> +	if (IS_ERR(tmu->tzd))
-> +		return dev_err_probe(dev, PTR_ERR(tmu->tzd),
-> +				     "failed to register thermal zone sensor\n");
-> +
-> +	ret = devm_add_action(dev, imx91_tmu_action_remove, tmu);
-
-Should it be moved before devm_thermal_of_zone_register(), so if the 
-thermal zone creation fails, it will stop the sensor which was 
-previously started ?
-
-> +	if (ret)
-> +		return dev_err_probe(dev, ret, "Failure to add action imx91_tmu_action_remove()\n");
-> +
-> +	return 0;
-> +}
-> +
-> +static int imx91_tmu_runtime_suspend(struct device *dev)
-> +{
-> +	struct imx91_tmu *tmu = dev_get_drvdata(dev);
-> +
-> +	/* disable tmu */
-> +	imx91_tmu_enable(tmu, false);
-> +
-> +	clk_disable_unprepare(tmu->clk);
-> +
-> +	return 0;
-> +}
-> +
-> +static int imx91_tmu_runtime_resume(struct device *dev)
-> +{
-> +	struct imx91_tmu *tmu = dev_get_drvdata(dev);
-> +	int ret;
-> +
-> +	ret = clk_prepare_enable(tmu->clk);
-> +	if (ret)
-> +		return ret;
-> +
-> +	imx91_tmu_enable(tmu, true);
-> +
-> +	return 0;
-> +}
-> +
-> +static DEFINE_RUNTIME_DEV_PM_OPS(imx91_tmu_pm_ops, imx91_tmu_runtime_suspend,
-> +				 imx91_tmu_runtime_resume, NULL);
-> +
-> +static const struct of_device_id imx91_tmu_table[] = {
-> +	{ .compatible = "fsl,imx91-tmu", },
-> +	{ },
-> +};
-> +MODULE_DEVICE_TABLE(of, imx91_tmu_table);
-> +
-> +static struct platform_driver imx91_tmu = {
-> +	.driver = {
-> +		.name	= "imx91_thermal",
-> +		.pm	= pm_ptr(&imx91_tmu_pm_ops),
-> +		.of_match_table = imx91_tmu_table,
+> =20
+>  	ret =3D devm_of_clk_add_hw_provider(dev, of_clk_hw_onecell_get, priv)=
+;
+>  	if (ret)
+> @@ -1081,6 +1217,11 @@ static int th1520_clk_probe(struct platform_devi=
+ce *pdev)
+>  static const struct of_device_id th1520_clk_match[] =3D {
+>  	{
+>  		.compatible =3D "thead,th1520-clk-ap",
+> +		.data =3D &th1520_ap_platdata,
 > +	},
-> +	.probe = imx91_tmu_probe,
-> +};
-> +module_platform_driver(imx91_tmu);
-> +
-> +MODULE_AUTHOR("Peng Fan <peng.fan@nxp.com>");
-> +MODULE_DESCRIPTION("i.MX91 Thermal Monitor Unit driver");
-> +MODULE_LICENSE("GPL");
-> 
+> +	{
+> +		.compatible =3D "thead,th1520-clk-vo",
+> +		.data =3D &th1520_vo_platdata,
+>  	},
+>  	{ /* sentinel */ },
+>  };
 
+--=20
+Matt Coster
+E: matt.coster@imgtec.com
 
--- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+--------------KMUnNqRXVfTSk0ZKCUXePycU--
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+--------------jkuz8klicTr03P3PrhKep0KO
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+wnsEABYIACMWIQS4qDmoJvwmKhjY+nN5vBnz2d5qsAUCZ5zuqQUDAAAAAAAKCRB5vBnz2d5qsGUY
+AP0UZWWYOE+oYUoeOOg2Ux6JWNh8HmNYan7GqLTCGSrdUgD/UTmT5CHcOSjvzpAcupso5Fqmv1F+
+eSrWBqyt/Yl5HAI=
+=Q3pb
+-----END PGP SIGNATURE-----
+
+--------------jkuz8klicTr03P3PrhKep0KO--
