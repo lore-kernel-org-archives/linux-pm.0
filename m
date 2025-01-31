@@ -1,61 +1,61 @@
 Received: from mx07-00376f01.pphosted.com (mx07-00376f01.pphosted.com [185.132.180.163])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04F661CAA99;
-	Fri, 31 Jan 2025 15:40:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDF3D1D0E2B;
+	Fri, 31 Jan 2025 15:40:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=185.132.180.163
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738338011; cv=fail; b=u61eS2fBiBzjPn8xOxO+cgw7HkZ4IhKFfqyeFuV/hdrZNYLeoOL1QdA6CAycplEtTTXbBz2BGv1NMQQBLFYnzNHbDMBNUoanY46LJYzpSW/Wq/0Tj3kkrrctJ+D8ElHYThthEuG3isPT1T7IN+WfGTysoNR6+qh5Oi5ewulePPE=
+	t=1738338011; cv=fail; b=LepNlzdQJIpY3IumUJeFKsq65slW/jmlWQClphiDz8RHXVsWHwXhKr9OQdfMCsmVsEfIw9Yo3MUpezHsno6op1bs4B9ZJkVUdqlSat8+F9goV/iigyf/HqHCZAs6qKZxRxlP8A9jiZuTELk+86GD7n5fH4OnJx0qgAlN6b7aXQU=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1738338011; c=relaxed/simple;
-	bh=++Tey5JH5TJTM32RgWmptUMPY2Za0VR23Xpsil9TENs=;
+	bh=BZAofs1n9Hh9hEbuOrmeL6H9CGCYsO/2lpAWgINMUd4=;
 	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=dZSpp/U7xHsNkEHnUf4QMIhislYbjOcXPvuLrZ4oDNqASkgqmZ0hwSf40YAvT6cMaWQ3Fq+yvCFwU8ag5pEaBsK0dBVdRmOaLHlmmuQe8m+O7NxJ6bBJIsnX7XJAQNLyFNjn4kr7GpRcJLnd9FHCuH52B+jRjN2fkPNnW6IARkM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=imgtec.com; spf=pass smtp.mailfrom=imgtec.com; dkim=pass (2048-bit key) header.d=imgtec.com header.i=@imgtec.com header.b=xvqc/iSE; dkim=pass (1024-bit key) header.d=IMGTecCRM.onmicrosoft.com header.i=@IMGTecCRM.onmicrosoft.com header.b=P2Hz8YKg; arc=fail smtp.client-ip=185.132.180.163
+	 Content-Type:MIME-Version; b=IpqZ9XN1vS8XEsBgEa8a6FCbTVhyz8N15YzIz0vulHzAo/GUThB5IJdQj42U69smtGZlW66is2tykHGJcE5quowFF/pDlBJ9ds1/uSl3KX5ypRZWUqPlghTj9gVXdcEPxFdUVVelOKkyMKn8fRIcDpZxbZ1fDxumtelKJzZWjEE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=imgtec.com; spf=pass smtp.mailfrom=imgtec.com; dkim=pass (2048-bit key) header.d=imgtec.com header.i=@imgtec.com header.b=y2d3qYia; dkim=pass (1024-bit key) header.d=IMGTecCRM.onmicrosoft.com header.i=@IMGTecCRM.onmicrosoft.com header.b=PmRu2T4e; arc=fail smtp.client-ip=185.132.180.163
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=imgtec.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=imgtec.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=imgtec.com header.i=@imgtec.com header.b="xvqc/iSE";
-	dkim=pass (1024-bit key) header.d=IMGTecCRM.onmicrosoft.com header.i=@IMGTecCRM.onmicrosoft.com header.b="P2Hz8YKg"
+	dkim=pass (2048-bit key) header.d=imgtec.com header.i=@imgtec.com header.b="y2d3qYia";
+	dkim=pass (1024-bit key) header.d=IMGTecCRM.onmicrosoft.com header.i=@IMGTecCRM.onmicrosoft.com header.b="PmRu2T4e"
 Received: from pps.filterd (m0168889.ppops.net [127.0.0.1])
-	by mx07-00376f01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50VF57SC028275;
-	Fri, 31 Jan 2025 15:39:30 GMT
+	by mx07-00376f01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50VF56W2028214;
+	Fri, 31 Jan 2025 15:39:44 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=imgtec.com; h=cc
 	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=dk201812; bh=E2kqLpb6yR80iDCdcO1JkFrzz
-	7udp4XX+Q/QSoqP73A=; b=xvqc/iSE/h9tpzKyjupxfr+r54q96k0zuABeSCNA8
-	iGTwiLAVrFgvKwCujXGWDk2SKgCtvckhgr5p1Y27sJeIBbOn6INPczKepgfqamWH
-	5sHiGYnfJ0EOva8a5dRtcsxW1j9hRai94p0R+ulynVRCxYub9zD0y+OEYkfeKdPb
-	W6XnMROkuvC7RGkexmis3VJhedjwS8ufXeN/PUFJj6OZW0Rk9zhtLjGMfabg7x8f
-	HblJeR2s2AEMDDKSILyx0DhzL2BjFmTjTYjjNgN9z3Xce/pO9Tce5T3F/2SibtOc
-	/j2XvtRso8tqDoe/wIEx7Eq33QrAPVzvtZB462CckaAaQ==
-Received: from lo2p265cu024.outbound.protection.outlook.com (mail-uksouthazlp17011026.outbound.protection.outlook.com [40.93.67.26])
-	by mx07-00376f01.pphosted.com (PPS) with ESMTPS id 44ep3c302v-1
+	:references:subject:to; s=dk201812; bh=4S52QNc0oLKOsf3Qz5WCgbcpg
+	oK+MJMIM8ZC43ztLY8=; b=y2d3qYiarIJT6Vgxw0ERPo4O+qAL9pmridU/ncSas
+	93uTGzK+A+UWKz2G50KSRKs1unK0Mm9wJZoqrmoxjG95nHJkgszx3tzseZj5NsTR
+	smmtNBOQlOqpYdEk39qw2zqOSIuVsxtvIvxp2kkbFFMw3wcX8FH9xAHwMcvhJr66
+	q/FQaArJcwgBLZvnxv8WGYGjQI/HwmgKdoYOF12MfN6wcZo46EZm/SHo3n7qRLFz
+	FVhRGxet+CegFHc+KTg831kUFoe4S8eNEs/ZVMCOZiKc92/owQV0XNkfSoIKt3U2
+	6bxCyIlVdCbBpi2FzLp+9f2UWkUq2RMeY3T6fM1MpfYuA==
+Received: from lo0p265cu003.outbound.protection.outlook.com (mail-uksouthazlp17012052.outbound.protection.outlook.com [40.93.67.52])
+	by mx07-00376f01.pphosted.com (PPS) with ESMTPS id 44ep3c302y-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 31 Jan 2025 15:39:28 +0000 (GMT)
+	Fri, 31 Jan 2025 15:39:43 +0000 (GMT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=bRTgvOH2cSfGsKiFpuXZbggLYXPw5T9C86wjNGB9L6KJ1frw9gdEaex7HrN48I4TU6r8v6guZt1+FSbL6n+yw5NNAsGfK3X4KXJlWvKC3n5vPnv63pKLpm2+Up0hrgXmyaeqIGpouw0X+YrIHf6u8Zc/ji0DZ4eo4sXIg4vsFRwjBCczfVw7pSaTp3ThZh7lHMe3mHpcoNmPp9p/KCCeEzuRkcwQdrq7K0vIJNv3I1/U7saetnJ67gcRwMb70lYzHMJThdRjn5Mee2qOPMeMtG34kGZRizqLLhJQosADHDXjG1Poce4DU/ofvg7DJsUFBugTRolZZeTxeldnI9CbYQ==
+ b=Gw3Z+F3eNaBqOxRtTrSr8VEcazyRTc0kQMgZELfaKYbWbrratG8ljBUNqelcufUf4qm8DaddcCsvwhPZyo86fgUYnI+k49eBoNZ0sk9wRjj/xRPGSjfjWjo24XAkaz3g21ucfOuYqbddNZ69T775WSJRI2XVestuBbUkwVA7O7qM1gJcy2NQwPXnXb74kW04ZX9SHkv4B+WWae3WRQYXbq4h5j68kyEd5DkeZBnZRO28JRvdcJWS79B9fjuIONK+ZK8U/HaLiyd9i3+84wAf11lp50JLTU/YOEfdRUvC/PUabSOTxC8xmpn06Iq5Dh8lsuDhJbtQajvMa3JZL8j2Cg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=E2kqLpb6yR80iDCdcO1JkFrzz7udp4XX+Q/QSoqP73A=;
- b=LTKg0d+s0Da/oeWQVxQwthLrQZ5D7wG0HKQzGFNkLPMLT8kaGzGWMcz14aCYPU5wRQ4XBb2jAEqh0ZxygKHGL3DQv/BIMwg7VU0cepRnpl2TmkvgBoFNjtJjJvyFEiRrKLK7Qyq6eqVNpodqMgpOAA7OMmrKBdjweJ26bh1FzGuFobmPhPjYhMd4LBNSzJb9jHMoIgJiMnbqyv8xBZWc+Mgn8yJ31Qy3uroxJ3VEEGK4WHmA5dr6wYJeOpfha4arA6KAwYCXHudYziB6pWdxTo7waDdo86VeFQwCyETgsuBAETgEft1m3qX2qsiVQc1lOUhudaNaDNxTXwebHWMPUA==
+ bh=4S52QNc0oLKOsf3Qz5WCgbcpgoK+MJMIM8ZC43ztLY8=;
+ b=vk3IavfCn/4AZhBf6v4cYmp10juuy6SYklx5IM80GBH1Fl/GhwHl/4n5HJBn1sn+aWMv+lqEnzdayHD94mI4Mlt808zsp2bwUGn/W7/So3Lh2xUQ6BsPY1RYt73YBhOpkcb9OR5D9gI2XRChMQU8iJ8hVfEyz8zx3fcO9B7EUlqbgWjOKOnbz1kvlaRr/XuTW+3qkLwShU21tH9jmZAFekpkNZ6hqaINgAhIaGd9ifO7+Mf1vnnzKWehUReJMgNtCFiDHMG/MTgiq5NkxU/zhkbOhFw5bLu0BS52n+BuRehwjZYb/X4aGvwdIrrSqRc7xYlVle/b2r55yUcuhcpe2A==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=imgtec.com; dmarc=pass action=none header.from=imgtec.com;
  dkim=pass header.d=imgtec.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=IMGTecCRM.onmicrosoft.com; s=selector2-IMGTecCRM-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=E2kqLpb6yR80iDCdcO1JkFrzz7udp4XX+Q/QSoqP73A=;
- b=P2Hz8YKggOwJlb6UYMuvDBsltyobhhQkICbeLyRX6C2200BgSTdv32ncZ3plohUDz+rlEFDi21QkjMozoPfJAkguusbOvR508pU3d2MUZxWQ+c38mLZM3wBXPHWyAV+eZ5f6GUloyn8IRql4U1itM7g0YJz0oAWBZb3ap/52VPo=
+ bh=4S52QNc0oLKOsf3Qz5WCgbcpgoK+MJMIM8ZC43ztLY8=;
+ b=PmRu2T4eR+p9J8ZT8Mm5JFcc4HgX1Z7GQTiUWtRdl4rXI6B+FwVfFdZc2SSRtyAmW7X6hImsbngpte0WtOTpbtpgF3UlLg+6E9EkOjBvEwSRJkRzNXKXPzxFmmctRaLOaMBKEKiouVHQeVp4BCt8GHci06NBzpBW9YFGHYNX7sY=
 Received: from CWXP265MB3397.GBRP265.PROD.OUTLOOK.COM (2603:10a6:400:e7::8) by
  LO0P265MB5503.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:287::8) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.8398.20; Fri, 31 Jan 2025 15:39:26 +0000
+ 15.20.8398.20; Fri, 31 Jan 2025 15:39:42 +0000
 Received: from CWXP265MB3397.GBRP265.PROD.OUTLOOK.COM
  ([fe80::8e9d:6b2f:9881:1e15]) by CWXP265MB3397.GBRP265.PROD.OUTLOOK.COM
  ([fe80::8e9d:6b2f:9881:1e15%6]) with mapi id 15.20.8398.020; Fri, 31 Jan 2025
- 15:39:26 +0000
+ 15:39:41 +0000
 From: Matt Coster <Matt.Coster@imgtec.com>
 To: Michal Wilczynski <m.wilczynski@samsung.com>,
         "mturquette@baylibre.com"
@@ -94,106 +94,107 @@ CC: "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
         "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
         "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
         "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v4 09/18] reset: thead: Add TH1520 reset controller driver
-Thread-Topic: [PATCH v4 09/18] reset: thead: Add TH1520 reset controller
- driver
-Thread-Index: AQHbc/ZOhStD0GzR6Uu093CNg6Udrw==
-Date: Fri, 31 Jan 2025 15:39:26 +0000
-Message-ID: <816db99d-7088-4c1a-af03-b9a825ac09dc@imgtec.com>
+Subject: Re: [PATCH v4 12/18] dt-bindings: gpu: Add support for T-HEAD TH1520
+ GPU
+Thread-Topic: [PATCH v4 12/18] dt-bindings: gpu: Add support for T-HEAD TH1520
+ GPU
+Thread-Index: AQHbc/ZYt0fdrtsWzkiY4ycg3g+HiA==
+Date: Fri, 31 Jan 2025 15:39:41 +0000
+Message-ID: <2fe3d93f-62ac-4439-ac17-d81137f6410a@imgtec.com>
 References: <20250128194816.2185326-1-m.wilczynski@samsung.com>
- <CGME20250128194836eucas1p151c4fc83a17173fd1b79bfc959976301@eucas1p1.samsung.com>
- <20250128194816.2185326-10-m.wilczynski@samsung.com>
-In-Reply-To: <20250128194816.2185326-10-m.wilczynski@samsung.com>
+ <CGME20250128194841eucas1p29048dc05a26475d8323a7a318a8c7a25@eucas1p2.samsung.com>
+ <20250128194816.2185326-13-m.wilczynski@samsung.com>
+In-Reply-To: <20250128194816.2185326-13-m.wilczynski@samsung.com>
 Accept-Language: en-GB, en-US
 Content-Language: en-US
 X-MS-Has-Attach: yes
 X-MS-TNEF-Correlator:
 x-ms-publictraffictype: Email
 x-ms-traffictypediagnostic: CWXP265MB3397:EE_|LO0P265MB5503:EE_
-x-ms-office365-filtering-correlation-id: 7fa9bdbf-dae2-4f92-bb5b-08dd420d7178
+x-ms-office365-filtering-correlation-id: 4c0e4822-821c-417a-cb3c-08dd420d7ad4
 x-ms-exchange-senderadcheck: 1
 x-ms-exchange-antispam-relay: 0
 x-microsoft-antispam:
  BCL:0;ARA:13230040|376014|7416014|366016|1800799024|38070700018|921020;
 x-microsoft-antispam-message-info:
- =?utf-8?B?eTZqOUhsUytTNTJxZklNMVBiUHJaR3FaYzVUV3djUzJ0MWcvVGU5TGV3MVV0?=
- =?utf-8?B?eUxndDhiNEwxVm9YZm5JSG9oZFA0K1RpSDBxMDZ1K2lGb3Uzb0NPV1RUbmxX?=
- =?utf-8?B?R3hnY3lvSW1wWEpXTS9VV0UwYzhjSkJ1UTZrUUpqb2NPYVRjNDVWRTBDSTBX?=
- =?utf-8?B?ajRXb0NwZlVydmJLYzRmYUVGRmVhTlBRT1hrT2FrWUlmWldZdlhTTUc5bzZI?=
- =?utf-8?B?czFtb1dhOTdZenUwNUpGMHZET1NaeTJaaWFmejdMNUNGSDRGbSt4NFdoaEhB?=
- =?utf-8?B?NnZTZkpvOTI4a0FhcG9HWXFMZU53K2VZUU14bEVKWjhCRXVNYnJiL1NHVU05?=
- =?utf-8?B?UmI4RUVhVDlaVEtKSy9hdkFmTGF2aUFoWHFPcmw1eXM5MGxjWTFvNURHb0RV?=
- =?utf-8?B?UkZJSU5xOGJuTjZTMkRnZk5zVXhKWld2WkNsQmtuZnFkNmpZNmU0V3M3QUEz?=
- =?utf-8?B?NXRFNGY2NEZjVWszUVplUmR5MzhPM2ZSc2E3SXB4WEZGQ2pDNVU0d04wQS9m?=
- =?utf-8?B?ck1oNG9QOExtMnh4T1pkeXZIYjMrUUh2bWt3QjViL2NPZ2JMa0JoSUs3QkN1?=
- =?utf-8?B?cFJibmFtVFozSU1NUll6VWRlbFNjTUtPKzZUbGlHOTJXbVBuOHdlSnJ5aHJ5?=
- =?utf-8?B?djZ2WDhIcmx5OHE1S2U2VW1PSjhGTkhKdFBZNHdqYy8rbG82QVE2Vzk0Wkg3?=
- =?utf-8?B?T1MyalpiazdxYVJLTHVRMkZ2SXVabE02QkFadmlwemhISHpXaGF6ZG1Sb0Zm?=
- =?utf-8?B?WTlRQW4zOHBSb1Q2NlQ5eVkyNFAxN0FNV3U2Q2RDZXk1S2NNMmJWSHl6ZUhK?=
- =?utf-8?B?Tno1WFdhZXc3dU9Delg1ZWpVWmNsUXdvOW1WY0phWHJ4djFKTEZLSzloM3pM?=
- =?utf-8?B?cDZqdzlvVjQ2Y3JGalBPZWwzL293YlkxdEZpZjFqZXJGTGFqMnFjVVlLUm41?=
- =?utf-8?B?bkZrSUlQODZFRitsbFdxMnlBOGsvVzhLL20xekRSaHZIamVrM0d0cXpMZStl?=
- =?utf-8?B?M3ZRMFVvZEVRMTlYVVlwdEpMR2htWTkyVFhvR3RveFRDNHJMT1RRQUlIck92?=
- =?utf-8?B?amdLYzNjdU1wVTRuWldPTlo1cHNLaW53c3lzY3B4QW52LzZ4LzBRcXNQUXVh?=
- =?utf-8?B?OXlaMnhmNHlxQmc4dkMwWU92UVppRmw1cnNsa3h4a2JaNXZnOTlQU2Fkby84?=
- =?utf-8?B?WHBaWW1DaGxibkwzSi82VU1oaHYxSmYyR082bjhJdXBlZWx1bjhuVndBR2Nq?=
- =?utf-8?B?ZGdDSFBBb1hCQ1hsd0IvOWhXVVRtckNHUDd0N3RPYTNwTE54UEU3ZkZCZkk5?=
- =?utf-8?B?RVRhbWV1dTljR2RBQUNNRmx4UE9XS09id3p2dkNXandBY09EMGJkU2FBRTFO?=
- =?utf-8?B?QTJJM05PRm1VN1VvU2FFcVgyUnZIK2VlZG1MZ1lGK2p0NlV3cGlYV1N4UmxS?=
- =?utf-8?B?RlRpWkU5eDBGVmJya3dQUmo5ZVVOb0hPZ3phSzVhQnE3MUZBMTRFcC9YaVBD?=
- =?utf-8?B?SG1nVmFyck5IU0lzTUEwNytUOHNISzdIa28rZ1A2b244SVl1RGFVQ25zUms5?=
- =?utf-8?B?MUgvRm5Rdnp0Mmc1OXh4NkRBd0w0MXpRWXlQNlFndHJiWXRPYStqQTc4ZXZW?=
- =?utf-8?B?RDRCcnAzK1JtNU5pTHlLcE1Qd1JtN281ajJiZzFLaHgwTERtWXVnc1RLaU5w?=
- =?utf-8?B?QlVSVGxhTlM4a3pScnB2cjg4dkx0VWE3alJySjVZSkg3L1gyV0NaZWt4dWVi?=
- =?utf-8?B?YlhiMWNMWVlyV2d6WGRqSG1TU28zakhBblAvb1NQZU5RUjlkbk1ibFpkU01v?=
- =?utf-8?B?enlEV2YwRVkvUVFjN3R2alVzN0JQRGdhaDN3Z0VHYkhKSWRQZERuYUJ5SXJi?=
- =?utf-8?B?MlJCSkw0eWVHcklDUzdZWGdOTVFzcmpVd2ZpNU4yTnhEbEFLK1R6WTVFaFdt?=
- =?utf-8?B?dnJvM2xOSHRkd3VMWi9pZmkyZkEraE14N1Nudm1hMDI1YUJVMFE3N0MrTXVC?=
- =?utf-8?B?K1h4T0Q2V0ZBPT0=?=
+ =?utf-8?B?V2ZyakpHbktOZk5vdExTTWRIN1c3M0N2N1hDUnozVENwWTVrQ29ubjBSWWFD?=
+ =?utf-8?B?R09XYkRZSkR5RTRHcXVhSFphMWx3OHlnZ1V0MGFnOTZTVWx5UVQzV3Iwbndp?=
+ =?utf-8?B?VWRhN3RMZjFiWUFqdmdSOXlSYTRyU1FNRmlCRlZuK21ERVV1ZUxIZ2ZEY3A5?=
+ =?utf-8?B?ckNyeFkvWnR1Z2RVMlF5ZUFRNkEySkRObUE5WjFaREdFVm1BWUpzL1lJNHFa?=
+ =?utf-8?B?eTZWekN4OVNRNlkrMC91Mlh1R2hURURjNk5xZ1RCKzFYMGcwNkpFeXRrRXVX?=
+ =?utf-8?B?blRKVWd2ZE81TVNNUzdDeWFxUmZKRkJxK3dza1RibGVaWWJDZk1EVXgydlM1?=
+ =?utf-8?B?RDc4cTAyczUvb1l2SDFTWWxERGE0aHVnMG9sRkVaWGNHRFpyL0hMS2FXTURJ?=
+ =?utf-8?B?dFdIUGpYdEJmbVI0NFhvb3NzWWR1SXltT0k2TkNpVjBhQkkrSzhqQnFrZUFP?=
+ =?utf-8?B?UWd1TVZBQSs1Nkk5NVlvb1hobGRaMFNxcjFORXBERnZrYXJjUFV6V1dJZHhn?=
+ =?utf-8?B?d0hVaGxGNk1lSXN3S1BIQU1ZY1pPYWtMSzQyaUhlSzRXRjRJTnB6MHhJTllJ?=
+ =?utf-8?B?bFl5WDhYMFVjSG1tRU9hc3d6cWFhUUxoZ1l3WWhBZG04a2s3VGVoMEVuR25r?=
+ =?utf-8?B?Tko1N2Y2c3l1dklHMndQOVJMTjFENHE2Y2p4TWtMb08vSVVGdHJhZFBxWXMr?=
+ =?utf-8?B?enE5NjJBbWJGOTFuVzJBd0Yxc3hvTVhxUkdQWEVCa2U2TzZlMENHQ0lQR2hJ?=
+ =?utf-8?B?L3cxcnVnN21oL050MHFjV3ZIUWN6T1RHZXdkZXY5VE1MQ1hsblZaanJlZld4?=
+ =?utf-8?B?SWRjQ1B4Z2UwVE1xOVRxUEM0S0xzSWpVSkNoUlBLWnNBL2UyWXR3YlNiYXBF?=
+ =?utf-8?B?d3dFUlhPcnUwRGVXQ0w3TWFDUk1zWW1VWER3S2dWRGFZbE5iMFNPYW5GOHhM?=
+ =?utf-8?B?WWZnSkp4RU54djJLSFNDSzNaNElxZTdPdmNjaHM5ODg2aUZnQ1J0TXVoT3ZY?=
+ =?utf-8?B?bWhwc0xEYVNOTUFBVE1mbFNTN2ZlSkxrNXA5aHZDWmdvd0tPcllvN3J0aE0y?=
+ =?utf-8?B?L3ArcEE3VS9mdi9PWERMQ2ZKczU2L2FudURWWUtmd285azN5QUdkVWcyUzZx?=
+ =?utf-8?B?UXJob3BSVGhrRnduNTJ5MFVDcFNkb3BqeWJIYXhtamliOVFRUEJDTkMvY1c5?=
+ =?utf-8?B?YWFHUG1KWXltcnh5NUIveVZvUndPbXErWi9tQmhpTk1FVFFua3pwTHJNdis3?=
+ =?utf-8?B?SEZITW5UMEtZSGpqS3FnSUlFZ3A5Tzl6RXVlVzhTajE0NWt1SVhQSnZLZXRG?=
+ =?utf-8?B?bUJEWDYwTWVZY3diZlJrWHNRaU1vSlVCL3BJdTJjZ3RFeG1uRHpYcWI2QjZu?=
+ =?utf-8?B?bGc3SWFFbHBjMCtLTVU5V2NaWVZ6R2o3UDBtY3M0VkxaQ3o4d3lLVHI0MnNR?=
+ =?utf-8?B?bHo4b3ZyY2xnYUQrM3hXWVp4ZzVGN3gwdmRUQlI3clI3ekQrNElUVmgvTkhu?=
+ =?utf-8?B?dzdYeUhNakJpUWM5T2tjR2hPend4dWQxd1JrNTdNYXVHeGlwblVqTG9LTzUx?=
+ =?utf-8?B?ZHFLeHFqSzYreisrTHQreUdvTXJiMmtoV0k4TlNqOGk5K25xeC9kYkpHUzRU?=
+ =?utf-8?B?Rjc3dmdtUGtrZ3NVY01VeVlBcFZIaTJSdjdadEgybHVrSStPN3RxczdiSHRE?=
+ =?utf-8?B?bG5PNjhFRStkME5yU29CWUJBenUrZnVrMVFPTCtBYnFONlVwTjJtLzBPa2k3?=
+ =?utf-8?B?NWVKblJucUY4QWEzajI1dG9VL0RuZnFZcENqNnY5dGQ3aURicnhvZFVpUHp6?=
+ =?utf-8?B?QnQ4QkdGbmFpQjJRblI3VW92NVY3YWk1QXg0ZllIMWFkeVlaalNNblg3WDI4?=
+ =?utf-8?B?VERweU5sZEUyYm5HZDZxdVFkQllGNVY4bE9rc3JNc0NuOFZHZ0JGRkp3bkNw?=
+ =?utf-8?B?SnZaRmwrYUJwTElrSUo0a1dwUWtGTUZBeXI5bFhmd0hIUWU0aVc3bVhWeTBE?=
+ =?utf-8?B?clBRQ2dqQlZRPT0=?=
 x-forefront-antispam-report:
  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CWXP265MB3397.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024)(38070700018)(921020);DIR:OUT;SFP:1102;
 x-ms-exchange-antispam-messagedata-chunkcount: 1
 x-ms-exchange-antispam-messagedata-0:
- =?utf-8?B?K3ZJakxwMGFGVkdJQWpBSG9JcUdmK3ZPcUY2Q3J3c3JibWxVRjVFV00ybkky?=
- =?utf-8?B?NVJOVzRyUE9hbG1sYUxnVXEyWUxGNldrWlJFT1dSM2tjdUczaWF1WGNkWDRD?=
- =?utf-8?B?UmZGVFlRLzdZdW1ya0lDNzh4bGNZS1hka29FZDNaZmJVWFluaktKL25QYVI4?=
- =?utf-8?B?bW5NUVVHdkJqcncrTktBVUFBbGtHWllmWUo3cmJkV2ZvdW5RclFWRVhEUGRw?=
- =?utf-8?B?b2R3ZVk5YzlmMXhYb0xLNVhBNllxRlhWSzYza3l6eEUxTTVnMFpEa0E1YmNG?=
- =?utf-8?B?clIzVmo0WlpmVU43c0dYUTN3R2QvczlNQ0ZkcUlwM3FmS3M2WUptVEEzT0pQ?=
- =?utf-8?B?aytWdjZKbjhrbG1CbFdjRThIVFVWZHpVby9TT2xubCtoOXZmOC96c3NOVlJr?=
- =?utf-8?B?MnJGWFlEcUxRazBWN1h6RzdSNDVETkdBakk1TUhMZVh6WnFLdzAwNy9rS1V2?=
- =?utf-8?B?b3dJaHdLa3ZHdTBxRjhqVFZwbzZBdDkzaVdNM00rUXlUS3RWR3EzRkNpcDFn?=
- =?utf-8?B?V1pmaXpKWkNCbEZDcHRGOG03aWYrVTBqL2RtbmRmZ1VCZzhuRlhSWGpza1Ny?=
- =?utf-8?B?SlV3VGF4QTVQK2tMYWtuQkxNYmROcTR0Z2VlTmI0UjZlbFRmQjU3WE5mRzJ3?=
- =?utf-8?B?WEg1Wi9BN3NFd1J1L1V1UUdsN2Rwc1pYSlZTQkJKY3d6cXMwc1ZmZ0lOM0Jj?=
- =?utf-8?B?NFBzRWVaWlJlSHRGMmtURmdnNkxLRnIwODVmWDVaWGU1dGtnSUNCN1h4bXI0?=
- =?utf-8?B?VWpmZjFaUUlxR1huMHJEeW13cU9DN2lWWi9tUlQwTGk0cXFBS3JnbFdHWlRH?=
- =?utf-8?B?V3JOOXdFbFpqbkkyaWp3cHZZTmNJZ0R3SHhkdEJDdHNvWUdOTkJkOGVMUTNR?=
- =?utf-8?B?eTBEdlpPSCt2M0t0ekhDSmxWN1UxUkdRSWdraFkvT2R1T0pselJjN3M5VHZ4?=
- =?utf-8?B?OUZ1ay9yNlRpQVdGMW9SYmhPNnd2Qm5lUSsvMlRFb0ppM0pQVklOS3F0NUt1?=
- =?utf-8?B?TG1NUjB5dU5LTUdaeGNkNmNJWmFIQ2V2TXRBLzIwR2lxWW93SklOZkZ6VUMx?=
- =?utf-8?B?WmxYWWVGZ1p1anlUak9JRjhRWGtaL2paekxhYjAvMDNCL2tmVG85a1hwTnBt?=
- =?utf-8?B?MnIzWWY1UmVOVVV4RmRDWWZsOEN3UXlzMVNOcG5DRzRHSHpPMU5KSWJBNDI0?=
- =?utf-8?B?dGlra0lJZW9LV2d4eFh2THhjRlJKb1VaOStVK3EvZEJjN2dJcXhNc3locWxk?=
- =?utf-8?B?UW12RVQ3WlJ5emhvWGY5bE12R2FmNVNiRVd4TDdXTlgvVHZsL1lzbTlLL1FP?=
- =?utf-8?B?U1dySDQ3L055WXB3K1QwdmdGd0tqVTVWZW80alNtNXVYamJtMm9LVlpCbDg2?=
- =?utf-8?B?S1VBaGFDTkYwWWpqQnc5VkdkVDZObnd6STFzbTdMZnBRWUJvUjkrTXhNR2ZI?=
- =?utf-8?B?Q0dJSGdpV09LYlF0YXB1Wm9kTEZja3JqT0NxbEs5bHl2ZTR6cHlIWW4xbk8r?=
- =?utf-8?B?cnU0a1FJQ0dJcUV6MXExd051TmxLSWNzdWRpUE9sbzljVjNWM1dQd2lCM1Yy?=
- =?utf-8?B?SVdwN1FIUFJBcVA0REJhR3VrUUZObmx0YUlrOWY5V3RDNG04V3cvbmlpWDNB?=
- =?utf-8?B?bzRCUkxYaUpvY3lGRGVkMkVXYnBtdGpFNE5FTkVLQStGalRCa0E2aWRzZzZy?=
- =?utf-8?B?cmNpVUgvUm5iM3ZsLzEwV2hrbXA0Uk16YXJDQXpRWSsreTlUMVNvaGYraUJa?=
- =?utf-8?B?bW4wK0JMbkdXRkZZT3J0bjgwU2Q1NURpSjNqVUtBT3N5T3puOVBsd09zNUV2?=
- =?utf-8?B?cCtNdlRnMGt5RUtNQzBBUTlKYWN3K0FrcVkxOFlnQWZUTkRTQll2dC9Yc0RD?=
- =?utf-8?B?cEorZ28yVlNjZ3hTalJJeGs4c1VaQTJYQytiNjdhRUhhUXZiSGNoSzMyQzB1?=
- =?utf-8?B?Q0JvVHBlSlovbHhSalIyUkpER0t2SG5aaHFlaFZLL2dEOWtxWjlMMm5RSHI3?=
- =?utf-8?B?QXZnSmFXNHIreHhpSjNBVDFUQVI3UkQ4enQyUStBMVBJd3ROenhHZS81VEgv?=
- =?utf-8?B?R3YydEFsbGxFb3Z3UDkzczdaOWlzZ0xkeUREcEIyRDdiYWFFVG1XNnQwVnFs?=
- =?utf-8?B?Y0RXQTJjQXVma2FleWR5OG5OT05hQndxa0FLZ2sxdkhGSzdWTUhkbjJiNjNJ?=
- =?utf-8?B?blE9PQ==?=
+ =?utf-8?B?SDlXQU1HR3NzRyswdGdUK053NnRtMUFQdlZzUm9FNHpXamNJUDhpb3JnTkZH?=
+ =?utf-8?B?NUxIaENaem5PQ3U3cFd3MlJCUW4wZ2FnQVU2eU5RcGJrVnFKN015Y2ZVRENa?=
+ =?utf-8?B?bytwYmdFV0RhR0s4VFdkV3U1S0I3a1BpT2YvNzZRT1YvZ0xtd3c2UGJIYlFr?=
+ =?utf-8?B?d2hDOGQzVnMxdmpEa2ZNaG5SbUhNU0trb0w3MGZLdHMydnNMSGY0aXJneVhI?=
+ =?utf-8?B?Nlp5YlN1c1NUMDNCSmt4YzdndjMybXNBNlFiSjJtaUpFMHA1VkxPZGlCdDVh?=
+ =?utf-8?B?ZndXNkhacnVzVTB3STBhOU9jUTc5blFmekM4WGoyQlF5T0xtYXc1WUErZk1Z?=
+ =?utf-8?B?S01PYVV5UWtRQ1V1bm85dlVOWGV0QUZzWWNONEZ2UWlJbHpsbnVzaVFXdk5a?=
+ =?utf-8?B?OWRlaGNzUVRvYndoU3FQcUhBUlliYWdIRFY2TjJoTUtFdU1kUjB1MmpFaVMw?=
+ =?utf-8?B?azNTVnpzSUZQTWFxQks4dE5tT21lTHRPczFIQXA5bUtOWmxRdExXdmFEYk9u?=
+ =?utf-8?B?djlJcENtQVpFQjhaMlQweFZhaXhoaWo2MVJwODdSMDU4OEdEQkNxbUxVR3pL?=
+ =?utf-8?B?bnBkczZTMlR5UzJVL0F5aWQyTEtqaFBXOVZabTdlQ3VoejZjSkt2TmZmMGZ1?=
+ =?utf-8?B?UmsvdTdSMEY3SHdOZklXMFBOZi9STW5RRllZaHNwZ2dFby9BWlBzbmdxdU9q?=
+ =?utf-8?B?YkxqUGQ1Q2tXZ3hUSjZUYkg5Zm5mL2RoczlEMG40UlVmMlZ4Tk0yRHZOSjNU?=
+ =?utf-8?B?Ny8yaCtPZ2V4aDVncWVCTXBpbWsydmVNYTJlK3dyWkVaR24xcXNGZVZOelhX?=
+ =?utf-8?B?K3BSTjZCZHJGdUpMcUlUblBKMkVUZEEwcXl2dTgxeEtkZEpUOTA5YlE0RHpZ?=
+ =?utf-8?B?dEZTODRGVjZ5Q2UvdUVIcW5LL2h5VmZJcW1mYncxbXROSDJNM2lTZ2g2KzJF?=
+ =?utf-8?B?Qm5aeGQrT1VvbEJIUEtoWnhjblJRU3JEaXpoL1hhYnlnNG43bEt6UWpiV3ZT?=
+ =?utf-8?B?UCtPZGtiWlRyQUwveXlSVlFpL0RRVlpXK3VDVmtBRXNjQkNVZWlqbG10ZXZI?=
+ =?utf-8?B?bFduWjFna0Z2ckY5MVMya1Zzak5mK3k0WjkwWEE5TlFZSjV6L0FBMDMyemsz?=
+ =?utf-8?B?NTlSaW0rR2U2ZFNoS1gwRmJJZnJxRHF6UnB5cnhrZjgvc0lScFc3dFl0VzNI?=
+ =?utf-8?B?YXJQd1pRQ1ZPNlhmb3UvVW1ENjdscmtOZnJVeW5jMVRYdExyc2JVSzNIZXFZ?=
+ =?utf-8?B?dUQ3blRkaUVNbDFLcDE2RGhDOFVaV3N0QlY3VXZSYUlObTFDNUsyYkNhaE5J?=
+ =?utf-8?B?czBvdzA4MEpoRjdtOFVtMkwzcy93N3ltcXJYRVpLa3N0ZmhHd0hoS2tEQUlr?=
+ =?utf-8?B?VXhCOXo3RC9zOGg5RGgxNUNLSTkvM3BJWGlWSVBoZ1dsaldoWU1rbytVdlU3?=
+ =?utf-8?B?RTJpNFA4Yy9BN3JSWjlPaU5iV095MGZ4Y3U4dVdBZGNvU1huL0pFZ1NDcWxG?=
+ =?utf-8?B?RWg3ZFQ5bEdJYkRVRmNPR0R4bjRjQ1d5WVBBNUJ2WVVWVWczWVVndWQ3WVV2?=
+ =?utf-8?B?YW5oSS9KdndxblhMcXp2U0lIeUxQbnluL0R2UERmY3FyUXRTTy9vUE9PbVZ3?=
+ =?utf-8?B?ZWtxRVhYd09FbU9jeEdxcDFuNTE4TXB4Nkp6c1U3QjZhMmhGWEI3Y2tzRUtU?=
+ =?utf-8?B?R0UxTUI5R2NhSGJSc0tKNHkxa2VkUGd3elFxMnhsVHRjWk1CMUdNZXA1SG5h?=
+ =?utf-8?B?V0FXNXdEU2paNWVUaXlHTFdqcjk1b0tsMWp0ekhuR3F5WStrQk52N2xraW44?=
+ =?utf-8?B?OTVvZlROT3hsVlFkd3NmY01qdWN6SFdabktMZHFTSFRzR3kxMnEwZEM5NEts?=
+ =?utf-8?B?RzlUeU56cm53VDRad1dSUmtBako3c2hLbVVSSXMrUFlyQ29nMFVqdnMrMjE5?=
+ =?utf-8?B?NjdpQ0ZXclF3NUd5T1RtbUJnbE5MSkQ0UElBaVQ3UEE0Uk1RUm0yZDQ2U0V4?=
+ =?utf-8?B?QUtkWEk3Z0xOeGkzZ1JldEJ3ZjA2c1U2RzFJYVRrWmtpM1lZV3hFRUtZMWov?=
+ =?utf-8?B?MlZVZDVySkljdHZrN3Vqekp0VWxBWVdoeGxWMkdRZ0VHNnMwbGpmZUtFaDlo?=
+ =?utf-8?B?ZWo5WGtIbzNQeVJkMVd6ZGlvUVlwMVdqNnpUUlFNci9UWW41UkdJL2ZRWUVz?=
+ =?utf-8?B?R0E9PQ==?=
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="------------Eq0VbxlsoI0QTtXd7lSPZZ0a"
+	boundary="------------icqSmFcs0ol6qu0Qgm0EhTR5"
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -203,21 +204,21 @@ MIME-Version: 1.0
 X-OriginatorOrg: imgtec.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
 X-MS-Exchange-CrossTenant-AuthSource: CWXP265MB3397.GBRP265.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7fa9bdbf-dae2-4f92-bb5b-08dd420d7178
-X-MS-Exchange-CrossTenant-originalarrivaltime: 31 Jan 2025 15:39:26.1616
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4c0e4822-821c-417a-cb3c-08dd420d7ad4
+X-MS-Exchange-CrossTenant-originalarrivaltime: 31 Jan 2025 15:39:41.8832
  (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 0d5fd8bb-e8c2-4e0a-8dd5-2c264f7140fe
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: AiUJhdD6PeXJIuAxufajYjJYX9i6/HznHCKmiD5n5MIP2UGO8PBJWt0Jz9J9EU+ZgRwxHenJ6ER+p/TYA679qQ==
+X-MS-Exchange-CrossTenant-userprincipalname: N41UDLQ6YCWho4wqCwQX2A2kFRBCL/+nLniwlEMp2avkXerni8BNKyNpB1hffRHOVo806H5kKZYAWR8pKXyaDw==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: LO0P265MB5503
-X-Proofpoint-GUID: Vdof7l0TVdwyVN1hxtkvwR4seTxytxNm
-X-Authority-Analysis: v=2.4 cv=PoBpbxM3 c=1 sm=1 tr=0 ts=679ceeb1 cx=c_pps a=/lXe6HOdRU+sJltUoZpKYw==:117 a=wKuvFiaSGQ0qltdbU6+NXLB8nM8=:19 a=Ol13hO9ccFRV9qXi2t6ftBPywas=:19 a=xqWC_Br6kY4A:10 a=VdSt8ZQiCzkA:10 a=WnR_qW7rlZcA:10 a=NgoYpvdbvlAA:10
- a=hD80L64hAAAA:8 a=r_1tXGB3AAAA:8 a=JChVGnZoar0qVcAQ6v4A:9 a=QEXdDO2ut3YA:10 a=vP7pQmnE2WyvIZqpF2wA:9 a=FfaGCDsud1wA:10 a=t8nPyN_e6usw4ciXM-Pk:22
-X-Proofpoint-ORIG-GUID: Vdof7l0TVdwyVN1hxtkvwR4seTxytxNm
+X-Proofpoint-GUID: lSn58D18wfumlDUVw804SCDnQy3mQ5yG
+X-Authority-Analysis: v=2.4 cv=PoBpbxM3 c=1 sm=1 tr=0 ts=679ceec0 cx=c_pps a=+8G7KV7MoNjfk4g9SO/OOg==:117 a=wKuvFiaSGQ0qltdbU6+NXLB8nM8=:19 a=Ol13hO9ccFRV9qXi2t6ftBPywas=:19 a=xqWC_Br6kY4A:10 a=VdSt8ZQiCzkA:10 a=WnR_qW7rlZcA:10 a=NgoYpvdbvlAA:10
+ a=hD80L64hAAAA:8 a=r_1tXGB3AAAA:8 a=-fQqvUCQEPmyFsL1sjYA:9 a=QEXdDO2ut3YA:10 a=IuWS7esrMLBfnw7xo7YA:9 a=FfaGCDsud1wA:10 a=t8nPyN_e6usw4ciXM-Pk:22
+X-Proofpoint-ORIG-GUID: lSn58D18wfumlDUVw804SCDnQy3mQ5yG
 
---------------Eq0VbxlsoI0QTtXd7lSPZZ0a
-Content-Type: multipart/mixed; boundary="------------stfDEBxv52PnsQ3UmECCE0Oy";
+--------------icqSmFcs0ol6qu0Qgm0EhTR5
+Content-Type: multipart/mixed; boundary="------------cd8sO06lL6Rmmg9xS505TJSh";
  protected-headers="v1"
 From: Matt Coster <matt.coster@imgtec.com>
 To: Michal Wilczynski <m.wilczynski@samsung.com>, mturquette@baylibre.com,
@@ -231,313 +232,142 @@ To: Michal Wilczynski <m.wilczynski@samsung.com>, mturquette@baylibre.com,
 Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
  dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org
-Message-ID: <816db99d-7088-4c1a-af03-b9a825ac09dc@imgtec.com>
-Subject: Re: [PATCH v4 09/18] reset: thead: Add TH1520 reset controller driver
+Message-ID: <2fe3d93f-62ac-4439-ac17-d81137f6410a@imgtec.com>
+Subject: Re: [PATCH v4 12/18] dt-bindings: gpu: Add support for T-HEAD TH1520
+ GPU
 References: <20250128194816.2185326-1-m.wilczynski@samsung.com>
- <CGME20250128194836eucas1p151c4fc83a17173fd1b79bfc959976301@eucas1p1.samsung.com>
- <20250128194816.2185326-10-m.wilczynski@samsung.com>
-In-Reply-To: <20250128194816.2185326-10-m.wilczynski@samsung.com>
+ <CGME20250128194841eucas1p29048dc05a26475d8323a7a318a8c7a25@eucas1p2.samsung.com>
+ <20250128194816.2185326-13-m.wilczynski@samsung.com>
+In-Reply-To: <20250128194816.2185326-13-m.wilczynski@samsung.com>
 
---------------stfDEBxv52PnsQ3UmECCE0Oy
+--------------cd8sO06lL6Rmmg9xS505TJSh
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
 On 28/01/2025 19:48, Michal Wilczynski wrote:
-> Add reset controller driver for the T-HEAD TH1520 SoC that manages
-> hardware reset lines for various subsystems. The driver currently
-> implements support for GPU reset control, with infrastructure in place
-> to extend support for NPU and Watchdog Timer resets in future updates.
+> Add bindings for the PowerVR BXM-4-64 GPU integrated in the T-HEAD
+> TH1520 SoC.  This GPU requires two clocks.
+
+None of the IMG Rogue GPUs use two clocks; they're all either one or
+three. The TRM for the TH1520 I have shows the standard three (core,
+cfg and mem). I mentioned this on P2 ("clk: thead: Add clock support for
+VO subsystem in T-Head TH1520 SoC"); can you add the missing clock here
+too?
+
+> Document the integration details including clock, reset, power domain
+> and interrupt assignments. Add a dt-bindings example showing the proper=
+
+> usage of the compatible string "thead,th1520-gpu" along with
+> "img,img-bxm".
 >=20
 > Signed-off-by: Michal Wilczynski <m.wilczynski@samsung.com>
 > ---
->  MAINTAINERS                  |   1 +
->  drivers/reset/Kconfig        |  10 ++
->  drivers/reset/Makefile       |   1 +
->  drivers/reset/reset-th1520.c | 178 +++++++++++++++++++++++++++++++++++=
+>  .../bindings/gpu/img,powervr-rogue.yaml       | 39 +++++++++++++++++--=
 
->  4 files changed, 190 insertions(+)
->  create mode 100644 drivers/reset/reset-th1520.c
+>  1 file changed, 35 insertions(+), 4 deletions(-)
 >=20
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index b4e21d814481..d71b8c68ae48 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -20352,6 +20352,7 @@ F:	drivers/mailbox/mailbox-th1520.c
->  F:	drivers/net/ethernet/stmicro/stmmac/dwmac-thead.c
->  F:	drivers/pinctrl/pinctrl-th1520.c
->  F:	drivers/pmdomain/thead/
-> +F:	drivers/reset/reset-th1520.c
->  F:	include/dt-bindings/clock/thead,th1520-clk-ap.h
->  F:	include/dt-bindings/power/thead,th1520-power.h
->  F:	include/dt-bindings/reset/thead,th1520-reset.h
-> diff --git a/drivers/reset/Kconfig b/drivers/reset/Kconfig
-> index 5b3abb6db248..fa0943c3d1de 100644
-> --- a/drivers/reset/Kconfig
-> +++ b/drivers/reset/Kconfig
-> @@ -272,6 +272,16 @@ config RESET_SUNXI
->  	help
->  	  This enables the reset driver for Allwinner SoCs.
+> diff --git a/Documentation/devicetree/bindings/gpu/img,powervr-rogue.ya=
+ml b/Documentation/devicetree/bindings/gpu/img,powervr-rogue.yaml
+> index bb607d4b1e07..b0d9635704d8 100644
+> --- a/Documentation/devicetree/bindings/gpu/img,powervr-rogue.yaml
+> +++ b/Documentation/devicetree/bindings/gpu/img,powervr-rogue.yaml
+> @@ -12,10 +12,15 @@ maintainers:
 > =20
-> +config RESET_TH1520
-> +	tristate "T-HEAD 1520 reset controller"
-> +	depends on ARCH_THEAD || COMPILE_TEST
-> +	select REGMAP_MMIO
-> +	help
-> +	  This driver provides support for the T-HEAD TH1520 SoC reset contro=
-ller,
-> +	  which manages hardware reset lines for SoC components such as the G=
-PU.
-> +	  Enable this option if you need to control hardware resets on TH1520=
--based
-> +	  systems.
-> +
->  config RESET_TI_SCI
->  	tristate "TI System Control Interface (TI-SCI) reset driver"
->  	depends on TI_SCI_PROTOCOL || (COMPILE_TEST && TI_SCI_PROTOCOL=3Dn)
-> diff --git a/drivers/reset/Makefile b/drivers/reset/Makefile
-> index 677c4d1e2632..d6c2774407ae 100644
-> --- a/drivers/reset/Makefile
-> +++ b/drivers/reset/Makefile
-> @@ -35,6 +35,7 @@ obj-$(CONFIG_RESET_SIMPLE) +=3D reset-simple.o
->  obj-$(CONFIG_RESET_SOCFPGA) +=3D reset-socfpga.o
->  obj-$(CONFIG_RESET_SUNPLUS) +=3D reset-sunplus.o
->  obj-$(CONFIG_RESET_SUNXI) +=3D reset-sunxi.o
-> +obj-$(CONFIG_RESET_TH1520) +=3D reset-th1520.o
->  obj-$(CONFIG_RESET_TI_SCI) +=3D reset-ti-sci.o
->  obj-$(CONFIG_RESET_TI_SYSCON) +=3D reset-ti-syscon.o
->  obj-$(CONFIG_RESET_TI_TPS380X) +=3D reset-tps380x.o
-> diff --git a/drivers/reset/reset-th1520.c b/drivers/reset/reset-th1520.=
-c
-> new file mode 100644
-> index 000000000000..48afbc9f1cdd
-> --- /dev/null
-> +++ b/drivers/reset/reset-th1520.c
-> @@ -0,0 +1,178 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright (c) 2024 Samsung Electronics Co., Ltd.
-> + * Author: Michal Wilczynski <m.wilczynski@samsung.com>
-> + */
-> +
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/reset-controller.h>
-> +#include <linux/regmap.h>
-> +
-> +#include <dt-bindings/reset/thead,th1520-reset.h>
-> +
-> + /* register offset in VOSYS_REGMAP */
-> +#define TH1520_GPU_RST_CFG		0x0
-> +#define TH1520_GPU_RST_CFG_MASK		GENMASK(2, 0)
-> +
-> +/* register values */
-> +#define TH1520_GPU_SW_GPU_RST		BIT(0)
-> +#define TH1520_GPU_SW_CLKGEN_RST	BIT(1)
-> +
-> +struct th1520_reset_priv {
-> +	struct reset_controller_dev rcdev;
-> +	struct regmap *map;
-> +	struct mutex gpu_seq_lock;  /* protects gpu assert/deassert sequence =
-*/
-> +};
-> +
-> +static inline struct th1520_reset_priv *
-> +to_th1520_reset(struct reset_controller_dev *rcdev)
-> +{
-> +	return container_of(rcdev, struct th1520_reset_priv, rcdev);
-> +}
-> +
-> +static void th1520_rst_gpu_enable(struct regmap *reg,
-> +				  struct mutex *gpu_seq_lock)
-> +{
-> +	int val;
-> +
-> +	mutex_lock(gpu_seq_lock);
-> +
-> +	/* if the GPU is not in a reset state it, put it into one */
-> +	regmap_read(reg, TH1520_GPU_RST_CFG, &val);
-> +	if (val)
-> +		regmap_update_bits(reg, TH1520_GPU_RST_CFG,
-> +				   TH1520_GPU_RST_CFG_MASK, 0x0);
-> +
-> +	/* rst gpu clkgen */
-> +	regmap_set_bits(reg, TH1520_GPU_RST_CFG, TH1520_GPU_SW_CLKGEN_RST);
+>  properties:
+>    compatible:
+> -    items:
+> -      - enum:
+> -          - ti,am62-gpu
+> -      - const: img,img-axe # IMG AXE GPU model/revision is fully disco=
+verable
+> +    oneOf:
+> +      - items:
+> +          - enum:
+> +              - ti,am62-gpu
+> +          - const: img,img-axe # IMG AXE GPU model/revision is fully d=
+iscoverable
+> +      - items:
+> +          - enum:
+> +              - thead,th1520-gpu
+> +          - const: img,img-bxm
 
-Do you know what this resets? From our side, the GPU only has a single
-reset line (which I assume to be GPU_RESET).
+This is going to be the main conflict between this series and the other
+B-Series series I mentioned on the cover letter. One of the main changes
+in that series is to rework how our compatible strings are structured;
+that would make this "thead,th1520-gpu", "img,img-bxm-4-64",
+"img,img-rogue". Would you mind holding this change back until the other
+series lands so we can avoid carrying a second deprecated compatible
+string?
+
+> =20
+>    reg:
+>      maxItems: 1
+> @@ -60,6 +65,17 @@ allOf:
+>          clocks:
+>            maxItems: 1
+> =20
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            const: thead,th1520-gpu
+> +    then:
+> +      properties:
+> +        clocks:
+> +          minItems: 2
+> +          maxItems: 2
+
+As mentioned before, this doesn't represent the hardware. Please bump to
+3 and add the missing clock.
 
 > +
-> +	/*
-> +	 * According to the hardware manual, a delay of at least 32 clock
-> +	 * cycles is required between de-asserting the clkgen reset and
-> +	 * de-asserting the GPU reset. Assuming a worst-case scenario with
-> +	 * a very high GPU clock frequency, a delay of 1 microsecond is
-> +	 * sufficient to ensure this requirement is met across all
-> +	 * feasible GPU clock speeds.
-> +	 */
-> +	udelay(1);
+>  examples:
+>    - |
+>      #include <dt-bindings/interrupt-controller/irq.h>
+> @@ -74,3 +90,18 @@ examples:
+>          interrupts =3D <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+>          power-domains =3D <&k3_pds 187 TI_SCI_PD_EXCLUSIVE>;
+>      };
+> +
+> +    #include <dt-bindings/clock/thead,th1520-clk-ap.h>
+> +    #include <dt-bindings/power/thead,th1520-power.h>
+> +    #include <dt-bindings/reset/thead,th1520-reset.h>
+> +
+> +    gpu: gpu@fff0000 {
+> +        compatible =3D "thead,th1520-gpu", "img,img-bxm";
+> +        reg =3D <0xfff0000 0x1000>;
+> +        interrupt-parent =3D <&plic>;
+> +        interrupts =3D <102 IRQ_TYPE_LEVEL_HIGH>;
+> +        clocks =3D <&clk CLK_GPU_CORE>, <&clk CLK_GPU_CFG_ACLK>;
+> +        clock-names =3D "core", "mem";
 
-I don't love that this procedure appears in the platform reset driver.
-I appreciate it may not be clear from the SoC TRM, but this is the
-standard reset procedure for all IMG Rogue GPUs. The currently
-supported TI SoC handles this in silicon, when power up/down requests
-are sent so we never needed to encode it in the driver before.
-
-Strictly speaking, the 32 cycle delay is required between power and
-clocks being enabled and the reset line being deasserted. If nothing
-here touches power or clocks (which I don't think it should), the delay
-could potentially be lifted to the GPU driver.
-
-Is it expected that if a device exposes a reset in devicetree that it
-can be cleanly reset without interaction with the device driver itself?
-I.E. in this case, is it required that the reset driver alone can cleanly=
-
-reset the GPU?
+You have CFG mapped to "mem" here. Out of curiosity, was that mismatch
+required to make things work?
 
 Cheers,
 Matt
 
-> +
-> +	/* rst gpu */
-> +	regmap_set_bits(reg, TH1520_GPU_RST_CFG, TH1520_GPU_SW_GPU_RST);
-> +
-> +	mutex_unlock(gpu_seq_lock);
-> +}
-> +
-> +static void th1520_rst_gpu_disable(struct regmap *reg,
-> +				   struct mutex *gpu_seq_lock)
-> +{
-> +	mutex_lock(gpu_seq_lock);
-> +
-> +	regmap_update_bits(reg, TH1520_GPU_RST_CFG, TH1520_GPU_RST_CFG_MASK, =
-0x0);
-> +
-> +	mutex_unlock(gpu_seq_lock);
-> +}
-> +
-> +static int th1520_reset_assert(struct reset_controller_dev *rcdev, uns=
-igned long id)
-> +{
-> +	struct th1520_reset_priv *priv =3D to_th1520_reset(rcdev);
-> +
-> +	switch (id) {
-> +	case TH1520_RESET_ID_GPU:
-> +		th1520_rst_gpu_disable(priv->map, &priv->gpu_seq_lock);
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int th1520_reset_deassert(struct reset_controller_dev *rcdev, u=
-nsigned long id)
-> +{
-> +	struct th1520_reset_priv *priv =3D to_th1520_reset(rcdev);
-> +
-> +	switch (id) {
-> +	case TH1520_RESET_ID_GPU:
-> +		th1520_rst_gpu_enable(priv->map, &priv->gpu_seq_lock);
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int th1520_reset_xlate(struct reset_controller_dev *rcdev,
-> +			      const struct of_phandle_args *reset_spec)
-> +{
-> +	unsigned int index =3D reset_spec->args[0];
-> +
-> +	/* currently, only GPU reset is implemented in this driver */
-> +	if (index =3D=3D TH1520_RESET_ID_GPU)
-> +		return index;
-> +
-> +	return -EOPNOTSUPP;
-> +}
-> +
-> +static const struct reset_control_ops th1520_reset_ops =3D {
-> +	.assert	=3D th1520_reset_assert,
-> +	.deassert =3D th1520_reset_deassert,
-> +};
-> +
-> +static const struct regmap_config th1520_reset_regmap_config =3D {
-> +	.reg_bits =3D 32,
-> +	.val_bits =3D 32,
-> +	.reg_stride =3D 4,
-> +	.fast_io =3D true,
-> +};
-> +
-> +static int th1520_reset_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev =3D &pdev->dev;
-> +	struct th1520_reset_priv *priv;
-> +	void __iomem *base;
-> +
-> +	priv =3D devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-> +	if (!priv)
-> +		return -ENOMEM;
-> +
-> +	base =3D devm_platform_ioremap_resource(pdev, 0);
-> +	if (IS_ERR(base))
-> +		return PTR_ERR(base);
-> +
-> +	priv->map =3D devm_regmap_init_mmio(dev, base,
-> +					  &th1520_reset_regmap_config);
-> +	if (IS_ERR(priv->map))
-> +		return PTR_ERR(priv->map);
-> +
-> +	mutex_init(&priv->gpu_seq_lock);
-> +
-> +	priv->rcdev.owner =3D THIS_MODULE;
-> +	priv->rcdev.nr_resets =3D 1;
-> +	priv->rcdev.ops =3D &th1520_reset_ops;
-> +	priv->rcdev.of_node =3D dev->of_node;
-> +	priv->rcdev.of_xlate =3D th1520_reset_xlate;
-> +	priv->rcdev.of_reset_n_cells =3D 1;
-> +
-> +	return devm_reset_controller_register(dev, &priv->rcdev);
-> +}
-> +
-> +static const struct of_device_id th1520_reset_match[] =3D {
-> +	{ .compatible =3D "thead,th1520-reset" },
-> +	{ /* sentinel */ }
-> +};
-> +MODULE_DEVICE_TABLE(of, th1520_reset_match);
-> +
-> +static struct platform_driver th1520_reset_driver =3D {
-> +	.driver =3D {
-> +		.name =3D "th1520-reset",
-> +		.of_match_table =3D th1520_reset_match,
-> +	},
-> +	.probe =3D th1520_reset_probe,
-> +};
-> +module_platform_driver(th1520_reset_driver);
-> +
-> +MODULE_AUTHOR("Michal Wilczynski <m.wilczynski@samsung.com>");
-> +MODULE_DESCRIPTION("T-HEAD TH1520 SoC reset controller");
-> +MODULE_LICENSE("GPL");
+> +        power-domains =3D <&pd TH1520_GPU_PD>;
+> +        resets =3D <&rst TH1520_RESET_ID_GPU>;
+> +    };
 
 --=20
 Matt Coster
 E: matt.coster@imgtec.com
 
---------------stfDEBxv52PnsQ3UmECCE0Oy--
+--------------cd8sO06lL6Rmmg9xS505TJSh--
 
---------------Eq0VbxlsoI0QTtXd7lSPZZ0a
+--------------icqSmFcs0ol6qu0Qgm0EhTR5
 Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="OpenPGP_signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-wnsEABYIACMWIQS4qDmoJvwmKhjY+nN5vBnz2d5qsAUCZ5zurQUDAAAAAAAKCRB5vBnz2d5qsDp1
-AP49IZ6CKPHDFz7d+wf06aIvtyJ6blscksofDOfdzx7YMgD/SYZInCl/c7DHc490x4D54cfVD/aV
-SQ5qTs+pXv1oWgI=
-=5t8f
+wnsEABYIACMWIQS4qDmoJvwmKhjY+nN5vBnz2d5qsAUCZ5zuvQUDAAAAAAAKCRB5vBnz2d5qsJUF
+AQCD0JKAnBga6in10i6NbGYj4gArSjkg1YgWrQJ9UxDGJwD+LBl8Iw3i7RREhUwVo3SkQSEToBX6
+6h9jXgpfJQOOGQw=
+=lgkj
 -----END PGP SIGNATURE-----
 
---------------Eq0VbxlsoI0QTtXd7lSPZZ0a--
+--------------icqSmFcs0ol6qu0Qgm0EhTR5--
