@@ -1,61 +1,61 @@
 Received: from mx07-00376f01.pphosted.com (mx07-00376f01.pphosted.com [185.132.180.163])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDF3D1D0E2B;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDFA41DED4F;
 	Fri, 31 Jan 2025 15:40:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=185.132.180.163
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738338011; cv=fail; b=LepNlzdQJIpY3IumUJeFKsq65slW/jmlWQClphiDz8RHXVsWHwXhKr9OQdfMCsmVsEfIw9Yo3MUpezHsno6op1bs4B9ZJkVUdqlSat8+F9goV/iigyf/HqHCZAs6qKZxRxlP8A9jiZuTELk+86GD7n5fH4OnJx0qgAlN6b7aXQU=
+	t=1738338012; cv=fail; b=b38Q3Mgb+9IpFzyTd/D5EnikJwzb13ciPeg7ehXVF2FsxupeTdasSz/joKTfit2MEC/MmfM5WjotM0yp41xQ2o06AAftNsEvsqyPMt+ycji+m7NBE1bXqfKgTfnaoKpy5k+Z+lHzCqMzPF4fWRJ6Ycy280f0pAfDa5IQVqryppM=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738338011; c=relaxed/simple;
-	bh=BZAofs1n9Hh9hEbuOrmeL6H9CGCYsO/2lpAWgINMUd4=;
+	s=arc-20240116; t=1738338012; c=relaxed/simple;
+	bh=lorBCHWCVvzweZXQlQea5ELhvoMPV45FwJSrzza8jNo=;
 	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=IpqZ9XN1vS8XEsBgEa8a6FCbTVhyz8N15YzIz0vulHzAo/GUThB5IJdQj42U69smtGZlW66is2tykHGJcE5quowFF/pDlBJ9ds1/uSl3KX5ypRZWUqPlghTj9gVXdcEPxFdUVVelOKkyMKn8fRIcDpZxbZ1fDxumtelKJzZWjEE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=imgtec.com; spf=pass smtp.mailfrom=imgtec.com; dkim=pass (2048-bit key) header.d=imgtec.com header.i=@imgtec.com header.b=y2d3qYia; dkim=pass (1024-bit key) header.d=IMGTecCRM.onmicrosoft.com header.i=@IMGTecCRM.onmicrosoft.com header.b=PmRu2T4e; arc=fail smtp.client-ip=185.132.180.163
+	 Content-Type:MIME-Version; b=kxc7V826MhNK3wCIfKRhcN8al0AEfpAGpRqQ1nPspMIVQ42khHKKxuXYsqrxQiw1GKGK4RerP6o/jkgJWNbW9L9W+XnRPXu02456b6M4D5ZW7Hf2TJA7lt7zrWkxVAp0OkSymUc6nn20RdRJNGEZIn63sJUA1HxG5C7t3AR3AX4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=imgtec.com; spf=pass smtp.mailfrom=imgtec.com; dkim=pass (2048-bit key) header.d=imgtec.com header.i=@imgtec.com header.b=jQuECRaq; dkim=pass (1024-bit key) header.d=IMGTecCRM.onmicrosoft.com header.i=@IMGTecCRM.onmicrosoft.com header.b=elixgdlC; arc=fail smtp.client-ip=185.132.180.163
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=imgtec.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=imgtec.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=imgtec.com header.i=@imgtec.com header.b="y2d3qYia";
-	dkim=pass (1024-bit key) header.d=IMGTecCRM.onmicrosoft.com header.i=@IMGTecCRM.onmicrosoft.com header.b="PmRu2T4e"
+	dkim=pass (2048-bit key) header.d=imgtec.com header.i=@imgtec.com header.b="jQuECRaq";
+	dkim=pass (1024-bit key) header.d=IMGTecCRM.onmicrosoft.com header.i=@IMGTecCRM.onmicrosoft.com header.b="elixgdlC"
 Received: from pps.filterd (m0168889.ppops.net [127.0.0.1])
-	by mx07-00376f01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50VF56W2028214;
-	Fri, 31 Jan 2025 15:39:44 GMT
+	by mx07-00376f01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50VF56W0028214;
+	Fri, 31 Jan 2025 15:39:23 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=imgtec.com; h=cc
 	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=dk201812; bh=4S52QNc0oLKOsf3Qz5WCgbcpg
-	oK+MJMIM8ZC43ztLY8=; b=y2d3qYiarIJT6Vgxw0ERPo4O+qAL9pmridU/ncSas
-	93uTGzK+A+UWKz2G50KSRKs1unK0Mm9wJZoqrmoxjG95nHJkgszx3tzseZj5NsTR
-	smmtNBOQlOqpYdEk39qw2zqOSIuVsxtvIvxp2kkbFFMw3wcX8FH9xAHwMcvhJr66
-	q/FQaArJcwgBLZvnxv8WGYGjQI/HwmgKdoYOF12MfN6wcZo46EZm/SHo3n7qRLFz
-	FVhRGxet+CegFHc+KTg831kUFoe4S8eNEs/ZVMCOZiKc92/owQV0XNkfSoIKt3U2
-	6bxCyIlVdCbBpi2FzLp+9f2UWkUq2RMeY3T6fM1MpfYuA==
-Received: from lo0p265cu003.outbound.protection.outlook.com (mail-uksouthazlp17012052.outbound.protection.outlook.com [40.93.67.52])
-	by mx07-00376f01.pphosted.com (PPS) with ESMTPS id 44ep3c302y-1
+	:references:subject:to; s=dk201812; bh=FeQuJktGbolO6dSkTnc8NDkHx
+	lBsl0FwpxpCtpoh66o=; b=jQuECRaqmCqX6bk6Zfm1KVpqDG7O6LDbDbljOZPCs
+	BC+fbuAcgVrVxF0hQQwVyUZ8W5+axeCvMD3wkaFBPr+E/xAYtRGn47erYxIwsk6t
+	d0tgKgzk+7fyVNi5TrjlcBC4flwWRreJxSVgAFmmtPDGVRPoLhesOFQFa61mbk8Q
+	xLomGEaSJlF3Fbn8VCXTphwCK5mu+uSmbxtWR0OhcWrgdp6nFo1riN0r/VL7Rz9H
+	IN3pOVhvKsDzICTZa/UjJUwewKej5XS3burMa8RUkDUYmJlvcK0gHVidQln6mBKo
+	xowlEHaUWs8NJPqXobARwC5oOaINgGnVdI3qo4i6HV/HQ==
+Received: from lo2p265cu024.outbound.protection.outlook.com (mail-uksouthazlp17011029.outbound.protection.outlook.com [40.93.67.29])
+	by mx07-00376f01.pphosted.com (PPS) with ESMTPS id 44ep3c302s-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 31 Jan 2025 15:39:43 +0000 (GMT)
+	Fri, 31 Jan 2025 15:39:21 +0000 (GMT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Gw3Z+F3eNaBqOxRtTrSr8VEcazyRTc0kQMgZELfaKYbWbrratG8ljBUNqelcufUf4qm8DaddcCsvwhPZyo86fgUYnI+k49eBoNZ0sk9wRjj/xRPGSjfjWjo24XAkaz3g21ucfOuYqbddNZ69T775WSJRI2XVestuBbUkwVA7O7qM1gJcy2NQwPXnXb74kW04ZX9SHkv4B+WWae3WRQYXbq4h5j68kyEd5DkeZBnZRO28JRvdcJWS79B9fjuIONK+ZK8U/HaLiyd9i3+84wAf11lp50JLTU/YOEfdRUvC/PUabSOTxC8xmpn06Iq5Dh8lsuDhJbtQajvMa3JZL8j2Cg==
+ b=nY4q+xg3k8Up2VzYs37Kt4Tieh3rKdYgifV+EJJD2CvPKwUKnWX6XYEFRbLcosJMmRenaYO3dYxxgDH3n8xdQZP+kJMRemD+IV1KsJaaCvcU7++JldZ2qEUqP7t/7EJ1QiKYD+3J4ugAHXbxL8TgwacmkBGlhC9bwvoQKKMDhNBiIF7E+Q/vLKS5nNYcisCixSUHaLdVzWDO8huX7WEHCD2Z6vtNl/sq2S+jw5UcPeP0RU03bDu5j6ZcPgjtXwjbZjsxHLy9EFiZZOjq4NiKxET+ZIWh6r+k9yLl2cvfmrvv2EDpcYfqnvfW9RaEV7po3ZdvWZz1IcadBYbjBsbxrg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=4S52QNc0oLKOsf3Qz5WCgbcpgoK+MJMIM8ZC43ztLY8=;
- b=vk3IavfCn/4AZhBf6v4cYmp10juuy6SYklx5IM80GBH1Fl/GhwHl/4n5HJBn1sn+aWMv+lqEnzdayHD94mI4Mlt808zsp2bwUGn/W7/So3Lh2xUQ6BsPY1RYt73YBhOpkcb9OR5D9gI2XRChMQU8iJ8hVfEyz8zx3fcO9B7EUlqbgWjOKOnbz1kvlaRr/XuTW+3qkLwShU21tH9jmZAFekpkNZ6hqaINgAhIaGd9ifO7+Mf1vnnzKWehUReJMgNtCFiDHMG/MTgiq5NkxU/zhkbOhFw5bLu0BS52n+BuRehwjZYb/X4aGvwdIrrSqRc7xYlVle/b2r55yUcuhcpe2A==
+ bh=FeQuJktGbolO6dSkTnc8NDkHxlBsl0FwpxpCtpoh66o=;
+ b=UyrEmJypSQ/vYKWTqZGrAY5X8N508AGjneBaKY9x97bAANDEK6bbn7fb2N9TuuUdiQrdgLHv06TFTySCgq+KB4ah4I+uNNtI6MbQCvl0hjaInwR0lgc966Rh+XU2nvtr6KHa6KeXGmxb3MdZuO6rLAvINLHnn66HtRF6PkcOy8jANXd9o97oTt53DK/rhVGdD/2b4Fq0B7q6wPWJEn4m4ZHrz1rO0qcnKnApHQYGIsPMKWCPjHLw4eYMJCNS/xP64Z1MmA2TFJx8uCC+kGpLvqovKw/OMR98W6JR63lNy0CAiTkLKblmlwYSOM0ec7soUqjBqbOAwFBEEWnMW3RnCw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=imgtec.com; dmarc=pass action=none header.from=imgtec.com;
  dkim=pass header.d=imgtec.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=IMGTecCRM.onmicrosoft.com; s=selector2-IMGTecCRM-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=4S52QNc0oLKOsf3Qz5WCgbcpgoK+MJMIM8ZC43ztLY8=;
- b=PmRu2T4eR+p9J8ZT8Mm5JFcc4HgX1Z7GQTiUWtRdl4rXI6B+FwVfFdZc2SSRtyAmW7X6hImsbngpte0WtOTpbtpgF3UlLg+6E9EkOjBvEwSRJkRzNXKXPzxFmmctRaLOaMBKEKiouVHQeVp4BCt8GHci06NBzpBW9YFGHYNX7sY=
+ bh=FeQuJktGbolO6dSkTnc8NDkHxlBsl0FwpxpCtpoh66o=;
+ b=elixgdlCe0JjKOlGrkywIzDYVcqnLZ1uV7paREcfyDOuikirta453jP2XFzBdxM8enpYudLSn8Xy2YUXLjORJM04m+3+MzCMQ2T33K8n4hsk7Tnso0AtVa6QleJafpSaCcC4mMaX/hFeV+ZSfLCmoN4BpGSUaZLOkOFJxwjG6LA=
 Received: from CWXP265MB3397.GBRP265.PROD.OUTLOOK.COM (2603:10a6:400:e7::8) by
  LO0P265MB5503.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:287::8) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.8398.20; Fri, 31 Jan 2025 15:39:42 +0000
+ 15.20.8398.20; Fri, 31 Jan 2025 15:39:18 +0000
 Received: from CWXP265MB3397.GBRP265.PROD.OUTLOOK.COM
  ([fe80::8e9d:6b2f:9881:1e15]) by CWXP265MB3397.GBRP265.PROD.OUTLOOK.COM
  ([fe80::8e9d:6b2f:9881:1e15%6]) with mapi id 15.20.8398.020; Fri, 31 Jan 2025
- 15:39:41 +0000
+ 15:39:18 +0000
 From: Matt Coster <Matt.Coster@imgtec.com>
 To: Michal Wilczynski <m.wilczynski@samsung.com>,
         "mturquette@baylibre.com"
@@ -94,107 +94,106 @@ CC: "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
         "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
         "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
         "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v4 12/18] dt-bindings: gpu: Add support for T-HEAD TH1520
- GPU
-Thread-Topic: [PATCH v4 12/18] dt-bindings: gpu: Add support for T-HEAD TH1520
- GPU
-Thread-Index: AQHbc/ZYt0fdrtsWzkiY4ycg3g+HiA==
-Date: Fri, 31 Jan 2025 15:39:41 +0000
-Message-ID: <2fe3d93f-62ac-4439-ac17-d81137f6410a@imgtec.com>
-References: <20250128194816.2185326-1-m.wilczynski@samsung.com>
- <CGME20250128194841eucas1p29048dc05a26475d8323a7a318a8c7a25@eucas1p2.samsung.com>
- <20250128194816.2185326-13-m.wilczynski@samsung.com>
-In-Reply-To: <20250128194816.2185326-13-m.wilczynski@samsung.com>
+Subject: Re: [PATCH v4 00/18] Enable drm/imagination BXM-4-64 Support for
+ LicheePi 4A
+Thread-Topic: [PATCH v4 00/18] Enable drm/imagination BXM-4-64 Support for
+ LicheePi 4A
+Thread-Index: AQHbc/ZKrCzvlwQrNEav83Jv2KY+wA==
+Date: Fri, 31 Jan 2025 15:39:17 +0000
+Message-ID: <ed7a463e-9654-41c3-91f6-f3f877fd9a20@imgtec.com>
+References:
+ <CGME20250128194825eucas1p14e2cb0a85c397dea297e9c4177cf1585@eucas1p1.samsung.com>
+ <20250128194816.2185326-1-m.wilczynski@samsung.com>
+In-Reply-To: <20250128194816.2185326-1-m.wilczynski@samsung.com>
 Accept-Language: en-GB, en-US
 Content-Language: en-US
 X-MS-Has-Attach: yes
 X-MS-TNEF-Correlator:
 x-ms-publictraffictype: Email
 x-ms-traffictypediagnostic: CWXP265MB3397:EE_|LO0P265MB5503:EE_
-x-ms-office365-filtering-correlation-id: 4c0e4822-821c-417a-cb3c-08dd420d7ad4
+x-ms-office365-filtering-correlation-id: a5668a97-aed4-45f9-a119-08dd420d6c81
 x-ms-exchange-senderadcheck: 1
 x-ms-exchange-antispam-relay: 0
 x-microsoft-antispam:
  BCL:0;ARA:13230040|376014|7416014|366016|1800799024|38070700018|921020;
 x-microsoft-antispam-message-info:
- =?utf-8?B?V2ZyakpHbktOZk5vdExTTWRIN1c3M0N2N1hDUnozVENwWTVrQ29ubjBSWWFD?=
- =?utf-8?B?R09XYkRZSkR5RTRHcXVhSFphMWx3OHlnZ1V0MGFnOTZTVWx5UVQzV3Iwbndp?=
- =?utf-8?B?VWRhN3RMZjFiWUFqdmdSOXlSYTRyU1FNRmlCRlZuK21ERVV1ZUxIZ2ZEY3A5?=
- =?utf-8?B?ckNyeFkvWnR1Z2RVMlF5ZUFRNkEySkRObUE5WjFaREdFVm1BWUpzL1lJNHFa?=
- =?utf-8?B?eTZWekN4OVNRNlkrMC91Mlh1R2hURURjNk5xZ1RCKzFYMGcwNkpFeXRrRXVX?=
- =?utf-8?B?blRKVWd2ZE81TVNNUzdDeWFxUmZKRkJxK3dza1RibGVaWWJDZk1EVXgydlM1?=
- =?utf-8?B?RDc4cTAyczUvb1l2SDFTWWxERGE0aHVnMG9sRkVaWGNHRFpyL0hMS2FXTURJ?=
- =?utf-8?B?dFdIUGpYdEJmbVI0NFhvb3NzWWR1SXltT0k2TkNpVjBhQkkrSzhqQnFrZUFP?=
- =?utf-8?B?UWd1TVZBQSs1Nkk5NVlvb1hobGRaMFNxcjFORXBERnZrYXJjUFV6V1dJZHhn?=
- =?utf-8?B?d0hVaGxGNk1lSXN3S1BIQU1ZY1pPYWtMSzQyaUhlSzRXRjRJTnB6MHhJTllJ?=
- =?utf-8?B?bFl5WDhYMFVjSG1tRU9hc3d6cWFhUUxoZ1l3WWhBZG04a2s3VGVoMEVuR25r?=
- =?utf-8?B?Tko1N2Y2c3l1dklHMndQOVJMTjFENHE2Y2p4TWtMb08vSVVGdHJhZFBxWXMr?=
- =?utf-8?B?enE5NjJBbWJGOTFuVzJBd0Yxc3hvTVhxUkdQWEVCa2U2TzZlMENHQ0lQR2hJ?=
- =?utf-8?B?L3cxcnVnN21oL050MHFjV3ZIUWN6T1RHZXdkZXY5VE1MQ1hsblZaanJlZld4?=
- =?utf-8?B?SWRjQ1B4Z2UwVE1xOVRxUEM0S0xzSWpVSkNoUlBLWnNBL2UyWXR3YlNiYXBF?=
- =?utf-8?B?d3dFUlhPcnUwRGVXQ0w3TWFDUk1zWW1VWER3S2dWRGFZbE5iMFNPYW5GOHhM?=
- =?utf-8?B?WWZnSkp4RU54djJLSFNDSzNaNElxZTdPdmNjaHM5ODg2aUZnQ1J0TXVoT3ZY?=
- =?utf-8?B?bWhwc0xEYVNOTUFBVE1mbFNTN2ZlSkxrNXA5aHZDWmdvd0tPcllvN3J0aE0y?=
- =?utf-8?B?L3ArcEE3VS9mdi9PWERMQ2ZKczU2L2FudURWWUtmd285azN5QUdkVWcyUzZx?=
- =?utf-8?B?UXJob3BSVGhrRnduNTJ5MFVDcFNkb3BqeWJIYXhtamliOVFRUEJDTkMvY1c5?=
- =?utf-8?B?YWFHUG1KWXltcnh5NUIveVZvUndPbXErWi9tQmhpTk1FVFFua3pwTHJNdis3?=
- =?utf-8?B?SEZITW5UMEtZSGpqS3FnSUlFZ3A5Tzl6RXVlVzhTajE0NWt1SVhQSnZLZXRG?=
- =?utf-8?B?bUJEWDYwTWVZY3diZlJrWHNRaU1vSlVCL3BJdTJjZ3RFeG1uRHpYcWI2QjZu?=
- =?utf-8?B?bGc3SWFFbHBjMCtLTVU5V2NaWVZ6R2o3UDBtY3M0VkxaQ3o4d3lLVHI0MnNR?=
- =?utf-8?B?bHo4b3ZyY2xnYUQrM3hXWVp4ZzVGN3gwdmRUQlI3clI3ekQrNElUVmgvTkhu?=
- =?utf-8?B?dzdYeUhNakJpUWM5T2tjR2hPend4dWQxd1JrNTdNYXVHeGlwblVqTG9LTzUx?=
- =?utf-8?B?ZHFLeHFqSzYreisrTHQreUdvTXJiMmtoV0k4TlNqOGk5K25xeC9kYkpHUzRU?=
- =?utf-8?B?Rjc3dmdtUGtrZ3NVY01VeVlBcFZIaTJSdjdadEgybHVrSStPN3RxczdiSHRE?=
- =?utf-8?B?bG5PNjhFRStkME5yU29CWUJBenUrZnVrMVFPTCtBYnFONlVwTjJtLzBPa2k3?=
- =?utf-8?B?NWVKblJucUY4QWEzajI1dG9VL0RuZnFZcENqNnY5dGQ3aURicnhvZFVpUHp6?=
- =?utf-8?B?QnQ4QkdGbmFpQjJRblI3VW92NVY3YWk1QXg0ZllIMWFkeVlaalNNblg3WDI4?=
- =?utf-8?B?VERweU5sZEUyYm5HZDZxdVFkQllGNVY4bE9rc3JNc0NuOFZHZ0JGRkp3bkNw?=
- =?utf-8?B?SnZaRmwrYUJwTElrSUo0a1dwUWtGTUZBeXI5bFhmd0hIUWU0aVc3bVhWeTBE?=
- =?utf-8?B?clBRQ2dqQlZRPT0=?=
+ =?utf-8?B?MmxsUGc5c1lFaUMvSXVWMDIzZWJZakJWY21uWmU0VzF2SGUybTM1MUpWbTVH?=
+ =?utf-8?B?YVRMVWM4Y09VeGN3cXNBcUx4VGFuekdNQ3h2MU9mNWIyemd1cEVGemljSE5l?=
+ =?utf-8?B?Qkg3QzRVZW9kcmErUHFHT0RTRnJVY1VieEFDb0tYRGowdUxLL3hLdDdKdWhP?=
+ =?utf-8?B?RUR0Q0lsWXpUNXF6a20rMkI3RUZGN3o3MFdSbkc2V0hXODh4SC9kSWdQcVlE?=
+ =?utf-8?B?emM1WlpaaUEzUUdHMW9hQ1JUdjUxT045Z0pqQzZrZUJtWU54N3ZlSjc1VE5W?=
+ =?utf-8?B?cEFZZFJ4Uk5kQXdMc1FBQU1rNWc0QnVRNmozSVE0WjllWWZyZDJBaEVwbmZV?=
+ =?utf-8?B?eVpKVThxMkdlRTgyWTZJTFIvblhFZjkySzRrQXJnSmx3ODVVeGRkNmhDRkNq?=
+ =?utf-8?B?empoR0hiak1DMWJ6dWZKYmp1K05tK1VMUU0xa2wzOUdIM0xSZ2NWVUZWaFJw?=
+ =?utf-8?B?V1R4VTlvSkgycWFPTnE2czhUR3RIUiszeW9oZkhmZnJtK2NyVWRzUkpMVzRn?=
+ =?utf-8?B?QWZsTjViVno4QXIrOHFaT1VUdEtpSmg1VWdlamZYS083QnZHSWsrMjRHYmY1?=
+ =?utf-8?B?bnl4MTZIWlMrZDBxU0FrbDE0eXZqOSsyckpmY2lJbHFXem1YMXM0eVpFUzlm?=
+ =?utf-8?B?Q1p2a2ErMDc1b2l2K1FtTWRWVDdnV2EzUVJ4V2FtbDZkTDU0UXRqQVlhUGJm?=
+ =?utf-8?B?S0xQK1BobURpRTM2K2NTK25HU3BYV1hBSGUzc3I4WDRmaWlWRmtLTWl0VjZq?=
+ =?utf-8?B?RVBUM2NMMHVTakorb1VqY3kvZVI0NllMYUxJMmNUS2JpNTBzcWFwaUtSZWVS?=
+ =?utf-8?B?eG9Dak1iNnV1WmxzaDRzczlWMFpQc0U4RTdJRlN5Y2V6N0JOSTZESVlMQzRw?=
+ =?utf-8?B?ekM3M0tCNXFzdkFlSG11VFJGWGtUY0VONkkzVlptQWcwelRkckUwM0UzMGhv?=
+ =?utf-8?B?Q2dJVytSeHM1ajM5Sm9qanhmKzVZWUt5d3hTT3BsMlg4S3Vvc3V0Ync0d3Q3?=
+ =?utf-8?B?akdhM2pNQTc1dlRxWmgxbTJrVERkQmZFRVEyS3I3eUZrWmRqRjRpanA3R3Bt?=
+ =?utf-8?B?ODVCR3l6OHNZaUhqbkl6UWlxQlMzYU9UclZrUFZ3NWJZb2lNcUIxWFIzQm5C?=
+ =?utf-8?B?YU4zUHZNTkx4cjhGS2tWbXJSTDVicTljcWdVTGw3cHNOOWFVRk5TMnFiOWNj?=
+ =?utf-8?B?eFhpOVV0b3AvRFBHVTJiTTdCcy83aFp6ZDdBcmYxNXY0UVdJUmViTHFvdVY3?=
+ =?utf-8?B?M2J6YmdqM1pudlRURmZKa2xFV1AvMUNRR0NNcklPNmFsWGpLSDhuRElETFRU?=
+ =?utf-8?B?Z1dSNTdZNndYUUNFRXRIV1BrRllTaXZzZDhocllqSW9MTVJQYWI2dmRaVGJ0?=
+ =?utf-8?B?QlZrb0JRUkhheThTNkVRWlVYb0I3aTdSK0VhUEZSZGdvMWxheFNPbzlTQ3NL?=
+ =?utf-8?B?a0xadTZtTnlUUHlMRzFIamU1RGdVaUdWZGk2K1hjQXRlNWk5d20wTmFzTVY0?=
+ =?utf-8?B?VUpSV1oveTZBUUloWWNnWHUxdm5VcDBDcFVSc1dZQ2NNUGNqNk1LMDJKbU90?=
+ =?utf-8?B?NUlRK2xaWlBuOVMxenBPZjhYbTE5TkFBb0hDWmowSnVVTTJEZS9Ed3hnQ2JQ?=
+ =?utf-8?B?dlFWTFo0NjcyV3dZU0lFaTJ5cy85dTBGR2wxekxwSVRjK05FWTM0dHJZVitE?=
+ =?utf-8?B?ZE5RZXZzaWV3b3hJUEFaSDJoMDBSU0FxOW5qb09BYTlsTDBPUDBGd1RVa1BC?=
+ =?utf-8?B?ZWZhNXNvNTQwdHYxTEkxdnhkVVJDWmZ5eU9mRGlSZVA0YjN0REFWYmMrbkFz?=
+ =?utf-8?B?UmNydTJqZ3FObXN0RkhSd0xuYnhzcGZ6TUE3T0MvY1V2eTJpU3BpQkZzbU1v?=
+ =?utf-8?B?a2U3dEY2Y1Myb0d0K2pqNXp0TWcra1RoaFd6Mlk3Z2VpOUJnd2QwaWhJdXAz?=
+ =?utf-8?Q?b0BUghLm2sw=3D?=
 x-forefront-antispam-report:
  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CWXP265MB3397.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024)(38070700018)(921020);DIR:OUT;SFP:1102;
 x-ms-exchange-antispam-messagedata-chunkcount: 1
 x-ms-exchange-antispam-messagedata-0:
- =?utf-8?B?SDlXQU1HR3NzRyswdGdUK053NnRtMUFQdlZzUm9FNHpXamNJUDhpb3JnTkZH?=
- =?utf-8?B?NUxIaENaem5PQ3U3cFd3MlJCUW4wZ2FnQVU2eU5RcGJrVnFKN015Y2ZVRENa?=
- =?utf-8?B?bytwYmdFV0RhR0s4VFdkV3U1S0I3a1BpT2YvNzZRT1YvZ0xtd3c2UGJIYlFr?=
- =?utf-8?B?d2hDOGQzVnMxdmpEa2ZNaG5SbUhNU0trb0w3MGZLdHMydnNMSGY0aXJneVhI?=
- =?utf-8?B?Nlp5YlN1c1NUMDNCSmt4YzdndjMybXNBNlFiSjJtaUpFMHA1VkxPZGlCdDVh?=
- =?utf-8?B?ZndXNkhacnVzVTB3STBhOU9jUTc5blFmekM4WGoyQlF5T0xtYXc1WUErZk1Z?=
- =?utf-8?B?S01PYVV5UWtRQ1V1bm85dlVOWGV0QUZzWWNONEZ2UWlJbHpsbnVzaVFXdk5a?=
- =?utf-8?B?OWRlaGNzUVRvYndoU3FQcUhBUlliYWdIRFY2TjJoTUtFdU1kUjB1MmpFaVMw?=
- =?utf-8?B?azNTVnpzSUZQTWFxQks4dE5tT21lTHRPczFIQXA5bUtOWmxRdExXdmFEYk9u?=
- =?utf-8?B?djlJcENtQVpFQjhaMlQweFZhaXhoaWo2MVJwODdSMDU4OEdEQkNxbUxVR3pL?=
- =?utf-8?B?bnBkczZTMlR5UzJVL0F5aWQyTEtqaFBXOVZabTdlQ3VoejZjSkt2TmZmMGZ1?=
- =?utf-8?B?UmsvdTdSMEY3SHdOZklXMFBOZi9STW5RRllZaHNwZ2dFby9BWlBzbmdxdU9q?=
- =?utf-8?B?YkxqUGQ1Q2tXZ3hUSjZUYkg5Zm5mL2RoczlEMG40UlVmMlZ4Tk0yRHZOSjNU?=
- =?utf-8?B?Ny8yaCtPZ2V4aDVncWVCTXBpbWsydmVNYTJlK3dyWkVaR24xcXNGZVZOelhX?=
- =?utf-8?B?K3BSTjZCZHJGdUpMcUlUblBKMkVUZEEwcXl2dTgxeEtkZEpUOTA5YlE0RHpZ?=
- =?utf-8?B?dEZTODRGVjZ5Q2UvdUVIcW5LL2h5VmZJcW1mYncxbXROSDJNM2lTZ2g2KzJF?=
- =?utf-8?B?Qm5aeGQrT1VvbEJIUEtoWnhjblJRU3JEaXpoL1hhYnlnNG43bEt6UWpiV3ZT?=
- =?utf-8?B?UCtPZGtiWlRyQUwveXlSVlFpL0RRVlpXK3VDVmtBRXNjQkNVZWlqbG10ZXZI?=
- =?utf-8?B?bFduWjFna0Z2ckY5MVMya1Zzak5mK3k0WjkwWEE5TlFZSjV6L0FBMDMyemsz?=
- =?utf-8?B?NTlSaW0rR2U2ZFNoS1gwRmJJZnJxRHF6UnB5cnhrZjgvc0lScFc3dFl0VzNI?=
- =?utf-8?B?YXJQd1pRQ1ZPNlhmb3UvVW1ENjdscmtOZnJVeW5jMVRYdExyc2JVSzNIZXFZ?=
- =?utf-8?B?dUQ3blRkaUVNbDFLcDE2RGhDOFVaV3N0QlY3VXZSYUlObTFDNUsyYkNhaE5J?=
- =?utf-8?B?czBvdzA4MEpoRjdtOFVtMkwzcy93N3ltcXJYRVpLa3N0ZmhHd0hoS2tEQUlr?=
- =?utf-8?B?VXhCOXo3RC9zOGg5RGgxNUNLSTkvM3BJWGlWSVBoZ1dsaldoWU1rbytVdlU3?=
- =?utf-8?B?RTJpNFA4Yy9BN3JSWjlPaU5iV095MGZ4Y3U4dVdBZGNvU1huL0pFZ1NDcWxG?=
- =?utf-8?B?RWg3ZFQ5bEdJYkRVRmNPR0R4bjRjQ1d5WVBBNUJ2WVVWVWczWVVndWQ3WVV2?=
- =?utf-8?B?YW5oSS9KdndxblhMcXp2U0lIeUxQbnluL0R2UERmY3FyUXRTTy9vUE9PbVZ3?=
- =?utf-8?B?ZWtxRVhYd09FbU9jeEdxcDFuNTE4TXB4Nkp6c1U3QjZhMmhGWEI3Y2tzRUtU?=
- =?utf-8?B?R0UxTUI5R2NhSGJSc0tKNHkxa2VkUGd3elFxMnhsVHRjWk1CMUdNZXA1SG5h?=
- =?utf-8?B?V0FXNXdEU2paNWVUaXlHTFdqcjk1b0tsMWp0ekhuR3F5WStrQk52N2xraW44?=
- =?utf-8?B?OTVvZlROT3hsVlFkd3NmY01qdWN6SFdabktMZHFTSFRzR3kxMnEwZEM5NEts?=
- =?utf-8?B?RzlUeU56cm53VDRad1dSUmtBako3c2hLbVVSSXMrUFlyQ29nMFVqdnMrMjE5?=
- =?utf-8?B?NjdpQ0ZXclF3NUd5T1RtbUJnbE5MSkQ0UElBaVQ3UEE0Uk1RUm0yZDQ2U0V4?=
- =?utf-8?B?QUtkWEk3Z0xOeGkzZ1JldEJ3ZjA2c1U2RzFJYVRrWmtpM1lZV3hFRUtZMWov?=
- =?utf-8?B?MlZVZDVySkljdHZrN3Vqekp0VWxBWVdoeGxWMkdRZ0VHNnMwbGpmZUtFaDlo?=
- =?utf-8?B?ZWo5WGtIbzNQeVJkMVd6ZGlvUVlwMVdqNnpUUlFNci9UWW41UkdJL2ZRWUVz?=
- =?utf-8?B?R0E9PQ==?=
+ =?utf-8?B?bVZBZVdHSnJSS3grZnpjZlp3Vm9BODM4dXpYNHovVjA4a2s4SkNaZ1VSSHZX?=
+ =?utf-8?B?Uk5kSjYwalpzSHJLMGRhMlNZamtabHpFMi9WV2h3SUNQSFdqdVY2NWNqMy9S?=
+ =?utf-8?B?UWw0cFFmSlZIZzl3MzRUUEFFcTVOdlUwU1VWdWdyVkdPWmFHemJuU2F1Rlpm?=
+ =?utf-8?B?VjM5NEJub3pSSzlmUWNwTll5V2FRS1lXNkJrZVB5V2Z0YTBlODliU3N2ejZC?=
+ =?utf-8?B?RlR6MG1HYWs4YTVReUpNbHBqLy9PZ254VHlJMWd4emdlQXE2cytQZTlqNG5G?=
+ =?utf-8?B?Mk1DQ001NHhCQjJJQnY0Rm9IdS9IVWxRU2Iva2lYU3pSVkd2WGFCZFA2blZx?=
+ =?utf-8?B?MlRIMW5aMVQ5eXY5Q1MzSHN5elpUanJOYll5dnZRVHNiNHZIa2x1aFRvVWha?=
+ =?utf-8?B?VTkxaWhRcjJ3bDZHc1VvNnlUTXVtelhrTUpEb0JSUkNwR2tMNDBRKzF2aGtQ?=
+ =?utf-8?B?UnRaMEpsZElteFRaRnN2ZDcwYzNHMWZCOGhDWTVIUlBqMmJhcGhWSzlSbDJs?=
+ =?utf-8?B?akwzQXhuTU1WZjFoV1h1L3phdnNWdnhCNzF0eEF6bmgrTmtFQVR0MnM3TUpa?=
+ =?utf-8?B?VmhGMlFSdjQrZlRFRUNZYzdFLzZJdWJpNTA4UHQ0T2FNMXc0MTZZR25KYXRq?=
+ =?utf-8?B?RzBad3F6YmpTTUJ6Q3U3aDRhak5oK2lUMnEvM2dIVlpRK3Bkc0haVFdCZ1RM?=
+ =?utf-8?B?Rk5YU0pHaU03SlJHa2tXdVltODZmOUNzNFgwUWJKYUNkSmRsYTU4cGVEQ2d0?=
+ =?utf-8?B?dTduY2Z2eUlqUFlwQVJUcG9CL2R0Vkk1RkptKzRYZUEvUmFjVEZKOUxLYW5R?=
+ =?utf-8?B?b1dzUVVKTnhUUG5mc2dqWW9WZTYrYnBWRHdTNW5iSS9mRG5uM1RrVXlLUUVB?=
+ =?utf-8?B?ZWhSRmYwczFmKzZ6dWI3ZEtPZUVsOW9pbWJDU1FvZXU1c1h2UEVRZGg3dE0r?=
+ =?utf-8?B?bFFrcGFXR01LcVhGakZJZ1lMS2VZNGhieGRrNlZzSmxnKzZCcE02cDM2TERj?=
+ =?utf-8?B?bVFaV3RvajNNSDdmM2c0K3hkSWcrc1JGSzFqeHk3TTZSL1cyZ0pEY3dkNUM0?=
+ =?utf-8?B?NFhTcnhzMGFTdmVWMi9hbXVyVlFBcnBPVFZmb2J4bzRxVW1YbWJPZ3BOcldY?=
+ =?utf-8?B?bTZPMk5zdzVrQWJ1bEd4RTJ2cFo3aDlJd0cxaklkRitZeDc0Rm9zY1BjNVkv?=
+ =?utf-8?B?cFo3RHZ3V1p5dFBTRG9vREpXQUZuZVlWb2FVV21VelZQSVk0azlPMWFOcGt4?=
+ =?utf-8?B?T3Y3emI4bW5rOTVQbkJRSnZCMjY3azVZdnZpRkVOY2NSay9jeEpCTW45Qnkz?=
+ =?utf-8?B?ZWZqMm50bHFXTzZKRXFXVG5zMXYwbDZVYnBQWGFUSU5FMUM1QnRQMHlwc2JO?=
+ =?utf-8?B?N2tLdWMwY2ZEZFF2a0dCZ2ZtVVVsdi8xdUdFalRVWVIvTzBqTkJLc21BWkpk?=
+ =?utf-8?B?d29aNFRvQ1NYWFpVWkRid2g1OWV6SXRtUE1qNzIzUXRWK3NCUnN3aXR4WnRj?=
+ =?utf-8?B?SXVTVTlPdlVISmN2ajJyOFhxUGRBaGtneEd1VkhOa0R2VEZxZnFKZEU3V3J0?=
+ =?utf-8?B?ck1WYy9GUGVHVzNadG15MjFTOGVweUJGeVJydW5ZRy9uc0lEeTNBQ0hiR0hZ?=
+ =?utf-8?B?Ull6RUZ6LzRUUkxXQkhONU4rRFFSY3RYOW9CeVFtNXV6aGk4ajlZU0ovNHpB?=
+ =?utf-8?B?T0ZTVkx1MFBQZGRaOXIvL2crcTZROEw1T0dTL2NRR1FveSs4N1FlaVRTcWFx?=
+ =?utf-8?B?Z1N0ZDdaQjhlUHVuOS9lZ2p3cUN5bGpxUTMyMjRmTlJXeVNVZDJiWEhNSjMw?=
+ =?utf-8?B?empIVldwelUrVFJnRVE4aGNCL3VxRUk5a2tqWkI1R2lwQUl5MHN5V2ZYMDZY?=
+ =?utf-8?B?K2RkMElOb2FpOE9WS3VoeTlwcUNZTmhlM2RXRzlic08vNzZ6Z2hNVitWZlF1?=
+ =?utf-8?B?UlVCdk1jVVFBN2phenMrOGo3RzJwbkJtTHlNU3FvOWpuRzlzVllQc1RTZ2c2?=
+ =?utf-8?B?UkVFZ1I1bzBxZ3ozUzNadnRCNk45dm5DMG1tS0dPOFU3L1p4QWI4V3pBanVx?=
+ =?utf-8?B?VUc1RW45WURlZzhGTWo2VzRSeHBFZzl2ZWQxWWg2eS90U294cHZSN3NWNmkw?=
+ =?utf-8?B?UzVaS1hRZGl5MWEzYnNTOXJtaWxEZzN4dnIxK0NINVpHYk1makJIWGpzMDhZ?=
+ =?utf-8?B?NXc9PQ==?=
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="------------icqSmFcs0ol6qu0Qgm0EhTR5"
+	boundary="------------cVQCRBBaOuw34poed0u77Vud"
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -204,21 +203,22 @@ MIME-Version: 1.0
 X-OriginatorOrg: imgtec.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
 X-MS-Exchange-CrossTenant-AuthSource: CWXP265MB3397.GBRP265.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4c0e4822-821c-417a-cb3c-08dd420d7ad4
-X-MS-Exchange-CrossTenant-originalarrivaltime: 31 Jan 2025 15:39:41.8832
+X-MS-Exchange-CrossTenant-Network-Message-Id: a5668a97-aed4-45f9-a119-08dd420d6c81
+X-MS-Exchange-CrossTenant-originalarrivaltime: 31 Jan 2025 15:39:17.8621
  (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 0d5fd8bb-e8c2-4e0a-8dd5-2c264f7140fe
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: N41UDLQ6YCWho4wqCwQX2A2kFRBCL/+nLniwlEMp2avkXerni8BNKyNpB1hffRHOVo806H5kKZYAWR8pKXyaDw==
+X-MS-Exchange-CrossTenant-userprincipalname: Emiu2vSSKSZ06BC04Kj8oO2O/A5SDJHcWulx3Nj+TKuSdQW1eqZGBepKwJc2xZPsti7dKP/uxojSAIuuXCInBw==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: LO0P265MB5503
-X-Proofpoint-GUID: lSn58D18wfumlDUVw804SCDnQy3mQ5yG
-X-Authority-Analysis: v=2.4 cv=PoBpbxM3 c=1 sm=1 tr=0 ts=679ceec0 cx=c_pps a=+8G7KV7MoNjfk4g9SO/OOg==:117 a=wKuvFiaSGQ0qltdbU6+NXLB8nM8=:19 a=Ol13hO9ccFRV9qXi2t6ftBPywas=:19 a=xqWC_Br6kY4A:10 a=VdSt8ZQiCzkA:10 a=WnR_qW7rlZcA:10 a=NgoYpvdbvlAA:10
- a=hD80L64hAAAA:8 a=r_1tXGB3AAAA:8 a=-fQqvUCQEPmyFsL1sjYA:9 a=QEXdDO2ut3YA:10 a=IuWS7esrMLBfnw7xo7YA:9 a=FfaGCDsud1wA:10 a=t8nPyN_e6usw4ciXM-Pk:22
-X-Proofpoint-ORIG-GUID: lSn58D18wfumlDUVw804SCDnQy3mQ5yG
+X-Proofpoint-GUID: 8J4kW2lK5B32wMp2aiqSENRUujuSGBV1
+X-Authority-Analysis: v=2.4 cv=PoBpbxM3 c=1 sm=1 tr=0 ts=679ceeaa cx=c_pps a=mRJfeTHGti1YOx0CH8CfHg==:117 a=wKuvFiaSGQ0qltdbU6+NXLB8nM8=:19 a=Ol13hO9ccFRV9qXi2t6ftBPywas=:19 a=xqWC_Br6kY4A:10 a=VdSt8ZQiCzkA:10 a=WnR_qW7rlZcA:10 a=NgoYpvdbvlAA:10
+ a=e5mUnYsNAAAA:8 a=VwQbUJbxAAAA:8 a=r_1tXGB3AAAA:8 a=NEAV23lmAAAA:8 a=Bq6zwJu1AAAA:8 a=pGLkceISAAAA:8 a=VeCtzijpZ1WmsS6HqsMA:9 a=QEXdDO2ut3YA:10 a=P1_s_JGqDwQImzC-o0EA:9 a=FfaGCDsud1wA:10 a=Vxmtnl_E_bksehYqCbjh:22 a=t8nPyN_e6usw4ciXM-Pk:22
+ a=KQ6X2bKhxX7Fj2iT9C4S:22
+X-Proofpoint-ORIG-GUID: 8J4kW2lK5B32wMp2aiqSENRUujuSGBV1
 
---------------icqSmFcs0ol6qu0Qgm0EhTR5
-Content-Type: multipart/mixed; boundary="------------cd8sO06lL6Rmmg9xS505TJSh";
+--------------cVQCRBBaOuw34poed0u77Vud
+Content-Type: multipart/mixed; boundary="------------6fiNF2KUwoS7kQR0FbbzFCwd";
  protected-headers="v1"
 From: Matt Coster <matt.coster@imgtec.com>
 To: Michal Wilczynski <m.wilczynski@samsung.com>, mturquette@baylibre.com,
@@ -232,142 +232,341 @@ To: Michal Wilczynski <m.wilczynski@samsung.com>, mturquette@baylibre.com,
 Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
  dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org
-Message-ID: <2fe3d93f-62ac-4439-ac17-d81137f6410a@imgtec.com>
-Subject: Re: [PATCH v4 12/18] dt-bindings: gpu: Add support for T-HEAD TH1520
- GPU
-References: <20250128194816.2185326-1-m.wilczynski@samsung.com>
- <CGME20250128194841eucas1p29048dc05a26475d8323a7a318a8c7a25@eucas1p2.samsung.com>
- <20250128194816.2185326-13-m.wilczynski@samsung.com>
-In-Reply-To: <20250128194816.2185326-13-m.wilczynski@samsung.com>
+Message-ID: <ed7a463e-9654-41c3-91f6-f3f877fd9a20@imgtec.com>
+Subject: Re: [PATCH v4 00/18] Enable drm/imagination BXM-4-64 Support for
+ LicheePi 4A
+References: <CGME20250128194825eucas1p14e2cb0a85c397dea297e9c4177cf1585@eucas1p1.samsung.com>
+ <20250128194816.2185326-1-m.wilczynski@samsung.com>
+In-Reply-To: <20250128194816.2185326-1-m.wilczynski@samsung.com>
 
---------------cd8sO06lL6Rmmg9xS505TJSh
+--------------6fiNF2KUwoS7kQR0FbbzFCwd
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-On 28/01/2025 19:48, Michal Wilczynski wrote:
-> Add bindings for the PowerVR BXM-4-64 GPU integrated in the T-HEAD
-> TH1520 SoC.  This GPU requires two clocks.
-
-None of the IMG Rogue GPUs use two clocks; they're all either one or
-three. The TRM for the TH1520 I have shows the standard three (core,
-cfg and mem). I mentioned this on P2 ("clk: thead: Add clock support for
-VO subsystem in T-Head TH1520 SoC"); can you add the missing clock here
-too?
-
-> Document the integration details including clock, reset, power domain
-> and interrupt assignments. Add a dt-bindings example showing the proper=
-
-> usage of the compatible string "thead,th1520-gpu" along with
-> "img,img-bxm".
+On 28/01/2025 19:47, Michal Wilczynski wrote:
+> The LicheePi 4A board, featuring the T-HEAD TH1520 SoC, includes an Ima=
+gination
+> Technologies BXM-4-64 GPU. Initial support for this GPU was provided th=
+rough a
+> downstream driver [1]. Recently, efforts have been made to upstream sup=
+port for
+> the Rogue family GPUs, which the BXM-4-64 is part of [2].
 >=20
-> Signed-off-by: Michal Wilczynski <m.wilczynski@samsung.com>
-> ---
->  .../bindings/gpu/img,powervr-rogue.yaml       | 39 +++++++++++++++++--=
-
->  1 file changed, 35 insertions(+), 4 deletions(-)
+> While the initial upstream driver focused on the AXE-1-16 GPU, newer pa=
+tches
+> have introduced support for the BXS-4-64 GPU [3]. The modern upstream
+> drm/imagination driver is expected to support the BXM-4-64 as well [4][=
+5]. As
+> this support is being developed, it's crucial to upstream the necessary=
+ glue
+> code including clock and power-domain drivers so they're ready for inte=
+gration
+> with the drm/imagination driver.
 >=20
-> diff --git a/Documentation/devicetree/bindings/gpu/img,powervr-rogue.ya=
-ml b/Documentation/devicetree/bindings/gpu/img,powervr-rogue.yaml
-> index bb607d4b1e07..b0d9635704d8 100644
-> --- a/Documentation/devicetree/bindings/gpu/img,powervr-rogue.yaml
-> +++ b/Documentation/devicetree/bindings/gpu/img,powervr-rogue.yaml
-> @@ -12,10 +12,15 @@ maintainers:
-> =20
->  properties:
->    compatible:
-> -    items:
-> -      - enum:
-> -          - ti,am62-gpu
-> -      - const: img,img-axe # IMG AXE GPU model/revision is fully disco=
-verable
-> +    oneOf:
-> +      - items:
-> +          - enum:
-> +              - ti,am62-gpu
-> +          - const: img,img-axe # IMG AXE GPU model/revision is fully d=
-iscoverable
-> +      - items:
-> +          - enum:
-> +              - thead,th1520-gpu
-> +          - const: img,img-bxm
+> Recent Progress:
+>=20
+> Firmware Improvements:
+> Since August, the vendor has provided updated firmware
+> [6][7] that correctly initiates the firmware for the BXM-4-64.
+>=20
+> Mesa Driver Testing:
+> The vendor-supplied Mesa driver [8] partially works with Vulkan example=
+s, such
+> as rendering a triangle using Sascha Willems' Vulkan samples [9]. Altho=
+ugh the
+> triangle isn't rendered correctly (only the blue background appears), s=
+hader
+> job submissions function properly, and IOCTL calls are correctly invoke=
+d.  For
+> testing, we used the following resources:
+>=20
+> Kernel Source: Custom kernel with necessary modifications [10].
+> Mesa Driver: Vendor-provided Mesa implementation [11].
+>=20
+> Dependencies:
+> Testing required a functional Display Processing Unit (DPU) and HDMI dr=
+iver,
+> which are currently not upstreamed. Efforts are underway to upstream th=
+e DPU
+> DC8200 driver used in StarFive boards [12], which is the same DPU used =
+on the
+> LicheePi 4A. Once the DPU and HDMI drivers are upstreamed, GPU support =
+can be
+> fully upstream.
+>=20
+> Testing Status:
+> This series has been tested by performing a probe-only operation, confi=
+rming
+> that the firmware begins execution. The probe function initiates firmwa=
+re
+> execution and waits for the firmware to flip a specific status bit.
+>=20
+> [   12.637880] powervr ffef400000.gpu: [drm] loaded firmware powervr/ro=
+gue_36.52.104.182_v1.fw
+> [   12.648979] powervr ffef400000.gpu: [drm] FW version v1.0 (build 664=
+5434 OS)
+> [   12.678906] [drm] Initialized powervr 1.0.0 for ffef400000.gpu on mi=
+nor 0
+>=20
+> Power Management:
+> Full power management capabilities require implementing the T-HEAD SoC =
+AON
+> protocol messaging via the hardware mailbox. Support for the mailbox wa=
+s merged
+> in kernel 6.13 [13], and the AON protocol implementation is part of thi=
+s
+> series, since v2. Therefore this series support full power management
+> capabilities for the GPU driver.
+>=20
+> Thanks everyone for taking the time to review the last revision ! Your
+> guidance and the direction was very helpful.
 
-This is going to be the main conflict between this series and the other
-B-Series series I mentioned on the cover letter. One of the main changes
-in that series is to rework how our compatible strings are structured;
-that would make this "thead,th1520-gpu", "img,img-bxm-4-64",
-"img,img-rogue". Would you mind holding this change back until the other
-series lands so we can avoid carrying a second deprecated compatible
-string?
+Hi Michal,
 
-> =20
->    reg:
->      maxItems: 1
-> @@ -60,6 +65,17 @@ allOf:
->          clocks:
->            maxItems: 1
-> =20
-> +  - if:
-> +      properties:
-> +        compatible:
-> +          contains:
-> +            const: thead,th1520-gpu
-> +    then:
-> +      properties:
-> +        clocks:
-> +          minItems: 2
-> +          maxItems: 2
+This is awesome, thanks for contributing! I apologise for not responding
+to earlier versions (things have been pretty busy here), but they have
+very much been on my radar.
 
-As mentioned before, this doesn't represent the hardware. Please bump to
-3 and add the missing clock.
-
-> +
->  examples:
->    - |
->      #include <dt-bindings/interrupt-controller/irq.h>
-> @@ -74,3 +90,18 @@ examples:
->          interrupts =3D <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
->          power-domains =3D <&k3_pds 187 TI_SCI_PD_EXCLUSIVE>;
->      };
-> +
-> +    #include <dt-bindings/clock/thead,th1520-clk-ap.h>
-> +    #include <dt-bindings/power/thead,th1520-power.h>
-> +    #include <dt-bindings/reset/thead,th1520-reset.h>
-> +
-> +    gpu: gpu@fff0000 {
-> +        compatible =3D "thead,th1520-gpu", "img,img-bxm";
-> +        reg =3D <0xfff0000 0x1000>;
-> +        interrupt-parent =3D <&plic>;
-> +        interrupts =3D <102 IRQ_TYPE_LEVEL_HIGH>;
-> +        clocks =3D <&clk CLK_GPU_CORE>, <&clk CLK_GPU_CFG_ACLK>;
-> +        clock-names =3D "core", "mem";
-
-You have CFG mapped to "mem" here. Out of curiosity, was that mismatch
-required to make things work?
+I see you're already aware of my other B-Series patchs[3]; would you
+mind rebasing these changes on top of those? We're making some not
+insignificant changes to the bindings which will conflict with any new
+GPUs added in the meantime. I'll leave comments in this series where I
+suspect the conflicts will appear.
 
 Cheers,
 Matt
 
-> +        power-domains =3D <&pd TH1520_GPU_PD>;
-> +        resets =3D <&rst TH1520_RESET_ID_GPU>;
-> +    };
+> Since this patchset is slowly getting closer to being ready I'm droppin=
+g the
+> RFC prefix with the v4.
+>=20
+> v4:
+>=20
+> Device Tree Changes:
+> - restructured power device tree bindings by abstracting power-domain I=
+Ds from
+>   firmware IDs, with the mappings now defined in a dedicated header fil=
+e
+> - retained existing clock-names in img,powervr-rogue.yaml to maintain A=
+BI
+>   compatibility, despite having only one downstream user
+> - enhanced documentation for new Video Output (VO) clock inputs in devi=
+ce tree
+>   bindings
+>=20
+> Reset Driver Changes:
+> - reverted reset-cells configuration to single cell as in v2
+> - maintained reset definitions in device tree bindings while deferring
+>   implementation of watchdog timer (WDT) reset functionality
+> - addressed implementation issues in the DRM/Imagination reset driver
+>=20
+> Power Domain Changes:
+> - added workaround to disable AUDIO power domain to prevent firmware cr=
+ashes
+>=20
+> v3:
+>=20
+> Device Tree Changes:
+>  - consolidated device tree representation by merging aon and power-dom=
+ain nodes
+>    while maintaining separate drivers internally
+>  - power-domain driver is now instantiated from within the aon driver
+>  - updated img,powervr-rogue.yaml to use allOf and oneOf for better sch=
+ema
+>    organization
+>=20
+> AP Clock Driver Improvements:
+>  - reworked driver to support multiple clock controllers through .compa=
+tible
+>    and .data instead of using multiple address spaces in dt-binding. Th=
+is change
+>    allows to re-use the driver code for multiple clock controllers
+>=20
+> Code Quality and Documentation:
+>  - fixed optional module dependencies in Kconfig
+>  - added kernel-doc comments for all exported functions
+>  - implemented th1520_aon_remove() to properly clean up mailbox channel=
+
+>    resources
+>  - removed unnecessary of.h header in multiple drivers
+>  - refactored reset driver to use zero cells
+>=20
+> v2:
+>=20
+> Removed AP_SUBSYS clock refactoring commits (1-6):
+>  - instead of refactoring, I opted to extend the current driver and its=
+
+>    associated device tree node to include support for a second address =
+space.
+>=20
+> Expanded patchset scope to fully support power management capabilities:=
+
+>  - introduced a new firmware driver to manage power-related operations.=
+
+>  - rewrote the power-domain driver to function alongside the firmware d=
+river.
+>    These nodes in the device tree lack direct address spaces, despite
+>    representing HW blocks. Control is achieved via firmware protocol me=
+ssages
+>    transmitted through a mailbox to the E902 core.
+>=20
+> Implemented a reset controller for the TH1520 SoC:
+>  - developed a reset controller driver for the TH1520 to manage reset
+>    sequences.
+>  - updated the drm/imagination driver to act as a reset controller cons=
+umer.
+>    While this patchset is focused on the LPI4A board, the reset control=
+ler is
+>    designed to be useful for other boards, such as the BPI-3F, which al=
+so require
+>    a reset sequence after power-up.
+>=20
+> Updated dt-bindings:
+>  - added new dt-bindings for power, reset, and firmware nodes.
+>  - updated the powervr dt-binding to include reset support and new comp=
+atibles.
+>  - ran dtbs_check and dt_binding_check to ensure compliance.
+>=20
+> Addressed code quality:
+>  - resolved all checkpatch issues using --strict, except for the call t=
+o
+>    devm_clk_hw_register_gate_parent_data().  The current implementation=
+ remains
+>    preferable in this context, and clang-format aligns with this choice=
+=2E
+>=20
+> References:
+>=20
+> [1] Downstream Driver Source:
+>     https://gitlab.freedesktop.org/frankbinns/powervr/-/blob/cb19299320=
+95649a24f051b9cfdd2cd2ceab35cb/drivers/gpu/drm/img-rogue/Kconfig
+>=20
+> [2] Initial Upstream Driver Series:
+>     https://lore.kernel.org/all/cover.1700668843.git.donald.robson@imgt=
+ec.com/
+>=20
+> [3] BXS-4-64 GPU Support Patches:
+>     https://lore.kernel.org/all/20241105-sets-bxs-4-64-patch-v1-v1-0-4e=
+d30e865892@imgtec.com/
+>=20
+> [4] Firmware Issue Discussion 1:
+>     https://gitlab.freedesktop.org/imagination/linux-firmware/-/issues/=
+1
+>=20
+> [5] Firmware Issue Discussion 2:
+>     https://gitlab.freedesktop.org/imagination/linux-firmware/-/issues/=
+2
+>=20
+> [6] Firmware Update Commit 1:
+>     https://gitlab.freedesktop.org/imagination/linux-firmware/-/commit/=
+6ac2247e9a1d1837af495fb6d0fbd6f35547c2d1
+>=20
+> [7] Firmware Update Commit 2:
+>     https://gitlab.freedesktop.org/imagination/linux-firmware/-/commit/=
+efbebc90f25adb2b2e1499e3cc24ea3f3c3e4f4c
+>=20
+> [8] Vendor-Provided Mesa Driver:
+>     https://gitlab.freedesktop.org/imagination/mesa/-/tree/dev/devinfo
+>=20
+> [9] Sascha Willems' Vulkan Samples:
+>     https://github.com/SaschaWillems/Vulkan
+>=20
+> [10] Test Kernel Source:
+>     https://github.com/mwilczy/linux/tree/2_December_reference_linux_ke=
+rnel_imagination
+>=20
+> [11] Test Mesa Driver:
+>     https://github.com/mwilczy/mesa-reference
+>=20
+> [12] DPU DC8200 Driver Upstream Attempt:
+>     https://lore.kernel.org/all/20241120061848.196754-1-keith.zhao@star=
+fivetech.com/
+>=20
+> [13] Pull request kernel 6.13 for mailbox
+>     https://lore.kernel.org/all/CABb+yY33qnivK-PzqpSMgmtbFid4nS8wcNvP7w=
+ED9DXrYAyLKg@mail.gmail.com/
+>=20
+> Michal Wilczynski (18):
+>   dt-bindings: clock: thead: Add TH1520 VO clock controller
+>   clk: thead: Add clock support for VO subsystem in T-Head TH1520 SoC
+>   dt-bindings: firmware: thead,th1520: Add support for firmware node
+>   firmware: thead: Add AON firmware protocol driver
+>   dt-bindings: power: Add TH1520 SoC power domains
+>   pmdomain: thead: Add power-domain driver for TH1520
+>   riscv: Enable PM_GENERIC_DOMAINS for T-Head SoCs
+>   dt-bindings: reset: Add T-HEAD TH1520 SoC Reset Controller
+>   reset: thead: Add TH1520 reset controller driver
+>   drm/imagination: Add reset controller support for GPU initialization
+>   dt-bindings: gpu: Add 'resets' property for GPU initialization
+>   dt-bindings: gpu: Add support for T-HEAD TH1520 GPU
+>   drm/imagination: Add support for IMG BXM-4-64 GPU
+>   drm/imagination: Enable PowerVR driver for RISC-V
+>   riscv: dts: thead: Add device tree VO clock controller
+>   riscv: dts: thead: Introduce power domain nodes with aon firmware
+>   riscv: dts: thead: Introduce reset controller node
+>   riscv: dts: thead: Add GPU node to TH1520 device tree
+>=20
+>  .../bindings/clock/thead,th1520-clk-ap.yaml   |  17 +-
+>  .../bindings/firmware/thead,th1520-aon.yaml   |  53 ++++
+>  .../bindings/gpu/img,powervr-rogue.yaml       |  42 ++-
+>  .../bindings/reset/thead,th1520-reset.yaml    |  44 +++
+>  MAINTAINERS                                   |   8 +
+>  arch/riscv/Kconfig.socs                       |   1 +
+>  arch/riscv/boot/dts/thead/th1520.dtsi         |  34 +++
+>  drivers/clk/thead/clk-th1520-ap.c             | 197 +++++++++++--
+>  drivers/firmware/Kconfig                      |   9 +
+>  drivers/firmware/Makefile                     |   1 +
+>  drivers/firmware/thead,th1520-aon.c           | 268 ++++++++++++++++++=
+
+>  drivers/gpu/drm/imagination/Kconfig           |   2 +-
+>  drivers/gpu/drm/imagination/pvr_device.c      |  21 ++
+>  drivers/gpu/drm/imagination/pvr_device.h      |   9 +
+>  drivers/gpu/drm/imagination/pvr_drv.c         |   1 +
+>  drivers/gpu/drm/imagination/pvr_power.c       |  12 +-
+>  drivers/pmdomain/Kconfig                      |   1 +
+>  drivers/pmdomain/Makefile                     |   1 +
+>  drivers/pmdomain/thead/Kconfig                |  12 +
+>  drivers/pmdomain/thead/Makefile               |   2 +
+>  drivers/pmdomain/thead/th1520-pm-domains.c    | 193 +++++++++++++
+>  drivers/reset/Kconfig                         |  10 +
+>  drivers/reset/Makefile                        |   1 +
+>  drivers/reset/reset-th1520.c                  | 178 ++++++++++++
+>  .../dt-bindings/clock/thead,th1520-clk-ap.h   |  33 +++
+>  .../dt-bindings/power/thead,th1520-power.h    |  19 ++
+>  .../dt-bindings/reset/thead,th1520-reset.h    |  15 +
+>  .../linux/firmware/thead/thead,th1520-aon.h   | 197 +++++++++++++
+>  28 files changed, 1344 insertions(+), 37 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/firmware/thead,th=
+1520-aon.yaml
+>  create mode 100644 Documentation/devicetree/bindings/reset/thead,th152=
+0-reset.yaml
+>  create mode 100644 drivers/firmware/thead,th1520-aon.c
+>  create mode 100644 drivers/pmdomain/thead/Kconfig
+>  create mode 100644 drivers/pmdomain/thead/Makefile
+>  create mode 100644 drivers/pmdomain/thead/th1520-pm-domains.c
+>  create mode 100644 drivers/reset/reset-th1520.c
+>  create mode 100644 include/dt-bindings/power/thead,th1520-power.h
+>  create mode 100644 include/dt-bindings/reset/thead,th1520-reset.h
+>  create mode 100644 include/linux/firmware/thead/thead,th1520-aon.h
+>=20
 
 --=20
 Matt Coster
 E: matt.coster@imgtec.com
 
---------------cd8sO06lL6Rmmg9xS505TJSh--
+--------------6fiNF2KUwoS7kQR0FbbzFCwd--
 
---------------icqSmFcs0ol6qu0Qgm0EhTR5
+--------------cVQCRBBaOuw34poed0u77Vud
 Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="OpenPGP_signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-wnsEABYIACMWIQS4qDmoJvwmKhjY+nN5vBnz2d5qsAUCZ5zuvQUDAAAAAAAKCRB5vBnz2d5qsJUF
-AQCD0JKAnBga6in10i6NbGYj4gArSjkg1YgWrQJ9UxDGJwD+LBl8Iw3i7RREhUwVo3SkQSEToBX6
-6h9jXgpfJQOOGQw=
-=lgkj
+wnsEABYIACMWIQS4qDmoJvwmKhjY+nN5vBnz2d5qsAUCZ5zupQUDAAAAAAAKCRB5vBnz2d5qsEAr
+AP41Plr+hl931JRWiDunqCgjpOl6jUZcdB5/AEUTUrv91QEA7IEn5P+M9znhoINoKqdvez5QXQ7n
+U1TaSnqiTIZHyQk=
+=7KYl
 -----END PGP SIGNATURE-----
 
---------------icqSmFcs0ol6qu0Qgm0EhTR5--
+--------------cVQCRBBaOuw34poed0u77Vud--
