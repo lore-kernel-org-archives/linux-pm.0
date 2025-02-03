@@ -1,32 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 168932045B9;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4AEE520897C;
 	Mon,  3 Feb 2025 15:08:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738595308; cv=none; b=adQTvWcjb8nF+IHf2SCsAHgulTiBZ0Az12sx9w/Ef9RaWcv8j7ipH6PKhZ2csXT4g4x8npf+mr1mIVUHVZPJN3aaSpmGE7QCDxriYVHoYGQSi7vk6IH9KfW1AuV6EGx59FLth0qASX4UpN2zc5IXmc7DyBLGYlS5qSWnXAkY5TI=
+	t=1738595308; cv=none; b=utUKe9kHFoJV1Cl5wnH81ht73VdtlxOU+Rsk/opYchD+myvdniZ0sEAO5braPjK04DPlXCy3FGE3daFdavzNAVPM/nytVHAr7RwV9Se+2gWuSZIJoeUItmrptbqKFgEDaza6ZggOb0vLSl9hXsg4zCKXZ5TIoQRzdM1SjRNHy0c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1738595308; c=relaxed/simple;
-	bh=hlSMwfXy7A2+SPz1/wooREjB1oNT+yXRln1lGbCW/g8=;
+	bh=xvNR/QUSPuereDKwzJjmn4QtJzLR/7rvTocjTiqaCDM=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=G/rmxYitSLe62gKoPcg8+rZhv++UZpnHCSXU51yqp9JQFVDdr0cpOiG5/Yt9nmJwykQWI9rB7SGOZaMKrINw755BVOy2wO32+V7dslQHn7gdoz+TmmOs++Cj9RfxADV6m0kwxj1Zk0to18Up2b56FefcVR8GP0PXc4xSTDjs+UI=
+	 MIME-Version:Content-Type; b=RfCWtR3WnuZCQdTjgPIa2d3wiGhlL9T9ilG2+vwf5QFCqQB7RooZozySXEwDkrWAy7T/UuqtzN0kQuQnl1JPkyS2NOKKRqvUIeujL0lUIqoMUUhYJ71WlSROsbPUOmco8xzWR1nVblr78etZIClqv4Vs6SLDXEwdZxum1DNmZoo=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4872FC4CED2;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 542B9C4AF09;
 	Mon,  3 Feb 2025 15:08:27 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 3C2211807D3; Mon, 03 Feb 2025 16:08:24 +0100 (CET)
+	id 45DEB1807D5; Mon, 03 Feb 2025 16:08:24 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Support Opensource <support.opensource@diasemi.com>, 
- =?utf-8?q?=D0=92=D0=B0=D1=82=D0=BE=D1=80=D0=BE=D0=BF=D0=B8=D0=BD_=D0=90=D0=BD=D0=B4=D1=80=D0=B5=D0=B9?= <a.vatoropin@crpt.ru>
-Cc: Sebastian Reichel <sre@kernel.org>, 
- Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, 
- Lee Jones <lee@kernel.org>, linux-pm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, lvc-project@linuxtesting.org
-In-Reply-To: <20250130090030.53422-1-a.vatoropin@crpt.ru>
-References: <20250130090030.53422-1-a.vatoropin@crpt.ru>
-Subject: Re: [PATCH] power: supply: da9150-fg: fix potential overflow
-Message-Id: <173859530421.32012.2111021401031509145.b4-ty@collabora.com>
+To: linux-sunxi@lists.linux.dev, Chris Morgan <macroalpha82@gmail.com>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, lee@kernel.org, 
+ samuel@sholland.org, jernej.skrabec@gmail.com, wens@csie.org, 
+ conor+dt@kernel.org, krzk+dt@kernel.org, robh@kernel.org, sre@kernel.org, 
+ Chris Morgan <macromorgan@hotmail.com>
+In-Reply-To: <20250131231455.153447-1-macroalpha82@gmail.com>
+References: <20250131231455.153447-1-macroalpha82@gmail.com>
+Subject: Re: (subset) [PATCH 0/5] Fix RG35XX Battery Charging Issues
+Message-Id: <173859530427.32012.7830763224536465875.b4-ty@collabora.com>
 Date: Mon, 03 Feb 2025 16:08:24 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -35,29 +34,27 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.2
 
 
-On Thu, 30 Jan 2025 09:00:34 +0000, Ваторопин Андрей wrote:
-> Size of variable sd_gain equals four bytes - DA9150_QIF_SD_GAIN_SIZE.
-> Size of variable shunt_val equals two bytes - DA9150_QIF_SHUNT_VAL_SIZE.
+On Fri, 31 Jan 2025 17:14:50 -0600, Chris Morgan wrote:
+> From: Chris Morgan <macromorgan@hotmail.com>
 > 
-> The expression sd_gain * shunt_val is currently being evaluated using
-> 32-bit arithmetic. So during the multiplication an overflow may occur.
-> 
-> As the value of type 'u64' is used as storage for the eventual result, put
-> ULL variable at the first position of each expression in order to give the
-> compiler complete information about the proper arithmetic to use. According
-> to C99 the guaranteed width for a variable of type 'unsigned long long' >=
-> 64 bits.
+> The Anbernic RG35XX devices sometimes fail to charge when the register
+> for the battery temperature sensor is set to the incorrect value either
+> by user error or an incorrectly programmed efuse. Allow users to
+> hard-code if a temperature sensor is not present (which is the case for
+> all Anbernic RGxx series devices) to prevent this issue from causing
+> problems. Additionally, a bug was identified with the handling of PMU
+> faults while this fix was being tested.
 > 
 > [...]
 
 Applied, thanks!
 
-[1/1] power: supply: da9150-fg: fix potential overflow
-      commit: 3fb3cb4350befc4f901c54e0cb4a2a47b1302e08
+[1/5] power: supply: axp20x_battery: Fix fault handling for AXP717
+      commit: 98380110bd48fbfd6a798ee11fffff893d36062c
 
 Best regards,
 -- 
