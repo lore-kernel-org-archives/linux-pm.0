@@ -1,107 +1,77 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+Received: from riemann.telenet-ops.be (riemann.telenet-ops.be [195.130.137.80])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A8C922A4C6;
-	Wed,  5 Feb 2025 08:44:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.13
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4377229B1D
+	for <linux-pm@vger.kernel.org>; Wed,  5 Feb 2025 09:45:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.130.137.80
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738745080; cv=none; b=C7WNQ46VvX4jXODeNfsFDEIMI4D2QSTUwd7VjP/Wdpqu8Y1YbyzcV9z8VH6V7K2T39z+odmX0hdFhOmkUV0fb2Lk/bsrh0nqhuvf3dcFV/o3NgQ3TtN1PY0vBlsKBjXqS6EduST1Tj4A4r8T6Rbat1kAGmqPe+wptD/5ZnO9uG8=
+	t=1738748749; cv=none; b=XrIeTPqNKeOCdNuOvRFVOf6ePjFLqpljBqm8EDDh48C0peC/hTEWnaDHw7f2JFcjGEPR1qNPoP5FX5K6Iel3YBYr3gCZUl97ym9AedX9V5NN4uu1eya/Do1JlgTSf6gbml6rs3N+cBU0FE1BBd2me6UINoNlnddLpylcBOKZNq4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738745080; c=relaxed/simple;
-	bh=TDI1x3pPPXADltJ6RYlbixxnTojq86IDBEnZD6rWzk4=;
-	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=kOCqMvy7HrlOkKmwR7bOk0kDFz1Ak5pgpocaIsMzfwCHzvwifjpWasN7X0VkwiPL3KgHOq5jE24lHbD+DacqBcw8u5av25gkU14wLj3K9JPGBLlW9TNothfO4r1NB3/Y88FrMR1jzDDhIwULx/yRwxXhFTQb+cJhAFiSMry/ZVo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=GBM0I/rl; arc=none smtp.client-ip=198.175.65.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="GBM0I/rl"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1738745080; x=1770281080;
-  h=from:date:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=TDI1x3pPPXADltJ6RYlbixxnTojq86IDBEnZD6rWzk4=;
-  b=GBM0I/rlqvdFSYAuS1WCBxgVlKJZsTfR1wLW3/E59myapsr01p+oyt+h
-   3+t4dw8RNLJBH5glvHbnHK8R43jU7Zsw2ZKZ/a52KPWcdiE2NR9UewpoX
-   vofA5LS6pNxs2WjIPmF0kTyAkJVrQ3BaVdzwjDZZ3ZtrscpJKhrvaVIcG
-   b7+9Au2vbrsSB/AHKQMu4uIEJBm3WMtu9SaxOkKVWxl2IvxQ2dQc3LkLL
-   IO0/eJ+UmkJ7vgR7jYxpIR250YnF6Lr3cJDJnK4fylMepoeUOXpWqx5OG
-   MBILb1vwxocRxuIvHzxPU2FcwmSKRBKbNRvWo9Q+pa55jQqKTmtSDws2C
-   Q==;
-X-CSE-ConnectionGUID: YAgS2tQUS8aciXjmMUxcmw==
-X-CSE-MsgGUID: pXVqIrbNQCuF2GsFDMmwlg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11336"; a="50291164"
-X-IronPort-AV: E=Sophos;i="6.13,261,1732608000"; 
-   d="scan'208";a="50291164"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Feb 2025 00:44:39 -0800
-X-CSE-ConnectionGUID: p2+Imi2eRdyiwjOQsJsGLQ==
-X-CSE-MsgGUID: XrWhEZReRxuR6iSdF5Wd6A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,199,1725346800"; 
-   d="scan'208";a="115809554"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.255])
-  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Feb 2025 00:44:35 -0800
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Wed, 5 Feb 2025 10:44:31 +0200 (EET)
-To: Paul Menzel <pmenzel@molgen.mpg.de>
-cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org, 
-    linux-pm@vger.kernel.org, regressions@lists.linux.dev, 
-    Ulf Hansson <ulf.hansson@linaro.org>, linux-mmc@vger.kernel.org, 
-    LKML <linux-kernel@vger.kernel.org>, Hans de Goede <hdegoede@redhat.com>
-Subject: Re: Linux warns `rtsx_pci 0000:3b:00.0: PM: dpm_run_callback():
- pci_pm_resume returns -110`
-In-Reply-To: <d7246feb-4f3f-4d0c-bb64-89566b170671@molgen.mpg.de>
-Message-ID: <027efc9e-bc70-49af-7d48-fb474533993d@linux.intel.com>
-References: <d7246feb-4f3f-4d0c-bb64-89566b170671@molgen.mpg.de>
+	s=arc-20240116; t=1738748749; c=relaxed/simple;
+	bh=GCOpWK6GXL7mrtPD52U4EunVLUVNpoq2eo5GgeDd31o=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=W6mlQE/BuuC3/4edyG8uPU/XY4H4M5UFdd5BykhF9SdFSOwvK2k1ssG1wFc6PkLQNVCn+3tDX28ypFy3K6pzZCtYl37WZUoryPxhmt2Un4+URF5dt5JHdw1vUb6k6oMVNeDWqF5zUJdtMPiGv6s2iouG5Ng92Oo0b6YS1OiUGKY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=none smtp.mailfrom=linux-m68k.org; arc=none smtp.client-ip=195.130.137.80
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux-m68k.org
+Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [IPv6:2a02:1800:120:4::f00:14])
+	by riemann.telenet-ops.be (Postfix) with ESMTPS id 4YnwMh46hQz4x2BC
+	for <linux-pm@vger.kernel.org>; Wed, 05 Feb 2025 10:45:36 +0100 (CET)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:c448:5c9f:5d50:ad45])
+	by xavier.telenet-ops.be with cmsmtp
+	id 9llV2E0075P95W301llVqD; Wed, 05 Feb 2025 10:45:29 +0100
+Received: from rox.of.borg ([192.168.97.57])
+	by ramsan.of.borg with esmtp (Exim 4.97)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1tfby9-0000000Fsdg-0FV9;
+	Wed, 05 Feb 2025 10:45:29 +0100
+Received: from geert by rox.of.borg with local (Exim 4.97)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1tfbyL-00000006KEx-0aUG;
+	Wed, 05 Feb 2025 10:45:29 +0100
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-renesas-soc@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Saravana Kannan <saravanak@google.com>
+Subject: [PATCH v2] pmdomain: renesas: rcar-sysc: Drop fwnode_dev_initialized() call
+Date: Wed,  5 Feb 2025 10:45:28 +0100
+Message-ID: <05c2ef630694a28b560426d8c426881cc14e8f7c.1738748678.git.geert+renesas@glider.be>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 
-On Tue, 4 Feb 2025, Paul Menzel wrote:
+As of commit bab2d712eeaf9d60 ("PM: domains: Mark fwnodes when their
+powerdomain is added/removed") in v5.12, the pmdomain core takes care of
+marking the fwnode initialized, so there is no need to repeat it.
 
-> #regzbot introduced: b46c89c08f41..aa22f4da2a46
-> 
-> Dear Linux folks,
-> 
-> 
-> On the Intel Kaby Lake laptop Dell XPS 13 9360, at least Linux
-> 6.13.0-07632-gaa22f4da2a46 logs the new warnings:
-> 
->     rtsx_pci 0000:3b:00.0: Unable to change power state from D0 to D3hot,
-> device inaccessible
->     rtsx_pci 0000:3b:00.0: PM: dpm_run_callback(): pci_pm_resume returns -110
->     rtsx_pci 0000:3b:00.0: PM: failed to resume async: error -110
-> 
-> These were not present up to including Linux 6.13.0-07078-gb46c89c08f41.
-> 
-> It looks like the first warning is not always logged:
-> 
->     $ sudo dmesg | grep rtsx
->     [    8.612537] rtsx_pci 0000:3b:00.0: enabling device (0000 -> 0002)
->     [ 2010.081170] rtsx_pci 0000:3b:00.0: Unable to change power state from D0
-> to D3hot, device inaccessible
->     [ 2010.236503] rtsx_pci 0000:3b:00.0: PM: dpm_run_callback():
-> pci_pm_resume returns -110
->     [ 2010.236525] rtsx_pci 0000:3b:00.0: PM: failed to resume async: error
-> -110
->     [ 4115.541202] rtsx_pci 0000:3b:00.0: PM: dpm_run_callback():
-> pci_pm_resume returns -110
->     [ 4115.541216] rtsx_pci 0000:3b:00.0: PM: failed to resume async: error
-> -110
-> 
-> Logs from Linux 6.14-rc1 are attached. Bisection is only possible after next
-> Sunday.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Acked-by: Saravana Kannan <saravanak@google.com>
+---
+v2:
+  - Add Acked-by.
+---
+ drivers/pmdomain/renesas/rcar-sysc.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-Please try if this fix helps:
-
-https://lore.kernel.org/linux-pci/20250131152913.2507-1-ilpo.jarvinen@linux.intel.com/
-
+diff --git a/drivers/pmdomain/renesas/rcar-sysc.c b/drivers/pmdomain/renesas/rcar-sysc.c
+index b99326917330f5f1..dce1a6d37e80127d 100644
+--- a/drivers/pmdomain/renesas/rcar-sysc.c
++++ b/drivers/pmdomain/renesas/rcar-sysc.c
+@@ -434,8 +434,6 @@ static int __init rcar_sysc_pd_init(void)
+ 	}
+ 
+ 	error = of_genpd_add_provider_onecell(np, &domains->onecell_data);
+-	if (!error)
+-		fwnode_dev_initialized(of_fwnode_handle(np), true);
+ 
+ out_put:
+ 	of_node_put(np);
 -- 
- i.
+2.43.0
 
