@@ -1,125 +1,107 @@
-Received: from mail-m155115.qiye.163.com (mail-m155115.qiye.163.com [101.71.155.115])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5989422A1EF;
-	Wed,  5 Feb 2025 08:41:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=101.71.155.115
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A8C922A4C6;
+	Wed,  5 Feb 2025 08:44:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.13
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738744867; cv=none; b=dssUi1/SMtUKGmBWcmdtULimMI43zUYZmfuIzCNOclrmXxmwpAdTN1SpFnJTpwyraYm+KHeAgO2ygScUYWyEGsHGEJICycZEcplIBi3Qdc9c6wQSCYncVmcQQJJLUtDc4rdq6MsB0hMBXio3QI9Q5KfxcoI9ffLzTtrLClyGDvM=
+	t=1738745080; cv=none; b=C7WNQ46VvX4jXODeNfsFDEIMI4D2QSTUwd7VjP/Wdpqu8Y1YbyzcV9z8VH6V7K2T39z+odmX0hdFhOmkUV0fb2Lk/bsrh0nqhuvf3dcFV/o3NgQ3TtN1PY0vBlsKBjXqS6EduST1Tj4A4r8T6Rbat1kAGmqPe+wptD/5ZnO9uG8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738744867; c=relaxed/simple;
-	bh=bNt3g41MbGOhRUtyPJTnQPZ+/OsEb8ekcvaA54K8B9s=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=aUkZTQli1zFZn8Hlsll7O4ZHq4gRQwyD64xJ/A6m7M3tHigZybaMvo/sl1aN4dXN5hAeTFQUZUTW1bQukuD9LKmtHFEo2KRTNdiEZF++4NRPBYAb4Cpe1bmJ2r4OmBvCFmgTq1WCW1Lzl3Mz+1M6B5yUWmJoSZQcam8fCeSxevc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=U5mFfZr1; arc=none smtp.client-ip=101.71.155.115
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
+	s=arc-20240116; t=1738745080; c=relaxed/simple;
+	bh=TDI1x3pPPXADltJ6RYlbixxnTojq86IDBEnZD6rWzk4=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=kOCqMvy7HrlOkKmwR7bOk0kDFz1Ak5pgpocaIsMzfwCHzvwifjpWasN7X0VkwiPL3KgHOq5jE24lHbD+DacqBcw8u5av25gkU14wLj3K9JPGBLlW9TNothfO4r1NB3/Y88FrMR1jzDDhIwULx/yRwxXhFTQb+cJhAFiSMry/ZVo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=GBM0I/rl; arc=none smtp.client-ip=198.175.65.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="U5mFfZr1"
-Received: from localhost.localdomain (unknown [58.22.7.114])
-	by smtp.qiye.163.com (Hmail) with ESMTP id a34e52fb;
-	Wed, 5 Feb 2025 14:18:36 +0800 (GMT+08:00)
-From: Shawn Lin <shawn.lin@rock-chips.com>
-To: Rob Herring <robh+dt@kernel.org>,
-	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
-	"Martin K . Petersen" <martin.petersen@oracle.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	Heiko Stuebner <heiko@sntech.de>,
-	"Rafael J . Wysocki" <rafael@kernel.org>
-Cc: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-	Alim Akhtar <alim.akhtar@samsung.com>,
-	Avri Altman <avri.altman@wdc.com>,
-	Bart Van Assche <bvanassche@acm.org>,
-	YiFeng Zhao <zyf@rock-chips.com>,
-	Liang Chen <cl@rock-chips.com>,
-	linux-scsi@vger.kernel.org,
-	linux-rockchip@lists.infradead.org,
-	devicetree@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	Shawn Lin <shawn.lin@rock-chips.com>
-Subject: [PATCH v7 7/7] arm64: dts: rockchip: Add UFS support for RK3576 SoC
-Date: Wed,  5 Feb 2025 14:15:56 +0800
-Message-Id: <1738736156-119203-8-git-send-email-shawn.lin@rock-chips.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1738736156-119203-1-git-send-email-shawn.lin@rock-chips.com>
-References: <1738736156-119203-1-git-send-email-shawn.lin@rock-chips.com>
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZQk9CSFZNTkNLTkxPGU5NGB1WFRQJFh
-	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
-	hVSktLVUpCS0tZBg++
-X-HM-Tid: 0a94d4c2af6d09cckunma34e52fb
-X-HM-MType: 1
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6Nxw6Myo6ETIQEgs#EjcrHBor
-	EwIwCxFVSlVKTEhDTEhNSEpMQ09PVTMWGhIXVQgTGgwVVRcSFTsJFBgQVhgTEgsIVRgUFkVZV1kS
-	C1lBWU5DVUlJVUxVSkpPWVdZCAFZQUpCSEI3Bg++
-DKIM-Signature:a=rsa-sha256;
-	b=U5mFfZr1sdZFCWiqy8e46HIrf3ILOWz6zcrZR9gIKDOVFyKDGv9l6sb9Y4BUzQyUBMCa/5Hu29CePBxDLaW2MrUGAyn0cD6yXRuETVSd//zKpxM3HDnMN5T77EtzggDXhfmT0DtyfEpxS+vtowhhug6ZY69/Wh7R+/9/GZOp8rg=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
-	bh=zXet6/X8S9LRHFBz6ujYL262DrXxbFU9c0/qc0AtD7Q=;
-	h=date:mime-version:subject:message-id:from;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="GBM0I/rl"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1738745080; x=1770281080;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=TDI1x3pPPXADltJ6RYlbixxnTojq86IDBEnZD6rWzk4=;
+  b=GBM0I/rlqvdFSYAuS1WCBxgVlKJZsTfR1wLW3/E59myapsr01p+oyt+h
+   3+t4dw8RNLJBH5glvHbnHK8R43jU7Zsw2ZKZ/a52KPWcdiE2NR9UewpoX
+   vofA5LS6pNxs2WjIPmF0kTyAkJVrQ3BaVdzwjDZZ3ZtrscpJKhrvaVIcG
+   b7+9Au2vbrsSB/AHKQMu4uIEJBm3WMtu9SaxOkKVWxl2IvxQ2dQc3LkLL
+   IO0/eJ+UmkJ7vgR7jYxpIR250YnF6Lr3cJDJnK4fylMepoeUOXpWqx5OG
+   MBILb1vwxocRxuIvHzxPU2FcwmSKRBKbNRvWo9Q+pa55jQqKTmtSDws2C
+   Q==;
+X-CSE-ConnectionGUID: YAgS2tQUS8aciXjmMUxcmw==
+X-CSE-MsgGUID: pXVqIrbNQCuF2GsFDMmwlg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11336"; a="50291164"
+X-IronPort-AV: E=Sophos;i="6.13,261,1732608000"; 
+   d="scan'208";a="50291164"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Feb 2025 00:44:39 -0800
+X-CSE-ConnectionGUID: p2+Imi2eRdyiwjOQsJsGLQ==
+X-CSE-MsgGUID: XrWhEZReRxuR6iSdF5Wd6A==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.11,199,1725346800"; 
+   d="scan'208";a="115809554"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.255])
+  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Feb 2025 00:44:35 -0800
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Wed, 5 Feb 2025 10:44:31 +0200 (EET)
+To: Paul Menzel <pmenzel@molgen.mpg.de>
+cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org, 
+    linux-pm@vger.kernel.org, regressions@lists.linux.dev, 
+    Ulf Hansson <ulf.hansson@linaro.org>, linux-mmc@vger.kernel.org, 
+    LKML <linux-kernel@vger.kernel.org>, Hans de Goede <hdegoede@redhat.com>
+Subject: Re: Linux warns `rtsx_pci 0000:3b:00.0: PM: dpm_run_callback():
+ pci_pm_resume returns -110`
+In-Reply-To: <d7246feb-4f3f-4d0c-bb64-89566b170671@molgen.mpg.de>
+Message-ID: <027efc9e-bc70-49af-7d48-fb474533993d@linux.intel.com>
+References: <d7246feb-4f3f-4d0c-bb64-89566b170671@molgen.mpg.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 
-Add ufshc node to rk3576.dtsi, so the board using UFS could
-enable it.
+On Tue, 4 Feb 2025, Paul Menzel wrote:
 
-Acked-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
----
+> #regzbot introduced: b46c89c08f41..aa22f4da2a46
+> 
+> Dear Linux folks,
+> 
+> 
+> On the Intel Kaby Lake laptop Dell XPS 13 9360, at least Linux
+> 6.13.0-07632-gaa22f4da2a46 logs the new warnings:
+> 
+>     rtsx_pci 0000:3b:00.0: Unable to change power state from D0 to D3hot,
+> device inaccessible
+>     rtsx_pci 0000:3b:00.0: PM: dpm_run_callback(): pci_pm_resume returns -110
+>     rtsx_pci 0000:3b:00.0: PM: failed to resume async: error -110
+> 
+> These were not present up to including Linux 6.13.0-07078-gb46c89c08f41.
+> 
+> It looks like the first warning is not always logged:
+> 
+>     $ sudo dmesg | grep rtsx
+>     [    8.612537] rtsx_pci 0000:3b:00.0: enabling device (0000 -> 0002)
+>     [ 2010.081170] rtsx_pci 0000:3b:00.0: Unable to change power state from D0
+> to D3hot, device inaccessible
+>     [ 2010.236503] rtsx_pci 0000:3b:00.0: PM: dpm_run_callback():
+> pci_pm_resume returns -110
+>     [ 2010.236525] rtsx_pci 0000:3b:00.0: PM: failed to resume async: error
+> -110
+>     [ 4115.541202] rtsx_pci 0000:3b:00.0: PM: dpm_run_callback():
+> pci_pm_resume returns -110
+>     [ 4115.541216] rtsx_pci 0000:3b:00.0: PM: failed to resume async: error
+> -110
+> 
+> Logs from Linux 6.14-rc1 are attached. Bisection is only possible after next
+> Sunday.
 
-Changes in v7:
-- Use 0x0 for consistency
-- Collect Mani's acked-by tag
+Please try if this fix helps:
 
-Changes in v6:
-- remove comments suggested by Mani
+https://lore.kernel.org/linux-pci/20250131152913.2507-1-ilpo.jarvinen@linux.intel.com/
 
-Changes in v5: None
-Changes in v4: None
-Changes in v3: None
-Changes in v2: None
-
- arch/arm64/boot/dts/rockchip/rk3576.dtsi | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/rockchip/rk3576.dtsi b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
-index 4dde954..bd55bd8 100644
---- a/arch/arm64/boot/dts/rockchip/rk3576.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
-@@ -1221,6 +1221,30 @@
- 			};
- 		};
- 
-+		ufshc: ufshc@2a2d0000 {
-+			compatible = "rockchip,rk3576-ufshc";
-+			reg = <0x0 0x2a2d0000 0x0 0x10000>,
-+			      <0x0 0x2b040000 0x0 0x10000>,
-+			      <0x0 0x2601f000 0x0 0x1000>,
-+			      <0x0 0x2603c000 0x0 0x1000>,
-+			      <0x0 0x2a2e0000 0x0 0x10000>;
-+			reg-names = "hci", "mphy", "hci_grf", "mphy_grf", "hci_apb";
-+			clocks = <&cru ACLK_UFS_SYS>, <&cru PCLK_USB_ROOT>, <&cru PCLK_MPHY>,
-+				 <&cru CLK_REF_UFS_CLKOUT>;
-+			clock-names = "core", "pclk", "pclk_mphy", "ref_out";
-+			assigned-clocks = <&cru CLK_REF_OSC_MPHY>;
-+			assigned-clock-parents = <&cru CLK_REF_MPHY_26M>;
-+			interrupts = <GIC_SPI 361 IRQ_TYPE_LEVEL_HIGH>;
-+			power-domains = <&power RK3576_PD_USB>;
-+			pinctrl-0 = <&ufs_refclk>;
-+			pinctrl-names = "default";
-+			resets = <&cru SRST_A_UFS_BIU>, <&cru SRST_A_UFS_SYS>,
-+				 <&cru SRST_A_UFS>, <&cru SRST_P_UFS_GRF>;
-+			reset-names = "biu", "sys", "ufs", "grf";
-+			reset-gpios = <&gpio4 RK_PD0 GPIO_ACTIVE_LOW>;
-+			status = "disabled";
-+		};
-+
- 		sdmmc: mmc@2a310000 {
- 			compatible = "rockchip,rk3576-dw-mshc";
- 			reg = <0x0 0x2a310000 0x0 0x4000>;
 -- 
-2.7.4
+ i.
 
