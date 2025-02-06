@@ -1,40 +1,39 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D06C71EDA34;
-	Thu,  6 Feb 2025 14:29:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D28A521C9E1;
+	Thu,  6 Feb 2025 14:29:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738852175; cv=none; b=YxK+vIos/tAGIHP7XZEIxKRDKelGbi5TQ7tuLj+HzinR6TMfjUDx+cTm7J6nbyOM12J5/59RUoss2/seEJvEZteiOphLsDt9FtkZNHk67BODZXqWOjoOYymxraZwN5WfxovVSmi/+bgeb0J3/12wjL+roYe3W/ywm2Z/cN6i6kg=
+	t=1738852176; cv=none; b=aBsiT0n+FAJ9Gaig8JRrWV2yeT/awnxgOJlNO085YPnSFs2RlAg+BDjT1PQ3w4vZ8XT4BoRLgvSYLbpFNOvNzr7W/qA1B0u3ZZCpB7SCJwRRcJc0qt2fB3wMMJv2B5z5d6zkRR9uaFP3qmW8OHiMqj4+jJ0gSbUSDNXOd1MlTIg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738852175; c=relaxed/simple;
-	bh=ALEieubBgccz3ujIHX0fEgcGmndFC4PRDsNOYLwOPKI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=rTXi1I/Wm1ZIip/CgYUtEjoCL6uPTl+6Kb1xZZJVdgGNkS+PwkcXjVBT0ZYX/9CXkscNJzqVSZEM20+k0ZpkOo2RsIoeB0+pqXzHEPUa76U/I2y1GVwigsAk+fB3NvWQbgIgr6wrgwV1DoiJisB4jjxOIEftSx+XSppLDDKdx1Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=bF3E5A9/; arc=none smtp.client-ip=79.96.170.134
+	s=arc-20240116; t=1738852176; c=relaxed/simple;
+	bh=ErWXixg523GBpVutAwglAFanD0ZU/6hOsgeYkUyeJBk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=T+gcrnKNVRAoG5NX3FM0av+sImFiVN0LTzcWi+1iVPe1ZvhK/7QEOR/9zgqfMb2B0njT9sCvpXhOVCrwG4AD0Oll7fpIo6Ipd6ofw6ANKVwOUwrv0tq6e8q1WT4nDTaZGBjaUpXnYqeZz0Bmf3NBimMRYpY6bp8bc0HUvIMwkf4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=es0YU7PC; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="bF3E5A9/"
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="es0YU7PC"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
- id 1b2af6f2bbd46cd0; Thu, 6 Feb 2025 15:29:24 +0100
+ id c532acd172b77253; Thu, 6 Feb 2025 15:29:26 +0100
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 452FE6BA970;
-	Thu,  6 Feb 2025 15:29:24 +0100 (CET)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 028836BA970;
+	Thu,  6 Feb 2025 15:29:26 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1738852164;
-	bh=ALEieubBgccz3ujIHX0fEgcGmndFC4PRDsNOYLwOPKI=;
+	s=dkim; t=1738852166;
+	bh=ErWXixg523GBpVutAwglAFanD0ZU/6hOsgeYkUyeJBk=;
 	h=From:Subject:Date;
-	b=bF3E5A9/bTCp6+LXbwm183ynq/nffQxfvQIwJjnw6EALGeC6v/fXsBMa8Fhuq6rvk
-	 uraaSb7IzDCYiyusUKopobwiVfV0wu0pZoPCOT4rT8GqQ5mMygIRwQeq3X7TM6eRKa
-	 cGMQA7iTTSspW81IZAMBqo2ch8GXTH6zbOfZECnCj8j4Cb88/g6Ern/yv8PoAj1nJq
-	 BlnOyKUjTHwFBMIeVJSo8g1MtartIL+08NlOrLF4lW2CDzyQVkTHE5ddlw38dZHFrD
-	 lDMCCRfp0Mn/zfGeyZ1RBYGugP1pG614wlSWnIOw9rVR2ZHj8DX6wtu+oiwfZrdkOn
-	 hIzwUtJbJLGEg==
+	b=es0YU7PCzTwaqBv67FTPblqBOgY9joZxQI9Ae5YTIbV6kQ1U3jyDtFUCqWQIY5V1d
+	 QKxyj/CvsCdP2uqzIt/9EXC03y+2bE9Cv/sIksNdRgnF2Gr95OTySPb/jLaemWZtbD
+	 e/R6eFHEC8n4UdE6OZriJkkRRb7kLlX3cFfFAcTnfCS8/sR71yStUPT/jPuOq9F6Vv
+	 NHvWNEYMSdh4IRqKCYRlK70G6nwDWfe3W4Cp/N2GX6IkT3jKD3DPZUUC2s2Ipl+Ks7
+	 U7Ke+CRvHkcV25RzFIJjLSDPhLHF9K71UKs86k+CTYFCGY9TJGiyPFX20vHksQ3RN1
+	 7722br6kch0YA==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -43,12 +42,10 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
  Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
  Aboorva Devarajan <aboorvad@linux.ibm.com>
 Subject:
- [RFT][PATCH v1 2/5] cpuidle: menu: Use one loop for average and variance
- computations
-Date: Thu, 06 Feb 2025 15:24:18 +0100
-Message-ID: <3339073.aeNJFYEL58@rjwysocki.net>
-In-Reply-To: <1916668.tdWV9SEqCh@rjwysocki.net>
-References: <1916668.tdWV9SEqCh@rjwysocki.net>
+ [RFT][PATCH v1 0/5] cpuidle: menu: Avoid discarding useful information when
+ processing recent idle intervals
+Date: Thu, 06 Feb 2025 15:21:58 +0100
+Message-ID: <1916668.tdWV9SEqCh@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -60,118 +57,90 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvieeifecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopegthhhrihhsthhirghnrdhlohgvhhhlvgesrghrmhdrtghomhdprhgtphhtthhopegrrhhtvghmrdgsihhthihuthhskhhihieslhh
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvieeifecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeevkefffeehgfethfffteekvddvtdduueetvdfhjedukeehuedugfeileevueekjeenucffohhmrghinhepkhgvrhhnvghlrdhorhhgpdhsphgvtgdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopegthhhrihhsthhirghnrdhlohgvhhhlvgesrghrmhdrtghomhd
 X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Everyone,
 
-Use the observation that one loop is sufficient to compute the average
-of an array of values and their variance to eliminate one of the loops
-from get_typical_interval().
+This work had been triggered by a report that commit 0611a640e60a ("eventpoll:
+prefer kfree_rcu() in __ep_remove()") had caused the critical-jOPS metric of
+the SPECjbb 2015 benchmark [1] to drop by around 50% even though it generally
+reduced kernel overhead.  Indeed, it was found during further investigation
+that the total interrupt rate while running the SPECjbb workload had fallen as
+a result of that commit by 55% and the local timer interrupt rate had fallen by
+almost 80%.
 
-While at it, make get_typical_interval() consistently use u64 as the
-64-bit unsigned integer data type and rearrange some white space and the
-declarations of local variables in it (to make them follow the reverse
-X-mas tree pattern).
+That turned out to cause the menu cpuidle governor to select the deepest idle
+state supplied by the cpuidle driver (intel_idle) much more often which added
+significantly more idle state latency to the workload and that led to the
+decrease of the critical-jOPS score.
 
-No intentional functional impact.
+Interestingly enough, this problem was not visible when the teo cpuidle
+governor was used instead of menu, so it appeared to be specific to the
+latter.  CPU wakeup event statistics collected while running the workload
+indicated that the menu governor was effectively ignoring non-timer wakeup
+information and all of its idle state selection decisions appeared to be
+based on timer wakeups only.  Thus, it appeared that the reduction of the
+local timer interrupt rate caused the governor to predict a idle duration
+much more often while running the workload and the deepest idle state was
+selected significantly more often as a result of that.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpuidle/governors/menu.c |   61 +++++++++++++++++----------------------
- 1 file changed, 28 insertions(+), 33 deletions(-)
+A subsequent inspection of the get_typical_interval() function in the menu
+governor indicated that it might return UINT_MAX too often which then caused
+the governor's decisions to be based entirely on information related to timers.
 
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -116,49 +116,45 @@
-  */
- static unsigned int get_typical_interval(struct menu_device *data)
- {
--	int i, divisor;
--	unsigned int max, thresh, avg;
--	uint64_t sum, variance;
--
--	thresh = INT_MAX; /* Discard outliers above this value */
-+	unsigned int max, divisor, thresh = INT_MAX;
-+	u64 avg, variance, avg_sq;
-+	int i;
- 
- again:
--
--	/* First calculate the average of past intervals */
-+	/* Compute the average and variance of past intervals. */
- 	max = 0;
--	sum = 0;
-+	avg = 0;
-+	variance = 0;
- 	divisor = 0;
- 	for (i = 0; i < INTERVALS; i++) {
- 		unsigned int value = data->intervals[i];
--		if (value <= thresh) {
--			sum += value;
--			divisor++;
--			if (value > max)
--				max = value;
--		}
-+
-+		/* Discard data points above the threshold. */
-+		if (value > thresh)
-+			continue;
-+
-+		divisor++;
-+
-+		avg += value;
-+		variance += (u64)value * value;
-+
-+		if (value > max)
-+			max = value;
- 	}
- 
- 	if (!max)
- 		return UINT_MAX;
- 
--	if (divisor == INTERVALS)
--		avg = sum >> INTERVAL_SHIFT;
--	else
--		avg = div_u64(sum, divisor);
--
--	/* Then try to determine variance */
--	variance = 0;
--	for (i = 0; i < INTERVALS; i++) {
--		unsigned int value = data->intervals[i];
--		if (value <= thresh) {
--			int64_t diff = (int64_t)value - avg;
--			variance += diff * diff;
--		}
--	}
--	if (divisor == INTERVALS)
-+	if (divisor == INTERVALS) {
-+		avg >>= INTERVAL_SHIFT;
- 		variance >>= INTERVAL_SHIFT;
--	else
-+	} else {
-+		do_div(avg, divisor);
- 		do_div(variance, divisor);
-+	}
-+
-+	avg_sq = avg * avg;
-+	variance -= avg_sq;
- 
- 	/*
- 	 * The typical interval is obtained when standard deviation is
-@@ -173,10 +169,9 @@
- 	 * Use this result only if there is no timer to wake us up sooner.
- 	 */
- 	if (likely(variance <= U64_MAX/36)) {
--		if ((((u64)avg*avg > variance*36) && (divisor * 4 >= INTERVALS * 3))
--							|| variance <= 400) {
-+		if ((avg_sq > variance * 36 && divisor * 4 >= INTERVALS * 3) ||
-+		    variance <= 400)
- 			return avg;
--		}
- 	}
- 
- 	/*
+Generally speaking, UINT_MAX is returned by get_typical_interval() if it
+cannot make a prediction based on the most recent idle intervals data with
+sufficiently high confidence, but at least in some cases this means that
+useful information is not taken into account at all which may lead to
+significant idle state selection mistakes.  Moreover, this is not really
+unlikely to happen.
+
+One issue with get_typical_interval() is that, when it eliminates outliers from
+the sample set in an attempt to reduce the standard deviation (and so improve
+the prediction confidence), it does that by dropping high-end samples only,
+while samples at the low end of the set are retained.  However, the samples
+at the low end very well may be the outliers and they should be eliminated
+from the sample set instead of the high-end samples.  Accordingly, the
+likelihood of making a meaningful idle duration prediction can be improved
+by making it also eliminate low-end samples if they are farther from the
+average than high-end samples.  This is done in patch [4/5].
+
+Another issue is that get_typical_interval() gives up after eliminating 1/4
+of the samples if the standard deviation is still not as low as desired (within
+1/6 of the average or within 20 us if the average is close to 0), but the
+remaining samples in the set still represent useful information at that point
+and discarding them altogether may lead to suboptimal idle state selection.
+
+For instance, the largest idle duration value in the get_typical_interval()
+data set is the maximum idle duration observed recently and it is likely that
+the upcoming idle duration will not exceed it.  Therefore, in the absence of
+a better choice, this value can be used as an upper bound on the target
+residency of the idle state to select.  Patch [5/5] works along these lines,
+but it takes the maximum data point remaining after the elimination of
+outliers.
+
+The first two patches in the series are straightforward cleanups (in fact,
+the first patch is kind of reversed by patch [4/5], but it is there because
+it can be applied without the latter) and patch [3/5] is a cosmetic change
+made in preparation for the subsequent ones.
+
+This series turns out to restore the SPECjbb critical-jOPS metric on affected
+systems to the level from before commit 0611a640e60a and it also happens to
+increase its max-jOPS metric by around 3%.
+
+For easier reference/testing it is present in the git branch at
+
+https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/log/?h=experimental/menu
+
+based on the cpuidle material that went into 6.14-rc1.
+
+If possible, please let me know if it works for you.
+
+Thanks!
+
+
+[1] Link: https://www.spec.org/jbb2015/
 
 
 
