@@ -1,40 +1,40 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 06E8A1EDA20;
-	Thu,  6 Feb 2025 14:29:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CEAB21EDA33;
+	Thu,  6 Feb 2025 14:29:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738852174; cv=none; b=RETjKLmIsH37KTmz1y6QwNct7ZrOCdSjmvbJzM184IMV0p8sodA+intmFmdEeGjH68N4B6JRQhVnCd7wxhmZ4fHceRYIDN0CKQzygxyuoiHHwl+g0cZq7nCqcrrGYSMRWF2Eq4g2N/CzMve1yJmTYVfZ4/QNv0q6tbCLfNem5wE=
+	t=1738852175; cv=none; b=JUq5RYpdPwuWd7rcjmOQwAKnenzr6u6HP8Gl+k98P1LmGYL3z6kbMIKPHpE7aDu79hllWetFINJ1yxaM10pIkucWl+tFbCZXd8aHBBLWECWTcHkMxWNsRofxoALnlQjG7yfO70aD0CGvJTnXA8e6jlfcI5lO6xUq8DZmuRf9PIs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738852174; c=relaxed/simple;
-	bh=ixHGPp5ZLF5maWj/njvU5xlymHep1GI46tlAYLZj4Vc=;
+	s=arc-20240116; t=1738852175; c=relaxed/simple;
+	bh=w88YqCV4joJ59wLsJjRrUn/tCBNWwaQK/X+ysio0IFA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=aj0BrotlbxiKB9E4QSG63WIIrFenF9d3N8JFVageaEzTd1dGiWgJgwgWUuMcBIsN8T2vgvfKoRBOT00w3D2HFyh38HxelLoTS51/CopHySyb2DybaS5OlqyBJ+UXo/FsiQZTSTlEf7keUpdnsnmRGk7S+BHKkJku0et4P+U2+kU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=RTLFuRJk; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=UNlEOhxZvIwBC4VY18DrDC2avEKLQYgXR6snA08PPt4KM0XahwGMXsDeAXPlCYhWhSSFn8zFVHiSBZavU/brE8xir7t1Ydq+mt/REVxTsnSG3xH1SfnF+0OE/v7EJds+9R7p6k4rzLGzhvuUFMRZILORKa1bn697oVrAgR2Mh6M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=M7DRQVSi; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="RTLFuRJk"
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="M7DRQVSi"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
- id ec84bb99580961bd; Thu, 6 Feb 2025 15:29:24 +0100
+ id e5625c4cae068dd4; Thu, 6 Feb 2025 15:29:25 +0100
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 71ED26BA970;
-	Thu,  6 Feb 2025 15:29:23 +0100 (CET)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 1EEA26BA970;
+	Thu,  6 Feb 2025 15:29:25 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1738852163;
-	bh=ixHGPp5ZLF5maWj/njvU5xlymHep1GI46tlAYLZj4Vc=;
+	s=dkim; t=1738852165;
+	bh=w88YqCV4joJ59wLsJjRrUn/tCBNWwaQK/X+ysio0IFA=;
 	h=From:Subject:Date;
-	b=RTLFuRJkG98k8S1KWQNxTR51aOBdRiU9P17oihnhD24Ik2oXoHR28lSgJdkyyP16l
-	 tWW7B4ruTugSgRbOWwkbZ2biz3onCS4NbgjPrtvx2SGhhtUuSvojzhpG4Rt+bf5QgW
-	 Hlk6Np27FT0nCVUU8uv5vb4oExMGTrfLA+3pSutxZe35JfSC9M1mANPgX6IC99k3kq
-	 rQVkNDYw5sOGr/QIbsKyabyG1gpsZr3jZuj0MGb1ukjGM+th8Qs47Z2ZicQcmdmDtm
-	 T7IunpvsVTWjrH1Ibq/ZAEEk4FkFJgjZOcGhvr4OU6TLQTEWm4Ijq96ELTvfcCPxnP
-	 ZBrcq+0i54JTg==
+	b=M7DRQVSigP8PXrHLIp1ijxfv9rKoEe6f6XUdS6rAfsBKNFwP+b0r08Dg1xXdXnh8g
+	 DfiGglwesh5WPYZNjH++USZU6dbPg9HYqj/4Wq7TNlrujiXXO6blQN3zGUMMfRsLHb
+	 OWIltwzl1OM+R6yg01fc7sD/NlsIbOM5iNKVwWfMzom+a1BtZfL5SUNbYtolvVcLaz
+	 mXPpSwdaKAujq2nRQX/mOzNezORHqnM8sE8UNCvXSMS71Qm4kPdk5ZK7WlnA+hut1G
+	 dsCCBC5Dbh5gJGRyrApf4xJ+9QxDMOZeUesxGMkMqE0O1SIz3gvJro46IGWIDhFDmX
+	 +bkVsNxCJINkg==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -42,11 +42,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
  Christian Loehle <christian.loehle@arm.com>,
  Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
  Aboorva Devarajan <aboorvad@linux.ibm.com>
-Subject:
- [RFT][PATCH v1 3/5] cpuidle: menu: Tweak threshold use in
- get_typical_interval()
-Date: Thu, 06 Feb 2025 15:25:18 +0100
-Message-ID: <8490144.T7Z3S40VBb@rjwysocki.net>
+Subject: [RFT][PATCH v1 1/5] cpuidle: menu: Drop a redundant local variable
+Date: Thu, 06 Feb 2025 15:22:59 +0100
+Message-ID: <13699686.uLZWGnKmhe@rjwysocki.net>
 In-Reply-To: <1916668.tdWV9SEqCh@rjwysocki.net>
 References: <1916668.tdWV9SEqCh@rjwysocki.net>
 Precedence: bulk
@@ -65,47 +63,44 @@ X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-To prepare get_typical_interval() for subsequent changes, rearrange
-the use of the data point threshold in it a bit and initialize that
-threshold to UINT_MAX which is more consistent with its data type.
+Local variable min in get_typical_interval() is updated, but never
+accessed later, so drop it.
 
-No intentional functional impact.
+No functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpuidle/governors/menu.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/cpuidle/governors/menu.c |    6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
 --- a/drivers/cpuidle/governors/menu.c
 +++ b/drivers/cpuidle/governors/menu.c
-@@ -116,7 +116,7 @@
-  */
+@@ -117,7 +117,7 @@
  static unsigned int get_typical_interval(struct menu_device *data)
  {
--	unsigned int max, divisor, thresh = INT_MAX;
-+	unsigned int max, divisor, thresh = UINT_MAX;
- 	u64 avg, variance, avg_sq;
- 	int i;
+ 	int i, divisor;
+-	unsigned int min, max, thresh, avg;
++	unsigned int max, thresh, avg;
+ 	uint64_t sum, variance;
  
-@@ -129,8 +129,8 @@
- 	for (i = 0; i < INTERVALS; i++) {
- 		unsigned int value = data->intervals[i];
+ 	thresh = INT_MAX; /* Discard outliers above this value */
+@@ -125,7 +125,6 @@
+ again:
  
--		/* Discard data points above the threshold. */
--		if (value > thresh)
-+		/* Discard data points above or at the threshold. */
-+		if (value >= thresh)
- 			continue;
- 
- 		divisor++;
-@@ -186,7 +186,7 @@
- 	if ((divisor * 4) <= INTERVALS * 3)
- 		return UINT_MAX;
- 
--	thresh = max - 1;
-+	thresh = max;
- 	goto again;
- }
+ 	/* First calculate the average of past intervals */
+-	min = UINT_MAX;
+ 	max = 0;
+ 	sum = 0;
+ 	divisor = 0;
+@@ -136,9 +135,6 @@
+ 			divisor++;
+ 			if (value > max)
+ 				max = value;
+-
+-			if (value < min)
+-				min = value;
+ 		}
+ 	}
  
 
 
