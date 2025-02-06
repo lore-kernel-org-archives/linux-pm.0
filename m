@@ -1,76 +1,113 @@
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 448DA1A3171;
-	Thu,  6 Feb 2025 13:16:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.188
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA5641EDA1E;
+	Thu,  6 Feb 2025 14:29:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738847819; cv=none; b=U7joXSkNaYrnxn2dlCVxXGKXaNhXWiHHrF8kNtzNOM7THUIXM43VQHbtAcD2LseumDu1BVkoKZ+KOdXhs1JzsmRfPkvm3w5QUmv1kRmzXoq9fy83iXdW0fv5YWUnSL3k3bOaDLY6fHycA/3pw0JrBRE8tDP9O5rKxeEcrMpVZio=
+	t=1738852172; cv=none; b=DAMFQlqk0zUEX795M/LVSn4j97KreRA7fLnbAwWTZGsHMgkgNG51wHmob/YvvpfaMstzqtvzUWNuBFHw0L/VhHgbEQ+8SCQBRQnai4Kk1T6lqDjhVZWR2c2Zpl8Q5zuXecL7jtMvVAH5z9hgDvJSwvEAtyr/ywaG8FGqwVBTwbY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738847819; c=relaxed/simple;
-	bh=zPMubyTzwNIWyC+ejfLa+a/uH4M1ftWD5v1xxdK/8TU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=ihwffSGcgRGAYjdFV1r+Os5L2+y/MitVxHpOKMqZ1L4oYoq6HgY2v69RRSCp6SC0EzzPZXD2Fck2NkA2tIQQXUbdnj5XoOGZivXTP/eYT40aJEgOAxn152Jv59ESRpmNlUie/dXhJBEJRdKiG/wjlabvTFooEVa+jD4E0DKKUjs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.188
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.88.194])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4YpczB6DdWzrRhk;
-	Thu,  6 Feb 2025 21:15:18 +0800 (CST)
-Received: from kwepemh100008.china.huawei.com (unknown [7.202.181.93])
-	by mail.maildlp.com (Postfix) with ESMTPS id D08641400CA;
-	Thu,  6 Feb 2025 21:16:54 +0800 (CST)
-Received: from [10.67.121.90] (10.67.121.90) by kwepemh100008.china.huawei.com
- (7.202.181.93) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Thu, 6 Feb
- 2025 21:16:53 +0800
-Message-ID: <632cb20b-97b8-4c45-ad92-da3e09fad52d@huawei.com>
-Date: Thu, 6 Feb 2025 21:16:53 +0800
+	s=arc-20240116; t=1738852172; c=relaxed/simple;
+	bh=s4fYyLyjkEC7Fy+w4j20uWWWPaHGIYLuHi2FBghOMcE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Q+9dHBIK8Pm9hIZXlerGJ2CimtKfmuPsGAhH48sbsHOwbx2DlJECPMRTQuajIuDXekVP/1nY9zE65NinpXVSO4aCp7JVDg95lZqEUfZ0GMOfH0iLcsiBjo0+uzUKTR8xRwtz6qxadJWmQhMVPE0SsknJTXePAcDsbYjzgy3/kHw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=dn6b/MsZ; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="dn6b/MsZ"
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
+ id 8ca5d26d5c476b4d; Thu, 6 Feb 2025 15:29:22 +0100
+Received: from kreacher.localnet (unknown [195.136.19.94])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id B37A36BA970;
+	Thu,  6 Feb 2025 15:29:21 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1738852162;
+	bh=s4fYyLyjkEC7Fy+w4j20uWWWPaHGIYLuHi2FBghOMcE=;
+	h=From:Subject:Date;
+	b=dn6b/MsZY4+k5w2oFAfupE3RW0OtWKkE4SdHxFXNua+i2A5w2VN/65xZ3u4EtOEhe
+	 5yY2vpZiEWXMb/EtgGe8swrkOzyxaxjdxqhj66Tp2hQ7S2E8QdRHorl7fNK16DpyWW
+	 Dbp/x+n4VJw5N511ydfFjR4wFyJxohBdjASQrERs7Om1db7fUxyrpl1GudBJjbVI2W
+	 dhFRXcNUvHSMJBjTDAFkuuar/RuYT1By5JYqdQwblwZ8w5UNC2BZgoo5acWC42u6WD
+	 hIFacbn70pquX3iJKg74FBM+WiDVWCGjRb4qntgwrGlIB8YEckUdR3wHzuhm9wgjxp
+	 G87BXqUi4eZUA==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Christian Loehle <christian.loehle@arm.com>,
+ Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
+ Aboorva Devarajan <aboorvad@linux.ibm.com>
+Subject:
+ [RFT][PATCH v1 5/5] cpuidle: menu: Avoid discarding useful information
+Date: Thu, 06 Feb 2025 15:29:05 +0100
+Message-ID: <7770672.EvYhyI6sBW@rjwysocki.net>
+In-Reply-To: <1916668.tdWV9SEqCh@rjwysocki.net>
+References: <1916668.tdWV9SEqCh@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 0/8] Support for autonomous selection in cppc_cpufreq
-To: <rafael@kernel.org>, <viresh.kumar@linaro.org>
-CC: <lenb@kernel.org>, <robert.moore@intel.com>, <mario.limonciello@amd.com>,
-	<gautham.shenoy@amd.com>, <ray.huang@amd.com>, <pierre.gondois@arm.com>,
-	<acpica-devel@lists.linux.dev>, <linux-acpi@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-	<linuxarm@huawei.com>, <yumpusamongus@gmail.com>,
-	<srinivas.pandruvada@linux.intel.com>, <jonathan.cameron@huawei.com>,
-	<zhanjie9@hisilicon.com>, <lihuisong@huawei.com>, <hepeng68@huawei.com>,
-	<fanghao11@huawei.com>
-References: <20250206131428.3261578-1-zhenglifeng1@huawei.com>
-From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
-In-Reply-To: <20250206131428.3261578-1-zhenglifeng1@huawei.com>
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
- kwepemh100008.china.huawei.com (7.202.181.93)
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvieeifecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopegthhhrihhsthhirghnrdhlohgvhhhlvgesrghrmhdrtghomhdprhgtphhtthhopegrrhhtvghmrdgsihhthihuthhskhhihieslhh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 
-Hello Rafael & Viresh,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-There are two things about this patchset I would like your advice on:
+When giving up on making a high-confidence prediction,
+get_typical_interval() always returns UINT_MAX which means that the
+next idle interval prediction will be based entirely on the time till
+the next timer.  However, the information represented by the most
+recent intervals may not be completely useless in those cases.
 
-1. Pierre and I have discussed about whether or not to show auto_act_window
-and energy_performance_preference_val when auto_select is disabled [1]. It
-seems like whether to show these two files has their own points. We'd like
-to ask for some advice.
+Namely, the largest recent idle interval is an upper bound on the
+recently observed idle duration, so it is reasonable to assume that
+the next idle duration is unlikely to exceed it.  Moreover, this is
+still true after eliminating the suspected outliers if the sample
+set still under consideration is at least as large as 50% of the
+maximum sample set size.
 
-2. In intel_pstate driver, there is a file named
-"energy_performance_preference", which accepts not only raw value but also
-a few string arguments and converts them to integers. But I think this
-implementation is not really nice and prefer not to follow it [2]. To
-distinguish it, I named the file in cppc_cpufreq
-"energy_performance_preference_val" instead of
-"energy_performance_preference". Should I follow the implementation of
-intel_pstate?     
+Accordingly, make get_typical_interval() return the current maximum
+recent interval value in that case instead of UINT_MAX.
 
-Looking forward to your reply!
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpuidle/governors/menu.c |   13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-Relevant discussion:
-[1] https://lore.kernel.org/all/522721da-1a5c-439c-96a8-d0300dd0f906@huawei.com/
-[2] https://lore.kernel.org/all/0c511da2-6a4a-4fa2-9d82-da45d1afe346@huawei.com/
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -190,8 +190,19 @@
+ 	 * This can deal with workloads that have long pauses interspersed
+ 	 * with sporadic activity with a bunch of short pauses.
+ 	 */
+-	if ((divisor * 4) <= INTERVALS * 3)
++	if (divisor * 4 <= INTERVALS * 3) {
++		/*
++		 * If there are sufficiently many data points still under
++		 * consideration after the outliers have been eliminated,
++		 * returning without a prediction would be a mistake because it
++		 * is likely that the next interval will not exceed the current
++		 * maximum, so return the latter in that case.
++		 */
++		if (divisor >= INTERVALS / 2)
++			return max;
++
+ 		return UINT_MAX;
++	}
+ 
+ 	/* Update the thresholds for the next round. */
+ 	if (avg - min > max - avg)
+
+
+
