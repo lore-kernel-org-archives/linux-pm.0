@@ -1,146 +1,136 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D28A521C9E1;
-	Thu,  6 Feb 2025 14:29:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D51A2236420;
+	Thu,  6 Feb 2025 14:37:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738852176; cv=none; b=aBsiT0n+FAJ9Gaig8JRrWV2yeT/awnxgOJlNO085YPnSFs2RlAg+BDjT1PQ3w4vZ8XT4BoRLgvSYLbpFNOvNzr7W/qA1B0u3ZZCpB7SCJwRRcJc0qt2fB3wMMJv2B5z5d6zkRR9uaFP3qmW8OHiMqj4+jJ0gSbUSDNXOd1MlTIg=
+	t=1738852656; cv=none; b=UBpHVIgzwjIf6mCMr0f8BxV138f+FrFija4pngoo9KTwSAj7jUmzm75cDv9KnKDDMcgL2zPSggLsctd3GwTZEk9Raw0BShkxU5eax1Torn4JFcZuvXyiQKhrkqL5grlevnQZ8MovfFEMkVVrtLpIX4dCBaPFWvgAy75BEVnYNCo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738852176; c=relaxed/simple;
-	bh=ErWXixg523GBpVutAwglAFanD0ZU/6hOsgeYkUyeJBk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=T+gcrnKNVRAoG5NX3FM0av+sImFiVN0LTzcWi+1iVPe1ZvhK/7QEOR/9zgqfMb2B0njT9sCvpXhOVCrwG4AD0Oll7fpIo6Ipd6ofw6ANKVwOUwrv0tq6e8q1WT4nDTaZGBjaUpXnYqeZz0Bmf3NBimMRYpY6bp8bc0HUvIMwkf4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=es0YU7PC; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1738852656; c=relaxed/simple;
+	bh=4uK47KEygQEWwVGcoVZkeuoHQF2iiSJDgicszxMhLUE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=k5ai2n9+m4KEaF7gcAeppKY/eLApeYT1/q0HLCZXxVzrdOGK7eVZQ1nJ/HckES6/dvcQg2lW1Q7ZhLk/yKiDO0snUIdWgJyHmIzFP3fcNAUOfxkytRdYPbvIDTeh1HeEVbqc5m+nBOfyraRL9v2C9qyNIYIlowP86E73kgrsM2k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cYNHlu9L; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="es0YU7PC"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
- id c532acd172b77253; Thu, 6 Feb 2025 15:29:26 +0100
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 028836BA970;
-	Thu,  6 Feb 2025 15:29:26 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1738852166;
-	bh=ErWXixg523GBpVutAwglAFanD0ZU/6hOsgeYkUyeJBk=;
-	h=From:Subject:Date;
-	b=es0YU7PCzTwaqBv67FTPblqBOgY9joZxQI9Ae5YTIbV6kQ1U3jyDtFUCqWQIY5V1d
-	 QKxyj/CvsCdP2uqzIt/9EXC03y+2bE9Cv/sIksNdRgnF2Gr95OTySPb/jLaemWZtbD
-	 e/R6eFHEC8n4UdE6OZriJkkRRb7kLlX3cFfFAcTnfCS8/sR71yStUPT/jPuOq9F6Vv
-	 NHvWNEYMSdh4IRqKCYRlK70G6nwDWfe3W4Cp/N2GX6IkT3jKD3DPZUUC2s2Ipl+Ks7
-	 U7Ke+CRvHkcV25RzFIJjLSDPhLHF9K71UKs86k+CTYFCGY9TJGiyPFX20vHksQ3RN1
-	 7722br6kch0YA==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Christian Loehle <christian.loehle@arm.com>,
- Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
- Aboorva Devarajan <aboorvad@linux.ibm.com>
-Subject:
- [RFT][PATCH v1 0/5] cpuidle: menu: Avoid discarding useful information when
- processing recent idle intervals
-Date: Thu, 06 Feb 2025 15:21:58 +0100
-Message-ID: <1916668.tdWV9SEqCh@rjwysocki.net>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cYNHlu9L"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 56B04C4CEE2;
+	Thu,  6 Feb 2025 14:37:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1738852656;
+	bh=4uK47KEygQEWwVGcoVZkeuoHQF2iiSJDgicszxMhLUE=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=cYNHlu9Li16/cYWcECllsDQkMwp2U97D6xVnP/8nzhJTAEsXMTsiQhC8pZHLAlABY
+	 85hGt0RWff2gJotCXsWO7d/ARUxGF0Tqi5VR23W32Sk8T35fkMVPm/8jzd1UDEsAwx
+	 pAscphsIJ5bXztzp2HNNbRETz4RhQyk19LSMCBS+1NTWdEDSMxnGYWW3Cctop2174I
+	 ccl3VsNOYeaX0fLZYanmqkSCu+04H/849FA+VdSFwPIgjhVL4HV9P1xaEADmeDop5Y
+	 lo0UeTw39pECPnMd4E4zWwm0lPAY70PoSNXlk9BRwvXI3blMOCKG6yR68Nss0spp+K
+	 rBYa2KMX7O8gQ==
+Received: by mail-oi1-f181.google.com with SMTP id 5614622812f47-3f37207259bso315023b6e.1;
+        Thu, 06 Feb 2025 06:37:36 -0800 (PST)
+X-Gm-Message-State: AOJu0YzkbOKoE6Xhl/iYMKpBwYXBjHxs+8AUoWr+ldmTRxsaSbi8ALEv
+	5ubkNORlB+Z7qUr0QHxSjvhQVZcwrC1ufa/fSJ/7f3OO12t1TV6y715/huq48m83PRTR8sDbqbk
+	MTR0vnfVsR5kb0VMT2QGR5cfIwPU=
+X-Google-Smtp-Source: AGHT+IFqvm0IT213/DuLt1yySZz9h6W/+Lgpa3XAdb39n5pbDxYtVyQhvT9JQ/FRsPvebCcRG1HvpSiXFmcHbSZVRKI=
+X-Received: by 2002:a05:6808:1706:b0:3ea:4e7c:a91a with SMTP id
+ 5614622812f47-3f37c1da666mr5218854b6e.34.1738852655622; Thu, 06 Feb 2025
+ 06:37:35 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <12630185.O9o76ZdvQC@rjwysocki.net>
+In-Reply-To: <12630185.O9o76ZdvQC@rjwysocki.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 6 Feb 2025 15:37:24 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0hCQ0nm+yy+Fg25kKX-76eZAR9r-855FrPLjiA4ytuufQ@mail.gmail.com>
+X-Gm-Features: AWEUYZkL0yQLslAU0j1j8oFF-2xzqbXOFs-8dR946nFfkTScbiU8mjTRkXUyuW8
+Message-ID: <CAJZ5v0hCQ0nm+yy+Fg25kKX-76eZAR9r-855FrPLjiA4ytuufQ@mail.gmail.com>
+Subject: Re: [RFT][PATCH v1] cpuidle: teo: Avoid selecting deepest idle state over-eagerly
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@linaro.org>, Christian Loehle <christian.loehle@arm.com>, 
+	Artem Bityutskiy <artem.bityutskiy@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, 
+	Aboorva Devarajan <aboorvad@linux.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvieeifecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeevkefffeehgfethfffteekvddvtdduueetvdfhjedukeehuedugfeileevueekjeenucffohhmrghinhepkhgvrhhnvghlrdhorhhgpdhsphgvtgdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopegthhhrihhsthhirghnrdhlohgvhhhlvgesrghrmhdrtghomhd
-X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
+Content-Transfer-Encoding: quoted-printable
 
-Hi Everyone,
+On Tue, Feb 4, 2025 at 9:58=E2=80=AFPM Rafael J. Wysocki <rjw@rjwysocki.net=
+> wrote:
+>
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> It has been observed that the recent teo governor update which concluded
+> with commit 16c8d7586c19 ("cpuidle: teo: Skip sleep length computation
+> for low latency constraints") caused the max-jOPS score of the SPECjbb
+> 2015 benchmark [1] on Intel Granite Rapids to decrease by around 1.4%.
+> While it may be argued that this is not a significant increase, the
+> previous score can be restored by tweaking the inequality used by teo
+> to decide whether or not to preselect the deepest enabled idle state.
+> That change also causes the critical-jOPS score of SPECjbb to increase
+> by around 2%.
+>
+> Namely, the likelihood of selecting the deepest enabled idle state in
+> teo on the platform in question has increased after commit 13ed5c4a6d9c
+> ("cpuidle: teo: Skip getting the sleep length if wakeups are very
+> frequent") because some timer wakeups were previously counted as non-
+> timer ones and they were effectively added to the left-hand side of the
+> inequality deciding whether or not to preselect the deepest idle state.
+>
+> Many of them are now (accurately) counted as timer wakeups, so the left-
+> hand side of that inequality is now effectively smaller in some cases,
+> especially when timer wakeups often occur in the range below the target
+> residency of the deepest enabled idle state and idle states with target
+> residencies below CPUIDLE_FLAG_POLLING are often selected, but the
+> majority of recent idle intervals are still above that value most of
+> the time.  As a result, the deepest enabled idle state may be selected
+> more often than it used to be selected in some cases.
+>
+> To counter that effect, add the sum of the hits metric for all of the
+> idle states below the candidate one (which is the deepest enabled idle
+> state at that point) to the left-hand side of the inequality mentioned
+> above.  This will cause it to be more balanced because, in principle,
+> putting both timer and non-timer wakeups on both sides of it is more
+> consistent than only taking into account the timer wakeups in the range
+> above the target residency of the deepest enabled idle state.
+>
+> Link: https://www.spec.org/jbb2015/
+> Tested-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/cpuidle/governors/teo.c |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+>
+> --- a/drivers/cpuidle/governors/teo.c
+> +++ b/drivers/cpuidle/governors/teo.c
+> @@ -349,13 +349,13 @@
+>         }
+>
+>         /*
+> -        * If the sum of the intercepts metric for all of the idle states
+> -        * shallower than the current candidate one (idx) is greater than=
+ the
+> +        * If the sum of the intercepts and hits metric for all of the id=
+le
+> +        * states below the current candidate one (idx) is greater than t=
+he
+>          * sum of the intercepts and hits metrics for the candidate state=
+ and
+>          * all of the deeper states, a shallower idle state is likely to =
+be a
+>          * better choice.
+>          */
+> -       if (2 * idx_intercept_sum > cpu_data->total - idx_hit_sum) {
+> +       if (2 * (idx_intercept_sum + idx_hit_sum) > cpu_data->total) {
+>                 int first_suitable_idx =3D idx;
+>
+>                 /*
 
-This work had been triggered by a report that commit 0611a640e60a ("eventpoll:
-prefer kfree_rcu() in __ep_remove()") had caused the critical-jOPS metric of
-the SPECjbb 2015 benchmark [1] to drop by around 50% even though it generally
-reduced kernel overhead.  Indeed, it was found during further investigation
-that the total interrupt rate while running the SPECjbb workload had fallen as
-a result of that commit by 55% and the local timer interrupt rate had fallen by
-almost 80%.
+For easier reference/testing this has been exposed in the git branch at
 
-That turned out to cause the menu cpuidle governor to select the deepest idle
-state supplied by the cpuidle driver (intel_idle) much more often which added
-significantly more idle state latency to the workload and that led to the
-decrease of the critical-jOPS score.
+https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/log/?h=
+=3Dexperimental/teo-tweak
 
-Interestingly enough, this problem was not visible when the teo cpuidle
-governor was used instead of menu, so it appeared to be specific to the
-latter.  CPU wakeup event statistics collected while running the workload
-indicated that the menu governor was effectively ignoring non-timer wakeup
-information and all of its idle state selection decisions appeared to be
-based on timer wakeups only.  Thus, it appeared that the reduction of the
-local timer interrupt rate caused the governor to predict a idle duration
-much more often while running the workload and the deepest idle state was
-selected significantly more often as a result of that.
-
-A subsequent inspection of the get_typical_interval() function in the menu
-governor indicated that it might return UINT_MAX too often which then caused
-the governor's decisions to be based entirely on information related to timers.
-
-Generally speaking, UINT_MAX is returned by get_typical_interval() if it
-cannot make a prediction based on the most recent idle intervals data with
-sufficiently high confidence, but at least in some cases this means that
-useful information is not taken into account at all which may lead to
-significant idle state selection mistakes.  Moreover, this is not really
-unlikely to happen.
-
-One issue with get_typical_interval() is that, when it eliminates outliers from
-the sample set in an attempt to reduce the standard deviation (and so improve
-the prediction confidence), it does that by dropping high-end samples only,
-while samples at the low end of the set are retained.  However, the samples
-at the low end very well may be the outliers and they should be eliminated
-from the sample set instead of the high-end samples.  Accordingly, the
-likelihood of making a meaningful idle duration prediction can be improved
-by making it also eliminate low-end samples if they are farther from the
-average than high-end samples.  This is done in patch [4/5].
-
-Another issue is that get_typical_interval() gives up after eliminating 1/4
-of the samples if the standard deviation is still not as low as desired (within
-1/6 of the average or within 20 us if the average is close to 0), but the
-remaining samples in the set still represent useful information at that point
-and discarding them altogether may lead to suboptimal idle state selection.
-
-For instance, the largest idle duration value in the get_typical_interval()
-data set is the maximum idle duration observed recently and it is likely that
-the upcoming idle duration will not exceed it.  Therefore, in the absence of
-a better choice, this value can be used as an upper bound on the target
-residency of the idle state to select.  Patch [5/5] works along these lines,
-but it takes the maximum data point remaining after the elimination of
-outliers.
-
-The first two patches in the series are straightforward cleanups (in fact,
-the first patch is kind of reversed by patch [4/5], but it is there because
-it can be applied without the latter) and patch [3/5] is a cosmetic change
-made in preparation for the subsequent ones.
-
-This series turns out to restore the SPECjbb critical-jOPS metric on affected
-systems to the level from before commit 0611a640e60a and it also happens to
-increase its max-jOPS metric by around 3%.
-
-For easier reference/testing it is present in the git branch at
-
-https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/log/?h=experimental/menu
-
-based on the cpuidle material that went into 6.14-rc1.
-
-If possible, please let me know if it works for you.
-
-Thanks!
-
-
-[1] Link: https://www.spec.org/jbb2015/
-
-
-
+on top of the cpuidle material that went into 6.14-rc1.
