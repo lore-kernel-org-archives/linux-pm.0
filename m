@@ -1,301 +1,261 @@
-Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com [210.118.77.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yb1-f178.google.com (mail-yb1-f178.google.com [209.85.219.178])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BCC2A255E4C
-	for <linux-pm@vger.kernel.org>; Mon, 10 Feb 2025 18:24:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.118.77.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 06274204855
+	for <linux-pm@vger.kernel.org>; Mon, 10 Feb 2025 18:31:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.178
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739211861; cv=none; b=qX+2hZzMmUA3TdXOeeD7071kp9cV+AeSm0+5LZI+PPuCVSDgCMNm8ItQtmTDSK3szd5D5Q6IJf9AtMgegl8YEJd24kJNafP6RxGaaSRQPGKwfpejZQ2nBqAGZw/NJd8jzoKmObxOMGuiyhOCVds5/6SuIPFdGX5CIdfl/fu9jN4=
+	t=1739212269; cv=none; b=OHAFZB/uUsN+Rl6VWz6WJMMrFU+rz1IiDJm6nlEFGoDSQI7MYCf1xdjdrSV/FtCiqqek1OU3YIDcPmUxAU6tnNg7qYU7VxkFxBsYeSWWwejoq8t/bHyopq7C5gJhCOD05cWaTx/MNtzcLGf7rVXjHO64se/XiGPImMLOZMtaCJs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739211861; c=relaxed/simple;
-	bh=GiX3AnNJ5preT0LgG4Nm7iJ9elZnPlpcYyH+a8gAtpk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:From:In-Reply-To:
-	 Content-Type:References; b=snAzFePYyu/vOEi2qcQJl07k3hcOob9b14UkhFjwKdDZV58FkCSF7ReJjK+KOAJ58rNpLwsNuoMAYvK09lf1Ul1gdFW1yMB7Ax/XJ8NroSsyQtP51r67Vc/yMGTli+bjSftzjszsjuKDZnmONFp7ungbQhXJ69/iWKCDzoXBGwE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com; spf=pass smtp.mailfrom=samsung.com; dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b=l8tUsGxU; arc=none smtp.client-ip=210.118.77.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=samsung.com
+	s=arc-20240116; t=1739212269; c=relaxed/simple;
+	bh=NGOFeQX/94iKLC7KRyXn9K4Nt0CwgBBrM/PM50W0oY0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=gXQWpZ66eBLodj/CXn6xC9P8IAHM+Yxa7uxTYlxcT/4sKw1rdw/0iJhDgk9R5RCE7eUKiwTHGBZcFRRVGwB775lURS+9M3gMcRtZ04ot4Tk+n9zSjCTnyJXsFlgmljXzGYZg6asWQnPzWtcBfnXmGTw67ytZbrZg7x7xKPMmwNo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rivosinc.com; spf=pass smtp.mailfrom=rivosinc.com; dkim=pass (2048-bit key) header.d=rivosinc-com.20230601.gappssmtp.com header.i=@rivosinc-com.20230601.gappssmtp.com header.b=uPPNNnS0; arc=none smtp.client-ip=209.85.219.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rivosinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rivosinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="l8tUsGxU"
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-	by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20250210181724euoutp02a0779ec27858e23b5d5ec121a53473c0~i65gkGBbN0466004660euoutp02B
-	for <linux-pm@vger.kernel.org>; Mon, 10 Feb 2025 18:17:24 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20250210181724euoutp02a0779ec27858e23b5d5ec121a53473c0~i65gkGBbN0466004660euoutp02B
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-	s=mail20170921; t=1739211444;
-	bh=eoM94/u449x42q6cf/40YSz4wflR55B4E76Sjb/7dTY=;
-	h=Date:Subject:To:Cc:From:In-Reply-To:References:From;
-	b=l8tUsGxUu/Vn0/u6PzTR+tqT6Ivupe5fgdztvNdy0J/c3tqf215jyFsEzXt60lBgj
-	 s2u0XXQ1yHh1AmpIqPOkWP9cnCWSuFNX3F4JkyeOdFnQjE80XaI18wrcoBClBz0kyQ
-	 uuEEXA0EcoMT3vEK5k/KWOoE2681CXXob1mzCRso=
-Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
-	eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-	20250210181723eucas1p25abb824449c578f42deb26c45f4dd664~i65fdA6XO3048030480eucas1p2I;
-	Mon, 10 Feb 2025 18:17:23 +0000 (GMT)
-Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-	eusmges3new.samsung.com (EUCPMTA) with SMTP id 6F.65.20397.3B24AA76; Mon, 10
-	Feb 2025 18:17:23 +0000 (GMT)
-Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
-	eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-	20250210181722eucas1p2b15d633fa8c141efec2d6e4b2ca80a42~i65eg_ZQP2654726547eucas1p2V;
-	Mon, 10 Feb 2025 18:17:22 +0000 (GMT)
-Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
-	eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-	20250210181722eusmtrp277a1cc907790040346300d53d97ae68b~i65egAD9x0172601726eusmtrp2G;
-	Mon, 10 Feb 2025 18:17:22 +0000 (GMT)
-X-AuditID: cbfec7f5-e59c770000004fad-cd-67aa42b3b35f
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-	eusmgms2.samsung.com (EUCPMTA) with SMTP id 44.84.19654.2B24AA76; Mon, 10
-	Feb 2025 18:17:22 +0000 (GMT)
-Received: from [192.168.1.44] (unknown [106.210.136.40]) by
-	eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-	20250210181721eusmtip2f628aba259a8f1d60f68c1d4648cbde6~i65dO1fME1001410014eusmtip2S;
-	Mon, 10 Feb 2025 18:17:21 +0000 (GMT)
-Message-ID: <7d8a3f8d-f369-47dd-8c5f-dcff8d692ea8@samsung.com>
-Date: Mon, 10 Feb 2025 19:17:20 +0100
+	dkim=pass (2048-bit key) header.d=rivosinc-com.20230601.gappssmtp.com header.i=@rivosinc-com.20230601.gappssmtp.com header.b="uPPNNnS0"
+Received: by mail-yb1-f178.google.com with SMTP id 3f1490d57ef6-e5b3391b033so3648575276.1
+        for <linux-pm@vger.kernel.org>; Mon, 10 Feb 2025 10:31:05 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1739212265; x=1739817065; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=KPwb4aI7pixw1RFAv20MaBbqn02tdpDM4Y6srTWRmRk=;
+        b=uPPNNnS04+JKCnArBtaVzbXinW+Z6sw8obI2LEZkIcEuXfK4sD6xH2vRUV7pbUuNlG
+         Y5k5sN9uXUvWVBhFL0VE3mesvv+WGMgHMAx/FjICw2cpmWW4KQ2u4FKPwG+rQ+lgzK8S
+         ZT6oikXG8OZ+vDptV+whm4dY2IU1UZCXfpKophp8tFe3E6KqtqNDqbgqaAon61IPwLBj
+         zUWF6Wson0GFjgnijp7GdoeTCDRIKDPzQnp3HHq6TZ7aH/iwoP7HjiTVzwBFOoePAPoZ
+         cpH77Motu1kIJmk+GTJZ9yym2DtuNZgfNEnSB8iJ0b1HB/a3C+GT4MAMOUEQKvJosiov
+         7XPQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739212265; x=1739817065;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=KPwb4aI7pixw1RFAv20MaBbqn02tdpDM4Y6srTWRmRk=;
+        b=vaLeWS6Xx6xFAz+8oosa0jth+Sl70Dz6ER0hNQ91DxRViCHpMHd6Av8N1ydN55NF6K
+         h134Bv7JxXIUvCRME63ZuXQZ84RKdUzMGbR7O1yWVd92AbZrDWWrNKNC9lZIEBnnElKv
+         02I1e6O0RB49DMOTp/rdq/bVNvDj8zNZRj9tM9bdP5eRyqQQ5fbX1Km8Qf+lmU/UL/xD
+         f9P4nkYImdSE4MXYu/7s5cGCJNjImdLOGtVwxP+WkZZCjvMqY4gr0jsAPQoeQuWGlo1j
+         4o+KQCrei6BYAun9fzYcRv0XzZG8DvNvqsGPchxSt1dYEUB1YMG+T7W/GB6YBtLvIqBo
+         anfA==
+X-Forwarded-Encrypted: i=1; AJvYcCUqsGIa08VTgHQ7v0dTkIDiuuLa82XV95W1KM32pO3Fmf2/4GYO7Bk5eYsyWoGHoZ83IqrL59pvuA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx/r2DAsQSCcE6osJvUDWiTXAIM0fWY3zVhTF8kgcaEn1o4Bx3E
+	eUsXMcvn1OXIjdFCitJ548SwSoTGxsAomBQnXtmoeYUmKMZG4L7YC/fI3fZnMlY=
+X-Gm-Gg: ASbGnctynpUTSN5lPXjqdPy3h2JFTFWzmt9xHnn6mlskvwpeaqj4VZaCUj3CQnsSe1Y
+	LPs5gdhi5EUhfY/KHzl350gjcUcS0dfc8U6fzMVnu1zVCaukyFxIIVj3xWRiJB61DeBcaEfigpo
+	4I9y08xdUyFYEfShXR3hwkFq0t5ELN8NBpawfpt/2bAkoQbK9GcsbcpB4Y4+nrU3ADQ6/kK6Yv8
+	ft94smg2nP8BzTVdT/7a8Pqdr1/ORSVaXZ4JaLm96K5o2fTz5AisDHgu5dRTv4r7MrOr18msDAW
+	4+8=
+X-Google-Smtp-Source: AGHT+IHP4/PfYe0pzIQUijWibiRiqcclWIqX6MxksiY/orFAxERUC+/zAt6c1cAXqUao8PQOqCSyhA==
+X-Received: by 2002:a05:6902:1793:b0:e5b:3394:ea0c with SMTP id 3f1490d57ef6-e5b461672f5mr12395154276.10.1739212264835;
+        Mon, 10 Feb 2025 10:31:04 -0800 (PST)
+Received: from ghost ([50.146.0.9])
+        by smtp.gmail.com with ESMTPSA id 3f1490d57ef6-e5b3a45d7f1sm2703301276.40.2025.02.10.10.31.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 10 Feb 2025 10:31:04 -0800 (PST)
+Date: Mon, 10 Feb 2025 10:31:02 -0800
+From: Charlie Jenkins <charlie@rivosinc.com>
+To: Andrii Nakryiko <andrii.nakryiko@gmail.com>
+Cc: Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+	Namhyung Kim <namhyung@kernel.org>,
+	Alexei Starovoitov <ast@kernel.org>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Andrii Nakryiko <andrii@kernel.org>,
+	Martin KaFai Lau <martin.lau@linux.dev>,
+	Eduard Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>,
+	Yonghong Song <yonghong.song@linux.dev>,
+	John Fastabend <john.fastabend@gmail.com>,
+	KP Singh <kpsingh@kernel.org>, Stanislav Fomichev <sdf@fomichev.me>,
+	Hao Luo <haoluo@google.com>, Jiri Olsa <jolsa@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Arnaldo Carvalho de Melo <acme@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Ian Rogers <irogers@google.com>,
+	Adrian Hunter <adrian.hunter@intel.com>,
+	Quentin Monnet <qmo@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Josh Poimboeuf <jpoimboe@kernel.org>,
+	Mykola Lysenko <mykolal@fb.com>, Shuah Khan <shuah@kernel.org>,
+	Jiri Kosina <jikos@kernel.org>,
+	Benjamin Tissoires <bentiss@kernel.org>,
+	Steven Rostedt <rostedt@goodmis.org>, bpf <bpf@vger.kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	"linux-perf-use." <linux-perf-users@vger.kernel.org>,
+	Linux Power Management <linux-pm@vger.kernel.org>,
+	"open list:KERNEL SELFTEST FRAMEWORK" <linux-kselftest@vger.kernel.org>,
+	"open list:HID CORE LAYER" <linux-input@vger.kernel.org>,
+	linux-trace-kernel <linux-trace-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] tools: Unify top-level quiet infrastructure
+Message-ID: <Z6pF5pkH_bqvDwMK@ghost>
+References: <20250203-quiet_tools-v1-0-d25c8956e59a@rivosinc.com>
+ <CAADnVQKTqRBQBA-yxB9EYPMgayP3rOE4iDhg+QD++2d=jxfY=Q@mail.gmail.com>
+ <Z6JdwSsAk1xCiSrn@ghost>
+ <Z6JksXDRh8OSAh-u@google.com>
+ <CAADnVQKmKf6wY3dg+PfAxtrrFWGO7D-m83dEndjWksPfWDt5wQ@mail.gmail.com>
+ <Z6Khl1rHIAb7wOXw@ghost>
+ <CAEf4Bza5nKk6_fVY2vmJjZgPb40zB+R3REy8==ZLc98eg1iHTA@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 09/18] reset: thead: Add TH1520 reset controller
- driver
-To: Philipp Zabel <p.zabel@pengutronix.de>, Matt Coster
-	<Matt.Coster@imgtec.com>, "mturquette@baylibre.com"
-	<mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>,
-	"robh@kernel.org" <robh@kernel.org>, "krzk+dt@kernel.org"
-	<krzk+dt@kernel.org>, "conor+dt@kernel.org" <conor+dt@kernel.org>,
-	"drew@pdp7.com" <drew@pdp7.com>, "guoren@kernel.org" <guoren@kernel.org>,
-	"wefu@redhat.com" <wefu@redhat.com>, "jassisinghbrar@gmail.com"
-	<jassisinghbrar@gmail.com>, "paul.walmsley@sifive.com"
-	<paul.walmsley@sifive.com>, "palmer@dabbelt.com" <palmer@dabbelt.com>,
-	"aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>, Frank Binns
-	<Frank.Binns@imgtec.com>, "maarten.lankhorst@linux.intel.com"
-	<maarten.lankhorst@linux.intel.com>, "mripard@kernel.org"
-	<mripard@kernel.org>, "tzimmermann@suse.de" <tzimmermann@suse.de>,
-	"airlied@gmail.com" <airlied@gmail.com>, "simona@ffwll.ch"
-	<simona@ffwll.ch>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>,
-	"jszhang@kernel.org" <jszhang@kernel.org>, "m.szyprowski@samsung.com"
-	<m.szyprowski@samsung.com>
-Cc: "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
-	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Content-Language: en-US
-From: Michal Wilczynski <m.wilczynski@samsung.com>
-In-Reply-To: <48261cdfab6e0bc16e5327664b06728e1894422a.camel@pengutronix.de>
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA02Sf1RTZRjHe+/u7t12zvAyUF5whu0EJ+uIQmbvMeEoheea/ZCTnZ38p3bk
-	nqGOH22MyIyh8mPahCHzVMMYIsGcgKGMBoIUEgO0wVwi8WNgZ54ARaAhESUGu1r893me5/s8
-	3+d5z8vjiJqJEN7+5DRGmSxTSAgBXt/+V/f6y7EW+Uab+1nUcbsMQ9a/jSSqanZgyNTm4CL3
-	zToM/fJwkkA1d3tINNp8BEe95m9IdKz9IoHGjG4CTevcXORqPEMg78k2gOq92QSqbhsi0dlp
-	K47KbY0A5R6v4CJnVxwacnfgaMyl46Bc4wr0uMlGooXeWhwVP2ghUd39Qi6yV0tRdosB37aG
-	nuzLIen7Y2M4fU07Q9LNs6U43WAcImldww1AX7IcJ+jB3iaCLumMp4e/sGP05XINnV3djtEF
-	jzbSk1dvEXR+nQXQN4/dJneL9gq2JjCK/emMckPMR4LEI9VHuakdmzNappRZwPnSCcDnQWoT
-	vHXBRp4AAp6IMgOYN+PB2GAGwPy5qxw28AJYU2vAn7YY9CVctlAJoOPna4ANJgD8razEpxJS
-	MdDx4z9giXEqDJboigGb94edX3t8mpVUKBzu/4pc4gBqN3TNlfrsAqkqHhw/Pe8rcKgsDtTq
-	M1kOgv0eE7bEBBUFRypN3CXmU2/B/HtuwGpC4fcTZ3yDIOUUwI5zVg679xvQOfEnwXIAHLfX
-	kSyL4eMGdiikUuCI9Y8n+sOwQWd/wq/BQcf8Yi9v0WAdvNi4gU1vh1PmcXwpDSk/2Dfhz67g
-	B0/Vf8lh00KozRWx6nB4WnfyP1OHuR7TA4lx2asYlx1pXHaM8X/fUoBbQBCjViXJGdXLycwn
-	ESpZkkqdLI/Yl5J0CSz+8OsL9oc2YB6fjmgFGA+0AsjjSAKFm86a5SJhguzTQ4wy5UOlWsGo
-	WsFqHi4JEpa15MhFlFyWxhxkmFRG+bSK8fghWVhMfEHAZz8dZICM32Rt/mGq4k7w+4cOR+V4
-	396TXvlt1JrQiYW1A7HvFFZs1/rN9eXims1hbxYWXVC8UqY20ecHwgcCX9AV9ThGDOK4BOng
-	6gdH089N2wu8W6yvzhrC6yJTn3m+2yh2u/o/X9+69gBeUJQzI8l/z7IqLCajc9WuPZopzwFT
-	D3El71GUX3Hix+JgfVdX9BV8W1qsRtw78N2o/we79moaaaqI2Rl6I9ZPshI8FyLdMhp3PTPa
-	bJRW6flV3c7id9Wvl8/vaBxWKmrSa5Ars29Wu69mOMsRPRK5AoQMr/PclXZyvXfu7cxoqh2K
-	z/tVv7Xy9/PUqTYip0ETLMFVibLIFzlKlexfy8v93FAEAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA02Se0xbdRTH/fXe3luIze4Kk18QAqm6RZd1tCv1xwREo+ZGDHNzTqOZWOFS
-	Kn3MtizbNFK2jjiKDCIiFNZSxZV1YzjsGI92nYg85qzjVRYYnVFIbIF1lUEyx1C6xsh/3/P4
-	fM/JyeFgPA87niNX6RiNSqrgE9H4z6sDvm3tL9plKV/0JaDBia9Z6OJ9E4nOuTwsZOnzsJFv
-	xMFCY0tBAp2fvU6iP12lOPK2nCLRsf42AvlNPgKFKnxsNNrdSKDFz/sA6lg0EKi1b5pE1tBF
-	HDV3dgNUduI0Gw1ffRlN+wZx5B+twFCZaQP6x9lJolXvBRw13HaTyDFfzUYDrW8hg7sGz0qk
-	gzeOk/S834/TP352l6Rdy0043WWaJumKrmuAbrefIOibXidBm4d207eMAyz6++YS2tDaz6JP
-	Pkihg5fHCbrSYQf0yLEJ8nXeO4J0jbpYxyQXqrW6DP67QiQSCNOQQCROEwh3PLt/pyiVvz0z
-	PZ9RyA8ymu2Z7wsKS1uPsg8MSg6572j0YHhrOYjiQEoMa6rM7HIQzeFR3wK4fG8FRAoJ0Gv0
-	4xEdA1e85USkaQ5Al/soK1zgUpnQ80MEwKmnoLmiAUTyG+FQ/cxDeBOVBG9N1pHlgMOJoXKg
-	2Z4S9oml2jlwpdRAhgOM0mPQ3nADCwM8aokFzZ6MsMaoODg5Y3k4jKBE8DebhR3WUdRrsHLO
-	B8KmGLUFtpl5kfYkeGmhEasCPNO6NUzrnEz/E6Z1RBPA7SCWKdYqZUqtSKCVKrXFKpkgT61s
-	B2uP1dF/z9EJzgRCgl7A4oBeADkYP5YrtrbIeNx86eEjjEadqylWMNpekLp2imosflOeeu0z
-	VbpcoSQlVSiWpKWkpkl28OO4xNivBTxKJtUxRQxzgNH8x7E4UfF6Vtuw/j32ndDC1FZe3AuG
-	J/4SNnW45YNn76cnBDact3zU8JUt85Kv0J4Nl99YeLLl49PObQprrLVIdy7q+vgV2ytf7l0N
-	GG9mzHMP/6H4ZnSswFn3SeeeyiFjDZ5bf9X13YTd2OgJis2f5vccFFo6omvLzpbkvJp1qsaq
-	WYze5XjTG5i9+3Ze7Z7fJb8o5bf3kxd26wOOqdEjj+YUnKGDoTrcrnQ2DSbPbUnKLkkc3/cY
-	aKzOgrj8sltdcs1o/rCXzI6ZZJuzEw/19CR31ecsK6Yole25lgfd4o0jM1Xk43t3cvfVGD8o
-	Oj5i23WlV/7SzE9Ls1P2wPNPSx4Z+ru2eXPcZj6uLZQKn8E0Wum/gIMQU+EDAAA=
-X-CMS-MailID: 20250210181722eucas1p2b15d633fa8c141efec2d6e4b2ca80a42
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20250128194836eucas1p151c4fc83a17173fd1b79bfc959976301
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20250128194836eucas1p151c4fc83a17173fd1b79bfc959976301
-References: <20250128194816.2185326-1-m.wilczynski@samsung.com>
-	<CGME20250128194836eucas1p151c4fc83a17173fd1b79bfc959976301@eucas1p1.samsung.com>
-	<20250128194816.2185326-10-m.wilczynski@samsung.com>
-	<816db99d-7088-4c1a-af03-b9a825ac09dc@imgtec.com>
-	<e83ea320-23f0-41ed-934c-2f1687b55ec1@samsung.com>
-	<48261cdfab6e0bc16e5327664b06728e1894422a.camel@pengutronix.de>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAEf4Bza5nKk6_fVY2vmJjZgPb40zB+R3REy8==ZLc98eg1iHTA@mail.gmail.com>
 
-
-
-On 2/4/25 18:18, Philipp Zabel wrote:
-> On Mo, 2025-02-03 at 19:15 +0100, Michal Wilczynski wrote:
->>
->> On 1/31/25 16:39, Matt Coster wrote:
->>> On 28/01/2025 19:48, Michal Wilczynski wrote:
->>>> Add reset controller driver for the T-HEAD TH1520 SoC that manages
->>>> hardware reset lines for various subsystems. The driver currently
->>>> implements support for GPU reset control, with infrastructure in place
->>>> to extend support for NPU and Watchdog Timer resets in future updates.
->>>>
->>>> Signed-off-by: Michal Wilczynski <m.wilczynski@samsung.com>
->>>> ---
->>>>  MAINTAINERS                  |   1 +
->>>>  drivers/reset/Kconfig        |  10 ++
->>>>  drivers/reset/Makefile       |   1 +
->>>>  drivers/reset/reset-th1520.c | 178 +++++++++++++++++++++++++++++++++++
->>>>  4 files changed, 190 insertions(+)
->>>>  create mode 100644 drivers/reset/reset-th1520.c
->>>>
-> [...]
->>>> diff --git a/drivers/reset/reset-th1520.c b/drivers/reset/reset-th1520.c
->>>> new file mode 100644
->>>> index 000000000000..48afbc9f1cdd
->>>> --- /dev/null
->>>> +++ b/drivers/reset/reset-th1520.c
->>>> @@ -0,0 +1,178 @@
-> [...]
->>>> +static void th1520_rst_gpu_enable(struct regmap *reg,
->>>> +				  struct mutex *gpu_seq_lock)
->>>> +{
->>>> +	int val;
->>>> +
->>>> +	mutex_lock(gpu_seq_lock);
->>>> +
->>>> +	/* if the GPU is not in a reset state it, put it into one */
->>>> +	regmap_read(reg, TH1520_GPU_RST_CFG, &val);
->>>> +	if (val)
->>>> +		regmap_update_bits(reg, TH1520_GPU_RST_CFG,
->>>> +				   TH1520_GPU_RST_CFG_MASK, 0x0);
+On Wed, Feb 05, 2025 at 05:28:19PM -0800, Andrii Nakryiko wrote:
+> On Tue, Feb 4, 2025 at 3:24 PM Charlie Jenkins <charlie@rivosinc.com> wrote:
+> >
+> > On Tue, Feb 04, 2025 at 11:02:42PM +0000, Alexei Starovoitov wrote:
+> > > On Tue, Feb 4, 2025 at 7:04 PM Namhyung Kim <namhyung@kernel.org> wrote:
+> > > >
+> > > > Hello,
+> > > >
+> > > > On Tue, Feb 04, 2025 at 10:34:41AM -0800, Charlie Jenkins wrote:
+> > > > > On Tue, Feb 04, 2025 at 05:18:42PM +0000, Alexei Starovoitov wrote:
+> > > > > > On Tue, Feb 4, 2025 at 12:10 AM Charlie Jenkins <charlie@rivosinc.com> wrote:
+> > > > > > >
+> > > > > > > The quiet infrastructure was moved out of Makefile.build to accomidate
+> > > > > > > the new syscall table generation scripts in perf. Syscall table
+> > > > > > > generation wanted to also be able to be quiet, so instead of again
+> > > > > > > copying the code to set the quiet variables, the code was moved into
+> > > > > > > Makefile.perf to be used globally. This was not the right solution. It
+> > > > > > > should have been moved even further upwards in the call chain.
+> > > > > > > Makefile.include is imported in many files so this seems like a proper
+> > > > > > > place to put it.
+> > > > > > >
+> > > > > > > To:
+> > > > > > >
+> > > > > > > Signed-off-by: Charlie Jenkins <charlie@rivosinc.com>
+> > > > > > > ---
+> > > > > > > Charlie Jenkins (2):
+> > > > > > >       tools: Unify top-level quiet infrastructure
+> > > > > > >       tools: Remove redundant quiet setup
+> > > > > > >
+> > > > > > >  tools/arch/arm64/tools/Makefile           |  6 -----
+> > > > > > >  tools/bpf/Makefile                        |  6 -----
+> > > > > > >  tools/bpf/bpftool/Documentation/Makefile  |  6 -----
+> > > > > > >  tools/bpf/bpftool/Makefile                |  6 -----
+> > > > > > >  tools/bpf/resolve_btfids/Makefile         |  2 --
+> > > > > > >  tools/bpf/runqslower/Makefile             |  5 +---
+> > > > > > >  tools/build/Makefile                      |  8 +-----
+> > > > > > >  tools/lib/bpf/Makefile                    | 13 ----------
+> > > > > >
+> > > > > > Nack.
+> > > > > > libbpf and bpftool are synced independently to github
+> > > > > > and released from there.
+> > > > > > This change breaks it.
+> > > >
+> > > > Sorry, I overlooked this part and merged a change that touched the
+> > > > common files into the perf tree.
+> > > >
+> > > > f2868b1a66d4f40f ("perf tools: Expose quiet/verbose variables in Makefile.perf")
+> > > >
+> > > > Unfortunately, it's already in v6.14-rc1.
+> > > >
+> > > > >
+> > > > > Can you explain how it breaks it? Currently bpftool and resolve_btfids
+> > > > > don't build quietly so this was an attempt to fix that.
+> > > >
+> > > > So I think you will need something like this for v6.14.  Again, sorry
+> > > > about the trouble.
+> > >
+> > > Just revert f2868b1a66d4f40f that created this mess.
+> >
+> > Why are you opposed to unifying this helpers among the various projects
+> > in tools? Can you explain what about this breaks the Github syncing flow
+> > and why it cannot be resolved? It doesn't make sense to duplicate "Q="
+> > in every Makefile anybody ever wants to add to tools just because bpf
+> > syncing isn't robust.
 > 
-> BIT(2) is not documented, but cleared here.
+> Alexei's concern about Github mirrors of bpftool and libbpf isn't
+> valid. Github versions of those projects use their own independent
+> Makefiles anyways, so your change doesn't break that aspect.
+> 
+> But your change *does* break both libbpf's and bpftool's make output
+> *in the kernel repo*. With this patch we basically don't have "quiet"
+> mode anymore:
+> 
+> $ git co f2868b1a66d4f40f07e985b0beead606b2753602
+> HEAD is now at f2868b1a66d4 perf tools: Expose quiet/verbose variables
+> in Makefile.perf
+> $ git log --oneline -n1
+> f2868b1a66d4 (HEAD) perf tools: Expose quiet/verbose variables in Makefile.perf
+> $ pwd
+> /home/andriin/linux/tools/lib/bpf
+> $ make
+>   gcc -Wp,-MD,/data/users/andriin/linux/tools/lib/bpf/staticobjs/.libbpf.o.d
+> -Wp,-MT,/data/users/andriin/linux/tools/lib/bpf/staticobjs/libbpf.o -g
+> -O2 -std=gnu89 -Wbad-function-cast -Wdeclaration-after-statement
+> -Wformat-security -Wformat-y2k -Winit-self -Wmissing-declarations
+> -Wmissing-prototypes -Wnested-externs -Wno-system-headers
+> -Wold-style-definition -Wpacked -Wredundant-decls -Wstrict-prototypes
+> -Wswitch-default -Wswitch-enum -Wundef -Wwrite-strings -Wformat
+> -Wno-type-limits -Wstrict-aliasing=3 -Wshadow -Wno-switch-enum -Werror
+> -Wall -I/data/users/andriin/linux/tools/lib/bpf/
+> -I/data/users/andriin/linux/tools/include
+> -I/data/users/andriin/linux/tools/include/uapi
+> -I/data/users/andriin/linux/tools/arch/x86/include -fvisibility=hidden
+> -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -D"BUILD_STR(s)=#s" -c -o
+> /data/users/andriin/linux/tools/lib/bpf/staticobjs/libbpf.o libbpf.c
+> ^Cmake[2]: *** [/data/users/andriin/linux/tools/build/Makefile.build:86:
+> /data/users/andriin/linux/tools/lib/bpf/staticobjs/libbpf.o] Interrupt
+> make[1]: *** [Makefile:165:
+> /data/users/andriin/linux/tools/lib/bpf/staticobjs/libbpf-in.o]
+> Interrupt
+> make: *** [Makefile:143: all] Interrupt
+> 
+> $ git co HEAD~
+> Previous HEAD position was f2868b1a66d4 perf tools: Expose
+> quiet/verbose variables in Makefile.perf
+> HEAD is now at e9cbc854d8b1 perf config: Add a function to set one
+> variable in .perfconfig
+> $ make
+>   CC      /data/users/andriin/linux/tools/lib/bpf/staticobjs/libbpf.o
+> ^C
+> 
+> So, can you please check and fix?
 
-Yeah shouldn't be cleared, thanks !
+I think I am misunderstanding what you are saying. The patch that we are
+discussing on is the patch to fix this? You are showing the output from
+the patch that is being fixed in this series.
 
 > 
->>>> +
->>>> +	/* rst gpu clkgen */
->>>> +	regmap_set_bits(reg, TH1520_GPU_RST_CFG, TH1520_GPU_SW_CLKGEN_RST);
->>>
->>> Do you know what this resets? From our side, the GPU only has a single
->>> reset line (which I assume to be GPU_RESET).
->>
->> This is clock generator reset, as described in the manual 5.4.2.6.1
->> GPU_RST_CFG. It does reside in the same register as the GPU reset line.
->>
->> I think this is required because the MEM clock gate is somehow broken
->> and marked as 'reserved' in manual, so instead as a workaround, since we
->> can't reliably enable the 'mem' clock it's a good idea to reset the
->> whole CLKGEN of the GPU.
+> Also, looking at your patch:
 > 
-> If this is a workaround for broken gating of the "mem" clock, would it
-> be possible (and reasonable) to make this a separate reset control that
-> is handled by the clock driver? ...
+> a) you removed the `"$(origin V)", "command line"` check from both
+> perf and libbpf, so that's not really an equivalent change/behavior
+> now
 
-Thank you for the detailed feedback, Philipp.
-
-After further consideration, I believe keeping the current reset driver
-implementation would be preferable to moving the CLKGEN reset handling
-to the clock driver. While it's technically possible to implement this
-in the clock driver, I have concerns about the added complexity:
-
-1. We'd need to expose the CLKGEN reset separately in the reset driver
-2. The clock driver's dt-bindings would need modification to add an
-   optional resets property
-3. We'd need custom clk_ops for all three clock gates (including a dummy
-   'mem' gate)
-4. Each clock gate's .enable operation would need to handle CLKGEN reset
-   deassertion
-
-While the clock framework could theoretically handle this, there's no
-clean way to express the requirement that the CLKGEN reset should only
-be deasserted after all clocks in the group are enabled. We could
-implement this explicitly, but it would make the code more complex and
-harder to understand.
-
-The current solution in the reset driver is simpler and clearer - it
-treats this as what it really is: a TH1520-specific reset sequence.
-Looking at other similar SoCs like the BPI-F3, we can see this is truly
-THEAD-specific - the BPI-F3 has just a single reset line with no CLKGEN
-bit to manage. When you assert/deassert the GPU reset line on the
-TH1520, it handles everything needed for a clean reset on this specific
-SoC. This keeps the implementation contained and straightforward.
-
-Regarding the delay between clock enable and reset deassert - for SoCs
-like BPI-F3 with a single reset line, implementing this in the GPU
-consumer driver makes perfect sense. However, for the T-HEAD SoC, moving
-the delay there would actually complicate things since we need to manage
-both the CLKGEN and GPU reset lines in a specific sequence. Having this
-handled entirely within the reset driver keeps the implementation
-cleaner.
-
-Does this reasoning align with your thoughts? I'm happy to explore the
-clock driver approach further if you still see significant advantages to
-that solution.
+I don't believe it is required to keep that check.
 
 > 
->>>> +
->>>> +	/*
->>>> +	 * According to the hardware manual, a delay of at least 32 clock
->>>> +	 * cycles is required between de-asserting the clkgen reset and
->>>> +	 * de-asserting the GPU reset. Assuming a worst-case scenario with
->>>> +	 * a very high GPU clock frequency, a delay of 1 microsecond is
->>>> +	 * sufficient to ensure this requirement is met across all
->>>> +	 * feasible GPU clock speeds.
->>>> +	 */
->>>> +	udelay(1);
->>>
->>> I don't love that this procedure appears in the platform reset driver.
->>> I appreciate it may not be clear from the SoC TRM, but this is the
->>> standard reset procedure for all IMG Rogue GPUs. The currently
->>> supported TI SoC handles this in silicon, when power up/down requests
->>> are sent so we never needed to encode it in the driver before.
->>>
->>> Strictly speaking, the 32 cycle delay is required between power and
->>> clocks being enabled and the reset line being deasserted. If nothing
->>> here touches power or clocks (which I don't think it should), the delay
->>> could potentially be lifted to the GPU driver.
+> b) a bit sloppy on assignment:
 > 
-> ... This could be expressed as a delay between clk_prepare_enable() and
-> reset_control_deassert() in the GPU driver then.
+> +ifeq ($(V),1)
+> +  quiet =
+> +  Q =
+> +else
+> +  quiet=quiet_
+> +  Q=@
+> +endif
 > 
->> Yeah you're making excellent points here, I think it would be a good    
->> idea to place the delay in the GPU driver, since this is specific to the
->> whole family of the GPU's not the SoC itself.
->>
->>> Is it expected that if a device exposes a reset in devicetree that it
->>> can be cleanly reset without interaction with the device driver itself?
->>> I.E. in this case, is it required that the reset driver alone can cleanly
->>> reset the GPU?
+> note the spaces around '=', try to keep stuff like this consistent
+> (and if this was shell, it would bite you as well)
+
+Yes, I can make that consistent.
+
 > 
-> No, the "resets" property should just describe the physical
-> connection(s) between reset controller and the device.
-> 
-> It is fine for the device driver to manually assert the reset, enable
-> clocks and power, delay, and then deassert the reset, if that is the
-> device specific reset procedure.
-> 
->> I'm not sure what the community as a whole thinks about that, so maybe
->> someone else can answer this, but I would code SoC specific stuff in the
->> reset driver for the SoC, and the GPU specific stuff (like the delay) in
->> the GPU driver code. I wasn't sure whether the delay was specific to the
->> SoC or the GPU so I've put it here.
-> 
-> I agree.
-> 
-> regards
-> Philipp
-> 
+> >
+> > - Charlie
+> >
