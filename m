@@ -1,171 +1,177 @@
-Received: from NAM11-CO1-obe.outbound.protection.outlook.com (mail-co1nam11on2081.outbound.protection.outlook.com [40.107.220.81])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qv1-f51.google.com (mail-qv1-f51.google.com [209.85.219.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20A0515ECDF;
-	Mon, 10 Feb 2025 05:13:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.220.81
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739164407; cv=fail; b=QS5CXI9tnJuHd1LgqBzHX1EMz53DIoXuirijgmZjYBMfggsNsM9VuwdZghV1XLAaZ98ihlPXfTH1FiVPj0GPlafFAh1ij7pxi61yTuCujaZNd2wwGPKP8YGpCGoVidLSYwzao2ce0eLqlHv770pgygpBkW4eKR2uUJvfmXh4yyk=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739164407; c=relaxed/simple;
-	bh=D0MQ8hHqfaJdsWc14tUfgVeo3g325DYhiWv2JmWZQXw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=NqhCFwG33wtPzbby56lROxgdycROWk+6ldYPPszYrp/VY77AlBbsgLFNaqqBjBh747v08K9H6Q4lvJlc30Kv9jug2Pun+IKqXrsTMYg72495Wc4gatvZbxaxSsvAFuE+zFW886x0t32xR370tw5D334WbmPOgNZJ0p8/4ONbgME=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=TWEivoyZ; arc=fail smtp.client-ip=40.107.220.81
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 720F715A87C;
+	Mon, 10 Feb 2025 05:15:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.51
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1739164514; cv=none; b=GUvsnb999DiE7tzZlcWPf9TfhH8YkcPd4FVNpKA+Ytu2LSycBX9kpp4TuDRQ32usSKlDCwq/BthEbGrFpDYcKYXy3sCXGwzYSffWkL+KA7C10/M2yH2b6aBQeweZED+205+lkQ3RHUoSElCFeTFTHt5YFqC0PSsCLOnmOuwNHH4=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1739164514; c=relaxed/simple;
+	bh=MG3Ad9L3pB9/1Waq7rcu6JsxoIBzEerr0O3vqh6hS/E=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=GCBMYBLnXdgbaUwdZswe4xHMbBpdntcxJxlglUnQvpPN4bHH5wbDjxG7LzoU/L+bypTR8LHKNt15JD3UOAEMsjXO7D5DDWykTygQQYac+x/1Rjo6VB+6pGZQqts7LM+3VxfxcyinN/sHhsJMjjjfTJjDewooWq+oCZrYNGUUndM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=m0OdoDze; arc=none smtp.client-ip=209.85.219.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="TWEivoyZ"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=udI1MI0GeGD2cxzoXcLm1NcDJ2dXwu19Iw5/luS0KIvfoSg0CIW3ZztlhA8VccZX8uG9z86zOITMgMmR/crJmyHAG/F9tMNDtYygjiqh3nQs1AHqnT9NYBinKDkgwoWG8xFIzFRIszPtvTAzYDM2nf4w/3AETLnHlBISULQEBHsLun/R6JmawvF29/SRlouwpFkZVJZOkWZo8BaVMxFV2BhNUPmGSQcJKxPMSxK8xcz87r9uQJsZ/ZPjMPZ+2R5kj6lfeXX/tIyQO025HNqG0sYsxHbmTn1AVTHQ88utBoyV7SglZ+9NRr9nUeDtgCaet+IBH+D26knQP25wVJZ3FA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=NBKHRYqGmkoU+fIIbXUTcItCkg1Crj6bzq/LcdN6N5s=;
- b=dyNNZioZohAuNWl/lqDlbmiKPrcVhstHvV3cd8h7RG8apWwxktgpB7JJ/EkBSjpRtFrCJObtByNFnI+vsdlzuUwZcrpOpaOAVb6klB8UvvLuQIfF6gR4pd2VkBOBAsitc0Jv+XMmEMNo4dFU+j4qgVfLi4UAvVHjCBNU+cva/kd2nb2/rwoTI3BP5BlgLGQ+I0FryQujRFg6kh9rkQAfGn9JywOtzD9fMxprAbV7TQSTpVndavt95hVmMveCbBeFfg9rE3P6YYeVMvI6dQMEjdt9pGNstPwdDLKbPEH4U5IIg82RYlhNnDwtLLL+uE/5zvMKBqBwPvYGNuMxg+dWdg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=NBKHRYqGmkoU+fIIbXUTcItCkg1Crj6bzq/LcdN6N5s=;
- b=TWEivoyZiliZmAtLp99oaEvOd0DZuzv8uFNISq98QufDGn+giaOVgAVPbN1daakGTouHFyKkI6qKprfPIaG0w5UjA6H4XTzB+ZlnybZfBWu95GzcpO6SrE2O5wGE7qjCkOTdKCMUz8jgE3MmHvQU2+rhP/F8HR7/LXOk7FzKkC4=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from DS7PR12MB8252.namprd12.prod.outlook.com (2603:10b6:8:ee::7) by
- PH8PR12MB7255.namprd12.prod.outlook.com (2603:10b6:510:224::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8422.15; Mon, 10 Feb
- 2025 05:13:24 +0000
-Received: from DS7PR12MB8252.namprd12.prod.outlook.com
- ([fe80::2d0c:4206:cb3c:96b7]) by DS7PR12MB8252.namprd12.prod.outlook.com
- ([fe80::2d0c:4206:cb3c:96b7%6]) with mapi id 15.20.8422.015; Mon, 10 Feb 2025
- 05:13:24 +0000
-Date: Mon, 10 Feb 2025 10:43:15 +0530
-From: "Gautham R. Shenoy" <gautham.shenoy@amd.com>
-To: Dhananjay Ugwekar <dhananjay.ugwekar@amd.com>
-Cc: mario.limonciello@amd.com, rafael@kernel.org, viresh.kumar@linaro.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 02/12] cpufreq/amd-pstate: Fix max_perf updation with
- schedutil
-Message-ID: <Z6mK6/Mo6Q4dxZ9N@BLRRASHENOY1.amd.com>
-References: <20250205112523.201101-1-dhananjay.ugwekar@amd.com>
- <20250205112523.201101-3-dhananjay.ugwekar@amd.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250205112523.201101-3-dhananjay.ugwekar@amd.com>
-X-ClientProxiedBy: PN2PR01CA0196.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:c01:e9::8) To DS7PR12MB8252.namprd12.prod.outlook.com
- (2603:10b6:8:ee::7)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="m0OdoDze"
+Received: by mail-qv1-f51.google.com with SMTP id 6a1803df08f44-6e4562aa221so11900426d6.0;
+        Sun, 09 Feb 2025 21:15:12 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1739164511; x=1739769311; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=GniGuM78BIcAr7ts8pXvWJNfUZLhduP49+7UQWf5Z0E=;
+        b=m0OdoDzeERryL/Y2VHcNsleGeLNkuuePGG27XA1TKjQQvlVbdTBVffY/JIrI6cBgMW
+         XcLmFgvM3VvYTMZ2yzuKCLzPNjl0nfs83+fdj5H8Fn9XCm2NPC9ana0k+Tg6FaxrVYV8
+         5bTg5uoibPLozia6CGX0vQs6UPQxz02DrgUAXhnWsVn4X/vGCHncoeCF2BU6y7jB9ur1
+         n9c/2Cy40vzIGVxzT9RNz/uDT2MhQqP3iUYwTJdB6sUVNEnCJmUBCkNTJPoEvLkDPwnH
+         tyorwmL8+WdIcvSrnRMb3tzYd0DI2tfZqU1gbIamXzLsz1RjE7aX0WGkC49hQs7fJabC
+         k3Gg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739164511; x=1739769311;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=GniGuM78BIcAr7ts8pXvWJNfUZLhduP49+7UQWf5Z0E=;
+        b=DZnR6rP5Be6qZ7ZVfaQLUrlEmQ0ts4F/kvXZ9kkZPhvGl7saG/Pg0oUwuyMEDgs8X4
+         9wIXQ2gAzRNgwWa1Tke267IXvXDkUrtHL+Awb8soPdttq5X3CNdA9r59pHELawRnbiLJ
+         uextW4XjkEZZJm07oF6fZ+WE7ZPObWgo9gpVzQ/elMiw/ocRix75vm0Wjd1a5OJWneE4
+         YdDvkJBriR+vRDtJ+W8BlIJu7soEpEtmlWW/+MuWycb1VCImrg5KQDHCzcKqqYWhAmsb
+         S5zqoQ759gQiZBW9lcWaZ0g+5n0OL7Uiu/S4PKcyQBfgAj5f1OqqpdyxAlvzgJA10ORv
+         HFkw==
+X-Forwarded-Encrypted: i=1; AJvYcCV2zEd+k1ILaCwqGQFArVIxeeo7G2e7FdsIx05FCfPDgf7N6ujRFuyAmVKLAn78qdyM9mV0Qplag10h@vger.kernel.org, AJvYcCW7qs1WlaigFeD5kiu9UCTWyY8/YxJtJlm657NXqDhFglZqRRBiEp1RFY6HlE6RcGXZDB5CPUoAv3g=@vger.kernel.org
+X-Gm-Message-State: AOJu0YwHyLoh0jEw2Q7aozNEbBLhYN9wgnZBmkb9hLjoB2pb5uVVjK7U
+	FzvylurPzOkJz+nvWGpzuCUKb9vZMFufgN50GhTeFJ+cGXU448S/
+X-Gm-Gg: ASbGnctktZ4CX0hIlxHhLoijk9MJ5QQK2GE6Q8S6dZFxZnPWBl7nSEUksQKZrc4EixT
+	1Hs5HUz9A5XEFWcRLRKAIPixjwGAZ0DSoglsvQlDH+uB9QOrjyYGcSjzFkTzHPkM6WJjtcIgkx2
+	n3HJYxg0VFn2RN+Zp2zcBtQb0dKA5JOrW1a12BcEOZ68Jezosbhxhh3dD0XYplQngp71D3E2LSN
+	lee2CgXNcGIeAV7hv6A6Hzj2cLxSSuwd86xj04obB+vRKfp7J4xt4jM8Ukkx/rngTA=
+X-Google-Smtp-Source: AGHT+IH28KSGQngpOC4sMgaBVZJQsS3ItIqPoUQbHrVhyVBUOfjf9q5guk+CZKNPKJ4L2waMIxeNTQ==
+X-Received: by 2002:ad4:5caf:0:b0:6da:dc79:a3cd with SMTP id 6a1803df08f44-6e4453fdde1mr194721716d6.0.1739164511260;
+        Sun, 09 Feb 2025 21:15:11 -0800 (PST)
+Received: from localhost ([2001:da8:7001:11::cb])
+        by smtp.gmail.com with UTF8SMTPSA id 6a1803df08f44-6e460380644sm8468166d6.120.2025.02.09.21.15.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 09 Feb 2025 21:15:10 -0800 (PST)
+Date: Mon, 10 Feb 2025 13:15:05 +0800
+From: Inochi Amaoto <inochiama@gmail.com>
+To: Alexander Sverdlin <alexander.sverdlin@gmail.com>
+Cc: Chen Wang <unicorn_wang@outlook.com>, soc@lists.linux.dev, 
+	Inochi Amaoto <inochiama@outlook.com>, Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Will Deacon <will@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
+	Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Albert Ou <aou@eecs.berkeley.edu>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, 
+	Haylen Chu <heylenay@outlook.com>, linux-arm-kernel@lists.infradead.org, 
+	linux-riscv@lists.infradead.org, linux-pm@vger.kernel.org, Inochi Amaoto <inochiama@gmail.com>
+Subject: Re: [PATCH 00/10] arm64 support for Milk-V Duo Module 01 EVB
+Message-ID: <xfvvie67ncfy5vnmk2lcjatvpmyneponc7ex4nv7otiiolruij@ejpqdomocv7z>
+References: <20250209220646.1090868-1-alexander.sverdlin@gmail.com>
+ <BMXPR01MB244050BA1841F4416FF0484CFEF22@BMXPR01MB2440.INDPRD01.PROD.OUTLOOK.COM>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS7PR12MB8252:EE_|PH8PR12MB7255:EE_
-X-MS-Office365-Filtering-Correlation-Id: a177b1c7-e52c-4d61-5e79-08dd4991a4b6
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|376014|366016;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?JVto4Cq7tVXaRNbgJfkGyl7QvGB97DK9Va4fi4AKeDek0N93JQAupUdxxV4k?=
- =?us-ascii?Q?dD7jQFjnoxYB5BUh/UmsxDrrMmUY5iXV3Mf69jBjbkiJ4KtYYsYqf4x6oTc6?=
- =?us-ascii?Q?l0EA7Dzp0mNr/KFUCx38wOG3Js8xrj3J7Ki8D5ZedIBAm8j2Zs6zKRXGjKAj?=
- =?us-ascii?Q?XX5T1OZp5jRxWSmS+xqd7SZMbo3QDiKiuV2mhriC/9Tq2W2vYMVXAphRucUP?=
- =?us-ascii?Q?I1hbVgo9kbAtUC/QMj2QuNiagPm0JweIuVfbJnWzwS/1KSp6ulDC+5/rpt6n?=
- =?us-ascii?Q?p/Mqz8803nGnr00OWm3S1ay4zHD6xpa0gXlLMK77PlsiLlCRd+zcG2vVBxP2?=
- =?us-ascii?Q?Xa4BpzZ4D6vHsoAjoxuCXD/bsVrcjxB31cnuCJb2ODmsIIWRIvHSbwSgDAfM?=
- =?us-ascii?Q?PxFchCtRW1c1RiE8rtbXmOpf+XfD9oXtDXU+S1PYQIsWixys+DiwuItkKGeQ?=
- =?us-ascii?Q?privxWcrEkSCes80YajykganwITlas9TLr/PVZ13NfCZajRvzs47fEFkm3Ux?=
- =?us-ascii?Q?MEaVqv3gVEjOZs0u4w/VB4d8eskCnma6YgaKnuicqW2PZRyr/mawkXBXCech?=
- =?us-ascii?Q?2i7GFiRlZQKHO7kxMaGHbo9Oa9vaf2qEpLb8IIUO9LEWXQ82HAetoNK+ePAt?=
- =?us-ascii?Q?6eNlIuWitCCJORVa5uC88jlZNc5fmagYWcd5RAXSi9pexNxug88J45RAWkGO?=
- =?us-ascii?Q?LvN3xcX0FhU9SGGMhg5YZcb9xH+nNx5XZ0VGdpIzu1lsd7ZgpXqEGR77r1zc?=
- =?us-ascii?Q?bYg0TjWB3i2g42e4MjJIGgwJtY89IpKyVPgm+zoUPRvAOgz7xt6ftL1Lqzaz?=
- =?us-ascii?Q?k3UHpCsuXy7cf768kCgxzREBljzGsClYa1CmH31lKh8QdC2DJSrvLVmnFhN1?=
- =?us-ascii?Q?y6yS3m4fAVvOykC6euCDg22nRGmYd6h1d0WcxD8oPjPVsHa5/Le+ChbqDddi?=
- =?us-ascii?Q?6+o+onGVQtEW0vELe5Wr7bsbT1uhFvpBK4MsfsnqkABsVRRQE2Rae1Xz+XIF?=
- =?us-ascii?Q?uuhTGIJj9mS1OQbr07h27TcMKQ6WRvvkFbGAoywBBFL0HsY+A8nq47TzEx1E?=
- =?us-ascii?Q?qdCu6RKR8sjRc+SKuXO4GkY43O/kuxY8aDQ4oBQINT2f2k5JkxiC11HGONRD?=
- =?us-ascii?Q?7q3fhAEPC3X6zEvqfDA2NThdNTdTIgSFizM3wSYfWwOAu2QBkqR0Up9P80LD?=
- =?us-ascii?Q?SKn3Js/cnWtLLESe36iv+ykxGd8aV3LsqXkfrIhXRE8DumBzDfNnksmZ17l7?=
- =?us-ascii?Q?Hl4m+K5XDwYxTucxIvUddTdosoTQ3xQzanlkd9yWHBkYzHN896SKluZEetXt?=
- =?us-ascii?Q?ntG5Vgy9vvLkf41CpRettadZDQeaiSidRcsFOYMhKPbPsFoqCExRlQYX8Qkg?=
- =?us-ascii?Q?BUaWJGAn0iEVZGZ9JLHthn8l2D+B?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR12MB8252.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(366016);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?9S7NRlbBdf8LGF8Qq1T7BZgLMBGM/ybGQhskWyqsCNIZpZ+pxQriiKGU5v+j?=
- =?us-ascii?Q?l6+R2ualJmPurmpWvI63xWO1zK2E51B7gJzRX6+l1Nrqe0zRrwpPdoJi/6NP?=
- =?us-ascii?Q?+j3IVhu5L4fvjytj/24B/SgauJGWgX7jKSO5e0SKmzq4bGCjI8HmAr8MbrAq?=
- =?us-ascii?Q?+BLukEQIe0qPnNTGUBsBicoPqPbxGABLtBTFP1DzeXjOHKhOx+v2W5vjtqhV?=
- =?us-ascii?Q?fAORvKshKTOLkvKtxHRIai3M5T4z9UV44qj0WAyAoG2iyN0iDuNdPW4tP9RE?=
- =?us-ascii?Q?nCjVdMr/KJfmFR/nUeCOilOC5H/UXMTFBvri1plRH+JdVpJTJ1+rhWLC2mOF?=
- =?us-ascii?Q?1MxVV9MnYh7eP6PxOiB4CFWLAvjl96Gl6NkY55z3mgy8ncyFOtXmfTZh0TtC?=
- =?us-ascii?Q?fAC0cdCl4zOBGcLsBGIaBjNOtv2ebAkWFAyggHwKD/qaSK/PCnj4ZKG38kTa?=
- =?us-ascii?Q?shbJZDapzxDsIllBPV6JR1yKeOnfPf/mbgtNIyPkwxcQ7kbX75+nHAEFnG/T?=
- =?us-ascii?Q?w7DzkjGnilDrCMLv7vjzKaknGEftRcuJ+vV8rbUpP/c7ELiy2ODaZZCj8S1I?=
- =?us-ascii?Q?7QddtdefOwBxfv6eC/G1XlaPN2L+5j7QivwejSSFhMIRbVUTdWa7aR4lPkxD?=
- =?us-ascii?Q?Tjkno4rTjm/t1odspZ1Xihmgnmvh6oOlosjePm7mW1iM8DHEMJSOD4oDIMOh?=
- =?us-ascii?Q?VgyCC6SLmPPnTlKciyNYNDH52ZSzhaY/kBDnB3SgvqkklkeJJyC2/ch/capY?=
- =?us-ascii?Q?JEl5WFLQp0TtxD4eWNAm703sBl0MYSHlA7uN9f+Oj2RpP6vSlxl7focccck6?=
- =?us-ascii?Q?5zGB0eza1aRqLkf6C8Yf4oH3gchveVczrwDmf4isupBjLVqoPbO9TQ28ySmY?=
- =?us-ascii?Q?aDzZ0DJWghTX5GMMPssIgUJVUqwCXHkmvl1aG0fTP9QXQDv0UT/foyqXFp8U?=
- =?us-ascii?Q?jUxc1U9PKE9kxINhKJg95nVvOmsXjS/At6bU0eUMKuBe6DS6hILBFNJG23Gu?=
- =?us-ascii?Q?XjiGDxEJq5Q9hKOnbbZrMdtmfMYJ90qm9J3u7tMpfU8dmEUDDmaHkL9nvdaR?=
- =?us-ascii?Q?Z7QQZtGYj64vfkFLOKYDClMCbQH8L69B4mr2/6sQkLYS1D1OA4FtJxlRt58S?=
- =?us-ascii?Q?SdT/5S1C0yU/Lmm0ln5F6uhqfJ/1vKHC1UlIEY8rA+iDtMRfbePylfgizyAd?=
- =?us-ascii?Q?W/1pvLSivVe2+yYh+vttcIr9M4pMB2PEOo4oHiYGhQGumq5DQDHjKjhJZzPF?=
- =?us-ascii?Q?8aWl4DiX6UExV0GCYggPhsKuUzHfTpKZzSW/G/o242pFZGSqfVUOY/CaJgFd?=
- =?us-ascii?Q?Ig+MmnwhXBb0u1LGn1YCudTA1uBss5SiTZyeU8GN9vR8m9CQ/5TMt+yK8nY1?=
- =?us-ascii?Q?2mugVjsuRmJdb8LmECJp5t+RZUJ9OrtziAqpVkqv21fQCCs//i/3KTz3nYo5?=
- =?us-ascii?Q?oM7AH/4opKwtKlJWeRk2s6O5rgj1pDgHkD74tFjZdbI4+vSxFjwRXyc6HDjh?=
- =?us-ascii?Q?iXhjxI9UVvfUpnc5ZYF7qk/QYqbBZzj++4EzRZKrt7euUzTTtpvid5Puh0jV?=
- =?us-ascii?Q?lw1lUSCgTxx86nFFNgMCePHc7dz7bK9c85N6T7Eg?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: a177b1c7-e52c-4d61-5e79-08dd4991a4b6
-X-MS-Exchange-CrossTenant-AuthSource: DS7PR12MB8252.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Feb 2025 05:13:24.0136
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 1OTbk9h0Kezxb3BiBDTpZMTNp88dASYzpdDBEN6+e6sZLTO9HO5TBFtxlhkbYvBR30jW86ZwFroKms63x0+59w==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH8PR12MB7255
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <BMXPR01MB244050BA1841F4416FF0484CFEF22@BMXPR01MB2440.INDPRD01.PROD.OUTLOOK.COM>
 
-On Wed, Feb 05, 2025 at 11:25:13AM +0000, Dhananjay Ugwekar wrote:
-> In adjust_perf() callback, we are setting the max_perf to highest_perf,
-> as opposed to the correct limit value i.e. max_limit_perf. Fix that.
+On Mon, Feb 10, 2025 at 08:02:12AM +0800, Chen Wang wrote:
 > 
-> Fixes: 3f7b835fa4d0 ("cpufreq/amd-pstate: Move limit updating code")
-> Signed-off-by: Dhananjay Ugwekar <dhananjay.ugwekar@amd.com>
+> On 2025/2/10 6:06, Alexander Sverdlin wrote:
+> > This series adds very basic support for Milk-V Duo Module 01 EVB [1] in
+> > arm64 mode. The SoC (SG2000) is dual-arch, RiscV and ARM64, the latter has
+> > been chosen because the upstream toolchain can be utilized.
+> > 
+> > Sophgo SG2000 seems to be a continuation of the Cvitek CV18xx series, same
+> > peripherals with an addition of ARM64 core. Therefore it would be
+> > beneficial not to copy-paste the peripherals' device-tree, but rather split
+> > the most suitable riscv DT into ARCH-specific and peripherals parts and
+> > just include the latter on the arm64 side.
+> > 
+> > This series adds the device-tree for Milk-V Duo Module 01 EVB, which
+> > in turn contains Milk-V Duo Module 01 (separate .dtsi) on it, which has
+> > SG2000 SoC inside (separate .dtsi).
+> > 
+> > This series has been tested with Sophgo-provided U-Boot binary [2]: it
+> > boots from SD card, pinctrl, serial, GPIO drivers are functional (same
+> > as for RiscV-based CV18xx SoCs).
+> > New reset driver is provided as an alternative to the ATF PSCI handler,
+> > which Sophgo only provides in binary form.
+> 
+> I just see Inochi posted a patchset about cv18xx reset driver [1]. FYI.
+> 
+> Maybe you and Inochi need to communicate with each other and synchronize the
+> related work in this regard.
+> 
+> Link: https://lore.kernel.org/linux-riscv/20250209122936.2338821-1-inochiama@gmail.com/
+> [1]
+> 
 
-Reviewed-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
+It is a power restart device, not the reset controller, I suggests you change
+the device name.
 
--- 
-Thanks and Regards
-gautham.
-> ---
->  drivers/cpufreq/amd-pstate.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-> index b163c1699821..9dc3933bc326 100644
-> --- a/drivers/cpufreq/amd-pstate.c
-> +++ b/drivers/cpufreq/amd-pstate.c
-> @@ -699,7 +699,7 @@ static void amd_pstate_adjust_perf(unsigned int cpu,
->  	if (min_perf < lowest_nonlinear_perf)
->  		min_perf = lowest_nonlinear_perf;
->  
-> -	max_perf = cap_perf;
-> +	max_perf = cpudata->max_limit_perf;
->  	if (max_perf < min_perf)
->  		max_perf = min_perf;
->  
-> -- 
-> 2.34.1
-> 
+> > 
+> > Partial SoC documentation is available [3].
+> > 
+> > This series lacks the support of:
+> > - USB
+> > - Audio
+> > - Ethernet
+> > - WiFi
+> > - Bluetooth
+> > - eMMC
+> > - Video
+> > 
+> > It would probably make sense that the whole series would go into SOC tree,
+> > even though technically nothing prevents the reboot/reset driver to come
+> > in PM/reset tree. If everything would come together, `reboot` command would
+> > work out of the box.
+> > 
+> > [1] https://milkv.io/docs/duo/getting-started/duo-module-01
+> > [2] https://github.com/milkv-duo/duo-buildroot-sdk-v2/releases/
+> > [3] https://github.com/sophgo/sophgo-doc/releases/download/sg2000-trm-v1.01/sg2000_trm_en.pdf
+> > 
+> > Alexander Sverdlin (10):
+> >    arm64: Add SOPHGO SOC family Kconfig support
+> >    riscv: dts: sophgo: cv18xx: Split into CPU core and peripheral parts
+> >    arm64: dts: sophgo: Add initial SG2000 SoC device tree
+> >    arm64: dts: sophgo: Add Duo Module 01
+> >    arm64: dts: sophgo: Add Duo Module 01 Evaluation Board
+> >    dt-bindings: mfd: syscon: Add Cvitek CV18xx rtcsys core and ctrl
+> >      compatible
+> >    dt-bindings: reset: sophgo: Add CV18xx reset controller
+> >    riscv/arm64: dts: cv18xx: Add sysctl and reset nodes
+> >    power: reset: cv18xx: New driver
+> >    arm64: defconfig: Enable rudimentary Sophgo SG2000 support
+> > 
+> >   .../devicetree/bindings/mfd/syscon.yaml       |   4 +
+> >   .../bindings/reset/sophgo,cv1800-reset.yaml   |  38 ++
+> >   MAINTAINERS                                   |   1 +
+> >   arch/arm64/Kconfig.platforms                  |  12 +
+> >   arch/arm64/boot/dts/Makefile                  |   1 +
+> >   arch/arm64/boot/dts/sophgo/Makefile           |   2 +
+> >   arch/arm64/boot/dts/sophgo/sg2000.dtsi        |  79 +++++
+> >   .../sophgo/sg2000_milkv_duo_module_01.dtsi    |  84 +++++
+> >   .../sophgo/sg2000_milkv_duo_module_01_evb.dts |  30 ++
+> >   arch/arm64/configs/defconfig                  |   3 +
+> >   arch/riscv/boot/dts/sophgo/cv181x.dtsi        |   2 +-
+> >   arch/riscv/boot/dts/sophgo/cv18xx-periph.dtsi | 329 ++++++++++++++++++
+> >   arch/riscv/boot/dts/sophgo/cv18xx.dtsi        | 305 +---------------
+> >   drivers/power/reset/Kconfig                   |  12 +
+> >   drivers/power/reset/Makefile                  |   1 +
+> >   drivers/power/reset/cv18xx-reset.c            |  89 +++++
+> >   16 files changed, 689 insertions(+), 303 deletions(-)
+> >   create mode 100644 Documentation/devicetree/bindings/reset/sophgo,cv1800-reset.yaml
+> >   create mode 100644 arch/arm64/boot/dts/sophgo/Makefile
+> >   create mode 100644 arch/arm64/boot/dts/sophgo/sg2000.dtsi
+> >   create mode 100644 arch/arm64/boot/dts/sophgo/sg2000_milkv_duo_module_01.dtsi
+> >   create mode 100644 arch/arm64/boot/dts/sophgo/sg2000_milkv_duo_module_01_evb.dts
+> >   create mode 100644 arch/riscv/boot/dts/sophgo/cv18xx-periph.dtsi
+> >   create mode 100644 drivers/power/reset/cv18xx-reset.c
+> > 
