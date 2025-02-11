@@ -1,131 +1,359 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B580C26563F;
-	Tue, 11 Feb 2025 21:01:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A92722641E5;
+	Tue, 11 Feb 2025 21:02:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739307663; cv=none; b=CGFanLXc4/dxz/hn68kBtCWa71G+ds0g35OYw1yt/NMUBwIRirAoOXElIAYUqPQmW3gl1/HoBlX/j5CUrKShOhn81Hi/j2zkdeF4ZTicLpbpWmm4jKDWemAR5LQkfg+vadeuIlaf4XsBtK0SsH+Yqek8y6CvhjO8WRe+fQ+Fay8=
+	t=1739307737; cv=none; b=rCGehyFXaYt4zaEABQZXPBdBdSQe8crO8kN7KLFdXmOY5y429DjZwCnldW1EYo/tTpRgME/PAvioVgHQwvorDd0/p5NAYu3qz5oYN0XcmPyfyCvAik+xFcarce15vpLrPg3faQYy7mym0xLyiGK7yNJdW3H/9Nwl12x2y5U1UNI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739307663; c=relaxed/simple;
-	bh=RjQmjlKqTv6LwLQd3gwxLhAr78AqkMUY8fkfjOd54lc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=I2GUYgTGUCgZFN5kywZ7SKaCL6mZjZVyQJdxx56LN8LkulN/ILMufYxZLmQdr15WAFPJvkMazwvcFVEL0O5+g4zZ+ACn4GEbALLGAhubC+EuMgPm6B/NqkSfocELL3Iqls+kbmMzui+zUkvh8HyM2Yz3N1aTMQICWTJoyow8jQw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=UPY8gUI9; arc=none smtp.client-ip=192.198.163.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1739307737; c=relaxed/simple;
+	bh=/JBVR8JEl9TEmCiDsvRcSlGqcBPClnJL1SJndMkvM+k=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=mUWxCGRaFJKrR97CxbeVTDLFKmB9ueePHKr1v5131AIMpaZQjrQf9+6xOZUYyodsJTFLonOTaKH0QoEYt1YKhlIrMIDm1t0UOy5sBb3O6HhPdV5UGkzwKkG9OWsMYA2WhlaXzKwlxWQTNbHG72tkDwlWvcCyfTSkZ8R5N+O9D+g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cTpg1UHy; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="UPY8gUI9"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1739307662; x=1770843662;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=RjQmjlKqTv6LwLQd3gwxLhAr78AqkMUY8fkfjOd54lc=;
-  b=UPY8gUI9ywbGH4ErMsD/hLwdItPZm4Drcq6Cp9FvNOe95kjQV40rbp6B
-   O6zWonQFz0HkSnrvgdJO68S66K4fiIJaSeezStY7os4NnaaQkiqiDDPxa
-   pleIf/cHhHzRUVdbtiJ0Wo7L6oIm3ve9SkWlTw1RJizV6HIxjLK9mk07k
-   /U4WI0hW0DFNMra72z6Xy7wixJVj+R9J7rW8wemH5aRCDeqBRkTIJtED0
-   EmUy7/8zv6KulB+pSAZiIBpkKoJFk64Gc6tVjw64fpONBOJ7/BY8jv0XL
-   2QmV5KbtxNvm9APlXOexQUmZ5PsHg2SMiSUnexB9KU8uzA8XcLNyjHB9d
-   g==;
-X-CSE-ConnectionGUID: nqIKP8RkQnGDTiYQ/grSxw==
-X-CSE-MsgGUID: OBVqdnJXRi2sBdYwf1uUZw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11342"; a="65301659"
-X-IronPort-AV: E=Sophos;i="6.13,278,1732608000"; 
-   d="scan'208";a="65301659"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
-  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2025 13:01:01 -0800
-X-CSE-ConnectionGUID: r9vsfxAHTuSYuqavoo6KtQ==
-X-CSE-MsgGUID: OOw7sX69Rjqu40PF1GmQfQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; 
-   d="scan'208";a="143534819"
-Received: from msatwood-mobl.amr.corp.intel.com (HELO [10.125.108.48]) ([10.125.108.48])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2025 13:00:59 -0800
-Message-ID: <7f5de627-e08a-4284-a464-dc3a73af3b0b@intel.com>
-Date: Tue, 11 Feb 2025 13:00:58 -0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cTpg1UHy"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D45A9C4CEDD;
+	Tue, 11 Feb 2025 21:02:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1739307737;
+	bh=/JBVR8JEl9TEmCiDsvRcSlGqcBPClnJL1SJndMkvM+k=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=cTpg1UHyaclMHHy7WUsDfK0vtCdJ4sxVAjvyT/Kf2C/YRuh0AfE+JNHiNvRI1lZJC
+	 TV0TIyzFjUIO5UGxQ5rxOZQG4smvWmX4CB61CvBfjXINYEIiuby6EvO8RWSvV2PI6l
+	 dCbD/3YM7e6TuTQsXzKLHsLE8k8IP33nl02ro8fs+BvNI/wRAWt1Di/SmH0KgHZYi4
+	 46qeiMkw/z5iMxSJ8lYsIpTfM8ELJo0c2rGjVVyiFXQtFxPEASpCiOYRYbA3oysKLJ
+	 oqRUK9clhoEaMn52/I9jgoe7bLEpTJvaoJOr5U3U701GbPx6lIg4D/7QA3K0uZhTUU
+	 nbFxtcYIY6sWg==
+Date: Tue, 11 Feb 2025 15:02:15 -0600
+From: Rob Herring <robh@kernel.org>
+To: Andras Szemzo <szemzo.andras@gmail.com>
+Cc: Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Chen-Yu Tsai <wens@csie.org>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Samuel Holland <samuel@sholland.org>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Maxime Ripard <mripard@kernel.org>, Vinod Koul <vkoul@kernel.org>,
+	Kishon Vijay Abraham I <kishon@kernel.org>,
+	Ulf Hansson <ulf.hansson@linaro.org>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev,
+	linux-kernel@vger.kernel.org, linux-phy@lists.infradead.org,
+	linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-riscv@lists.infradead.org
+Subject: Re: [PATCH v2 03/10] dt-bindings: clock: sunxi-ng: add compatibles
+ for V853
+Message-ID: <20250211210215.GA1160917-robh@kernel.org>
+References: <20250205125225.1152849-1-szemzo.andras@gmail.com>
+ <20250205125225.1152849-4-szemzo.andras@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 09/17] x86/mtrr: Modify a x86_model check to an Intel
- VFM check
-To: Sohil Mehta <sohil.mehta@intel.com>, x86@kernel.org,
- Dave Hansen <dave.hansen@linux.intel.com>, Tony Luck <tony.luck@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
- Adrian Hunter <adrian.hunter@intel.com>,
- Kan Liang <kan.liang@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>,
- Borislav Petkov <bp@alien8.de>, "H . Peter Anvin" <hpa@zytor.com>,
- "Rafael J . Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
- Andy Lutomirski <luto@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
- Fenghua Yu <fenghua.yu@intel.com>, Jean Delvare <jdelvare@suse.com>,
- Guenter Roeck <linux@roeck-us.net>, Zhang Rui <rui.zhang@intel.com>,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- David Laight <david.laight.linux@gmail.com>,
- linux-perf-users@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-hwmon@vger.kernel.org
-References: <20250211194407.2577252-1-sohil.mehta@intel.com>
- <20250211194407.2577252-10-sohil.mehta@intel.com>
-From: Dave Hansen <dave.hansen@intel.com>
-Content-Language: en-US
-Autocrypt: addr=dave.hansen@intel.com; keydata=
- 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
-In-Reply-To: <20250211194407.2577252-10-sohil.mehta@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250205125225.1152849-4-szemzo.andras@gmail.com>
 
-On 2/11/25 11:43, Sohil Mehta wrote:
-> Simplify one of the last few Intel x86_model checks in arch/x86 by
-> substituting it with a VFM one.
+On Wed, Feb 05, 2025 at 01:52:18PM +0100, Andras Szemzo wrote:
+> V853 has 2 CCUs, add compatible strings for it.
+> 
+> Signed-off-by: Andras Szemzo <szemzo.andras@gmail.com>
+> ---
+>  .../clock/allwinner,sun4i-a10-ccu.yaml        |   3 +
+>  .../clock/allwinner,sun8i-v853-ccu.h          | 132 ++++++++++++++++++
+>  .../clock/allwinner,sun8i-v853-r-ccu.h        |  16 +++
+>  .../reset/allwinner,sun8i-v853-ccu.h          |  60 ++++++++
+>  .../reset/allwinner,sun8i-v853-r-ccu.h        |  14 ++
+>  5 files changed, 225 insertions(+)
+>  create mode 100644 include/dt-bindings/clock/allwinner,sun8i-v853-ccu.h
+>  create mode 100644 include/dt-bindings/clock/allwinner,sun8i-v853-r-ccu.h
+>  create mode 100644 include/dt-bindings/reset/allwinner,sun8i-v853-ccu.h
+>  create mode 100644 include/dt-bindings/reset/allwinner,sun8i-v853-r-ccu.h
+> 
+> diff --git a/Documentation/devicetree/bindings/clock/allwinner,sun4i-a10-ccu.yaml b/Documentation/devicetree/bindings/clock/allwinner,sun4i-a10-ccu.yaml
+> index 1690b9d99c3d..9369d62284ed 100644
+> --- a/Documentation/devicetree/bindings/clock/allwinner,sun4i-a10-ccu.yaml
+> +++ b/Documentation/devicetree/bindings/clock/allwinner,sun4i-a10-ccu.yaml
+> @@ -33,6 +33,8 @@ properties:
+>        - allwinner,sun8i-r40-ccu
+>        - allwinner,sun8i-v3-ccu
+>        - allwinner,sun8i-v3s-ccu
+> +      - allwinner,sun8i-v853-ccu
+> +      - allwinner,sun8i-v853-r-ccu
 
-Acked-by: Dave Hansen <dave.hansen@linux.intel.com>
+Please explain the difference between these in the commit message.
+
+>        - allwinner,sun9i-a80-ccu
+>        - allwinner,sun20i-d1-ccu
+>        - allwinner,sun20i-d1-r-ccu
+> @@ -103,6 +105,7 @@ else:
+>        compatible:
+>          enum:
+>            - allwinner,sun20i-d1-ccu
+> +          - allwinner,sun8i-v853-ccu
+>            - allwinner,sun50i-a100-ccu
+>            - allwinner,sun50i-h6-ccu
+>            - allwinner,sun50i-h616-ccu
+> diff --git a/include/dt-bindings/clock/allwinner,sun8i-v853-ccu.h b/include/dt-bindings/clock/allwinner,sun8i-v853-ccu.h
+> new file mode 100644
+> index 000000000000..cf56c168e1cd
+> --- /dev/null
+> +++ b/include/dt-bindings/clock/allwinner,sun8i-v853-ccu.h
+> @@ -0,0 +1,132 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+
+Dual license.
+
+> +/*
+> + * Copyright (C) 2024 Andras Szemzo <szemzo.andras@gmail.com.com>
+> + */
+> +
+> +#ifndef _DT_BINDINGS_CLK_ALLWINNER_SUN8I_V85X_CCU_H_
+> +#define _DT_BINDINGS_CLK_ALLWINNER_SUN8I_V85X_CCU_H_
+> +
+> +#define CLK_OSC12M		0
+> +#define CLK_PLL_CPU		1
+> +#define CLK_PLL_DDR		2
+> +#define CLK_PLL_PERIPH_4X	3
+> +#define CLK_PLL_PERIPH_2X	4
+> +#define CLK_PLL_PERIPH_800M	5
+> +#define CLK_PLL_PERIPH_480M	6
+> +#define CLK_PLL_PERIPH_600M	7
+> +#define CLK_PLL_PERIPH_400M	8
+> +#define CLK_PLL_PERIPH_300M	9
+> +#define CLK_PLL_PERIPH_200M	10
+> +#define CLK_PLL_PERIPH_160M	11
+> +#define CLK_PLL_PERIPH_150M	12
+> +#define CLK_PLL_VIDEO_4X	13
+> +#define CLK_PLL_VIDEO_2X	14
+> +#define CLK_PLL_VIDEO_1X	15
+> +#define CLK_PLL_CSI_4X		16
+> +#define CLK_PLL_AUDIO_DIV2	17
+> +#define CLK_PLL_AUDIO_DIV5	18
+> +#define CLK_PLL_AUDIO_4X	19
+> +#define CLK_PLL_AUDIO_1X	20
+> +#define CLK_PLL_NPU_4X		21
+> +#define CLK_CPU			22
+> +#define CLK_CPU_AXI		23
+> +#define CLK_CPU_APB		24
+> +#define CLK_AHB			25
+> +#define CLK_APB0		26
+> +#define CLK_APB1		27
+> +#define CLK_MBUS		28
+> +#define CLK_DE			29
+> +#define CLK_BUS_DE		30
+> +#define CLK_G2D			31
+> +#define CLK_BUS_G2D		32
+> +#define CLK_CE			33
+> +#define CLK_BUS_CE		34
+> +#define CLK_VE			35
+> +#define CLK_BUS_VE		36
+> +#define CLK_NPU			37
+> +#define CLK_BUS_NPU		38
+> +#define CLK_BUS_DMA		39
+> +#define CLK_BUS_MSGBOX0		40
+> +#define CLK_BUS_MSGBOX1		41
+> +#define CLK_BUS_SPINLOCK	42
+> +#define CLK_BUS_HSTIMER		43
+> +#define CLK_AVS			44
+> +#define CLK_BUS_DBG		45
+> +#define CLK_BUS_PWM		46
+> +#define CLK_BUS_IOMMU		47
+> +#define CLK_DRAM		48
+> +#define CLK_MBUS_DMA		49
+> +#define CLK_MBUS_VE		50
+> +#define CLK_MBUS_CE		51
+> +#define CLK_MBUS_CSI		52
+> +#define CLK_MBUS_ISP		53
+> +#define CLK_MBUS_G2D		54
+> +#define CLK_BUS_DRAM		55
+> +#define CLK_MMC0		56
+> +#define CLK_MMC1		57
+> +#define CLK_MMC2		58
+> +#define CLK_BUS_MMC0		59
+> +#define CLK_BUS_MMC1		60
+> +#define CLK_BUS_MMC2		61
+> +#define CLK_BUS_UART0		62
+> +#define CLK_BUS_UART1		63
+> +#define CLK_BUS_UART2		64
+> +#define CLK_BUS_UART3		65
+> +#define CLK_BUS_I2C0		66
+> +#define CLK_BUS_I2C1		67
+> +#define CLK_BUS_I2C2		68
+> +#define CLK_BUS_I2C3		69
+> +#define CLK_BUS_I2C4		70
+> +#define CLK_SPI0		71
+> +#define CLK_SPI1		72
+> +#define CLK_SPI2		73
+> +#define CLK_SPI3		74
+> +#define CLK_BUS_SPI0		75
+> +#define CLK_BUS_SPI1		76
+> +#define CLK_BUS_SPI2		77
+> +#define CLK_BUS_SPI3		78
+> +#define CLK_SPIF		79
+> +#define CLK_BUS_SPIF		80
+> +#define CLK_EMAC_25M		81
+> +#define CLK_BUS_EMAC		82
+> +#define CLK_BUS_GPADC		83
+> +#define CLK_BUS_THS		84
+> +#define CLK_I2S0		85
+> +#define CLK_I2S1		86
+> +#define CLK_BUS_I2S0		87
+> +#define CLK_BUS_I2S1		88
+> +#define CLK_DMIC		89
+> +#define CLK_BUS_DMIC		90
+> +#define CLK_AUDIO_CODEC_DAC	91
+> +#define CLK_AUDIO_CODEC_ADC	92
+> +#define CLK_BUS_AUDIO_CODEC	93
+> +#define CLK_USB_OHCI		94
+> +#define CLK_BUS_OHCI		95
+> +#define CLK_BUS_EHCI		96
+> +#define CLK_BUS_OTG		97
+> +#define CLK_BUS_DPSS_TOP	98
+> +#define CLK_MIPI_DSI		99
+> +#define CLK_BUS_MIPI_DSI	100
+> +#define CLK_TCON_LCD		101
+> +#define CLK_BUS_TCON_LCD	102
+> +#define CLK_CSI_TOP		103
+> +#define CLK_CSI_MCLK0		104
+> +#define CLK_CSI_MCLK1		105
+> +#define CLK_CSI_MCLK2		106
+> +#define CLK_BUS_CSI		107
+> +#define CLK_BUS_WIEGAND		108
+> +#define CLK_RISCV		109
+> +#define CLK_RISCV_AXI		110
+> +#define CLK_RISCV_CORE_GATE	111
+> +#define CLK_RISCV_CFG_GATE	112
+> +#define CLK_FANOUT_24M		113
+> +#define CLK_FANOUT_12M		114
+> +#define CLK_FANOUT_16M		115
+> +#define CLK_FANOUT_25M		116
+> +#define CLK_FANOUT_27M		117
+> +#define CLK_FANOUT_PCLK		118
+> +#define CLK_FANOUT0		119
+> +#define CLK_FANOUT1		120
+> +#define CLK_FANOUT2		121
+> +
+> +#endif
+> diff --git a/include/dt-bindings/clock/allwinner,sun8i-v853-r-ccu.h b/include/dt-bindings/clock/allwinner,sun8i-v853-r-ccu.h
+> new file mode 100644
+> index 000000000000..48fe598b7bd8
+> --- /dev/null
+> +++ b/include/dt-bindings/clock/allwinner,sun8i-v853-r-ccu.h
+> @@ -0,0 +1,16 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/*
+> + * Copyright (C) 2025 Andras Szemzo <szemzo.andras@gmail.com>
+> + */
+> +
+> +#ifndef _DT_BINDINGS_CLK_ALLWINNER_SUN8I_V853_R_CCU_H_
+> +#define _DT_BINDINGS_CLK_ALLWINNER_SUN8I_V853_R_CCU_H_
+> +
+> +#define CLK_R_AHB		0
+> +#define CLK_R_APB0		1
+> +#define CLK_BUS_R_TWD		2
+> +#define CLK_BUS_R_PPU		3
+> +#define CLK_BUS_R_RTC		4
+> +#define CLK_BUS_R_CPUCFG	5
+> +
+> +#endif
+> diff --git a/include/dt-bindings/reset/allwinner,sun8i-v853-ccu.h b/include/dt-bindings/reset/allwinner,sun8i-v853-ccu.h
+> new file mode 100644
+> index 000000000000..e258117518aa
+> --- /dev/null
+> +++ b/include/dt-bindings/reset/allwinner,sun8i-v853-ccu.h
+> @@ -0,0 +1,60 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/*
+> + * Copyright (C) 2024 Andras Szemzo <szemzo.andras@gmail.com>
+> + */
+> +
+> +#ifndef _DT_BINDINGS_RST_ALLWINNER_SUN8I_V85X_CCU_H_
+> +#define _DT_BINDINGS_RST_ALLWINNER_SUN8I_V85X_CCU_H_
+> +
+> +#define RST_MBUS		0
+> +#define RST_BUS_DE		1
+> +#define RST_BUS_G2D		2
+> +#define RST_BUS_CE		3
+> +#define RST_BUS_VE		4
+> +#define RST_BUS_NPU		5
+> +#define RST_BUS_DMA		6
+> +#define RST_BUS_MSGBOX0		7
+> +#define RST_BUS_MSGBOX1		8
+> +#define RST_BUS_SPINLOCK	9
+> +#define RST_BUS_HSTIMER		10
+> +#define RST_BUS_DBG		11
+> +#define RST_BUS_PWM		12
+> +#define RST_BUS_DRAM		13
+> +#define RST_BUS_MMC0		14
+> +#define RST_BUS_MMC1		15
+> +#define RST_BUS_MMC2		16
+> +#define RST_BUS_UART0		17
+> +#define RST_BUS_UART1		18
+> +#define RST_BUS_UART2		19
+> +#define RST_BUS_UART3		20
+> +#define RST_BUS_I2C0		21
+> +#define RST_BUS_I2C1		22
+> +#define RST_BUS_I2C2		23
+> +#define RST_BUS_I2C3		24
+> +#define RST_BUS_I2C4		25
+> +#define RST_BUS_SPI0		26
+> +#define RST_BUS_SPI1		27
+> +#define RST_BUS_SPI2		28
+> +#define RST_BUS_SPI3		29
+> +#define RST_BUS_SPIF		30
+> +#define RST_BUS_EMAC		31
+> +#define RST_BUS_GPADC		32
+> +#define RST_BUS_THS		33
+> +#define RST_BUS_I2S0		34
+> +#define RST_BUS_I2S1		35
+> +#define RST_BUS_DMIC		36
+> +#define RST_BUS_AUDIO_CODEC	37
+> +#define RST_USB_PHY		38
+> +#define RST_BUS_OHCI		39
+> +#define RST_BUS_EHCI		40
+> +#define RST_BUS_OTG		41
+> +#define RST_BUS_DPSS_TOP	42
+> +#define RST_BUS_MIPI_DSI	43
+> +#define RST_BUS_TCON_LCD	44
+> +#define RST_BUS_CSI		45
+> +#define RST_BUS_WIEGAND		46
+> +#define RST_RISCV_SYS_APB	47
+> +#define RST_RISCV_SOFT		48
+> +#define RST_RISCV_CFG		49
+> +
+> +#endif
+> diff --git a/include/dt-bindings/reset/allwinner,sun8i-v853-r-ccu.h b/include/dt-bindings/reset/allwinner,sun8i-v853-r-ccu.h
+> new file mode 100644
+> index 000000000000..57629d635115
+> --- /dev/null
+> +++ b/include/dt-bindings/reset/allwinner,sun8i-v853-r-ccu.h
+> @@ -0,0 +1,14 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/*
+> + * Copyright (C) 2025 Andras Szemzo <szemzo.andras@gmail.com>
+> + */
+> +
+> +#ifndef _DT_BINDINGS_RST_ALLWINNER_SUN8I_V853_R_CCU_H_
+> +#define _DT_BINDINGS_RST_ALLWINNER_SUN8I_V853_R_CCU_H_
+> +
+> +#define RST_BUS_R_TWD		0
+> +#define RST_BUS_R_PPU		1
+> +#define RST_BUS_R_RTC		2
+> +#define RST_BUS_R_CPUCFG	3
+> +
+> +#endif
+> -- 
+> 2.39.5
+> 
