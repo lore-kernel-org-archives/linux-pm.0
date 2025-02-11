@@ -1,39 +1,40 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E09F262803;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6EFB26280E;
 	Tue, 11 Feb 2025 21:25:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739309157; cv=none; b=i7bxUBpIhjHwTRGn2fsnBUc9i7/9XnRW2s9S0fQqjmiXjVO5uJSbmRTRakwWtU+g36SV8St2SRPMayQcggCwSF50t4DUb2wCYQ54tUaL3juqHPjx1w7ec8yt8mo6D+mhtYE8gSH/w1PTE7Tja1Bi8AJwGHpRFUarIhCzAf5X4dA=
+	t=1739309157; cv=none; b=NiKOTCSFutzEsMKH4JwcFgjhcTPX6sjea5jvP7q87ehAIeQYfRAA+Jpvo5NczPcgK7F6KmjLjoCOF7ZNgu2BOQzU4sYp1phbrxkwBme+RSeuj+s3a2kFk9XKZbFqRbuhb5UO4KfFL3J5h7GyQVlCVCWWmBx+UNmNHh0X6Z9XjBw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1739309157; c=relaxed/simple;
-	bh=IZxrj6Gu0pIXpywIgOSybDUHKnFS0Y4eMhTg3+5V+js=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=D1XZ9NEPr2rJ1wQR31naftQwtm4pRw9TxVKGmVklylyEJeuuxhY7WWIWtlYPpezshhvWWwHSsvkFLyBDxpwMbxfG7CwAaKLX8x0YHq5pbRqcBqA7GHuZqgUOZ8apSHY6XtI+nRKHSinfO90bnuQk/8D1jNEtjMFFiNfDQ58kMgc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=c/sF42oi; arc=none smtp.client-ip=79.96.170.134
+	bh=CVXpmJor++qVMVrNa2Vtw7b1Gj23SWNCnYY/5A5S8YU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=iCb93y1RIjMN8/4CBTK5YUFc42LGvco43mwola5zLxeppzv6iOWd2eabS4cEqdc7JYf3w+wQAww0O401QwCNWy7mH49//aOI8//rQEi+1S1RiJXW7O2shtw64lMIdjlCrLH958OVjbf/CAtYG/XRyz64srZSMubvrxUULK1AkII=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=lYHSmmnL; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="c/sF42oi"
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="lYHSmmnL"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
- id cbb5aeea9cca1d0b; Tue, 11 Feb 2025 22:25:53 +0100
+ id 043443d38ece3eef; Tue, 11 Feb 2025 22:25:47 +0100
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id F20D3770175;
-	Tue, 11 Feb 2025 22:25:52 +0100 (CET)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 2F9FE770175;
+	Tue, 11 Feb 2025 22:25:47 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1739309153;
-	bh=IZxrj6Gu0pIXpywIgOSybDUHKnFS0Y4eMhTg3+5V+js=;
+	s=dkim; t=1739309147;
+	bh=CVXpmJor++qVMVrNa2Vtw7b1Gj23SWNCnYY/5A5S8YU=;
 	h=From:Subject:Date;
-	b=c/sF42oid7G9JckXojZiUZzCaI7i9gYL/7L3Mjd3eQP45ZHvToVrSoLuNuHgw41n2
-	 mxoajGMy/X5Rcq0mYGryz6Qna/dgG0Bt8T9NjlrBfGBBWNGwnmrULbOj5ONhRMBwX4
-	 s288plxfAwTYj0CSZb+3v+FCdy3Gn19gW5o37Tp1Hmi8r7p4K+bhA7Gu3hKyTPzMFy
-	 vFIqzK1c8IumlcnEEwz6IJkn+sYzmD3jjf8yUPHYyElOEL0/aBgj/uw3E2KYzfCrt7
-	 wjNAzqeAD+7GQXkrBiudtf18bKPvFdF0xxSyJzx1rDbIkgStCGHDYUoX4425hWKG2x
-	 hvo6GAyaTUMkw==
+	b=lYHSmmnLa/p1gEwWiGE/rEnPKxHM2jU+pPnMB2xwW/gnrDp3S7pXUF6zzkS2KTfaE
+	 CQvgkcy5kn0ubzhy9X5nGiEsryZXL84SoV+5SSMwqf1gHNnmM/migPdbvCcjVZr7N9
+	 xSTt/uB5uRsdnR1g08vYNPzSvn01+mfxyjyCKp2liEIOaqDqQL3FkA4Jggx9mQimhe
+	 76Ixfa7781xtHiZyHULzr4cLbLBBD1zzP62oXF+xqdRhgNu1zF7DMD+vib7KNWLbQF
+	 Otk1oYvV4HQNb/kFLmElIrUwhuwNh7x4yIHWbAd3zyqE5kkbqroCk7Q3sbdUI+vsB3
+	 cF5eg2RSvQZYQ==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -42,10 +43,11 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
  Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
  Jon Hunter <jonathanh@nvidia.com>
 Subject:
- [PATCH v1 00/10] PM: Make the core and pm_runtime_force_suspend/resume()
- agree more
-Date: Tue, 11 Feb 2025 22:01:24 +0100
-Message-ID: <2314745.iZASKD2KPV@rjwysocki.net>
+ [PATCH v1 06/10] PM: sleep: Adjust check before setting power.must_resume
+Date: Tue, 11 Feb 2025 22:10:39 +0100
+Message-ID: <3548152.QJadu78ljV@rjwysocki.net>
+In-Reply-To: <2314745.iZASKD2KPV@rjwysocki.net>
+References: <2314745.iZASKD2KPV@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -57,75 +59,74 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdegvddtjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeegfffhudejlefhtdegffekteduhfethffhieettefhkeevgfdvgfefieekiefgheenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomheprhhjfiesrhhjfiihshhotghkihdrnhgvthdpnhgspghrtghpthhtohepjedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehsthgvrhhnsehrohiflhgrnhgurdhhrghrvhgrrhgurdgvughupdhrtghpthhtohepuhhlfhdrhhgrnhhsshhonheslhhinhgrrhhordhorhhgpdhrtghpthhtohepjhhohhg
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdegvddtkecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeejpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhtvghrnhesrhhofihlrghnugdrhhgrrhhvrghrugdrvgguuhdprhgtphhtthhopehulhhfrdhhrghnshhsohhnsehlihhnrghrohdrohhrghdprhgtphhtthhopehjohhhrghnsehkvghrnhgvlhdrohhrghdprhgtphh
 X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 
-Hi Everyone,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-This series is a result of the discussion on a recently reported issue
-with device runtime PM status propagation during system resume and
-the resulting patches:
+Use pm_runtime_need_not_resume() in the check deciding whether or not
+the device's power.must_resume flag needs to be set, so it covers the
+device's active children counter in addition to its runtime PM usage
+counter, rearrange that check and adjust the comment next to it.
 
-https://lore.kernel.org/linux-pm/12619233.O9o76ZdvQC@rjwysocki.net/
-https://lore.kernel.org/linux-pm/6137505.lOV4Wx5bFT@rjwysocki.net/
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/power/main.c    |   12 +++++-------
+ drivers/base/power/runtime.c |    2 +-
+ include/linux/pm_runtime.h   |    2 ++
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
-Overall, due to restrictions related to pm_runtime_force_suspend() and
-pm_runtime_force_resume(), it was necessary to limit the RPM_ACTIVE
-setting propagation to the parent of the first device in a dependency
-chain that turned out to have to be resumed during system resume even
-though it was runtime-suspended before system suspend.
-
-Those restrictions are that (1) pm_runtime_force_suspend() attempts to
-suspend devices that have never had runtime PM enabled if their runtime
-PM status is currently RPM_ACTIVE and (2) pm_runtime_force_resume()
-will skip device whose runtime PM status is currently RPM_ACTIVE.
-
-The purpose of this series is to eliminate the above restrictions and
-get pm_runtime_force_suspend() and pm_runtime_force_resume() to agree
-more with what the core does.
-
-First off, it turns out that detecting devices that have never had
-runtime PM enabled is not really hard - it is sufficient to check
-their power.last_status data when runtime PM is disabled.  If
-power.last_status is RPM_INVALID at that point, runtime PM has never
-been enabled for the given device, so patch [01/10] adds a helper
-function for checking that.
-
-Patch [02/10] makes the PM core use the new function to avoid setting
-power.set_active for devices with no runtime PM support which really
-is a fixup on top of
-
-https://lore.kernel.org/linux-pm/6137505.lOV4Wx5bFT@rjwysocki.net/
-
-Patch [03/10] modifies pm_runtime_force_suspend() to skip devices
-with no runtime PM support with the help of the new function.
-
-Next, patch [04/10] uses the observation that the runtime PM status
-check in pm_runtime_force_resume() is redundant and drops that check.
-
-Patch [05/10] removes the wakeirq enabling from the pm_runtime_force_resume()
-error path because it is not really a good idea to enable wakeirqs during
-system resume.
-
-Patch [06/10] makes the PM core somewhat more consistent with
-pm_runtime_force_suspend() and patch [07/10] prepares it for the subsequent
-changes.
-
-Patch [08/10] changes pm_runtime_force_resume() to handle the case in
-which the runtime PM status of the device has been updated by the core to
-RPM_ACTIVE after pm_runtime_force_suspend() left it in RPM_SUSPENDED.
-
-Patch [09/10] restores the RPM_ACTIVE setting propagation to parents
-and suppliers, but it takes exceptions into account (for example, devices
-with no runtime PM support).
-
-Finally, patch [10/10] adds a mechanism to discover cases in which runtime PM
-is disabled for a device permanently even though it has been enabled for that
-device at one point.
-
-Please have a look and let me know if you see any problems.
-
-Thanks!
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1268,14 +1268,12 @@
+ 	dev->power.is_noirq_suspended = true;
+ 
+ 	/*
+-	 * Skipping the resume of devices that were in use right before the
+-	 * system suspend (as indicated by their PM-runtime usage counters)
+-	 * would be suboptimal.  Also resume them if doing that is not allowed
+-	 * to be skipped.
++	 * If it is not allowed to skip the resume of the device or it was in
++	 * use before the system suspend has started (in which case it needs to
++	 * be resumed for consistency), set the "must resume" flag for it.
+ 	 */
+-	if (atomic_read(&dev->power.usage_count) > 1 ||
+-	    !(dev_pm_test_driver_flags(dev, DPM_FLAG_MAY_SKIP_RESUME) &&
+-	      dev->power.may_skip_resume))
++	if (!(dev_pm_test_driver_flags(dev, DPM_FLAG_MAY_SKIP_RESUME) &&
++	      dev->power.may_skip_resume) || !pm_runtime_need_not_resume(dev))
+ 		dev->power.must_resume = true;
+ 
+ 	if (dev->power.must_resume) {
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -1874,7 +1874,7 @@
+ 	pm_request_idle(link->supplier);
+ }
+ 
+-static bool pm_runtime_need_not_resume(struct device *dev)
++bool pm_runtime_need_not_resume(struct device *dev)
+ {
+ 	return atomic_read(&dev->power.usage_count) <= 1 &&
+ 		(atomic_read(&dev->power.child_count) == 0 ||
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -66,6 +66,7 @@
+ 
+ extern int pm_generic_runtime_suspend(struct device *dev);
+ extern int pm_generic_runtime_resume(struct device *dev);
++extern bool pm_runtime_need_not_resume(struct device *dev);
+ extern int pm_runtime_force_suspend(struct device *dev);
+ extern int pm_runtime_force_resume(struct device *dev);
+ 
+@@ -254,6 +255,7 @@
+ 
+ static inline int pm_generic_runtime_suspend(struct device *dev) { return 0; }
+ static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
++static inline bool pm_runtime_need_not_resume(struct device *dev) {return true; }
+ static inline int pm_runtime_force_suspend(struct device *dev) { return 0; }
+ static inline int pm_runtime_force_resume(struct device *dev) { return 0; }
+ 
 
 
 
