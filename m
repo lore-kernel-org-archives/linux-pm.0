@@ -1,100 +1,147 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f50.google.com (mail-pj1-f50.google.com [209.85.216.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2C52266589;
-	Tue, 11 Feb 2025 21:25:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A11D263F57;
+	Tue, 11 Feb 2025 21:37:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739309158; cv=none; b=Ok/lmXSOtAO0WkoG019PL9RRP93ME8/2k+zb/jJS6VeQMzCU2D2mwjK1F3bLr9UjJ6Shgu8MpRiHJDrRSX/ZurF0jUBMmGRKZmFTI+IyCKTAUNTXWwbUSOsAROzB2X/9bu3X33Za3DLbGejL3F7Ym0TJeyLZiRW8smiO44G5BaA=
+	t=1739309860; cv=none; b=HNfMvWccp7j9N0a72SVHTE8gMIku5dS56QJKSszp1exrL4Ne1IX93AsGg87Gz0CK19r8rrho2t+E8tLnd5V6mSuAaL5RlHdcDxAYyHcCgWEcYsgmdxn3ylvoqcPm9CJ9iuh2vqZ8PKMAUHBwEgMaCCjwe99b5rwONexTFcdFeU8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739309158; c=relaxed/simple;
-	bh=zVHK9tKkrrsUglkhVCFQZZeMj/6ZCvBq1S2weRFFqdk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=F/snKhzUDj7AWNrxUZL2lxtkhPc+XdH1r2EVUKju+rddeOFQ8wws/tuWtzSdswgRWkBxHc69JdNhm6GTeel8utYixQf8lKpSBTvxg3Nzs6QROB6cD2pA6C1wdl3urk1p7CrFuRXf/YVTLXaNamrjYoW4FczHvoWmEUf4kBt/OQA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=CHPt/RUh; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1739309860; c=relaxed/simple;
+	bh=XKbAUeYtUw75h5ZAra0XFiv2T2PGq52hQCmLhO8mPb4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=WoMmwHUAPbrjSVTXYlCNTpK7y74UAq8r7m/ZLQTjAhvXBE8SEPGlJvDr6RNMhRHv5YnxcPFFeneJmApRabVbrSFt0PTpt8px+CMqsLW7xAa3m6mNB2rvbaBa51Ev4Ut2iJidQSe6iTHiuA+UOMbI+wc+2DfKrwkOhhkZ5EFv1eo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KGN5w9gJ; arc=none smtp.client-ip=209.85.216.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="CHPt/RUh"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
- id e027a457252b6505; Tue, 11 Feb 2025 22:25:49 +0100
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 100E6770175;
-	Tue, 11 Feb 2025 22:25:49 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1739309149;
-	bh=zVHK9tKkrrsUglkhVCFQZZeMj/6ZCvBq1S2weRFFqdk=;
-	h=From:Subject:Date;
-	b=CHPt/RUhm3cXLGMvxhiWdSgoVaBFqdO6LPDszthIOUdPfj8qeIHopckJZqaySZqpD
-	 xqdg57J/xp/fjdJqc7bCR5z8kfjPUyo8VV1bwFrqQCaCvtmwPWQPRErx4KDyl3RUCQ
-	 k6V1BTZ5Pxoy9mjSMMNFT4G8dTMs7/Mlv2bKKUF4l/yOXx5nsqD9fO6Cz30DHfmI1+
-	 XcU8JpkGoBdtgy4K1vz2DzKxvDWs3udxxtxD655gZeturWF2v7gA4Xl0XlqiSlJTQf
-	 rVKbZr+oiv8dZzOjynYjGdW2z0+eBhr8TpXLVrL5Q2LqeBQdyKY9h/VOAnspbBwWdT
-	 JM4fkG0AZ/zOg==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>,
- Johan Hovold <johan@kernel.org>,
- Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
- Jon Hunter <jonathanh@nvidia.com>
-Subject:
- [PATCH v1 04/10] PM: runtime: Drop status check from
- pm_runtime_force_resume()
-Date: Tue, 11 Feb 2025 22:07:52 +0100
-Message-ID: <6038511.MhkbZ0Pkbq@rjwysocki.net>
-In-Reply-To: <2314745.iZASKD2KPV@rjwysocki.net>
-References: <2314745.iZASKD2KPV@rjwysocki.net>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KGN5w9gJ"
+Received: by mail-pj1-f50.google.com with SMTP id 98e67ed59e1d1-2fa1c3ac70cso1334712a91.0;
+        Tue, 11 Feb 2025 13:37:39 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1739309858; x=1739914658; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=akzFHrt13Sf+zIMfS9Ii+SJ+PVxb1KqnXMwjp26RJ/w=;
+        b=KGN5w9gJ31IcwtQzfHOx030GPXZeZFoVMpzZT8BxjJ4sGNaFaTksTSEve0fa3DGHKg
+         bjgqwyxp0TsPOS+6+woLzQI7p99mJZFYXfLHtMs/U671izQgRvva6X+8dNxmc4nzc5ho
+         Qtm/g6xQh4hy3PAZ6NwZjI4uRtTOX/dVV2/stG0jWjYKoolYNVbZh2sxfupwOVzRwSad
+         kGxHeYDl0H4hckmsHLIWgz/kv6PJFtfhmE+UfIFC6MYiC+ltgwkbHAHOEERmO/dnJDHU
+         8vXNUGQLkFnvmHFkN+1L/oP7tpccR3t+u8J00W20mb171Tpgu8lOZWqTo1GqzGpbQ1/v
+         539w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739309858; x=1739914658;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=akzFHrt13Sf+zIMfS9Ii+SJ+PVxb1KqnXMwjp26RJ/w=;
+        b=vvYPMUDlDVyITis3v22ap86OUu4HfRetc4utT8iWyV1Ub/qsI3KEhQz1qswl1vf96Y
+         1BGe1uy4bN1LRyTxplkQjIQXuCHzd4cnbVWZeS/h1lTA0Ko/Dxvl4s5qtC468jR9f6FT
+         gAMvul21ah1dwepRmQKHh2Gl7+FmamyamdC04ZfiFxg6YxPW4wrxp6ZsjOVy1NFSbNu4
+         /QpLbXJNjJnaDyl9p0oFsCVrsx+SyrP7LEy5VxEcvpsXbzkLq6ddydO1RiLyBW5x/tsi
+         Ne3q/H2QSJv6OcGuIU1virak4/FWWXGYHWDlmizFL/DgfpmkrEXRYoqByOnRvhyyw+Ht
+         5VAA==
+X-Forwarded-Encrypted: i=1; AJvYcCVr3/uQe8WVfyzRGxt8FE7kK1KDhPB/edM67iluA8TLOKMxT9+dmCaufypE5B1Ep4PSmLeXg/AxLIJHW4Q=@vger.kernel.org, AJvYcCWRVQdeR1o71FmLixNioz08j8lw9hn6sQ/yDXfWiype6ls/VdJWOMEdrq8WPZi1Nv9CfIwdeti5vL8=@vger.kernel.org, AJvYcCXHQd1lrbumu6ZmjtK2Lr1kNEJnlLPFJylaC7PY7DQ08mm5TQ36DPUTNFtq2+JXatNb00PqFWP74/1dKduJRIw=@vger.kernel.org
+X-Gm-Message-State: AOJu0YwyqTbp0vYlXyKrobY6WT/CygDASaryoTOIkh3vjYB9ftHemBpM
+	2IIEcZSofHWqQU6lsYT4VRToCLbA3P1fcXKMhoev0eLcsqva14VMnjOJRMd9GeD33D/DNSCAeoQ
+	GNa/K/IpwCUAYcZSm1mUVG8ewncY=
+X-Gm-Gg: ASbGncuxI+ZqZP3J9jCwsR0ektC/u3m4Li7keZklcEjV0irtvPUw0GFMCh77IuVj0FX
+	5Y890sWFNdqZ1w+t2S1qAYGZnY8KH4KjmZQ24yw+0xoL/lWNjJXvPrSrXqmyyR9bkNJ70k1s+
+X-Google-Smtp-Source: AGHT+IGaXS1EDa6yC/VYlIlgcCMZhbiBlWn7y6h9gigI5MM1OjNIt2C44T9+/GZ4SCA6mmKeQDKqx9OcBnX/akiH2jE=
+X-Received: by 2002:a17:90b:3845:b0:2ee:948b:72d3 with SMTP id
+ 98e67ed59e1d1-2fbf5bb8de3mr405275a91.1.1739309858447; Tue, 11 Feb 2025
+ 13:37:38 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <cover.1738832118.git.viresh.kumar@linaro.org> <db0166341ce824c157d0c58c240b3efc6aec6f6e.1738832118.git.viresh.kumar@linaro.org>
+ <Z6qTelPSqpFk439l@thinkpad> <20250211042908.nyftiw7gtxosfjwc@vireshk-i7> <Z6t51xodSV21ER4M@thinkpad>
+In-Reply-To: <Z6t51xodSV21ER4M@thinkpad>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Tue, 11 Feb 2025 22:37:26 +0100
+X-Gm-Features: AWEUYZngWJ1M-awjFN_5Da2lJECVQzCBMpv2S6V7HN11_MwJfmvJvmjOQij9-yk
+Message-ID: <CANiq72=3MR9F9ur-aQYP4P81RBreAr=UiGg5iaSuFjjd5Q4Y7Q@mail.gmail.com>
+Subject: Re: [PATCH V8 04/14] rust: Add cpumask helpers
+To: Yury Norov <yury.norov@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@redhat.com>, Miguel Ojeda <ojeda@kernel.org>, Alex Gaynor <alex.gaynor@gmail.com>, 
+	Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>, 
+	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+	Benno Lossin <benno.lossin@proton.me>, Andreas Hindborg <a.hindborg@kernel.org>, 
+	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-pm@vger.kernel.org, 
+	Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, 
+	Nishanth Menon <nm@ti.com>, rust-for-linux@vger.kernel.org, 
+	Manos Pitsidianakis <manos.pitsidianakis@linaro.org>, Erik Schilling <erik.schilling@linaro.org>, 
+	=?UTF-8?B?QWxleCBCZW5uw6ll?= <alex.bennee@linaro.org>, 
+	Joakim Bech <joakim.bech@linaro.org>, Rob Herring <robh@kernel.org>, Christoph Hellwig <hch@lst.de>, 
+	Jason Gunthorpe <jgg@nvidia.com>, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdegvddtkecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeejpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhtvghrnhesrhhofihlrghnugdrhhgrrhhvrghrugdrvgguuhdprhgtphhtthhopehulhhfrdhhrghnshhsohhnsehlihhnrghrohdrohhrghdprhgtphhtthhopehjohhhrghnsehkvghrnhgvlhdrohhrghdprhgtphh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
+Content-Transfer-Encoding: quoted-printable
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tue, Feb 11, 2025 at 5:24=E2=80=AFPM Yury Norov <yury.norov@gmail.com> w=
+rote:
+>
+> No, not Okay.
+>
+> To begin with, this is the 8th version of the same patch, but you
+> only now bothered to CC someone who is listed in MAINTAINERS. This is
+> not how the community works.
 
-Since pm_runtime_force_resume() requires pm_runtime_force_suspend() to
-be called before it on the same device, the runtime PM status of that
-device is RPM_SUSPENDED when it is called unless the device's runtime
-PM status is changed somewhere else in the meantime.
+Yeah, that is not good.
 
-However, even if that happens, the power.needs_force_resume
-check is still required to pass and that flag is only set by
-pm_runtime_force_suspend() and it is cleared at the end of
-pm_runtime_force_resume(), so it cannot be taken into account
-twice in a row.
+For what it is worth, we try to make this very clear:
 
-Accordingly, the pm_runtime_status_suspended(dev) check in
-pm_runtime_force_resume() is redundant, so drop it.
+    https://rust-for-linux.com/contributing#submitting-new-abstractions-and=
+-modules
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/runtime.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+i.e. that maintainers need to be Cc'd and contacted as soon as
+possible (possibly even before writing the code).
 
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -1963,7 +1963,7 @@
- 	int (*callback)(struct device *);
- 	int ret = 0;
- 
--	if (!pm_runtime_status_suspended(dev) || !dev->power.needs_force_resume)
-+	if (!dev->power.needs_force_resume)
- 		goto out;
- 
- 	/*
+> You also made it a patch bomb that touches multiple critical and very
+> sensitive subsystems. You link them to an experimental and unstable
+> project, and do it in a way that makes it really easy to slip through
+> maintainers' attention.
 
+Not sure what you mean by "unstable project", but I agree that the
+patch series, unless Viresh is the maintainer of the C side of
+everything added, it should be discussed and maintenance discussed
+accordingly before merging anything.
 
+This is what we have done for everything else, and that has not changed.
 
+I try to spot cases where this is not done, which is why I Cc'd you in
+v7 and told Viresh to please do so, and he did -- I don't think he was
+trying to bypass on purpose:
+
+    https://lore.kernel.org/rust-for-linux/CANiq72=3Do+uc3ZnNrdkuoSGSL8apNE=
+4z4QwpvsiLfGzXFywSLrQ@mail.gmail.com/
+
+> That would make things even worse. Before you wanted me to maintain
+> rust linkage. Now you want me to get approval from someone else who
+> maintains rust linkage. In case I need to change something, I want to
+> be able to just change.
+
+Like Danilo mentions, there are several ways to go forward here. For
+some ideas/context, please see:
+
+    https://rust-for-linux.com/rust-kernel-policy#how-is-rust-introduced-in=
+-a-subsystem
+
+(Thanks Jason for linking the page)
+
+And, yeah, whoever ends up maintaining this, then they should of
+course be testing it properly with Rust enabled with a proper config
+for that and so on, just like one would do for anything else. By the
+way, it is possible to request Intel's 0day to build with Rust
+enabled.
+
+(Side-note: to clarify, there are different parties involved here --
+"Rust team" is fairly ambiguous.)
+
+Cheers,
+Miguel
