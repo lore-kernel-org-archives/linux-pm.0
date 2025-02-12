@@ -1,50 +1,49 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7C79253B5B;
-	Wed, 12 Feb 2025 16:50:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E28520B1E5;
+	Wed, 12 Feb 2025 16:50:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.13
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739379022; cv=none; b=cvjkXgVjzn+UNgxdAdTIAOX1ouMuYLneCl7MH8JjiyILInL26jrvu60Ka6TPM6OWdldTaL/3HkM0AbQc176PnB3ABHYYg2MI3Q6uHZrP+cEfSUlmfnOxfc7s+bkaggRovzntb1YqRgkRWFZ8noDoA/PmLdI+zELxf7e4RaKguXs=
+	t=1739379028; cv=none; b=SREb+ruxgjs2izYfdPoX3mFpMyUkTvA4hj2D+O07QLYJ/C44Y+2FdWGnCNeEuNxNOWUeE0gIOXzXWjRQM8/IadLH6rfECKVa5nTCY3nx0Az/VkYUmRy7sJUlftCoT2DAicDGVYHFdYW5/344E8U4MXTs4j5NkyjXH5s/SCxwzNQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739379022; c=relaxed/simple;
-	bh=1+Mz2ycujLjY41kSFCBp2VosgomPuA1VzEOfiJ+uivo=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=V6wO3P5+dHC5Z6p55LgFCYmRnl+RUgRzRriqG5NKiGomUUcJ9h5SMWq+aizO5nSX+1RvQ1DzonSN36QGFJ+hr65B6oHR0wU5Bs52cfUH0Z7yf27F1ESw3OYsZGqUiv/gMW0zh++jY7wQiSz5hFA+ce/EM9RERQA9rUHFSVggDiU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=H+Ahi2RC; arc=none smtp.client-ip=192.198.163.17
+	s=arc-20240116; t=1739379028; c=relaxed/simple;
+	bh=sN0KMmUXHXUMO+a/DP6eUSSoPf12acyibiEzC9XXU4s=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=STA5k6FaomW0VvEA68F17A5mrgPrYOdkJPIpQy1XzCsbCA+/Vgenw8StG+rGIeK8Or87cUrQ834ZmGVagNf2lXbjs96kSJtsr0fHZZwOQd0zE6b07WrXvyZI9gmoJ9bykzm4urZtHVA+1dM7sxcqrVikRFunvmcP38jmdLATU7k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=aHQTAAUI; arc=none smtp.client-ip=192.198.163.13
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="H+Ahi2RC"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="aHQTAAUI"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1739379021; x=1770915021;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=1+Mz2ycujLjY41kSFCBp2VosgomPuA1VzEOfiJ+uivo=;
-  b=H+Ahi2RCTw0pz39pVAAd4Y6cXueRXFbt2Nr4UT7CTkTFjcST5BQDlnAh
-   PqvLUw0n2qyVtSp8mhdS0XUs5oeX2n24b+wwxXny4K/6C0rRmLfMJQj9r
-   IoQF02ARgT84jLK26yaK5Fy2itSzJvdMEzOqZ6qdBLnlaM/xPfB86Wh2m
-   UPpGbdeZ3jn3mZpmmo9KS+zBsBV8d0mh+O8fGRX553groQwnZosE4FSyT
-   4bX0PYO1PIS4wcSz7hFQkWdrNjWG+yy88vJAZqHzP5odWlTozN8wUKeRi
-   b/23678CLAq9rQ/oZcCQB8vpIMPDsQrdZRCvk9VBnAPqRhrrwGErx6Rem
+  t=1739379027; x=1770915027;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=sN0KMmUXHXUMO+a/DP6eUSSoPf12acyibiEzC9XXU4s=;
+  b=aHQTAAUIebt515xGgyO8gVq4RzsWKzG7fXgRtLr8uH85QcOBjFZS8pBW
+   E3qZbcy2MIoJertH7u+Zd13Ve3xFNI29utbw9QtAww61wuGwYvy6lKxb5
+   OD9rJysIulTZIVsiVHSbEnSbg16g1m7Gj85WiTe0bSuaqW7RhEuY2Jyz6
+   +x8TppggLdZOkgFMBeU/EoWaWrS6IbxviifZQ4TLqCqELFbHyQOaygzg+
+   QhssRSfgM7fKQztcFw2ZbcVIElkdQ4NZDOKg4Q0ZW8Pmu4eXXnV15IdDv
+   RuRnyWljQNKK3KBWli1gdBzRTYfaTo0Jg8ojd3HF6A2B4nLApYMbMaCWI
    g==;
-X-CSE-ConnectionGUID: Yax0ljPUQOKZYGjLoMLZNw==
-X-CSE-MsgGUID: tn4xmZ0/ToOhkOE8M2XOTw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11343"; a="39930865"
+X-CSE-ConnectionGUID: 2RueKw5CTZyr47rPKZesIQ==
+X-CSE-MsgGUID: UNLa47QRSTe6GmnLfCigNA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11343"; a="42885976"
 X-IronPort-AV: E=Sophos;i="6.13,280,1732608000"; 
-   d="scan'208";a="39930865"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Feb 2025 08:50:16 -0800
-X-CSE-ConnectionGUID: dPksZOdzSPqSiiygsAVuLw==
-X-CSE-MsgGUID: Tt0Gv14jRu2+1/mwfX4uRQ==
+   d="scan'208";a="42885976"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Feb 2025 08:50:17 -0800
+X-CSE-ConnectionGUID: tAKMShbmSHq2v5Mia1WvpA==
+X-CSE-MsgGUID: O+qniqbiRyOdY8ptdTBDzQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,280,1732608000"; 
-   d="scan'208";a="113539612"
+X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; 
+   d="scan'208";a="118048277"
 Received: from black.fi.intel.com ([10.237.72.28])
-  by fmviesa009.fm.intel.com with ESMTP; 12 Feb 2025 08:50:14 -0800
+  by orviesa005.jf.intel.com with ESMTP; 12 Feb 2025 08:50:14 -0800
 Received: by black.fi.intel.com (Postfix, from userid 1003)
-	id 3B8A91FD; Wed, 12 Feb 2025 18:50:13 +0200 (EET)
+	id 222DF11E; Wed, 12 Feb 2025 18:50:13 +0200 (EET)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	=?UTF-8?q?Bence=20Cs=C3=B3k=C3=A1s?= <csokas.bence@prolan.hu>,
@@ -55,12 +54,10 @@ To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	linux-pm@vger.kernel.org
 Cc: Samuel Holland <samuel@sholland.org>,
 	Sebastian Reichel <sre@kernel.org>
-Subject: [PATCH v1 2/2] i2c: Unexport i2c_of_match_device()
-Date: Wed, 12 Feb 2025 18:46:24 +0200
-Message-ID: <20250212165012.2413079-3-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 0/2] i2c: Reduce use of i2c_of_match_device()
+Date: Wed, 12 Feb 2025 18:46:22 +0200
+Message-ID: <20250212165012.2413079-1-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.45.1.3035.g276e886db78b
-In-Reply-To: <20250212165012.2413079-1-andriy.shevchenko@linux.intel.com>
-References: <20250212165012.2413079-1-andriy.shevchenko@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -70,79 +67,28 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-i2c_of_match_device() is not used anymore outside of I²C framework,
-unexport it.
+The i2c_of_match_device() was developed as internal API and was exported just
+in case well before we get an idea of the generic helper for getting driver
+data for the matched device. For all the times of i2c_of_match_device() being
+exported there were _only_ three users, two of which had been already converted
+to better API. For preventing the use of i2c_of_match_device(), make it private
+to I²C subsystem.
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- drivers/i2c/i2c-core-of.c |  1 -
- drivers/i2c/i2c-core.h    |  9 +++++++++
- include/linux/i2c.h       | 11 -----------
- 3 files changed, 9 insertions(+), 12 deletions(-)
+This is assumed to go via I²C tree, but can be done differently taking into
+account the immutable tag or branch for involved subsystems.
 
-diff --git a/drivers/i2c/i2c-core-of.c b/drivers/i2c/i2c-core-of.c
-index a6c407d36800..02feee6c9ba9 100644
---- a/drivers/i2c/i2c-core-of.c
-+++ b/drivers/i2c/i2c-core-of.c
-@@ -157,7 +157,6 @@ const struct of_device_id
- 
- 	return i2c_of_match_device_sysfs(matches, client);
- }
--EXPORT_SYMBOL_GPL(i2c_of_match_device);
- 
- #if IS_ENABLED(CONFIG_OF_DYNAMIC)
- static int of_i2c_notify(struct notifier_block *nb, unsigned long action,
-diff --git a/drivers/i2c/i2c-core.h b/drivers/i2c/i2c-core.h
-index 36587f38dff3..4797ba88331c 100644
---- a/drivers/i2c/i2c-core.h
-+++ b/drivers/i2c/i2c-core.h
-@@ -84,8 +84,17 @@ static inline void i2c_acpi_remove_space_handler(struct i2c_adapter *adapter) {
- 
- #ifdef CONFIG_OF
- void of_i2c_register_devices(struct i2c_adapter *adap);
-+const struct of_device_id *i2c_of_match_device(const struct of_device_id *matches,
-+					       struct i2c_client *client);
-+
- #else
- static inline void of_i2c_register_devices(struct i2c_adapter *adap) { }
-+static inline
-+const struct of_device_id *i2c_of_match_device(const struct of_device_id *matches,
-+					       struct i2c_client *client)
-+{
-+	return NULL;
-+}
- #endif
- extern struct notifier_block i2c_of_notifier;
- 
-diff --git a/include/linux/i2c.h b/include/linux/i2c.h
-index ae2ef3da6ecd..4d281ff5582b 100644
---- a/include/linux/i2c.h
-+++ b/include/linux/i2c.h
-@@ -1039,10 +1039,6 @@ static inline struct i2c_adapter *of_get_i2c_adapter_by_node(struct device_node
- 	return i2c_get_adapter_by_fwnode(of_fwnode_handle(node));
- }
- 
--const struct of_device_id
--*i2c_of_match_device(const struct of_device_id *matches,
--		     struct i2c_client *client);
--
- int of_i2c_get_board_info(struct device *dev, struct device_node *node,
- 			  struct i2c_board_info *info);
- 
-@@ -1063,13 +1059,6 @@ static inline struct i2c_adapter *of_get_i2c_adapter_by_node(struct device_node
- 	return NULL;
- }
- 
--static inline const struct of_device_id
--*i2c_of_match_device(const struct of_device_id *matches,
--		     struct i2c_client *client)
--{
--	return NULL;
--}
--
- static inline int of_i2c_get_board_info(struct device *dev,
- 					struct device_node *node,
- 					struct i2c_board_info *info)
+Please, review and ack.
+
+Andy Shevchenko (2):
+  power: ip5xxx_power: Make use of i2c_get_match_data()
+  i2c: Unexport i2c_of_match_device()
+
+ drivers/i2c/i2c-core-of.c           |  1 -
+ drivers/i2c/i2c-core.h              |  9 +++++++++
+ drivers/power/supply/ip5xxx_power.c |  6 ++----
+ include/linux/i2c.h                 | 11 -----------
+ 4 files changed, 11 insertions(+), 16 deletions(-)
+
 -- 
 2.45.1.3035.g276e886db78b
 
