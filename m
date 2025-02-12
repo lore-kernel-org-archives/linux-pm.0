@@ -1,153 +1,236 @@
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1722C1E9B3B
-	for <linux-pm@vger.kernel.org>; Wed, 12 Feb 2025 08:22:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.187
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3053E204F73;
+	Wed, 12 Feb 2025 08:26:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739348524; cv=none; b=NUKy21Y9r4S8z7JISHia+T8eDlgVn/Tem3HjtmOZZRWU65YdufM2vunX9OEsZz1gKzw0Bl7AwRL9zHCP+LHQ+UhrO7xIC571zM6e6xLZ9vO6uMo45cXBFoBlqdj82JgYqA7w6arZvoct8KxhMxifUv7SI5YwIXB+YBl9g7svUzo=
+	t=1739348792; cv=none; b=l8oz9Y/rnL3k2jzAtlHZFi4uC2IT33MqIr8sauomolSCrCSeXMs+NEdB6GG0o0kWkj6jnlbyq8P4QafFT0lgWUZv2iv861Tp14K/2eKnrJR4oTgii+kyVP9A9DEdAnjat3ML4QYe8tJnEQmqpyWSAcR/JZStzDstqwPcVG7ogsg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739348524; c=relaxed/simple;
-	bh=FuT1ASiQrvpwE46UW9tiK9Q2X0rqNLK50CHk+F6Fnh8=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ZY9UxRwdw/20mR0Nq/2Po76/MhqQJTW5JYfmhsijKyCJYhtSXcX6MnxbMxn8yszkkreglEdbs6k/0NYfDJGaQFq0iMZtIMO6zDpiedRVGjY3QtI+YkcQP4EpEAP1YHCBIqqFgGlokIHxDOKLRt+194/VZk5uSVr50j8HK7ib5u0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=45.249.212.187
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.88.105])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4YtB4p6fGkz11PbB;
-	Wed, 12 Feb 2025 16:17:30 +0800 (CST)
-Received: from kwepemo100006.china.huawei.com (unknown [7.202.195.47])
-	by mail.maildlp.com (Postfix) with ESMTPS id 13BA6140258;
-	Wed, 12 Feb 2025 16:21:58 +0800 (CST)
-Received: from localhost.localdomain (10.90.30.45) by
- kwepemo100006.china.huawei.com (7.202.195.47) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Wed, 12 Feb 2025 16:21:57 +0800
-From: Jie Zhan <zhanjie9@hisilicon.com>
-To: <rafael@kernel.org>, <viresh.kumar@linaro.org>
-CC: <linux-pm@vger.kernel.org>, <yu.c.chen@intel.com>, <linuxarm@huawei.com>,
-	<jonathan.cameron@huawei.com>, <zhanjie9@hisilicon.com>,
-	<zhenglifeng1@huawei.com>, <lihuisong@huawei.com>, <wanghuiqiang@huawei.com>,
-	<fanghao11@huawei.com>, <prime.zeng@hisilicon.com>
-Subject: [PATCH v2] cpufreq: governor: Fix negative 'idle_time' handling in dbs_update()
-Date: Wed, 12 Feb 2025 16:14:38 +0800
-Message-ID: <20250212081438.1294503-1-zhanjie9@hisilicon.com>
-X-Mailer: git-send-email 2.30.0
+	s=arc-20240116; t=1739348792; c=relaxed/simple;
+	bh=SrzGn1c0JLdZuLtX1GIffHogC91jGV4Iua5E6KKiYOU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=bRCbsT17P3dPeTwWPoLarUUpRMaEgg6nXHuZecR6OCHsZIX5uoLp6iHHnkdlCnxRAQV0QS0nC1z1QV0CA7nNVKAaTD4SxtYP3C/VJrLh2bbC3RMAv/Rnsptv1Ff1uHrU+qzmJtZXsdb1jHCVAUOC8+lPBQj6iBRQU8USSBI8cE4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=GDudayGq; arc=none smtp.client-ip=198.175.65.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="GDudayGq"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1739348790; x=1770884790;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=SrzGn1c0JLdZuLtX1GIffHogC91jGV4Iua5E6KKiYOU=;
+  b=GDudayGq5lwMiJKc8Oy46GYWCsGXv233PwOwk29rzc0PuxbWuLc6GneW
+   +iBLYJr50Y0JUpnaOHZ1lRLDw3ZYMZVlMhonc8bwDWGfRDF9LPHRgyeN9
+   EY4cQrEWwUqTN8rZfCYZYWfMNHXWezo2m6wvKuW/higaycQwa2G+utxis
+   3XVa0ST/7vORZ5rAGm582n0sOqEsb65opOI4wem59UZ+ThwWw6HWKzQmB
+   zb8iXEEzS5mnLgjyw3GltgA+3tw1uToV9ZM/ICPzA60JVMy7IM9EpY9pg
+   NiURfToYZ019vqAtUW6SywkRBJJh7vaTJ5s+vU5i1HR4jvJrBGJopGJ58
+   g==;
+X-CSE-ConnectionGUID: JaukPrHOT0uXEHgZgWZQfw==
+X-CSE-MsgGUID: uTVWjinOSg2Aw7dx0ZwDLQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11314"; a="40114731"
+X-IronPort-AV: E=Sophos;i="6.12,310,1728975600"; 
+   d="scan'208";a="40114731"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Feb 2025 00:26:29 -0800
+X-CSE-ConnectionGUID: vvTe5n8/Sg2KTZj+YkbRtg==
+X-CSE-MsgGUID: KiP3q/SHSSi1wyxKZEnhVw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.13,279,1732608000"; 
+   d="scan'208";a="112585409"
+Received: from lkp-server01.sh.intel.com (HELO d63d4d77d921) ([10.239.97.150])
+  by fmviesa006.fm.intel.com with ESMTP; 12 Feb 2025 00:26:24 -0800
+Received: from kbuild by d63d4d77d921 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1ti84c-0015N9-11;
+	Wed, 12 Feb 2025 08:26:22 +0000
+Date: Wed, 12 Feb 2025 16:25:30 +0800
+From: kernel test robot <lkp@intel.com>
+To: Sumit Gupta <sumitg@nvidia.com>, rafael@kernel.org,
+	viresh.kumar@linaro.org, lenb@kernel.org, robert.moore@intel.com,
+	corbet@lwn.net, linux-pm@vger.kernel.org,
+	linux-acpi@vger.kernel.org, linux-doc@vger.kernel.org,
+	acpica-devel@lists.linux.dev, linux-kernel@vger.kernel.org
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	linux-tegra@vger.kernel.org, treding@nvidia.com,
+	jonathanh@nvidia.com, sashal@nvidia.com, vsethi@nvidia.com,
+	ksitaraman@nvidia.com, sanjayc@nvidia.com, bbasu@nvidia.com,
+	sumitg@nvidia.com
+Subject: Re: [Patch 1/5] ACPI: CPPC: add read perf ctrls api and rename few
+ existing
+Message-ID: <202502121658.IcwbwB0y-lkp@intel.com>
+References: <20250211103737.447704-2-sumitg@nvidia.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
- kwepemo100006.china.huawei.com (7.202.195.47)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250211103737.447704-2-sumitg@nvidia.com>
 
-We observed an issue that the cpu frequency can't raise up with a 100% cpu
-load when nohz is off and the 'conservative' governor is selected.
+Hi Sumit,
 
-'idle_time' can be negative if it's obtained from get_cpu_idle_time_jiffy()
-when nohz is off.  This was found and explained in commit 9485e4ca0b48
-("cpufreq: governor: Fix handling of special cases in dbs_update()").
+kernel test robot noticed the following build errors:
 
-However, commit 7592019634f8 ("cpufreq: governors: Fix long idle detection
-logic in load calculation") introduced a comparison between 'idle_time' and
-'samling_rate' to detect a long idle interval.  While 'idle_time' is
-converted to int before comparison, it's actually promoted to unsigned
-again when compared with an unsigned 'sampling_rate'.  Hence, this leads to
-wrong idle interval detection when it's in fact 100% busy and sets
-policy_dbs->idle_periods to a very large value.  'conservative' adjusts the
-frequency to minimum because of the large 'idle_periods', such that the
-frequency can't raise up.  'Ondemand' doesn't use policy_dbs->idle_periods
-so it fortunately avoids the issue.
+[auto build test ERROR on next-20250210]
+[also build test ERROR on linus/master v6.14-rc2]
+[cannot apply to rafael-pm/linux-next rafael-pm/bleeding-edge v6.14-rc2 v6.14-rc1 v6.13]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Correct negative 'idle_time' to 0 before any use of it in dbs_update().
+url:    https://github.com/intel-lab-lkp/linux/commits/Sumit-Gupta/ACPI-CPPC-add-read-perf-ctrls-api-and-rename-few-existing/20250211-184154
+base:   next-20250210
+patch link:    https://lore.kernel.org/r/20250211103737.447704-2-sumitg%40nvidia.com
+patch subject: [Patch 1/5] ACPI: CPPC: add read perf ctrls api and rename few existing
+config: x86_64-buildonly-randconfig-002-20250212 (https://download.01.org/0day-ci/archive/20250212/202502121658.IcwbwB0y-lkp@intel.com/config)
+compiler: clang version 19.1.3 (https://github.com/llvm/llvm-project ab51eccf88f5321e7c60591c5546b254b6afab99)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250212/202502121658.IcwbwB0y-lkp@intel.com/reproduce)
 
-Fixes: 7592019634f8 ("cpufreq: governors: Fix long idle detection logic in load calculation")
-Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
----
-v2:
-- Avoid type conversion, compare current and previous idle time before
-  obtaining 'idle_time'.
-- Update the explanation in comments.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202502121658.IcwbwB0y-lkp@intel.com/
 
-Discussions:
-v1: https://lore.kernel.org/linux-pm/20250210130659.3533182-1-zhanjie9@hisilicon.com/
----
- drivers/cpufreq/cpufreq_governor.c | 42 ++++++++++++++----------------
- 1 file changed, 19 insertions(+), 23 deletions(-)
+All error/warnings (new ones prefixed by >>):
 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index af44ee6a6430..c140e3f8d4f9 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -145,7 +145,20 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 		time_elapsed = update_time - j_cdbs->prev_update_time;
- 		j_cdbs->prev_update_time = update_time;
- 
--		idle_time = cur_idle_time - j_cdbs->prev_cpu_idle;
-+		/*
-+		 * cur_idle_time could be smaller than j_cdbs->prev_cpu_idle if
-+		 * it's obtained from get_cpu_idle_time_jiffy() when NO_HZ is
-+		 * off, where idle_time is calculated by the difference between
-+		 * time elapsed in jiffies and "busy time" obtained from CPU
-+		 * statistics.  If a CPU is 100% busy, the time elapsed and busy
-+		 * time should grow with the same amount in two consecutive
-+		 * samples, but in practice there could be a tiny difference,
-+		 * making the accumulated idle time decrease sometimes.  Hence,
-+		 * in this case, idle_time should be regarded as 0 in order to
-+		 * make the further process correct.
-+		 */
-+		idle_time = cur_idle_time > j_cdbs->prev_cpu_idle ?
-+			    cur_idle_time - j_cdbs->prev_cpu_idle : 0;
- 		j_cdbs->prev_cpu_idle = cur_idle_time;
- 
- 		if (ignore_nice) {
-@@ -162,7 +175,7 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 			 * calls, so the previous load value can be used then.
- 			 */
- 			load = j_cdbs->prev_load;
--		} else if (unlikely((int)idle_time > 2 * sampling_rate &&
-+		} else if (unlikely(idle_time > 2 * sampling_rate &&
- 				    j_cdbs->prev_load)) {
- 			/*
- 			 * If the CPU had gone completely idle and a task has
-@@ -189,30 +202,13 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 			load = j_cdbs->prev_load;
- 			j_cdbs->prev_load = 0;
- 		} else {
--			if (time_elapsed >= idle_time) {
--				load = 100 * (time_elapsed - idle_time) / time_elapsed;
--			} else {
--				/*
--				 * That can happen if idle_time is returned by
--				 * get_cpu_idle_time_jiffy().  In that case
--				 * idle_time is roughly equal to the difference
--				 * between time_elapsed and "busy time" obtained
--				 * from CPU statistics.  Then, the "busy time"
--				 * can end up being greater than time_elapsed
--				 * (for example, if jiffies_64 and the CPU
--				 * statistics are updated by different CPUs),
--				 * so idle_time may in fact be negative.  That
--				 * means, though, that the CPU was busy all
--				 * the time (on the rough average) during the
--				 * last sampling interval and 100 can be
--				 * returned as the load.
--				 */
--				load = (int)idle_time < 0 ? 100 : 0;
--			}
-+			load = time_elapsed > idle_time ?
-+			       100 * (time_elapsed - idle_time) / time_elapsed :
-+			       0;
- 			j_cdbs->prev_load = load;
- 		}
- 
--		if (unlikely((int)idle_time > 2 * sampling_rate)) {
-+		if (unlikely(idle_time > 2 * sampling_rate)) {
- 			unsigned int periods = idle_time / sampling_rate;
- 
- 			if (periods < idle_periods)
+>> drivers/cpufreq/amd-pstate.c:395:10: error: call to undeclared function 'cppc_set_perf'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+     395 |                         ret = cppc_set_perf(cpu, &perf_ctrls);
+         |                               ^
+   drivers/cpufreq/amd-pstate.c:395:10: note: did you mean 'cppc_set_epp_perf'?
+   include/acpi/cppc_acpi.h:161:12: note: 'cppc_set_epp_perf' declared here
+     161 | extern int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable);
+         |            ^
+   drivers/cpufreq/amd-pstate.c:498:9: error: call to undeclared function 'cppc_set_perf'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+     498 |         return cppc_set_perf(cpudata->cpu, &perf_ctrls);
+         |                ^
+   2 errors generated.
+--
+>> drivers/acpi/cppc_acpi.c:1734:6: warning: variable 'energy_perf' is used uninitialized whenever 'if' condition is false [-Wsometimes-uninitialized]
+    1734 |         if (CPC_SUPPORTED(energy_perf_reg))
+         |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/acpi/cppc_acpi.c:129:28: note: expanded from macro 'CPC_SUPPORTED'
+     129 | #define CPC_SUPPORTED(cpc) ((cpc)->type == ACPI_TYPE_INTEGER ?          \
+         |                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     130 |                                 !!(cpc)->cpc_entry.int_value :          \
+         |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     131 |                                 !IS_NULL_REG(&(cpc)->cpc_entry.reg))
+         |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/acpi/cppc_acpi.c:1736:28: note: uninitialized use occurs here
+    1736 |         perf_ctrls->energy_perf = energy_perf;
+         |                                   ^~~~~~~~~~~
+   drivers/acpi/cppc_acpi.c:1734:2: note: remove the 'if' if its condition is always true
+    1734 |         if (CPC_SUPPORTED(energy_perf_reg))
+         |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    1735 |                 cpc_read(cpu, energy_perf_reg, &energy_perf);
+   drivers/acpi/cppc_acpi.c:1689:41: note: initialize the variable 'energy_perf' to silence this warning
+    1689 |         u64 max, min, desired_perf, energy_perf;
+         |                                                ^
+         |                                                 = 0
+>> drivers/acpi/cppc_acpi.c:1730:6: warning: variable 'desired_perf' is used uninitialized whenever 'if' condition is false [-Wsometimes-uninitialized]
+    1730 |         if (CPC_SUPPORTED(desired_perf_reg))
+         |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/acpi/cppc_acpi.c:129:28: note: expanded from macro 'CPC_SUPPORTED'
+     129 | #define CPC_SUPPORTED(cpc) ((cpc)->type == ACPI_TYPE_INTEGER ?          \
+         |                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     130 |                                 !!(cpc)->cpc_entry.int_value :          \
+         |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     131 |                                 !IS_NULL_REG(&(cpc)->cpc_entry.reg))
+         |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/acpi/cppc_acpi.c:1732:29: note: uninitialized use occurs here
+    1732 |         perf_ctrls->desired_perf = desired_perf;
+         |                                    ^~~~~~~~~~~~
+   drivers/acpi/cppc_acpi.c:1730:2: note: remove the 'if' if its condition is always true
+    1730 |         if (CPC_SUPPORTED(desired_perf_reg))
+         |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    1731 |                 cpc_read(cpu, desired_perf_reg, &desired_perf);
+   drivers/acpi/cppc_acpi.c:1689:28: note: initialize the variable 'desired_perf' to silence this warning
+    1689 |         u64 max, min, desired_perf, energy_perf;
+         |                                   ^
+         |                                    = 0
+>> drivers/acpi/cppc_acpi.c:1726:6: warning: variable 'min' is used uninitialized whenever 'if' condition is false [-Wsometimes-uninitialized]
+    1726 |         if (CPC_SUPPORTED(min_perf_reg))
+         |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/acpi/cppc_acpi.c:129:28: note: expanded from macro 'CPC_SUPPORTED'
+     129 | #define CPC_SUPPORTED(cpc) ((cpc)->type == ACPI_TYPE_INTEGER ?          \
+         |                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     130 |                                 !!(cpc)->cpc_entry.int_value :          \
+         |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     131 |                                 !IS_NULL_REG(&(cpc)->cpc_entry.reg))
+         |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/acpi/cppc_acpi.c:1728:25: note: uninitialized use occurs here
+    1728 |         perf_ctrls->min_perf = min;
+         |                                ^~~
+   drivers/acpi/cppc_acpi.c:1726:2: note: remove the 'if' if its condition is always true
+    1726 |         if (CPC_SUPPORTED(min_perf_reg))
+         |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    1727 |                 cpc_read(cpu, min_perf_reg, &min);
+   drivers/acpi/cppc_acpi.c:1689:14: note: initialize the variable 'min' to silence this warning
+    1689 |         u64 max, min, desired_perf, energy_perf;
+         |                     ^
+         |                      = 0
+>> drivers/acpi/cppc_acpi.c:1722:6: warning: variable 'max' is used uninitialized whenever 'if' condition is false [-Wsometimes-uninitialized]
+    1722 |         if (CPC_SUPPORTED(max_perf_reg))
+         |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/acpi/cppc_acpi.c:129:28: note: expanded from macro 'CPC_SUPPORTED'
+     129 | #define CPC_SUPPORTED(cpc) ((cpc)->type == ACPI_TYPE_INTEGER ?          \
+         |                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     130 |                                 !!(cpc)->cpc_entry.int_value :          \
+         |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     131 |                                 !IS_NULL_REG(&(cpc)->cpc_entry.reg))
+         |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/acpi/cppc_acpi.c:1724:25: note: uninitialized use occurs here
+    1724 |         perf_ctrls->max_perf = max;
+         |                                ^~~
+   drivers/acpi/cppc_acpi.c:1722:2: note: remove the 'if' if its condition is always true
+    1722 |         if (CPC_SUPPORTED(max_perf_reg))
+         |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    1723 |                 cpc_read(cpu, max_perf_reg, &max);
+   drivers/acpi/cppc_acpi.c:1689:9: note: initialize the variable 'max' to silence this warning
+    1689 |         u64 max, min, desired_perf, energy_perf;
+         |                ^
+         |                 = 0
+   4 warnings generated.
+--
+>> drivers/acpi/cppc_acpi.c:1685: warning: expecting prototype for cppc_get_perf(). Prototype was for cppc_get_perf_ctrls() instead
+
+
+vim +/cppc_set_perf +395 drivers/cpufreq/amd-pstate.c
+
+ec437d71db77a1 Huang Rui         2021-12-24  377  
+7fb463aac84577 Dhananjay Ugwekar 2024-10-23  378  static int shmem_cppc_enable(bool enable)
+e059c184da47e9 Huang Rui         2021-12-24  379  {
+e059c184da47e9 Huang Rui         2021-12-24  380  	int cpu, ret = 0;
+ffa5096a7c3386 Perry Yuan        2023-01-31  381  	struct cppc_perf_ctrls perf_ctrls;
+e059c184da47e9 Huang Rui         2021-12-24  382  
+217e67784eab30 Wyes Karny        2023-05-30  383  	if (enable == cppc_enabled)
+217e67784eab30 Wyes Karny        2023-05-30  384  		return 0;
+217e67784eab30 Wyes Karny        2023-05-30  385  
+e059c184da47e9 Huang Rui         2021-12-24  386  	for_each_present_cpu(cpu) {
+e059c184da47e9 Huang Rui         2021-12-24  387  		ret = cppc_set_enable(cpu, enable);
+e059c184da47e9 Huang Rui         2021-12-24  388  		if (ret)
+e059c184da47e9 Huang Rui         2021-12-24  389  			return ret;
+ffa5096a7c3386 Perry Yuan        2023-01-31  390  
+ffa5096a7c3386 Perry Yuan        2023-01-31  391  		/* Enable autonomous mode for EPP */
+ffa5096a7c3386 Perry Yuan        2023-01-31  392  		if (cppc_state == AMD_PSTATE_ACTIVE) {
+ffa5096a7c3386 Perry Yuan        2023-01-31  393  			/* Set desired perf as zero to allow EPP firmware control */
+ffa5096a7c3386 Perry Yuan        2023-01-31  394  			perf_ctrls.desired_perf = 0;
+ffa5096a7c3386 Perry Yuan        2023-01-31 @395  			ret = cppc_set_perf(cpu, &perf_ctrls);
+ffa5096a7c3386 Perry Yuan        2023-01-31  396  			if (ret)
+ffa5096a7c3386 Perry Yuan        2023-01-31  397  				return ret;
+ffa5096a7c3386 Perry Yuan        2023-01-31  398  		}
+e059c184da47e9 Huang Rui         2021-12-24  399  	}
+e059c184da47e9 Huang Rui         2021-12-24  400  
+217e67784eab30 Wyes Karny        2023-05-30  401  	cppc_enabled = enable;
+e059c184da47e9 Huang Rui         2021-12-24  402  	return ret;
+e059c184da47e9 Huang Rui         2021-12-24  403  }
+e059c184da47e9 Huang Rui         2021-12-24  404  
+
 -- 
-2.33.0
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
