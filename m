@@ -1,179 +1,174 @@
-Received: from mail-ed1-f46.google.com (mail-ed1-f46.google.com [209.85.208.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73E6B202F7E;
-	Wed, 12 Feb 2025 22:44:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 46A8178F26
+	for <linux-pm@vger.kernel.org>; Thu, 13 Feb 2025 01:21:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.187
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739400248; cv=none; b=AR9zeOnqq7JDxyk7t0i3jflRpstC01iEz6WEV4sVD6JmmzYI3m2cwTlsnKMNJe0rFFL+EJLUzbdp2udAnOk7yh4V6VnPkcdepcNs7Qk869vJ7bddkAAui9h2iMjlpUlfkWezTG3hAqnDYKOXbMaDTa0cG9Uhw9urBEWNvJm4OpY=
+	t=1739409671; cv=none; b=XiLC6gCzxdAJ+6louejbXJ+IgDN06g7fTGwytBTJMtRRvaEPY+IjEoErPR8Fd7tYYfBPVVV3GfVwwmiP+H/uDNEkSTzBAp9EOrB4aNoJhk/tl8v6BbFjs1ussCXvWYopx6YmPSO8rXZVz64NJwXtMXOFDg5JkNQCrJP/znbTv64=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739400248; c=relaxed/simple;
-	bh=8XeVwHSw3fMh3jLSmwjruyUOp6GzMgE1kFJYTL7bjZw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=SC13y0bN19TNLettVHjdeZfmxM9H5KW2rC/E70dCA2g4vIWXf/pvjX2xHNYPCNC8UfaqYVyyF7JXtOxNlf01Kc5SEjH2m9mLY8NXGMRV+HU+tK9LrEho2ZWEaTGqhfl0aznWfwsQuFfGcjJxw6q3FtpDaCslPofH/wOTs2Il71Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BcbPqvgc; arc=none smtp.client-ip=209.85.208.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BcbPqvgc"
-Received: by mail-ed1-f46.google.com with SMTP id 4fb4d7f45d1cf-5dc89df7eccso305727a12.3;
-        Wed, 12 Feb 2025 14:44:06 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1739400245; x=1740005045; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=sD1Sd6cAP8Th7UTJsJpR3D3J20e2A9Te/LBbAhEgPjM=;
-        b=BcbPqvgc+VgtXkrS4RN2hVfiHsE2O9p1sFpOtpmB0+AM1aJ94PaXuXk5P8wYK7LPhg
-         e2wbdODL879I7Ut93gkH8ApJH0gcKHIKJyQLJ3EVXT3j8mt/e6wJyDzhgrpL1U+khl+d
-         PIOdzvFNkP3mKTddAV2QG68NgbhqfWGPqYVRQvLycjSyQUV/ukL3RM0M0RQ6JRtpzW91
-         K3bkhuML9m5TUb1ad9vf+nl/nSpr4VfqbTasNO+ePUjlqw7fl+JtVBAbIA+AMsj7NJeB
-         KQgG96YzX6vv+ICJ8aOKZcLPa1QJk0bRPg/kg7CAzNLhirCZjjMO4jGz/hQNlE2VtRsu
-         zDCg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739400245; x=1740005045;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=sD1Sd6cAP8Th7UTJsJpR3D3J20e2A9Te/LBbAhEgPjM=;
-        b=rxMe232NqcWDGbUX2EOu/WXlFrgs09b9sf0dDgwTwzghEgLBtTiiCIfveL/feDhmEY
-         xIfMuPxeLw3xwFajIQtZn04g8Cybqbm/J73EFPve7XJCsmTj6/49t7UtOV+3QQd5W9pK
-         fZU68XSvo/nFHGhsfcWEumh9yR1hLvCYtkQIkPZtoMlsO/44uFTNNHHHUHi2NeXbbF+s
-         CaPYAZS8u/UO9KrumFzjVU1Y3+S0QNPRzcptUK64036JboLha7b0BjsuMEPnSydfZMeh
-         /StKFaedph6XSYMDD+NpugH4IxsObtwhG8ANa2oVQ5VHSQkZtfAtrw9llKVzyYpsWFuW
-         wVyQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUKivaQxjZ4gPV5hU97jzrwXL3pmKihpwQ7pX0Jq3e7RJPXdlvW3MfNSLI8Cc90H7+Z8hYdJSqk/Crh@vger.kernel.org, AJvYcCX4zOgSd2ZKxflegzqDhwy/zmGY6xyjG8ogDznfuabbNLcczTHDmhcp3fhXO4dXr1fnloDR98LZEQU=@vger.kernel.org
-X-Gm-Message-State: AOJu0YyGFt16qooJSqctEtUsRZAuvwR7ZWWak/hqPMtPMOnnfTCNOGjp
-	5oP81bppkVLpjY+r4bQ86noZuQmU69FjYcTBAUuntfDgEsl+4XR3vG/8iv1W
-X-Gm-Gg: ASbGncuaICBB0EI99E/I+O99nYZeqhQUx8ZgRoAkzSnb42Ooc/9Ia4oLNKst/tgSr2p
-	Mqzt0G3cHHDuygbNLHCT98oSQ8eOISFmMg9+UqWfBoWmiHCbeu/ofcIH1T0YtFy5LwprNJZfE0Q
-	+XUgXqRejorq6ECE3SZCVuWnKEXpu1LHUzyCv0cwGgfYV2lnZhosRZzNi9HZrMWXvWwgcW0HZrU
-	OG1vvc+TEsrVVQjtWj3b+OgZz75azqfjjy/6701z0/YiYotsQDrr70Ws7TJbqYTYq2Cyomu5/UG
-	OsjnoXRbxWo7+b12SA+lMF2OJqWP
-X-Google-Smtp-Source: AGHT+IGew9eYcM2URi/21CyZAiBNRVDDORJCErtMKBXGaipTpLhYOkMN7qo1rF4n3H1ilggRuIN5EA==
-X-Received: by 2002:a05:6402:2748:b0:5dc:c3c2:225e with SMTP id 4fb4d7f45d1cf-5dec9d3eb64mr723602a12.8.1739400234330;
-        Wed, 12 Feb 2025 14:43:54 -0800 (PST)
-Received: from giga-mm.. ([2a02:1210:861b:6f00:82ee:73ff:feb8:99e3])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-5dece1b4e02sm119914a12.3.2025.02.12.14.43.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 12 Feb 2025 14:43:53 -0800 (PST)
-From: Alexander Sverdlin <alexander.sverdlin@gmail.com>
-To: soc@lists.linux.dev
-Cc: Alexander Sverdlin <alexander.sverdlin@gmail.com>,
-	Chen Wang <unicorn_wang@outlook.com>,
-	Inochi Amaoto <inochiama@outlook.com>,
-	Lee Jones <lee@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Sebastian Reichel <sre@kernel.org>,
-	devicetree@vger.kernel.org,
-	Haylen Chu <heylenay@outlook.com>,
-	linux-arm-kernel@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	linux-pm@vger.kernel.org,
-	Jisheng Zhang <jszhang@kernel.org>,
-	Chao Wei <chao.wei@sophgo.com>
-Subject: [PATCH v3 0/7] arm64 support for Milk-V Duo Module 01 EVB
-Date: Wed, 12 Feb 2025 23:43:32 +0100
-Message-ID: <20250212224347.1767819-1-alexander.sverdlin@gmail.com>
-X-Mailer: git-send-email 2.48.1
+	s=arc-20240116; t=1739409671; c=relaxed/simple;
+	bh=4JLWCn7tcl/RkXPsTSFFVVqcKpQU5PPEo14n/3cDed0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=FocKcnmrLRawLz2FuLDrVfU8EF1lFMDbHMSv3n9MaWutXgp4ZhpqTY6D67VfSqdtyvdtZ1Bz0pJ/mNuUsmrQcd7APNd0raCznlOhtK5DKg+Zx47jXK/hz2wjhGJxDnzvC3uQQUFRw3BnxZSMUP+aUl48lF232KJ3x78V+17lxR4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=45.249.212.187
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
+Received: from mail.maildlp.com (unknown [172.19.162.254])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4YtchZ16Drz11Pyd;
+	Thu, 13 Feb 2025 09:16:30 +0800 (CST)
+Received: from kwepemo100006.china.huawei.com (unknown [7.202.195.47])
+	by mail.maildlp.com (Postfix) with ESMTPS id 371F518032E;
+	Thu, 13 Feb 2025 09:20:58 +0800 (CST)
+Received: from [10.67.121.58] (10.67.121.58) by kwepemo100006.china.huawei.com
+ (7.202.195.47) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Thu, 13 Feb
+ 2025 09:20:57 +0800
+Message-ID: <924fad06-c840-28d4-912e-542f659d19b4@hisilicon.com>
+Date: Thu, 13 Feb 2025 09:20:57 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.3.2
+Subject: Re: [PATCH v2] cpufreq: governor: Fix negative 'idle_time' handling
+ in dbs_update()
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+CC: <viresh.kumar@linaro.org>, <linux-pm@vger.kernel.org>,
+	<yu.c.chen@intel.com>, <linuxarm@huawei.com>, <jonathan.cameron@huawei.com>,
+	<zhenglifeng1@huawei.com>, <lihuisong@huawei.com>, <wanghuiqiang@huawei.com>,
+	<fanghao11@huawei.com>, <prime.zeng@hisilicon.com>
+References: <20250212081438.1294503-1-zhanjie9@hisilicon.com>
+ <CAJZ5v0jBs-qNyz2kSkVVh2qmWqfsx_Hs9=V1+JXkd0LHEBA8bQ@mail.gmail.com>
+From: Jie Zhan <zhanjie9@hisilicon.com>
+In-Reply-To: <CAJZ5v0jBs-qNyz2kSkVVh2qmWqfsx_Hs9=V1+JXkd0LHEBA8bQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
+ kwepemo100006.china.huawei.com (7.202.195.47)
 
-This series adds very basic support for Milk-V Duo Module 01 EVB [1] in
-arm64 mode. The SoC (SG2000) is dual-arch, RiscV and ARM64, the latter has
-been chosen because the upstream toolchain can be utilized.
 
-Sophgo SG2000 seems to be a continuation of the Cvitek CV18xx series, same
-peripherals with an addition of ARM64 core. Therefore it would be
-beneficial not to copy-paste the peripherals' device-tree, but rather split
-the most suitable riscv DT into ARCH-specific and peripherals parts and
-just include the latter on the arm64 side.
 
-This series adds the device-tree for Milk-V Duo Module 01 EVB, which
-in turn contains Milk-V Duo Module 01 (separate .dtsi) on it, which has
-SG2000 SoC inside (separate .dtsi).
+On 13/02/2025 03:49, Rafael J. Wysocki wrote:
+> On Wed, Feb 12, 2025 at 9:22 AM Jie Zhan <zhanjie9@hisilicon.com> wrote:
+>>
+>> We observed an issue that the cpu frequency can't raise up with a 100% cpu
+>> load when nohz is off and the 'conservative' governor is selected.
+> 
+> NOHZ
 
-This series has been tested with Sophgo-provided U-Boot binary [2]: it
-boots from SD card; pinctrl, serial, GPIO drivers are functional (same
-as for RiscV-based CV18xx SoCs).
+Cool.
 
-Partial SoC documentation is available [3].
+> 
+>>
+>> 'idle_time' can be negative if it's obtained from get_cpu_idle_time_jiffy()
+>> when nohz is off.  This was found and explained in commit 9485e4ca0b48
+>> ("cpufreq: governor: Fix handling of special cases in dbs_update()").
+>>
+>> However, commit 7592019634f8 ("cpufreq: governors: Fix long idle detection
+>> logic in load calculation") introduced a comparison between 'idle_time' and
+>> 'samling_rate' to detect a long idle interval.  While 'idle_time' is
+>> converted to int before comparison, it's actually promoted to unsigned
+>> again when compared with an unsigned 'sampling_rate'.  Hence, this leads to
+>> wrong idle interval detection when it's in fact 100% busy and sets
+>> policy_dbs->idle_periods to a very large value.  'conservative' adjusts the
+>> frequency to minimum because of the large 'idle_periods', such that the
+>> frequency can't raise up.  'Ondemand' doesn't use policy_dbs->idle_periods
+>> so it fortunately avoids the issue.
+>>
+>> Correct negative 'idle_time' to 0 before any use of it in dbs_update().
+>>
+>> Fixes: 7592019634f8 ("cpufreq: governors: Fix long idle detection logic in load calculation")
+>> Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
+>> ---
+>> v2:
+>> - Avoid type conversion, compare current and previous idle time before
+>>   obtaining 'idle_time'.
+>> - Update the explanation in comments.
+>>
+>> Discussions:
+>> v1: https://lore.kernel.org/linux-pm/20250210130659.3533182-1-zhanjie9@hisilicon.com/
+>> ---
+>>  drivers/cpufreq/cpufreq_governor.c | 42 ++++++++++++++----------------
+>>  1 file changed, 19 insertions(+), 23 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+>> index af44ee6a6430..c140e3f8d4f9 100644
+>> --- a/drivers/cpufreq/cpufreq_governor.c
+>> +++ b/drivers/cpufreq/cpufreq_governor.c
+>> @@ -145,7 +145,20 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+>>                 time_elapsed = update_time - j_cdbs->prev_update_time;
+>>                 j_cdbs->prev_update_time = update_time;
+>>
+>> -               idle_time = cur_idle_time - j_cdbs->prev_cpu_idle;
+>> +               /*
+>> +                * cur_idle_time could be smaller than j_cdbs->prev_cpu_idle if
+>> +                * it's obtained from get_cpu_idle_time_jiffy() when NO_HZ is
+>> +                * off, where idle_time is calculated by the difference between
+>> +                * time elapsed in jiffies and "busy time" obtained from CPU
+>> +                * statistics.  If a CPU is 100% busy, the time elapsed and busy
+>> +                * time should grow with the same amount in two consecutive
+>> +                * samples, but in practice there could be a tiny difference,
+>> +                * making the accumulated idle time decrease sometimes.  Hence,
+>> +                * in this case, idle_time should be regarded as 0 in order to
+>> +                * make the further process correct.
+>> +                */
+>> +               idle_time = cur_idle_time > j_cdbs->prev_cpu_idle ?
+>> +                           cur_idle_time - j_cdbs->prev_cpu_idle : 0;
+> 
+> Please avoid using the ternary operator in new code.
 
-This series lacks the support of:
-- USB
-- Audio
-- Ethernet
-- WiFi
-- Bluetooth
-- eMMC
-- Video
-- "reboot" functionality
+Sure. Will fix this here and below. 
 
-It would probably make sense that the series will go into ARM SOC tree.
-
-Changelog:
-v3:
-- &cpus node has been moved into cv18xx-cpu.dtsi, &plic and &clint nodes
-were moved into cv18xx-intc.dtsi to reduce code duplication;
-v2:
-- dropped all patches related to the new reboot driver and corresponding DT
-and bindings;
-- grouped DT-related and config-related patches together;
-- added patch moving sophgo.yaml from riscv into soc (to share it with
-ARM); added SG2000 SoC and Milk-V Duo Module 01 EVB into it;
-- other changes are documented in the corresponding patches;
-
-[1] https://milkv.io/docs/duo/getting-started/duo-module-01
-[2] https://github.com/milkv-duo/duo-buildroot-sdk-v2/releases/
-[3] https://github.com/sophgo/sophgo-doc/releases/download/sg2000-trm-v1.01/sg2000_trm_en.pdf
-
-Alexander Sverdlin (7):
-  riscv: dts: sophgo: cv18xx: Move RiscV-specific part into SoCs' .dtsi
-    files
-  dt-bindings: soc: sophgo: Move SoCs/boards from riscv into soc, add
-    SG2000
-  arm64: dts: sophgo: Add initial SG2000 SoC device tree
-  arm64: dts: sophgo: Add Duo Module 01
-  arm64: dts: sophgo: Add Duo Module 01 Evaluation Board
-  arm64: Add SOPHGO SOC family Kconfig support
-  arm64: defconfig: Enable rudimentary Sophgo SG2000 support
-
- .../{riscv => soc/sophgo}/sophgo.yaml         |  7 +-
- arch/arm64/Kconfig.platforms                  |  6 ++
- arch/arm64/boot/dts/Makefile                  |  1 +
- arch/arm64/boot/dts/sophgo/Makefile           |  2 +
- .../sophgo/sg2000-milkv-duo-module-01-evb.dts | 31 +++++++
- .../sophgo/sg2000-milkv-duo-module-01.dtsi    | 85 +++++++++++++++++
- arch/arm64/boot/dts/sophgo/sg2000.dtsi        | 75 +++++++++++++++
- arch/arm64/configs/defconfig                  |  4 +
- arch/riscv/boot/dts/sophgo/cv1800b.dtsi       | 28 +++---
- arch/riscv/boot/dts/sophgo/cv1812h.dtsi       | 28 +++---
- arch/riscv/boot/dts/sophgo/cv181x.dtsi        |  2 +-
- arch/riscv/boot/dts/sophgo/cv18xx-cpu.dtsi    | 36 ++++++++
- arch/riscv/boot/dts/sophgo/cv18xx-intc.dtsi   | 23 +++++
- arch/riscv/boot/dts/sophgo/cv18xx.dtsi        | 91 +++++--------------
- arch/riscv/boot/dts/sophgo/sg2002.dtsi        | 34 ++++---
- 15 files changed, 347 insertions(+), 106 deletions(-)
- rename Documentation/devicetree/bindings/{riscv => soc/sophgo}/sophgo.yaml (80%)
- create mode 100644 arch/arm64/boot/dts/sophgo/Makefile
- create mode 100644 arch/arm64/boot/dts/sophgo/sg2000-milkv-duo-module-01-evb.dts
- create mode 100644 arch/arm64/boot/dts/sophgo/sg2000-milkv-duo-module-01.dtsi
- create mode 100644 arch/arm64/boot/dts/sophgo/sg2000.dtsi
- create mode 100644 arch/riscv/boot/dts/sophgo/cv18xx-cpu.dtsi
- create mode 100644 arch/riscv/boot/dts/sophgo/cv18xx-intc.dtsi
-
--- 
-2.48.1
-
+> 
+>>                 j_cdbs->prev_cpu_idle = cur_idle_time;
+>>
+>>                 if (ignore_nice) {
+>> @@ -162,7 +175,7 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+>>                          * calls, so the previous load value can be used then.
+>>                          */
+>>                         load = j_cdbs->prev_load;
+>> -               } else if (unlikely((int)idle_time > 2 * sampling_rate &&
+>> +               } else if (unlikely(idle_time > 2 * sampling_rate &&
+>>                                     j_cdbs->prev_load)) {
+>>                         /*
+>>                          * If the CPU had gone completely idle and a task has
+>> @@ -189,30 +202,13 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+>>                         load = j_cdbs->prev_load;
+>>                         j_cdbs->prev_load = 0;
+>>                 } else {
+>> -                       if (time_elapsed >= idle_time) {
+>> -                               load = 100 * (time_elapsed - idle_time) / time_elapsed;
+>> -                       } else {
+>> -                               /*
+>> -                                * That can happen if idle_time is returned by
+>> -                                * get_cpu_idle_time_jiffy().  In that case
+>> -                                * idle_time is roughly equal to the difference
+>> -                                * between time_elapsed and "busy time" obtained
+>> -                                * from CPU statistics.  Then, the "busy time"
+>> -                                * can end up being greater than time_elapsed
+>> -                                * (for example, if jiffies_64 and the CPU
+>> -                                * statistics are updated by different CPUs),
+>> -                                * so idle_time may in fact be negative.  That
+>> -                                * means, though, that the CPU was busy all
+>> -                                * the time (on the rough average) during the
+>> -                                * last sampling interval and 100 can be
+>> -                                * returned as the load.
+>> -                                */
+>> -                               load = (int)idle_time < 0 ? 100 : 0;
+>> -                       }
+>> +                       load = time_elapsed > idle_time ?
+>> +                              100 * (time_elapsed - idle_time) / time_elapsed :
+>> +                              0;
+>>                         j_cdbs->prev_load = load;
+>>                 }
+>>
+>> -               if (unlikely((int)idle_time > 2 * sampling_rate)) {
+>> +               if (unlikely(idle_time > 2 * sampling_rate)) {
+>>                         unsigned int periods = idle_time / sampling_rate;
+>>
+>>                         if (periods < idle_periods)
+>> --
