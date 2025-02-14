@@ -1,1323 +1,825 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C73F1D9A79;
-	Fri, 14 Feb 2025 21:44:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 14AD41FC7D0;
+	Fri, 14 Feb 2025 22:10:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739569464; cv=none; b=IdpzVpShW/YK7LRukXqlXvj13DQFZYfEeH5OuMDog30fmb2rCnPRKZVEjoUSke4ACHa1Fu7RXHPmujO1bwDpNSfVR53rEtURWEL9KYiFmMhL/2osK9qGic5WYkjrmcRvUlrvZKtlRwznX/l8n2wlSuZrlX6rY3Nvxvhck+Pm8Rs=
+	t=1739571040; cv=none; b=Ll2jObYpCrPVCkidOUEZCQd15x45b4cGY5qXfmzjM9d2V5aHN7u3wQTnVU5WiC4qqfLI9BvRjuQs3KCs7VdUwEUfXEyDngMfOaVkY68uD+V4+5bBbsDUsoISm3ICxmNuIn+T7tdY5llkqGsKV6TjRt078q+OfWRNMxVR7At3c1E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739569464; c=relaxed/simple;
-	bh=sAJUnYiH+ouHkWMbJ6L5fpG5ii1H9ebPNbrFbn6ajwI=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Bte6NhpwBZB0z4Oud/nAl5/4Q9HyGaoSV77wBEws+y+/i8zqMcJd2Tw82g1IqU//SeMiBYPoqniIuJ34kzRObogbOn/MxnRUXTlvi8Xp7+o3a5WLECWNS2lZw9mMS3EfJ0TmfKubjvBMH6dXmjMVOKyWqCOgThKeRFve1sq921U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=UZpIm1E+; arc=none smtp.client-ip=198.175.65.21
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1739571040; c=relaxed/simple;
+	bh=sFqvBnfO1CU6dmGLJ6rZT7lP2w9+neZuRRPsvCOGrqk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=pEs0AZpXkk68EiIMpziccqLmpwuXa6pq9gs7ypxPL8+85c3CgcTAszFMkRo9sLMUPfCBAUsdwnsIM2i1c7ycZs8MKekbwfPNee+z3oDCnYlQubXDY1CCIyTNwiuUuuIFyGxp7NXmx1lHVX4hqUY72qqYzY853mVQobogczhwfU4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lmUoRu6U; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="UZpIm1E+"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1739569462; x=1771105462;
-  h=from:to:subject:date:message-id:in-reply-to:references:
-   mime-version:content-transfer-encoding;
-  bh=sAJUnYiH+ouHkWMbJ6L5fpG5ii1H9ebPNbrFbn6ajwI=;
-  b=UZpIm1E+JoEGm6uPjrzEQOZbqb6NUghYxNv0jtRhMgzfVO2yUY0YuBCD
-   C39aXRJWWxDgcTlpTlA5NKBhEMQ9DsaPkHQgUI+027vLJiXwbGsA77T28
-   MPGhMk2uT9ceJDYqJJ+ja5AwK7Jauxl5Ye0PhcM8A1acXYkzItTN132Sy
-   v30ihI42m1dw8anAd289BLc7RmtcxtQaauT4whEcBHJb4z0zUsNdQ6JEq
-   RWHm3ZVpTn2cmv/cCg5tDFHqhMPDyhFzHXuoTf/Abb5N4WxXCiRhXimtS
-   vFgBVSqTwhhLt+g4Pow5FSP7YHLU4bp0LIXKqYXKQnvfciDlD2ycu3/UB
-   g==;
-X-CSE-ConnectionGUID: 7ookzAZVRU+irj3qcLIlWA==
-X-CSE-MsgGUID: 3QFuXwDDTgGJYVNDDQ2+AA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11345"; a="40253126"
-X-IronPort-AV: E=Sophos;i="6.13,287,1732608000"; 
-   d="scan'208";a="40253126"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2025 13:44:20 -0800
-X-CSE-ConnectionGUID: J8aSJ1oKRPuv6oxYiMq8Rg==
-X-CSE-MsgGUID: 1uPcjER1S2K3yYAq+/dLdA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,287,1732608000"; 
-   d="scan'208";a="113546312"
-Received: from mdroper-mobl2.amr.corp.intel.com (HELO xpardee-desk.intel.com) ([10.124.223.241])
-  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2025 13:44:19 -0800
-From: Xi Pardee <xi.pardee@linux.intel.com>
-To: xi.pardee@linux.intel.com,
-	rajvi0912@gmail.com,
-	irenic.rajneesh@gmail.com,
-	david.e.box@linux.intel.com,
-	hdegoede@redhat.com,
-	ilpo.jarvinen@linux.intel.com,
-	platform-driver-x86@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v2 2/3] platform/x86/intel/pmc: Remove unnecessary declarations in header
-Date: Fri, 14 Feb 2025 13:44:10 -0800
-Message-ID: <20250214214416.10150-3-xi.pardee@linux.intel.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20250214214416.10150-1-xi.pardee@linux.intel.com>
-References: <20250214214416.10150-1-xi.pardee@linux.intel.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lmUoRu6U"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6AB61C4CEE9;
+	Fri, 14 Feb 2025 22:10:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1739571039;
+	bh=sFqvBnfO1CU6dmGLJ6rZT7lP2w9+neZuRRPsvCOGrqk=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=lmUoRu6UFnsXnTSs/jNj2MJRIF6q9KtjjlzPdkjc5NhphlkfeXQn7xkbEm4zD7SrE
+	 RbEcT/Q88Y1HUcgUweKdkh4HZ/8Z5QXgwAntmcu5kikAa1Ic77ePzbCK/G5Fu1QA64
+	 IwDAFuK/ZINPjDYvLF4yf3OgcqZzyJO1jl5XygPGrh+z1GPDFXWgZZs46jAzur4tog
+	 29VgK9Ika8H2D9clSQ9hwUdj+HVBlsnsuFA0+rXt8xP6zxV3ATIZ5ApcPZgPT3VdEw
+	 XZcJjKL9SIlYBGkCdHiE7BDDhHrrGDHFX0wBy0/0uGJSsG52wFo2Z+MFUbtSkcT1Mv
+	 nxd8f2oK3wt9Q==
+Received: by mail-oa1-f43.google.com with SMTP id 586e51a60fabf-2addd5053c0so1474677fac.1;
+        Fri, 14 Feb 2025 14:10:39 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCUj+3fepWkTva2cdU6udcdDAudoFPOoBpD7Q6pXR/Kwo4NEr/owaHL7xMtvoEIjN+pishdoDziiSIo=@vger.kernel.org, AJvYcCVvsGGGhzAvRUOKyZ1ssy/PnrzHnJ0ogajNNXddj5dGeFoH3RmoSOCQi4am22nKPZdnpp4Z7tpmRm7MvSA=@vger.kernel.org
+X-Gm-Message-State: AOJu0YwRbybj/fhTE8fSP9iYnlWE/nUBDaND5DMF4ylCbpitlOtD88HT
+	pfpHUTF28VXr6gRY+n6pfvPjWZHpctNHRlt09M6erCX1pli/0+acNtLIH3NgiplChdn9zwMSFCp
+	JJqQLWkSvyBa2k0Qvjo2fkzrAbAo=
+X-Google-Smtp-Source: AGHT+IE/2UwscLC9x7F2FW7mZo7n9SQiCvQllVMdI/5gfhMRETiy53FfO9ilPkMHFwu04tqbEOazhja6DlyibOLJXYg=
+X-Received: by 2002:a05:6870:c48:b0:29e:29ac:5ade with SMTP id
+ 586e51a60fabf-2bc99dcb14bmr507219fac.35.1739571038449; Fri, 14 Feb 2025
+ 14:10:38 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <1916668.tdWV9SEqCh@rjwysocki.net> <003b01db7e99$34791c50$9d6b54f0$@telus.net>
+In-Reply-To: <003b01db7e99$34791c50$9d6b54f0$@telus.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 14 Feb 2025 23:10:27 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0jRctJV9eBZA=e737W0tot-4C+wrrQ2xUCVZDuYwym3=Q@mail.gmail.com>
+X-Gm-Features: AWEUYZmLT-FHTgdcN6OElspOFrgk1dxHrJ373W0G-gT8IYfQeIVJK2xfbWFnaBg
+Message-ID: <CAJZ5v0jRctJV9eBZA=e737W0tot-4C+wrrQ2xUCVZDuYwym3=Q@mail.gmail.com>
+Subject: Re: [RFT][PATCH v1 0/5] cpuidle: menu: Avoid discarding useful
+ information when processing recent idle intervals
+To: Doug Smythies <dsmythies@telus.net>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, 
+	LKML <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
+	Christian Loehle <christian.loehle@arm.com>, 
+	Artem Bityutskiy <artem.bityutskiy@linux.intel.com>, 
+	Aboorva Devarajan <aboorvad@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Remove unnecessary declarations in header file. Variable that are
-used by only one .c file are removed from header file and changed
-to be static in their corresponding .c file.
+Hi Doug,
 
-Signed-off-by: Xi Pardee <xi.pardee@linux.intel.com>
----
- drivers/platform/x86/intel/pmc/adl.c  |  34 +++----
- drivers/platform/x86/intel/pmc/arl.c  |  58 ++++++------
- drivers/platform/x86/intel/pmc/cnp.c  |   8 +-
- drivers/platform/x86/intel/pmc/core.h | 126 --------------------------
- drivers/platform/x86/intel/pmc/icl.c  |   6 +-
- drivers/platform/x86/intel/pmc/lnl.c  |  42 ++++-----
- drivers/platform/x86/intel/pmc/mtl.c  |  64 ++++++-------
- drivers/platform/x86/intel/pmc/spt.c  |  12 +--
- drivers/platform/x86/intel/pmc/tgl.c  |  20 ++--
- 9 files changed, 122 insertions(+), 248 deletions(-)
+On Fri, Feb 14, 2025 at 5:30=E2=80=AFAM Doug Smythies <dsmythies@telus.net>=
+ wrote:
+>
+> On 2025.02.06 06:22 Rafael J. Wysocki wrote:
+>
+> > Hi Everyone,
+>
+> Hi Rafael,
+>
+> >
+> > This work had been triggered by a report that commit 0611a640e60a ("eve=
+ntpoll:
+> > prefer kfree_rcu() in __ep_remove()") had caused the critical-jOPS metr=
+ic of
+> ... deleted ...
+>
+> This is a long email. It contains test results for several recent idle go=
+vernor patches:
 
-diff --git a/drivers/platform/x86/intel/pmc/adl.c b/drivers/platform/x86/intel/pmc/adl.c
-index de361a316d51d..9e7dfd6e3310a 100644
---- a/drivers/platform/x86/intel/pmc/adl.c
-+++ b/drivers/platform/x86/intel/pmc/adl.c
-@@ -11,7 +11,7 @@
- #include "core.h"
- 
- /* Alder Lake: PGD PFET Enable Ack Status Register(s) bitmap */
--const struct pmc_bit_map adl_pfear_map[] = {
-+static const struct pmc_bit_map adl_pfear_map[] = {
- 	{"SPI/eSPI",		BIT(2)},
- 	{"XHCI",		BIT(3)},
- 	{"SPA",			BIT(4)},
-@@ -54,7 +54,7 @@ const struct pmc_bit_map adl_pfear_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map *ext_adl_pfear_map[] = {
-+static const struct pmc_bit_map *ext_adl_pfear_map[] = {
- 	/*
- 	 * Check intel_pmc_core_ids[] users of cnp_reg_map for
- 	 * a list of core SoCs using this.
-@@ -63,7 +63,7 @@ const struct pmc_bit_map *ext_adl_pfear_map[] = {
- 	NULL
- };
- 
--const struct pmc_bit_map adl_ltr_show_map[] = {
-+static const struct pmc_bit_map adl_ltr_show_map[] = {
- 	{"SOUTHPORT_A",		CNP_PMC_LTR_SPA},
- 	{"SOUTHPORT_B",		CNP_PMC_LTR_SPB},
- 	{"SATA",		CNP_PMC_LTR_SATA},
-@@ -100,7 +100,7 @@ const struct pmc_bit_map adl_ltr_show_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map adl_clocksource_status_map[] = {
-+static const struct pmc_bit_map adl_clocksource_status_map[] = {
- 	{"CLKPART1_OFF_STS",			BIT(0)},
- 	{"CLKPART2_OFF_STS",			BIT(1)},
- 	{"CLKPART3_OFF_STS",			BIT(2)},
-@@ -128,7 +128,7 @@ const struct pmc_bit_map adl_clocksource_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map adl_power_gating_status_0_map[] = {
-+static const struct pmc_bit_map adl_power_gating_status_0_map[] = {
- 	{"PMC_PGD0_PG_STS",			BIT(0)},
- 	{"DMI_PGD0_PG_STS",			BIT(1)},
- 	{"ESPISPI_PGD0_PG_STS",			BIT(2)},
-@@ -158,7 +158,7 @@ const struct pmc_bit_map adl_power_gating_status_0_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map adl_power_gating_status_1_map[] = {
-+static const struct pmc_bit_map adl_power_gating_status_1_map[] = {
- 	{"USBR0_PGD0_PG_STS",			BIT(0)},
- 	{"SMT1_PGD0_PG_STS",			BIT(2)},
- 	{"CSMERTC_PGD0_PG_STS",			BIT(6)},
-@@ -170,14 +170,14 @@ const struct pmc_bit_map adl_power_gating_status_1_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map adl_power_gating_status_2_map[] = {
-+static const struct pmc_bit_map adl_power_gating_status_2_map[] = {
- 	{"THC0_PGD0_PG_STS",			BIT(7)},
- 	{"THC1_PGD0_PG_STS",			BIT(8)},
- 	{"SPF_PGD0_PG_STS",			BIT(14)},
- 	{}
- };
- 
--const struct pmc_bit_map adl_d3_status_0_map[] = {
-+static const struct pmc_bit_map adl_d3_status_0_map[] = {
- 	{"ISH_D3_STS",				BIT(2)},
- 	{"LPSS_D3_STS",				BIT(3)},
- 	{"XDCI_D3_STS",				BIT(4)},
-@@ -193,13 +193,13 @@ const struct pmc_bit_map adl_d3_status_0_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map adl_d3_status_1_map[] = {
-+static const struct pmc_bit_map adl_d3_status_1_map[] = {
- 	{"GBE_D3_STS",				BIT(19)},
- 	{"CNVI_D3_STS",				BIT(27)},
- 	{}
- };
- 
--const struct pmc_bit_map adl_d3_status_2_map[] = {
-+static const struct pmc_bit_map adl_d3_status_2_map[] = {
- 	{"CSMERTC_D3_STS",			BIT(1)},
- 	{"CSE_D3_STS",				BIT(4)},
- 	{"KVMCC_D3_STS",			BIT(5)},
-@@ -210,20 +210,20 @@ const struct pmc_bit_map adl_d3_status_2_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map adl_d3_status_3_map[] = {
-+static const struct pmc_bit_map adl_d3_status_3_map[] = {
- 	{"THC0_D3_STS",				BIT(14)},
- 	{"THC1_D3_STS",				BIT(15)},
- 	{}
- };
- 
--const struct pmc_bit_map adl_vnn_req_status_0_map[] = {
-+static const struct pmc_bit_map adl_vnn_req_status_0_map[] = {
- 	{"ISH_VNN_REQ_STS",			BIT(2)},
- 	{"ESPISPI_VNN_REQ_STS",			BIT(18)},
- 	{"DSP_VNN_REQ_STS",			BIT(19)},
- 	{}
- };
- 
--const struct pmc_bit_map adl_vnn_req_status_1_map[] = {
-+static const struct pmc_bit_map adl_vnn_req_status_1_map[] = {
- 	{"NPK_VNN_REQ_STS",			BIT(4)},
- 	{"EXI_VNN_REQ_STS",			BIT(9)},
- 	{"GBE_VNN_REQ_STS",			BIT(19)},
-@@ -232,7 +232,7 @@ const struct pmc_bit_map adl_vnn_req_status_1_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map adl_vnn_req_status_2_map[] = {
-+static const struct pmc_bit_map adl_vnn_req_status_2_map[] = {
- 	{"CSMERTC_VNN_REQ_STS",			BIT(1)},
- 	{"CSE_VNN_REQ_STS",			BIT(4)},
- 	{"SMT1_VNN_REQ_STS",			BIT(8)},
-@@ -245,12 +245,12 @@ const struct pmc_bit_map adl_vnn_req_status_2_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map adl_vnn_req_status_3_map[] = {
-+static const struct pmc_bit_map adl_vnn_req_status_3_map[] = {
- 	{"GPIOCOM5_VNN_REQ_STS",		BIT(11)},
- 	{}
- };
- 
--const struct pmc_bit_map adl_vnn_misc_status_map[] = {
-+static const struct pmc_bit_map adl_vnn_misc_status_map[] = {
- 	{"CPU_C10_REQ_STS",			BIT(0)},
- 	{"PCIe_LPM_En_REQ_STS",			BIT(3)},
- 	{"ITH_REQ_STS",				BIT(5)},
-@@ -265,7 +265,7 @@ const struct pmc_bit_map adl_vnn_misc_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map *adl_lpm_maps[] = {
-+static const struct pmc_bit_map *adl_lpm_maps[] = {
- 	adl_clocksource_status_map,
- 	adl_power_gating_status_0_map,
- 	adl_power_gating_status_1_map,
-diff --git a/drivers/platform/x86/intel/pmc/arl.c b/drivers/platform/x86/intel/pmc/arl.c
-index 54b0e8e56de92..320993bd6d31d 100644
---- a/drivers/platform/x86/intel/pmc/arl.c
-+++ b/drivers/platform/x86/intel/pmc/arl.c
-@@ -20,7 +20,7 @@
- 
- static const u8 ARL_LPM_REG_INDEX[] = {0, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20};
- 
--const struct pmc_bit_map arl_socs_ltr_show_map[] = {
-+static const struct pmc_bit_map arl_socs_ltr_show_map[] = {
- 	{"SOUTHPORT_A",		CNP_PMC_LTR_SPA},
- 	{"SOUTHPORT_B",		CNP_PMC_LTR_SPB},
- 	{"SATA",		CNP_PMC_LTR_SATA},
-@@ -60,7 +60,7 @@ const struct pmc_bit_map arl_socs_ltr_show_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_socs_clocksource_status_map[] = {
-+static const struct pmc_bit_map arl_socs_clocksource_status_map[] = {
- 	{"AON2_OFF_STS",		BIT(0)},
- 	{"AON3_OFF_STS",		BIT(1)},
- 	{"AON4_OFF_STS",		BIT(2)},
-@@ -88,7 +88,7 @@ const struct pmc_bit_map arl_socs_clocksource_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_socs_power_gating_status_0_map[] = {
-+static const struct pmc_bit_map arl_socs_power_gating_status_0_map[] = {
- 	{"PMC_PGD0_PG_STS",		BIT(0)},
- 	{"DMI_PGD0_PG_STS",		BIT(1)},
- 	{"ESPISPI_PGD0_PG_STS",		BIT(2)},
-@@ -124,7 +124,7 @@ const struct pmc_bit_map arl_socs_power_gating_status_0_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_socs_power_gating_status_1_map[] = {
-+static const struct pmc_bit_map arl_socs_power_gating_status_1_map[] = {
- 	{"USBR0_PGD0_PG_STS",		BIT(0)},
- 	{"SUSRAM_PGD0_PG_STS",		BIT(1)},
- 	{"SMT1_PGD0_PG_STS",		BIT(2)},
-@@ -160,7 +160,7 @@ const struct pmc_bit_map arl_socs_power_gating_status_1_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_socs_power_gating_status_2_map[] = {
-+static const struct pmc_bit_map arl_socs_power_gating_status_2_map[] = {
- 	{"PSF8_PGD0_PG_STS",		BIT(0)},
- 	{"FIA_PGD0_PG_STS",		BIT(1)},
- 	{"SOC_D2D_PGD3_PG_STS",		BIT(2)},
-@@ -188,7 +188,7 @@ const struct pmc_bit_map arl_socs_power_gating_status_2_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_socs_d3_status_2_map[] = {
-+static const struct pmc_bit_map arl_socs_d3_status_2_map[] = {
- 	{"CSMERTC_D3_STS",		BIT(1)},
- 	{"SUSRAM_D3_STS",		BIT(2)},
- 	{"CSE_D3_STS",			BIT(4)},
-@@ -207,7 +207,7 @@ const struct pmc_bit_map arl_socs_d3_status_2_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_socs_d3_status_3_map[] = {
-+static const struct pmc_bit_map arl_socs_d3_status_3_map[] = {
- 	{"GBETSN_D3_STS",		BIT(13)},
- 	{"THC0_D3_STS",			BIT(14)},
- 	{"THC1_D3_STS",			BIT(15)},
-@@ -215,13 +215,13 @@ const struct pmc_bit_map arl_socs_d3_status_3_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_socs_vnn_req_status_3_map[] = {
-+static const struct pmc_bit_map arl_socs_vnn_req_status_3_map[] = {
- 	{"DTS0_VNN_REQ_STS",		BIT(7)},
- 	{"GPIOCOM5_VNN_REQ_STS",	BIT(11)},
- 	{}
- };
- 
--const struct pmc_bit_map *arl_socs_lpm_maps[] = {
-+static const struct pmc_bit_map *arl_socs_lpm_maps[] = {
- 	arl_socs_clocksource_status_map,
- 	arl_socs_power_gating_status_0_map,
- 	arl_socs_power_gating_status_1_map,
-@@ -239,7 +239,7 @@ const struct pmc_bit_map *arl_socs_lpm_maps[] = {
- 	NULL
- };
- 
--const struct pmc_bit_map arl_socs_pfear_map[] = {
-+static const struct pmc_bit_map arl_socs_pfear_map[] = {
- 	{"RSVD64",			BIT(0)},
- 	{"RSVD65",			BIT(1)},
- 	{"RSVD66",			BIT(2)},
-@@ -250,13 +250,13 @@ const struct pmc_bit_map arl_socs_pfear_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map *ext_arl_socs_pfear_map[] = {
-+static const struct pmc_bit_map *ext_arl_socs_pfear_map[] = {
- 	mtl_socm_pfear_map,
- 	arl_socs_pfear_map,
- 	NULL
- };
- 
--const struct pmc_reg_map arl_socs_reg_map = {
-+static const struct pmc_reg_map arl_socs_reg_map = {
- 	.pfear_sts = ext_arl_socs_pfear_map,
- 	.ppfear_buckets = ARL_SOCS_PPFEAR_NUM_ENTRIES,
- 	.pm_read_disable_bit = CNP_PMC_READ_DISABLE_BIT,
-@@ -284,7 +284,7 @@ const struct pmc_reg_map arl_socs_reg_map = {
- 	.pson_residency_counter_step = TGL_PSON_RES_COUNTER_STEP,
- };
- 
--const struct pmc_bit_map arl_pchs_ltr_show_map[] = {
-+static const struct pmc_bit_map arl_pchs_ltr_show_map[] = {
- 	{"SOUTHPORT_A",		CNP_PMC_LTR_SPA},
- 	{"SOUTHPORT_B",		CNP_PMC_LTR_SPB},
- 	{"SATA",		CNP_PMC_LTR_SATA},
-@@ -324,7 +324,7 @@ const struct pmc_bit_map arl_pchs_ltr_show_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_pchs_clocksource_status_map[] = {
-+static const struct pmc_bit_map arl_pchs_clocksource_status_map[] = {
- 	{"AON2_OFF_STS",		BIT(0)},
- 	{"AON3_OFF_STS",		BIT(1)},
- 	{"AON4_OFF_STS",		BIT(2)},
-@@ -359,7 +359,7 @@ const struct pmc_bit_map arl_pchs_clocksource_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_pchs_power_gating_status_0_map[] = {
-+static const struct pmc_bit_map arl_pchs_power_gating_status_0_map[] = {
- 	{"PMC_PGD0_PG_STS",		BIT(0)},
- 	{"DMI_PGD0_PG_STS",		BIT(1)},
- 	{"ESPISPI_PGD0_PG_STS",		BIT(2)},
-@@ -395,7 +395,7 @@ const struct pmc_bit_map arl_pchs_power_gating_status_0_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_pchs_power_gating_status_1_map[] = {
-+static const struct pmc_bit_map arl_pchs_power_gating_status_1_map[] = {
- 	{"USBR0_PGD0_PG_STS",		BIT(0)},
- 	{"SUSRAM_PGD0_PG_STS",		BIT(1)},
- 	{"SMT1_PGD0_PG_STS",		BIT(2)},
-@@ -431,7 +431,7 @@ const struct pmc_bit_map arl_pchs_power_gating_status_1_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_pchs_power_gating_status_2_map[] = {
-+static const struct pmc_bit_map arl_pchs_power_gating_status_2_map[] = {
- 	{"U3FPW2_PGD0_PG_STS",		BIT(0)},
- 	{"FIA_PGD0_PG_STS",		BIT(1)},
- 	{"FIACPCB_X_PGD0_PG_STS",	BIT(2)},
-@@ -458,7 +458,7 @@ const struct pmc_bit_map arl_pchs_power_gating_status_2_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_pchs_d3_status_0_map[] = {
-+static const struct pmc_bit_map arl_pchs_d3_status_0_map[] = {
- 	{"SPF_D3_STS",			BIT(0)},
- 	{"LPSS_D3_STS",			BIT(3)},
- 	{"XDCI_D3_STS",			BIT(4)},
-@@ -475,7 +475,7 @@ const struct pmc_bit_map arl_pchs_d3_status_0_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_pchs_d3_status_1_map[] = {
-+static const struct pmc_bit_map arl_pchs_d3_status_1_map[] = {
- 	{"GBETSN1_D3_STS",		BIT(14)},
- 	{"GBE_D3_STS",			BIT(19)},
- 	{"ITSS_D3_STS",			BIT(23)},
-@@ -484,7 +484,7 @@ const struct pmc_bit_map arl_pchs_d3_status_1_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_pchs_d3_status_2_map[] = {
-+static const struct pmc_bit_map arl_pchs_d3_status_2_map[] = {
- 	{"CSMERTC_D3_STS",		BIT(1)},
- 	{"SUSRAM_D3_STS",		BIT(2)},
- 	{"CSE_D3_STS",			BIT(4)},
-@@ -505,7 +505,7 @@ const struct pmc_bit_map arl_pchs_d3_status_2_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_pchs_d3_status_3_map[] = {
-+static const struct pmc_bit_map arl_pchs_d3_status_3_map[] = {
- 	{"ESE_D3_STS",			BIT(3)},
- 	{"GBETSN_D3_STS",		BIT(13)},
- 	{"THC0_D3_STS",			BIT(14)},
-@@ -514,13 +514,13 @@ const struct pmc_bit_map arl_pchs_d3_status_3_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_pchs_vnn_req_status_0_map[] = {
-+static const struct pmc_bit_map arl_pchs_vnn_req_status_0_map[] = {
- 	{"FIA_VNN_REQ_STS",		BIT(17)},
- 	{"ESPISPI_VNN_REQ_STS",		BIT(18)},
- 	{}
- };
- 
--const struct pmc_bit_map arl_pchs_vnn_req_status_1_map[] = {
-+static const struct pmc_bit_map arl_pchs_vnn_req_status_1_map[] = {
- 	{"NPK_VNN_REQ_STS",		BIT(4)},
- 	{"DFXAGG_VNN_REQ_STS",		BIT(8)},
- 	{"EXI_VNN_REQ_STS",		BIT(9)},
-@@ -531,7 +531,7 @@ const struct pmc_bit_map arl_pchs_vnn_req_status_1_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_pchs_vnn_req_status_2_map[] = {
-+static const struct pmc_bit_map arl_pchs_vnn_req_status_2_map[] = {
- 	{"FIA2_VNN_REQ_STS",		BIT(0)},
- 	{"CSMERTC_VNN_REQ_STS",		BIT(1)},
- 	{"CSE_VNN_REQ_STS",		BIT(4)},
-@@ -549,7 +549,7 @@ const struct pmc_bit_map arl_pchs_vnn_req_status_2_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_pchs_vnn_req_status_3_map[] = {
-+static const struct pmc_bit_map arl_pchs_vnn_req_status_3_map[] = {
- 	{"ESE_VNN_REQ_STS",		BIT(3)},
- 	{"DTS0_VNN_REQ_STS",		BIT(7)},
- 	{"GPIOCOM5_VNN_REQ_STS",	BIT(11)},
-@@ -557,7 +557,7 @@ const struct pmc_bit_map arl_pchs_vnn_req_status_3_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_pchs_vnn_misc_status_map[] = {
-+static const struct pmc_bit_map arl_pchs_vnn_misc_status_map[] = {
- 	{"CPU_C10_REQ_STS",			BIT(0)},
- 	{"TS_OFF_REQ_STS",			BIT(1)},
- 	{"PNDE_MET_REQ_STS",			BIT(2)},
-@@ -587,7 +587,7 @@ const struct pmc_bit_map arl_pchs_vnn_misc_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map arl_pchs_signal_status_map[] = {
-+static const struct pmc_bit_map arl_pchs_signal_status_map[] = {
- 	{"LSX_Wake0_STS",		BIT(0)},
- 	{"LSX_Wake1_STS",		BIT(1)},
- 	{"LSX_Wake2_STS",		BIT(2)},
-@@ -607,7 +607,7 @@ const struct pmc_bit_map arl_pchs_signal_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map *arl_pchs_lpm_maps[] = {
-+static const struct pmc_bit_map *arl_pchs_lpm_maps[] = {
- 	arl_pchs_clocksource_status_map,
- 	arl_pchs_power_gating_status_0_map,
- 	arl_pchs_power_gating_status_1_map,
-@@ -625,7 +625,7 @@ const struct pmc_bit_map *arl_pchs_lpm_maps[] = {
- 	NULL
- };
- 
--const struct pmc_reg_map arl_pchs_reg_map = {
-+static const struct pmc_reg_map arl_pchs_reg_map = {
- 	.pfear_sts = ext_arl_socs_pfear_map,
- 	.ppfear_buckets = ARL_SOCS_PPFEAR_NUM_ENTRIES,
- 	.pm_read_disable_bit = CNP_PMC_READ_DISABLE_BIT,
-diff --git a/drivers/platform/x86/intel/pmc/cnp.c b/drivers/platform/x86/intel/pmc/cnp.c
-index f147ec51c7fd0..2c5af158bbe2e 100644
---- a/drivers/platform/x86/intel/pmc/cnp.c
-+++ b/drivers/platform/x86/intel/pmc/cnp.c
-@@ -88,7 +88,7 @@ const struct pmc_bit_map cnp_pfear_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map *ext_cnp_pfear_map[] = {
-+static const struct pmc_bit_map *ext_cnp_pfear_map[] = {
- 	/*
- 	 * Check intel_pmc_core_ids[] users of cnp_reg_map for
- 	 * a list of core SoCs using this.
-@@ -97,7 +97,7 @@ const struct pmc_bit_map *ext_cnp_pfear_map[] = {
- 	NULL
- };
- 
--const struct pmc_bit_map cnp_slps0_dbg0_map[] = {
-+static const struct pmc_bit_map cnp_slps0_dbg0_map[] = {
- 	{"AUDIO_D3",		BIT(0)},
- 	{"OTG_D3",		BIT(1)},
- 	{"XHCI_D3",		BIT(2)},
-@@ -110,7 +110,7 @@ const struct pmc_bit_map cnp_slps0_dbg0_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map cnp_slps0_dbg1_map[] = {
-+static const struct pmc_bit_map cnp_slps0_dbg1_map[] = {
- 	{"SDIO_PLL_OFF",	BIT(0)},
- 	{"USB2_PLL_OFF",	BIT(1)},
- 	{"AUDIO_PLL_OFF",	BIT(2)},
-@@ -127,7 +127,7 @@ const struct pmc_bit_map cnp_slps0_dbg1_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map cnp_slps0_dbg2_map[] = {
-+static const struct pmc_bit_map cnp_slps0_dbg2_map[] = {
- 	{"MPHY_CORE_GATED",	BIT(0)},
- 	{"CSME_GATED",		BIT(1)},
- 	{"USB2_SUS_GATED",	BIT(2)},
-diff --git a/drivers/platform/x86/intel/pmc/core.h b/drivers/platform/x86/intel/pmc/core.h
-index eb9450b3b69e6..21c247beee50d 100644
---- a/drivers/platform/x86/intel/pmc/core.h
-+++ b/drivers/platform/x86/intel/pmc/core.h
-@@ -467,148 +467,22 @@ struct pmc_dev_info {
- };
- 
- extern const struct pmc_bit_map msr_map[];
--extern const struct pmc_bit_map spt_pll_map[];
--extern const struct pmc_bit_map spt_mphy_map[];
--extern const struct pmc_bit_map spt_pfear_map[];
--extern const struct pmc_bit_map *ext_spt_pfear_map[];
--extern const struct pmc_bit_map spt_ltr_show_map[];
--extern const struct pmc_reg_map spt_reg_map;
- extern const struct pmc_bit_map cnp_pfear_map[];
--extern const struct pmc_bit_map *ext_cnp_pfear_map[];
--extern const struct pmc_bit_map cnp_slps0_dbg0_map[];
--extern const struct pmc_bit_map cnp_slps0_dbg1_map[];
--extern const struct pmc_bit_map cnp_slps0_dbg2_map[];
- extern const struct pmc_bit_map *cnp_slps0_dbg_maps[];
- extern const struct pmc_bit_map cnp_ltr_show_map[];
- extern const struct pmc_reg_map cnp_reg_map;
--extern const struct pmc_bit_map icl_pfear_map[];
--extern const struct pmc_bit_map *ext_icl_pfear_map[];
--extern const struct pmc_reg_map icl_reg_map;
--extern const struct pmc_bit_map tgl_pfear_map[];
--extern const struct pmc_bit_map *ext_tgl_pfear_map[];
--extern const struct pmc_bit_map tgl_clocksource_status_map[];
--extern const struct pmc_bit_map tgl_power_gating_status_map[];
--extern const struct pmc_bit_map tgl_d3_status_map[];
--extern const struct pmc_bit_map tgl_vnn_req_status_map[];
--extern const struct pmc_bit_map tgl_vnn_misc_status_map[];
- extern const struct pmc_bit_map tgl_signal_status_map[];
--extern const struct pmc_bit_map *tgl_lpm_maps[];
--extern const struct pmc_reg_map tgl_reg_map;
--extern const struct pmc_reg_map tgl_h_reg_map;
--extern const struct pmc_bit_map adl_pfear_map[];
--extern const struct pmc_bit_map *ext_adl_pfear_map[];
--extern const struct pmc_bit_map adl_ltr_show_map[];
--extern const struct pmc_bit_map adl_clocksource_status_map[];
--extern const struct pmc_bit_map adl_power_gating_status_0_map[];
--extern const struct pmc_bit_map adl_power_gating_status_1_map[];
--extern const struct pmc_bit_map adl_power_gating_status_2_map[];
--extern const struct pmc_bit_map adl_d3_status_0_map[];
--extern const struct pmc_bit_map adl_d3_status_1_map[];
--extern const struct pmc_bit_map adl_d3_status_2_map[];
--extern const struct pmc_bit_map adl_d3_status_3_map[];
--extern const struct pmc_bit_map adl_vnn_req_status_0_map[];
--extern const struct pmc_bit_map adl_vnn_req_status_1_map[];
--extern const struct pmc_bit_map adl_vnn_req_status_2_map[];
--extern const struct pmc_bit_map adl_vnn_req_status_3_map[];
--extern const struct pmc_bit_map adl_vnn_misc_status_map[];
--extern const struct pmc_bit_map *adl_lpm_maps[];
- extern const struct pmc_reg_map adl_reg_map;
- extern const struct pmc_bit_map mtl_socm_pfear_map[];
--extern const struct pmc_bit_map *ext_mtl_socm_pfear_map[];
--extern const struct pmc_bit_map mtl_socm_ltr_show_map[];
--extern const struct pmc_bit_map mtl_socm_clocksource_status_map[];
--extern const struct pmc_bit_map mtl_socm_power_gating_status_0_map[];
--extern const struct pmc_bit_map mtl_socm_power_gating_status_1_map[];
--extern const struct pmc_bit_map mtl_socm_power_gating_status_2_map[];
- extern const struct pmc_bit_map mtl_socm_d3_status_0_map[];
- extern const struct pmc_bit_map mtl_socm_d3_status_1_map[];
--extern const struct pmc_bit_map mtl_socm_d3_status_2_map[];
--extern const struct pmc_bit_map mtl_socm_d3_status_3_map[];
- extern const struct pmc_bit_map mtl_socm_vnn_req_status_0_map[];
- extern const struct pmc_bit_map mtl_socm_vnn_req_status_1_map[];
- extern const struct pmc_bit_map mtl_socm_vnn_req_status_2_map[];
--extern const struct pmc_bit_map mtl_socm_vnn_req_status_3_map[];
- extern const struct pmc_bit_map mtl_socm_vnn_misc_status_map[];
- extern const struct pmc_bit_map mtl_socm_signal_status_map[];
--extern const struct pmc_bit_map *mtl_socm_lpm_maps[];
- extern const struct pmc_reg_map mtl_socm_reg_map;
--extern const struct pmc_bit_map mtl_ioep_pfear_map[];
--extern const struct pmc_bit_map *ext_mtl_ioep_pfear_map[];
--extern const struct pmc_bit_map mtl_ioep_ltr_show_map[];
--extern const struct pmc_bit_map mtl_ioep_clocksource_status_map[];
--extern const struct pmc_bit_map mtl_ioep_power_gating_status_0_map[];
--extern const struct pmc_bit_map mtl_ioep_power_gating_status_1_map[];
--extern const struct pmc_bit_map mtl_ioep_power_gating_status_2_map[];
--extern const struct pmc_bit_map mtl_ioep_d3_status_0_map[];
--extern const struct pmc_bit_map mtl_ioep_d3_status_1_map[];
--extern const struct pmc_bit_map mtl_ioep_d3_status_2_map[];
--extern const struct pmc_bit_map mtl_ioep_d3_status_3_map[];
--extern const struct pmc_bit_map mtl_ioep_vnn_req_status_0_map[];
--extern const struct pmc_bit_map mtl_ioep_vnn_req_status_1_map[];
--extern const struct pmc_bit_map mtl_ioep_vnn_req_status_2_map[];
--extern const struct pmc_bit_map mtl_ioep_vnn_req_status_3_map[];
--extern const struct pmc_bit_map mtl_ioep_vnn_misc_status_map[];
--extern const struct pmc_bit_map *mtl_ioep_lpm_maps[];
- extern const struct pmc_reg_map mtl_ioep_reg_map;
--extern const struct pmc_bit_map mtl_ioem_pfear_map[];
--extern const struct pmc_bit_map *ext_mtl_ioem_pfear_map[];
--extern const struct pmc_bit_map mtl_ioem_power_gating_status_1_map[];
--extern const struct pmc_bit_map mtl_ioem_vnn_req_status_1_map[];
--extern const struct pmc_bit_map *mtl_ioem_lpm_maps[];
--extern const struct pmc_reg_map mtl_ioem_reg_map;
--extern const struct pmc_reg_map lnl_socm_reg_map;
--
--/* LNL */
--extern const struct pmc_bit_map lnl_ltr_show_map[];
--extern const struct pmc_bit_map lnl_clocksource_status_map[];
--extern const struct pmc_bit_map lnl_power_gating_status_0_map[];
--extern const struct pmc_bit_map lnl_power_gating_status_1_map[];
--extern const struct pmc_bit_map lnl_power_gating_status_2_map[];
--extern const struct pmc_bit_map lnl_d3_status_0_map[];
--extern const struct pmc_bit_map lnl_d3_status_1_map[];
--extern const struct pmc_bit_map lnl_d3_status_2_map[];
--extern const struct pmc_bit_map lnl_d3_status_3_map[];
--extern const struct pmc_bit_map lnl_vnn_req_status_0_map[];
--extern const struct pmc_bit_map lnl_vnn_req_status_1_map[];
--extern const struct pmc_bit_map lnl_vnn_req_status_2_map[];
--extern const struct pmc_bit_map lnl_vnn_req_status_3_map[];
--extern const struct pmc_bit_map lnl_vnn_misc_status_map[];
--extern const struct pmc_bit_map *lnl_lpm_maps[];
--extern const struct pmc_bit_map *lnl_blk_maps[];
--extern const struct pmc_bit_map lnl_pfear_map[];
--extern const struct pmc_bit_map *ext_lnl_pfear_map[];
--extern const struct pmc_bit_map lnl_signal_status_map[];
--
--/* ARL */
--extern const struct pmc_bit_map arl_socs_ltr_show_map[];
--extern const struct pmc_bit_map arl_socs_clocksource_status_map[];
--extern const struct pmc_bit_map arl_socs_power_gating_status_0_map[];
--extern const struct pmc_bit_map arl_socs_power_gating_status_1_map[];
--extern const struct pmc_bit_map arl_socs_power_gating_status_2_map[];
--extern const struct pmc_bit_map arl_socs_d3_status_2_map[];
--extern const struct pmc_bit_map arl_socs_d3_status_3_map[];
--extern const struct pmc_bit_map arl_socs_vnn_req_status_3_map[];
--extern const struct pmc_bit_map *arl_socs_lpm_maps[];
--extern const struct pmc_bit_map arl_socs_pfear_map[];
--extern const struct pmc_bit_map *ext_arl_socs_pfear_map[];
--extern const struct pmc_reg_map arl_socs_reg_map;
--extern const struct pmc_bit_map arl_pchs_ltr_show_map[];
--extern const struct pmc_bit_map arl_pchs_clocksource_status_map[];
--extern const struct pmc_bit_map arl_pchs_power_gating_status_0_map[];
--extern const struct pmc_bit_map arl_pchs_power_gating_status_1_map[];
--extern const struct pmc_bit_map arl_pchs_power_gating_status_2_map[];
--extern const struct pmc_bit_map arl_pchs_d3_status_0_map[];
--extern const struct pmc_bit_map arl_pchs_d3_status_1_map[];
--extern const struct pmc_bit_map arl_pchs_d3_status_2_map[];
--extern const struct pmc_bit_map arl_pchs_d3_status_3_map[];
--extern const struct pmc_bit_map arl_pchs_vnn_req_status_0_map[];
--extern const struct pmc_bit_map arl_pchs_vnn_req_status_1_map[];
--extern const struct pmc_bit_map arl_pchs_vnn_req_status_2_map[];
--extern const struct pmc_bit_map arl_pchs_vnn_req_status_3_map[];
--extern const struct pmc_bit_map arl_pchs_vnn_misc_status_map[];
--extern const struct pmc_bit_map arl_pchs_signal_status_map[];
--extern const struct pmc_bit_map *arl_pchs_lpm_maps[];
--extern const struct pmc_reg_map arl_pchs_reg_map;
- 
- extern void pmc_core_get_tgl_lpm_reqs(struct platform_device *pdev);
- extern int pmc_core_ssram_get_lpm_reqs(struct pmc_dev *pmcdev);
-diff --git a/drivers/platform/x86/intel/pmc/icl.c b/drivers/platform/x86/intel/pmc/icl.c
-index 6952c8ef58a01..db7ed15bf863a 100644
---- a/drivers/platform/x86/intel/pmc/icl.c
-+++ b/drivers/platform/x86/intel/pmc/icl.c
-@@ -10,7 +10,7 @@
- 
- #include "core.h"
- 
--const struct pmc_bit_map icl_pfear_map[] = {
-+static const struct pmc_bit_map icl_pfear_map[] = {
- 	{"RES_65",		BIT(0)},
- 	{"RES_66",		BIT(1)},
- 	{"RES_67",		BIT(2)},
-@@ -22,7 +22,7 @@ const struct pmc_bit_map icl_pfear_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map *ext_icl_pfear_map[] = {
-+static const struct pmc_bit_map *ext_icl_pfear_map[] = {
- 	/*
- 	 * Check intel_pmc_core_ids[] users of icl_reg_map for
- 	 * a list of core SoCs using this.
-@@ -32,7 +32,7 @@ const struct pmc_bit_map *ext_icl_pfear_map[] = {
- 	NULL
- };
- 
--const struct pmc_reg_map icl_reg_map = {
-+static const struct pmc_reg_map icl_reg_map = {
- 	.pfear_sts = ext_icl_pfear_map,
- 	.slp_s0_offset = CNP_PMC_SLP_S0_RES_COUNTER_OFFSET,
- 	.slp_s0_res_counter_step = ICL_PMC_SLP_S0_RES_COUNTER_STEP,
-diff --git a/drivers/platform/x86/intel/pmc/lnl.c b/drivers/platform/x86/intel/pmc/lnl.c
-index 5a78807b9bc25..da513c234714b 100644
---- a/drivers/platform/x86/intel/pmc/lnl.c
-+++ b/drivers/platform/x86/intel/pmc/lnl.c
-@@ -13,7 +13,7 @@
- 
- #include "core.h"
- 
--const struct pmc_bit_map lnl_ltr_show_map[] = {
-+static const struct pmc_bit_map lnl_ltr_show_map[] = {
- 	{"SOUTHPORT_A",		CNP_PMC_LTR_SPA},
- 	{"SOUTHPORT_B",		CNP_PMC_LTR_SPB},
- 	{"SATA",		CNP_PMC_LTR_SATA},
-@@ -55,7 +55,7 @@ const struct pmc_bit_map lnl_ltr_show_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map lnl_power_gating_status_0_map[] = {
-+static const struct pmc_bit_map lnl_power_gating_status_0_map[] = {
- 	{"PMC_PGD0_PG_STS",			BIT(0),		0},
- 	{"FUSE_OSSE_PGD0_PG_STS",		BIT(1),		0},
- 	{"ESPISPI_PGD0_PG_STS",			BIT(2),		0},
-@@ -91,7 +91,7 @@ const struct pmc_bit_map lnl_power_gating_status_0_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map lnl_power_gating_status_1_map[] = {
-+static const struct pmc_bit_map lnl_power_gating_status_1_map[] = {
- 	{"USBR0_PGD0_PG_STS",			BIT(0),		1},
- 	{"SUSRAM_PGD0_PG_STS",			BIT(1),		1},
- 	{"SMT1_PGD0_PG_STS",			BIT(2),		1},
-@@ -127,7 +127,7 @@ const struct pmc_bit_map lnl_power_gating_status_1_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map lnl_power_gating_status_2_map[] = {
-+static const struct pmc_bit_map lnl_power_gating_status_2_map[] = {
- 	{"PSF8_PGD0_PG_STS",			BIT(0),		0},
- 	{"SBR16B2_PGD0_PG_STS",			BIT(1),		0},
- 	{"D2D_IPU_PGD0_PG_STS",			BIT(2),		1},
-@@ -163,7 +163,7 @@ const struct pmc_bit_map lnl_power_gating_status_2_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map lnl_d3_status_0_map[] = {
-+static const struct pmc_bit_map lnl_d3_status_0_map[] = {
- 	{"LPSS_D3_STS",				BIT(3),		1},
- 	{"XDCI_D3_STS",				BIT(4),		1},
- 	{"XHCI_D3_STS",				BIT(5),		1},
-@@ -175,7 +175,7 @@ const struct pmc_bit_map lnl_d3_status_0_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map lnl_d3_status_1_map[] = {
-+static const struct pmc_bit_map lnl_d3_status_1_map[] = {
- 	{"OSSE_SMT1_D3_STS",			BIT(7),		0},
- 	{"GBE_D3_STS",				BIT(19),	0},
- 	{"ITSS_D3_STS",				BIT(23),	0},
-@@ -185,7 +185,7 @@ const struct pmc_bit_map lnl_d3_status_1_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map lnl_d3_status_2_map[] = {
-+static const struct pmc_bit_map lnl_d3_status_2_map[] = {
- 	{"ESE_D3_STS",				BIT(0),		0},
- 	{"CSMERTC_D3_STS",			BIT(1),		0},
- 	{"SUSRAM_D3_STS",			BIT(2),		0},
-@@ -205,7 +205,7 @@ const struct pmc_bit_map lnl_d3_status_2_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map lnl_d3_status_3_map[] = {
-+static const struct pmc_bit_map lnl_d3_status_3_map[] = {
- 	{"THC0_D3_STS",				BIT(14),	1},
- 	{"THC1_D3_STS",				BIT(15),	1},
- 	{"OSSE_SMT3_D3_STS",			BIT(21),	0},
-@@ -213,14 +213,14 @@ const struct pmc_bit_map lnl_d3_status_3_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map lnl_vnn_req_status_0_map[] = {
-+static const struct pmc_bit_map lnl_vnn_req_status_0_map[] = {
- 	{"LPSS_VNN_REQ_STS",			BIT(3),		1},
- 	{"OSSE_VNN_REQ_STS",			BIT(15),	1},
- 	{"ESPISPI_VNN_REQ_STS",			BIT(18),	1},
- 	{}
- };
- 
--const struct pmc_bit_map lnl_vnn_req_status_1_map[] = {
-+static const struct pmc_bit_map lnl_vnn_req_status_1_map[] = {
- 	{"NPK_VNN_REQ_STS",			BIT(4),		1},
- 	{"OSSE_SMT1_VNN_REQ_STS",		BIT(7),		1},
- 	{"DFXAGG_VNN_REQ_STS",			BIT(8),		0},
-@@ -232,7 +232,7 @@ const struct pmc_bit_map lnl_vnn_req_status_1_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map lnl_vnn_req_status_2_map[] = {
-+static const struct pmc_bit_map lnl_vnn_req_status_2_map[] = {
- 	{"eSE_VNN_REQ_STS",			BIT(0),		1},
- 	{"CSMERTC_VNN_REQ_STS",			BIT(1),		1},
- 	{"CSE_VNN_REQ_STS",			BIT(4),		1},
-@@ -249,14 +249,14 @@ const struct pmc_bit_map lnl_vnn_req_status_2_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map lnl_vnn_req_status_3_map[] = {
-+static const struct pmc_bit_map lnl_vnn_req_status_3_map[] = {
- 	{"DISP_SHIM_VNN_REQ_STS",		BIT(2),		0},
- 	{"DTS0_VNN_REQ_STS",			BIT(7),		0},
- 	{"GPIOCOM5_VNN_REQ_STS",		BIT(11),	2},
- 	{}
- };
- 
--const struct pmc_bit_map lnl_vnn_misc_status_map[] = {
-+static const struct pmc_bit_map lnl_vnn_misc_status_map[] = {
- 	{"CPU_C10_REQ_STS",			BIT(0),		0},
- 	{"TS_OFF_REQ_STS",			BIT(1),		0},
- 	{"PNDE_MET_REQ_STS",			BIT(2),		1},
-@@ -292,7 +292,7 @@ const struct pmc_bit_map lnl_vnn_misc_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map lnl_clocksource_status_map[] = {
-+static const struct pmc_bit_map lnl_clocksource_status_map[] = {
- 	{"AON2_OFF_STS",			BIT(0),		0},
- 	{"AON3_OFF_STS",			BIT(1),		1},
- 	{"AON4_OFF_STS",			BIT(2),		1},
-@@ -317,7 +317,7 @@ const struct pmc_bit_map lnl_clocksource_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map lnl_signal_status_map[] = {
-+static const struct pmc_bit_map lnl_signal_status_map[] = {
- 	{"LSX_Wake0_STS",			BIT(0),		0},
- 	{"LSX_Wake1_STS",			BIT(1),		0},
- 	{"LSX_Wake2_STS",			BIT(2),		0},
-@@ -337,7 +337,7 @@ const struct pmc_bit_map lnl_signal_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map lnl_rsc_status_map[] = {
-+static const struct pmc_bit_map lnl_rsc_status_map[] = {
- 	{"Memory",				0,		1},
- 	{"PSF0",				0,		1},
- 	{"PSF4",				0,		1},
-@@ -349,7 +349,7 @@ const struct pmc_bit_map lnl_rsc_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map *lnl_lpm_maps[] = {
-+static const struct pmc_bit_map *lnl_lpm_maps[] = {
- 	lnl_clocksource_status_map,
- 	lnl_power_gating_status_0_map,
- 	lnl_power_gating_status_1_map,
-@@ -367,7 +367,7 @@ const struct pmc_bit_map *lnl_lpm_maps[] = {
- 	NULL
- };
- 
--const struct pmc_bit_map *lnl_blk_maps[] = {
-+static const struct pmc_bit_map *lnl_blk_maps[] = {
- 	lnl_power_gating_status_0_map,
- 	lnl_power_gating_status_1_map,
- 	lnl_power_gating_status_2_map,
-@@ -386,7 +386,7 @@ const struct pmc_bit_map *lnl_blk_maps[] = {
- 	NULL
- };
- 
--const struct pmc_bit_map lnl_pfear_map[] = {
-+static const struct pmc_bit_map lnl_pfear_map[] = {
- 	{"PMC_0",			BIT(0)},
- 	{"FUSE_OSSE",			BIT(1)},
- 	{"ESPISPI",			BIT(2)},
-@@ -498,12 +498,12 @@ const struct pmc_bit_map lnl_pfear_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map *ext_lnl_pfear_map[] = {
-+static const struct pmc_bit_map *ext_lnl_pfear_map[] = {
- 	lnl_pfear_map,
- 	NULL
- };
- 
--const struct pmc_reg_map lnl_socm_reg_map = {
-+static const struct pmc_reg_map lnl_socm_reg_map = {
- 	.pfear_sts = ext_lnl_pfear_map,
- 	.slp_s0_offset = CNP_PMC_SLP_S0_RES_COUNTER_OFFSET,
- 	.slp_s0_res_counter_step = TGL_PMC_SLP_S0_RES_COUNTER_STEP,
-diff --git a/drivers/platform/x86/intel/pmc/mtl.c b/drivers/platform/x86/intel/pmc/mtl.c
-index 705b7e1b0b865..8862829694a71 100644
---- a/drivers/platform/x86/intel/pmc/mtl.c
-+++ b/drivers/platform/x86/intel/pmc/mtl.c
-@@ -102,12 +102,12 @@ const struct pmc_bit_map mtl_socm_pfear_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map *ext_mtl_socm_pfear_map[] = {
-+static const struct pmc_bit_map *ext_mtl_socm_pfear_map[] = {
- 	mtl_socm_pfear_map,
- 	NULL
- };
- 
--const struct pmc_bit_map mtl_socm_ltr_show_map[] = {
-+static const struct pmc_bit_map mtl_socm_ltr_show_map[] = {
- 	{"SOUTHPORT_A",		CNP_PMC_LTR_SPA},
- 	{"SOUTHPORT_B",		CNP_PMC_LTR_SPB},
- 	{"SATA",		CNP_PMC_LTR_SATA},
-@@ -141,7 +141,7 @@ const struct pmc_bit_map mtl_socm_ltr_show_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map mtl_socm_clocksource_status_map[] = {
-+static const struct pmc_bit_map mtl_socm_clocksource_status_map[] = {
- 	{"AON2_OFF_STS",                 BIT(0)},
- 	{"AON3_OFF_STS",                 BIT(1)},
- 	{"AON4_OFF_STS",                 BIT(2)},
-@@ -167,7 +167,7 @@ const struct pmc_bit_map mtl_socm_clocksource_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map mtl_socm_power_gating_status_0_map[] = {
-+static const struct pmc_bit_map mtl_socm_power_gating_status_0_map[] = {
- 	{"PMC_PGD0_PG_STS",              BIT(0)},
- 	{"DMI_PGD0_PG_STS",              BIT(1)},
- 	{"ESPISPI_PGD0_PG_STS",          BIT(2)},
-@@ -203,7 +203,7 @@ const struct pmc_bit_map mtl_socm_power_gating_status_0_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map mtl_socm_power_gating_status_1_map[] = {
-+static const struct pmc_bit_map mtl_socm_power_gating_status_1_map[] = {
- 	{"USBR0_PGD0_PG_STS",            BIT(0)},
- 	{"SUSRAM_PGD0_PG_STS",           BIT(1)},
- 	{"SMT1_PGD0_PG_STS",             BIT(2)},
-@@ -239,7 +239,7 @@ const struct pmc_bit_map mtl_socm_power_gating_status_1_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map mtl_socm_power_gating_status_2_map[] = {
-+static const struct pmc_bit_map mtl_socm_power_gating_status_2_map[] = {
- 	{"PSF8_PGD0_PG_STS",             BIT(0)},
- 	{"FIA_PGD0_PG_STS",              BIT(1)},
- 	{"SOC_D2D_PGD1_PG_STS",          BIT(2)},
-@@ -291,7 +291,7 @@ const struct pmc_bit_map mtl_socm_d3_status_1_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map mtl_socm_d3_status_2_map[] = {
-+static const struct pmc_bit_map mtl_socm_d3_status_2_map[] = {
- 	{"GNA_D3_STS",                   BIT(0)},
- 	{"CSMERTC_D3_STS",               BIT(1)},
- 	{"SUSRAM_D3_STS",                BIT(2)},
-@@ -310,7 +310,7 @@ const struct pmc_bit_map mtl_socm_d3_status_2_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map mtl_socm_d3_status_3_map[] = {
-+static const struct pmc_bit_map mtl_socm_d3_status_3_map[] = {
- 	{"ESE_D3_STS",                   BIT(2)},
- 	{"GBETSN_D3_STS",                BIT(13)},
- 	{"THC0_D3_STS",                  BIT(14)},
-@@ -353,7 +353,7 @@ const struct pmc_bit_map mtl_socm_vnn_req_status_2_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map mtl_socm_vnn_req_status_3_map[] = {
-+static const struct pmc_bit_map mtl_socm_vnn_req_status_3_map[] = {
- 	{"ESE_VNN_REQ_STS",              BIT(2)},
- 	{"DTS0_VNN_REQ_STS",             BIT(7)},
- 	{"GPIOCOM5_VNN_REQ_STS",         BIT(11)},
-@@ -432,7 +432,7 @@ const struct pmc_bit_map mtl_socm_signal_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map *mtl_socm_lpm_maps[] = {
-+static const struct pmc_bit_map *mtl_socm_lpm_maps[] = {
- 	mtl_socm_clocksource_status_map,
- 	mtl_socm_power_gating_status_0_map,
- 	mtl_socm_power_gating_status_1_map,
-@@ -476,7 +476,7 @@ const struct pmc_reg_map mtl_socm_reg_map = {
- 	.lpm_reg_index = MTL_LPM_REG_INDEX,
- };
- 
--const struct pmc_bit_map mtl_ioep_pfear_map[] = {
-+static const struct pmc_bit_map mtl_ioep_pfear_map[] = {
- 	{"PMC_0",               BIT(0)},
- 	{"OPI",                 BIT(1)},
- 	{"TCSS",                BIT(2)},
-@@ -563,12 +563,12 @@ const struct pmc_bit_map mtl_ioep_pfear_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map *ext_mtl_ioep_pfear_map[] = {
-+static const struct pmc_bit_map *ext_mtl_ioep_pfear_map[] = {
- 	mtl_ioep_pfear_map,
- 	NULL
- };
- 
--const struct pmc_bit_map mtl_ioep_ltr_show_map[] = {
-+static const struct pmc_bit_map mtl_ioep_ltr_show_map[] = {
- 	{"SOUTHPORT_A",		CNP_PMC_LTR_SPA},
- 	{"SOUTHPORT_B",		CNP_PMC_LTR_SPB},
- 	{"SATA",		CNP_PMC_LTR_SATA},
-@@ -600,7 +600,7 @@ const struct pmc_bit_map mtl_ioep_ltr_show_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map mtl_ioep_clocksource_status_map[] = {
-+static const struct pmc_bit_map mtl_ioep_clocksource_status_map[] = {
- 	{"AON2_OFF_STS",                 BIT(0)},
- 	{"AON3_OFF_STS",                 BIT(1)},
- 	{"AON4_OFF_STS",                 BIT(2)},
-@@ -623,7 +623,7 @@ const struct pmc_bit_map mtl_ioep_clocksource_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map mtl_ioep_power_gating_status_0_map[] = {
-+static const struct pmc_bit_map mtl_ioep_power_gating_status_0_map[] = {
- 	{"PMC_PGD0_PG_STS",              BIT(0)},
- 	{"DMI_PGD0_PG_STS",              BIT(1)},
- 	{"TCSS_PGD0_PG_STS",             BIT(2)},
-@@ -650,7 +650,7 @@ const struct pmc_bit_map mtl_ioep_power_gating_status_0_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map mtl_ioep_power_gating_status_1_map[] = {
-+static const struct pmc_bit_map mtl_ioep_power_gating_status_1_map[] = {
- 	{"PSF9_PGD0_PG_STS",             BIT(0)},
- 	{"MPFPW4_PGD0_PG_STS",           BIT(1)},
- 	{"SBR0_PGD0_PG_STS",             BIT(8)},
-@@ -668,7 +668,7 @@ const struct pmc_bit_map mtl_ioep_power_gating_status_1_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map mtl_ioep_power_gating_status_2_map[] = {
-+static const struct pmc_bit_map mtl_ioep_power_gating_status_2_map[] = {
- 	{"FIA_PGD0_PG_STS",              BIT(1)},
- 	{"FIA_P_PGD0_PG_STS",            BIT(3)},
- 	{"TAM_PGD0_PG_STS",              BIT(4)},
-@@ -680,7 +680,7 @@ const struct pmc_bit_map mtl_ioep_power_gating_status_2_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map mtl_ioep_d3_status_0_map[] = {
-+static const struct pmc_bit_map mtl_ioep_d3_status_0_map[] = {
- 	{"SPF_D3_STS",                   BIT(0)},
- 	{"SPA_D3_STS",                   BIT(12)},
- 	{"SPB_D3_STS",                   BIT(13)},
-@@ -691,43 +691,43 @@ const struct pmc_bit_map mtl_ioep_d3_status_0_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map mtl_ioep_d3_status_1_map[] = {
-+static const struct pmc_bit_map mtl_ioep_d3_status_1_map[] = {
- 	{"GBETSN1_D3_STS",               BIT(14)},
- 	{"P2S_D3_STS",                   BIT(24)},
- 	{}
- };
- 
--const struct pmc_bit_map mtl_ioep_d3_status_2_map[] = {
-+static const struct pmc_bit_map mtl_ioep_d3_status_2_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map mtl_ioep_d3_status_3_map[] = {
-+static const struct pmc_bit_map mtl_ioep_d3_status_3_map[] = {
- 	{"GBETSN_D3_STS",                BIT(13)},
- 	{"ACE_D3_STS",                   BIT(23)},
- 	{}
- };
- 
--const struct pmc_bit_map mtl_ioep_vnn_req_status_0_map[] = {
-+static const struct pmc_bit_map mtl_ioep_vnn_req_status_0_map[] = {
- 	{"FIA_VNN_REQ_STS",              BIT(17)},
- 	{}
- };
- 
--const struct pmc_bit_map mtl_ioep_vnn_req_status_1_map[] = {
-+static const struct pmc_bit_map mtl_ioep_vnn_req_status_1_map[] = {
- 	{"DFXAGG_VNN_REQ_STS",           BIT(8)},
- 	{}
- };
- 
--const struct pmc_bit_map mtl_ioep_vnn_req_status_2_map[] = {
-+static const struct pmc_bit_map mtl_ioep_vnn_req_status_2_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map mtl_ioep_vnn_req_status_3_map[] = {
-+static const struct pmc_bit_map mtl_ioep_vnn_req_status_3_map[] = {
- 	{"DTS0_VNN_REQ_STS",             BIT(7)},
- 	{"DISP_VNN_REQ_STS",             BIT(19)},
- 	{}
- };
- 
--const struct pmc_bit_map mtl_ioep_vnn_misc_status_map[] = {
-+static const struct pmc_bit_map mtl_ioep_vnn_misc_status_map[] = {
- 	{"CPU_C10_REQ_STS",              BIT(0)},
- 	{"TS_OFF_REQ_STS",               BIT(1)},
- 	{"PNDE_MET_REQ_STS",             BIT(2)},
-@@ -762,7 +762,7 @@ const struct pmc_bit_map mtl_ioep_vnn_misc_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map *mtl_ioep_lpm_maps[] = {
-+static const struct pmc_bit_map *mtl_ioep_lpm_maps[] = {
- 	mtl_ioep_clocksource_status_map,
- 	mtl_ioep_power_gating_status_0_map,
- 	mtl_ioep_power_gating_status_1_map,
-@@ -800,7 +800,7 @@ const struct pmc_reg_map mtl_ioep_reg_map = {
- 	.lpm_reg_index = MTL_LPM_REG_INDEX,
- };
- 
--const struct pmc_bit_map mtl_ioem_pfear_map[] = {
-+static const struct pmc_bit_map mtl_ioem_pfear_map[] = {
- 	{"PMC_0",               BIT(0)},
- 	{"OPI",                 BIT(1)},
- 	{"TCSS",                BIT(2)},
-@@ -887,12 +887,12 @@ const struct pmc_bit_map mtl_ioem_pfear_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map *ext_mtl_ioem_pfear_map[] = {
-+static const struct pmc_bit_map *ext_mtl_ioem_pfear_map[] = {
- 	mtl_ioem_pfear_map,
- 	NULL
- };
- 
--const struct pmc_bit_map mtl_ioem_power_gating_status_1_map[] = {
-+static const struct pmc_bit_map mtl_ioem_power_gating_status_1_map[] = {
- 	{"PSF9_PGD0_PG_STS",                    BIT(0)},
- 	{"MPFPW4_PGD0_PG_STS",                  BIT(1)},
- 	{"SBR0_PGD0_PG_STS",                    BIT(8)},
-@@ -909,7 +909,7 @@ const struct pmc_bit_map mtl_ioem_power_gating_status_1_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map *mtl_ioem_lpm_maps[] = {
-+static const struct pmc_bit_map *mtl_ioem_lpm_maps[] = {
- 	mtl_ioep_clocksource_status_map,
- 	mtl_ioep_power_gating_status_0_map,
- 	mtl_ioem_power_gating_status_1_map,
-@@ -927,7 +927,7 @@ const struct pmc_bit_map *mtl_ioem_lpm_maps[] = {
- 	NULL
- };
- 
--const struct pmc_reg_map mtl_ioem_reg_map = {
-+static const struct pmc_reg_map mtl_ioem_reg_map = {
- 	.regmap_length = MTL_IOE_PMC_MMIO_REG_LEN,
- 	.pfear_sts = ext_mtl_ioem_pfear_map,
- 	.ppfear0_offset = CNP_PMC_HOST_PPFEAR0A,
-diff --git a/drivers/platform/x86/intel/pmc/spt.c b/drivers/platform/x86/intel/pmc/spt.c
-index 440594acac6cf..b50534aa2cba0 100644
---- a/drivers/platform/x86/intel/pmc/spt.c
-+++ b/drivers/platform/x86/intel/pmc/spt.c
-@@ -12,7 +12,7 @@
- 
- #include "core.h"
- 
--const struct pmc_bit_map spt_pll_map[] = {
-+static const struct pmc_bit_map spt_pll_map[] = {
- 	{"MIPI PLL",			SPT_PMC_BIT_MPHY_CMN_LANE0},
- 	{"GEN2 USB2PCIE2 PLL",		SPT_PMC_BIT_MPHY_CMN_LANE1},
- 	{"DMIPCIE3 PLL",		SPT_PMC_BIT_MPHY_CMN_LANE2},
-@@ -20,7 +20,7 @@ const struct pmc_bit_map spt_pll_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map spt_mphy_map[] = {
-+static const struct pmc_bit_map spt_mphy_map[] = {
- 	{"MPHY CORE LANE 0",           SPT_PMC_BIT_MPHY_LANE0},
- 	{"MPHY CORE LANE 1",           SPT_PMC_BIT_MPHY_LANE1},
- 	{"MPHY CORE LANE 2",           SPT_PMC_BIT_MPHY_LANE2},
-@@ -40,7 +40,7 @@ const struct pmc_bit_map spt_mphy_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map spt_pfear_map[] = {
-+static const struct pmc_bit_map spt_pfear_map[] = {
- 	{"PMC",				SPT_PMC_BIT_PMC},
- 	{"OPI-DMI",			SPT_PMC_BIT_OPI},
- 	{"SPI / eSPI",			SPT_PMC_BIT_SPI},
-@@ -84,7 +84,7 @@ const struct pmc_bit_map spt_pfear_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map *ext_spt_pfear_map[] = {
-+static const struct pmc_bit_map *ext_spt_pfear_map[] = {
- 	/*
- 	 * Check intel_pmc_core_ids[] users of spt_reg_map for
- 	 * a list of core SoCs using this.
-@@ -93,7 +93,7 @@ const struct pmc_bit_map *ext_spt_pfear_map[] = {
- 	NULL
- };
- 
--const struct pmc_bit_map spt_ltr_show_map[] = {
-+static const struct pmc_bit_map spt_ltr_show_map[] = {
- 	{"SOUTHPORT_A",		SPT_PMC_LTR_SPA},
- 	{"SOUTHPORT_B",		SPT_PMC_LTR_SPB},
- 	{"SATA",		SPT_PMC_LTR_SATA},
-@@ -118,7 +118,7 @@ const struct pmc_bit_map spt_ltr_show_map[] = {
- 	{}
- };
- 
--const struct pmc_reg_map spt_reg_map = {
-+static const struct pmc_reg_map spt_reg_map = {
- 	.pfear_sts = ext_spt_pfear_map,
- 	.mphy_sts = spt_mphy_map,
- 	.pll_sts = spt_pll_map,
-diff --git a/drivers/platform/x86/intel/pmc/tgl.c b/drivers/platform/x86/intel/pmc/tgl.c
-index 758bd8d162e59..02e731ed33914 100644
---- a/drivers/platform/x86/intel/pmc/tgl.c
-+++ b/drivers/platform/x86/intel/pmc/tgl.c
-@@ -18,7 +18,7 @@ enum pch_type {
- 	PCH_LP
- };
- 
--const struct pmc_bit_map tgl_pfear_map[] = {
-+static const struct pmc_bit_map tgl_pfear_map[] = {
- 	{"PSF9",		BIT(0)},
- 	{"RES_66",		BIT(1)},
- 	{"RES_67",		BIT(2)},
-@@ -29,7 +29,7 @@ const struct pmc_bit_map tgl_pfear_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map *ext_tgl_pfear_map[] = {
-+static const struct pmc_bit_map *ext_tgl_pfear_map[] = {
- 	/*
- 	 * Check intel_pmc_core_ids[] users of tgl_reg_map for
- 	 * a list of core SoCs using this.
-@@ -39,7 +39,7 @@ const struct pmc_bit_map *ext_tgl_pfear_map[] = {
- 	NULL
- };
- 
--const struct pmc_bit_map tgl_clocksource_status_map[] = {
-+static const struct pmc_bit_map tgl_clocksource_status_map[] = {
- 	{"USB2PLL_OFF_STS",			BIT(18)},
- 	{"PCIe/USB3.1_Gen2PLL_OFF_STS",		BIT(19)},
- 	{"PCIe_Gen3PLL_OFF_STS",		BIT(20)},
-@@ -55,7 +55,7 @@ const struct pmc_bit_map tgl_clocksource_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map tgl_power_gating_status_map[] = {
-+static const struct pmc_bit_map tgl_power_gating_status_map[] = {
- 	{"CSME_PG_STS",				BIT(0)},
- 	{"SATA_PG_STS",				BIT(1)},
- 	{"xHCI_PG_STS",				BIT(2)},
-@@ -83,7 +83,7 @@ const struct pmc_bit_map tgl_power_gating_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map tgl_d3_status_map[] = {
-+static const struct pmc_bit_map tgl_d3_status_map[] = {
- 	{"ADSP_D3_STS",				BIT(0)},
- 	{"SATA_D3_STS",				BIT(1)},
- 	{"xHCI0_D3_STS",			BIT(2)},
-@@ -98,7 +98,7 @@ const struct pmc_bit_map tgl_d3_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map tgl_vnn_req_status_map[] = {
-+static const struct pmc_bit_map tgl_vnn_req_status_map[] = {
- 	{"GPIO_COM0_VNN_REQ_STS",		BIT(1)},
- 	{"GPIO_COM1_VNN_REQ_STS",		BIT(2)},
- 	{"GPIO_COM2_VNN_REQ_STS",		BIT(3)},
-@@ -123,7 +123,7 @@ const struct pmc_bit_map tgl_vnn_req_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map tgl_vnn_misc_status_map[] = {
-+static const struct pmc_bit_map tgl_vnn_misc_status_map[] = {
- 	{"CPU_C10_REQ_STS_0",			BIT(0)},
- 	{"PCIe_LPM_En_REQ_STS_3",		BIT(3)},
- 	{"ITH_REQ_STS_5",			BIT(5)},
-@@ -175,7 +175,7 @@ const struct pmc_bit_map tgl_signal_status_map[] = {
- 	{}
- };
- 
--const struct pmc_bit_map *tgl_lpm_maps[] = {
-+static const struct pmc_bit_map *tgl_lpm_maps[] = {
- 	tgl_clocksource_status_map,
- 	tgl_power_gating_status_map,
- 	tgl_d3_status_map,
-@@ -185,7 +185,7 @@ const struct pmc_bit_map *tgl_lpm_maps[] = {
- 	NULL
- };
- 
--const struct pmc_reg_map tgl_reg_map = {
-+static const struct pmc_reg_map tgl_reg_map = {
- 	.pfear_sts = ext_tgl_pfear_map,
- 	.slp_s0_offset = CNP_PMC_SLP_S0_RES_COUNTER_OFFSET,
- 	.slp_s0_res_counter_step = TGL_PMC_SLP_S0_RES_COUNTER_STEP,
-@@ -210,7 +210,7 @@ const struct pmc_reg_map tgl_reg_map = {
- 	.etr3_offset = ETR3_OFFSET,
- };
- 
--const struct pmc_reg_map tgl_h_reg_map = {
-+static const struct pmc_reg_map tgl_h_reg_map = {
- 	.pfear_sts = ext_tgl_pfear_map,
- 	.slp_s0_offset = CNP_PMC_SLP_S0_RES_COUNTER_OFFSET,
- 	.slp_s0_res_counter_step = TGL_PMC_SLP_S0_RES_COUNTER_STEP,
--- 
-2.43.0
+Thanks a lot for this data, it's really helpful!
 
+> cpuidle: teo: Cleanups and very frequent wakeups handling update
+> cpuidle: teo: Avoid selecting deepest idle state over-eagerly (Testing ab=
+orted, after the patch was dropped.)
+> cpuidle: menu: Avoid discarding useful information when processing recent=
+ idle intervals
+>
+> Processor: Intel(R) Core(TM) i5-10600K CPU @ 4.10GHz
+> Distro: Ubuntu 24.04.1, server, no desktop GUI.
+>
+> CPU frequency scaling driver: intel_pstate
+> HWP: disabled.
+> CPU frequency scaling governor: performance
+>
+> Ilde driver: intel_idle
+> Idle governor: as per individual test
+> Idle states: 4: name : description:
+>    state0/name:POLL             desc:CPUIDLE CORE POLL IDLE
+>    state1/name:C1_ACPI          desc:ACPI FFH MWAIT 0x0
+>    state2/name:C2_ACPI          desc:ACPI FFH MWAIT 0x30
+>    state3/name:C3_ACPI          desc:ACPI FFH MWAIT 0x60
+>
+> Legend:
+> teo-613: teo governor - Kernel 6.13: before "cpuidle: teo: Cleanups and v=
+ery frequent wakeups handling update"
+> menu-613: menu governor - Kernel 6.13: before "cpuidle: teo: Cleanups and=
+ very frequent wakeups handling update"
+> teo-614: teo governor - Kernel 6.14-rc1: Includes cpuidle: teo: Cleanups =
+and very frequent wakeups handling update
+> menu-614: menu governor - Kernel 6.14-rc1: Includes cpuidle: teo: Cleanup=
+s and very frequent wakeups handling update
+> teo-614-p: teo governor - Kernel 6.14-rc1-p: Includes "cpuidle: teo: Avoi=
+d selecting deepest idle state over-eagerly"
+> menu-614-p: menu governor - Kernel 6.14-rc1-p: Includes "cpuidle: menu: A=
+void discarding useful information when processing recent idle intervals"
+>
+> I do a set of tests adopted over some years now.
+> Readers may recall that some of the tests search over a wide range of ope=
+rating conditions looking for areas to focus on in more detail.
+> One interesting observation is that everything seems to run slower than t=
+he last time I did this, June 2024, Kernel 6.10-rc2,
+> which was also slower than the time before that, August 2023, Kernel 6.5-=
+rc4.
+> There are some repatabilty issues with the tests.
+>
+> I was unable to get the "cpuidle: teo: Cleanups and very frequent wakeups=
+ handling update" patch set to apply to kernel 6.13, and so just used kerne=
+l 6.14-rc1, but that means that all the other commits
+> between the kernel versions are included. This could cast doubt on the te=
+st results, and indeed some differences in test results are observed with t=
+he menu idle governor, which did not change.
+>
+> Test 1: System Idle
+>
+> Purpose: Basic starting point test. To observee and check an idle system =
+for excessive power consumption.
+>
+> teo-613: 1.752 watts (reference: 0.0%)
+> menu-613: 1.909 watts (+9.0%)
+> teo-614: 2.199 watts (+25.51%)   <<< Test flawed. Needs to be redone. Wil=
+l be less.
+> teo-614-2: 2.112 watts (+17.05%) <<< Re-test of teo-614. (don't care abou=
+t 0.4 watts)
+> menu-614: 1.873 watts (+6.91%)
+> teo-614-p: 9.401 watts (+436.6%)  <<< Very bad regression.
+
+Already noted.
+
+Since I've decided to withdraw this patch, I will not talk about it below.
+
+> menu-614-p: 1.820 watts (+3.9%)
+
+And this is an improvement worth noting.
+
+Generally speaking, I'm mostly interested in the differences between
+teo-613 and teo-614 and between menu-6.14 and menu-614-p.
+
+> Further details:
+> http://smythies.com/~doug/linux/idle/teo-6.14/idle/perf/
+>
+> Test 2: 2 core ping pong sweep:
+>
+> Pass a token between 2 CPUs on 2 different cores.
+> Do a variable amount of work at each stop.
+> NOT a timer based test.
+>
+> Purpose: To utilize the shallowest idle states
+> and observe the transition from using more of 1
+> idle state to another.
+>
+> Results relative to teo-613 (negative is better):
+>         menu-613        teo-614         menu-614        menu-614-p
+> average -2.06%          -0.32%          -2.33%          -2.52%
+> max     9.42%           12.72%          8.29%           8.55%
+> min     -10.36%         -3.82%          -11.89%         -12.13%
+>
+> No significant issues here. There are differences on idle state preferenc=
+es.
+>
+> Standard "fast" dwell test:
+>
+> teo-613: average 3.826 uSec/loop reference
+> menu-613: average 4.159 +8.70%
+> teo-614: average 3.751 -1.94%
+
+A small improvement.
+
+> menu-614: average 4.076 +6.54%
+> menu-614-p: average 4.178 +9.21%
+>
+> Intrestingly, teo-614 also uses a little less power.
+> Note that there is an offsetting region for the menu governor where it pe=
+rforms better
+> than teo, but it was not extracted and done as a dwell test.
+>
+> Standard "medium dwell test:
+>
+> teo-613: 12.241 average uSec/loop reference
+> menu-613: 12.251 average +0.08%
+> teo-614: 12.121 average -0.98%
+
+Similarly here, but smaller.
+
+> menu-614: 12.123 average -0.96%
+> menu-614-p: 12.236 average -0.04%
+>
+> Standard "slow" dwell test: Not done.
+>
+> Further details:
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-2/loop-times.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-2/loop-times-rel=
+ative.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-2/perf/
+> http://smythies.com/~doug/linux/idle/teo-6.14/many-0-400000000-2/perf/
+> http://smythies.com/~doug/linux/idle/teo-6.14/many-3000-100000000-2/
+>
+> Test 3: 6 core ping pong sweep:
+>
+> Pass a token between 6 CPUs on 6 different cores.
+> Do a variable amount of work at each stop.
+> NOT a timer based test.
+>
+> Purpose: To utilize the midrange idle states
+> and observe the transitions between use of
+> idle states.
+>
+> Note: This test has uncertainty in an area where the performance is bi-st=
+able for all idle governors,
+> transitioning between much less power and slower performance and much mor=
+e power and higher performance.
+> On either side of this area, the differences between all idle governors a=
+re small.
+> Only data from before this area (from results 1 to 95) was included in th=
+e below results.
+>
+> Results relative to teo-613 (negative is better):
+>         teo-614 menu-613        menu-614        menu-614-p
+> average 1.60%   0.18%           0.02%           0.02%
+> max     5.91%   0.97%           1.12%           0.85%
+> min     -1.79%  -1.11%          -1.88%          -1.52%
+>
+> A further dwell test was done in the area where teo-614 performed worse.
+> There was a slight regression in both performance and power:
+>
+> teo-613: average 21.34068 uSec per loop
+> teo-614: average 20.55809 usec per loop 3.67% regression
+
+As this is usec per loop, I'd think that smaller would be better?
+
+> teo-613: average 37.17577 watts.
+> teo-614: average 38.06375 watts. 2.3% regression.
+
+Which would be consistent with this.
+
+> Further details:
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-6/loop-times.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-6/loop-times-det=
+ail-a.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-6/loop-times-det=
+ail-b.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-6/perf/
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-6/dwell/perf/
+>
+> Test 4: 12 CPU ping pong sweep:
+>
+> Pass a token between all 12 CPUs.
+> Do a variable amount of work at each stop.
+> NOT a timer based test.
+>
+> Purpose: To utilize the deeper idle states
+> and observe the transitions between use of
+> idle states.
+>
+> This test was added last time at the request of Christian Loehle.
+>
+> Note: This test has uncertainty in an area where the performance is bi-st=
+able for all idle governors,
+> transitioning between much less power and slower performance and much mor=
+e power and higher performance.
+> On either side of this area, the differences between all idle governors a=
+re small.
+>
+> Only data from before this area (from results 1 to 60) was included in th=
+e below results:
+>
+> Results relative to teo-613 (negative is better):
+>         teo-614 menu-613        menu-614        teo-614-p       menu-614-=
+p
+> ave     1.73%   0.97%           1.29%           1.70%           0.43%
+> max     16.79%  3.52%           3.95%           17.48%          4.98%
+> min     -0.35%  -0.35%          -0.18%          -0.40%          -0.54%
+>
+> Only data from after the uncertainty area (from results 170-300) was incl=
+uded in the below results:
+>
+>         teo-614 menu-613        menu-614        teo-614-p       menu-614-=
+p
+> ave     1.65%   0.04%           0.98%           -0.56%          0.73%
+> max     5.04%   2.10%           4.58%           2.44%           3.82%
+> min     0.00%   -1.89%          -1.17%          -1.95%          -1.38%
+>
+> A further dwell test was done in the area where teo-614 performed worse a=
+nd there is a 15.74%
+> throughput regression for teo-614 and a 5.4% regression in power.
+>
+> Further details:
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-12/sweep-loop-ti=
+mes.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-12/sweep-loop-ti=
+mes-detail-a.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-12/sweep-relativ=
+e-times.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-12/perf/
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-12/dwell/times.t=
+xt
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-12/dwell/perf/
+>
+> Test 5: sleeping ebizzy - 128 threads.
+>
+> Purpose: This test has given interesting results in the past.
+> The test varies the sleep interval between record lookups.
+> The result is varying usage of idle states.
+>
+> Results: Nothing significant to report just from the performance data.
+> However, there does seem to be power differences worth considering.
+>
+> A futher dwell test was done in a cherry picked spot.
+> It it is important to note that teo-614 removed a sawtooth performance
+> pattern that was present with teo-613. I.E. it is more stable. See:
+> http://smythies.com/~doug/linux/idle/teo-6.14/ebizzy/dwell/rps-only-teo.p=
+ng
+>
+> Further details:
+> http://smythies.com/~doug/linux/idle/teo-6.14/ebizzy/interval-sweep.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ebizzy/relative-performance=
+.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ebizzy/perf/
+> http://smythies.com/~doug/linux/idle/teo-6.14/ebizzy/dwell/rps.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ebizzy/dwell/rps-relative.p=
+ng
+> http://smythies.com/~doug/linux/idle/teo-6.14/ebizzy/dwell/perf/
+>
+> Test 6: adrestia wakeup latency tests. 500 threads.
+>
+> Purpose: The test was reported in 2023.09 by the kernel test robot and lo=
+oked
+> both interesting and gave interesting results, so I added it to the tests=
+ I run.
+>
+> Results:
+> teo-613.txt:wakeup cost (periodic, 20us): 3331nSec reference
+> teo-614.txt:wakeup cost (periodic, 20us): 3375nSec +1.32%
+> menu-613.txt:wakeup cost (periodic, 20us): 3207nSec -3.72%
+> menu-614.txt:wakeup cost (periodic, 20us): 3315nSec -0.48%
+> menu-614-p.txt:wakeup cost (periodic, 20us): 3353nSec +0.66%
+>
+> Further details:
+> http://smythies.com/~doug/linux/idle/teo-6.14/adrestia/periodic/histogram=
+.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/adrestia/periodic/histogram=
+-detail-a.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/adrestia/periodic/perf/
+>
+>
+> Test 7: consume: periodic workflow. Various work/sleep frequencies and lo=
+ads.
+>
+> Purpose: To search for anomalies and hysteresis over all possible workloa=
+ds at various work/sleep frequencies.
+> work/sleep frequencies tested: 73, 113, 211, 347, and 401 Hertz.
+> IS a timer based test.
+>
+> NOTE: Repeatability issues. More work needed.
+>
+> Tests show instability with teo-614, but a re-test was much less unstable=
+ and better power.
+> Idle statistics were collected for the re-test and does show teo-614 over=
+ly favoring idle state 1, with
+> "Idle state 1 was too shallow" of 70% verses 15% for teo-613.
+>
+> Further details:
+> http://smythies.com/~doug/linux/idle/teo-6.14/consume/pf73/
+> http://smythies.com/~doug/linux/idle/teo-6.14/consume/pf113/
+> http://smythies.com/~doug/linux/idle/teo-6.14/consume/pf211/
+> http://smythies.com/~doug/linux/idle/teo-6.14/consume/pf347/
+> http://smythies.com/~doug/linux/idle/teo-6.14/consume/pf401/
+> http://smythies.com/~doug/linux/idle/teo-6.14/consume/test/
+> http://smythies.com/~doug/linux/idle/teo-6.14/consume/test-idle/
+>
+> Test 8: shell-intensive serialized workloads.
+>
+> Variable: PIDs per second, amount of work each task does.
+> Note: Single threaded.
+>
+> Dountil the list of tasks is finished:
+>     Start the next task in the list of stuff to do (with a new PID).
+>     Wait for it to finish
+> Enduntil
+>
+> This workflow represents a challenge for CPU frequency scaling drivers,
+> schedulers, and therefore idle drivers.
+>
+> Also, the best performance is achieved by overriding
+> the scheduler and forcing CPU affinity. This "best" case is the
+> master reference, requiring additional legend definitions:
+> 1cpu-613: Kernel 6.13, execution forced onto CPU 3.
+> 1cpu-614: Kernel 6.14-rc1, execution forced onto CPU 3.
+>
+> Ideally the two 1cpu graphs would be identical, but they are not,
+> likely due to other changes betwwen the two kernels.
+>
+> Results:
+> teo-614 is abaolutely outstanding in this test.
+> Considerably better than any previous result over many years.
+
+Sounds good!
+
+> Further details:
+> http://smythies.com/~doug/linux/idle/teo-6.14/pid-per-sec/perf-3/times.pn=
+g
+> http://smythies.com/~doug/linux/idle/teo-6.14/pid-per-sec/perf-3/times-lo=
+g.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/pid-per-sec/perf-3/relative=
+.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/pid-per-sec/perf-3/relative=
+-log.png
+>
+> Test 9: Many threads, periodic workflow
+>
+> 500 threads of do a little work and then sleep a little.
+> IS a timer based test.
+>
+> Results:
+> Kernel 6.13 teo:    reference
+> Kernel 6.13 menu:   -0.06%
+> Kernel 6.14 teo:    -0.09%
+> Kernel 6.14 menu:   +0.49%
+> Kernel 6.14+p menu: +0.33%
+>
+> What is interesting is the significant differences in idle state selectio=
+n.
+> Powers might be interesting, but much longer tests would be needed to ach=
+eive thermal equalibrium.
+>
+> doug@s19:~/idle/teo/6.14$ nano README.txt
+> doug@s19:~/idle/teo/6.14$ rsync --archive --delete --verbose ./ doug@s15.=
+smythies.com:/home/doug/public_html/linux/idle/teo-6.14
+> doug@s15.smythies.com's password:
+> sending incremental file list
+> ./
+> README.txt
+> idle/
+> idle/teo-614-2.xlsx
+>
+> sent 61,869 bytes  received 214 bytes  13,796.22 bytes/sec
+> total size is 20,642,833  speedup is 332.50
+> doug@s19:~/idle/teo/6.14$ uname -a
+> Linux s19 6.14.0-rc1-stock #1339 SMP PREEMPT_DYNAMIC Sun Feb  2 16:45:39 =
+PST 2025 x86_64 x86_64 x86_64 GNU/Linux
+> doug@s19:~/idle/teo/6.14$ uname -a
+> Linux s19 6.14.0-rc1-stock #1339 SMP PREEMPT_DYNAMIC Sun Feb  2 16:45:39 =
+PST 2025 x86_64 x86_64 x86_64 GNU/Linux
+> doug@s19:~/idle/teo/6.14$
+> doug@s19:~/idle/teo/6.14$
+> doug@s19:~/idle/teo/6.14$
+> doug@s19:~/idle/teo/6.14$ cat READEME.txt
+> cat: READEME.txt: No such file or directory
+> doug@s19:~/idle/teo/6.14$ cat README.txt
+> 2025.02.13 Notes on this round of idle governors testing:
+>
+> Processor: Intel(R) Core(TM) i5-10600K CPU @ 4.10GHz
+> Distro: Ubuntu 24.04.1, server, no desktop GUI.
+>
+> CPU frequency scaling driver: intel_pstate
+> HWP: disabled.
+> CPU frequency scaling governor: performance
+
+What's the difference between this configuration and the one above?
+
+> Ilde driver: intel_idle
+> Idle governor: as per individual test
+> Idle states: 4: name : description:
+>    state0/name:POLL             desc:CPUIDLE CORE POLL IDLE
+>    state1/name:C1_ACPI          desc:ACPI FFH MWAIT 0x0
+>    state2/name:C2_ACPI          desc:ACPI FFH MWAIT 0x30
+>    state3/name:C3_ACPI          desc:ACPI FFH MWAIT 0x60
+>
+> Legend:
+> teo-613: teo governor - Kernel 6.13: before "cpuidle: teo: Cleanups and v=
+ery frequent wakeups handling update"
+> menu-613: menu governor - Kernel 6.13: before "cpuidle: teo: Cleanups and=
+ very frequent wakeups handling update"
+> teo-614: teo governor - Kernel 6.14-rc1: Includes cpuidle: teo: Cleanups =
+and very frequent wakeups handling update
+> menu-614: menu governor - Kernel 6.14-rc1: Includes cpuidle: teo: Cleanup=
+s and very frequent wakeups handling update
+> teo-614-p: teo governor - Kernel 6.14-rc1-p: Includes "cpuidle: teo: Avoi=
+d selecting deepest idle state over-eagerly"
+> menu-614-p: menu governor - Kernel 6.14-rc1-p: Includes "cpuidle: menu: A=
+void discarding useful information when processing recent idle intervals"
+>
+> I do a set of tests adopted over some years now.
+> Readers may recall that some of the tests search over a wide range of ope=
+rating conditions looking for areas to focus on in more detail.
+> One interesting observation is that everything seems to run slower than t=
+he last time I did this, June 2024, Kernel 6.10-rc2,
+> which was also slower than the time before that, August 2023, Kernel 6.5-=
+rc4.
+> There are some repeatability issues with the tests.
+>
+> I was unable to get the "cpuidle: teo: Cleanups and very frequent wakeups=
+ handling update"
+> patch set to apply to kernel 6.13, and so just used kernel 6.14-rc1, but =
+that means that
+> all the other commits between the kernel versions are included. This coul=
+d cast doubt on
+> the test results, and indeed some differences in test results are observe=
+d with the menu
+> idle governor, which did not change.
+>
+> Test 1: System Idle
+>
+> Purpose: Basic starting point test. To observe and check an idle system f=
+or excessive power consumption.
+>
+> teo-613: 1.752 watts (reference: 0.0%)
+> menu-613: 1.909 watts (+9.0%)
+> teo-614: 2.199 watts (+25.51%)   <<< Test flawed. Needs to be redone. Wil=
+l be less.
+> teo-614-2: 2.112 watts (+17.05%) <<< Re-test of teo-614. (don't care abou=
+t 0.4 watts)
+> menu-614: 1.873 watts (+6.91%)
+> teo-614-p: 9.401 watts (+436.6%)  <<< Very bad regression.
+> menu-614-p: 1.820 watts (+3.9%)
+>
+> Further details:
+> http://smythies.com/~doug/linux/idle/teo-6.14/idle/perf/
+>
+> Test 2: 2 core ping pong sweep:
+>
+> Pass a token between 2 CPUs on 2 different cores.
+> Do a variable amount of work at each stop.
+> NOT a timer based test.
+>
+> Purpose: To utilize the shallowest idle states
+> and observe the transition from using more of 1
+> idle state to another.
+>
+> Results relative to teo-613 (negative is better):
+>         menu-613        teo-614         menu-614        menu-614-p
+> average -2.06%          -0.32%          -2.33%          -2.52%
+> max     9.42%           12.72%          8.29%           8.55%
+> min     -10.36%         -3.82%          -11.89%         -12.13%
+>
+> No significant issues here. There are differences on idle state preferenc=
+es.
+>
+> Standard "fast" dwell test:
+>
+> teo-613: average 3.826 uSec/loop reference
+> menu-613: average 4.159 +8.70%
+> teo-614: average 3.751 -1.94%
+> menu-614: average 4.076 +6.54%
+> menu-614-p: average 4.178 +9.21%
+>
+> Interestingly, teo-614 also uses a little less power.
+> Note that there is an offsetting region for the menu governor where it pe=
+rforms better
+> than teo, but it was not extracted and done as a dwell test.
+>
+> Standard "medium dwell test:
+>
+> teo-613: 12.241 average uSec/loop reference
+> menu-613: 12.251 average +0.08%
+> teo-614: 12.121 average -0.98%
+> menu-614: 12.123 average -0.96%
+> menu-614-p: 12.236 average -0.04%
+>
+> Standard "slow" dwell test: Not done.
+>
+> Further details:
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-2/loop-times.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-2/loop-times-rel=
+ative.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-2/perf/
+> http://smythies.com/~doug/linux/idle/teo-6.14/many-0-400000000-2/perf/
+> http://smythies.com/~doug/linux/idle/teo-6.14/many-3000-100000000-2/
+>
+> Test 3: 6 core ping pong sweep:
+>
+> Pass a token between 6 CPUs on 6 different cores.
+> Do a variable amount of work at each stop.
+> NOT a timer based test.
+>
+> Purpose: To utilize the midrange idle states
+> and observe the transitions between use of
+> idle states.
+>
+> Note: This test has uncertainty in an area where the performance is bi-st=
+able for all idle governors,
+> transitioning between much less power and slower performance and much mor=
+e power and higher performance.
+> On either side of this area, the differences between all idle governors a=
+re small.
+> Only data from before this area (from results 1 to 95) was included in th=
+e below results.
+>
+> Results relative to teo-613 (negative is better):
+>         teo-614 menu-613        menu-614        menu-614-p
+> average 1.60%   0.18%           0.02%           0.02%
+> max     5.91%   0.97%           1.12%           0.85%
+> min     -1.79%  -1.11%          -1.88%          -1.52%
+>
+> A further dwell test was done in the area where teo-614 performed worse.
+> There was a slight regression in both performance and power:
+>
+> teo-613: average 21.34068 uSec per loop
+> teo-614: average 20.55809 usec per loop 3.67% regression
+>
+> teo-613: average 37.17577 watts.
+> teo-614: average 38.06375 watts. 2.3% regression.
+>
+> Further details:
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-6/loop-times.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-6/loop-times-det=
+ail-a.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-6/loop-times-det=
+ail-b.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-6/perf/
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-6/dwell/perf/
+>
+> Test 4: 12 CPU ping pong sweep:
+>
+> Pass a token between all 12 CPUs.
+> Do a variable amount of work at each stop.
+> NOT a timer based test.
+>
+> Purpose: To utilize the deeper idle states
+> and observe the transitions between use of
+> idle states.
+>
+> This test was added last time at the request of Christian Loehle.
+>
+> Note: This test has uncertainty in an area where the performance is bi-st=
+able for all idle governors,
+> transitioning between much less power and slower performance and much mor=
+e power and higher performance.
+> On either side of this area, the differences between all idle governors a=
+re small.
+>
+> Only data from before this area (from results 1 to 60) was included in th=
+e below results:
+>
+> Results relative to teo-613 (negative is better):
+>         teo-614 menu-613        menu-614        teo-614-p       menu-614-=
+p
+> ave     1.73%   0.97%           1.29%           1.70%           0.43%
+> max     16.79%  3.52%           3.95%           17.48%          4.98%
+> min     -0.35%  -0.35%          -0.18%          -0.40%          -0.54%
+>
+> Only data from after the uncertainty area (from results 170-300) was incl=
+uded in the below results:
+>
+>         teo-614 menu-613        menu-614        teo-614-p       menu-614-=
+p
+> ave     1.65%   0.04%           0.98%           -0.56%          0.73%
+> max     5.04%   2.10%           4.58%           2.44%           3.82%
+> min     0.00%   -1.89%          -1.17%          -1.95%          -1.38%
+>
+> A further dwell test was done in the area where teo-614 performed worse a=
+nd there is a 15.74%
+> throughput regression for teo-614 and a 5.4% regression in power.
+>
+> Further details:
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-12/sweep-loop-ti=
+mes.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-12/sweep-loop-ti=
+mes-detail-a.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-12/sweep-relativ=
+e-times.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-12/perf/
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-12/dwell/times.t=
+xt
+> http://smythies.com/~doug/linux/idle/teo-6.14/ping-sweep-12/dwell/perf/
+>
+> Test 5: sleeping ebizzy - 128 threads.
+>
+> Purpose: This test has given interesting results in the past.
+> The test varies the sleep interval between record lookups.
+> The result is varying usage of idle states.
+>
+> Results: Nothing significant to report just from the performance data.
+> However, there does seem to be power differences worth considering.
+>
+> A further dwell test was done on a cherry-picked spot.
+> It it is important to note that teo-614 removed a sawtooth performance
+> pattern that was present with teo-613. I.E. it is more stable. See:
+> http://smythies.com/~doug/linux/idle/teo-6.14/ebizzy/dwell/rps-only-teo.p=
+ng
+>
+> Further details:
+> http://smythies.com/~doug/linux/idle/teo-6.14/ebizzy/interval-sweep.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ebizzy/relative-performance=
+.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ebizzy/perf/
+> http://smythies.com/~doug/linux/idle/teo-6.14/ebizzy/dwell/rps.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/ebizzy/dwell/rps-relative.p=
+ng
+> http://smythies.com/~doug/linux/idle/teo-6.14/ebizzy/dwell/perf/
+>
+> Test 6: adrestia wakeup latency tests. 500 threads.
+>
+> Purpose: The test was reported in 2023.09 by the kernel test robot and lo=
+oked
+> both interesting and gave interesting results, so I added it to the tests=
+ I run.
+>
+> Results:
+> teo-613.txt:wakeup cost (periodic, 20us): 3331nSec reference
+> teo-614.txt:wakeup cost (periodic, 20us): 3375nSec +1.32%
+> menu-613.txt:wakeup cost (periodic, 20us): 3207nSec -3.72%
+> menu-614.txt:wakeup cost (periodic, 20us): 3315nSec -0.48%
+> menu-614-p.txt:wakeup cost (periodic, 20us): 3353nSec +0.66%
+>
+> Further details:
+> http://smythies.com/~doug/linux/idle/teo-6.14/adrestia/periodic/histogram=
+.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/adrestia/periodic/histogram=
+-detail-a.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/adrestia/periodic/perf/
+>
+>
+> Test 7: consume: periodic workflow. Various work/sleep frequencies and lo=
+ads.
+>
+> Purpose: To search for anomalies and hysteresis over all possible workloa=
+ds at various work/sleep frequencies.
+> work/sleep frequencies tested: 73, 113, 211, 347, and 401 Hertz.
+> IS a timer based test.
+>
+> NOTE: Repeatability issues. More work needed.
+>
+> Tests show instability with teo-614, but a re-test was much less unstable=
+ and better power.
+> Idle statistics were collected for the re-test and does show teo-614 over=
+ly favoring idle state 1, with
+> "Idle state 1 was too shallow" of 70% verses 15% for teo-613.
+>
+> Further details:
+> http://smythies.com/~doug/linux/idle/teo-6.14/consume/pf73/
+> http://smythies.com/~doug/linux/idle/teo-6.14/consume/pf113/
+> http://smythies.com/~doug/linux/idle/teo-6.14/consume/pf211/
+> http://smythies.com/~doug/linux/idle/teo-6.14/consume/pf347/
+> http://smythies.com/~doug/linux/idle/teo-6.14/consume/pf401/
+> http://smythies.com/~doug/linux/idle/teo-6.14/consume/test/
+> http://smythies.com/~doug/linux/idle/teo-6.14/consume/test-idle/
+>
+> Test 8: shell-intensive serialized workloads.
+>
+> Variable: PIDs per second, amount of work each task does.
+> Note: Single threaded.
+>
+> Dountil the list of tasks is finished:
+>     Start the next task in the list of stuff to do (with a new PID).
+>     Wait for it to finish
+> Enduntil
+>
+> This workflow represents a challenge for CPU frequency scaling drivers,
+> schedulers, and therefore idle drivers.
+>
+> Also, the best performance is achieved by overriding
+> the scheduler and forcing CPU affinity. This "best" case is the
+> master reference, requiring additional legend definitions:
+> 1cpu-613: Kernel 6.13, execution forced onto CPU 3.
+> 1cpu-614: Kernel 6.14-rc1, execution forced onto CPU 3.
+>
+> Ideally the two 1cpu graphs would be identical, but they are not,
+> likely due to other changes between the two kernels.
+>
+> Results:
+> teo-614 is absolutely outstanding in this test.
+> Considerably better than any previous result over many years.
+>
+> Further details:
+> http://smythies.com/~doug/linux/idle/teo-6.14/pid-per-sec/perf-3/times.pn=
+g
+> http://smythies.com/~doug/linux/idle/teo-6.14/pid-per-sec/perf-3/times-lo=
+g.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/pid-per-sec/perf-3/relative=
+.png
+> http://smythies.com/~doug/linux/idle/teo-6.14/pid-per-sec/perf-3/relative=
+-log.png
+>
+> Test 9: Many threads, periodic workflow
+>
+> 500 threads of do a little work and then sleep a little.
+> IS a timer based test.
+>
+> Results:
+> Kernel 6.13 teo:    reference
+> Kernel 6.13 menu:   -0.06%
+> Kernel 6.14 teo:    -0.09%
+> Kernel 6.14 menu:   +0.49%
+> Kernel 6.14+p menu: +0.33%
+>
+> What is interesting is the significant differences in idle state selectio=
+n.
+> Powers might be interesting, but much longer tests would be needed to ach=
+ieve thermal equilibrium.
+
+Overall, having seen these results, I'm not worried about the change
+from teo-613 to teo-614.  The motivation for it was mostly code
+consistency and IMV the results indicate that it was worth doing.
+
+Also, if I'm not mistaken, the differences between menu-6.14 and
+menu-6.14-p in the majority of your tests are relatively small (if not
+in the noise) which, given that the latter is a major improvement for
+the SPECjbb workload as reported by Artem, makes me think that I
+should queue up menu-614-p for 6.15.
+
+Thanks!
