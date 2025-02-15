@@ -1,44 +1,45 @@
 Received: from sender4-op-o14.zoho.com (sender4-op-o14.zoho.com [136.143.188.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA69B1FCCE1;
-	Sat, 15 Feb 2025 23:35:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00E151FDA8B;
+	Sat, 15 Feb 2025 23:35:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.14
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739662531; cv=pass; b=p9bHaLB2Nh/7oERbOBRxKJVGUPjp4wIck++pQF3MJupruurXx1nqWMVrv0GRGudSLDLpFsSc6UnzDzdmO38uLXwrfDaHWQHaS4k8gqcG8mi5bRihsxC2Vh1u+9Jqbd1asLWrGvp5WvPEWbv/nuB+MuStSJJ5lWa69gqUE29V22Y=
+	t=1739662533; cv=pass; b=i9RwfPYpge2LKklywTQF5sCTcf8mRrpQ3tb1cbnZN4ufj5Go2hiMcS1l8S10u+dVVFTDp/ZLrNHDm0HCf/mzgmbnQ8ts+SoicCbWljVqvN3OuyzFrG/aXO+uqJCBTq632kWBxFyBIPrQWMJN6e+aqkFoSig0GNQpYMPJYQL/vOs=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739662531; c=relaxed/simple;
-	bh=J6aDRKpFHvCt/SrA0G6krm2MZyuETOzJLkbkmn3oCdg=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=PdEx+4nXPi14xfyI00cVovqrFvGXM+mTzB3KdloBei/Tt9/F1Bsc7he475MnJCa8cA64x9bRLjr/UOOXbOyNTPubwJNH+laaJvpQIYuNycMG88l/ulWaW/3dMw3UzMTQH6FIPv49vhwE4gaaV99bP50GZsIrx20Vps8pAlGDkgU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=kDI5ka04; arc=pass smtp.client-ip=136.143.188.14
+	s=arc-20240116; t=1739662533; c=relaxed/simple;
+	bh=3LfqDR2Pzs7OKRyDz5mrNdZnhWugx+GxSd2BzhP+4os=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=YBEOfmU3VJYwo3BOeo6m59uNPMF9ABNdFVVOqIKhok/mF4ofMOBc9AzOEBu0ER8igdx1nAzR+KeU5+Ge3gN9BbsK9dHkEG5rkq760L+HkK3HUY6Z7qKdhh/fn/x6NmKRAPTbDMrHcXNJNlJLYalnp/qzPjZEZVyS1H5EmPka2aY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=VdUaNEpT; arc=pass smtp.client-ip=136.143.188.14
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="kDI5ka04"
-ARC-Seal: i=1; a=rsa-sha256; t=1739662512; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="VdUaNEpT"
+ARC-Seal: i=1; a=rsa-sha256; t=1739662504; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=aFv4rUM8HzHqC0CcPeHNBZkJLFKYzYUH1zAdZi1xwzOWiS+0Y5ZwTJ0GHv5pHDjFnIuK8EILzPbzt7l8XmGnaPRVzsZURAWVT+Apw+VdtiRtSosb9eoLEXQTgOM9mE1SaVtdm0suq++Ys+A6ZC1he1+M41Hayh1zV/0kzUxm0zA=
+	b=H0f8h1UNsng7CEtVbo53pmVCmAmNgqG1K+hLVRKeEcomU5XTOAh18wBstErMKh6Hw2FK3gUAC1dbA8We+yVsz9aUijeqAekFF07kj/Xi5DFh8AtlELheUtk8lw+vf2Yau7ttmpEfNmx0rBsJeWUjEJvRsr3QkhgGBbnADZOOsvg=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1739662512; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=8av1iXNMpvlvtcg8scR+m4/u77ONzUeOM2pGww4zkIw=; 
-	b=dourin8Sf2DJ9HKzwJcgqVM90jmr/X1u4h9JepWnW3bjVLOvlPswWMEBaBw4AuTypt4Y9AnGtiZO3Cxd0ux6J3yORgDtzN3URFquOyn+iop3/FbrKzIC+F8nxd14GLWw41mHYE2bO3NNtGiGa+oVxn1JWIeJu/K9t0j8T85ttsU=
+	t=1739662504; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=2IwalmKvII2wjdNIZlzpaAimkHRlXVRsnIocmdujjKQ=; 
+	b=UBX/iciIGXZ8T1EY1+SI80SJ6mVfsxZ4ODXRYLkFLbFlueRf6lNVnppjAlrfzGr8tQ4JyXcmkyaERmQ+V3WpBq14f+2Qjv5aqfJGBIpBE9Yr7P0k1YcF+4capG9+r9UAppK4Cb4/+eTcZwxZD4hgH5n3D0cbbaAr5ZfW0/zzv+s=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1739662512;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1739662504;
 	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
-	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
-	bh=8av1iXNMpvlvtcg8scR+m4/u77ONzUeOM2pGww4zkIw=;
-	b=kDI5ka04HpnqwELOTw4cEJm+lkj7jT4ASVw/Nf0Ju56JXsREzgZpqW803mE07L92
-	+9/BuW7kgryJOZ7J9JswByStD9SRV6CXAg6NmkIg8bHHG0PYcMTLN7UStJBwzo/5pTp
-	ds7auqYn2NcEFXF/R/XfodtqG11MTqEbMZKFJgHg=
-Received: by mx.zohomail.com with SMTPS id 1739662510999466.30832668154085;
-	Sat, 15 Feb 2025 15:35:10 -0800 (PST)
+	h=From:From:Subject:Subject:Date:Date:Message-Id:Message-Id:MIME-Version:Content-Type:Content-Transfer-Encoding:To:To:Cc:Cc:Reply-To;
+	bh=2IwalmKvII2wjdNIZlzpaAimkHRlXVRsnIocmdujjKQ=;
+	b=VdUaNEpTfhrBgz3yCxJzRhkxyYY5GNurBCa8pmxnME/ZtDHwcQc0nlpt2+KurSty
+	KzJw55z3DxnXck48z5u7/MsTpR6alWj2HV7YgfNcxHUASd0QuF90wFCR1dwkkPR2R51
+	+nntNRTtBUYqfAr0cJBgs4jgRKl7i8/7SGxPtF3c=
+Received: by mx.zohomail.com with SMTPS id 1739662502809296.039531409702;
+	Sat, 15 Feb 2025 15:35:02 -0800 (PST)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Sun, 16 Feb 2025 00:34:51 +0100
-Subject: [PATCH 2/6] arm64: dts: rockchip: Add thermal nodes to RK3576
+Subject: [PATCH 0/6] RK3576 thermal sensor support, including OTP trim
+ adjustments
+Date: Sun, 16 Feb 2025 00:34:49 +0100
+Message-Id: <20250216-rk3576-tsadc-upstream-v1-0-6ec969322a14@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -47,9 +48,11 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250216-rk3576-tsadc-upstream-v1-2-6ec969322a14@collabora.com>
-References: <20250216-rk3576-tsadc-upstream-v1-0-6ec969322a14@collabora.com>
-In-Reply-To: <20250216-rk3576-tsadc-upstream-v1-0-6ec969322a14@collabora.com>
+X-B4-Tracking: v=1; b=H4sIAJkksWcC/y3MQQqDMBCF4atI1h1JotEqpfQexUUaxxokajOxC
+ OLda9Xl/+B9CyP0FomV0cI8fi3Zod9CXCJmWt2/EWy9NZNcKi6FAt8lKs8gkK4NTCMFj9pBjty
+ IImny7KrZ9h09Nnbe3Wd1tMfPtPHhGJlDIr3zZXQ7dS5lqgSPhSjSIktAQIu2Gx7UBzRtXOP9b
+ 780IZjBORvKqMc5wHmXrFrXHwAAv+7SAAAA
+X-Change-ID: 20250215-rk3576-tsadc-upstream-7e0c193f768a
 To: "Rafael J. Wysocki" <rafael@kernel.org>, 
  Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
  Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
@@ -59,271 +62,91 @@ Cc: Sebastian Reichel <sebastian.reichel@collabora.com>,
  kernel@collabora.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
  linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, 
  linux-kernel@vger.kernel.org, 
- Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+ Nicolas Frattaroli <nicolas.frattaroli@collabora.com>, 
+ Ye Zhang <ye.zhang@rock-chips.com>
 X-Mailer: b4 0.14.2
 
-Add the TSADC node to the RK3576. Additionally, add everything the TSADC
-needs to function, i.e. thermal zones, their trip points and maps, as
-well as adjust the CPU cooling-cells property.
+This series adds support for the RK3576's thermal sensor.
 
-The polling-delay properties are set to 0 as we do have interrupts for
-this TSADC on this particular SoC.
+The sensor has six channels, providing measurements for the package
+temperature, the temperature of the big cores, the temperature of the
+little cores, and the GPU, NPU and DDR controller.
+
+In addition to adding support for the sensor itself, the series also
+adds support for reading thermal trim values out of the device tree.
+Most of this functionality is not specific to this SoC, but needed to be
+implemented to make the sensors a little more accurate in order to
+investigate whether the TRM swapped GPU and DDR or downstream swapped
+GPU and DDR in terms of channel IDs, as downstream disagrees with what's
+in the TRM, and the difference is so small and hard to pin down with
+testing that the constant offset between the two sensors was a little
+annoying for me to deal with.
+
+I ended up going with the channel assignment the TRM lists, as I see the
+DDR sensor get a larger deviation from baseline temperatures during memory
+stress tests (stress-ng --memrate 8 --memrate-flush) than what the TRM
+claims is the GPU sensor but downstream claims is the DDR sensor. Input
+from Rockchip engineers on whether the TRM is right or wrong welcome.
+
+The trim functionality is only used by RK3576 at the moment. Code to
+handle other SoCs can rely on the shared otp reading and perhaps even
+the IP revision specific function, but may need its own IP revision
+specific functions added as well. Absent trim functionality in other
+SoCs should not interfere with the modified common code paths.
+
+Patch 1 adds the RK3576 compatible to the bindings.
+
+Patch 2 adds the basic thermal nodes required to get temperature
+readings and device throttling to the rk3576.dtsi device tree.
+
+Patch 3 adds support for this SoC's thermal chip to the driver. It is a
+port of the downstream commit adding support for this.
+
+Patch 4 adds some documentation for imminent additional functionality to
+the binding, namely the trim value stuff.
+
+Patch 5 adds the requisite OTP cells and tsadc nodes to the SoC's device
+tree, conforming with the bindings modified in Patch 4.
+
+Patch 6 adds support for reading these OTP values in the
+rockchip_thermal driver, and makes use of them. The code is mostly new
+upstream code written by me, using downstream code as reference.
+
+This series depends on Heiko's OTP series[1]. You can grab yourself a
+spicy linux-next based tree from [2] with both changesets if you just
+want to give it a spin on your own board.
+
+[1]: https://lore.kernel.org/linux-rockchip/20250210224510.1194963-1-heiko@sntech.de/
+[2]: https://gitlab.collabora.com/fratti/linux/-/tree/rk3576-thermal-adc-4
 
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
- arch/arm64/boot/dts/rockchip/rk3576.dtsi | 164 ++++++++++++++++++++++++++++++-
- 1 file changed, 162 insertions(+), 2 deletions(-)
+Nicolas Frattaroli (5):
+      dt-bindings: rockchip-thermal: Add RK3576 compatible
+      arm64: dts: rockchip: Add thermal nodes to RK3576
+      dt-bindings: thermal: rockchip: document otp thermal trim
+      arm64: dts: rockchip: Add thermal trim OTP and tsadc nodes
+      thermal: rockchip: support reading trim values from OTP
 
-diff --git a/arch/arm64/boot/dts/rockchip/rk3576.dtsi b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
-index 29b47799849ad50540755d62622865d84226c6c4..73df515a3937414d89515b4ddccf71f33f6a4fe7 100644
---- a/arch/arm64/boot/dts/rockchip/rk3576.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
-@@ -11,6 +11,7 @@
- #include <dt-bindings/power/rockchip,rk3576-power.h>
- #include <dt-bindings/reset/rockchip,rk3576-cru.h>
- #include <dt-bindings/soc/rockchip,boot-mode.h>
-+#include <dt-bindings/thermal/thermal.h>
- 
- / {
- 	compatible = "rockchip,rk3576";
-@@ -113,9 +114,9 @@ cpu_l0: cpu@0 {
- 			capacity-dmips-mhz = <485>;
- 			clocks = <&scmi_clk ARMCLK_L>;
- 			operating-points-v2 = <&cluster0_opp_table>;
--			#cooling-cells = <2>;
- 			dynamic-power-coefficient = <120>;
- 			cpu-idle-states = <&CPU_SLEEP>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu_l1: cpu@1 {
-@@ -127,6 +128,7 @@ cpu_l1: cpu@1 {
- 			clocks = <&scmi_clk ARMCLK_L>;
- 			operating-points-v2 = <&cluster0_opp_table>;
- 			cpu-idle-states = <&CPU_SLEEP>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu_l2: cpu@2 {
-@@ -138,6 +140,7 @@ cpu_l2: cpu@2 {
- 			clocks = <&scmi_clk ARMCLK_L>;
- 			operating-points-v2 = <&cluster0_opp_table>;
- 			cpu-idle-states = <&CPU_SLEEP>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu_l3: cpu@3 {
-@@ -149,6 +152,7 @@ cpu_l3: cpu@3 {
- 			clocks = <&scmi_clk ARMCLK_L>;
- 			operating-points-v2 = <&cluster0_opp_table>;
- 			cpu-idle-states = <&CPU_SLEEP>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu_b0: cpu@100 {
-@@ -159,9 +163,9 @@ cpu_b0: cpu@100 {
- 			capacity-dmips-mhz = <1024>;
- 			clocks = <&scmi_clk ARMCLK_B>;
- 			operating-points-v2 = <&cluster1_opp_table>;
--			#cooling-cells = <2>;
- 			dynamic-power-coefficient = <320>;
- 			cpu-idle-states = <&CPU_SLEEP>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu_b1: cpu@101 {
-@@ -173,6 +177,7 @@ cpu_b1: cpu@101 {
- 			clocks = <&scmi_clk ARMCLK_B>;
- 			operating-points-v2 = <&cluster1_opp_table>;
- 			cpu-idle-states = <&CPU_SLEEP>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu_b2: cpu@102 {
-@@ -184,6 +189,7 @@ cpu_b2: cpu@102 {
- 			clocks = <&scmi_clk ARMCLK_B>;
- 			operating-points-v2 = <&cluster1_opp_table>;
- 			cpu-idle-states = <&CPU_SLEEP>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu_b3: cpu@103 {
-@@ -195,6 +201,7 @@ cpu_b3: cpu@103 {
- 			clocks = <&scmi_clk ARMCLK_B>;
- 			operating-points-v2 = <&cluster1_opp_table>;
- 			cpu-idle-states = <&CPU_SLEEP>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		idle-states {
-@@ -431,6 +438,143 @@ psci {
- 		method = "smc";
- 	};
- 
-+	thermal_zones: thermal-zones {
-+		/* sensor near the center of the SoC */
-+		package_thermal: package-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsadc 0>;
-+
-+			trips {
-+				package_crit: package-crit {
-+					temperature = <115000>;
-+					hysteresis = <0>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		/* sensor for cluster1 (big Cortex-A72 cores) */
-+		bigcore_thermal: bigcore-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsadc 1>;
-+
-+			trips {
-+				bigcore_alert: bigcore-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				bigcore_crit: bigcore-crit {
-+					temperature = <115000>;
-+					hysteresis = <0>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&bigcore_alert>;
-+					cooling-device =
-+						<&cpu_b0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu_b1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu_b2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu_b3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		/* sensor for cluster0 (little Cortex-A53 cores) */
-+		littlecore_thermal: littlecore-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsadc 2>;
-+
-+			trips {
-+				littlecore_alert: littlecore-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				littlecore_crit: littlecore-crit {
-+					temperature = <115000>;
-+					hysteresis = <0>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&littlecore_alert>;
-+					cooling-device =
-+						<&cpu_l0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu_l1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu_l2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu_l3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		gpu_thermal: gpu-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsadc 3>;
-+
-+			trips {
-+				gpu_alert: gpu-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				gpu_crit: gpu-crit {
-+					temperature = <115000>;
-+					hysteresis = <0>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&gpu_alert>;
-+					cooling-device =
-+						<&gpu THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		npu_thermal: npu-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsadc 4>;
-+
-+			trips {
-+				npu_crit: npu-crit {
-+					temperature = <115000>;
-+					hysteresis = <0>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		ddr_thermal: ddr-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsadc 5>;
-+
-+			trips {
-+				ddr_crit: ddr-crit {
-+					temperature = <115000>;
-+					hysteresis = <0>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+	};
-+
- 	timer {
- 		compatible = "arm,armv8-timer";
- 		interrupts = <GIC_PPI 13 IRQ_TYPE_LEVEL_LOW>,
-@@ -1694,6 +1838,22 @@ saradc: adc@2ae00000 {
- 			status = "disabled";
- 		};
- 
-+		tsadc: tsadc@2ae70000 {
-+			compatible = "rockchip,rk3576-tsadc";
-+			reg = <0x0 0x2ae70000 0x0 0x400>;
-+			interrupts = <GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&cru CLK_TSADC>, <&cru PCLK_TSADC>;
-+			clock-names = "tsadc", "apb_pclk";
-+			assigned-clocks = <&cru CLK_TSADC>;
-+			assigned-clock-rates = <2000000>;
-+			resets = <&cru SRST_P_TSADC>, <&cru SRST_TSADC>;
-+			reset-names = "tsadc-apb", "tsadc";
-+			#thermal-sensor-cells = <1>;
-+			rockchip,hw-tshut-temp = <120000>;
-+			rockchip,hw-tshut-mode = <0>; /* tshut mode 0:CRU 1:GPIO */
-+			rockchip,hw-tshut-polarity = <0>; /* tshut polarity 0:LOW 1:HIGH */
-+		};
-+
- 		i2c9: i2c@2ae80000 {
- 			compatible = "rockchip,rk3576-i2c", "rockchip,rk3399-i2c";
- 			reg = <0x0 0x2ae80000 0x0 0x1000>;
+Ye Zhang (1):
+      thermal: rockchip: Support RK3576 SoC in the thermal driver
 
+ .../bindings/thermal/rockchip-thermal.yaml         |  45 ++++
+ arch/arm64/boot/dts/rockchip/rk3576.dtsi           | 239 +++++++++++++++++-
+ drivers/thermal/rockchip_thermal.c                 | 280 +++++++++++++++++++--
+ 3 files changed, 540 insertions(+), 24 deletions(-)
+---
+base-commit: 6f5eb5a1b91efbc9317ac7a55c5c9e74be3e358d
+change-id: 20250215-rk3576-tsadc-upstream-7e0c193f768a
+prerequisite-message-id: <20250210224510.1194963-1-heiko@sntech.de>
+prerequisite-patch-id: 8b8d7c74c83755b87a59b37dfa1c335a84f4fbda
+prerequisite-patch-id: 39def5e1f0f4ae6f182cf50b42e1e43a90d0991d
+prerequisite-patch-id: bf402264f426cb53f5a40b36dea74e0e2def5621
+prerequisite-patch-id: fb7a67402ea0d8792cbcefed9239ad141689e33a
+prerequisite-patch-id: ae942d1f9e0e9d8e0b0ca493b8ec0bd5994365ae
+prerequisite-patch-id: 12e5d422403737e300ba9563f7d4338e356d0299
+
+Best regards,
 -- 
-2.48.1
+Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 
