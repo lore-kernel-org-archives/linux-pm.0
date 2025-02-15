@@ -1,102 +1,87 @@
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
+Received: from sender4-op-o14.zoho.com (sender4-op-o14.zoho.com [136.143.188.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE36D84D02
-	for <linux-pm@vger.kernel.org>; Sat, 15 Feb 2025 15:43:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.72.192.74
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739634214; cv=none; b=SZD+hU/1GG1dmIY5z7TpLbDvaO7etbCXNzZzidxp1m2nzv1T5yi9LUXa+DrhYf2mbMvcw2W2y2JhkxX/CjPPFP9RYSFDUnkH+zekff1zDcQlIO6bb6KZ+jjsOwB7Ej0drIBccjJY7U3jtlOyeKilNGnvinu//HHxNNQXzq+FIi4=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739634214; c=relaxed/simple;
-	bh=T/l6R7c052cpChK/88MI3HKLKlt544tzWGfWRGGvOIo=;
-	h=Message-ID:Subject:From:To:Date:Content-Type:MIME-Version; b=H5JDQ1gfWu62HXm1Jcxy4+Kv1g/wu8F2jApbAbLcN6WdI5ek9VjCaCgN5h2tXw8gPz9rz4kiANQh6VY2/JB6zzoSO2eEQPyGwMiNx7Ud1JUJWytpnP9+6v0YS78FhK8wb10hU3YOOyeQC/Rh7aSy1IQM8pqMf6UG4uLXVq2YtG8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=online.de; spf=pass smtp.mailfrom=online.de; dkim=pass (2048-bit key) header.d=online.de header.i=captainfineweather@online.de header.b=LkfxGHhu; arc=none smtp.client-ip=217.72.192.74
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=online.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=online.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D55442AA5;
+	Sat, 15 Feb 2025 23:35:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.14
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1739662529; cv=pass; b=jwDwnTvZjLPpYw/Xva1KB4g2rtGXoOUeTC9CYjrBqy4nLfdstXjBs8d4v3nxUlL7AzJHg4SnDMdN6QpOtE36sTbrm7uXj0PU3PswsSjqWbIKX7VO+MTUuGjJBsrUOss82NoHl9G/KKZjPaKpAo2qDBCSGXKfjBHl8It0C8tbp/w=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1739662529; c=relaxed/simple;
+	bh=3U34nazgbQM+gxbpQhKeoB2hzKFJEarbj37PvDzHW1w=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=WNd1IfXJMOVFAX8lwcTtqAjQ9wDvWtB6RyGixzmPnJK1Kp6YDYJYaLaCz+yPI+MWzH+zWH+JRtqBmNYfX9RP1QJ1HaX7RUHpmrh5FepbmwNyeeODu2F10jS80wjkCdNfnVWLNsQhfyvpjRF0EPnR8FRsmQshZGJ4EXBdQgqBzkQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=jbPHXtKR; arc=pass smtp.client-ip=136.143.188.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=online.de header.i=captainfineweather@online.de header.b="LkfxGHhu"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=online.de;
-	s=s42582890; t=1739634208; x=1740239008;
-	i=captainfineweather@online.de;
-	bh=T/l6R7c052cpChK/88MI3HKLKlt544tzWGfWRGGvOIo=;
-	h=X-UI-Sender-Class:Message-ID:Subject:From:Reply-To:To:Date:
-	 Content-Type:MIME-Version:Content-Transfer-Encoding:cc:
-	 content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=LkfxGHhuCI9iVX0lfWGSFECAeCHqJ5UMT+GCUgSY8rPwqlWyd92gfLMOhwQ9NtMJ
-	 5kMzniKxSfHml/Fixge8t+hm0r7qxERvPKIv5C/Db3ygUFsrPsj+PdntFhMd3oWxd
-	 f3es4yRkHb0ifyAS4jvQKHxNmIMLYTEQRiC4NO48wrQhyVsMk9sa5g8vrRwnOHlYD
-	 QEnLcaQE2znUKbFWkkYwDss7ufrSNkLWVOpIiZHhYP9YksHVlrSJu+K7uELcmCLAO
-	 jZ83ZQ5r5WqAubryYgE1O9FKbqBY5YkMp4jJa6dx5z26laVtn1M2AsqlfDbg4/Nqi
-	 yY+vfihEvRF3t/bVqA==
-X-UI-Sender-Class: 6003b46c-3fee-4677-9b8b-2b628d989298
-Received: from Captain.fritz.box ([87.146.17.67]) by mrelayeu.kundenserver.de
- (mreue106 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1MMnnm-1u25zc4C0q-00KNeB for <linux-pm@vger.kernel.org>; Sat, 15 Feb 2025
- 16:30:29 +0100
-Message-ID: <48eda7b68480db4209eb9c5a2fef4260180c3a49.camel@online.de>
-Subject: Trouble with cpufreq-set
-From: Frank Fricke <captainfineweather@online.de>
-Reply-To: captainfineweather@online.de
-To: linux-pm@vger.kernel.org
-Date: Sat, 15 Feb 2025 16:30:22 +0100
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.38.3-1+deb11u2 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="jbPHXtKR"
+ARC-Seal: i=1; a=rsa-sha256; t=1739662508; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=mbifMoSoMISXAR3xZXE43PYTb4VKgKz3cmubZVfwwT2VLJgOT22619GtQ8sidUBoPXi0Sko/Anpf+p5uar7g90Xe3Ztxunk3hAHVDTagAScw//nKcNeljvApYgOdaSU0gYe4GgkXADDA/TdUqUxGXe+EbA3ohQZ8NwR5YQfszMc=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1739662508; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=sbLLDWdkkmGg2gJ/dWXDp9NJrL5rckyuc1qaW2EiOzg=; 
+	b=KUAoQz/q6ZiXs1LrledRyiwjuenPgJq1NSTzToxd5g+3XHObSDX3zabLyyWhMYGUoA2H4IjJiA5qC3nZ7erEjl9Fkbx+v0PUJpN3T7enOKcAc2ibH01fY/IbB78YNqGqJKr9iSkXIqFRSNkETeNFo51SGjBDRjpIvyMWP5cimYk=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
+	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1739662508;
+	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
+	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
+	bh=sbLLDWdkkmGg2gJ/dWXDp9NJrL5rckyuc1qaW2EiOzg=;
+	b=jbPHXtKR3x8zgy3OraOCzqKnb5xaJx6sWJxZLhDmx6BWw1Ma1PzwJDqA8ofG3pHy
+	F24QkmqCJCQeHj2JuAVy4DgkdK9uuZFxGQOw6kjE29S07J5ne7VaKxxUJqWNNfB7Wc/
+	A2pf+mdyOC46VtBThZRlGsnH6tv2UXN7L9a9T+tI=
+Received: by mx.zohomail.com with SMTPS id 173966250691519.102304818019547;
+	Sat, 15 Feb 2025 15:35:06 -0800 (PST)
+From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+Date: Sun, 16 Feb 2025 00:34:50 +0100
+Subject: [PATCH 1/6] dt-bindings: rockchip-thermal: Add RK3576 compatible
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V03:K1:5lv7LXuUCKXXCO6L2OsjyuZWt0lODE2MG5VGTXNuJjUc9l6onve
- L5KyZWyLYbI1gW5HQA9ZNQN5gOn07YN2KBenJ6b5E5QQuJNvm78kO74WL0QNu1i/Ju3XJAt
- CYemvm6gZfOXfMwhsq3QYnsAUKYYfB0YwgVzd7nyOWe2FDCYn7I4RdFXBgzor6Y9XjDNzLt
- +jIBJ5wKoKkYJqOFlwNMQ==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:Q1QZapLnytk=;nB1UuEAIISM+eOFxu1wgW/Snawt
- zXU2Rq8JZbuYyx8nhe+CRvlhEc+7ECyeu/BE/4mInOcW9C7VOnvCY/PEn9wxN2qK1YmGOCB35
- Kg9uIIZkIWkZxWlhK7ouj3Qd4ZFigniQc7k76FCfigZwMayemDOdsPuNPJfaxd/wxXrLFSeKm
- 35AGaxAhWVwrvtbFTDebjaKiB4CEfoosyRYjw3cl7MHo8Q63prldX26PBCVSzwKqDV6ku9kbX
- aL9zDHNCF3SCR++/1nvjDEdVJJJUePwl1WhvSQMqdoMlamax6iQX/ebCgM6IFE307ZVLWV2sb
- xojL0MtYTOSfM6JI5hr3cBZdoXHUY2SjxRDAyGVFTKjFyG0prOh8uWpMR+A6OBV0uVQLyzYQ5
- Rj0OFmc2BkfFKhYTyk31SBpFF4KgHEYG8008K3RoInG0aKqp9f4tiJMG3rvqZUiRHjTKSA01A
- N0sTeS8e/8NDDPtkoJueYE92zMgGlIJeIHbEVNlbqCRyMC0r4quBTBSUl8/SExqGj0KPWI7ee
- UQDUxQ7yuexRiWXslriViP94c9PeKJF+GxCSbudM3fDiWwicDgq5V86kk1ICYYIisGKROuRgz
- HlFbDLwMSpj49Dv0AUuxVtoLLvPPBi2GRc4yjE773dqmFzpd2WE/jNLuVRjoiknAdRCcCVpQm
- Ht1DI33H/IB0gIWGh53PQ1C61bnClRpsNUD85l+MTkNLLDkIcpGABbCw1t85hVHwBk3HJV34e
- bSLc/GeqjC3viHmGhrRymMzv2BDCjDtcUxDtS1/8UfpKbXyykns2C8jGCbHe2JRLKvU6CJPuT
- rkLcY/Kv3eQeQS2xQFt12L9haWMl+sQz6qL1xivgQKQo526htpSYSorIt+xzeaIC+qr2e05zV
- 8wqxIoaDOH9YN09k1mCD5s6yGJjkf8o4mQA9TSdSlhMCki82tb1IIMhbyhcqrju/6bgCgtHkY
- QIsA8rgy6YXqEfcnYiIC+Cqos/6X9uwukY+f2J3WYN0cAstjRmy4mo1+rPjsbGvBlFqdcXDnF
- edN6mv6Iq979IQpoajSKB6VCCUxs+UDT95iEWtuIzPmke25++RNIu8MVDhfTlx+LNgpZYIkjn
- BqekfKioqOW6Tgq7142v/92Lj+D7F3NuQqmalmj6BKMpVL00s/oAzvmHsOpkaaoNMqlcTnDYY
- Vh2hp87P8PKhHdWnemhpKnFTi1/1LO/YlHc5y0v10HsYb3y04ezAj4lzcUHWjOS/KMYMAW4+0
- BHzrYHtX/xoHm1zm0P/UQXq3zlT7BdjRRaXEIgy5y9pRZ3TdRCJNHkAr8Y0+bZ57xujNQSJyo
- 0pRTVbXxDLi2nfs/CycJvmtSoRASVtcaUptebD+8P1HZxXb10W4NgC6gg7RPtRa3FRn
+Message-Id: <20250216-rk3576-tsadc-upstream-v1-1-6ec969322a14@collabora.com>
+References: <20250216-rk3576-tsadc-upstream-v1-0-6ec969322a14@collabora.com>
+In-Reply-To: <20250216-rk3576-tsadc-upstream-v1-0-6ec969322a14@collabora.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>
+Cc: Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ kernel@collabora.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, 
+ linux-kernel@vger.kernel.org, 
+ Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+X-Mailer: b4 0.14.2
 
+Add a new compatible for the thermal sensor device on the RK3576 SoC.
 
-Good afternoon!
+Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+---
+ Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-I want to set the "Performance" governor with cpufreq-set for my dual
-core CPU but I am having a hard time figuring out the correct syntax
-for using the -c option (in order to make it work for both CPUs) since
-the man page is not quite specific about that and I'm not very familiar
-with that sort of thing.
+diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
+index b717ea8261ca24ebaf709f410ec6372de1366b8a..49ceed68c92ce5a32ed8d4f39bd88fd052de0e80 100644
+--- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
+@@ -21,6 +21,7 @@ properties:
+       - rockchip,rk3368-tsadc
+       - rockchip,rk3399-tsadc
+       - rockchip,rk3568-tsadc
++      - rockchip,rk3576-tsadc
+       - rockchip,rk3588-tsadc
+       - rockchip,rv1108-tsadc
+ 
 
-I'm using Debian 11 LTS.
-
-Would you please be so kind and advise me? Thank you very much.
-
-Have a nice day and All The Best!
-
-Frank Fricke
-
-
-Composed with Evolution mailclient on Debian GNU/Linux
-
-
-
-
-
+-- 
+2.48.1
 
