@@ -1,91 +1,113 @@
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oa1-f45.google.com (mail-oa1-f45.google.com [209.85.160.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D875B1487C8
-	for <linux-pm@vger.kernel.org>; Sun, 16 Feb 2025 10:16:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.126.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E97989450;
+	Sun, 16 Feb 2025 16:09:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739701022; cv=none; b=ip62C4M6P2JGf/M3iN3LQc8+Trky4VSNzlg27VnMj6O9trllMMXXQDx2/5ymGpEXAP/cZ5SBkw9xm/uxoB82a3MrN7WOw3bXwr+9YiMOoYZ+4bwLlIR04nsSvuqeQ4YP3hybO5S2zd39/MOwWW7Z06N5aHF3BW1f4CfpDc4a50Q=
+	t=1739722171; cv=none; b=gfvqG4s0PXAYj3/DeyYmT2XZvbomn/Sl11gFJm1bH4UoNLIgfJkVk+hN/qQpYaggYKY4p83wvws8LHPKSDxKzTNxl/Ik+H/xMimdoWIgW7N6KzLlc13LjxnEd3WXVL+uPoFghPUH2jj60vAl1uL+YRxVb4/PYrzPFFmtguJQ5Yg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739701022; c=relaxed/simple;
-	bh=lDyrgP1tKRrqkKBwB2pqMCM1jdU2kKO0LrYsVtLjBFE=;
-	h=Message-ID:Subject:From:To:Date:Content-Type:MIME-Version; b=pKFi8AyNIqf4h39zckTh7EOFysxaPajnfA67UqSEmwzjf1MysY2jkG/iEOr0ZnhjgEVI5DAsGXjDwaIS2LlWDcfg+11mznVfwHpMLVkeDy4/iWNiJg6DtX/4B9MlQMb7o9WbVv4djcgL3WXC4vK+3PscRDL7DleTdZ1ae6TJiGM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=online.de; spf=pass smtp.mailfrom=online.de; dkim=pass (2048-bit key) header.d=online.de header.i=captainfineweather@online.de header.b=hveWaBK2; arc=none smtp.client-ip=212.227.126.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=online.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=online.de
+	s=arc-20240116; t=1739722171; c=relaxed/simple;
+	bh=mfbl0vJ7voZrewg6vqPE5K/y2Lsehv8G+ZR6l9PEvH0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=KKpEspcE2l2fLqP1NaUQzoaMSo2npdaAJjEz+LHg8zeLUL94kxrFg2OmjteXOWZv6sM/2ZdvGQeSk6C61sVQ8f0RTqxBhczvD8HGq9XXUunsghUCHLGAXcSGhFlbWGbnGlq8qLFyJHOFveH8XmGI1leNt6U3CMu/6ajDfqRdO1I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=YA4tE66s; arc=none smtp.client-ip=209.85.160.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=online.de header.i=captainfineweather@online.de header.b="hveWaBK2"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=online.de;
-	s=s42582890; t=1739701018; x=1740305818;
-	i=captainfineweather@online.de;
-	bh=lDyrgP1tKRrqkKBwB2pqMCM1jdU2kKO0LrYsVtLjBFE=;
-	h=X-UI-Sender-Class:Message-ID:Subject:From:Reply-To:To:Date:
-	 Content-Type:MIME-Version:Content-Transfer-Encoding:cc:
-	 content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=hveWaBK2JJbUBBM/nLOogYBwqpGHqBv+u7KOBsn8YBpQgtxsG/WejxFbAiVUy7JA
-	 OlgseC0NjNzt1RwXgKpS7OR/u/OZeBwYNPul/M3X0uJv1Vdtu7z0mn9zmNrI/Z4ZY
-	 JGq5IuQCwZ/kOzjQY4lrSW8mTHByqrD7+iwWiWcAe4bM7wN+motNSyfCMcJ7gmZWT
-	 4FtnAe6ILCzifTSKnUcbJMOWt3AEMctQ8fNc7JeAFDdke9h5OTFZXL+/D1rzr2uWw
-	 /CqpUaxtxXa1RCghs9nUJsVQnz+4wksjyzjY+NOUAfh/RJAXkAjftiqT9gszw6kOT
-	 C3DIryvqJ/jxmw0TvQ==
-X-UI-Sender-Class: 6003b46c-3fee-4677-9b8b-2b628d989298
-Received: from Captain.fritz.box ([79.235.164.134]) by
- mrelayeu.kundenserver.de (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis)
- id 1MSKq0-1tudg12ObY-00QTz6 for <linux-pm@vger.kernel.org>; Sun, 16 Feb 2025
- 10:34:41 +0100
-Message-ID: <e6f7d4b028513b1b1d82b859c4747f4f82d91f40.camel@online.de>
-Subject: SOLVED: Trouble with cpufreq-set
-From: Frank Fricke <captainfineweather@online.de>
-Reply-To: captainfineweather@online.de
-To: linux-pm@vger.kernel.org
-Date: Sun, 16 Feb 2025 10:34:33 +0100
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.38.3-1+deb11u2 
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YA4tE66s"
+Received: by mail-oa1-f45.google.com with SMTP id 586e51a60fabf-2b89395a3efso1847494fac.2;
+        Sun, 16 Feb 2025 08:09:29 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1739722169; x=1740326969; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=rwXwJhkTpn0cp8zSQjVUxqBuPCU0+4gNIispero9yJo=;
+        b=YA4tE66sWIuN6iYuyWeIr6s6gEVzmIAaUusZcglqeibsR43nGTyhoJs0IU2pWtCsVC
+         CgbVax1zsosT4iAf5PpdxbSegrYLdp9ryhZ4IFsa1CF4FrRDsfRLZyrJS8NOSp3ybG9K
+         HejzFdHcDnKe0kHR9PU9M+a+ReC858+7KtS3dQQa3QYvBpDfRzG+7lD+GxVe3zeRRRvv
+         C5dP5jxM2jhP5OQioNKQGm9DXAJE1WHwV3BHfYfIULw4SMiEZPgS6v5o9+pwwVwgae8t
+         CptV4dR/CL6ElaT+1aqGAUpg5lUffnis9MlLafjjPyVpUvTdDkBcgb4N7dp4LXLcXX1A
+         fXZA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739722169; x=1740326969;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=rwXwJhkTpn0cp8zSQjVUxqBuPCU0+4gNIispero9yJo=;
+        b=B2gKFHA6geanHf/XsxvMg6xJG2ICpp5Cp3ui07VCybmZ0hJtWat4CDzkiyETsX5MQk
+         NMBUjcAFnYBKIQxkqIISDqL2LI4gLoyFMNE8y2QraGMQshUhykxt/p4KZPC54Pm7HuWc
+         vMhhrpVUZ14w/q+zIfLr73Xuer3FSDQHCXaFk4fMcvQumeAMpLQh83WFYaYGJOEW5xgs
+         h9ZHLBXeQzi00QDUfLm6fVXJaGfhf5XGod94qsiLb30q6tr5JytWwlTYiCazjlyfXIEl
+         vWG9JFae3IcVtHHPyD8zbmyZEHqnpuVQvliNISOKSN1baaLrJbS0KOwYXJviMKqSn+Nz
+         l/XA==
+X-Forwarded-Encrypted: i=1; AJvYcCUYJBNIhWsC3VRPW6kTk5J0oKz1fwXUTOMwTH++BzWq8und4346kpjGn8Gp1j+hSahy63l9rklUsqj75Pw=@vger.kernel.org, AJvYcCV3pyWdoeMgNxxui0s39/636SKazhW4A/5TIEfvR+TKHgK3N+5HImHqcM4/xznZriv4mkCDAHSgbQQ=@vger.kernel.org, AJvYcCXJeMCPIxG+eNRjv7wxEwULz5N58dcUEdbUuT2BRBFLu2xu0ZMJhhhRfj3CCHWhu/n/+TYJY0x9IlUuwXE=@vger.kernel.org
+X-Gm-Message-State: AOJu0YzbBhHCVsVMJ6j7M4ZkxiM+Rt9oIgNIivEACeQ80NpJgcPw4vhF
+	xr/soIjNWeJKxySLw3gx4oVU+FqGBdI5n3Bb6tuB9xoonuFPFyGE
+X-Gm-Gg: ASbGncuOv58C1e+1Lz8THOi9ie4PKhyBp3YHkqHvBt0ypiXcwQ+8gAnsRLkdrVR/Tqr
+	oev9Q0FoZVufAozSY5/opmgkwQTnoBSLDhebrPf5fbzUo196SyUBiacWtK+k6DwKr/Qe3aIe94t
+	U3+scY1b8bDKSXzgw/iQ58m+ad35YUXl1KdiKTn98Esf3vdhByQkztc3YcYLkJ/Fk3kycRWId0j
+	mUy2y+B3yuVhcSLPtbqw+Fym7lT02FSIVRK9M+FIlvNtLMncofvol632Ebfx60FzIq16N+Vj/Hr
+	jgzonNQwC6a0LndrriD4cPR01w==
+X-Google-Smtp-Source: AGHT+IFJPDGkTR5KrflDiwTGE1Nz3oDLGA/P37bHvK58TqTMmGm8EI2n/rlW/oxOOtIfbvxA4e/B9A==
+X-Received: by 2002:a05:6870:280f:b0:29e:4a13:603f with SMTP id 586e51a60fabf-2bc99a4b935mr3705664fac.4.1739722168850;
+        Sun, 16 Feb 2025 08:09:28 -0800 (PST)
+Received: from vengeance.tcpc.lan ([97.75.251.196])
+        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-2b954875e0esm3355467fac.14.2025.02.16.08.09.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 16 Feb 2025 08:09:28 -0800 (PST)
+From: Aaron Kling <luceoscutum@gmail.com>
+X-Google-Original-From: Aaron Kling <webgeek1234@gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Thierry Reding <thierry.reding@gmail.com>,
+	Jonathan Hunter <jonathanh@nvidia.com>
+Cc: Aaron Kling <webgeek1234@gmail.com>,
+	linux-pm@vger.kernel.org,
+	linux-tegra@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] cpufreq: tegra186: Share policy per cluster
+Date: Sun, 16 Feb 2025 10:08:06 -0600
+Message-ID: <20250216160806.391566-1-webgeek1234@gmail.com>
+X-Mailer: git-send-email 2.48.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:R6RdVbmgmYpTGhLFnVBfzbgcdeD7qQ87XwOD3Q0bKhphUqtkzbK
- nALPC3LET3xCIyTMGTBNdyKHvFPQtsPd/Ugetb6cR1m+pu41o3pIlM/bXzVsRXOVpLDvUih
- V94kkrrZbriIRTJkCii8u/JNkjaukWmWLIuTZzH+YFMAObFRq/uWhfqP3Xt2Im7HUNHi8Ma
- t8PUPl+KSWUzcfgSp+xvg==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:RS/nhVj+3T8=;EpzfxmtEfCXox/QusQiC/id7lNk
- +F12J9Dhr7VwFQ9dStz24MeW/vNQlbkcYLOndz8p5GoSzDGXiyZjy3hEm5gjEaMFxiriKW3co
- PkL5Im9VPdwdTnJjZPWzz8ZqARazNg4/1aVIb9xjMWM2AqZ+L6l19w1UgkxzfBPDs6yvBBLlr
- vspQ2lTOq0CC8tGEWy+Ystr/8tib/rCsLq7s+HNM/dmVlB1Vlni16syFmC8FN/H+eVuLUV/aZ
- Lcu24EfqqqfHiGEwfpKtTU5ASso36WuRxu6lBr/jgxIMrjh5yir8MT/jfnDRESV0Er/tveCwB
- zjDcDS/Q8jmuYS09QROx/Zl4PKWLL+YYGgcnQIkR2Of9G62OvFg9KKfHa9Dtk4sEV87+DT3hc
- 6KD6ihrEXB7NSPHNp6hNHdpmE/I+h/AVMYIqwdJJdjg3LiodZiSkYXL3CzvlNkxaiP4DUQ5pI
- 3D3w4lTYtCRgmM60hVhX+IRVJ7qGp21sV/BAo4a4lJrTit4d3HMDTGeB7ZnFbUppvNnBSKdSO
- yWqETxy8gfePwjFqTu0CDc+VHuxzqyopkJT5dTFKjZiJBmooCSFlgMUaezthPGvfkYTKT5QKA
- LQqzxb+zyR1GnzHotMgGFcVS9/po3yoYRn0sFNYR8lDqOeBv6ibJ/wb6u3ySG9LiHP/DgOZsq
- L6g6VBP5dYpLdJTl5UY2C6G/XxGz0Mjk0ALxyp5faCYuB5bE2tHwylkKz9i6H0x5qoGHWAfK5
- Y+CvohVPiWsUgELgvfEgyrFV5FJVDY7cal3fpT9Hl53pJouVMmP5sackI2015WFzoM1gXvNOK
- 2IT21p45GIF4n1JU4mKuFAd8iIhrTSp3cL8RpYnXmZyde71yCBJF7LzuadRZhPQu/nMAKpiEG
- c/r/U2cl5bjFuPQFUBXGnLcDwv9Qdnole8KAsXFv0VziOtfSCvbutcT199SsD0ybO0X3bupCO
- a/UdWZ0+Ar9hYN/87/so6APEZ/mOKlpou/d9Q2pfrIgPD+IyLJerbIgSrqx5W6wKIuayFFmJW
- W1PUtpJI3ZXO2AKuZtnNyNc1mWcaHEbKgN6NN3LsK0SXz0aUC2UfmF0ZrIElSTV4A3eapgx4p
- 7unxTtbPKSXHfGaiqvR5Txfl4EUhcrC+6gwHd8hACzBUJ/84BsMNrq7inKfbGLp9rBRWFn7uj
- Gh+gv5WHNlEvrxYC3ADNkLZq8eIl47nQw+E376aS0A6e6o77iDBTYxs1WqBjIvzQEXloDhPEI
- AWjR11BTE6UcTuZYOqeqXZ4DMvE+tATdALeBVGAGm7spWzYjYeEdd8WHGxOGWws/QXkEncYYQ
- c2Bsdi0fqT7HSrI76fY80bhf2jZCAKePKds/zHKtaZBRNQqCx6Pr9p9HNwOZWWCkXRK
+Content-Transfer-Encoding: 8bit
 
+This functionally brings tegra186 in line with tegra210 and tegra194,
+sharing a cpufreq policy between all cores in a cluster.
 
-Good Morning!
+Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
+---
+ drivers/cpufreq/tegra186-cpufreq.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-Please regard my request to help me with setting the "Performance"
-governor for ALL CPUs using cpufreq-set. I have found what I was
-looking for by asking the search engine the right question.
-
-Again, have a nice day and All The Best!
-
-Frank Fricke
-
-
-Composed with Evolution mailclient on Debian GNU/Linux
+diff --git a/drivers/cpufreq/tegra186-cpufreq.c b/drivers/cpufreq/tegra186-cpufreq.c
+index c7761eb99f3cc..c832a1270e688 100644
+--- a/drivers/cpufreq/tegra186-cpufreq.c
++++ b/drivers/cpufreq/tegra186-cpufreq.c
+@@ -73,11 +73,18 @@ static int tegra186_cpufreq_init(struct cpufreq_policy *policy)
+ {
+ 	struct tegra186_cpufreq_data *data = cpufreq_get_driver_data();
+ 	unsigned int cluster = data->cpus[policy->cpu].bpmp_cluster_id;
++	u32 cpu;
+ 
+ 	policy->freq_table = data->clusters[cluster].table;
+ 	policy->cpuinfo.transition_latency = 300 * 1000;
+ 	policy->driver_data = NULL;
+ 
++	/* set same policy for all cpus in a cluster */
++	for (cpu = 0; cpu < (sizeof(tegra186_cpus)/sizeof(struct tegra186_cpufreq_cpu)); cpu++) {
++		if (data->cpus[cpu].bpmp_cluster_id == cluster)
++			cpumask_set_cpu(cpu, policy->cpus);
++	}
++
+ 	return 0;
+ }
+ 
+-- 
+2.48.1
 
