@@ -1,137 +1,171 @@
-Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43DC4236A8E;
-	Mon, 17 Feb 2025 20:51:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.11.138.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0EDBB23958D
+	for <linux-pm@vger.kernel.org>; Mon, 17 Feb 2025 20:56:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739825473; cv=none; b=IgslZPTcL5k8FWrpNh+dKRfIAk7TnkLRhbtL7howw55AzX8lGuc+gqwqCCj+MMX652RgWJuRMH/vSbBi6zFFClfaEo/j3Hz/NgJYo+E1ha9seHRs9CzAzRFsK6p3MA0vMmPy7lXD/xkFquHs5KHF8gdFsJv87NcHZCMLur9XbyI=
+	t=1739825766; cv=none; b=QchWvILr3hNNoDb/kxg5fyYmaFq6M16yiCHZQkE4DBbYzRVy/ryn32kH/WFK1IubX0YHZGGcHn/p4nZHcyOhmV5Oa+n2lYIcqCpuGtA0xbopG0xRLbA1hgzueRD14QVaOjislZ9fbamMSsrTxL+Dr7iDZK+dNNz1Y2JozizfhOY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739825473; c=relaxed/simple;
-	bh=+Tneczc/gt5KlRww9DciWgCPYL3QAZCwMLLyT/8V2j0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=qixh+6E9Yj6yT7Jwm0hdvJ4EiPP3ouz9RPWK4gkVCahr0zwWvcYZ78roZ5Ek9tg3yOMpBu0wCAPuH5y10Il6QbU3/80Ix2r3YZ7Ez/bzNgwl7lxtfBycEJdsbVLcD5XfP22eEU246OED+WKJx3BL/vRczTiZfBDGJ/n4yvpzFfM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=sntech.de; spf=pass smtp.mailfrom=sntech.de; dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.b=1HrXNtcE; arc=none smtp.client-ip=185.11.138.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=sntech.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sntech.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.b="1HrXNtcE"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
-	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
-	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
-	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-	Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
-	List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=IXt480Abf0JotZYaVu+nX5d1RPwKRi9f0QFxpN31t9o=; b=1HrXNtcEjiR4bI/hrUHfyTpuhJ
-	JT2f8Hm5aC5Y/0l7nCoyzBbotkZhQ7OROX38ne58/OFkBnRPaSeXptNjbhwlw1D4o6uqn7Ez0QTwI
-	Amcl3Y0SrStBGHHF9206aYqM2BlWfISLru8f6p7nqxKlBKA8TQZZQRA5nsVxe/vruEt3iYDoLECzQ
-	0l+zVtVQX07NQT/ev66Ym2F5SXmnt1oL6J6HiCk0SKPICdWg4x+fxBugyxONOFRFv+L22cYjlVgBl
-	+xOzIRAWIDC/hT9Z8L59yh79gpowPwq7xVF68zLODFHni7MLvIhhQnFqQCEsOhCsvXQGElyMsf4lk
-	+TAGLl9w==;
-Received: from i53875bc0.versanet.de ([83.135.91.192] helo=diego.localnet)
-	by gloria.sntech.de with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <heiko@sntech.de>)
-	id 1tk84i-0007CW-1Y; Mon, 17 Feb 2025 21:50:44 +0100
-From: Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>
-To: Shawn Lin <shawn.lin@rock-chips.com>, Rob Herring <robh+dt@kernel.org>,
- "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
- "Martin K . Petersen" <martin.petersen@oracle.com>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
- Ulf Hansson <ulf.hansson@linaro.org>,
- "Rafael J . Wysocki" <rafael@kernel.org>, Steven Price <steven.price@arm.com>
-Cc: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
- Alim Akhtar <alim.akhtar@samsung.com>, Avri Altman <avri.altman@wdc.com>,
- Bart Van Assche <bvanassche@acm.org>, YiFeng Zhao <zyf@rock-chips.com>,
- Liang Chen <cl@rock-chips.com>, linux-scsi@vger.kernel.org,
- linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org,
- linux-pm@vger.kernel.org
-Subject:
- Re: [PATCH v7 4/7] pmdomain: rockchip: Add smc call to inform firmware
-Date: Mon, 17 Feb 2025 21:50:42 +0100
-Message-ID: <5649637.F8r316W7xa@diego>
-In-Reply-To: <321804ef-f852-47cf-afd7-723666ec8f62@arm.com>
-References:
- <1738736156-119203-1-git-send-email-shawn.lin@rock-chips.com>
- <2579724.BzM5BlMlMQ@diego> <321804ef-f852-47cf-afd7-723666ec8f62@arm.com>
+	s=arc-20240116; t=1739825766; c=relaxed/simple;
+	bh=GbyX32X+vQrwB3z3vHzaBs748Z5oShxfqdhcPjn/50w=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=hcWDkaq+blTp9uQucigVZAtj605Xm0hL56gsV4HuChV/H8ynjx5+Q1JCcSgtX7tiv09RQghwAT3g5jiqun3iAH7ULt4aF3RFeTUDtnWq19KxWvqyFBPa3SxbJ9dTzv4PwPwPHgIUJEFFZWU+D+UPZ7vu2qBLV/iIvvtpyMqBdJ8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <a.fatoum@pengutronix.de>)
+	id 1tk89U-00028j-TM; Mon, 17 Feb 2025 21:55:40 +0100
+Received: from dude05.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::54])
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <a.fatoum@pengutronix.de>)
+	id 1tk89S-001THg-28;
+	Mon, 17 Feb 2025 21:55:38 +0100
+Received: from localhost ([::1] helo=dude05.red.stw.pengutronix.de)
+	by dude05.red.stw.pengutronix.de with esmtp (Exim 4.96)
+	(envelope-from <a.fatoum@pengutronix.de>)
+	id 1tk7uX-000W9t-2Y;
+	Mon, 17 Feb 2025 21:40:13 +0100
+From: Ahmad Fatoum <a.fatoum@pengutronix.de>
+Date: Mon, 17 Feb 2025 21:39:51 +0100
+Subject: [PATCH v3 11/12] thermal: core: allow user configuration of
+ hardware protection action
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250217-hw_protection-reboot-v3-11-e1c09b090c0c@pengutronix.de>
+References: <20250217-hw_protection-reboot-v3-0-e1c09b090c0c@pengutronix.de>
+In-Reply-To: <20250217-hw_protection-reboot-v3-0-e1c09b090c0c@pengutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, 
+ Fabio Estevam <festevam@denx.de>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+ Jonathan Corbet <corbet@lwn.net>, Serge Hallyn <serge@hallyn.com>, 
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+ Matti Vaittinen <mazziesaccount@gmail.com>, 
+ Benson Leung <bleung@chromium.org>, Tzung-Bi Shih <tzungbi@kernel.org>, 
+ Guenter Roeck <groeck@chromium.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-doc@vger.kernel.org, linux-security-module@vger.kernel.org, 
+ chrome-platform@lists.linux.dev, devicetree@vger.kernel.org, 
+ kernel@pengutronix.de, Ahmad Fatoum <a.fatoum@pengutronix.de>
+X-Mailer: b4 0.14.2
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: a.fatoum@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-Am Montag, 17. Februar 2025, 18:10:32 MEZ schrieb Steven Price:
-> On 17/02/2025 15:16, Heiko St=C3=BCbner wrote:
-> > Hi Steven,
-> >=20
-> > Am Montag, 17. Februar 2025, 15:47:21 MEZ schrieb Steven Price:
-> >> On 05/02/2025 06:15, Shawn Lin wrote:
-> >>> Inform firmware to keep the power domain on or off.
-> >>>
-> >>> Suggested-by: Ulf Hansson <ulf.hansson@linaro.org>
-> >>> Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
-> >>> ---
-> >>
-> >> This patch is causing my Firefly RK3288 to fail to boot, it hangs=20
-> >> shortly after reaching user space, but the bootup messages include the=
-=20
-> >> suspicious line "Bad mode in prefetch abort handler detected".
-> >> I suspect the firmware on this board doesn't support this new SMC=20
-> >> correctly. Reverting this patch on top of linux-next gets everything=20
-> >> working again.
-> >=20
-> > Is your board actually running some trusted firmware?
->=20
-> Not as far as I know.
->=20
-> > Stock rk3288 never had tf-a / psci [0], I did work on that for a while,
-> > but don't think that ever took off.
-> >=20
-> > I'm wondering who the smcc call is calling, but don't know about
-> > about smcc stuff.
->=20
-> Good question - it's quite possible things are blowing up just because
-> there's nothing there to handle the SMC. My DTB is as upstream:
->=20
->         cpus {
->                 #address-cells =3D <0x01>;
->                 #size-cells =3D <0x00>;
->                 enable-method =3D "rockchip,rk3066-smp";
->                 rockchip,pmu =3D <0x06>;
->=20
-> I haven't investigated why this code is attempting to call an SMC on
-> this board.
+In the general case, we don't know which of system shutdown or
+reboot is the better action to take to protect hardware in an emergency
+situation. We thus allow the policy to come from the device-tree in the
+form of an optional critical-action OF property, but so far there was no
+way for the end user to configure this.
 
-I guess the why is easy, something to do with suspend :-) .
+With recent addition of the hw_protection parameter, the user can now
+choose a default action for the case, where the driver isn't fully sure
+what's the better course of action.
 
-I did go testing a bit, booting a rk3288-veyron produces the same issue
-you saw, likely due to the non-existent trusted-firmware.
+Let's make use of this by passing HWPROT_ACT_DEFAULT in absence of the
+critical-action OF property.
 
-On the arm64-side, I tried a plethora of socs + tfa-versions,
+As HWPROT_ACT_DEFAULT is shutdown by default, this introduces no
+functional change for users, unless they start using the new parameter.
 
-  rk3328: v2.5 upstream(?)-tf-a
-  rk3399: v2.9 upstream-tf-a
-  px30: v2.4+v2.9 upstream-tf-a
-  rk3568: v2.3 vendor-tf-a
-  rk3588: v2.3 vendor-tf-a
+Reviewed-by: Tzung-Bi Shih <tzungbi@kernel.org>
+Signed-off-by: Ahmad Fatoum <a.fatoum@pengutronix.de>
+---
+ drivers/thermal/thermal_core.c | 17 ++++++++++-------
+ drivers/thermal/thermal_core.h |  1 +
+ drivers/thermal/thermal_of.c   |  7 +++++--
+ 3 files changed, 16 insertions(+), 9 deletions(-)
 
-and all ran just fine.
-So it really looks like the smcc call going to some unset location is
-the culprit.
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 2328ac0d8561b1d051a0dea6d7565c145d584cbb..5847729419f2e02e3367ad39553440defe702d59 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -369,7 +369,8 @@ void thermal_governor_update_tz(struct thermal_zone_device *tz,
+ 	tz->governor->update_tz(tz, reason);
+ }
+ 
+-static void thermal_zone_device_halt(struct thermal_zone_device *tz, bool shutdown)
++static void thermal_zone_device_halt(struct thermal_zone_device *tz,
++				     enum hw_protection_action action)
+ {
+ 	/*
+ 	 * poweroff_delay_ms must be a carefully profiled positive value.
+@@ -380,21 +381,23 @@ static void thermal_zone_device_halt(struct thermal_zone_device *tz, bool shutdo
+ 
+ 	dev_emerg(&tz->device, "%s: critical temperature reached\n", tz->type);
+ 
+-	if (shutdown)
+-		hw_protection_shutdown(msg, poweroff_delay_ms);
+-	else
+-		hw_protection_reboot(msg, poweroff_delay_ms);
++	__hw_protection_trigger(msg, poweroff_delay_ms, action);
+ }
+ 
+ void thermal_zone_device_critical(struct thermal_zone_device *tz)
+ {
+-	thermal_zone_device_halt(tz, true);
++	thermal_zone_device_halt(tz, HWPROT_ACT_DEFAULT);
+ }
+ EXPORT_SYMBOL(thermal_zone_device_critical);
+ 
++void thermal_zone_device_critical_shutdown(struct thermal_zone_device *tz)
++{
++	thermal_zone_device_halt(tz, HWPROT_ACT_SHUTDOWN);
++}
++
+ void thermal_zone_device_critical_reboot(struct thermal_zone_device *tz)
+ {
+-	thermal_zone_device_halt(tz, false);
++	thermal_zone_device_halt(tz, HWPROT_ACT_REBOOT);
+ }
+ 
+ static void handle_critical_trips(struct thermal_zone_device *tz,
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index 09866f0ce76585d4c7f2322ee62030fc1af9afc2..bdadd141aa24cf3c0afaf8d4c274e62bd796a4e9 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -262,6 +262,7 @@ int thermal_build_list_of_policies(char *buf);
+ void __thermal_zone_device_update(struct thermal_zone_device *tz,
+ 				  enum thermal_notify_event event);
+ void thermal_zone_device_critical_reboot(struct thermal_zone_device *tz);
++void thermal_zone_device_critical_shutdown(struct thermal_zone_device *tz);
+ void thermal_governor_update_tz(struct thermal_zone_device *tz,
+ 				enum thermal_notify_event reason);
+ 
+diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+index 5ab4ce4daaebdf0210d9b318ae17b3eb8a4bccaf..0eb92d57a1e2d5170754ee04c86e85634f10acc1 100644
+--- a/drivers/thermal/thermal_of.c
++++ b/drivers/thermal/thermal_of.c
+@@ -397,9 +397,12 @@ static struct thermal_zone_device *thermal_of_zone_register(struct device_node *
+ 	of_ops.should_bind = thermal_of_should_bind;
+ 
+ 	ret = of_property_read_string(np, "critical-action", &action);
+-	if (!ret)
+-		if (!of_ops.critical && !strcasecmp(action, "reboot"))
++	if (!ret && !of_ops.critical) {
++		if (!strcasecmp(action, "reboot"))
+ 			of_ops.critical = thermal_zone_device_critical_reboot;
++		else if (!strcasecmp(action, "shutdown"))
++			of_ops.critical = thermal_zone_device_critical_shutdown;
++	}
+ 
+ 	tz = thermal_zone_device_register_with_trips(np->name, trips, ntrips,
+ 						     data, &of_ops, &tzp,
 
-Looking at other users of arm_smcc_smc, most of them seem to be handled
-unguarded, but some older(?) arm32 boards actually check their DTs for an
-optee node before trying their smc-call.
-
-I guess in the pm-domain case, we could just wrap the call with:
-	if(arm_smccc_1_1_get_conduit() !=3D SMCCC_CONDUIT_NONE)
-
-I've checked in my boards now, and all the boards mentioned above seem
-to handle this well with smccc-versions of at least 0x10002 .
-
-Heiko
-
+-- 
+2.39.5
 
