@@ -1,121 +1,166 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7B70423C376
-	for <linux-pm@vger.kernel.org>; Mon, 17 Feb 2025 20:56:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 02222226545;
+	Mon, 17 Feb 2025 21:06:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739825777; cv=none; b=iFGMztylRnIKZDgp2etUuu/1/GYR7kEYVW263UvJLBOY2Lbm2zvWWo+8jGbxki3fCXxvtG6kx1/i2c+Q5tQ7tIUuc64RmiPEdH2DuVg+NlYf85wV0kjRKfS8kBrSmi+QkdMxXFWbIXUujhM0q3irfPdu8zDFU6Bao+m24MZhZgc=
+	t=1739826419; cv=none; b=hizw+G6X1a8Zq7JzDzmVGys0Puqja6cht9A0tCRnpp1EOFg6KUTifcXIZG3kysZ7p2sxsSplX1auCpD154YkIUAxk2T/ZK3enC3/dAMy59XBolxO1eM6oIgf0+fqC6Ao7ez0n/LKMfX8hhN3nkMkN6f6WKW+xYsUNzyYDbYHR64=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739825777; c=relaxed/simple;
-	bh=7xlQqT6SyHmrrrZ7lcI+lzDoY6cGIt6c6FPPGn5CXb4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=qnOWrSF8buA/vXlQVJ+oblBoiMAUkbiwQJGwkbmDQrCI+t1SBFfb2r14AjZc+totj+DjKmWzuizigWSJgnUE13sS9u7P7P36oDl0F8HMW3ZcaQMYHJ+3ePEaqFz31/N1cs+jQOZHbmRzx3wiAIp2HMOX2GuOdablCt57JHHs7NI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tk89U-00028h-TM; Mon, 17 Feb 2025 21:55:40 +0100
-Received: from dude05.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::54])
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tk89S-001THa-1I;
-	Mon, 17 Feb 2025 21:55:38 +0100
-Received: from localhost ([::1] helo=dude05.red.stw.pengutronix.de)
-	by dude05.red.stw.pengutronix.de with esmtp (Exim 4.96)
-	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tk7uX-000W9t-2Z;
-	Mon, 17 Feb 2025 21:40:13 +0100
-From: Ahmad Fatoum <a.fatoum@pengutronix.de>
-Date: Mon, 17 Feb 2025 21:39:52 +0100
-Subject: [PATCH v3 12/12] reboot: retire hw_protection_reboot and
- hw_protection_shutdown helpers
+	s=arc-20240116; t=1739826419; c=relaxed/simple;
+	bh=XBiZ9M6VH2FsYZ+jANHvMHi9akZFIZce1Nh6SBYvdYs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=PiTzsMVpnm6ydfUQ6sGN6OKgdWFLKekiW0aL5pl3oT4mWmdYJ3BmiPu0y+gTLMMDvqeFc9nj0lyoqwa+zyS7BXh1XQTI9eG7u26HhhYkeshWOjGDgtUgqAZR22v0YdDnZwcwAdGA/nJMM+HAO1HGf67mieHB8vY5GROtMW47e9k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LSdMCVRW; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LSdMCVRW"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 02A28C4CED1;
+	Mon, 17 Feb 2025 21:06:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1739826418;
+	bh=XBiZ9M6VH2FsYZ+jANHvMHi9akZFIZce1Nh6SBYvdYs=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=LSdMCVRW/1ceh83iJtXPcXh6CajmXy5DEIHnWeAadVc3KlpvKanX94pfsiffM56uC
+	 ZoxrnZQ+eU4dWCDzv1jm1nJD19eBvcVSZx9h9YtwV1ZEteIUNKtrZf9qDZGI5xpDel
+	 Vf/DagYv9SSXZPSVAsrFWqLvbYsqnv3Mc34qfeJH5ta2VmrnrWHPeavDyaQKqfJ2R4
+	 LYyLJ/FQLSR36iGI1r6JAxpqqvjUPRxNo7tJxRlGfjH3V4RaWIwfbabiT7ehv1psMx
+	 D4TO5E1hcO4qsNU2Kc/7Jd2orrI4MnQMkjwwI5lyj+ajVXwyXkZbIiOT8hEjURlazM
+	 agMSXDylJ76Fg==
+Message-ID: <8d909900-daee-4925-8d5a-2aa46275240d@kernel.org>
+Date: Mon, 17 Feb 2025 15:06:57 -0600
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 02/17] cpufreq/amd-pstate: Drop min and max cached
+ frequencies
+To: "Gautham R. Shenoy" <gautham.shenoy@amd.com>
+Cc: Perry Yuan <perry.yuan@amd.com>,
+ Dhananjay Ugwekar <Dhananjay.Ugwekar@amd.com>,
+ "open list:X86 ARCHITECTURE (32-BIT AND 64-BIT)"
+ <linux-kernel@vger.kernel.org>,
+ "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>,
+ Mario Limonciello <mario.limonciello@amd.com>
+References: <20250215005244.1212285-1-superm1@kernel.org>
+ <20250215005244.1212285-3-superm1@kernel.org>
+ <Z7LZg8oq3LqfKZID@BLRRASHENOY1.amd.com>
+Content-Language: en-US
+From: Mario Limonciello <superm1@kernel.org>
+In-Reply-To: <Z7LZg8oq3LqfKZID@BLRRASHENOY1.amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250217-hw_protection-reboot-v3-12-e1c09b090c0c@pengutronix.de>
-References: <20250217-hw_protection-reboot-v3-0-e1c09b090c0c@pengutronix.de>
-In-Reply-To: <20250217-hw_protection-reboot-v3-0-e1c09b090c0c@pengutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, 
- Fabio Estevam <festevam@denx.de>, "Rafael J. Wysocki" <rafael@kernel.org>, 
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
- Jonathan Corbet <corbet@lwn.net>, Serge Hallyn <serge@hallyn.com>, 
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
- Matti Vaittinen <mazziesaccount@gmail.com>, 
- Benson Leung <bleung@chromium.org>, Tzung-Bi Shih <tzungbi@kernel.org>, 
- Guenter Roeck <groeck@chromium.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-doc@vger.kernel.org, linux-security-module@vger.kernel.org, 
- chrome-platform@lists.linux.dev, devicetree@vger.kernel.org, 
- kernel@pengutronix.de, Ahmad Fatoum <a.fatoum@pengutronix.de>
-X-Mailer: b4 0.14.2
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: a.fatoum@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-The hw_protection_reboot and hw_protection_shutdown functions mix
-mechanism with policy: They let the driver requesting an emergency
-action for hardware protection also decide how to deal with it.
+On 2/17/2025 00:38, Gautham R. Shenoy wrote:
+> Hello Mario,
+> 
+> On Fri, Feb 14, 2025 at 06:52:29PM -0600, Mario Limonciello wrote:
+>> From: Mario Limonciello <mario.limonciello@amd.com>
+>>
+>> Use the perf_to_freq helpers to calculate this on the fly.
+>>
+>> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+>> --
+>> v2:
+>>   * Keep cached limits
+>> ---
+> 
+> [..snip..]
+> 
+>> --- a/drivers/cpufreq/amd-pstate.c
+>> +++ b/drivers/cpufreq/amd-pstate.c
+>> @@ -717,7 +717,7 @@ static int amd_pstate_cpu_boost_update(struct cpufreq_policy *policy, bool on)
+>>   	int ret = 0;
+>>   
+>>   	nominal_freq = READ_ONCE(cpudata->nominal_freq);
+>> -	max_freq = READ_ONCE(cpudata->max_freq);
+>> +	max_freq = perf_to_freq(cpudata, READ_ONCE(cpudata->highest_perf));
+>>   
+>>   	if (on)
+>>   		policy->cpuinfo.max_freq = max_freq;
+>> @@ -901,35 +901,25 @@ static u32 amd_pstate_get_transition_latency(unsigned int cpu)
+>>   static int amd_pstate_init_freq(struct amd_cpudata *cpudata)
+>>   {
+>>   	int ret;
+>> -	u32 min_freq, max_freq;
+>> -	u32 nominal_freq, lowest_nonlinear_freq;
+>> +	u32 min_freq, nominal_freq, lowest_nonlinear_freq;
+>>   	struct cppc_perf_caps cppc_perf;
+>>   
+>>   	ret = cppc_get_perf_caps(cpudata->cpu, &cppc_perf);
+>>   	if (ret)
+>>   		return ret;
+>>   
+>> -	if (quirks && quirks->lowest_freq)
+>> -		min_freq = quirks->lowest_freq;
+>> -	else
+>> -		min_freq = cppc_perf.lowest_freq;
+>> -
+>>   	if (quirks && quirks->nominal_freq)
+>>   		nominal_freq = quirks->nominal_freq;
+>>   	else
+>>   		nominal_freq = cppc_perf.nominal_freq;
+>>   
+>> -	min_freq *= 1000;
+>>   	nominal_freq *= 1000;
+>> -
+>>   	WRITE_ONCE(cpudata->nominal_freq, nominal_freq);
+> 
+> So cpudata->nominal_freq will be in KHz here.
+> 
+> 
+>> -	WRITE_ONCE(cpudata->min_freq, min_freq);
+>> -
+>> -	max_freq = perf_to_freq(cpudata, cpudata->highest_perf);
+>> -	lowest_nonlinear_freq = perf_to_freq(cpudata, cpudata->lowest_nonlinear_perf);
+>>   
+>> -	WRITE_ONCE(cpudata->lowest_nonlinear_freq, lowest_nonlinear_freq);
+>> -	WRITE_ONCE(cpudata->max_freq, max_freq);
+>> +	if (quirks && quirks->lowest_freq) {
+>> +		min_freq = quirks->lowest_freq;
+>> +	} else
+>> +		min_freq = cppc_perf.lowest_freq;
+>>
+> 
+> Since cppc_perf exposes the frequency values in MHz, min_freq is in MHz.
+> 
+>>   	/**
+>>   	 * Below values need to be initialized correctly, otherwise driver will fail to load
+>> @@ -937,12 +927,15 @@ static int amd_pstate_init_freq(struct amd_cpudata *cpudata)
+>>   	 * lowest_nonlinear_freq is a value between [min_freq, nominal_freq]
+>>   	 * Check _CPC in ACPI table objects if any values are incorrect
+>>   	 */
+>> -	if (min_freq <= 0 || max_freq <= 0 || nominal_freq <= 0 || min_freq > max_freq) {
+>> -		pr_err("min_freq(%d) or max_freq(%d) or nominal_freq(%d) value is incorrect\n",
+>> -			min_freq, max_freq, nominal_freq);
+>> +	if (nominal_freq <= 0) {
+>> +		pr_err("nominal_freq(%d) value is incorrect\n",
+>> +			nominal_freq);
+>>   		return -EINVAL;
+>>   	}
+>>   
+>> +	lowest_nonlinear_freq = perf_to_freq(cpudata, cpudata->lowest_nonlinear_perf);
+> 
+> Since lowest_nonlinear_freq will be computed using cpudata->nominal_freq, the former will be in KHz.
+> 
+>> +	WRITE_ONCE(cpudata->lowest_nonlinear_freq, lowest_nonlinear_freq);
+>> +
+>>   	if (lowest_nonlinear_freq <= min_freq || lowest_nonlinear_freq > nominal_freq) {
+>              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 
+> And thus since lowest_nonlinear_freq is in KHz and min_freq is in MHz, this check will always be true.
+> 
+> Shouldn't the min_freq be multiplied by 1000 ?
+>     
 
-This is inadequate in the general case as a driver reporting e.g. an
-imminent power failure can't know whether a shutdown or a reboot would
-be more appropriate for a given hardware platform.
+Yup, I think you're right.  Great catch!
+I'll spin this for v3.
 
-With the addition of the hw_protection parameter, it's now possible to
-configure at runtime the default emergency action and drivers are
-expected to use hw_protection_trigger to have this parameter dictate
-policy.
-
-As no current users of either hw_protection_shutdown or
-hw_protection_shutdown helpers remain, remove them, as not to tempt
-driver authors to call them.
-
-Existing users now either defer to hw_protection_trigger or call
-__hw_protection_trigger with a suitable argument directly when
-they have inside knowledge on whether a reboot or shutdown would
-be more appropriate.
-
-Reviewed-by: Tzung-Bi Shih <tzungbi@kernel.org>
-Signed-off-by: Ahmad Fatoum <a.fatoum@pengutronix.de>
----
- include/linux/reboot.h | 10 ----------
- 1 file changed, 10 deletions(-)
-
-diff --git a/include/linux/reboot.h b/include/linux/reboot.h
-index 79e02876f2ba2b5508f6f26567cbcd5cbe97a277..aa08c3bbbf59a9dec65d775d280902b1455427c2 100644
---- a/include/linux/reboot.h
-+++ b/include/linux/reboot.h
-@@ -211,16 +211,6 @@ static inline void hw_protection_trigger(const char *reason, int ms_until_forced
- 	__hw_protection_trigger(reason, ms_until_forced, HWPROT_ACT_DEFAULT);
- }
- 
--static inline void hw_protection_reboot(const char *reason, int ms_until_forced)
--{
--	__hw_protection_trigger(reason, ms_until_forced, HWPROT_ACT_REBOOT);
--}
--
--static inline void hw_protection_shutdown(const char *reason, int ms_until_forced)
--{
--	__hw_protection_trigger(reason, ms_until_forced, HWPROT_ACT_SHUTDOWN);
--}
--
- /*
-  * Emergency restart, callable from an interrupt handler.
-  */
-
--- 
-2.39.5
+> 
+>>   		pr_err("lowest_nonlinear_freq(%d) value is out of range [min_freq(%d), nominal_freq(%d)]\n",
+>>   			lowest_nonlinear_freq, min_freq, nominal_freq);
+> 
+> 
 
