@@ -1,206 +1,93 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f45.google.com (mail-ed1-f45.google.com [209.85.208.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E5F5924111E
-	for <linux-pm@vger.kernel.org>; Mon, 17 Feb 2025 20:40:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7FC5F235BF4
+	for <linux-pm@vger.kernel.org>; Mon, 17 Feb 2025 20:44:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739824861; cv=none; b=JK12aDMKbJoFOEpqZ47v3KYKx/RTdRXpDdwrekmQWDuPX4Jd4EufE/tr6vC/8eBitzzPvIwBW/jqXPYCKCxFW3uotk1aKR9Ye+4HJGPTL8BbZ/j/n8+VSu1Eqstr0MvWpU7vBKgw+h2BBAGNPFTcoZ9vnrOC0o1InZ0dYLl//jc=
+	t=1739825100; cv=none; b=X+e6P5JVvaSVZP5jAtJwwdlcs2Do+UzJniEmaLV1KeS7F0158wO/w4RQXMU5Y4XPmY3beSOg2htJ0HhviGGgVXlOy4q37SHqiKt1j6ZfKpl1lUxVm91kC4aKcOgblDZzfCRFJTasQO/oBUrBRiwvhM/o9qbTodS9yUsyvKEsgVo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739824861; c=relaxed/simple;
-	bh=gaPSjZVx/Yimb+0L5jpSeFIvuSJksgLRI7SDPB3SfWU=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=LZIiGWhKRUpoa4WUuuaBpNfZi8ULv45FNFSxdGAq2QUPb/xbNnJF1/pVJfNbq2zc/JW2TXyms6FwLaJZs2YJ5elOGwPKoTPbWJcvvvPAbLjMvQwIbXvCDaJQ94c1fJrGfMnIC7OJ6+lBdq15VlZ4kieM8PI4Bg7BHIJ4jFrG3I8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tk7uZ-0007oI-CW; Mon, 17 Feb 2025 21:40:15 +0100
-Received: from dude05.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::54])
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tk7uX-001TFv-2y;
-	Mon, 17 Feb 2025 21:40:13 +0100
-Received: from localhost ([::1] helo=dude05.red.stw.pengutronix.de)
-	by dude05.red.stw.pengutronix.de with esmtp (Exim 4.96)
-	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1tk7uX-000W9t-2P;
-	Mon, 17 Feb 2025 21:40:13 +0100
-From: Ahmad Fatoum <a.fatoum@pengutronix.de>
-Date: Mon, 17 Feb 2025 21:39:42 +0100
-Subject: [PATCH v3 02/12] reboot: reboot, not shutdown, on
- hw_protection_reboot timeout
+	s=arc-20240116; t=1739825100; c=relaxed/simple;
+	bh=8pLWhykq/xuXsSGo3fdN/MDuXB8gYp2zSrRpJzw54+8=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Content-Type; b=RTnQwoZwI6baCA76jrLa6r6IRgboMqKdSxWG8ryoCe9lHqpflgHAJlQoW5l9lrYDknQmJdvEB59k0LPcEHcCiapFD/3RSNvJy9xei/wQ+v0KJlnTNj92xwSr3+rvxdmOUpQ2D+u31TjqaZd5gfwCApPkOWwS8DfX0cW4/jTxowg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=LqMwvxxR; arc=none smtp.client-ip=209.85.208.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LqMwvxxR"
+Received: by mail-ed1-f45.google.com with SMTP id 4fb4d7f45d1cf-5e0505275b7so2741708a12.3
+        for <linux-pm@vger.kernel.org>; Mon, 17 Feb 2025 12:44:58 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1739825096; x=1740429896; darn=vger.kernel.org;
+        h=to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=8pLWhykq/xuXsSGo3fdN/MDuXB8gYp2zSrRpJzw54+8=;
+        b=LqMwvxxRkcENjS72aFBO0SbnqEL/0n1itpL7ht8kVVGunwJQqPWBDiK53s2qool4bo
+         8PZfT8zZPGvjdAPhJh3xChI24kSPCmlj5jeBMKfTvSwuv0yLpeEmMdE5W3X6fNfvXmfE
+         wqGfyjlmYc0/rSRHEsIinwyxnYj8HoDIZ4p0NiaXidnsM0QBa23wThmDCnsUI8yO6n+r
+         4JM6ijdNxDl2S5Z3Geom1AgSSeTQOvmoE/oo2p30Y3UkZSOjS8pY0DudpIrqw3JmVT9R
+         ufr9kL8YutuUwVMFT7q7wDYpjaLOOcn7/wO4fuR8Hh/buX5W4ZW2G35k8t75NjuaMvJ0
+         a5+w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739825096; x=1740429896;
+        h=to:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=8pLWhykq/xuXsSGo3fdN/MDuXB8gYp2zSrRpJzw54+8=;
+        b=qD81HMfEesrQwQnzFMg2Afj7OvKrF5OaOTH8JE2kgZriou1GjvdAE8VZVhsiCh2JfR
+         pLKfTmbqfcAzk3esMUHfZFi0RqlUCzJFghnxEbv+4XEOjVy0YMayZn7hIqwj9g6Y20Y+
+         u4tBaKbVaM3yRbceH1WcNcSMbvDjJx8bbPY8VfY+dV4Vr9pf/KSAeFxrnHk2r9qNVlra
+         nXr3e0Yan95MvU75s6cwk8H/JPezCeSEDsno3GfTBAxIC551T48nguPyM4ABqAbPrQAm
+         Ebsa53vdu1C4G5/cDzwB+eRVhhhwM6Aviw1f5De4VuYlKwXsgq5ZNVqsqOQjx+TQl0CI
+         J7aA==
+X-Gm-Message-State: AOJu0YxHKM/u5P6UlvmCcjvhoJgS1cYbq6DISmtMIZNTknKIzG4c8VF9
+	b58czxn0aAVaT9zj7x7e/SeZk63PLNaqvoxIvjiL/z9DFK7+pNjK7h00BfQXGIK3Wd3YOLKhmMd
+	JZAyTVDuOSaWzwABBwLzSgY/AdO2LKAmo
+X-Gm-Gg: ASbGncuxHcRidjL8kgr5ygQeVlAxoCZsQPY8H4s99fYU4A/UiL8yxuIAuvXke0vK19T
+	M4fxq+QuS2U9XQnsIAMrYgd8z3xkGzTHXQLT9MP1d+7wY/pF7sw75HOW9iC/5mL3vCSfcCCJ3
+X-Google-Smtp-Source: AGHT+IF2EEHGFKTYn1KC73CJALtPKogvwbcqnYt3N89uDplEyb0Crdf8Va6MydGVaM5QRbX7fVXKNv9h7x+1WTaXa+8=
+X-Received: by 2002:a17:906:3190:b0:abb:6722:f98c with SMTP id
+ a640c23a62f3a-abb70c5c019mr1067603466b.34.1739825096098; Mon, 17 Feb 2025
+ 12:44:56 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250217-hw_protection-reboot-v3-2-e1c09b090c0c@pengutronix.de>
-References: <20250217-hw_protection-reboot-v3-0-e1c09b090c0c@pengutronix.de>
-In-Reply-To: <20250217-hw_protection-reboot-v3-0-e1c09b090c0c@pengutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, 
- Fabio Estevam <festevam@denx.de>, "Rafael J. Wysocki" <rafael@kernel.org>, 
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
- Jonathan Corbet <corbet@lwn.net>, Serge Hallyn <serge@hallyn.com>, 
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
- Matti Vaittinen <mazziesaccount@gmail.com>, 
- Benson Leung <bleung@chromium.org>, Tzung-Bi Shih <tzungbi@kernel.org>, 
- Guenter Roeck <groeck@chromium.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-doc@vger.kernel.org, linux-security-module@vger.kernel.org, 
- chrome-platform@lists.linux.dev, devicetree@vger.kernel.org, 
- kernel@pengutronix.de, Ahmad Fatoum <a.fatoum@pengutronix.de>
-X-Mailer: b4 0.14.2
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: a.fatoum@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+From: James Dutton <james.dutton@gmail.com>
+Date: Mon, 17 Feb 2025 20:44:19 +0000
+X-Gm-Features: AWEUYZlcIM3HqJwp-yKRSySzLDYeKKErPzw0dSiDVsse2QzQZH3PhqI84AFMSr0
+Message-ID: <CAAMvbhGRBhdz2RnReoGxDRM=bTws6s4qe5kh2nUqQDMRDYBh6Q@mail.gmail.com>
+Subject: USB4 thunderbolt device suspend/resume problems. Unplug during suspend.
+To: Linux PM mailing list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-hw_protection_shutdown() will kick off an orderly shutdown and if that
-takes longer than a configurable amount of time, an emergency shutdown
-will occur.
+Hi,
 
-Recently, hw_protection_reboot() was added for those systems that don't
-implement a proper shutdown and are better served by rebooting and
-having the boot firmware worry about doing something about the critical
-condition.
+I have a thunderbolt / usb4 10Gbps ethernet adapter.
+While plugged in, it appears to handle suspend and resume OK.
+The problem is the following:
+1) Thunderbolt device plugged in. Device appears in "lscpi".
+2) Suspend Laptop
+3) Unplug the device while it is asleep.
+4) Resume the Laptop
+5) Laptop locks up, no stack trace, nothing output.
 
-On timeout of the orderly reboot of hw_protection_reboot(), the system
-would go into shutdown, instead of reboot. This is not a good idea, as
-going into shutdown was explicitly not asked for.
+Further diagnosis has found the following:
+I locks up in:
+drivers/base/power/main.c:
+static void device_resume(struct device *dev, pm_message_t state, bool async)
+at the line that says:
+"device_lock(dev);"
+where "dev" is the dev of the 10Gbps ethernet adapter.
 
-Fix this by always doing an emergency reboot if hw_protection_reboot()
-is called and the orderly reboot takes too long.
+I don't have any other usb4 / thunderbolt devices but I am thinking
+that this might affect all usb4 / thunderbolt devices that appear in
+lspci.
+Essentially, it looks to the OS like a PCIe card is removed during suspend.
 
-Fixes: 79fa723ba84c ("reboot: Introduce thermal_zone_device_critical_reboot()")
-Reviewed-by: Tzung-Bi Shih <tzungbi@kernel.org>
-Reviewed-by: Matti Vaittinen <mazziesaccount@gmail.com>
-Signed-off-by: Ahmad Fatoum <a.fatoum@pengutronix.de>
----
- kernel/reboot.c | 70 ++++++++++++++++++++++++++++++++++++++++-----------------
- 1 file changed, 49 insertions(+), 21 deletions(-)
+Does anyone have any hints of where in the code to look for a fix for this?
 
-diff --git a/kernel/reboot.c b/kernel/reboot.c
-index b20b53f08648d88bac533ab18ea66396b44a3045..f348f1ba9e22675ac1183149ba19f39be12edacd 100644
---- a/kernel/reboot.c
-+++ b/kernel/reboot.c
-@@ -932,48 +932,76 @@ void orderly_reboot(void)
- }
- EXPORT_SYMBOL_GPL(orderly_reboot);
- 
-+static const char *hw_protection_action_str(enum hw_protection_action action)
-+{
-+	switch (action) {
-+	case HWPROT_ACT_SHUTDOWN:
-+		return "shutdown";
-+	case HWPROT_ACT_REBOOT:
-+		return "reboot";
-+	default:
-+		return "undefined";
-+	}
-+}
-+
-+static enum hw_protection_action hw_failure_emergency_action;
-+
- /**
-- * hw_failure_emergency_poweroff_func - emergency poweroff work after a known delay
-- * @work: work_struct associated with the emergency poweroff function
-+ * hw_failure_emergency_action_func - emergency action work after a known delay
-+ * @work: work_struct associated with the emergency action function
-  *
-  * This function is called in very critical situations to force
-- * a kernel poweroff after a configurable timeout value.
-+ * a kernel poweroff or reboot after a configurable timeout value.
-  */
--static void hw_failure_emergency_poweroff_func(struct work_struct *work)
-+static void hw_failure_emergency_action_func(struct work_struct *work)
- {
-+	const char *action_str = hw_protection_action_str(hw_failure_emergency_action);
-+
-+	pr_emerg("Hardware protection timed-out. Trying forced %s\n",
-+		 action_str);
-+
- 	/*
--	 * We have reached here after the emergency shutdown waiting period has
--	 * expired. This means orderly_poweroff has not been able to shut off
--	 * the system for some reason.
-+	 * We have reached here after the emergency action waiting period has
-+	 * expired. This means orderly_poweroff/reboot has not been able to
-+	 * shut off the system for some reason.
- 	 *
--	 * Try to shut down the system immediately using kernel_power_off
--	 * if populated
-+	 * Try to shut off the system immediately if possible
- 	 */
--	pr_emerg("Hardware protection timed-out. Trying forced poweroff\n");
--	kernel_power_off();
-+
-+	if (hw_failure_emergency_action == HWPROT_ACT_REBOOT)
-+		kernel_restart(NULL);
-+	else
-+		kernel_power_off();
- 
- 	/*
- 	 * Worst of the worst case trigger emergency restart
- 	 */
--	pr_emerg("Hardware protection shutdown failed. Trying emergency restart\n");
-+	pr_emerg("Hardware protection %s failed. Trying emergency restart\n",
-+		 action_str);
- 	emergency_restart();
- }
- 
--static DECLARE_DELAYED_WORK(hw_failure_emergency_poweroff_work,
--			    hw_failure_emergency_poweroff_func);
-+static DECLARE_DELAYED_WORK(hw_failure_emergency_action_work,
-+			    hw_failure_emergency_action_func);
- 
- /**
-- * hw_failure_emergency_poweroff - Trigger an emergency system poweroff
-+ * hw_failure_emergency_schedule - Schedule an emergency system shutdown or reboot
-+ *
-+ * @action:		The hardware protection action to be taken
-+ * @action_delay_ms:	Time in milliseconds to elapse before triggering action
-  *
-  * This may be called from any critical situation to trigger a system shutdown
-- * after a given period of time. If time is negative this is not scheduled.
-+ * or reboot after a given period of time.
-+ * If time is negative this is not scheduled.
-  */
--static void hw_failure_emergency_poweroff(int poweroff_delay_ms)
-+static void hw_failure_emergency_schedule(enum hw_protection_action action,
-+					  int action_delay_ms)
- {
--	if (poweroff_delay_ms <= 0)
-+	if (action_delay_ms <= 0)
- 		return;
--	schedule_delayed_work(&hw_failure_emergency_poweroff_work,
--			      msecs_to_jiffies(poweroff_delay_ms));
-+	hw_failure_emergency_action = action;
-+	schedule_delayed_work(&hw_failure_emergency_action_work,
-+			      msecs_to_jiffies(action_delay_ms));
- }
- 
- /**
-@@ -1006,7 +1034,7 @@ void __hw_protection_shutdown(const char *reason, int ms_until_forced,
- 	 * Queue a backup emergency shutdown in the event of
- 	 * orderly_poweroff failure
- 	 */
--	hw_failure_emergency_poweroff(ms_until_forced);
-+	hw_failure_emergency_schedule(action, ms_until_forced);
- 	if (action == HWPROT_ACT_REBOOT)
- 		orderly_reboot();
- 	else
+Kind Regards
 
--- 
-2.39.5
-
+James
