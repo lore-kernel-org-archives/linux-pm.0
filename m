@@ -1,90 +1,92 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED52E1BC065;
-	Tue, 18 Feb 2025 20:21:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E65B1DF968;
+	Tue, 18 Feb 2025 20:25:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739910066; cv=none; b=sdBLqGJRs/0swA9UBu/GLxPqR5qDy3IxSqK+fnfQqrh84d8n5DlI1bptkHTheiF4/cf6YxW216xnEo5gEaD27R5U5JjJWiM0W7QjrXF64i2JfpaxjMrCVYSyvbFmIDhfuxNhAhUEK4sh44LVE7Tn2gqniWqHNSUmdgzR23pAxj0=
+	t=1739910335; cv=none; b=T+rju0c7tToN88nLWjSprv7SZJcOIbU0wC2rKaulTC5V1bxYr4WvROOwcCrZQMM3p1wuIopdrUVqqSGA395IoFC4GUFZu2adqKv6KPlmTOhP/lrmNZqmzZVzVwUnWKu1+GE325JiSMnloP0i6vyLc0lYPTD4T79kKlCRaj+RoLI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739910066; c=relaxed/simple;
-	bh=i33dTSeYvt6pAnKPn2/SembgQRoq+U8dsM0rlrRnu7A=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=lMkZzkSHNZ0sfiz+5VxGcYX2tIc7FiZYy+4CsbO+pAjECy4uSY9MLPlKzphdif9MBdeT4LBDDQpvWhPTIhkr0i1NiJ0LgYCqFr6N4yerFPgkThzsxI4Co+fkfYghsKsUaM5+otjhQb6kPEWAygDGaJT6g2GsGDeHztRXLZHSXfo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=lgunc9eD; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1739910335; c=relaxed/simple;
+	bh=mKMJDW6nakEGmrz4QiQyiO3fhORm4+3vCRoK1DdyepQ=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=CGLUojxWnqKTh+xjIHkC3zgEAvdHmN2JAtfKWw+33Fui6I80RbD3hWFZEH/PZUeiHC29iqcbFtk3uQcx8iUHyJBk7DCdWDS5IhIme+Wx0rYONNzkVAcW7Ur3tMcwyZpO0ZKTBBpidrDd60erK2VgFNkD55GZCl70Yk1JFmFpkfo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=eqUIPo/W; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="lgunc9eD"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
- id 23ad9d96bbb82d25; Tue, 18 Feb 2025 21:20:55 +0100
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 2C5C696554D;
-	Tue, 18 Feb 2025 21:20:55 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1739910055;
-	bh=i33dTSeYvt6pAnKPn2/SembgQRoq+U8dsM0rlrRnu7A=;
-	h=From:Subject:Date;
-	b=lgunc9eD88bTKqg9cWDpJ/7t4ju0rsoBrmHuprkNVEUVlIfWoqMQgSEXQojhdTiYn
-	 p95x2uZ2b75PX8wO+zQ1pMVZyHL9sxPsPTLgmqHMtpDURw10x1jM4zUFqEXQ8oYiVm
-	 xxYkwY3MgQ+BvhaFZ93G/tfXuC7Hu2HkLKRHHwUh9HNsx9bIA4ItsALo0/39n3od9f
-	 h2S2QYRdFWYk+wbFH1QP/IuyXWjfViCaJC4BMbQ5bxqd2KdiOP0j0SZbDZpVFF5C8Y
-	 RdfCwfy1LxOeQg7kWxv/NjPac2EKco8ul1/PlYtO0QkZ1vz1KLrgsHzKtxmba2Z+2D
-	 LdDFQgEV6rBUA==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <helgaas@kernel.org>,
- Linux PCI <linux-pci@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>,
- Johan Hovold <johan@kernel.org>,
- Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
- Jon Hunter <jonathanh@nvidia.com>, Linux ACPI <linux-acpi@vger.kernel.org>,
- Mika Westerberg <mika.westerberg@linux.intel.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v2 0/4] PM: Use DPM_FLAG_SMART_SUSPEND conditionally
-Date: Tue, 18 Feb 2025 21:09:37 +0100
-Message-ID: <12612706.O9o76ZdvQC@rjwysocki.net>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="eqUIPo/W"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10772C4CEE4;
+	Tue, 18 Feb 2025 20:25:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1739910335;
+	bh=mKMJDW6nakEGmrz4QiQyiO3fhORm4+3vCRoK1DdyepQ=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=eqUIPo/WjSHPq83ftLmqD4Xl/MdQurKXWVE529tu5t1/QeBFMHC/KqPdM4FEeogm4
+	 ncM8KA8E99B5MvAe0QO7F+2pdoxtOHwqOUmcmY2OYd/3eIiT6gdgHr1yxdrMqBQ5Pn
+	 6gyTNi6FFAKLsrqLeZQnDP7JaNfD0KfZwI1MXzoBiDZcEzPisHkrFjzx+apXbaZqrT
+	 zg8ffhLGeSF+c0jLblFDhbXrCe/IZ+0cBa6FPQkbZfwhGXo1svCbvNic9lnzuK8x84
+	 elrbfbw2t+WYikW4tpZ7AQBkNk8OvN+R1J8fhQMEY8ROU4+JdrweOrm9MdKeED+Hif
+	 yQdSgTmuQ0rZQ==
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
+	kernel test robot <lkp@intel.com>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	"Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+	Sasha Levin <sashal@kernel.org>,
+	amit.kachhap@gmail.com,
+	rafael@kernel.org,
+	linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 6.13 20/31] thermal/cpufreq_cooling: Remove structure member documentation
+Date: Tue, 18 Feb 2025 15:24:40 -0500
+Message-Id: <20250218202455.3592096-20-sashal@kernel.org>
+X-Mailer: git-send-email 2.39.5
+In-Reply-To: <20250218202455.3592096-1-sashal@kernel.org>
+References: <20250218202455.3592096-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdeivddviecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeegfffhudejlefhtdegffekteduhfethffhieettefhkeevgfdvgfefieekiefgheenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomheprhhjfiesrhhjfiihshhotghkihdrnhgvthdpnhgspghrtghpthhtohepuddvpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhtvghrnhesrhhofihlrghnugdrhhgrrhhvrghrugdrvgguuhdprhgtphhtthhopehhvghlghgrrghssehkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=12 Fuz1=12 Fuz2=12
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 6.13.3
+Content-Transfer-Encoding: 8bit
 
-Hi Everyone,
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-This is an update of the patch series at
+[ Upstream commit a6768c4f92e152265590371975d44c071a5279c7 ]
 
-https://lore.kernel.org/linux-pm/4966939.GXAFRqVoOG@rjwysocki.net/
+The structure member documentation refers to a member which does not
+exist any more. Remove it.
 
-which was a follow-up for
+Link: https://lore.kernel.org/all/202501220046.h3PMBCti-lkp@intel.com/
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202501220046.h3PMBCti-lkp@intel.com/
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Link: https://patch.msgid.link/20250211084712.2746705-1-daniel.lezcano@linaro.org
+[ rjw: Minor changelog edits ]
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/thermal/cpufreq_cooling.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-https://lore.kernel.org/linux-pm/2314745.iZASKD2KPV@rjwysocki.net/
-
-This series modifies the PM core and the users of DPM_FLAG_SMART_SUSPEND to
-take it into account only if it is consistently used in dependency graphs,
-as described in the changelog of patch [3/4].
-
-Patches [1-2/4] are preparatory and they arrange for the handling
-of devices with no runtime PM support in a meaningful way.
-
-Patch [4/4] is new in this series and it adds an optimization on top of
-the previous patches.
-
-Apart from adding the new patch, this update addresses review comments
-in the other patches.
-
-Thanks!
-
-
+diff --git a/drivers/thermal/cpufreq_cooling.c b/drivers/thermal/cpufreq_cooling.c
+index 280071be30b15..6b7ab1814c12d 100644
+--- a/drivers/thermal/cpufreq_cooling.c
++++ b/drivers/thermal/cpufreq_cooling.c
+@@ -57,8 +57,6 @@ struct time_in_idle {
+  * @max_level: maximum cooling level. One less than total number of valid
+  *	cpufreq frequencies.
+  * @em: Reference on the Energy Model of the device
+- * @cdev: thermal_cooling_device pointer to keep track of the
+- *	registered cooling device.
+  * @policy: cpufreq policy.
+  * @cooling_ops: cpufreq callbacks to thermal cooling device ops
+  * @idle_time: idle time stats
+-- 
+2.39.5
 
