@@ -1,124 +1,85 @@
-Received: from mail-vs1-f41.google.com (mail-vs1-f41.google.com [209.85.217.41])
+Received: from mail-pj1-f73.google.com (mail-pj1-f73.google.com [209.85.216.73])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 577F21B6D1C;
-	Tue, 18 Feb 2025 08:25:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CDDDF1EB1A6
+	for <linux-pm@vger.kernel.org>; Tue, 18 Feb 2025 09:17:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.73
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739867127; cv=none; b=M6ZBw3MSHha5BL6Bly/3kg0zCOKGDfwFQls0HvWT4UmeYp+9kbQFVVLgdEl35kWgE+mAHJ1F1L/UVZo9ERFCCdKpn6aoF4ZisZkXb8KO0R8xackcHnMkVRBcLB04ATyDTAkRM0iYCAJqubSvoS0zkZiRgSR1Z4lYJI4QsZbi/gs=
+	t=1739870242; cv=none; b=U9VoWpYvHwDCPXV1VREFQ6dkYgb1hwIWy1iv1s+rn46dUqqoh4Ag8aBmalviGzFRkkVlzq6V7E/B7NB/8H8x1tIUJC9I7JI0vwKHVxLho6w7RAabEVkInfXXoyPFkT0aWSRkf8n1wyo1f6asXAfBFlcTi9ahHxqVzM6T5jrzE0I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739867127; c=relaxed/simple;
-	bh=eKpFWYk9gLsR1VwUPE2StO3ksoQrbMsGjkHO71WMvoQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=AITSth1eOC8NVOdGsnJu3PB1MHROdIx4P8nWktAeiG4W+RBm7N/0iOxFLWHcKNwOcjcqQwZJcsZtJij1ftINF5qph7GrBvc/nFJl5URjm9vhoACmV95NhjpW6OE66YXPWHHXmudqqeARnbe1hjBgNRjSiXoYVSKpDL+GvBB3ltw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.217.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vs1-f41.google.com with SMTP id ada2fe7eead31-4be75b2bbceso171881137.1;
-        Tue, 18 Feb 2025 00:25:26 -0800 (PST)
+	s=arc-20240116; t=1739870242; c=relaxed/simple;
+	bh=e9eawh0CQTC6B4XkVXKnBZTw+De/FpP0oA2+UhyUCeA=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=SSG3uZ5WoVqyx2Z2s8EdAYZOkp2G8lAnOerVxxJEX3f/moG/3hMf49FfctJxnYNo4M+sJHReAPExf8DdkK66FmGgK3hMQ8iJO96pGJhUgJn1hhJrQkYVNZeyrV+AGKKK4N8SBSx2ZemgK021Z0T3dYffYYTYNMLTpWgpDC9yu2I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--keyz.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=kkPj8ud3; arc=none smtp.client-ip=209.85.216.73
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--keyz.bounces.google.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="kkPj8ud3"
+Received: by mail-pj1-f73.google.com with SMTP id 98e67ed59e1d1-2f816a85facso10509645a91.3
+        for <linux-pm@vger.kernel.org>; Tue, 18 Feb 2025 01:17:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1739870240; x=1740475040; darn=vger.kernel.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=e9eawh0CQTC6B4XkVXKnBZTw+De/FpP0oA2+UhyUCeA=;
+        b=kkPj8ud3WPOPuoa0aG9XMxegP/Uq+j0KH96YL0HqV29MJuctdCHRzz/bveDcYoCg0V
+         ej2vzyGqUpLHMrlTblU6jzAY7CCBO18QKE4bujyzOEvMKVVHOoViJ9SZE0b/6dzfgyAm
+         Fuvb400lk8JQSqPhzP7b+yiiVkLghzLZ5GqjsekFQ+zF8OaAX2NQ5C6ct0TN7nqiDSsi
+         yyTtM5PRPHySogNoVqsAvTJGuri7vRTWI3ZqHhcME+6pcBBa0Uy3VK1PHRAUP/D5HrSd
+         iNKui2VODNumGEgLaQyCD0ZKEXN6EydrMNhW47w7k5TYKA0uWzoSw43SZCjyFqKvDF1c
+         3wdw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739867124; x=1740471924;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=cDPxvkilNbMO9E7etRrlexrHd+7C+mRJTRHcVNpSHmo=;
-        b=sJ0Q3Xox/u95WqxVZRxCuS4BC6PSny10ggGyTCVOhkfbc1X4KmGEsAZLqU1odlYy8m
-         g9ieNPkhmZ/lMBvHp5WXRibVjGeua+9jlaDb0p12tLzS4JKbDLCzzSXT1++E3n1ZwslJ
-         4bu1WTNsUegnJYfKujIBpZ87oDJObloHhfMZgIWi/ELUGqRH+qrI2XNylDGqtxbP0T/g
-         exKSordtriNHswhtuWtUFEe7d366rzCp4nn7e10ME9vLTCcdmOyJDaDGXV6SDyGWJRk4
-         ZpyHBJwv3smiDXIXoGXHWbD84oDu06D+k1OK1BC30ljWU3zvF4ej0NoLNUVJ5eaI+Fkg
-         E59A==
-X-Forwarded-Encrypted: i=1; AJvYcCU5Qt2szS09qiQzieG6iWCsFZ3Rf1vxwJfjPNO97xipEzwiBHB0+vxvU42K3Zo5qUj08g8GfjpcU+ZbyAIPtPlRxTc=@vger.kernel.org, AJvYcCWNXq50Z7rHmWKWz3O/uJ9RB/eXqa3yr7HDpsEqvdaUJ81Bru8z9sCi13dr/L6ZCsrmHtqXti/S64U=@vger.kernel.org, AJvYcCWWDlc8zIYvljfpVrGIQXLeZozEpoZdjpILQfEJnXqWc3w+UoGU2RbUaFcwtcNcwqMyY+IEyagdiOac@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz0mQqu78queFB2jV8npYOS/iDogATdPSzAEF+fAym/oVSFs4G3
-	tqbJM3keGQL41jISBlAOePicQ9V8K9+fkpIYznnmC/EWZKesd+Sf1pV+8nIRzto=
-X-Gm-Gg: ASbGnctu2j6XCsVyPrpfFxEHWhgJqx00BQE65mQUsYgDGotN7EW+Dh3dACEiL08/D4Y
-	QAnDOizn8sz/ESwUyxsEBH4IC+CqGiLTWkma/7HTvoZgZYGLE6eLETamUB5YwaRglYwkiuquROz
-	GOG5xdN6avCcrQUp6TiC7bakw1xyxgUSAhcCwnGJOtpsLxI7X1uBAmpU1ON/38M8cwEFEc3kpRv
-	OAKfioUUbAbsErOC3Wg//RHbc4dDIDvGxEvM0TNP2MSjOnosX7xWvIdcVdYSYwpf1q7MLmf9Ge8
-	I00wswNuhNwqW/XVR4rtv4faJ16CtCZ3aEWNZmTRvIwYAy/7qZkl7g==
-X-Google-Smtp-Source: AGHT+IF24tgc8uwn/sK840AKDhGIqFJnaEdfbamqf+EEzCL5YyNsZiYxvqe9r6cOnKJ85VgyvyCngw==
-X-Received: by 2002:a05:6102:c4f:b0:4b2:485b:e151 with SMTP id ada2fe7eead31-4bd3fc9b9fbmr5691529137.10.1739867124544;
-        Tue, 18 Feb 2025 00:25:24 -0800 (PST)
-Received: from mail-vs1-f41.google.com (mail-vs1-f41.google.com. [209.85.217.41])
-        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-868e86bce70sm2242220241.27.2025.02.18.00.25.24
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 18 Feb 2025 00:25:24 -0800 (PST)
-Received: by mail-vs1-f41.google.com with SMTP id ada2fe7eead31-4be4de0c038so709494137.0;
-        Tue, 18 Feb 2025 00:25:24 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCUNxXRuEibyVgoBByMJxS0ntcvDNt4Ek/tJWeBSznZ2Z3H+7W1MnR9HEg9oWdhGvX+uraZOqRzFThRA@vger.kernel.org, AJvYcCUjQtUg+P6JAy+7zY7BP3sgshwzD8QwWXJrKzBh9VArqXCXAGTa0M463cqESXz7eI+NBO72e7dfouM=@vger.kernel.org, AJvYcCUkgPkooICdn+ufci68XbVk0ShbfewSWB9cn4Sp5cgsAAcILS4zsxt2aJbMJbygB3sGr+/U6xMfvIwt1To+Yt90ZfU=@vger.kernel.org
-X-Received: by 2002:a05:6102:f8a:b0:4b2:adfb:4f91 with SMTP id
- ada2fe7eead31-4bd3fe2a660mr6642224137.21.1739867124064; Tue, 18 Feb 2025
- 00:25:24 -0800 (PST)
+        d=1e100.net; s=20230601; t=1739870240; x=1740475040;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=e9eawh0CQTC6B4XkVXKnBZTw+De/FpP0oA2+UhyUCeA=;
+        b=kH8PDhFCWF/Hs08DjfJaCDxscenMU2XoFNV3lQLebEBE8H9VMV1s0Wepb1AnJxlaZY
+         h/a4/LZ82TvTy8XtpErl2RKKTq4eNzzMflTwo8/7URXlQNOqOf42rbE23q2I+5AmBtPR
+         iPLcG8KYtOgoqyPqjkOeDj6/fb3FUB/zYFxYKOeT+l+KbwGOYQAS/023GT9Z5aVG5l/t
+         q0NuYMuVMaEtBiPNmENMyv533JNfybv7kws2Ade+tohuvK5mfdQ0fZYVpiV3OQyeCZYj
+         cM8civI2m7+DYs9298XNV1Rutu2j+WpOnGGQOe8oaGcWlzw6+QYiTgZHOIQWzgXXr6F+
+         UuEA==
+X-Forwarded-Encrypted: i=1; AJvYcCUueC+NqqnXh25Kifs/DWp5IL+2dlU41mxmmlZmT7d0caCTYhrRKuePopT6u6w9xDo3rAjG1wzJhA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxdEnT/NI2ya49tWoD/V/PdVqYh4BN6bYPBBJK38L9HUcP1plq5
+	R+eH8/A3rLYG8OaFUSLwd+TxuebjT8MMPGcyJaWyYPWqH4h+mp5FTiVaJNe+8NaB1GvLEA==
+X-Google-Smtp-Source: AGHT+IGEUf1IAWU1YfH4BCxWMw3DbzclxHXWfJ0bKoh4oebNPcKR4H3sJDIdZaS1HGUEr9wC1aKrwoRL
+X-Received: from pfbdn12.prod.google.com ([2002:a05:6a00:498c:b0:730:92d9:52e3])
+ (user=keyz job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:124e:b0:732:23ed:9470
+ with SMTP id d2e1a72fcca58-73261901144mr18452340b3a.23.1739870240161; Tue, 18
+ Feb 2025 01:17:20 -0800 (PST)
+Date: Tue, 18 Feb 2025 17:17:16 +0800
+In-Reply-To: <CAPDyKFor_kP1hcNC1YwLBjH=eaLG9qSyvOYvj+FQrNu8Piu2Dg@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-References: <cover.1728377971.git.geert+renesas@glider.be>
-In-Reply-To: <cover.1728377971.git.geert+renesas@glider.be>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 18 Feb 2025 09:25:12 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdX6CBXuKn8bk9y=YpYyD6tCE8fSbQJBns=1aO6uG1_irQ@mail.gmail.com>
-X-Gm-Features: AWEUYZkUFoq6t5-uqY2bkFLs-5l0x0T4E_EBgtc_8teNEaiiojRb2XaDjcZj1a8
-Message-ID: <CAMuHMdX6CBXuKn8bk9y=YpYyD6tCE8fSbQJBns=1aO6uG1_irQ@mail.gmail.com>
-Subject: Re: [PATCH/RFC 0/2] arm64: dts: renesas: Re-add voltages to OPP tables
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Lukasz Luba <lukasz.luba@arm.com>, Magnus Damm <magnus.damm@gmail.com>, 
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, 
-	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, linux-pm@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, devicetree@vger.kernel.org
+Mime-Version: 1.0
+References: <CAPDyKFor_kP1hcNC1YwLBjH=eaLG9qSyvOYvj+FQrNu8Piu2Dg@mail.gmail.com>
+X-Mailer: git-send-email 2.48.1.601.g30ceb7b040-goog
+Message-ID: <20250218091716.1450623-1-keyz@google.com>
+Subject: Re: [PATCH v5 RESEND] cpuidle: psci: Add trace for PSCI domain idle
+From: Keita Morisaki <keyz@google.com>
+To: ulf.hansson@linaro.org
+Cc: aarontian@google.com, d-gole@ti.com, daniel.lezcano@linaro.org, 
+	keyz@google.com, khilman@baylibre.com, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-trace-kernel@vger.kernel.org, lpieralisi@kernel.org, 
+	mathieu.desnoyers@efficios.com, mhiramat@kernel.org, rafael@kernel.org, 
+	rostedt@goodmis.org, sudeep.holla@arm.com, yimingtseng@google.com
 Content-Type: text/plain; charset="UTF-8"
 
-On Tue, 8 Oct 2024 at 11:14, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> When CONFIG_ENERGY_MODEL=y, an error is printed on RZ/G2E and R-Car E3:
+> Looks good to me. I left it to Ulf, FWIW:
 >
->     cpu cpu0: EM: invalid perf. state: -22
->
-> This happens because the Operating Points Parameters tables do not list
-> voltages, as they are all identical.  Previously, it was assumed they
-> were optional, and unused, when none of the CPU nodes is tied to a
-> regulator using the "cpu-supply" property.  This assumption turned out
-> to be incorrect, causing the reported error message.
->
-> This RFC patch series fixes this by adding the missing voltages.
->
-> Note that the Energy Model calculates energy efficiency by dividing the
-> (estimated) CPU power consumption by CPU core clock frequency.  When all
-> voltages have the same value, the former is proportional to clock
-> frequency, and energy efficiency becomes a constant.  Hence all
-> operating points are considered to have the same efficiency, and the
-> Energy Model always picks the one with the highest clock rate (see also
-> [1]).
->
-> Alternatively, the Energy Model could be changed to silently ignore OPP
-> tables with missing frequencies.  IMHO this is not an unusual case.
->
-> Which approach should be taken?
-> Thanks for your comments!
->
-> [1] "PM: EM: Question Potential Issue with EM and OPP Table in cpufreq
->      ondemand Governor"
->     https://lore.kernel.org/all/a2ca883e-122e-43a1-b377-c43956b5b3be@arm.com
->
-> Geert Uytterhoeven (2):
->   arm64: dts: renesas: r8a774c0: Re-add voltages to OPP table
->   arm64: dts: renesas: r8a77990: Re-add voltages to OPP table
->
->  arch/arm64/boot/dts/renesas/r8a774c0.dtsi | 3 +++
->  arch/arm64/boot/dts/renesas/r8a77990.dtsi | 3 +++
->  2 files changed, 6 insertions(+)
+> Acked-by: Sudeep Holla <sudeep.holla@arm.com>
 
-Queuing in renesas-devel for v6.15.
-This can be replaced by an alternative solution later...
+> Applied for next, thanks!
+>
+> Kind regards
+> Uffe
 
-Gr{oetje,eeting}s,
+Thank you for all the review! Excited to see it in the next.
 
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Best regards,
+Keita
