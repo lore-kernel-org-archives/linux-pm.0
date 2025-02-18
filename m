@@ -1,108 +1,211 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yb1-f174.google.com (mail-yb1-f174.google.com [209.85.219.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 294272594B7
-	for <linux-pm@vger.kernel.org>; Tue, 18 Feb 2025 12:49:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 74F1125A620
+	for <linux-pm@vger.kernel.org>; Tue, 18 Feb 2025 12:49:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739882991; cv=none; b=miVXHiawotQ7o2UKj+uivf51rC9XU296gbEOa+F8lDfK1klLEQt6W2EB1Fk1Iu+6HMYt+rZcdfhhxLxENoBlDbDxEDvVCQzNAF7qXu3EL0pJqziwkyqLuojnVHZT5V53wT1Y26SJB9XmKw7er+guh40j1+qjnnvEinD9/h5c8q4=
+	t=1739883000; cv=none; b=bXPs7WrLo3WeBEHfOZrRtqGX5QEZLFDBJg/MQUTu23e6IrFBWwKwi8j9DM1IrNflgW9OXY3DFHnMd5u39sCJDdNaHG4uyZh34EzO7ZTH9BLqxDQYkUmC1nMQz7G0W47m2U1jVMsDb048HR+aqpaffq4zaMEbXzGLHN1bD5BDlq4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739882991; c=relaxed/simple;
-	bh=idynLg+n570UxVJEbZQbALLGH9flYbfL7QB8Dvg2Dy0=;
+	s=arc-20240116; t=1739883000; c=relaxed/simple;
+	bh=EYXiIhJKzDkf/Zed83KpoEMdqEqpk8RBZccRoSos+zQ=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=GqBvzwnlZVW6Tk/E9UwRiNDU968ejBmw6GUInx6S3HGiJM/S7+vNEX/E89qu7NHuOGFEUiqCMu57+EgdNzrKFT54RjACCUGMxr0JtN32SflsLQI5QxJpgSq+wCn7GL7x+r1RUnzbSAFhL+MX4pzDM0+7dogy1dLGYLvbCK5KPA8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=L7gvC9vf; arc=none smtp.client-ip=10.30.226.201
+	 To:Cc:Content-Type; b=s9bczmn0HDHSEaIt+IPP7aHchvql/0WdVN1FvTPN5RY7pVeSG8nzdrV0+3jLPFu1Pyux+sayLHnHSoPRzvParezSM27EcZyD43HyQyoBIMN3dJvGwG3Dec1Jgru8fOTaYCwznk5YLrutb+fM12pBeFiL4luhZ18UqvPTxcFYeHQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=g6heF/fB; arc=none smtp.client-ip=209.85.219.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="L7gvC9vf"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 07EECC4AF09
-	for <linux-pm@vger.kernel.org>; Tue, 18 Feb 2025 12:49:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1739882991;
-	bh=idynLg+n570UxVJEbZQbALLGH9flYbfL7QB8Dvg2Dy0=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=L7gvC9vfHxanFQbTTJckDSdF23pLkWbMSEjvFP48eIxRuGw68hjxx22QkMIB2TNlt
-	 WVDA1He0tDYGAwcdu/YPcl0axXw7v+OGwljDTCdTCSaJ8ksIyrkyuGRH89pqjGny/o
-	 U7ngJBiwqlSVk3UlijEipDbg8ftBypgo/grIHcqRQmu6Vtk2yLGTWXtjrRT2koKOTL
-	 /7ICUvJIWD7UX0pcVA65/8HKXHsQR8c1izYWpKH32jJslHB7g+y6Z2Jko5XfxyZsvQ
-	 pJdgHgZ3aE3bsk1RKky++79ADecsLfW9ghx50Ia9fqLt0Dl/1T8zmuP0Fn7VOAvdkA
-	 tHoMCqy8ahsuA==
-Received: by mail-oo1-f52.google.com with SMTP id 006d021491bc7-5fa2685c5c0so2701070eaf.3
-        for <linux-pm@vger.kernel.org>; Tue, 18 Feb 2025 04:49:51 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCVfdHk4xVj1LpKDBsB9u0DBSrq9XgIq+svzZAjZDTDTpoA1dEW58euRa4oOqJM9UpkY+2QCuBOAjA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwBQyZTVh3SI6FnJcaJgiYYurvpoiTvncEPYhB9z+GgDajtq63F
-	+f9HW2TD/Yj3Vwt9JZ0aGKcK78b51Ln98uRZIkNUiV6W+SHzYROhlO/5lF8SWv+wcNIbgtGFZh0
-	Ax4ZzQ7Jw/RNOaz89r+foFUekxNg=
-X-Google-Smtp-Source: AGHT+IG+SLdXSLCPwCNvc4DsALlMiNwh9q34pP7mQ9K/SG4mXQKD8pehW7+aYG8ousnGCC7owq7qWMSB1mEK25v+Vok=
-X-Received: by 2002:a05:6808:2024:b0:3f0:403a:3db9 with SMTP id
- 5614622812f47-3f3eb15ab78mr8430544b6e.35.1739882990327; Tue, 18 Feb 2025
- 04:49:50 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="g6heF/fB"
+Received: by mail-yb1-f174.google.com with SMTP id 3f1490d57ef6-e4930eca0d4so3850534276.3
+        for <linux-pm@vger.kernel.org>; Tue, 18 Feb 2025 04:49:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1739882996; x=1740487796; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=IiwBH1VwDjX3hwLw759NPJsM3Da1Zq4No+XqAt8EcVE=;
+        b=g6heF/fBGLiDZw18AlyiUpOYB8fnjidsa+Wv6quUvseeLJkVzNR5tYB5x2QZHw6ewA
+         fcJ+gaUX4kkZ31qVft3u96SH5pBBH3biLXHXR3Ao5IXWypn4mNFPxQJlOLjBvi5RHvve
+         TKW49LwE/10VKypTQMxv5PDYa4j1VMhFiKfRz7zVs9SXbIxxDdZzhr7P8X96TJXwglUB
+         KoEvznfytbIYa/mfGrpnzqDjMgQaJjhtu+MSaNxhvqBo2nTW3NQE0IM6IcbujdPemdv1
+         KURwkp6TVeNNs9CAEKEdAs1ASma2lksSTEbn6fNym1zS+8gPdzysMNWZNWd2VRCKnkNT
+         Zm+w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739882996; x=1740487796;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=IiwBH1VwDjX3hwLw759NPJsM3Da1Zq4No+XqAt8EcVE=;
+        b=fVKWNIlzJq89hwzesu5rKlDa269hnXLPZC0eMbgEywPSOyYJnb+YOe+8CGo/USh/RU
+         mW6g1bdbhs1l/4yZdELw5W0KsOWOnhpFhQ1QHUYedacRBtN48OsAJ9Oly53DkBNSOkY5
+         SJQ1jeO09FcmoK6ji9AKUjD4OQhv3+Pd8UAQzptKhVdHqgTGsP+QjJ8O0v1PfBglFwzC
+         b5k9TwuPuf4vPGiuMn3biCsk8GXAonY3dZ1rF5vDFkayNTBJBh1zg8HszZe3yJENQxoo
+         OIIsMTc9KNXuwAEbymnYTqHK0KKWoe/RdmVrljaPILqkj14zL4/w7E1yWKpVSayQIh4k
+         KyhQ==
+X-Gm-Message-State: AOJu0YwlO/iYzxvoGskXop5AG546ZteYhnZJuTY0c3/w0vBJyYhRAwYE
+	MJMrJWgu6z7E3oW848Uiv0TW4xkz+Taf6qZhqHQqlN8srCbtE19grg7KLWWSbSengQyAp++cqUk
+	Il6sWSIJw4XMlYYddQb6B6wnU7SnmtivRrtas6A==
+X-Gm-Gg: ASbGncsxPrHWHmgIZqyaG/WOwX4hu010GXjr+oRpZlqTFtb/qhbEQWem5SlKCNR+Zmm
+	9xCX4RO1sKmMNvsctCz1apHaFVVnJKJlAb/KSfOg6mHVJ6rSsDhw33hIcGKI9qivI/trAz9VLHQ
+	==
+X-Google-Smtp-Source: AGHT+IFV9+p4KGq953gb9Ygs5FJ/2Cq+/II4+fSXpQadcHenCDQI8dVl1agYXuFKW5/2VG+FDeTGo04AqfI0ojx2avw=
+X-Received: by 2002:a05:6902:2684:b0:e5b:1c0a:6cb6 with SMTP id
+ 3f1490d57ef6-e5dc92f3a3dmr9935964276.36.1739882996443; Tue, 18 Feb 2025
+ 04:49:56 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250218082021.2766-1-lirongqing@baidu.com>
-In-Reply-To: <20250218082021.2766-1-lirongqing@baidu.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 18 Feb 2025 13:49:39 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0gHUQzjk9vdSrHOU6tCoN0hx291ALW7tVN-JPxW9cVSiw@mail.gmail.com>
-X-Gm-Features: AWEUYZnP7fuWYD5K1U2bn0Uij2nRPMuqaZhvU4CKR28vffnqfgdViyv-y3myEEo
-Message-ID: <CAJZ5v0gHUQzjk9vdSrHOU6tCoN0hx291ALW7tVN-JPxW9cVSiw@mail.gmail.com>
-Subject: Re: [PATCH] PM: EM: use kfree_rcu to simplify the code
-To: lirongqing <lirongqing@baidu.com>, Lukasz Luba <lukasz.luba@arm.com>
-Cc: rafael@kernel.org, pavel@kernel.org, len.brown@intel.com, 
-	linux-pm@vger.kernel.org
+References: <4966939.GXAFRqVoOG@rjwysocki.net> <2984234.e9J7NaK4W3@rjwysocki.net>
+In-Reply-To: <2984234.e9J7NaK4W3@rjwysocki.net>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Tue, 18 Feb 2025 13:49:20 +0100
+X-Gm-Features: AWEUYZmAiMQQjoSXdJvdY6LlYTyK9cHRbbIMKwfyPB3OyZ8WmWz4Jn-c8CS83kE
+Message-ID: <CAPDyKFonaX6gfHgj-OJaowUxhYZR4qQ8EZvvLHfF9AP1GvqrZw@mail.gmail.com>
+Subject: Re: [PATCH v1 1/3] PM: Block enabling of runtime PM during system suspend
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, 
+	Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <helgaas@kernel.org>, 
+	Linux PCI <linux-pci@vger.kernel.org>, Johan Hovold <johan@kernel.org>, 
+	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, 
+	Linux ACPI <linux-acpi@vger.kernel.org>, 
+	Mika Westerberg <mika.westerberg@linux.intel.com>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-+Lukasz Luba
-
-On Tue, Feb 18, 2025 at 9:20=E2=80=AFAM lirongqing <lirongqing@baidu.com> w=
-rote:
+On Mon, 17 Feb 2025 at 21:20, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 >
-> From: Li RongQing <lirongqing@baidu.com>
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> The callback function of call_rcu() just calls kfree(), so use
-> kfree_rcu() instead of call_rcu() + callback function.
+> If device_prepare() runs on a device that has never had runtime
+> PM enabled so far, it may reasonably assume that runtime PM will
+> not be enabled for that device during the system suspend-resume
+> cycle currently in progress, but this has never been guaranteed.
 >
-> Signed-off-by: Li RongQing <lirongqing@baidu.com>
-
-This looks fine to me.  Lukasz?
-
+> To verify this assumption, make device_prepare() arrange for
+> triggering a device warning accompanied by a call trace dump if
+> runtime PM is enabled for such a device after it has returned.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->  kernel/power/energy_model.c | 10 +---------
->  1 file changed, 1 insertion(+), 9 deletions(-)
+>  drivers/base/power/main.c    |    9 +++++++++
+>  drivers/base/power/runtime.c |   24 ++++++++++++++++++++++++
+>  include/linux/pm.h           |    1 +
+>  include/linux/pm_runtime.h   |    6 +++++-
+>  4 files changed, 39 insertions(+), 1 deletion(-)
 >
-> diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-> index 3874f0e..72655ef 100644
-> --- a/kernel/power/energy_model.c
-> +++ b/kernel/power/energy_model.c
-> @@ -161,14 +161,6 @@ static void em_debug_create_pd(struct device *dev) {=
-}
->  static void em_debug_remove_pd(struct device *dev) {}
->  #endif
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -1109,6 +1109,8 @@
+>         device_unlock(dev);
 >
-> -static void em_destroy_table_rcu(struct rcu_head *rp)
-> -{
-> -       struct em_perf_table __rcu *table;
-> -
-> -       table =3D container_of(rp, struct em_perf_table, rcu);
-> -       kfree(table);
-> -}
-> -
->  static void em_release_table_kref(struct kref *kref)
->  {
->         struct em_perf_table __rcu *table;
-> @@ -176,7 +168,7 @@ static void em_release_table_kref(struct kref *kref)
->         /* It was the last owner of this table so we can free */
->         table =3D container_of(kref, struct em_perf_table, kref);
->
-> -       call_rcu(&table->rcu, em_destroy_table_rcu);
-> +       kfree_rcu(table, rcu);
+>  out:
+> +       /* If enabling runtime PM for the device is blocked, unblock it. */
+> +       pm_runtime_unblock(dev);
+>         pm_runtime_put(dev);
 >  }
 >
->  /**
-> --
-> 2.9.4
+> @@ -1815,6 +1817,13 @@
+>          * it again during the complete phase.
+>          */
+>         pm_runtime_get_noresume(dev);
+> +       /*
+> +        * If runtime PM is disabled for the device at this point and it has
+> +        * never been enabled so far, it should not be enabled until this system
+> +        * suspend-resume cycle is complete, so prepare to trigger a warning on
+> +        * subsequent attempts to enable it.
+> +        */
+> +       pm_runtime_block_if_disabled(dev);
 >
+>         if (dev->power.syscore)
+>                 return 0;
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -1460,6 +1460,26 @@
+>  }
+>  EXPORT_SYMBOL_GPL(pm_runtime_barrier);
+>
+> +void pm_runtime_block_if_disabled(struct device *dev)
+> +{
+> +       spin_lock_irq(&dev->power.lock);
+> +
+> +       if (dev->power.disable_depth && dev->power.last_status == RPM_INVALID)
+> +               dev->power.last_status = RPM_BLOCKED;
+> +
+> +       spin_unlock_irq(&dev->power.lock);
+> +}
+> +
+> +void pm_runtime_unblock(struct device *dev)
+> +{
+> +       spin_lock_irq(&dev->power.lock);
+> +
+> +       if (dev->power.last_status == RPM_BLOCKED)
+> +               dev->power.last_status = RPM_INVALID;
+> +
+> +       spin_unlock_irq(&dev->power.lock);
+> +}
+> +
+>  void __pm_runtime_disable(struct device *dev, bool check_resume)
+>  {
+>         spin_lock_irq(&dev->power.lock);
+> @@ -1518,6 +1538,10 @@
+>         if (--dev->power.disable_depth > 0)
+>                 goto out;
+>
+> +       if (dev->power.last_status == RPM_BLOCKED) {
+> +               dev_warn(dev, "Attempt to enabled runtime PM when it is blocked\n");
+
+/s/enabled/enable
+
+> +               dump_stack();
+> +       }
+>         dev->power.last_status = RPM_INVALID;
+>         dev->power.accounting_timestamp = ktime_get_mono_fast_ns();
+>
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -597,6 +597,7 @@
+>         RPM_RESUMING,
+>         RPM_SUSPENDED,
+>         RPM_SUSPENDING,
+> +       RPM_BLOCKED,
+>  };
+>
+>  /*
+> --- a/include/linux/pm_runtime.h
+> +++ b/include/linux/pm_runtime.h
+> @@ -77,8 +77,10 @@
+>  extern int pm_schedule_suspend(struct device *dev, unsigned int delay);
+>  extern int __pm_runtime_set_status(struct device *dev, unsigned int status);
+>  extern int pm_runtime_barrier(struct device *dev);
+> +extern void pm_runtime_block_if_disabled(struct device *dev);
+> +extern void pm_runtime_unblock(struct device *dev);
+>  extern void pm_runtime_enable(struct device *dev);
+> -extern void __pm_runtime_disable(struct device *dev, bool check_resume);
+> +extern void __pm_runtime_disable(struct device *dev, bool regular);
+
+This looks unrelated to the $subject patch.
+
+>  extern void pm_runtime_allow(struct device *dev);
+>  extern void pm_runtime_forbid(struct device *dev);
+>  extern void pm_runtime_no_callbacks(struct device *dev);
+> @@ -271,6 +273,8 @@
+>  static inline int __pm_runtime_set_status(struct device *dev,
+>                                             unsigned int status) { return 0; }
+>  static inline int pm_runtime_barrier(struct device *dev) { return 0; }
+> +static inline void pm_runtime_block_if_disabled(struct device *dev) {}
+> +static inline void pm_runtime_unblock(struct device *dev) {}
+>  static inline void pm_runtime_enable(struct device *dev) {}
+>  static inline void __pm_runtime_disable(struct device *dev, bool c) {}
+>  static inline void pm_runtime_allow(struct device *dev) {}
+>
+>
+>
+
+With the minor things above fixed, feel free to add:
+
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Kind regards
+Uffe
