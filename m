@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80D07280A3B;
-	Tue, 18 Feb 2025 19:09:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77B33281363;
+	Tue, 18 Feb 2025 19:09:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739905747; cv=none; b=Vvgj94w2c4r83HGLL9t64zvEsrqsLyi8D6IOlQwx1Cyeh+Ntwrfcr6I6w5eTkcRicN/KuB8idMPtHOUwazDTaCeP8ATzDg3yCCI4WEQkEcnWguqxR2oRvCFOSi0lW8Qh9u4duUdTHLjNmkVJX/qcQw0juEFcFSu0u0YCEbDXpnw=
+	t=1739905749; cv=none; b=V953DhMIFBSIEYvQixm/zSr1MdrOoTQIaDDfEZLZzUq7idxCH6U+1wpmizExKK+NWNlxtpsdZHDEIkPrrjA9g2sPGK7m/Fe0aORje5qx2W8GcZ0XmbZ1Sayje5VFfwiGaa7UkIULKMVb8UKTZROm3PSgJFrwis5V7Rt4QPtoD/s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739905747; c=relaxed/simple;
-	bh=kkmiHVXfJXfM1Y0OJM/t6VFEd5Na7GfS4a+2m3iMWLg=;
+	s=arc-20240116; t=1739905749; c=relaxed/simple;
+	bh=SI1sRPnXmV2AWytIfSaxpRG24MRaOV6/z0jvYmJu0ng=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=k+FwNq6f+z517C3HNuktTAJ2V8OHXpvo51iwtTdix80RciKTdGIcTP2y7gNvumxrmHp8EJTtpIMai1Qf1y/o22teXeD6IC2oa+90TUme156JSZZXV1i1Pbeu/oenCRrrcjxGlSBwJtPlvfZro4q8MB/hxv/ewSuIDKzEcWlcUFY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZIhAA2CC; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=K7+H97ZexRRRvBEXO/7uCD3aJGKPmKrLM71af9X5O759M3i6eHsAFehGjXxMLKkGPEDKVPrkLbMPSvun63f1oFecOZlyGecxRp4orEequv7+u5L6l9auq2c63ozJmFrl0whFoeuPfJe23/ugEOvfPgsRvA3JgtU6KnrpevfNlwk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MM29XqyV; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZIhAA2CC"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2BE33C4CEEB;
-	Tue, 18 Feb 2025 19:09:05 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MM29XqyV"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3B2A3C4CEE9;
+	Tue, 18 Feb 2025 19:09:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1739905747;
-	bh=kkmiHVXfJXfM1Y0OJM/t6VFEd5Na7GfS4a+2m3iMWLg=;
+	s=k20201202; t=1739905749;
+	bh=SI1sRPnXmV2AWytIfSaxpRG24MRaOV6/z0jvYmJu0ng=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=ZIhAA2CCktPixohzXmZW70xmnmxvwcqLXe8g27dIHBCCSxh6fbayD2QE5k+ZJcQJG
-	 y68xysEsJ42aolH8Tzz4zt5ONXz73OfVHsSPpI3j2iWowWt8W1N4noDSj7THqL1e3Y
-	 mYR4/UHNxR6YE7XBeOInMu2IRJIrVrC3zMjDGNWQqAzuOyEpC3AsmFw3RbnuRDJ5x8
-	 OTDtpa3HDcoi2a9QKD8io4hEjiBIsnF1itijCZDug+I2SmSgib9EKR0MuqYx8s8pzr
-	 CliJELyTWSFVgHH0jVvr8VQkxwomdbeTAaG00VCbJHIgX9q6YQmoV1MIvk2Xeo68Bd
-	 U0U/5dSAggNJQ==
+	b=MM29XqyVyD2JEs3mtEVhbTMSO0zM5lM9J6SlOgol5maq6slhT7+bchdEWluGedzkX
+	 o8CEB7HezddAJtD+RNvSrQ6EtenYXl6McqeZCPWenp009RcuNokXQhRSN649yrx2a0
+	 xvpHhgm+XGVw8yAVUuxreYtvYpKnNqe5+ISq9llyPb2cY4wt3o5u1jmmuXItuVwYJr
+	 KCAEhpLY4pzARzw7m5sYYZfhqvEknGLab4YJWXrvQI2otpTDq9/etcvBSBhaBejxSn
+	 SdvvWNXnRcl2VCIZ1Nl8WbiupjWQRjpz42/Wys/4tO4QAGm9i8fdNL6JGabbRCNia3
+	 czg9R8dPWgEMQ==
 From: Mario Limonciello <superm1@kernel.org>
 To: Hans de Goede <hdegoede@redhat.com>,
 	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
@@ -45,11 +45,10 @@ Cc: Mario Limonciello <mario.limonciello@amd.com>,
 	platform-driver-x86@vger.kernel.org (open list:AMD HETERO CORE HARDWARE FEEDBACK DRIVER),
 	linux-kernel@vger.kernel.org (open list:X86 ARCHITECTURE (32-BIT AND 64-BIT)),
 	linux-doc@vger.kernel.org (open list:DOCUMENTATION),
-	linux-pm@vger.kernel.org (open list:AMD PSTATE DRIVER),
-	Perry Yuan <Perry.Yuan@amd.com>
-Subject: [PATCH v8 08/13] platform/x86: hfi: add power management callback
-Date: Tue, 18 Feb 2025 13:08:17 -0600
-Message-ID: <20250218190822.1039982-9-superm1@kernel.org>
+	linux-pm@vger.kernel.org (open list:AMD PSTATE DRIVER)
+Subject: [PATCH v8 09/13] x86/process: Clear hardware feedback history for AMD processors
+Date: Tue, 18 Feb 2025 13:08:18 -0600
+Message-ID: <20250218190822.1039982-10-superm1@kernel.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250218190822.1039982-1-superm1@kernel.org>
 References: <20250218190822.1039982-1-superm1@kernel.org>
@@ -61,72 +60,39 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Perry Yuan <Perry.Yuan@amd.com>
+From: Perry Yuan <perry.yuan@amd.com>
 
-Introduces power management callbacks for the `amd_hfi` driver.
-Specifically, the `suspend` and `resume` callbacks have been added
-to handle the necessary operations during system low power states
-and wake-up.
+Incorporate a mechanism within the context switching code to reset
+the hardware history for AMD processors. Specifically, when a task
+is switched in, the class ID was read and reset the hardware workload
+classification history of CPU firmware and then it start to trigger
+workload classification for the next running thread.
 
-Reviewed-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
-Signed-off-by: Perry Yuan <Perry.Yuan@amd.com>
+Signed-off-by: Perry Yuan <perry.yuan@amd.com>
 Co-developed-by: Mario Limonciello <mario.limonciello@amd.com>
 Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 ---
- drivers/platform/x86/amd/hfi/hfi.c | 33 ++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+v8:
+ * Only for 64 bit
+---
+ arch/x86/kernel/process_64.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/platform/x86/amd/hfi/hfi.c b/drivers/platform/x86/amd/hfi/hfi.c
-index 90b57175ccd97..ad93c3b5d5ddf 100644
---- a/drivers/platform/x86/amd/hfi/hfi.c
-+++ b/drivers/platform/x86/amd/hfi/hfi.c
-@@ -381,6 +381,38 @@ static int amd_hfi_metadata_parser(struct platform_device *pdev,
- 	return ret;
+diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+index 226472332a70d..371e0e8f987fa 100644
+--- a/arch/x86/kernel/process_64.c
++++ b/arch/x86/kernel/process_64.c
+@@ -709,6 +709,10 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+ 	/* Load the Intel cache allocation PQR MSR. */
+ 	resctrl_sched_in(next_p);
+ 
++	/* Reset hw history on AMD CPUs */
++	if (cpu_feature_enabled(X86_FEATURE_AMD_WORKLOAD_CLASS))
++		wrmsrl(AMD_WORKLOAD_HRST, 0x1);
++
+ 	return prev_p;
  }
  
-+static int amd_hfi_pm_resume(struct device *dev)
-+{
-+	int ret, cpu;
-+
-+	for_each_online_cpu(cpu) {
-+		ret = amd_hfi_set_state(cpu, true);
-+		if (ret < 0) {
-+			dev_err(dev, "failed to enable workload class config: %d\n", ret);
-+			return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int amd_hfi_pm_suspend(struct device *dev)
-+{
-+	int ret, cpu;
-+
-+	for_each_online_cpu(cpu) {
-+		ret = amd_hfi_set_state(cpu, false);
-+		if (ret < 0) {
-+			dev_err(dev, "failed to disable workload class config: %d\n", ret);
-+			return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static DEFINE_SIMPLE_DEV_PM_OPS(amd_hfi_pm_ops, amd_hfi_pm_suspend, amd_hfi_pm_resume);
-+
- static const struct acpi_device_id amd_hfi_platform_match[] = {
- 	{"AMDI0104", 0},
- 	{ }
-@@ -433,6 +465,7 @@ static struct platform_driver amd_hfi_driver = {
- 	.driver = {
- 		.name = AMD_HFI_DRIVER,
- 		.owner = THIS_MODULE,
-+		.pm = &amd_hfi_pm_ops,
- 		.acpi_match_table = ACPI_PTR(amd_hfi_platform_match),
- 	},
- 	.probe = amd_hfi_probe,
 -- 
 2.43.0
 
