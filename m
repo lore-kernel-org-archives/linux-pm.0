@@ -1,190 +1,179 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43F891EB5CA;
-	Tue, 18 Feb 2025 19:57:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 049BB21B9E0;
+	Tue, 18 Feb 2025 20:20:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739908672; cv=none; b=q/6Z4vxGtvTVrL9LxoxJRwTiKp1zBoeGgwIUhZwEEwgm6SMoLTP08/UkyjFiJk1lSUgMiyHaQHqZkcLCWTwjKBMLIWb/l04hq2Fso5YRXvj5G0V9xAVvZmjhzaVDvwqgTqvtDtltO8B4FsgCR+XSmWo6YJCX0ETZqRjhLyHSNec=
+	t=1739910064; cv=none; b=Zu5p1FXzXPL1ITlUbynDzFV4OmZn+fE64pqD2AWYgn3x3TvbaC8yD4S/Uo99ho9SO74GN5zRNyqSXTAzsqR5YMovmxAijbNBxZnIUVP771P3ohEeXnJdTDaMAkN32BGxEEhThQrEK7gbpxhfYMnv5Uy1L1DCkiLxScFKdqaJaAc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739908672; c=relaxed/simple;
-	bh=NdOg0UvtyHWKWW084SqAvljhOyOWRFlP2AMh8KCGNoQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=hTAqjHoSKFeZlcwoPGNspwNrkU9VmBVDUd/8HlzT8tXNxtO0SqWjrhXgHExQykVnt0l4JW38XU3K9I0I1/z103iGtZwsupUwbGk7s0KCpy2SG88fuR0DsnXYbqwZ69SoQYKC6FKDxBNSzo7M1wHQt69G4HO01VygbKnfGcvYEVM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PYBBKsxT; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1739910064; c=relaxed/simple;
+	bh=Mi0yeJ0NG7Wggqky6pV4DEQsB94EDemrjJ+/gmx9XZY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=s+BC+pqoZLUA4Pdwh9vW0b5ZBuHO8racwE/PaegqrhhVEu3a2VOLqxt3gkkBwVdKZV67WnSxn0qosY7bxjj+oHm9KIR/Ua180A+KfFRjK9BODVD3FiX6y0jvjDqXr7/cPKlnuVQ4CVUhhdah7e2Bx/svfsbk7ptp8pdsF9H1GmI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=H4334Tr1; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PYBBKsxT"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BFFA7C4CEE8;
-	Tue, 18 Feb 2025 19:57:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1739908671;
-	bh=NdOg0UvtyHWKWW084SqAvljhOyOWRFlP2AMh8KCGNoQ=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=PYBBKsxTn04vfOuRBwwdNeTfYiKdx5HHotfiprRS/CAgz/anhk5cQrAhSfpEHPP8A
-	 P+5Xn/8r9oUSYb+ZfEjuucsVZD9QVMvaL1R/y48CruxXvzhZkX+dRJ2VHMEIvTSh9f
-	 u8l8Mvy+j+WVWeFdgEDcuc8JDmD17YNWy4gLQVZmj0aJhniWEcNpKnt73PHYt/HnHc
-	 lHDBDvCbIYjAtFC5ELdHasMjVmBPMH1cta/xdzbF1lzYuGLctwCZM2/qDlrrUSm6fy
-	 PexSJuARuHlSSw33KuvS95vA+zUIVeC1UvikbgQrgUtb33Th4e73vNe/WzqXedaaBX
-	 xfi+S1EoWlg/A==
-Received: by mail-ot1-f53.google.com with SMTP id 46e09a7af769-71e10e6a1ceso1768532a34.0;
-        Tue, 18 Feb 2025 11:57:51 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCUjysqafsG5f+P6ifFecBtBXspr8fKdMgi9A5yTu59w1HLcaHUZ6N2/VdqmhRFvO+8uRLhTH30H4L4=@vger.kernel.org, AJvYcCVwH0MizjJ6ihsRUhi/D4qq3IXQgzR/2BlQB7FxkARPDY+B4V4LdZwmthRpEAsF85mSZW73tN5pIMGzPMN5@vger.kernel.org
-X-Gm-Message-State: AOJu0YzK0fyvQk5MuqU8bGpA7WSYUjKqy2JBl+mzk0B5fahpw5c3O8v/
-	tvuS9Jiwcs1aJLIpiYV6Z7otGHoPwCAGfvYs0BY+f78epFWMd1Et/HWJQHOlkOcaIp5ueDKIc5P
-	nQJqbfETKlH7qWFDMN0lHKGEm7RQ=
-X-Google-Smtp-Source: AGHT+IGehTfwfgWTGlTqYmZ+2Zqn21Ck9f4vM9tehLAR4CXgcbyAmFYF8Ptk/fKaY/fx8HLNFpj4hS1T6r1FNiDq9+o=
-X-Received: by 2002:a05:6808:1a25:b0:3f4:756:52cf with SMTP id
- 5614622812f47-3f4075653f4mr4199404b6e.10.1739908671118; Tue, 18 Feb 2025
- 11:57:51 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="H4334Tr1"
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
+ id 4976fd652ffeded7; Tue, 18 Feb 2025 21:20:52 +0100
+Received: from kreacher.localnet (unknown [195.136.19.94])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 8283696554D;
+	Tue, 18 Feb 2025 21:20:51 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1739910052;
+	bh=Mi0yeJ0NG7Wggqky6pV4DEQsB94EDemrjJ+/gmx9XZY=;
+	h=From:Subject:Date;
+	b=H4334Tr1mb6uz+bPzXNEwdkp3mwIlrK0St12WEBqEIygqXylgoeXIPeGgmQBfDTE1
+	 EIS/mbwrd8cfnzaJZcYvA8SBCluludgvAZxPJoB/JH3MMGPmvvfOejxysg8aB0Ri8G
+	 jRhnCQorZkjzZ99NFmNsXPEiLXomoQvkXkKJMNmjVP4ISlohMA0zlxvagtt+6BLv36
+	 vVfL9j3w4mE88vBnXjmYnkYwYekEfAaGGCQm0pjcTMysZATXWwM7Bs1AvsXsYLwyPd
+	 bMLRp9Bj6+y53eZFT0iR6lscDgwB3BkdkPIURxU8uat1J9c665xMhscsFBOnGtsHN4
+	 gQwlJjmucMJJg==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <helgaas@kernel.org>,
+ Linux PCI <linux-pci@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>,
+ Johan Hovold <johan@kernel.org>,
+ Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+ Jon Hunter <jonathanh@nvidia.com>, Linux ACPI <linux-acpi@vger.kernel.org>,
+ Mika Westerberg <mika.westerberg@linux.intel.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject:
+ [PATCH v2 4/4] PM: sleep: Avoid unnecessary checks in
+ device_prepare_smart_suspend()
+Date: Tue, 18 Feb 2025 21:20:46 +0100
+Message-ID: <2978873.e9J7NaK4W3@rjwysocki.net>
+In-Reply-To: <12612706.O9o76ZdvQC@rjwysocki.net>
+References: <12612706.O9o76ZdvQC@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250128141139.2033088-1-darcari@redhat.com> <20250213160741.445351-1-darcari@redhat.com>
-In-Reply-To: <20250213160741.445351-1-darcari@redhat.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 18 Feb 2025 20:57:38 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0g27Sutp_Ww7zGe0xB95kxFh-pzjd5-PpjR==h7-s8MLA@mail.gmail.com>
-X-Gm-Features: AWEUYZlpai7SpXsNA6Zx29eRhmjHn54ScnowNhZR7EUXOxXW2VU5HrPEd_C27oA
-Message-ID: <CAJZ5v0g27Sutp_Ww7zGe0xB95kxFh-pzjd5-PpjR==h7-s8MLA@mail.gmail.com>
-Subject: Re: [PATCH v4] intel_idle: introduce 'no_native' module parameter
-To: David Arcari <darcari@redhat.com>, Artem Bityutskiy <dedekind1@gmail.com>
-Cc: linux-pm@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, 
-	Jacob Pan <jacob.jun.pan@linux.intel.com>, Len Brown <lenb@kernel.org>, 
-	Prarit Bhargava <prarit@redhat.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdeivddviecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeduvddprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehsthgvrhhnsehrohiflhgrnhgurdhhrghrvhgrrhgurdgvughupdhrtghpthhtohephhgvlhhgrggrsheskhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphgtihesvhhgvghrrdhkvghrnhgvlhdrohh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=12 Fuz1=12 Fuz2=12
 
-On Thu, Feb 13, 2025 at 5:07=E2=80=AFPM David Arcari <darcari@redhat.com> w=
-rote:
->
-> Since commit 18734958e9bf ("intel_idle: Use ACPI _CST for processor model=
-s
-> without C-state tables") the intel_idle driver has had the ability to use
-> the ACPI _CST to populate C-states when the processor model is not
-> recognized. However, even when the processor model is recognized (native
-> mode) there are cases where it is useful to make the driver ignore the pe=
-r
-> cpu idle states in lieu of ACPI C-states (such as specific application
-> performance). Add the 'no_native' module parameter to provide this
-> functionality.
->
-> Cc: Jonathan Corbet <corbet@lwn.net>
-> Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: David Arcari <darcari@redhat.com>
-> Cc: Artem Bityutskiy <dedekind1@gmail.com>
-> Cc: Prarit Bhargava <prarit@redhat.com>
-> Cc: linux-doc@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: David Arcari <darcari@redhat.com>
-> ---
-> v4: fix !CONFIG_ACPI_PROCESSOR_CSTATE compilation issue
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Artem, have all of your comments been addressed in this version?
+Add an optimization (on top of previous changes) to avoid calling
+pm_runtime_blocked(), which involves acquiring the device's PM spinlock,
+for devices with no PM callbacks and runtime PM "blocked".
 
-> v3: more documentation cleanup
-> v2: renamed parameter, cleaned up documentation
->
-> Documentation/admin-guide/pm/intel_idle.rst | 18 +++++++++++++-----
->  drivers/idle/intel_idle.c                   | 16 ++++++++++++++++
->  2 files changed, 29 insertions(+), 5 deletions(-)
->
-> diff --git a/Documentation/admin-guide/pm/intel_idle.rst b/Documentation/=
-admin-guide/pm/intel_idle.rst
-> index 39bd6ecce7de..5940528146eb 100644
-> --- a/Documentation/admin-guide/pm/intel_idle.rst
-> +++ b/Documentation/admin-guide/pm/intel_idle.rst
-> @@ -192,11 +192,19 @@ even if they have been enumerated (see :ref:`cpu-pm=
--qos` in
->  Documentation/admin-guide/pm/cpuidle.rst).
->  Setting ``max_cstate`` to 0 causes the ``intel_idle`` initialization to =
-fail.
->
-> -The ``no_acpi`` and ``use_acpi`` module parameters (recognized by ``inte=
-l_idle``
-> -if the kernel has been configured with ACPI support) can be set to make =
-the
-> -driver ignore the system's ACPI tables entirely or use them for all of t=
-he
-> -recognized processor models, respectively (they both are unset by defaul=
-t and
-> -``use_acpi`` has no effect if ``no_acpi`` is set).
-> +The ``no_acpi``, ``use_acpi`` and ``no_native`` module parameters are
-> +recognized by ``intel_idle`` if the kernel has been configured with ACPI
-> +support.  In the case that ACPI is not configured these flags have no im=
-pact
-> +on functionality.
-> +
-> +``no_acpi`` - Do not use ACPI at all.  Only native mode is available, no
-> +ACPI mode.
-> +
-> +``use_acpi`` - No-op in ACPI mode, the driver will consult ACPI tables f=
-or
-> +C-states on/off status in native mode.
-> +
-> +``no_native`` - Work only in ACPI mode, no native mode available (ignore
-> +all custom tables).
->
->  The value of the ``states_off`` module parameter (0 by default) represen=
-ts a
->  list of idle states to be disabled by default in the form of a bitmask.
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index 118fe1d37c22..b0be5ef43ffc 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -1695,6 +1695,10 @@ static bool force_use_acpi __read_mostly; /* No ef=
-fect if no_acpi is set. */
->  module_param_named(use_acpi, force_use_acpi, bool, 0444);
->  MODULE_PARM_DESC(use_acpi, "Use ACPI _CST for building the idle states l=
-ist");
->
-> +static bool no_native __read_mostly; /* No effect if no_acpi is set. */
-> +module_param_named(no_native, no_native, bool, 0444);
-> +MODULE_PARM_DESC(no_native, "Ignore cpu specific (native) idle states in=
- lieu of ACPI idle states");
-> +
->  static struct acpi_processor_power acpi_state_table __initdata;
->
->  /**
-> @@ -1834,6 +1838,11 @@ static bool __init intel_idle_off_by_default(unsig=
-ned int flags, u32 mwait_hint)
->         }
->         return true;
->  }
-> +
-> +static inline bool ignore_native(void)
-> +{
-> +       return no_native & !no_acpi;
-> +}
->  #else /* !CONFIG_ACPI_PROCESSOR_CSTATE */
->  #define force_use_acpi (false)
->
-> @@ -1843,6 +1852,7 @@ static inline bool intel_idle_off_by_default(unsign=
-ed int flags, u32 mwait_hint)
->  {
->         return false;
->  }
-> +static inline bool ignore_native(void) { return false; }
->  #endif /* !CONFIG_ACPI_PROCESSOR_CSTATE */
->
->  /**
-> @@ -2328,6 +2338,12 @@ static int __init intel_idle_init(void)
->         pr_debug("MWAIT substates: 0x%x\n", mwait_substates);
->
->         icpu =3D (const struct idle_cpu *)id->driver_data;
-> +       if (ignore_native()) {
-> +               if (icpu) {
-> +                       pr_debug("ignoring native cpu idle states\n");
-> +                       icpu =3D NULL;
-> +               }
-> +       }
->         if (icpu) {
->                 if (icpu->state_table)
->                         cpuidle_state_table =3D icpu->state_table;
-> --
-> 2.48.1
->
->
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/power/main.c    |   16 +++++++++-------
+ drivers/base/power/runtime.c |    9 +++++++--
+ include/linux/pm_runtime.h   |    4 ++--
+ 3 files changed, 18 insertions(+), 11 deletions(-)
+
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1796,16 +1796,14 @@
+ 
+ 	/*
+ 	 * The "smart suspend" feature is enabled for devices whose drivers ask
+-	 * for it and for devices without PM callbacks unless runtime PM is
+-	 * disabled and enabling it is blocked for them.
++	 * for it and for devices without PM callbacks.
+ 	 *
+ 	 * However, if "smart suspend" is not enabled for the device's parent
+ 	 * or any of its suppliers that take runtime PM into account, it cannot
+ 	 * be enabled for the device either.
+ 	 */
+-	dev->power.smart_suspend = (dev->power.no_pm_callbacks ||
+-		dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND)) &&
+-		!pm_runtime_blocked(dev);
++	dev->power.smart_suspend = dev->power.no_pm_callbacks ||
++		dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND);
+ 
+ 	if (!dev_pm_smart_suspend(dev))
+ 		return;
+@@ -1843,6 +1841,7 @@
+ static int device_prepare(struct device *dev, pm_message_t state)
+ {
+ 	int (*callback)(struct device *) = NULL;
++	bool no_runtime_pm;
+ 	int ret = 0;
+ 
+ 	/*
+@@ -1858,7 +1857,7 @@
+ 	 * suspend-resume cycle is complete, so prepare to trigger a warning on
+ 	 * subsequent attempts to enable it.
+ 	 */
+-	pm_runtime_block_if_disabled(dev);
++	no_runtime_pm = pm_runtime_block_if_disabled(dev);
+ 
+ 	if (dev->power.syscore)
+ 		return 0;
+@@ -1893,7 +1892,10 @@
+ 		pm_runtime_put(dev);
+ 		return ret;
+ 	}
+-	device_prepare_smart_suspend(dev);
++	/* Do not enable "smart suspend" for devices without runtime PM. */
++	if (!no_runtime_pm)
++		device_prepare_smart_suspend(dev);
++
+ 	/*
+ 	 * A positive return value from ->prepare() means "this device appears
+ 	 * to be runtime-suspended and its state is fine, so if it really is
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -1460,14 +1460,19 @@
+ }
+ EXPORT_SYMBOL_GPL(pm_runtime_barrier);
+ 
+-void pm_runtime_block_if_disabled(struct device *dev)
++bool pm_runtime_block_if_disabled(struct device *dev)
+ {
++	bool ret;
++
+ 	spin_lock_irq(&dev->power.lock);
+ 
+-	if (dev->power.disable_depth && dev->power.last_status == RPM_INVALID)
++	ret = dev->power.disable_depth && dev->power.last_status == RPM_INVALID;
++	if (ret)
+ 		dev->power.last_status = RPM_BLOCKED;
+ 
+ 	spin_unlock_irq(&dev->power.lock);
++
++	return ret;
+ }
+ 
+ void pm_runtime_unblock(struct device *dev)
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -77,7 +77,7 @@
+ extern int pm_schedule_suspend(struct device *dev, unsigned int delay);
+ extern int __pm_runtime_set_status(struct device *dev, unsigned int status);
+ extern int pm_runtime_barrier(struct device *dev);
+-extern void pm_runtime_block_if_disabled(struct device *dev);
++extern bool pm_runtime_block_if_disabled(struct device *dev);
+ extern void pm_runtime_unblock(struct device *dev);
+ extern void pm_runtime_enable(struct device *dev);
+ extern void __pm_runtime_disable(struct device *dev, bool check_resume);
+@@ -274,7 +274,7 @@
+ static inline int __pm_runtime_set_status(struct device *dev,
+ 					    unsigned int status) { return 0; }
+ static inline int pm_runtime_barrier(struct device *dev) { return 0; }
+-static inline void pm_runtime_block_if_disabled(struct device *dev) {}
++static inline bool pm_runtime_block_if_disabled(struct device *dev) { return true; }
+ static inline void pm_runtime_unblock(struct device *dev) {}
+ static inline void pm_runtime_enable(struct device *dev) {}
+ static inline void __pm_runtime_disable(struct device *dev, bool c) {}
+
+
+
