@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7A1A1DED66;
-	Wed, 19 Feb 2025 09:27:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5BB121E4928;
+	Wed, 19 Feb 2025 09:27:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739957226; cv=none; b=gi/b0KkI1VQPZcegca6ezXVhEIMWYGAuhAxfmCgb9fay4Rvr6LjePuqoFnFWLBMVqsJn0P3mY6H1bhmSeV0k1D64bL4thLULBFi9wgzyY0jLhKOB5GXP1fb/kZ3H7sxbbaU+oMff+vYn282ZwgFv0LW1M/ygz5a4foosr3t1c2c=
+	t=1739957226; cv=none; b=RXbVJxPeGClWzI53Tkw8wWgmEYwuEdRP6KWGxu+/PbrGaYwWsFMG5iaEIlYtYSqbGqvMiNP+0GaCQaSfSotfDWHOkypMJ7Gj2IPwzmat5J5yPz7EOG9KOJRhMTpza9VWsuoJ8hydmvxl5CVxWEc3mOJ8x2sQtXcZSjA7HgqSUcg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1739957226; c=relaxed/simple;
-	bh=OeRy+twmD8FQBSJGvaeeiPxoNoz0B9M0gaBTwQgybCY=;
+	bh=qk9IZco66UBn8C3Vba9yyk9yqB7+Kiosc0nwXq6BBxM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=HtdItYVxZ3zypPcwDJUygjXQHtSjXaq6SOWrPMW0oRL+qDrQFvrJikPTvpsvyGs9B7FwJQ1thKVhQVUuZ+M/s0PQkFnpyGFbKGZRVBsmGR1xUo3wm/45uadbAGhCTOfRaJWUF/qxLpmsjZYQL3xt1+q6qKgXn4/JQ+8iH8XEZXs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mjGkec+B; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=hkZ6m2Y37cB5Bl1sQoGhtVgJ47oj/vxgiSc8CDKMStN1b6iEbNyfxirngRDVIoQHwQpjHmOhgNOT1G2qspcKSgc8DK3YgeAldTyoCfW3BH8fOhwWNjOG9SolDBbyq6tA84pUhVkQH0KEVGLMGfnp2uEbDNUF8paF+eESm6MH/Bg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bW8yoFMS; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mjGkec+B"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id B2629C4CEEE;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bW8yoFMS"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id E5BC8C4CEEF;
 	Wed, 19 Feb 2025 09:27:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1739957225;
-	bh=OeRy+twmD8FQBSJGvaeeiPxoNoz0B9M0gaBTwQgybCY=;
+	bh=qk9IZco66UBn8C3Vba9yyk9yqB7+Kiosc0nwXq6BBxM=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=mjGkec+BegjNPVeH4nLLQu2Df7U2/xK2EQ5ol62omqCHnq+eZHyiXyGM0297RY//g
-	 dsONx4NR+fdBumU02JxpI4sTL8twIEP2AwzPRyPbm5k7MTbJ17gxw1sIl5b5p/tAT1
-	 FJXc30jiC+r2D9HZCCgbGMWkVTy7qNwWwglLhzeweimYqQnkfAN5lLo5HKFgcOB0p4
-	 NOXEYXA4VqHfzfccKM2dt6LOi2W50+xVQHWx+B2htKP9/qT25/h9FAVYbHePlUclLZ
-	 +iq9tmIeviZO5MYnaLBQ6cXY90Le3fa+HnWUZGOl8t7zXhlfWtHC5Qyq8DzkOjXmRB
-	 iklJ6w5Ns+mfA==
+	b=bW8yoFMS83evLGvnhNoYee11OVAQ5y6uoenaJoSfSch7Uulo9S/6JiUx+LLS5j0k+
+	 iGMhM0oiUUrZVC+xFVsL5Qca8Dw07kwOn1D18CKNyxwi3saUF3KIBSfblRsewCDDZW
+	 JS1QGWRWbGNAbdZJ05/Jrr+wbbDW0XAEnPA1o4hB1nzdBk115wJyXGmuavDHemL4eP
+	 wwG1BupxYys8xmwdByU8fBM+WTMYB/Ky0iR2fN1POH+gxKecU06arbmQhYn2Rwq5Wp
+	 UsonkW14oZERZtNYAKmsyZdF31m7w15zkeSGlJXJ6CQyGvpFfp3HI+ezIvajuMeNG+
+	 6+8B5nuJc6wDg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A82C2C021AA;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA2C8C021AA;
 	Wed, 19 Feb 2025 09:27:05 +0000 (UTC)
 From: Sasha Finkelstein via B4 Relay <devnull+fnkl.kernel.gmail.com@kernel.org>
-Date: Wed, 19 Feb 2025 10:26:59 +0100
-Subject: [PATCH 3/5] media: dt-bindings: Add Apple ISP
+Date: Wed, 19 Feb 2025 10:27:01 +0100
+Subject: [PATCH 5/5] arm64: dts: apple: Add ISP nodes
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +40,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250219-isp-v1-3-6d3e89b67c31@gmail.com>
+Message-Id: <20250219-isp-v1-5-6d3e89b67c31@gmail.com>
 References: <20250219-isp-v1-0-6d3e89b67c31@gmail.com>
 In-Reply-To: <20250219-isp-v1-0-6d3e89b67c31@gmail.com>
 To: Sven Peter <sven@svenpeter.dev>, 
@@ -55,13 +55,14 @@ To: Sven Peter <sven@svenpeter.dev>,
 Cc: asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
  linux-pm@vger.kernel.org, linux-media@vger.kernel.org, imx@lists.linux.dev, 
- Sasha Finkelstein <fnkl.kernel@gmail.com>
+ Sasha Finkelstein <fnkl.kernel@gmail.com>, Eileen Yoon <eyn@gmx.com>, 
+ Janne Grunau <j@jannau.net>, Asahi Lina <lina@asahilina.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1739957223; l=5702;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1739957223; l=32393;
  i=fnkl.kernel@gmail.com; s=20241124; h=from:subject:message-id;
- bh=A9oH4JPrA84M2AIoue7FVKM9TwqTr7E5y+sVJjno88Q=;
- b=XBhltGV9upjAetievVsxuOOHOJqwjFWEQS4CcHPjb8inxvCNo5X/gTHoybc1LTAJ95fVKfZnn
- R/qqq4PjLRxAYmNoyZE26x0HUOU0QvIf2WDp0SQzmEyQYl5M+8cWoMF
+ bh=M1l/C577EU61p9d/ygfOHQRhflKDcFrX9DiHp6hGnQY=;
+ b=Dg0nSQ/h4VzFouS01v9scgfQH1KwJUwIe7GHoR0l1qvTMO5PGnFNcdgZcSmVEYrTK8Lb/KnnF
+ IWcNCOTLvSTCZU2lM4CyQxmA6aTwhg4QSZM1vp9dwEpRWrGbtiZaGZU
 X-Developer-Key: i=fnkl.kernel@gmail.com; a=ed25519;
  pk=aSkp1PdZ+eF4jpMO6oLvz/YfT5XkBUneWwyhQrOgmsU=
 X-Endpoint-Received: by B4 Relay for fnkl.kernel@gmail.com/20241124 with
@@ -69,186 +70,1108 @@ X-Endpoint-Received: by B4 Relay for fnkl.kernel@gmail.com/20241124 with
 X-Original-From: Sasha Finkelstein <fnkl.kernel@gmail.com>
 Reply-To: fnkl.kernel@gmail.com
 
-From: Sasha Finkelstein <fnkl.kernel@gmail.com>
+From: Eileen Yoon <eyn@gmx.com>
 
-Add bindings for the ISP used with the webcam in Apple
-ARM laptops.
+Adds device tree entries for the ISP and camera sensors
 
+Signed-off-by: Eileen Yoon <eyn@gmx.com>
+Co-developed-by: Janne Grunau <j@jannau.net>
+Signed-off-by: Janne Grunau <j@jannau.net>
+Co-developed-by: Hector Martin <marcan@marcan.st>
+Signed-off-by: Hector Martin <marcan@marcan.st>
+Co-developed-by: Asahi Lina <lina@asahilina.net>
+Signed-off-by: Asahi Lina <lina@asahilina.net>
 Signed-off-by: Sasha Finkelstein <fnkl.kernel@gmail.com>
 ---
- .../devicetree/bindings/media/apple,isp.yaml       | 151 +++++++++++++++++++++
- MAINTAINERS                                        |   1 +
- 2 files changed, 152 insertions(+)
+ arch/arm64/boot/dts/apple/isp-common.dtsi      |  45 ++++++++++
+ arch/arm64/boot/dts/apple/isp-imx248.dtsi      |  62 +++++++++++++
+ arch/arm64/boot/dts/apple/isp-imx364.dtsi      |  78 ++++++++++++++++
+ arch/arm64/boot/dts/apple/isp-imx558-cfg0.dtsi | 101 +++++++++++++++++++++
+ arch/arm64/boot/dts/apple/isp-imx558.dtsi      | 102 +++++++++++++++++++++
+ arch/arm64/boot/dts/apple/t600x-die0.dtsi      |  48 ++++++++++
+ arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi |   6 ++
+ arch/arm64/boot/dts/apple/t600x-pmgr.dtsi      |  81 +++++++++++++++++
+ arch/arm64/boot/dts/apple/t8103-j293.dts       |   6 ++
+ arch/arm64/boot/dts/apple/t8103-j313.dts       |   6 ++
+ arch/arm64/boot/dts/apple/t8103-j456.dts       |   6 ++
+ arch/arm64/boot/dts/apple/t8103-j457.dts       |   6 ++
+ arch/arm64/boot/dts/apple/t8103-pmgr.dtsi      | 118 +++++++++++++++++++++++++
+ arch/arm64/boot/dts/apple/t8103.dtsi           |  50 +++++++++++
+ arch/arm64/boot/dts/apple/t8112-j413.dts       |   7 ++
+ arch/arm64/boot/dts/apple/t8112-j493.dts       |   6 ++
+ arch/arm64/boot/dts/apple/t8112-pmgr.dtsi      | 118 +++++++++++++++++++++++++
+ arch/arm64/boot/dts/apple/t8112.dtsi           |  50 +++++++++++
+ 18 files changed, 896 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/media/apple,isp.yaml b/Documentation/devicetree/bindings/media/apple,isp.yaml
+diff --git a/arch/arm64/boot/dts/apple/isp-common.dtsi b/arch/arm64/boot/dts/apple/isp-common.dtsi
 new file mode 100644
-index 0000000000000000000000000000000000000000..67d536b61851af30fcc5bc452a761138876c6b18
+index 0000000000000000000000000000000000000000..beaaab950bef70d7521666ba093f10a57cf1b910
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/media/apple,isp.yaml
-@@ -0,0 +1,151 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/media/apple,isp.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
++++ b/arch/arm64/boot/dts/apple/isp-common.dtsi
+@@ -0,0 +1,45 @@
++// SPDX-License-Identifier: GPL-2.0+ OR MIT
++/*
++ * Common ISP configuration for Apple silicon platforms.
++ *
++ * Copyright The Asahi Linux Contributors
++ */
 +
-+title: An ISP block used in Apple products
++/ {
++	aliases {
++		isp = &isp;
++	};
 +
-+maintainers:
-+  - Sasha Finkelstein <fnkl.kernel@gmail.com>
++	reserved-memory {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
 +
-+description:
-+  The ISP in charge of webcams on ARM Apple laptops
++		isp_heap: isp-heap {
++			/* Filled in by bootloder */
++			reg = <0 0 0 0>;
++			no-map;
++		};
++	};
++};
 +
-+properties:
-+  compatible:
-+    items:
-+      - enum:
-+          - apple,t8103-isp
-+          - apple,t8112-isp
-+          - apple,t6000-isp
-+          - apple,t6020-isp
-+      - const: apple,isp
++&isp {
++	memory-region = <&isp_heap>;
++	status = "okay";
++};
 +
-+  reg:
-+    items:
-+      - description: ASC coprocessor control
-+      - description: Peripheral to host mailbox
-+      - description: General-purpose ASC IO registers
-+      - description: Host to peripheral mailbox
++&isp_dart0 {
++	status = "okay";
++};
 +
-+  reg-names:
-+    items:
-+      - const: coproc
-+      - const: mbox
-+      - const: gpio
-+      - const: mbox2
++&isp_dart1 {
++	status = "okay";
++};
 +
-+  iommus:
-+    description: All 3 must be kept in sync
-+    minItems: 3
-+    maxItems: 3
++&isp_dart2 {
++	status = "okay";
++};
 +
-+  interrupts:
-+    maxItems: 1
++&ps_isp_sys {
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/apple/isp-imx248.dtsi b/arch/arm64/boot/dts/apple/isp-imx248.dtsi
+new file mode 100644
+index 0000000000000000000000000000000000000000..1d8a87b8058cfc8d63ccef5874aa7c2c318f9654
+--- /dev/null
++++ b/arch/arm64/boot/dts/apple/isp-imx248.dtsi
+@@ -0,0 +1,62 @@
++// SPDX-License-Identifier: GPL-2.0+ OR MIT
++/*
++ * ISP configuration for platforms with IMX248 sensor.
++ *
++ * Copyright The Asahi Linux Contributors
++ */
 +
-+  power-domains:
-+    minItems: 1
-+    maxItems: 20
-+    description: All necessary power domains. Driver will enable them in order
++#include "isp-common.dtsi"
 +
-+  memory-region:
-+    maxItems: 1
++&isp {
++	apple,temporal-filter = <0>;
 +
-+  apple,dart-vm-size:
-+    description: Supported device memory range
-+    $ref: /schemas/types.yaml#/definitions/uint64
++	sensor-presets {
++		/* 1280x720 */
++		preset0 {
++			apple,config-index = <0>;
++			apple,input-size = <1296 736>;
++			apple,output-size = <1280 720>;
++			apple,crop = <8 8 1280 720>;
++		};
 +
-+  apple,platform-id:
-+    description: Platform id for firmware
-+    $ref: /schemas/types.yaml#/definitions/uint32
++		/* 960x720 (4:3) */
++		preset1 {
++			apple,config-index = <0>;
++			apple,input-size = <1296 736>;
++			apple,output-size = <960 720>;
++			apple,crop = <168 8 960 720>;
++		};
 +
-+  apple,temporal-filter:
-+    description: Whether temporal filter should be enabled in firmware
-+    $ref: /schemas/types.yaml#/definitions/uint32
++		/* 960x540 (16:9) */
++		preset2 {
++			apple,config-index = <0>;
++			apple,input-size = <1296 736>;
++			apple,output-size = <960 540>;
++			apple,crop = <8 8 1280 720>;
++		};
 +
-+  sensor-presets:
-+    additionalProperties: false
++		/* 640x480 (4:3) */
++		preset3 {
++			apple,config-index = <0>;
++			apple,input-size = <1296 736>;
++			apple,output-size = <640 480>;
++			apple,crop = <168 8 960 720>;
++		};
 +
-+    patternProperties:
-+      '^preset[0-9]+$':
-+        type: object
++		/* 640x360 (16:9) */
++		preset4 {
++			apple,config-index = <0>;
++			apple,input-size = <1296 736>;
++			apple,output-size = <640 360>;
++			apple,crop = <8 8 1280 720>;
++		};
 +
-+        additionalProperties: false
++		/* 320x180 (16:9) */
++		preset5 {
++			apple,config-index = <0>;
++			apple,input-size = <1296 736>;
++			apple,output-size = <320 180>;
++			apple,crop = <8 8 1280 720>;
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/apple/isp-imx364.dtsi b/arch/arm64/boot/dts/apple/isp-imx364.dtsi
+new file mode 100644
+index 0000000000000000000000000000000000000000..dc52fb22126ffb7370fb4bb9e9a9e04ee3c1b9ae
+--- /dev/null
++++ b/arch/arm64/boot/dts/apple/isp-imx364.dtsi
+@@ -0,0 +1,78 @@
++// SPDX-License-Identifier: GPL-2.0+ OR MIT
++/*
++ * ISP configuration for platforms with IMX364 sensor.
++ *
++ * Copyright The Asahi Linux Contributors
++ */
 +
-+        properties:
-+          apple,config-index:
-+            description: Firmware config index
-+            $ref: /schemas/types.yaml#/definitions/uint32
++#include "isp-common.dtsi"
 +
-+          apple,input-size:
-+            $ref: /schemas/types.yaml#/definitions/uint32-array
-+            minItems: 2
-+            maxItems: 2
-+            description: Raw sensor size
++&isp {
++	apple,temporal-filter = <0>;
 +
-+          apple,output-size:
-+            $ref: /schemas/types.yaml#/definitions/uint32-array
-+            minItems: 2
-+            maxItems: 2
-+            description: Cropped and scaled image size
++	sensor-presets {
++		/* 1920x1080 */
++		preset0 {
++			apple,config-index = <0>;
++			apple,input-size = <1920 1080>;
++			apple,output-size = <1920 1080>;
++			apple,crop = <0 0 1920 1080>;
++		};
 +
-+          apple,crop:
-+            $ref: /schemas/types.yaml#/definitions/uint32-array
-+            minItems: 4
-+            maxItems: 4
-+            description: Area to crop
++		/* 1440x720 (4:3) */
++		preset1 {
++			apple,config-index = <0>;
++			apple,input-size = <1920 1080>;
++			apple,output-size = <1440 1080>;
++			apple,crop = <240 0 1440 1080>;
++		};
 +
-+        required:
-+          - apple,config-index
-+          - apple,input-size
-+          - apple,output-size
-+          - apple,crop
++		/* 1280x720 (16:9) */
++		preset2 {
++			apple,config-index = <0>;
++			apple,input-size = <1920 1080>;
++			apple,output-size = <1280 720>;
++			apple,crop = <0 0 1920 1080>;
++		};
 +
-+required:
-+  - compatible
-+  - reg
-+  - iommus
-+  - interrupts
-+  - power-domains
-+  - memory-region
-+  - apple,dart-vm-size
-+  - apple,platform-id
-+  - apple,temporal-filter
++		/* 960x720 (4:3) */
++		preset3{
++			apple,config-index = <0>;
++			apple,input-size = <1920 1080>;
++			apple,output-size = <960 720>;
++			apple,crop = <240 0 1440 1080>;
++		};
 +
-+additionalProperties: false
++		/* 960x540 (16:9) */
++		preset4 {
++			apple,config-index = <0>;
++			apple,input-size = <1920 1080>;
++			apple,output-size = <960 540>;
++			apple,crop = <0 0 1920 1080>;
++		};
 +
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/apple-aic.h>
-+    isp: isp@2a000000 {
-+        compatible = "apple,t8103-isp", "apple,isp";
-+        reg = <0x2a000000 0x2000000>,
-+              <0x2c104000 0x100>,
-+              <0x2c104170 0x100>,
-+              <0x2c1043f0 0x100>;
-+        reg-names = "coproc", "mbox", "gpio", "mbox2";
-+        iommus = <&isp_dart0 0>, <&isp_dart1 0>, <&isp_dart2 0>;
-+        interrupt-parent = <&aic>;
-+        interrupts = <AIC_IRQ 246 IRQ_TYPE_LEVEL_HIGH>;
-+        power-domains = <&ps_isp_sys>, <&ps_isp_set0>,
-+                        <&ps_isp_set1>, <&ps_isp_set2>, <&ps_isp_fe>,
-+                        <&ps_isp_set4>, <&ps_isp_set5>, <&ps_isp_set6>,
-+                        <&ps_isp_set7>, <&ps_isp_set8>, <&ps_isp_set9>,
-+                        <&ps_isp_set10>, <&ps_isp_set11>,
-+                        <&ps_isp_set12>;
-+        memory-region = <&isp_heap>;
-+        apple,dart-vm-size = <0x0 0xa0000000>;
-+        apple,platform-id = <1>;
-+        apple,temporal-filter = <0>;
++		/* 640x480 (4:3) */
++		preset5 {
++			apple,config-index = <0>;
++			apple,input-size = <1920 1080>;
++			apple,output-size = <640 480>;
++			apple,crop = <240 0 1440 1080>;
++		};
 +
-+        sensor-presets {
-+            preset0 {
-+                apple,config-index = <0>;
-+                apple,input-size = <1296 736>;
-+                apple,output-size = <1280 720>;
-+                apple,crop = <8 8 1280 720>;
-+            };
-+        };
-+    };
-+...
-diff --git a/MAINTAINERS b/MAINTAINERS
-index efee40ea589f70bc5e4a390072a4543234616743..dea7239ee0f5464b31efed5a2e0e5e602bcb6439 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2228,6 +2228,7 @@ F:	Documentation/devicetree/bindings/interrupt-controller/apple,*
- F:	Documentation/devicetree/bindings/iommu/apple,dart.yaml
- F:	Documentation/devicetree/bindings/iommu/apple,sart.yaml
- F:	Documentation/devicetree/bindings/mailbox/apple,mailbox.yaml
-+F:	Documentation/devicetree/bindings/media/apple,isp.yaml
- F:	Documentation/devicetree/bindings/net/bluetooth/brcm,bcm4377-bluetooth.yaml
- F:	Documentation/devicetree/bindings/nvme/apple,nvme-ans.yaml
- F:	Documentation/devicetree/bindings/nvmem/apple,efuses.yaml
++		/* 640x360 (16:9) */
++		preset6 {
++			apple,config-index = <0>;
++			apple,input-size = <1920 1080>;
++			apple,output-size = <640 360>;
++			apple,crop = <0 0 1920 1080>;
++		};
++
++		/* 320x180 (16:9) */
++		preset7 {
++			apple,config-index = <0>;
++			apple,input-size = <1920 1080>;
++			apple,output-size = <320 180>;
++			apple,crop = <0 0 1920 1080>;
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/apple/isp-imx558-cfg0.dtsi b/arch/arm64/boot/dts/apple/isp-imx558-cfg0.dtsi
+new file mode 100644
+index 0000000000000000000000000000000000000000..83a86a937f41a4589419b051d33f3fae728ffe6e
+--- /dev/null
++++ b/arch/arm64/boot/dts/apple/isp-imx558-cfg0.dtsi
+@@ -0,0 +1,101 @@
++// SPDX-License-Identifier: GPL-2.0+ OR MIT
++/*
++ * ISP configuration for platforms with IMX558 sensor in
++ * config #0 mode.
++ *
++ * These platforms enable MLVNR for all configs except
++ * #0, which we don't support. Config #0 is an uncropped
++ * square 1920x1920 sensor, with dark corners.
++ * Therefore, we synthesize common resolutions by using
++ * crop/scale while always choosing config #0.
++ *
++ * Copyright The Asahi Linux Contributors
++ */
++
++#include "isp-common.dtsi"
++
++&isp {
++	apple,temporal-filter = <0>;
++
++	sensor-presets {
++		/* 1920x1080 */
++		preset0 {
++			apple,config-index = <0>;
++			apple,input-size = <1920 1920>;
++			apple,output-size = <1920 1080>;
++			apple,crop = <0 420 1920 1080>;
++		};
++
++		/* 1080x1920 */
++		preset1 {
++			apple,config-index = <0>;
++			apple,input-size = <1920 1920>;
++			apple,output-size = <1080 1920>;
++			apple,crop = <420 0 1080 1920>;
++		};
++
++		/* 1920x1440 */
++		preset2 {
++			apple,config-index = <0>;
++			apple,input-size = <1920 1920>;
++			apple,output-size = <1920 1440>;
++			apple,crop = <0 240 1920 1440>;
++		};
++
++		/* 1440x1920 */
++		preset3 {
++			apple,config-index = <0>;
++			apple,input-size = <1920 1920>;
++			apple,output-size = <1440 1920>;
++			apple,crop = <240 0 1440 1920>;
++		};
++
++		/* 1280x720 */
++		preset4 {
++			apple,config-index = <0>;
++			apple,input-size = <1920 1920>;
++			apple,output-size = <1280 720>;
++			apple,crop = <0 420 1920 1080>;
++		};
++
++		/* 720x1280 */
++		preset5 {
++			apple,config-index = <0>;
++			apple,input-size = <1920 1920>;
++			apple,output-size = <720 1280>;
++			apple,crop = <420 0 1080 1920>;
++		};
++
++		/* 1280x960 */
++		preset6 {
++			apple,config-index = <0>;
++			apple,input-size = <1920 1920>;
++			apple,output-size = <1280 960>;
++			apple,crop = <0 240 1920 1440>;
++		};
++
++		/* 960x1280 */
++		preset7 {
++			apple,config-index = <0>;
++			apple,input-size = <1920 1920>;
++			apple,output-size = <960 1280>;
++			apple,crop = <240 0 1440 1920>;
++		};
++
++		/* 640x480 */
++		preset8 {
++			apple,config-index = <0>;
++			apple,input-size = <1920 1920>;
++			apple,output-size = <640 480>;
++			apple,crop = <0 240 1920 1440>;
++		};
++
++		/* 480x640 */
++		preset9 {
++			apple,config-index = <0>;
++			apple,input-size = <1920 1920>;
++			apple,output-size = <480 640>;
++			apple,crop = <240 0 1440 1920>;
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/apple/isp-imx558.dtsi b/arch/arm64/boot/dts/apple/isp-imx558.dtsi
+new file mode 100644
+index 0000000000000000000000000000000000000000..6eae34a3c2ee4a5dc02c7871462c4cebfc0a9be2
+--- /dev/null
++++ b/arch/arm64/boot/dts/apple/isp-imx558.dtsi
+@@ -0,0 +1,102 @@
++// SPDX-License-Identifier: GPL-2.0+ OR MIT
++/*
++ * ISP configuration for platforms with IMX558 sensor.
++ *
++ * Copyright The Asahi Linux Contributors
++ */
++
++#include "isp-common.dtsi"
++
++&isp {
++	apple,temporal-filter = <0>;
++
++	sensor-presets {
++		/* 1920x1080 */
++		preset0 {
++			apple,config-index = <1>;
++			apple,input-size = <1920 1080>;
++			apple,output-size = <1920 1080>;
++			apple,crop = <0 0 1920 1080>;
++		};
++
++		/* 1080x1920 */
++		preset1 {
++			apple,config-index = <2>;
++			apple,input-size = <1080 1920>;
++			apple,output-size = <1080 1920>;
++			apple,crop = <0 0 1080 1920>;
++		};
++
++		/* 1760x1328 */
++		preset2 {
++			apple,config-index = <3>;
++			apple,input-size = <1760 1328>;
++			apple,output-size = <1760 1328>;
++			apple,crop = <0 0 1760 1328>;
++		};
++
++		/* 1328x1760 */
++		preset3 {
++			apple,config-index = <4>;
++			apple,input-size = <1328 1760>;
++			apple,output-size = < 1328 1760>;
++			apple,crop = <0 0 1328 1760>;
++		};
++
++		/* 1152x1152 */
++		preset4 {
++			apple,config-index = <5>;
++			apple,input-size = <1152 1152>;
++			apple,output-size = <1152 1152>;
++			apple,crop = <0 0 1152 1152>;
++		};
++
++		/* 1280x720 */
++		preset5 {
++			apple,config-index = <1>;
++			apple,input-size = <1920 1080>;
++			apple,output-size = <1280 720>;
++			apple,crop = <0 0 1920 1080>;
++		};
++
++		/* 720x1280 */
++		preset6 {
++			apple,config-index = <2>;
++			apple,input-size = <1080 1920>;
++			apple,output-size = <720 1280>;
++			apple,crop = <0 0 1080 1920>;
++		};
++
++		/* 1280x960 */
++		preset7 {
++			apple,config-index = <3>;
++			apple,input-size = <1760 1328>;
++			apple,output-size = <1280 960>;
++			apple,crop = <0 4 1760 1320>;
++		};
++
++		/* 960x1280 */
++		preset8 {
++			apple,config-index = <4>;
++			apple,input-size = <1328 1760>;
++			apple,output-size = <960 1280>;
++			apple,crop = <4 0 1320 1760>;
++		};
++
++		/* 640x480 */
++		preset9 {
++			apple,config-index = <3>;
++			apple,input-size = <1760 1328>;
++			apple,output-size = <640 480>;
++			apple,crop = <0 4 1760 1320>;
++		};
++
++		/* 480x640 */
++		preset10 {
++			apple,config-index = <4>;
++			apple,input-size = <1328 1760>;
++			apple,output-size = <480 640>;
++			apple,crop = <4 0 1320 1760>;
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/apple/t600x-die0.dtsi b/arch/arm64/boot/dts/apple/t600x-die0.dtsi
+index b1c875e692c8fb9c0af46a23568a7b0cd720141b..019484360804ecdd0313638a0694a61693a5729a 100644
+--- a/arch/arm64/boot/dts/apple/t600x-die0.dtsi
++++ b/arch/arm64/boot/dts/apple/t600x-die0.dtsi
+@@ -53,6 +53,54 @@ wdt: watchdog@2922b0000 {
+ 		interrupts = <AIC_IRQ 0 631 IRQ_TYPE_LEVEL_HIGH>;
+ 	};
+ 
++	isp: isp@384000000 {
++		compatible = "apple,t6000-isp", "apple,isp";
++		reg = <0x3 0x84000000 0x0 0x2000000>,
++			<0x3 0x86104000 0x0 0x100>,
++			<0x3 0x86104170 0x0 0x100>,
++			<0x3 0x861043f0 0x0 0x100>;
++		reg-names = "coproc", "mbox", "gpio", "mbox2";
++		iommus = <&isp_dart0 0>, <&isp_dart1 0>, <&isp_dart2 0>;
++		interrupt-parent = <&aic>;
++		interrupts = <AIC_IRQ 0 538 IRQ_TYPE_LEVEL_HIGH>;
++		power-domains = <&ps_isp_sys>, <&ps_isp_set0>,
++			<&ps_isp_set1>, <&ps_isp_fe>, <&ps_isp_set3>,
++			<&ps_isp_set4>, <&ps_isp_set5>, <&ps_isp_set6>,
++			<&ps_isp_set7>, <&ps_isp_set8>;
++		apple,dart-vm-size = <0x0 0xa0000000>;
++		status = "disabled";
++	};
++
++	isp_dart0: iommu@3860e8000 {
++		compatible = "apple,t6000-dart";
++		reg = <0x3 0x860e8000 0x0 0x4000>;
++		interrupt-parent = <&aic>;
++		interrupts = <AIC_IRQ 0 543 IRQ_TYPE_LEVEL_HIGH>;
++		#iommu-cells = <1>;
++		power-domains = <&ps_isp_sys>;
++		status = "disabled";
++	};
++
++	isp_dart1: iommu@3860f4000 {
++		compatible = "apple,t6000-dart";
++		reg = <0x3 0x860f4000 0x0 0x4000>;
++		interrupt-parent = <&aic>;
++		interrupts = <AIC_IRQ 0 543 IRQ_TYPE_LEVEL_HIGH>;
++		#iommu-cells = <1>;
++		power-domains = <&ps_isp_sys>;
++		status = "disabled";
++	};
++
++	isp_dart2: iommu@3860fc000 {
++		compatible = "apple,t6000-dart";
++		reg = <0x3 0x860fc000 0x0 0x4000>;
++		interrupt-parent = <&aic>;
++		interrupts = <AIC_IRQ 0 543 IRQ_TYPE_LEVEL_HIGH>;
++		#iommu-cells = <1>;
++		power-domains = <&ps_isp_sys>;
++		status = "disabled";
++	};
++
+ 	sio_dart_0: iommu@39b004000 {
+ 		compatible = "apple,t6000-dart";
+ 		reg = <0x3 0x9b004000 0x0 0x4000>;
+diff --git a/arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi b/arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi
+index 2e471dfe43cf885c1234d36bf0e0acfdc4904621..416e6ec213c8238f0d3c15298d5e44cb13abaabf 100644
+--- a/arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi
++++ b/arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi
+@@ -119,3 +119,9 @@ sdhci0: mmc@0,0 {
+ &fpwm0 {
+ 	status = "okay";
+ };
++
++#include "isp-imx558.dtsi"
++
++&isp {
++	apple,platform-id = <3>;
++};
+diff --git a/arch/arm64/boot/dts/apple/t600x-pmgr.dtsi b/arch/arm64/boot/dts/apple/t600x-pmgr.dtsi
+index 0bd44753b76a0c111dc12e6e900bf2f3c07a07ff..1a24e0d20c040fc6225326cd665cf1d1902b7813 100644
+--- a/arch/arm64/boot/dts/apple/t600x-pmgr.dtsi
++++ b/arch/arm64/boot/dts/apple/t600x-pmgr.dtsi
+@@ -1368,6 +1368,7 @@ DIE_NODE(ps_isp_sys): power-controller@3a8 {
+ 		#reset-cells = <0>;
+ 		label = DIE_LABEL(isp_sys);
+ 		power-domains = <&DIE_NODE(ps_afnc2_lw1)>;
++		status = "disabled";
+ 	};
+ 
+ 	DIE_NODE(ps_venc_sys): power-controller@3b0 {
+@@ -1456,6 +1457,86 @@ DIE_NODE(ps_venc_me1): power-controller@8020 {
+ 		label = DIE_LABEL(venc_me1);
+ 		power-domains = <&DIE_NODE(ps_venc_me0)>;
+ 	};
++
++	/* There is a dependency tree involved with these PDs,
++	 * but we do not express it here since the ISP driver
++	 * is supposed to sequence them in the right order anyway
++	 * (and we do not know the exact tree structure).
++	 *
++	 * This also works around spurious parent PD activation
++	 * on machines with ISP disabled (desktops).
++	 */
++	DIE_NODE(ps_isp_set0): power-controller@4000 {
++		compatible = "apple,t6000-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4000 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set0";
++	};
++
++	DIE_NODE(ps_isp_set1): power-controller@4010 {
++		compatible = "apple,t6000-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4010 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set1";
++	};
++
++	DIE_NODE(ps_isp_fe): power-controller@4008 {
++		compatible = "apple,t6000-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4008 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set2";
++	};
++
++	DIE_NODE(ps_isp_set3): power-controller@4028 {
++		compatible = "apple,t6000-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4028 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set3";
++	};
++
++	DIE_NODE(ps_isp_set4): power-controller@4020 {
++		compatible = "apple,t6000-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4020 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set4";
++	};
++
++	DIE_NODE(ps_isp_set5): power-controller@4030 {
++		compatible = "apple,t6000-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4030 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set5";
++	};
++
++	DIE_NODE(ps_isp_set6): power-controller@4018 {
++		compatible = "apple,t6000-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4018 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set6";
++	};
++
++	DIE_NODE(ps_isp_set7): power-controller@4038 {
++		compatible = "apple,t6000-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4038 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set7";
++	};
++
++	DIE_NODE(ps_isp_set8): power-controller@4040 {
++		compatible = "apple,t6000-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4040 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set8";
++	};
+ };
+ 
+ &DIE_NODE(pmgr_south) {
+diff --git a/arch/arm64/boot/dts/apple/t8103-j293.dts b/arch/arm64/boot/dts/apple/t8103-j293.dts
+index 56b0c67bfcda321b60c621de092643017693ff91..cef284f347363d416d375a68dacc7221739f2d75 100644
+--- a/arch/arm64/boot/dts/apple/t8103-j293.dts
++++ b/arch/arm64/boot/dts/apple/t8103-j293.dts
+@@ -49,3 +49,9 @@ &i2c4 {
+ &fpwm1 {
+ 	status = "okay";
+ };
++
++#include "isp-imx248.dtsi"
++
++&isp {
++	apple,platform-id = <1>;
++};
+diff --git a/arch/arm64/boot/dts/apple/t8103-j313.dts b/arch/arm64/boot/dts/apple/t8103-j313.dts
+index 97a4344d8dca685708aff136af92a1b316f3c3dd..b6899af595f47eaae3e5ff24ba18490dc81377c8 100644
+--- a/arch/arm64/boot/dts/apple/t8103-j313.dts
++++ b/arch/arm64/boot/dts/apple/t8103-j313.dts
+@@ -41,3 +41,9 @@ &wifi0 {
+ &fpwm1 {
+ 	status = "okay";
+ };
++
++#include "isp-imx248.dtsi"
++
++&isp {
++	apple,platform-id = <1>;
++};
+diff --git a/arch/arm64/boot/dts/apple/t8103-j456.dts b/arch/arm64/boot/dts/apple/t8103-j456.dts
+index 58c8e43789b4861544e20c717124ede3327be010..e54393b4e83c12a233067683c03e9ada2d1fba70 100644
+--- a/arch/arm64/boot/dts/apple/t8103-j456.dts
++++ b/arch/arm64/boot/dts/apple/t8103-j456.dts
+@@ -75,3 +75,9 @@ &pcie0_dart_1 {
+ &pcie0_dart_2 {
+ 	status = "okay";
+ };
++
++#include "isp-imx364.dtsi"
++
++&isp {
++	apple,platform-id = <2>;
++};
+diff --git a/arch/arm64/boot/dts/apple/t8103-j457.dts b/arch/arm64/boot/dts/apple/t8103-j457.dts
+index 152f95fd49a2118093396838fbd8b6bd1b518f81..7a825eee01f5600fe5eb9a11d59e64d3939edac6 100644
+--- a/arch/arm64/boot/dts/apple/t8103-j457.dts
++++ b/arch/arm64/boot/dts/apple/t8103-j457.dts
+@@ -48,3 +48,9 @@ ethernet0: ethernet@0,0 {
+ &pcie0_dart_2 {
+ 	status = "okay";
+ };
++
++#include "isp-imx364.dtsi"
++
++&isp {
++	apple,platform-id = <2>;
++};
+diff --git a/arch/arm64/boot/dts/apple/t8103-pmgr.dtsi b/arch/arm64/boot/dts/apple/t8103-pmgr.dtsi
+index 9645861a858c1a7c46c25a614c2cc4b03083bf46..5761cb260b7f1c1a0657aa99137e451892610ec3 100644
+--- a/arch/arm64/boot/dts/apple/t8103-pmgr.dtsi
++++ b/arch/arm64/boot/dts/apple/t8103-pmgr.dtsi
+@@ -805,6 +805,7 @@ ps_isp_sys: power-controller@400 {
+ 		#reset-cells = <0>;
+ 		label = "isp_sys";
+ 		power-domains = <&ps_rmx>;
++		status = "disabled";
+ 	};
+ 
+ 	ps_venc_sys: power-controller@408 {
+@@ -1003,6 +1004,123 @@ ps_disp0_cpu0: power-controller@10018 {
+ 		apple,always-on; /* TODO: figure out if we can enable PM here */
+ 		apple,min-state = <4>;
+ 	};
++
++	/* There is a dependency tree involved with these PDs,
++	 * but we do not express it here since the ISP driver
++	 * is supposed to sequence them in the right order anyway
++	 * (and we do not know the exact tree structure).
++	 *
++	 * This also works around spurious parent PD activation
++	 * on machines with ISP disabled (desktops).
++	 */
++	ps_isp_set0: power-controller@4000 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4000 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set0";
++		apple,force-disable;
++	};
++
++	ps_isp_set1: power-controller@4008 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4008 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set1";
++		apple,force-disable;
++		apple,force-reset;
++	};
++
++	ps_isp_set2: power-controller@4010 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4010 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set2";
++		apple,force-disable;
++		apple,force-reset;
++	};
++
++	ps_isp_fe: power-controller@4018 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4018 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_fe";
++	};
++
++	ps_isp_set4: power-controller@4020 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4020 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set4";
++	};
++
++	ps_isp_set5: power-controller@4028 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4028 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set5";
++	};
++
++	ps_isp_set6: power-controller@4030 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4030 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set6";
++	};
++
++	ps_isp_set7: power-controller@4038 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4038 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set7";
++	};
++
++	ps_isp_set8: power-controller@4040 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4040 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set8";
++	};
++
++	ps_isp_set9: power-controller@4048 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4048 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set9";
++	};
++
++	ps_isp_set10: power-controller@4050 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4050 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set10";
++	};
++
++	ps_isp_set11: power-controller@4058 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4058 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set11";
++	};
++
++	ps_isp_set12: power-controller@4060 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4060 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set12";
++	};
+ };
+ 
+ &pmgr_mini {
+diff --git a/arch/arm64/boot/dts/apple/t8103.dtsi b/arch/arm64/boot/dts/apple/t8103.dtsi
+index 9b0dad6b618444ac6b1c9735c50cccfc3965f947..420fda4a8dba70992c7a55c9ef56142ed39ad68f 100644
+--- a/arch/arm64/boot/dts/apple/t8103.dtsi
++++ b/arch/arm64/boot/dts/apple/t8103.dtsi
+@@ -356,6 +356,56 @@ cpufreq_p: performance-controller@211e20000 {
+ 			#performance-domain-cells = <0>;
+ 		};
+ 
++		isp: isp@22a000000 {
++			compatible = "apple,t8103-isp", "apple,isp";
++			reg = <0x2 0x2a000000 0x0 0x2000000>,
++				<0x2 0x2c104000 0x0 0x100>,
++				<0x2 0x2c104170 0x0 0x100>,
++				<0x2 0x2c1043f0 0x0 0x100>;
++			reg-names = "coproc", "mbox", "gpio", "mbox2";
++			iommus = <&isp_dart0 0>, <&isp_dart1 0>, <&isp_dart2 0>;
++			interrupt-parent = <&aic>;
++			interrupts = <AIC_IRQ 246 IRQ_TYPE_LEVEL_HIGH>;
++			power-domains = <&ps_isp_sys>, <&ps_isp_set0>,
++				<&ps_isp_set1>, <&ps_isp_set2>, <&ps_isp_fe>,
++				<&ps_isp_set4>, <&ps_isp_set5>, <&ps_isp_set6>,
++				<&ps_isp_set7>, <&ps_isp_set8>, <&ps_isp_set9>,
++				<&ps_isp_set10>, <&ps_isp_set11>,
++				<&ps_isp_set12>;
++			apple,dart-vm-size = <0x0 0xa0000000>;
++			status = "disabled";
++		};
++
++		isp_dart0: iommu@22c0e8000 {
++			compatible = "apple,t8103-dart";
++			reg = <0x2 0x2c0e8000 0x0 0x4000>;
++			interrupt-parent = <&aic>;
++			interrupts = <AIC_IRQ 251 IRQ_TYPE_LEVEL_HIGH>;
++			power-domains = <&ps_isp_sys>;
++			#iommu-cells = <1>;
++			status = "disabled";
++		};
++
++		isp_dart1: iommu@22c0f4000 {
++			compatible = "apple,t8103-dart";
++			reg = <0x2 0x2c0f4000 0x0 0x4000>;
++			interrupt-parent = <&aic>;
++			interrupts = <AIC_IRQ 251 IRQ_TYPE_LEVEL_HIGH>;
++			#iommu-cells = <1>;
++			power-domains = <&ps_isp_sys>;
++			status = "disabled";
++		};
++
++		isp_dart2: iommu@22c0fc000 {
++			compatible = "apple,t8103-dart";
++			reg = <0x2 0x2c0fc000 0x0 0x4000>;
++			interrupt-parent = <&aic>;
++			interrupts = <AIC_IRQ 251 IRQ_TYPE_LEVEL_HIGH>;
++			#iommu-cells = <1>;
++			power-domains = <&ps_isp_sys>;
++			status = "disabled";
++		};
++
+ 		sio_dart: iommu@235004000 {
+ 			compatible = "apple,t8103-dart";
+ 			reg = <0x2 0x35004000 0x0 0x4000>;
+diff --git a/arch/arm64/boot/dts/apple/t8112-j413.dts b/arch/arm64/boot/dts/apple/t8112-j413.dts
+index 6f69658623bf89ce73e3486bce504f1f5f8003f3..94bf097ff2a343cd6446b97e3391f9faee2fc5f4 100644
+--- a/arch/arm64/boot/dts/apple/t8112-j413.dts
++++ b/arch/arm64/boot/dts/apple/t8112-j413.dts
+@@ -78,3 +78,10 @@ &i2c4 {
+ &fpwm1 {
+ 	status = "okay";
+ };
++
++#include "isp-imx558-cfg0.dtsi"
++
++&isp {
++	apple,platform-id = <14>;
++	apple,temporal-filter = <1>;
++};
+diff --git a/arch/arm64/boot/dts/apple/t8112-j493.dts b/arch/arm64/boot/dts/apple/t8112-j493.dts
+index 0ad908349f55406783942735a2e9dad54cda00ec..5632bfb939ef8ff4f746c8e61ae0a87b82c646cb 100644
+--- a/arch/arm64/boot/dts/apple/t8112-j493.dts
++++ b/arch/arm64/boot/dts/apple/t8112-j493.dts
+@@ -67,3 +67,9 @@ &i2c4 {
+ &fpwm1 {
+ 	status = "okay";
+ };
++
++#include "isp-imx248.dtsi"
++
++&isp {
++	apple,platform-id = <6>;
++};
+diff --git a/arch/arm64/boot/dts/apple/t8112-pmgr.dtsi b/arch/arm64/boot/dts/apple/t8112-pmgr.dtsi
+index 7c050c6f2707a1d8128c09b4f58076a1c035adac..7154615b757215a2294f8f1559657ade951aab6c 100644
+--- a/arch/arm64/boot/dts/apple/t8112-pmgr.dtsi
++++ b/arch/arm64/boot/dts/apple/t8112-pmgr.dtsi
+@@ -818,6 +818,7 @@ ps_isp_sys: power-controller@438 {
+ 		#reset-cells = <0>;
+ 		label = "isp_sys";
+ 		power-domains = <&ps_rmx1>;
++		status = "disabled";
+ 	};
+ 
+ 	ps_venc_sys: power-controller@440 {
+@@ -964,6 +965,123 @@ ps_sep: power-controller@c00 {
+ 		apple,always-on;
+ 	};
+ 
++	/* There is a dependency tree involved with these PDs,
++	 * but we do not express it here since the ISP driver
++	 * is supposed to sequence them in the right order anyway
++	 * (and we do not know the exact tree structure).
++	 *
++	 * This also works around spurious parent PD activation
++	 * on machines with ISP disabled (desktops).
++	 */
++	ps_isp_set0: power-controller@4000 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4000 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set0";
++		apple,force-disable;
++	};
++
++	ps_isp_set1: power-controller@4008 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4008 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set1";
++		apple,force-disable;
++		apple,force-reset;
++	};
++
++	ps_isp_set2: power-controller@4010 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4010 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set2";
++		apple,force-disable;
++		apple,force-reset;
++	};
++
++	ps_isp_fe: power-controller@4018 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4018 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_fe";
++	};
++
++	ps_isp_set4: power-controller@4020 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4020 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set4";
++	};
++
++	ps_isp_set5: power-controller@4028 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4028 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set5";
++	};
++
++	ps_isp_set6: power-controller@4030 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4030 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set6";
++	};
++
++	ps_isp_set7: power-controller@4038 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4038 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set7";
++	};
++
++	ps_isp_set8: power-controller@4040 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4040 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set8";
++	};
++
++	ps_isp_set9: power-controller@4048 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4048 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set9";
++	};
++
++	ps_isp_set12: power-controller@4050 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4050 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set10";
++	};
++
++	ps_isp_set10: power-controller@4058 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4058 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set11";
++	};
++
++	ps_isp_set11: power-controller@4060 {
++		compatible = "apple,t8103-pmgr-pwrstate", "apple,pmgr-pwrstate";
++		reg = <0x4060 4>;
++		#power-domain-cells = <0>;
++		#reset-cells = <0>;
++		label = "isp_set12";
++	};
++
+ 	ps_venc_dma: power-controller@8000 {
+ 		compatible = "apple,t8112-pmgr-pwrstate", "apple,pmgr-pwrstate";
+ 		reg = <0x8000 4>;
+diff --git a/arch/arm64/boot/dts/apple/t8112.dtsi b/arch/arm64/boot/dts/apple/t8112.dtsi
+index 1666e6ab250bc0be9b8318e3c8fc903ccd3f3760..ed1852ac346b0f74d84619147feb7e624e355630 100644
+--- a/arch/arm64/boot/dts/apple/t8112.dtsi
++++ b/arch/arm64/boot/dts/apple/t8112.dtsi
+@@ -379,6 +379,56 @@ cpufreq_p: cpufreq@211e20000 {
+ 			#performance-domain-cells = <0>;
+ 		};
+ 
++		isp: isp@22a000000 {
++			compatible = "apple,t8112-isp", "apple,isp";
++			reg = <0x2 0x2a000000 0x0 0x2000000>,
++				<0x2 0x2c4c4000 0x0 0x100>,
++				<0x2 0x2c4c41b0 0x0 0x100>,
++				<0x2 0x2c4c4430 0x0 0x100>;
++			reg-names = "coproc", "mbox", "gpio", "mbox2";
++			iommus = <&isp_dart0 0>, <&isp_dart1 0>, <&isp_dart2 0>;
++			interrupt-parent = <&aic>;
++			interrupts = <AIC_IRQ 269 IRQ_TYPE_LEVEL_HIGH>;
++			power-domains = <&ps_isp_sys>, <&ps_isp_set0>,
++				<&ps_isp_set1>, <&ps_isp_set2>, <&ps_isp_fe>,
++				<&ps_isp_set4>, <&ps_isp_set5>, <&ps_isp_set6>,
++				<&ps_isp_set7>, <&ps_isp_set8>, <&ps_isp_set9>,
++				<&ps_isp_set10>, <&ps_isp_set11>,
++				<&ps_isp_set12>;
++			apple,dart-vm-size = <0x0 0xa0000000>;
++			status = "disabled";
++		};
++
++		isp_dart0: iommu@22c4a8000 {
++			compatible = "apple,t8110-dart";
++			reg = <0x2 0x2c4a8000 0x0 0x4000>;
++			interrupt-parent = <&aic>;
++			interrupts = <AIC_IRQ 274 IRQ_TYPE_LEVEL_HIGH>;
++			power-domains = <&ps_isp_sys>;
++			#iommu-cells = <1>;
++			status = "disabled";
++		};
++
++		isp_dart1: iommu@22c4b4000 {
++			compatible = "apple,t8110-dart";
++			reg = <0x2 0x2c4b4000 0x0 0x4000>;
++			interrupt-parent = <&aic>;
++			interrupts = <AIC_IRQ 274 IRQ_TYPE_LEVEL_HIGH>;
++			power-domains = <&ps_isp_sys>;
++			#iommu-cells = <1>;
++			status = "disabled";
++		};
++
++		isp_dart2: iommu@22c4bc000 {
++			compatible = "apple,t8110-dart";
++			reg = <0x2 0x2c4bc000 0x0 0x4000>;
++			interrupt-parent = <&aic>;
++			interrupts = <AIC_IRQ 274 IRQ_TYPE_LEVEL_HIGH>;
++			power-domains = <&ps_isp_sys>;
++			#iommu-cells = <1>;
++			status = "disabled";
++		};
++
+ 		sio_dart: iommu@235004000 {
+ 			compatible = "apple,t8110-dart";
+ 			reg = <0x2 0x35004000 0x0 0x4000>;
 
 -- 
 2.48.1
