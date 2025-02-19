@@ -1,55 +1,55 @@
-Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com [210.118.77.12])
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE7E11F130C
-	for <linux-pm@vger.kernel.org>; Wed, 19 Feb 2025 14:02:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.118.77.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CFB9D1F17E5
+	for <linux-pm@vger.kernel.org>; Wed, 19 Feb 2025 14:02:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.118.77.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739973776; cv=none; b=Bv1cnOoY/ug/SatVyBT9ynfdO5wr4rpNihthd9T0OAF9tDavSgrVZDtvlFVsm2rfO+ArzwVFjPMQTIwlwmMUiqdUdDCUVIhJF5Ab7Hvblrkzv57JxQS3BISxhPDCYQ5NjE5WuP7nwz/+6dP0/HL97YWxN8d7DVR/DSa2ZpnO4Ww=
+	t=1739973780; cv=none; b=FC4KgQaAKAfMGDRgRcOVBpn4+/VxF6OQsQ2VREWA2J10rvaQL5xD09eMO0eUQHEslMog2r6vqzOxBDuz4Qn/iVALZW3g6RzYj0tgEIRt0KINsEsoyWKNtvgb4zF/Uq8vALWlY2omwPfEm1ICRXcRWQhcvuLBLNoqQR/IB3Q0saA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739973776; c=relaxed/simple;
-	bh=oEzLfFZJH4LxRYAt4dHQDVjJIWaaUZych4wvP4WFyoc=;
+	s=arc-20240116; t=1739973780; c=relaxed/simple;
+	bh=g3RWD5WNA1XA9EuBozxDQjyz1EmXFsFv+nFAujcE4oQ=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:MIME-Version:
-	 Content-Type:References; b=mlqKhk18wlP99jRCsUbzaVfVKD8YbyiPNHDoGgrtkHYYRSOpMCbFw48u5Rq9jV9OKCq31kPbeQ/4of8rSmS0WOATgxCwop/ceQrgKTdn+tfvZofkKLpiGpMStty36Hz+Gmb2tqHbtz3Yk6IBLEWADbgJOEuUWIT7I2V+0Ne/b50=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com; spf=pass smtp.mailfrom=samsung.com; dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b=LD+X4e9e; arc=none smtp.client-ip=210.118.77.12
+	 Content-Type:References; b=PDDE9fbv8OjlpOjIDCwPpT7EkNG9Nzc3+0s2oc4lBiDDJe9nirUCZfI+YCtdYw0skLo5LctRYlv/M6tocXvF1S96hIQp0QnHV1zyZX7En6tpiSIt4/aswkL9nyvZcZsXMem7GaFQW0ldpiTpS1LcljUGd1sxkwiMBVM4M/Y/Wxk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com; spf=pass smtp.mailfrom=samsung.com; dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b=rVak43kg; arc=none smtp.client-ip=210.118.77.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=samsung.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="LD+X4e9e"
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-	by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20250219140252euoutp02fc7965ac88a619da7b21d59c07888ccb~loO1MyuxM0177601776euoutp02G
-	for <linux-pm@vger.kernel.org>; Wed, 19 Feb 2025 14:02:52 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20250219140252euoutp02fc7965ac88a619da7b21d59c07888ccb~loO1MyuxM0177601776euoutp02G
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="rVak43kg"
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+	by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20250219140254euoutp01aa658eb9569ddddce2da03dd5d61b3ae~loO3cDnzB1474514745euoutp01H
+	for <linux-pm@vger.kernel.org>; Wed, 19 Feb 2025 14:02:54 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20250219140254euoutp01aa658eb9569ddddce2da03dd5d61b3ae~loO3cDnzB1474514745euoutp01H
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-	s=mail20170921; t=1739973772;
-	bh=uo7s5XP9xLCcaXV6zS5at5CrZeY48gYb8finhktiqJo=;
+	s=mail20170921; t=1739973774;
+	bh=OXM2fKf2SgZdL8QFvjqFSeOIgpJMN90LmI9jfn1I+iM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=LD+X4e9em9WJylhofuniR3Axa7TTJGtCp5mBu3YW5Fi1xSG9ay7d8JTUhAYXw49Ho
-	 EoEvZB/D3s0C+dZiZnWyWNjCBQQ8nwIXf/VSnft7u5Y7L4084v1QXCNmfNvKbDFGwQ
-	 aEsCvufBkIJaZAxCTBEj4eVXMd/GNhnMYfNF/AFc=
-Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
+	b=rVak43kgdpgeGgYn7Gyn3xI7Fxbne7mQmpGlZ/D/sQdQ9XQelG4dP92cYoaIms0XR
+	 fot2uKKW9OamG9/pw9Vg8Oci8cfu0U56oujH9FISxVJogD2nUNLeR69wGS5NwzjHiF
+	 V9POx1mX7Sw2ajgxTfsLSbGJ7yMLXS7OXsU1a5RE=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
 	eucas1p1.samsung.com (KnoxPortal) with ESMTP id
-	20250219140251eucas1p1af357e5281ba396a4d6369a7305587c6~loO0srYhE1246212462eucas1p1G;
-	Wed, 19 Feb 2025 14:02:51 +0000 (GMT)
+	20250219140254eucas1p12cdefcfd2b54f41f82a29f950bb85c47~loO2-Dm-K1247112471eucas1p1y;
+	Wed, 19 Feb 2025 14:02:54 +0000 (GMT)
 Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-	eusmges3new.samsung.com (EUCPMTA) with SMTP id 68.72.20397.B84E5B76; Wed, 19
-	Feb 2025 14:02:51 +0000 (GMT)
+	eusmges2new.samsung.com (EUCPMTA) with SMTP id 5E.F0.20409.D84E5B76; Wed, 19
+	Feb 2025 14:02:53 +0000 (GMT)
 Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
 	eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-	20250219140250eucas1p2e099f0f15ce0342f816ae15666e3e2f9~loO0GUseq1970819708eucas1p2u;
-	Wed, 19 Feb 2025 14:02:50 +0000 (GMT)
+	20250219140253eucas1p2a137df988b89e84b7e52c45521b5bb06~loO2bY-jr1561415614eucas1p2K;
+	Wed, 19 Feb 2025 14:02:53 +0000 (GMT)
 Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
 	eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-	20250219140250eusmtrp1801e2278c4db1da2a8bba7c6a671a3b6~loO0FZLAD2416524165eusmtrp1K;
-	Wed, 19 Feb 2025 14:02:50 +0000 (GMT)
-X-AuditID: cbfec7f5-ed1d670000004fad-b5-67b5e48b35f0
+	20250219140253eusmtrp1c0237ed2985c6b30ee5cdc9466f7ae31~loO2acM2c2416524165eusmtrp1Q;
+	Wed, 19 Feb 2025 14:02:53 +0000 (GMT)
+X-AuditID: cbfec7f4-c39fa70000004fb9-ec-67b5e48d21d1
 Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-	eusmgms1.samsung.com (EUCPMTA) with SMTP id B2.76.19920.A84E5B76; Wed, 19
-	Feb 2025 14:02:50 +0000 (GMT)
+	eusmgms1.samsung.com (EUCPMTA) with SMTP id 07.76.19920.D84E5B76; Wed, 19
+	Feb 2025 14:02:53 +0000 (GMT)
 Received: from AMDC4942.home (unknown [106.210.136.40]) by
 	eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-	20250219140249eusmtip2e60405385117c7a2ec12b5af0b18e71d~loOyqS8N10094500945eusmtip2x;
-	Wed, 19 Feb 2025 14:02:49 +0000 (GMT)
+	20250219140251eusmtip2b10afb40cdb62706fd5ad2842d00f208~loO1GcWVN0084500845eusmtip2i;
+	Wed, 19 Feb 2025 14:02:51 +0000 (GMT)
 From: Michal Wilczynski <m.wilczynski@samsung.com>
 To: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org,
 	krzk+dt@kernel.org, conor+dt@kernel.org, drew@pdp7.com, guoren@kernel.org,
@@ -64,10 +64,10 @@ Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
 	dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org, Michal Wilczynski
 	<m.wilczynski@samsung.com>, Krzysztof Kozlowski
 	<krzysztof.kozlowski@linaro.org>
-Subject: [PATCH v5 01/21] dt-bindings: clock: thead: Add TH1520 VO clock
- controller
-Date: Wed, 19 Feb 2025 15:02:19 +0100
-Message-Id: <20250219140239.1378758-2-m.wilczynski@samsung.com>
+Subject: [PATCH v5 03/21] dt-bindings: firmware: thead,th1520: Add support
+ for firmware node
+Date: Wed, 19 Feb 2025 15:02:21 +0100
+Message-Id: <20250219140239.1378758-4-m.wilczynski@samsung.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20250219140239.1378758-1-m.wilczynski@samsung.com>
 Precedence: bulk
@@ -77,156 +77,136 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA02Se1BUZRjG+845e87ZraXjso6fUJI0mjHIpRj7TFJMHQ7ZMF2GCLRgg9NK
-	sAvtipZjg7RAAguairorCCqTgCDmXrgEkguyErJyEbAQpISJVZLlsk5KWS4Hy/+e9/l+7/u8
-	78xH45J60oNOUG7nVEpZkjcpIsyt96+uzB0xyQNGi5agy/0nMWSa1VOostGGoeIWmwANdRsx
-	dM05QaKzo50UGmtMJ1BfWRGFNK3VJLLrh0jUeMdEoUntkAD11BeSaDqvBSDzdAaJqloGKVTt
-	LMbQiUkTgUpr6wHKyv5OgLp+2oQGhy4TyN6jxVGW/ln0T0MthR72fU+gY3ebKGQc/1aArFWR
-	KKPpEBHixU5cz6TYcbudYJv3zlBs470Sgq3TD1Kstu4KYM9XZJPsjb4Gkj3e9i57M9eKsYbS
-	NDajqhVj9/0dwE5c6CXZfGMFYLs1/dQ7kmhRcDyXlLCDU/mvjRVtO3TnZ5BydskXJbpCwR7Q
-	B3OAkIZMEOwomaVygIiWMGUA/latE/DFDIAn7p+bL6YBPPVLOv64pbFcQ7q0hDkN4OGarTw0
-	DmDrD1NzEMm8AodPF891S5lMAmZeSgeuAmeKMXjmgW6Ocmci4M0OA5YDaJpglkF7ZZjLFjPr
-	4K1mG8GnecGmix24CxEyIfBClwePLIBtupE5BH+EaEzHcNd4yJhEsKO9neR7N8I6+wDgtTu8
-	bTVSvH4Oth/Uzs9PhsOmqfnLdsM6rXVer4E3bA9IVy7OvAyr6/15ez08U1dOuGzIuMHrfyzg
-	V3CDB8xHcN4Ww71ZEp5eDgu0ef+F2srMGK9ZOH30LrEfLNU/cYz+iWP0/+eWALwCLOJS1Qo5
-	p35Vye30U8sU6lSl3C8uWXEePPre7Q+tzlpQdnvSzwIwGlgApHFvqTgrzSiXiONlX+7iVMkx
-	qtQkTm0BnjThvUh8silTLmHksu1cIselcKrHrxgt9NiD+YZEGl6LK/04wHhwZX5NuE3zTUxc
-	zvMeP0b7RyW4Ey9aPfeNHXhBMbJwC/5Mc4nj6dyM46sLbn3uWBWGB2YGegZryocL90de2WJz
-	XG2JEL25qq1/VpmWWJqIeYmponVk1ObX25K37qS+DpVOeubeeyo8PCUs/63Y8fDk9W8sXNy/
-	IXQ6OH7gJXVXvSMidXXo78WOXVErhNKNusPSvChfe3YPLHjftLa/MvpP69LdTTWxmyTmDwfe
-	phP9FL7LlYvxoD6f0fKPDBUNH4RYLq0J2HFqzKen8pP3LF+t6OrpdLptPjcjnPrMoAj6S+dw
-	/xXZhP7imN5lgZ3XPpX2dhcNXtQ744civAn1NlmgD65Sy/4Fj0TrFk0EAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrBKsWRmVeSWpSXmKPExsVy+t/xe7pdT7amG6xermNx4voiJoutv2ex
-	W6zZe47JYv6Rc6wW9y5tYbK48vU9m8W6pxfYLV7sbWSxuLZiLrtF87H1bBYvZ91js9j7eiu7
-	xceee6wWl3fNYbP43HuE0WLb5xY2i7VH7rJbrP86n8li4cetLBZLduxitGjrXMZqcfGUq8Xd
-	eydYLF5e7mG2aJvFb/F/zw52i3/XNrJYzH63n91iy5uJrBbH14ZbtOyfwuIg7/H+Riu7x5uX
-	L1k8Dnd8YffY+20Bi8fOWXfZPXp2nmH02LSqk83jzrU9bB7zTgZ63O8+zuSxeUm9R8vaY0we
-	/X8NPN7vu8rm0bdlFaPHpebr7AFCUXo2RfmlJakKGfnFJbZK0YYWRnqGlhZ6RiaWeobG5rFW
-	RqZK+nY2Kak5mWWpRfp2CXoZU17fZCxYJ1exYOYc1gbGaxJdjJwcEgImEntXNrOB2EICSxkl
-	zm93g4jLSFzrfskCYQtL/LnWBVTDBVTzilGiY/12RpAEm4CRxIPl81lBbBGBxSwSe/dVghQx
-	Cyxlknj0/wDYVGGBYIlz22YwdzFycLAIqEq8XOMJEuYVsJd4fPgc1AJ5if0Hz4KVcAo4SOy7
-	KAVxj73Eub77rBDlghInZz4BK2cGKm/eOpt5AqPALCSpWUhSCxiZVjGKpJYW56bnFhvqFSfm
-	Fpfmpesl5+duYgQmmW3Hfm7ewTjv1Ue9Q4xMHIyHGCU4mJVEeNvqt6QL8aYkVlalFuXHF5Xm
-	pBYfYjQFunois5Rocj4wzeWVxBuaGZgamphZGphamhkrifO6XT6fJiSQnliSmp2aWpBaBNPH
-	xMEp1cCkk+/xz0rmyXepuQKhuafzcy802q8tmvp/C8dfM3fxV8d+y/OvCQoMrWVh3fZHzbLw
-	NOu1TwcPbXLRL840+JFyrErw3NwToTbBfgdCPgmujU3+G+fTkXqpc6+ss0+P3wzd45FejAFH
-	ToYFykxjcAhde+jZ31mz259O3rZuinv7fs0vASyLZv5+tfLSkze/T6lYbeU7lhI/c/aKx0d/
-	Wrkf79di/avwRfrx69MqIgFa6sem/77P9mxfEsOiCVYqi61nXn3AWT89dHHOki15p+ZZdL54
-	MeNUr8Tu9P+3lPjbBeKEea/2LQyZ5Ztb6Ku3UG+LB2N7t+l+U0Ed2Ty1Qpfm5ikxTxXF1Jli
-	bnlpbZJTYinOSDTUYi4qTgQA0g9DgrsDAAA=
-X-CMS-MailID: 20250219140250eucas1p2e099f0f15ce0342f816ae15666e3e2f9
+X-Brightmail-Tracker: H4sIAAAAAAAAA02SfUxTVxiHc+69vbfUFK6FyQlbQkTATB0C44/jdM4t4O4ShW0mMzHBrepd
+	dYMivcXJZvhIy5eUTdRJrFU+JJaPUTb6IVSQCUhlOJCClBmoDnBSxobQ6gZOHOXi5n/POe9z
+	fu95T44Ql1jJIOEhuZJVyKVJIaSIsHTO9b5WNG6WRRonNqEbjgoMmZ9oKfRdSw+GSjt6BMhp
+	N2Fo4NE0iQz3b1FooiWbQINV5ymk6qwnkUvrJFHL72YKzWicAtRv1ZHIXdQBkMWtJlFdxwiF
+	6h+VYqh8xkygykYrQLkFlwSo76c4NOK8QSBXvwZHuVo/9Ky5kUILgz8Q6NyfrRQyTRULkK1u
+	N1K3nia2BTPTQzkUM+VyEUx7vodiWh6XEUyTdoRiNE03AdNQU0Ayw4PNJHOh6wPmbqENY4yV
+	mYy6rhNjvnkayUxfvU0yX5tqAGNXOaj3JXtEWw6wSYeOsIqNWz8RHcyfGCUO1wQetVc/w7NA
+	pf9x4COEdAy8NFoMvCyhqwAsGMOOA9EiewAczRsA/MIN4JXJEez5iQnLRYov6AEszJldtqYA
+	dI2dEngtko6G9/SlAm8hgM4hYM717CULp0sxWDt/Fvda/vReeH5YT3iZoMPgnXzVEovpt2B1
+	fxfJ9wuGrdd+XvSFQh96G7zaF8QrK2HX2fElHV9UVOZzuDcf0mYRXOj+kfD6kI6Fxmtr+Bh/
+	OGkzUTy/ArtPaQieU+A98yzO8zHYpLEt82Y43DNPemNw+lVYb93Ib78Nu/RTy+m+cOiPlfwN
+	fOFJSwnOb4thfq6Et8Pht5qi/5r2VFmW35CB1vIS4gRYrX1hFu0Ls2j/71sG8BoQyKZxyTKW
+	i5azX0Rw0mQuTS6L2J+S3AAWv3f3gs3TCPSTMxFtABOCNgCFeEiAODfTJJOID0jTv2QVKR8r
+	0pJYrg28LCRCAsUVrTkyCS2TKtnPWfYwq3hexYQ+QVlY/YORUFQRadE5QtV/Ky+knVgROmeV
+	Ns/tCnqvVu2RxoW/kep46K882eDzPdPv/sxp5/bm7fPJY2uNVnHG6cfFhrCCieu+s8PgyJhH
+	+vo49asuyRPDNd3/aOquLn5LrMHQsr28b6E0eE/XpsqtqRtekicMUO+U7AyXs5tXpK4v0+17
+	uOaXW1zWb+lqv6iIMDtLCUi7X9vlgL82ZHz65JjK3rw+L+aMa21KQOjQTfrDwvaShDtPrzx4
+	M9UQJVpl7FW8206vk1dq/ZVNhpnL6fFrq+2ZcQs7YjO6ezoHHL417gQ1p9/5z+74VWeMRYm3
+	9/cenU8zfRWaHT2YuH11+zCxIzGE4A5Ko9bhCk76L9xBYBtNBAAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA02SfUwTdxjH87u73l01yNmi3OoStur+WWahvP5YkJEssktWki06CGxOGz0K
+	jlJzbYkSDW7UroVacDMjXBVwVKaNaBSKFSwMRLC+gFCHo5HWOVxoZ4YIGMm2skKzxP+ePJ/P
+	8/LHl0RFDoGELC3XsVy5skyKr8HuhIf9W49PO1VJ9YNx8NbDHxHo/Jsn4AX3CAKbB0cE0D/e
+	icAHi7M4vPj0PgFn3F9jcOLcaQJWD13CYZD349D9p5OAcxa/AHq7T+Fw/vgggF3zBhy2D04R
+	8NJiMwLPzDkxaHd1A2g0twng2O3tcMp/C4NBrwWFRj4WLl93ETA8cRmDtr/6CNj57IQADrcX
+	QEPfSSwngZn99RjBPAsGMeaGaYFg3C9bMOYaP0Uwlmt3AXPFYcaZRxPXcabJ8ykTqB1GmA57
+	FWNoH0KYun+TmNneX3DG2ukAzHj1Q+ITUZEsi9PodexbJRqtbpv0czlMlskzoSw5NVMmT8nY
+	9X5ymjQxO2sfW1ZawXKJ2XtkJaaZJ9gBR/zB8fPL6FFgF9cAIUlTqfRMVytRA9aQIuosoE1W
+	KxoFb9ITtUEsWovpfyZq8KgUAvRTY5tgBeBUMv34p+bVOo5qxWh376EVCaXOIvST5Z/xFSCm
+	vqBrTZZVCaPeoX2m6tWtMdQH9HmvB49eSKD7+u9FLpOkkMqhe8ckK21RRBmxBgRRfT3taZxe
+	HUUjerXThtYDin8N8a+hFoA4QByr16pVaq1cplWqtfpylWyvRn0FRELTNbTU4QJNoTnZAEBI
+	MABoEpXGxRirOlWimH3KQ5Usp9nN6ctY7QBIi7x9ApVs2KuJpK5ct1uenpQmT03PTErLTE+R
+	xsfkekeLRZRKqWO/YtkDLPf/HEIKJUcRkIufPilVB9ZOZnP3vhcezLFnGYt31KTG5m4cPbwQ
+	Fj8QxH5IWoNzChf9eIs/mK/Lw3f+3jFpqj+X/94ZxZGK58X8R8degUa48F2xz7K+4dvJHWX2
+	utthX1eCmEtpp/JKf+hYuC8MLnkUr/gNoYqrlacSfaJtDYXmeKteodgk6f4y11F09076i7qd
+	Hz/aL3f1b33e4zWGQoU3RWut3vpwv7Jte+umaXNG403+8sseR5Ws7+3Ghjc83NLhxT12yR8X
+	s22B4YKeShKG8r/ZWLCuJS8UP780GvjM15ShQgqdF4K7XvSPFYlv2PJ+22yw7d9sazPbUsJ1
+	M4arR/h1W6SYtkQpfxfltMr/AAD2YAy9AwAA
+X-CMS-MailID: 20250219140253eucas1p2a137df988b89e84b7e52c45521b5bb06
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20250219140250eucas1p2e099f0f15ce0342f816ae15666e3e2f9
+X-RootMTR: 20250219140253eucas1p2a137df988b89e84b7e52c45521b5bb06
 X-EPHeader: CA
 CMS-TYPE: 201P
-X-CMS-RootMailID: 20250219140250eucas1p2e099f0f15ce0342f816ae15666e3e2f9
+X-CMS-RootMailID: 20250219140253eucas1p2a137df988b89e84b7e52c45521b5bb06
 References: <20250219140239.1378758-1-m.wilczynski@samsung.com>
-	<CGME20250219140250eucas1p2e099f0f15ce0342f816ae15666e3e2f9@eucas1p2.samsung.com>
+	<CGME20250219140253eucas1p2a137df988b89e84b7e52c45521b5bb06@eucas1p2.samsung.com>
 
-Add device tree bindings for the TH1520 Video Output (VO) subsystem
-clock controller. The VO sub-system manages clock gates for multimedia
-components including HDMI, MIPI, and GPU.
-
-Document the VIDEO_PLL requirements for the VO clock controller, which
-receives its input from the AP clock controller. The VIDEO_PLL is a
-Silicon Creations Sigma-Delta (integer) PLL typically running at 792 MHz
-with maximum FOUTVCO of 2376 MHz.
-
-This binding complements the existing AP sub-system clock controller
-which manages CPU, DPU, GMAC and TEE PLLs.
+The kernel communicates with the E902 core through the mailbox
+transport using AON firmware protocol. Add dt-bindings to document it
+the dt node.
 
 Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Signed-off-by: Michal Wilczynski <m.wilczynski@samsung.com>
 ---
- .../bindings/clock/thead,th1520-clk-ap.yaml   | 17 ++++++++--
- .../dt-bindings/clock/thead,th1520-clk-ap.h   | 34 +++++++++++++++++++
- 2 files changed, 48 insertions(+), 3 deletions(-)
+ .../bindings/firmware/thead,th1520-aon.yaml   | 53 +++++++++++++++++++
+ MAINTAINERS                                   |  1 +
+ 2 files changed, 54 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/firmware/thead,th1520-aon.yaml
 
-diff --git a/Documentation/devicetree/bindings/clock/thead,th1520-clk-ap.yaml b/Documentation/devicetree/bindings/clock/thead,th1520-clk-ap.yaml
-index 0129bd0ba4b3..9d058c00ab3d 100644
---- a/Documentation/devicetree/bindings/clock/thead,th1520-clk-ap.yaml
-+++ b/Documentation/devicetree/bindings/clock/thead,th1520-clk-ap.yaml
-@@ -8,7 +8,8 @@ title: T-HEAD TH1520 AP sub-system clock controller
- 
- description: |
-   The T-HEAD TH1520 AP sub-system clock controller configures the
--  CPU, DPU, GMAC and TEE PLLs.
-+  CPU, DPU, GMAC and TEE PLLs. Additionally the VO subsystem configures
-+  the clock gates for the HDMI, MIPI and the GPU.
- 
-   SoC reference manual
-   https://openbeagle.org/beaglev-ahead/beaglev-ahead/-/blob/main/docs/TH1520%20System%20User%20Manual.pdf
-@@ -20,14 +21,24 @@ maintainers:
- 
- properties:
-   compatible:
--    const: thead,th1520-clk-ap
-+    enum:
-+      - thead,th1520-clk-ap
-+      - thead,th1520-clk-vo
- 
-   reg:
-     maxItems: 1
- 
-   clocks:
-     items:
--      - description: main oscillator (24MHz)
-+      - description: |
-+          One input clock:
-+          - For "thead,th1520-clk-ap": the clock input must be the 24 MHz
-+            main oscillator.
-+          - For "thead,th1520-clk-vo": the clock input must be the VIDEO_PLL,
-+            which is configured by the AP clock controller. According to the
-+            TH1520 manual, VIDEO_PLL is a Silicon Creations Sigma-Delta PLL
-+            (integer PLL) typically running at 792 MHz (FOUTPOSTDIV), with
-+            a maximum FOUTVCO of 2376 MHz.
- 
-   "#clock-cells":
-     const: 1
-diff --git a/include/dt-bindings/clock/thead,th1520-clk-ap.h b/include/dt-bindings/clock/thead,th1520-clk-ap.h
-index a199784b3512..09a9aa7b3ab1 100644
---- a/include/dt-bindings/clock/thead,th1520-clk-ap.h
-+++ b/include/dt-bindings/clock/thead,th1520-clk-ap.h
-@@ -93,4 +93,38 @@
- #define CLK_SRAM3		83
- #define CLK_PLL_GMAC_100M	84
- #define CLK_UART_SCLK		85
+diff --git a/Documentation/devicetree/bindings/firmware/thead,th1520-aon.yaml b/Documentation/devicetree/bindings/firmware/thead,th1520-aon.yaml
+new file mode 100644
+index 000000000000..bbc183200400
+--- /dev/null
++++ b/Documentation/devicetree/bindings/firmware/thead,th1520-aon.yaml
+@@ -0,0 +1,53 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/firmware/thead,th1520-aon.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+/* VO clocks */
-+#define CLK_AXI4_VO_ACLK		0
-+#define CLK_GPU_MEM			1
-+#define CLK_GPU_CORE			2
-+#define CLK_GPU_CFG_ACLK		3
-+#define CLK_DPU_PIXELCLK0		4
-+#define CLK_DPU_PIXELCLK1		5
-+#define CLK_DPU_HCLK			6
-+#define CLK_DPU_ACLK			7
-+#define CLK_DPU_CCLK			8
-+#define CLK_HDMI_SFR			9
-+#define CLK_HDMI_PCLK			10
-+#define CLK_HDMI_CEC			11
-+#define CLK_MIPI_DSI0_PCLK		12
-+#define CLK_MIPI_DSI1_PCLK		13
-+#define CLK_MIPI_DSI0_CFG		14
-+#define CLK_MIPI_DSI1_CFG		15
-+#define CLK_MIPI_DSI0_REFCLK		16
-+#define CLK_MIPI_DSI1_REFCLK		17
-+#define CLK_HDMI_I2S			18
-+#define CLK_X2H_DPU1_ACLK		19
-+#define CLK_X2H_DPU_ACLK		20
-+#define CLK_AXI4_VO_PCLK		21
-+#define CLK_IOPMP_VOSYS_DPU_PCLK	22
-+#define CLK_IOPMP_VOSYS_DPU1_PCLK	23
-+#define CLK_IOPMP_VOSYS_GPU_PCLK	24
-+#define CLK_IOPMP_DPU1_ACLK		25
-+#define CLK_IOPMP_DPU_ACLK		26
-+#define CLK_IOPMP_GPU_ACLK		27
-+#define CLK_MIPIDSI0_PIXCLK		28
-+#define CLK_MIPIDSI1_PIXCLK		29
-+#define CLK_HDMI_PIXCLK			30
++title: T-HEAD TH1520 AON (Always-On) Firmware
 +
- #endif
++description: |
++  The Always-On (AON) subsystem in the TH1520 SoC is responsible for managing
++  low-power states, system wakeup events, and power management tasks. It is
++  designed to operate independently in a dedicated power domain, allowing it to
++  remain functional even during the SoC's deep sleep states.
++
++  At the heart of the AON subsystem is the E902, a low-power core that executes
++  firmware responsible for coordinating tasks such as power domain control,
++  clock management, and system wakeup signaling. Communication between the main
++  SoC and the AON subsystem is handled through a mailbox interface, which
++  enables message-based interactions with the AON firmware.
++
++maintainers:
++  - Michal Wilczynski <m.wilczynski@samsung.com>
++
++properties:
++  compatible:
++    const: thead,th1520-aon
++
++  mboxes:
++    maxItems: 1
++
++  mbox-names:
++    items:
++      - const: aon
++
++  "#power-domain-cells":
++    const: 1
++
++required:
++  - compatible
++  - mboxes
++  - mbox-names
++  - "#power-domain-cells"
++
++additionalProperties: false
++
++examples:
++  - |
++    aon: aon {
++        compatible = "thead,th1520-aon";
++        mboxes = <&mbox_910t 1>;
++        mbox-names = "aon";
++        #power-domain-cells = <1>;
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index efee40ea589f..0934f9791fe9 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -20413,6 +20413,7 @@ L:	linux-riscv@lists.infradead.org
+ S:	Maintained
+ T:	git https://github.com/pdp7/linux.git
+ F:	Documentation/devicetree/bindings/clock/thead,th1520-clk-ap.yaml
++F:	Documentation/devicetree/bindings/firmware/thead,th1520-aon.yaml
+ F:	Documentation/devicetree/bindings/mailbox/thead,th1520-mbox.yaml
+ F:	Documentation/devicetree/bindings/net/thead,th1520-gmac.yaml
+ F:	Documentation/devicetree/bindings/pinctrl/thead,th1520-pinctrl.yaml
 -- 
 2.34.1
 
