@@ -1,96 +1,118 @@
-Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-f176.google.com (mail-lj1-f176.google.com [209.85.208.176])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E5AEF8BF8
-	for <linux-pm@vger.kernel.org>; Wed, 19 Feb 2025 08:17:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.11.138.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 212671C82F4;
+	Wed, 19 Feb 2025 08:28:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1739953059; cv=none; b=E8gxVE2IcDOdT8oUHKTHi1299FoTypXZZ+sKGghG21O8lgtA/VRhga38eKQXlI5UqfamdYvtF7UOkPGv6i2c7u7RXdUnEzsLQ5KLy9hpTn3+AI/IJ8u0KBDyJrWtN8f+UnZOp5zhhjJC7WqF8UuNwL9TO6z2iamX1hjzCdvE/sA=
+	t=1739953723; cv=none; b=oVqBmfLYTM5SB645+NHmOb5VThudQT5RIvTMI/bHYgNdcUPbZJ+gEPSt+P93UsbAlnGGnSXswPXVk2xNKt2H91A7YyEgr2tIKzu7J/0Tpj7foSBRbraxThG0V3K5tf31VJoTzssken5VQMNEXFqgtYtZDHaLOMFIYir1F1Y8PgQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1739953059; c=relaxed/simple;
-	bh=GIK3DRXklKZVZel0Z1LrIooZwULZTxEBHjXcnRUluyE=;
+	s=arc-20240116; t=1739953723; c=relaxed/simple;
+	bh=4JzvjrWls8MKSWJG9gzPifIffzcDoP0jfVQK+Hf4xX0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=uoXQB36dWZXXWsdwcPFdjziaeeac/Yz5Y3C7wDGRb/ff4Il429w4jZ/L9tj98zPA7Rv2Z4I1cNiTeenv3XtNi1cDOJ1vYz2GAGUl0POlrGYMw2cWCYd5Kob9AZvs7R1KAETO4R51r6OoLuao568WS6aVzppYladNxvQZrCs9SnY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=sntech.de; spf=pass smtp.mailfrom=sntech.de; dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.b=yKzgy0y2; arc=none smtp.client-ip=185.11.138.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=sntech.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sntech.de
+	 MIME-Version; b=BDbNPNJPG0PAJ/YK1/VhoJygh+s5j8YnFvUMwtVmS3u9AB06w1Sat7DzT0mVTzRw0UKX0pcK0DwxESbxftXO9+/BQLFXxu0eWfg6rn/731a6tyGoVr4Ht1Ef8Li+6uw4OTO0sB2Jn+/ORXwn6eXZdtQ5ks4+IG5I8blSheVxJaU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=UxhzdNoV; arc=none smtp.client-ip=209.85.208.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.b="yKzgy0y2"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
-	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
-	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
-	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-	Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
-	List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=kUTRJU/6XNS+Ziltnvt01u6UQNfGdBBiYXmQdZRzoKc=; b=yKzgy0y2gAUniVCffgsMaAlieY
-	RgtUVaZdAgHkhZ22gN3unHMqX8CSzxq6ZDh23ZS3RrRZOyQ7UvQJ71dCagPOhobaEiocDelZ1XuSk
-	18eZDvf8XhL0HTC51PQluB5yuCjZkzFJW8qm7pwivbGVW+g7l7e8loo3VwVHNVz/5AUaJ2abKuFaV
-	AkJ26Ce8u4+lRas6UpBlwGWylk+SCQpyI47beiS1pWMmq/fopepUJR5qIx93v/PHnJLTl58D+N1bw
-	OAixcrgZEHxMD/VzB1/hjtgcbSSifwLMFBPnVd0Mxjwex/xqbolkJO92ASWnJZ9YhcczicVKDd6mE
-	tWOwlt1w==;
-Received: from i53875bc0.versanet.de ([83.135.91.192] helo=diego.localnet)
-	by gloria.sntech.de with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <heiko@sntech.de>)
-	id 1tkfGn-00077N-H6; Wed, 19 Feb 2025 09:17:25 +0100
-From: Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>
-To: Ulf Hansson <ulf.hansson@linaro.org>,
- "Rafael J . Wysocki" <rafael@kernel.org>,
- Shawn Lin <shawn.lin@rock-chips.com>
-Cc: linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org,
- Shawn Lin <shawn.lin@rock-chips.com>, Steven Price <steven.price@arm.com>
-Subject: Re: [PATCH] pmdomain: rockchip: Check if smcc could be handled by TA
-Date: Wed, 19 Feb 2025 09:17:24 +0100
-Message-ID: <3600260.V25eIC5XRa@diego>
-In-Reply-To: <1739926689-151827-1-git-send-email-shawn.lin@rock-chips.com>
-References: <1739926689-151827-1-git-send-email-shawn.lin@rock-chips.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UxhzdNoV"
+Received: by mail-lj1-f176.google.com with SMTP id 38308e7fff4ca-30737db1aa9so60716101fa.1;
+        Wed, 19 Feb 2025 00:28:41 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1739953720; x=1740558520; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Tzczu/KeE3eNkMX5hnweWTDCNf2r7BW02oA1kIbmbSU=;
+        b=UxhzdNoVHXmfPIu6UErT4Q5TwayQzxge6CC8zhpimaqPiWCz9ARUQkB0vwXASlAQDI
+         65QsXG539CU0zp0RXwrS9r7ki/YhV0fyrzmzYnRhnnaaG4Tz9DFHVX7PTyJLsDIM900Q
+         5qSPkZPsOri1nwIy9Lp4gd7FO0TchjywFkzVXLr8/qIOsQ347dKgW/Fcl7+IIiNXX5L6
+         BHuYLXRz8zwYWg3LzzxzukdEyCNj3hEIEmEMO513BlGTywMGVS0hxLQrNsOe/NDii9jf
+         0JbjYDh81GJnyFLqgHJ1IPS1duDX98egjv5ffx+ach7USrdm4FuQaEPMYxU2e0c3ISU1
+         3ipg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739953720; x=1740558520;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Tzczu/KeE3eNkMX5hnweWTDCNf2r7BW02oA1kIbmbSU=;
+        b=Ggh/AN85ZTZMVm8+rw6ED7FZ76/xoZQcdqaOfkz34BY9yH1kmeHZ+pNrN3Sc7XgZrI
+         TZhEJf7rHkFB5cfNRDCtJ9pxiqmX99A1onxSBNKSWdePGv5VoYv/8eRG23wxuAYPpvBR
+         db8SmdGbtO8Qgsyn4GwnFrLGPNeS20R3iT4C+tkYe+fn1NL+6CnKJzjI0e/+cJX1rj82
+         SKtPKKHv/lHg5aZViMTjcqLCJwNrHr6Mv1Iee54q0KuF5yIaIppd6W973z5Rs/8Zms5Y
+         vRJQw9lXfEGg8pwcqLcS3y3rSbsaffjFSR1Yt4WbTPnZ0UiHEyvGMJsP9VvMea5UK55v
+         XI7A==
+X-Forwarded-Encrypted: i=1; AJvYcCVTMDpdVkdxkaKkO4SkD1b1YSqqUsqnitCGeL1dbMTmN5RfnmgygB3kKkGveVmrsRds9wI1wbRmZZKg@vger.kernel.org, AJvYcCW7rMtnW116Mazb7WX8i+fIO8yIekfLXltnA2NEkemxlJauephFCdTExcqshIkLuqw6WUCDSyYYHO8mflhG@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz8ip+lfWzFzcnWG59cNeGoH4sgnsDQYF9Rz+FoHfWPrCskRLXN
+	EDYHn8/SMzvO+X1vrcodXl1wekQBHHViY64/BziDj3b2zzkhzasO
+X-Gm-Gg: ASbGncs7jTVOGo4yLCIfwg9AWFb1BZLjNeZCAH3HVo0r/vYfQOq4HSKEMqRLcCzW/+8
+	pwQcwX3JqByhBGmlWOoE1Pe4oNR4fmenbrJMLN3+SZBre6/ccadGDb3euCtXrOGZ4Q6WkrQDPlE
+	GCENzSpDCND6nWOxNUzNuNRiZqIQXFs+bGelO6xNNOseSfWpVIXYjkt0KKpBs97yNdb9IGBfmtS
+	X9fkZepWUU9K5W4hKGRo9nyBknIIgMMgEsaz0IHLvt8p25Je8H9PvS2imL0n/sbX85h0CU8Lz/G
+	Ag3qcA==
+X-Google-Smtp-Source: AGHT+IGye2FAZHsucHh4OJcLXHKm/UEJ2InJFf96ynQ3Aj7FuDucOiJ0+O1GWE1ItBmeYP4TcUTUBQ==
+X-Received: by 2002:a2e:9e87:0:b0:308:db61:34cf with SMTP id 38308e7fff4ca-30a44dcd022mr7798931fa.14.1739953719917;
+        Wed, 19 Feb 2025 00:28:39 -0800 (PST)
+Received: from xeon.. ([188.163.112.51])
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-30a2699d0f5sm12645911fa.78.2025.02.19.00.28.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 19 Feb 2025 00:28:39 -0800 (PST)
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Laxman Dewangan <ldewangan@nvidia.com>
+Cc: linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2 1/2] dt-bindings: thermal: generic-adc: Add optional io-channel-cells property
+Date: Wed, 19 Feb 2025 10:28:16 +0200
+Message-ID: <20250219082817.56339-2-clamor95@gmail.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250219082817.56339-1-clamor95@gmail.com>
+References: <20250219082817.56339-1-clamor95@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
-Am Mittwoch, 19. Februar 2025, 01:58:09 MEZ schrieb Shawn Lin:
-> Non-existent trusted-firmware could lead smcc calls into some
-> unset location which breaks the system.
-> 
-> Reported-by: Steven Price <steven.price@arm.com>
-> Cc: Steven Price <steven.price@arm.com>
-> Suggested-by: Heiko Stuebner <heiko@sntech.de>
-> Fixes: 58ebba35ddab ("pmdomain: rockchip: Add smc call to inform firmware")
-> Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
+Since device is a thermal sensor it needs '#io-channel-cells' to allow
+exposure of thermal data via IIO means.
 
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+---
+ .../devicetree/bindings/thermal/generic-adc-thermal.yaml      | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-> ---
-> Hi Ulf, this's a follow-up patch fixing the issue Steven saw.
-> 
->  drivers/pmdomain/rockchip/pm-domains.c | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-> index 49842f1..27a5c68 100644
-> --- a/drivers/pmdomain/rockchip/pm-domains.c
-> +++ b/drivers/pmdomain/rockchip/pm-domains.c
-> @@ -572,9 +572,10 @@ static void rockchip_do_pmu_set_power_domain(struct rockchip_pm_domain *pd,
->  	}
->  
->  	/* Inform firmware to keep this pd on or off */
-> -	arm_smccc_smc(ROCKCHIP_SIP_SUSPEND_MODE, ROCKCHIP_SLEEP_PD_CONFIG,
-> -			pmu->info->pwr_offset + pd_pwr_offset,
-> -			pd->info->pwr_mask, on, 0, 0, 0, &res);
-> +	if (arm_smccc_1_1_get_conduit() != SMCCC_CONDUIT_NONE)
-> +		arm_smccc_smc(ROCKCHIP_SIP_SUSPEND_MODE, ROCKCHIP_SLEEP_PD_CONFIG,
-> +				pmu->info->pwr_offset + pd_pwr_offset,
-> +				pd->info->pwr_mask, on, 0, 0, 0, &res);
->  }
->  
->  static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
-> 
-
-
-
+diff --git a/Documentation/devicetree/bindings/thermal/generic-adc-thermal.yaml b/Documentation/devicetree/bindings/thermal/generic-adc-thermal.yaml
+index 12e6418dc24d..4bc2cff0593c 100644
+--- a/Documentation/devicetree/bindings/thermal/generic-adc-thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/generic-adc-thermal.yaml
+@@ -30,6 +30,9 @@ properties:
+   io-channel-names:
+     const: sensor-channel
+ 
++  '#io-channel-cells':
++    const: 1
++
+   temperature-lookup-table:
+     description: |
+       Lookup table to map the relation between ADC value and temperature.
+@@ -60,6 +63,7 @@ examples:
+         #thermal-sensor-cells = <0>;
+         io-channels = <&ads1015 1>;
+         io-channel-names = "sensor-channel";
++        #io-channel-cells = <1>;
+         temperature-lookup-table = <
+               (-40000) 2578
+               (-39000) 2577
+-- 
+2.43.0
 
