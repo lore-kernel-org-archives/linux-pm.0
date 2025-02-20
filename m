@@ -1,119 +1,96 @@
-Received: from mail-ed1-f52.google.com (mail-ed1-f52.google.com [209.85.208.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A67D6134B0;
-	Thu, 20 Feb 2025 12:50:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 557171F4621;
+	Thu, 20 Feb 2025 12:54:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740055852; cv=none; b=ASK+QlVRB55dU9kdW65TKJ2Ufgw9CfHu190lOJ/543AM0+2bcHudq/+jNUGlPfi41s4eUfZXqqCzNLneRq3Ul8VJfj3Fi5fgfwzzeSfh4pojyXhACfutCrg0oyXatsQN8eYzY+9Ks6q1jVgBVSwZ0pFNXeS4Zq0TnTJCV9GVas8=
+	t=1740056101; cv=none; b=ovj+MKChdCsCMvpyfyXVlF5bCubLJAGkDGNDw7DvB8Zxm1urhE62bgkQlH348m/+gNSqR9dcjBiz3MAabZ/jT0EfoQg9GV0EzRNQIIrN4F9VmW3guijJdoBrZXC1Fe42WY1vSc+wsnwv5RXAbzSrugFNLSZELsJhdb5izcfS9Bs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740055852; c=relaxed/simple;
-	bh=5CdqDe6a+TgCmrvpY0A7LzJCD1blyf0ZlG7AQjJyN4E=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=XwJ7+IwSEZk+RaDEgJpwHz+5I2wb+dTCmlcIIa8ZWjpSooxE9mfG8/47vAkWA0PSVSEgr+1G4CLn4bXTWjja2D2czcZLSNMCA4EeMGAm7z+G77sUYkppYhEb3mupFMFjl89Ux8DuK6fm1tkrjodFC8+V4TQ7nSDAJYceKmLOZJ4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=a4jCKz9g; arc=none smtp.client-ip=209.85.208.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1740056101; c=relaxed/simple;
+	bh=sBHem4zK9G85urgcW8anMZnYb9lfCBQvoHXta4ohn/Y=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=CXffaTyAfJcbkJyLaeMVEqgzGml4gaj8TllNa4O5AywOduJdbxGIKV8aLqVsNIjK8hA6e0CS+2kZCWFcAyJ61zSNqJ5vWI/PCIG1ooGATSdbpaKgysU3hHDJK+n2W/p3ycoTOeuqpKer8cDRCBuSNRftkaOsIbbSqriakfFtkrU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=bjfIwrzL; arc=none smtp.client-ip=192.198.163.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="a4jCKz9g"
-Received: by mail-ed1-f52.google.com with SMTP id 4fb4d7f45d1cf-5e050b1491eso3557655a12.0;
-        Thu, 20 Feb 2025 04:50:50 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1740055849; x=1740660649; darn=vger.kernel.org;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:reply-to:from:subject:message-id:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=5CdqDe6a+TgCmrvpY0A7LzJCD1blyf0ZlG7AQjJyN4E=;
-        b=a4jCKz9g4DtMxh2XdqyZo1+IrgkwVuuM/SZk7M29dl2e7Iypu5gN8z6zwmftrZWerY
-         D9StLxWTSkN9pi9c2ZDgBpFI8WVBj5qzyKu9h9/AOFiyU9HFlnUC1mpjEmMjSM9BKhjE
-         BePuqA6DKi0lN74SiVRwyJVqcsPH9y+C46kuu2SNu1d8C0OiGJoFP3eKq1PtlWlqpP4F
-         V46VLUkOZ/DSDyTpLw9kfO1iEsVfVcd0WFXgshLr1JNUqmiYgrBz+wA15ke+8AURrS6N
-         F+CUN9al8JvIsEevuw0TQhUT3dCmK96i06+emmgzUTpNCcWlRGtH910iI0sKK9B73N9w
-         HPDQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740055849; x=1740660649;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:reply-to:from:subject:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=5CdqDe6a+TgCmrvpY0A7LzJCD1blyf0ZlG7AQjJyN4E=;
-        b=omFuU7uJZEJUOAZkxUtQc/eXQKwa60nQnS4f1nOAd6uA0fj8GyhW+GlEzJO2+I+dkd
-         n8N1OtTs1Jj1EAyu8QYOzviGYBTaupgU69fAXqWxVw3sx5IMQBxH7Pu+XGKr7WHBWF14
-         bBs+qUHWuIpzvK4yvv3Jexv0eGpYvKMg29qVzUuRz1Q9coDMrNNRuKZUNNJ84qyYc4Ei
-         1+YiZsTmHvsgMb7ryV+pCHuyXVbXpjpdaxP75tzxYCn2tz4FuYk1Q2lMj2ybO0CNloUx
-         IWUJ0FqTw+fn3+tO+KCBRRiRnlbR9gYMlWTPfn08R59cBPrZtsJUbJ1JbFlf8k+TjLx2
-         b3QA==
-X-Forwarded-Encrypted: i=1; AJvYcCUzEt3D/ERx0MGQa7pCbY5UT9nRqACsprR5+vbfZIYubqE3C8Q469gzcV+jnAtPoWACKB47evgQMK4yJiyw@vger.kernel.org, AJvYcCX333zdNLfySwDlg6l67jwxBApq4Fe2hGzcwZj6MoktBY8OUqtyIbBslhcyjknkLg6lkPXwe2ib6Jw=@vger.kernel.org
-X-Gm-Message-State: AOJu0YzOLxcrODnGYeoa7AY+OTretRfwI1FoTEy4/17sewcCJ54K5/3n
-	AUuhLxa2vEpYUFgoFnHvMj00b6Xrz9I0JQUzhto+WvjjaJ14pJNgyMNIn/zoE7A=
-X-Gm-Gg: ASbGncuXWAeoY38ZQRryfqbtREUhDkUIWtBrubvVtBAYvNpzhCC0zsJp85v4FAhmnrV
-	SUau47r6GIm5sNN59v2Pvl9vpwdXdcqPR9Jb0SKkK+USgzd2qPh7hJ9CEWrtvLiKhRDAQfg6PHG
-	YgVoywIPzBuzIZ0X1C+EcNRNY6jJQ1urvXSwOQVQbw3MmsPrqAIGraGk/ztiyL9gaIOdhjgx1BU
-	3DcVNnAbN1zRWOdB1zDQK4EgRdObnr+dOhU2AOaC1dK/OjPZAhNT9meNoRgkLb/bfxRR9ZUd+1y
-	sbqzNyC3hFAiGJygUTOSrIcKz/TNt5W3mU+VjEFkQhfRaw==
-X-Google-Smtp-Source: AGHT+IHtm/rvi3VIjBkWuIExSB85ST7i+4B0cXT1pvysb3E5JpPYV5QDujzd5YmocYgA3XX2V8kIRQ==
-X-Received: by 2002:a17:907:d109:b0:ab3:3b92:8ca5 with SMTP id a640c23a62f3a-abbeddc5984mr305310166b.12.1740055848569;
-        Thu, 20 Feb 2025 04:50:48 -0800 (PST)
-Received: from abityuts-desk1.ger.corp.intel.com ([134.191.196.181])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-abb8eea4d65sm874370366b.161.2025.02.20.04.50.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 20 Feb 2025 04:50:47 -0800 (PST)
-Message-ID: <9b67088de0b6a24a67cfe0a1860011d290307c08.camel@gmail.com>
-Subject: Re: [PATCH v4] intel_idle: introduce 'no_native' module parameter
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To: "Rafael J. Wysocki" <rafael@kernel.org>, David Arcari
- <darcari@redhat.com>
-Cc: linux-pm@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Jacob Pan
- <jacob.jun.pan@linux.intel.com>, Len Brown <lenb@kernel.org>, Prarit
- Bhargava <prarit@redhat.com>, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Date: Thu, 20 Feb 2025 14:50:44 +0200
-In-Reply-To: <CAJZ5v0g27Sutp_Ww7zGe0xB95kxFh-pzjd5-PpjR==h7-s8MLA@mail.gmail.com>
-References: <20250128141139.2033088-1-darcari@redhat.com>
-	 <20250213160741.445351-1-darcari@redhat.com>
-	 <CAJZ5v0g27Sutp_Ww7zGe0xB95kxFh-pzjd5-PpjR==h7-s8MLA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.52.4 (3.52.4-2.fc40) 
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="bjfIwrzL"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1740056099; x=1771592099;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=sBHem4zK9G85urgcW8anMZnYb9lfCBQvoHXta4ohn/Y=;
+  b=bjfIwrzLSr1/tm79l95kmggkxPiYPpFL7O1LfWdLD4n0jQSotS/8HFv6
+   0WhEuNi1AdyEONf1QL48kHtnVr4ru24TC6o06yXREg/4BhV5bxes5ptEa
+   OSebiOEdf9nzdOKtchc3Htew02gS3cO5/byRQG4Ta2cwGqSA/a4Y0r9kJ
+   p2PU+6Ob8voEtvICv92i6i3jaXIgi4O2bbFT+k8Jz5l/k7js1oP4pmMYy
+   ZBLYdhShAnRu0l0SKrAdywMMkoxZ4BrVt4Wy5hK0u9mDFdTNw8PWonxq7
+   RwUQOI6BkWuc7JwMuQr2Uxh9NM7fsabx+6hLX3GG4EgdT/RQz1agZwrIZ
+   Q==;
+X-CSE-ConnectionGUID: O74B6JuRSruQ4pdwy0Ra0w==
+X-CSE-MsgGUID: CnorXsUOR5S+5pdaTx0U1A==
+X-IronPort-AV: E=McAfee;i="6700,10204,11351"; a="28429148"
+X-IronPort-AV: E=Sophos;i="6.13,301,1732608000"; 
+   d="scan'208";a="28429148"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Feb 2025 04:54:58 -0800
+X-CSE-ConnectionGUID: isdo0tmaQLabSEWAx0cJNA==
+X-CSE-MsgGUID: huZm/DEhTC6VejN1rexusw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.13,301,1732608000"; 
+   d="scan'208";a="120015815"
+Received: from black.fi.intel.com ([10.237.72.28])
+  by orviesa004.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Feb 2025 04:54:57 -0800
+Date: Thu, 20 Feb 2025 14:54:53 +0200
+From: Raag Jadav <raag.jadav@intel.com>
+To: Paul Cercueil <paul@crapouillou.net>
+Cc: rafael@kernel.org, andriy.shevchenko@linux.intel.com,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1] PM: Discard runtime_xx() handles using pm_ptr()
+Message-ID: <Z7cmHZ_uuM31mGRd@black.fi.intel.com>
+References: <20250220080318.2660840-1-raag.jadav@intel.com>
+ <04b87029f2237e209d8c8b620d009692d80eea2f.camel@crapouillou.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <04b87029f2237e209d8c8b620d009692d80eea2f.camel@crapouillou.net>
 
-On Tue, 2025-02-18 at 20:57 +0100, Rafael J. Wysocki wrote:
-> On Thu, Feb 13, 2025 at 5:07=E2=80=AFPM David Arcari <darcari@redhat.com>=
- wrote:
-> >=20
-> > Since commit 18734958e9bf ("intel_idle: Use ACPI _CST for processor mod=
-els
-> > without C-state tables") the intel_idle driver has had the ability to u=
-se
-> > the ACPI _CST to populate C-states when the processor model is not
-> > recognized. However, even when the processor model is recognized (nativ=
-e
-> > mode) there are cases where it is useful to make the driver ignore the =
-per
-> > cpu idle states in lieu of ACPI C-states (such as specific application
-> > performance). Add the 'no_native' module parameter to provide this
-> > functionality.
-> >=20
-> > Cc: Jonathan Corbet <corbet@lwn.net>
-> > Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> > Cc: Len Brown <lenb@kernel.org>
-> > Cc: David Arcari <darcari@redhat.com>
-> > Cc: Artem Bityutskiy <dedekind1@gmail.com>
-> > Cc: Prarit Bhargava <prarit@redhat.com>
-> > Cc: linux-doc@vger.kernel.org
-> > Cc: linux-kernel@vger.kernel.org
-> > Signed-off-by: David Arcari <darcari@redhat.com>
-> > ---
-> > v4: fix !CONFIG_ACPI_PROCESSOR_CSTATE compilation issue
->=20
-> Artem, have all of your comments been addressed in this version?
+On Thu, Feb 20, 2025 at 01:15:19PM +0100, Paul Cercueil wrote:
+> Hi Raag,
+> 
+> Le jeudi 20 février 2025 à 13:33 +0530, Raag Jadav a écrit :
+> > Discard runtime_xx() handles in RUNTIME_PM_OPS() using pm_ptr() macro
+> > and drop unnecessary CONFIG_PM ifdeffery.
+> 
+> So the RUNTIME_PM_OPS() is newer and people should use that, but we're
+> not yet at the point where the older SET_RUNTIME_PM_OPS() macro can be
+> dropped.
+> 
+> The difference is that in the !CONFIG_PM case, the former will
+> reference the suspend/resume functions, but they will be detected as
+> dead code; on the other hand, the latter macro won't reference them at
+> all. Many drivers still wrap their suspend/resume functions in a #ifdef
+> CONFIG_PM to avoid warnings about unused static functions. Therefore if
+> you unconditionally force the use of the first macro everywhere, many
+> drivers will fail to compile in the !CONFIG_PM case.
+> 
+> As for adding pm_ptr() inside RUNTIME_PM_OPS(), it is unnecesary, as
+> the whole pm_ops struct should be referenced through pm_ptr() or
+> pm_sleep_ptr() anyway, which means that the whole struct and the
+> callback functions will be garbage-collected if PM is disabled.
 
-Hi, I was away for few days. Yes, this patch looks good to me. Works, and
-useful. Granted your comment is also addressed:
+True. My intent was to garbage collect the runtime handles, atleast until
+the users are converted to reference their struct pm_ops through it. I
+didn't account for the driver wide CONFIG_PM ifdeffery though.
 
-Reviewed-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+I guess pm.h has its own learning curve.
+
+Raag
