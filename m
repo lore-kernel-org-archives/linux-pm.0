@@ -1,136 +1,140 @@
-Received: from linux1587.grserver.gr (linux1587.grserver.gr [185.138.42.100])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE47019E975;
-	Sat, 22 Feb 2025 16:30:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.138.42.100
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE49F27453;
+	Sat, 22 Feb 2025 17:56:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740241812; cv=none; b=ACqF0vF6mEY0Vfwvv9rsbA4DVaOFRGpNXWvvq8T8K0o0V+FF0l7dTlnRlWkMgd5883L2XaWDZkUMurAlFT2sQmSm8CZoHpauQk1x7WGsImY2exXvETLWxkEt4CEAbKLAXkJW+1Dxh7h0kuqj0j257ueuNogL1TQ/vdi691W1hx8=
+	t=1740247013; cv=none; b=G3Uc3ci1ebBxjstZOoId80L7XvfrACQ0UbjTo5YO57sMXfpSlCbvtkKesu368gUM2wxgmzPEjECOwAW3Qojs68o0YpAkkIhq/0p9RGF7PAuAWxhLUWVo8C9++jsW37UlHe68BkGRrMKxJHXkbzVprixqFL52Rmx6WjxM8er4UXc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740241812; c=relaxed/simple;
-	bh=jyqvHSFqOFsY1PXsSSN904r8wYVR6DvtzhnRyZ+hGf8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=fM5kGUrxkLjmAH0PuhYjR1asoxYXnjzTghqqs/vi6NkHQ9HswwJWpb+0L6Yc9xBbqXeTxnlWEPBq2UgEIZewh5af6ISH7Gmjxt2GJ5lIwYC8qDQ49eTPWn8NHzBJZnTeJMcLOxKoFcxn4GNyR4mxU9jMEKbZqRpUHMaThbNRoyA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=E8wyQwe/; arc=none smtp.client-ip=185.138.42.100
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=antheas.dev
+	s=arc-20240116; t=1740247013; c=relaxed/simple;
+	bh=uzpopPaovfV0FnA/YF3PcM/CYKFDq4orpbcVjIKflrw=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=e3I8h4Kqw3Kp9dyu4r9exR6/GZ7S49BI6Hb3HKmfRFCM4fwt8EhDYLtYvOE4MquyWG/jnyr0QP1rHXl0ayQynb/BEKIAU1RVnnhcP5iJUB0a9xmQ8v97LrO7LaLFm8jkC1pPMb9gcPKz1O1Ve12ne+Wjr2P0CbUdvuOxMA6C7d4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Mb6wrws5; arc=none smtp.client-ip=192.198.163.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="E8wyQwe/"
-Received: from localhost.localdomain (unknown [IPv6:2a05:f6c2:511b:0:cbc0:999f:73ad:33bd])
-	by linux1587.grserver.gr (Postfix) with ESMTPSA id 4FC342E08C2F;
-	Sat, 22 Feb 2025 18:20:22 +0200 (EET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=antheas.dev;
-	s=default; t=1740241223;
-	bh=6qQL+zKQxfhiEopyGjxPkJmskcBXM7Vdkt09g7USSlE=; h=From:To:Subject;
-	b=E8wyQwe/oB/HRGLEyE5ri2VrVxtXndjLoKtw6BfBeyPYethHCnhqruMNwXTVynaWr
-	 WAeLSx9Aa9je7B1/nop/2M+KF4RpLnIJmwBDtGDvoHb3W9u4Q+WmfKz7XfMeNANJRq
-	 wGAuKXWe8vI0jdNJTALfrPAkxClfYGlhulvI/3co=
-Authentication-Results: linux1587.grserver.gr;
-	spf=pass (sender IP is 2a05:f6c2:511b:0:cbc0:999f:73ad:33bd) smtp.mailfrom=lkml@antheas.dev smtp.helo=localhost.localdomain
-Received-SPF: pass (linux1587.grserver.gr: connection is authenticated)
-From: Antheas Kapenekakis <lkml@antheas.dev>
-To: linux-hwmon@vger.kernel.org
-Cc: linux-doc@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	platform-driver-x86@vger.kernel.org,
-	Guenter Roeck <linux@roeck-us.net>,
-	Jean Delvare <jdelvare@suse.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Joaquin Ignacio Aramendia <samsagax@gmail.com>,
-	Derek J Clark <derekjohn.clark@gmail.com>,
-	Kevin Greenberg <kdgreenberg234@protonmail.com>,
-	Joshua Tam <csinaction@pm.me>,
-	Parth Menon <parthasarathymenon@gmail.com>,
-	Eileen <eileen@one-netbook.com>,
-	Antheas Kapenekakis <lkml@antheas.dev>
-Subject: [PATCH v2 00/12] hwmon: (oxpsensors) Add devices, features,
- fix ABI and move to platform/x86
-Date: Sat, 22 Feb 2025 17:18:11 +0100
-Message-ID: <20250222161824.172511-1-lkml@antheas.dev>
-X-Mailer: git-send-email 2.48.1
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Mb6wrws5"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1740247010; x=1771783010;
+  h=date:from:to:cc:subject:message-id;
+  bh=uzpopPaovfV0FnA/YF3PcM/CYKFDq4orpbcVjIKflrw=;
+  b=Mb6wrws5st6ahKtGcQ0fN+os+gxwoNHKsWssLd/Zw2lMHx/d6IoX1xfs
+   ra8j96ZKqZV485veT/7b2PsbTzKNm5mdYLhJidPUmHCUYEQ+XIfLoizB5
+   NYoQg8qMwyHs8iZmvYCojX8psHHz/caDgJ6WOOvne+5gQu1vOMkBCdGnA
+   g95wrZ1JzANrKBoiUlE4NlQa6FIG25n2RpUrzd12b9VBoxj2ps7jffrJi
+   RijprPvHXX69bNa9ZBZTrASTpf4PZeUT/RvGR/ACMp3XhYPgoEKY8Uej6
+   oA5qcTm+N47TpwSt0gd55q0E4Ku0hcnxXkQdh283qsibHNTw4/XBD79CY
+   g==;
+X-CSE-ConnectionGUID: 6qv/4f5SQIKKSmCTpiR4Qg==
+X-CSE-MsgGUID: jmu2uAFuTkeKuJH8HABmGQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11353"; a="51687070"
+X-IronPort-AV: E=Sophos;i="6.13,308,1732608000"; 
+   d="scan'208";a="51687070"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Feb 2025 09:56:50 -0800
+X-CSE-ConnectionGUID: 91+8AT46Sky5HcadDKovbA==
+X-CSE-MsgGUID: GEhY0JzmShy38TzfFvBfxA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.13,308,1732608000"; 
+   d="scan'208";a="120755568"
+Received: from lkp-server02.sh.intel.com (HELO 76cde6cc1f07) ([10.239.97.151])
+  by fmviesa004.fm.intel.com with ESMTP; 22 Feb 2025 09:56:48 -0800
+Received: from kbuild by 76cde6cc1f07 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1tltk6-0006n1-1Z;
+	Sat, 22 Feb 2025 17:56:46 +0000
+Date: Sun, 23 Feb 2025 01:56:11 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, devel@acpica.org,
+ linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ 1c719415e5838dd2c6704b97addb0476cbce90f7
+Message-ID: <202502230105.tYVOUMHn-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-PPP-Message-ID: 
- <174024122356.13470.8646678086481011352@linux1587.grserver.gr>
-X-PPP-Vhost: antheas.dev
-X-Virus-Scanned: clamav-milter 0.103.11 at linux1587.grserver.gr
-X-Virus-Status: Clean
 
-This four part series updates the oxpsensors module to bring it in line
-with its Windows OneXPlayer counterpart. First, it adds support for all
-2024, 2025 OneXPlayer handhelds and their special variants.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: 1c719415e5838dd2c6704b97addb0476cbce90f7  Merge branch 'testing' into bleeding-edge
 
-Then, it adds the new charge limiting and bypass features that were first
-introduced in the X1 and retrofit to older OneXFly variants and for
-controlling the turbo led found in the X1 models. For Bypass, it adds a new
-bypass variant BypassS0 that is only active while the device is in the S0
-state.
+elapsed time: 1442m
 
-Then, it performs a minor refactor by moving around switch statements
-into their own functions, in order to allow for fixing the pwm1_enable ABI
-in the final patch. Currently, pwm1_enable sets the fan to auto with the
-value 0 and allows manual control with the value 1. This patch makes it
-so 0 sets the fan to full speed, 1 sets the fan to manual control, and
-2 sets the fan to auto. This requires both setting enable and the fan
-speed when the enable sysfs is written to as 0, hence the refactor.
+configs tested: 62
+configs skipped: 1
 
-As this is a breaking ABI change and there is userspace software relying
-on this previous behavior, the last patch also changes the /name of the
-hwmon endpoint to "oxp_ec" from "oxpec" (mirroring WMI module conventions)
-such that userspace software that relied on the previous behavior can be
-retrofit to the new kernel while enabling correct functionality on old
-and new kernels. Failing that, software that is not updated will just
-stop controlling the fans, ensuring no malignant behavior.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Finally, the oxp-sensors module is converted into the oxpec platform driver
-in order for it to stay as a single unit. Then, the appropriate
-documentation for it is added.
+tested configs:
+alpha                           allyesconfig    gcc-14.2.0
+arc                  randconfig-001-20250222    gcc-13.2.0
+arc                  randconfig-002-20250222    gcc-13.2.0
+arm                  randconfig-001-20250222    gcc-14.2.0
+arm                  randconfig-002-20250222    gcc-14.2.0
+arm                  randconfig-003-20250222    clang-16
+arm                  randconfig-004-20250222    gcc-14.2.0
+arm64                randconfig-001-20250222    gcc-14.2.0
+arm64                randconfig-002-20250222    clang-21
+arm64                randconfig-003-20250222    clang-18
+arm64                randconfig-004-20250222    clang-21
+csky                 randconfig-001-20250222    gcc-14.2.0
+csky                 randconfig-002-20250222    gcc-14.2.0
+hexagon                         allmodconfig    clang-21
+hexagon                         allyesconfig    clang-18
+hexagon              randconfig-001-20250222    clang-17
+hexagon              randconfig-002-20250222    clang-19
+i386       buildonly-randconfig-001-20250222    clang-19
+i386       buildonly-randconfig-002-20250222    gcc-12
+i386       buildonly-randconfig-003-20250222    gcc-12
+i386       buildonly-randconfig-004-20250222    clang-19
+i386       buildonly-randconfig-005-20250222    gcc-12
+i386       buildonly-randconfig-006-20250222    clang-19
+loongarch            randconfig-001-20250222    gcc-14.2.0
+loongarch            randconfig-002-20250222    gcc-14.2.0
+nios2                randconfig-001-20250222    gcc-14.2.0
+nios2                randconfig-002-20250222    gcc-14.2.0
+parisc               randconfig-001-20250222    gcc-14.2.0
+parisc               randconfig-002-20250222    gcc-14.2.0
+powerpc              randconfig-001-20250222    gcc-14.2.0
+powerpc              randconfig-002-20250222    gcc-14.2.0
+powerpc              randconfig-003-20250222    gcc-14.2.0
+powerpc64            randconfig-001-20250222    gcc-14.2.0
+powerpc64            randconfig-002-20250222    clang-16
+powerpc64            randconfig-003-20250222    clang-18
+riscv                randconfig-001-20250222    clang-21
+riscv                randconfig-002-20250222    gcc-14.2.0
+s390                            allmodconfig    clang-19
+s390                            allyesconfig    gcc-14.2.0
+s390                 randconfig-001-20250222    gcc-14.2.0
+s390                 randconfig-002-20250222    clang-15
+sh                              allmodconfig    gcc-14.2.0
+sh                              allyesconfig    gcc-14.2.0
+sh                   randconfig-001-20250222    gcc-14.2.0
+sh                   randconfig-002-20250222    gcc-14.2.0
+sparc                           allmodconfig    gcc-14.2.0
+sparc                randconfig-001-20250222    gcc-14.2.0
+sparc                randconfig-002-20250222    gcc-14.2.0
+sparc64              randconfig-001-20250222    gcc-14.2.0
+sparc64              randconfig-002-20250222    gcc-14.2.0
+um                              allmodconfig    clang-21
+um                              allyesconfig    gcc-12
+um                   randconfig-001-20250222    gcc-12
+um                   randconfig-002-20250222    gcc-12
+x86_64     buildonly-randconfig-001-20250222    clang-19
+x86_64     buildonly-randconfig-002-20250222    gcc-12
+x86_64     buildonly-randconfig-003-20250222    gcc-12
+x86_64     buildonly-randconfig-004-20250222    clang-19
+x86_64     buildonly-randconfig-005-20250222    clang-19
+x86_64     buildonly-randconfig-006-20250222    gcc-12
+xtensa               randconfig-001-20250222    gcc-14.2.0
+xtensa               randconfig-002-20250222    gcc-14.2.0
 
-Changes since V1:
-    - Add X1 Pro, F1 Pro variants
-    - Fix minor typo in initial patches
-    - Convert oxp-sensors into a platform driver, as it is no longer
-      considered a hwmon driver.
-    - Add sysfs documentation and myself to the MAINTAINERS file
-    - Update documentation to state that this is the OneXPlayer/AOKZOE
-      platform driver, and that support for Ayaneo/OPI is provided until
-      they gain their own platform driver.
-
-Antheas Kapenekakis (12):
-  hwmon: (oxp-sensors) Distinguish the X1 variants
-  hwmon: (oxp-sensors) Add all OneXFly variants
-  ABI: testing: sysfs-class-power: add BypassS0 charge_type
-  hwmon: (oxp-sensors) Add charge threshold and bypass to OneXPlayer
-  hwmon: (oxp-sensors) Rename ec group to tt_toggle
-  hwmon: (oxp-sensors) Add turbo led support to X1 devices
-  hwmon: (oxp-sensors) Move pwm_enable read to its own function
-  hwmon: (oxp-sensors) Move pwm value read/write to separate functions
-  hwmon: (oxp-sensors) Move fan speed read to separate function
-  hwmon: (oxp-sensors) Adhere to sysfs-class-hwmon and enable pwm on 2
-  platform/x86: oxpec: Move hwmon/oxp-sensors to platform/x86
-  ABI: testing: add tt_toggle and tt_led entries
-
- Documentation/ABI/testing/sysfs-class-power   |   6 +-
- Documentation/ABI/testing/sysfs-platform-oxp  |  29 +
- Documentation/hwmon/index.rst                 |   2 +-
- Documentation/hwmon/oxp-sensors.rst           |  89 ---
- Documentation/hwmon/oxpec.rst                 |  67 ++
- MAINTAINERS                                   |   7 +-
- drivers/hwmon/Kconfig                         |  11 -
- drivers/hwmon/Makefile                        |   1 -
- drivers/platform/x86/Kconfig                  |  11 +
- drivers/platform/x86/Makefile                 |   3 +
- .../oxp-sensors.c => platform/x86/oxpec.c}    | 664 ++++++++++++++----
- 11 files changed, 649 insertions(+), 241 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-platform-oxp
- delete mode 100644 Documentation/hwmon/oxp-sensors.rst
- create mode 100644 Documentation/hwmon/oxpec.rst
- rename drivers/{hwmon/oxp-sensors.c => platform/x86/oxpec.c} (52%)
-
--- 
-2.48.1
-
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
