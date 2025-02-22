@@ -1,30 +1,30 @@
 Received: from linux1587.grserver.gr (linux1587.grserver.gr [185.138.42.100])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC0A113C82E;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE41419AD93;
 	Sat, 22 Feb 2025 16:30:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.138.42.100
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740241811; cv=none; b=suwU445ahSGkkAMLFnnj4DvyAzXf4iKszf+QNU8wpeI4TALx3CvqhGVLiIljkG9qxZItQAm9Eh3MOs/VA3q54QKQz15I3ICWuXOIhr5hdMn5h+bA6SbwXJyiqzqV8IvHtItmhk9R0UCMjgXVIiEvu7mIbQqLnVJhE4C091RmoPA=
+	t=1740241811; cv=none; b=lbxfkkbvRDWwfs21s3P65B7K/TuwLvZc6A7UNRpYP/sPK5Pjpy3L1Rjs9KWinGPRr/fn8YnlIYISUmBGfcZrj1tn9Z2c1peLVZ0IA+gJ0l0W1KdkRRTo4EiOfXpmOdEpr8/C0iYJgbgYSDzRppLMiX1iOiteK32nb6y/Tl+RmtI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1740241811; c=relaxed/simple;
-	bh=IcrhvnCvUHCuMIGbETR9mEFI0UQMqOZZMgN+zXUaL08=;
+	bh=5hTvtGWy7U0s0avSlsCImPWbqjzDdIRWYVapgEdtQSQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=YGcuQI/0QlqhZv68cbMx4IYLvGKVIJHqh5NjJ1TXJsuQ/4+0qAxxCe/Zwj/UCgU6VdVltOfMvDnZqUWbVmO2YKjVsJZZc4J7mhTMneVi3fcvj/r+SWKkDYd1hdj+h3WQni5kNnJz5E2mBU9u9iGk8gkuHg/vuPYuHJdy0qJd7gQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=kxXcRSWt; arc=none smtp.client-ip=185.138.42.100
+	 MIME-Version; b=rTqTROnvYgND06LJAt1twAfBnKV4Yfr5ctRj4bJ/w942iQ36wUTn+jt0w9F6kwUxosHLNBPPxeSQUwEzYr6rXdl/vrlTw53slq/eTK+hGBqUHIqS/QNYsz68IsGZMyks8pGOzeS4T+O91GNGm0t4hL6iGN1FPbe+znZQvio/yVY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=Nizy2vvB; arc=none smtp.client-ip=185.138.42.100
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=antheas.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="kxXcRSWt"
+	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="Nizy2vvB"
 Received: from localhost.localdomain (unknown [IPv6:2a05:f6c2:511b:0:cbc0:999f:73ad:33bd])
-	by linux1587.grserver.gr (Postfix) with ESMTPSA id A229C2E08C33;
-	Sat, 22 Feb 2025 18:20:27 +0200 (EET)
+	by linux1587.grserver.gr (Postfix) with ESMTPSA id 0D55C2E08C0D;
+	Sat, 22 Feb 2025 18:20:23 +0200 (EET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=antheas.dev;
-	s=default; t=1740241229;
-	bh=SCCDeCBo29de2kp+oo0Ou/s/xpcOPZtLKqPSGiCiYCY=; h=From:To:Subject;
-	b=kxXcRSWt4jvgn7kSEpopuqDzsi2g5izBeKilZcWfSJ4X2JwGLz+OhpAmcO/SkJJKX
-	 Ubm6UpNqWdOwfjBdnGCG73LkiAJjqGyl7wBzwpunO/yTc4IAdXvnuM/qwGGt7XDrPh
-	 /uht/drt1TQTqsVIETAC6hXwzbqIVUYeCHrdTIwg=
+	s=default; t=1740241225;
+	bh=GC519y6vbmddG2cXwg0/Xpucd4pYX//7MaXKPNqTN3I=; h=From:To:Subject;
+	b=Nizy2vvBr7RGCj8oElpSCIQX7858snb55MQvZ5gMwU5tnQ0c6C4k25xFjkPtioms6
+	 2BUq3m4tkFWeFhpa0lyz0HZYdL1uT8tXKlTj04sLGFo09zQQ7yKaeeZ7/IcdBKxCi6
+	 rgBBikjRquV8bqa8MCy0py4BUvliWhGmDkjCNNlw=
 Authentication-Results: linux1587.grserver.gr;
 	spf=pass (sender IP is 2a05:f6c2:511b:0:cbc0:999f:73ad:33bd) smtp.mailfrom=lkml@antheas.dev smtp.helo=localhost.localdomain
 Received-SPF: pass (linux1587.grserver.gr: connection is authenticated)
@@ -43,10 +43,9 @@ Cc: linux-doc@vger.kernel.org,
 	Parth Menon <parthasarathymenon@gmail.com>,
 	Eileen <eileen@one-netbook.com>,
 	Antheas Kapenekakis <lkml@antheas.dev>
-Subject: [PATCH v2 03/12] ABI: testing: sysfs-class-power: add BypassS0
- charge_type
-Date: Sat, 22 Feb 2025 17:18:14 +0100
-Message-ID: <20250222161824.172511-4-lkml@antheas.dev>
+Subject: [PATCH v2 01/12] hwmon: (oxp-sensors) Distinguish the X1 variants
+Date: Sat, 22 Feb 2025 17:18:12 +0100
+Message-ID: <20250222161824.172511-2-lkml@antheas.dev>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250222161824.172511-1-lkml@antheas.dev>
 References: <20250222161824.172511-1-lkml@antheas.dev>
@@ -58,45 +57,61 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-PPP-Message-ID: 
- <174024122903.13680.15334843946299538340@linux1587.grserver.gr>
+ <174024122531.13526.12235562537487038666@linux1587.grserver.gr>
 X-PPP-Vhost: antheas.dev
 X-Virus-Scanned: clamav-milter 0.103.11 at linux1587.grserver.gr
 X-Virus-Status: Clean
 
-OneXPlayer devices support a conditional bypass type, in which the
-device will only perform the battery bypass while in the S0 state.
-Therefore, add BypassS0, which is a state in which the device
-conditionally bypasses the battery only in the S0 state.
+Currently, the oxp-sensors driver fuzzy matches the X1 variants. Luckily,
+X1 and X1 mini share most hardware features so this works. However, they
+are completely different product lines, and there is an expectation that
+OneXPlayer will release more devices in the X1 line that may have
+differences.
+
+Therefore, distinguish the 3 devices that currently exist in the market.
+These are the OneXPlayer X1 AMD and Intel variants, and the X1 mini which
+only has an AMD variant. As far as registers go, all three support the
+current driver functionality.
 
 Signed-off-by: Antheas Kapenekakis <lkml@antheas.dev>
 ---
- Documentation/ABI/testing/sysfs-class-power | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/hwmon/oxp-sensors.c | 23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-index 2a5c1a09a28f..117731652ab0 100644
---- a/Documentation/ABI/testing/sysfs-class-power
-+++ b/Documentation/ABI/testing/sysfs-class-power
-@@ -404,6 +404,10 @@ Description:
- 			The charger bypasses the charging path around the
- 			integrated converter allowing for a "smart" wall
- 			adaptor to perform the power conversion externally.
-+		BypassS0:
-+			Same as Bypass, but the device automatically enables
-+			bypass only while on the S0 state and disables it when
-+			it powers off or during sleep.
- 
- 		Access: Read, Write
- 
-@@ -412,7 +416,7 @@ Description:
- 
- 		Valid values:
- 			      "Unknown", "N/A", "Trickle", "Fast", "Standard",
--			      "Adaptive", "Custom", "Long Life", "Bypass"
-+			      "Adaptive", "Custom", "Long Life", "Bypass", "BypassS0"
- 
- What:		/sys/class/power_supply/<supply_name>/charge_types
- Date:		December 2024
+diff --git a/drivers/hwmon/oxp-sensors.c b/drivers/hwmon/oxp-sensors.c
+index 83730d931824..5a4230ad3757 100644
+--- a/drivers/hwmon/oxp-sensors.c
++++ b/drivers/hwmon/oxp-sensors.c
+@@ -205,7 +205,28 @@ static const struct dmi_system_id dmi_table[] = {
+ 	{
+ 		.matches = {
+ 			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
+-			DMI_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1 A"),
++		},
++		.driver_data = (void *)oxp_x1,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1 i"),
++		},
++		.driver_data = (void *)oxp_x1,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1 mini"),
++		},
++		.driver_data = (void *)oxp_x1,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1Pro"),
+ 		},
+ 		.driver_data = (void *)oxp_x1,
+ 	},
 -- 
 2.48.1
 
