@@ -1,106 +1,104 @@
-Received: from mail-lf1-f54.google.com (mail-lf1-f54.google.com [209.85.167.54])
+Received: from linux1587.grserver.gr (linux1587.grserver.gr [185.138.42.100])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4493535949;
-	Sat, 22 Feb 2025 13:51:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 60A4D1F19A;
+	Sat, 22 Feb 2025 16:20:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.138.42.100
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740232271; cv=none; b=GsEnd/wJER8T5VjmwZmecav5r/+/1iw9I0b03F+DlWABu6o0eYH5PhpBRT4mYTq+y7Dz6o6891KSXZaqgHl0ZfVMrjsDy/dRxGI3bqAkyYAPu2oTg8EZDxGrIOYABkBZ9aB/qtjwhNFDEqnz303kcmeY5KW6Z/yQKgrTiSijGcg=
+	t=1740241239; cv=none; b=ICWKYeeX2vTehoEvAKQ7eKyspHJUysqNNU27AgCcSa4f6P8HZmWGk0R9ZTth1KW5OSaFK1RXXvVKMdZvSln3g1ksAPS8kwp8GmqWctYVjJPijVPYyg+dGvysm2RFL+BZtIYIgmGt2NWWjDHcXDhcHJLmynf80dUIkqQicBptKgE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740232271; c=relaxed/simple;
-	bh=7XvebaarfPWYMLZS8DRSVmQKGFCvLowf4P4Z/yIOI4A=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ieByRL9Jc/VB7kIpWaDvprDtGmAyGvvh8UZlxLLOY9Kbae46f4ImoDQwUkZOxRzGs5v6TrRflB68g9SYuvEjluhFXoduhcGo867CahkrtpK9YiWCCwpwMJu8NWWeYznqrMCJrxSdmAdVIIMfSrAWkS0zpbGsn/wjFCvGTPnfWWg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=MBU8AN+2; arc=none smtp.client-ip=209.85.167.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1740241239; c=relaxed/simple;
+	bh=O1s9MppqBD24Uxeex5wnrbx/DM8VUSADzkNddc4Evsc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=PZC3x3jn5ZbvHnRzd6Cc8t4wU0HPdFnaBFrRrIvqyXIdDP6GIYOFTZLe7JVoxdKykIW8dqNnS2rlU/j+kp5W7PmZx/BP1JSYHW6K4b5BxaWQv5D1L83Dfm2MCBTkyeWBW7ZjFx0ZJ/obM9041A3GSWUI/Wx878U0YJvC8rlE3Qg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=R5ZyCvhp; arc=none smtp.client-ip=185.138.42.100
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=antheas.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MBU8AN+2"
-Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-548043a912fso344628e87.2;
-        Sat, 22 Feb 2025 05:51:08 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1740232267; x=1740837067; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=7XvebaarfPWYMLZS8DRSVmQKGFCvLowf4P4Z/yIOI4A=;
-        b=MBU8AN+2XkRKQ9cCFmyFfUlbI5GaEYHFtF4tkcgBAE8MXy+YR8/zsoPGXy6Bg9G5dV
-         cJ37MoBpZth4O+lXgej8KZ27jDKiqzoPT/2bAYMIMSh2sGgcNKocPnoUoHHwuXchd62E
-         MsRf16xMYtuSvsXeRIh61fuhySoLOBtqpr8QHWwQ012jN/b25oWQzAhBcFIOMq+mkjAs
-         TaEVnonGNnatMf57xHRnQPksQ2QP1NMljdIp/nfd86Rc2X+EWi64ZJzxOUBnosZVVuLl
-         UMZ3PvYaUrf4gg8vgNABndA0smDYeFFiOINfJ4dIFYT8kW28zSfPlzN9jmsQjEOzmd0/
-         sN2g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740232267; x=1740837067;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=7XvebaarfPWYMLZS8DRSVmQKGFCvLowf4P4Z/yIOI4A=;
-        b=PJezCn2aGoTKItK0R6XINKGqPiKB5uLyBznqu1S3D1AGIDdKy9lo34eGa57Z67wFwP
-         G4FqFHDtG8yBPJMyKPzM5/L7lB+p05Ivgc1FEQocQzW05OqZc7JTLpSA1Jv6qXqjAhS7
-         kFf3MxoNaGo/bsf7LQd+1mFB6RN79d9SVvpzqHIjbb7+q8eG8gTrYoj1Ybu9wEv1NLAE
-         z8PNz19nOw7vWOOAE8cdE84oJ7C8mmO++djEtyFuwixxT56+kes9mByhB1gMFH0ByRa1
-         d0+EfbymJv7HKd0E0rTnj+/5u0Bw1MZGPvQXiBQIBdOCbvZR/OaaSvXzCC+hKOZ3Ur8E
-         5a3Q==
-X-Forwarded-Encrypted: i=1; AJvYcCVib9HqF9j1wYHiFbPMTzib7wuGiWs8t8KstUWA64pEkciGi1GLGKzJxv+RaY6TUVp2VaYRZbhoCqGhCxsL6+U=@vger.kernel.org, AJvYcCW0dOHO3/+ZJbuC0Pwzr6zOyyFbhV9oz0Fim7Kv09LJB0bt7NwTROcbueFxGaX/6vpxnF5Q0hAcOUNNhu4=@vger.kernel.org, AJvYcCXwUznJOPFWzxxJpe99IjugZXr3gt6mc8QpJkAKZ/Svval8WOeXXY2o0cp3wqFn9PG+BTVrgctYyNA=@vger.kernel.org
-X-Gm-Message-State: AOJu0YxBKQsUwfMAIXlr78a16I5Bfq6xxgNC7Nhy5oWxMKn6ejJFEu0P
-	5aQ6ZWmMrZb5yo0fwgQsaN6FDD34JZKINocPnn84L6HZBZMsfPWMVl7QX6yvMNwdxqppuE2JHtN
-	b356RL8FqKnd5AB1idCuIODWiSKo=
-X-Gm-Gg: ASbGncsdLxioemT6qRS5J5Q3nBE8SKKntps+13yyDaWdgtLfM7m6LvajajzTtemtMRY
-	m3xNWjw8pVok0hMzClm9SKCRX1oFuELpmDdzcH0z8CfpUOowGjeA/qxb5dvsFC+RcqGRWaOEHiz
-	4hFdPHSsI=
-X-Google-Smtp-Source: AGHT+IEiprFzehPTOxru2M93tQg4m3wL/6UlJh/OyAX0ySYI2kjESez6vGmCeLbUDX5qhzIjXc8BWzRwjAt+mbpFnZk=
-X-Received: by 2002:a05:651c:1b14:b0:307:2aea:559a with SMTP id
- 38308e7fff4ca-30a59997932mr9566891fa.9.1740232267051; Sat, 22 Feb 2025
- 05:51:07 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="R5ZyCvhp"
+Received: from localhost.localdomain (unknown [IPv6:2a05:f6c2:511b:0:cbc0:999f:73ad:33bd])
+	by linux1587.grserver.gr (Postfix) with ESMTPSA id 3C7EF2E08C37;
+	Sat, 22 Feb 2025 18:20:31 +0200 (EET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=antheas.dev;
+	s=default; t=1740241232;
+	bh=2lNU/XHEtmmljo7nIHbwCfjs1skLNJxV0ouzdd8xI+A=; h=From:To:Subject;
+	b=R5ZyCvhpqfXCSc0VZCZDs03z8IF3wat7OSmqQUMaNSn0O0ZZWdbspYRVqM0vldAQl
+	 djbqfFd5iu3bcl2pZ6yTHhlKJPFzani3wqZ39B12UZie383CeeipD+weL/8ah1q9nU
+	 qQURkB3qOZpDuKPSaoh78QQo4aNizV75ScPPKJOg=
+Authentication-Results: linux1587.grserver.gr;
+	spf=pass (sender IP is 2a05:f6c2:511b:0:cbc0:999f:73ad:33bd) smtp.mailfrom=lkml@antheas.dev smtp.helo=localhost.localdomain
+Received-SPF: pass (linux1587.grserver.gr: connection is authenticated)
+From: Antheas Kapenekakis <lkml@antheas.dev>
+To: linux-hwmon@vger.kernel.org
+Cc: linux-doc@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	platform-driver-x86@vger.kernel.org,
+	Guenter Roeck <linux@roeck-us.net>,
+	Jean Delvare <jdelvare@suse.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Joaquin Ignacio Aramendia <samsagax@gmail.com>,
+	Derek J Clark <derekjohn.clark@gmail.com>,
+	Kevin Greenberg <kdgreenberg234@protonmail.com>,
+	Joshua Tam <csinaction@pm.me>,
+	Parth Menon <parthasarathymenon@gmail.com>,
+	Eileen <eileen@one-netbook.com>,
+	Antheas Kapenekakis <lkml@antheas.dev>
+Subject: [PATCH v2 05/12] hwmon: (oxp-sensors) Rename ec group to tt_toggle
+Date: Sat, 22 Feb 2025 17:18:16 +0100
+Message-ID: <20250222161824.172511-6-lkml@antheas.dev>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250222161824.172511-1-lkml@antheas.dev>
+References: <20250222161824.172511-1-lkml@antheas.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250221205649.141305-1-yury.norov@gmail.com> <20250221205649.141305-3-yury.norov@gmail.com>
-In-Reply-To: <20250221205649.141305-3-yury.norov@gmail.com>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Sat, 22 Feb 2025 14:50:50 +0100
-X-Gm-Features: AWEUYZkMOIblNgQKZQV0DVwztTF32mbQDrM8xd4mK5hBqeEGuus0sxvxiKDGStk
-Message-ID: <CANiq72=ctKoDz+Kf7UFBTD-oF17cTHBcrkNN_5cqxQeK609OVA@mail.gmail.com>
-Subject: Re: [PATCH 2/2] MAINTAINERS: add rust bindings entry for bitmap API
-To: Yury Norov <yury.norov@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Danilo Krummrich <dakr@redhat.com>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Alex Gaynor <alex.gaynor@gmail.com>, 
-	Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>, 
-	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
-	Benno Lossin <benno.lossin@proton.me>, Andreas Hindborg <a.hindborg@kernel.org>, 
-	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
-	Rasmus Villemoes <linux@rasmusvillemoes.dk>, Vincent Guittot <vincent.guittot@linaro.org>, 
-	Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>, 
-	Manos Pitsidianakis <manos.pitsidianakis@linaro.org>, Erik Schilling <erik.schilling@linaro.org>, 
-	=?UTF-8?B?QWxleCBCZW5uw6ll?= <alex.bennee@linaro.org>, 
-	Joakim Bech <joakim.bech@linaro.org>, Rob Herring <robh@kernel.org>, Christoph Hellwig <hch@lst.de>, 
-	Jason Gunthorpe <jgg@nvidia.com>, John Hubbard <jhubbard@nvidia.com>, linux-pm@vger.kernel.org, 
-	rust-for-linux@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-PPP-Message-ID: 
+ <174024123248.13812.6826396738358864198@linux1587.grserver.gr>
+X-PPP-Vhost: antheas.dev
+X-Virus-Scanned: clamav-milter 0.103.11 at linux1587.grserver.gr
+X-Virus-Status: Clean
 
-On Fri, Feb 21, 2025 at 9:57=E2=80=AFPM Yury Norov <yury.norov@gmail.com> w=
-rote:
->
-> Bitmap developers do their best to keep the API stable. When API or
-> user-visible behavior needs to be changed such that it breaks rust,
-> bitmap and rust developers collaborate as follows:
+Currently, the EC group is used for the turbo button. However, the next
+patch in the series adds support for the LED button in X1 devices, which
+is only applicable for X1 devices. Therefore, rename it to prepare for
+adding the second group.
 
-If I understand correctly, you are proposing to a "temporarily stable
-API", i.e. to add new APIs while keeping old ones for a bit until the
-Rust side updates to the new one (including perhaps workarounds in the
-helpers when needed). Is that correct?
+Signed-off-by: Antheas Kapenekakis <lkml@antheas.dev>
+---
+ drivers/hwmon/oxp-sensors.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-In other words, while the entry is about the helpers file, the policy
-is about all APIs (since some APIs are called directly), right?
+diff --git a/drivers/hwmon/oxp-sensors.c b/drivers/hwmon/oxp-sensors.c
+index f8ffc78deedd..1c01636582d7 100644
+--- a/drivers/hwmon/oxp-sensors.c
++++ b/drivers/hwmon/oxp-sensors.c
+@@ -884,18 +884,18 @@ static const struct hwmon_channel_info * const oxp_platform_sensors[] = {
+ 	NULL,
+ };
+ 
+-static struct attribute *oxp_ec_attrs[] = {
++static struct attribute *oxp_tt_toggle_attrs[] = {
+ 	&dev_attr_tt_toggle.attr,
+ 	NULL
+ };
+ 
+-static struct attribute_group oxp_ec_attribute_group = {
++static struct attribute_group oxp_tt_toggle_attribute_group = {
+ 	.is_visible = tt_toggle_is_visible,
+-	.attrs = oxp_ec_attrs,
++	.attrs = oxp_tt_toggle_attrs,
+ };
+ 
+ static const struct attribute_group *oxp_ec_groups[] = {
+-	&oxp_ec_attribute_group,
++	&oxp_tt_toggle_attribute_group,
+ 	NULL
+ };
+ 
+-- 
+2.48.1
 
-(Up to you, Viresh et al., of course, i.e. I am just trying to follow)
-
-Thanks!
-
-Cheers,
-Miguel
