@@ -1,25 +1,24 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AFFE0101F2;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AFFA42571AD;
 	Mon, 24 Feb 2025 23:22:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740439320; cv=none; b=YiMB/h1QF1zlmUf2sVIgLeWgS0aX9HCl7t5ZpA6DbpPguRAGWKqs5Zg3jwkq1vZdv0+Z486eyA2hdcghSqEnSCboWhNa50MNpwZrCYLSgud2/vWH7KwSV0IJ6IUTL3daY09Q1wVpSIpVHX6TtHT05XWGcVa+8m/gy0cac8LXLXg=
+	t=1740439320; cv=none; b=d6WUhQYC9GRvB3tUOXqXGV9jC0uhJa3ze3t//yDoUiRxHPGM9XWgIZmC2KLJDlfblg7RgnlYyHKUePfofMtZYDqIF/4qysY/qTIBbZq0AuqHYaqi6Nx9z3xtBy/CapKgwtwzhpVU9MTtfTOjDamykW6YoJ7nsKf444FT985BUvY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1740439320; c=relaxed/simple;
-	bh=z6RCFb2/vB/uPI6y66W4S0l3zN9napepWbci1XWwVNA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=a3z1nQHBA+OaOTPCu1iu4uCfg2EkXA9QaZVWlG5pfCBD4coBSOUln+Xicr0K2eqrMfalrAlynodHExUyqB4viFW6N6rC61vDLt4sHWEzxbuP2S2P1yRSK8zlkDVcofuWoVp/n5InIaN0JH4oWgpHgnC1EtMWYaxQf5kDmOFTIvo=
+	bh=FRmFi9i/dohft9kXQXHUNw9zRthT6BA/ZO7P+OEA/Tg=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=XXNslb6uQX8Z/wPf3tGbpVsyVJTYicOqWHvzJNcHd64kCTovbbLLJQeIFz+Fsyutw4Ws1/8mvHs726BvRJRKp8cvKHbWJ13mhOJjLrM2BXTceD6cGg04VU8fO0AhDegc0d5M/RmTPWCqEWMCY4t16LlsHBz+RVCv8ZfDeW+m+FI=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1CE11C4CED6;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2069AC4CEE8;
 	Mon, 24 Feb 2025 23:22:00 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 470D218066F; Tue, 25 Feb 2025 00:21:58 +0100 (CET)
+	id 420B218066D; Tue, 25 Feb 2025 00:21:58 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Date: Tue, 25 Feb 2025 00:21:35 +0100
-Subject: [PATCH 2/7] regulator: act8865-regulator: switch psy_cfg from
- of_node to fwnode
+Subject: [PATCH 0/7] power: supply: core: convert to fwnode
+Date: Tue, 25 Feb 2025 00:21:33 +0100
+Message-Id: <20250225-psy-core-convert-to-fwnode-v1-0-d5e4369936bb@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -28,9 +27,10 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250225-psy-core-convert-to-fwnode-v1-2-d5e4369936bb@collabora.com>
-References: <20250225-psy-core-convert-to-fwnode-v1-0-d5e4369936bb@collabora.com>
-In-Reply-To: <20250225-psy-core-convert-to-fwnode-v1-0-d5e4369936bb@collabora.com>
+X-B4-Tracking: v=1; b=H4sIAP3+vGcC/x3MPQqAMAxA4atIZgMa7aBXEQdpU83SSir+ULy7x
+ eXBt7wMiVU4wVhlUD4lSQwFbV2B3ZawMoorBmrINEQt7ulBG5VLwsl64BHRXyE6RmcW0/fkbec
+ HKINd2cv9z6f5fT9n8zkSbAAAAA==
+X-Change-ID: 20250221-psy-core-convert-to-fwnode-d5a5442fc3f9
 To: Sebastian Reichel <sre@kernel.org>, Mark Brown <broonie@kernel.org>, 
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
  Linus Walleij <linus.walleij@linaro.org>, 
@@ -52,46 +52,113 @@ Cc: Liam Girdwood <lgirdwood@gmail.com>, Chen-Yu Tsai <wens@csie.org>,
  linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, 
  Sebastian Reichel <sebastian.reichel@collabora.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=890;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4565;
  i=sebastian.reichel@collabora.com; h=from:subject:message-id;
- bh=z6RCFb2/vB/uPI6y66W4S0l3zN9napepWbci1XWwVNA=;
- b=kA0DAAoB2O7X88g7+poByyZiAGe8/xSimcaazLXGcNG/1mTR16VIq9X7i+gMf3F5pKIfBdrFE
- 4kCMwQAAQoAHRYhBO9mDQdGP4tyanlUE9ju1/PIO/qaBQJnvP8UAAoJENju1/PIO/qafVQP/11l
- j3+tzVXJQejIIWqovbTDKhcu5evCd64HmFmMcW/lxU7NGcV9hWKXIcrO7Vc/VWSFALTqK0vUA4L
- X/BPijrawRPWY5a5KZLd39MjVcApUCSZpDLcL9Qyb7maxy0Yu0KkR9znpYQtDl/BGcNcTowxPmt
- wxW75zdKnSbEnG06VR8OHwIBb/QcpYS8aiLV2WL36yQRGZfdpXOmeTLOII82zVI+CFYZX8pNhb7
- z7pHK74GC6Ec6RJ3hJJfCNLUbpFlwNdL+yMb2361EazgpKHXpmzv6mRA2EcB1qtKCgglogQ85HI
- ywvbZ2Fac/wmgvz9Bmn9hyQLMEhpL7gInMMluFZERAQQ0qYH4TugA09hHhAK9XsTFnVrLsD/lsC
- JRbIKqLR6uRRrsqEdqlTM+4YZBG0/7WlrSIgi94WiRDsbn+dKWp3u9En1YHhGJJI9B3kkhdubRg
- +aNOHqVbc3o7BX4m2T/X0svguaoFbaTF3/KCfdisxSvR1Y4eWzQ+ek4yql2FVBjgnLQAra0pW3B
- 4FptwcIRqre30P4uAErYuqZGI8pliU/cn2OWfZ0f+m8SiUIamfFNkRiK0Fa+PZhLuMq8wiN04cJ
- HuuDNxsCoqByr0DotSzNt9i8FdjyLHtDGLuN0gADzgu7h2hqnKGg2A6ZfvilZeJbPSkA4UcJhMM
- 9naKi
+ bh=FRmFi9i/dohft9kXQXHUNw9zRthT6BA/ZO7P+OEA/Tg=;
+ b=owEBbQKS/ZANAwAKAdju1/PIO/qaAcsmYgBnvP8LwBsfsMPqhNW3Q9Z8oPHCkw9MnJk5mtaNE
+ HkSMAD54iuJAjMEAAEKAB0WIQTvZg0HRj+Lcmp5VBPY7tfzyDv6mgUCZ7z/CwAKCRDY7tfzyDv6
+ mtZyD/9gpAbaSTVDHWfO8vw/mF7Vq6c7KXwf8S7SgR/B9wmdUAdPSB/4o66mnFkSDwNz2NUMEdb
+ dlxrM1cSFflYjC5saEMxvuFRhCWh6OXT4L2k14esjYg6QFX9BKkeBoOfVl+qljgJNofr/WBHb52
+ 4ntAMLY0BWmlKgbaqxC6RDbEoZfMh92jEzP7nIYNEg/tav/xPYfFAjxeTf8UYhYhc7rJXfESzcA
+ jJFA5Bvpx6xELiY3AM3uTjgMBLY+HTl72R1ua0UlYvucPVegur7vBVsQezwDfkw2Moc6neE40zu
+ WOxi1NUMtT9Z8J+TZ+yZD2rk+AKNnZ7JHabss2TzJS4RI6l8sJmD3m0RM4cRXpctLTXZdUDIcOC
+ 1e15+sTmn5KTnwbI4VJgdT5CGAwJfCqt0u7w04oUuv/rVzjnuegaORzyqLcZoly4K+c8u3PjFvL
+ XHB2jdLu1sbacBwTP5OYkFRSwpKZ8u19SjLm6VVZDD+nPoH0BXWNMMHXw5MXYPGb03l2F4giMIb
+ 4ug5XqRBy9YusWNpGQx/dDqf34+8PFJ5pCdZeA6fp+nIf/kgjdAyt0im2k5W6g5TNJV29BySHib
+ av5I4SFe6qScMNKXcA9UuHcqw8+H905kqiMKKE2BnR+NsMNVp1teHHgCz4/XhZbC/CPB9DeXTu3
+ JrGBKUPHowjP5rA==
 X-Developer-Key: i=sebastian.reichel@collabora.com; a=openpgp;
  fpr=EF660D07463F8B726A795413D8EED7F3C83BFA9A
 
-In order to remove .of_node from the power_supply_config struct,
-use .fwnode instead.
+The goal of this series is to replace any OF specific code in the
+power-supply core with more generic fwnode code.
 
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+The first 5 patches of this series mostly take care of removing .of_node
+from power_supply_config in favor of using the existing .fwnode.
+
+Patch 6 replaces the OF specific logic in battery-info. This will
+hopefully also allow Hans de Goede reusing the code with his Intel
+Dollar Cove TI CC battery driver series.
+
+Last but not least patch 7 replaces the OF phandle code with fwnode to
+have everything converted.
+
+Note, that I do not own a single device making use of the
+"ocv-capacity-celsius" and "resistance-temp-table", which means patch 7
+is basically untested. I would really appreciate if somebody gives this
+series a test run on an affected device.
+
 ---
- drivers/regulator/act8865-regulator.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Sebastian Reichel (7):
+      power: supply: core: get rid of of_node
+      regulator: act8865-regulator: switch psy_cfg from of_node to fwnode
+      usb: common: usb-conn-gpio: switch psy_cfg from of_node to fwnode
+      power: supply: all: switch psy_cfg from of_node to fwnode
+      power: supply: core: remove of_node from power_supply_config
+      power: supply: core: battery-info: fully switch to fwnode
+      power: supply: core: convert to fwnnode
 
-diff --git a/drivers/regulator/act8865-regulator.c b/drivers/regulator/act8865-regulator.c
-index 0457af23c55acdd97b2cdc6fd6bfd07ae0f9d11f..b2a6ddc6f56d32e8758977e25858b972e294bc84 100644
---- a/drivers/regulator/act8865-regulator.c
-+++ b/drivers/regulator/act8865-regulator.c
-@@ -643,7 +643,7 @@ static int act8600_charger_probe(struct device *dev, struct regmap *regmap)
- 	struct power_supply *charger;
- 	struct power_supply_config cfg = {
- 		.drv_data = regmap,
--		.of_node = dev->of_node,
-+		.fwnode = dev_fwnode(dev),
- 	};
- 
- 	charger = devm_power_supply_register(dev, &act8600_charger_desc, &cfg);
+ drivers/power/supply/ab8500_charger.c       |   4 +-
+ drivers/power/supply/acer_a500_battery.c    |   3 +-
+ drivers/power/supply/act8945a_charger.c     |   2 +-
+ drivers/power/supply/axp20x_ac_power.c      |   2 +-
+ drivers/power/supply/axp20x_battery.c       |   2 +-
+ drivers/power/supply/axp20x_usb_power.c     |   2 +-
+ drivers/power/supply/bd99954-charger.c      |   2 +-
+ drivers/power/supply/bq2415x_charger.c      |   4 +-
+ drivers/power/supply/bq24190_charger.c      |   2 +-
+ drivers/power/supply/bq24735-charger.c      |   2 +-
+ drivers/power/supply/bq2515x_charger.c      |   2 +-
+ drivers/power/supply/bq256xx_charger.c      |   2 +-
+ drivers/power/supply/bq25980_charger.c      |   2 +-
+ drivers/power/supply/bq27xxx_battery.c      |   2 +-
+ drivers/power/supply/cpcap-battery.c        |   2 +-
+ drivers/power/supply/cpcap-charger.c        |   2 +-
+ drivers/power/supply/ds2760_battery.c       |   3 +-
+ drivers/power/supply/generic-adc-battery.c  |   2 +-
+ drivers/power/supply/gpio-charger.c         |   2 +-
+ drivers/power/supply/ingenic-battery.c      |   2 +-
+ drivers/power/supply/ip5xxx_power.c         |   2 +-
+ drivers/power/supply/lego_ev3_battery.c     |   3 +-
+ drivers/power/supply/lt3651-charger.c       |   2 +-
+ drivers/power/supply/ltc4162-l-charger.c    |   2 +-
+ drivers/power/supply/max17042_battery.c     |   2 +-
+ drivers/power/supply/max77650-charger.c     |   2 +-
+ drivers/power/supply/max8903_charger.c      |   2 +-
+ drivers/power/supply/mm8013.c               |   2 +-
+ drivers/power/supply/mt6360_charger.c       |   2 +-
+ drivers/power/supply/mt6370-charger.c       |   2 +-
+ drivers/power/supply/olpc_battery.c         |   4 +-
+ drivers/power/supply/pm8916_bms_vm.c        |   2 +-
+ drivers/power/supply/pm8916_lbc.c           |   2 +-
+ drivers/power/supply/power_supply_core.c    | 178 +++++++++++++++-------------
+ drivers/power/supply/qcom_battmgr.c         |   5 +-
+ drivers/power/supply/qcom_pmi8998_charger.c |   2 +-
+ drivers/power/supply/qcom_smbb.c            |   2 +-
+ drivers/power/supply/rk817_charger.c        |   2 +-
+ drivers/power/supply/rt5033_battery.c       |   2 +-
+ drivers/power/supply/rt5033_charger.c       |   3 +-
+ drivers/power/supply/rt9455_charger.c       |   2 +-
+ drivers/power/supply/rt9467-charger.c       |   2 +-
+ drivers/power/supply/rt9471.c               |   2 +-
+ drivers/power/supply/sbs-battery.c          |   2 +-
+ drivers/power/supply/sbs-charger.c          |   2 +-
+ drivers/power/supply/sbs-manager.c          |   2 +-
+ drivers/power/supply/sc2731_charger.c       |   2 +-
+ drivers/power/supply/sc27xx_fuel_gauge.c    |   3 +-
+ drivers/power/supply/smb347-charger.c       |   2 +-
+ drivers/power/supply/tps65090-charger.c     |   2 +-
+ drivers/power/supply/tps65217_charger.c     |   2 +-
+ drivers/power/supply/ucs1002_power.c        |   2 +-
+ drivers/regulator/act8865-regulator.c       |   2 +-
+ drivers/usb/common/usb-conn-gpio.c          |   2 +-
+ include/linux/power_supply.h                |   4 +-
+ 55 files changed, 158 insertions(+), 144 deletions(-)
+---
+base-commit: 2014c95afecee3e76ca4a56956a936e23283f05b
+change-id: 20250221-psy-core-convert-to-fwnode-d5a5442fc3f9
 
+Best regards,
 -- 
-2.47.2
+Sebastian Reichel <sebastian.reichel@collabora.com>
 
