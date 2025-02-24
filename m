@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E595264A92;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E4AC264A85;
 	Mon, 24 Feb 2025 17:57:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740419821; cv=none; b=MkKp1xt2+8dXq7KuaR7Vhg6uHfxfARoGOFyhzRtSkBXFvgZEo/BjvngtpnulEM7L2RpNQRUUOPNlVkYzXWTUCHpP/3pzXkEcUQW//NKZPqyaB/ByGIoDRgcTllZVHvjr1xIOsatWeOu0DW6eJLFr222mP7QseLh98QKTIDEEnlQ=
+	t=1740419821; cv=none; b=kh5mF8rXwXY9JGAowmBjS53eDU6q+8JIIjWx/U0EW2pw976GrZpB3nz9HYjmZYXwostCght2uu98cW7VDHqq0CZJ1pEMZoLDRmcp/9q8eBxu+1Y9K7s56pGdQDd+0UU0QQiSOkWggxrEbNgAu75q417OUFYlUv36OghgaRhNsAc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1740419821; c=relaxed/simple;
-	bh=98Z6rWquwnb+oqau6pISJGfTMsaiWJKg9oR7AsN7MLQ=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=VtuHnP978L+TZmYEea0K9nKWylU9nY+b9jsO67TrvYpXoSiHvyWL28wdv53wjOE+notPCNNwc2c8xy1dcr5Xu4cRMC0W+X1dqCfA89+qoF/42heSXaK4w1F5sgeW4PfuBvMz/rW7uYyHDbzj8cSwAWtO9jNcQtJL14rEGSLfBGo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=vKY/Xj9U; arc=none smtp.client-ip=10.30.226.201
+	bh=LsInl6C5Ll+asf1Orv5FJIOgIGtwKiaM1xC0RW/LLB8=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=cRb+QYN1XIeEYi7fsY+t/aYQKByssEh9hWK+ifxQm1PRkjJnP4NpntAvekTkMJ3GUws8zViA8MZCEo9ilyzZLIraGFHliDa7ortsNijjXU21IF2IIt/3HXvra/FTjZIvuFjSD3udwOqzDY1mZtHoUY8v7fbD/kN5i46k2moUUZQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UkLK5+Sv; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="vKY/Xj9U"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id E503AC4CED6;
-	Mon, 24 Feb 2025 17:57:00 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UkLK5+Sv"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 108D5C4CEDD;
+	Mon, 24 Feb 2025 17:57:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1740419821;
-	bh=98Z6rWquwnb+oqau6pISJGfTMsaiWJKg9oR7AsN7MLQ=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=vKY/Xj9UEObtFXb1O4O4gx+CotG9LPPrPo5gAo61O4uqu9J5ffjOaiRUfAVLJB0ka
-	 HpM/XaU+RLmv7AkPiP/i0hNMvycYKB9CYCGq79CZPkdb/C+IAmIti8lReIIn7ZS4xD
-	 n3mkaMjX8b3PgQRj7zFvttEMxsJFTQnBxPQJ5EHd42SE36OrZwD4T/3QPCiUCrsyiE
-	 AlQwg/fAgTguxyAvmu5P+TeelivESdJlhUC+vPvIaiRX+pDMKTE/OObOee/gXRU3QO
-	 +26XZgn+7ih1q/d+rtPPcJzf/tUgcvZZxniPKWRB3FXx+rXpIG8vpqu4o4ninhj/vQ
-	 xBL7EnxU5AwzQ==
+	bh=LsInl6C5Ll+asf1Orv5FJIOgIGtwKiaM1xC0RW/LLB8=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=UkLK5+SvBHWRRi0/ATnyleB/7Ym/PGBi+K59jaKwQmOVM+GHizAilfkvfi2QEooyM
+	 WA6GREk/maNot9iP5ziPLmU+R2dhItZBok61VTSYmY3B/MVltcsZDFjsqmcea0Zx73
+	 a/mWXcENCJcZtWmu0EpUnLBN9r7dzwOXAoSnfeOY35L5GuOEGLHjMnyDq6KgphuXeK
+	 C1DrF/uOsPvP2sGpGIVbqQb5LBqTmQ9bucLUXIv8wmrKhHh/SPODZmtI+MmN0QUu2c
+	 0JkGqS4CZDqej4e6/OJZF/yAQ6EFsNAFANnLJXoQIht2551Ser67kw2YHFDiTZ7Zs1
+	 B/ga4QFlq1dng==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC103C021BB;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3B93C021BE;
 	Mon, 24 Feb 2025 17:57:00 +0000 (UTC)
 From: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>
-Subject: [PATCH 0/2] (no cover subject)
-Date: Mon, 24 Feb 2025 11:55:32 -0600
-Message-Id: <20250224-build-tegra234-v1-0-39e4e912f968@gmail.com>
+Date: Mon, 24 Feb 2025 11:55:34 -0600
+Subject: [PATCH 2/2] PCI: tegra194: Allow building for Tegra234
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,10 +40,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAJSyvGcC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDI1MDIyMT3aTSzJwU3ZLU9KJEI2MT3WRDC9OklETLtBSTRCWgpoKi1LTMCrC
- B0bG1tQDeDU1GYAAAAA==
-X-Change-ID: 20250224-build-tegra234-c185bda9fd4a
+Message-Id: <20250224-build-tegra234-v1-2-39e4e912f968@gmail.com>
+References: <20250224-build-tegra234-v1-0-39e4e912f968@gmail.com>
+In-Reply-To: <20250224-build-tegra234-v1-0-39e4e912f968@gmail.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>, 
  Viresh Kumar <viresh.kumar@linaro.org>, Sumit Gupta <sumitg@nvidia.com>, 
  Lorenzo Pieralisi <lpieralisi@kernel.org>, 
@@ -54,11 +53,11 @@ To: "Rafael J. Wysocki" <rafael@kernel.org>,
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
  linux-pci@vger.kernel.org, Aaron Kling <webgeek1234@gmail.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1740419820; l=723;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1740419820; l=1308;
  i=webgeek1234@gmail.com; s=20250217; h=from:subject:message-id;
- bh=98Z6rWquwnb+oqau6pISJGfTMsaiWJKg9oR7AsN7MLQ=;
- b=iARYKkm2gfxVmnVK8DYl1ygPH+MXiUi2obi+p9pHnMiJJH3kPeSHY4FES+MyFsGKXyVN4z984
- mxKf7YYuNk0DrCqYGfvBq/7H/VUvvLRujZj1xLNpRYw92WAaZu3INUa
+ bh=RQMU1OruosUtu/kFiSKZkJtzqv30gwNTIdbY5d1PAWo=;
+ b=NxyKmg4DpPG0QjYEYE1fUUbABtXtfAfAuXjENVceq5qPHCOTBW6ZoKPEXAUHTmcZvanTswfNQ
+ qfYzOvdtqvOC80CStXD4sT2/EtEcz2GI2kFShXidYVcvlTfR8arSKp5
 X-Developer-Key: i=webgeek1234@gmail.com; a=ed25519;
  pk=TQwd6q26txw7bkK7B8qtI/kcAohZc7bHHGSD7domdrU=
 X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
@@ -66,26 +65,41 @@ X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
 X-Original-From: Aaron Kling <webgeek1234@gmail.com>
 Reply-To: webgeek1234@gmail.com
 
-When Tegra234 support was added to existing Tegra drivers, many of them
-did not have the matching Kconfig entries updated to allow building for
-the arch. A few of those have already been fixed. This series fixes a
-couple more.
+From: Aaron Kling <webgeek1234@gmail.com>
 
+Support was added for Tegra234 in the referenced commit, but the Kconfig
+was not updated to allow building for the arch.
+
+Fixes: a54e19073718 ("PCI: tegra194: Add Tegra234 PCIe support")
 Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
 ---
-Aaron Kling (2):
-      cpufreq: tegra194: Allow building for Tegra234
-      PCI: tegra194: Allow building for Tegra234
-
- drivers/cpufreq/Kconfig.arm        | 2 +-
  drivers/pci/controller/dwc/Kconfig | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
----
-base-commit: d082ecbc71e9e0bf49883ee4afd435a77a5101b6
-change-id: 20250224-build-tegra234-c185bda9fd4a
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Best regards,
+diff --git a/drivers/pci/controller/dwc/Kconfig b/drivers/pci/controller/dwc/Kconfig
+index b6d6778b0698b2ab22ef69f6c8d8cd5619ede41f..6dd232cf80642583482827d80c6321dd8e8156da 100644
+--- a/drivers/pci/controller/dwc/Kconfig
++++ b/drivers/pci/controller/dwc/Kconfig
+@@ -205,7 +205,7 @@ config PCIE_TEGRA194
+ 
+ config PCIE_TEGRA194_HOST
+ 	tristate "NVIDIA Tegra194 (and later) PCIe controller (host mode)"
+-	depends on ARCH_TEGRA_194_SOC || COMPILE_TEST
++	depends on ARCH_TEGRA_194_SOC || ARCH_TEGRA_234_SOC || COMPILE_TEST
+ 	depends on PCI_MSI
+ 	select PCIE_DW_HOST
+ 	select PHY_TEGRA194_P2U
+@@ -220,7 +220,7 @@ config PCIE_TEGRA194_HOST
+ 
+ config PCIE_TEGRA194_EP
+ 	tristate "NVIDIA Tegra194 (and later) PCIe controller (endpoint mode)"
+-	depends on ARCH_TEGRA_194_SOC || COMPILE_TEST
++	depends on ARCH_TEGRA_194_SOC || ARCH_TEGRA_234_SOC || COMPILE_TEST
+ 	depends on PCI_ENDPOINT
+ 	select PCIE_DW_EP
+ 	select PHY_TEGRA194_P2U
+
 -- 
-Aaron Kling <webgeek1234@gmail.com>
+2.48.1
 
 
