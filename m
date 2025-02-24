@@ -1,105 +1,65 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from gentwo.org (gentwo.org [62.72.0.81])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E4AC264A85;
-	Mon, 24 Feb 2025 17:57:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DD1C7BAEC;
+	Mon, 24 Feb 2025 18:02:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=62.72.0.81
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740419821; cv=none; b=kh5mF8rXwXY9JGAowmBjS53eDU6q+8JIIjWx/U0EW2pw976GrZpB3nz9HYjmZYXwostCght2uu98cW7VDHqq0CZJ1pEMZoLDRmcp/9q8eBxu+1Y9K7s56pGdQDd+0UU0QQiSOkWggxrEbNgAu75q417OUFYlUv36OghgaRhNsAc=
+	t=1740420150; cv=none; b=J/jpvXJEUnF8ITfNYljzJqeqeievb+K+2bC73jmAT+ikJz1nFEWQnyeFaU+xzqKPKqnDQSFGIbPzOWe8DpqWl/PKTV0AdkVYd0R3oqhg6lKVyQHXW/Hg6bRBV6wPMswRBOyVK2R8uqIYm4ZKlWss5q3L52aPvWRXDlNaxakL7X0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740419821; c=relaxed/simple;
-	bh=LsInl6C5Ll+asf1Orv5FJIOgIGtwKiaM1xC0RW/LLB8=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=cRb+QYN1XIeEYi7fsY+t/aYQKByssEh9hWK+ifxQm1PRkjJnP4NpntAvekTkMJ3GUws8zViA8MZCEo9ilyzZLIraGFHliDa7ortsNijjXU21IF2IIt/3HXvra/FTjZIvuFjSD3udwOqzDY1mZtHoUY8v7fbD/kN5i46k2moUUZQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UkLK5+Sv; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1740420150; c=relaxed/simple;
+	bh=ZcSniXRgM+Ddmr47JfUfBW9xvN1HNe9i5drbqA1M/n4=;
+	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=upXHWVJ3iVykRRB/vu/bS7MiuEckUXjgS4e0ztGbKxYeoiL9accuU1lXuAn2WmRstxEebUtGdyLWm52Fw9gCLZHzEnH7pHEpi4cqGo+LX6R0PFjO0/Rs3hjgwbQCjpaArgOD3Q3yESdUwzYVO4rMX9eNV0IELRcIW6aszFlYJL8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=gentwo.org; spf=pass smtp.mailfrom=gentwo.org; dkim=pass (1024-bit key) header.d=gentwo.org header.i=@gentwo.org header.b=QVK9OBJj; arc=none smtp.client-ip=62.72.0.81
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=gentwo.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gentwo.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UkLK5+Sv"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 108D5C4CEDD;
-	Mon, 24 Feb 2025 17:57:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740419821;
-	bh=LsInl6C5Ll+asf1Orv5FJIOgIGtwKiaM1xC0RW/LLB8=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=UkLK5+SvBHWRRi0/ATnyleB/7Ym/PGBi+K59jaKwQmOVM+GHizAilfkvfi2QEooyM
-	 WA6GREk/maNot9iP5ziPLmU+R2dhItZBok61VTSYmY3B/MVltcsZDFjsqmcea0Zx73
-	 a/mWXcENCJcZtWmu0EpUnLBN9r7dzwOXAoSnfeOY35L5GuOEGLHjMnyDq6KgphuXeK
-	 C1DrF/uOsPvP2sGpGIVbqQb5LBqTmQ9bucLUXIv8wmrKhHh/SPODZmtI+MmN0QUu2c
-	 0JkGqS4CZDqej4e6/OJZF/yAQ6EFsNAFANnLJXoQIht2551Ser67kw2YHFDiTZ7Zs1
-	 B/ga4QFlq1dng==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3B93C021BE;
-	Mon, 24 Feb 2025 17:57:00 +0000 (UTC)
-From: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>
-Date: Mon, 24 Feb 2025 11:55:34 -0600
-Subject: [PATCH 2/2] PCI: tegra194: Allow building for Tegra234
+	dkim=pass (1024-bit key) header.d=gentwo.org header.i=@gentwo.org header.b="QVK9OBJj"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gentwo.org;
+	s=default; t=1740416264;
+	bh=ZcSniXRgM+Ddmr47JfUfBW9xvN1HNe9i5drbqA1M/n4=;
+	h=Date:From:To:cc:Subject:In-Reply-To:References:From;
+	b=QVK9OBJjeDjcboUGIJNsj1/Yd213YN4Cc+1uJUcOc0TH4pwHTurFfHQ+hHR+shN4c
+	 NEtsVESYC4pMVHGrop80zFSssiVTh2QtP520C9PdZM4L/alnUbI8LUFfRCqpXt0Gdj
+	 wGk/29IBVVg2djOspxa+EzOJhlsUNaJrOaYywbt0=
+Received: by gentwo.org (Postfix, from userid 1003)
+	id 41A2940A17; Mon, 24 Feb 2025 08:57:44 -0800 (PST)
+Received: from localhost (localhost [127.0.0.1])
+	by gentwo.org (Postfix) with ESMTP id 4069040195;
+	Mon, 24 Feb 2025 08:57:44 -0800 (PST)
+Date: Mon, 24 Feb 2025 08:57:44 -0800 (PST)
+From: "Christoph Lameter (Ampere)" <cl@gentwo.org>
+To: Ankur Arora <ankur.a.arora@oracle.com>
+cc: linux-pm@vger.kernel.org, kvm@vger.kernel.org, 
+    linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+    linux-acpi@vger.kernel.org, catalin.marinas@arm.com, will@kernel.org, 
+    x86@kernel.org, pbonzini@redhat.com, vkuznets@redhat.com, 
+    rafael@kernel.org, daniel.lezcano@linaro.org, peterz@infradead.org, 
+    arnd@arndb.de, lenb@kernel.org, mark.rutland@arm.com, harisokn@amazon.com, 
+    mtosatti@redhat.com, sudeep.holla@arm.com, maz@kernel.org, 
+    misono.tomohiro@fujitsu.com, maobibo@loongson.cn, zhenglifeng1@huawei.com, 
+    joao.m.martins@oracle.com, boris.ostrovsky@oracle.com, 
+    konrad.wilk@oracle.com
+Subject: Re: [PATCH v10 08/11] governors/haltpoll: drop kvm_para_available()
+ check
+In-Reply-To: <20250218213337.377987-9-ankur.a.arora@oracle.com>
+Message-ID: <6d035996-8b8f-3d3d-d41e-6573f8a76f31@gentwo.org>
+References: <20250218213337.377987-1-ankur.a.arora@oracle.com> <20250218213337.377987-9-ankur.a.arora@oracle.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250224-build-tegra234-v1-2-39e4e912f968@gmail.com>
-References: <20250224-build-tegra234-v1-0-39e4e912f968@gmail.com>
-In-Reply-To: <20250224-build-tegra234-v1-0-39e4e912f968@gmail.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Viresh Kumar <viresh.kumar@linaro.org>, Sumit Gupta <sumitg@nvidia.com>, 
- Lorenzo Pieralisi <lpieralisi@kernel.org>, 
- =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
- Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, 
- Rob Herring <robh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
- Vidya Sagar <vidyas@nvidia.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-pci@vger.kernel.org, Aaron Kling <webgeek1234@gmail.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1740419820; l=1308;
- i=webgeek1234@gmail.com; s=20250217; h=from:subject:message-id;
- bh=RQMU1OruosUtu/kFiSKZkJtzqv30gwNTIdbY5d1PAWo=;
- b=NxyKmg4DpPG0QjYEYE1fUUbABtXtfAfAuXjENVceq5qPHCOTBW6ZoKPEXAUHTmcZvanTswfNQ
- qfYzOvdtqvOC80CStXD4sT2/EtEcz2GI2kFShXidYVcvlTfR8arSKp5
-X-Developer-Key: i=webgeek1234@gmail.com; a=ed25519;
- pk=TQwd6q26txw7bkK7B8qtI/kcAohZc7bHHGSD7domdrU=
-X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
- auth_id=342
-X-Original-From: Aaron Kling <webgeek1234@gmail.com>
-Reply-To: webgeek1234@gmail.com
+Content-Type: text/plain; charset=US-ASCII
 
-From: Aaron Kling <webgeek1234@gmail.com>
+On Tue, 18 Feb 2025, Ankur Arora wrote:
 
-Support was added for Tegra234 in the referenced commit, but the Kconfig
-was not updated to allow building for the arch.
+> So, we can safely forgo the kvm_para_available() check. This also
+> allows cpuidle-haltpoll to be tested on baremetal.
 
-Fixes: a54e19073718 ("PCI: tegra194: Add Tegra234 PCIe support")
-Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
----
- drivers/pci/controller/dwc/Kconfig | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I would hope that we will have this functionality as the default on
+baremetal after testing in the future.
 
-diff --git a/drivers/pci/controller/dwc/Kconfig b/drivers/pci/controller/dwc/Kconfig
-index b6d6778b0698b2ab22ef69f6c8d8cd5619ede41f..6dd232cf80642583482827d80c6321dd8e8156da 100644
---- a/drivers/pci/controller/dwc/Kconfig
-+++ b/drivers/pci/controller/dwc/Kconfig
-@@ -205,7 +205,7 @@ config PCIE_TEGRA194
- 
- config PCIE_TEGRA194_HOST
- 	tristate "NVIDIA Tegra194 (and later) PCIe controller (host mode)"
--	depends on ARCH_TEGRA_194_SOC || COMPILE_TEST
-+	depends on ARCH_TEGRA_194_SOC || ARCH_TEGRA_234_SOC || COMPILE_TEST
- 	depends on PCI_MSI
- 	select PCIE_DW_HOST
- 	select PHY_TEGRA194_P2U
-@@ -220,7 +220,7 @@ config PCIE_TEGRA194_HOST
- 
- config PCIE_TEGRA194_EP
- 	tristate "NVIDIA Tegra194 (and later) PCIe controller (endpoint mode)"
--	depends on ARCH_TEGRA_194_SOC || COMPILE_TEST
-+	depends on ARCH_TEGRA_194_SOC || ARCH_TEGRA_234_SOC || COMPILE_TEST
- 	depends on PCI_ENDPOINT
- 	select PCIE_DW_EP
- 	select PHY_TEGRA194_P2U
-
--- 
-2.48.1
-
-
+Reviewed-by; Christoph Lameter (Ampere) <cl@linux.com>
