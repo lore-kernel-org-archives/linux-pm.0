@@ -1,82 +1,97 @@
-Received: from smtp.smtpout.orange.fr (smtp-78.smtpout.orange.fr [80.12.242.78])
-	(using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6487136327;
-	Mon, 24 Feb 2025 19:58:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.12.242.78
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AFFE0101F2;
+	Mon, 24 Feb 2025 23:22:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740427140; cv=none; b=MMTzTDzkMNkmkpruwhb4L5OZyLFr5KVc4AbfCUbqrVvrF/Vj4lSsXnh+NR2/ZM7IUTsIgERd7CoU1x45vU4Md+qDcLRyMJ77TeVC2IuhKQRIojQBnqhj+4Kx7ZM5zhIVL95OjtRiukw4JnPY6jD2/SKDSr39OvAO4Hdy29p4U8A=
+	t=1740439320; cv=none; b=YiMB/h1QF1zlmUf2sVIgLeWgS0aX9HCl7t5ZpA6DbpPguRAGWKqs5Zg3jwkq1vZdv0+Z486eyA2hdcghSqEnSCboWhNa50MNpwZrCYLSgud2/vWH7KwSV0IJ6IUTL3daY09Q1wVpSIpVHX6TtHT05XWGcVa+8m/gy0cac8LXLXg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740427140; c=relaxed/simple;
-	bh=fWCZLO7EKR4DOPrWOUXgbX4igVnp3NTdUsv32c2M+X0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=eK4jc0f++aiL4258pJ88mM7W2MnZTfsYIT005Blcww9IN8CR74OeGkjVNQQJGBvyoLRYDO05nwoEyHIlqHPziouu9B22sifE/i5JPjCQFhWqLug+dN1DbPVCf0+OUrQ1PdjnbGnGctTFZi3nHDukkUtPxQVFNgXiuuA3hYPFrwg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr; spf=pass smtp.mailfrom=wanadoo.fr; dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b=lSBGMgSM; arc=none smtp.client-ip=80.12.242.78
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wanadoo.fr
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b="lSBGMgSM"
-Received: from fedora.home ([90.11.132.44])
-	by smtp.orange.fr with ESMTPA
-	id meSLt3GDwJyOhmeSPtGswC; Mon, 24 Feb 2025 20:49:38 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
-	s=t20230301; t=1740426579;
-	bh=TYkhntDhg6zE2Z9rvZA/FjSywjAnJEg0AG/RXj5Cj1k=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=lSBGMgSMfFY2R+JdkvLMGe2zWfxig9natjAOM4rxrWscn60b5LMO+ZS3u1Xe5Ekev
-	 1CvRH93p4Yd9EpqVtYBGU6Jp4WhutYyiDeJbim0UAq+bamEeDLoIfeGXleFZ9i5eWR
-	 argVhLUHy4C8W7QR24QpctGtYri85t4yoAid5HMWGJ9It5oKL4eOzDXSE7iSEKKEVo
-	 3RU2KCqZBjh1vjdyMbnDyWX3eCo3PM2XQh4RYmdISJilAvW8xQWhRiFrkum9b+anhN
-	 FBOTbRiEt09JWr3T4W3ryk9fr0iGMynSOU3aGeYt3SHKzxLdc7+mjbdpHDvMps5eai
-	 Vw9liiq/fSqGw==
-X-ME-Helo: fedora.home
-X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Mon, 24 Feb 2025 20:49:39 +0100
-X-ME-IP: 90.11.132.44
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>
-Cc: linux-kernel@vger.kernel.org,
-	kernel-janitors@vger.kernel.org,
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-	linux-pm@vger.kernel.org
-Subject: [PATCH] thermal: intel: Remove a useless operation in int340x_thermal_zone_add()
-Date: Mon, 24 Feb 2025 20:49:28 +0100
-Message-ID: <cceb7f8864c43f046cf1c19c3bbcc38a7a57adc5.1740426540.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.48.1
+	s=arc-20240116; t=1740439320; c=relaxed/simple;
+	bh=z6RCFb2/vB/uPI6y66W4S0l3zN9napepWbci1XWwVNA=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=a3z1nQHBA+OaOTPCu1iu4uCfg2EkXA9QaZVWlG5pfCBD4coBSOUln+Xicr0K2eqrMfalrAlynodHExUyqB4viFW6N6rC61vDLt4sHWEzxbuP2S2P1yRSK8zlkDVcofuWoVp/n5InIaN0JH4oWgpHgnC1EtMWYaxQf5kDmOFTIvo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1CE11C4CED6;
+	Mon, 24 Feb 2025 23:22:00 +0000 (UTC)
+Received: by venus (Postfix, from userid 1000)
+	id 470D218066F; Tue, 25 Feb 2025 00:21:58 +0100 (CET)
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+Date: Tue, 25 Feb 2025 00:21:35 +0100
+Subject: [PATCH 2/7] regulator: act8865-regulator: switch psy_cfg from
+ of_node to fwnode
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250225-psy-core-convert-to-fwnode-v1-2-d5e4369936bb@collabora.com>
+References: <20250225-psy-core-convert-to-fwnode-v1-0-d5e4369936bb@collabora.com>
+In-Reply-To: <20250225-psy-core-convert-to-fwnode-v1-0-d5e4369936bb@collabora.com>
+To: Sebastian Reichel <sre@kernel.org>, Mark Brown <broonie@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Linus Walleij <linus.walleij@linaro.org>, 
+ Hans de Goede <hdegoede@redhat.com>
+Cc: Liam Girdwood <lgirdwood@gmail.com>, Chen-Yu Tsai <wens@csie.org>, 
+ Matti Vaittinen <mazziesaccount@gmail.com>, 
+ =?utf-8?q?Pali_Roh=C3=A1r?= <pali@kernel.org>, 
+ Paul Cercueil <paul@crapouillou.net>, Samuel Holland <samuel@sholland.org>, 
+ David Lechner <david@lechnology.com>, Krzysztof Kozlowski <krzk@kernel.org>, 
+ Marek Szyprowski <m.szyprowski@samsung.com>, 
+ Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, 
+ Purism Kernel Team <kernel@puri.sm>, Bartosz Golaszewski <brgl@bgdev.pl>, 
+ Konrad Dybcio <konradybcio@kernel.org>, 
+ Matthias Brugger <matthias.bgg@gmail.com>, 
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ Orson Zhai <orsonzhai@gmail.com>, 
+ Baolin Wang <baolin.wang@linux.alibaba.com>, 
+ Chunyan Zhang <zhang.lyra@gmail.com>, linux-pm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, 
+ Sebastian Reichel <sebastian.reichel@collabora.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=890;
+ i=sebastian.reichel@collabora.com; h=from:subject:message-id;
+ bh=z6RCFb2/vB/uPI6y66W4S0l3zN9napepWbci1XWwVNA=;
+ b=kA0DAAoB2O7X88g7+poByyZiAGe8/xSimcaazLXGcNG/1mTR16VIq9X7i+gMf3F5pKIfBdrFE
+ 4kCMwQAAQoAHRYhBO9mDQdGP4tyanlUE9ju1/PIO/qaBQJnvP8UAAoJENju1/PIO/qafVQP/11l
+ j3+tzVXJQejIIWqovbTDKhcu5evCd64HmFmMcW/lxU7NGcV9hWKXIcrO7Vc/VWSFALTqK0vUA4L
+ X/BPijrawRPWY5a5KZLd39MjVcApUCSZpDLcL9Qyb7maxy0Yu0KkR9znpYQtDl/BGcNcTowxPmt
+ wxW75zdKnSbEnG06VR8OHwIBb/QcpYS8aiLV2WL36yQRGZfdpXOmeTLOII82zVI+CFYZX8pNhb7
+ z7pHK74GC6Ec6RJ3hJJfCNLUbpFlwNdL+yMb2361EazgpKHXpmzv6mRA2EcB1qtKCgglogQ85HI
+ ywvbZ2Fac/wmgvz9Bmn9hyQLMEhpL7gInMMluFZERAQQ0qYH4TugA09hHhAK9XsTFnVrLsD/lsC
+ JRbIKqLR6uRRrsqEdqlTM+4YZBG0/7WlrSIgi94WiRDsbn+dKWp3u9En1YHhGJJI9B3kkhdubRg
+ +aNOHqVbc3o7BX4m2T/X0svguaoFbaTF3/KCfdisxSvR1Y4eWzQ+ek4yql2FVBjgnLQAra0pW3B
+ 4FptwcIRqre30P4uAErYuqZGI8pliU/cn2OWfZ0f+m8SiUIamfFNkRiK0Fa+PZhLuMq8wiN04cJ
+ HuuDNxsCoqByr0DotSzNt9i8FdjyLHtDGLuN0gADzgu7h2hqnKGg2A6ZfvilZeJbPSkA4UcJhMM
+ 9naKi
+X-Developer-Key: i=sebastian.reichel@collabora.com; a=openpgp;
+ fpr=EF660D07463F8B726A795413D8EED7F3C83BFA9A
 
-'zone_trips' has just been allocated with kzalloc(), so .flags is known to
-be 0. Remove the useless | when assigning THERMAL_TRIP_FLAG_RW_TEMP.
+In order to remove .of_node from the power_supply_config struct,
+use .fwnode instead.
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
-This was added in commit cca52f696952 ("thermal: intel: Set
-THERMAL_TRIP_FLAG_RW_TEMP directly")
----
- drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c | 2 +-
+ drivers/regulator/act8865-regulator.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-index 8dca6a6aceca..b43d848e66b8 100644
---- a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-+++ b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-@@ -143,7 +143,7 @@ struct int34x_thermal_zone *int340x_thermal_zone_add(struct acpi_device *adev,
- 	for (i = 0; i < trip_cnt; i++) {
- 		zone_trips[i].type = THERMAL_TRIP_PASSIVE;
- 		zone_trips[i].temperature = THERMAL_TEMP_INVALID;
--		zone_trips[i].flags |= THERMAL_TRIP_FLAG_RW_TEMP;
-+		zone_trips[i].flags = THERMAL_TRIP_FLAG_RW_TEMP;
- 		zone_trips[i].priv = THERMAL_INT_TO_TRIP_PRIV(i);
- 	}
+diff --git a/drivers/regulator/act8865-regulator.c b/drivers/regulator/act8865-regulator.c
+index 0457af23c55acdd97b2cdc6fd6bfd07ae0f9d11f..b2a6ddc6f56d32e8758977e25858b972e294bc84 100644
+--- a/drivers/regulator/act8865-regulator.c
++++ b/drivers/regulator/act8865-regulator.c
+@@ -643,7 +643,7 @@ static int act8600_charger_probe(struct device *dev, struct regmap *regmap)
+ 	struct power_supply *charger;
+ 	struct power_supply_config cfg = {
+ 		.drv_data = regmap,
+-		.of_node = dev->of_node,
++		.fwnode = dev_fwnode(dev),
+ 	};
  
+ 	charger = devm_power_supply_register(dev, &act8600_charger_desc, &cfg);
+
 -- 
-2.48.1
+2.47.2
 
