@@ -1,113 +1,123 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yb1-f172.google.com (mail-yb1-f172.google.com [209.85.219.172])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2A5720E31E;
-	Mon, 24 Feb 2025 23:22:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0F8C20764E;
+	Mon, 24 Feb 2025 23:39:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740439322; cv=none; b=AawfaYTTBLfW9rA+WmRON8SjBxy9mFgxF0MC4f7E33b+ot4atBCjx1eDttkR3YPEzE8BCGPqcpZvjDKGNdgmyu5zst4Fj7FppEf3NOSlmGDKi4deOgDI2Di0SKipiQCVzGg9NJBkLPO2zNWlKv9j6zlx10ZJqksk+X0uBkztS3A=
+	t=1740440386; cv=none; b=PqDDckqCsiPsor72UaMw3vIzsdfSl+wOFD7GlvuOUW1hdTS+VfhBzYAiqE/44BZGBsFqk11qC4UvXJLcb3J2hiivGtKm1UW3L3MfAgv8rVsFA9BdX47wnEdLW0+4WhZBpKxl8Na0VCeZIeTmQkoPnbeNNGcAOyzaCF3gnk9KJZs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740439322; c=relaxed/simple;
-	bh=511brLxdmW1LmKJ2YEH7hXNc3fca9+EzIlpO7BItZAM=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=rgRX4zf1TMCaWN7MthRs4txbITtO8Wf2GbisMXm6UlFGDNwAySm1lNz/Dqwn67NXjvr48TYKxGNKUbI3JS3yCcrLjz/jDKmdIAxnajmR1AvvCmbrMryLsF9dC0/wfG5I5SsQcEwL57nOD6W3qmbp0uSFqg728JEMoJs++a5RZK8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 41024C4CEEF;
-	Mon, 24 Feb 2025 23:22:02 +0000 (UTC)
-Received: by venus (Postfix, from userid 1000)
-	id 4C9DF18067D; Tue, 25 Feb 2025 00:21:58 +0100 (CET)
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Date: Tue, 25 Feb 2025 00:21:38 +0100
-Subject: [PATCH 5/7] power: supply: core: remove of_node from
- power_supply_config
+	s=arc-20240116; t=1740440386; c=relaxed/simple;
+	bh=Mx3M84WwtY3NU5OR0FXjmYAPb68dziDd5bWY/P4BbEE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=P3J9tBQWNRJJavdkVJHe/7kkTD9b970EaEYDMmHEE7u9xVkyuS4pNq4Nmvw5hcQj8L4waffrfKrIm7UfzKEOQy32KCoKq2XE981uepZpkPnzp878wouO6FKzX2JWK/dhgVs/j0vln+aesXic9I/qhZwoDutM1OcP+9bH7lq+TYE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fCNxnZCt; arc=none smtp.client-ip=209.85.219.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fCNxnZCt"
+Received: by mail-yb1-f172.google.com with SMTP id 3f1490d57ef6-e5dd7b439e3so4230765276.1;
+        Mon, 24 Feb 2025 15:39:43 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1740440383; x=1741045183; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Em6wyZNwKj45p/oNoxuXgA87kPyVGeauMHk780ar+kU=;
+        b=fCNxnZCtovtjDme0XXFa+yfJJY4l/Akj1tHyikhyIxNS4HRRWIzY8exvMS9YBwwe8J
+         xW3iB2eXvuwUBfO9IU+BgXznmHLuiz8xlT/GP8Hq5AvPq8OD5X4ygKPc4Iuipoi0roww
+         rw/Yqa/e0iVAfvLmk2F1jj3PBKkXKXRoIPwV13B7x02GJc6p2l7S0ry2P5CGBbV8+gL6
+         vMP+AlI5tbbRQwq3Jys2d0n8viqwuPk4w0G1TeFq217Dif7Qr1eqSJrO5wtI4atnFyfe
+         IPrJGAiqBxPxjO7ufHrMfTIEaq+rvCYLYJF3MPvoAx+3slkfA0xUcthXlgBdrUvi4l4o
+         +DTw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1740440383; x=1741045183;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Em6wyZNwKj45p/oNoxuXgA87kPyVGeauMHk780ar+kU=;
+        b=lawplL/zrq4g7rejcnKcuiUAKEQ5tgRffpmdyl/+xNX20lJi/uLRwpjZb4SEQTpSZ/
+         8FgT+9NZHGmCI9+VUbCzRG1ulxZ2es/03ZIaQSZ2Xhw23uSDJiM7hSxCNnIHtEAtSpfc
+         4PXgBO66Uy5sAZfg21m34vFdXzF6dlKiDsFBFEfWs6r49yg7FQvBMu9UCVdzF14oThkX
+         Zko9zhlvOKwVhMRnzHDrX0hk6MGQjm6pJMPX76i7jxYeRh1wAaGlTRx8P/r0l/gA0X7Q
+         2jDTmNpShuqluepG3fpdsRCN2u4Ow8KfaJtYx1aH+z5ez26aqD5keAwmzfv4Q0+sRbiZ
+         zZfg==
+X-Forwarded-Encrypted: i=1; AJvYcCUa9wmnI8RWuQawNh9bdlU7Im7Dt4S/ODx0YyGn/rAwtcrtLo1bWX4JaIQNEQMjJxmSnYirYu4jui+pMH15Jvk=@vger.kernel.org, AJvYcCUfKkPknD//GVe3WA+S/l9VSfdSo2f/kqc0sUQYUNkZSCQx+cEF2Mo2ljtqW92MZD/7jQNNSbTTj5ntYZ4=@vger.kernel.org, AJvYcCVWjZUlPHNW9VCIOuk9ytGy6O8l/aiKN7ZDGY29yXpC6NJydswKX+xF3ejJgTKU9l2LULp4ZRvZgEw=@vger.kernel.org
+X-Gm-Message-State: AOJu0YzjAQgZaow1RUZgQ+nbPwy5M1KeyXert/zJ5OirN7york+mpoZ/
+	YScFWVtPuxU6/6WLupVozh1h7pfNxStnLMJbJEJTAiM+5kL2eZBM
+X-Gm-Gg: ASbGncvpadk5ZDSyUvkxHStY95zV3I9TpQWBSQsBDvDTb4WkXKGy1ep3UJwaVqpmtBs
+	N3qgnFrE+eQi4UyZ/3YUl4XQHL1pWzS4Z731JN/NxQFBcgIbrrOCutMay+Ul1kDSCsdRUNvCxR5
+	2QjGc2cj6GLAP5YNXQoOynIz5aLJdnGW8jrPpfdzMhhKxkSdyp1osrf5gxM7tS7D/Vn+qieAETN
+	Hd7S7sDD7YRYYBmIrHIviSoSRwVna15ihYwYX+ZNso9BCwD1ehJBOHaHKQ3C92ai1P/dRKoI0DV
+	WbSA0/IX0tJNgM+YvZP3Nhgm+6GtDRExh+DXzDJOpRv0nQ+P+/VB2+KDszEcfQ==
+X-Google-Smtp-Source: AGHT+IGJ4kYO+7vEeod1p53CFmuKDYnA9HznKe1Ojaxw+/QIMgxp46DfqTGP8DgzDp0dw2ylUJqDyA==
+X-Received: by 2002:a05:6902:3301:b0:e5d:ba97:b1af with SMTP id 3f1490d57ef6-e5e8b04674cmr10799379276.39.1740440382744;
+        Mon, 24 Feb 2025 15:39:42 -0800 (PST)
+Received: from localhost (c-73-224-175-84.hsd1.fl.comcast.net. [73.224.175.84])
+        by smtp.gmail.com with ESMTPSA id 3f1490d57ef6-e607b3eb08bsm89564276.23.2025.02.24.15.39.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 24 Feb 2025 15:39:41 -0800 (PST)
+From: Yury Norov <yury.norov@gmail.com>
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Danilo Krummrich <dakr@redhat.com>
+Cc: Yury Norov <yury.norov@gmail.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Alex Gaynor <alex.gaynor@gmail.com>,
+	Boqun Feng <boqun.feng@gmail.com>,
+	Gary Guo <gary@garyguo.net>,
+	=?UTF-8?q?Bj=C3=B6rn=20Roy=20Baron?= <bjorn3_gh@protonmail.com>,
+	Benno Lossin <benno.lossin@proton.me>,
+	Andreas Hindborg <a.hindborg@kernel.org>,
+	Alice Ryhl <aliceryhl@google.com>,
+	Trevor Gross <tmgross@umich.edu>,
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Nishanth Menon <nm@ti.com>,
+	Manos Pitsidianakis <manos.pitsidianakis@linaro.org>,
+	Erik Schilling <erik.schilling@linaro.org>,
+	=?UTF-8?q?Alex=20Benn=C3=A9e?= <alex.bennee@linaro.org>,
+	Joakim Bech <joakim.bech@linaro.org>,
+	Rob Herring <robh@kernel.org>,
+	Christoph Hellwig <hch@lst.de>,
+	Jason Gunthorpe <jgg@nvidia.com>,
+	John Hubbard <jhubbard@nvidia.com>,
+	linux-pm@vger.kernel.org,
+	rust-for-linux@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2 0/2] Bitmap bindings for rust
+Date: Mon, 24 Feb 2025 18:39:34 -0500
+Message-ID: <20250224233938.3158-1-yury.norov@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250225-psy-core-convert-to-fwnode-v1-5-d5e4369936bb@collabora.com>
-References: <20250225-psy-core-convert-to-fwnode-v1-0-d5e4369936bb@collabora.com>
-In-Reply-To: <20250225-psy-core-convert-to-fwnode-v1-0-d5e4369936bb@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, Mark Brown <broonie@kernel.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Linus Walleij <linus.walleij@linaro.org>, 
- Hans de Goede <hdegoede@redhat.com>
-Cc: Liam Girdwood <lgirdwood@gmail.com>, Chen-Yu Tsai <wens@csie.org>, 
- Matti Vaittinen <mazziesaccount@gmail.com>, 
- =?utf-8?q?Pali_Roh=C3=A1r?= <pali@kernel.org>, 
- Paul Cercueil <paul@crapouillou.net>, Samuel Holland <samuel@sholland.org>, 
- David Lechner <david@lechnology.com>, Krzysztof Kozlowski <krzk@kernel.org>, 
- Marek Szyprowski <m.szyprowski@samsung.com>, 
- Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, 
- Purism Kernel Team <kernel@puri.sm>, Bartosz Golaszewski <brgl@bgdev.pl>, 
- Konrad Dybcio <konradybcio@kernel.org>, 
- Matthias Brugger <matthias.bgg@gmail.com>, 
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
- Orson Zhai <orsonzhai@gmail.com>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, 
- Chunyan Zhang <zhang.lyra@gmail.com>, linux-pm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, 
- Sebastian Reichel <sebastian.reichel@collabora.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1503;
- i=sebastian.reichel@collabora.com; h=from:subject:message-id;
- bh=511brLxdmW1LmKJ2YEH7hXNc3fca9+EzIlpO7BItZAM=;
- b=owEBbQKS/ZANAwAKAdju1/PIO/qaAcsmYgBnvP8VHH3zVpqr2x6FqT/EUtdHjjGEDOfvsYOf/
- 449y0YhxYWJAjMEAAEKAB0WIQTvZg0HRj+Lcmp5VBPY7tfzyDv6mgUCZ7z/FQAKCRDY7tfzyDv6
- msflD/9zp4jHuSncqxBwwfyBiowNkH4qjozD3duNH/lddjXP3Bz6FOuhNq2IErX2bDICSE6eaUL
- OsyVRlYYLhj19hD4j9t0nxcul9NQqMGKBaD6oTcR6Ug1tZmR3SBWF5dfOYM4fDhlq80ZiLoWmGi
- 8v5iigmnWwP2zFt35yeJ+tM3BNAD4SgPvcpY4YL2D76oiLATP2iyW/QrSweecSPtM69+3OzK5Qs
- 7oaSu2B72IFbRa9SxNuCPkwtNuDxsDWgNrpLCn6yIr1DgDtUYIT6T+duLSKwsLJyGxXxA6d0b0f
- ZDL8Sbn4dkkKSGcHLmMJreFysEKsx3fWw4/wAfP6h28ILufrvirl4xlYBE1SHv0Z7VuZ7xJqnsb
- NBF4BAG4OS3wzuiK1z9/W5FNZZ0d65hCI6QocaoITcT8gBCW8umHpFtFLR6b2yw1RHA80J+1A3p
- IgEbvUYCmgvPL9tCApqvpdkAkby9B+PlnaVoguQQZHKA3MRqg3ajboLtuB1s7vO6m9qDRn4+UUT
- lWIiN66XVEJOuPI7L9ubb5g2gb3fNWjFklHwONqWbJ04kDVkN6+TXlsVN/IB5dp9h0BjgVbN8vo
- rk867bG08JullRP6G5qAeZDBHSsXqfqAW64e/opyICsWLqNvJHt8Fu4figcDtRfss5kk+4PNmph
- j87sZSCAsKEnQjA==
-X-Developer-Key: i=sebastian.reichel@collabora.com; a=openpgp;
- fpr=EF660D07463F8B726A795413D8EED7F3C83BFA9A
+Content-Transfer-Encoding: 8bit
 
-All drivers have been migrated from .of_node to .fwnode,
-so let's kill the former.
+The bindings and a new maintenance entry together with the API changes
+policy.
 
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- drivers/power/supply/power_supply_core.c | 3 +--
- include/linux/power_supply.h             | 1 -
- 2 files changed, 1 insertion(+), 3 deletions(-)
+v1: https://lore.kernel.org/all/20250221205649.141305-1-yury.norov@gmail.com/T/
+v2:
+ - export alloc_cpumask_var() @ Viresh;
+ - clarify that the maintenance rules apply to all bitmap interfaces,
+   including those not mentioned explicitly in the helpers @ Miguel.
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 11030035da6f121ca76bebf800c06cfd5db57578..c43539ea1318506ada0a6fcbcdbf7ece253f5257 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -1542,10 +1542,9 @@ __power_supply_register(struct device *parent,
- 	dev_set_drvdata(dev, psy);
- 	psy->desc = desc;
- 	if (cfg) {
-+		device_set_node(dev, cfg->fwnode);
- 		dev->groups = cfg->attr_grp;
- 		psy->drv_data = cfg->drv_data;
--		dev->of_node =
--			cfg->fwnode ? to_of_node(cfg->fwnode) : cfg->of_node;
- 		psy->supplied_to = cfg->supplied_to;
- 		psy->num_supplicants = cfg->num_supplicants;
- 	}
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 975ccab56597ef579ef0c9dc913dcb0a26b5855a..a785742f97721e7e70d0e4c17a1ded7b985acb6d 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -229,7 +229,6 @@ struct power_supply;
- 
- /* Run-time specific power supply configuration */
- struct power_supply_config {
--	struct device_node *of_node;
- 	struct fwnode_handle *fwnode;
- 
- 	/* Driver private data */
+Viresh Kumar (1):
+  rust: Add cpumask helpers
+
+Yury Norov [NVIDIA] (1):
+  MAINTAINERS: add rust bindings entry for bitmap API
+
+ MAINTAINERS                     |  5 ++++
+ rust/bindings/bindings_helper.h |  1 +
+ rust/helpers/cpumask.c          | 45 +++++++++++++++++++++++++++++++++
+ rust/helpers/helpers.c          |  1 +
+ 4 files changed, 52 insertions(+)
+ create mode 100644 rust/helpers/cpumask.c
 
 -- 
-2.47.2
+2.43.0
 
