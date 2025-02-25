@@ -1,79 +1,89 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+Received: from sender4-op-o14.zoho.com (sender4-op-o14.zoho.com [136.143.188.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24FDE15B980;
-	Tue, 25 Feb 2025 11:50:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.13
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740484214; cv=none; b=k6S9bB4bnn4zFndKMscChX6835JDxyMLTg0dQSf3k4cb4zF/1an46vGJY67Z4PX7EhJ240ZU69kOGqHqmvNoMjIoUHTRRi9c1YvBpsZjYuoqKU/3ejhmcz4FUikfrlC2BfkMUtO9O/O9lq767VohJlmm7qJlTjs3L9kQl720nAQ=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740484214; c=relaxed/simple;
-	bh=UxEOdwg0ihDoq4aqItGrjjobZcNx/KJtRnB5kORZoJ8=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=qOn/eglwxKU0N67UWa7mK0bKPQIfO04weobjaxDnKG/IoqonzR1HSXnV5+6HvTk7Pm0nTD4P87kY0LEn1QJemkhpJsiMfLHB8ExVepNMvTToOWh63wS1WEMr21kFhHcviO/LRnqH4wHXIPCOba2H8Nr76mq5aqaNtsYevaicIdA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=TdcQkwlW; arc=none smtp.client-ip=192.198.163.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D751D25487C;
+	Tue, 25 Feb 2025 12:57:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.14
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1740488271; cv=pass; b=eYMzqKVnRM8FtHCIdwJoGatuocxuHO32Ls+qQ1nHF373w8pc3YfzRxNdo5jkCedxCjkkLJBrMpWZLBXlQUTiXSGYllQaoyDBg8M1N9+OP8H0eWGSoS5ThhRJ4hhOa17dm0rHgfUsca2CIINmgEuJ3ZGK1cLJ0SaNK6A0fdPmOWw=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1740488271; c=relaxed/simple;
+	bh=qD0ohSixxyfcyZNwZTY+EVVmsFxDCEnbu5RvtJbYW6c=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=mBUoCd4v/gHutLQjS9Kp2icMvVWrTMndbsIAfnZ18/SGSJ29UidQtLh54viYLRLtaL7wYsvGDdsdAT3dg9GpvmHRwPMpQxF+do/mogdIq0nAz5s3/PXOkew7iuou2PDb0KfW72Kbb7oiD3gi+NRqsvu7Wi83/ivT2UPZDlSUWpk=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=GTNrD93e; arc=pass smtp.client-ip=136.143.188.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="TdcQkwlW"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1740484212; x=1772020212;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=UxEOdwg0ihDoq4aqItGrjjobZcNx/KJtRnB5kORZoJ8=;
-  b=TdcQkwlWUIX4Y5BvZeljVEcrAU0OnZcE/HXOWAny1bPljIE6CF1PTd6a
-   jqxzRPOABwFpnmvXa9uvgbPyjgBAb6i5iyX51mWGSYaoSAlZPWoIyX3Nr
-   9jBD2Q7fFgmqqC6HiA2Hp9Y/otpFgh5hIhAZ6yxMOfi5ktYe0Z/VmuF8U
-   sA8Da8S+1deSscUYmFPHf38peXYeAmoW0igeaCB76Nr8T4jMI3cujAtTn
-   ydK8x/onC2D0zfna2M9x8v52dDNcM99EQYsq9miXTFjSFygdaEP5SoqXi
-   T8MtTLQT3eP2b3Lj2md8m78GsosTmGjlZOx/urVwZGSz+y7w9jXWW3HXZ
-   Q==;
-X-CSE-ConnectionGUID: msipkubiS/y4WBbFGfmPag==
-X-CSE-MsgGUID: QSuhhlQnSkmukogHQfiDNA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11356"; a="44109810"
-X-IronPort-AV: E=Sophos;i="6.13,314,1732608000"; 
-   d="scan'208";a="44109810"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Feb 2025 03:50:11 -0800
-X-CSE-ConnectionGUID: X9uOLBsgRPmzoEzQLs4odA==
-X-CSE-MsgGUID: clXZvq46Siynv1mc20Bw3w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,314,1732608000"; 
-   d="scan'208";a="121463642"
-Received: from linux.intel.com ([10.54.29.200])
-  by fmviesa004.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Feb 2025 03:50:11 -0800
-Received: from abityuts-desk1.ger.corp.intel.com (abityuts-desk1.fi.intel.com [10.237.68.150])
-	by linux.intel.com (Postfix) with ESMTP id CD69A20B5713;
-	Tue, 25 Feb 2025 03:50:09 -0800 (PST)
-Message-ID: <9446c26ad0a640b9f65ac8630f7878e76fe23c3c.camel@linux.intel.com>
-Subject: Re: [PATCH v2] cpuidle: intel_idle: Update MAINTAINERS
-From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM
- <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, 
- "Rafael J. Wysocki"
-	 <rjw@rjwysocki.net>
-Date: Tue, 25 Feb 2025 13:50:08 +0200
-In-Reply-To: <CAJZ5v0goH0unRRuQNCKC8WYRndsSenJaVJOYU64COYHocVE7ig@mail.gmail.com>
-References: <12621866.O9o76ZdvQC@rjwysocki.net>
-	 <CAJZ5v0goH0unRRuQNCKC8WYRndsSenJaVJOYU64COYHocVE7ig@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.52.4 (3.52.4-2.fc40) 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="GTNrD93e"
+ARC-Seal: i=1; a=rsa-sha256; t=1740488248; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=lmcXg71Tfat+hgjWvLhShXas9QGFsvlWYt6HKtso735A8hdFlY7syJ2e0onyCR4aGj1YfjHOC8SucKM0+mOwIUJ97KRkHeypbiGl8kCgogRl5AhPXiiB7Cx1i0zU26BOeChFfNI+QOhWLUCBoIqwq7H5H0RXt6F4Dt2tesQq/p0=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1740488248; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=cWGtW43TgLnA9XLRjmVYZyHmW1immnR6brlslYhRp80=; 
+	b=mfohuTo97wtGhA6gUQ1s94iiCJzuNmrWxs5mbI13B8q59JmL36ihXBJFQKFA1tJFmBX9QEkpYd+DV29yr4fMM3Le80U8hGxXVhoaoePRH5GTwaYJs2aQT9i4foK1FA5hpXJhI0ai38N3UhVmoeDXRpIPRgD0a8kCO1emP3tkqq8=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
+	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1740488248;
+	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
+	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
+	bh=cWGtW43TgLnA9XLRjmVYZyHmW1immnR6brlslYhRp80=;
+	b=GTNrD93eBrF+xM9lAwCtYSod3XyhAMdx8D0mEBbrXSXRDEgy5QnGk0eIpXX1xh6S
+	WkhGiLaeK+m+VuJrp9glWvadYUOMdeEswTiH7Kn07gxPl63c9NnybeCduhz1sh3yR1P
+	KfaZ2ofWjVzkOunW+M7BApYr3UT00J+FRTEJ+6NU=
+Received: by mx.zohomail.com with SMTPS id 174048824766496.17668398054809;
+	Tue, 25 Feb 2025 04:57:27 -0800 (PST)
+From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+Date: Tue, 25 Feb 2025 13:56:44 +0100
+Subject: [PATCH v2 1/6] dt-bindings: rockchip-thermal: Add RK3576
+ compatible
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250225-rk3576-tsadc-upstream-v2-1-6eb7b00de89c@collabora.com>
+References: <20250225-rk3576-tsadc-upstream-v2-0-6eb7b00de89c@collabora.com>
+In-Reply-To: <20250225-rk3576-tsadc-upstream-v2-0-6eb7b00de89c@collabora.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>
+Cc: Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ kernel@collabora.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, 
+ linux-kernel@vger.kernel.org, 
+ Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+X-Mailer: b4 0.14.2
 
-On Tue, 2025-02-25 at 12:41 +0100, Rafael J. Wysocki wrote:
-> > v1 -> v2:
-> > =C2=A0=C2=A0=C2=A0 * Add an alternative address for Artem and change hi=
-s role to M.
-> > =C2=A0=C2=A0=C2=A0 * Change the development git tree link.
->=20
-> I am assuming no objections.
+Add a new compatible for the thermal sensor device on the RK3576 SoC.
 
-Oh, yes, thanks!
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
+Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+---
+ Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
+index b717ea8261ca24ebaf709f410ec6372de1366b8a..49ceed68c92ce5a32ed8d4f39bd88fd052de0e80 100644
+--- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
+@@ -21,6 +21,7 @@ properties:
+       - rockchip,rk3368-tsadc
+       - rockchip,rk3399-tsadc
+       - rockchip,rk3568-tsadc
++      - rockchip,rk3576-tsadc
+       - rockchip,rk3588-tsadc
+       - rockchip,rv1108-tsadc
+ 
+
+-- 
+2.48.1
+
