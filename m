@@ -1,45 +1,45 @@
 Received: from sender4-op-o14.zoho.com (sender4-op-o14.zoho.com [136.143.188.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 122CA268FD8;
-	Tue, 25 Feb 2025 12:58:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1A19269835;
+	Tue, 25 Feb 2025 12:58:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.14
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740488284; cv=pass; b=hLfvuWyJMIz6OTwUrw5ASDopPO5k9/qkEBWyVMmCaPCwjkpuRrF58r1iB1DM4eJBlJPm1HkuEAvz8NMDrjuW2jGmvaI90G5ba6cB63IalrSu9d9Q9X8aVP7o/j7mE4+iv5747jwU13iS0nTHq0hpFG0knjGm9soULzzPad+WlUk=
+	t=1740488286; cv=pass; b=Ki9/6+yJ28OX4CobvJqmi3+3U0pDWY2e13/LK/pD+KebvatYv/bR6n7eWYXZalCi9F+NFQ/RAaEU8KadaLI/xIVsUZoVhrHmdnGrpwnwX+KrC/ZKBM/jFpmP+82jhmptAzUO5YDCRvHNUM5rWL+lb+ZaWvJ79G03cLKHzxTk/QQ=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740488284; c=relaxed/simple;
-	bh=jAEe76elxBMYeqH8BFnSVXiTlfwvmQgt9R30KiBeaqE=;
+	s=arc-20240116; t=1740488286; c=relaxed/simple;
+	bh=N0hAjvg6mvU2dzVgWEnk4GjB9T95fRycc6bEhWgtnaM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Ct1nTvxLQbNJ3J6DFQE1TCVEKyQ+3BYugOH8iVcDPxhWMhu3HEqdQkUTafuPx8yNMlvUsaPQWNvZNYAogNBzj39bacic08F0rhmapoQfkdhdYxVvIJIPU8x32XSNfm7hjocTVMJzNOOqs/5lGvB5KuPnK9SQQ1L18JUi+Uv0gNM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=IHwUmb1t; arc=pass smtp.client-ip=136.143.188.14
+	 In-Reply-To:To:Cc; b=a3C+qAcMR51j+ZaM4PkFEbFmDl8GFmtErueBWW8J4YZaAWAcc8zDPYe/Alg9BQmPVtTMqZlUDwmap6Aj9l7wZJh6oopJ7FPvWuicoQnavEvLcSl7k+qcXyOCVp9qGHy0y0gHcI46wzh2kb5rbAOgzJiVURqpCEtObfvRY/jdtwg=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=goPqZOEl; arc=pass smtp.client-ip=136.143.188.14
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="IHwUmb1t"
-ARC-Seal: i=1; a=rsa-sha256; t=1740488266; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="goPqZOEl"
+ARC-Seal: i=1; a=rsa-sha256; t=1740488258; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=WbVgD9oGy3DepUvX3SqwjQpfam9LRr925GwR5s+TEUuRK/mIazxF3mo72BorkFMJKoLgEZOvQAEgJYj0WHj4/CIPLliCDjThoAE0RQqoVzg6KgtrFHe2cIOAeZk/945lmuYjU6TobM/UGRHlS4qsRyuUzbYpKFntoskGgHWIq/8=
+	b=BG4norq42qX5WVhbnIWZ7fq6l5w/ag8mgkP5WcR57nGd30zfuG8ei6972YvTV2G4+oJPuUNbdQwLakjN7duB0aS+I7ycBkE31kdrFJQe2Vn7pZwJIhPyCVS4qLhQ/gY7aeTkR0FY8VhseY2Xwj3hfm6FTCS/GMjZOuCtyPuiZcw=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1740488266; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=rOJZszzif1/HZY52xKVFqAjULL/Hvz7aQBJ2gFzmCG0=; 
-	b=CC7yU/5JQDXEBWBorV1zUVvK5Te7d1Hwb5IpcAwJlTXQB2h41yNept6qipM4Egwttl+vEpSq0VIh5ejgUOwp/XH/AQpqY3nBaLEIco82XGCwJhGiez++p8WIHRmZRtLWJQneAPkXKntVWWy6k3/2rboSwWpP7m2RI+UtVs6yGYU=
+	t=1740488258; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=k7eNk5qHMFWPJbC7DgO4/o0LboHoTT+Aabq56bbGgPE=; 
+	b=h4jjB7LXCQcMmH2O+UE7cPUNo6bU8dQMn4RtGWoOf2TVXGOY5VglhBNmTsxBbt6UELq2EIsyExJg650Kb0HOCYXdbgJDUBXoMe+pBFd9PugXsYR6y4ss3fhTCkjvUY1xLH3wvM5cbkIZ0Os3lV4rPwC6GI7r08JwTZYMN9pTNg4=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1740488266;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1740488258;
 	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
 	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
-	bh=rOJZszzif1/HZY52xKVFqAjULL/Hvz7aQBJ2gFzmCG0=;
-	b=IHwUmb1tHssbhJOq+zAAfI9IPEnmRnl3BXOORaY2IagPuWIZUtgFvqcrmI4vNFpA
-	NJD8vvOmHrhhYiuJqwvEgjLLmqkggnw2QNwN4/LlercAVH5JaXqIEmfcOH62DF7l5Mk
-	UNe8363eQlqyD6Ny3BxLku83VZ2/X9wHbd6NesO0=
-Received: by mx.zohomail.com with SMTPS id 1740488265286980.3837702290158;
-	Tue, 25 Feb 2025 04:57:45 -0800 (PST)
+	bh=k7eNk5qHMFWPJbC7DgO4/o0LboHoTT+Aabq56bbGgPE=;
+	b=goPqZOElyNYrdeEpebC74lPoJlQVYRpKUROR2QYNAc7RyQfZjVYcP4fnc4R6r2BB
+	Qg+uGlpp6QZEn98l01EppOH/yWywtkWBh75qDpPlSgQgJba2qGtK/F/aFvwueu/iIHV
+	98UST+ls+9ckfZ6cbW5Za+EcMdTyFk/PfYM/huyQ=
+Received: by mx.zohomail.com with SMTPS id 1740488256566382.5081815102708;
+	Tue, 25 Feb 2025 04:57:36 -0800 (PST)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Tue, 25 Feb 2025 13:56:48 +0100
-Subject: [PATCH v2 5/6] arm64: dts: rockchip: Add thermal trim OTP and
- tsadc nodes
+Date: Tue, 25 Feb 2025 13:56:46 +0100
+Subject: [PATCH v2 3/6] thermal: rockchip: Support RK3576 SoC in the
+ thermal driver
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,7 +48,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250225-rk3576-tsadc-upstream-v2-5-6eb7b00de89c@collabora.com>
+Message-Id: <20250225-rk3576-tsadc-upstream-v2-3-6eb7b00de89c@collabora.com>
 References: <20250225-rk3576-tsadc-upstream-v2-0-6eb7b00de89c@collabora.com>
 In-Reply-To: <20250225-rk3576-tsadc-upstream-v2-0-6eb7b00de89c@collabora.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>, 
@@ -60,95 +60,89 @@ Cc: Sebastian Reichel <sebastian.reichel@collabora.com>,
  kernel@collabora.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
  linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, 
  linux-kernel@vger.kernel.org, 
- Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+ Nicolas Frattaroli <nicolas.frattaroli@collabora.com>, 
+ Ye Zhang <ye.zhang@rock-chips.com>
 X-Mailer: b4 0.14.2
 
-Thanks to Heiko's work getting OTP working on the RK3576, we can specify
-the thermal sensor trim values which are stored there now, and with my
-driver addition to rockchip_thermal, we can make use of these.
+From: Ye Zhang <ye.zhang@rock-chips.com>
 
-Add them to the devicetree for the SoC.
+The RK3576 SoC has six TS-ADC channels: TOP, BIG_CORE, LITTLE_CORE,
+DDR, NPU and GPU.
 
+Signed-off-by: Ye Zhang <ye.zhang@rock-chips.com>
+[ported to mainline, reworded commit message]
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
- arch/arm64/boot/dts/rockchip/rk3576.dtsi | 57 ++++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
+ drivers/thermal/rockchip_thermal.c | 42 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/rockchip/rk3576.dtsi b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
-index 6603f442674c09d017a256bc272e33a2fea7cb8d..e7ce707e6339bcdddb2914eb7e0ed8269275c679 100644
---- a/arch/arm64/boot/dts/rockchip/rk3576.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
-@@ -1465,6 +1465,30 @@ gpu_leakage: gpu-leakage@21 {
- 			log_leakage: log-leakage@22 {
- 				reg = <0x22 0x1>;
- 			};
-+			bigcore_tsadc_trim: bigcore-tsadc-trim@24 {
-+				reg = <0x24 0x2>;
-+				bits = <0 10>;
-+			};
-+			litcore_tsadc_trim: litcore-tsadc-trim@26 {
-+				reg = <0x26 0x2>;
-+				bits = <0 10>;
-+			};
-+			ddr_tsadc_trim: ddr-tsadc-trim@28 {
-+				reg = <0x28 0x2>;
-+				bits = <0 10>;
-+			};
-+			npu_tsadc_trim: npu-tsadc-trim@2a {
-+				reg = <0x2a 0x2>;
-+				bits = <0 10>;
-+			};
-+			gpu_tsadc_trim: gpu-tsadc-trim@2c {
-+				reg = <0x2c 0x2>;
-+				bits = <0 10>;
-+			};
-+			soc_tsadc_trim: soc-tsadc-trim@64 {
-+				reg = <0x64 0x2>;
-+				bits = <0 10>;
-+			};
- 		};
+diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+index a8ad85feb68fbb7ec8d79602b16c47838ecb3c00..bec1930bebd87859a7e519cfc9f05e10b1c31e87 100644
+--- a/drivers/thermal/rockchip_thermal.c
++++ b/drivers/thermal/rockchip_thermal.c
+@@ -1061,6 +1061,22 @@ static void rk_tsadcv3_tshut_mode(int chn, void __iomem *regs,
+ 	writel_relaxed(val_cru, regs + TSADCV3_HSHUT_CRU_INT_EN);
+ }
  
- 		gic: interrupt-controller@2a701000 {
-@@ -1876,6 +1900,39 @@ tsadc: tsadc@2ae70000 {
- 			rockchip,hw-tshut-temp = <120000>;
- 			rockchip,hw-tshut-mode = <0>; /* tshut mode 0:CRU 1:GPIO */
- 			rockchip,hw-tshut-polarity = <0>; /* tshut polarity 0:LOW 1:HIGH */
-+			#address-cells = <1>;
-+			#size-cells = <0>;
++static void rk_tsadcv4_tshut_mode(int chn, void __iomem *regs,
++				  enum tshut_mode mode)
++{
++	u32 val_gpio, val_cru;
 +
-+			soc@0 {
-+				reg = <0>;
-+				nvmem-cells = <&soc_tsadc_trim>;
-+				nvmem-cell-names = "trim";
-+			};
-+			bigcores@1 {
-+				reg = <1>;
-+				nvmem-cells = <&bigcore_tsadc_trim>;
-+				nvmem-cell-names = "trim";
-+			};
-+			littlecores@2 {
-+				reg = <2>;
-+				nvmem-cells = <&litcore_tsadc_trim>;
-+				nvmem-cell-names = "trim";
-+			};
-+			ddr@3 {
-+				reg = <3>;
-+				nvmem-cells = <&ddr_tsadc_trim>;
-+				nvmem-cell-names = "trim";
-+			};
-+			npu@4 {
-+				reg = <4>;
-+				nvmem-cells = <&npu_tsadc_trim>;
-+				nvmem-cell-names = "trim";
-+			};
-+			gpu@5 {
-+				reg = <5>;
-+				nvmem-cells = <&gpu_tsadc_trim>;
-+				nvmem-cell-names = "trim";
-+			};
- 		};
++	if (mode == TSHUT_MODE_GPIO) {
++		val_gpio = TSADCV2_INT_SRC_EN(chn) | TSADCV2_INT_SRC_EN_MASK(chn);
++		val_cru = TSADCV2_INT_SRC_EN_MASK(chn);
++	} else {
++		val_cru = TSADCV2_INT_SRC_EN(chn) | TSADCV2_INT_SRC_EN_MASK(chn);
++		val_gpio = TSADCV2_INT_SRC_EN_MASK(chn);
++	}
++	writel_relaxed(val_gpio, regs + TSADCV3_HSHUT_GPIO_INT_EN);
++	writel_relaxed(val_cru, regs + TSADCV3_HSHUT_CRU_INT_EN);
++}
++
+ static const struct rockchip_tsadc_chip px30_tsadc_data = {
+ 	/* cpu, gpu */
+ 	.chn_offset = 0,
+@@ -1284,6 +1300,28 @@ static const struct rockchip_tsadc_chip rk3568_tsadc_data = {
+ 	},
+ };
  
- 		i2c9: i2c@2ae80000 {
++static const struct rockchip_tsadc_chip rk3576_tsadc_data = {
++	/* top, big_core, little_core, ddr, npu, gpu */
++	.chn_offset = 0,
++	.chn_num = 6, /* six channels for tsadc */
++	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
++	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
++	.tshut_temp = 95000,
++	.initialize = rk_tsadcv8_initialize,
++	.irq_ack = rk_tsadcv4_irq_ack,
++	.control = rk_tsadcv4_control,
++	.get_temp = rk_tsadcv4_get_temp,
++	.set_alarm_temp = rk_tsadcv3_alarm_temp,
++	.set_tshut_temp = rk_tsadcv3_tshut_temp,
++	.set_tshut_mode = rk_tsadcv4_tshut_mode,
++	.table = {
++		.id = rk3588_code_table,
++		.length = ARRAY_SIZE(rk3588_code_table),
++		.data_mask = TSADCV4_DATA_MASK,
++		.mode = ADC_INCREMENT,
++	},
++};
++
+ static const struct rockchip_tsadc_chip rk3588_tsadc_data = {
+ 	/* top, big_core0, big_core1, little_core, center, gpu, npu */
+ 	.chn_offset = 0,
+@@ -1342,6 +1380,10 @@ static const struct of_device_id of_rockchip_thermal_match[] = {
+ 		.compatible = "rockchip,rk3568-tsadc",
+ 		.data = (void *)&rk3568_tsadc_data,
+ 	},
++	{
++		.compatible = "rockchip,rk3576-tsadc",
++		.data = (void *)&rk3576_tsadc_data,
++	},
+ 	{
+ 		.compatible = "rockchip,rk3588-tsadc",
+ 		.data = (void *)&rk3588_tsadc_data,
 
 -- 
 2.48.1
