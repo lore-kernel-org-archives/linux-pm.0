@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A637713C9B8;
-	Tue, 25 Feb 2025 02:35:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91ADE1624C7;
+	Tue, 25 Feb 2025 02:35:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740450917; cv=none; b=Oq//3Vu9Wt7802uknZFWZswvMOoRAC1pOvryy8k35GxsVypp2Nkwbxdm8dBUdLY4mfIuUCF3GQkt21dL7oih3Yo/0MSqMnwBIX+c5v2/rLlWBBzQ5tPkTmyzBOXDTKFIVdhMx2fMWBFbsJEAG/OOX5tMxNtFigUYCDS2wF95Zmk=
+	t=1740450921; cv=none; b=s4c5rEFza4C1RYuztaAZiuSdp5ZX7H42WlHJX8HyfmGnQM4TFq5eaMML4Ax+YAdRThdUMipSa7peD+bqDbPti8WK/BTlvRHCzDX1ED30rxjpOYcmNqbTWsUyhB5yWPky+aGE3b0M55u0gS6T/s+H7zkssOGj2CCm2cz0kE/nkig=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740450917; c=relaxed/simple;
-	bh=x1K6c8DwZ/iqkKf52ZklxqWa27mXEskdG4g9qoiRsUU=;
+	s=arc-20240116; t=1740450921; c=relaxed/simple;
+	bh=yI3U9kFvQuboZ2tG8G24IVcpAGjmPqYpf3KrY/IyXO8=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=R1r9pCYdFZeeGsrpnaLSKAvYm++DDwk8hAplUSmXDkm+irYK01sJc75iT8B9eBf+1npJnN1EVM6PWK7SlFagadknSVC9pfdMnMq4+nlclia7XX4jlgGYCNSTKnyP0/UMcBgt8pAJDgKucuB7DIGeMzgPvW1UzWbGq0LOKgdLPQQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lGTp0Qbm; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:Content-Type; b=Zd/7phsUH/ROE2ILvD+O+XqWJD+wt3v5HulXOmV4MrfSWZAQQUFDO4KVpmNUBUVN7rynPQbfqbu552rsEe2wkp0kJvrqsEC7kI27Xyrw8ZLds59As/JBJBE+ZkbpMN3dIvtL9RqsF2ujV90aKV3qg9Dw6W6cb0aBcw2Q8mvqC1w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ujScPUBX; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lGTp0Qbm"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 50903C4CEE9;
-	Tue, 25 Feb 2025 02:35:17 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ujScPUBX"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AB5ACC4CEE6;
+	Tue, 25 Feb 2025 02:35:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740450917;
-	bh=x1K6c8DwZ/iqkKf52ZklxqWa27mXEskdG4g9qoiRsUU=;
+	s=k20201202; t=1740450921;
+	bh=yI3U9kFvQuboZ2tG8G24IVcpAGjmPqYpf3KrY/IyXO8=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=lGTp0Qbmbib+R32XgVIRpvyyuSKp14khrzIVOEBdpnfAegOkZkrMuKvxTvxx5ewtQ
-	 8+gfUDYL6CLRPMaeax4rfRi7KCCXjGXV1UBVVVyANhXs/rxRg4czH06OXVzrYFvTwr
-	 EaXMVioAU82383GTffdmiz2nAk/r5Stmv/BOiWpVUY2FWvE2h67QavBKhLrLQ4e1S2
-	 0BqhzosRZXq53rDdTXE5JyAQ71YWH0sJvB9QLgBEnqdMeLfrorMR1o0GyjVUbeNwM9
-	 TEk2358txwdcRaSKYIap29fwHWzwhQ5RlSEQmcDFJYj83bQ7w6VTZ4PAP0p1XtuNaJ
-	 MT8KQfcFZhTew==
-Message-ID: <5a5b00ae-f5e7-4642-8ba2-e5f2f472a794@kernel.org>
-Date: Mon, 24 Feb 2025 18:05:10 -0600
+	b=ujScPUBXNG0Hja+fR8/f5QdSCju2RnGIvY1VLPb7JA3kxy6FrlIG/bQbyXDVr2FpI
+	 Xa4VDgljHPkmJdPHMyXCGZaQUmmzkT1GGV5jGVDxLpsFd/nNvUoY34TY8AoXKdZ5Af
+	 k2k2crtqkpTwwD3pT4r4aniC8LHQGA4ljJO/8m6414C1KoIRFVSl6S2dMgfhf5R40x
+	 FLod1Kt7TalcUQHYlICD/WJgEXeFYurKYPwYE/qiRBx4qxwB6Sfiai72H1wZW2PM7s
+	 cCmXEj3ZUGaV4cOOz0oalR52PtRDGKxxgPwQz6VJfLsEqBju2hxrUOtB5Ie1zusl9S
+	 yEGEz3znia/cg==
+Message-ID: <9db9da8f-859d-4e23-94ca-e14905c8c6c7@kernel.org>
+Date: Mon, 24 Feb 2025 18:29:05 -0600
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 09/19] cpufreq/amd-pstate-ut: Drop SUCCESS and FAIL
- enums
+Subject: Re: [PATCH v3 04/18] cpufreq/amd-pstate: Move perf values into a
+ union
 To: Dhananjay Ugwekar <Dhananjay.Ugwekar@amd.com>,
  "Gautham R . Shenoy" <gautham.shenoy@amd.com>,
  Perry Yuan <perry.yuan@amd.com>
@@ -44,161 +44,258 @@ Cc: "open list:X86 ARCHITECTURE (32-BIT AND 64-BIT)"
  <linux-kernel@vger.kernel.org>,
  "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>,
  Mario Limonciello <mario.limonciello@amd.com>
-References: <20250219210302.442954-1-superm1@kernel.org>
- <20250219210302.442954-10-superm1@kernel.org>
- <086f6284-46b8-4cb1-8b19-009ee0e10af3@amd.com>
+References: <20250217220707.1468365-1-superm1@kernel.org>
+ <20250217220707.1468365-5-superm1@kernel.org>
+ <ccac287d-5bde-4b0d-a1d6-b1e8b5f4e6cb@amd.com>
 Content-Language: en-US
 From: Mario Limonciello <superm1@kernel.org>
-In-Reply-To: <086f6284-46b8-4cb1-8b19-009ee0e10af3@amd.com>
+In-Reply-To: <ccac287d-5bde-4b0d-a1d6-b1e8b5f4e6cb@amd.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-On 2/24/2025 00:05, Dhananjay Ugwekar wrote:
-> On 2/20/2025 2:32 AM, Mario Limonciello wrote:
+On 2/19/2025 04:57, Dhananjay Ugwekar wrote:
+> On 2/18/2025 3:36 AM, Mario Limonciello wrote:
 >> From: Mario Limonciello <mario.limonciello@amd.com>
 >>
->> Enums are effectively used as a boolean and don't show
->> the return value of the failing call.
+>> By storing perf values in a union all the writes and reads can
+>> be done atomically, removing the need for some concurrency protections.
 >>
->> Instead of using enums switch to returning the actual return
->> code from the unit test.
+>> While making this change, also drop the cached frequency values,
+>> using inline helpers to calculate them on demand from perf value.
 >>
-> 
-> One query below, apart from that LGTM,
-> 
-> Reviewed-by: Dhananjay Ugwekar <dhananjay.ugwekar@amd.com>
-
-Thanks!
-
-> 
 >> Reviewed-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
 >> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 >> ---
->>   drivers/cpufreq/amd-pstate-ut.c | 143 ++++++++++++--------------------
->>   1 file changed, 55 insertions(+), 88 deletions(-)
+>> v3:
+>>   * Pick up tag
+>> v2:
+>>   * cache perf variable in unit tests
+>>   * Drop unnecessary check from amd_pstate_update_min_max_limit()
+>>   * Consistency with READ_ONCE()
+>>   * Drop unneeded policy checks
+>>   * add kdoc
+>> ---
+>>   drivers/cpufreq/amd-pstate-ut.c |  18 +--
+>>   drivers/cpufreq/amd-pstate.c    | 195 ++++++++++++++++++--------------
+>>   drivers/cpufreq/amd-pstate.h    |  49 +++++---
+>>   3 files changed, 151 insertions(+), 111 deletions(-)
 >>
 >> diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
->> index 0f0b867e271cc..028527a0019ca 100644
+>> index 445278cf40b61..ba3e06f349c6d 100644
 >> --- a/drivers/cpufreq/amd-pstate-ut.c
 >> +++ b/drivers/cpufreq/amd-pstate-ut.c
->> @@ -32,30 +32,20 @@
+>> @@ -129,6 +129,7 @@ static void amd_pstate_ut_check_perf(u32 index)
+>>   	struct cppc_perf_caps cppc_perf;
+>>   	struct cpufreq_policy *policy = NULL;
+>>   	struct amd_cpudata *cpudata = NULL;
+>> +	union perf_cached cur_perf;
 >>   
->>   #include "amd-pstate.h"
+>>   	for_each_possible_cpu(cpu) {
+>>   		policy = cpufreq_cpu_get(cpu);
+>> @@ -162,19 +163,20 @@ static void amd_pstate_ut_check_perf(u32 index)
+>>   			lowest_perf = AMD_CPPC_LOWEST_PERF(cap1);
+>>   		}
 >>   
->> -/*
->> - * Abbreviations:
->> - * amd_pstate_ut: used as a shortform for AMD P-State unit test.
->> - * It helps to keep variable names smaller, simpler
->> - */
->> -enum amd_pstate_ut_result {
->> -	AMD_PSTATE_UT_RESULT_PASS,
->> -	AMD_PSTATE_UT_RESULT_FAIL,
->> -};
->>   
->>   struct amd_pstate_ut_struct {
->>   	const char *name;
->> -	void (*func)(u32 index);
->> -	enum amd_pstate_ut_result result;
->> +	int (*func)(u32 index);
->>   };
->>   
->>   /*
->>    * Kernel module for testing the AMD P-State unit test
->>    */
->> -static void amd_pstate_ut_acpi_cpc_valid(u32 index);
->> -static void amd_pstate_ut_check_enabled(u32 index);
->> -static void amd_pstate_ut_check_perf(u32 index);
->> -static void amd_pstate_ut_check_freq(u32 index);
->> -static void amd_pstate_ut_check_driver(u32 index);
->> +static int amd_pstate_ut_acpi_cpc_valid(u32 index);
->> +static int amd_pstate_ut_check_enabled(u32 index);
->> +static int amd_pstate_ut_check_perf(u32 index);
->> +static int amd_pstate_ut_check_freq(u32 index);
->> +static int amd_pstate_ut_check_driver(u32 index);
->>   
->>   static struct amd_pstate_ut_struct amd_pstate_ut_cases[] = {
->>   	{"amd_pstate_ut_acpi_cpc_valid",   amd_pstate_ut_acpi_cpc_valid   },
->> @@ -78,51 +68,46 @@ static bool get_shared_mem(void)
->>   /*
->>    * check the _CPC object is present in SBIOS.
->>    */
->> -static void amd_pstate_ut_acpi_cpc_valid(u32 index)
->> +static int amd_pstate_ut_acpi_cpc_valid(u32 index)
->>   {
->> -	if (acpi_cpc_valid())
->> -		amd_pstate_ut_cases[index].result = AMD_PSTATE_UT_RESULT_PASS;
->> -	else {
->> -		amd_pstate_ut_cases[index].result = AMD_PSTATE_UT_RESULT_FAIL;
->> +	if (!acpi_cpc_valid()) {
->>   		pr_err("%s the _CPC object is not present in SBIOS!\n", __func__);
->> +		return -EINVAL;
->>   	}
->> +
->> +	return 0;
+>> -		if (highest_perf != READ_ONCE(cpudata->highest_perf) && !cpudata->hw_prefcore) {
+>> +		cur_perf = READ_ONCE(cpudata->perf);
+>> +		if (highest_perf != cur_perf.highest_perf && !cpudata->hw_prefcore) {
+>>   			pr_err("%s cpu%d highest=%d %d highest perf doesn't match\n",
+>> -				__func__, cpu, highest_perf, cpudata->highest_perf);
+>> +				__func__, cpu, highest_perf, cpudata->perf.highest_perf);
+> 						  Can we use cur_perf.highest_perf here ?
+
+Ack.
+
+> 
+>>   			goto skip_test;
+>>   		}
+>> -		if ((nominal_perf != READ_ONCE(cpudata->nominal_perf)) ||
+>> -			(lowest_nonlinear_perf != READ_ONCE(cpudata->lowest_nonlinear_perf)) ||
+>> -			(lowest_perf != READ_ONCE(cpudata->lowest_perf))) {
+>> +		if (nominal_perf != cur_perf.nominal_perf ||
+>> +		   (lowest_nonlinear_perf != cur_perf.lowest_nonlinear_perf) ||
+>> +		   (lowest_perf != cur_perf.lowest_perf)) {
+>>   			amd_pstate_ut_cases[index].result = AMD_PSTATE_UT_RESULT_FAIL;
+>>   			pr_err("%s cpu%d nominal=%d %d lowest_nonlinear=%d %d lowest=%d %d, they should be equal!\n",
+>> -				__func__, cpu, nominal_perf, cpudata->nominal_perf,
+>> -				lowest_nonlinear_perf, cpudata->lowest_nonlinear_perf,
+>> -				lowest_perf, cpudata->lowest_perf);
+>> +				__func__, cpu, nominal_perf, cpudata->perf.nominal_perf,
+>> +				lowest_nonlinear_perf, cpudata->perf.lowest_nonlinear_perf,
+>> +				lowest_perf, cpudata->perf.lowest_perf);
+> 			          Can we use cur_perf.(nominal/lowest_nonlinear/lowest)_perf here as well ?			
+
+Ack.
+			
+> 
+>>   			goto skip_test;
+>>   		}
+>>
+> [Snip]
+>> @@ -888,25 +896,24 @@ static u32 amd_pstate_get_transition_latency(unsigned int cpu)
 >>   }
 >>   
->> -static void amd_pstate_ut_pstate_enable(u32 index)
->> +/*
->> + * check if amd pstate is enabled
->> + */
->> +static int amd_pstate_ut_check_enabled(u32 index)
+>>   /*
+>> - * amd_pstate_init_freq: Initialize the max_freq, min_freq,
+>> - *                       nominal_freq and lowest_nonlinear_freq for
+>> - *                       the @cpudata object.
+>> + * amd_pstate_init_freq: Initialize the nominal_freq and lowest_nonlinear_freq
+>> + *			 for the @cpudata object.
+>>    *
+>> - *  Requires: highest_perf, lowest_perf, nominal_perf and
+>> - *            lowest_nonlinear_perf members of @cpudata to be
+>> - *            initialized.
+>> + * Requires: all perf members of @cpudata to be initialized.
+>>    *
+>> - *  Returns 0 on success, non-zero value on failure.
+>> + * Returns 0 on success, non-zero value on failure.
+>>    */
+>>   static int amd_pstate_init_freq(struct amd_cpudata *cpudata)
 >>   {
->> -	int ret = 0;
->>   	u64 cppc_enable = 0;
+>> -	int ret;
+>>   	u32 min_freq, nominal_freq, lowest_nonlinear_freq;
+>>   	struct cppc_perf_caps cppc_perf;
+>> +	union perf_cached perf;
 >> +	int ret;
+>>   
+>>   	ret = cppc_get_perf_caps(cpudata->cpu, &cppc_perf);
+>>   	if (ret)
+>>   		return ret;
+>> +	perf = READ_ONCE(cpudata->perf);
+>>   
+>>   	if (quirks && quirks->nominal_freq)
+>>   		nominal_freq = quirks->nominal_freq;
+>> @@ -918,6 +925,7 @@ static int amd_pstate_init_freq(struct amd_cpudata *cpudata)
+>>   
+>>   	if (quirks && quirks->lowest_freq) {
+>>   		min_freq = quirks->lowest_freq;
+>> +		perf.lowest_perf = freq_to_perf(perf, nominal_freq, min_freq);
+> 
+> I think we forgot to write back this value to the cpudata->perf variable
+
+Ack, great catch.
+
+> 
+>>   	} else
+>>   		min_freq = cppc_perf.lowest_freq;
+>>   	min_freq *= 1000;
+>> @@ -934,7 +942,7 @@ static int amd_pstate_init_freq(struct amd_cpudata *cpudata)
+>>   		return -EINVAL;
+>>   	}
+>>   
+>> -	lowest_nonlinear_freq = perf_to_freq(cpudata, cpudata->lowest_nonlinear_perf);
+>> +	lowest_nonlinear_freq = perf_to_freq(perf, nominal_freq, perf.lowest_nonlinear_perf);
+>>   	WRITE_ONCE(cpudata->lowest_nonlinear_freq, lowest_nonlinear_freq);
+>>   
+>>   	if (lowest_nonlinear_freq <= min_freq || lowest_nonlinear_freq > nominal_freq) {
+> [Snip]
+>> diff --git a/drivers/cpufreq/amd-pstate.h b/drivers/cpufreq/amd-pstate.h
+>> index 0149933692458..8421c83c07919 100644
+>> --- a/drivers/cpufreq/amd-pstate.h
+>> +++ b/drivers/cpufreq/amd-pstate.h
+>> @@ -13,6 +13,34 @@
+>>   /*********************************************************************
+>>    *                        AMD P-state INTERFACE                       *
+>>    *********************************************************************/
 >> +
->> +	if (get_shared_mem())
->> +		return 0;
+>> +/**
+>> + * union perf_cached - A union to cache performance-related data.
+>> + * @highest_perf: the maximum performance an individual processor may reach,
+>> + *		  assuming ideal conditions
+>> + *		  For platforms that do not support the preferred core feature, the
+>> + *		  highest_pef may be configured with 166 or 255, to avoid max frequency
 > 
-> What do you think about adding a "cppc_get_enable()" function in acpi_cppc.c so that we can
-> run this check for shared mem systems as well ?
+> s/highest_pef/highest_perf/
 > 
+> Also I think this statement is bit confusing, how about,
+> 
+> "For platforms that support the preferred core feature, the highest_perf value maybe
+> configured to any value in the range 166-256 by the firmware (because the preferred
+> core ranking is encoded in the highest_perf value). To maintain consistency across
+> all platforms, we split the highest_perf and preferred core ranking values into
+> cpudata->perf.highest_perf and cpudata->prefcore_ranking."
 
-I think it's a good idea.  Would you mind working that out for after 
-this series lands?
+I like it, thanks.
 
+> 
+>> + *		  calculated wrongly. we take the fixed value as the highest_perf.
+>> + * @nominal_perf: the maximum sustained performance level of the processor,
+>> + *		  assuming ideal operating conditions
+>> + * @lowest_nonlinear_perf: the lowest performance level at which nonlinear power
+>> + *			   savings are achieved
+>> + * @lowest_perf: the absolute lowest performance level of the processor
+>> + * @min_limit_perf: Cached value of the performance corresponding to policy->min
+>> + * @max_limit_perf: Cached value of the performance corresponding to policy->max
+>> + */
+>> +union perf_cached {
+>> +	struct {
+>> +		u8	highest_perf;
+>> +		u8	nominal_perf;
+>> +		u8	lowest_nonlinear_perf;
+>> +		u8	lowest_perf;
+>> +		u8	min_limit_perf;
+>> +		u8	max_limit_perf;
+> 
+> Just a thought, how about adding the "u8 desired_perf" (last requested) and "u8 prefcore_ranking"
+> in this. We can pursue it as a separate patch if you want.
+> 
+> I think there is value in adding desired_perf atleast, so that when we are caching the
+> min, max limits in the perf_cached variable, desired perf level is also atomically
+> updated into the shared cpudata structure.
+
+Can you see if there is any performance advantage to caching these?
+If there is, can you please do a follow up to my v5 series?
+
+It's going to mean another write in amd_pstate_update() potentially.
+
+> 
 > Thanks,
 > Dhananjay
 > 
->>   
->>   	ret = rdmsrl_safe(MSR_AMD_CPPC_ENABLE, &cppc_enable);
->>   	if (ret) {
->> -		amd_pstate_ut_cases[index].result = AMD_PSTATE_UT_RESULT_FAIL;
->>   		pr_err("%s rdmsrl_safe MSR_AMD_CPPC_ENABLE ret=%d error!\n", __func__, ret);
->> -		return;
->> +		return ret;
->>   	}
->> -	if (cppc_enable)
->> -		amd_pstate_ut_cases[index].result = AMD_PSTATE_UT_RESULT_PASS;
->> -	else {
->> -		amd_pstate_ut_cases[index].result = AMD_PSTATE_UT_RESULT_FAIL;
+>> +	};
+>> +	u64	val;
+>> +};
 >> +
->> +	if (!cppc_enable) {
->>   		pr_err("%s amd pstate must be enabled!\n", __func__);
->> +		return -EINVAL;
->>   	}
->> -}
+>>   /**
+>>    * struct  amd_aperf_mperf
+>>    * @aperf: actual performance frequency clock count
+>> @@ -30,20 +58,9 @@ struct amd_aperf_mperf {
+>>    * @cpu: CPU number
+>>    * @req: constraint request to apply
+>>    * @cppc_req_cached: cached performance request hints
+>> - * @highest_perf: the maximum performance an individual processor may reach,
+>> - *		  assuming ideal conditions
+>> - *		  For platforms that do not support the preferred core feature, the
+>> - *		  highest_pef may be configured with 166 or 255, to avoid max frequency
+>> - *		  calculated wrongly. we take the fixed value as the highest_perf.
+>> - * @nominal_perf: the maximum sustained performance level of the processor,
+>> - *		  assuming ideal operating conditions
+>> - * @lowest_nonlinear_perf: the lowest performance level at which nonlinear power
+>> - *			   savings are achieved
+>> - * @lowest_perf: the absolute lowest performance level of the processor
+>> + * @perf: cached performance-related data
+>>    * @prefcore_ranking: the preferred core ranking, the higher value indicates a higher
+>>    * 		  priority.
+>> - * @min_limit_perf: Cached value of the performance corresponding to policy->min
+>> - * @max_limit_perf: Cached value of the performance corresponding to policy->max
+>>    * @min_limit_freq: Cached value of policy->min (in khz)
+>>    * @max_limit_freq: Cached value of policy->max (in khz)
+>>    * @nominal_freq: the frequency (in khz) that mapped to nominal_perf
+>> @@ -68,13 +85,9 @@ struct amd_cpudata {
+>>   	struct	freq_qos_request req[2];
+>>   	u64	cppc_req_cached;
 >>   
->> -/*
->> - * check if amd pstate is enabled
->> - */
->> -static void amd_pstate_ut_check_enabled(u32 index)
->> -{
->> -	if (get_shared_mem())
->> -		amd_pstate_ut_cases[index].result = AMD_PSTATE_UT_RESULT_PASS;
->> -	else
->> -		amd_pstate_ut_pstate_enable(index);
->> +	return 0;
->>   }
->>   
->>   /*
->>    * check if performance values are reasonable.
->>    * highest_perf >= nominal_perf > lowest_nonlinear_perf > lowest_perf > 0
->>    */
->> -static void amd_pstate_ut_check_perf(u32 index)
->> +static int amd_pstate_ut_check_perf(u32 index)
->>   {
->>   	int cpu = 0, ret = 0;
->>   	u32 highest_perf = 0, nominal_perf = 0, lowest_nonlinear_perf = 0, lowest_perf = 0;
-> [Snip]
+>> -	u8	highest_perf;
+>> -	u8	nominal_perf;
+>> -	u8	lowest_nonlinear_perf;
+>> -	u8	lowest_perf;
+>> +	union perf_cached perf;
+>> +
+>>   	u8	prefcore_ranking;
+>> -	u8	min_limit_perf;
+>> -	u8	max_limit_perf;
+>>   	u32	min_limit_freq;
+>>   	u32	max_limit_freq;
+>>   	u32	nominal_freq;
+> 
 
