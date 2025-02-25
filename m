@@ -1,33 +1,34 @@
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 6C32322256B;
-	Tue, 25 Feb 2025 20:17:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 6C8E3221733;
+	Tue, 25 Feb 2025 20:17:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740514649; cv=none; b=kDK0T91+4Q3dO4cz+TyF5/SJSuuHLQxlh1BIizZEHqiPVraQLNUEnDucFUR2aC7/kGmVjHDRsZjXgQ4f4Z6HQPTgyMDpzs2qkQc1L1oECkmDLcs8AiJVAcxv5W7XhX8927FVideBeOn33Hq6j1kpzGjZ2zCUEmyh8M6ymMTYcaU=
+	t=1740514649; cv=none; b=gG2DkI++YbkdCAyzDlmdy0Y7aSgLL61Pji0i9iVXfKxgcWUPr6aYJtHT6zuqtKnv1CY/P0n4cSSnNOIjUuD1qJqeBl8ccPTT+LlHJ3NaqsRYkQhRYGdu1GKFGeP75JoQx720CtnXMQbv/FiQlQt1ERVhFeyBWVgLsvJ/yyvE8Xw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1740514649; c=relaxed/simple;
-	bh=b17XZAvzaTH046mwhaHNwAtpVlTJZaGNfVU9xuXcyTM=;
+	bh=qhLI3OtFbfHmMj7z1Bn39+DuvRHM3fli/+N6w1GqnCw=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=NxitxL0deb3o2vt7Ia4yqOUQP8ExlM2zOLAvrYfwsMYnae9elB7LdMAoaDjdhzMUZRFftCx0Wv9PjWWMHL2bHEwDMT4YI6qB5CYCehk+iJxuiY3L7Bn0PMCLDV4861T8u45TOl+HVsmdRqncSujnqh9g/mclyXZUxrRlyzXgYcw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=rY57gui/; arc=none smtp.client-ip=13.77.154.182
+	 In-Reply-To:To:Cc; b=JC2YuN0La186eau0EmfzXfaUdDcunabv8N9KamGHo/E+t+X79EQJ+zGv/QQTqbrSAohMgcL+ky3/bJsBAyZIFCAEAK5Kd8Zm5xLZyg/750ijJ/AoaYrfBoQlsE95zoTmGiooWTlSBq3eWUjcUbOjZ0ejFgr55gVCc+ElpbouyWI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=Du6Fw81g; arc=none smtp.client-ip=13.77.154.182
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="rY57gui/"
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="Du6Fw81g"
 Received: from eahariha-devbox.internal.cloudapp.net (unknown [40.91.112.99])
-	by linux.microsoft.com (Postfix) with ESMTPSA id 75931206AB6C;
-	Tue, 25 Feb 2025 12:17:21 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 75931206AB6C
+	by linux.microsoft.com (Postfix) with ESMTPSA id 544A4206ADFB;
+	Tue, 25 Feb 2025 12:17:22 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 544A4206ADFB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1740514641;
-	bh=/rdlqcTwv5mN/sc7m2KrDg4m+dKAQX2yY+t0CXok2oY=;
+	s=default; t=1740514642;
+	bh=XNL3dldZNlw1Eq84meBUr//vKEng/ID/zFGHKMY53sg=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=rY57gui/I5s3opnKpMkUiVz2c8KEinkfrPoI4a0X58a/iSSS8lb6zsgJqkOKu7xOq
-	 seorPBf8U1Bj+VcZjFfcO6jdNkWNML7i48hryZFC0g73WPEObXszX5QqDSiVWRpKsR
-	 xhTzpQnxfRVcu8e8QVi+FGZLfxmNCa9p9IBg3p6A=
+	b=Du6Fw81gtR9lc6VxhG+uolWk6DNSsR0fD03V4uHvgstLN4C99mrYAdfHxBUoITNbw
+	 0dBuGVNQZXhzAmqB9swX2y81gcwwAgNvdFZl3mtEL75lM8WadHp0lYC+JXaZXEaD0T
+	 xEVN7fx6wsqh1SZPlLtM4UUNPYU6T4vw+KsVz5dg=
 From: Easwar Hariharan <eahariha@linux.microsoft.com>
-Date: Tue, 25 Feb 2025 20:17:25 +0000
-Subject: [PATCH v3 11/16] nvme: convert timeouts to secs_to_jiffies()
+Date: Tue, 25 Feb 2025 20:17:30 +0000
+Subject: [PATCH v3 16/16] RDMA/bnxt_re: convert timeouts to
+ secs_to_jiffies()
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -36,7 +37,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250225-converge-secs-to-jiffies-part-two-v3-11-a43967e36c88@linux.microsoft.com>
+Message-Id: <20250225-converge-secs-to-jiffies-part-two-v3-16-a43967e36c88@linux.microsoft.com>
 References: <20250225-converge-secs-to-jiffies-part-two-v3-0-a43967e36c88@linux.microsoft.com>
 In-Reply-To: <20250225-converge-secs-to-jiffies-part-two-v3-0-a43967e36c88@linux.microsoft.com>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -95,30 +96,24 @@ expression E;
 - * \( 1000 \| MSEC_PER_SEC \)
 )
 
-Acked-by: Keith Busch <kbusch@kernel.org>
 Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
 ---
- drivers/nvme/host/core.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/infiniband/hw/bnxt_re/qplib_rcfw.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/nvme/host/core.c b/drivers/nvme/host/core.c
-index f028913e2e622ee348e88879c6e6b7e8f8a1cc82..24c3e1765d491daf8fd600f96788bf5765946f54 100644
---- a/drivers/nvme/host/core.c
-+++ b/drivers/nvme/host/core.c
-@@ -4466,11 +4466,9 @@ static void nvme_fw_act_work(struct work_struct *work)
- 	nvme_auth_stop(ctrl);
+diff --git a/drivers/infiniband/hw/bnxt_re/qplib_rcfw.c b/drivers/infiniband/hw/bnxt_re/qplib_rcfw.c
+index 17e62f22683b14a3571188e25fe0df3cbf1d8360..b1a18c9cb7f6c248548bc38fcb98781a3030a1b6 100644
+--- a/drivers/infiniband/hw/bnxt_re/qplib_rcfw.c
++++ b/drivers/infiniband/hw/bnxt_re/qplib_rcfw.c
+@@ -160,7 +160,7 @@ static int __wait_for_resp(struct bnxt_qplib_rcfw *rcfw, u16 cookie)
+ 		wait_event_timeout(cmdq->waitq,
+ 				   !crsqe->is_in_used ||
+ 				   test_bit(ERR_DEVICE_DETACHED, &cmdq->flags),
+-				   msecs_to_jiffies(rcfw->max_timeout * 1000));
++				   secs_to_jiffies(rcfw->max_timeout));
  
- 	if (ctrl->mtfa)
--		fw_act_timeout = jiffies +
--				msecs_to_jiffies(ctrl->mtfa * 100);
-+		fw_act_timeout = jiffies + msecs_to_jiffies(ctrl->mtfa * 100);
- 	else
--		fw_act_timeout = jiffies +
--				msecs_to_jiffies(admin_timeout * 1000);
-+		fw_act_timeout = jiffies + secs_to_jiffies(admin_timeout);
- 
- 	nvme_quiesce_io_queues(ctrl);
- 	while (nvme_ctrl_pp_status(ctrl)) {
+ 		if (!crsqe->is_in_used)
+ 			return 0;
 
 -- 
 2.43.0
