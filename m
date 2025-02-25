@@ -1,40 +1,40 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E6BE4199E88;
-	Tue, 25 Feb 2025 16:46:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C886019A288;
+	Tue, 25 Feb 2025 16:46:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740501986; cv=none; b=EQLvvodEYYsFy58KCtUYLI0Pg7Pi9LswWjhnBU7FAZF56Hdt3xRXK29+7eoc6HhQ4oxn1Ak4fGRBUPWA1eVvpR+LCZ7K1oIsNLAdWxEzxp2fzjN+rEaamU4iXjDysBIRJ4V34weRGAjEmBeSD7hXfGsrExrQevUYLaEbHlpenKQ=
+	t=1740501987; cv=none; b=bmaGZpz2FCpgA2USnSvwdojl6jZC+BrDHQ5uLVhgCMR8tgfm9JapwL+Kr2M3dWTHqWMM4+j77Y5SJ5NdL/WrjTVlwG0mdKKNOaNDBc3cBhRlULO6u2iNwDaBfptsNg+9Z1vREaf82xClj9m1FNAEAe8vUy70xeeFgogPIVXuEMo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740501986; c=relaxed/simple;
-	bh=/Bl7bGe++8isDlcz6Yj2CRmk4+9xThGrSHZAAT8K00E=;
+	s=arc-20240116; t=1740501987; c=relaxed/simple;
+	bh=+k1w3zIKJCdHQc3g5rjCyOSmrNbD4FRJ5HlfhHPq9GA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=mczRtXTxsUWLkCTiuokh8UP9Zb6gbCVLpvKynIRZ/Y26ubgZXGH7HQrhulBSv0agx+b0KfJLKLYWVZ/oH+01NlUtVNiTCacmjV6fjRWq6sZ09yjiWTKM9ZZg3cq3t33+dgkq/EanMmjriSL7t6L6AL0WyZtUDFO1c7NhQ+dS7KA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=DerIyJ8c; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=iTq7HGxwepK/05jzLrod9hDxwmKQ9vnzweeXr/Y802LOFCUNrxkZKY/U47dT6v4BFcwuyEXMt6wVFVLS3KoWBioXc00vn8MyuKl1cSh03FiLn7bAg9co+9kDY32GPcvJg6dypbRo7wUieV43oHQ3oatkBMqaK77KaHaF7Uh1agQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=fLA0Ig5x; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="DerIyJ8c"
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="fLA0Ig5x"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
- id d0c76005e8e4e746; Tue, 25 Feb 2025 17:46:15 +0100
+ id 99d3f2a535374919; Tue, 25 Feb 2025 17:46:17 +0100
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 0AA6622C28BF;
-	Tue, 25 Feb 2025 17:46:15 +0100 (CET)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id CAFB622C28BF;
+	Tue, 25 Feb 2025 17:46:16 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1740501975;
-	bh=/Bl7bGe++8isDlcz6Yj2CRmk4+9xThGrSHZAAT8K00E=;
+	s=dkim; t=1740501977;
+	bh=+k1w3zIKJCdHQc3g5rjCyOSmrNbD4FRJ5HlfhHPq9GA=;
 	h=From:Subject:Date;
-	b=DerIyJ8cOL8sFe0ssqaBLAhjptKb0jb+awo4bNfQCj8BMmtKGyQjTH2dMWFOL9o+G
-	 FOv5nXZugVANCRDq1KTNw+O/4WTow7dMhMkAKBrSpedXxMET8I41PtnmffvVCWBH6r
-	 WAHs83oGhiKEeK0ea45WVqTB8K48y7Q9w3VJPNiKLpeTse9umHhkAjebdAek4kpYHw
-	 vyPSpa6NtdkWm0oKSipvou5+O/kYASjV8uOad/TdAri4bUtJl15XR0XsOTD9SeIv62
-	 r1A9SPyCOMjPs3dH2XF0MZetmt44+f0Zti115u2pNVtznIRJSCxXdu7QnJTyyPq9FJ
-	 K3iKFaWsOCqAQ==
+	b=fLA0Ig5xjF91+fuwfuy0zRP0pL6tRJdi/dN0D4abz5IZpoBP+hrJGWdgU7zghNw43
+	 xZ1KmXjCsfidROcmHu62SFS1YjrICVL1NPuhD7L8I+a4NUaO3CxhnOJX11Pf2A4Yk+
+	 0ZPUbt+WNIFG1N2Hla4i1y1THwR9jCSPKCKBIfB0uT4U0/xwnYLvMmvR3xWge/qEL9
+	 5Wy/um4yjftSi2h5g37gEGxYgvkqFIGf4al9pZD7/XwUjlSE10VdQIRgdxuODT1YoU
+	 gehVZUux2xjHrXdDckCffMNAOvjNpcqcdaRyc5XEFryN6hDsrxjws7X7feX69WHX3J
+	 8sVYiUYXYap1w==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -43,10 +43,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
  Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
  Saravana Kannan <saravanak@google.com>
 Subject:
- [PATCH v1 5/5] PM: sleep: Make late and noirq suspend of devices more
- asynchronous
-Date: Tue, 25 Feb 2025 17:45:37 +0100
-Message-ID: <2016539.usQuhbGJ8B@rjwysocki.net>
+ [PATCH v1 3/5] PM: sleep: Resume children right after resuming the parent
+Date: Tue, 25 Feb 2025 17:45:22 +0100
+Message-ID: <1819312.VLH7GnMWUR@rjwysocki.net>
 In-Reply-To: <13709135.uLZWGnKmhe@rjwysocki.net>
 References: <13709135.uLZWGnKmhe@rjwysocki.net>
 Precedence: bulk
@@ -60,153 +59,217 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdekvddvvdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeejpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhtvghrnhesrhhofihlrghnugdrhhgrrhhvrghrugdrvgguuhdprhgtphhtthhopehulhhfrdhhrghnshhsohhnsehlihhnrghrohdrohhrghdprhgtphhtthhopehjohhhrghnsehkvghrnhgvlhdrohhrghdprhgtphh
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdekvddvudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeefudduuedtuefgleffudeigeeitdeufeelvdejgefftdethffhhfethfeljefgteenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomheprhhjfiesrhhjfiihshhotghkihdrnhgvthdpnhgspghrtghpthhtohepjedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehsthgvrhhnsehrohiflhgrnhgurdhhrghrvhgrrhgurdgvughupdhrtghpthhtohepuhhlfhdrhhgrnhhsshhonheslhhinhgrrhhordhorhhgpdhrtghpthhtohepjhh
 X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-In analogy with previous changes, make device_suspend_late() and
-device_suspend_noirq() start the async suspend of the device's parent
-and suppliers after the device itself has been processed and make
-dpm_suspend_late() and dpm_noirq_suspend_devices() start processing
-"async" leaf devices (that is, devices without children or consumers)
-upfront because they don't need to wait for any other devices.
+According to [1], the handling of device suspend and resume, and
+particularly the latter, involves unnecessary overhead related to
+starting new async work items for devices that cannot make progress
+right away because they have to wait for other devices.
 
+To reduce this problem in the resume path, use the observation that
+starting the async resume of the children of a device after resuming
+the parent is likely to produce less scheduling and memory management
+noise than starting it upfront while at the same time it should not
+increase the resume duration substantially.
+
+Accordingly, modify the code to start the async resume of the device's
+children when the processing of the parent has been completed in each
+stage of device resume and only start async resume upfront for devices
+without parents.
+
+Also make it check if a given device can be resumed asynchronously
+before starting the synchronous resume of it in case it will have to
+wait for another that is already resuming asynchronously.
+
+In addition to making the async resume of devices more friendly to
+systems with relatively less computing resources, this change is also
+preliminary for analogous changes in the suspend path.
+
+On the systems where it has been tested, this change by itself does
+not affect the overall system resume duration in a measurable way.
+
+Link: https://lore.kernel.org/linux-pm/20241114220921.2529905-1-saravanak@google.com/ [1]
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/base/power/main.c |   60 +++++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 52 insertions(+), 8 deletions(-)
+ drivers/base/power/main.c |   72 ++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 63 insertions(+), 9 deletions(-)
 
 --- a/drivers/base/power/main.c
 +++ b/drivers/base/power/main.c
-@@ -1317,6 +1317,8 @@
- 	device_links_read_unlock(idx);
+@@ -621,12 +621,41 @@
+ 	return false;
  }
  
-+static void async_suspend_noirq(void *data, async_cookie_t cookie);
++static int dpm_async_unless_in_progress(struct device *dev, void *fn)
++{
++	async_func_t func = fn;
 +
- /**
-  * device_suspend_noirq - Execute a "noirq suspend" callback for given device.
-  * @dev: Device to handle.
-@@ -1396,7 +1398,13 @@
- Complete:
- 	complete_all(&dev->power.completion);
- 	TRACE_SUSPEND(error);
--	return error;
-+
-+	if (error || async_error)
-+		return error;
-+
-+	dpm_async_suspend_superior(dev, async_suspend_noirq);
++	if (!dev->power.work_in_progress)
++		dpm_async_fn(dev, func);
 +
 +	return 0;
++}
++
++static void dpm_async_resume_children(struct device *dev, async_func_t func)
++{
++	mutex_lock(&dpm_list_mtx);
++
++	/*
++	 * Start processing "async" children of the device unless it's been
++	 * started already for them.
++	 *
++	 * This could have been done for the device's "async" consumers too, but
++	 * they either need to wait for their parents or the processing has
++	 * already started for them after their parents were processed.
++	 */
++	device_for_each_child(dev, func, dpm_async_unless_in_progress);
++
++	mutex_unlock(&dpm_list_mtx);
++}
++
+ static void dpm_clear_async_state(struct device *dev)
+ {
+ 	reinit_completion(&dev->power.completion);
+ 	dev->power.work_in_progress = false;
  }
  
- static void async_suspend_noirq(void *data, async_cookie_t cookie)
-@@ -1410,6 +1418,7 @@
- static int dpm_noirq_suspend_devices(pm_message_t state)
- {
- 	ktime_t starttime = ktime_get();
-+	struct device *dev;
- 	int error = 0;
++static void async_resume_noirq(void *data, async_cookie_t cookie);
++
+ /**
+  * device_resume_noirq - Execute a "noirq resume" callback for given device.
+  * @dev: Device to handle.
+@@ -710,6 +739,8 @@
+ 		dpm_save_failed_dev(dev_name(dev));
+ 		pm_dev_err(dev, state, async ? " async noirq" : " noirq", error);
+ 	}
++
++	dpm_async_resume_children(dev, async_resume_noirq);
+ }
  
- 	trace_suspend_resume(TPS("dpm_suspend_noirq"), state.event, true);
-@@ -1419,15 +1428,28 @@
- 
+ static void async_resume_noirq(void *data, async_cookie_t cookie)
+@@ -733,19 +764,24 @@
  	mutex_lock(&dpm_list_mtx);
  
-+	/*
-+	 * Start processing "async" leaf devices upfront because they don't need
-+	 * to wait.
-+	 */
-+	list_for_each_entry_reverse(dev, &dpm_late_early_list, power.entry) {
-+		dpm_clear_async_state(dev);
-+		if (dpm_leaf_device(dev))
-+			dpm_async_fn(dev, async_suspend_noirq);
-+	}
+ 	/*
+-	 * Trigger the resume of "async" devices upfront so they don't have to
+-	 * wait for the "non-async" ones they don't depend on.
++	 * Start processing "async" devices without parents upfront so they
++	 * don't wait for the "sync" devices they don't depend on.
+ 	 */
+ 	list_for_each_entry(dev, &dpm_noirq_list, power.entry) {
+ 		dpm_clear_async_state(dev);
+-		dpm_async_fn(dev, async_resume_noirq);
++		if (!dev->parent)
++			dpm_async_fn(dev, async_resume_noirq);
+ 	}
+ 
+ 	while (!list_empty(&dpm_noirq_list)) {
+ 		dev = to_device(dpm_noirq_list.next);
+ 		list_move_tail(&dev->power.entry, &dpm_late_early_list);
+ 
++		dpm_async_unless_in_progress(dev, async_resume_noirq);
 +
+ 		if (!dev->power.work_in_progress) {
++			dev->power.work_in_progress = true;
++
+ 			get_device(dev);
+ 
+ 			mutex_unlock(&dpm_list_mtx);
+@@ -781,6 +817,8 @@
+ 	device_wakeup_disarm_wake_irqs();
+ }
+ 
++static void async_resume_early(void *data, async_cookie_t cookie);
++
+ /**
+  * device_resume_early - Execute an "early resume" callback for given device.
+  * @dev: Device to handle.
+@@ -848,6 +886,8 @@
+ 		dpm_save_failed_dev(dev_name(dev));
+ 		pm_dev_err(dev, state, async ? " async early" : " early", error);
+ 	}
++
++	dpm_async_resume_children(dev, async_resume_early);
+ }
+ 
+ static void async_resume_early(void *data, async_cookie_t cookie)
+@@ -875,19 +915,24 @@
+ 	mutex_lock(&dpm_list_mtx);
+ 
+ 	/*
+-	 * Trigger the resume of "async" devices upfront so they don't have to
+-	 * wait for the "non-async" ones they don't depend on.
++	 * Start processing "async" devices without parents upfront so they
++	 * don't wait for the "sync" devices they don't depend on.
+ 	 */
+ 	list_for_each_entry(dev, &dpm_late_early_list, power.entry) {
+ 		dpm_clear_async_state(dev);
+-		dpm_async_fn(dev, async_resume_early);
++		if (!dev->parent)
++			dpm_async_fn(dev, async_resume_early);
+ 	}
+ 
  	while (!list_empty(&dpm_late_early_list)) {
--		struct device *dev = to_device(dpm_late_early_list.prev);
-+		dev = to_device(dpm_late_early_list.prev);
+ 		dev = to_device(dpm_late_early_list.next);
+ 		list_move_tail(&dev->power.entry, &dpm_suspended_list);
  
- 		list_move(&dev->power.entry, &dpm_noirq_list);
- 
--		dpm_clear_async_state(dev);
--		if (dpm_async_fn(dev, async_suspend_noirq))
-+		dpm_async_unless_in_progress(dev, async_suspend_noirq);
++		dpm_async_unless_in_progress(dev, async_resume_early);
 +
-+		if (dev->power.work_in_progress)
- 			continue;
- 
-+		dev->power.work_in_progress = true;
+ 		if (!dev->power.work_in_progress) {
++			dev->power.work_in_progress = true;
 +
- 		get_device(dev);
+ 			get_device(dev);
  
- 		mutex_unlock(&dpm_list_mtx);
-@@ -1492,6 +1514,8 @@
- 	spin_unlock_irq(&parent->power.lock);
+ 			mutex_unlock(&dpm_list_mtx);
+@@ -919,6 +964,8 @@
  }
+ EXPORT_SYMBOL_GPL(dpm_resume_start);
  
-+static void async_suspend_late(void *data, async_cookie_t cookie);
++static void async_resume(void *data, async_cookie_t cookie);
 +
  /**
-  * device_suspend_late - Execute a "late suspend" callback for given device.
+  * device_resume - Execute "resume" callbacks for given device.
   * @dev: Device to handle.
-@@ -1568,7 +1592,13 @@
- Complete:
- 	TRACE_SUSPEND(error);
- 	complete_all(&dev->power.completion);
--	return error;
+@@ -1012,6 +1059,8 @@
+ 		dpm_save_failed_dev(dev_name(dev));
+ 		pm_dev_err(dev, state, async ? " async" : "", error);
+ 	}
 +
-+	if (error || async_error)
-+		return error;
-+
-+	dpm_async_suspend_superior(dev, async_suspend_late);
-+
-+	return 0;
++	dpm_async_resume_children(dev, async_resume);
  }
  
- static void async_suspend_late(void *data, async_cookie_t cookie)
-@@ -1586,6 +1616,7 @@
- int dpm_suspend_late(pm_message_t state)
- {
- 	ktime_t starttime = ktime_get();
-+	struct device *dev;
- 	int error = 0;
- 
- 	trace_suspend_resume(TPS("dpm_suspend_late"), state.event, true);
-@@ -1597,15 +1628,28 @@
- 
+ static void async_resume(void *data, async_cookie_t cookie)
+@@ -1043,19 +1092,24 @@
  	mutex_lock(&dpm_list_mtx);
  
-+	/*
-+	 * Start processing "async" leaf devices upfront because they don't need
-+	 * to wait.
-+	 */
-+	list_for_each_entry_reverse(dev, &dpm_suspended_list, power.entry) {
-+		dpm_clear_async_state(dev);
-+		if (dpm_leaf_device(dev))
-+			dpm_async_fn(dev, async_suspend_late);
-+	}
-+
+ 	/*
+-	 * Trigger the resume of "async" devices upfront so they don't have to
+-	 * wait for the "non-async" ones they don't depend on.
++	 * Start processing "async" devices without parents upfront so they
++	 * don't wait for the "sync" devices they don't depend on.
+ 	 */
+ 	list_for_each_entry(dev, &dpm_suspended_list, power.entry) {
+ 		dpm_clear_async_state(dev);
+-		dpm_async_fn(dev, async_resume);
++		if (!dev->parent)
++			dpm_async_fn(dev, async_resume);
+ 	}
+ 
  	while (!list_empty(&dpm_suspended_list)) {
--		struct device *dev = to_device(dpm_suspended_list.prev);
-+		dev = to_device(dpm_suspended_list.prev);
+ 		dev = to_device(dpm_suspended_list.next);
+ 		list_move_tail(&dev->power.entry, &dpm_prepared_list);
  
- 		list_move(&dev->power.entry, &dpm_late_early_list);
- 
--		dpm_clear_async_state(dev);
--		if (dpm_async_fn(dev, async_suspend_late))
-+		dpm_async_unless_in_progress(dev, async_suspend_late);
++		dpm_async_unless_in_progress(dev, async_resume);
 +
-+		if (dev->power.work_in_progress)
- 			continue;
- 
-+		dev->power.work_in_progress = true;
+ 		if (!dev->power.work_in_progress) {
++			dev->power.work_in_progress = true;
 +
- 		get_device(dev);
+ 			get_device(dev);
  
- 		mutex_unlock(&dpm_list_mtx);
+ 			mutex_unlock(&dpm_list_mtx);
 
 
 
