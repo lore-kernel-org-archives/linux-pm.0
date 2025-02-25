@@ -1,86 +1,111 @@
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DA5D21ABC6;
-	Tue, 25 Feb 2025 19:35:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 721E920FA9E;
+	Tue, 25 Feb 2025 20:17:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740512148; cv=none; b=aowc2V6KkRu1zybgRPSIeEFvWaiaF4vy8AEyI0OLZvwU+NnzUT/qQ6e6WIFNavOlE+F9UqXvLjfiRbg34fXISVUVb1bnVBWN5/mNk61jp3LUFoQuQr8hsjCi6JQdg6vm+A0hRpWXJQK/uFjBuGKht8NF1QoLfVzY0csCPJu9eKo=
+	t=1740514642; cv=none; b=HfN5ACIIQ4aTXMkuXPurzGkWaRdF6ZKet0Vuu0XmfEacWndGdqZBFwaCIhhqOY10MXEj9cTHxi4e9FF4fDcfcdduWlw421LG+Nr+bFW8HjIPVYIu7yJLFx6eqijsLY1NcFCoE2STLPaiJn0kay1V6OzPg07LSNHf9Fu0TnvGchg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740512148; c=relaxed/simple;
-	bh=KsEFBJDMyMqE1GNzZ8NLeV+1MIUPSoldSittfrDl8pg=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=s6Q3Y/NqByrA22Hue6EJItHClcd2X2XetTTPEUyy2pbcjag2JF4Uo41x2wZ5NhRezOxH7wr6LcdYjZcxHJ5wpky02BKuqymzr4IHZvexjLZSOgSVY1PUDovPc1z/dcLwDvCVb2dd+gHKe7sPyra50Ikh870gW0zdgn8WtNLETYQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=N9yxvrIY; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=1GdtkJ4E; arc=none smtp.client-ip=193.142.43.55
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
+	s=arc-20240116; t=1740514642; c=relaxed/simple;
+	bh=KhNEyo7WFu+pfBKWpwr7dBCkfYqG9oS0AfyoC6gzP2I=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=b3CDrWiJDIGshR/XpN3pqHS/BsSmvt33nMebk7jMiVa7MQsOzCdU5JwlkeKMsjXF2SgBjJX0S0IFvZttUS1Cg/Ay15em5GbA0wrNRkGzARh34kc8iImSxqoVBwVqB32R2EEn990KaRwXWQ9mjwVAh4sGwKKX8chWalSsBUqtNPs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=OP63wp67; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="N9yxvrIY";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="1GdtkJ4E"
-From: Thomas Gleixner <tglx@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1740512144;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qDTiPxWy1P2Fx4DmRfxnMT0ntSR96+IUL871wEEDv7U=;
-	b=N9yxvrIYPb1ldIap8iYrtbc3q7iYny02QmR+rGlDXYFjd+CbwCz8yoCi345xGZxvJccxy8
-	joB/j5nyUZ0WJVbArA8SmfxYmN+rnNbgF7UOua2Yv56YbPF8DnnjKCL86N6QxB+ajpzL3I
-	rrmyQQQv7ddcaUo9b66vBNcx+1/9qJj83UBlMyRruv6XOeM1Zg4vymnoBW9m4Q2QhjJZti
-	xuS2z1Th8enwmcb5Tn4tunBSoZdkkQLRoYFCHbTvoyY+dcFeaMB2ipQ73fB8vEjjOwihzJ
-	Wzdutp+wtDZJKzmbI6F++/Ppt2kzX/Mgtk8fQO7NBpcxH1T7ePJG48X1wI0IoA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1740512144;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qDTiPxWy1P2Fx4DmRfxnMT0ntSR96+IUL871wEEDv7U=;
-	b=1GdtkJ4EKnOcyKDySyhF2tEw5pENFkFHj6qA2Kc/NhsCfczyFbFIUlhCIRwuTogLz5cwpt
-	gu7Lr1W81gtJjRAQ==
-To: Fab Stz <fabstz-it@yahoo.fr>, John Stultz <jstultz@google.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Anna-Maria Behnsen
- <anna-maria@linutronix.de>, Frederic Weisbecker <frederic@kernel.org>,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Jacob Pan
- <jacob.jun.pan@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J.
- Wysocki" <rafael@kernel.org>
-Subject: Re: [REGRESSION] ? system is stuck in clocksource, >60s delay at
- boot time without tsc=unstable
-In-Reply-To: <5114de6a-e6ef-4459-9570-6dd2245fabd5@yahoo.fr>
-References: <10cf96aa-1276-4bd4-8966-c890377030c3.ref@yahoo.fr>
- <10cf96aa-1276-4bd4-8966-c890377030c3@yahoo.fr>
- <22539099.EfDdHjke4D@debian>
- <CANDhNCqdpbi=r81NyXVWBbB5POj5nmrc7qo3r2bi1yYqYBgiAg@mail.gmail.com>
- <CANDhNCqFi1adk_MdejQC1bod5STHPDjaSB9imSGpRtJt3TbW1Q@mail.gmail.com>
- <c1d1b79c-bb2e-4a69-888d-a3301bcbfeb2@yahoo.fr>
- <CANDhNCreiCQUKccmW1wBtvVzQrfB=xC0GFRO65SHG-+Wfu1wtA@mail.gmail.com>
- <b9b58a9e-eb56-4acd-b854-0b5ccb8e6759@yahoo.fr> <87plkoau8w.ffs@tglx>
- <15f4f44d-6f73-4031-a7dc-d2105672bc81@yahoo.fr> <874j0jhiag.ffs@tglx>
- <5114de6a-e6ef-4459-9570-6dd2245fabd5@yahoo.fr>
-Date: Tue, 25 Feb 2025 20:35:43 +0100
-Message-ID: <87eczlg6ls.ffs@tglx>
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="OP63wp67"
+Received: from eahariha-devbox.internal.cloudapp.net (unknown [40.91.112.99])
+	by linux.microsoft.com (Postfix) with ESMTPSA id BF51B203CDFD;
+	Tue, 25 Feb 2025 12:17:19 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com BF51B203CDFD
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1740514639;
+	bh=iYMbK5A793RDdkoEPga+PoRyWET+ntXiAELhCjFiDKo=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=OP63wp67iKSqHjNTjMNd+sihLCyoASTZi2GNLl0ELqRwvrBXcEngcH+yXafC8Yprq
+	 nAvYY5Wrea0EY1UvsDuANN22sm/ZDZFvEyjRA+KLA6UssBgo0/5UVPQNqQpxTLUDBc
+	 wEQUX4uMwl08WGSAzFvomPPI3q3DYIQICkks+WHI=
+From: Easwar Hariharan <eahariha@linux.microsoft.com>
+Date: Tue, 25 Feb 2025 20:17:15 +0000
+Subject: [PATCH v3 01/16] coccinelle: misc: secs_to_jiffies: Patch
+ expressions too
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250225-converge-secs-to-jiffies-part-two-v3-1-a43967e36c88@linux.microsoft.com>
+References: <20250225-converge-secs-to-jiffies-part-two-v3-0-a43967e36c88@linux.microsoft.com>
+In-Reply-To: <20250225-converge-secs-to-jiffies-part-two-v3-0-a43967e36c88@linux.microsoft.com>
+To: Andrew Morton <akpm@linux-foundation.org>, 
+ Yaron Avizrat <yaron.avizrat@intel.com>, Oded Gabbay <ogabbay@kernel.org>, 
+ Julia Lawall <Julia.Lawall@inria.fr>, Nicolas Palix <nicolas.palix@imag.fr>, 
+ James Smart <james.smart@broadcom.com>, 
+ Dick Kennedy <dick.kennedy@broadcom.com>, 
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+ "Martin K. Petersen" <martin.petersen@oracle.com>, 
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+ Chris Mason <clm@fb.com>, Josef Bacik <josef@toxicpanda.com>, 
+ David Sterba <dsterba@suse.com>, Ilya Dryomov <idryomov@gmail.com>, 
+ Dongsheng Yang <dongsheng.yang@easystack.cn>, Jens Axboe <axboe@kernel.dk>, 
+ Xiubo Li <xiubli@redhat.com>, Damien Le Moal <dlemoal@kernel.org>, 
+ Niklas Cassel <cassel@kernel.org>, Carlos Maiolino <cem@kernel.org>, 
+ "Darrick J. Wong" <djwong@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
+ Keith Busch <kbusch@kernel.org>, Christoph Hellwig <hch@lst.de>, 
+ Sagi Grimberg <sagi@grimberg.me>, Frank Li <Frank.Li@nxp.com>, 
+ Mark Brown <broonie@kernel.org>, Shawn Guo <shawnguo@kernel.org>, 
+ Sascha Hauer <s.hauer@pengutronix.de>, 
+ Pengutronix Kernel Team <kernel@pengutronix.de>, 
+ Fabio Estevam <festevam@gmail.com>, 
+ Shyam Sundar S K <Shyam-sundar.S-k@amd.com>, 
+ Hans de Goede <hdegoede@redhat.com>, 
+ =?utf-8?q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
+ Henrique de Moraes Holschuh <hmh@hmh.eng.br>, 
+ Selvin Xavier <selvin.xavier@broadcom.com>, 
+ Kalesh AP <kalesh-anakkur.purayil@broadcom.com>, 
+ Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>
+Cc: cocci@inria.fr, linux-kernel@vger.kernel.org, 
+ linux-scsi@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-sound@vger.kernel.org, linux-btrfs@vger.kernel.org, 
+ ceph-devel@vger.kernel.org, linux-block@vger.kernel.org, 
+ linux-ide@vger.kernel.org, linux-xfs@vger.kernel.org, 
+ linux-pm@vger.kernel.org, linux-nvme@lists.infradead.org, 
+ linux-spi@vger.kernel.org, imx@lists.linux.dev, 
+ linux-arm-kernel@lists.infradead.org, platform-driver-x86@vger.kernel.org, 
+ ibm-acpi-devel@lists.sourceforge.net, linux-rdma@vger.kernel.org, 
+ Easwar Hariharan <eahariha@linux.microsoft.com>
+X-Mailer: b4 0.14.2
 
-On Tue, Feb 25 2025 at 09:11, Fab Stz wrote:
-> Thank you for the patch! I built the 6.1 kernel with it applied and it 
-> apparently works as expected (no delay). Please find logs below & 
-> attached dmesg log. Maybe the interesting line is:
->
-> Feb 25 08:53:51 debian kernel: tsc: Marking TSC unstable due to TSC 
-> halts in idle
+Teach the script to suggest conversions for timeout patterns where the
+arguments to msecs_to_jiffies() are expressions as well.
 
-Correct. That's the missing piece.
+Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
+---
+ scripts/coccinelle/misc/secs_to_jiffies.cocci | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-> Will the patch also enter the longterm releases like 6.1?
+diff --git a/scripts/coccinelle/misc/secs_to_jiffies.cocci b/scripts/coccinelle/misc/secs_to_jiffies.cocci
+index 8bbb2884ea5db939c63fd4513cf5ca8c977aa8cb..416f348174ca659b544441f5f68f04a41d1ad4a3 100644
+--- a/scripts/coccinelle/misc/secs_to_jiffies.cocci
++++ b/scripts/coccinelle/misc/secs_to_jiffies.cocci
+@@ -20,3 +20,13 @@ virtual patch
+ 
+ - msecs_to_jiffies(C * MSEC_PER_SEC)
+ + secs_to_jiffies(C)
++
++@depends on patch@ expression E; @@
++
++- msecs_to_jiffies(E * 1000)
+++ secs_to_jiffies(E)
++
++@depends on patch@ expression E; @@
++
++- msecs_to_jiffies(E * MSEC_PER_SEC)
+++ secs_to_jiffies(E)
 
-Let me write a proper change log with a Fixes tag and cc stable, so it
-will be automatically picked up.
+-- 
+2.43.0
 
-Thanks,
-
-        tglx
