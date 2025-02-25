@@ -1,117 +1,201 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0128026BDAB
-	for <linux-pm@vger.kernel.org>; Tue, 25 Feb 2025 15:17:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D3722199FC9;
+	Tue, 25 Feb 2025 16:46:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740496681; cv=none; b=aOEyEnnlQhx0EHOex6jH6JzeHGq5/dxAvgSItSPrXMFwzdzQQZhyZOxNwYDb8KnASx6TJaN8MnNphvZiQhBf0cBEeC5oU/fMLge5KScCfcqVJueWPpkuq3kCv9/3+m34kFjx6CfRZjC/iPHmxE83IBogcYK1CY2H7/zyA4YEtrA=
+	t=1740501986; cv=none; b=H0LzwkCVe7nAVdd69t1w5GXxqU5ZGHs52VqWgE4Zr5KTrwQq4+QVmpDgAwlN5iuNxFM1jhTw7oRxR0npd3/RlLPiNg8WeGS6rq1Dj5k8qZjbFInLkdoK5J24ryxl+YSUI1h96p/VjmbyFDfJ3GvC5Zyybky1LAdThzPt0eTp5v4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740496681; c=relaxed/simple;
-	bh=rALszVeWffksEsP/Rrj6WAtB7agsaUXOmR/msDwji8U=;
-	h=From:In-Reply-To:References:To:Cc:Subject:MIME-Version:
-	 Content-Type:Date:Message-ID; b=aKqXfs13OxAFWtMhnqn55yGsZsFNrk2Lv0pkWtRKsy5pa3y/M/Rojr6jjWYcXNDWCERIvlUq1P856tRJOQNRus0/TQqAmOsJ6kYHkMr6X0yvRS82A+b5Xd6LRDd8jjKiNfAIDrn4qI1m6UtFOFa3KCRGCKlq1nknftRQ0fCLNdo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=AwmSELce; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1740501986; c=relaxed/simple;
+	bh=/h1M9Yd/hl0peihTWu72GbT2QD7Z8SUTRbuKu4wuUVM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=j/L1yT0z80hLXDyKeaRJAfPTfZNl9oldM136zHP8cpHJouLd7x1SeruI8Upog59rLffoqs8zbDhIHLdcq7wqj6PXR1WqQsNagYbeorlSl93PHzxSRNbWOukjDc+aUIg4/+KVY+YMVywksSU4zZnDJVJcNU0WvIEHzARJY9zIdNo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=F32oceb9; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="AwmSELce"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1740496679;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=+QyH+Q7MigOrd7puvdyRTTPCeyR6wog0WvQSvTNgWAg=;
-	b=AwmSELce/se5XCG6C4yYekqzrZR8iqgqdc5M+hHw6o4/TVpFVFgpnelVQ1gfK6pOYZo0Ri
-	JlWeCBqJ2Rd0xw2inIefQyk3uYU+biEeUsMdFzQ4ih85kaMg7mxlQ78cA02Dw1jmyOrxrp
-	tLlAgYAIjV/MOKxLO1Vtt26jQ89ZbPQ=
-Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-184-q8YtqpU0OC6xToOGXJ3YDQ-1; Tue,
- 25 Feb 2025 10:17:53 -0500
-X-MC-Unique: q8YtqpU0OC6xToOGXJ3YDQ-1
-X-Mimecast-MFC-AGG-ID: q8YtqpU0OC6xToOGXJ3YDQ_1740496667
-Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="F32oceb9"
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
+ id d576d25cca437ddc; Tue, 25 Feb 2025 17:46:16 +0100
+Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 1840F1A24789;
-	Tue, 25 Feb 2025 15:16:53 +0000 (UTC)
-Received: from warthog.procyon.org.uk (unknown [10.42.28.9])
-	by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id A8A29180194B;
-	Tue, 25 Feb 2025 15:16:37 +0000 (UTC)
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <8f36be7c-6052-4c5d-85ff-0eed27cf1456@icloud.com>
-References: <8f36be7c-6052-4c5d-85ff-0eed27cf1456@icloud.com> <20250221-rmv_return-v1-0-cc8dff275827@quicinc.com> <20250221-rmv_return-v1-1-cc8dff275827@quicinc.com> <20250221200137.GH7373@noisy.programming.kicks-ass.net>
-To: Zijun Hu <zijun_hu@icloud.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-    Will Deacon <will@kernel.org>,
-    "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
-    Andrew Morton <akpm@linux-foundation.org>,
-    Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
-    Thomas Gleixner <tglx@linutronix.de>,
-    Herbert Xu <herbert@gondor.apana.org.au>,
-    "David S. Miller" <davem@davemloft.net>,
-    "Rafael J. Wysocki" <rafael@kernel.org>,
-    Danilo Krummrich <dakr@kernel.org>,
-    Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
-    Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
-    Johannes Berg <johannes@sipsolutions.net>,
-    Jamal Hadi Salim <jhs@mojatatu.com>,
-    Cong Wang <xiyou.wangcong@gmail.com>, Jiri Pirko <jiri@resnulli.us>,
-    Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
-    Linus Walleij <linus.walleij@linaro.org>,
-    Bartosz Golaszewski <brgl@bgdev.pl>, Lee Jones <lee@kernel.org>,
-    Thomas Graf <tgraf@suug.ch>, Christoph Hellwig <hch@lst.de>,
-    Marek Szyprowski <m.szyprowski@samsung.com>,
-    Robin Murphy <robin.murphy@arm.com>,
-    Miquel Raynal <miquel.raynal@bootlin.com>,
-    Richard Weinberger <richard@nod.at>,
-    Vignesh Raghavendra <vigneshr@ti.com>, linux-arch@vger.kernel.org,
-    linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-    linux-crypto@vger.kernel.org, netdev@vger.kernel.org,
-    linux-wireless@vger.kernel.org, linux-rdma@vger.kernel.org,
-    linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org,
-    iommu@lists.linux.dev, linux-mtd@lists.infradead.org
-Subject: Re: [PATCH *-next 01/18] mm/mmu_gather: Remove needless return in void API tlb_remove_page()
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id E50A922C28BF;
+	Tue, 25 Feb 2025 17:46:15 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1740501976;
+	bh=/h1M9Yd/hl0peihTWu72GbT2QD7Z8SUTRbuKu4wuUVM=;
+	h=From:Subject:Date;
+	b=F32oceb9XdzbWUceV5xaf1eeRTSsVGgFgwJOJW+5OErbIt1Mvdhv2fT63tBsBdMAO
+	 HDpyjn1xTbE1Ue+c5qm3IT41oAVMqFU2RydR8GAd5c0mlESr6gXtAgZtPSSqOQe2g6
+	 mNGxg/nEQ8cpLf/8NwwFj9y/Z6a7RDSaG8gBBsKwYhc3F8hTO+6a2pdrR8nSzabvlt
+	 n1su8E6Hpki4bTJkgIvGILHVRB1LmPEFqGYpK7OTN9abPLKzz7AyokBrUUHW5xpJ6i
+	 sDTw8jJeqCS3Wjj0+WORaMUBjx0L84bUnu83KxH5yekzQtLzUad5nu3OKU/+z8Sllw
+	 ZTxZA+4d3m5EA==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>,
+ Johan Hovold <johan@kernel.org>,
+ Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+ Saravana Kannan <saravanak@google.com>
+Subject:
+ [PATCH v1 4/5] PM: sleep: Start suspending parents and suppliers after
+ subordinate suspend
+Date: Tue, 25 Feb 2025 17:45:31 +0100
+Message-ID: <8536271.NyiUUSuA9g@rjwysocki.net>
+In-Reply-To: <13709135.uLZWGnKmhe@rjwysocki.net>
+References: <13709135.uLZWGnKmhe@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-ID: <2298250.1740496596.1@warthog.procyon.org.uk>
-Content-Transfer-Encoding: quoted-printable
-Date: Tue, 25 Feb 2025 15:16:36 +0000
-Message-ID: <2298251.1740496596@warthog.procyon.org.uk>
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdekvddvudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeejpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhtvghrnhesrhhofihlrghnugdrhhgrrhhvrghrugdrvgguuhdprhgtphhtthhopehulhhfrdhhrghnshhsohhnsehlihhnrghrohdrohhrghdprhgtphhtthhopehjohhhrghnsehkvghrnhgvlhdrohhrghdprhgtphh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 
-Zijun Hu <zijun_hu@icloud.com> wrote:
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> >>  static inline void tlb_remove_page(struct mmu_gather *tlb, struct pa=
-ge *page)
-> >>  {
-> >> -	return tlb_remove_page_size(tlb, page, PAGE_SIZE);
-> >> +	tlb_remove_page_size(tlb, page, PAGE_SIZE);
-> >>  }
-> > So I don't mind removing it, but note that that return enforces
-> > tlb_remove_page_size() has void return type.
-> >
-> =
+In analogy with the previous change affecting the resume path,
+make device_suspend() start the async suspend of the device's parent
+and suppliers after the device itself has been processed and make
+dpm_suspend() start processing "async" leaf devices (that is, devices
+without children or consumers) upfront because they don't need to wait
+for any other devices.
 
-> tlb_remove_page_size() is void function already. (^^)
+On the Dell XPS13 9360 in my office, this change reduces the total
+duration of device suspend by approximately 100 ms (over 20%).
 
-That may be true... for now.  But if that is changed in the future, then y=
-ou
-will get an error indicating something you need to go and look at... so in
-that regard, it's *better* to do this ;-)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/power/main.c |   73 +++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 69 insertions(+), 4 deletions(-)
 
-David
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1237,6 +1237,49 @@
+ 
+ /*------------------------- Suspend routines -------------------------*/
+ 
++static bool dpm_leaf_device(struct device *dev)
++{
++	struct device *child;
++
++	lockdep_assert_held(&dpm_list_mtx);
++
++	child = device_find_any_child(dev);
++	if (child) {
++		put_device(child);
++
++		return false;
++	}
++
++	/*
++	 * Since this function is required to run under dpm_list_mtx, the
++	 * list_empty() below will only return true if the device's list of
++	 * consumers is actually empty before calling it.
++	 */
++	return list_empty(&dev->links.consumers);
++}
++
++static void dpm_async_suspend_superior(struct device *dev, async_func_t func)
++{
++	struct device_link *link;
++
++	mutex_lock(&dpm_list_mtx);
++
++	/* Start processing the device's parent if it is "async". */
++	if (dev->parent)
++		dpm_async_unless_in_progress(dev->parent, func);
++
++	/*
++	 * Start processing the device's "async" suppliers.
++	 *
++	 * The dpm_list_mtx locking is sufficient for this.
++	 */
++	list_for_each_entry_rcu(link, &dev->links.consumers, s_node)
++		if (READ_ONCE(link->status) != DL_STATE_DORMANT)
++			dpm_async_unless_in_progress(link->consumer, func);
++
++	mutex_unlock(&dpm_list_mtx);
++}
++
+ /**
+  * resume_event - Return a "resume" message for given "suspend" sleep state.
+  * @sleep_state: PM message representing a sleep state.
+@@ -1663,6 +1706,8 @@
+ 	device_links_read_unlock(idx);
+ }
+ 
++static void async_suspend(void *data, async_cookie_t cookie);
++
+ /**
+  * device_suspend - Execute "suspend" callbacks for given device.
+  * @dev: Device to handle.
+@@ -1791,7 +1836,13 @@
+ 
+ 	complete_all(&dev->power.completion);
+ 	TRACE_SUSPEND(error);
+-	return error;
++
++	if (error || async_error)
++		return error;
++
++	dpm_async_suspend_superior(dev, async_suspend);
++
++	return 0;
+ }
+ 
+ static void async_suspend(void *data, async_cookie_t cookie)
+@@ -1809,6 +1860,7 @@
+ int dpm_suspend(pm_message_t state)
+ {
+ 	ktime_t starttime = ktime_get();
++	struct device *dev;
+ 	int error = 0;
+ 
+ 	trace_suspend_resume(TPS("dpm_suspend"), state.event, true);
+@@ -1822,15 +1874,28 @@
+ 
+ 	mutex_lock(&dpm_list_mtx);
+ 
++	/*
++	 * Start processing "async" leaf devices upfront because they don't need
++	 * to wait.
++	 */
++	list_for_each_entry_reverse(dev, &dpm_prepared_list, power.entry) {
++		dpm_clear_async_state(dev);
++		if (dpm_leaf_device(dev))
++			dpm_async_fn(dev, async_suspend);
++	}
++
+ 	while (!list_empty(&dpm_prepared_list)) {
+-		struct device *dev = to_device(dpm_prepared_list.prev);
++		dev = to_device(dpm_prepared_list.prev);
+ 
+ 		list_move(&dev->power.entry, &dpm_suspended_list);
+ 
+-		dpm_clear_async_state(dev);
+-		if (dpm_async_fn(dev, async_suspend))
++		dpm_async_unless_in_progress(dev, async_suspend);
++
++		if (dev->power.work_in_progress)
+ 			continue;
+ 
++		dev->power.work_in_progress = true;
++
+ 		get_device(dev);
+ 
+ 		mutex_unlock(&dpm_list_mtx);
+
+
 
