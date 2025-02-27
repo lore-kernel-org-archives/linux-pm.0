@@ -1,60 +1,70 @@
-Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.153.233])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98F6C1ADFE0;
-	Thu, 27 Feb 2025 15:53:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=68.232.153.233
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EFBC91AE003;
+	Thu, 27 Feb 2025 15:53:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740671609; cv=none; b=KhwhXKIpM6p44pQDv+0Qxs2Bh0vAiF5x+vSJ1iff4rrXEJA6kvpLoHIBdSD5Uap43GjcyUB0lSHmoUdGjE+R5jXTOo8ju+036HHVZpC/EfqJ0Ma+Z7t2TWtBQNYHmqBbfeGCqk+RKdEdqg9jDcF3IDDhoXkaBGze4i9K9jUyYBs=
+	t=1740671610; cv=none; b=kNsgdLkvVl6rG1b2HxengQ3sGdG9qhRDH62AGsP8QoNQEdnB8cH57YTjGb5u1UT3Wun7u/h3qYugNAUBxf8OaZfQBCH8R4/5vYoatWPaVsRe5mVWSsCBOu2yR74dy52HI1Q740rXxdtpNxZhHYBvE1jiucaUZNDGwFvMspB1xOg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740671609; c=relaxed/simple;
-	bh=XiAlfy2hIb0teFrPDSk5k50YHK4Av/9RD2s1zu1v4Yw=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=M2pTYl5GVwda34MIIN11h/AD9dR/d8lYmgCkoPyQb9XUjbHHYNuCgY5Ir63rRfTWS7fVCQjF4Abr0t6ezD/YO8KJPEKvEMwfFI8/4Eu9qFg4gXDX10nUPpv4s6npL25YvDU5mfUf6/abwlRG3DgQhSXS9z6l0l6PYW7r5KlTBvA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com; spf=pass smtp.mailfrom=microchip.com; dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b=iQUIWICY; arc=none smtp.client-ip=68.232.153.233
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=microchip.com
+	s=arc-20240116; t=1740671610; c=relaxed/simple;
+	bh=wSTK6h83unVu3TYKBR8UFm3/8hL3yKO4DT3ORdyzzaw=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=REkIJiq+5PL3d06X1LiJh38V+cBjM9rzRAFMWFTEhGWMUvEZRNKmhV4iQ9Eduf+ylYkNr1b6KIB1FGgyKy80+KFqsCfSY7RMc8l2Smy4IfzskNea5+4mtNci078Lw56j76cunUrMbatfMXW7MsXjg2prQ2IUSzoPpTUDiSq0jSc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=VNPTprwf; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b="iQUIWICY"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1740671607; x=1772207607;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=XiAlfy2hIb0teFrPDSk5k50YHK4Av/9RD2s1zu1v4Yw=;
-  b=iQUIWICYg6/H51DsojS5FIleoWmCEGd7MZcdC4h9/GXoZR8kZ7qtr8lD
-   wpt1k9A2VdxPHPLf/ogH2U8uE6S8ZBayT28issKXufyzsyOQoumZFr94I
-   YgSo3bzYqrRBjpJA3PZulVa7jTpOuXZPNwCF0Sva6RfXpshNeTE19M5Kh
-   1cSuHpOdD5Q90b5Ec4z4ytJoGUwf5uQSYt9PCzJM7NFtzkIQ8HBaZevhH
-   Z3W0P15wy/9TCb/p/PnHCV3eFu5CBkPjCDdWXHAuHwjQXWT6Je3FB2VNc
-   xtRM6feOSpy6WpBw8EatQN3zzZmb8ORpuEblYvI9dcqLROPY2zQv0s9GS
-   Q==;
-X-CSE-ConnectionGUID: uJ81GKH9TgaiFMahOXtqRw==
-X-CSE-MsgGUID: HqLtVomjSKCcqL7dRAzydg==
-X-IronPort-AV: E=Sophos;i="6.13,320,1732604400"; 
-   d="scan'208";a="42360406"
-X-Amp-Result: SKIPPED(no attachment in message)
-Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
-  by esa1.microchip.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 27 Feb 2025 08:53:20 -0700
-Received: from chn-vm-ex04.mchp-main.com (10.10.85.152) by
- chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35; Thu, 27 Feb 2025 08:52:44 -0700
-Received: from ryan-Precision-3630-Tower.microchip.com (10.10.85.11) by
- chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server id
- 15.1.2507.35 via Frontend Transport; Thu, 27 Feb 2025 08:52:44 -0700
-From: <Ryan.Wanner@microchip.com>
-To: <lee@kernel.org>, <robh@kernel.org>, <krzk+dt@kernel.org>,
-	<conor+dt@kernel.org>, <claudiu.beznea@tuxon.dev>, <sre@kernel.org>,
-	<nicolas.ferre@microchip.com>, <alexandre.belloni@bootlin.com>,
-	<p.zabel@pengutronix.de>
-CC: <linux@armlinux.org.uk>, <devicetree@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-rtc@vger.kernel.org>, "Ryan
- Wanner" <Ryan.Wanner@microchip.com>
-Subject: [PATCH v3 00/21] Enable Power Modes Support for SAMA7D65 SoC
-Date: Thu, 27 Feb 2025 08:51:47 -0700
-Message-ID: <cover.1740671156.git.Ryan.Wanner@microchip.com>
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="VNPTprwf"
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 51R8UwEP021807;
+	Thu, 27 Feb 2025 15:53:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	N7oVH5B1wv2LlM5jaTjP7bKTVaUEbWnWn8906O+CgGc=; b=VNPTprwfDKNP3N8b
+	0xOcqzgFJaljKE1vV1yrIsqpkgAJMYA8vYndYHOAm34lPLQWljBymZ6S776n8JuG
+	MOWZZl3aCuGKQNvvU7qZbDGDnoKbiFWJiHI8QSTYJ7rjGDSsmsGAceGIY/ERGfAD
+	ohC+ACk/6+HiMsR6B6MTIe+1c4RekMK6f9bEkB3jZNFD9TSv5JxXaZ4Z+Hd18EbV
+	dgIF03VbYr78yWXC/6EDMPWGCP7P+faTPhKvJ2o/vnhOd2t6DY40fP5UzbwGvY4+
+	lWpWrSmjk7UNKOQfReZ3BdoNeyPAs/vhpHNvJByZVnCItZYPm8emyOY8L6487Yk8
+	hiIDAA==
+Received: from nasanppmta03.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 451prkpa9g-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 27 Feb 2025 15:53:26 +0000 (GMT)
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+	by NASANPPMTA03.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 51RFrPs0020180
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 27 Feb 2025 15:53:25 GMT
+Received: from 0d558f49c4ed.qualcomm.com (10.80.80.8) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.9; Thu, 27 Feb 2025 07:53:20 -0800
+From: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
+To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio
+	<konradybcio@kernel.org>
+CC: Odelu Kukatla <quic_okukatla@quicinc.com>,
+        Jeff Johnson
+	<jeff.johnson@oss.qualcomm.com>,
+        Mike Tipton <mdtipton@quicinc.com>,
+        Jagadeesh Kona <quic_jkona@quicinc.com>,
+        Sibi Sankar
+	<quic_sibis@quicinc.com>, <linux-arm-msm@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        Shivnandan Kumar <quic_kshivnan@quicinc.com>,
+        Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
+Subject: [PATCH V9 7/7] arm64: dts: qcom: sa8775p: Add CPU OPP tables to scale DDR/L3
+Date: Thu, 27 Feb 2025 15:52:13 +0000
+Message-ID: <20250227155213.404-8-quic_rlaggysh@quicinc.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250227155213.404-1-quic_rlaggysh@quicinc.com>
+References: <20250227155213.404-1-quic_rlaggysh@quicinc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -63,86 +73,323 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
+X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: ioQms3t4s5N5HWpgzy7PEvJ0gck_bGjN
+X-Proofpoint-ORIG-GUID: ioQms3t4s5N5HWpgzy7PEvJ0gck_bGjN
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-02-27_06,2025-02-27_01,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 impostorscore=0
+ adultscore=0 phishscore=0 mlxlogscore=999 mlxscore=0 suspectscore=0
+ clxscore=1015 malwarescore=0 priorityscore=1501 spamscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2502100000 definitions=main-2502270120
 
-From: Ryan Wanner <Ryan.Wanner@microchip.com>
+From: Jagadeesh Kona <quic_jkona@quicinc.com>
 
-This patch set adds support for low power modes for the SAMA7D65 SoC and
-the required components and changes for low power modes.
+Add OPP tables required to scale DDR and L3 per freq-domain
+on SA8775P platform.
 
-The series includes changes in the asm code to account for the addtional
-clocks that are in this SoC.
+If a single OPP table is used for both CPU domains, then
+_allocate_opp_table() won't be invoked for CPU4 but instead
+CPU4 will be added as device under the CPU0 OPP table. Due
+to this, dev_pm_opp_of_find_icc_paths() won't be invoked for
+CPU4 device and hence CPU4 won't be able to independently scale
+it's interconnects. Both CPU0 and CPU4 devices will scale the
+same ICC path which can lead to one device overwriting the BW
+vote placed by other device. Hence CPU0 and CPU4 require separate
+OPP tables to allow independent scaling of DDR and L3 frequencies
+for each CPU domain, with the final DDR and L3 frequencies being
+an aggregate of both.
 
-The Device tree additions are to enable all the components needed to
-keep the SoC in low power mode.
+Co-developed-by: Shivnandan Kumar <quic_kshivnan@quicinc.com>
+Signed-off-by: Shivnandan Kumar <quic_kshivnan@quicinc.com>
+Signed-off-by: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
+Signed-off-by: Jagadeesh Kona <quic_jkona@quicinc.com>
+---
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi | 210 ++++++++++++++++++++++++++
+ 1 file changed, 210 insertions(+)
 
-There are some DTB check warnings but that is due to the dt-binding not
-in the correct .yaml file format.
-
-Changes v1 -> v2:
-- Add missing compatible for ddr3phy, it is now in both syscon sets.
-- Fix alphabetical ordering for sama7d65.
-- Remove the incorrect reorganizing patch.
-- Remove sama7g5-rtt as a compatible for sama7d65-rtt and add
-  sama7d65-rtt as a compatible wake up source in the pm driver.
-
-Changes from v2 -> v3:
-- Correct mistake in v2 sfrbu dt-binding patch.
-- Correct incorrect dt-binding addition and formatting for rtc and rtt bindings.
-- Add missing SoB tag.
-- Cleaned up commit message for Backup mode to describe SHDWC is status
-  register is cleared for this SoC.
-- Cleaned up variable naming and usage for mcks. Changed the mcks number
-  to the correct number of clocks needed to be saved and corrected the
-  ASM code accordingly.
-- Removed the SHDWC from ULP0 wake-up source as it is not configured as
-  a valid wake-up source for ULP0.
-- Separated all the DTSI and DTS changes into individual patches.
-
-
-Li Bin (1):
-  ARM: at91: pm: fix at91_suspend_finish for ZQ calibration
-
-Ryan Wanner (20):
-  dt-bindings: mfd: syscon: add microchip,sama7d65-ddr3phy
-  dt-bindings: mfd: syscon: add microchip,sama7d65-sfrbu
-  dt-bindings: sram: Add microchip,sama7d65-sram
-  dt-bindings: power: reset: atmel,sama5d2-shdwc: Add
-    microchip,sama7d65-shdwc
-  dt-bindings: reset: atmel,at91sam9260-reset: add
-    microchip,sama7d65-rstc
-  dt-bindings: rtc: at91rm9200: add microchip,sama7d65-rtc
-  dt-bindings: at91rm9260-rtt: add microchip,sama7d65-rtt
-  ARM: at91: Add PM support to sama7d65
-  ARM: at91: pm: add DT compatible support for sama7d65
-  ARM: at91: PM: Add Backup mode for SAMA7D65
-  ARM: at91: pm: Enable ULP0/ULP1 for SAMA7D65
-  power: reset: at91-sama5d2_shdwc: Add sama7d65 PMC
-  ARM: dts: microchip: sama7d65: Add SRAM and DRAM components support
-  ARM: dts: microchip: sama7d65: Add Reset Controller to sama7d65 SoC
-  ARM: dts: microchip: sama7d65: Add Shutdown controller support
-  ARM: dts: microchip: sama7d65: Add RTT and GPBR Support for sama7d65
-    SoC
-  ARM: dts: microchip: sama7d65: Add RTC support for sama7d65
-  ARM: dts: microchip: sama7d65: Add SFRBU support to sama7d65
-  ARM: dts: microchip: sama7d65: Enable shutdown controller
-  ARM: dts: microchip: sama7d65: Add RTT timer to curiosity board
-
- .../devicetree/bindings/mfd/syscon.yaml       |   4 +
- .../power/reset/atmel,sama5d2-shdwc.yaml      |   5 +
- .../reset/atmel,at91sam9260-reset.yaml        |   3 +
- .../bindings/rtc/atmel,at91rm9200-rtc.yaml    |   4 +-
- .../bindings/rtc/atmel,at91sam9260-rtt.yaml   |   1 +
- .../devicetree/bindings/sram/sram.yaml        |   1 +
- .../dts/microchip/at91-sama7d65_curiosity.dts |  13 +++
- arch/arm/boot/dts/microchip/sama7d65.dtsi     |  77 +++++++++++++
- arch/arm/mach-at91/Kconfig                    |   1 +
- arch/arm/mach-at91/pm.c                       |  47 +++++---
- arch/arm/mach-at91/pm.h                       |   1 +
- arch/arm/mach-at91/pm_data-offsets.c          |   2 +
- arch/arm/mach-at91/pm_suspend.S               | 101 ++++++++++++++++--
- drivers/power/reset/at91-sama5d2_shdwc.c      |   1 +
- 14 files changed, 238 insertions(+), 23 deletions(-)
-
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+index d02b4abe9e8d..02b790cb8734 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+@@ -52,6 +52,11 @@ cpu0: cpu@0 {
+ 			next-level-cache = <&l2_0>;
+ 			capacity-dmips-mhz = <1024>;
+ 			dynamic-power-coefficient = <100>;
++			operating-points-v2 = <&cpu0_opp_table>;
++			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
++					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
++					<&epss_l3_cl0 MASTER_EPSS_L3_APPS
++					 &epss_l3_cl0 SLAVE_EPSS_L3_SHARED>;
+ 			l2_0: l2-cache {
+ 				compatible = "cache";
+ 				cache-level = <2>;
+@@ -76,6 +81,11 @@ cpu1: cpu@100 {
+ 			next-level-cache = <&l2_1>;
+ 			capacity-dmips-mhz = <1024>;
+ 			dynamic-power-coefficient = <100>;
++			operating-points-v2 = <&cpu0_opp_table>;
++			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
++					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
++					<&epss_l3_cl0 MASTER_EPSS_L3_APPS
++					 &epss_l3_cl0 SLAVE_EPSS_L3_SHARED>;
+ 			l2_1: l2-cache {
+ 				compatible = "cache";
+ 				cache-level = <2>;
+@@ -95,6 +105,11 @@ cpu2: cpu@200 {
+ 			next-level-cache = <&l2_2>;
+ 			capacity-dmips-mhz = <1024>;
+ 			dynamic-power-coefficient = <100>;
++			operating-points-v2 = <&cpu0_opp_table>;
++			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
++					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
++					<&epss_l3_cl0 MASTER_EPSS_L3_APPS
++					 &epss_l3_cl0 SLAVE_EPSS_L3_SHARED>;
+ 			l2_2: l2-cache {
+ 				compatible = "cache";
+ 				cache-level = <2>;
+@@ -114,6 +129,11 @@ cpu3: cpu@300 {
+ 			next-level-cache = <&l2_3>;
+ 			capacity-dmips-mhz = <1024>;
+ 			dynamic-power-coefficient = <100>;
++			operating-points-v2 = <&cpu0_opp_table>;
++			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
++					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
++					<&epss_l3_cl0 MASTER_EPSS_L3_APPS
++					 &epss_l3_cl0 SLAVE_EPSS_L3_SHARED>;
+ 			l2_3: l2-cache {
+ 				compatible = "cache";
+ 				cache-level = <2>;
+@@ -133,6 +153,11 @@ cpu4: cpu@10000 {
+ 			next-level-cache = <&l2_4>;
+ 			capacity-dmips-mhz = <1024>;
+ 			dynamic-power-coefficient = <100>;
++			operating-points-v2 = <&cpu4_opp_table>;
++			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
++					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
++					<&epss_l3_cl1 MASTER_EPSS_L3_APPS
++					 &epss_l3_cl1 SLAVE_EPSS_L3_SHARED>;
+ 			l2_4: l2-cache {
+ 				compatible = "cache";
+ 				cache-level = <2>;
+@@ -158,6 +183,11 @@ cpu5: cpu@10100 {
+ 			next-level-cache = <&l2_5>;
+ 			capacity-dmips-mhz = <1024>;
+ 			dynamic-power-coefficient = <100>;
++			operating-points-v2 = <&cpu4_opp_table>;
++			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
++					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
++					<&epss_l3_cl1 MASTER_EPSS_L3_APPS
++					 &epss_l3_cl1 SLAVE_EPSS_L3_SHARED>;
+ 			l2_5: l2-cache {
+ 				compatible = "cache";
+ 				cache-level = <2>;
+@@ -177,6 +207,11 @@ cpu6: cpu@10200 {
+ 			next-level-cache = <&l2_6>;
+ 			capacity-dmips-mhz = <1024>;
+ 			dynamic-power-coefficient = <100>;
++			operating-points-v2 = <&cpu4_opp_table>;
++			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
++					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
++					<&epss_l3_cl1 MASTER_EPSS_L3_APPS
++					 &epss_l3_cl1 SLAVE_EPSS_L3_SHARED>;
+ 			l2_6: l2-cache {
+ 				compatible = "cache";
+ 				cache-level = <2>;
+@@ -196,6 +231,11 @@ cpu7: cpu@10300 {
+ 			next-level-cache = <&l2_7>;
+ 			capacity-dmips-mhz = <1024>;
+ 			dynamic-power-coefficient = <100>;
++			operating-points-v2 = <&cpu4_opp_table>;
++			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
++					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
++					<&epss_l3_cl1 MASTER_EPSS_L3_APPS
++					 &epss_l3_cl1 SLAVE_EPSS_L3_SHARED>;
+ 			l2_7: l2-cache {
+ 				compatible = "cache";
+ 				cache-level = <2>;
+@@ -285,6 +325,176 @@ cluster_sleep_apss_rsc_pc: cluster-sleep-1 {
+ 		};
+ 	};
+ 
++	cpu0_opp_table: opp-table-cpu0 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp-1267200000 {
++			opp-hz = /bits/ 64 <1267200000>;
++			opp-peak-kBps = <(1555200 * 4) (921600 * 32)>;
++		};
++
++		opp-1363200000 {
++			opp-hz = /bits/ 64 <1363200000>;
++			opp-peak-kBps = <(1555200 * 4) (921600 * 32)>;
++		};
++
++		opp-1459200000 {
++			opp-hz = /bits/ 64 <1459200000>;
++			opp-peak-kBps = <(1555200 * 4) (921600 * 32)>;
++		};
++
++		opp-1536000000 {
++			opp-hz = /bits/ 64 <1536000000>;
++			opp-peak-kBps = <(1555200 * 4) (921600 * 32)>;
++		};
++
++		opp-1632000000 {
++			opp-hz = /bits/ 64 <1632000000>;
++			opp-peak-kBps = <(1708800 * 4) (1228800 * 32)>;
++		};
++
++		opp-1708800000 {
++			opp-hz = /bits/ 64 <1708800000>;
++			opp-peak-kBps = <(1708800 * 4) (1228800 * 32)>;
++		};
++
++		opp-1785600000 {
++			opp-hz = /bits/ 64 <1785600000>;
++			opp-peak-kBps = <(1708800 * 4) (1228800 * 32)>;
++		};
++
++		opp-1862400000 {
++			opp-hz = /bits/ 64 <1862400000>;
++			opp-peak-kBps = <(1708800 * 4) (1228800 * 32)>;
++		};
++
++		opp-1939200000 {
++			opp-hz = /bits/ 64 <1939200000>;
++			opp-peak-kBps = <(1708800 * 4) (1228800 * 32)>;
++		};
++
++		opp-2016000000 {
++			opp-hz = /bits/ 64 <2016000000>;
++			opp-peak-kBps = <(1708800 * 4) (1228800 * 32)>;
++		};
++
++		opp-2112000000 {
++			opp-hz = /bits/ 64 <2112000000>;
++			opp-peak-kBps = <(2092800 * 4) (1555200 * 32)>;
++		};
++
++		opp-2188800000 {
++			opp-hz = /bits/ 64 <2188800000>;
++			opp-peak-kBps = <(2092800 * 4) (1555200 * 32)>;
++		};
++
++		opp-2265600000 {
++			opp-hz = /bits/ 64 <2265600000>;
++			opp-peak-kBps = <(2092800 * 4) (1555200 * 32)>;
++		};
++
++		opp-2361600000 {
++			opp-hz = /bits/ 64 <2361600000>;
++			opp-peak-kBps = <(3196800 * 4) (1612800 * 32)>;
++		};
++
++		opp-2457600000 {
++			opp-hz = /bits/ 64 <2457600000>;
++			opp-peak-kBps = <(3196800 * 4) (1612800 * 32)>;
++		};
++
++		opp-2553600000 {
++			opp-hz = /bits/ 64 <2553600000>;
++			opp-peak-kBps = <(3196800 * 4) (1708800 * 32)>;
++		};
++	};
++
++	cpu4_opp_table: opp-table-cpu4 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp-1267200000 {
++			opp-hz = /bits/ 64 <1267200000>;
++			opp-peak-kBps = <(1555200 * 4) (921600 * 32)>;
++		};
++
++		opp-1363200000 {
++			opp-hz = /bits/ 64 <1363200000>;
++			opp-peak-kBps = <(1555200 * 4) (921600 * 32)>;
++		};
++
++		opp-1459200000 {
++			opp-hz = /bits/ 64 <1459200000>;
++			opp-peak-kBps = <(1555200 * 4) (921600 * 32)>;
++		};
++
++		opp-1536000000 {
++			opp-hz = /bits/ 64 <1536000000>;
++			opp-peak-kBps = <(1555200 * 4) (921600 * 32)>;
++		};
++
++		opp-1632000000 {
++			opp-hz = /bits/ 64 <1632000000>;
++			opp-peak-kBps = <(1708800 * 4) (1228800 * 32)>;
++		};
++
++		opp-1708800000 {
++			opp-hz = /bits/ 64 <1708800000>;
++			opp-peak-kBps = <(1708800 * 4) (1228800 * 32)>;
++		};
++
++		opp-1785600000 {
++			opp-hz = /bits/ 64 <1785600000>;
++			opp-peak-kBps = <(1708800 * 4) (1228800 * 32)>;
++		};
++
++		opp-1862400000 {
++			opp-hz = /bits/ 64 <1862400000>;
++			opp-peak-kBps = <(1708800 * 4) (1228800 * 32)>;
++		};
++
++		opp-1939200000 {
++			opp-hz = /bits/ 64 <1939200000>;
++			opp-peak-kBps = <(1708800 * 4) (1228800 * 32)>;
++		};
++
++		opp-2016000000 {
++			opp-hz = /bits/ 64 <2016000000>;
++			opp-peak-kBps = <(1708800 * 4) (1228800 * 32)>;
++		};
++
++		opp-2112000000 {
++			opp-hz = /bits/ 64 <2112000000>;
++			opp-peak-kBps = <(2092800 * 4) (1555200 * 32)>;
++		};
++
++		opp-2188800000 {
++			opp-hz = /bits/ 64 <2188800000>;
++			opp-peak-kBps = <(2092800 * 4) (1555200 * 32)>;
++		};
++
++		opp-2265600000 {
++			opp-hz = /bits/ 64 <2265600000>;
++			opp-peak-kBps = <(2092800 * 4) (1555200 * 32)>;
++		};
++
++		opp-2361600000 {
++			opp-hz = /bits/ 64 <2361600000>;
++			opp-peak-kBps = <(3196800 * 4) (1612800 * 32)>;
++		};
++
++		opp-2457600000 {
++			opp-hz = /bits/ 64 <2457600000>;
++			opp-peak-kBps = <(3196800 * 4) (1612800 * 32)>;
++		};
++
++		opp-2553600000 {
++			opp-hz = /bits/ 64 <2553600000>;
++			opp-peak-kBps = <(3196800 * 4) (1708800 * 32)>;
++		};
++	};
++
+ 	dummy-sink {
+ 		compatible = "arm,coresight-dummy-sink";
+ 
 -- 
 2.43.0
 
