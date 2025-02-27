@@ -1,40 +1,40 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 663DA227B9C;
-	Thu, 27 Feb 2025 11:49:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F143F18C34B;
+	Thu, 27 Feb 2025 11:49:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740656964; cv=none; b=ji9fPmcRT5qMPmT8/yjZY7T6W/H/JL6Z2dY/9SNtNPs+uRJAYKF1YakEwIGHJDs1I68iGG8HPyPhPTsrSZ2yImEi1Yz1zUON8+StB175W7lgHgEhIuY0u4y0vNAw9oFnpbEiI0utIMJDNXSLImLxhIKbmMjH3warsbRPU7qhqIs=
+	t=1740656965; cv=none; b=VW57nczMWArlD47liOdMZm2efJwgpiRtbI756dOnCkcorv7N8Facx9Ce9uqwkZXNvGoqnX9GiO9jklRS01Jq0jY2JpqXjijtVUAy4M01Q3hL4j381eT0JISzn3ZcE12/8rLrEXHbyBUdIJxuUJA4p4HK2lPSjds5T3siKaEAy2g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740656964; c=relaxed/simple;
-	bh=66uWDs0dEvE/f0XOsqKgWaU0Dwb0vWSA//uid9NL0T8=;
+	s=arc-20240116; t=1740656965; c=relaxed/simple;
+	bh=3JjXQcjruxl7T2U/j9rlu8qhbi1Eqvuizv3BLuPaZFk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Co9E/fy1v99yN3mi0TCiLnGANypzrueGhDkjG160zA0Ge2ycRwo4C8yAMvIIMa97k8vSYtguB+4Mh5yrnu+z+b3LGO5esNVaM3P78bwIC5pj2iTXwd2zQgmkVZtuSEMoAUy7kVcB0NhXrIMsfUURyuiDdYgqV3TBDyuw13f/vqM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=Ws/JioKh; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=TDRA/9fru8B9/HfW+cdqD1QdOxP0cSV3chmw+2qcFdd04BWOy1cTW/jcpRVPk7Li8PLLaN8tDvsPb/VSP0hG1eGWK4TQe2smfNbOJmtuurj2WMBaxPrEWrbJp6xOzWByQCb5gDG+mDA5ovhyUqbSQ8lvTqRVYQ85IzLRviFxNRQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=mrLFJyru; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="Ws/JioKh"
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="mrLFJyru"
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
- id 1d2a6c11e063f019; Thu, 27 Feb 2025 11:49:20 +0100
+ id e14e882bf36c814f; Thu, 27 Feb 2025 11:49:21 +0100
 Received: from kreacher.localnet (unknown [195.136.19.94])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 6EC92D517DE;
-	Thu, 27 Feb 2025 11:49:19 +0100 (CET)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 29621D50215;
+	Thu, 27 Feb 2025 11:49:21 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1740653359;
-	bh=66uWDs0dEvE/f0XOsqKgWaU0Dwb0vWSA//uid9NL0T8=;
+	s=dkim; t=1740653361;
+	bh=3JjXQcjruxl7T2U/j9rlu8qhbi1Eqvuizv3BLuPaZFk=;
 	h=From:Subject:Date;
-	b=Ws/JioKhvM/s2MTwIi8v2nBdhIcZhE4wfDV5awt3ruF1DlkCOiFb1DzZSAqsAjp5m
-	 Lw8cpjfvKwwTO8amL4YArsdzbnqpKHRLnl1/XbhTycLV8WEKXDn48uX/LfVADAs4tQ
-	 pfKhell5sJKxSpkjz9vZyJYJ1ufX0kpZA9TOiZ7b9y78LO88A0uHaQJ6aYzHfmkeA0
-	 Akob6goWMy299Hg70mEi67i3bGNV8qnsfGAYpb19zUvP8yN9HAHUeLPJRsHQKfLb77
-	 KTwmHlBAiaYSove/FDb6cM6Yu3aade78INgtJwSdluTmqOLTvnmMU+tNpB/C19v9qr
-	 SaXvmZVXVdqTA==
+	b=mrLFJyruDmtEPUX+lvIUGVtR9mgDGwextLdf0lBwN99mOClGjRB4AOC2L7ElRnnF2
+	 eyVV8dXBTW13EoHoFFMp53T1BMsVxpmOba8MnnRW1SiI/QYRf4kJmjSascGRXjNMTY
+	 Qd76tLPOUVUOowpSiLVNOTG3X2ryggYPVPTGyMAESAqDgQFMhKuUW4ibW2Nu1DHv8r
+	 Y8VVSEsjGWB7Gw0gDZoHXORogIRN1qqCIa5XmBmD8Ad6VaARkGdnCsmbMYvF4z8gYr
+	 KK668M2SjTW1lUS+2d8o+AGd2q5qTCmSgf1JFQEjqtAK6ilsXRPICy9s+bjJm+M5Oo
+	 RetfA6tJ2kLFQ==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -43,9 +43,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
  Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
  Jon Hunter <jonathanh@nvidia.com>
 Subject:
- [PATCH v1 3/3] PM: core: Tweak pm_runtime_block_if_disabled() return value
-Date: Thu, 27 Feb 2025 11:49:12 +0100
-Message-ID: <13718674.uLZWGnKmhe@rjwysocki.net>
+ [PATCH v1 1/3] PM: sleep: Update power.smart_suspend under PM spinlock
+Date: Thu, 27 Feb 2025 11:45:52 +0100
+Message-ID: <2368159.ElGaqSPkdT@rjwysocki.net>
 In-Reply-To: <5000287.31r3eYUQgx@rjwysocki.net>
 References: <5000287.31r3eYUQgx@rjwysocki.net>
 Precedence: bulk
@@ -59,55 +59,125 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 195.136.19.94
 X-CLIENT-HOSTNAME: 195.136.19.94
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdekjedviecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeejpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhtvghrnhesrhhofihlrghnugdrhhgrrhhvrghrugdrvgguuhdprhgtphhtthhopehulhhfrdhhrghnshhsohhnsehlihhnrghrohdrohhrghdprhgtphhtthhopehjohhhrghnsehkvghrnhgvlhdrohhrghdprhgtphh
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdekjedvjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeejpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhtvghrnhesrhhofihlrghnugdrhhgrrhhvrghrugdrvgguuhdprhgtphhtthhopehulhhfrdhhrghnshhsohhnsehlihhnrghrohdrohhrghdprhgtphhtthhopehjohhhrghnsehkvghrnhgvlhdrohhrghdprhgtphh
 X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Modify pm_runtime_block_if_disabled() to return true when runtime PM
-is disabled for the device, regardless of the power.last_status value.
+Put the update of the power.smart_suspend device flag under the PM
+spinlock of the device in case multiple bit fields in struct dev_pm_info
+occupy one memory location which needs to be updated via RMW every time
+any of these bit fields is updated.
 
-This effectively prevents "smart suspend" from being enabled for
-devices with runtime PM disabled in device_prepare(), even transiently,
-so update the related comment in that function accordingly.
-
-If a device has runtime PM disabled in device_prepare(), it is not
-actually known whether or not runtime PM will be enabled for that
-device going forward, so it is more appropriate to postpone the
-"smart suspend" optimization for the device in the given system
-suspend-resume cycle than to enable it and get confused going
-forward.
+The lock in question is already held around the power.direct_complete
+flag update in device_prepare() for the same reason, so this change does
+not add locking-related overhead to the code.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/base/power/main.c    |    2 +-
- drivers/base/power/runtime.c |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/base/power/main.c |   35 +++++++++++++++++++----------------
+ 1 file changed, 19 insertions(+), 16 deletions(-)
 
 --- a/drivers/base/power/main.c
 +++ b/drivers/base/power/main.c
-@@ -1891,7 +1891,7 @@
- 		pm_runtime_put(dev);
+@@ -1789,9 +1789,10 @@
+ 	return error;
+ }
+ 
+-static void device_prepare_smart_suspend(struct device *dev)
++static bool device_prepare_smart_suspend(struct device *dev)
+ {
+ 	struct device_link *link;
++	bool ret = true;
+ 	int idx;
+ 
+ 	/*
+@@ -1802,17 +1803,13 @@
+ 	 * or any of its suppliers that take runtime PM into account, it cannot
+ 	 * be enabled for the device either.
+ 	 */
+-	dev->power.smart_suspend = dev->power.no_pm_callbacks ||
+-		dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND);
+-
+-	if (!dev_pm_smart_suspend(dev))
+-		return;
++	if (!dev->power.no_pm_callbacks &&
++	    !dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND))
++		return false;
+ 
+ 	if (dev->parent && !dev_pm_smart_suspend(dev->parent) &&
+-	    !dev->parent->power.ignore_children && !pm_runtime_blocked(dev->parent)) {
+-		dev->power.smart_suspend = false;
+-		return;
+-	}
++	    !dev->parent->power.ignore_children && !pm_runtime_blocked(dev->parent))
++		return false;
+ 
+ 	idx = device_links_read_lock();
+ 
+@@ -1822,12 +1819,14 @@
+ 
+ 		if (!dev_pm_smart_suspend(link->supplier) &&
+ 		    !pm_runtime_blocked(link->supplier)) {
+-			dev->power.smart_suspend = false;
++			ret = false;
+ 			break;
+ 		}
+ 	}
+ 
+ 	device_links_read_unlock(idx);
++
++	return ret;
+ }
+ 
+ /**
+@@ -1841,7 +1840,7 @@
+ static int device_prepare(struct device *dev, pm_message_t state)
+ {
+ 	int (*callback)(struct device *) = NULL;
+-	bool no_runtime_pm;
++	bool smart_suspend;
+ 	int ret = 0;
+ 
+ 	/*
+@@ -1857,7 +1856,7 @@
+ 	 * suspend-resume cycle is complete, so prepare to trigger a warning on
+ 	 * subsequent attempts to enable it.
+ 	 */
+-	no_runtime_pm = pm_runtime_block_if_disabled(dev);
++	smart_suspend = !pm_runtime_block_if_disabled(dev);
+ 
+ 	if (dev->power.syscore)
+ 		return 0;
+@@ -1893,9 +1892,12 @@
  		return ret;
  	}
--	/* Do not enable "smart suspend" for devices without runtime PM. */
-+	/* Do not enable "smart suspend" for devices with disabled runtime PM. */
- 	if (smart_suspend)
- 		smart_suspend = device_prepare_smart_suspend(dev);
+ 	/* Do not enable "smart suspend" for devices without runtime PM. */
+-	if (!no_runtime_pm)
+-		device_prepare_smart_suspend(dev);
++	if (smart_suspend)
++		smart_suspend = device_prepare_smart_suspend(dev);
++
++	spin_lock_irq(&dev->power.lock);
  
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -1466,8 +1466,8 @@
- 
- 	spin_lock_irq(&dev->power.lock);
- 
--	ret = dev->power.disable_depth && dev->power.last_status == RPM_INVALID;
--	if (ret)
-+	ret = !pm_runtime_enabled(dev);
-+	if (ret && dev->power.last_status == RPM_INVALID)
- 		dev->power.last_status = RPM_BLOCKED;
- 
++	dev->power.smart_suspend = smart_suspend;
+ 	/*
+ 	 * A positive return value from ->prepare() means "this device appears
+ 	 * to be runtime-suspended and its state is fine, so if it really is
+@@ -1903,11 +1905,12 @@
+ 	 * will do the same thing with all of its descendants".  This only
+ 	 * applies to suspend transitions, however.
+ 	 */
+-	spin_lock_irq(&dev->power.lock);
+ 	dev->power.direct_complete = state.event == PM_EVENT_SUSPEND &&
+ 		(ret > 0 || dev->power.no_pm_callbacks) &&
+ 		!dev_pm_test_driver_flags(dev, DPM_FLAG_NO_DIRECT_COMPLETE);
++
  	spin_unlock_irq(&dev->power.lock);
++
+ 	return 0;
+ }
+ 
 
 
 
