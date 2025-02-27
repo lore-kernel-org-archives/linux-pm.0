@@ -1,78 +1,110 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E284374F1;
-	Thu, 27 Feb 2025 11:49:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+Received: from relmlie6.idc.renesas.com (relmlor2.renesas.com [210.160.252.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7F3B7225417;
+	Thu, 27 Feb 2025 12:25:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.160.252.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740656966; cv=none; b=uhhtfNprcI6c+e+HYJh2Vpex9Tnb8781pPiKW4+h67+6XCuiz8HC8xB5LHYFLG1IrrA2Wg3M5b+zNMj4HzpoUaM6wHMoxV2F83oiwWstlLltHMTsVmBO2/XQhKS/0Igy1Z5VwOllcwsTH02IPxcDft8DwOCjbExrqsqGQpCY+4o=
+	t=1740659114; cv=none; b=jQVU1aA4rMtCF6KoFWRvm+WlMtOai3o8a+fOLa5iLfMk+XCIaZwm6X2IAn+sbZ58TH75KklUVZcqrg1jzZcVkKbWncfHlbPdTQ/1dEOuAvNEvv9PYspU99cB0kG+mCyxlVxAmeUGyANYDUzHM5ANJ2af6vITaQttbYfMsoNYtdk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740656966; c=relaxed/simple;
-	bh=85lMz2M0QYHYQ6bvLv6GGi/2p5ZaXpYYj4wUS4wT9Xs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=M9EYz7FyKDmxFpvqSN0snHINnWT0PUJCHtnzod0PS2hPZwk+gV8q9nFGfaYoSRScQ1A2g1jQF1no2IGvovDVFQTher7SONn0wa2yBh9D+GBW/KTYBk/wFaMm+/4Nu0d44P1x2UMEOR3OGLEH2E/uVauhIuVDRyGvhdgM6j0/ixU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=HdHx+4l1; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="HdHx+4l1"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
- id 33343677ed09fce7; Thu, 27 Feb 2025 11:49:22 +0100
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id F35B4D50215;
-	Thu, 27 Feb 2025 11:49:21 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1740653362;
-	bh=85lMz2M0QYHYQ6bvLv6GGi/2p5ZaXpYYj4wUS4wT9Xs=;
-	h=From:Subject:Date;
-	b=HdHx+4l1Rmr42SpTQWfOXg1asn+wghFLaF4mSt0+Kqjs23AFOjempx6GMeaoVOR6T
-	 qS+k8cHb669tn6b6GY+AdbahUHdynjMExc/XWg3GCELcuW+6al+U1jCUAN6KLuIWTh
-	 yGcjbNN/gx339RMTD2JemWbUbVh+IRwz4pJJSyopjiyZqTL33JBiCu0FEq/HutKJVF
-	 268ZBDhOg18t6m2N/u+YBPEg2qICp7CfOMoFhQsWgszrTUfWkvUaM1rfGcaYcr/DyJ
-	 cL0Cm5imXf+k/nyF6XRh7zOc1ES7upuTTgtRbowcX8rx9R48k4w+hnXtMiMeg8sgPo
-	 nPjWH1misj/Hw==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>,
- Johan Hovold <johan@kernel.org>,
- Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
- Jon Hunter <jonathanh@nvidia.com>
-Subject: [PATCH v1 0/3] PM: Tweaks on top of "smart suspend" handling changes
-Date: Thu, 27 Feb 2025 11:44:23 +0100
-Message-ID: <5000287.31r3eYUQgx@rjwysocki.net>
+	s=arc-20240116; t=1740659114; c=relaxed/simple;
+	bh=b3Eu3PVFgwBHfl2UMMUVPYQlp/YZioJOW4+lpM9Dmxw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Voy+E8boGP1ekQha/2irPmxEs++5beNnXWi1WPEioUnKGVQY6zxxQIKQM12kVHAbGxyv7G8Fv5lphq5Uy6Xs9rkvp+8lyMUTQefLJFaVLeiHh2iYvZfqLiSHY3VRLLswgVloD5IEQYinDYZYYcMb8JiaLN4c1J/ny/3YdPn81Cs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=bp.renesas.com; spf=pass smtp.mailfrom=bp.renesas.com; arc=none smtp.client-ip=210.160.252.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=bp.renesas.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bp.renesas.com
+X-CSE-ConnectionGUID: znxM1xLTR3mpvimHHn6aDw==
+X-CSE-MsgGUID: ml/HIhIST4aCimY9fdisBQ==
+Received: from unknown (HELO relmlir5.idc.renesas.com) ([10.200.68.151])
+  by relmlie6.idc.renesas.com with ESMTP; 27 Feb 2025 21:25:03 +0900
+Received: from ubuntu.adwin.renesas.com (unknown [10.226.92.68])
+	by relmlir5.idc.renesas.com (Postfix) with ESMTP id C581840029C3;
+	Thu, 27 Feb 2025 21:24:56 +0900 (JST)
+From: John Madieu <john.madieu.xa@bp.renesas.com>
+To: john.madieu.xa@bp.renesas.com,
+	geert+renesas@glider.be,
+	magnus.damm@gmail.com,
+	mturquette@baylibre.com,
+	sboyd@kernel.org,
+	rafael@kernel.org,
+	daniel.lezcano@linaro.org,
+	rui.zhang@intel.com,
+	lukasz.luba@arm.com,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	p.zabel@pengutronix.de,
+	catalin.marinas@arm.com,
+	will@kernel.org
+Cc: john.madieu@gmail.com,
+	linux-renesas-soc@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-clk@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	biju.das.jz@bp.renesas.com
+Subject: [PATCH v2 0/7] thermal: renesas: Add support fot RZ/G3E
+Date: Thu, 27 Feb 2025 13:24:36 +0100
+Message-ID: <20250227122453.30480-1-john.madieu.xa@bp.renesas.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdekjedviecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeegfffhudejlefhtdegffekteduhfethffhieettefhkeevgfdvgfefieekiefgheenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomheprhhjfiesrhhjfiihshhotghkihdrnhgvthdpnhgspghrtghpthhtohepjedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehsthgvrhhnsehrohiflhgrnhgurdhhrghrvhgrrhgurdgvughupdhrtghpthhtohepuhhlfhdrhhgrnhhsshhonheslhhinhgrrhhordhorhhgpdhrtghpthhtohepjhhohhg
-X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
+Content-Transfer-Encoding: 8bit
 
-Hi Everyone,
+Hello,
 
-These are some tweaks based on
+This series adds support for the temperature sensor unit (TSU) found on the
+Renesas RZ/G3E SoC.
 
-https://lore.kernel.org/linux-pm/12612706.O9o76ZdvQC@rjwysocki.net/
+The series consists of 7 patches (some of which are not related to the thermal
+framework) that progressively add TSU support as follows:
+- patch 1/7:    adds syscon/regmap support for accessing system controller
+                registers, enabling access to TSU calibration values
+- patch 2/7:    adds clock and reset signals to the CPG driver
 
-which in the meantime has been applied to linux-pm.git/linux-next (as 6.15
-material).
-
-None of them is essential, so if you have objections, please let me know,
-but IMV they generally will make the code work better.
-
-Please refer to the individual patch changelogs for details.
-
-Thanks!
+- patch 3/7:    adds dt-bindings
+- patch 4/7:    adds the actual TSU driver for the RZ/G3E
+- patch 5/6:    adds safety mechanism to make sure we we protect the chip in
+                case of consecutive read failures
+- patch 6-7/7:  add DT node and defconfig enablement
 
 
+Changes:
+
+v1 -> v2
+ * Fix yaml warnings from dt-binding
+ * Update IRQ names to reflect TSU expectations
+
+Regards,
+
+John Madieu (7):
+  soc: renesas: rz-sysc: add syscon/regmap support
+  clk: renesas: r9a09g047: Add clock and reset signals for the TSU IP
+  dt-bindings: thermal: r9a09g047-tsu: Document the TSU unit
+  thermal: renesas: rzg3e: Add thermal driver for the Renesas RZ/G3E SoC
+  thermal: renesas: rzg3e: Add safety check when reading temperature
+  arm64: dts: renesas: r9a09g047: Add TSU node
+  arm64: defconfig: Enable RZ/G3E thermal
+
+ .../thermal/renesas,r9a09g047-tsu.yaml        | 123 +++++
+ MAINTAINERS                                   |   7 +
+ arch/arm64/boot/dts/renesas/r9a09g047.dtsi    |  49 ++
+ arch/arm64/configs/defconfig                  |   1 +
+ drivers/clk/renesas/r9a09g047-cpg.c           |   3 +
+ drivers/soc/renesas/Kconfig                   |   1 +
+ drivers/soc/renesas/r9a09g047-sys.c           |   1 +
+ drivers/soc/renesas/rz-sysc.c                 |  30 +-
+ drivers/soc/renesas/rz-sysc.h                 |   2 +
+ drivers/thermal/renesas/Kconfig               |   7 +
+ drivers/thermal/renesas/Makefile              |   1 +
+ drivers/thermal/renesas/rzg3e_thermal.c       | 479 ++++++++++++++++++
+ 12 files changed, 703 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/renesas,r9a09g047-tsu.yaml
+ create mode 100644 drivers/thermal/renesas/rzg3e_thermal.c
+
+-- 
+2.25.1
 
