@@ -1,134 +1,78 @@
-Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B3111EB5ED;
-	Thu, 27 Feb 2025 13:04:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B9A522171A;
+	Thu, 27 Feb 2025 13:18:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.11.138.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740661469; cv=none; b=C5ITfpT4jcwVHPphaBwnLNLxsBkWZHknJf27p7kLafZYNzsQER/8cbATXfJsQxWxRP/npSOGDLcCO5/bLgmvkUnLpvlmWGW3/ENqC6AsLofmqOyBFVXt0Ajxu0L+/fFxJjbo8K8zyDG/dLPRB0tDdypV7v1CnzhT1G7feaUyEvw=
+	t=1740662319; cv=none; b=KxqkVxsh5g7KEajy6xJxebRO8dnLLI3xR4cEYeoNgjBswaDvJCN6th4bMUSk/kl3p8BIpN77O6KGKXXvYxyEJjVQxj9czHaDqJ6EJ0zVuU+uCUoWKnd4kqult4ZmbSja7jb9quftUdGVDRF7b9dyRAxiNxw8uO3WY5rb2von3sc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740661469; c=relaxed/simple;
-	bh=RhAn648KZjGR1zL9fk7lBgC1kuhesOSbeueMHlrV+FQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=h3fhmBk9yNtZedd0uJfc6NMuRGpGM6oJBgaLn6l9YyJbMAPgyUga06ncKCQdauJ7mN5K9jc3/6wZd4tpACP54NvLTeDhZdJ4sfAKyhZ4b9DIjjshdPzL99wzFGw3EedNmfPBQQis/Uj4MELnRO0Ozx9ytmCHG+sOgLxtS5hvPzc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=Dpw3udR3; arc=none smtp.client-ip=90.155.50.34
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+	s=arc-20240116; t=1740662319; c=relaxed/simple;
+	bh=mNzyP2i8s5xxojWRGpta1D3Ukh8tpM3eSID4p4vReCc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=qZh1BLAAks4RIzQhdvncuolk5OI5Nd5ewCzKQ4c2ecFKb09xLhqRHiEBK3khMbUNtrw3YRGAJ6VHkvKfk/uFwnc2SoMdctMSwvRaI+RgXtvs/OqEwVlZZt+sE80XylAie7vCmDP5Be8f6BEO3wglBco7/dCIsrJ9Uzt60piNFLQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=sntech.de; spf=pass smtp.mailfrom=sntech.de; dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.b=I/ckulVE; arc=none smtp.client-ip=185.11.138.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=sntech.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sntech.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Dpw3udR3"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=C4NTJOJ3dCAJ9+vpvzEprQrWJrpsHSJFBRqUQ8todYw=; b=Dpw3udR3BJAFq9SyV4WrEEtnAj
-	4AK/f2BJmM2iCspBbFHcvyAYokish3HnL+MnOj7JlEsRpxTpwaGNuOZ0GjF1xl2kJOx4qt3J2ahuW
-	az6fb102wILROrGzFvXwJPaH58zNpMOOcrCBc343TieQO3/CDGnn7X1+s/6kO95pgHKXAnEejIoZr
-	eB7TVgWCB6dlZRGlAflwAymbuHq47SCX9B61CP43qWtZ2O6ijiX7nvvVtATjJJOXC5cOJJTTKtd0a
-	0oXIb31u03yt/F+rw+NDupYNgVgy0IBHz3v3ZGkJAqcax4tYjHYegxiTUmQ4/XbT5eUfHjXU340Lp
-	d0XLYfiw==;
-Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
-	by casper.infradead.org with esmtpsa (Exim 4.98 #2 (Red Hat Linux))
-	id 1tndYL-0000000Hb1D-0gW6;
-	Thu, 27 Feb 2025 13:03:49 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id 45472300472; Thu, 27 Feb 2025 14:03:47 +0100 (CET)
-Date: Thu, 27 Feb 2025 14:03:47 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Zijun Hu <zijun_hu@icloud.com>
-Cc: Zijun Hu <quic_zijuhu@quicinc.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Will Deacon <will@kernel.org>,
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	"David S. Miller" <davem@davemloft.net>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Simon Horman <horms@kernel.org>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Jamal Hadi Salim <jhs@mojatatu.com>,
-	Cong Wang <xiyou.wangcong@gmail.com>, Jiri Pirko <jiri@resnulli.us>,
-	Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Bartosz Golaszewski <brgl@bgdev.pl>, Lee Jones <lee@kernel.org>,
-	Thomas Graf <tgraf@suug.ch>, Christoph Hellwig <hch@lst.de>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Robin Murphy <robin.murphy@arm.com>,
-	Miquel Raynal <miquel.raynal@bootlin.com>,
-	Richard Weinberger <richard@nod.at>,
-	Vignesh Raghavendra <vigneshr@ti.com>, linux-arch@vger.kernel.org,
-	linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-	linux-crypto@vger.kernel.org, netdev@vger.kernel.org,
-	linux-wireless@vger.kernel.org, linux-rdma@vger.kernel.org,
-	linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org,
-	iommu@lists.linux.dev, linux-mtd@lists.infradead.org
-Subject: Re: [PATCH *-next 00/18] Remove weird and needless 'return' for void
- APIs
-Message-ID: <20250227130347.GA5880@noisy.programming.kicks-ass.net>
-References: <20250221-rmv_return-v1-0-cc8dff275827@quicinc.com>
- <46d17d84-5298-4460-96b0-9c62672167a0@icloud.com>
+	dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.b="I/ckulVE"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
+	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+	Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
+	List-Subscribe:List-Post:List-Owner:List-Archive;
+	bh=odRe86wbBsQkcjq+MlDDcHZ1ydHEZEkP/u4cZxHpKl8=; b=I/ckulVENplgJLCSPkpinMhiHF
+	cya+hcSVQSocal22jUocKva6Y3YPPggHj7N8rUMd6sxpwPiQysYVQV4QX9YftUu9UwxqVX/+7yCNZ
+	h9Ey4lCbqJOfcVi1d/L6Pz4jKJBTnQ3j7pGN7HDT5e3kB8wsPqwtK9JJdCGkNYuUr1xY2MUBAPW6A
+	zmsr6Qh1i6iT1iog0K00WDYJmA8LtkJdEEG4a25Mt0yFwo0Z/F+GnNl/7AmJK6pv0ZpQR9xKNHOPn
+	Hd8DfmcCmhPB7AXbHCsRyIy1gyD5m/K2nFDz9iR9mIHev3WHc/CBz9/jxvbpPvAu6h1EkEvFCI9Jj
+	v1KAeXGg==;
+Received: from i53875b47.versanet.de ([83.135.91.71] helo=diego.localnet)
+	by gloria.sntech.de with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <heiko@sntech.de>)
+	id 1tndmV-00012t-UU; Thu, 27 Feb 2025 14:18:27 +0100
+From: Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>
+To: Kever Yang <kever.yang@rock-chips.com>
+Cc: linux-rockchip@lists.infradead.org,
+ Kever Yang <kever.yang@rock-chips.com>,
+ Finley Xiao <finley.xiao@rock-chips.com>,
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+ linux-pm@vger.kernel.org, Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+ Detlev Casanova <detlev.casanova@collabora.com>,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Ulf Hansson <ulf.hansson@linaro.org>
+Subject:
+ Re: [PATCH v3 2/2] soc: rockchip: power-domain: add power domain support for
+ rk3562
+Date: Thu, 27 Feb 2025 14:18:27 +0100
+Message-ID: <3210955.TQGk6oTFT5@diego>
+In-Reply-To: <20250227105957.2341107-3-kever.yang@rock-chips.com>
+References:
+ <20250227105957.2341107-1-kever.yang@rock-chips.com>
+ <20250227105957.2341107-3-kever.yang@rock-chips.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46d17d84-5298-4460-96b0-9c62672167a0@icloud.com>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
 
-On Thu, Feb 27, 2025 at 08:48:19PM +0800, Zijun Hu wrote:
-> On 2025/2/21 21:02, Zijun Hu wrote:
-> > void api_func_a(...);
-> > 
-> > static inline void api_func_b(...)
-> > {
-> > 	return api_func_a(...);
-> > }
+Am Donnerstag, 27. Februar 2025, 11:59:57 MEZ schrieb Kever Yang:
+> This driver is modified to support RK3562 SoC.
+> Add support to ungate clk.
+> Add support to shut down memory for rk3562.
 > 
-> The Usage : Return void function in void function
-> 
-> IMO, perhaps, the usage is not good since:
-> 
-> A) STD C does not like the usage, and i find GCC has no description
-> about the usage.
->    C11/C17: 6.8.6.4 The return statement
->    "A return statement with an expression shall not appear in a
-> function whose return type is void"
+> Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
+> Signed-off-by: Kever Yang <kever.yang@rock-chips.com>
 
-We really don't use STD C, the kernel is littered with extensions.
+After the move to the pmdomains subsystem patch subject should be
+	pmdomain: rockchip: add power domain support for rk3562
 
-> B) According to discussion, the usage have function that return type
->    of the callee api_func_a() is monitored. but this function has below
-> shortcoming as well:
-> 
-> the monitor is not needed if the caller api_func_b() is in the same
-> module with the callee api_func_a(), otherwise, provided the callee is
-> a API and provided by author of other module. the author needs to clean
-> up lot of usages of the API if he/she changes the API's return type from
-> void to any other type, so it is not nice to API provider.
-> 
-> C) perhaps, most ordinary developers don't known the function mentioned
->    by B), and also feel strange for the usage
+with that change
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
 
-It is quite common to do kernel wide updates using scripts / cocinelle.
 
-If you have a specialization that wraps a function to fill out a default
-value, then you want the return types to keep matching.
-
-Ex.
-
-return_type foo(type1 a1, type2 a2);
-
-return_type my_foo(type1 a1)
-{
-	return foo(a1, value);
-}
-
-is a normal thing to do. The whole STD C cannot return void bollocks
-breaks that when return_type := void, so in that regards I would call
-this a STD C defect.
