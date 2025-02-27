@@ -1,340 +1,113 @@
-Received: from NAM10-DM6-obe.outbound.protection.outlook.com (mail-dm6nam10olkn2025.outbound.protection.outlook.com [40.92.41.25])
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 779C922B8BE;
-	Thu, 27 Feb 2025 11:05:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.92.41.25
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740654331; cv=fail; b=q9ko69E8qL7kQQDhh1VfQVRIWpIXz7Lo8slbHEc+e79/RCUL/7FYP25aAJDsSPQYMaQDjRV4wffDPQ8yR/DBTwDc3vfNcfJXqPfOagb/G5v2lIvOG9huM8jOGQWy4ZaOh3cJcfLTn2cabR4EbNAOqTFkYec5iaIPmQnd9F/6DUg=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740654331; c=relaxed/simple;
-	bh=+ZXI3CVyjg+YhUXIKX2hcUAXiedyppt8aMSOEPTQ1Cc=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 663DA227B9C;
+	Thu, 27 Feb 2025 11:49:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1740656964; cv=none; b=ji9fPmcRT5qMPmT8/yjZY7T6W/H/JL6Z2dY/9SNtNPs+uRJAYKF1YakEwIGHJDs1I68iGG8HPyPhPTsrSZ2yImEi1Yz1zUON8+StB175W7lgHgEhIuY0u4y0vNAw9oFnpbEiI0utIMJDNXSLImLxhIKbmMjH3warsbRPU7qhqIs=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1740656964; c=relaxed/simple;
+	bh=66uWDs0dEvE/f0XOsqKgWaU0Dwb0vWSA//uid9NL0T8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=PWLftxNhXKXhRMjUi/dNPtBoZ8T6KKOP/ZWMN8YsPbJB/2yHAQdU9vFLHhbcz5Wk1TwOsJSZ1FRGSI6MKkHrdBhslnZxd3RTLbu7zXnj6eFum58+VTpzGXhShdcdrySkmmGVX6aDcFsfMIL/U+xH9681m6lOglqTeVpbiGtR3gQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=fVwTHhYo; arc=fail smtp.client-ip=40.92.41.25
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
+	 MIME-Version:Content-Type; b=Co9E/fy1v99yN3mi0TCiLnGANypzrueGhDkjG160zA0Ge2ycRwo4C8yAMvIIMa97k8vSYtguB+4Mh5yrnu+z+b3LGO5esNVaM3P78bwIC5pj2iTXwd2zQgmkVZtuSEMoAUy7kVcB0NhXrIMsfUURyuiDdYgqV3TBDyuw13f/vqM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=Ws/JioKh; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="fVwTHhYo"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=YC0u/AgorVt6RHNL8hAWdu8aYoA9DerWEAzlxKDHW8mDmg2bwJ7t1sHxWPR0m6eneCYEBum+OMpk5ey5PG+XUO0VJu9WGn1MRWaYOPeHhpXeBRepRg1EPgBXNHnhoIu95K/ANKUT8nC1Yw6v/nvpXWZNIVAzPB6fAaJRvRImSSMu+tXnPaMVDSkZWEHgilRSKa+3SgX2KZfZUisCtjSn7sZUWQk/PFZldarScF9nYjdLTApqaD3Yn4883dWptsUXIZ9eSE6wUPz1s3qTIbwKtDiZ/wEJy6lYK/U1yizgDqgF/QU9uUS/J/FqKwlx9Ay7NTmKgCgCL+kdQzXlDQKohg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=2SSj7QgoDONfKcaWLlz5r9EV5ONOIzzXfN8ZyOwCgcc=;
- b=ORFneItNaAROnn1T2E7dK47w4Yt6/yvljqw5XqHHGFGBE6aKRP7oaUwzLPLj+T729vlbyx2abpDnq3XorGvd+BWCxLjwSOflTRfxrdA5vEpl6FbULThAc7kGqqD9qEycFFJ8LE0MyySOCHrq+9awyRkP4FWcyY/qUVpjAuiFDPUSbZjcvR5xxRWQIsoSrax4oCpI9qHudxMVMn5IA5/gZy4L/hNajJxNZi5IVSMGcdvmof7LexD0Btje66Sol5Sls+Baw/wZqCFEJc17Qioia7VATfC2u5olei4cujSgRrqd/ObTweGley9GcSZv9k5ZwPjwHyOumvWf43JKFi1U+w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=2SSj7QgoDONfKcaWLlz5r9EV5ONOIzzXfN8ZyOwCgcc=;
- b=fVwTHhYoocG6y5lcvq1aJTYU+unYfoZ0Lp9pJHciu1PR/iZKdvHEwXtPE7MKyl6aTJK//nJXU054HKXloIj3KXURp7ub/WCZGN9dEZulohWFcig9KLEJPFUl4gvNUXu9/aakQKAFesF7tATGgyjGCN7dTOH/y1GVLflNgYg+WvnYjcT1gSnYWhRE53VwuO5YFGv7ms5mt09ECp5SEOiXoAqJA4u1JhfMjVfsHJvHZvUSJ9Cgn0809TmKB244wYyy6mMEUZFVT3Z20h+gzefjgJrHjcYt0+q4St/0sPypV5TYslVhcD00b/VJfaZhumk+NhmRQkFvcXCcpWFZVmAUvQ==
-Received: from DS7PR19MB8883.namprd19.prod.outlook.com (2603:10b6:8:253::16)
- by SN7PR19MB7333.namprd19.prod.outlook.com (2603:10b6:806:348::8) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8466.19; Thu, 27 Feb
- 2025 11:05:27 +0000
-Received: from DS7PR19MB8883.namprd19.prod.outlook.com
- ([fe80::e0c2:5b31:534:4305]) by DS7PR19MB8883.namprd19.prod.outlook.com
- ([fe80::e0c2:5b31:534:4305%6]) with mapi id 15.20.8466.020; Thu, 27 Feb 2025
- 11:05:27 +0000
-From: George Moussalem <george.moussalem@outlook.com>
-To: linux-arm-msm@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	daniel.lezcano@linaro.org,
-	rafael@kernel.org,
-	amitk@kernel.org,
-	thara.gopinath@gmail.com,
-	dmitry.baryshkov@linaro.org,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	quic_srichara@quicinc.com
-Cc: George Moussalem <george.moussalem@outlook.com>
-Subject: [PATCH v8 5/5] arm64: dts: qcom: ipq5018: Add tsens node
-Date: Thu, 27 Feb 2025 14:56:43 +0400
-Message-ID:
- <DS7PR19MB88837954A5FECEC8B84C40A79DCD2@DS7PR19MB8883.namprd19.prod.outlook.com>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20250227110423.8418-1-george.moussalem@outlook.com>
-References: <20250227110423.8418-1-george.moussalem@outlook.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: DX0P273CA0085.AREP273.PROD.OUTLOOK.COM
- (2603:1086:300:5d::15) To DS7PR19MB8883.namprd19.prod.outlook.com
- (2603:10b6:8:253::16)
-X-Microsoft-Original-Message-ID:
- <20250227110423.8418-7-george.moussalem@outlook.com>
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="Ws/JioKh"
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.2.1)
+ id 1d2a6c11e063f019; Thu, 27 Feb 2025 11:49:20 +0100
+Received: from kreacher.localnet (unknown [195.136.19.94])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 6EC92D517DE;
+	Thu, 27 Feb 2025 11:49:19 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1740653359;
+	bh=66uWDs0dEvE/f0XOsqKgWaU0Dwb0vWSA//uid9NL0T8=;
+	h=From:Subject:Date;
+	b=Ws/JioKhvM/s2MTwIi8v2nBdhIcZhE4wfDV5awt3ruF1DlkCOiFb1DzZSAqsAjp5m
+	 Lw8cpjfvKwwTO8amL4YArsdzbnqpKHRLnl1/XbhTycLV8WEKXDn48uX/LfVADAs4tQ
+	 pfKhell5sJKxSpkjz9vZyJYJ1ufX0kpZA9TOiZ7b9y78LO88A0uHaQJ6aYzHfmkeA0
+	 Akob6goWMy299Hg70mEi67i3bGNV8qnsfGAYpb19zUvP8yN9HAHUeLPJRsHQKfLb77
+	 KTwmHlBAiaYSove/FDb6cM6Yu3aade78INgtJwSdluTmqOLTvnmMU+tNpB/C19v9qr
+	 SaXvmZVXVdqTA==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>,
+ Johan Hovold <johan@kernel.org>,
+ Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+ Jon Hunter <jonathanh@nvidia.com>
+Subject:
+ [PATCH v1 3/3] PM: core: Tweak pm_runtime_block_if_disabled() return value
+Date: Thu, 27 Feb 2025 11:49:12 +0100
+Message-ID: <13718674.uLZWGnKmhe@rjwysocki.net>
+In-Reply-To: <5000287.31r3eYUQgx@rjwysocki.net>
+References: <5000287.31r3eYUQgx@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS7PR19MB8883:EE_|SN7PR19MB7333:EE_
-X-MS-Office365-Filtering-Correlation-Id: e587ea9c-2bb7-4c08-c674-08dd571ea3b8
-X-Microsoft-Antispam:
-	BCL:0;ARA:14566002|19110799003|8060799006|5072599009|13031999003|15080799006|461199028|7092599003|3412199025|440099028|41001999003|1710799026;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?kXu/PYDFFdITijnDDaVFY8COlBtozsk+Qa8rdAWwEI1jzpUrkwDJmQV1LuQp?=
- =?us-ascii?Q?KDE+FvOj2XyvolAWXhcdCSkfY8eHaIFs/VyiQaCH49D2dAQ+s4bLDhPMNhL9?=
- =?us-ascii?Q?hcWsOII9cK23HxyUzNDvn5R3tsRAAJ0ZERQwM1/N0TgLFGYXnsq2YT25CDCK?=
- =?us-ascii?Q?ImN7H1t5VQtzxIosZAJ1cHB4VpAXN5Q645iJG/nef9q5HaLLSRtaDsgY1bXZ?=
- =?us-ascii?Q?HRFfNNJrEnoPJYqVuPXmqUhVUasamxTSM2bJoltPm1hgG9Ymv/O82lDZDeL2?=
- =?us-ascii?Q?2GR3AWB+QK+oZtNEY2WOjy1X43VnKDvpweQ99CuD+MsTi+rBZPEIfIpcnTdo?=
- =?us-ascii?Q?G3Mw901P/7//zG84Fjz+ruMVXC6aX+1/MD++5YyTQkeh1cFnlLpN4Y8kUfMY?=
- =?us-ascii?Q?xZp4LtF90ds4eO37FgPil1haLhTiKTdVhw6fZSse0pEV8LLxBmG48L6Ed3LR?=
- =?us-ascii?Q?4KfHGEaG3rQJApjTbRVEsEottOvI6/jec66dR+Zu5uw6bJtRNs1V0yy3p2u1?=
- =?us-ascii?Q?suq4Zlj8w2LIfmmEKngpVZK9ilxjc0YBTyShg4l63r7wi0cQeXA4zRsg0VTi?=
- =?us-ascii?Q?6RUvbgWe1zkruLZvrkPXst7BCmvMPCNgb8LQgQdhYrzlqEGXf61tEub0N0q9?=
- =?us-ascii?Q?XbutEa7p1xSkPqjFwoje7wqE7VsldFPXk+4QjLKNpIcDFfs2vcG6bIwGQrUb?=
- =?us-ascii?Q?pQwAq3GC3JCQUtbPiMA0Tq5YUNG88XbDRJDWlL9Q3A07l7xblrMUopoCD+X+?=
- =?us-ascii?Q?kj1nADWhrRDiDCpZtUUxVxK8/E9hjP1+rOCh/ljV2kxSNgo1uoPMv4uULTgx?=
- =?us-ascii?Q?fmXjn6G8DMNT1lvxtbBS9GXIV93N1f8A9c/hkvn04uwwgVd6obf0I+Lt7bxk?=
- =?us-ascii?Q?56aPOaQiu2A2I9jtDqAfFO+6zHuNxaiqwE/QEAtNsm7paQNZ7826LvuYJ/iH?=
- =?us-ascii?Q?dKvAwJ3ptImxSOXiKFw7hzmDjF1I+BFeI32uUobGXxsZWoQEy4QlnGTotK0o?=
- =?us-ascii?Q?JUo0B6eXyCN/bd1oRc+IYdpr4GfbC0zUvTeSly4Qe7yYXcRi6xJQFWTqYALo?=
- =?us-ascii?Q?AWF0ViWL+T+q+09YrN8edVVhRjrnDbKYig6Ehp2b+M7PUJ5MunBc/JwOsbhj?=
- =?us-ascii?Q?veGi1A/Tnuh3BtpH13M7w5F/CJ+wXFfYFoqjSFJbZM/2SOPZmgpa/+w=3D?=
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?ItW/CPRFapcbtRh+nisVbQvktSsNUDC7R323w+e6ptD1RoeY1ZB9sEwbnfyq?=
- =?us-ascii?Q?3O75VcCOk0scjiHNP7cA4bMVGgkwj9vCqF/Kzb13aHk0mYLCyLrkXSBkH31A?=
- =?us-ascii?Q?8IMmucNo+8xGUQOKAOemHtk394Q/2ZWl05AcnYG47BWyx4d93vyfAFLPzR5B?=
- =?us-ascii?Q?b/JQOy95tXIb0r4N/7CkWW4/DJ1vYzylUjRULMOTMq6rhabbkM/n2a3RZ3P9?=
- =?us-ascii?Q?YM/8Tl/kCdLcoDbg9MEsR+qU8KNsWdWQRIJbEFnFsokomRRkARRGbhDJoGI5?=
- =?us-ascii?Q?T4laV7Vc8U5LFjoeWpj3LBggmA12/SJO86Mq98YH6PK5D+M1VILgjM0xywuZ?=
- =?us-ascii?Q?N1idSSN14FZi4DzFy+Ig4zToPOtj2q4VumICYaE6UmM2dxjfTJWzJmdOzWIZ?=
- =?us-ascii?Q?5gTIIoz+MURcOF/bpEJijrejFl28vcvmTVupnTBvDZnWBY2Z/cfofkVzT5Rx?=
- =?us-ascii?Q?y+zrVptVT7eHoG0ulMwSTPTxRn/byHvC+gWy4lhPwKwCybWc4HAC1Ev0yAU3?=
- =?us-ascii?Q?IydKgADfhvq6U/zCH9JPIEIiDwEXR44rcdyqk0jOG7nsDlLmvQYD794Wwr/k?=
- =?us-ascii?Q?FJxPapc7v19C9AiI+kuwANrm4jWcuuIx33L9BLxs3SpDa3ZeyRCJ8tsmYKET?=
- =?us-ascii?Q?sjJ6EmSZSEEe3QsUSMjPO+Ttm2exayo8p9LKxr6X5jSh09MTQuR/V4Ix3UFV?=
- =?us-ascii?Q?CmdDUtzYqDS94xSNzK1AmIniZvVJT8dbXsTzDF39zVPeNBEeALYUYYqC/8kj?=
- =?us-ascii?Q?dNNQ9lUlDW7VBCFWbA1EQ5+5cRp9DcMsT86bcLFxTj2JTq2+ZbWWDeaJwTCP?=
- =?us-ascii?Q?ZoD6fACWS9SwJ+g890OQ3M0yi82qP3k4PVdMrnrqstKlmbVBsAylk/dc2uwl?=
- =?us-ascii?Q?Nvb25qgE3PT8m8LRt0XkL+ci8YbrHBM6Pnekc3gCgQMTpBlw9SXVawWjPtSs?=
- =?us-ascii?Q?wydcEbvlDjBbiWXwuGtSxGQdPEHmO1AA0L5yMZ07jHcUceAKIUjfc6tyrnFQ?=
- =?us-ascii?Q?xBjCAV3T1YWqfSZI7OA0pCMaezIwviMUxySadPlaotrJwUdXFjZ77goDJgTA?=
- =?us-ascii?Q?YAda3w7TmX1/k09C2j1CXx7VZw2LFHk+3297EvRCjMQyUY/mgZwWJiY894y5?=
- =?us-ascii?Q?ekppBWQtXYL/rrfwkLHw+L1K3S2ovCXFzm862j6jCPqXFKbOHVijoAyN7uYQ?=
- =?us-ascii?Q?B+xdnoq5DzoJjP0UwEihLmEXTugXqiDLqiw71EF5SqKUeHaHCJ8iEHQhRUQD?=
- =?us-ascii?Q?ARyYct3zliRBUcIPJxFB?=
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: e587ea9c-2bb7-4c08-c674-08dd571ea3b8
-X-MS-Exchange-CrossTenant-AuthSource: DS7PR19MB8883.namprd19.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Feb 2025 11:05:27.0787
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg:
-	00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR19MB7333
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdekjedviecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeejpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhtvghrnhesrhhofihlrghnugdrhhgrrhhvrghrugdrvgguuhdprhgtphhtthhopehulhhfrdhhrghnshhsohhnsehlihhnrghrohdrohhrghdprhgtphhtthhopehjohhhrghnsehkvghrnhgvlhdrohhrghdprhgtphh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 
-From: Sricharan Ramabadhran <quic_srichara@quicinc.com>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-IPQ5018 has tsens V1.0 IP with 5 sensors, though 4 are in use.
-There is no RPM, so tsens has to be manually enabled. Adding the tsens
-and nvmem nodes and adding 4 thermal sensors (zones). With the
-critical temperature being 120'C and action is to reboot.
+Modify pm_runtime_block_if_disabled() to return true when runtime PM
+is disabled for the device, regardless of the power.last_status value.
 
-Signed-off-by: Sricharan Ramabadhran <quic_srichara@quicinc.com>
-Signed-off-by: George Moussalem <george.moussalem@outlook.com>
+This effectively prevents "smart suspend" from being enabled for
+devices with runtime PM disabled in device_prepare(), even transiently,
+so update the related comment in that function accordingly.
+
+If a device has runtime PM disabled in device_prepare(), it is not
+actually known whether or not runtime PM will be enabled for that
+device going forward, so it is more appropriate to postpone the
+"smart suspend" optimization for the device in the given system
+suspend-resume cycle than to enable it and get confused going
+forward.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- arch/arm64/boot/dts/qcom/ipq5018.dtsi | 169 ++++++++++++++++++++++++++
- 1 file changed, 169 insertions(+)
+ drivers/base/power/main.c    |    2 +-
+ drivers/base/power/runtime.c |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/ipq5018.dtsi b/arch/arm64/boot/dts/qcom/ipq5018.dtsi
-index 8914f2ef0bc4..91c062cce903 100644
---- a/arch/arm64/boot/dts/qcom/ipq5018.dtsi
-+++ b/arch/arm64/boot/dts/qcom/ipq5018.dtsi
-@@ -147,6 +147,117 @@ usbphy0: phy@5b000 {
- 			status = "disabled";
- 		};
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1891,7 +1891,7 @@
+ 		pm_runtime_put(dev);
+ 		return ret;
+ 	}
+-	/* Do not enable "smart suspend" for devices without runtime PM. */
++	/* Do not enable "smart suspend" for devices with disabled runtime PM. */
+ 	if (smart_suspend)
+ 		smart_suspend = device_prepare_smart_suspend(dev);
  
-+		qfprom: qfprom@a0000 {
-+			compatible = "qcom,ipq5018-qfprom", "qcom,qfprom";
-+			reg = <0x000a0000 0x1000>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+
-+			tsens_mode: mode@249 {
-+				reg = <0x249 0x1>;
-+				bits = <0 3>;
-+			};
-+
-+			tsens_base1: base1@249 {
-+				reg = <0x249 0x2>;
-+				bits = <3 8>;
-+			};
-+
-+			tsens_base2: base2@24a {
-+				reg = <0x24a 0x2>;
-+				bits = <3 8>;
-+			};
-+
-+			tsens_s0_p1: s0-p1@24b {
-+				reg = <0x24b 0x2>;
-+				bits = <2 6>;
-+			};
-+
-+			tsens_s0_p2: s0-p2@24c {
-+				reg = <0x24c 0x1>;
-+				bits = <1 6>;
-+			};
-+
-+			tsens_s1_p1: s1-p1@24c {
-+				reg = <0x24c 0x2>;
-+				bits = <7 6>;
-+			};
-+
-+			tsens_s1_p2: s1-p2@24d {
-+				reg = <0x24d 0x2>;
-+				bits = <5 6>;
-+			};
-+
-+			tsens_s2_p1: s2-p1@24e {
-+				reg = <0x24e 0x2>;
-+				bits = <3 6>;
-+			};
-+
-+			tsens_s2_p2: s2-p2@24f {
-+				reg = <0x24f 0x1>;
-+				bits = <1 6>;
-+			};
-+
-+			tsens_s3_p1: s3-p1@24f {
-+				reg = <0x24f 0x2>;
-+				bits = <7 6>;
-+			};
-+
-+			tsens_s3_p2: s3-p2@250 {
-+				reg = <0x250 0x2>;
-+				bits = <5 6>;
-+			};
-+
-+			tsens_s4_p1: s4-p1@251 {
-+				reg = <0x251 0x2>;
-+				bits = <3 6>;
-+			};
-+
-+			tsens_s4_p2: s4-p2@254 {
-+				reg = <0x254 0x1>;
-+				bits = <0 6>;
-+			};
-+		};
-+
-+		tsens: thermal-sensor@4a9000 {
-+			compatible = "qcom,ipq5018-tsens";
-+			reg = <0x004a9000 0x1000>, /* TM */
-+			      <0x004a8000 0x1000>; /* SROT */
-+
-+			nvmem-cells = <&tsens_mode>,
-+				      <&tsens_base1>,
-+				      <&tsens_base2>,
-+				      <&tsens_s0_p1>,
-+				      <&tsens_s0_p2>,
-+				      <&tsens_s1_p1>,
-+				      <&tsens_s1_p2>,
-+				      <&tsens_s2_p1>,
-+				      <&tsens_s2_p2>,
-+				      <&tsens_s3_p1>,
-+				      <&tsens_s3_p2>,
-+				      <&tsens_s4_p1>,
-+				      <&tsens_s4_p2>;
-+
-+			nvmem-cell-names = "mode",
-+					   "base1",
-+					   "base2",
-+					   "s0_p1",
-+					   "s0_p2",
-+					   "s1_p1",
-+					   "s1_p2",
-+					   "s2_p1",
-+					   "s2_p2",
-+					   "s3_p1",
-+					   "s3_p2",
-+					   "s4_p1",
-+					   "s4_p2";
-+
-+			interrupts = <GIC_SPI 184 IRQ_TYPE_EDGE_RISING>;
-+			interrupt-names = "uplow";
-+			#qcom,sensors = <5>;
-+			#thermal-sensor-cells = <1>;
-+		};
-+
- 		tlmm: pinctrl@1000000 {
- 			compatible = "qcom,ipq5018-tlmm";
- 			reg = <0x01000000 0x300000>;
-@@ -389,6 +500,64 @@ frame@b128000 {
- 		};
- 	};
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -1466,8 +1466,8 @@
  
-+	thermal-zones {
-+		cpu-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsens 2>;
-+
-+			trips {
-+				cpu-critical {
-+					temperature = <120000>;
-+					hysteresis = <2>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		gephy-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsens 4>;
-+
-+			trips {
-+				gephy-critical {
-+					temperature = <120000>;
-+					hysteresis = <2>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		top-glue-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsens 3>;
-+
-+			trips {
-+				top_glue-critical {
-+					temperature = <120000>;
-+					hysteresis = <2>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		ubi32-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsens 1>;
-+
-+			trips {
-+				ubi32-critical {
-+					temperature = <120000>;
-+					hysteresis = <2>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+	};
-+
- 	timer {
- 		compatible = "arm,armv8-timer";
- 		interrupts = <GIC_PPI 2 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
--- 
-2.48.1
+ 	spin_lock_irq(&dev->power.lock);
+ 
+-	ret = dev->power.disable_depth && dev->power.last_status == RPM_INVALID;
+-	if (ret)
++	ret = !pm_runtime_enabled(dev);
++	if (ret && dev->power.last_status == RPM_INVALID)
+ 		dev->power.last_status = RPM_BLOCKED;
+ 
+ 	spin_unlock_irq(&dev->power.lock);
+
+
 
