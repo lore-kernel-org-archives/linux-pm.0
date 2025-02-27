@@ -1,41 +1,41 @@
 Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9AE7A1A9B48;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC0E81B07AE;
 	Thu, 27 Feb 2025 15:53:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=68.232.154.123
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740671584; cv=none; b=sBV5S0X14t5mdbFoUhzpn+HVg2gU8pn05ZIfSOS8lfl49TRgKdDlL5NjtrGCSRC4GFrheCEukZ+G+t/1yuDa6l00iklWCzb25WwLNznkAvdVhNTpENo1kI+Js79DSkVUlXGxGZNRG4N3ok6WhLfpZPFFsrPa4qcRh7/OukGESYQ=
+	t=1740671584; cv=none; b=KqzDbeKJiIo0BtYu+tzqylEsSjS3uscoV5exrX9Dpl3xF5xRIh3lh67xOA9jTTbqfJNJCxpB2fqQIk2Jh/T+MH0XwyXG57D/40EnDmZfNScAhUeNMavwWZCz8TZ91k7HGOMLlmZdOKQOWf/Y5VGlOc+sz86b15SwMVPXv2C+3sk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1740671584; c=relaxed/simple;
-	bh=y6zBcUQgWavANG8NsuRsZDucUUdJh5SHXwtzFjn3t3c=;
+	bh=QtZL9N8JnzdiSxrQgqOdrgyJiMS1ffqau28eqfXsCas=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=tr4KyZpkPYlX+AiK5LZwyehhfzqTG1LeKvjKmafWMAWMjdPPSAEKeVUQLkStVunvkGZQC9rD6Y7BtwfOcUkYQ5JyWqHd3oMrJdevMCDDzeDiriVheBDYivQus7GRe+Ghwz7dx5xdvssxDrCb5QIlQMZUYyGJM60+9CkY4y5DFNE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com; spf=pass smtp.mailfrom=microchip.com; dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b=hGTuxDCR; arc=none smtp.client-ip=68.232.154.123
+	 MIME-Version:Content-Type; b=vEm+ueWdtiRC3Vr4kzGRgpuIALc8kzS9Qglnl3faj1dG2jdynZ+dlxdNi8LePBuiRggtfIQzvo3yzY6IbNUkF6tL/fj+UYBRdpXyKX6yUe4pHi00opbqF6Zt24FDoT7S1O80pdiQxe59udq00HE1LuGGvEqrlLJphoVKdStGyJE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com; spf=pass smtp.mailfrom=microchip.com; dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b=X+jwBg8f; arc=none smtp.client-ip=68.232.154.123
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=microchip.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b="hGTuxDCR"
+	dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b="X+jwBg8f"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1740671582; x=1772207582;
+  t=1740671583; x=1772207583;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=y6zBcUQgWavANG8NsuRsZDucUUdJh5SHXwtzFjn3t3c=;
-  b=hGTuxDCRbtMcFCcHYm3fGw2JSNdtB8M5Z8fMID2LMpbon6+GRdOiKvRG
-   elp3j0zGfBSfb2YIF4vhUPd0Z2iEWI1TmlOyjcm8itD/awyYeJIzPM3rI
-   UeikDYAD0eiyOnpkuQDHjoCQuzZpZimFP1X7nF0Ju+PYwhgoR0LUA0leG
-   epanUCZ+1Ac5eNJ408ic0rdolehC7RaxLm+u3tVK/VQbR6TdCC+8Xda55
-   keBRbcFr0L6Vcb+7OAX36rI8sargeTJZxD6UTVRCJXsHjhKhN6Eb//6IT
-   xF61e+NPNiLm5XFqEe1RJQTGIWuTk0zxDfu3MMWVbaktHIPYTE0NYtJ22
+  bh=QtZL9N8JnzdiSxrQgqOdrgyJiMS1ffqau28eqfXsCas=;
+  b=X+jwBg8fd5iwvIXM6iaIdlIvgPMBNk/Exum1WmEEn/BGj2C7MGIhe+WI
+   hs+6C5XvN7RHYTco2LDqMdVEZ1J0CO41zEntkMgkwASqljx2R/1JJQnj5
+   O+8avrHNbK1xnAfT+QIthLki/vw5PgKhwoPfRiut+5XtCn/SNgLL0BfHX
+   oiikZftwYkM9ZtQPZT4Brm/eHRq3yhwLHkLxRlsSPSymJ9NawSWJfOi3y
+   r9aDQe0dQji0vr3XEMwWdiPP40L8/4/c+jBed4tiE7Gb7H+hWaxgImqTL
+   GWqtGE2iceODCG0jeSg/PK64PI0c4k6AnBLKxkEtjL+8/ee+/VDdqOE4W
    w==;
 X-CSE-ConnectionGUID: xBkIAngZQVSwQhIMCQbtUA==
-X-CSE-MsgGUID: TSfk1f/VQZaZsJ8UblroGw==
+X-CSE-MsgGUID: dfcixra1Qo+oLexBdYUyKg==
 X-IronPort-AV: E=Sophos;i="6.13,320,1732604400"; 
-   d="scan'208";a="38638163"
+   d="scan'208";a="38638165"
 X-Amp-Result: SKIPPED(no attachment in message)
 Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
-  by esa2.microchip.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 27 Feb 2025 08:52:54 -0700
+  by esa2.microchip.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 27 Feb 2025 08:52:55 -0700
 Received: from chn-vm-ex04.mchp-main.com (10.10.85.152) by
  chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
@@ -51,10 +51,11 @@ To: <lee@kernel.org>, <robh@kernel.org>, <krzk+dt@kernel.org>,
 CC: <linux@armlinux.org.uk>, <devicetree@vger.kernel.org>,
 	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
 	<linux-arm-kernel@lists.infradead.org>, <linux-rtc@vger.kernel.org>, "Ryan
- Wanner" <Ryan.Wanner@microchip.com>
-Subject: [PATCH v3 03/21] dt-bindings: sram: Add microchip,sama7d65-sram
-Date: Thu, 27 Feb 2025 08:51:50 -0700
-Message-ID: <1f27526bcb63f611d2e14a0f1925b3106f1914c6.1740671156.git.Ryan.Wanner@microchip.com>
+ Wanner" <Ryan.Wanner@microchip.com>, Krzysztof Kozlowski
+	<krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v3 05/21] dt-bindings: reset: atmel,at91sam9260-reset: add microchip,sama7d65-rstc
+Date: Thu, 27 Feb 2025 08:51:52 -0700
+Message-ID: <410a509696c32c683c98cab31247e68fe6dbb414.1740671156.git.Ryan.Wanner@microchip.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1740671156.git.Ryan.Wanner@microchip.com>
 References: <cover.1740671156.git.Ryan.Wanner@microchip.com>
@@ -69,26 +70,29 @@ Content-Type: text/plain
 
 From: Ryan Wanner <Ryan.Wanner@microchip.com>
 
-Add microchip,sama7d65-sram compatibility to DT binding documentation.
+Add SAMA7D65 RSTC compatible to DT bindings documentation. The
+sama7d65-rstc is compatible with the sama7g5-rstc.
 
 Signed-off-by: Ryan Wanner <Ryan.Wanner@microchip.com>
-Acked-by: Rob Herring (Arm) <robh@kernel.org>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- Documentation/devicetree/bindings/sram/sram.yaml | 1 +
- 1 file changed, 1 insertion(+)
+ .../devicetree/bindings/reset/atmel,at91sam9260-reset.yaml     | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/sram/sram.yaml b/Documentation/devicetree/bindings/sram/sram.yaml
-index 7c1337e159f2..3071c5075ee4 100644
---- a/Documentation/devicetree/bindings/sram/sram.yaml
-+++ b/Documentation/devicetree/bindings/sram/sram.yaml
-@@ -31,6 +31,7 @@ properties:
-         - amlogic,meson-gxbb-sram
-         - arm,juno-sram-ns
-         - atmel,sama5d2-securam
-+        - microchip,sama7d65-securam
-         - nvidia,tegra186-sysram
-         - nvidia,tegra194-sysram
-         - nvidia,tegra234-sysram
+diff --git a/Documentation/devicetree/bindings/reset/atmel,at91sam9260-reset.yaml b/Documentation/devicetree/bindings/reset/atmel,at91sam9260-reset.yaml
+index 98465d26949e..a2ab7f8a11f8 100644
+--- a/Documentation/devicetree/bindings/reset/atmel,at91sam9260-reset.yaml
++++ b/Documentation/devicetree/bindings/reset/atmel,at91sam9260-reset.yaml
+@@ -23,6 +23,9 @@ properties:
+               - atmel,sama5d3-rstc
+               - microchip,sam9x60-rstc
+               - microchip,sama7g5-rstc
++      - items:
++          - const: microchip,sama7d65-rstc
++          - const: microchip,sama7g5-rstc
+       - items:
+           - const: atmel,sama5d3-rstc
+           - const: atmel,at91sam9g45-rstc
 -- 
 2.43.0
 
