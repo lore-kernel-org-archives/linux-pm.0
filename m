@@ -1,63 +1,70 @@
-Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55DC11B0F34;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A99EB25F790;
 	Thu, 27 Feb 2025 15:53:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=68.232.154.123
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740671590; cv=none; b=rEkRmKdtfuVQjCK4b1H4y78uYi9X8eM3QQ7U34ze7dvjJSGfwgrSScpSx6URAl2BhUuJCjnLib1dhkaidsPUb/6iNRbCwAxBRjTZHpZn7yI2yUceAISXM28oh2mD+zttBdJFgtTdu+F/CyqRgNr9W0Vj1j1ghwHpacoNM/tN9FU=
+	t=1740671590; cv=none; b=pEt6JNXZw2TFLt22gA7FxWbeyaI6D3feDP8HqWxV+NlRLLgmyw2V2H/O8snuVn7PZRx7TohugWU5+LHbv3VZyDTzVB9XnEtiDeZAE9diD6IXxkwLnpfVbUNXtz+u++c1bEudMzLIYYmJyuG9Wb6XnLunF32ULGh1S581xCrBcZA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1740671590; c=relaxed/simple;
-	bh=efKIZeMDJfkpGyPbaCu342SvLzmk6I9e9j/KfGGydXw=;
+	bh=qjw+CntSOPkjOmLFOccqqCtmc1V5Na/eYdZ8DfiskV0=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=TYvkbiH4b2flac5GGE4/TPkixkg5jPJCTOXdD2GiAvic37NPdB11LyIOSzYd17Xmg8wAvZZbn9DGXu9xz35V4Mup7gfwWvVV1KhyiGVc79+nH1uSvq8HtGx7gkvOUGocMsi4lxFBG8WL1Y5d242ybYsAk87lozvKomzcvYB7XyI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com; spf=pass smtp.mailfrom=microchip.com; dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b=Q2XihpyU; arc=none smtp.client-ip=68.232.154.123
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=microchip.com
+	 MIME-Version:Content-Type; b=raiNV7PAKdTDED42F43NKXkYHQ67KEWTpEzvKvMd0W7Q8sC5A0FYu2ushhVRPwahvlZjUmyIST/xfj6BI4QoTCmciK4Tp1IGXTCDglfZmE56FrC2I3c1/eIS3mmnLSvCqraaAdM6UwvEvV5N0lBiAVUUdgduUUJ9Afak3ZHSTB0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=US2TV3BM; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b="Q2XihpyU"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1740671588; x=1772207588;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=efKIZeMDJfkpGyPbaCu342SvLzmk6I9e9j/KfGGydXw=;
-  b=Q2XihpyUZTY6PycCVMYp53QUC/fa2rqSVxv2KzGDR1Gi/f+9swL1LadA
-   AAP0H9eqJXNp5eQOrgR/IVQCj3kY9PEL3BINgsJUUcH/9QoJ6FIzcigVd
-   oQlETKVIR3VgXXlLtEsuSJ8oOLKeO0AJr2vZVMkJHev3s3wzrQ4EO2E2K
-   WKqHA+B7/ZS/DwrxfUlOjx8Z23n+k9U7uYGIPlkoezzrYLWkTHvvHCR99
-   xzlt9BYRyFmGljJBUAJJAgG8nCDa64BFSvRWZgEkrgCQ+g7jL6OL2mCrk
-   JMZ/B6JoNCbRqw+r2yCMCzTAIR1V+CGgvjNKNGqOrSYb8BKXXKJaWr5Zr
-   w==;
-X-CSE-ConnectionGUID: xBkIAngZQVSwQhIMCQbtUA==
-X-CSE-MsgGUID: ffN8EMH2QKu/Y8j/J0ZaOQ==
-X-IronPort-AV: E=Sophos;i="6.13,320,1732604400"; 
-   d="scan'208";a="38638176"
-X-Amp-Result: SKIPPED(no attachment in message)
-Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
-  by esa2.microchip.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 27 Feb 2025 08:52:57 -0700
-Received: from chn-vm-ex04.mchp-main.com (10.10.85.152) by
- chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35; Thu, 27 Feb 2025 08:52:46 -0700
-Received: from ryan-Precision-3630-Tower.microchip.com (10.10.85.11) by
- chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server id
- 15.1.2507.35 via Frontend Transport; Thu, 27 Feb 2025 08:52:46 -0700
-From: <Ryan.Wanner@microchip.com>
-To: <lee@kernel.org>, <robh@kernel.org>, <krzk+dt@kernel.org>,
-	<conor+dt@kernel.org>, <claudiu.beznea@tuxon.dev>, <sre@kernel.org>,
-	<nicolas.ferre@microchip.com>, <alexandre.belloni@bootlin.com>,
-	<p.zabel@pengutronix.de>
-CC: <linux@armlinux.org.uk>, <devicetree@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-rtc@vger.kernel.org>, "Ryan
- Wanner" <Ryan.Wanner@microchip.com>
-Subject: [PATCH v3 12/21] ARM: at91: pm: Enable ULP0/ULP1 for SAMA7D65
-Date: Thu, 27 Feb 2025 08:51:59 -0700
-Message-ID: <2ac0832f6ede17a5c111ede09b44b8a126e33e36.1740671156.git.Ryan.Wanner@microchip.com>
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="US2TV3BM"
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 51R8sIkR021536;
+	Thu, 27 Feb 2025 15:53:05 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	a6b778EMkpw2o4BnHKWeBNV1DQywEL8Yq4GjDNBTywk=; b=US2TV3BMqyps80ks
+	sSln6FGCN1oXhREEIcl2dowOTZKjl6dPoD+Fkr7iHtZ6yC753zOo0CNIeXeN8yO1
+	xU6IjFm33jN4ty0EPdy0LpFQPB+caHe6XUtzR6rx05dpviGEUyK2Vx1CFSfcyjw8
+	QilIOJGDxkdnRPyItAmL7QWzZQyP9oK8px3ZGHlDHRDx+AkXaEJW1rQz3lCEHLvr
+	2Sl6ZY0RHf+vVkqGhhLVKgfIzCBfnGPeTMWaR56CXgRnzIlZQ/e717n0gJuDQNNZ
+	0vBrEl4vk5eJYygvgeOK5WEsKy0ABNXmvshf3VuGxv8GtOYqMgtZCJpwBLGWTzx7
+	r4BpxA==
+Received: from nasanppmta05.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 451prkpa8n-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 27 Feb 2025 15:53:05 +0000 (GMT)
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+	by NASANPPMTA05.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 51RFr5Ys011607
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 27 Feb 2025 15:53:05 GMT
+Received: from 0d558f49c4ed.qualcomm.com (10.80.80.8) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.9; Thu, 27 Feb 2025 07:53:00 -0800
+From: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
+To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio
+	<konradybcio@kernel.org>
+CC: Odelu Kukatla <quic_okukatla@quicinc.com>,
+        Jeff Johnson
+	<jeff.johnson@oss.qualcomm.com>,
+        Mike Tipton <mdtipton@quicinc.com>,
+        Jagadeesh Kona <quic_jkona@quicinc.com>,
+        Sibi Sankar
+	<quic_sibis@quicinc.com>, <linux-arm-msm@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        Raviteja Laggyshetty
+	<quic_rlaggysh@quicinc.com>
+Subject: [PATCH V9 4/7] interconnect: qcom: icc-rpmh: Add dynamic icc node id support
+Date: Thu, 27 Feb 2025 15:52:10 +0000
+Message-ID: <20250227155213.404-5-quic_rlaggysh@quicinc.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <cover.1740671156.git.Ryan.Wanner@microchip.com>
-References: <cover.1740671156.git.Ryan.Wanner@microchip.com>
+In-Reply-To: <20250227155213.404-1-quic_rlaggysh@quicinc.com>
+References: <20250227155213.404-1-quic_rlaggysh@quicinc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -66,272 +73,78 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
+X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: gj5RsBO9SqX3EN6vK5aMDepLZ5ZoGu4N
+X-Proofpoint-ORIG-GUID: gj5RsBO9SqX3EN6vK5aMDepLZ5ZoGu4N
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-02-27_06,2025-02-27_01,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 impostorscore=0
+ adultscore=0 phishscore=0 mlxlogscore=999 mlxscore=0 suspectscore=0
+ clxscore=1015 malwarescore=0 priorityscore=1501 spamscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2502100000 definitions=main-2502270120
 
-From: Ryan Wanner <Ryan.Wanner@microchip.com>
+To facilitate dynamic node ID support, the driver now uses
+node pointers for links instead of static node IDs.
+Additionally, the default node ID is set to -1 to prompt
+the ICC framework for dynamic node ID allocation.
 
-New clocks are saved to enable ULP0/ULP1 for SAMA7D65 because this SoC has a
-total of 9 main clocks that need to be saved for ULP0/ULP1 mode.
-
-Add mcks member to at91_pm_data, this will be used to determine
-how many main clocks need to be saved. In the pm_mcks variable will also make
-sure that no unnecessary clock settings are written during
-mck_ps_restore.
-
-Signed-off-by: Ryan Wanner <Ryan.Wanner@microchip.com>
-Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
+Signed-off-by: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
 ---
- arch/arm/mach-at91/pm.c              |  11 ++-
- arch/arm/mach-at91/pm.h              |   1 +
- arch/arm/mach-at91/pm_data-offsets.c |   2 +
- arch/arm/mach-at91/pm_suspend.S      | 101 ++++++++++++++++++++++++---
- 4 files changed, 105 insertions(+), 10 deletions(-)
+ drivers/interconnect/qcom/icc-rpmh.c | 16 ++++++++++++++--
+ drivers/interconnect/qcom/icc-rpmh.h |  3 ++-
+ 2 files changed, 16 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/mach-at91/pm.c b/arch/arm/mach-at91/pm.c
-index d82a507bc8da..ab51ca03632b 100644
---- a/arch/arm/mach-at91/pm.c
-+++ b/arch/arm/mach-at91/pm.c
-@@ -1340,6 +1340,7 @@ struct pmc_info {
- 	unsigned long uhp_udp_mask;
- 	unsigned long mckr;
- 	unsigned long version;
-+	unsigned long mcks;
- };
+diff --git a/drivers/interconnect/qcom/icc-rpmh.c b/drivers/interconnect/qcom/icc-rpmh.c
+index f2d63745be54..2e654917f535 100644
+--- a/drivers/interconnect/qcom/icc-rpmh.c
++++ b/drivers/interconnect/qcom/icc-rpmh.c
+@@ -285,13 +285,25 @@ int qcom_icc_rpmh_probe(struct platform_device *pdev)
+ 			ret = PTR_ERR(node);
+ 			goto err_remove_nodes;
+ 		}
++		qn->id = node->id;
  
- static const struct pmc_info pmc_infos[] __initconst = {
-@@ -1371,6 +1372,13 @@ static const struct pmc_info pmc_infos[] __initconst = {
- 	{
- 		.mckr = 0x28,
- 		.version = AT91_PMC_V2,
-+		.mcks = 4,
-+	},
-+	{
-+		.uhp_udp_mask = AT91SAM926x_PMC_UHP,
-+		.mckr = 0x28,
-+		.version = AT91_PMC_V2,
-+		.mcks = 9,
- 	},
+ 		node->name = qn->name;
+ 		node->data = qn;
+ 		icc_node_add(node, provider);
  
- };
-@@ -1389,7 +1397,7 @@ static const struct of_device_id atmel_pmc_ids[] __initconst = {
- 	{ .compatible = "atmel,sama5d2-pmc", .data = &pmc_infos[1] },
- 	{ .compatible = "microchip,sam9x60-pmc", .data = &pmc_infos[4] },
- 	{ .compatible = "microchip,sam9x7-pmc", .data = &pmc_infos[4] },
--	{ .compatible = "microchip,sama7d65-pmc", .data = &pmc_infos[4] },
-+	{ .compatible = "microchip,sama7d65-pmc", .data = &pmc_infos[6] },
- 	{ .compatible = "microchip,sama7g5-pmc", .data = &pmc_infos[5] },
- 	{ /* sentinel */ },
- };
-@@ -1460,6 +1468,7 @@ static void __init at91_pm_init(void (*pm_idle)(void))
- 	soc_pm.data.uhp_udp_mask = pmc->uhp_udp_mask;
- 	soc_pm.data.pmc_mckr_offset = pmc->mckr;
- 	soc_pm.data.pmc_version = pmc->version;
-+	soc_pm.data.pmc_mcks = pmc->mcks;
- 
- 	if (pm_idle)
- 		arm_pm_idle = pm_idle;
-diff --git a/arch/arm/mach-at91/pm.h b/arch/arm/mach-at91/pm.h
-index 53bdc9000e44..50c3a425d140 100644
---- a/arch/arm/mach-at91/pm.h
-+++ b/arch/arm/mach-at91/pm.h
-@@ -39,6 +39,7 @@ struct at91_pm_data {
- 	unsigned int suspend_mode;
- 	unsigned int pmc_mckr_offset;
- 	unsigned int pmc_version;
-+	unsigned int pmc_mcks;
- };
- #endif
- 
-diff --git a/arch/arm/mach-at91/pm_data-offsets.c b/arch/arm/mach-at91/pm_data-offsets.c
-index 40bd4e8fe40a..0ca5da66dc26 100644
---- a/arch/arm/mach-at91/pm_data-offsets.c
-+++ b/arch/arm/mach-at91/pm_data-offsets.c
-@@ -18,6 +18,8 @@ int main(void)
- 						 pmc_mckr_offset));
- 	DEFINE(PM_DATA_PMC_VERSION,	offsetof(struct at91_pm_data,
- 						 pmc_version));
-+	DEFINE(PM_DATA_PMC_MCKS,	offsetof(struct at91_pm_data,
-+						 pmc_mcks));
- 
- 	return 0;
- }
-diff --git a/arch/arm/mach-at91/pm_suspend.S b/arch/arm/mach-at91/pm_suspend.S
-index e5869cca5e79..e23b86834096 100644
---- a/arch/arm/mach-at91/pm_suspend.S
-+++ b/arch/arm/mach-at91/pm_suspend.S
-@@ -814,18 +814,20 @@ sr_dis_exit:
- .endm
- 
- /**
-- * at91_mckx_ps_enable:	save MCK1..4 settings and switch it to main clock
-+ * at91_mckx_ps_enable:	save MCK settings and switch it to main clock
-  *
-- * Side effects: overwrites tmp1, tmp2
-+ * Side effects: overwrites tmp1, tmp2, tmp3
-  */
- .macro at91_mckx_ps_enable
- #ifdef CONFIG_SOC_SAMA7
- 	ldr	pmc, .pmc_base
-+	ldr	tmp3, .mcks
- 
--	/* There are 4 MCKs we need to handle: MCK1..4 */
-+	/* Start at MCK1 and go until MCKs */
- 	mov	tmp1, #1
--e_loop:	cmp	tmp1, #5
--	beq	e_done
-+e_loop:
-+	cmp	tmp1, tmp3
-+	bgt	e_done
- 
- 	/* Write MCK ID to retrieve the settings. */
- 	str	tmp1, [pmc, #AT91_PMC_MCR_V2]
-@@ -850,7 +852,37 @@ e_save_mck3:
- 	b	e_ps
- 
- e_save_mck4:
-+	cmp	tmp1, #4
-+	bne	e_save_mck5
- 	str	tmp2, .saved_mck4
-+	b	e_ps
+-		for (j = 0; j < qn->num_links; j++)
+-			icc_link_create(node, qn->links[j]);
++		for (j = 0; j < qn->num_links; j++) {
++			struct qcom_icc_node *qn_link_node = qn->link_nodes[j];
++			struct icc_node *link_node;
 +
-+e_save_mck5:
-+	cmp	tmp1, #5
-+	bne	e_save_mck6
-+	str	tmp2, .saved_mck5
-+	b	e_ps
-+
-+e_save_mck6:
-+	cmp	tmp1, #6
-+	bne	e_save_mck7
-+	str	tmp2, .saved_mck6
-+	b	e_ps
-+
-+e_save_mck7:
-+	cmp	tmp1, #7
-+	bne	e_save_mck8
-+	str	tmp2, .saved_mck7
-+	b	e_ps
-+
-+e_save_mck8:
-+	cmp	tmp1, #8
-+	bne	e_save_mck9
-+	str	tmp2, .saved_mck8
-+	b	e_ps
-+
-+e_save_mck9:
-+	str	tmp2, .saved_mck9
++			if (qn_link_node) {
++				link_node = icc_node_create(qn_link_node->id);
++				qn_link_node->id = link_node->id;
++				icc_link_create(node, qn_link_node->id);
++			} else {
++				/* backward compatibility for target using static IDs */
++				icc_link_create(node, qn->links[j]);
++			}
++		}
  
- e_ps:
- 	/* Use CSS=MAINCK and DIV=1. */
-@@ -870,18 +902,20 @@ e_done:
- .endm
- 
- /**
-- * at91_mckx_ps_restore: restore MCK1..4 settings
-+ * at91_mckx_ps_restore: restore MCKx settings
-  *
-  * Side effects: overwrites tmp1, tmp2
-  */
- .macro at91_mckx_ps_restore
- #ifdef CONFIG_SOC_SAMA7
- 	ldr	pmc, .pmc_base
-+	ldr	tmp2, .mcks
- 
--	/* There are 4 MCKs we need to handle: MCK1..4 */
-+	/* Start from MCK1 and go up to MCKs */
- 	mov	tmp1, #1
--r_loop:	cmp	tmp1, #5
--	beq	r_done
-+r_loop:
-+	cmp	tmp1, tmp2
-+	bgt	r_done
- 
- r_save_mck1:
- 	cmp	tmp1, #1
-@@ -902,7 +936,37 @@ r_save_mck3:
- 	b	r_ps
- 
- r_save_mck4:
-+	cmp	tmp1, #4
-+	bne	r_save_mck5
- 	ldr	tmp2, .saved_mck4
-+	b	r_ps
-+
-+r_save_mck5:
-+	cmp	tmp1, #5
-+	bne	r_save_mck6
-+	ldr	tmp2, .saved_mck5
-+	b	r_ps
-+
-+r_save_mck6:
-+	cmp	tmp1, #6
-+	bne	r_save_mck7
-+	ldr	tmp2, .saved_mck6
-+	b	r_ps
-+
-+r_save_mck7:
-+	cmp	tmp1, #7
-+	bne	r_save_mck8
-+	ldr	tmp2, .saved_mck7
-+	b	r_ps
-+
-+r_save_mck8:
-+	cmp	tmp1, #8
-+	bne	r_save_mck9
-+	ldr	tmp2, .saved_mck8
-+	b	r_ps
-+
-+r_save_mck9:
-+	ldr	tmp2, .saved_mck9
- 
- r_ps:
- 	/* Write MCK ID to retrieve the settings. */
-@@ -921,6 +985,7 @@ r_ps:
- 	wait_mckrdy tmp1
- 
- 	add	tmp1, tmp1, #1
-+	ldr	tmp2, .mcks
- 	b	r_loop
- r_done:
- #endif
-@@ -1045,6 +1110,10 @@ ENTRY(at91_pm_suspend_in_sram)
- 	str	tmp1, .memtype
- 	ldr	tmp1, [r0, #PM_DATA_MODE]
- 	str	tmp1, .pm_mode
-+#ifdef CONFIG_SOC_SAMA7
-+	ldr	tmp1, [r0, #PM_DATA_PMC_MCKS]
-+	str	tmp1, .mcks
-+#endif
- 
- 	/*
- 	 * ldrne below are here to preload their address in the TLB as access
-@@ -1132,6 +1201,10 @@ ENDPROC(at91_pm_suspend_in_sram)
- 	.word 0
- .pmc_version:
- 	.word 0
-+#ifdef CONFIG_SOC_SAMA7
-+.mcks:
-+	.word 0
-+#endif
- .saved_mckr:
- 	.word 0
- .saved_pllar:
-@@ -1155,6 +1228,16 @@ ENDPROC(at91_pm_suspend_in_sram)
- 	.word 0
- .saved_mck4:
- 	.word 0
-+.saved_mck5:
-+	.word 0
-+.saved_mck6:
-+	.word 0
-+.saved_mck7:
-+	.word 0
-+.saved_mck8:
-+	.word 0
-+.saved_mck9:
-+	.word 0
- #endif
- 
- ENTRY(at91_pm_suspend_in_sram_sz)
+ 		data->nodes[i] = node;
+ 	}
+diff --git a/drivers/interconnect/qcom/icc-rpmh.h b/drivers/interconnect/qcom/icc-rpmh.h
+index 82344c734091..cf4aa69c707c 100644
+--- a/drivers/interconnect/qcom/icc-rpmh.h
++++ b/drivers/interconnect/qcom/icc-rpmh.h
+@@ -95,7 +95,8 @@ struct qcom_icc_qosbox {
+ struct qcom_icc_node {
+ 	const char *name;
+ 	u16 links[MAX_LINKS];
+-	u16 id;
++	struct qcom_icc_node *link_nodes[MAX_LINKS];
++	int id;
+ 	u16 num_links;
+ 	u16 channels;
+ 	u16 buswidth;
 -- 
 2.43.0
 
