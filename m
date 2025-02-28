@@ -1,32 +1,32 @@
 Received: from unicom145.biz-email.net (unicom145.biz-email.net [210.51.26.145])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B50014B092;
-	Fri, 28 Feb 2025 08:04:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D861310E5;
+	Fri, 28 Feb 2025 08:04:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.51.26.145
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740729857; cv=none; b=fDETDQSoYoW6kSFcjYPzVZCN3HTIDbHBmPfote15q1y6GwFTz8GR7A+JjCIv+V7uRulPNdmWgpcyV7BZ4HuC2qewFdZM1ZHsWd+yW3CeRo+RH341Iv9Nw7UL/dDNDiLI/hwavlz1yc3zr+3xbliy/2UgeSPykNOsKxP3FKSfaNU=
+	t=1740729860; cv=none; b=bJxmQDMIEQQ23xx25827BlgoTSClUMOZ0U3nUhCZC5A5HAOEhDIffCpz6v2fZE4tQ9NnderaiQd6CMdLY+8yBYYn6y01sDRZXqPgenfiuEs6TV/xrTrvvjgJcdYm4QVRZF1X7u7KvLpHYjxeQotCN1R2Q05Hp5mu72c/ZvFMlR8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740729857; c=relaxed/simple;
-	bh=dw1TQBkvrIyQhac/ZQzbBW90OqwHCvvPGnXkseSfItE=;
+	s=arc-20240116; t=1740729860; c=relaxed/simple;
+	bh=GEvryLHMMg3AolUb29+/LBGN0pGCfWs+tn12IadqdDI=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=VOMT63WMKrrtTCVgt/1v6UY+8b9UG4yHGydUeV2BX0b9B65wR6gs0FIkiUa+w2dfCQ/aP0UZSu3SK31LEiFTHyHNuiUX1s1K9+5rivKV1b+irgo1Wa0E5J2r1CToZPDGc3Q6tNIWBWQpbjtQTNdxjyDRmn9miVide/TPwDS9Cfs=
+	 MIME-Version:Content-Type; b=tinQ4Q4CNaRfA1ClBDaMMH12g79O2cn43jBKO20lVA7ODFltsMCRLiHgk+C9m1Lg4RH47zfJBR3ZjLw/P1CwH1mrKkP+RLkTA9PfR7eVpfHV9dduzKCSOi8IS6jueksAFHoV67hTvNN9/J0fbEKqnl6DHRZgGzi0WNvgaj9a/oI=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=inspur.com; spf=pass smtp.mailfrom=inspur.com; arc=none smtp.client-ip=210.51.26.145
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=inspur.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=inspur.com
 Received: from jtjnmail201602.home.langchao.com
-        by unicom145.biz-email.net ((D)) with ASMTP (SSL) id 202502281604081785;
-        Fri, 28 Feb 2025 16:04:08 +0800
+        by unicom145.biz-email.net ((D)) with ASMTP (SSL) id 202502281604091828;
+        Fri, 28 Feb 2025 16:04:09 +0800
 Received: from localhost.localdomain (10.94.16.254) by
  jtjnmail201602.home.langchao.com (10.100.2.2) with Microsoft SMTP Server id
- 15.1.2507.39; Fri, 28 Feb 2025 16:04:07 +0800
+ 15.1.2507.39; Fri, 28 Feb 2025 16:04:08 +0800
 From: Bo Liu <liubo03@inspur.com>
 To: <sre@kernel.org>, <mazziesaccount@gmail.com>
 CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>, Bo Liu
 	<liubo03@inspur.com>
-Subject: [PATCH 1/9] power: supply: bd99954: convert to use maple tree register cache
-Date: Fri, 28 Feb 2025 03:02:28 -0500
-Message-ID: <20250228080236.2759-2-liubo03@inspur.com>
+Subject: [PATCH 3/9] power: supply: bq2515x: convert to use maple tree register cache
+Date: Fri, 28 Feb 2025 03:02:30 -0500
+Message-ID: <20250228080236.2759-4-liubo03@inspur.com>
 X-Mailer: git-send-email 2.18.2
 In-Reply-To: <20250228080236.2759-1-liubo03@inspur.com>
 References: <20250228080236.2759-1-liubo03@inspur.com>
@@ -37,7 +37,7 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain
-tUid: 2025228160408da40222ee3984afbbfd2f4c4bef53ba0
+tUid: 202522816040988bf0c9f1a5945ecf11573d5ab4a34d6
 X-Abuse-Reports-To: service@corp-email.com
 Abuse-Reports-To: service@corp-email.com
 X-Complaints-To: service@corp-email.com
@@ -49,22 +49,31 @@ more appropriate for modern systems than those made by the rbtree cache.
 
 Signed-off-by: Bo Liu <liubo03@inspur.com>
 ---
- drivers/power/supply/bd99954-charger.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/power/supply/bq2515x_charger.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/supply/bd99954-charger.c b/drivers/power/supply/bd99954-charger.c
-index 54bf88262510..bd884ebee904 100644
---- a/drivers/power/supply/bd99954-charger.c
-+++ b/drivers/power/supply/bd99954-charger.c
-@@ -156,7 +156,7 @@ static const struct regmap_config bd9995x_regmap_config = {
- 	.reg_stride = 1,
+diff --git a/drivers/power/supply/bq2515x_charger.c b/drivers/power/supply/bq2515x_charger.c
+index a3424f67f2b1..6909b1322f0d 100644
+--- a/drivers/power/supply/bq2515x_charger.c
++++ b/drivers/power/supply/bq2515x_charger.c
+@@ -1060,7 +1060,7 @@ static const struct regmap_config bq25150_regmap_config = {
+ 	.max_register		= BQ2515X_DEVICE_ID,
+ 	.reg_defaults		= bq25150_reg_defaults,
+ 	.num_reg_defaults	= ARRAY_SIZE(bq25150_reg_defaults),
+-	.cache_type		= REGCACHE_RBTREE,
++	.cache_type		= REGCACHE_MAPLE,
+ 	.volatile_reg		= bq2515x_volatile_register,
+ };
  
- 	.max_register = 3 * 0x100,
--	.cache_type = REGCACHE_RBTREE,
-+	.cache_type = REGCACHE_MAPLE,
+@@ -1071,7 +1071,7 @@ static const struct regmap_config bq25155_regmap_config = {
+ 	.max_register		= BQ2515X_DEVICE_ID,
+ 	.reg_defaults		= bq25155_reg_defaults,
+ 	.num_reg_defaults	= ARRAY_SIZE(bq25155_reg_defaults),
+-	.cache_type		= REGCACHE_RBTREE,
++	.cache_type		= REGCACHE_MAPLE,
+ 	.volatile_reg		= bq2515x_volatile_register,
+ };
  
- 	.ranges = regmap_range_cfg,
- 	.num_ranges = ARRAY_SIZE(regmap_range_cfg),
 -- 
 2.31.1
 
