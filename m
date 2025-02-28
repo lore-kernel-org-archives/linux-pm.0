@@ -1,32 +1,32 @@
 Received: from unicom145.biz-email.net (unicom145.biz-email.net [210.51.26.145])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1DC901DE2D7;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBC3A1DE2C9;
 	Fri, 28 Feb 2025 08:04:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.51.26.145
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740729865; cv=none; b=gLttFB47ig8xKpga7hl6NhFH7nU9lCQfWtR3W7T8j1pYElS7GUx+KX8Esmkef9mEjMCOCaBBWOI5ErsIi2QH1QYAsr3c4858q37ZDfwnPW8x2YPqxb2/1cX9RxVnJoXduumullQzNQ6LalkyEJJKDxrlsTb98TfsvMCMM1tcAhU=
+	t=1740729866; cv=none; b=N8oL2vhpxivZr8uxP6I06ssLEc0J0DfoDLWOgh/GhhKnP0vWI2x4E+ORmDPUYPeYvZ+VnhCQ0bJNVNqsXwYmRTwUkX8uSFFGbVbvjFMtmLqnan8wvrHAtNdZHccAvOASGm1+ectJbV8+MXO97aBjzo2ICTZDapzA+2F8Ebnxpbc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740729865; c=relaxed/simple;
-	bh=bTW5lHMAe3sUEa49Ua+XwSqzM0Gt6INQVEE0T+NIjrQ=;
+	s=arc-20240116; t=1740729866; c=relaxed/simple;
+	bh=U56EgwxoyeVmpJO22ghuZQ7id7oDbuEKy3lpE6x2eoY=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=A0GBaTiwaaKjKNs7Cos61IlaLuedzELrYRKEH+WFzCXpAm+5UswaRmALzhi4NL4rQyw7Mr/Ei85zSKclcNs2uL/54yrYZHU4J3PkFpVIcxd+nzzK5T5Dp/DK0eMrD5D+6HUDwxnYOTzG5qafNEdxRDvRX84YYWqVhr0L6gNBrrk=
+	 MIME-Version:Content-Type; b=QABoPZWBg5WiNIMcRbSv/gP9R+apU+nGv/8lF/JhjyquP4HnHCuYu9lp7EVUjd7+jWQVNnSW43orr9D5hUGPihnNjrfpPU2btXtRljBDV+41vseu52JQksCj6mRJBwgaYMXG4wWyZ00ipWCf+DiSZl+L2t6KhTw/fwdkoamhQWE=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=inspur.com; spf=pass smtp.mailfrom=inspur.com; arc=none smtp.client-ip=210.51.26.145
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=inspur.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=inspur.com
 Received: from jtjnmail201602.home.langchao.com
-        by unicom145.biz-email.net ((D)) with ASMTP (SSL) id 202502281604141935;
-        Fri, 28 Feb 2025 16:04:14 +0800
+        by unicom145.biz-email.net ((D)) with ASMTP (SSL) id 202502281604101847;
+        Fri, 28 Feb 2025 16:04:10 +0800
 Received: from localhost.localdomain (10.94.16.254) by
  jtjnmail201602.home.langchao.com (10.100.2.2) with Microsoft SMTP Server id
- 15.1.2507.39; Fri, 28 Feb 2025 16:04:13 +0800
+ 15.1.2507.39; Fri, 28 Feb 2025 16:04:09 +0800
 From: Bo Liu <liubo03@inspur.com>
 To: <sre@kernel.org>, <mazziesaccount@gmail.com>
 CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>, Bo Liu
 	<liubo03@inspur.com>
-Subject: [PATCH 8/9] power: supply: rt9455: convert to use maple tree register cache
-Date: Fri, 28 Feb 2025 03:02:35 -0500
-Message-ID: <20250228080236.2759-9-liubo03@inspur.com>
+Subject: [PATCH 4/9] power: supply: bq25890: convert to use maple tree register cache
+Date: Fri, 28 Feb 2025 03:02:31 -0500
+Message-ID: <20250228080236.2759-5-liubo03@inspur.com>
 X-Mailer: git-send-email 2.18.2
 In-Reply-To: <20250228080236.2759-1-liubo03@inspur.com>
 References: <20250228080236.2759-1-liubo03@inspur.com>
@@ -37,7 +37,7 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain
-tUid: 2025228160414b0ae14750ff103693320210b413a027c
+tUid: 2025228160410b0846fe8585b468c2ba630187eb5116b
 X-Abuse-Reports-To: service@corp-email.com
 Abuse-Reports-To: service@corp-email.com
 X-Complaints-To: service@corp-email.com
@@ -49,22 +49,22 @@ more appropriate for modern systems than those made by the rbtree cache.
 
 Signed-off-by: Bo Liu <liubo03@inspur.com>
 ---
- drivers/power/supply/rt9455_charger.c | 2 +-
+ drivers/power/supply/bq25890_charger.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/rt9455_charger.c b/drivers/power/supply/rt9455_charger.c
-index 64a23e3d7bb0..ff15e20ec70a 100644
---- a/drivers/power/supply/rt9455_charger.c
-+++ b/drivers/power/supply/rt9455_charger.c
-@@ -1579,7 +1579,7 @@ static const struct regmap_config rt9455_regmap_config = {
- 	.writeable_reg	= rt9455_is_writeable_reg,
- 	.volatile_reg	= rt9455_is_volatile_reg,
- 	.max_register	= RT9455_REG_MASK3,
--	.cache_type	= REGCACHE_RBTREE,
-+	.cache_type	= REGCACHE_MAPLE,
- };
+diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
+index 2f5ceaf00b94..868e86e1749b 100644
+--- a/drivers/power/supply/bq25890_charger.c
++++ b/drivers/power/supply/bq25890_charger.c
+@@ -164,7 +164,7 @@ static const struct regmap_config bq25890_regmap_config = {
+ 	.val_bits = 8,
  
- static int rt9455_probe(struct i2c_client *client)
+ 	.max_register = 0x14,
+-	.cache_type = REGCACHE_RBTREE,
++	.cache_type = REGCACHE_MAPLE,
+ 
+ 	.wr_table = &bq25890_writeable_regs,
+ 	.volatile_table = &bq25890_volatile_regs,
 -- 
 2.31.1
 
