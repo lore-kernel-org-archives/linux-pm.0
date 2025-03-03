@@ -1,161 +1,94 @@
-Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com [209.85.128.176])
+Received: from mail-yw1-f173.google.com (mail-yw1-f173.google.com [209.85.128.173])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C10020C014
-	for <linux-pm@vger.kernel.org>; Mon,  3 Mar 2025 11:50:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 102982036F9
+	for <linux-pm@vger.kernel.org>; Mon,  3 Mar 2025 11:55:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741002631; cv=none; b=FaTQt0L+S5T/SHYD07fx/l0N8KoSQXOBinmSsx4HfMDuqLVp8hK4rPdO+8EoG/JCltlafm3LnVD5bL2RnokTpPE+sG4D+HUB2SngTnsiWaJTIP6z7LgCuwq2W25EzJTZyWL+jk86mEj1xk4H4EqW/SeQcELAFOs0+6o4v19x8HI=
+	t=1741002959; cv=none; b=Cej2U4ng/3yR+WtPxKng+YIF+VB9sJ3JV04/jcjfMynT/10dqbkAwHm0kzHUx8MldpP5meDcH2ePnqYOzOPqUEazACYnrQ5R+bA/yWnA9lIn2PQQMZ/2vzhp0Ps6Uj/zjRSY2itMim7YocRISeB0FjzPdwPiSVi1Jig5zz33cPg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741002631; c=relaxed/simple;
-	bh=iYUckyVAVeI7XDNNji2uBn6ccd7npEcaiKeFcolCkl4=;
+	s=arc-20240116; t=1741002959; c=relaxed/simple;
+	bh=XNgWdH8fl5cRzt9ljpvgTEJNjZwPu9TAIUcQAUPpGJ4=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Bjw5sgM6sImKqElb7pSecr6nU0in6Z+oCLfthirdKZHIEuEXW+4ZXnKdZCD6fRlNvH1cAvU+/llC4JK44feJLLhSiM1yGf4GLEmV8Ralx5ZIDv3IFNKChVIqI4YdKao8enXzKVRECbLobvdzFyBM9+wLyBvIcLMVMg0SWyNem2M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=F8hsg1Ui; arc=none smtp.client-ip=209.85.128.176
+	 To:Cc:Content-Type; b=Rx1I3SsJE0227n5B4xgi8UXBnp1ZQO5Wv77U3p9wNLDLB9YdxFJk6neYjcOyUWbBOsdNxKv/sVlUD5e0A95iduC3HJsXCilpwe02egz7l3qlfcHo5Dexxf8L3J0prAUxji6zpjOPuZaDkjqxWq1JeDXP7fIF1IwrLjrBZfkJlUc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=FCX1s3W7; arc=none smtp.client-ip=209.85.128.173
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="F8hsg1Ui"
-Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-6f74b78df93so38129417b3.0
-        for <linux-pm@vger.kernel.org>; Mon, 03 Mar 2025 03:50:29 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="FCX1s3W7"
+Received: by mail-yw1-f173.google.com with SMTP id 00721157ae682-6efe4e3d698so37452907b3.0
+        for <linux-pm@vger.kernel.org>; Mon, 03 Mar 2025 03:55:57 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1741002629; x=1741607429; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1741002957; x=1741607757; darn=vger.kernel.org;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=uk4RC6gYyKlg81cJh6W+VhPYO5gDI/YlGZXXv16k7MQ=;
-        b=F8hsg1UiwKECfQsGtOKKbFDKGEqu6ZIXQDa1QTruaoye6q78NWZQHYBzvcQ4B2iuWI
-         1o8gez1SEP7H37/UixC4ZDON6HsTim+Aj6WvUFxmrlymX5Xs3+XB35XCtlI/X2Y5kTlc
-         wj8bAMqDg9mXtAdq/e0QRkB1szc12HpCUDsHTxrOS1jMWptro81bmUyTJcHV1HFxkJCL
-         gM/ouAshpbk3r/zDp6J2WVawtLvsmZGj6VPQBaVCyJsLH9ihO9XY5qGjB4Y5hyF5iCcj
-         FVclzS6mR9jXufNj1uasHP+WQI3T/Zqn/THUJgqYDBRo7iuuN2p4bKV0ELXPCc8AzVHR
-         iPPQ==
+        bh=XNgWdH8fl5cRzt9ljpvgTEJNjZwPu9TAIUcQAUPpGJ4=;
+        b=FCX1s3W7gks/gh1gIaOYRXTZMnZnt5XYck4kneFLu1lY53SmOcChbVtjj/FYmSWOvE
+         tH7XeRuCCxMQDvpvj6CIE2s35eMVGd3dMRELe4xJl3w4Ecw4tHdwFSYjicq7XMaZrbK9
+         J3Zb9GnCK5MrgVENiax+Wj4CP4+30ULaKIoB7cVk4HVlL1UC3lOPeeK7/4mi2KDNPZon
+         HakKlODddkGd/FkddB4b54NQlKJsWDeoMXTDS0mkYtmvypHOLx3QqKDx+hrdtAtWdmbR
+         2rMFSIV50oWxtzECb6I3YOChrCr4tzRgYE+UMvGAthnElw6O81qqExbblEn+/LbCYvxU
+         Y+yQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1741002629; x=1741607429;
+        d=1e100.net; s=20230601; t=1741002957; x=1741607757;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=uk4RC6gYyKlg81cJh6W+VhPYO5gDI/YlGZXXv16k7MQ=;
-        b=OZi996xiLluraqY5e41P+uCZxWRAnxU72jFxICcUgbI1Y0TjkXIFnwtJ8c3TYtsJYx
-         2qP+FevrJd1LbQiK2yShnItpAIMvFohTBn7hBgfHo/64k301XId1UERpHNea2J7WwKnE
-         qN1yvro+9rp1/EfrB8X1VuSAG3/5qZjeDCp98c8FGr+EEuxNRskcffIbLQh+hjvUCarn
-         6YdDyfT+1AcmyglR1Re9aE7AxwczLbUGsF3JL5PnA+9VFZ/AJ4gtyD1w6ZW0z0BEtpeO
-         xIrCYcl9EVYjX3r/4yDy6hXX7VhSYLlR8a/GhNnvq4nFE6+26UhLy5tHPWuRIYlTaIZg
-         cozA==
-X-Gm-Message-State: AOJu0YwICXaU7YItlBYLwfXUwvwIbCJxv0c5BeRrH+G6oHPjaxG2zk5W
-	bdR5icF5Czc7mxFZouyjYw6dXCxHsXZHfWvErEfTLDFbkQ9EVLYsoF8N3JJ1QlKBLStr4HXXak3
-	EFJx7WI63SjgoyBwKj14qV83NnxH5LuUUqHtMLw==
-X-Gm-Gg: ASbGnctmXg+eOSaPjnjXwQsWREkMsinYjQWNFMPormBcS9L9SQ6tJxYHQgEbgJJDpLn
-	125sKYioq864YaoHp/Hnh/BDNEtUvHm95DtKbwbNJ00njviKxLZFu/f0xeFNUEdPttG07V0D9Ui
-	j6Ku+CTm0Age3MA44R0x1FTCslB/s=
-X-Google-Smtp-Source: AGHT+IHbEZTHl8hhFga4vQY/ULqM1THSQSqqYAdq51p7CVUXvrld+wWN+muocGAUEDlP0o1E2tcH3vx/K7c1uLHnFyY=
-X-Received: by 2002:a05:690c:4b8c:b0:6fd:47b7:9730 with SMTP id
- 00721157ae682-6fd49fb60a6mr161831797b3.12.1741002628443; Mon, 03 Mar 2025
- 03:50:28 -0800 (PST)
+        bh=XNgWdH8fl5cRzt9ljpvgTEJNjZwPu9TAIUcQAUPpGJ4=;
+        b=I5dbz9qoO/2j70p4Gh8RPB244XR9Cktu2wcKrBt924sA/LkJdkn7dtishckgl/7daR
+         4XnReSbV6hU35ujnUEgowW88EOkBvpd40gxyW+D6SvbBTbhofrNwTcOXq/bkIodaPFYZ
+         HdvzXBD+KYXveFbcUL4jduFQcEwWIK/HxWi9ZbAHzRo9j8mumu0bFI7mwYF7utyYLVxG
+         MC0pFJEdNDZHsFnT3FCReEObVmIHktUkNtzT3UMoRsyZU1VtATtqnzLpbmxdnPy5EgbO
+         jaodJDx4sim5jnJgt2u+Rdo9IOnjcxB4pVp5u4RXcGfDGzqLVbiip0IfUOecaxM5LkuS
+         Z6Aw==
+X-Gm-Message-State: AOJu0Yw0JVZBcjx1ETH1KIQfgHQ0n2LAXVi4Ccv2SGYtrUL8c1R2E5/f
+	nJOnGyomvIfoKddOVJvbOS3gDB0D5fS9EbXQWyIzWWzyUbzAd4yfZkNLKfCIrla+/QSeO2t9d6F
+	AzjRQ1GygrobPQselcSvGTItK+CDkI/yv5kK5+Q==
+X-Gm-Gg: ASbGncvaYwSqbvg5I1YaP9kMyfBlusMqOnmZk9DyEn2/QGJt+Rqyz4T43A/T25y/jo1
+	fBDzHxa8iL7YiZABEolR4KwPTYNDNTfZhdqArevb3Czsnygen+IJyPz61DFIlthFC6ytQIXuR5u
+	Qeo/rd9CXF/cIxvoHhb6KnJN0r3Is=
+X-Google-Smtp-Source: AGHT+IGX8q8UK5ca8HVl/UrYuKtJYKHT+VOk7Nc15oA5SjFGT6TC1WnbIOSec57WlAO7CIGV36a6PfFL7M2kit01IOI=
+X-Received: by 2002:a05:690c:5719:b0:6fd:3ff9:ad96 with SMTP id
+ 00721157ae682-6fd4a16d0aemr115286237b3.37.1741002957064; Mon, 03 Mar 2025
+ 03:55:57 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <3353728.44csPzL39Z@rjwysocki.net>
-In-Reply-To: <3353728.44csPzL39Z@rjwysocki.net>
+References: <5000287.31r3eYUQgx@rjwysocki.net>
+In-Reply-To: <5000287.31r3eYUQgx@rjwysocki.net>
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Mon, 3 Mar 2025 12:49:52 +0100
-X-Gm-Features: AQ5f1JrH4q1zOIaTrqYzbdkfjiU66g40RtbSmo7LK-gb4j9oNzq1abNpZhBdAkc
-Message-ID: <CAPDyKFoQvKFmwpzPtHGzPKzPv7KLo_7-2oYb2=BXEZAm4xpVbQ@mail.gmail.com>
-Subject: Re: [PATCH v2] PM: sleep: Adjust check before setting power.must_resume
+Date: Mon, 3 Mar 2025 12:55:20 +0100
+X-Gm-Features: AQ5f1JoaEzH0RILD_BxoqNSMy1juR0ec4QxtwfOG9M6tuXJbj4t5l5bWPbiZLn4
+Message-ID: <CAPDyKFpo-Pn_4aUAwowQmNDDa2zEZ6hwJhAAzCfArzzdt511Fw@mail.gmail.com>
+Subject: Re: [PATCH v1 0/3] PM: Tweaks on top of "smart suspend" handling changes
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, 
 	Alan Stern <stern@rowland.harvard.edu>, Johan Hovold <johan@kernel.org>, 
 	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, Jon Hunter <jonathanh@nvidia.com>
 Content-Type: text/plain; charset="UTF-8"
 
-On Thu, 27 Feb 2025 at 11:53, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+On Thu, 27 Feb 2025 at 11:49, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 >
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Hi Everyone,
 >
-> The check before setting power.must_resume in device_suspend_noirq()
-> does not take power.child_count into account, but it should do that, so
-> use pm_runtime_need_not_resume() in it for this purpose and adjust the
-> comment next to it accordingly.
+> These are some tweaks based on
 >
-> Fixes: 107d47b2b95e ("PM: sleep: core: Simplify the SMART_SUSPEND flag handling")
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> https://lore.kernel.org/linux-pm/12612706.O9o76ZdvQC@rjwysocki.net/
+>
+> which in the meantime has been applied to linux-pm.git/linux-next (as 6.15
+> material).
+>
+> None of them is essential, so if you have objections, please let me know,
+> but IMV they generally will make the code work better.
+>
+> Please refer to the individual patch changelogs for details.
+
+For the series:
 
 Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
 Kind regards
 Uffe
-
-> ---
->
-> The previous version of this patch is here:
->
-> https://lore.kernel.org/linux-pm/3548152.QJadu78ljV@rjwysocki.net/
->
-> v1 -> v2:
->    * Changelog rewrite.
->    * Added the Fixes: tag.
->    * Refined the comment adjustment.
->
-> ---
->  drivers/base/power/main.c    |   13 ++++++-------
->  drivers/base/power/runtime.c |    2 +-
->  include/linux/pm_runtime.h   |    2 ++
->  3 files changed, 9 insertions(+), 8 deletions(-)
->
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -1382,14 +1382,13 @@
->         dev->power.is_noirq_suspended = true;
->
->         /*
-> -        * Skipping the resume of devices that were in use right before the
-> -        * system suspend (as indicated by their PM-runtime usage counters)
-> -        * would be suboptimal.  Also resume them if doing that is not allowed
-> -        * to be skipped.
-> +        * Devices must be resumed unless they are explicitly allowed to be left
-> +        * in suspend, but even in that case skipping the resume of devices that
-> +        * were in use right before the system suspend (as indicated by their
-> +        * runtime PM usage counters and child counters) would be suboptimal.
->          */
-> -       if (atomic_read(&dev->power.usage_count) > 1 ||
-> -           !(dev_pm_test_driver_flags(dev, DPM_FLAG_MAY_SKIP_RESUME) &&
-> -             dev->power.may_skip_resume))
-> +       if (!(dev_pm_test_driver_flags(dev, DPM_FLAG_MAY_SKIP_RESUME) &&
-> +             dev->power.may_skip_resume) || !pm_runtime_need_not_resume(dev))
->                 dev->power.must_resume = true;
->
->         if (dev->power.must_resume)
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -1897,7 +1897,7 @@
->         pm_request_idle(link->supplier);
->  }
->
-> -static bool pm_runtime_need_not_resume(struct device *dev)
-> +bool pm_runtime_need_not_resume(struct device *dev)
->  {
->         return atomic_read(&dev->power.usage_count) <= 1 &&
->                 (atomic_read(&dev->power.child_count) == 0 ||
-> --- a/include/linux/pm_runtime.h
-> +++ b/include/linux/pm_runtime.h
-> @@ -66,6 +66,7 @@
->
->  extern int pm_generic_runtime_suspend(struct device *dev);
->  extern int pm_generic_runtime_resume(struct device *dev);
-> +extern bool pm_runtime_need_not_resume(struct device *dev);
->  extern int pm_runtime_force_suspend(struct device *dev);
->  extern int pm_runtime_force_resume(struct device *dev);
->
-> @@ -254,6 +255,7 @@
->
->  static inline int pm_generic_runtime_suspend(struct device *dev) { return 0; }
->  static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
-> +static inline bool pm_runtime_need_not_resume(struct device *dev) {return true; }
->  static inline int pm_runtime_force_suspend(struct device *dev) { return 0; }
->  static inline int pm_runtime_force_resume(struct device *dev) { return 0; }
->
->
->
->
