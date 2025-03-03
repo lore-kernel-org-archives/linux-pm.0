@@ -1,94 +1,109 @@
-Received: from mail-yw1-f173.google.com (mail-yw1-f173.google.com [209.85.128.173])
+Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com [209.85.167.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 102982036F9
-	for <linux-pm@vger.kernel.org>; Mon,  3 Mar 2025 11:55:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.173
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A816E2036F9;
+	Mon,  3 Mar 2025 11:56:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741002959; cv=none; b=Cej2U4ng/3yR+WtPxKng+YIF+VB9sJ3JV04/jcjfMynT/10dqbkAwHm0kzHUx8MldpP5meDcH2ePnqYOzOPqUEazACYnrQ5R+bA/yWnA9lIn2PQQMZ/2vzhp0Ps6Uj/zjRSY2itMim7YocRISeB0FjzPdwPiSVi1Jig5zz33cPg=
+	t=1741002998; cv=none; b=Jlf0E/tqqvNgPubPtF9ezZAcv1YrBA+O12peRxqI8F6sY82Y7m9Z98pysFYbvDijHsX/ugs3/puE9935/0CPDHJ5ArzFR87/Cf2Y1egehiFhrHm3CfjwHxlEGbFRYWYr9NSqnQh2P5vycZomlIEGKx1RuK86VyQMrT+5mD0BlEQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741002959; c=relaxed/simple;
-	bh=XNgWdH8fl5cRzt9ljpvgTEJNjZwPu9TAIUcQAUPpGJ4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Rx1I3SsJE0227n5B4xgi8UXBnp1ZQO5Wv77U3p9wNLDLB9YdxFJk6neYjcOyUWbBOsdNxKv/sVlUD5e0A95iduC3HJsXCilpwe02egz7l3qlfcHo5Dexxf8L3J0prAUxji6zpjOPuZaDkjqxWq1JeDXP7fIF1IwrLjrBZfkJlUc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=FCX1s3W7; arc=none smtp.client-ip=209.85.128.173
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1741002998; c=relaxed/simple;
+	bh=EPUaYsz9RGP9Mfmct+MjKUCihkIdRVMvNEvFaiL85yo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=f0HlTWKMVtUBRlrWv28Xzp/579gLapERIfrriRSVGLfm5Co5SvlHosARFwGEWVqljs0J33dLmJer7/RosUkOxwytNgPM+o4jioOqur3ZJDCuNmdg8aVsnnLRPOmCta68uJBlqlQqlby9E4k6jDb8owD9FgtzdpF97Yt0/4CUR0E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=lcg4DFRr; arc=none smtp.client-ip=209.85.167.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="FCX1s3W7"
-Received: by mail-yw1-f173.google.com with SMTP id 00721157ae682-6efe4e3d698so37452907b3.0
-        for <linux-pm@vger.kernel.org>; Mon, 03 Mar 2025 03:55:57 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lcg4DFRr"
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-549490e290dso3171845e87.2;
+        Mon, 03 Mar 2025 03:56:36 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1741002957; x=1741607757; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=XNgWdH8fl5cRzt9ljpvgTEJNjZwPu9TAIUcQAUPpGJ4=;
-        b=FCX1s3W7gks/gh1gIaOYRXTZMnZnt5XYck4kneFLu1lY53SmOcChbVtjj/FYmSWOvE
-         tH7XeRuCCxMQDvpvj6CIE2s35eMVGd3dMRELe4xJl3w4Ecw4tHdwFSYjicq7XMaZrbK9
-         J3Zb9GnCK5MrgVENiax+Wj4CP4+30ULaKIoB7cVk4HVlL1UC3lOPeeK7/4mi2KDNPZon
-         HakKlODddkGd/FkddB4b54NQlKJsWDeoMXTDS0mkYtmvypHOLx3QqKDx+hrdtAtWdmbR
-         2rMFSIV50oWxtzECb6I3YOChrCr4tzRgYE+UMvGAthnElw6O81qqExbblEn+/LbCYvxU
-         Y+yQ==
+        d=gmail.com; s=20230601; t=1741002995; x=1741607795; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=pbRgFCwk7Kav0J9k0Ma2PmL6NESow8QOcvEaprV4e+A=;
+        b=lcg4DFRrO9oMmV3cojgDgjz6K0Ro/QqeT7mFFmN9844jh8559rdSyrXg7ggN1lFg/R
+         QT1vl0vTo1xp904pMm0lfH7G1vNcV31vlg1dJwOWQopEJLm913D429lpGtmtDaCL7wha
+         mYpuWWdeEQ8lNH/7Lf8Fj3yILPkXb9+gCUPS0cw2FevzZK7zzGCVQOQw/keNedtppKE4
+         e5j2MQUviKKc/FtHKzVs2D1psk741uPIB3upCy7jUed4wqJn3ktPNhLlSr1ipVBuno9Q
+         jZnaViV9LmL0Udw0Vs6xEMDnIi/ol6shnzZKg/GuOZBQRmOb5Z6EnxZAKrohPWniN2PM
+         J/pg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1741002957; x=1741607757;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=1e100.net; s=20230601; t=1741002995; x=1741607795;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=XNgWdH8fl5cRzt9ljpvgTEJNjZwPu9TAIUcQAUPpGJ4=;
-        b=I5dbz9qoO/2j70p4Gh8RPB244XR9Cktu2wcKrBt924sA/LkJdkn7dtishckgl/7daR
-         4XnReSbV6hU35ujnUEgowW88EOkBvpd40gxyW+D6SvbBTbhofrNwTcOXq/bkIodaPFYZ
-         HdvzXBD+KYXveFbcUL4jduFQcEwWIK/HxWi9ZbAHzRo9j8mumu0bFI7mwYF7utyYLVxG
-         MC0pFJEdNDZHsFnT3FCReEObVmIHktUkNtzT3UMoRsyZU1VtATtqnzLpbmxdnPy5EgbO
-         jaodJDx4sim5jnJgt2u+Rdo9IOnjcxB4pVp5u4RXcGfDGzqLVbiip0IfUOecaxM5LkuS
-         Z6Aw==
-X-Gm-Message-State: AOJu0Yw0JVZBcjx1ETH1KIQfgHQ0n2LAXVi4Ccv2SGYtrUL8c1R2E5/f
-	nJOnGyomvIfoKddOVJvbOS3gDB0D5fS9EbXQWyIzWWzyUbzAd4yfZkNLKfCIrla+/QSeO2t9d6F
-	AzjRQ1GygrobPQselcSvGTItK+CDkI/yv5kK5+Q==
-X-Gm-Gg: ASbGncvaYwSqbvg5I1YaP9kMyfBlusMqOnmZk9DyEn2/QGJt+Rqyz4T43A/T25y/jo1
-	fBDzHxa8iL7YiZABEolR4KwPTYNDNTfZhdqArevb3Czsnygen+IJyPz61DFIlthFC6ytQIXuR5u
-	Qeo/rd9CXF/cIxvoHhb6KnJN0r3Is=
-X-Google-Smtp-Source: AGHT+IGX8q8UK5ca8HVl/UrYuKtJYKHT+VOk7Nc15oA5SjFGT6TC1WnbIOSec57WlAO7CIGV36a6PfFL7M2kit01IOI=
-X-Received: by 2002:a05:690c:5719:b0:6fd:3ff9:ad96 with SMTP id
- 00721157ae682-6fd4a16d0aemr115286237b3.37.1741002957064; Mon, 03 Mar 2025
- 03:55:57 -0800 (PST)
+        bh=pbRgFCwk7Kav0J9k0Ma2PmL6NESow8QOcvEaprV4e+A=;
+        b=rZNucrkHrIfckI8qS/23puFiSYzczPnSUxGNCbFIp85twxio2WM6vfACwFnn1JSdSx
+         0lB36Adwh1fuJ7z2BciqLJfhia6FFvIvPa5m/e67I1Sf7VYCQwVzyHYQV1qkbCZW7/Va
+         yiY3saVl6N2d8SCkp/XnZYICHyi9GbFwqAdFTukobx5PmlEpWOMX9fb7mLPHHM6uZcS4
+         V9rSf4A7zCOaoq1XpAGUi1txo6gq2t92ZjYmSfNcIAjPnEl6BQlQNEo+Gt2dINDz6n60
+         Tg1nIhn3lnMUAWYPXTzt/cbOe1tyDt37Vj6bDFMrJu9wu5jmaDhOKR3Pw3lLnpcuIVsc
+         MzMg==
+X-Forwarded-Encrypted: i=1; AJvYcCUQOUcw4DQusQzxcm8c0fAGnEmVzXfWmiAEHGjqkJc+86RqsNQWrkTeqFv6yuvIdSwF4MzYLsHJUzwA5dCk@vger.kernel.org, AJvYcCX3mE21VW+BU7Y/aq7DDQHMerWFPhZGQaLriPYKmvsM5GWDbTBXR+2/68zE5+wL/uoa078g7fnf4ewM@vger.kernel.org
+X-Gm-Message-State: AOJu0YwHK7eFGE8TQbsD7L6MndDMf8Uu6ihmLf3byH1yOAuQbSPGyB9U
+	3ItRc+LXY9kzK0En/7b/AEHthj6yAIk74AK5otfD0H1E7zIqhyHx
+X-Gm-Gg: ASbGnctdxXIdExv9S1ByfJ5fDhTt9aOXceC8i6bydq66zzD9KZtOcsIoVFZ8Y26V5wL
+	b8Wx0ktqsaRhjm/3pl6/JTdLklmE7cOQis+vof0l3RGq6g5Uk4XLwPmsRJDl67kydIOigGu/Lu5
+	iKXXb+M0+sJR4ulxaFjZieslGzyfLcCZtqnlKL2GGBgxBP7yTw+78Lo9M3cCOeloZ3sYHRnEMmy
+	M9+DuEYuxn70r6XG9BrKF1QzBqyQR6jI8ziiVRxUSCLYOU8qBRXAfbLlmCA+PB+0g61oKnSYraB
+	3htX8a25wGyHwitsLprUhSeoDP/WtNcCDBk=
+X-Google-Smtp-Source: AGHT+IE14Kz+bAZcHvS8EnHx9OLxfEmTwZXbj/JyckNJPTgTfvtpnACPfWH43rqQOq/qJWRTLLkWPg==
+X-Received: by 2002:a05:6512:3d19:b0:545:ea9:1a19 with SMTP id 2adb3069b0e04-5494c10c72bmr5706279e87.5.1741002994430;
+        Mon, 03 Mar 2025 03:56:34 -0800 (PST)
+Received: from xeon.. ([188.163.112.51])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5495f630cb5sm511817e87.212.2025.03.03.03.56.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 03 Mar 2025 03:56:33 -0800 (PST)
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v3 0/2] power: supply: Add support for Maxim MAX8971 charger
+Date: Mon,  3 Mar 2025 13:55:00 +0200
+Message-ID: <20250303115502.89457-1-clamor95@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <5000287.31r3eYUQgx@rjwysocki.net>
-In-Reply-To: <5000287.31r3eYUQgx@rjwysocki.net>
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Mon, 3 Mar 2025 12:55:20 +0100
-X-Gm-Features: AQ5f1JoaEzH0RILD_BxoqNSMy1juR0ec4QxtwfOG9M6tuXJbj4t5l5bWPbiZLn4
-Message-ID: <CAPDyKFpo-Pn_4aUAwowQmNDDa2zEZ6hwJhAAzCfArzzdt511Fw@mail.gmail.com>
-Subject: Re: [PATCH v1 0/3] PM: Tweaks on top of "smart suspend" handling changes
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, 
-	Alan Stern <stern@rowland.harvard.edu>, Johan Hovold <johan@kernel.org>, 
-	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, Jon Hunter <jonathanh@nvidia.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-On Thu, 27 Feb 2025 at 11:49, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> Hi Everyone,
->
-> These are some tweaks based on
->
-> https://lore.kernel.org/linux-pm/12612706.O9o76ZdvQC@rjwysocki.net/
->
-> which in the meantime has been applied to linux-pm.git/linux-next (as 6.15
-> material).
->
-> None of them is essential, so if you have objections, please let me know,
-> but IMV they generally will make the code work better.
->
-> Please refer to the individual patch changelogs for details.
+The MAX8971 is a compact, high-frequency, high-efficiency
+switch-mode charger for a one-cell lithium-ion (Li+) battery.
 
-For the series:
+---
+Changes on switching from v2 to v3:
+- fast_charge_timer, top_off_threshold_current and top_off_timer converted to
+  device attributes. Other vendor properties removed.
+- removed max8971_config
+- removed unneded functions and definitions along vendor props removal
+- added __maybe_unused for resume function
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Changes on switching from v1 to v2:
+- swap phandle with graph for extcon
+- added power-supply ref
+---
 
-Kind regards
-Uffe
+Svyatoslav Ryhel (2):
+  dt-bindings: power: supply: Document Maxim MAX8971 charger
+  power: supply: Add support for Maxim MAX8971 charger
+
+ .../bindings/power/supply/maxim,max8971.yaml  |  68 ++
+ drivers/power/supply/Kconfig                  |  14 +
+ drivers/power/supply/Makefile                 |   1 +
+ drivers/power/supply/max8971_charger.c        | 758 ++++++++++++++++++
+ 4 files changed, 841 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/maxim,max8971.yaml
+ create mode 100644 drivers/power/supply/max8971_charger.c
+
+-- 
+2.43.0
+
