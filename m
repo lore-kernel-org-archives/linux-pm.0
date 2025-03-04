@@ -1,38 +1,51 @@
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.4])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id AE9C520127D;
-	Tue,  4 Mar 2025 12:53:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.4
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92C10204581
+	for <linux-pm@vger.kernel.org>; Tue,  4 Mar 2025 13:25:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741092826; cv=none; b=DCwHFqnBZBjokAP2lgOmAZ05Ez5/UWbrOqhq0YR0tbeOvMdTEQtMbEaThslHFDHEiRVy8PwvRmlT/vP3aqxvYUFvvQ0YKNcnoiEBLfz4um23MAKMl6p3LYjfEyAZb5LOYFDUovFWkxO4OyWfEUtM6jhXVRodgQjNRvrSqqlhIsk=
+	t=1741094702; cv=none; b=dANmiFKM1rKPVL837vQhv1WBSPLdal0kH7JSSvzIlgNSi8snM3DfN7pR/GgvqjLCxukacFnZLJRB+fi5+HciavJt2OE+yEBLxLpCJUvIaTZM0uYlIRzWIPoYNqePChTCpi93g7iw0l1rlSaiFe30JFpBhn0CsyKLEGBshLQT/fU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741092826; c=relaxed/simple;
-	bh=SroIqtwDcZBI6USYWmrVQHd45regAWwrIk5senY15hQ=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=VMTYzYUIvx/P3H9WjkdnZgwe9rBtNRXso1nOiqGphw203VkyO2Gi7fEM46KtOUCZAPbDhN22Q6LNAo4BRRLOdQbIFRlvIMIxdGWJVcZi3EhvEDS8pl2wKVokGSieb1XigRO8iTmLqhcmlQI10ECS3c1rB8UxuGGRxMhOCDCr3Q4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=bPLXE3IP; arc=none smtp.client-ip=220.197.31.4
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="bPLXE3IP"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=5VkIE
-	0q8S0ZH3DD+BjbROvAubXkdtsXQCphn+uhJwiI=; b=bPLXE3IPi323vSZzaXpr1
-	AcrNetLkSrc5iEnoOUJAT+eKukbXYOsb8zfX2Vt5LLiV6yZbEbIXvqwLeg55hUmG
-	utV7jb1YCd2BdWa9YVJombNPeI1BdE/I7JP0JBc1U2jSTiOLCTh4lMOP4BgALBL0
-	x1YLTDG8i4QV/JcckGrH8M=
-Received: from zhuxin.hobot.cc (unknown [])
-	by gzga-smtp-mtada-g0-1 (Coremail) with SMTP id _____wAn7ISw98ZnSRmsPg--.2684S2;
-	Tue, 04 Mar 2025 20:53:16 +0800 (CST)
-From: Zxyan Zhu <zxyan20@163.com>
-To: vireshk@kernel.org
-Cc: nm@ti.com,
-	sboyd@kernel.org,
-	linux-pm@vger.kernel.org,
+	s=arc-20240116; t=1741094702; c=relaxed/simple;
+	bh=pd+PjXprAEkmIPp8pwsQ7ixhvBILYw1Yeknc9VSDaBw=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=E5fUO2rUmWVMDJ9jd2dBgeiZ00pvhKLLaGblw1qY3Z7fD+8NstgdbRTjWbG6ZK4C5C1fDq6duBLZBJ7IFUkIeOhJD86lriHwaSJAK1sDW4VNBcfYpl/Wd3uqoARrVdZ8Q39i7zAJ+Do/GWDerFUK4Q9KnaJZ2/Jnf51k70Wyr5U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ore@pengutronix.de>)
+	id 1tpSGB-000726-JP; Tue, 04 Mar 2025 14:24:35 +0100
+Received: from dude04.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::ac])
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <ore@pengutronix.de>)
+	id 1tpSGA-003yyy-2W;
+	Tue, 04 Mar 2025 14:24:34 +0100
+Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ore@pengutronix.de>)
+	id 1tpSGA-000sjP-2G;
+	Tue, 04 Mar 2025 14:24:34 +0100
+From: Oleksij Rempel <o.rempel@pengutronix.de>
+To: Sebastian Reichel <sre@kernel.org>,
+	Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Cc: Oleksij Rempel <o.rempel@pengutronix.de>,
+	kernel@pengutronix.de,
 	linux-kernel@vger.kernel.org,
-	Zxyan Zhu <zxyan20@163.com>
-Subject: [PATCH 1/1] OPP: Support multiple frequency points with opp-hz-<name>
-Date: Tue,  4 Mar 2025 20:52:56 +0800
-Message-Id: <20250304125256.3361648-1-zxyan20@163.com>
-X-Mailer: git-send-email 2.34.1
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	linux-pm@vger.kernel.org,
+	=?UTF-8?q?S=C3=B8ren=20Andersen?= <san@skov.dk>
+Subject: [PATCH v3 0/7] Introduction of PSCR Framework and Related Components
+Date: Tue,  4 Mar 2025 14:24:26 +0100
+Message-Id: <20250304132433.210355-1-o.rempel@pengutronix.de>
+X-Mailer: git-send-email 2.39.5
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,76 +53,66 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wAn7ISw98ZnSRmsPg--.2684S2
-X-Coremail-Antispam: 1Uf129KBjvJXoW7ArWxJF4UAFWkJF13trW5ZFb_yoW8uryfpF
-	43J398CrZ7J3y2gF97Ja1vvryavF4kXFWxKFy7C34jva17JF95Xw47tFyjq3Zayry7Z3y5
-	tayqgFy0ka10kw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0piYhF7UUUUU=
-X-CM-SenderInfo: p201t0isq6il2tof0z/1tbioBQGXmfG7SDRDAAAsd
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ore@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-Current OPP driver only supports a single frequency value per OPP
-entry using `opp-hz`. This patch extends the functionality to allow
-retrieving named frequency points using `opp-hz-<name>`, improving
-flexibility for different operating modes.
+changes v3
+- rework to remove devicetree dependencies
+- extend NVMEM to search devices and cells by names.
 
-Signed-off-by: Zxyan Zhu <zxyan20@163.com>
----
- drivers/opp/of.c | 28 ++++++++++++++++++++--------
- 1 file changed, 20 insertions(+), 8 deletions(-)
+changes v2:
+- rename the framework from PSCR to PSCRR (last R is for Recorder)
+- extend power on reason header and use it to show detected reason on
+  system start and in sysfs.
+- remove "unknow" reason
+- rebase on top of v6.8-rc1
+- yaml fixes
+- zero reason state on boot
 
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index a24f76f5fd01..d20802b0f89c 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -752,18 +752,30 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_of_remove_table);
- static int _read_rate(struct dev_pm_opp *new_opp, struct opp_table *opp_table,
- 		      struct device_node *np)
- {
--	struct property *prop;
-+	struct property *prop = NULL;
- 	int i, count, ret;
- 	u64 *rates;
-+	char name[NAME_MAX];
- 
--	prop = of_find_property(np, "opp-hz", NULL);
--	if (!prop)
--		return -ENODEV;
-+	/* Search for "opp-hz-<name>" */
-+	if (opp_table->prop_name) {
-+		snprintf(name, sizeof(name), "opp-hz-%s",
-+			 opp_table->prop_name);
-+		prop = of_find_property(np, name, NULL);
-+	}
-+
-+	if (!prop) {
-+		/* Search for "opp-hz" */
-+		sprintf(name, "opp-hz");
-+		prop = of_find_property(np, name, NULL);
-+		if (!prop)
-+			return -ENODEV;
-+	}
- 
- 	count = prop->length / sizeof(u64);
- 	if (opp_table->clk_count != count) {
--		pr_err("%s: Count mismatch between opp-hz and clk_count (%d %d)\n",
--		       __func__, count, opp_table->clk_count);
-+		pr_err("%s: Count mismatch between %s and clk_count (%d %d)\n",
-+		       __func__, name, count, opp_table->clk_count);
- 		return -EINVAL;
- 	}
- 
-@@ -771,9 +783,9 @@ static int _read_rate(struct dev_pm_opp *new_opp, struct opp_table *opp_table,
- 	if (!rates)
- 		return -ENOMEM;
- 
--	ret = of_property_read_u64_array(np, "opp-hz", rates, count);
-+	ret = of_property_read_u64_array(np, name, rates, count);
- 	if (ret) {
--		pr_err("%s: Error parsing opp-hz: %d\n", __func__, ret);
-+		pr_err("%s: Error parsing %s: %d\n", __func__, name, ret);
- 	} else {
- 		/*
- 		 * Rate is defined as an unsigned long in clk API, and so
--- 
-2.34.1
+Hello all,
+
+This patch series introduces the Power State Change Reasons Recording
+(PSCRR) framework and its related components into the kernel. The PSCR
+framework is designed for systems where traditional methods of storing
+power state change reasons, like PMICs or watchdogs, are inadequate. It
+provides a structured way to store reasons for system shutdowns and
+reboots, such as under-voltage or software-triggered events, in
+non-volatile hardware storage.
+
+These changes are critical for systems requiring detailed postmortem
+analysis and where immediate power-down scenarios limit traditional
+storage options. The framework also assists bootloaders and early-stage
+system components in making informed recovery decisions.
+
+Oleksij Rempel (7):
+  power: Extend power_on_reason.h for upcoming PSCRR framework
+  power: reset: Introduce PSCR Recording Framework for Non-Volatile
+    Storage
+  nvmem: provide consumer access to cell size metrics
+  nvmem: add support for device and sysfs-based cell lookups
+  power: reset: add PSCR NVMEM Driver for Recording Power State Change
+    Reasons
+  regulator: set Power State Change Reason before
+    hw_protection_shutdown()
+  thermal: core: Record PSCR before hw_protection_shutdown()
+
+ drivers/nvmem/core.c                  | 116 ++++++++
+ drivers/power/reset/Kconfig           |  30 ++
+ drivers/power/reset/Makefile          |   2 +
+ drivers/power/reset/pscrr-nvmem.c     | 254 ++++++++++++++++
+ drivers/power/reset/pscrr.c           | 408 ++++++++++++++++++++++++++
+ drivers/regulator/core.c              |   6 +
+ drivers/thermal/thermal_core.c        |   3 +
+ include/linux/nvmem-consumer.h        |  21 ++
+ include/linux/power/power_on_reason.h |   3 +
+ include/linux/pscrr.h                 |  91 ++++++
+ 10 files changed, 934 insertions(+)
+ create mode 100644 drivers/power/reset/pscrr-nvmem.c
+ create mode 100644 drivers/power/reset/pscrr.c
+ create mode 100644 include/linux/pscrr.h
+
+--
+2.39.5
 
