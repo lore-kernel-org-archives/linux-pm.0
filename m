@@ -1,370 +1,178 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f45.google.com (mail-wr1-f45.google.com [209.85.221.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A2A3220AF9B
-	for <linux-pm@vger.kernel.org>; Thu,  6 Mar 2025 09:39:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA86220A5C1;
+	Thu,  6 Mar 2025 09:50:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741253962; cv=none; b=MV1UiJX8wfe2q99SKGmGBuAdCI6NDSp5NEgWQElvVU7BsrpeMSw3Mi2ViK6hyjGqXRoFd+pNq+b/BjieTjn4yBnzuAiDA3C34o9Gb9m2aVLXJCvaFsXeCR2R8wuXkfwu8ABeamMAJugd6j+6vT+RukVULG82Vigx2yMIP0hOXe4=
+	t=1741254610; cv=none; b=YF7D4wE1RZnEpmLzCMibx/2ILlaynbR8rORZz74MysYpiq10rRlaYZ8W4pkKu2PCexHlmO4Td/Lvu0uSvnBdk3kHJMimssWcS+dv7+Tnw49IgYhxO7smlLOE/gyv5zf5iA2gBx3NkYrog8pokq/AvbOkLmPPWQIN4lfjIxqSinQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741253962; c=relaxed/simple;
-	bh=dwoFRUYoGAVCvcBi/bhIYzgTcMHv0zq4ziZL/ISCsh8=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=D/y9qw9KekN9hH9DWOZmr0VTHi7LSi93bwkZxFEWt9Z1yIX90Bwjp1Wdc9q8m+YLMlNjAlb7TK8cbgMtWuA961ktsRObJs5SGAqqNUI/l939TRZdK8lO3cokMqXRiWw4Tx7wh+WlbL0gvXpdbfXCkzjRuNTDvefGBl/pO0pu8L8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ore@pengutronix.de>)
-	id 1tq7h0-0002QQ-Iy; Thu, 06 Mar 2025 10:39:02 +0100
-Received: from dude04.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::ac])
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <ore@pengutronix.de>)
-	id 1tq7gz-004I9e-2G;
-	Thu, 06 Mar 2025 10:39:01 +0100
-Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.96)
-	(envelope-from <ore@pengutronix.de>)
-	id 1tq7gz-009ECS-21;
-	Thu, 06 Mar 2025 10:39:01 +0100
-From: Oleksij Rempel <o.rempel@pengutronix.de>
-To: Sebastian Reichel <sre@kernel.org>,
-	Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-Cc: Oleksij Rempel <o.rempel@pengutronix.de>,
-	kernel@pengutronix.de,
-	linux-kernel@vger.kernel.org,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	linux-pm@vger.kernel.org,
-	=?UTF-8?q?S=C3=B8ren=20Andersen?= <san@skov.dk>
-Subject: [PATCH v4 5/7] power: reset: add PSCR NVMEM Driver for Recording Power State Change Reasons
-Date: Thu,  6 Mar 2025 10:38:57 +0100
-Message-Id: <20250306093900.2199442-6-o.rempel@pengutronix.de>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250306093900.2199442-1-o.rempel@pengutronix.de>
-References: <20250306093900.2199442-1-o.rempel@pengutronix.de>
+	s=arc-20240116; t=1741254610; c=relaxed/simple;
+	bh=e/AROmtNQA02sSTZ4A2FXigthR1D6TwSo1b/w26IaUM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Y/pOVlcCUcgACaXm9G2TJBRTOFcMK5XuAGRAWgM/myNQ6dSg/GE6kUoOol/jevEcn4iZuwV1HWMGaY+6qChnaa8aPK0qdxVUTKQfUfG862NKCNgW+hi+iC6VBzOwoU2ceBSy0nVwVQa2pxMcEtxqyr8533dJxY9sq7DJIR/cPxo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=l38UIdFg; arc=none smtp.client-ip=209.85.221.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="l38UIdFg"
+Received: by mail-wr1-f45.google.com with SMTP id ffacd0b85a97d-390e702d481so233324f8f.1;
+        Thu, 06 Mar 2025 01:50:08 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1741254607; x=1741859407; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=KZbn0ZWk1+rvuFKVTnqNPyrfKXHkL/ZMvNqwP+kgElY=;
+        b=l38UIdFg955w9D+jMVU4EcxJXQa6S0sern+d6jsHjl/hpCwZeIrkloveRzdEVKUJ7J
+         Irg6v+u++FLJ1WlbNs7t+zfzeGFKYImfM6ReWbKpCm0kCP2LnqU88bG0FQoId+GqVooK
+         kKIQuR53PrOCyngbC0y2Fy8xBOlsZ3lVZ1YSeVz/6zl537IXAf/Vua9GSGiXWD70hIma
+         s6n101sE07HeQJ9dQkAZxJlpVh5Y58aF1CldCU4sZYfuti+XQ8eYVItajAhtqrEy6Eiw
+         qP1H8tD6fJQH8JczZWlnYhHQu6nDqLXbKDO1E+7lMbYV7kDud5S01axptDEUyizu0ino
+         fQOQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1741254607; x=1741859407;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=KZbn0ZWk1+rvuFKVTnqNPyrfKXHkL/ZMvNqwP+kgElY=;
+        b=F798f8yYYxpLtMkNPgD4mex53PHbgmIFOmyHk029mdx54+ad2ulW22MPxvRD4u+JpP
+         /BVUyNQrhlOdUJa69ZWsPPbTlRGT3Td31+HjWb9v6qFNYXYsPn7SLxyu/dcWZBl7oolB
+         DAbhFIxPlen9tpVLt7b73xh0/KZnyqQ4oh0Tq4p3lQkMZP5+ZoP4A9mhXta30gCgLZbj
+         cVe1FLpaCwvTDIQ+cfvF4JBDrV8URTnSGq+tLwMazD0MsCyn655culBwvLsQxC5H+rQ8
+         dMiWm9bBpQFnd6t6elfs6T1MefoshykHt1jiC7plqLSsW311x8Eiyu99uyKYwWlhKGkR
+         PLZA==
+X-Forwarded-Encrypted: i=1; AJvYcCUCcR+2aqEzZRCWEk4WlqvRpUjIE25WldJEuEaQ4FxqVThf6rV9a4EkAOQwVMZ216lsc6MgeuVd6v2V@vger.kernel.org, AJvYcCXHeUuwKVGlO7cUOgHVdLFgGe6yUdbtQj4nqTb/a1cq5dVOCuA31w58INfhrX+uC4rn8ytVu7d62x4V13RB@vger.kernel.org
+X-Gm-Message-State: AOJu0YwEfRcIo2xZlJqEaTmU9pfERCqboDkOfgZi+T2fZQ2oI3FVkFUx
+	ntikvDdAmV+eYFk6XHrQV3pfbF6VTBNQ5Ud7UzcHiIfDSRxNzn3j+dJXXIru1c/fQWFzFJlIHtP
+	h2A6pFnFUFGVFitc08Hd9GOjqP38=
+X-Gm-Gg: ASbGncuhS87Qf7xwGFTFRxm7GmZV2dkUoxULGsSfIfYd1QS6wx52UIB+95AlE8jHEp/
+	wyNYkIWBaw7XLLzesiG7g0qFTZUAQgirqPZgHL/yzNXkO2Q2TRoVUWW4+GG1miLdh3W3wMe39h4
+	AByarc27WssIPeCm57AEolPsldzoU=
+X-Google-Smtp-Source: AGHT+IHsd4hBnwqBMV6hYs1c9OgJ34UfLr66Fmw5hh4VbcZbcNnGwo18Hw3rs1KLCrQQNBpTyvxsy6Y6md6nFJblGKw=
+X-Received: by 2002:a05:6000:1a8f:b0:390:e7c1:59d3 with SMTP id
+ ffacd0b85a97d-3911f72620bmr5556599f8f.2.1741254606826; Thu, 06 Mar 2025
+ 01:50:06 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ore@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+References: <20250303122151.91557-1-clamor95@gmail.com> <20250303122151.91557-3-clamor95@gmail.com>
+ <3bc7c5a5-8fe7-4c4b-a80e-23522922debb@arm.com> <CAPVz0n0yvw4kyYKSve9sSZEvcZrCYZ6RqCjFSO5OCqtvRZSfJg@mail.gmail.com>
+ <f56596fe-92e8-481b-b15b-29b531eaec32@arm.com>
+In-Reply-To: <f56596fe-92e8-481b-b15b-29b531eaec32@arm.com>
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+Date: Thu, 6 Mar 2025 11:49:55 +0200
+X-Gm-Features: AQ5f1JpB7S5f4HnXIbqgzShFt_D77QbK0bshvECgENO_LYSZuaLirvex7ZfhGe8
+Message-ID: <CAPVz0n2ywjm+nLQ+ZAYbR1P6yCr8FQgOMeDT07s_YHZ7xA_6uA@mail.gmail.com>
+Subject: Re: [PATCH v3 2/2] thermal: thermal-generic-adc: add temperature
+ sensor channel
+To: Lukasz Luba <lukasz.luba@arm.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+	Jonathan Cameron <jic23@kernel.org>, Laxman Dewangan <ldewangan@nvidia.com>, 
+	Conor Dooley <conor+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+	linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-This driver utilizes the Power State Change Reasons Recording (PSCRR)
-framework to store specific power state change information, such as
-shutdown or reboot reasons, into a designated non-volatile memory
-(NVMEM) cell.
+=D1=81=D1=80, 5 =D0=B1=D0=B5=D1=80. 2025=E2=80=AF=D1=80. =D0=BE 16:37 Lukas=
+z Luba <lukasz.luba@arm.com> =D0=BF=D0=B8=D1=88=D0=B5:
+>
+>
+>
+> On 3/5/25 10:06, Svyatoslav Ryhel wrote:
+> > =D1=81=D1=80, 5 =D0=B1=D0=B5=D1=80. 2025=E2=80=AF=D1=80. =D0=BE 11:52 L=
+ukasz Luba <lukasz.luba@arm.com> =D0=BF=D0=B8=D1=88=D0=B5:
+> >>
+> >>
+> >>
+> >> On 3/3/25 12:21, Svyatoslav Ryhel wrote:
+> >>> To avoid duplicating sensor functionality and conversion tables, this=
+ design
+> >>> allows converting an ADC IIO channel's output directly into a tempera=
+ture IIO
+> >>> channel. This is particularly useful for devices where hwmon isn't su=
+itable
+> >>> or where temperature data must be accessible through IIO.
+> >>>
+> >>> One such device is, for example, the MAX17040 fuel gauge.
+> >>>
+> >>> Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> >>> ---
+> >>>    drivers/thermal/thermal-generic-adc.c | 54 +++++++++++++++++++++++=
++++-
+> >>>    1 file changed, 53 insertions(+), 1 deletion(-)
+> >>>
+> >>> diff --git a/drivers/thermal/thermal-generic-adc.c b/drivers/thermal/=
+thermal-generic-adc.c
+> > ...
+> >>>
+> >>> +static const struct iio_chan_spec gadc_thermal_iio_channel[] =3D {
+> >>> +     {
+> >>> +             .type =3D IIO_TEMP,
+> >>> +             .info_mask_separate =3D BIT(IIO_CHAN_INFO_PROCESSED),
+> >>
+> >> I would add the IIO_CHAN_INFO_SCALE and say it's in milli-degrees.
+> >>
+> >
+> > I have hit this issue already with als sensor. This should definitely
+> > be a IIO_CHAN_INFO_PROCESSED since there is no raw temp data we have,
+> > it gets processed into temp data via conversion table. I will add
+> > Jonathan Cameron to list if you don't mind, he might give some good
+> > advice.
+>
+> I'm not talking about 'PROCESSED' vs 'RAW'...
+> I'm asking if you can add the 'SCALE' case to handle and report
+> that this device will report 'processed' temp value in milli-degrees
+> of Celsius.
+>
 
-Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
----
- drivers/power/reset/Kconfig       |  11 ++
- drivers/power/reset/Makefile      |   1 +
- drivers/power/reset/pscrr-nvmem.c | 254 ++++++++++++++++++++++++++++++
- 3 files changed, 266 insertions(+)
- create mode 100644 drivers/power/reset/pscrr-nvmem.c
+It seems that SCALE is not applied to PROCESSED channel. I can use RAW
+which would work as intended and I will add a note in commit
+description why I used RAW. Would that be acceptable?
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index 0f6aee415f1c..de7bae1b3be3 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -335,3 +335,14 @@ menuconfig PSCRR
-       timeouts.
- 
-       If unsure, say N.
-+
-+if PSCRR
-+
-+config PSCRR_NVMEM
-+	tristate "Generic NVMEM-based Power State Change Reason Recorder"
-+	depends on OF
-+	help
-+	  Enabling this option adds support for recording power state change
-+	  reasons in a NVMEM cell.
-+
-+endif
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index dbd6ae6b26a4..532698552d40 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -33,6 +33,7 @@ obj-$(CONFIG_POWER_RESET_SYSCON) += syscon-reboot.o
- obj-$(CONFIG_POWER_RESET_SYSCON_POWEROFF) += syscon-poweroff.o
- obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
- obj-$(CONFIG_PSCRR) += pscrr.o
-+obj-$(CONFIG_PSCRR_NVMEM) += pscrr-nvmem.o
- obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
- obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
- obj-$(CONFIG_POWER_RESET_SC27XX) += sc27xx-poweroff.o
-diff --git a/drivers/power/reset/pscrr-nvmem.c b/drivers/power/reset/pscrr-nvmem.c
-new file mode 100644
-index 000000000000..c6912a1a4f7b
---- /dev/null
-+++ b/drivers/power/reset/pscrr-nvmem.c
-@@ -0,0 +1,254 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * pscrr_nvmem.c - PSCRR backend for storing shutdown reasons in small NVMEM
-+ *		   cells
-+ *
-+ * This backend provides a way to persist power state change reasons in a
-+ * non-volatile memory (NVMEM) cell, ensuring that reboot causes can be
-+ * analyzed post-mortem. Unlike traditional logging to eMMC or NAND, which
-+ * may be unreliable during power failures, this approach allows storing
-+ * reboot reasons in small, fast-access storage like RTC scratchpads, EEPROM,
-+ * or FRAM.
-+ *
-+ * The module allows dynamic configuration of the NVMEM device and cell
-+ * via module parameters:
-+ *
-+ * Example usage:
-+ *   modprobe pscrr-nvmem nvmem_name=pcf85063_nvram0 cell_name=pscr@0,0
-+ */
-+
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/nvmem-consumer.h>
-+#include <linux/pscrr.h>
-+#include <linux/slab.h>
-+
-+/*
-+ * Module parameters:
-+ *   nvmem_name: Name of the NVMEM device (e.g. "pcf85063_nvram0").
-+ *   cell_name : Sysfs name of the cell on that device (e.g. "pscr@0,0").
-+ */
-+static char *nvmem_name;
-+module_param(nvmem_name, charp, 0444);
-+MODULE_PARM_DESC(nvmem_name, "Name of the NVMEM device (e.g. pcf85063_nvram0)");
-+
-+static char *cell_name;
-+module_param(cell_name, charp, 0444);
-+MODULE_PARM_DESC(cell_name, "Sysfs name of the NVMEM cell (e.g. pscr@0,0)");
-+
-+struct pscrr_nvmem_priv {
-+	struct nvmem_device *nvmem;
-+	struct nvmem_cell *cell;
-+
-+	unsigned int total_bits;
-+	size_t max_val;
-+};
-+
-+static struct pscrr_nvmem_priv *priv;
-+
-+static int pscrr_nvmem_write_reason(enum pscr_reason reason)
-+{
-+	size_t required_bytes;
-+	u32 val;
-+	int ret;
-+
-+	if (!priv || !priv->cell)
-+		return -ENODEV;
-+
-+	/* Ensure reason fits in the available storage */
-+	if (reason > priv->max_val) {
-+		pr_err("PSCRR-nvmem: Reason %d exceeds max storable value %zu for %u-bit cell\n",
-+		       reason, priv->max_val, priv->total_bits);
-+		return -ERANGE;
-+	}
-+
-+	val = reason;
-+
-+	/* Determine required bytes for storing total_bits */
-+	required_bytes = (priv->total_bits + 7) / 8;
-+
-+	/* Write the reason to the NVMEM cell */
-+	ret = nvmem_cell_write(priv->cell, &val, required_bytes);
-+	if (ret < 0) {
-+		pr_err("PSCRR-nvmem: Failed to write reason %d, err=%d (%pe)\n",
-+		       reason, ret, ERR_PTR(ret));
-+		return ret;
-+	}
-+
-+	pr_debug("PSCRR-nvmem: Successfully wrote reason %d\n", reason);
-+
-+	return 0;
-+}
-+
-+static int pscrr_nvmem_read_reason(enum pscr_reason *reason)
-+{
-+	unsigned int required_bytes, val;
-+	int ret = 0;
-+	size_t len;
-+	void *buf;
-+
-+	if (!priv || !priv->cell)
-+		return -ENODEV;
-+
-+	buf = nvmem_cell_read(priv->cell, &len);
-+	if (IS_ERR(buf)) {
-+		ret = PTR_ERR(buf);
-+		pr_err("PSCRR-nvmem: Failed to read cell, err=%d (%pe)\n", ret,
-+		       ERR_PTR(ret));
-+		return ret;
-+	}
-+
-+	/* Calculate the required number of bytes */
-+	required_bytes = (priv->total_bits + 7) / 8;
-+
-+	/* Validate that the returned length is large enough */
-+	if (len < required_bytes) {
-+		pr_err("PSCRR-nvmem: Read length %zu is too small (need at least %u bytes)\n",
-+		       len, required_bytes);
-+		kfree(buf);
-+		return -EIO;
-+	}
-+
-+	/* Extract value safely with proper memory alignment handling */
-+	val = 0;
-+	memcpy(&val, buf, required_bytes);
-+
-+	/* Mask only the necessary bits to avoid garbage data */
-+	val &= (1U << priv->total_bits) - 1;
-+
-+	kfree(buf);
-+
-+	*reason = (enum pscr_reason)val;
-+
-+	pr_debug("PSCRR-nvmem: Read reason => %d (from %zu bytes, %u bits used)\n",
-+		 *reason, len, priv->total_bits);
-+
-+	return 0;
-+}
-+
-+static const struct pscrr_backend_ops pscrr_nvmem_ops = {
-+	.write_reason = pscrr_nvmem_write_reason,
-+	.read_reason  = pscrr_nvmem_read_reason,
-+};
-+
-+static int __init pscrr_nvmem_init(void)
-+{
-+	size_t bytes, bits;
-+	int ret;
-+
-+	if (!nvmem_name || !cell_name) {
-+		pr_err("PSCRR-nvmem: Must specify both nvmem_name and cell_name.\n");
-+		return -EINVAL;
-+	}
-+
-+	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->nvmem = nvmem_device_get_by_name(nvmem_name);
-+	if (IS_ERR(priv->nvmem)) {
-+		ret = PTR_ERR(priv->nvmem);
-+		pr_err("PSCRR-nvmem: nvmem_device_get_by_name(%s) failed: %d\n",
-+		       nvmem_name, ret);
-+		priv->nvmem = NULL;
-+		goto err_free;
-+	}
-+
-+	priv->cell = nvmem_cell_get_by_sysfs_name(priv->nvmem, cell_name);
-+	if (IS_ERR(priv->cell)) {
-+		ret = PTR_ERR(priv->cell);
-+		pr_err("PSCRR-nvmem: nvmem_cell_get_by_sysfs_name(%s) failed, err=%pe\n",
-+		       cell_name, ERR_PTR(ret));
-+		priv->cell = NULL;
-+		goto err_dev_put;
-+	}
-+
-+	ret = nvmem_cell_get_size(priv->cell, &bytes, &bits);
-+	if (ret < 0) {
-+		pr_err("PSCRR-nvmem: Failed to get cell size, err=%pe\n",
-+		       ERR_PTR(ret));
-+		goto err_cell_put;
-+	}
-+
-+	if (bits)
-+		priv->total_bits = bits;
-+	else
-+		priv->total_bits = bytes * 8;
-+
-+	if (priv->total_bits > 31) {
-+		pr_err("PSCRR-nvmem: total_bits=%u is too large (max 31 allowed)\n",
-+		       priv->total_bits);
-+		return -EOVERFLOW;
-+	}
-+
-+	priv->max_val = (1 << priv->total_bits) - 1;
-+	pr_debug("PSCRR-nvmem: Cell size: %zu bytes + %zu bits => total_bits=%u\n",
-+		 bytes, bits, priv->total_bits);
-+
-+	/*
-+	 * If we store reasons 0..PSCR_MAX_REASON, the largest needed is
-+	 * 'PSCR_MAX_REASON'. That must fit within total_bits.
-+	 * So the max storable integer is (1 << total_bits) - 1.
-+	 */
-+	if (priv->max_val < PSCR_MAX_REASON) {
-+		pr_err("PSCRR-nvmem: Not enough bits (%u) to store up to reason=%d\n",
-+		       priv->total_bits, PSCR_MAX_REASON);
-+		ret = -ENOSPC;
-+		goto err_cell_put;
-+	}
-+
-+	/* 4. Register with pscrr_core. */
-+	ret = pscrr_core_init(&pscrr_nvmem_ops);
-+	if (ret) {
-+		pr_err("PSCRR-nvmem: pscrr_core_init() failed: %d\n", ret);
-+		goto err_cell_put;
-+	}
-+
-+	pr_info("PSCRR-nvmem: Loaded (nvmem=%s, cell=%s), can store 0..%zu\n",
-+		nvmem_name, cell_name, priv->max_val);
-+	return 0;
-+
-+err_cell_put:
-+	if (priv->cell) {
-+		nvmem_cell_put(priv->cell);
-+		priv->cell = NULL;
-+	}
-+err_dev_put:
-+	if (priv->nvmem) {
-+		nvmem_device_put(priv->nvmem);
-+		priv->nvmem = NULL;
-+	}
-+err_free:
-+	kfree(priv);
-+	priv = NULL;
-+	return ret;
-+}
-+
-+static void __exit pscrr_nvmem_exit(void)
-+{
-+	pscrr_core_exit();
-+
-+	if (priv) {
-+		if (priv->cell) {
-+			nvmem_cell_put(priv->cell);
-+			priv->cell = NULL;
-+		}
-+		if (priv->nvmem) {
-+			nvmem_device_put(priv->nvmem);
-+			priv->nvmem = NULL;
-+		}
-+		kfree(priv);
-+		priv = NULL;
-+	}
-+
-+	pr_info("pscrr-nvmem: Unloaded\n");
-+}
-+
-+module_init(pscrr_nvmem_init);
-+module_exit(pscrr_nvmem_exit);
-+
-+MODULE_AUTHOR("Oleksij Rempel <o.rempel@pengutronix.de>");
-+MODULE_DESCRIPTION("PSCRR backend for storing reason code in NVMEM");
-+MODULE_LICENSE("GPL");
--- 
-2.39.5
-
+> >
+> >>> +     }
+> >>> +};
+> >>> +
+> >>> +static int gadc_thermal_read_raw(struct iio_dev *indio_dev,
+> >>> +                              struct iio_chan_spec const *chan,
+> >>> +                              int *temp, int *val2, long mask)
+> >>> +{
+> >>> +     struct gadc_thermal_info *gtinfo =3D iio_priv(indio_dev);
+> >>> +     int ret;
+> >>> +
+> >>> +     if (mask !=3D IIO_CHAN_INFO_PROCESSED)
+> >>> +             return -EINVAL;
+> >>
+> >> Therefore, here it would need to handle such case as well, when
+> >> a client is asking about scale.
+> >>
+> >>> +
+> >>> +     ret =3D gadc_thermal_get_temp(gtinfo->tz_dev, temp);
+> >>> +     if (ret < 0)
+> >>> +             return ret;
+> >>> +
+> >>> +     *temp /=3D 1000;
+> >>
+> >> IMO we shouldn't cut the precision if it's provided.
+> >> The user of this would know what to do with the value (when
+> >> the proper information about scale is also available).
+> >>
+> >
+> > The it will not fit existing IIO framework and thermal readings will
+> > be 1000 off. I have had to adjust this since my battery suddenly got
+> > temperature reading of 23200C which obviously was not true. With
+> > adjustment temperature will be in 10th of C (yes, odd, I know but it
+> > is what it is).
+>
+> Your battery driver should get and check the 'SCALE' info first, then
+> it will know that the value is in higher resolution than it needs.
+> Therefore, it can divide the value inside its code.
+> Your proposed division here is creating a limitation.
+>
+> You shouldn't force all other drivers to ignore and drop the
+> available information about milli-degC (which is done in this patch).
