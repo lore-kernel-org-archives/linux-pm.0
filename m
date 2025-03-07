@@ -1,42 +1,42 @@
 Received: from mx.treblig.org (mx.treblig.org [46.235.229.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B9A019006F;
-	Fri,  7 Mar 2025 23:02:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A2F501EBFE6;
+	Fri,  7 Mar 2025 23:02:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.235.229.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741388550; cv=none; b=LI/HaCO4SAicwB2PuJTDEeySURT6oEDE6lfh7pu7HtS/E8X6jUW+H4ODLZBLAQFmViAm4LJ+MTLvINgsfYsTUCJnCbPICyTsaUMFIiBEF33nGAMhgbNTFMYs31w/FEL7HBeIzQTlyWvwgAI0wwhGr9j8Eay6xo9Ug1CZ8mvNBVQ=
+	t=1741388551; cv=none; b=gR4HhB0MirhZowXHja1q/Y1vL+g2h1072pEo/m9Uait3sDxALKZWlCc3VdNFsykqKgsMRF1EgL7ASvsTIcu/Rj1t/ouq5kwTtPtKdZ0AM5ifo+YH4TZH6FnOjHXz2gp7kNkuc2wU7GyFhswHBFNAPM4vwIrp33nj+mODaAq+U3U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741388550; c=relaxed/simple;
-	bh=/vuVUlwiJC1vlB8rYoBU/EU5I/W3M2F4MRh4xrG4JIo=;
+	s=arc-20240116; t=1741388551; c=relaxed/simple;
+	bh=mdMVobuWepIr7PV03x7xbJHm7C/7keEOmWcHH70aAcU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=IeCoyMZ5/hP26BAM2wvt2zuo5jVZxWCkQHZomohUMa3cdoFXCUcq0lsU8VSaU0x/SPzd/eneXJFIv2jjw8q/SI/K3sNkJ2s80PL3TEBLk8+njUmAI37J//99AMLIVsxknSOV+IAaGBo4jgrGosPeWQcFIAgZNb73MxWAuFN4w3c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org; spf=pass smtp.mailfrom=treblig.org; dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b=VGhZ72qm; arc=none smtp.client-ip=46.235.229.95
+	 MIME-Version; b=ousHqFLuovtUED5KiJzPd8LZOe3u3p0HQ7L04aIdIeP083gMGDsf4G9BUb0nIOXHc8Jh+nYZQ1vf2/2MGM0CQIETQ11f7mLVRFz7i9Mmh+F3KHs2SzxQcRunU073i3Yew6uPm00JvD6ZIJ5kiHcRUGIRRsu0CKbnzAm6Z8R5VQg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org; spf=pass smtp.mailfrom=treblig.org; dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b=F7v69lV1; arc=none smtp.client-ip=46.235.229.95
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=treblig.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b="VGhZ72qm"
+	dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b="F7v69lV1"
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=treblig.org
 	; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
-	:Subject; bh=OvaaM5K1iTaNPtb1WzCdYsTgO1bTNP7eXeSy1JzDb1I=; b=VGhZ72qm6JhBDu9g
-	cPlTJtGfHTeNsmBwdbyiJCtuNA1hYKGPlmjR1tW7f3+mbEF3libN2GaKc1Z259kiOZu5wKsXq31MC
-	nHlRt45pwcFrVj/YUSgCcZCqY+XjL1MkrxDkhvB3TYPjwOu2NGbrO0YZrsq3IwBtbJsAykKI6daro
-	9Oy3J4B3iRvH2hDi0rY6kAKi7RuBHaAf2cKb8gS6WIVpxscvN0arU8VPqCejVSFBrALgyTuX5ooeT
-	m2RHt3O/JZ5BhGl2vEVQKy6K+3Nu813XQeXDrVXneEr2mX+fTnqdXF+YC1TXeC/61RBFtExFEuXM1
-	/TrCjpZcEiiYKltPAw==;
+	:Subject; bh=nqjQmn5zuk4Kwr62lIq32KHD5DpJuH6RLBYrL+pZlHA=; b=F7v69lV1camihRet
+	BEi7CVqtRE/GMGTZhLkw47xmKG1pwuPPUT074TETZ0YxB/o9UNJXC5afdJXirFLKEE5HmXQZGnrGa
+	DntZEaBVqGH3iavPcq/zSQRvQSCpxunGSvMNOTi0Qozz+JsysXARVQCIAPHTuSk22sb+6l5Jro+FI
+	TZz2MvJhPJF/4eJbRGHuoeLtDwOHG19rSslapHz2qoBynbOZt9U7bo1V2wX0obYwZpDW3wEYtTQst
+	Y8Yr5c9Ud0DxSNUoGRrb+d/gAWN1NOPy4Vilf4hpf3ZYZphVPwBHKf1vt2Q62n1R2b/blqmURXnnN
+	IeKabVeW+2Z/XfUlTg==;
 Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
 	by mx.treblig.org with esmtp (Exim 4.96)
 	(envelope-from <linux@treblig.org>)
-	id 1tqgi2-003XFb-2b;
-	Fri, 07 Mar 2025 23:02:26 +0000
+	id 1tqgi3-003XFb-2A;
+	Fri, 07 Mar 2025 23:02:27 +0000
 From: linux@treblig.org
 To: sre@kernel.org,
 	linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
 	"Dr. David Alan Gilbert" <linux@treblig.org>
-Subject: [PATCH 1/3] power: supply: core: Remove unused power_supply_set_battery_charged
-Date: Fri,  7 Mar 2025 23:02:23 +0000
-Message-ID: <20250307230225.128775-2-linux@treblig.org>
+Subject: [PATCH 3/3] power: supply: Remove unused set_charged method
+Date: Fri,  7 Mar 2025 23:02:25 +0000
+Message-ID: <20250307230225.128775-4-linux@treblig.org>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250307230225.128775-1-linux@treblig.org>
 References: <20250307230225.128775-1-linux@treblig.org>
@@ -50,54 +50,28 @@ Content-Transfer-Encoding: 8bit
 
 From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-power_supply_set_battery_charged() has been unused since 2019's
-commit 0f884f8a090e ("ARM: pxa: remove raumfeld board files and
-defconfig")
+The previous patches in this series removed the only caller
+and only setter of this method.
 
 Remove it.
 
 Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
 ---
- drivers/power/supply/power_supply_core.c | 13 -------------
- include/linux/power_supply.h             |  1 -
- 2 files changed, 14 deletions(-)
+ include/linux/power_supply.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 76c340b38015..47e0fea84917 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -449,19 +449,6 @@ int power_supply_get_property_from_supplier(struct power_supply *psy,
- }
- EXPORT_SYMBOL_GPL(power_supply_get_property_from_supplier);
- 
--int power_supply_set_battery_charged(struct power_supply *psy)
--{
--	if (atomic_read(&psy->use_cnt) >= 0 &&
--			psy->desc->type == POWER_SUPPLY_TYPE_BATTERY &&
--			psy->desc->set_charged) {
--		psy->desc->set_charged(psy);
--		return 0;
--	}
--
--	return -EINVAL;
--}
--EXPORT_SYMBOL_GPL(power_supply_set_battery_charged);
--
- static int power_supply_match_device_by_name(struct device *dev, const void *data)
- {
- 	const char *name = data;
 diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 6ed53b292162..5afc5946eb03 100644
+index 5afc5946eb03..92da3deba342 100644
 --- a/include/linux/power_supply.h
 +++ b/include/linux/power_supply.h
-@@ -852,7 +852,6 @@ extern int power_supply_am_i_supplied(struct power_supply *psy);
- int power_supply_get_property_from_supplier(struct power_supply *psy,
- 					    enum power_supply_property psp,
- 					    union power_supply_propval *val);
--extern int power_supply_set_battery_charged(struct power_supply *psy);
+@@ -274,7 +274,6 @@ struct power_supply_desc {
+ 	int (*property_is_writeable)(struct power_supply *psy,
+ 				     enum power_supply_property psp);
+ 	void (*external_power_changed)(struct power_supply *psy);
+-	void (*set_charged)(struct power_supply *psy);
  
- static inline bool
- power_supply_supports_maintenance_charging(struct power_supply_battery_info *info)
+ 	/*
+ 	 * Set if thermal zone should not be created for this power supply.
 -- 
 2.48.1
 
