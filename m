@@ -1,45 +1,46 @@
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ECB94202C44;
-	Sat,  8 Mar 2025 18:38:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DEE711DE4E7;
+	Sat,  8 Mar 2025 18:38:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741459115; cv=none; b=sZIiMakl3X0caB8/tTQ8T/x5VAektbcNYcqjBbBIETUvLVpd8SPGARq3XJV2nDo8MO8v5VgWv9StL3SUkhFmDGTKoOvmK6b+xWR7opraCCkKX8kRBXDNYE+bp0dfpvC3qMaZhltbXu4axbP4Mhv609su+2+6TElj4ZfZOnPT/f0=
+	t=1741459117; cv=none; b=IbDeg6KsoNBkEZHPD1QtGDlb4GeeSvj0vWht09FpkKBcbuQ5TMeCb7W/0ex3HH9DXuPDKaxX7HR3Gy3/Xb8ADFoA5rJM/4s52DI0Or8xpphPth1R4OzlhojupvU+i9/EJSeKsX+DSil3zYCoMqADcWbieXhnTP1DfMrQeLh8Hns=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741459115; c=relaxed/simple;
-	bh=ICxQvEvaELWXWRTD7ERZkdpAUoDpnDms71ShTxZILq0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=dexZw5PYUxvpF6GFKfbmR5wHPysngiGnsCc5Lxov6UV0jgmAeuhsNG6uGKyfsMsGwnqEAtpGV1s45ShGlxyyIZklUkTSanuhzbkU3F5l/LYU1zzs0mdP7APBqhYULVDHqvkm8aAaBM5jiPtbbXAI8CNhTJ9GXw7QwvhW8G0vC3g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=hTuPFvxP; arc=none smtp.client-ip=198.175.65.15
+	s=arc-20240116; t=1741459117; c=relaxed/simple;
+	bh=t2B2o+S0wXOAA4+LJE2F4eNiPS9UXwAkOPzF1uone2o=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=TwDjZVuSZKbnqpvxKtC+9SknpFgSrINRxX73yNCyUXBCEPLnhA1cchL09wspSjI/quwJfRMwIEclhk/xuSq79VHy/Zj3DBt9lNhOf4/VsAqyqdwDjRaSxFIbqtVHec3K2rRSkJwgWh8CWibr1Dn2EAWON0lUDYBO/CHdsZt0flY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=deJr1bsQ; arc=none smtp.client-ip=198.175.65.15
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="hTuPFvxP"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="deJr1bsQ"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1741459114; x=1772995114;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=ICxQvEvaELWXWRTD7ERZkdpAUoDpnDms71ShTxZILq0=;
-  b=hTuPFvxP195bbJtFUQSoViwP6IZiLuL/kFzxeNHozojK0YK7pdIbUv4H
-   Zwk6z6OyH4rL1ePopBAn2MBAKklEs/WDfLtwXl2MKkforHVk7IQWAgzEN
-   zpRTh42Sa34+PdZLMsK+GOrOb73jT2g9FRuA0sV4Re2wzcYI2gVJF6+aV
-   6/NEwzRy+MQbiyVvXxEDrEx7tjUjX8tQpCQkFZzV6uT5282+wfMSjsRvn
-   eHmQ9MeH2FNebdsggL0d5G+laJgi/0flwEcKfqnntFGMcZpXloYlUNNrS
-   /cqS0v2FnHfRpLtvXE14GTHipYMt2DE28YjC0qMxoKabZG3DOraqWDmfB
-   A==;
-X-CSE-ConnectionGUID: B4XpsmnyR6mYYGE2esW5oQ==
-X-CSE-MsgGUID: 6D3hwoi7TH+LEvp+1LfMkg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11367"; a="46148327"
+  t=1741459116; x=1772995116;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=t2B2o+S0wXOAA4+LJE2F4eNiPS9UXwAkOPzF1uone2o=;
+  b=deJr1bsQL/51neKDEmnX+zDEEZfN6nhRAMPH8R/mr3Dx0Z6lKF1EvRx5
+   l4wAWR6esC7/hC3LAKdGZOldT7RALhAlgghz8F+zPk2yNC7s6m+3CuC5A
+   gaDGDNWZWzTMmc9VZsukbNpCcsGU5WoP+e9eEjHRuTEQS8afi9MCAG6+a
+   irk5yDhL6H8jOTa7FiqK5lWnPWxKwmGltFwhwVPWhFUd36CvH+JG9Wuso
+   sayPLlr5Hbh1FsP9S+DcLqUCWv76Aqg59kpaLAlp8DiaBIKmOmDG/+N38
+   hMxwZcYa012SIEh3OYyOPVpmF61WSIjFQKY/tb1kaJ1NttMqNkIAZl9Ad
+   w==;
+X-CSE-ConnectionGUID: tmRiTDkYSuOk2ZgQOD2Eeg==
+X-CSE-MsgGUID: rz+wxwkzTXW1TQmzQZQgIQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11367"; a="46148338"
 X-IronPort-AV: E=Sophos;i="6.14,232,1736841600"; 
-   d="scan'208";a="46148327"
+   d="scan'208";a="46148338"
 Received: from orviesa006.jf.intel.com ([10.64.159.146])
   by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2025 10:38:33 -0800
-X-CSE-ConnectionGUID: 93+1aL03Tc65t2WKh4ha8Q==
-X-CSE-MsgGUID: bQmRIgPcSO+ZMlrZjoGcUA==
+X-CSE-ConnectionGUID: rZtE35f5RwKXHDyBxHus2A==
+X-CSE-MsgGUID: dmnUx0OISRKEdI0/mNEsAQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.14,232,1736841600"; 
-   d="scan'208";a="119584462"
+   d="scan'208";a="119584468"
 Received: from spandruv-desk.jf.intel.com ([10.54.75.16])
   by orviesa006.jf.intel.com with ESMTP; 08 Mar 2025 10:38:33 -0800
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
@@ -50,42 +51,52 @@ To: rui.zhang@intel.com,
 Cc: linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 0/3] Platform Temperature Control interface
-Date: Sat,  8 Mar 2025 10:38:09 -0800
-Message-ID: <20250308183812.118311-1-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 2/3] thermal: intel: int340x: Enable platform temperature control
+Date: Sat,  8 Mar 2025 10:38:11 -0800
+Message-ID: <20250308183812.118311-3-srinivas.pandruvada@linux.intel.com>
 X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250308183812.118311-1-srinivas.pandruvada@linux.intel.com>
+References: <20250308183812.118311-1-srinivas.pandruvada@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Platform Temperature Control is a dynamic control loop implemented in
-hardware to manage the skin or any board temperature of a device. The
-reported skin or board temperature is controlled by comparing to a
-configured target temperature and adjusting the SoC (System on Chip)
-performance accordingly.
+Enable platform temperature control feature for Lunar Lake and
+Panther Lake.
 
-This series supports optional controls from the user space.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ .../intel/int340x_thermal/processor_thermal_device_pci.c    | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Srinivas Pandruvada (3):
-  thermal: intel: int340x: Add platform temperature control interface
-  thermal: intel: int340x: Enable platform temperature control
-  thermal: int340x: processor_thermal: Platform temperature control
-    documentation
-
- .../driver-api/thermal/intel_dptf.rst         |  15 ++
- .../thermal/intel/int340x_thermal/Makefile    |   1 +
- .../platform_temperature_control.c            | 181 ++++++++++++++++++
- .../processor_thermal_device.c                |  15 +-
- .../processor_thermal_device.h                |   3 +
- .../processor_thermal_device_pci.c            |   6 +-
- 6 files changed, 218 insertions(+), 3 deletions(-)
- create mode 100644 drivers/thermal/intel/int340x_thermal/platform_temperature_control.c
-
+diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
+index a55aaa8cef42..f7f03159606a 100644
+--- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
++++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
+@@ -486,7 +486,8 @@ static const struct pci_device_id proc_thermal_pci_ids[] = {
+ 	  PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_WT_REQ) },
+ 	{ PCI_DEVICE_DATA(INTEL, LNLM_THERMAL, PROC_THERMAL_FEATURE_MSI_SUPPORT |
+ 	  PROC_THERMAL_FEATURE_RAPL | PROC_THERMAL_FEATURE_DLVR |
+-	  PROC_THERMAL_FEATURE_WT_HINT | PROC_THERMAL_FEATURE_POWER_FLOOR) },
++	  PROC_THERMAL_FEATURE_WT_HINT | PROC_THERMAL_FEATURE_POWER_FLOOR |
++	  PROC_THERMAL_FEATURE_PTC) },
+ 	{ PCI_DEVICE_DATA(INTEL, MTLP_THERMAL, PROC_THERMAL_FEATURE_RAPL |
+ 	  PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_DLVR |
+ 	  PROC_THERMAL_FEATURE_WT_HINT | PROC_THERMAL_FEATURE_POWER_FLOOR) },
+@@ -496,7 +497,8 @@ static const struct pci_device_id proc_thermal_pci_ids[] = {
+ 	  PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_WT_REQ) },
+ 	{ PCI_DEVICE_DATA(INTEL, PTL_THERMAL, PROC_THERMAL_FEATURE_RAPL |
+ 	  PROC_THERMAL_FEATURE_DLVR | PROC_THERMAL_FEATURE_MSI_SUPPORT |
+-	  PROC_THERMAL_FEATURE_WT_HINT | PROC_THERMAL_FEATURE_POWER_FLOOR) },
++	  PROC_THERMAL_FEATURE_WT_HINT | PROC_THERMAL_FEATURE_POWER_FLOOR |
++	  PROC_THERMAL_FEATURE_PTC) },
+ 	{ },
+ };
+ 
 -- 
 2.48.1
 
