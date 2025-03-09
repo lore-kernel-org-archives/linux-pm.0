@@ -1,30 +1,30 @@
 Received: from linux1587.grserver.gr (linux1587.grserver.gr [185.138.42.100])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 26797199949;
-	Sun,  9 Mar 2025 11:21:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 075741A4F22;
+	Sun,  9 Mar 2025 11:21:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.138.42.100
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741519291; cv=none; b=bsnqyti/hsVzqvlZFXd7WRV8xz4yLHDCEMKqWE1y3uYlntqQ+P46xZjE7I4Pdkf4UyIA9VByvxFHwhL+whUU69UJTW3pEX0VSRIHH9jbIXd1cbglhru1R88oTWr8BRyhkZY4kn52Fkm76jPQbguKHKHeTSm0u5nQEs6QRdgYwWA=
+	t=1741519291; cv=none; b=pf5Mck52LMZZqUPJmjYS0vIs5NH5QQSkSiWIP3FUuSoJVAPpuN6Vjih1E/ylvIfFzfORiOEGMS2/SXz6Z2n8h7IMx2C9+kkM3u3LLUbS0R2fpnolWGFhzRGduhRhQPZicWnbnoaeeC3MYkeR2/izJp2NvpyDblPEaVzEcdc5ohM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1741519291; c=relaxed/simple;
-	bh=DN4lPGzRvJ5WNcNqzi6UYhqtxe0UJP4nUvlWxCQtf3k=;
+	bh=5hTvtGWy7U0s0avSlsCImPWbqjzDdIRWYVapgEdtQSQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=tr0Zimw9LwtWWgPglJPbUbx4hcvWqylHXt8lCSInUjKNgikZlxb5YiXzz7Wfx0szgZF+xhLwucewO4QvqQb9FjTpPH8w/l64lQtPVC9YeAjLNEs8QSNc+2HQRLrukPOVcyrz1xQnfQ4cNsOpmsnHVVnyAuKnFSmu+3RhA1q//6M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=d7scwS4L; arc=none smtp.client-ip=185.138.42.100
+	 MIME-Version; b=iXbmVMTEOAAnrsw9z2FCnrcxV8xhjG+uj/l84T/+/KUEh3RXygAQLSG7Gi3u+yLGCurzsF7sVD2Ho+PvTNyS2KtjbHNcnwQdG/3Rq/e9B4ytwJkHmGJ2DFFFXOMIZhd6xFwfqkIDZ9aDmEU/jxKyyCfsxZ0Y3B+v3gv9q6koE3Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=VQLwogTH; arc=none smtp.client-ip=185.138.42.100
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=antheas.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="d7scwS4L"
+	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="VQLwogTH"
 Received: from localhost.localdomain (unknown [IPv6:2a05:f6c2:511b:0:8d8a:5967:d692:ea4e])
-	by linux1587.grserver.gr (Postfix) with ESMTPSA id 36E062E02CAB;
-	Sun,  9 Mar 2025 13:21:22 +0200 (EET)
+	by linux1587.grserver.gr (Postfix) with ESMTPSA id 538542E037E0;
+	Sun,  9 Mar 2025 13:21:18 +0200 (EET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=antheas.dev;
-	s=default; t=1741519284;
-	bh=RYIh6+vPCJzjj/Auw7QFSfgfIxTo9QzItGSvqYtET6k=; h=From:To:Subject;
-	b=d7scwS4LNmjcEsobsVgI87jZPSFPg3SGtmt/l9jpPi2maikF5dzUywJEgxgvjoazU
-	 n0NyzwtHcauR9o938tTSQ3ax5k0RZ3ZFSxfq1s1qIeYbEIIW0Phrsi1CWjkgWcAAE/
-	 j9a8GOcmt9CdBQUEUYphAK04sUFTWdm9w+H7Mfg8=
+	s=default; t=1741519279;
+	bh=GC519y6vbmddG2cXwg0/Xpucd4pYX//7MaXKPNqTN3I=; h=From:To:Subject;
+	b=VQLwogTHaTBOzga+rHb2DLrE0MCiDcm5eTjCFxNo4ogpbXpQ/ptk6U+DNRtrrAdCV
+	 OTdvCsZPF9KJ2UQmxlWM0dnEIxRNZ5iTQEkPJjbqKq/Bc42LU4xmxGKX5iD9Fm+OPI
+	 MLzhcZFSKqscdZEq8//N9hMKTLB+WSAc24p7Kues=
 Authentication-Results: linux1587.grserver.gr;
 	spf=pass (sender IP is 2a05:f6c2:511b:0:8d8a:5967:d692:ea4e) smtp.mailfrom=lkml@antheas.dev smtp.helo=localhost.localdomain
 Received-SPF: pass (linux1587.grserver.gr: connection is authenticated)
@@ -43,10 +43,9 @@ Cc: linux-hwmon@vger.kernel.org,
 	Parth Menon <parthasarathymenon@gmail.com>,
 	Eileen <eileen@one-netbook.com>,
 	Antheas Kapenekakis <lkml@antheas.dev>
-Subject: [PATCH v3 03/12] platform/x86: oxpec: Move hwmon/oxp-sensors to
- platform/x86
-Date: Sun,  9 Mar 2025 12:21:04 +0100
-Message-ID: <20250309112114.1177361-4-lkml@antheas.dev>
+Subject: [PATCH v3 01/12] hwmon: (oxp-sensors) Distinguish the X1 variants
+Date: Sun,  9 Mar 2025 12:21:02 +0100
+Message-ID: <20250309112114.1177361-2-lkml@antheas.dev>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250309112114.1177361-1-lkml@antheas.dev>
 References: <20250309112114.1177361-1-lkml@antheas.dev>
@@ -56,175 +55,63 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-PPP-Message-ID: 
- <174151928355.28721.4095908493012173453@linux1587.grserver.gr>
+ <174151927965.28594.17710857436778778111@linux1587.grserver.gr>
 X-PPP-Vhost: antheas.dev
 X-Virus-Scanned: clamav-milter 0.103.11 at linux1587.grserver.gr
 X-Virus-Status: Clean
 
-The EC of OneXPlayer devices used to only control the fan.
-This is no longer the case, with the EC of OneXPlayer gaining
-additional functionality (turbo button, turbo led, battery controls).
+Currently, the oxp-sensors driver fuzzy matches the X1 variants. Luckily,
+X1 and X1 mini share most hardware features so this works. However, they
+are completely different product lines, and there is an expectation that
+OneXPlayer will release more devices in the X1 line that may have
+differences.
 
-As it will be beneficial from a complexity perspective
-to retain this driver as a single unit, move it out
-of hwmon, and into platform/x86.
+Therefore, distinguish the 3 devices that currently exist in the market.
+These are the OneXPlayer X1 AMD and Intel variants, and the X1 mini which
+only has an AMD variant. As far as registers go, all three support the
+current driver functionality.
 
-While at it, add myself to the maintainer's file.
-
-Acked-by: Guenter Roeck <linux@roeck-us.net>
 Signed-off-by: Antheas Kapenekakis <lkml@antheas.dev>
 ---
- Documentation/hwmon/index.rst                         |  2 +-
- Documentation/hwmon/{oxp-sensors.rst => oxpec.rst}    |  0
- MAINTAINERS                                           |  7 ++++---
- drivers/hwmon/Kconfig                                 | 11 -----------
- drivers/hwmon/Makefile                                |  1 -
- drivers/platform/x86/Kconfig                          | 11 +++++++++++
- drivers/platform/x86/Makefile                         |  3 +++
- drivers/{hwmon/oxp-sensors.c => platform/x86/oxpec.c} | 10 ++++------
- 8 files changed, 23 insertions(+), 22 deletions(-)
- rename Documentation/hwmon/{oxp-sensors.rst => oxpec.rst} (100%)
- rename drivers/{hwmon/oxp-sensors.c => platform/x86/oxpec.c} (98%)
+ drivers/hwmon/oxp-sensors.c | 23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/hwmon/index.rst b/Documentation/hwmon/index.rst
-index 874f8fd26325..dd7a54d5f281 100644
---- a/Documentation/hwmon/index.rst
-+++ b/Documentation/hwmon/index.rst
-@@ -186,7 +186,7 @@ Hardware Monitoring Kernel Drivers
-    nzxt-kraken3
-    nzxt-smart2
-    occ
--   oxp-sensors
-+   oxpec
-    pc87360
-    pc87427
-    pcf8591
-diff --git a/Documentation/hwmon/oxp-sensors.rst b/Documentation/hwmon/oxpec.rst
-similarity index 100%
-rename from Documentation/hwmon/oxp-sensors.rst
-rename to Documentation/hwmon/oxpec.rst
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 0248c9eb39d6..a11d346a458b 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -17641,12 +17641,13 @@ S:	Maintained
- F:	drivers/mtd/nand/onenand/
- F:	include/linux/mtd/onenand*.h
- 
--ONEXPLAYER FAN DRIVER
-+ONEXPLAYER PLATFORM EC DRIVER
-+M:	Antheas Kapenekakis <lkml@antheas.dev>
- M:	Derek John Clark <derekjohn.clark@gmail.com>
- M:	Joaquín Ignacio Aramendía <samsagax@gmail.com>
--L:	linux-hwmon@vger.kernel.org
-+L:	platform-driver-x86@vger.kernel.org
- S:	Maintained
--F:	drivers/hwmon/oxp-sensors.c
-+F:	drivers/platform/x86/oxpec.c
- 
- ONIE TLV NVMEM LAYOUT DRIVER
- M:	Miquel Raynal <miquel.raynal@bootlin.com>
-diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index 4cbaba15d86e..09f7aed96d15 100644
---- a/drivers/hwmon/Kconfig
-+++ b/drivers/hwmon/Kconfig
-@@ -1774,17 +1774,6 @@ config SENSORS_NZXT_SMART2
- 
- source "drivers/hwmon/occ/Kconfig"
- 
--config SENSORS_OXP
--	tristate "OneXPlayer EC fan control"
--	depends on ACPI_EC
--	depends on X86
--	help
--		If you say yes here you get support for fan readings and control over
--		OneXPlayer handheld devices. Only OneXPlayer mini AMD handheld variant
--		boards are supported.
--
--		Can also be built as a module. In that case it will be called oxp-sensors.
--
- config SENSORS_PCF8591
- 	tristate "Philips PCF8591 ADC/DAC"
- 	depends on I2C
-diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-index b7ef0f0562d3..0edb08824b17 100644
---- a/drivers/hwmon/Makefile
-+++ b/drivers/hwmon/Makefile
-@@ -181,7 +181,6 @@ obj-$(CONFIG_SENSORS_NTC_THERMISTOR)	+= ntc_thermistor.o
- obj-$(CONFIG_SENSORS_NZXT_KRAKEN2) += nzxt-kraken2.o
- obj-$(CONFIG_SENSORS_NZXT_KRAKEN3) += nzxt-kraken3.o
- obj-$(CONFIG_SENSORS_NZXT_SMART2) += nzxt-smart2.o
--obj-$(CONFIG_SENSORS_OXP) += oxp-sensors.o
- obj-$(CONFIG_SENSORS_PC87360)	+= pc87360.o
- obj-$(CONFIG_SENSORS_PC87427)	+= pc87427.o
- obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
-diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
-index 0258dd879d64..4531b20c6b30 100644
---- a/drivers/platform/x86/Kconfig
-+++ b/drivers/platform/x86/Kconfig
-@@ -1186,6 +1186,17 @@ config SEL3350_PLATFORM
- 	  To compile this driver as a module, choose M here: the module
- 	  will be called sel3350-platform.
- 
-+config OXP_EC
-+	tristate "OneXPlayer EC platform control"
-+	depends on ACPI_EC
-+	depends on X86
-+	help
-+		Enables support for the platform EC of OneXPlayer and AOKZOE
-+		handheld devices. This includes fan speed, fan controls, and
-+		disabling the default TDP behavior of the device. Due to legacy
-+		reasons, this driver also provides hwmon functionality to Ayaneo
-+		devices and the OrangePi Neo.
-+
- endif # X86_PLATFORM_DEVICES
- 
- config P2SB
-diff --git a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
-index e1b142947067..f64a191c1162 100644
---- a/drivers/platform/x86/Makefile
-+++ b/drivers/platform/x86/Makefile
-@@ -153,3 +153,6 @@ obj-$(CONFIG_WINMATE_FM07_KEYS)		+= winmate-fm07-keys.o
- 
- # SEL
- obj-$(CONFIG_SEL3350_PLATFORM)		+= sel3350-platform.o
-+
-+# OneXPlayer
-+obj-$(CONFIG_OXP_EC)		+= oxpec.o
-\ No newline at end of file
-diff --git a/drivers/hwmon/oxp-sensors.c b/drivers/platform/x86/oxpec.c
-similarity index 98%
-rename from drivers/hwmon/oxp-sensors.c
-rename to drivers/platform/x86/oxpec.c
-index f7a64fbc8f33..dc3a0871809c 100644
+diff --git a/drivers/hwmon/oxp-sensors.c b/drivers/hwmon/oxp-sensors.c
+index 83730d931824..5a4230ad3757 100644
 --- a/drivers/hwmon/oxp-sensors.c
-+++ b/drivers/platform/x86/oxpec.c
-@@ -1,11 +1,8 @@
- // SPDX-License-Identifier: GPL-2.0+
- /*
-- * Platform driver for OneXPlayer, AOKZOE, AYANEO, and OrangePi Handhelds
-- * that expose fan reading and control via hwmon sysfs.
-- *
-- * Old OXP boards have the same DMI strings and they are told apart by
-- * the boot cpu vendor (Intel/AMD). Of these older models only AMD is
-- * supported.
-+ * Platform driver for OneXPlayer and AOKZOE devices. For the time being,
-+ * it also exposes fan controls for AYANEO, and OrangePi Handhelds via
-+ * hwmon sysfs.
-  *
-  * Fan control is provided via pwm interface in the range [0-255].
-  * Old AMD boards use [0-100] as range in the EC, the written value is
-@@ -16,6 +13,7 @@
-  *
-  * Copyright (C) 2022 Joaquín I. Aramendía <samsagax@gmail.com>
-  * Copyright (C) 2024 Derek J. Clark <derekjohn.clark@gmail.com>
-+ * Copyright (C) 2025 Antheas Kapenekakis <lkml@antheas.dev>
-  */
- 
- #include <linux/acpi.h>
++++ b/drivers/hwmon/oxp-sensors.c
+@@ -205,7 +205,28 @@ static const struct dmi_system_id dmi_table[] = {
+ 	{
+ 		.matches = {
+ 			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
+-			DMI_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1 A"),
++		},
++		.driver_data = (void *)oxp_x1,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1 i"),
++		},
++		.driver_data = (void *)oxp_x1,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1 mini"),
++		},
++		.driver_data = (void *)oxp_x1,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1Pro"),
+ 		},
+ 		.driver_data = (void *)oxp_x1,
+ 	},
 -- 
 2.48.1
 
