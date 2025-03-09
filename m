@@ -1,30 +1,30 @@
 Received: from linux1587.grserver.gr (linux1587.grserver.gr [185.138.42.100])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 075741A4F22;
-	Sun,  9 Mar 2025 11:21:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F22E1A840D;
+	Sun,  9 Mar 2025 11:21:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.138.42.100
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741519291; cv=none; b=pf5Mck52LMZZqUPJmjYS0vIs5NH5QQSkSiWIP3FUuSoJVAPpuN6Vjih1E/ylvIfFzfORiOEGMS2/SXz6Z2n8h7IMx2C9+kkM3u3LLUbS0R2fpnolWGFhzRGduhRhQPZicWnbnoaeeC3MYkeR2/izJp2NvpyDblPEaVzEcdc5ohM=
+	t=1741519291; cv=none; b=L70VcqL8GPVilZW1aXJ3cjsY3TYCM0SIM7rE12T8Bxli9C8h7gkr6p2EMl6fpHz0Gz5LmeuWF0W/UKSIQTowhoBkQ/FHh4LA+KjBp75lI5/C/+S8WbMZ1yU6v0fk1oF1zLGbYu7jEnPUmBdf3CPrADhvwP0bnmtVFF4sNatA+50=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1741519291; c=relaxed/simple;
-	bh=5hTvtGWy7U0s0avSlsCImPWbqjzDdIRWYVapgEdtQSQ=;
+	bh=hwbg85IHRmzac4MOiU1b/r7yBMLHOMIeHyC8YX0maYM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=iXbmVMTEOAAnrsw9z2FCnrcxV8xhjG+uj/l84T/+/KUEh3RXygAQLSG7Gi3u+yLGCurzsF7sVD2Ho+PvTNyS2KtjbHNcnwQdG/3Rq/e9B4ytwJkHmGJ2DFFFXOMIZhd6xFwfqkIDZ9aDmEU/jxKyyCfsxZ0Y3B+v3gv9q6koE3Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=VQLwogTH; arc=none smtp.client-ip=185.138.42.100
+	 MIME-Version:Content-Type; b=rPJbBzQKb6uBg/XY8f2mnLCnmd2d7jwW2y1H+AH6FWIJ+lh+qSBEtOBRQPypjOlvthVflJ5l/u3r+ikJdE97DwfWzJ1kPQJydt9VycFzlRcsPXZ5OZLcDtIuFP3KJFckEXU+q4E9DytKI9/+XoiWAGBj0hqIVcXbbHmSRsNHQy4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=aIPfWTaa; arc=none smtp.client-ip=185.138.42.100
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=antheas.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="VQLwogTH"
+	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="aIPfWTaa"
 Received: from localhost.localdomain (unknown [IPv6:2a05:f6c2:511b:0:8d8a:5967:d692:ea4e])
-	by linux1587.grserver.gr (Postfix) with ESMTPSA id 538542E037E0;
-	Sun,  9 Mar 2025 13:21:18 +0200 (EET)
+	by linux1587.grserver.gr (Postfix) with ESMTPSA id 1D4C82E05696;
+	Sun,  9 Mar 2025 13:21:25 +0200 (EET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=antheas.dev;
-	s=default; t=1741519279;
-	bh=GC519y6vbmddG2cXwg0/Xpucd4pYX//7MaXKPNqTN3I=; h=From:To:Subject;
-	b=VQLwogTHaTBOzga+rHb2DLrE0MCiDcm5eTjCFxNo4ogpbXpQ/ptk6U+DNRtrrAdCV
-	 OTdvCsZPF9KJ2UQmxlWM0dnEIxRNZ5iTQEkPJjbqKq/Bc42LU4xmxGKX5iD9Fm+OPI
-	 MLzhcZFSKqscdZEq8//N9hMKTLB+WSAc24p7Kues=
+	s=default; t=1741519286;
+	bh=EbAW66MOShp+FMmH6+3P02El1Ie30xboAe3WC3/AJMs=; h=From:To:Subject;
+	b=aIPfWTaaI9j9+VH4LI9SytI3dhe7ae9XHW2mPNom8G+1FtOiBnU/bgZvaAomOlJyq
+	 fDRQq8gONGUDOFw9vsSgj6b8NdO0bKQ1STqEbOny1CrzuGrZhlOcBP3MRcRbFJdgAi
+	 dfm8Q/HihadmQ06WKwtskwcnBZ06V3pxTwORwZps=
 Authentication-Results: linux1587.grserver.gr;
 	spf=pass (sender IP is 2a05:f6c2:511b:0:8d8a:5967:d692:ea4e) smtp.mailfrom=lkml@antheas.dev smtp.helo=localhost.localdomain
 Received-SPF: pass (linux1587.grserver.gr: connection is authenticated)
@@ -43,9 +43,9 @@ Cc: linux-hwmon@vger.kernel.org,
 	Parth Menon <parthasarathymenon@gmail.com>,
 	Eileen <eileen@one-netbook.com>,
 	Antheas Kapenekakis <lkml@antheas.dev>
-Subject: [PATCH v3 01/12] hwmon: (oxp-sensors) Distinguish the X1 variants
-Date: Sun,  9 Mar 2025 12:21:02 +0100
-Message-ID: <20250309112114.1177361-2-lkml@antheas.dev>
+Subject: [PATCH v3 04/12] ABI: testing: add tt_toggle and tt_led entries
+Date: Sun,  9 Mar 2025 12:21:05 +0100
+Message-ID: <20250309112114.1177361-5-lkml@antheas.dev>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250309112114.1177361-1-lkml@antheas.dev>
 References: <20250309112114.1177361-1-lkml@antheas.dev>
@@ -55,63 +55,163 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-PPP-Message-ID: 
- <174151927965.28594.17710857436778778111@linux1587.grserver.gr>
+ <174151928638.28801.5989227754740765426@linux1587.grserver.gr>
 X-PPP-Vhost: antheas.dev
 X-Virus-Scanned: clamav-milter 0.103.11 at linux1587.grserver.gr
 X-Virus-Status: Clean
 
-Currently, the oxp-sensors driver fuzzy matches the X1 variants. Luckily,
-X1 and X1 mini share most hardware features so this works. However, they
-are completely different product lines, and there is an expectation that
-OneXPlayer will release more devices in the X1 line that may have
-differences.
-
-Therefore, distinguish the 3 devices that currently exist in the market.
-These are the OneXPlayer X1 AMD and Intel variants, and the X1 mini which
-only has an AMD variant. As far as registers go, all three support the
-current driver functionality.
+When tt_toggle was introduced, it was not added to the platform sysfs.
+Add it, then add documentation for tt_led. Remove the documentation
+from the hwmon entry, then update its readme to be current.
 
 Signed-off-by: Antheas Kapenekakis <lkml@antheas.dev>
 ---
- drivers/hwmon/oxp-sensors.c | 23 ++++++++++++++++++++++-
- 1 file changed, 22 insertions(+), 1 deletion(-)
+ Documentation/ABI/testing/sysfs-platform-oxp | 29 +++++++++
+ Documentation/hwmon/oxpec.rst                | 62 +++++++-------------
+ 2 files changed, 49 insertions(+), 42 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-platform-oxp
 
-diff --git a/drivers/hwmon/oxp-sensors.c b/drivers/hwmon/oxp-sensors.c
-index 83730d931824..5a4230ad3757 100644
---- a/drivers/hwmon/oxp-sensors.c
-+++ b/drivers/hwmon/oxp-sensors.c
-@@ -205,7 +205,28 @@ static const struct dmi_system_id dmi_table[] = {
- 	{
- 		.matches = {
- 			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
--			DMI_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1"),
-+			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1 A"),
-+		},
-+		.driver_data = (void *)oxp_x1,
-+	},
-+	{
-+		.matches = {
-+			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
-+			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1 i"),
-+		},
-+		.driver_data = (void *)oxp_x1,
-+	},
-+	{
-+		.matches = {
-+			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
-+			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1 mini"),
-+		},
-+		.driver_data = (void *)oxp_x1,
-+	},
-+	{
-+		.matches = {
-+			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
-+			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER X1Pro"),
- 		},
- 		.driver_data = (void *)oxp_x1,
- 	},
+diff --git a/Documentation/ABI/testing/sysfs-platform-oxp b/Documentation/ABI/testing/sysfs-platform-oxp
+new file mode 100644
+index 000000000000..8727d5ecaab5
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-platform-oxp
+@@ -0,0 +1,29 @@
++What:		/sys/devices/platform/<platform>/tt_toggle
++Date:		Jun 2023
++KernelVersion:	6.5
++Contact:	"Antheas Kapenekakis" <lkml@antheas.dev>
++Description:
++		Takeover TDP controls from the device. OneXPlayer devices have a
++        turbo button that can be used to switch between two TDP modes
++        (usually 15W and 25W). By setting this attribute to 1, this
++        functionality is disabled, handing TDP control over to (Windows)
++        userspace software and the Turbo button turns into a keyboard
++        shortcut over the AT keyboard of the device. In addition,
++        using this setting is a prerequisite for PWM control for most
++        devices (otherwise it NOOPs).
++
++        This attribute was originally introduced in 6.5, without a
++        corresponding documentation entry.
++
++What:		/sys/devices/platform/<platform>/tt_led
++Date:		Feb 2025
++KernelVersion:	6.15
++Contact:	"Antheas Kapenekakis" <lkml@antheas.dev>
++Description:
++		Some OneXPlayer devices (e.g., X1 series) feature a little LED
++        nested in the Turbo button. This LED is illuminated when the
++        device is in the higher TDP mode (e.g., 25W). Once tt_toggle
++        is engaged, this LED is left dangling to its last state. This
++        attribute allows userspace to control the LED state manually
++        (either with 1 or 0). Only a subset of devices contain this LED.
++
+diff --git a/Documentation/hwmon/oxpec.rst b/Documentation/hwmon/oxpec.rst
+index 581c4dafbfa1..0a0a7c5d0263 100644
+--- a/Documentation/hwmon/oxpec.rst
++++ b/Documentation/hwmon/oxpec.rst
+@@ -1,35 +1,41 @@
+ .. SPDX-License-Identifier: GPL-2.0-or-later
+ 
+-Kernel driver oxp-sensors
++Kernel driver oxpec
+ =========================
+ 
+ Authors:
+     - Derek John Clark <derekjohn.clark@gmail.com>
+     - Joaquín Ignacio Aramendía <samsagax@gmail.com>
++    - Antheas Kapenekakis <lkml@antheas.dev>
+ 
+ Description:
+ ------------
+ 
+-Handheld devices from OneNetbook, AOKZOE, AYANEO, And OrangePi provide fan
+-readings and fan control through their embedded controllers.
++Handheld devices from OneXPlayer and AOKZOE provide fan readings and fan
++control through their embedded controllers, which can be accessed via this
++module. If the device has the platform `tt_toggle` attribute (see
++Documentation/ABI/testing/sysfs-platform-oxp), controlling these attributes
++without having it engaged is undefined behavior.
+ 
+-Currently supports OneXPlayer devices, AOKZOE, AYANEO, and OrangePi
+-handheld devices. AYANEO devices preceding the AIR and OneXPlayer devices
+-preceding the Mini A07 are not supportable as the EC model is different
+-and do not have manual control capabilities.
+-
+-Some OneXPlayer and AOKZOE models have a toggle for changing the behaviour
+-of the "Turbo/Silent" button of the device. It will change the key event
+-that it triggers with a flip of the `tt_toggle` attribute. See below for
+-boards that support this function.
++In addition, for legacy reasons, this driver provides hwmon functionality
++to Ayaneo devices, and the OrangePi Neo (AOKZOE is a sister company of
++OneXPlayer and uses the same EC).
+ 
+ Supported devices
+ -----------------
+ 
+ Currently the driver supports the following handhelds:
+-
+  - AOKZOE A1
+  - AOKZOE A1 PRO
++ - OneXPlayer 2/2 Pro
++ - OneXPlayer AMD
++ - OneXPlayer mini AMD
++ - OneXPlayer mini AMD PRO
++ - OneXPlayer OneXFly variants
++ - OneXPlayer X1 variants
++
++In addition, until a driver is upstreamed for the following, the driver
++also supports controlling them:
+  - AYANEO 2
+  - AYANEO 2S
+  - AYANEO AIR
+@@ -41,29 +47,8 @@ Currently the driver supports the following handhelds:
+  - AYANEO Geek
+  - AYANEO Geek 1S
+  - AYANEO KUN
+- - OneXPlayer 2
+- - OneXPlayer 2 Pro
+- - OneXPlayer AMD
+- - OneXPlayer mini AMD
+- - OneXPlayer mini AMD PRO
+- - OneXPlayer OneXFly
+- - OneXPlayer X1 A
+- - OneXPlayer X1 i
+- - OneXPlayer X1 mini
+  - OrangePi NEO-01
+ 
+-"Turbo/Silent" button behaviour toggle is only supported on:
+- - AOK ZOE A1
+- - AOK ZOE A1 PRO
+- - OneXPlayer 2
+- - OneXPlayer 2 Pro
+- - OneXPlayer mini AMD (only with updated alpha BIOS)
+- - OneXPlayer mini AMD PRO
+- - OneXPlayer OneXFly
+- - OneXPlayer X1 A
+- - OneXPlayer X1 i
+- - OneXPlayer X1 mini
+-
+ Sysfs entries
+ -------------
+ 
+@@ -79,11 +64,4 @@ pwm1_enable
+ pwm1
+   Read Write. Read this attribute to see current duty cycle in the range [0-255].
+   When pwm1_enable is set to "1" (manual) write any value in the range [0-255]
+-  to set fan speed.
+-
+-tt_toggle
+-  Read Write. Read this attribute to check the status of the turbo/silent
+-  button behaviour function. Write "1" to activate the switch and "0" to
+-  deactivate it. The specific keycodes and behaviour is specific to the device
+-  both with this function on and off. This attribute is attached to the platform
+-  driver and not to the hwmon driver (/sys/devices/platform/oxp-platform/tt_toggle)
++  to set fan speed.
+\ No newline at end of file
 -- 
 2.48.1
 
