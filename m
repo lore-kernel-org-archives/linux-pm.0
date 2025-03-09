@@ -1,29 +1,30 @@
 Received: from linux1587.grserver.gr (linux1587.grserver.gr [185.138.42.100])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9CED74C08;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 26797199949;
 	Sun,  9 Mar 2025 11:21:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.138.42.100
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741519290; cv=none; b=K6LGR90FXSj2xeBvG310VuF9K7m/+mmd2Ar+F2H0T2kFqNz5p2hE+a3DtxbnrQ/Og+Pr4NkmwXLeAeDaEaq3gr6KRW4ea4TvYcIZPjEv8ujI+VK4lbLRq8mVZCPpXorPkPCC0Y7O2wFR2kXeMGEVYzz/d6jCLP7VxV5GAOoYKk4=
+	t=1741519291; cv=none; b=bsnqyti/hsVzqvlZFXd7WRV8xz4yLHDCEMKqWE1y3uYlntqQ+P46xZjE7I4Pdkf4UyIA9VByvxFHwhL+whUU69UJTW3pEX0VSRIHH9jbIXd1cbglhru1R88oTWr8BRyhkZY4kn52Fkm76jPQbguKHKHeTSm0u5nQEs6QRdgYwWA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741519290; c=relaxed/simple;
-	bh=D3tYI8iTJ7QZIlhKuN2+ClrGTuzJa2U2KPsn5/wV2js=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=eBFE+hAd9J8H+9KM6Ugvl1OH/+QcVVPXra4uBvscu3zOl3gX/9apqBu8eYHYwawXBI+i5rnGdPg/w+4oLB7J9Yc7vTcViZ4lUn1n+TOyiUfG5d7bAdAld29JfVRHfzzV5uDanAG+2hEEjX/rFJBBFvGkiFFk+pqi1yH04esK/ko=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=PrlYaP84; arc=none smtp.client-ip=185.138.42.100
+	s=arc-20240116; t=1741519291; c=relaxed/simple;
+	bh=DN4lPGzRvJ5WNcNqzi6UYhqtxe0UJP4nUvlWxCQtf3k=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=tr0Zimw9LwtWWgPglJPbUbx4hcvWqylHXt8lCSInUjKNgikZlxb5YiXzz7Wfx0szgZF+xhLwucewO4QvqQb9FjTpPH8w/l64lQtPVC9YeAjLNEs8QSNc+2HQRLrukPOVcyrz1xQnfQ4cNsOpmsnHVVnyAuKnFSmu+3RhA1q//6M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=d7scwS4L; arc=none smtp.client-ip=185.138.42.100
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=antheas.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="PrlYaP84"
+	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="d7scwS4L"
 Received: from localhost.localdomain (unknown [IPv6:2a05:f6c2:511b:0:8d8a:5967:d692:ea4e])
-	by linux1587.grserver.gr (Postfix) with ESMTPSA id 917972E037CC;
-	Sun,  9 Mar 2025 13:21:16 +0200 (EET)
+	by linux1587.grserver.gr (Postfix) with ESMTPSA id 36E062E02CAB;
+	Sun,  9 Mar 2025 13:21:22 +0200 (EET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=antheas.dev;
-	s=default; t=1741519278;
-	bh=w3CdKrkESq2tKARZR2k9fTv2YfnbpHvzaojVRo6xY4o=; h=From:To:Subject;
-	b=PrlYaP849T8sA/19KRFS4qOb2ocBEyujLhtlFvgAECkj6400RHpoxQjM72ukJzDDC
-	 FiiHqZ/SkXghZgVmAqOuJZICRlEh1T/+c2dn9e1e2rxjDLf1EWr+YbuVwHjNrFKk7W
-	 hbXi/r3JQR02UnmsGXfoQiZgbIiW8pm7Ir8DD8hM=
+	s=default; t=1741519284;
+	bh=RYIh6+vPCJzjj/Auw7QFSfgfIxTo9QzItGSvqYtET6k=; h=From:To:Subject;
+	b=d7scwS4LNmjcEsobsVgI87jZPSFPg3SGtmt/l9jpPi2maikF5dzUywJEgxgvjoazU
+	 n0NyzwtHcauR9o938tTSQ3ax5k0RZ3ZFSxfq1s1qIeYbEIIW0Phrsi1CWjkgWcAAE/
+	 j9a8GOcmt9CdBQUEUYphAK04sUFTWdm9w+H7Mfg8=
 Authentication-Results: linux1587.grserver.gr;
 	spf=pass (sender IP is 2a05:f6c2:511b:0:8d8a:5967:d692:ea4e) smtp.mailfrom=lkml@antheas.dev smtp.helo=localhost.localdomain
 Received-SPF: pass (linux1587.grserver.gr: connection is authenticated)
@@ -42,103 +43,188 @@ Cc: linux-hwmon@vger.kernel.org,
 	Parth Menon <parthasarathymenon@gmail.com>,
 	Eileen <eileen@one-netbook.com>,
 	Antheas Kapenekakis <lkml@antheas.dev>
-Subject: [PATCH v3 00/12] hwmon: (oxpsensors) Add devices, features,
- fix ABI and move to platform/x86
-Date: Sun,  9 Mar 2025 12:21:01 +0100
-Message-ID: <20250309112114.1177361-1-lkml@antheas.dev>
+Subject: [PATCH v3 03/12] platform/x86: oxpec: Move hwmon/oxp-sensors to
+ platform/x86
+Date: Sun,  9 Mar 2025 12:21:04 +0100
+Message-ID: <20250309112114.1177361-4-lkml@antheas.dev>
 X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250309112114.1177361-1-lkml@antheas.dev>
+References: <20250309112114.1177361-1-lkml@antheas.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-PPP-Message-ID: 
- <174151927785.28547.2924708597399637820@linux1587.grserver.gr>
+ <174151928355.28721.4095908493012173453@linux1587.grserver.gr>
 X-PPP-Vhost: antheas.dev
 X-Virus-Scanned: clamav-milter 0.103.11 at linux1587.grserver.gr
 X-Virus-Status: Clean
 
-This four part series updates the oxpsensors module to bring it in line
-with its Windows OneXPlayer counterpart. First, it adds support for all
-2024, 2025 OneXPlayer handhelds and their special variants. Then, it moves
-the module to platform/x86 to allow for including more EC features.
+The EC of OneXPlayer devices used to only control the fan.
+This is no longer the case, with the EC of OneXPlayer gaining
+additional functionality (turbo button, turbo led, battery controls).
 
-Then, it adds the new charge limiting and bypass features that were first
-introduced in the X1 and retrofit to older OneXFly variants and for
-controlling the turbo led found in the X1 models. For Bypass, it adds a new
-charge_behaviour variant called inhibit-charge-s0.
+As it will be beneficial from a complexity perspective
+to retain this driver as a single unit, move it out
+of hwmon, and into platform/x86.
 
-Finally, it performs a minor refactor by moving around switch statements
-into their own functions, in order to allow for fixing the pwm1_enable ABI
-in the final patch. Currently, pwm1_enable sets the fan to auto with the
-value 0 and allows manual control with the value 1. This patch makes it
-so 0 sets the fan to full speed, 1 sets the fan to manual control, and
-2 sets the fan to auto. This requires both setting enable and the fan
-speed when the enable sysfs is written to as 0, hence the refactor.
+While at it, add myself to the maintainer's file.
 
-As this is a minor ABI break and there is userspace software relying
-on this previous behavior, the last patch also changes the /name of the
-hwmon endpoint to "oxp_ec" from "oxpec" (mirroring WMI module conventions)
-such that userspace software that relied on the previous behavior can be
-retrofit to the new kernel while enabling correct functionality on old
-and new kernels. Failing that, software that is not updated will just
-stop controlling the fans, ensuring no malignant behavior.
+Acked-by: Guenter Roeck <linux@roeck-us.net>
+Signed-off-by: Antheas Kapenekakis <lkml@antheas.dev>
+---
+ Documentation/hwmon/index.rst                         |  2 +-
+ Documentation/hwmon/{oxp-sensors.rst => oxpec.rst}    |  0
+ MAINTAINERS                                           |  7 ++++---
+ drivers/hwmon/Kconfig                                 | 11 -----------
+ drivers/hwmon/Makefile                                |  1 -
+ drivers/platform/x86/Kconfig                          | 11 +++++++++++
+ drivers/platform/x86/Makefile                         |  3 +++
+ drivers/{hwmon/oxp-sensors.c => platform/x86/oxpec.c} | 10 ++++------
+ 8 files changed, 23 insertions(+), 22 deletions(-)
+ rename Documentation/hwmon/{oxp-sensors.rst => oxpec.rst} (100%)
+ rename drivers/{hwmon/oxp-sensors.c => platform/x86/oxpec.c} (98%)
 
-Changes since V2:
-    - Add ack by Guenter, move platform move patch to be third (not first
-      to allow for device support backport to lts kernels)
-    - Rework patch text, especially in the refactor patches as per Derek
-    - Change bypass to use charge_behaviour instead of charge_type, as that
-      ABI supports capability detection and is more appropriate
-    - Move battery attach to probe instead of init
-    - Fix bug where reading tt_led would instead use the turbo register
-
-Changes since V1:
-    - Add X1 Pro, F1 Pro variants
-    - Fix minor typo in initial patches
-    - Convert oxp-sensors into a platform driver, as it is no longer
-      considered a hwmon driver.
-    - Add sysfs documentation and myself to the MAINTAINERS file
-    - Update documentation to state that this is the OneXPlayer/AOKZOE
-      platform driver, and that support for Ayaneo/OPI is provided until
-      they gain their own platform driver.
-
-Antheas Kapenekakis (12):
-  hwmon: (oxp-sensors) Distinguish the X1 variants
-  hwmon: (oxp-sensors) Add all OneXFly variants
-  platform/x86: oxpec: Move hwmon/oxp-sensors to platform/x86
-  ABI: testing: add tt_toggle and tt_led entries
-  power: supply: add inhibit-charge-s0 to charge_behaviour
-  platform/x86: oxpec: Add charge threshold and behaviour to OneXPlayer
-  platform/x86: oxpec: Rename ec group to tt_toggle
-  platform/x86: oxpec: Add turbo led support to X1 devices
-  platform/x86: oxpec: Move pwm_enable read to its own function
-  platform/x86: oxpec: Move pwm value read/write to separate functions
-  platform/x86: oxpec: Move fan speed read to separate function
-  platform/x86: oxpec: Adhere to sysfs-class-hwmon and enable pwm on 2
-
- Documentation/ABI/testing/sysfs-class-power   |  11 +-
- Documentation/ABI/testing/sysfs-platform-oxp  |  29 +
- Documentation/hwmon/index.rst                 |   2 +-
- Documentation/hwmon/oxp-sensors.rst           |  89 ---
- Documentation/hwmon/oxpec.rst                 |  67 ++
- MAINTAINERS                                   |   7 +-
- drivers/hwmon/Kconfig                         |  11 -
- drivers/hwmon/Makefile                        |   1 -
- drivers/platform/x86/Kconfig                  |  11 +
- drivers/platform/x86/Makefile                 |   3 +
- .../oxp-sensors.c => platform/x86/oxpec.c}    | 675 ++++++++++++++----
- drivers/power/supply/power_supply_sysfs.c     |   1 +
- drivers/power/supply/test_power.c             |   1 +
- include/linux/power_supply.h                  |   1 +
- 14 files changed, 664 insertions(+), 245 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-platform-oxp
- delete mode 100644 Documentation/hwmon/oxp-sensors.rst
- create mode 100644 Documentation/hwmon/oxpec.rst
- rename drivers/{hwmon/oxp-sensors.c => platform/x86/oxpec.c} (51%)
-
+diff --git a/Documentation/hwmon/index.rst b/Documentation/hwmon/index.rst
+index 874f8fd26325..dd7a54d5f281 100644
+--- a/Documentation/hwmon/index.rst
++++ b/Documentation/hwmon/index.rst
+@@ -186,7 +186,7 @@ Hardware Monitoring Kernel Drivers
+    nzxt-kraken3
+    nzxt-smart2
+    occ
+-   oxp-sensors
++   oxpec
+    pc87360
+    pc87427
+    pcf8591
+diff --git a/Documentation/hwmon/oxp-sensors.rst b/Documentation/hwmon/oxpec.rst
+similarity index 100%
+rename from Documentation/hwmon/oxp-sensors.rst
+rename to Documentation/hwmon/oxpec.rst
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 0248c9eb39d6..a11d346a458b 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -17641,12 +17641,13 @@ S:	Maintained
+ F:	drivers/mtd/nand/onenand/
+ F:	include/linux/mtd/onenand*.h
+ 
+-ONEXPLAYER FAN DRIVER
++ONEXPLAYER PLATFORM EC DRIVER
++M:	Antheas Kapenekakis <lkml@antheas.dev>
+ M:	Derek John Clark <derekjohn.clark@gmail.com>
+ M:	Joaquín Ignacio Aramendía <samsagax@gmail.com>
+-L:	linux-hwmon@vger.kernel.org
++L:	platform-driver-x86@vger.kernel.org
+ S:	Maintained
+-F:	drivers/hwmon/oxp-sensors.c
++F:	drivers/platform/x86/oxpec.c
+ 
+ ONIE TLV NVMEM LAYOUT DRIVER
+ M:	Miquel Raynal <miquel.raynal@bootlin.com>
+diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
+index 4cbaba15d86e..09f7aed96d15 100644
+--- a/drivers/hwmon/Kconfig
++++ b/drivers/hwmon/Kconfig
+@@ -1774,17 +1774,6 @@ config SENSORS_NZXT_SMART2
+ 
+ source "drivers/hwmon/occ/Kconfig"
+ 
+-config SENSORS_OXP
+-	tristate "OneXPlayer EC fan control"
+-	depends on ACPI_EC
+-	depends on X86
+-	help
+-		If you say yes here you get support for fan readings and control over
+-		OneXPlayer handheld devices. Only OneXPlayer mini AMD handheld variant
+-		boards are supported.
+-
+-		Can also be built as a module. In that case it will be called oxp-sensors.
+-
+ config SENSORS_PCF8591
+ 	tristate "Philips PCF8591 ADC/DAC"
+ 	depends on I2C
+diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
+index b7ef0f0562d3..0edb08824b17 100644
+--- a/drivers/hwmon/Makefile
++++ b/drivers/hwmon/Makefile
+@@ -181,7 +181,6 @@ obj-$(CONFIG_SENSORS_NTC_THERMISTOR)	+= ntc_thermistor.o
+ obj-$(CONFIG_SENSORS_NZXT_KRAKEN2) += nzxt-kraken2.o
+ obj-$(CONFIG_SENSORS_NZXT_KRAKEN3) += nzxt-kraken3.o
+ obj-$(CONFIG_SENSORS_NZXT_SMART2) += nzxt-smart2.o
+-obj-$(CONFIG_SENSORS_OXP) += oxp-sensors.o
+ obj-$(CONFIG_SENSORS_PC87360)	+= pc87360.o
+ obj-$(CONFIG_SENSORS_PC87427)	+= pc87427.o
+ obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
+diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+index 0258dd879d64..4531b20c6b30 100644
+--- a/drivers/platform/x86/Kconfig
++++ b/drivers/platform/x86/Kconfig
+@@ -1186,6 +1186,17 @@ config SEL3350_PLATFORM
+ 	  To compile this driver as a module, choose M here: the module
+ 	  will be called sel3350-platform.
+ 
++config OXP_EC
++	tristate "OneXPlayer EC platform control"
++	depends on ACPI_EC
++	depends on X86
++	help
++		Enables support for the platform EC of OneXPlayer and AOKZOE
++		handheld devices. This includes fan speed, fan controls, and
++		disabling the default TDP behavior of the device. Due to legacy
++		reasons, this driver also provides hwmon functionality to Ayaneo
++		devices and the OrangePi Neo.
++
+ endif # X86_PLATFORM_DEVICES
+ 
+ config P2SB
+diff --git a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
+index e1b142947067..f64a191c1162 100644
+--- a/drivers/platform/x86/Makefile
++++ b/drivers/platform/x86/Makefile
+@@ -153,3 +153,6 @@ obj-$(CONFIG_WINMATE_FM07_KEYS)		+= winmate-fm07-keys.o
+ 
+ # SEL
+ obj-$(CONFIG_SEL3350_PLATFORM)		+= sel3350-platform.o
++
++# OneXPlayer
++obj-$(CONFIG_OXP_EC)		+= oxpec.o
+\ No newline at end of file
+diff --git a/drivers/hwmon/oxp-sensors.c b/drivers/platform/x86/oxpec.c
+similarity index 98%
+rename from drivers/hwmon/oxp-sensors.c
+rename to drivers/platform/x86/oxpec.c
+index f7a64fbc8f33..dc3a0871809c 100644
+--- a/drivers/hwmon/oxp-sensors.c
++++ b/drivers/platform/x86/oxpec.c
+@@ -1,11 +1,8 @@
+ // SPDX-License-Identifier: GPL-2.0+
+ /*
+- * Platform driver for OneXPlayer, AOKZOE, AYANEO, and OrangePi Handhelds
+- * that expose fan reading and control via hwmon sysfs.
+- *
+- * Old OXP boards have the same DMI strings and they are told apart by
+- * the boot cpu vendor (Intel/AMD). Of these older models only AMD is
+- * supported.
++ * Platform driver for OneXPlayer and AOKZOE devices. For the time being,
++ * it also exposes fan controls for AYANEO, and OrangePi Handhelds via
++ * hwmon sysfs.
+  *
+  * Fan control is provided via pwm interface in the range [0-255].
+  * Old AMD boards use [0-100] as range in the EC, the written value is
+@@ -16,6 +13,7 @@
+  *
+  * Copyright (C) 2022 Joaquín I. Aramendía <samsagax@gmail.com>
+  * Copyright (C) 2024 Derek J. Clark <derekjohn.clark@gmail.com>
++ * Copyright (C) 2025 Antheas Kapenekakis <lkml@antheas.dev>
+  */
+ 
+ #include <linux/acpi.h>
 -- 
 2.48.1
 
