@@ -1,51 +1,114 @@
-Received: from hibnavf.top (v160-251-183-180.rka7.static.cnode.jp [160.251.183.180])
+Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net [217.70.183.197])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FE8822576E
-	for <linux-pm@vger.kernel.org>; Tue, 11 Mar 2025 08:52:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=160.251.183.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2038422CBD5;
+	Tue, 11 Mar 2025 09:21:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.70.183.197
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741683170; cv=none; b=eoO1lXt91ruNKW6D2aDmwvakaIpeGxrQG989hCVx9xU0Il2vrl6Ik/Ez3UGYvwweUNASS45+Yky1RPEb61wyr03LWDWtw8vo4CM9YjMFWGIk3g/GxPZ9C1DtYOamQNFYC4HJdPothJu1ljH/WTgJ3vEYgQ4WdxsGUvv7XGklWsE=
+	t=1741684896; cv=none; b=LAkgTU93YsubOAygzJuK9ACfvsalUbZWSmimHrqGcUtv01Zc2RV1VA0CCIdSSDpoZF7PNEpKeAo9AEWW1SLv4TWkn9RMWZ8gX6rErNoB0A+E5cZZ2dvByL2dqzDRokKC8lX9XBWVDYGRvUHlAEkjsMTEG/xkU+7kpwfhNKhhzKQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741683170; c=relaxed/simple;
-	bh=j/r+ZU8ocng2qBgyRdeMZwQ3hdTKS3WqQbWXN6Z8cp8=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=MUax8FYC0omUX0ii44vyGthz6Pk+x2SMPywwaFKYe4tuC6Dbi4JMNg1M0+kpydd4WPXZFWztgGNoP+HeDfcKoT+vgklMMxaIOy3RW+WErRm6o+1qwdfbiD/EAM0NqGmw3RsOa7s2dsH2JJz0zAjnRAb7n7epDvhVBs3FxVnT2s8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=hibnavf.top; spf=pass smtp.mailfrom=hibnavf.top; dkim=pass (2048-bit key) header.d=hibnavf.top header.i=@hibnavf.top header.b=pI5dpcuW; arc=none smtp.client-ip=160.251.183.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=hibnavf.top
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hibnavf.top
+	s=arc-20240116; t=1741684896; c=relaxed/simple;
+	bh=D3oDrA/DYZsV2ZD9WpsoFM6T5ClnWVYJe1My0WXo2Xs=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=CZ9GIE104jKsHTS6Qd+9E/5JbPE+MGbZLuY19cQR2CyZgVE5SfeTIT2kxdSihHOgU8KzhYQSeensQD788RUFue7Kv4kmUpjC5wAvJtMBDtemsnrukU2CO8Rd8mZWGXY47x+AVW0Tk9B/dWsBCJ3wTtVY3AHar+KF5m3/MyfEjLE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=o9p83flX; arc=none smtp.client-ip=217.70.183.197
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=hibnavf.top header.i=@hibnavf.top header.b="pI5dpcuW"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=hibnavf.top; s=mail;
-	t=1741681832; bh=j/r+ZU8ocng2qBgyRdeMZwQ3hdTKS3WqQbWXN6Z8cp8=;
-	h=From:To:Subject:Date:From;
-	b=pI5dpcuWaJFlHQZyBK5gtoYvTgACF+VnqhDCUlptEIHcb9rztgJOI1WMU5NiatR6w
-	 9u55oXPdS4GrNQeC1By12Jm8vGV3WoTmHXINozyN6BfjXjAY8HcLJ4Jhi4VhkIY8xn
-	 yY7m0oyKCGgrfE50b6LsYicDaROFz/a+LCfO3TTEIeCKDN+ohFrj1mmeNEGUpAfcbh
-	 G7cuVukBC+/QlCwfO9AZJoQlNZgpJRUcBAM5FjVfW3f/kt/51PVvEoA/tttUtyAKBc
-	 6PGfkvNHJOEgzT3JlIGQSvJn4MlN8ZTCv877lYslzo7DsM0ML+EfMrTIjOqab90SL1
-	 lpaJXPrUkTPOg==
-Received: from budgetownse.cyou (x162-43-58-98.static.xvps.ne.jp [162.43.58.98])
-	by hibnavf.top (Postfix) with ESMTPSA id C975D103E53
-	for <linux-pm@vger.kernel.org>; Tue, 11 Mar 2025 17:30:32 +0900 (JST)
-From: =?iso-2022-jp?B?GyRCJEklYiUtJU0ldiRmJEEbKEI=?= <service_1@hibnavf.top>
-To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Subject: Ailyn hello
-Date: Tue, 11 Mar 2025 17:30:31 +0900
-Message-ID: <FHPNIPHNGDGDABONLDONJDADGIBE.service_1@hibnavf.top>
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="o9p83flX"
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 9D8E3432FA;
+	Tue, 11 Mar 2025 09:21:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1741684892;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=6VTqHFVqHMv5npZuUyKgDinGie6VAE2hr7CtUFwYLSY=;
+	b=o9p83flXRMrRQuTLg6n/HGont2VUgB6/lw/4w2fAvirJUilLCqThl8RIPLmtWw9vEW95eX
+	envhk4s2MbLlzGsQ27DidxfRYMN44+3RIPG6IjBlPdfTXNQOOivGfzTqKEm6d9e+tL6QUp
+	dtDRYnr3/mG9lUC2rJD/UMAfkIh6l/+H9vQhU3fyvb4zD2QkhuytKMs3Nq2/wnfcbWBuZJ
+	SsRtZocmVaX+Juk8O43qF2q6E+QMN3fbet6gpazai6Dc4JcUXZ90pZioTpeucWr/sYw9MJ
+	LBNJAENxwSNN4bTC7qANAYjPilyUpYrUUyAvCtwKLM5hvCJ6vxwl5hU2Hh1Zfg==
+From: Luca Ceresoli <luca.ceresoli@bootlin.com>
+Subject: [PATCH v2 0/2] vsprintf: remove redundant %pCn format specifier
+Date: Tue, 11 Mar 2025 10:21:21 +0100
+Message-Id: <20250311-vsprintf-pcn-v2-0-0af40fc7dee4@bootlin.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-2022-jp"
-Content-Transfer-Encoding: base64
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.2416 (9.0.2911.0)
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2180
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAJEA0GcC/3WMywrCMBBFf6XM2pFJ4gtX/od00bzsgCYlCUEp+
+ Xdj964u58I5K2SX2GW4DiskVzlzDB3kbgAzT+HhkG1nkCSPpOiMNS+JQ/G4mICX6aCc0mT7QFe
+ W5Dy/t9x97DxzLjF9tnoVv/dPqAoktJ60NMafBPmbjrE8OexNfMHYWvsC41q6JaoAAAA=
+X-Change-ID: 20250307-vsprintf-pcn-8a43e3b0d43e
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, 
+ Florian Fainelli <florian.fainelli@broadcom.com>, 
+ Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, 
+ Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
+ Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>, 
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>, 
+ Sergey Senozhatsky <senozhatsky@chromium.org>, 
+ Jonathan Corbet <corbet@lwn.net>, Andrew Morton <akpm@linux-foundation.org>, 
+ Alex Shi <alexs@kernel.org>, Yanteng Si <si.yanteng@linux.dev>
+Cc: Binbin Zhou <zhoubinbin@loongson.cn>, 
+ Thomas Petazzoni <thomas.petazzoni@bootlin.com>, 
+ Michael Turquette <mturquette@baylibre.com>, 
+ Stephen Boyd <sboyd@kernel.org>, 
+ Geert Uytterhoeven <geert+renesas@glider.be>, Liu Ying <victor.liu@nxp.com>, 
+ linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+ linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, 
+ Luca Ceresoli <luca.ceresoli@bootlin.com>
+X-Mailer: b4 0.14.2
+X-GND-State: clean
+X-GND-Score: -100
+X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdduvddukeeiucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuifetpfffkfdpucggtfgfnhhsuhgsshgtrhhisggvnecuuegrihhlohhuthemuceftddunecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhufffkfggtgfgvfevofesthejredtredtjeenucfhrhhomhepnfhutggrucevvghrvghsohhlihcuoehluhgtrgdrtggvrhgvshholhhisegsohhothhlihhnrdgtohhmqeenucggtffrrghtthgvrhhnpefgieetkeekgfdtudevueffueffveekheeiudfhfedvhfeukeeuhffhtddtvdekfeenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppedvrgdtvdemieejtdemvddtvddtmegvrgdtudemsggvgedumeelhegvjeemfeegfeemledufegvnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvdgrtddvmeeijedtmedvtddvtdemvggrtddumegsvgegudemleehvgejmeefgeefmeeludefvgdphhgvlhhopegludelvddrudeikedrudejkedrjeehngdpmhgrihhlfhhrohhmpehluhgtrgdrtggvrhgvshholhhisegsohhothhlihhnrdgtohhmpdhnsggprhgtphhtthhopeeftddprhgtphhtthhopehflhhorhhirghnrdhfrghinhgvlhhlihessghrohgruggtohhmrdgtohhmpdhrtghpthhtoheplhhinhhugidqrhhpihdqkhgvrhhnvghlsehlihhsthhsrdhinhhfrhgruggvrggur
+ dhorhhgpdhrtghpthhtohepiihhohhusghinhgsihhnsehlohhonhhgshhonhdrtghnpdhrtghpthhtoheprhgrfhgrvghlsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhgtrgdrtggvrhgvshholhhisegsohhothhlihhnrdgtohhmpdhrtghpthhtohepphhmlhgruggvkhesshhushgvrdgtohhmpdhrtghpthhtoheprghnughrihihrdhshhgvvhgthhgvnhhkoheslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehlihhnuhigqdguohgtsehvghgvrhdrkhgvrhhnvghlrdhorhhg
+X-GND-Sasl: luca.ceresoli@bootlin.com
 
-bGludXgtcG0sPxskQjklGyhCDQoNCg0KDQoNCg0KMjAyNS0wMy0xMSAxNzozMDozMQ0KDQo=
+There are two printk format specifiers for clocks: %pC and %pCn, and they
+print exactly the same string. Geert confirmed the intended reason for
+having two was that %pC would act as a default, like some (but not all)
+formats do. However there seem to be no advantage in having two instead of
+one, especially now that there is no other %pC specifier since commit
+666902e42fd8 ("lib/vsprintf: Remove atomic-unsafe support for %pCr").
+
+Definitely having two without properly documenting they do the same creates
+misunderstandings [0].
+
+Since %pCn is used in a single place, replace it with %pC and remove %pCn
+to simplify such format specifiers implementation and avoid
+misunderstandings.
+
+[0] https://lore.kernel.org/dri-devel/f8df2b5e-b005-4ada-8108-159b2b94a72e@nxp.com/
+
+Signed-off-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
+---
+Changes in v2:
+- Add Chinese translation
+- Link to v1: https://lore.kernel.org/r/20250307-vsprintf-pcn-v1-0-df0b2ccf610f@bootlin.com
+
+---
+Luca Ceresoli (2):
+      thermal: bcm2835: use %pC instead of %pCn
+      vsprintf: remove redundant and unused %pCn format specifier
+
+ Documentation/core-api/printk-formats.rst                    |  3 +--
+ Documentation/translations/zh_CN/core-api/printk-formats.rst |  3 +--
+ drivers/thermal/broadcom/bcm2835_thermal.c                   |  2 +-
+ lib/vsprintf.c                                               | 10 ++--------
+ 4 files changed, 5 insertions(+), 13 deletions(-)
+---
+base-commit: 4d872d51bc9d7b899c1f61534e3dbde72613f627
+change-id: 20250307-vsprintf-pcn-8a43e3b0d43e
+
+Best regards,
+-- 
+Luca Ceresoli <luca.ceresoli@bootlin.com>
 
