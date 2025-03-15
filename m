@@ -1,23 +1,24 @@
 Received: from relmlie5.idc.renesas.com (relmlor1.renesas.com [210.160.252.171])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 63B628633F;
-	Sat, 15 Mar 2025 08:12:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id E1FCE1C860F;
+	Sat, 15 Mar 2025 08:13:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.160.252.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1742026358; cv=none; b=tvVsQFP5rkm1/RPP/19pZ55+IWFBYfSsd4zzIiBlJ+Nwdv/PpcuSLHn/QTjW4edL/rTql5Opv55sHsC1amkp9iFDLUfARITy9Rag5Hp0NHCJsCN7cuV2LT9u2W3/3iJeudbsOIjX3WLBKHIjAUmd2g3h33xtzy6vbB1zA3JlUoU=
+	t=1742026384; cv=none; b=bD7gNFXAS7y2mh9rPODdfkX4xcZ3JIzwYy5eI+lXtbe9u6se+BNiW9urzvIvWvSX31bHSKHm3Va5rlaL8VW20EcHYOklRW77sppk2Gqcokg7wTww5IBECrSngvZKz8wNDbxPc2EOAEDkpRkBJ+bughtwjebzd2FziM3JKbFHrO8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1742026358; c=relaxed/simple;
-	bh=jG9oPcjZqHlbR4d47jM7VKXo5P/tae2bdnMELTmPOaM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=i2bFk9sTTs9FHFRA84i1QPccASBbg4kqCPK5/kUU3R7Y5I6iEQU9naXOOMlKpkdG+NIKSy9ofqZyMfRqNCmDeul/uqUrmIODgONtWPe+Bu5uqj4eFRoayA5weHauAUb6qMoxJ5IuAtpMp9lJi8oRvLlZ7hpmbzveVAWodEFRH14=
+	s=arc-20240116; t=1742026384; c=relaxed/simple;
+	bh=erGtLpcQB3i+4RLubw5o5z1gJDfAFuDuVIGplQZyu6A=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Ag4ohJ3Zc6uM2eAx1FEeORrofy3wWL+1yzdFkid2OgH1U7bBmFiFUmMZsTyGtBlvKG1U0aV4rebq59+mWqKRaWfsZG+flhFgG5LmwYjrTDXfTYPVSbIJaHTZ8CzQ1H00QK9ccFvZ2RK6N246hFEyMW+1mbj3p6vvqqCDUcNPRiU=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=bp.renesas.com; spf=pass smtp.mailfrom=bp.renesas.com; arc=none smtp.client-ip=210.160.252.171
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=bp.renesas.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bp.renesas.com
-X-CSE-ConnectionGUID: ZMxv4JYITJmRHA9upJO4aQ==
-X-CSE-MsgGUID: n+2J8ZdeRyaN7PalhWpnvg==
+X-CSE-ConnectionGUID: isV4w/dgSyuBMnEkxrXCuA==
+X-CSE-MsgGUID: AvIAZGJeTkCq6ob+FuX4bg==
 Received: from unknown (HELO relmlir6.idc.renesas.com) ([10.200.68.152])
-  by relmlie5.idc.renesas.com with ESMTP; 15 Mar 2025 17:12:33 +0900
+  by relmlie5.idc.renesas.com with ESMTP; 15 Mar 2025 17:13:00 +0900
 Received: from ubuntu.adwin.renesas.com (unknown [10.226.92.58])
-	by relmlir6.idc.renesas.com (Postfix) with ESMTP id E69F641BFA40;
-	Sat, 15 Mar 2025 17:12:28 +0900 (JST)
+	by relmlir6.idc.renesas.com (Postfix) with ESMTP id 7FD9F41BFA47;
+	Sat, 15 Mar 2025 17:12:55 +0900 (JST)
 From: John Madieu <john.madieu.xa@bp.renesas.com>
 To: geert+renesas@glider.be,
 	conor+dt@kernel.org,
@@ -36,10 +37,12 @@ Cc: magnus.damm@gmail.com,
 	linux-pm@vger.kernel.org,
 	lukasz.luba@arm.com,
 	John Madieu <john.madieu.xa@bp.renesas.com>
-Subject: [PATCH v3 0/6] thermal: renesas: Add support fot RZ/G3E
-Date: Sat, 15 Mar 2025 09:12:10 +0100
-Message-ID: <20250315081225.92118-1-john.madieu.xa@bp.renesas.com>
+Subject: [PATCH v3 5/6] arm64: dts: renesas: r9a09g047: Add TSU node
+Date: Sat, 15 Mar 2025 09:12:15 +0100
+Message-ID: <20250315081225.92118-6-john.madieu.xa@bp.renesas.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250315081225.92118-1-john.madieu.xa@bp.renesas.com>
+References: <20250315081225.92118-1-john.madieu.xa@bp.renesas.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,57 +51,110 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Hello,
+Add TSU node along with thermal zones and keep it enabled in the SoC DTSI.
 
-This series adds support for the temperature sensor unit (TSU) found on the
-Renesas RZ/G3E SoC.
+Signed-off-by: John Madieu <john.madieu.xa@bp.renesas.com>
+---
+v1 -> v2: Fix IRQ names
+v2 -> v3: remove useless 'renesas,tsu-operating-mode' property'
 
-The series consists of 7 patches (some of which are not related to the thermal
-framework) that progressively add TSU support as follows:
-- patch 1/6:    adds syscon/regmap support for accessing system controller
-                registers, enabling access to TSU calibration values
+ arch/arm64/boot/dts/renesas/r9a09g047.dtsi | 48 ++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
 
-- patch 2/6:    adds dt-bindings
-- patch 3/6:    adds the actual TSU driver for the RZ/G3E
-- patch 4/6:    adds safety mechanism to make sure we we protect the chip in
-                case of consecutive read failures
-- patch 4-6/6:  add DT node and defconfig enablement
-
-
-Changes:
-
-v1 -> v2
- * Fix yaml warnings from dt-binding
- * Update IRQ names to reflect TSU expectations
-
-v2 -> v3
- * Remove useless 'renesas,tsu-operating-mode' property
-
-Regards,
-
-John Madieu (6):
-  soc: renesas: rz-sysc: add syscon/regmap support
-  dt-bindings: thermal: r9a09g047-tsu: Document the TSU unit
-  thermal: renesas: rzg3e: Add thermal driver for the Renesas RZ/G3E SoC
-  thermal: renesas: rzg3e: Add safety check when reading temperature
-  arm64: dts: renesas: r9a09g047: Add TSU node
-  arm64: defconfig: Enable RZ/G3E thermal
-
- .../thermal/renesas,r9a09g047-tsu.yaml        | 113 +++++
- MAINTAINERS                                   |   7 +
- arch/arm64/boot/dts/renesas/r9a09g047.dtsi    |  48 ++
- arch/arm64/configs/defconfig                  |   1 +
- drivers/soc/renesas/Kconfig                   |   1 +
- drivers/soc/renesas/r9a09g047-sys.c           |   1 +
- drivers/soc/renesas/rz-sysc.c                 |  30 +-
- drivers/soc/renesas/rz-sysc.h                 |   2 +
- drivers/thermal/renesas/Kconfig               |   7 +
- drivers/thermal/renesas/Makefile              |   1 +
- drivers/thermal/renesas/rzg3e_thermal.c       | 479 ++++++++++++++++++
- 11 files changed, 689 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/thermal/renesas,r9a09g047-tsu.yaml
- create mode 100644 drivers/thermal/renesas/rzg3e_thermal.c
-
+diff --git a/arch/arm64/boot/dts/renesas/r9a09g047.dtsi b/arch/arm64/boot/dts/renesas/r9a09g047.dtsi
+index a6b83e057a40..c49214cb7936 100644
+--- a/arch/arm64/boot/dts/renesas/r9a09g047.dtsi
++++ b/arch/arm64/boot/dts/renesas/r9a09g047.dtsi
+@@ -64,6 +64,7 @@ cpu0: cpu@0 {
+ 			next-level-cache = <&L3_CA55>;
+ 			enable-method = "psci";
+ 			clocks = <&cpg CPG_CORE R9A09G047_CA55_0_CORECLK0>;
++			#cooling-cells = <2>;
+ 			operating-points-v2 = <&cluster0_opp>;
+ 		};
+ 
+@@ -74,6 +75,7 @@ cpu1: cpu@100 {
+ 			next-level-cache = <&L3_CA55>;
+ 			enable-method = "psci";
+ 			clocks = <&cpg CPG_CORE R9A09G047_CA55_0_CORECLK1>;
++			#cooling-cells = <2>;
+ 			operating-points-v2 = <&cluster0_opp>;
+ 		};
+ 
+@@ -84,6 +86,7 @@ cpu2: cpu@200 {
+ 			next-level-cache = <&L3_CA55>;
+ 			enable-method = "psci";
+ 			clocks = <&cpg CPG_CORE R9A09G047_CA55_0_CORECLK2>;
++			#cooling-cells = <2>;
+ 			operating-points-v2 = <&cluster0_opp>;
+ 		};
+ 
+@@ -94,6 +97,7 @@ cpu3: cpu@300 {
+ 			next-level-cache = <&L3_CA55>;
+ 			enable-method = "psci";
+ 			clocks = <&cpg CPG_CORE R9A09G047_CA55_0_CORECLK3>;
++			#cooling-cells = <2>;
+ 			operating-points-v2 = <&cluster0_opp>;
+ 		};
+ 
+@@ -302,6 +306,19 @@ wdt3: watchdog@13000400 {
+ 			status = "disabled";
+ 		};
+ 
++		tsu: thermal@14002000 {
++			compatible = "renesas,r9a09g047-tsu";
++			reg = <0 0x14002000 0 0x1000>;
++			interrupts = <GIC_SPI 250 IRQ_TYPE_EDGE_RISING>,
++				     <GIC_SPI 251 IRQ_TYPE_LEVEL_HIGH>;
++			interrupt-names = "adi", "adcmpi";
++			clocks = <&cpg CPG_MOD 0x10a>;
++			resets = <&cpg 0xf8>;
++			power-domains = <&cpg>;
++			#thermal-sensor-cells = <0>;
++			renesas,tsu-calibration-sys = <&sys>;
++		};
++
+ 		i2c0: i2c@14400400 {
+ 			compatible = "renesas,riic-r9a09g047", "renesas,riic-r9a09g057";
+ 			reg = <0 0x14400400 0 0x400>;
+@@ -502,6 +519,37 @@ gic: interrupt-controller@14900000 {
+ 		};
+ 	};
+ 
++	thermal-zones {
++		cpu-thermal {
++			polling-delay = <1000>;
++			polling-delay-passive = <250>;
++			thermal-sensors = <&tsu>;
++
++			cooling-maps {
++				map0 {
++					trip = <&target>;
++					cooling-device = <&cpu0 0 3>, <&cpu1 0 3>,
++							 <&cpu2 0 3>, <&cpu3 0 3>;
++					contribution = <1024>;
++				};
++			};
++
++			trips {
++				target: trip-point {
++					temperature = <95000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++
++				sensor_crit: sensor-crit {
++					temperature = <120000>;
++					hysteresis = <1000>;
++					type = "critical";
++				};
++			};
++		};
++	};
++
+ 	timer {
+ 		compatible = "arm,armv8-timer";
+ 		interrupts-extended = <&gic GIC_PPI 13 IRQ_TYPE_LEVEL_LOW>,
 -- 
 2.25.1
 
