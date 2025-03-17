@@ -1,222 +1,103 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5DE0EACD
-	for <linux-pm@vger.kernel.org>; Mon, 17 Mar 2025 13:31:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1742218283; cv=none; b=UguvUwFiYCx3ZJr1yJ1w9k5+pjDNmp8arHj0DmzTtAtQx0Bc7WRt5Fl31xjlFLix2FKfPOEhtBYmr424QaQMANnwKF1jhsmFzzGUcVx7J+w9aMkOIKOEZ5EVP4H92O+VEKHFBkW/KQuLg7mdSrw+DLgd/+vgOgtorXZ2Ua4P4vI=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1742218283; c=relaxed/simple;
-	bh=GYJVMbQZ7uiqaYWMnpndV0P0ZAxM8Qmrf0bBSZB8jWQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=tZwuSQoz+hUOQgulAZ49HJDzMJulhY1+Uht8FoOXS2DD3Xd4D/HC9KKXhgcTFod3ISH/FwUJN7ZCUNoNcHN0kG/U/ee4maFR/W7O88EzISDksB+hIm28Tw99p3/Dc7vtwSRpY9o3GP1+70VzE86wfxRVWkkU+Nfn1Vhh/Ua32QU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=YE5VhhCt; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D7AC6226888;
+	Mon, 17 Mar 2025 13:50:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1742219446; cv=pass; b=uKDjVV5G77XA1JZSmWwAycet7VL/3R9VKOaU0i9PCXeduZBqJDMKaYxr89ZpvVB/9PaXHnarctsH+16yPk3KG0i7Ui6gPZbfdZBDYsAX+taTLpzkkZbn0jjXfCjueJo7RZnWH1KzEwTzeoqfvUzQWNd59QyE/iznAi/+cAYy8HE=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1742219446; c=relaxed/simple;
+	bh=jjV7xgcqTpNdMjdr4xut2lXKfKkNyiWOgeea4XBsYVU=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=m10+2cnU3Flh9HscV8p5OwBiC/7S2rPELNTSRvrPggL1FaKLEYnFRPuZeTXynEB6b8tv8eQWStFDATPQTuTMt+6rORgwpGXQYRrt9kQLfVV43TRTLg+730hkqClenEQuxOpYy0kQD+D9H4k67OYb+WHe/WEsokGPj99hlw4H43o=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=kuvvtxa/; arc=pass smtp.client-ip=136.143.188.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="YE5VhhCt"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1742218280;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=XicbyQCxRSNC4G7MmnFYTtssAxXR5/Ky4MMYhuVTNrE=;
-	b=YE5VhhCtnVIwkcZd/NoU6ebbvD/D2QMR961ocrV2S0Y0WpfYDVz1xsV+t2ia5OnFv60boG
-	Wd8Vd9q1vWHeUpF+cnL7PKC7XwONUItlDBCrDK4iY8uLERxbTflvoMHtoXQ7YLzv6Hjx+0
-	9oU2TVTch1ZudXwRoDmaLzXdxQixSso=
-Received: from mail-ej1-f70.google.com (mail-ej1-f70.google.com
- [209.85.218.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-206-S0HqewMRMz6M7ebQjJHGmQ-1; Mon, 17 Mar 2025 09:31:18 -0400
-X-MC-Unique: S0HqewMRMz6M7ebQjJHGmQ-1
-X-Mimecast-MFC-AGG-ID: S0HqewMRMz6M7ebQjJHGmQ_1742218277
-Received: by mail-ej1-f70.google.com with SMTP id a640c23a62f3a-abb9b2831b7so580240266b.1
-        for <linux-pm@vger.kernel.org>; Mon, 17 Mar 2025 06:31:18 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1742218277; x=1742823077;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=XicbyQCxRSNC4G7MmnFYTtssAxXR5/Ky4MMYhuVTNrE=;
-        b=S0DB0679HiFdTK7ojZf2dNRjazlTtF72/h1UfQPILKgfZv/TI3LgNNY6iejpELg8Mw
-         a46YGV75i1gFpvkpJDFJVMfUi3qvpbcB9x8i6eEY5rD3rCS6bqEsuIudBx+077pYwSHP
-         jWdgHMxgq7BffVViRGQhIYRXo+4aLAYEGfTg1Z+G7oM7CjtMaTEWvhKsKwNIn+yVdzla
-         gMg7ENJzFFuOYV/fhN6TQCDoQUPSddd1gQ22CAJPR/Fyh1aauwp7ZSl85heDqBP4UItO
-         77CglciWdW8D8k1WGFGOcLcPBpWIZVMvFC01/Nq63GasyCDJev6eshHCqCg1JiDLhEiI
-         8wYw==
-X-Forwarded-Encrypted: i=1; AJvYcCUlOYsGSB9ISAFJ0LSNY887oGzxPkRWsP8O8PPMx7fMrPNP+UUngwzLUqk3NCkHxOm2fUovKGw99g==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx2MhXtnjqmwlmBJhUVxKAJsN8Uyh9tenjXDLfaxPb4yZAi5d1m
-	lChrIC+sIA0tubs5/2rVEcY84bVpU5FYfYXeINv75K1oZu3CILozaaqGhLbVl0WLynxziJvOUVg
-	/k+am+Voed9FMeuRM0DmAb0Hb3lkEkSwAGiFAupv+FE2cg78M121ig6jo
-X-Gm-Gg: ASbGncvR6dfDjMDoKekDN/6TIA7hTbVoMOPwOoPd03Tp1TFzDBlRJS0yygf2IIZiaPZ
-	254V/gj/k+YG/435Pq3VuOweT8j9fV2/ANIAILKa86rT1jOl9pCu6PnmwzFVchC+wi/N9Uql4vn
-	uuAHpa8gYLwCt/juT2UwrBCEMih2RKb3sHWlt9AshX8sicp4LHQoccWnzQvaGxWusHYp2BO2efn
-	ufG9QauAzzZ1QbpWw0efFt2r6nrV8ka62yN5A1G0vSJm9pdtbXuy6GlVRzHgPvfbvYO/XlMh56M
-	aU9OlF5qEoCmKPY1+Ns=
-X-Received: by 2002:a05:6402:13c7:b0:5db:e88c:914f with SMTP id 4fb4d7f45d1cf-5e8b02242c4mr11890275a12.4.1742218277330;
-        Mon, 17 Mar 2025 06:31:17 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IHhZiaJYx30uK3+q9vUUtAFQDkx1k1IDJZJR9UYxtCzYRPH7G5wkGZMkjI62F2gMmOFEuwo9g==
-X-Received: by 2002:a05:6402:13c7:b0:5db:e88c:914f with SMTP id 4fb4d7f45d1cf-5e8b02242c4mr11890206a12.4.1742218276779;
-        Mon, 17 Mar 2025 06:31:16 -0700 (PDT)
-Received: from [10.40.98.122] ([78.108.130.194])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-5e8169b1602sm6056505a12.42.2025.03.17.06.31.15
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 17 Mar 2025 06:31:16 -0700 (PDT)
-Message-ID: <82e27f38-f951-4e6f-babd-81890d590a04@redhat.com>
-Date: Mon, 17 Mar 2025 14:31:15 +0100
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="kuvvtxa/"
+ARC-Seal: i=1; a=rsa-sha256; t=1742219423; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=jTUQ3+B3Jdh6ejfaMBnfAgWEiEpN+M4tloQJpU7rikYKYQnB4Dixm/BkULndJebb+XASDYrwjjcEp5Vi8UEt98JsjvdmSCc793rYTrlE2dhQ2nTSGvf6IBixNnTRSCCqeiCA+plALDlKE4IKVBdHt0zV02WsOT6xWZmZhi0wBxI=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1742219423; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=vTJZMXEurjXX++PH2hmwuc7IJOgr6HvrWn3KlD6bDXs=; 
+	b=WyQhIdC3jtYRZP5irqzIwsWJGzEYWr/R0ZRvj8vu1YXdnwd/FQnbtxCv+kWk+zskOW3D9EFD6HFDqh4paPo2UfyE2S+3VcBTot6fyN3FXLa6yBXFGdoHUKEOdr1A1Q6nuEHN6M0CuoQY0Kw0uCtH1CN8OACphDOKgJbchfDuBz4=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
+	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1742219423;
+	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
+	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
+	bh=vTJZMXEurjXX++PH2hmwuc7IJOgr6HvrWn3KlD6bDXs=;
+	b=kuvvtxa/F1QMRJ6TH1gRdomRSkeIA6gRvbwHcY+46N9jQAmkZeBjtQhSRhp8AYJ5
+	OufTGyej15B0LRGWDkL5lXxs1OWF+zl2PmvKUVjNN+qvQNc8IbBVSsYfuTPOk6hL5z3
+	Q3/71TAtFeYWX0mB8a7TnhT+gtpXz9C7uMav0S4s=
+Received: by mx.zohomail.com with SMTPS id 1742219422229957.2183576646732;
+	Mon, 17 Mar 2025 06:50:22 -0700 (PDT)
+From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+Date: Mon, 17 Mar 2025 14:49:26 +0100
+Subject: [PATCH v4 1/7] thermal: rockchip: rename rk_tsadcv3_tshut_mode
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 05/13] power: supply: add inhibit-charge-s0 to
- charge_behaviour
-To: Antheas Kapenekakis <lkml@antheas.dev>
-Cc: platform-driver-x86@vger.kernel.org, linux-hwmon@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-pm@vger.kernel.org,
- Guenter Roeck <linux@roeck-us.net>, Jean Delvare <jdelvare@suse.com>,
- Jonathan Corbet <corbet@lwn.net>,
- Joaquin Ignacio Aramendia <samsagax@gmail.com>,
- Derek J Clark <derekjohn.clark@gmail.com>,
- Kevin Greenberg <kdgreenberg234@protonmail.com>,
- Joshua Tam <csinaction@pm.me>, Parth Menon <parthasarathymenon@gmail.com>,
- Eileen <eileen@one-netbook.com>
-References: <20250311165406.331046-1-lkml@antheas.dev>
- <20250311165406.331046-6-lkml@antheas.dev>
- <b1ac8a33-06ed-482a-b5f6-ca88eb3802a1@redhat.com>
- <CAGwozwGESTw2DJsqr3uAhEymXxH4O5EXDw6O91i8CzCT0=yC1Q@mail.gmail.com>
-Content-Language: en-US, nl
-From: Hans de Goede <hdegoede@redhat.com>
-In-Reply-To: <CAGwozwGESTw2DJsqr3uAhEymXxH4O5EXDw6O91i8CzCT0=yC1Q@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <20250317-rk3576-tsadc-upstream-v4-1-c5029ce55d74@collabora.com>
+References: <20250317-rk3576-tsadc-upstream-v4-0-c5029ce55d74@collabora.com>
+In-Reply-To: <20250317-rk3576-tsadc-upstream-v4-0-c5029ce55d74@collabora.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
+ Jonas Karlman <jonas@kwiboo.se>
+Cc: Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ kernel@collabora.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, 
+ linux-kernel@vger.kernel.org, 
+ Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+X-Mailer: b4 0.14.2
 
-Hi,
+The "v" version specifier here refers to the hardware IP revision.
+Mainline deviated from downstream here by calling the v4 revision v3 as
+it didn't support the v3 hardware revision at all.
 
-On 17-Mar-25 13:38, Antheas Kapenekakis wrote:
-> On Mon, 17 Mar 2025 at 13:27, Hans de Goede <hdegoede@redhat.com> wrote:
->>
->> Hi Antheas,
->>
->> On 11-Mar-25 17:53, Antheas Kapenekakis wrote:
->>> OneXPlayer devices have a charge bypass
->>
->> The term "charge bypass" is typically used for the case where the
->> external charger gets directly connected to the battery cells,
->> bypassing the charge-IC inside the device, in making
->> the external charger directly responsible for battery/charge
->> management.
->>
->> Yet you name the feature inhibit charge, so I guess it simply
->> disables charging of the battery rather then doing an actual
->> chaerger-IC bypass ?
->>
->> Assuming I have this correct, please stop using the term
->> charge-bypass as that has a specific (different) meaning.
-> 
-> Unfortunately, this is how the feature is called in Windows. On both
-> OneXPlayer and Ayaneo. Manufacturers are centralizing around that
-> term.
+This creates needless confusion, so rename it to rk_tsadcv4_tshut_mode
+to be consistent with what the hardware wants to be called.
 
-Ok, so I just did a quick duckduckgo for this and it looks like
-you are right.
+Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+---
+ drivers/thermal/rockchip_thermal.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> Under the hood, it should be bypassing the charger circuitry, but it
-> is not obvious during use.
+diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+index a8ad85feb68fbb7ec8d79602b16c47838ecb3c00..40c7d234c3ef99f69dd8db4d8c47f9d493c0583d 100644
+--- a/drivers/thermal/rockchip_thermal.c
++++ b/drivers/thermal/rockchip_thermal.c
+@@ -1045,7 +1045,7 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
+ 	writel_relaxed(val, regs + TSADCV2_INT_EN);
+ }
+ 
+-static void rk_tsadcv3_tshut_mode(int chn, void __iomem *regs,
++static void rk_tsadcv4_tshut_mode(int chn, void __iomem *regs,
+ 				  enum tshut_mode mode)
+ {
+ 	u32 val_gpio, val_cru;
+@@ -1297,7 +1297,7 @@ static const struct rockchip_tsadc_chip rk3588_tsadc_data = {
+ 	.get_temp = rk_tsadcv4_get_temp,
+ 	.set_alarm_temp = rk_tsadcv3_alarm_temp,
+ 	.set_tshut_temp = rk_tsadcv3_tshut_temp,
+-	.set_tshut_mode = rk_tsadcv3_tshut_mode,
++	.set_tshut_mode = rk_tsadcv4_tshut_mode,
+ 	.table = {
+ 		.id = rk3588_code_table,
+ 		.length = ARRAY_SIZE(rk3588_code_table),
 
-Ack reading up on this it seems the idea is not to connect the external
-charger directly to the battery to allow fast-charging without
-the charge-IC inside the device adding heat, which is the traditional
-bypass mode.
-
-Instead the whole battery + charging-IC are cut out of the circuit
-(so bypassed) and the charger is now directly powering the device
-without the battery acting as a buffer if the power-draw superseeds
-what the external charger can deliver.
-
-> The user behavior mirrors `inhibit-charge`,
-> as the battery just stops charging, so the endpoint is appropriate.
-
-Hmm this new bypass mode indeed does seem to mirror inhibit charge
-from a user pov, but it does more. It reminds me of the battery disconnect
-option which some charge-ICs have which just puts the battery FET in
-high impedance mode effectively disconnecting the battery. Now that
-feature is intended for long term storage of devices with a builtin
-battery and it typically also immediately powers off the device ...
-
-Still I wonder if it would make sense to add a new "disconnect"
-charge_behaviour or charge_types enum value for this ?
-
-
-
-
-<snip>
-
->>> diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
->>> index 2a5c1a09a28f..4a187ca11f92 100644
->>> --- a/Documentation/ABI/testing/sysfs-class-power
->>> +++ b/Documentation/ABI/testing/sysfs-class-power
->>> @@ -508,11 +508,12 @@ Description:
->>>               Access: Read, Write
->>>
->>>               Valid values:
->>> -                     ================ ====================================
->>> -                     auto:            Charge normally, respect thresholds
->>> -                     inhibit-charge:  Do not charge while AC is attached
->>> -                     force-discharge: Force discharge while AC is attached
->>> -                     ================ ====================================
->>> +                     ================== =====================================
->>> +                     auto:              Charge normally, respect thresholds
->>> +                     inhibit-charge:    Do not charge while AC is attached
->>> +                     inhibit-charge-s0: same as inhibit-charge but only in S0
->>
->> Only in S0 suggests that charging gets disabled when the device is on / in-use,
->> I guess this is intended to avoid generating extra heat while the device is on?
->>
->> What about when the device is suspended, should the battery charge then ?
->>
->> On x86 we've 2 sorts of suspends S3, and the current name suggests that the
->> device will charge (no inhibit) then. But modern hw almost always uses
->> s0i3 / suspend to idle suspend and the name suggests charging would then
->> still be inhibited?
->>
->> Also s0 is an ACPI specific term, so basically 2 remarks here:
->>
->> 1. The name should probably be "inhibit-charge-when-on" since the power_supply
->>    calls is platform agnositic and "S0" is not.
-> 
-> I tried to be minimal. If we want to make the name longer, I vote for
-> "inhibit-charge-awake". I can spin a v5 with that.
-> 
-> The device does not charge while asleep. Only when it is off.
-
-Is suspend awake though ? 
-
->> 2. We need to clearly define what happens when the device is suspended and then
->>    make sure that the driver matches this (e.g. if we want to *not* inhibit during
->>    suspend we may need to turn this feature off during suspend).
-> 
-> This is handled by the device when it comes to OneXPlayer. No driver
-> changes are needed.
-
-Well you say no charging is done when suspended, the question also is what
-behavior do we want here?  I'm fine with the default behaviour, but a case
-could be made that charging while suspended might be desirable (dependent on
-the use case) in which case we would need to disable the inhibit when
-suspending to get the desired behavior.
-
-Also what if other firmware interfaces with a bypass^W inhibit option work
-differently and do charge during suspend ?
-
-It is important that we clearly define the expected behavior now so that
-future devices can be made to behave the same.
-
-Regards,
-
-Hans
-
+-- 
+2.48.1
 
