@@ -1,74 +1,85 @@
 Received: from mail-pl1-f173.google.com (mail-pl1-f173.google.com [209.85.214.173])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DFFB157A48
-	for <linux-pm@vger.kernel.org>; Mon, 17 Mar 2025 06:01:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0292721505B
+	for <linux-pm@vger.kernel.org>; Mon, 17 Mar 2025 06:04:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1742191275; cv=none; b=OprMEYWbUQr3bjvF9v/Y2rWkaMnSWWj+R3ZtGNGnHWM7pdnBUKXo9Q0ceb34xyZu5vKJMLDHx1BQRDumSDHDZiqXGypiWY9tPl+JSC62/+OKS9WfDyLQbgO00kEAW1Z0NfC8bIq4bw/k0Ci1d7XwRrUheL0N6z25Vhn48Q7Nw/E=
+	t=1742191463; cv=none; b=Vq8tKJxWRfuFCfvmz/BiqPokmTV9cYmgeEj026iGpqBozBz5lHOLDS9PJiIFj2fQEX2obUfaHQtI81guwoS4NrYHm7g+WRAn0UWym3KvzIjDUjwZuUmdf2mfedaxYmwft+atoCaD0RVPJtxttVu6xpc1LgMeSYrVjZsDFZrqmBg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1742191275; c=relaxed/simple;
-	bh=sYhKHIY1kH/Sv85aMyZfq/DmcwiJ9qI1WjhsBbWJhMg=;
+	s=arc-20240116; t=1742191463; c=relaxed/simple;
+	bh=ml2pvES1bcDjWG1BADG1sOaAPR0s/wjw2CaSm11wlIg=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=hh7Bci4R798+pwhXvPPaBfpLi0Qk1WwBKG/Qh7mguJNi+vAispFV1ZYEw/aDmD808VemHL938M9adwAe75IsPZ0nFMF2f7N70gUNkKgzgUVJjst2TVYttRUHnquQefjJxFMvXNJxMhZ72itxYZVu5xdWn4L2RkeVRUkHZBNlVAs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=fbG8FZrL; arc=none smtp.client-ip=209.85.214.173
+	 Content-Type:Content-Disposition:In-Reply-To; b=QArdbw8cklUnX5sWd11oOvCOKwhYcPpcljScxq/phq5zq1YsbE1M+MGneHFEsfj2b4XIKEm3g3aCmlMKQPaDlAIVIKpl21Vr3FBIjaOkn7LErfa/5nRp80gl+F6UCThD8fptPC3B+gELNyP+DSIaSt9nuNg9mnvnfQolkLt+yCk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Tw1G2f7+; arc=none smtp.client-ip=209.85.214.173
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="fbG8FZrL"
-Received: by mail-pl1-f173.google.com with SMTP id d9443c01a7336-224341bbc1dso70969765ad.3
-        for <linux-pm@vger.kernel.org>; Sun, 16 Mar 2025 23:01:14 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Tw1G2f7+"
+Received: by mail-pl1-f173.google.com with SMTP id d9443c01a7336-225fbdfc17dso16562515ad.3
+        for <linux-pm@vger.kernel.org>; Sun, 16 Mar 2025 23:04:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1742191273; x=1742796073; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1742191461; x=1742796261; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=/t696LxEbizTgZEO/Thjd7sK7TQiRojJYmJJpO8fsxc=;
-        b=fbG8FZrLehgdWCO29kUwKdr5YeM4Sl83jKaHqRmb3b+8SC9EvCNovHHLocuUyjgik8
-         8P9QhOqy4su9VZzcmM54st1NYFvLDoiiC0KrRyi7fGNSu0PsV+B5lHoBwvIrDHYKTTR3
-         vuwA2w/B8nFy2Svdy5mSs8bzt5RRwkX4HawcfA4oLB6PTjWDF/Qf8MxMSw1tPWUDQrvX
-         auWxWqMcxCi64taM3jz+p7TzGu9yPNTYATVqk9vmx9M/S3DXcSlQiTpixBG03IjO0wmL
-         evnPcksjQdVQYMX3Z9GNqZiit6mEz5+28akOHgjBR47Qjib1rzrvVRhFk5oDPW93Jz75
-         KPwQ==
+        bh=v20yzStT9VGAjU5GNTzWqe+zrXLJCLLqnxAXXWJhWaw=;
+        b=Tw1G2f7+LfQv7ktGT03S9FxFTebGzxflYagBecy+MgOBt3Ptmy9JwUCGl/Rt1yWNcj
+         PEjVEo/cUwks097Aqz8dFcz0LenhLe9AMZEAGIDgDnT47JzLQAphYsUtJENLLsGkQvNE
+         cEHXUvQruudAaq6yLO4DhmP4oIVeck6QolhrIFa4uRdhcCFHJZ0b18zitdNXDCEQkfrf
+         uRTKi+zSLsOUwPjwT/dY0vAfJORRbBXxMHpTAvOurSl6jFeIUnOqI47U+EfbdS/CHYXM
+         Zn0iZkAe1MyIr24VTh4qjYwgMgVcrny5Vu380G1S1MvDOsfcY6LFcZUc6cj/yxziER4Y
+         qs8w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1742191273; x=1742796073;
+        d=1e100.net; s=20230601; t=1742191461; x=1742796261;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=/t696LxEbizTgZEO/Thjd7sK7TQiRojJYmJJpO8fsxc=;
-        b=jMyQT5sx1MFuBnHyNnGv78i/MeXXKupTcVxRmujymBTm5RNx95OolWndPbRir2Vdor
-         l7x9pmmjnNGRgl1bnbBvV4hsfxhN7JjpYYioSQVLQSJJ60W1FECF2SIywgClclOR3TLu
-         23DOMFY04GSdd+YCCT/TZwZz6YON/TONXRD/Nr0PidSY1TGsyRl/xsxISbANHMQOCW5c
-         X3ts+Sgfcx9oqTVopkgUrU3fBVrdwnpfi/176woD7+6GsPuD2DXq7C+uaULBqEt/YDRg
-         pUhdpRcJWi3IKWWbgonDpdcCs+RHxoBbZaNNNejpvlJ6mExJMYoYrXfs7OYUv2M0YAZ2
-         KiEA==
-X-Forwarded-Encrypted: i=1; AJvYcCWIA8TiHnaCJaNid9zho3nnDe6uItxcLPMKlUP3klbvurGY6SdS70j5RivR6tYQ+BxsWP0xmrOlWw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzCmknjC0/pt+yr9rdqij2XskyirrBS4fIdT6AoZrcRePGMfqIz
-	2AEWRWfwoWR4ec3HR2raMGzAtZVF+l9fDugkLEWiew6/3O02O4GNKfrGo/+IbU8=
-X-Gm-Gg: ASbGncvzdFEgTiCCaH943GzCnn56m+dg92W+HuzTYGzwsZJanvfv6b6mLbdl+Bs4a0i
-	AyRZHm6zsadXHImRC8os/3Gf/KcBf0c2JN6jwvNqnEyGhTXW+Y/h9UgDc1tCh7/sY2Rvx7XsM+6
-	W2jO1tCYZwO/KkX73OTeez86G431L1/E+rnn8k8BE25Jq+m57mIzXIAbf/PnIieUGU8sqApDO7+
-	C3/TAjRhfdpSoYMHUnaJgZJ1uhUj49+LhOcd9msw+UShyUrDgRrqpC5zRCPNhrSnOoDPL6hLyn+
-	FfkoLdzJiEmTxtk6w8OXc+OBVwBnjHDSD6rJSTYlKnKZrA==
-X-Google-Smtp-Source: AGHT+IGZgTvwmbnlN60aL/w128MQKSBVf0ulmLghu2RqTVsFN9YIVHdgYTn08PK0fXwGZKBluWTVCg==
-X-Received: by 2002:a17:902:e74c:b0:223:3bf6:7e6a with SMTP id d9443c01a7336-225e0a40bb3mr160011395ad.12.1742191273540;
-        Sun, 16 Mar 2025 23:01:13 -0700 (PDT)
+        bh=v20yzStT9VGAjU5GNTzWqe+zrXLJCLLqnxAXXWJhWaw=;
+        b=oIoy5fGWkKh/LEVqAcxBJHc2aZSeqlx8ZSFaoLkhuyU6VNRDofc3Hg8bbRbHuZhLGq
+         lSNOtlmAJaviyOAVAgV/HClk2AbT0YY25bZuFCDiCBPAQQDcbqyjNMmT1TGq411I8ffe
+         Bl9lw5lHArnAGb/VQH8qqyU5UmXLdZZEy6IzwrXIC5cIzrWWpMl1MWNeOmBa2gt1wr04
+         239dKq6l2IyG5pjSj3oUXHGjhjJ+UBtzIPhmIHkKKHEcwPD1TatYhoFDgwSsO7dh/mMK
+         w+ltD6O32DwtckQhEtV8fzhhUR+TvsZUleqyJDtH9IvRjAG83Wwy08TdPDQ6boZ7b6Uw
+         OOCQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVhf4m+MNX6tu5k+ICstO7a7VHN353hV49+oFsikXSfATi6pmS/1aa8XSROGZr8HejpbGPcjIpDHw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywl3NCcID1HZXjGJ8yDPXrKlDR/odlS2x/4bNOfCM7paY6I0Y72
+	Wn2Qu44G7ndDKR5hA7kkGrJG+9lMwFlc5tJPr64eSx31JZf7+1DANfpYTCSe7RQWBxn2l+uJw6G
+	o
+X-Gm-Gg: ASbGnct8vf3r5T9N2OtqWK7y814XA9Zui4KUyR7p/1wqJfT+i9b4smoEjqstj5USgP/
+	39cUULY7qogrFHgYPmdRS8PYw8iiHJ5zd3jYSPyFLymfqRYStrPGJIIMxuY2Whuw3QnEf5Po3xf
+	vNIIWOfk9twIKOUmoO82ienzn75ZJwoUU6jUlDDEwzfL2rGQ5JtrsAa/9ZQsqUF8DoLS5Fyp3vF
+	D9IVYg/jyAOCTu9XFGoC5dmt8xfjM8EwKEEykzo74r/wLq23c43AEh2CKfZneBLScLAAsRInDfm
+	8nW8snn5ICCnsvKOXqIQMYWCcTi4fe1p+8P1nd6ptiRDsw==
+X-Google-Smtp-Source: AGHT+IFe6jS1xlWkF22sbp8P4KRa+3Fa3e1mF+gfQI2nbyw2sog0uD5R60+Qr90Q84NCNk2zO7PuVg==
+X-Received: by 2002:a17:902:e785:b0:220:fce7:d3a6 with SMTP id d9443c01a7336-225e0a75becmr156086615ad.23.1742191461318;
+        Sun, 16 Mar 2025 23:04:21 -0700 (PDT)
 Received: from localhost ([122.172.84.15])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-225c6bbeb94sm66648165ad.199.2025.03.16.23.01.12
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7371152951bsm6998422b3a.15.2025.03.16.23.04.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 16 Mar 2025 23:01:12 -0700 (PDT)
-Date: Mon, 17 Mar 2025 11:31:10 +0530
+        Sun, 16 Mar 2025 23:04:20 -0700 (PDT)
+Date: Mon, 17 Mar 2025 11:34:18 +0530
 From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Jacky Bai <ping.bai@nxp.com>
-Cc: rafael@kernel.org, sudeep.holla@arm.com, ilia.lin@kernel.org,
-	tiny.windzz@gmail.com, wens@csie.org, jernej.skrabec@gmail.com,
-	samuel@sholland.org, matthias.bgg@gmail.com,
-	angelogioacchino.delregno@collabora.com, linux-pm@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-sunxi@lists.linux.dev, linux-mediatek@lists.infradead.org,
-	imx@lists.linux.dev
-Subject: Re: [PATCH v3] cpufreq: Init cpufreq only for present CPUs
-Message-ID: <20250317060110.tvjat7ugmaceayyk@vireshk-i7>
-References: <20250313013928.529926-1-ping.bai@nxp.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Imran Shaik <quic_imrashai@quicinc.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Ajit Pandey <quic_ajipan@quicinc.com>,
+	Taniya Das <quic_tdas@quicinc.com>,
+	Jagadeesh Kona <quic_jkona@quicinc.com>,
+	Satya Priya Kakitapalli <quic_skakitap@quicinc.com>,
+	linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+Subject: Re: [PATCH 1/2] dt-bindings: cpufreq: cpufreq-qcom-hw: Add QCS8300
+ compatible
+Message-ID: <20250317060418.7vmdznbz2igeppw6@vireshk-i7>
+References: <20250313-qcs8300-cpufreq-scaling-v1-0-d4cd3bd9c018@quicinc.com>
+ <20250313-qcs8300-cpufreq-scaling-v1-1-d4cd3bd9c018@quicinc.com>
+ <20250313-valiant-fine-giraffe-c6acdd@krzk-bin>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -77,30 +88,20 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250313013928.529926-1-ping.bai@nxp.com>
+In-Reply-To: <20250313-valiant-fine-giraffe-c6acdd@krzk-bin>
 
-On 13-03-25, 09:39, Jacky Bai wrote:
-> for_each_possible_cpu() is currently used to initialize cpufreq.
-> However, in cpu_dev_register_generic(), for_each_present_cpu()
-> is used to register CPU devices which means the CPU devices are
-> only registered for present CPUs and not all possible CPUs.
+On 13-03-25, 09:52, Krzysztof Kozlowski wrote:
+> On Thu, Mar 13, 2025 at 11:33:39AM +0530, Imran Shaik wrote:
+> > Document compatible for cpufreq hardware on Qualcomm QCS8300 platform.
+> > 
+> > Signed-off-by: Imran Shaik <quic_imrashai@quicinc.com>
+> > ---
+> >  Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml | 2 ++
+> >  1 file changed, 2 insertions(+)
 > 
-> With nosmp or maxcpus=0, only the boot CPU is present, lead
-> to the cpufreq probe failure or defer probe due to no cpu device
-> available for not present CPUs.
-> 
-> Change for_each_possible_cpu() to for_each_present_cpu() in the
-> above cpufreq drivers to ensure it only registers cpufreq for
-> CPUs that are actually present.
-> 
-> Fixes: b0c69e1214bc ("drivers: base: Use present CPUs in GENERIC_CPU_DEVICES")
-> Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
-> Signed-off-by: Jacky Bai <ping.bai@nxp.com>
-> ---
->  - v3 changes:
->   - refine the changlog to drop the changed driver list.
+> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-Applied. Thanks.
+Applied [1/2]. Thanks.
 
 -- 
 viresh
