@@ -1,170 +1,109 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mx0b-002e3701.pphosted.com (mx0b-002e3701.pphosted.com [148.163.143.35])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0FEB81A7046;
-	Wed, 19 Mar 2025 20:36:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C38AE19259E;
+	Wed, 19 Mar 2025 21:20:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.143.35
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1742416605; cv=none; b=n0Tl3YqYH4lAiI6lWI+AinnkYondmtUmcKSMSoZtP4N/cdl/S08AwRGhiN9uQfxDZLQJF2HgGY6Gm3bU3v4AhaDnricZHep+95/jxKp2XTfJXbgStVlL60S3tQPII/ReLx48RiGq9vuMT/0mWRGCxiQ8E/QA/jdjIYMZpcIjSkk=
+	t=1742419259; cv=none; b=tFIvwJxLcNITXykY453jhNrpBHUfaXvPdx2JIhqrkpk01TYxXR84QiafQu17aFRxdGG5BMHx5RHei0v2Mcx449tY3y76bl0QDHCCflW0UdIHZvcAzRDizXBIhoJkXQzx4vYs/KzEujDHEP5VdlCm58cVZxPl2eNOQgwrBRch30Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1742416605; c=relaxed/simple;
-	bh=Rpi5EZJtdIXV38JBQVPCQTTTUTsGclKxCESwXvkaeok=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XAR737WncdTWFhthdVBxr9bYoWx2m8pJT2w1A6uZlof0tf2y+kaL08XU0cTLWpOne+/3qR+UDLW9dmgGU3x2h/Dw9OlkccMCwIcGwPFRZB05AZCANDSm+SQOiOd7S98L+MKtrpXoukvQf5TQJXFnle7F8RViDBKe6uKhMgb/HRA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RXKTmsmm; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1742419259; c=relaxed/simple;
+	bh=YsC2PH6HLyqCgb3DMrG1QZFnMFuZDxjMaNHci169mnc=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=GkJ7QhtdL9fXoMUnObZc4gtMiQ6vysPXUlaxQ2Jkw+tAFhYY8nNXd1I8sRIpysPZYO3QzaMOj0pZX29vBdDa1szDCFRH2VcgfhatrnA1LZSfRHz8SOX0zxMFmwgFH+758RvVDllPTgGdh1MFatheBoB70QmiLrt1YptLr1OySR8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=hpe.com; spf=pass smtp.mailfrom=hpe.com; dkim=pass (2048-bit key) header.d=hpe.com header.i=@hpe.com header.b=ogrYwz8t; arc=none smtp.client-ip=148.163.143.35
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=hpe.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hpe.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RXKTmsmm"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 31B75C4CEE4;
-	Wed, 19 Mar 2025 20:36:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742416604;
-	bh=Rpi5EZJtdIXV38JBQVPCQTTTUTsGclKxCESwXvkaeok=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=RXKTmsmmntuQ0cnLuVXXQOmU47mZc58YToPSkTapRHY8SDQ2B84sNvumnZLHS6ndt
-	 QVoqQDRq4Msk6/AEpU/iY1eW0D5qR3C2+v1o7FGpmh7ARGaJa/JvuRn8bi8sZKW3YE
-	 7EFbEFVBLw0jtorO8RYltX/7J9OXwAv/rF09tQNOnW0IccE7PfVd5onSOBH6Uuh1e4
-	 cG/Ed5eQrLfvtKOyyfRFuLpeyjqKZ8T8Qa4ljIP4oVtT4bMVxm8yRcemFk6zosoNfN
-	 Pij0g9ldw4vXI5W6pW3E4Ax6pXEgeLpgARwvQ94ArdZuG6TRCJ+2EoATt1nDq+3wYX
-	 /JKYjoXoLEmCg==
-Received: by pali.im (Postfix)
-	id 70F27A0C; Wed, 19 Mar 2025 21:36:29 +0100 (CET)
-Date: Wed, 19 Mar 2025 21:36:29 +0100
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>
-To: Jerry Lv <Jerry.Lv@axis.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, kernel@axis.com
-Subject: Re: [PATCH v3] power: supply: bq27xxx: Retrieve again when busy
-Message-ID: <20250319203629.zb6zob5nqapr2faw@pali>
-References: <20250319-foo-fix-v2-1-ff4cb232ef42@axis.com>
+	dkim=pass (2048-bit key) header.d=hpe.com header.i=@hpe.com header.b="ogrYwz8t"
+Received: from pps.filterd (m0150244.ppops.net [127.0.0.1])
+	by mx0b-002e3701.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 52JHfhoX029966;
+	Wed, 19 Mar 2025 20:27:51 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hpe.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pps0720; bh=XqJrfl7hvAFHoIlHnGXjypKYN2YSyNzDmZXQO
+	yzzboM=; b=ogrYwz8tOHjEDahsGnndq3XWgvs+WlK6FDYoAWAXjL4HXrTnJwg7O
+	XapABcMQuwVcUbYAfKw7JyeO2DlpOaZQ1X+YlCsimM3OSHUFryMlXIrvwb5p5oEU
+	mIMDbRr1YXmK1DuPde1S451arZcws7RbufRvpDhuehZj1J7qbbelcIWog5zYkSOO
+	hCfL5IEhfmNrTHZKzGjumEXkUySZJTXC/Ofl5YE+kSjyAZRN80X6B83Gvd6iQbCM
+	8ANWBkKbnviyRnysRy3Ep1pamr7wuaRnNAfdoHWWwx6uwic6hxVHztwk3ip1c1Z0
+	nJSjpJh9NWQmRQnPBfZ8OGgvxgn5Fxrkw==
+Received: from p1lg14880.it.hpe.com ([16.230.97.201])
+	by mx0b-002e3701.pphosted.com (PPS) with ESMTPS id 45f81b0mce-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 19 Mar 2025 20:27:51 +0000 (GMT)
+Received: from p1lg14886.dc01.its.hpecorp.net (unknown [10.119.18.237])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by p1lg14880.it.hpe.com (Postfix) with ESMTPS id DFB09800EC1;
+	Wed, 19 Mar 2025 20:27:49 +0000 (UTC)
+Received: from dog.eag.rdlabs.hpecorp.net (unknown [16.231.227.36])
+	by p1lg14886.dc01.its.hpecorp.net (Postfix) with ESMTP id 8E113806B10;
+	Wed, 19 Mar 2025 20:27:49 +0000 (UTC)
+Received: by dog.eag.rdlabs.hpecorp.net (Postfix, from userid 605001)
+	id DEAD5300069F3; Wed, 19 Mar 2025 15:27:48 -0500 (CDT)
+From: Justin Ernst <justin.ernst@hpe.com>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Justin Ernst <justin.ernst@hpe.com>
+Subject: [PATCH] tools/power/turbostat: Increase CPU_SUBSET_MAXCPUS to 8192
+Date: Wed, 19 Mar 2025 15:27:31 -0500
+Message-Id: <20250319202731.258267-1-justin.ernst@hpe.com>
+X-Mailer: git-send-email 2.26.2
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20250319-foo-fix-v2-1-ff4cb232ef42@axis.com>
-User-Agent: NeoMutt/20180716
+X-Proofpoint-GUID: WpV0UF3Rps3zgOYzr4dTkZ53y80dNKBg
+X-Proofpoint-ORIG-GUID: WpV0UF3Rps3zgOYzr4dTkZ53y80dNKBg
+X-HPE-SCL: -1
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1093,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-03-19_07,2025-03-19_01,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999 spamscore=0
+ phishscore=0 malwarescore=0 lowpriorityscore=0 mlxscore=0 adultscore=0
+ impostorscore=0 priorityscore=1501 bulkscore=0 suspectscore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2502280000 definitions=main-2503190137
 
-On Wednesday 19 March 2025 17:41:28 Jerry Lv wrote:
-> Multiple applications may access the battery gauge at the same time, so
-> the gauge may be busy and EBUSY will be returned. The driver will set a
-> flag to record the EBUSY state, and this flag will be kept until the next
-> periodic update. When this flag is set, bq27xxx_battery_get_property()
-> will just return ENODEV until the flag is updated.
-> 
-> Even if the gauge was busy during the last accessing attempt, returning
-> ENODEV is not ideal, and can cause confusion in the applications layer.
-> 
-> Instead, retry accessing the I2C to update the flag is as expected, for
-> the gauge typically recovers from busy state within a few milliseconds.
-> If still failed to access the gauge, the real error code would be returned
-> instead of ENODEV (as suggested by Pali Rohár).
-> 
-> Signed-off-by: Jerry Lv <Jerry.Lv@axis.com>
-> ---
-> Changes in v3:
-> - Move I2C retry logic to bq27xxx_battery_i2c_read()
-> - Link to v2: https://lore.kernel.org/all/20241029-foo-fix-v1-1-1dbfed72d023@axis.com
-> 
-> Changes in v2:
-> - Retry up to 3 times when gauge is busy
-> - return the real error code when fail to access the device
-> - Link to v1: https://lore.kernel.org/all/20240913-foo-fix2-v1-1-a0f499404f3a@axis.com
-> ---
->  drivers/power/supply/bq27xxx_battery.c     |  2 +-
->  drivers/power/supply/bq27xxx_battery_i2c.c | 15 ++++++++++++++-
->  2 files changed, 15 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-> index 750fda543308..99631ab46e8e 100644
-> --- a/drivers/power/supply/bq27xxx_battery.c
-> +++ b/drivers/power/supply/bq27xxx_battery.c
-> @@ -2030,7 +2030,7 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
->  	mutex_unlock(&di->lock);
->  
->  	if (psp != POWER_SUPPLY_PROP_PRESENT && di->cache.flags < 0)
-> -		return -ENODEV;
-> +		return di->cache.flags;
->  
->  	switch (psp) {
->  	case POWER_SUPPLY_PROP_STATUS:
-> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-> index ba0d22d90429..78cccea4d419 100644
-> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
-> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-> @@ -6,6 +6,7 @@
->   *	Andrew F. Davis <afd@ti.com>
->   */
->  
-> +#include <linux/delay.h>
->  #include <linux/i2c.h>
->  #include <linux/interrupt.h>
->  #include <linux/module.h>
-> @@ -27,10 +28,15 @@ static irqreturn_t bq27xxx_battery_irq_handler_thread(int irq, void *data)
->  static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
->  				    bool single)
->  {
-> +#define MAX_RETRY 3
-> +#define I2C_DELAY_MIN 10000
-> +#define I2C_DELAY_MAX 11000
-> +
->  	struct i2c_client *client = to_i2c_client(di->dev);
->  	struct i2c_msg msg[2];
->  	u8 data[2];
->  	int ret;
-> +	int retry = 0;
->  
->  	if (!client->adapter)
->  		return -ENODEV;
-> @@ -47,7 +53,14 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
->  	else
->  		msg[1].len = 2;
->  
-> -	ret = i2c_transfer(client->adapter, msg, ARRAY_SIZE(msg));
-> +	do {
-> +		ret = i2c_transfer(client->adapter, msg, ARRAY_SIZE(msg));
-> +		if (ret == -EBUSY && retry < MAX_RETRY) {
-> +			retry++;
-> +			/* sleep 10 miliseconds when busy */
-> +			usleep_range(I2C_DELAY_MIN, I2C_DELAY_MAX);
-> +		}
-> +	} while (ret == -EBUSY && retry < MAX_RETRY);
->  	if (ret < 0)
->  		return ret;
->  
-> 
-> ---
-> base-commit: 42f7652d3eb527d03665b09edac47f85fb600924
-> change-id: 20241008-foo-fix-b2244cbe6dce
-> 
-> Best regards,
-> -- 
-> Jerry Lv <Jerry.Lv@axis.com>
-> 
+On systems with >= 1024 cpus (in my case 1152), turbostat fails with the error output:
+	"turbostat: /sys/fs/cgroup/cpuset.cpus.effective: cpu str malformat 0-1151"
 
-Hello, this change looks good. I think that now it should handle all
-cases when chipset is busy.
+A similar error appears with the use of turbostat --cpu when the inputted cpu
+range contains a cpu number >= 1024:
+	# turbostat -c 1100-1151
+	"--cpu 1100-1151" malformed
+	...
 
-Personally if I'm writing this change I will avoid those new ad-hoc
-#defines in the middle of the function and also avoid duplicating the
-loop terminating condition (there is two times). For example as:
+Both errors are caused by parse_cpu_str() reaching its limit of CPU_SUBSET_MAXCPUS.
 
-    retry = 0;
-    do {
-        ret = i2c_transfer(client->adapter, msg, ARRAY_SIZE(msg));
-        if (ret == -EBUSY && ++retry < 3) {
-            /* sleep 10 milliseconds when busy */
-            usleep_range(10000, 11000);
-            continue;
-        }
-        break;
-    } while (0);
+It's a good idea to limit the maximum cpu number being parsed, but 1024 is too low.
+For a small increase in compute and allocated memory, increasing CPU_SUBSET_MAXCPUS
+brings support for parsing cpu numbers >= 1024.
 
-Btw, "milliseconds" should be with two LL.
+Increase CPU_SUBSET_MAXCPUS to 8192, a common setting for CONFIG_NR_CPUS on x86_64.
 
-But I will let the code style decision to maintainers.
+Signed-off-by: Justin Ernst <justin.ernst@hpe.com>
+---
+ tools/power/x86/turbostat/turbostat.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Reviewed-by: Pali Rohár <pali@kernel.org>
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 8d5011a0bf60..f9f8df587b76 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -1121,7 +1121,7 @@ void probe_platform_features(unsigned int family, unsigned int model)
+ int backwards_count;
+ char *progname;
+ 
+-#define CPU_SUBSET_MAXCPUS	1024	/* need to use before probe... */
++#define CPU_SUBSET_MAXCPUS	8192	/* need to use before probe... */
+ cpu_set_t *cpu_present_set, *cpu_possible_set, *cpu_effective_set, *cpu_allowed_set, *cpu_affinity_set, *cpu_subset;
+ size_t cpu_present_setsize, cpu_possible_setsize, cpu_effective_setsize, cpu_allowed_setsize, cpu_affinity_setsize, cpu_subset_size;
+ #define MAX_ADDED_THREAD_COUNTERS 24
+-- 
+2.35.3
+
