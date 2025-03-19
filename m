@@ -1,55 +1,60 @@
-Received: from mx0a-002e3701.pphosted.com (mx0a-002e3701.pphosted.com [148.163.147.86])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CF914A1D;
-	Wed, 19 Mar 2025 21:23:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.147.86
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B33CD21B9C5;
+	Wed, 19 Mar 2025 22:44:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1742419440; cv=none; b=mnYSorhNE8pI5qpIdkXWcSuAgQAnbFah1+fcUsrrJ5BFTZXydCbiv4AHoUT1guCkNVGUEzQIeb/+psW8YyRdpstRGOLy47tLXAFDzQ/4ul7LhEBYtCH9kfshkxfG+R1uGWOuer0TOB66MDAEHjUkMp6/RWR4ALFvOUrbsR/0h88=
+	t=1742424256; cv=none; b=PEYP3Q7CwUq32iMunt7YtaxB4eDC0tftt2vsZ26yBx+nyqgWoTAYBJjOmxv/zfGYHFOBhSi48CBCZ6YgryXYb9aKmgVaqnJjcSeLKMFiBszen43GefaEnz8UdPZitdIanOjJHEegWWeqgDFQKU2qDqdnZBSoE+BVN0RAsUKHsfI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1742419440; c=relaxed/simple;
-	bh=YsC2PH6HLyqCgb3DMrG1QZFnMFuZDxjMaNHci169mnc=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=YHCSJuRNJkttMz/r2me/XhCh0pJMVzh9jfbDjsdh8lQTIpkW06mrYp/lwHob3Bg4dYsbDc5L4LZFY3RryNFXPghl8jGrlMKRt6ajmbwhnIVhEuk9PwTWEbL9seLdezgxb5nZi6xhi8VhkLnxpQO3w7wCD/VMgV3VZN9pke4dTac=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=hpe.com; spf=pass smtp.mailfrom=hpe.com; dkim=pass (2048-bit key) header.d=hpe.com header.i=@hpe.com header.b=ma6IT+d7; arc=none smtp.client-ip=148.163.147.86
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=hpe.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hpe.com
+	s=arc-20240116; t=1742424256; c=relaxed/simple;
+	bh=0ph8TWg4i5QPlJyTQE6/THVW5Vuy8oxKuuPiP1VUq0M=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version; b=WBacti81Agx1ywW+JnLffU2bze5Hc5vSOKu0VNs+H8kM5sW0BQNGyvq6ouqqoTr8chnljzQmMeYziYe64Hu8DQc26ISaf87BDYwumcQeXYb2ZtsUp52thPdRvfQG08JmeUgh2xy3bomkjmGny5MjBpCNn6MGOxDY/etuESIjW9U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=awF+H281; arc=none smtp.client-ip=192.198.163.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=hpe.com header.i=@hpe.com header.b="ma6IT+d7"
-Received: from pps.filterd (m0134421.ppops.net [127.0.0.1])
-	by mx0b-002e3701.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 52JCBVGP005803;
-	Wed, 19 Mar 2025 20:20:18 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hpe.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pps0720; bh=XqJrfl7hvAFHoIlHnGXjypKYN2YSyNzDmZXQO
-	yzzboM=; b=ma6IT+d7chDYnqtP76WOPq0gLZe4czM0D4dWeg75zg5VeYT9c5HUD
-	3IoG0nR2VtY3DrHF01F1+GwObVrKlG8KnSzJJGpbhOMs++tyUuVzqtIo+uHKnYNu
-	b6aw/7JjiWr5YdxSSqNcF9/JS1IMHetYBCMsjcHkjPdaH4gOrEr0+sNZ+lIZQhaN
-	LKDseg4dzQvOvZEzFiH1+yfW2LeIW8yJHFAJP6cWH42VAeWceIriKskEvAW64EAf
-	3L8cHkpEU8q82OOBAWQj1713pf5cnxE7A4NVfNjNkBuQliWYFlFPFDEacIYAbhGB
-	M8u4k+YKIg2GBIoYM+zvKgTQc+eMlxi5Q==
-Received: from p1lg14878.it.hpe.com ([16.230.97.204])
-	by mx0b-002e3701.pphosted.com (PPS) with ESMTPS id 45f87yfxvw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 19 Mar 2025 20:20:17 +0000 (GMT)
-Received: from p1lg14885.dc01.its.hpecorp.net (unknown [10.119.18.236])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by p1lg14878.it.hpe.com (Postfix) with ESMTPS id 21035295EF;
-	Wed, 19 Mar 2025 20:20:17 +0000 (UTC)
-Received: from stormcage.eag.rdlabs.hpecorp.net (unknown [16.231.227.39])
-	by p1lg14885.dc01.its.hpecorp.net (Postfix) with ESMTP id CA365806B1A;
-	Wed, 19 Mar 2025 20:20:16 +0000 (UTC)
-Received: by stormcage.eag.rdlabs.hpecorp.net (Postfix, from userid 605001)
-	id 3D64764B64C; Wed, 19 Mar 2025 15:20:16 -0500 (CDT)
-From: Justin Ernst <justin.ernst@hpe.com>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Justin Ernst <justin.ernst@hpe.com>
-Subject: [PATCH] tools/power/turbostat: Increase CPU_SUBSET_MAXCPUS to 8192
-Date: Wed, 19 Mar 2025 15:19:37 -0500
-Message-Id: <20250319201937.5368-1-justin.ernst@hpe.com>
-X-Mailer: git-send-email 2.35.3
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="awF+H281"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1742424255; x=1773960255;
+  h=from:to:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=0ph8TWg4i5QPlJyTQE6/THVW5Vuy8oxKuuPiP1VUq0M=;
+  b=awF+H2810p7XcDpN8L9PuMiyKU/q937gSX+lMMKmj3M9ODt42/8VjNZZ
+   XJJ4xojpPcXMfCxeodQPOXCe+kEExTQpiwnK8hjHPqH4rhIofoxROUHoq
+   WYh5el1mFEmzSn+pkcDVNN+7rwDRIPXEn6437pLd+i0dC/bsMibuBjVZn
+   14nmHGooWF9EZJk2fue8KwcNxqsyFL4wZkXdDSUHvPxfGDAe40IcnqxSd
+   pOSEU3GHJ+xCGxqtA1uEBfrInI8FetM9+6KtpVVrEsBnObli6QFUUkeQr
+   WdcWoEagEKWEaU2klecMEtNAJJBWmUZkHGmqun7tO5FLF0Wwx17n+Fac8
+   w==;
+X-CSE-ConnectionGUID: XnddF+i/R6eG9NZKqg3YHA==
+X-CSE-MsgGUID: zJfGCtJCRleSIzdXfUKrAg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11378"; a="54304189"
+X-IronPort-AV: E=Sophos;i="6.14,260,1736841600"; 
+   d="scan'208";a="54304189"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Mar 2025 15:44:14 -0700
+X-CSE-ConnectionGUID: ZBcqqMlPQICiWzd42qIzQg==
+X-CSE-MsgGUID: R90ltUHNQwCo/v4avMAsOA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.14,260,1736841600"; 
+   d="scan'208";a="153723685"
+Received: from bjrankin-mobl3.amr.corp.intel.com (HELO xpardee-desk.lan) ([10.124.220.177])
+  by orviesa002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Mar 2025 15:44:13 -0700
+From: Xi Pardee <xi.pardee@linux.intel.com>
+To: xi.pardee@linux.intel.com,
+	irenic.rajneesh@gmail.com,
+	david.e.box@linux.intel.com,
+	hdegoede@redhat.com,
+	ilpo.jarvinen@linux.intel.com,
+	platform-driver-x86@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: [PATCH] platform/x86: intel/pmc: Fix iounmap call for valid addresses
+Date: Wed, 19 Mar 2025 15:44:06 -0700
+Message-ID: <20250319224410.788273-1-xi.pardee@linux.intel.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -57,53 +62,31 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: Z9vZEBEKUnSCjwt-RvlmM-XNfjkTfXYH
-X-Proofpoint-ORIG-GUID: Z9vZEBEKUnSCjwt-RvlmM-XNfjkTfXYH
-X-HPE-SCL: -1
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1093,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-03-19_07,2025-03-19_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999 clxscore=1011
- spamscore=0 suspectscore=0 priorityscore=1501 mlxscore=0 adultscore=0
- phishscore=0 malwarescore=0 impostorscore=0 lowpriorityscore=0 bulkscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2502280000
- definitions=main-2503190136
 
-On systems with >= 1024 cpus (in my case 1152), turbostat fails with the error output:
-	"turbostat: /sys/fs/cgroup/cpuset.cpus.effective: cpu str malformat 0-1151"
+pmc_core_clean_structure() is called when generic_core_init() fails.
+generic_core_init() could fail before ioremap() is called to get
+a valid regbase for pmc structure. The current code does not check
+regbase before calling iounmap(). Add a check to fix it.
 
-A similar error appears with the use of turbostat --cpu when the inputted cpu
-range contains a cpu number >= 1024:
-	# turbostat -c 1100-1151
-	"--cpu 1100-1151" malformed
-	...
-
-Both errors are caused by parse_cpu_str() reaching its limit of CPU_SUBSET_MAXCPUS.
-
-It's a good idea to limit the maximum cpu number being parsed, but 1024 is too low.
-For a small increase in compute and allocated memory, increasing CPU_SUBSET_MAXCPUS
-brings support for parsing cpu numbers >= 1024.
-
-Increase CPU_SUBSET_MAXCPUS to 8192, a common setting for CONFIG_NR_CPUS on x86_64.
-
-Signed-off-by: Justin Ernst <justin.ernst@hpe.com>
+Fixes: 1b8c7b843c00 ("platform/x86:intel/pmc: Discover PMC devices")
+Signed-off-by: Xi Pardee <xi.pardee@linux.intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 2 +-
+ drivers/platform/x86/intel/pmc/core.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 8d5011a0bf60..f9f8df587b76 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -1121,7 +1121,7 @@ void probe_platform_features(unsigned int family, unsigned int model)
- int backwards_count;
- char *progname;
+diff --git a/drivers/platform/x86/intel/pmc/core.c b/drivers/platform/x86/intel/pmc/core.c
+index 7a1d11f2914f..de5fc06232e5 100644
+--- a/drivers/platform/x86/intel/pmc/core.c
++++ b/drivers/platform/x86/intel/pmc/core.c
+@@ -1471,7 +1471,7 @@ static void pmc_core_clean_structure(struct platform_device *pdev)
+ 	for (i = 0; i < ARRAY_SIZE(pmcdev->pmcs); ++i) {
+ 		struct pmc *pmc = pmcdev->pmcs[i];
  
--#define CPU_SUBSET_MAXCPUS	1024	/* need to use before probe... */
-+#define CPU_SUBSET_MAXCPUS	8192	/* need to use before probe... */
- cpu_set_t *cpu_present_set, *cpu_possible_set, *cpu_effective_set, *cpu_allowed_set, *cpu_affinity_set, *cpu_subset;
- size_t cpu_present_setsize, cpu_possible_setsize, cpu_effective_setsize, cpu_allowed_setsize, cpu_affinity_setsize, cpu_subset_size;
- #define MAX_ADDED_THREAD_COUNTERS 24
+-		if (pmc)
++		if (pmc && pmc->regbase)
+ 			iounmap(pmc->regbase);
+ 	}
+ 
 -- 
-2.35.3
+2.43.0
 
