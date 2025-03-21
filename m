@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF89C2AE84
-	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2025 15:44:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F31B01D6DDD
+	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2025 15:49:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1742571853; cv=none; b=jhjdA+jMgCW3EGrdv9vd0skVwoIh3eAoWcWt4LDtTc9PZ/O2BS3DkivDOYQ8mlxdxLGxH/4LP0FTzVH1DlgZMXgssTgzOZg9BmKdz3MdCtD6TDhELcsnwj1iLL6Hl7e+21X9Shyap7yJkgja9NeB4micRkWoWXx19LAwvaNtWno=
+	t=1742572168; cv=none; b=awIf2xGL3zu+lTxiqTEFVDdR2eEdMmcmdTxs3N8IyIPBI8IViL27m/WRfU5kyO/m50BG+oCg1f/iqKBlZhEgFIEDosLHkfBxCZB1zbzEJ8Z6whQG3BdKzR03437xM7qAPLIOs1xaZDBslQeZ7ejKlmklM86Zl7/sE++Kl4rjeBc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1742571853; c=relaxed/simple;
-	bh=116WygNXi88iNjcZObSUExuEGZ6fuXd3KxO4E0G03Yg=;
+	s=arc-20240116; t=1742572168; c=relaxed/simple;
+	bh=Qdbf2qT3Ab//VT+2i8/a8Gug+M/rmjwmuIzZSaXKobI=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=oT4N3fl8J2V/5vRLrlsHCpDAVOu6m3Ol7IBbxBw2Qv8M5i4rc6NRhQsQK47v88hD+VxBcDCWydgwIUgm9ZPwNRrq3S2yLaeJ5wUCIU/L87IX9d3F1Wq7I82fHCwksa108FfqtVC6XeklXW2oygMa0n7Hg2HsPocPrEMQrMzEaNw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Hc3QiLTn; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:MIME-Version; b=rKKhKsICAVu7VDUdDMb88igjW9uYnpNSdFJ+m8RCTAn/Vt15oVc4Q/oMDErS9OmXSy1tP0h8nECS1rcqVrhXnm+CmVLSJf/DQ7wZmyM0sTDV5UlCBwaOBrwTZckifj9ybAb02rddBT3l6HkGpgTKtdAtRzCwqORHELFXSdVgUh8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=s1PnUhfu; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Hc3QiLTn"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id C7380C4CEEA
-	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2025 15:44:12 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="s1PnUhfu"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 59C86C4CEE8
+	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2025 15:49:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742571852;
-	bh=116WygNXi88iNjcZObSUExuEGZ6fuXd3KxO4E0G03Yg=;
+	s=k20201202; t=1742572167;
+	bh=Qdbf2qT3Ab//VT+2i8/a8Gug+M/rmjwmuIzZSaXKobI=;
 	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=Hc3QiLTnWs9MlHuG1ALKzON43i7z+eog/pCcYHX/zL0DAC3MMbujqF55Gzzz0mtTd
-	 Vjpk6mT0fsIMw20pmIsdXst50to/OJex6WMIRtq02nievuDo6ImR1cOcx5zFX6i9w1
-	 TfwBucwiHQ2O3lKZq+SNk8CGJMHIYunT/QB2Yyqg+xoUlG68gWFWJ+E6MdBW8rORX9
-	 XdkHSUZukcn7zls/tAe9FECSNXJWdi3fkhCyK09zmssHE2smBYLHugftfaG7sk2lxH
-	 1JRasIT6SbrOtNo9h/8jMlqjidZAp4vLPkicUFewlF9U9UzATBCY1avqUulT6u5Uzs
-	 sIFHAwmyZcD3g==
+	b=s1PnUhfuSEzczIAG+XlBrWHdfRGcXXzFTrlG89V+E99Biqh70Y+2K90T4WdAiLi0S
+	 aNsRDj79jCla5inl28pjSJIxDWN4uE4nFcnx4O/W+EvgjpWkVjhGz077BhNZhSHyhi
+	 i85NgevlVo9zGT6+0LoNHDxJbTeNEQz1Shh3OXJCu8V+n2jFEsebUeElUIzs42JltH
+	 t14QdZly6Ot4ae4uRLlFJVvOkJAevzminQBSIeOvA5R1pfSTPYHrhNwU3SK0ldkP2c
+	 HqXzadiEUhF6K0hZUH3N45jwDdxqaEOIeSAk07qqwQlPnxMix3wDlEJ9iP0SOLGWTP
+	 sefh37ILuD3kw==
 Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id BFC0FC4160E; Fri, 21 Mar 2025 15:44:12 +0000 (UTC)
+	id 3E6D3C41612; Fri, 21 Mar 2025 15:49:27 +0000 (UTC)
 From: bugzilla-daemon@kernel.org
 To: linux-pm@vger.kernel.org
 Subject: [Bug 219858] AMD Zen 2 broken power management after sleep
-Date: Fri, 21 Mar 2025 15:44:12 +0000
+Date: Fri, 21 Mar 2025 15:49:27 +0000
 X-Bugzilla-Reason: AssignedTo
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: None
@@ -47,7 +47,7 @@ X-Bugzilla-Priority: P3
 X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-219858-137361-NZ1ualqjtW@https.bugzilla.kernel.org/>
+Message-ID: <bug-219858-137361-0FGCnXHwuk@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-219858-137361@https.bugzilla.kernel.org/>
 References: <bug-219858-137361@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -63,13 +63,15 @@ MIME-Version: 1.0
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D219858
 
---- Comment #3 from Mario Limonciello (AMD) (mario.limonciello@amd.com) ---
-On 6.14-rc can you please run this script before suspend and after suspend =
-and
-share the text reports it generates?
+--- Comment #4 from Mario Limonciello (AMD) (mario.limonciello@amd.com) ---
+Also; if possible can you please see if you can reproduce it on this branch?
 
-https://web.git.kernel.org/pub/scm/linux/kernel/git/superm1/amd-debug-tools=
-.git/tree/amd_pstate.py
+https://web.git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git/log/?=
+h=3Dlinux-next
+
+This is the code that is going into 6.15-rc1.  If it's fixed there, I might=
+ be
+able to identify a commit to backport to 6.14.y.
 
 --=20
 You may reply to this email to add a comment.
