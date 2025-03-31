@@ -1,199 +1,182 @@
-Received: from mail.zytor.com (terminus.zytor.com [198.137.202.136])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f46.google.com (mail-wr1-f46.google.com [209.85.221.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3E9B1F03C9;
-	Mon, 31 Mar 2025 08:24:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.136
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1070D1953A1
+	for <linux-pm@vger.kernel.org>; Mon, 31 Mar 2025 09:45:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1743409470; cv=none; b=fdYw+R82rqsVQVM+WEr1N8Yr/L4qGW48pgyXMQkdX6mQW8Ea+nOHzPXiuuBxs6e6LgKIJp40bJkFXsZQbh1tFz2SSghfuJ+dyZE3yLdLIq9s/XmRz+KPQ08kD4zYtnkFJd7x5YAru7Zx0aZxetT5Nccz9RWQAh01rY0bZg0WYVo=
+	t=1743414347; cv=none; b=HFU6M1FVPnce9pGtv26h9i8aBU4bEhiJL40wZjJ9qLn3SheANj4qMHmkZW8CEt5af9XmL0JcGa5NKOPbYTdJ76Fo9DlLOhckEajBYsfu2+6dDf5FXbqwftic4EleKD4S3gEW/yUwez62dlP0geVAdpvalQ0nFNZHRFvAwCToU80=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1743409470; c=relaxed/simple;
-	bh=oYmM0CCry6cTlflAhfomz2ZkehnIFifV1gvK1EPpSk8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Y7gySEXhbix7tjkWBUsXuhH5bPqKngVeqAaCEfQlrWNPfr318XDxM7S0iCcRYvNAH6cpuQZHiFfclMC67kQrJBJ5/ak5Hfed3DgE8FE7qXwAzmoZNZNF56dIelNHb/ZdOS5S7GM0i/YVZ2+sX9PiJQemWoRk8FEspSx+xtsWOFs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zytor.com; spf=pass smtp.mailfrom=zytor.com; dkim=pass (2048-bit key) header.d=zytor.com header.i=@zytor.com header.b=EVNNysVl; arc=none smtp.client-ip=198.137.202.136
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zytor.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zytor.com
+	s=arc-20240116; t=1743414347; c=relaxed/simple;
+	bh=8GyrqIAXJmnLWE+QR/uNM2y8SfLju5Q2OARDtyhAtl8=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=pS8eI4c+ejioUo1JwWyAnJvx0T2qsPaPItfKrOiLgrWWbHdrWzZtpr34gLIf5aZOB6jjqf98gdYAxEVCYWWQJ2L/uxZaUKp55xFN0DAD3tRkZ1hrlm+m8iTuBydIkVXYZTKma/mwH10i6hMYWSMq5PCwu1IVB05Y+huBj4eqilo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=wRpqIX7j; arc=none smtp.client-ip=209.85.221.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=zytor.com header.i=@zytor.com header.b="EVNNysVl"
-Received: from terminus.zytor.com (terminus.zytor.com [IPv6:2607:7c80:54:3:0:0:0:136])
-	(authenticated bits=0)
-	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 52V8Mp073171319
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NO);
-	Mon, 31 Mar 2025 01:23:12 -0700
-DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 52V8Mp073171319
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zytor.com;
-	s=2025032001; t=1743409394;
-	bh=4oMqi/mNiX/dP3yUNXOh0KHKk5eO4mtyZ/S9nY+rYCU=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=EVNNysVl8UKZVEUX8F7MbPFwX2epn0yrpmH2w+9q6c8158NF8qnthafY3Pkh8Ilxh
-	 9M0ASaWQUpbHnDRwUDQa7VXHXLDjd40aeBCbAqUiExQtgZ+wsRgJSE1VkqGpirm+UR
-	 5prXvLiFohME5Rh9uOv5Cw+cBYozzUd9b4kenjhMrVaaMr45h9Bi4/VNNbAxT8bv2/
-	 Z8Dx3/k762OqkBR7GvNLYD2WZ0BEYXT78x4FpDvDc8rCAR5k7TIawz4/K3bBBGMueL
-	 W/Wh/zFdQkonvF67LZZkVO833IcrPosTMqlS6T0maUanzmLHMlKbYhc9HxoZ+xAFPV
-	 Y0GoucFLKizNQ==
-From: "Xin Li (Intel)" <xin@zytor.com>
-To: linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
-        linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev,
-        linux-edac@vger.kernel.org, kvm@vger.kernel.org,
-        xen-devel@lists.xenproject.org, linux-ide@vger.kernel.org,
-        linux-pm@vger.kernel.org, bpf@vger.kernel.org, llvm@lists.linux.dev
-Cc: tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
-        dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
-        jgross@suse.com, andrew.cooper3@citrix.com, peterz@infradead.org,
-        acme@kernel.org, namhyung@kernel.org, mark.rutland@arm.com,
-        alexander.shishkin@linux.intel.com, jolsa@kernel.org,
-        irogers@google.com, adrian.hunter@intel.com, kan.liang@linux.intel.com,
-        wei.liu@kernel.org, ajay.kaher@broadcom.com,
-        alexey.amakhalov@broadcom.com, bcm-kernel-feedback-list@broadcom.com,
-        tony.luck@intel.com, pbonzini@redhat.com, vkuznets@redhat.com,
-        seanjc@google.com, luto@kernel.org, boris.ostrovsky@oracle.com,
-        kys@microsoft.com, haiyangz@microsoft.com, decui@microsoft.com
-Subject: [RFC PATCH v1 07/15] x86/msr: Remove pmu_msr_{read,write}()
-Date: Mon, 31 Mar 2025 01:22:43 -0700
-Message-ID: <20250331082251.3171276-8-xin@zytor.com>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20250331082251.3171276-1-xin@zytor.com>
-References: <20250331082251.3171276-1-xin@zytor.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="wRpqIX7j"
+Received: by mail-wr1-f46.google.com with SMTP id ffacd0b85a97d-39ac9aea656so3531031f8f.3
+        for <linux-pm@vger.kernel.org>; Mon, 31 Mar 2025 02:45:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1743414344; x=1744019144; darn=vger.kernel.org;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=dIZXc8U9GSYZgsDRfKdNtiEgygY5UmV+phshMkWCfHM=;
+        b=wRpqIX7jWBrGZ4KMohKO9eTYnNSn0ckTJ/YLtPeK6wCTQQFTDsnywMfhuCTEFSTj0p
+         OC+tS5Z6TpNfVaz7e/exnIqLqSzAlxclxvtoK21pCEm/Z+OibD0BUbrqbpJjvRi/CHa+
+         YrGqkaauDpdQREh6yO2Z3290IQMoRfTOPAAxAWGEOiA8J5ls4rMCsS9WluXIb4Tou7G1
+         yYD52TCiPI64q+NOxuSO4vPqA7Lu7Q4qQ9qxUsZ1YNycDawa90noU6zFrF0WYAsnWT8o
+         nd1ZgEp5C6l59yhCHI0XvuUVBIph6pOoV8NuJPhfuNUM2I/uMr05+nEm1cgXVxn+Xlvl
+         lhkg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1743414344; x=1744019144;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=dIZXc8U9GSYZgsDRfKdNtiEgygY5UmV+phshMkWCfHM=;
+        b=j7sSZ6oEA1L3hbCDMfJu8rBTGNmHGH2o3/pQz/uoYVne1sjSNYM6/dNaykugURhwLY
+         s6s185jA7r5zcu4bk19mZlPojer73iCwWSHGD/jtZrH1C7xY2p/vPNbcHV2sBL2ru1l6
+         w9EZ6INpV8M7DxyXavQV6zxqn1DCUDnExB3begrg266XXGnO/3BbeAntkANDikSrstNO
+         E+pVrUvwdQVEP0RPTWR7AFChBhhuUSCE8F1M8RFpnaDZq10d9iIJLZb+9XPt6DaoQz7F
+         jHE2BrTY6/9ZFov85YQG1F33tO96v2Fso/ok79ZgK7yBhNtO1jxvCSbiCvw6FNx7ciaj
+         IKeg==
+X-Gm-Message-State: AOJu0YwvDdtBLntIYHaJMzDUjnkzJ4VTfy8Ijd55ZiBU53MmIsGJLEw1
+	I8flgSqWc8YJDFFjMAxAANiQiobkIgvWUPgctnCA0qGWcU977jZEsyY0uv1gSsfKFoFw/l35pIj
+	Sgtg=
+X-Gm-Gg: ASbGncvimUu66uk7CuUDScp4/0fSKiJjzbHFF0C7EgeXahoZiKNmX8sazmmX/7fhrva
+	1OTmZx/VGsJROvlbs55VX+Zh5OPx0KS6vl5p/vmjtL/nGJwjCC0zxiPdl8hvzw6kJ7x9VrmN5H7
+	oeRYhjZP6rZANGVOgWso5BKWUA2QnSS6SuRcZ/Ubfsl+gCk/EM2b1NhwPbriQwQW2atBpswrbbj
+	h6MkEPRSIL+fga5+Vx6qycP7V3Ntozx5wvoVVSjlNh3QhgvrDxGvtZ5mxXKdWNvR1HQtUsw+2nS
+	LpFITUPo20aAkvMaQtYSApu8quuh3AoNeNSTzKS5XEWB/vWEKA==
+X-Google-Smtp-Source: AGHT+IE6tUoj3q6i8uD6WXTzYloCv4NfTssYi82juGjuw3XqZtU2u81FwRk1zL9G6woAWNZTRtJLEA==
+X-Received: by 2002:a05:6000:2706:b0:39c:1257:cd3f with SMTP id ffacd0b85a97d-39c1257d4fbmr4127877f8f.57.1743414344306;
+        Mon, 31 Mar 2025 02:45:44 -0700 (PDT)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-43d82efe389sm158473405e9.19.2025.03.31.02.45.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 31 Mar 2025 02:45:43 -0700 (PDT)
+Date: Mon, 31 Mar 2025 12:45:41 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Subject: [bug report] PM / Domains: Introduce dev_pm_domain_attach_by_name()
+Message-ID: <d995010a-ef5f-40bc-b33b-62213972e605@stanley.mountain>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Now pmu_msr_{read,write}() just do pmu_msr_chk_emulated(), so remove
-them and call pmu_msr_chk_emulated() directly.
+Hello Ulf Hansson,
 
-Suggested-by: H. Peter Anvin (Intel) <hpa@zytor.com>
-Signed-off-by: Xin Li (Intel) <xin@zytor.com>
----
- arch/x86/xen/enlighten_pv.c | 17 ++++++++++-------
- arch/x86/xen/pmu.c          | 24 ++++--------------------
- arch/x86/xen/xen-ops.h      |  3 +--
- 3 files changed, 15 insertions(+), 29 deletions(-)
+Commit 27dceb81f445 ("PM / Domains: Introduce
+dev_pm_domain_attach_by_name()") from Jun 29, 2018 (linux-next),
+leads to the following Smatch static checker warning:
 
-diff --git a/arch/x86/xen/enlighten_pv.c b/arch/x86/xen/enlighten_pv.c
-index 7401cce19939..a047dadf4511 100644
---- a/arch/x86/xen/enlighten_pv.c
-+++ b/arch/x86/xen/enlighten_pv.c
-@@ -1090,8 +1090,9 @@ static void xen_write_cr4(unsigned long cr4)
- static u64 xen_do_read_msr(unsigned int msr, int *err)
- {
- 	u64 val = 0;	/* Avoid uninitialized value for safe variant. */
-+	bool emulated;
- 
--	if (pmu_msr_read(msr, &val, err))
-+	if (pmu_msr_chk_emulated(msr, &val, true, &emulated) && emulated)
- 		return val;
- 
- 	if (err)
-@@ -1134,6 +1135,7 @@ static void xen_do_write_msr(unsigned int msr, unsigned int low,
- 			     unsigned int high, int *err)
- {
- 	u64 val;
-+	bool emulated;
- 
- 	switch (msr) {
- 	case MSR_FS_BASE:
-@@ -1163,12 +1165,13 @@ static void xen_do_write_msr(unsigned int msr, unsigned int low,
- 	default:
- 		val = (u64)high << 32 | low;
- 
--		if (!pmu_msr_write(msr, val)) {
--			if (err)
--				*err = native_write_msr_safe(msr, val);
--			else
--				native_write_msr(msr, val);
--		}
-+		if (pmu_msr_chk_emulated(msr, &val, false, &emulated) && emulated)
-+			return;
-+
-+		if (err)
-+			*err = native_write_msr_safe(msr, val);
-+		else
-+			native_write_msr(msr, val);
- 	}
- }
- 
-diff --git a/arch/x86/xen/pmu.c b/arch/x86/xen/pmu.c
-index 1364cd3fb3ef..4d20503430dd 100644
---- a/arch/x86/xen/pmu.c
-+++ b/arch/x86/xen/pmu.c
-@@ -128,7 +128,7 @@ static inline uint32_t get_fam15h_addr(u32 addr)
- 	return addr;
- }
- 
--static inline bool is_amd_pmu_msr(unsigned int msr)
-+static bool is_amd_pmu_msr(u32 msr)
- {
- 	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD &&
- 	    boot_cpu_data.x86_vendor != X86_VENDOR_HYGON)
-@@ -194,8 +194,7 @@ static bool is_intel_pmu_msr(u32 msr_index, int *type, int *index)
- 	}
- }
- 
--static bool xen_intel_pmu_emulate(unsigned int msr, u64 *val, int type,
--				  int index, bool is_read)
-+static bool xen_intel_pmu_emulate(u32 msr, u64 *val, int type, int index, bool is_read)
- {
- 	uint64_t *reg = NULL;
- 	struct xen_pmu_intel_ctxt *ctxt;
-@@ -257,7 +256,7 @@ static bool xen_intel_pmu_emulate(unsigned int msr, u64 *val, int type,
- 	return false;
- }
- 
--static bool xen_amd_pmu_emulate(unsigned int msr, u64 *val, bool is_read)
-+static bool xen_amd_pmu_emulate(u32 msr, u64 *val, bool is_read)
- {
- 	uint64_t *reg = NULL;
- 	int i, off = 0;
-@@ -298,8 +297,7 @@ static bool xen_amd_pmu_emulate(unsigned int msr, u64 *val, bool is_read)
- 	return false;
- }
- 
--static bool pmu_msr_chk_emulated(unsigned int msr, uint64_t *val, bool is_read,
--				 bool *emul)
-+bool pmu_msr_chk_emulated(u32 msr, u64 *val, bool is_read, bool *emul)
- {
- 	int type, index = 0;
- 
-@@ -313,20 +311,6 @@ static bool pmu_msr_chk_emulated(unsigned int msr, uint64_t *val, bool is_read,
- 	return true;
- }
- 
--bool pmu_msr_read(u32 msr, u64 *val, int *err)
--{
--	bool emulated;
--
--	return pmu_msr_chk_emulated(msr, val, true, &emulated) && emulated;
--}
--
--bool pmu_msr_write(u32 msr, u64 val)
--{
--	bool emulated;
--
--	return pmu_msr_chk_emulated(msr, &val, false, &emulated) && emulated;
--}
--
- static unsigned long long xen_amd_read_pmc(int counter)
- {
- 	struct xen_pmu_amd_ctxt *ctxt;
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
-index 4a0a1d73d8b8..6545661010ce 100644
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -274,8 +274,7 @@ void xen_pmu_finish(int cpu);
- static inline void xen_pmu_init(int cpu) {}
- static inline void xen_pmu_finish(int cpu) {}
- #endif
--bool pmu_msr_read(u32 msr, u64 *val, int *err);
--bool pmu_msr_write(u32 msr, u64 val);
-+bool pmu_msr_chk_emulated(u32 msr, u64 *val, bool is_read, bool *emul);
- int pmu_apic_update(uint32_t reg);
- unsigned long long xen_read_pmc(int counter);
- 
--- 
-2.49.0
+	drivers/pmdomain/imx/imx8m-blk-ctrl.c:331 imx8m_blk_ctrl_probe()
+	warn: 'bc->bus_power_dev' can also be NULL
 
+drivers/pmdomain/imx/imx8m-blk-ctrl.c
+    214         bc->bus_power_dev = dev_pm_domain_attach_by_name(dev, "bus");
+    215         if (IS_ERR(bc->bus_power_dev)) {
+
+The problem is the dev_pm_domain_attach_by_name() function can return
+NULL when the power domain is not needed but this driver assumes that
+checking for IS_ERR() is sufficient.
+
+    216                 if (PTR_ERR(bc->bus_power_dev) == -ENODEV)
+    217                         return dev_err_probe(dev, -EPROBE_DEFER,
+    218                                              "failed to attach power domain \"bus\"\n");
+    219                 else
+    220                         return dev_err_probe(dev, PTR_ERR(bc->bus_power_dev),
+    221                                              "failed to attach power domain \"bus\"\n");
+    222         }
+    223 
+    224         for (i = 0; i < bc_data->num_domains; i++) {
+    225                 const struct imx8m_blk_ctrl_domain_data *data = &bc_data->domains[i];
+    226                 struct imx8m_blk_ctrl_domain *domain = &bc->domains[i];
+    227                 int j;
+    228 
+    229                 domain->data = data;
+    230                 domain->num_paths = data->num_paths;
+    231 
+    232                 for (j = 0; j < data->num_clks; j++)
+    233                         domain->clks[j].id = data->clk_names[j];
+    234 
+    235                 for (j = 0; j < data->num_paths; j++) {
+    236                         domain->paths[j].name = data->path_names[j];
+    237                         /* Fake value for now, just let ICC could configure NoC mode/priority */
+    238                         domain->paths[j].avg_bw = 1;
+    239                         domain->paths[j].peak_bw = 1;
+    240                 }
+    241 
+    242                 ret = devm_of_icc_bulk_get(dev, data->num_paths, domain->paths);
+    243                 if (ret) {
+    244                         if (ret != -EPROBE_DEFER) {
+    245                                 dev_warn_once(dev, "Could not get interconnect paths, NoC will stay unconfigured!\n");
+    246                                 domain->num_paths = 0;
+    247                         } else {
+    248                                 dev_err_probe(dev, ret, "failed to get noc entries\n");
+    249                                 goto cleanup_pds;
+    250                         }
+    251                 }
+    252 
+    253                 ret = devm_clk_bulk_get(dev, data->num_clks, domain->clks);
+    254                 if (ret) {
+    255                         dev_err_probe(dev, ret, "failed to get clock\n");
+    256                         goto cleanup_pds;
+    257                 }
+    258 
+    259                 domain->power_dev =
+    260                         dev_pm_domain_attach_by_name(dev, data->gpc_name);
+    261                 if (IS_ERR_OR_NULL(domain->power_dev)) {
+    262                         if (!domain->power_dev)
+    263                                 ret = -ENODEV;
+    264                         else
+    265                                 ret = PTR_ERR(domain->power_dev);
+
+This call is done correctly, I guess?
+
+    266                         dev_err_probe(dev, ret,
+    267                                       "failed to attach power domain \"%s\"\n",
+    268                                       data->gpc_name);
+    269                         goto cleanup_pds;
+    270                 }
+
+Two other cases are:
+
+=========================================================
+drivers/gpu/drm/msm/adreno/a6xx_gmu.c:1844 a6xx_gmu_wrapper_init() warn: 'gmu->cxpd' can also be NULL
+        gmu->initialized = true;
+
+        return 0;
+
+detach_cxpd:
+--->    dev_pm_domain_detach(gmu->cxpd, false);
+
+err_mmio:
+        iounmap(gmu->mmio);
+
+        /* Drop reference taken in of_find_device_by_node */
+=========================================================
+drivers/gpu/drm/msm/adreno/a6xx_gmu.c:2025 a6xx_gmu_init() warn: 'gmu->cxpd' can also be NULL
+
+remove_device_link:
+        device_link_del(link);
+
+detach_cxpd:
+--->    dev_pm_domain_detach(gmu->cxpd, false);
+
+err_mmio:
+        iounmap(gmu->mmio);
+        if (platform_get_resource_byname(pdev, IORESOURCE_MEM, "rscc"))
+                iounmap(gmu->rscc);
+
+It's not just as simple as adding a NULL check to dev_pm_domain_detach()
+because the whole driver assumes it is a valid pointer.
+
+regards,
+dan carpenter
