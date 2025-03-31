@@ -1,30 +1,30 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0442218EB1;
-	Mon, 31 Mar 2025 14:36:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73ADA21B8F5;
+	Mon, 31 Mar 2025 14:37:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1743431816; cv=none; b=GEb9JkoPvCZQ9UnPrKx+V3qghSwEMsSQ0vgIPVRrfPzPNFoshZMAqQKpMfMfxSZF3MlD65rSmPqo4vrT0eIMQDcBxRIDyq/qzU30PLLWNDmJQV4e15jtoCvxn4ZhdJq1U1bGlXpn3L8yfV7WGMYTG7vuM+T/MqeYwKnPBWs9gOA=
+	t=1743431833; cv=none; b=IxoCyfBiHsCwqMnqwSrItIv/HoHWoikkvdSxeKQaJtAomRVeSAuHxmWASTvuT4fcvIk8Mpvj0GRMCBt2HR63NsB74Dy6wCHuyStucOo2wLrmNgL5tAVECVc1utr6iltp6pCcqdFqjhxX+4BUfHUVRZXDMKsU4lJBO74+bYe9aTA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1743431816; c=relaxed/simple;
+	s=arc-20240116; t=1743431833; c=relaxed/simple;
 	bh=doh+7ARyEYWjZJvgKfbqcxfkqsBHv0qsRf5JId0INjw=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=kXeMuaMihIOah5cDHPap16gKYq5kEblAz177oVjS5vYkXrpNpEu53NrbL5Ss12DWY4nB2xfIozhV8HOXRH2xmQqwx923wT9pvJZYQEEpTYtHZMiZz2ymhQ7AfEgjz7vQuU2XWWscym3LJksYHqhtSdqUAcGDJAHkl1UDrj43G6c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Q34f2ldi; arc=none smtp.client-ip=10.30.226.201
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=fvvqITBfTqA650/HOgGi9v3z70md27VlZYhcxX/Lkk0mcePhGsdWngfkVwBxTrzQA2Kc2LNPfw20lQeoOt9vU/alx/8GuEh/J4sCyD8djKId8qZP0puN9ZG2gSc5BgAvauJNuj4QuSTFd4JPgnc/odSH/qDLQ6359aCWb3pIqFM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=s+uSrkNt; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Q34f2ldi"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1A8C1C4CEE3;
-	Mon, 31 Mar 2025 14:36:54 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="s+uSrkNt"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B5AB2C4CEE3;
+	Mon, 31 Mar 2025 14:37:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1743431815;
+	s=k20201202; t=1743431833;
 	bh=doh+7ARyEYWjZJvgKfbqcxfkqsBHv0qsRf5JId0INjw=;
 	h=From:To:Cc:Subject:Date:From;
-	b=Q34f2ldijC6YAHgyOmEuzRa1tAvnnxyUSAtp5GGqzthb8BsyEeKTKrDvXLLHEfCPm
-	 vyR78ImGBiPHrLoDGbua4eKltxtcpJBejq+DPVWTvGwdzww4pHceS/Oa9HP8RC9yd0
-	 rOABO435CQCBx2ZgdR8QlIZoUn1asznYW5p7eZFuF7Q/Kjgas/IQ72v8r1r8GAhiJH
-	 Cl4qDeM1DRIIo4KqY2uhuMOmGCz5dQ6348dqZnGPabii0Ea7vwwxNTsaRakMAtxoWB
-	 h8NNqx6ToVoC0Oqw2yUVOFlqui3llxDnhjv6CcPg7raPvudadKExolVwYGpnaROsVm
-	 LD4o5ISuHBh5A==
+	b=s+uSrkNtiMOmBdzyCQmROJ4dTRkTYBB65PggTst+CZOQ1Ap5EsNIwU31AQcGyKIn+
+	 GExquxiVL72QnsVdhwPUPW6KbkMbhzcZQREO93DicM4XMx8Ok4bW7zqF/omFRmhUTv
+	 ZL40NgYaqix/okhWxUUskQ9V3PvapMyj7YiFx/x1KrAt6knoED89AoqMSEOGJPbKmA
+	 ZV4Ju2TXUa9xEan87JKVs44Frqu/eXdBplJ8sHo69zohd1SBj/4vg6Yruzf3qkGGcT
+	 VqNwpRA9yelU2GCMvw5ERg5s0wX+dXx+32I5ts3rhO+KUapbVnS9fiZJURHhxtyouS
+	 gpXwRKqyP3h0w==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
@@ -37,9 +37,9 @@ Cc: Zhongqiu Han <quic_zhonhan@quicinc.com>,
 	jkacur@redhat.com,
 	peng.fan@nxp.com,
 	linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.15 1/6] pm: cpupower: bench: Prevent NULL dereference on malloc failure
-Date: Mon, 31 Mar 2025 10:36:46 -0400
-Message-Id: <20250331143652.1686503-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 1/6] pm: cpupower: bench: Prevent NULL dereference on malloc failure
+Date: Mon, 31 Mar 2025 10:37:03 -0400
+Message-Id: <20250331143710.1686600-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.5
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -49,7 +49,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 5.15.179
+X-stable-base: Linux 5.10.235
 Content-Transfer-Encoding: 8bit
 
 From: Zhongqiu Han <quic_zhonhan@quicinc.com>
