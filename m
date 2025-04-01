@@ -1,205 +1,243 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mx.treblig.org (mx.treblig.org [46.235.229.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 089111F91CD;
-	Tue,  1 Apr 2025 12:14:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53D4342A94;
+	Tue,  1 Apr 2025 12:15:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.235.229.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1743509648; cv=none; b=odbC3U4GVkP1U3P+PwuGJoFnh6kSqWBDMv9OZ8yIlmJtBoMQmZZGqxWrfF54aoDQyIQn/R/QLzdZIMPi5KRGHVBkEihp+kBhmZ86N+2z20seRfMI9oqVqiXuyV+cb5hIJjp9WDvVgbK7VTLZ2v1p1xiCur66FX6gpH5WahUFAB0=
+	t=1743509762; cv=none; b=PbAexvRjWaP294M8e5iP1m0UeZixMQ02UV/awGxX2BHcXaQn+qiw3Df0qgODfKH5bWVx0TJN96hz5vXBjfegyQkZjf17YBSuSEkFOjr7+Gy3z9WOz9tOyV3Ypdlf9Nmx9UH2JrdbEPrZYCjRMg9SNvwJCthkslsoZCYLS2K4r1Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1743509648; c=relaxed/simple;
-	bh=cW+SgWG4t5icqmSDD5B28BvPyfh8yfBleexRLseF73k=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Z7IduuxXE6+B03ZWxDxhXZtOyxF3EIh21tfOgn8mOSIk85iQCpleZZI+Ut1KJV68ChvdRIbf3Th+PBJCuY9oGRsfj0cTp/PeqcpmTvAwZMHm1XVXihkFeXQXgDhZvORfffnRwn/2KRsB5Mtvfk69uqXh1+BrOumBBZal1qg+LsM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=m/m2p2JW; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1743509762; c=relaxed/simple;
+	bh=tJ/nY5DmjGkUEyUIKawES06pKMf+xtUebkpWoQY+V7E=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ubZD3U+Pb8lMhg2FAWOWsZ+3oYsQWb3x+ckuo+y4yfh/RszD2l4Q3oClKXJVIOXTjC6T/26K6PCjKKMbnAqNlLGLyqOM/c/LPBAXjp5TNvGK98eikKWxSu6RaQpE09idcr9whdT64ai46dfQW/ytZ5ewBKpSsF0T1Lcgtz+H2B0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org; spf=pass smtp.mailfrom=treblig.org; dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b=BI8ZYVDD; arc=none smtp.client-ip=46.235.229.95
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=treblig.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=treblig.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="m/m2p2JW"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C69DC4CEED;
-	Tue,  1 Apr 2025 12:14:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1743509646;
-	bh=cW+SgWG4t5icqmSDD5B28BvPyfh8yfBleexRLseF73k=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=m/m2p2JWYS9MkVHRFy5prVSfpIMH5SY3jiiWZrPRgGhfd0KNH/PA1tOg7S+KrJxkk
-	 JSX0cD90OB4srHDpp2NCGpyjzGIwACeD0oMeDEI8FNeU3Te/nSYZJ7IQ8PWzdUMktP
-	 CDXdXN96p45hx7W98t9osxv7ohk1bS66TN+4GeSI2mFN8/2rYf0/Ma6kRPhVynCyUW
-	 70E0A1eIbNihkaJVcogpm4i7xO3+1O18jP3ZXUGFwY/oCWWK2b3Xjxd35+2ElDER5Q
-	 hbUeOONMmPAY/FcwTQ0BwB/gJZhc+EhEcCLduC0klRJrH0mL52uS+E/hvi0irNyREs
-	 YZcmhVD7KYUvA==
-Received: by mail-oa1-f53.google.com with SMTP id 586e51a60fabf-2c818343646so3537995fac.3;
-        Tue, 01 Apr 2025 05:14:06 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUMrZQzrAu7UkbdnV/sC/nmXueENngvryKfXSR8c7+lxXDHT3/NNRI306Q0JNOctq+FympXMSN+I4U=@vger.kernel.org, AJvYcCWFhajWfdqvZaYPT/zH0Vj5js9X4Gqa3IKNn6/w1fTswFzj2pOvnSLz3y5vXLCJkglVOlxLJTJ5yAfn@vger.kernel.org, AJvYcCXI9bZWAUzTvzL4n7lb4DLNJNkiNwFK/d3j1sy3icOgrgAySbVKKbZJouOVn+rBnfGRttABtWWjQLF+zjJB@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywhi0w1DlNHixMHdFhSJxS3ibbmRy8phzYa/n0PS+XwaunhDKAn
-	1DNa2yJFo6P/dnsAxSytlBRcrjQlEqvvIFjok9RRooez/jvxpMNmigIwnjQiLXyG2DZz3lY3gHi
-	krl3gTgaVXEMh12dBaLf00FNzqnE=
-X-Google-Smtp-Source: AGHT+IGOlogupRrW1ILu3k/BWzEUrlfnOQdl3bgoOraLGfT5cXQwFCdTo4dpWOe+YYaMJLSMdHaLzj7VnVnNwllSJKU=
-X-Received: by 2002:a05:6870:330a:b0:29e:69a9:8311 with SMTP id
- 586e51a60fabf-2cbcf7e09acmr7956746fac.36.1743509645617; Tue, 01 Apr 2025
- 05:14:05 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org header.b="BI8ZYVDD"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=treblig.org
+	; s=bytemarkmx; h=Content-Type:MIME-Version:Message-ID:Subject:From:Date:From
+	:Subject; bh=cpHa3hRcyYE+oveSMpWWau+9FeOL1orHAEbMAeTSCY0=; b=BI8ZYVDD+A/bplQt
+	Lxzx6WknmOncFAkzbg2GZCQjMX0EAq3hUE9F4Aes1QlpQGYc2jv803aIWQnkSeu1SB4HcnYScO+yg
+	vxZPEWAte1PAaam76hgaooRGKH/oYX6y6tnP4nfGIO/WmayF48Jf/Y+bbe+FDkYOV0L7ozJaO7fF4
+	cxqDUiRvIoIGCHx3CjyqPfvSEXQ/zYYbs4d642O+Op3BWzlkgU8N8wRfC0Bt6yr30AMrT3jketCEJ
+	sRmONLJWJkJ+tiAsl0gyRjWasE+3VPQ2kYY994EuQop1SvJlb/h7dGwe9C/0e3Ijd/HG6FuSc006A
+	tJHj4XYIBZWId1R7kw==;
+Received: from dg by mx.treblig.org with local (Exim 4.96)
+	(envelope-from <dg@treblig.org>)
+	id 1tzZpw-008Jmf-0j;
+	Tue, 01 Apr 2025 11:31:20 +0000
+Date: Tue, 1 Apr 2025 11:31:20 +0000
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
+To: arnd@arndb.de, lee@kernel.org, dmitry.torokhov@gmail.com,
+	sre@kernel.org, lgirdwood@gmail.com, broonie@kernel.org,
+	alexandre.belloni@bootlin.com, danielt@kernel.org,
+	jingoohan1@gmail.com, deller@gmx.de, linus.walleij@linaro.org,
+	brgl@bgdev.pl, tsbogend@alpha.franken.de
+Cc: linux-mips@vger.kernel.org, linux-input@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 4/9] Input: pcf50633-input - Remove
+Message-ID: <Z-vOiJ9tdovS-Guq@gallifrey>
+References: <20250311014959.743322-1-linux@treblig.org>
+ <20250311014959.743322-5-linux@treblig.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250328143040.9348-1-ggherdovich@suse.cz> <20250328143040.9348-2-ggherdovich@suse.cz>
- <SJ0PR11MB66228319834B1C7B48FCE52EF5AD2@SJ0PR11MB6622.namprd11.prod.outlook.com>
- <CAJZ5v0gC3DzanSdPqQiJ4JQppgNeRA7Z9Cge7NxmTO_shoUyOA@mail.gmail.com> <7a14ea42462a346958954f328933f583dcf9cb52.camel@intel.com>
-In-Reply-To: <7a14ea42462a346958954f328933f583dcf9cb52.camel@intel.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 1 Apr 2025 14:13:54 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0juH2kYx-fyyfoFLBTjg30y59Dwj1wBYXxuHvU2c7X31w@mail.gmail.com>
-X-Gm-Features: AQ5f1JqInvfmF-dEU2O33yfuIWE_7Znqodgm49GlPYWEkfdKphYD_-K3cc_SD6g
-Message-ID: <CAJZ5v0juH2kYx-fyyfoFLBTjg30y59Dwj1wBYXxuHvU2c7X31w@mail.gmail.com>
-Subject: Re: [PATCH 2/2] ACPI: processor: idle: Remove obsolete comment
-To: "Zhang, Rui" <rui.zhang@intel.com>
-Cc: "rafael@kernel.org" <rafael@kernel.org>, "ggherdovich@suse.cz" <ggherdovich@suse.cz>, 
-	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lenb@kernel.org" <lenb@kernel.org>, 
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
-	"linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20250311014959.743322-5-linux@treblig.org>
+X-Chocolate: 70 percent or better cocoa solids preferably
+X-Operating-System: Linux/6.1.0-21-amd64 (x86_64)
+X-Uptime: 11:28:53 up 327 days, 22:42,  1 user,  load average: 0.00, 0.00,
+ 0.00
+User-Agent: Mutt/2.2.12 (2023-09-09)
 
-On Tue, Apr 1, 2025 at 2:25=E2=80=AFAM Zhang, Rui <rui.zhang@intel.com> wro=
-te:
->
-> On Mon, 2025-03-31 at 14:07 +0200, Rafael J. Wysocki wrote:
-> > On Mon, Mar 31, 2025 at 9:38=E2=80=AFAM Zhang, Rui <rui.zhang@intel.com=
-> wrote:
-> > >
-> > > > -----Original Message-----
-> > > > From: Giovanni Gherdovich <ggherdovich@suse.cz>
-> > > > Sent: Friday, March 28, 2025 10:31 PM
-> > > > To: Rafael J . Wysocki <rafael@kernel.org>; Zhang, Rui
-> > > > <rui.zhang@intel.com>
-> > > > Cc: Len Brown <lenb@kernel.org>; Giovanni Gherdovich
-> > > > <ggherdovich@suse.cz>; linux-acpi@vger.kernel.org; linux-
-> > > > kernel@vger.kernel.org; linux-pm@vger.kernel.org
-> > > > Subject: [PATCH 2/2] ACPI: processor: idle: Remove obsolete comment
-> > > > Importance: High
-> > > >
-> > > > Since commit 496121c02127e9c460b436244c38260b044cc45a ("ACPI:
-> > > > processor:
-> > > > idle: Allow probing on platforms with one ACPI C-state"), the
-> > > > comment
-> > > > doesn't reflect the code anymore; remove it.
-> > > >
-> > > > Signed-off-by: Giovanni Gherdovich <ggherdovich@suse.cz>
-> > > > ---
-> > > >  drivers/acpi/processor_idle.c | 4 ----
-> > > >  1 file changed, 4 deletions(-)
-> > > >
-> > > > diff --git a/drivers/acpi/processor_idle.c
-> > > > b/drivers/acpi/processor_idle.c
-> > > > index b181f7fc2090..2a076c7a825a 100644
-> > > > --- a/drivers/acpi/processor_idle.c
-> > > > +++ b/drivers/acpi/processor_idle.c
-> > > > @@ -482,10 +482,6 @@ static int
-> > > > acpi_processor_get_cstate_info(struct
-> > > > acpi_processor *pr)
-> > > >
-> > > >       pr->power.count =3D acpi_processor_power_verify(pr);
-> > > >
-> > > > -     /*
-> > > > -      * if one state of type C2 or C3 is available, mark this
-> > > > -      * CPU as being "idle manageable"
-> > > > -      */
-> > > >       for (i =3D 1; i < ACPI_PROCESSOR_MAX_POWER; i++) {
-> > > >               if (pr->power.states[i].valid) {
-> > > >                       pr->power.count =3D i;
-> > > > --
-> > > > 2.43.0
-> > >
-> > > I think we can clean up a bit more. How about the patch below?
-> > >
-> > > From 115d3a07febff32eed49f9343ef111e7e1452f9d Mon Sep 17 00:00:00
-> > > 2001
-> > > From: "Zhang, Rui" <rui.zhang@intel.com>
-> > > Date: Mon, 31 Mar 2025 07:29:57 +0000
-> > > Subject: [PATCH] ACPI: processor: idle: Simplify
-> > >  acpi_processor_get_cstate_info() logic
-> > >
-> > > Since commit 496121c02127 ("ACPI: processor: idle: Allow probing on
-> > > platforms with one ACPI C-state"), acpi_idle driver can be probed
-> > > with
-> > > C1 only.
-> > >
-> > > Optimize the logic for setting pr->power.count and pr->flags.power by
-> > > 1. unconditionally set pr->flags.power leveraging the fact that C1 is
-> > >    always valid after acpi_processor_get_power_info_default().
-> > > 2. update acpi_processor_power_verify() to return the highest valid
-> > >    C-state directly.
-> > >
-> > > No functional change intended.
-> > >
-> > > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> > > ---
-> > >  drivers/acpi/processor_idle.c | 15 ++-------------
-> > >  1 file changed, 2 insertions(+), 13 deletions(-)
-> > >
-> > > diff --git a/drivers/acpi/processor_idle.c
-> > > b/drivers/acpi/processor_idle.c
-> > > index 698897b29de2..7ce8c3802937 100644
-> > > --- a/drivers/acpi/processor_idle.c
-> > > +++ b/drivers/acpi/processor_idle.c
-> > > @@ -442,7 +442,7 @@ static int acpi_processor_power_verify(struct
-> > > acpi_processor *pr)
-> > >
-> > >                 lapic_timer_check_state(i, pr, cx);
-> > >                 tsc_check_state(cx->type);
-> > > -               working++;
-> > > +               working =3D i;
-> >
-> > What if some states are skipped because they are invalid?  'working'
-> > can be less than 'i' then AFAICS.
->
-> yes, but please refer to my comments here and below,
->
-> 1. 'working' is used as return value only in acpi_processor_power_verify(=
-).
->
-> >
-> > >         }
-> > >
-> > >         if (buggy_latency) {
-> > > @@ -457,7 +457,6 @@ static int acpi_processor_power_verify(struct
-> > > acpi_processor *pr)
-> > >
-> > >  static int acpi_processor_get_cstate_info(struct acpi_processor *pr)
-> > >  {
-> > > -       unsigned int i;
-> > >         int result;
-> > >
-> > >
-> > > @@ -477,17 +476,7 @@ static int acpi_processor_get_cstate_info(struct
-> > > acpi_processor *pr)
-> > >         acpi_processor_get_power_info_default(pr);
-> > >
-> > >         pr->power.count =3D acpi_processor_power_verify(pr);
->
-> 2. acpi_processor_get_cstate_info(), which is the only caller of
-> acpi_processor_power_verify(), use this return value to set
-> pr->power.count.
+* linux@treblig.org (linux@treblig.org) wrote:
+> From: "Dr. David Alan Gilbert" <linux@treblig.org>
+> 
+> The pcf50633 was used as part of the OpenMoko devices but
+> the support for its main chip was recently removed in:
+> commit 61b7f8920b17 ("ARM: s3c: remove all s3c24xx support")
+> 
+> See https://lore.kernel.org/all/Z8z236h4B5A6Ki3D@gallifrey/
+> 
+> Remove it.
+> 
+> Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
 
-So far so good.
+Has anyone got this input patch lined up?
+I think most of the other parts are there; the rtc I see in next.
+Then once those go there is a core.h that needs nuking.
 
-> > > -
-> > > -       /*
-> > > -        * if one state of type C2 or C3 is available, mark this
-> > > -        * CPU as being "idle manageable"
-> > > -        */
-> > > -       for (i =3D 1; i < ACPI_PROCESSOR_MAX_POWER; i++) {
-> > > -               if (pr->power.states[i].valid) {
-> > > -                       pr->power.count =3D i;
->
-> 3. use a loop to override pr->power.count with the index of the highest
-> valid state
+Dave
 
-I see.
-
-> So I'm proposing to return the index of the highest valid state directly
-> in acpi_processor_power_verify() and then we don't need this loop any
-> more.
-
-OK, so I'd prefer to first rename power.count to power.max_index
-(which it really is) and then make the changes you have proposed.
+> ---
+>  drivers/input/misc/Kconfig          |   7 --
+>  drivers/input/misc/Makefile         |   1 -
+>  drivers/input/misc/pcf50633-input.c | 113 ----------------------------
+>  3 files changed, 121 deletions(-)
+>  delete mode 100644 drivers/input/misc/pcf50633-input.c
+> 
+> diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
+> index 13d135257e06..62819144bd8c 100644
+> --- a/drivers/input/misc/Kconfig
+> +++ b/drivers/input/misc/Kconfig
+> @@ -584,13 +584,6 @@ config INPUT_PALMAS_PWRBUTTON
+>  	  To compile this driver as a module, choose M here. The module will
+>  	  be called palmas_pwrbutton.
+>  
+> -config INPUT_PCF50633_PMU
+> -	tristate "PCF50633 PMU events"
+> -	depends on MFD_PCF50633
+> -	help
+> -	 Say Y to include support for delivering  PMU events via  input
+> -	 layer on NXP PCF50633.
+> -
+>  config INPUT_PCF8574
+>  	tristate "PCF8574 Keypad input device"
+>  	depends on I2C
+> diff --git a/drivers/input/misc/Makefile b/drivers/input/misc/Makefile
+> index 6d91804d0a6f..d468c8140b93 100644
+> --- a/drivers/input/misc/Makefile
+> +++ b/drivers/input/misc/Makefile
+> @@ -59,7 +59,6 @@ obj-$(CONFIG_INPUT_MC13783_PWRBUTTON)	+= mc13783-pwrbutton.o
+>  obj-$(CONFIG_INPUT_MMA8450)		+= mma8450.o
+>  obj-$(CONFIG_INPUT_PALMAS_PWRBUTTON)	+= palmas-pwrbutton.o
+>  obj-$(CONFIG_INPUT_PCAP)		+= pcap_keys.o
+> -obj-$(CONFIG_INPUT_PCF50633_PMU)	+= pcf50633-input.o
+>  obj-$(CONFIG_INPUT_PCF8574)		+= pcf8574_keypad.o
+>  obj-$(CONFIG_INPUT_PCSPKR)		+= pcspkr.o
+>  obj-$(CONFIG_INPUT_PM8941_PWRKEY)	+= pm8941-pwrkey.o
+> diff --git a/drivers/input/misc/pcf50633-input.c b/drivers/input/misc/pcf50633-input.c
+> deleted file mode 100644
+> index 6d046e236ba6..000000000000
+> --- a/drivers/input/misc/pcf50633-input.c
+> +++ /dev/null
+> @@ -1,113 +0,0 @@
+> -// SPDX-License-Identifier: GPL-2.0-or-later
+> -/* NXP PCF50633 Input Driver
+> - *
+> - * (C) 2006-2008 by Openmoko, Inc.
+> - * Author: Balaji Rao <balajirrao@openmoko.org>
+> - * All rights reserved.
+> - *
+> - * Broken down from monstrous PCF50633 driver mainly by
+> - * Harald Welte, Andy Green and Werner Almesberger
+> - */
+> -
+> -#include <linux/kernel.h>
+> -#include <linux/module.h>
+> -#include <linux/device.h>
+> -#include <linux/platform_device.h>
+> -#include <linux/input.h>
+> -#include <linux/slab.h>
+> -
+> -#include <linux/mfd/pcf50633/core.h>
+> -
+> -#define PCF50633_OOCSTAT_ONKEY	0x01
+> -#define PCF50633_REG_OOCSTAT	0x12
+> -#define PCF50633_REG_OOCMODE	0x10
+> -
+> -struct pcf50633_input {
+> -	struct pcf50633 *pcf;
+> -	struct input_dev *input_dev;
+> -};
+> -
+> -static void
+> -pcf50633_input_irq(int irq, void *data)
+> -{
+> -	struct pcf50633_input *input;
+> -	int onkey_released;
+> -
+> -	input = data;
+> -
+> -	/* We report only one event depending on the key press status */
+> -	onkey_released = pcf50633_reg_read(input->pcf, PCF50633_REG_OOCSTAT)
+> -						& PCF50633_OOCSTAT_ONKEY;
+> -
+> -	if (irq == PCF50633_IRQ_ONKEYF && !onkey_released)
+> -		input_report_key(input->input_dev, KEY_POWER, 1);
+> -	else if (irq == PCF50633_IRQ_ONKEYR && onkey_released)
+> -		input_report_key(input->input_dev, KEY_POWER, 0);
+> -
+> -	input_sync(input->input_dev);
+> -}
+> -
+> -static int pcf50633_input_probe(struct platform_device *pdev)
+> -{
+> -	struct pcf50633_input *input;
+> -	struct input_dev *input_dev;
+> -	int ret;
+> -
+> -
+> -	input = kzalloc(sizeof(*input), GFP_KERNEL);
+> -	if (!input)
+> -		return -ENOMEM;
+> -
+> -	input_dev = input_allocate_device();
+> -	if (!input_dev) {
+> -		kfree(input);
+> -		return -ENOMEM;
+> -	}
+> -
+> -	platform_set_drvdata(pdev, input);
+> -	input->pcf = dev_to_pcf50633(pdev->dev.parent);
+> -	input->input_dev = input_dev;
+> -
+> -	input_dev->name = "PCF50633 PMU events";
+> -	input_dev->id.bustype = BUS_I2C;
+> -	input_dev->evbit[0] = BIT(EV_KEY) | BIT(EV_PWR);
+> -	set_bit(KEY_POWER, input_dev->keybit);
+> -
+> -	ret = input_register_device(input_dev);
+> -	if (ret) {
+> -		input_free_device(input_dev);
+> -		kfree(input);
+> -		return ret;
+> -	}
+> -	pcf50633_register_irq(input->pcf, PCF50633_IRQ_ONKEYR,
+> -				pcf50633_input_irq, input);
+> -	pcf50633_register_irq(input->pcf, PCF50633_IRQ_ONKEYF,
+> -				pcf50633_input_irq, input);
+> -
+> -	return 0;
+> -}
+> -
+> -static void pcf50633_input_remove(struct platform_device *pdev)
+> -{
+> -	struct pcf50633_input *input  = platform_get_drvdata(pdev);
+> -
+> -	pcf50633_free_irq(input->pcf, PCF50633_IRQ_ONKEYR);
+> -	pcf50633_free_irq(input->pcf, PCF50633_IRQ_ONKEYF);
+> -
+> -	input_unregister_device(input->input_dev);
+> -	kfree(input);
+> -}
+> -
+> -static struct platform_driver pcf50633_input_driver = {
+> -	.driver = {
+> -		.name = "pcf50633-input",
+> -	},
+> -	.probe = pcf50633_input_probe,
+> -	.remove = pcf50633_input_remove,
+> -};
+> -module_platform_driver(pcf50633_input_driver);
+> -
+> -MODULE_AUTHOR("Balaji Rao <balajirrao@openmoko.org>");
+> -MODULE_DESCRIPTION("PCF50633 input driver");
+> -MODULE_LICENSE("GPL");
+> -MODULE_ALIAS("platform:pcf50633-input");
+> -- 
+> 2.48.1
+> 
+-- 
+ -----Open up your eyes, open up your mind, open up your code -------   
+/ Dr. David Alan Gilbert    |       Running GNU/Linux       | Happy  \ 
+\        dave @ treblig.org |                               | In Hex /
+ \ _________________________|_____ http://www.treblig.org   |_______/
