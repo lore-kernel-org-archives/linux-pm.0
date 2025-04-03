@@ -1,88 +1,78 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from out-183.mta1.migadu.com (out-183.mta1.migadu.com [95.215.58.183])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 765F7240608;
-	Thu,  3 Apr 2025 19:30:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E3302E62D1
+	for <linux-pm@vger.kernel.org>; Thu,  3 Apr 2025 21:59:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.183
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1743708610; cv=none; b=NGGW67dZPp+Pmiu/oMUzEtTqxD8KBppLNjSk/FcGZ1zG9z+hoOXVdmF5neWnNG0mQ1BhaOMPCnatJU55r8JBT7rEBZjZ6i20eRkp+bn57XS4WvLumbmcg7Efo/L/MnNn9bayos5GbC4evUWsDBMTYbsgE6r8kCmb8uONagYoUDg=
+	t=1743717586; cv=none; b=Vmg6Z39BCLBGRqsd5f/BPL74mRg+HqjvmdTgDK54GVfIXy9ujTFn8/IDwWgOcQJu8HHuHDhq/Bp6Ss0FFW1WNKC9MQ+QOQMlIEFV9fxwcERU6ZlILdlmsQEYgxbp6pAxmsardK2pqtxVHigLEtVpNNFAViWrwhv7n03UThtvu/4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1743708610; c=relaxed/simple;
-	bh=jc8qMlt1c1eQw+W1a0Rxp/TfA3rYdyvQzVG4iXwMJeM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=pd7nwDFr0tQaoBFwc3TkRP0kkOHz8oS9wr2gqUv/CfoqeAlDTofo6Bj5/UnWfayK1A1UQm+BRNwaaEpER3moLCV4EsxcuSkcqRKqkvh2AG7uFJWjeL8dwpEWixN3wU3ztrDOHWfFeJln7bZImJ/3ojwRTFomuc5m6CSVGjHLavA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=kEh6zNO3; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1743717586; c=relaxed/simple;
+	bh=xVOpi2NrysHijpOurSHwvEoJziXFVJnfKW/CtFYrl50=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=sJFmLLJ01oQ8jmafxuCX+x/EhgITMplug/Xve+g6Ci5a21UpcSO0kK5t8cykeAE4DXIBtzrncp2ui+8TkkJGYfblv9fgNQhD0OXgFjRutOZPKLMrSf93YyuU9umiQ9ibhIifg9tEG9KDM3lel0b8EVEcs//cygBIU3jpvmUtn9Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=r-ricci.it; spf=pass smtp.mailfrom=r-ricci.it; dkim=pass (2048-bit key) header.d=r-ricci.it header.i=@r-ricci.it header.b=heCR0QTK; arc=none smtp.client-ip=95.215.58.183
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=r-ricci.it
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=r-ricci.it
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="kEh6zNO3"
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 6.3.1)
- id 4e8db405cd3e6ab8; Thu, 3 Apr 2025 21:30:06 +0200
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id E856590158A;
-	Thu,  3 Apr 2025 21:30:04 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1743708606;
-	bh=jc8qMlt1c1eQw+W1a0Rxp/TfA3rYdyvQzVG4iXwMJeM=;
-	h=From:Subject:Date;
-	b=kEh6zNO3/Jg+/JjB/6QYatWF6Q2dII0Ql9R3mFaP58J7ODyLjYpTjOPI2QG8xA0we
-	 UwSVUzhkFPHBoxOlxFgaWUSY2b3t6NjpIzEuZMqczTLwhQbZy1G1FvG3XvHXxLqQgc
-	 Eo9AsnweEdjBH/QYPhdtP4su3Nl9NIQ7FJ9PeKb9cUT/cXvnxJWsglrcHDKUSDNznw
-	 Hl1SORZc/pHSPFzlpr/9hZpplNNZtgUQAvUYpbDsQYhhp6Gl/ZyignHOp/MzEaMd4T
-	 loO6zgXX5G4qc8r2LaDUyB1zWbwr11H4CnC7GGMLpH0RaTBQ4wlp3eluwJEuGjp/Zi
-	 ecT4AbFt5IYDw==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Christian Loehle <christian.loehle@arm.com>,
- Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
- Doug Smythies <dsmythies@telus.net>,
- Aboorva Devarajan <aboorvad@linux.ibm.com>
-Subject: [PATCH v1 0/2] cpuidle: teo: Refine handling of short idle intervals
-Date: Thu, 03 Apr 2025 21:16:08 +0200
-Message-ID: <4661520.LvFx2qVVIh@rjwysocki.net>
+	dkim=pass (2048-bit key) header.d=r-ricci.it header.i=@r-ricci.it header.b="heCR0QTK"
+Date: Thu, 3 Apr 2025 23:59:29 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=r-ricci.it; s=key1;
+	t=1743717579;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=5gWVPsaMeVoq3PEOblosd8Uc4uwzdadJ+Lx1YrHoDlQ=;
+	b=heCR0QTKCfdNHBAd6RcJd7HR4EPXeNDV86iCUlXot0NbT94u9r7zuNR/T4a7O00k1+WKqo
+	oRtCLMfj6x4eFUN86Pp2l2dQI+XpAgksb32jVziMbcvmXk3YMgG8YsZgHyKudc4zLuR8JK
+	H9IoEon6Qp+mN5MbkcVpCyUrO9TWmj9xLhwqZCEkreb3gTKlp6YCDlwJv3fLabnBg7ejTo
+	5EB4aJlzOX4yLv0CZzwVNnpdSfYdEU0R1f5CGIODXTQFDHz4MU55sF3an9Md9tpXB8wCnh
+	gAjT52jzelVE83+Boqtxp9hTFRkrp7Mmx3+RCuybMq74qOYcIoXPNu3xrJ+p2Q==
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Roberto Ricci <io@r-ricci.it>
+To: Dave Young <dyoung@redhat.com>
+Cc: Baoquan He <bhe@redhat.com>, ebiederm@xmission.com, rafael@kernel.org,
+	pavel@ucw.cz, ytcoode@gmail.com, kexec@lists.infradead.org,
+	linux-pm@vger.kernel.org, akpm@linux-foundation.org,
+	regressions@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] Kernel booted via kexec fails to resume from
+ hibernation
+Message-ID: <Z-8EwQksGi36v-QQ@desktop0a>
+References: <Z4WFjBVHpndct7br@desktop0a>
+ <Z5bx7ZHNcyc5fM_L@darkstar.users.ipa.redhat.com>
+ <CALu+AoSSKh=5ELgQyzDrGEDm5fm2XKteH1ZC70mm89pNSSPMHw@mail.gmail.com>
+ <Z-c7V2hptt9U9UCl@desktop0a>
+ <Z+dQZozsbdls6yqJ@MiWiFi-R3L-srv>
+ <Z-hYWc9LtBU1Yhtg@desktop0a>
+ <CALu+AoTrPZS7ukuLsCTCwKNKVd8=PUN8nXwh9BdicyV-==-W=g@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: spam:low
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddukeelgedtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuphgrmhfkphculdeftddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepffffffekgfehheffleetieevfeefvefhleetjedvvdeijeejledvieehueevueffnecukfhppeduleehrddufeeirdduledrleegnecuufhprghmkfhppeduleehrddufeeirdduledrleegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepudelhedrudefiedrudelrdelgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomheprhhjfiesrhhjfiihshhotghkihdrnhgvthdpnhgspghrtghpthhtohepjedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtoheptghhrhhishhtihgrnhdrlhhovghhlhg
-X-DCC--Metrics: v370.home.net.pl 1024; Body=21 Fuz1=21 Fuz2=21
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CALu+AoTrPZS7ukuLsCTCwKNKVd8=PUN8nXwh9BdicyV-==-W=g@mail.gmail.com>
+X-Migadu-Flow: FLOW_OUT
 
-Hi Everyone,
+On 2025-03-31 11:22 +0800, Dave Young wrote:
+> > With v4.9.337, kexec (via kexec_load) + hibernation works.
+> > With v5.4.291 it doesn't.
+> > I'm not sure how bisection could be done in this case.
 
-This series is intended to address an issue with overly aggressive selection
-of idle state 0 (the polling state) in teo on x86 in some cases when timer
-wakeups dominate the CPU wakeup pattern.
+I just found out that 5.0 is not what comes after 4.9 [facepalm].
+With v4.14.336 kexec_load + hibernation doesn't work either.
+I'm still having a bit of trouble finding the commits which fixed
+various build and boot issues and cherry-picking them. But now at least
+I have fewer bisection steps.
 
-In those cases, timer wakeups are not taken into account when they are
-within the LATENCY_THRESHOLD_NS range and the idle state selection may
-be based entirely on non-timer wakeups which may be rare.  This causes
-the prediction accuracy to be low and too much energy may be used as
-a result.
+> Not confident, but maybe you can try latest mainline kernel see if the
+> below commit helps:
+> https://web.git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=a2498e5c453b3d8d054d77751487cd593332f8c2
+> 
+> I noticed the e820 export is different for v4.9.337 and v5.4.291
 
-The first patch is preparatory and it is not expected to make any
-functional difference.
-
-The second patch causes teo to take timer wakeups into account if it
-is about to skip the tick_nohz_get_sleep_length() invocation, so they
-get a chance to influence the idle state selection.
-
-I have been using this series on my systems for several weeks and observed
-a significant reduction of the polling state selection rate in multiple
-workloads.
-
-Thanks!
-
-
-
+Unfortunately, this commit doesn't fix my issue. Latest mainline works
+when using kexec_file_load (but not kexec_load) because it contains
+https://lore.kernel.org/all/20250214090651.3331663-1-rppt@kernel.org/
