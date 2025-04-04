@@ -1,162 +1,166 @@
-Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B3ED1DB363
-	for <linux-pm@vger.kernel.org>; Fri,  4 Apr 2025 12:40:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.52
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 8FBCA1DB363;
+	Fri,  4 Apr 2025 12:41:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1743770416; cv=none; b=p2GoYPXWKDnodzn8x2ImxJ3t+EDnxP2yPz8ZELZd4+bek7y8pISNsmRWwtvcXsJzouyCYjcxfdFVZjMXvH2tI03AbLrbV8CKbjGBubWWQbRRnA2t+WdO1XF5+s5Olejvaxfk+b7bQvLJog6Rf9MUlZ0wY+atIG72Y3NlCCQQ2fI=
+	t=1743770469; cv=none; b=po1iB3a4WTKm1jZJkxuzara899KRRNduo/D6MGAzjWeq614NUK6+oD3OiezraDHoyCxQiwdh6bhmxFP7fcozPUL6UFbH7jz5nB8lHu26fLr2OiwM+tMFMf5seMmgjeb79bwM2DFphN9oyT5USqyjYNZe/qYCw5XfRfmdOpN4h1k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1743770416; c=relaxed/simple;
-	bh=mp8cJLgoOUlOQe5pHPhCKpMgDHHkEU6HvefJQt9GYSA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Vvop47thcBBi4RL3cLr0SaI8STRyjdPaMWhZfO8eKiWCGhUxYJUXu7thnRZBbp32xIQDdYXQNjrNNGdf4/ZsdjGrCGNnKkQ9XLOvh4BAl9/X2YzOvPqIwESnzfwtJMgQ3E+54y4NZhShXEhqpp1feZuy224+Gbfa4HdU6KQLpmY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=SI4iODPo; arc=none smtp.client-ip=209.85.221.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="SI4iODPo"
-Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-39973c72e8cso199944f8f.0
-        for <linux-pm@vger.kernel.org>; Fri, 04 Apr 2025 05:40:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1743770412; x=1744375212; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=BNkwiRggtXL8RMSGB6OjJXFLVErNHtUr3angEyuAVQ0=;
-        b=SI4iODPoDhNz4qOyR+bFnwLqp+MzE7aFdGPzd/n4BtwaKktgy6kTSInQpVziNOVFJ8
-         hk3eMVBygcgayBCPFYgGRK2GKJi41pzTC0K6t/JpQ3jOclD/9ZqgfwWgspCUQmqOpELi
-         CZ3sJsWamR6+etd50oy951Rdvuh2xCiq125Dfq4f+O0ksCTMyaSQ85zBv2LyGs966zAi
-         FdiA6oZMIG1fzXhQIaYtvdmR3Ozt90/rCj+NRq9r6IAkwldXoahCCLN1I96a/+fc7pjh
-         JbzKnbJFM2sFwm20I0keNnW8sc6e86GADigBEnuHJW+23oIjdll4UbtHqb3NmL2o8OL0
-         4Dsg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1743770412; x=1744375212;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=BNkwiRggtXL8RMSGB6OjJXFLVErNHtUr3angEyuAVQ0=;
-        b=ZMqF2ADHCLinn9UFZHiqTX+UuKzBfcJ+jje9B6fBlYI3+0FzQt5dOt8urkfoqMLbL4
-         COrTD72jJ1f6Ri0LSTBlhPcIFTXe1EmtNij4xoLCIdoNwkhBi9phHlhwoEqWerhDIB5V
-         7mAOcrpUwajwsAn2umdHDRuwFPjcg10/awDq9XIKexrPJoJGZuYESwHVQ2WY88gUXe5n
-         5yg2KRL9hj+Ky1Bwxbza5A6v8iz+CPgQ9jUEfUJc4zQrLP3RxPx6PctvexakbYMw+E4b
-         auB+3V4UJtmHnS3H2s4Rp72ynVF2DVqzQMfNGls0r/NjUpO1eZIklJkl72jJInj3pJD+
-         74cQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVhLAtYIyYjn84eoeIqBKNPUVeqFS9bZ07nFxEQTj2GIjKT5+rQ1nkcpwBsWbGjII6bgGjf2X9eYw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyi3ZwIcjcx9mHL3aTT8LizwIUHTNuCM6Z7qfnDRlDT9Quf5ypI
-	3rIS7shLu89UChQQijXSWT0aST+b84bomzcaMwH7M4QxznQzxIfHmi1iGh8y9eeFUhpsNMHHCo2
-	R
-X-Gm-Gg: ASbGncvnCI/0YUIRjXl4hiirm7ePesSbgIQGWpMo3tg9c5XStkLXT02V+iJhcvIWwUc
-	NijRiFfRnO3+frZOcrOhkPIPcSqTcgjmVFXsgAc2cdfx8SKMUUQXhWuJ4vniWGYKvxeDHS9huDY
-	6cC1ZAcuVQFsbgMuE3eZb2PFx7UqT1hR6feeLhE5xEKcIZRGHAFl3EKJAqhzLzYZbJGFt1Qu7i3
-	seAMCeMw/PsZQd6SmVy7c2aMNDNW5mwpUF1wOBdaTqkZLKoqffIVmzidJO1pnLS8BF8Vh4xFEcl
-	BROntcMXCWtsnAOAIOl5g5OE0cRyh5CWMZlrq/RENWYH3HTkdNr/xg==
-X-Google-Smtp-Source: AGHT+IEURi10IoT1+Q2AT0oaalmPLIi4DcXVocxxasvzE9bMjolz2JujxAXVP42nSP6DxQsuxh8uoA==
-X-Received: by 2002:a5d:64c7:0:b0:39c:1258:17d7 with SMTP id ffacd0b85a97d-39cba94bb2bmr906076f8f.16.1743770412643;
-        Fri, 04 Apr 2025 05:40:12 -0700 (PDT)
-Received: from shite.. ([178.197.198.86])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-39c30096bb2sm4316476f8f.12.2025.04.04.05.40.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 04 Apr 2025 05:40:12 -0700 (PDT)
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH] cpufreq: Do not enable by default during compile testing
-Date: Fri,  4 Apr 2025 14:40:06 +0200
-Message-ID: <20250404124006.362723-1-krzysztof.kozlowski@linaro.org>
-X-Mailer: git-send-email 2.45.2
+	s=arc-20240116; t=1743770469; c=relaxed/simple;
+	bh=iY1p6+npB+bD9BrO1Sg5lKvxjiUurx93mXmSO4ERzEc=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=t9c45BdoxF1MPfDuk6ktwePTMHImdOzEL8fVrVErXLJ2Z9O+3FMVkOU+J9QcNawKvTVcIPuY8/rKFxmK25MuRS972okxWrJRIHFhzBzWfU0/ELlGFr948mefJ+jHXbTcYn1yuB/EqC0+jk/xQFmcp19EWhTWNP8YQIS0pBMQEIY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 39AA31515;
+	Fri,  4 Apr 2025 05:41:02 -0700 (PDT)
+Received: from donnerap.manchester.arm.com (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id EF7A53F59E;
+	Fri,  4 Apr 2025 05:40:53 -0700 (PDT)
+Date: Fri, 4 Apr 2025 13:39:58 +0100
+From: Andre Przywara <andre.przywara@arm.com>
+To: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Jernej Skrabec
+ <jernej.skrabec@gmail.com>, Samuel Holland <samuel@sholland.org>, "Rafael
+ J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
+ Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno
+ <angelogioacchino.delregno@collabora.com>, Vincenzo Frascino
+ <vincenzo.frascino@arm.com>, Liviu Dudau <liviu.dudau@arm.com>, Sudeep
+ Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>,
+ Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio
+ <konradybcio@kernel.org>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd
+ <sboyd@kernel.org>, zhouyanjie@wanyeetech.com, Conor Dooley
+ <conor@kernel.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, Claudiu
+ Beznea <claudiu.beznea@tuxon.dev>, Steen Hegelund
+ <Steen.Hegelund@microchip.com>, Daniel Machon
+ <daniel.machon@microchip.com>, UNGLinuxDriver@microchip.com, Shawn Guo
+ <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+ Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>,
+ Heiko Stuebner <heiko@sntech.de>, Neil Armstrong
+ <neil.armstrong@linaro.org>, Kevin Hilman <khilman@baylibre.com>, Jerome
+ Brunet <jbrunet@baylibre.com>, Martin Blumenstingl
+ <martin.blumenstingl@googlemail.com>, Geert Uytterhoeven
+ <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-sunxi@lists.linux.dev, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org,
+ linux-arm-msm@vger.kernel.org, linux-mips@vger.kernel.org,
+ imx@lists.linux.dev, linux-rockchip@lists.infradead.org,
+ linux-amlogic@lists.infradead.org, linux-renesas-soc@vger.kernel.org
+Subject: Re: [PATCH 01/19] arm64: dts: allwinner: h5/h6: Drop spurious
+ 'clock-latency-ns' properties
+Message-ID: <20250404133958.5361be95@donnerap.manchester.arm.com>
+In-Reply-To: <20250403-dt-cpu-schema-v1-1-076be7171a85@kernel.org>
+References: <20250403-dt-cpu-schema-v1-0-076be7171a85@kernel.org>
+	<20250403-dt-cpu-schema-v1-1-076be7171a85@kernel.org>
+Organization: ARM
+X-Mailer: Claws Mail 3.18.0 (GTK+ 2.24.32; aarch64-unknown-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Enabling the compile test should not cause automatic enabling of all
-drivers.
+On Thu, 03 Apr 2025 21:59:22 -0500
+"Rob Herring (Arm)" <robh@kernel.org> wrote:
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
----
- drivers/cpufreq/Kconfig.arm | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+Hi,
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 4f9cb943d945..d4d625ded285 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -76,7 +76,7 @@ config ARM_VEXPRESS_SPC_CPUFREQ
- config ARM_BRCMSTB_AVS_CPUFREQ
- 	tristate "Broadcom STB AVS CPUfreq driver"
- 	depends on (ARCH_BRCMSTB && !ARM_SCMI_CPUFREQ) || COMPILE_TEST
--	default y
-+	default ARCH_BRCMSTB
- 	help
- 	  Some Broadcom STB SoCs use a co-processor running proprietary firmware
- 	  ("AVS") to handle voltage and frequency scaling. This driver provides
-@@ -181,7 +181,7 @@ config ARM_RASPBERRYPI_CPUFREQ
- config ARM_S3C64XX_CPUFREQ
- 	bool "Samsung S3C64XX"
- 	depends on CPU_S3C6410 || COMPILE_TEST
--	default y
-+	default CPU_S3C6410
- 	help
- 	  This adds the CPUFreq driver for Samsung S3C6410 SoC.
- 
-@@ -190,7 +190,7 @@ config ARM_S3C64XX_CPUFREQ
- config ARM_S5PV210_CPUFREQ
- 	bool "Samsung S5PV210 and S5PC110"
- 	depends on CPU_S5PV210 || COMPILE_TEST
--	default y
-+	default CPU_S5PV210
- 	help
- 	  This adds the CPUFreq driver for Samsung S5PV210 and
- 	  S5PC110 SoCs.
-@@ -214,7 +214,7 @@ config ARM_SCMI_CPUFREQ
- config ARM_SPEAR_CPUFREQ
- 	bool "SPEAr CPUFreq support"
- 	depends on PLAT_SPEAR || COMPILE_TEST
--	default y
-+	default PLAT_SPEAR
- 	help
- 	  This adds the CPUFreq driver support for SPEAr SOCs.
- 
-@@ -233,7 +233,7 @@ config ARM_TEGRA20_CPUFREQ
- 	tristate "Tegra20/30 CPUFreq support"
- 	depends on ARCH_TEGRA || COMPILE_TEST
- 	depends on CPUFREQ_DT
--	default y
-+	default ARCH_TEGRA
- 	help
- 	  This adds the CPUFreq driver support for Tegra20/30 SOCs.
- 
-@@ -241,7 +241,7 @@ config ARM_TEGRA124_CPUFREQ
- 	bool "Tegra124 CPUFreq support"
- 	depends on ARCH_TEGRA || COMPILE_TEST
- 	depends on CPUFREQ_DT
--	default y
-+	default ARCH_TEGRA
- 	help
- 	  This adds the CPUFreq driver support for Tegra124 SOCs.
- 
-@@ -256,14 +256,14 @@ config ARM_TEGRA194_CPUFREQ
- 	tristate "Tegra194 CPUFreq support"
- 	depends on ARCH_TEGRA_194_SOC || ARCH_TEGRA_234_SOC || (64BIT && COMPILE_TEST)
- 	depends on TEGRA_BPMP
--	default y
-+	default ARCH_TEGRA
- 	help
- 	  This adds CPU frequency driver support for Tegra194 SOCs.
- 
- config ARM_TI_CPUFREQ
- 	bool "Texas Instruments CPUFreq support"
- 	depends on ARCH_OMAP2PLUS || ARCH_K3 || COMPILE_TEST
--	default y
-+	default ARCH_OMAP2PLUS || ARCH_K3
- 	help
- 	  This driver enables valid OPPs on the running platform based on
- 	  values contained within the SoC in use. Enable this in order to
--- 
-2.45.2
+> 'clock-latency-ns' is not a valid property for CPU nodes. It belongs in
+> OPP table (which has it). Drop them from the CPU nodes.
+
+Looks alright, only affects H5 and H6, and they indeed have it in their
+-cpu-opp.dtsi:
+
+> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+
+Reviewed-by: Andre Przywara <andre.przywara@arm.com>
+
+Cheers,
+Andre
+
+> ---
+>  arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi | 4 ----
+>  arch/arm64/boot/dts/allwinner/sun50i-h6.dtsi | 4 ----
+>  2 files changed, 8 deletions(-)
+> 
+> diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
+> index d3caf27b6a55..48802bf02f3b 100644
+> --- a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
+> +++ b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
+> @@ -16,7 +16,6 @@ cpu0: cpu@0 {
+>  			reg = <0>;
+>  			enable-method = "psci";
+>  			clocks = <&ccu CLK_CPUX>;
+> -			clock-latency-ns = <244144>; /* 8 32k periods */
+>  			#cooling-cells = <2>;
+>  		};
+>  
+> @@ -26,7 +25,6 @@ cpu1: cpu@1 {
+>  			reg = <1>;
+>  			enable-method = "psci";
+>  			clocks = <&ccu CLK_CPUX>;
+> -			clock-latency-ns = <244144>; /* 8 32k periods */
+>  			#cooling-cells = <2>;
+>  		};
+>  
+> @@ -36,7 +34,6 @@ cpu2: cpu@2 {
+>  			reg = <2>;
+>  			enable-method = "psci";
+>  			clocks = <&ccu CLK_CPUX>;
+> -			clock-latency-ns = <244144>; /* 8 32k periods */
+>  			#cooling-cells = <2>;
+>  		};
+>  
+> @@ -46,7 +43,6 @@ cpu3: cpu@3 {
+>  			reg = <3>;
+>  			enable-method = "psci";
+>  			clocks = <&ccu CLK_CPUX>;
+> -			clock-latency-ns = <244144>; /* 8 32k periods */
+>  			#cooling-cells = <2>;
+>  		};
+>  	};
+> diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h6.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-h6.dtsi
+> index 2301c59b41b1..73e8604315c5 100644
+> --- a/arch/arm64/boot/dts/allwinner/sun50i-h6.dtsi
+> +++ b/arch/arm64/boot/dts/allwinner/sun50i-h6.dtsi
+> @@ -27,7 +27,6 @@ cpu0: cpu@0 {
+>  			reg = <0>;
+>  			enable-method = "psci";
+>  			clocks = <&ccu CLK_CPUX>;
+> -			clock-latency-ns = <244144>; /* 8 32k periods */
+>  			#cooling-cells = <2>;
+>  			i-cache-size = <0x8000>;
+>  			i-cache-line-size = <64>;
+> @@ -44,7 +43,6 @@ cpu1: cpu@1 {
+>  			reg = <1>;
+>  			enable-method = "psci";
+>  			clocks = <&ccu CLK_CPUX>;
+> -			clock-latency-ns = <244144>; /* 8 32k periods */
+>  			#cooling-cells = <2>;
+>  			i-cache-size = <0x8000>;
+>  			i-cache-line-size = <64>;
+> @@ -61,7 +59,6 @@ cpu2: cpu@2 {
+>  			reg = <2>;
+>  			enable-method = "psci";
+>  			clocks = <&ccu CLK_CPUX>;
+> -			clock-latency-ns = <244144>; /* 8 32k periods */
+>  			#cooling-cells = <2>;
+>  			i-cache-size = <0x8000>;
+>  			i-cache-line-size = <64>;
+> @@ -78,7 +75,6 @@ cpu3: cpu@3 {
+>  			reg = <3>;
+>  			enable-method = "psci";
+>  			clocks = <&ccu CLK_CPUX>;
+> -			clock-latency-ns = <244144>; /* 8 32k periods */
+>  			#cooling-cells = <2>;
+>  			i-cache-size = <0x8000>;
+>  			i-cache-line-size = <64>;
+> 
 
