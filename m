@@ -1,161 +1,204 @@
-Received: from lelvem-ot01.ext.ti.com (lelvem-ot01.ext.ti.com [198.47.23.234])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-f180.google.com (mail-lj1-f180.google.com [209.85.208.180])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DBA01237162;
-	Tue,  8 Apr 2025 15:46:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.234
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 09C8E1991CB;
+	Tue,  8 Apr 2025 16:23:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744127166; cv=none; b=kT73BDk9H6n1ymr13lzlMdyO8oDcNc1F7u+6YRg6QkSEK5UjgOivautZ7o/2BfEuCmRnonoUJtzCo3M1cTUNOW3xjI/FG293vWKTAxuDhKCiP7/FOUj1UsX184Fomc9ULAv76ZP/8E7bdWyAcfq1lJS/CRUTJiTCPWi6h8VXSq0=
+	t=1744129399; cv=none; b=Q5XMwjkgYk6X84LWpNDv6nYFvDatAzjgfAdpyDQjoMfe1susZDRJFoCmezVa96oLvyuae4dyCt+S1zck0bOqfjItIRP3vhI3pAmdivTKd3DrMRJY4k2b1P66VmLHZEm1YbolREiQgU5xcoy4THHbXf8pEerMObEnE2dzOqGk8ww=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744127166; c=relaxed/simple;
-	bh=TgnPEwxKynlGgdrkX9ppd52WfIoibS1pQ5GLOkbD8G0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=Xjs4F12RWR4d56ij4fOtKzlsjCWk57j0DfyTWmRP8ca+Zh9CEXfnxdrAIJ24SMYup7A6+io/XsoUVCFKBf1MQ5uicSTQJIz4ZNGAYbvP+SGUkL4QjdBezw4LSYBrEqwYcVXTeBTC1NOVAizmda5XVz4n44YJJwm1FxXlXIYl2LI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=ffk711sv; arc=none smtp.client-ip=198.47.23.234
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
+	s=arc-20240116; t=1744129399; c=relaxed/simple;
+	bh=RfS/RPt20xT1FRrwznKp2niS7/MlF89JXFfqnnkdXcQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Wj2fRhUMQ90s0KUvk56IDXHmecyr3dBv7b5QmuGz5zSn0Rc4ATM3bD03XiYT66Dk3jmFk1NE9+E0H2zswQ6GN0cpy9vBsb2jUToeulEx2m6U1x3l2qY5V4qpTT3xELk9jnVWPFYfk2xMgY5MDjsXHLOnMBRBCCWNh19moLEhIjc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Uu/PVtL+; arc=none smtp.client-ip=209.85.208.180
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="ffk711sv"
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-	by lelvem-ot01.ext.ti.com (8.15.2/8.15.2) with ESMTPS id 538FjVYa727315
-	(version=TLSv1.2 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 8 Apr 2025 10:45:31 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1744127131;
-	bh=d3v4cd4TMfIKWMhvlqeuZ2JjyuPQMdC/A2P+VNln3tQ=;
-	h=Date:Subject:To:CC:References:From:In-Reply-To;
-	b=ffk711svConoIJeUGaH3fq63oFmHtY8IsZLZYXIb5wuHsjnrsc3CNpOJhwGm4pImG
-	 lwmE8dpT9slAygh7sfbSD7EVEi/DCKZxfur6m04NeYKQ8flHcc2fH+oan8ZXNrWdfX
-	 QqT3Bko5Vt1ZC7v9QTQ+qC/CDJQpQxRjAvWdw3dE=
-Received: from DFLE100.ent.ti.com (dfle100.ent.ti.com [10.64.6.21])
-	by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 538FjVGN016850
-	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Tue, 8 Apr 2025 10:45:31 -0500
-Received: from DFLE102.ent.ti.com (10.64.6.23) by DFLE100.ent.ti.com
- (10.64.6.21) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Tue, 8
- Apr 2025 10:45:30 -0500
-Received: from lelvsmtp5.itg.ti.com (10.180.75.250) by DFLE102.ent.ti.com
- (10.64.6.23) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
- Frontend Transport; Tue, 8 Apr 2025 10:45:30 -0500
-Received: from [172.24.227.245] (uda0132425.dhcp.ti.com [172.24.227.245])
-	by lelvsmtp5.itg.ti.com (8.15.2/8.15.2) with ESMTP id 538FjR2t004072;
-	Tue, 8 Apr 2025 10:45:27 -0500
-Message-ID: <24b28bda-e294-4680-bed5-c44efcb6c455@ti.com>
-Date: Tue, 8 Apr 2025 21:15:26 +0530
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Uu/PVtL+"
+Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-30ddad694c1so60929781fa.2;
+        Tue, 08 Apr 2025 09:23:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1744129396; x=1744734196; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=cO/lkkmO99Xfr4W0KYk8tkPWToFmwEKNPxUMEMkq524=;
+        b=Uu/PVtL+YtgQNHRoT2lXkWKlwUn7oahLJL7QLlwUWBzMtbjHpGpnPG+1OBHmaGVUY2
+         ZhL7xzMGSRG95zW0ktP7TV7B7Y+JQCYlXtjz81Roh7zJblyhGt+jxQtLwn5iRtbO84Mn
+         JO5z0rimPfx/o9P9FJJqOsKy48r230LGpSOKuJ2hdIa2oDGRCQOxPyItA7xSveIhgTCG
+         7OZl8CuzOZ/Or1XfJSEDX6vKRMME6K8UEbAN5vJ7YJm2kCQsGBOL4gO8O0Y4CmSR0wTe
+         8WTIIswuQpUlbL4WB54/bfl4JCQNkEXB0JrGgmWoWBe9JlheUrhz/zP/THWgIUj0j1y9
+         qkzw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1744129396; x=1744734196;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=cO/lkkmO99Xfr4W0KYk8tkPWToFmwEKNPxUMEMkq524=;
+        b=CzYjo5yUPR4pw71oCFj7W1Bjc51x992RG9HbzQN7f76O/9nyxOLJigOGoD9rlDvwqN
+         eWkbTK+JxvY+wO6oBlJFPrMKB9z1MwuAIid4Hi/nS6hAuUWUrZXq2nlzxPxIs++rH401
+         c2TZ7cFTsGsivMMeyI9lUTAuBUDKrURyICQDyFBCJoQy6/WUWFw+d/gMPCSHMAp96UDO
+         9AC0wC8oklX6g60JbUHROrUOCPY3DDnZlI5LRrjVZvaBZubipxXHsGG0goMOUMEOML5E
+         Lbf1lxS2QPfa+fRkxIQrT1TlvZOO4DDAXr5985jNrY2jirwPlxOuC61DlrgZBoQhkaD0
+         0K5A==
+X-Forwarded-Encrypted: i=1; AJvYcCVx3iaC/okTehDBVwGwRQpSoCKYcMwXu/vTrIOUPQUgeVDgGAQvD7H03NecoVYlKhslI3zl4UVP1UQ=@vger.kernel.org, AJvYcCWD0jF25fDhjo8uHdGPu+B/H4kngp8fYO4HPZbiiXLlTpWSLFO5+4gHaRKOX1UGXTVZVwUwqOVy@vger.kernel.org, AJvYcCWqcwhszvEFus1yAq324HhF6PccxhpPaHXXuZxUWflclGyy5PruUEBnVxWTIDfnkx39asc5QQx4eTs1kt/J@vger.kernel.org
+X-Gm-Message-State: AOJu0YyYoNCcTfsR7/+I/PSuYefj8mj3jfM6HdWosnNGZXyLpCGw8SnY
+	bTz53EDqe5JhBr/uM8u1JeEFkxR+WUkj0BnsD0tTT7O0ITu5yV09BDCjiEJqLBv/bSNdYe4JHTO
+	cf1nshb/hFxAAQguz1aflZWqP7JA=
+X-Gm-Gg: ASbGncsBhU/6y4F6MtkzyDc+z37ja8ijXQDdZMJpTPt+VIH/GAeGyhVACudtkzqi7vb
+	fllZop8zjQ3FkLMmwTQk2QfHAIR5SeMAre8pf3vQrNvGWJo4QTplP1W5HDb/02eQ6jGoG3rNjTH
+	x6arW88C5rQua3SuuT7hYW3i/Cdw==
+X-Google-Smtp-Source: AGHT+IEP7Nh9wOKkc5/HcoAMiiR8n7ueANOAM3TtdGIfWyMJemlif/wFUDHgutRmKYSexGttnFcOIpdcHd1q2LgcJ/o=
+X-Received: by 2002:a2e:a553:0:b0:30d:b328:8394 with SMTP id
+ 38308e7fff4ca-30f0bf1eb07mr47215981fa.13.1744129395756; Tue, 08 Apr 2025
+ 09:23:15 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: Kernel WARNING (RCU) with btnxpuart on TI AM62 platform
-To: Francesco Dolcini <francesco@dolcini.it>,
-        Amitkumar Karwar
-	<amitkumar.karwar@nxp.com>,
-        Neeraj Kale <neeraj.sanjaykale@nxp.com>, Nishanth
- Menon <nm@ti.com>,
-        Tero Kristo <kristo@kernel.org>,
-        Santosh Shilimkar
-	<ssantosh@kernel.org>
-CC: <linux-bluetooth@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-        <linux-serial@vger.kernel.org>
-References: <20250408083512.GA26035@francesco-nb>
-From: Vignesh Raghavendra <vigneshr@ti.com>
-Content-Language: en-US
-In-Reply-To: <20250408083512.GA26035@francesco-nb>
+References: <20250407234223.1059191-1-nphamcs@gmail.com>
+In-Reply-To: <20250407234223.1059191-1-nphamcs@gmail.com>
+From: Kairui Song <ryncsn@gmail.com>
+Date: Wed, 9 Apr 2025 00:22:58 +0800
+X-Gm-Features: ATxdqUFrOA5poLk2LCvT8r-ZavahScL1G90R_uOdgsK8qiGr9BEUgLKAk8ly3mA
+Message-ID: <CAMgjq7CdARdTEZB3ik4X9cAzNUFa6GRqjT61brygihGUYFBAeQ@mail.gmail.com>
+Subject: Re: [RFC PATCH 00/14] Virtual Swap Space
+To: Nhat Pham <nphamcs@gmail.com>
+Cc: linux-mm@kvack.org, akpm@linux-foundation.org, hannes@cmpxchg.org, 
+	hughd@google.com, yosry.ahmed@linux.dev, mhocko@kernel.org, 
+	roman.gushchin@linux.dev, shakeel.butt@linux.dev, muchun.song@linux.dev, 
+	len.brown@intel.com, chengming.zhou@linux.dev, chrisl@kernel.org, 
+	huang.ying.caritas@gmail.com, ryan.roberts@arm.com, viro@zeniv.linux.org.uk, 
+	baohua@kernel.org, osalvador@suse.de, lorenzo.stoakes@oracle.com, 
+	christophe.leroy@csgroup.eu, pavel@kernel.org, kernel-team@meta.com, 
+	linux-kernel@vger.kernel.org, cgroups@vger.kernel.org, 
+	linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Tue, Apr 8, 2025 at 7:47=E2=80=AFAM Nhat Pham <nphamcs@gmail.com> wrote:
+>
+> This RFC implements the virtual swap space idea, based on Yosry's
+> proposals at LSFMMBPF 2023 (see [1], [2], [3]), as well as valuable
+> inputs from Johannes Weiner. The same idea (with different
+> implementation details) has been floated by Rik van Riel since at least
+> 2011 (see [8]).
+>
+> The code attached to this RFC is purely a prototype. It is not 100%
+> merge-ready (see section VI for future work). I do, however, want to show
+> people this prototype/RFC, including all the bells and whistles and a
+> couple of actual use cases, so that folks can see what the end results
+> will look like, and give me early feedback :)
+>
+> I. Motivation
+>
+> Currently, when an anon page is swapped out, a slot in a backing swap
+> device is allocated and stored in the page table entries that refer to
+> the original page. This slot is also used as the "key" to find the
+> swapped out content, as well as the index to swap data structures, such
+> as the swap cache, or the swap cgroup mapping. Tying a swap entry to its
+> backing slot in this way is performant and efficient when swap is purely
+> just disk space, and swapoff is rare.
+>
+> However, the advent of many swap optimizations has exposed major
+> drawbacks of this design. The first problem is that we occupy a physical
+> slot in the swap space, even for pages that are NEVER expected to hit
+> the disk: pages compressed and stored in the zswap pool, zero-filled
+> pages, or pages rejected by both of these optimizations when zswap
+> writeback is disabled. This is the arguably central shortcoming of
+> zswap:
+> * In deployments when no disk space can be afforded for swap (such as
+>   mobile and embedded devices), users cannot adopt zswap, and are forced
+>   to use zram. This is confusing for users, and creates extra burdens
+>   for developers, having to develop and maintain similar features for
+>   two separate swap backends (writeback, cgroup charging, THP support,
+>   etc.). For instance, see the discussion in [4].
+> * Resource-wise, it is hugely wasteful in terms of disk usage, and
+>   limits the memory saving potentials of these optimizations by the
+>   static size of the swapfile, especially in high memory systems that
+>   can have up to terabytes worth of memory. It also creates significant
+>   challenges for users who rely on swap utilization as an early OOM
+>   signal.
+>
+> Another motivation for a swap redesign is to simplify swapoff, which
+> is complicated and expensive in the current design. Tight coupling
+> between a swap entry and its backing storage means that it requires a
+> whole page table walk to update all the page table entries that refer to
+> this swap entry, as well as updating all the associated swap data
+> structures (swap cache, etc.).
+>
+>
+> II. High Level Design Overview
+>
+> To fix the aforementioned issues, we need an abstraction that separates
+> a swap entry from its physical backing storage. IOW, we need to
+> =E2=80=9Cvirtualize=E2=80=9D the swap space: swap clients will work with =
+a dynamically
+> allocated virtual swap slot, storing it in page table entries, and
+> using it to index into various swap-related data structures. The
+> backing storage is decoupled from the virtual swap slot, and the newly
+> introduced layer will =E2=80=9Cresolve=E2=80=9D the virtual swap slot to =
+the actual
+> storage. This layer also manages other metadata of the swap entry, such
+> as its lifetime information (swap count), via a dynamically allocated
+> per-swap-entry descriptor:
+>
+> struct swp_desc {
+>         swp_entry_t vswap;
+>         union {
+>                 swp_slot_t slot;
+>                 struct folio *folio;
+>                 struct zswap_entry *zswap_entry;
+>         };
+>         struct rcu_head rcu;
+>
+>         rwlock_t lock;
+>         enum swap_type type;
+>
+>         atomic_t memcgid;
+>
+>         atomic_t in_swapcache;
+>         struct kref refcnt;
+>         atomic_t swap_count;
+> };
 
-On 08/04/25 14:05, Francesco Dolcini wrote:
-> Hello,
-> I do have the following kernel warning with 6.15-rc1, on a TI AM62
-> platform (arm64), single CPU core, using btnxpuart driver, any idea?
-> PREEMPT_RT is enabled, if it matters.
-> 
-> Either the issue is not systematic, or multi cores SoCs are not affected
-> (no error on the exact same image on a dual nor on quad core TI AM62).
-> 
-> 
-> [   23.139080] Voluntary context switch within RCU read-side critical section!
-> [   23.139119] WARNING: CPU: 0 PID: 61 at /kernel/rcu/tree_plugin.h:332 rcu_note_context_switch+0x3c4/0x430
-> [   23.139172] Modules linked in: uas onboard_usb_dev optee_rng dwc3 evdev btnxpuart spidev aes_ce_blk aes_ce_cipher ghash_ce gf128mul sha2_ce sha256_arm64 sha1_ce snd_soc_simple_card snd_soc_simple_card_utils optee spi_cadence_quadspi tee gpio_keys usb_conn_gpio display_connector roles dwc3_am62 mwifiex_sdio k3_j72xx_bandgap mwifiex rtc_ti_k3 cfg80211 tidss sa2ul sha512_generic snd_soc_davinci_mcasp authenc drm_display_helper snd_soc_ti_udma crypto_null snd_soc_ti_edma sha1_generic snd_soc_ti_sdma omap_hwspinlock lontium_lt8912b ina2xx snd_soc_wm8904 ti_ads1015 industrialio_triggered_buffer kfifo_buf lm75 tpm_tis_i2c tps65219_pwrbutton crc_ccitt tpm_tis_core tpm rng_core tc358768 m_can_platform pwm_tiehrpwm m_can spi_omap2_mcspi can_dev bluetooth ecdh_generic ecc rfkill libaes loop fuse ipv6 autofs4
-> [   23.139459] CPU: 0 UID: 0 PID: 61 Comm: kworker/u5:0 Not tainted 6.15.0-rc1-0.0.0-devel #1 PREEMPT_RT
-> [   23.139471] Hardware name: Toradex Verdin AM62 WB on Dahlia Board (DT)
-> [   23.139478] Workqueue: hci0 hci_power_off [bluetooth]
-> [   23.139615] pstate: 600000c5 (nZCv daIF -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
-> [   23.139625] pc : rcu_note_context_switch+0x3c4/0x430
-> [   23.139647] lr : rcu_note_context_switch+0x3c4/0x430
-> [   23.139658] sp : ffff8000819fb740
-> [   23.139661] x29: ffff8000819fb740 x28: 0000000000000000 x27: ffff0000079d2010
-> [   23.139673] x26: ffff0000011e7810 x25: ffff000001c2c200 x24: 0000000000000000
-> [   23.139688] x23: 0000000000000000 x22: ffff000001c2c200 x21: ffff000001c2c200
-> [   23.139700] x20: ffff800081083ec0 x19: ffff00001da9fec0 x18: fffffffffffe7e78
-> [   23.139712] x17: ffff7fff9ca1c000 x16: ffff800080000000 x15: ffff00001da9f8c0
-> [   23.139726] x14: fffffffffffc7e77 x13: 216e6f6974636573 x12: 206c616369746972
-> [   23.139738] x11: 6320656469732d64 x10: 6165722055435220 x9 : 206e696874697720
-> [   23.139750] x8 : ffff80008113f040 x7 : ffff8000819fb4e0 x6 : 000000000000000c
-> [   23.139761] x5 : ffff00001da95888 x4 : 0000000000000000 x3 : 0000000000000027
-> [   23.139775] x2 : 0000000000000000 x1 : 0000000000000000 x0 : ffff000001c2c200
-> [   23.139788] Call trace:
-> [   23.139793]  rcu_note_context_switch+0x3c4/0x430 (P)
-> [   23.139813]  __schedule+0xa0/0x7dc
-> [   23.139830]  schedule+0x34/0x11c
-> [   23.139841]  schedule_timeout+0x8c/0x110
-> [   23.139861]  wait_for_completion_timeout+0x78/0x14c
-> [   23.139873]  ti_sci_set_device_state+0x120/0x1fc
-> [   23.139886]  ti_sci_cmd_get_device_exclusive+0x18/0x30
-> [   23.139899]  ti_sci_pd_power_on+0x28/0x54
-> [   23.139916]  _genpd_power_on+0x98/0x188
-> [   23.139927]  genpd_power_on+0xa8/0x168
-> [   23.139940]  genpd_runtime_resume+0xc0/0x298
-> [   23.139957]  __rpm_callback+0x48/0x1a4
-> [   23.139974]  rpm_callback+0x74/0x80
-> [   23.139987]  rpm_resume+0x3b0/0x698
-> [   23.140000]  __pm_runtime_resume+0x48/0x88
-> [   23.140012]  omap8250_set_mctrl+0x2c/0xbc
-> [   23.140030]  serial8250_set_mctrl+0x20/0x40
-> [   23.140046]  uart_update_mctrl+0x80/0x110
+Thanks for sharing the code, my initial idea after the discussion at
+LSFMM is that there is a simple way to combine this with the "swap
+table" [1] design of mine to solve the performance issue of this
+series: just store the pointer of this struct in the swap table. It's
+a bruteforce and glue like solution but the contention issue will be
+gone.
 
-I think issue is that uart_update_mctrl() holds a spinlock:
+Of course it's not a good approach, ideally the data structure can be
+simplified to an entry type in the swap table. The swap table series
+handles locking and synchronizations using either cluster lock
+(reusing swap allocator and existing swap logics) or folio lock (kind
+of like page cache). So many parts can be much simplified, I think it
+will be at most ~32 bytes per page with a virtual device (including
+the intermediate pointers).Will require quite some work though.
 
-	uart_port_lock_irqsave(port, &flags);
+The good side with that approach is we will have a much lower memory
+overhead and even better performance. And the virtual space part will
+be optional, for non virtual setup the memory consumption will be only
+8 bytes per page and also dynamically allocated, as discussed at
+LSFMM.
 
-and then omap8250_set_mctrl() calls pm_runtime APIs which on K3 SoC
-needs to talk to a Firmware to enable pd. This IPC call is a sleeping
-call leading to scheduling with IRQs disabled.
+So sorry that I still have a few parts undone, looking forward to
+posting in about one week, eg. After this weekend it goes well. I'll
+also try to check your series first to see how these can be
+collaborated better.
 
-I guess this is what RT linux is complaining? I dont have a solution
-though, maybe serdev delays pm_runtime_put till the port is closed?
+A draft version is available here though, just in case anyone is
+really anxious to see the code, I wouldn't recommend spend much effort
+check it though as it may change rapidly:
+https://github.com/ryncsn/linux/tree/kasong/devel/swap-unification
 
-> [   23.140062]  uart_dtr_rts+0x104/0x118
-> [   23.140079]  tty_port_shutdown+0xd4/0xe0
-> [   23.140092]  tty_port_close+0x3c/0xb8
-> [   23.140103]  uart_close+0x34/0x98
-> [   23.140116]  ttyport_close+0x50/0xa0
-> [   23.140137]  serdev_device_close+0x40/0x5c
-> [   23.140150]  btnxpuart_close+0x1c/0xa0 [btnxpuart]
-> [   23.140175]  hci_dev_close_sync+0x304/0x7cc [bluetooth]
-> [   23.140243]  hci_dev_do_close+0x2c/0x70 [bluetooth]
-> [   23.140309]  hci_power_off+0x20/0x64 [bluetooth]
-> [   23.140379]  process_one_work+0x148/0x284
-> [   23.140403]  worker_thread+0x2c8/0x3dc
-> [   23.140414]  kthread+0x12c/0x208
-> [   23.140426]  ret_from_fork+0x10/0x20
-> 
-> 
-> Francesco
-> 
-> 
+But the good news is the total LOC should be reduced, or at least
+won't increase much, as it will unify a lot of swap infrastructures.
+So things might be easier to implement after that.
 
--- 
-Regards
-Vignesh
-https://ti.com/opensource
-
+[1] https://lore.kernel.org/linux-mm/CAMgjq7DHFYWhm+Z0C5tR2U2a-N_mtmgB4+idD=
+2S+-1438u-wWw@mail.gmail.com/T/
