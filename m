@@ -1,46 +1,47 @@
-Received: from out162-62-57-64.mail.qq.com (out162-62-57-64.mail.qq.com [162.62.57.64])
+Received: from out162-62-57-252.mail.qq.com (out162-62-57-252.mail.qq.com [162.62.57.252])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 665812B2DA;
-	Wed,  9 Apr 2025 09:58:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=162.62.57.64
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0E921DF247;
+	Wed,  9 Apr 2025 10:05:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=162.62.57.252
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744192720; cv=none; b=TScFuIkjUfZJVogwKF4ghfVfVl+za/qbl51D6kvCm5njf7fQBTcyy7+zAYod/MhQ0obzWQSprJh//sJdkoyR9wO81I5mRIvZuJu/NgHbpvxLs44zIgQQuZq+nWGOqEr7Sd3XvAPshvVZmvw2OYPinscX0oZT8wamHVUuT433rno=
+	t=1744193121; cv=none; b=piZ1HzFKE7X6j+WhnLYysZKMH0Jb6bU0pjNE0Etd33jrqFshPn3kB9wS6o49Wo7IOW6bdg1sPwLZRvUmklx8K0pjyWfc8gZsNpoxqMeH4kj1AXZlWcOAopG+HJlDLaG3cnlZePWhJjm5I+XrvL+zeVdFXuWNaT/XPsayTsygsM4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744192720; c=relaxed/simple;
-	bh=+3JfXT1Xs5fV6IP12sI9JzAAOim7iJsMfyQ6w0e5gxA=;
-	h=Message-ID:From:To:Cc:Subject:Date:MIME-Version; b=X77FfHmXB+fYSTfJyYNdwj9ixWGgh/K3TIl6y0cgzjeuRNq95umvQZfBEwLo/sdn33mBMuVrijXnv5kn5l5s2CkpNkDo2OOPBlpv9gfVtB+JOqfpaTdAxCO4i2QjWFmvfF12QuSSsX4kw0JDRXcWdAfqIRzRxqC3/DKhooyvi3A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com; spf=pass smtp.mailfrom=qq.com; dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.b=cwrItvD6; arc=none smtp.client-ip=162.62.57.64
+	s=arc-20240116; t=1744193121; c=relaxed/simple;
+	bh=dftAXhrtSj6CtjhCfME+c+dNS0JOX5D/+C+I3mPSItA=;
+	h=Message-ID:From:To:Cc:Subject:Date:In-Reply-To:References:
+	 MIME-Version; b=jb1Y9BO8A3t0hP4gnmfPQvTZYaRU41X2Vhcepar3MPJPlK5qW5eej5QIy97Rlcvxd25AHYMA0WpTvbXKBLhj5u4jj9DFJ45h6NEXzW1dr+TOOd5Di7AgwIwXrehqCihkqmurc6RBQKHYdphxerISmqFMB10gsXbrGruEdu/Bk0E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com; spf=pass smtp.mailfrom=qq.com; dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.b=ndC0RNz7; arc=none smtp.client-ip=162.62.57.252
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qq.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.b="cwrItvD6"
+	dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.b="ndC0RNz7"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
-	t=1744192706; bh=+lyAfonLE1WC9lkwgR5fNnzG/kCwzKlfRCzS5ujqlpw=;
-	h=From:To:Cc:Subject:Date;
-	b=cwrItvD6FrtHAYm0SuOuDYeuj5NWQs5VI52utkSpmpBwYd3dTvnOlac3ARXKUhApE
-	 ayt31MIt0qZtTLm4tCfFHuKkOtmszFWcRFwFyPLlgKXGRleK/iUHVd0QYM5TaiMzhp
-	 ore0gNQja84Z6QW8NlZsLP6PNqUZky0lFUpaLaIc=
+	t=1744193111; bh=JRw+TJVVfisiKuNwIGnJ9MSWyLObSQOGDeMTJZPcRVw=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=ndC0RNz7vT64SFOnaVQruznx06fGF6P9wA0huFcB/VwCAQK4TzYmQhECigPjW7w/R
+	 rgzDsMQnwkw1txl0O+VyTB7SnFF8bbkmTGsgkHQ8Y2AHTN9vSNWCV9oIVxzSnSJlzW
+	 zsrW15yrvSX0LohLPTa86RRxJ3U9DmMgKsEhLSW4=
 Received: from localhost.localdomain ([116.128.244.169])
-	by newxmesmtplogicsvrsza29-0.qq.com (NewEsmtp) with SMTP
-	id C71194AE; Wed, 09 Apr 2025 17:49:49 +0800
-X-QQ-mid: xmsmtpt1744192189tzh3ku7q2
-Message-ID: <tencent_D6C4728C5C687C042BA7C156B0F3ECF7AE05@qq.com>
-X-QQ-XMAILINFO: MLQF5pNkQhvxiqkx6mdELVKIwLq3+oG8ZVIOq2Njw6DkGw45tjnxQoLppcwGyC
-	 kX2Vy+O/6O/hEEL5PHfSDLMsNvDkvpP6gY59SRTODlsmX5aHEsakNUonbkva2xj+6te53r7OhkwB
-	 3t8Q993M5iU7iBO9Fv7TyN9CFBM6X2v4o5s3LDHLjj5uL9q9A2hVu2VfSKs8WtZsyItJflyOPSOO
-	 JpT4lC3PUy11nC59brIj8nlCsRp13g1swZQ6wYFEu1Mm3po+E5oR327UxAz8LQJAEzoFnWcW29ha
-	 YJyz/jaVYxROdRSXTDBeVriXxuhHLEcDz7muziNqeVEqO/5Z5fv0T3a6PUULYD6hxhFU9ub0rzoA
-	 ByTMCm1GpiKGObCPRi8yc83aW0NDegFqINhG/S8diTbruYYGipiVuFOj6erAifJX8cK/nteSIOzp
-	 tWwkEm+fVh58xKtISGm281HM/XmqEzjoH16HmkvNG2UjzHFnQq/2hAqC17H4B14OcS4QAJJCl9Qy
-	 j9LPpaA0WT9htPGUbbQTKlGyxJlryVoLeWuD1KE37un53DfuRhATbVBqPeIr++rk61Jon08aeTMH
-	 NT94fqnPG1FdIVRo/cxPSV1OJ5kGwObNMAMVbMxKZdGziaxAtT++7NdUtTyCg0uO3MMSEZVOIguV
-	 sWazrMy7lMhigpm2DeBzA4MiAT8AMLD3gz9HlyjaNPnPsMwumxNtbWTvhIqKKNyg211NqNelMG6b
-	 GdldoKbojB2iAPxzrKToFi1b13LCZXyUpivo+EP2rdSmUGGw+BdoToavO3pF74xPBXVKlMRjlSxC
-	 49NhYV8VA84WLsJDnQ5m/eaYUIFfBxKKPcnxz1HOdmhXV9vo61ypceiw9eJ3r70+8+S+lyVEZyVG
-	 EDgJv8mqxACW0shN2ta0XWjSOHAazrzRpQGVtlycQwjkzL4Qj8kSlAdgSCWygXYSaxNwwDh3nzHN
-	 9R6ttKlcebFZt7ny8umA==
-X-QQ-XMRINFO: NyFYKkN4Ny6FSmKK/uo/jdU=
+	by newxmesmtplogicsvrszb21-0.qq.com (NewEsmtp) with SMTP
+	id CF320A71; Wed, 09 Apr 2025 17:51:51 +0800
+X-QQ-mid: xmsmtpt1744192311tpyuc4d19
+Message-ID: <tencent_2353FA17ABE475CC48686CA43867C9D6A605@qq.com>
+X-QQ-XMAILINFO: N3l5ASPewLWqJR+Oh04cuw2lq01R2qAcvty0EhcJ7UWAJsqCLQ8yJ6NR9x2NAT
+	 JJMj6K/t2RfqcTJIZV0m8mOJ+/tzVKKKl4638WDi3gWh4F5FbFMgA2xgWWZCalZCfgWGBugxCqt4
+	 QNhhoKxQuhzcnuUI5TfgoYxSG4MkTfn2jSHaLtizhdwfXgJKHhhPtVJTwUuxgsjb0UZ8Wye+Pwvz
+	 VXydZXSSwXPpG5Z+2C3LMOJwvl2+iJrxL7ITJYt2gUY7E6gXuIY/uxHs0uNO69t3Tqs4/Kpdmtae
+	 ke2G8fIAksW809Rz+kL8f9JtvOazsRxbUKJxBiszsDD7Q8Tbs0ttp2bDh5D84LT757k0dEe67em7
+	 hScaiveMARQqums6RZg5IeL1hcnNgAEft6dM4aCvGimu0w0j5klJoYkBrN0zvgBu0pAgrupiR4RP
+	 l7m9sA+DDL8s4GmWlzpfQuffkoYh2BnUoXesLt2PzoXWa9fRcafLMEkKePt0JblW97BPo9AtpCnq
+	 jmg+YHYWoHAgZMGG+rFDIYyY7HA2NAUnco70e7xkzovOrRPzKq2g5UymvBu5Vi75NvVUfLnPxelp
+	 V24E11jiGsN6o9pqvTLvDq+TSro4i6FGJUY9nRSh/mJfrVhlFX/WT+8BxapBaVpOVKp6V2zYkefX
+	 LYuXgifOpyXszB/4Q3kXmdWxAdXiuuY8UDbnnwfdG7+w+sQ0XwEDgk3NE7LlQofM2ghVOWunlfSL
+	 Oaa9/92F+hGDheqn0DZf6JZsLoWPouriLn+kNwvgCfMnToRHlAJiUK32AM4g9hAjqbc5mYyLwRB3
+	 ZZhvFUKSXlT4kdKrylrHXQdTfsbDsRPlv6TC9cJxwJUNPXlpY8IVTyvrwyytnxeY4veO/dOhugAS
+	 Gr8QSJCXQMJFmGnIHd1tDS03ivFcnrWlwK7C02FW71uxAiwtl0d9UHvKApc0vSUnmCRyIbTc/uAA
+	 RVTj6H5VnOMbPFCjc7IwqD8sRsyzs+
+X-QQ-XMRINFO: NI4Ajvh11aEj8Xl/2s1/T8w=
 From: Yaxiong Tian <iambestgod@qq.com>
 To: rafael@kernel.org,
 	viresh.kumar@linaro.org,
@@ -48,10 +49,12 @@ To: rafael@kernel.org,
 Cc: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Yaxiong Tian <tianyaxiong@kylinos.cn>
-Subject: [PATCH 0/2]  Fix and optimize some comments in the CPCC EM model 
-Date: Wed,  9 Apr 2025 17:49:48 +0800
-X-OQ-MSGID: <20250409094948.1684994-1-iambestgod@qq.com>
+Subject: [PATCH 2/2] cpufreq: cppc: Add comments for CPPC_EM_COST_GAP calculation
+Date: Wed,  9 Apr 2025 17:51:50 +0800
+X-OQ-MSGID: <20250409095150.1692220-1-iambestgod@qq.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <tencent_D6C4728C5C687C042BA7C156B0F3ECF7AE05@qq.com>
+References: <tencent_D6C4728C5C687C042BA7C156B0F3ECF7AE05@qq.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -62,34 +65,55 @@ Content-Transfer-Encoding: 8bit
 
 From: Yaxiong Tian <tianyaxiong@kylinos.cn>
 
-Commit <740fcdc2c20ec> ("cpufreq: CPPC: Register EM based on efficiency 
-class information") introduced a very good feature. However, since commit
-<1b600da510735a> ("PM: EM: Optimize em_cpu_energy() and remove division"), 
-the energy calculation formula in the EM model has changed. Therefore, some
-comments need to be updated and corrected to avoid misunderstandings.
+The existing comments about CPPC_EM_COST_GAP were too brief. To help other
+developers better understand its design rationale, this commit adds detailed
+explanations about it.
 
-I carefully analyzed the code theoretically and found that the new energy 
-calculation formula doesn't affect the current code - in fact, it has brought 
-some improvements. For example, consider four efficiency classes (1, 2, 3, 4). 
-Under the old logic, there were cases where tasks would be scheduled to class 4 
-CPUs instead of class 3 CPUs. This happened because the old energy calculation 
-formula divided by CPU capacity, and since class 3 CPUs have lower capacity than 
-class 4, it sometimes went against the original intention.
+Signed-off-by: Yaxiong Tian <tianyaxiong@kylinos.cn>
+---
+ drivers/cpufreq/cppc_cpufreq.c | 29 ++++++++++++++++++++++++++++-
+ 1 file changed, 28 insertions(+), 1 deletion(-)
 
-Considering that the comments about CPPC_EM_COST_GAP might be confusing, I've 
-added some analytical comments before CPPC_EM_COST_GAP in the latest code to 
-help other developers better understand. 
-
-Of course, this is just my personal understanding - please point out if 
-there are any mistakes.
-
-Yaxiong Tian (2):
-  cpufreq: cppc: Update and opt comment for cost calculation method
-  cpufreq: cppc: Add comments for CPPC_EM_COST_GAP calculation
-
- drivers/cpufreq/cppc_cpufreq.c | 44 ++++++++++++++++++++++++++++++----
- 1 file changed, 40 insertions(+), 4 deletions(-)
-
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index 756034b21682..c8e281ca95c0 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -358,7 +358,34 @@ static void cppc_cpufreq_register_em(struct cpufreq_policy *policy);
+ #define CPPC_EM_CAP_STEP	(20)
+ /* Increase the cost value by CPPC_EM_COST_STEP every performance state. */
+ #define CPPC_EM_COST_STEP	(1)
+-/* Add a cost gap correspnding to the energy of 4 CPUs. */
++
++/*
++ * In the current EM (Energy Model), energy consumption is calculated as:
++ *   ps->cost * sum_util;
++ *
++ * For CPPC, the cost calculation uses a linear model: cost = a + b * step.
++ *
++ * For a task A with utilization 'util' in a performance domain (pd):
++ * Before placement:
++ *   energy_pd_before = a * sum_util_pd + b * step * sum_util_pd;
++ * After placement:
++ *   energy_pd_after = a * (sum_util_pd + util) + b * (sum_util_pd + util) *
++ *                    (step + util/CPPC_EM_CAP_STEP);
++ * Energy difference:
++ *   energy_diff = a * util + b * util * step_pd +
++ *                 b * (sum_util_pd + util) * util/cap_step
++ *
++ * The placement decision depends on the bias 'a' and slope 'b'. Considering the
++ * extreme case where little cores are nearly full and big cores are nearly idle:
++ *   energy_diff_pd = a_diff * util - b * util * step_pd_small -
++ *                 b * util * sum_util_pd_small/cap_step
++ *
++ * Ignoring smaller terms, the key condition becomes:
++ *   a_diff > b * sum_util_pd_small / step_cap
++ *
++ * Therefore, for a pd domain with 4 CPUs, for ensures the scheduler will prefer
++ * placing it.we can configure accordingly.
++ */
+ #define CPPC_EM_COST_GAP	(4 * SCHED_CAPACITY_SCALE * CPPC_EM_COST_STEP \
+ 				/ CPPC_EM_CAP_STEP)
+ 
 -- 
 2.25.1
 
