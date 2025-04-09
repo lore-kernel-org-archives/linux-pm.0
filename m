@@ -1,96 +1,92 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
+Received: from szxga05-in.huawei.com (szxga05-in.huawei.com [45.249.212.191])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0EC603D81;
-	Wed,  9 Apr 2025 06:52:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB751213245;
+	Wed,  9 Apr 2025 06:57:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.191
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744181538; cv=none; b=sPIOBrCLIQ/tnoKVjveZNwR8Dq9nTz3yoE535NYDw3OY0vtoK8x9Eo+2m5vratLp64oS44sbWkFYsN3zche74TWNyd20VXcL24M73llv6+NvbPGjBp5wQ9yERdR6MN5D385W84TzMux3mLe9A+6lze+YQXAKAb8seuBAxMZdxkM=
+	t=1744181831; cv=none; b=YWqSgNBY2ULqXBVGlSmT62YYcI7ce7WgxaWrZzj1ILZPNUSuraE9/0EfBbj9UNb7G2zhH0dh04GvECwawuiPGiwzB99xhzgDcLWmKbNZgBmC10gBdDwwNiQJ4AlgIcUTIhExyWSSAkILJMG146h5inb4zI9WH0rPYSvYSzFFVPc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744181538; c=relaxed/simple;
-	bh=kWYezyYs1zuswcTDPHq/cb/rTH297BcrKTnJpgUhmcw=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=j4xM8k7spHQdRC5O1ygino9FmBqQs7QQm/yO2o7xllQFDGjssMk22emL6d5aKnW5n33iBbmt52kDlMmoBobXsId6zDCm9uCQwL5Q3lMiG+soM1gOOxHf9SiKVJZNeoEBg3cLkouqSdvS/5ipAjnPtiDtmvXpalxsnCkbvYAW+nI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Yc+e34az; arc=none smtp.client-ip=198.175.65.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Yc+e34az"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1744181537; x=1775717537;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=kWYezyYs1zuswcTDPHq/cb/rTH297BcrKTnJpgUhmcw=;
-  b=Yc+e34azWhCtGe9WxdfeXDAzL4W90UWwKIR+ekwPUGN1yf9yWSMhoEtV
-   mWWWiqj0gMcK2IqVjNJZzJhT18HtdJekZznl2h5kuYUOREbPv3Dwqj9rY
-   WYtQ/tq549pJbRFtyV/vei8FmEaVwzO1W8ygc1uKX1oezjCZiFvqpkgiG
-   w3dJeOhkAdXX9yCGvyyI8Tb6+Cf1lXcR8u2YPNC00slQ+/ZF3sRb9y1i/
-   mF2xd40FljQ3sCNOSOAAjyYiPjPthhh1VUcYXTqdrOU7ZNmWoR8elUUps
-   W4AxtwQQ5JY1024oaVROHXQTpg2iABcUTYVmGkoXo+8amRtTZ8D2gk09W
-   A==;
-X-CSE-ConnectionGUID: 9Bx0AWApQXOt4jVovhWQMQ==
-X-CSE-MsgGUID: LLTem6PjTUKISLDp2SX/Aw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11397"; a="45771591"
-X-IronPort-AV: E=Sophos;i="6.15,200,1739865600"; 
-   d="scan'208";a="45771591"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Apr 2025 23:52:16 -0700
-X-CSE-ConnectionGUID: 7pIIqn+7T9m/+NxggTxebg==
-X-CSE-MsgGUID: sjRp9DNDS5qFuztZ37c6lA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,200,1739865600"; 
-   d="scan'208";a="129005862"
-Received: from linux.intel.com ([10.54.29.200])
-  by fmviesa010.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Apr 2025 23:52:16 -0700
-Received: from abityuts-desk1.ger.corp.intel.com (abityuts-desk1.fi.intel.com [10.237.68.150])
-	by linux.intel.com (Postfix) with ESMTP id 090EE20B5736;
-	Tue,  8 Apr 2025 23:52:13 -0700 (PDT)
-Message-ID: <3892c0eb983900c184c6d06ffe8364e2da23ae2a.camel@linux.intel.com>
-Subject: Re: [PATCH v1 0/2] cpuidle: teo: Refine handling of short idle
- intervals
-From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM
- <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Daniel Lezcano
- <daniel.lezcano@linaro.org>, Christian Loehle <christian.loehle@arm.com>, 
- Doug Smythies <dsmythies@telus.net>, Aboorva Devarajan
- <aboorvad@linux.ibm.com>
-Date: Wed, 09 Apr 2025 09:52:12 +0300
-In-Reply-To: <4661520.LvFx2qVVIh@rjwysocki.net>
-References: <4661520.LvFx2qVVIh@rjwysocki.net>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.52.4 (3.52.4-2.fc40) 
+	s=arc-20240116; t=1744181831; c=relaxed/simple;
+	bh=nDNvcGa9mb12hyB1y6PAopbo3bvof6x9tkNdInKpOU8=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=ZLSop/UMTcKIMC9Ime9PbdfMzv8cEG37gwIfeEI/SbwWJlMzF+TwXMy9WYl+a+LIJuq9lY98gN/+gvbBtY/BPav7T/atF4cHsFiCDvgo1vZxF9t/3ueeNgPPDiYVTWcpwyfxC4tafVe/vuFakBUfMrb79e1HC5EuaxVznQpe0Jg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.191
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.19.163.17])
+	by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4ZXYXT0w8Dz26gwd;
+	Wed,  9 Apr 2025 14:52:09 +0800 (CST)
+Received: from kwepemh100008.china.huawei.com (unknown [7.202.181.93])
+	by mail.maildlp.com (Postfix) with ESMTPS id 024681A0188;
+	Wed,  9 Apr 2025 14:57:06 +0800 (CST)
+Received: from localhost.huawei.com (10.50.165.33) by
+ kwepemh100008.china.huawei.com (7.202.181.93) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Wed, 9 Apr 2025 14:57:05 +0800
+From: Lifeng Zheng <zhenglifeng1@huawei.com>
+To: <rafael@kernel.org>, <lenb@kernel.org>, <robert.moore@intel.com>,
+	<viresh.kumar@linaro.org>, <mario.limonciello@amd.com>,
+	<gautham.shenoy@amd.com>, <ray.huang@amd.com>, <perry.yuan@amd.com>,
+	<pierre.gondois@arm.com>
+CC: <acpica-devel@lists.linux.dev>, <linux-acpi@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+	<linuxarm@huawei.com>, <jonathan.cameron@huawei.com>,
+	<zhanjie9@hisilicon.com>, <lihuisong@huawei.com>,
+	<cenxinghai@h-partners.com>, <zhenglifeng1@huawei.com>, <hepeng68@huawei.com>
+Subject: [PATCH v6 1/8] ACPI: CPPC: Add IS_OPTIONAL_CPC_REG macro to judge if a cpc_reg is optional
+Date: Wed, 9 Apr 2025 14:56:56 +0800
+Message-ID: <20250409065703.1461867-2-zhenglifeng1@huawei.com>
+X-Mailer: git-send-email 2.33.0
+In-Reply-To: <20250409065703.1461867-1-zhenglifeng1@huawei.com>
+References: <20250409065703.1461867-1-zhenglifeng1@huawei.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
+ kwepemh100008.china.huawei.com (7.202.181.93)
 
-On Thu, 2025-04-03 at 21:16 +0200, Rafael J. Wysocki wrote:
-> Hi Everyone,
->=20
-> This series is intended to address an issue with overly aggressive select=
-ion
-> of idle state 0 (the polling state) in teo on x86 in some cases when time=
-r
-> wakeups dominate the CPU wakeup pattern.
+In ACPI 6.5, s8.4.6.1 _CPC (Continuous Performance Control), whether each
+of the per-cpu cpc_regs[] is mendatory or optional is defined. Since the
+CPC_SUPPORTED() check is only for optional cpc field, another macro to
+check if the field is optional is needed.
 
-Hi Rafael, I ran SPECjbb2015 with and without these 2 patches on Granite Ra=
-pids
-Xeon (GNR).
+Reviewed-by: Pierre Gondois <pierre.gondois@arm.com>
+Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+---
+ drivers/acpi/cppc_acpi.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-Expectation: no measurable difference, because there is almost no POLL in c=
-ase
-of SPECjbb2015 on GNR.
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index f193e713825a..39f019e265da 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -129,6 +129,20 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr);
+ #define CPC_SUPPORTED(cpc) ((cpc)->type == ACPI_TYPE_INTEGER ?		\
+ 				!!(cpc)->cpc_entry.int_value :		\
+ 				!IS_NULL_REG(&(cpc)->cpc_entry.reg))
++
++/*
++ * Each bit indicates the optionality of the register in per-cpu
++ * cpc_regs[] with the corresponding index. 0 means mandatory and 1
++ * means optional.
++ */
++#define REG_OPTIONAL (0x1FC7D0)
++
++/*
++ * Use the index of the register in per-cpu cpc_regs[] to check if
++ * it's an optional one.
++ */
++#define IS_OPTIONAL_CPC_REG(reg_idx) (REG_OPTIONAL & (1U << (reg_idx)))
++
+ /*
+  * Arbitrary Retries in case the remote processor is slow to respond
+  * to PCC commands. Keeping it high enough to cover emulators where
+-- 
+2.33.0
 
-Result: no measurable difference.
-
-Conclusion: these 2 patches do not introduce a regression as measured by
-SPECjbb2015 on GNR.
-
-"No regression" is also a useful piece of information, so reporting.
-
-Thanks, Artem.
