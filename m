@@ -1,151 +1,114 @@
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f179.google.com (mail-pg1-f179.google.com [209.85.215.179])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A23652144C0;
-	Wed,  9 Apr 2025 06:57:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.255
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B0151DE3AA
+	for <linux-pm@vger.kernel.org>; Wed,  9 Apr 2025 09:13:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744181840; cv=none; b=F7rtcNPuAd1RugK62fqrzoAD5r4dQ+G5u6Rfy/plwPYDqNOLfTl1YRDZqbqycJqAxexUELZ69UjORKtYBRRnZ55RXa3cbYhEc90CqINRqpF0qf/UI+0frkVc7j1/xvzqtWrQWlsgDa7ir7RP6+ZTym16dEsfNNYLflumAWoC4G4=
+	t=1744190006; cv=none; b=AOZvCpUZzyP4n8mVTjs5WpeeDd1fWdWRIv7CKRgmOzdEPxdQVm5tnjUpCVufW9Rj8U2rFaayCd48+kOXt3zssOxIj198eiUJGs1g6ZHpbdCXYCmAT0A6H8YDNUvNnCNfSKpGWE/+iLEF5LIWcjCsYWb7Pa4p0mkXfuJxbPo1W1Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744181840; c=relaxed/simple;
-	bh=ZweLAlyYZ/0BHvOJNuWs+UKYLWAL2fo3tyK0jY8wvRE=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=hF+H1BaEEoCGjp7upSzLtmhEbkrB90+LtLCTkeSjwqjLHL4vMhNCs1+RGB3mjyQFIZEINiornxN4S9N9zwo8YVM/exM56vQRqNYktlwpWKRkNsTUdirmZh1bzst8omqyoiWnPRL5izcgFZtigwRsAq5ZM2HujsIoOT7a6y9ACfE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.255
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.163.252])
-	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4ZXYdS6nPQz1d18W;
-	Wed,  9 Apr 2025 14:56:28 +0800 (CST)
-Received: from kwepemh100008.china.huawei.com (unknown [7.202.181.93])
-	by mail.maildlp.com (Postfix) with ESMTPS id 84420180B4A;
-	Wed,  9 Apr 2025 14:57:09 +0800 (CST)
-Received: from localhost.huawei.com (10.50.165.33) by
- kwepemh100008.china.huawei.com (7.202.181.93) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Wed, 9 Apr 2025 14:57:08 +0800
-From: Lifeng Zheng <zhenglifeng1@huawei.com>
-To: <rafael@kernel.org>, <lenb@kernel.org>, <robert.moore@intel.com>,
-	<viresh.kumar@linaro.org>, <mario.limonciello@amd.com>,
-	<gautham.shenoy@amd.com>, <ray.huang@amd.com>, <perry.yuan@amd.com>,
-	<pierre.gondois@arm.com>
-CC: <acpica-devel@lists.linux.dev>, <linux-acpi@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-	<linuxarm@huawei.com>, <jonathan.cameron@huawei.com>,
-	<zhanjie9@hisilicon.com>, <lihuisong@huawei.com>,
-	<cenxinghai@h-partners.com>, <zhenglifeng1@huawei.com>, <hepeng68@huawei.com>
-Subject: [PATCH v6 7/8] ACPI: CPPC: Modify cppc_get_auto_sel_caps() to cppc_get_auto_sel()
-Date: Wed, 9 Apr 2025 14:57:02 +0800
-Message-ID: <20250409065703.1461867-8-zhenglifeng1@huawei.com>
-X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20250409065703.1461867-1-zhenglifeng1@huawei.com>
-References: <20250409065703.1461867-1-zhenglifeng1@huawei.com>
+	s=arc-20240116; t=1744190006; c=relaxed/simple;
+	bh=w8jM+kjNpQwYUHFIVj+21LsNdXWV4iKMqaSnGVehs7c=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=ZPM5dpE937dnzreNZO98NZFTxn0QrGRp7YXcyC1GSHCI5uv0px6mos9525S4z3+aeVFNnnLp3zrKRhg5Bul6NDx5FODCvVVEEx6MtFObVP+nPNpNYKl+aemYQdjlYqZA4PfumyLFO4BAAuSkV1PtmEXPAzmoIakDWqP8agVAVDY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=IP7Wimv0; arc=none smtp.client-ip=209.85.215.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="IP7Wimv0"
+Received: by mail-pg1-f179.google.com with SMTP id 41be03b00d2f7-af5139ad9a2so4417985a12.1
+        for <linux-pm@vger.kernel.org>; Wed, 09 Apr 2025 02:13:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1744190004; x=1744794804; darn=vger.kernel.org;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=BaNms8AAHYU6+Lu110JwWuCHuNcKevGY2uAR6UWGQNE=;
+        b=IP7Wimv0+4lMP02bu2jDuBGVXZS7Y0PuCUYtYQeKWoEvcrAeFQRpmnubsCOhcIHL4u
+         R9G9YZq5lwvDEMELvAWCQkokl2aS2fKt2BUaQnPXBlaM+GJ2YnbiJw85X9FhLXuWyiMT
+         f85gli5YSFazGR4wFm6WTc9hhjR41Pvg6Cey0=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1744190004; x=1744794804;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=BaNms8AAHYU6+Lu110JwWuCHuNcKevGY2uAR6UWGQNE=;
+        b=mXF6c2lQt5htqHqnPrObWVSE88tMen+yeE0H2Vm08L8HoiBSWEQvpe/CnjvHYpwUHZ
+         HVtC5K86OAZcWeNwU3sCoMqqIyEsF5xGPX9PUAfs37YfTjxyDGDwKgB7+XTaQvuP6rAZ
+         4yFw7KMG0riQW2m65JOh/YTl0LPEksK7wdWOAMcrvLxM4gbA3xCqmlB5n9KrX/6UqosN
+         Z9X9ZchU1BH/8Mh0sR35OUd8v391vyHv8wMnWpsYQflFhVmwkFWrErAk5DHG6o+cI9Rh
+         gnHR1boaqwVoH0ei6KbMpOZVQDPHilm7nlZNjgewtdgO8aQfewWJKzskGLy2HNcVDPou
+         I31A==
+X-Gm-Message-State: AOJu0Ywvolm3gYjWhMclbo6qEEBtVbF9ivcTiVwJKKNJ+do3TGyjiMm0
+	HywA28WQmnBZVcUGtcgwAhl6jBk3PG/TuYstRuuTS9vzZlgx6ijU7tiqx67cMg==
+X-Gm-Gg: ASbGncuVK4vLQ9c14VCtCMlxOouymVnJme4xMZ0vFxJUok02JuH6AOcFr9nHl5WLl0v
+	vCGvhHiIVAjFa9AYD0ZiP1vSY9mSg8RZnvoyMjzd1HHmnj9J/WgxB5ba2tYtjrh33dfHUAIJbMV
+	4kQlA3PLHcakBd4LoHS3ZzDY2Hespqdox2Qt4I4tB2rmTfNomtpGqHqu/LlqdpjdiHeriy514e1
+	CVQ7g7KmBibdEy1MK4uDJVxrPR1xUOK2MHLpQedgHbzWWdHFnbqhpMfufbQw429DWFxvYRSR0lP
+	uz0F5jEawFD5zGt6Cw2n5yk4RgVKoxqZKYOiJxuqSLsFbG5kCyWUt2kE/akHUtezoeqfIR4QD5l
+	MuwV7Febc6B2UNxFKe1bxnfK9Kukl
+X-Google-Smtp-Source: AGHT+IG2BgqZHSIHI8aYAkVrTJn/SDbhHGgzVIz93kwK2lBJoxcfDzl64PMZYZKZH2NJ1T9ptVPhUw==
+X-Received: by 2002:a17:90a:d644:b0:306:b78a:e22d with SMTP id 98e67ed59e1d1-306dbbc2ce6mr2970209a91.20.1744190004299;
+        Wed, 09 Apr 2025 02:13:24 -0700 (PDT)
+Received: from yuanhsinte.c.googlers.com (95.147.221.35.bc.googleusercontent.com. [35.221.147.95])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-306dd10dc40sm1182551a91.9.2025.04.09.02.13.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 09 Apr 2025 02:13:23 -0700 (PDT)
+From: Hsin-Te Yuan <yuanhsinte@chromium.org>
+Date: Wed, 09 Apr 2025 09:13:11 +0000
+Subject: [PATCH] thermal: sysfs: Return ENODATA instead of EAGAIN for reads
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
- kwepemh100008.china.huawei.com (7.202.181.93)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250409-temp-v1-1-9a391d8c60fd@chromium.org>
+X-B4-Tracking: v=1; b=H4sIACc69mcC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDI1MDEwNL3ZLU3AJds9SkFEPjxBSDlKQUJaDSgqLUtMwKsDHRsbW1AHYO/vd
+ WAAAA
+X-Change-ID: 20250409-temp-6ebd13ad0dbd
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Hsin-Te Yuan <yuanhsinte@chromium.org>
+X-Mailer: b4 0.15-dev-7be4f
 
-Modify cppc_get_auto_sel_caps() to cppc_get_auto_sel(). Using a
-cppc_perf_caps to carry the value is unnecessary.
+When userspace nonblocking reads temperature via sysfs, EAGAIN error
+returned by thermal driver will confuse user from the usual meaning of
+EAGAIN, the read would block. Change to throw ENODATA instead of EAGAIN
+to userspace. Also, ENODATA more accurately reflects that data is not
+currently available.
 
-Reviewed-by: Pierre Gondois <pierre.gondois@arm.com>
-Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+Signed-off-by: Hsin-Te Yuan <yuanhsinte@chromium.org>
 ---
- drivers/acpi/cppc_acpi.c     | 15 ++++++++-------
- drivers/cpufreq/amd-pstate.c |  3 ++-
- include/acpi/cppc_acpi.h     |  6 +++---
- 3 files changed, 13 insertions(+), 11 deletions(-)
+ drivers/thermal/thermal_sysfs.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index ab492c89b0d8..ef2394c074e3 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -1609,23 +1609,24 @@ int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
- EXPORT_SYMBOL_GPL(cppc_set_epp_perf);
+diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+index 24b9055a0b6c515b865e0d7e2db1d0de176ff767..3d1713e053dfb867933d95131f1f2491d2ecd07e 100644
+--- a/drivers/thermal/thermal_sysfs.c
++++ b/drivers/thermal/thermal_sysfs.c
+@@ -40,8 +40,11 @@ temp_show(struct device *dev, struct device_attribute *attr, char *buf)
  
- /**
-- * cppc_get_auto_sel_caps - Read autonomous selection register.
-- * @cpunum : CPU from which to read register.
-- * @perf_caps : struct where autonomous selection register value is updated.
-+ * cppc_get_auto_sel() - Read autonomous selection register.
-+ * @cpu: CPU from which to read register.
-+ * @enable: Return address.
-  */
--int cppc_get_auto_sel_caps(int cpunum, struct cppc_perf_caps *perf_caps)
-+int cppc_get_auto_sel(int cpu, bool *enable)
- {
- 	u64 auto_sel;
- 	int ret;
+ 	ret = thermal_zone_get_temp(tz, &temperature);
  
--	ret = cppc_get_reg_val(cpunum, AUTO_SEL_ENABLE, &auto_sel);
-+	ret = cppc_get_reg_val(cpu, AUTO_SEL_ENABLE, &auto_sel);
- 	if (ret)
+-	if (ret)
++	if (ret) {
++		if (ret == -EAGAIN)
++			return -ENODATA;
  		return ret;
++	}
  
--	perf_caps->auto_sel = (bool)auto_sel;
-+	*enable = (bool)auto_sel;
-+
- 	return 0;
+ 	return sprintf(buf, "%d\n", temperature);
  }
--EXPORT_SYMBOL_GPL(cppc_get_auto_sel_caps);
-+EXPORT_SYMBOL_GPL(cppc_get_auto_sel);
- 
- /**
-  * cppc_set_auto_sel - Write autonomous selection register.
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 6789eed1bb5b..9cd54d8630cd 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -417,6 +417,7 @@ static int shmem_init_perf(struct amd_cpudata *cpudata)
- 	struct cppc_perf_caps cppc_perf;
- 	union perf_cached perf = READ_ONCE(cpudata->perf);
- 	u64 numerator;
-+	bool auto_sel;
- 
- 	int ret = cppc_get_perf_caps(cpudata->cpu, &cppc_perf);
- 	if (ret)
-@@ -438,7 +439,7 @@ static int shmem_init_perf(struct amd_cpudata *cpudata)
- 	if (cppc_state == AMD_PSTATE_ACTIVE)
- 		return 0;
- 
--	ret = cppc_get_auto_sel_caps(cpudata->cpu, &cppc_perf);
-+	ret = cppc_get_auto_sel(cpudata->cpu, &auto_sel);
- 	if (ret) {
- 		pr_warn("failed to get auto_sel, ret: %d\n", ret);
- 		return 0;
-diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-index 62d368bcd9ec..31767c65be20 100644
---- a/include/acpi/cppc_acpi.h
-+++ b/include/acpi/cppc_acpi.h
-@@ -159,7 +159,7 @@ extern int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val);
- extern int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val);
- extern int cppc_get_epp_perf(int cpunum, u64 *epp_perf);
- extern int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable);
--extern int cppc_get_auto_sel_caps(int cpunum, struct cppc_perf_caps *perf_caps);
-+extern int cppc_get_auto_sel(int cpu, bool *enable);
- extern int cppc_set_auto_sel(int cpu, bool enable);
- extern int amd_get_highest_perf(unsigned int cpu, u32 *highest_perf);
- extern int amd_get_boost_ratio_numerator(unsigned int cpu, u64 *numerator);
-@@ -229,11 +229,11 @@ static inline int cppc_get_epp_perf(int cpunum, u64 *epp_perf)
- {
- 	return -EOPNOTSUPP;
- }
--static inline int cppc_set_auto_sel(int cpu, bool enable)
-+static inline int cppc_get_auto_sel(int cpu, bool *enable)
- {
- 	return -EOPNOTSUPP;
- }
--static inline int cppc_get_auto_sel_caps(int cpunum, struct cppc_perf_caps *perf_caps)
-+static inline int cppc_set_auto_sel(int cpu, bool enable)
- {
- 	return -EOPNOTSUPP;
- }
+
+---
+base-commit: a24588245776dafc227243a01bfbeb8a59bafba9
+change-id: 20250409-temp-6ebd13ad0dbd
+
+Best regards,
 -- 
-2.33.0
+Hsin-Te Yuan <yuanhsinte@chromium.org>
 
