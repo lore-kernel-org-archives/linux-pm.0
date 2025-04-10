@@ -1,35 +1,35 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 943A128EA7F;
-	Thu, 10 Apr 2025 15:47:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F23E28F95A;
+	Thu, 10 Apr 2025 15:47:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744300077; cv=none; b=qhcORsP1VxRoi4wRtrPJFnrBGJpI72oGh8TUklHILb5mN+dYjn4cIRfvtJgRucIjGOgCD4+8v/7iFwcE2SOjSdo6GMPHqNWBRVRDhZ1+Lr2AzZTIy2J5mUpS8Q9UZHEQ5ac1vVDBUcZU3Nl1eappS/NZJmgNJs8qhXhlo/HPqIw=
+	t=1744300079; cv=none; b=IiplnWLOdbzRKRwp5VnXT29aPEB9DqtnxSNpdSRDze0hipEyfQZ6Uj2Ugx+eUGJEpIaYl4zdSASgJHrNmvKjm/ZUmskQy3ROPPS7zjwviF8POmjZnewZY+lM5uMaWPMEXBAQbcrCraIuTijn5qVTuWstFPchgi2xojfcYRg6sEs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744300077; c=relaxed/simple;
-	bh=w8D/oQlbjYFMA654Kfwwvab2rVq8372zGCPcqKW1Iu0=;
+	s=arc-20240116; t=1744300079; c=relaxed/simple;
+	bh=rxpmdQ00QIobReD/bCkMksNDeC2yXxfKVAGTAYhvgkc=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=lVSxWQul8mRTcH4cdvjnyylSeqD4HXdcq20LU//2dW5GCX2NePYYFhlmVqI0QupN3Uaa4LcqgWXmzqDCMBLEfYyVuJJnYSM8vDzdXRntb0VjFRjTP9cDiERQMz3IjQGp1VMjU36WkkY9sWyJqjPY+5aXfXoMq8gJgUOrRh80/NI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fG2TpuqM; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=D3z9N4D5hr9gESpXh3zdGyfpeRRlexJZP0MPWLylqtVU7TrUXduaMQ9Pj2B6pKnizCY9Z/KL0Ay4BOjqgU4eZsR+Y3Eyy+sFuue7mBVXDKQ8aH5nMg9iAiQXB3wg2Hx3aiPAK7CknvM+G6ilL09kiWxNgSUlrt9GGpcTd7wLwBg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iIQUvuA3; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fG2TpuqM"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE3ADC4CEE8;
-	Thu, 10 Apr 2025 15:47:55 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iIQUvuA3"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8F97AC4CEDD;
+	Thu, 10 Apr 2025 15:47:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1744300076;
-	bh=w8D/oQlbjYFMA654Kfwwvab2rVq8372zGCPcqKW1Iu0=;
+	s=k20201202; t=1744300078;
+	bh=rxpmdQ00QIobReD/bCkMksNDeC2yXxfKVAGTAYhvgkc=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=fG2TpuqMMHHyYZtykHxBYOOreDpwV+ldhF4Z5Qy+/+1VXWQ49leBhORYlyDtMvG/U
-	 s0WqonhwLJRWz0RL+p1Pn0QquD9o35gsf+po8VW6kll00ijBpV0kRkUFtAN8tW/UPD
-	 qYfRXrcQ1KCnPHN8qNAPaYn7F+b8tWIiL4aR0n5C3a6Fq7S12sz5nXEnBcuZFyvaGn
-	 cSuVuT01eLQbeYBv51ckvqUHv3N9rjCw/uF9DlZTS4EKdamYhxQ4/Zh/EJtAFERtPU
-	 FFNHgAu3/FaAT+jqRU1sI5ZiGte/aL2KnKPX5eJUdd2+unfwIwf6LeZPkclUmONFY7
-	 wOKwYMsAvfkSA==
+	b=iIQUvuA3gCshAauWH6zqRI+XnRTwwMXV9I3TGGqvy/FEER7QJ7uNg9cI44qlxasr5
+	 R+ZaP9NiVZ34J1QGpo5SeLFChNsPeTgAxjM27nsqqT4e3WUqtyKOsQLY/aVPEunLoj
+	 m/wI1Hh9QqYtsFJ6rwrqHfViwqaTpORKlJy6QsjVkjPiSww29Trsj7jmsrdWY+hlSg
+	 MiLq+RXW8Pv/nuX92JbMAqgRxs026LTnIx1WqmLlezoEukSV6ShwHIzhAlypfoJq23
+	 zgY8buBGUkvYk1b+aZru6NhR15CWbwZqMBVTjo/NhBVD9EaxYG/+4t0ydMjHFfl1S1
+	 js7HvMT+iaIqQ==
 From: "Rob Herring (Arm)" <robh@kernel.org>
-Date: Thu, 10 Apr 2025 10:47:28 -0500
-Subject: [PATCH v2 07/17] arm: dts: qcom: sdx55/sdx65: Fix CPU
- power-domain-names
+Date: Thu, 10 Apr 2025 10:47:30 -0500
+Subject: [PATCH v2 09/17] arm: dts: qcom: ipq4019: Drop redundant CPU
+ "clock-latency"
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -38,7 +38,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250410-dt-cpu-schema-v2-7-63d7dc9ddd0a@kernel.org>
+Message-Id: <20250410-dt-cpu-schema-v2-9-63d7dc9ddd0a@kernel.org>
 References: <20250410-dt-cpu-schema-v2-0-63d7dc9ddd0a@kernel.org>
 In-Reply-To: <20250410-dt-cpu-schema-v2-0-63d7dc9ddd0a@kernel.org>
 To: Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -73,47 +73,57 @@ Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-arm-msm@vger.kernel.org, imx@lists.linux.dev, 
  linux-rockchip@lists.infradead.org, linux-amlogic@lists.infradead.org, 
  linux-renesas-soc@vger.kernel.org, linux-mips@vger.kernel.org, 
- linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org
+ linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, 
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 X-Mailer: b4 0.15-dev
 
-"rpmhpd" is not documented nor used anywhere. The power-domain is used
-for performance scaling (cpufreq), so "perf" is the correct name to use.
+The "clock-latency" property is part of the deprecated opp-v1 binding
+and is redundant if the opp-v2 table has equal or larger values in any
+"clock-latency-ns". The OPP table has values of 256000, so it can be
+removed.
 
 Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 ---
-v2:
- - Use "perf" instead of "psci"
----
- arch/arm/boot/dts/qcom/qcom-sdx55.dtsi | 2 +-
- arch/arm/boot/dts/qcom/qcom-sdx65.dtsi | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/qcom/qcom-ipq4019.dtsi | 4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/arch/arm/boot/dts/qcom/qcom-sdx55.dtsi b/arch/arm/boot/dts/qcom/qcom-sdx55.dtsi
-index 39530eb580ea..20fdae9825e0 100644
---- a/arch/arm/boot/dts/qcom/qcom-sdx55.dtsi
-+++ b/arch/arm/boot/dts/qcom/qcom-sdx55.dtsi
-@@ -57,7 +57,7 @@ cpu0: cpu@0 {
- 			enable-method = "psci";
- 			clocks = <&apcs>;
- 			power-domains = <&rpmhpd SDX55_CX>;
--			power-domain-names = "rpmhpd";
-+			power-domain-names = "perf";
- 			operating-points-v2 = <&cpu_opp_table>;
+diff --git a/arch/arm/boot/dts/qcom/qcom-ipq4019.dtsi b/arch/arm/boot/dts/qcom/qcom-ipq4019.dtsi
+index 06b20c196faf..fceb2f5f5482 100644
+--- a/arch/arm/boot/dts/qcom/qcom-ipq4019.dtsi
++++ b/arch/arm/boot/dts/qcom/qcom-ipq4019.dtsi
+@@ -53,7 +53,6 @@ cpu@0 {
+ 			reg = <0x0>;
+ 			clocks = <&gcc GCC_APPS_CLK_SRC>;
+ 			clock-frequency = <0>;
+-			clock-latency = <256000>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
  		};
- 	};
-diff --git a/arch/arm/boot/dts/qcom/qcom-sdx65.dtsi b/arch/arm/boot/dts/qcom/qcom-sdx65.dtsi
-index 6b23ee676c9e..c8e312dcd26b 100644
---- a/arch/arm/boot/dts/qcom/qcom-sdx65.dtsi
-+++ b/arch/arm/boot/dts/qcom/qcom-sdx65.dtsi
-@@ -58,7 +58,7 @@ cpu0: cpu@0 {
- 			enable-method = "psci";
- 			clocks = <&apcs>;
- 			power-domains = <&rpmhpd SDX65_CX_AO>;
--			power-domain-names = "rpmhpd";
-+			power-domain-names = "perf";
- 			operating-points-v2 = <&cpu_opp_table>;
+ 
+@@ -67,7 +66,6 @@ cpu@1 {
+ 			reg = <0x1>;
+ 			clocks = <&gcc GCC_APPS_CLK_SRC>;
+ 			clock-frequency = <0>;
+-			clock-latency = <256000>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
  		};
- 	};
+ 
+@@ -81,7 +79,6 @@ cpu@2 {
+ 			reg = <0x2>;
+ 			clocks = <&gcc GCC_APPS_CLK_SRC>;
+ 			clock-frequency = <0>;
+-			clock-latency = <256000>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
+ 		};
+ 
+@@ -95,7 +92,6 @@ cpu@3 {
+ 			reg = <0x3>;
+ 			clocks = <&gcc GCC_APPS_CLK_SRC>;
+ 			clock-frequency = <0>;
+-			clock-latency = <256000>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
+ 		};
+ 
 
 -- 
 2.47.2
