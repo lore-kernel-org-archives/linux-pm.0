@@ -1,147 +1,131 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D46361E9B38
-	for <linux-pm@vger.kernel.org>; Thu, 10 Apr 2025 15:31:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.13
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5747C1E1A16;
+	Thu, 10 Apr 2025 15:34:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744299089; cv=none; b=kt0tDLdXPCqVuo7h+u8DqOhahWWpwEy1W879//l2RLp4o5NthipM1q2XkUIxXQfbn5EGHIdeJS5+uAoMzKFatG/oiBt0thiWYFhmv92Y8S+kUiieiRr8xv7G6Ci3X8bX+9pUg8LmrzaBHc3v4nlS7uIkLLsEQZThs2CjbNB5QDU=
+	t=1744299294; cv=none; b=W9PVxFYVWBjDKXouj8LbUutMuoK9BLO9o0CUdbTn7t+aFmbYxCflU8dOf2mL2Gk1r0Rk05EHGeVC/Mkiz34M/SGG1HbrjRZXt1a0TBzt2uYmYNeIV7TagFn6xPs1IgR9eWxlxh0PpZhSpn18t5lM8E5lS2EsMFjx3UT7V+URBJg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744299089; c=relaxed/simple;
-	bh=KTnOVxCx05kYnTiWbyfwazR+WvPKTbLzNbPbEMm2vws=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=pvuFFnQqYb3YcF9Y3YQ5xsV7grupW303+fikUSxdna0kWVJG+pv7ZR1cCnbQFuZVrbOcmeugWKcHVuOSK7mAnQ0tU0Awi30mhN/8hHzlQgP3KXC9HyyjaoQiPGqqFpeR1vQnIjlyfdUhaE0Fn17Pgk615FI+jZFR2rMThG+Ye5o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=KjGBo34O; arc=none smtp.client-ip=198.175.65.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1744299294; c=relaxed/simple;
+	bh=Zv+Um0ud9dyGlFs+NxyqU2VYlQwgrjWX8XbkLklXQMk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=BHF5zbqqjRikhvcNE8j/qOc3zFXA1bDG/UuS3mhYxFyNf8n8MxzluyWeGbwb0IRxvxPscBN3Cg7ktVo1VgizHqQOQum/zOvrK08yvICsP7sXMNQzi7zJpORsAZY1dpcigLy7cqRp/cEEy1+4yFHX2G3w3PT2iAkwZThySNsRRhw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ry7BWx4X; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="KjGBo34O"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1744299088; x=1775835088;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=KTnOVxCx05kYnTiWbyfwazR+WvPKTbLzNbPbEMm2vws=;
-  b=KjGBo34ObgbfQAzzA4W86IxEvc39O4Pl/jEVm5AgnioKLtxsXhUrs7u5
-   iNjJdkkE7jvoA/awoMYIZNR0vb/kuh/tWzdkhAGYmFmol4yXBfrXAaGgG
-   X8NtzoKr2Mh0yBWCnYR96CfznpWEdSmPuF5uEOSEAEkS0AUJZZcOGVUb5
-   2EDBMXgTHoedMXoRNTBDGgkmyMOUGSZlg8VzgG6oEBmacCMx+fFYaLx3K
-   Tocatp0Hl/kGbvapU1CvZHQwYIBGbdzzuf3LER61JUDGffJaigCY6IG0N
-   NIENaGllPP78AW1FH8AlacAxPwYmG5OQjAIkaAwXmJo43zd3qPKyoW9Kt
-   w==;
-X-CSE-ConnectionGUID: n8L9LfBaS9KJJtsDtdHupw==
-X-CSE-MsgGUID: WpCie+NoTDyKj1kyhp8ikg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11400"; a="56806976"
-X-IronPort-AV: E=Sophos;i="6.15,202,1739865600"; 
-   d="scan'208";a="56806976"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2025 08:31:24 -0700
-X-CSE-ConnectionGUID: oR1xRyJnQ9eEsGRUM/RNTQ==
-X-CSE-MsgGUID: B/ukP4QVQ5mtHBrdKIbTFw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,202,1739865600"; 
-   d="scan'208";a="129475393"
-Received: from turnipsi.fi.intel.com (HELO kekkonen.fi.intel.com) ([10.237.72.44])
-  by fmviesa010-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2025 08:31:22 -0700
-Received: from punajuuri.localdomain (punajuuri.localdomain [192.168.240.130])
-	by kekkonen.fi.intel.com (Postfix) with ESMTP id 54C1C12097D;
-	Thu, 10 Apr 2025 18:31:16 +0300 (EEST)
-Received: from sailus by punajuuri.localdomain with local (Exim 4.96)
-	(envelope-from <sakari.ailus@linux.intel.com>)
-	id 1u2ts4-00HOe2-14;
-	Thu, 10 Apr 2025 18:31:16 +0300
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-From: Sakari Ailus <sakari.ailus@linux.intel.com>
-To: linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Len Brown <len.brown@intel.com>,
-	Pavel Machek <pavel@kernel.org>,
-	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Subject: [PATCH 5/7] pm: runtime: Mark last busy stamp in pm_runtime_autosuspend()
-Date: Thu, 10 Apr 2025 18:31:04 +0300
-Message-Id: <20250410153106.4146265-6-sakari.ailus@linux.intel.com>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250410153106.4146265-1-sakari.ailus@linux.intel.com>
-References: <20250410153106.4146265-1-sakari.ailus@linux.intel.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ry7BWx4X"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C2262C4CEE9;
+	Thu, 10 Apr 2025 15:34:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1744299292;
+	bh=Zv+Um0ud9dyGlFs+NxyqU2VYlQwgrjWX8XbkLklXQMk=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=Ry7BWx4XZb4pF7DKL87KtGi6rEUTHbfD/nwTyaFSoaxoEPu2Dao6EShPoLS8gGuGS
+	 bYiRCMpP6doJr0PUkrPLdJ/re6PV/r3A+i/7oL+BNnJWLWqRKvTnSQrQgTe/fcJKPj
+	 g/M4slMc2IvSxAQTCIoULVcPPZS/pdWOSvK0rVJL2e6VwDhWxEnEKKLjhnBWo9bngX
+	 9lChs2a+EvBDxfFEYMkvWPww6i5js+jn0/mfoXS56pVHpnKgE1YxaWIPUjPUBIFEKF
+	 Z5ztIE/Dx9Ixpiw+v+k7NRskNryVnlH4dICfA5aGq6+3P+FhgbhPxUJnrisVRRf9H/
+	 oRVMfx6EdlTiA==
+Received: by mail-oa1-f46.google.com with SMTP id 586e51a60fabf-2c1c9b7bd9aso539967fac.0;
+        Thu, 10 Apr 2025 08:34:52 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWrBy+cblsnyra88B6kn2sjzxd+bTYqldQh4jq7DMxlttBO7rzkdiAIUe9Z0wXfQJiBbchDNKIMSc0=@vger.kernel.org, AJvYcCXkqePN14cUA1g2dPOwG3UPHUbgCSSnnrogdQnf9eYLAFB+5kxx4xIJJr3mwO5I9RIVbC1UJMvnMyR4FZM=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxnuPeesgakx3cAXzJpdKzWnQrKVPZdfuoPIrKZdr+mVlgHSM72
+	o0MVjOFfqjPSMUwAz3ltfjrKcVN6cUWmTRQVa1ktDH5NCbUVC7r4DZTxDqnshn7AlWFoJVs5gox
+	hWP2z698v83gt7yP76ZapYpn2PFI=
+X-Google-Smtp-Source: AGHT+IE4pxDce+3DuPfmtgFYtz5PPOwwmefMW3guIZlO6Tzul/1CkZr1Lmkt8rKNDj0krYw+/X7DRVOn9u4lv1uZCr0=
+X-Received: by 2002:a05:6871:64c9:b0:2bc:9787:affe with SMTP id
+ 586e51a60fabf-2d0b5bb97e1mr1746144fac.10.1744299291966; Thu, 10 Apr 2025
+ 08:34:51 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20250410024439.20859-1-sultan@kerneltoast.com>
+In-Reply-To: <20250410024439.20859-1-sultan@kerneltoast.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 10 Apr 2025 17:34:39 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jKyy-3cELyDQTynE3Dv29V15F5f+w0A-H_nu+4LuaaYw@mail.gmail.com>
+X-Gm-Features: ATxdqUGv-blLo91PP0wa4Y8Aq0RZu24wohJZpW2y1vTEU0c4WIIHykq1K6JyWLE
+Message-ID: <CAJZ5v0jKyy-3cELyDQTynE3Dv29V15F5f+w0A-H_nu+4LuaaYw@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: schedutil: Don't ignore limit changes when util
+ is unchanged
+To: Sultan Alsawaf <sultan@kerneltoast.com>
+Cc: Stephan Gerhold <stephan.gerhold@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, 
+	Peter Zijlstra <peterz@infradead.org>, Juri Lelli <juri.lelli@redhat.com>, 
+	Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, 
+	Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>, 
+	Valentin Schneider <vschneid@redhat.com>, Christian Loehle <christian.loehle@arm.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Set device's last busy timestamp to current time in
-pm_runtime_autosuspend().
+On Thu, Apr 10, 2025 at 4:45=E2=80=AFAM Sultan Alsawaf <sultan@kerneltoast.=
+com> wrote:
+>
+> From: Sultan Alsawaf <sultan@kerneltoast.com>
+>
+> When utilization is unchanged, a policy limits update is ignored unless
+> CPUFREQ_NEED_UPDATE_LIMITS is set. This occurs because limits_changed
+> depends on the old broken behavior of need_freq_update to trigger a call
+> into cpufreq_driver_resolve_freq() to evaluate the changed policy limits.
+>
+> After fixing need_freq_update, limit changes are ignored without
+> CPUFREQ_NEED_UPDATE_LIMITS, at least until utilization changes enough to
+> make map_util_freq() return something different.
+>
+> Fix the ignored limit changes by preserving the value of limits_changed
+> until get_next_freq() is called, so limits_changed can trigger a call to
+> cpufreq_driver_resolve_freq().
+>
+> Reported-and-tested-by: Stephan Gerhold <stephan.gerhold@linaro.org>
+> Link: https://lore.kernel.org/lkml/Z_Tlc6Qs-tYpxWYb@linaro.org
+> Fixes: 8e461a1cb43d6 ("cpufreq: schedutil: Fix superfluous updates caused=
+ by need_freq_update")
+> Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+> ---
+>  kernel/sched/cpufreq_schedutil.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+>
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_sche=
+dutil.c
+> index 1a19d69b91ed3..f37b999854d52 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -82,7 +82,6 @@ static bool sugov_should_update_freq(struct sugov_polic=
+y *sg_policy, u64 time)
+>                 return false;
+>
+>         if (unlikely(sg_policy->limits_changed)) {
+> -               sg_policy->limits_changed =3D false;
+>                 sg_policy->need_freq_update =3D cpufreq_driver_test_flags=
+(CPUFREQ_NEED_UPDATE_LIMITS);
+>                 return true;
+>         }
+> @@ -171,9 +170,11 @@ static unsigned int get_next_freq(struct sugov_polic=
+y *sg_policy,
+>         freq =3D get_capacity_ref_freq(policy);
+>         freq =3D map_util_freq(util, freq, max);
+>
+> -       if (freq =3D=3D sg_policy->cached_raw_freq && !sg_policy->need_fr=
+eq_update)
+> +       if (freq =3D=3D sg_policy->cached_raw_freq && !sg_policy->limits_=
+changed &&
+> +           !sg_policy->need_freq_update)
+>                 return sg_policy->next_freq;
+>
+> +       sg_policy->limits_changed =3D false;
 
-Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
----
- Documentation/power/runtime_pm.rst | 15 ++++++---------
- include/linux/pm_runtime.h         |  9 ++++++---
- 2 files changed, 12 insertions(+), 12 deletions(-)
+AFAICS, after this code modification, a limit change may be missed due
+to a possible race with sugov_limits() which cannot happen if
+sg_policy->limits_changed is only cleared when it is set before
+updating sg_policy->need_freq_update.
 
-diff --git a/Documentation/power/runtime_pm.rst b/Documentation/power/runtime_pm.rst
-index 9c21c913f9cf..39a0b62f6648 100644
---- a/Documentation/power/runtime_pm.rst
-+++ b/Documentation/power/runtime_pm.rst
-@@ -154,11 +154,9 @@ suspending the device are satisfied) and to queue up a suspend request for the
- device in that case.  If there is no idle callback, or if the callback returns
- 0, then the PM core will attempt to carry out a runtime suspend of the device,
- also respecting devices configured for autosuspend.  In essence this means a
--call to pm_runtime_autosuspend() (do note that drivers needs to update the
--device last busy mark, pm_runtime_mark_last_busy(), to control the delay under
--this circumstance).  To prevent this (for example, if the callback routine has
--started a delayed suspend), the routine must return a non-zero value.  Negative
--error return codes are ignored by the PM core.
-+call to pm_runtime_autosuspend(). To prevent this (for example, if the callback
-+routine has started a delayed suspend), the routine must return a non-zero
-+value.  Negative error return codes are ignored by the PM core.
- 
- The helper functions provided by the PM core, described in Section 4, guarantee
- that the following constraints are met with respect to runtime PM callbacks for
-@@ -330,10 +328,9 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
-       'power.disable_depth' is different from 0
- 
-   `int pm_runtime_autosuspend(struct device *dev);`
--    - same as pm_runtime_suspend() except that the autosuspend delay is taken
--      `into account;` if pm_runtime_autosuspend_expiration() says the delay has
--      not yet expired then an autosuspend is scheduled for the appropriate time
--      and 0 is returned
-+    - same as pm_runtime_suspend() except that a call to
-+      pm_runtime_mark_last_busy() is made and an autosuspend is scheduled for
-+      the appropriate time and 0 is returned
- 
-   `int pm_runtime_resume(struct device *dev);`
-     - execute the subsystem-level resume callback for the device; returns 0 on
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index e26caf2c0552..3d12cfb0bf00 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -375,11 +375,13 @@ static inline int pm_runtime_suspend(struct device *dev)
- }
- 
- /**
-- * pm_runtime_autosuspend - Set up autosuspend of a device or suspend it.
-+ * pm_runtime_autosuspend - Update the last access time and set up autosuspend
-+ * of a device.
-  * @dev: Target device.
-  *
-- * Set up autosuspend of @dev or suspend it (depending on whether or not
-- * autosuspend is enabled for it) without engaging its "idle check" callback.
-+ * First update the last access time, then set up autosuspend of @dev or suspend
-+ * it (depending on whether or not autosuspend is enabled for it) without
-+ * engaging its "idle check" callback.
-  *
-  * Return:
-  * * 0: Success.
-@@ -395,6 +397,7 @@ static inline int pm_runtime_suspend(struct device *dev)
-  */
- static inline int pm_runtime_autosuspend(struct device *dev)
- {
-+	pm_runtime_mark_last_busy(dev);
- 	return __pm_runtime_suspend(dev, RPM_AUTO);
- }
- 
--- 
-2.39.5
-
+>         sg_policy->cached_raw_freq =3D freq;
+>         return cpufreq_driver_resolve_freq(policy, freq);
+>  }
+> --
+> 2.49.0
+>
