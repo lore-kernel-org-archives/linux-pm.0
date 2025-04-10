@@ -1,54 +1,53 @@
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86FAB1CB31D
-	for <linux-pm@vger.kernel.org>; Thu, 10 Apr 2025 15:31:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E16A91E9B38
+	for <linux-pm@vger.kernel.org>; Thu, 10 Apr 2025 15:31:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.13
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744299086; cv=none; b=AEgh/Xg3Hp5nkDpGDtQ90o4rq4UI0FwBY2ym9REKVF01euRxtQFSeQ6vgJBUUuok5Y1mMBWXWUdCbulfFezavfghhThZUw/AeSDxhFL+H4zl55hq1oUknLrm52UMyxB1hpQO1Udb/Rmm+fva4E8ntiZ/gmkL2uFeSq/Nes28iZo=
+	t=1744299087; cv=none; b=LGkGduGAiMC8ZkhRu6S2psAmxWXCE9sS4Vr4eic1Rgf6eQldyJy+Nh93lJWcvm9BYt4Ykvh0UR5UCswJ2npfSGpuSnTFdgYm4ePyl90ppOeXruy2ZWRxJ2Ss9hMU6qkolWtvPtINxigakhAICnFedl4MkFZzO3TqdRX97eqX/mw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744299086; c=relaxed/simple;
-	bh=0hVVainr2nhsKp3QUAXNadUC4viN/joSKE5cBZjgp0A=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=kjIY0GMCOTbvhrgCJVvuDRE8gK4R6q+XVUeca4ao36BmAF15FAI9rMyq0AKO3tONu3k/ZT984rbmkbLS9miZnYfyFgkwQLDsKoXgzxI7OMk0VzQtRp4/Dqlb9RNrLzmnOtWSHFuZG1oEnhCkw8bDO2GHGanKaERzK/rhmDA3yy4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Y8CiTUZp; arc=none smtp.client-ip=198.175.65.13
+	s=arc-20240116; t=1744299087; c=relaxed/simple;
+	bh=97YXpv+Ga08IsvhLpGZpF63VVEvQFRQJdt/ZPfIQw40=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=H8gilf3dZW9X3EfrHrMV9kmSP35olQJCFkzEhxpP5g/1iqkJ2/DEeiDEu+uTINTh4FuvOamAgikZW49X3htrRXFwtUAV7yZwKKILqHQjwN7VJe9VuKhRkek1prDkBCoJq1lMONZyaFdTcG22zLa7+RcIsJJ93OyWngWyRJBcfig=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=KK2S89T/; arc=none smtp.client-ip=198.175.65.13
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Y8CiTUZp"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="KK2S89T/"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1744299085; x=1775835085;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=0hVVainr2nhsKp3QUAXNadUC4viN/joSKE5cBZjgp0A=;
-  b=Y8CiTUZpZkjQlikX2swFYu2M5xIWQ8LhXRi+21H5CB3uodZyk1o7Yeje
-   mxnkvMvQqCbTE2uRKKPswWveNkVD9zK5yzEkEnSkA4z24rftH+lyNk7IW
-   mZWScDcdvRaSFMxBW0bWGUhiKBEGqAPl/aFXyvDCDxcp9Jj7CcgfzV66Q
-   mgA3fuQD8SS4k/SvMNLHweEbH4KYoYZMtUuKNcy4l7TGq2SVeIGuqa2Q1
-   uEa3FAlkSBZWvCVpkmaVXKixBKkqif2V8Eqrm9XZahUxh1F430EWf8YC/
-   8pbvyx2nxkZTehkJehMOHkKDbrMxTSCILQkNTHhao3uQ4oO/E4+Ws0I8l
-   A==;
-X-CSE-ConnectionGUID: y/GpDerDQHW8f2j6314o/w==
-X-CSE-MsgGUID: NWJz8+4VQ36CONVAEH2R8A==
-X-IronPort-AV: E=McAfee;i="6700,10204,11400"; a="56806955"
+  t=1744299086; x=1775835086;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=97YXpv+Ga08IsvhLpGZpF63VVEvQFRQJdt/ZPfIQw40=;
+  b=KK2S89T/79/RBYDJk8EAWiYPyZ3iTvbzk6PbeLuvZcj0j2R8gz/zn8/g
+   MYSouZHciGyGKMVUM6bok6vI9fsEjHC9TDkpDyKGhJ2saCxZLSGvidAr0
+   7cYx2HY8d7FRq+f2rbbDXAuNvmPNZEsaF1Ce0a++xzmOv9s1q3rWoatIA
+   HrbDgceDGjpIsTyMBmo3j+OVhecYx/AGZrBlT35czFz6a9rMO5VUhLzcg
+   41SP2rxc3hVrCcqP/Lnp6pfSYC6cP9Aw68fAN0hWJ7BIT9hbNy/279rYP
+   TxHScxpVCLSG4KTvwbbTAlYV9WN34rgJME7pJU1BiwCv0UuMPso6sczeM
+   Q==;
+X-CSE-ConnectionGUID: TRihKoVXRuWj3vSnuFn5bQ==
+X-CSE-MsgGUID: 8gFYE42kSBSBy7E1n87VRw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11400"; a="56806959"
 X-IronPort-AV: E=Sophos;i="6.15,202,1739865600"; 
-   d="scan'208";a="56806955"
+   d="scan'208";a="56806959"
 Received: from fmviesa010.fm.intel.com ([10.60.135.150])
   by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2025 08:31:22 -0700
-X-CSE-ConnectionGUID: 4y+W5fiqRa2J0pIVi+YxZg==
-X-CSE-MsgGUID: cEqZ8WWVSaa3vYQt9aUx4A==
+X-CSE-ConnectionGUID: sHYl+QPrRWiOeig/+XR8Fg==
+X-CSE-MsgGUID: nFnRNaw7RvOFikZsASptkQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.15,202,1739865600"; 
-   d="scan'208";a="129475368"
+   d="scan'208";a="129475365"
 Received: from turnipsi.fi.intel.com (HELO kekkonen.fi.intel.com) ([10.237.72.44])
   by fmviesa010-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2025 08:31:19 -0700
 Received: from punajuuri.localdomain (punajuuri.localdomain [192.168.240.130])
-	by kekkonen.fi.intel.com (Postfix) with ESMTP id 4CFA61203B9;
+	by kekkonen.fi.intel.com (Postfix) with ESMTP id 4596111F74E;
 	Thu, 10 Apr 2025 18:31:16 +0300 (EEST)
 Received: from sailus by punajuuri.localdomain with local (Exim 4.96)
 	(envelope-from <sakari.ailus@linux.intel.com>)
-	id 1u2ts4-00HOdq-0w;
+	id 1u2ts4-00HOdf-0f;
 	Thu, 10 Apr 2025 18:31:16 +0300
 Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 From: Sakari Ailus <sakari.ailus@linux.intel.com>
@@ -57,12 +56,10 @@ Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
 	Len Brown <len.brown@intel.com>,
 	Pavel Machek <pavel@kernel.org>,
 	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Subject: [PATCH 3/7] pm: runtime: Mark last busy stamp in pm_runtime_put_autosuspend()
-Date: Thu, 10 Apr 2025 18:31:02 +0300
-Message-Id: <20250410153106.4146265-4-sakari.ailus@linux.intel.com>
+Subject: [PATCH 0/7] Update last busy timestamp in Runtime PM autosuspend callbacks
+Date: Thu, 10 Apr 2025 18:30:59 +0300
+Message-Id: <20250410153106.4146265-1-sakari.ailus@linux.intel.com>
 X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250410153106.4146265-1-sakari.ailus@linux.intel.com>
-References: <20250410153106.4146265-1-sakari.ailus@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -71,104 +68,95 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Set device's last busy timestamp to current time in
-pm_runtime_put_autosuspend(). Callers wishing not to do that will need to
-use __pm_runtime_put_autosuspend().
+Folks,
 
-Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
----
- Documentation/power/runtime_pm.rst | 23 ++++++++++-------------
- include/linux/pm_runtime.h         | 12 +++++++-----
- 2 files changed, 17 insertions(+), 18 deletions(-)
+The original plan for adding pm_runtime_mark_last_busy() calls to
+functions dealing with Runtime PM autosuspend originally included a few
+intermediate steps of driver conversion, including the use of recently
+added __pm_runtime_put_autosuspend(). The review of the set converting the
+users first to __pm_runtime_put_autosuspend() concluded this wasn't
+necessary. See
+<URL:https://lore.kernel.org/all/20241004094101.113349-1-sakari.ailus@linux.intel.com/>.
 
-diff --git a/Documentation/power/runtime_pm.rst b/Documentation/power/runtime_pm.rst
-index 63344bea8393..e7bbdc66d64c 100644
---- a/Documentation/power/runtime_pm.rst
-+++ b/Documentation/power/runtime_pm.rst
-@@ -411,8 +411,9 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
-       pm_request_idle(dev) and return its result
- 
-   `int pm_runtime_put_autosuspend(struct device *dev);`
--    - does the same as __pm_runtime_put_autosuspend() for now, but in the
--      future, will also call pm_runtime_mark_last_busy() as well, DO NOT USE!
-+    - set the power.last_busy field to the current time and decrement the
-+      device's usage counter; if the result is 0 then run
-+      pm_request_autosuspend(dev) and return its result
- 
-   `int __pm_runtime_put_autosuspend(struct device *dev);`
-     - decrement the device's usage counter; if the result is 0 then run
-@@ -870,11 +871,9 @@ device is automatically suspended (the subsystem or driver still has to call
- the appropriate PM routines); rather it means that runtime suspends will
- automatically be delayed until the desired period of inactivity has elapsed.
- 
--Inactivity is determined based on the power.last_busy field.  Drivers should
--call pm_runtime_mark_last_busy() to update this field after carrying out I/O,
--typically just before calling __pm_runtime_put_autosuspend().  The desired
--length of the inactivity period is a matter of policy.  Subsystems can set this
--length initially by calling pm_runtime_set_autosuspend_delay(), but after device
-+Inactivity is determined based on the power.last_busy field. The desired length
-+of the inactivity period is a matter of policy.  Subsystems can set this length
-+initially by calling pm_runtime_set_autosuspend_delay(), but after device
- registration the length should be controlled by user space, using the
- /sys/devices/.../power/autosuspend_delay_ms attribute.
- 
-@@ -885,7 +884,7 @@ instead of the non-autosuspend counterparts::
- 
- 	Instead of: pm_runtime_suspend    use: pm_runtime_autosuspend;
- 	Instead of: pm_schedule_suspend   use: pm_request_autosuspend;
--	Instead of: pm_runtime_put        use: __pm_runtime_put_autosuspend;
-+	Instead of: pm_runtime_put        use: pm_runtime_put_autosuspend;
- 	Instead of: pm_runtime_put_sync   use: pm_runtime_put_sync_autosuspend.
- 
- Drivers may also continue to use the non-autosuspend helper functions; they
-@@ -922,12 +921,10 @@ Here is a schematic pseudo-code example::
- 	foo_io_completion(struct foo_priv *foo, void *req)
- 	{
- 		lock(&foo->private_lock);
--		if (--foo->num_pending_requests == 0) {
--			pm_runtime_mark_last_busy(&foo->dev);
--			__pm_runtime_put_autosuspend(&foo->dev);
--		} else {
-+		if (--foo->num_pending_requests == 0)
-+			pm_runtime_put_autosuspend(&foo->dev);
-+		else
- 			foo_process_next_request(foo);
--		}
- 		unlock(&foo->private_lock);
- 		/* Send req result back to the user ... */
- 	}
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index 3e31cbebc527..0ade3f75d903 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -562,11 +562,13 @@ static inline int __pm_runtime_put_autosuspend(struct device *dev)
- }
- 
- /**
-- * pm_runtime_put_autosuspend - Drop device usage counter and queue autosuspend if 0.
-+ * pm_runtime_put_autosuspend - Update the last access time of a device, drop
-+ * its usage counter and queue autosuspend if the usage counter becomes 0.
-  * @dev: Target device.
-  *
-- * Decrement the runtime PM usage counter of @dev and if it turns out to be
-- * equal to 0, queue up a work item for @dev like in pm_request_autosuspend().
-+ * Update the last access time of @dev and decrement its runtime PM usage
-+ * counter and if it turns out to be equal to 0, queue up a work item for @dev
-+ * like in pm_request_autosuspend().
-  *
-  * Return:
-  * * 0: Success.
-@@ -581,8 +583,8 @@ static inline int __pm_runtime_put_autosuspend(struct device *dev)
-  */
- static inline int pm_runtime_put_autosuspend(struct device *dev)
- {
--	return __pm_runtime_suspend(dev,
--	    RPM_GET_PUT | RPM_ASYNC | RPM_AUTO);
-+	pm_runtime_mark_last_busy(dev);
-+	return __pm_runtime_put_autosuspend(dev);
- }
- 
- /**
+This set extends the inclusion of the pm_runtime_mark_last_busy() call to
+the _autosuspend() variants of the Runtime PM functions dealing with
+suspending devices, i.e. pm_runtime_put_autosuspend(),
+pm_runtime_put_sync_autosuspend(), pm_runtime_autosuspend() and
+pm_request_autosuspend(). This will introduce, for a brief amount of time,
+unnecessary calls to pm_runtime_mark_last_busy() but this wasn't seen as
+an issue. Also, all users of these functions, including those that did not
+call pm_runtime_mark_last_busy(), will now include that call. Presumably
+in the vast majority of the cases a missing call would have been a bug.
+
+Once this set is merged, I'll post further patches to remove the extra
+pm_runtime_mark_last_busy() calls. The current set of these patches is
+here
+<URL:https://git.kernel.org/pub/scm/linux/kernel/git/sailus/linux-next.git/log/?h=pm-direct-on-next>.
+
+It'd be best to have all merged within the same cycle.
+
+The changes in the patches to remove the pm_runtime_mark_last_busy() calls
+have been generated using the following Coccinelle spatch:
+
+@@
+expression E;
+identifier label, rval;
+@@
+- pm_runtime_mark_last_busy(E);
+...
+(
+  label:
+|
+)
+...
+(
+  pm_runtime_put_autosuspend(E);
+|
+  pm_runtime_put_sync_autosuspend(E);
+|
+  pm_runtime_autosuspend(E);
+|
+  pm_request_autosuspend(E);
+|
+  (void)pm_runtime_put_autosuspend(E);
+|
+  (void)pm_runtime_put_sync_autosuspend(E);
+|
+  (void)pm_runtime_autosuspend(E);
+|
+  (void)pm_request_autosuspend(E);
+|
+  return pm_runtime_put_autosuspend(E);
+|
+  return pm_runtime_put_sync_autosuspend(E);
+|
+  return pm_runtime_autosuspend(E);
+|
+  return pm_request_autosuspend(E);
+|
+  rval = pm_runtime_put_autosuspend(E);
+|
+  rval = pm_runtime_put_sync_autosuspend(E);
+|
+  rval = pm_runtime_autosuspend(E);
+|
+  rval = pm_request_autosuspend(E);
+)
+
+Sakari Ailus (7):
+  Documentation: pm: runtime: Fix a reference to
+    pm_runtime_autosuspend()
+  pm: runtime: Document return values of suspend related API functions
+  pm: runtime: Mark last busy stamp in pm_runtime_put_autosuspend()
+  pm: runtime: Mark last busy stamp in pm_runtime_put_sync_autosuspend()
+  pm: runtime: Mark last busy stamp in pm_runtime_autosuspend()
+  pm: runtime: Mark last busy stamp in pm_request_autosuspend()
+  Documentation: PM: *_autosuspend() functions update last busy time
+
+ Documentation/power/runtime_pm.rst |  50 ++++----
+ include/linux/pm_runtime.h         | 187 +++++++++++++++++++++++++----
+ 2 files changed, 186 insertions(+), 51 deletions(-)
+
 -- 
 2.39.5
 
