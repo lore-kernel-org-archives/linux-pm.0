@@ -1,153 +1,83 @@
-Received: from szxga07-in.huawei.com (szxga07-in.huawei.com [45.249.212.35])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53F3329C328;
-	Fri, 11 Apr 2025 09:39:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.35
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1885B278E5D;
+	Fri, 11 Apr 2025 10:31:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744364349; cv=none; b=PMWFPPxXRW0SPtlk3MSvLnnoVr6VKRxctUeCYLTazQyBHq6ttGhQDlspR7mwq2MHtvEGpnmjrbsln9XS4ZrIWvhl3BXCd6XayUQ+hFKfg/h6laPhbq/x18PvzAbxDtdrkfep+OmNplxrTeStuhQc5xfpktNZ+khGBDuspcw3vh0=
+	t=1744367462; cv=none; b=ImmpVVuucHrbalVV+CiRAeBAkrUiA2mZokYpmjuWge8KvblQXmlktgw01Roc2v4oRtmQ49s+ieJCDqPULcm506DEnQLXwPIoxAJQS+5n/UiOlq87/bW7hgT1oK6xKQSGrGRDH5JF/YGMLxnG1tpROkSB/PecoKkf+AVAHm8O+c0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744364349; c=relaxed/simple;
-	bh=HpU2Gc7E+0ZR9qzAMNrVb+eQ7d8tKFl/t/voxmUs9nk=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=uPgXnTLMuJETMm56VJJ5tD6speDT5PRCDmSWUn987KKLB6gxfkAXfzRQAZsMg/MUbj4+g3MaQOjIfB6YOmRFvpPvHwtmRjOMue63rETcVGtoZuBSi5TDWMPR96qIBlk5IbwD9V7HWr3QypzYThDRwyfOOoZ92jtuYG09LvfE7sc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.35
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.163.44])
-	by szxga07-in.huawei.com (SkyGuard) with ESMTP id 4ZYs813zbvzsTKw;
-	Fri, 11 Apr 2025 17:38:57 +0800 (CST)
-Received: from kwepemh100008.china.huawei.com (unknown [7.202.181.93])
-	by mail.maildlp.com (Postfix) with ESMTPS id 64100140158;
-	Fri, 11 Apr 2025 17:38:59 +0800 (CST)
-Received: from localhost.huawei.com (10.50.165.33) by
- kwepemh100008.china.huawei.com (7.202.181.93) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Fri, 11 Apr 2025 17:38:58 +0800
-From: Lifeng Zheng <zhenglifeng1@huawei.com>
-To: <rafael@kernel.org>, <lenb@kernel.org>, <robert.moore@intel.com>,
-	<viresh.kumar@linaro.org>, <mario.limonciello@amd.com>,
-	<gautham.shenoy@amd.com>, <ray.huang@amd.com>, <perry.yuan@amd.com>,
-	<pierre.gondois@arm.com>, <sumitg@nvidia.com>
-CC: <acpica-devel@lists.linux.dev>, <linux-acpi@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-	<linuxarm@huawei.com>, <jonathan.cameron@huawei.com>,
-	<zhanjie9@hisilicon.com>, <lihuisong@huawei.com>,
-	<cenxinghai@h-partners.com>, <zhenglifeng1@huawei.com>, <hepeng68@huawei.com>
-Subject: [PATCH v7 3/8] ACPI: CPPC: Rename cppc_get_perf() to cppc_get_reg_val()
-Date: Fri, 11 Apr 2025 17:38:50 +0800
-Message-ID: <20250411093855.982491-4-zhenglifeng1@huawei.com>
-X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20250411093855.982491-1-zhenglifeng1@huawei.com>
-References: <20250411093855.982491-1-zhenglifeng1@huawei.com>
+	s=arc-20240116; t=1744367462; c=relaxed/simple;
+	bh=6Gwa5w3owrBlIZyBkzhAeBY2fksfigo03OfNrgjBtbA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=GPZtYgmihKTPEBsZhgnEMsrNQWIvb2jHOIIMOOXJhjU88Mket5v8KqI5AIXQMALpgrM7nTT19ve36E0SnWpzbcT3RTjgwP/C4dZbouuJnVRQwSmHxZWRuAy2UitL5Iwkq9abRTV+hcrk1WDU0qiomPAXvBHmd/pCSthVuxuf5ZA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FqsYxC9G; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FqsYxC9G"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 85DEBC4CEF0;
+	Fri, 11 Apr 2025 10:31:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1744367461;
+	bh=6Gwa5w3owrBlIZyBkzhAeBY2fksfigo03OfNrgjBtbA=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=FqsYxC9GSdc3kIp0YcBtpyQpp10sGD1DZM4LgjlRF3+PvvX/AtSzFHCb/kh0arojD
+	 eO5+BaWLftgF6MxPcobSNezgMErH9MJmu/EG4LbUiUikCrlZYCCpAJTdBy1C8sTvq2
+	 c+K3oJc+OH12x0RBFF9AVo7TS58pHh/9ZKlBJ+lgC/VjPTg8K43BxCX70YVpelF8gC
+	 kZmovlpy5El+5lfSvZSws35SaTXaVPUOE1yIOzNc1D2RpytKRqh/iC/PclFB2H2dTP
+	 fwCxEkoaoMt0VwII/oLXJoaiuaBMZ9gXBPVn7GAObiGNTNU61aLjwJgZJL+jI0H/Nb
+	 KQar3532qazuw==
+Received: by mail-oa1-f49.google.com with SMTP id 586e51a60fabf-2c6ed7ec0a5so817512fac.1;
+        Fri, 11 Apr 2025 03:31:01 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUJdqnfofj1W08gUTMbGoPWwIIGxF7RfnbrcROjjtJJFV1kh53bZA19jD5UWcvVCo7zZAbXJZyyQmg=@vger.kernel.org, AJvYcCXb7S16wVqOAGicd46kOQyS+Qbqd1L8vGxuUwkPkWBhLGTw0TRt0KnxNcPtSlRZdRcqgBKa4Ol2BW1FOcY=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxYlD/2GabW3B3mCvWYsfRpZ43dtZ87/9sFRYG+sgCwwcbt+jZW
+	KaFxgl5G0GX14KBuiMsd/5AsFAA2FQs5ZlAdAEpP9lRSG+t9M/tVPHj9vc506H8s2PJlm2lDkPx
+	OSh4ujRmVz3zWWKeCWZ7Dj1OFxzA=
+X-Google-Smtp-Source: AGHT+IH0LX3bDDoDBM0kIknin6Kvq5ZRj0ozncoHMNHLV1Eir1yLnmQSTP9h3Tww8fkeKeA6kWZsW4FwIzMNMKuSkRA=
+X-Received: by 2002:a05:6871:e71a:b0:2c2:5639:3a4d with SMTP id
+ 586e51a60fabf-2d0d5fcc80amr1201791fac.38.1744367460800; Fri, 11 Apr 2025
+ 03:31:00 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
- kwepemh100008.china.huawei.com (7.202.181.93)
+References: <20250410024439.20859-1-sultan@kerneltoast.com>
+ <CAJZ5v0jKyy-3cELyDQTynE3Dv29V15F5f+w0A-H_nu+4LuaaYw@mail.gmail.com> <CAB8ipk-EAALE1bhihF3k8i=uk_cPtDom+dD0KP-U3k=vgVj9ZA@mail.gmail.com>
+In-Reply-To: <CAB8ipk-EAALE1bhihF3k8i=uk_cPtDom+dD0KP-U3k=vgVj9ZA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 11 Apr 2025 12:30:48 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hTb6+cNA4fP6ovg2M3woLjid-fMy8jAp8S--=tv+7f4Q@mail.gmail.com>
+X-Gm-Features: ATxdqUHSAKFBNaCPYAfEF12zbgjVtf7UFcyxO-QAEdSoxtit892-U_G_UKOm0hs
+Message-ID: <CAJZ5v0hTb6+cNA4fP6ovg2M3woLjid-fMy8jAp8S--=tv+7f4Q@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: schedutil: Don't ignore limit changes when util
+ is unchanged
+To: Xuewen Yan <xuewen.yan94@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Sultan Alsawaf <sultan@kerneltoast.com>, 
+	Stephan Gerhold <stephan.gerhold@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, 
+	Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, 
+	Dietmar Eggemann <dietmar.eggemann@arm.com>, Steven Rostedt <rostedt@goodmis.org>, 
+	Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>, 
+	Valentin Schneider <vschneid@redhat.com>, Christian Loehle <christian.loehle@arm.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Rename cppc_get_perf() to cppc_get_reg_val() as a generic function to read
-cppc registers.
+On Fri, Apr 11, 2025 at 10:22=E2=80=AFAM Xuewen Yan <xuewen.yan94@gmail.com=
+> wrote:
+>
+> ...
+> >
+> > AFAICS, after this code modification, a limit change may be missed due
+> > to a possible race with sugov_limits() which cannot happen if
+> > sg_policy->limits_changed is only cleared when it is set before
+> > updating sg_policy->need_freq_update.
+> >
+> could the following patch prevent the race?
+>
+> https://lore.kernel.org/all/CAB8ipk_Ayqmh=3DCh2aH2c+i-q+qdiQ317VBH1kOHYN=
+=3DR9dt6LOw@mail.gmail.com/
 
-Reviewed-by: Pierre Gondois <pierre.gondois@arm.com>
-Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
----
- drivers/acpi/cppc_acpi.c | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 4965a6465538..76c5e58e5e99 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -1189,16 +1189,16 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
- 	return ret_val;
- }
- 
--static int cppc_get_perf(int cpunum, enum cppc_regs reg_idx, u64 *perf)
-+static int cppc_get_reg_val(int cpu, enum cppc_regs reg_idx, u64 *val)
- {
--	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
-+	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
- 	struct cpc_register_resource *reg;
- 
--	if (perf == NULL)
-+	if (val == NULL)
- 		return -EINVAL;
- 
- 	if (!cpc_desc) {
--		pr_debug("No CPC descriptor for CPU:%d\n", cpunum);
-+		pr_debug("No CPC descriptor for CPU:%d\n", cpu);
- 		return -ENODEV;
- 	}
- 
-@@ -1212,7 +1212,7 @@ static int cppc_get_perf(int cpunum, enum cppc_regs reg_idx, u64 *perf)
- 	}
- 
- 	if (CPC_IN_PCC(reg)) {
--		int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpunum);
-+		int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
- 		struct cppc_pcc_data *pcc_ss_data = NULL;
- 		int ret;
- 
-@@ -1226,7 +1226,7 @@ static int cppc_get_perf(int cpunum, enum cppc_regs reg_idx, u64 *perf)
- 		down_write(&pcc_ss_data->pcc_lock);
- 
- 		if (send_pcc_cmd(pcc_ss_id, CMD_READ) >= 0)
--			ret = cpc_read(cpunum, reg, perf);
-+			ret = cpc_read(cpu, reg, val);
- 		else
- 			ret = -EIO;
- 
-@@ -1235,7 +1235,7 @@ static int cppc_get_perf(int cpunum, enum cppc_regs reg_idx, u64 *perf)
- 		return ret;
- 	}
- 
--	return cpc_read(cpunum, reg, perf);
-+	return cpc_read(cpu, reg, val);
- }
- 
- /**
-@@ -1247,7 +1247,7 @@ static int cppc_get_perf(int cpunum, enum cppc_regs reg_idx, u64 *perf)
-  */
- int cppc_get_desired_perf(int cpunum, u64 *desired_perf)
- {
--	return cppc_get_perf(cpunum, DESIRED_PERF, desired_perf);
-+	return cppc_get_reg_val(cpunum, DESIRED_PERF, desired_perf);
- }
- EXPORT_SYMBOL_GPL(cppc_get_desired_perf);
- 
-@@ -1260,7 +1260,7 @@ EXPORT_SYMBOL_GPL(cppc_get_desired_perf);
-  */
- int cppc_get_nominal_perf(int cpunum, u64 *nominal_perf)
- {
--	return cppc_get_perf(cpunum, NOMINAL_PERF, nominal_perf);
-+	return cppc_get_reg_val(cpunum, NOMINAL_PERF, nominal_perf);
- }
- 
- /**
-@@ -1272,7 +1272,7 @@ int cppc_get_nominal_perf(int cpunum, u64 *nominal_perf)
-  */
- int cppc_get_highest_perf(int cpunum, u64 *highest_perf)
- {
--	return cppc_get_perf(cpunum, HIGHEST_PERF, highest_perf);
-+	return cppc_get_reg_val(cpunum, HIGHEST_PERF, highest_perf);
- }
- EXPORT_SYMBOL_GPL(cppc_get_highest_perf);
- 
-@@ -1285,7 +1285,7 @@ EXPORT_SYMBOL_GPL(cppc_get_highest_perf);
-  */
- int cppc_get_epp_perf(int cpunum, u64 *epp_perf)
- {
--	return cppc_get_perf(cpunum, ENERGY_PERF, epp_perf);
-+	return cppc_get_reg_val(cpunum, ENERGY_PERF, epp_perf);
- }
- EXPORT_SYMBOL_GPL(cppc_get_epp_perf);
- 
--- 
-2.33.0
-
+The first hunk is essentially a partial revert of the problematic
+commit, but I'm not sure what you want to achieve with the second one.
