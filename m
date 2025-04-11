@@ -1,16 +1,16 @@
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 54B652BD5B3
-	for <linux-pm@vger.kernel.org>; Fri, 11 Apr 2025 12:18:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6649629C328
+	for <linux-pm@vger.kernel.org>; Fri, 11 Apr 2025 12:18:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744373908; cv=none; b=iUDghfhsgpH7vGoxqyHWxiWYS7LZ6skYosjNasPFFXEe8gDIX5EZ+GN5CI7GsimgvL3efLzowAQwX6OBdt+VhpdYcjGO4OSxyBCINgj13m6GM/dI9v+9YeQdagWtJOaLh6vX001xE+5rrYajLyJ2Va17PF21m+An1hOHTdbADZM=
+	t=1744373919; cv=none; b=ebPDupBY14yl2bJ1FINaq6qircgrxZnAQSSiWEr+Gay2LeORt8TnT20+X4JqTtW/2DEUoy1GCjwYv52FzO3ir1r2Rfy3rh70uECMKtw1BUy2UrIFhdy8S9GdXBO0rcq2IFBAOqQr5C3vflTtzEaD9gmxQ6+EkF7CjjWk5nRNyCo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744373908; c=relaxed/simple;
-	bh=NUyfHXKDD6v3aWEOOVgewfAqWd9qq3kYppr+Q23ReSY=;
+	s=arc-20240116; t=1744373919; c=relaxed/simple;
+	bh=saHhgzILLYYRrBS9mwBgPqLZuuaZobYrDkh2JOgxy68=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=hVXMMIHfsP+R6lM17GuqY2liAxzHOdyOW66IsZl1IUwg7AdTIK/DjFSnCfNAlJZwYUisYd2+4AYmUuuXPcpdyDhewG4PSQW+odawe/0bg2IP+wabk0xFzdCvHoOclOCsnJri/M1Ds6Ezfp8xlOuQHbV+H5eIDqq6tH8+YOmRt+U=
+	 MIME-Version; b=Ya0GpXaJ5O43QgHDp84cuafQCIViGaXGoSAq/b8JfkEW8Fw0nN57cntRtyryWt/nZ6ReNrThhO5tTVEZVeJB9sCW7DsTopMLT3y2G6m4YCFxYsNbkXTO1N8WE1nCWYqIeZuPQZYr2elEk9R5Xd8cikH+skcehTOdfRkq8Xr4aj4=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
@@ -18,16 +18,16 @@ Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <ore@pengutronix.de>)
-	id 1u3DKZ-0006JX-Fu; Fri, 11 Apr 2025 14:17:59 +0200
+	id 1u3DKZ-0006JS-Fu; Fri, 11 Apr 2025 14:17:59 +0200
 Received: from dude04.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::ac])
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.96)
 	(envelope-from <ore@pengutronix.de>)
-	id 1u3DKY-004Qka-22;
+	id 1u3DKY-004QkV-1i;
 	Fri, 11 Apr 2025 14:17:58 +0200
 Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.96)
 	(envelope-from <ore@pengutronix.de>)
-	id 1u3DKY-002PCC-1g;
+	id 1u3DKY-002PBY-1R;
 	Fri, 11 Apr 2025 14:17:58 +0200
 From: Oleksij Rempel <o.rempel@pengutronix.de>
 To: Sebastian Reichel <sre@kernel.org>,
@@ -36,23 +36,23 @@ To: Sebastian Reichel <sre@kernel.org>,
 	Tzung-Bi Shih <tzungbi@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: Oleksij Rempel <o.rempel@pengutronix.de>,
+	Matti Vaittinen <mazziesaccount@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
 	kernel@pengutronix.de,
 	linux-kernel@vger.kernel.org,
 	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
 	"Rafael J. Wysocki" <rafael@kernel.org>,
 	Zhang Rui <rui.zhang@intel.com>,
 	Lukasz Luba <lukasz.luba@arm.com>,
 	linux-pm@vger.kernel.org,
 	=?UTF-8?q?S=C3=B8ren=20Andersen?= <san@skov.dk>,
 	Guenter Roeck <groeck@chromium.org>,
-	Matti Vaittinen <mazziesaccount@gmail.com>,
 	Ahmad Fatoum <a.fatoum@pengutronix.de>,
 	Andrew Morton <akpm@linux-foundation.org>,
 	chrome-platform@lists.linux.dev
-Subject: [PATCH v8 6/7] power: reset: add PSCR NVMEM Driver for Recording Power State Change Reasons
-Date: Fri, 11 Apr 2025 14:17:56 +0200
-Message-Id: <20250411121757.573419-7-o.rempel@pengutronix.de>
+Subject: [PATCH v8 2/7] reboot: hw_protection_trigger: use standardized numeric shutdown/reboot reasons instead of strings
+Date: Fri, 11 Apr 2025 14:17:52 +0200
+Message-Id: <20250411121757.573419-3-o.rempel@pengutronix.de>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20250411121757.573419-1-o.rempel@pengutronix.de>
 References: <20250411121757.573419-1-o.rempel@pengutronix.de>
@@ -68,328 +68,405 @@ X-SA-Exim-Mail-From: ore@pengutronix.de
 X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
 X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-This driver utilizes the Power State Change Reasons Recording (PSCRR)
-framework to store specific power state change information, such as
-shutdown or reboot reasons, into a designated non-volatile memory
-(NVMEM) cell.
+Prepares the kernel for the Power State Change Reason (PSCR) recorder,
+which will store shutdown and reboot reasons in persistent storage.
+
+Instead of using string-based reason descriptions, which are often too
+large to fit within limited storage spaces (e.g., RTC clocks with only 8
+bits of battery-backed storage), we introduce `enum psc_reason`. This
+enumerates predefined reasons for power state changes, making it
+efficient to store and retrieve shutdown causes.
+
+Key changes:
+- Introduced `enum psc_reason`, defining structured reasons for power state
+  changes.
+- Replaced string-based shutdown reasons with `psc_reason` identifiers.
+- Implemented `get_psc_reason()` and `set_psc_reason()` for tracking the
+  last shutdown cause.
+- Added `psc_reason_to_str()` to map enum values to human-readable strings.
+- Updated `hw_protection_trigger()` to use `psc_reason` instead of string
+  parameters.
+- Updated all consumers of `hw_protection_trigger()` to pass an appropriate
+  `psc_reason` value instead
+  of a string.
 
 Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
+Reviewed-by: Matti Vaittinen <mazziesaccount@gmail.com>
+Acked-by: Mark Brown <broonie@kernel.org>
 ---
+changes v8:
+- add Acked/Reviewed-by.
 changes v6:
-- rename pscr_reason to psc_reason
-changes v5:
-- avoid a build against NVMEM=m
-changes v4:
-- remove devicetree dependencies
+- added in this version
 ---
- drivers/power/reset/Kconfig       |  22 +++
- drivers/power/reset/Makefile      |   1 +
- drivers/power/reset/pscrr-nvmem.c | 254 ++++++++++++++++++++++++++++++
- 3 files changed, 277 insertions(+)
- create mode 100644 drivers/power/reset/pscrr-nvmem.c
+ drivers/platform/chrome/cros_ec_lpc.c |  2 +-
+ drivers/regulator/core.c              |  7 ++-
+ drivers/regulator/irq_helpers.c       | 22 ++++---
+ drivers/thermal/thermal_core.c        |  3 +-
+ include/linux/reboot.h                | 77 ++++++++++++++++++++++-
+ kernel/reboot.c                       | 89 +++++++++++++++++++++++++--
+ 6 files changed, 182 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index 7e4c4f317938..33ccdecd6442 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -341,3 +341,25 @@ menuconfig PSCRR
- 	  be recorded unless hardware provides the reset cause.
+diff --git a/drivers/platform/chrome/cros_ec_lpc.c b/drivers/platform/chrome/cros_ec_lpc.c
+index 7d9a78289c96..20d792f99f13 100644
+--- a/drivers/platform/chrome/cros_ec_lpc.c
++++ b/drivers/platform/chrome/cros_ec_lpc.c
+@@ -455,7 +455,7 @@ static void cros_ec_lpc_acpi_notify(acpi_handle device, u32 value, void *data)
+ 		blocking_notifier_call_chain(&ec_dev->panic_notifier, 0, ec_dev);
+ 		kobject_uevent_env(&ec_dev->dev->kobj, KOBJ_CHANGE, (char **)env);
+ 		/* Begin orderly shutdown. EC will force reset after a short period. */
+-		__hw_protection_trigger("CrOS EC Panic", -1, HWPROT_ACT_SHUTDOWN);
++		__hw_protection_trigger(PSCR_EC_PANIC, -1, HWPROT_ACT_SHUTDOWN);
+ 		/* Do not query for other events after a panic is reported */
+ 		return;
+ 	}
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index 90629a756693..a5b1bdbc2134 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -5263,6 +5263,7 @@ EXPORT_SYMBOL_GPL(regulator_bulk_free);
+ static void regulator_handle_critical(struct regulator_dev *rdev,
+ 				      unsigned long event)
+ {
++	enum psc_reason pscr;
+ 	const char *reason = NULL;
  
- 	  If unsure, say N.
+ 	if (!rdev->constraints->system_critical)
+@@ -5271,18 +5272,22 @@ static void regulator_handle_critical(struct regulator_dev *rdev,
+ 	switch (event) {
+ 	case REGULATOR_EVENT_UNDER_VOLTAGE:
+ 		reason = "System critical regulator: voltage drop detected";
++		pscr = PSCR_UNDER_VOLTAGE;
+ 		break;
+ 	case REGULATOR_EVENT_OVER_CURRENT:
+ 		reason = "System critical regulator: over-current detected";
++		pscr = PSCR_OVER_CURRENT;
+ 		break;
+ 	case REGULATOR_EVENT_FAIL:
+ 		reason = "System critical regulator: unknown error";
++		pscr = PSCR_REGULATOR_FAILURE;
+ 	}
+ 
+ 	if (!reason)
+ 		return;
+ 
+-	hw_protection_trigger(reason,
++	rdev_crit(rdev, "%s\n", reason);
++	hw_protection_trigger(pscr,
+ 			      rdev->constraints->uv_less_critical_window_ms);
+ }
+ 
+diff --git a/drivers/regulator/irq_helpers.c b/drivers/regulator/irq_helpers.c
+index 5742faee8071..31395a912341 100644
+--- a/drivers/regulator/irq_helpers.c
++++ b/drivers/regulator/irq_helpers.c
+@@ -63,17 +63,22 @@ static void regulator_notifier_isr_work(struct work_struct *work)
+ 
+ reread:
+ 	if (d->fatal_cnt && h->retry_cnt > d->fatal_cnt) {
+-		if (!d->die)
+-			return hw_protection_trigger("Regulator HW failure? - no IC recovery",
++		if (!d->die) {
++			pr_crit("Regulator HW failure? - no IC recovery\n");
++			return hw_protection_trigger(PSCR_REGULATOR_FAILURE,
+ 						     REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
++		}
 +
-+if PSCRR
+ 		ret = d->die(rid);
+ 		/*
+ 		 * If the 'last resort' IC recovery failed we will have
+ 		 * nothing else left to do...
+ 		 */
+-		if (ret)
+-			return hw_protection_trigger("Regulator HW failure. IC recovery failed",
++		if (ret) {
++			pr_crit("Regulator HW failure. IC recovery failed\n");
++			return hw_protection_trigger(PSCR_REGULATOR_FAILURE,
+ 						     REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
++		}
+ 
+ 		/*
+ 		 * If h->die() was implemented we assume recovery has been
+@@ -263,14 +268,17 @@ static irqreturn_t regulator_notifier_isr(int irq, void *data)
+ 	if (d->fatal_cnt && h->retry_cnt > d->fatal_cnt) {
+ 		/* If we have no recovery, just try shut down straight away */
+ 		if (!d->die) {
+-			hw_protection_trigger("Regulator failure. Retry count exceeded",
++			pr_crit("Regulator failure. Retry count exceeded\n");
++			hw_protection_trigger(PSCR_REGULATOR_FAILURE,
+ 					      REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
+ 		} else {
+ 			ret = d->die(rid);
+ 			/* If die() failed shut down as a last attempt to save the HW */
+-			if (ret)
+-				hw_protection_trigger("Regulator failure. Recovery failed",
++			if (ret) {
++				pr_crit("Regulator failure. Recovery failed\n");
++				hw_protection_trigger(PSCR_REGULATOR_FAILURE,
+ 						      REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
++			}
+ 		}
+ 	}
+ 
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 17ca5c082643..9f13213f0722 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -377,11 +377,10 @@ static void thermal_zone_device_halt(struct thermal_zone_device *tz,
+ 	 * Its a must for forced_emergency_poweroff_work to be scheduled.
+ 	 */
+ 	int poweroff_delay_ms = CONFIG_THERMAL_EMERGENCY_POWEROFF_DELAY_MS;
+-	const char *msg = "Temperature too high";
+ 
+ 	dev_emerg(&tz->device, "%s: critical temperature reached\n", tz->type);
+ 
+-	__hw_protection_trigger(msg, poweroff_delay_ms, action);
++	__hw_protection_trigger(PSCR_OVER_TEMPERATURE, poweroff_delay_ms, action);
+ }
+ 
+ void thermal_zone_device_critical(struct thermal_zone_device *tz)
+diff --git a/include/linux/reboot.h b/include/linux/reboot.h
+index aa08c3bbbf59..6477910c6a9e 100644
+--- a/include/linux/reboot.h
++++ b/include/linux/reboot.h
+@@ -178,6 +178,73 @@ void ctrl_alt_del(void);
+ extern void orderly_poweroff(bool force);
+ extern void orderly_reboot(void);
+ 
 +
-+config PSCRR_NVMEM
-+	tristate "Generic NVMEM-based Power State Change Reason Recorder"
-+	depends on NVMEM || !NVMEM
-+	help
-+	  This option enables support for storing power state change reasons
-+	  (such as shutdown, reboot, or power failure events) into a designated
-+	  NVMEM (Non-Volatile Memory) cell.
-+
-+	  This feature allows embedded systems to retain power transition
-+	  history even after a full system restart or power loss. It is useful
-+	  for post-mortem debugging, automated recovery strategies, and
-+	  improving system reliability.
-+
-+	  The NVMEM cell used for storing these reasons can be dynamically
-+	  configured via module parameters.
-+
-+	  If unsure, say N.
-+
-+endif
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index dbd6ae6b26a4..532698552d40 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -33,6 +33,7 @@ obj-$(CONFIG_POWER_RESET_SYSCON) += syscon-reboot.o
- obj-$(CONFIG_POWER_RESET_SYSCON_POWEROFF) += syscon-poweroff.o
- obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
- obj-$(CONFIG_PSCRR) += pscrr.o
-+obj-$(CONFIG_PSCRR_NVMEM) += pscrr-nvmem.o
- obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
- obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
- obj-$(CONFIG_POWER_RESET_SC27XX) += sc27xx-poweroff.o
-diff --git a/drivers/power/reset/pscrr-nvmem.c b/drivers/power/reset/pscrr-nvmem.c
-new file mode 100644
-index 000000000000..7d02d989893f
---- /dev/null
-+++ b/drivers/power/reset/pscrr-nvmem.c
-@@ -0,0 +1,254 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * pscrr_nvmem.c - PSCRR backend for storing shutdown reasons in small NVMEM
-+ *		   cells
++/**
++ * enum psc_reason - Enumerates reasons for power state changes.
 + *
-+ * This backend provides a way to persist power state change reasons in a
-+ * non-volatile memory (NVMEM) cell, ensuring that reboot causes can be
-+ * analyzed post-mortem. Unlike traditional logging to eMMC or NAND, which
-+ * may be unreliable during power failures, this approach allows storing
-+ * reboot reasons in small, fast-access storage like RTC scratchpads, EEPROM,
-+ * or FRAM.
++ * This enum defines various reasons why a system might transition into a
++ * shutdown, reboot, or kexec state. While originally intended for hardware
++ * protection events, `psc_reason` can be extended to track other system
++ * transitions, such as controlled reboots triggered by software or
++ * maintenance operations.
 + *
-+ * The module allows dynamic configuration of the NVMEM device and cell
-+ * via module parameters:
++ * The values in this enumeration provide structured and standardized
++ * identifiers that replace free-form string descriptions. They are designed
++ * to be stored efficiently, making them suitable for use in environments
++ * with limited storage, such as battery-backed RTC registers, non-volatile
++ * memory, or bootloader communication mechanisms.
 + *
-+ * Example usage:
-+ *   modprobe pscrr-nvmem nvmem_name=pcf85063_nvram0 cell_name=pscr@0,0
++ * Importantly, the order of these values **must remain stable**, as
++ * bootloaders, user-space tools, or post-mortem investigation utilities
++ * may rely on their numerical representation for consistent behavior.
++ *
++ * @PSCR_UNKNOWN: Unknown or unspecified reason for the power state change.
++ *	This value serves as a default when no explicit cause is recorded.
++ *
++ * @PSCR_UNDER_VOLTAGE: Shutdown or reboot triggered due to supply voltage
++ *      dropping below a safe threshold. This helps prevent instability or
++ *      corruption caused by insufficient power.
++ *
++ * @PSCR_OVER_CURRENT: System shutdown or reboot due to excessive current draw,
++ *      which may indicate a short circuit, an overloaded power rail, or other
++ *      hardware faults requiring immediate action.
++ *
++ * @PSCR_REGULATOR_FAILURE: A critical failure in a voltage regulator, causing
++ *      improper power delivery. This may be due to internal component failure,
++ *      transient conditions, or external load issues requiring mitigation.
++ *
++ * @PSCR_OVER_TEMPERATURE: System shutdown or reboot due to excessive thermal
++ *	conditions. This attempts to prevent hardware damage when temperature
++ *	sensors detect unsafe levels, often impacting CPUs, GPUs, or power
++ *	components.
++ *
++ * @PSCR_EC_PANIC: Shutdown or reboot triggered by an Embedded Controller (EC)
++ *	panic. The EC is a microcontroller responsible for low-level system
++ *	management, including power sequencing, thermal control, and battery
++ *	management. An EC panic may indicate critical firmware issues, power
++ *	management errors, or an unrecoverable hardware fault requiring
++ *	immediate response.
++ *
++ * @PSCR_REASON_COUNT: Number of defined power state change reasons. This
++ *	value is useful for range checking and potential future extensions
++ *	while maintaining compatibility.
 + */
++enum psc_reason {
++	PSCR_UNKNOWN,
++	PSCR_UNDER_VOLTAGE,
++	PSCR_OVER_CURRENT,
++	PSCR_REGULATOR_FAILURE,
++	PSCR_OVER_TEMPERATURE,
++	PSCR_EC_PANIC,
 +
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/nvmem-consumer.h>
-+#include <linux/pscrr.h>
-+#include <linux/slab.h>
-+
-+/*
-+ * Module parameters:
-+ *   nvmem_name: Name of the NVMEM device (e.g. "pcf85063_nvram0").
-+ *   cell_name : Sysfs name of the cell on that device (e.g. "pscr@0,0").
-+ */
-+static char *nvmem_name;
-+module_param(nvmem_name, charp, 0444);
-+MODULE_PARM_DESC(nvmem_name, "Name of the NVMEM device (e.g. pcf85063_nvram0)");
-+
-+static char *cell_name;
-+module_param(cell_name, charp, 0444);
-+MODULE_PARM_DESC(cell_name, "Sysfs name of the NVMEM cell (e.g. pscr@0,0)");
-+
-+struct pscrr_nvmem_priv {
-+	struct nvmem_device *nvmem;
-+	struct nvmem_cell *cell;
-+
-+	size_t total_bits;
-+	size_t max_val;
++	/* Number of reasons */
++	PSCR_REASON_COUNT,
 +};
 +
-+static struct pscrr_nvmem_priv *priv;
++#define PSCR_MAX_REASON	(PSCR_REASON_COUNT - 1)
 +
-+static int pscrr_nvmem_write_reason(enum psc_reason reason)
++const char *psc_reason_to_str(enum psc_reason reason);
++
+ /**
+  * enum hw_protection_action - Hardware protection action
+  *
+@@ -191,13 +258,13 @@ extern void orderly_reboot(void);
+  */
+ enum hw_protection_action { HWPROT_ACT_DEFAULT, HWPROT_ACT_SHUTDOWN, HWPROT_ACT_REBOOT };
+ 
+-void __hw_protection_trigger(const char *reason, int ms_until_forced,
++void __hw_protection_trigger(enum psc_reason reason, int ms_until_forced,
+ 			     enum hw_protection_action action);
+ 
+ /**
+  * hw_protection_trigger - Trigger default emergency system hardware protection action
+  *
+- * @reason:		Reason of emergency shutdown or reboot to be printed.
++ * @reason:		Reason of emergency shutdown or reboot.
+  * @ms_until_forced:	Time to wait for orderly shutdown or reboot before
+  *			triggering it. Negative value disables the forced
+  *			shutdown or reboot.
+@@ -206,11 +273,15 @@ void __hw_protection_trigger(const char *reason, int ms_until_forced,
+  * hardware from further damage. The exact action taken is controllable at
+  * runtime and defaults to shutdown.
+  */
+-static inline void hw_protection_trigger(const char *reason, int ms_until_forced)
++static inline void hw_protection_trigger(enum psc_reason reason,
++					 int ms_until_forced)
+ {
+ 	__hw_protection_trigger(reason, ms_until_forced, HWPROT_ACT_DEFAULT);
+ }
+ 
++enum psc_reason get_psc_reason(void);
++void set_psc_reason(enum psc_reason reason);
++
+ /*
+  * Emergency restart, callable from an interrupt handler.
+  */
+diff --git a/kernel/reboot.c b/kernel/reboot.c
+index ec087827c85c..7e9a1a2df66a 100644
+--- a/kernel/reboot.c
++++ b/kernel/reboot.c
+@@ -13,6 +13,7 @@
+ #include <linux/kexec.h>
+ #include <linux/kmod.h>
+ #include <linux/kmsg_dump.h>
++#include <linux/power/power_on_reason.h>
+ #include <linux/reboot.h>
+ #include <linux/suspend.h>
+ #include <linux/syscalls.h>
+@@ -49,6 +50,7 @@ int reboot_default = 1;
+ int reboot_cpu;
+ enum reboot_type reboot_type = BOOT_ACPI;
+ int reboot_force;
++enum psc_reason psc_last_reason = PSCR_UNKNOWN;
+ 
+ struct sys_off_handler {
+ 	struct notifier_block nb;
+@@ -1010,10 +1012,86 @@ static void hw_failure_emergency_schedule(enum hw_protection_action action,
+ 			      msecs_to_jiffies(action_delay_ms));
+ }
+ 
++/**
++ * get_psc_reason - Retrieve the last recorded power state change reason.
++ *
++ * This function returns the most recent power state change reason stored
++ * in `psc_last_reason`. The value is set using `set_psc_reason()` when a
++ * shutdown, reboot, or kexec event occurs.
++ *
++ * The reason can be used for system diagnostics, post-mortem analysis, or
++ * debugging unexpected power state changes. Bootloaders or user-space tools
++ * may retrieve this value to determine why the system last transitioned to
++ * a new power state.
++ *
++ * Return: A value from `enum psc_reason`, indicating the last known power
++ * state change reason.
++ */
++enum psc_reason get_psc_reason(void)
 +{
-+	size_t required_bytes;
-+	u32 val;
-+	int ret;
-+
-+	if (!priv || !priv->cell)
-+		return -ENODEV;
-+
-+	/* Ensure reason fits in the available storage */
-+	if (reason > priv->max_val) {
-+		pr_err("PSCRR-nvmem: Reason %d exceeds max storable value %zu for %zu-bit cell\n",
-+		       reason, priv->max_val, priv->total_bits);
-+		return -ERANGE;
-+	}
-+
-+	val = reason;
-+
-+	/* Determine required bytes for storing total_bits */
-+	required_bytes = (priv->total_bits + 7) / 8;
-+
-+	/* Write the reason to the NVMEM cell */
-+	ret = nvmem_cell_write(priv->cell, &val, required_bytes);
-+	if (ret < 0) {
-+		pr_err("PSCRR-nvmem: Failed to write reason %d, err=%d (%pe)\n",
-+		       reason, ret, ERR_PTR(ret));
-+		return ret;
-+	}
-+
-+	pr_debug("PSCRR-nvmem: Successfully wrote reason %d\n", reason);
-+
-+	return 0;
++	return READ_ONCE(psc_last_reason);
 +}
++EXPORT_SYMBOL_GPL(get_psc_reason);
 +
-+static int pscrr_nvmem_read_reason(enum psc_reason *reason)
++/**
++ * set_psc_reason - Set the reason for the last power state change.
++ *
++ * @reason: A value from `enum psc_reason` indicating the cause of the power
++ *          state change.
++ *
++ * This function records the reason for a shutdown, reboot, or kexec event
++ * by storing it in `psc_last_reason`. It ensures that the value remains
++ * consistent within the running system, allowing retrieval via
++ * `get_psc_reason()` for diagnostics, logging, or post-mortem analysis.
++ *
++ * Persistence Consideration:
++ * - This function **does not persist** the recorded reason across power cycles.
++ * - After a system reset or complete power loss, the recorded reason is lost.
++ * - To store power state change reasons persistently, additional tools such as
++ *   the Power State Change Reason Recorder (PSCRR) framework should be used.
++ */
++void set_psc_reason(enum psc_reason reason)
 +{
-+	size_t required_bytes, len;
-+	unsigned int val;
-+	int ret = 0;
-+	void *buf;
-+
-+	if (!priv || !priv->cell)
-+		return -ENODEV;
-+
-+	buf = nvmem_cell_read(priv->cell, &len);
-+	if (IS_ERR(buf)) {
-+		ret = PTR_ERR(buf);
-+		pr_err("PSCRR-nvmem: Failed to read cell, err=%d (%pe)\n", ret,
-+		       ERR_PTR(ret));
-+		return ret;
-+	}
-+
-+	/* Calculate the required number of bytes */
-+	required_bytes = (priv->total_bits + 7) / 8;
-+
-+	/* Validate that the returned length is large enough */
-+	if (len < required_bytes) {
-+		pr_err("PSCRR-nvmem: Read length %zu is too small (need at least %zu bytes)\n",
-+		       len, required_bytes);
-+		kfree(buf);
-+		return -EIO;
-+	}
-+
-+	/* Extract value safely with proper memory alignment handling */
-+	val = 0;
-+	memcpy(&val, buf, required_bytes);
-+
-+	/* Mask only the necessary bits to avoid garbage data */
-+	val &= (1U << priv->total_bits) - 1;
-+
-+	kfree(buf);
-+
-+	*reason = (enum psc_reason)val;
-+
-+	pr_debug("PSCRR-nvmem: Read reason => %d (from %zu bytes, %zu bits used)\n",
-+		 *reason, len, priv->total_bits);
-+
-+	return 0;
++	WRITE_ONCE(psc_last_reason, reason);
 +}
++EXPORT_SYMBOL_GPL(set_psc_reason);
 +
-+static const struct pscrr_backend_ops pscrr_nvmem_ops = {
-+	.write_reason = pscrr_nvmem_write_reason,
-+	.read_reason  = pscrr_nvmem_read_reason,
-+};
-+
-+static int __init pscrr_nvmem_init(void)
++/**
++ * psc_reason_to_str - Converts a power state change reason enum to a string.
++ * @reason: The `psc_reason` enum value to be converted.
++ *
++ * This function provides a human-readable string representation of the power
++ * state change reason, making it easier to interpret logs and debug messages.
++ *
++ * Return:
++ * - A string corresponding to the given `psc_reason` value.
++ * - `"Invalid"` if the value is not recognized.
++ */
++const char *psc_reason_to_str(enum psc_reason reason)
 +{
-+	size_t bytes, bits;
-+	int ret;
-+
-+	if (!nvmem_name || !cell_name) {
-+		pr_err("PSCRR-nvmem: Must specify both nvmem_name and cell_name.\n");
-+		return -EINVAL;
++	switch (reason) {
++	case PSCR_UNKNOWN:
++		return POWER_ON_REASON_UNKNOWN;
++	case PSCR_UNDER_VOLTAGE:
++		return POWER_ON_REASON_BROWN_OUT;
++	case PSCR_OVER_CURRENT:
++		return POWER_ON_REASON_OVER_CURRENT;
++	case PSCR_REGULATOR_FAILURE:
++		return POWER_ON_REASON_REGULATOR_FAILURE;
++	case PSCR_OVER_TEMPERATURE:
++		return POWER_ON_REASON_OVER_TEMPERATURE;
++	case PSCR_EC_PANIC:
++		return POWER_ON_REASON_EC_PANIC;
++	default:
++		return "Invalid";
 +	}
-+
-+	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->nvmem = nvmem_device_get_by_name(nvmem_name);
-+	if (IS_ERR(priv->nvmem)) {
-+		ret = PTR_ERR(priv->nvmem);
-+		pr_err("PSCRR-nvmem: nvmem_device_get_by_name(%s) failed: %d\n",
-+		       nvmem_name, ret);
-+		priv->nvmem = NULL;
-+		goto err_free;
-+	}
-+
-+	priv->cell = nvmem_cell_get_by_sysfs_name(priv->nvmem, cell_name);
-+	if (IS_ERR(priv->cell)) {
-+		ret = PTR_ERR(priv->cell);
-+		pr_err("PSCRR-nvmem: nvmem_cell_get_by_sysfs_name(%s) failed, err=%pe\n",
-+		       cell_name, ERR_PTR(ret));
-+		priv->cell = NULL;
-+		goto err_dev_put;
-+	}
-+
-+	ret = nvmem_cell_get_size(priv->cell, &bytes, &bits);
-+	if (ret < 0) {
-+		pr_err("PSCRR-nvmem: Failed to get cell size, err=%pe\n",
-+		       ERR_PTR(ret));
-+		goto err_cell_put;
-+	}
-+
-+	if (bits)
-+		priv->total_bits = bits;
-+	else
-+		priv->total_bits = bytes * 8;
-+
-+	if (priv->total_bits > 31) {
-+		pr_err("PSCRR-nvmem: total_bits=%zu is too large (max 31 allowed)\n",
-+		       priv->total_bits);
-+		return -EOVERFLOW;
-+	}
-+
-+	priv->max_val = (1 << priv->total_bits) - 1;
-+	pr_debug("PSCRR-nvmem: Cell size: %zu bytes + %zu bits => total_bits=%zu\n",
-+		 bytes, bits, priv->total_bits);
-+
-+	/*
-+	 * If we store reasons 0..PSCR_MAX_REASON, the largest needed is
-+	 * 'PSCR_MAX_REASON'. That must fit within total_bits.
-+	 * So the max storable integer is (1 << total_bits) - 1.
-+	 */
-+	if (priv->max_val < PSCR_MAX_REASON) {
-+		pr_err("PSCRR-nvmem: Not enough bits (%zu) to store up to reason=%d\n",
-+		       priv->total_bits, PSCR_MAX_REASON);
-+		ret = -ENOSPC;
-+		goto err_cell_put;
-+	}
-+
-+	/* 4. Register with pscrr_core. */
-+	ret = pscrr_core_init(&pscrr_nvmem_ops);
-+	if (ret) {
-+		pr_err("PSCRR-nvmem: pscrr_core_init() failed: %d\n", ret);
-+		goto err_cell_put;
-+	}
-+
-+	pr_info("PSCRR-nvmem: Loaded (nvmem=%s, cell=%s), can store 0..%zu\n",
-+		nvmem_name, cell_name, priv->max_val);
-+	return 0;
-+
-+err_cell_put:
-+	if (priv->cell) {
-+		nvmem_cell_put(priv->cell);
-+		priv->cell = NULL;
-+	}
-+err_dev_put:
-+	if (priv->nvmem) {
-+		nvmem_device_put(priv->nvmem);
-+		priv->nvmem = NULL;
-+	}
-+err_free:
-+	kfree(priv);
-+	priv = NULL;
-+	return ret;
 +}
++EXPORT_SYMBOL_GPL(psc_reason_to_str);
 +
-+static void __exit pscrr_nvmem_exit(void)
-+{
-+	pscrr_core_exit();
+ /**
+  * __hw_protection_trigger - Trigger an emergency system shutdown or reboot
+  *
+- * @reason:		Reason of emergency shutdown or reboot to be printed.
++ * @reason:		Reason of emergency shutdown or reboot.
+  * @ms_until_forced:	Time to wait for orderly shutdown or reboot before
+  *			triggering it. Negative value disables the forced
+  *			shutdown or reboot.
+@@ -1025,7 +1103,7 @@ static void hw_failure_emergency_schedule(enum hw_protection_action action,
+  * pending even if the previous request has given a large timeout for forced
+  * shutdown/reboot.
+  */
+-void __hw_protection_trigger(const char *reason, int ms_until_forced,
++void __hw_protection_trigger(enum psc_reason reason, int ms_until_forced,
+ 			     enum hw_protection_action action)
+ {
+ 	static atomic_t allow_proceed = ATOMIC_INIT(1);
+@@ -1033,8 +1111,11 @@ void __hw_protection_trigger(const char *reason, int ms_until_forced,
+ 	if (action == HWPROT_ACT_DEFAULT)
+ 		action = hw_protection_action;
+ 
+-	pr_emerg("HARDWARE PROTECTION %s (%s)\n",
+-		 hw_protection_action_str(action), reason);
++	set_psc_reason(reason);
 +
-+	if (priv) {
-+		if (priv->cell) {
-+			nvmem_cell_put(priv->cell);
-+			priv->cell = NULL;
-+		}
-+		if (priv->nvmem) {
-+			nvmem_device_put(priv->nvmem);
-+			priv->nvmem = NULL;
-+		}
-+		kfree(priv);
-+		priv = NULL;
-+	}
-+
-+	pr_info("pscrr-nvmem: Unloaded\n");
-+}
-+
-+module_init(pscrr_nvmem_init);
-+module_exit(pscrr_nvmem_exit);
-+
-+MODULE_AUTHOR("Oleksij Rempel <o.rempel@pengutronix.de>");
-+MODULE_DESCRIPTION("PSCRR backend for storing reason code in NVMEM");
-+MODULE_LICENSE("GPL");
++	pr_emerg("HARDWARE PROTECTION %s: %i (%s)\n",
++		 hw_protection_action_str(action), reason,
++		 psc_reason_to_str(reason));
+ 
+ 	/* Shutdown should be initiated only once. */
+ 	if (!atomic_dec_and_test(&allow_proceed))
 -- 
 2.39.5
 
