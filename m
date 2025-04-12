@@ -1,63 +1,60 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9D76D26D;
-	Sat, 12 Apr 2025 01:55:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C5C3A125D6;
+	Sat, 12 Apr 2025 02:37:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744422921; cv=none; b=WuRjgyn5/LMt7INiRqoYdMuLTSDBNojkml6hZrpP8dJ62Ks1xt6s1XhTCpQVF9IfwJ7gmMkedH7akarAxjh6CcSonTNPRxvxmcj0le8rqOXzQ+5Q9jRJMGu4sZUV2xG0Vt4+6EEQHBf2SAxL6Ge++bUOUOpNrxKJTlkHj354eTE=
+	t=1744425444; cv=none; b=Oz075sqZlNGtP+sKXqHfbQlLkW9THd8aYDddqm9liLIlDhPDbki9R9ABu6Rz72wxzZ8GJdQBAGT+LdOScs48Wl+UgjiHswkxqf02iiUbxoxjYEqLpXVqLj4jspiw0d3z0Lg6/wrwtIewiUzei+Hom4zBJ1UB0KPhnViebRxAYdY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744422921; c=relaxed/simple;
-	bh=wmKnxb7GFyuae2WQ6SVt9gXSex8dPJlcbqKCyw/Zp1E=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=cI9S1xGm2DARWZSZjp0SmnN1BRS/iUC/ThoDg9cT6xPlMAv4LWEaIpuvKMviclHl3rcJ+1mT9q4azVX3asIowud2hXr70TbCaL4dBM5Af1z0RIFpyEPpmvlCiCjQHYaAQnPM/xXARen+iUcErZX/Mz8IiKoFdepYMmRK+prEpUc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=hMPcdfla; arc=none smtp.client-ip=198.175.65.9
+	s=arc-20240116; t=1744425444; c=relaxed/simple;
+	bh=0ayBwoV8AYxDtvLvJrFXVLxv7jWsvYxEm31iguCyoiM=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=NPuXBp/YHD3FLF/EtxukjITtBPw6u5fFclMvHJtNH7n3BL2l2H+njd0nMsNA9ziceNMVwLyEhRZmicxnr9o12HUrlMB4UrSlElGuuFU0lpICr6UO4/v8xc4yGGajBlRgC3TCStwy8x06ruWVDEiebHuZZXaEAuBf8kfESWRcPLI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=P3mRnYjP; arc=none smtp.client-ip=192.198.163.7
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="hMPcdfla"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="P3mRnYjP"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1744422920; x=1775958920;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=wmKnxb7GFyuae2WQ6SVt9gXSex8dPJlcbqKCyw/Zp1E=;
-  b=hMPcdflaXeqBa+cpEWt2oGHRHyRReLuscD77P99PcimkMnQ0jfISqJcn
-   5sHaB4GR4JjYPlVfLOy4TX6WbGhwumeD91kMaszkCg0K6FC/JrAHxjnLv
-   5tGrkCRLxkkeVhAgLdHyb/aZEi8/vpI3a9jh4jWZv+QmLmQlVIWFj2wPN
-   dYtT/LLfJmxA3pg4L4rsKBvJ2eg0ZyE15x/jpHqjpW1YyRXUXsnhR3D+l
-   hPJeIIcYirhcKKN4cyHzh52wuJWlH4uJztySrXhO7AyFDO5qHLqrIwI7o
-   /NiURYvP5yjfUSAkfLQ1ey4JDl22khaMEK7NLuC2X4OmCdjLQjWiXxYUy
-   g==;
-X-CSE-ConnectionGUID: n5igox7ZS8af+m6SN1kq1g==
-X-CSE-MsgGUID: 6V0a1XbpQ/21BeGuW8ryoA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11401"; a="68470301"
+  t=1744425443; x=1775961443;
+  h=date:from:to:cc:subject:message-id:mime-version;
+  bh=0ayBwoV8AYxDtvLvJrFXVLxv7jWsvYxEm31iguCyoiM=;
+  b=P3mRnYjPb/ZRJZLOhAiJDvAX0VW2EZ3D3q4zl4Rol70d6d/RL2Wd43aO
+   6a7hMovhBh9ckLXSLvQcTXVe5QNqKzFBvr9b9Qf7PUQa7Hw06JrW1u3D0
+   rEWiwpWY+8xpD2erXy7un/qVs6LpR5jVOgfN6gUXnIqPCBw7WY7px1wQ1
+   TREKaCckqmrdHKVX3tKsbUw4zWSt9Nmu9qhZJvUFeipUFOyWORpOyBVgZ
+   EaeUrSPCpC1caWHWubgpS6kZIHUQ7pc5YJgSsNudyo0DHWYu/GK7pXBwz
+   qAz5ShUyLwPH/xCwSx/NWDUcxrLPkPBAit7b8mdD3PG/dheYDlOQYscQX
+   Q==;
+X-CSE-ConnectionGUID: SBzYiBXcQhCnCMhOct8mgA==
+X-CSE-MsgGUID: //fZ0ct5RFypymOSyQhS4A==
+X-IronPort-AV: E=McAfee;i="6700,10204,11401"; a="71365411"
 X-IronPort-AV: E=Sophos;i="6.15,206,1739865600"; 
-   d="scan'208";a="68470301"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Apr 2025 18:55:20 -0700
-X-CSE-ConnectionGUID: ysXp3TG6QtWGgy+aKhK3mg==
-X-CSE-MsgGUID: zCIgpvvmTQKne7wo+UtwKg==
+   d="scan'208";a="71365411"
+Received: from fmviesa007.fm.intel.com ([10.60.135.147])
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Apr 2025 19:37:22 -0700
+X-CSE-ConnectionGUID: G1klJNWoTV+dsOP2kz7zZQ==
+X-CSE-MsgGUID: QHoBTdAsRqqsBVM55JMGSw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.15,206,1739865600"; 
-   d="scan'208";a="129319566"
+   d="scan'208";a="129346852"
 Received: from lkp-server01.sh.intel.com (HELO b207828170a5) ([10.239.97.150])
-  by orviesa006.jf.intel.com with ESMTP; 11 Apr 2025 18:55:17 -0700
+  by fmviesa007.fm.intel.com with ESMTP; 11 Apr 2025 19:37:20 -0700
 Received: from kbuild by b207828170a5 with local (Exim 4.96)
 	(envelope-from <lkp@intel.com>)
-	id 1u3Q5S-000BVW-1o;
-	Sat, 12 Apr 2025 01:55:14 +0000
-Date: Sat, 12 Apr 2025 09:55:12 +0800
+	id 1u3Qk9-000BWQ-39;
+	Sat, 12 Apr 2025 02:37:17 +0000
+Date: Sat, 12 Apr 2025 10:36:41 +0800
 From: kernel test robot <lkp@intel.com>
-To: Yaxiong Tian <iambestgod@qq.com>, rafael@kernel.org,
-	lukasz.luba@arm.com
+To: Sudeep Holla <sudeep.holla@arm.com>
 Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Yaxiong Tian <tianyaxiong@kylinos.cn>
-Subject: Re: [PATCH v2] PM: EM: Fix potential division-by-zero error in
- em_compute_costs()
-Message-ID: <202504120921.Wqmipx6e-lkp@intel.com>
-References: <tencent_EE27C7D1D6BDB3EE57A2C467CC59A866C405@qq.com>
+	linux-acpi@vger.kernel.org, devel@acpica.org,
+	linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [rafael-pm:bleeding-edge 44/52]
+ drivers/cpuidle/cpuidle-psci.c:437:54: error: expected identifier
+Message-ID: <202504121050.dgHmFeWe-lkp@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -66,90 +63,42 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <tencent_EE27C7D1D6BDB3EE57A2C467CC59A866C405@qq.com>
 
-Hi Yaxiong,
-
-kernel test robot noticed the following build warnings:
-
-[auto build test WARNING on amd-pstate/linux-next]
-[also build test WARNING on amd-pstate/bleeding-edge linus/master v6.15-rc1 next-20250411]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Yaxiong-Tian/PM-EM-Fix-potential-division-by-zero-error-in-em_compute_costs/20250411-093452
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git linux-next
-patch link:    https://lore.kernel.org/r/tencent_EE27C7D1D6BDB3EE57A2C467CC59A866C405%40qq.com
-patch subject: [PATCH v2] PM: EM: Fix potential division-by-zero error in em_compute_costs()
-config: i386-buildonly-randconfig-003-20250412 (https://download.01.org/0day-ci/archive/20250412/202504120921.Wqmipx6e-lkp@intel.com/config)
-compiler: clang version 20.1.2 (https://github.com/llvm/llvm-project 58df0ef89dd64126512e4ee27b4ac3fd8ddf6247)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250412/202504120921.Wqmipx6e-lkp@intel.com/reproduce)
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+head:   605857f6c52205d83a7963edbdfaaa307ee7bde4
+commit: a60e3d71e4d49a9be9fa5fc3cb9c4942e29fd934 [44/52] cpuidle: psci: Transition to the faux device interface
+config: arm64-allmodconfig (https://download.01.org/0day-ci/archive/20250412/202504121050.dgHmFeWe-lkp@intel.com/config)
+compiler: clang version 19.1.7 (https://github.com/llvm/llvm-project cd708029e0b2869e80abe31ddb175f7c35361f90)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250412/202504121050.dgHmFeWe-lkp@intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202504120921.Wqmipx6e-lkp@intel.com/
+| Closes: https://lore.kernel.org/oe-kbuild-all/202504121050.dgHmFeWe-lkp@intel.com/
 
-All warnings (new ones prefixed by >>):
+All errors (new ones prefixed by >>):
 
->> kernel/power/energy_model.c:247:14: warning: variable 'cost' is used uninitialized whenever 'if' condition is false [-Wsometimes-uninitialized]
-     247 |                 } else if (_is_cpu_device(dev)) {
-         |                            ^~~~~~~~~~~~~~~~~~~
-   kernel/power/energy_model.c:253:19: note: uninitialized use occurs here
-     253 |                 table[i].cost = cost;
-         |                                 ^~~~
-   kernel/power/energy_model.c:247:10: note: remove the 'if' if its condition is always true
-     247 |                 } else if (_is_cpu_device(dev)) {
-         |                        ^~~~~~~~~~~~~~~~~~~~~~~~
-   kernel/power/energy_model.c:238:32: note: initialize the variable 'cost' to silence this warning
-     238 |                 unsigned long power_res, cost;
-         |                                              ^
-         |                                               = 0
-   1 warning generated.
+>> drivers/cpuidle/cpuidle-psci.c:437:54: error: expected identifier
+     437 | module_faux_driver(psci_cpuidle, psci_cpuidle_probe, NULL, true);
+         |                                                      ^
+   include/linux/stddef.h:8:14: note: expanded from macro 'NULL'
+       8 | #define NULL ((void *)0)
+         |              ^
+>> drivers/cpuidle/cpuidle-psci.c:437:1: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+     437 | module_faux_driver(psci_cpuidle, psci_cpuidle_probe, NULL, true);
+         | ^
+         | int
+>> drivers/cpuidle/cpuidle-psci.c:437:19: error: a function declaration without a prototype is deprecated in all versions of C [-Werror,-Wstrict-prototypes]
+     437 | module_faux_driver(psci_cpuidle, psci_cpuidle_probe, NULL, true);
+         |                   ^                                            
+         |                                                                void
+   3 errors generated.
 
 
-vim +247 kernel/power/energy_model.c
+vim +437 drivers/cpuidle/cpuidle-psci.c
 
-   228	
-   229	static int em_compute_costs(struct device *dev, struct em_perf_state *table,
-   230				    const struct em_data_callback *cb, int nr_states,
-   231				    unsigned long flags)
-   232	{
-   233		unsigned long prev_cost = ULONG_MAX;
-   234		int i, ret;
-   235	
-   236		/* Compute the cost of each performance state. */
-   237		for (i = nr_states - 1; i >= 0; i--) {
-   238			unsigned long power_res, cost;
-   239	
-   240			if ((flags & EM_PERF_DOMAIN_ARTIFICIAL) && cb->get_cost) {
-   241				ret = cb->get_cost(dev, table[i].frequency, &cost);
-   242				if (ret || !cost || cost > EM_MAX_POWER) {
-   243					dev_err(dev, "EM: invalid cost %lu %d\n",
-   244						cost, ret);
-   245					return -EINVAL;
-   246				}
- > 247			} else if (_is_cpu_device(dev)) {
-   248				/* increase resolution of 'cost' precision */
-   249				power_res = table[i].power * 10;
-   250				cost = power_res / table[i].performance;
-   251			}
-   252	
-   253			table[i].cost = cost;
-   254	
-   255			if (table[i].cost >= prev_cost) {
-   256				table[i].flags = EM_PERF_STATE_INEFFICIENT;
-   257				dev_dbg(dev, "EM: OPP:%lu is inefficient\n",
-   258					table[i].frequency);
-   259			} else {
-   260				prev_cost = table[i].cost;
-   261			}
-   262		}
-   263	
-   264		return 0;
-   265	}
-   266	
+   436	
+ > 437	module_faux_driver(psci_cpuidle, psci_cpuidle_probe, NULL, true);
 
 -- 
 0-DAY CI Kernel Test Service
