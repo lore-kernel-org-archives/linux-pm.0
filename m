@@ -1,64 +1,39 @@
-Received: from mail-pf1-f178.google.com (mail-pf1-f178.google.com [209.85.210.178])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail.zytor.com (terminus.zytor.com [198.137.202.136])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 14091155743;
-	Sat, 12 Apr 2025 03:53:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 365495339D;
+	Sat, 12 Apr 2025 04:29:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.136
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744430009; cv=none; b=mO6nvgdFAJHrEPIq4em9ttuESgugxdVyfEVeSZuSTw66fqbQeyMb6YoTMIx1/SryqdfPrt1IWOHcvTfQ7nPmCO1qD5i1yEFZSXy+QaruCnQnn84y63Czgo95smiXLfd1K+YMjQYjzslqXjGGBFp6/ff6FLqHyJphTBKayS9ug2M=
+	t=1744432195; cv=none; b=B2anQPaqk4qTzVmXzCTgB3GhYjsMjOf/7GljBer7kDfxt8dKFuD2fz9assgnVuvSM9b1uQ9SsC9Wg6hh+jw962FB98hwh1mR+ooCVe3qHXJj7yjKWDov6oHpdpWuyKDxP17jbkG7UMNTUD/2dDU0X3rA8whuURPKmrhFgI+6Rjs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744430009; c=relaxed/simple;
-	bh=wTzkihgJDk+PfgalYMEfICtXY4uHOcjzu9cQSMU9SvY=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=gkNw0E3XED1Mi/DPRHX1fh3qtAA4cz5Eo4GS7IxOETFFlK0YG3iCU2BXNQmorlQFVriYpVkd3f9hjYef71QrBwmKqza1+62oEGJ3ITLcuUaE5f3JL1xihMB6i+3C2VqeKe0DV7WLykx+csoL4IEhc1XNosf21A+qUEby8OpNCNA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=N3g/8nXc; arc=none smtp.client-ip=209.85.210.178
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1744432195; c=relaxed/simple;
+	bh=JBvQZYwHTuoyXs0QWuD2OUgJ6Jszv9WuY2iXMXSDM9A=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=PnglfBUsUGd9vbZOreAFb1xTe52HIHWreZF3pdFzeCTuumMABLuavrb+ue1iaKHrxbmWPfbTe9o7FZei7WgRYXUzAI9YlJYsIJI4j6+YGgkm+TRsubjbk+XhmTZ7A3h2L49azrsKjXYjVhcK6egWjIFC9yUWbwm6QwyKgQnNSQs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zytor.com; spf=pass smtp.mailfrom=zytor.com; dkim=pass (2048-bit key) header.d=zytor.com header.i=@zytor.com header.b=VRPOWZvb; arc=none smtp.client-ip=198.137.202.136
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zytor.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zytor.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="N3g/8nXc"
-Received: by mail-pf1-f178.google.com with SMTP id d2e1a72fcca58-736dd9c4b40so3256190b3a.0;
-        Fri, 11 Apr 2025 20:53:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1744430007; x=1745034807; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:content-language:references
-         :cc:to:from:subject:user-agent:mime-version:date:message-id:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=9cCaU/9pItXeyQyKncm+hw9C0oW5ARKbMzPEkSk/lu0=;
-        b=N3g/8nXcC63yd8R5bLzSfi6P/qDJfvtchPmhEGa6m15WKADcOposL3Z99bRBJ2vBiF
-         lrg12fzCaKK66NRYx0tE1oY1dUHNI84pkrFX5p96zIT5/3CSh8ak2DJZ+8FfPTv+qLsS
-         K7U+Xo6BWrybAsxz53/Gq68B3c9OxrJl9TZ7tExrZqAcg7fJFoKlxa4x7Vr8Gmh1p+1Z
-         BCtP7e7Kx9AaXiNHKGAXkY/1/m4WDpX452Nemtzk0IWv/TmNOKWDGavgrypEqAPN8iGS
-         TAX61GFd7tRETWaxVrOlDYFIcge5rYyX1fJp8PeMT5nJ1iTFbmudHxOprwzqk071ehvb
-         g3ig==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1744430007; x=1745034807;
-        h=content-transfer-encoding:in-reply-to:content-language:references
-         :cc:to:from:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=9cCaU/9pItXeyQyKncm+hw9C0oW5ARKbMzPEkSk/lu0=;
-        b=YgUzaXW5t7s/QhxVjFOPdE8j8he2qk3jHoV2qluthLHJbWiuuYBOxmqj3PWVTPrf+j
-         0Y5VarOf5CCYUnuYunrCsfT5NEmqETPP+A+k/rF0AgHVwaHL9oMqtnklk62ocWepNcNf
-         hOJBbDeB0fUVV4aixWjIdjd5YdKJpDvYjdrj4tXWCROdsc8ASKHMYn6pk6D2Bq/OLygt
-         XxbIyGepcT/g6PSsb4qANhr92UIkBzJRpYLextbBi3BNzLDCXHJngCoKRWOkwueatatD
-         zt9BQvGz+UDnsAmbntzTO64Kaw80wqDSsR+7NevuSGcrptlH2sMNMPzgeJHgRzstB3y8
-         wlZA==
-X-Forwarded-Encrypted: i=1; AJvYcCVX89rz8A/Ol/tGUkZH2Z4kZWKjmad945Wy+MY5sJS9Do/ada9I4o8SIFzFCNr+shl/bD6IGW1kYB3lRjyE@vger.kernel.org, AJvYcCVdakyic5D4CmefWgPkyEcrr8syUjkI63JcQ8gMBkOMyUg/8UzodL131rZhw6UzsrXBUHW6/vdkWx0=@vger.kernel.org, AJvYcCWRBaenYOI18hidoEoRL1if2leb1lxCcSDr2I++kUMsoey8ahspiyzkXpUdQZY0ljQAXo3dsKWDbAhF@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw16QyxhN+rB81xfH3MDDp+FSmiVlDb6EG7/5iTwUdgHieI473F
-	JeIwLaVAfMhTak0WRGOX553pwXOYHl8Oj7dhXBX+l1Y31s41iCco
-X-Gm-Gg: ASbGncuvgplU+8bdasapTVoE3xtZKXXvraWc0ZI+q9AEAlWhYkrnB0D76JZiBk/SGIZ
-	MjaynB/P1DvuF1Elc55wUhtnXP4z0BG1FoxGABME0rU9pO/ePxPS+7YXCErOqV60Rirk7v99/+g
-	5PrHJagQe4RH3ayPnFCjv/RBsWXd2h6aw8AcjhdEtrvIIjNnoHj6UeNgS7FBGiS40C1L/FZ8PUJ
-	k+o3x7PgrZFegLn4FdEVx8X+yHBD2TAfROTN+cURjTQYhr6uxbhGxt9c4u/+IprD20w9X+KxNyh
-	12NsFugVqOIXGM1XBqmOktlzhZ/Z3jI9oEsxNZKKETI5
-X-Google-Smtp-Source: AGHT+IEIMF5fg8Rc1Bjc1V7Y1P75rom0e3KD+7LFsWsIXn/FP8KnbU+SQpMciMlE4vYfRTYAuGDRbQ==
-X-Received: by 2002:a05:6a20:6f08:b0:1f3:1e5c:c655 with SMTP id adf61e73a8af0-201795227d9mr7520801637.6.1744430007203;
-        Fri, 11 Apr 2025 20:53:27 -0700 (PDT)
-Received: from [192.168.101.248] ([212.192.12.80])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-73bd2198c00sm2594765b3a.10.2025.04.11.20.53.12
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 11 Apr 2025 20:53:26 -0700 (PDT)
-Message-ID: <5084c2dc-d268-4268-a827-2ae445782a4e@gmail.com>
-Date: Sat, 12 Apr 2025 03:53:08 +0300
+	dkim=pass (2048-bit key) header.d=zytor.com header.i=@zytor.com header.b="VRPOWZvb"
+Received: from [192.168.7.202] ([71.202.166.45])
+	(authenticated bits=0)
+	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 53C4Slu6870108
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NO);
+	Fri, 11 Apr 2025 21:28:47 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 53C4Slu6870108
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zytor.com;
+	s=2025032001; t=1744432131;
+	bh=FXvWlC8cZ0c5rZvfhCZWv2G6gDWGLrU6c2dfFP+ocqY=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=VRPOWZvbRcqn1EMY2mNRL9aN3N/c3MyZF0mdY259h4YB1tWna+5wI8moYEe13BQrV
+	 Y7VxgVfWa/tVrQnCfTeJI+jR+mXuFWbKp1foVl/RfgDxEvVEcU1OReNbo3FKsyzDsS
+	 IUz1Bg6FQJOpybPqDAwkpjirXvLuxVP/OGIHZ7SyeJM7r5PCYnsymYO0HJ236p08Kn
+	 dkuauEUlLLatvA9E1RQNU6sG1uL18fyy/377y0CpobGu/GgaJRIVx9ZcbEtirZuNa+
+	 r+lDqtaYkKQKAbzpZ2JxRaUoFWbSSsykVtmXOfUWdDZWzwmhNWRAo/oRdIU4DO6UVF
+	 EXRIghMJiBfug==
+Message-ID: <46f17b70-bdbb-4d6c-bf49-2384364e7fc5@zytor.com>
+Date: Fri, 11 Apr 2025 21:28:46 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -66,45 +41,77 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/6] Add support for A523 Thermal system
-From: Mikhail Kalashnikov <iuncuim@gmail.com>
-To: Vasily Khoruzhick <anarsoul@gmail.com>, Yangtao Li
- <tiny.windzz@gmail.com>, Chen-Yu Tsai <wens@csie.org>,
- Jernej Skrabec <jernej.skrabec@gmail.com>,
- Samuel Holland <samuel@sholland.org>, Andre Przywara <andre.przywara@arm.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>,
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev,
- linux-kernel@vger.kernel.org, Piotr Oniszczuk <piotr.oniszczuk@gmail.com>
-References: <20250411003827.782544-1-iuncuim@gmail.com>
+Subject: Re: [RFC PATCH v1 10/15] KVM: VMX: Use WRMSRNS or its immediate form
+ when available
+To: "H. Peter Anvin" <hpa@zytor.com>, Sean Christopherson <seanjc@google.com>
+Cc: linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
+        linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev,
+        linux-edac@vger.kernel.org, kvm@vger.kernel.org,
+        xen-devel@lists.xenproject.org, linux-ide@vger.kernel.org,
+        linux-pm@vger.kernel.org, bpf@vger.kernel.org, llvm@lists.linux.dev,
+        tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
+        dave.hansen@linux.intel.com, x86@kernel.org, jgross@suse.com,
+        andrew.cooper3@citrix.com, peterz@infradead.org, acme@kernel.org,
+        namhyung@kernel.org, mark.rutland@arm.com,
+        alexander.shishkin@linux.intel.com, jolsa@kernel.org,
+        irogers@google.com, adrian.hunter@intel.com, kan.liang@linux.intel.com,
+        wei.liu@kernel.org, bcm-kernel-feedback-list@broadcom.com,
+        tony.luck@intel.com, pbonzini@redhat.com, vkuznets@redhat.com,
+        luto@kernel.org, boris.ostrovsky@oracle.com, kys@microsoft.com,
+        haiyangz@microsoft.com, decui@microsoft.com
+References: <20250331082251.3171276-1-xin@zytor.com>
+ <20250331082251.3171276-11-xin@zytor.com> <Z_hTI8ywa3rTxFaz@google.com>
+ <41eb2d08-1b2d-4ca8-bcb7-f5f4611f91a9@zytor.com>
+ <39ECA4CA-9CBC-4F72-B52E-9BD06DBF9B6D@zytor.com>
 Content-Language: en-US
-In-Reply-To: <20250411003827.782544-1-iuncuim@gmail.com>
+From: Xin Li <xin@zytor.com>
+Autocrypt: addr=xin@zytor.com; keydata=
+ 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
+ l75w1xInsg==
+In-Reply-To: <39ECA4CA-9CBC-4F72-B52E-9BD06DBF9B6D@zytor.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
+On 4/11/2025 1:50 PM, H. Peter Anvin wrote:
+>>> This is quite hideous.  I have no objection to optimizing __vmx_vcpu_run(), but
+>>> I would much prefer that a macro like this live in generic code, and that it be
+>>> generic.  It should be easy enough to provide an assembly friendly equivalent to
+>>> __native_wrmsr_constant().
+>> Will do.
+> This should be coming anyway, right?
 
-On 4/11/25 03:38, Mikhail Kalashnikov wrote:
-> This patch series adds temperature sensor support for the Allwinner A523
-> family of processors (same die with H728/A527/T527)
+Absolutely.
 
-Based on 6.15-rc1 with dts patches from
+Totally stupid me: we have it ready to use here, but ...
 
-https://lore.kernel.org/linux-sunxi/20250307005712.16828-1-andre.przywara@arm.com/T/#t
-
-> Mikhail Kalashnikov (6):
->    thermal/drivers/sun8i: add gpadc clock
->    thermal/drivers/sun8i: replace devm_reset_control_get to shared
->    thermal/drivers/sun8i: Add support for A523 THS0/1 controllers
->    arm64: dts: allwinner: A523: Add SID controller node
->    arm64: dts: allwinner: A523: Add thermal sensors and zones
->    dt-bindings: thermal: sun8i: Add A523 THS0/1 controllers
->
->   .../thermal/allwinner,sun8i-a83t-ths.yaml     |   5 +
->   .../arm64/boot/dts/allwinner/sun55i-a523.dtsi | 145 +++++++++++++++++
->   drivers/thermal/sun8i_thermal.c               | 154 +++++++++++++++++-
->   3 files changed, 300 insertions(+), 4 deletions(-)
->
