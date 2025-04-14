@@ -1,104 +1,147 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 292891EB5D6;
-	Mon, 14 Apr 2025 20:52:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4D8F1CAA6D;
+	Mon, 14 Apr 2025 21:42:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=68.232.154.123
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744663965; cv=none; b=XJoGl13kl+uNdljrEbp3oFyzRdTGOp4YrWfygFZv1g2ERtxj8YLhQXxW5QUfhtc5iiH3ixhJK1kKjKckETmChzOCScm9ZPMLtt8gxxaWhComu7v50jhGuZHoTR62eZ1gOU8j4/uaS/9QC7m315Nhh2nObCCawLd36lrszHipguo=
+	t=1744666923; cv=none; b=Y/vXHSCxSc1x7nVdQB/sJXbjidI91dOdu/J2Xz4rlldp5BmS8aVEOeLzeOGJdrRGLoDJmjLwFxLH1SqSTV9hrGPwdjry14S8sQ3ygkmFvG1xTYif0jl+GXt64dLHjum9zaKY10D9m7EIGKjzCBBBnB9148Xj1K07kfDRmF+Mqpk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744663965; c=relaxed/simple;
-	bh=nd8+9UJ+TOW1+YdlodfI+xvYQNqm7gqnsIfwCuBXWPs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=AJSZiDHKM8R8HjYvgkap3vrBpKo2tOBwfVS2sB8GvF0aJVeXpzmD6yl7NVeoe102f0xCLoL88+m+xQOyNVYkBTQrZUYo3HaBMoAQvnD2ohB+pL3wEn11SujpN014HVhd8lJ0/UlR6STzOgHBGbSCKGgLomp6nqBx9lYuemYa2Bk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=kU+sEdgo; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1744666923; c=relaxed/simple;
+	bh=tLt2eP72kLFIOGeY1xWW7M7uOV9URzcP5sXZZ5GRu38=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=pM1jZLKfI1EVqaV7gOO+xnB9Jf81WJNdyPuER5FBdyVGIUK6vzzmXrGStKS6N8i9u1TO58DrAH9mHSo9Z9ivZOBdJFgpQxFu85gvlbi6XkzQPKtNOwYhYNzrPfVewzyBCBT0dOTp2AGzipcNk9jM0wxgMSeLwTo7ZfsZNwKgBFw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com; spf=pass smtp.mailfrom=microchip.com; dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b=iIpB0zL6; arc=none smtp.client-ip=68.232.154.123
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=microchip.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="kU+sEdgo"
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 275A06625E5;
-	Mon, 14 Apr 2025 22:52:36 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1744663956;
-	bh=nd8+9UJ+TOW1+YdlodfI+xvYQNqm7gqnsIfwCuBXWPs=;
-	h=From:Subject:Date;
-	b=kU+sEdgorq20UccxrPVADnIKzDKR/nQfh0snvRRZp5Mx4AcmQQGqWdetw/jeilJJv
-	 g6idjoCN7bhRBSBOliPKhiEaURiAeea1u4raGK3kJaSTiGm1pixOTnA9UmNbmD7yJD
-	 C+18xbLWhHwCsgc2Yoq5qa2INWnVatV4V+ydXyV8ah9MeLzYPum5m6XKqvtn4h82th
-	 ndeT1JwRkrAcqGBTmvj6GEMZge4FQuzdiEB76xq6ymEXHk+o45GGiyOzbm7GlCmjec
-	 dsI973VnblHalqFz8YNgwpHaysN3dtU4w+uLG6SIOZoETaiVA0HlW+dHtjrgMuS4fa
-	 UOsPwsXiHFhAw==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Mario Limonciello <mario.limonciello@amd.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Christian Loehle <christian.loehle@arm.com>,
- Sultan Alsawaf <sultan@kerneltoast.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Valentin Schneider <vschneid@redhat.com>, Ingo Molnar <mingo@redhat.com>
-Subject:
- [PATCH v1 0/5] cpufreq/sched: Improve synchronization of policy limits
- updates with schedutil
-Date: Mon, 14 Apr 2025 22:39:53 +0200
-Message-ID: <3364921.aeNJFYEL58@rjwysocki.net>
+	dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b="iIpB0zL6"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
+  t=1744666921; x=1776202921;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=tLt2eP72kLFIOGeY1xWW7M7uOV9URzcP5sXZZ5GRu38=;
+  b=iIpB0zL6XlV4gaiF/FjqRuntcSvesXqA0XN4maYaEMFM3rAWaqqr/MzH
+   7TIs/B0JpmmdfSgKwsr0s4E6bXJnDydI/K5DlyED8hE/PaXaOjq/tmeKJ
+   HQqJ+6rnov5DJAY3PzzLQRbF8ba1CSk1za60G9yu+k/DwP4FS2WWRp4jc
+   URuCqeqrF0SUPoPmu+yE6tR4LqMmczO2bdu/M6Yyx6Qg+voWmxJoHtJkv
+   VBZO1LxTj+pmmB5zaIKReb2i+OlJwsCyTIScf+XI8s1rgDGA6rG1axFm2
+   RebhIYUlvESljA5Wl3YwpHfjs/qyI0g9Qd/ZzESQeF8sw2WJU7SLnhWJl
+   g==;
+X-CSE-ConnectionGUID: jf75aQsXSneWELgtntpGWQ==
+X-CSE-MsgGUID: nFPUg5ewTjG1kq33dFZTtQ==
+X-IronPort-AV: E=Sophos;i="6.15,212,1739862000"; 
+   d="scan'208";a="40006664"
+X-Amp-Result: SKIPPED(no attachment in message)
+Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
+  by esa4.microchip.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 14 Apr 2025 14:41:54 -0700
+Received: from chn-vm-ex04.mchp-main.com (10.10.85.152) by
+ chn-vm-ex03.mchp-main.com (10.10.85.151) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.44; Mon, 14 Apr 2025 14:41:04 -0700
+Received: from ryan-Precision-3630-Tower.microchip.com (10.10.85.11) by
+ chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server id
+ 15.1.2507.44 via Frontend Transport; Mon, 14 Apr 2025 14:41:04 -0700
+From: <Ryan.Wanner@microchip.com>
+To: <robh@kernel.org>, <krzk+dt@kernel.org>, <conor+dt@kernel.org>,
+	<nicolas.ferre@microchip.com>, <alexandre.belloni@bootlin.com>,
+	<claudiu.beznea@tuxon.dev>, <lee@kernel.org>, <sre@kernel.org>,
+	<p.zabel@pengutronix.de>
+CC: <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+	<linux-rtc@vger.kernel.org>, Ryan Wanner <Ryan.Wanner@microchip.com>
+Subject: [PATCH v5 00/11] Enable Power Modes Support for SAMA7D65 SoC
+Date: Mon, 14 Apr 2025 14:41:17 -0700
+Message-ID: <cover.1744666011.git.Ryan.Wanner@microchip.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvvdduheeiucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeduuddprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehvihhrvghshhdrkhhumhgrrheslhhinhgrrhhordhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=11 Fuz1=11 Fuz2=11
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-Hi Everyone,
+From: Ryan Wanner <Ryan.Wanner@microchip.com>
 
-This series of patches has been inspired by the discussion following a bug
-report regarding the patch at
+This patch set adds support for low power modes for the SAMA7D65 SoC and
+the required components and changes for low power modes.
 
-https://lore.kernel.org/lkml/20241212015734.41241-2-sultan@kerneltoast.com/
+The series includes changes in the asm code to account for the addtional
+clocks that are in this SoC.
 
-and its attempted unsuccessful resolution:
+The Device tree additions are to enable all the components needed to
+keep the SoC in low power mode.
 
-https://lore.kernel.org/linux-pm/20250410024439.20859-1-sultan@kerneltoast.com/
+There are some DTB check warnings but that is due to the dt-binding not
+in the correct .yaml file format.
 
-which basically leads to the conclusion that cpufreq policy limits updates are
-not sufficiently synchronized with the scheditil governor, especially in the
-fast switching case in which running the driver callback is the only way to
-make the new policy limits take effect.
+Changes v1 -> v2:
+- Add missing compatible for ddr3phy, it is now in both syscon sets.
+- Fix alphabetical ordering for sama7d65.
+- Remove the incorrect reorganizing patch.
+- Remove sama7g5-rtt as a compatible for sama7d65-rtt and add
+  sama7d65-rtt as a compatible wake up source in the pm driver.
 
-The purpose of this series is to address this concern.
+Changes from v2 -> v3:
+- Correct mistake in v2 sfrbu dt-binding patch.
+- Correct incorrect dt-binding addition and formatting for rtc and rtt bindings.
+- Add missing SoB tag.
+- Cleaned up commit message for Backup mode to describe SHDWC is status
+  register is cleared for this SoC.
+- Cleaned up variable naming and usage for mcks. Changed the mcks number
+  to the correct number of clocks needed to be saved and corrected the
+  ASM code accordingly.
+- Removed the SHDWC from ULP0 wake-up source as it is not configured as
+  a valid wake-up source for ULP0.
+- Separated all the DTSI and DTS changes into individual patches.
 
-Patch [1/5] is a fix for the issue introduced by the patch linked above (please
-see the patch changelog for details), for 6.15-rc.  The remaining patches are
-for 6.16.
+Changes from v3 -> v4:
+- Add sama7d65-gpbr to the dt-binding.
+- Converted the sama5d2-secumod binding into yaml format.
+- Add sama7d65-secumod to the new dt binding.
+- Collect and remove applied and accpeted pathces from the set.
 
-Patch [2/5] adds memory barriers in two places in schedutil along with some
-WRITE_ONCE()/READ_ONCE() annotations to ensure that policy limits updates will
-not be missed due to reordering of instructions.
+Changes from v4 -> v5:
+- Use generic naming for dt-binding yaml example.
+- Adjust DTSI SECUMOD node to match generic naming.
+- Collect Acked and Reviewed tags. 
 
-Patch [3/5] is a preparatory function rename with no functional impact.
+v1) https://lore.kernel.org/linux-arm-kernel/cover.1738257860.git.Ryan.Wanner@microchip.com/
+v2) https://lore.kernel.org/linux-arm-kernel/cover.1739221064.git.Ryan.Wanner@microchip.com/
+v3) https://lore.kernel.org/linux-arm-kernel/cover.1740671156.git.Ryan.Wanner@microchip.com/T/#m576233e7af84d68559afb286884c2b9294e7bc1d 
+v4) https://lore.kernel.org/linux-arm-kernel/cover.1742936082.git.Ryan.Wanner@microchip.com/
 
-Patch [4/5] updates the cpufreq core to avoid situations in which
-cpufreq_driver_resolve_freq(), called by schedutil, may see intermediate
-values of policy->min and policy->max and makes that function address the
-unlikely case in which it may see policy->min > policy->max.
+Ryan Wanner (11):
+  dt-bindings: sram: Add microchip,sama7d65-sram
+  dt-bindings: power: reset: atmel,sama5d2-shdwc: Add
+    microchip,sama7d65-shdwc
+  dt-bindings: reset: atmel,at91sam9260-reset: add
+    microchip,sama7d65-rstc
+  dt-bindings: rtc: at91rm9200: add microchip,sama7d65-rtc
+  dt-bindings: at91rm9260-rtt: add microchip,sama7d65-rtt
+  dt-bindings: mfd: atmel: Add microchip,sama7d65-gpbr
+  dt-bindings: mfd: syscon: atmel,sama5d2-secumod: convert to yaml
+  dt-bindings: mfd: syscon: add microchip,sama7d65-secumod
+  ARM: dts: microchip: sama7d65: Add SRAM and DRAM components support
+  ARM: dts: microchip: sama7d65: Add RTT and GPBR Support for sama7d65
+    SoC
+  ARM: dts: microchip: sama7d65: Add RTT timer to curiosity board
 
-Patch [5/5] cleans up the code after the previous changes.
+ .../bindings/arm/atmel,sama5d2-secumod.yaml   | 49 +++++++++++++++++++
+ .../devicetree/bindings/arm/atmel-sysregs.txt | 25 ----------
+ .../bindings/mfd/atmel,at91sam9260-gpbr.yaml  |  1 +
+ .../power/reset/atmel,sama5d2-shdwc.yaml      |  5 ++
+ .../reset/atmel,at91sam9260-reset.yaml        |  3 ++
+ .../bindings/rtc/atmel,at91rm9200-rtc.yaml    |  4 +-
+ .../bindings/rtc/atmel,at91sam9260-rtt.yaml   |  1 +
+ .../devicetree/bindings/sram/sram.yaml        |  1 +
+ .../dts/microchip/at91-sama7d65_curiosity.dts |  4 ++
+ arch/arm/boot/dts/microchip/sama7d65.dtsi     | 47 ++++++++++++++++++
+ 10 files changed, 114 insertions(+), 26 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/atmel,sama5d2-secumod.yaml
 
-Please see individual patch changelogs for details.
-
-Thanks!
-
-
+-- 
+2.43.0
 
