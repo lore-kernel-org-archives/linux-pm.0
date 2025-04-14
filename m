@@ -1,83 +1,89 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from fw2.prolan.hu (fw2.prolan.hu [193.68.50.107])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E91A2D1F6E
-	for <linux-pm@vger.kernel.org>; Mon, 14 Apr 2025 13:19:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25AC727FD7D;
+	Mon, 14 Apr 2025 14:02:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.68.50.107
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744636771; cv=none; b=TgaIbXNv4fF70QuincdFHHzdhhnsN+JmZAja/2VapyEHL+w3pzbzBngalW0t85pz2DDD8uNDkaFcJ6CQiXjMGtjYt3Q2zocoFx66JHwTk3eblnNigYAtM8Vu/7zJKjiHGm0j1UknhMb9KPHjTz9UXLsnT8CkI1Srqhlh4ygWv/A=
+	t=1744639335; cv=none; b=F1+6XPkbiQr45XjqDchGSGUjQKZVaXu5Nsg1ueW+TnV6fF7capHEsQ3OvkUbcMhj7zBS0gxnideduSzlRtAtWzCA0xtguyjpevfQSHoAdnfewX1jEpRae0mDAfRpL60y4Ia3rOPWcZaPZ3F/cjIBhXont/MpWF+Wbhao0NzVyE8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744636771; c=relaxed/simple;
-	bh=KyKZ3ufkEQe3K5p24FQ6yx+x877Wi04k+RBNX2F1xW0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=t5TvsdNM31OyGLFlZ2ezWzBH0K4z5EM1QqsgUeHqIxtE5ypRzu6SC9DpAdzmNpYIo433meuimp+zTFTql4TxNhaZr3x6XxSEasWWYY5bH3I102k9f1a9VlSuY/R9iJ2vhJKeC6P2qr4xD3ujzupsa1cRhAlZtu0EFYiFQoluBCw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=JeEfTbiI; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1744639335; c=relaxed/simple;
+	bh=CndQFGuLnQ703+fOAOJDmmHIDhuS/2SEJT3iDiK/hvQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=Xf9S0Ler6W4VNGoMqKB/f7064MxTKWW9aw49ET07mo//ikBfl1hLxe4mftJzpAelhwHxtpe+Cef4SY4GcxRQD/+uBJKlnQQSI8+xLzzPJ2ebnlGCjPLwPh6jG7tBrvDGi4sJuo19mp57KWSY+bYzijMnrJvCFnxoqddpyg9nVD4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=prolan.hu; spf=pass smtp.mailfrom=prolan.hu; dkim=pass (4096-bit key) header.d=prolan.hu header.i=@prolan.hu header.b=t9pCPRQ2; arc=none smtp.client-ip=193.68.50.107
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=prolan.hu
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=prolan.hu
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="JeEfTbiI"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1744636768;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=+QZ3tghRcLpy9psREtTvIDG6cbVFr5jPCan3SZyejlw=;
-	b=JeEfTbiIgXe9L93N+Doc8he2Qp1hQQMyXXHg+6tgjj617ITYz06Gvim2twg0vBimTQjnJP
-	RFiRW0eHB42JjlOjnR+if4//lGsV4xy7Rc6GgD7YIVyUpFrGdJUXq2eVCIavpJfzJhE1ci
-	LroEkEI2V/3LG/USYUzK9iwdVXbRt8Q=
-Received: from mx-prod-mc-04.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-315-s4ivFx0yPnGT2e5Sl8a_7Q-1; Mon,
- 14 Apr 2025 09:19:19 -0400
-X-MC-Unique: s4ivFx0yPnGT2e5Sl8a_7Q-1
-X-Mimecast-MFC-AGG-ID: s4ivFx0yPnGT2e5Sl8a_7Q_1744636759
-Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-04.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id F09E11955D82;
-	Mon, 14 Apr 2025 13:19:18 +0000 (UTC)
-Received: from carbon.redhat.com (unknown [10.44.32.142])
-	by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 555063003746;
-	Mon, 14 Apr 2025 13:19:16 +0000 (UTC)
-From: Jelle van der Waa <jvanderwaa@redhat.com>
-To: Sebastian Reichel <sre@kernel.org>,
-	linux-pm@vger.kernel.org
-Cc: =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>,
-	Hans de Goede <hdegoede@redhat.com>,
-	Jelle van der Waa <jvanderwaa@redhat.com>
-Subject: [PATCH v2 0/1] power: supply: support charge_types in the extensions API
-Date: Mon, 14 Apr 2025 15:18:39 +0200
-Message-ID: <20250414131840.382756-1-jvanderwaa@redhat.com>
+	dkim=pass (4096-bit key) header.d=prolan.hu header.i=@prolan.hu header.b="t9pCPRQ2"
+Received: from proxmox-mailgw.intranet.prolan.hu (localhost.localdomain [127.0.0.1])
+	by proxmox-mailgw.intranet.prolan.hu (Proxmox) with ESMTP id B451CA0370;
+	Mon, 14 Apr 2025 15:56:48 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=prolan.hu; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:from:from:in-reply-to:message-id:mime-version:references
+	:reply-to:subject:subject:to:to; s=mail; bh=8fUTt49ngH9LwQeutmpq
+	Atan+y77TmFvSLDx00ftJms=; b=t9pCPRQ2tmxUZmdzLFDzbVZeoRtXZjDfgQoU
+	JMJpuozYaayHGe5M8rtZeul0OU/+F9X4CpMRAVyMFQFkPO7wR8zzEFtkI74Ye0dI
+	ADOz7gwLOQPJeZujzuajq635AW7etk4of6jaKUDWUnjyUgcgFHA4wFSlBn/Wema8
+	h8PFPH2UyOzNqCyjL2KDQXPqbCYhed4NZ+0Rdyx3IVfp7MVupbKlIeo055aR5zyn
+	HiCcr96E4uWhI47L71f0twy8JsoxjMausdIw6mCa8yjWiEtCvWdk6CGx7J6CHx0T
+	3vuIVBNAzb4osY94mucmeauKFPNuFOfSdxzd9dJ8utOPILJ/OE8X5nPlPxMHeiMC
+	wVXUT1b961oG1BveaAZz2BIctqzdxleO5HU5r+7ayNSEvR5IdBqo6C18d17+1q/k
+	6OfkDYosROTg7TUakxHUyXJ8/R5NGwv3dJcEYDWEujln53H1zsGk5oI6J/J0KlkT
+	D6Sfd2ElQtNUWMqubsWtaD+9X51Ux5MhtelheK6OGoHUbcfr/RTY2UgGmTWZJrVd
+	zrgeq4F2WGqcvULyHEHgHmQqicc3w6dcEJqT07jV+Rc7UpvLaUahU8thqM5ebD+i
+	PQ0nPK8VdUJDejG2Hffd2qnwkKH5+R/XbwdIHNuP1hKpkDZkJbL0w8fkZJkLUI+F
+	Y3cED88=
+Message-ID: <832eb5e3-7e2d-4ed2-8571-eca9fe129013@prolan.hu>
+Date: Mon, 14 Apr 2025 15:56:47 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 1/2] pm: runtime: Add new devm functions
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Mark Brown <broonie@kernel.org>
+CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>, "Varshini
+ Rajendran" <varshini.rajendran@microchip.com>, Tudor Ambarus
+	<tudor.ambarus@linaro.org>, <linux-spi@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, Len Brown <len.brown@intel.com>,
+	Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Danilo Krummrich <dakr@kernel.org>, Alexander Dahl <ada@thorsis.com>,
+	"Nicolas Ferre" <nicolas.ferre@microchip.com>, Alexandre Belloni
+	<alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+	Pavel Machek <pavel@kernel.org>
+References: <20250327195928.680771-2-csokas.bence@prolan.hu>
+ <20250327195928.680771-3-csokas.bence@prolan.hu>
+ <CAJZ5v0jmuzvo-xzGBDhGVBbY7svbrqEdi-SeJrx5BG=qtN6ZiQ@mail.gmail.com>
+Content-Language: en-US, hu-HU
+From: =?UTF-8?B?Q3PDs2vDoXMgQmVuY2U=?= <csokas.bence@prolan.hu>
+In-Reply-To: <CAJZ5v0jmuzvo-xzGBDhGVBbY7svbrqEdi-SeJrx5BG=qtN6ZiQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
+X-ClientProxiedBy: ATLAS.intranet.prolan.hu (10.254.0.229) To
+ ATLAS.intranet.prolan.hu (10.254.0.229)
+X-EsetResult: clean, is OK
+X-EsetId: 37303A2980D94853647464
 
-The goal of this patch is to make it possible for the ideapad-laptop
-driver to move from its custom conservation_mode sysfs attribute to the
-standardised charge_types sysfs attribute with a power_supply extension.
-Along with other laptop models which support an end charge threshold
-which limits it to a fixed value such as some Toshiba and LG models.
+Hi,
 
-User space, in this case UPower would then be detect 'Long Life' as
-charge_types option and set it.
+On 2025. 04. 09. 19:43, Rafael J. Wysocki wrote:
+> On Thu, Mar 27, 2025 at 8:59 PM Bence Csókás <csokas.bence@prolan.hu> wrote:
+>>
+>> Add `devm_pm_runtime_set_active_enabled()` and
+>> `devm_pm_runtime_get_noresume()` for simplifying common cases in drivers.
+>>
+>> Signed-off-by: Bence Csókás <csokas.bence@prolan.hu>
+> 
+> I can apply this one alone if you want me to do that, but I could also
+> apply the other patch in the series if it got an ACK from the driver
+> maintainer.
 
-This patch should also allow the "dell-laptop" driver to move over to
-the extensions API.
+I think you can apply it and then Mark can apply the SPI part to his 
+tree. @broonie what do you think?
 
-Jelle van der Waa (1):
-  power: supply: support charge_types in extensions
-
- drivers/power/supply/power_supply_sysfs.c | 23 ++++++++++++++++++++++-
- drivers/power/supply/test_power.c         | 20 ++++++++++++++++++--
- include/linux/power_supply.h              |  1 +
- 3 files changed, 41 insertions(+), 3 deletions(-)
-
--- 
-2.49.0
+Bence
 
