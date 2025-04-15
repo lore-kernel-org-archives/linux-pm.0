@@ -1,124 +1,117 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8712824169D;
-	Tue, 15 Apr 2025 08:55:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 044B68633F;
+	Tue, 15 Apr 2025 09:12:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744707310; cv=none; b=awuMwmb4Afq3G4k7zY2NI/B3BwTaKjTXyxfZF6hLRcQ86AyJs8HsP0sVWFa7J5W4ni96AT7QSrIWE6b1Q85tk2dnBiCavEFOa/WsgoxXaO38B7bYPJ871PqiOx1NNFtW9KUPq3QV6W1+/h6ozV6cZcvav3aVY16am4KeCzuEkFk=
+	t=1744708353; cv=none; b=Q75H3R/B/4wVji2VPGfu5SWzRl0srid6w+08jcYwU6dd6xoIDFgVd/wwsz1LAt892DxiFd4wStoTEF7Kofe/mOB++Y3Kif4ZKHFY+U5A2/gUvselV+kJbeWj7g2qoFW1aiHCgwBkwyV3ZeV0Qw7inucEmUWAPHdEZmZvxtiYa8w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744707310; c=relaxed/simple;
-	bh=vGvpKawwe3gI5yvFnpIT7nHbouJvN4MFyvJyYAkbBsA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=u9pUyG+JDBoyFIsvrLV7zaXkxvvNcyShSoDQC+AM8SUb3QdBZsonjl00tVKl7WcvBZQ4yvbtOY3C6HmFvTcK60/0eQQQ+ZjO0wDwhGsTJNXjbjHrIwdMmbR+RhD46zzmRVzX/K81/gIXHHxrWL781PGuieNK3gko/dcQ0RFAwiA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Gl2fmgtD; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1744708353; c=relaxed/simple;
+	bh=1GPdp0yF1LxXZR2PHbVhmstt8gYYNiu8Be9hukxMSKg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=p4QoUE3cP+LOZywyrSupHVpU4lF25SJ8KZqxdYpiLunLX+Pz3mwPiF0pTKXRLvYGm9WpzaAKWNJlD9qfZjvZpYVi/WzI9TJPPO3fL7oA63++2kg+f1pOn/swRxD9rTobmrzCuWPhow2Y+0riix2LswU4YtPhnlNkt99Cm3dtoN4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=uwCWIXWO; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Gl2fmgtD"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A690C4CEDD;
-	Tue, 15 Apr 2025 08:55:09 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="uwCWIXWO"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 69EC4C4CEE9;
+	Tue, 15 Apr 2025 09:12:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1744707310;
-	bh=vGvpKawwe3gI5yvFnpIT7nHbouJvN4MFyvJyYAkbBsA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Gl2fmgtD+ZSCoo67x4oHR2ZYoD3QcZhpyCGP8Scecgr+Fp/lHASgEDumO10W8Dv7O
-	 035vsmJvbj5Vg0UD6MiI5xbxLNRWG+0xtq95m2U5Nyb5W6WaMbcwSgaftRmdcwOeW6
-	 EhbsZt3RYI3vrz4Q95FvtyS6Z/t1USGZrynKrZCnjbs7pM5TXTPMgDNKOncboH6VfA
-	 JLRWFKbZVKfARUb+bFqM652yrz+KDihgB9912fHs0nR8W7kFQ6dOygjGDcnX/YPilC
-	 ZHfvb6jjjgjsVCqqN13FHowyIaqHtc5C2UU7fs+U1STPxyOfF626j8WooeXh1jJ/KT
-	 /d7UI6axfZbHQ==
-Date: Tue, 15 Apr 2025 10:55:07 +0200
-From: Maxime Ripard <mripard@kernel.org>
-To: Michal Wilczynski <m.wilczynski@samsung.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Pavel Machek <pavel@kernel.org>, Drew Fustini <drew@pdp7.com>, 
-	Guo Ren <guoren@kernel.org>, Fu Wei <wefu@redhat.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Ulf Hansson <ulf.hansson@linaro.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	Frank Binns <frank.binns@imgtec.com>, Matt Coster <matt.coster@imgtec.com>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Thomas Zimmermann <tzimmermann@suse.de>, 
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, m.szyprowski@samsung.com, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-riscv@lists.infradead.org, 
-	devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v2 4/4] drm/imagination: Skip clocks if platform PM
- manages resources
-Message-ID: <20250415-poetic-magenta-cicada-9d1ee7@houat>
-References: <20250414-apr_14_for_sending-v2-0-70c5af2af96c@samsung.com>
- <CGME20250414185317eucas1p139284a38dc4418ac90bd081c2825142a@eucas1p1.samsung.com>
- <20250414-apr_14_for_sending-v2-4-70c5af2af96c@samsung.com>
+	s=k20201202; t=1744708352;
+	bh=1GPdp0yF1LxXZR2PHbVhmstt8gYYNiu8Be9hukxMSKg=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=uwCWIXWOjs4ZUB2sl812nBkFDj5xJ5vtkezRCrfMst7XMGarouLL2tQyX+2LXZSLC
+	 yIMOPEznBq3OBevBKvZnj+wpJ+HpVAfNHPHo8m2VVemN7Yl9J3XLoo1HHmM7NFEkCB
+	 Vueh6uFD+qq2X8hUElD/NdeVUVfUO1y1d5Fgz+MJ3hpDITtga03UP2xmccwaz7wLi3
+	 5/rcVarwn+SjJowQbT5pcs2wyLSbkmMWbLetH/dXVFo92yUksI3wbkXdqKgDUaGKBf
+	 z4JVuZEKb77iGDhj3R9bHZveTMucORDqGBS8yz3bEmARCEQ2QcQHbTnJFjRHCHTY+W
+	 iEdYqHTdCq8cw==
+Received: by mail-oa1-f47.google.com with SMTP id 586e51a60fabf-2cca475546fso2542037fac.1;
+        Tue, 15 Apr 2025 02:12:32 -0700 (PDT)
+X-Gm-Message-State: AOJu0Yy8NOEct9713y8Tu0feOiZcIUp6NeFtEAcCprLQDDr4irdEr8XB
+	+PE1zM+OCuZN32Ror9vaV0EmI+1Ym8rU5TNvhqgzOy4PnGvqGpw7PLmXY44Ql/94jokUtKdH39M
+	BK7tNKa8m2Ylyp9PMr+s04IdYeqI=
+X-Google-Smtp-Source: AGHT+IHd6zT4M76Tkq99+iZ/V1LqHgTjfCOEic8maVILN3RMZaCDCPkYCIDpgaGK0+eePA5xmH+78+9WsSmN60/2cjo=
+X-Received: by 2002:a05:6871:a582:b0:2a3:832e:5492 with SMTP id
+ 586e51a60fabf-2d0d5efba95mr8488238fac.25.1744708351716; Tue, 15 Apr 2025
+ 02:12:31 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="dpgfk2bi35c7deux"
-Content-Disposition: inline
-In-Reply-To: <20250414-apr_14_for_sending-v2-4-70c5af2af96c@samsung.com>
-
-
---dpgfk2bi35c7deux
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
+References: <3364921.aeNJFYEL58@rjwysocki.net> <8533207.T7Z3S40VBb@rjwysocki.net>
+In-Reply-To: <8533207.T7Z3S40VBb@rjwysocki.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Tue, 15 Apr 2025 11:12:19 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hwBA=EkE8aV5Gyn2R3JxsgSzg_F9pNMSkNgwzPUBKLow@mail.gmail.com>
+X-Gm-Features: ATxdqUFxCYrrQbp2Dc0mDJWKB-pIhJh3_KXY5hQFXWXSYs6lax73wZnI9gBRquA
+Message-ID: <CAJZ5v0hwBA=EkE8aV5Gyn2R3JxsgSzg_F9pNMSkNgwzPUBKLow@mail.gmail.com>
+Subject: Re: [PATCH v1 1/5] cpufreq/sched: Check fast_switch_enabled when
+ setting need_freq_update
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
+	Mario Limonciello <mario.limonciello@amd.com>, Vincent Guittot <vincent.guittot@linaro.org>, 
+	Christian Loehle <christian.loehle@arm.com>, Sultan Alsawaf <sultan@kerneltoast.com>, 
+	Peter Zijlstra <peterz@infradead.org>, Valentin Schneider <vschneid@redhat.com>, 
+	Ingo Molnar <mingo@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v2 4/4] drm/imagination: Skip clocks if platform PM
- manages resources
-MIME-Version: 1.0
 
-On Mon, Apr 14, 2025 at 08:52:58PM +0200, Michal Wilczynski wrote:
-> Update the Imagination PVR driver to skip clock management during
-> initialization if the platform PM has indicated that it manages platform
-> resources.
->=20
-> This is necessary for platforms like the T-HEAD TH1520, where the GPU's
-> clocks and resets are managed via a PM domain, and should not be
-> manipulated directly by the GPU driver.
->=20
-> Signed-off-by: Michal Wilczynski <m.wilczynski@samsung.com>
+On Mon, Apr 14, 2025 at 10:52=E2=80=AFPM Rafael J. Wysocki <rjw@rjwysocki.n=
+et> wrote:
+>
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Commit 8e461a1cb43d ("cpufreq: schedutil: Fix superfluous updates caused
+> by need_freq_update") overlooked the fact that when fast swtching is
+> enabled, it is the only way to pick up new policy limits and so
+> need_freq_update needs to be set in that case when limits_changed is
+> set.
+>
+> This causes policy limits updates to be missed in some cases, so
+> make sugov_should_update_freq() also set need_freq_update when the
+> fast_switch_enabled policy flag is set.
+
+Earlier today I realized that this patch would not be sufficient
+because if the policy limits change, schedutil needed to invoke the
+driver callback for the new limits to take effect regardless of
+whether or not fast switching had been enabled.
+
+After making this observation I've realized that there's a better fix
+that covers all of the relevant cases, but it requires patch [2/5] to
+be rebased and one more can be made between the new fix and patch
+[2/5].
+
+So there will be a v2.
+
+> Fixes: 8e461a1cb43d ("cpufreq: schedutil: Fix superfluous updates caused =
+by need_freq_update")
+> Closes: https://lore.kernel.org/lkml/Z_Tlc6Qs-tYpxWYb@linaro.org/
+> Reported-by: Stephan Gerhold <stephan.gerhold@linaro.org>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->  drivers/gpu/drm/imagination/pvr_device.c | 14 ++++++++++----
->  1 file changed, 10 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/gpu/drm/imagination/pvr_device.c b/drivers/gpu/drm/i=
-magination/pvr_device.c
-> index 1704c0268589bdeb65fa6535f9ec63182b0a3e94..f40468b99cf14da418aeecde0=
-86f009695ff877c 100644
-> --- a/drivers/gpu/drm/imagination/pvr_device.c
-> +++ b/drivers/gpu/drm/imagination/pvr_device.c
-> @@ -504,10 +504,16 @@ pvr_device_init(struct pvr_device *pvr_dev)
->  	if (err)
->  		return err;
-> =20
-> -	/* Enable and initialize clocks required for the device to operate. */
-> -	err =3D pvr_device_clk_init(pvr_dev);
-> -	if (err)
-> -		return err;
-> +	/*
-> +	 * Only initialize clocks if they are not managed by the platform's
-> +	 * PM domain.
-> +	 */
-> +	if (!device_platform_resources_pm_managed(dev)) {
-> +		/* Enable and initialize clocks required for the device to operate. */
-> +		err =3D pvr_device_clk_init(pvr_dev);
-> +		if (err)
-> +			return err;
-> +	}
-
-So, how does that work for devfreq? I can understand the rationale for
-resets and the sys clock, but the core clock at least should really be
-handled by the driver.
-
-Maxime
-
---dpgfk2bi35c7deux
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCZ/4e6gAKCRDj7w1vZxhR
-xeTeAQDBOrkzTJtdQ3A1rnkjHNj0lVxM4Ty8cZ/N6If/1qYvgAD/S8+uTDIzPSNF
-nUiSeauW8K+11TmEGBs2o10AHNMK4wY=
-=lBeR
------END PGP SIGNATURE-----
-
---dpgfk2bi35c7deux--
+>  kernel/sched/cpufreq_schedutil.c |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+>
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -83,7 +83,9 @@
+>
+>         if (unlikely(sg_policy->limits_changed)) {
+>                 sg_policy->limits_changed =3D false;
+> -               sg_policy->need_freq_update =3D cpufreq_driver_test_flags=
+(CPUFREQ_NEED_UPDATE_LIMITS);
+> +               sg_policy->need_freq_update =3D
+> +                       sg_policy->policy->fast_switch_enabled ||
+> +                       cpufreq_driver_test_flags(CPUFREQ_NEED_UPDATE_LIM=
+ITS);
+>                 return true;
+>         }
+>
+>
+>
+>
+>
