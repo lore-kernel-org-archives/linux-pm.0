@@ -1,136 +1,105 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F53A221D80;
-	Wed, 16 Apr 2025 18:12:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B277219A79
+	for <linux-pm@vger.kernel.org>; Wed, 16 Apr 2025 20:18:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744827178; cv=none; b=JPnu8/gObIOYZcjpvqvQTVvKRSPBENfZTqmdNjbYeao4MMo1a43iDqDullCU/2Wwn0u6yZBDmSE2d5veVmtvVqZLgwa6lw55ENjlpWPX32ilPLhgq7zg2Opsjtr0docja/hoO/TCOTLkzL6eP8i23KuuY8XgqLQMe++deXxnJyM=
+	t=1744834701; cv=none; b=GFFUH97im9/HbXUxcG5/YBL9bQZkqG3d7rBGkAx2ihs1vQzxxn+9jG5qsmdm3zUIXPIrTV1qudtSiHI+8GUOxFPiNT5JPytKwUW+sTcEc2ehxsWjyLenwZyiMBMDqsVtClsQT9HPHQaJ3mB+UYjYXM5zbz+rgI7MlbctVFnQjLE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744827178; c=relaxed/simple;
-	bh=SXPUl90BjvGcpXMvmbXxCsof9c3BOGco/bFN/nHJFmI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ibIknG6lMl5UtXgBEZDTe5qH22WDTiZAshHjqIVl6WfsLVsKkv4AfAkX2qs0A5RhgQynSuvA8DcjputdByxNAl9m47h3w2y2HRM8M7AkkafycGb4+G88roPGerFwxs5MsFfL8pOyZDi0WHC2MxVlKUDN7KEaxmt0MaGPRpjSgNE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=xT57oqYN; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1744834701; c=relaxed/simple;
+	bh=0SmEON0Tw+ZzqwBF2QPH0kEjZgsLnEhgxvYjYRg4ye0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=LH/zUYxfpE7qBRJVKHeGfFzF/jNgSVYzLzLzMnP4eDXG2SapIRnDPGoHjHz+dGbSPxCcxm29Dtz1yXYadRVlyj68vPfwD8u+KBvZYgXk2EPqvuuLJYFtdBtivUaNnPvjViS0x1Wc9F+YZBHdJolPwyFHOYu6uHa7vMAuuWBIBjY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bcOZ3WWM; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="xT57oqYN"
-Received: from kreacher.localnet (unknown [195.136.19.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 73572662716;
-	Wed, 16 Apr 2025 20:12:53 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1744827174;
-	bh=SXPUl90BjvGcpXMvmbXxCsof9c3BOGco/bFN/nHJFmI=;
-	h=From:Subject:Date;
-	b=xT57oqYNKhSfN3LgVlcpUWX8w/K2GWnDdEl1KZ3TtBmOpI2981uCUqUuAHCs+zFCy
-	 /BTJNP5EaZyVib/0FodXuC41vNftwI6nKZVQmLZ89JJ2zQ08blESOIHNm/vavVQLS8
-	 DfEWzgL7Xb6+T95uD6AqJugjKA4dLl1qcl5VHvIoc3QL3Thdjq/Oj5vAO+8XwKZigy
-	 5Ok87vtcGabzs5KVJwogUKPIAcDizn5CuV1LOYGNEV/Z1Bmw8jlAkIgT2yDsukaiX/
-	 taADtHZfKsYiFLMR12KdygJ69cXaxq5gtJI/pMCEgf+Tf2LzMoCes18A83JfyRC0yO
-	 MeFJ+H/zcpcIg==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Morten Rasmussen <morten.rasmussen@arm.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
- Pierre Gondois <pierre.gondois@arm.com>,
- Christian Loehle <christian.loehle@arm.com>
-Subject:
- [RFT][PATCH v1 0/8] cpufreq: intel_pstate: Enable EAS on hybrid platforms
- without SMT
-Date: Wed, 16 Apr 2025 19:44:43 +0200
-Message-ID: <3344336.aeNJFYEL58@rjwysocki.net>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bcOZ3WWM"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C2563C4CEE2
+	for <linux-pm@vger.kernel.org>; Wed, 16 Apr 2025 20:18:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1744834700;
+	bh=0SmEON0Tw+ZzqwBF2QPH0kEjZgsLnEhgxvYjYRg4ye0=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=bcOZ3WWMnixM4FANu/OD2oz3ruZGJuTV5zqnUeJb+MkkWIofHYuXw+3ucQwGpjq6t
+	 usfFcWAlMflJZWm6sgjgZQKciVHp8OLrGFUu6z7JczlKHsAQQ2LRYj6LwChi22Sxau
+	 VNnfg2+2XItEysBkKVSBsxAI4L6p1HKJfIQEii5xyWoIrCqR0ljzPk3GHNi6XX2+ur
+	 H8G/ZNYhcQKWZByxniZlMfTsB2BwyQhjsY+IdV6ij/4yUw0158Jta/Rw7QZ97D5DjK
+	 JhueRQPVEWetBxP1AIPwBXU8890vEkogQ5eUjWjPcLdOwLfGzHSxUUE2dU813/ogzK
+	 AyVKFAyphoVGw==
+Received: by mail-oa1-f50.google.com with SMTP id 586e51a60fabf-2c2504fa876so2034089fac.0
+        for <linux-pm@vger.kernel.org>; Wed, 16 Apr 2025 13:18:20 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUuYwcUR/fLjBGPotvVVEFjST9O4IJk1F1mpIdrPlOvnjO/psX0OhQcuJFmRZXonerfdJwicDYjmg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxbj7NYPnmlrOdnbskjFr0LR+eRU0YGh76JfHrbe4LdEFenRtKT
+	f/eKeV9ho/eeL2jwuI8kIrW1+bWy+tuLcYPKp0jHWax9GUew3x4I1j9gzxFEczPzWiaJP8vyIeG
+	Pc+XIIXRaKOZ3jsZ4CaPAJAvT0/U=
+X-Google-Smtp-Source: AGHT+IEXa2aduTrtJnKLVgDfMJZEG/0fAQ9rBK/JLb8BuXZK/qu0gCYcYGEDRjjmSyqSQeoKyZ2HZzkRFLSOFjTK/7c=
+X-Received: by 2002:a05:6870:fe8a:b0:2b8:ec17:66e9 with SMTP id
+ 586e51a60fabf-2d4d2aa3809mr2138299fac.11.1744834700040; Wed, 16 Apr 2025
+ 13:18:20 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <51d02a58-433b-470f-86ee-618994cecb22@infradead.org>
+In-Reply-To: <51d02a58-433b-470f-86ee-618994cecb22@infradead.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 16 Apr 2025 22:18:08 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jOtYC+5SnY5eM3ys0frwXYJ9oWAC-aBASOT8YBJw6Sqw@mail.gmail.com>
+X-Gm-Features: ATxdqUF8RWa3N-MP8eJ5tilT-grwcdjkD2lFL-4bhOBrOlN4CvubkEP6QVMq2io
+Message-ID: <CAJZ5v0jOtYC+5SnY5eM3ys0frwXYJ9oWAC-aBASOT8YBJw6Sqw@mail.gmail.com>
+Subject: Re: cpufreq governors
+To: Randy Dunlap <rdunlap@infradead.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 195.136.19.94
-X-CLIENT-HOSTNAME: 195.136.19.94
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvvdejtdeiucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeduuddprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtohepphgvthgvrhiisehinhhfrhgruggvrggurdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=11 Fuz1=11 Fuz2=11
+Content-Transfer-Encoding: quoted-printable
 
-Hi Everyone,
+Hi Randy,
 
-This is a new version of
-
-https://lore.kernel.org/linux-pm/22640172.EfDdHjke4D@rjwysocki.net/
-
-which is not regarded as RFC any more.  It appears to be better than
-
-https://lore.kernel.org/linux-pm/5861970.DvuYhMxLoT@rjwysocki.net/
-
-but still requires more testing, so I'd appreciate any help here.
-
-The following paragraph from the original cover letter still applies:
-
-"The underlying observation is that on the platforms targeted by these changes,
-Lunar Lake at the time of this writing, the "small" CPUs (E-cores), when run at
-the same performance level, are always more energy-efficient than the "big" or
-"performance" CPUs (P-cores).  This means that, regardless of the scale-
-invariant utilization of a task, as long as there is enough spare capacity on
-E-cores, the relative cost of running it there is always lower."
-
-The first 3 patches have been updated since v0.3 and they now depend on the new
-cpufreq material in linux-next.
-
-The next 2 patches (Energy Model code changes) have been reviewed in the
-meantime, but they are only needed for the last 3 patches.
-
-Patch [6/8] is essentially the same as before.  It causes perf domains to be
-registered per CPU and in addition to the primary cost component, which is
-related to the CPU type, there is a small component proportional to performance
-whose role is to help balance the load between CPUs of the same type.
-
-This is done to avoid migrating tasks too much between CPUs of the same type,
-especially between E-cores, which has been observed in tests of
-
-https://lore.kernel.org/linux-pm/5861970.DvuYhMxLoT@rjwysocki.net/
-
-The expected effect is still that the CPUs of the "low-cost" type will be
-preferred so long as there is enough spare capacity on any of them.
-
-The last 2 patches are new.
-
-Patch [7/8] looks at the cache topology to avoid creating per-CPU perf domains
-for CPUs sharing an L2 cache.  Typically, on the chips that will be affected
-by this patch, CPUs sharing an L2 cache also share a voltage regulator and a
-clock, so they technically belong to the same OPP domain and they will be put
-into a shared perf domain after this patch.
-
-Patch [8/8] makes CPUs sharing the L3 cache look slightly more expensive to
-cause the scheduler to prefer placing tasks on CPUs that don't use the L3,
-which in some cases should allow all of the CPUs sharing the L3 to stay in
-idle states and the energy usage should be reduced.
-
-Please refer to the individual patch changelogs for details.
-
-Since patches [7-8/8] also apply on top of the v0.3, I have created a git branch at
-
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
-experimental/intel_pstate/eas-take2-extended
-
+On Thu, Apr 10, 2025 at 10:39=E2=80=AFPM Randy Dunlap <rdunlap@infradead.or=
+g> wrote:
+>
+> Hi Rafael,
+>
+> My little (Intel) laptop needs some performance improvement (IMO) so I se=
+t out
+> to read Documentation/admin-guide/pm/cpufreq.rst. I still have some
+> questions that I hope you can give me some insights into.
+>
+>
+> 1. Can I use the schedutil policy governor even though the P-state govern=
 or
+> seems to be the default?
 
-https://web.git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/log/?h=experimental/intel_pstate/eas-take2-extended
+Yes, you can.
 
-to allow the difference they make with respect to the v0.3 to be seen (if any).
+Change /sys/devices/system/cpu/intel_pstate/status to "passive" and
+you'll be able to use regular cpufreq governors, including schedutil.
 
-Later, I'm going to put this series as a whole into a new git branch on top of
-the mainline and the cpufreq material queued up for 6.16.
+> 2. Or should I just continue to use the P-state governor? Is it preferred=
+?
+> If so, why?
 
-Thanks!
+That really depends on what you're going to run.
 
+The default intel_pstate internal governor (in the "powersave" mode)
+lets the processor adjust itself to the utilization expected by it,
+while schedutil gives hints on what utilization is expected by the
+kernel to it.  The latter may help it to avoid rising the frequency
+too eagerly or to make other similar mistakes sometimes.
 
+It generally is reasonable to try both and see which one works better for y=
+ou.
 
+> 3. Can a cpufreq policy governor be changed by whether a laptop is runnin=
+g
+> on battery power or A/C power?
+
+Yes, this is technically possible, but the kernel doesn't do it.  An
+agent in user space that detects configuration changes and makes
+adjustments is necessary for that.
+
+> Thanks for your help.
+
+No problem.
