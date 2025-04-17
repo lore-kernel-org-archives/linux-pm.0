@@ -1,181 +1,331 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 25728254847;
-	Thu, 17 Apr 2025 17:18:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from linux1587.grserver.gr (linux1587.grserver.gr [185.138.42.100])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 382CC255E23;
+	Thu, 17 Apr 2025 17:53:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.138.42.100
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744910319; cv=none; b=nLdPOvIFsDLNqdMSUG2YJXNMZgihncDhe+Nc5LaIJaNpAbDI1tJe5h/tjv2nSROZs9YTJcPs/iGDc2c5xf9UZ0ToQZrw3nNGa02Al2gE6j003yU1X2KX2uZQjp+nMF9P+ZZeSlv4Uo8l26qhH1MJoK37AfjhwIrggZtw1CifFdU=
+	t=1744912410; cv=none; b=VdMGzyCwWH3QPl3u3clXncUFZdxNmO2VMZSEWOzuQ4aJ4nsEhPtvTsCrRvumV6d2w9UF+cMnmweJpBbj9nM8xbAJ+NeTTmkDTk/INrc5BlFM4DMHdL15hexQObE0DtPClTi04J4RtB1mUuwNw5Nkk6SJ7H56t/Xjv6kQTiFzTZQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744910319; c=relaxed/simple;
-	bh=FUOnj3xOnDMsbedJ4HwYNfcITYuGluDV0KsX1xuZ3vI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=eSmjNgzGFsK04YIGCBF60NapZdjrk21m11qHq8PEGKyBwYrIYSs3PvAeHDWtT51vg3mAm0att9Difv+rc1HlqbmWT1SfZeIb87iddb+G2PCpqAras4Yq0SDa6l2fJE/H/VpJPsNruJQhsBElXVF7McnrVf9Li8qotnoAm+Hp1uo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9DACA1515;
-	Thu, 17 Apr 2025 10:18:33 -0700 (PDT)
-Received: from [10.57.83.52] (unknown [10.57.83.52])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D63D93F59E;
-	Thu, 17 Apr 2025 10:18:34 -0700 (PDT)
-Message-ID: <b4835a2d-d855-403f-b3c1-c169faa1a9b4@arm.com>
-Date: Thu, 17 Apr 2025 18:18:33 +0100
+	s=arc-20240116; t=1744912410; c=relaxed/simple;
+	bh=zpPGTn9jBq6dlXLi2aKAfFOf1S875AgtFgpT+dNjwe8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=OKxGUYHD/UgEaKgHgj6esaVwhRtZ9sLCFry4i+7r5iKuPEjGi/KQraj8ADdufVS0xIT+w8lF/6iBMjqa5fuxSuAPxiTF8gvdVDsPlQoB9a5CK7MF/tytbRwmBruKKuzfYqqs791gnqLGBuaQU8PQ+c6z4DXk6IgMcKuc+hnyS0k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=bSaSMj3n; arc=none smtp.client-ip=185.138.42.100
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=antheas.dev
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="bSaSMj3n"
+Received: from localhost.localdomain (unknown [IPv6:2a05:f6c2:511b:0:cbc0:999f:73ad:33bd])
+	by linux1587.grserver.gr (Postfix) with ESMTPSA id D4E7B2E0895C;
+	Thu, 17 Apr 2025 20:53:22 +0300 (EEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=antheas.dev;
+	s=default; t=1744912404;
+	bh=5krtJAQ2Hs3Msl2turSRVjSkxAaMpQ5x31o5h0mc8ag=; h=From:To:Subject;
+	b=bSaSMj3nl7wrP1gi03SdKUxIuOVWEGwnJEnh7MEoGhY5KOwYYa8VSsD1WnnHVK4dE
+	 RIPuiKHbhGErUclgatM5JTbdeQcsTkKiGPgj+cMHzFHJlr2wLZ+uYiwFs2E7kyteCt
+	 59/utkRZuS3KRUiiZG+7AoNmzPv/OjgYnUdY3wLA=
+Authentication-Results: linux1587.grserver.gr;
+	spf=pass (sender IP is 2a05:f6c2:511b:0:cbc0:999f:73ad:33bd) smtp.mailfrom=lkml@antheas.dev smtp.helo=localhost.localdomain
+Received-SPF: pass (linux1587.grserver.gr: connection is authenticated)
+From: Antheas Kapenekakis <lkml@antheas.dev>
+To: platform-driver-x86@vger.kernel.org
+Cc: linux-hwmon@vger.kernel.org,
+	linux-doc@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Guenter Roeck <linux@roeck-us.net>,
+	Jean Delvare <jdelvare@suse.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Joaquin Ignacio Aramendia <samsagax@gmail.com>,
+	Derek J Clark <derekjohn.clark@gmail.com>,
+	Kevin Greenberg <kdgreenberg234@protonmail.com>,
+	Joshua Tam <csinaction@pm.me>,
+	Parth Menon <parthasarathymenon@gmail.com>,
+	Eileen <eileen@one-netbook.com>,
+	linux-kernel@vger.kernel.org,
+	sre@kernel.org,
+	linux@weissschuh.net,
+	ilpo.jarvinen@linux.intel.com,
+	hdegoede@redhat.com,
+	mario.limonciello@amd.com,
+	Antheas Kapenekakis <lkml@antheas.dev>
+Subject: [PATCH v9 03/15] platform/x86: oxpec: Move hwmon/oxp-sensors to
+ platform/x86
+Date: Thu, 17 Apr 2025 19:52:58 +0200
+Message-ID: <20250417175310.3552671-4-lkml@antheas.dev>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20250417175310.3552671-1-lkml@antheas.dev>
+References: <20250417175310.3552671-1-lkml@antheas.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 2/2] cpuidle: teo: Refine handling of short idle
- intervals
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
- Doug Smythies <dsmythies@telus.net>,
- Aboorva Devarajan <aboorvad@linux.ibm.com>
-References: <4661520.LvFx2qVVIh@rjwysocki.net>
- <2239639.irdbgypaU6@rjwysocki.net>
- <1c0c6caa-e56c-454a-a976-81303dee1852@arm.com>
- <CAJZ5v0g-=DB_W5jkxxCERy22jz9a_V1Tcj8hiVwL6_R+xSM=gQ@mail.gmail.com>
- <76d5c5ba-6be0-405b-83dd-038f016af12b@arm.com>
- <CAJZ5v0hVRg0P+E1Ux9tOkr+g6wF36Bf52UT4f3BEAePMUM85Lw@mail.gmail.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <CAJZ5v0hVRg0P+E1Ux9tOkr+g6wF36Bf52UT4f3BEAePMUM85Lw@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-PPP-Message-ID: 
+ <174491240451.24806.15948022686644251336@linux1587.grserver.gr>
+X-PPP-Vhost: antheas.dev
+X-Virus-Scanned: clamav-milter 0.103.11 at linux1587.grserver.gr
+X-Virus-Status: Clean
 
-On 4/17/25 16:21, Rafael J. Wysocki wrote:
-> On Thu, Apr 17, 2025 at 1:58 PM Christian Loehle
-> <christian.loehle@arm.com> wrote:
->>
->> On 4/16/25 16:28, Rafael J. Wysocki wrote:
->>> On Wed, Apr 16, 2025 at 5:00 PM Christian Loehle
->>> <christian.loehle@arm.com> wrote:
->>>>
->>>> On 4/3/25 20:18, Rafael J. Wysocki wrote:
->>>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>>>
->>>>> Make teo take all recent wakeups (both timer and non-timer) into
->>>>> account when looking for a new candidate idle state in the cases
->>>>> when the majority of recent idle intervals are within the
->>>>> LATENCY_THRESHOLD_NS range or the latency limit is within the
->>>>> LATENCY_THRESHOLD_NS range.
->>>>>
->>>>> Since the tick_nohz_get_sleep_length() invocation is likely to be
->>>>> skipped in those cases, timer wakeups should arguably be taken into
->>>>> account somehow in case they are significant while the current code
->>>>> mostly looks at non-timer wakeups under the assumption that frequent
->>>>> timer wakeups are unlikely in the given idle duration range which
->>>>> may or may not be accurate.
->>>>>
->>>>> The most natural way to do that is to add the "hits" metric to the
->>>>> sums used during the new candidate idle state lookup which effectively
->>>>> means the above.
->>>>>
->>>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>>
->>>> Hi Rafael,
->>>> I might be missing something so bare with me.
->>>> Quoting the cover-letter too:
->>>> "In those cases, timer wakeups are not taken into account when they are
->>>> within the LATENCY_THRESHOLD_NS range and the idle state selection may
->>>> be based entirely on non-timer wakeups which may be rare.  This causes
->>>> the prediction accuracy to be low and too much energy may be used as
->>>> a result.
->>>>
->>>> The first patch is preparatory and it is not expected to make any
->>>> functional difference.
->>>>
->>>> The second patch causes teo to take timer wakeups into account if it
->>>> is about to skip the tick_nohz_get_sleep_length() invocation, so they
->>>> get a chance to influence the idle state selection."
->>>>
->>>> If the timer wakeups are < LATENCY_THRESHOLD_NS we will not do
->>>>
->>>> cpu_data->sleep_length_ns = tick_nohz_get_sleep_length(&delta_tick);
->>>>
->>>> but
->>>>
->>>> cpu_data->sleep_length_ns = KTIME_MAX;
->>>>
->>>> therefore
->>>> idx_timer = drv->state_count - 1
->>>> idx_duration = some state with residency < LATENCY_THRESHOLD_NS
->>>>
->>>> For any reasonable system therefore idx_timer != idx_duration
->>>> (i.e. there's an idle state deeper than LATENCY_THRESHOLD_NS).
->>>> So hits will never be incremented?
->>>
->>> Why never?
->>>
->>> First of all, you need to get into the "2 * cpu_data->short_idles >=
->>> cpu_data->total" case somehow and this may be through timer wakeups.
->>
->> Okay, maybe I had a too static scenario in mind here.
->> Let me think it through one more time.
-> 
-> Well, this is subtle and your question is actually a good one.
-> 
->>>
->>>> How would adding hits then help this case?
->>>
->>> They may be dominant when this condition triggers for the first time.
->>
->> I see.
->>
->> Anything in particular this would help a lot with?
-> 
-> So I've been trying to reproduce my own results using essentially the
-> linux-next branch of mine (6.15-rc2 with some material on top) as the
-> baseline and so far I've been unable to do that.  There's no
-> significant difference from these patches or at least they don't help
-> as much as I thought they would.
-> 
->> There's no noticeable behavior change in my usual tests, which is
->> expected, given we have only WFI in LATENCY_THRESHOLD_NS.
->>
->> I did fake a WFI2 with residency=5 latency=1, teo-m is mainline, teo
->> is with series applied:
->>
->> device   gov    iter   iops    idles     idle_misses  idle_miss_ratio  belows   aboves   WFI       WFI2
->> -------  -----  -----  ------  --------  ------------  ----------------  --------  -------  --------  --------
->> nvme0n1  teo    0      80223   8601862   1079609       0.126             918363    161246   205096    4080894
->> nvme0n1  teo    1      78522   8488322   1054171       0.124             890420    163751   208664    4020130
->> nvme0n1  teo    2      77901   8375258   1031275       0.123             878083    153192   194500    3977655
->> nvme0n1  teo    3      77517   8344681   1023423       0.123             869548    153875   195262    3961675
->> nvme0n1  teo    4      77934   8356760   1027556       0.123             876438    151118   191848    3971578
->> nvme0n1  teo    5      77864   8371566   1033686       0.123             877745    155941   197903    3972844
->> nvme0n1  teo    6      78057   8417326   1040512       0.124             881420    159092   201922    3991785
->> nvme0n1  teo    7      78214   8490292   1050379       0.124             884528    165851   210860    4019102
->> nvme0n1  teo    8      78100   8357664   1034487       0.124             882781    151706   192728    3971505
->> nvme0n1  teo    9      76895   8316098   1014695       0.122             861950    152745   193680    3948573
->> nvme0n1  teo-m  0      76729   8261670   1032158       0.125             845247    186911   237147    3877992
->> nvme0n1  teo-m  1      77763   8344526   1053266       0.126             867094    186172   237526    3919320
->> nvme0n1  teo-m  2      76717   8285070   1034706       0.125             848385    186321   236956    3889534
->> nvme0n1  teo-m  3      76920   8270834   1030223       0.125             847490    182733   232081    3887525
->> nvme0n1  teo-m  4      77198   8329578   1044724       0.125             855438    189286   240947    3908194
->> nvme0n1  teo-m  5      77361   8338772   1046903       0.126             857291    189612   241577    3912576
->> nvme0n1  teo-m  6      76827   8346204   1037520       0.124             846008    191512   243167    3914194
->> nvme0n1  teo-m  7      77931   8367212   1053337       0.126             866549    186788   237852    3930510
->> nvme0n1  teo-m  8      77870   8358306   1056011       0.126             867167    188844   240602    3923417
->> nvme0n1  teo-m  9      77405   8338356   1046012       0.125             856605    189407   240694    3913012
->>
->> The difference is small, but it's there even though this isn't
->> a timer-heavy workload at all.
-> 
-> This is interesting, so thanks for doing it, but the goal really was
-> to help with the polling state usage on x86 and that doesn't appear to
-> be happening, so I'm going to drop these patches at least for now.
+The EC of OneXPlayer devices used to only control the fan.
+This is no longer the case, with the EC of OneXPlayer gaining
+additional functionality (turbo button, turbo led, battery controls).
 
-Alright, well my testing on x86 is limited, but I assume you are
-referring to systems were we do have
-state0 latency=0 residency=0 polling
-state1 latency=1 residency=1
-in theory teo shouldn't be super aggressive on state0 then with the
-intercept logic, unless the idle durations are recorded as <1us.
-I wonder what goes wrong, any traces or workloads you recommend looking
-at?
+As it will be beneficial from a complexity perspective
+to retain this driver as a single unit, move it out
+of hwmon, and into platform/x86. Also, remove the
+hwmon documentation to prepare moving it to
+Documentation/ABI/.
+
+While at it, add myself to the maintainer's file.
+
+Acked-by: Guenter Roeck <linux@roeck-us.net>
+Reviewed-by: Thomas Weißschuh <linux@weissschuh.net>
+Reviewed-by: Derek J. Clark <derekjohn.clark@gmail.com>
+Signed-off-by: Antheas Kapenekakis <lkml@antheas.dev>
+---
+ Documentation/hwmon/index.rst                 |  2 +-
+ Documentation/hwmon/oxp-sensors.rst           | 89 -------------------
+ MAINTAINERS                                   |  7 +-
+ drivers/hwmon/Kconfig                         | 11 ---
+ drivers/hwmon/Makefile                        |  1 -
+ drivers/platform/x86/Kconfig                  | 12 +++
+ drivers/platform/x86/Makefile                 |  3 +
+ .../oxp-sensors.c => platform/x86/oxpec.c}    | 10 +--
+ 8 files changed, 24 insertions(+), 111 deletions(-)
+ delete mode 100644 Documentation/hwmon/oxp-sensors.rst
+ rename drivers/{hwmon/oxp-sensors.c => platform/x86/oxpec.c} (98%)
+
+diff --git a/Documentation/hwmon/index.rst b/Documentation/hwmon/index.rst
+index f0ddf6222c44d..a86f7aa9006e6 100644
+--- a/Documentation/hwmon/index.rst
++++ b/Documentation/hwmon/index.rst
+@@ -189,7 +189,7 @@ Hardware Monitoring Kernel Drivers
+    nzxt-kraken3
+    nzxt-smart2
+    occ
+-   oxp-sensors
++   oxpec
+    pc87360
+    pc87427
+    pcf8591
+diff --git a/Documentation/hwmon/oxp-sensors.rst b/Documentation/hwmon/oxp-sensors.rst
+deleted file mode 100644
+index 581c4dafbfa13..0000000000000
+--- a/Documentation/hwmon/oxp-sensors.rst
++++ /dev/null
+@@ -1,89 +0,0 @@
+-.. SPDX-License-Identifier: GPL-2.0-or-later
+-
+-Kernel driver oxp-sensors
+-=========================
+-
+-Authors:
+-    - Derek John Clark <derekjohn.clark@gmail.com>
+-    - Joaquín Ignacio Aramendía <samsagax@gmail.com>
+-
+-Description:
+-------------
+-
+-Handheld devices from OneNetbook, AOKZOE, AYANEO, And OrangePi provide fan
+-readings and fan control through their embedded controllers.
+-
+-Currently supports OneXPlayer devices, AOKZOE, AYANEO, and OrangePi
+-handheld devices. AYANEO devices preceding the AIR and OneXPlayer devices
+-preceding the Mini A07 are not supportable as the EC model is different
+-and do not have manual control capabilities.
+-
+-Some OneXPlayer and AOKZOE models have a toggle for changing the behaviour
+-of the "Turbo/Silent" button of the device. It will change the key event
+-that it triggers with a flip of the `tt_toggle` attribute. See below for
+-boards that support this function.
+-
+-Supported devices
+------------------
+-
+-Currently the driver supports the following handhelds:
+-
+- - AOKZOE A1
+- - AOKZOE A1 PRO
+- - AYANEO 2
+- - AYANEO 2S
+- - AYANEO AIR
+- - AYANEO AIR 1S
+- - AYANEO AIR Plus (Mendocino)
+- - AYANEO AIR Pro
+- - AYANEO Flip DS
+- - AYANEO Flip KB
+- - AYANEO Geek
+- - AYANEO Geek 1S
+- - AYANEO KUN
+- - OneXPlayer 2
+- - OneXPlayer 2 Pro
+- - OneXPlayer AMD
+- - OneXPlayer mini AMD
+- - OneXPlayer mini AMD PRO
+- - OneXPlayer OneXFly
+- - OneXPlayer X1 A
+- - OneXPlayer X1 i
+- - OneXPlayer X1 mini
+- - OrangePi NEO-01
+-
+-"Turbo/Silent" button behaviour toggle is only supported on:
+- - AOK ZOE A1
+- - AOK ZOE A1 PRO
+- - OneXPlayer 2
+- - OneXPlayer 2 Pro
+- - OneXPlayer mini AMD (only with updated alpha BIOS)
+- - OneXPlayer mini AMD PRO
+- - OneXPlayer OneXFly
+- - OneXPlayer X1 A
+- - OneXPlayer X1 i
+- - OneXPlayer X1 mini
+-
+-Sysfs entries
+--------------
+-
+-The following attributes are supported:
+-
+-fan1_input
+-  Read Only. Reads current fan RPM.
+-
+-pwm1_enable
+-  Read Write. Enable manual fan control. Write "1" to set to manual, write "0"
+-  to let the EC control de fan speed. Read this attribute to see current status.
+-
+-pwm1
+-  Read Write. Read this attribute to see current duty cycle in the range [0-255].
+-  When pwm1_enable is set to "1" (manual) write any value in the range [0-255]
+-  to set fan speed.
+-
+-tt_toggle
+-  Read Write. Read this attribute to check the status of the turbo/silent
+-  button behaviour function. Write "1" to activate the switch and "0" to
+-  deactivate it. The specific keycodes and behaviour is specific to the device
+-  both with this function on and off. This attribute is attached to the platform
+-  driver and not to the hwmon driver (/sys/devices/platform/oxp-platform/tt_toggle)
+diff --git a/MAINTAINERS b/MAINTAINERS
+index c59316109e3f8..e584c1a25449a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -18013,12 +18013,13 @@ S:	Maintained
+ F:	drivers/mtd/nand/onenand/
+ F:	include/linux/mtd/onenand*.h
+ 
+-ONEXPLAYER FAN DRIVER
++ONEXPLAYER PLATFORM EC DRIVER
++M:	Antheas Kapenekakis <lkml@antheas.dev>
+ M:	Derek John Clark <derekjohn.clark@gmail.com>
+ M:	Joaquín Ignacio Aramendía <samsagax@gmail.com>
+-L:	linux-hwmon@vger.kernel.org
++L:	platform-driver-x86@vger.kernel.org
+ S:	Maintained
+-F:	drivers/hwmon/oxp-sensors.c
++F:	drivers/platform/x86/oxpec.c
+ 
+ ONIE TLV NVMEM LAYOUT DRIVER
+ M:	Miquel Raynal <miquel.raynal@bootlin.com>
+diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
+index f91f713b0105d..5fd93aad2d6df 100644
+--- a/drivers/hwmon/Kconfig
++++ b/drivers/hwmon/Kconfig
+@@ -1795,17 +1795,6 @@ config SENSORS_NZXT_SMART2
+ 
+ source "drivers/hwmon/occ/Kconfig"
+ 
+-config SENSORS_OXP
+-	tristate "OneXPlayer EC fan control"
+-	depends on ACPI_EC
+-	depends on X86
+-	help
+-		If you say yes here you get support for fan readings and control over
+-		OneXPlayer handheld devices. Only OneXPlayer mini AMD handheld variant
+-		boards are supported.
+-
+-		Can also be built as a module. In that case it will be called oxp-sensors.
+-
+ config SENSORS_PCF8591
+ 	tristate "Philips PCF8591 ADC/DAC"
+ 	depends on I2C
+diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
+index 766c652ef22be..e3468d024ff39 100644
+--- a/drivers/hwmon/Makefile
++++ b/drivers/hwmon/Makefile
+@@ -183,7 +183,6 @@ obj-$(CONFIG_SENSORS_NTC_THERMISTOR)	+= ntc_thermistor.o
+ obj-$(CONFIG_SENSORS_NZXT_KRAKEN2) += nzxt-kraken2.o
+ obj-$(CONFIG_SENSORS_NZXT_KRAKEN3) += nzxt-kraken3.o
+ obj-$(CONFIG_SENSORS_NZXT_SMART2) += nzxt-smart2.o
+-obj-$(CONFIG_SENSORS_OXP) += oxp-sensors.o
+ obj-$(CONFIG_SENSORS_PC87360)	+= pc87360.o
+ obj-$(CONFIG_SENSORS_PC87427)	+= pc87427.o
+ obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
+diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+index 43407e76476b5..739740c4bb535 100644
+--- a/drivers/platform/x86/Kconfig
++++ b/drivers/platform/x86/Kconfig
+@@ -1201,6 +1201,18 @@ config SEL3350_PLATFORM
+ 	  To compile this driver as a module, choose M here: the module
+ 	  will be called sel3350-platform.
+ 
++config OXP_EC
++	tristate "OneXPlayer EC platform control"
++	depends on ACPI_EC
++	depends on HWMON
++	depends on X86
++	help
++		Enables support for the platform EC of OneXPlayer and AOKZOE
++		handheld devices. This includes fan speed, fan controls, and
++		disabling the default TDP behavior of the device. Due to legacy
++		reasons, this driver also provides hwmon functionality to Ayaneo
++		devices and the OrangePi Neo.
++
+ endif # X86_PLATFORM_DEVICES
+ 
+ config P2SB
+diff --git a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
+index 650dfbebb6c8c..38ffc4c98e786 100644
+--- a/drivers/platform/x86/Makefile
++++ b/drivers/platform/x86/Makefile
+@@ -154,3 +154,6 @@ obj-$(CONFIG_WINMATE_FM07_KEYS)		+= winmate-fm07-keys.o
+ 
+ # SEL
+ obj-$(CONFIG_SEL3350_PLATFORM)		+= sel3350-platform.o
++
++# OneXPlayer
++obj-$(CONFIG_OXP_EC)			+= oxpec.o
+diff --git a/drivers/hwmon/oxp-sensors.c b/drivers/platform/x86/oxpec.c
+similarity index 98%
+rename from drivers/hwmon/oxp-sensors.c
+rename to drivers/platform/x86/oxpec.c
+index f7a64fbc8f33e..dc3a0871809cd 100644
+--- a/drivers/hwmon/oxp-sensors.c
++++ b/drivers/platform/x86/oxpec.c
+@@ -1,11 +1,8 @@
+ // SPDX-License-Identifier: GPL-2.0+
+ /*
+- * Platform driver for OneXPlayer, AOKZOE, AYANEO, and OrangePi Handhelds
+- * that expose fan reading and control via hwmon sysfs.
+- *
+- * Old OXP boards have the same DMI strings and they are told apart by
+- * the boot cpu vendor (Intel/AMD). Of these older models only AMD is
+- * supported.
++ * Platform driver for OneXPlayer and AOKZOE devices. For the time being,
++ * it also exposes fan controls for AYANEO, and OrangePi Handhelds via
++ * hwmon sysfs.
+  *
+  * Fan control is provided via pwm interface in the range [0-255].
+  * Old AMD boards use [0-100] as range in the EC, the written value is
+@@ -16,6 +13,7 @@
+  *
+  * Copyright (C) 2022 Joaquín I. Aramendía <samsagax@gmail.com>
+  * Copyright (C) 2024 Derek J. Clark <derekjohn.clark@gmail.com>
++ * Copyright (C) 2025 Antheas Kapenekakis <lkml@antheas.dev>
+  */
+ 
+ #include <linux/acpi.h>
+-- 
+2.49.0
+
