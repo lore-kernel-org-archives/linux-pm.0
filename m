@@ -1,175 +1,110 @@
-Received: from mail-m21468.qiye.163.com (mail-m21468.qiye.163.com [117.135.214.68])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vk1-f169.google.com (mail-vk1-f169.google.com [209.85.221.169])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71ECD2147FB;
-	Thu, 17 Apr 2025 07:20:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.214.68
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 03E772147FB;
+	Thu, 17 Apr 2025 07:20:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.169
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744874435; cv=none; b=rJ52OnGA012bf3DVSlq7vNWQRPEhmkbVPxGExegPPVAjN4ZgnR4gcRa1BpKZ/QoCmnUx1R+yFqYCwS6aKSveGqcoLOJw6v6jZoeQ9aFZ2sYem39nhU4g+rpZWjXk8ZnVCkw7Scj6TO93t8PdXNXtGEN3mtY3yWrB9Fo8BYcaeX0=
+	t=1744874446; cv=none; b=b3F57tG2eALzM3XWRNfVn/CUcO2reWp6aaywlpJV45M94WwPt/EzYzu0dZ1LorUizdUGMZaRWhlN/MKhhukPWxT8aTumMcj37l7YaSpcG4NpzTeocMnDYpK1qZLyGiAPvfbJjauTYLWQCojJyTbSYog7AcpFN3e+D4AOtDlJ2UE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744874435; c=relaxed/simple;
-	bh=RlL5RNTTt9RTjRUIgbyuAwTkkmOCTYDBtWrqbJ8spd4=;
-	h=Message-ID:Date:MIME-Version:Cc:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=MlLbaPptIV1xM5Y9PTdIB0twN2O1Dxh3uMkM8f77lP72NxqRvKZb6bola3bT7vQkHbFpm/xJaaiNQZgwy/QiPflEOgKJePLHJlHYcXPbpp0U7+yIkc4jj9oBFNwR9r0nWSmCehM7JBwdv+h+JC/mNTWGD0/sMFQMZwA6LqNawW0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=ESDZnh8a; arc=none smtp.client-ip=117.135.214.68
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="ESDZnh8a"
-Received: from [172.16.12.129] (unknown [58.22.7.114])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 1231f10fc;
-	Thu, 17 Apr 2025 14:44:54 +0800 (GMT+08:00)
-Message-ID: <b9db4ac1-4657-236a-3cf1-6672961b2199@rock-chips.com>
-Date: Thu, 17 Apr 2025 14:44:19 +0800
+	s=arc-20240116; t=1744874446; c=relaxed/simple;
+	bh=QyhbxHAbNWI97LfKLS2k+ny8t1SV9wPT6bs06/rAvAU=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=eY6+DDGUx9JVKfx/0aqZ9d8NrgvpzgCOy/5y/PmgGyyhAzxdD9rXXFY2G9qqqbdZsycBwvf8g6Ws/FE7KsmTCegvgVA2KeCiVQaq27AFvzTIxA7UDbEFzqM4dLL+/uG/ysVb8NehhumSLBpQhrhF/o0KJUP6SQvk47ILnVdXDcs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vk1-f169.google.com with SMTP id 71dfb90a1353d-5242f137a1eso197796e0c.1;
+        Thu, 17 Apr 2025 00:20:42 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1744874441; x=1745479241;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=wJlwgfdjlKlj72m9IIHqT+BTPyJAYFDO/iuqVhlAcZU=;
+        b=IxHqa3U5jpTXNvJXMJRi/Gocwu1En/EElXG5hCq8BfFIB28pSR0SkcFe6T51wSY8AA
+         c8XvFkcvWzFIAGTvdiaYh9/f+iGPB//dfMm4v3rlDiMijMdM+qmxs3pvIa/GDaZ9HQLx
+         PDcocScf3BJyeb7v/4wHCqg6j6XA9Jn88l+M9R2slu/TdYP5PxOmqqnMbaeXmNCeZ7Uc
+         eAQ5e8Bb/BWokJ0ApZFPgz99EeN/HVZSYjhWTlgGmb1ofsHYUujqeFa343H8O/0IFig7
+         0xouYGcWxZoFohqnMpi5XXOyBw+Z1IhGgp3UifzEXaIO/jxA2MlIoiZq73VLlYcUt+qu
+         u7fA==
+X-Forwarded-Encrypted: i=1; AJvYcCViSbg4rmmRX/+qyfvCHPU9Q5diI68OaWkJYYEBUZiOIaCb2RKFIvd0etj3jL+i4GRtJBg7oK8xUYE=@vger.kernel.org, AJvYcCWRzjpwwR2LRJ23YZ9L50As40orsQR/D/y6Ic5JIHcUCQlDExHNYRJt6GDNVJ30/PRvtURD0o50Z/HFfgU=@vger.kernel.org
+X-Gm-Message-State: AOJu0YyGmO+/HsiGWfMcxvX954XLcXoNOjoNsO7GoFRJI80fhYRf3aNL
+	8qIbnEnFFCFeC0/VnJru1ko50yR74md1Ks5BugvL8Hj1qrV6sE8/KBD39cqK
+X-Gm-Gg: ASbGnctE23ExKGBE4t2gn1saA9pwQFSuARyO+UlPA5l/nliunktM1+haiwkFT/26yJ6
+	SYy8tGjocftzMv2zoLUoxI+angaO8yuQaNJ1VZN+Z2qe6+J2POJUSbmuMi2ot3oJ+/FOuhWi4E0
+	VOuXZsXUp0OoO2NoWkQ47hWld3h8+hAycC+6A82u5c7z5xANq5ObmF4YZLiSLFaQiSguaxiHSQ0
+	wPSmA617gU3x1ytRyhqHx9ppxzTSoCqWCyrBYClY5dl7g3taTbGfG6PF2KkDTCYv7b2M4LgTl4N
+	FY8NeVvrWIZmmwZSULxxIITiqCkC/pxCzhlsbsSg7EObwzcl9HXeed3jyAMBuLpvo7KpXIxncY2
+	Xlsk=
+X-Google-Smtp-Source: AGHT+IEVjDeBrfr9Jcm8shhx4xC2+uyxs+Cp1nRsUo6xK/0cGrd/NBqVyAMuJcWAl55aixkFbvDhsQ==
+X-Received: by 2002:a05:6122:2001:b0:528:bd71:8a8e with SMTP id 71dfb90a1353d-5290dfe1882mr3795822e0c.5.1744874440992;
+        Thu, 17 Apr 2025 00:20:40 -0700 (PDT)
+Received: from mail-ua1-f42.google.com (mail-ua1-f42.google.com. [209.85.222.42])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-527abe8d74bsm3459815e0c.35.2025.04.17.00.20.40
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 17 Apr 2025 00:20:40 -0700 (PDT)
+Received: by mail-ua1-f42.google.com with SMTP id a1e0cc1a2514c-86fab198f8eso192592241.1;
+        Thu, 17 Apr 2025 00:20:40 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWUxuElXMAYlGS+/6AYxbHrAwhslz7G7O5wSw3WQiL+DZFjCqykCuYS7EOPaPzLKwPuKHSydVduMEGeeMM=@vger.kernel.org, AJvYcCWl/Grh+AUs/Dpl1L/gW3+ry/Z+EInoYJBxdWmDFChMgOlSHBDEl6k84YWCNJK0HkvtWydURR8QIUI=@vger.kernel.org
+X-Received: by 2002:a05:6102:55d3:b0:4bb:9b46:3f8a with SMTP id
+ ada2fe7eead31-4cb591b7d30mr2988752137.2.1744874439951; Thu, 17 Apr 2025
+ 00:20:39 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.1
-Cc: shawn.lin@rock-chips.com, Detlev Casanova
- <detlev.casanova@collabora.com>, linux-pm@vger.kernel.org,
- linux-mmc@vger.kernel.org,
- Sebastian Reichel <sebastian.reichel@collabora.com>,
- linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org,
- kernel@collabora.com, linux-arm-kernel@lists.infradead.org,
- Ulf Hansson <ulf.hansson@linaro.org>, Heiko Stuebner <heiko@sntech.de>,
- Elaine Zhang <zhangqing@rock-chips.com>,
- Adrian Hunter <adrian.hunter@intel.com>,
- Finley Xiao <finley.xiao@rock-chips.com>,
- "jon.lin@rock-chips.com" <jon.lin@rock-chips.com>
-Subject: Re: [PATCH v2] mmc: sdhci-of-dwcmshc: add PD workaround on RK3576
-To: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-References: <20250412-rk3576-emmc-fix-v2-1-830e653ad4f0@collabora.com>
-From: Shawn Lin <shawn.lin@rock-chips.com>
-In-Reply-To: <20250412-rk3576-emmc-fix-v2-1-830e653ad4f0@collabora.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZGRhJQlZPGR8eGhhJTE5PS0hWFRQJFh
-	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
-	hVSktLVUpCS0tZBg++
-X-HM-Tid: 0a96427e485009cckunm1231f10fc
-X-HM-MType: 1
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6MVE6TRw6HjJJDhAxSAlOS08X
-	NSMKFAxVSlVKTE9PQ0xJSUJNT01DVTMWGhIXVQgTGgwVVRcSFTsJFBgQVhgTEgsIVRgUFkVZV1kS
-	C1lBWU5DVUlJVUxVSkpPWVdZCAFZQU1LTkg3Bg++
-DKIM-Signature:a=rsa-sha256;
-	b=ESDZnh8aikfHaiq7IYfnOrYeq/BkvCKQAqvo4IVcY0+CXNTby3f/4GuZNdzUdwpK9O2L1cEzqORm0A8kFleCu/E2GV/q6pZcjEkyPHJzPCEa2G1aUKdKpWqnOQ6CUVF1q5eq5nZYTA/H44Z9DXUezOY9Nf9OpTC9VcaKWrsDEqc=; c=relaxed/relaxed; s=default; d=rock-chips.com; v=1;
-	bh=mOf8GWaAUa3y0Ll4tMagrn3LdiJZ5rNNldT2O6sNcvU=;
-	h=date:mime-version:subject:message-id:from;
+References: <tencent_EE27C7D1D6BDB3EE57A2C467CC59A866C405@qq.com>
+ <143378b0-5740-4f2b-9a79-f04cf9ef1f77@arm.com> <tencent_C16C813B177E434BEAC73E842C46D872BC09@qq.com>
+In-Reply-To: <tencent_C16C813B177E434BEAC73E842C46D872BC09@qq.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 17 Apr 2025 09:20:27 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVAvMuzmn48aVB-xshMjbENXFc1MmYB=r7iPrMvfDZjDg@mail.gmail.com>
+X-Gm-Features: ATxdqUGiXYh3QJkTgWt9shrcBT3lBi2PArasakP1xODfxivBaBiSHWBEneAs48k
+Message-ID: <CAMuHMdVAvMuzmn48aVB-xshMjbENXFc1MmYB=r7iPrMvfDZjDg@mail.gmail.com>
+Subject: Re: [PATCH v2] PM: EM: Fix potential division-by-zero error in em_compute_costs()
+To: Yaxiong Tian <iambestgod@qq.com>
+Cc: Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Yaxiong Tian <tianyaxiong@kylinos.cn>, rafael@kernel.org, 
+	Konstantin Ryabitsev <konstantin@linuxfoundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-+ Jon, who may have some comment on FSPI0 part as mentioned below.
+Hi Yaxiong,
 
-在 2025/04/13 星期日 4:45, Nicolas Frattaroli 写道:
-> RK3576's power domains have a peculiar problem where the PD_NVM
-> power domain, of which the sdhci controller is a part, seemingly does
-> not have idempotent disable/enable. The end effect is that if PD_NVM
-> gets turned off by the generic power domain logic because all the
-> devices depending on it are suspended, then the next time the sdhci
-> device is unsuspended, it'll hang the SoC as soon as it tries accessing
-> the CQHCI registers.
-> 
-> RK3576's UFS support needed a new dev_pm_genpd_rpm_always_on function
-> added to the generic power domains API to handle what appears to be a
-> similar hardware issue.
-> 
-> Use this new function to ask for the same treatment in the sdhci
-> controller by giving rk3576 its own platform data with its own postinit
-> function. The benefit of doing this instead of marking the power domains
-> always on in the power domain core is that we only do this if we know
-> the platform we're running on actually uses the sdhci controller. For
-> others, keeping PD_NVM always on would be a waste, as they won't run
-> into this specific issue. The only other IP in PD_NVM that could be
-> affected is FSPI0. If it gets a mainline driver, it will probably want
-> to do the same thing.
-> 
-> Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-> ---
-> Changes in v2:
-> - Rewrite patch to use dev_pm_genpd_rpm_always_on in sdhci driver
->    instead, after Ulf Hansson made me aware of its existence
-> - Link to v1: https://lore.kernel.org/r/20250408-rk3576-emmc-fix-v1-1-3009828b1b31@collabora.com
-> ---
->   drivers/mmc/host/sdhci-of-dwcmshc.c | 39 +++++++++++++++++++++++++++++++++++++
->   1 file changed, 39 insertions(+)
-> 
-> diff --git a/drivers/mmc/host/sdhci-of-dwcmshc.c b/drivers/mmc/host/sdhci-of-dwcmshc.c
-> index 09b9ab15e4995f0bddf57dd309c010c849be40d9..a00aec05eff2da8197cc64690ba9665be756e54a 100644
-> --- a/drivers/mmc/host/sdhci-of-dwcmshc.c
-> +++ b/drivers/mmc/host/sdhci-of-dwcmshc.c
-> @@ -17,6 +17,7 @@
->   #include <linux/module.h>
->   #include <linux/of.h>
->   #include <linux/platform_device.h>
-> +#include <linux/pm_domain.h>
->   #include <linux/pm_runtime.h>
->   #include <linux/reset.h>
->   #include <linux/sizes.h>
-> @@ -745,6 +746,28 @@ static void dwcmshc_rk35xx_postinit(struct sdhci_host *host, struct dwcmshc_priv
->   	}
->   }
->   
-> +static void dwcmshc_rk3576_postinit(struct sdhci_host *host, struct dwcmshc_priv *dwc_priv)
-> +{
-> +	struct device *dev = mmc_dev(host->mmc);
-> +	int ret;
-> +
-> +	/*
-> +	 * This works around what appears to be a silicon bug, which makes the
-> +	 * PD_NVM power domain, which the sdhci controller on the RK3576 is in,
-> +	 * never come back the same way once it's turned off once. This can
-> +	 * happen during early kernel boot if no driver is using either PD_NVM
-> +	 * or its child power domain PD_SDGMAC for a short moment, leading to it
-> +	 * being turned off to save power. By keeping it on, sdhci suspending
-> +	 * won't lead to PD_NVM becoming a candidate for getting turned off.
-> +	 */
-> +	ret = dev_pm_genpd_rpm_always_on(dev, true);
-> +	if (ret && ret != -EOPNOTSUPP)
-> +		dev_warn(dev, "failed to set PD rpm always on, SoC may hang later: %pe\n",
-> +			 ERR_PTR(ret));
-> +
-> +	dwcmshc_rk35xx_postinit(host, dwc_priv);
-> +}
-> +
->   static int th1520_execute_tuning(struct sdhci_host *host, u32 opcode)
->   {
->   	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
-> @@ -1176,6 +1199,18 @@ static const struct dwcmshc_pltfm_data sdhci_dwcmshc_rk35xx_pdata = {
->   	.postinit = dwcmshc_rk35xx_postinit,
->   };
->   
-> +static const struct dwcmshc_pltfm_data sdhci_dwcmshc_rk3576_pdata = {
-> +	.pdata = {
-> +		.ops = &sdhci_dwcmshc_rk35xx_ops,
-> +		.quirks = SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN |
-> +			  SDHCI_QUIRK_BROKEN_TIMEOUT_VAL,
-> +		.quirks2 = SDHCI_QUIRK2_PRESET_VALUE_BROKEN |
-> +			   SDHCI_QUIRK2_CLOCK_DIV_ZERO_BROKEN,
-> +	},
-> +	.init = dwcmshc_rk35xx_init,
-> +	.postinit = dwcmshc_rk3576_postinit,
-> +};
-> +
->   static const struct dwcmshc_pltfm_data sdhci_dwcmshc_th1520_pdata = {
->   	.pdata = {
->   		.ops = &sdhci_dwcmshc_th1520_ops,
-> @@ -1274,6 +1309,10 @@ static const struct of_device_id sdhci_dwcmshc_dt_ids[] = {
->   		.compatible = "rockchip,rk3588-dwcmshc",
->   		.data = &sdhci_dwcmshc_rk35xx_pdata,
->   	},
-> +	{
-> +		.compatible = "rockchip,rk3576-dwcmshc",
-> +		.data = &sdhci_dwcmshc_rk3576_pdata,
-> +	},
->   	{
->   		.compatible = "rockchip,rk3568-dwcmshc",
->   		.data = &sdhci_dwcmshc_rk35xx_pdata,
-> 
-> ---
-> base-commit: 64e9fdfc89a76fed38d8ddeed72d42ec71957ed9
-> change-id: 20250317-rk3576-emmc-fix-7dc81a627422
-> 
-> Best regards,
+On Mon, 14 Apr 2025 at 11:14, Yaxiong Tian <iambestgod@qq.com> wrote:
+> I wasn=E2=80=99t sure whether the new patch should reuse the current Mess=
+age-ID
+> or create a new one, so I checked with ChatGPT and kept the original
+> Message-ID for v2. If a new Message-ID is required, I can resend the
+> email.
+
+Different (revisions of) patches must have different Message-IDs,
+else they can no longer be distinguished by our tooling.
+Fortunately it seems like you didn't succeed (which is good ;-),
+as all four revisions do have different Message-IDs:
+
+https://lore.kernel.org/all/tencent_8478BF8F2549630842D323E7394CB6F49D08@qq=
+.com/
+https://lore.kernel.org/all/tencent_EE27C7D1D6BDB3EE57A2C467CC59A866C405@qq=
+.com/
+https://lore.kernel.org/all/tencent_6D2374392DB66C9D23BF6E2546638A42EC08@qq=
+.com/
+https://lore.kernel.org/all/tencent_2256A7C02F7849F1D89390E488704E826D06@qq=
+.com/
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
