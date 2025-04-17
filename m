@@ -1,131 +1,139 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34902219A76;
-	Thu, 17 Apr 2025 07:28:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D1CB1DE3AF
+	for <linux-pm@vger.kernel.org>; Thu, 17 Apr 2025 07:37:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744874938; cv=none; b=pFuGrHgJE/AgvLMT9Ne2UNhiCfAVO7tGKTwv0O50nGfnJqABE6nyarPoxx036Bbajdo/mcM3kRofbS/NGtiNKYsfRuLmz8yOhMiDUyjhtRK0UTYHBuQXxoNF/7nyyuCsCq/LY0GyCEWmGPtGPvfgm7ZMiT85f9eQxyvkJ2/HBas=
+	t=1744875465; cv=none; b=Gsau6HnMv2VVNKvovlzWdxhVyqBEvYftbX60J5X2EMasTu1Ndj71HT0qoh+3IGzk5EFV5ka3pM6PkoAjyYZ+/epOpqrJGWSLCCVjVmagM1BwSqp/nhm2KmI41BjojGzcCJjFeVhx/IpIUxxi4MQHB3cn66uWqsExmfxr9qx1mtQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744874938; c=relaxed/simple;
-	bh=1Go1rOeSwKFJb+OGsYoOU4Np68HqJFr1nvpQbJt93ck=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=S7ifJx53pD96RH8fHNGOVvijSs9EIWFWmSKeXD41DzyzaLeJvg1j60ibx2OUW7WXPYSS5Zw1D51Tw7z03cSzz5ek1Ojtczg7ffwqCAP7Fll4czrnH615KV84Y6fvFGvDxkFHWuY2TFshvJIQCwCQAWPzhvX4gHir3Dy2KI+qLfs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=vFy10jB2; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1744875465; c=relaxed/simple;
+	bh=5Up4c2ec9bz9tNPVJsSQs5s0U01bmRiYXnnnXA1OJnw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=M9cGAwG43NXD3rOmoK/YF9aUTUCPrwibFBAG90bAAdUiy6M/YAeP/3uOzyJF1YRgo8VCa64HCpPB7jcY5mpal/ULpnN2T85MuyicgBB0jX54+lYEh1Cm4nyU/PeBTRVRhAxapr16MqN8Aq9kU2vfcM0BHG3X0C+BJTtwoJzM6NY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz; spf=pass smtp.mailfrom=suse.cz; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.b=Kcg77EO3; dkim=permerror (0-bit key) header.d=suse.cz header.i=@suse.cz header.b=NB8++XD7; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.b=Kcg77EO3; dkim=permerror (0-bit key) header.d=suse.cz header.i=@suse.cz header.b=NB8++XD7; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.cz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="vFy10jB2"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9E447C4CEE4;
-	Thu, 17 Apr 2025 07:28:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1744874937;
-	bh=1Go1rOeSwKFJb+OGsYoOU4Np68HqJFr1nvpQbJt93ck=;
-	h=From:To:Cc:Subject:Date:From;
-	b=vFy10jB2gwIdklMCwQUJWAbjJg5c0eS9HYkRp8cdZat4o4XaI3cO2neYY/aslV5rO
-	 4LdlCsnmUTplRIAl4Ij7mm5jGWFXUoI40fW5X4FuUMrM+lHFSGfAvEXckACb8rwsXk
-	 4bI07zOTbXmMoRHJx6GX5OFgOwgbMukafjWTXbEJtQmTFHjkn2H+4b3xSFxlajbqOy
-	 1nhfaglzyMb0xyq0Uk0vSPY8Bea8gTLpihzAv67MB5BKHmj4gJBqTkYZRY2LCzKhGc
-	 +29UXUCsNu9CBZ+s9CIUy8XUemRqW/3DO6DGvJgctmQ1LVPAMvvzTM5PypUHIRSMUt
-	 AiEIkae5VfCFw==
-Received: from johan by xi.lan with local (Exim 4.97.1)
-	(envelope-from <johan+linaro@kernel.org>)
-	id 1u5Jg8-000000000CH-31wy;
-	Thu, 17 Apr 2025 09:28:57 +0200
-From: Johan Hovold <johan+linaro@kernel.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rob Herring (Arm)" <robh@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Johan Hovold <johan+linaro@kernel.org>,
-	stable@vger.kernel.org
-Subject: [PATCH v3] cpufreq: fix compile-test defaults
-Date: Thu, 17 Apr 2025 09:28:38 +0200
-Message-ID: <20250417072838.734-1-johan+linaro@kernel.org>
-X-Mailer: git-send-email 2.49.0
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.b="Kcg77EO3";
+	dkim=permerror (0-bit key) header.d=suse.cz header.i=@suse.cz header.b="NB8++XD7";
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.b="Kcg77EO3";
+	dkim=permerror (0-bit key) header.d=suse.cz header.i=@suse.cz header.b="NB8++XD7"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id C1A651F391;
+	Thu, 17 Apr 2025 07:37:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1744875460; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=WY/upZ4RRyv+Af/uq37XK2KMVfUJ5EV6Iwrz5O78PcU=;
+	b=Kcg77EO3YAvi3HHRtM1Cey2oVHNpiVx3hiYEP98iylnJRFWwPUHIb9H1mI1smmR8ybJJxo
+	FjJXvkvqG2nDpcBaW5HkZOe34jdpT6Qn/xFVHhX54UaOXXjqRLj9GYGueNHKCdNkwCyx6h
+	hn/5k3YjS56pBH7tWTpmCh2tEgg4dGc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1744875460;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=WY/upZ4RRyv+Af/uq37XK2KMVfUJ5EV6Iwrz5O78PcU=;
+	b=NB8++XD7+6MTY1UqStY6otFYnkHR3M/lSsdJ6i/cRggvxxLI3slt0egetza22uxF/YQhPJ
+	4cW9TVm7SUKrOXDQ==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1744875460; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=WY/upZ4RRyv+Af/uq37XK2KMVfUJ5EV6Iwrz5O78PcU=;
+	b=Kcg77EO3YAvi3HHRtM1Cey2oVHNpiVx3hiYEP98iylnJRFWwPUHIb9H1mI1smmR8ybJJxo
+	FjJXvkvqG2nDpcBaW5HkZOe34jdpT6Qn/xFVHhX54UaOXXjqRLj9GYGueNHKCdNkwCyx6h
+	hn/5k3YjS56pBH7tWTpmCh2tEgg4dGc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1744875460;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=WY/upZ4RRyv+Af/uq37XK2KMVfUJ5EV6Iwrz5O78PcU=;
+	b=NB8++XD7+6MTY1UqStY6otFYnkHR3M/lSsdJ6i/cRggvxxLI3slt0egetza22uxF/YQhPJ
+	4cW9TVm7SUKrOXDQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id B2EE6137CF;
+	Thu, 17 Apr 2025 07:37:40 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id Y45ZK8SvAGixUgAAD6G6ig
+	(envelope-from <ggherdovich@suse.cz>); Thu, 17 Apr 2025 07:37:40 +0000
+Message-ID: <7a2c79fd-cad2-4685-9da2-a12f089be13d@suse.cz>
+Date: Thu, 17 Apr 2025 09:37:36 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/2] ACPI: processor: idle:
+ acpi_processor_get_cstate_info() cleanup
+To: Zhang Rui <rui.zhang@intel.com>, rafael.j.wysocki@intel.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-acpi@vger.kernel.org
+References: <20250409005026.1932637-1-rui.zhang@intel.com>
+Content-Language: en-US
+From: Giovanni Gherdovich <ggherdovich@suse.cz>
+In-Reply-To: <20250409005026.1932637-1-rui.zhang@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Level: 
+X-Spamd-Result: default: False [-4.30 / 50.00];
+	BAYES_HAM(-3.00)[99.99%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-0.999];
+	MIME_GOOD(-0.10)[text/plain];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_FIVE(0.00)[5];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.cz:email,suse.cz:mid,imap1.dmz-prg2.suse.org:helo]
+X-Spam-Score: -4.30
+X-Spam-Flag: NO
 
-Commit 3f66425a4fc8 ("cpufreq: Enable COMPILE_TEST on Arm drivers")
-enabled compile testing of most Arm CPUFreq drivers but left the
-existing default values unchanged so that many drivers are enabled by
-default whenever COMPILE_TEST is selected.
+On Wed Apr 9, 2025 02:50, Zhang Rui wrote:
+> This patch series does further cleanups for
+> acpi_processor_get_cstate_info() on top of
+> https://lore.kernel.org/all/20250328143040.9348-2-ggherdovich@suse.cz/
+> 
+> thanks,
+> rui
+> 
+> ----------------------------------------------------------------
+> Zhang Rui (2):
+>        ACPI: processor: idle: Set pr->flags.power unconditionally
+>        ACPI: processor: idle: Remove redundant pr->power.count assignment
+> 
+>   drivers/acpi/processor_idle.c | 8 +-------
+>   1 file changed, 1 insertion(+), 7 deletions(-)
 
-This specifically results in the S3C64XX CPUFreq driver being enabled
-and initialised during boot of non-S3C64XX platforms with the following
-error logged:
+Thanks a lot Rui for this cleanup.
 
-	cpufreq: Unable to obtain ARMCLK: -2
+To the series:
 
-Commit d4f610a9bafd ("cpufreq: Do not enable by default during compile
-testing") recently fixed most of the default values, but two entries
-were missed and two could use a more specific default condition.
-
-Fix the default values for drivers that can be compile tested and that
-should be enabled by default when not compile testing.
-
-Fixes: 3f66425a4fc8 ("cpufreq: Enable COMPILE_TEST on Arm drivers")
-Cc: stable@vger.kernel.org	# 6.12: d4f610a9bafd
-Cc: Rob Herring (Arm) <robh@kernel.org>
-Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
----
-
-Changes in v3:
- - use stable backport dependency notation instead of a Fixes tag for
-   the partial fix
-
-Changes in v2:
- - rebase on commit d4f610a9bafd ("cpufreq: Do not enable by default
-   during compile testing")
-
-
- drivers/cpufreq/Kconfig.arm | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index d4d625ded285..0d46402e3094 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -76,7 +76,7 @@ config ARM_VEXPRESS_SPC_CPUFREQ
- config ARM_BRCMSTB_AVS_CPUFREQ
- 	tristate "Broadcom STB AVS CPUfreq driver"
- 	depends on (ARCH_BRCMSTB && !ARM_SCMI_CPUFREQ) || COMPILE_TEST
--	default ARCH_BRCMSTB
-+	default y if ARCH_BRCMSTB && !ARM_SCMI_CPUFREQ
- 	help
- 	  Some Broadcom STB SoCs use a co-processor running proprietary firmware
- 	  ("AVS") to handle voltage and frequency scaling. This driver provides
-@@ -88,7 +88,7 @@ config ARM_HIGHBANK_CPUFREQ
- 	tristate "Calxeda Highbank-based"
- 	depends on ARCH_HIGHBANK || COMPILE_TEST
- 	depends on CPUFREQ_DT && REGULATOR && PL320_MBOX
--	default m
-+	default m if ARCH_HIGHBANK
- 	help
- 	  This adds the CPUFreq driver for Calxeda Highbank SoC
- 	  based boards.
-@@ -133,7 +133,7 @@ config ARM_MEDIATEK_CPUFREQ
- config ARM_MEDIATEK_CPUFREQ_HW
- 	tristate "MediaTek CPUFreq HW driver"
- 	depends on ARCH_MEDIATEK || COMPILE_TEST
--	default m
-+	default m if ARCH_MEDIATEK
- 	help
- 	  Support for the CPUFreq HW driver.
- 	  Some MediaTek chipsets have a HW engine to offload the steps
-@@ -256,7 +256,7 @@ config ARM_TEGRA194_CPUFREQ
- 	tristate "Tegra194 CPUFreq support"
- 	depends on ARCH_TEGRA_194_SOC || ARCH_TEGRA_234_SOC || (64BIT && COMPILE_TEST)
- 	depends on TEGRA_BPMP
--	default ARCH_TEGRA
-+	default ARCH_TEGRA_194_SOC || ARCH_TEGRA_234_SOC
- 	help
- 	  This adds CPU frequency driver support for Tegra194 SOCs.
- 
--- 
-2.49.0
-
+Acked-by: Giovanni Gherdovich <ggherdovich@suse.cz>
