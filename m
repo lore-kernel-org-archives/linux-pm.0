@@ -1,193 +1,180 @@
-Received: from out203-205-221-221.mail.qq.com (out203-205-221-221.mail.qq.com [203.205.221.221])
+Received: from mail-m19731113.qiye.163.com (mail-m19731113.qiye.163.com [220.197.31.113])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8D54184E;
-	Fri, 18 Apr 2025 01:31:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=203.205.221.221
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 800872641EC;
+	Fri, 18 Apr 2025 02:00:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.113
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744939927; cv=none; b=Zx55SmIbyOGvV04kWQuJXB+jQd7YA1HIO2M3EgFA/20xNpIGV7v/aqK2yVI0pQ67sEw/TvJwZMc0ZUvmJuX6wHVu23qxQwHtsKC6hImbv3owzjRkuv+GeEDA36gvJvfFLOaqGP8ayZxw/MAHnG5mW9qqbgKM5KijQ/zPd6vJXvo=
+	t=1744941619; cv=none; b=jnwkfe0QtQfP9KPPygbZM+LxUDJrS6+MWOUAtPE2dhimLcwgLbv2IB72+tD3dmLTCYz04ts/LJggbfrq3Qen3XY8KyN54IN3Vy7ETOHC9tCb5bWNTdPxK/d7M4yrfJDPwttd08VCSdPT36+6Js/GUCJQSxZs932TkYdTJPqIORk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744939927; c=relaxed/simple;
-	bh=jekfTa9V30p9Z0YsCtA2/HSKfXwCMg4Wx7EMinWsgk0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Ny2dCSdCKPoEOlVYB0JG2ctQs/UEQQsNX74q6h47vTU2hucU3AwtOMJFx5tWcBqd9+/7fFosFkvAvjODdgIStLIScv5APLwokF/Z6KSMMw4Tql83gQgHcLzl8+bi8Hsrdml8xGRFeoDP7Nh7uQVJNDFOY35mEVmSX2bQo2qOyqY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com; spf=pass smtp.mailfrom=qq.com; dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.b=Ken9vZV/; arc=none smtp.client-ip=203.205.221.221
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qq.com
+	s=arc-20240116; t=1744941619; c=relaxed/simple;
+	bh=1+ScBvG+oLMlHepXE4HuFUNDLPQ6s7vDAMcdM2Q9ubE=;
+	h=Message-ID:Date:MIME-Version:Cc:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=VqU9kqhKxbQbURvmRDGdwtNRWjJvf1Pqv5iuEVd34kkUb7Rf7wz+m7a2FJURWZJF88HVREm82gDi7mtet4fvcat1GPDmHOeWX7s9KX0Pd8ugswBXLLbl/nChI7IWVIGlor+wqxEVqDmeWLwgkhEiHeCYhFfDD4YPzrXui85lnlA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=Tk//MLA5; arc=none smtp.client-ip=220.197.31.113
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.b="Ken9vZV/"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
-	t=1744939610; bh=HevGOi1X0mZXbeVlJrmCyia/jNHwBFQD50J/snF8XCI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=Ken9vZV/f7kgs80KtLY4T0e/bKgVLOWSi+qRp8iHuTUMD9rlD3SN/JDNYlDuPWrAZ
-	 7jv2Ks04YX8ICZCVriZgYzgOw0SRaBVBAZ++ESYLjP22xIcQXwJUGXNzvKCxnuLXSh
-	 +nEnNpx7ZiBrSCnTfq+Z9pEjGYc6f0DQUNv2Nd5U=
-Received: from [10.42.13.21] ([116.128.244.169])
-	by newxmesmtplogicsvrszb16-1.qq.com (NewEsmtp) with SMTP
-	id 6B139465; Fri, 18 Apr 2025 09:26:49 +0800
-X-QQ-mid: xmsmtpt1744939609t8f0vwbn3
-Message-ID: <tencent_F59412B7B14221D391FE1C1ADBAF4EBD5F07@qq.com>
-X-QQ-XMAILINFO: NQR8mRxMnur9Dov2d0lKs+xY+CV9nImtN7dQtaXynqINr664JPoEpVGYDL9Djk
-	 5bRkyPq1dnVF98I+nOQYVPeEAZ8U1u/6t2qvJhpXkwmwYs89hFVUnmpVEV7C1hyi6DJuuqERpZ9h
-	 3QQltE3NyBS6M/zc923xe/7JOT1Vyc5N/L5PjR3lEkAR3h0cDS5Q6kedrvwEz7ppq2y5ekEkfiWH
-	 pP4pTUIR+OCd4VBycL0efTntBK+Y+Lcmih27xM3VqB8Enh4mzKMSdde+pU7S2zDl8LbtIGWB4pEX
-	 ufNwdTmcGVXcF+P6UdBORRme6McCA0NTloz1kq3RgJhwQAlOtOv5k8eqKurLjuWlfKyeJxTPRq9/
-	 BO59fCTzttJg95Czv0GHuRXdoG5KirkuIrcU/mbH0WbUtqoN/+1mUBC5fFoX60HnzP7Rhjgu7pQP
-	 opcz1nTIQIVpk3yno/ZtdU31xqfUUMkZfv7/Kj5yxvOGL6C+RAI+2gk46j6T5+PFlWt1ajeAs4v6
-	 qF4GPUGa9lhhwHg9jT7PqDGgQUimGT5Cl85t9/IbM6qs9vNJ6S8dtFWPkSF21i22YY7Pm8ET7z1l
-	 Fh2oynRdVvFqe52cMU31odQHQ9aQfSk6JzJKzYNOpD+jDo9EHb8zVte7iG2h3cbE691UukpAOveN
-	 jLWn6R5PqPqWhdXluJstZWgz0lERWHvz7cYoFp5qGQXpAR7LzmBmQGZMTFJKBIymxZCu2Kcu8uiX
-	 ipsmWV1MOKKPWeKvVbO1Mza9bxWpA+1x251jHMb7KyKXbj2H/xMi6hoTeDFx1buGWYj1eRbvoe9V
-	 OMT49eIsQo3Qk/BVmqQ4KSFHMdTheJDsvsl/IJUhT6SrAfj43xdO5tQbG9CwzdrghvpMCpxTBH06
-	 RNrvPO+5SOy0NUxh8ZhpeFnwNzjUNLCtOehxfATHf/VL5qxQsRJEfgNI4xNr5+eV4+2k0mFTUlzA
-	 8xSUxzD/mc61Rg+SmR7MvLKoedSMh+cZ0Gjzg4gNcK3xrUH9gktFMYocVpr+Mm
-X-QQ-XMRINFO: NyFYKkN4Ny6FSmKK/uo/jdU=
-X-OQ-MSGID: <75d26d83-aa3a-4acc-9341-e901b1793f1e@qq.com>
-Date: Fri, 18 Apr 2025 09:26:49 +0800
+	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="Tk//MLA5"
+Received: from [172.16.12.129] (unknown [58.22.7.114])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 12477934f;
+	Fri, 18 Apr 2025 08:44:31 +0800 (GMT+08:00)
+Message-ID: <c70cef1b-9f37-5a73-faf3-4d1cac6bcdde@rock-chips.com>
+Date: Fri, 18 Apr 2025 08:43:54 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4] PM: EM: Fix potential division-by-zero error in
- em_compute_costs()
-To: Lukasz Luba <lukasz.luba@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Yaxiong Tian <tianyaxiong@kylinos.cn>, rafael@kernel.org
-References: <tencent_EE27C7D1D6BDB3EE57A2C467CC59A866C405@qq.com>
- <tencent_2256A7C02F7849F1D89390E488704E826D06@qq.com>
- <1ca192e6-3a45-45c6-b4f0-be6a89eaf192@arm.com>
- <tencent_91D93A837FF94A06C7FE8492461472B86D09@qq.com>
- <1a7f6279-c21c-4d6f-a5ee-48766b1ca34e@arm.com>
-Content-Language: en-US
-From: Yaxiong Tian <iambestgod@qq.com>
-In-Reply-To: <1a7f6279-c21c-4d6f-a5ee-48766b1ca34e@arm.com>
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.1
+Cc: shawn.lin@rock-chips.com, Detlev Casanova
+ <detlev.casanova@collabora.com>, linux-pm@vger.kernel.org,
+ linux-mmc@vger.kernel.org,
+ Sebastian Reichel <sebastian.reichel@collabora.com>,
+ linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org,
+ kernel@collabora.com, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v2] mmc: sdhci-of-dwcmshc: add PD workaround on RK3576
+To: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
+ Ulf Hansson <ulf.hansson@linaro.org>, Heiko Stuebner <heiko@sntech.de>,
+ Elaine Zhang <zhangqing@rock-chips.com>,
+ Finley Xiao <finley.xiao@rock-chips.com>,
+ Adrian Hunter <adrian.hunter@intel.com>
+References: <20250412-rk3576-emmc-fix-v2-1-830e653ad4f0@collabora.com>
+From: Shawn Lin <shawn.lin@rock-chips.com>
+In-Reply-To: <20250412-rk3576-emmc-fix-v2-1-830e653ad4f0@collabora.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZQkpITlZNGk9PHRhKT0hNH05WFRQJFh
+	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
+	hVSktLVUpCS0tZBg++
+X-HM-Tid: 0a96465ab30c09cckunm12477934f
+X-HM-MType: 1
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6NiI6Tio5GjJNFhU4Mg8fS0ks
+	NTUwCRBVSlVKTE9PQkhMS0xJQ09IVTMWGhIXVQgTGgwVVRcSFTsJFBgQVhgTEgsIVRgUFkVZV1kS
+	C1lBWU5DVUlJVUxVSkpPWVdZCAFZQU1KTkk3Bg++
+DKIM-Signature:a=rsa-sha256;
+	b=Tk//MLA56Ghww08hBdr9vFuE8XaqrrlB+sMy2CcuqZJ3Ion+u7E9rGD/rlImMVOzl/RJ1cGe5d/e6fGfqh5LKM5ABl2DSUs6liUiPPBhBSXaeBm77NSls+uwEOj4zX9UlsU1xyrp7rIE+06HHojiLnttWKb5J/whbh7OB6+Tfs0=; c=relaxed/relaxed; s=default; d=rock-chips.com; v=1;
+	bh=Lcb43dSZS3+Y/L9GUNHVrV5chNZ/V2WVLs/FwGaCc1s=;
+	h=date:mime-version:subject:message-id:from;
+
+Hi Nicolas,
+
+在 2025/04/13 星期日 4:45, Nicolas Frattaroli 写道:
+> RK3576's power domains have a peculiar problem where the PD_NVM
+> power domain, of which the sdhci controller is a part, seemingly does
+> not have idempotent disable/enable. The end effect is that if PD_NVM
+> gets turned off by the generic power domain logic because all the
+> devices depending on it are suspended, then the next time the sdhci
+> device is unsuspended, it'll hang the SoC as soon as it tries accessing
+> the CQHCI registers.
+> 
+> RK3576's UFS support needed a new dev_pm_genpd_rpm_always_on function
+> added to the generic power domains API to handle what appears to be a
+> similar hardware issue.
+> 
+> Use this new function to ask for the same treatment in the sdhci
+> controller by giving rk3576 its own platform data with its own postinit
+> function. The benefit of doing this instead of marking the power domains
+> always on in the power domain core is that we only do this if we know
+> the platform we're running on actually uses the sdhci controller. For
+> others, keeping PD_NVM always on would be a waste, as they won't run
+> into this specific issue. The only other IP in PD_NVM that could be
+> affected is FSPI0. If it gets a mainline driver, it will probably want
+> to do the same thing.
+> 
+> Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+> ---
+> Changes in v2:
+> - Rewrite patch to use dev_pm_genpd_rpm_always_on in sdhci driver
+>    instead, after Ulf Hansson made me aware of its existence
+> - Link to v1: https://lore.kernel.org/r/20250408-rk3576-emmc-fix-v1-1-3009828b1b31@collabora.com
+> ---
+>   drivers/mmc/host/sdhci-of-dwcmshc.c | 39 +++++++++++++++++++++++++++++++++++++
+>   1 file changed, 39 insertions(+)
+> 
+> diff --git a/drivers/mmc/host/sdhci-of-dwcmshc.c b/drivers/mmc/host/sdhci-of-dwcmshc.c
+> index 09b9ab15e4995f0bddf57dd309c010c849be40d9..a00aec05eff2da8197cc64690ba9665be756e54a 100644
+> --- a/drivers/mmc/host/sdhci-of-dwcmshc.c
+> +++ b/drivers/mmc/host/sdhci-of-dwcmshc.c
+> @@ -17,6 +17,7 @@
+>   #include <linux/module.h>
+>   #include <linux/of.h>
+>   #include <linux/platform_device.h>
+> +#include <linux/pm_domain.h>
+>   #include <linux/pm_runtime.h>
+>   #include <linux/reset.h>
+>   #include <linux/sizes.h>
+> @@ -745,6 +746,28 @@ static void dwcmshc_rk35xx_postinit(struct sdhci_host *host, struct dwcmshc_priv
+>   	}
+>   }
+>   
+> +static void dwcmshc_rk3576_postinit(struct sdhci_host *host, struct dwcmshc_priv *dwc_priv)
+> +{
+> +	struct device *dev = mmc_dev(host->mmc);
+> +	int ret;
+> +
+> +	/*
+> +	 * This works around what appears to be a silicon bug, which makes the
+
+After discussion with Finley, we agree with this patch which is
+basically the same way we handle it on vendor tree. But it's not a
+silicon bug to us, so maybe the comments need a bit of adjustment.
 
 
-
-在 2025/4/17 21:27, Lukasz Luba 写道:
+> +	 * PD_NVM power domain, which the sdhci controller on the RK3576 is in,
+> +	 * never come back the same way once it's turned off once. This can
+> +	 * happen during early kernel boot if no driver is using either PD_NVM
+> +	 * or its child power domain PD_SDGMAC for a short moment, leading to it
+> +	 * being turned off to save power. By keeping it on, sdhci suspending
+> +	 * won't lead to PD_NVM becoming a candidate for getting turned off.
+> +	 */
+> +	ret = dev_pm_genpd_rpm_always_on(dev, true);
+> +	if (ret && ret != -EOPNOTSUPP)
+> +		dev_warn(dev, "failed to set PD rpm always on, SoC may hang later: %pe\n",
+> +			 ERR_PTR(ret));
+> +
+> +	dwcmshc_rk35xx_postinit(host, dwc_priv);
+> +}
+> +
+>   static int th1520_execute_tuning(struct sdhci_host *host, u32 opcode)
+>   {
+>   	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
+> @@ -1176,6 +1199,18 @@ static const struct dwcmshc_pltfm_data sdhci_dwcmshc_rk35xx_pdata = {
+>   	.postinit = dwcmshc_rk35xx_postinit,
+>   };
+>   
+> +static const struct dwcmshc_pltfm_data sdhci_dwcmshc_rk3576_pdata = {
+> +	.pdata = {
+> +		.ops = &sdhci_dwcmshc_rk35xx_ops,
+> +		.quirks = SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN |
+> +			  SDHCI_QUIRK_BROKEN_TIMEOUT_VAL,
+> +		.quirks2 = SDHCI_QUIRK2_PRESET_VALUE_BROKEN |
+> +			   SDHCI_QUIRK2_CLOCK_DIV_ZERO_BROKEN,
+> +	},
+> +	.init = dwcmshc_rk35xx_init,
+> +	.postinit = dwcmshc_rk3576_postinit,
+> +};
+> +
+>   static const struct dwcmshc_pltfm_data sdhci_dwcmshc_th1520_pdata = {
+>   	.pdata = {
+>   		.ops = &sdhci_dwcmshc_th1520_ops,
+> @@ -1274,6 +1309,10 @@ static const struct of_device_id sdhci_dwcmshc_dt_ids[] = {
+>   		.compatible = "rockchip,rk3588-dwcmshc",
+>   		.data = &sdhci_dwcmshc_rk35xx_pdata,
+>   	},
+> +	{
+> +		.compatible = "rockchip,rk3576-dwcmshc",
+> +		.data = &sdhci_dwcmshc_rk3576_pdata,
+> +	},
+>   	{
+>   		.compatible = "rockchip,rk3568-dwcmshc",
+>   		.data = &sdhci_dwcmshc_rk35xx_pdata,
 > 
+> ---
+> base-commit: 64e9fdfc89a76fed38d8ddeed72d42ec71957ed9
+> change-id: 20250317-rk3576-emmc-fix-7dc81a627422
 > 
-> On 4/17/25 08:43, Yaxiong Tian wrote:
->>
->>
->> 在 2025/4/17 13:57, Lukasz Luba 写道:
->>>
->>>
->>> On 4/17/25 02:07, Yaxiong Tian wrote:
->>>> From: Yaxiong Tian <tianyaxiong@kylinos.cn>
->>>>
->>>> When the device is of a non-CPU type, table[i].performance won't be
->>>> initialized in the previous em_init_performance(), resulting in 
->>>> division
->>>> by zero when calculating costs in em_compute_costs().
->>>>
->>>> Since the 'cost' algorithm is only used for EAS energy efficiency
->>>> calculations and is currently not utilized by other device drivers, we
->>>> should add the _is_cpu_device(dev) check to prevent this 
->>>> division-by-zero
->>>> issue.
->>>>
->>>> Fixes: 1b600da51073 ("PM: EM: Optimize em_cpu_energy() and remove 
->>>> division")
->>>> Signed-off-by: Yaxiong Tian <tianyaxiong@kylinos.cn>
->>>> ---
->>>>   kernel/power/energy_model.c | 4 ++++
->>>>   1 file changed, 4 insertions(+)
->>>>
->>>> diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
->>>> index d9b7e2b38c7a..41606247c277 100644
->>>> --- a/kernel/power/energy_model.c
->>>> +++ b/kernel/power/energy_model.c
->>>> @@ -233,6 +233,10 @@ static int em_compute_costs(struct device *dev, 
->>>> struct em_perf_state *table,
->>>>       unsigned long prev_cost = ULONG_MAX;
->>>>       int i, ret;
->>>> +    /* This is needed only for CPUs and EAS skip other devices */
->>>> +    if (!_is_cpu_device(dev))
->>>> +        return 0;
->>>> +
->>>>       /* Compute the cost of each performance state. */
->>>>       for (i = nr_states - 1; i >= 0; i--) {
->>>>           unsigned long power_res, cost;
->>>
->>>
->>> Please stop for a while. I have to check what happened that you
->>> faced the issue in the first place. I have been testing the GPU
->>> EMs and there was no issues...
->>>
->>> Let me debug that today.
->>
->> Of course. Since I don't have actual hardware, I can only logically
->> deduce that this issue might exist.
->>
->>
-> 
-> I have run with the GPU EM registered in the boot:
-> 
-> -------------------------------------------------------
-> [    2.753333] panfrost ff9a0000.gpu: EM: created perf domain
-> [    2.759863] panfrost ff9a0000.gpu: mali-t860 id 0x860 major 0x2 minor 
-> 0x0 status 0x0
-> [    2.768530] panfrost ff9a0000.gpu: features: 00000000,00000407, 
-> issues: 00000000,24040400
-> [    2.777678] panfrost ff9a0000.gpu: Features: L2:0x07120206 
-> Shader:0x00000000 Tiler:0x00000809 Mem:0x1 MMU:0x00002830 AS:0xff JS:0x7
-> [    2.780746] mmc_host mmc2: Bus speed (slot 0) = 148500000Hz (slot req 
-> 150000000Hz, actual 148500000HZ div = 0)
-> [    2.790905] panfrost ff9a0000.gpu: shader_present=0xf l2_present=0x1
-> 
-> root@arm:~# cat /sys/kernel/debug/energy_model/ff9a0000.gpu/flags
-> 0x1
-> root@arm:~# grep . /sys/kernel/debug/energy_model/ff9a0000.gpu/ps*/*
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:200000/cost:0
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:200000/frequency:200000
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:200000/inefficient:1
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:200000/performance:0
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:200000/power:404250
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:300000/cost:0
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:300000/frequency:300000
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:300000/inefficient:1
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:300000/performance:0
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:300000/power:606375
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:400000/cost:0
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:400000/frequency:400000
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:400000/inefficient:1
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:400000/performance:0
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:400000/power:808500
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:600000/cost:0
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:600000/frequency:600000
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:600000/inefficient:0
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:600000/performance:0
-> /sys/kernel/debug/energy_model/ff9a0000.gpu/ps:600000/power:1505790
-> 
-> --------------------------------------------------------
-> 
-> The EM for the GPU is not modified during the boot like the CPUs'
-> EM are, thus this code is not triggered. Although, the API is
-> open and in theory the GPU EM can be modified at runtime
-> as well and it will reach that em_compute_costs() issue
-> with 'performance' field having value 0.
-> 
-> So this v4 patch would be needed in this case.
-> 
-> Please re-send this v4 patch as a completely new message.
-> 
-> Thanks for looking at that code path and the fix for potential
-> issue.
-> 
-> You can also add my:
-> 
-> Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
-> 
-> Regrds,
-> Lukasz
-
-Got it - patch resent with Reviewed-by.
-
-https://lore.kernel.org/all/tencent_7F99ED4767C1AF7889D0D8AD50F34859CE06@qq.com/
-
+> Best regards,
