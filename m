@@ -1,180 +1,112 @@
-Received: from mail-m19731113.qiye.163.com (mail-m19731113.qiye.163.com [220.197.31.113])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f46.google.com (mail-ed1-f46.google.com [209.85.208.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 800872641EC;
-	Fri, 18 Apr 2025 02:00:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.113
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58F6B1CF8B
+	for <linux-pm@vger.kernel.org>; Fri, 18 Apr 2025 05:58:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744941619; cv=none; b=jnwkfe0QtQfP9KPPygbZM+LxUDJrS6+MWOUAtPE2dhimLcwgLbv2IB72+tD3dmLTCYz04ts/LJggbfrq3Qen3XY8KyN54IN3Vy7ETOHC9tCb5bWNTdPxK/d7M4yrfJDPwttd08VCSdPT36+6Js/GUCJQSxZs932TkYdTJPqIORk=
+	t=1744955937; cv=none; b=XWOsU8IKiQl0dgEDe9M4HIvWs9YVu9o/CO1WlD2OVPxAqhchKd+ExSyLsXbwEFUI8DWOsPqzVkWcmoG0WMZKmBHwEIZT/Ec3g/1GnNBWvuQS+2khhO+klaFJbtdAEKQMEurDcKQE0K+4WXZ9VZWPghWBw5xGqpKA/hlWPJUnC1k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744941619; c=relaxed/simple;
-	bh=1+ScBvG+oLMlHepXE4HuFUNDLPQ6s7vDAMcdM2Q9ubE=;
-	h=Message-ID:Date:MIME-Version:Cc:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=VqU9kqhKxbQbURvmRDGdwtNRWjJvf1Pqv5iuEVd34kkUb7Rf7wz+m7a2FJURWZJF88HVREm82gDi7mtet4fvcat1GPDmHOeWX7s9KX0Pd8ugswBXLLbl/nChI7IWVIGlor+wqxEVqDmeWLwgkhEiHeCYhFfDD4YPzrXui85lnlA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=Tk//MLA5; arc=none smtp.client-ip=220.197.31.113
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
+	s=arc-20240116; t=1744955937; c=relaxed/simple;
+	bh=9vzQM3t5vp/0pOozAYzw8sT/kUPRS92tdRYnfzsM3ts=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=CD+TEsZxa4dUtyyol4da2mFYHRn4Ho7iLlzc2QYSCueCZfis/OsdVAWVyVjgbFtfVZbmmfas48GeF93pL0k6ANd+lVC8+UK/+aNi/DbxsSRa4MjjjpjDcOfv9jG41bXL85NpmktL/VWpeALJh7Gt/ChhZP6X8QeHTG6ygeabeJg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=QWdxi/HI; arc=none smtp.client-ip=209.85.208.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="Tk//MLA5"
-Received: from [172.16.12.129] (unknown [58.22.7.114])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 12477934f;
-	Fri, 18 Apr 2025 08:44:31 +0800 (GMT+08:00)
-Message-ID: <c70cef1b-9f37-5a73-faf3-4d1cac6bcdde@rock-chips.com>
-Date: Fri, 18 Apr 2025 08:43:54 +0800
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="QWdxi/HI"
+Received: by mail-ed1-f46.google.com with SMTP id 4fb4d7f45d1cf-5e5c7d6b96fso2765570a12.3
+        for <linux-pm@vger.kernel.org>; Thu, 17 Apr 2025 22:58:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1744955933; x=1745560733; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=rFhmOeXgIAlpgdzXmkuAFZPhvLmDKS09kQhKDPs7SSw=;
+        b=QWdxi/HISx2YFfJGrAMKYH2CIctgux9CvDakPaZRtqMYIvIC+haank58pLqduZPA8D
+         bbQZnDbNnJFEav/GmeMgvoTbVF81KIOD6dIYIYvwIv6vsAzBHqjfKwLc3k9p4qZTiuCZ
+         /3n/q1NGU4duTRAJ40RII2D6TIdwaDSK9qXLFE7f2mf7lfgG2iLNoU8BKwieQE7j+dLV
+         wlsbkixrRwvPos1/BwslU15lx/x2MgsCtVZgz1inUGHbo76G3RbLWsr6jzMwINElxtZp
+         Q3npsuK4QR/wZyHNWG1XiWePPWUtJnxyVHGmuiUEEzCmw4dtdcV08g4nKWqcXhQskx0Y
+         Xuqw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1744955933; x=1745560733;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=rFhmOeXgIAlpgdzXmkuAFZPhvLmDKS09kQhKDPs7SSw=;
+        b=lLSsDsmAf9raQu9yLtPsr1Fb92GU1+WSiUOI2kskGK6+2AoOEOVszQEVxiN/Yud9Uh
+         Xn14fJZt1aRAPuphxHX5KvzuZc+aGv1HQMt96ojTc2jD4NQY3KP0igFqa3S0xm0+lVEt
+         pu3WXDvARU+v6k0SvsmF9om1vkGMXFIypSgM4n7dBmmB58ZRc5R3w2AyaVV6yOAdo3pj
+         ZszoVvmQlYH7hX6Im1XAsRzGnb7mbd5jzdKJibux+qMjqJYlUXjwjO4HY1BxpSMAb9Dv
+         AdMI9sedEfRlwvHWNDYRNtDUj8r92m0PRE2JLuoiSUySSZ7nUWfGP9MGHKYENoBnJ0fe
+         bSvQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVx+Ri4iP1g50ceXWHq7jAyFZyuMkDd7CHRIdjEI/u/J3dq5nnJuhY/Bf68SO+JjxkioFLrYY4jdw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx+oYvw9mYCO8oV1szcpJNBhDEMy9MdmVtWPwWKoiw/32xsNSSF
+	MgRuTmqJTzF5RPTB5QDLLNEtwvT+798Ebyvfo/7uP0d/gZSx2Jaak8kZO7zYjPcYP/lZIyNbTgM
+	SIpuqSjqNDlMm6FPF16XS58s2Ye4J4mEEkAH4Iw==
+X-Gm-Gg: ASbGncvQSwB+bGKAUs2EYv2o9/QIaD91yyEwdkSgIch5AuWHWasI5k+b8vMa+iLZe1c
+	88sFMfBs5yknes6zpOHEuVLal2CCizTfGifDhmUc78pHjPss0dlbGSVt74CRd+7o3bSNJod3Yhn
+	ZUwNMuesuWB6U+6Vg1BIl8gDIrJSDPh8k9
+X-Google-Smtp-Source: AGHT+IHh85joDb2VeapV3maVEqgQe9L9tm8FqA2mZKy01E0HnbaGNJfQUJ+nqSYGMzINt6uLO0DslAKNblccoGq618A=
+X-Received: by 2002:a17:907:9712:b0:ac7:16ef:e994 with SMTP id
+ a640c23a62f3a-acb74e19569mr100020766b.56.1744955933480; Thu, 17 Apr 2025
+ 22:58:53 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.1
-Cc: shawn.lin@rock-chips.com, Detlev Casanova
- <detlev.casanova@collabora.com>, linux-pm@vger.kernel.org,
- linux-mmc@vger.kernel.org,
- Sebastian Reichel <sebastian.reichel@collabora.com>,
- linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org,
- kernel@collabora.com, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v2] mmc: sdhci-of-dwcmshc: add PD workaround on RK3576
-To: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
- Ulf Hansson <ulf.hansson@linaro.org>, Heiko Stuebner <heiko@sntech.de>,
- Elaine Zhang <zhangqing@rock-chips.com>,
- Finley Xiao <finley.xiao@rock-chips.com>,
- Adrian Hunter <adrian.hunter@intel.com>
-References: <20250412-rk3576-emmc-fix-v2-1-830e653ad4f0@collabora.com>
-From: Shawn Lin <shawn.lin@rock-chips.com>
-In-Reply-To: <20250412-rk3576-emmc-fix-v2-1-830e653ad4f0@collabora.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZQkpITlZNGk9PHRhKT0hNH05WFRQJFh
-	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
-	hVSktLVUpCS0tZBg++
-X-HM-Tid: 0a96465ab30c09cckunm12477934f
-X-HM-MType: 1
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6NiI6Tio5GjJNFhU4Mg8fS0ks
-	NTUwCRBVSlVKTE9PQkhMS0xJQ09IVTMWGhIXVQgTGgwVVRcSFTsJFBgQVhgTEgsIVRgUFkVZV1kS
-	C1lBWU5DVUlJVUxVSkpPWVdZCAFZQU1KTkk3Bg++
-DKIM-Signature:a=rsa-sha256;
-	b=Tk//MLA56Ghww08hBdr9vFuE8XaqrrlB+sMy2CcuqZJ3Ion+u7E9rGD/rlImMVOzl/RJ1cGe5d/e6fGfqh5LKM5ABl2DSUs6liUiPPBhBSXaeBm77NSls+uwEOj4zX9UlsU1xyrp7rIE+06HHojiLnttWKb5J/whbh7OB6+Tfs0=; c=relaxed/relaxed; s=default; d=rock-chips.com; v=1;
-	bh=Lcb43dSZS3+Y/L9GUNHVrV5chNZ/V2WVLs/FwGaCc1s=;
-	h=date:mime-version:subject:message-id:from;
+References: <2c788c2ca0cab09a8ef4e384f272af928a880b0e.1744781329.git.viresh.kumar@linaro.org>
+ <20250417015424.36487-1-nic.c3.14@gmail.com> <20250417050226.c6kdp2s5du3y3a3j@vireshk-i7>
+ <20250417050911.xycjkalehqsg3i6x@vireshk-i7> <CAJZ5v0iO4=nHcATzPyiKiWumdETFRR32C97K_RH=yhD--Tai=g@mail.gmail.com>
+ <CAJZ5v0gcf07YykOS9VsQgHwM0DnphBX4yc9dt5cKjNR8G_4mAQ@mail.gmail.com>
+In-Reply-To: <CAJZ5v0gcf07YykOS9VsQgHwM0DnphBX4yc9dt5cKjNR8G_4mAQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Fri, 18 Apr 2025 11:28:49 +0530
+X-Gm-Features: ATxdqUEgPyyaV3xmQOk0XfmWdfy0ew_P7jRJpbFnpMXANh3GgdaCIR7Xj1vkn-o
+Message-ID: <CAKohpomN1PYn1NPSsxCxqpMfg-9nYgCRQD6dFGQ30B+76vneQw@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: acpi: Don't enable boost on policy exit
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Nicholas Chin <nic.c3.14@gmail.com>, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, 
+	vincent.guittot@linaro.org, zhenglifeng1@huawei.com
+Content-Type: text/plain; charset="UTF-8"
 
-Hi Nicolas,
+On Thu, 17 Apr 2025 at 21:23, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> But the changelog isn't because the patch really doesn't address the
+> issue at hand, which is most likely related to the platform firmware
+> clearing the "boost disable" bit.
 
-在 2025/04/13 星期日 4:45, Nicolas Frattaroli 写道:
-> RK3576's power domains have a peculiar problem where the PD_NVM
-> power domain, of which the sdhci controller is a part, seemingly does
-> not have idempotent disable/enable. The end effect is that if PD_NVM
-> gets turned off by the generic power domain logic because all the
-> devices depending on it are suspended, then the next time the sdhci
-> device is unsuspended, it'll hang the SoC as soon as it tries accessing
-> the CQHCI registers.
-> 
-> RK3576's UFS support needed a new dev_pm_genpd_rpm_always_on function
-> added to the generic power domains API to handle what appears to be a
-> similar hardware issue.
-> 
-> Use this new function to ask for the same treatment in the sdhci
-> controller by giving rk3576 its own platform data with its own postinit
-> function. The benefit of doing this instead of marking the power domains
-> always on in the power domain core is that we only do this if we know
-> the platform we're running on actually uses the sdhci controller. For
-> others, keeping PD_NVM always on would be a waste, as they won't run
-> into this specific issue. The only other IP in PD_NVM that could be
-> affected is FSPI0. If it gets a mainline driver, it will probably want
-> to do the same thing.
-> 
-> Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-> ---
-> Changes in v2:
-> - Rewrite patch to use dev_pm_genpd_rpm_always_on in sdhci driver
->    instead, after Ulf Hansson made me aware of its existence
-> - Link to v1: https://lore.kernel.org/r/20250408-rk3576-emmc-fix-v1-1-3009828b1b31@collabora.com
-> ---
->   drivers/mmc/host/sdhci-of-dwcmshc.c | 39 +++++++++++++++++++++++++++++++++++++
->   1 file changed, 39 insertions(+)
-> 
-> diff --git a/drivers/mmc/host/sdhci-of-dwcmshc.c b/drivers/mmc/host/sdhci-of-dwcmshc.c
-> index 09b9ab15e4995f0bddf57dd309c010c849be40d9..a00aec05eff2da8197cc64690ba9665be756e54a 100644
-> --- a/drivers/mmc/host/sdhci-of-dwcmshc.c
-> +++ b/drivers/mmc/host/sdhci-of-dwcmshc.c
-> @@ -17,6 +17,7 @@
->   #include <linux/module.h>
->   #include <linux/of.h>
->   #include <linux/platform_device.h>
-> +#include <linux/pm_domain.h>
->   #include <linux/pm_runtime.h>
->   #include <linux/reset.h>
->   #include <linux/sizes.h>
-> @@ -745,6 +746,28 @@ static void dwcmshc_rk35xx_postinit(struct sdhci_host *host, struct dwcmshc_priv
->   	}
->   }
->   
-> +static void dwcmshc_rk3576_postinit(struct sdhci_host *host, struct dwcmshc_priv *dwc_priv)
-> +{
-> +	struct device *dev = mmc_dev(host->mmc);
-> +	int ret;
-> +
-> +	/*
-> +	 * This works around what appears to be a silicon bug, which makes the
+I think the patch and changelog were still correct as the driver was also
+enabling the boost at exit(). So it fixes the problem, but not fully.
 
-After discussion with Finley, we agree with this patch which is
-basically the same way we handle it on vendor tree. But it's not a
-silicon bug to us, so maybe the comments need a bit of adjustment.
+> Frankly, I'd rather get back to the state from before commit
+> 2b16c631832d ("cpufreq: ACPI: Remove set_boost in
+> acpi_cpufreq_cpu_init()") and start over with the knowledge that the
+> platform firmware may scribble on the MSR before the kernel gets
+> control back.
+>
+> On a way back from system suspend the MSR needs to be put back in sync
+> with the boost settings in the kernel.
 
+What about something like this instead ? Nicholas, can you give this a try
+along with the $Subject patch (both patches should be applied) ?
 
-> +	 * PD_NVM power domain, which the sdhci controller on the RK3576 is in,
-> +	 * never come back the same way once it's turned off once. This can
-> +	 * happen during early kernel boot if no driver is using either PD_NVM
-> +	 * or its child power domain PD_SDGMAC for a short moment, leading to it
-> +	 * being turned off to save power. By keeping it on, sdhci suspending
-> +	 * won't lead to PD_NVM becoming a candidate for getting turned off.
-> +	 */
-> +	ret = dev_pm_genpd_rpm_always_on(dev, true);
-> +	if (ret && ret != -EOPNOTSUPP)
-> +		dev_warn(dev, "failed to set PD rpm always on, SoC may hang later: %pe\n",
-> +			 ERR_PTR(ret));
-> +
-> +	dwcmshc_rk35xx_postinit(host, dwc_priv);
-> +}
-> +
->   static int th1520_execute_tuning(struct sdhci_host *host, u32 opcode)
->   {
->   	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
-> @@ -1176,6 +1199,18 @@ static const struct dwcmshc_pltfm_data sdhci_dwcmshc_rk35xx_pdata = {
->   	.postinit = dwcmshc_rk35xx_postinit,
->   };
->   
-> +static const struct dwcmshc_pltfm_data sdhci_dwcmshc_rk3576_pdata = {
-> +	.pdata = {
-> +		.ops = &sdhci_dwcmshc_rk35xx_ops,
-> +		.quirks = SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN |
-> +			  SDHCI_QUIRK_BROKEN_TIMEOUT_VAL,
-> +		.quirks2 = SDHCI_QUIRK2_PRESET_VALUE_BROKEN |
-> +			   SDHCI_QUIRK2_CLOCK_DIV_ZERO_BROKEN,
-> +	},
-> +	.init = dwcmshc_rk35xx_init,
-> +	.postinit = dwcmshc_rk3576_postinit,
-> +};
-> +
->   static const struct dwcmshc_pltfm_data sdhci_dwcmshc_th1520_pdata = {
->   	.pdata = {
->   		.ops = &sdhci_dwcmshc_th1520_ops,
-> @@ -1274,6 +1309,10 @@ static const struct of_device_id sdhci_dwcmshc_dt_ids[] = {
->   		.compatible = "rockchip,rk3588-dwcmshc",
->   		.data = &sdhci_dwcmshc_rk35xx_pdata,
->   	},
-> +	{
-> +		.compatible = "rockchip,rk3576-dwcmshc",
-> +		.data = &sdhci_dwcmshc_rk3576_pdata,
-> +	},
->   	{
->   		.compatible = "rockchip,rk3568-dwcmshc",
->   		.data = &sdhci_dwcmshc_rk35xx_pdata,
-> 
-> ---
-> base-commit: 64e9fdfc89a76fed38d8ddeed72d42ec71957ed9
-> change-id: 20250317-rk3576-emmc-fix-7dc81a627422
-> 
-> Best regards,
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 924314cdeebc..71557f2ac22a 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -909,8 +909,10 @@ static int acpi_cpufreq_cpu_init(struct
+cpufreq_policy *policy)
+        if (perf->states[0].core_frequency * 1000 != freq_table[0].frequency)
+                pr_warn(FW_WARN "P-state 0 is not max freq\n");
+
+-       if (acpi_cpufreq_driver.set_boost)
++       if (acpi_cpufreq_driver.set_boost) {
+                policy->boost_supported = true;
++               policy->boost_enabled = boost_state(cpu);
++       }
+
+        return result;
