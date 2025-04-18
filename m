@@ -1,125 +1,181 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-f170.google.com (mail-lj1-f170.google.com [209.85.208.170])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C9CA870809;
-	Fri, 18 Apr 2025 00:33:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE78C8836
+	for <linux-pm@vger.kernel.org>; Fri, 18 Apr 2025 00:51:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.170
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744936384; cv=none; b=Z05CWiCK3VcHbjNX1VPDXBkj7A+riT9twDxXDEqzqz0hEwgFx69jogumqjNPr5rq/JQRXftzzZOY3+mdmOpXLIwNAs6UjDJzJuuGgzgGOa1DCG0iwtF1l9sKeVHaqVW9bumF2RQsqRcgxZdNCjBF21HTTpJudIPJ+eg7a1E3FCU=
+	t=1744937487; cv=none; b=iawD2OezUQrLWzugO9naN46BYdklh1kfNuYno2w2Sc0MORidPOXSu5MKzlBwHjC+apTvdNpzV52B2Y7BNx5ZnurIYn6RXHjaPv4sval26qCJsiJgKq0ldxIomw8XEP9wOAUtN7D0lVz3Y7YnWdQuDsxUnXEpOcYPO4B+jpRWoHQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744936384; c=relaxed/simple;
-	bh=X56rnsjlDCuwL+1MMz+5gWk6fCKSQBrk7LTX893DDIM=;
-	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=I4mvWoHAkbWDMeeY+VxFrf4XTMf9C3RwzQxiVvas0LGxw/3+ud2A0zPKvH5Q0srjbOPcK6EyvF0XiFuaXlACTGK3ysW6MTpdIjh3SQgnOENo4JVNsbSC0mSB2/XBgx+ivXgime91en9FYu5zL9Gx/FxlJaN7a66JW9OUml7upAg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=afaS14Z9; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
+	s=arc-20240116; t=1744937487; c=relaxed/simple;
+	bh=pmfJz9HOSf1YHC9miy/q7VstUc493X2MClNIJeftUNc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=eAF09jgrKJp4lMELyqHJGpYPzVkK7Skb8P/m+GiRie5gyU8c1pQGHap5yHQoE4OPC8e8TG/iDtk3ZdpoApEMjNojCxYpC/fUOocXQm3qrhMopEPWJuvr5EsNGvP5tucrS5etJnkdS0gwqypOdo3W3/JSZJcwjD9v3PpjsXpYmPY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=t/c1jUM6; arc=none smtp.client-ip=209.85.208.170
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="afaS14Z9"
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 53HClU2j005239;
-	Fri, 18 Apr 2025 00:32:58 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=WoKQ1Gf4RTzaW58T3r2Dxthd
-	VjtUH2sR3JuHdtrWZE4=; b=afaS14Z9614nTbLSMnZNvuUcCAZHUbmbgg2oRvJO
-	cS5kg/QrWu4VIEMPhmRlUcWd4kj7sDVHerwgPBBikdgnFKCsHuBbYwBLBLck/GCV
-	apNyPGuT4kpY/o1mgAFSmvAypWHiCZqlmd3aaIuzbDG+sC1gqE2FsUvlj29DmPhG
-	ebmtWRLlef73D5jmYiePSx+6RdQQOBHyGA7j4ibN38e/a9ywSArRrywWipkS4Fz7
-	dz+lj/7jqUV6YNWWz0e6WAiRPxEBkZVfluurofYNariB1eDzHwAzD9JUQnrEhYYd
-	j90AkhwFA1VohHKb0byKtX00RkSZqkcjdPZKz8OkV4sBLA==
-Received: from nalasppmta01.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 45yf6a0jyb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 18 Apr 2025 00:32:58 +0000 (GMT)
-Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-	by NALASPPMTA01.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 53I0WvKh024971
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 18 Apr 2025 00:32:57 GMT
-Received: from hu-mdtipton-lv.qualcomm.com (10.49.16.6) by
- nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.9; Thu, 17 Apr 2025 17:32:57 -0700
-Date: Thu, 17 Apr 2025 17:32:55 -0700
-From: Mike Tipton <quic_mdtipton@quicinc.com>
-To: "Aiqun(Maria) Yu" <quic_aiquny@quicinc.com>
-CC: Georgi Djakov <djakov@kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <quic_okukatla@quicinc.com>
-Subject: Re: [PATCH] interconnect: Replace mutex with rt_mutex
-Message-ID: <aAGdt7GftthwJ1+6@hu-mdtipton-lv.qualcomm.com>
-References: <20220906191423.30109-1-quic_mdtipton@quicinc.com>
- <3c8965c0-3bc0-252e-381d-bd057fd02af5@kernel.org>
- <20220907145916.GA2368@hu-mdtipton-lv.qualcomm.com>
- <bda36907-d7eb-4969-909b-697eebe14941@quicinc.com>
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="t/c1jUM6"
+Received: by mail-lj1-f170.google.com with SMTP id 38308e7fff4ca-3105ef2a06cso13050461fa.2
+        for <linux-pm@vger.kernel.org>; Thu, 17 Apr 2025 17:51:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1744937484; x=1745542284; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=espvvwCOUsOaiPeW4qBVlqsEGI9VvnOEfzXFD5TrphU=;
+        b=t/c1jUM6bVMTHbMcmmsIMoOd76eAwN31S1nnOr+V4HrcusDb7UPRbA0BGP3dFttHX/
+         D1/IL3/p5FzSG6rTdlUtzC6T9HnBqFBjDi3Zf6sgm5Fg8rpH8pEiBnoWD8w7mWhSX1/s
+         7KYkA2Flf4PLTzn1wAwpA0Ef/bpXdSwdhxNt3lMkoo/elgwPMNVqgeYIRgOGFSz8meHF
+         RegCVUfE7gk4kg9j8CO9+4Dg6iTXBDkBtX3VrYIXQBZSvOmW9P282oVPohZCn8+mcptL
+         uWvartwdU/4J7xZXAOV3JFpt/jJEdpgaguW3vo6GjVOOeDoXzxsYu5jiQUN9PjkOYXbA
+         LzaQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1744937484; x=1745542284;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=espvvwCOUsOaiPeW4qBVlqsEGI9VvnOEfzXFD5TrphU=;
+        b=g0HDJ6BsnDd6Fdsq+PMbaSLV4VwkQdQsZpfChU8V1/lo7ishM1No7HtZ5mGvgQvN/k
+         uoWdl+bE+aw7nOqWvS0Tz5HLrqLHVN+gJgijbbsIU5f5jPZmXZpgOSnfiQp758ahm56J
+         H81r9wY6cS3qRz4v96mQJJpRwfP3gmJ/VxqCDFJRLiiBmvgeq951k+Er6Usg8NWw3zuM
+         cKxAx2WbQ3HmZVn4EyRwHiEYIbPDVJjjTtWG9EP+zLfTSKKR7Wm5KSmJidMwGAL6CGKf
+         GOmxPOHVX2DDMJQFVi6q2TBJvli6V8um5iE4HX3coAvRS4QWBc6E86sjHud5sIVWK0Bo
+         nngg==
+X-Forwarded-Encrypted: i=1; AJvYcCVZQY/mOP3eY1ty8t5RLHnyYRtP4f6t4pabMQk9CHl+G41nuwdWo0mLGxIZgog7GqX9S8JQcIeufQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwMezNfLWmbYDcoe77OTiuDF6tGwHx/+HkrWb2hgy7O65Qcbss/
+	ZqJ7PMCh074NKyIdQPkqaUkuP+FnQViWz9VfcPPZpcYpSBFDnMkKRj1IxMiqVdTDvL4G1o1RKv8
+	WHKQGWWEa7zQqjf/tYxLfNRICQYBn5zl6/HPD
+X-Gm-Gg: ASbGnct06n/EH20EFRdMUZPULzMdnr20K5ago2K1740+rn4eI4D1QBnRYV3Ad8MOtKx
+	fV2Qlru3y/bi2itY9j4Lv1kaB5pYyNAQfKJhLBeFriSbMgiBmiFEnRMFCwG0N0Aje+LNyfEE9lV
+	5ojrjnZ05DaMh6DnM6lWGU0DQZRjv9Y6wck9IhWIjz4ER+Ll8=
+X-Google-Smtp-Source: AGHT+IE/wqWU+kEJ+uNl1lu0U9l4Nd/hTZwOvDN4HtDxpaQCKOIhack1E/1QtP4XZ5jNQUL4f+oT4lDAZLRZaMBAPC4=
+X-Received: by 2002:a2e:bc86:0:b0:30c:40d6:5cdb with SMTP id
+ 38308e7fff4ca-310904dba7cmr3095251fa.11.1744937483536; Thu, 17 Apr 2025
+ 17:51:23 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <bda36907-d7eb-4969-909b-697eebe14941@quicinc.com>
-X-ClientProxiedBy: nalasex01a.na.qualcomm.com (10.47.209.196) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: QBeyfsDkBDkMLU_criEAjohgrjVJMtDZ
-X-Authority-Analysis: v=2.4 cv=JNc7s9Kb c=1 sm=1 tr=0 ts=68019dba cx=c_pps a=ouPCqIW2jiPt+lZRy3xVPw==:117 a=ouPCqIW2jiPt+lZRy3xVPw==:17 a=3H110R4YSZwA:10 a=kj9zAlcOel0A:10 a=XR8D0OoHHMoA:10 a=PhClAm8El1gnTNPeiugA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-ORIG-GUID: QBeyfsDkBDkMLU_criEAjohgrjVJMtDZ
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1095,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-04-17_07,2025-04-17_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 malwarescore=0
- suspectscore=0 mlxlogscore=758 lowpriorityscore=0 bulkscore=0
- impostorscore=0 clxscore=1015 phishscore=0 adultscore=0 priorityscore=1501
- spamscore=0 classifier=spam authscore=0 authtc=n/a authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.19.0-2502280000
- definitions=main-2504180002
+References: <20250417142513.312939-1-ulf.hansson@linaro.org> <20250417142513.312939-12-ulf.hansson@linaro.org>
+In-Reply-To: <20250417142513.312939-12-ulf.hansson@linaro.org>
+From: Saravana Kannan <saravanak@google.com>
+Date: Thu, 17 Apr 2025 17:50:45 -0700
+X-Gm-Features: ATxdqUG3nsZ8r4b4j3azqOjFpPct1ZcFhXbrqEnzX0WXjS0gXoFni5vfKcox8w4
+Message-ID: <CAGETcx_hQRr1hRQD0vyAN9bhZRx+763zfHUG0oBi0sqFUi85pA@mail.gmail.com>
+Subject: Re: [PATCH 11/11] pmdomain: core: Leave powered-on genpds on until ->sync_state()
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org, 
+	"Rafael J . Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Michael Grzeschik <m.grzeschik@pengutronix.de>, Bjorn Andersson <andersson@kernel.org>, 
+	Abel Vesa <abel.vesa@linaro.org>, Devarsh Thakkar <devarsht@lewv0571a.ent.ti.com>, 
+	Peng Fan <peng.fan@oss.nxp.com>, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, 
+	Johan Hovold <johan@kernel.org>, Maulik Shah <maulik.shah@oss.qualcomm.com>, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Apr 17, 2025 at 07:13:52PM +0800, Aiqun(Maria) Yu wrote:
-> On 9/7/2022 10:59 PM, Mike Tipton wrote:
-> > On Wed, Sep 07, 2022 at 10:35:26AM +0300, Georgi Djakov wrote:
-> >> Hi Mike,
-> >>
-> >> Thanks for the patch!
-> >>
-> >> On 6.09.22 22:14, Mike Tipton wrote:
-> >>> Replace mutex with rt_mutex to prevent priority inversion between
-> >>> clients, which can cause unacceptable delays in some cases.
-> >>
-> >> It would be nice if you have any numbers to share in the commit text.
-> > 
-> > I can try to dig up some numbers, but mileage will vary tremendously of
-> > course. Improvement is really only seen in certain high-concurrency
-> > scenarios.
-> 
-> We need to revisit this thread because the issue has been reported again
-> recently.
-> Here is the data I can provide regarding the performance issue. Please
-> check if it is sufficient for the commit message to understand the change.
-> The CFS normal tasks holding the mutex lock were runnable for
-> approximately 40ms in a busy load scenario, causing the RT task to wait
-> for the mutex for about 40ms, which resulted in the RT task not being
-> 'real-time' enough and causing janks. Changing the mutex to an RT mutex
-> helped the caller of the interface, such as icc_set_bw, to ensure that
-> RT tasks can deliver RT priority to the current RT mutex owner quickly,
-> thereby improving performance in this scenario.
+On Thu, Apr 17, 2025 at 7:25=E2=80=AFAM Ulf Hansson <ulf.hansson@linaro.org=
+> wrote:
+>
+> Powering-off a genpd that was on during boot, before all of its consumer
+> devices have been probed, is certainly prone to problems.
+>
+> Let's fix these problems by preventing these genpds from being powered-of=
+f
+> until ->sync_state(). Note that, this only works for OF based platform as
+> ->sync_state() are relying on fw_devlink.
 
-I'll post an updated and rebased version of this patch soon. In addition
-to the display use cases, it was recently reported for certain other GPU
-use cases as well.
+For non-OF platforms, this will still wait until late_initcall(). So,
+there's at least SOME protection. We could potentially even move that
+to happen after deferred probe timeout expires.
 
-> 
-> > 
-> > I'm not sure what an alternative, generic solution would be. We have
-> > many clients requesting many different paths. Some are more
-> > latency-sensitive and higher priority than others. If these use cases
-> > overlap, then we're subject to these sorts of priority inversion issues.
-> > Bumping the priority of all clients to match the highest priority one
-> > isn't really possible.
-> 
-> Based on my understanding, rt_mutex is a good API to solve this type of
-> issue.
+-Saravana
 
-I agree and still don't see any generic solution aside from this.
+>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/pmdomain/core.c   | 12 +++++++++++-
+>  include/linux/pm_domain.h |  1 +
+>  2 files changed, 12 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+> index 695d7d9e5582..a8c56f7a7ba0 100644
+> --- a/drivers/pmdomain/core.c
+> +++ b/drivers/pmdomain/core.c
+> @@ -212,6 +212,12 @@ static inline bool irq_safe_dev_in_sleep_domain(stru=
+ct device *dev,
+>         return ret;
+>  }
+>
+> +#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
+> +static bool genpd_may_stay_on(bool on) { return on; }
+> +#else
+> +static bool genpd_may_stay_on(bool on) { return false; }
+> +#endif
+> +
+>  static int genpd_runtime_suspend(struct device *dev);
+>
+>  /*
+> @@ -933,11 +939,12 @@ static void genpd_power_off(struct generic_pm_domai=
+n *genpd, bool one_dev_on,
+>          * The domain is already in the "power off" state.
+>          * System suspend is in progress.
+>          * The domain is configured as always on.
+> +        * The domain was on at boot and still need to stay on.
+>          * The domain has a subdomain being powered on.
+>          */
+>         if (!genpd_status_on(genpd) || genpd->prepared_count > 0 ||
+>             genpd_is_always_on(genpd) || genpd_is_rpm_always_on(genpd) ||
+> -           atomic_read(&genpd->sd_count) > 0)
+> +           genpd->stay_on || atomic_read(&genpd->sd_count) > 0)
+>                 return;
+>
+>         /*
+> @@ -2374,6 +2381,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+>         INIT_WORK(&genpd->power_off_work, genpd_power_off_work_fn);
+>         atomic_set(&genpd->sd_count, 0);
+>         genpd->status =3D is_off ? GENPD_STATE_OFF : GENPD_STATE_ON;
+> +       genpd->stay_on =3D genpd_may_stay_on(!is_off);
+>         genpd->sync_state =3D GENPD_SYNC_STATE_OFF;
+>         genpd->device_count =3D 0;
+>         genpd->provider =3D NULL;
+> @@ -2640,6 +2648,7 @@ void of_genpd_sync_state(struct device *dev)
+>         list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
+>                 if (genpd->provider =3D=3D &np->fwnode) {
+>                         genpd_lock(genpd);
+> +                       genpd->stay_on =3D false;
+>                         genpd_power_off(genpd, false, 0);
+>                         genpd_unlock(genpd);
+>                 }
+> @@ -3486,6 +3495,7 @@ static void genpd_provider_sync_state(struct device=
+ *dev)
+>
+>         case GENPD_SYNC_STATE_SIMPLE:
+>                 genpd_lock(genpd);
+> +               genpd->stay_on =3D false;
+>                 genpd_power_off(genpd, false, 0);
+>                 genpd_unlock(genpd);
+>                 break;
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 2185ee9e4f7c..c5358cccacad 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -193,6 +193,7 @@ struct generic_pm_domain {
+>         unsigned int performance_state; /* Aggregated max performance sta=
+te */
+>         cpumask_var_t cpus;             /* A cpumask of the attached CPUs=
+ */
+>         bool synced_poweroff;           /* A consumer needs a synced powe=
+roff */
+> +       bool stay_on;                   /* Stay powered-on during boot. *=
+/
+>         enum genpd_sync_state sync_state; /* How sync_state is managed. *=
+/
+>         int (*power_off)(struct generic_pm_domain *domain);
+>         int (*power_on)(struct generic_pm_domain *domain);
+> --
+> 2.43.0
+>
