@@ -1,170 +1,243 @@
-Received: from EUR05-AM6-obe.outbound.protection.outlook.com (mail-am6eur05on2061.outbound.protection.outlook.com [40.107.22.61])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com [209.85.208.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 63E8D27510B;
-	Fri, 18 Apr 2025 12:38:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.22.61
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744979929; cv=fail; b=PkrCu+VviVH219QgIgUa+s5YJ4mQGQthC6IdXQQh41Zs6pNC9C4wXJewY3YEmxxZnQWEldu8Bv2X855IkVrfEwpvwoiBXIsh00P2Ono5BmhysZVgL+Vkyei5t2NW5/N9PcGb02ZmXO2ZoP+OL2ApBIfj6d2j9s/4mJQvUYpT1K4=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744979929; c=relaxed/simple;
-	bh=haTTeE0Nhos0Dg8RPD1CHVoVMSkFD0lSdoZz9ftvIXY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=giH50LOjoODsGd95UYjxhe5mCZv/neMYrtcEIYnao62aRy4pZDQj+5QihDMAMs43hAG15tgk2OBKCUI6BeCirkxgwxSDxUuiUNmcVj1U+nyg0lsSrtASwxhxZl226qUnsvW6tVLAyyXCvIQbUK3Q7BAhSnFMy/pculIQiGr8xeg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=pM2voUJq; arc=fail smtp.client-ip=40.107.22.61
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7038F20767E;
+	Fri, 18 Apr 2025 13:31:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.42
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1744983110; cv=none; b=HCS0ZatgnszRnHu4zZif6kfpdVTth+fgtiNuMupozcxSA5p6KLpXB+vBGRc92G3Alwmu+J6MQqeZJQmgMKZCBCIlGG5fr4eXy2aQXLuaPTWrpu7DUrMgi0X8flIBwQhj5o5S1Yy3mpfbIJcLwiBW6hrQ6qJLwspnSZiQyue/AkU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1744983110; c=relaxed/simple;
+	bh=+ipEq0DN1psmNTdr4XRWkkXLvcwAD4hbAap9lZ1Syy4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=NLCP4uzex/vcgGYPRos7HO7ySZ5zUpnVJhYhg22vgT/eroX+zkNrj+8c3pIF37HR1z1viHdU4E2H8MfIg9TVbr3VuBNr0spGIrkqO7xWVgLhM/p6Ez3SdumNdp+E+48KinwhJP2TlVZd1A3eM7uTmm8pnRuQ9DvRi+miNyBQ19Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gE4/Cx0d; arc=none smtp.client-ip=209.85.208.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="pM2voUJq"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=SNt2EkTlC4Bi0yNO3RjvHj2FN3GaGauk7BC8mRpX2jzUAm6Mp03xp3j8tX/l2XNEZVRAQ30+nveZ3kPeOQMTW43RsjL7QgGeh1VPiL9JP8EKr3plZt5xZUZMpnqGMo6ci2dNV++bB6SRVxHT7d9EFhXtfNDhbaPAcpj8AQOtayWd0t9nWox2q0AJm/IwUOuvVXoiNR6v4hxQnDPzGtteyMzPX1WWdQj72chZ0cGy55BinuOEO8ZwPYAMppSnwQZX+01d1XVKlR2eJFo1QeEzy+rMKcwi+5qjoZqO1t2L0UlRNc8hdPA0TXtKaM75TsJ+vfr3ZmJ2k0zbh6duHpfxLw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=haTTeE0Nhos0Dg8RPD1CHVoVMSkFD0lSdoZz9ftvIXY=;
- b=IayFyDYQFM1MZU7suOWQ2hd4M5L8OSetGTdNAZfJZ3wosWL4ypB+MzFBmm4BqQeMi4IIg26hCKpcOIFzB0pUyBSTFhukPiicxj4IWSr8bZviVjXOcMkjeykdkvSNG8CShceO7kKp2p/yl7djgNKTjKbjgMWnZTwFRCpClmNJx/KX9zuMDeDMnjypxQevqEwEYiv+sJVXwvsPETyqruaihbh5llpsXEBsMEIgwPQE+UPmpWkSnBaCXclm1vSJdmsbXcWlIqHZBIsrp9qgJ2hATWW2Ck1XlVKfNGo3aa+ndJrdPecCc3TYPAXzf2K0tdR8rOMrbbudXVPf8ObUpnihIA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=haTTeE0Nhos0Dg8RPD1CHVoVMSkFD0lSdoZz9ftvIXY=;
- b=pM2voUJqwFFcXuBHX+rw4YoWI6cm0gPRtoECMZsY8P7BOW8Tf4EZrlEkt+jmgJzobRW7epUcBjDZ6ZT6sn+7JsMq7bLUqbPC2uZIlEsogTFQuvYTj8ZLXAaK3qRePLZFLy1P+waVikZHEeIPZKHVxXTr/G+NfjOoI79l5TlYP8I4cP0Fsr5wB+zJcf7Xahjyk9BEjCW4EyUhPPJ9e1OCVCCiLog2wxPadFrOdlWCr6UBTH2LB3mlxmpfpS1nbyPBo9ypc1IFvG97+v9LksOEXva7Z4k8GbQd1VqWSto5XPSWRom6AqIYK/DyloY+zYQ1dTrN6zzatbeRl23FW/QHRg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from PAXPR04MB8459.eurprd04.prod.outlook.com (2603:10a6:102:1da::15)
- by DBBPR04MB7836.eurprd04.prod.outlook.com (2603:10a6:10:1f3::8) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8655.22; Fri, 18 Apr
- 2025 12:38:42 +0000
-Received: from PAXPR04MB8459.eurprd04.prod.outlook.com
- ([fe80::165a:30a2:5835:9630]) by PAXPR04MB8459.eurprd04.prod.outlook.com
- ([fe80::165a:30a2:5835:9630%5]) with mapi id 15.20.8655.022; Fri, 18 Apr 2025
- 12:38:42 +0000
-Date: Fri, 18 Apr 2025 21:47:21 +0800
-From: Peng Fan <peng.fan@oss.nxp.com>
-To: ulf.hansson@linaro.org, rafael@kernel.org, pavel@kernel.org,
-	len.brown@intel.com, vincent.guittot@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Peng Fan <peng.fan@nxp.com>
-Subject: Re: [PATCH] pmdomain: core: Introduce
- device_set/get_out_band_wakeup()
-Message-ID: <20250418134721.GA31933@nxa18884-linux>
-References: <20250311083239.3336439-1-peng.fan@oss.nxp.com>
- <20250403094629.GA20718@nxa18884-linux>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250403094629.GA20718@nxa18884-linux>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-ClientProxiedBy: SG2PR06CA0212.apcprd06.prod.outlook.com
- (2603:1096:4:68::20) To PAXPR04MB8459.eurprd04.prod.outlook.com
- (2603:10a6:102:1da::15)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gE4/Cx0d"
+Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-5efe8d9eb12so71279a12.1;
+        Fri, 18 Apr 2025 06:31:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1744983107; x=1745587907; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=VW/r+Xskypu97YYD6KF6jc5zwux2QZnn2gKuuTUWqVE=;
+        b=gE4/Cx0dYk9em6Y0NJOfavwg7aCSmA2Rk/X0hErzcjPsYchSnkXb444UVqpDnIfr/n
+         nyphkiRildA9GTrKlcPgYPzO7QzRABd7dciHPk1uz/6PD97IJbU6W2SO7KtFI9VrN3o3
+         Fff0spJnyQt2afzdgEu/gprbpaaN37t4aAu45Sh1UXKHI7TFCdjW6T7IgHV5y5Knb81l
+         5MkLl9ikM9ODWavwKTyCTt3EaCVjVRYilziOEyuGNYA08wHFFtF5UjgOHRFDs4mI/vsH
+         q6bG4CK2mZTouBJlc1UjSIgGk25eddzAxBsj1Cjovy+k9Dz6at/5cp2NXT8a0JA70WEu
+         Iiqg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1744983107; x=1745587907;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=VW/r+Xskypu97YYD6KF6jc5zwux2QZnn2gKuuTUWqVE=;
+        b=VcfgX+TnAdHxTZ27GuqfHgnw7RSzjAnBng1cNzOwqORJew5nXx1n6eugF4RAJWkGML
+         /lLehEB+VEUun6iU/N68fim00+RYNWhrlOHUgKe69nqvR7HIDmSCiVXzbzuQrx7fXRql
+         sAufGyyXU8Zo9zvoOfB4+IUVc0xJ0EEhnm2Sl2ZK9BIDew8LDR059iA8t3/SlzAmdeR+
+         kbb1+yhGu+0/zovDyYvH1soiZM0UWT70q6X7IO86gdBtrd1mnt8hj7mW2/BAB39db5ds
+         jF3ZWwHsPnqeWLVwgl2Z44mNDn9KL9N2ubwX+PZEfZwkKf057AXXLamwrg2uAJfxfkVd
+         V1Vw==
+X-Forwarded-Encrypted: i=1; AJvYcCVie4nK3AYGvW3LlTSTlQE75qk73IGHipe6J4dq2jZOYEamndGybY/LOEmApGxcP+VYCzg1yFayfNbqwrtXez2o8A8=@vger.kernel.org, AJvYcCWt4i/mhbEn3ySZCSw7gmRDY6SyV12/zQV7OOggWJbQP1fBAdjcbHd0rlJQDQfIPXsCTq2LBVaHu4g=@vger.kernel.org, AJvYcCXIS3jo1qjJ3zlliRveB7qTTh91yewW7opGp9YjCEZLVJ38l6oSRMIoFJ7WW2ARhcYULSOsPpjZZFhGgDU=@vger.kernel.org
+X-Gm-Message-State: AOJu0YzYbf1UbPoNpE2bhcjeo2m6+BBfkl9fGIcUUfnOA36IgaklSbOH
+	9sIYTa8AP8jB0WYy6tTged5MyPxUx5fb/udCwD8aQu7VY+y2O49JAc49vqRcjSg7kOcPDVRMqd3
+	Op1pkTw5Pqkh4f0biwqUN40Wjr4rm3+5+
+X-Gm-Gg: ASbGncv97miwI7viGXgaSwX5Ee17bMea1GWzKk1J+XdTnQNYiAeLtF4gaP4CEOhc4fb
+	z6CdRuanuqqUGFROoBh3ng2GeKv5aNb+utiRcfGEGAuFCG1NJqa7eCcYdws5qboQilqEKdNRtbo
+	k5IcZK9XQwgvzRA47HxKDJ
+X-Google-Smtp-Source: AGHT+IE+R7I4dVbYwOWf8/dydNM3ras0vM8Hcd1dtJhxh5iLeMMP4/GOg7s0W+7aCQ1EW35HU9YjtmFodyE+MqjWPmY=
+X-Received: by 2002:a17:906:e208:b0:acb:85f2:f032 with SMTP id
+ a640c23a62f3a-acb85f31115mr5753166b.13.1744983106327; Fri, 18 Apr 2025
+ 06:31:46 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PAXPR04MB8459:EE_|DBBPR04MB7836:EE_
-X-MS-Office365-Filtering-Correlation-Id: 44ed54bc-3f4c-4d2d-6138-08dd7e75f3d7
-X-MS-Exchange-SharedMailbox-RoutingAgent-Processed: True
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|52116014|376014|38350700014;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?zLzUD9n2kHvzirlRKf3vaK6uaeEs6civdgbxmQjx2PvT0LFRPHIa4nZfpijc?=
- =?us-ascii?Q?fs+3RuUs+KftgVkxZeVClZUVzRyUurzfAL5K5L8Z1busDW94avyO/DBa6WLF?=
- =?us-ascii?Q?3nOgI6qlt6CSncNXgLJcFCvt+kMLuk/Td8XHiAXDSRy8ApV1vjfANOrAOhZX?=
- =?us-ascii?Q?nQdWtWn7K1CwK4wWi02ng73H/BgZtf3F5CuzxYy+/DmKSgp8VP2bQohK70Xt?=
- =?us-ascii?Q?JP3+pMquLpfDXTaHiGcSEvy8WZ5RyA7t2X7J244L/tPhFbqHx8OxENFws6hu?=
- =?us-ascii?Q?SJjyZKdDXvUryr28rIaSyZYU96tZ0tkwV+jkWwpTtITr8bxb1krBIS1j1G+X?=
- =?us-ascii?Q?SU1Bjw+0F45XGll+VTWS8j4U+l93a24TD9tD3EuXIewC7d6Hgzd0R+tuygJU?=
- =?us-ascii?Q?R9wbTPdKhJkroMtRze3v4eBe+StyrLQkuuYn1GSNKsYdXbEHPumSwxOc3zBt?=
- =?us-ascii?Q?vMINoI9Tybm/TJbSNkYtukKqmtNP3AmrW6hDk0wd8//9D4LlQE3+cKtQDKWS?=
- =?us-ascii?Q?MBm4A9mqiPDAxlOfsVOZDch0JnNbUpbFZyiVRxSTEAvxDHOh08RixqTb5/9r?=
- =?us-ascii?Q?9Euh4ajXx2k02qXkJkdpX6ghPdbejwVOYLnv74K11sjq16d8IL5H8nctsYcY?=
- =?us-ascii?Q?J/KxqJxKk6CsPzOpjIH5k0ag8gaNAqIuqWCkU9rPSxRQKKpUVwnA5MWIDnE2?=
- =?us-ascii?Q?yGnMh2Yy7Au9sBRhgPJePke0l6zrZr3AviC6H1N+I3rFM4vfwpuKs5lT9pSJ?=
- =?us-ascii?Q?i7IHRByQ/IVCTchS4VdZjtPCIoWSprsxRXFRQuA5+9qmT4uXKnolEkQZ0xQn?=
- =?us-ascii?Q?2XQOpvxb0Z5mq+VOYXd7Zm9YSg6oByB2khUF8hPWLhnhA383VrZc/JVtvHde?=
- =?us-ascii?Q?Ukxjcvv38h/yoDRPRr/DVspacV3C7SKgHySNnI5Ax/ptq5YROi2r+iX7fvqT?=
- =?us-ascii?Q?ybkNwDogLrxwtoIPDqIyaA5uE88rvHnswqXbi+9BbtDlQ9CmgLdvspg7FLrT?=
- =?us-ascii?Q?QwrUt9arn6oIeO8jRqk0ITuy/Oxk1nIA/mIaGKsYV77gOIw68ToXrN4jkaQL?=
- =?us-ascii?Q?ZZPEVxjVUPAV/QxYcL6CmWL08I3RT31GuDUNaOAFl/xEiFDuwKDEi8ika+GI?=
- =?us-ascii?Q?O2dy0DK1OkKIpvWxIlquX7ICAkTnlSs3Iv4rSsBfXwAbvpXKjprtIgGV8O2K?=
- =?us-ascii?Q?EZIpSsfxD6ICbltRmrohyuz94QhYTOWtr1+/TKaxQlM6NYMbqdUJeSw/muYX?=
- =?us-ascii?Q?pbPYyeiwnkkL8jlkzkFv8eGFVwlO7c72SEBycniwDuUTJnIq1ny3faTh/YNa?=
- =?us-ascii?Q?HD8JurbBil59wu2uc0vbRzcbv3bRwTK3Qh3yUYl1ldstdQRkRxtIuBnEHQhK?=
- =?us-ascii?Q?wBONDRNOwWHDXmYaSa+Xeylkxexu0f0g32t/DQeEYBfmBO0AQmonK0/pYb1L?=
- =?us-ascii?Q?kJGvzFPrvd/a1zsERXQzDAvLh3MpHV0Ze+3s0b/wCBzfe16en5ShIA=3D=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB8459.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(52116014)(376014)(38350700014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?ZJbwj7qaGswBuDP++ogdApJp4YI86wHhVlocaWlmLFtrDDG30/w4S7L/sJ5b?=
- =?us-ascii?Q?vXePV2rjfrlS3/024MJYVq1wqwMfFfD1f97WoBOBixjpKUMnB2h0DogMkR7H?=
- =?us-ascii?Q?QhFyDEis2adBT5tNgXhlKpsKYRqRN87S9ZVloXTjVgL3gUk7+Ees0VmLHtzA?=
- =?us-ascii?Q?dSb1RpJXly8YCBwhxLxJiUWNPQ4nvEJU+NLcNiRVJ4NJwEBECuAtLn+0TUkC?=
- =?us-ascii?Q?iMatyb2ArKAVYs4ywwxmMuClsHKAj10neseW29uvzjM0RTMIWkPPcns4Ou6R?=
- =?us-ascii?Q?DB1hO2l0x/1qRkNv2osMfWYFSua/bKojuwSaAzihD8PMu/DpFK3SYKCSJTDY?=
- =?us-ascii?Q?dQcyovGDo3BvnQY3iMwHALdWcBMTilMwpI/T6nHqn4vfjH8/uM53LV34bEGc?=
- =?us-ascii?Q?o54INbyv3uMLBnExuZwanPwMYktnvytJb9PxFWymcR8T4qEhuEMzuZxmMY4n?=
- =?us-ascii?Q?GM7NZH7PFnBt7udnOjOuCq1smIES7HFk0jejIZwCGQgpo188SB3xah1yNlX9?=
- =?us-ascii?Q?yjtuBgImqLmR5gCphh6qpzsTjiiJAo3nVzNtjrlj3a8gFisHwq9+ANG43fd7?=
- =?us-ascii?Q?gHpPcIqGf2JVrkpEJhdbT5+n6LsoTJoCPHwTNRwyuQ/w9bH81Dbvw1YvxduA?=
- =?us-ascii?Q?Tmn4B4WpGNQKlSpxNuYEns0KxWKY/DlPQWhQXaIF4zGi3uZorI4ogkyFpm4o?=
- =?us-ascii?Q?il94sdZ9c9wp9FqWdtZ6M+p3u56vNQddsxZ7OmtUFF3hGZgtKB6kpmrtpzPN?=
- =?us-ascii?Q?5YDYbzHzni8D5LzCMgC93TS7C26iHiA6CCiMqdbu7gvH/TVm7FHVApXaXw7S?=
- =?us-ascii?Q?sGsCq/ILo3ZwO6Gz8EnNeXVGubS+nT6CJVwf0p6ZxzFPHWaOx+aaYNXqutRG?=
- =?us-ascii?Q?MKPUX7zlwu6e0HEZl7/hwQxQllydV6vYjlb990y7/AKLphLTsqZP17xuIguI?=
- =?us-ascii?Q?39L0THHrdVCISnfFRxzPLa9JNTsxOstRSpXZkYUsYktw5CDa+2rqTAKbBlHJ?=
- =?us-ascii?Q?q0kjh4ltznR+QjnMkiJfawGfRKIXj/gJEG2WA8u4/3rcvqvUt2Cj20kvdJUx?=
- =?us-ascii?Q?zpxqtDk51I1QtqdJ9a8PGjTyqQxVkWLTd93Y5IbfXz9NHAQ62VLnVctClxUP?=
- =?us-ascii?Q?62cpvaEgLGJDv5jeywfCSIUqZ6gjvq222vShtYX3GtsSZdsFbr+MCQPF06SY?=
- =?us-ascii?Q?KVhk3n6+i7VV9jIvlZ50pr3+X990WZAbsZxfV9f+y98vlufxn0nBjxKRirB5?=
- =?us-ascii?Q?u04cQOzyXY1t7IFIjTpLmRlFAbZruoVy7CYQYviPGot2PG6Mz6ix3RvhGp3S?=
- =?us-ascii?Q?EtO+T1p0uoaBuyQHcdpww8R5y/ZQCOpkldWXOQv88EpDsBxgtK0xqf193iRY?=
- =?us-ascii?Q?jifRpAbE02Sv+QDkdFEUlfey8OnC6/kI2OZpY7AjPqv2KzFzeEmgj3qzFty9?=
- =?us-ascii?Q?Sqg5BRgQN2fRJkMkvw3o6jpTpovtLNnTilsPtSUJjdBGau5cuE+HFShnx8sO?=
- =?us-ascii?Q?UZlrbLiS9Y3Beb5hefIPCCWV3VKSMW/Lb3WzqaoNX5E8+N8QCyTP3/7wDHwZ?=
- =?us-ascii?Q?Waqi9zSF5GAbqvgycEDSS+ft31EwHXsvpDMKLIFY?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 44ed54bc-3f4c-4d2d-6138-08dd7e75f3d7
-X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB8459.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Apr 2025 12:38:42.5996
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: KV9wiF2+JDqDELQ3etFllpOkjp0lKzziKkco1Btdt81yIyiGMh+fJn0VleCjGfNT5VzD0WsWpWrM9bJagQY80A==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DBBPR04MB7836
+References: <20250410063754.5483-1-linux.amoon@gmail.com> <20250410063754.5483-2-linux.amoon@gmail.com>
+ <aAIIH7H1oQH8cf-6@mai.linaro.org>
+In-Reply-To: <aAIIH7H1oQH8cf-6@mai.linaro.org>
+From: Anand Moon <linux.amoon@gmail.com>
+Date: Fri, 18 Apr 2025 19:01:29 +0530
+X-Gm-Features: ATxdqUEh1pZaqB8ipWBIif6O9726dyogwx9y_IR39XM-ncpaQF8skGDo78Oz4mw
+Message-ID: <CANAwSgS_OnEv=r7S4CetLkW4vo-QdFAKTbqRK9H-Q0dq5VDYLA@mail.gmail.com>
+Subject: Re: [PATCH v5 1/3] drivers/thermal/exynos: Refactor clk_sec
+ initialization inside SOC-specific case
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Krzysztof Kozlowski <krzk@kernel.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Alim Akhtar <alim.akhtar@samsung.com>, 
+	Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, 
+	Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>, 
+	"open list:SAMSUNG THERMAL DRIVER" <linux-pm@vger.kernel.org>, 
+	"open list:SAMSUNG THERMAL DRIVER" <linux-samsung-soc@vger.kernel.org>, 
+	"moderated list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES" <linux-arm-kernel@lists.infradead.org>, 
+	open list <linux-kernel@vger.kernel.org>, 
+	"open list:CLANG/LLVM BUILD SUPPORT:Keyword:b(?i:clang|llvm)b" <llvm@lists.linux.dev>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Ping..
+Hi Daniel,
 
-On Thu, Apr 03, 2025 at 05:46:29PM +0800, Peng Fan wrote:
->Hi Ulf,
+On Fri, 18 Apr 2025 at 13:36, Daniel Lezcano <daniel.lezcano@linaro.org> wr=
+ote:
 >
->On Tue, Mar 11, 2025 at 04:32:39PM +0800, Peng Fan (OSS) wrote:
->>From: Peng Fan <peng.fan@nxp.com>
->>
->>For some cases, a device could still wakeup the system even if its power
->>domain is in off state, because the device's wakeup hardware logic is
->>in an always-on domain.
->>
->>To support this case, introduce device_set/get_out_band_wakeup() to
->>allow device drivers to control the behaviour in genpd for a device
->>that is attached to it.
+> On Thu, Apr 10, 2025 at 12:07:48PM +0530, Anand Moon wrote:
+> > Refactor the initialization of the clk_sec clock to be inside the
+> > SOC_ARCH_EXYNOS5420_TRIMINFO case. It ensures that the clk_sec clock
+> > is only initialized for the specified SOC and not for other SOCs,
+> > thereby simplifying the code. The clk_sec clock is used by the TMU
+> > for GPU on the Exynos 542x platform.
+> >
+> > Removed redundant IS_ERR() checks for the clk_sec clock since error
+> > handling is already managed internally by clk_unprepare() functions.
+> >
+> > Signed-off-by: Anand Moon <linux.amoon@gmail.com>
+> > ---
+> > v5: None
+> > v4: Fix the aligment of code clk for clk_prepare in proper if/else bloc=
+k.
+> >     update the commit for clk_sec used.
+> >     checked to goto clean up all the clks are proper.
+> >     drop IS_ERR() check for clk_sec.
+> > v3: improve the commit message.
+> > ---
+> >  drivers/thermal/samsung/exynos_tmu.c | 37 ++++++++++++++--------------
+> >  1 file changed, 18 insertions(+), 19 deletions(-)
+> >
+> > diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/sam=
+sung/exynos_tmu.c
+> > index 47a99b3c5395..3657920de000 100644
+> > --- a/drivers/thermal/samsung/exynos_tmu.c
+> > +++ b/drivers/thermal/samsung/exynos_tmu.c
+> > @@ -1037,29 +1037,30 @@ static int exynos_tmu_probe(struct platform_dev=
+ice *pdev)
+> >               return ret;
+> >
+> >       data->clk =3D devm_clk_get(dev, "tmu_apbif");
+> > -     if (IS_ERR(data->clk))
+> > +     if (IS_ERR(data->clk)) {
+> >               return dev_err_probe(dev, PTR_ERR(data->clk), "Failed to =
+get clock\n");
 >
->Do you have any comments on this patch?
+> As this branch returns, the else block can be removed.
 >
->Thanks,
->Peng
+>         if (IS_ERR(data->clk))
+>                 return dev_err_probe(dev, PTR_ERR(data->clk), "Failed to =
+get clock\n");
 >
+>         ret =3D clk_prepare(data->clk);
+>         if (ret) {
+>                 ...
+>         }
+>
+Earlier I got this review comment on this.
+[0] https://patchwork.kernel.org/project/linux-samsung-soc/patch/2025021619=
+5850.5352-2-linux.amoon@gmail.com/
+I will try to fix this in next vrsion.
 
-Thanks,
-Peng
+> May be worth to group both calls with devm_clk_get_enabled()
+
+Earlier, I attempted to change the clock ABI, but it didn't work.
+
+[1] https://lore.kernel.org/all/20220515064126.1424-2-linux.amoon@gmail.com=
+/
+If you're okay with changing this, I'll update it in the next version.
+
+> > -
+> > -     data->clk_sec =3D devm_clk_get(dev, "tmu_triminfo_apbif");
+> > -     if (IS_ERR(data->clk_sec)) {
+> > -             if (data->soc =3D=3D SOC_ARCH_EXYNOS5420_TRIMINFO)
+> > -                     return dev_err_probe(dev, PTR_ERR(data->clk_sec),
+> > -                                          "Failed to get triminfo cloc=
+k\n");
+> >       } else {
+> > -             ret =3D clk_prepare(data->clk_sec);
+> > +             ret =3D clk_prepare(data->clk);
+> >               if (ret) {
+> >                       dev_err(dev, "Failed to get clock\n");
+> >                       return ret;
+> >               }
+> >       }
+> >
+> > -     ret =3D clk_prepare(data->clk);
+> > -     if (ret) {
+> > -             dev_err(dev, "Failed to get clock\n");
+> > -             goto err_clk_sec;
+> > -     }
+> > -
+> >       switch (data->soc) {
+> > +     case SOC_ARCH_EXYNOS5420_TRIMINFO:
+> > +             data->clk_sec =3D devm_clk_get(dev, "tmu_triminfo_apbif")=
+;
+> > +             if (IS_ERR(data->clk_sec)) {
+> > +                     ret =3D dev_err_probe(dev, PTR_ERR(data->clk_sec)=
+,
+> > +                                         "Failed to get clk_sec clock\=
+n");
+> > +                     goto err_clk;
+> > +             }
+> > +             ret =3D clk_prepare(data->clk_sec);
+>
+> Same comment, devm_clk_get_enabled()
+If you're okay with changing this, I'll update it in the next version.
+>
+> > +             if (ret) {
+> > +                     dev_err(dev, "Failed to prepare clk_sec clock\n")=
+;
+> > +                     goto err_clk_sec;
+> > +             }
+> > +             break;
+> >       case SOC_ARCH_EXYNOS5433:
+> >       case SOC_ARCH_EXYNOS7:
+> >               data->sclk =3D devm_clk_get(dev, "tmu_sclk");
+> > @@ -1112,11 +1113,10 @@ static int exynos_tmu_probe(struct platform_dev=
+ice *pdev)
+> >
+> >  err_sclk:
+> >       clk_disable_unprepare(data->sclk);
+> > +err_clk_sec:
+> > +     clk_unprepare(data->clk_sec);
+> >  err_clk:
+> >       clk_unprepare(data->clk);
+> > -err_clk_sec:
+> > -     if (!IS_ERR(data->clk_sec))
+> > -             clk_unprepare(data->clk_sec);
+>
+> With devm_ variant those labels should go away
+Correct.
+
+Thanks
+-Anand
+>
+> >       return ret;
+> >  }
+> >
+> > @@ -1128,8 +1128,7 @@ static void exynos_tmu_remove(struct platform_dev=
+ice *pdev)
+> >
+> >       clk_disable_unprepare(data->sclk);
+> >       clk_unprepare(data->clk);
+> > -     if (!IS_ERR(data->clk_sec))
+> > -             clk_unprepare(data->clk_sec);
+> > +     clk_unprepare(data->clk_sec);
+> >  }
+> >
+> >  #ifdef CONFIG_PM_SLEEP
+> > --
+> > 2.49.0
+> >
+>
+> --
+>
+>  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for A=
+RM SoCs
+>
+> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+> <http://twitter.com/#!/linaroorg> Twitter |
+> <http://www.linaro.org/linaro-blog/> Blog
