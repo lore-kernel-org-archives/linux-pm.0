@@ -1,78 +1,104 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3FC4E239085;
-	Tue, 22 Apr 2025 08:43:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B1A3255247
+	for <linux-pm@vger.kernel.org>; Tue, 22 Apr 2025 08:57:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745311418; cv=none; b=I8cA5HqzCOrt6qVY8Ib9m0ccMgVlp/axZix+oA3OZKNyRK63At25UjKpxhrXspKMqrTxYI7kJDe1mJBy1lPQklNYhsg6QAyBkCEosmkKgwvpSmW1YaPa69tuz+L7T0joZ3SaO/WPzzNsKltPauwez22+dUbMJRhpaPpUAw6kiYU=
+	t=1745312256; cv=none; b=Z22qQYn00z4wiPXed9XfJWFhnbO3QUWqtq/r0BF+WZ7pCTnWaekKfJ+K9Cdz4s7I89gb4KZb2T+KCz0vEtLPPKXJUbyplpKERNreCTa8htuwvtPDrIak1UitIcGfHVIJprkV3aKWc0DgYWsuimfSGEPEQQXnU+W+VjYgqqb9PoE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745311418; c=relaxed/simple;
-	bh=trUwxgkbYocqWQI6MfdxJtzi88omtDraXrFFZ8EFGnE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=onVwZqjSMcHeIckO16C2RX9oeApmG8+UzmUkwZWVQJ+SaPEYW4WwvafS9nXg0cc6/TZwwYuZie9C6SJEg3cDm2dlbsAtaXJAoAMVS04THrM701IdmZpb14g6opaWUV1F0ApYAsca5GWifZbNOFR5hZ0LIJWmSA3DCtkTA+IsNJQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ChdFVkhz; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ChdFVkhz"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E5AA7C4CEE9;
-	Tue, 22 Apr 2025 08:43:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1745311417;
-	bh=trUwxgkbYocqWQI6MfdxJtzi88omtDraXrFFZ8EFGnE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ChdFVkhzjsXHdkBGYH4gMHe7OCaIptwGjHtQ3BjfZtrrvBmdk91tVrY0tjAxc120c
-	 B7NYiXVNUg6vHjy0Y5LpbI920NOG1XmK7QjkCdTPglkIDgHnDM4XjEBazVRdyHSe7T
-	 zB3NvgKudujC6wvkmgZsdLHTE6YUJqDSHacYqX7uwsvV8Z2X0UOoUQxPS9oyDIb5bu
-	 afpup07WhhdxQp86PDvOU/Ro4N6EQAJZFfTVzS3KsbuY91/xyY1OUgNwauevrYiRuy
-	 d/buaizv/dU77jat3O8Z470nSCkHm1lixgik2Coa5rYdHy5i0DE01DFqsFzmYxtMUY
-	 FjN/ZWIut0prw==
-Date: Tue, 22 Apr 2025 10:43:34 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Akhil P Oommen <quic_akhilpo@quicinc.com>
-Cc: Rob Clark <robdclark@gmail.com>, Sean Paul <sean@poorly.run>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Abhinav Kumar <quic_abhinavk@quicinc.com>, 
-	Marijn Suijten <marijn.suijten@somainline.org>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Bjorn Andersson <andersson@kernel.org>, Maya Matuszczyk <maccraft123mc@gmail.com>, 
-	Anthony Ruhier <aruhier@mailbox.org>, Dmitry Baryshkov <lumag@kernel.org>, 
-	linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Subject: Re: [PATCH v5 5/7] dt-bindings: opp: Add v2-qcom-adreno vendor
- bindings
-Message-ID: <20250422-beneficial-fractal-otter-ebd1d2@kuoka>
-References: <20250419-gpu-acd-v5-0-8dbab23569e0@quicinc.com>
- <20250419-gpu-acd-v5-5-8dbab23569e0@quicinc.com>
+	s=arc-20240116; t=1745312256; c=relaxed/simple;
+	bh=lTbHJ1/ZlZxy/0X5aGRTsmnSe0G1gRDQaLVCb3W0FPk=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=jhs7dYFl44tC5XVDVgs72Zlwq7f+d/vmCSoIDe+RkokSF35YKC9Woeb8uh05Z6zSe++Ziyg6LRiuKmgT9O6fA7Fp/c3e5ZDRrBYO141z+AHGlDisFzjsvmmTRNgwX+MwZ6cKavxsiWVYAlDrs8qyY5IpE3AXiMzi1q51Qa3t1Ag=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ore@pengutronix.de>)
+	id 1u79RQ-0007Tz-3o; Tue, 22 Apr 2025 10:57:20 +0200
+Received: from dude04.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::ac])
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <ore@pengutronix.de>)
+	id 1u79RO-001WRC-2n;
+	Tue, 22 Apr 2025 10:57:18 +0200
+Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ore@pengutronix.de>)
+	id 1u79RO-00AvpD-2W;
+	Tue, 22 Apr 2025 10:57:18 +0200
+From: Oleksij Rempel <o.rempel@pengutronix.de>
+To: Sebastian Reichel <sre@kernel.org>,
+	Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+	Benson Leung <bleung@chromium.org>,
+	Tzung-Bi Shih <tzungbi@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Oleksij Rempel <o.rempel@pengutronix.de>,
+	kernel@pengutronix.de,
+	linux-kernel@vger.kernel.org,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	linux-pm@vger.kernel.org,
+	=?UTF-8?q?S=C3=B8ren=20Andersen?= <san@skov.dk>,
+	Guenter Roeck <groeck@chromium.org>,
+	Matti Vaittinen <mazziesaccount@gmail.com>,
+	Ahmad Fatoum <a.fatoum@pengutronix.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	chrome-platform@lists.linux.dev
+Subject: [PATCH v9 1/7] power: Extend power_on_reason.h for upcoming PSCRR framework
+Date: Tue, 22 Apr 2025 10:57:11 +0200
+Message-Id: <20250422085717.2605520-2-o.rempel@pengutronix.de>
+X-Mailer: git-send-email 2.39.5
+In-Reply-To: <20250422085717.2605520-1-o.rempel@pengutronix.de>
+References: <20250422085717.2605520-1-o.rempel@pengutronix.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20250419-gpu-acd-v5-5-8dbab23569e0@quicinc.com>
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ore@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-On Sat, Apr 19, 2025 at 08:21:34PM GMT, Akhil P Oommen wrote:
-> Add a new schema which extends opp-v2 to support a new vendor specific
-> property required for Adreno GPUs found in Qualcomm's SoCs. The new
-> property called "qcom,opp-acd-level" carries a u32 value recommended
-> for each opp needs to be shared to GMU during runtime.
-> 
-> Also, update MAINTAINERS file include the new opp-v2-qcom-adreno.yaml.
-> 
-> Cc: Rob Clark <robdclark@gmail.com>
-> Signed-off-by: Akhil P Oommen <quic_akhilpo@quicinc.com>
-> Tested-by: Maya Matuszczyk <maccraft123mc@gmail.com>
-> Tested-by: Anthony Ruhier <aruhier@mailbox.org>
-> ---
->  .../bindings/opp/opp-v2-qcom-adreno.yaml           | 96 ++++++++++++++++++++++
->  MAINTAINERS                                        |  1 +
->  2 files changed, 97 insertions(+)
+Prepare for the introduction of the Power State Change Reason Recorder
+(PSCRR)  framework by expanding the power_on_reason.h header. This
+extension includes new power-on reasons:
+- POWER_ON_REASON_OVER_CURRENT for over-current conditions.
+- POWER_ON_REASON_REGULATOR_FAILURE for regulator failures.
+- POWER_ON_REASON_OVER_TEMPERATURE for over temperature situations.
+- POWER_ON_REASON_EC_PANIC for EC panics
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
+---
+changes v6:
+- add POWER_ON_REASON_EC_PANIC
+- s/POWER_ON_REASON_OVERTEMPERATURE/POWER_ON_REASON_OVER_TEMPERATURE
+---
+ include/linux/power/power_on_reason.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Best regards,
-Krzysztof
+diff --git a/include/linux/power/power_on_reason.h b/include/linux/power/power_on_reason.h
+index 95a1ec0c403c..bf9501792696 100644
+--- a/include/linux/power/power_on_reason.h
++++ b/include/linux/power/power_on_reason.h
+@@ -15,5 +15,9 @@
+ #define POWER_ON_REASON_XTAL_FAIL "crystal oscillator failure"
+ #define POWER_ON_REASON_BROWN_OUT "brown-out reset"
+ #define POWER_ON_REASON_UNKNOWN "unknown reason"
++#define POWER_ON_REASON_OVER_CURRENT "over current"
++#define POWER_ON_REASON_REGULATOR_FAILURE "regulator failure"
++#define POWER_ON_REASON_OVER_TEMPERATURE "over temperature"
++#define POWER_ON_REASON_EC_PANIC "EC panic"
+ 
+ #endif /* POWER_ON_REASON_H */
+-- 
+2.39.5
 
