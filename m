@@ -1,395 +1,266 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4DFBE25C70B
-	for <linux-pm@vger.kernel.org>; Tue, 22 Apr 2025 08:57:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B67541EFFAB
+	for <linux-pm@vger.kernel.org>; Tue, 22 Apr 2025 08:59:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745312269; cv=none; b=JqgAKvC0Sa/nDPshCoknGu6H8/M0C3KTgs90stRcOcon39sVil6NBgXRrUhKbUy3+M0s9NjdzpTHZHdbV2B2QeuR6pws0x2BwPd8y1ZMc1n4siEO/yqDMCyoknYl9cdCZtgmapbFP19Yz+5h6yhEdzD9SKAYHxpnMLq2CxMRV0k=
+	t=1745312397; cv=none; b=YxVzKxI/vK1NivkZ9wxm+mPvcLuRdl/cMBRCosGfDAGxnyMycYCWowFZsgZ+FCCaRCDsvn6ZXAEGEFpmnIr/FMao9ld/2umapXJjZXj2vPBR7irSvDgiJQihv8dxS3kgomAbEjAoTkAI0FEf7XdCvZMkUkcCyf/z71W40TD/ySA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745312269; c=relaxed/simple;
-	bh=NUyfHXKDD6v3aWEOOVgewfAqWd9qq3kYppr+Q23ReSY=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=VuHajGYC6vdeDFq6sxR6EKE9pHyEjsvew8VsTnwbBRAqcOF/mosn7AZN1pSvYjAD+qmaKqZaag7392kH7+9O1v3eKdJgUPiach70b5ZVbEPbeUVYqCxAw92wVSu86ZUQDn563e8njRSGUvQYGOZaNb/X/XX64Djs54eyjGCNhGw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ore@pengutronix.de>)
-	id 1u79RQ-0007U3-3o; Tue, 22 Apr 2025 10:57:20 +0200
-Received: from dude04.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::ac])
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <ore@pengutronix.de>)
-	id 1u79RP-001WRH-04;
-	Tue, 22 Apr 2025 10:57:19 +0200
-Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.96)
-	(envelope-from <ore@pengutronix.de>)
-	id 1u79RO-00Avq1-2w;
-	Tue, 22 Apr 2025 10:57:18 +0200
-From: Oleksij Rempel <o.rempel@pengutronix.de>
-To: Sebastian Reichel <sre@kernel.org>,
-	Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-	Benson Leung <bleung@chromium.org>,
-	Tzung-Bi Shih <tzungbi@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Oleksij Rempel <o.rempel@pengutronix.de>,
-	kernel@pengutronix.de,
-	linux-kernel@vger.kernel.org,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	linux-pm@vger.kernel.org,
-	=?UTF-8?q?S=C3=B8ren=20Andersen?= <san@skov.dk>,
-	Guenter Roeck <groeck@chromium.org>,
-	Matti Vaittinen <mazziesaccount@gmail.com>,
-	Ahmad Fatoum <a.fatoum@pengutronix.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	chrome-platform@lists.linux.dev
-Subject: [PATCH v9 6/7] power: reset: add PSCR NVMEM Driver for Recording Power State Change Reasons
-Date: Tue, 22 Apr 2025 10:57:16 +0200
-Message-Id: <20250422085717.2605520-7-o.rempel@pengutronix.de>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250422085717.2605520-1-o.rempel@pengutronix.de>
-References: <20250422085717.2605520-1-o.rempel@pengutronix.de>
+	s=arc-20240116; t=1745312397; c=relaxed/simple;
+	bh=ujyn0VKVe/xF+dYczM9VnE6xq8ijmCm9Y16p78vYay4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=W4uIfdrgmExqAE6+A3clDDHAsoGS8j4pqu8rxoliU+3ow/ddWtFGde9SkEb5D3kkjneh7G1xaizF9dGdxFJNFU2GQlcWf9G2NtYWy8qPEz/LG/WAXX1ywTR58COEeRXJEw5vtfoULMPNYOy9JyIiNLp8KOloIgAZiBqv9fnz6bQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=feJcY1Nn; arc=none smtp.client-ip=209.85.221.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="feJcY1Nn"
+Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-39c13fa05ebso3451221f8f.0
+        for <linux-pm@vger.kernel.org>; Tue, 22 Apr 2025 01:59:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1745312393; x=1745917193; darn=vger.kernel.org;
+        h=in-reply-to:autocrypt:from:content-language:references:cc:to
+         :subject:user-agent:mime-version:date:message-id:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=ujyn0VKVe/xF+dYczM9VnE6xq8ijmCm9Y16p78vYay4=;
+        b=feJcY1NnT8hoAuwyW0fLxln9HsqfZtEwjJnEOUogn5zSJUZWVV8ng8kkOThcK1KwsD
+         TWMgDbL7rkvT9hnUSZ7UayfZJOAe9F1fA2o/fkdc3m4Jeib4BbGWL0waxnkNONTxtfUq
+         1fRHyeNuhPTFIlBaZxZodECXg/v9NrHgKIcDwevnnRyPfLHMK9JumbvJQ3yyRagFHAht
+         pN+oL0GMyDo7fynC7soLvurC8JoKeO/BUU9UCLl0nV0DqA90JilMDye57+kiR2IDQNhk
+         80HYFoBtpSwTE5wGxjCJcac5QYrMsBJlSs89JKj0t2GGOHw/I3ABWyY4zSsDhFz0szst
+         OSdw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1745312393; x=1745917193;
+        h=in-reply-to:autocrypt:from:content-language:references:cc:to
+         :subject:user-agent:mime-version:date:message-id:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=ujyn0VKVe/xF+dYczM9VnE6xq8ijmCm9Y16p78vYay4=;
+        b=YfG2Kc8xgKtWV9oRB71n2Oixr+N8oy1194qTggzLfD/pw1lSwCPWLI9SrRlTVrbift
+         +zNxhdmKPUd1JKHy+uJ990wLwvfpvhAQth8/dKgHhRiaDxmQ12krfsgV5KiOGWX7M/JL
+         o2qrreFlb5DSBjEbIH267ypG0u/2Ipzx6fK/+YTL8nFwlTbD3MEHgs+Khpj8JjYpYO/7
+         7LiSQ2//VI23wLWS1E6jHRAhLNDuDZvZFcljNMahgGaydEBqSVbVS+g7bBPV4Y/lmD8c
+         XSF8HJuwFxy+LDaKM1RXSl5/20xs3CoyUId1VfQ5x7xH+5DmrInSbIWrxH0SHpJ/cDiV
+         2nXg==
+X-Forwarded-Encrypted: i=1; AJvYcCWY0bqHt7OFPtxgIohNzK2UZ/5q8ZOHoNbg0MUKAgyUoV8oYiqknNxDW+n9V11fQyjRMrHPq7yjxg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxatIcqyIDX2sS/jvy/GSPyCHOMzgDtC0i3CTPUjdPbcJ1sZ2/j
+	AWfOhBd2hzYxFw3HE6h5car+lXqVcWbojLm4th201vr8jw2iVxCRiHUOmXzlMc8=
+X-Gm-Gg: ASbGncu60LLnV0WT4C7q/teLp8Wru/y1oDuXow2YSYFva5bscSaOk8Z5+0u1BXosLl6
+	ONlfUHFhx1q9O1V/rVX+L2zVFNiGJ960xBp5HX5Jy+mRDXtAOf+qvMmzLGLzkuxPcBK468AaUuS
+	riGbGqlSw/a0eyo8/kgTQznXjtBoSKSLD/DHYT4OJyBn2zqxwbAM57PG1Kglb1/Fwn9l+884fad
+	moB7uiZpZCcRV1XLCbzK3v+cMZQL7q0Ns8l+FZ1aIN5NbaCw3szxAplz7GQvn+S6n7nGUX8Y7yU
+	Zo4xtMuzih544hWTHxOdEXBaXon4zg4hJfUvUqSrRd6i3L7FQBikwYhAwZMPwWOgdozDOfED93I
+	dJWnVJi5OybZ/MsMK/o2kzy1fiMcWHAORb+CkFZBb3X5gN6ZHi2HoW3DasXCT/21U5A==
+X-Google-Smtp-Source: AGHT+IHhAxs5QMTZ7btt0BxV1tkAgF4gAnB1ObDDlK+iQMS14fyL4RdcPyHNPw8fbHs/dOwMDpgnkQ==
+X-Received: by 2002:a05:6000:1887:b0:39a:c9d9:877b with SMTP id ffacd0b85a97d-39efba5eae1mr10977975f8f.27.1745312392891;
+        Tue, 22 Apr 2025 01:59:52 -0700 (PDT)
+Received: from ?IPV6:2003:e5:873d:1a00:8e99:ce06:aa4a:2e7b? (p200300e5873d1a008e99ce06aa4a2e7b.dip0.t-ipconnect.de. [2003:e5:873d:1a00:8e99:ce06:aa4a:2e7b])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4406d5acccdsm163039815e9.11.2025.04.22.01.59.51
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 22 Apr 2025 01:59:52 -0700 (PDT)
+Message-ID: <91f9217a-cc2d-4a6e-bada-290312f73d82@suse.com>
+Date: Tue, 22 Apr 2025 10:59:50 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ore@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH v2 22/34] x86/msr: Utilize the alternatives mechanism
+ to read MSR
+To: "Xin Li (Intel)" <xin@zytor.com>, linux-kernel@vger.kernel.org,
+ kvm@vger.kernel.org, linux-perf-users@vger.kernel.org,
+ linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev,
+ linux-pm@vger.kernel.org, linux-edac@vger.kernel.org,
+ xen-devel@lists.xenproject.org, linux-acpi@vger.kernel.org,
+ linux-hwmon@vger.kernel.org, netdev@vger.kernel.org,
+ platform-driver-x86@vger.kernel.org
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
+ dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com, acme@kernel.org,
+ andrew.cooper3@citrix.com, peterz@infradead.org, namhyung@kernel.org,
+ mark.rutland@arm.com, alexander.shishkin@linux.intel.com, jolsa@kernel.org,
+ irogers@google.com, adrian.hunter@intel.com, kan.liang@linux.intel.com,
+ wei.liu@kernel.org, ajay.kaher@broadcom.com,
+ bcm-kernel-feedback-list@broadcom.com, tony.luck@intel.com,
+ pbonzini@redhat.com, vkuznets@redhat.com, seanjc@google.com,
+ luto@kernel.org, boris.ostrovsky@oracle.com, kys@microsoft.com,
+ haiyangz@microsoft.com, decui@microsoft.com
+References: <20250422082216.1954310-1-xin@zytor.com>
+ <20250422082216.1954310-23-xin@zytor.com>
+Content-Language: en-US
+From: =?UTF-8?B?SsO8cmdlbiBHcm/Dnw==?= <jgross@suse.com>
+Autocrypt: addr=jgross@suse.com; keydata=
+ xsBNBFOMcBYBCACgGjqjoGvbEouQZw/ToiBg9W98AlM2QHV+iNHsEs7kxWhKMjrioyspZKOB
+ ycWxw3ie3j9uvg9EOB3aN4xiTv4qbnGiTr3oJhkB1gsb6ToJQZ8uxGq2kaV2KL9650I1SJve
+ dYm8Of8Zd621lSmoKOwlNClALZNew72NjJLEzTalU1OdT7/i1TXkH09XSSI8mEQ/ouNcMvIJ
+ NwQpd369y9bfIhWUiVXEK7MlRgUG6MvIj6Y3Am/BBLUVbDa4+gmzDC9ezlZkTZG2t14zWPvx
+ XP3FAp2pkW0xqG7/377qptDmrk42GlSKN4z76ELnLxussxc7I2hx18NUcbP8+uty4bMxABEB
+ AAHNH0p1ZXJnZW4gR3Jvc3MgPGpncm9zc0BzdXNlLmNvbT7CwHkEEwECACMFAlOMcK8CGwMH
+ CwkIBwMCAQYVCAIJCgsEFgIDAQIeAQIXgAAKCRCw3p3WKL8TL8eZB/9G0juS/kDY9LhEXseh
+ mE9U+iA1VsLhgDqVbsOtZ/S14LRFHczNd/Lqkn7souCSoyWsBs3/wO+OjPvxf7m+Ef+sMtr0
+ G5lCWEWa9wa0IXx5HRPW/ScL+e4AVUbL7rurYMfwCzco+7TfjhMEOkC+va5gzi1KrErgNRHH
+ kg3PhlnRY0Udyqx++UYkAsN4TQuEhNN32MvN0Np3WlBJOgKcuXpIElmMM5f1BBzJSKBkW0Jc
+ Wy3h2Wy912vHKpPV/Xv7ZwVJ27v7KcuZcErtptDevAljxJtE7aJG6WiBzm+v9EswyWxwMCIO
+ RoVBYuiocc51872tRGywc03xaQydB+9R7BHPzsBNBFOMcBYBCADLMfoA44MwGOB9YT1V4KCy
+ vAfd7E0BTfaAurbG+Olacciz3yd09QOmejFZC6AnoykydyvTFLAWYcSCdISMr88COmmCbJzn
+ sHAogjexXiif6ANUUlHpjxlHCCcELmZUzomNDnEOTxZFeWMTFF9Rf2k2F0Tl4E5kmsNGgtSa
+ aMO0rNZoOEiD/7UfPP3dfh8JCQ1VtUUsQtT1sxos8Eb/HmriJhnaTZ7Hp3jtgTVkV0ybpgFg
+ w6WMaRkrBh17mV0z2ajjmabB7SJxcouSkR0hcpNl4oM74d2/VqoW4BxxxOD1FcNCObCELfIS
+ auZx+XT6s+CE7Qi/c44ibBMR7hyjdzWbABEBAAHCwF8EGAECAAkFAlOMcBYCGwwACgkQsN6d
+ 1ii/Ey9D+Af/WFr3q+bg/8v5tCknCtn92d5lyYTBNt7xgWzDZX8G6/pngzKyWfedArllp0Pn
+ fgIXtMNV+3t8Li1Tg843EXkP7+2+CQ98MB8XvvPLYAfW8nNDV85TyVgWlldNcgdv7nn1Sq8g
+ HwB2BHdIAkYce3hEoDQXt/mKlgEGsLpzJcnLKimtPXQQy9TxUaLBe9PInPd+Ohix0XOlY+Uk
+ QFEx50Ki3rSDl2Zt2tnkNYKUCvTJq7jvOlaPd6d/W0tZqpyy7KVay+K4aMobDsodB3dvEAs6
+ ScCnh03dDAFgIq5nsB11j3KPKdVoPlfucX2c7kGNH+LUMbzqV6beIENfNexkOfxHfw==
+In-Reply-To: <20250422082216.1954310-23-xin@zytor.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------un2AYJFRoeghgHfedleEX9ZN"
 
-This driver utilizes the Power State Change Reasons Recording (PSCRR)
-framework to store specific power state change information, such as
-shutdown or reboot reasons, into a designated non-volatile memory
-(NVMEM) cell.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------un2AYJFRoeghgHfedleEX9ZN
+Content-Type: multipart/mixed; boundary="------------j8Mm72KUaJS15LtVM5GZpzd8";
+ protected-headers="v1"
+From: =?UTF-8?B?SsO8cmdlbiBHcm/Dnw==?= <jgross@suse.com>
+To: "Xin Li (Intel)" <xin@zytor.com>, linux-kernel@vger.kernel.org,
+ kvm@vger.kernel.org, linux-perf-users@vger.kernel.org,
+ linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev,
+ linux-pm@vger.kernel.org, linux-edac@vger.kernel.org,
+ xen-devel@lists.xenproject.org, linux-acpi@vger.kernel.org,
+ linux-hwmon@vger.kernel.org, netdev@vger.kernel.org,
+ platform-driver-x86@vger.kernel.org
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
+ dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com, acme@kernel.org,
+ andrew.cooper3@citrix.com, peterz@infradead.org, namhyung@kernel.org,
+ mark.rutland@arm.com, alexander.shishkin@linux.intel.com, jolsa@kernel.org,
+ irogers@google.com, adrian.hunter@intel.com, kan.liang@linux.intel.com,
+ wei.liu@kernel.org, ajay.kaher@broadcom.com,
+ bcm-kernel-feedback-list@broadcom.com, tony.luck@intel.com,
+ pbonzini@redhat.com, vkuznets@redhat.com, seanjc@google.com,
+ luto@kernel.org, boris.ostrovsky@oracle.com, kys@microsoft.com,
+ haiyangz@microsoft.com, decui@microsoft.com
+Message-ID: <91f9217a-cc2d-4a6e-bada-290312f73d82@suse.com>
+Subject: Re: [RFC PATCH v2 22/34] x86/msr: Utilize the alternatives mechanism
+ to read MSR
+References: <20250422082216.1954310-1-xin@zytor.com>
+ <20250422082216.1954310-23-xin@zytor.com>
+In-Reply-To: <20250422082216.1954310-23-xin@zytor.com>
 
-Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
----
-changes v6:
-- rename pscr_reason to psc_reason
-changes v5:
-- avoid a build against NVMEM=m
-changes v4:
-- remove devicetree dependencies
----
- drivers/power/reset/Kconfig       |  22 +++
- drivers/power/reset/Makefile      |   1 +
- drivers/power/reset/pscrr-nvmem.c | 254 ++++++++++++++++++++++++++++++
- 3 files changed, 277 insertions(+)
- create mode 100644 drivers/power/reset/pscrr-nvmem.c
+--------------j8Mm72KUaJS15LtVM5GZpzd8
+Content-Type: multipart/mixed; boundary="------------nQ9cpx1ohBCDhUhDRNjrikdZ"
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index 7e4c4f317938..33ccdecd6442 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -341,3 +341,25 @@ menuconfig PSCRR
- 	  be recorded unless hardware provides the reset cause.
- 
- 	  If unsure, say N.
-+
-+if PSCRR
-+
-+config PSCRR_NVMEM
-+	tristate "Generic NVMEM-based Power State Change Reason Recorder"
-+	depends on NVMEM || !NVMEM
-+	help
-+	  This option enables support for storing power state change reasons
-+	  (such as shutdown, reboot, or power failure events) into a designated
-+	  NVMEM (Non-Volatile Memory) cell.
-+
-+	  This feature allows embedded systems to retain power transition
-+	  history even after a full system restart or power loss. It is useful
-+	  for post-mortem debugging, automated recovery strategies, and
-+	  improving system reliability.
-+
-+	  The NVMEM cell used for storing these reasons can be dynamically
-+	  configured via module parameters.
-+
-+	  If unsure, say N.
-+
-+endif
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index dbd6ae6b26a4..532698552d40 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -33,6 +33,7 @@ obj-$(CONFIG_POWER_RESET_SYSCON) += syscon-reboot.o
- obj-$(CONFIG_POWER_RESET_SYSCON_POWEROFF) += syscon-poweroff.o
- obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
- obj-$(CONFIG_PSCRR) += pscrr.o
-+obj-$(CONFIG_PSCRR_NVMEM) += pscrr-nvmem.o
- obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
- obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
- obj-$(CONFIG_POWER_RESET_SC27XX) += sc27xx-poweroff.o
-diff --git a/drivers/power/reset/pscrr-nvmem.c b/drivers/power/reset/pscrr-nvmem.c
-new file mode 100644
-index 000000000000..7d02d989893f
---- /dev/null
-+++ b/drivers/power/reset/pscrr-nvmem.c
-@@ -0,0 +1,254 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * pscrr_nvmem.c - PSCRR backend for storing shutdown reasons in small NVMEM
-+ *		   cells
-+ *
-+ * This backend provides a way to persist power state change reasons in a
-+ * non-volatile memory (NVMEM) cell, ensuring that reboot causes can be
-+ * analyzed post-mortem. Unlike traditional logging to eMMC or NAND, which
-+ * may be unreliable during power failures, this approach allows storing
-+ * reboot reasons in small, fast-access storage like RTC scratchpads, EEPROM,
-+ * or FRAM.
-+ *
-+ * The module allows dynamic configuration of the NVMEM device and cell
-+ * via module parameters:
-+ *
-+ * Example usage:
-+ *   modprobe pscrr-nvmem nvmem_name=pcf85063_nvram0 cell_name=pscr@0,0
-+ */
-+
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/nvmem-consumer.h>
-+#include <linux/pscrr.h>
-+#include <linux/slab.h>
-+
-+/*
-+ * Module parameters:
-+ *   nvmem_name: Name of the NVMEM device (e.g. "pcf85063_nvram0").
-+ *   cell_name : Sysfs name of the cell on that device (e.g. "pscr@0,0").
-+ */
-+static char *nvmem_name;
-+module_param(nvmem_name, charp, 0444);
-+MODULE_PARM_DESC(nvmem_name, "Name of the NVMEM device (e.g. pcf85063_nvram0)");
-+
-+static char *cell_name;
-+module_param(cell_name, charp, 0444);
-+MODULE_PARM_DESC(cell_name, "Sysfs name of the NVMEM cell (e.g. pscr@0,0)");
-+
-+struct pscrr_nvmem_priv {
-+	struct nvmem_device *nvmem;
-+	struct nvmem_cell *cell;
-+
-+	size_t total_bits;
-+	size_t max_val;
-+};
-+
-+static struct pscrr_nvmem_priv *priv;
-+
-+static int pscrr_nvmem_write_reason(enum psc_reason reason)
-+{
-+	size_t required_bytes;
-+	u32 val;
-+	int ret;
-+
-+	if (!priv || !priv->cell)
-+		return -ENODEV;
-+
-+	/* Ensure reason fits in the available storage */
-+	if (reason > priv->max_val) {
-+		pr_err("PSCRR-nvmem: Reason %d exceeds max storable value %zu for %zu-bit cell\n",
-+		       reason, priv->max_val, priv->total_bits);
-+		return -ERANGE;
-+	}
-+
-+	val = reason;
-+
-+	/* Determine required bytes for storing total_bits */
-+	required_bytes = (priv->total_bits + 7) / 8;
-+
-+	/* Write the reason to the NVMEM cell */
-+	ret = nvmem_cell_write(priv->cell, &val, required_bytes);
-+	if (ret < 0) {
-+		pr_err("PSCRR-nvmem: Failed to write reason %d, err=%d (%pe)\n",
-+		       reason, ret, ERR_PTR(ret));
-+		return ret;
-+	}
-+
-+	pr_debug("PSCRR-nvmem: Successfully wrote reason %d\n", reason);
-+
-+	return 0;
-+}
-+
-+static int pscrr_nvmem_read_reason(enum psc_reason *reason)
-+{
-+	size_t required_bytes, len;
-+	unsigned int val;
-+	int ret = 0;
-+	void *buf;
-+
-+	if (!priv || !priv->cell)
-+		return -ENODEV;
-+
-+	buf = nvmem_cell_read(priv->cell, &len);
-+	if (IS_ERR(buf)) {
-+		ret = PTR_ERR(buf);
-+		pr_err("PSCRR-nvmem: Failed to read cell, err=%d (%pe)\n", ret,
-+		       ERR_PTR(ret));
-+		return ret;
-+	}
-+
-+	/* Calculate the required number of bytes */
-+	required_bytes = (priv->total_bits + 7) / 8;
-+
-+	/* Validate that the returned length is large enough */
-+	if (len < required_bytes) {
-+		pr_err("PSCRR-nvmem: Read length %zu is too small (need at least %zu bytes)\n",
-+		       len, required_bytes);
-+		kfree(buf);
-+		return -EIO;
-+	}
-+
-+	/* Extract value safely with proper memory alignment handling */
-+	val = 0;
-+	memcpy(&val, buf, required_bytes);
-+
-+	/* Mask only the necessary bits to avoid garbage data */
-+	val &= (1U << priv->total_bits) - 1;
-+
-+	kfree(buf);
-+
-+	*reason = (enum psc_reason)val;
-+
-+	pr_debug("PSCRR-nvmem: Read reason => %d (from %zu bytes, %zu bits used)\n",
-+		 *reason, len, priv->total_bits);
-+
-+	return 0;
-+}
-+
-+static const struct pscrr_backend_ops pscrr_nvmem_ops = {
-+	.write_reason = pscrr_nvmem_write_reason,
-+	.read_reason  = pscrr_nvmem_read_reason,
-+};
-+
-+static int __init pscrr_nvmem_init(void)
-+{
-+	size_t bytes, bits;
-+	int ret;
-+
-+	if (!nvmem_name || !cell_name) {
-+		pr_err("PSCRR-nvmem: Must specify both nvmem_name and cell_name.\n");
-+		return -EINVAL;
-+	}
-+
-+	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->nvmem = nvmem_device_get_by_name(nvmem_name);
-+	if (IS_ERR(priv->nvmem)) {
-+		ret = PTR_ERR(priv->nvmem);
-+		pr_err("PSCRR-nvmem: nvmem_device_get_by_name(%s) failed: %d\n",
-+		       nvmem_name, ret);
-+		priv->nvmem = NULL;
-+		goto err_free;
-+	}
-+
-+	priv->cell = nvmem_cell_get_by_sysfs_name(priv->nvmem, cell_name);
-+	if (IS_ERR(priv->cell)) {
-+		ret = PTR_ERR(priv->cell);
-+		pr_err("PSCRR-nvmem: nvmem_cell_get_by_sysfs_name(%s) failed, err=%pe\n",
-+		       cell_name, ERR_PTR(ret));
-+		priv->cell = NULL;
-+		goto err_dev_put;
-+	}
-+
-+	ret = nvmem_cell_get_size(priv->cell, &bytes, &bits);
-+	if (ret < 0) {
-+		pr_err("PSCRR-nvmem: Failed to get cell size, err=%pe\n",
-+		       ERR_PTR(ret));
-+		goto err_cell_put;
-+	}
-+
-+	if (bits)
-+		priv->total_bits = bits;
-+	else
-+		priv->total_bits = bytes * 8;
-+
-+	if (priv->total_bits > 31) {
-+		pr_err("PSCRR-nvmem: total_bits=%zu is too large (max 31 allowed)\n",
-+		       priv->total_bits);
-+		return -EOVERFLOW;
-+	}
-+
-+	priv->max_val = (1 << priv->total_bits) - 1;
-+	pr_debug("PSCRR-nvmem: Cell size: %zu bytes + %zu bits => total_bits=%zu\n",
-+		 bytes, bits, priv->total_bits);
-+
-+	/*
-+	 * If we store reasons 0..PSCR_MAX_REASON, the largest needed is
-+	 * 'PSCR_MAX_REASON'. That must fit within total_bits.
-+	 * So the max storable integer is (1 << total_bits) - 1.
-+	 */
-+	if (priv->max_val < PSCR_MAX_REASON) {
-+		pr_err("PSCRR-nvmem: Not enough bits (%zu) to store up to reason=%d\n",
-+		       priv->total_bits, PSCR_MAX_REASON);
-+		ret = -ENOSPC;
-+		goto err_cell_put;
-+	}
-+
-+	/* 4. Register with pscrr_core. */
-+	ret = pscrr_core_init(&pscrr_nvmem_ops);
-+	if (ret) {
-+		pr_err("PSCRR-nvmem: pscrr_core_init() failed: %d\n", ret);
-+		goto err_cell_put;
-+	}
-+
-+	pr_info("PSCRR-nvmem: Loaded (nvmem=%s, cell=%s), can store 0..%zu\n",
-+		nvmem_name, cell_name, priv->max_val);
-+	return 0;
-+
-+err_cell_put:
-+	if (priv->cell) {
-+		nvmem_cell_put(priv->cell);
-+		priv->cell = NULL;
-+	}
-+err_dev_put:
-+	if (priv->nvmem) {
-+		nvmem_device_put(priv->nvmem);
-+		priv->nvmem = NULL;
-+	}
-+err_free:
-+	kfree(priv);
-+	priv = NULL;
-+	return ret;
-+}
-+
-+static void __exit pscrr_nvmem_exit(void)
-+{
-+	pscrr_core_exit();
-+
-+	if (priv) {
-+		if (priv->cell) {
-+			nvmem_cell_put(priv->cell);
-+			priv->cell = NULL;
-+		}
-+		if (priv->nvmem) {
-+			nvmem_device_put(priv->nvmem);
-+			priv->nvmem = NULL;
-+		}
-+		kfree(priv);
-+		priv = NULL;
-+	}
-+
-+	pr_info("pscrr-nvmem: Unloaded\n");
-+}
-+
-+module_init(pscrr_nvmem_init);
-+module_exit(pscrr_nvmem_exit);
-+
-+MODULE_AUTHOR("Oleksij Rempel <o.rempel@pengutronix.de>");
-+MODULE_DESCRIPTION("PSCRR backend for storing reason code in NVMEM");
-+MODULE_LICENSE("GPL");
--- 
-2.39.5
+--------------nQ9cpx1ohBCDhUhDRNjrikdZ
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
+T24gMjIuMDQuMjUgMTA6MjIsIFhpbiBMaSAoSW50ZWwpIHdyb3RlOg0KPiBUbyBlbGltaW5h
+dGUgdGhlIGluZGlyZWN0IGNhbGwgb3ZlcmhlYWQgaW50cm9kdWNlZCBieSB0aGUgcHZfb3Bz
+IEFQSSwNCj4gdXRpbGl6ZSB0aGUgYWx0ZXJuYXRpdmVzIG1lY2hhbmlzbSB0byByZWFkIE1T
+UjoNCj4gDQo+ICAgICAgMSkgV2hlbiBidWlsdCB3aXRoICFDT05GSUdfWEVOX1BWLCBYODZf
+RkVBVFVSRV9YRU5QViBiZWNvbWVzIGENCj4gICAgICAgICBkaXNhYmxlZCBmZWF0dXJlLCBw
+cmV2ZW50aW5nIHRoZSBYZW4gY29kZSBmcm9tIGJlaW5nIGJ1aWx0DQo+ICAgICAgICAgYW5k
+IGVuc3VyaW5nIHRoZSBuYXRpdmUgY29kZSBpcyBleGVjdXRlZCB1bmNvbmRpdGlvbmFsbHku
+DQo+IA0KPiAgICAgIDIpIFdoZW4gYnVpbHQgd2l0aCBDT05GSUdfWEVOX1BWOg0KPiANCj4g
+ICAgICAgICAyLjEpIElmIG5vdCBydW5uaW5nIG9uIHRoZSBYZW4gaHlwZXJ2aXNvciAoIVg4
+Nl9GRUFUVVJFX1hFTlBWKSwNCj4gICAgICAgICAgICAgIHRoZSBrZXJuZWwgcnVudGltZSBi
+aW5hcnkgaXMgcGF0Y2hlZCB0byB1bmNvbmRpdGlvbmFsbHkNCj4gICAgICAgICAgICAgIGp1
+bXAgdG8gdGhlIG5hdGl2ZSBNU1IgcmVhZCBjb2RlLg0KPiANCj4gICAgICAgICAyLjIpIElm
+IHJ1bm5pbmcgb24gdGhlIFhlbiBoeXBlcnZpc29yIChYODZfRkVBVFVSRV9YRU5QViksIHRo
+ZQ0KPiAgICAgICAgICAgICAga2VybmVsIHJ1bnRpbWUgYmluYXJ5IGlzIHBhdGNoZWQgdG8g
+dW5jb25kaXRpb25hbGx5IGp1bXANCj4gICAgICAgICAgICAgIHRvIHRoZSBYZW4gTVNSIHJl
+YWQgY29kZS4NCj4gDQo+IFRoZSBhbHRlcm5hdGl2ZXMgbWVjaGFuaXNtIGlzIGFsc28gdXNl
+ZCB0byBjaG9vc2UgdGhlIG5ldyBpbW1lZGlhdGUNCj4gZm9ybSBNU1IgcmVhZCBpbnN0cnVj
+dGlvbiB3aGVuIGl0J3MgYXZhaWxhYmxlLg0KPiANCj4gQ29uc2VxdWVudGx5LCByZW1vdmUg
+dGhlIHB2X29wcyBNU1IgcmVhZCBBUElzIGFuZCB0aGUgWGVuIGNhbGxiYWNrcy4NCg0KU2Ft
+ZSBhcyB0aGUgY29tbWVudCB0byBwYXRjaCA1OiB0aGVyZSBpcyBubyBpbmRpcmVjdCBjYWxs
+IG92ZXJoZWFkIGFmdGVyDQp0aGUgc3lzdGVtIGhhcyBjb21lIHVwLg0KDQoNCkp1ZXJnZW4N
+Cg==
+--------------nQ9cpx1ohBCDhUhDRNjrikdZ
+Content-Type: application/pgp-keys; name="OpenPGP_0xB0DE9DD628BF132F.asc"
+Content-Disposition: attachment; filename="OpenPGP_0xB0DE9DD628BF132F.asc"
+Content-Description: OpenPGP public key
+Content-Transfer-Encoding: quoted-printable
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+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
+kt+z4drzFUyEjLM1vVvIMjkUoJs=3D
+=3DeeAB
+-----END PGP PUBLIC KEY BLOCK-----
+
+--------------nQ9cpx1ohBCDhUhDRNjrikdZ--
+
+--------------j8Mm72KUaJS15LtVM5GZpzd8--
+
+--------------un2AYJFRoeghgHfedleEX9ZN
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsB5BAABCAAjFiEEhRJncuj2BJSl0Jf3sN6d1ii/Ey8FAmgHWoYFAwAAAAAACgkQsN6d1ii/Ey8D
+BQf+OA19Vpg0eUa4ERij9S9MXvQgixkI0nFzR7la2M7mGDzjkkOaQEkFSUweGf7z1sWPEFz2Rcur
+2jPu4DTZw1n2NfYf2nwEVrOyAXJPCWled0ZzTbfLlwXAg4fSvz1po/QW2sin5kuNqFUKuq3lUIXs
+QBnKaTx2+pzCnVp2E+E6cKb05IPjd46gZn5Vzgc1XF0Q0RSkM4J74f+mD+GKJMEL8PqfgzTH9Gb6
+uNQjjbf1nLrKiauc2xpYec2q6IndTJhHBZKvMzBVAM45WeTDAiZQFUGYtFg10xQ7N1ZKfi1z8j1+
+E70SrF18uNYtrFViiyjvuYSE3PLZwksXAkLqtLb8gQ==
+=hDW8
+-----END PGP SIGNATURE-----
+
+--------------un2AYJFRoeghgHfedleEX9ZN--
