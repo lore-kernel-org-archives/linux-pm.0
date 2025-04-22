@@ -1,16 +1,16 @@
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A72D525A2CB
-	for <linux-pm@vger.kernel.org>; Tue, 22 Apr 2025 08:57:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DA7025A648
+	for <linux-pm@vger.kernel.org>; Tue, 22 Apr 2025 08:57:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745312258; cv=none; b=VQJf0T3LhnmjZYGM6IByqItOp0jcyJNejhOodD3TD8cHXRkJ/Lv4w06Xzy0ybBOtYpZNj4KyTjCl0OMHGbWDe7OtznySZdoTzHjKcz62Ba6vLIEEsMAjUhVHtMYNh2joq6CCrZJ2l6swVoHzhLyaLmvB/HnYOqtlSv8opICOymY=
+	t=1745312260; cv=none; b=Xlxgm5SgTaM8OKCO/BKl6gANZ0ZLKZ5+ZCDcrmDOhfMR5FgbDrSj7cqy+UTQXFe8vLMQjRaQ3iZqiS+IUq25J4/RqUGRg2QqAnZlcXtvX+QylG/B/mrTnmZCoLfxfIvZXDBz27L4fmuUKNUMzwIllgdN5GblURXHHxke4VMIz/g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745312258; c=relaxed/simple;
-	bh=penylcrZjRjoRlt2DxZgzg5QOoQPPyQfH7KISVKYXtg=;
+	s=arc-20240116; t=1745312260; c=relaxed/simple;
+	bh=syywMVMqohA1NGmYJCurCu30p3AL85R5OC4/8mHT9eA=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=IfMVCQuQ2qDYebpw3sk1aXfoUCBhIOLg4WPhz45JRhlWxkQwG56/ahyY2BObdRGcmpjJSSRR7PgHauvXTz1P1dvEttfvEWkwsE+nnzUuh2fXl/2EUNhnsIER7fw0FlO+jj7781uSgH0q+V3dOGF9J3V/O8HUuaaSFQd7uwxBZOo=
+	 MIME-Version; b=YZC8FoxVEQ9qgB5C3Q9ezMmHDcngoJApR8oee1+GUrm7pOf48sdSHM4snN7lLP3qW7llXMiR6eh06ikGuBVdcMiioUY8T9ubqFiZoscQxWcEwtxHPU7dC7xGUA9AQ8gahmGA9vnc7aRN3z/jrg3K+XOn+lM1HIjZyKfxmT5NUbE=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
@@ -18,16 +18,16 @@ Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <ore@pengutronix.de>)
-	id 1u79RQ-0007U4-3n; Tue, 22 Apr 2025 10:57:20 +0200
+	id 1u79RQ-0007U2-3n; Tue, 22 Apr 2025 10:57:20 +0200
 Received: from dude04.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::ac])
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.96)
 	(envelope-from <ore@pengutronix.de>)
-	id 1u79RP-001WRJ-0A;
+	id 1u79RP-001WRG-01;
 	Tue, 22 Apr 2025 10:57:19 +0200
 Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.96)
 	(envelope-from <ore@pengutronix.de>)
-	id 1u79RO-00AvqB-2z;
+	id 1u79RO-00Avpr-2r;
 	Tue, 22 Apr 2025 10:57:18 +0200
 From: Oleksij Rempel <o.rempel@pengutronix.de>
 To: Sebastian Reichel <sre@kernel.org>,
@@ -36,7 +36,6 @@ To: Sebastian Reichel <sre@kernel.org>,
 	Tzung-Bi Shih <tzungbi@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: Oleksij Rempel <o.rempel@pengutronix.de>,
-	Matti Vaittinen <mazziesaccount@gmail.com>,
 	kernel@pengutronix.de,
 	linux-kernel@vger.kernel.org,
 	Liam Girdwood <lgirdwood@gmail.com>,
@@ -47,12 +46,13 @@ Cc: Oleksij Rempel <o.rempel@pengutronix.de>,
 	linux-pm@vger.kernel.org,
 	=?UTF-8?q?S=C3=B8ren=20Andersen?= <san@skov.dk>,
 	Guenter Roeck <groeck@chromium.org>,
+	Matti Vaittinen <mazziesaccount@gmail.com>,
 	Ahmad Fatoum <a.fatoum@pengutronix.de>,
 	Andrew Morton <akpm@linux-foundation.org>,
 	chrome-platform@lists.linux.dev
-Subject: [PATCH v9 7/7] Documentation: Add sysfs documentation for PSCRR reboot reason tracking
-Date: Tue, 22 Apr 2025 10:57:17 +0200
-Message-Id: <20250422085717.2605520-8-o.rempel@pengutronix.de>
+Subject: [PATCH v9 5/7] nvmem: add support for device and sysfs-based cell lookups
+Date: Tue, 22 Apr 2025 10:57:15 +0200
+Message-Id: <20250422085717.2605520-6-o.rempel@pengutronix.de>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20250422085717.2605520-1-o.rempel@pengutronix.de>
 References: <20250422085717.2605520-1-o.rempel@pengutronix.de>
@@ -68,105 +68,208 @@ X-SA-Exim-Mail-From: ore@pengutronix.de
 X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
 X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-Add documentation for the Power State Change Reason Recorder (PSCRR)
-sysfs interface, which allows tracking of system shutdown and reboot
-reasons. The documentation provides details on available sysfs entries
-under `/sys/kernel/pscrr/`, explaining their functionality, example usage,
-and how they interact with different backend storage options (e.g., NVMEM).
+Introduce new API functions to allow looking up NVMEM devices and cells
+by name, enhancing flexibility in cases where devicetree-based  lookup
+is not available.
+
+Key changes:
+- Added `nvmem_device_get_by_name()`: Enables retrieving an NVMEM device by
+  its name for systems where direct device reference is needed.
+- Added `nvmem_cell_get_by_sysfs_name()`: Allows retrieving an NVMEM cell
+  based on its sysfs-style name (e.g., "cell@offset,bits"), making it
+  possible to identify cells dynamically.
+- Introduced `nvmem_find_cell_entry_by_sysfs_name()`: A helper function
+  that constructs sysfs-like names and searches for matching cell entries.
 
 Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
-Reviewed-by: Matti Vaittinen <mazziesaccount@gmail.com>
 ---
-changes v8:
-- Simplify and clarify example sysfs value comments
-- Add note that not all values are meaningful on every system
-changes v7:
-- document expected values
+changes v5:
+- fix build we NVMEM=n
 ---
- .../ABI/testing/sysfs-kernel-reboot-pscrr     | 74 +++++++++++++++++++
- 1 file changed, 74 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-kernel-reboot-pscrr
+ drivers/nvmem/core.c           | 105 +++++++++++++++++++++++++++++++++
+ include/linux/nvmem-consumer.h |  18 ++++++
+ 2 files changed, 123 insertions(+)
 
-diff --git a/Documentation/ABI/testing/sysfs-kernel-reboot-pscrr b/Documentation/ABI/testing/sysfs-kernel-reboot-pscrr
-new file mode 100644
-index 000000000000..96369422ed6e
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-kernel-reboot-pscrr
-@@ -0,0 +1,74 @@
-+What:		/sys/kernel/pscrr/reason
-+Date:		April 2025
-+KernelVersion:  6.16
-+Contact:	Oleksij Rempel <o.rempel@pengutronix.de>
-+Description:
-+		This file provides access to the current power state
-+		change reason. If supported, the reason may be stored
-+		persistently in an NVMEM cell or another backend.
+diff --git a/drivers/nvmem/core.c b/drivers/nvmem/core.c
+index 754a9448c39d..676b2308f62f 100644
+--- a/drivers/nvmem/core.c
++++ b/drivers/nvmem/core.c
+@@ -1203,6 +1203,23 @@ struct nvmem_device *of_nvmem_device_get(struct device_node *np, const char *id)
+ EXPORT_SYMBOL_GPL(of_nvmem_device_get);
+ #endif
+ 
++/**
++ * nvmem_device_get_by_name - Look up an NVMEM device by its device name
++ * @name: String matching device name in the provider
++ *
++ * Return: A valid pointer to struct nvmem_device on success,
++ * or ERR_PTR(...) on failure. The caller must later call nvmem_device_put() to
++ * release the reference.
++ */
++struct nvmem_device *nvmem_device_get_by_name(const char *name)
++{
++	if (!name)
++		return ERR_PTR(-EINVAL);
 +
-+		Reading this file returns an integer representing the
-+		current shutdown or reboot cause.
++	return __nvmem_device_get((void *)name, device_match_name);
++}
++EXPORT_SYMBOL_GPL(nvmem_device_get_by_name);
 +
-+		Writing an integer value to this file sets the reason
-+		to be stored for system analysis on next reboot.
+ /**
+  * nvmem_device_get() - Get nvmem device from a given id
+  *
+@@ -1516,6 +1533,94 @@ struct nvmem_cell *of_nvmem_cell_get(struct device_node *np, const char *id)
+ EXPORT_SYMBOL_GPL(of_nvmem_cell_get);
+ #endif
+ 
++/**
++ * nvmem_find_cell_entry_by_sysfs_name - Find an NVMEM cell entry by its sysfs
++ *					 name.
++ * @nvmem:      The nvmem_device pointer where the cell is located.
++ * @sysfs_name: The full sysfs cell name, e.g. "mycell@0x100,8".
++ *
++ * This function constructs the sysfs-like name for each cell and compares it
++ * to @sysfs_name. If a match is found, the matching nvmem_cell_entry pointer
++ * is returned. This is analogous to nvmem_find_cell_entry_by_name(), except
++ * it matches on the sysfs naming convention used in the device's attributes.
++ *
++ * Return: Pointer to the matching nvmem_cell_entry on success, or NULL if no
++ * match is found.
++ */
++static struct nvmem_cell_entry *
++nvmem_find_cell_entry_by_sysfs_name(struct nvmem_device *nvmem,
++				    const char *sysfs_name)
++{
++	struct nvmem_cell_entry *entry;
++	char tmp[NVMEM_CELL_NAME_MAX];
 +
-+		Example usage:
-+		  Read:
-+			$ cat /sys/kernel/pscrr/reason
-+			1   # (Example: Under-voltage shutdown)
++	mutex_lock(&nvmem_mutex);
++	list_for_each_entry(entry, &nvmem->cells, node) {
++		int len = snprintf(tmp, NVMEM_CELL_NAME_MAX, "%s@%x,%u",
++				   entry->name, entry->offset,
++				   entry->bit_offset);
 +
-+		  Write:
-+			$ echo 4 > /sys/kernel/pscrr/reason
-+			# Sets the reason to 4 (Example: Over-temperature shutdown)
++		if (len >= NVMEM_CELL_NAME_MAX) {
++			pr_warn("nvmem: cell name too long (max %zu bytes): %s\n",
++				NVMEM_CELL_NAME_MAX, sysfs_name);
++			continue;
++		}
 +
-+		Note:
-+		  Not all systems support all reason values. Hardware or
-+		  configuration may limit which reasons are applicable.
++		if (len < 0) {
++			pr_warn("nvmem: error formatting cell name\n");
++			continue;
++		}
 +
-+		Values are defined in:
-+		  - include/linux/reboot.h (enum psc_reason)
++		if (!strcmp(tmp, sysfs_name)) {
++			mutex_unlock(&nvmem_mutex);
++			return entry;
++		}
++	}
 +
-+		Supported Values:
-+		  (from include/linux/reboot.h)
++	mutex_unlock(&nvmem_mutex);
++	return NULL;
++}
 +
-+		+-------+---------------------------+--------------------------+
-+		| Value | Symbol                    | Description              |
-+		+-------+---------------------------+--------------------------+
-+		| 0     | PSCR_UNKNOWN              | Unknown or unspecified   |
-+		|       |                           | power state change reason|
-+		+-------+---------------------------+--------------------------+
-+		| 1     | PSCR_UNDER_VOLTAGE        | Supply voltage dropped   |
-+		|       |                           | below safe threshold     |
-+		+-------+---------------------------+--------------------------+
-+		| 2     | PSCR_OVER_CURRENT         | Excessive current draw or|
-+		|       |                           | potential short circuit  |
-+		+-------+---------------------------+--------------------------+
-+		| 3     | PSCR_REGULATOR_FAILURE    | Voltage regulator failure|
-+		|       |                           | preventing stable supply |
-+		+-------+---------------------------+--------------------------+
-+		| 4     | PSCR_OVER_TEMPERATURE     | Unsafe system temperature|
-+		|       |                           | detected by sensors      |
-+		+-------+---------------------------+--------------------------+
-+		| 5     | PSCR_EC_PANIC             | Reboot triggered by EC   |
-+		|       |                           | (Embedded Controller)    |
-+		+-------+---------------------------+--------------------------+
++/**
++ * nvmem_cell_get_by_sysfs_name - Retrieve an NVMEM cell using a sysfs-style
++ *				  name.
++ * @nvmem: Pointer to the `struct nvmem_device` containing the cell.
++ * @sysfs_name: The sysfs-style cell name, formatted as
++ *		"<cell_name>@<offset>,<bits>".
++ *
++ * This function enables dynamic lookup of NVMEM cells via sysfs-style
++ * identifiers. It is useful when devicetree-based lookup is unavailable or when
++ * cells are managed dynamically.
++ *
++ * Example Usage:
++ *   nvmem_cell_get_by_sysfs_name(nvmem, "mycell@0x100,8");
++ *
++ * Return: Pointer to `struct nvmem_cell` on success. On error, an ERR_PTR() is
++ * returned with the appropriate error code.
++ */
++struct nvmem_cell *nvmem_cell_get_by_sysfs_name(struct nvmem_device *nvmem,
++						const char *sysfs_name)
++{
++	struct nvmem_cell_entry *entry;
++	struct nvmem_cell *cell;
 +
-+What:		/sys/kernel/pscrr/reason_boot
-+Date:		April 2025
-+KernelVersion:  6.16
-+Contact:	Oleksij Rempel <o.rempel@pengutronix.de>
-+Description:
-+		This file provides the last recorded power state change
-+		reason from before the current boot. If a supported backend
-+		is configured (e.g., NVMEM), the value is retained across
-+		reboots.
++	entry = nvmem_find_cell_entry_by_sysfs_name(nvmem, sysfs_name);
++	if (!entry)
++		return ERR_PTR(-ENOENT);
 +
-+		Example usage:
-+		  Read:
-+			$ cat /sys/kernel/pscrr/reason_boot
-+			4   # (Example: Over-temperature shutdown)
++	if (!try_module_get(nvmem->owner))
++		return ERR_PTR(-EINVAL);
 +
-+		Supported values:
-+		  Same as /sys/kernel/pscrr/reason (see above).
++	kref_get(&nvmem->refcnt);
 +
++	cell = nvmem_create_cell(entry, entry->name, 0);
++	if (IS_ERR(cell))
++		__nvmem_device_put(nvmem);
++
++	return cell;
++}
++EXPORT_SYMBOL_GPL(nvmem_cell_get_by_sysfs_name);
++
+ /**
+  * nvmem_cell_get() - Get nvmem cell of device form a given cell name
+  *
+diff --git a/include/linux/nvmem-consumer.h b/include/linux/nvmem-consumer.h
+index bcb0e17e415d..2b5e06f457b0 100644
+--- a/include/linux/nvmem-consumer.h
++++ b/include/linux/nvmem-consumer.h
+@@ -20,6 +20,10 @@ struct nvmem_cell;
+ struct nvmem_device;
+ struct nvmem_cell_info;
+ 
++#define NVMEM_CELL_NAME_MAX \
++	(sizeof("very_long_cell_name_with_some_extra_chars_12345678@0x12345678,128"))
++
++
+ /**
+  * struct nvmem_cell_lookup - cell lookup entry
+  *
+@@ -52,6 +56,8 @@ enum {
+ /* Cell based interface */
+ struct nvmem_cell *nvmem_cell_get(struct device *dev, const char *id);
+ struct nvmem_cell *devm_nvmem_cell_get(struct device *dev, const char *id);
++struct nvmem_cell *nvmem_cell_get_by_sysfs_name(struct nvmem_device *nvmem,
++						const char *cell_name);
+ void nvmem_cell_put(struct nvmem_cell *cell);
+ void devm_nvmem_cell_put(struct device *dev, struct nvmem_cell *cell);
+ void *nvmem_cell_read(struct nvmem_cell *cell, size_t *len);
+@@ -70,6 +76,7 @@ int nvmem_cell_read_variable_le_u64(struct device *dev, const char *cell_id,
+ struct nvmem_device *nvmem_device_get(struct device *dev, const char *name);
+ struct nvmem_device *devm_nvmem_device_get(struct device *dev,
+ 					   const char *name);
++struct nvmem_device *nvmem_device_get_by_name(const char *name);
+ void nvmem_device_put(struct nvmem_device *nvmem);
+ void devm_nvmem_device_put(struct device *dev, struct nvmem_device *nvmem);
+ int nvmem_device_read(struct nvmem_device *nvmem, unsigned int offset,
+@@ -109,6 +116,12 @@ static inline struct nvmem_cell *devm_nvmem_cell_get(struct device *dev,
+ 	return ERR_PTR(-EOPNOTSUPP);
+ }
+ 
++static inline struct nvmem_cell *
++nvmem_cell_get_by_sysfs_name(struct nvmem_device *nvmem, const char *cell_name)
++{
++	return ERR_PTR(-EOPNOTSUPP);
++}
++
+ static inline void devm_nvmem_cell_put(struct device *dev,
+ 				       struct nvmem_cell *cell)
+ {
+@@ -185,6 +198,11 @@ static inline struct nvmem_device *devm_nvmem_device_get(struct device *dev,
+ 	return ERR_PTR(-EOPNOTSUPP);
+ }
+ 
++static inline struct nvmem_device *nvmem_device_get_by_name(const char *name)
++{
++	return ERR_PTR(-EOPNOTSUPP);
++}
++
+ static inline void nvmem_device_put(struct nvmem_device *nvmem)
+ {
+ }
 -- 
 2.39.5
 
