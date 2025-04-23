@@ -1,161 +1,182 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from mail-m15592.qiye.163.com (mail-m15592.qiye.163.com [101.71.155.92])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D3614155322
-	for <linux-pm@vger.kernel.org>; Wed, 23 Apr 2025 13:28:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD5EC9460;
+	Wed, 23 Apr 2025 13:29:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=101.71.155.92
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745414928; cv=none; b=UEDc2WT6CL4npVTA56WvDR4SgZZQJ1uNcdJvjpxD11lD1tcdk6FtXCSEj4kjpRfqQ0Qyz/Ur/4zV0sfv61FlT0620Z0FhTcvG4PYIMWGqge7tZMTVh4kdGEwKGFvxeiGScNo3DYa9ZJ3cA+BS6Rm5cBaQsu+Sq1OECt3JMOKuqc=
+	t=1745414952; cv=none; b=q2GDxC9bzsn12yY/cOJQsXwrgeRmf5GwUq8gl7+VYSWNF/WCQSLapsW9JsdnliItLQDZcCWKLR/7jmovRtFzBr9ouBgPOyrwK84mSTtSBlO2YEA6kqXsfhciQjCfw0BGYQumI3Z8WDL3ZIQh0PPHoc9oUxogL+jF0YDibGTduqA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745414928; c=relaxed/simple;
-	bh=U9OtDZeDCzanLJBDLtmfBqU2PmEPFD3p7Lovsa9a7nY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=gvSQZGwKp8I7F8Ici9oSlzZIAQ0mQMGKh2RXDGkvlUC41PvB+ss4yM8qKuu695rX9uudxgBolsZTcMZSRe81PJZt7b2eQthTE7NHrxy7IduN7Jug+dIFGKxneL+0KMqkk9hHd0ubgFuc/l2A9eEk+ExC6uQsRCRS6MvQtIqkZIA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=o8A/Sy+J; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1745414952; c=relaxed/simple;
+	bh=a150Pu+le3PUHIaPC7evLffms8yMxg22M67A+K8cG80=;
+	h=Message-ID:Date:MIME-Version:Cc:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=FqZZ6GPfdc9/reAlH6151kLh52vPmG+HjV/8pjpBKKqSyDr9OzrFT2xLYxjWEetF6AIoZRyDuJDFmy23IKTvkkHKKkoPpVytx5FEyJHSFrW4DI0tPfDsDvQrFAhtfpQLTEQTVOizEdHB5XYx0rNEvOmomPn3IAy7Uthyv0lfUM4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=RnC7Hd5w; arc=none smtp.client-ip=101.71.155.92
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="o8A/Sy+J"
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 53NAkGMA014763
-	for <linux-pm@vger.kernel.org>; Wed, 23 Apr 2025 13:28:45 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=PB3zeJwysZUF/ByBSq+dhGKR
-	vdPDfw2nxYgcYIOLE7k=; b=o8A/Sy+JMV06jqoMqAEv5+g+6FDVaLsmlIWxloNE
-	eyZ/EllNAnyYMZUJHD7/qcGvvCxNbY1ME4C9kk6kfMRheml5qkIeDP3rVubG4PAA
-	UziHFc8yy16AMPfamL5IOvke+Fk+GhleIfMLJBVwlcwZHzXdSsfhfoWXPaFy5HEQ
-	pyuys0GQ73qgTa1J3xXaPu9/TPENp+Mfpy7RQyZJOYaSj3pqzGmqJzXeGFGuMxHA
-	dsyUxzDaHCrDmKuKy5i8O2VeZX/H/BE7JXFfoFEarVwBhw7chpY7vglyw+ByK0OZ
-	Jz7r2tgbdUcT7JMPxrJqh/7p8DaKWSpx7E0BjYzm3AdHLA==
-Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com [209.85.222.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 466jh0j86s-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 23 Apr 2025 13:28:45 +0000 (GMT)
-Received: by mail-qk1-f200.google.com with SMTP id af79cd13be357-7c54e9f6e00so150836285a.0
-        for <linux-pm@vger.kernel.org>; Wed, 23 Apr 2025 06:28:45 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1745414925; x=1746019725;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=PB3zeJwysZUF/ByBSq+dhGKRvdPDfw2nxYgcYIOLE7k=;
-        b=dRt7tzHkAA9ffnSjZk6GoyepZYGIjI7xtbw7ZmBOJ7em/OwGKe2bAQFMNnitXDMul5
-         Ot4pcv7CV+4DzIgsQ7NjlYVOogl3sukQRQisNzl0j77JbSHw9Vpux7kd5WdfZcGe+Wpn
-         /vh41b3ummXhalzCB3qDcyIN1n/J7PfsXcrSthlIVwYPHPI2Ke/fDQ+sC273Go18UyTs
-         joboBakmoUkwE7LfqKnJFd8Jc6vCImaLJzvcQSly+RcuxgfJZNZ3JLz5j+yo4iMeDeYt
-         PJ3kBz0B3/oHaqfX9vxc3tlMKAeZq7EG45OjrQ3NjAQqY89VFL5R/N8KIM/clFtZUgWF
-         +Vgw==
-X-Forwarded-Encrypted: i=1; AJvYcCVghUZ/hOl1LpGWKG6HQOSU80sw6SXreQ+HBHjUJncRXfl8f0K7GOg6pUwxMEYELvkEy/bH/vasoQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxr4PfyR3IfninrZWzglXOLGhUrzMgvnS2wb6+MC2i9U/bwyg4X
-	xRkjc6HuX7CkeSrB0ANpvdsNopbSioYj6Bu6h6rjeNVjvm3ZAcE5SMbl/sX5JlcWDoGEIsn4984
-	P51CblE183jLY07r893Yar7KekVlkT1WKzHE5mUOBjbro78z2NQjSkNjqHA==
-X-Gm-Gg: ASbGncs2MCbMPeH74hsVtq/kUc2d4GP23pr2TX6izcExo7hG5gZy4qqiWTNJsnplpng
-	R3dz4agIszl3jfNdgm67PNEzmlXd3VUm5WOPLR2yU+YF4frWz+Xwa7/Zy+kTn0bsKJxLgqmiP8N
-	/PZIfOwCQeVqJI0wGn+MXaBGQiJ9Y/ekY2IYEV0pTz/Y6AKJl0G9uULt/+RFmtzAof021bxu96/
-	ZjJx0VrhiYrLZVOAYuz2o/Cdj/cn5zZqv0STX1NVGxbbRFBSSi2+51hfCn4U0CFD3BoOT/XLBbv
-	/e6qeYtotKeudet6rcYsQmEbNTgkusSYbv8dEri7EwJscnq0Dupr0P3Vh8TEj+9WrsD9W059y8M
-	=
-X-Received: by 2002:a05:620a:424e:b0:7c0:b350:820 with SMTP id af79cd13be357-7c94d80df6bmr443623685a.5.1745414924633;
-        Wed, 23 Apr 2025 06:28:44 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IFk636fFRRkvuLyPaBe/JMMbB0DmZRi+A72gsKa2vsyQGLytxQjLxNTJxnnRLMfxvaeNdGcxQ==
-X-Received: by 2002:a05:620a:424e:b0:7c0:b350:820 with SMTP id af79cd13be357-7c94d80df6bmr443619285a.5.1745414924226;
-        Wed, 23 Apr 2025 06:28:44 -0700 (PDT)
-Received: from eriador.lumag.spb.ru (2001-14ba-a0c3-3a00--7a1.rev.dnainternet.fi. [2001:14ba:a0c3:3a00::7a1])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-54d6e5423a2sm1534611e87.101.2025.04.23.06.28.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 23 Apr 2025 06:28:43 -0700 (PDT)
-Date: Wed, 23 Apr 2025 16:28:41 +0300
-From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-To: Akhil P Oommen <quic_akhilpo@quicinc.com>
-Cc: Rob Clark <robdclark@gmail.com>, Sean Paul <sean@poorly.run>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Abhinav Kumar <quic_abhinavk@quicinc.com>,
-        Marijn Suijten <marijn.suijten@somainline.org>,
-        David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Maya Matuszczyk <maccraft123mc@gmail.com>,
-        Anthony Ruhier <aruhier@mailbox.org>,
-        Dmitry Baryshkov <lumag@kernel.org>, linux-arm-msm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Subject: Re: [PATCH v5 3/7] drm/msm: a6x: Rework qmp_get() error handling
-Message-ID: <skrb5hkl66gt6vr6c42tx2ipfn62uuouztd2g37xlhreeq7nqj@r6ohzexpwmy7>
-References: <20250419-gpu-acd-v5-0-8dbab23569e0@quicinc.com>
- <20250419-gpu-acd-v5-3-8dbab23569e0@quicinc.com>
+	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="RnC7Hd5w"
+Received: from [172.16.12.129] (unknown [58.22.7.114])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 12d9c1966;
+	Wed, 23 Apr 2025 16:52:55 +0800 (GMT+08:00)
+Message-ID: <576e87c1-5c4c-bcc4-4d4f-6cf76bb1c591@rock-chips.com>
+Date: Wed, 23 Apr 2025 16:52:54 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250419-gpu-acd-v5-3-8dbab23569e0@quicinc.com>
-X-Proofpoint-ORIG-GUID: DexE4MXKnSRD6n6EhCDfAI1_SyXbzkoR
-X-Authority-Analysis: v=2.4 cv=ftfcZE4f c=1 sm=1 tr=0 ts=6808eb0d cx=c_pps a=hnmNkyzTK/kJ09Xio7VxxA==:117 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10 a=XR8D0OoHHMoA:10 a=COk6AnOGAAAA:8 a=EUspDBNiAAAA:8 a=pGLkceISAAAA:8 a=b3CbU_ItAAAA:8 a=3mVCJS2yw26y67mb1AsA:9
- a=CjuIK1q_8ugA:10 a=PEH46H7Ffwr30OY-TuGO:22 a=TjNXssC_j7lpFel5tvFf:22 a=Rv2g8BkzVjQTVhhssdqe:22
-X-Proofpoint-GUID: DexE4MXKnSRD6n6EhCDfAI1_SyXbzkoR
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNDIzMDA5NCBTYWx0ZWRfXw85iOxcX1ItA E6ZSp0HCscZaaZDOehKjeLS5+EJq0htMWah4/X0PmJSqIJBKJFfunfIXv18Bhw1hn/ZhQxd36FA 6FRCX4hz3gM42y6erAxdElKdKzpExigp6kg+ko/qhYkW2V++6NFEuOv4WwrR28cMZqngBITTTI6
- 3Npjq6k15BbfjuS4VKRp+s8GTsdGXU3UvGEmVPlxQZweiHO5EboHy9SaQjKcP9q451qoe180HZg GQkLRdKggGWpKVv+SmRxQCcbVzfwq7vJ07b4qBFpRA6tdGnhpBINrBLztIeXUtvjWRG+SG08Uxp mhVxBIq4qGc5DCKQwhFnn498oHLUVPJDH/kCVLHJ1xKXNiL3J5/sWbY3JE1RGdPGz5ha7pvAzoo
- D1dogQGpncTlEQf+fZFcGxX18in0jEiVUFMrzwQPcSBl+IV3/3K39NjxA2tN33yu+HiQZUPl
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.680,FMLib:17.12.80.40
- definitions=2025-04-23_08,2025-04-22_01,2025-02-21_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 mlxscore=0
- suspectscore=0 mlxlogscore=999 lowpriorityscore=0 phishscore=0
- malwarescore=0 impostorscore=0 adultscore=0 spamscore=0 clxscore=1015
- priorityscore=1501 classifier=spam authscore=0 authtc=n/a authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2504070000
- definitions=main-2504230094
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.1
+Cc: shawn.lin@rock-chips.com, Ulf Hansson <ulf.hansson@linaro.org>,
+ Sebastian Reichel <sebastian.reichel@collabora.com>,
+ Detlev Casanova <detlev.casanova@collabora.com>, kernel@collabora.com,
+ linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-mmc@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>,
+ Elaine Zhang <zhangqing@rock-chips.com>,
+ Adrian Hunter <adrian.hunter@intel.com>,
+ Finley Xiao <finley.xiao@rock-chips.com>
+Subject: Re: [PATCH v3] mmc: sdhci-of-dwcmshc: add PD workaround on RK3576
+To: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+References: <20250423-rk3576-emmc-fix-v3-1-0bf80e29967f@collabora.com>
+From: Shawn Lin <shawn.lin@rock-chips.com>
+In-Reply-To: <20250423-rk3576-emmc-fix-v3-1-0bf80e29967f@collabora.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZGUpMHVZPQkgeQ0NDTR1DTktWFRQJFh
+	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
+	hVSktLVUpCS0tZBg++
+X-HM-Tid: 0a9661d9a34909cckunm12d9c1966
+X-HM-MType: 1
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6PiI6Eio4MjJRHk5DH00sIk4f
+	FClPCkJVSlVKTE9OSEJDSExNQ0NDVTMWGhIXVQgTGgwVVRcSFTsJFBgQVhgTEgsIVRgUFkVZV1kS
+	C1lBWU5DVUlJVUxVSkpPWVdZCAFZQU1ITUs3Bg++
+DKIM-Signature:a=rsa-sha256;
+	b=RnC7Hd5weLU8Y+dO7lw+qNXo5d9KvBzLVb+aVUMNqoaN0NsUAhQhIlmqyF0FTczFmkeyCtd9GFGHnNQlp/ayHDXVppu6C5/Ng/9BdEDorhQnw4roGSuN5xPaACTrfGi875qqzCKPXFvG2QgjGRSBVA2m4kGQfBaWB0RWl0HrU8Y=; c=relaxed/relaxed; s=default; d=rock-chips.com; v=1;
+	bh=dGYSU8yspLY+yzvc+cdwfSs2SpB2H9RhDGDPSqaDb24=;
+	h=date:mime-version:subject:message-id:from;
 
-On Sat, Apr 19, 2025 at 08:21:32PM +0530, Akhil P Oommen wrote:
-> Fix the following for qmp_get() errors:
+在 2025/04/23 星期三 15:53, Nicolas Frattaroli 写道:
+> RK3576's power domains have a peculiar design where the PD_NVM power
+> domain, of which the sdhci controller is a part, seemingly does not have
+> idempotent runtime disable/enable. The end effect is that if PD_NVM gets
+> turned off by the generic power domain logic because all the devices
+> depending on it are suspended, then the next time the sdhci device is
+> unsuspended, it'll hang the SoC as soon as it tries accessing the CQHCI
+> registers.
 > 
-> 1. Correctly handle probe defer for A6x GPUs
-> 2. Ignore other errors because those are okay when GPU ACD is
-> not required. They are checked again during gpu acd probe.
+> RK3576's UFS support needed a new dev_pm_genpd_rpm_always_on function
+> added to the generic power domains API to handle what appears to be a
+> similar hardware design.
 > 
-> Signed-off-by: Akhil P Oommen <quic_akhilpo@quicinc.com>
-> Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-> Tested-by: Maya Matuszczyk <maccraft123mc@gmail.com>
-> Tested-by: Anthony Ruhier <aruhier@mailbox.org>
+> Use this new function to ask for the same treatment in the sdhci
+> controller by giving rk3576 its own platform data with its own postinit
+> function. The benefit of doing this instead of marking the power domains
+> always on in the power domain core is that we only do this if we know
+> the platform we're running on actually uses the sdhci controller. For
+> others, keeping PD_NVM always on would be a waste, as they won't run
+> into this specific issue. The only other IP in PD_NVM that could be
+> affected is FSPI0. If it gets a mainline driver, it will probably want
+> to do the same thing.
+
+Reviewed-by: Shawn Lin <shawn.lin@rock-chips.com>
+
+> 
+> Acked-by: Adrian Hunter <adrian.hunter@intel.com>
+> Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 > ---
->  drivers/gpu/drm/msm/adreno/a6xx_gmu.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-
-If this a fix for the existing commit, it should come first and have a
-proper Fixes: tag. If not, please squash it into the first patch.
-
+> Changes in v3:
+> - Reword comment and commit message to correct that this is not a
+>    silicon bug, but seemingly intentional design with regards to runtime
+>    power management.
+> - Link to v2: https://lore.kernel.org/r/20250412-rk3576-emmc-fix-v2-1-830e653ad4f0@collabora.com
 > 
-> diff --git a/drivers/gpu/drm/msm/adreno/a6xx_gmu.c b/drivers/gpu/drm/msm/adreno/a6xx_gmu.c
-> index 6bd6d7c67f98b38cb1d23f926b5e6ccbd7f2ec53..48b4ca8894ba38176481b62b7fd1406472369df1 100644
-> --- a/drivers/gpu/drm/msm/adreno/a6xx_gmu.c
-> +++ b/drivers/gpu/drm/msm/adreno/a6xx_gmu.c
-> @@ -2043,9 +2043,10 @@ int a6xx_gmu_init(struct a6xx_gpu *a6xx_gpu, struct device_node *node)
->  		goto detach_cxpd;
->  	}
->  
-> +	/* Other errors are handled during GPU ACD probe */
->  	gmu->qmp = qmp_get(gmu->dev);
-> -	if (IS_ERR(gmu->qmp) && adreno_is_a7xx(adreno_gpu)) {
-> -		ret = PTR_ERR(gmu->qmp);
-> +	if (PTR_ERR_OR_ZERO(gmu->qmp) == -EPROBE_DEFER) {
-> +		ret = -EPROBE_DEFER;
->  		goto detach_gxpd;
->  	}
->  
+> Changes in v2:
+> - Rewrite patch to use dev_pm_genpd_rpm_always_on in sdhci driver
+>    instead, after Ulf Hansson made me aware of its existence
+> - Link to v1: https://lore.kernel.org/r/20250408-rk3576-emmc-fix-v1-1-3009828b1b31@collabora.com
+> ---
+>   drivers/mmc/host/sdhci-of-dwcmshc.c | 40 +++++++++++++++++++++++++++++++++++++
+>   1 file changed, 40 insertions(+)
 > 
-> -- 
-> 2.48.1
+> diff --git a/drivers/mmc/host/sdhci-of-dwcmshc.c b/drivers/mmc/host/sdhci-of-dwcmshc.c
+> index 09b9ab15e4995f0bddf57dd309c010c849be40d9..a20d03fdd6a93ecc5229c71f825bade5ac730370 100644
+> --- a/drivers/mmc/host/sdhci-of-dwcmshc.c
+> +++ b/drivers/mmc/host/sdhci-of-dwcmshc.c
+> @@ -17,6 +17,7 @@
+>   #include <linux/module.h>
+>   #include <linux/of.h>
+>   #include <linux/platform_device.h>
+> +#include <linux/pm_domain.h>
+>   #include <linux/pm_runtime.h>
+>   #include <linux/reset.h>
+>   #include <linux/sizes.h>
+> @@ -745,6 +746,29 @@ static void dwcmshc_rk35xx_postinit(struct sdhci_host *host, struct dwcmshc_priv
+>   	}
+>   }
+>   
+> +static void dwcmshc_rk3576_postinit(struct sdhci_host *host, struct dwcmshc_priv *dwc_priv)
+> +{
+> +	struct device *dev = mmc_dev(host->mmc);
+> +	int ret;
+> +
+> +	/*
+> +	 * This works around the design of the RK3576's power domains, which
+> +	 * makes the PD_NVM power domain, which the sdhci controller on the
+> +	 * RK3576 is in, never come back the same way once it's run-time
+> +	 * suspended once. This can happen during early kernel boot if no driver
+> +	 * is using either PD_NVM or its child power domain PD_SDGMAC for a
+> +	 * short moment, leading to it being turned off to save power. By
+> +	 * keeping it on, sdhci suspending won't lead to PD_NVM becoming a
+> +	 * candidate for getting turned off.
+> +	 */
+> +	ret = dev_pm_genpd_rpm_always_on(dev, true);
+> +	if (ret && ret != -EOPNOTSUPP)
+> +		dev_warn(dev, "failed to set PD rpm always on, SoC may hang later: %pe\n",
+> +			 ERR_PTR(ret));
+> +
+> +	dwcmshc_rk35xx_postinit(host, dwc_priv);
+> +}
+> +
+>   static int th1520_execute_tuning(struct sdhci_host *host, u32 opcode)
+>   {
+>   	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
+> @@ -1176,6 +1200,18 @@ static const struct dwcmshc_pltfm_data sdhci_dwcmshc_rk35xx_pdata = {
+>   	.postinit = dwcmshc_rk35xx_postinit,
+>   };
+>   
+> +static const struct dwcmshc_pltfm_data sdhci_dwcmshc_rk3576_pdata = {
+> +	.pdata = {
+> +		.ops = &sdhci_dwcmshc_rk35xx_ops,
+> +		.quirks = SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN |
+> +			  SDHCI_QUIRK_BROKEN_TIMEOUT_VAL,
+> +		.quirks2 = SDHCI_QUIRK2_PRESET_VALUE_BROKEN |
+> +			   SDHCI_QUIRK2_CLOCK_DIV_ZERO_BROKEN,
+> +	},
+> +	.init = dwcmshc_rk35xx_init,
+> +	.postinit = dwcmshc_rk3576_postinit,
+> +};
+> +
+>   static const struct dwcmshc_pltfm_data sdhci_dwcmshc_th1520_pdata = {
+>   	.pdata = {
+>   		.ops = &sdhci_dwcmshc_th1520_ops,
+> @@ -1274,6 +1310,10 @@ static const struct of_device_id sdhci_dwcmshc_dt_ids[] = {
+>   		.compatible = "rockchip,rk3588-dwcmshc",
+>   		.data = &sdhci_dwcmshc_rk35xx_pdata,
+>   	},
+> +	{
+> +		.compatible = "rockchip,rk3576-dwcmshc",
+> +		.data = &sdhci_dwcmshc_rk3576_pdata,
+> +	},
+>   	{
+>   		.compatible = "rockchip,rk3568-dwcmshc",
+>   		.data = &sdhci_dwcmshc_rk35xx_pdata,
 > 
-
--- 
-With best wishes
-Dmitry
+> ---
+> base-commit: f34da179a4517854b2ffbe4bce8c3405bd9be04e
+> change-id: 20250317-rk3576-emmc-fix-7dc81a627422
+> 
+> Best regards,
