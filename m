@@ -1,47 +1,48 @@
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89D1A18DB02;
-	Fri, 25 Apr 2025 19:53:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D24F219A94;
+	Fri, 25 Apr 2025 19:53:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745610787; cv=none; b=icP3tXJQk3Rrb81GBGgdLhQ5IrtSzZbm5KRtLD3NRP5l8Z4U/k6qh6E6DyLoH1K4ekrOEGRGEcTUkkWQs7MbpGjmJeqOnibBt2Jq6D5bOECAmPL+8awdiBEZc6Z+LGgP0lmAZvaztFqUIa2guugH7crs906fflzZUIXHg6+/Xz8=
+	t=1745610788; cv=none; b=sh4+hd4ZcbIKQnQw2z4IcGU0WHsbFi5oVnTr4CEzTtLYDGLYZfj4RZlJZz0PORuo3EMcqhDML4n4ySz4x3H3g5osTXohM8L90j93mH0Tld+55lcaZQ97YfHswHYmgNRfFbSqdaC1bkd/0BfKtT6KZw/pdYV1XNwKFESOHLZzmH0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745610787; c=relaxed/simple;
-	bh=+U7mfNionqaziIRwSsiRuUYCyFeS/Go5S59SyviznHE=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version; b=tEOHX41/c8FXLX56ow4jg0vHhFTWvwpIZ+4yUZgMP/OfqbF8tsXlICt5DyuzN08kh4pt38Xy10BELfIBLnwDHWBTPJVQKgdVvZIXGj8mdHDaF5TI+Vna650QvRGeKdEH6lrfsr+MGxpqMVIWSvr3CrT81gzQwVrxPXKuqBMw1x4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=H8PKuBTI; arc=none smtp.client-ip=198.175.65.9
+	s=arc-20240116; t=1745610788; c=relaxed/simple;
+	bh=tDkrPFf0SYYldAGaWQZecxLtvI8HrAT9VbYubdDvHSA=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=JdReO/MXfIkmijt+gpqH5ur8t4+3e/xTQne9sck0Knc5muxdLfMNQkp4wd0a4vSXNeutnrvN6XM/7qG3x4UiSqo2G0IbRMyRjZRVo+czctJlU9k8QA624qRfM9oqOCADiF2ZrQE4wUbmtMWAhX9dvj72cfIlLOthevdQ/qEhNiI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=QDLPbjuC; arc=none smtp.client-ip=198.175.65.9
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="H8PKuBTI"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="QDLPbjuC"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1745610787; x=1777146787;
-  h=from:to:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=+U7mfNionqaziIRwSsiRuUYCyFeS/Go5S59SyviznHE=;
-  b=H8PKuBTIlNrj6GbI6q4eIYlSt5iW3BlEumaAaYjPGZPpy6XNYSAJdIj0
-   a7BgeIkV2o2BmKSgoMGTcQaKOpGQ4wFJt6LIFkEc2mn50qb5BfnDR5rx1
-   UpMkIZpDuj7ICyR/hxTzV7e/zQeT4Odiq1rvEkRs+6WLjk6vQ3ujOGx5A
-   UmRhhRd3wSVRudOYvPaI+68szf/PGsQ8BnVxsFlEimUSLhS4uoqJ0kBpI
-   cvje1+yvC2nevg1lhPaVdLa11uToCemcRsDsCLqwm0/+cdE7TkLDzD0Ip
-   DIeI76y5+dDqpElFqqWqT/utZ8dz751CGyFlzaoAlQ7+gjBo/OfCSaf9r
+  t=1745610788; x=1777146788;
+  h=from:to:subject:date:message-id:in-reply-to:references:
+   mime-version:content-transfer-encoding;
+  bh=tDkrPFf0SYYldAGaWQZecxLtvI8HrAT9VbYubdDvHSA=;
+  b=QDLPbjuCNNlHtsyy1rnK/RfWOT3lo9GZs3RIxyseyk8yx2oCIc+XezXo
+   rvV550s7M+hHELAHZr6sa0Wm7tFC6yo63wkggioAJy/wbBfTexMqwgBlz
+   d4R3dmgCZNPv2o/jNHVEj16V0avSgQLbwuLqcE/f6FJsE/mG3sR/OVk2f
+   3mCdaSRZRePGKMSw8rwnOkXJ6GxJxR6lpEw5qQVBy0xVBMwnZ8OjvyXeV
+   eaxhVIabnmOtaVvrkIVlyoJYGyujIfe8CrnSGegW2fjMwcAGAtDrV8DXR
+   uf3hHnxTutn5rS5qRkwSAWmQLaNXONgsrXsm1M7TaHfguNoEymA8myHWD
    w==;
-X-CSE-ConnectionGUID: 6U19qg7iSHGGIFpPja7zwg==
-X-CSE-MsgGUID: t5AYOfWyRRGafj7pyf0nhg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11414"; a="69776215"
+X-CSE-ConnectionGUID: mpyoEMq6TrGvrwhozWBbPg==
+X-CSE-MsgGUID: bCjPqZvuSEqOSwOg81re1A==
+X-IronPort-AV: E=McAfee;i="6700,10204,11414"; a="69776228"
 X-IronPort-AV: E=Sophos;i="6.15,238,1739865600"; 
-   d="scan'208";a="69776215"
+   d="scan'208";a="69776228"
 Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Apr 2025 12:52:40 -0700
-X-CSE-ConnectionGUID: FXmDh9JOTQKnVVOZeWoLEQ==
-X-CSE-MsgGUID: lTDeGlyTTo2kI6/o2/I2Zw==
+  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Apr 2025 12:52:42 -0700
+X-CSE-ConnectionGUID: 4jWizRM0SkKC2SQTzlxKfg==
+X-CSE-MsgGUID: B+ADvBbgT8m4HAOQ0yoMIg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.15,238,1739865600"; 
-   d="scan'208";a="132897638"
+   d="scan'208";a="132897656"
 Received: from mgoodin-mobl3.amr.corp.intel.com (HELO xpardee-desk.intel.com) ([10.124.222.107])
-  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Apr 2025 12:52:39 -0700
+  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Apr 2025 12:52:41 -0700
 From: Xi Pardee <xi.pardee@linux.intel.com>
 To: xi.pardee@linux.intel.com,
 	irenic.rajneesh@gmail.com,
@@ -51,10 +52,12 @@ To: xi.pardee@linux.intel.com,
 	platform-driver-x86@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org
-Subject: [PATCH v5 0/5] Create Intel PMC SSRAM Telemetry driver
-Date: Fri, 25 Apr 2025 12:52:28 -0700
-Message-ID: <20250425195237.493129-1-xi.pardee@linux.intel.com>
+Subject: [PATCH v5 4/5] platform/x86:intel/pmc: Move error handling to init function
+Date: Fri, 25 Apr 2025 12:52:32 -0700
+Message-ID: <20250425195237.493129-5-xi.pardee@linux.intel.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250425195237.493129-1-xi.pardee@linux.intel.com>
+References: <20250425195237.493129-1-xi.pardee@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -63,72 +66,58 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This patch series removes the SSRAM support from Intel PMC Core driver
-and creates a separate PCI driver for SSRAM device. The new Intel PMC
-SSRAM driver provides the following functionalities:
+Move error handling code to generic_core_init() function. The previous
+implementation is that init function called for "full cleanup" function
+when error occurs which is error prone. The init function should handle
+the error path itself to improve code maintainability.
 
-1. Search and store the PMC information in a structure, including PWRMBASE
-address and devid for each available PMC. Then Intel PMC Core driver
-achieves the PMC information using the API provided by the new driver.
-2. Search and register Intel Platform Monitoring Techology telemetry
-regions so they would by available for read through sysfs and Intel PMT
-API. Intel PMC Core driver can achieve Low Power Mode requirement
-information from a telemetry region registered by the new driver.
+Signed-off-by: Xi Pardee <xi.pardee@linux.intel.com>
+---
+ drivers/platform/x86/intel/pmc/core.c | 22 +++++++++++++++++++---
+ 1 file changed, 19 insertions(+), 3 deletions(-)
 
-The above functionalities was previously handled by Intel PMC Core
-driver. Intel PMC Core driver returns -EPROBE_DEFER when trying to read
-data from a telem region that is not available yet. This setup may
-result in an infinite loop of .probe() calls as Intel PMC Core driver
-creates child devices. Creating a separate PCI driver avoids the infinite
-loop possibility.
-
-v5->v4:
-- Remove unneeded changes in pmc_core_ssram_get_lpm_reqs()
-- Replace mutex_init() with devm_mutex_init()
+diff --git a/drivers/platform/x86/intel/pmc/core.c b/drivers/platform/x86/intel/pmc/core.c
+index db3fccca06fb..93a335b0ea63 100644
+--- a/drivers/platform/x86/intel/pmc/core.c
++++ b/drivers/platform/x86/intel/pmc/core.c
+@@ -1583,10 +1583,26 @@ int generic_core_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_info)
+ 	if (pmc_dev_info->dmu_guid)
+ 		pmc_core_punit_pmt_init(pmcdev, pmc_dev_info->dmu_guid);
  
-V4->v3:
-- Remove the first six patches that are accepted.
-- Add a patch to change the return type of intel_vsec_registeri() from
-  void to int.
-- Change the return type of pmc_ssram_telemetry_get_pmc() so the probe
-  function of Intel PMC SSRAM Telemetry driver will fail if
-  intel_vsec_register() fails. The previous implementation hides the
-  failure.
-- Use __free(pci_dev_put) in core.c.
-- Move pmc_ssram_telemetry_get_pmc_info() function comment to c file
-  from h file.
-- Add a patch to improve pmc_core_get_lpm_req() suggested by comment
-  from last version.
+-	if (ssram)
+-		return pmc_core_ssram_get_lpm_reqs(pmcdev, pmc_dev_info->pci_func);
++	if (ssram) {
++		ret = pmc_core_ssram_get_lpm_reqs(pmcdev, pmc_dev_info->pci_func);
++		if (ret)
++			goto unmap_regbase;
++	}
  
-v3->v2:
-- Add memory barriers to the new driver to ensure write/read order of
-  device_probed variable.
-- Minor grammar changes: add needed white space and end of life new line.
-- Add patch to move error handling to init function.
-- Remove patch to enable SSRAM support of LNL platforms. This patch will be
-  included in a separate series.
-
-v2->v1:
-- Rearrange and restructure patches completely based on feedback from v1
+ 	return 0;
++
++unmap_regbase:
++	for (unsigned int i = 0; i < ARRAY_SIZE(pmcdev->pmcs); ++i) {
++		struct pmc *pmc = pmcdev->pmcs[i];
++
++		if (pmc && pmc->regbase)
++			iounmap(pmc->regbase);
++	}
++
++	if (pmcdev->punit_ep)
++		pmt_telem_unregister_endpoint(pmcdev->punit_ep);
++
++	return ret;
+ }
  
-Xi Pardee (5):
-  platform/x86:intel/vsec: Change return type of intel_vsec_register
-  platform/x86:intel/pmc: Create Intel PMC SSRAM Telemetry driver
-  platform/x86:intel/pmc: Use devm for mutex_init
-  platform/x86:intel/pmc: Move error handling to init function
-  platform/x86:intel/pmc: Improve pmc_core_get_lpm_req()
-
- drivers/platform/x86/intel/pmc/Kconfig        |   4 +
- drivers/platform/x86/intel/pmc/Makefile       |   8 +-
- drivers/platform/x86/intel/pmc/core.c         | 189 +++++++++++-------
- drivers/platform/x86/intel/pmc/core.h         |   7 -
- .../platform/x86/intel/pmc/ssram_telemetry.c  | 147 +++++++++-----
- .../platform/x86/intel/pmc/ssram_telemetry.h  |  24 +++
- drivers/platform/x86/intel/vsec.c             |   9 +-
- include/linux/intel_vsec.h                    |   5 +-
- 8 files changed, 260 insertions(+), 133 deletions(-)
- create mode 100644 drivers/platform/x86/intel/pmc/ssram_telemetry.h
-
+ static const struct x86_cpu_id intel_pmc_core_ids[] = {
+@@ -1735,7 +1751,7 @@ static int pmc_core_probe(struct platform_device *pdev)
+ 		ret = generic_core_init(pmcdev, pmc_dev_info);
+ 
+ 	if (ret) {
+-		pmc_core_clean_structure(pdev);
++		platform_set_drvdata(pdev, NULL);
+ 		return ret;
+ 	}
+ 
 -- 
 2.43.0
 
