@@ -1,29 +1,30 @@
 Received: from linux1587.grserver.gr (linux1587.grserver.gr [185.138.42.100])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4D7623C39A;
-	Fri, 25 Apr 2025 11:18:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF55E2288D5;
+	Fri, 25 Apr 2025 11:18:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.138.42.100
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745579913; cv=none; b=W7+qedhzjfjMrTa2L16VcQB2oVXyEZs/TWHC9rD/jdEOD44hUXPWa0+CN8pg7GWhnyzeHOyuOYCvrlc0Jr1q2NYRObjy9SljbihOkl/1ZXy0PFx2kYWkIW45WYPDAf06jQFU/M4UNgsElaeF+nD2nNUOirnedCF6UMqoKcJvWmw=
+	t=1745579913; cv=none; b=FXrqSDYMYw+2UntYwJH6ObhS9hCxZMkRGuMx5eBh7EYiNbTx6SP4m9rzVyrXd5iZq4/q9uFboetvSNmaUu4+bb0nxEkH2Xb8Rqpk32iS4eYvTzmB5mCdl03o0MXA6N5FmLvfuBziApcQk761BonSLdM58/t+niDtD+VPTsopqLU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1745579913; c=relaxed/simple;
-	bh=woMhmSbd2RGStLtARhpFlSXw0HogGCcgxqjp/f0CaNs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=mP+uNW4j3jqEb7MAZiIc/u3odBcS7TIAJMQNx/FpNy4VJwEFDxBIrgLP3AoFe3vzyWbE0ZG9wy56XN0Sbg6AN8VSM4Gi8/+isAo9uFSMD0zap3vJot3s/XWQwfJ2Yty3c2UrGsHfwicCihckb8MTrseOF5Ay+wDp4dWk26ALwsk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=tmZsm/DW; arc=none smtp.client-ip=185.138.42.100
+	bh=DQuiCF1SN/NjnZzhOowdWV/B0vWkundVtE6TjRFYqqk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=DoQmKut+FEgNkt1ApBmx5yOtK2sj3hcMXWtcl+D4JdPHa6dxUM1pCNnLqu5czoqcdsUop9Mnc1kUH39+YEWEFneKrY85rAHMyVLTNBIN52n97B5ylI+e9J6rmjjxxFqL6jYeRXkuYU/JuvJ2rHHlth+u9loQ+DChvNccnK9Go6s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev; spf=pass smtp.mailfrom=antheas.dev; dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b=XE7GT5qE; arc=none smtp.client-ip=185.138.42.100
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=antheas.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=antheas.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="tmZsm/DW"
+	dkim=pass (1024-bit key) header.d=antheas.dev header.i=@antheas.dev header.b="XE7GT5qE"
 Received: from localhost.localdomain (unknown [IPv6:2a02:2149:8a3b:5a00:3490:6581:3910:8337])
-	by linux1587.grserver.gr (Postfix) with ESMTPSA id 56EAB2E028F6;
-	Fri, 25 Apr 2025 14:18:24 +0300 (EEST)
+	by linux1587.grserver.gr (Postfix) with ESMTPSA id C6C482E08DB1;
+	Fri, 25 Apr 2025 14:18:27 +0300 (EEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=antheas.dev;
-	s=default; t=1745579905;
-	bh=xkqb9DdTPLOsKuZ2Ytpn497eBzpN7zXb863QHCFPmrw=; h=From:To:Subject;
-	b=tmZsm/DWRr3VhbEE1SJlbEbDdBrZXBaiV7NoU+5g6D1rqkwPdFC6rcS0s8MV8wXob
-	 jSzP1G2QyaAjMnOupyYdu8EdDXQREJr5id4oEGpB7lcZYwEfE5YOU8/8gOrCBN9G9z
-	 L3kUJDU02k9hAqDrVfUq40KBwbrqzY0upIssrh90=
+	s=default; t=1745579908;
+	bh=/7DXyuv2rJHvdhAG9cuHuiAEipooyujiZO2C2+5uEdU=; h=From:To:Subject;
+	b=XE7GT5qEFNmSB/X3c5JAUI6QBtX29SPwRCvbIBiApjcXyLCqXbYaRv+A/v86XS+7O
+	 o4KxX6BimoR7/fR6vTteBn8guufp3BsRwbkmsmab+4XGEB/hp/3vUkS8ZguzVLcVZZ
+	 Mro1HUgBm3jtiozlOJcS2zgSbHPTQm/ax2ozeHhg=
 Authentication-Results: linux1587.grserver.gr;
 	spf=pass (sender IP is 2a02:2149:8a3b:5a00:3490:6581:3910:8337) smtp.mailfrom=lkml@antheas.dev smtp.helo=localhost.localdomain
 Received-SPF: pass (linux1587.grserver.gr: connection is authenticated)
@@ -48,11 +49,12 @@ Cc: linux-hwmon@vger.kernel.org,
 	hdegoede@redhat.com,
 	mario.limonciello@amd.com,
 	Antheas Kapenekakis <lkml@antheas.dev>
-Subject: [PATCH v10 00/16] hwmon: (oxpsensors) Add devices, features,
- fix ABI and move to platform/x86
-Date: Fri, 25 Apr 2025 13:18:05 +0200
-Message-ID: <20250425111821.88746-1-lkml@antheas.dev>
+Subject: [PATCH v10 02/16] hwmon: (oxp-sensors) Add all OneXFly variants
+Date: Fri, 25 Apr 2025 13:18:07 +0200
+Message-ID: <20250425111821.88746-3-lkml@antheas.dev>
 X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20250425111821.88746-1-lkml@antheas.dev>
+References: <20250425111821.88746-1-lkml@antheas.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -62,150 +64,84 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-PPP-Message-ID: 
- <174557990523.22129.15756631395239033959@linux1587.grserver.gr>
+ <174557990864.22256.14651202597221804722@linux1587.grserver.gr>
 X-PPP-Vhost: antheas.dev
 X-Virus-Scanned: clamav-milter 0.103.11 at linux1587.grserver.gr
 X-Virus-Status: Clean
 
-This four part series updates the oxpsensors module to bring it in line
-with its Windows OneXPlayer counterpart. First, it adds support for all
-2024, 2025 OneXPlayer handhelds and their special variants. Then, it moves
-the module to platform/x86 to allow for including more EC features.
+Currently, the driver only has the F1 OneXFly variant, which was based
+on the 7000 AMD platform. Add its special editions: F1 EVA-01, F1 OLED.
+F1 OLED might have been a dev unit, but it is supported by OneXConsole
+with the same features so add it. Then add the F1L variant which is
+based on the 8000 AMD platform and the F1Pro and its special edition
+EVA-02.
 
-Then, it adds the new charge limiting and bypass features that were first
-introduced in the X1 and retrofit to older OneXFly variants and for
-controlling the turbo led found in the X1 models. For Bypass, it adds a new
-charge_behaviour variant called inhibit-charge-s0.
+One might ask why not just fuzzy match. Well, EVA-02 is a variant of
+F1Pro which is a Strix Point handheld, but does not have F1Pro in its
+name. This makes it risky to fuzzy match, as special variants in the
+future from different platforms might not have the same feature set
+or registers.
 
-Finally, it performs a minor refactor by moving around switch statements
-into their own functions, in order to allow for fixing the pwm1_enable ABI
-in the final patch. Currently, pwm1_enable sets the fan to auto with the
-value 0 and allows manual control with the value 1. This patch makes it
-so 0 sets the fan to full speed, 1 sets the fan to manual control, and
-2 sets the fan to auto. This requires both setting enable and the fan
-speed when the enable sysfs is written to as 0, hence the refactor.
+By happenstance, all current devices use the same registers. For the
+charge limitting feature on this series, only F1Pro/X1 (AMD) were
+released with it, but OneXPlayer is providing bios updates for F1, F1L,
+X1 Mini units that use the same register, so treat all of them the same.
 
-As this is a minor ABI break and there is userspace software relying
-on this previous behavior, the last patch also changes the /name of the
-hwmon endpoint to "oxp_ec" from "oxpec" (mirroring WMI module conventions)
-such that userspace software that relied on the previous behavior can be
-retrofit to the new kernel while enabling correct functionality on old
-and new kernels. Failing that, software that is not updated will just
-stop controlling the fans, ensuring no malignant behavior.
-
+Acked-by: Guenter Roeck <linux@roeck-us.net>
+Reviewed-by: Thomas Weißschuh <linux@weissschuh.net>
+Reviewed-by: Derek J. Clark <derekjohn.clark@gmail.com>
+Reviewed-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+Signed-off-by: Antheas Kapenekakis <lkml@antheas.dev>
 ---
-V9: https://lore.kernel.org/all/20250417175310.3552671-1-lkml@antheas.dev/
-V8: https://lore.kernel.org/all/20250322103606.680401-1-lkml@antheas.dev/
-V7: https://lore.kernel.org/all/20250319181044.392235-1-lkml@antheas.dev/
-V6: NA
-V5: https://lore.kernel.org/all/20250317155349.1236188-1-lkml@antheas.dev/
-V4: https://lore.kernel.org/all/20250311165406.331046-1-lkml@antheas.dev/
-V3: https://lore.kernel.org/all/20250309112114.1177361-1-lkml@antheas.dev/
+ drivers/hwmon/oxp-sensors.c | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
 
-Changes since V9:
-    - Reflow commit texts
-    - Use tabs for all defines (with extra patch)
-    - Reflow some function headers
-
-Changes since V8:
-    - Fix nits by Ilpo
-    - No functionality changes (battery check was a NOOP)
-
-Changes since V7:
-    - Add rename to ABI switch patch, for rebase friendliness (this is
-      moreso for my sanity as I will be the one rebasing)
-    - Fix 2 other nits by Thomas
-
-Changes since V6:
-    - Fix compile error due to extra const. My bad on that one, did a
-      double check on a device too.
-
-Changes since V5:
-    - Separate doc entries with Fixes as by Mario
-    - Add sysfs file name to subject as per Thomas
-    - Make tt_led and tt_turbo const as per Thomas
-    - Align a couple of structs as per Thomas
-    - Remove excess battery check as per Thomas
-    - For Thomas: devices without a BIOS update battery control is a NOOP
-      OXP is a boutique manufacturer for now, so gathering information
-      about old devices to add BIOS checks is not practical unfortunately
-
-Changes since V4:
-    - Fix nits by Hans
-    - change inhibit-charge-s0 to inhibit-charge-awake
-    - use devm_battery_hook_register and power_supply_unregister_extension
-      (based on cros driver)
-    - move charge behavior patches to the end to make the rest of the series
-      easier to merge
-    - CC platform-x86 and power maintainers
-
-Changes since V3:
-    - Fix nits by Derek
-    - Remove the hwmon documentation as it is not required for platform
-      drivers (suggested by Guenter)
-    - Add ACPI_BATTERY and HWMON depends to Kconfig
-      (reported by kernel robot)
-    - Homogenize driver into following reverse xmas convention
-
-Changes since V2:
-    - Add ack by Guenter, move platform move patch to be third (not first
-      to allow for device support backport to lts kernels)
-    - Rework patch text, especially in the refactor patches as per Derek
-    - Change bypass to use charge_behaviour instead of charge_type, as that
-      ABI supports capability detection and is more appropriate
-    - Move battery attach to probe instead of init
-    - Fix bug where reading tt_led would instead use the turbo register
-
-Changes since V1:
-    - Add X1 Pro, F1 Pro variants
-    - Fix minor typo in initial patches
-    - Convert oxp-sensors into a platform driver, as it is no longer
-      considered a hwmon driver.
-    - Add sysfs documentation and myself to the MAINTAINERS file
-    - Update documentation to state that this is the OneXPlayer/AOKZOE
-      platform driver, and that support for Ayaneo/OPI is provided until
-      they gain their own platform driver.
-
-Antheas Kapenekakis (16):
-  hwmon: (oxp-sensors) Distinguish the X1 variants
-  hwmon: (oxp-sensors) Add all OneXFly variants
-  platform/x86: oxpec: Move hwmon/oxp-sensors to platform/x86
-  ABI: testing: sysfs-class-oxp: add missing documentation
-  ABI: testing: sysfs-class-oxp: add tt_led attribute documentation
-  platform/x86: oxpec: Rename ec group to tt_toggle
-  platform/x86: oxpec: Add turbo led support to X1 devices
-  platform/x86: oxpec: Move pwm_enable read to its own function
-  platform/x86: oxpec: Move pwm value read/write to separate functions
-  platform/x86: oxpec: Move fan speed read to separate function
-  platform/x86: oxpec: Adhere to sysfs-class-hwmon and enable pwm on 2
-  platform/x86: oxpec: Follow reverse xmas convention for tt_toggle
-  power: supply: add inhibit-charge-awake to charge_behaviour
-  platform/x86: oxpec: Add charge threshold and behaviour to OneXPlayer
-  platform/x86: oxpec: Rename rval to ret in tt_toggle
-  platform/x86: oxpec: Convert defines to using tabs
-
- Documentation/ABI/testing/sysfs-class-power  |   11 +-
- Documentation/ABI/testing/sysfs-platform-oxp |   25 +
- Documentation/hwmon/index.rst                |    2 +-
- Documentation/hwmon/oxp-sensors.rst          |   89 --
- MAINTAINERS                                  |    7 +-
- drivers/hwmon/Kconfig                        |   11 -
- drivers/hwmon/Makefile                       |    1 -
- drivers/hwmon/oxp-sensors.c                  |  716 ------------
- drivers/platform/x86/Kconfig                 |   13 +
- drivers/platform/x86/Makefile                |    3 +
- drivers/platform/x86/oxpec.c                 | 1055 ++++++++++++++++++
- drivers/power/supply/power_supply_sysfs.c    |    7 +-
- drivers/power/supply/test_power.c            |    1 +
- include/linux/power_supply.h                 |    1 +
- 14 files changed, 1113 insertions(+), 829 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-platform-oxp
- delete mode 100644 Documentation/hwmon/oxp-sensors.rst
- delete mode 100644 drivers/hwmon/oxp-sensors.c
- create mode 100644 drivers/platform/x86/oxpec.c
-
-
-base-commit: 9c32cda43eb78f78c73aee4aa344b777714e259b
+diff --git a/drivers/hwmon/oxp-sensors.c b/drivers/hwmon/oxp-sensors.c
+index 5a4230ad3757e..f7a64fbc8f33e 100644
+--- a/drivers/hwmon/oxp-sensors.c
++++ b/drivers/hwmon/oxp-sensors.c
+@@ -188,6 +188,41 @@ static const struct dmi_system_id dmi_table[] = {
+ 		},
+ 		.driver_data = (void *)oxp_fly,
+ 	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER F1 EVA-01"),
++		},
++		.driver_data = (void *)oxp_fly,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER F1 OLED"),
++		},
++		.driver_data = (void *)oxp_fly,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER F1L"),
++		},
++		.driver_data = (void *)oxp_fly,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER F1Pro"),
++		},
++		.driver_data = (void *)oxp_fly,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER F1 EVA-02"),
++		},
++		.driver_data = (void *)oxp_fly,
++	},
+ 	{
+ 		.matches = {
+ 			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
 -- 
 2.49.0
 
