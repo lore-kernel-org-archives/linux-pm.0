@@ -1,134 +1,90 @@
-Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from sender3-pp-f112.zoho.com (sender3-pp-f112.zoho.com [136.143.184.112])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82F241D5CC4
-	for <linux-pm@vger.kernel.org>; Fri, 25 Apr 2025 19:16:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.175
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745608612; cv=none; b=UhwPOYqcw6iMMtcQD3nWkIgGgZl1NuCBhZTG51HwR3icm7n3GwdkIMBTLljLMsVp0szHks3DmWOWg5RLGvN1U3xGOWMpbjYTOIYtEdfRG2QcPt9rl/8t0KB1sXxVktSkfjuGOwa5XWZgpUE2an+Oztt9EYmeZHh/tz/CDoKwSS4=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745608612; c=relaxed/simple;
-	bh=aaF5KoonwPXnBEeEYX5de2+bpxSx1NBVU3iFsDtiboQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AB32nm7gAiERzO4ss3v5mxWFhR9BLN1DxIDA1fQ87Y4Ft6ZfkShmRJ+/gtwFp6n4NKV0c7Q3McUi/+jHwVnbCGMVc5jMYqsJQZxQ25JFAYYpQosk+O6usMJO6n2orQBuUbAZKRetuw+LEMgcqR+Vf4c70Xdf6ygCZfkdC7QJ068=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pdp7.com; spf=none smtp.mailfrom=pdp7.com; dkim=pass (2048-bit key) header.d=pdp7-com.20230601.gappssmtp.com header.i=@pdp7-com.20230601.gappssmtp.com header.b=AX6+kZK6; arc=none smtp.client-ip=209.85.214.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pdp7.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=pdp7.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2A5C21C17D;
+	Fri, 25 Apr 2025 19:35:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.184.112
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1745609738; cv=pass; b=OYM3y4atDub5AJAuU6wFrYk5Izmdzzxx+dznb/O7ydeSMmAMSsakvELaQycI7d+JKPbqLOXQG/zEUT+ZdL5eEACiB3Ub0ihaU26vdzAYGD6gIQyJcuT0vvjjpYCFtIrxPRgA/5Z7F0JrlYM2Djryhqvmru9coH23SoOVloF+R8U=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1745609738; c=relaxed/simple;
+	bh=XQ0dSp3Flpla5xIAgUPRx6pHdPhqCsf7vpoehMz7BJQ=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=Nyv6r7pIGED77afe6JjQkZYnkgCGcL0SsNhtdY1CQ8uEcQyWywrVKE5AAiLdVBTP5Pa+hb/2QodD9VDF7uNjhs7JPMMZNYgCE9L2SNm8F9hpgwESmslUCddT3P5gIq93MPXna/rTMiWQea8YCO8qTNbA0MHvzyZjnFQZJJvFx+I=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=kdn0Si4L; arc=pass smtp.client-ip=136.143.184.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=pdp7-com.20230601.gappssmtp.com header.i=@pdp7-com.20230601.gappssmtp.com header.b="AX6+kZK6"
-Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-22435603572so32363065ad.1
-        for <linux-pm@vger.kernel.org>; Fri, 25 Apr 2025 12:16:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=pdp7-com.20230601.gappssmtp.com; s=20230601; t=1745608609; x=1746213409; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=XNI+wkZfospHmLOr+2+jXX5pJdTmqRckjghLYfMtBgk=;
-        b=AX6+kZK6ovgYV1OXg4LN+fg8H6PBJfhIUQTz8JijOzGPflZA1GuWotgMtDF+ppDsPt
-         hrOrCgpu+YWTVnnXYJYXnnNmxciITMZGPTnJ/XK69nSJh2VyAwMCMqliDrmdszKnkaLr
-         QHGcYS0EkDoWsvobRcvCSwmIKh1L0RuLTOph3rOOvmUZaT4KFWbZEidBcdA20HH+TLES
-         krPH0yzYlT2TPvQqQgNSI4bJS417IH7jp5A0AZZv/vfx9nb5TX9mo3lteFbLr9UsAG35
-         RmqEnWcZT2IgWiZsIDhB07k0RYQALhdTY0jtw8UYOK0zRKIKcfhSeRKVxecLcWRCg/8x
-         jO8Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1745608609; x=1746213409;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=XNI+wkZfospHmLOr+2+jXX5pJdTmqRckjghLYfMtBgk=;
-        b=pp1iOCPkymEAj9XvPSht3HFxNyWwiLPQ26dtLdyD/2fyi0cvy5Q1aWdNXsF/vAiZUB
-         X/6KiKHm/mQaSxeR/JhGV34fgC2ta0x8qnAEyriWOW4AuWaEjuY2NDKsjFePzykTQl31
-         fnH4oSssvjcx4rrWPBnjhQGFwf4Y+5hVLlN/hWmlikqJb32j0TVq4Po8CZldhq58VrPl
-         hDrudRRYR2LyVZoqMqIGFdiF1WKMiQNWInOijaU0D/ZvDoYk4nWxTAT3oVg3BpnM486t
-         ZIOsUfIfKaNTkT4OCg4xjso4fexgxWd/VFi/FQ/5CgYT45fHKL9EHhHfE5+SGfjaA1HH
-         1Inw==
-X-Forwarded-Encrypted: i=1; AJvYcCUAeyngqxJDLZwcqzi8yiApHr2Tqs6CsVbNB/h8rSyP+5DtsWo3PjLPAhN/hJV1XC0fupz8bZ+y8g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwnGzJRLVb9iZhru8fWjI4QtQ7rx1vdgkSgx3GIr1pUOcxcxDYS
-	PQ+jLUfPyV8I51jGEdp7Ry4CaoR55STWRfFiOHNmatdPdd2eznZAin5SHZLbLdw=
-X-Gm-Gg: ASbGnctQ9/pNwKfeWapVGddhOvAlH9gFYFCrUZwAlkZFKw9mkkoKer82vEql29x/Wvx
-	2/35wuBqJb2Q7WRNGfrgfunWc/NFCa5o1En8IcZFUCOnD0whNvjLZKI7gUzbdfOwPCoFauxLF+K
-	RxK7g8rN4fftYzQNKW+YSX2lZYtGPb03VAWbO6CU/JiqZbplOxWc4xqWMU6LTLIwPX0pSBaetDF
-	iIjTBXojh6qtohldFVgCWgVUZKN7O6Wshx/ToRoQ5mGNp+/behWV+nDbLaiPBXh/Dc91WMYznuD
-	CTX1o0t/Uf2R0byw4ujrmFbUCZa3r4qXDMggSh1NajBPMKc=
-X-Google-Smtp-Source: AGHT+IFhMLeZWxbEN2BcydszBZXCVk7gJnHRAGc8GbZQro6UfqEPZMk7uHs43lBLaNwzfikdBQk+ag==
-X-Received: by 2002:a17:903:1cf:b0:224:721:ed9 with SMTP id d9443c01a7336-22dbf73e8bfmr61560135ad.44.1745608609541;
-        Fri, 25 Apr 2025 12:16:49 -0700 (PDT)
-Received: from x1 (97-120-122-6.ptld.qwest.net. [97.120.122.6])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-22db510304csm36179535ad.204.2025.04.25.12.16.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Apr 2025 12:16:49 -0700 (PDT)
-Date: Fri, 25 Apr 2025 12:16:47 -0700
-From: Drew Fustini <drew@pdp7.com>
-To: Michal Wilczynski <m.wilczynski@samsung.com>
-Cc: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org,
-	krzk+dt@kernel.org, conor+dt@kernel.org, guoren@kernel.org,
-	wefu@redhat.com, jassisinghbrar@gmail.com, paul.walmsley@sifive.com,
-	palmer@dabbelt.com, aou@eecs.berkeley.edu, frank.binns@imgtec.com,
-	matt.coster@imgtec.com, maarten.lankhorst@linux.intel.com,
-	mripard@kernel.org, tzimmermann@suse.de, airlied@gmail.com,
-	simona@ffwll.ch, ulf.hansson@linaro.org, jszhang@kernel.org,
-	p.zabel@pengutronix.de, m.szyprowski@samsung.com,
-	linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
-	dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v5 20/21] riscv: dts: thead: Introduce reset controller
- node
-Message-ID: <aAvfn2mq0Ksi8DF2@x1>
-References: <20250219140239.1378758-1-m.wilczynski@samsung.com>
- <CGME20250219140316eucas1p29a76023868946f090f261bf78d5103e3@eucas1p2.samsung.com>
- <20250219140239.1378758-21-m.wilczynski@samsung.com>
- <aAP1BW3RmMb/Irya@x1>
- <81e53e3a-5873-44c7-9070-5596021daa42@samsung.com>
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="kdn0Si4L"
+ARC-Seal: i=1; a=rsa-sha256; t=1745609714; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=Dd5PbieyEc/C+5e1O1b11wZALoNtvt6yM+/kg08ARgdyUhpmzP/NhBN1CKmNf8AaLntYnmgLTChakcyeMaVN8WRfyUWDNENQtDeLYqmzk6Zt6l9IIWJfSo+R5j+9jpJIBlDKuLSmAebBDQFqHka3O0+y5zoIZpfa8yC0JqaZquE=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1745609714; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=r/yCBdXULN/7dimob9RM70hBvraS8nfz9TzFTVD+37g=; 
+	b=Y0+ebmMQPjK2p3ZeqgQ4Rhj+IigsGl4R1yNgcS6Rl/gnxuF/9Nke5pfIc10hpopuCJluT+mBr9L0bkiSwsubz9hYoapoYsJlDL0fOWacUhjdiHkbrh1ojoBnWkkGHwGQIiYgwyl9BKHw8hkwMH4JNAcbTnGlLBJ9h6KmPJUz1Xc=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
+	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1745609714;
+	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
+	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
+	bh=r/yCBdXULN/7dimob9RM70hBvraS8nfz9TzFTVD+37g=;
+	b=kdn0Si4LxDoOzrxLzkKFSkVrcD993k4FD4Kje2SS/5wabMI22WWPRplacrKMDifc
+	vjDz/S11+9xs1hOmz6+e1BDNeE4xQUwvGkBo4/kSlMNrOFRtLw0AMZCjo4DuUpQZKFs
+	cSgHEv5ws01yAWARhnoNeTQGpZHhJlIpy4HBoKw4=
+Received: by mx.zohomail.com with SMTPS id 1745609712399137.5838901988809;
+	Fri, 25 Apr 2025 12:35:12 -0700 (PDT)
+From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+Date: Fri, 25 Apr 2025 21:34:36 +0200
+Subject: [PATCH v5 2/7] dt-bindings: rockchip-thermal: Add RK3576
+ compatible
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <81e53e3a-5873-44c7-9070-5596021daa42@samsung.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250425-rk3576-tsadc-upstream-v5-2-0c840b99c30e@collabora.com>
+References: <20250425-rk3576-tsadc-upstream-v5-0-0c840b99c30e@collabora.com>
+In-Reply-To: <20250425-rk3576-tsadc-upstream-v5-0-0c840b99c30e@collabora.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
+ Jonas Karlman <jonas@kwiboo.se>
+Cc: Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ kernel@collabora.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, 
+ linux-kernel@vger.kernel.org, 
+ Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+X-Mailer: b4 0.14.2
 
-On Tue, Apr 22, 2025 at 09:47:34AM +0200, Michal Wilczynski wrote:
-> 
-> 
-> On 4/19/25 21:09, Drew Fustini wrote:
-> > On Wed, Feb 19, 2025 at 03:02:38PM +0100, Michal Wilczynski wrote:
-> >> T-HEAD TH1520 SoC requires to put the GPU out of the reset state as part
-> >> of the power-up sequence.
-> >>
-> >> Signed-off-by: Michal Wilczynski <m.wilczynski@samsung.com>
-> >> ---
-> >>  arch/riscv/boot/dts/thead/th1520.dtsi | 7 +++++++
-> >>  1 file changed, 7 insertions(+)
-> >>
-> >> diff --git a/arch/riscv/boot/dts/thead/th1520.dtsi b/arch/riscv/boot/dts/thead/th1520.dtsi
-> >> index 474f31576a1b..6b34aab4b455 100644
-> >> --- a/arch/riscv/boot/dts/thead/th1520.dtsi
-> >> +++ b/arch/riscv/boot/dts/thead/th1520.dtsi
-> >> @@ -7,6 +7,7 @@
-> >>  #include <dt-bindings/interrupt-controller/irq.h>
-> >>  #include <dt-bindings/clock/thead,th1520-clk-ap.h>
-> >>  #include <dt-bindings/power/thead,th1520-power.h>
-> >> +#include <dt-bindings/reset/thead,th1520-reset.h>
-> > 
-> > Are you okay if I omit this hunk? My thead-dt-for-next branch is based
-> > on 6.15-rc1 but thead,th1520-reset.h only exists in next until the merge
-> > window.
-> 
-> Yeah, I'm not exactly sure how to coordinate such stuff, obviosuly it
-> would be best if this chunk would make it to the 6.16, but if you think
-> it would be problematic then omit it, no problem.
-> 
-> I will then update this patch series v3 [1] to gracefully handle lack of
-> reset, as the 6.16 will not contain the required reset line for sure.
-> 
-> [1] - https://lore.kernel.org/all/20250414-apr_14_for_sending-v2-2-70c5af2af96c@samsung.com/
+Add a new compatible for the thermal sensor device on the RK3576 SoC.
 
-I've applied this patch to my thead-dt-for-next tree:
-https://github.com/pdp7/linux/commit/1b136de08b5feca37ebdb6d28db3c9c6285aba5a
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
+Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+---
+ Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-We should be able to test with the driver in next once a new next is
-published (which I assume will be on Monday in Austrlia).
+diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
+index b717ea8261ca24ebaf709f410ec6372de1366b8a..49ceed68c92ce5a32ed8d4f39bd88fd052de0e80 100644
+--- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
+@@ -21,6 +21,7 @@ properties:
+       - rockchip,rk3368-tsadc
+       - rockchip,rk3399-tsadc
+       - rockchip,rk3568-tsadc
++      - rockchip,rk3576-tsadc
+       - rockchip,rk3588-tsadc
+       - rockchip,rv1108-tsadc
+ 
 
-Thanks,
-Drew
+-- 
+2.49.0
+
