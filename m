@@ -1,156 +1,127 @@
-Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5220D27466C;
-	Fri, 25 Apr 2025 19:35:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745609755; cv=pass; b=HJd9x6lnnuulHt2UtPcWtWNK8PKTLoUPJrkG983faL2OyVydmkAh/r8oGPVhUo7R4e9IftJ+L6Wmf2U6WaL30mNwdyyS55U9pFFCyXnGKDzIX5Kq133zsWgt/sHTfs5pG5GXg86KbMw/TuMyyWPkW6vY9uACu7cNM4d4mJCZ/Gk=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745609755; c=relaxed/simple;
-	bh=0oWjjHvoxMkDi7kpSS8zJFnVCPK+eZR3CMCb5GA5rpQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Ysj3i5iArIkesa4rjLL2S3ee0GN9LJPwa60/kp3a/3KQe/U5nObHJxteY2vVRjzzBsk0q44dsaPKTRyvqu/VXhzuU7EZACR+Hc8XiMOkddiHQBmGX/8+bT+9ImLjK0JWEy66YOGS+2t9v8qf/XxiZBwUs1KxU2WfHahTnQ8b6U0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=GNIWyK0p; arc=pass smtp.client-ip=136.143.188.112
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CBFB21CA0C;
+	Fri, 25 Apr 2025 19:53:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1745610786; cv=none; b=B/jbT/fPb+X0zWO5kmtT4U/xd/nFNY+rJVdcXzg6wZQMDalY8i7CQcxn5haQdAJDmNHmF6YIF4R2hBCWUO3bziTDItpSoEVLDppCn0z6HFstgVYtDA/VYJC1L9DqVfA7J4vxoyUnqSnRLzEMSS2iXruvIiJD16wxkXdANx2KE8o=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1745610786; c=relaxed/simple;
+	bh=PcMt8Jp0f62RG/rNVrmXfgzvG/ZGY+L39bmdXiveS2I=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Bc4OSWUUOwsPYsywja2089/m29+CKk3wpNRJ0JWMMPKujJpwsdO8RVFvdeFWW3GxnRL63Lq4x2W/3q3ZHCahHjFWhwqBAa7ne8SHJue6zczKfOweuOebpsKNmbiaJQSLYaGIhnls7bHDIwi6ASEqAr3/SkkqGV3zfwEVhm8BlkE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=b9Jaochh; arc=none smtp.client-ip=198.175.65.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="GNIWyK0p"
-ARC-Seal: i=1; a=rsa-sha256; t=1745609732; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=McvM/5S/gudmAvogvJYT0yoqtZLnRN40s9bXXHlvL67PHEcnw7xpKBAPDCcRJlAUNWhiV5AILJ9nD4IRaTJzcvG4BJjbQjdzmyuLTDMFsomkjUZE81TF7KpdVVNnXisI5PngPQmGgf0FXE/w+ra2zt0rYyNHZSH1yt6CjDVGX6w=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1745609732; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=G6WkyjIM6JJr1zT7YnCAra6NvTRkyDobXnkB7/hgoLI=; 
-	b=fz9a52cGJvDD35pNj1DEF6CoWdZyZ0UxT67U/klgz6oyV9cw2BSKZyVjJ1HbXboKyDuVFSfSDSCwls29ULeecb23gtfP8Fhc72L3MmlKbSZF3MSs9YAObQHLgl4QToCzcZgm9uhW+88RDNqNxozq6BHodRftEVLVwxyDpqNZ1jU=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
-	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1745609732;
-	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
-	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
-	bh=G6WkyjIM6JJr1zT7YnCAra6NvTRkyDobXnkB7/hgoLI=;
-	b=GNIWyK0pHy0ghHmQQrpGnPIUBz6duDhzalEWJ75VwQFzs/zd7K5/5e0wJjPYd+in
-	Gs8el+NHGVSKNnIwv4g96BT1HHE8TKp1RWVlysIhEUckcLV/RA3Lh/mTJGBapQZNhiW
-	T+G3pt9ir6TumFuvTiXscaVRSkl/FWed1P/vcGn0=
-Received: by mx.zohomail.com with SMTPS id 1745609730234755.6078636363667;
-	Fri, 25 Apr 2025 12:35:30 -0700 (PDT)
-From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Fri, 25 Apr 2025 21:34:41 +0200
-Subject: [PATCH v5 7/7] arm64: dts: rockchip: Add thermal trim OTP and
- tsadc nodes
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="b9Jaochh"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1745610785; x=1777146785;
+  h=from:to:subject:date:message-id:in-reply-to:references:
+   mime-version:content-transfer-encoding;
+  bh=PcMt8Jp0f62RG/rNVrmXfgzvG/ZGY+L39bmdXiveS2I=;
+  b=b9Jaochh4FyXxy2Qq2PkagLx9oLstd4ezcq9muGiEX4r3PW1lNfw9Dcj
+   qLRw1BJIq3N/Kw0F9i+pUtIfhMxHV/tnU0dR/U7+ioReBaXaXAgXS9hEr
+   4tHWXwZaakjLyqxdzixNxHJ30UGd94EvxMTes6mAzuKKQ6dP+feeVLyUS
+   e2LDejDP/wGnY4PR4J2bWlLL7S0zUYs3PN0vi1KXN99WUZyncmwyYz7xd
+   fUGdkQaU+scvXu0lDSSmLtI6eEmlfmqfxTz8UxMZEbbNs+M8S7Ah5A1tk
+   LVJyJ1+GfdKhKy5XrNP8hYsQ4wuTJFsmDl5Y89q4MOdsG43ExvSxzwH9K
+   A==;
+X-CSE-ConnectionGUID: Un3oET/iSV2MGXF9ZeIXug==
+X-CSE-MsgGUID: FQkadsA6Tp+RpepHB4PuXw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11414"; a="69776216"
+X-IronPort-AV: E=Sophos;i="6.15,238,1739865600"; 
+   d="scan'208";a="69776216"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Apr 2025 12:52:40 -0700
+X-CSE-ConnectionGUID: Z9y3xGV5S9KLdLmZM5zHPw==
+X-CSE-MsgGUID: edPbIq70SceU8CXDoVWdZA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.15,238,1739865600"; 
+   d="scan'208";a="132897642"
+Received: from mgoodin-mobl3.amr.corp.intel.com (HELO xpardee-desk.intel.com) ([10.124.222.107])
+  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Apr 2025 12:52:40 -0700
+From: Xi Pardee <xi.pardee@linux.intel.com>
+To: xi.pardee@linux.intel.com,
+	irenic.rajneesh@gmail.com,
+	david.e.box@linux.intel.com,
+	hdegoede@redhat.com,
+	ilpo.jarvinen@linux.intel.com,
+	platform-driver-x86@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: [PATCH v5 1/5] platform/x86:intel/vsec: Change return type of intel_vsec_register
+Date: Fri, 25 Apr 2025 12:52:29 -0700
+Message-ID: <20250425195237.493129-2-xi.pardee@linux.intel.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250425195237.493129-1-xi.pardee@linux.intel.com>
+References: <20250425195237.493129-1-xi.pardee@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250425-rk3576-tsadc-upstream-v5-7-0c840b99c30e@collabora.com>
-References: <20250425-rk3576-tsadc-upstream-v5-0-0c840b99c30e@collabora.com>
-In-Reply-To: <20250425-rk3576-tsadc-upstream-v5-0-0c840b99c30e@collabora.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
- Jonas Karlman <jonas@kwiboo.se>
-Cc: Sebastian Reichel <sebastian.reichel@collabora.com>, 
- kernel@collabora.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, 
- linux-kernel@vger.kernel.org, 
- Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-X-Mailer: b4 0.14.2
+Content-Transfer-Encoding: 8bit
 
-Thanks to Heiko's work getting OTP working on the RK3576, we can specify
-the thermal sensor trim values which are stored there now, and with my
-driver addition to rockchip_thermal, we can make use of these.
+Change return type of intel_vsec_register() to int. The current
+implementation does not indicate if the register fail or not.
+Change to return error code if it fails or if INTEL_VSEC config
+is not set. This is a preparation step to introduce a new SSRAM
+Telemetry driver that will be using this API.
 
-Add them to the devicetree for the SoC.
-
-Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+Signed-off-by: Xi Pardee <xi.pardee@linux.intel.com>
 ---
- arch/arm64/boot/dts/rockchip/rk3576.dtsi | 57 ++++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
+ drivers/platform/x86/intel/vsec.c | 9 ++++++---
+ include/linux/intel_vsec.h        | 5 +++--
+ 2 files changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/rockchip/rk3576.dtsi b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
-index 1c07ad78c9230f1e46b0ef8817834f58b19eb86b..b95546163e1c54296edd3346469eed733b1670da 100644
---- a/arch/arm64/boot/dts/rockchip/rk3576.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
-@@ -1708,6 +1708,30 @@ gpu_leakage: gpu-leakage@21 {
- 			log_leakage: log-leakage@22 {
- 				reg = <0x22 0x1>;
- 			};
-+			bigcore_tsadc_trim: bigcore-tsadc-trim@24 {
-+				reg = <0x24 0x2>;
-+				bits = <0 10>;
-+			};
-+			litcore_tsadc_trim: litcore-tsadc-trim@26 {
-+				reg = <0x26 0x2>;
-+				bits = <0 10>;
-+			};
-+			ddr_tsadc_trim: ddr-tsadc-trim@28 {
-+				reg = <0x28 0x2>;
-+				bits = <0 10>;
-+			};
-+			npu_tsadc_trim: npu-tsadc-trim@2a {
-+				reg = <0x2a 0x2>;
-+				bits = <0 10>;
-+			};
-+			gpu_tsadc_trim: gpu-tsadc-trim@2c {
-+				reg = <0x2c 0x2>;
-+				bits = <0 10>;
-+			};
-+			soc_tsadc_trim: soc-tsadc-trim@64 {
-+				reg = <0x64 0x2>;
-+				bits = <0 10>;
-+			};
- 		};
+diff --git a/drivers/platform/x86/intel/vsec.c b/drivers/platform/x86/intel/vsec.c
+index db3c031d1757..055ca9f48fb4 100644
+--- a/drivers/platform/x86/intel/vsec.c
++++ b/drivers/platform/x86/intel/vsec.c
+@@ -332,13 +332,16 @@ static bool intel_vsec_walk_vsec(struct pci_dev *pdev,
+ 	return have_devices;
+ }
  
- 		gic: interrupt-controller@2a701000 {
-@@ -2119,6 +2143,39 @@ tsadc: tsadc@2ae70000 {
- 			rockchip,hw-tshut-temp = <120000>;
- 			rockchip,hw-tshut-mode = <0>; /* tshut mode 0:CRU 1:GPIO */
- 			rockchip,hw-tshut-polarity = <0>; /* tshut polarity 0:LOW 1:HIGH */
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			sensor@0 {
-+				reg = <0>;
-+				nvmem-cells = <&soc_tsadc_trim>;
-+				nvmem-cell-names = "trim";
-+			};
-+			sensor@1 {
-+				reg = <1>;
-+				nvmem-cells = <&bigcore_tsadc_trim>;
-+				nvmem-cell-names = "trim";
-+			};
-+			sensor@2 {
-+				reg = <2>;
-+				nvmem-cells = <&litcore_tsadc_trim>;
-+				nvmem-cell-names = "trim";
-+			};
-+			sensor@3 {
-+				reg = <3>;
-+				nvmem-cells = <&ddr_tsadc_trim>;
-+				nvmem-cell-names = "trim";
-+			};
-+			sensor@4 {
-+				reg = <4>;
-+				nvmem-cells = <&npu_tsadc_trim>;
-+				nvmem-cell-names = "trim";
-+			};
-+			sensor@5 {
-+				reg = <5>;
-+				nvmem-cells = <&gpu_tsadc_trim>;
-+				nvmem-cell-names = "trim";
-+			};
- 		};
+-void intel_vsec_register(struct pci_dev *pdev,
++int intel_vsec_register(struct pci_dev *pdev,
+ 			 struct intel_vsec_platform_info *info)
+ {
+ 	if (!pdev || !info || !info->headers)
+-		return;
++		return -EINVAL;
  
- 		i2c9: i2c@2ae80000 {
-
+-	intel_vsec_walk_header(pdev, info);
++	if (!intel_vsec_walk_header(pdev, info))
++		return -ENODEV;
++	else
++		return 0;
+ }
+ EXPORT_SYMBOL_NS_GPL(intel_vsec_register, "INTEL_VSEC");
+ 
+diff --git a/include/linux/intel_vsec.h b/include/linux/intel_vsec.h
+index b94beab64610..bc95821f1bfb 100644
+--- a/include/linux/intel_vsec.h
++++ b/include/linux/intel_vsec.h
+@@ -139,12 +139,13 @@ static inline struct intel_vsec_device *auxdev_to_ivdev(struct auxiliary_device
+ }
+ 
+ #if IS_ENABLED(CONFIG_INTEL_VSEC)
+-void intel_vsec_register(struct pci_dev *pdev,
++int intel_vsec_register(struct pci_dev *pdev,
+ 			 struct intel_vsec_platform_info *info);
+ #else
+-static inline void intel_vsec_register(struct pci_dev *pdev,
++static inline int intel_vsec_register(struct pci_dev *pdev,
+ 				       struct intel_vsec_platform_info *info)
+ {
++	return -ENODEV;
+ }
+ #endif
+ #endif
 -- 
-2.49.0
+2.43.0
 
