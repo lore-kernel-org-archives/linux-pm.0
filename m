@@ -1,30 +1,30 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73771205E10;
-	Sun, 27 Apr 2025 22:50:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1464CB663;
+	Sun, 27 Apr 2025 23:27:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745794220; cv=none; b=p86L7ggbAUHv+WXvQ5xBl7NaYgXhO8O166GGWFTKyX8XMFMLkQ2UxAIXPOMdxVvIIISST1GgCtweDmLfFCWn/5e3Yw8bIMZgiWQC+FoizHQ2uypsmdkqDyWU+utjZzJhsP1I5wOqoBJu9KTMhfW74Dg9Oh7JsImdm3GWpmY67HM=
+	t=1745796448; cv=none; b=ocT2wLFKDlmR/Bgn9q1NKGAMft9J2dSsol5HaLZgE7VRGEQBzlox7I3wysiIue0kZPEauDYBo0T+QxE47/mxYhPHmbIgs3dfrW9YGWkYJUX8zGqWSpPmBa8X84AtOkFqdN51cz7rF4THFVWxEaDorRlRGJ9toIy/UABLY6mGpFY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745794220; c=relaxed/simple;
-	bh=bIefR7abHqZ0OLFrE8m28DahUtmVjQc6Jqf2rjP4FkQ=;
+	s=arc-20240116; t=1745796448; c=relaxed/simple;
+	bh=9SKc+mYiQDS0sF/SZPXMjoefdv+Wv38cj1C/b7g9aFE=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=ewNKCi9xJM22U5gEX8/1QorH34wvImqQACK77Qxp5OgUxLnCk+hZ5MpQVqXUpIim/vtZ4TmeNoxr5UuJhe4tdAQlg4NhU3f49LdH1Hi1Vdx8RJ44rYO93xUpTv/kR1vNCH5GICMX2ytIInk8QfVAr4pWR7WOZzkVjMFTjDJ0BHE=
+	 MIME-Version:Content-Type; b=pMmeVdJf3N+sJYT0J+fuzXs32W6avEoj21vUBNCbAXhCysbQ/6hWWFqo+FOABhuH6xXVmkCKmcYd1dOgWTkvzoqgAu0Iu+VVX7hiaZKSEg5HXWkis8Y21KTTIyVgyusQkUMUvldAaWhz6WE255QTZRP57FqFw1QkscT20gpDAJg=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2002C4AF0B;
-	Sun, 27 Apr 2025 22:50:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75F06C4CEEE;
+	Sun, 27 Apr 2025 23:27:27 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id C7643180F9E; Mon, 28 Apr 2025 00:50:16 +0200 (CEST)
+	id 85286180F9A; Mon, 28 Apr 2025 01:27:25 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: =?utf-8?q?Pali_Roh=C3=A1r?= <pali@kernel.org>, 
- Sebastian Reichel <sre@kernel.org>, Jerry Lv <Jerry.Lv@axis.com>
-Cc: kernel@axis.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20250415-foo-fix-v2-1-5b45a395e4cc@axis.com>
-References: <20250415-foo-fix-v2-1-5b45a395e4cc@axis.com>
-Subject: Re: [PATCH v4] power: supply: bq27xxx: Retrieve again when busy
-Message-Id: <174579421680.295785.5362050281749814568.b4-ty@collabora.com>
-Date: Mon, 28 Apr 2025 00:50:16 +0200
+To: Sebastian Reichel <sre@kernel.org>, Kees Cook <kees@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-hardening@vger.kernel.org
+In-Reply-To: <20250416222740.work.569-kees@kernel.org>
+References: <20250416222740.work.569-kees@kernel.org>
+Subject: Re: [PATCH] power: supply: sysfs: Remove duplicate NUL termination
+Message-Id: <174579644553.306236.1161318959919770313.b4-ty@collabora.com>
+Date: Mon, 28 Apr 2025 01:27:25 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -36,22 +36,27 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.2
 
 
-On Tue, 15 Apr 2025 11:40:47 +0800, Jerry Lv wrote:
-> Multiple applications may access the battery gauge at the same time, so
-> the gauge may be busy and EBUSY will be returned. The driver will set a
-> flag to record the EBUSY state, and this flag will be kept until the next
-> periodic update. When this flag is set, bq27xxx_battery_get_property()
-> will just return ENODEV until the flag is updated.
+On Wed, 16 Apr 2025 15:27:41 -0700, Kees Cook wrote:
+> GCC 15's new -Wunterminated-string-initialization notices that one of
+> the sysfs attr strings would lack the implicit trailing NUL byte during
+> initialization:
 > 
-> Even if the gauge was busy during the last accessing attempt, returning
-> ENODEV is not ideal, and can cause confusion in the applications layer.
+> drivers/power/supply/power_supply_sysfs.c:183:57: warning: initializer-string for array of 'char' truncates NUL terminator but destination lacks 'nonstring' attribute (32 chars into 31 available) [-Wunterminated-string-initialization]
+>   183 |         POWER_SUPPLY_ATTR(CHARGE_CONTROL_START_THRESHOLD),
+>       |                                                         ^
+> drivers/power/supply/power_supply_sysfs.c:36:23: note: in definition of macro '_POWER_SUPPLY_ATTR'
+>    36 |         .attr_name = #_name "\0",               \
+>       |                       ^~~~~
+> drivers/power/supply/power_supply_sysfs.c:183:9: note: in expansion of macro 'POWER_SUPPLY_ATTR'
+>   183 |         POWER_SUPPLY_ATTR(CHARGE_CONTROL_START_THRESHOLD),
+>       |         ^~~~~~~~~~~~~~~~~
 > 
 > [...]
 
 Applied, thanks!
 
-[1/1] power: supply: bq27xxx: Retrieve again when busy
-      commit: f16d9fb6cf03fdbdefa41a8b32ba1e57afb7ae3d
+[1/1] power: supply: sysfs: Remove duplicate NUL termination
+      commit: 77f5bb150132bbbcd6bc37ffdc80c9e140e373a4
 
 Best regards,
 -- 
