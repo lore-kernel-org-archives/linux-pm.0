@@ -1,35 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 146AD1E7C38;
-	Sun, 27 Apr 2025 23:27:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB254623;
+	Mon, 28 Apr 2025 00:20:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745796448; cv=none; b=TxB4QGuOId4mDQrqGc0BjOItpqTPoFwOgKQhqptnjX0aa49qiiDC69pefaAddMVyoSZwei28jQfnCc/J65iku18itLpeUCjHXUcc9CzPWJka9h/dtX0MHH9LHXyctJRbeHCXePdS0fA3wEhjaIxU1K+hopdwU/nNFSibmz6yDBc=
+	t=1745799660; cv=none; b=LFq8qDzWYfX4Ow6JP3cHROTRgJeKAxPtP8aEB7ob9ylDN2FoQvOis/FLESpSSd3lG48eadwTPq0hj045jENlSfIi9jVcPCtWbKKaP9Z4gMAANsxXN6537F6O2yvfPm9lNxAawtuC9msJBZEr2LGb72BwtGgnfbk9obWnXZowBz8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745796448; c=relaxed/simple;
-	bh=OdDaRC6CcwfVjGwgLyYP5EYBYBgoc7OFQF+K6ZUqAjw=;
+	s=arc-20240116; t=1745799660; c=relaxed/simple;
+	bh=Mxmm6OSm0KCuNa6NaZX4AtZ+skV9h8LKyFNJT6tIPyI=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=sEanPXL+B/JQtxYw3LZMC1UzlUox1DkdUxZYPnxUlAz6PVvTaGNCZo2xWhm7JXqskVYu4eEAFQicM2I7qS6AYD7XDnAKTBHrQF9IlPTUEjeI02kqo9iS1E+tacINYUnoDXSvhk6jd8P6pLEXCVAsOLCg6FkVT1jcQocfZMCKzNs=
+	 MIME-Version:Content-Type; b=RPM1s1RxNZJPgmDVZnxw8ScMurGFFIs27/n8igXNh/9ZG0MBWuFTTe61W6Cgb570Z9m6feeRogITb9jeoBN1nJRy1PtjOSEDQ99mGDhjDRcSFE4Fs4xZZIM5JTYGPvItPlAOr/tJTRnd4S5nj9tmFU3KoQL5ywytZOqSo7La/KY=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6DDD9C4CEE3;
-	Sun, 27 Apr 2025 23:27:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 31D26C4CEE3;
+	Mon, 28 Apr 2025 00:20:59 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 81A111808BE; Mon, 28 Apr 2025 01:27:25 +0200 (CEST)
+	id 1002F1808BE; Mon, 28 Apr 2025 02:20:57 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
- nicolas.ferre@microchip.com, alexandre.belloni@bootlin.com, 
- claudiu.beznea@tuxon.dev, lee@kernel.org, sre@kernel.org, 
- p.zabel@pengutronix.de, Ryan.Wanner@microchip.com
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-rtc@vger.kernel.org
-In-Reply-To: <cover.1744666011.git.Ryan.Wanner@microchip.com>
-References: <cover.1744666011.git.Ryan.Wanner@microchip.com>
-Subject: Re: (subset) [PATCH v5 00/11] Enable Power Modes Support for
- SAMA7D65 SoC
-Message-Id: <174579644550.306236.7065063387311339385.b4-ty@collabora.com>
-Date: Mon, 28 Apr 2025 01:27:25 +0200
+To: Sebastian Reichel <sre@kernel.org>, 
+ Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, 
+ patches@opensource.cirrus.com, linux-pm@vger.kernel.org
+In-Reply-To: <0edde57b691db7f920d121fdbd5ebc3fb24f30f1.1743787625.git.christophe.jaillet@wanadoo.fr>
+References: <0edde57b691db7f920d121fdbd5ebc3fb24f30f1.1743787625.git.christophe.jaillet@wanadoo.fr>
+Subject: Re: [PATCH] power: supply: wm831x: Constify struct chg_map and
+ some arrays
+Message-Id: <174579965704.310722.16935712011735151878.b4-ty@collabora.com>
+Date: Mon, 28 Apr 2025 02:20:57 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,21 +38,20 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.2
 
 
-On Mon, 14 Apr 2025 14:41:17 -0700, Ryan.Wanner@microchip.com wrote:
-> From: Ryan Wanner <Ryan.Wanner@microchip.com>
+On Fri, 04 Apr 2025 19:27:38 +0200, Christophe JAILLET wrote:
+> 'struct chg_map' is not modified in this driver.
 > 
-> This patch set adds support for low power modes for the SAMA7D65 SoC and
-> the required components and changes for low power modes.
+> Constifying these structures moves some data to a read-only section, so
+> increase overall security.
 > 
-> The series includes changes in the asm code to account for the addtional
-> clocks that are in this SoC.
+> While at it, also constify a few other arrays.
 > 
 > [...]
 
 Applied, thanks!
 
-[03/11] dt-bindings: reset: atmel,at91sam9260-reset: add microchip,sama7d65-rstc
-        commit: 4e55fb7d60e128fb5a57921cbd59f9ff29cd4297
+[1/1] power: supply: wm831x: Constify struct chg_map and some arrays
+      commit: 883730c192b5cf9d72cabefd83bfb3dcd1aadb6f
 
 Best regards,
 -- 
