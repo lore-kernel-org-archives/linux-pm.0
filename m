@@ -1,98 +1,172 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DF132AEFB;
-	Tue, 29 Apr 2025 01:05:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3BAF6433C4;
+	Tue, 29 Apr 2025 01:19:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745888750; cv=none; b=fZzntOWWtq9YPtlYDNYEREvyyTWqfI8O/GeZQ8OksSnkx/8h+pXlP7w86eK/7zD+VM7JN+N8cxizzJLFfB4pruIILPMq37azECKGKu+N9+H1/HoK5bRW1P6OS/++ipG9T93r+qVwKpWveXX08ZQdINffrogOsRQ4r82YviQRKJU=
+	t=1745889573; cv=none; b=Fk5fFQ7HWHuWMajNqJpN9X7sRYMPPSyBcciOzssY+Vsom45lWfTt19hu+xjpHHkCMmZ1qv53OoXKQ7FMDLZT5vNKY7FedZAZTZSJKtIx/+7AQkl7L7109A4doIvtn623x2yr7sGvnM1sG+W+CaZajcxDJZrbp3gEuwXWN1qbKuE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745888750; c=relaxed/simple;
-	bh=EM6ElMfbJozbwi36h7rM3Qknfs+VrjA5AmrU9DsF36s=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=cZnxP9P+SU472jvsI8T/1Ih+8dB7fP+Wy0aeifF9SVR4br3NNCP15R0pR0pv7+PMDhbfhsC+WScAi96bUQv9z6IB8ZYohRz2IeUXwMQCgkH4sn5k83cSIkgosvzLRkkcxrnrJ7fLepjCZy66RUFEllpedDQ6V+4sDTh414xwLc8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JklXKfpo; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1745889573; c=relaxed/simple;
+	bh=Ig6rBPtJSH8iA/rKKNMYpbEYMMPT9H1HG6g552xirrA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Tkf6bktgYoiYhr9O10pEVfA0SM/BBsqz/HWI4dGh2aMDsPZ7qxpDwiJYTBLqI2BTCMpJiM2cuK3gw56AhkFHL/Id5Uxr6uXYdPQUso6DYmjfURI3zY2LfTwlGS7cLLPiPVEU3BxJZQmQPYpoQvYsv7CsMwA0gzikWQHuuX62fSY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ImVVA5Sv; arc=none smtp.client-ip=192.198.163.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JklXKfpo"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 2AE96C4CEEE;
-	Tue, 29 Apr 2025 01:05:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1745888750;
-	bh=EM6ElMfbJozbwi36h7rM3Qknfs+VrjA5AmrU9DsF36s=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=JklXKfpoM6eam6ewpkiiJrk+oLEyBOFDks2ysMzVEglltyYGv+PMcXRClDJtXRLhl
-	 MIcNRdfkLIDiD4ZDUjlxFe7VaJya00ZtFRxOFUIfGpH54jsAouhgA7kVpDR1AmIz/D
-	 DkfYbgndHVPHg3KgzvozsJRvAldT4p6ljg8z7wlz3qn9O2TAzS9PD7pRWmZZrH+pAc
-	 LcJPODpg2LsRop1IUcxfwovVBvaofYFmbwNLeHAOpL3f2tZUfTf8I2O+mjCTnG+bIi
-	 QedYFK8HSWHU2mVpCiGtlZICTRDKRYPZQ+CbnFnTUQBXdvxCWcTbKlelvSS7whD7H0
-	 YpMPvVf3wD6Mw==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C184C3ABA5;
-	Tue, 29 Apr 2025 01:05:50 +0000 (UTC)
-From: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>
-Date: Mon, 28 Apr 2025 20:05:47 -0500
-Subject: [PATCH v2 2/3] cpuidle: tegra: Export
- tegra_cpuidle_pcie_irqs_in_use
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ImVVA5Sv"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1745889571; x=1777425571;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=Ig6rBPtJSH8iA/rKKNMYpbEYMMPT9H1HG6g552xirrA=;
+  b=ImVVA5Sv5N0kyH5bSrwsggC89PycUww573KFtopDbDXm5FR3WahWWP/b
+   4O5PP1bN/App8JUnOnzV5KAa6VsNFyKxNmCSjauREiFqHVUFvMUGq+E3L
+   0uGjuljoFQSgbe+lyDnOiQaRUMYYi9tQvs5w3zJ0st8U731zuxS5alvSF
+   fUk1sK4c+hz1OMiDzannD5AfYLnZP8cUYE01s7NS6Bt0TG1GDpSYWI7Bk
+   eOaPlln8d2u0qYcfJ0WG1y/6Owrodi556LxMW7jIbJUHvD3Adcl6wYj8X
+   5xxcq2CB9JDzUi+2FTQ5ngpnWz8nlhopMMlTSV2/QbQJH3buww/6NdHMy
+   Q==;
+X-CSE-ConnectionGUID: XoBu5ceZRV6wlEDKYiQcwQ==
+X-CSE-MsgGUID: 2R3bYiKKQEWTgOvoyRsTNg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11417"; a="72874007"
+X-IronPort-AV: E=Sophos;i="6.15,247,1739865600"; 
+   d="scan'208";a="72874007"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Apr 2025 18:19:30 -0700
+X-CSE-ConnectionGUID: r77JBzqSTnuIYgcATmIDgQ==
+X-CSE-MsgGUID: N/AslonpRyWcRq2J0NQ1WQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.15,247,1739865600"; 
+   d="scan'208";a="133581475"
+Received: from lkp-server01.sh.intel.com (HELO 1992f890471c) ([10.239.97.150])
+  by orviesa010.jf.intel.com with ESMTP; 28 Apr 2025 18:19:28 -0700
+Received: from kbuild by 1992f890471c with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1u9Zd7-00001g-27;
+	Tue, 29 Apr 2025 01:19:25 +0000
+Date: Tue, 29 Apr 2025 02:57:29 +0800
+From: kernel test robot <lkp@intel.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: oe-kbuild-all@lists.linux.dev, "Rafael J. Wysocki" <rafael@kernel.org>,
+	Pavel Machek <pavel@kernel.org>, Len Brown <len.brown@intel.com>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [rft, PATCH v1 1/1] PM: Don't use "proxy" headers
+Message-ID: <202504290212.e8iXOU2x-lkp@intel.com>
+References: <20250428071922.3264455-1-andriy.shevchenko@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250428-pci-tegra-module-v2-2-c11a4b912446@gmail.com>
-References: <20250428-pci-tegra-module-v2-0-c11a4b912446@gmail.com>
-In-Reply-To: <20250428-pci-tegra-module-v2-0-c11a4b912446@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>, 
- Lorenzo Pieralisi <lpieralisi@kernel.org>, 
- =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
- Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, 
- Rob Herring <robh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
- Thierry Reding <thierry.reding@gmail.com>, 
- Jonathan Hunter <jonathanh@nvidia.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, 
- linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, 
- Aaron Kling <webgeek1234@gmail.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1745888749; l=830;
- i=webgeek1234@gmail.com; s=20250217; h=from:subject:message-id;
- bh=xVyHjzSr7wHYXMLNGdp54ReYaOCWfcLl7SzVd0MbeFs=;
- b=gIud+Pwnuh30AZATYddoB8kGlcEmY/P9Nw0DW7/uOyryc78z11uWGMo9bZX3IGoqdTjnxY2mH
- yeby/7GMn7+CowD+fN5sc9KPPJ89qdEWjbHPF6D/bEfFopMgG7F56jJ
-X-Developer-Key: i=webgeek1234@gmail.com; a=ed25519;
- pk=TQwd6q26txw7bkK7B8qtI/kcAohZc7bHHGSD7domdrU=
-X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
- auth_id=342
-X-Original-From: Aaron Kling <webgeek1234@gmail.com>
-Reply-To: webgeek1234@gmail.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250428071922.3264455-1-andriy.shevchenko@linux.intel.com>
 
-From: Aaron Kling <webgeek1234@gmail.com>
+Hi Andy,
 
-Add export for tegra_cpuidle_pcie_irqs_in_use() so that we can allow
-drivers like the pci-tegra driver to be loadable as a module.
+kernel test robot noticed the following build errors:
 
-Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
----
- drivers/cpuidle/cpuidle-tegra.c | 1 +
- 1 file changed, 1 insertion(+)
+[auto build test ERROR on rafael-pm/linux-next]
+[also build test ERROR on rafael-pm/bleeding-edge amd-pstate/linux-next amd-pstate/bleeding-edge linus/master v6.15-rc4 next-20250428]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-diff --git a/drivers/cpuidle/cpuidle-tegra.c b/drivers/cpuidle/cpuidle-tegra.c
-index b203a93deac5f378572be90e22c73e7417adb99e..aca907a62bb5de4ee4c71c1900eacedd4b90bc0a 100644
---- a/drivers/cpuidle/cpuidle-tegra.c
-+++ b/drivers/cpuidle/cpuidle-tegra.c
-@@ -336,6 +336,7 @@ void tegra_cpuidle_pcie_irqs_in_use(void)
- 	pr_info("disabling CC6 state, since PCIe IRQs are in use\n");
- 	tegra_cpuidle_disable_state(TEGRA_CC6);
- }
-+EXPORT_SYMBOL_GPL(tegra_cpuidle_pcie_irqs_in_use);
- 
- static void tegra_cpuidle_setup_tegra114_c7_state(void)
- {
+url:    https://github.com/intel-lab-lkp/linux/commits/Andy-Shevchenko/PM-Don-t-use-proxy-headers/20250428-152021
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+patch link:    https://lore.kernel.org/r/20250428071922.3264455-1-andriy.shevchenko%40linux.intel.com
+patch subject: [rft, PATCH v1 1/1] PM: Don't use "proxy" headers
+config: sh-randconfig-001-20250428 (https://download.01.org/0day-ci/archive/20250429/202504290212.e8iXOU2x-lkp@intel.com/config)
+compiler: sh4-linux-gcc (GCC) 10.5.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250429/202504290212.e8iXOU2x-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202504290212.e8iXOU2x-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+   In file included from arch/sh/kernel/reboot.c:2:
+>> include/linux/pm.h:690:18: error: field 'suspend_timer' has incomplete type
+     690 |  struct hrtimer  suspend_timer;
+         |                  ^~~~~~~~~~~~~
+   cc1: note: unrecognized command-line option '-Wno-unterminated-string-initialization' may have been intended to silence earlier diagnostics
+
+
+vim +/suspend_timer +690 include/linux/pm.h
+
+08810a4119aaeb Rafael J. Wysocki 2017-10-25  660  
+1eede070a59e1c Rafael J. Wysocki 2008-05-20  661  struct dev_pm_info {
+1eede070a59e1c Rafael J. Wysocki 2008-05-20  662  	pm_message_t		power_state;
+b017500ab53c06 Rafael J. Wysocki 2024-01-22  663  	bool			can_wakeup:1;
+b017500ab53c06 Rafael J. Wysocki 2024-01-22  664  	bool			async_suspend:1;
+9ed9895370aedd Rafael J. Wysocki 2016-10-30  665  	bool			in_dpm_list:1;	/* Owned by the PM core */
+f76b168b6f117a Alan Stern        2011-06-18  666  	bool			is_prepared:1;	/* Owned by the PM core */
+6d0e0e84f66d32 Alan Stern        2011-06-18  667  	bool			is_suspended:1;	/* Ditto */
+3d2699bc179a10 Liu, Chuansheng   2014-02-18  668  	bool			is_noirq_suspended:1;
+3d2699bc179a10 Liu, Chuansheng   2014-02-18  669  	bool			is_late_suspended:1;
+85945c28b5a888 Sudeep Holla      2019-02-14  670  	bool			no_pm:1;
+bed2b42d9f0b41 Rafael J. Wysocki 2012-08-06  671  	bool			early_init:1;	/* Owned by the PM core */
+aae4518b3124b2 Rafael J. Wysocki 2014-05-16  672  	bool			direct_complete:1;	/* Owned by the PM core */
+08810a4119aaeb Rafael J. Wysocki 2017-10-25  673  	u32			driver_flags;
+074037ec79bea7 Rafael J. Wysocki 2010-09-22  674  	spinlock_t		lock;
+1eede070a59e1c Rafael J. Wysocki 2008-05-20  675  #ifdef CONFIG_PM_SLEEP
+1eede070a59e1c Rafael J. Wysocki 2008-05-20  676  	struct list_head	entry;
+5af84b82701a96 Rafael J. Wysocki 2010-01-23  677  	struct completion	completion;
+074037ec79bea7 Rafael J. Wysocki 2010-09-22  678  	struct wakeup_source	*wakeup;
+4ca46ff3e0d8c2 Rafael J. Wysocki 2011-10-16  679  	bool			wakeup_path:1;
+feb70af0e3ac68 Rafael J. Wysocki 2012-08-13  680  	bool			syscore:1;
+aa8e54b559479d Tomeu Vizoso      2016-01-07  681  	bool			no_pm_callbacks:1;	/* Owned by the PM core */
+3038b22bc09856 Rafael J. Wysocki 2025-02-25  682  	bool			work_in_progress:1;	/* Owned by the PM core */
+bca84a7b93fdc7 Rafael J. Wysocki 2025-02-18  683  	bool			smart_suspend:1;	/* Owned by the PM core */
+b017500ab53c06 Rafael J. Wysocki 2024-01-22  684  	bool			must_resume:1;		/* Owned by the PM core */
+b017500ab53c06 Rafael J. Wysocki 2024-01-22  685  	bool			may_skip_resume:1;	/* Set by subsystems */
+805bdaec1a4415 Rafael J. Wysocki 2011-02-24  686  #else
+b017500ab53c06 Rafael J. Wysocki 2024-01-22  687  	bool			should_wakeup:1;
+1eede070a59e1c Rafael J. Wysocki 2008-05-20  688  #endif
+d30d819dc83107 Rafael J. Wysocki 2014-11-27  689  #ifdef CONFIG_PM
+8234f6734c5d74 Vincent Guittot   2018-12-14 @690  	struct hrtimer		suspend_timer;
+6b61d49a55796d Grygorii Strashko 2020-09-18  691  	u64			timer_expires;
+5e928f77a09a07 Rafael J. Wysocki 2009-08-18  692  	struct work_struct	work;
+5e928f77a09a07 Rafael J. Wysocki 2009-08-18  693  	wait_queue_head_t	wait_queue;
+4990d4fe327b9d Tony Lindgren     2015-05-18  694  	struct wake_irq		*wakeirq;
+5e928f77a09a07 Rafael J. Wysocki 2009-08-18  695  	atomic_t		usage_count;
+5e928f77a09a07 Rafael J. Wysocki 2009-08-18  696  	atomic_t		child_count;
+5e928f77a09a07 Rafael J. Wysocki 2009-08-18  697  	unsigned int		disable_depth:3;
+b017500ab53c06 Rafael J. Wysocki 2024-01-22  698  	bool			idle_notification:1;
+b017500ab53c06 Rafael J. Wysocki 2024-01-22  699  	bool			request_pending:1;
+b017500ab53c06 Rafael J. Wysocki 2024-01-22  700  	bool			deferred_resume:1;
+b017500ab53c06 Rafael J. Wysocki 2024-01-22  701  	bool			needs_force_resume:1;
+b017500ab53c06 Rafael J. Wysocki 2024-01-22  702  	bool			runtime_auto:1;
+372a12ed9d99c0 Ulf Hansson       2016-04-08  703  	bool			ignore_children:1;
+b017500ab53c06 Rafael J. Wysocki 2024-01-22  704  	bool			no_callbacks:1;
+b017500ab53c06 Rafael J. Wysocki 2024-01-22  705  	bool			irq_safe:1;
+b017500ab53c06 Rafael J. Wysocki 2024-01-22  706  	bool			use_autosuspend:1;
+b017500ab53c06 Rafael J. Wysocki 2024-01-22  707  	bool			timer_autosuspends:1;
+b017500ab53c06 Rafael J. Wysocki 2024-01-22  708  	bool			memalloc_noio:1;
+baa8809f60971d Rafael J. Wysocki 2016-10-30  709  	unsigned int		links_count;
+5e928f77a09a07 Rafael J. Wysocki 2009-08-18  710  	enum rpm_request	request;
+5e928f77a09a07 Rafael J. Wysocki 2009-08-18  711  	enum rpm_status		runtime_status;
+c24efa6732788f Rafael J. Wysocki 2021-12-07  712  	enum rpm_status		last_status;
+5e928f77a09a07 Rafael J. Wysocki 2009-08-18  713  	int			runtime_error;
+15bcb91d7e607d Alan Stern        2010-09-25  714  	int			autosuspend_delay;
+8234f6734c5d74 Vincent Guittot   2018-12-14  715  	u64			last_busy;
+a08c2a5a319411 Thara Gopinath    2019-01-23  716  	u64			active_time;
+a08c2a5a319411 Thara Gopinath    2019-01-23  717  	u64			suspended_time;
+a08c2a5a319411 Thara Gopinath    2019-01-23  718  	u64			accounting_timestamp;
+5e928f77a09a07 Rafael J. Wysocki 2009-08-18  719  #endif
+5c095a0e0d600d Rafael J. Wysocki 2011-08-25  720  	struct pm_subsys_data	*subsys_data;  /* Owned by the subsystem. */
+2d984ad132a87c Rafael J. Wysocki 2014-02-11  721  	void (*set_latency_tolerance)(struct device *, s32);
+5f986c590fcf42 Rafael J. Wysocki 2012-10-23  722  	struct dev_pm_qos	*qos;
+1eede070a59e1c Rafael J. Wysocki 2008-05-20  723  };
+1eede070a59e1c Rafael J. Wysocki 2008-05-20  724  
 
 -- 
-2.48.1
-
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
