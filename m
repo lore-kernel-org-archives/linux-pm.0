@@ -1,37 +1,38 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E815E17A2E2;
-	Tue, 29 Apr 2025 00:36:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68BE11494C3;
+	Tue, 29 Apr 2025 00:36:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745886989; cv=none; b=IQZRBvYsKtUhwGJ+e4hU8JNERcyKnRYKNtudUhkDPCK+hOnDn6lrLFfe7cLWsXnk6b1VgoA5KLvcChYX92TOLhJeyGEA5SROC7F2f0ExD1tPVad/EDVAZN1yoEvETH3RKguCqi1r7E1YZiOuyj2RfXAOKTPkaqOJAWNbzZBpqkM=
+	t=1745886989; cv=none; b=KVcva/JT57Rxs3P4ODt2f0K3ZvG8+979bxhCw5F/iuSJa5OSFGy85JzrI6eW+bSRS1yfiFCtlZuy38nxfHn7QIdL0Z3Mw9mE/2BAbSQcZSkGULcH/Ieh6C1PWKVdrEEKta3Dr66gElpSrjh71cPGhDenuj9XC1b11HUEQC50Ucw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1745886989; c=relaxed/simple;
-	bh=KRZF4AimC4ir70M6J+ICGlCcbbzHC9tV5OlMioEtp7o=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=f+vE8DcandhLTtq18BxI5+Da/t+joSnAxaWi8JRYQZ8uNhNA1nwthCj0uHoqg9LwDSPjlY2U8B103ZU6/Sp6rDqr7aZtJ5MdzMaLXyYHT4+4pMKS9Job6u6FzPFABfgTaS54FYwexAMG5rzlNb1SpL7Nf2uJK9lq32ht1tJS7YA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=w_armin@gmx.de header.b=VjWNSKdg; arc=none smtp.client-ip=212.227.17.22
+	bh=2G13UdckMVoNWyQ2KkNbIsqMt2eJ/selT3Q4mTX/i9M=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=AM2kveJzBuppfm21RsSowwApoCRKJqRmCfh5AvV96Brhb8+M4CJrd83EStEPEeSvRSJ2WejZ8zkFdZYSyjrrOoA8UnWe6VOvs9h4wdWLC2iDnfdcprc1iPEUuUTxxHEF5RMrl2VwHfRVwGmS6oPaYxfbteFMiolP6AnA0jxxBxE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=w_armin@gmx.de header.b=BX6q7Z8k; arc=none smtp.client-ip=212.227.17.20
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=w_armin@gmx.de header.b="VjWNSKdg"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=w_armin@gmx.de header.b="BX6q7Z8k"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1745886978; x=1746491778; i=w_armin@gmx.de;
-	bh=VGRq0MaqT5yVpxK/8Ryqn4LVg8ze7XpG9UtDh6/J4UU=;
-	h=X-UI-Sender-Class:From:To:Cc:Subject:Date:Message-Id:
-	 MIME-Version:Content-Transfer-Encoding:cc:
+	s=s31663417; t=1745886982; x=1746491782; i=w_armin@gmx.de;
+	bh=g9WnqqVjdggWi2YjHHXf4QuvT/xttrq0L//6veEdl2w=;
+	h=X-UI-Sender-Class:From:To:Cc:Subject:Date:Message-Id:In-Reply-To:
+	 References:MIME-Version:Content-Transfer-Encoding:cc:
 	 content-transfer-encoding:content-type:date:from:message-id:
 	 mime-version:reply-to:subject:to;
-	b=VjWNSKdgZ6TrfpQPgS+UzcSx1SVx3HqP2MJ9XYW1aw/Ejup/WhQK1die3D/iwcgc
-	 k+pvi8HztQI7rljGdGu0v+xXRVaAMkGYT84eIDhjQGJy8LFPpz2/JcT0F7b6DWGaR
-	 EchNaIKns+LtZWPhwlClewSw0LBNFfKQU1iz8ptTxtiFT9dgrXDIgxJiXlsDqjqR8
-	 YgSfGzTm5MnEHwisWixzKjc9F1OgowpLcDqL0RFExa5EzrDg1Re9/wQ9ZhqtZ6kjZ
-	 3rirCZ4wHQLjRRd0R/ZvtXpIiSGecgoFtnvuHJrRHmNXCFRivGA9t2tPOIzC45Wg8
-	 p7SPqxTvL+nEItxUMg==
+	b=BX6q7Z8kDr+SCLb41wsd4I3BYXCnrqb4BwWXbf4x3IIBUMUVDU50fit91K5j3ODO
+	 ik+iEMsWQKmDkodV/q7bABKj/AI/QeS+afKXmo8AsiyccTIyxXv6odUFtz6KymsJr
+	 ZohNYwIKlxxG6IbiHrvMTrmiVeiB5Cp7rJf6A40RYdakseIHXmzRIg1z4aFjC/LGr
+	 eos4rqalYFRKZ5yPz7/z344Zb68EosP0VwwYlwtaqeJS44HddC8aSeLUymKhEirHT
+	 ZJOAVDAiLQwo0fm0Z1n+Z3gPcQei247dxNNWqMrkdqyUQXeC0+lMoYk460jUqz7LE
+	 DUw06e/VGTcYY8FLQw==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from mx-amd-b650.fritz.box ([87.177.78.219]) by mail.gmx.net
  (mrgmx104 [212.227.17.168]) with ESMTPSA (Nemesis) id
- 1M2O2Q-1uDOiC0xwM-00C7yM; Tue, 29 Apr 2025 02:36:18 +0200
+ 1MrhQC-1uoPZ40VXw-00fQIe; Tue, 29 Apr 2025 02:36:22 +0200
 From: Armin Wolf <W_Armin@gmx.de>
 To: hdegoede@redhat.com,
 	ilpo.jarvinen@linux.intel.com
@@ -39,10 +40,12 @@ Cc: sre@kernel.org,
 	platform-driver-x86@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/4] power: supply: core: Add additional health status values
-Date: Tue, 29 Apr 2025 02:36:03 +0200
-Message-Id: <20250429003606.303870-1-W_Armin@gmx.de>
+Subject: [PATCH v2 3/4] platform/x86: dell-ddv: Expose the battery manufacture date to userspace
+Date: Tue, 29 Apr 2025 02:36:05 +0200
+Message-Id: <20250429003606.303870-3-W_Armin@gmx.de>
 X-Mailer: git-send-email 2.39.5
+In-Reply-To: <20250429003606.303870-1-W_Armin@gmx.de>
+References: <20250429003606.303870-1-W_Armin@gmx.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -50,121 +53,194 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:pdHDwMJ1+w0c4m6E6Wqxh/4mKPhG107SCRtPqrJUYYzltsf+xTl
- o1iLhupyEXzg9xmLNbKTRTkrvDpqZzPeX/vSwUtyJheaG44qgTZmLgm5TnFYYp9vbqMnqBX
- xnCi+V3kM0s+Pni1sHUDq6dILHk+yL2nGTgOYNVh5iVVVtiXhmhQI/Uy+gALC330IHilUtG
- hd04nU4YHKic9gLh4+kPw==
+X-Provags-ID: V03:K1:CCotywXhA+GsZBcrnSnFt/W7RmxOkIa/WOrFgZautWT24o3gXwL
+ BLv37ohB2N17uQ7/tF6h+do+QVBJxvP04n2ycPpquGOE/TeR+UNF+sabsviBhhzg+qUt4Yw
+ TnFAX2C8VJsmiX5QEmIW/PFPIWk2NF9RLSvifIu/bfEgNWvzRS1BQNKbx4f+5GjDHcjY0NZ
+ eX4BkziUAIJBYKyYXkZxg==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:EfjctNjd2Y8=;F+rIxBWIZSKLzrunzhA2aa52RAg
- 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
- TMbCjyKIMfPoPjy2JIMBGhXoj6xiV3mcBp
+UI-OutboundReport: notjunk:1;M01:P0:crD9Uq+VSbA=;DzW8CM6+StTN8TuQep4LqBlLrMC
+ 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
+ mrek=
 
-Some batteries can signal when an internal fuse was blown. In such a
-case POWER_SUPPLY_HEALTH_DEAD is too vague for userspace applications
-to perform meaningful diagnostics.
+The manufacture date of a given battery is exposed over the Dell DDV
+WMI interface using the "BatteryManufactureDate" WMI method. The
+resulting data contains the manufacture date of the battery encoded
+inside a 16-bit value as described in the Smart Battery Data
+Specification.
 
-Additionally some batteries can also signal when some of their
-internal cells are imbalanced. In such a case returning
-POWER_SUPPLY_HEALTH_UNSPEC_FAILURE is again too vague for userspace
-applications to perform meaningful diagnostics.
+Expose this value to userspace using the power supply extension
+interface.
 
-Add new health status values for both cases.
+Tested on a Dell Inspiron 3505.
 
 Signed-off-by: Armin Wolf <W_Armin@gmx.de>
 =2D--
-Changes since v1:
- - rename "Fuse blown" to "Blown fuse"
- - rename "Cell imbalanced" to "Cell imbalance"
-=2D--
- Documentation/ABI/testing/sysfs-class-power | 2 +-
- drivers/power/supply/power_supply_sysfs.c   | 2 ++
- include/linux/power_supply.h                | 2 ++
- 3 files changed, 5 insertions(+), 1 deletion(-)
+ Documentation/wmi/devices/dell-wmi-ddv.rst |  3 --
+ drivers/platform/x86/dell/dell-wmi-ddv.c   | 58 ++++++++++++++++++++++
+ 2 files changed, 58 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/A=
-BI/testing/sysfs-class-power
-index 2a5c1a09a28f..be8be54b183d 100644
-=2D-- a/Documentation/ABI/testing/sysfs-class-power
-+++ b/Documentation/ABI/testing/sysfs-class-power
-@@ -456,7 +456,7 @@ Description:
- 			      "Over voltage", "Under voltage", "Unspecified failure", "Cold",
- 			      "Watchdog timer expire", "Safety timer expire",
- 			      "Over current", "Calibration required", "Warm",
--			      "Cool", "Hot", "No battery"
-+			      "Cool", "Hot", "No battery", "Blown fuse", "Cell imbalance"
+diff --git a/Documentation/wmi/devices/dell-wmi-ddv.rst b/Documentation/wm=
+i/devices/dell-wmi-ddv.rst
+index f10a623acca1..41c553d5c77d 100644
+=2D-- a/Documentation/wmi/devices/dell-wmi-ddv.rst
++++ b/Documentation/wmi/devices/dell-wmi-ddv.rst
+@@ -118,9 +118,6 @@ The date is encoded in the following manner:
+ - bits 5 to 8 contain the manufacture month.
+ - bits 9 to 15 contain the manufacture year biased by 1980.
 =20
- What:		/sys/class/power_supply/<supply_name>/precharge_current
- Date:		June 2017
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/sup=
-ply/power_supply_sysfs.c
-index edb058c19c9c..2703ed1dd943 100644
-=2D-- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -110,6 +110,8 @@ static const char * const POWER_SUPPLY_HEALTH_TEXT[] =
-=3D {
- 	[POWER_SUPPLY_HEALTH_COOL]		    =3D "Cool",
- 	[POWER_SUPPLY_HEALTH_HOT]		    =3D "Hot",
- 	[POWER_SUPPLY_HEALTH_NO_BATTERY]	    =3D "No battery",
-+	[POWER_SUPPLY_HEALTH_BLOWN_FUSE]	    =3D "Blown fuse",
-+	[POWER_SUPPLY_HEALTH_CELL_IMBALANCE]	    =3D "Cell imbalance",
+-.. note::
+-   The data format needs to be verified on more machines.
+-
+ WMI method BatterySerialNumber()
+ --------------------------------
+=20
+diff --git a/drivers/platform/x86/dell/dell-wmi-ddv.c b/drivers/platform/x=
+86/dell/dell-wmi-ddv.c
+index 711639001be4..8bd3ff76bb91 100644
+=2D-- a/drivers/platform/x86/dell/dell-wmi-ddv.c
++++ b/drivers/platform/x86/dell/dell-wmi-ddv.c
+@@ -8,6 +8,7 @@
+ #define pr_format(fmt) KBUILD_MODNAME ": " fmt
+=20
+ #include <linux/acpi.h>
++#include <linux/bitfield.h>
+ #include <linux/debugfs.h>
+ #include <linux/device.h>
+ #include <linux/device/driver.h>
+@@ -42,6 +43,10 @@
+ /* Battery indices 1, 2 and 3 */
+ #define DELL_DDV_NUM_BATTERIES		3
+=20
++#define SBS_MANUFACTURE_YEAR_MASK	GENMASK(15, 9)
++#define SBS_MANUFACTURE_MONTH_MASK	GENMASK(8, 5)
++#define SBS_MANUFACTURE_DAY_MASK	GENMASK(4, 0)
++
+ #define DELL_EPPID_LENGTH	20
+ #define DELL_EPPID_EXT_LENGTH	23
+=20
+@@ -744,6 +749,52 @@ static ssize_t eppid_show(struct device *dev, struct =
+device_attribute *attr, cha
+ 	return ret;
+ }
+=20
++static int dell_wmi_ddv_get_manufacture_date(struct dell_wmi_ddv_data *da=
+ta, u32 index,
++					     enum power_supply_property psp,
++					     union power_supply_propval *val)
++{
++	u16 year, month, day;
++	u32 value;
++	int ret;
++
++	ret =3D dell_wmi_ddv_query_integer(data->wdev, DELL_DDV_BATTERY_MANUFACT=
+URE_DATE,
++					 index, &value);
++
++	if (ret < 0)
++		return ret;
++
++	if (value > U16_MAX)
++		return -ENXIO;
++
++	/*
++	 * Some devices report a invalid manufacture date value
++	 * like 0.0.1980. Because of this we have to check the
++	 * whole value before exposing parts of it to user space.
++	 */
++	year =3D FIELD_GET(SBS_MANUFACTURE_YEAR_MASK, value) + 1980;
++	month =3D FIELD_GET(SBS_MANUFACTURE_MONTH_MASK, value);
++	if (month < 1 || month > 12)
++		return -ENODATA;
++
++	day =3D FIELD_GET(SBS_MANUFACTURE_DAY_MASK, value);
++	if (day < 1 || day > 31)
++		return -ENODATA;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_MANUFACTURE_YEAR:
++		val->intval =3D year;
++		return 0;
++	case POWER_SUPPLY_PROP_MANUFACTURE_MONTH:
++		val->intval =3D month;
++		return 0;
++	case POWER_SUPPLY_PROP_MANUFACTURE_DAY:
++		val->intval =3D day;
++		return 0;
++	default:
++		return -EINVAL;
++	}
++}
++
+ static int dell_wmi_ddv_get_property(struct power_supply *psy, const stru=
+ct power_supply_ext *ext,
+ 				     void *drvdata, enum power_supply_property psp,
+ 				     union power_supply_propval *val)
+@@ -768,6 +819,10 @@ static int dell_wmi_ddv_get_property(struct power_sup=
+ply *psy, const struct powe
+ 		 */
+ 		val->intval =3D value - 2732;
+ 		return 0;
++	case POWER_SUPPLY_PROP_MANUFACTURE_YEAR:
++	case POWER_SUPPLY_PROP_MANUFACTURE_MONTH:
++	case POWER_SUPPLY_PROP_MANUFACTURE_DAY:
++		return dell_wmi_ddv_get_manufacture_date(data, index, psp, val);
+ 	default:
+ 		return -EINVAL;
+ 	}
+@@ -775,6 +830,9 @@ static int dell_wmi_ddv_get_property(struct power_supp=
+ly *psy, const struct powe
+=20
+ static const enum power_supply_property dell_wmi_ddv_properties[] =3D {
+ 	POWER_SUPPLY_PROP_TEMP,
++	POWER_SUPPLY_PROP_MANUFACTURE_YEAR,
++	POWER_SUPPLY_PROP_MANUFACTURE_MONTH,
++	POWER_SUPPLY_PROP_MANUFACTURE_DAY,
  };
 =20
- static const char * const POWER_SUPPLY_TECHNOLOGY_TEXT[] =3D {
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 888824592953..69df3a452918 100644
-=2D-- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -71,6 +71,8 @@ enum {
- 	POWER_SUPPLY_HEALTH_COOL,
- 	POWER_SUPPLY_HEALTH_HOT,
- 	POWER_SUPPLY_HEALTH_NO_BATTERY,
-+	POWER_SUPPLY_HEALTH_BLOWN_FUSE,
-+	POWER_SUPPLY_HEALTH_CELL_IMBALANCE,
- };
-=20
- enum {
+ static const struct power_supply_ext dell_wmi_ddv_extension =3D {
 =2D-=20
 2.39.5
 
