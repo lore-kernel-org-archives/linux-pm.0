@@ -1,24 +1,25 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D1DA2BCF59;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D09229E07E;
 	Tue, 29 Apr 2025 22:55:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745967308; cv=none; b=DEYjCkLCNWK4yenZpHSMtvqu8r73H6pGr/I4eY3Onu9lpdDrfCbMHJao0FJ7F6s6Rtw/CW3obcpvSjGWKhWkvJIO63mHuHaBbBcRlXWINZPhyuB0GXALtXBJ2sbr7ZftUF5SMWZqRkttSoLpS2KeVMEjgCcXbfbgAd4Kpn7gxy4=
+	t=1745967308; cv=none; b=agfpolJdTVKofhjCc5bV4HCAyYTZL0GLZSlW3jYKZTxqgo7NGosOJ6CX4+Xpvw/PAeihVyoxiwDiiZJ8PWpe3RA6P4+zrBVTbEg2GtvAGVG+ZdnQhBw9oHqjeMPJLNNVhZ/W/LQmX/lAzsYKDxZJZrI3UMrYOZDPTxojrzJzp+0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1745967308; c=relaxed/simple;
-	bh=Qg7dbWo30d2R/S/bXavA5Q5cFMZ+5uXYXTvq8MvcP/I=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=YgH6muboJ4YS48iS3iu5o+OeEDSDm77XEL68czts/JeBZAuIRBVg5QVcaOdMNq/djxGZimHzwdOTOF42Qdip+HAB1gIGq8eNY/ViaeqsDEzQ+/lFI1313wT5irVHmUIJ3RkRe8MJ+Z5FnpAnAiAiV7Hyk+a+/tY0MKrWzlXCIeE=
+	bh=VdxKhz6N3WuAtyhJvRnjh/8RH3azoVAUuV/Qt7lH9OU=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=u1CNP3Inn7AbtJfAAhcoe3r94R3q5xzzgmM5PsIny+UlrmKr7jd956KIkb5sLNcWW9mH8c3MOJzaWskjTA4iYEY834xYH9eJjCOIHQk16zIjRkwsyz5fcI/eY60Bdum1WOYmjfg9J9AUU/QC/m5Lza7VwwSVVJWBlx3FzO3KGAk=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6FB37C4AF09;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 66969C4CEE3;
 	Tue, 29 Apr 2025 22:55:07 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 98054180E71; Wed, 30 Apr 2025 00:55:05 +0200 (CEST)
+	id 9B5DC180F44; Wed, 30 Apr 2025 00:55:05 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCH v2 0/5] power: supply: core: convert to fwnode
-Date: Wed, 30 Apr 2025 00:54:22 +0200
-Message-Id: <20250430-psy-core-convert-to-fwnode-v2-0-f9643b958677@collabora.com>
+Date: Wed, 30 Apr 2025 00:54:24 +0200
+Subject: [PATCH v2 2/5] power: supply: core: remove of_node from
+ power_supply_config
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -27,11 +28,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAJ5YEWgC/33NwQqDMAzG8VeRnJeh1QrutPcYHmpNZ8E1I5VuI
- r77OmHXXQL/HH7fBpHEU4RLsYFQ8tFzyKFOBdjJhDuhH3ODKpUularwGVe0LJRPSCQLLozuFXg
- kHLXRTaOcrV0HGXgKOf8+8Fufe/JxYVmPrVR9vz9W/2NThWW2qanbrqvbYbhanmczsJiz5Qf0+
- 75/AJ0ysxnIAAAA
-X-Change-ID: 20250221-psy-core-convert-to-fwnode-d5a5442fc3f9
+Message-Id: <20250430-psy-core-convert-to-fwnode-v2-2-f9643b958677@collabora.com>
+References: <20250430-psy-core-convert-to-fwnode-v2-0-f9643b958677@collabora.com>
+In-Reply-To: <20250430-psy-core-convert-to-fwnode-v2-0-f9643b958677@collabora.com>
 To: Sebastian Reichel <sre@kernel.org>, Mark Brown <broonie@kernel.org>, 
  Linus Walleij <linus.walleij@linaro.org>, 
  Hans de Goede <hdegoede@redhat.com>
@@ -47,72 +46,63 @@ Cc: Liam Girdwood <lgirdwood@gmail.com>, Vinod Koul <vkoul@kernel.org>,
  linux-phy@vger.kernel.org, 
  Sebastian Reichel <sebastian.reichel@collabora.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2174;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1586;
  i=sebastian.reichel@collabora.com; h=from:subject:message-id;
- bh=Qg7dbWo30d2R/S/bXavA5Q5cFMZ+5uXYXTvq8MvcP/I=;
- b=owEBbQKS/ZANAwAKAdju1/PIO/qaAcsmYgBoEVjHHm+QZt24518eVkCGiIkUGogfduz7bAMMN
- yvsyzZuGiqJAjMEAAEKAB0WIQTvZg0HRj+Lcmp5VBPY7tfzyDv6mgUCaBFYxwAKCRDY7tfzyDv6
- mrbED/9hlVlNL6cchpUTF8R47pd72Q/GXJxNpiukcKuEVW7zkhSwEwkxtnFH3gTUhmWO3oVO/GG
- AinO9drL7hN4N+j9sGDkp1Y8szwd4Cb0r9qS+bKnKOQFEIWB2z+y3Kp97QRCkvpbCwmS1wymK7S
- 3nupzUOda5hk/CKGadQi/aroM+UmUMhD5Pk5arlqtRaF8uuhxto3kFe6S1Qn3kGOw5O9GjsbRxe
- j7rp8fkYtckUHR47ozkFHnl5RO1YaAHXfegxtHSoGM74BLZ15kEtRJvcbdKnU1I+6VgNnaefQ6b
- FI/gtWbrVx+H3AeMWdGEZ6eSPx9Gq41NGrIid7aLdvQYgpPaIAuxTor1Ds/kzNC/uVVX5QJUamX
- EjZqKUD6lqW0uj04aTzcS2tsrBYT+dTvofKxyOR8szCqn6CvrNJMQqRZbgUbRAcYMEpNgCCCjiQ
- r/eOlTd0zfLYmZ/7RvpUEIN+xdhWvCWkJ15ZPzyW7hMAF/4QPobdwEEBWLNIyysGccwE7bahFbd
- En8cNoMFe8tGwEHLp1jDM1sIG3oaVcuR5iYX0TtK1+ENh5QIy/hGJdkKeU6BHGPPBs8oYd/J92a
- oE1sT0gjY04CQ5VNq76W7GdgL3H0T2xThU7EmlpwdutuOu0wcXEX/YBxUXLxxYVJ4MZXQLZVwS8
- NC9cM/Jg+bxyM8A==
+ bh=VdxKhz6N3WuAtyhJvRnjh/8RH3azoVAUuV/Qt7lH9OU=;
+ b=owEBbQKS/ZANAwAKAdju1/PIO/qaAcsmYgBoEVjIQWkdUql6NNuli5U3aY4Y/bKXE4oGhtlL1
+ v31l/zwZ+6JAjMEAAEKAB0WIQTvZg0HRj+Lcmp5VBPY7tfzyDv6mgUCaBFYyAAKCRDY7tfzyDv6
+ mvqJD/4q4P+lOwNAv610m+hf8jOlOOuGuYYiqa9IXiJfUz/0xX0sCa+00tOsyfqDXQvWa4n3nYt
+ utv05VXwMp7e0Q6d8W4Nm2+JPgnCKIQ9h5p95IUNEz66Wa8IEiVSOv9xr8K1Axttg2dzaUuGf9m
+ DYcuEBWCZJHWKFbDHcxbPKU3jRCSl496VdcyVgtg1o1XHERNLn5t7wYGiagIbi9DcrxyC7oY04O
+ 9DnUT2ATJBc7RD9Zmbxvsl3sti1nPKepXQ3k4abfGyWByko3PmhV1E6QhB4YJ8XxFH2v17dN2Td
+ KB48RRjmYn1PEy98E08AlS6Qd20BlG5phguqg7IXXgaQpmzImHrK3d+fzyn/fwxrmuJgjiG0YlX
+ w04O0uJU3Wpush0TofNEsCZISQmMsme6I//qyYCm50AlN2pbBiFLH/WAL0bxpsxC/iTRPuuCoFr
+ G90uC6GdFhYTvEAn1kIO5CuyVYvgP/TRKDULENPtCWvlW3Mln8BH2UpsbT0ZPJnTtK9eD6aWuVD
+ 2qvRwdI0TY68ncJoa9wSG+s5Y6UdVZEZ23qiNd7oPaXYpXNmvx/szd4GSf876ybw3YrdUbG8kdK
+ bZKjAqLrvF8EAj8HvOyruxQTn0VLj7FSOg+eW5wqcwc3X99jsnvoVYfTq46xVxje3y4kSRxn0G3
+ e0Ci+mdeca0kTKA==
 X-Developer-Key: i=sebastian.reichel@collabora.com; a=openpgp;
  fpr=EF660D07463F8B726A795413D8EED7F3C83BFA9A
 
-The goal of this series is to replace any OF specific code in the
-power-supply core with more generic fwnode code.
+All drivers have been migrated from .of_node to .fwnode,
+so let's kill the former.
 
-The first 2 patches of this series mostly take care of removing .of_node
-from power_supply_config in favor of using the existing .fwnode.
-
-Patch 3 replaces the OF specific logic in battery-info. This will
-hopefully also allow Hans de Goede reusing the code with his Intel
-Dollar Cove TI CC battery driver series.
-
-Patch 4 replaces the OF phandle code with fwnode to have everything
-converted.
-
-Finally patch 5 renames some functions to remove the OF terminology
-and allows using them without CONFIG_OF being enabled.
-
-Note, that I do not own a single device making use of the
-"ocv-capacity-celsius" and "resistance-temp-table", which means patch 3
-is basically untested. I would really appreciate if somebody gives this
-series a test run on an affected device.
-
-Changes in PATCHv2:
-- Link to v1: https://lore.kernel.org/r/20250225-psy-core-convert-to-fwnode-v1-0-d5e4369936bb@collabora.com
-- drop merged patches
-- add new patch renaming power_supply_get_by_phandle to power_supply_get_by_reference
-- rebase to latest power-supply for-next branch
-- collected Reviewed-by
-- rewrite cover letter accordingly
-
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
-Sebastian Reichel (5):
-      regulator: act8865-regulator: switch psy_cfg from of_node to fwnode
-      power: supply: core: remove of_node from power_supply_config
-      power: supply: core: battery-info: fully switch to fwnode
-      power: supply: core: convert to fwnnode
-      power: supply: core: rename power_supply_get_by_phandle to power_supply_get_by_reference
+ drivers/power/supply/power_supply_core.c | 3 +--
+ include/linux/power_supply.h             | 1 -
+ 2 files changed, 1 insertion(+), 3 deletions(-)
 
- drivers/phy/allwinner/phy-sun4i-usb.c    |   2 +-
- drivers/power/supply/bq2415x_charger.c   |   2 +-
- drivers/power/supply/power_supply_core.c | 193 +++++++++++++++++--------------
- drivers/regulator/act8865-regulator.c    |   2 +-
- include/linux/power_supply.h             |  16 +--
- 5 files changed, 109 insertions(+), 106 deletions(-)
----
-base-commit: fbc1d056d3f3d417bc9df521cb45a0f51758b64a
-change-id: 20250221-psy-core-convert-to-fwnode-d5a5442fc3f9
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 33a5bfce4604f012344733ba489eda1c5e8b92c0..89947f1fe610d8a75756e1e4e5339b06349f9ab8 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -1529,10 +1529,9 @@ __power_supply_register(struct device *parent,
+ 	dev_set_drvdata(dev, psy);
+ 	psy->desc = desc;
+ 	if (cfg) {
++		device_set_node(dev, cfg->fwnode);
+ 		dev->groups = cfg->attr_grp;
+ 		psy->drv_data = cfg->drv_data;
+-		dev->of_node =
+-			cfg->fwnode ? to_of_node(cfg->fwnode) : cfg->of_node;
+ 		psy->supplied_to = cfg->supplied_to;
+ 		psy->num_supplicants = cfg->num_supplicants;
+ 	}
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index c4cb854971f53a244ba7742a15ce7a5515da6199..b6eb31a23c878aa9ed8ad7bcb02a13721354e1cb 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -229,7 +229,6 @@ struct power_supply;
+ 
+ /* Run-time specific power supply configuration */
+ struct power_supply_config {
+-	struct device_node *of_node;
+ 	struct fwnode_handle *fwnode;
+ 
+ 	/* Driver private data */
 
-Best regards,
 -- 
-Sebastian Reichel <sebastian.reichel@collabora.com>
+2.47.2
 
