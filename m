@@ -1,176 +1,136 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D82F829C341;
-	Wed, 30 Apr 2025 20:03:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2ACD32BD93D;
+	Wed, 30 Apr 2025 21:22:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746043402; cv=none; b=fjWx7GatKQTLf7u1jsryPzIeTJb4XMN79EtHFa1wOs0Vf77qNfHAooX6VdYhRjOcGYNCxgkMdcFabSa/5mOfVzGyUySaDRjj72gwntuieYaxRyMgh6QWwZ4vmffIiQ/d9xw36KMOwFQtDMPihd/M4Sc0A0ZeeKILq7lUSU18kBw=
+	t=1746048128; cv=none; b=YZjXh5iTz4jczxf+FtcnUO9GP8WcIHPDuA19ei1Yw+Un2+bexzIA0+AJSk1ZRCgudPyIIyIOduu0zqIVVdXfyPhaBPAfahqtV56336w+8AIOdt8t37257UiwlDTJcHZyXuZ7m/W3EHAXqXhfoAY1HtKeudTm69KAzAw44cPzryc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746043402; c=relaxed/simple;
-	bh=NwkGTVS0PocVVimFJdrGAK87WACDEWoHwAWZ4ywRzNo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=aSeyjcbDgTRtwsw6FA1iASS+TW6inVcbDVATTZAGubWIrORCIDBtEAo6wlxQsEFYZ+8cbl3x7uRM7BnBMSKYsTRUwzemTrkNedleGa3MmznAWUt6dBCJvBWrjXDGMalHi9lzLjshmNTRaGroeV5eBPMqOEFUldkyyQnuJ9N85IY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=sGXtdOIs; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1746048128; c=relaxed/simple;
+	bh=sWO2f/PxHT1FPtFUalwag2d9hPPO/aR7oKxfBHK7ykw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=CjBSIoVHgjCBQTOwFcojQT2DOmKg+sRgdT2nntV+FCbt6TiNysNflPSLjhYKoxJaWgWQ7gbhvNG6IoRd49WfzTy8ngsd6dmV8/Ip4BHaHwgZnVcy6Mb29esVufEvYETZfLGXuCUU6GYMv1s5+TlCPTjSu6xUUMgtjZPHmDQ9xy8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=lst.de; spf=none smtp.mailfrom=bombadil.srs.infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=D+ofx2nx; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=lst.de
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="sGXtdOIs"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 694E4C4CEF5;
-	Wed, 30 Apr 2025 20:03:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746043401;
-	bh=NwkGTVS0PocVVimFJdrGAK87WACDEWoHwAWZ4ywRzNo=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=sGXtdOIsh95cJHlMJ2UvMYNq00VI1k0tUOUT8o+jwmfNBOiBD5Hz43nN12KbD+z1A
-	 WJh8s/CwSa4vKwQyieZf4GpmaGw1DibvLQyYrAcawmxZ5u8T9z5fpOhnCVUKDx5+dZ
-	 VUCHdTS+Xporl7tISdbYNDtETZHm0ffNF9LD5pjz/oMQW9U6LiiJb/wzo4r2Kzxpqm
-	 96whW6qML7A3aFOUj2zlxPbO44i2YU1VeyrmWycr39pjqvd9y977mil+s0iCQeOyIJ
-	 iI3//MkPerjXdl6K5HHd+Jya+nDST2Apv8BzB1DtdRIwJPsdiyloj4TM/MC5VYojRW
-	 cTkLNGVDCXIag==
-Received: by mail-oa1-f44.google.com with SMTP id 586e51a60fabf-2da3c5729fcso211955fac.0;
-        Wed, 30 Apr 2025 13:03:21 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCU4gRMLN3RKOl6JxnQF+6oEqfrLQeYE1g/a2B3AwNQxLggkJR1NGTrj6xGH7NYf6wITxZ3pPu9evqgH@vger.kernel.org, AJvYcCWRvkUqRnLu6EsX44PE187A2zAUlwGlQeyTSirJw+Ygdd6IoruO0FV3LWE5TN2hlfESb94KSb02+8k=@vger.kernel.org, AJvYcCXLReoQTGWoiYwA0kyOl6+SzSvDWCHCq62P3FeciJWN0aETxhVmgem5Xomtue9Tm5PGlNZ0fgaQ0qxAzfqh@vger.kernel.org
-X-Gm-Message-State: AOJu0YyntJUcnLxZM5FPAD90ULFTkLOFu1wRWxwrDuM3rUo6nWr7Ib+a
-	570SwIAdc+WtlQsBNd48PkLQWfmnpRm8J2v8ODO9OvlEyT/s9X37Rbpl7z859cglO+cQ+Ehe7v1
-	WQg6fTzfyJynX5lDkt+/cI474XQI=
-X-Google-Smtp-Source: AGHT+IGhmLyBRn0IZdPfK6KM97JS9uw2zTeIkkXouEb91STcAV8rAa4Gk6jixae6PbBFOGyZRuGtQUMmrj+NP/8P2CA=
-X-Received: by 2002:a05:6870:71cb:b0:2b3:55b3:e38 with SMTP id
- 586e51a60fabf-2da69f21b34mr2403838fac.21.1746043400613; Wed, 30 Apr 2025
- 13:03:20 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="D+ofx2nx"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
+	:Reply-To:Content-Type:Content-ID:Content-Description;
+	bh=R5NIVw/93J/inPIJ3/N2tOuwD8pOE89NikFOGZTqiC4=; b=D+ofx2nxOGw3yGY/8psrCG4CGg
+	wSpsZV3SlGqkToRY30U+M8OwT2tIVU2BU9Xbo01ttwJ4qF8tp6Q2MN6Sne/d2fWpc0htF53qI/VpF
+	pcAWkMJ4LuGnqG9MKROb8Rsp1gsJLj7kUJSWrGJ+hH2KxwFHNd9gDeDfoUHAWGaU6EVZ1P6uvNsWX
+	oqO/GM2yKUqRza45WoEqKPbPFRO4Zkb4o+jX2nvbwqH8ZDv0rJ6SmEh3bBmT06mRi2uHRxSagHn37
+	9tVRNAzo1pXfMcp6c8qEY4pCmej3/P+diktB/1KYO5KeI1QdINlCnXwbUvwpLWolxUEZQc0NID/BR
+	0JX12Smg==;
+Received: from [206.0.71.65] (helo=localhost)
+	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1uAEsW-0000000E2W5-2808;
+	Wed, 30 Apr 2025 21:22:04 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Jens Axboe <axboe@kernel.dk>
+Cc: linux-block@vger.kernel.org,
+	"Md. Haris Iqbal" <haris.iqbal@ionos.com>,
+	Jack Wang <jinpu.wang@ionos.com>,
+	Coly Li <colyli@kernel.org>,
+	Kent Overstreet <kent.overstreet@linux.dev>,
+	Mike Snitzer <snitzer@kernel.org>,
+	Mikulas Patocka <mpatocka@redhat.com>,
+	Chris Mason <clm@fb.com>,
+	Josef Bacik <josef@toxicpanda.com>,
+	David Sterba <dsterba@suse.com>,
+	Andreas Gruenbacher <agruenba@redhat.com>,
+	Carlos Maiolino <cem@kernel.org>,
+	Damien Le Moal <dlemoal@kernel.org>,
+	Naohiro Aota <naohiro.aota@wdc.com>,
+	Johannes Thumshirn <jth@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	slava@dubeyko.com,
+	glaubitz@physik.fu-berlin.de,
+	frank.li@vivo.com,
+	linux-bcache@vger.kernel.org,
+	dm-devel@lists.linux.dev,
+	linux-btrfs@vger.kernel.org,
+	gfs2@lists.linux.dev,
+	linux-fsdevel@vger.kernel.org,
+	linux-xfs@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Hannes Reinecke <hare@suse.de>,
+	Johannes Thumshirn <johannes.thumshirn@wdc.com>
+Subject: [PATCH 01/19] block: add a bio_add_virt_nofail helper
+Date: Wed, 30 Apr 2025 16:21:31 -0500
+Message-ID: <20250430212159.2865803-2-hch@lst.de>
+X-Mailer: git-send-email 2.47.2
+In-Reply-To: <20250430212159.2865803-1-hch@lst.de>
+References: <20250430212159.2865803-1-hch@lst.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250411093855.982491-1-zhenglifeng1@huawei.com> <f6904bb1-f41f-4be9-92bb-92fec509a821@amd.com>
-In-Reply-To: <f6904bb1-f41f-4be9-92bb-92fec509a821@amd.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 30 Apr 2025 22:03:09 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0gNZsv+sJ8OweGYE6bFTqD48g3JUJn_kL2m17Q2QX6p1w@mail.gmail.com>
-X-Gm-Features: ATxdqUFlzi9fK4g3MpOxGzQvjbOGdDgFxNB6hIBF5J0ky9zNPfIg6Ulnwvdr2WA
-Message-ID: <CAJZ5v0gNZsv+sJ8OweGYE6bFTqD48g3JUJn_kL2m17Q2QX6p1w@mail.gmail.com>
-Subject: Re: [PATCH v7 0/8] Add functions for getting and setting registers
- related to autonomous selection in cppc_acpi
-To: Mario Limonciello <mario.limonciello@amd.com>, Lifeng Zheng <zhenglifeng1@huawei.com>
-Cc: lenb@kernel.org, robert.moore@intel.com, viresh.kumar@linaro.org, 
-	gautham.shenoy@amd.com, ray.huang@amd.com, perry.yuan@amd.com, 
-	pierre.gondois@arm.com, sumitg@nvidia.com, acpica-devel@lists.linux.dev, 
-	linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linuxarm@huawei.com, jonathan.cameron@huawei.com, 
-	zhanjie9@hisilicon.com, lihuisong@huawei.com, cenxinghai@h-partners.com, 
-	hepeng68@huawei.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 
-On Fri, Apr 11, 2025 at 8:18=E2=80=AFPM Mario Limonciello
-<mario.limonciello@amd.com> wrote:
->
-> On 4/11/2025 4:38 AM, Lifeng Zheng wrote:
-> > The patch series is organized in two parts:
-> >
-> >   - patch 1-6 refactor out the general CPPC register get and set functi=
-ons
-> >     in cppc_acpi.c
-> >
-> >   - patches 7-8 add functions for getting and setting values of auto_se=
-l,
-> >     energy_perf and auto_act_window in cppc_acpi.c
-> >
-> > Changelog:
-> >
-> > v7:
-> >
-> >   - Fix some typos
-> >   - Add check of null pointer in cppc_get_reg_val(),
-> >     cppc_get_auto_act_window() and cppc_get_auto_sel()
-> >   - Replace ternary operator with logical expression in cppc_get_reg_va=
-l()
-> >
-> > v6:
-> >
-> >   - Remove the last patch, will resent it in the future after reaching =
-an
-> >     agreement with Sumit
-> >   - split patch 3 into 2 smaller patches
-> >   - Remove the printing of reg_idx in cppc_get_reg_val() and
-> >     cppc_set_reg_val()
-> >   - Change the logic for determing whether a register is supported in
-> >     cppc_get_reg_val() and cppc_set_reg_val()
-> >
-> > v5:
-> >
-> >   - add more explanation to the commit logs and comments
-> >   - change REG_OPTIONAL from bin to hex
-> >   - split patch 2 into 3 smaller patches
-> >   - remove CPPC_REG_VAL_READ() and CPPC_REG_VAL_WRITE() macros
-> >   - move the modification part in patch 5 into a separate patch
-> >   - rename the sysfs file from "energy_perf" to
-> >     energy_performance_preference_val
-> >
-> > v4:
-> >
-> >   - add REG_OPTIONAL and IS_OPTIONAL_CPC_REG to judge if a cpc register=
- is
-> >     an optional one
-> >   - check whether the register is optional before CPC_SUPPORTED check i=
-n
-> >     cppc_get_reg_val() and cppc_set_reg_val()
-> >   - check the register's type in cppc_set_reg_val()
-> >   - add macros to generally implement registers getting and setting
-> >     functions
-> >   - move some logic codes from cppc_cpufreq.c to cppc_acpi.c
-> >   - replace cppc_get_auto_sel_caps() by cppc_get_auto_sel()
-> >
-> > v3:
-> >
-> >   - change cppc_get_reg() and cppc_set_reg() name to cppc_get_reg_val()=
- and
-> >     cppc_set_reg_val()
-> >   - extract cppc_get_reg_val_in_pcc() and cppc_set_reg_val_in_pcc()
-> >   - return the result of cpc_read() in cppc_get_reg_val()
-> >   - add pr_debug() in cppc_get_reg_val_in_pcc() when pcc_ss_id < 0
-> >   - rename 'cpunum' to 'cpu' in cppc_get_reg_val()
-> >   - move some macros from drivers/cpufreq/cppc_cpufreq.c to
-> >     include/acpi/cppc_acpi.h with a CPPC_XXX prefix
-> >
-> > v2:
-> >
-> >   - fix some incorrect placeholder
-> >   - change kstrtoul to kstrtobool in store_auto_select
-> >
-> > ---
-> > Discussions of previous versions:
-> > v1: https://lore.kernel.org/all/20241114084816.1128647-1-zhenglifeng1@h=
-uawei.com/
-> > v2: https://lore.kernel.org/all/20241122062051.3658577-1-zhenglifeng1@h=
-uawei.com/
-> > v3: https://lore.kernel.org/all/20241216091603.1247644-1-zhenglifeng1@h=
-uawei.com/
-> > v4: https://lore.kernel.org/all/20250113122104.3870673-1-zhenglifeng1@h=
-uawei.com/
-> > v5: https://lore.kernel.org/all/20250206131428.3261578-1-zhenglifeng1@h=
-uawei.com/
-> > v6: https://lore.kernel.org/all/20250409065703.1461867-1-zhenglifeng1@h=
-uawei.com/
-> >
-> > Lifeng Zheng (8):
-> >    ACPI: CPPC: Add IS_OPTIONAL_CPC_REG macro to judge if a cpc_reg is
-> >      optional
-> >    ACPI: CPPC: Optimize cppc_get_perf()
-> >    ACPI: CPPC: Rename cppc_get_perf() to cppc_get_reg_val()
-> >    ACPI: CPPC: Extract cppc_get_reg_val_in_pcc()
-> >    ACPI: CPPC: Add cppc_set_reg_val()
-> >    ACPI: CPPC: Refactor register value get and set ABIs
-> >    ACPI: CPPC: Modify cppc_get_auto_sel_caps() to cppc_get_auto_sel()
-> >    ACPI: CPPC: Add three functions related to autonomous selection
-> >
-> >   drivers/acpi/cppc_acpi.c     | 313 +++++++++++++++++++++-------------=
--
-> >   drivers/cpufreq/amd-pstate.c |   3 +-
-> >   include/acpi/cppc_acpi.h     |  30 +++-
-> >   3 files changed, 219 insertions(+), 127 deletions(-)
-> >
->
-> Reviewed-by: Mario Limonciello <mario.limonciello@amd.com>
+Add a helper to add a directly mapped kernel virtual address to a
+bio so that callers don't have to convert to pages or folios.
 
-All patches in the series applied as 6.16 material, thanks!
+For now only the _nofail variant is provided as that is what all the
+obvious callers want.
+
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Damien Le Moal <dlemoal@kernel.org>
+Reviewed-by: Hannes Reinecke <hare@suse.de>
+Reviewed-by: Johannes Thumshirn <johannes.thumshirn@wdc.com>
+---
+ block/bio.c         | 16 ++++++++++++++++
+ include/linux/bio.h |  2 ++
+ 2 files changed, 18 insertions(+)
+
+diff --git a/block/bio.c b/block/bio.c
+index 4e6c85a33d74..c1789a58f23f 100644
+--- a/block/bio.c
++++ b/block/bio.c
+@@ -989,6 +989,22 @@ void __bio_add_page(struct bio *bio, struct page *page,
+ }
+ EXPORT_SYMBOL_GPL(__bio_add_page);
+ 
++/**
++ * bio_add_virt_nofail - add data in the direct kernel mapping to a bio
++ * @bio: destination bio
++ * @vaddr: data to add
++ * @len: length of the data to add, may cross pages
++ *
++ * Add the data at @vaddr to @bio.  The caller must have ensure a segment
++ * is available for the added data.  No merging into an existing segment
++ * will be performed.
++ */
++void bio_add_virt_nofail(struct bio *bio, void *vaddr, unsigned len)
++{
++	__bio_add_page(bio, virt_to_page(vaddr), len, offset_in_page(vaddr));
++}
++EXPORT_SYMBOL_GPL(bio_add_virt_nofail);
++
+ /**
+  *	bio_add_page	-	attempt to add page(s) to bio
+  *	@bio: destination bio
+diff --git a/include/linux/bio.h b/include/linux/bio.h
+index cafc7c215de8..acca7464080c 100644
+--- a/include/linux/bio.h
++++ b/include/linux/bio.h
+@@ -417,6 +417,8 @@ void __bio_add_page(struct bio *bio, struct page *page,
+ 		unsigned int len, unsigned int off);
+ void bio_add_folio_nofail(struct bio *bio, struct folio *folio, size_t len,
+ 			  size_t off);
++void bio_add_virt_nofail(struct bio *bio, void *vaddr, unsigned len);
++
+ int bio_iov_iter_get_pages(struct bio *bio, struct iov_iter *iter);
+ void bio_iov_bvec_set(struct bio *bio, const struct iov_iter *iter);
+ void __bio_release_pages(struct bio *bio, bool mark_dirty);
+-- 
+2.47.2
+
