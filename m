@@ -1,30 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A3A7253332
-	for <linux-pm@vger.kernel.org>; Thu,  1 May 2025 21:17:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 350F525F970
+	for <linux-pm@vger.kernel.org>; Thu,  1 May 2025 21:17:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746134263; cv=none; b=EqVrV7IbkPaLjJMnE99RafkI1uurhMmHRFU2LkQFZ58EriZvsYS4VNQsSedp40E9EFrQNvUooRXSS1uxEGxariZ0ezFBQJKdco3uOiKnriIAAkJfODAYIEW9t64lrGVIt+TLmjnI30c2aQpXCPfaHJ4B+lPS8Bl2cgA6bNMaHzU=
+	t=1746134264; cv=none; b=ILixDPXZFIyFM2RbDUOj58cVN1fxabdzViT+WiBESfvy+OqDRg1HbCi1yLPhVIhOAacSqAjo+G/2PSmLqM6THLb/0DE099UUhanl2ZbqqwLtrRygXTisaNvGoesCnx0ALtE9PpctSiylI+ek0h8okHcSZ99/I5pbiAwfJuAM6mM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746134263; c=relaxed/simple;
-	bh=ezi9K3Epx60pZdQ7FxZyZ9yVvMN3Di0TUurJQagcf74=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=MmMIDJp2Kch3kHsV9RHXMSxT/fQ1YZLKgH5DIK5X7BPpGBAVuXV13/8HuAOF81fcnFpv44ihzkuVdZzl1kyPo2YIwZS1fs0Y2N/OAVDCRZmfeD9CalIvnej1RDPe5Oz2g0rUZ+1sBJJY5yO0Vdu6tbZRIwiO2I3F5EmhCL7XkmU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hO8b29nx; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1746134264; c=relaxed/simple;
+	bh=PaL6fSpxU3x6hlhh7NpF14QNceBepBMnGGT5NyW1Kk4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=a3bz714DeQ6Skr52Pv0senfKEoSSxr5JX8iZlUccl2WToKaVYJaKIS3TOmskJLHndNwS9l07F9QIonRL4Prh0Qvxxu6/FaOWD8rIGZWMVo6cFC4a23KRX2JnX1Uvc7nJ2v0nh0k54JB5ld0IP+agRgfGQYJq4a2RA8mi8SzmjSM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CDJ3QtPG; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hO8b29nx"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1DC97C4CEE3;
-	Thu,  1 May 2025 21:17:41 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CDJ3QtPG"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F0AEBC4CEEF;
+	Thu,  1 May 2025 21:17:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746134261;
-	bh=ezi9K3Epx60pZdQ7FxZyZ9yVvMN3Di0TUurJQagcf74=;
-	h=From:To:Cc:Subject:Date:From;
-	b=hO8b29nxu3zuNtZftjLJYD7Ty2mb09NntcFBmVqcgx8ustUAecnsJy8ygRWprSVKx
-	 dtgs8wigxH91xwGtU9iH6CytaoXBK9VUexlp4yaIF/rBtr5cU6C9+x2t2kfFSbtzZo
-	 643LL3pB+LM71mBK/YwvnNTeevbOupjYUzKDjpLaHRnEkP4Qqvk4sLyZCXMfSdXjgw
-	 /bHhUtfen3lETp2K/VRpJn2esqsHN8k2zYa5+HEbg0oMF79oibHa6St/pQdIM9eM7T
-	 I6r/6SSqxK2BUhExv2wO/+UMA1cUhktLwFBFUEIyXXJxd2AHnuo82RtQmFwMxq2Jjy
-	 +aZg+6z+BjI6g==
+	s=k20201202; t=1746134263;
+	bh=PaL6fSpxU3x6hlhh7NpF14QNceBepBMnGGT5NyW1Kk4=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=CDJ3QtPGpXRAm5yXpFnRjAiAArom0g+X7z9IkpMCHFbp6js7r9C9Ie7NVFIE2vPxT
+	 gHlT9P8Tb7CzR/cMLwbHoK6irWKYvgij9cm23DAI/a/Grd8oAV8RUc3XPUY/m5QnCQ
+	 Jli4WO6CSEuJoBDlmpfPaA2I/B1T4VMIivsMXVjDLg50d84xwrCFnYQTCE4qfnYRKA
+	 4ZVsuL9h+lSNdurO2vZV7BaTN6PdJOOYYhphhp2kRpjDj0rD7qF25N/Yvk/KPahcw9
+	 YyNOGAW7w5itvGbDVKZEyKCfapIstkEbbREc3cDIGLP9kVyjg0XEO6ZMBb4w54JhY9
+	 kPBg8AJTWhwgw==
 From: Mario Limonciello <superm1@kernel.org>
 To: Alex Deucher <alexander.deucher@amd.com>,
 	"Rafael J . Wysocki" <rafael@kernel.org>
@@ -33,10 +34,12 @@ Cc: =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
 	dri-devel@lists.freedesktop.org (open list:DRM DRIVERS),
 	linux-pm@vger.kernel.org (open list:HIBERNATION (aka Software Suspend, aka swsusp)),
 	Mario Limonciello <mario.limonciello@amd.com>
-Subject: [RFC 0/2] Evict VRAM after processes are frozen
-Date: Thu,  1 May 2025 16:17:31 -0500
-Message-ID: <20250501211734.2434369-1-superm1@kernel.org>
+Subject: [RFC 2/2] drm/amd: Use suspend and hibernate post freeze notifications
+Date: Thu,  1 May 2025 16:17:33 -0500
+Message-ID: <20250501211734.2434369-3-superm1@kernel.org>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250501211734.2434369-1-superm1@kernel.org>
+References: <20250501211734.2434369-1-superm1@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -47,41 +50,42 @@ Content-Transfer-Encoding: 8bit
 
 From: Mario Limonciello <mario.limonciello@amd.com>
 
-As part of the suspend and hibernate sequences devices supported
-by amdgpu will have VRAM evicted.  This has been littered with problems
-in the past, and now it is called strategically at multiple times
-during power management sequences.
+commit 2965e6355dcd ("drm/amd: Add Suspend/Hibernate notification
+callback support") introduced a VRAM eviction earlier in the PM
+sequences when swap was still available for evicting to. This helped
+to fix a number of memory pressure related bugs but also exposed a
+new one.
 
-Most recently there were a number of issues reported that were root caused
-to physical memory pressure at suspend time where VRAM couldn't be evicted.
-A new call was introduced using a PM notifier before swap was turned off
-so that even if there are physical memory pressures VRAM could still be
-evicted into swap.
+If a userspace process is actively using the GPU when suspend starts
+then a deadlock could occur.
 
-This helped, but users using older systemd noted that this could lead to a
-deadlock.  This is because user processes aren't frozen by older versions
-of systemd and thus if a game is running it could potentially be creating
-BOs during the eviction thus preventing eviction from ever completing.
+Instead of going off the prepare notifier, use the PM notifiers that
+occur after processes have been frozen to do evictions.
 
-This isn't an issue with newer systemd because it uses cgroup freezing
-to freeze user processes. Nonetheless this isn't a good behavior to rely
-upon for userspace, so this series aims to solve the problem in another way.
+Closes: https://gitlab.freedesktop.org/drm/amd/-/issues/4178
+Fixes: 2965e6355dcd ("drm/amd: Add Suspend/Hibernate notification callback support")
+Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+---
+ drivers/gpu/drm/amd/amdgpu/amdgpu_device.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Introduce new PM notifier calls after "prepare" notifier is done AND after
-tasks have been frozen.  amdgpu listens to these PM notifier calls and
-will run the first eviction at this time.
-
-Mario Limonciello (2):
-  PM: Add suspend and hibernate notifications for after freeze
-  drm/amd: Use suspend and hibernate post freeze notifications
-
- Documentation/driver-api/pm/notifiers.rst  | 19 ++++++++++++++++---
- drivers/gpu/drm/amd/amdgpu/amdgpu_device.c |  4 ++--
- include/linux/suspend.h                    | 14 ++++++++------
- kernel/power/hibernate.c                   |  9 +++++++--
- kernel/power/suspend.c                     | 13 +++++++++----
- 5 files changed, 42 insertions(+), 17 deletions(-)
-
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c
+index 7f354cd532dc1..cad311b9fd834 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c
+@@ -4917,10 +4917,10 @@ static int amdgpu_device_pm_notifier(struct notifier_block *nb, unsigned long mo
+ 	int r;
+ 
+ 	switch (mode) {
+-	case PM_HIBERNATION_PREPARE:
++	case PM_HIBERNATION_POST_FREEZE:
+ 		adev->in_s4 = true;
+ 		fallthrough;
+-	case PM_SUSPEND_PREPARE:
++	case PM_SUSPEND_POST_FREEZE:
+ 		r = amdgpu_device_evict_resources(adev);
+ 		/*
+ 		 * This is considered non-fatal at this time because
 -- 
 2.43.0
 
