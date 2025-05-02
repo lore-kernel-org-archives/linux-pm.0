@@ -1,98 +1,112 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-io1-f42.google.com (mail-io1-f42.google.com [209.85.166.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 189401B393C;
-	Fri,  2 May 2025 19:00:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 179AC376
+	for <linux-pm@vger.kernel.org>; Fri,  2 May 2025 19:55:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746212445; cv=none; b=RuhXZW21bm3mNGlA68HBpHviSIh2B11j2Yw1AfS0LUXxDYiWb2wY0QbvH3VlecIO/3fb+ZU43QlF5vLXQILHFwZo4mt8kJIkgyytqzF8pzx9WnGhS3VVR8bgtEfg7wCzGxxfDJWUMYLg483ekFXglEKjAwW2Ld0icieryPgHXko=
+	t=1746215754; cv=none; b=Eyrwlf5MbjPg6TtDu9Jek+jnBtyaXQ0dHV3WkTbZ9llg2bXx72plm/zV5OcGwAe+9B0Squhbv/dQc1rkB4A6cpInQfCpKXTAoqDTtudUOqP95lSYTNCXJwH4h3cDnhW5auqHJIXush22VDXzz5KQ50tW2Yi8z6FlR2L0ElKT5q4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746212445; c=relaxed/simple;
-	bh=EM6ElMfbJozbwi36h7rM3Qknfs+VrjA5AmrU9DsF36s=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=nWwgvHWbJQUuUr45EoeRhzMfDwloSxbbUY4PeBD6AbxfPreEdEdKjkwpEQ+B704+pEgZUisujfH9jLVuPF3ttbWj8QqK0h/Nl5kF5cnoibGjmDvF4GfImUNlbSJj0M4VMHMoAPwZ2VkSwZO2XuPpPgaIrXj94p9M70IPVSu4Ycc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VYk9O1ao; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1746215754; c=relaxed/simple;
+	bh=VtPlKWFy8dLyv40NHTCnooyrWiuzHaBD47um/SalBkg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=RBKKx4G7+uChAu3T7KxE5QceRaHK2QQwrvsW5sj6GVHjY61FNXy93hWUbt8b986bSVykLzcwNd3MTgWr0jCRdbCEEbOvmYgw8a145uFclVP4KSaEfB6vrCAtgge2o8fycmnVmnXuNzaZRaLzNhuMngWw1AoVnvFt0dEsMU3+DrA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=ARfc+u5N; arc=none smtp.client-ip=209.85.166.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VYk9O1ao"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id A607DC4CEE9;
-	Fri,  2 May 2025 19:00:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746212444;
-	bh=EM6ElMfbJozbwi36h7rM3Qknfs+VrjA5AmrU9DsF36s=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=VYk9O1aoPmu0AGsHsWYGcOvFTNkG5k5HBdSxIUgQ23nsQNxBzq3joz4pEGPw6mKxO
-	 JDybJA8k62Lol1jHhn881y1JWwbMpAX/6GBmbqy0fOhH01Saj9u62opFFwhyop8aUf
-	 VG6zeavbM4q44h2RqPRZFWEF7bAdR2FD7rBK98GboC0oH3FBgnEIw4v3S0VtazC/j1
-	 4GWK74R9qB71A4Doq+S9/UKRWCFzxoLQAmH/0ssO5I/szHmqpdOIf9Kx60muo5Bj8h
-	 Bo4ZoVJXVXphVo89bafFJCONslJZl/MLaS5qMgwNp/A4kt/tnsFaauDaaKAfHFPxoe
-	 2heui5+ACIEkg==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9791FC3ABAA;
-	Fri,  2 May 2025 19:00:44 +0000 (UTC)
-From: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>
-Date: Fri, 02 May 2025 14:00:30 -0500
-Subject: [PATCH v3 2/4] cpuidle: tegra: Export
- tegra_cpuidle_pcie_irqs_in_use
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="ARfc+u5N"
+Received: by mail-io1-f42.google.com with SMTP id ca18e2360f4ac-861b1f04b99so98645939f.0
+        for <linux-pm@vger.kernel.org>; Fri, 02 May 2025 12:55:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linuxfoundation.org; s=google; t=1746215751; x=1746820551; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=EdHVSx+/Zv4EI0oT8E/EyFlV1rhKfQaBAkeD7BezElw=;
+        b=ARfc+u5NvVvPOHVu+IugwK6Or345/xzYbPiUXGMv9Yt67+wLFSXiuffKDOWwRn0mvd
+         PMACnFFNdiWHTtRBUq1ktqWUdWns1sMqBDbuF8zGjaXMpDOE1/lsncpfcCmW/+haNfqM
+         QeLjmmIBe6+AsBS1EtuVv9JkvqQr4qY6cXh2w=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1746215751; x=1746820551;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=EdHVSx+/Zv4EI0oT8E/EyFlV1rhKfQaBAkeD7BezElw=;
+        b=gI2qryoESLlotuXwXEMS63NVsyAf+qRBVhgzQBoNHlHrtoIkhEb9lDyZt7oTjwYGfi
+         vdSXjBq/IFZNvF+RekLneKTgxIAP2zjMQhjj55zPwW1Ns3wQNiOOfLEs4RW/1GmSoXCL
+         W/5C609lDb58efeirCpBjH6yr97F+XWM8QFRvk4w32TKRV/PnEvrJ1dgf/UlGyNqnThk
+         axwTA9POgAvsv+kdf8gRiAavmsKoiHO9ykGtsiM7TfNpeGCiM+48sJTxHGFjLfwbZt5s
+         7Y0RycjBm7BV4Jr4+Nd7igAudnE6rS+txGVPLfcHEfrFKigMQbsOr28pAysQ00AjK24X
+         QIDA==
+X-Gm-Message-State: AOJu0Yz5AHd4AxG8DVT6eMjCqBOFCTmLtxb5vMJ5ThNM60SQq+7TK0KJ
+	/EKJwhWC3r28DXiQEeWdErO61UsVvUtahDEA06nflguWT6Qzs0/emPU20PoKkb8=
+X-Gm-Gg: ASbGnctDscxaVhWDTpGTYk/UPUP053PrALSVvXN84s7ARUbR4FrDBhLziWDjiGVh83J
+	oB6UzzBlfseFND7/NK41hwFoKRiVbhtNMVtGi9sK4pZXavqHCUH9XXRjFpMyd82EmSCln9y+4JS
+	9ugT2cTyeonKAeryg5E90AUxYvJ5kFODFbo57wu0wvUQrPGFNZz8/NRZqI6rndUhOIAKaTt1sEP
+	zpz6wwl4WVkmKQEwwEo0hs8Swk96XvBjB31SmnIW54DSR9iETQiIqIzeRaiRE5P4rzWVcbQqv2m
+	ODXzrzno54AUy2mo1+8/+MRBWwR+1To22nw3V+uvaEuGkx0dcMY=
+X-Google-Smtp-Source: AGHT+IHz40ezoPkpw4ypsNSC/ftFEhx2VVCiTDcFlni2O4E7NekFGHZP7j3c7uAHylH7D+25Kz6pnA==
+X-Received: by 2002:a05:6602:358c:b0:864:58a2:1f0a with SMTP id ca18e2360f4ac-866b349adf6mr545650839f.10.1746215751025;
+        Fri, 02 May 2025 12:55:51 -0700 (PDT)
+Received: from [192.168.1.14] ([38.175.170.29])
+        by smtp.gmail.com with ESMTPSA id ca18e2360f4ac-864aa585a1fsm66852639f.44.2025.05.02.12.55.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 02 May 2025 12:55:50 -0700 (PDT)
+Message-ID: <bb5bb612-e98f-49ce-9082-5a883068977d@linuxfoundation.org>
+Date: Fri, 2 May 2025 13:55:49 -0600
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] cpupower: add a systemd service to run cpupower
+To: Francesco Poli <invernomuto@paranoici.org>,
+ "John B. Wyatt IV" <jwyatt@redhat.com>
+Cc: linux-pm list <linux-pm@vger.kernel.org>,
+ Thomas Renninger <trenn@suse.com>, Shuah Khan <shuah@kernel.org>,
+ John Kacur <jkacur@redhat.com>, Shuah Khan <skhan@linuxfoundation.org>
+References: <20250425151024.121630-1-invernomuto@paranoici.org>
+ <aBE9ly7vP0eryfMO@thinkpad2024>
+ <20250502175309.05e66d43fc2654afb01721fc@paranoici.org>
+ <bdc10540-2e4a-4f97-9007-e4b70db04c64@linuxfoundation.org>
+Content-Language: en-US
+From: Shuah Khan <skhan@linuxfoundation.org>
+In-Reply-To: <bdc10540-2e4a-4f97-9007-e4b70db04c64@linuxfoundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250502-pci-tegra-module-v3-2-556a49732d70@gmail.com>
-References: <20250502-pci-tegra-module-v3-0-556a49732d70@gmail.com>
-In-Reply-To: <20250502-pci-tegra-module-v3-0-556a49732d70@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>, 
- Lorenzo Pieralisi <lpieralisi@kernel.org>, 
- =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
- Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, 
- Rob Herring <robh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
- Thierry Reding <thierry.reding@gmail.com>, 
- Jonathan Hunter <jonathanh@nvidia.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, 
- linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, 
- Aaron Kling <webgeek1234@gmail.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1746212443; l=830;
- i=webgeek1234@gmail.com; s=20250217; h=from:subject:message-id;
- bh=xVyHjzSr7wHYXMLNGdp54ReYaOCWfcLl7SzVd0MbeFs=;
- b=SqXjWEAxLjXZ8IA642yInZJFT5zVd1nLIm+wRIuqLxf1ecpSS54HDkd1vt24WdaR5cLTNfshs
- VuuD0ygtyLJB4jBitbzfc2U5jSgSfnU+RV8dUr8yaJ//yilQWNe53IS
-X-Developer-Key: i=webgeek1234@gmail.com; a=ed25519;
- pk=TQwd6q26txw7bkK7B8qtI/kcAohZc7bHHGSD7domdrU=
-X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
- auth_id=342
-X-Original-From: Aaron Kling <webgeek1234@gmail.com>
-Reply-To: webgeek1234@gmail.com
 
-From: Aaron Kling <webgeek1234@gmail.com>
+On 5/2/25 10:41, Shuah Khan wrote:
+> On 5/2/25 09:53, Francesco Poli wrote:
+>> On Tue, 29 Apr 2025 16:59:03 -0400 John B. Wyatt IV wrote:
+>>
+>> [...]
+>>> Adding my tags.
+>>>
+>>> Reviewed-by: John B. Wyatt IV <jwyatt@redhat.com>
+>>> Reviewed-by: John B. Wyatt IV <sageofredondo@gmail.com>
+>>> Tested-by: John B. Wyatt IV <jwyatt@redhat.com>
+>>> Tested-by: John B. Wyatt IV <sageofredondo@gmail.com>
+>>
+>> Thanks a lot for reviewing and testing my patch!
+>>
+>> Do I need to resend the patch (without any change) with these tags
+>> added to the commit message?
+>> Or is it pointless?
+>>
+>>
+> 
+> No need to resend. I will apply this later on today.
+> 
+> thanks,
+> -- Shuah
 
-Add export for tegra_cpuidle_pcie_irqs_in_use() so that we can allow
-drivers like the pci-tegra driver to be loadable as a module.
+Applied now for Linux 6.16-rc1 - will be included in pull request to
+PM maintainer.
 
-Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
----
- drivers/cpuidle/cpuidle-tegra.c | 1 +
- 1 file changed, 1 insertion(+)
+https://web.git.kernel.org/pub/scm/linux/kernel/git/shuah/linux.git/log/?h=cpupower
 
-diff --git a/drivers/cpuidle/cpuidle-tegra.c b/drivers/cpuidle/cpuidle-tegra.c
-index b203a93deac5f378572be90e22c73e7417adb99e..aca907a62bb5de4ee4c71c1900eacedd4b90bc0a 100644
---- a/drivers/cpuidle/cpuidle-tegra.c
-+++ b/drivers/cpuidle/cpuidle-tegra.c
-@@ -336,6 +336,7 @@ void tegra_cpuidle_pcie_irqs_in_use(void)
- 	pr_info("disabling CC6 state, since PCIe IRQs are in use\n");
- 	tegra_cpuidle_disable_state(TEGRA_CC6);
- }
-+EXPORT_SYMBOL_GPL(tegra_cpuidle_pcie_irqs_in_use);
- 
- static void tegra_cpuidle_setup_tegra114_c7_state(void)
- {
-
--- 
-2.48.1
-
-
+thanks,
+-- Shuah
