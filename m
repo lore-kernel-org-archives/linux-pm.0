@@ -1,140 +1,180 @@
-Received: from mail-wr1-f45.google.com (mail-wr1-f45.google.com [209.85.221.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B1211B4248;
-	Sat,  3 May 2025 08:54:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4677C1A8403;
+	Sat,  3 May 2025 10:07:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746262464; cv=none; b=gmlZ5O2/oqTmQ8bhgiMB7Nl7gPXfJOK3xn4tpnH/RMtvKyC9X+/MVUQyzpDTN27P5zEaZB6f12AAGwI6LpH1Qjh3NQOhSF2NhghJzx1qp8Eio5WrKKZDiMaReUCoDR1WYFJinOaQEARqHWmDTNWXAJ2zzv7qt0FJSP16tRbfukM=
+	t=1746266836; cv=none; b=MAUUSVmC1O1greFSA4HRlwOKxkhWfAFDrZIKmv16wesTuUK4DWnMIiTE2qsmCNx5KkJ4LwFEKXzqWtbmpyZPRx4cf2hcyvQEaYiekhZnXdPkqA4/pttMQ65aOQf0GXp04Yx8k7ZpFRJJi6AmQjLoaoNOHeZibiXKp7QffFF2x5o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746262464; c=relaxed/simple;
-	bh=KC5wSlC8ldVc/1/ANa0xPfHpqPnMjSq7jhbsZsijn30=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=RJVDUxGrPCfayiClE7TTIsGuEqS9wgvu/g9DFeybxWJsyYxZQAo8LQhrobYYxp57AsFIXQVx/OyA/GytoWVqvcNF2FdonzYfeUDhtniiiw1kxMDEFY0MZaowGVskVGLoYSSUK40tUw+eERewVp8Y/KsKnKABWaeWXXzfSBbvMuc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=eQj9bpdM; arc=none smtp.client-ip=209.85.221.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1746266836; c=relaxed/simple;
+	bh=FCj41YuS83lubvQ4sTVq20svbkJeutFtiBUdO/qgxJc=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=m1Utqyv4ag5+ZfLxnMswNx8Y5COi2UYoWadMo9tSYuZFpmwHw8z1XLiTEV0jokzsxqtE5/IIshBhopBYN5jynt/l0v3Ma3j/wKsjA/wX7/2PO3agb7f3w2Yoczg1TuQklAKBh7WNy+zxmjGRtjctydzI8op3gcMegzKr9lIKN5s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aYVtCN7W; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eQj9bpdM"
-Received: by mail-wr1-f45.google.com with SMTP id ffacd0b85a97d-3995ff6b066so1186952f8f.3;
-        Sat, 03 May 2025 01:54:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1746262461; x=1746867261; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=v0rajkV8F45MIMG03jHItI8yQSZ0sSq+1qy4v7bWCgY=;
-        b=eQj9bpdMgk+ClYFQpMutXIAZGVcknhCHVS5O1/1eLEjVfe8hHCUi0i3Qo/vSniL3CK
-         wkaT96rTKz9O5nNqDydPSygpL3Kdoyor/vWrzLmc83nnv543cC9jfuJy9UzXS2SnsooT
-         /uLGcXCv/NkAbVKsxILsaHnWCG5e2rHo+pANELUSeNkQZKmlJIsje2bNMu9txe7NOwQw
-         8Y+vWninQtMWiuMgk/D8cCoGsduSFU5O/0YQlLt3+i5hHRPu4/MZ3p4B7n7FnEqNUFVq
-         mwRy9OZuegwrMjisS1qSyIx8ODi1lzMyHAOYRsLQzBDbKxvkTEFmzOxgNT7lVgmCKVgi
-         ZeqQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1746262461; x=1746867261;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=v0rajkV8F45MIMG03jHItI8yQSZ0sSq+1qy4v7bWCgY=;
-        b=In0akTQfAZ5p7tisw5H1OWf0bLOvxSu4UA5C5c0wjs4eCK6Z5nWO+p2ECENZtN0o4L
-         fqk1WoeB3elSnHqRJ9sZVt/ohE4Twtc9cGDIWZBNtb6QRPMF1kFFzCbxLfZXd1RI6IH1
-         rUwNeTN2ACM9nf1AbUrU1tKnfgglnKzyfXcoqAF4i200lRznoD3mi+6ngAqv3sGMOS64
-         RU4AzGXZYhGGygW4N1pZuVrnPRhGeYiIH4eVmllU4IzG9DLEasws0hcIOZN86jTfEwb+
-         2bWL64LXqtVQEVd5Shj+VXdc+PXraQGcabp5qv3fQGCUUlUecxGIfH8LIkxL3WL5MRF4
-         CXFA==
-X-Forwarded-Encrypted: i=1; AJvYcCUjGsmX7nsejo01v7Fy+NJ+bdfktDa2xPNXjLIBVeycU8ELQbUTISlFY472UDzxUs2FCX7BooOFUec=@vger.kernel.org, AJvYcCVzqrEZYCMDhrxG6olSPMUtrfTLCJ671E+ic7QOE3l1CB8XnjVOtOlduwg0gPYFBvCW3j0W/bBW1b2X4mdp@vger.kernel.org, AJvYcCX2Rnst+CLzKt7TlxhF3QJMGbRdbrBwndrm456OINm8t8enjTHEcn0Ju1LLXwu4NQKqZVGy0r0hjCiySSU=@vger.kernel.org, AJvYcCX6BN5rURQyrH3tckrL6XEqjmWGGCO2qLlP01P02ILlJvtebBQzcJnfVBH3YtR0KgcZycnnvhsQVm0=@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxt5ycyHaGKcGh92zi7SqIz4M30vWKN1xTxPrrJnMcMX+u0rQ1F
-	DG8PkB+LIQYoNPHkgjVEgG1hAuUajfZsALJ7yrSWpkOCPWNUoEyoa0sjrBr2XUBx1HcgjzHEzi9
-	TFxaFfyolKUioYAomj/vObxmVGPU=
-X-Gm-Gg: ASbGnctGYevqGVcLZzR3XwKupxjFB8+hSqTOHmn/prstTaXqLZuAmrBKBKsVT4EV2EH
-	v+x/m0yzRMPx3e6fpq3oAaYEEQU67aatC1DSVdUFVhygDXrwwb4ht5cQHTS0B6frFGLDlLAQT2O
-	yap+jwSz8NNDrXkimkJkqqoxU=
-X-Google-Smtp-Source: AGHT+IEiRCFaVbG3AmnYfBsbUy9cwbkVHAHepWoGFC80Dcd4IF6BuhA+RCHqkkE0BQNM9cmujTmkZMccEhI+motAAYA=
-X-Received: by 2002:a05:6000:2483:b0:3a0:9dd8:420c with SMTP id
- ffacd0b85a97d-3a09fde626emr355383f8f.50.1746262461006; Sat, 03 May 2025
- 01:54:21 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aYVtCN7W"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id D1EF5C4CEF2;
+	Sat,  3 May 2025 10:07:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1746266835;
+	bh=FCj41YuS83lubvQ4sTVq20svbkJeutFtiBUdO/qgxJc=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=aYVtCN7W4K++duwoGczZfIvcv4H17huF7MKXqW1kDVi9fJnbFYZ8w4bljXz1YPxY1
+	 OTBwYeHV27gprbXlS0gQHZzBx0Pat35veBQG0tyzq1OlfQOnm+pmxpyMt0Q7jB2FSk
+	 NS1j+yp1QP3wTdm+s2tQgJFHfjboxb+SiJXHgoZzpXrOB/C9+01e/q08j6b5Dk3RPX
+	 HZIcNaRl9bL2oIhPybTCUkJzUxSteFZKAX2sz7QnJSnv8VZJF6zY4ffVlZ1iolH/2h
+	 hNs8ebMj4xwDLCPX7cuCwgmw0Kl7s5IVChTQZHulYQ3BJa1z1+5EVOUxM/AcvCMAII
+	 PLLFj3tA8EVTQ==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C429BC3ABB8;
+	Sat,  3 May 2025 10:07:15 +0000 (UTC)
+From: Sven Peter via B4 Relay <devnull+sven.svenpeter.dev@kernel.org>
+Date: Sat, 03 May 2025 10:06:50 +0000
+Subject: [PATCH v4 3/9] dt-bindings: mfd: Add Apple Mac System Management
+ Controller
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250321095556.91425-1-clamor95@gmail.com> <20250321095556.91425-3-clamor95@gmail.com>
- <aef4574b-8167-4af3-a29c-8c962b396496@kernel.org>
-In-Reply-To: <aef4574b-8167-4af3-a29c-8c962b396496@kernel.org>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Sat, 3 May 2025 11:54:09 +0300
-X-Gm-Features: ATxdqUFHDuJFidHJr9tx4g91kDWQYsoQui3fjv94FmbPMMiUE8iqHf7-yk1T2Y4
-Message-ID: <CAPVz0n2580WLJmqeH-mJGrTQUpADt32qw7pJzuqRuwrpojc5vA@mail.gmail.com>
-Subject: Re: [PATCH v1 2/3] drivers: clk: tegra: add DFLL support for Tegra 4
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
-	Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, 
-	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, linux-tegra@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, 
-	linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250503-smc-6-15-v4-3-500b9b6546fc@svenpeter.dev>
+References: <20250503-smc-6-15-v4-0-500b9b6546fc@svenpeter.dev>
+In-Reply-To: <20250503-smc-6-15-v4-0-500b9b6546fc@svenpeter.dev>
+To: Sven Peter <sven@svenpeter.dev>, Janne Grunau <j@jannau.net>, 
+ Alyssa Rosenzweig <alyssa@rosenzweig.io>, Neal Gompa <neal@gompa.dev>, 
+ Hector Martin <marcan@marcan.st>, Linus Walleij <linus.walleij@linaro.org>, 
+ Bartosz Golaszewski <brgl@bgdev.pl>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
+ Lee Jones <lee@kernel.org>, Marc Zyngier <maz@kernel.org>, 
+ "Russell King (Oracle)" <rmk+kernel@armlinux.org.uk>
+Cc: asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+ linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3091; i=sven@svenpeter.dev;
+ h=from:subject:message-id;
+ bh=g5ICObcHrqmqje6IzUss8WgmYFLH5P7pKOHUdmrLAhA=;
+ b=owGbwMvMwCHmIlirolUq95LxtFoSQ4boq+PztK3ON3yI529a18uZtTXwzw2+Mw6x5kFGX19Pe
+ PFun+TLjlIWBjEOBlkxRZbt++1Nnzx8I7h006X3MHNYmUCGMHBxCsBElDQZGR5/+8p24hhjemWO
+ 9ws5gxnaS5vnipilxe/ZwsBQ+Wz3z30M/5Pr9aU2bgx1WtEfdO5JwmOr+BN//y//pZK7LyBofea
+ 1BRwA
+X-Developer-Key: i=sven@svenpeter.dev; a=openpgp;
+ fpr=A1E3E34A2B3C820DBC4955E5993B08092F131F93
+X-Endpoint-Received: by B4 Relay for sven@svenpeter.dev/default with
+ auth_id=167
+X-Original-From: Sven Peter <sven@svenpeter.dev>
+Reply-To: sven@svenpeter.dev
 
-=D0=BF=D1=82, 21 =D0=B1=D0=B5=D1=80. 2025=E2=80=AF=D1=80. =D0=BE 22:50 Krzy=
-sztof Kozlowski <krzk@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
->
-> On 21/03/2025 10:55, Svyatoslav Ryhel wrote:
-> > Extend the Tegra124 driver to include DFLL configuration settings requi=
-red
-> > for Tegra114 compatibility.
-> >
-> > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
->
-> <form letter>
-> Please use scripts/get_maintainers.pl to get a list of necessary people
-> and lists to CC (and consider --no-git-fallback argument, so you will
-> not CC people just because they made one commit years ago). It might
-> happen, that command when run on an older kernel, gives you outdated
-> entries. Therefore please be sure you base your patches on recent Linux
-> kernel.
->
-> Tools like b4 or scripts/get_maintainer.pl provide you proper list of
-> people, so fix your workflow. Tools might also fail if you work on some
-> ancient tree (don't, instead use mainline) or work on fork of kernel
-> (don't, instead use mainline). Just use b4 and everything should be
-> fine, although remember about `b4 prep --auto-to-cc` if you added new
-> patches to the patchset.
-> </form letter>
->
->
->
-> > +++ b/include/dt-bindings/reset/tegra114-car.h
->
-> Filename based on compatible.
->
-> > @@ -0,0 +1,13 @@
-> > +/* SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause */
-> > +/*
-> > + * This header provides Tegra114-specific constants for binding
-> > + * nvidia,tegra114-car.
-> > + */
-> > +
-> > +#ifndef _DT_BINDINGS_RESET_TEGRA114_CAR_H
-> > +#define _DT_BINDINGS_RESET_TEGRA114_CAR_H
-> > +
-> > +#define TEGRA114_RESET(x)            (5 * 32 + (x))
->
->
-> Does not look like a binding, but some sort of register. Binding IDs
-> start from 0 (or 1) and are incremented by 1.
->
+From: "Russell King (Oracle)" <rmk+kernel@armlinux.org.uk>
 
-Hello there!
-This file add same logic for Tegra114 as Tegra124 currently
-implements, check here
-https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/inclu=
-de/dt-bindings/reset/tegra124-car.h?h=3Dv6.14.5
+Add a DT binding for the Apple Mac System Management Controller.
 
-I did not re-use Tegra124 value, though it is same, to avoid confusion
-in main Tegra114 device tree.
+Signed-off-by: Russell King (Oracle) <rmk+kernel@armlinux.org.uk>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Sven Peter <sven@svenpeter.dev>
+---
+ .../devicetree/bindings/mfd/apple,smc.yaml         | 71 ++++++++++++++++++++++
+ MAINTAINERS                                        |  1 +
+ 2 files changed, 72 insertions(+)
 
-> Best regards,
-> Krzysztof
+diff --git a/Documentation/devicetree/bindings/mfd/apple,smc.yaml b/Documentation/devicetree/bindings/mfd/apple,smc.yaml
+new file mode 100644
+index 0000000000000000000000000000000000000000..9f1058c15bbf62d84f8a72fdaa354909b02e2801
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mfd/apple,smc.yaml
+@@ -0,0 +1,71 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/mfd/apple,smc.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Apple Mac System Management Controller
++
++maintainers:
++  - Sven Peter <sven@svenpeter.dev>
++
++description:
++  Apple Mac System Management Controller implements various functions
++  such as GPIO, RTC, power, reboot.
++
++properties:
++  compatible:
++    items:
++      - enum:
++          - apple,t6000-smc
++          - apple,t8103-smc
++          - apple,t8112-smc
++      - const: apple,smc
++
++  reg:
++    items:
++      - description: SMC area
++      - description: SRAM area
++
++  reg-names:
++    items:
++      - const: smc
++      - const: sram
++
++  mboxes:
++    maxItems: 1
++
++  gpio:
++    $ref: /schemas/gpio/apple,smc-gpio.yaml
++
++  reboot:
++    $ref: /schemas/power/reset/apple,smc-reboot.yaml
++
++additionalProperties: false
++
++required:
++  - compatible
++  - reg
++  - reg-names
++  - mboxes
++
++examples:
++  - |
++    soc {
++      #address-cells = <2>;
++      #size-cells = <2>;
++
++      smc@23e400000 {
++        compatible = "apple,t8103-smc", "apple,smc";
++        reg = <0x2 0x3e400000 0x0 0x4000>,
++               <0x2 0x3fe00000 0x0 0x100000>;
++        reg-names = "smc", "sram";
++        mboxes = <&smc_mbox>;
++
++        smc_gpio: gpio {
++          compatible = "apple,smc-gpio";
++          gpio-controller;
++          #gpio-cells = <2>;
++        };
++      };
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index d85d9d9065db4dc5869788f8a81d9d9a425d7ce3..2c16b2fc3fec76104967530f487123485af1e777 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2275,6 +2275,7 @@ F:	Documentation/devicetree/bindings/iommu/apple,dart.yaml
+ F:	Documentation/devicetree/bindings/iommu/apple,sart.yaml
+ F:	Documentation/devicetree/bindings/leds/backlight/apple,dwi-bl.yaml
+ F:	Documentation/devicetree/bindings/mailbox/apple,mailbox.yaml
++F:	Documentation/devicetree/bindings/mfd/apple,smc.yaml
+ F:	Documentation/devicetree/bindings/net/bluetooth/brcm,bcm4377-bluetooth.yaml
+ F:	Documentation/devicetree/bindings/nvme/apple,nvme-ans.yaml
+ F:	Documentation/devicetree/bindings/nvmem/apple,efuses.yaml
+
+-- 
+2.34.1
+
+
