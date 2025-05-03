@@ -1,49 +1,49 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9DE31AA1D2;
-	Sat,  3 May 2025 07:05:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE4D01A5B99;
+	Sat,  3 May 2025 07:05:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746255902; cv=none; b=uljFqC1trNWWcXN04Y1emK1SOfcmyuPp+spsScCWWsihGcV+llRP9FPVx6mzTRSO9dZhyQ78IxiE7HdIH2YTj8luFltJJapSNeYmSq1FFoB0qDZonYeIAyZiwxk81Z7CuLm/R49xKAOUKvkgcJxSDq6IDPi+FXMXTxrhBnTDox8=
+	t=1746255903; cv=none; b=DhoftNK49jR5zR3btbh+kftjJmXJy0R+LLl6Yd2RoaZBAx/gXlGkTGNWiuZBy+L2hyPpvryUwHJCqeiJje034kyCNwaKkA8RebpQMQ+z5/R7Gm2wt5ZT+YYCDzO3B1rCtPE3kkYpjuhRIEhxyWLTmo55E1iWeHbUyXMpL92Jnts=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746255902; c=relaxed/simple;
-	bh=44E01bjnWusTnG6MhHB+xFx1Vb3V469PnIPdoBUnVeg=;
+	s=arc-20240116; t=1746255903; c=relaxed/simple;
+	bh=0w1fKddcScC0dmSgzxeQLcre4UwOthTrSfgZ0RkvsYw=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=aELf+NQjbNlef6QJcloswurvHpVigximaZonNXVr6buuagY26gzxZpmjLj97im1/RLEIfMnR7kEwk3qa5LBznzMmGogiSsZFBByRHHFn2SpikJJ1bx0gBttJbrM1qG6tdW5PdJox1hBZobq2opTxz8Et0k01QrgX21CT7jkq4tk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=YvAeFDt3; arc=none smtp.client-ip=205.220.168.131
+	 In-Reply-To:To:CC; b=AO8nHwWdc/LkF0pcwSt0M8wlf3JqTY0noto/zZw7qPPniDvH+UA3Gh7z2ThPB/8sZzXE7QW6Jw/nSJYRujA3E5giDcTN6Rk/l6tXRSQrSgNHF5jnv+UeOs/MKxNMo540cHYwuZoMbDYWa2INFJaiB8YHUl9vkxNseKblL8pd/RQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=DolCqiCR; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="YvAeFDt3"
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5436pgFn031056;
-	Sat, 3 May 2025 07:04:29 GMT
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="DolCqiCR"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5433S9he015858;
+	Sat, 3 May 2025 07:04:43 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	f2qeULFLiJ0bP7dUf9gDhamCmgR3MsEK1Ai2tpricv0=; b=YvAeFDt3kII8IhLG
-	Wn3kilGc8V8yRxqRJO0P7Y18fhtvoL6yrXCHlq6JrDalUn3bt8WPiJ+58XAVzwQG
-	2xizyWblqoyhUvdlfZ3woc6SOTHph0I+gQnyCdrnIwcNQ0cnN0h2PJDljWaqHjp7
-	W6c+mllLtiyxSge5AZnKgC0fzG3p5tmtQB9XSqlnKvt9U0/ai4OVLmsljhVTaimX
-	OjNjPGpuQBhHH8LBQ/bHz2VBt7TR9EflR/RhHFVL5oJ6Lyu6PXsY7Dja6QFdV0s9
-	rctMWYySaOOErqXqEl9qHbB4Bb3UO3cFmCXm5/IAeGclDWsUKJpLVc7ncmDuv9o/
-	au1l0w==
-Received: from nalasppmta05.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 46d9nkrb7v-1
+	w6FTIxjmnrVIMbjYmNyi66xrC7oUXS4eW4qGDVqqnAU=; b=DolCqiCRr6N6KNU3
+	Fq6PTYAaPq2KSQQjCXFfhuyMuyVX+6cVVlr32NM0BVDxMjHKO5d+nphPkvdFMr2V
+	hQ8ZS69m0sAvX8B9bkmvAneC5W4GnQ+JOjaTejqD8HBiXN5wrwMRtZ9QXexWvJQs
+	82Xgr0QLP5KHBk2pjN0w86+YQ8mk2n/hFeHCiQURFfFkVyLbxosq+T1sZMmvLNJn
+	y1COXbJOHszcGL+kNwWZQjd8yHxQgsrpY71yCT4rkRebGh2VGZ/gcWdqyzouLbAN
+	2Po1pSPgrPMbS8mvz8oq2TRikly1YrKJDsui3dIuoiD9rpjvhlp8grOBl1KhwWrJ
+	ala55Q==
+Received: from nalasppmta01.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 46d9ep0bsf-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 03 May 2025 07:04:29 +0000 (GMT)
+	Sat, 03 May 2025 07:04:43 +0000 (GMT)
 Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-	by NALASPPMTA05.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 54374Sx5002313
+	by NALASPPMTA01.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 54374gmO020827
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 3 May 2025 07:04:28 GMT
+	Sat, 3 May 2025 07:04:42 GMT
 Received: from [10.213.111.143] (10.80.80.8) by nalasex01a.na.qualcomm.com
  (10.47.209.196) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.9; Sat, 3 May 2025
- 00:04:22 -0700
+ 00:04:35 -0700
 From: Akhil P Oommen <quic_akhilpo@quicinc.com>
-Date: Sat, 3 May 2025 12:33:35 +0530
-Subject: [PATCH v6 4/7] drm/msm/adreno: Add module param to disable ACD
+Date: Sat, 3 May 2025 12:33:37 +0530
+Subject: [PATCH v6 6/7] arm64: dts: qcom: x1e80100: Add ACD levels for GPU
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -52,7 +52,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <20250503-gpu-acd-v6-4-ab1b52866c64@quicinc.com>
+Message-ID: <20250503-gpu-acd-v6-6-ab1b52866c64@quicinc.com>
 References: <20250503-gpu-acd-v6-0-ab1b52866c64@quicinc.com>
 In-Reply-To: <20250503-gpu-acd-v6-0-ab1b52866c64@quicinc.com>
 To: Rob Clark <robdclark@gmail.com>, Sean Paul <sean@poorly.run>,
@@ -82,86 +82,126 @@ CC: <linux-arm-msm@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
         Konrad Dybcio
 	<konrad.dybcio@oss.qualcomm.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1746255835; l=1987;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1746255835; l=2693;
  i=quic_akhilpo@quicinc.com; s=20240726; h=from:subject:message-id;
- bh=44E01bjnWusTnG6MhHB+xFx1Vb3V469PnIPdoBUnVeg=;
- b=hp5me4ORF1twA1HzIzupwhVXRDAhADTk1vzB3Mptlz7bGyRhzE78F0KQj+l/KsR3FF6t1VmfI
- Zn99Oj1URCQDIUjTsdzRHQPOXLW+t8dDP6GyDSJ7XAu/N7KuHrJLCUZ
+ bh=0w1fKddcScC0dmSgzxeQLcre4UwOthTrSfgZ0RkvsYw=;
+ b=md18TOTDVSsl2HaAvTjaRo6O0CeV9Ec7C+pIniXWdMGqglUli/S2WS0Z5D6kbu5oEZKxe8YIQ
+ l/2VXOBQ0USAeIgEAFUPp/1sUx3GGl9WX80t781ymocCGM4rEEx8iYZ
 X-Developer-Key: i=quic_akhilpo@quicinc.com; a=ed25519;
  pk=lmVtttSHmAUYFnJsQHX80IIRmYmXA4+CzpGcWOOsfKA=
 X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
  nalasex01a.na.qualcomm.com (10.47.209.196)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTAzMDA1OSBTYWx0ZWRfX+sb+dI1EvwR2
- LA+l7H292DctUw9FT780ydVCMy9fqpmIFu6xLZfxC4BkJVLMmEWf1bsYnOiZ/3aXt+SaNWuKKrp
- U/ajzeR0NR1yZ0Xq7NAAsOk25eOvbgbLtyUhpTP8j6dVAmlM6v9u2j2S1BErNDfkxkYUV9w2Y1/
- C5pDeVfm33eOk2pxX/wyv0cpqA+0DhY5UT1I5bRrKp0GfvdpldL47YbnVN9zDV58UrgpGF2RUZH
- 9vaz5G8SS1OKN3wCQt3CFC0XOS00taOMcSg9y3gJnsENNFmLkS7NncBNDm5IomVEazQcNvxUrVF
- qh/Apqjmv0nqOB15+YHqpt3EbW/Bk/9oeqEJtWWMMfOnpMxXW8aQ4qasPji7JlgGmmmhaaTzVRg
- ZinG559QXgPYcUjACgVljie9VPqCYvTul4TVqlrbsD2/RxAXn5Q4C2dK4SK23B16th6mj+dP
-X-Proofpoint-GUID: ORltK2tnST75yFwsRy6JRWxJHZT4ofWx
-X-Authority-Analysis: v=2.4 cv=LpeSymdc c=1 sm=1 tr=0 ts=6815bffd cx=c_pps
+X-Authority-Analysis: v=2.4 cv=EOUG00ZC c=1 sm=1 tr=0 ts=6815c00b cx=c_pps
  a=ouPCqIW2jiPt+lZRy3xVPw==:117 a=ouPCqIW2jiPt+lZRy3xVPw==:17
- a=GEpy-HfZoHoA:10 a=IkcTkHD0fZMA:10 a=dt9VzEwgFbYA:10 a=pGLkceISAAAA:8
- a=b3CbU_ItAAAA:8 a=EUspDBNiAAAA:8 a=COk6AnOGAAAA:8 a=adu2xZl7kSneRhG-aSEA:9
+ a=GEpy-HfZoHoA:10 a=IkcTkHD0fZMA:10 a=dt9VzEwgFbYA:10 a=EUspDBNiAAAA:8
+ a=pGLkceISAAAA:8 a=b3CbU_ItAAAA:8 a=COk6AnOGAAAA:8 a=BxRqZMmKrSJ94LtEhJwA:9
  a=QEXdDO2ut3YA:10 a=Rv2g8BkzVjQTVhhssdqe:22 a=TjNXssC_j7lpFel5tvFf:22
-X-Proofpoint-ORIG-GUID: ORltK2tnST75yFwsRy6JRWxJHZT4ofWx
+X-Proofpoint-ORIG-GUID: qJNABv24YKMhBYxZuEXzOwCxfVlMIeL_
+X-Proofpoint-GUID: qJNABv24YKMhBYxZuEXzOwCxfVlMIeL_
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTAzMDA1OSBTYWx0ZWRfX8hOTeC61g+mi
+ CWBnSnfT4TZZzPKhz78de9xE8VGHlnBTinrIfK5F2Hixk6waoetzgNRqHpNYaUaDkCuqJIj0y7m
+ n9J/YMRINiIIuTRBA5N3NQxHVqbQOgs5DvOr+hIDbU9+O9wtPwTjJpB+76HWicZX4yKEj+tI2uW
+ tdjI7azilTHeilFNEtRG2stUmS6730Vq3GCC/TtUKb4qGoRjm4OG/fbdm/buwsim4wCm2fg5uXa
+ aUBeARGRFzL7GSCvQTYixyVjhMYGcS6g6D7xBGKQeO5R7+rxekiy5eTNIOLqgRO9AI94bbf9siv
+ HSF2/guQe7Jk2+8BRkM77kQk6YWG9gyJzWkPsoCG5vTdLHKy1NJfgwBMCpHu6VV22akYBxM0jIh
+ b/InYAckJ2GSV5AmwZ22vQZgPHpllClZy/u0BnBufv01w3lye5dy7yxu+SZ4/ySqu3q1jvI2
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
  definitions=2025-05-03_03,2025-04-30_01,2025-02-21_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999 adultscore=0 lowpriorityscore=0 impostorscore=0 mlxscore=0
- spamscore=0 malwarescore=0 priorityscore=1501 clxscore=1015 phishscore=0
- bulkscore=0 suspectscore=0 classifier=spam authscore=0 authtc=n/a authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2504070000
- definitions=main-2505030059
+ adultscore=0 clxscore=1015 impostorscore=0 spamscore=0 lowpriorityscore=0
+ bulkscore=0 phishscore=0 suspectscore=0 mlxlogscore=848 mlxscore=0
+ priorityscore=1501 malwarescore=0 classifier=spam authscore=0 authtc=n/a
+ authcc= route=outbound adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2504070000 definitions=main-2505030059
 
-Add a module param to disable ACD which will help to quickly rule it
-out for any GPU issues.
+Update GPU node to include acd level values.
 
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 Tested-by: Maya Matuszczyk <maccraft123mc@gmail.com>
 Tested-by: Anthony Ruhier <aruhier@mailbox.org>
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 Signed-off-by: Akhil P Oommen <quic_akhilpo@quicinc.com>
 ---
- drivers/gpu/drm/msm/adreno/a6xx_gmu.c      | 7 +++++++
- drivers/gpu/drm/msm/adreno/adreno_device.c | 4 ++++
- 2 files changed, 11 insertions(+)
+ arch/arm64/boot/dts/qcom/x1e80100.dtsi | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/msm/adreno/a6xx_gmu.c b/drivers/gpu/drm/msm/adreno/a6xx_gmu.c
-index 48b4ca8894ba38176481b62b7fd1406472369df1..38c0f8ef85c3d260864541d83abe43e49c772c52 100644
---- a/drivers/gpu/drm/msm/adreno/a6xx_gmu.c
-+++ b/drivers/gpu/drm/msm/adreno/a6xx_gmu.c
-@@ -1670,6 +1670,13 @@ static int a6xx_gmu_acd_probe(struct a6xx_gmu *gmu)
- 	struct adreno_gpu *adreno_gpu = &a6xx_gpu->base;
- 	struct msm_gpu *gpu = &adreno_gpu->base;
- 	int ret, i, cmd_idx = 0;
-+	extern bool disable_acd;
-+
-+	/* Skip ACD probe if requested via module param */
-+	if (disable_acd) {
-+		DRM_DEV_ERROR(gmu->dev, "Skipping GPU ACD probe\n");
-+		return 0;
-+	}
+diff --git a/arch/arm64/boot/dts/qcom/x1e80100.dtsi b/arch/arm64/boot/dts/qcom/x1e80100.dtsi
+index 4936fa5b98ff7a9a009e3106f4dba90131251971..a9c8cca1c6356393962cef856b3dbd9420733999 100644
+--- a/arch/arm64/boot/dts/qcom/x1e80100.dtsi
++++ b/arch/arm64/boot/dts/qcom/x1e80100.dtsi
+@@ -3752,60 +3752,69 @@ zap-shader {
+ 			};
  
- 	cmd->version = 1;
- 	cmd->stride = 1;
-diff --git a/drivers/gpu/drm/msm/adreno/adreno_device.c b/drivers/gpu/drm/msm/adreno/adreno_device.c
-index 236b25c094cd5d462f4b6653de7b7910985cccb6..f5e1490d07c1868fa21cddb38de44c28af5ca0d5 100644
---- a/drivers/gpu/drm/msm/adreno/adreno_device.c
-+++ b/drivers/gpu/drm/msm/adreno/adreno_device.c
-@@ -24,6 +24,10 @@ int enable_preemption = -1;
- MODULE_PARM_DESC(enable_preemption, "Enable preemption (A7xx only) (1=on , 0=disable, -1=auto (default))");
- module_param(enable_preemption, int, 0600);
+ 			gpu_opp_table: opp-table {
+-				compatible = "operating-points-v2";
++				compatible = "operating-points-v2-adreno", "operating-points-v2";
  
-+bool disable_acd;
-+MODULE_PARM_DESC(disable_acd, "Forcefully disable GPU ACD");
-+module_param_unsafe(disable_acd, bool, 0400);
-+
- extern const struct adreno_gpulist a2xx_gpulist;
- extern const struct adreno_gpulist a3xx_gpulist;
- extern const struct adreno_gpulist a4xx_gpulist;
+ 				opp-1100000000 {
+ 					opp-hz = /bits/ 64 <1100000000>;
+ 					opp-level = <RPMH_REGULATOR_LEVEL_TURBO_L1>;
+ 					opp-peak-kBps = <16500000>;
++					qcom,opp-acd-level = <0xa82a5ffd>;
+ 				};
+ 
+ 				opp-1000000000 {
+ 					opp-hz = /bits/ 64 <1000000000>;
+ 					opp-level = <RPMH_REGULATOR_LEVEL_TURBO>;
+ 					opp-peak-kBps = <14398438>;
++					qcom,opp-acd-level = <0xa82b5ffd>;
+ 				};
+ 
+ 				opp-925000000 {
+ 					opp-hz = /bits/ 64 <925000000>;
+ 					opp-level = <RPMH_REGULATOR_LEVEL_NOM_L1>;
+ 					opp-peak-kBps = <14398438>;
++					qcom,opp-acd-level = <0xa82b5ffd>;
+ 				};
+ 
+ 				opp-800000000 {
+ 					opp-hz = /bits/ 64 <800000000>;
+ 					opp-level = <RPMH_REGULATOR_LEVEL_NOM>;
+ 					opp-peak-kBps = <12449219>;
++					qcom,opp-acd-level = <0xa82c5ffd>;
+ 				};
+ 
+ 				opp-744000000 {
+ 					opp-hz = /bits/ 64 <744000000>;
+ 					opp-level = <RPMH_REGULATOR_LEVEL_SVS_L2>;
+ 					opp-peak-kBps = <10687500>;
++					qcom,opp-acd-level = <0x882e5ffd>;
+ 				};
+ 
+ 				opp-687000000 {
+ 					opp-hz = /bits/ 64 <687000000>;
+ 					opp-level = <RPMH_REGULATOR_LEVEL_SVS_L1>;
+ 					opp-peak-kBps = <8171875>;
++					qcom,opp-acd-level = <0x882e5ffd>;
+ 				};
+ 
+ 				opp-550000000 {
+ 					opp-hz = /bits/ 64 <550000000>;
+ 					opp-level = <RPMH_REGULATOR_LEVEL_SVS>;
+ 					opp-peak-kBps = <6074219>;
++					qcom,opp-acd-level = <0xc0285ffd>;
+ 				};
+ 
+ 				opp-390000000 {
+ 					opp-hz = /bits/ 64 <390000000>;
+ 					opp-level = <RPMH_REGULATOR_LEVEL_LOW_SVS>;
+ 					opp-peak-kBps = <3000000>;
++					qcom,opp-acd-level = <0xc0285ffd>;
+ 				};
+ 
+ 				opp-300000000 {
+ 					opp-hz = /bits/ 64 <300000000>;
+ 					opp-level = <RPMH_REGULATOR_LEVEL_LOW_SVS_D1>;
+ 					opp-peak-kBps = <2136719>;
++					qcom,opp-acd-level = <0xc02b5ffd>;
+ 				};
+ 			};
+ 		};
 
 -- 
 2.48.1
