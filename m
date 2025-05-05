@@ -1,93 +1,129 @@
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DA3B322A90;
-	Mon,  5 May 2025 22:33:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50ABB332817;
+	Mon,  5 May 2025 22:35:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746484416; cv=none; b=aTOJVV3ws5dd+jVSuuHJR/ngkA4WR9NavmtGtdcwKYqUUJlsoLcGk/em0qqFED/8z+X/o55QdNsuLZBBRWeXzXdi29sObLT3v42cbGqUMXKyH0NNP56rPd1rUMkse394vJRA7+pQPJ6yqvz5feG6JiVa0MDYGtBBC8Hjme9ULT0=
+	t=1746484557; cv=none; b=lMw6mpsJa55xanikGAzh369qxrv98T9b1C5gm44olF/CKVpmgoOsGZkAMUmjCBLDLmhIPMuRM+LnNx6c4ligrP0vfgivTlTGEXJgSEhmfDokcKDrVR63gkzDSwIMa541iPVzl9zCnE3PMjTMhzIYMKj21+14UgS8V7FkKZyHKBM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746484416; c=relaxed/simple;
-	bh=HatdA9k8dTOZzoALiSAOatm15PguKG74mPF5yaTmjXw=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=U0qO5mjDr1ymM6fSu9543fhK0DnvIDuYpO+O5xKq7kb7Hoejp6Oy05BnV2yTQmkp+z21aQ8T9xu+7kMUkVW8uEVRUtz1WUnm6U7aZi1/+PuFVIJ0ZenLObGx/7X9+2PNLcLNkOLXmZ34Xr/tSaKgOmhzCrVGJQUc/tP8Sr/VMnE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=YNbJQ11E; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=f+q9z70S; arc=none smtp.client-ip=193.142.43.55
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
+	s=arc-20240116; t=1746484557; c=relaxed/simple;
+	bh=Faw6lcy8GRM96DWvlwn0FJjHDv+oz9qshy5X7N2AODY=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=PXEBi6u920P13TbW3/9z+VGt3iXO0nkrE0Fog6Z03JT44vBpOiQ5AFY/YBIwKGm5FwpKB2xBygOUA+UWQrjwAo6lGfABMVgbWEhJSnjAgzqG74qYe9NxRHEx1T6LIwMbqp+nsQ1UKzl6GRLMqkIqb5L7zIs10AXE1LropIdJlbw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aS/EAaL7; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="YNbJQ11E";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="f+q9z70S"
-From: Thomas Gleixner <tglx@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1746484411;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ar+nYY6YvS1JDsf3WZ/fGQw2E8KQPNJ8g1OwVIgR+aM=;
-	b=YNbJQ11E0VmO8C+gqyhlukX676Aov3AgM0pJVFAc4FJgNaleYvU1mCt+jSrgTy00xjZdcY
-	lw5g1mEGYYy2t9gmxGgFkVEo5Xn9LxICd16cbLXdLhaH+lo5UkL7bt28USzil0HKrq15fy
-	zW8p3peJv8DIfogSabh+6tPhKL76cJj2HgNcuMVpP1yL9LQyOUKglw3H7FKhsJTSP9E8l9
-	sN2XkT9RQb5nl4RDyj3Z3u23EuIxjuQfrGqKC6+T0KUkFhQJJN4y4Nub4mO3SUdCRrLJYs
-	qK9CQ+vVfaZ9RSzBw8uYllWzYms2soUc2mGoN5DWyToCHSXwaCnnyaoZ2sMnlA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1746484411;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ar+nYY6YvS1JDsf3WZ/fGQw2E8KQPNJ8g1OwVIgR+aM=;
-	b=f+q9z70Smk3vOT60407tVIz6Ss+kDH8S/UNUpUYoaE8+VjeoW6/KIMuK5eDqOnEyyebr9T
-	HeK2bY8XrvJ2t6Bg==
-To: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>,
- Lorenzo Pieralisi <lpieralisi@kernel.org>, Krzysztof =?utf-8?Q?Wilczy?=
- =?utf-8?Q?=C5=84ski?=
- <kw@linux.com>, Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
- Rob Herring <robh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter
- <jonathanh@nvidia.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Daniel
- Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, Aaron Kling
- <webgeek1234@gmail.com>
-Subject: Re: [PATCH v4 1/4] irqdomain: Export irq_domain_free_irqs
-In-Reply-To: <20250505-pci-tegra-module-v4-1-088b552c4b1a@gmail.com>
-References: <20250505-pci-tegra-module-v4-0-088b552c4b1a@gmail.com>
- <20250505-pci-tegra-module-v4-1-088b552c4b1a@gmail.com>
-Date: Tue, 06 May 2025 00:33:30 +0200
-Message-ID: <87o6w6ofgl.ffs@tglx>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aS/EAaL7"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 67912C4CEE4;
+	Mon,  5 May 2025 22:35:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1746484557;
+	bh=Faw6lcy8GRM96DWvlwn0FJjHDv+oz9qshy5X7N2AODY=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=aS/EAaL7E0fDHEYllGYfU9oLL7ucHULhZsAifjof/hejdVlDryCRnKN8+Z0tlkCur
+	 phvI7Vg7m5CDCpnvHSAtQPZeZpB+HDq7iK2zlE29SMoO5ks/jcYd5TZOEsVXYl80Bt
+	 AvleOpzu7u9pOVuzMm4Bnsn378OJL5dDYg7DlSgruDWXxSna/uLiW924f+hG0+n+Tq
+	 G342yuQQXWhWO+waRRTfjd+jLEJbE8gN2bGvwjpT9VG7ia/CBIkJ3mpI7/enSI7pzy
+	 hYyy8c/R9/MmKaqs6hLg3jG7lFfSSYheME0xJEMiaWAoZ4YTEz5l7tkHJU9qJmGw55
+	 bFGM+waqst7LQ==
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>,
+	Artem Bityutskiy <artem.bityutskiy@intel.com>,
+	Sasha Levin <sashal@kernel.org>,
+	lenb@kernel.org,
+	linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 6.14 535/642] tools/power turbostat: Clustered Uncore MHz counters should honor show/hide options
+Date: Mon,  5 May 2025 18:12:31 -0400
+Message-Id: <20250505221419.2672473-535-sashal@kernel.org>
+X-Mailer: git-send-email 2.39.5
+In-Reply-To: <20250505221419.2672473-1-sashal@kernel.org>
+References: <20250505221419.2672473-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 6.14.5
+Content-Transfer-Encoding: 8bit
 
-On Mon, May 05 2025 at 09:58, Aaron Kling via wrote:
-> From: Aaron Kling <webgeek1234@gmail.com>
->
-> Add export for irq_domain_free_irqs() so that drivers like pci-tegra can
-> be loaded as a module.
->
-> Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+From: Len Brown <len.brown@intel.com>
 
-Seriously?
+[ Upstream commit 1c7c7388e6c31f46b26a884d80b45efbad8237b2 ]
 
-Did you actually sit down for a couple of seconds to read and understand what I
-asked you to do in that initial review and then again:
+The clustered uncore frequency counters, UMHz*.*
+should honor the --show and --hide options.
 
-    https://lore.kernel.org/all/877c33qxss.ffs@tglx
+All non-specified counters should be implicityly hidden.
+But when --show was used, UMHz*.* showed up anyway:
 
-I appreciate your dedication to get this sorted, but please take your
-time to read more than just the _two_ lines which you think to be
-relevant.
+$ sudo turbostat -q -S --show Busy%
+Busy%  UMHz0.0  UMHz1.0  UMHz2.0  UMHz3.0  UMHz4.0
 
-Please don't come back and waste your breath on telling me you are so
-sorry as last time:
+Indeed, there was no string that can be used to explicitly
+show or hide clustered uncore counters.
 
-    https://lore.kernel.org/all/CALHNRZ_ctL1fJGO5752B6XEEXHwRe-a-Ofv+_=qtdq1WWXLLjw@mail.gmail.com
+Even through they are dynamically probed and added,
+group the clustered UMHz*.* counters with the legacy
+built-in-counter "UncMHz" for show/hide.
 
-Just get your act together and do it right.
+turbostat --show Busy%
+	does not show UMHz*.*.
+turbostat --show UncMHz
+	shows either UncMHz or UMHz*.*, if present
+turbostat --hide UncMHz
+	hides either UncMHz or UMHz*.*, if present
 
-Thanks,
+Reported-by: Artem Bityutskiy <artem.bityutskiy@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Tested-by: Artem Bityutskiy <artem.bityutskiy@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ tools/power/x86/turbostat/turbostat.8 |  1 +
+ tools/power/x86/turbostat/turbostat.c | 13 ++++++++++++-
+ 2 files changed, 13 insertions(+), 1 deletion(-)
 
-        tglx
+diff --git a/tools/power/x86/turbostat/turbostat.8 b/tools/power/x86/turbostat/turbostat.8
+index e4f9f93c123a2..abee03ddc7f09 100644
+--- a/tools/power/x86/turbostat/turbostat.8
++++ b/tools/power/x86/turbostat/turbostat.8
+@@ -201,6 +201,7 @@ The system configuration dump (if --quiet is not used) is followed by statistics
+ \fBUncMHz\fP per-package uncore MHz, instantaneous sample.
+ .PP
+ \fBUMHz1.0\fP per-package uncore MHz for domain=1 and fabric_cluster=0, instantaneous sample.  System summary is the average of all packages.
++For the "--show" and "--hide" options, use "UncMHz" to operate on all UMHz*.* as a group.
+ .SH TOO MUCH INFORMATION EXAMPLE
+ By default, turbostat dumps all possible information -- a system configuration header, followed by columns for all counters.
+ This is ideal for remote debugging, use the "--out" option to save everything to a text file, and get that file to the expert helping you debug.
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 4155d9bfcfc6d..505b07b5be19b 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -6713,7 +6713,18 @@ static void probe_intel_uncore_frequency_cluster(void)
+ 		sprintf(path, "%s/current_freq_khz", path_base);
+ 		sprintf(name_buf, "UMHz%d.%d", domain_id, cluster_id);
+ 
+-		add_counter(0, path, name_buf, 0, SCOPE_PACKAGE, COUNTER_K2M, FORMAT_AVERAGE, 0, package_id);
++		/*
++		 * Once add_couter() is called, that counter is always read
++		 * and reported -- So it is effectively (enabled & present).
++		 * Only call add_counter() here if legacy BIC_UNCORE_MHZ (UncMHz)
++		 * is (enabled).  Since we are in this routine, we
++		 * know we will not probe and set (present) the legacy counter.
++		 *
++		 * This allows "--show/--hide UncMHz" to be effective for
++		 * the clustered MHz counters, as a group.
++		 */
++		if BIC_IS_ENABLED(BIC_UNCORE_MHZ)
++			add_counter(0, path, name_buf, 0, SCOPE_PACKAGE, COUNTER_K2M, FORMAT_AVERAGE, 0, package_id);
+ 
+ 		if (quiet)
+ 			continue;
+-- 
+2.39.5
+
