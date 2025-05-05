@@ -1,88 +1,93 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [62.89.141.173])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7AB6F2C0857;
-	Mon,  5 May 2025 22:36:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8456B2C086E;
+	Mon,  5 May 2025 22:36:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=62.89.141.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746484580; cv=none; b=Hz1xqOLNHu9D0uEn9jqZbAIBdd6GljJ9PK7CqNs+2U5MW0hgpoz4dzIxkJB24f56MIAU3wqvlKFLOwHVD7wZT1RjmurIDNEWqkvDaJLWX14R/+6jPkcUfCEdMXm1KZb/c6bKJq0LEaTPMalN+T5H8b21tGXse4HqxudnOCTCtjI=
+	t=1746484583; cv=none; b=YTMCMujevoUD2R+YRSK+U60c48+vSif4YjckTx6v4g5Mof+XgvVrF17d5H8vDjCiWilFw5so/zGknmnTVIhVwmvuRn8ozZFhwRUlgHCsz+Wgcgn9tJit7qCDKml+X+QBCCbJojlaWMJsNOUh2V5MdMzsnLF+9n1rRYjkMLPCjow=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746484580; c=relaxed/simple;
-	bh=5hb73CcXb8+qVB6cbm5qP12nY9T/ydtLkiLbo7bKb20=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=BphO0EvdHbKwA89pT/YjjTv1VyyNiuyKHH768UU7bPP6VIslLvPAxvH6CklAjN6ksoYIZ9rwunfq8d5mZ4OUh7Gh11cUWTFvYL2kOyEvv+ZUeHcDHrZmTwhG2Eo/4h+ut1m/ZuRKmOOnR8IDwHap7dXdGMwmcHiyqrWbP/x5e60=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=F4x+ExvI; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1746484583; c=relaxed/simple;
+	bh=V/as8NAbScpAc7r0jNSjRHgZ4ii7oO7JrW99rb0nMJI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=KBSD+MgkyX7mLRblRRhfxE0FsyLidXyYwvyhm1GYrzORRnmoNvPIdzN6s3HTFahAe1OoY0MBWQ9a2h8VgM9TQ5NDKVWm1DOm0M+TG8OlO0roNlKhZS4Jp5AeDQrd9CxuuVMs0LrQpueTH5Rvj8ZeHeIVbPUETV0jqgLUY04aT4c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; spf=none smtp.mailfrom=ftp.linux.org.uk; dkim=pass (2048-bit key) header.d=linux.org.uk header.i=@linux.org.uk header.b=KODD3dnU; arc=none smtp.client-ip=62.89.141.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="F4x+ExvI"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D2161C4CEEF;
-	Mon,  5 May 2025 22:36:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746484578;
-	bh=5hb73CcXb8+qVB6cbm5qP12nY9T/ydtLkiLbo7bKb20=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=F4x+ExvIk/GzBFsajxfXnSmEi2o3Tl/Yq6BkqI7mo0y2TX0WRnFxEJOU2lsrD5L4c
-	 TKWi+1YmyWO0oQw/W9SOdMFXAjrW2aGjKL48GsUVTFNgQopPA6rm7jUq1MD7ozu1mr
-	 MXGZMh6vpOB/8IQNZbgsiBh5I9phHGM0dC6Vm+VZlWqMGuMSIdeKPmyJkW/YvEpTnL
-	 wBG5FmfKBj01WppPld1XC01qBm1iaLICfxj5UW7H8bnJAB2XgJWg3kNxCFm7maxaxm
-	 ob9QK7RsVKX+kLI2SgUdqvLePO+rwkWBIRSufSEB7hWV0/1UbU+B4/yKljpiOh01/b
-	 1SBDwUkKjW50g==
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Cc: Dhananjay Ugwekar <dhananjay.ugwekar@amd.com>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Sasha Levin <sashal@kernel.org>,
-	ray.huang@amd.com,
-	gautham.shenoy@amd.com,
-	rafael@kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.14 546/642] cpufreq: amd-pstate: Remove unnecessary driver_lock in set_boost
-Date: Mon,  5 May 2025 18:12:42 -0400
-Message-Id: <20250505221419.2672473-546-sashal@kernel.org>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250505221419.2672473-1-sashal@kernel.org>
-References: <20250505221419.2672473-1-sashal@kernel.org>
+	dkim=pass (2048-bit key) header.d=linux.org.uk header.i=@linux.org.uk header.b="KODD3dnU"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=linux.org.uk; s=zeniv-20220401; h=Sender:In-Reply-To:
+	Content-Transfer-Encoding:Content-Type:MIME-Version:References:Message-ID:
+	Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description;
+	bh=wjv/3kkg8ER8GtdmsC4OfpctOuq/Lbu60oSY4NqUSV4=; b=KODD3dnUFam1+/IYyLJc/CXSLs
+	Gw9rntN2BqtvuXlFEaZG6JhJA6URM/jLipCXwPYSr/YFlP9n4gLuYF2daWvE2rDCC7/vAkm6s0nuN
+	QXiS6iKN3ofsx7PLEDDx6y9jUN9RXgITzSCI4Tsoj5PUIYa/DJBvbFIJhCstkDKqUwbc02C12msB4
+	n2FHQzzYVeE56cAlg2pjy1u1CuD8oPlQuosvbOI+scszXsJeP/LLq1vjB8RGKxpTUp6AmIV81HpQg
+	DIBWC0kfOdO3g7lB20nmxiiE6+K7HJbBWhLw45OAmxaH5ayGw5kNEpepcvcpoKjN9NZz0O6a1JQdr
+	06dZq0rw==;
+Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1uC4Q3-000000073Pb-3xQP;
+	Mon, 05 May 2025 22:36:15 +0000
+Date: Mon, 5 May 2025 23:36:15 +0100
+From: Al Viro <viro@zeniv.linux.org.uk>
+To: Yunseong Kim <ysk@kzalloc.com>
+Cc: Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Pavel Machek <pavel@kernel.org>, Len Brown <len.brown@intel.com>,
+	byungchul@sk.com, max.byungchul.park@gmail.com,
+	linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fs: Prevent panic from NULL dereference in
+ alloc_fs_context() during do_exit()
+Message-ID: <20250505223615.GK2023217@ZenIV>
+References: <20250505203801.83699-2-ysk@kzalloc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.14.5
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20250505203801.83699-2-ysk@kzalloc.com>
+Sender: Al Viro <viro@ftp.linux.org.uk>
 
-From: Dhananjay Ugwekar <dhananjay.ugwekar@amd.com>
+On Tue, May 06, 2025 at 05:38:02AM +0900, Yunseong Kim wrote:
+> The function alloc_fs_context() assumes that current->nsproxy and its
+> net_ns field are valid. However, this assumption can be violated in
+> cases such as task teardown during do_exit(), where current->nsproxy can
+> be NULL or already cleared.
+> 
+> This issue was triggered during stress-ng's kernel-coverage.sh testing,
+> Since alloc_fs_context() can be invoked in various contexts — including
+> from asynchronous or teardown paths like do_exit() — it's difficult to
+> guarantee that its input arguments are always valid.
+> 
+> A follow-up patch will improve the granularity of this fix by moving the
+> check closer to the actual mount trigger(e.g., in efivarfs_pm_notify()).
 
-[ Upstream commit db1cafc77aaaf871509da06f4a864e9af6d6791f ]
+UGH.
 
-set_boost is a per-policy function call, hence a driver wide lock is
-unnecessary. Also this mutex_acquire can collide with the mutex_acquire
-from the mode-switch path in status_store(), which can lead to a
-deadlock. So, remove it.
+> diff --git a/fs/fs_context.c b/fs/fs_context.c
+> index 582d33e81117..529de43b8b5e 100644
+> --- a/fs/fs_context.c
+> +++ b/fs/fs_context.c
+> @@ -282,6 +282,9 @@ static struct fs_context *alloc_fs_context(struct file_system_type *fs_type,
+>  	struct fs_context *fc;
+>  	int ret = -ENOMEM;
+>  
+> +	if (!current->nsproxy || !current->nsproxy->net_ns)
+> +		return ERR_PTR(-EINVAL);
+> +
+>  	fc = kzalloc(sizeof(struct fs_context), GFP_KERNEL_ACCOUNT);
+>  	if (!fc)
+>  		return ERR_PTR(-ENOMEM);
 
-Signed-off-by: Dhananjay Ugwekar <dhananjay.ugwekar@amd.com>
-Acked-by: Mario Limonciello <mario.limonciello@amd.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/cpufreq/amd-pstate.c | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 1b26845703f68..a27749d948b46 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -746,7 +746,6 @@ static int amd_pstate_set_boost(struct cpufreq_policy *policy, int state)
- 		pr_err("Boost mode is not supported by this processor or SBIOS\n");
- 		return -EOPNOTSUPP;
- 	}
--	guard(mutex)(&amd_pstate_driver_lock);
- 
- 	ret = amd_pstate_cpu_boost_update(policy, state);
- 	refresh_frequency_limits(policy);
--- 
-2.39.5
-
+That might paper over the oops, but I very much doubt that this will be
+a correct fix...  Note that in efivarfs_pm_notify() we have other
+fun issues when run from such context - have task_work_add() fail in
+fput() and if delayed_fput() runs right afterwards and
+        efivar_init(efivarfs_check_missing, sfi->sb, false);
+in there might end up with UAF...
