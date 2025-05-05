@@ -1,210 +1,1639 @@
-Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de [80.237.130.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD23C25F98D
-	for <linux-pm@vger.kernel.org>; Mon,  5 May 2025 16:06:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.237.130.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4BC61F2BAB
+	for <linux-pm@vger.kernel.org>; Mon,  5 May 2025 16:19:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746461200; cv=none; b=I3Qts1U83pv/gTp9Vl3qFL22mDLDMxXeOmvFqKJoWNNxuSFZ2ERCqaS69vQuM22NuPPZqcH30Cgi822ZCWCMejJhqfFelxQWD8rjGObeER1MCZ8JCNE/DQPzKRZTeQ6wEq8pvD1+oLaYx+CjHEW1IscdnJHCtwmF9Wd3/1LEsSI=
+	t=1746461982; cv=none; b=Tm9oD16FnYybCew+LA7/2jwfXEnTEZaBq8uRxwOtCXenwQRNloAmsmx8GWXFi/gd9YYnwZWt8BrXmVBLM3Jhjm7WaKH+njAwLnsUCsO/dtopOFKfPnall+xIHXvAm0JE5gYE+IP+TUeUod8QMkZ5AfN8npavE1As9ZUVAWxi+ek=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746461200; c=relaxed/simple;
-	bh=6BiYzLt13FpbsjuoGBCE9enFuPJv5DJOAuUhbPFel4k=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WEUKlsBWS1dZGOAqBcK8jlD10Nlai0F52LCLLeE2N1chzCnjnEjcsA9Y+C8JlDdwFHtPGeqWrmLlKAR30GbKpJj2uFm3bqUOpLfS4DX+3LW6xHFxHVudNq9lON4lEwLJoh9+g8r2wV+lvay808QnvLoKyVCSgQ4lVe+ySmMBPuY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=leemhuis.info; spf=pass smtp.mailfrom=leemhuis.info; dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b=AnjVrNkl; arc=none smtp.client-ip=80.237.130.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=leemhuis.info
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=leemhuis.info
+	s=arc-20240116; t=1746461982; c=relaxed/simple;
+	bh=FNnesGMMQb0tc5nboo/+ESd9TicpF8S6NBEpr9cslng=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=uIaf3MxnLyi05ioqcyHHt2JgswkAswE4ZeKaiEOktmytLaqloRAlXJ/sPadydSouFcLfDih8yaAbnyhuJ1wih1oSWNl5u1asbUaXhjVvviMmuYzDOgskt4Ks1BF3+P9Q5lQZyi+IpB9VnDAslvU6SSI5F/umQQvk/Cz+ll7lmWc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=brQykehV; arc=none smtp.client-ip=209.85.128.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b="AnjVrNkl"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=leemhuis.info; s=he214686; h=Content-Transfer-Encoding:Content-Type:
-	In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:From:
-	Sender:Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
-	Content-Transfer-Encoding:Content-ID:Content-Description:In-Reply-To:
-	References; bh=KxQWpogNNtGNwsa5aJUcAs9QhCahQnA+uIt3Fl5q7YY=; t=1746461198;
-	x=1746893198; b=AnjVrNklLgF/47QWOBQz/4UbJDKoqduReWotDKIxLA9BvZrTV65pEfCQ7sbD3
-	R25+DK2E/oAPcqTadmNjez1HvWLsifWSxeDubkG6HoV2kd3lajaOIIZ2uaqwdn77wYBquPIidT21B
-	6/KyYY6VjrF1CWbs4UlwC0eTRkKty3adnLIDMe747XCawdE3IZJVrix64Ui18Km0BEzRhb1mEsFRX
-	+HA2DkaftZ2SsB3kms/dmowO7BCeof6hSsXMZMdwsTHSRR2bLV1HRWYdbK2mX+05NNjU6jyfb2vRB
-	2yCxz/wYFlcv1xNQvEy7EvzUc/3mtCC71nxs/w0dmkEc0xnynw==;
-Received: from [2a02:8108:8984:1d00:a0cf:1912:4be:477f]; authenticated
-	by wp530.webpack.hosteurope.de running ExIM with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128)
-	id 1uByKt-009XI3-1H;
-	Mon, 05 May 2025 18:06:31 +0200
-Message-ID: <d06fb5d6-b8fe-4c4f-9ee9-6710c05cc51e@leemhuis.info>
-Date: Mon, 5 May 2025 18:06:30 +0200
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="brQykehV"
+Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-43690d4605dso33153085e9.0
+        for <linux-pm@vger.kernel.org>; Mon, 05 May 2025 09:19:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1746461977; x=1747066777; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=XMfKOSolIPFtP/2jfvl4rNgPPHayVOA0ad+l75+iyAA=;
+        b=brQykehV/ML7b7qSfwMGfapvwBoyTExxAe5HUHpMPZn610VMPxaHmpjvPbOMfYVBDK
+         sI4q6ZtrIoM2GVrdy266da5f1zKouA/OtNEt7889rr3v9FNZNoWYzZjJx1RX/+heXYVf
+         YSOHgCZPEMM0JT7G6PnlI2Ca/zpN6kU5u7OzvoKt/AElRIk5kkvwMKuDMBY0u5OxkZkA
+         7jARRT+LW0x+Dp0cXjglCd44YkKIUzQJBqha33gCZ1rxekuP+B9upamSIhACOV9Mr8w+
+         0HtASobH34y6hOi0wJmNBIVSxrLie0BBEdWu0B1+EqEgRehLDp2lxZMcg05/0f/Y0nCw
+         jQYw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1746461977; x=1747066777;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=XMfKOSolIPFtP/2jfvl4rNgPPHayVOA0ad+l75+iyAA=;
+        b=OarNpGERNweSovBaoJyKxCWok1UIjGZSj4lRKMo3BPYgki+t0JD4XMaiuMgO+VzZsA
+         jcVt0NKHrnp3XKg+hIE8xkifZTieBe7fXFO3vJT0Od/T8Z1P4PDK2855LUcG/boWz85d
+         hl9fkIpyFbhPOj2E6MK3ShVTzKa/PTzX6YK5ulPV5Hf0aqSHdRT2DTdWENy3B72vrftr
+         ASS8hnDWMVfM3+XN7kg0pGgULk1bB6fDzu687IZwwXl3ib3Efxq6nfMWdM3C31zsLoxl
+         FuulxVcIDKrMNy3Q2CdUh17fAOlIE5eDKxhrz2o0U5HwelijIqK5lT+LUQVQzRb4EVat
+         BUyA==
+X-Forwarded-Encrypted: i=1; AJvYcCW2xUtnGp90EUmv3CO5ETgaut0k/GZTzZZOpMmx3U+R/HFvAzq1Jw/q81uhF8E3wsLSEzjLhw0izQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yyf72Pb20H9H/manznalg6fz24YtrBDM0rFN1redyDtAtTdWkxV
+	MdG3gToMyBjG9x7mjhK75nTVa1qt2AGnRE4SsX2z5d+lEJ4mSAe5nxTFuA6slfc=
+X-Gm-Gg: ASbGncsq7LDWFgoepv8hpRQAUBJzh4fjo+Tr/W+HWBvWgDvPiQuJz1XBR1wAbKce676
+	M2j4VK5IJbTstl58EH5a0K1J8ZtTEDohvaRUpLQFP1YyzqBCEsyQjGH7S7yvKzCnbhEIFc16hS+
+	gjvYkzBXyonjlibcTgBWMOKkdDPSokk89Qg36KD5M+qLh1YxBGpe2hdf1oy34jZ6tEECd64fao8
+	j6K9Tr3db2HcjJHgZ3dTtgJsrxbfs3+s7VLPIpodr7h+2oH+Rcz3b4clGclnynFJ7QLIzQDitwV
+	QO5tz/vI+va7o6FPuy0za9z6JIj/TRK/uaCdMOcYVcWDbO0EqomaIJgbm7M/o8SDAAs=
+X-Google-Smtp-Source: AGHT+IEFaVJd/lebDtSqzlCjBmif2uKB/aYQgpdOijhehrAZdokTkxluIiyo0TLuobdmewCnyEpYrw==
+X-Received: by 2002:a05:600c:500d:b0:43d:b3:fb1 with SMTP id 5b1f17b1804b1-441c4938d9emr59038915e9.27.1746461976968;
+        Mon, 05 May 2025 09:19:36 -0700 (PDT)
+Received: from mai.. (146725694.box.freepro.com. [130.180.211.218])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-441b89d150fsm137352925e9.15.2025.05.05.09.19.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 05 May 2025 09:19:36 -0700 (PDT)
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+To: daniel.lezcano@linaro.org,
+	rafael@kernel.org
+Cc: linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	ulf.hansson@linaro.org,
+	arnd@linaro.org,
+	saravanak@google.com
+Subject: [RFC PATCH 2/2] selftests: Add perf_qos selftests
+Date: Mon,  5 May 2025 18:19:28 +0200
+Message-ID: <20250505161928.475030-2-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250505161928.475030-1-daniel.lezcano@linaro.org>
+References: <20250505161928.475030-1-daniel.lezcano@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] cpupower: add a systemd service to run cpupower
-To: "Francesco Poli (wintermute)" <invernomuto@paranoici.org>,
- Shuah Khan <shuah@kernel.org>, linux-pm list <linux-pm@vger.kernel.org>
-Cc: Thomas Renninger <trenn@suse.com>, "John B. Wyatt IV"
- <jwyatt@redhat.com>, John Kacur <jkacur@redhat.com>,
- Justin Forbes <jforbes@redhat.com>
-References: <20250425151024.121630-1-invernomuto@paranoici.org>
-From: Thorsten Leemhuis <linux@leemhuis.info>
-Content-Language: de-DE, en-US
-Autocrypt: addr=linux@leemhuis.info; keydata=
- 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 n7RI
-In-Reply-To: <20250425151024.121630-1-invernomuto@paranoici.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-bounce-key: webpack.hosteurope.de;linux@leemhuis.info;1746461198;a17d08f4;
-X-HE-SMSGID: 1uByKt-009XI3-1H
+Content-Transfer-Encoding: 8bit
 
-[CCing Justin Forbes FYI]
+The performance QoS is a framework to allow the userspace to set the
+performance limits of a device which is exported as a char device in
+/dev. The performance constraints are set from userspace and their
+life cycle is tied with the opened file descriptor and other processes
+requesting the same constraint via another instance of the file
+descriptor. This kind of non trivial behavior, involving constraint
+limits to be enqueued in a sorted list and depending on the process
+holding a file descriptor, deserves a set of testing programs.
 
-On 25.04.25 17:07, Francesco Poli (wintermute) wrote:
-> One of the most typical use cases of the 'cpupower' utility works as
-> follows: run 'cpupower' at boot with the desired command-line options
-> and then forget about it.
-> 
-> Add a systemd service (disabled by default) that automates this use
-> case (for environments where the initialization system is 'systemd'),
-> by running 'cpupower' at boot with the settings read from a default
-> configuration file.
-> 
-> The systemd service, the associated support script and the
-> corresponding default configuration file are derived from what is
-> provided by the Arch Linux package (under "GPL-2.0-or-later" terms),
-> modernized and enhanced in various ways (the script has also been
-> checked with 'shellcheck').
-> 
-> Link: https://gitlab.archlinux.org/archlinux/packaging/packages/linux-tools/-/tree/dd2e2a311e05413d0d87a0346ffce8c7e98d6d2b
-> Signed-off-by: Francesco Poli (wintermute) <invernomuto@paranoici.org>
+This patch provides somes tests which depend on a kernel module
+creating a dummy performance QoS device. More tests will be added
+later.
 
-Lo! I'm wondering if the the DESTDIR usage in this patch is wrong, as it
-caused trouble for me today when it showed up in -next. During debugging
-I furthermore found a related problem.
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ lib/Kconfig.debug                             |   9 ++
+ lib/Makefile                                  |   1 +
+ lib/test_perf_qos.c                           |  69 ++++++++
+ tools/include/uapi/linux/perf_qos_ioctl.h     |  47 ++++++
+ tools/testing/selftests/Makefile              |   1 +
+ tools/testing/selftests/perf_qos/Makefile     |  16 ++
+ tools/testing/selftests/perf_qos/get_limits.c |  61 +++++++
+ .../testing/selftests/perf_qos/get_set_max.c  |  95 +++++++++++
+ .../selftests/perf_qos/get_set_max_forked.c   | 150 ++++++++++++++++++
+ .../testing/selftests/perf_qos/get_set_min.c  |  95 +++++++++++
+ .../selftests/perf_qos/get_set_min_forked.c   | 150 ++++++++++++++++++
+ tools/testing/selftests/perf_qos/get_unit.c   |  46 ++++++
+ .../selftests/perf_qos/set_max_forked.c       | 147 +++++++++++++++++
+ .../selftests/perf_qos/set_min_forked.c       | 147 +++++++++++++++++
+ .../selftests/perf_qos/set_multiple_maxs.c    |  93 +++++++++++
+ .../selftests/perf_qos/set_multiple_mins.c    |  87 ++++++++++
+ .../perf_qos/set_same_multiple_maxs.c         |  84 ++++++++++
+ .../perf_qos/set_same_multiple_mins.c         |  84 ++++++++++
+ 18 files changed, 1382 insertions(+)
+ create mode 100644 lib/test_perf_qos.c
+ create mode 100644 tools/include/uapi/linux/perf_qos_ioctl.h
+ create mode 100644 tools/testing/selftests/perf_qos/Makefile
+ create mode 100644 tools/testing/selftests/perf_qos/get_limits.c
+ create mode 100644 tools/testing/selftests/perf_qos/get_set_max.c
+ create mode 100644 tools/testing/selftests/perf_qos/get_set_max_forked.c
+ create mode 100644 tools/testing/selftests/perf_qos/get_set_min.c
+ create mode 100644 tools/testing/selftests/perf_qos/get_set_min_forked.c
+ create mode 100644 tools/testing/selftests/perf_qos/get_unit.c
+ create mode 100644 tools/testing/selftests/perf_qos/set_max_forked.c
+ create mode 100644 tools/testing/selftests/perf_qos/set_min_forked.c
+ create mode 100644 tools/testing/selftests/perf_qos/set_multiple_maxs.c
+ create mode 100644 tools/testing/selftests/perf_qos/set_multiple_mins.c
+ create mode 100644 tools/testing/selftests/perf_qos/set_same_multiple_maxs.c
+ create mode 100644 tools/testing/selftests/perf_qos/set_same_multiple_mins.c
 
-> diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
-> index 835123add0ed..9c2b5f71fee1 100644
-> --- a/tools/power/cpupower/Makefile
-> +++ b/tools/power/cpupower/Makefile
-> @@ -2,6 +2,7 @@
->  # Makefile for cpupower
->  #
->  # Copyright (C) 2005,2006 Dominik Brodowski <linux@dominikbrodowski.net>
-> +# Copyright (C) 2025      Francesco Poli <invernomuto@paranoici.org>
->  #
->  # Based largely on the Makefile for udev by:
->  #
-> @@ -71,6 +72,7 @@ bindir ?=	/usr/bin
->  sbindir ?=	/usr/sbin
->  mandir ?=	/usr/man
->  libdir ?=	/usr/lib
-> +libexecdir ?=	/usr/libexec
->  includedir ?=	/usr/include
->  localedir ?=	/usr/share/locale
->  docdir ?=       /usr/share/doc/packages/cpupower
-> @@ -83,6 +85,7 @@ CP = cp -fpR
->  INSTALL = /usr/bin/install -c
->  INSTALL_PROGRAM = ${INSTALL}
->  INSTALL_DATA  = ${INSTALL} -m 644
-> +SETPERM_DATA  = chmod 644
->  #bash completion scripts get sourced and so they should be rw only.
->  INSTALL_SCRIPT = ${INSTALL} -m 644
->  
-> @@ -302,6 +305,14 @@ install-tools: $(OUTPUT)cpupower
->  	$(INSTALL_PROGRAM) $(OUTPUT)cpupower $(DESTDIR)${bindir}
->  	$(INSTALL) -d $(DESTDIR)${bash_completion_dir}
->  	$(INSTALL_SCRIPT) cpupower-completion.sh '$(DESTDIR)${bash_completion_dir}/cpupower'
-> +	$(INSTALL) -d $(DESTDIR)${confdir}default
-> +	$(INSTALL_DATA) cpupower.default '$(DESTDIR)${confdir}default/cpupower'
-> +	$(INSTALL) -d $(DESTDIR)${libexecdir}
-> +	$(INSTALL_PROGRAM) cpupower.sh '$(DESTDIR)${libexecdir}/cpupower'
-> +	$(INSTALL) -d $(DESTDIR)${libdir}/systemd/system
-> +	sed 's|___CDIR___|$(DESTDIR)${confdir}|; s|___LDIR___|$(DESTDIR)${libexecdir}|' cpupower.service.in > '$(DESTDIR)${libdir}/systemd/system/cpupower.service'
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 7312ae7c3cc5..5b66089d6103 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -2585,6 +2585,15 @@ config TEST_FIRMWARE
+ 
+ 	  If unsure, say N.
+ 
++config TEST_PERF_QOS
++	tristate "Create a dummy device for the performance QoS testing"
++	help
++	  This builds the "test_perf_qos" module which creates an
++	  userspace interface for testing the performance QoS API. It
++	  is needed for the performance QoS selftests.
++
++	  If unsure, say N.
++
+ config TEST_SYSCTL
+ 	tristate "sysctl test driver"
+ 	depends on PROC_SYSCTL
+diff --git a/lib/Makefile b/lib/Makefile
+index 773adf88af41..72d345071725 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -61,6 +61,7 @@ obj-$(CONFIG_TEST_BPF) += test_bpf.o
+ test_dhry-objs := dhry_1.o dhry_2.o dhry_run.o
+ obj-$(CONFIG_TEST_DHRY) += test_dhry.o
+ obj-$(CONFIG_TEST_FIRMWARE) += test_firmware.o
++obj-$(CONFIG_TEST_PERF_QOS) += test_perf_qos.o
+ obj-$(CONFIG_TEST_BITOPS) += test_bitops.o
+ CFLAGS_test_bitops.o += -Werror
+ obj-$(CONFIG_CPUMASK_KUNIT_TEST) += cpumask_kunit.o
+diff --git a/lib/test_perf_qos.c b/lib/test_perf_qos.c
+new file mode 100644
+index 000000000000..7d1c21f4170d
+--- /dev/null
++++ b/lib/test_perf_qos.c
+@@ -0,0 +1,69 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Kernel module for testing performance QoS
++ *
++ * Copyright (2024) Linaro Ltd
++ *
++ * Author: Daniel Lezcano <daniel.lezcano@kernel.org>
++ *
++ */
++#include <linux/module.h>
++#include <linux/perf_qos.h>
++
++static struct perf_qos *pq;
++
++static int test_set_perf_limit_min(int limit)
++{
++	static int prev_limit = -1;
++
++	pr_info("Performance minimal limit set to %d->%d\n",
++		prev_limit, limit);
++
++	WARN_ON_ONCE(prev_limit == limit);
++	
++	return 0;
++}
++
++static int test_set_perf_limit_max(int limit)
++{
++	static int prev_limit = -1;
++
++	pr_info("Performance maximal limit set to %d->%d\n",
++		prev_limit, limit);
++
++	WARN_ON_ONCE(prev_limit == limit);
++
++	return 0;
++}
++
++static int __init test_perf_qos_init(void)
++{
++	struct perf_qos_ops ops = {
++		.set_perf_limit_max = test_set_perf_limit_max,
++		.set_perf_limit_min = test_set_perf_limit_min,
++	};
++
++	struct perf_qos_value_descr descr = {
++		.unit = PERF_QOS_UNIT_NORMAL,
++		.limit_min = 0,
++		.limit_max = 1024,
++	};
++	
++	pq = perf_qos_device_create("dummy", &ops, &descr);
++	if (IS_ERR(pq))
++		return PTR_ERR(pq);
++
++	return 0;
++}
++
++static void __exit test_perf_qos_exit(void)
++{
++	perf_qos_device_destroy(pq);
++}
++
++module_init(test_perf_qos_init);
++module_exit(test_perf_qos_exit);
++
++MODULE_AUTHOR("Daniel Lezcano <daniel.lezcano@kernel.org>");
++MODULE_DESCRIPTION("Kernel module for testing the performance QoS");
++MODULE_LICENSE("GPL");
+diff --git a/tools/include/uapi/linux/perf_qos_ioctl.h b/tools/include/uapi/linux/perf_qos_ioctl.h
+new file mode 100644
+index 000000000000..a9fb8940c175
+--- /dev/null
++++ b/tools/include/uapi/linux/perf_qos_ioctl.h
+@@ -0,0 +1,47 @@
++/* SPDX-License-Identifier: LGPL-2.0+ WITH Linux-syscall-note */
++/*
++ * Performance QoS device abstraction
++ *
++ * Copyright (2024) Linaro Ltd
++ *
++ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
++ *
++ */
++#ifndef __PERF_QOS_IOCTL_H
++#define __PERF_QOS_IOCTL_H
++
++#include <linux/types.h>
++
++enum {
++	PERF_QOS_IOC_SET_MIN_CMD,
++	PERF_QOS_IOC_GET_MIN_CMD,
++	PERF_QOS_IOC_SET_MAX_CMD,
++	PERF_QOS_IOC_GET_MAX_CMD,
++	PERF_QOS_IOC_GET_UNIT_CMD,
++	PERF_QOS_IOC_GET_LIMITS_CMD,
++	PERF_QOS_IOC_MAX_CMD,
++};
++
++typedef enum {
++	PERF_QOS_UNIT_NORMAL,
++	PERF_QOS_UNIT_KBPS,
++	PERF_QOS_UNIT_MAX
++} perf_qos_unit_t;
++
++struct perf_qos_ioctl_arg {
++	int value;
++	int limit_min;
++	int limit_max;
++	perf_qos_unit_t unit;
++};
++
++#define PERF_QOS_IOCTL_TYPE 'P'
++
++#define PERF_QOS_IOC_SET_MIN	_IOW(PERF_QOS_IOCTL_TYPE, PERF_QOS_IOC_SET_MIN_CMD,	struct perf_qos_ioctl_arg *)
++#define PERF_QOS_IOC_GET_MIN	_IOR(PERF_QOS_IOCTL_TYPE, PERF_QOS_IOC_GET_MIN_CMD,	struct perf_qos_ioctl_arg *)
++#define PERF_QOS_IOC_SET_MAX	_IOW(PERF_QOS_IOCTL_TYPE, PERF_QOS_IOC_SET_MAX_CMD,	struct perf_qos_ioctl_arg *)
++#define PERF_QOS_IOC_GET_MAX	_IOR(PERF_QOS_IOCTL_TYPE, PERF_QOS_IOC_GET_MAX_CMD,	struct perf_qos_ioctl_arg *)
++#define PERF_QOS_IOC_GET_UNIT	_IOR(PERF_QOS_IOCTL_TYPE, PERF_QOS_IOC_GET_UNIT_CMD,	struct perf_qos_ioctl_arg *)
++#define PERF_QOS_IOC_GET_LIMITS	_IOR(PERF_QOS_IOCTL_TYPE, PERF_QOS_IOC_GET_LIMITS_CMD,	struct perf_qos_ioctl_arg *)
++
++#endif
+diff --git a/tools/testing/selftests/Makefile b/tools/testing/selftests/Makefile
+index 363d031a16f7..d6f3706443c6 100644
+--- a/tools/testing/selftests/Makefile
++++ b/tools/testing/selftests/Makefile
+@@ -73,6 +73,7 @@ TARGETS += net/rds
+ TARGETS += net/tcp_ao
+ TARGETS += nsfs
+ TARGETS += perf_events
++TARGETS += perf_qos
+ TARGETS += pidfd
+ TARGETS += pid_namespace
+ TARGETS += power_supply
+diff --git a/tools/testing/selftests/perf_qos/Makefile b/tools/testing/selftests/perf_qos/Makefile
+new file mode 100644
+index 000000000000..279a2bce1b82
+--- /dev/null
++++ b/tools/testing/selftests/perf_qos/Makefile
+@@ -0,0 +1,16 @@
++# SPDX-License-Identifier: GPL-2.0
++
++TEST_GEN_PROGS = get_unit get_limits
++TEST_GEN_PROGS += get_set_min get_set_max
++TEST_GEN_PROGS += get_set_min_forked get_set_max_forked
++TEST_GEN_PROGS += set_min_forked set_max_forked
++TEST_GEN_PROGS += set_multiple_mins set_multiple_maxs
++TEST_GEN_PROGS += set_same_multiple_mins set_same_multiple_maxs
++
++include ../lib.mk
++
++TOOLSDIR := $(top_srcdir)/tools
++TOOLSINCDIR := $(TOOLSDIR)/include
++APIDIR := $(TOOLSINCDIR)/uapi
++
++CFLAGS += -Wall -O2 -I$(APIDIR)
+diff --git a/tools/testing/selftests/perf_qos/get_limits.c b/tools/testing/selftests/perf_qos/get_limits.c
+new file mode 100644
+index 000000000000..e7559481a9a3
+--- /dev/null
++++ b/tools/testing/selftests/perf_qos/get_limits.c
+@@ -0,0 +1,61 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Performance Quality of Service (Perf QoS) support base.
++ *
++ * Copyright (C) 2024 Linaro Ltd
++ *
++ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
++ *
++ */
++#include <errno.h>
++#include <fcntl.h>
++#include <signal.h>
++#include <stdarg.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/poll.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <unistd.h>
++
++#include <linux/perf_qos_ioctl.h>
++
++int main(int argc, char *argv[])
++{
++	struct perf_qos_ioctl_arg arg = {};
++	const char *path = "/dev/perf_qos/dummy";
++	int fd;
++	
++	if (argc == 2)
++		path = argv[1];
++
++	fd = open(path, 0, O_RDWR);
++	if (fd < 0) {
++		fprintf(stderr, "Failed to open '%s': %m\n", path);
++		return 1;
++	}
++
++	if (ioctl(fd, PERF_QOS_IOC_GET_LIMITS, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++
++	if (arg.unit != PERF_QOS_UNIT_NORMAL) {
++		fprintf(stderr, "Invalid unit, expected 'PERF_QOS_UNIT_NORMAL'\n");
++		return 1;
++	}
++
++	if (arg.limit_min != 0) {
++		fprintf(stderr, "Invalid minimum unit %d != 0\n", arg.limit_min);
++		return 1;
++	}
++
++	if (arg.limit_max != 1024) {
++		fprintf(stderr, "Invalid maximum unit %d != 1024\n", arg.limit_max);
++		return 1;
++	}
++
++	return 0;
++}
+diff --git a/tools/testing/selftests/perf_qos/get_set_max.c b/tools/testing/selftests/perf_qos/get_set_max.c
+new file mode 100644
+index 000000000000..87bf5c26acf7
+--- /dev/null
++++ b/tools/testing/selftests/perf_qos/get_set_max.c
+@@ -0,0 +1,95 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Performance Quality of Service (Perf QoS) support base.
++ *
++ * Copyright (C) 2024 Linaro Ltd
++ *
++ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
++ *
++ */
++#include <errno.h>
++#include <fcntl.h>
++#include <signal.h>
++#include <stdarg.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/poll.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <unistd.h>
++
++#include <linux/perf_qos_ioctl.h>
++
++int main(int argc, char *argv[])
++{
++	struct perf_qos_ioctl_arg arg = { .value = 512 };
++	const char *path = "/dev/perf_qos/dummy";
++	int fd;
++	
++	if (argc == 2)
++		path = argv[1];
++
++	fd = open(path, 0, O_RDWR);
++	if (fd < 0) {
++		fprintf(stderr, "Failed to open '%s': %m\n", path);
++		return 1;
++	}
++
++	/*
++	 * Test 1: Check the value is set
++	 */
++	if (ioctl(fd, PERF_QOS_IOC_SET_MAX, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++
++	arg.value = 0;
++	
++	if (ioctl(fd, PERF_QOS_IOC_GET_MAX, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++
++	if (arg.value != 512) {
++		fprintf(stderr, "max value differs with set/get (arg=%d)\n",
++			arg.value);
++		return 1;
++	}
++
++	/*
++	 * Test 2: Check we can not set the same constraint
++	 */
++	if (ioctl(fd, PERF_QOS_IOC_SET_MAX, &arg) == 0) {
++		fprintf(stderr, "ioctl should have failed\n");
++		return 1;
++	}
++	
++	/*
++	 * Test 3: Check the constraint is removed
++	 */
++	if (ioctl(fd, PERF_QOS_IOC_GET_LIMITS, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++
++	arg.value = arg.limit_max;
++	
++	if (ioctl(fd, PERF_QOS_IOC_SET_MAX, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++	
++	if (!ioctl(fd, PERF_QOS_IOC_GET_MAX, &arg)) {
++		fprintf(stderr, "ioctl should have failed\n");
++		return 1;
++	}
++
++	if (errno != ENODATA) {
++		fprintf(stderr, "errno should have been ENODATA\n");
++		return 1;
++	}
++
++	return 0;
++}
+diff --git a/tools/testing/selftests/perf_qos/get_set_max_forked.c b/tools/testing/selftests/perf_qos/get_set_max_forked.c
+new file mode 100644
+index 000000000000..1bffddd684c8
+--- /dev/null
++++ b/tools/testing/selftests/perf_qos/get_set_max_forked.c
+@@ -0,0 +1,150 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Performance Quality of Service (Perf QoS) support base.
++ *
++ * Copyright (C) 2024 Linaro Ltd
++ *
++ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
++ *
++ */
++#include <errno.h>
++#include <fcntl.h>
++#include <signal.h>
++#include <stdarg.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/poll.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <unistd.h>
++
++#include <linux/perf_qos_ioctl.h>
++
++static int test_forked_get_set_max(int fd, const char *path)
++{
++	pid_t pid;
++	int fds[2];
++	int result;
++	const int init_value = 256;
++	struct perf_qos_ioctl_arg arg = { .value = init_value };
++
++	if (ioctl(fd, PERF_QOS_IOC_SET_MAX, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++
++	if (pipe(fds)) {
++		fprintf(stderr, "Failed to pipe: %m\n");
++		return 1;
++	}
++		
++	pid = fork();
++	if (pid < 0) {
++		fprintf(stderr, "Failed to fork: %m\n");
++		return 1;
++	}
++
++	if (!pid) {
++		close(fd);
++		close(fds[0]);
++
++		fd = open(path, 0, O_RDWR);
++		if (fd < 0) {
++			fprintf(stderr, "Failed to open '%s': %m\n", path);
++			return 1;
++		}
++
++		arg.value = 0;
++
++		/*
++		 * At this point, we must have a 'init_value'
++		 * constraint created by the parent process
++		 */
++		if (ioctl(fd, PERF_QOS_IOC_GET_MAX, &arg)) {
++			fprintf(stderr, "Failed to ioctl: %m\n");
++			return 1;
++		}
++
++		result = arg.value;
++
++		if (write(fds[1], &result, sizeof(result)) < 0) {
++			fprintf(stderr, "Failed to write result to pipe: %m\n");
++			exit(1);
++		}
++
++		exit(0);
++	}
++
++	close(fds[1]);
++
++	if (read(fds[0], &result, sizeof(result)) < 0) {
++		fprintf(stderr, "Failed to read pipe: %m\n");
++		return 1;
++	}
++
++	if (result != init_value) {
++		fprintf(stderr, "Child test failed: %d\n", result);
++		return 1;
++	}
++
++	if (waitpid(pid, NULL, 0) < 0) {
++		fprintf(stderr, "Failed to wait child pid: %m\n");
++		return 1;
++	}
++
++	arg.value = 0;
++
++	if (ioctl(fd, PERF_QOS_IOC_GET_MAX, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++
++	if (arg.value != init_value) {
++		fprintf(stderr, "Perf constraints differ %d <> %d\n",
++			arg.value, init_value);
++		return 1;
++	}
++
++	if (ioctl(fd, PERF_QOS_IOC_GET_LIMITS, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++
++	arg.value = arg.limit_max;
++
++	if (ioctl(fd, PERF_QOS_IOC_SET_MAX, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++
++	if (!ioctl(fd, PERF_QOS_IOC_GET_MAX, &arg)) {
++		fprintf(stderr, "ioctl should have failed\n");
++		return 1;
++	}
++
++	if (errno != ENODATA) {
++		fprintf(stderr, "errno should have been ENODATA\n");
++		return 1;
++	}
++
++	return 0;
++}
++
++int main(int argc, char *argv[])
++{
++	const char *path = "/dev/perf_qos/dummy";
++	int fd;
++	
++	if (argc == 2)
++		path = argv[1];
++
++	fd = open(path, 0, O_RDWR);
++	if (fd < 0) {
++		fprintf(stderr, "Failed to open '%s': %m\n", path);
++		return 1;
++	}
++
++	return test_forked_get_set_max(fd, path);
++}
+diff --git a/tools/testing/selftests/perf_qos/get_set_min.c b/tools/testing/selftests/perf_qos/get_set_min.c
+new file mode 100644
+index 000000000000..89c0a6f9f106
+--- /dev/null
++++ b/tools/testing/selftests/perf_qos/get_set_min.c
+@@ -0,0 +1,95 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Performance Quality of Service (Perf QoS) support base.
++ *
++ * Copyright (C) 2024 Linaro Ltd
++ *
++ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
++ *
++ */
++#include <errno.h>
++#include <fcntl.h>
++#include <signal.h>
++#include <stdarg.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/poll.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <unistd.h>
++
++#include <linux/perf_qos_ioctl.h>
++
++int main(int argc, char *argv[])
++{
++	struct perf_qos_ioctl_arg arg = { .value = 512 };
++	const char *path = "/dev/perf_qos/dummy";
++	int fd;
++	
++	if (argc == 2)
++		path = argv[1];
++
++	fd = open(path, 0, O_RDWR);
++	if (fd < 0) {
++		fprintf(stderr, "Failed to open '%s': %m\n", path);
++		return 1;
++	}
++
++	/*
++	 * Test 1: Check the value is set
++	 */
++	if (ioctl(fd, PERF_QOS_IOC_SET_MIN, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++
++	arg.value = 0;
++	
++	if (ioctl(fd, PERF_QOS_IOC_GET_MIN, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++
++	if (arg.value != 512) {
++		fprintf(stderr, "min value differs with set/get (arg=%d)\n",
++			arg.value);
++		return 1;
++	}
++
++	/*
++	 * Test 2: Check we can not set the same constraint
++	 */
++	if (ioctl(fd, PERF_QOS_IOC_SET_MIN, &arg) == 0) {
++		fprintf(stderr, "ioctl should have failed\n");
++		return 1;
++	}
++	
++	/*
++	 * Test 3: Check the constraint is removed
++	 */
++	if (ioctl(fd, PERF_QOS_IOC_GET_LIMITS, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++
++	arg.value = arg.limit_min;
++	
++	if (ioctl(fd, PERF_QOS_IOC_SET_MIN, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++	
++	if (!ioctl(fd, PERF_QOS_IOC_GET_MIN, &arg)) {
++		fprintf(stderr, "ioctl should have failed\n");
++		return 1;
++	}
++
++	if (errno != ENODATA) {
++		fprintf(stderr, "errno should have been ENODATA\n");
++		return 1;
++	}
++
++	return 0;
++}
+diff --git a/tools/testing/selftests/perf_qos/get_set_min_forked.c b/tools/testing/selftests/perf_qos/get_set_min_forked.c
+new file mode 100644
+index 000000000000..36971da265a5
+--- /dev/null
++++ b/tools/testing/selftests/perf_qos/get_set_min_forked.c
+@@ -0,0 +1,150 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Performance Quality of Service (Perf QoS) support base.
++ *
++ * Copyright (C) 2024 Linaro Ltd
++ *
++ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
++ *
++ */
++#include <errno.h>
++#include <fcntl.h>
++#include <signal.h>
++#include <stdarg.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/poll.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <unistd.h>
++
++#include <linux/perf_qos_ioctl.h>
++
++static int test_forked_get_set_min(int fd, const char *path)
++{
++	pid_t pid;
++	int fds[2];
++	int result;
++	const int init_value = 256;
++	struct perf_qos_ioctl_arg arg = { .value = init_value };
++
++	if (ioctl(fd, PERF_QOS_IOC_SET_MIN, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++
++	if (pipe(fds)) {
++		fprintf(stderr, "Failed to pipe: %m\n");
++		return 1;
++	}
++		
++	pid = fork();
++	if (pid < 0) {
++		fprintf(stderr, "Failed to fork: %m\n");
++		return 1;
++	}
++
++	if (!pid) {
++		close(fd);
++		close(fds[0]);
++
++		fd = open(path, 0, O_RDWR);
++		if (fd < 0) {
++			fprintf(stderr, "Failed to open '%s': %m\n", path);
++			return 1;
++		}
++
++		arg.value = 0;
++
++		/*
++		 * At this point, we must have a 'init_value'
++		 * constraint created by the parent process
++		 */
++		if (ioctl(fd, PERF_QOS_IOC_GET_MIN, &arg)) {
++			fprintf(stderr, "Failed to ioctl: %m\n");
++			return 1;
++		}
++
++		result = arg.value;
++
++		if (write(fds[1], &result, sizeof(result)) < 0) {
++			fprintf(stderr, "Failed to write result to pipe: %m\n");
++			exit(1);
++		}
++
++		exit(0);
++	}
++
++	close(fds[1]);
++
++	if (read(fds[0], &result, sizeof(result)) < 0) {
++		fprintf(stderr, "Failed to read pipe: %m\n");
++		return 1;
++	}
++
++	if (result != init_value) {
++		fprintf(stderr, "Child test failed: %d\n", result);
++		return 1;
++	}
++
++	if (waitpid(pid, NULL, 0) < 0) {
++		fprintf(stderr, "Failed to wait child pid: %m\n");
++		return 1;
++	}
++
++	arg.value = 0;
++
++	if (ioctl(fd, PERF_QOS_IOC_GET_MIN, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++
++	if (arg.value != init_value) {
++		fprintf(stderr, "Perf constraints differ %d <> %d\n",
++			arg.value, init_value);
++		return 1;
++	}
++
++	if (ioctl(fd, PERF_QOS_IOC_GET_LIMITS, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++
++	arg.value = arg.limit_min;
++
++	if (ioctl(fd, PERF_QOS_IOC_SET_MIN, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++
++	if (!ioctl(fd, PERF_QOS_IOC_GET_MIN, &arg)) {
++		fprintf(stderr, "ioctl should have failed\n");
++		return 1;
++	}
++
++	if (errno != ENODATA) {
++		fprintf(stderr, "errno should have been ENODATA\n");
++		return 1;
++	}
++
++	return 0;
++}
++
++int main(int argc, char *argv[])
++{
++	const char *path = "/dev/perf_qos/dummy";
++	int fd;
++	
++	if (argc == 2)
++		path = argv[1];
++
++	fd = open(path, 0, O_RDWR);
++	if (fd < 0) {
++		fprintf(stderr, "Failed to open '%s': %m\n", path);
++		return 1;
++	}
++
++	return test_forked_get_set_min(fd, path);
++}
+diff --git a/tools/testing/selftests/perf_qos/get_unit.c b/tools/testing/selftests/perf_qos/get_unit.c
+new file mode 100644
+index 000000000000..938322d78599
+--- /dev/null
++++ b/tools/testing/selftests/perf_qos/get_unit.c
+@@ -0,0 +1,46 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Performance Quality of Service (Perf QoS) support base.
++ *
++ * Copyright (C) 2024 Linaro Ltd
++ *
++ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
++ *
++ */
++#include <errno.h>
++#include <fcntl.h>
++#include <signal.h>
++#include <stdarg.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/poll.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <unistd.h>
++
++#include <linux/perf_qos_ioctl.h>
++
++int main(int argc, char *argv[])
++{
++	struct perf_qos_ioctl_arg arg = {};
++	const char *path = "/dev/perf_qos/dummy";
++	int fd;
++	
++	if (argc == 2)
++		path = argv[1];
++
++	fd = open(path, 0, O_RDWR);
++	if (fd < 0) {
++		fprintf(stderr, "Failed to open '%s': %m\n", path);
++		return 1;
++	}
++
++	if (ioctl(fd, PERF_QOS_IOC_GET_UNIT, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		return 1;
++	}
++
++	return 0;
++}
+diff --git a/tools/testing/selftests/perf_qos/set_max_forked.c b/tools/testing/selftests/perf_qos/set_max_forked.c
+new file mode 100644
+index 000000000000..cff06364ba81
+--- /dev/null
++++ b/tools/testing/selftests/perf_qos/set_max_forked.c
+@@ -0,0 +1,147 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Performance Quality of Service (Perf QoS) support base.
++ *
++ * Copyright (C) 2024 Linaro Ltd
++ *
++ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
++ *
++ */
++#include <errno.h>
++#include <fcntl.h>
++#include <signal.h>
++#include <stdarg.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/poll.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <unistd.h>
++
++#include <linux/perf_qos_ioctl.h>
++
++static int integer_cmp(const void *a, const void *b)
++{
++	int *ia = (typeof(ia))(a);
++	int *ib = (typeof(ib))(b);
++
++	return (*ia) - (*ib);
++}
++
++static int test_forked_set_max(int fd, const char *path)
++{
++	struct perf_qos_ioctl_arg arg;
++
++	int i;
++	int nr_pids = 100;
++	pid_t pids[nr_pids];
++	int value, values[nr_pids];
++	int fds[nr_pids][2];
++	int ret = 1;
++	
++	memset(pids, 0, sizeof(pid_t) * nr_pids);
++
++	/*
++	 * Random values in the interval 0-1024, to be set by each
++	 * child process. The underlying framework will sort them out
++	 * so when reading them, they should be ordered and while the
++	 * child process exits, the new maximal will be set each time.
++	 */
++	for (i = 0; i < nr_pids; i++) {
++		value = rand() % 1023;
++
++		if (pipe(fds[i])) {
++			fprintf(stderr, "Failed to pipe: %m\n");
++			goto out;
++		}
++		
++		pids[i] = fork();
++		if (pids[i] < 0) {
++			fprintf(stderr, "Failed to fork: %m\n");
++			goto out;
++		}
++
++		if (!pids[i]) {
++
++			arg.value = value;
++
++			close(fd);
++			close(fds[i][0]);
++
++			fd = open(path, 0, O_RDWR);
++			if (fd < 0) {
++				fprintf(stderr, "Failed to open '%s': %m\n", path);
++				goto out;
++			}
++
++			if (ioctl(fd, PERF_QOS_IOC_SET_MAX, &arg)) {
++				fprintf(stderr, "Failed to ioctl: %m\n");
++				goto out;
++			}
++
++			if (write(fds[i][1], &value, sizeof(value)) < 0) {
++				fprintf(stderr, "Failed to write in the pipe: %m\n");
++				goto out;
++			}
++
++			poll(0, 0, -1);
++			
++			exit(0);
++		}
++
++		close(fds[i][1]);
++		values[i] = value;
++	}
++
++	/*
++	 * Wait for all the children to set the constraint and write
++	 * to the pipe
++	 */
++	for (i = 0; i < nr_pids; i++) {
++		if (read(fds[i][0], &value, sizeof(value)) < 0) {
++			fprintf(stderr, "Failed to read pipe: %m\n");
++			goto out;
++		}
++	}
++
++	qsort(values, nr_pids, sizeof(values[0]), integer_cmp);
++
++	if (ioctl(fd, PERF_QOS_IOC_GET_MAX, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		goto out;
++	}
++
++	if (arg.value != values[0]) {
++		fprintf(stderr, "Unexcepted value order %d <> %d\n",
++			arg.value, values[0]);
++		goto out;
++	}
++
++	ret = 0;
++out:
++	for (i = 0; i < nr_pids; i++) {
++		kill(pids[i], SIGTERM);
++		waitpid(pids[i], NULL, 0);
++	}
++
++	return ret;
++}
++
++int main(int argc, char *argv[])
++{
++	const char *path = "/dev/perf_qos/dummy";
++	int fd;
++	
++	if (argc == 2)
++		path = argv[1];
++
++	fd = open(path, 0, O_RDWR);
++	if (fd < 0) {
++		fprintf(stderr, "Failed to open '%s': %m\n", path);
++		return 1;
++	}
++
++	return test_forked_set_max(fd, path);
++}
+diff --git a/tools/testing/selftests/perf_qos/set_min_forked.c b/tools/testing/selftests/perf_qos/set_min_forked.c
+new file mode 100644
+index 000000000000..beda48c251f6
+--- /dev/null
++++ b/tools/testing/selftests/perf_qos/set_min_forked.c
+@@ -0,0 +1,147 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Performance Quality of Service (Perf QoS) support base.
++ *
++ * Copyright (C) 2024 Linaro Ltd
++ *
++ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
++ *
++ */
++#include <errno.h>
++#include <fcntl.h>
++#include <signal.h>
++#include <stdarg.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/poll.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <unistd.h>
++
++#include <linux/perf_qos_ioctl.h>
++
++static int integer_cmp(const void *a, const void *b)
++{
++	int *ia = (typeof(ia))(a);
++	int *ib = (typeof(ib))(b);
++
++	return (*ib) - (*ia);
++}
++
++static int test_forked_set_min(int fd, const char *path)
++{
++	struct perf_qos_ioctl_arg arg;
++
++	int i;
++	int nr_pids = 100;
++	pid_t pids[nr_pids];
++	int value, values[nr_pids];
++	int fds[nr_pids][2];
++	int ret = 1;
++	
++	memset(pids, 0, sizeof(pid_t) * nr_pids);
++
++	/*
++	 * Random values in the interval 0-1024, to be set by each
++	 * child process. The underlying framework will sort them out
++	 * so when reading them, they should be ordered and while the
++	 * child process exits, the new minimal will be set each time.
++	 */
++	for (i = 0; i < nr_pids; i++) {
++		value = rand() % 1023;
++
++		if (pipe(fds[i])) {
++			fprintf(stderr, "Failed to pipe: %m\n");
++			goto out;
++		}
++		
++		pids[i] = fork();
++		if (pids[i] < 0) {
++			fprintf(stderr, "Failed to fork: %m\n");
++			goto out;
++		}
++
++		if (!pids[i]) {
++
++			arg.value = value;
++
++			close(fd);
++			close(fds[i][0]);
++
++			fd = open(path, 0, O_RDWR);
++			if (fd < 0) {
++				fprintf(stderr, "Failed to open '%s': %m\n", path);
++				goto out;
++			}
++
++			if (ioctl(fd, PERF_QOS_IOC_SET_MIN, &arg)) {
++				fprintf(stderr, "Failed to ioctl: %m\n");
++				goto out;
++			}
++
++			if (write(fds[i][1], &value, sizeof(value)) < 0) {
++				fprintf(stderr, "Failed to write in the pipe: %m\n");
++				goto out;
++			}
++
++			poll(0, 0, -1);
++			
++			exit(0);
++		}
++
++		close(fds[i][1]);
++		values[i] = value;
++	}
++
++	/*
++	 * Wait for all the children to set the constraint and write
++	 * to the pipe
++	 */
++	for (i = 0; i < nr_pids; i++) {
++		if (read(fds[i][0], &value, sizeof(value)) < 0) {
++			fprintf(stderr, "Failed to read pipe: %m\n");
++			goto out;
++		}
++	}
++
++	qsort(values, nr_pids, sizeof(values[0]), integer_cmp);
++
++	if (ioctl(fd, PERF_QOS_IOC_GET_MIN, &arg)) {
++		fprintf(stderr, "Failed to ioctl: %m\n");
++		goto out;
++	}
++
++	if (arg.value != values[0]) {
++		fprintf(stderr, "Unexcepted value order %d <> %d\n",
++			arg.value, values[0]);
++		goto out;
++	}
++
++	ret = 0;
++out:
++	for (i = 0; i < nr_pids; i++) {
++		kill(pids[i], SIGTERM);
++		waitpid(pids[i], NULL, 0);
++	}
++
++	return ret;
++}
++
++int main(int argc, char *argv[])
++{
++	const char *path = "/dev/perf_qos/dummy";
++	int fd;
++	
++	if (argc == 2)
++		path = argv[1];
++
++	fd = open(path, 0, O_RDWR);
++	if (fd < 0) {
++		fprintf(stderr, "Failed to open '%s': %m\n", path);
++		return 1;
++	}
++
++	return test_forked_set_min(fd, path);
++}
+diff --git a/tools/testing/selftests/perf_qos/set_multiple_maxs.c b/tools/testing/selftests/perf_qos/set_multiple_maxs.c
+new file mode 100644
+index 000000000000..e30a81043283
+--- /dev/null
++++ b/tools/testing/selftests/perf_qos/set_multiple_maxs.c
+@@ -0,0 +1,93 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Performance Quality of Service (Perf QoS) support base.
++ *
++ * Copyright (C) 2024 Linaro Ltd
++ *
++ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
++ *
++ */
++#include <errno.h>
++#include <fcntl.h>
++#include <signal.h>
++#include <stdarg.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/poll.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <unistd.h>
++
++#include <linux/perf_qos_ioctl.h>
++
++int main(int argc, char *argv[])
++{
++	struct perf_qos_ioctl_arg arg;
++	const char *path = "/dev/perf_qos/dummy";
++	const int nr_fds = 256;
++	int i, fd[nr_fds];
++
++	if (argc == 2)
++		path = argv[1];
++
++	for (i = 0; i < nr_fds; i++) {
++
++		fd[i] = open(path, 0, O_RDWR);
++		if (fd[i] < 0) {
++			fprintf(stderr, "Failed to open '%s': %m\n", path);
++			return 1;
++		}
++
++		/*
++		 * We want a value increasing so the value we set is
++		 * always the first entry in the list of constraints
++		 * and when we get the max, we get the last value we
++		 * set.
++		 */
++		arg.value = nr_fds - i;
++
++		if (ioctl(fd[i], PERF_QOS_IOC_SET_MAX, &arg)) {
++			fprintf(stderr, "Failed to ioctl: %m\n");
++			return 1;
++		}
++
++		arg.value = 0;
++		
++		if (ioctl(fd[i], PERF_QOS_IOC_GET_MAX, &arg)) {
++			fprintf(stderr, "Failed to ioctl: %m\n");
++			return 1;
++		}
++
++		if (arg.value != (nr_fds - i)) {
++			fprintf(stderr, "max value differs with set/get (arg=%d <> %d)\n",
++				arg.value, nr_fds - i);
++			return 1;
++		}
++	}
++
++	for (i = 0; i < nr_fds; i++)
++		close(fd[i]);
++
++	fd[0] = open(path, 0, O_RDWR);
++	if (fd[0] < 0) {
++		fprintf(stderr, "Failed to open '%s': %m\n", path);
++		return 1;
++	}
++
++	/*
++	 * Test: Check the constraint is removed
++	 */
++	if (!ioctl(fd[0], PERF_QOS_IOC_GET_MAX, &arg)) {
++		fprintf(stderr, "ioctl should have failed\n");
++		return 1;
++	}
++
++	if (errno != ENODATA) {
++		fprintf(stderr, "errno should have been ENODATA\n");
++		return 1;
++	}
++
++	return 0;
++}
+diff --git a/tools/testing/selftests/perf_qos/set_multiple_mins.c b/tools/testing/selftests/perf_qos/set_multiple_mins.c
+new file mode 100644
+index 000000000000..e6412a592c3a
+--- /dev/null
++++ b/tools/testing/selftests/perf_qos/set_multiple_mins.c
+@@ -0,0 +1,87 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Performance Quality of Service (Perf QoS) support base.
++ *
++ * Copyright (C) 2024 Linaro Ltd
++ *
++ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
++ *
++ */
++#include <errno.h>
++#include <fcntl.h>
++#include <signal.h>
++#include <stdarg.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/poll.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <unistd.h>
++
++#include <linux/perf_qos_ioctl.h>
++
++int main(int argc, char *argv[])
++{
++	struct perf_qos_ioctl_arg arg;
++	const char *path = "/dev/perf_qos/dummy";
++	const int nr_fds = 256;
++	int i, fd[nr_fds];
++
++	if (argc == 2)
++		path = argv[1];
++
++	for (i = 0; i < nr_fds; i++) {
++
++		fd[i] = open(path, 0, O_RDWR);
++		if (fd[i] < 0) {
++			fprintf(stderr, "Failed to open '%s': %m\n", path);
++			return 1;
++		}
++
++		arg.value = i + 1;
++
++		if (ioctl(fd[i], PERF_QOS_IOC_SET_MIN, &arg)) {
++			fprintf(stderr, "Failed to ioctl: %m\n");
++			return 1;
++		}
++
++		arg.value = 0;
++		
++		if (ioctl(fd[i], PERF_QOS_IOC_GET_MIN, &arg)) {
++			fprintf(stderr, "Failed to ioctl: %m\n");
++			return 1;
++		}
++
++		if (arg.value != i + 1) {
++			fprintf(stderr, "min value differs with set/get (arg=%d <> %d)\n",
++				arg.value, nr_fds + 1);
++			return 1;
++		}
++	}
++
++	for (i = 0; i < nr_fds; i++)
++		close(fd[i]);
++
++	fd[0] = open(path, 0, O_RDWR);
++	if (fd[0] < 0) {
++		fprintf(stderr, "Failed to open '%s': %m\n", path);
++		return 1;
++	}
++
++	/*
++	 * Test: Check the constraint is removed
++	 */
++	if (!ioctl(fd[0], PERF_QOS_IOC_GET_MIN, &arg)) {
++		fprintf(stderr, "ioctl should have failed\n");
++		return 1;
++	}
++
++	if (errno != ENODATA) {
++		fprintf(stderr, "errno should have been ENODATA\n");
++		return 1;
++	}
++
++	return 0;
++}
+diff --git a/tools/testing/selftests/perf_qos/set_same_multiple_maxs.c b/tools/testing/selftests/perf_qos/set_same_multiple_maxs.c
+new file mode 100644
+index 000000000000..ce36b28794fd
+--- /dev/null
++++ b/tools/testing/selftests/perf_qos/set_same_multiple_maxs.c
+@@ -0,0 +1,84 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Performance Quality of Service (Perf QoS) support base.
++ *
++ * Copyright (C) 2024 Linaro Ltd
++ *
++ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
++ *
++ */
++#include <errno.h>
++#include <fcntl.h>
++#include <signal.h>
++#include <stdarg.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/poll.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <unistd.h>
++
++#include <linux/perf_qos_ioctl.h>
++
++int main(int argc, char *argv[])
++{
++	struct perf_qos_ioctl_arg arg = { .value = 512 };
++	const char *path = "/dev/perf_qos/dummy";
++	const int nr_fds = 256;
++	int i, fd[nr_fds];
++
++	if (argc == 2)
++		path = argv[1];
++
++	for (i = 0; i < nr_fds; i++) {
++		fd[i] = open(path, 0, O_RDWR);
++		if (fd[i] < 0) {
++			fprintf(stderr, "Failed to open '%s': %m\n", path);
++			return 1;
++		}
++
++		if (ioctl(fd[i], PERF_QOS_IOC_SET_MAX, &arg)) {
++			fprintf(stderr, "Failed to ioctl: %m\n");
++			return 1;
++		}
++
++		arg.value = 0;
++		
++		if (ioctl(fd[i], PERF_QOS_IOC_GET_MAX, &arg)) {
++			fprintf(stderr, "Failed to ioctl: %m\n");
++			return 1;
++		}
++
++		if (arg.value != 512) {
++			fprintf(stderr, "max value differs with set/get (arg=%d)\n",
++				arg.value);
++			return 1;
++		}
++	}
++
++	for (i = 0; i < nr_fds; i++)
++		close(fd[i]);
++
++	fd[0] = open(path, 0, O_RDWR);
++	if (fd[0] < 0) {
++		fprintf(stderr, "Failed to open '%s': %m\n", path);
++		return 1;
++	}
++
++	/*
++	 * Test: Check the constraint is removed
++	 */
++	if (!ioctl(fd[0], PERF_QOS_IOC_GET_MAX, &arg)) {
++		fprintf(stderr, "ioctl should have failed\n");
++		return 1;
++	}
++
++	if (errno != ENODATA) {
++		fprintf(stderr, "errno should have been ENODATA\n");
++		return 1;
++	}
++
++	return 0;
++}
+diff --git a/tools/testing/selftests/perf_qos/set_same_multiple_mins.c b/tools/testing/selftests/perf_qos/set_same_multiple_mins.c
+new file mode 100644
+index 000000000000..90fd47be50f6
+--- /dev/null
++++ b/tools/testing/selftests/perf_qos/set_same_multiple_mins.c
+@@ -0,0 +1,84 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Performance Quality of Service (Perf QoS) support base.
++ *
++ * Copyright (C) 2024 Linaro Ltd
++ *
++ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
++ *
++ */
++#include <errno.h>
++#include <fcntl.h>
++#include <signal.h>
++#include <stdarg.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/poll.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <unistd.h>
++
++#include <linux/perf_qos_ioctl.h>
++
++int main(int argc, char *argv[])
++{
++	struct perf_qos_ioctl_arg arg = { .value = 512 };
++	const char *path = "/dev/perf_qos/dummy";
++	const int nr_fds = 256;
++	int i, fd[nr_fds];
++
++	if (argc == 2)
++		path = argv[1];
++
++	for (i = 0; i < nr_fds; i++) {
++		fd[i] = open(path, 0, O_RDWR);
++		if (fd[i] < 0) {
++			fprintf(stderr, "Failed to open '%s': %m\n", path);
++			return 1;
++		}
++
++		if (ioctl(fd[i], PERF_QOS_IOC_SET_MIN, &arg)) {
++			fprintf(stderr, "Failed to ioctl: %m\n");
++			return 1;
++		}
++
++		arg.value = 0;
++		
++		if (ioctl(fd[i], PERF_QOS_IOC_GET_MIN, &arg)) {
++			fprintf(stderr, "Failed to ioctl: %m\n");
++			return 1;
++		}
++
++		if (arg.value != 512) {
++			fprintf(stderr, "min value differs with set/get (arg=%d)\n",
++				arg.value);
++			return 1;
++		}
++	}
++
++	for (i = 0; i < nr_fds; i++)
++		close(fd[i]);
++
++	fd[0] = open(path, 0, O_RDWR);
++	if (fd[0] < 0) {
++		fprintf(stderr, "Failed to open '%s': %m\n", path);
++		return 1;
++	}
++
++	/*
++	 * Test: Check the constraint is removed
++	 */
++	if (!ioctl(fd[0], PERF_QOS_IOC_GET_MIN, &arg)) {
++		fprintf(stderr, "ioctl should have failed\n");
++		return 1;
++	}
++
++	if (errno != ENODATA) {
++		fprintf(stderr, "errno should have been ENODATA\n");
++		return 1;
++	}
++
++	return 0;
++}
+-- 
+2.43.0
 
-While building -next kernel RPMS for Fedora the above line lead to the
-this build error today:
-
-"""
-/builddir/build/BUILD/kernel-6.15.0-build/BUILDROOT/usr/lib64/systemd/system/cpupower.service
-Found '/builddir/build/BUILD/kernel-6.15.0-build/BUILDROOT' in installed
-files; aborting
-"""
-
-This somewhat cryptic error message means that the path
-"/builddir/build/BUILD/kernel-6.15.0-build/BUILDROOT/" ended up in the
-file "cpupower.service"; RPM noticed that and rightfully aborts the
-build, as that path should not end up there. It's inserted by the sed
-call in the last line quoted above.
-
-I could easily fix this up in the RPM spec file with another sed call,
-but wonder if that path should end up there in the first place. Not
-quite sure, but I guess it should not (removing the first two
-"$(DESTDIR)" in the line with the quoted sed call would fix that).
-
-[1] Full log:
-https://download.copr.fedorainfracloud.org/results/@kernel-vanilla/next/fedora-rawhide-x86_64/08996136-next-next-all/builder-live.log.gz
-
-Build command used is basically "/usr/bin/make [redacted] -C
-tools/power/cpupower
-DESTDIR=/builddir/build/BUILD/kernel-6.15.0-build/BUILDROOT
-libdir=/usr/lib64 mandir=/usr/share/man CPUFREQ_BENCH=false install
-
-
-> +	$(SETPERM_DATA) '$(DESTDIR)${libdir}/systemd/system/cpupower.service'
-> +	if test -d /run/systemd/system; then systemctl daemon-reload; fi
-
-While investigating the issue I did a manual local build using
-"make DESTDIR=~/tmp/out libdir=/usr/lib64 CPUFREQ_BENCH=false install"
-to take a closer look. That make call then made systemd ask me for the
-root password, which I found odd. Turns out that happens due to that "if
-test -d" command quoted above.
-
-I'd say that should not have happened this case (or maybe in general?).
-The service afterwards would not have been available in systemd anyway,
-as the service file was as instructed installed to
-~/tmp/out/usr/lib64/systemd/system/cpupower.service -- but there systemd
-would never have found it own it's own, so reloading the daemon is
-meaningless in this case anyway.
-
-Ciao, Thorsten
