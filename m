@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3F3B381E93;
-	Mon,  5 May 2025 23:08:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF4FF2F4161;
+	Mon,  5 May 2025 23:15:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746486534; cv=none; b=ZHUVA1zfV/w1uOaBLHP+ePzl93cGLZjNGN/VkHytoMcmekSl3tZ57chxGjJFaFMEg++IG9+hahp8A+LGAcNLxxe820B8sqxo2pVp+P9+VbGoblplQ1qHbtzxbkJ+OM8y7psZgTaPVkTQJjygvdMbsaqiIZachjFrsR8lntnmxeQ=
+	t=1746486908; cv=none; b=ix1xEibHbs6GBuxvYJckDASwLVormESdDvZGhqqaSx39ZA16RrRBP1n0g7MtY/ei5m/zPQTYXfMLj66+4D2w6XGDAKL3vPL2f328hxu6pLzpaxt7DFZKd0gbpkKgAuTDsu9PrmBOYN6IJD7VzXeTs/bPcBkihQQVPzX29hXtFxM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746486534; c=relaxed/simple;
-	bh=lknYkve/ssLDCR4ZLt5Gu05goNj+CeRKYYC396pQaIs=;
+	s=arc-20240116; t=1746486908; c=relaxed/simple;
+	bh=V/+TK0izZzZS0EJ0WMtAlltjs7JTuVPirujUWhnm3Bo=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=bW7J4/b8u5BA8vpY9qPyFPHtc6EoJ8bNwfAccCH3Rq07WBN4XFAACd5aIwsap0uP89/FnN3P6Uf/SkNeQOF3su2mLbmQnCmKuB20Rfg5NR7pHTHDTIl/7J//KUQowniGI+LhKjG9q7eLMnnFunjSIFVPPo4e35IO4eSewcecXDY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=keAJmZkZ; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=Sm3b02KLRVvUo3e+qdGdjSpt3ZSAJSVG6hFbLM26kkt31fVSKQyf/ozws9sU9XQpQKmqIpjOMRZfcuVF06cEy4De+UgzFpyBY31F8eiDpfGkwqDaoH+OyFVUuEj+GouZDKWLbpIpHuDWbU0MNP2wMWYghgYyE2LdFi6X4tKWXuo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aAKJyv68; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="keAJmZkZ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7B021C4CEED;
-	Mon,  5 May 2025 23:08:51 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aAKJyv68"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6320FC4CEF1;
+	Mon,  5 May 2025 23:15:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746486532;
-	bh=lknYkve/ssLDCR4ZLt5Gu05goNj+CeRKYYC396pQaIs=;
+	s=k20201202; t=1746486907;
+	bh=V/+TK0izZzZS0EJ0WMtAlltjs7JTuVPirujUWhnm3Bo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=keAJmZkZoBM0XSJmpjS12qRZ70BPooL7t7MMYoohVM6eYfRF7+390sxV7yXy+NHV/
-	 SVwgPTnVtYSLWqBOvAH3mrZBCLt+2YMaiezHlGHOLlx6CF9IS4Mgl/1zzbMjKeIW4L
-	 A/YlbKn7s2a1EVWj2Yi5fAKLMT2zoySBXlRfidGhKqihYIX6F/JX+lB6NLKMTvU3fh
-	 LmbpXfopRR4TsNTM/YX3u0654RlUOLIQbrD1/0m40h0PJmpJ3g1f7kvPSLZWhgWGdO
-	 BfW9uCy3EXxCg9pu0B3UsDAXvIbC8H8CSmS6zutDLJAVnspqboEocCRdcfM+5t7W3T
-	 7uDxRdraVNWHA==
+	b=aAKJyv68Imw1iqO4F764/sk9oVu6piGdM1pJUQ3ApAnGp13qm6AeNR5uB5ctkJZjz
+	 B61kTSZ3SpSwbiXBoA3BtMjFAmVNV28mC+aDQefKp2+CkuliP7YvSS0LRzlZzhqXxZ
+	 Eo4bMDG+IqhPp1jjAxvPRKr7jUJj95RWSbbBLolj2AeEiuTW1Plunykwg6pqDqbnsa
+	 S7lmGxOHMdcaa3CFNDI5MX8giFeMP2RRq9MWHBoDsxM9tioD4W31gRF2dALdRbMDJ1
+	 9V+orQnCdzGivGmMRIQcDec0P6e6rV3A3ha2xL6VDlZPBXrahDK9aqtjLWrp8MBLq7
+	 1LYq+aOJ4B3UQ==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
@@ -40,12 +40,12 @@ Cc: Aaron Kling <luceoscutum@gmail.com>,
 	jonathanh@nvidia.com,
 	linux-pm@vger.kernel.org,
 	linux-tegra@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.1 078/212] cpufreq: tegra186: Share policy per cluster
-Date: Mon,  5 May 2025 19:04:10 -0400
-Message-Id: <20250505230624.2692522-78-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 054/153] cpufreq: tegra186: Share policy per cluster
+Date: Mon,  5 May 2025 19:11:41 -0400
+Message-Id: <20250505231320.2695319-54-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250505230624.2692522-1-sashal@kernel.org>
-References: <20250505230624.2692522-1-sashal@kernel.org>
+In-Reply-To: <20250505231320.2695319-1-sashal@kernel.org>
+References: <20250505231320.2695319-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -54,7 +54,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.1.136
+X-stable-base: Linux 5.15.181
 Content-Transfer-Encoding: 8bit
 
 From: Aaron Kling <luceoscutum@gmail.com>
@@ -74,7 +74,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 7 insertions(+)
 
 diff --git a/drivers/cpufreq/tegra186-cpufreq.c b/drivers/cpufreq/tegra186-cpufreq.c
-index 6c88827f4e625..1d6b543037237 100644
+index 5d1943e787b0c..19597246f9ccb 100644
 --- a/drivers/cpufreq/tegra186-cpufreq.c
 +++ b/drivers/cpufreq/tegra186-cpufreq.c
 @@ -73,11 +73,18 @@ static int tegra186_cpufreq_init(struct cpufreq_policy *policy)
