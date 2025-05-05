@@ -1,43 +1,45 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 632C52F2C4B;
-	Mon,  5 May 2025 23:13:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21BAC3A5DF5;
+	Mon,  5 May 2025 23:16:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746486828; cv=none; b=OF8BqMIDToxjUq2Xvsx8qYGzidVz77rqxxmDoUwsOdIq7mnRz69fwlg03DBXys2whb2tHfh3v3uTr4haqOnH70EdPD+yHNN58BemGzHKLDqSl7fwvghEAXIg+RUgTWG+rs4sjNGRAXVP+ZzNGdp2ZKYZmgPArnjSsuh3xXVGe6I=
+	t=1746486988; cv=none; b=l2psg9HoxRGO9CdVNkH8hdKuFs0zTSLJXfgs3+VGpQPKx/cFd8lfUPiKzwegodBTG94aLg/P+8r9VOdddaFe006cZLIMRiOMFPnxJUC+zahxow6A9/Eu7f5U/kmhfJIqWTHA9T3q/gz6LXRfrqrc2NKLcrQ9h7HQjyzndnPtrp8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746486828; c=relaxed/simple;
-	bh=Qp0IIlHYIciNX7Eip4u3/xx/27fVip6CeUOfHnBhWHI=;
+	s=arc-20240116; t=1746486988; c=relaxed/simple;
+	bh=e6PPiJqHq1kb2CurSc9d+u9z45PoeCFo6VTeddddQ/o=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=JoGcoKbsziAsnE4FkUJl1p/jXXYnUVOlkxJFKsA40fBWWTHQjh4ljsO4diGncpSUgYRYzbeLNqUR1f6qmxa2pzQuFV3K9Uu14A5NHyxiMAn5gpI4ALFjUtaI+Jq09Cjt6pQyFO6e9FcRV8hhYzIy+cO7q9RDpHwp2EGRhf+9o3w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DFoWVUga; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=knhBeRM0ywJsYd0N29SITR4WtLy/fnrcjoVr5xJrHgnsv1nl1VWU7f2gtIZXOfIT/pDoDgPmjKvABl4TTDtI9nBe6Fsss7Mia5LkdYPLCGDJGt8LdRNB4ohacrfRKmhewEjfEcx2VZE8zJvKN/+joS1J5DCRgRG2HmyAV7K2wT4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CDEyZl5r; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DFoWVUga"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 62524C4CEED;
-	Mon,  5 May 2025 23:13:46 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CDEyZl5r"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6E91C4CEED;
+	Mon,  5 May 2025 23:16:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746486827;
-	bh=Qp0IIlHYIciNX7Eip4u3/xx/27fVip6CeUOfHnBhWHI=;
+	s=k20201202; t=1746486987;
+	bh=e6PPiJqHq1kb2CurSc9d+u9z45PoeCFo6VTeddddQ/o=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=DFoWVUgagd3J1decoEdLXA741GO/Jlt4pp67O1tkJqGJ8vyGNfP7FwI07WCi/9hZE
-	 rKj9qHBCHThFFOutprWpr+kEIjFWzTNLg+TxH8vDFnyEDmWWUMWsa7/rCukcreXX1Y
-	 XeQSsugw9H94fjsY3EQYASdXr4EfAFtEI2y1DrzBDXOzbX/M9Ao7CjOZS3O/fnNwJ+
-	 vCwJYo06b3rf/44aek+DHbkk8lFAZCj8byQF69AlG5Jd+tEqY0d+m5+JTdIBfjV2uK
-	 g1+udmx+W4/2djTJijY7DQqUnzrxieGV9m/Y0iaSBYLGc6SWFGc8V6vqh9SfYVIvh6
-	 DLdE/WeI8pltw==
+	b=CDEyZl5roPv7lGcoSMqpiGJGDcHvBDgl49InnJLaIKEbr1pro16SWWz0yzdi3aJm7
+	 xQFcXnHsuX7DlS/2LQoeR8kkemAfAR20OAnglsHcVRWlvjZ+tniYMB1Sr4Uy54VyvX
+	 +l3SOqsmeAr+d/HVoG2D8iGZGCpaSS8rNAoLMEyTg9Si36UWFy2q+6f1LCFN427213
+	 CSNKQNgIUZ9tiHPTN2MbxC4FYjTP9bnhs4gh8gL8dEMczEMuuYPM0NvAA/pxwpXZEl
+	 YKt8khgC2bfe8nud0JuRzAoyyKKkTmklNBTUYDpPasHo3XtNpzxqIM57RkT3+f8aWD
+	 pdfAiwC/nUcnw==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Cc: Alice Guo <alice.guo@nxp.com>,
-	Frank Li <Frank.Li@nxp.com>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
+	Christian Loehle <christian.loehle@arm.com>,
+	Aboorva Devarajan <aboorvad@linux.ibm.com>,
 	Sasha Levin <sashal@kernel.org>,
 	rafael@kernel.org,
+	daniel.lezcano@linaro.org,
 	linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.15 011/153] thermal/drivers/qoriq: Power down TMU on system suspend
-Date: Mon,  5 May 2025 19:10:58 -0400
-Message-Id: <20250505231320.2695319-11-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 092/153] cpuidle: menu: Avoid discarding useful information
+Date: Mon,  5 May 2025 19:12:19 -0400
+Message-Id: <20250505231320.2695319-92-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20250505231320.2695319-1-sashal@kernel.org>
 References: <20250505231320.2695319-1-sashal@kernel.org>
@@ -52,61 +54,63 @@ X-Patchwork-Hint: Ignore
 X-stable-base: Linux 5.15.181
 Content-Transfer-Encoding: 8bit
 
-From: Alice Guo <alice.guo@nxp.com>
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-[ Upstream commit 229f3feb4b0442835b27d519679168bea2de96c2 ]
+[ Upstream commit 85975daeaa4d6ec560bfcd354fc9c08ad7f38888 ]
 
-Enable power-down of TMU (Thermal Management Unit) for TMU version 2 during
-system suspend to save power. Save approximately 4.3mW on VDD_ANA_1P8 on
-i.MX93 platforms.
+When giving up on making a high-confidence prediction,
+get_typical_interval() always returns UINT_MAX which means that the
+next idle interval prediction will be based entirely on the time till
+the next timer.  However, the information represented by the most
+recent intervals may not be completely useless in those cases.
 
-Signed-off-by: Alice Guo <alice.guo@nxp.com>
-Signed-off-by: Frank Li <Frank.Li@nxp.com>
-Link: https://lore.kernel.org/r/20241209164859.3758906-2-Frank.Li@nxp.com
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Namely, the largest recent idle interval is an upper bound on the
+recently observed idle duration, so it is reasonable to assume that
+the next idle duration is unlikely to exceed it.  Moreover, this is
+still true after eliminating the suspected outliers if the sample
+set still under consideration is at least as large as 50% of the
+maximum sample set size.
+
+Accordingly, make get_typical_interval() return the current maximum
+recent interval value in that case instead of UINT_MAX.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Reported-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+Tested-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+Reviewed-by: Christian Loehle <christian.loehle@arm.com>
+Tested-by: Christian Loehle <christian.loehle@arm.com>
+Tested-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
+Link: https://patch.msgid.link/7770672.EvYhyI6sBW@rjwysocki.net
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/thermal/qoriq_thermal.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ drivers/cpuidle/governors/menu.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 73049f9bea252..34a5fbcc3d200 100644
---- a/drivers/thermal/qoriq_thermal.c
-+++ b/drivers/thermal/qoriq_thermal.c
-@@ -19,6 +19,7 @@
- #define SITES_MAX		16
- #define TMR_DISABLE		0x0
- #define TMR_ME			0x80000000
-+#define TMR_CMD			BIT(29)
- #define TMR_ALPF		0x0c000000
- #define TMR_ALPF_V2		0x03000000
- #define TMTMIR_DEFAULT	0x0000000f
-@@ -345,6 +346,12 @@ static int __maybe_unused qoriq_tmu_suspend(struct device *dev)
- 	if (ret)
- 		return ret;
- 
-+	if (data->ver > TMU_VER1) {
-+		ret = regmap_set_bits(data->regmap, REGS_TMR, TMR_CMD);
-+		if (ret)
-+			return ret;
-+	}
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index 2e5670446991f..e1e2721beb75b 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -249,8 +249,19 @@ static unsigned int get_typical_interval(struct menu_device *data,
+ 	 * This can deal with workloads that have long pauses interspersed
+ 	 * with sporadic activity with a bunch of short pauses.
+ 	 */
+-	if ((divisor * 4) <= INTERVALS * 3)
++	if (divisor * 4 <= INTERVALS * 3) {
++		/*
++		 * If there are sufficiently many data points still under
++		 * consideration after the outliers have been eliminated,
++		 * returning without a prediction would be a mistake because it
++		 * is likely that the next interval will not exceed the current
++		 * maximum, so return the latter in that case.
++		 */
++		if (divisor >= INTERVALS / 2)
++			return max;
 +
- 	clk_disable_unprepare(data->clk);
- 
- 	return 0;
-@@ -359,6 +366,12 @@ static int __maybe_unused qoriq_tmu_resume(struct device *dev)
- 	if (ret)
- 		return ret;
- 
-+	if (data->ver > TMU_VER1) {
-+		ret = regmap_clear_bits(data->regmap, REGS_TMR, TMR_CMD);
-+		if (ret)
-+			return ret;
+ 		return UINT_MAX;
 +	}
-+
- 	/* Enable monitoring */
- 	return regmap_update_bits(data->regmap, REGS_TMR, TMR_ME, TMR_ME);
- }
+ 
+ 	thresh = max - 1;
+ 	goto again;
 -- 
 2.39.5
 
