@@ -1,116 +1,115 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21BAC3A5DF5;
-	Mon,  5 May 2025 23:16:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 814493A80FC;
+	Mon,  5 May 2025 23:17:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746486988; cv=none; b=l2psg9HoxRGO9CdVNkH8hdKuFs0zTSLJXfgs3+VGpQPKx/cFd8lfUPiKzwegodBTG94aLg/P+8r9VOdddaFe006cZLIMRiOMFPnxJUC+zahxow6A9/Eu7f5U/kmhfJIqWTHA9T3q/gz6LXRfrqrc2NKLcrQ9h7HQjyzndnPtrp8=
+	t=1746487041; cv=none; b=GTjs6arqIBOTpr1myGmxS3POcdeXKLZ48A6xFyNxUckc25SU5W0u24tJemFlgTHzNbZs0JSCRfSrHfUTmSYsiAsAt2KWfcR3EwYFxDS1mgHqmLtcOw+2fr0ypV7mX60RWUF9oj+INBVomioRyg9qZU5Tgyro8gQqdZhMgAw+ZNI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746486988; c=relaxed/simple;
-	bh=e6PPiJqHq1kb2CurSc9d+u9z45PoeCFo6VTeddddQ/o=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=knhBeRM0ywJsYd0N29SITR4WtLy/fnrcjoVr5xJrHgnsv1nl1VWU7f2gtIZXOfIT/pDoDgPmjKvABl4TTDtI9nBe6Fsss7Mia5LkdYPLCGDJGt8LdRNB4ohacrfRKmhewEjfEcx2VZE8zJvKN/+joS1J5DCRgRG2HmyAV7K2wT4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CDEyZl5r; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1746487041; c=relaxed/simple;
+	bh=eUfjuqWwgzc7HEzgfWaIoJCRqEYULkjhX5zB3ZSy8Ts=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=iTdBJzp7X6mmUmbvnYE/YXWzqBrTEu69lEbde0nayAQkoHPEkuAzTcrANL+JMEAJx0tqovOMVD+s2mSvDLCuRgGbNQH/WSekN6xWZCu9qKRmyXpivNH/oQHVG4czv+0wpv5eM732+eahh+miQPMq15sFjcKUGk4P/TmZV69x7bA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=b79HvWEm; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CDEyZl5r"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6E91C4CEED;
-	Mon,  5 May 2025 23:16:25 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="b79HvWEm"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 54ABBC4CEEE;
+	Mon,  5 May 2025 23:17:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746486987;
-	bh=e6PPiJqHq1kb2CurSc9d+u9z45PoeCFo6VTeddddQ/o=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=CDEyZl5roPv7lGcoSMqpiGJGDcHvBDgl49InnJLaIKEbr1pro16SWWz0yzdi3aJm7
-	 xQFcXnHsuX7DlS/2LQoeR8kkemAfAR20OAnglsHcVRWlvjZ+tniYMB1Sr4Uy54VyvX
-	 +l3SOqsmeAr+d/HVoG2D8iGZGCpaSS8rNAoLMEyTg9Si36UWFy2q+6f1LCFN427213
-	 CSNKQNgIUZ9tiHPTN2MbxC4FYjTP9bnhs4gh8gL8dEMczEMuuYPM0NvAA/pxwpXZEl
-	 YKt8khgC2bfe8nud0JuRzAoyyKKkTmklNBTUYDpPasHo3XtNpzxqIM57RkT3+f8aWD
-	 pdfAiwC/nUcnw==
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-	Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
-	Christian Loehle <christian.loehle@arm.com>,
-	Aboorva Devarajan <aboorvad@linux.ibm.com>,
-	Sasha Levin <sashal@kernel.org>,
-	rafael@kernel.org,
-	daniel.lezcano@linaro.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.15 092/153] cpuidle: menu: Avoid discarding useful information
-Date: Mon,  5 May 2025 19:12:19 -0400
-Message-Id: <20250505231320.2695319-92-sashal@kernel.org>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250505231320.2695319-1-sashal@kernel.org>
-References: <20250505231320.2695319-1-sashal@kernel.org>
+	s=k20201202; t=1746487041;
+	bh=eUfjuqWwgzc7HEzgfWaIoJCRqEYULkjhX5zB3ZSy8Ts=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=b79HvWEmOgjvCrM3BDAPa2gI30QcgO4pbzLHgnyJAAZG6R8ww/QoXocZw9202IB7z
+	 mKWiaSbAEh67S40nmAv79NnsYxmQN2d+ST0RqOR+73xPKkhh1QGe5Lfg9twZLhjuJV
+	 Q70UT0noss7qnTlgfgVknkznocX5s4PEHiUZAyQkmIammg5NGBti4zAG0d6GWK3ov9
+	 1xYKzbzYogCtla/YGah9pxFA0X61dsQQCjhihVxR2In79HGi2Hm+MkxN3ncUBbwzd5
+	 e1aMvbYw0MOM9HrTOc8K1nrDUY6THSgngV175I2Yzjw3zGtyRbA3TzjG+YtanKKAo+
+	 KlOgivg3MSvOg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4318FC3ABB6;
+	Mon,  5 May 2025 23:17:21 +0000 (UTC)
+From: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>
+Subject: [PATCH v5 0/3] PCI: tegra: Allow building as a module
+Date: Mon, 05 May 2025 18:17:19 -0500
+Message-Id: <20250505-pci-tegra-module-v5-0-827aaac998ba@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 5.15.181
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAP9GGWgC/23PTQ6CMBAF4KuYrq2Zmc4IuvIexkUpBZuImKJEY
+ 7i7RRf+sXwvme9l7qrzMfhOrWd3FX0futAeU5D5TLm9PdZehzJlRUACBo0+uaDPvo5WN215OXi
+ duaJEJz4DW6l0doq+Ctcnud2lvA/duY2350KPY/vCmOAf61GDdmCxytOYsN3UjQ2HhWsbNWI9f
+ QL5BEAjgGi5WCExL38B8wYEaAIwCRBZWl5lhsoMfgH+BGQC4ARAnhci5LjArxeGYXgAwJpL2HM
+ BAAA=
+X-Change-ID: 20250313-pci-tegra-module-7cbd1c5e70af
+To: Thomas Gleixner <tglx@linutronix.de>, 
+ Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+ =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
+ Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, 
+ Rob Herring <robh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
+ Thierry Reding <thierry.reding@gmail.com>, 
+ Jonathan Hunter <jonathanh@nvidia.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, 
+ linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, 
+ Aaron Kling <webgeek1234@gmail.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1746487040; l=1598;
+ i=webgeek1234@gmail.com; s=20250217; h=from:subject:message-id;
+ bh=eUfjuqWwgzc7HEzgfWaIoJCRqEYULkjhX5zB3ZSy8Ts=;
+ b=PPOCuy8fWxrudoIzuE1qc7uG79iuQLKGG/jVPH4ve4vcbV36e3ZeLTq9Ho3LNkHHYIoECpcYS
+ oV33CYQ4v5iDW9PE+038JE4R2iUQU/1eoEnSjdQL8SghnA82UDOro5j
+X-Developer-Key: i=webgeek1234@gmail.com; a=ed25519;
+ pk=TQwd6q26txw7bkK7B8qtI/kcAohZc7bHHGSD7domdrU=
+X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
+ auth_id=342
+X-Original-From: Aaron Kling <webgeek1234@gmail.com>
+Reply-To: webgeek1234@gmail.com
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-
-[ Upstream commit 85975daeaa4d6ec560bfcd354fc9c08ad7f38888 ]
-
-When giving up on making a high-confidence prediction,
-get_typical_interval() always returns UINT_MAX which means that the
-next idle interval prediction will be based entirely on the time till
-the next timer.  However, the information represented by the most
-recent intervals may not be completely useless in those cases.
-
-Namely, the largest recent idle interval is an upper bound on the
-recently observed idle duration, so it is reasonable to assume that
-the next idle duration is unlikely to exceed it.  Moreover, this is
-still true after eliminating the suspected outliers if the sample
-set still under consideration is at least as large as 50% of the
-maximum sample set size.
-
-Accordingly, make get_typical_interval() return the current maximum
-recent interval value in that case instead of UINT_MAX.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Reported-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
-Tested-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
-Reviewed-by: Christian Loehle <christian.loehle@arm.com>
-Tested-by: Christian Loehle <christian.loehle@arm.com>
-Tested-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
-Link: https://patch.msgid.link/7770672.EvYhyI6sBW@rjwysocki.net
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
 ---
- drivers/cpuidle/governors/menu.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+Changes in v5:
+- Copy commit message exactly word for word on patch 1, as required by reviewer
+- Delete remove callback in patch 3, per request
+- Don't clean up debugfs, per request, which drops patch 4 entirely
+- Link to v4: https://lore.kernel.org/r/20250505-pci-tegra-module-v4-0-088b552c4b1a@gmail.com
 
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 2e5670446991f..e1e2721beb75b 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -249,8 +249,19 @@ static unsigned int get_typical_interval(struct menu_device *data,
- 	 * This can deal with workloads that have long pauses interspersed
- 	 * with sporadic activity with a bunch of short pauses.
- 	 */
--	if ((divisor * 4) <= INTERVALS * 3)
-+	if (divisor * 4 <= INTERVALS * 3) {
-+		/*
-+		 * If there are sufficiently many data points still under
-+		 * consideration after the outliers have been eliminated,
-+		 * returning without a prediction would be a mistake because it
-+		 * is likely that the next interval will not exceed the current
-+		 * maximum, so return the latter in that case.
-+		 */
-+		if (divisor >= INTERVALS / 2)
-+			return max;
-+
- 		return UINT_MAX;
-+	}
- 
- 	thresh = max - 1;
- 	goto again;
+Changes in v4:
+- Updated commit messages for patches 1 and 2, per review
+- Link to v3: https://lore.kernel.org/r/20250502-pci-tegra-module-v3-0-556a49732d70@gmail.com
+
+Changes in v3:
+- Add patch to drop remove callback, per request
+- Link to v2: https://lore.kernel.org/r/20250428-pci-tegra-module-v2-0-c11a4b912446@gmail.com
+
+Changes in v2:
+- Add patch to export tegra_cpuidle_pcie_irqs_in_use as required when
+  building pci-tegra as a module for arm
+- Drop module exit to prevent module unloading, as requested
+- Link to v1: https://lore.kernel.org/r/20250420-pci-tegra-module-v1-0-c0a1f831354a@gmail.com
+
+---
+Aaron Kling (3):
+      irqdomain: Export irq_domain_free_irqs
+      cpuidle: tegra: Export tegra_cpuidle_pcie_irqs_in_use
+      PCI: tegra: Allow building as a module
+
+ drivers/cpuidle/cpuidle-tegra.c    |  1 +
+ drivers/pci/controller/Kconfig     |  2 +-
+ drivers/pci/controller/pci-tegra.c | 29 ++++-------------------------
+ kernel/irq/irqdomain.c             |  1 +
+ 4 files changed, 7 insertions(+), 26 deletions(-)
+---
+base-commit: 18352e73612d60b81790d2437845276ae499b64a
+change-id: 20250313-pci-tegra-module-7cbd1c5e70af
+
+Best regards,
 -- 
-2.39.5
+Aaron Kling <webgeek1234@gmail.com>
+
 
