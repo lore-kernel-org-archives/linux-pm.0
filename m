@@ -1,96 +1,93 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 084833118DD;
-	Mon,  5 May 2025 22:30:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DA3B322A90;
+	Mon,  5 May 2025 22:33:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746484217; cv=none; b=u9CwHAtSiN2u/vtn7/4P0vA3m20kX3mg2pJhF49hubmyQlJ1taAjqZ0/QY4onOB1jvLXwXFvN61+fOXgqhrkkSVB4YZFq/0qhCJgh4EyUdth7X6h79lAe40gku9jc70sDVyaSRYfNhZeKbFLlJTv1JTks6kvuhXLD388WS6i6bw=
+	t=1746484416; cv=none; b=aTOJVV3ws5dd+jVSuuHJR/ngkA4WR9NavmtGtdcwKYqUUJlsoLcGk/em0qqFED/8z+X/o55QdNsuLZBBRWeXzXdi29sObLT3v42cbGqUMXKyH0NNP56rPd1rUMkse394vJRA7+pQPJ6yqvz5feG6JiVa0MDYGtBBC8Hjme9ULT0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746484217; c=relaxed/simple;
-	bh=0SqSalVLNIGV7ZGEkllDtan/2CZ5yqAgZD7fPjaulCI=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=iie1tbWO+ObnSuOqVu1+BkvOsVu8GmD8s2dDQlj+xBP68/tpFZ84OHDnF5nEYtjDRERyFrrAu9+e/m7k37969cQzrsHH0lfuYPo0uUSMc+yZLHvQBF5LcN5WA9z/YeiFdcRXD2JZAiSle1/HgUUIdT+jL6KlVAXqY9Mp7vtHdAc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IqyQhuD8; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1746484416; c=relaxed/simple;
+	bh=HatdA9k8dTOZzoALiSAOatm15PguKG74mPF5yaTmjXw=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=U0qO5mjDr1ymM6fSu9543fhK0DnvIDuYpO+O5xKq7kb7Hoejp6Oy05BnV2yTQmkp+z21aQ8T9xu+7kMUkVW8uEVRUtz1WUnm6U7aZi1/+PuFVIJ0ZenLObGx/7X9+2PNLcLNkOLXmZ34Xr/tSaKgOmhzCrVGJQUc/tP8Sr/VMnE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=YNbJQ11E; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=f+q9z70S; arc=none smtp.client-ip=193.142.43.55
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IqyQhuD8"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4E2CEC4CEE4;
-	Mon,  5 May 2025 22:30:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746484216;
-	bh=0SqSalVLNIGV7ZGEkllDtan/2CZ5yqAgZD7fPjaulCI=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=IqyQhuD8MmBuM3bt8GlSiHB9oharCb3ejbevYIWd+5G5Bw+RJk28oon3WbJRTSRkB
-	 9MIESsKDWkGC9B07XY8nC8RSvCbO7Bti+FdmxQ9tfVmJOa3X1WmgK2nqV4YsDwNZYF
-	 tUDaXyfCNbHIt217pLQKGGcXxyPfnzeayfXUJbUey/sP7A0LzzyANW4ffGnADzs73z
-	 b5Uzr4sndhXCC+8sjSz49FbXsdgCuFQL+b4uYmyg2DFwjTiIOfVQ19rPCDGQvSLyuc
-	 uKxsbvqkcUTSCbeUhULRSrDDHJKJyFWKAbnut2VFxxpIrjdDSOO7sBZRZ+w+Ko//yi
-	 mAA1JKE7UnLLw==
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Cc: Ahmad Fatoum <a.fatoum@pengutronix.de>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	Sasha Levin <sashal@kernel.org>,
-	shawnguo@kernel.org,
-	shengjiu.wang@nxp.com,
-	joe@pf.is.s.u-tokyo.ac.jp,
-	peng.fan@nxp.com,
-	m.felsch@pengutronix.de,
-	krzysztof.kozlowski@linaro.org,
-	dario.binacchi@amarulasolutions.com,
-	linux-pm@vger.kernel.org,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH AUTOSEL 6.14 392/642] pmdomain: imx: gpcv2: use proper helper for property detection
-Date: Mon,  5 May 2025 18:10:08 -0400
-Message-Id: <20250505221419.2672473-392-sashal@kernel.org>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250505221419.2672473-1-sashal@kernel.org>
-References: <20250505221419.2672473-1-sashal@kernel.org>
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="YNbJQ11E";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="f+q9z70S"
+From: Thomas Gleixner <tglx@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1746484411;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ar+nYY6YvS1JDsf3WZ/fGQw2E8KQPNJ8g1OwVIgR+aM=;
+	b=YNbJQ11E0VmO8C+gqyhlukX676Aov3AgM0pJVFAc4FJgNaleYvU1mCt+jSrgTy00xjZdcY
+	lw5g1mEGYYy2t9gmxGgFkVEo5Xn9LxICd16cbLXdLhaH+lo5UkL7bt28USzil0HKrq15fy
+	zW8p3peJv8DIfogSabh+6tPhKL76cJj2HgNcuMVpP1yL9LQyOUKglw3H7FKhsJTSP9E8l9
+	sN2XkT9RQb5nl4RDyj3Z3u23EuIxjuQfrGqKC6+T0KUkFhQJJN4y4Nub4mO3SUdCRrLJYs
+	qK9CQ+vVfaZ9RSzBw8uYllWzYms2soUc2mGoN5DWyToCHSXwaCnnyaoZ2sMnlA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1746484411;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ar+nYY6YvS1JDsf3WZ/fGQw2E8KQPNJ8g1OwVIgR+aM=;
+	b=f+q9z70Smk3vOT60407tVIz6Ss+kDH8S/UNUpUYoaE8+VjeoW6/KIMuK5eDqOnEyyebr9T
+	HeK2bY8XrvJ2t6Bg==
+To: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>,
+ Lorenzo Pieralisi <lpieralisi@kernel.org>, Krzysztof =?utf-8?Q?Wilczy?=
+ =?utf-8?Q?=C5=84ski?=
+ <kw@linux.com>, Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+ Rob Herring <robh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter
+ <jonathanh@nvidia.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Daniel
+ Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, Aaron Kling
+ <webgeek1234@gmail.com>
+Subject: Re: [PATCH v4 1/4] irqdomain: Export irq_domain_free_irqs
+In-Reply-To: <20250505-pci-tegra-module-v4-1-088b552c4b1a@gmail.com>
+References: <20250505-pci-tegra-module-v4-0-088b552c4b1a@gmail.com>
+ <20250505-pci-tegra-module-v4-1-088b552c4b1a@gmail.com>
+Date: Tue, 06 May 2025 00:33:30 +0200
+Message-ID: <87o6w6ofgl.ffs@tglx>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.14.5
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-From: Ahmad Fatoum <a.fatoum@pengutronix.de>
+On Mon, May 05 2025 at 09:58, Aaron Kling via wrote:
+> From: Aaron Kling <webgeek1234@gmail.com>
+>
+> Add export for irq_domain_free_irqs() so that drivers like pci-tegra can
+> be loaded as a module.
+>
+> Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
 
-[ Upstream commit 6568cb40e73163fa25e2779f7234b169b2e1a32e ]
+Seriously?
 
-Starting with commit c141ecc3cecd7 ("of: Warn when of_property_read_bool()
-is used on non-boolean properties"), probing the gpcv2 device on i.MX8M
-SoCs leads to warnings when LOCKDEP is enabled.
+Did you actually sit down for a couple of seconds to read and understand what I
+asked you to do in that initial review and then again:
 
-Fix this by checking property presence with of_property_present as
-intended.
+    https://lore.kernel.org/all/877c33qxss.ffs@tglx
 
-Signed-off-by: Ahmad Fatoum <a.fatoum@pengutronix.de>
-Link: https://lore.kernel.org/r/20250218-gpcv2-of-property-present-v1-1-3bb1a9789654@pengutronix.de
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/pmdomain/imx/gpcv2.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I appreciate your dedication to get this sorted, but please take your
+time to read more than just the _two_ lines which you think to be
+relevant.
 
-diff --git a/drivers/pmdomain/imx/gpcv2.c b/drivers/pmdomain/imx/gpcv2.c
-index 958d34d4821b1..105fcaf13a34c 100644
---- a/drivers/pmdomain/imx/gpcv2.c
-+++ b/drivers/pmdomain/imx/gpcv2.c
-@@ -1361,7 +1361,7 @@ static int imx_pgc_domain_probe(struct platform_device *pdev)
- 	}
- 
- 	if (IS_ENABLED(CONFIG_LOCKDEP) &&
--	    of_property_read_bool(domain->dev->of_node, "power-domains"))
-+	    of_property_present(domain->dev->of_node, "power-domains"))
- 		lockdep_set_subclass(&domain->genpd.mlock, 1);
- 
- 	ret = of_genpd_add_provider_simple(domain->dev->of_node,
--- 
-2.39.5
+Please don't come back and waste your breath on telling me you are so
+sorry as last time:
 
+    https://lore.kernel.org/all/CALHNRZ_ctL1fJGO5752B6XEEXHwRe-a-Ofv+_=qtdq1WWXLLjw@mail.gmail.com
+
+Just get your act together and do it right.
+
+Thanks,
+
+        tglx
