@@ -1,93 +1,138 @@
-Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [62.89.141.173])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8456B2C086E;
-	Mon,  5 May 2025 22:36:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=62.89.141.173
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0227C296D0B;
+	Mon,  5 May 2025 22:39:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746484583; cv=none; b=YTMCMujevoUD2R+YRSK+U60c48+vSif4YjckTx6v4g5Mof+XgvVrF17d5H8vDjCiWilFw5so/zGknmnTVIhVwmvuRn8ozZFhwRUlgHCsz+Wgcgn9tJit7qCDKml+X+QBCCbJojlaWMJsNOUh2V5MdMzsnLF+9n1rRYjkMLPCjow=
+	t=1746484770; cv=none; b=i0ZDAooLJXPyWth9guYRZmUmtfvVb8w4io1XM9zP7dkuUT+z1/msDCz7gb4TDyboIA7D9aoNsIO9fkoTnpClNKlRn+L9B/6sLoR1tGpYzayLq9lJP+LJ7wZ6Hx2Fw20UesmAbtNwmqTe4lK4lMELHTkkHhc/oVvSujzOiMOpNDI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746484583; c=relaxed/simple;
-	bh=V/as8NAbScpAc7r0jNSjRHgZ4ii7oO7JrW99rb0nMJI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=KBSD+MgkyX7mLRblRRhfxE0FsyLidXyYwvyhm1GYrzORRnmoNvPIdzN6s3HTFahAe1OoY0MBWQ9a2h8VgM9TQ5NDKVWm1DOm0M+TG8OlO0roNlKhZS4Jp5AeDQrd9CxuuVMs0LrQpueTH5Rvj8ZeHeIVbPUETV0jqgLUY04aT4c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; spf=none smtp.mailfrom=ftp.linux.org.uk; dkim=pass (2048-bit key) header.d=linux.org.uk header.i=@linux.org.uk header.b=KODD3dnU; arc=none smtp.client-ip=62.89.141.173
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ftp.linux.org.uk
+	s=arc-20240116; t=1746484770; c=relaxed/simple;
+	bh=J9LKa0JVlnkzvGDcwNe2mR9Fops5wHLY5lriBOCwhnM=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=EnKcwuN/rBLeMul4Oebkv4/Jlu3ZbcLrBFMMrRgGf6tOsdGguO1WU/cnE1TVClNl0lrIxel3LWGsPFMR0qxnzjPGNTNx5fMVBqnwXPYgmFw6LMs3C2aAdFaD5YqhjaLe1249AkQv5YAg6u4FHa/p1rUy+rFJ+bnzintOFvANn2w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ad77RjAI; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linux.org.uk header.i=@linux.org.uk header.b="KODD3dnU"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=linux.org.uk; s=zeniv-20220401; h=Sender:In-Reply-To:
-	Content-Transfer-Encoding:Content-Type:MIME-Version:References:Message-ID:
-	Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description;
-	bh=wjv/3kkg8ER8GtdmsC4OfpctOuq/Lbu60oSY4NqUSV4=; b=KODD3dnUFam1+/IYyLJc/CXSLs
-	Gw9rntN2BqtvuXlFEaZG6JhJA6URM/jLipCXwPYSr/YFlP9n4gLuYF2daWvE2rDCC7/vAkm6s0nuN
-	QXiS6iKN3ofsx7PLEDDx6y9jUN9RXgITzSCI4Tsoj5PUIYa/DJBvbFIJhCstkDKqUwbc02C12msB4
-	n2FHQzzYVeE56cAlg2pjy1u1CuD8oPlQuosvbOI+scszXsJeP/LLq1vjB8RGKxpTUp6AmIV81HpQg
-	DIBWC0kfOdO3g7lB20nmxiiE6+K7HJbBWhLw45OAmxaH5ayGw5kNEpepcvcpoKjN9NZz0O6a1JQdr
-	06dZq0rw==;
-Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uC4Q3-000000073Pb-3xQP;
-	Mon, 05 May 2025 22:36:15 +0000
-Date: Mon, 5 May 2025 23:36:15 +0100
-From: Al Viro <viro@zeniv.linux.org.uk>
-To: Yunseong Kim <ysk@kzalloc.com>
-Cc: Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>, Len Brown <len.brown@intel.com>,
-	byungchul@sk.com, max.byungchul.park@gmail.com,
-	linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fs: Prevent panic from NULL dereference in
- alloc_fs_context() during do_exit()
-Message-ID: <20250505223615.GK2023217@ZenIV>
-References: <20250505203801.83699-2-ysk@kzalloc.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ad77RjAI"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 53633C4CEEE;
+	Mon,  5 May 2025 22:39:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1746484769;
+	bh=J9LKa0JVlnkzvGDcwNe2mR9Fops5wHLY5lriBOCwhnM=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=ad77RjAIswqB+HB8H7MSPRu5tccI0kxMm+/8Zre6PdI/5n0vtyaYayjq91/tKa7sg
+	 YNkevA1drrgaEyigQW8XHcwTJ0PMXj+y/5iSIN/K0Uzz6QKSOfsDI8tDk5K+4vMfyE
+	 iYrWBjuTmCnQ3/sqBGXPcCOVouDDTgYL2m7b06reniCKm/tYSZH6aC2vKGsUVM0+y9
+	 JS9r9I3gVDnDDAKhjDowM5jBsBh1wSvo2CwF/z0U++aghyOWcqXgz6TS2elr++LFyg
+	 xHDkHTsdg8t7OkiCLtppCRQxu2cShilsYsEzHHOzKFG5ztboh9NmDg5a4Ld66vTmEr
+	 HBDeBmJUfkJPQ==
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Cc: "Xin Li (Intel)" <xin@zytor.com>,
+	Xi Pardee <xi.pardee@intel.com>,
+	Todd Brandt <todd.e.brandt@intel.com>,
+	"H . Peter Anvin" <hpa@zytor.com>,
+	Ingo Molnar <mingo@kernel.org>,
+	"Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+	Andy Lutomirski <luto@kernel.org>,
+	Brian Gerst <brgerst@gmail.com>,
+	Juergen Gross <jgross@suse.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Sasha Levin <sashal@kernel.org>,
+	rafael@kernel.org,
+	pavel@kernel.org,
+	tglx@linutronix.de,
+	mingo@redhat.com,
+	bp@alien8.de,
+	dave.hansen@linux.intel.com,
+	x86@kernel.org,
+	linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 6.12 002/486] x86/fred: Fix system hang during S4 resume with FRED enabled
+Date: Mon,  5 May 2025 18:31:18 -0400
+Message-Id: <20250505223922.2682012-2-sashal@kernel.org>
+X-Mailer: git-send-email 2.39.5
+In-Reply-To: <20250505223922.2682012-1-sashal@kernel.org>
+References: <20250505223922.2682012-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 6.12.26
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20250505203801.83699-2-ysk@kzalloc.com>
-Sender: Al Viro <viro@ftp.linux.org.uk>
 
-On Tue, May 06, 2025 at 05:38:02AM +0900, Yunseong Kim wrote:
-> The function alloc_fs_context() assumes that current->nsproxy and its
-> net_ns field are valid. However, this assumption can be violated in
-> cases such as task teardown during do_exit(), where current->nsproxy can
-> be NULL or already cleared.
-> 
-> This issue was triggered during stress-ng's kernel-coverage.sh testing,
-> Since alloc_fs_context() can be invoked in various contexts — including
-> from asynchronous or teardown paths like do_exit() — it's difficult to
-> guarantee that its input arguments are always valid.
-> 
-> A follow-up patch will improve the granularity of this fix by moving the
-> check closer to the actual mount trigger(e.g., in efivarfs_pm_notify()).
+From: "Xin Li (Intel)" <xin@zytor.com>
 
-UGH.
+[ Upstream commit e5f1e8af9c9e151ecd665f6d2e36fb25fec3b110 ]
 
-> diff --git a/fs/fs_context.c b/fs/fs_context.c
-> index 582d33e81117..529de43b8b5e 100644
-> --- a/fs/fs_context.c
-> +++ b/fs/fs_context.c
-> @@ -282,6 +282,9 @@ static struct fs_context *alloc_fs_context(struct file_system_type *fs_type,
->  	struct fs_context *fc;
->  	int ret = -ENOMEM;
->  
-> +	if (!current->nsproxy || !current->nsproxy->net_ns)
-> +		return ERR_PTR(-EINVAL);
-> +
->  	fc = kzalloc(sizeof(struct fs_context), GFP_KERNEL_ACCOUNT);
->  	if (!fc)
->  		return ERR_PTR(-ENOMEM);
+Upon a wakeup from S4, the restore kernel starts and initializes the
+FRED MSRs as needed from its perspective.  It then loads a hibernation
+image, including the image kernel, and attempts to load image pages
+directly into their original page frames used before hibernation unless
+those frames are currently in use.  Once all pages are moved to their
+original locations, it jumps to a "trampoline" page in the image kernel.
 
-That might paper over the oops, but I very much doubt that this will be
-a correct fix...  Note that in efivarfs_pm_notify() we have other
-fun issues when run from such context - have task_work_add() fail in
-fput() and if delayed_fput() runs right afterwards and
-        efivar_init(efivarfs_check_missing, sfi->sb, false);
-in there might end up with UAF...
+At this point, the image kernel takes control, but the FRED MSRs still
+contain values set by the restore kernel, which may differ from those
+set by the image kernel before hibernation.  Therefore, the image kernel
+must ensure the FRED MSRs have the same values as before hibernation.
+Since these values depend only on the location of the kernel text and
+data, they can be recomputed from scratch.
+
+Reported-by: Xi Pardee <xi.pardee@intel.com>
+Reported-by: Todd Brandt <todd.e.brandt@intel.com>
+Tested-by: Todd Brandt <todd.e.brandt@intel.com>
+Suggested-by: H. Peter Anvin (Intel) <hpa@zytor.com>
+Signed-off-by: Xin Li (Intel) <xin@zytor.com>
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
+Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Reviewed-by: H. Peter Anvin (Intel) <hpa@zytor.com>
+Cc: Andy Lutomirski <luto@kernel.org>
+Cc: Brian Gerst <brgerst@gmail.com>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Link: https://lore.kernel.org/r/20250401075728.3626147-1-xin@zytor.com
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ arch/x86/power/cpu.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
+index 63230ff8cf4f0..08e76a5ca1553 100644
+--- a/arch/x86/power/cpu.c
++++ b/arch/x86/power/cpu.c
+@@ -27,6 +27,7 @@
+ #include <asm/mmu_context.h>
+ #include <asm/cpu_device_id.h>
+ #include <asm/microcode.h>
++#include <asm/fred.h>
+ 
+ #ifdef CONFIG_X86_32
+ __visible unsigned long saved_context_ebx;
+@@ -231,6 +232,19 @@ static void notrace __restore_processor_state(struct saved_context *ctxt)
+ 	 */
+ #ifdef CONFIG_X86_64
+ 	wrmsrl(MSR_GS_BASE, ctxt->kernelmode_gs_base);
++
++	/*
++	 * Reinitialize FRED to ensure the FRED MSRs contain the same values
++	 * as before hibernation.
++	 *
++	 * Note, the setup of FRED RSPs requires access to percpu data
++	 * structures.  Therefore, FRED reinitialization can only occur after
++	 * the percpu access pointer (i.e., MSR_GS_BASE) is restored.
++	 */
++	if (ctxt->cr4 & X86_CR4_FRED) {
++		cpu_init_fred_exceptions();
++		cpu_init_fred_rsps();
++	}
+ #else
+ 	loadsegment(fs, __KERNEL_PERCPU);
+ #endif
+-- 
+2.39.5
+
