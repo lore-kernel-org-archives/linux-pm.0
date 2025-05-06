@@ -1,37 +1,37 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 319CA1AAA1C;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7B7EC1B87F0;
 	Tue,  6 May 2025 20:49:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746564585; cv=none; b=I5tNzHyIPtgKsq/4kV+eiRgNR5P0+p627qoKFTWpUCotZuTy2uMz7MqwnzhFcRlBTIIwMadUCKqMXhGXd3e+32/zmqRXj5xsJpvnzyYmuZNTVhnlS4Os0PZaWJeaSay97QpEwCpnvAfg4ihkk3C0ReN2aaFNLkIdT0Ttv9FHiP8=
+	t=1746564586; cv=none; b=suuH+IBS8iUWCt2d2atXa+cqcXdS42OWo+Qz7gN8J5ZBbk460PWvkMufrkZxI6Mr2GNH1Zclri1C10Vi/8FgNNy5ebN9PeGN7Ylw/EwT7CAYp/sDZlCAKsIkhNxwbwanOjEoFmWKWymC3OE9fTc77kcdf+vb01z0vKXa3vV8ZCk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746564585; c=relaxed/simple;
-	bh=bIAJgFCW8p08FPTyn9O3V5PiHuLVTgOdO4RQCZpYtv4=;
+	s=arc-20240116; t=1746564586; c=relaxed/simple;
+	bh=4lV2ajf8SHgMeBPWlu1efq9ktIyLStrRYprfISF89l0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=cEp4MptxV9KwApf+dzx5whgY2vAmcAi4VpHOl/cV9hrKJHF70yZetqveZ/kexKwTIXTK+/J9mCBloy4eQuyM3L6tbkubgZuNBs2ZNHtP/sC63x9GPbl1WAF2qmdTllJULddTrosBUsNLibYq9NmSVflJMd6jgty592+CtLmruE4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=iyTzWkl4; arc=none smtp.client-ip=79.96.170.134
+	 MIME-Version:Content-Type; b=FA22/a6Iaqr+7MWQ+oyWL9cKFeHu8Ye3FzDUHcyaJCqJ440Iem4cXLtL7fOgW+8fXK/CZX1An+0tIP5ZCCc6ekMWaathxIKXi6y6IMo9ulkTERcGt9mNlYjRDBiB6qyxrD2Op9voj+wusXI38ygYBnHsybEawwntVFujPSrzBR8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=sLUtSPjQ; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="iyTzWkl4"
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="sLUtSPjQ"
 Received: from kreacher.localnet (unknown [217.114.34.19])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 5D23A666BB1;
-	Tue,  6 May 2025 22:49:36 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 82249666BAF;
+	Tue,  6 May 2025 22:49:34 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1746564576;
-	bh=bIAJgFCW8p08FPTyn9O3V5PiHuLVTgOdO4RQCZpYtv4=;
+	s=dkim; t=1746564575;
+	bh=4lV2ajf8SHgMeBPWlu1efq9ktIyLStrRYprfISF89l0=;
 	h=From:Subject:Date;
-	b=iyTzWkl4CTpTmcF/G7V9n0KxYEsreSgGCafu+3ME4NLfbJd5ogHyDuuKgI7QZu2S2
-	 HySAg3dD58r2daxnN1819hSnxRmU17mlbIbS0gdK3JtDFQNM99g3Rbst+EUiwOHJFQ
-	 WfnL556wPZWLnb/YWmt4SRL9PYIulckyGLtT9zGI27Bc4lxAuBsB0O9dRcliqQC8OF
-	 oEDrvgjOFBXn9SAWvAhp47Tao8WREfMT94L7gn8V+I68zRQlkrhh708SeC8TRuLUxg
-	 MaCmIOmV5SdLZZMnJauIoT6HN6NA//SPnB9G7vC84RWS5mh3rWE0dxp1wBPiDBSIS8
-	 Dfm/vBSsdsGJQ==
+	b=sLUtSPjQNvUHP4Y6tkGqHQOscenpc/iGkWYMNBIiELaO0LcwhDaF7CUoZmyRsbooY
+	 hf2xjxt9JNg3T3IlcMx6YAoejqFgiTuIwvVR+o0eZ9KkUCT5egxcksjqiXbp5UE5Qn
+	 hrah1tTPWW2Kot9lj853gGhZhFS5dPoxWYrCkUrARIeF1jPu6PsAUddB4Km5094viS
+	 wsC1uY1kavVICu7qmH8jz+sMq2ESu3tSWlMIY71ldu+17Ur82Q0yjS4Rl38ntGRPcY
+	 2mcOR/SJA7KRpvBM2sQlkAC5mGk0MY/M9cgOZ9BV2th0uz4xt06Kg0LIsdT1jfhYFm
+	 8ITmHY/h/qtLA==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
@@ -43,10 +43,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
  Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
  Pierre Gondois <pierre.gondois@arm.com>,
  Christian Loehle <christian.loehle@arm.com>
-Subject:
- [PATCH v2 2/7] cpufreq/sched: Move cpufreq-specific EAS checks to cpufreq
-Date: Tue, 06 May 2025 22:37:15 +0200
-Message-ID: <2317800.iZASKD2KPV@rjwysocki.net>
+Subject: [PATCH v2 4/7] PM: EM: Introduce em_adjust_cpu_capacity()
+Date: Tue, 06 May 2025 22:41:21 +0200
+Message-ID: <3637203.iIbC2pHGDl@rjwysocki.net>
 In-Reply-To: <2999205.e9J7NaK4W3@rjwysocki.net>
 References: <2999205.e9J7NaK4W3@rjwysocki.net>
 Precedence: bulk
@@ -65,124 +64,91 @@ X-DCC--Metrics: v370.home.net.pl 1024; Body=11 Fuz1=11 Fuz2=11
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Doing cpufreq-specific EAS checks that require accessing policy
-internals directly from sched_is_eas_possible() is a bit unfortunate,
-so introduce cpufreq_ready_for_eas() in cpufreq, move those checks
-into that new function and make sched_is_eas_possible() call it.
+Add a function for updating the Energy Model for a CPU after its
+capacity has changed, which subsequently will be used by the
+intel_pstate driver.
 
-While at it, address a possible race between the EAS governor check
-and governor change by doing the former under the policy rwsem.
+An EM_PERF_DOMAIN_ARTIFICIAL check is added to em_recalc_and_update()
+to prevent it from calling em_compute_costs() for an "artificial" perf
+domain with a NULL cb parameter which would cause it to crash.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Reviewed-by: Christian Loehle <christian.loehle@arm.com>
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 Tested-by: Christian Loehle <christian.loehle@arm.com>
 Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
 
 v1 -> v2:
-   * Add missing newline characters in two places (Christian).
+   * Use em_is_artificial() in the new check (Dietmar).
    * Pick up tags.
 
 ---
- drivers/cpufreq/cpufreq.c |   32 ++++++++++++++++++++++++++++++++
- include/linux/cpufreq.h   |    2 ++
- kernel/sched/topology.c   |   25 +++++--------------------
- 3 files changed, 39 insertions(+), 20 deletions(-)
+ include/linux/energy_model.h |    2 ++
+ kernel/power/energy_model.c  |   28 ++++++++++++++++++++++++----
+ 2 files changed, 26 insertions(+), 4 deletions(-)
 
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -3056,6 +3056,38 @@
+--- a/include/linux/energy_model.h
++++ b/include/linux/energy_model.h
+@@ -179,6 +179,7 @@
+ int em_dev_update_chip_binning(struct device *dev);
+ int em_update_performance_limits(struct em_perf_domain *pd,
+ 		unsigned long freq_min_khz, unsigned long freq_max_khz);
++void em_adjust_cpu_capacity(unsigned int cpu);
+ void em_rebuild_sched_domains(void);
  
- 	return 0;
+ /**
+@@ -403,6 +404,7 @@
+ {
+ 	return -EINVAL;
  }
-+
-+static bool cpufreq_policy_is_good_for_eas(unsigned int cpu)
-+{
-+	struct cpufreq_policy *policy __free(put_cpufreq_policy);
-+
-+	policy = cpufreq_cpu_get(cpu);
-+	if (!policy) {
-+		pr_debug("cpufreq policy not set for CPU: %d\n", cpu);
-+		return false;
++static inline void em_adjust_cpu_capacity(unsigned int cpu) {}
+ static inline void em_rebuild_sched_domains(void) {}
+ #endif
+ 
+--- a/kernel/power/energy_model.c
++++ b/kernel/power/energy_model.c
+@@ -702,10 +702,12 @@
+ {
+ 	int ret;
+ 
+-	ret = em_compute_costs(dev, em_table->state, NULL, pd->nr_perf_states,
+-			       pd->flags);
+-	if (ret)
+-		goto free_em_table;
++	if (!em_is_artificial(pd)) {
++		ret = em_compute_costs(dev, em_table->state, NULL,
++				       pd->nr_perf_states, pd->flags);
++		if (ret)
++			goto free_em_table;
 +	}
+ 
+ 	ret = em_dev_update_perf_domain(dev, em_table);
+ 	if (ret)
+@@ -755,6 +757,24 @@
+ 	em_recalc_and_update(dev, pd, em_table);
+ }
+ 
++/**
++ * em_adjust_cpu_capacity() - Adjust the EM for a CPU after a capacity update.
++ * @cpu: Target CPU.
++ *
++ * Adjust the existing EM for @cpu after a capacity update under the assumption
++ * that the capacity has been updated in the same way for all of the CPUs in
++ * the same perf domain.
++ */
++void em_adjust_cpu_capacity(unsigned int cpu)
++{
++	struct device *dev = get_cpu_device(cpu);
++	struct em_perf_domain *pd;
 +
-+	guard(cpufreq_policy_read)(policy);
-+
-+	return sugov_is_governor(policy);
++	pd = em_pd_get(dev);
++	if (pd)
++		em_adjust_new_capacity(cpu, dev, pd);
 +}
 +
-+bool cpufreq_ready_for_eas(const struct cpumask *cpu_mask)
-+{
-+	unsigned int cpu;
-+
-+	/* Do not attempt EAS if schedutil is not being used. */
-+	for_each_cpu(cpu, cpu_mask) {
-+		if (!cpufreq_policy_is_good_for_eas(cpu)) {
-+			pr_debug("rd %*pbl: schedutil is mandatory for EAS\n",
-+				 cpumask_pr_args(cpu_mask));
-+			return false;
-+		}
-+	}
-+
-+	return true;
-+}
-+
- module_param(off, int, 0444);
- module_param_string(default_governor, default_governor, CPUFREQ_NAME_LEN, 0444);
- core_initcall(cpufreq_core_init);
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -1237,6 +1237,8 @@
- 		struct cpufreq_frequency_table *table,
- 		unsigned int transition_latency);
- 
-+bool cpufreq_ready_for_eas(const struct cpumask *cpu_mask);
-+
- static inline void cpufreq_register_em_with_opp(struct cpufreq_policy *policy)
+ static void em_check_capacity_update(void)
  {
- 	dev_pm_opp_of_register_em(get_cpu_device(policy->cpu),
---- a/kernel/sched/topology.c
-+++ b/kernel/sched/topology.c
-@@ -212,8 +212,6 @@
- static bool sched_is_eas_possible(const struct cpumask *cpu_mask)
- {
- 	bool any_asym_capacity = false;
--	struct cpufreq_policy *policy;
--	bool policy_is_ready;
- 	int i;
- 
- 	/* EAS is enabled for asymmetric CPU capacity topologies. */
-@@ -248,25 +246,12 @@
- 		return false;
- 	}
- 
--	/* Do not attempt EAS if schedutil is not being used. */
--	for_each_cpu(i, cpu_mask) {
--		policy = cpufreq_cpu_get(i);
--		if (!policy) {
--			if (sched_debug()) {
--				pr_info("rd %*pbl: Checking EAS, cpufreq policy not set for CPU: %d",
--					cpumask_pr_args(cpu_mask), i);
--			}
--			return false;
--		}
--		policy_is_ready = sugov_is_governor(policy);
--		cpufreq_cpu_put(policy);
--		if (!policy_is_ready) {
--			if (sched_debug()) {
--				pr_info("rd %*pbl: Checking EAS, schedutil is mandatory\n",
--					cpumask_pr_args(cpu_mask));
--			}
--			return false;
-+	if (!cpufreq_ready_for_eas(cpu_mask)) {
-+		if (sched_debug()) {
-+			pr_info("rd %*pbl: Checking EAS: cpufreq is not ready\n",
-+				cpumask_pr_args(cpu_mask));
- 		}
-+		return false;
- 	}
- 
- 	return true;
+ 	cpumask_var_t cpu_done_mask;
 
 
 
