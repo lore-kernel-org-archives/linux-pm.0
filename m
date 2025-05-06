@@ -1,57 +1,68 @@
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70FA072629;
-	Tue,  6 May 2025 04:47:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.95.11.211
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DEEC61FCCF8;
+	Tue,  6 May 2025 07:42:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746506850; cv=none; b=nJ8fUcC/4MjU7WrEbKFw0y4gUPU6cOS5VORXSFUiRLjOoWh6gG6qhQQofwsYhzW9MNEEf4eKbnpGH6uddUi5JcUlEwpJGNaNT1g4oTJ7uoDH6/kXvjk2Nh/j1n2UUVtYxVzb19va3De2bqGxSu1aXMigSvJPkxb3IsTPYbXS5h4=
+	t=1746517355; cv=none; b=UQAgWuo4F+ocC0DPen67AX62Sd6srqfo8tqrZDrZa1W7EYDPCv7gQzFsMz2cgNmW8ZOxgUITniX/FVGo754hLigd3rTrnChtqzPN90g9UEQPJOQbuFMSQIH69vuSSRXsSBzeUY74Ri/WX29THssbxYE4gfCGWN/aPwfGUm7FZf0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746506850; c=relaxed/simple;
-	bh=6yNFM7ngHYeSSeoUicHGAyGghCXiMKa68OxABeUigu0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=uYdS3orM6eaUl3WuoiPDXhWqyHLeboDYP4/WK2V0GLhvpWx7FJGNeqh25NJccQMuhpPge1Z4U5KEIar4lKtihEiR7nxYKyvElA83UJ+P9NwxSYszd6YT1MOsJstAGOaP2tvnjTEAzhSCUG9t/gQWCq1s98XzELw1t0b2ItRa9Aw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lst.de; spf=pass smtp.mailfrom=lst.de; arc=none smtp.client-ip=213.95.11.211
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lst.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lst.de
-Received: by verein.lst.de (Postfix, from userid 2407)
-	id 020CC67373; Tue,  6 May 2025 06:47:24 +0200 (CEST)
-Date: Tue, 6 May 2025 06:47:23 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Jens Axboe <axboe@kernel.dk>
-Cc: linux-block@vger.kernel.org, "Md. Haris Iqbal" <haris.iqbal@ionos.com>,
-	Jack Wang <jinpu.wang@ionos.com>, Coly Li <colyli@kernel.org>,
-	Kent Overstreet <kent.overstreet@linux.dev>,
-	Mike Snitzer <snitzer@kernel.org>,
-	Mikulas Patocka <mpatocka@redhat.com>, Chris Mason <clm@fb.com>,
-	Josef Bacik <josef@toxicpanda.com>, David Sterba <dsterba@suse.com>,
-	Andreas Gruenbacher <agruenba@redhat.com>,
-	Carlos Maiolino <cem@kernel.org>,
-	Damien Le Moal <dlemoal@kernel.org>,
-	Naohiro Aota <naohiro.aota@wdc.com>,
-	Johannes Thumshirn <jth@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>, slava@dubeyko.com,
-	glaubitz@physik.fu-berlin.de, frank.li@vivo.com,
-	linux-bcache@vger.kernel.org, dm-devel@lists.linux.dev,
-	linux-btrfs@vger.kernel.org, gfs2@lists.linux.dev,
-	linux-fsdevel@vger.kernel.org, linux-xfs@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: add more bio helpers v2
-Message-ID: <20250506044723.GA27656@lst.de>
-References: <20250430212159.2865803-1-hch@lst.de>
+	s=arc-20240116; t=1746517355; c=relaxed/simple;
+	bh=mO+m+JaxLYq+BevXI0NK5P8AwDclsuWZdZ7YIumHxgU=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=logtTikKZZv8ilEZOCygYuzVE7UB1w4GJNOzFLPWhYMwJqzAQBSp8va1PnF+Nj3ccreR1/UFfxAi3DyPjBJI0PVKETCUd9BVRauEZIabPM7lGMwlKOYdUU4/spyTSDzVpt/P+AB1UA1C1w4Aak7YMNBbTjDUhlBDf1tpcIxfT2I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=WR8OVbB9; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=unk+dOg+; arc=none smtp.client-ip=193.142.43.55
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="WR8OVbB9";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="unk+dOg+"
+From: Thomas Gleixner <tglx@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1746517352;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=mO+m+JaxLYq+BevXI0NK5P8AwDclsuWZdZ7YIumHxgU=;
+	b=WR8OVbB98rI62CJm0F0v0JgI2akbIkGT2OsobsosytZFD3JYGrWAL1v554FJkEAq7n+kSu
+	3tyMaHgcVBgQzzoHiHMaEI/DBmoXo8hulJavFf/XuDFVa/lsHVbdFyprVFa6d8NOCyBAyr
+	whlLIMrHobOJTJMHQYei0bjI3ATdosFgCFey4FlRLTm6xkGHFi5ahlkB9OK8Nz1qc3Icwd
+	b12mrbiB1NC80481lq5IxCqEUrU34cneTKG9iUJlqLhjGfhEWWToAf9f2BXKrSATa7pbF+
+	/lOQRvzVou/GAcx5mGGEcaMLbBbq9YWrfbPE3Bn1dqhdFXpYdVoxMcu8pfsAwg==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1746517352;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=mO+m+JaxLYq+BevXI0NK5P8AwDclsuWZdZ7YIumHxgU=;
+	b=unk+dOg+tXXJAMCzqGPhFJ3n4qZK94I3OgBtOvSILG+8LyTBnlfv1XldvMUpEb/ePs4PLM
+	B3TukPbHTzBzbsAw==
+To: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>,
+ Lorenzo Pieralisi <lpieralisi@kernel.org>, Krzysztof =?utf-8?Q?Wilczy?=
+ =?utf-8?Q?=C5=84ski?=
+ <kw@linux.com>, Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+ Rob Herring <robh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter
+ <jonathanh@nvidia.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Daniel
+ Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, Aaron Kling
+ <webgeek1234@gmail.com>
+Subject: Re: [PATCH v5 0/3] PCI: tegra: Allow building as a module
+In-Reply-To: <20250505-pci-tegra-module-v5-0-827aaac998ba@gmail.com>
+References: <20250505-pci-tegra-module-v5-0-827aaac998ba@gmail.com>
+Date: Tue, 06 May 2025 09:42:31 +0200
+Message-ID: <87ikmenq1k.ffs@tglx>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250430212159.2865803-1-hch@lst.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain
 
-This has maintaner ACKs for everything but the two dm and the one
-btrfs patch one.  Maybe we can queue up the series minus those three
-patches and then deal with them later?
+On Mon, May 05 2025 at 18:17, Aaron Kling via wrote:
+> - Copy commit message exactly word for word on patch 1, as required by reviewer
 
+That's not what I asked for at all. I asked you to read _ALL_ feedback I
+gave you. I give up now.
