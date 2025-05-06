@@ -1,37 +1,36 @@
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FEE01BC099;
-	Tue,  6 May 2025 20:49:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45FC21EB5DD;
+	Tue,  6 May 2025 20:49:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746564586; cv=none; b=TXdIgAJtwNYIBa4hwt81HjoskiTu3W7TOlupZVxcGUGW5YZ4+s+YIShP/jwkpo5hTo+G/KBrAfncLQtu3FXXr5FynJXOiLwwUGJVA15Wx7jSeE1BMgx2/C5xDxcM6A+lyGGq982C8hrg27PG317PY4N1iCpucTS2r8XLt8Hovvk=
+	t=1746564587; cv=none; b=RcfdfIUgH+Zv/WsULU/7ncKolSV+3rOVemQaxOwUqGrc7G5zdM8n6BPpAKBAE7eWvRp+xCIpc8JV3uYAsXrvFlH/4GTwJCUtTbNy0ZqJjitmeOUwRdOVWUY4FqVht0/yOY8e+gukl5OG90Ram6qZhFwmwqvBLdFaHOvaigvgHZk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746564586; c=relaxed/simple;
-	bh=RpxsMctV1jrsDxcHCIc3Gn9iSl/41S+1uDF9v0s8jeg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ncT3STN2vHrAXC4dcMKJJqgBM0m6tcvfNryq35LPFXMmiHepc9N8f+IjTYj8Iz9dxWvq1nI/FadyX+zTYNt750Cf5OZh8zUsU7ksrtPDDxwidOhR1Ug78dsp7v5M6siRrdqhCiU3XvbAsbM0Mm5ASVJyLryZQpccSP2uc0xRfVk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=YwQlPv5u; arc=none smtp.client-ip=79.96.170.134
+	s=arc-20240116; t=1746564587; c=relaxed/simple;
+	bh=3ifhBa8IsbFHOoBX5X+2uisAdJUzd51bhh3lYFD8pJo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=JblbrVMRDy8yfIH4B6OCRp+wRmNlInHm6c8xfO+3dVE0dW3ijtto3IJBnYWm+zSFQEBTZjExQQBE87cRBnihc0DY7KXpDCBYcE/70HM1vWulQtDv0kD7lRPLj7N9NbGkrKBTB8EAlEi/j27rDwsjH2K08f5OQor3aVnLHPW7iB8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=o8ZiNbMj; arc=none smtp.client-ip=79.96.170.134
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="YwQlPv5u"
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="o8ZiNbMj"
 Received: from kreacher.localnet (unknown [217.114.34.19])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 3CB24666BB3;
-	Tue,  6 May 2025 22:49:37 +0200 (CEST)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 26541666BB5;
+	Tue,  6 May 2025 22:49:38 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1746564577;
-	bh=RpxsMctV1jrsDxcHCIc3Gn9iSl/41S+1uDF9v0s8jeg=;
+	s=dkim; t=1746564578;
+	bh=3ifhBa8IsbFHOoBX5X+2uisAdJUzd51bhh3lYFD8pJo=;
 	h=From:Subject:Date;
-	b=YwQlPv5ukebRlsVl2efKN6GTenU9JpNZnvmJhKq+wJsa6HXdUQiX++My/3I+6b7vs
-	 2nJus3ne6UhMvmKjJ36/0kKyAh3VH34Au6C/H7ielmAEF0b7IKSuzgZ0XUi20bQhbc
-	 i1UmK94w7e6XQCdMgcEA90DIfqnInBtys3A5K38MYpyGYbyKZ8Ly4ELnqV/eHY5Sgd
-	 zesgNxLUs6HZyiqYB5Bxt2BXmkMMHgAS3oTSk5XwvftwTHGTTCc7CA+2Z8kkvtjau+
-	 BI/wt2KKbEqo+ngkPdMR1ZXDzpUnWh8LuHD1eCp+NoF8dYtwBto9MuCL88X64Joy9M
-	 08DblzFhSwaKQ==
+	b=o8ZiNbMjd2E/slvetW65vMCFZpkGwqOyrGH5a//PblFJiZ537EZtZZUGe/u2RGjZM
+	 ey1JoaC+viV+QoHlmdKI5/dojbiWBMxqlzuED699t2qDrpnLTV+c8y+9pUt5WFi2gc
+	 MjCCkHPQKGOPBvkJzfhS9FAZA9z8FwzajbKdtOaiQFnI/Lbs1DIFddDKVvcw7oIP4J
+	 bk80rvpFJh1gGyEYsiWjv9eKE+f3uOnTtNiYoaTEbuSXLGci3Vgj7mPFY3VrKfsQ+h
+	 pzYBYuF4+Y3p7hV9fB71yFAyeEaB/pvZXqbepwG1+8b5l7dSMt16dqrVF6wIHNetLn
+	 CVcmgpQvRf72g==
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
@@ -44,11 +43,10 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
  Pierre Gondois <pierre.gondois@arm.com>,
  Christian Loehle <christian.loehle@arm.com>
 Subject:
- [PATCH v2 1/7] cpufreq/sched: schedutil: Add helper for governor checks
-Date: Tue, 06 May 2025 22:34:31 +0200
-Message-ID: <3365956.44csPzL39Z@rjwysocki.net>
-In-Reply-To: <2999205.e9J7NaK4W3@rjwysocki.net>
-References: <2999205.e9J7NaK4W3@rjwysocki.net>
+ [PATCH v2 0/7] cpufreq: intel_pstate: Enable EAS on hybrid platforms without
+ SMT
+Date: Tue, 06 May 2025 22:32:47 +0200
+Message-ID: <2999205.e9J7NaK4W3@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -60,114 +58,74 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 217.114.34.19
 X-CLIENT-HOSTNAME: 217.114.34.19
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvkeegleekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppedvudejrdduudegrdefgedrudelnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddujedruddugedrfeegrdduledphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomheprhhjfiesrhhjfiihshhotghkihdrnhgvthdpnhgspghrtghpthhtohepuddupdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhukhgrshiirdhluhgsrgesrghrmhdrtghomhdprhgtphhtthhopehpvghtvghriiesihhnfhhrrgguvggrugdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdh
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvkeegleekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepvddujedruddugedrfeegrdduleenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudejrdduudegrdefgedrudelpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeduuddprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtohepphgvthgvrhiisehinhhfrhgruggvrggurdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdh
 X-DCC--Metrics: v370.home.net.pl 1024; Body=11 Fuz1=11 Fuz2=11
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Everyone,
 
-Add a helper for checking if schedutil is the current governor for
-a given cpufreq policy and use it in sched_is_eas_possible() to avoid
-accessing cpufreq policy internals directly from there.
+This is a new (and most likely final) version of
 
-No intentional functional impact.
+https://lore.kernel.org/linux-pm/3344336.aeNJFYEL58@rjwysocki.net/
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Reviewed-by: Christian Loehle <christian.loehle@arm.com>
-Tested-by: Christian Loehle <christian.loehle@arm.com>
-Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
----
+The most significant difference between it and the above is that schedutil is
+now required for EAS to be enabled, like on the other platforms using EAS,
+which means that intel_pstate needs to operate in the passive mode in order
+to use it (the most straightforward way to switch it over to the passive mode
+is to write "passive" to /sys/devices/system/cpu/intel_pstate/status).
 
-v1 -> v2: Pick up tags
+Accordingly, the changes that were needed for EAS to work without schedutil are
+not needed any more, so there is one patch less in the series because of that
+and patch [5/7] is simpler than its previous version because some changes made
+by it are not necessary any more.
 
----
- include/linux/cpufreq.h          |    9 +++++++++
- kernel/sched/cpufreq_schedutil.c |    9 +++++++--
- kernel/sched/sched.h             |    2 --
- kernel/sched/topology.c          |    6 +++---
- 4 files changed, 19 insertions(+), 7 deletions(-)
+Another patch that has been dropped is
 
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -650,6 +650,15 @@
- struct cpufreq_governor *cpufreq_default_governor(void);
- struct cpufreq_governor *cpufreq_fallback_governor(void);
- 
-+#ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
-+bool sugov_is_governor(struct cpufreq_policy *policy);
-+#else
-+static inline bool sugov_is_governor(struct cpufreq_policy *policy)
-+{
-+	return false;
-+}
-+#endif
-+
- static inline void cpufreq_policy_apply_limits(struct cpufreq_policy *policy)
- {
- 	if (policy->max < policy->cur)
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -630,7 +630,7 @@
- 
- /********************** cpufreq governor interface *********************/
- 
--struct cpufreq_governor schedutil_gov;
-+static struct cpufreq_governor schedutil_gov;
- 
- static struct sugov_policy *sugov_policy_alloc(struct cpufreq_policy *policy)
- {
-@@ -909,7 +909,7 @@
- 	WRITE_ONCE(sg_policy->limits_changed, true);
- }
- 
--struct cpufreq_governor schedutil_gov = {
-+static struct cpufreq_governor schedutil_gov = {
- 	.name			= "schedutil",
- 	.owner			= THIS_MODULE,
- 	.flags			= CPUFREQ_GOV_DYNAMIC_SWITCHING,
-@@ -927,4 +927,9 @@
- }
- #endif
- 
-+bool sugov_is_governor(struct cpufreq_policy *policy)
-+{
-+	return policy->governor == &schedutil_gov;
-+}
-+
- cpufreq_governor_init(schedutil_gov);
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -3509,8 +3509,6 @@
- 	return static_branch_unlikely(&sched_energy_present);
- }
- 
--extern struct cpufreq_governor schedutil_gov;
--
- #else /* ! (CONFIG_ENERGY_MODEL && CONFIG_CPU_FREQ_GOV_SCHEDUTIL) */
- 
- #define perf_domain_span(pd) NULL
---- a/kernel/sched/topology.c
-+++ b/kernel/sched/topology.c
-@@ -213,7 +213,7 @@
- {
- 	bool any_asym_capacity = false;
- 	struct cpufreq_policy *policy;
--	struct cpufreq_governor *gov;
-+	bool policy_is_ready;
- 	int i;
- 
- 	/* EAS is enabled for asymmetric CPU capacity topologies. */
-@@ -258,9 +258,9 @@
- 			}
- 			return false;
- 		}
--		gov = policy->governor;
-+		policy_is_ready = sugov_is_governor(policy);
- 		cpufreq_cpu_put(policy);
--		if (gov != &schedutil_gov) {
-+		if (!policy_is_ready) {
- 			if (sched_debug()) {
- 				pr_info("rd %*pbl: Checking EAS, schedutil is mandatory\n",
- 					cpumask_pr_args(cpu_mask));
+https://lore.kernel.org/linux-pm/1964444.taCxCBeP46@rjwysocki.net/
+
+because it didn't take CPU online into account properly and it is not essential
+for the current hardware anyway.
+
+There is a new patch, [7/7], which adds CAS/EAS/hybrid support description to
+the intel_pstate admin-guide documentation.
+
+The following paragraph from the original cover letter still applies:
+
+"The underlying observation is that on the platforms targeted by these changes,
+Lunar Lake at the time of this writing, the "small" CPUs (E-cores), when run at
+the same performance level, are always more energy-efficient than the "big" or
+"performance" CPUs (P-cores).  This means that, regardless of the scale-
+invariant utilization of a task, as long as there is enough spare capacity on
+E-cores, the relative cost of running it there is always lower."
+
+The first 2 patches depend on the current cpufreq material queued up for 6.16
+in linux-pm.git/linux-next (and in linux-next proper) and are not really
+depended on by the rest of the series, but I've decided to include them into
+this series because they have been slightly updated since the previous version,
+mostly to take review feedback into account (I'm going to queue them up for
+6.16 shortly because they don't appear to be objectionable).
+
+The next 2 patches (Energy Model code changes) were reviewed previously, but
+they are only needed because of patch [5/7].
+
+Patch [5/7] has not changed much except that some changes made by the previous
+version have been dropped from it.  Also its changelog has been updated.  It
+causes perf domains to be registered per CPU and in addition to the primary cost
+component, which is related to the CPU type, there is a small component
+proportional to performance whose role is to help balance the load between CPUs
+of the same type.
+
+The expected effect is still that the CPUs of the "low-cost" type will be
+preferred so long as there is enough spare capacity on any of them.
+
+Patch [6/7] has been updated to walk all of the cache leaves and look for
+the ones with level equal to 3 because the check used in the previous version
+does not always work.
+
+The documentation patch, [7/7], is new.
+
+Please refer to the individual patch changelogs for details.
+
+Thanks!
 
 
 
