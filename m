@@ -1,131 +1,110 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f179.google.com (mail-pl1-f179.google.com [209.85.214.179])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45FC21EB5DD;
-	Tue,  6 May 2025 20:49:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0052219EB6;
+	Tue,  6 May 2025 22:01:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746564587; cv=none; b=RcfdfIUgH+Zv/WsULU/7ncKolSV+3rOVemQaxOwUqGrc7G5zdM8n6BPpAKBAE7eWvRp+xCIpc8JV3uYAsXrvFlH/4GTwJCUtTbNy0ZqJjitmeOUwRdOVWUY4FqVht0/yOY8e+gukl5OG90Ram6qZhFwmwqvBLdFaHOvaigvgHZk=
+	t=1746568862; cv=none; b=Lzdla03UFuSsQaO1NEYVXeIw9bc8vLRQ2iHHy/hyLLGXK0zGeFUInDCgUBIzqFoQGsFeo8wAiq+pWIoCv1WnR9OKMRfL0RSPFy0OC3u0jMfuvRFOOK7EI/MWHtW3nFChyya6sY1p9xxkdtxV8MFhBdIP2wXhMZ77oIrVNxTJh6o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746564587; c=relaxed/simple;
-	bh=3ifhBa8IsbFHOoBX5X+2uisAdJUzd51bhh3lYFD8pJo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=JblbrVMRDy8yfIH4B6OCRp+wRmNlInHm6c8xfO+3dVE0dW3ijtto3IJBnYWm+zSFQEBTZjExQQBE87cRBnihc0DY7KXpDCBYcE/70HM1vWulQtDv0kD7lRPLj7N9NbGkrKBTB8EAlEi/j27rDwsjH2K08f5OQor3aVnLHPW7iB8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=o8ZiNbMj; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1746568862; c=relaxed/simple;
+	bh=LV0ruNcHRpMJi2vfvfpRfLtobecYu0JIoRgAf4DBbYU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=eMZBiQnyPggh1FVPUbKFTM5sdmM4F1IjH3LnCFDVxfzN1dLb6kr8VScyRsD5UoNcXVc3P2QwXrB5CtjmjA4vO5a19zW6Lw+D05CP/AvA7crut45XoexdAZQcPonT5mFFmxDTIHSK/F6k143z35XDwUMiKnX6TejpMCV0iqCrQUs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=OkkVivCL; arc=none smtp.client-ip=209.85.214.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="o8ZiNbMj"
-Received: from kreacher.localnet (unknown [217.114.34.19])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 26541666BB5;
-	Tue,  6 May 2025 22:49:38 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1746564578;
-	bh=3ifhBa8IsbFHOoBX5X+2uisAdJUzd51bhh3lYFD8pJo=;
-	h=From:Subject:Date;
-	b=o8ZiNbMjd2E/slvetW65vMCFZpkGwqOyrGH5a//PblFJiZ537EZtZZUGe/u2RGjZM
-	 ey1JoaC+viV+QoHlmdKI5/dojbiWBMxqlzuED699t2qDrpnLTV+c8y+9pUt5WFi2gc
-	 MjCCkHPQKGOPBvkJzfhS9FAZA9z8FwzajbKdtOaiQFnI/Lbs1DIFddDKVvcw7oIP4J
-	 bk80rvpFJh1gGyEYsiWjv9eKE+f3uOnTtNiYoaTEbuSXLGci3Vgj7mPFY3VrKfsQ+h
-	 pzYBYuF4+Y3p7hV9fB71yFAyeEaB/pvZXqbepwG1+8b5l7dSMt16dqrVF6wIHNetLn
-	 CVcmgpQvRf72g==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Morten Rasmussen <morten.rasmussen@arm.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
- Pierre Gondois <pierre.gondois@arm.com>,
- Christian Loehle <christian.loehle@arm.com>
-Subject:
- [PATCH v2 0/7] cpufreq: intel_pstate: Enable EAS on hybrid platforms without
- SMT
-Date: Tue, 06 May 2025 22:32:47 +0200
-Message-ID: <2999205.e9J7NaK4W3@rjwysocki.net>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OkkVivCL"
+Received: by mail-pl1-f179.google.com with SMTP id d9443c01a7336-22e4db05fe8so11072595ad.0;
+        Tue, 06 May 2025 15:01:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1746568860; x=1747173660; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=+rDcZ92GkQmefn+4rDVGL9lHZUyx4g109kWVrq63bKg=;
+        b=OkkVivCLY0i5AqV+/Cg9TYSPg0MVC2BsseD5YsQ3CGgGNJ7vGKStuOlGW38CWA+Wyw
+         OKu9p2+Htb0YPuconR+hDzXobRmTmUBx+bw7yVbJkOOYV3zDMmOxG6X3wQlrT5DUEJ7A
+         ft1Sz2S5DyyVarAB8enXq8KKH0DW31UHq2uD0R54rBOHl+jXbj4t44v88vT7ZhwgPkS8
+         W4O3Hl4RN/1rgvUtirbozHwdf6VKaBq/lozs2zPSefcq+JGUVzPKazZi17h54vo0W00b
+         CDvQCsyeYn1GJwJwAI9ztcagvC6LAK/Q+tttwWg4pVd6gEGVm0kNMnmxZGysARmIOXwA
+         Yjug==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1746568860; x=1747173660;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=+rDcZ92GkQmefn+4rDVGL9lHZUyx4g109kWVrq63bKg=;
+        b=frU+thAFOHGo8I52jlxUfmSxaPPH8nHibWSd3mdiIVqBkovooJpeqZX5ou+apKED4c
+         3JbicnM2FCyxNFBKbg3zxgPwj2GbBtB+yjBtZFZscNJSYbFyh7lVFy+66N8Mie3HwzwD
+         9+yntWzBzTBk5pDRqlMokaY8bZBg1XPojFJcalCGBLTehUt5HvX3cM2xzM6Le7V/Bdd0
+         3cBTAIUcqjS0k6MQZb07Hzx+Vn9ZLvCvKnj9wWDPy+IaBqIiuAT/C1sD7WZEp7j2W3zF
+         edsLd6pKwZ7O+YDfCtdEiXxyXyiK/DavW1mMhrD+d0jifprO0iwvimB7aBV3zujXU9IT
+         Tl2Q==
+X-Forwarded-Encrypted: i=1; AJvYcCVC2bhpn3waLTC1pWR6QOsbhcG/LZqKR9S4m/mmqmJJaNIFkNDPltLG8Gjoy0k8L9FuSicrEtrIGWqLje0=@vger.kernel.org, AJvYcCVmfomg1w2j4Lt7fkirhu8pXrW0ck+VF/xaSZO/OmCgEv9d6fpXz5B6k0LOMb1ieTovUmzg7q4/Jcc=@vger.kernel.org
+X-Gm-Message-State: AOJu0YwCzZUC9q4pPHCOu54vtmmZBKkoNjzt2tyYly9kDO3xouC6r/BG
+	ee9tJyueEUVCbdyY5GILlVqqj6FZYQDFn2bvrqIqf62t97cXHrjU
+X-Gm-Gg: ASbGncu5bZ8cQLo2Rg6cHv0mzY0ANXbU3trzKuHidT7BcC1MeGmsPwoz09FEKwsqYhg
+	FZRSC11Ki07l8tSyr9EloDo2GQ1oNWAYZwhefM5mWa0bZV1Abz4vnl6oz/jb+u04bxL5E3JbeyG
+	Y9twMk+9uYMlLk4mNj883QpR6UH9wwKSYcAF1FD7M9FWqzL7jZamZ9DB48wW4xvZSIlxTwBqEUO
+	f3y4GcjLMTjhYEGWxsYk+ynTereh2E5ZC7A7ohywdQNovlAjDvC4LY26Jz1SnfJG0IoroUb1HR2
+	1A/Ua2Z2mgoFYgxQ3kAxBPiNcLT0H8AgJznjxDlK4jv4NB3sNXpZsFuXxdHUvyt3iy8BJ1RP5Mb
+	goNspzoCeGbkuPw3Abxwcnszi0vfNWv0/lxk=
+X-Google-Smtp-Source: AGHT+IENa9/kGarw9mxc/t5RKacJDRPAwdfKQlLEIUah+OKX/huZhyAfxQFY94dTpj+9W/i6cXNtxw==
+X-Received: by 2002:a17:902:e743:b0:21f:61a9:be7d with SMTP id d9443c01a7336-22e5edfa34bmr10893105ad.49.1746568859875;
+        Tue, 06 May 2025 15:00:59 -0700 (PDT)
+Received: from server-kernel.moonheelee.internal (d173-180-147-14.bchsia.telus.net. [173.180.147.14])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-22e1521fb3esm78746415ad.121.2025.05.06.15.00.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 06 May 2025 15:00:59 -0700 (PDT)
+From: Moon Hee Lee <moonhee.lee.ca@gmail.com>
+To: lukasz.luba@arm.com,
+	rafael@kernel.org
+Cc: len.brown@intel.com,
+	pavel@kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	skhan@linuxfoundation.org,
+	linux-kernel-mentees@lists.linux.dev,
+	Moon Hee Lee <moonhee.lee.ca@gmail.com>
+Subject: [PATCH v2] docs: fix typo in energy-model.rst
+Date: Tue,  6 May 2025 15:00:57 -0700
+Message-ID: <20250506220057.5589-1-moonhee.lee.ca@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 217.114.34.19
-X-CLIENT-HOSTNAME: 217.114.34.19
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvkeegleekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgeffhfdujeelhfdtgeffkeetudfhtefhhfeiteethfekvefgvdfgfeeikeeigfehnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepvddujedruddugedrfeegrdduleenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudejrdduudegrdefgedrudelpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpehrjhifsehrjhifhihsohgtkhhirdhnvghtpdhnsggprhgtphhtthhopeduuddprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhkrghsiidrlhhusggrsegrrhhmrdgtohhmpdhrtghpthhtohepphgvthgvrhiisehinhhfrhgruggvrggurdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=11 Fuz1=11 Fuz2=11
+Content-Transfer-Encoding: 8bit
 
-Hi Everyone,
+Fixes a grammar issue ("than" -> "then") and changes "re-use" to
+"reuse" for consistency with modern spelling.
 
-This is a new (and most likely final) version of
+Changes since v1:
+- Limited scope to .rst files excluding translations, using:
+  find Documentation/ \
+    -path Documentation/translations -prune -o \
+    -name '*.rst' -print | xargs codespell
 
-https://lore.kernel.org/linux-pm/3344336.aeNJFYEL58@rjwysocki.net/
+Signed-off-by: Moon Hee Lee <moonhee.lee.ca@gmail.com>
+---
+ Documentation/power/energy-model.rst | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-The most significant difference between it and the above is that schedutil is
-now required for EAS to be enabled, like on the other platforms using EAS,
-which means that intel_pstate needs to operate in the passive mode in order
-to use it (the most straightforward way to switch it over to the passive mode
-is to write "passive" to /sys/devices/system/cpu/intel_pstate/status).
-
-Accordingly, the changes that were needed for EAS to work without schedutil are
-not needed any more, so there is one patch less in the series because of that
-and patch [5/7] is simpler than its previous version because some changes made
-by it are not necessary any more.
-
-Another patch that has been dropped is
-
-https://lore.kernel.org/linux-pm/1964444.taCxCBeP46@rjwysocki.net/
-
-because it didn't take CPU online into account properly and it is not essential
-for the current hardware anyway.
-
-There is a new patch, [7/7], which adds CAS/EAS/hybrid support description to
-the intel_pstate admin-guide documentation.
-
-The following paragraph from the original cover letter still applies:
-
-"The underlying observation is that on the platforms targeted by these changes,
-Lunar Lake at the time of this writing, the "small" CPUs (E-cores), when run at
-the same performance level, are always more energy-efficient than the "big" or
-"performance" CPUs (P-cores).  This means that, regardless of the scale-
-invariant utilization of a task, as long as there is enough spare capacity on
-E-cores, the relative cost of running it there is always lower."
-
-The first 2 patches depend on the current cpufreq material queued up for 6.16
-in linux-pm.git/linux-next (and in linux-next proper) and are not really
-depended on by the rest of the series, but I've decided to include them into
-this series because they have been slightly updated since the previous version,
-mostly to take review feedback into account (I'm going to queue them up for
-6.16 shortly because they don't appear to be objectionable).
-
-The next 2 patches (Energy Model code changes) were reviewed previously, but
-they are only needed because of patch [5/7].
-
-Patch [5/7] has not changed much except that some changes made by the previous
-version have been dropped from it.  Also its changelog has been updated.  It
-causes perf domains to be registered per CPU and in addition to the primary cost
-component, which is related to the CPU type, there is a small component
-proportional to performance whose role is to help balance the load between CPUs
-of the same type.
-
-The expected effect is still that the CPUs of the "low-cost" type will be
-preferred so long as there is enough spare capacity on any of them.
-
-Patch [6/7] has been updated to walk all of the cache leaves and look for
-the ones with level equal to 3 because the check used in the previous version
-does not always work.
-
-The documentation patch, [7/7], is new.
-
-Please refer to the individual patch changelogs for details.
-
-Thanks!
-
-
+diff --git a/Documentation/power/energy-model.rst b/Documentation/power/energy-model.rst
+index ada4938c37e5..490ddd483f46 100644
+--- a/Documentation/power/energy-model.rst
++++ b/Documentation/power/energy-model.rst
+@@ -230,7 +230,7 @@ Drivers must provide a pointer to the allocated and initialized new EM
+ and will be visible to other sub-systems in the kernel (thermal, powercap).
+ The main design goal for this API is to be fast and avoid extra calculations
+ or memory allocations at runtime. When pre-computed EMs are available in the
+-device driver, than it should be possible to simply re-use them with low
++device driver, then it should be possible to simply reuse them with low
+ performance overhead.
+ 
+ In order to free the EM, provided earlier by the driver (e.g. when the module
+-- 
+2.43.0
 
