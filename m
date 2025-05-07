@@ -1,176 +1,230 @@
-Received: from mail-wr1-f49.google.com (mail-wr1-f49.google.com [209.85.221.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82C812135CB
-	for <linux-pm@vger.kernel.org>; Wed,  7 May 2025 07:29:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 884A6223DE7
+	for <linux-pm@vger.kernel.org>; Wed,  7 May 2025 07:45:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746602971; cv=none; b=b7PuNrHG9OXdMOgwfSr4xlc1j2JjasSrW2uOYLWDwBRripUdpp5PHWB13jczcqWulD7WHj4tp+Gyo7yZSE2kPrFwV/lEosyNAdKgrUlFs0Iz5B80a3p+flx9wpl6DL4uMFSzz7SgbjINpJRu2BO8GjBApxlIw7FlPYhBHkSdfaY=
+	t=1746603907; cv=none; b=n1C7rACUJxZ75HLjVWq2rXlWhkcKa3sQkvGXFzFXPjTzF/Gx6r5wzvLzk40WIwahBILdIOF6mXwoVvU+FqvskuS6WbKc42SCs/FxK5Uye96cVmYiaQUsTYiRaBJZpQgtGXm8aKWZ5aU8EPsBuhn5SdWzsMIFoXzNP4x8shA+R5k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746602971; c=relaxed/simple;
-	bh=3ofFTovtnJvX5M/xuhvl18Z0GfLNgQGP2MJvinEcTik=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=CpeODfDuzNZ3dFOp5X7QPqpq2lI0rsNpX7mh+7Dbuv9E+Oan+gEtOHPZmnAjJjXmF3w23aOTHHG7jHJxucSa0H3alhKls8AQmPJ02g0BxpMsGtgXUAMKsVcQ42iSL4NWAFZqawl62D5TT9mOcOOCHogAmQK25rXPMSX6o46E3Ds=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=lqcX8HWj; arc=none smtp.client-ip=209.85.221.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1746603907; c=relaxed/simple;
+	bh=i3iNoejldEwfu1pudT27J8wiNZ81ZODfSVYRzrrKNjg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=YKVvSIx386tK1l46eYk8XzXDP4vNMNeBFeY3wA7aZn3IPPwD0gGGQCnTsJdVqkFIW90trVmG84HsWGr1+vsxZFUpWXQ82XANKBalBwlk0BuwnXY9OMBLnOVrfMFh/AvwdNbJr2ikHn+E0OU+E6iNmnNVAzHadNZOLAm61dw6q3g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=W6QpABJK; arc=none smtp.client-ip=192.198.163.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="lqcX8HWj"
-Received: by mail-wr1-f49.google.com with SMTP id ffacd0b85a97d-39c1efc4577so3366319f8f.0
-        for <linux-pm@vger.kernel.org>; Wed, 07 May 2025 00:29:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1746602968; x=1747207768; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=exh3b5R7L77rlGB9XDLUTNFBk7LtXN6j6kHQ/wrFppg=;
-        b=lqcX8HWjoX36WHrfdPUWIjNj0BPu4jxR/vDN0sjAWhBJQ7QMdXwwwRn20Na67XyaNs
-         zHRWU9RdQEm52VDinC1WP3zhufhSSap2ix1APn4UVW706vlBGsTTSr7E1kOYi/Z0yrHb
-         TTYmpP3N0NXBHnieEZKmqSuC9UsAvDTniQz82qqKpTkd+wKP8fiHBBQR3gWkSjKtXjaE
-         u1K0iGAv7JdeeqgIYPqdeTRQ2q6VfzsWxDU1vLI/y+pkJZ5YicQstZdEmoPGpih70KZ5
-         IpzulRQDCE2YGYLBW6+NN+uJmfQmESsHDdaVmVMcnOWUgDLz7gFX//YoL6mv3zx4Q++8
-         9xoQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1746602968; x=1747207768;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=exh3b5R7L77rlGB9XDLUTNFBk7LtXN6j6kHQ/wrFppg=;
-        b=bkQKkvyrKYD1BNjKr0HvrNpHFxqg2xGQK0proWrei44q6SPcNPWrORzH2HOBhvc0U1
-         EUxFiBNGTrbe3m/vPmJOq2gu52Z1peMIN8tu7UJsEb61Mn+pmYotBNInEQOIpysScMot
-         kaCxv3NCesdz/N5vqwxDnhBrH4jQckRhY5hIgt8A9s3W5XnEZgBPvGWlOFgCshVZk6kG
-         mAbj9jnTcJa0x4uUdoPMJybHpz+SyEbex28Vz7itnorL3hzoMyfSSnbpaOs2P1bwDb6/
-         g9gubWNPqwfjoTVfgqvzljsZbQyfr5YTxceW/L3dMjoe2FqNEY+fOtFVOh5opwWcHrQO
-         IT3Q==
-X-Forwarded-Encrypted: i=1; AJvYcCVQIAVYFPNX6TlRXuoGCl0IpFv8t3RN14uVaU00OWCw7M009NMLKTP1XiH3o1JCmn2tfQy9R2FuAw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywosz2NaBiMZSQHaF1ctmu+GDb/UtJ0T2YWIfX4KLcdElJpJg22
-	WE3sqAz4QpT1CMkZPsjBwXACySkFqSn1Jr4HoVw+G6Yvbmcv9GyqOHKpBEiinBA=
-X-Gm-Gg: ASbGncvRN+ARZ3K4rviwssDwcjMID5jEKtc2cBfu2MXap1EnYY5csGWBz91xLq6FFVX
-	Q9+BFwiwQpVjlHBpHoltunzQtDrAEiEeSRiE3OGkFjSr1ID9twS64hKT8Nq3q50b4s01Dlg5hRk
-	dY7VFognnMLOrI6A2ACTMRfH7L+x4OrRn4SzH/mU4wQsuK6OCfFTwX5u5mGBn4A1NMBgdHLI9Zm
-	78fl/pYejlAccwKxXRE1/RrC9S51XxtcFG4dgiQzE3DfwFgtWKOzTo0k9IpkEB2kJyoUP3Kf53n
-	J1bU2l8OfeINYQYd1I80bVdINQsYfhkDqb489sUCJ0/vW636NUJRcJ/tmWtqKEQof1Tavd5AF1J
-	xVtRa
-X-Google-Smtp-Source: AGHT+IEH+UhigDV51ycf06z5unZsxUS1KzhCHNWdikOd5Jo+ShmTKo/P+eDgWolx1p8pfsovDvmOIg==
-X-Received: by 2002:a5d:64e7:0:b0:38d:b325:471f with SMTP id ffacd0b85a97d-3a0b4a16497mr2004847f8f.15.1746602967790;
-        Wed, 07 May 2025 00:29:27 -0700 (PDT)
-Received: from [192.168.10.46] (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-3a0b350f604sm2547973f8f.21.2025.05.07.00.29.26
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 07 May 2025 00:29:27 -0700 (PDT)
-Message-ID: <c0e9a395-41d1-4edc-a759-f958ea10387a@linaro.org>
-Date: Wed, 7 May 2025 09:29:26 +0200
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="W6QpABJK"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1746603906; x=1778139906;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=i3iNoejldEwfu1pudT27J8wiNZ81ZODfSVYRzrrKNjg=;
+  b=W6QpABJKDToV/b3mcrNm9QEkK4zuK3nxtyCkB9GpsigHnkcOdtJiZ/oe
+   1+yIsSIqr/XBL/CAtjURO2bbyaBWdXgHyqfH0Ey2bdqXzcLiSGkVYXn8F
+   r9I5kspkDJzzML0Ls8OMBf5qP+FIpu4sIM1JaDW5w07RudsOWInn3cRKG
+   0BLViWDrglr60BTfLDkGiJwbUn8afJtVomTiqudmvYaWGIB2ldTDySMyn
+   yEs45hJnYflahDDOSlbCa3XBO0hJBen20+Iokg6gieD1h0pSyv5xTJiK0
+   TsiBUYVrXjIKR/3VySrwbxwk77Fk3mjbTQY46rTvQEAQlAjsA4XKll42A
+   w==;
+X-CSE-ConnectionGUID: koTFWPavRC2baLIoKHlo6A==
+X-CSE-MsgGUID: 1V90AYHET46R08CIs4M+Fg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11425"; a="52133198"
+X-IronPort-AV: E=Sophos;i="6.15,268,1739865600"; 
+   d="scan'208";a="52133198"
+Received: from fmviesa007.fm.intel.com ([10.60.135.147])
+  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 May 2025 00:45:03 -0700
+X-CSE-ConnectionGUID: wbFxOg/ZReaIggV/UXRZwg==
+X-CSE-MsgGUID: FGKt83fsS+24ZPRJt8PinQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.15,268,1739865600"; 
+   d="scan'208";a="135875088"
+Received: from lkp-server01.sh.intel.com (HELO 1992f890471c) ([10.239.97.150])
+  by fmviesa007.fm.intel.com with ESMTP; 07 May 2025 00:44:52 -0700
+Received: from kbuild by 1992f890471c with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1uCZST-0007LP-3C;
+	Wed, 07 May 2025 07:44:49 +0000
+Date: Wed, 7 May 2025 15:44:27 +0800
+From: kernel test robot <lkp@intel.com>
+To: Mario Limonciello <superm1@kernel.org>, mario.limonciello@amd.com,
+	rafael@kernel.org, len.brown@intel.com, pavel@kernel.org
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH] PM: hibernate: Explicitly set PM_SUSPEND_MAX at
+ hibernate entry
+Message-ID: <202505071516.juQNugSC-lkp@intel.com>
+References: <20250501215838.2501827-1-superm1@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 2/2] thermal: Add support for Airoha EN7581 thermal
- sensor
-To: Christian Marangi <ansuelsmth@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20250226003608.8973-1-ansuelsmth@gmail.com>
- <20250226003608.8973-2-ansuelsmth@gmail.com>
- <a9f58437-5992-4042-85cd-b9150c4855ff@linaro.org>
- <6814de0d.7b0a0220.2add1a.0689@mx.google.com>
-Content-Language: en-US
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <6814de0d.7b0a0220.2add1a.0689@mx.google.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250501215838.2501827-1-superm1@kernel.org>
 
-On 02/05/2025 17:00, Christian Marangi wrote:
-> On Fri, May 02, 2025 at 03:30:56PM +0200, Daniel Lezcano wrote:
+Hi Mario,
 
-[ ... ]
+kernel test robot noticed the following build errors:
 
->>> +static int airoha_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
->>> +{
->>> +	struct airoha_thermal_priv *priv = thermal_zone_device_priv(tz);
->>> +	int min, max, avg_temp, temp_adc;
->>> +	int i;
->>> +
->>> +	/* Get the starting temp */
->>> +	temp_adc = airoha_get_thermal_ADC(priv);
->>> +	min = temp_adc;
->>> +	max = temp_adc;
->>> +	avg_temp = temp_adc;
->>> +
->>> +	/* Make 5 more measurement and average the temp ADC difference */
->>> +	for (i = 0; i < 5; i++) {
->>> +		temp_adc = airoha_get_thermal_ADC(priv);
->>> +		avg_temp += temp_adc;
->>> +		if (temp_adc > max)
->>> +			max = temp_adc;
->>> +		if (temp_adc < min)
->>> +			min = temp_adc;
->>> +	}
->>> +	avg_temp = avg_temp - max - min;
->>> +	avg_temp /= 4;
+[auto build test ERROR on amd-pstate/linux-next]
+[also build test ERROR on amd-pstate/bleeding-edge linus/master v6.15-rc5 next-20250506]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Why 4 ? There is 5 samples no ? one before the loop and 4 with the loop
+url:    https://github.com/intel-lab-lkp/linux/commits/Mario-Limonciello/PM-hibernate-Explicitly-set-PM_SUSPEND_MAX-at-hibernate-entry/20250502-060011
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git linux-next
+patch link:    https://lore.kernel.org/r/20250501215838.2501827-1-superm1%40kernel.org
+patch subject: [PATCH] PM: hibernate: Explicitly set PM_SUSPEND_MAX at hibernate entry
+config: x86_64-randconfig-071-20250502 (https://download.01.org/0day-ci/archive/20250507/202505071516.juQNugSC-lkp@intel.com/config)
+compiler: clang version 20.1.2 (https://github.com/llvm/llvm-project 58df0ef89dd64126512e4ee27b4ac3fd8ddf6247)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250507/202505071516.juQNugSC-lkp@intel.com/reproduce)
 
->>> +	*temp = RAW_TO_TEMP(priv, avg_temp);
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202505071516.juQNugSC-lkp@intel.com/
 
-Does RAW_TO_TEMP() on a average raw adc value report the same value as 
-an average of the temperature after their conversion ?
+All errors (new ones prefixed by >>):
 
->>> +	return 0;
->>> +}
-
-The routine is a bit confusing because of the initial adc read.
-
-avg_value = 0;
-min_value = INT_MAX;
-max_value = INT_MIN;
-
-for (i = 0; i < AIROHA_MAX_SAMPLES; i++) {
-	value = airoha_get_thermal_ADC(priv);
-	min_value = min(value, min_value);
-	max_value = max(value, max_value);
-	avg_value += value;
-}
-
-avg_value -= (min_value + max_value);
-avg_value /= AIROHA_MAX_SAMPLES;
-
->> Does this chip support the averaging with the filtered mode which prevent to
->> do this expensive calls when getting the temperature ?
->>
-> 
-> If you notice in this function we read directly from the ADC sensor to
-> have a more precise and realtime temperature.
-> 
-> Yes the thermal module support averaging (and this is what is set for
-> the critical temperature monitor) but since we base everything on
-> interrupt the expensive call is called only when the user poll the
-> temperature with sysfs.
-
-When the temperature reaches the threshold, the interrupt is fired which 
-in turn calls thermal_zone_device_update(). This lead to a polling from 
-the kernel at a higher rate with the governor taking cooling decision.
-
-> Do you prefer to use the thermal module entirely?
-
-It is up to you. I would say if the sensor has a hardware assistance to 
-compute the averaging while the CPU does something else it is better. 
-But if the filtered mode has the same issues than the LVTS, then it is 
-probably not worth it.
+>> kernel/power/hibernate.c:775:26: error: expression is not assignable
+     775 |         pm_suspend_target_state = PM_SUSPEND_MAX;
+         |         ~~~~~~~~~~~~~~~~~~~~~~~ ^
+   kernel/power/hibernate.c:856:26: error: expression is not assignable
+     856 |         pm_suspend_target_state = PM_SUSPEND_ON;
+         |         ~~~~~~~~~~~~~~~~~~~~~~~ ^
+   2 errors generated.
 
 
-[ ... ]
+vim +775 kernel/power/hibernate.c
 
-
+   741	
+   742	/**
+   743	 * hibernate - Carry out system hibernation, including saving the image.
+   744	 */
+   745	int hibernate(void)
+   746	{
+   747		bool snapshot_test = false;
+   748		unsigned int sleep_flags;
+   749		int error;
+   750	
+   751		if (!hibernation_available()) {
+   752			pm_pr_dbg("Hibernation not available.\n");
+   753			return -EPERM;
+   754		}
+   755	
+   756		/*
+   757		 * Query for the compression algorithm support if compression is enabled.
+   758		 */
+   759		if (!nocompress) {
+   760			strscpy(hib_comp_algo, hibernate_compressor, sizeof(hib_comp_algo));
+   761			if (!crypto_has_acomp(hib_comp_algo, 0, CRYPTO_ALG_ASYNC)) {
+   762				pr_err("%s compression is not available\n", hib_comp_algo);
+   763				return -EOPNOTSUPP;
+   764			}
+   765		}
+   766	
+   767		sleep_flags = lock_system_sleep();
+   768		/* The snapshot device should not be opened while we're running */
+   769		if (!hibernate_acquire()) {
+   770			error = -EBUSY;
+   771			goto Unlock;
+   772		}
+   773	
+   774		pr_info("hibernation entry\n");
+ > 775		pm_suspend_target_state = PM_SUSPEND_MAX;
+   776		pm_prepare_console();
+   777		error = pm_notifier_call_chain_robust(PM_HIBERNATION_PREPARE, PM_POST_HIBERNATION);
+   778		if (error)
+   779			goto Restore;
+   780	
+   781		ksys_sync_helper();
+   782	
+   783		error = freeze_processes();
+   784		if (error)
+   785			goto Exit;
+   786	
+   787		lock_device_hotplug();
+   788		/* Allocate memory management structures */
+   789		error = create_basic_memory_bitmaps();
+   790		if (error)
+   791			goto Thaw;
+   792	
+   793		error = hibernation_snapshot(hibernation_mode == HIBERNATION_PLATFORM);
+   794		if (error || freezer_test_done)
+   795			goto Free_bitmaps;
+   796	
+   797		if (in_suspend) {
+   798			unsigned int flags = 0;
+   799	
+   800			if (hibernation_mode == HIBERNATION_PLATFORM)
+   801				flags |= SF_PLATFORM_MODE;
+   802			if (nocompress) {
+   803				flags |= SF_NOCOMPRESS_MODE;
+   804			} else {
+   805			        flags |= SF_CRC32_MODE;
+   806	
+   807				/*
+   808				 * By default, LZO compression is enabled. Use SF_COMPRESSION_ALG_LZ4
+   809				 * to override this behaviour and use LZ4.
+   810				 *
+   811				 * Refer kernel/power/power.h for more details
+   812				 */
+   813	
+   814				if (!strcmp(hib_comp_algo, COMPRESSION_ALGO_LZ4))
+   815					flags |= SF_COMPRESSION_ALG_LZ4;
+   816				else
+   817					flags |= SF_COMPRESSION_ALG_LZO;
+   818			}
+   819	
+   820			pm_pr_dbg("Writing hibernation image.\n");
+   821			error = swsusp_write(flags);
+   822			swsusp_free();
+   823			if (!error) {
+   824				if (hibernation_mode == HIBERNATION_TEST_RESUME)
+   825					snapshot_test = true;
+   826				else
+   827					power_down();
+   828			}
+   829			in_suspend = 0;
+   830			pm_restore_gfp_mask();
+   831		} else {
+   832			pm_pr_dbg("Hibernation image restored successfully.\n");
+   833		}
+   834	
+   835	 Free_bitmaps:
+   836		free_basic_memory_bitmaps();
+   837	 Thaw:
+   838		unlock_device_hotplug();
+   839		if (snapshot_test) {
+   840			pm_pr_dbg("Checking hibernation image\n");
+   841			error = swsusp_check(false);
+   842			if (!error)
+   843				error = load_image_and_restore();
+   844		}
+   845		thaw_processes();
+   846	
+   847		/* Don't bother checking whether freezer_test_done is true */
+   848		freezer_test_done = false;
+   849	 Exit:
+   850		pm_notifier_call_chain(PM_POST_HIBERNATION);
+   851	 Restore:
+   852		pm_restore_console();
+   853		hibernate_release();
+   854	 Unlock:
+   855		unlock_system_sleep(sleep_flags);
+   856		pm_suspend_target_state = PM_SUSPEND_ON;
+   857		pr_info("hibernation exit\n");
+   858	
+   859		return error;
+   860	}
+   861	
 
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
