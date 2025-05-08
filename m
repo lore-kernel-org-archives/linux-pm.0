@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99FDC101C8;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF1A9208D0;
 	Thu,  8 May 2025 01:02:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746666155; cv=none; b=WcgZe4Vak+V8iiO2LjS6SOuyuZErsBdX30IxBrTWpiO5phU+FmBeJ5i0OzcEZ7Uim4KJF8cq+1als+9ZvKt0AmdzagKqxx1oQ6pN/UCiB3OJ1IevH+WE0lVaW4ijEwI4EbnRl0+PnFr6ZWPpUar/R+ODKZsprY71Dsee7N98y7c=
+	t=1746666155; cv=none; b=o/opnrqq0Vj4UK9T5ECALmL7+3lfL+jk27jpAlpDX3okzYR43x3Nr41wdC2vvOzyNKW4kvyFWF4ulQ/JiRQO5HjpLv73CjpxxWqQ6qHyHI+Wsmxsrw4M2SuK57ijnrhL4C+r9kz0yE04XDO/wyt91k/xrLdEfJU5YmZi/rJ8f/g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1746666155; c=relaxed/simple;
-	bh=LRcV+pKioj0dnQiQ87GE22M3+IfV3Fs50YQalR4s3E0=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=WNXwY7ckSJAWcIuINyZSE2stdnAXpqPGjkElD9Vt1iQr+1Ejf7rXWeFG8EdDzh5WnNJRuDVrzHacc3hF1x/8uBOw0nMykxKS4wyR/+3Y74k1moDVYAT58wLd41wBzDLLzw9Wz3WstqOxCsbcqwdrcHQWk8EXJ/sl32WfPYqhh4c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nD24P9E4; arc=none smtp.client-ip=10.30.226.201
+	bh=/7YObtV03/PH0CZkIklZ+NjmOVa5AkOnBVyqgm4mkLY=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=JTQvDBmmLwVyhUgLo/rW/OLzLRHIBQ51n6/XpEFDJwAsrN22MO8Rs4jLKh/PKDx+NZRmJv9BCdCFDaOLeGrD2hsoWZ4bYYUsJbmGz39YfITkktHGf5ecTPLEhXjfH94f1X4hVNBHGgRbGnEQ5NsrgOwLAXwipn7xIW5RpXU5Llk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=N3XYQq57; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nD24P9E4"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 113DDC4CEE2;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="N3XYQq57"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 4E4E8C4CEFA;
 	Thu,  8 May 2025 01:02:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1746666155;
-	bh=LRcV+pKioj0dnQiQ87GE22M3+IfV3Fs50YQalR4s3E0=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=nD24P9E4YbvjSSPqzb70ZEJaC1oGg1pD+DnierwAI2obq/mDgkBDEKm7er5y4h6Rh
-	 4gufBbGcbU7I9Qt9M+/hJv6m8DaEQIuTQ7X3nN3MjmdWm6jmqeTBd8dNppGcKyMdEl
-	 lCW8Sm461hJFz929LlYSeOBVOki3IkL9b5Z/4pC3vUsgE435MKyYUQ/nAIMAMjEWZF
-	 D5X72saPoOmh+bxqiSAjVGAfGvI/h+zvN7G1dJeQMacVOgefj3IojvXtsV4rcHqxHk
-	 hl70hR5b0+GvI8KOAJXDU3nEDbg4nD18PQUrWESLfAhIh2Jz/VIr2PUJeqEfPyQ+2v
-	 ub5HuKZ4zj/hA==
+	bh=/7YObtV03/PH0CZkIklZ+NjmOVa5AkOnBVyqgm4mkLY=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=N3XYQq57EQanZ0lGH4IfohlciKYAzxUIuXUM1a/Jlj7QQuWHeDLVQ4RPcHwecMQBR
+	 1/5kZFJ0/Dt96jkfeEitgtGioByy7sz+v03Eu85gWLNr/ZclRfYNQS2Q7dXxgM18jP
+	 1T7cKl35lLrqrH/Hd0cfxIisxEgjgc6Be86q3Bq6y3IRSdYuNcUKRlo7qNpYde4j3+
+	 pA16L+j90wI6v7widpuUQ/5Ln1AGPmS2AKM0F0X/QyTLxd8RDV4qzucvqp6lke14Q1
+	 JefYMj5im5BKG1WUwuCUN4La3tOdKR7l9oWkUbWUUGvs2/UPBZ28n+IqMghqBc0dkY
+	 Z0MKIh1/5skIg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 001D4C3ABC0;
-	Thu,  8 May 2025 01:02:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 460A5C3ABC6;
+	Thu,  8 May 2025 01:02:35 +0000 (UTC)
 From: Amit Sunil Dhamne via B4 Relay <devnull+amitsd.google.com@kernel.org>
-Subject: [PATCH v2 0/5] Add support for Battery Status & Battery Caps AMS
- in TCPM
-Date: Wed, 07 May 2025 18:00:21 -0700
-Message-Id: <20250507-batt_ops-v2-0-8d06130bffe6@google.com>
+Date: Wed, 07 May 2025 18:00:25 -0700
+Subject: [PATCH v2 4/5] power: supply: core: add vendor and product id
+ properties
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,10 +41,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIACUCHGgC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyjHQUlJIzE
- vPSU3UzU4B8JSMDI1MDY0ND3aTEkpL4/IJi3aRUw6QUc8PkRCNTEyWg8oKi1LTMCrBR0bG1tQD
- o5/1GWgAAAA==
-X-Change-ID: 20250311-batt_ops-be1bd71ca254
+Message-Id: <20250507-batt_ops-v2-4-8d06130bffe6@google.com>
+References: <20250507-batt_ops-v2-0-8d06130bffe6@google.com>
+In-Reply-To: <20250507-batt_ops-v2-0-8d06130bffe6@google.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, 
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
@@ -57,11 +56,11 @@ Cc: Kyle Tso <kyletso@google.com>, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, 
  linux-pm@vger.kernel.org, Amit Sunil Dhamne <amitsd@google.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1746666154; l=1861;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1746666154; l=4662;
  i=amitsd@google.com; s=20241031; h=from:subject:message-id;
- bh=LRcV+pKioj0dnQiQ87GE22M3+IfV3Fs50YQalR4s3E0=;
- b=3Id+Nk6+E6cUAu6NLSo6T6dh5n72Vz78BzucEQ2NbPWm4zzcW9Av99ytXVakATFYyAJxyWdry
- 7zaAHUj5dYkBMJpnELQcs7AoFNoVeswI2MeGakLMn6l4h9X2ehao/qt
+ bh=g9p/DCU+bGgdFEAH/ycTnIAAglqng7UgwLdvZfFI4iw=;
+ b=Yz1RUaHYwcb+mtpsdlRbZycn+wl+0jQ9bh7UaEA2QIuNOyFQIc6NuhyTAOLMs6jeypEDdXsYd
+ NUTZ8vjF+LJBaA7Zzp/r+mHGOgXh7QxsTX/iShsM5v+JAT4FQ/mOZTV
 X-Developer-Key: i=amitsd@google.com; a=ed25519;
  pk=wD+XZSST4dmnNZf62/lqJpLm7fiyT8iv462zmQ3H6bI=
 X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
@@ -69,45 +68,109 @@ X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
 X-Original-From: Amit Sunil Dhamne <amitsd@google.com>
 Reply-To: amitsd@google.com
 
-Support for Battery Status & Battery Caps messages in response to
-Get_Battery_Status & Get_Battery_Cap request is required by USB PD devices
-powered by battery, as per "USB PD R3.1 V1.8 Spec", "6.13 Message
-Applicability" section. This patchset adds support for these AMSes
-to achieve greater compliance with the spec.
+From: Amit Sunil Dhamne <amitsd@google.com>
+
+Add the following properties:
+  * Vendor Identifier (VID): Assigned to the battery manufacturer by USB
+    Implementers Forum (USB-IF).
+  * Product Identifier (PID) assigned by the manufacturer to the
+    battery.
+
+This info is required by USB Type-C PD devices containing batteries.
+This enables the USB Type C devices to respond to a Battery capacity
+request from the port partner by querying for the PID & VID assigned to
+the batteries. Refer to "USB Power Delivery Specification Rev3.1 v1.8"
+Chapter 5.5 Battery_Capabilities Message.
 
 Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
 ---
-Changes in v2:
-  - Instead of introducing new "fixed-batteries" property to pass
-    reference to FG, use OF graph by extending "ports" property
-    definition. (suggested by Krzysztof).
-  - Demonstration of binding usage in gs101-oriole will be in a
-    different patchset.
+ Documentation/ABI/testing/sysfs-class-power | 19 +++++++++++++++----
+ Documentation/power/power_supply_class.rst  | 11 +++++++++++
+ drivers/power/supply/power_supply_sysfs.c   |  2 ++
+ include/linux/power_supply.h                |  2 ++
+ 4 files changed, 30 insertions(+), 4 deletions(-)
 
----
-Amit Sunil Dhamne (5):
-      dt-bindings: connector: extend ports property to model power connections
-      power: supply: core: add helper to get power supply given a fwnode
-      usb: typec: tcpm: Add support for Battery Status response message
-      power: supply: core: add vendor and product id properties
-      usb: typec: tcpm: Add support for Battery Cap response message
+diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
+index 2a5c1a09a28f91beec6b18ca7b4492093026bc81..5495e82885b2294cdfd5ace0e7e5fcbeadfccb5f 100644
+--- a/Documentation/ABI/testing/sysfs-class-power
++++ b/Documentation/ABI/testing/sysfs-class-power
+@@ -814,11 +814,22 @@ Description:
+ 		Access: Read
+ 		Valid values: 1-31
+ 
+-What:		/sys/class/power_supply/<supply_name>/extensions/<extension_name>
+-Date:		March 2025
++What:		/sys/class/power_supply/<supply_name>/usbif_vendor_id
++Date:		May 2025
+ Contact:	linux-pm@vger.kernel.org
+ Description:
+-		Reports the extensions registered to the power supply.
+-		Each entry is a link to the device which registered the extension.
++		Reports the vendor id assigned to the battery manufacturer by USB
++		Implementers Forum (USB-IF).
+ 
+ 		Access: Read
++		Valid values: 0x0-0xffff
++
++What:		/sys/class/power_supply/<supply_name>/usbif_product_id
++Date:		May 2025
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Reports the product id assigned to the battery by the manufacturer
++		(associated with usbif_vendor_id).
++
++		Access: Read
++		Valid values: 0x0-0xffff
+diff --git a/Documentation/power/power_supply_class.rst b/Documentation/power/power_supply_class.rst
+index da8e275a14ffb9f84bae9ae1efc4720a55ea3010..6d0a6bcf501e719fa4454845b583a8b38d371bb4 100644
+--- a/Documentation/power/power_supply_class.rst
++++ b/Documentation/power/power_supply_class.rst
+@@ -213,6 +213,17 @@ TIME_TO_FULL
+   seconds left for battery to be considered full
+   (i.e. while battery is charging)
+ 
++USBIF_VENDOR_ID
++  Vendor ID (VID) assigned to manufacturer or device vendor associated with the
++  battery by USB Implementers Forum (USB-IF). This property is described in
++  "USB Power Delivery Specification Rev3.1 V1.8" Chapter 6.5.5 Battery
++  Capabilities, Section 6.5.5.1 Vendor ID (VID).
++USBIF_PRODUCT_ID
++  Product ID (PID) assigned to the battery, such that if the VID belongs to the
++  manufacturer then the PID will be designated by it. Similarly if the VID
++  belongs to the device vendor then the PID will be designated by it. This
++  property is described in "USB Power Delivery Specification Rev3.1 V1.8"
++  Chapter 6.5.5 Battery Capabilities, Section 6.5.5.2 Product ID (PID).
+ 
+ Battery <-> external power supply interaction
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index edb058c19c9c44ad9ad97a626fc8f59e3d3735a6..534ed3cd049866fa747455bb6dae1ec2dc5e2da6 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -211,6 +211,8 @@ static struct power_supply_attr power_supply_attrs[] __ro_after_init = {
+ 	POWER_SUPPLY_ATTR(TIME_TO_EMPTY_AVG),
+ 	POWER_SUPPLY_ATTR(TIME_TO_FULL_NOW),
+ 	POWER_SUPPLY_ATTR(TIME_TO_FULL_AVG),
++	POWER_SUPPLY_ATTR(USBIF_VENDOR_ID),
++	POWER_SUPPLY_ATTR(USBIF_PRODUCT_ID),
+ 	POWER_SUPPLY_ENUM_ATTR(TYPE),
+ 	POWER_SUPPLY_ENUM_ATTR(USB_TYPE),
+ 	POWER_SUPPLY_ENUM_ATTR(SCOPE),
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index a35b08bd368e9305554e1a608dc8e526983cfa12..100eb559dcede938595ffbf83bc5ef3645a5a172 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -165,6 +165,8 @@ enum power_supply_property {
+ 	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
+ 	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
+ 	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
++	POWER_SUPPLY_PROP_USBIF_VENDOR_ID,
++	POWER_SUPPLY_PROP_USBIF_PRODUCT_ID,
+ 	POWER_SUPPLY_PROP_TYPE, /* use power_supply.type instead */
+ 	POWER_SUPPLY_PROP_USB_TYPE,
+ 	POWER_SUPPLY_PROP_SCOPE,
 
- Documentation/ABI/testing/sysfs-class-power        |  19 +-
- .../bindings/connector/usb-connector.yaml          |  20 +-
- .../devicetree/bindings/usb/maxim,max33359.yaml    |  25 +++
- Documentation/power/power_supply_class.rst         |  11 ++
- drivers/power/supply/power_supply_core.c           |  30 +++
- drivers/power/supply/power_supply_sysfs.c          |   2 +
- drivers/usb/typec/tcpm/tcpm.c                      | 208 ++++++++++++++++++++-
- include/linux/power_supply.h                       |   5 +
- include/linux/usb/pd.h                             |  65 +++++++
- 9 files changed, 371 insertions(+), 14 deletions(-)
----
-base-commit: 80e54e84911a923c40d7bee33a34c1b4be148d7a
-change-id: 20250311-batt_ops-be1bd71ca254
-
-Best regards,
 -- 
-Amit Sunil Dhamne <amitsd@google.com>
+2.49.0.987.g0cc8ee98dc-goog
 
 
