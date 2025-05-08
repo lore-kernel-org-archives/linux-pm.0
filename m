@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A00A175A5;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99FDC101C8;
 	Thu,  8 May 2025 01:02:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746666155; cv=none; b=jP70LKPJ+wAHJAWtJGxfpuZn23Ki6fdJH4uwpfbTp3KUNuEvyiYDrdlY+z18MfuWdQEQSgStd3jxrFNCFc3FbdCbiizZE6+n2cSqqfdt6VsrK7K5SjHCZeO9d6cRozy3Wm5vtuk9Ukz7AkEYbe41WKBv4WofQ+52rT/jXaugr9k=
+	t=1746666155; cv=none; b=WcgZe4Vak+V8iiO2LjS6SOuyuZErsBdX30IxBrTWpiO5phU+FmBeJ5i0OzcEZ7Uim4KJF8cq+1als+9ZvKt0AmdzagKqxx1oQ6pN/UCiB3OJ1IevH+WE0lVaW4ijEwI4EbnRl0+PnFr6ZWPpUar/R+ODKZsprY71Dsee7N98y7c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1746666155; c=relaxed/simple;
-	bh=d4slsEd4cKmuSOAFsQWaXdJfASlTswsfHKp1hoC2dgw=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Zr+VkmeTH4gPqsZ1Ws5GDDprU5Uva2V96H3UnwH85bb5jrdtIPvEG9IqematyiqQuZ07Tn4hlLfdzvpXsxQdpiyxNM9wA85xHSfWpFNKv9jbljz17gHFgWmjVPitznRtwLC2bV2xXnymxju8bZ6n8IHtbLfrv6tVX3TyzqlwSO8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YPNK+4bW; arc=none smtp.client-ip=10.30.226.201
+	bh=LRcV+pKioj0dnQiQ87GE22M3+IfV3Fs50YQalR4s3E0=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=WNXwY7ckSJAWcIuINyZSE2stdnAXpqPGjkElD9Vt1iQr+1Ejf7rXWeFG8EdDzh5WnNJRuDVrzHacc3hF1x/8uBOw0nMykxKS4wyR/+3Y74k1moDVYAT58wLd41wBzDLLzw9Wz3WstqOxCsbcqwdrcHQWk8EXJ/sl32WfPYqhh4c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nD24P9E4; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YPNK+4bW"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 320B5C4CEE7;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nD24P9E4"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 113DDC4CEE2;
 	Thu,  8 May 2025 01:02:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1746666155;
-	bh=d4slsEd4cKmuSOAFsQWaXdJfASlTswsfHKp1hoC2dgw=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=YPNK+4bWrL9bYqY5Uumx76t66XueUiJ9dU0C0G0Vb1j3AfZJwxSMexbfZOMWxtmnJ
-	 jTOHchmCaYxOJaFeyy+/Hrbja7xPLJWmNBrXYcWzAmQpIaWyx8N4FODv4fF7KmvtQs
-	 lxJp1WNtwjSQQmQYhl8c1PuojfndEJWEByKp8rZJs9KguHgZz3YBU0+pMPf6ub8C6V
-	 yFXh+7rLS5cErfnG+RDFLpEmUx5Ub5luLuJXUTTR9j62ZZxPuv93BeYukEVEUSKuap
-	 fNmxoQpDzhzi3ddbenV+T6twUmA6PXHYX/WvfAnbw8zY7waqXsvZibK+w1fma41wM8
-	 27dpY4idyKufQ==
+	bh=LRcV+pKioj0dnQiQ87GE22M3+IfV3Fs50YQalR4s3E0=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=nD24P9E4YbvjSSPqzb70ZEJaC1oGg1pD+DnierwAI2obq/mDgkBDEKm7er5y4h6Rh
+	 4gufBbGcbU7I9Qt9M+/hJv6m8DaEQIuTQ7X3nN3MjmdWm6jmqeTBd8dNppGcKyMdEl
+	 lCW8Sm461hJFz929LlYSeOBVOki3IkL9b5Z/4pC3vUsgE435MKyYUQ/nAIMAMjEWZF
+	 D5X72saPoOmh+bxqiSAjVGAfGvI/h+zvN7G1dJeQMacVOgefj3IojvXtsV4rcHqxHk
+	 hl70hR5b0+GvI8KOAJXDU3nEDbg4nD18PQUrWESLfAhIh2Jz/VIr2PUJeqEfPyQ+2v
+	 ub5HuKZ4zj/hA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26647C3ABCA;
-	Thu,  8 May 2025 01:02:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 001D4C3ABC0;
+	Thu,  8 May 2025 01:02:34 +0000 (UTC)
 From: Amit Sunil Dhamne via B4 Relay <devnull+amitsd.google.com@kernel.org>
-Date: Wed, 07 May 2025 18:00:23 -0700
-Subject: [PATCH v2 2/5] power: supply: core: add helper to get power supply
- given a fwnode
+Subject: [PATCH v2 0/5] Add support for Battery Status & Battery Caps AMS
+ in TCPM
+Date: Wed, 07 May 2025 18:00:21 -0700
+Message-Id: <20250507-batt_ops-v2-0-8d06130bffe6@google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,9 +41,10 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250507-batt_ops-v2-2-8d06130bffe6@google.com>
-References: <20250507-batt_ops-v2-0-8d06130bffe6@google.com>
-In-Reply-To: <20250507-batt_ops-v2-0-8d06130bffe6@google.com>
+X-B4-Tracking: v=1; b=H4sIACUCHGgC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyjHQUlJIzE
+ vPSU3UzU4B8JSMDI1MDY0ND3aTEkpL4/IJi3aRUw6QUc8PkRCNTEyWg8oKi1LTMCrBR0bG1tQD
+ o5/1GWgAAAA==
+X-Change-ID: 20250311-batt_ops-be1bd71ca254
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, 
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
@@ -56,11 +57,11 @@ Cc: Kyle Tso <kyletso@google.com>, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, 
  linux-pm@vger.kernel.org, Amit Sunil Dhamne <amitsd@google.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1746666154; l=2859;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1746666154; l=1861;
  i=amitsd@google.com; s=20241031; h=from:subject:message-id;
- bh=n/LuhXwbMG+uq2FAx4zj5314rxmEnmyuEdKNHG3ZivU=;
- b=dTaz7OkB3YkPjDneIrBZe+0QEC+/53CmHhzD87wh4fYYWZ7UQ5H7LlQRrclRrlPHTp6tsTyXR
- iV8Z2mcwUyhCP0cZivtxXycLG8L081x/tLWCnn4Bz17G/s19koXnENJ
+ bh=LRcV+pKioj0dnQiQ87GE22M3+IfV3Fs50YQalR4s3E0=;
+ b=3Id+Nk6+E6cUAu6NLSo6T6dh5n72Vz78BzucEQ2NbPWm4zzcW9Av99ytXVakATFYyAJxyWdry
+ 7zaAHUj5dYkBMJpnELQcs7AoFNoVeswI2MeGakLMn6l4h9X2ehao/qt
 X-Developer-Key: i=amitsd@google.com; a=ed25519;
  pk=wD+XZSST4dmnNZf62/lqJpLm7fiyT8iv462zmQ3H6bI=
 X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
@@ -68,78 +69,45 @@ X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
 X-Original-From: Amit Sunil Dhamne <amitsd@google.com>
 Reply-To: amitsd@google.com
 
-From: Amit Sunil Dhamne <amitsd@google.com>
-
-Add a helper function power_supply_get_by_fwnode() to retrieve
-power_supply given a valid fwnode reference.
+Support for Battery Status & Battery Caps messages in response to
+Get_Battery_Status & Get_Battery_Cap request is required by USB PD devices
+powered by battery, as per "USB PD R3.1 V1.8 Spec", "6.13 Message
+Applicability" section. This patchset adds support for these AMSes
+to achieve greater compliance with the spec.
 
 Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
 ---
- drivers/power/supply/power_supply_core.c | 30 ++++++++++++++++++++++++++++++
- include/linux/power_supply.h             |  3 +++
- 2 files changed, 33 insertions(+)
+Changes in v2:
+  - Instead of introducing new "fixed-batteries" property to pass
+    reference to FG, use OF graph by extending "ports" property
+    definition. (suggested by Krzysztof).
+  - Demonstration of binding usage in gs101-oriole will be in a
+    different patchset.
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 76c340b38015af0a67a0d91305e6242a8646bf53..ef6ba22b837b0b9463f9a3065425e2720f40b9eb 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -496,6 +496,36 @@ struct power_supply *power_supply_get_by_name(const char *name)
- }
- EXPORT_SYMBOL_GPL(power_supply_get_by_name);
- 
-+static int power_supply_match_device_by_fwnode(struct device *dev, const void *data)
-+{
-+	return dev->parent && dev_fwnode(dev->parent) == data;
-+}
-+
-+/**
-+ * power_supply_get_by_fwnode() - Search for power supply given a fwnode ref.
-+ * @fwnode: fwnode reference
-+ *
-+ * If power supply was found, it increases reference count for the internal
-+ * power supply's device. The user should power_supply_put() after use.
-+ *
-+ * Return: Reference to power_supply node matching the fwnode on success or
-+ * NULL on failure.
-+ */
-+struct power_supply *power_supply_get_by_fwnode(struct fwnode_handle *fwnode)
-+{
-+	struct power_supply *psy = NULL;
-+	struct device *dev = class_find_device(&power_supply_class, NULL, fwnode,
-+					       power_supply_match_device_by_fwnode);
-+
-+	if (dev) {
-+		psy = dev_get_drvdata(dev);
-+		atomic_inc(&psy->use_cnt);
-+	}
-+
-+	return psy;
-+}
-+EXPORT_SYMBOL_GPL(power_supply_get_by_fwnode);
-+
- /**
-  * power_supply_put() - Drop reference obtained with power_supply_get_by_name
-  * @psy: Reference to put
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 6ed53b292162469d7b357734d5589bff18a201d0..a35b08bd368e9305554e1a608dc8e526983cfa12 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -801,10 +801,13 @@ extern void power_supply_unreg_notifier(struct notifier_block *nb);
- #if IS_ENABLED(CONFIG_POWER_SUPPLY)
- extern struct power_supply *power_supply_get_by_name(const char *name);
- extern void power_supply_put(struct power_supply *psy);
-+extern struct power_supply *power_supply_get_by_fwnode(struct fwnode_handle *fwnode);
- #else
- static inline void power_supply_put(struct power_supply *psy) {}
- static inline struct power_supply *power_supply_get_by_name(const char *name)
- { return NULL; }
-+static inline struct power_supply *power_supply_get_by_fwnode(struct fwnode_handle *fwnode)
-+{ return NULL; }
- #endif
- #ifdef CONFIG_OF
- extern struct power_supply *power_supply_get_by_phandle(struct device_node *np,
+---
+Amit Sunil Dhamne (5):
+      dt-bindings: connector: extend ports property to model power connections
+      power: supply: core: add helper to get power supply given a fwnode
+      usb: typec: tcpm: Add support for Battery Status response message
+      power: supply: core: add vendor and product id properties
+      usb: typec: tcpm: Add support for Battery Cap response message
 
+ Documentation/ABI/testing/sysfs-class-power        |  19 +-
+ .../bindings/connector/usb-connector.yaml          |  20 +-
+ .../devicetree/bindings/usb/maxim,max33359.yaml    |  25 +++
+ Documentation/power/power_supply_class.rst         |  11 ++
+ drivers/power/supply/power_supply_core.c           |  30 +++
+ drivers/power/supply/power_supply_sysfs.c          |   2 +
+ drivers/usb/typec/tcpm/tcpm.c                      | 208 ++++++++++++++++++++-
+ include/linux/power_supply.h                       |   5 +
+ include/linux/usb/pd.h                             |  65 +++++++
+ 9 files changed, 371 insertions(+), 14 deletions(-)
+---
+base-commit: 80e54e84911a923c40d7bee33a34c1b4be148d7a
+change-id: 20250311-batt_ops-be1bd71ca254
+
+Best regards,
 -- 
-2.49.0.987.g0cc8ee98dc-goog
+Amit Sunil Dhamne <amitsd@google.com>
 
 
