@@ -1,66 +1,95 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from out-171.mta0.migadu.com (out-171.mta0.migadu.com [91.218.175.171])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98C43290D8F;
-	Fri,  9 May 2025 13:04:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D81428EA40
+	for <linux-pm@vger.kernel.org>; Fri,  9 May 2025 13:05:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746795855; cv=none; b=kTY8xuIOBnD/C1PjTBRMwYkXOHJ0Gq8Ylap0nxifzJhy+sIeWxT1JQ4pBig4EVoS23Drnn6JSIcOD7Sih/7mf6OOZ7BljO+1zRuD8YG5R2OP+m5564vRtyFlHq7k/xsdJf5ioZHPZ+G9tR7FE+5XtKr60oZQ9GxMFQUy9q8HIus=
+	t=1746795923; cv=none; b=S7kmdeo60aZNrG0TY5E8JyCV88/Qg7m1U8tk5aNcnk1+7s59fZ6a/DPDI63pEB2T2t4MdKOfIM1/3t9ah7gIMOC0LfpwSyPrXdz4AwsaK4nHpYhDGkAnAAewcDDbbI4PcFtkVNkNwyT0Rm5/n75HJWBxT98+xAJtmtb4M5Lc1ls=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746795855; c=relaxed/simple;
-	bh=4GBgrzvvN+4kJ+ed+nVHWU+vFzchSbWl69PMneh6zI8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=DKB36EfNlqohFYSxoDVjUjRfWb7uZWIYFWK5CIOr86R2CFCHcuITCuv35hsvfhs6ita44pi1Do43c2+7kK2mitPbdxxW1+1WkwOofiffcXhFNeRW2bT+2HrP9j87xRyOu6L3qq5pgo5VH9G6oqVbkzfF8a3pS6zxo7hHiUsJq/Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=uQo2FFZH; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1746795923; c=relaxed/simple;
+	bh=wf5aooCRDYeY8UPU0Zbj2NphFSO7stnqv3aY4IenlGk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=BBAipX7RUUmBXe72rCszJHFciSAu7dvY4KHcBEQ2KT03flqggG44OaUBbV9kh7gZqR2k9Kn5pl7gf2lgoU5yQrQPAwIErSa3rxyGh6OFxoizsET9wTqsH/i9odVQBVGVLpiYJEhlJbCgsGUbK6Fl4BU9cBGIjNWfdZhQLRTNIIA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=rosenzweig.io; spf=pass smtp.mailfrom=rosenzweig.io; dkim=pass (2048-bit key) header.d=rosenzweig.io header.i=@rosenzweig.io header.b=tIgn3Xe2; arc=none smtp.client-ip=91.218.175.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=rosenzweig.io
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rosenzweig.io
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="uQo2FFZH"
-Received: from kreacher.localnet (unknown [217.114.34.19])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 0B4C8666CB6;
-	Fri,  9 May 2025 15:04:05 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1746795845;
-	bh=4GBgrzvvN+4kJ+ed+nVHWU+vFzchSbWl69PMneh6zI8=;
-	h=From:Subject:Date;
-	b=uQo2FFZHPIayu0Frg80ym2MiZdkqShKX3nhF67L8uRLzv+w6zP3QfS/v6KzushWMy
-	 eMVcxKDW5e2vuL2Ffff6/swNAT0T3awLdt/Gu8FbfIWp94YmfG03QFrzqj1UbS1zbz
-	 0JyahHtItK9Es5EWcKmT+4dii5CKynrxsWobuZMuKiiwMOln4FCK26tmLKd93b5/Bt
-	 aAr5q7eqiDSs96N2mwKzresYg/QKg0WE7SnwyEVOIrplmpEwkC6V+/lQ4UtYG7e+ET
-	 EIDktwfkjMLPgmm3qFLb96zuup1Z47uLVj/XhvVUUDSbl4t0vBYw6MyvSjKXTbCLTM
-	 2DTxqRIIuDhdw==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Mario Limonciello <mario.limonciello@amd.com>
-Subject: [PATCH v1 0/3] PM: sleep: Updates related to pm_suspend_target_state
-Date: Fri, 09 May 2025 14:49:59 +0200
-Message-ID: <5903743.DvuYhMxLoT@rjwysocki.net>
+	dkim=pass (2048-bit key) header.d=rosenzweig.io header.i=@rosenzweig.io header.b="tIgn3Xe2"
+Date: Fri, 9 May 2025 09:05:12 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=rosenzweig.io;
+	s=key1; t=1746795918;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=gzSnmSwk0nGHtv2iF4t+ebWzcjSFYhcwYVYNbytSiHk=;
+	b=tIgn3Xe2JeGm376gk4FVSfq+FmP0ZaFCgb4UHTE7K3hNLhS/FqRBYeGELvYgW5MxqZGVZ4
+	n0kBVS1euuaTESPcXx/31E0/NnalAoUrBvZt5CdQsj7zWa61fB8zdwAYSvsr1yGN6ayaw6
+	FhsDNP1jUAZnni0KgqScKToufJJ3m8+WS8U12YoV9ufY1G6w2sASlEza3I+RbTJWkAvvd6
+	kEJQbO8AIxAufRvXll84vR04nBi3tqBtyjeo0QTFDI2fCwGmFETIm6EGohBbQg4tfZu+St
+	UjkMTd89YeYTR25UgS7gTl4cm3jzqLDzzBP6s9JlKlRkSU2SLBnk78pEA/ds7A==
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Alyssa Rosenzweig <alyssa@rosenzweig.io>
+To: sven@svenpeter.dev
+Cc: Janne Grunau <j@jannau.net>, Neal Gompa <neal@gompa.dev>,
+	Hector Martin <marcan@marcan.st>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Bartosz Golaszewski <brgl@bgdev.pl>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>, Lee Jones <lee@kernel.org>,
+	Marc Zyngier <maz@kernel.org>,
+	"Russell King (Oracle)" <rmk+kernel@armlinux.org.uk>,
+	asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-gpio@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v4 6/9] power: reset: macsmc-reboot: Add driver for
+ rebooting via Apple SMC
+Message-ID: <aB39iJm9759RYAKW@blossom>
+References: <20250503-smc-6-15-v4-0-500b9b6546fc@svenpeter.dev>
+ <20250503-smc-6-15-v4-6-500b9b6546fc@svenpeter.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 217.114.34.19
-X-CLIENT-HOSTNAME: 217.114.34.19
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvledvieelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepffffffekgfehheffleetieevfeefvefhleetjedvvdeijeejledvieehueevueffnecukfhppedvudejrdduudegrdefgedrudelnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddujedruddugedrfeegrdduledphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomheprhhjfiesrhhjfiihshhotghkihdrnhgvthdpnhgspghrtghpthhtohepfedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehmrghrihhordhlihhmohhntghivghllhhosegrmhgurdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=3 Fuz1=3 Fuz2=3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250503-smc-6-15-v4-6-500b9b6546fc@svenpeter.dev>
+X-Migadu-Flow: FLOW_OUT
 
-Hi Everyone,
+> +	for (i = 0; i < ARRAY_SIZE(ac_power_mode_map); i++)
+> +		if (mode == ac_power_mode_map[i])
+> +			len += scnprintf(buf+len, PAGE_SIZE-len,
+> +					 "[%s] ", ac_power_modes[i]);
+> +		else
+> +			len += scnprintf(buf+len, PAGE_SIZE-len,
+> +					 "%s ", ac_power_modes[i]);
 
-This allows PM debug messages to be printed during hibernation (again) in
-patch [1/3], adds pm_suspend_in_progress() for checking if a system suspend
-transition is in progress (which does not cover hibernation) on top of that
-(patch [2/3]), and adds pm_sleep_transition_in_progress() covering both
-system suspend and hibernation (patch [3/3]).
+Nit: { braces } at least on the for loop...
 
-Thanks!
+(And might be more concise as
 
+    for (i = 0; i < ARRAY_SIZE(ac_power_mode_map); i++) {
+        bool match = (mode == ac_power_mode_map[i]);
+        len += scnprintf(buf+len, PAGE_SIZE-len,
+                 match ? "[%s] " : "%s ", ac_power_modes[i]);
+    }
 
+though IDK how people feel about it.)
 
+> +		mdelay(100);
+> +		WARN_ON(1);
+
+...What?
+
+> +	if (ret)
+> +		return dev_err_probe(&pdev->dev, ret,
+> +				     "Failed to register power-off handler\n");
+> +
+> +
+> +	ret = devm_register_sys_off_handler(&pdev->dev, SYS_OFF_MODE_RESTART_PREPARE,
+> +					    SYS_OFF_PRIO_HIGH, macsmc_prepare_atomic, reboot);
+
+Nit: squash double blank-line
