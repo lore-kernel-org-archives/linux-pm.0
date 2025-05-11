@@ -1,37 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C85319ABDE;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C89A19F12D;
 	Sun, 11 May 2025 08:19:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746951549; cv=none; b=LyVXI9p/rUlw3X1PMfoC/nUy9kDYWoBBf5bmxpQx7IbjBaxRI2qizJoOahgVIA3ltTH/LUpSQScIkHdrAEvz9+HvQi0XZ7UhbUVNyg1rQVDZ0PYf7inV5xkOcdFqshMO3AkaABTeooRvImiDzI26qv1GLE0z3aEvlRq29OY5zsw=
+	t=1746951549; cv=none; b=k9lwT3Z6l/GNK/vi8ZCWhDMw0B3SFu0qxrjxFQD/Q+LrvewTep6g+wg9+Mknf2EZcp+2C4nUKINCszZIP4WPoasMbg2XsiY63ESGVqKDq6Yc9mJ5VnF86XaAU2t1/yW+cbHJdX38coAbi3akx4kW4QW1mIR3wCJc+a4QkMqLX9Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1746951549; c=relaxed/simple;
-	bh=EFwuzycZZAj55AsZrQ8FwNZUMC6vffFkyYtonYf6oHw=;
+	bh=mElo/9lqwRdzJHY3Def79WJSU/DDHR2YnekZvuusMbA=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=KfF/1vNIet2AwIi3vyIwbs+GeQhIJFVQ0cP8goMIaMHAsQhKSHORpQWMdCWkx7cih9Btj4367yslD0CGkYHbtCpw3Ttc4p6ZuGZTgyyRNA09XD1Hv77F6xuH5d3QRh6aWSnlN6zXtU7F+uqYCKXXiO+q8mLkjL8q2Aj71fjz/Dw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FgNgAkZy; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=eGSX/QFHrFkBq/pu2txt/RG08ry9LFt28jQCVOh8PlNfDyWUS6AtuDzpc5joyHT/Mzzlk1k8K80Fq4B4/Hq6Rd7ePp9jcwsAucEK6G2yCTE3t4Kmuqm1notfw/YW6Gg32zX2lHk4TOA5qRNOQ92rCJOPTNbW4JihBfRTGjmtiG4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=g2xRWn6V; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FgNgAkZy"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 0AAF1C4CEEF;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="g2xRWn6V"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 2BAF0C4CEF4;
 	Sun, 11 May 2025 08:19:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1746951549;
-	bh=EFwuzycZZAj55AsZrQ8FwNZUMC6vffFkyYtonYf6oHw=;
+	bh=mElo/9lqwRdzJHY3Def79WJSU/DDHR2YnekZvuusMbA=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=FgNgAkZyMYdX5YEtef4zs4QdmY39Q0p0mMOcdgtAyUZHjGx1v5A2+1xsQ/Vkt3DdH
-	 Tv+qvNjASe+g43Y0McEv0N8YxXVSEywojUmdZ1DmxCHf4UTWSlwg/eLfrPD/vaXLrI
-	 UkuLhgMIaTZ//nseLX6kRaf72c2y08qaNtWEJ5zPH2uVnosdzPCf8FSk1mxtJL0/J6
-	 skvO/SVRRu9LGHggS0qM/UJfkqIzhPDYCG4+/P7Kq6nKKwqIIQK1M5c5bkX/XQwSQn
-	 Qccctn9OWrWMYEaE6g7oHU1824XCaRKtmYBqQqLttSQp689rVaCY32qZOEG74mBYu+
-	 W2d1+RagIwLUg==
+	b=g2xRWn6V7fr8XbMGAnywQMDCL5OXfBs9yL1DeGTnV8e/4H8zyXalXX+oRxWi7HGM8
+	 MfMUfOUbl2Ep4QHNTnrv5tyClt1/zwmpysMOzJ+Tt8k6jihebj2NjAC2eEDoK/S22x
+	 jkF+MnFTdmoQ/g7d3GfjhPOICsIv1Vn3xNPy3J2d6WjKZcYcLXkUTvQoRXQlHbZytV
+	 HynuMBAp0kZcYhUR4L4KefER0yMy71Y+4SV1yZ47FNLrCA5epaGxpyH/V2+M8/FmHp
+	 dopzsi1TQ3qJ1VN1jjVyC2J+Mia9tZEORn9+H7innQ6qjRDlcEYrJtZr3EfRmlaZ52
+	 DwYkgOq0jc+rQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EAC9DC3ABC5;
-	Sun, 11 May 2025 08:19:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 209F3C3ABC3;
+	Sun, 11 May 2025 08:19:09 +0000 (UTC)
 From: Sven Peter via B4 Relay <devnull+sven.svenpeter.dev@kernel.org>
-Date: Sun, 11 May 2025 08:18:36 +0000
-Subject: [PATCH v5 01/10] dt-bindings: gpio: Add Apple Mac SMC GPIO block
+Date: Sun, 11 May 2025 08:18:38 +0000
+Subject: [PATCH v5 03/10] dt-bindings: mfd: Add Apple Mac System Management
+ Controller
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250511-smc-6-15-v5-1-f5980bdb18bd@svenpeter.dev>
+Message-Id: <20250511-smc-6-15-v5-3-f5980bdb18bd@svenpeter.dev>
 References: <20250511-smc-6-15-v5-0-f5980bdb18bd@svenpeter.dev>
 In-Reply-To: <20250511-smc-6-15-v5-0-f5980bdb18bd@svenpeter.dev>
 To: Sven Peter <sven@svenpeter.dev>, Janne Grunau <j@jannau.net>, 
@@ -53,15 +54,16 @@ To: Sven Peter <sven@svenpeter.dev>, Janne Grunau <j@jannau.net>,
  "Russell King (Oracle)" <rmk+kernel@armlinux.org.uk>
 Cc: asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
  linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2317; i=sven@svenpeter.dev;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3146; i=sven@svenpeter.dev;
  h=from:subject:message-id;
- bh=2bi5nXYBfkQV2rFFcMqCxUW1BDnhZVe5IxR79APQdc4=;
- b=owGbwMvMwCHmIlirolUq95LxtFoSQ4ZCbNG0UK7VlpdPXG97Y5WkwFcQMM+69gPT4xnqHXue/
- jC8cn91RykLgxgHg6yYIsv2/famTx6+EVy66dJ7mDmsTCBDGLg4BWAi8fsY/tkwhJ7iltAUsJol
- sDL07W7f36XnX69R3pdd9H6Oqc47ZhOG36y1aXbfFiVabVIU5/q8aOGMJZnrlp4UjDnEOs3YvHq
- LJTsA
+ bh=0q9ISIA6ZrOBVUIWGWVC4flaf5WpZPAyCkEc6EQwW2M=;
+ b=owGbwMvMwCHmIlirolUq95LxtFoSQ4ZCbLHKy5wTpZPlTtxof1fut+t9/u31lZMX5lxINsl8c
+ TRvHpdARykLgxgHg6yYIsv2/famTx6+EVy66dJ7mDmsTCBDGLg4BWAiG6UYGd6FRy29tLlig32+
+ 9GmmMA1V9dq7mmfPppy/NDkv4IywPA/DH+6t3vXHtqz6q6wpGyty78j7m7WqKUFG/PV1rhmCRfu
+ +8wAA
 X-Developer-Key: i=sven@svenpeter.dev; a=openpgp;
  fpr=A1E3E34A2B3C820DBC4955E5993B08092F131F93
 X-Endpoint-Received: by B4 Relay for sven@svenpeter.dev/default with
@@ -71,72 +73,107 @@ Reply-To: sven@svenpeter.dev
 
 From: "Russell King (Oracle)" <rmk+kernel@armlinux.org.uk>
 
-Add the DT binding for the Apple Mac System Management Controller GPIOs.
+Add a DT binding for the Apple Mac System Management Controller.
 
 Signed-off-by: Russell King (Oracle) <rmk+kernel@armlinux.org.uk>
 Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Reviewed-by: Alyssa Rosenzweig <alyssa@rosenzweig.io>
 Signed-off-by: Sven Peter <sven@svenpeter.dev>
 ---
- .../devicetree/bindings/gpio/apple,smc-gpio.yaml   | 37 ++++++++++++++++++++++
+ .../devicetree/bindings/mfd/apple,smc.yaml         | 71 ++++++++++++++++++++++
  MAINTAINERS                                        |  1 +
- 2 files changed, 38 insertions(+)
+ 2 files changed, 72 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/gpio/apple,smc-gpio.yaml b/Documentation/devicetree/bindings/gpio/apple,smc-gpio.yaml
+diff --git a/Documentation/devicetree/bindings/mfd/apple,smc.yaml b/Documentation/devicetree/bindings/mfd/apple,smc.yaml
 new file mode 100644
-index 0000000000000000000000000000000000000000..07305eeb2595f59d5c28f6e507295b828dafd4a1
+index 0000000000000000000000000000000000000000..9f1058c15bbf62d84f8a72fdaa354909b02e2801
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/gpio/apple,smc-gpio.yaml
-@@ -0,0 +1,37 @@
++++ b/Documentation/devicetree/bindings/mfd/apple,smc.yaml
+@@ -0,0 +1,71 @@
 +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/gpio/apple,smc-gpio.yaml#
++$id: http://devicetree.org/schemas/mfd/apple,smc.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: Apple Mac System Management Controller GPIO
++title: Apple Mac System Management Controller
 +
 +maintainers:
 +  - Sven Peter <sven@svenpeter.dev>
 +
 +description:
-+  Apple Mac System Management Controller GPIO block.
++  Apple Mac System Management Controller implements various functions
++  such as GPIO, RTC, power, reboot.
 +
 +properties:
 +  compatible:
-+    const: apple,smc-gpio
++    items:
++      - enum:
++          - apple,t6000-smc
++          - apple,t8103-smc
++          - apple,t8112-smc
++      - const: apple,smc
 +
-+  gpio-controller: true
++  reg:
++    items:
++      - description: SMC area
++      - description: SRAM area
 +
-+  '#gpio-cells':
-+    const: 2
++  reg-names:
++    items:
++      - const: smc
++      - const: sram
 +
-+required:
-+  - compatible
-+  - gpio-controller
-+  - '#gpio-cells'
++  mboxes:
++    maxItems: 1
++
++  gpio:
++    $ref: /schemas/gpio/apple,smc-gpio.yaml
++
++  reboot:
++    $ref: /schemas/power/reset/apple,smc-reboot.yaml
 +
 +additionalProperties: false
 +
++required:
++  - compatible
++  - reg
++  - reg-names
++  - mboxes
++
 +examples:
 +  - |
-+    gpio {
-+        compatible = "apple,smc-gpio";
-+        gpio-controller;
-+        #gpio-cells = <2>;
++    soc {
++      #address-cells = <2>;
++      #size-cells = <2>;
++
++      smc@23e400000 {
++        compatible = "apple,t8103-smc", "apple,smc";
++        reg = <0x2 0x3e400000 0x0 0x4000>,
++               <0x2 0x3fe00000 0x0 0x100000>;
++        reg-names = "smc", "sram";
++        mboxes = <&smc_mbox>;
++
++        smc_gpio: gpio {
++          compatible = "apple,smc-gpio";
++          gpio-controller;
++          #gpio-cells = <2>;
++        };
++      };
 +    };
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 96b82704950184bd71623ff41fc4df31e4c7fe87..b53f3929b06006f9f38f5cda048516891c18c7ab 100644
+index 3f32d028ab49994a0da9f3882f37b9c3b183f5b4..27caedc40262ee9b9fdb6478f7624422517375a7 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -2267,6 +2267,7 @@ F:	Documentation/devicetree/bindings/arm/apple/*
- F:	Documentation/devicetree/bindings/clock/apple,nco.yaml
- F:	Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml
- F:	Documentation/devicetree/bindings/dma/apple,admac.yaml
-+F:	Documentation/devicetree/bindings/gpio/apple,smc-gpio.yaml
- F:	Documentation/devicetree/bindings/i2c/apple,i2c.yaml
- F:	Documentation/devicetree/bindings/input/touchscreen/apple,z2-multitouch.yaml
- F:	Documentation/devicetree/bindings/interrupt-controller/apple,*
+@@ -2275,6 +2275,7 @@ F:	Documentation/devicetree/bindings/iommu/apple,dart.yaml
+ F:	Documentation/devicetree/bindings/iommu/apple,sart.yaml
+ F:	Documentation/devicetree/bindings/leds/backlight/apple,dwi-bl.yaml
+ F:	Documentation/devicetree/bindings/mailbox/apple,mailbox.yaml
++F:	Documentation/devicetree/bindings/mfd/apple,smc.yaml
+ F:	Documentation/devicetree/bindings/net/bluetooth/brcm,bcm4377-bluetooth.yaml
+ F:	Documentation/devicetree/bindings/nvme/apple,nvme-ans.yaml
+ F:	Documentation/devicetree/bindings/nvmem/apple,efuses.yaml
 
 -- 
 2.34.1
