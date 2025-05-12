@@ -1,184 +1,184 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4245829826E;
-	Mon, 12 May 2025 21:09:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9CDB257431
+	for <linux-pm@vger.kernel.org>; Mon, 12 May 2025 21:26:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747084181; cv=none; b=rrUj7zsI7idN4NaxntRX0mByCX3aTC5T3n7BgSh1n3zxgwZEJvkd14QWqjtZQEdiBlVVNPIWYWztCYZkEt0rkWuc4jvqorKHfxJCBhep6rudJ8PMAinoFv6qsbWIulYWv7Ahrf14h2GkS9/6x71Wf6+T2TSDI12gln2nNtfy9fU=
+	t=1747085197; cv=none; b=HrN6lBfy0SsB5uqeNi3izlPVjQHN+Kr/rTgYIti4SiId7x+jpzJ1bkMYFFR3YaJfzRUXROWrwA9/isc9haTGIbfv9vcP2g7PGq4syzTGBP8tFSnRsmV2Bqiu6GMnzOHtvYPOsJBP3BNvepsVWFAAdnoUQiuf3IGRhmnmtuWAR74=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747084181; c=relaxed/simple;
-	bh=u/MV0bw8ZCiqsrAXerHWyETAW/s4ZNxo7OKc9ya9URA=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=kJFONCMm9Nj1WTiudnBe+UDwXxqucn4hCRgl2G1kdjFFY61wQwe5PtQQ8EhjeStZh6cIqeaPi0attcewbyoIqARAceZs8S50WWAudYjCceT1V7kt/GvSjJwnuSZDS/aygFsFInfpElFFiCvNG5bdaUzX1EXs2F3Eq2E76xVm5Lw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=keqWDAQR; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1747085197; c=relaxed/simple;
+	bh=+a/KgmPWwl14TjhDwQb5jwJ7pArkLdnh0yHSCxXeSHU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=lukeYatZU7TMKfHsyYsVoVjiOc7hNZeYKCAlQ53dkWQwCt826dMfRCejabH9cDy3mcQ0siUvqyx4a88JGEBaCKXyczA6gTxBHnKvhZ4YLKslHGKu8LwZf3uYnetzricwMA7A4MUM+76bPAXCKC99RsBjIfNkBZM4LGI4Pgs0tO4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DhZ2HKEj; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="keqWDAQR"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4ABF7C4CEE7;
-	Mon, 12 May 2025 21:09:40 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DhZ2HKEj"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 37FBBC4CEE7;
+	Mon, 12 May 2025 21:26:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1747084180;
-	bh=u/MV0bw8ZCiqsrAXerHWyETAW/s4ZNxo7OKc9ya9URA=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=keqWDAQREe5w6fpxGeM9IrsRvsmUrOzfDAt1TzR0BD7ZINd0Mxv+v71nQyXmZ0ek7
-	 OBazdx+Gs9VgOm6ycUTw3mnVP5oePvKrUb0ghTyy1mveYGcujlnxCYaKn9Z4AuG9YH
-	 wXLIjZe9MK5Y0BxjbGV0uEkBlyhVBfbdawLDxTSKd7/xPdBsbQUrr7calceVwOIK5r
-	 6rwdMbH4J+vCCXonG7NKnSizg7JlRFA3T3NZDPmXIdPyUNj2bOLHQ9QsM3d+6LHNoC
-	 8uvGAHUESRaxazqU0Ig5yjDkkOX8DEv/3h5qAF9vxBczV345LlORQdUDRn2+NBkz+6
-	 i0URln4pX6cVw==
-Date: Mon, 12 May 2025 16:09:38 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: "Kenneth R. Crudup" <kenny@panix.com>
-Cc: rafael@kernel.org, linux-pm@vger.kernel.org,
-	Kai-Heng Feng <kai.heng.feng@canonical.com>,
-	Vidya Sagar <vidyas@nvidia.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Andrea Righi <andrea.righi@canonical.com>,
-	You-Sheng Yang <vicamo.yang@canonical.com>,
-	linux-pci@vger.kernel.org,
-	Sergey Dolgov <sergey.v.dolgov@gmail.com>,
-	Nirmal Patel <nirmal.patel@linux.intel.com>,
-	Jonathan Derrick <jonathan.derrick@linux.dev>,
-	Jian-Hong Pan <jhp@endlessos.org>,
-	"David E. Box" <david.e.box@linux.intel.com>
-Subject: Re: Raphael, I'd like your help upstreaming this VMD power-saving
- patch, please
-Message-ID: <20250512210938.GA1128238@bhelgaas>
+	s=k20201202; t=1747085196;
+	bh=+a/KgmPWwl14TjhDwQb5jwJ7pArkLdnh0yHSCxXeSHU=;
+	h=From:To:Cc:Subject:Date:From;
+	b=DhZ2HKEj+laOXjzpOqq6UaIbbXTZwFc9fNnRVcOsdf7Bp98Z45Ss1k5EHNyxaaJag
+	 Ms4vrBtNI3Ck8ZBrI1k340WvnDwdEj69hWbJwa/wVaTd9BJvgmMghmISQ3XHZRhBBH
+	 JCLpDpHOJFzn11pSRvWC90S1ZVqouY1b2GRMhEwHWU1bvfbwSjjy2yGgobG9WoyXKj
+	 yQed7MFIg+KyuDPIeSzKsCwKR285wn+pgh58V1mg6m9rOizJzZd6BVbIeue2Tbs5Y6
+	 bmpAFJLws/0oHL8qJTdrzLTMxNCHLovy9x/02tPjmNHOL67C6GHod10t1ELkrKxN9c
+	 wmEou4zJuOFKw==
+From: Mario Limonciello <superm1@kernel.org>
+To: mario.limonciello@amd.com,
+	rafael@kernel.org,
+	len.brown@intel.com,
+	pavel@kernel.org,
+	gregkh@linuxfoundation.org,
+	dakr@kernel.org
+Cc: AceLan Kao <acelan.kao@canonical.com>,
+	Kai-Heng Feng <kaihengf@nvidia.com>,
+	Mark Pearson <mpearson-lenovo@squebb.ca>,
+	Denis Benato <benato.denis96@gmail.com>,
+	=?UTF-8?q?Merthan=20Karaka=C5=9F?= <m3rthn.k@gmail.com>,
+	linux-pm@vger.kernel.org
+Subject: [PATCH] PM: Use hibernate flows for system power off
+Date: Mon, 12 May 2025 16:26:22 -0500
+Message-ID: <20250512212628.2539193-1-superm1@kernel.org>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0b166ece-eeec-ba5d-2212-50d995611cef@panix.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-[+cc Sergey, Nirmal, Jonathan, Jian-Hong, David]
+From: Mario Limonciello <mario.limonciello@amd.com>
 
-On Sun, May 11, 2025 at 01:10:24PM -0700, Kenneth R. Crudup wrote:
-> 
-> Hello Raphael,
-> 
-> For almost two years now, I've been trying to get patches from Ubuntu that
-> enable ASPM for devices behind Intel's VMD, necessary to get full lower-power
-> states (including very-reduced power usage during s0ix sleep) on my Alderlake
-> (et al.) laptop, upstreamed into mainline.
-> 
-> One such thread: https://lore.kernel.org/linux-pm/218aa81f-9c6-5929-578d-8dc15f83dd48@panix.com/
-> 
-> Since the original set of patches on this, most of the work has been pushed
-> upstream, with only this last patch required to get fully into the "CPU%LPI"
-> and "SYS%LPI" (names according to "turbostat") states.
-> 
-> I'm surprised that with the number of VMD-enabled laptops out there (which I
-> had to keep on so I could dual-boot into Win11 (the disk geometry changes if
-> I disable it, rendering the Win11 partition useless)), that there haven't been
-> many reports of excessive power usage in Linux during sleep; perhaps because
-> many installations are running stock Ubuntu kernels (where I assume variants
-> of this patch remain) it isn't an issue, but I do believe having this upstreamed
-> is still valuable.
-> 
-> I don't have the resources you've got to test this fully for regressions, nor
-> the expertise getting a patch into the kernel, so I'd like to again bring this
-> up for discussion (hence the phone-book of a CC: here).
-> 
-> If there's anything I can do to help get this done, please let me know.
-> 
-> Thank you,
-> 
-> -Kenneth Crudup
-> 
-> -- 
-> Kenneth R. Crudup / Sr. SW Engineer, Scott County Consulting, Orange County CA
+When the system is powered off the kernel will call device_shutdown()
+which will issue callbacks into PCI core to wake up a device and call
+it's shutdown() callback.  This will leave devices in ACPI D0 which can
+cause some devices to misbehave with spurious wakeups and also leave some
+devices on which will consume power needlessly.
 
-> From ee3618a598a261bbc8a875557d42d6dbbbc4cdd0 Mon Sep 17 00:00:00 2001
-> From: "Kenneth R. Crudup" <kenny@panix.com>
-> Date: Fri, 13 Dec 2024 15:28:42 -0800
-> Subject: [PATCH] PCI/ASPM: Fixup ASPM for VMD bridges
-> 
-> Effectively a squashed commit of:
-> UBUNTU: SAUCE: PCI/ASPM: Enable ASPM for links under VMD domain
-> UBUNTU: SAUCE: PCI/ASPM: Enable LTR for endpoints behind VMD
-> UBUNTU: SAUCE: vmd: fixup bridge ASPM by driver name instead
-> ---
->  drivers/pci/pcie/aspm.c | 28 +++++++++++++++++++++++++++-
->  1 file changed, 27 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/pci/pcie/aspm.c b/drivers/pci/pcie/aspm.c
-> index 29fcb0689a91..fdc1ce2755ff 100644
-> --- a/drivers/pci/pcie/aspm.c
-> +++ b/drivers/pci/pcie/aspm.c
-> @@ -788,6 +788,31 @@ static void aspm_l1ss_init(struct pcie_link_state *link)
->  		aspm_calc_l12_info(link, parent_l1ss_cap, child_l1ss_cap);
->  }
->  
-> +/*
-> + * BIOS may not be able to access config space of devices under VMD domain, so
-> + * it relies on software to enable ASPM for links under VMD.
-> + */
-> +static bool pci_fixup_vmd_bridge_enable_aspm(struct pci_dev *pdev)
-> +{
-> +       struct pci_bus *bus = pdev->bus;
-> +       struct device *dev;
-> +       struct pci_driver *pdrv;
-> +
-> +       if (!pci_is_root_bus(bus))
-> +               return false;
-> +
-> +       dev = bus->bridge->parent;
-> +       if (dev == NULL)
-> +               return false;
-> +
-> +       pdrv = pci_dev_driver(to_pci_dev(dev));
-> +       if (pdrv == NULL || strcmp("vmd", pdrv->name))
-> +               return false;
-> +
-> +       pci_info(pdev, "enable ASPM for pci bridge behind vmd");
-> +       return true;
-> +}
-> +
->  static void pcie_aspm_cap_init(struct pcie_link_state *link, int blacklist)
->  {
->  	struct pci_dev *child = link->downstream, *parent = link->pdev;
-> @@ -866,7 +891,8 @@ static void pcie_aspm_cap_init(struct pcie_link_state *link, int blacklist)
->  	}
->  
->  	/* Save default state */
-> -	link->aspm_default = link->aspm_enabled;
-> +	link->aspm_default = pci_fixup_vmd_bridge_enable_aspm(parent) ?
-> +		PCIE_LINK_STATE_ASPM_ALL : link->aspm_enabled;
+The issue won't happen if the device is in D3 before system shutdown, so
+putting device to low power state before shutdown solves the issue.
 
-PCIE_LINK_STATE_ASPM_ALL includes PCIE_LINK_STATE_L1_2, so I think
-this potentially enables L1.2.  The L1.2 configuration depends on
-T_POWER_ON and Common_Mode_Restore_Time, which depend on electrical
-design and are not discoverable by the kernel.  See PCIe r6.0, sec
-5.5.4:
+ACPI Spec 6.5, "7.4.2.5 System \_S4 State" says "Devices states are
+compatible with the current Power Resource states. In other words, all
+devices are in the D3 state when the system state is S4."
 
-  The TPOWER_ON and Common_Mode_Restore_Time fields must be programmed
-  to the appropriate values based on the components and AC coupling
-  capacitors used in the connection linking the two components. The
-  determination of these values is design implementation specific.
+The following "7.4.2.6 System \_S5 State (Soft Off)" states "The S5
+state is similar to the S4 state except that OSPM does not save any
+context." so it's safe to assume devices should be at D3 for S5.
 
-aspm_calc_l12_info() tries to compute these values, but I don't think
-it can do it correctly, and we have a related problem report where
-BIOS set them correctly and then Linux came along and messed them up:
+To accomplish this, modify the PM core to call all the device hibernate
+callbacks when turning off the system. To avoid issues when the kernel
+is compiled without hibernate support introduce a new internal PM message
+type "SHUTDOWN" which points to all the same callbacks as hibernate would.
 
-  https://lore.kernel.org/r/20250407155742.GA178541@bhelgaas
+Cc: AceLan Kao <acelan.kao@canonical.com>
+Cc: Kai-Heng Feng <kaihengf@nvidia.com>
+Cc: Mark Pearson <mpearson-lenovo@squebb.ca>
+Cc: Denis Benato <benato.denis96@gmail.com>
+Cc: Merthan Karakaş <m3rthn.k@gmail.com>
+Link: https://lore.kernel.org/linux-pci/20231213182656.6165-1-mario.limonciello@amd.com/
+Link: https://lore.kernel.org/linux-pci/20250506041934.1409302-1-superm1@kernel.org/
+Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+---
+This is the spiritual successor to "PCI/PM: Put devices to low power
+state on shutdown" as well as "Improvements to system power consumption
+at S5"
+---
+ drivers/base/power/main.c | 6 ++++++
+ include/linux/pm.h        | 5 +++++
+ kernel/reboot.c           | 6 ++++++
+ 3 files changed, 17 insertions(+)
 
-I think the only thing we can do with L1.2 is rely on values already
-programmed by BIOS.  There is a _DSM method for Latency Tolerance
-Reporting configuration (PCI Firmware r3.3, sec 4.6.6), but AFAICT it
-only addresses the LTR Capability in upstream ports, not the
-T_POWER_ON and Common_Mode_Restore_Time values.
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 29561f7346d93..58adedc4dab23 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -363,6 +363,8 @@ static pm_callback_t pm_op(const struct dev_pm_ops *ops, pm_message_t state)
+ 	case PM_EVENT_RESTORE:
+ 		return ops->restore;
+ #endif /* CONFIG_HIBERNATE_CALLBACKS */
++	case PM_EVENT_SHUTDOWN:
++		return ops->poweroff;
+ 	}
+ 
+ 	return NULL;
+@@ -397,6 +399,8 @@ static pm_callback_t pm_late_early_op(const struct dev_pm_ops *ops,
+ 	case PM_EVENT_RESTORE:
+ 		return ops->restore_early;
+ #endif /* CONFIG_HIBERNATE_CALLBACKS */
++	case PM_EVENT_SHUTDOWN:
++		return ops->poweroff_late;
+ 	}
+ 
+ 	return NULL;
+@@ -431,6 +435,8 @@ static pm_callback_t pm_noirq_op(const struct dev_pm_ops *ops, pm_message_t stat
+ 	case PM_EVENT_RESTORE:
+ 		return ops->restore_noirq;
+ #endif /* CONFIG_HIBERNATE_CALLBACKS */
++	case PM_EVENT_SHUTDOWN:
++		return ops->poweroff_noirq;
+ 	}
+ 
+ 	return NULL;
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index f0bd8fbae4f2c..536defa771716 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -490,6 +490,9 @@ const struct dev_pm_ops name = { \
+  * HIBERNATE	Hibernation image has been saved, call ->prepare() and
+  *		->poweroff() for all devices.
+  *
++ * SHUTDOWN	System is going to shut down, call ->prepare() and ->poweroff()
++ * 		for all devices.
++ *
+  * QUIESCE	Contents of main memory are going to be restored from a (loaded)
+  *		hibernation image, call ->prepare() and ->freeze() for all
+  *		devices.
+@@ -536,6 +539,7 @@ const struct dev_pm_ops name = { \
+ #define PM_EVENT_USER		0x0100
+ #define PM_EVENT_REMOTE		0x0200
+ #define PM_EVENT_AUTO		0x0400
++#define PM_EVENT_SHUTDOWN	0x0800
+ 
+ #define PM_EVENT_SLEEP		(PM_EVENT_SUSPEND | PM_EVENT_HIBERNATE)
+ #define PM_EVENT_USER_SUSPEND	(PM_EVENT_USER | PM_EVENT_SUSPEND)
+@@ -550,6 +554,7 @@ const struct dev_pm_ops name = { \
+ #define PMSG_QUIESCE	((struct pm_message){ .event = PM_EVENT_QUIESCE, })
+ #define PMSG_SUSPEND	((struct pm_message){ .event = PM_EVENT_SUSPEND, })
+ #define PMSG_HIBERNATE	((struct pm_message){ .event = PM_EVENT_HIBERNATE, })
++#define PMSG_SHUTDOWN	((struct pm_message){ .event = PM_EVENT_SHUTDOWN, })
+ #define PMSG_RESUME	((struct pm_message){ .event = PM_EVENT_RESUME, })
+ #define PMSG_THAW	((struct pm_message){ .event = PM_EVENT_THAW, })
+ #define PMSG_RESTORE	((struct pm_message){ .event = PM_EVENT_RESTORE, })
+diff --git a/kernel/reboot.c b/kernel/reboot.c
+index ec087827c85cd..083c143f99e40 100644
+--- a/kernel/reboot.c
++++ b/kernel/reboot.c
+@@ -13,6 +13,7 @@
+ #include <linux/kexec.h>
+ #include <linux/kmod.h>
+ #include <linux/kmsg_dump.h>
++#include <linux/pm.h>
+ #include <linux/reboot.h>
+ #include <linux/suspend.h>
+ #include <linux/syscalls.h>
+@@ -305,7 +306,12 @@ static void kernel_shutdown_prepare(enum system_states state)
+ 		(state == SYSTEM_HALT) ? SYS_HALT : SYS_POWER_OFF, NULL);
+ 	system_state = state;
+ 	usermodehelper_disable();
++#ifdef CONFIG_PM_SLEEP
++	dpm_suspend_start(PMSG_SHUTDOWN);
++	dpm_suspend_end(PMSG_SHUTDOWN);
++#else
+ 	device_shutdown();
++#endif
+ }
+ /**
+  *	kernel_halt - halt the system
+-- 
+2.43.0
 
-_HPX Type 2 and 3 records (ACPI r6.5, sec 6.2.9.3 and 6.2.9.4) are
-quite general and maybe there's a way to use them to configure the
-L1.2 parameters, but I am skeptical that these have been implemented
-in Linux and BIOSes.  At least, I don't recall any reports of problems
-or of them being used.
-
-Maybe something like this patch can be done for ASPM *except* for
-L1.2?
-
-Bjorn
