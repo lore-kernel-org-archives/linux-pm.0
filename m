@@ -1,137 +1,103 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36F315475E;
-	Mon, 12 May 2025 21:27:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.13
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8C53299AA4;
+	Mon, 12 May 2025 21:29:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747085239; cv=none; b=XM9hsDoQRuIR476tasIasJUzFjZY/nBrSgjCNGWC+Jz1xbxjnbn9hpVY41+ZFuk5hotCuhEbcFWGMzik+z8r51de2fl/J16i/C6ufrSzT4Neb+Kr/E+fejrRHnqg9vWUojFhzsN4ceZdRVpLzFybMEFxoU18EsvkeaEcSdiJ2/8=
+	t=1747085351; cv=none; b=gDzKdUhlkLGi8E1wfx6sVJIzBPHzuz9ATH+ifXBWppTew/YbNkMTxSuIyFQsGEpqBHwA693zv4mDnOZXOmMQognFTm/+/RxYw4Gi/5s2s//MmVveLprvCQRTBrm7MR04W8NcxdCxnowgqAvcbC/3qR+4pwYXgwn3EWJFNqHfzNY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747085239; c=relaxed/simple;
-	bh=MjwoJwDMlLUQ0bo4JY/L1ooY69zgG23YhBSme2DpFUM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=P/JCwhkJe2RMwdPWMq5tzR5vPBqGlDirQyyulWfpuQTMGy9I0kmbjDAcfIxJffW6Jd1PCtno8S92Jd0k6ynfZ0cY7KJ87OFwyGTavrX3bwYxexA7rHF01jz1oan9m4cng898R/DE00DmebQaCEJ24Szg6cQkjja2kJhuw+jhWAM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=fDBnXMvb; arc=none smtp.client-ip=192.198.163.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1747085351; c=relaxed/simple;
+	bh=awwXn2TAbBoaYGo+e+KQV3s1Vl5rprM8b1Qcv70cHOc=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=LI04Uu38G4/utUrdlCvfaABq4wK0MmoI94UYCRCPIKSCryL5S9/VORuToj0iHTLFD26NOIVBbdxjEikrlrCCION1OsdBqkK9P+PAInmBaGP9FBqvZ8GFXXXHIq4zIB/5e+knIwUjd+1sbufTnFioRhkMca/Q8BWlUdmHa5+B5hc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ke/5ibqI; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="fDBnXMvb"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1747085237; x=1778621237;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=MjwoJwDMlLUQ0bo4JY/L1ooY69zgG23YhBSme2DpFUM=;
-  b=fDBnXMvbV35fPDnGVtA/SX5x8gSy/QPkDn1ez1giUjShLx2JFATskEKX
-   j8ufvfpvU6VDWWQIC3FSf8VcZtwOfK7VaC81SQaGYTiH9aPznq5vML2+U
-   N2qCpa/LY9TLF7CwriDn7kWR5ylcoFhh7kZP3oHBoTwRouhTtE4FKvx9K
-   y94AFtAOSu/vNpqBzLSWApnqwuXn92//zGJPE/StEr7XDwYbAOKAKSYp6
-   WEV+CjD4uBYfGrmLCfMw1Z6oMxpWZF0W7EUYMf2PSZ9rxGa3FOENPHQkd
-   TQYBv/iZcGlkMW+aZRA5XCeHKVIAxatm2XXrVgyouenDxriCSaKCbK41v
-   A==;
-X-CSE-ConnectionGUID: 66BwpoSfQZueXlXv1gPVqA==
-X-CSE-MsgGUID: DXH4lvgERgaEnXimNsEnwQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11431"; a="51555313"
-X-IronPort-AV: E=Sophos;i="6.15,283,1739865600"; 
-   d="scan'208";a="51555313"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
-  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 May 2025 14:27:16 -0700
-X-CSE-ConnectionGUID: EFmkp3ZhSKOT4e5wVN8G5g==
-X-CSE-MsgGUID: m8H7JVlgRC2iGeHO15JLtg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,283,1739865600"; 
-   d="scan'208";a="174636997"
-Received: from lkp-server01.sh.intel.com (HELO 1992f890471c) ([10.239.97.150])
-  by orviesa001.jf.intel.com with ESMTP; 12 May 2025 14:27:13 -0700
-Received: from kbuild by 1992f890471c with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1uEag2-000FR9-30;
-	Mon, 12 May 2025 21:27:10 +0000
-Date: Tue, 13 May 2025 05:26:11 +0800
-From: kernel test robot <lkp@intel.com>
-To: Christian Marangi <ansuelsmth@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev
-Subject: Re: [PATCH v6 2/2] thermal: Add support for Airoha EN7581 thermal
- sensor
-Message-ID: <202505130415.DDziIQRY-lkp@intel.com>
-References: <20250510172509.2547273-2-ansuelsmth@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ke/5ibqI"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0DFB8C4CEF4;
+	Mon, 12 May 2025 21:29:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1747085351;
+	bh=awwXn2TAbBoaYGo+e+KQV3s1Vl5rprM8b1Qcv70cHOc=;
+	h=From:Date:Subject:To:Cc:From;
+	b=ke/5ibqIxWZIGCfnstPdWuLJxGt6VqLdV8S7+5X6WU/w7r27Y8KBN0COjW3baioVk
+	 Z7ENjzNHG5U01R5BRxaA1sHeFzAl7IU3HZqRJLanE357WZ/1v9Xl+EuH3Sjj/Uncsu
+	 cfWS7GCGlRjtItjKVGmZ9FxgnHU3wwOdQxwPODB9ZDx4tXbmq+os8i8+tk87wzqOUU
+	 URUdK2ggwfgWZmaDZy7x/0ASlyIVSctQL84AZ7xnpPSqsb5AOUB8TB8taFtY5SrpAN
+	 JuJrLtxl54sILH7N9vCsgjDREL5fljH1ko7dhcByEu+eew3wpW2FhFapjh79UCu06W
+	 IA/J6wAnJbXlQ==
+From: Nathan Chancellor <nathan@kernel.org>
+Date: Mon, 12 May 2025 23:28:55 +0200
+Subject: [PATCH] cpufreq/amd-pstate: Avoid shadowing ret in
+ amd_pstate_ut_check_driver()
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250510172509.2547273-2-ansuelsmth@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250512-amd-pstate-ut-uninit-ret-v1-1-fcb4104f502e@kernel.org>
+X-B4-Tracking: v=1; b=H4sIABZoImgC/x3MQQ4CIQxA0auQrqcJoKDOVSYuGqnahTiBYkwId
+ 5e4fIv/O1QuwhVW06HwR6q884RbDNyelB+MkqbBWx9scB7plXCvSsrYFFuWLIqFFY+R/IHcJcT
+ zCWa+F77L97/ermP8ACZKtfdqAAAA
+X-Change-ID: 20250512-amd-pstate-ut-uninit-ret-46a23a195687
+To: Huang Rui <ray.huang@amd.com>, 
+ "Gautham R. Shenoy" <gautham.shenoy@amd.com>, 
+ Mario Limonciello <mario.limonciello@amd.com>, 
+ Perry Yuan <perry.yuan@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>, 
+ Swapnil Sapkal <swapnil.sapkal@amd.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ llvm@lists.linux.dev, kernel test robot <lkp@intel.com>, 
+ Nathan Chancellor <nathan@kernel.org>
+X-Mailer: b4 0.15-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1520; i=nathan@kernel.org;
+ h=from:subject:message-id; bh=awwXn2TAbBoaYGo+e+KQV3s1Vl5rprM8b1Qcv70cHOc=;
+ b=owGbwMvMwCUmm602sfCA1DTG02pJDBlKGSq/J7pqtxw/uqaAVcJYSjhjpztfTHfd3ya2WcZbr
+ 18MOfqro5SFQYyLQVZMkaX6sepxQ8M5ZxlvnJoEM4eVCWQIAxenAEyk8BbD/wIxRt+1yqsWee5c
+ UDw363DGh3tLEudPf/d6lp336xXzzm1h+F+4o8ZLzbf/I7dz6iz59F9RSl/fhIVwbDwh0R2p3tl
+ 2hQcA
+X-Developer-Key: i=nathan@kernel.org; a=openpgp;
+ fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
 
-Hi Christian,
+Clang warns (or errors with CONFIG_WERROR=y):
 
-kernel test robot noticed the following build warnings:
+  drivers/cpufreq/amd-pstate-ut.c:262:6: error: variable 'ret' is uninitialized when used here [-Werror,-Wuninitialized]
+    262 |         if (ret)
+        |             ^~~
 
-[auto build test WARNING on rafael-pm/thermal]
-[also build test WARNING on linus/master v6.15-rc6 next-20250512]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+ret is declared at the top of the function and in the for loop so the
+initialization of ret is local to the loop. Remove the declaration in
+the for loop so that ret is always used initialized.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Christian-Marangi/thermal-Add-support-for-Airoha-EN7581-thermal-sensor/20250511-012647
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal
-patch link:    https://lore.kernel.org/r/20250510172509.2547273-2-ansuelsmth%40gmail.com
-patch subject: [PATCH v6 2/2] thermal: Add support for Airoha EN7581 thermal sensor
-config: alpha-randconfig-r111-20250512 (https://download.01.org/0day-ci/archive/20250513/202505130415.DDziIQRY-lkp@intel.com/config)
-compiler: alpha-linux-gcc (GCC) 12.4.0
-reproduce: (https://download.01.org/0day-ci/archive/20250513/202505130415.DDziIQRY-lkp@intel.com/reproduce)
+Fixes: d26d16438bc5 ("amd-pstate-ut: Reset amd-pstate driver mode after running selftests")
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202505072226.g2QclhaR-lkp@intel.com/
+Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+---
+ drivers/cpufreq/amd-pstate-ut.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202505130415.DDziIQRY-lkp@intel.com/
+diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
+index 30835d0e4994..65f9d2bae2d3 100644
+--- a/drivers/cpufreq/amd-pstate-ut.c
++++ b/drivers/cpufreq/amd-pstate-ut.c
+@@ -246,7 +246,7 @@ static int amd_pstate_ut_check_driver(u32 index)
+ 	int ret;
+ 
+ 	for (mode1 = AMD_PSTATE_DISABLE; mode1 < AMD_PSTATE_MAX; mode1++) {
+-		int ret = amd_pstate_set_mode(mode1);
++		ret = amd_pstate_set_mode(mode1);
+ 		if (ret)
+ 			return ret;
+ 		for (mode2 = AMD_PSTATE_DISABLE; mode2 < AMD_PSTATE_MAX; mode2++) {
 
-sparse warnings: (new ones prefixed by >>)
->> drivers/thermal/airoha_thermal.c:317:9: sparse: sparse: statement expected after case label
+---
+base-commit: b01fc4eca73cbd7946181255a95dbe64ff83bc5f
+change-id: 20250512-amd-pstate-ut-uninit-ret-46a23a195687
 
-vim +317 drivers/thermal/airoha_thermal.c
-
-   297	
-   298	static irqreturn_t airoha_thermal_irq(int irq, void *data)
-   299	{
-   300		struct airoha_thermal_priv *priv = data;
-   301		enum thermal_notify_event event;
-   302		bool update = false;
-   303		u32 status;
-   304	
-   305		status = readl(priv->base + EN7581_TEMPMONINTSTS);
-   306		switch (status & (EN7581_HOFSINTSTS0 | EN7581_LOFSINTSTS0)) {
-   307		case EN7581_HOFSINTSTS0:
-   308			event = THERMAL_TRIP_VIOLATED;
-   309			update = true;
-   310			break;
-   311		case EN7581_LOFSINTSTS0:
-   312			event = THERMAL_EVENT_UNSPECIFIED;
-   313			update = true;
-   314			break;
-   315		/* Should be impossible as we enable only these interrupt */
-   316		default:
- > 317		}
-   318	
-   319		/* reset interrupt */
-   320		writel(status, priv->base + EN7581_TEMPMONINTSTS);
-   321	
-   322		if (update)
-   323			thermal_zone_device_update(priv->tz, event);
-   324	
-   325		return IRQ_HANDLED;
-   326	}
-   327	
-
+Best regards,
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Nathan Chancellor <nathan@kernel.org>
+
