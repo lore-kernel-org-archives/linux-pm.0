@@ -1,114 +1,93 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from devianza.investici.org (devianza.investici.org [198.167.222.108])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B6BF15533F
-	for <linux-pm@vger.kernel.org>; Tue, 13 May 2025 16:26:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA000645
+	for <linux-pm@vger.kernel.org>; Tue, 13 May 2025 16:45:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.167.222.108
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747153588; cv=none; b=nLZiqTm6izgJOu5DdqD9u7GMQ42ohMbO/gvuBN/EtPecOesZ47HCjGUoYOw/WqB0GR/bPgs/iU5kSxOfvkdcf2YKmjbGG0zN7p4CHm8jqP9vdS8C3G+XhDmejjxmbElL4e/SX8mt6PfsXSw8TtqQOtzxum50BgHKvNC6sBPl3T8=
+	t=1747154722; cv=none; b=kkxBVVnWd+K3q23FA0wFHhQSF27mRTeHQ8BWbuZOQtZeo9GVdNUdUEdGJGxJp7iCOj/Wy1YO13XKkXiTuFlmz52K/Ua5Jd4CQmCbsSW8/7vXGWtDimIDYbgQ20sO/svH82Bf+YG2znLoDwPhd73VEG01vhEgibC8TLFuDvaILpQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747153588; c=relaxed/simple;
-	bh=ga3zCv76QkUCBLxG+3obr75Z66d/dc+j2DqdsPQXh0c=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ZaDAxqSbnCDcjca6n+yQhqTXDY+6kLLtwC6qk4YNpd2JhvpkYskoXvINKI5SCtjWLjYckpAS5vTaeVRlGRewihyXItfRzMm8oYBWO02jDGNssU6kbcUrhRvuGF+6rK7SF5xBI5lvnj6Ydm6yZU+g8gSfaKTytwkXxR3L3VbZX8Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ghnA84IH; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1747154722; c=relaxed/simple;
+	bh=njIzucSmzmIxTnajmetVrrjPJeE3qLTqesqBsT525I4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=KhIYvJ/o1dQt+h1gYiXUrF+uBwrSHPnpaBGrMURpUNkYdlXclWiHhPXCLtBXoK/teTb+bLJJpG01vNeZPIIIiNYOXgqL2EK6c8mc1mHeZ8fgrUcQV0kK304Qt7snBvMAYsYSufYI67h6Ddq8PzqxsENd6VbHuVO4M7ueFH1TuXI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=paranoici.org; spf=pass smtp.mailfrom=paranoici.org; dkim=pass (1024-bit key) header.d=paranoici.org header.i=@paranoici.org header.b=IXcKLsMY; arc=none smtp.client-ip=198.167.222.108
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=paranoici.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=paranoici.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ghnA84IH"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A1781C4CEE9
-	for <linux-pm@vger.kernel.org>; Tue, 13 May 2025 16:26:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1747153587;
-	bh=ga3zCv76QkUCBLxG+3obr75Z66d/dc+j2DqdsPQXh0c=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=ghnA84IHlg7O22yhptVGd5Vo4K2suyTcvlb+dB5s7Xg4X6SCKx0ZtMdwAnmiIGhrH
-	 M868zaiZXQjfGDXf9pX+lD9EQ9T5uT9qwj6inycMkJOrwftBuYfzqwRkK1PToW2PZs
-	 RYNCKFYf3234mnyWthq+oKNmQQvb8i58T5ANMMw1R8pSUmTgMPX1KuXrfKOLRSumu4
-	 Y/Lg0OuxA6RGFWAgVYErB6RT1wwV+AFVxlYEKgJ6/v10H8Ksf7D8azLajSyucjEEwe
-	 mWxhdjJIYEZ+LQTq5P2LTa366AGYaAE9nvfu0kzlc/FZxK0WpLPebLv/Wk5X+aA5O9
-	 LGfIdhM7MlxpQ==
-Received: by mail-ed1-f51.google.com with SMTP id 4fb4d7f45d1cf-5fbf0324faaso11849085a12.1
-        for <linux-pm@vger.kernel.org>; Tue, 13 May 2025 09:26:27 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUOFCRlYGYkKwiaKzofLtshW0JRxt9gIdSUyfja13D0xflQvlrd6HbnEEOkoilADLW2p5JGN2gmvg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxo8i/GWh+cnZv1hGvfqvjDRWneUbTOtOvMT2dKWCGZwK5PIW7O
-	ChDESERvFPZDg+T/C9rXNZdcraC10KhY2Lxa9BsV9V5/ahqrDaEUSTuRRwNqXBK5v6TWaIaGMVw
-	NBYOjl3rQ0RIPYVj2acFnQ51LOfg=
-X-Google-Smtp-Source: AGHT+IGLphKmJHdSpxiAM6EZINozmZaCBpRvN/kTcv+//ma0V7JmmF8efQr+QHrkewteuL8JarBqgc1UuBNDbXrxzSs=
-X-Received: by 2002:a17:907:d17:b0:ad4:f6d3:a188 with SMTP id
- a640c23a62f3a-ad4f755173bmr20068366b.46.1747153586566; Tue, 13 May 2025
- 09:26:26 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=paranoici.org header.i=@paranoici.org header.b="IXcKLsMY"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=paranoici.org;
+	s=stigmate; t=1747154716;
+	bh=6Lt7NBxPwYNy6JNOB51hq3BllvsubtABLTk9iZlS/bg=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=IXcKLsMYzx7CaHI6wtXkaewcmaKNeKyGx38iCtDB4e4FmusF603oOCBMuLSo3sFT1
+	 upLwVHjxhJ7ffBPrzBMeiGfwT8OfOc4HzTZ9VoR+QDUP9EHkA1ovbQvqBPWkAB+m4w
+	 OEUM1rsMgvuf8hul/GHs7ykJ9eepQRUSbPXd9CJc=
+Received: from mx2.investici.org (unknown [127.0.0.1])
+	by devianza.investici.org (Postfix) with ESMTP id 4Zxj585k8lz6xfk;
+	Tue, 13 May 2025 16:45:16 +0000 (UTC)
+Received: from [198.167.222.108] (mx2.investici.org [198.167.222.108]) (Authenticated sender: invernomuto@paranoici.org) by localhost (Postfix) with ESMTPSA id 4Zxj585Dcpz6vQ1;
+	Tue, 13 May 2025 16:45:16 +0000 (UTC)
+Received: from frx by crunch with local (Exim 4.98.2)
+	(envelope-from <invernomuto@paranoici.org>)
+	id 1uEskl-00000000Gn8-2zW8;
+	Tue, 13 May 2025 18:45:15 +0200
+From: "Francesco Poli (wintermute)" <invernomuto@paranoici.org>
+To: linux-pm list <linux-pm@vger.kernel.org>
+Cc: Francesco Poli <invernomuto@paranoici.org>,
+	Thomas Renninger <trenn@suse.com>,
+	Shuah Khan <shuah@kernel.org>,
+	"John B. Wyatt IV" <jwyatt@redhat.com>,
+	John Kacur <jkacur@redhat.com>,
+	Thorsten Leemhuis <linux@leemhuis.info>,
+	Justin Forbes <jforbes@redhat.com>
+Subject: [PATCH 1/3] cpupower: do not write DESTDIR to cpupower.service
+Date: Tue, 13 May 2025 18:29:31 +0200
+Message-ID: <20250513163937.61062-3-invernomuto@paranoici.org>
+X-Mailer: git-send-email 2.47.2
+In-Reply-To: <20250513163937.61062-2-invernomuto@paranoici.org>
+References: <20250513163937.61062-2-invernomuto@paranoici.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250512082938.97110-2-u.kleine-koenig@baylibre.com>
-In-Reply-To: <20250512082938.97110-2-u.kleine-koenig@baylibre.com>
-From: Chanwoo Choi <chanwoo@kernel.org>
-Date: Wed, 14 May 2025 01:25:51 +0900
-X-Gmail-Original-Message-ID: <CAGTfZH2uk-6-R5QNZwsssQ1UtnqexKeo=e=SsXB26NMwqf8c9g@mail.gmail.com>
-X-Gm-Features: AX0GCFv7rFmK8zZwyel010vviBuZuUDkrqDnxqcGo43EqBsoQ0TBQM5VkdZiclQ
-Message-ID: <CAGTfZH2uk-6-R5QNZwsssQ1UtnqexKeo=e=SsXB26NMwqf8c9g@mail.gmail.com>
-Subject: Re: [PATCH] PM / devfreq: sun8i-a33-mbus: Fix misconversion to devm_clk_rate_exclusive_get()
-To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, 
-	Chanwoo Choi <cw00.choi@samsung.com>, Chen-Yu Tsai <wens@csie.org>, 
-	Jernej Skrabec <jernej.skrabec@gmail.com>, Samuel Holland <samuel@sholland.org>, linux-pm@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev, 
-	oe-kbuild-all@lists.linux.dev, kernel test robot <lkp@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hi,
+Fix the use of DESTDIR variable in the Makefile, as far as the
+installation of the systemd service unit 'cpupower.service' is
+concerned.
 
-Instead of fix-up patch, I'd like you to send the v2 of patch[1].
-[1] https://patchwork.kernel.org/project/linux-pm/patch/20241111112237.3363=
-10-2-u.kleine-koenig@baylibre.com/
+This was caused by a misunderstanding about the purpose of the DESTDIR
+variable in the Makefile, which is instead meant to support staged
+installations: its value should not end up into installed file contents.
 
+Link: https://lore.kernel.org/linux-pm/20250509002206.bd2519ba52035d47c3c32aa6@paranoici.org/T/#mfbb938f9c0d5a21173acb92a061eb9205fd0abfe
+Link: https://www.gnu.org/prep/standards/html_node/DESTDIR.html
 
+Fixes: 9c70b779ad91 ("cpupower: add a systemd service to run cpupower")
 
-On Mon, May 12, 2025 at 5:29=E2=80=AFPM Uwe Kleine-K=C3=B6nig
-<u.kleine-koenig@baylibre.com> wrote:
->
-> The patch converting the driver to make more use of devm functions got
-> one conversion wrong making the driver not compilable any more. I have
-> no excuse, mea culpa!
->
-> Fix this by adding the needed device parameter.
->
-> Reported-by: kernel test robot <lkp@intel.com>
-> Link: https://lore.kernel.org/all/202412070231.MzXdNrLv-lkp@intel.com
-> Fixes: bc253b28a365 ("PM / devfreq: sun8i-a33-mbus: Simplify by using mor=
-e devm functions")
-> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@baylibre.com>
-> ---
->  drivers/devfreq/sun8i-a33-mbus.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/devfreq/sun8i-a33-mbus.c b/drivers/devfreq/sun8i-a33=
--mbus.c
-> index f99af530211d..4bd5657558d6 100644
-> --- a/drivers/devfreq/sun8i-a33-mbus.c
-> +++ b/drivers/devfreq/sun8i-a33-mbus.c
-> @@ -381,7 +381,7 @@ static int sun8i_a33_mbus_probe(struct platform_devic=
-e *pdev)
->                 return dev_err_probe(dev, ret, "failed to lock dram clock=
- rate\n");
->
->         /* Lock the MBUS clock rate to keep MBUS_TMR_PERIOD in sync. */
-> -       ret =3D devm_clk_rate_exclusive_get(priv->clk_mbus);
-> +       ret =3D devm_clk_rate_exclusive_get(dev, priv->clk_mbus);
->         if (ret)
->                 return dev_err_probe(dev, ret, "failed to lock mbus clock=
- rate\n");
->
-> --
-> 2.47.2
->
+Signed-off-by: Francesco Poli (wintermute) <invernomuto@paranoici.org>
+---
+ tools/power/cpupower/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
+index 9c2b5f71fee1..4ad931509eaa 100644
+--- a/tools/power/cpupower/Makefile
++++ b/tools/power/cpupower/Makefile
+@@ -310,7 +310,7 @@ install-tools: $(OUTPUT)cpupower
+ 	$(INSTALL) -d $(DESTDIR)${libexecdir}
+ 	$(INSTALL_PROGRAM) cpupower.sh '$(DESTDIR)${libexecdir}/cpupower'
+ 	$(INSTALL) -d $(DESTDIR)${libdir}/systemd/system
+-	sed 's|___CDIR___|$(DESTDIR)${confdir}|; s|___LDIR___|$(DESTDIR)${libexecdir}|' cpupower.service.in > '$(DESTDIR)${libdir}/systemd/system/cpupower.service'
++	sed 's|___CDIR___|${confdir}|; s|___LDIR___|${libexecdir}|' cpupower.service.in > '$(DESTDIR)${libdir}/systemd/system/cpupower.service'
+ 	$(SETPERM_DATA) '$(DESTDIR)${libdir}/systemd/system/cpupower.service'
+ 	if test -d /run/systemd/system; then systemctl daemon-reload; fi
+ 
 
+base-commit: 99d2fce9b44dec6d270b85a7d28cdc99aaa93da6
+-- 
+2.47.2
 
---=20
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
