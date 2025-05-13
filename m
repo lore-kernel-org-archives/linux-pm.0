@@ -1,179 +1,207 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f41.google.com (mail-ej1-f41.google.com [209.85.218.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 522B62C1799;
-	Tue, 13 May 2025 20:38:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 553281FAC48
+	for <linux-pm@vger.kernel.org>; Tue, 13 May 2025 20:39:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747168685; cv=none; b=iEHKxiJs3nV1ZyGWOocopTdBCrDlbft1bQf8TGzZD+YVdnDdRch1mMMvzsCcW5/QuQAX22e90VR08oe5+jHtnJTFZCg6QmKN9nCn4QDXnhfrsR8Xu8Dg8RasseimFuNeLRCtuWvg3sbygsN0Hg9E18Ts5IowvZx3bx36Cp6DuEg=
+	t=1747168768; cv=none; b=bDDkmJe4zkavJiSpW/IYmeP6KYgQC3K0Aj9v+RferkiL6OQBNrmxSezX1uyJa5pbx20duHbtXK6g47oPI0zDQR4u5S5OltfNYiepR0nYBBkC19cGYm6TZL3iWWiSuTYPgS4r143pxUnEWNMykYNm0TH2uPpX9Xhsvdy4QWGeyaE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747168685; c=relaxed/simple;
-	bh=agLNp8oAxzQaWYhjfHFlOBrApju2Hbb0chhD8+zYEOA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=E9duIGLx0Fj6biFNhDDuBBV4lNeLNdy0IW9Q5v9w6gszlPp9jzFgYSd/l6rEjG8bbMnaqIMDeb1DUBt/iRZx5KQWZUZu76iVeuPfWKjKUC5L5mkGLEXIPu7ZOPhoM5AeJlH2tjLNIErYPDyL1Lm9ixeYtlQRt5Kj8/Xwb/fCEt0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=SlMflK2O; arc=none smtp.client-ip=192.198.163.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1747168768; c=relaxed/simple;
+	bh=TJafEwdeqjrP6AcWhb1FzDP3OG9jHCSl2xxI4+oU+mY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=lX/9wojYAxp898gZVQHuGCZ4ZF6PSypA/X7avTkY8WDIc2xCndHsCJG7WKroUKJd5LAPrfCnY26mc3echcBF6kBihO4jyBb6auGAUMpIr/GbZQWxknx7TRHhlH5WL1JO+Z0ADVQuhOTd4RNKxgkkxi7Bna1xgs7FRvfqoi21C3E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=qxh10uLo; arc=none smtp.client-ip=209.85.218.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="SlMflK2O"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1747168683; x=1778704683;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=agLNp8oAxzQaWYhjfHFlOBrApju2Hbb0chhD8+zYEOA=;
-  b=SlMflK2Ozr16aF5H5ehYlRXNlpcUmvALZCqGgA13XyBw7BpNk+2COTp8
-   pSaOxDQ1JcXidMDw4sQGHKQdTSmkoGrPqfHalPqcKy/G2XhircdVErQQH
-   ZW7inRo2Fs6wZfwCVi/dSklMdbW3TUq3YzRAUQblr4cNnOYtuQgUZanr/
-   wfpC4e9MsBrj4acQnGzL7aXvDH4nv8e3gogyuzCH6Y6cKoupR98dcb+qk
-   l3TEwI7sK0TT8sFMXZ9sDstSKugozphKbE/ShCxwm8gFm1UquWnousGHN
-   RbQStn5lYbOr5lkKsFHiGdmg27SA65Z7CC3sirJL9am3YaP1N+tiYpIQK
-   A==;
-X-CSE-ConnectionGUID: V2wVW8IIT1yC6ehFsK5WXg==
-X-CSE-MsgGUID: +Dc6+vhnR8yIvD6SqIYo6g==
-X-IronPort-AV: E=McAfee;i="6700,10204,11432"; a="49160486"
-X-IronPort-AV: E=Sophos;i="6.15,286,1739865600"; 
-   d="scan'208";a="49160486"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
-  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 May 2025 13:38:00 -0700
-X-CSE-ConnectionGUID: UCq+j34SQnyxy4tBG8PDfQ==
-X-CSE-MsgGUID: VT1VdeJ9T1Sfv0wsLdaadw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,286,1739865600"; 
-   d="scan'208";a="138241737"
-Received: from sohilmeh.sc.intel.com ([172.25.103.65])
-  by fmviesa008.fm.intel.com with ESMTP; 13 May 2025 13:37:59 -0700
-From: Sohil Mehta <sohil.mehta@intel.com>
-To: x86@kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Xin Li <xin@zytor.com>,
-	"H . Peter Anvin" <hpa@zytor.com>,
-	Andy Lutomirski <luto@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Sean Christopherson <seanjc@google.com>,
-	Adrian Hunter <adrian.hunter@intel.com>,
-	Kan Liang <kan.liang@linux.intel.com>,
-	Tony Luck <tony.luck@intel.com>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Sohil Mehta <sohil.mehta@intel.com>,
-	Andrew Cooper <andrew.cooper3@citrix.com>,
-	"Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
-	Jacob Pan <jacob.pan@linux.microsoft.com>,
-	Andi Kleen <ak@linux.intel.com>,
-	Kai Huang <kai.huang@intel.com>,
-	Sandipan Das <sandipan.das@amd.com>,
-	linux-perf-users@vger.kernel.org,
-	linux-edac@vger.kernel.org,
-	kvm@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="qxh10uLo"
+Received: by mail-ej1-f41.google.com with SMTP id a640c23a62f3a-ad257009e81so415850366b.2
+        for <linux-pm@vger.kernel.org>; Tue, 13 May 2025 13:39:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1747168763; x=1747773563; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=juaG+AmbI9q0dBfqd6nXXGHR850jBoYkaw6Nn2riiLQ=;
+        b=qxh10uLou2liPYrjhRdGO49UtHX0NddfD1TQHCHbGtV4qCPdcI3mjBvkViefvG0VCV
+         AFLxZcsjpJvvlbbBks/vInrzhUNrpO2Io3NJhQZh4LkkpRohhG9a7Owy7bLS7B2WPiu7
+         JZEIlIU82tds8XglWR5YrheljfjzxF3845v7YyaVCqCWzyVw3EKVVMrkrgsOwbj8YVYq
+         KLoQWnevSX0bS4k8gNnPGF54IsmMUdXo2lB3KEETlbOWi/oC9V5cNe3X57ovaYyEa6r2
+         uI4TDda9IUMSuDxvgvU/lbvqENHk3NWEL6Xd11T9OOI3a/ZQUXbmfV5mRTX4O0nNk406
+         HlfA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1747168763; x=1747773563;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=juaG+AmbI9q0dBfqd6nXXGHR850jBoYkaw6Nn2riiLQ=;
+        b=DXV9Gx7/VPOK4GxWT7uoAK+UAh+6zzMA7OYMflwz9c3VKc0ZnHLf9Sa3kftUqRH1Zg
+         oejzb4ZojGv7dLi5DsCPEmWBemQ6u97uEREAAGg7suRs24xNvy9rcRsIcP1QNIC9LGBO
+         soOCjqB4Lg8leklFfjPxLFaIZMDXyS0IEaIBqfX6AvJ5HZiFgbkA0vcXoX1hO4xQJS/c
+         xBxWmgviq0m5veAC8dvMs42ZKZUWfiXi0sCH+JIjYE1CklkAgWV9ATUkCrZpU2luQx/Y
+         kznVD673PqoORuvGE41RjNoRy6HuQpafZXtG5aNrHYB816Qi2zrxXRXkiy6b6bY/Zlux
+         +BiQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVbxxJC00e7gIT488ns0BC/yd80ol7M4KNU1ytF4irNbWTzOQNA1NG7tRkwlq/NHogeNEFt5HiKJA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzaVn1/h2iBVFnhQ1tD6KAHuCFCYqrcDXHctL4z1Qz1r2ukQiJG
+	W/OKeXSsFLcbtNMFWldwGzw+8z/iiyBEf+pJtEnbhViDaN7Bh0kvR1h6zoZuHnM=
+X-Gm-Gg: ASbGnct8JR4pSiKtf6T+ms5ymICZVCMfjZ/nBmvAnpxO6VSQQdDeotv/l31Vdwq+1xT
+	jgX15NCE+fk4FoWQehFYcBSBom6VaEt7PFF89+p45EfCvgapkCahhtFa9s6Q9i+vD7JDOsBP4/v
+	D+iw4olimy11tI8u0dG2wmbHd3EcCZCuAUWCerfkqYqid9CkclQ4jYYhasxTp0FKC+N+DLNozdB
+	iTYbX6K2C+Ul4yZSE68n4Pr58MU8NHzhFSdjuEscYQIsYtUDWAsWARaD64JEBK/5Pe9rtHn+fzH
+	RpE1jraTWxdme856IqhbReDyZWmqmNNAZ0CMizeVQ2B59gU1Y7NV7H12
+X-Google-Smtp-Source: AGHT+IEWi0WXmXZATUkUPYXouuDIbFY4Wie5OHgl0qQme2z1Ey//pJl2AcKhRMhJ30qxF29lDPOGiA==
+X-Received: by 2002:a17:907:7f93:b0:aca:d5a1:c324 with SMTP id a640c23a62f3a-ad4f6f2d088mr92332366b.0.1747168763600;
+        Tue, 13 May 2025 13:39:23 -0700 (PDT)
+Received: from localhost ([2a02:8071:b783:6940:36f3:9aff:fec2:7e46])
+        by smtp.gmail.com with UTF8SMTPSA id a640c23a62f3a-ad2417f2341sm558309166b.19.2025.05.13.13.39.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 13 May 2025 13:39:22 -0700 (PDT)
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+To: Chanwoo Choi <chanwoo@kernel.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	Chen-Yu Tsai <wens@csie.org>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Samuel Holland <samuel@sholland.org>,
 	linux-pm@vger.kernel.org,
-	linux-trace-kernel@vger.kernel.org
-Subject: [PATCH v6 8/9] perf/x86: Enable NMI-source reporting for perfmon
-Date: Tue, 13 May 2025 13:38:02 -0700
-Message-ID: <20250513203803.2636561-9-sohil.mehta@intel.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20250513203803.2636561-1-sohil.mehta@intel.com>
-References: <20250513203803.2636561-1-sohil.mehta@intel.com>
+	linux-arm-kernel@lists.infradead.org,
+	linux-sunxi@lists.linux.dev,
+	oe-kbuild-all@lists.linux.dev,
+	kernel test robot <lkp@intel.com>
+Subject: [PATCH v2] PM / devfreq: sun8i-a33-mbus: Simplify by using more devm functions
+Date: Tue, 13 May 2025 22:39:02 +0200
+Message-ID: <20250513203908.205060-2-u.kleine-koenig@baylibre.com>
+X-Mailer: git-send-email 2.47.2
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4304; i=u.kleine-koenig@baylibre.com; h=from:subject; bh=TJafEwdeqjrP6AcWhb1FzDP3OG9jHCSl2xxI4+oU+mY=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBoI63sY58Twokv5DGNH6EVESTwuHi9qJrQuljDW 0TZ/o6436uJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCaCOt7AAKCRCPgPtYfRL+ ThdmCACTnKilk91CPrcwCCc8E6w6Qkeu1s7JX1d7nbxmop8SKujh1EkNmq3VZsh6Jmr/lrNMsq0 TFJEt8AsI9PDKE8pgk/O0HnavuU+wFSXMqkXvfho7F/bZ3AH0YqB6FzcVQTq2SdjR/fdfYedDAN xq5za9VcjV9tJsNETgJBu4lk1F34qD5+EMsTcWU3zInCUMoiJjsvox/8DV/olg3mWnNDgbiZPbr 6FfbQaBKYIais3/ScGfPoThGaKJgqhNGJur1JjCHlG4tuO44gtIcd4lMg5gDiiuj+ox/6MqCxUy Q6n84JggAIId8OQOhKXPjNL9k8hlNKcF5kcVyRqNgrwaAkO/
+X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Program the designated PMI NMI-source vector into the local vector table
-for the PMU. An NMI for the PMU would directly invoke the PMI handler
-without polling other NMI handlers, resulting in reduced PMI delivery
-latency.
+Use devm allocators for enabling the bus clock and
+clk_rate_exclusive_get(). This simplifies error handling and the remove
+callback.
 
-Co-developed-by: Zeng Guang <guang.zeng@intel.com>
-Signed-off-by: Zeng Guang <guang.zeng@intel.com>
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Signed-off-by: Sohil Mehta <sohil.mehta@intel.com>
-Reviewed-by: Kan Liang <kan.liang@linux.intel.com>
-Tested-by: Sandipan Das <sandipan.das@amd.com> # AMD overlapping bits
+Reviewed-by: Chen-Yu Tsai <wens@csie.org>
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@baylibre.com>
 ---
-v6: Picked up a tested-by tag.
+Hello,
 
-v5: No significant change.
----
- arch/x86/events/core.c       | 4 ++--
- arch/x86/events/intel/core.c | 6 +++---
- arch/x86/include/asm/apic.h  | 1 +
- 3 files changed, 6 insertions(+), 5 deletions(-)
+On Wed, May 14, 2025 at 01:25:51AM +0900, Chanwoo Choi wrote in the
+thread at
+https://lore.kernel.org/linux-pm/CAGTfZH2uk-6-R5QNZwsssQ1UtnqexKeo=e=SsXB26NMwqf8c9g@mail.gmail.com:
+> Instead of fix-up patch, I'd like you to send the v2 of patch[1].
+> [1] https://patchwork.kernel.org/project/linux-pm/patch/20241111112237.336310-2-u.kleine-koenig@baylibre.com/
 
-diff --git a/arch/x86/events/core.c b/arch/x86/events/core.c
-index 031e908f0d61..42b270526631 100644
---- a/arch/x86/events/core.c
-+++ b/arch/x86/events/core.c
-@@ -1695,7 +1695,7 @@ int x86_pmu_handle_irq(struct pt_regs *regs)
- 	 * This generic handler doesn't seem to have any issues where the
- 	 * unmasking occurs so it was left at the top.
- 	 */
--	apic_write(APIC_LVTPC, APIC_DM_NMI);
-+	apic_write(APIC_LVTPC, PERF_NMI);
+Ah, then I misunderstood. Here comes the requested v2. The changes since
+(implicit) v1 are:
+
+ - Fix the build failure that I introduced by forgetting to add the dev
+   parameter to devm_clk_rate_exclusive_get(dev, priv->clk_mbus);
+
+ - Added the Reviewed-by tag for Chen-Yu.
+
+ - Actually compile tested. I would have sworn I did that for v1
+   already, but that is proven to be a perjury now. Don't know how that
+   slipped through.
+
+Best regards and again sorry for the mess
+Uwe
+
+ drivers/devfreq/sun8i-a33-mbus.c | 38 ++++++++------------------------
+ 1 file changed, 9 insertions(+), 29 deletions(-)
+
+diff --git a/drivers/devfreq/sun8i-a33-mbus.c b/drivers/devfreq/sun8i-a33-mbus.c
+index 7c6ae91ede1f..4bd5657558d6 100644
+--- a/drivers/devfreq/sun8i-a33-mbus.c
++++ b/drivers/devfreq/sun8i-a33-mbus.c
+@@ -360,7 +360,7 @@ static int sun8i_a33_mbus_probe(struct platform_device *pdev)
+ 	if (IS_ERR(priv->reg_mbus))
+ 		return PTR_ERR(priv->reg_mbus);
  
- 	for_each_set_bit(idx, x86_pmu.cntr_mask, X86_PMC_IDX_MAX) {
- 		if (!test_bit(idx, cpuc->active_mask))
-@@ -1737,7 +1737,7 @@ void perf_events_lapic_init(void)
- 	/*
- 	 * Always use NMI for PMU
- 	 */
--	apic_write(APIC_LVTPC, APIC_DM_NMI);
-+	apic_write(APIC_LVTPC, PERF_NMI);
+-	priv->clk_bus = devm_clk_get(dev, "bus");
++	priv->clk_bus = devm_clk_get_enabled(dev, "bus");
+ 	if (IS_ERR(priv->clk_bus))
+ 		return dev_err_probe(dev, PTR_ERR(priv->clk_bus),
+ 				     "failed to get bus clock\n");
+@@ -375,24 +375,15 @@ static int sun8i_a33_mbus_probe(struct platform_device *pdev)
+ 		return dev_err_probe(dev, PTR_ERR(priv->clk_mbus),
+ 				     "failed to get mbus clock\n");
+ 
+-	ret = clk_prepare_enable(priv->clk_bus);
+-	if (ret)
+-		return dev_err_probe(dev, ret,
+-				     "failed to enable bus clock\n");
+-
+ 	/* Lock the DRAM clock rate to keep priv->nominal_bw in sync. */
+-	ret = clk_rate_exclusive_get(priv->clk_dram);
+-	if (ret) {
+-		err = "failed to lock dram clock rate\n";
+-		goto err_disable_bus;
+-	}
++	ret = devm_clk_rate_exclusive_get(dev, priv->clk_dram);
++	if (ret)
++		return dev_err_probe(dev, ret, "failed to lock dram clock rate\n");
+ 
+ 	/* Lock the MBUS clock rate to keep MBUS_TMR_PERIOD in sync. */
+-	ret = clk_rate_exclusive_get(priv->clk_mbus);
+-	if (ret) {
+-		err = "failed to lock mbus clock rate\n";
+-		goto err_unlock_dram;
+-	}
++	ret = devm_clk_rate_exclusive_get(dev, priv->clk_mbus);
++	if (ret)
++		return dev_err_probe(dev, ret, "failed to lock mbus clock rate\n");
+ 
+ 	priv->gov_data.upthreshold	= 10;
+ 	priv->gov_data.downdifferential	=  5;
+@@ -405,10 +396,8 @@ static int sun8i_a33_mbus_probe(struct platform_device *pdev)
+ 	priv->profile.max_state		= max_state;
+ 
+ 	ret = devm_pm_opp_set_clkname(dev, "dram");
+-	if (ret) {
+-		err = "failed to add OPP table\n";
+-		goto err_unlock_mbus;
+-	}
++	if (ret)
++		return dev_err_probe(dev, ret, "failed to add OPP table\n");
+ 
+ 	base_freq = clk_get_rate(clk_get_parent(priv->clk_dram));
+ 	for (i = 0; i < max_state; ++i) {
+@@ -448,12 +437,6 @@ static int sun8i_a33_mbus_probe(struct platform_device *pdev)
+ 
+ err_remove_opps:
+ 	dev_pm_opp_remove_all_dynamic(dev);
+-err_unlock_mbus:
+-	clk_rate_exclusive_put(priv->clk_mbus);
+-err_unlock_dram:
+-	clk_rate_exclusive_put(priv->clk_dram);
+-err_disable_bus:
+-	clk_disable_unprepare(priv->clk_bus);
+ 
+ 	return dev_err_probe(dev, ret, err);
+ }
+@@ -472,9 +455,6 @@ static void sun8i_a33_mbus_remove(struct platform_device *pdev)
+ 		dev_warn(dev, "failed to restore DRAM frequency: %d\n", ret);
+ 
+ 	dev_pm_opp_remove_all_dynamic(dev);
+-	clk_rate_exclusive_put(priv->clk_mbus);
+-	clk_rate_exclusive_put(priv->clk_dram);
+-	clk_disable_unprepare(priv->clk_bus);
  }
  
- static int
-diff --git a/arch/x86/events/intel/core.c b/arch/x86/events/intel/core.c
-index 09d2d66c9f21..87c624686c58 100644
---- a/arch/x86/events/intel/core.c
-+++ b/arch/x86/events/intel/core.c
-@@ -3202,7 +3202,7 @@ static int intel_pmu_handle_irq(struct pt_regs *regs)
- 	 * NMI handler.
- 	 */
- 	if (!late_ack && !mid_ack)
--		apic_write(APIC_LVTPC, APIC_DM_NMI);
-+		apic_write(APIC_LVTPC, PERF_NMI);
- 	intel_bts_disable_local();
- 	cpuc->enabled = 0;
- 	__intel_pmu_disable_all(true);
-@@ -3239,7 +3239,7 @@ static int intel_pmu_handle_irq(struct pt_regs *regs)
- 
- done:
- 	if (mid_ack)
--		apic_write(APIC_LVTPC, APIC_DM_NMI);
-+		apic_write(APIC_LVTPC, PERF_NMI);
- 	/* Only restore PMU state when it's active. See x86_pmu_disable(). */
- 	cpuc->enabled = pmu_enabled;
- 	if (pmu_enabled)
-@@ -3252,7 +3252,7 @@ static int intel_pmu_handle_irq(struct pt_regs *regs)
- 	 * Haswell CPUs.
- 	 */
- 	if (late_ack)
--		apic_write(APIC_LVTPC, APIC_DM_NMI);
-+		apic_write(APIC_LVTPC, PERF_NMI);
- 	return handled;
- }
- 
-diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
-index 99033bfb26ea..d637717d42bd 100644
---- a/arch/x86/include/asm/apic.h
-+++ b/arch/x86/include/asm/apic.h
-@@ -30,6 +30,7 @@
- #define BT_NMI			(APIC_DM_NMI | NMIS_VECTOR_BT)
- #define KGDB_NMI		(APIC_DM_NMI | NMIS_VECTOR_KGDB)
- #define MCE_NMI			(APIC_DM_NMI | NMIS_VECTOR_MCE)
-+#define PERF_NMI		(APIC_DM_NMI | NMIS_VECTOR_PMI)
- 
- /*
-  * Debugging macros
+ static const struct sun8i_a33_mbus_variant sun50i_a64_mbus = {
+
+base-commit: 92a09c47464d040866cf2b4cd052bc60555185fb
 -- 
-2.43.0
+2.47.2
 
