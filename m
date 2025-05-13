@@ -1,181 +1,124 @@
-Received: from latitanza.investici.org (latitanza.investici.org [82.94.249.234])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7D1B1DE3CB
-	for <linux-pm@vger.kernel.org>; Tue, 13 May 2025 16:55:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=82.94.249.234
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C7D32BF3C0;
+	Tue, 13 May 2025 16:59:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747155328; cv=none; b=fKDdaIHTzEjVyjCfnQaXLNiiq40TpdZV+aa0Y/N6TZFPxh4v2L1XtWgQAXVSyV++Hjy1CVOTUAcpJNq9Yz2V/nPSyVAad6ucF2ih8RG95YzRxIha4hCuGrpJv0nSNIuwuxN6zdjbeZtpugtuH1iJwypPnf0nHbweA3QHBKE7rFE=
+	t=1747155584; cv=none; b=nG1qdykiC+Js+wiBB7fHFUX3GLkAP1qAmjvWOYm+k0Tv3L7HIAyLL4o9Nc5UDSnVwpNkxwSxRd9QB7E/Y4O1Nu8jJMQmssqDJf2L9/WECP9p9QqoG3e1t7pUJszCdsVOjTtSep4tFhBqrMspTKVJcQG+nceNNVB1szE28fc/ESo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747155328; c=relaxed/simple;
-	bh=idjcXr4AW3aS5sRNjH54SgoDueyDr5MtWOE5jKs+qeM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Ju0fJ6vT2fIO8sAFUv0LDIvJi+cK1slishTEykxUD60jgIKll59i9h/qNL6Y+rtoD0Ix08sREzhmtU4aEeTeVD4okTVNVSiieKkx8s7hfp5jINBIZmDROwf15/c/appOX85KFBQdI1+iI0tbvkm/QRCyoGjHU1Dxe0r9FuLQJVE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=paranoici.org; spf=pass smtp.mailfrom=paranoici.org; dkim=pass (1024-bit key) header.d=paranoici.org header.i=@paranoici.org header.b=Bq0wx4my; arc=none smtp.client-ip=82.94.249.234
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=paranoici.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=paranoici.org
+	s=arc-20240116; t=1747155584; c=relaxed/simple;
+	bh=MSCkUA6vnRhy8Sae4hmW1h3EhXHjttD7BUxZq5ZLzwg=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=iqVArB9G3vtb+N5+lG5yndtRdomig2evTt2MlqP+IkoSNxK2/YYpa+KIsdkKGK0uVctnKiySZbzDJH6YsNml90zNakbXahInO8dbUwJLFNnz03J/HqM7OgR9DDKNEqLo/S7lTobsQU2YhM8jb5Erx6gWxrdEwboAmgPrZnPx1mE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=FQyyt+Q8; arc=none smtp.client-ip=198.175.65.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=paranoici.org header.i=@paranoici.org header.b="Bq0wx4my"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=paranoici.org;
-	s=stigmate; t=1747154745;
-	bh=eWztpAAb/Kqcm5/81RQihc6lDynmpXfknEZ8NEXt4rc=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Bq0wx4mynAhBqvAw29Qxow05SpdXGj1WwfQJa6TFySo0c18xN+UU6uz/zTZCpJbH9
-	 CTXeK1tnOvr/0jrkqha7nZHwJ852j1q/7dhPomK9N4uvrZAfzn4St2V0xaZAYogmOe
-	 M0OOkLBpdAZ9LNZ7Lj5yZ9Znh5HZcSl2vXfQmyjo=
-Received: from mx3.investici.org (unknown [127.0.0.1])
-	by latitanza.investici.org (Postfix) with ESMTP id 4Zxj5j048DzGp8X;
-	Tue, 13 May 2025 16:45:45 +0000 (UTC)
-Received: from [82.94.249.234] (mx3.investici.org [82.94.249.234]) (Authenticated sender: invernomuto@paranoici.org) by localhost (Postfix) with ESMTPSA id 4Zxj5h6x8NzGp8R;
-	Tue, 13 May 2025 16:45:44 +0000 (UTC)
-Received: from frx by crunch with local (Exim 4.98.2)
-	(envelope-from <invernomuto@paranoici.org>)
-	id 1uEslE-00000000Goo-0CwT;
-	Tue, 13 May 2025 18:45:44 +0200
-From: "Francesco Poli (wintermute)" <invernomuto@paranoici.org>
-To: linux-pm list <linux-pm@vger.kernel.org>
-Cc: Francesco Poli <invernomuto@paranoici.org>,
-	Thomas Renninger <trenn@suse.com>,
-	Shuah Khan <shuah@kernel.org>,
-	"John B. Wyatt IV" <jwyatt@redhat.com>,
-	John Kacur <jkacur@redhat.com>,
-	Thorsten Leemhuis <linux@leemhuis.info>,
-	Justin Forbes <jforbes@redhat.com>
-Subject: [PATCH 3/3] cpupower: do not install files to /etc/default/
-Date: Tue, 13 May 2025 18:29:33 +0200
-Message-ID: <20250513163937.61062-5-invernomuto@paranoici.org>
-X-Mailer: git-send-email 2.47.2
-In-Reply-To: <20250513163937.61062-2-invernomuto@paranoici.org>
-References: <20250513163937.61062-2-invernomuto@paranoici.org>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="FQyyt+Q8"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1747155581; x=1778691581;
+  h=date:from:to:cc:subject:message-id:mime-version;
+  bh=MSCkUA6vnRhy8Sae4hmW1h3EhXHjttD7BUxZq5ZLzwg=;
+  b=FQyyt+Q82cpICJOBtdnGsasFVnYAqSFUeS/T0pkWjhkbYDWv3h2BKIS+
+   RgCNnNOUBmpKqwVNfpgkvCtldX5ALfVbJCVWBdyYPenqeYGcRaeq0uNeg
+   ohmsIIYJCc1aSlVzOf53Gb6RSy40D9KbIBhTK0mIav+D3QeANyRhVpaKL
+   pNBVQZ9C6P2P5+WlzxtBA/Dx7RbVad3zsAPRgSfqUidlJ3d+STGubUDBq
+   iCr/c/rgGxfzZngortCRW1yoNNvrxbQn66OwZPySfGq+Y0jmH3xkyX2Ol
+   /ZLlTBFgnmPxoqxpyBNf9o7fnpqfzsXcYm1zZrQDNJ+GSivbRg+ct/1eL
+   w==;
+X-CSE-ConnectionGUID: mWxDKVJ4RTWaAogr6WNNbA==
+X-CSE-MsgGUID: GTSzL83ITKiPDvv9pgK7TA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11432"; a="49091037"
+X-IronPort-AV: E=Sophos;i="6.15,285,1739865600"; 
+   d="scan'208";a="49091037"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 May 2025 09:59:41 -0700
+X-CSE-ConnectionGUID: 3WlXync2Q/ylJUyQ6nxDPg==
+X-CSE-MsgGUID: DgTx8mmYQsWAmyAgE7R6ZQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.15,285,1739865600"; 
+   d="scan'208";a="138690659"
+Received: from lkp-server01.sh.intel.com (HELO 1992f890471c) ([10.239.97.150])
+  by orviesa008.jf.intel.com with ESMTP; 13 May 2025 09:59:39 -0700
+Received: from kbuild by 1992f890471c with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1uEsye-000GFV-2g;
+	Tue, 13 May 2025 16:59:36 +0000
+Date: Wed, 14 May 2025 00:59:17 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: oe-kbuild-all@lists.linux.dev, linux-acpi@vger.kernel.org,
+	devel@acpica.org, linux-pm@vger.kernel.org,
+	Mario Limonciello <mario.limonciello@amd.com>
+Subject: [rafael-pm:bleeding-edge 131/143]
+ drivers/base/power/wakeup.c:376:undefined reference to
+ `pm_sleep_transition_in_progress'
+Message-ID: <202505140033.hlHonEIr-lkp@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Improve the installation procedure for the systemd service unit
-'cpupower.service', to be more distro-agnostic. Do not install the
-service unit configuration file to /etc/default/ (a directory that
-is used by Debian and Debian-derivatives and only rarely by other
-distros).
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+head:   e6b70b05628d6ec7335b0fcfe50e60e273fba2d2
+commit: d1b37a4c5081dbad554b8e792b7a7937b635db58 [131/143] PM: sleep: Introduce pm_sleep_transition_in_progress()
+config: riscv-randconfig-002-20250513 (https://download.01.org/0day-ci/archive/20250514/202505140033.hlHonEIr-lkp@intel.com/config)
+compiler: riscv64-linux-gcc (GCC) 14.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250514/202505140033.hlHonEIr-lkp@intel.com/reproduce)
 
-Also, clarify the role of the configuration file in its own comments.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202505140033.hlHonEIr-lkp@intel.com/
 
-Link: https://lore.kernel.org/linux-pm/20250509002206.bd2519ba52035d47c3c32aa6@paranoici.org/T/#ma8a3fa80acc4036af6c754e8ecabacc55b288ad1
+All errors (new ones prefixed by >>):
 
-Fixes: 9c70b779ad91 ("cpupower: add a systemd service to run cpupower")
+   riscv64-linux-ld: drivers/base/power/wakeup.o: in function `device_wakeup_attach_irq':
+>> drivers/base/power/wakeup.c:376:(.text+0x15c6): undefined reference to `pm_sleep_transition_in_progress'
 
-Signed-off-by: Francesco Poli (wintermute) <invernomuto@paranoici.org>
----
- tools/power/cpupower/Makefile                          |  6 +++---
- tools/power/cpupower/README                            |  6 +++---
- .../{cpupower.default => cpupower-service.conf}        | 10 +++++++---
- tools/power/cpupower/cpupower.service.in               |  4 ++--
- 4 files changed, 15 insertions(+), 11 deletions(-)
- rename tools/power/cpupower/{cpupower.default => cpupower-service.conf} (67%)
 
-diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
-index 7cec2c30f98a..be8dfac14076 100644
---- a/tools/power/cpupower/Makefile
-+++ b/tools/power/cpupower/Makefile
-@@ -305,8 +305,8 @@ install-tools: $(OUTPUT)cpupower
- 	$(INSTALL_PROGRAM) $(OUTPUT)cpupower $(DESTDIR)${bindir}
- 	$(INSTALL) -d $(DESTDIR)${bash_completion_dir}
- 	$(INSTALL_SCRIPT) cpupower-completion.sh '$(DESTDIR)${bash_completion_dir}/cpupower'
--	$(INSTALL) -d $(DESTDIR)${confdir}default
--	$(INSTALL_DATA) cpupower.default '$(DESTDIR)${confdir}default/cpupower'
-+	$(INSTALL) -d $(DESTDIR)${confdir}
-+	$(INSTALL_DATA) cpupower-service.conf '$(DESTDIR)${confdir}'
- 	$(INSTALL) -d $(DESTDIR)${libexecdir}
- 	$(INSTALL_PROGRAM) cpupower.sh '$(DESTDIR)${libexecdir}/cpupower'
- 	$(INSTALL) -d $(DESTDIR)${libdir}/systemd/system
-@@ -346,7 +346,7 @@ uninstall:
- 	- rm -f $(DESTDIR)${includedir}/cpufreq.h
- 	- rm -f $(DESTDIR)${includedir}/cpuidle.h
- 	- rm -f $(DESTDIR)${bindir}/utils/cpupower
--	- rm -f $(DESTDIR)${confdir}default/cpupower
-+	- rm -f $(DESTDIR)${confdir}cpupower-service.conf
- 	- rm -f $(DESTDIR)${libexecdir}/cpupower
- 	- rm -f $(DESTDIR)${libdir}/systemd/system/cpupower.service
- 	- rm -f $(DESTDIR)${mandir}/man1/cpupower.1
-diff --git a/tools/power/cpupower/README b/tools/power/cpupower/README
-index 494104de1540..9de449469568 100644
---- a/tools/power/cpupower/README
-+++ b/tools/power/cpupower/README
-@@ -195,9 +195,9 @@ command:
- 
- $ sudo systemctl daemon-reload
- 
--If you want to enable this systemd service, edit
--'${DESTDIR}/etc/default/cpupower' (uncommenting at least one of the options,
--depending on your preferences) and then issue the following command:
-+If you want to enable this systemd service, edit '/etc/cpupower-service.conf'
-+(uncommenting at least one of the options, depending on your preferences)
-+and then issue the following command:
- 
- $ sudo systemctl enable --now cpupower.service
- 
-diff --git a/tools/power/cpupower/cpupower.default b/tools/power/cpupower/cpupower-service.conf
-similarity index 67%
-rename from tools/power/cpupower/cpupower.default
-rename to tools/power/cpupower/cpupower-service.conf
-index 376ca40fe5a6..02eabe8e3614 100644
---- a/tools/power/cpupower/cpupower.default
-+++ b/tools/power/cpupower/cpupower-service.conf
-@@ -2,7 +2,11 @@
- # Copyright (C) 2012, Sébastien Luttringer
- # Copyright (C) 2024-2025, Francesco Poli <invernomuto@paranoici.org>
- 
--# Default file for linux-cpupower
-+# Configuration file for cpupower.service systemd service unit
-+#
-+# Edit this file (uncommenting at least one of the options, depending on
-+# your preferences) and then enable cpupower.service, if you want cpupower
-+# to run at boot with these settings.
- 
- # --- CPU clock frequency ---
- 
-@@ -15,14 +19,14 @@
- #MIN_FREQ="2.25GHz"
- #MAX_FREQ="3GHz"
- 
--# Specific frequency to be set.
-+# Set a specific frequency
- # Requires userspace governor to be available.
- # If this option is set, all the previous frequency options are ignored
- #FREQ=
- 
- # --- CPU policy ---
- 
--# Sets a register on supported Intel processore which allows software to convey
-+# Set a register on supported Intel processore which allows software to convey
- # its policy for the relative importance of performance versus energy savings to
- # the processor. See man CPUPOWER-SET(1) for additional details
- #PERF_BIAS=
-diff --git a/tools/power/cpupower/cpupower.service.in b/tools/power/cpupower/cpupower.service.in
-index f91eaed03872..fbd5b8c14270 100644
---- a/tools/power/cpupower/cpupower.service.in
-+++ b/tools/power/cpupower/cpupower.service.in
-@@ -1,6 +1,6 @@
- # SPDX-License-Identifier: GPL-2.0-or-later
- # Copyright (C) 2012-2020, Sébastien Luttringer
--# Copyright (C) 2024, Francesco Poli <invernomuto@paranoici.org>
-+# Copyright (C) 2024-2025, Francesco Poli <invernomuto@paranoici.org>
- 
- [Unit]
- Description=Apply cpupower configuration
-@@ -8,7 +8,7 @@ ConditionVirtualization=!container
- 
- [Service]
- Type=oneshot
--EnvironmentFile=-___CDIR___default/cpupower
-+EnvironmentFile=-___CDIR___cpupower-service.conf
- ExecStart=___LDIR___/cpupower
- RemainAfterExit=yes
- 
+vim +376 drivers/base/power/wakeup.c
+
+074037ec79bea7 Rafael J. Wysocki 2010-09-22  354  
+4990d4fe327b9d Tony Lindgren     2015-05-18  355  /**
+4990d4fe327b9d Tony Lindgren     2015-05-18  356   * device_wakeup_attach_irq - Attach a wakeirq to a wakeup source
+4990d4fe327b9d Tony Lindgren     2015-05-18  357   * @dev: Device to handle
+4990d4fe327b9d Tony Lindgren     2015-05-18  358   * @wakeirq: Device specific wakeirq entry
+4990d4fe327b9d Tony Lindgren     2015-05-18  359   *
+4990d4fe327b9d Tony Lindgren     2015-05-18  360   * Attach a device wakeirq to the wakeup source so the device
+4990d4fe327b9d Tony Lindgren     2015-05-18  361   * wake IRQ can be configured automatically for suspend and
+4990d4fe327b9d Tony Lindgren     2015-05-18  362   * resume.
+6d3dab7d84177f Rafael J. Wysocki 2015-07-07  363   *
+6d3dab7d84177f Rafael J. Wysocki 2015-07-07  364   * Call under the device's power.lock lock.
+4990d4fe327b9d Tony Lindgren     2015-05-18  365   */
+7bf4e594c28afc Rafael J. Wysocki 2018-01-05  366  void device_wakeup_attach_irq(struct device *dev,
+4990d4fe327b9d Tony Lindgren     2015-05-18  367  			     struct wake_irq *wakeirq)
+4990d4fe327b9d Tony Lindgren     2015-05-18  368  {
+4990d4fe327b9d Tony Lindgren     2015-05-18  369  	struct wakeup_source *ws;
+4990d4fe327b9d Tony Lindgren     2015-05-18  370  
+4990d4fe327b9d Tony Lindgren     2015-05-18  371  	ws = dev->power.wakeup;
+7bf4e594c28afc Rafael J. Wysocki 2018-01-05  372  	if (!ws)
+7bf4e594c28afc Rafael J. Wysocki 2018-01-05  373  		return;
+4990d4fe327b9d Tony Lindgren     2015-05-18  374  
+6d3dab7d84177f Rafael J. Wysocki 2015-07-07  375  	if (ws->wakeirq)
+7bf4e594c28afc Rafael J. Wysocki 2018-01-05 @376  		dev_err(dev, "Leftover wakeup IRQ found, overriding\n");
+4990d4fe327b9d Tony Lindgren     2015-05-18  377  
+4990d4fe327b9d Tony Lindgren     2015-05-18  378  	ws->wakeirq = wakeirq;
+4990d4fe327b9d Tony Lindgren     2015-05-18  379  }
+4990d4fe327b9d Tony Lindgren     2015-05-18  380  
+
+:::::: The code at line 376 was first introduced by commit
+:::::: 7bf4e594c28afc67bc120a380ca774e43ca496d8 PM / wakeup: Do not fail dev_pm_attach_wake_irq() unnecessarily
+
+:::::: TO: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+:::::: CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
 -- 
-2.47.2
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
