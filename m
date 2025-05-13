@@ -1,48 +1,48 @@
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CDBB2C1098;
-	Tue, 13 May 2025 20:38:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A88452C17B4;
+	Tue, 13 May 2025 20:38:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747168684; cv=none; b=XtEpsoj9okjJcSdkvXcgPG8maUHu/ViXqKjK8xTRvl/oYV1NI2mYYeA1BJagJR4xTfryO5Vgqj0b3TrIFs3PYMncJkQHNn0mpMRHtUnxCU+lCF3XkytWV/AQo9po/tvjVUxGBKmaqUPd9TbcGQx1zwgLa3YeVgJFWaKXYgQAZEs=
+	t=1747168685; cv=none; b=ncSjJl2maBQILEfIgy46H3ssL2DYx7z7uOy6tk/04u6K1Py6PUB1BDWmeupOr9Biaowal7IGeYnkxcutXvRZoWlAciuTSsyGV0+hAxsLJhHLuV45FEL2rO9zLfzyeGKST6F8LaA2IJn0QsZjl9a/Ub/8olwC3/Q3HHs0PbsOwGg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747168684; c=relaxed/simple;
-	bh=tuP0z5QJYB3K4sZ/QOSUtwEDpmxwT+ADMb45rtxF958=;
+	s=arc-20240116; t=1747168685; c=relaxed/simple;
+	bh=8Lfg9L/fBQ9McgK/dl0rQJBpGwpkcPv9aMzRa9sr5kc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=hekL7lqBPhv7wWDY6YBq//31r7dl2gRTJUsd6VzJRbRXS3lu6mL5hde+hT2MjTIW4WK5SG7jmFG+ybqJb9nDF4IYQhoBkh0AvdZox/IrPLyiQ5EOqmvFNW37uGgQZORMtjO9u0UX/lscJRh6cwosa5IjP6RROInS0zJUFtYOG6I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=QlAJxtkQ; arc=none smtp.client-ip=192.198.163.14
+	 MIME-Version; b=V1Ms2vF3NuxUfnT+F71N+eP2nPO/6mrcgG2FEzHIzt82CTgaQVR07WTrdmCGCkpIM+KSNJOzXBdHKAXkrQZ2004xOMK0tgk2t0sGKJYOkKLLWKzx1Uuia3HyKKEMh8cpDfd3tDJ+5CSMWHzwfDR2ThWDjSseL6DSn1zb/SlguCM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=OUyPI5xp; arc=none smtp.client-ip=192.198.163.14
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="QlAJxtkQ"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="OUyPI5xp"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1747168683; x=1778704683;
+  t=1747168684; x=1778704684;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=tuP0z5QJYB3K4sZ/QOSUtwEDpmxwT+ADMb45rtxF958=;
-  b=QlAJxtkQ2rZeu64K69LsFOV4ZSV6waPTZMecXokLN/+PaQT7G9vx1/MI
-   fTpqWM66Hk+vVISZTvggnFTGCdvZX+cLl24Wa4Vz7LoTYEn2mUfkW6X6V
-   mwMfqlYn77+D2Zvcl3Q8tDckIijoDJJTqIWj/sf4TQgKXptpxiOTpbXIZ
-   pA4E0/YGoYpBuYcWhKIxTEOlgjNkxMFPwizRpN/jReHXEoDq+oOiJBYlZ
-   jgtxaVNbiDb33d0I32Q9OtXB6sb/f4A0u37Z8WnU6zrGllBetg5cGC5oy
-   178EbnfURpzpq4I2HhSIgE/9SarXkO55ne4yqIa1KVZf4orP48yf/QhlB
-   w==;
-X-CSE-ConnectionGUID: YZLLzq3mTjOjqhTkHQ8J5w==
-X-CSE-MsgGUID: HVx6UgARTS64GM6nkYlYgg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11432"; a="49160474"
+  bh=8Lfg9L/fBQ9McgK/dl0rQJBpGwpkcPv9aMzRa9sr5kc=;
+  b=OUyPI5xpaQO5qddYja9TgsmtJW3APQXRZkxkIWms6nvh9nOP5rKhEjjF
+   pEo4T3Z1xfKddAHHy8HRKCoQqkcmS++FZrzAjSUaTTsFMSH12RnyTgmXO
+   zVtTsNKemEyPirWrA7L1kVSTxCMJSKaVndi9g7JT1/xe7uK0+f3mCMN/j
+   07KFe6hwYtarL0j9HjlCF/djcGWWLwg+l5RM+VCcGs67Z19/6LLrYIje1
+   998EMvPUpJpeA0bUy77IvCRfXZol22BCqPt7ZeR6vpVWhDH7K7g/98Efm
+   68T99nyXJ2bHwFPMgusmRYK0P3FnGf+6Cod+m0zczZOtHWm6fVOD7pQPU
+   g==;
+X-CSE-ConnectionGUID: sHn1M0CkT5SwsCqbiKocig==
+X-CSE-MsgGUID: bt2PDjDSTwGYKOTEdWgW0A==
+X-IronPort-AV: E=McAfee;i="6700,10204,11432"; a="49160498"
 X-IronPort-AV: E=Sophos;i="6.15,286,1739865600"; 
-   d="scan'208";a="49160474"
+   d="scan'208";a="49160498"
 Received: from fmviesa008.fm.intel.com ([10.60.135.148])
-  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 May 2025 13:38:00 -0700
-X-CSE-ConnectionGUID: LnsfcjOvSLCJQFVQ6UcCKg==
-X-CSE-MsgGUID: c3Uf+7qEQGarDivPmKTZrg==
+  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 May 2025 13:38:01 -0700
+X-CSE-ConnectionGUID: DqlVOjUOSpWSPEPN/6PMmA==
+X-CSE-MsgGUID: 7rhg0/1BTDuX7xq0+Blbfg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.15,286,1739865600"; 
-   d="scan'208";a="138241733"
+   d="scan'208";a="138241740"
 Received: from sohilmeh.sc.intel.com ([172.25.103.65])
-  by fmviesa008.fm.intel.com with ESMTP; 13 May 2025 13:37:59 -0700
+  by fmviesa008.fm.intel.com with ESMTP; 13 May 2025 13:38:00 -0700
 From: Sohil Mehta <sohil.mehta@intel.com>
 To: x86@kernel.org,
 	linux-kernel@vger.kernel.org
@@ -72,9 +72,9 @@ Cc: Xin Li <xin@zytor.com>,
 	kvm@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-trace-kernel@vger.kernel.org
-Subject: [PATCH v6 7/9] x86/nmi: Enable NMI-source for IPIs delivered as NMIs
-Date: Tue, 13 May 2025 13:38:01 -0700
-Message-ID: <20250513203803.2636561-8-sohil.mehta@intel.com>
+Subject: [PATCH v6 9/9] x86/nmi: Print source information with the unknown NMI console message
+Date: Tue, 13 May 2025 13:38:03 -0700
+Message-ID: <20250513203803.2636561-10-sohil.mehta@intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250513203803.2636561-1-sohil.mehta@intel.com>
 References: <20250513203803.2636561-1-sohil.mehta@intel.com>
@@ -86,127 +86,35 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-With the IPI handling APIs ready to support the new NMI encoding, encode
-the NMI delivery mode directly with the NMI-source vectors to trigger
-NMIs.
+The NMI-source bitmap is critical information provided by the NMI-source
+reporting feature. It is very useful in debugging unknown NMIs since it
+can pinpoint the exact source that caused the NMI.
 
-Move most of the existing NMI-based IPIs to use the new NMI-source
-vectors, except for the microcode rendezvous NMI and the crash reboot
-NMI. NMI handling for them is special-cased in exc_nmi() and does not
-need NMI-source reporting.
+Print the source bitmap along with the "Unknown NMI" kernel log message.
 
-However, in the future, it might be useful to assign a source vector to
-all NMI sources to improve isolation and debuggability.
-
-Originally-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Suggested-by: Sean Christopherson <seanjc@google.com>
-Co-developed-by: Xin Li (Intel) <xin@zytor.com>
-Signed-off-by: Xin Li (Intel) <xin@zytor.com>
 Signed-off-by: Sohil Mehta <sohil.mehta@intel.com>
 ---
-v6: Include asm/nmi.h to avoid compile errors. (LKP)
+v6: Drop the tracepoint modification part for now.
 
-v5: Encode APIC_DM_NMI directly with the NMI-source vector.
+v5: New patch
 ---
- arch/x86/include/asm/apic.h      | 8 ++++++++
- arch/x86/kernel/apic/hw_nmi.c    | 2 +-
- arch/x86/kernel/cpu/mce/inject.c | 2 +-
- arch/x86/kernel/kgdb.c           | 2 +-
- arch/x86/kernel/nmi_selftest.c   | 2 +-
- arch/x86/kernel/smp.c            | 2 +-
- 6 files changed, 13 insertions(+), 5 deletions(-)
+ arch/x86/kernel/nmi.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
-index 9c3d5932d591..99033bfb26ea 100644
---- a/arch/x86/include/asm/apic.h
-+++ b/arch/x86/include/asm/apic.h
-@@ -14,6 +14,7 @@
- #include <asm/msr.h>
- #include <asm/hardirq.h>
- #include <asm/io.h>
-+#include <asm/nmi.h>
- #include <asm/posted_intr.h>
+diff --git a/arch/x86/kernel/nmi.c b/arch/x86/kernel/nmi.c
+index 55ecbe2ab5e4..7a288603683f 100644
+--- a/arch/x86/kernel/nmi.c
++++ b/arch/x86/kernel/nmi.c
+@@ -376,6 +376,9 @@ unknown_nmi_error(unsigned char reason, struct pt_regs *regs)
+ 	pr_emerg_ratelimited("Uhhuh. NMI received for unknown reason %02x on CPU %d.\n",
+ 			     reason, smp_processor_id());
  
- #define ARCH_APICTIMER_STOPS_ON_C3	1
-@@ -23,6 +24,13 @@
- #define APIC_EXTNMI_ALL		1
- #define APIC_EXTNMI_NONE	2
- 
-+/* Trigger NMIs with source information */
-+#define TEST_NMI		(APIC_DM_NMI | NMIS_VECTOR_TEST)
-+#define SMP_STOP_NMI		(APIC_DM_NMI | NMIS_VECTOR_SMP_STOP)
-+#define BT_NMI			(APIC_DM_NMI | NMIS_VECTOR_BT)
-+#define KGDB_NMI		(APIC_DM_NMI | NMIS_VECTOR_KGDB)
-+#define MCE_NMI			(APIC_DM_NMI | NMIS_VECTOR_MCE)
++	if (cpu_feature_enabled(X86_FEATURE_NMI_SOURCE))
++		pr_emerg_ratelimited("NMI-source bitmap is 0x%lx\n", fred_event_data(regs));
 +
- /*
-  * Debugging macros
-  */
-diff --git a/arch/x86/kernel/apic/hw_nmi.c b/arch/x86/kernel/apic/hw_nmi.c
-index 4e04f13d2de9..586f4b25feae 100644
---- a/arch/x86/kernel/apic/hw_nmi.c
-+++ b/arch/x86/kernel/apic/hw_nmi.c
-@@ -33,7 +33,7 @@ u64 hw_nmi_get_sample_period(int watchdog_thresh)
- #ifdef arch_trigger_cpumask_backtrace
- static void nmi_raise_cpu_backtrace(cpumask_t *mask)
- {
--	__apic_send_IPI_mask(mask, NMI_VECTOR);
-+	__apic_send_IPI_mask(mask, BT_NMI);
- }
+ 	if (unknown_nmi_panic || panic_on_unrecovered_nmi)
+ 		nmi_panic(regs, "NMI: Not continuing");
  
- void arch_trigger_cpumask_backtrace(const cpumask_t *mask, int exclude_cpu)
-diff --git a/arch/x86/kernel/cpu/mce/inject.c b/arch/x86/kernel/cpu/mce/inject.c
-index a3c753dfce91..6328a607ffc4 100644
---- a/arch/x86/kernel/cpu/mce/inject.c
-+++ b/arch/x86/kernel/cpu/mce/inject.c
-@@ -269,7 +269,7 @@ static void __maybe_unused raise_mce(struct mce *m)
- 					mce_irq_ipi, NULL, 0);
- 				preempt_enable();
- 			} else if (m->inject_flags & MCJ_NMI_BROADCAST)
--				__apic_send_IPI_mask(mce_inject_cpumask, NMI_VECTOR);
-+				__apic_send_IPI_mask(mce_inject_cpumask, MCE_NMI);
- 		}
- 		start = jiffies;
- 		while (!cpumask_empty(mce_inject_cpumask)) {
-diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
-index 9ca4b141da0c..3dedc5f57541 100644
---- a/arch/x86/kernel/kgdb.c
-+++ b/arch/x86/kernel/kgdb.c
-@@ -416,7 +416,7 @@ static void kgdb_disable_hw_debug(struct pt_regs *regs)
-  */
- void kgdb_roundup_cpus(void)
- {
--	apic_send_IPI_allbutself(NMI_VECTOR);
-+	apic_send_IPI_allbutself(KGDB_NMI);
- }
- #endif
- 
-diff --git a/arch/x86/kernel/nmi_selftest.c b/arch/x86/kernel/nmi_selftest.c
-index 5196023b31dc..c5c91f520c69 100644
---- a/arch/x86/kernel/nmi_selftest.c
-+++ b/arch/x86/kernel/nmi_selftest.c
-@@ -71,7 +71,7 @@ static void __init test_nmi_ipi(struct cpumask *mask)
- 	/* sync above data before sending NMI */
- 	wmb();
- 
--	__apic_send_IPI_mask(mask, NMI_VECTOR);
-+	__apic_send_IPI_mask(mask, TEST_NMI);
- 
- 	/* Don't wait longer than a second */
- 	timeout = USEC_PER_SEC;
-diff --git a/arch/x86/kernel/smp.c b/arch/x86/kernel/smp.c
-index 5be1c0bdf901..614acec5655f 100644
---- a/arch/x86/kernel/smp.c
-+++ b/arch/x86/kernel/smp.c
-@@ -217,7 +217,7 @@ static void native_stop_other_cpus(int wait)
- 			pr_emerg("Shutting down cpus with NMI\n");
- 
- 			for_each_cpu(cpu, &cpus_stop_mask)
--				__apic_send_IPI(cpu, NMI_VECTOR);
-+				__apic_send_IPI(cpu, SMP_STOP_NMI);
- 		}
- 		/*
- 		 * Don't wait longer than 10 ms if the caller didn't
 -- 
 2.43.0
 
