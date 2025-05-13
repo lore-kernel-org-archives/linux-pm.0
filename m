@@ -1,37 +1,36 @@
 Received: from devianza.investici.org (devianza.investici.org [198.167.222.108])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7DF5B1A76DA
-	for <linux-pm@vger.kernel.org>; Tue, 13 May 2025 16:45:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E78461AAE2E
+	for <linux-pm@vger.kernel.org>; Tue, 13 May 2025 16:50:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.167.222.108
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747154741; cv=none; b=cg4pTtkAX0Q0mNjtpSbMF72+UNkvOE4HHNZfZXi6ZSppkAlee6ALpu/uiOY1ooRe5z6J+e1pUlJOr2imcFutJTumbVbjDvcTu8IMW6Ex1wZo+pvw9H7Sa+kFCUhN0BrNXj7XWfflUzjjFlSC0D9etZN6g/dvD5rKcpsO6NmXqDY=
+	t=1747155049; cv=none; b=OeenSUu51T/kHmFQ9UQPqP5EQ6RglTMVdZDuG+yIeayZ/5Mre6xv09gHwkMGa3SzhRMkHaPp7JbYPEAgzQRp6zTs8TJbjFfqED/Wzn3QqHJJyO+1I+f8+oGofBvDpF1FiHWXv6T76960n4nKneb3yha5MV0wPr1swVBsC95Qc90=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747154741; c=relaxed/simple;
-	bh=11ikuz21sbx1DS6gP9D/N/M3mRjDTmv8KRFDhd7RR2w=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=L8a3Noakbp1rxBndW/r2uXFHxCHas0yk0k3amYKxE94N/5RcYlZzzwyashqDNudRsBhiMFyYDJayybvDhi0UYukQc6wuE+O5sl49ZfIINqGhccZMXTpNbdd4w0KjXk2ppQYc7h90Y4eoSKXfc0Tq3JsEsbjbJegPXPgT/Xwfshg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=paranoici.org; spf=pass smtp.mailfrom=paranoici.org; dkim=pass (1024-bit key) header.d=paranoici.org header.i=@paranoici.org header.b=jVFlJO8i; arc=none smtp.client-ip=198.167.222.108
+	s=arc-20240116; t=1747155049; c=relaxed/simple;
+	bh=IzdlC4/KrVhkgauAg3rQi23U6iKWVZOnRnDkfzVxxBk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=R4BRI0vesFpdKksWKBLPctTOPbP4WnqpMWDVBvkDfwOi+rCcsz8eDotDINIQ3EPK8KltgFizoLJU7wZzXFXUFihcpWw2wYIlrgKhv0/gAw6ZodErbtPY/9UFse6Jm4Qm3/JG0tqqouyzn8UguyCM4cpHiirVRKh/oHukamhp4Zg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=paranoici.org; spf=pass smtp.mailfrom=paranoici.org; dkim=pass (1024-bit key) header.d=paranoici.org header.i=@paranoici.org header.b=S/qsIU59; arc=none smtp.client-ip=198.167.222.108
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=paranoici.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=paranoici.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=paranoici.org header.i=@paranoici.org header.b="jVFlJO8i"
+	dkim=pass (1024-bit key) header.d=paranoici.org header.i=@paranoici.org header.b="S/qsIU59"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=paranoici.org;
-	s=stigmate; t=1747154736;
-	bh=lLOd7tQ76Z9Dv/K7XoIbBfnbDergJ6kT2rO4vhZGoUg=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=jVFlJO8io2lAonBrVmYYBJZ/H4PpE/iFiV6UFgXVbyfmd+FBCI/HIB6ws+s8TF8HV
-	 74MIbTOpHGkvCoDb80toA0XIXjgHF/bDMY5lc75tk7nn8pl78+XtjRubjwqnOpE55V
-	 HQ0bJITQSvHNPzD6OWyMgZ9uHWTtHJILajZbyOA4=
+	s=stigmate; t=1747154678;
+	bh=IzdlC4/KrVhkgauAg3rQi23U6iKWVZOnRnDkfzVxxBk=;
+	h=From:To:Cc:Subject:Date:From;
+	b=S/qsIU59xnJ/FiALuZdGuxtoyT41dlJJl6MNEyBePd4sSAV7Ky/wogId6OvfyFYFl
+	 0vU5e5ekyuRCDRxOcBKSE4MtumjvBWqpZiziT6vRMbjwyaA6RI7J7AVXf+7ytJveT+
+	 y1YrudKSlt5DmPfSbLL5Z2KL7sJ7uKH4G+lWbsj4=
 Received: from mx2.investici.org (unknown [127.0.0.1])
-	by devianza.investici.org (Postfix) with ESMTP id 4Zxj5X4r20z6xg3;
-	Tue, 13 May 2025 16:45:36 +0000 (UTC)
-Received: from [198.167.222.108] (mx2.investici.org [198.167.222.108]) (Authenticated sender: invernomuto@paranoici.org) by localhost (Postfix) with ESMTPSA id 4Zxj5X4Vgzz6xfm;
-	Tue, 13 May 2025 16:45:36 +0000 (UTC)
+	by devianza.investici.org (Postfix) with ESMTP id 4Zxj4Q4hfRz6vNm;
+	Tue, 13 May 2025 16:44:38 +0000 (UTC)
+Received: from [198.167.222.108] (mx2.investici.org [198.167.222.108]) (Authenticated sender: invernomuto@paranoici.org) by localhost (Postfix) with ESMTPSA id 4Zxj4Q4LhXz6vML;
+	Tue, 13 May 2025 16:44:38 +0000 (UTC)
 Received: from frx by crunch with local (Exim 4.98.2)
 	(envelope-from <invernomuto@paranoici.org>)
-	id 1uEsl5-00000000GoK-3SAg;
-	Tue, 13 May 2025 18:45:35 +0200
+	id 1uEsk9-00000000Gkt-1U0N;
+	Tue, 13 May 2025 18:44:37 +0200
 From: "Francesco Poli (wintermute)" <invernomuto@paranoici.org>
 To: linux-pm list <linux-pm@vger.kernel.org>
 Cc: Francesco Poli <invernomuto@paranoici.org>,
@@ -41,12 +40,10 @@ Cc: Francesco Poli <invernomuto@paranoici.org>,
 	John Kacur <jkacur@redhat.com>,
 	Thorsten Leemhuis <linux@leemhuis.info>,
 	Justin Forbes <jforbes@redhat.com>
-Subject: [PATCH 2/3] cpupower: do not call systemctl at install time
-Date: Tue, 13 May 2025 18:29:32 +0200
-Message-ID: <20250513163937.61062-4-invernomuto@paranoici.org>
+Subject: [PATCH 0/3] cpupower: fixes for cpupower.service
+Date: Tue, 13 May 2025 18:29:30 +0200
+Message-ID: <20250513163937.61062-2-invernomuto@paranoici.org>
 X-Mailer: git-send-email 2.47.2
-In-Reply-To: <20250513163937.61062-2-invernomuto@paranoici.org>
-References: <20250513163937.61062-2-invernomuto@paranoici.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -55,87 +52,15 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Fix the installation procedure for the systemd service unit
-'cpupower.service'. Do not call "systemctl daemon-reload" in the
-Makefile, but explain when this command should be manually issued
-in the README file.
 
-Link: https://lore.kernel.org/linux-pm/20250509002206.bd2519ba52035d47c3c32aa6@paranoici.org/T/#mfbb938f9c0d5a21173acb92a061eb9205fd0abfe
+Hello!
 
-Fixes: 9c70b779ad91 ("cpupower: add a systemd service to run cpupower")
+I prepared a patch series to address the issues reported about my
+previous patch by Thorsten Leemhuis.
 
-Signed-off-by: Francesco Poli (wintermute) <invernomuto@paranoici.org>
----
- tools/power/cpupower/Makefile |  2 --
- tools/power/cpupower/README   | 19 ++++++++++++++-----
- 2 files changed, 14 insertions(+), 7 deletions(-)
+The patch series has been created against the tip of the
+'origin/cpupower' git branch.
+I hope it can be applied soon, if you agree with the fixes.
 
-diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
-index 4ad931509eaa..7cec2c30f98a 100644
---- a/tools/power/cpupower/Makefile
-+++ b/tools/power/cpupower/Makefile
-@@ -312,7 +312,6 @@ install-tools: $(OUTPUT)cpupower
- 	$(INSTALL) -d $(DESTDIR)${libdir}/systemd/system
- 	sed 's|___CDIR___|${confdir}|; s|___LDIR___|${libexecdir}|' cpupower.service.in > '$(DESTDIR)${libdir}/systemd/system/cpupower.service'
- 	$(SETPERM_DATA) '$(DESTDIR)${libdir}/systemd/system/cpupower.service'
--	if test -d /run/systemd/system; then systemctl daemon-reload; fi
- 
- install-man:
- 	$(INSTALL_DATA) -D man/cpupower.1 $(DESTDIR)${mandir}/man1/cpupower.1
-@@ -360,7 +359,6 @@ uninstall:
- 	- for HLANG in $(LANGUAGES); do \
- 		rm -f $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpupower.mo; \
- 	  done;
--	- if test -d /run/systemd/system; then systemctl daemon-reload; fi
- 
- help:
- 	@echo  'Building targets:'
-diff --git a/tools/power/cpupower/README b/tools/power/cpupower/README
-index e6ae7c1e0a0d..494104de1540 100644
---- a/tools/power/cpupower/README
-+++ b/tools/power/cpupower/README
-@@ -59,7 +59,7 @@ $ sudo make install
- -----------------------------------------------------------------------
- | man pages              | /usr/man                                   |
- -----------------------------------------------------------------------
--| systemd service        | /usr/lib                                   |
-+| systemd service        | /usr/lib/systemd/system                    |
- -----------------------------------------------------------------------
- | systemd support script | /usr/libexec                               |
- -----------------------------------------------------------------------
-@@ -113,7 +113,7 @@ The files will be installed to the following dirs:
- -----------------------------------------------------------------------
- | man pages              | ${DESTDIR}/usr/man                         |
- -----------------------------------------------------------------------
--| systemd service        | ${DESTDIR}/usr/lib                         |
-+| systemd service        | ${DESTDIR}/usr/lib/systemd/system          |
- -----------------------------------------------------------------------
- | systemd support script | ${DESTDIR}/usr/libexec                     |
- -----------------------------------------------------------------------
-@@ -185,11 +185,20 @@ systemd service
- ---------------
- 
- A systemd service is also provided to run the cpupower utility at boot with
--settings read from a configuration file. In order to enable this systemd
--service, edit '${DESTDIR}/etc/default/cpupower' (uncommenting at least one of
--the options, depending on your preferences) and then issue the following
-+settings read from a configuration file.
-+
-+If you want systemd to find the new service after the installation, the service
-+unit must have been installed in one of the system unit search path directories
-+(such as '/usr/lib/systemd/system/', which is the default location) and (unless
-+you are willing to wait for the next reboot) you need to issue the following
- command:
- 
-+$ sudo systemctl daemon-reload
-+
-+If you want to enable this systemd service, edit
-+'${DESTDIR}/etc/default/cpupower' (uncommenting at least one of the options,
-+depending on your preferences) and then issue the following command:
-+
- $ sudo systemctl enable --now cpupower.service
- 
- 
--- 
-2.47.2
-
+Thanks for your time!
+Bye.
