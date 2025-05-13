@@ -1,142 +1,115 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BED552BE7A8;
-	Tue, 13 May 2025 16:59:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 795431D5CDE;
+	Tue, 13 May 2025 17:20:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747155584; cv=none; b=Pzo9MjxVaOujBWXfo7c1HZ7jxlzZeha5f+I87Q2Op/CjhyoYqYCt0QrOHhAtmEFtePVUR1ojktqnsIfa9zN9lqE67vljeH3HVwhJ805F3SEHoCra7IcNeXvZo+9JQN3YcG/1GeCTp89XjpqwID27R6et8HZdtGWUOf45zhgHv5Q=
+	t=1747156801; cv=none; b=U2xsD+pya53oeZ+OAaD+8q1uNncqZ8xiwPE4RcxAgKS3aa+sfsQWDOFaqTHN083Z6cSv1M2czzE6p1PJZjtlJE/gjPBHg89AnnH+nqUVZhokyhZvbb07U9lRj4qcIDeJx2dX6g3LkG2Ipk0omwk5ye8cZAtrbHAjMZvrItwjDWc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747155584; c=relaxed/simple;
-	bh=wT1jIMhAfxAIuR2cDTICkJPnwZnAngY5iWaiZPeA23k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=umrbV1eZjQvfagYQPRIm6tBDEhil0jG60cx6EJU8mw7yPOoX+rTp6Y8NyqT+PxNWhEr++5ZheQFJRWwdyBRz2tabaTgdqO6zofB1L7ryJdcNr9so/cYhFZfZbWNZQwqulq/PbenXWi8x90HpytLvlRajN/7APsiuh4B/7qU54IU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=VtnKMIj9; arc=none smtp.client-ip=198.175.65.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1747156801; c=relaxed/simple;
+	bh=N7na6PFufzfGQKJuOuksZezPcW1F3v2kAd8IXZgLHzg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=gz4AFvFYM2oANZVh72OmlE814LI+lYU0WqsTj0mMx4040TzrJL04Plfof1Yd2ixFfWrx5Td/x0TPhixPSGTY3vGI6/RAa6V/xEuM7MgpRffnZ92HNVJEWak1CVcmbtql1QzoOyl0eQVBBkAozQLTkByokfR90bkwcDNTm+ENaDw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=g6jJ1uwa; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="VtnKMIj9"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1747155582; x=1778691582;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=wT1jIMhAfxAIuR2cDTICkJPnwZnAngY5iWaiZPeA23k=;
-  b=VtnKMIj9ruIXcnLCmnC7zVl8HjwKIa0Bs59xyKcmxR0UpWFrJxmITueU
-   g/82ooNp0kSJ9ztHhLQoHE4GUHnBn3Liqj9YXyJg+ftDnjKzDyYTF2sgV
-   2+WN0nTN5Xw8VhvihbBu4cdc090z64phSKFBuuHgoMoWwKNb9PBouW0Hw
-   9hykegJBYEhDtZeWVzH5ECAwZAObs+MVNJ3dTnJ4Vg0sRO7eL3+ZxKK8w
-   xj+QjsDJx31Me/YcFYGbmmxTRbO7aj7Ur21phdLd22Q4yUymAs6Wj3RZ/
-   R0WM339jOFv3gUYFYb7nfRQv7p7b0N2GpGjU6YojCXoQFbgzI7JDHvaNh
-   A==;
-X-CSE-ConnectionGUID: 3adJXAPSTN+BakvQbuaAbA==
-X-CSE-MsgGUID: FfuvJmcjRIGYxXFZ7KL1DQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11432"; a="49004968"
-X-IronPort-AV: E=Sophos;i="6.15,285,1739865600"; 
-   d="scan'208";a="49004968"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
-  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 May 2025 09:59:42 -0700
-X-CSE-ConnectionGUID: LqCGDER2TQKzQBomicmxjA==
-X-CSE-MsgGUID: tIAkwncLTMKMayszpT6oWA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,285,1739865600"; 
-   d="scan'208";a="138739643"
-Received: from lkp-server01.sh.intel.com (HELO 1992f890471c) ([10.239.97.150])
-  by fmviesa009.fm.intel.com with ESMTP; 13 May 2025 09:59:39 -0700
-Received: from kbuild by 1992f890471c with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1uEsye-000GFT-2d;
-	Tue, 13 May 2025 16:59:36 +0000
-Date: Wed, 14 May 2025 00:59:16 +0800
-From: kernel test robot <lkp@intel.com>
-To: Christian Marangi <ansuelsmth@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev
-Subject: Re: [PATCH v6 2/2] thermal: Add support for Airoha EN7581 thermal
- sensor
-Message-ID: <202505132238.CSoMFWV9-lkp@intel.com>
-References: <20250510172509.2547273-2-ansuelsmth@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="g6jJ1uwa"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E8C41C4CEF1;
+	Tue, 13 May 2025 17:20:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1747156800;
+	bh=N7na6PFufzfGQKJuOuksZezPcW1F3v2kAd8IXZgLHzg=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=g6jJ1uwa8syyG9vYULiYgEapmOEFRvHxSbsHar9VK/G6rnDhnr6Ast35yWsG9nMjk
+	 PVYLneOMxEZBCYnlq578xi0Hb0uRWE+mDpCDn3r3bVJilY1/m+wFhbCg/C8+aEY34Z
+	 XGKg/IVTs3Kas99MatQcS/FLeJDviI4QuYKqpR25/TZjyWEiwDejzbFNUgHV0mB/QM
+	 ziqzrGrR+OAyXLpES32XYfIG0me15xHXjsArf50E8qks2ugn533EevJU56/UZ3LDfY
+	 3Bdw1KiUAOIlYuok3SXeEv47m2sE7AYM/h+g9SD3PYtOAvY+yH/2bg7Jp+sXBPXapl
+	 Nr2kCgJILh0og==
+Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-acb5ec407b1so1012727666b.1;
+        Tue, 13 May 2025 10:20:00 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCX7z50jo4PymF+jt09jPIFWZJvV09YB5D2+yNwGhlttx7sezBB8QfABuZRPC818PpItWtxO63kQ3l+UZEY=@vger.kernel.org, AJvYcCXW4fituomUeqFfj5/fObG4HNld8gPeLw8aZ2tb/C/VbExzmC6MK7A3Na/reOxvlfWetZe7OyZI7vk=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxMRixxXXNB19766mFpp7EkaaxIRddOPPv8u6ncJLeHvs9KLZQM
+	lbHBRwy5jlyQMXybX6IaycsjjxFOmgHmvZT/Jg1YmkKPNE1UNiXdv+EK1U8DnYWM051WCYlS3Vn
+	gMlDnvbCh7fj4CpGC2b5XZhJV1eE=
+X-Google-Smtp-Source: AGHT+IHRAueVku/+OOa5F92B7Rfa3cSGSF3qzAN3N5HYSdsmS0DOPsI4IRLjZ085TGPBZb99BHTsKf/vRHgPm+XVNj8=
+X-Received: by 2002:a17:907:d006:b0:ad4:f512:733 with SMTP id
+ a640c23a62f3a-ad4f726e946mr29476566b.45.1747156799809; Tue, 13 May 2025
+ 10:19:59 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250510172509.2547273-2-ansuelsmth@gmail.com>
+References: <20250421030020.3108405-1-zhenglifeng1@huawei.com> <20250421030020.3108405-2-zhenglifeng1@huawei.com>
+In-Reply-To: <20250421030020.3108405-2-zhenglifeng1@huawei.com>
+From: Chanwoo Choi <chanwoo@kernel.org>
+Date: Wed, 14 May 2025 02:19:23 +0900
+X-Gmail-Original-Message-ID: <CAGTfZH1T+hvErU6sU-bMOiDfSSTTbt-ygOvEC42B4EaEYvy_tw@mail.gmail.com>
+X-Gm-Features: AX0GCFtWGMxVVle0tG4dFX6xiKgLOM9TY0Lg3WlJ6FgGVpA1Nz1CqcVxc5IyOfc
+Message-ID: <CAGTfZH1T+hvErU6sU-bMOiDfSSTTbt-ygOvEC42B4EaEYvy_tw@mail.gmail.com>
+Subject: Re: [PATCH 1/4] PM / devfreq: governor: Replace sscanf() with
+ kstrtoul() in set_freq_store()
+To: Lifeng Zheng <zhenglifeng1@huawei.com>
+Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxarm@huawei.com, 
+	jonathan.cameron@huawei.com, zhanjie9@hisilicon.com, lihuisong@huawei.com, 
+	yubowen8@huawei.com, cenxinghai@h-partners.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Christian,
+Hi,
 
-kernel test robot noticed the following build errors:
+Applied it. Thanks.
 
-[auto build test ERROR on rafael-pm/thermal]
-[also build test ERROR on linus/master v6.15-rc6 next-20250513]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+On Mon, Apr 21, 2025 at 12:00=E2=80=AFPM Lifeng Zheng <zhenglifeng1@huawei.=
+com> wrote:
+>
+> Replace sscanf() with kstrtoul() in set_freq_store() and check the result
+> to avoid invalid input.
+>
+> Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+> ---
+>  drivers/devfreq/governor_userspace.c | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/gover=
+nor_userspace.c
+> index d1aa6806b683..175de0c0b50e 100644
+> --- a/drivers/devfreq/governor_userspace.c
+> +++ b/drivers/devfreq/governor_userspace.c
+> @@ -9,6 +9,7 @@
+>  #include <linux/slab.h>
+>  #include <linux/device.h>
+>  #include <linux/devfreq.h>
+> +#include <linux/kstrtox.h>
+>  #include <linux/pm.h>
+>  #include <linux/mutex.h>
+>  #include <linux/module.h>
+> @@ -39,10 +40,13 @@ static ssize_t set_freq_store(struct device *dev, str=
+uct device_attribute *attr,
+>         unsigned long wanted;
+>         int err =3D 0;
+>
+> +       err =3D kstrtoul(buf, 0, &wanted);
+> +       if (err)
+> +               return err;
+> +
+>         mutex_lock(&devfreq->lock);
+>         data =3D devfreq->governor_data;
+>
+> -       sscanf(buf, "%lu", &wanted);
+>         data->user_frequency =3D wanted;
+>         data->valid =3D true;
+>         err =3D update_devfreq(devfreq);
+> --
+> 2.33.0
+>
+>
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Christian-Marangi/thermal-Add-support-for-Airoha-EN7581-thermal-sensor/20250511-012647
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal
-patch link:    https://lore.kernel.org/r/20250510172509.2547273-2-ansuelsmth%40gmail.com
-patch subject: [PATCH v6 2/2] thermal: Add support for Airoha EN7581 thermal sensor
-config: microblaze-randconfig-r073-20250513 (https://download.01.org/0day-ci/archive/20250513/202505132238.CSoMFWV9-lkp@intel.com/config)
-compiler: microblaze-linux-gcc (GCC) 10.5.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250513/202505132238.CSoMFWV9-lkp@intel.com/reproduce)
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202505132238.CSoMFWV9-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
-   drivers/thermal/airoha_thermal.c: In function 'airoha_thermal_irq':
->> drivers/thermal/airoha_thermal.c:316:2: error: label at end of compound statement
-     316 |  default:
-         |  ^~~~~~~
-
-
-vim +316 drivers/thermal/airoha_thermal.c
-
-   297	
-   298	static irqreturn_t airoha_thermal_irq(int irq, void *data)
-   299	{
-   300		struct airoha_thermal_priv *priv = data;
-   301		enum thermal_notify_event event;
-   302		bool update = false;
-   303		u32 status;
-   304	
-   305		status = readl(priv->base + EN7581_TEMPMONINTSTS);
-   306		switch (status & (EN7581_HOFSINTSTS0 | EN7581_LOFSINTSTS0)) {
-   307		case EN7581_HOFSINTSTS0:
-   308			event = THERMAL_TRIP_VIOLATED;
-   309			update = true;
-   310			break;
-   311		case EN7581_LOFSINTSTS0:
-   312			event = THERMAL_EVENT_UNSPECIFIED;
-   313			update = true;
-   314			break;
-   315		/* Should be impossible as we enable only these interrupt */
- > 316		default:
-   317		}
-   318	
-   319		/* reset interrupt */
-   320		writel(status, priv->base + EN7581_TEMPMONINTSTS);
-   321	
-   322		if (update)
-   323			thermal_zone_device_update(priv->tz, event);
-   324	
-   325		return IRQ_HANDLED;
-   326	}
-   327	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+--=20
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
