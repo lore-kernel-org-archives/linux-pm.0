@@ -1,58 +1,58 @@
-Received: from mail-lj1-f174.google.com (mail-lj1-f174.google.com [209.85.208.174])
+Received: from mail-lj1-f181.google.com (mail-lj1-f181.google.com [209.85.208.181])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E06EC17A31F;
-	Wed, 14 May 2025 16:26:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B81617B425;
+	Wed, 14 May 2025 16:31:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747239982; cv=none; b=mw1xvBpep6/fJW1HaKmrsnoojzakCEDikd2R+PRcNsP/MbpWW48pIN3+QJXLoWbtPSco1Cxke7DNRdrQDvO3XqsWOe1H/ScKzagYQ1vJzWcKNbPYryEzszpd3hOOrBhNIjTS/IYU1pv/jSsP54z8IwgDQCIRnThLaB37FfJldTo=
+	t=1747240275; cv=none; b=oYs5CZbHrk35GQOlcty9DJ3ALmzBuvxCK3hsHbD3ibST5itXavzGEqAwfsA6Und9xFA0KuMWuY9yzx4xaquIkt4lxnQmsWOga+NrvBtNQZOvza8Y0FjH5HpiM4vMYnEjb7oZSPiIY6Q7FWgSG/OPIYuL/JgtpQtpHhYtq79ZvUw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747239982; c=relaxed/simple;
-	bh=GIESU+iUZJaPMI+zA9vfT9gZW6/Sx15SV7jAG8TtOP8=;
+	s=arc-20240116; t=1747240275; c=relaxed/simple;
+	bh=hMG5Hp4DrK9f+Zt1PU2mXZ8zjXEdBSx3vlr7E9/HJHE=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=uWQyxSbu8A1u3ta0bKAUFChHWnuLSLxeziCTLutsV4aNkawIIk6H8WLjo0nXy4CPHP5NZRSlXknmPCekCzbBLF5ieq2jYCi8dTI/8jEJkTz0XYfOZ6LSHgb5LAZSRSKfbGIZSia8lZIA0rUn5O5A0u6Yg/63Nlr4Qejuup4VcYw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DPjDmFdg; arc=none smtp.client-ip=209.85.208.174
+	 To:Cc:Content-Type; b=ZZKoe58k3+5cvjleWn1Ab2g0BycqAG4u8xbQ3mgQLqKMyjvk1Z0KgxYtelh6xx0Rkb5wbmxL9xuJooiX+zWv04+doox/hbeX9GQPra7EohVWe8lmYfaj/4eTN3r8enKRiEWciwW0m5rVzHPcndKh+OP29WZ78Av0FwAeaHl3egQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=f/1wIB5q; arc=none smtp.client-ip=209.85.208.181
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DPjDmFdg"
-Received: by mail-lj1-f174.google.com with SMTP id 38308e7fff4ca-326d823304fso37166071fa.0;
-        Wed, 14 May 2025 09:26:20 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="f/1wIB5q"
+Received: by mail-lj1-f181.google.com with SMTP id 38308e7fff4ca-326c1795b8bso13397371fa.1;
+        Wed, 14 May 2025 09:31:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1747239979; x=1747844779; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1747240271; x=1747845071; darn=vger.kernel.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=wMNBvOAelRf/aEmSOjmnBt5f4s2CUzlEA7lgWB9KPa4=;
-        b=DPjDmFdgVbiY1uD1LFx8Eq0a5p6PM7RpUqMZUHqER5Io3FYJC2Ff+zEnPVH9R1BzEz
-         CTtFbfsK2cMAjwL0yTMda09d7hqFqEJBev9msTC+byRDqhrRJXViuaztEg3lYg8gqodg
-         uFkOqgsZF0wdzp+Y8Z5LOJUwrpJeZzD+iAieuqTISCMH/zsQ+W1o0bWDmz4wXk3JCbw5
-         U0ODjnc641O4/Rq5sEyilEBBa5G6hkRtegozY1A8my9mQTIq2FuAfQ7zxuwJfxFmYpkz
-         Ae9mQ3i4IumyHsRENabOh7ZRo66PEuxUCADgLdHAlwvp3gYqOGWaiuECvR5/6a1jV8If
-         qe7g==
+        bh=Tl3sZuw1JpFTPNUyXtF/TiniOiQd8y65SQ3qOplFDgE=;
+        b=f/1wIB5qY0x9wE4vuekUTdIvWxi3DAR5ECw4OaoaDh/Tiq3Fv70y+Q4cI8TcYZeimY
+         PO9LjKT5mJl09UwS061RYRJatqDoMKdJ7zSHVff3UJtoaCMlgm36Js+X3U/hLR4vHbUX
+         AU0gD7uXQKkqPE/Uzoylo3+pDIVa8pRGax2tP+sRcBiAnWvbO2ZUncZQTwIFVbuZhqAm
+         nu+iydzCfUmKojVO6rIYBF6hblv/tfzShj7oRFYuT/wyyWexdLj6pC2OO85e81z4alA/
+         OQ4NcehM2FlYlaWjsPHkTvXIpEFs39qzhyl+zyDFR3FmIMGtpWqSN93yX3Wu6fCaB2jq
+         OKVg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1747239979; x=1747844779;
+        d=1e100.net; s=20230601; t=1747240271; x=1747845071;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=wMNBvOAelRf/aEmSOjmnBt5f4s2CUzlEA7lgWB9KPa4=;
-        b=IzS6j0HIdr/K8B49uIMmFXQs/PIhmE2eTw/HXFBIVpiMMPpz7Z88oXI4Z/BjhBZOKi
-         rK9XsloreLXBEJimfouH2fAN8fKfEYp9QefxEaCBmbef8VDx1OrDQjztbfVuOcuriaD6
-         aOCKk2QJaqhrAzofV7BGIhWsxtzXDb5vGOosbweC/R4J+d9KNOOOUcKaFBJv3SOgG5zw
-         7WZnCUxNFbob/noSI7/PPKwsI1h3bnCC0K3O1BtxK6KSKeWAeDg1D14Q0bvDEnuCM4rO
-         aphfmuvoMWvwfzUHkOYYtO4778djaXZYPSSLWZvwOiScNCDfqPMbiTTm1e6sOo1FUhOI
-         GaJA==
-X-Forwarded-Encrypted: i=1; AJvYcCUV8Ht7YbiNE6qbP1MccXyl1dQghMuLXQ1mPMkGfgvQkDiYycLdXHoaMUApMOlpr7YBsg5pu+998CMt+Lg=@vger.kernel.org, AJvYcCWCTwvMO8enLrEW3N6ozQdPZkE+SEyw13og577mDaU34IsTdULA5tYtBbnMEnrY1pGXf3mzWP2VQ6dtbrQ=@vger.kernel.org, AJvYcCWNN/QXjE1RJxsdwuybwHpEnBs97Ye7hS5+ibX1V0mkEnjYNZwP98775mILNtHXI2SnkG6vip1MF84=@vger.kernel.org
-X-Gm-Message-State: AOJu0YwNGrbgbu0iwoMh2mAXfhvHvkX/6Vn3tGkKSnvMZ4v96DHX4h+r
-	BK6svyvCDdP+9GCHEywVBSCjEimpfIIflRyacSiLdszER/EDK/FdutSwzS1RjzE1PL+LraushgK
-	d2gwSidLnOyXZL+K3l8R/+5NZWFo=
-X-Gm-Gg: ASbGnctkEMseMXJayK8fLt+mCcqdS0sEebUvTv4Q79AeGSgTPMGuPOf97Iam32wAu7/
-	IKHqP2gPLqDIhwV08kWZsQLjgEhLxp9fQxA5jG0UveohMxCt63Ycnln01iT8ze92hsoFOaf0Rou
-	Hm1BQ3xS/FYJ6yml0C7h/pU6i5HBa115bvMw==
-X-Google-Smtp-Source: AGHT+IEuGSm3mBr75lUKxAMiFBWmCn7dZDNntjwFzklEiUcmiYMNyrKwOHaq+huwYB9vJJqB47JrALQJlga5dT+Q07E=
-X-Received: by 2002:a2e:bc08:0:b0:30b:e3d9:37e5 with SMTP id
- 38308e7fff4ca-327ed0d72ccmr15714531fa.13.1747239978632; Wed, 14 May 2025
- 09:26:18 -0700 (PDT)
+        bh=Tl3sZuw1JpFTPNUyXtF/TiniOiQd8y65SQ3qOplFDgE=;
+        b=gaKAj9L7QuIpPnoDI5E5IU2R1ONBvGMXqLkL7krB1XB2BfbKOnjrb5b/wlZvZjxVgd
+         mZILNoQxjaAUkDFY0PjWaJqzl005qwrBEjv2S1mFIswTc1pucQMmfMLtuCIKpwP1RkXy
+         JJpNRZINn7VS3yYVtd3pQQ1vDPnokqtcLM5pifts3AUgOb6g091crpy4u3d6VZlW+WUo
+         0puI7voOVu4d5kKxYBdxiW1CEo4W9WMrHYRVD1tp88Z3iPu2N0GVy89CYppWB+qskdkR
+         +HF7C66gJhFiGoD3jifKApBOpA1Sh9k7AhROsKPAA3X4lKYjqK/hw7h/MlPuaILX2etZ
+         /2+Q==
+X-Forwarded-Encrypted: i=1; AJvYcCVLhOPFIBIOvsSRLb7Us4ZfTqTLsWKGqgHJdVkkkxgnfiLqgPl1nGtlzdJjJAWErwhdWyJ+tMsp7lUZ3KU=@vger.kernel.org, AJvYcCWgRJx/vGwj1KZF0iJFNNSMOcDPLKlOFw+5F9vjB7Y/eG9ff3g91Zvzwfr0XfjT5XAs86lp1rBXBNlMk/E=@vger.kernel.org, AJvYcCXBWhZlxoGz5Qo4WgQ+aTxlio3I+0e3KgX08xeaKUxCT88GzYBA7iBPexT07sPfgfD37alENuKkN6Y=@vger.kernel.org
+X-Gm-Message-State: AOJu0YzJM6LWtqm7ztfxzhMlF/7OieIjoVltlPnOPF13r5fjilXRXf04
+	Uf95G9FxNP1YY2gZWvNgmKOaCPehOub4FkdyiaPtbFgjM8KYeAqc5yFSvXZHaGPLXjg+9hTIDrO
+	P11fOV+eyLI3m4wxAlW3cPDvvNDU=
+X-Gm-Gg: ASbGncsUd2z5Pj8pYHMgjHJKR2YlxoSZBQ8ztuQXlbeo4H6a3CAOSsRtKlUkmUm84KS
+	tmwEvOenWfvyEKPFFsVw10pYxWiSOGinOCd6sQzZ+lx8QuHtpDQy1/NNPAnqVg5XRnO0pA+aVGz
+	MeWvrnQd0sM/o7mGPPdkgT1Hsv487ZI5CfuQ==
+X-Google-Smtp-Source: AGHT+IEBixW/UnlsdMV+KcAwpESPlSRZwPO2hjoXVUOHsdw5UOEX0JmzjViwlmGtZphdTMfVYwah+r3pzhyPDgtTI3Q=
+X-Received: by 2002:a05:651c:b12:b0:326:cf84:63c4 with SMTP id
+ 38308e7fff4ca-327f843efc2mr1150781fa.1.1747240271035; Wed, 14 May 2025
+ 09:31:11 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -60,14 +60,13 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 References: <20250508-tegra124-cpufreq-v4-0-d142bcbd0234@gmail.com>
- <20250508-tegra124-cpufreq-v4-1-d142bcbd0234@gmail.com> <040b0d8b-e862-48dd-9b77-9266a5194f99@nvidia.com>
- <CALHNRZ_AH-OkDak_RDoA3FB6EVO78r5G=5zosiJEXk4UGLH=fQ@mail.gmail.com>
-In-Reply-To: <CALHNRZ_AH-OkDak_RDoA3FB6EVO78r5G=5zosiJEXk4UGLH=fQ@mail.gmail.com>
+ <20250508-tegra124-cpufreq-v4-2-d142bcbd0234@gmail.com> <da080e61-4e54-4334-a239-1619bf8fea0c@nvidia.com>
+In-Reply-To: <da080e61-4e54-4334-a239-1619bf8fea0c@nvidia.com>
 From: Aaron Kling <webgeek1234@gmail.com>
-Date: Wed, 14 May 2025 11:26:06 -0500
-X-Gm-Features: AX0GCFuHlyC0-Iz38p3CLXOkhiqmbRzxA0tQ5KfR89ZAPRMKo0iCPoXGbUHFpN8
-Message-ID: <CALHNRZ8Ri4sv7JkFj6t8b3VT=LU9ZS0Wc_8US2b3xGimLY6P6g@mail.gmail.com>
-Subject: Re: [PATCH v4 1/2] cpufreq: tegra124: Remove use of disable_cpufreq
+Date: Wed, 14 May 2025 11:30:58 -0500
+X-Gm-Features: AX0GCFtHpKPKPsDOnGvKMQdAIPreQAx29TyN97-A_3yl0xx21IqwVU2UXtPudyg
+Message-ID: <CALHNRZ9DKf_p5y3K4yVF8wDm4S0jRB-NSF8aZB5CsYxk7GmyNQ@mail.gmail.com>
+Subject: Re: [PATCH v4 2/2] cpufreq: tegra124: Allow building as a module
 To: Jon Hunter <jonathanh@nvidia.com>
 Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
 	Thierry Reding <thierry.reding@gmail.com>, linux-pm@vger.kernel.org, 
@@ -75,70 +74,81 @@ Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.o
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, May 9, 2025 at 11:57=E2=80=AFAM Aaron Kling <webgeek1234@gmail.com>=
- wrote:
+On Wed, May 14, 2025 at 5:32=E2=80=AFAM Jon Hunter <jonathanh@nvidia.com> w=
+rote:
 >
-> On Fri, May 9, 2025 at 6:04=E2=80=AFAM Jon Hunter <jonathanh@nvidia.com> =
-wrote:
+>
+> On 09/05/2025 01:04, Aaron Kling via B4 Relay wrote:
+> > From: Aaron Kling <webgeek1234@gmail.com>
 > >
+> > This requires three changes:
+> > * A soft dependency on cpufreq-dt as this driver only handles power
+> >    management and cpufreq-dt does the real operations
+> > * Adding a remove routine to remove the cpufreq-dt device
+> > * Adding a exit routine to handle cleaning up the driver
 > >
+> > Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
+> > ---
+> >   drivers/cpufreq/Kconfig.arm        |  2 +-
+> >   drivers/cpufreq/tegra124-cpufreq.c | 36 +++++++++++++++++++++++++++++=
++++----
+> >   2 files changed, 33 insertions(+), 5 deletions(-)
 > >
-> > On 09/05/2025 01:04, Aaron Kling via B4 Relay wrote:
-> > > From: Aaron Kling <webgeek1234@gmail.com>
-> > >
-> > > Instead, unregister the cpufreq device for this fatal fail case.
+> > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> > index 4f9cb943d945c244eb2b29f543d14df6cac4e5d4..625f6fbdaaf5fd774e3b0bb=
+996eb7ce980da41ee 100644
+> > --- a/drivers/cpufreq/Kconfig.arm
+> > +++ b/drivers/cpufreq/Kconfig.arm
+> > @@ -238,7 +238,7 @@ config ARM_TEGRA20_CPUFREQ
+> >         This adds the CPUFreq driver support for Tegra20/30 SOCs.
 > >
-> > This is not a complete sentence. Seems to be a continuation of the
-> > subject which is not clear to the reader (at least not to me). No
-> > mention of why or what this is fixing, if anything?
->
-> I can clean up the subject and message in a new revision. More on the
-> reasoning below.
->
-> > >
-> > > Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
-> > > ---
-> > >   drivers/cpufreq/tegra124-cpufreq.c | 5 ++++-
-> > >   1 file changed, 4 insertions(+), 1 deletion(-)
-> > >
-> > > diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/teg=
-ra124-cpufreq.c
-> > > index 514146d98bca2d8aa59980a14dff3487cd8045f6..bc0691e8971f9454def37=
-f489e4a3e244100b9f4 100644
-> > > --- a/drivers/cpufreq/tegra124-cpufreq.c
-> > > +++ b/drivers/cpufreq/tegra124-cpufreq.c
-> > > @@ -168,7 +168,10 @@ static int __maybe_unused tegra124_cpufreq_resum=
-e(struct device *dev)
-> > >   disable_dfll:
-> > >       clk_disable_unprepare(priv->dfll_clk);
-> > >   disable_cpufreq:
-> > > -     disable_cpufreq();
-> > > +     if (!IS_ERR(priv->cpufreq_dt_pdev)) {
-> > > +             platform_device_unregister(priv->cpufreq_dt_pdev);
-> > > +             priv->cpufreq_dt_pdev =3D ERR_PTR(-ENODEV);
-> > > +     }
+> >   config ARM_TEGRA124_CPUFREQ
+> > -     bool "Tegra124 CPUFreq support"
+> > +     tristate "Tegra124 CPUFreq support"
+> >       depends on ARCH_TEGRA || COMPILE_TEST
+> >       depends on CPUFREQ_DT
+> >       default y
+> > diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra=
+124-cpufreq.c
+> > index bc0691e8971f9454def37f489e4a3e244100b9f4..b6059c91f2474c56809c403=
+eca94eacf51df734f 100644
+> > --- a/drivers/cpufreq/tegra124-cpufreq.c
+> > +++ b/drivers/cpufreq/tegra124-cpufreq.c
+> > @@ -16,6 +16,8 @@
+> >   #include <linux/pm_opp.h>
+> >   #include <linux/types.h>
 > >
-> > So you are proposing to unregister the device in resume? That seems odd=
-.
-> > I see there is no remove for this driver, but I really don't see the
-> > value in this.
+> > +static struct platform_device *platform_device;
+> > +
+> >   struct tegra124_cpufreq_priv {
+> >       struct clk *cpu_clk;
+> >       struct clk *pllp_clk;
+> > @@ -176,6 +178,21 @@ static int __maybe_unused tegra124_cpufreq_resume(=
+struct device *dev)
+> >       return err;
+> >   }
+> >
+> > +static void tegra124_cpufreq_remove(struct platform_device *pdev)
+> > +{
+> > +     struct tegra124_cpufreq_priv *priv =3D dev_get_drvdata(&pdev->dev=
+);
+> > +
+> > +     if (!IS_ERR(priv->cpufreq_dt_pdev)) {
+> > +             platform_device_unregister(priv->cpufreq_dt_pdev);
+> > +             priv->cpufreq_dt_pdev =3D ERR_PTR(-ENODEV);
+> > +     }
+> > +
+> > +     clk_put(priv->pllp_clk);
+> > +     clk_put(priv->pllx_clk);
+> > +     clk_put(priv->dfll_clk);
+> > +     clk_put(priv->cpu_clk);
 >
-> This was suggested by Viresh in v1 [0] to replace the call to
-> disable_cpufreq, which is not currently an exported function. I'm open
-> to other suggestions.
 >
-> Sincerely,
-> Aaron
->
-> [0] https://lore.kernel.org/all/20250421054452.fdlrrhtsimyucbup@vireshk-i=
-7/
+> If we use devm_clk_get() in probe, then we should be able to avoid this.
 
-Viresh, could you comment here please? As you were the one that
-suggested replacing disable_cpufreq with an unregister instead of
-exporting said function. I can make the code changes and verify they
-work as intended, but I'm not familiar enough with this subsystem to
-know what a good option here is. Are there any other cpufreq drivers
-that have to handle a resume failure like this?
+I can do that. There's a lot of other cleanup like this that the
+driver could use based on newer kernel apis, but that's out of scope
+of this series.
 
 Sincerely,
 Aaron
