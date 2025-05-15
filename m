@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 87DA329713F;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 07E1F296D2C;
 	Thu, 15 May 2025 06:22:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747290135; cv=none; b=Vr0nRu+sdWIMb8KS1hUHJqPc8KRxzNdnTho6JVEjE8a3Hr5DRHWiYtdAo91oGJGeEF/pBO1HJkfumnCEJSKAAIOwSwt1euln+bGVOd5ZmreFBv7iWBEhR6S1rOPa7kgVlgQuLdqep1d970aD0w86jSqN5g/X9I4NBSsnpQdwaP0=
+	t=1747290135; cv=none; b=RdunslMm4fIDNIHxKW+XrRyTlYJKb0bS6lCCsPo6+hPTaAUZj42k6a+qcGJu+4BRlThm4UBT/J5/Mw354n0yd0L42GvCA3K+FQ+N1LV57W22muXEldJp3O7Up9G8EEsBQpbnm6JaSC95o236imYD00qOCD3/WQ2SSdQnYdihVMM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1747290135; c=relaxed/simple;
-	bh=J5+XTddKYL+uGoeS6U5n3vqNTVoz33EZ6TLivaXUeOs=;
+	bh=30ZD5Z2cB4b1Mg2SYua2SNUON9SvIrxzWTdu7USDv5M=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=bUJ0NKy5EaEirZqQw9P7AVcAKSSjVWT+Z5Vj7Y90d3RvsTPTaW1d7b6R9xiNy78WpRjVUTVoxVKZmxPLPdWGOXZ8Rufv//qpU4cDHSYiN/XT18gD/wxey1rt6aAUTvU54xh21/BhkwETcQsc+COUuDvURHkglqpGnyPNNvxiIMQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FucVwOxB; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=SC31RnpOTYYkB/UHSGlLLRmPa9w009HTPX4MMAHjrcxYuYeODin00iHX4cWc9P7KlBRqGVso2rp9baoBuy4NogjUbVKFgHVHYohsAV9XM3N0rOnxTlJPHYVi1M7nhEYYKtfMgV0Fia9sx/G59IHtvAMIkmfox7gzHybXXOtGfo4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QloEdcL2; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FucVwOxB"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id BE5D0C4CEEF;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QloEdcL2"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 8062CC4CEFD;
 	Thu, 15 May 2025 06:22:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1747290134;
-	bh=J5+XTddKYL+uGoeS6U5n3vqNTVoz33EZ6TLivaXUeOs=;
+	bh=30ZD5Z2cB4b1Mg2SYua2SNUON9SvIrxzWTdu7USDv5M=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=FucVwOxBmZzmgCt80SOQ8pDki16kbikn7nFbn/39hegTVlG/tXe8ziBkxVJ6wk84b
-	 H2yQtCVxNXnGQLUhIw9ozxycgGEdMe14dEov+XRTS0glhSe77kQaT7LPTFGk22Bpbb
-	 WDXQ6ffTcsqlk4fq0HmeB09ZbM9JhyPU1Qw2UKUvFxggIa9dLDWkOl0CSaxYvSR+17
-	 dn33i4jszdBY0KdqD22941TVYkWpI6VlqYXjE0l51Ty8iTYOLYB9Tc0ysCRYEQQSVm
-	 2DOBUjLnQTDC0g+c/zC4pF1k5eTb2clc0qPynqd0w+7S7Rb4kcgMuyWz9pT9kuocV6
-	 +9e9OD7c4o0hA==
+	b=QloEdcL2sr3pVO+FEOrTGz5Eyr0m90F1ofXFyI68TEoyrHzevwOkqfD9ZkejLVNs8
+	 rJN2DYUvMFp2wDJwTeooFU+vLwBDaQ4ZUuX9r4RF9MlEzz5+CbLN9gKAZKOBF0kPXp
+	 v8uaDK3mIpOEOBJJZCn8OZBuPAwmwiDdvCkAb7ENUpw/a/Ga7h8QoVPT+zbkLp0qrP
+	 3FRwX6l+UDtFNNhzJw8+04ff0rfGVgymDsCjouB9aTDBc0jUo2G8y6RLw+Lr4B6vNC
+	 7y6N4ljGCiwEjE1pXW8JNk+gCIOBwf5JiD6w/1NchoWURVqzxJkkFmK0um+vzUp31e
+	 DNPPW7a0pKWDw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B48E0C2D0CD;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76967C3DA6D;
 	Thu, 15 May 2025 06:22:14 +0000 (UTC)
 From: Sven Peter via B4 Relay <devnull+sven.svenpeter.dev@kernel.org>
-Date: Thu, 15 May 2025 06:21:22 +0000
-Subject: [PATCH v6 10/10] arm64: dts: apple: t600x: Add SMC node
+Date: Thu, 15 May 2025 06:21:18 +0000
+Subject: [PATCH v6 06/10] gpio: Add new gpio-macsmc driver for Apple Macs
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +40,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250515-smc-6-15-v6-10-c47b1ef4b0ae@svenpeter.dev>
+Message-Id: <20250515-smc-6-15-v6-6-c47b1ef4b0ae@svenpeter.dev>
 References: <20250515-smc-6-15-v6-0-c47b1ef4b0ae@svenpeter.dev>
 In-Reply-To: <20250515-smc-6-15-v6-0-c47b1ef4b0ae@svenpeter.dev>
 To: Sven Peter <sven@svenpeter.dev>, Janne Grunau <j@jannau.net>, 
@@ -55,13 +55,13 @@ Cc: asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
  linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
  linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1919; i=sven@svenpeter.dev;
- h=from:subject:message-id;
- bh=/N53oOOBzb58n/OPSPSRL49kg7S7jUG56OD40+fuzWc=;
- b=owGbwMvMwCHmIlirolUq95LxtFoSQ4Zqh3CXhsmiem4x9rY1d6VNMhvjfVeXXbrtwO7ydd33U
- 35ZW450lLIwiHEwyIopsmzfb2/65OEbwaWbLr2HmcPKBDKEgYtTACbSeJiRYbJzPne/QlhOR/27
- I+fZ9TJcsqZOPFUowPxCZ4XD0u2bGBgZjhWbPX1X4MR490rqgT2J+zf1zWtf8MRENWTViattEj9
- c+AA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=10960;
+ i=sven@svenpeter.dev; h=from:subject:message-id;
+ bh=nRIP2lbfi8Qx2314ng3IAUeq0fIP5UD1ZzN8EKd2EkE=;
+ b=owGbwMvMwCHmIlirolUq95LxtFoSQ4ZqB29yDctus0WCc/J5b23YcvLn1gfx1ZaRr2u/Pt96v
+ /xV+M0THaUsDGIcDLJiiizb99ubPnn4RnDppkvvYeawMoEMYeDiFICJPFJgZHgsfDbysqecjaKK
+ jNtTj9TTV/f0vLGeeOv0yisdyeEanTsZ/lfM/VLm9rOVQeWyZ0qK7tcr6+8l9AUzXlC0eRQUJ+G
+ bzwsA
 X-Developer-Key: i=sven@svenpeter.dev; a=openpgp;
  fpr=A1E3E34A2B3C820DBC4955E5993B08092F131F93
 X-Endpoint-Received: by B4 Relay for sven@svenpeter.dev/default with
@@ -71,60 +71,377 @@ Reply-To: sven@svenpeter.dev
 
 From: Hector Martin <marcan@marcan.st>
 
+This driver implements the GPIO service on top of the SMC framework
+on Apple Mac machines. In particular, these are the GPIOs present in the
+PMU IC which are used to control power to certain on-board devices.
+
+Although the underlying hardware supports various pin config settings
+(input/output, open drain, etc.), this driver does not implement that
+functionality and leaves it up to the firmware to configure things
+properly. We also don't yet support interrupts/events. This is
+sufficient for device power control, which is the only thing we need to
+support at this point. More features will be implemented when needed.
+
+To our knowledge, only Apple Silicon Macs implement this SMC feature.
+
 Signed-off-by: Hector Martin <marcan@marcan.st>
+Reviewed-by: Bartosz Golaszewski <brgl@bgdev.pl>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Reviewed-by: Sven Peter <sven@svenpeter.dev>
+Signed-off-by: Russell King (Oracle) <rmk+kernel@armlinux.org.uk>
 Reviewed-by: Alyssa Rosenzweig <alyssa@rosenzweig.io>
 Reviewed-by: Neal Gompa <neal@gompa.dev>
 Signed-off-by: Sven Peter <sven@svenpeter.dev>
 ---
- arch/arm64/boot/dts/apple/t600x-die0.dtsi | 35 +++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
+ MAINTAINERS                |   1 +
+ drivers/gpio/Kconfig       |  10 ++
+ drivers/gpio/Makefile      |   1 +
+ drivers/gpio/gpio-macsmc.c | 292 +++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 304 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/apple/t600x-die0.dtsi b/arch/arm64/boot/dts/apple/t600x-die0.dtsi
-index 110bc6719512e334e04b496fb157cb4368679957..9eb9b0656bf9c570983c90e360795b7a7c71cf90 100644
---- a/arch/arm64/boot/dts/apple/t600x-die0.dtsi
-+++ b/arch/arm64/boot/dts/apple/t600x-die0.dtsi
-@@ -24,6 +24,41 @@ aic: interrupt-controller@28e100000 {
- 		power-domains = <&ps_aic>;
- 	};
+diff --git a/MAINTAINERS b/MAINTAINERS
+index dfaca531600c22d487fb17a25294686611dd4513..fa3a5f9ee40446bcc725c9eac2a36651e6bc7553 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2291,6 +2291,7 @@ F:	drivers/bluetooth/hci_bcm4377.c
+ F:	drivers/clk/clk-apple-nco.c
+ F:	drivers/cpufreq/apple-soc-cpufreq.c
+ F:	drivers/dma/apple-admac.c
++F:	drivers/gpio/gpio-macsmc.c
+ F:	drivers/pmdomain/apple/
+ F:	drivers/i2c/busses/i2c-pasemi-core.c
+ F:	drivers/i2c/busses/i2c-pasemi-platform.c
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index f2c39bbff83a33dcb12b2d32aa3ebc358a0dd949..f0e25105f8ebe7356344722987333a9fc244ea1f 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -1440,6 +1440,16 @@ config GPIO_LP87565
+ 	  This driver can also be built as a module. If so, the module will be
+ 	  called gpio-lp87565.
  
-+	smc: smc@290400000 {
-+		compatible = "apple,t6000-smc", "apple,smc";
-+		reg = <0x2 0x90400000 0x0 0x4000>,
-+			<0x2 0x91e00000 0x0 0x100000>;
-+		reg-names = "smc", "sram";
-+		mboxes = <&smc_mbox>;
++config GPIO_MACSMC
++	tristate "Apple Mac SMC GPIO"
++	depends on MFD_MACSMC
++	help
++	  Support for GPIOs controlled by the SMC microcontroller on Apple Mac
++	  systems.
 +
-+		smc_gpio: gpio {
-+			compatible = "apple,smc-gpio";
-+			gpio-controller;
-+			#gpio-cells = <2>;
-+		};
++	  This driver can also be built as a module. If so, the module will be
++	  called gpio-macsmc.
 +
-+		smc_reboot: reboot {
-+			compatible = "apple,smc-reboot";
-+			nvmem-cells = <&shutdown_flag>, <&boot_stage>,
-+				<&boot_error_count>, <&panic_count>;
-+			nvmem-cell-names = "shutdown_flag", "boot_stage",
-+				"boot_error_count", "panic_count";
-+		};
-+	};
+ config GPIO_MADERA
+ 	tristate "Cirrus Logic Madera class codecs"
+ 	depends on PINCTRL_MADERA
+diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+index af130882ffeeef8b1d518867bfe1493ec4f21b5f..c2e47f356bfae73384ace8103074f246e49fb9d6 100644
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -97,6 +97,7 @@ obj-$(CONFIG_GPIO_LP873X)		+= gpio-lp873x.o
+ obj-$(CONFIG_GPIO_LP87565)		+= gpio-lp87565.o
+ obj-$(CONFIG_GPIO_LPC18XX)		+= gpio-lpc18xx.o
+ obj-$(CONFIG_GPIO_LPC32XX)		+= gpio-lpc32xx.o
++obj-$(CONFIG_GPIO_MACSMC)		+= gpio-macsmc.o
+ obj-$(CONFIG_GPIO_MADERA)		+= gpio-madera.o
+ obj-$(CONFIG_GPIO_MAX3191X)		+= gpio-max3191x.o
+ obj-$(CONFIG_GPIO_MAX7300)		+= gpio-max7300.o
+diff --git a/drivers/gpio/gpio-macsmc.c b/drivers/gpio/gpio-macsmc.c
+new file mode 100644
+index 0000000000000000000000000000000000000000..7570d9e89adfff49b9858c82bb34b075fb0e5f16
+--- /dev/null
++++ b/drivers/gpio/gpio-macsmc.c
+@@ -0,0 +1,292 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * Apple SMC GPIO driver
++ * Copyright The Asahi Linux Contributors
++ *
++ * This driver implements basic SMC PMU GPIO support that can read inputs
++ * and write outputs. Mode changes and IRQ config are not yet implemented.
++ */
 +
-+	smc_mbox: mbox@290408000 {
-+		compatible = "apple,t6000-asc-mailbox", "apple,asc-mailbox-v4";
-+		reg = <0x2 0x90408000 0x0 0x4000>;
-+		interrupt-parent = <&aic>;
-+		interrupts = <AIC_IRQ 0 754 IRQ_TYPE_LEVEL_HIGH>,
-+			<AIC_IRQ 0 755 IRQ_TYPE_LEVEL_HIGH>,
-+			<AIC_IRQ 0 756 IRQ_TYPE_LEVEL_HIGH>,
-+			<AIC_IRQ 0 757 IRQ_TYPE_LEVEL_HIGH>;
-+		interrupt-names = "send-empty", "send-not-empty",
-+			"recv-empty", "recv-not-empty";
-+		#mbox-cells = <0>;
-+	};
++#include <linux/bitmap.h>
++#include <linux/device.h>
++#include <linux/gpio/driver.h>
++#include <linux/mfd/core.h>
++#include <linux/mfd/macsmc.h>
 +
- 	pinctrl_smc: pinctrl@290820000 {
- 		compatible = "apple,t6000-pinctrl", "apple,pinctrl";
- 		reg = <0x2 0x90820000 0x0 0x4000>;
++#define MAX_GPIO 64
++
++/*
++ * Commands 0-6 are, presumably, the intended API.
++ * Command 0xff lets you get/set the pin configuration in detail directly,
++ * but the bit meanings seem not to be stable between devices/PMU hardware
++ * versions.
++ *
++ * We're going to try to make do with the low commands for now.
++ * We don't implement pin mode changes at this time.
++ */
++
++#define CMD_ACTION	(0 << 24)
++#define CMD_OUTPUT	(1 << 24)
++#define CMD_INPUT	(2 << 24)
++#define CMD_PINMODE	(3 << 24)
++#define CMD_IRQ_ENABLE	(4 << 24)
++#define CMD_IRQ_ACK	(5 << 24)
++#define CMD_IRQ_MODE	(6 << 24)
++#define CMD_CONFIG	(0xff << 24)
++
++#define MODE_INPUT	0
++#define MODE_OUTPUT	1
++#define MODE_VALUE_0	0
++#define MODE_VALUE_1	2
++
++#define IRQ_MODE_HIGH		0
++#define IRQ_MODE_LOW		1
++#define IRQ_MODE_RISING		2
++#define IRQ_MODE_FALLING	3
++#define IRQ_MODE_BOTH		4
++
++#define CONFIG_MASK	GENMASK(23, 16)
++#define CONFIG_VAL	GENMASK(7, 0)
++
++#define CONFIG_OUTMODE	GENMASK(7, 6)
++#define CONFIG_IRQMODE	GENMASK(5, 3)
++#define CONFIG_PULLDOWN	BIT(2)
++#define CONFIG_PULLUP	BIT(1)
++#define CONFIG_OUTVAL	BIT(0)
++
++/*
++ * Output modes seem to differ depending on the PMU in use... ?
++ * j274 / M1 (Sera PMU):
++ *   0 = input
++ *   1 = output
++ *   2 = open drain
++ *   3 = disable
++ * j314 / M1Pro (Maverick PMU):
++ *   0 = input
++ *   1 = open drain
++ *   2 = output
++ *   3 = ?
++ */
++
++struct macsmc_gpio {
++	struct device *dev;
++	struct apple_smc *smc;
++	struct gpio_chip gc;
++
++	int first_index;
++};
++
++static int macsmc_gpio_nr(smc_key key)
++{
++	int low = hex_to_bin(key & 0xff);
++	int high = hex_to_bin((key >> 8) & 0xff);
++
++	if (low < 0 || high < 0)
++		return -1;
++
++	return low | (high << 4);
++}
++
++static int macsmc_gpio_key(unsigned int offset)
++{
++	return _SMC_KEY("gP\0\0") | hex_asc_hi(offset) << 8 | hex_asc_lo(offset);
++}
++
++static int macsmc_gpio_find_first_gpio_index(struct macsmc_gpio *smcgp)
++{
++	struct apple_smc *smc = smcgp->smc;
++	smc_key key = macsmc_gpio_key(0);
++	smc_key first_key, last_key;
++	int start, count, ret;
++
++	/* Return early if the key is out of bounds */
++	ret = apple_smc_get_key_by_index(smc, 0, &first_key);
++	if (ret)
++		return ret;
++	if (key <= first_key)
++		return -ENODEV;
++
++	ret = apple_smc_get_key_by_index(smc, smc->key_count - 1, &last_key);
++	if (ret)
++		return ret;
++	if (key > last_key)
++		return -ENODEV;
++
++	/* Binary search to find index of first SMC key bigger or equal to key */
++	start = 0;
++	count = smc->key_count;
++	while (count > 1) {
++		smc_key pkey;
++		int pivot = start + ((count - 1) >> 1);
++
++		ret = apple_smc_get_key_by_index(smc, pivot, &pkey);
++		if (ret < 0)
++			return ret;
++
++		if (pkey == key)
++			return pivot;
++
++		pivot++;
++
++		if (pkey < key) {
++			count -= pivot - start;
++			start = pivot;
++		} else {
++			count = pivot - start;
++		}
++	}
++
++	return start;
++}
++
++static int macsmc_gpio_get_direction(struct gpio_chip *gc, unsigned int offset)
++{
++	struct macsmc_gpio *smcgp = gpiochip_get_data(gc);
++	smc_key key = macsmc_gpio_key(offset);
++	u32 val;
++	int ret;
++
++	/* First try reading the explicit pin mode register */
++	ret = apple_smc_rw_u32(smcgp->smc, key, CMD_PINMODE, &val);
++	if (!ret)
++		return (val & MODE_OUTPUT) ? GPIO_LINE_DIRECTION_OUT : GPIO_LINE_DIRECTION_IN;
++
++	/*
++	 * Less common IRQ configs cause CMD_PINMODE to fail, and so does open drain mode.
++	 * Fall back to reading IRQ mode, which will only succeed for inputs.
++	 */
++	ret = apple_smc_rw_u32(smcgp->smc, key, CMD_IRQ_MODE, &val);
++	return ret ? GPIO_LINE_DIRECTION_OUT : GPIO_LINE_DIRECTION_IN;
++}
++
++static int macsmc_gpio_get(struct gpio_chip *gc, unsigned int offset)
++{
++	struct macsmc_gpio *smcgp = gpiochip_get_data(gc);
++	smc_key key = macsmc_gpio_key(offset);
++	u32 cmd, val;
++	int ret;
++
++	ret = macsmc_gpio_get_direction(gc, offset);
++	if (ret < 0)
++		return ret;
++
++	if (ret == GPIO_LINE_DIRECTION_OUT)
++		cmd = CMD_OUTPUT;
++	else
++		cmd = CMD_INPUT;
++
++	ret = apple_smc_rw_u32(smcgp->smc, key, cmd, &val);
++	if (ret < 0)
++		return ret;
++
++	return val ? 1 : 0;
++}
++
++static int macsmc_gpio_set(struct gpio_chip *gc, unsigned int offset, int value)
++{
++	struct macsmc_gpio *smcgp = gpiochip_get_data(gc);
++	smc_key key = macsmc_gpio_key(offset);
++	int ret;
++
++	value |= CMD_OUTPUT;
++	ret = apple_smc_write_u32(smcgp->smc, key, CMD_OUTPUT | value);
++	if (ret < 0)
++		dev_err(smcgp->dev, "GPIO set failed %p4ch = 0x%x\n",
++			&key, value);
++
++	return ret;
++}
++
++static int macsmc_gpio_init_valid_mask(struct gpio_chip *gc,
++				       unsigned long *valid_mask, unsigned int ngpios)
++{
++	struct macsmc_gpio *smcgp = gpiochip_get_data(gc);
++	int count;
++	int i;
++
++	count = min(smcgp->smc->key_count, MAX_GPIO);
++
++	bitmap_zero(valid_mask, ngpios);
++
++	for (i = 0; i < count; i++) {
++		int ret, gpio_nr;
++		smc_key key;
++
++		ret = apple_smc_get_key_by_index(smcgp->smc, smcgp->first_index + i, &key);
++		if (ret < 0)
++			return ret;
++
++		if (key > SMC_KEY(gPff))
++			break;
++
++		gpio_nr = macsmc_gpio_nr(key);
++		if (gpio_nr < 0 || gpio_nr > MAX_GPIO) {
++			dev_err(smcgp->dev, "Bad GPIO key %p4ch\n", &key);
++			continue;
++		}
++
++		set_bit(gpio_nr, valid_mask);
++	}
++
++	return 0;
++}
++
++static int macsmc_gpio_probe(struct platform_device *pdev)
++{
++	struct macsmc_gpio *smcgp;
++	struct apple_smc *smc = dev_get_drvdata(pdev->dev.parent);
++	smc_key key;
++	int ret;
++
++	smcgp = devm_kzalloc(&pdev->dev, sizeof(*smcgp), GFP_KERNEL);
++	if (!smcgp)
++		return -ENOMEM;
++
++	smcgp->dev = &pdev->dev;
++	smcgp->smc = smc;
++
++	smcgp->first_index = macsmc_gpio_find_first_gpio_index(smcgp);
++	if (smcgp->first_index < 0)
++		return smcgp->first_index;
++
++	ret = apple_smc_get_key_by_index(smc, smcgp->first_index, &key);
++	if (ret < 0)
++		return ret;
++
++	if (key > macsmc_gpio_key(MAX_GPIO - 1))
++		return -ENODEV;
++
++	dev_info(smcgp->dev, "First GPIO key: %p4ch\n", &key);
++
++	smcgp->gc.label = "macsmc-pmu-gpio";
++	smcgp->gc.owner = THIS_MODULE;
++	smcgp->gc.get = macsmc_gpio_get;
++	smcgp->gc.set_rv = macsmc_gpio_set;
++	smcgp->gc.get_direction = macsmc_gpio_get_direction;
++	smcgp->gc.init_valid_mask = macsmc_gpio_init_valid_mask;
++	smcgp->gc.can_sleep = true;
++	smcgp->gc.ngpio = MAX_GPIO;
++	smcgp->gc.base = -1;
++	smcgp->gc.parent = &pdev->dev;
++
++	return devm_gpiochip_add_data(&pdev->dev, &smcgp->gc, smcgp);
++}
++
++static const struct of_device_id macsmc_gpio_of_table[] = {
++	{ .compatible = "apple,smc-gpio", },
++	{}
++};
++MODULE_DEVICE_TABLE(of, macsmc_gpio_of_table);
++
++static struct platform_driver macsmc_gpio_driver = {
++	.driver = {
++		.name = "macsmc-gpio",
++		.of_match_table = macsmc_gpio_of_table,
++	},
++	.probe = macsmc_gpio_probe,
++};
++module_platform_driver(macsmc_gpio_driver);
++
++MODULE_AUTHOR("Hector Martin <marcan@marcan.st>");
++MODULE_LICENSE("Dual MIT/GPL");
++MODULE_DESCRIPTION("Apple SMC GPIO driver");
 
 -- 
 2.34.1
