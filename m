@@ -1,449 +1,213 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from NAM04-MW2-obe.outbound.protection.outlook.com (mail-mw2nam04on2073.outbound.protection.outlook.com [40.107.101.73])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 07E1F296D2C;
-	Thu, 15 May 2025 06:22:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747290135; cv=none; b=RdunslMm4fIDNIHxKW+XrRyTlYJKb0bS6lCCsPo6+hPTaAUZj42k6a+qcGJu+4BRlThm4UBT/J5/Mw354n0yd0L42GvCA3K+FQ+N1LV57W22muXEldJp3O7Up9G8EEsBQpbnm6JaSC95o236imYD00qOCD3/WQ2SSdQnYdihVMM=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747290135; c=relaxed/simple;
-	bh=30ZD5Z2cB4b1Mg2SYua2SNUON9SvIrxzWTdu7USDv5M=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=SC31RnpOTYYkB/UHSGlLLRmPa9w009HTPX4MMAHjrcxYuYeODin00iHX4cWc9P7KlBRqGVso2rp9baoBuy4NogjUbVKFgHVHYohsAV9XM3N0rOnxTlJPHYVi1M7nhEYYKtfMgV0Fia9sx/G59IHtvAMIkmfox7gzHybXXOtGfo4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QloEdcL2; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 63E531A08AB;
+	Thu, 15 May 2025 06:33:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.101.73
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1747290824; cv=fail; b=kdEH9OpXSEyakshamBtNhZFBFakNscm61Adp7CF1MhV8IMWdIE9+E5x06b2tvZQkA3KnuioWxICbb5GWTDnJz1r3Cmud+4b9CjkZO9T3i8+KfW2+JoaeSjbsEW0zKOxtbElHqgj8vFDZHuoUuCz0eGtD7zZ0e3DDTNJGWOiosCA=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1747290824; c=relaxed/simple;
+	bh=NDSEgveadyBpxwAeZDbpoujAY+Uyrs72D3c6kn+GWrs=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=evtgrUyNnFVgJ+GvO0WwAw8acbh8kHplRWk2Csts5SyPouYHLsbeaTtuIv1hhdSQyO9gq/E9UqlzNoJIJNQhr/eZR3S1ACFFWwOcgvVVGTNmx4fdFa8sgc3Y2KRAN023/BAuR9vqmLtqRLtJ3LBhhZLRMyVwlJxOoLMIb3AujeY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=mBY+3Iet; arc=fail smtp.client-ip=40.107.101.73
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QloEdcL2"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 8062CC4CEFD;
-	Thu, 15 May 2025 06:22:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1747290134;
-	bh=30ZD5Z2cB4b1Mg2SYua2SNUON9SvIrxzWTdu7USDv5M=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=QloEdcL2sr3pVO+FEOrTGz5Eyr0m90F1ofXFyI68TEoyrHzevwOkqfD9ZkejLVNs8
-	 rJN2DYUvMFp2wDJwTeooFU+vLwBDaQ4ZUuX9r4RF9MlEzz5+CbLN9gKAZKOBF0kPXp
-	 v8uaDK3mIpOEOBJJZCn8OZBuPAwmwiDdvCkAb7ENUpw/a/Ga7h8QoVPT+zbkLp0qrP
-	 3FRwX6l+UDtFNNhzJw8+04ff0rfGVgymDsCjouB9aTDBc0jUo2G8y6RLw+Lr4B6vNC
-	 7y6N4ljGCiwEjE1pXW8JNk+gCIOBwf5JiD6w/1NchoWURVqzxJkkFmK0um+vzUp31e
-	 DNPPW7a0pKWDw==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76967C3DA6D;
-	Thu, 15 May 2025 06:22:14 +0000 (UTC)
-From: Sven Peter via B4 Relay <devnull+sven.svenpeter.dev@kernel.org>
-Date: Thu, 15 May 2025 06:21:18 +0000
-Subject: [PATCH v6 06/10] gpio: Add new gpio-macsmc driver for Apple Macs
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="mBY+3Iet"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=PTPMoLUMyEMyrGLs/ZsUjXzj/yLho2txvKFhyoFH0tS3y5mjj//Q4P+lFr2NarETJb84/FNnP4hTVIlWf0XqnSKWUNScgwZNkPS50v7w9BJQu7wt69mPFse1h4yR7ifJle4UuLvE+71xxgb0JrszwUizdOxNBqheaJvxI1Z3bkEBQmag42ByKXmc2GXsgMnP+Mz/wEufJ5DRQKplxcLu2pAXWC0OgQNcTLQZs5sRHhFgSAY9QNrraq5tAbRMeZUlAebg2oB7fPvJdAF8yNLxhOWtMYtRL+LytzhCX5gfl/+iRhc3FO9mEzVxPKtSOIHxl98h6SymB3mhPGA7GZmPvw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=F2o6Px9vA8dMFb0uQc89SbLm8i269oSXIwiQrNAwxtA=;
+ b=TEmtY+zrYyzyQWoy7hMrI2QNuQaxOk6DUSiDWPXm0i+++Xy8Zw+vjycy4BkW4EpSSO6+Es8qdbqCJRaEZ6CP1PU2F+1MRK/DSTthwYELclfct5yurFIQ46IDbE8By++sHr7wI19MUm+ktmKfrUGhkRrWQ/MdUcwOjgtc3u8v4vULzf54cwpzjpUyxzEKK3ztC7UFn34BlIh5nzqvvXRfG34HztQBibwT7MwOeC6fmyq9KehqUMBOcFQjwPUVYGteL0YJqaHO12wEMutvJKSgjAQC5DgZ/0huUGIQtIK4KyT2oQESf4EA2cZeC5mJJl/hI2xIeY2/C7Yf9iCK5iGOoQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=F2o6Px9vA8dMFb0uQc89SbLm8i269oSXIwiQrNAwxtA=;
+ b=mBY+3Iet/l2oCtFeLD02f3er95tDDSf/BNXjwFLPefGHmzan9LjZvAzxafxmaY5M/AjnkLGpem9zxFSjzsJk3gGXjZfGTlWFRzk5nXWgff8tAl9N0sxSaI3mcnmBc7MjOBN+7OwipMMFzg0vS+vIKJOAWTPIpaWedPJSWeVR6DU=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from CH2PR12MB4262.namprd12.prod.outlook.com (2603:10b6:610:af::8)
+ by SJ0PR12MB7474.namprd12.prod.outlook.com (2603:10b6:a03:48d::5) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8722.30; Thu, 15 May
+ 2025 06:33:38 +0000
+Received: from CH2PR12MB4262.namprd12.prod.outlook.com
+ ([fe80::3bdb:bf3d:8bde:7870]) by CH2PR12MB4262.namprd12.prod.outlook.com
+ ([fe80::3bdb:bf3d:8bde:7870%5]) with mapi id 15.20.8722.027; Thu, 15 May 2025
+ 06:33:38 +0000
+Message-ID: <51fbdbcd-a895-43b0-bb59-aa3361d77cad@amd.com>
+Date: Thu, 15 May 2025 12:03:25 +0530
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RESEND 4/4] x86/apic: Fix W=1 build kernel-doc warning
+To: Ingo Molnar <mingo@kernel.org>
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
+ dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com, luto@kernel.org,
+ peterz@infradead.org, rafael@kernel.org, pavel@kernel.org,
+ akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, sohil.mehta@intel.com, rui.zhang@intel.com,
+ yuntao.wang@linux.dev, kai.huang@intel.com, xiaoyao.li@intel.com,
+ peterx@redhat.com, sandipan.das@amd.com, ak@linux.intel.com,
+ rostedt@goodmis.org
+References: <20250514062637.3287779-1-shivankg@amd.com>
+ <20250514062637.3287779-4-shivankg@amd.com> <aCRMpba5mp5YvmY3@gmail.com>
+Content-Language: en-US
+From: Shivank Garg <shivankg@amd.com>
+In-Reply-To: <aCRMpba5mp5YvmY3@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: PN3PEPF00000186.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:c04::4c) To CH2PR12MB4262.namprd12.prod.outlook.com
+ (2603:10b6:610:af::8)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250515-smc-6-15-v6-6-c47b1ef4b0ae@svenpeter.dev>
-References: <20250515-smc-6-15-v6-0-c47b1ef4b0ae@svenpeter.dev>
-In-Reply-To: <20250515-smc-6-15-v6-0-c47b1ef4b0ae@svenpeter.dev>
-To: Sven Peter <sven@svenpeter.dev>, Janne Grunau <j@jannau.net>, 
- Alyssa Rosenzweig <alyssa@rosenzweig.io>, Neal Gompa <neal@gompa.dev>, 
- Hector Martin <marcan@marcan.st>, Linus Walleij <linus.walleij@linaro.org>, 
- Bartosz Golaszewski <brgl@bgdev.pl>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
- Lee Jones <lee@kernel.org>, Marc Zyngier <maz@kernel.org>, 
- "Russell King (Oracle)" <rmk+kernel@armlinux.org.uk>
-Cc: asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
- linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=10960;
- i=sven@svenpeter.dev; h=from:subject:message-id;
- bh=nRIP2lbfi8Qx2314ng3IAUeq0fIP5UD1ZzN8EKd2EkE=;
- b=owGbwMvMwCHmIlirolUq95LxtFoSQ4ZqB29yDctus0WCc/J5b23YcvLn1gfx1ZaRr2u/Pt96v
- /xV+M0THaUsDGIcDLJiiizb99ubPnn4RnDppkvvYeawMoEMYeDiFICJPFJgZHgsfDbysqecjaKK
- jNtTj9TTV/f0vLGeeOv0yisdyeEanTsZ/lfM/VLm9rOVQeWyZ0qK7tcr6+8l9AUzXlC0eRQUJ+G
- bzwsA
-X-Developer-Key: i=sven@svenpeter.dev; a=openpgp;
- fpr=A1E3E34A2B3C820DBC4955E5993B08092F131F93
-X-Endpoint-Received: by B4 Relay for sven@svenpeter.dev/default with
- auth_id=167
-X-Original-From: Sven Peter <sven@svenpeter.dev>
-Reply-To: sven@svenpeter.dev
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CH2PR12MB4262:EE_|SJ0PR12MB7474:EE_
+X-MS-Office365-Filtering-Correlation-Id: 87c45450-60d5-408b-8919-08dd937a6cb0
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|366016|376014|7416014;
+X-Microsoft-Antispam-Message-Info:
+	=?utf-8?B?bUxsQjBCOWNDbG04OHZ5VUZ3MFczSWxpb2Q1YnFXc0ZuWk16TFlWODk0aWJR?=
+ =?utf-8?B?NnNPRnRQeGphZE1zbHFUdGtSN1g0eTJRdUpoaml5M0plSTZTKzd5RUtXSmtP?=
+ =?utf-8?B?d3VXdFhMdEczK3FKQ2kyUDM3c2xURW1wWmxhRXcxei9ucms1bi8yd0dvYi9I?=
+ =?utf-8?B?ZllTZFprV2sydUtHVnk3N0Z5NjNna2I0TGFDaEZVK0pSVzZHOVAvdTZoVWtq?=
+ =?utf-8?B?Y2xVa25HTlBSWktvNGhEZzNLb0VIRHZzTmpGaVpaVjhSRElvTEQ4cFA4ZHFQ?=
+ =?utf-8?B?VmV2YzhIU1dKRGljWFcxblozSGxFZFgyVjFaQk8yQ05ualNkTnJmcjNwNnZE?=
+ =?utf-8?B?RlhmTkd4NFdFdWpab1pYQ0lmcUFSMlltOGU0TWNjMmxCdEhhdEdUeEdVSW5h?=
+ =?utf-8?B?VmRaNjkxNGhLbEx6clBHY3pSVllzSGVMalNpYWdDT0tpOEN6dndwQU5GVWZz?=
+ =?utf-8?B?Mk1wTHNHbjFrNFZ0YkFoMWVibkpabmFUbVdMT2ZuVENuMkxkMVFRWXVYRVMy?=
+ =?utf-8?B?L2tmcXZuR0lHdkwzVXJQUGFIMlNqcDdaSXArbE9yOG1uY0RLYXhrQ2hIWjNv?=
+ =?utf-8?B?ZndRbzZkdnJYakkwYTZkNFFtcEdubVZGSG1keUpFOEVkWkJrQjJwc29yNWZO?=
+ =?utf-8?B?NWtMalNhRk5yeitXcXgrNzV1Y1JJRk82Y3RCOFJLUURmYVFvZzRneUNJUzBo?=
+ =?utf-8?B?NDY3R0hKblpRYzVBcDVJc05FWnNTemkzT0hUMjJBVmJFbkpNSytEdjJTeFVl?=
+ =?utf-8?B?YlhkemRQcStmcDJ3UTE3Q3RWYnNQRmlsTitCclZFcUgrbG5mS0NrcDZrMWJi?=
+ =?utf-8?B?ckRWeWdGTGRxOU9LeEljd1F6QVBLbUdudlVwRFdNZVZEL0pUaHhmR2RYc3VG?=
+ =?utf-8?B?ZmdzdVZwemFwRUoxa0tRYVJDUVJ6MnpEcHJsVlp3VjBqMForbFJ0YkIvWkxQ?=
+ =?utf-8?B?Z2dGKytpc0lvOC84N3Q1OGpqK3NZMHBrNFZDWGxublUzRHpUTWlmajE0THZj?=
+ =?utf-8?B?UWZlY2xGVlpHelRiZUJNY0VQYWJCV01KTlZGYng5SFE1VmI0eURrUGUxcU1V?=
+ =?utf-8?B?OTQrL1NRaDBlSkE2emswU0FrMU5RQWZLdkkveVp0c29hZ1JWc0E4ZFliamtL?=
+ =?utf-8?B?WkgwY0s4Ukhjb1A1WEtuRTV1ZUJTN0EwMXYyOXZBR3BIUk1IQ1BJYkZIc0dT?=
+ =?utf-8?B?SVhVbFJxWXREcElieGNkdHA5V01xZ0dFVlcxNVFVVi9ZNWNCbE1KZ1lJMDEx?=
+ =?utf-8?B?OXZyczI5S3U3R3lucFpQd2hCeTI2dXpOQ3BsQjhocXRKZW9BVGhzNXhwZGwv?=
+ =?utf-8?B?NnVjSEYxMHNqQzlENStKMUxFSWQzMWpvMmV0VThmbmNZNnRuU0NjVTB3UDdl?=
+ =?utf-8?B?Rm9qTENoaEowOWNlQ0FqTndzVExXdEEvWFNrN3hnV0dMc1lKb25lSmVQVHQ0?=
+ =?utf-8?B?VEtuVkRDYW5OMGtxVFI3Y01FZVlmc1ZxSXFhekc1d0JVM1VMcEMwdVRkai9n?=
+ =?utf-8?B?UVFLS3JHcTJGVW52Y3paTDQ2Y0Z6K0pEbit6OG5zL0dPY1M0YXFESzNrR05l?=
+ =?utf-8?B?UFYxZTdkS3gzTUl5YWNxdW1LdHRWUEVMWWhNbVJXS2UxRHBxbXA2VmZac3p4?=
+ =?utf-8?B?Qm80WGVYNGtEYUJQd2VwMG95WVBJOEVBamZUK0FLbS9lbGFUTGVWQitxUEg2?=
+ =?utf-8?B?OWZFVXVZUWp3ZzZvY0QzYmdyMmI0OHByQUZIWkRCS0RDeklEbTVLRjhKYU9C?=
+ =?utf-8?B?S2tXUWZibjluUVhWSTZ3SnlacFBESnpTSkF3ODhEc2R1dnc5bXRldktuZ0Zy?=
+ =?utf-8?B?WDRBY3NvUjVuUGRlZGFiSXZMbTVRT0NkcmtGM3hhVFJLRHdFRHVTZXRJK3o0?=
+ =?utf-8?B?L3J3aHBucHcwcTdyTFp3REk0cWdpZmg1cFloaVkzWDlITGN1Z0VkZ2poRS9D?=
+ =?utf-8?Q?TY5MIMOHt20=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH2PR12MB4262.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(7416014);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?MDdaRWJtZXRSR1FqMllSaXNORnRSMU5aSlhqYU9ENkVqZHFiejhHL1djZnU4?=
+ =?utf-8?B?TlY1eFFlTjdOTzN0Ylp1WWhvbllKZVZhMzFuZjZNc2xVUUFuM0lydDFCWUph?=
+ =?utf-8?B?Z05wM2gxRjJRanhkN2xrdzdJbWxSWitpOEVSdGdtTG91TFNkTU5uSnJmV0dr?=
+ =?utf-8?B?RnpxbExaaWJaUmV3am01b2Y0L256R0c4K0VRQWJzY2Q2SGhiUDQ4WlFlQ3l2?=
+ =?utf-8?B?OExFeDRTZG54dU5lM2tVM3p3OWJvWElJUzhndjJ2QkdIU1FnakZYMDJ6NXlN?=
+ =?utf-8?B?OHI3dE1GM2NTRDVzV0hsdjdmN0dFSFRrdXA2d0JwOERDblNkbTdpYjJRZWEv?=
+ =?utf-8?B?NHFJQldTVnVvaVVkWmRHL1pkTjNuaGRua2VRUEE3YWRaWVZWRzZsa3lJRHhn?=
+ =?utf-8?B?Vm9Ta2dFQjh1NC9qdTBXdUs0SWdvUlk3RDZEVWpqQWFGelBHSDJKa2Vlc2tt?=
+ =?utf-8?B?Qngrdk1IM01oVUhrMnpTYnU2MGJJSndOWDNncXBkRmdDbHdRbUdXREgxL0RS?=
+ =?utf-8?B?Ty9VSmNEN1Y3blRHUEo3bjJQQnBjQlVDN3dGZjZEclBwbWFTRlBZRDVLT1dK?=
+ =?utf-8?B?cXJYVkVzSE1WRmxPVEpHcVZBeWZpOWNHWHYrc3JPWjRkYVRRcW5ONW1mQnpZ?=
+ =?utf-8?B?QlpxNkdQMElqSlkzN2NsV2prWFVGdys2Z2czUmxISmhlVkVVdnRweVlycHR4?=
+ =?utf-8?B?VTVBNk1KdnZYMUx3WDJ6V2hOM1R2MEliSklacW5iUzNsOGVEd29ZcmxwUnNQ?=
+ =?utf-8?B?YVMrYTNrV2pmZnVvRWlCaVFyQWNZS3AxZzUyRVdnaExTR0N4RkpXaGNOMGhO?=
+ =?utf-8?B?TERhOHZPeUN1L1JVNFlyclo5dHNobGpydS9nTEpORVpoWmgrRitobStkNEpp?=
+ =?utf-8?B?dHNpd2ZjOWN3Q1dvQUV0L3VRRG4vZWZteE9rK2NFS2dKbVpVcWhUYWtEYnN2?=
+ =?utf-8?B?c3VpaVRHN0tydjJ5aUNteHlnekVyZDUya2NOL3FrV1NLMHJCWnZkSjJaTUdG?=
+ =?utf-8?B?alNLVnl5aDd5MFJoYVJKRnpGdmdyQ0M0ODBYVEJNVDR0bklQWmUyYXI2bWVN?=
+ =?utf-8?B?RGNLUVZOM0ZYOWVEUUQxM2lSem4rU2tXUUk5dktrQTNOYmxhSTNvemFtdzV4?=
+ =?utf-8?B?WU1JWXQ5b2l4RjNDVzZUbWJDaTBscGZEN3dTNnZJQk53OWRCbXpOOVVLaDJa?=
+ =?utf-8?B?N1RkUmQ4WGlzWitpVDBLWDR2VmhuSzNzV3JzZU9LZFpWVVp5Vm5jMXpaS0l0?=
+ =?utf-8?B?b29YVTZpYXpNN3RKRGVmYW1rdGlhY2xKbWIzdFpJaEZ5dVBjVGZCR1VxQnpz?=
+ =?utf-8?B?UUFBTk8zV3VNWDdnSlFOWkJIQmN0K1lSNU1sdGJWTGI3dTFPOWdvUEltL3By?=
+ =?utf-8?B?OXY2SjVjZGIyaVgzWXN0U2lLVEltSGd4ZGs0a2o0WnJIUUltY2xBbFRwczlU?=
+ =?utf-8?B?L3o4NkhURjFLa2k5dS8yOVdJQjBsTjZCU2FVKzNKV2VOMzBveFFXNU9lWk80?=
+ =?utf-8?B?eVRITG50OUdmYXIyekoxOFhIcGl6cStxYmlQcVpETjIxamV4eEI0TXVMeW1V?=
+ =?utf-8?B?ekcvemtGRGxFaERCVDNOUzIwRVRsL2lRbXc0RTF4MmVDZmxCVGdKSFdZTzkv?=
+ =?utf-8?B?R1F6bzlxVEJKVy9VQUR5T2R1T1QrUTVRN1BkMDVPQzAySXNpNGt3clZzRkh2?=
+ =?utf-8?B?eVNaRXZkVThJZk9tUloycmN1THZrUDAybUZJck5lT0NHdkVpdXVHMyticHRC?=
+ =?utf-8?B?RUc2N29sSTdlL1NrNmpnTnhqaXBuU1JnN2lVaVhjZE01YlpWcGhUeWxqeHBT?=
+ =?utf-8?B?R25WTnlKZGg5eXdxbng2MXlvVndvejJpQmZqc1lYYlVUNUdZaXVqb3lqZDRJ?=
+ =?utf-8?B?b2pUVHZsN0xwYWhFSFhGNnM3cTFrWGdTbHhEV0prMlM4ZE1BUDAxbmdKdkRt?=
+ =?utf-8?B?WFo1cFg1ZllBRG51dW9PNENEZm1BUVpBeW5NOEYzNWU2cTQyNmp1VzRCV0lN?=
+ =?utf-8?B?ZDJKWFpCdVdNRHhiNDd0RUREdXp2RFZQZkhQMTdlaDRDazFiMEIzUi9JMzht?=
+ =?utf-8?B?NU1yQUQwT2cwQnpwb1plWFVkTE4xZTdaVXh1RWIzeVlqbktqeUI2UDFkYmVL?=
+ =?utf-8?Q?Yoou+59QKnkOmeBQPM2utmRc1?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 87c45450-60d5-408b-8919-08dd937a6cb0
+X-MS-Exchange-CrossTenant-AuthSource: CH2PR12MB4262.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 May 2025 06:33:38.0050
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: L2lhb7+DrwjjPzFX3SQs3n0JIl4n6nK491ROxPD2lxgwaU3UrwHM00ZuJ/SxElep6ROY/+uKOrg8ZO4Zrm6oNA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR12MB7474
 
-From: Hector Martin <marcan@marcan.st>
 
-This driver implements the GPIO service on top of the SMC framework
-on Apple Mac machines. In particular, these are the GPIOs present in the
-PMU IC which are used to control power to certain on-board devices.
 
-Although the underlying hardware supports various pin config settings
-(input/output, open drain, etc.), this driver does not implement that
-functionality and leaves it up to the firmware to configure things
-properly. We also don't yet support interrupts/events. This is
-sufficient for device power control, which is the only thing we need to
-support at this point. More features will be implemented when needed.
+On 5/14/2025 1:26 PM, Ingo Molnar wrote:
+> 
+> * Shivank Garg <shivankg@amd.com> wrote:
+> 
+>> Building the kernel with W=1 generates the following warning:
+>>
+>> arch/x86/kernel/apic/apic.c:2140: warning: Function parameter or struct member 'spurious_interrupt' not described in 'DEFINE_IDTENTRY_IRQ'
+>> arch/x86/kernel/apic/apic.c:2140: warning: expecting prototype for spurious_interrupt(). Prototype was for DEFINE_IDTENTRY_IRQ() instead
+>>
+>> Fix the description format to fix the warning.
+>>
+>> Signed-off-by: Shivank Garg <shivankg@amd.com>
+>> ---
+>>  arch/x86/kernel/apic/apic.c | 7 ++++---
+>>  1 file changed, 4 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+>> index 62584a347931..f888a28d400f 100644
+>> --- a/arch/x86/kernel/apic/apic.c
+>> +++ b/arch/x86/kernel/apic/apic.c
+>> @@ -2128,9 +2128,10 @@ static noinline void handle_spurious_interrupt(u8 vector)
+>>  }
+>>  
+>>  /**
+>> - * spurious_interrupt - Catch all for interrupts raised on unused vectors
+>> - * @regs:	Pointer to pt_regs on stack
+>> - * @vector:	The vector number
+>> + * DEFINE_IDTENTRY_IRQ - Handler for spurious interrupts
+>> + * @spurious_interrupt: Catch all for interrupts raised on unused vectors
+>> + * regs:	Pointer to pt_regs on stack
+>> + * vector:	The vector number
+> 
+> This is incorrect and is based on a misunderstanding of what the code 
+> does:
+> 
+> DEFINE_IDTENTRY_IRQ(spurious_interrupt)
+> {
+>         handle_spurious_interrupt(vector);
+> }
 
-To our knowledge, only Apple Silicon Macs implement this SMC feature.
+The kernel-doc tool doesn't handle macros properly.
+Can I change it to a normal comment instead?
+or if a kernel-doc comment is required how should I make it correct?
 
-Signed-off-by: Hector Martin <marcan@marcan.st>
-Reviewed-by: Bartosz Golaszewski <brgl@bgdev.pl>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Reviewed-by: Sven Peter <sven@svenpeter.dev>
-Signed-off-by: Russell King (Oracle) <rmk+kernel@armlinux.org.uk>
-Reviewed-by: Alyssa Rosenzweig <alyssa@rosenzweig.io>
-Reviewed-by: Neal Gompa <neal@gompa.dev>
-Signed-off-by: Sven Peter <sven@svenpeter.dev>
----
- MAINTAINERS                |   1 +
- drivers/gpio/Kconfig       |  10 ++
- drivers/gpio/Makefile      |   1 +
- drivers/gpio/gpio-macsmc.c | 292 +++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 304 insertions(+)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index dfaca531600c22d487fb17a25294686611dd4513..fa3a5f9ee40446bcc725c9eac2a36651e6bc7553 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2291,6 +2291,7 @@ F:	drivers/bluetooth/hci_bcm4377.c
- F:	drivers/clk/clk-apple-nco.c
- F:	drivers/cpufreq/apple-soc-cpufreq.c
- F:	drivers/dma/apple-admac.c
-+F:	drivers/gpio/gpio-macsmc.c
- F:	drivers/pmdomain/apple/
- F:	drivers/i2c/busses/i2c-pasemi-core.c
- F:	drivers/i2c/busses/i2c-pasemi-platform.c
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index f2c39bbff83a33dcb12b2d32aa3ebc358a0dd949..f0e25105f8ebe7356344722987333a9fc244ea1f 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -1440,6 +1440,16 @@ config GPIO_LP87565
- 	  This driver can also be built as a module. If so, the module will be
- 	  called gpio-lp87565.
- 
-+config GPIO_MACSMC
-+	tristate "Apple Mac SMC GPIO"
-+	depends on MFD_MACSMC
-+	help
-+	  Support for GPIOs controlled by the SMC microcontroller on Apple Mac
-+	  systems.
-+
-+	  This driver can also be built as a module. If so, the module will be
-+	  called gpio-macsmc.
-+
- config GPIO_MADERA
- 	tristate "Cirrus Logic Madera class codecs"
- 	depends on PINCTRL_MADERA
-diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-index af130882ffeeef8b1d518867bfe1493ec4f21b5f..c2e47f356bfae73384ace8103074f246e49fb9d6 100644
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -97,6 +97,7 @@ obj-$(CONFIG_GPIO_LP873X)		+= gpio-lp873x.o
- obj-$(CONFIG_GPIO_LP87565)		+= gpio-lp87565.o
- obj-$(CONFIG_GPIO_LPC18XX)		+= gpio-lpc18xx.o
- obj-$(CONFIG_GPIO_LPC32XX)		+= gpio-lpc32xx.o
-+obj-$(CONFIG_GPIO_MACSMC)		+= gpio-macsmc.o
- obj-$(CONFIG_GPIO_MADERA)		+= gpio-madera.o
- obj-$(CONFIG_GPIO_MAX3191X)		+= gpio-max3191x.o
- obj-$(CONFIG_GPIO_MAX7300)		+= gpio-max7300.o
-diff --git a/drivers/gpio/gpio-macsmc.c b/drivers/gpio/gpio-macsmc.c
-new file mode 100644
-index 0000000000000000000000000000000000000000..7570d9e89adfff49b9858c82bb34b075fb0e5f16
---- /dev/null
-+++ b/drivers/gpio/gpio-macsmc.c
-@@ -0,0 +1,292 @@
-+// SPDX-License-Identifier: GPL-2.0-only OR MIT
-+/*
-+ * Apple SMC GPIO driver
-+ * Copyright The Asahi Linux Contributors
-+ *
-+ * This driver implements basic SMC PMU GPIO support that can read inputs
-+ * and write outputs. Mode changes and IRQ config are not yet implemented.
-+ */
-+
-+#include <linux/bitmap.h>
-+#include <linux/device.h>
-+#include <linux/gpio/driver.h>
-+#include <linux/mfd/core.h>
-+#include <linux/mfd/macsmc.h>
-+
-+#define MAX_GPIO 64
-+
-+/*
-+ * Commands 0-6 are, presumably, the intended API.
-+ * Command 0xff lets you get/set the pin configuration in detail directly,
-+ * but the bit meanings seem not to be stable between devices/PMU hardware
-+ * versions.
-+ *
-+ * We're going to try to make do with the low commands for now.
-+ * We don't implement pin mode changes at this time.
-+ */
-+
-+#define CMD_ACTION	(0 << 24)
-+#define CMD_OUTPUT	(1 << 24)
-+#define CMD_INPUT	(2 << 24)
-+#define CMD_PINMODE	(3 << 24)
-+#define CMD_IRQ_ENABLE	(4 << 24)
-+#define CMD_IRQ_ACK	(5 << 24)
-+#define CMD_IRQ_MODE	(6 << 24)
-+#define CMD_CONFIG	(0xff << 24)
-+
-+#define MODE_INPUT	0
-+#define MODE_OUTPUT	1
-+#define MODE_VALUE_0	0
-+#define MODE_VALUE_1	2
-+
-+#define IRQ_MODE_HIGH		0
-+#define IRQ_MODE_LOW		1
-+#define IRQ_MODE_RISING		2
-+#define IRQ_MODE_FALLING	3
-+#define IRQ_MODE_BOTH		4
-+
-+#define CONFIG_MASK	GENMASK(23, 16)
-+#define CONFIG_VAL	GENMASK(7, 0)
-+
-+#define CONFIG_OUTMODE	GENMASK(7, 6)
-+#define CONFIG_IRQMODE	GENMASK(5, 3)
-+#define CONFIG_PULLDOWN	BIT(2)
-+#define CONFIG_PULLUP	BIT(1)
-+#define CONFIG_OUTVAL	BIT(0)
-+
-+/*
-+ * Output modes seem to differ depending on the PMU in use... ?
-+ * j274 / M1 (Sera PMU):
-+ *   0 = input
-+ *   1 = output
-+ *   2 = open drain
-+ *   3 = disable
-+ * j314 / M1Pro (Maverick PMU):
-+ *   0 = input
-+ *   1 = open drain
-+ *   2 = output
-+ *   3 = ?
-+ */
-+
-+struct macsmc_gpio {
-+	struct device *dev;
-+	struct apple_smc *smc;
-+	struct gpio_chip gc;
-+
-+	int first_index;
-+};
-+
-+static int macsmc_gpio_nr(smc_key key)
-+{
-+	int low = hex_to_bin(key & 0xff);
-+	int high = hex_to_bin((key >> 8) & 0xff);
-+
-+	if (low < 0 || high < 0)
-+		return -1;
-+
-+	return low | (high << 4);
-+}
-+
-+static int macsmc_gpio_key(unsigned int offset)
-+{
-+	return _SMC_KEY("gP\0\0") | hex_asc_hi(offset) << 8 | hex_asc_lo(offset);
-+}
-+
-+static int macsmc_gpio_find_first_gpio_index(struct macsmc_gpio *smcgp)
-+{
-+	struct apple_smc *smc = smcgp->smc;
-+	smc_key key = macsmc_gpio_key(0);
-+	smc_key first_key, last_key;
-+	int start, count, ret;
-+
-+	/* Return early if the key is out of bounds */
-+	ret = apple_smc_get_key_by_index(smc, 0, &first_key);
-+	if (ret)
-+		return ret;
-+	if (key <= first_key)
-+		return -ENODEV;
-+
-+	ret = apple_smc_get_key_by_index(smc, smc->key_count - 1, &last_key);
-+	if (ret)
-+		return ret;
-+	if (key > last_key)
-+		return -ENODEV;
-+
-+	/* Binary search to find index of first SMC key bigger or equal to key */
-+	start = 0;
-+	count = smc->key_count;
-+	while (count > 1) {
-+		smc_key pkey;
-+		int pivot = start + ((count - 1) >> 1);
-+
-+		ret = apple_smc_get_key_by_index(smc, pivot, &pkey);
-+		if (ret < 0)
-+			return ret;
-+
-+		if (pkey == key)
-+			return pivot;
-+
-+		pivot++;
-+
-+		if (pkey < key) {
-+			count -= pivot - start;
-+			start = pivot;
-+		} else {
-+			count = pivot - start;
-+		}
-+	}
-+
-+	return start;
-+}
-+
-+static int macsmc_gpio_get_direction(struct gpio_chip *gc, unsigned int offset)
-+{
-+	struct macsmc_gpio *smcgp = gpiochip_get_data(gc);
-+	smc_key key = macsmc_gpio_key(offset);
-+	u32 val;
-+	int ret;
-+
-+	/* First try reading the explicit pin mode register */
-+	ret = apple_smc_rw_u32(smcgp->smc, key, CMD_PINMODE, &val);
-+	if (!ret)
-+		return (val & MODE_OUTPUT) ? GPIO_LINE_DIRECTION_OUT : GPIO_LINE_DIRECTION_IN;
-+
-+	/*
-+	 * Less common IRQ configs cause CMD_PINMODE to fail, and so does open drain mode.
-+	 * Fall back to reading IRQ mode, which will only succeed for inputs.
-+	 */
-+	ret = apple_smc_rw_u32(smcgp->smc, key, CMD_IRQ_MODE, &val);
-+	return ret ? GPIO_LINE_DIRECTION_OUT : GPIO_LINE_DIRECTION_IN;
-+}
-+
-+static int macsmc_gpio_get(struct gpio_chip *gc, unsigned int offset)
-+{
-+	struct macsmc_gpio *smcgp = gpiochip_get_data(gc);
-+	smc_key key = macsmc_gpio_key(offset);
-+	u32 cmd, val;
-+	int ret;
-+
-+	ret = macsmc_gpio_get_direction(gc, offset);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (ret == GPIO_LINE_DIRECTION_OUT)
-+		cmd = CMD_OUTPUT;
-+	else
-+		cmd = CMD_INPUT;
-+
-+	ret = apple_smc_rw_u32(smcgp->smc, key, cmd, &val);
-+	if (ret < 0)
-+		return ret;
-+
-+	return val ? 1 : 0;
-+}
-+
-+static int macsmc_gpio_set(struct gpio_chip *gc, unsigned int offset, int value)
-+{
-+	struct macsmc_gpio *smcgp = gpiochip_get_data(gc);
-+	smc_key key = macsmc_gpio_key(offset);
-+	int ret;
-+
-+	value |= CMD_OUTPUT;
-+	ret = apple_smc_write_u32(smcgp->smc, key, CMD_OUTPUT | value);
-+	if (ret < 0)
-+		dev_err(smcgp->dev, "GPIO set failed %p4ch = 0x%x\n",
-+			&key, value);
-+
-+	return ret;
-+}
-+
-+static int macsmc_gpio_init_valid_mask(struct gpio_chip *gc,
-+				       unsigned long *valid_mask, unsigned int ngpios)
-+{
-+	struct macsmc_gpio *smcgp = gpiochip_get_data(gc);
-+	int count;
-+	int i;
-+
-+	count = min(smcgp->smc->key_count, MAX_GPIO);
-+
-+	bitmap_zero(valid_mask, ngpios);
-+
-+	for (i = 0; i < count; i++) {
-+		int ret, gpio_nr;
-+		smc_key key;
-+
-+		ret = apple_smc_get_key_by_index(smcgp->smc, smcgp->first_index + i, &key);
-+		if (ret < 0)
-+			return ret;
-+
-+		if (key > SMC_KEY(gPff))
-+			break;
-+
-+		gpio_nr = macsmc_gpio_nr(key);
-+		if (gpio_nr < 0 || gpio_nr > MAX_GPIO) {
-+			dev_err(smcgp->dev, "Bad GPIO key %p4ch\n", &key);
-+			continue;
-+		}
-+
-+		set_bit(gpio_nr, valid_mask);
-+	}
-+
-+	return 0;
-+}
-+
-+static int macsmc_gpio_probe(struct platform_device *pdev)
-+{
-+	struct macsmc_gpio *smcgp;
-+	struct apple_smc *smc = dev_get_drvdata(pdev->dev.parent);
-+	smc_key key;
-+	int ret;
-+
-+	smcgp = devm_kzalloc(&pdev->dev, sizeof(*smcgp), GFP_KERNEL);
-+	if (!smcgp)
-+		return -ENOMEM;
-+
-+	smcgp->dev = &pdev->dev;
-+	smcgp->smc = smc;
-+
-+	smcgp->first_index = macsmc_gpio_find_first_gpio_index(smcgp);
-+	if (smcgp->first_index < 0)
-+		return smcgp->first_index;
-+
-+	ret = apple_smc_get_key_by_index(smc, smcgp->first_index, &key);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (key > macsmc_gpio_key(MAX_GPIO - 1))
-+		return -ENODEV;
-+
-+	dev_info(smcgp->dev, "First GPIO key: %p4ch\n", &key);
-+
-+	smcgp->gc.label = "macsmc-pmu-gpio";
-+	smcgp->gc.owner = THIS_MODULE;
-+	smcgp->gc.get = macsmc_gpio_get;
-+	smcgp->gc.set_rv = macsmc_gpio_set;
-+	smcgp->gc.get_direction = macsmc_gpio_get_direction;
-+	smcgp->gc.init_valid_mask = macsmc_gpio_init_valid_mask;
-+	smcgp->gc.can_sleep = true;
-+	smcgp->gc.ngpio = MAX_GPIO;
-+	smcgp->gc.base = -1;
-+	smcgp->gc.parent = &pdev->dev;
-+
-+	return devm_gpiochip_add_data(&pdev->dev, &smcgp->gc, smcgp);
-+}
-+
-+static const struct of_device_id macsmc_gpio_of_table[] = {
-+	{ .compatible = "apple,smc-gpio", },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, macsmc_gpio_of_table);
-+
-+static struct platform_driver macsmc_gpio_driver = {
-+	.driver = {
-+		.name = "macsmc-gpio",
-+		.of_match_table = macsmc_gpio_of_table,
-+	},
-+	.probe = macsmc_gpio_probe,
-+};
-+module_platform_driver(macsmc_gpio_driver);
-+
-+MODULE_AUTHOR("Hector Martin <marcan@marcan.st>");
-+MODULE_LICENSE("Dual MIT/GPL");
-+MODULE_DESCRIPTION("Apple SMC GPIO driver");
-
--- 
-2.34.1
-
+Thanks,
+Shivank
 
