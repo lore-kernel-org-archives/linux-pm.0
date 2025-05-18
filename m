@@ -1,30 +1,31 @@
 Received: from smtp.forwardemail.net (smtp.forwardemail.net [121.127.44.73])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3FC0638DE1
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D52D1DC98B
 	for <linux-pm@vger.kernel.org>; Sun, 18 May 2025 22:18:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=121.127.44.73
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747606696; cv=none; b=OWEhFTjjqmF+ZChi375YvcdSxlo4Ga+E5riBtIFmA75GRLwU0ga6M4uYWvkiGfwNrpYGMx/H4166gD+IonWz9wD63KIfjZdzvX0STVsNJtK8H6jRVtEqwPkQNVAcmpx17us/Zw4nzuuUlqErtJAZfP5aJVMbXjrXchMWCG+Y3+k=
+	t=1747606697; cv=none; b=Q2NkubovIr9kAmYBqTiNMRtnwyY0axdv6JFHnyNv0u5weSRowTIAAcr8hFUbDvP254PJczcAqPGv37Yvq0DpkSseqH0MWCIii3Q39486xv/3oCKWxf2mdsGjk9Hk9WNOyEs+8pNqVUB0UWacrvGk6ai8V8bBgA4zosyJeVai4jc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747606696; c=relaxed/simple;
-	bh=4NsPffv0XXVJT+w1Hwa18uapraBH1MPE/1ptpvhkpaM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BMU8NT+Zl6iYj/zx9bSawImbjOWtd730eNwkAYwaJdQML3gQDhiPROvSSMqY+yFvuOFx2KX67eyAbpr74MrUUykUIMxfbN0e+DRHWXAbp0C4fIYqaItVNM/nXRRbmU8RjPIBSlxLH3D33yI4R2vXBV/QxFk66R2uBvPQMNRn3GI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kwiboo.se; spf=pass smtp.mailfrom=fe-bounces.kwiboo.se; dkim=pass (2048-bit key) header.d=kwiboo.se header.i=@kwiboo.se header.b=fZ0CQ0K/; arc=none smtp.client-ip=121.127.44.73
+	s=arc-20240116; t=1747606697; c=relaxed/simple;
+	bh=5x3UGZaZlxXjWW89yIp7LGaERQKkHUjp8KDII8XBuQs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=DbNGE09F+xoYwEfwUxtHIBvPcTfb2q/Us6yRnckjJjHPOE1rvxhJcLhclP9wz5+exQ+ihVphMAhRo0w/8OK+YV+JioAdd32gRmwR39SIRMJYGvRlFuU17IPAxxH450s7mMBdUoT1HfayRM5irijaF6Mdn36hJlElAwAoQmpf07U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kwiboo.se; spf=pass smtp.mailfrom=fe-bounces.kwiboo.se; dkim=pass (2048-bit key) header.d=kwiboo.se header.i=@kwiboo.se header.b=owaqLK3H; arc=none smtp.client-ip=121.127.44.73
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kwiboo.se
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fe-bounces.kwiboo.se
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kwiboo.se header.i=@kwiboo.se header.b="fZ0CQ0K/"
+	dkim=pass (2048-bit key) header.d=kwiboo.se header.i=@kwiboo.se header.b="owaqLK3H"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kwiboo.se;
- h=Content-Transfer-Encoding: MIME-Version: Message-ID: Date: Subject: Cc:
- To: From; q=dns/txt; s=fe-e1b5cab7be; t=1747606694;
- bh=bhPt7fBQetiRYT1MgQ8GKwCup58p63/+Za+k3J/ZaT4=;
- b=fZ0CQ0K/HKp7WatzdWpRCX5Vo5a+weaMqitENKvrkoMKZNizJKfWUOBBIZkjcHiiIOXsIMzQZ
- pKvdlWGm3A8uxsXzT50dVn+nuVqn2Llef/FDJxpke0djIxm7I0xcweAZ3PCO2N3/Z61yDSGXuKS
- kBy2mY4651YAx4BK2Ykiz4cZmOL/vxTBHaupYiacakoZL5DXrBSeOlAmQjto27Y+m1ojUyxL0RU
- LSR0CoLW7zkhwyRIn1oXq1trNRZxJHNvxjUVFN8iLWFiG7kHnQWbP6tazKApWxHpcVv13ndwjlt
- tdoW7WzBbzLKaFIsI4fbfT7FOgNChc69xPMRLHnc3+Iw==
-X-Forward-Email-ID: 682a5a1178cae75fbd8d4660
+ h=Content-Transfer-Encoding: MIME-Version: References: In-Reply-To:
+ Message-ID: Date: Subject: Cc: To: From; q=dns/txt; s=fe-e1b5cab7be;
+ t=1747606694; bh=XdJ8idrCkjaMANhXmNVJs+MC4XORO5o90qIWLcWpGNw=;
+ b=owaqLK3HDGa2NPwwv4+REoyhknt8M36o0Vu9zeRTOeR+NC9DEtV8ikBrMlTcyUX71TRVzxJIM
+ DCkDD+Kjbo49ejOoAJ3Nz9jiDlHnu+Jtjojg2K2hAAxaHgoYJ4hKgx/9d/qyTB3dX7L8LcUl+Y1
+ neUsBHPC/tFp94vNZ0UCtx83THzX5rGqMwIuasGP3qESXcZEiF9zC7C4qyAag8MvkaI5Ht4V3nE
+ Z8WjIQBmx4L3GPmgjHVa9QQD86i80xQLFwYMY8EVjptvLhvXd8s3/2IMQc7Ay6aenU7oUV6uZOn
+ plQLLkafoCIdO8Jw7RwtTmuiRwYZlOLBTwM5/e11+SBw==
+X-Forward-Email-ID: 682a5a1a78cae75fbd8d4697
 X-Forward-Email-Sender: rfc822; jonas@kwiboo.se, smtp.forwardemail.net,
  121.127.44.73
 X-Forward-Email-Version: 1.0.3
@@ -44,11 +45,14 @@ Cc: Rob Herring <robh@kernel.org>,
 	linux-pm@vger.kernel.org,
 	devicetree@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
-	Jonas Karlman <jonas@kwiboo.se>
-Subject: [PATCH 0/9] rockchip: Add power controller support for RK3528
-Date: Sun, 18 May 2025 22:06:47 +0000
-Message-ID: <20250518220707.669515-1-jonas@kwiboo.se>
+	Jonas Karlman <jonas@kwiboo.se>,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH 2/9] pmdomain: rockchip: Add support for RK3528
+Date: Sun, 18 May 2025 22:06:49 +0000
+Message-ID: <20250518220707.669515-3-jonas@kwiboo.se>
 X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20250518220707.669515-1-jonas@kwiboo.se>
+References: <20250518220707.669515-1-jonas@kwiboo.se>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -57,66 +61,82 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The Rockchip RK3528 support multiple power domains, one PD_GPU that can
-fully be powered down, and other that can be idle requested.
+Add configuration and power domains for RK3528 SoC.
 
-Vendor kernel flag all power domains on RK3528 as always-on, this takes
-a different route and instead tries to describe all devices power-domain
-in the device tree, even for controllers with unsupported runtime status.
+Only PD_GPU can fully be powered down. PD_RKVDEC, PD_RKVENC, PD_VO and
+PD_VPU are used by miscellaneous devices in RK3528.
 
-The PD_RKVDEC is used by RKVDEC and DDRPHY CRU, and is kept disabled to
-prevent a full system reset when trying to read current rate of the
-SCMI_CLK_DDR clock.
+Signed-off-by: Jonas Karlman <jonas@kwiboo.se>
+---
+ drivers/pmdomain/rockchip/pm-domains.c | 27 ++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-Patch 1-4 prepares and makes it possible to use the PD_GPU power domain
-for a separate "Add GPU support for RK3528" series.
-
-Patch 7-9 updates dt-bindings for controllers not supporting use of the
-power-domains prop and enables the PD_RKVENC, PD_VO and PD_VPU domains.
-
-pm_genpd_summary on a Radxa E20C after this:
-
-  domain                          status          children        performance
-      /device                         runtime status                  managed by
-  ------------------------------------------------------------------------------
-  vpu                             on                              0
-      ffaf0000.gpio                   unsupported                 0           SW
-      ffb10000.gpio                   unsupported                 0           SW
-      ffbe0000.ethernet               active                      0           SW
-      ffae0000.adc                    unsupported                 0           SW
-      ffbf0000.mmc                    suspended                   0           SW
-  vo                              on                              0
-      ffb00000.gpio                   unsupported                 0           SW
-      ffc30000.mmc                    suspended                   0           SW
-  venc                            on                              0
-      ffb20000.gpio                   unsupported                 0           SW
-      ffa58000.i2c                    unsupported                 0           SW
-  gpu                             off-0                           0
-      ff700000.gpu                    suspended                   0           SW
-
-Jonas Karlman (9):
-  dt-bindings: power: rockchip: Add support for RK3528
-  pmdomain: rockchip: Add support for RK3528
-  dt-bindings: rockchip: pmu: Add compatible for RK3528
-  arm64: dts: rockchip: Add power controller for RK3528
-  dt-bindings: mmc: sdhci-of-dwcmhsc: Allow use of a power-domain
-  dt-bindings: gpio: rockchip: Allow use of a power-domain
-  dt-bindings: i2c: i2c-rk3x: Allow use of a power-domain
-  dt-bindings: iio: adc: rockchip-saradc: Allow use of a power-domain
-  arm64: dts: rockchip: Enable more power domains for RK3528
-
- .../devicetree/bindings/arm/rockchip/pmu.yaml |  2 +
- .../bindings/gpio/rockchip,gpio-bank.yaml     |  3 +
- .../devicetree/bindings/i2c/i2c-rk3x.yaml     |  3 +
- .../bindings/iio/adc/rockchip-saradc.yaml     |  3 +
- .../bindings/mmc/snps,dwcmshc-sdhci.yaml      |  4 -
- .../power/rockchip,power-controller.yaml      |  1 +
- arch/arm64/boot/dts/rockchip/rk3528.dtsi      | 87 +++++++++++++++++++
- drivers/pmdomain/rockchip/pm-domains.c        | 27 ++++++
- .../dt-bindings/power/rockchip,rk3528-power.h | 19 ++++
- 9 files changed, 145 insertions(+), 4 deletions(-)
- create mode 100644 include/dt-bindings/power/rockchip,rk3528-power.h
-
+diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
+index 4cce407bb1eb..242570c505fb 100644
+--- a/drivers/pmdomain/rockchip/pm-domains.c
++++ b/drivers/pmdomain/rockchip/pm-domains.c
+@@ -35,6 +35,7 @@
+ #include <dt-bindings/power/rk3366-power.h>
+ #include <dt-bindings/power/rk3368-power.h>
+ #include <dt-bindings/power/rk3399-power.h>
++#include <dt-bindings/power/rockchip,rk3528-power.h>
+ #include <dt-bindings/power/rockchip,rk3562-power.h>
+ #include <dt-bindings/power/rk3568-power.h>
+ #include <dt-bindings/power/rockchip,rk3576-power.h>
+@@ -216,6 +217,9 @@ struct rockchip_pmu {
+ #define DOMAIN_RK3399(name, pwr, status, req, wakeup)		\
+ 	DOMAIN(name, pwr, status, req, req, req, wakeup)
+ 
++#define DOMAIN_RK3528(name, pwr, req)		\
++	DOMAIN_M(name, pwr, pwr, req, req, req, false)
++
+ #define DOMAIN_RK3562(name, pwr, req, g_mask, mem, wakeup)		\
+ 	DOMAIN_M_G_SD(name, pwr, pwr, req, req, req, g_mask, mem, wakeup, false)
+ 
+@@ -1215,6 +1219,14 @@ static const struct rockchip_domain_info rk3399_pm_domains[] = {
+ 	[RK3399_PD_SDIOAUDIO]	= DOMAIN_RK3399("sdioaudio", BIT(31), BIT(31), BIT(29), true),
+ };
+ 
++static const struct rockchip_domain_info rk3528_pm_domains[] = {
++	[RK3528_PD_GPU]		= DOMAIN_RK3528("gpu",  BIT(0), BIT(4)),
++	[RK3528_PD_RKVDEC]	= DOMAIN_RK3528("vdec",      0, BIT(5)),
++	[RK3528_PD_RKVENC]	= DOMAIN_RK3528("venc",      0, BIT(6)),
++	[RK3528_PD_VO]		= DOMAIN_RK3528("vo",        0, BIT(7)),
++	[RK3528_PD_VPU]		= DOMAIN_RK3528("vpu",       0, BIT(8)),
++};
++
+ static const struct rockchip_domain_info rk3562_pm_domains[] = {
+ 					     /* name           pwr     req     g_mask  mem wakeup */
+ 	[RK3562_PD_GPU]		= DOMAIN_RK3562("gpu",         BIT(0), BIT(1), BIT(1), 0, false),
+@@ -1428,6 +1440,17 @@ static const struct rockchip_pmu_info rk3399_pmu = {
+ 	.domain_info = rk3399_pm_domains,
+ };
+ 
++static const struct rockchip_pmu_info rk3528_pmu = {
++	.pwr_offset = 0x1210,
++	.status_offset = 0x1230,
++	.req_offset = 0x1110,
++	.idle_offset = 0x1128,
++	.ack_offset = 0x1120,
++
++	.num_domains = ARRAY_SIZE(rk3528_pm_domains),
++	.domain_info = rk3528_pm_domains,
++};
++
+ static const struct rockchip_pmu_info rk3562_pmu = {
+ 	.pwr_offset = 0x210,
+ 	.status_offset = 0x230,
+@@ -1538,6 +1561,10 @@ static const struct of_device_id rockchip_pm_domain_dt_match[] = {
+ 		.compatible = "rockchip,rk3399-power-controller",
+ 		.data = (void *)&rk3399_pmu,
+ 	},
++	{
++		.compatible = "rockchip,rk3528-power-controller",
++		.data = (void *)&rk3528_pmu,
++	},
+ 	{
+ 		.compatible = "rockchip,rk3562-power-controller",
+ 		.data = (void *)&rk3562_pmu,
 -- 
 2.49.0
 
