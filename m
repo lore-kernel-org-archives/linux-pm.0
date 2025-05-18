@@ -1,33 +1,32 @@
-Received: from smtp.forwardemail.net (smtp.forwardemail.net [149.28.215.223])
+Received: from smtp.forwardemail.net (smtp.forwardemail.net [121.127.44.73])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 26863211497
-	for <linux-pm@vger.kernel.org>; Sun, 18 May 2025 22:07:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=149.28.215.223
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3FC0638DE1
+	for <linux-pm@vger.kernel.org>; Sun, 18 May 2025 22:18:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=121.127.44.73
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747606076; cv=none; b=czaOgOje4pqw1p3JoGkgOUiIouOup/D+LCEDULYWHTdsZTOGUHVZBNJm1y1GZ+SVSrnWLVQGRAJZM0asEFlAOh837s8nf8le65SQkuoHg3BLG5bSfXZOmA8zTA2zk/auhAfJDMi56VUErgi62QxYn7SL7Eufy5iJ7V4oUdD8GgU=
+	t=1747606696; cv=none; b=OWEhFTjjqmF+ZChi375YvcdSxlo4Ga+E5riBtIFmA75GRLwU0ga6M4uYWvkiGfwNrpYGMx/H4166gD+IonWz9wD63KIfjZdzvX0STVsNJtK8H6jRVtEqwPkQNVAcmpx17us/Zw4nzuuUlqErtJAZfP5aJVMbXjrXchMWCG+Y3+k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747606076; c=relaxed/simple;
-	bh=NI8ZpKqVeT2O0wYKWvr00l6EYFZUEguyKS4NdA4QyWs=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=jJpCC9nas3Zq719MbgfDQYmiT3l1pv7eYhTCM6MRDsfn6hCIWpkAFId4MQN3KNXeACd1RTi3rjHe+lx+D6jZ/4z38VO5D6AWaDjC1eHp5jyknD+a9y1bbg+6zQhaKKNfB7Xrqep4+AyqBzK4MrEejZQTs1amCvALmxN3VdurcNM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kwiboo.se; spf=pass smtp.mailfrom=fe-bounces.kwiboo.se; dkim=pass (2048-bit key) header.d=kwiboo.se header.i=@kwiboo.se header.b=zUKPttTg; arc=none smtp.client-ip=149.28.215.223
+	s=arc-20240116; t=1747606696; c=relaxed/simple;
+	bh=4NsPffv0XXVJT+w1Hwa18uapraBH1MPE/1ptpvhkpaM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BMU8NT+Zl6iYj/zx9bSawImbjOWtd730eNwkAYwaJdQML3gQDhiPROvSSMqY+yFvuOFx2KX67eyAbpr74MrUUykUIMxfbN0e+DRHWXAbp0C4fIYqaItVNM/nXRRbmU8RjPIBSlxLH3D33yI4R2vXBV/QxFk66R2uBvPQMNRn3GI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kwiboo.se; spf=pass smtp.mailfrom=fe-bounces.kwiboo.se; dkim=pass (2048-bit key) header.d=kwiboo.se header.i=@kwiboo.se header.b=fZ0CQ0K/; arc=none smtp.client-ip=121.127.44.73
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kwiboo.se
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fe-bounces.kwiboo.se
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kwiboo.se header.i=@kwiboo.se header.b="zUKPttTg"
+	dkim=pass (2048-bit key) header.d=kwiboo.se header.i=@kwiboo.se header.b="fZ0CQ0K/"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kwiboo.se;
- h=Content-Transfer-Encoding: MIME-Version: References: In-Reply-To:
- Message-ID: Date: Subject: Cc: To: From; q=dns/txt; s=fe-e1b5cab7be;
- t=1747606074; bh=EMpzWrkVyV6vMCT5CK0scK0XhgFMcmSqXuqMq+/6SaA=;
- b=zUKPttTgWYJJhNfLn+HjO0H5AvKkd30UExTpo/psAG1ek3CLqHZrqSHTQBN9R/avQVNiAHbYQ
- R27vLIJo6h8p5AbR8iRcDdTdthTZ5rjrhx3CBdS2jm2jxvPQpTqpNnbzGS1kK2OHRrZfRKQ9o5J
- sMdfu/urLqncVtLUBAGfkTCW2nrweQ1fkdw0ZJiJA+7sJq5iOCYt/OO6uJP2/5110jTa2mU2Mh2
- SUNuPTQJeZpAoAZIvitRcATf5agNIaulEJVqGnD976/bc9wUXbpA5DfXMBT9MNPkv/Oh6rLblHo
- 5NQvZc2bL/j5VnwTgkAlXdGWIgz10FUsWrIlBilKrKdA==
-X-Forward-Email-ID: 682a5a3378cae75fbd8d4719
+ h=Content-Transfer-Encoding: MIME-Version: Message-ID: Date: Subject: Cc:
+ To: From; q=dns/txt; s=fe-e1b5cab7be; t=1747606694;
+ bh=bhPt7fBQetiRYT1MgQ8GKwCup58p63/+Za+k3J/ZaT4=;
+ b=fZ0CQ0K/HKp7WatzdWpRCX5Vo5a+weaMqitENKvrkoMKZNizJKfWUOBBIZkjcHiiIOXsIMzQZ
+ pKvdlWGm3A8uxsXzT50dVn+nuVqn2Llef/FDJxpke0djIxm7I0xcweAZ3PCO2N3/Z61yDSGXuKS
+ kBy2mY4651YAx4BK2Ykiz4cZmOL/vxTBHaupYiacakoZL5DXrBSeOlAmQjto27Y+m1ojUyxL0RU
+ LSR0CoLW7zkhwyRIn1oXq1trNRZxJHNvxjUVFN8iLWFiG7kHnQWbP6tazKApWxHpcVv13ndwjlt
+ tdoW7WzBbzLKaFIsI4fbfT7FOgNChc69xPMRLHnc3+Iw==
+X-Forward-Email-ID: 682a5a1178cae75fbd8d4660
 X-Forward-Email-Sender: rfc822; jonas@kwiboo.se, smtp.forwardemail.net,
- 149.28.215.223
+ 121.127.44.73
 X-Forward-Email-Version: 1.0.3
 X-Forward-Email-Website: https://forwardemail.net
 X-Complaints-To: abuse@forwardemail.net
@@ -35,29 +34,21 @@ X-Report-Abuse: abuse@forwardemail.net
 X-Report-Abuse-To: abuse@forwardemail.net
 From: Jonas Karlman <jonas@kwiboo.se>
 To: Heiko Stuebner <heiko@sntech.de>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	Jonathan Cameron <jic23@kernel.org>,
-	David Lechner <dlechner@baylibre.com>,
-	=?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>,
-	Rob Herring <robh@kernel.org>,
+	Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>
-Cc: Yao Zi <ziyao@disroot.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Yao Zi <ziyao@disroot.org>,
 	Chukun Pan <amadeus@jmu.edu.cn>,
 	linux-rockchip@lists.infradead.org,
 	linux-pm@vger.kernel.org,
 	devicetree@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
-	Jonas Karlman <jonas@kwiboo.se>,
-	linux-iio@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 8/9] dt-bindings: iio: adc: rockchip-saradc: Allow use of a power-domain
-Date: Sun, 18 May 2025 22:06:55 +0000
-Message-ID: <20250518220707.669515-9-jonas@kwiboo.se>
+	Jonas Karlman <jonas@kwiboo.se>
+Subject: [PATCH 0/9] rockchip: Add power controller support for RK3528
+Date: Sun, 18 May 2025 22:06:47 +0000
+Message-ID: <20250518220707.669515-1-jonas@kwiboo.se>
 X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20250518220707.669515-1-jonas@kwiboo.se>
-References: <20250518220707.669515-1-jonas@kwiboo.se>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -66,32 +57,66 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The SARADC controller in most Rockchip SoCs are part or power domains
-that are always powered on, i.e. PD_BUS or PD_PERI.
+The Rockchip RK3528 support multiple power domains, one PD_GPU that can
+fully be powered down, and other that can be idle requested.
 
-On RK3528 the SARADC controller is part of the PD_VPU power domain.
+Vendor kernel flag all power domains on RK3528 as always-on, this takes
+a different route and instead tries to describe all devices power-domain
+in the device tree, even for controllers with unsupported runtime status.
 
-Add support to describe power-domains for the SARADC controllers.
+The PD_RKVDEC is used by RKVDEC and DDRPHY CRU, and is kept disabled to
+prevent a full system reset when trying to read current rate of the
+SCMI_CLK_DDR clock.
 
-Signed-off-by: Jonas Karlman <jonas@kwiboo.se>
----
- Documentation/devicetree/bindings/iio/adc/rockchip-saradc.yaml | 3 +++
- 1 file changed, 3 insertions(+)
+Patch 1-4 prepares and makes it possible to use the PD_GPU power domain
+for a separate "Add GPU support for RK3528" series.
 
-diff --git a/Documentation/devicetree/bindings/iio/adc/rockchip-saradc.yaml b/Documentation/devicetree/bindings/iio/adc/rockchip-saradc.yaml
-index 41e0c56ef8e3..f776041fd08f 100644
---- a/Documentation/devicetree/bindings/iio/adc/rockchip-saradc.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/rockchip-saradc.yaml
-@@ -47,6 +47,9 @@ properties:
-       - const: saradc
-       - const: apb_pclk
- 
-+  power-domains:
-+    maxItems: 1
-+
-   resets:
-     maxItems: 1
- 
+Patch 7-9 updates dt-bindings for controllers not supporting use of the
+power-domains prop and enables the PD_RKVENC, PD_VO and PD_VPU domains.
+
+pm_genpd_summary on a Radxa E20C after this:
+
+  domain                          status          children        performance
+      /device                         runtime status                  managed by
+  ------------------------------------------------------------------------------
+  vpu                             on                              0
+      ffaf0000.gpio                   unsupported                 0           SW
+      ffb10000.gpio                   unsupported                 0           SW
+      ffbe0000.ethernet               active                      0           SW
+      ffae0000.adc                    unsupported                 0           SW
+      ffbf0000.mmc                    suspended                   0           SW
+  vo                              on                              0
+      ffb00000.gpio                   unsupported                 0           SW
+      ffc30000.mmc                    suspended                   0           SW
+  venc                            on                              0
+      ffb20000.gpio                   unsupported                 0           SW
+      ffa58000.i2c                    unsupported                 0           SW
+  gpu                             off-0                           0
+      ff700000.gpu                    suspended                   0           SW
+
+Jonas Karlman (9):
+  dt-bindings: power: rockchip: Add support for RK3528
+  pmdomain: rockchip: Add support for RK3528
+  dt-bindings: rockchip: pmu: Add compatible for RK3528
+  arm64: dts: rockchip: Add power controller for RK3528
+  dt-bindings: mmc: sdhci-of-dwcmhsc: Allow use of a power-domain
+  dt-bindings: gpio: rockchip: Allow use of a power-domain
+  dt-bindings: i2c: i2c-rk3x: Allow use of a power-domain
+  dt-bindings: iio: adc: rockchip-saradc: Allow use of a power-domain
+  arm64: dts: rockchip: Enable more power domains for RK3528
+
+ .../devicetree/bindings/arm/rockchip/pmu.yaml |  2 +
+ .../bindings/gpio/rockchip,gpio-bank.yaml     |  3 +
+ .../devicetree/bindings/i2c/i2c-rk3x.yaml     |  3 +
+ .../bindings/iio/adc/rockchip-saradc.yaml     |  3 +
+ .../bindings/mmc/snps,dwcmshc-sdhci.yaml      |  4 -
+ .../power/rockchip,power-controller.yaml      |  1 +
+ arch/arm64/boot/dts/rockchip/rk3528.dtsi      | 87 +++++++++++++++++++
+ drivers/pmdomain/rockchip/pm-domains.c        | 27 ++++++
+ .../dt-bindings/power/rockchip,rk3528-power.h | 19 ++++
+ 9 files changed, 145 insertions(+), 4 deletions(-)
+ create mode 100644 include/dt-bindings/power/rockchip,rk3528-power.h
+
 -- 
 2.49.0
 
