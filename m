@@ -1,95 +1,53 @@
-Received: from mail-pj1-f50.google.com (mail-pj1-f50.google.com [209.85.216.50])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 647C11C8613
-	for <linux-pm@vger.kernel.org>; Tue, 20 May 2025 06:24:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CA1D20E32B;
+	Tue, 20 May 2025 07:42:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747722244; cv=none; b=EzSOIhfWifj7MfDQbLCioQeN4tiGTXeyz7DbVMq604oEe6RXOGvaeeK661TMcXmEnxiCEupFo+wpz3yS9PPs/ImXZT7hX9kcAnwb/NqzdJ3nTgOVHanQ+jlqg1eL1Wh9fCCE/x5qaT6Ujma+Oi7go++HExVZx0CjqSlUyjbPeqo=
+	t=1747726940; cv=none; b=fYmLi8lGXS+2AQ8tYZyuyvkTGgNodPqRDWefpsqqCejrVnWZpcIvHSO9Z4pvjyat4judA6bcHEvkbdMTjUWTzlmmHcjtFbQumzJloYjGpLxRnRqHFbIUqeIayjlHYSmCOljirnNWKojAfGMESY3wPczWmWeakT4YWaav7cGc6ag=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747722244; c=relaxed/simple;
-	bh=OErLSkE/m1BgaO00NjK5OW2PuAYt7QDHMHCcdsySpeM=;
+	s=arc-20240116; t=1747726940; c=relaxed/simple;
+	bh=eEi3mKDvtMM13Ex5UlZGmEeN1NuJCNnvqtuW0peVH0Y=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Z7PrsLhi25R0Mkmq3gWuhTMVhHeem1p9N23JD1AyJZSGMibTjWC62UR3UqySGebNw6Pqye+DkQvxf54BQhm6Hxwb0ABy+W1bGkJLhLRVIXIq/zTx25CF2hYnrmSEvvcVUEL7WIE7ZjHzSncFI5/gagQV/iaecUOSY71b/uTZTQg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=xxvDIST9; arc=none smtp.client-ip=209.85.216.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=LSax2nJ2pEYdstOmA9zGI+IqDkrVKkkY9Exip6qEAIDFsD1LRYlauR6YG5qN09OZSC/Rb9VyW4JSLl10JXZ2jYdc1cucKyKqGI9MK8ZCBQQh0bwqlGqOt6AVUjUplq8dGcO8CzsQnkPvLNxzFt+pkltbE9SJBwMh5bf1/beacC8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=teIyenw9; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="xxvDIST9"
-Received: by mail-pj1-f50.google.com with SMTP id 98e67ed59e1d1-30e87549254so5322654a91.2
-        for <linux-pm@vger.kernel.org>; Mon, 19 May 2025 23:24:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1747722243; x=1748327043; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=gOOxKXVW+mfOfzJmAX4sL2q7PTCJ7BSmtyABQv/dOSg=;
-        b=xxvDIST98ZmUGClwtCZ1V8zaW6UkaSftWh70vM+tKUL5mKWJNVXfO+hWqXglXNR2pZ
-         uy5c8IyRLbUyJdN7vuDdOOisyG6NCChfVX/38mQ4jje8kDpbx3zNB3eEa+26GF6uaoqO
-         nkpcmhJ6I6HZePUwE1m1vpHRgyC5iu+G5hn440eWjwa4URvNlt0CkpqthPxQVA53oMEw
-         liLGTmFMdGqi9ESszqHbFfdVZ4fWU89FF/ZSC25c3BflElXOw6BTJYR/F5hDEp2hnZqv
-         nshJ5t6BwkN4DXHf49j788sSJbZDjKQAW5xyjU5Izh3ZpRI/1WjGvwxhAfw6Tdpwiyan
-         hpjw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1747722243; x=1748327043;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=gOOxKXVW+mfOfzJmAX4sL2q7PTCJ7BSmtyABQv/dOSg=;
-        b=NyHpG3ch3vaJprxvwI8G5zfnxFQS4ScAdZ6w4ZaRdYPnRd9BJHW7BVAsBKqdW/J004
-         byZI8E++VIJsMq+DArsYmlgy3eAd3PCXrghiNaAcehYDg+C0MRSBDYuByLaEMkiXNU2c
-         MyK5Rqs531dQR6utqUzneAuWjIxX4aaLDA9gB+goqNl67ovlnK2M5cNA4vL9c13VKTgI
-         uRB9g8XGu2gjcLfDDFLuYledsM9HXy6mlSGskSCF1H0mm2SQr8HWPUdYf/9+xAdOpot5
-         ++Lr+CXD/tWCptrheXrpFFOHW1BemMMz2VNJWKAtZ8Lu6Fr82oq/b9bqIdB/pnBgM3s0
-         CWHw==
-X-Gm-Message-State: AOJu0Yw+O0qKYZjxySjt8PEQ2iefU8H0uam1f9f6XJJFYj7wNzBe7eSu
-	FU0KXcW9uFuW0BthV+9vSFqsGV/Qn5k/6fQV6185Kwmq4XR7+785tH+Z4oG7nGMljPI=
-X-Gm-Gg: ASbGncu0pReyeSLCDuQ995EZGrtPsA1Z7+hTZd0tIqj7hYX9XwobIAQ3stAC6xkKdMc
-	OMg7jNumOm7x/GJ07GuZTpdTaGFpQgnN0cGNZALs1bNRvgVreCOE74Szex+1pTMUxyBN7n+MQW6
-	YCPLfliO7Mh2aYzOYHY49GABmeB0xKabTxjB51Mu+pX48rFnF1BJxCYXO7dzBmMkwt24yBle270
-	UMo5CrXYXLZgk3Com/92RqiaUpJhyv2m5RKl8Xicy6PI6pJex7TSLbjiODf7GN+aI9fvV+DqAoY
-	i9WYQP3mCWNP5huvCLFISoANW6rnUESAWXQxar9rUk4SE1r7+wAZ
-X-Google-Smtp-Source: AGHT+IHX+LQFIfZztGFcwBpfpATN8GuvitXJDkA2u+hyNtGRg1r5lgWVjoOyMg8lPkAa6aTJv5nQeA==
-X-Received: by 2002:a17:90b:394d:b0:2ee:d024:e4fc with SMTP id 98e67ed59e1d1-30e7d5bb433mr28527339a91.33.1747722242148;
-        Mon, 19 May 2025 23:24:02 -0700 (PDT)
-Received: from localhost ([122.172.81.72])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-30f36515776sm934684a91.48.2025.05.19.23.24.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 19 May 2025 23:24:01 -0700 (PDT)
-Date: Tue, 20 May 2025 11:53:59 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>,
-	Danilo Krummrich <dakr@redhat.com>,
-	Alex Gaynor <alex.gaynor@gmail.com>,
-	Alice Ryhl <aliceryhl@google.com>,
-	Andreas Hindborg <a.hindborg@kernel.org>,
-	Benno Lossin <benno.lossin@proton.me>,
-	=?utf-8?B?QmrDtnJu?= Roy Baron <bjorn3_gh@protonmail.com>,
-	Boqun Feng <boqun.feng@gmail.com>,
-	Danilo Krummrich <dakr@kernel.org>, Gary Guo <gary@garyguo.net>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Miguel Ojeda <ojeda@kernel.org>, Nishanth Menon <nm@ti.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Stephen Boyd <sboyd@kernel.org>,
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="teIyenw9"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9D088C4CEE9;
+	Tue, 20 May 2025 07:42:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1747726940;
+	bh=eEi3mKDvtMM13Ex5UlZGmEeN1NuJCNnvqtuW0peVH0Y=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=teIyenw9nDbvXgqsws1U7d+4gOHxN9QNOsFhbs8og2rTMNZnYx+yVdg8OUHsZKr0b
+	 MltxdnR8nH66sVgWyt0PCXNXhRgFfHkXeXaK/8PbLUQFFoC35UHzHamD9JVOlRaBQc
+	 M7ZUeoCSOJ+xJVf+xaYu3B4j/Xpa6rjLeteOQ1sxEWstLxp6ahrfHYr/sfJKuHhh2t
+	 yoGSnMIT+RZB3HIG37lf6mqwqox0NCB9CVw47qzLqaSQfgccIW1sKRjRjBB1l508wH
+	 6eOA/JG7/PD/VPRv1lUJf3alyR461gY1BkZkDieEagwz0mTaL5Oa1U1x3zS4InTP9H
+	 jhb3wJpDwGJiw==
+Date: Tue, 20 May 2025 09:42:14 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Ard Biesheuvel <ardb@kernel.org>
+Cc: Eric Biggers <ebiggers@kernel.org>, x86@kernel.org,
+	linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
+	linux-pm@vger.kernel.org, Borislav Petkov <bp@alien8.de>,
 	Thomas Gleixner <tglx@linutronix.de>,
-	Trevor Gross <tmgross@umich.edu>, Viresh Kumar <vireshk@kernel.org>,
-	Yury Norov <yury.norov@gmail.com>
-Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>,
-	rust-for-linux@vger.kernel.org,
-	Manos Pitsidianakis <manos.pitsidianakis@linaro.org>,
-	Alex =?utf-8?Q?Benn=C3=A9e?= <alex.bennee@linaro.org>,
-	Joakim Bech <joakim.bech@linaro.org>, Rob Herring <robh@kernel.org>,
-	Burak Emir <bqe@google.com>,
-	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
-	Russell King <linux@armlinux.org.uk>, linux-clk@vger.kernel.org,
-	Andrew Ballance <andrewjballance@gmail.com>,
-	Anisse Astier <anisse@astier.eu>,
-	Daniel Almeida <daniel.almeida@collabora.com>,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V12 00/15] Rust abstractions for clk, cpumask, cpufreq,
- OPP
-Message-ID: <20250520062359.paojvjytle4yznpz@vireshk-i7>
-References: <cover.1747634382.git.viresh.kumar@linaro.org>
+	Ayush Jain <Ayush.Jain3@amd.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [PATCH 3/3] x86/fpu: Don't support kernel-mode FPU when
+ irqs_disabled()
+Message-ID: <aCwyVvgewYum4mrE@gmail.com>
+References: <20250516231858.27899-4-ebiggers@kernel.org>
+ <aCg2DSYp0nakwX3l@gmail.com>
+ <20250517183919.GC1239@sol>
+ <aCl_cSO2XqtSQEZT@gmail.com>
+ <CAMj1kXGVAbD9zxUQSwwGo=ueadqWWSdaQNDe_-7ZezpFLMJRMA@mail.gmail.com>
+ <20250518200114.GA1764@sol>
+ <aCrmZnSokvmqfel3@gmail.com>
+ <CAMj1kXGe0hMD-71KYN_htJztAL+P8vFNf+9+W_aVDkHx3nCEWA@mail.gmail.com>
+ <aCsqyrHdMWlU3yc0@gmail.com>
+ <CAMj1kXHzFiQsjUH90J56ds2fgge-MUXmFMBWKtmb0LF=UjbJcg@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -98,16 +56,118 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <cover.1747634382.git.viresh.kumar@linaro.org>
+In-Reply-To: <CAMj1kXHzFiQsjUH90J56ds2fgge-MUXmFMBWKtmb0LF=UjbJcg@mail.gmail.com>
 
-On 19-05-25, 12:37, Viresh Kumar wrote:
-> I have queued this up for v6.16-rc1, will merge it via the PM tree soon.
-> Thanks.
 
-Sent for inclusion in the PM tree for 6.16. Thanks everyone for
-reviewing the work.
+* Ard Biesheuvel <ardb@kernel.org> wrote:
 
-https://lore.kernel.org/all/20250520061944.pl3mqw2clo2roe3s@vireshk-i7/
+> On Mon, 19 May 2025 at 14:57, Ingo Molnar <mingo@kernel.org> wrote:
+> >
+> >
+> > * Ard Biesheuvel <ardb@kernel.org> wrote:
+> >
+> > > On Mon, 19 May 2025 at 10:06, Ingo Molnar <mingo@kernel.org> wrote:
+> > > >
+> > > >
+> > > > * Eric Biggers <ebiggers@kernel.org> wrote:
+> > > >
+> > > > > > # echo PANIC > /sys/kernel/debug/provoke-crash/DIRECT
+> > > > > >
+> > > > > > Another case that likely executes with IRQs disabled (but I 
+> > > > > > haven't double checked) is reset_system(), which may return 
+> > > > > > with an error, or reboot/poweroff the machine and never 
+> > > > > > return.
+> > > > >
+> > > > > That makes sense to me.  preempt_disable() and 
+> > > > > preempt_enable() are already allowed when IRQs are disabled, 
+> > > > > and I'm not sure why local_bh_disable() and local_bh_enable() 
+> > > > > are different.
+> > > >
+> > > > Because local_bh_enable() may run softirq handlers immediately 
+> > > > if there's pending softirqs, which shouldn't be done in hardirq 
+> > > > context.
+> > >
+> > > Sure, but why is that mandatory?
+> > >
+> > >
+> > > preempt_disable() has preempt_enable() and 
+> > > preempt_enable_no_resched() counterparts.
+> >
+> > > [...] Could we have a local_bh_enable_no_xxx() version that
+> > > re-enables async softirq processing on the current CPU but does not
+> > > kick off a synchronous processing run?
+> >
+> > Yes, that's what __local_bh_enable() does, but if used it for
+> > kernel_fpu_end() we'd be introducing random softirq processing
+> > latencies. The softirq execution model is for softirqs to be
+> > immediately executed after local_bh_enable(), and various networking
+> > code is tuned to that behavior.
+> >
+> 
+> All of that only applies when re-enabling softirqs with IRQs enabled.
 
--- 
-viresh
+Yes, of course. BHs in the networking code are typically 
+disabled/enabled when IRQs are on. It's the whole *point* of the 
+facility: it was written as a 'lightweight' IRQs-on/off facility 
+originally, back in the days when local_irq_save() was very expensive, 
+especially on non-x86 platforms.
+
+> I don't see why we'd need all of that.
+> 
+> Conceptually, kernel_fpu_end() would do
+> 
+> if (irqs_disabled())
+>    local_bh_enable_no_xxx();
+> else
+>    local_bh_enable();
+
+In normal kernel code local_bh_enable() obviously cannot be done with 
+IRQs off, and local_bh_disable()/__local_bh_enable() is highly frowned 
+upon because it's generally pointless: if irqs are off to begin with, 
+why disable any BHs?
+
+What you probably mean is to only disable BHs if IRQs are not off 
+(because hardirqs-off state already disables BHs):
+
+  kernel_fpu_begin()
+	if (!irqs_disabled)
+		local_bh_disable();
+
+  kernel_fpu_end()
+	if (!irqs_disabled())
+		local_bh_enable();
+
+... which is basically what the current code does:
+
+        if (!irqs_disabled())
+                fpregs_lock();
+
+	...
+
+        if (!irqs_disabled())
+                fpregs_unlock();
+
+BTW., maybe we should add a lockdep check to make sure we never enable 
+hardirqs while kernel FPU handling is ongoing. It should be relatively 
+straightforward and cheap.
+
+But that brings is far away from the original question:
+
+> > > > > preempt_disable() and preempt_enable() are already allowed 
+> > > > > when IRQs are disabled, and I'm not sure why 
+> > > > > local_bh_disable() and local_bh_enable() are different.
+> > > >
+> > > > Because local_bh_enable() may run softirq handlers immediately 
+> > > > if there's pending softirqs, which shouldn't be done in hardirq 
+> > > > context.
+
+To rephrase my answer: local_bh_disable()/enable() are part of the 
+softirq execution mechanism whose primary historical purpose was to be 
+a lighter-weight replacement hardirq disable/enable critical sections, 
+combined with a relaxation of how long a softirq could run versus a 
+hardirq. It makes little sense to try to nest BH handling primitives to 
+within hardirq critical sections.
+
+Thanks,
+
+	Ingo
