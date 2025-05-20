@@ -1,322 +1,105 @@
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f169.google.com (mail-pg1-f169.google.com [209.85.215.169])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD6EF1A2C11
-	for <linux-pm@vger.kernel.org>; Tue, 20 May 2025 02:22:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.187
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D7551C860B
+	for <linux-pm@vger.kernel.org>; Tue, 20 May 2025 03:09:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.169
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747707754; cv=none; b=YGl3lbrB4+lwmvYvQ7x0x/ynOg9ZsRZfPhGhNh+zzR8U64t/sDaZSUF5cUTtK/xeCAuXRzH5OIdI8hVXkKuNQbh+0PVZ0fmGm7mxR3rNk5lM+MrBzgaveUk5cXu7LDeTrBO6Y9i6ZxGUWGuZ67u7DuCO0D7/7AkGpgK39UllWoc=
+	t=1747710568; cv=none; b=F44DzNAAMbATZsZHxgfdNaLZMHWygcNCzN9tnnRl0xkmnN9SEYPK5N6HmEcFPFUDtXSEROVSzqFTLusthlWxIHHfBKvBXdihNqrqUFcS5dsoOe67HRDiUlk6Thetx6G+WKQALtMevDqi8W3knTo8gvTzvZYgZJwcedHOGYjPAVs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747707754; c=relaxed/simple;
-	bh=Pdxz/O8Hv3gc6A3tKzTsJqHXabc/cShL5i6Lgp2zYlE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=hDfoyGQDpS5M5yVPIOOXDOghguf765UAUugLQitN2iGWge38yRWE55wlC/eqkiAUX2TycI1eICphgjjbOX4I3W6Q0y1soOHHQTu9iU9RrSBwtCeRkZdW69Nyca00fdP24/OB3beomZ6pl97VHZAfQ7ezKtSIxtKgEzMlOv4sQHE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=45.249.212.187
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.163.174])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4b1dWL4Qffz10WGF;
-	Tue, 20 May 2025 10:18:06 +0800 (CST)
-Received: from kwepemo100006.china.huawei.com (unknown [7.202.195.47])
-	by mail.maildlp.com (Postfix) with ESMTPS id ADA00140121;
-	Tue, 20 May 2025 10:22:27 +0800 (CST)
-Received: from [10.67.121.58] (10.67.121.58) by kwepemo100006.china.huawei.com
- (7.202.195.47) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 20 May
- 2025 10:22:26 +0800
-Message-ID: <42bb418d-5e6a-8922-268c-8b6e2a48d578@hisilicon.com>
-Date: Tue, 20 May 2025 10:22:26 +0800
+	s=arc-20240116; t=1747710568; c=relaxed/simple;
+	bh=WFIJhpj8kHnoZQR/hf5HHxL5h/aWV/NOwBwPTu1YjSo=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=OHgwwIVmILF63O2qg4bdB977240IJVUXaCg/NZ/WWYlazo90VLhIiPpJCZJ2dBgQxYig+z7IIL0gISAGVkCSkx618IboPuM4jssTPDquo+FTZdbLZIvY6gkfkuL1bR1k+AIl7LiX4b0Ick8w39GMaSUsF5SzWOMVuZ8oK5SsFeU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=YFVxMPTl; arc=none smtp.client-ip=209.85.215.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YFVxMPTl"
+Received: by mail-pg1-f169.google.com with SMTP id 41be03b00d2f7-b061a06f127so3383609a12.2
+        for <linux-pm@vger.kernel.org>; Mon, 19 May 2025 20:09:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1747710566; x=1748315366; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=UUyeLkns9IfRG/8V3c0lYiMThv/MhJAXlf6Hx02ddXI=;
+        b=YFVxMPTliWwpltk/wNTz/c0RagzeB5F4fSwBeDhE5nooc5FkupBY55HE6gFRvSaTmw
+         IUDeRmzisV9N5Dh6tjzz3fNcmMYJsgXpEwmZX75AJDduTalHvPtLCEJyFO+GSTLmK3+8
+         La/jkcB1jxLpN2XDJQIO/Twc/HW87PgeRpGaA9sJ16NDPdqsqK1qBPYZj8VNVTL6Elpj
+         WvAkvFIrd2Ub00hGfdBkdcuCvTAorSvv2INcK19zCDhMsGHTdf6fk1jjcrojVoYfBzvI
+         Gtax/WEq77KhzsXPKYrz1XZXo+BmuPaphxFvQH9HVYWuPtq9cU/JNE32DpMwrA/fJEW3
+         pcpA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1747710566; x=1748315366;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=UUyeLkns9IfRG/8V3c0lYiMThv/MhJAXlf6Hx02ddXI=;
+        b=uWPA8rUAAOi6B5ovaZjNpT27Ou6CUprNMLdcVLuv1tYKNwyTtQpmjQy5BLbQ3n7CQh
+         Qi+RPgx2CBxInzG+VvTzYl/DQxVeXhDwByACVW7dwEaHfT3SC5bZ4XKqUM/DhNU7vsKs
+         CFDh5XhiSh6iOzgu8ZH/YUiuI1wWh04pWLfFMPc8OmwFSdXhgV7md+UMrvok8MnqUhaV
+         1lmmxoc5ZUOCsxzVHyMwMWsi2DV0o6cuuWDlWWIEiu6SPxpg85XHIWDq01cKBALRo8x2
+         PLhQVqgv4aMAiGESZ74dvIle/Wrx8JeioYeoiD5zYLf4DgBLQ0Olaz7mTofofAnTv6ra
+         ffzg==
+X-Gm-Message-State: AOJu0YxDJ/VHbWP408GvO5rIgCDfIztixceEGX5J51aVP2+4hIRckUeQ
+	iemSHaEk45H025Fty0gDVAZcK0W4c3LemNfs5tt0egh0fDBOAY50xghQ
+X-Gm-Gg: ASbGncsmpL2Dj5z/pvP1Ss8NYgRgPUtrWVb6j0K8DQlrN5EzZ7TufOVXl3j9yGBbspp
+	iWA7fdTNvstIV4qGkfhPo0hcW1jHLs0/7LxobiVQ7TRN+PCTprgqyTYDQtqJ0LENnANzkncphxs
+	ARATj3R7rEB9hc0S75g3ARxG+lNKwFgWI/AbR8DFDdX2oOCme38cnlcjCPws1fe1qwOSQGnxx1p
+	oKOPzUOQJCO2JPWHBHPMGtlNH+PnfLLOhpnzgIiQldkoQk87fJedOZdJIdZO2ACpIcU1FtGG7eI
+	0rCOCuKIWsGIhKL5olFhvzCmFoQwV8v4Wje9eo/GkYdG7vGPXEfhLty6EU2S
+X-Google-Smtp-Source: AGHT+IF1EH0S3UJO61+AOv7LmyvrKoE7wCgmqSnvQt+pg4Z0TcfIVg12LADlSjYbkzb6uK+SWxpsnw==
+X-Received: by 2002:a17:903:94f:b0:223:5ca1:3b0b with SMTP id d9443c01a7336-231d45a9aa0mr232819085ad.40.1747710566294;
+        Mon, 19 May 2025 20:09:26 -0700 (PDT)
+Received: from localhost ([107.155.12.245])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-231d4e9784bsm67167645ad.113.2025.05.19.20.09.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 19 May 2025 20:09:25 -0700 (PDT)
+From: "qiwu.chen" <qiwuchen55@gmail.com>
+X-Google-Original-From: "qiwu.chen" <qiwu.chen@transsion.com>
+To: rafael@kernel.org,
+	daniel.lezcano@linaro.org
+Cc: linux-pm@vger.kernel.org,
+	"qiwu.chen" <qiwu.chen@transsion.com>
+Subject: [PATCH] cpuidle: add tracepoint for enter_s2idle flow
+Date: Tue, 20 May 2025 11:09:22 +0800
+Message-Id: <20250520030922.9505-1-qiwu.chen@transsion.com>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.3.2
-Subject: Re: [PATCH v1] PM / devfreq: Add HiSilicon uncore frequency scaling
- driver
-To: "lihuisong (C)" <lihuisong@huawei.com>, <myungjoo.ham@samsung.com>,
-	<kyungmin.park@samsung.com>, <cw00.choi@samsung.com>
-CC: <linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linuxarm@huawei.com>, <jonathan.cameron@huawei.com>,
-	<alireza.sanaee@huawei.com>, <zhenglifeng1@huawei.com>,
-	<yubowen8@huawei.com>, <liwei728@huawei.com>, <prime.zeng@hisilicon.com>, Jie
- Zhan <zhanjie9@hisilicon.com>
-References: <20250506021434.944386-1-zhanjie9@hisilicon.com>
- <8ef46e21-4ad0-46ef-bfb3-fc56094ef79d@huawei.com>
- <4f910767-9a96-6229-18cb-0119574eca00@hisilicon.com>
- <74894849-4e0b-47b7-8749-fd10d30b5709@huawei.com>
-From: Jie Zhan <zhanjie9@hisilicon.com>
-In-Reply-To: <74894849-4e0b-47b7-8749-fd10d30b5709@huawei.com>
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
- kwepemo100006.china.huawei.com (7.202.195.47)
 
+Add the tracepoint cpu_idle in enter_s2idle_proper for tracing
+the enter and exit events with a determined idle state.
 
+Signed-off-by: qiwu.chen <qiwu.chen@transsion.com>
+---
+ drivers/cpuidle/cpuidle.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-On 20/05/2025 09:36, lihuisong (C) wrote:
-> 
-> 在 2025/5/19 16:03, Jie Zhan 写道:
->> Hi Huisong,
->>
->> Thanks for reviewing.
->>
->> On 12/05/2025 10:17, lihuisong (C) wrote:
->>> Hi Jie,
->>>
->>> There are some trivia advice. please have a look.
->>>
->>> /Huisong
->>> 在 2025/5/6 10:14, Jie Zhan 写道:
->>>> Add the HiSilicon uncore frequency scaling driver for Kunpeng SoCs based on
->>>> the devfreq framework.  The uncore domain contains shared computing
->>>> resources, including system interconnects and L3 cache.  The uncore
->>>> frequency significantly impacts the system-wide performance as well as
->>>> power consumption.  This driver adds support for runtime management of
->>>> uncore frequency from kernel and userspace.  The main function includes
->>>> setting and getting frequencies, changing frequency scaling policies, and
->>>> querying the list of CPUs whose performance is significantly related to
->>>> this uncore frequency domain, etc.  The driver communicates with a platform
->>>> controller through an ACPI PCC mailbox to take the actual actions of
->>>> frequency scaling.
->>>>
->>>> Co-developed-by: Lifeng Zheng <zhenglifeng1@huawei.com>
->>>> Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
->>>> Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
->>>> ---
->>>>    drivers/devfreq/Kconfig            |  11 +
->>>>    drivers/devfreq/Makefile           |   1 +
->>>>    drivers/devfreq/hisi_uncore_freq.c | 722 +++++++++++++++++++++++++++++
->>>>    3 files changed, 734 insertions(+)
->>>>    create mode 100644 drivers/devfreq/hisi_uncore_freq.c
->>>>
->> ...
->>
->>>> +
->>>> +static int hisi_uncore_request_pcc_chan(struct hisi_uncore_freq *uncore)
->>>> +{
->>>> +    struct pcc_mbox_chan *pcc_chan;
->>>> +    int rc;
->>>> +
->>>> +    uncore->cl = (struct mbox_client) {
->>>> +        .dev = uncore->dev,
->>>> +        .tx_block = false,
->>>> +        .knows_txdone = true,
->>>> +    };
->>>> +
->>>> +    pcc_chan = pcc_mbox_request_channel(&uncore->cl, uncore->chan_id);
->>>> +    if (IS_ERR(pcc_chan)) {
->>>> +        dev_err(uncore->dev, "Failed to request PCC channel %u\n",
->>>> +            uncore->chan_id);
->>>> +        return -ENODEV;
->>>> +    }
->>>> +
->>>> +    if (!pcc_chan->shmem_base_addr) {
->>>> +        dev_err(uncore->dev, "Invalid PCC shared memory address\n");
->>>> +        rc = -EINVAL;
->>>> +        goto err_pcc_chan_free;
->>>> +    }
->>>> +
->>>> +    if (pcc_chan->shmem_size < sizeof(struct hisi_uncore_pcc_shmem)) {
->>>> +        dev_err(uncore->dev, "Invalid PCC shared memory size (%lluB)\n",
->>>> +            pcc_chan->shmem_size);
->>>> +        rc = -EINVAL;
->>>> +        goto err_pcc_chan_free;
->>>> +    }
->>>> +
->>>> +    uncore->pcc_shmem_addr = ioremap(pcc_chan->shmem_base_addr,
->>>> +                     pcc_chan->shmem_size);
->>> Now driver doesn't need to ioremap repeatly because of Sudeep's work.
->>> Please see the patch:
->>> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=fa362ffafa51b08cf8e2fcca38e056332f6b9b05
->> Cool. Now we can use pcc_chan->shmem. Will update the code based on that.
->>
->>>> +    if (!uncore->pcc_shmem_addr) {
->>>> +        rc = -ENOMEM;
->>>> +        goto err_pcc_chan_free;
->>>> +    }
->>>> +
->> ...
->>
->>>> +static int hisi_uncore_cmd_send(struct hisi_uncore_freq *uncore,
->>>> +                u8 cmd, u32 *data)
->>>> +{
->>>> +    struct hisi_uncore_pcc_shmem __iomem *addr;
->>>> +    struct hisi_uncore_pcc_shmem shmem;
->>>> +    struct pcc_mbox_chan *pchan;
->>>> +    unsigned int mrtt;
->>>> +    s64 time_delta;
->>>> +    u16 status;
->>>> +    int rc;
->>>> +
->>>> +    guard(mutex)(&uncore->pcc_lock);
->>>> +
->>>> +    pchan = uncore->pchan;
->>>> +    addr = uncore->pcc_shmem_addr;
->>>> +
->>>> +    if (!pchan || !addr)
->>>> +        return -ENODEV;
->>> This parameter validation seems redundant. From driver point, it always be ok.
->> uncore->pchan could be NULL if hisi_uncore_cmd_send() if called after
->> hisi_uncore_free_pcc_chan().
->>
->> In the driver detaching processor, the drv->remove() is called before devm
->> resources free, i.e. where devfreq device is freed.
->> Hence the devfreq governor, e.g. simpleondemand, could possibly issue a
->> freq request after the driver is removed.
->>
->> The checking and setting uncore->pchan = NULL in this driver is trying to
->> protect against the above case.  It actually happened during our tests so
->> it's not redundant unless we get a better way to solve that.
->>
->>>> +
->>>> +    /* Handle the Minimum Request Turnaround Time (MRTT) */
->>>> +    mrtt = pchan->min_turnaround_time;
->>>> +    time_delta = ktime_us_delta(ktime_get(),
->>>> +                    uncore->last_cmd_cmpl_time);
->>>> +    if (mrtt > time_delta)
->>>> +        udelay(mrtt - time_delta);
->>>> +
->>>> +    /* Copy data */
->>>> +    shmem.head = (struct acpi_pcct_shared_memory) {
->>>> +        .signature = PCC_SIGNATURE | uncore->chan_id,
->>>> +        .command = cmd,
->>>> +        .status = 0,
->>>> +    };
->>>> +    shmem.pcc_data.data = *data;
->>>> +    memcpy_toio(addr, &shmem, sizeof(shmem));
->>>> +
->>>> +    /* Ring doorbell */
->>>> +    rc = mbox_send_message(pchan->mchan, &cmd);
->>>> +    if (rc < 0) {
->>>> +        dev_err(uncore->dev, "Failed to send mbox message, %d\n", rc);
->>>> +        return rc;
->>>> +    }
->>>> +
->>>> +    /* Wait status */
->>>> +    rc = readw_poll_timeout(&addr->head.status, status,
->>>> +                status & (PCC_STATUS_CMD_COMPLETE |
->>>> +                      PCC_STATUS_ERROR),
->>>> +                HUCF_PCC_POLL_INTERVAL_US,
->>>> +                pchan->latency * HUCF_PCC_POLL_TIMEOUT_NUM);
->>>> +    if (rc) {
->>>> +        dev_err(uncore->dev, "PCC channel response timeout, cmd=%u\n", cmd);
->>>> +        goto exit;
->>>> +    }
->>>> +
->>>> +    if (status & PCC_STATUS_ERROR) {
->>>> +        dev_err(uncore->dev, "PCC cmd error, cmd=%u\n", cmd);
->>>> +        rc = -EIO;
->>>> +        goto exit;
->>>> +    }
->>>> +
->>>> +exit:
->>>> +    uncore->last_cmd_cmpl_time = ktime_get();
->>>> +
->>>> +    /* Copy data back */
->>>> +    memcpy_fromio(data, &addr->pcc_data.data, sizeof(*data));
->>>> +
->>>> +    /* Clear mailbox active req */
->>>> +    mbox_client_txdone(pchan->mchan, rc);
->>>> +
->>>> +    return rc;
->>>> +}
->>>> +
->>>> +static int hisi_uncore_target(struct device *dev, unsigned long *freq,
->>>> +                  u32 flags)
->>>> +{
->>>> +    struct hisi_uncore_freq *uncore = dev_get_drvdata(dev);
->>>> +    struct dev_pm_opp *opp;
->>>> +    u32 data;
->>>> +
->>>> +    /*
->>>> +     * ->target() might be called after drv->remove() and before governor
->>>> +     * stopped, so it's necessary to check here, but no need to warn.
->>>> +     */
->>>> +    if (!uncore || !uncore->pchan)
->>>> +        return 0;
->>> If have the following tips, this check can be removed, right?
->> See below.
->>
->> ...
-> We need to resolve the issue completely.🙂
->>>> +
->>>> +static int hisi_uncore_devfreq_register(struct hisi_uncore_freq *uncore)
->>>> +{
->>>> +    struct devfreq_dev_profile *profile;
->>>> +    unsigned long freq;
->>>> +    u32 data;
->>>> +    int rc;
->>>> +
->>>> +    rc = hisi_uncore_get_cur_freq(uncore->dev, &freq);
->>>> +    if (rc) {
->>>> +        dev_err(uncore->dev, "Failed to get plat init freq (%d)\n", rc);
->>>> +        return rc;
->>>> +    }
->>>> +
->>>> +    profile = devm_kzalloc(uncore->dev, sizeof(*profile), GFP_KERNEL);
->>>> +    if (!profile)
->>>> +        return -ENOMEM;
->>>> +
->>>> +    profile->initial_freq = freq;
->>>> +    profile->polling_ms = DEFAULT_POLLING_MS;
->>>> +    profile->timer = DEVFREQ_TIMER_DELAYED;
->>>> +    profile->target = hisi_uncore_target;
->>>> +    profile->get_dev_status = hisi_uncore_get_dev_status;
->>>> +    profile->get_cur_freq = hisi_uncore_get_cur_freq;
->>>> +
->>>> +    rc = hisi_uncore_cmd_send(uncore, HUCF_PCC_CMD_GET_MODE, &data);
->>>> +    if (rc) {
->>>> +        dev_err(uncore->dev, "Failed to get operate mode (%d)\n", rc);
->>>> +        return rc;
->>>> +    }
->>>> +
->>>> +    if (data == HUCF_MODE_PLATFORM)
->>>> +        uncore->devfreq = devm_devfreq_add_device(uncore->dev, profile,
->>>> +                              hisi_platform_governor.name, NULL);
->>>> +    else
->>>> +        uncore->devfreq = devm_devfreq_add_device(uncore->dev, profile,
->>>> +                              DEVFREQ_GOV_PERFORMANCE, NULL);
->>> This code creates sysfs file which will be freed after .remove() executed.
->>> However, the PCC channel is released in .remove().
->>> This may lead to UAF issue.
->> Not only those sysfs files, the whole devfreq device & governor is still
->> there after drv->remove().  That's the main cause of issues when
->> registering a devfreq device by devm_devfreq_add_device().
->>
->> However, at the moment, we have prevented against any UAF issues?
-> I understand you. But please see two options below again.
->>
->>> We have tow options:
->>> *option 1:*
->>> hisi_uncore_free_pcc_chan() also move to the last release instead of the .remove() by devm_add_action_or_reset() or devm_add_action().
->> I don't quite understand what this means.
->> hisi_uncore_free_pcc_chan() is currently the last step of drv->remove().
->> If we let it be managed by devm, it can't be guaranteed that the pcc chan
->> is freed after devfreq device is removed.
-> This option is just to let hisi_uncore_free_pcc_chan() to call after removing all sysfs files created in devfreq.
->>
->>> *option 2:*
->>> Use devfreq_add_device() to replace devm_devfreq_add_device() and .remove() in driver call devfreq_remove_device() to delete these sysfs files.
->>>
->>> There are the resources  dependency between these interfaces. And there is a potential release sequence in .remove, devm_xxx, and even the devm_xxx release inside.
->>> I prefer to explicitly free interfaces that have resource dependencies in driver.
->>>
->>>
->> This looks like a possible plan, but we will need to go back to the raw
->> ABIs.
-> 
-> Yeah, this option is simple.
-> 
-> Whether driver selects the raw ABI or devm_ prefixed ABI, which should be open, I think. This depends on the user's preference.
-> 
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 0835da449db8..9ff8fa5db444 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -147,6 +147,7 @@ static noinstr void enter_s2idle_proper(struct cpuidle_driver *drv,
+ 	struct cpuidle_state *target_state = &drv->states[index];
+ 	ktime_t time_start, time_end;
+ 
++	trace_cpu_idle(index, dev->cpu);
+ 	instrumentation_begin();
+ 
+ 	time_start = ns_to_ktime(local_clock_noinstr());
+@@ -178,6 +179,7 @@ static noinstr void enter_s2idle_proper(struct cpuidle_driver *drv,
+ 	dev->states_usage[index].s2idle_time += ktime_us_delta(time_end, time_start);
+ 	dev->states_usage[index].s2idle_usage++;
+ 	instrumentation_end();
++	trace_cpu_idle(PWR_EVENT_EXIT, dev->cpu);
+ }
+ 
+ /**
+-- 
+2.25.1
 
-Sure, understood now.
-Option 1: Add the devm resources in a correct order and let devm manage the
-release sequence.
-Option 2: Explicitly define the release sequence in the driver remove.
-
-Since currently only one devfreq driver uses the non-devm ABI, I may prefer
-to try the Option 1 first.
