@@ -1,172 +1,113 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f53.google.com (mail-pj1-f53.google.com [209.85.216.53])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6AFCD2571D2;
-	Tue, 20 May 2025 03:26:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4BBA82550B7
+	for <linux-pm@vger.kernel.org>; Tue, 20 May 2025 04:33:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747711571; cv=none; b=B0MsF6W77Uc9/5iFq9Ba2igjpnbK93WvN5o/W94r+X8qQBMmDlnYdhP0l9ncIDOFxmUWBigchyURIDQxdwlQ4p+V8xV+B53Y6pptwsJmq9h/6VzbBrHEQlI78lqUrv1xfUhLhJKLfaEvP/h4NYzN3EXLmYTy8sOMzoXRt9CpKgc=
+	t=1747715640; cv=none; b=Yqdb+Pic7IeQb57+dXJPVOpuyywwS0fJgji8LzBSOBOGCpDv4naM0cXtspqQ6CyOmWK1SbPJmJX1A0OIvrFYs3UzSL4PCNSCEOOezHjfsh9eosRnXIGrzpFD52AWPYZlyx30lvtAUVlkGXCHiKg0/bD3M9rLmGNjon4x7GQ3XfU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747711571; c=relaxed/simple;
-	bh=O5WlLJx2+c4wwI4hD4aEpExVS165ZV3Rb0A7jWj6nqc=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=uPRQZpT3c3Yk/uvfRvJxnEuXSQ7zV2LZWNytVuWTcIlqPWFhLor59Sc9D2+/JTmC6P3OCJoiH0IgnqHlMYllJYgZOYGLxs7iVYL/ze/DHWU0V+hsMUaYkeZVSysm047llfeIxTzlV/dweZSxmIwTFCwDz1sGVSYUcuidBW35x+A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 23f5f7fc352a11f0b29709d653e92f7d-20250520
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.45,REQID:37b74419-d921-4320-accf-1d236675eb27,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:0
-X-CID-META: VersionHash:6493067,CLOUDID:1597e8b14a6d409660efa3b5747038bb,BulkI
-	D:nil,BulkQuantity:0,Recheck:0,SF:81|82|102,TC:nil,Content:0|50,EDM:-3,IP:
-	nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,L
-	ES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 0
-X-CID-BAS: 0,_,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-UUID: 23f5f7fc352a11f0b29709d653e92f7d-20250520
-Received: from mail.kylinos.cn [(10.44.16.175)] by mailgw.kylinos.cn
-	(envelope-from <zhangzihuan@kylinos.cn>)
-	(Generic MTA)
-	with ESMTP id 1874766652; Tue, 20 May 2025 11:25:55 +0800
-Received: from mail.kylinos.cn (localhost [127.0.0.1])
-	by mail.kylinos.cn (NSMail) with SMTP id 79925E003505;
-	Tue, 20 May 2025 11:25:55 +0800 (CST)
-X-ns-mid: postfix-682BF643-334541295
-Received: from localhost.localdomain (unknown [172.25.120.24])
-	by mail.kylinos.cn (NSMail) with ESMTPA id 57878E006100;
-	Tue, 20 May 2025 11:25:54 +0800 (CST)
-From: Zihuan Zhang <zhangzihuan@kylinos.cn>
-To: rafael@kernel.org,
-	len.brown@intel.com,
-	pavel@kernel.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org,
-	tzungbi@kernel.org,
-	a.fatoum@pengutronix.de,
-	jani.nikula@intel.com,
-	joel.granados@kernel.org,
-	paulmck@kernel.org,
-	zhangguopeng@kylinos.cn,
-	linux@weissschuh.net,
-	Zihuan Zhang <zhangzihuan@kylinos.cn>
-Subject: [PATCH 1/3] PM / Sleep: Replace mutex_[un]lock(&system_transition_mutex) with [un]lock_system_sleep()
-Date: Tue, 20 May 2025 11:25:43 +0800
-Message-Id: <20250520032545.29558-2-zhangzihuan@kylinos.cn>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20250520032545.29558-1-zhangzihuan@kylinos.cn>
-References: <20250520032545.29558-1-zhangzihuan@kylinos.cn>
+	s=arc-20240116; t=1747715640; c=relaxed/simple;
+	bh=TM7YWc2HanxUC5uSa/mx8mHwCfO/Qpz2hocXunXzOnQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=AceYfpA3k1GG7pnAL7DoAxmLV3Ty3u8tupdpFIs48PuCc9+qSPlPIjgIDCqLmnRCsbtu6zGPpiVLzLu5d0dzjZQhlZiAwU+1h64O3GsEV4zeLBqtauN/SYuP0mnzznn4YHsje1s27SHbQPfTpsHEw6l0fc4uuUSQ2h1YQW+QWM0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=DTEtPKVx; arc=none smtp.client-ip=209.85.216.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="DTEtPKVx"
+Received: by mail-pj1-f53.google.com with SMTP id 98e67ed59e1d1-3081f72c271so4505690a91.0
+        for <linux-pm@vger.kernel.org>; Mon, 19 May 2025 21:33:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1747715638; x=1748320438; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=vmXtbFG7YZNNbJEDh1fYDcGa0WLHVZ/52LrX9t09NXg=;
+        b=DTEtPKVxPh29thGGyvRwymyu6QWa5HrLLK1TOwWteGJkisDMVF5VfmI9KQDARigvz6
+         9eeSDnSsK6REQDVEmaeBX/v2tqPUAKIrEwogrzS4cLIF1kfJaRSyZWRy4GCQbT1uMLIy
+         /DzvcOhOzF9KeGmt8fPXmATyQUT5D8htprY8ePsYCksh7rsWjvzaSV/5tzPRL+f8PUki
+         NxPoDEPc1rhdESWvJDeFvd/tQZ5vnqhrgR3D01vuP2nkzW9lX3KCqyosAWy//aCqtaIv
+         Z2mHGXpbzi8NFMHDX4F+583rdVhQ7C2RjRG3BsOEAVw4CtNTPo/D/+Kqt1zGRsFLZQoB
+         bLIQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1747715638; x=1748320438;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=vmXtbFG7YZNNbJEDh1fYDcGa0WLHVZ/52LrX9t09NXg=;
+        b=DnLuY5fo4n0dAmkhdtkMC/wPGbuplJmUIwy4ZTFnNDB5eCCONQe4QzBCuwJUOOcNyZ
+         TO+dr+7V/HDuphcd8e0RAOu4UdUnYCiMD0lpc9zzRjSjSehHLovVjVoOlcOeJBM7kVOS
+         V4DD2t4kryE8fy255Xbi+b2XY+/8tPTuHg2IwmX9tEa+2DRmW/M4pTm7DlA7rMJsqLw5
+         psgmUs9JiX93T9PVdx5+unktzTqjPWoC7E5E2MyJwsoOPmzAsb9G+ftPSXqANd3RyfzW
+         zEDv9Uw2ORhrwHbF8bo4LWT6VPD8Tc9uWcv5Mpo5jDsFmHkDm3+/8xz0UPe/I3Ki2UWJ
+         AG3w==
+X-Forwarded-Encrypted: i=1; AJvYcCXeu4L5jKPSIMPSZh+pb4S7mKYgHyPjHSnW/txOb/n35SVASi4I+4olGj5EX7zGG0w3jSC+5x1ITA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxUhHqROb7NvfAkFS+OVsIIscqyXYSoG6xYvddYNuFH0DSBY8S/
+	MfZ0T29djQigRuT5YITFL4O2l11BmrPI0m2GJERioIfGZJilggBj1SaQeco2TwKRNNY=
+X-Gm-Gg: ASbGncuscjOml4BNHIfEE74VhM0Y7KmkUJ5yfuWajSqO070kn6QtM6yAPhywRyvDBIZ
+	newaFXnFIpqqeQ6/vUP6wLs+SpT3n82gAH7DkaQl0rSYg1N7tNvNlEW2rWoruuxqC/JcbD/Q2Wx
+	X/JiQCEmR9nJ+3KopJ7HIEAQodx/ZeKww9F6aF5Jtv8ElkPDiCTm0c+DmuGysQqqYsmG644dnf6
+	IRwMyTqpf0+R9GP8ti+FZ8JDva82dOYy1OniAG92TIFXggCwkciltrEdb/nFMcbM67NvB6DYWMq
+	UHPysJbGPoUymcyfhTfoB1z0RibrCmZNokuL5CwHQs6Kc2dvWAew
+X-Google-Smtp-Source: AGHT+IEv6gz69p3L0tnkjs4WbboIMeCV0Y6PseXGe/lkFOQuL+7jOhnn31ID8Drzpd2DcrW3kToDNw==
+X-Received: by 2002:a17:90b:1a91:b0:2ee:e113:815d with SMTP id 98e67ed59e1d1-30e830ebc99mr22665162a91.8.1747715638413;
+        Mon, 19 May 2025 21:33:58 -0700 (PDT)
+Received: from localhost ([122.172.81.72])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-30f36491611sm643232a91.26.2025.05.19.21.33.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 19 May 2025 21:33:57 -0700 (PDT)
+Date: Tue, 20 May 2025 10:03:55 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@redhat.com>, Miguel Ojeda <ojeda@kernel.org>,
+	Alex Gaynor <alex.gaynor@gmail.com>,
+	Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>,
+	=?utf-8?B?QmrDtnJu?= Roy Baron <bjorn3_gh@protonmail.com>,
+	Benno Lossin <benno.lossin@proton.me>,
+	Andreas Hindborg <a.hindborg@kernel.org>,
+	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
+	Danilo Krummrich <dakr@kernel.org>, linux-pm@vger.kernel.org,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
+	rust-for-linux@vger.kernel.org,
+	Manos Pitsidianakis <manos.pitsidianakis@linaro.org>,
+	Alex =?utf-8?Q?Benn=C3=A9e?= <alex.bennee@linaro.org>,
+	Joakim Bech <joakim.bech@linaro.org>, Rob Herring <robh@kernel.org>,
+	Yury Norov <yury.norov@gmail.com>, Burak Emir <bqe@google.com>,
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+	Russell King <linux@armlinux.org.uk>, linux-clk@vger.kernel.org,
+	Michael Turquette <mturquette@baylibre.com>,
+	Andrew Ballance <andrewjballance@gmail.com>,
+	Anisse Astier <anisse@astier.eu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V12 06/15] rust: macros: enable use of hyphens in module
+ names
+Message-ID: <20250520043355.wjkrslnripaqj6mm@vireshk-i7>
+References: <cover.1747634382.git.viresh.kumar@linaro.org>
+ <21b4c30db60f22d56cc6386a18564705ad3a6f4a.1747634382.git.viresh.kumar@linaro.org>
+ <CANiq72mNHYKXcDm6DiB=69W0w8pZ1KhqeARqqKBK_s01PPRsmQ@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CANiq72mNHYKXcDm6DiB=69W0w8pZ1KhqeARqqKBK_s01PPRsmQ@mail.gmail.com>
 
-These function currently calls mutex_lock(&system_transition_mutex) and
-mutex_unlock() directly to protect the resume-from-disk operation from
-concurrent suspend/resume transitions.
+On 19-05-25, 16:15, Miguel Ojeda wrote:
+> On Mon, May 19, 2025 at 9:08 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >
+> > +    /* Rust does not allow hyphens in identifiers, use underscore instead */
+> 
+> (In case you see this before you apply)
+> 
+> Nit: `//` for comments, also please end with a period.
 
-However, this is inconsistent with the rest of the power management
-code, where lock_system_sleep() and unlock_system_sleep() are used to
-wrap suspend/hibernate transitions. These wrapper functions not only
-acquire system_transition_mutex, but also set PF_NOFREEZE for the
-calling thread, ensuring that it is not subject to freezing during
-suspend.
+Done.
 
-This change replaces the raw mutex_lock()/unlock() with the standard
-lock_system_sleep()/unlock_system_sleep() wrapper pair, bringing it in
-line with the locking pattern used by hibernate(), pm_suspend(), and
-other similar entry points.
-
-Benefits of this change:
-
- - Ensures the thread performing software resume is marked PF_NOFREEZE,
-   which is important during early resume paths where freezing is
-active.
- - Improves code clarity by making the locking intent more explicit.
- - Unifies suspend/hibernate locking style across the kernel power
-   subsystem.
- - Reduces the risk of future maintenance issues due to inconsistent
-   locking.
-
-No functional change is expected at runtime, since the lock order and
-coverage remain the same. This is a straightforward cleanup and
-consistency fix.
-
-Signed-off-by: Zihuan Zhang <zhangzihuan@kylinos.cn>
----
- kernel/power/hibernate.c | 5 +++--
- kernel/reboot.c          | 5 +++--
- 2 files changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 23c0f4e6cb2f..cfaa92f24857 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -988,6 +988,7 @@ static int __init find_resume_device(void)
-=20
- static int software_resume(void)
- {
-+	unsigned int sleep_flags;
- 	int error;
-=20
- 	pm_pr_dbg("Hibernation image partition %d:%d present\n",
-@@ -995,7 +996,7 @@ static int software_resume(void)
-=20
- 	pm_pr_dbg("Looking for hibernation image.\n");
-=20
--	mutex_lock(&system_transition_mutex);
-+	sleep_flags =3D lock_system_sleep();
- 	error =3D swsusp_check(true);
- 	if (error)
- 		goto Unlock;
-@@ -1050,7 +1051,7 @@ static int software_resume(void)
- 	hibernate_release();
- 	/* For success case, the suspend path will release the lock */
-  Unlock:
--	mutex_unlock(&system_transition_mutex);
-+	unlock_system_sleep(sleep_flags);
- 	pm_pr_dbg("Hibernation image not present or could not be loaded.\n");
- 	return error;
-  Close_Finish:
-diff --git a/kernel/reboot.c b/kernel/reboot.c
-index ec087827c85c..68ac7e377efb 100644
---- a/kernel/reboot.c
-+++ b/kernel/reboot.c
-@@ -729,6 +729,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, uns=
-igned int, cmd,
- 		void __user *, arg)
- {
- 	struct pid_namespace *pid_ns =3D task_active_pid_ns(current);
-+	unsigned int sleep_flags;
- 	char buffer[256];
- 	int ret =3D 0;
-=20
-@@ -761,7 +762,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, uns=
-igned int, cmd,
- 		cmd =3D LINUX_REBOOT_CMD_HALT;
- 	}
-=20
--	mutex_lock(&system_transition_mutex);
-+	sleep_flags =3D lock_system_sleep();
- 	switch (cmd) {
- 	case LINUX_REBOOT_CMD_RESTART:
- 		kernel_restart(NULL);
-@@ -811,7 +812,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, uns=
-igned int, cmd,
- 		ret =3D -EINVAL;
- 		break;
- 	}
--	mutex_unlock(&system_transition_mutex);
-+	unlock_system_sleep(sleep_flags);
- 	return ret;
- }
-=20
---=20
-2.25.1
-
+-- 
+viresh
