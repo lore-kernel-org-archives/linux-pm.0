@@ -1,196 +1,144 @@
-Received: from mail-yb1-f180.google.com (mail-yb1-f180.google.com [209.85.219.180])
+Received: from mail-yb1-f172.google.com (mail-yb1-f172.google.com [209.85.219.172])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71F9526A083
-	for <linux-pm@vger.kernel.org>; Thu, 22 May 2025 22:09:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 264C62571AE
+	for <linux-pm@vger.kernel.org>; Thu, 22 May 2025 22:25:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747951789; cv=none; b=mDOqSc4gVtxA8sNq2emmf1pOuc2AXUMSkcNJArbRlNcICgS+Xq/6tXwLV/7LXoDTaCxOkV5a+e3M1gnmnakL8Qg8NCapkMj7NahWbF6QQWBpb3c9gxwwt8X1+7GwR5nxcpII76wEWVufb7/1RQhlrDcApeMgbMM4Blkve/CS+KY=
+	t=1747952703; cv=none; b=bQOVT6TJrBN+fahaTlQnG4QA9pn3Qv8+1Kav9odWzBZiO1aY5upkRdsEb6Pfify6sUBkOPCUEZ/c85245LRMAD4/okny1uV23osc7Th6iLyxprvIHqpNVKf+/VKmZ5sOMIipk96JI2+ms3VZpYRZoNlLoKJmDX6eXyN4F61OASI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747951789; c=relaxed/simple;
-	bh=aGU5joKlmsc4tJLp/ZjJC18En5pCyl2YsaUdNZBEyNY=;
+	s=arc-20240116; t=1747952703; c=relaxed/simple;
+	bh=D4gXf7k9CUNciIPNoD2d5KCpK3nE9hEh+TOs0VegVxg=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Rd7iNHxjMX+XmcIdyrAFjy8eP1AVSFQlP/ZAtWNpCc6h8zrHx3rVduG9KtYylM/WjAaNGfknHmcggJZCWaWC55q3boitTPrjEPh1Y3Cp3kj0RUYFfBslqqEwkjIwiZjVjPv+GJVqEsabRku1m/umRztgUo7j7hxw9p+yMpi5IB4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=fORy/Kqg; arc=none smtp.client-ip=209.85.219.180
+	 To:Cc:Content-Type; b=oIVK86pYL5oulrYSWDumMofySDIs7cqUiain3Q0NVnMhFPEypYgCK5lksuMMrJyz+ukocNikERjVy8lpmLDnA4GVVFD2lEOcAsMvztsrTHbAWa11UjmCS95Nq0P6XyWysTMGgwa5K6fb9h742lzOljFOocY9i5ZsTvJqwU2QF50=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=b4Kymxef; arc=none smtp.client-ip=209.85.219.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="fORy/Kqg"
-Received: by mail-yb1-f180.google.com with SMTP id 3f1490d57ef6-e7d6bedd114so1343257276.0
-        for <linux-pm@vger.kernel.org>; Thu, 22 May 2025 15:09:47 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="b4Kymxef"
+Received: by mail-yb1-f172.google.com with SMTP id 3f1490d57ef6-e7b811be6dbso5852193276.2
+        for <linux-pm@vger.kernel.org>; Thu, 22 May 2025 15:25:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1747951786; x=1748556586; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1747952700; x=1748557500; darn=vger.kernel.org;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=ytKn/xAm5fG7iosGiXWkgx37JTIZsw4UDMYhapgMJtk=;
-        b=fORy/Kqgj8hWSwsElD1XqrJi5qK8Ah1B/Z41PYblSK9GiYuMpHUJljlLbd30vhzPBo
-         9RvHFGr8rxEGoCbYYmEDrhNGZYHwVUnHfLS1sbBIFwN9V5dWOgzi8NkYXC4X9g3aKfmc
-         5d2IN9BicLPfqqcxBgQCWYs2nQLtqbVgERyCf89O4LjysTTCPLnprJ/oW/gCb4AAMAFA
-         jD7Q2/YQMDRjpyn+FNDHDwzo4bNthOfFLT9RuPLrEtQoQZQLVa6JtBp5DV4CNTzT27Wj
-         8fLVo6XvsOlR+FBA50sA9BG89KBUm7DDHsjncsQgOGRBeYRr8SgrgT40eXq63VHmTsup
-         qUkA==
+        bh=NxvStOnrhhdHpMl3yQwpKdFC4CaZgST0YwPJdz+2jlk=;
+        b=b4Kymxefn57MH8NGpFP18ojN00ommkF1eBK+DW+GsA55syu3B7RL0ms+Mn0qy9S/JK
+         Xt8FFPO+f0yNhAKj/93ETc2fcUkhKX3G3Gi9CRHxKYBGbfe4rZ29t7R18H6ErwdosM0a
+         ZuSah0+5s8b4D7yexmp2KerldTwUYIhEXBAAGSs+cOrNUA1IevUUJMK0Q8aSwr7j8CwF
+         E2590UPX34cvDGL/eUDlK8WFJO1Dc1LbI5RaUbn9hDeZS7xEt90DSAhnl1Bl5zrmWr8N
+         PQEuHWsiBEhBLxUmo0/NvttidBCuG0sm5lIhSWbmQLqikPgKvk+qr86XRyj7oni/3NFe
+         a+rw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1747951786; x=1748556586;
+        d=1e100.net; s=20230601; t=1747952700; x=1748557500;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=ytKn/xAm5fG7iosGiXWkgx37JTIZsw4UDMYhapgMJtk=;
-        b=ZcrdztBzxiuJaoCstF26JBxiWLVNMdUazeqAzUb3hfk69XoFXpW++GicpbYxg2p7iP
-         c+vx5mvJfI+YYnkCQGysHiB79m/9SivocAALB64YSQjA/fxwEpILBZQaL0o4QiEEKVV+
-         st8zLoU0ougKAkIllpR1ANbuY7RjUmc8Si1SoHx4QOKdJfNAnCOkglMqDRCP+EUxKVbh
-         DbNm6AM0cyQ86K014MhJBO0pro07e/UpMigReeODwawXACyMNx4PABtsOaMhN6beo+gp
-         ZUcR2XCYZRWxT66K9WTqKgIJjLTWvdKQB9WqHA1DMNnLg/xUSDkfbAX9J55WHkPm8eLS
-         xbtA==
-X-Forwarded-Encrypted: i=1; AJvYcCUN55VYYEMoj6gTr1RLe1J6RVYeDU9W8eHIVaj1l4IOaPHFFixpI+64axE/XfRt4GRmDqLs0SM/yw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy1afJvqoZcVpyX1BDqOfeLVaD+/bGpXw3lQIJdAUXuNvUs6YOe
-	TXY6nLx2pm2biY6iseuRE/wh96W/j0f/72BFKWuyIg0yJQiZqjSEyabnsojbHnvmJNGxcA69rWl
-	bfIjWI+KtO+LCagdEvEBEf+F6g1vy7E8lGsoaLCzNsg==
-X-Gm-Gg: ASbGnctvTPdsFO6LOZl8ZcR6FhmB+angoJ5X9CTDcRQmobJ6oR2BqeD1BvM6sI4WCEG
-	eQakYjeLb3W5Su9jTNdml87EnvKYF7oZqtX/VIOouixO1IpZ7Pm0dHTXvTEc58ZUjdJzdpUYQDq
-	Jm8lzX0gF8RF/8HP1eKPOpxEvzx+JLCvpGng==
-X-Google-Smtp-Source: AGHT+IGYyJxLMA8/8GOi2bmSkwfU/WISSYVhRusNzbVkFPw+Z4WEurkZHKkq6Z3/hyy3zkRDJ4/v8Z7Q+C1zdP3A248=
-X-Received: by 2002:a05:6902:2190:b0:e7d:3b61:e24a with SMTP id
- 3f1490d57ef6-e7d3b61e544mr19540272276.32.1747951784370; Thu, 22 May 2025
- 15:09:44 -0700 (PDT)
+        bh=NxvStOnrhhdHpMl3yQwpKdFC4CaZgST0YwPJdz+2jlk=;
+        b=Ud+dfVEiWnpqNSSz7IkG4FUfNGg4e2/9PKeRlW5GXBIN9JS4vUw++M4FbmWcnsCwOR
+         A/UReGveyWg3MA4Sb/hkENpsP/RZsEaBj9JWGBz6HvHPlnE5sy0V/EA0kJV9UCfdUp2B
+         SRFxsueh42igEsri/8b3IZJUBdn5ntjDkeDBsj7IUPxV3spTlIYC0WfE37jnak8gqFrz
+         tUoGbK69q90SD2Ft1kC7KQghGhjCKBB9JvKZPaYslKgUYGRIvjo1qfjFPfDw79gch9FE
+         71nv7jizdum8vgzyKdH9gTC8UC+Iu2+1JMl2260C2q3LTsSlw3GHpc+QLDrzMQ6ESIw+
+         OFRg==
+X-Forwarded-Encrypted: i=1; AJvYcCWEci6VGuYBBKAtAz+bNCSLWlVFMOdtgXfwNbmmCGO4NEA/zQUcprAnpshGrH5Zd8CAS5flRxjI5g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwOJOwlD74cWXuIgWr+TaceHoNGf4bJlHVeLoi7v+uX7O0KoYy7
+	WF4TNBJCsBJrjr+7hdsn1foZ3xMBmTZLr61pXsL43StTeVGQB0PpEhwPpek0ayHlR8JmnqJz/pg
+	kLIl1hGQ/gSZzZ7ldXckkTw4fSTZ61CLrPGKWpgDG0w==
+X-Gm-Gg: ASbGncvjD6u4WcJGUvyenVyai8k9kNLVd2LUJk4Ik/pqpcJvuYt7CQrjQUS8F5wY/8N
+	mnPB0nITc+ULSoEWkqJYNA7CkQyWKO+lkdo0WhuuE6UeWV61+/v+Vqd2JB1+K5SYUVjND3nw921
+	6ldZHsOpf3SqhklcTlTt9k4e7iWWcq53deaA==
+X-Google-Smtp-Source: AGHT+IEo+69w2SsM6WMoVy+VU1iqNjeWOLIwlyMXV18izZtek9qzw2edQkf8SeO0U8a6gS+XaVviMhz0QFnpEijXRvY=
+X-Received: by 2002:a05:6902:1247:b0:e7d:702d:9342 with SMTP id
+ 3f1490d57ef6-e7d7e0a37acmr1367189276.8.1747952700109; Thu, 22 May 2025
+ 15:25:00 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <CAPDyKFozR4qDq4mzcZBK-LcoPf=fGyuJTXwdt=Ey+_DcQOAp0g@mail.gmail.com>
+References: <20250330163129.02f24afb@jic23-huawei> <5bca6dfd-fe03-4c44-acf4-a51673124338@tuxon.dev>
+ <95f5923f-7a8f-4947-b588-419525930bcb@tuxon.dev> <CAPDyKFoMqmCFBoO8FwQe2wHh2kqQi4jUZNFyiNckK7QhGVgmvg@mail.gmail.com>
+ <c3a2950a-17ff-444a-bee7-af5e7e10e2bf@tuxon.dev> <CAPDyKFozR4qDq4mzcZBK-LcoPf=fGyuJTXwdt=Ey+_DcQOAp0g@mail.gmail.com>
  <4o3wo76st7w6qwyye3rrayuo2qx773i6jfzcnbkhdj76ouh7ds@3e2mblehkgwf>
  <CAPDyKFqMB7XutXba73YHx1X4rm6uc3Fz6yMZ8yM=wgduEmgUDg@mail.gmail.com>
  <a20fc6ee-c6c3-4013-b175-4918b9a44380@tuxon.dev> <CAPDyKFpbeLJUiB_xQbqDib+-8Q3AcJNVg+DuEcqmVGMbFdNxwA@mail.gmail.com>
  <fgl4w5uhxci7rrbdigtni72vveb2gqemh6iccz4qruqkek5rja@rzwkcjg6hkid>
  <3b1963ba-f93f-48f2-8fb0-a485dd80ffcb@tuxon.dev> <CAPDyKFqrAS4iV59S-zJ9H7_3VuGr9JdZABhfUGBwTzQNDCasaw@mail.gmail.com>
- <482b55c9-a210-4b2d-8405-e9f30d48a8fd@tuxon.dev> <CAPDyKFpLF2P438GGWSgbXzpT7JNdUjtZ2ZxYf1_4=fNUX3s-KQ@mail.gmail.com>
- <4fzotopz57igmiyssgkogfbup6uu7qgza3t53t5qsouegmj7ii@wfiz4g3eiffs>
-In-Reply-To: <4fzotopz57igmiyssgkogfbup6uu7qgza3t53t5qsouegmj7ii@wfiz4g3eiffs>
+ <CAMuHMdWxeKWJ8hDG=GHngJzGxs_pDe3oGeok38S_PhxQy194RA@mail.gmail.com>
+In-Reply-To: <CAMuHMdWxeKWJ8hDG=GHngJzGxs_pDe3oGeok38S_PhxQy194RA@mail.gmail.com>
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Fri, 23 May 2025 00:09:08 +0200
-X-Gm-Features: AX0GCFugZ72jR4N4Zhb7o7hjSV-HtwPLk02fPFYwEJ3WEVVCfay8AKrTsrcY3DI
-Message-ID: <CAPDyKFoxs6wDCLp5EGHVqkqSstBLNmngps2KfanRezV_EN8tuA@mail.gmail.com>
+Date: Fri, 23 May 2025 00:24:23 +0200
+X-Gm-Features: AX0GCFuXinMJhLA931XICspXqJ6iaQgPA7OkwAdTsyiI_m91Si1IspTyACa7VnU
+Message-ID: <CAPDyKFq1iFCan+jB8oSh7z9CRogYWTZPj8x_jbFAu-U93QEMiQ@mail.gmail.com>
 Subject: Re: [PATCH] driver core: platform: Use devres group to free driver
  probe resources
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Claudiu Beznea <claudiu.beznea@tuxon.dev>, Jonathan Cameron <jic23@kernel.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, dakr@kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, geert@linux-m68k.org, 
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Claudiu Beznea <claudiu.beznea@tuxon.dev>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, 
+	Jonathan Cameron <jic23@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@linaro.org>, dakr@kernel.org, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
 	Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>, 
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-iio@vger.kernel.org, bhelgaas@google.com
 Content-Type: text/plain; charset="UTF-8"
 
-On Thu, 22 May 2025 at 20:47, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+On Thu, 22 May 2025 at 16:56, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 >
-> On Thu, May 22, 2025 at 06:28:44PM +0200, Ulf Hansson wrote:
-> > On Thu, 22 May 2025 at 16:08, Claudiu Beznea <claudiu.beznea@tuxon.dev> wrote:
-> > >
-> > > Hi, Ulf,
-> > >
-> > > On 22.05.2025 14:53, Ulf Hansson wrote:
-> > > >
-> > > > That said, I think adding a devm_pm_domain_attach() interface would
-> > > > make perfect sense. Then we can try to replace
-> > > > dev_pm_domain_attach|detach() in bus level code, with just a call to
-> > > > devm_pm_domain_attach(). In this way, we should preserve the
-> > > > expectation for drivers around devres for PM domains. Even if it would
-> > > > change the behaviour for some drivers, it still sounds like the
-> > > > correct thing to do in my opinion.
-> > >
-> > > This looks good to me, as well. I did prototype it on my side and tested on
-> > > all my failure cases and it works.
+> Hi Ulf,
+>
+> On Thu, 22 May 2025 at 13:54, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > On Thu, 22 May 2025 at 11:48, Claudiu Beznea <claudiu.beznea@tuxon.dev> wrote:
+> > > I may have missed considering things when describing the case 2 (which is
+> > > what is proposed by this patch) as I don't have the full picture behind the
+> > > dev_pm_domain_detach() call in platform bus remove. If so, please correct me.
 > >
-> > That's great! I am happy to help review, if/when you decide to post it.
+> > The dev_pm_domain_attach|detach() calls in bus level code
+> > (probe/remove) were added there a long time ago, way before devres was
+> > being used like today.
+> >
+> > Currently we also have devm_pm_domain_attach_list(), which is used
+> > when devices have multiple PM domains to attach too. This is *not*
+> > called by bus-level code, but by the driver themselves. For these
+> > cases, we would not encounter the problems you have been facing with
+> > clocks/IRQ-handler, I think - because the devres order is maintained
+> > for PM domains too.
+> >
+> > That said, I think adding a devm_pm_domain_attach() interface would
+> > make perfect sense. Then we can try to replace
+> > dev_pm_domain_attach|detach() in bus level code, with just a call to
+> > devm_pm_domain_attach(). In this way, we should preserve the
+> > expectation for drivers around devres for PM domains. Even if it would
+> > change the behaviour for some drivers, it still sounds like the
+> > correct thing to do in my opinion.
 >
-> So you are saying you'd be OK with essentially the following (with
-> devm_pm_domain_attach() actually being elsewhere in a real patch and not
-> necessarily mimicked by devm_add_action_or_reset()):
+> IMO that sounds like going in the wrong direction.  Why would a driver
+> need to care if the device it manages is not located in a PM domain,
+> located in a single PM domain, or located in multiple PM domains?
 
-Correct!
+Before we added support for multiple PM domains for a device, it was
+more or less transparent for drivers. It still is, as long as there
+are not multiple PM domains to consider for the device in question.
 
->
-> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-> index cfccf3ff36e7..1e017bfa5caf 100644
-> --- a/drivers/base/platform.c
-> +++ b/drivers/base/platform.c
-> @@ -1376,6 +1376,27 @@ static int platform_uevent(const struct device *dev, struct kobj_uevent_env *env
->         return 0;
->  }
->
-> +
-> +static void platform_pm_domain_detach(void *d)
-> +{
-> +       dev_pm_domain_detach(d, true);
-> +}
+The problem with making this transparent/common for the multiple PM
+domain case too, was in principle that it could not be done flexible
+enough from bus level code. It was discussed at conferences and at
+LKML, sorry but I don't have the references to those chats at hand.
+Anyway, that was the conclusion back when we introduced this around
+2018. See the below commits:
 
-Well, I would not limit this to the platform bus, even if that is the
-most widely used.
+82e12d9e0bd5 PM / Domains: Add dev_pm_domain_attach_by_id() to manage
+multi PM domains
+3c095f32a92b PM / Domains: Add support for multi PM domains per device to genpd
 
-Let's add the new generic interface along with
-dev_pm_domain_attach|detach* and friends instead.
+> All of this depends on SoC integration, not on the device that's
+> being driven. The nice thing about doing all this in the bus level
+> code is that it is abstracted away for the device driver (modulo using
+> pm_runtime_*() calls).
 
-Then we can convert bus level code (and others), such as the platform
-bus to use it, in a step-by-step approach.
+Right, I would have been nice, but we couldn't make it work back then.
 
-> +
-> +static int devm_pm_domain_attach(struct device *dev)
-> +{
-> +       int error;
-> +
-> +       error = dev_pm_domain_attach(dev, true);
-> +       if (error)
-> +               return error;
-> +
-> +       error = devm_add_action_or_reset(dev, platform_pm_domain_detach, dev);
-> +       if (error)
-> +               return error;
-> +
-> +       return 0;
-> +}
-> +
->  static int platform_probe(struct device *_dev)
->  {
->         struct platform_driver *drv = to_platform_driver(_dev->driver);
-> @@ -1396,15 +1417,12 @@ static int platform_probe(struct device *_dev)
->         if (ret < 0)
->                 return ret;
->
-> -       ret = dev_pm_domain_attach(_dev, true);
-> +       ret = devm_pm_domain_attach(_dev);
->         if (ret)
->                 goto out;
->
-> -       if (drv->probe) {
-> +       if (drv->probe)
->                 ret = drv->probe(dev);
-> -               if (ret)
-> -                       dev_pm_domain_detach(_dev, true);
-> -       }
->
->  out:
->         if (drv->prevent_deferred_probe && ret == -EPROBE_DEFER) {
-> @@ -1422,7 +1440,6 @@ static void platform_remove(struct device *_dev)
->
->         if (drv->remove)
->                 drv->remove(dev);
-> -       dev_pm_domain_detach(_dev, true);
->  }
->
->  static void platform_shutdown(struct device *_dev)
->
->
-> If so, then OK, it will work for me as well. This achieves the
-> same behavior as with using devres group. The only difference is that if
-> we ever need to extend the platform bus to acquire/release more
-> resources they will also have to use devm API and not the regular one.
-
-Sounds reasonable to me! Thanks for a nice discussion!
-
-When it comes to the devm_pm_runtime_enable() API, I think we
-seriously should consider removing it. Let me have a closer look at
-that.
+[...]
 
 Kind regards
 Uffe
