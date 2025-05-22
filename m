@@ -1,114 +1,101 @@
-Received: from jpms-ob01.noc.sony.co.jp (jpms-ob01.noc.sony.co.jp [211.125.140.164])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 970C91B0434;
-	Thu, 22 May 2025 08:15:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=211.125.140.164
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id BEF2D17A2E1;
+	Thu, 22 May 2025 08:19:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747901753; cv=none; b=kbXFqLkKDH6B6enAtrHn8VocKW+CcAFwxMU5ilQ8PxKJU9/VvVy9zvhROXfRplM9UBLp0q1+YAOKd1KObbuz0vZq/rcyVqv8nUrWy3ZgoVgW8ROxwPzKtu+3iK/LIu5wG92PKg07GM/KdUmSbjA+fCZ5JRnmPvUkttzDPuKKG5o=
+	t=1747901991; cv=none; b=OSmUWm304gVvceoJO/SFJt6WnIHT6OYzTgV7ViUy54B2VXYE1IMjZCVjjPSCjVgGz0YHBvOK+/eb9PMHdtP42HnD2Tq5EyEI2Nh3yhlX1CaQHh6P1V9w6ZreXFOyl8hVxha8858MBtcQZXXhy5EPUCB0Iz/yg1jOd91XxXs39/s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747901753; c=relaxed/simple;
-	bh=7E4VpZaYTeyHmonM9ukVDRJ98qeI0xAsr6LbdRcYv4k=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=QK+CowQqpO3mNf10QHDC/P9wYfTwyPg5VjcVesZr/x1bOT0HkedsdueEl7SkAnaS6M84mR5IO7cN9A0aiAvYhM947bb7zZ11IugFs1fqwrJq5kBTfbdzO2oD+NeEK6fJdyY0VFxgePnJWw4nuypX+93ZB0IX7OoS/Q3noWYcNME=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=sony.com; spf=pass smtp.mailfrom=sony.com; dkim=pass (2048-bit key) header.d=sony.com header.i=@sony.com header.b=WMbg7s3o; arc=none smtp.client-ip=211.125.140.164
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=sony.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sony.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=sony.com header.i=@sony.com header.b="WMbg7s3o"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=sony.com; s=s1jp; t=1747901748; x=1779437748;
-  h=from:date:subject:mime-version:content-transfer-encoding:
-   message-id:to:cc;
-  bh=1WWTa3On4JPd2OiE7+97JDn9jIPF7/XgeqzVzCmonJQ=;
-  b=WMbg7s3oqbnhLci0corqti8vq/nksYm8JuLweDpUQps/0XTYLVTV2Sp6
-   ppiu8xgXAMEaTopXykMGdLsKEwnFMG+KnA6q37tal5XiJlaRi4Kq3X/4g
-   ipWyyCpajpr4Q/gP131EKIDeQuliDhu81uEYoz5tUd/6tpdiPnkPjRdPw
-   qnoR2D3dddV24f3Kieh9KsKgoXQ2tkcTsyEcE4MwvVyME6FRRfM5l7hQT
-   wIvrJwTaxa4Vg2NsDdFzB4Ii3fAxVZCUszSuwewDdZyoT5VIxmNwwqxd+
-   QdP3juAunrhgsxwekS82IVLFL09cAcBtcT1QQWL3i1ns/0caD+AokidKg
-   Q==;
-Received: from unknown (HELO jpmta-ob1.noc.sony.co.jp) ([IPv6:2001:cf8:0:6e7::6])
-  by jpms-ob01.noc.sony.co.jp with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 May 2025 17:05:37 +0900
-X-IronPort-AV: E=Sophos;i="6.15,305,1739804400"; 
-   d="scan'208";a="562594206"
-Received: from unknown (HELO [127.0.1.1]) ([IPv6:2001:cf8:1:573:0:dddd:6b3e:119e])
-  by jpmta-ob1.noc.sony.co.jp with ESMTP; 22 May 2025 17:05:37 +0900
-From: Shashank Balaji <shashank.mahadasyam@sony.com>
-Date: Thu, 22 May 2025 17:05:33 +0900
-Subject: [PATCH] cpufreq, docs: (userspace governor) add that actual freq
- is >= scaling_setspeed
+	s=arc-20240116; t=1747901991; c=relaxed/simple;
+	bh=c/iwD65h6KHaqI/Yxo+GId26LdbQ9yJq+PIvnjY5tdU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=M+F8cTo3OQejXGU53Dd1c6Y3etGguCrBahiAJZ8R68DKmmw7r7PiRIr1SzmoFpv4DutBREe9Uv4X3aYMWL1gvANCRr4wnda5MdevHfBrctF1jebMfCFXFC+WZc4YX+oue5YswUIKxHDbEz3AKPZi5I46sM8xhd0/Q+VioBA7zSY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 06D6E1A32;
+	Thu, 22 May 2025 01:19:35 -0700 (PDT)
+Received: from [10.57.46.113] (unknown [10.57.46.113])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 78F073F5A1;
+	Thu, 22 May 2025 01:19:47 -0700 (PDT)
+Message-ID: <96b4ae67-b9a8-47d3-a951-a880848e6719@arm.com>
+Date: Thu, 22 May 2025 09:19:52 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250522-userspace-governor-doc-v1-1-c8a038e39084@sony.com>
-X-B4-Tracking: v=1; b=H4sIAMzaLmgC/x3MPQqAMAxA4atIZgO1UhGvIg79iTVLKymKIL27x
- fEN33uhkDAVWLoXhG4unFOLoe/AHzZFQg6tQSttlNEarwbKaT1hzDdJyoIhe5yncVbBWTcGAw2
- fQjs//3jdav0AAr4h5GgAAAA=
-X-Change-ID: 20250522-userspace-governor-doc-86380dbab3d5
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Viresh Kumar <viresh.kumar@linaro.org>, Jonathan Corbet <corbet@lwn.net>
-Cc: linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Shinya Takumi <shinya.takumi@sony.com>, 
- Shashank Balaji <shashank.mahadasyam@sony.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2204;
- i=shashank.mahadasyam@sony.com; h=from:subject:message-id;
- bh=7E4VpZaYTeyHmonM9ukVDRJ98qeI0xAsr6LbdRcYv4k=;
- b=owGbwMvMwCV2mPH4Ij++H1mMp9WSGDL0bl04EOm1ZPGGI+3Bvpe9CqsZZu/7bhklo2jw99ok/
- +9Zde8udpSyMIhxMciKKbK8k1l34aCVZdPX4wzfYOawMoEMYeDiFICJnL7K8FcyrilrX8Yi6+PN
- C96vUusUZsk1PKoRd3oSi0zKX7b4XCdGhoP51zUc+JU6A0OfS3MzFfS5f7dw7d7ybs1/JubDL76
- u4AYA
-X-Developer-Key: i=shashank.mahadasyam@sony.com; a=openpgp;
- fpr=EE1CAED0C13A3982F5C700F6C301C7A24E0EF86A
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] PM: EM: Add inotify support when the energy model is
+ updated.
+To: Changwoo Min <changwoo@igalia.com>
+Cc: christian.loehle@arm.com, tj@kernel.org, pavel@kernel.org,
+ kernel-dev@igalia.com, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, len.brown@intel.com,
+ "Rafael J. Wysocki" <rafael@kernel.org>
+References: <20250507014728.6094-1-changwoo@igalia.com>
+ <a82423bc-8c38-4d57-93da-c4f20011cc92@arm.com>
+ <CAJZ5v0ixh=ra-TDbC59rpZoGn0pRWmAMchHqoOb_XwB2XUzA7Q@mail.gmail.com>
+ <90834b07-9261-4be6-a10b-88d3f5308e1e@igalia.com>
+ <CAJZ5v0jiAHHLP2O_0ZkXPPCXq9tFTxqrap1mFXOJtKuBo-gJfw@mail.gmail.com>
+Content-Language: en-US
+From: Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <CAJZ5v0jiAHHLP2O_0ZkXPPCXq9tFTxqrap1mFXOJtKuBo-gJfw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-The userspace governor does not have the CPUFREQ_GOV_STRICT_TARGET flag, which
-means the requested frequency may not strictly be followed. This is true in the
-case of the intel_pstate driver with HWP enabled. When programming the
-HWP_REQUEST MSR, the min_perf is set to `scaling_setspeed`, and the max_perf
-is set to the policy's max. So, the hardware is free to increase the frequency
-beyond the requested frequency.
 
-This behaviour can be slightly surprising, given the current wording "allows
-userspace to set the CPU frequency". Hence, document this.
 
-Signed-off-by: Shashank Balaji <shashank.mahadasyam@sony.com>
----
- Documentation/admin-guide/pm/cpufreq.rst | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+On 5/10/25 12:34, Rafael J. Wysocki wrote:
+> On Sat, May 10, 2025 at 7:07 AM Changwoo Min <changwoo@igalia.com> wrote:
+>>
+>> Thank you, Rafael, for the pointer.
+>>
+>> On 5/10/25 01:41, Rafael J. Wysocki wrote:
+>>>>
+>>>> I have discussed that with Rafael and we have similar view.
+>>>> The EM debugfs is not the right interface for this purpose.
+>>>>
+>>>> A better design and mechanism for your purpose would be the netlink
+>>>> notification. It is present in the kernel in thermal framework
+>>>> and e.g. is used by Intel HFI
+>>>> - drivers/thermal/intel/intel_hfi.c
+>>>> - drivers/thermal/thermal_netlink.c
+>>>> It's able to send to the user space the information from FW about
+>>>> the CPUs' efficiency changes, which is similar to this EM modification.
+>>>
+>>> In addition, after this patch
+>>>
+>>> https://lore.kernel.org/linux-pm/3637203.iIbC2pHGDl@rjwysocki.net/
+>>>
+>>> which is about to get into linux-next, em_dev_update_perf_domain()
+>>> will not be the only place where the Energy Model can be updated.
+>>
+>> I am curious about whether the energy mode is likely to be updated more
+>> often with this change. How often the energy model is likely to be
+>> updated is the factor to be considered for the interface and the model
+>> to post-processing the eneergy model (in the BPF schedulers).
+> 
+> It really is hard to say precisely because eventually this will depend
+> on the platform firmware.  Hopefully, this is not going to happen too
+> often, but if the thermal envelope of the platform is tight, for
+> instance, it may not be the case.
 
-diff --git a/Documentation/admin-guide/pm/cpufreq.rst b/Documentation/admin-guide/pm/cpufreq.rst
-index 3950583f2b1549b27f568632547e22e9ef8bc167..066fe74f856699c8dd6aaf5e135162ce70686333 100644
---- a/Documentation/admin-guide/pm/cpufreq.rst
-+++ b/Documentation/admin-guide/pm/cpufreq.rst
-@@ -397,8 +397,15 @@ policy limits change after that.
- -------------
- 
- This governor does not do anything by itself.  Instead, it allows user space
--to set the CPU frequency for the policy it is attached to by writing to the
--``scaling_setspeed`` attribute of that policy.
-+to set a target CPU frequency for the policy it is attached to by writing to the
-+``scaling_setspeed`` attribute of that policy. The actual frequency will be
-+greater than or equal to ``scaling_setspeed``, depending on the cpufreq driver.
-+For example, if hardware-managed P-states are enabled, then the ``intel_pstate``
-+driver will set the minimum frequency to the value of ``scaling_setspeed`` and
-+the maximum frequency to the value of ``scaling_max_freq``.  The hardware is
-+free to select any frequency between those two values. If this behavior is not
-+desired, then ``scaling_max_freq`` should be set to the same value as
-+``scaling_setspeed``.
- 
- ``schedutil``
- -------------
+It's hard to say for all use cases, but there are some easy to measure
+and understand:
 
----
-base-commit: d608703fcdd9e9538f6c7a0fcf98bf79b1375b60
-change-id: 20250522-userspace-governor-doc-86380dbab3d5
+1. Long scenarios with heavy GPU usage (e.g. gaming). Power on CPUs
+    built from High-Performance cells can be affected by +20% and after
+    ~1min
+2. Longer recording with heavy ISP usage, similar to above
 
-Best regards,
--- 
-Shashank Balaji <shashank.mahadasyam@sony.com>
+In those two, it's sufficient to update the EM every 1-3sec to reach
+this +20% after 60sec. Although, at the beginning when the GPU starts
+heating the updates should happen a bit more often.
 
+There are some more complex cases, e.g. when more than 1 Big CPU does
+heavy computations and the heat is higher than normal EM model of
+single CPU (even for that scenario profile). Then the updates to EM
+can go a bit more often (it depends what the platform would like
+to leverage and achieve w/ SW).
