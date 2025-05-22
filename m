@@ -1,110 +1,139 @@
-Received: from devianza.investici.org (devianza.investici.org [198.167.222.108])
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 293EA1A5BAC
-	for <linux-pm@vger.kernel.org>; Wed, 21 May 2025 21:24:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.167.222.108
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 879FC1172A;
+	Thu, 22 May 2025 02:35:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747862660; cv=none; b=EkYtYyE8yulyaYpFfroBXkpGKaMnvZtyYxaCMuO9gH2fmP5FNCBOgXm8oBovWTBWRaqZOU1/bh/RB0PpxC+6HRWXllTl3YaNGStud3OugEyjZ5ruhvfNG+xSzvg4VbStNRZKlQ87ARUxq8RbICp6dKu1X89dVzVnectdMoeJqfM=
+	t=1747881330; cv=none; b=uO7bS83gk4dihWMkk1MRYMut9aUd4vZpHU//8EZSktYML9IXrtUGjQIwn3azSEyZy854nRX8uOdxsnutVeAhvu5i8Wzvb4pbPNQPyX359OYGIEFIMOdr2MzG1pIS2D+rrel+b1YgNDvnBcP/wGliDQHiyEovrW1tbdVJ6uS7a0c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747862660; c=relaxed/simple;
-	bh=OHgA9xgdiCe7JlP9s02C14pVouo1UjLuOXqqvGF7eYk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DtYjVt36/QDkfOkaZjUzv6FZesEUonnoXJHk5NhVe0XmjPJ+3dVCKrrC9k+FQZ2Ae2DJKB6SJ/62E77jIXU+aps5lAYewwY3nv2QjKVytWzpbzMbryHR+aLWrMau7oU+vqoE1SkOys9jTCPdCJs+hMzRPN0UPrdZbmNkHx8HVLA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=paranoici.org; spf=pass smtp.mailfrom=paranoici.org; dkim=pass (1024-bit key) header.d=paranoici.org header.i=@paranoici.org header.b=O+JN7rxS; arc=none smtp.client-ip=198.167.222.108
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=paranoici.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=paranoici.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=paranoici.org header.i=@paranoici.org header.b="O+JN7rxS"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=paranoici.org;
-	s=stigmate; t=1747862250;
-	bh=vLEw7WaNQ9TyUKGCrdww17iw6jYoTDFvSmJWvNTB4rY=;
-	h=From:To:Cc:Subject:Date:From;
-	b=O+JN7rxSIB/IvjURNgzw2WmOhx0y/JNIlqhsqJOQN0gWioDT3JBcBxljpEl/5l61t
-	 RllBofpZNA+gr2Dxy7nSu4uIoRPG1+km8iQE0RqB1G6ZYR3SB4ojFLBn9rEJv6+CL1
-	 QJcsPRUAk+lhvMyqvzWNf78r5QE+b6Q0xxoj5WVg=
-Received: from mx2.investici.org (unknown [127.0.0.1])
-	by devianza.investici.org (Postfix) with ESMTP id 4b2klZ1XJcz6y0v;
-	Wed, 21 May 2025 21:17:30 +0000 (UTC)
-Received: from [198.167.222.108] (mx2.investici.org [198.167.222.108]) (Authenticated sender: invernomuto@paranoici.org) by localhost (Postfix) with ESMTPSA id 4b2klZ18c2z6xxL;
-	Wed, 21 May 2025 21:17:30 +0000 (UTC)
-Received: from frx by crunch with local (Exim 4.98.2)
-	(envelope-from <invernomuto@paranoici.org>)
-	id 1uHqoa-00000000HEZ-3YvZ;
-	Wed, 21 May 2025 23:17:28 +0200
-From: "Francesco Poli (wintermute)" <invernomuto@paranoici.org>
-To: linux-pm list <linux-pm@vger.kernel.org>
-Cc: Francesco Poli <invernomuto@paranoici.org>,
-	Thomas Renninger <trenn@suse.com>,
-	Shuah Khan <shuah@kernel.org>,
-	"John B. Wyatt IV" <jwyatt@redhat.com>,
-	John Kacur <jkacur@redhat.com>,
-	Thorsten Leemhuis <linux@leemhuis.info>,
-	Justin Forbes <jforbes@redhat.com>
-Subject: [PATCH] cpupower: split unitdir from libdir in Makefile
-Date: Wed, 21 May 2025 23:14:39 +0200
-Message-ID: <20250521211656.65646-1-invernomuto@paranoici.org>
-X-Mailer: git-send-email 2.47.2
+	s=arc-20240116; t=1747881330; c=relaxed/simple;
+	bh=ttUHZ2SO5aE6GFFXpMt/n/cJfl6ftCJJVoxXZ5mH3ng=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=iJWoF02Kz2wejHLiCzEJ90OlZFf8sQ377OWmJitRzXUYysueas2ZDcT+7hn5q2hLjg3i1WImaRxK1LLnYl1iA3Zi+Mg1tJtMypoA9UWi8rlkBR9BOLN0/dVbCBPxvn0PDj56KLEPmDgy2S2zFzgJqSrkvPEtQgpCI6rsZHbQKdM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 68ae149236b511f0b29709d653e92f7d-20250522
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.45,REQID:615e2428-35b8-4b14-9f8b-321c3f46725e,IP:0,U
+	RL:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+	N:release,TS:-25
+X-CID-META: VersionHash:6493067,CLOUDID:6ce6c8b6e70f0946646e63f75385181d,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:81|82|102,TC:nil,Content:0|50,EDM:-3,IP:
+	nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,L
+	ES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 0
+X-CID-BAS: 0,_,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-UUID: 68ae149236b511f0b29709d653e92f7d-20250522
+Received: from mail.kylinos.cn [(10.44.16.175)] by mailgw.kylinos.cn
+	(envelope-from <zhangzihuan@kylinos.cn>)
+	(Generic MTA)
+	with ESMTP id 2001903690; Thu, 22 May 2025 10:35:22 +0800
+Received: from mail.kylinos.cn (localhost [127.0.0.1])
+	by mail.kylinos.cn (NSMail) with SMTP id 3AC23E003519;
+	Thu, 22 May 2025 10:17:07 +0800 (CST)
+X-ns-mid: postfix-682E8923-87613444
+Received: from localhost.localdomain (unknown [172.25.120.24])
+	by mail.kylinos.cn (NSMail) with ESMTPA id EAE2BE003519;
+	Thu, 22 May 2025 10:17:05 +0800 (CST)
+From: Zihuan Zhang <zhangzihuan@kylinos.cn>
+To: rafael@kernel.org,
+	len.brown@intel.com,
+	pavel@kernel.org
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org,
+	tzungbi@kernel.org,
+	a.fatoum@pengutronix.de,
+	jani.nikula@intel.com,
+	joel.granados@kernel.org,
+	paulmck@kernel.org,
+	zhangguopeng@kylinos.cn,
+	linux@weissschuh.net,
+	Zihuan Zhang <zhangzihuan@kylinos.cn>
+Subject: [PATCH v2 2/3] PM / Sleep:  Introduce try_lock_system_sleep()
+Date: Thu, 22 May 2025 10:16:48 +0800
+Message-Id: <20250522021649.55228-3-zhangzihuan@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20250522021649.55228-1-zhangzihuan@kylinos.cn>
+References: <20250522021649.55228-1-zhangzihuan@kylinos.cn>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 
-Improve the installation procedure for the systemd service unit
-'cpupower.service', to be more flexible. Some distros install libraries
-to /usr/lib64/, but systemd service units have to be installed to
-/usr/lib/systemd/system: as a consequence, the installation procedure
-should not assume that systemd service units can be installed to
-${libdir}/systemd/system ...
-Define a dedicated variable ("unitdir") in the Makefile.
+The suspend subsystem uses system_transition_mutex to serialize
+suspend and hibernate transitions. The existing lock_system_sleep()
+wrapper both acquires the mutex and sets PF_NOFREEZE on the current
+task to avoid it being frozen during the suspend process.
 
-Link: https://lore.kernel.org/linux-pm/260b6d79-ab61-43b7-a0eb-813e257bc028@leemhuis.info/T/#m0601940ab439d5cbd288819d2af190ce59e810e6
+However, in some places such as enter_state(), mutex_trylock() is
+used instead. This path currently lacks PF_NOFREEZE protection.
 
-Fixes: 9c70b779ad91 ("cpupower: add a systemd service to run cpupower")
+This patch introduces a new wrapper:
 
-Signed-off-by: Francesco Poli (wintermute) <invernomuto@paranoici.org>
+    try_lock_system_sleep()
+
+It sets PF_NOFREEZE and then performs mutex_trylock(), mirroring the
+existing lock_system_sleep() implementation. This improves consistency
+and enables future cleanup of raw trylock calls.
+
+Signed-off-by: Zihuan Zhang <zhangzihuan@kylinos.cn>
 ---
- tools/power/cpupower/Makefile | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ include/linux/suspend.h |  2 ++
+ kernel/power/main.c     | 14 ++++++++++++++
+ 2 files changed, 16 insertions(+)
 
-diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
-index be8dfac14076..c43db1c41205 100644
---- a/tools/power/cpupower/Makefile
-+++ b/tools/power/cpupower/Makefile
-@@ -73,6 +73,7 @@ sbindir ?=	/usr/sbin
- mandir ?=	/usr/man
- libdir ?=	/usr/lib
- libexecdir ?=	/usr/libexec
-+unitdir ?=	/usr/lib/systemd/system
- includedir ?=	/usr/include
- localedir ?=	/usr/share/locale
- docdir ?=       /usr/share/doc/packages/cpupower
-@@ -309,9 +310,9 @@ install-tools: $(OUTPUT)cpupower
- 	$(INSTALL_DATA) cpupower-service.conf '$(DESTDIR)${confdir}'
- 	$(INSTALL) -d $(DESTDIR)${libexecdir}
- 	$(INSTALL_PROGRAM) cpupower.sh '$(DESTDIR)${libexecdir}/cpupower'
--	$(INSTALL) -d $(DESTDIR)${libdir}/systemd/system
--	sed 's|___CDIR___|${confdir}|; s|___LDIR___|${libexecdir}|' cpupower.service.in > '$(DESTDIR)${libdir}/systemd/system/cpupower.service'
--	$(SETPERM_DATA) '$(DESTDIR)${libdir}/systemd/system/cpupower.service'
-+	$(INSTALL) -d $(DESTDIR)${unitdir}
-+	sed 's|___CDIR___|${confdir}|; s|___LDIR___|${libexecdir}|' cpupower.service.in > '$(DESTDIR)${unitdir}/cpupower.service'
-+	$(SETPERM_DATA) '$(DESTDIR)${unitdir}/cpupower.service'
- 
- install-man:
- 	$(INSTALL_DATA) -D man/cpupower.1 $(DESTDIR)${mandir}/man1/cpupower.1
-@@ -348,7 +349,7 @@ uninstall:
- 	- rm -f $(DESTDIR)${bindir}/utils/cpupower
- 	- rm -f $(DESTDIR)${confdir}cpupower-service.conf
- 	- rm -f $(DESTDIR)${libexecdir}/cpupower
--	- rm -f $(DESTDIR)${libdir}/systemd/system/cpupower.service
-+	- rm -f $(DESTDIR)${unitdir}/cpupower.service
- 	- rm -f $(DESTDIR)${mandir}/man1/cpupower.1
- 	- rm -f $(DESTDIR)${mandir}/man1/cpupower-frequency-set.1
- 	- rm -f $(DESTDIR)${mandir}/man1/cpupower-frequency-info.1
-
-base-commit: e5174365c13246ed8fd2d40900edec37be6f7a34
--- 
-2.47.2
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index da6ebca3ff77..6c9e8fe0c446 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -468,6 +468,7 @@ extern void pm_wakep_autosleep_enabled(bool set);
+ extern void pm_print_active_wakeup_sources(void);
+=20
+ extern unsigned int lock_system_sleep(void);
++extern unsigned int try_lock_system_sleep(void);
+ extern void unlock_system_sleep(unsigned int);
+=20
+ #else /* !CONFIG_PM_SLEEP */
+@@ -496,6 +497,7 @@ static inline void pm_wakeup_clear(bool reset) {}
+ static inline void pm_system_irq_wakeup(unsigned int irq_number) {}
+=20
+ static inline unsigned int lock_system_sleep(void) { return 0; }
++static inline unsigned int try_lock_system_sleep(void) { return 0; }
+ static inline void unlock_system_sleep(unsigned int flags) {}
+=20
+ #endif /* !CONFIG_PM_SLEEP */
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 6254814d4817..0d3f94f62664 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -58,6 +58,20 @@ unsigned int lock_system_sleep(void)
+ }
+ EXPORT_SYMBOL_GPL(lock_system_sleep);
+=20
++unsigned int try_lock_system_sleep(void)
++{
++	unsigned int flags =3D current->flags;
++	current->flags |=3D PF_NOFREEZE;
++
++	if (!mutex_trylock(&system_transition_mutex)) {
++		current->flags =3D flags;
++		return 0;
++	}
++
++	return flags;
++}
++EXPORT_SYMBOL_GPL(try_lock_system_sleep);
++
+ void unlock_system_sleep(unsigned int flags)
+ {
+ 	if (!(flags & PF_NOFREEZE))
+--=20
+2.25.1
 
