@@ -1,63 +1,64 @@
-Received: from mail-lf1-f53.google.com (mail-lf1-f53.google.com [209.85.167.53])
+Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1283297A4E
-	for <linux-pm@vger.kernel.org>; Fri, 23 May 2025 13:41:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 186E4294A07
+	for <linux-pm@vger.kernel.org>; Fri, 23 May 2025 13:41:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1748007676; cv=none; b=RcD8a9YtscvbA/fz036W4RKdBArL+7Hs/zLk4wyKYzN2dop+JFfdIHaLVLRTAdsFbwWaUkKkE003zAti3elRiWktchMsvH4NjZMhTQMKrIXbN2ZdjetDcePbSlyaDF113V0EijEDgTiH6P1nwrTOT2cODpVsMOtgnWq4On41BNA=
+	t=1748007680; cv=none; b=lVPkWQ9zB34BhAoI33sle2MViWqp6Whu6dxXOJx66r937Dx9gKonFL2k0X1cGXWx8AHgUYUu7AP7YrYl2iqjuc6nOFt9UJk9GgNcmRWuTbRQd87T8gDnqNH5HHmpujJtZ7cOhYJK4zkkQm1vSBWRc1UFrcGbFCLhnfxcsMhJnCs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1748007676; c=relaxed/simple;
-	bh=cUPVPfOLqbKbGTZ9buOjuzMp47UCVQpzZR5BzbuI17A=;
+	s=arc-20240116; t=1748007680; c=relaxed/simple;
+	bh=NN3Crtgicr2RANdkx4XpcfEgrbjiC/nyTFX0TvsgmcU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=K3dgeoA6jIW8gBpNJy1E0PTnuc9fs2jVfapqE3FTdtONalPXp2hy4OtCGIO/F4724NTuz/gjiQa1UurWz6+bc0EmchWm2oiI2kL/Os/Pri4r0PeqPUEIG01mjBGqDI3jG2AVoP7b637s6voeWfPW+ihQCacmIpDgjXE4PmWOZCY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=rQH4OHk2; arc=none smtp.client-ip=209.85.167.53
+	 MIME-Version; b=Hq+mdkZwUjF6JPYeQm11ylIjl6ONh3VP02ncAQ4b0Uvprx4/GRaCKlZfF8rmEYlPQ2b15v8xiLXIrbC+2gxGnjFVjkgFCOdPYvgE5NuKyizb0zVqaAUe/1fHWBICvqV0x/y5iKhyNS7yBBaNJJdUAYHSrQ7LAy9cIKin+T5Q2s4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=QmOOZ6Hs; arc=none smtp.client-ip=209.85.128.53
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="rQH4OHk2"
-Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-551fe46934eso1063442e87.1
-        for <linux-pm@vger.kernel.org>; Fri, 23 May 2025 06:41:14 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="QmOOZ6Hs"
+Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-43cfe63c592so105666625e9.2
+        for <linux-pm@vger.kernel.org>; Fri, 23 May 2025 06:41:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1748007673; x=1748612473; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1748007677; x=1748612477; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=HGyEwCJhPN1ZKDIimFxnLW+xEyMfXf8H84gi9aCiP1o=;
-        b=rQH4OHk27026Huv+aUSNiCciMgwT+9NnCTPgwT2sr/OmHh5/Ly3bGay9CeMIOyRnvi
-         zajmFV19CXTV1qVVg/gY69fAjeJMtdsMwHSovJrm4L8P+kyJAIZ5Qvru2A4e6VdcZWi4
-         C1CJN5lk14bLW2cdRsWshYVEkSiGFje/+dxz3qyBIrOWc1pQixhSnMVcwmYB2bNGBA3h
-         49Mqon4rlfzL7hml/Gwbkx3OFgktBwDjZFTYUJD9co4M9lUnXxU/OIrQ6NLrMnI4kLa6
-         i6/m4Zt1yNNdRstCv4h5l0a6s+URja6+KCEyjUVdOZJMJ/84kwdXFxTpw85laeDR+fo2
-         cYMA==
+        bh=71f6dv8Oj3Q5ky21qEIlnyYawuoQhOrGkPFVRB1RoRk=;
+        b=QmOOZ6HsCKyJLrz1mLizI/tgjEbdw5BkTVRL+G8Z/34FC0PYAaU+lvVx9ui/xVMlse
+         4Gz22ERx5TDlx/8kutNUMOTdE+95JEkncjaQCzzcwqRcUIgXaSE+cKflFJKeCiQ7f4X8
+         LBFBG9w9gRsnM61XVCOt+4CHca8Zwwp2ossjh7gd5dIeuaH4pJZPeN0li0yVmKCjQnfL
+         vsroWu0lbOAzFELcxdqUzVBGKDnOUDJYV562A8AFIUA2jDgGWm1smi5FRhXi1heVk5PR
+         eOJgG9EO1+dLY2tiiIr+kQYZByLCQfSSVXOUxM/bsFrHyLP/tvTkIqK8iKED9z/L6Nen
+         ZS+A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1748007673; x=1748612473;
+        d=1e100.net; s=20230601; t=1748007677; x=1748612477;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=HGyEwCJhPN1ZKDIimFxnLW+xEyMfXf8H84gi9aCiP1o=;
-        b=mztdXNHoMnTqVSfFgh1uZ1iltrl8JJzEO9CdfH1o0U5WNmNKNfQZsUshiHdm38GJdT
-         8xvZZgRPAvQDrrJ1YJJkwQh6LBTBiksEAf/fMzNdHSb9OPkdAMowsberkE1ZZaMehJRK
-         Qp1+o5WG19iBTxSGt2buXhrkfzcSEXs1MFHGPS7XKrHtytjeybkHa7hE4dkQLdymvJxJ
-         V+RXaB4menoDO0j0kPlBZfanWd+9ak4Et3doeYFKr5IWiN/+FGFbqbAhxiaWeLelKAnV
-         mFOpTCFIG7VmVfyE0CYZ+LLO7Qs3Rd6BLF5iR+2pQzLQ0ec1TX7CM+ilfgcRufXNPHq3
-         +Z4Q==
-X-Forwarded-Encrypted: i=1; AJvYcCUy8qmsPcKpscx2ENrjVmMeVDyOZhxykRwoSS7dqsvT6Rh32N4BWGUKSNz/N53U6uhS0EjJoGbRuA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxg0RRQlqnJmv0rygGE7bmDjSbb9e/1NLF1IhIt4t9CrJR6RvvT
-	l7cU7mYYdydHFTdoHkUjMiKs8uBsglBf2oWUyGXpB87N14UL+86pwaQDcqL7tC5dVNo=
-X-Gm-Gg: ASbGnctiKhXjl+OJWJaofQBHiVikeltGhaLfxieUquZl+VMN3VjvAHR9jRRzY2QUOJo
-	Eg7udzBkCe3iriT+VmPcl5wl9ENzAbwnwwHQE5ycWfw8BzdkVPFPmnFgruO2wIuIUw2viPjQ2zO
-	CUICIq/vnOYhkkiaScMtsItsJdbHX/7F94prXStmz7syQhzT68/sVDAwps+wLY/yvVq31ucI2ff
-	jrjmO0PsGY+5YrCNmxykhfwkCubeves5F1TqqKaqzFP2EJ2fx2TdIIDIFhUuFTaJx2U8QXSKvDm
-	409X2zg3NWjTfwSmG9FQLzecQSIxrpeQc7h2PSrCjRbLQS2dBiG3xuzVV83u3PkcXBWD5MTtDJ6
-	yATwOjfCKMP5mF+MFSumE3FmPBA==
-X-Google-Smtp-Source: AGHT+IGPyCQFUdzHIALfteU0vTerPpV7oILLzxQIlLInZMqH94Tb+MaxZdvt9CEg2iCH7sWV6l9Bng==
-X-Received: by 2002:a05:6512:3ba7:b0:54f:c1cc:1241 with SMTP id 2adb3069b0e04-552156cc6a3mr1224907e87.25.1748007672736;
-        Fri, 23 May 2025 06:41:12 -0700 (PDT)
+        bh=71f6dv8Oj3Q5ky21qEIlnyYawuoQhOrGkPFVRB1RoRk=;
+        b=mq5PDvuO5JrytTHqm7OKU0QftGb8C4ZQ0Ssz+F00hk04yTI1rZsjixf42ER8iSEz6G
+         j5xi58wOO3XWp8wHog6eqOvBTmwwPVhMmxwQZ6QEUig0txa84rYZAzZfEgojhntpmyaY
+         umH/7EcEHijlyq6RHIgZo7zM5oBv7x0ISFAwsfTkHo0+uR70WaRn/7IbXZOLGJrLNeYF
+         /aiLM0NE4yW/jxHYKvBXNrjHai3lT6fr/JPRbsEcZi+owa1DRedCW1tank9MD4RKAmyD
+         7SYjREnDgnHpHcyEV9kmWobrDAUA4Z9XoYhzWFSxpOVYGopFSkgR0lW075iQ2WrYKBoN
+         0Y5A==
+X-Forwarded-Encrypted: i=1; AJvYcCWgEkO1kZJ4GJ/osHF56gyn3VUTwwaCKk5kclI5BTKBRzDL1ZhWubWXstCbJYcD/Qy5UfTqIUYiHQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzqE73TQpnjA5kMzlGZZ0f9G481vd0UCS8xijoFek6/74Z8MPTi
+	NWvPwoghmM0qv7f4jzz7DOTLWyltLsTw2dgJ0Gibi4CmzzXFIRepkiQz61Y58UAdog6ACqI9smH
+	GvZvnaBk=
+X-Gm-Gg: ASbGncu8Jahpu5gj3HUn/RG9yZZp5Ja/lOHMWhv21aGgfqLTGP18cL3bmKMNWo3oBTq
+	YTWD6tSn/9qctSOnMA7sASRtZ+sTm8sHvNZxI0Kh2CtOCPzu9WbEGdaYXa4dwvUAh3v053DOk/i
+	p/fiZ15ROQG+kC3RioUqzJLgqK9f9YSEiUE0Ym/OLN7e5Sx82yAmgiaGiG5szSQgJfGGBfPihZj
+	UrfAW2T2RUy+edAsLWl75GSEhXL5t/IqObFCYZ3vODlVRS4+AR/Cfi+NsdBSa2QzYEk8mXXq4yy
+	quV7piENxNtZn/PEp4XL2PFA0W0YVAvfD8ZOTSR42IaAW1c/dRa3RSKaZY7EJuaU8tYugmSxsen
+	7EhSl41fRv6vA+TVBKsRPpJywLw==
+X-Google-Smtp-Source: AGHT+IGFndHOIFZSsgQfYdZw+/8HGCKSecirkmKfEr0kpQ5LrWHxETwwaD5/Fwd9r/MLkzRBHLqG+Q==
+X-Received: by 2002:a05:6512:b9d:b0:54a:d68f:6ecc with SMTP id 2adb3069b0e04-55216df94b9mr843157e87.2.1748007667241;
+        Fri, 23 May 2025 06:41:07 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-178-174-189-39.A498.priv.bahnhof.se. [178.174.189.39])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-551fc0d473bsm1950609e87.244.2025.05.23.06.41.11
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-551fc0d473bsm1950609e87.244.2025.05.23.06.41.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 23 May 2025 06:41:12 -0700 (PDT)
+        Fri, 23 May 2025 06:41:06 -0700 (PDT)
 From: Ulf Hansson <ulf.hansson@linaro.org>
 To: Saravana Kannan <saravanak@google.com>,
 	Stephen Boyd <sboyd@kernel.org>,
@@ -77,12 +78,10 @@ Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Jonathan Hunter <jonathanh@nvidia.com>,
 	Ulf Hansson <ulf.hansson@linaro.org>,
 	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Anup Patel <anup@brainfault.org>,
-	linux-riscv@lists.infradead.org
-Subject: [PATCH v2 21/21] cpuidle: riscv-sbi: Drop redundant sync_state support
-Date: Fri, 23 May 2025 15:40:18 +0200
-Message-ID: <20250523134025.75130-22-ulf.hansson@linaro.org>
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2 17/21] pmdomain: core: Default to use of_genpd_sync_state() for genpd providers
+Date: Fri, 23 May 2025 15:40:14 +0200
+Message-ID: <20250523134025.75130-18-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250523134025.75130-1-ulf.hansson@linaro.org>
 References: <20250523134025.75130-1-ulf.hansson@linaro.org>
@@ -94,81 +93,55 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The recent updates to the genpd core, can entirely manage the sync_state
-support for the cpuidle-riscv-sbi-domain. More precisely, genpd prevents
-our ->power_off() callback from being invoked, until all of our consumers
-are ready for it.
+Unless the typical platform driver that act as genpd provider, has its own
+->sync_state() callback implemented let's default to use
+of_genpd_sync_state().
 
-Let's therefore drop the sync_state support for the
-cpuidle-riscv-sbi-domain as it has become redundant.
+More precisely, while adding a genpd OF provider let's assign the
+->sync_state() callback, in case the fwnode has a device and its driver
+doesn't have the ->sync_state() set already. In this way the typical
+platform driver doesn't need to assign ->sync_state(), unless it has some
+additional things to manage beyond genpds.
 
-Cc: Anup Patel <anup@brainfault.org>
-Cc: linux-riscv@lists.infradead.org
+Suggested-by: Saravana Kannan <saravanak@google.com>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/cpuidle/cpuidle-riscv-sbi.c | 22 +---------------------
- 1 file changed, 1 insertion(+), 21 deletions(-)
+ drivers/pmdomain/core.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/cpuidle/cpuidle-riscv-sbi.c b/drivers/cpuidle/cpuidle-riscv-sbi.c
-index 83d58d00872f..a360bc4d20b7 100644
---- a/drivers/cpuidle/cpuidle-riscv-sbi.c
-+++ b/drivers/cpuidle/cpuidle-riscv-sbi.c
-@@ -44,7 +44,6 @@ static DEFINE_PER_CPU_READ_MOSTLY(struct sbi_cpuidle_data, sbi_cpuidle_data);
- static DEFINE_PER_CPU(struct sbi_domain_state, domain_state);
- static bool sbi_cpuidle_use_osi;
- static bool sbi_cpuidle_use_cpuhp;
--static bool sbi_cpuidle_pd_allow_domain_state;
- 
- static inline void sbi_set_domain_state(u32 state)
- {
-@@ -345,20 +344,6 @@ static int sbi_cpuidle_init_cpu(struct device *dev, int cpu)
+diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+index c094ccbba151..b39d06d3ad26 100644
+--- a/drivers/pmdomain/core.c
++++ b/drivers/pmdomain/core.c
+@@ -2621,6 +2621,11 @@ static bool genpd_present(const struct generic_pm_domain *genpd)
  	return ret;
  }
  
--static void sbi_cpuidle_domain_sync_state(struct device *dev)
--{
--	struct sbi_pd_provider *pd_provider;
--
--	/*
--	 * All devices have now been attached/probed to the PM domain
--	 * topology, hence it's fine to allow domain states to be picked.
--	 */
--	sbi_cpuidle_pd_allow_domain_state = true;
--
--	list_for_each_entry(pd_provider, &sbi_pd_providers, link)
--		of_genpd_sync_state(pd_provider->node);
--}
--
- #ifdef CONFIG_DT_IDLE_GENPD
++static void genpd_sync_state(struct device *dev)
++{
++	return of_genpd_sync_state(dev->of_node);
++}
++
+ /**
+  * of_genpd_add_provider_simple() - Register a simple PM domain provider
+  * @np: Device node pointer associated with the PM domain provider.
+@@ -2646,6 +2651,8 @@ int of_genpd_add_provider_simple(struct device_node *np,
+ 	if (!dev && !genpd_is_no_sync_state(genpd)) {
+ 		genpd->sync_state = GENPD_SYNC_STATE_SIMPLE;
+ 		device_set_node(&genpd->dev, fwnode);
++	} else {
++		dev_set_drv_sync_state(dev, genpd_sync_state);
+ 	}
  
- static int sbi_cpuidle_pd_power_off(struct generic_pm_domain *pd)
-@@ -369,9 +354,6 @@ static int sbi_cpuidle_pd_power_off(struct generic_pm_domain *pd)
- 	if (!state->data)
- 		return 0;
+ 	put_device(dev);
+@@ -2715,6 +2722,8 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+ 	dev = get_dev_from_fwnode(fwnode);
+ 	if (!dev)
+ 		sync_state = true;
++	else
++		dev_set_drv_sync_state(dev, genpd_sync_state);
  
--	if (!sbi_cpuidle_pd_allow_domain_state)
--		return -EBUSY;
--
- 	/* OSI mode is enabled, set the corresponding domain state. */
- 	pd_state = state->data;
- 	sbi_set_domain_state(*pd_state);
-@@ -401,8 +383,7 @@ static int sbi_pd_init(struct device_node *np)
- 	if (!pd_provider)
- 		goto free_pd;
- 
--	pd->flags |= GENPD_FLAG_IRQ_SAFE | GENPD_FLAG_CPU_DOMAIN |
--		     GENPD_FLAG_NO_SYNC_STATE;
-+	pd->flags |= GENPD_FLAG_IRQ_SAFE | GENPD_FLAG_CPU_DOMAIN;
- 
- 	/* Allow power off when OSI is available. */
- 	if (sbi_cpuidle_use_osi)
-@@ -570,7 +551,6 @@ static struct platform_driver sbi_cpuidle_driver = {
- 	.probe = sbi_cpuidle_probe,
- 	.driver = {
- 		.name = "sbi-cpuidle",
--		.sync_state = sbi_cpuidle_domain_sync_state,
- 	},
- };
+ 	put_device(dev);
  
 -- 
 2.43.0
