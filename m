@@ -1,63 +1,63 @@
-Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
+Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F003E214814;
-	Tue, 27 May 2025 21:53:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 87D2F1F7580;
+	Tue, 27 May 2025 21:53:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1748382794; cv=none; b=VaXCejLjrfbqAVaRn/AxPKXG2vQYCp1u9WqIYTEgWvnf9OP5O/kUNtVte49TkgCALJa1GfZzuGMuDiJcZ08VmoEqFNCDtkZoK8IVW6GnxKraueEAEd+CIFc3PgPyfYN1a1r+owJ43SLvuDbSy6mMMokVlOF1LLyGsKcoGmHzHck=
+	t=1748382795; cv=none; b=P3uioyR7dWc9DTOKXWRdJf9PqQ/C3kwhBH/DcoxgAgKI3DoO+JLDobIytyBVdIe2FydxSy4sabyymktMLBTV7lFlhDwSS+In/tlwCHEDubh2RkH4CvKaJUP7tRR7s9hb0p5oEmD3GW10wFTfirmToScy0MXtXFekF9CY/F5e4c0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1748382794; c=relaxed/simple;
-	bh=NFoge0TAAOxil832I375a1uGhWyZY9zmeg3YifnMATo=;
+	s=arc-20240116; t=1748382795; c=relaxed/simple;
+	bh=ekBKR7Lv9oRac0ZLGP9CYgwGxje7bKMozV4NKyoCQ8Q=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=NUbVuMXu4+ncPuYuUOzRfeIbp+y6SCej9UzourKpwUsMWaMY/clfetUJe5lZJMUtDqRh/SvNY+Gk2cLOeNchjVM9vQpu9wR4dh9tZ24hfarGPAGoFzVeYUU5Buvl2jTulgwRV9cTPbVX7DeldBtwqc4lE+cHSpIiuiV22nCVVrE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Qip/s355; arc=none smtp.client-ip=209.85.128.52
+	 MIME-Version; b=tMHGgPAV2OZxOOZVWOvhPKPiJJNp2Qhvi95iS1I667HirX0m1gEmA3/ivKnpu8VtTbQMbWWg40Q2MbdvfG2II4dFUlyU37YB0BjNpsuhlTQnVIaEgrBMvD00UBQEVnHjmSgdS45BGLApd9FCEQbd2nBjPlCAIvLFllw8C83IBp0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gQhPU/Rb; arc=none smtp.client-ip=209.85.221.48
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Qip/s355"
-Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-43d0618746bso31650795e9.2;
-        Tue, 27 May 2025 14:53:10 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gQhPU/Rb"
+Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-3a4dc0f164fso2160992f8f.3;
+        Tue, 27 May 2025 14:53:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1748382789; x=1748987589; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1748382792; x=1748987592; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=3KjsrRqkqh+4w7zYTnKXGm12Hu5UeqaTDd57FU942h0=;
-        b=Qip/s355T8YW4P6VV5SW9B1+loTY1o3JvA8jh/039Wd719Eb1xWvITAt+AkNZXDxEd
-         rEp8Ht85Y8O/stl5jKy8tvq1P5QA+0HOqDiVYlP1joAUP+921OJD3LuJU507rIDc90SE
-         BHjM7AlDMkw34ansiyq7Q7LGLGxiWsdsaffgbm2eCJc5f33N4eSA+ZM5StfKE7t5YkQA
-         elWZyxykY6wGM4YWe7OKJQTe4ca8fq+ZnJPwNnY3w7cUKYcXhG+J9uNEiK7uuPK1rLaP
-         PsJsd+f6yOx2h2B5qm/28ajiphaozu1P1UfeMBL0DTPivALGibT+Y6YHib94NhTQLCxe
-         BSkQ==
+        bh=ZQ8QlcBdWd0Fx5MdvLJdxsCqqhtJN4mycD+l4My2cUw=;
+        b=gQhPU/RbqH1TmrTgwdZx5PcEoobNFjVtv9vROUoZSiGkUEUGJs7TvdfGWsn1FA1ArT
+         m5D0wJJMLc7rmW2bvK1HalP5bpwWzw1Zag+ljMZx9Q8FBHN3jgDEtAitTKWbZdZpgIF3
+         4r+420xq/xLz1pXL+r3qczB+WEmJM305MNNmfP9uH0KgyDFufQOeIFkW9IpeEEW62R+Z
+         UIW7B4wte2Fqz0Eo9UV0KhwFzJRjtSLlgWaUj2fCMiLA1nyCLALG7IoyvtQRVHHEAiZY
+         uktWAC2kdmghPK8qPPDBjTWDIJB9Z42zCAiMH/eaPylL7SzWXVxjy3oWc6maSh2IysSr
+         qm1Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1748382789; x=1748987589;
+        d=1e100.net; s=20230601; t=1748382792; x=1748987592;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=3KjsrRqkqh+4w7zYTnKXGm12Hu5UeqaTDd57FU942h0=;
-        b=gU6nsgnSF8JtnOdM4fd5CNV6oTVh7NuDqUVWYmSciFL7EkxSyHIsmazly+a23LXDTC
-         DCbWF7TZE2cw3nCjuI1Ea+NnKJvkHxz/Hfva3hyRcYVBiwNSfuPPIkBYacbNI5CJVgYk
-         xCuii2M/K5N3qFjGGk5vdsi35aWiOPtCKiaWLJpwkZJ74ANOMKRiFFACjPRlYA6hlMNw
-         yeyis9JOMcS/w1ZHyYEFVLu0MNDLEgkh5OTWzJcrAB8RgHw++EvfF4Z2TNqBvm9GLsyh
-         IcogkU/RkEsRu2/1cR4Ao3eIeBNgmetwIJF/xfa8OJ9JjOQDha3wtvWNamGMwte/J7rj
-         V6WA==
-X-Forwarded-Encrypted: i=1; AJvYcCUXIMfJoP7xoWzhu4lbZUY1U5AhDP+3DJn5uDVLanfpvPYdvgiNUa3wSVnqU3f/HMXeBdtiHBLymZw8lyut@vger.kernel.org, AJvYcCVITq/KjwFC6AiekVsAqu9HJ5UvlSUNx5Dso5M1BTjAhfaz9N/XwQQo1TjFMNIYu1nia88V+VsOmOo=@vger.kernel.org, AJvYcCVYhecKOM7afFKJyCpaNl6PG77cz9Y3wxswJcgJ4kNEZerUJIlnYsfcP/JJZ/E9ckd1JpczSb5DCidE@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy/v/dLNXzV7Sb7uwrsDJGU02SyGIgppJMKGW5hbmGqvs6JvPLh
-	DppwZN+2gc6tYQMlZYDyzS2FcDAAewInvdM6LAl20l1l8R2WFLa7mPvD
-X-Gm-Gg: ASbGncs0CkNVvc90YN7plGQrVl17/x22OOwSueeiUrwEOo7zyJK/1WYV/8MWUcpLYOW
-	Gt3H3cBteP2RO9iI2AIvBGHbUTRNYR5vA7wEC1zOs0BViGu8QJ6gWGqXeEBcaijpJt4EedDV5Ec
-	RR+kJHGXhoO6+Emo8IpRhGpWkaQWQAmtXzpznD4YaOA4bXbhoNF6JB0fwShYEjXJmOaD0ZQNa9C
-	YFsF/z6a82CVM+gFZxaRKfB7Gib09JU5iTjtmJPgmFmBQqLLGH8eZN1xVogwp2qwhEqR7cMWQiq
-	0XHvTgUvXoMn1tw5bJReqzIxX6zSWTU35AUvcX+hI1Mg3Ie4G+BUFpEynObY7AXBLug1U+6zPYv
-	qv80XfsPihN3GRzfSMT7AuO8jpzSCYF8=
-X-Google-Smtp-Source: AGHT+IH9rVnmfkUcHSNbUn8fV7xapZ6bFvwLY0rRLSokxz8DMe3pEERywRLtY4xhJGcv6ctBs7lJug==
-X-Received: by 2002:a05:600c:5395:b0:43d:9d5:474d with SMTP id 5b1f17b1804b1-44c90a7d192mr136136705e9.0.1748382789005;
-        Tue, 27 May 2025 14:53:09 -0700 (PDT)
+        bh=ZQ8QlcBdWd0Fx5MdvLJdxsCqqhtJN4mycD+l4My2cUw=;
+        b=EHGGHnagzJuEAyrHu779bMkmtGXGMg/reHE4y7ELOCHCBOYUkb8HJzTHdMUp5RI8XC
+         Lircl6v9JZQ3SzQ9I+1YECFkAuAvhvMy/wZyZ3meF9YlZsNpivp4/zb9/2PbcEViJddW
+         HmUpdpy/aVsvu4/vvtL6YXhI/iW5StxICLzn9FxeAx7ljnRrYRyElWppHgPrvPWUdp8Q
+         3Sqp6Nf+hMfMyCeOwibCKjtjx8rRAEv2SVubKedpjEUvQdAjG5/ledhERkGXeTVeyACg
+         lOBf6qhsFkojQJBoUpzO0ugothstKB356668GtBMOqekkRsUMOUmynfX3jq6dIBkW8xB
+         YN2A==
+X-Forwarded-Encrypted: i=1; AJvYcCVrBMkLIv6pgoya0oe2xcwkIjtn41vOAcbdUS5xPpjUYBQ8SaN5WGurbp+HM11cxC3eRjKZZk6fjYckzYQ+@vger.kernel.org, AJvYcCVrEinrK956BnYdIO4nCTndIPfyEnJYc1VC7RvJXX9C8p+3U1GNQbS8mGB7MG9pMKR34Ahf47GpAuIC@vger.kernel.org, AJvYcCXvz6yFut5mY3OVpABACGMe+IRDtBqgfeQnpkCnu8gyV7AdXsAt59K7UyXsELS7kv9ocCYqcCbS9cs=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy6cCZWP2joWxUHtBJgqy9760jke759bLTjVxV31vjtmCQo7u8f
+	zR1fV9FXIqADrhiOedOij+Au4ra38uWxtPrnotANOgAOZmhUzU+IpfnA
+X-Gm-Gg: ASbGnct2qIVn/gQe1wuZuf07JCetdz8ppo/6Qko4gOq2VOJeS+6Zbdr5LD/eO+Sn3Dz
+	1OfDmsagUDEahnyf0kQwqZWL1tXZSh6Ae4T68uNfLXizL5VgqIZrhl/5cDssTIUXBM75A0m7JHc
+	iBHPIfZTjCplaANdiAqfaUe7YbtbTCsR3K19wC9GPNdsQdfe+BJyU1ESVRCSAe6e/vmQtyIopDb
+	M7cgFrDtvvNFyxbPtgytrqn0jzvxZ6sRJiQKQ7COcy4o28zKkR294X3/xh+kwBZRO+FPS8djaJX
+	j1nFeT3RriJEclS82QSWbaRIBEZ6n9i/EG1RQnMchmDSafMh/eAO+2jqITUSJHH9YK4H/M1wth5
+	fAlM3pExdsEXLEt7Poes4GjKX91bKsRQ=
+X-Google-Smtp-Source: AGHT+IHwdlIjl4XdhfQz3skBsBAaA2A6LDfME6WNoDpTGosbqtfqEag4vHLNAhvHpnxTCUxQLVnrPA==
+X-Received: by 2002:a05:6000:2dc7:b0:3a4:e6e6:a026 with SMTP id ffacd0b85a97d-3a4e6e6a0dbmr1016333f8f.28.1748382791535;
+        Tue, 27 May 2025 14:53:11 -0700 (PDT)
 Received: from localhost.localdomain (93-34-88-225.ip49.fastwebnet.it. [93.34.88.225])
-        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-3a4e8b8dcdasm206656f8f.11.2025.05.27.14.53.07
+        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-3a4e8b8dcdasm206656f8f.11.2025.05.27.14.53.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 May 2025 14:53:08 -0700 (PDT)
+        Tue, 27 May 2025 14:53:11 -0700 (PDT)
 From: Christian Marangi <ansuelsmth@gmail.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@linaro.org>,
@@ -70,9 +70,9 @@ To: "Rafael J. Wysocki" <rafael@kernel.org>,
 	linux-pm@vger.kernel.org,
 	devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/5] thermal: airoha: Convert to regmap API
-Date: Tue, 27 May 2025 23:52:35 +0200
-Message-ID: <20250527215241.25767-2-ansuelsmth@gmail.com>
+Subject: [PATCH v2 3/5] thermal/drivers: airoha: Generalize get_thermal_ADC and set_mux function
+Date: Tue, 27 May 2025 23:52:37 +0200
+Message-ID: <20250527215241.25767-4-ansuelsmth@gmail.com>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250527215241.25767-1-ansuelsmth@gmail.com>
 References: <20250527215241.25767-1-ansuelsmth@gmail.com>
@@ -82,200 +82,133 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-In preparation for support of Airoha AN7583, convert the driver to
-regmap API. This is needed as Airoha AN7583 will be based on syscon
-regmap.
+In preparation for support of Airoha AN7583, generalize
+get_thermal_ADC() and set_thermal_mux() with the use of reg_field API.
+
+This is to account the same logic between the current supported SoC and
+the new one but with different register address.
+
+While at it also further improve some comments and move sleep inside the
+set_thermal_mux function.
 
 Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
 ---
- drivers/thermal/airoha_thermal.c | 72 +++++++++++++++++++-------------
- 1 file changed, 42 insertions(+), 30 deletions(-)
+ drivers/thermal/airoha_thermal.c | 54 +++++++++++++++++++++++++-------
+ 1 file changed, 42 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/thermal/airoha_thermal.c b/drivers/thermal/airoha_thermal.c
-index 9a7a702a17de..04bda890dbb1 100644
+index 9bfa59b97032..4c973cce106a 100644
 --- a/drivers/thermal/airoha_thermal.c
 +++ b/drivers/thermal/airoha_thermal.c
-@@ -194,7 +194,7 @@
+@@ -193,9 +193,18 @@
+ 
  #define AIROHA_MAX_SAMPLES			6
  
- struct airoha_thermal_priv {
--	void __iomem *base;
-+	struct regmap *map;
- 	struct regmap *chip_scu;
- 	struct resource scu_adc_res;
- 
-@@ -265,8 +265,8 @@ static int airoha_thermal_set_trips(struct thermal_zone_device *tz, int low,
- 			       RAW_TO_TEMP(priv, FIELD_MAX(EN7581_DOUT_TADC_MASK)));
- 
- 		/* We offset the high temp of 1°C to trigger correct event */
--		writel(TEMP_TO_RAW(priv, high) >> 4,
--		       priv->base + EN7581_TEMPOFFSETH);
-+		regmap_write(priv->map, EN7581_TEMPOFFSETH,
-+			     TEMP_TO_RAW(priv, high) >> 4);
- 
- 		enable_monitor = true;
- 	}
-@@ -277,15 +277,15 @@ static int airoha_thermal_set_trips(struct thermal_zone_device *tz, int low,
- 			      RAW_TO_TEMP(priv, FIELD_MAX(EN7581_DOUT_TADC_MASK)));
- 
- 		/* We offset the low temp of 1°C to trigger correct event */
--		writel(TEMP_TO_RAW(priv, low) >> 4,
--		       priv->base + EN7581_TEMPOFFSETL);
-+		regmap_write(priv->map, EN7581_TEMPOFFSETL,
-+			     TEMP_TO_RAW(priv, high) >> 4);
- 
- 		enable_monitor = true;
- 	}
- 
- 	/* Enable sensor 0 monitor after trip are set */
- 	if (enable_monitor)
--		writel(EN7581_SENSE0_EN, priv->base + EN7581_TEMPMONCTL0);
-+		regmap_write(priv->map, EN7581_TEMPMONCTL0, EN7581_SENSE0_EN);
- 
- 	return 0;
- }
-@@ -302,7 +302,7 @@ static irqreturn_t airoha_thermal_irq(int irq, void *data)
- 	bool update = false;
- 	u32 status;
- 
--	status = readl(priv->base + EN7581_TEMPMONINTSTS);
-+	regmap_read(priv->map, EN7581_TEMPMONINTSTS, &status);
- 	switch (status & (EN7581_HOFSINTSTS0 | EN7581_LOFSINTSTS0)) {
- 	case EN7581_HOFSINTSTS0:
- 		event = THERMAL_TRIP_VIOLATED;
-@@ -318,7 +318,7 @@ static irqreturn_t airoha_thermal_irq(int irq, void *data)
- 	}
- 
- 	/* Reset Interrupt */
--	writel(status, priv->base + EN7581_TEMPMONINTSTS);
-+	regmap_write(priv->map, EN7581_TEMPMONINTSTS, status);
- 
- 	if (update)
- 		thermal_zone_device_update(priv->tz, event);
-@@ -336,11 +336,11 @@ static void airoha_thermal_setup_adc_val(struct device *dev,
- 	/* sleep 10 ms for ADC to enable */
- 	usleep_range(10 * USEC_PER_MSEC, 11 * USEC_PER_MSEC);
- 
--	efuse_calib_info = readl(priv->base + EN7581_EFUSE_TEMP_OFFSET_REG);
-+	regmap_read(priv->map, EN7581_EFUSE_TEMP_OFFSET_REG, &efuse_calib_info);
- 	if (efuse_calib_info) {
- 		priv->default_offset = FIELD_GET(EN7581_EFUSE_TEMP_OFFSET, efuse_calib_info);
- 		/* Different slope are applied if the sensor is used for CPU or for package */
--		cpu_sensor = readl(priv->base + EN7581_EFUSE_TEMP_CPU_SENSOR_REG);
-+		regmap_read(priv->map, EN7581_EFUSE_TEMP_CPU_SENSOR_REG, &cpu_sensor);
- 		if (cpu_sensor) {
- 			priv->default_slope = EN7581_SLOPE_X100_DIO_DEFAULT;
- 			priv->init_temp = EN7581_INIT_TEMP_FTK_X10;
-@@ -359,8 +359,8 @@ static void airoha_thermal_setup_adc_val(struct device *dev,
- static void airoha_thermal_setup_monitor(struct airoha_thermal_priv *priv)
- {
- 	/* Set measure mode */
--	writel(FIELD_PREP(EN7581_MSRCTL0, EN7581_MSRCTL_6SAMPLE_MAX_MIX_AVG4),
--	       priv->base + EN7581_TEMPMSRCTL0);
-+	regmap_write(priv->map, EN7581_TEMPMSRCTL0,
-+		     FIELD_PREP(EN7581_MSRCTL0, EN7581_MSRCTL_6SAMPLE_MAX_MIX_AVG4));
- 
- 	/*
- 	 * Configure ADC valid reading addr
-@@ -375,15 +375,15 @@ static void airoha_thermal_setup_monitor(struct airoha_thermal_priv *priv)
- 	 * We set valid instead of volt as we don't enable valid/volt
- 	 * split reading and AHB read valid addr in such case.
- 	 */
--	writel(priv->scu_adc_res.start + EN7581_DOUT_TADC,
--	       priv->base + EN7581_TEMPADCVALIDADDR);
-+	regmap_write(priv->map, EN7581_TEMPADCVALIDADDR,
-+		     priv->scu_adc_res.start + EN7581_DOUT_TADC);
- 
- 	/*
- 	 * Configure valid bit on a fake value of bit 16. The ADC outputs
- 	 * max of 2 bytes for voltage.
- 	 */
--	writel(FIELD_PREP(EN7581_ADV_RD_VALID_POS, 16),
--	       priv->base + EN7581_TEMPADCVALIDMASK);
-+	regmap_write(priv->map, EN7581_TEMPADCVALIDMASK,
-+		     FIELD_PREP(EN7581_ADV_RD_VALID_POS, 16));
- 
- 	/*
- 	 * AHB supports max 12 bytes for ADC voltage. Shift the read
-@@ -391,40 +391,52 @@ static void airoha_thermal_setup_monitor(struct airoha_thermal_priv *priv)
- 	 * in the order of half a °C and is acceptable in the context
- 	 * of triggering interrupt in critical condition.
- 	 */
--	writel(FIELD_PREP(EN7581_ADC_VOLTAGE_SHIFT, 4),
--	       priv->base + EN7581_TEMPADCVOLTAGESHIFT);
-+	regmap_write(priv->map, EN7581_TEMPADCVOLTAGESHIFT,
-+		     FIELD_PREP(EN7581_ADC_VOLTAGE_SHIFT, 4));
- 
- 	/* BUS clock is 300MHz counting unit is 3 * 68.64 * 256 = 52.715us */
--	writel(FIELD_PREP(EN7581_PERIOD_UNIT, 3),
--	       priv->base + EN7581_TEMPMONCTL1);
-+	regmap_write(priv->map, EN7581_TEMPMONCTL1,
-+		     FIELD_PREP(EN7581_PERIOD_UNIT, 3));
- 
- 	/*
- 	 * filt interval is 1 * 52.715us = 52.715us,
- 	 * sen interval is 379 * 52.715us = 19.97ms
- 	 */
--	writel(FIELD_PREP(EN7581_FILT_INTERVAL, 1) |
--	       FIELD_PREP(EN7581_FILT_INTERVAL, 379),
--	       priv->base + EN7581_TEMPMONCTL2);
-+	regmap_write(priv->map, EN7581_TEMPMONCTL2,
-+		     FIELD_PREP(EN7581_FILT_INTERVAL, 1) |
-+		     FIELD_PREP(EN7581_FILT_INTERVAL, 379));
- 
- 	/* AHB poll is set to 146 * 68.64 = 10.02us */
--	writel(FIELD_PREP(EN7581_ADC_POLL_INTVL, 146),
--	       priv->base + EN7581_TEMPAHBPOLL);
-+	regmap_write(priv->map, EN7581_TEMPAHBPOLL,
-+		     FIELD_PREP(EN7581_ADC_POLL_INTVL, 146));
- }
- 
-+static const struct regmap_config airoha_thermal_regmap_config = {
-+	.reg_bits		= 32,
-+	.reg_stride		= 4,
-+	.val_bits		= 32,
++enum airoha_thermal_chip_scu_field {
++	AIROHA_THERMAL_DOUT_TADC,
++	AIROHA_THERMAL_MUX_TADC,
++
++	/* keep last */
++	AIROHA_THERMAL_FIELD_MAX,
 +};
 +
- static int airoha_thermal_probe(struct platform_device *pdev)
+ struct airoha_thermal_priv {
+ 	struct regmap *map;
+ 	struct regmap *chip_scu;
++	struct regmap_field *chip_scu_fields[AIROHA_THERMAL_FIELD_MAX];
+ 	struct resource scu_adc_res;
+ 
+ 	u32 pllrg_protect;
+@@ -219,22 +228,29 @@ static int airoha_get_thermal_ADC(struct airoha_thermal_priv *priv)
  {
- 	struct airoha_thermal_priv *priv;
+ 	u32 val;
+ 
+-	regmap_read(priv->chip_scu, EN7581_DOUT_TADC, &val);
+-	return FIELD_GET(EN7581_DOUT_TADC_MASK, val);
++	regmap_field_read(priv->chip_scu_fields[AIROHA_THERMAL_DOUT_TADC],
++			  &val);
++	return val;
+ }
+ 
+-static void airoha_init_thermal_ADC_mode(struct airoha_thermal_priv *priv)
++static void airoha_set_thermal_mux(struct airoha_thermal_priv *priv,
++				   int tdac_idx)
+ {
+-	u32 adc_mux, pllrg;
++	u32 pllrg;
+ 
+ 	/* Save PLLRG current value */
+ 	regmap_read(priv->chip_scu, EN7581_PLLRG_PROTECT, &pllrg);
+ 
+-	/* Give access to thermal regs */
++	/* Give access to Thermal regs */
+ 	regmap_write(priv->chip_scu, EN7581_PLLRG_PROTECT,
+ 		     priv->pllrg_protect);
+-	adc_mux = FIELD_PREP(EN7581_MUX_TADC, EN7581_SCU_THERMAL_MUX_DIODE1);
+-	regmap_write(priv->chip_scu, EN7581_PWD_TADC, adc_mux);
++
++	/* Configure Thermal ADC mux to tdac_idx */
++	regmap_field_write(priv->chip_scu_fields[AIROHA_THERMAL_MUX_TADC],
++			   tdac_idx);
++
++	/* Sleep 10 ms for Thermal ADC to enable */
++	usleep_range(10 * USEC_PER_MSEC, 11 * USEC_PER_MSEC);
+ 
+ 	/* Restore PLLRG value on exit */
+ 	regmap_write(priv->chip_scu, EN7581_PLLRG_PROTECT, pllrg);
+@@ -343,10 +359,8 @@ static void en7581_thermal_setup_adc_val(struct device *dev,
+ {
+ 	u32 efuse_calib_info, cpu_sensor;
+ 
+-	/* Setup thermal sensor to ADC mode and setup the mux to DIODE1 */
+-	airoha_init_thermal_ADC_mode(priv);
+-	/* sleep 10 ms for ADC to enable */
+-	usleep_range(10 * USEC_PER_MSEC, 11 * USEC_PER_MSEC);
++	/* Setup Thermal Sensor to ADC mode and setup the mux to DIODE1 */
++	airoha_set_thermal_mux(priv, EN7581_SCU_THERMAL_MUX_DIODE1);
+ 
+ 	regmap_read(priv->map, EN7581_EFUSE_TEMP_OFFSET_REG, &efuse_calib_info);
+ 	if (efuse_calib_info) {
+@@ -429,13 +443,18 @@ static const struct regmap_config en7581_thermal_regmap_config = {
+ 	.val_bits		= 32,
+ };
+ 
++static const struct reg_field en7581_chip_scu_fields[AIROHA_THERMAL_FIELD_MAX] = {
++	[AIROHA_THERMAL_DOUT_TADC] = REG_FIELD(EN7581_DOUT_TADC, 0, 15),
++	[AIROHA_THERMAL_MUX_TADC] = REG_FIELD(EN7581_PWD_TADC, 1, 3),
++};
++
+ static int en7581_thermal_probe(struct platform_device *pdev,
+ 				struct airoha_thermal_priv *priv)
+ {
  	struct device_node *chip_scu_np;
  	struct device *dev = &pdev->dev;
-+	void __iomem *base;
- 	int irq, ret;
+ 	void __iomem *base;
+-	int irq, ret;
++	int i, irq, ret;
  
- 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
- 		return -ENOMEM;
+ 	base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(base))
+@@ -454,6 +473,17 @@ static int en7581_thermal_probe(struct platform_device *pdev,
+ 	if (IS_ERR(priv->chip_scu))
+ 		return PTR_ERR(priv->chip_scu);
  
--	priv->base = devm_platform_ioremap_resource(pdev, 0);
--	if (IS_ERR(priv->base))
--		return PTR_ERR(priv->base);
-+	base = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(base))
-+		return PTR_ERR(base);
++	for (i = 0; i < AIROHA_THERMAL_FIELD_MAX; i++) {
++		struct regmap_field *field;
 +
-+	priv->map = devm_regmap_init_mmio(dev, base,
-+					  &airoha_thermal_regmap_config);
-+	if (IS_ERR(priv->map))
-+		return PTR_ERR(priv->map);
++		field = devm_regmap_field_alloc(dev, priv->chip_scu,
++						en7581_chip_scu_fields[i]);
++		if (IS_ERR(field))
++			return PTR_ERR(field);
++
++		priv->chip_scu_fields[i] = field;
++	}
++
+ 	of_address_to_resource(chip_scu_np, 0, &priv->scu_adc_res);
+ 	of_node_put(chip_scu_np);
  
- 	chip_scu_np = of_parse_phandle(dev->of_node, "airoha,chip-scu", 0);
- 	if (!chip_scu_np)
-@@ -462,8 +474,8 @@ static int airoha_thermal_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, priv);
- 
- 	/* Enable LOW and HIGH interrupt */
--	writel(EN7581_HOFSINTEN0 | EN7581_LOFSINTEN0,
--	       priv->base + EN7581_TEMPMONINT);
-+	regmap_write(priv->map, EN7581_TEMPMONINT,
-+		     EN7581_HOFSINTEN0 | EN7581_LOFSINTEN0);
- 
- 	return 0;
- }
 -- 
 2.48.1
 
