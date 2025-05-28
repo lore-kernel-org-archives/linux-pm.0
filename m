@@ -1,166 +1,157 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 359D220B81D;
-	Wed, 28 May 2025 13:59:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 422B013AF2;
+	Wed, 28 May 2025 14:25:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1748440791; cv=none; b=RvCx9Sxn0FuxKe4sHf3BbFJEbT/gOOTL+OAVuPO9+t7MFvUdh7SovhX3Z258KrgDEdcVrExf41OXf0LPFVmGJxMSNKpiT8+frtODffUVChUhC8fmnTrxxiBuQkdedTAQL/X1nsWMf2F4vH/2Hyq3pFte2ukZg8PuM6nRFRU7HP4=
+	t=1748442332; cv=none; b=bpg6XFc9kjHRmFVkYg+nSj8Kze/3g3Oq78y7Jf4NZJ6rswpt+CJhDoBs4i8jl8ZtCTK6Gi2JqaNc6BXaPTMZoSihKG4uLx8L6/qSUef6RqrUWz3360Qm/2J6YZwhAb3s1IvRYh1lep0UOfP3dG4W1Od9Dr/bpCDE/FDvfshfP78=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1748440791; c=relaxed/simple;
-	bh=GidpZsTdS1mvFVZhMXx5AjlxUimuu/0oP04bsW6NDt0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=mhJNEsdq6cpUXXqLdqx/J/+WTaMh6l/k3dWRyB6O7dk/CCAKY0hx0THVKFaYBOoEihRtlN+ajYAtG+M3HSR3036ISOQU1DcMRVL4xGPYfxoBTwUfuHA5kVyW8XTjZHNfsxNvz7zeTXKUI+BQzKzAdG4uds6oYFd4RHUk2jOSjKI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=qYmj06y/; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1748442332; c=relaxed/simple;
+	bh=IGnOjm9mSj79ffcLMCdQ5dCfH2Vp1XxSc1dFI2W3IWU=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ifMkcnpaD/q3RrpjMlcQ8ZF8VjpCm7hePPpPRyed1m1BGkakFXFtpYXytBqeXPJyI0oJOurG6Jj86rP6PtLyCqIxQVEoXoSxHU65n/92CmKzpj5yPMBCFSQBbgFx3wpOOGCZ1wMfBV4I5526qr/USfqTVSOtqZK6Wxg6kiXDLkg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=pFPu6Nv5; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="qYmj06y/"
-Received: from kreacher.localnet (unknown [5.63.189.50])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 9073266808C;
-	Wed, 28 May 2025 14:55:02 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1748436903;
-	bh=GidpZsTdS1mvFVZhMXx5AjlxUimuu/0oP04bsW6NDt0=;
-	h=From:Subject:Date;
-	b=qYmj06y/nV3RBN8Fv+zAmh9NV3LKKLHOdDrbzBcaDhQk9MDi3ifDcpMHQf2gsJgek
-	 va06FTPQm6czxhfAXhJ6WxME+BD34MwmG8DevcNaiMgfRZa/ezDUWxFCwGJTI/HOnj
-	 kf0+6YiXxdlZvGeiiH7CrwKyE/O0xkEIlP1SOEf4MBI2gZjRWPmVxrbyyW9C+c9+bj
-	 aIFguT8ukNOiietqjHyMz026EP+tod/MoqpJ5uk3eC+5LRELvPlu0hkd7xa2HWTRi2
-	 ezbpKTmMfUk13XcC1fy4rc8f6m220KAG2RRJVZKdwDsWgyuTRg/BoxkcyaWLYkEizQ
-	 ntoe97QkZcv0w==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: x86 Maintainers <x86@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
- Len Brown <lenb@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@suse.de>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
- "Gautham R. Shenoy" <gautham.shenoy@amd.com>, Ingo Molnar <mingo@redhat.com>,
- Todd Brandt <todd.e.brandt@linux.intel.com>
-Subject:
- [PATCH v1 1/2] Revert "x86/smp: Eliminate mwait_play_dead_cpuid_hint()"
-Date: Wed, 28 May 2025 14:53:50 +0200
-Message-ID: <7811828.EvYhyI6sBW@rjwysocki.net>
-In-Reply-To: <2006806.PYKUYFuaPT@rjwysocki.net>
-References: <2006806.PYKUYFuaPT@rjwysocki.net>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="pFPu6Nv5"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A4869C4CEF0;
+	Wed, 28 May 2025 14:25:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1748442331;
+	bh=IGnOjm9mSj79ffcLMCdQ5dCfH2Vp1XxSc1dFI2W3IWU=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=pFPu6Nv5KUg54HCB1RFBZehdsUXuEPF41F5OcBAmTuDSqDk71OuYotBlFk6ApoS6/
+	 qDP2JKUFl4ozF0Apnlw7dCeWRz/Z3LGMvFfm7zS6B5UcKQN4btfND+V5Jr9dq+J7aH
+	 YPAAxwr4Y0AbWePJtjRmdxXuibZn4/J/JodkKIzBIaFTMxoGSrgpvnYXvwwSeso581
+	 i515JJQaspU14NCE7XD2vbIdq3b3ZsvgRXjFsXOc4v6Jxct+lDcMyrPzOC7b1p4P5q
+	 Egbl/e5nWToQz9BRJeTjX4pPJnFg/BskCw1WgQgzbFTPJHNixez+UKj/cG5MolZuy3
+	 Tt2fGENUuNbcA==
+Received: by mail-oi1-f177.google.com with SMTP id 5614622812f47-3f9a7cbc8f1so929804b6e.0;
+        Wed, 28 May 2025 07:25:31 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUaioPM6b07S/HU7hCjZ0DkieQ5kqazmwDK1h1VqawMpWHPJPLSz0uHr4tYm/dh4T5QzsmfMOdZwbC3XP8=@vger.kernel.org, AJvYcCXpNHc2/bHC/vnTw4dn/W4o10qBBkzkvNU9HqbPCmh9mRUCMiCJaYAEQ0cx/Syoep75vQWb821TTag=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw63c8tbhT7pfNOdSF4U4zsbv8tiWuEqbedGpJWM+izO8DX2G3o
+	TL0XtsJyeJIHNRsb1uEikIpP395xbBG66mPn7QyHWC242WY2cQW2v3wNG664VNnpzXberGaAV1K
+	wfjXBIu3wLjtB4wk4h90ssUt7Ybc6yBQ=
+X-Google-Smtp-Source: AGHT+IFBffpsH1BwM4rm3RKitOIYehD5JkfJiM7Akv8GtbDS6I+0PNtu7adSWCuQP2UV0B5aF4Hy2BVM7MD0imWH0JM=
+X-Received: by 2002:a05:6808:3307:b0:401:918a:5b81 with SMTP id
+ 5614622812f47-406468464ccmr9420552b6e.25.1748442330895; Wed, 28 May 2025
+ 07:25:30 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <2006806.PYKUYFuaPT@rjwysocki.net> <20250528131759.GA39944@noisy.programming.kicks-ass.net>
+ <CAJZ5v0i=TWMjPKxGa8eT-prV=dtQo=pwys5amcj3QL9qo=EYyQ@mail.gmail.com> <20250528133807.GC39944@noisy.programming.kicks-ass.net>
+In-Reply-To: <20250528133807.GC39944@noisy.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 28 May 2025 16:25:19 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0g2+OVdFM-bUCOynNivUc4doxH=ukt9e9Z_nKpoZh6gPA@mail.gmail.com>
+X-Gm-Features: AX0GCFsL9gL26hQm_JdbGOMd4-i0oGeAZbKK_nVZQB08D27ommvyh01AYcly-4Q
+Message-ID: <CAJZ5v0g2+OVdFM-bUCOynNivUc4doxH=ukt9e9Z_nKpoZh6gPA@mail.gmail.com>
+Subject: Re: [PATCH v1 0/2] x86/smp: Fix power regression introduced by commit 96040f7273e2
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, 
+	x86 Maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, 
+	Linux PM <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, 
+	Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@suse.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, 
+	Artem Bityutskiy <artem.bityutskiy@linux.intel.com>, 
+	"Gautham R. Shenoy" <gautham.shenoy@amd.com>, Ingo Molnar <mingo@redhat.com>, 
+	Todd Brandt <todd.e.brandt@linux.intel.com>
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 5.63.189.50
-X-CLIENT-HOSTNAME: 5.63.189.50
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: dmFkZTFxkQHn3iCFbbSyiDpq8O8fxHSz0xYZKn6328KRsDmyVOaUGJ5g9Pr88Mn+X1Ui8c/1Qb79P6Egeac0Wd4sy6JCX3KJ8P1U64eCx1OWa9IyZBsPPK141xkOOqyv/1Zw1QatQDlGB1yvkLOMXmCIAxkp70zSNBD+o+hqAg2qBFKsovAAPZZDWVM7txTozblkZF1eJ0XJ7pt6v7XqlFsO0rolzhHpavgnhWYGpyOXvsRTfKUvYlv9wsRDHePo6aQnJXczz+S8EYGfHpo5I4rhmR4dky+Ke+Gndp63BdmPoFR5Kj/OTkj1EaUzRCA+oOB4QoAjMMFv2OYrjxrYTUWJw73TCS0jrhzgA/flO6Xqujmn+vAEAQ+axfmVYpRJVSlP9ZXYBnFqcAdW8TsUL9ksWIhX3xI5Qyei3oWArXep7LaNMMAaiGAQsNPcOjP87pwjeZVreH9GvRVVadL1FlFGq6QbPh5OoIYwyxTOoqMUFY+GsM/USIXxn+9CsKxYs/gVczqEqmhP5FyHJMkFfdcLM1VL7rK394QhEbKO9gw5wZKwrU6KIoegU5gO0xWuDd2WrRAi0gyib3a+NPnePFw1e+mu9WLf+3uErb/F8slWWzvCdxw6R+SvdixosfwcrVPBnpeBo8pWaRJxOF5qNnjUerbLR+2lv7rHfBROzcD4hA0MtA
-X-DCC--Metrics: v370.home.net.pl 1024; Body=12 Fuz1=12 Fuz2=12
+Content-Transfer-Encoding: quoted-printable
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+On Wed, May 28, 2025 at 3:45=E2=80=AFPM Peter Zijlstra <peterz@infradead.or=
+g> wrote:
+>
+> On Wed, May 28, 2025 at 03:20:16PM +0200, Rafael J. Wysocki wrote:
+> > On Wed, May 28, 2025 at 3:18=E2=80=AFPM Peter Zijlstra <peterz@infradea=
+d.org> wrote:
+> > >
+> > > On Wed, May 28, 2025 at 02:53:13PM +0200, Rafael J. Wysocki wrote:
+> > > > Hi Everyone,
+> > > >
+> > > > Commit 96040f7273e2 ("x86/smp: Eliminate mwait_play_dead_cpuid_hint=
+()")
+> > > > that shipped in 6.15 introduced a nasty power regression on systems=
+ that
+> > > > start with "nosmt" in the kernel command line which prevents it fro=
+m entering
+> > > > deep package idle states (for instance, PC10) later on.  Idle power=
+, including
+> > > > power in suspend-to-idle, goes up significantly on those systems as=
+ a result.
+> > > >
+> > > > Address this by reverting commit 96040f7273e2 (patch [1/2]) and usi=
+ng a
+> > > > different approach, which is to retain mwait_play_dead_cpuid_hint()=
+ and
+> > > > still prefer it to hlt_play_dead() in case it is needed when cpuidl=
+e is
+> > > > not available, but prefer cpuidle_play_dead() to it by default (pat=
+ch [2/2]).
+> > >
+> > > I don't understand. The revert says the reason it regresses is that i=
+t
+> > > goes into play_dead before cpuidle is initialized. The fix is then to
+> > > call cpuidle first.
+> > >
+> > > But if cpuidle isn't initialized yet, how does that fix anything?
+> >
+> > The revert fixes the bug.
+>
+> This is not what I asked.
+>
+> > The other patch does what the reverted commit was supposed to be
+> > doing, but differently.
+>
+> No, it does not.
 
-Revert commit 96040f7273e2 ("x86/smp: Eliminate mwait_play_dead_cpuid_hint()")
-because it introduced a significant power regression on systems that start
-with "nosmt" in the kernel command line.
+If cpuidle is available and works, it will do the same thing.
 
-Namely, on such systems, SMT siblings permanently go offline early,
-when cpuidle has not been initialized yet, so after the above commit,
-hlt_play_dead() is called for them.  Later on, when the processor
-attempts to enter a deep package C-state, including PC10 which is
-requisite for reaching minimum power in suspend-to-idle, it is not
-able to do that because of the SMT siblings staying in C1 (which
-they have been put into by HLT).
+> The whole point was that mwait_play_dead did not DTRT because hints are
+> stupid and it could not select the deepest C state in an unambiguous
+> fashion.
 
-Fixes: 96040f7273e2 ("x86/smp: Eliminate mwait_play_dead_cpuid_hint()")
-Reported-by: Todd Brandt <todd.e.brandt@linux.intel.com>
-Tested-by: Todd Brandt <todd.e.brandt@linux.intel.com>
-Cc: 6.15+ <stable@vger.kernel.org> # 6.15+
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- arch/x86/kernel/smpboot.c |   54 ++++++++++++++++++++++++++++++++++++++++------
- 1 file changed, 47 insertions(+), 7 deletions(-)
+Yes, on some systems.
 
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -1238,10 +1238,6 @@
- 	local_irq_disable();
- }
- 
--/*
-- * We need to flush the caches before going to sleep, lest we have
-- * dirty data in our caches when we come back up.
-- */
- void __noreturn mwait_play_dead(unsigned int eax_hint)
- {
- 	struct mwait_cpu_dead *md = this_cpu_ptr(&mwait_cpu_dead);
-@@ -1288,6 +1284,50 @@
- }
- 
- /*
-+ * We need to flush the caches before going to sleep, lest we have
-+ * dirty data in our caches when we come back up.
-+ */
-+static inline void mwait_play_dead_cpuid_hint(void)
-+{
-+	unsigned int eax, ebx, ecx, edx;
-+	unsigned int highest_cstate = 0;
-+	unsigned int highest_subcstate = 0;
-+	int i;
-+
-+	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD ||
-+	    boot_cpu_data.x86_vendor == X86_VENDOR_HYGON)
-+		return;
-+	if (!this_cpu_has(X86_FEATURE_MWAIT))
-+		return;
-+	if (!this_cpu_has(X86_FEATURE_CLFLUSH))
-+		return;
-+
-+	eax = CPUID_LEAF_MWAIT;
-+	ecx = 0;
-+	native_cpuid(&eax, &ebx, &ecx, &edx);
-+
-+	/*
-+	 * eax will be 0 if EDX enumeration is not valid.
-+	 * Initialized below to cstate, sub_cstate value when EDX is valid.
-+	 */
-+	if (!(ecx & CPUID5_ECX_EXTENSIONS_SUPPORTED)) {
-+		eax = 0;
-+	} else {
-+		edx >>= MWAIT_SUBSTATE_SIZE;
-+		for (i = 0; i < 7 && edx; i++, edx >>= MWAIT_SUBSTATE_SIZE) {
-+			if (edx & MWAIT_SUBSTATE_MASK) {
-+				highest_cstate = i;
-+				highest_subcstate = edx & MWAIT_SUBSTATE_MASK;
-+			}
-+		}
-+		eax = (highest_cstate << MWAIT_SUBSTATE_SIZE) |
-+			(highest_subcstate - 1);
-+	}
-+
-+	mwait_play_dead(eax);
-+}
-+
-+/*
-  * Kick all "offline" CPUs out of mwait on kexec(). See comment in
-  * mwait_play_dead().
-  */
-@@ -1337,9 +1377,9 @@
- 	play_dead_common();
- 	tboot_shutdown(TB_SHUTDOWN_WFS);
- 
--	/* Below returns only on error. */
--	cpuidle_play_dead();
--	hlt_play_dead();
-+	mwait_play_dead_cpuid_hint();
-+	if (cpuidle_play_dead())
-+		hlt_play_dead();
- }
- 
- #else /* ... !CONFIG_HOTPLUG_CPU */
+> And now you're restoring that -- code you all argued was fundamentally
+> buggered.
+>
+> Yes is 'fixes' things on old platforms, but it is equally broken on the
+> new platforms where you all argued it was broken on. So either way
+> around you're going to need to fix those, and this isn't it.
 
+There are systems where mwait_play_dead_cpuid_hint() does not work and
+there are systems where it works.  Some of the latter are actually
+new.
 
+Regardless, if cpuidle_play_dead() runs before it and cpuidle is
+there, the right thing will be done because cpuidle_play_dead() will
+not return in that case.
 
+The only question is what to do when cpuidle is not there.
+
+The commit reverted by the first patch removed
+mwait_play_dead_cpuid_hint() altogether, so it never runs and the only
+fallback is hlt_play_dead(), but this doesn't work for disabling SMT
+siblings.
+
+If mwait_play_dead_cpuid_hint() is allowed to run before
+hlt_play_dead() though, then worst-case it may use an unrecognized
+MWAIT hint and the CPU should fall back to C1.  If the MWAIT hint is
+valid though, it will enter a deep idle state and that's what happens
+on all of the systems tested in the lab (20+), including the most
+recent ones.
+
+> Now, SMT siblings are all AP, by definition. So can't we simply send
+> them INIT instead of doing CLI;HLT, that way they drop into
+> Wait-for-SIPI and the ucode can sort it out?
+
+No, I don't think so.  I don't think that Wait-for-SIPI is an idle state.
+
+But we are discussing patch [2/2] here while really the problem is
+that the commit in question is broken, so it needs to be reverted in
+the first place.
