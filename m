@@ -1,78 +1,78 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9572214211;
-	Wed, 28 May 2025 12:55:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3505123CB;
+	Wed, 28 May 2025 13:18:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1748436916; cv=none; b=oN4wG9okM4XejT7Nj/j++D52dHxWTJ75RDze2Z8sLcPJpyY4pOeyIKkmkpu5xKjybWHjxLnTmaYl2v4rokPb8jAIQPx7x+uIC1r/Tlbpp6zY8fqweQVuvjyMnpyYdaylwXi0wAau0+ft8Vqw/LO2H6+JZHl6KoeTJzUhzBpS6r8=
+	t=1748438289; cv=none; b=iv8vbPE+6URVp+mL0sdWjZ0b3wBNhquIzsd55JgTLG5z22fEQpyxKEK/RKMnzbNFXOX27KfRfKlXrUYv71iFNo+JlqKDEIZC2l01pIyuVsb93jo5O7mNQqwdIB6BIAbZOXSkKwcSWyBscfXRHSHlSQ3yIhDYdLserpaTlACrbSc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1748436916; c=relaxed/simple;
-	bh=u06uU+f22ZydMweS4ad4ipwJZCaFj54prJ9Y8i2zNxA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=mBLvBUyjYWfZVef32EbL5fRmd0nHV0u+VnqgbHDqJxFWvArRssYgLl7z8ag9ZDUh1i4kIzWdDVkT0hhuFXMOtPmg0V5fwDQEMOq32rjOnAUzyQkqxMTAHRW1/6ZJw2BoEjqdgARtBHqOWcxAghOVPE9MQI2L9sIhM0ZV32AXDB8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=ndnJc5FP; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1748438289; c=relaxed/simple;
+	bh=JyQ/g7Kg5zGeYkYRJRGiz+qenkQhnkpuUKlYzzPl8U4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=k10uxEPoW4O1DGTReVXmhqk2H7NJQUiLrzTLY/PqtDoCKVogPLnDC5hdp1IM4NePk0HAwPSA6zEjIgSUSxkG4Tu3SJFaX+xKf1GrUzN8l4eImPEG0NGTi+F/d1NVvJq6xLRg9jaYTNs7CCku47Kd1xhIaXPD3J7cBGgPDnVZYiU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=EyQhrn7j; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="ndnJc5FP"
-Received: from kreacher.localnet (unknown [5.63.189.50])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 6D2D166810C;
-	Wed, 28 May 2025 14:55:03 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1748436904;
-	bh=u06uU+f22ZydMweS4ad4ipwJZCaFj54prJ9Y8i2zNxA=;
-	h=From:Subject:Date;
-	b=ndnJc5FPKZ/gAEhXWrUWuQ6N9zgrgwaDt4sG1DWP0owFVQwK1CZf7V3HCLkv2cHX2
-	 Vpud6wmvofFI8Oj6VQryqoPqtveIFlwXF6gBVPfR9m0i0XuxdjgA/L4yVB2OxZ/alm
-	 uGdy/tdhka3APiXK2yPQIWaQf6BkyPiQsNrvicF3jeSY/WgCVAw9vNb/0Qpz6grmvn
-	 uEZJNphV2DHygPhapge0M1qhWVO4Pv6egj76Vf7Mr2n+VgT4HfVLGYOISquf4OqYEL
-	 g2QNMwFWsEV0YVZPoJcrfoiZ70lJTSx3zhosD8y2QYFxXAbmXtuZES0XRjfJsAiANR
-	 opTZ0doBCBCpA==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: x86 Maintainers <x86@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
- Len Brown <lenb@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@suse.de>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
- "Gautham R. Shenoy" <gautham.shenoy@amd.com>, Ingo Molnar <mingo@redhat.com>,
- Todd Brandt <todd.e.brandt@linux.intel.com>
-Subject:
- [PATCH v1 0/2] x86/smp: Fix power regression introduced by commit
- 96040f7273e2
-Date: Wed, 28 May 2025 14:53:13 +0200
-Message-ID: <2006806.PYKUYFuaPT@rjwysocki.net>
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="EyQhrn7j"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=AVELsSfT+NEsd6GMqBswfz7jVJ/MdJvCvrkyarXhQCQ=; b=EyQhrn7jpycft0MeKIZGHyWnJS
+	ibq1GqgdSdrU8tsQyawklHn+12vyeXjBzV6dery6l2SD8cOTNx5/oB1HNcGEL27lWhewnxWPye9Js
+	nA79OsaIKp86WbLInP4ThC6poftelv6zYQUUzgfcoTLjXC6WNJkI5k9klFu3NHap01jEkk9HkQwIF
+	1727Xlwu+i8z1/1hu9w0iIHPk1ptBXXpHj7GNzKXQip+nCN7GB54WuQaRC65UPCcEp8Yt9Cv/ibPp
+	4gfdH+rM+/abnV9+WYPqErR8508sW8sjHs6pNJ4MCMF1J3d1B+PElS4/YArtLUsBm97tBYSup/C9n
+	BerYQpKw==;
+Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
+	by casper.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1uKGfS-0000000DfhL-3vdd;
+	Wed, 28 May 2025 13:18:03 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id D91C9300155; Wed, 28 May 2025 15:17:59 +0200 (CEST)
+Date: Wed, 28 May 2025 15:17:59 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: x86 Maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+	Linux PM <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@suse.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
+	"Gautham R. Shenoy" <gautham.shenoy@amd.com>,
+	Ingo Molnar <mingo@redhat.com>,
+	Todd Brandt <todd.e.brandt@linux.intel.com>
+Subject: Re: [PATCH v1 0/2] x86/smp: Fix power regression introduced by
+ commit 96040f7273e2
+Message-ID: <20250528131759.GA39944@noisy.programming.kicks-ass.net>
+References: <2006806.PYKUYFuaPT@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 5.63.189.50
-X-CLIENT-HOSTNAME: 5.63.189.50
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: dmFkZTEHEdcPvDb44RX7oLy/l0XZsAaDsySGk2yiU1eNtMaRD1jj7PwTFn2xAYp8o0iAjmTVoe6ZGZaOOMsZJ49A4eudkghxFhzckY2diivE17GlEIoxg8trE3zRqjV8o1kzpBEeyA4kmvhEP8t9tE65NjajAvWfVkFgA181gCxV6f8eY7uKPMacthbKQ3Wz9UMXuYmHytYdGi64pBHYmmT2Ez24Ij5HjNr+/vUcx/BtM21yBQTYe5pReKOOdaAoHDKaLGS+flJe0i2Hnac7cR4W640PkdYrwZeJ9l9p6kmWypBNs+6zOHQhZIav6rMmxp2+ZzutyIyh9KbgLbUrwlyhqOqdtl2rGjTR5BH9A90WJYQyuIZurD17gJfpCkyLGNysSpxtW7hXgoSYIra1Vf33ek+bFEz6UddXUA/mwUC3mCONoWF3H1gmhoE3XsXPCpfm8yWTyMdi/ClUWfpSzCrtYPaZx7iM52v158hmVMM8NGgrnMCVo+EokCwQNDW7DcJ1MZ/K/cNm4omDL2tNcglj+gjRkxhMcGvexr96oj8BqOdFVIW3zxovRr/D3RjjHBj9iWkH+9lE1Yvk4IEUnxYZMsR0dQQSHj59TQkzopjwVGSB2EMZOqr6j8tY6TywLhLCMl4hFxYK60pOTdWG2WlfYrIRARlPzTBPqVQG7yeOR4IygA
-X-DCC--Metrics: v370.home.net.pl 1024; Body=12 Fuz1=12 Fuz2=12
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2006806.PYKUYFuaPT@rjwysocki.net>
 
-Hi Everyone,
+On Wed, May 28, 2025 at 02:53:13PM +0200, Rafael J. Wysocki wrote:
+> Hi Everyone,
+> 
+> Commit 96040f7273e2 ("x86/smp: Eliminate mwait_play_dead_cpuid_hint()")
+> that shipped in 6.15 introduced a nasty power regression on systems that
+> start with "nosmt" in the kernel command line which prevents it from entering
+> deep package idle states (for instance, PC10) later on.  Idle power, including
+> power in suspend-to-idle, goes up significantly on those systems as a result.
+> 
+> Address this by reverting commit 96040f7273e2 (patch [1/2]) and using a
+> different approach, which is to retain mwait_play_dead_cpuid_hint() and
+> still prefer it to hlt_play_dead() in case it is needed when cpuidle is
+> not available, but prefer cpuidle_play_dead() to it by default (patch [2/2]).
 
-Commit 96040f7273e2 ("x86/smp: Eliminate mwait_play_dead_cpuid_hint()")
-that shipped in 6.15 introduced a nasty power regression on systems that
-start with "nosmt" in the kernel command line which prevents it from entering
-deep package idle states (for instance, PC10) later on.  Idle power, including
-power in suspend-to-idle, goes up significantly on those systems as a result.
+I don't understand. The revert says the reason it regresses is that it
+goes into play_dead before cpuidle is initialized. The fix is then to
+call cpuidle first.
 
-Address this by reverting commit 96040f7273e2 (patch [1/2]) and using a
-different approach, which is to retain mwait_play_dead_cpuid_hint() and
-still prefer it to hlt_play_dead() in case it is needed when cpuidle is
-not available, but prefer cpuidle_play_dead() to it by default (patch [2/2]).
-
-Thanks!
-
-
-
+But if cpuidle isn't initialized yet, how does that fix anything?
