@@ -1,98 +1,107 @@
-Received: from mxout3.routing.net (mxout3.routing.net [134.0.28.8])
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D3E686323;
-	Wed, 28 May 2025 13:53:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.8
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35A4228643A;
+	Wed, 28 May 2025 13:59:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1748440398; cv=none; b=GSZYXw6/4dQGWcjzSfPS71WyL3nFtpMv05+fIsIj1Uk9PzD5odgoyZsjHFut6cul0gV8s35SYliDpew98jF0vgCy3K8A4fdcBh7mZqdYqnoJdrgpTbXlQGUt5FEyxnfeZAd8s7hrPQYSdf2q/eujq6mivVqzRPeGNeQyzAPYrHQ=
+	t=1748440790; cv=none; b=NAJJeQyJj3GQV2gS74A4bbJKV77RGDvXrhfoAvpSBn3pmdxJejsmi6obdVPrO3gcsJ07r3WmwQ5N7205H827nBhvfJjdhQezngaaHEWWJhfaRrOfzKVnB/ZPPlW8vdyxxo1sUUb0oOQZsl5OxiDhd5/Q8r4vIvGNniSadViIq34=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1748440398; c=relaxed/simple;
-	bh=KIQK8+ItF9LQsxxYe8mbJmOP1jp7O83BOKoxqnMSxNQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=SK2OPoyboUQG78Oh1gmvC6Scjf5f5MOLCuWGptnJW5ICg2swa/m+YOD3CmWU0IAplZsJ85mgCH4KjSu4dogn7buZQQBo9omVdGc0gbOCtlC3MRxdDjr0+fPgNc92vqBU8+cPZjeG6L26cMediGZzrfNA9qnfwBXBlv+YQ8RDGkk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=ZSdRO8sm; arc=none smtp.client-ip=134.0.28.8
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
+	s=arc-20240116; t=1748440790; c=relaxed/simple;
+	bh=keU5ngDbfNyJ99ZyYcjp9U+daYH5n6t4r62lhQZewAM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=F9UnJvPxPqai2o3cztoPz2lCu5YflQE2Z66Lwb2KSLFh/fgbZRcZ+2Qkx43a9r1bsOyboUYJk6ke7TTsyznKd4MLRESqvnzfLm4U18Y3GX0/3RofaS4+3abb8zK0Kh2pZKfvQYBl97JbwaBpv9dY7S/GxWlRel+PqBqBiKZep7U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=a9rwiP4Y; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="ZSdRO8sm"
-Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout3.routing.net (Postfix) with ESMTP id 073AD604DC;
-	Wed, 28 May 2025 13:53:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=20200217; t=1748440387;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=/IYn+Ak3aJNTaLzk0CMzwKGukq1D6rOsByjE7CfES9I=;
-	b=ZSdRO8smi2hWk/PzPnGVQxbayF0NO5QBIO9DbjkNur9j5VDSieATcAPjRC3DQ+wceS9DaQ
-	rv4V45NILSzZeZUyvVZnFX/AymgbAuYd3mJK90Ht7hpcE9XfeK6MUnHEsLGxnte/hLYlHD
-	zihODtfXtsWxaipmiIzQd/5pq60qyT8=
-Received: from frank-u24.. (fttx-pool-194.15.80.234.bambit.de [194.15.80.234])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id BE1B21226F1;
-	Wed, 28 May 2025 13:53:06 +0000 (UTC)
-From: Frank Wunderlich <linux@fw-web.de>
-To: MyungJoo Ham <myungjoo.ham@samsung.com>,
-	Kyungmin Park <kyungmin.park@samsung.com>,
-	Chanwoo Choi <cw00.choi@samsung.com>,
-	Georgi Djakov <djakov@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Jia-Wei Chang <jia-wei.chang@mediatek.com>,
-	Johnson Wang <johnson.wang@mediatek.com>
-Cc: Frank Wunderlich <frank-w@public-files.de>,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-mediatek@lists.infradead.org
-Subject: [RFC v1] dt-bindings: interconnect: add mt7988-cci compatible
-Date: Wed, 28 May 2025 15:52:49 +0200
-Message-ID: <20250528135251.6492-1-linux@fw-web.de>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="a9rwiP4Y"
+Received: from kreacher.localnet (unknown [5.63.189.50])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 96BD66680C5;
+	Wed, 28 May 2025 14:55:01 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1748436902;
+	bh=keU5ngDbfNyJ99ZyYcjp9U+daYH5n6t4r62lhQZewAM=;
+	h=From:Subject:Date;
+	b=a9rwiP4YBID5AEMl88r98X0/YUjecAMXTGehm+rI8XaSaDPHnfQct6wkChpjCUR2M
+	 1YifvrF2Q3LcSuC5HIqDvTKY2DCp1IPDWJ5qoBN8hti6XCCZM1XTh+o3S4S1ET9/IL
+	 TnFFTfvJG5msYWh8BUHEuQZIJ26ZmqMcpvEqaiOXuQBcffT7b/S86RFFbmizl60+RO
+	 MnzYRJYcGRgpV/dnRppojDMibcZWpy3MvBp6JS/DRIcb/vPoVzvm52mu3jFBlFTFxe
+	 HhGxzUwUZfj1mSd8OCF1nxt42gFsIEWuKMY/4mitvxFnsm7wrDcvZyaUwRAzv4tg1b
+	 9spZzrow5b17w==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: x86 Maintainers <x86@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
+ Len Brown <lenb@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@suse.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
+ "Gautham R. Shenoy" <gautham.shenoy@amd.com>, Ingo Molnar <mingo@redhat.com>,
+ Todd Brandt <todd.e.brandt@linux.intel.com>
+Subject:
+ [PATCH v1 2/2] x86/smp: Prefer cpuidle_play_dead() to
+ mwait_play_dead_cpuid_hint()
+Date: Wed, 28 May 2025 14:54:49 +0200
+Message-ID: <3633769.iIbC2pHGDl@rjwysocki.net>
+In-Reply-To: <2006806.PYKUYFuaPT@rjwysocki.net>
+References: <2006806.PYKUYFuaPT@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 5.63.189.50
+X-CLIENT-HOSTNAME: 5.63.189.50
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: dmFkZTFxkQHn3iCFbbSyiDpq8O8fxHSz0xYZKn6328KRsDmyVOaUGJ5g9Pr88Mn+X1Ui8c/1Qb79P6Egeac0Wd4sy6JCX3KJ8P1U64eCx1OWa9IyZBsPPK141xkOOqyv/1Zw1QatQDlGB1yvkLOMXmCIAxkp70zSNBD+o+hqAg2qBFKsovAAPZZDWVM7txTozblkZF1eJ0XJ7pt6v7XqlFsO0rolzhHpavgnhWYGpyOXvsRTfKUvYlv9wsRDHePo6aQnJXczz+S8EYGfHpo5I4rhmR4dky+Ke+Gndp63BdmPoFR5Kj/OTkj1EaUzRCA+oOB4QoAjMMFv2OYrjxrYTUWJw73Tc20c4APwngYflEi8giQzRlt560/yFzju9koWkC242yDLQqC7sYVR1SeRj/Pv9uNTh+Oe9h9mxtQVLPALHvGM81Vaysotj4uNCPrBIKZKaj+LeTDWutps2VJAGLFbTexMH27DhYJ+SorOA3NUpZMbd15anfnRxafGyaX5ouSUbJenPXRNPCdULXesceieZqGBJEcqxrYGsXN4Y1gx4fuHfsY7W0mRke7t0MZl1qcpy5Dqjff3t4Pp9ajDtI9fs1J/ifowUmZ2P0NBQXP4NiKsUIzfvKMeeMQ3YBxVXxvmdWH366PtoP6liJLj/jpdwS+F94D5sbaqKUMmjsivEd2gbQ
+X-DCC--Metrics: v370.home.net.pl 1024; Body=12 Fuz1=12 Fuz2=12
 
-From: Frank Wunderlich <frank-w@public-files.de>
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Add compatible for Mediatek MT7988 SoC with mediatek,mt8183-cci fallback
-which is taken by driver.
+Currently, mwait_play_dead_cpuid_hint() looks up the MWAIT hint of the
+deepest idle state by inspecting CPUID leaf 0x05 with the assumption
+that, if the number of sub-states for a given major C-state is nonzero,
+those sub-states are always represented by consecutive numbers starting
+from 0. This assumption is not based on the documented platform behavior
+and in fact it is not met on recent Intel platforms (eg. Sierra Forest).
 
-Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+For this reason, it is better to let the cpuidle driver for the given
+platform put CPUs going offline into appropriate idle state and only
+if that fails, fall back to mwait_play_dead_cpuid_hint(), which may
+still be the next best "play dead" variant if cpuidle is not available.
+
+For example, when "nosmt" is passed to the kernel in the command line,
+SMT siblings are disabled early, before cpuidle gets ready, but they
+need to be put into sufficiently deep idle states to allow the whole
+processor to reach deep package idle states, like PC10, later on.
+
+Tested-by: Todd Brandt <todd.e.brandt@linux.intel.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- .../bindings/interconnect/mediatek,cci.yaml          | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+ arch/x86/kernel/smpboot.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/interconnect/mediatek,cci.yaml b/Documentation/devicetree/bindings/interconnect/mediatek,cci.yaml
-index 58611ba2a0f4..2c6785c588e9 100644
---- a/Documentation/devicetree/bindings/interconnect/mediatek,cci.yaml
-+++ b/Documentation/devicetree/bindings/interconnect/mediatek,cci.yaml
-@@ -17,9 +17,15 @@ description: |
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -1377,9 +1377,10 @@
+ 	play_dead_common();
+ 	tboot_shutdown(TB_SHUTDOWN_WFS);
  
- properties:
-   compatible:
--    enum:
--      - mediatek,mt8183-cci
--      - mediatek,mt8186-cci
-+    oneOf:
-+      - items:
-+          - enum:
-+              - mediatek,mt8183-cci
-+              - mediatek,mt8186-cci
-+      - items:
-+          - enum:
-+              - mediatek,mt7988-cci
-+          - const: mediatek,mt8183-cci
++	/* Each call in the following sequence returns only on errors. */
++	cpuidle_play_dead();
+ 	mwait_play_dead_cpuid_hint();
+-	if (cpuidle_play_dead())
+-		hlt_play_dead();
++	hlt_play_dead();
+ }
  
-   clocks:
-     items:
--- 
-2.43.0
+ #else /* ... !CONFIG_HOTPLUG_CPU */
+
+
 
