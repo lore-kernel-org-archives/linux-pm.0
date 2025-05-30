@@ -1,106 +1,142 @@
-Received: from lgeamrelo03.lge.com (lgeamrelo03.lge.com [156.147.51.102])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35C4B1A0728
-	for <linux-pm@vger.kernel.org>; Fri, 30 May 2025 07:02:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.102
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC9ED10FD;
+	Fri, 30 May 2025 07:35:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1748588554; cv=none; b=TALtLFsnfQopnXtIdOG3X53usl6A9AX9Qpc9IucoOckaxSWUxPcxT36HtSERHwIFJXXDzH0IFAS9WWKUIKbRVWTPHzq+QN9LFSie086rfYm7dsY1ZKPULHBqbcpmleGtoR+B8Hkyyy7qf9rwpqZe4Ui6RyHHgNKWvO+5G/5bQLA=
+	t=1748590540; cv=none; b=bzN33qY3sdWbr/qs9zc4/M4e9q5t3QACsi7PS5nayHFd23exNeOwTpOFlMwf0JGd/ZK98Ud9aM2gqAivOv5gaS72DbKx6ZZ7TjV230ulfrE7m8PQ4sk3TmGG6sdZ38wC3TKwB8CpmrkkdYgp6VrwziA56h2BQiXtOOGslInZd+0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1748588554; c=relaxed/simple;
-	bh=E/O9HAYc1pxKvwei2SjnR9l+4Xm5rk6K33BGfGo/hgA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=D9s7Pa8CevPGbNxzmc4ETNSVauhoXOFl578yhLzIj241gt4oDHDZVZOF6yzfIQ7/dcT4OrKONWeLkIOUD0AGIDjkFHbUuRb/RxoUsnfSL6iQ3FLhPNL6CedWu7o6OS0AC0idd+aYp6E6039k/3ip5dUxoER7fxh95POFNS6nHIc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.102
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
-Received: from unknown (HELO yjaykim-PowerEdge-T330) (10.177.112.156)
-	by 156.147.51.102 with ESMTP; 30 May 2025 15:47:30 +0900
-X-Original-SENDERIP: 10.177.112.156
-X-Original-MAILFROM: youngjun.park@lge.com
-Date: Fri, 30 May 2025 15:47:29 +0900
-From: YoungJun Park <youngjun.park@lge.com>
-To: Nhat Pham <nphamcs@gmail.com>
-Cc: linux-mm@kvack.org, akpm@linux-foundation.org, hannes@cmpxchg.org,
-	hughd@google.com, yosry.ahmed@linux.dev, mhocko@kernel.org,
-	roman.gushchin@linux.dev, shakeel.butt@linux.dev,
-	muchun.song@linux.dev, len.brown@intel.com,
-	chengming.zhou@linux.dev, kasong@tencent.com, chrisl@kernel.org,
-	huang.ying.caritas@gmail.com, ryan.roberts@arm.com,
-	viro@zeniv.linux.org.uk, baohua@kernel.org, osalvador@suse.de,
-	lorenzo.stoakes@oracle.com, christophe.leroy@csgroup.eu,
-	pavel@kernel.org, kernel-team@meta.com,
-	linux-kernel@vger.kernel.org, cgroups@vger.kernel.org,
-	linux-pm@vger.kernel.org, peterx@redhat.com, gunho.lee@lge.com,
-	taejoon.song@lge.com, iamjoonsoo.kim@lge.com
-Subject: Re: [RFC PATCH v2 00/18] Virtual Swap Space
-Message-ID: <aDlUgVFdA7rCUvHx@yjaykim-PowerEdge-T330>
-References: <20250429233848.3093350-1-nphamcs@gmail.com>
+	s=arc-20240116; t=1748590540; c=relaxed/simple;
+	bh=HpRU3ck2iDgNbdzeI8oBQWZLheKpAIeZpo9xfMldP2w=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=az/5YMuPYgPYTPWdHa79BVP1PqGrgbPGLx0ybZmdGEaojopu+BhbOCuzk/Wj7HUFV7K9/XyIw+cOJQ1BxBSZ3XqtKdtGKjiY/jpShWJiUCPUvAJxfCHpE7cjbIVzIzLo8/0cm/0nXD6ZlSozqTlx0r/BIfEGbRBFqvfMj2ZwVlc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=rt6ilV55; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="rt6ilV55"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 4E8E9C4CEF3;
+	Fri, 30 May 2025 07:35:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1748590540;
+	bh=HpRU3ck2iDgNbdzeI8oBQWZLheKpAIeZpo9xfMldP2w=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=rt6ilV55CVdzl+vZAHWoQmGghXXWQJXsyePqgDcsd1Aj9rJop3t0+hmGnk/ILNYgt
+	 r7skrw969lxpjGar8p4KGNVQ+fyw1Y0ybQB8knkZ4V2+x9hTYxRm7uZrqbVf0GLp4C
+	 fjVKb/bx7mRyvMem4mZQs9iaF0lH7+XLnXgXwygYpCMQvnLzLFYvB7YIq2rW9hTKzZ
+	 rD9vwnhAvwQyamWQBID1TnG3T1fYtSM7EOnhaa11+MNT7jebaDJZygxejPZvmWgwRY
+	 AbNoTOpaomZiGc/Utla7iqh0notb00cbL4YxThMtf+CBosPSwrfEOqTYP5SucHY4VY
+	 CMVK7gJwK37lg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44F5BC3ABB2;
+	Fri, 30 May 2025 07:35:40 +0000 (UTC)
+From: Fenglin Wu via B4 Relay <devnull+fenglin.wu.oss.qualcomm.com@kernel.org>
+Date: Fri, 30 May 2025 15:35:08 +0800
+Subject: [PATCH v2 3/8] power: supply: qcom_battmgr: Add resistance power
+ supply property
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20250429233848.3093350-1-nphamcs@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250530-qcom_battmgr_update-v2-3-9e377193a656@oss.qualcomm.com>
+References: <20250530-qcom_battmgr_update-v2-0-9e377193a656@oss.qualcomm.com>
+In-Reply-To: <20250530-qcom_battmgr_update-v2-0-9e377193a656@oss.qualcomm.com>
+To: Sebastian Reichel <sre@kernel.org>, 
+ Bjorn Andersson <andersson@kernel.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Subbaraman Narayanamurthy <subbaraman.narayanamurthy@oss.qualcomm.com>, 
+ David Collins <david.collins@oss.qualcomm.com>, linux-pm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+ kernel@oss.qualcomm.com, devicetree@vger.kernel.org, 
+ linux-usb@vger.kernel.org, Fenglin Wu <fenglin.wu@oss.qualcomm.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1748590538; l=2437;
+ i=fenglin.wu@oss.qualcomm.com; s=20240327; h=from:subject:message-id;
+ bh=0cVLEmmNpliBpNUD0QR9vZL+uf2t1nTBnEIcltQ8698=;
+ b=m14YG3sHE+PlJwy7oQPcaZxsDuP262u4Wnd1rJoWhr8DbjVnW1Iki+ZXW05QWmQKpuOqCiwqk
+ rphts1kUjp1BcEW5iZaZsHI0syCJ+NgHqVBHtGgfctYY9sr04+4F59f
+X-Developer-Key: i=fenglin.wu@oss.qualcomm.com; a=ed25519;
+ pk=BF8SA4IVDk8/EBCwlBehKtn2hp6kipuuAuDAHh9s+K4=
+X-Endpoint-Received: by B4 Relay for fenglin.wu@oss.qualcomm.com/20240327
+ with auth_id=406
+X-Original-From: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
+Reply-To: fenglin.wu@oss.qualcomm.com
 
-On Tue, Apr 29, 2025 at 04:38:28PM -0700, Nhat Pham wrote:
-> Changelog:
-> * v2:
-> 	* Use a single atomic type (swap_refs) for reference counting
-> 	  purpose. This brings the size of the swap descriptor from 64 KB
-> 	  down to 48 KB (25% reduction). Suggested by Yosry Ahmed.
-> 	* Zeromap bitmap is removed in the virtual swap implementation.
-> 	  This saves one bit per phyiscal swapfile slot.
-> 	* Rearrange the patches and the code change to make things more
-> 	  reviewable. Suggested by Johannes Weiner.
-> 	* Update the cover letter a bit.
+From: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
 
-Hi Nhat,
+Add power supply property to get battery resistance from the battery
+management firmware.
 
-Thank you for sharing this patch series.
-I’ve read through it with great interest.
+Signed-off-by: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
+---
+ drivers/power/supply/qcom_battmgr.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-I’m part of a kernel team working on features related to multi-tier swapping,
-and this patch set appears quite relevant
-to our ongoing discussions and early-stage implementation.
+diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
+index fe27676fbc7cd12292caa6fb3b5b46a18c426e6d..bc521f60f67fa427cc03b51c44adaeb46ae746f5 100644
+--- a/drivers/power/supply/qcom_battmgr.c
++++ b/drivers/power/supply/qcom_battmgr.c
+@@ -2,6 +2,7 @@
+ /*
+  * Copyright (c) 2019-2020, The Linux Foundation. All rights reserved.
+  * Copyright (c) 2022, Linaro Ltd
++ * Copyright (c) 2025 Qualcomm Innovation Center, Inc. All rights reserved.
+  */
+ #include <linux/auxiliary_bus.h>
+ #include <linux/module.h>
+@@ -254,6 +255,7 @@ struct qcom_battmgr_status {
+ 	unsigned int voltage_now;
+ 	unsigned int voltage_ocv;
+ 	unsigned int temperature;
++	unsigned int resistance;
+ 
+ 	unsigned int discharge_time;
+ 	unsigned int charge_time;
+@@ -418,6 +420,7 @@ static const u8 sm8350_bat_prop_map[] = {
+ 	[POWER_SUPPLY_PROP_MODEL_NAME] = BATT_MODEL_NAME,
+ 	[POWER_SUPPLY_PROP_TIME_TO_FULL_AVG] = BATT_TTF_AVG,
+ 	[POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG] = BATT_TTE_AVG,
++	[POWER_SUPPLY_PROP_RESISTANCE] = BATT_RESISTANCE,
+ 	[POWER_SUPPLY_PROP_POWER_NOW] = BATT_POWER_NOW,
+ };
+ 
+@@ -582,6 +585,9 @@ static int qcom_battmgr_bat_get_property(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_TEMP:
+ 		val->intval = battmgr->status.temperature;
+ 		break;
++	case POWER_SUPPLY_PROP_RESISTANCE:
++		val->intval = battmgr->status.resistance;
++		break;
+ 	case POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG:
+ 		val->intval = battmgr->status.discharge_time;
+ 		break;
+@@ -665,6 +671,7 @@ static const enum power_supply_property sm8350_bat_props[] = {
+ 	POWER_SUPPLY_PROP_MODEL_NAME,
+ 	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
+ 	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
++	POWER_SUPPLY_PROP_RESISTANCE,
+ 	POWER_SUPPLY_PROP_POWER_NOW,
+ };
+ 
+@@ -1174,6 +1181,9 @@ static void qcom_battmgr_sm8350_callback(struct qcom_battmgr *battmgr,
+ 		case BATT_TTE_AVG:
+ 			battmgr->status.discharge_time = le32_to_cpu(resp->intval.value);
+ 			break;
++		case BATT_RESISTANCE:
++			battmgr->status.resistance = le32_to_cpu(resp->intval.value);
++			break;
+ 		case BATT_POWER_NOW:
+ 			battmgr->status.power_now = le32_to_cpu(resp->intval.value);
+ 			break;
 
-I had a couple of questions regarding the future direction.
+-- 
+2.34.1
 
-> * Multi-tier swapping (as mentioned in [5]), with transparent
->   transferring (promotion/demotion) of pages across tiers (see [8] and
->   [9]). Similar to swapoff, with the old design we would need to
->   perform the expensive page table walk.
 
-Based on the discussion in [5], it seems there was some exploration
-around enabling per-cgroup selection of multiple tiers.
-Do you envision the current design evolving in a similar direction
-to those past discussions, or is there a different direction you're aiming for?
-
->   This idea is very similar to Kairui's work to optimize the (physical)
->   swap allocator. He is currently also working on a swap redesign (see
->   [11]) - perhaps we can combine the two efforts to take advantage of
->   the swap allocator's efficiency for virtual swap.
-
-I noticed that your patch appears to be aligned with the work from Kairui.
-It seems like the overall architecture may be headed toward introducing
-a virtual swap device layer.
-I'm curious if there’s already been any concrete discussion
-around this abstraction, especially regarding how it might be layered over
-multiple physical swap devices?
-
-From a naive perspective, I imagine that while today’s swap devices
-are in a 1:1 mapping with physical devices,
-this virtual layer could introduce a 1:N relationship —
-one virtual swap device mapped to multiple physical ones.
-Would this virtual device behave as a new swappable block device
-exposed via `swapon`, or is the plan to abstract it differently?
-
-Thanks again for your work, 
-and I would greatly appreciate any insights you could share.
-
-Best regards,  
-YoungJun Park
