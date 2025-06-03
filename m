@@ -1,115 +1,118 @@
-Received: from mail-lf1-f41.google.com (mail-lf1-f41.google.com [209.85.167.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18D1A1EEF9
-	for <linux-pm@vger.kernel.org>; Tue,  3 Jun 2025 14:49:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B9A423C51B;
+	Tue,  3 Jun 2025 16:22:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1748962173; cv=none; b=lZfcVnOrzQTel/H9pTfvYvut26YgW9MEwQmv3Ue9IJvu9LxOAgCdGwf+BCsTlE0pOQkp1WRcZ6HS7+og22RT1yNxLFkpeHAfs4opl2l/BI31W8ePxIQhLcd0t2enqmWYQw2bSAe0a34DiiDiyhgKwwN8YWzAhTh2hqlImBGEc60=
+	t=1748967744; cv=none; b=RykfhM6Ccze959QrEJco72XthLuGBsrQcHIz+mc+2MVe5kQ/1U+7Q0tfME/TKYJLtbFuusbazqTsp/lcT3iyqyxy4xhmfEmWL9sIG9bP5aKoqWFQHQtPLicyys8K+ClujisbiLzL3Vm1hqN+dofdNTvsPh+fVMHrpmibbs46D8w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1748962173; c=relaxed/simple;
-	bh=Ex3LHxHEHJ4BZQ38M7qwegLl2zSlvRBxwaOVQhyHde4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=AVWxE7NVdVOaCH5iAoT40RVOM0xOXgPQ7oAyjnpNkcZ5QsZ+KQIfhQuLieFifUF7scEZxu4jo9h58S10kDQFN+nFyIJjIin9G+kw6lZ/ejLHIUulAw7IMRhypYg7WHEBVyZTeNrD1PxOlWxlfBQ3vU5jCTz0j08MARy2CXtLkTI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; spf=none smtp.mailfrom=bgdev.pl; dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b=YjkSn1dZ; arc=none smtp.client-ip=209.85.167.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bgdev.pl
+	s=arc-20240116; t=1748967744; c=relaxed/simple;
+	bh=Fdok7Br/KDs6NeJ/Y7SQFQQ/Cag227mQAiEgw2APNW0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=FhB5ILsM1zkjQ3gl4BUlSaGf1cHAZWVNmrDj0UBAouVX+hc21DdWlptqFDwpTZxFAjrjglyVAo06fOLH+zMOFn5zvJnMvMDi8YHZk1uPA4ZOKXirXvcg8HU3XeaAMHwVDxNu5lX+LC0mRSCjUI0fbeymzqKdfUC3hrWu0dioOsQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=hU0+rwnH; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b="YjkSn1dZ"
-Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-551ed563740so7130731e87.2
-        for <linux-pm@vger.kernel.org>; Tue, 03 Jun 2025 07:49:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1748962170; x=1749566970; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Ex3LHxHEHJ4BZQ38M7qwegLl2zSlvRBxwaOVQhyHde4=;
-        b=YjkSn1dZmHZhA/6TYufayxKqC70zA6znDbflQDTnjnBrsWaxljYkBbPCxK81coZf0h
-         CUjA8ptdll9T29L8j2aQJd3HiSeL99XHEjTdmpU9UGxccQor9H9lmue6AQfr0htn/kB3
-         wzvWy4MRrBLjVJ0kRP0Wd/HHLLPULCRE3O05gOTYmCU9y5A1sG/GZSTWAoXHx9+8SozE
-         i5yGn6m8tiyenOGWzVSXuyqkkuoEKQBenmQrtjLgMyQgX0NpUuRajuV39NtmZj1UV7Gg
-         O1vM+Jr5TZ769wW0eneZOzAoMxliOfVvEzkEhaLfUyc7/ZdYeoTzb/kFqlnPWqBUPpfZ
-         mxvQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1748962170; x=1749566970;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Ex3LHxHEHJ4BZQ38M7qwegLl2zSlvRBxwaOVQhyHde4=;
-        b=hqZUQcBRU+MnRi6sRWcobB83kbffn75kpehWGYfzQpzeE6vYlD9z5nKGZAZ6ythGkS
-         889W49btmqYNlBmcunR8XxDpeFQeiJIUt6n93k/nWxwzVjqVXN/8BtOP0EUkohBdzmhJ
-         uJaxsrU5Qbv+MdU5jm4m8eOKT4N+WlLMlfyKMao/7S72NVwO1dO4ks2PF+W9ZcpmdIoQ
-         nl0vXpoMVWu/hc4yvSJI+JHwNYKDYfoY0Y0bqt59LHkNglnjcDVs4iTU8kYt5Cx/40ZG
-         Haa8V9XujSPuJ8cbpqUNNtWeyLpv6BPMwAa72UQk3TG3s2+VLJt80+1HMiHhApaLFNES
-         UOfA==
-X-Forwarded-Encrypted: i=1; AJvYcCUs4BoM3o/pl27CghFEoLZxYkjyHD7XDKWd/7MAK/+3u9gtGQ+qApzRAda2oYKYNsVl0uK66RjrwA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzPqX962lUCCjqw3BFdZNkMQ4gRVF51wvRrFkLbpphCR+drCCf6
-	UAu4KhZ88Xa4cpQaWlSlfkFeTHD4es2BNfE7p+wbjv/I4Jk/M0eCsON0hK2oZtxphj6o6N/rePY
-	HtKauQc0o8lJOdgw9BpYDyygXGwiC7zGdy7IKd/SYBw==
-X-Gm-Gg: ASbGncvja/EYMbCS61b8Ji1ewHe7lA2ZbA1tynPpv98dDXofzQA+cMxlZeLr/rzVlj/
-	KwUyqV8HuJtKmVwbw3nwHwwh9RuuI/DPP+HTJub/YpuRqpbHaXEAhFhjkswlROgJx154bLc+wFN
-	xwVm+LzuFxzbS8beZUtIef9N4Al6nZGcIW9qs+ceV/3T12rYGC5qQ2zRwxtb1rHSa6ok5CtqUne
-	g==
-X-Google-Smtp-Source: AGHT+IHc0KihO6QMjKjy0pMBkN2tQA80vRJ1vg3x2S+UcGNd55YVBv2aTqZA0Vmu7gFOqc5cx2vs3hmS2lLX+V2bUMY=
-X-Received: by 2002:a05:6512:318d:b0:553:23c4:6822 with SMTP id
- 2adb3069b0e04-5533b8f6183mr5171073e87.13.1748962170032; Tue, 03 Jun 2025
- 07:49:30 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="hU0+rwnH"
+Received: from kreacher.localnet (unknown [5.63.189.50])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id A438D66BCC9;
+	Tue,  3 Jun 2025 18:22:13 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1748967734;
+	bh=Fdok7Br/KDs6NeJ/Y7SQFQQ/Cag227mQAiEgw2APNW0=;
+	h=From:Subject:Date;
+	b=hU0+rwnHak3id2gyt6DWN/090L6zwPKbz4PbpEes8sM5DBlaxxDB2ZFJHW6CHOWjY
+	 ed892S0Ou02xoDPJdhnpi06wQHkiDF9gLiT7DWJO675ufGcWBwatZcJ2nX4vvvBefR
+	 J2HsFYN+YVHKmZOS6clU6xoIv3NtN9nDMak38Y7sr3oJ7LhyvHBfT20gl0WP0E2sgR
+	 tvQCYQmNmNLbHlnj8wDuyrfML5KOx1btby3G5hErJRsrxSw8Esd8QXXcyGn+LBsZSs
+	 9E+kqPiBjiDJ1xGgM787Ybj9Cp6YGo9pKdmNzWHDVTCs9WV1QqldcqIe7JLBECMbrV
+	 gt29yz3wmFbwg==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ Chris Bainbridge <chris.bainbridge@gmail.com>,
+ Ulf Hansson <ulf.hansson@linaro.org>, Saravana Kannan <saravanak@google.com>,
+ Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH v1 3/3] PM: sleep: Add locking to dpm_async_resume_children()
+Date: Tue, 03 Jun 2025 18:21:57 +0200
+Message-ID: <13779172.uLZWGnKmhe@rjwysocki.net>
+In-Reply-To: <6166108.lOV4Wx5bFT@rjwysocki.net>
+References: <6166108.lOV4Wx5bFT@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <CGME20250529222403eucas1p1923fe09240be34e3bbadf16822574d75@eucas1p1.samsung.com>
- <20250530-apr_14_for_sending-v3-0-83d5744d997c@samsung.com>
- <20250530-apr_14_for_sending-v3-1-83d5744d997c@samsung.com>
- <CAMRc=Me9cWfe2mL=Q6JQbAFjpd55MOBZuAWC793Us0criiQr4Q@mail.gmail.com>
- <4519844e-b1c0-40a7-b856-a6e4a80c6334@samsung.com> <20250603-cuddly-certain-mussel-4fbe96@kuoka>
- <CAMRc=MfXashaEscE1vF_P6cs9iOCBerfNFiB4yC+TX76fZ87nA@mail.gmail.com>
-In-Reply-To: <CAMRc=MfXashaEscE1vF_P6cs9iOCBerfNFiB4yC+TX76fZ87nA@mail.gmail.com>
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Tue, 3 Jun 2025 16:49:18 +0200
-X-Gm-Features: AX0GCFs2qeMG4HtPzgixdlaSw6fJIrCjF4lFG8AFOQDBjIfm0hhKZz_Zk6uhWO0
-Message-ID: <CAMRc=Mc-jjULmc=3fS0qZgXbq9Sgfg8JBoH7peWML1PdyyyH+A@mail.gmail.com>
-Subject: Re: [PATCH v3 1/8] dt-bindings: power: Add T-HEAD TH1520 GPU power sequencer
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Michal Wilczynski <m.wilczynski@samsung.com>, Drew Fustini <drew@pdp7.com>, Guo Ren <guoren@kernel.org>, 
-	Fu Wei <wefu@redhat.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, Frank Binns <frank.binns@imgtec.com>, 
-	Matt Coster <matt.coster@imgtec.com>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
-	Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>, 
-	linux-riscv@lists.infradead.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-CLIENT-IP: 5.63.189.50
+X-CLIENT-HOSTNAME: 5.63.189.50
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: dmFkZTEfh61c7A06WGUkHT7vFJj3USfNCX9d7R2R4WDorhZXrTp+60oyaNLi8kxofXKZvVyiSPeh1eRKP6GGLnApa9zR/OniJAvvEMQ1432r7ddp+szjuOZLmmEDeQ462kYyym/es++QedRbmJpAqZk4JpzfKTE9dwUKY/LAM+xuYz1xsKm5lY/u1Ps2tx+OrHuE44Y42UBvmONU1b9DBIFv9Kn4cWCY2VY9PFdAK+mdu+es0kVGbUtXVZPu2aniTr+6zPi4tYOzPR9rWA2/vfEf7ZgVIBisrWHBBrP1xK9dTKvY8hqHr3gwpkh++zOsshp9kf81spISYgx0MUNxjbhqnYnPsznmf6PtqvqTsuFMbwCXEoxV82wakrZzC8W15DTOfP5sINw+MlDfGvHswhAbP2BiV0iMoEc3ugoVygxh9qxLx1Zuz84+63WhbWqLO5g5wrzRXAkIjQXznjv0MsVepaz1b1yzdBZggSARr5dtZsM85w/TFLW5cbX0fGuNWgnCagYZaXThE7lQjXO/gc6M06VFa8s+Q4x6UVb0U1/wfO1OoTg0/54MVikzjyXL3krJX2y7ITsWwC8GCyppcsa9FUd+QX6dHLMO8ERb9zsW+qvJFoCIMC/5OXDzOWzXEAl7qx1nNe9ttxdP6OAz2rPKwcNs6zVfC/PRvdKt5Ve8NBwkDA
+X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 
-On Tue, Jun 3, 2025 at 3:35=E2=80=AFPM Bartosz Golaszewski <brgl@bgdev.pl> =
-wrote:
-> > >
-> > > The compatible string could be updated like so:
-> > > "thead,th1520-aon-pwrseq"
-> >
-> > Should not be separate node, you already have one for AON.
-> >
->
-> Agreed. And as far as implementation goes, you can have the same
-> driver be a PM domain AND pwrseq provider. It just has to bind to the
-> device node that represents an actual component, not a made-up
-> "convenience" node.
->
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I'm seeing that there's already a main driver under
-drivers/pmdomain/thead/th1520-pm-domains.c and a "logical sub-driver"
-under drivers/firmware/thead,th1520-aon.c which exposes
-th1520_aon_init() called by the former. Maybe just follow that
-pattern, add a module under drivers/power/sequencing/ called
-pwrseq-th1520-pwrseq.c and call its init function from the pm-domains
-module?
+Commit 0cbef962ce1f ("PM: sleep: Resume children after resuming the
+parent") introduced a subtle concurrency issue that may lead to a kernel
+crash if system suspend is aborted and may also slow down asynchronous
+device resume otherwise.
 
-Bart
+Namely, the initial list walks in dpm_noirq_resume_devices(),
+dpm_resume_early(), and dpm_resume() call dpm_clear_async_state() for
+every device and attepmt to asynchronously resume it if it has no
+children (so it is a "root" device).  The asynchronous resume of a
+root device triggers an attempt to asynchronously resume its children
+which may take place before calling dpm_clear_async_state() for them
+due to the lack of synchronization between dpm_async_resume_children()
+and the code calling dpm_clear_async_state().  If this happens, the
+dpm_clear_async_state() that comes in late, will clear
+power.work_in_progress for the given device after it has been set by
+__dpm_async(), so the suspend callback will be allowed to run once
+again for the same device during the same transition.  This leads to
+a whole range of interesting breakage.
+
+Fortunately, if the suspend transition is not aborted, power.work_in_progress
+is set by it for all devices, so dpm_async_resume_children() will not
+schedule asynchronous resume for them until dpm_clear_async_state()
+clears that flag, but this means missing an opportunity to start the
+resume of those devices earlier.
+
+Address the above issue by adding dpm_list_mtx locking to
+dpm_async_resume_children(), so it will wait for the entire initial
+list walk and the invocation of dpm_clear_async_state() for all devices
+to be completed before scheduling any new asynchronous resume callbacks.
+
+Fixes: 0cbef962ce1f ("PM: sleep: Resume children after resuming the parent")
+Reported-and-tested-by: Chris Bainbridge <chris.bainbridge@gmail.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/power/main.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -638,6 +638,13 @@
+ static void dpm_async_resume_children(struct device *dev, async_func_t func)
+ {
+ 	/*
++	 * Prevent racing with dpm_clear_async_state() during initial list
++	 * walks in dpm_noirq_resume_devices(), dpm_resume_early(), and
++	 * dpm_resume().
++	 */
++	guard(mutex)(&dpm_list_mtx);
++
++	/*
+ 	 * Start processing "async" children of the device unless it's been
+ 	 * started already for them.
+ 	 *
+
+
+
