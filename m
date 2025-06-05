@@ -1,224 +1,166 @@
-Received: from mail-pf1-f175.google.com (mail-pf1-f175.google.com [209.85.210.175])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A7F8237164;
-	Thu,  5 Jun 2025 13:25:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E83EA1CCB40;
+	Thu,  5 Jun 2025 15:09:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749129915; cv=none; b=Jhzkzkob+bplhVRj1liEGicq6FwSJ/nV9Pu2++VShfB5P3VFIXqjIEKRlu2BuNW1IG3DB6/NQy1pQjZnJzr5ATaWtpBS8AEJSWzQcwHD72vOwd0HZLIqNdgcljZsx1wJMD7ITqZStnRTmBoyg4AqkJqNEA2BMBDHG0wtfsAqctg=
+	t=1749136195; cv=none; b=iCZvl0SHR6HGVnK7Cqw1MrH3egO1WVEXwjwtmogLc3Nz600uGlgUcSUelGgY895aE5kOQD9+fA2ev/PVVZRownEmdBPyEvfm1VfcsPQJQ74JXFoOg19LiZJz5xpCRKwZ6GIgwMzmJXUAz5jrUoxh3iRfqk/VSv5r5Ab7ClFKq/4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749129915; c=relaxed/simple;
-	bh=XCqCr87fMiryN8wBVJwOIxfP6gD+dhX1Z/cb7SASagk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=udeuAyWMwkOf3zCX0ZIztSwbJlGRt52/m3mNT6JXIkBDI4vy48c/OxGItPw9JM/wyqWT0v9E8J0g6AobbkTGyuNvoZgOHufvwvCAswUbyVOEqBwYfBM2WHXnFnbjRS55Rt1m3ztlmGhzbUdsTFXot0gtBFXtuW8IM0vJYUCjTIE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=YqfZibq2; arc=none smtp.client-ip=209.85.210.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1749136195; c=relaxed/simple;
+	bh=5w6Yv93zAQ3ErcgdTrPiDO9Q9Wfrs45HpAf7J5N0gZQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=s9jeeM+0BV2LpBdI7T3+50OT127mbC+6zze6e641ohyQt09xgP6c53FaJS2llUWgClBgl0v274quT9LjIX9npW0GkNlFkjhueF+FoMF9Rgb0lR6EoemuY22m4J4THyO3lEbEe+ezLHFGHmH69yERNna937QXdX9GEZ4Yfi/jBG8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=qSH1k1Bt; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YqfZibq2"
-Received: by mail-pf1-f175.google.com with SMTP id d2e1a72fcca58-74801bc6dc5so850833b3a.1;
-        Thu, 05 Jun 2025 06:25:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1749129913; x=1749734713; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=FfxhwSOG/RM0gPvUyXeyOo3ZKbVYGqvyCyXESojdWoQ=;
-        b=YqfZibq2LHHdvtdoeA7JVN+oxvnJ2hRJR6lK5VflOZOiSdNpZRwUyJ1foqOfoEBGR/
-         VShMb6A7k5rz31zVlIzSRsmzIDmiF2OwUzwfV1HGdu74tn9OdpGNAhV5+a1Li/mc5mqn
-         z+DEoZJ31U74Bs5rAcXYQiyYpxfD5ikvurw1282fdF8SGKIB4VrJx+rX9qPnq9EC27kj
-         gRPVkVFPo9NS19f+tdG79xSSvMCGpQa+XFgvyUAEQJDyEj+v72bjlw3lwFJr6x/jDrLu
-         uLkbt1zaEvOg7jCH4SwTMkQsoz3HX5AC1B0w+nGhRiqV3Eqz4EwpNsWiPzeZlxmQR1WQ
-         KmXA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749129913; x=1749734713;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=FfxhwSOG/RM0gPvUyXeyOo3ZKbVYGqvyCyXESojdWoQ=;
-        b=cvocYWCivDMmPwKVwsO+Xup+wZZoIf/+5Yizf2PLYm0LkZlA4FHRBeLU3GOY0VqLzv
-         4Ha3ffk46AzDicWBR6rn2aXSLmnhsNK3BLPpBD9d+fe7gp0B8rjWRhkREldycsRVXOQf
-         stR7GtxImyQgbj36PHoZeAm9js0ksOBEZ7OHw9KoaYKdyiqFcUmKUX32NMSC+pgIPbKV
-         fUE7nBnAGmxJKHoMPFGou0jfqyqgBVDxGdffyGbKZR0amZ2zXtERRg/BwBlSmoq8TrG9
-         eAmhE00jEm1gJ9ipzqR/RGXplaQvqDQS8Y7hqXC8lChJdeoWmqU2CjhE+Ih/wJnq7Ow9
-         VVMg==
-X-Forwarded-Encrypted: i=1; AJvYcCVfuiBMkRsUysY1vMneCVXGFv2eGUtRwfUUjmzMH557Cnzq77B7aAD4JA8JVjmiYpfsG6lxCvuwtsddzK9znTKrHA==@vger.kernel.org, AJvYcCXC0l9UeXN0gWaT4lxfcMbIdFGEfxtCE27gzI//Qbx0uWvMltDGTeWsfpEC8rpqxfnu8P5Qe0Q6NLw=@vger.kernel.org, AJvYcCXjnOQTBRkU/T9HQGD0V4I3+9bxbTxJY1eXUNr1cxZmBQeqMlwtw5ahmR9tz8QB5JCXL2NLM9I+YZ3j+co=@vger.kernel.org
-X-Gm-Message-State: AOJu0YypJApCEOc6ezpRPHzWfuqC6Egd3/bHFKezBSMUb9S11kYFTWYk
-	E3zbNyzS1QkdaddRlQhSPylIhLyL0kkhk3cdOWPETPkAsfVBjTt2mF7PBpHBKmnA
-X-Gm-Gg: ASbGncsOM5ozZlVc+K8Kh0dTBlsGtNeku0VqG8mcXpS0zxsJqvYVAhyO8jcG94o0uNs
-	zQKcdKdrZvd42HLPmYgXr3UEmrQkrayVi3bHKVoyPgq7qqtMdHSp/X7FG00QOVnEI0AYOJoOVEw
-	EJLhn0wR1+xf2anLUYf8XNuFeihZX59YLcuI4p9/ilAvd+uucPzhjc6sZKeD2/bFgpyQubd+fVN
-	0nGeKamlZtOrMJACVejhG9lwRqUZEzUtYRrkrCMzmjcdI4hByt0QdEEsg+lV03wAfDRDn3buHAK
-	jtU1Z43BoP9U+AYOHLbx4H4+ekdQNRQZ1rcYZQvEXyg+MpZt1g==
-X-Google-Smtp-Source: AGHT+IHQGzKHWpB4RSPbdx58AntCVZ2keB8gOeLail6WPggKiKp/eXtko5QLgS4IoilLjWPFK9AAoA==
-X-Received: by 2002:a05:6a00:c83:b0:746:2ae9:fc49 with SMTP id d2e1a72fcca58-748184ab829mr4203417b3a.9.1749129913242;
-        Thu, 05 Jun 2025 06:25:13 -0700 (PDT)
-Received: from hiago-nb ([67.159.246.222])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-747afeab79bsm13234842b3a.50.2025.06.05.06.25.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Jun 2025 06:25:12 -0700 (PDT)
-Date: Thu, 5 Jun 2025 10:25:07 -0300
-From: Hiago De Franco <hiagofranco@gmail.com>
-To: Peng Fan <peng.fan@nxp.com>
-Cc: Mathieu Poirier <mathieu.poirier@linaro.org>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-	"linux-remoteproc@vger.kernel.org" <linux-remoteproc@vger.kernel.org>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Hiago De Franco <hiago.franco@toradex.com>,
-	"imx@lists.linux.dev" <imx@lists.linux.dev>,
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"Peng Fan (OSS)" <peng.fan@oss.nxp.com>,
-	Daniel Baluta <daniel.baluta@nxp.com>,
-	"Iuliana Prodan (OSS)" <iuliana.prodan@oss.nxp.com>,
-	"Rafael J . Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v4 3/3] remoteproc: imx_rproc: detect and attach to
- pre-booted remote cores
-Message-ID: <20250605132507.2td5zlnlapraoggn@hiago-nb>
-References: <20250602131906.25751-1-hiagofranco@gmail.com>
- <20250602131906.25751-4-hiagofranco@gmail.com>
- <PAXPR04MB84594F9ABDF0728D9A71FAFE886CA@PAXPR04MB8459.eurprd04.prod.outlook.com>
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="qSH1k1Bt"
+Received: from kreacher.localnet (unknown [5.63.189.50])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 29D2566C036;
+	Thu,  5 Jun 2025 17:09:44 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1749136184;
+	bh=5w6Yv93zAQ3ErcgdTrPiDO9Q9Wfrs45HpAf7J5N0gZQ=;
+	h=From:Subject:Date;
+	b=qSH1k1BtkumQjRlAiVzukEKaymWbwSyIEpgjTJCKwbbWza9OEwLmY60+XkKsJH/yi
+	 0eChstEywNEVUS5+ZcCor3NJkdVZxYWwedkT4EnfaDFc9WwPayV/zO1qhCbaU4CW9Z
+	 2YwyJRFpzW+v0vHX7daAFV0kVPMH4kBfPzRB833qY3U20izZP7DPnF7v8+qZHyk3rC
+	 FM6RwjMcgrStNBR79iBAOTFmLToLPd/QbiXb5UqpH25bF3N86pgbMd4am7m35Uir/s
+	 Gl47N9xeatvxdHmtOYVRp3BrMGzadQyqAWCr8aKT0HqTChfLq4NQRz5mVL2JV8vv95
+	 UnQEwyMZnDjKg==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: x86 Maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
+ "Gautham R. Shenoy" <gautham.shenoy@amd.com>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Linux ACPI <linux-acpi@vger.kernel.org>
+Subject:
+ [PATCH v1 5/5] Reapply "x86/smp: Eliminate mwait_play_dead_cpuid_hint()"
+Date: Thu, 05 Jun 2025 17:09:35 +0200
+Message-ID: <7813065.EvYhyI6sBW@rjwysocki.net>
+In-Reply-To: <2226957.irdbgypaU6@rjwysocki.net>
+References: <2226957.irdbgypaU6@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <PAXPR04MB84594F9ABDF0728D9A71FAFE886CA@PAXPR04MB8459.eurprd04.prod.outlook.com>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 5.63.189.50
+X-CLIENT-HOSTNAME: 5.63.189.50
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: dmFkZTEzSEGzZ/ONVrWENr6vcXfS3S2jicISDIUk4t6WJg+Zjj/tMsiKrH6p/W9hVn65rDd2JKDd5uTYEHknKQT2r7pOoqF3rdVD5yhK7Rprhh7g9Zvcj23lpp2rY7UCLtUpLjrE40L5kP2ENOt7F7JFMQrsU0BxCSyD9ImwCg/5uHKqloLfTfX1B6buKhq24d5iBCDj1fuCRg5EDPCCcGoXCAG/xJ8DxnVxdLMqNeA6Murrcf5yV2bVSf0qD3cTb1ZGJEaagT8ZwEZw1hwmHq4GBUTZA/geTkMBRKK8IMyXCx4LjU27eYT2E9Bi7kPkpz1heTPAWpmaTKgTxzYdBmQllqRTl/Yl2mbTQxvwrPd3I7zV7RAKW8lL8zC1Qqzv74Nqlxzwid9Qnd2k+6vzP8M8lTjbI3EUY48Qn0InRxGMdT0mI6F/wpdr91v91Wod4Xt1EmxclbwDJX2Is1vMQRh2U2mZLIDQN0M9sNrj+X3o5zkShMz+j9Z0XGTwte4UyGTpMainqH1zLPnxQEI/Cs8t6faBMja0m/aGPSYG7PZDZ0JZ8/fORk3jqIccuBkwbYmzOXwKB1kP9qI0b1DCJzVBeBsHtWzitHFlQ9cMDPKTooa6zSw9QtOGbQS78UXLSL9r4vruh1z2hDnMKDwCCPHN4KlkDj1wHu+122qK3UBoDbQH+w
+X-DCC--Metrics: v370.home.net.pl 1024; Body=12 Fuz1=12 Fuz2=12
 
-Hi Peng,
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Wed, Jun 04, 2025 at 03:19:52AM +0000, Peng Fan wrote:
-> > Subject: [PATCH v4 3/3] remoteproc: imx_rproc: detect and attach to
-> > pre-booted remote cores
-> > 
-> > From: Hiago De Franco <hiago.franco@toradex.com>
-> > 
-> > When the remote core is started before Linux boots (e.g., by the
-> > bootloader), the driver currently is not able to attach because it only
-> > checks for cores running in different partitions. If the core was kicked
-> > by the bootloader, it is in the same partition as Linux and it is already
-> > up and running.
-> > 
-> > This adds power mode verification through dev_pm_genpd_is_on(),
-> > enabling the driver to detect when the remote core is already running
-> > and properly attach to it if all the power domain devices are on.
-> > 
-> > To accomplish this, we need to avoid passing any attach_data or flags
-> > to dev_pm_domain_attach_list(), letting the platform device become a
-> > consumer of the power domain provider. With that the current power
-> > state of the genpds will not change, allowing the detection of the
-> > remote core power state.
-> > 
-> > We enable and sync the device runtime PM during probe to make sure
-> > the power domains are correctly managed when the core is controlled
-> > by the kernel.
-> > 
-> > Suggested-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > Signed-off-by: Hiago De Franco <hiago.franco@toradex.com>
-> > ---
-> > v4: Changed to use the new dev_pm_genpd_is_on() function instead,
-> > as suggested by Ulf. This will now get the power status of the two
-> > remote cores power domains to decided if imx_rpoc needs to attach or
-> > not. In order to do that, pm_runtime_enable() and
-> > pm_runtime_get_sync() were introduced and pd_data was removed.
-> > v3: Unchanged.
-> > v2: Dropped unecessary include. Removed the imx_rproc_is_on
-> > function, as suggested.
-> > v1:
-> > ---
-> >  drivers/remoteproc/imx_rproc.c | 29 ++++++++++++++++++++++++-----
-> >  1 file changed, 24 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/drivers/remoteproc/imx_rproc.c
-> > b/drivers/remoteproc/imx_rproc.c index
-> > 627e57a88db2..6f9680142704 100644
-> > --- a/drivers/remoteproc/imx_rproc.c
-> > +++ b/drivers/remoteproc/imx_rproc.c
-> > @@ -18,6 +18,7 @@
-> >  #include <linux/of_reserved_mem.h>
-> >  #include <linux/platform_device.h>
-> >  #include <linux/pm_domain.h>
-> > +#include <linux/pm_runtime.h>
-> >  #include <linux/reboot.h>
-> >  #include <linux/regmap.h>
-> >  #include <linux/remoteproc.h>
-> > @@ -890,10 +891,8 @@ static int imx_rproc_partition_notify(struct
-> > notifier_block *nb,  static int imx_rproc_attach_pd(struct imx_rproc
-> > *priv)  {
-> >  	struct device *dev = priv->dev;
-> > -	int ret;
-> > -	struct dev_pm_domain_attach_data pd_data = {
-> > -		.pd_flags = PD_FLAG_DEV_LINK_ON,
-> > -	};
-> > +	int ret, i;
-> > +	bool detached = true;
-> > 
-> >  	/*
-> >  	 * If there is only one power-domain entry, the platform driver
-> > framework @@ -902,7 +901,22 @@ static int
-> > imx_rproc_attach_pd(struct imx_rproc *priv)
-> >  	if (dev->pm_domain)
-> >  		return 0;
-> > 
-> > -	ret = dev_pm_domain_attach_list(dev, &pd_data, &priv-
-> > >pd_list);
-> > +	ret = dev_pm_domain_attach_list(dev, NULL, &priv->pd_list);
-> > +	/*
-> > +	 * If all the power domain devices are already turned on, the
-> > remote
-> > +	 * core is already up when the kernel booted (e.g. kicked by
-> > the
-> > +	 * bootloader). In this case attach to it.
-> > +	 */
-> > +	for (i = 0; i < ret; i++) {
-> > +		if (!dev_pm_genpd_is_on(priv->pd_list->pd_devs[i])) {
-> > +			detached = false;
-> > +			break;
-> > +		}
-> > +	}
-> > +
-> > +	if (detached)
-> > +		priv->rproc->state = RPROC_DETACHED;
-> > +
-> >  	return ret < 0 ? ret : 0;
-> >  }
-> > 
-> > @@ -1146,6 +1160,11 @@ static int imx_rproc_probe(struct
-> > platform_device *pdev)
-> >  		}
-> >  	}
-> > 
-> > +	if (dcfg->method == IMX_RPROC_SCU_API) {
-> > +		pm_runtime_enable(dev);
-> > +		pm_runtime_get_sync(dev);
-> 
-> Need put and disable in imx_rproc_remove.
+Revert commit 70523f335734 ("Revert "x86/smp: Eliminate
+mwait_play_dead_cpuid_hint()"") to reapply the changes from commit
+96040f7273e2 ("x86/smp: Eliminate mwait_play_dead_cpuid_hint()")
+reverted by it.
 
-I will add it in a v5, thanks.
+Previously, these changes caused idle power to rise on systems booting
+with "nosmt" in the kernel command line because they effectively caused
+"dead" SMT siblings to remain in idle state C1 after executing the HLT
+instruction, which prevented the processor from reaching package idle
+states deeper than PC2 going forward.
 
-> 
-> BTW: Has this patchset tested with M4 in a separate partition,
-> saying M4 image packed in flash.bin?
+Now, the "dead" SMT siblings are rescanned after initializing a proper
+cpuidle driver for the processor (either intel_idle or ACPI idle), at
+which point they are able to enter a sufficiently deep idle state
+in native_play_dead() via cpuidle, so the code changes in question can
+be reapplied.
 
-Not yet, I will prepare this test today and let you know.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ arch/x86/kernel/smpboot.c |   54 +++++-----------------------------------------
+ 1 file changed, 7 insertions(+), 47 deletions(-)
 
-> 
-> Regards,
-> Peng
-> > +	}
-> > +
-> >  	ret = rproc_add(rproc);
-> >  	if (ret) {
-> >  		dev_err(dev, "rproc_add failed\n");
-> > --
-> > 2.39.5
-> > 
-> 
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -1238,6 +1238,10 @@
+ 	local_irq_disable();
+ }
+ 
++/*
++ * We need to flush the caches before going to sleep, lest we have
++ * dirty data in our caches when we come back up.
++ */
+ void __noreturn mwait_play_dead(unsigned int eax_hint)
+ {
+ 	struct mwait_cpu_dead *md = this_cpu_ptr(&mwait_cpu_dead);
+@@ -1284,50 +1288,6 @@
+ }
+ 
+ /*
+- * We need to flush the caches before going to sleep, lest we have
+- * dirty data in our caches when we come back up.
+- */
+-static inline void mwait_play_dead_cpuid_hint(void)
+-{
+-	unsigned int eax, ebx, ecx, edx;
+-	unsigned int highest_cstate = 0;
+-	unsigned int highest_subcstate = 0;
+-	int i;
+-
+-	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD ||
+-	    boot_cpu_data.x86_vendor == X86_VENDOR_HYGON)
+-		return;
+-	if (!this_cpu_has(X86_FEATURE_MWAIT))
+-		return;
+-	if (!this_cpu_has(X86_FEATURE_CLFLUSH))
+-		return;
+-
+-	eax = CPUID_LEAF_MWAIT;
+-	ecx = 0;
+-	native_cpuid(&eax, &ebx, &ecx, &edx);
+-
+-	/*
+-	 * eax will be 0 if EDX enumeration is not valid.
+-	 * Initialized below to cstate, sub_cstate value when EDX is valid.
+-	 */
+-	if (!(ecx & CPUID5_ECX_EXTENSIONS_SUPPORTED)) {
+-		eax = 0;
+-	} else {
+-		edx >>= MWAIT_SUBSTATE_SIZE;
+-		for (i = 0; i < 7 && edx; i++, edx >>= MWAIT_SUBSTATE_SIZE) {
+-			if (edx & MWAIT_SUBSTATE_MASK) {
+-				highest_cstate = i;
+-				highest_subcstate = edx & MWAIT_SUBSTATE_MASK;
+-			}
+-		}
+-		eax = (highest_cstate << MWAIT_SUBSTATE_SIZE) |
+-			(highest_subcstate - 1);
+-	}
+-
+-	mwait_play_dead(eax);
+-}
+-
+-/*
+  * Kick all "offline" CPUs out of mwait on kexec(). See comment in
+  * mwait_play_dead().
+  */
+@@ -1377,9 +1337,9 @@
+ 	play_dead_common();
+ 	tboot_shutdown(TB_SHUTDOWN_WFS);
+ 
+-	mwait_play_dead_cpuid_hint();
+-	if (cpuidle_play_dead())
+-		hlt_play_dead();
++	/* Below returns only on error. */
++	cpuidle_play_dead();
++	hlt_play_dead();
+ }
+ 
+ #else /* ... !CONFIG_HOTPLUG_CPU */
 
-Best Regards,
-Hiago.
+
+
