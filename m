@@ -1,49 +1,60 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE0812749F0;
-	Thu,  5 Jun 2025 15:10:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749136205; cv=none; b=ZcEMw8LgdhA4Oekf1RxhDCHc2R8yIjHz9b5tL1Mv3l0HUFz0nDCnB2glt03nxUmkTkJ2YTxSwvRJT4Dhs/i3SvPmEmeE+OKdssxWq1/WF/up6/b733WEB4TDo6NCZktTUcxsUrEV3GLfm6XmpApVIUsPIOHgzObtQsOgkpcz9mg=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749136205; c=relaxed/simple;
-	bh=WsntjljouOPbHdbSquLJoJXrNH7kjo5Cyehy4uSQ4Uo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=THledoigrYJcUbMhBXd+rbUROpG4o/Ei/Hmv0oYKWEnd3Ob2/8GosNTm4h9NKb8DjlRyvIxgTx8OsElGVun/m/X/KPbkIRAeMNClpwDjcltAf6DqpoHerCxN98wWwEDrqTkVoLkQHTA+4f4i4CeXqOQ20uq+bGK3W7cAkSc2zS8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=yAUwfp9f; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBA6C13AD3F;
+	Thu,  5 Jun 2025 15:15:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1749136537; cv=pass; b=PkBrasjIY+HYKgngfqp4BTQFxppuNdxtKK/2iAmH2yg7ZFrP/xq+cmswabegei6kwjZnfIeRFOm8jvWgC07sAXLkVlQ3yWN0rGvuVfdm3b63anZPOCIwgSJgkInPgkW/8ssxRT0bV8BLFCPWdw4UkGhY3iy1IJ83QenSbZs7E0w=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1749136537; c=relaxed/simple;
+	bh=GgJMseciY2sRjSScoO4X8MCR1HDf9uZ8s4u0sGGTtAc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=PwUQZ+oJIHhUU1j+RS3BZAOQKWCBidqHjrL2A1HLZp5dxLdJwmn62VQQ4lst1AOYOq1ocMlVurlKJ20iAQ8RV0jK7gDSIhkXVAt0RKjloBZvy6MaMjfw2Lxxddyr3A4b6eucbujIPUG0uq+PhQ+HzjEGhzwq+aRwKMsu0WMdhzc=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=e51u7eqb; arc=pass smtp.client-ip=136.143.188.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="yAUwfp9f"
-Received: from kreacher.localnet (unknown [5.63.189.50])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 1F2A966C044;
-	Thu,  5 Jun 2025 17:09:49 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1749136189;
-	bh=WsntjljouOPbHdbSquLJoJXrNH7kjo5Cyehy4uSQ4Uo=;
-	h=From:Subject:Date;
-	b=yAUwfp9f6+Yf3Fewx70/e6mr97+PWDZevnXvooQV8plIaTg3M2rfGuhgE2J77lvnX
-	 cXwkfCWJhXaA06qOCNMMqAMR0rK4BCUU9rgUJS0QacqkFCPitzhG6UjKfdpifdfLeR
-	 7m+OHbBGcAPYuLFwtopHYH0OtEcrTo1onq/op+qBmDdPVh21eJh68HKBGoYgtkIX+a
-	 lp4XksNWMNRwXi3Yri7fxst6cQ73jtOdjA+FqabwOxBJpBPdi0UcNOlfmlMEJNeSYz
-	 2nF0As3011AkOtnjrp47SOzF0U9X+DCCJNgJZUIsSJ/iehKq72En5ndTKkR0kTFHDb
-	 ooiCdJVItfoMA==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: x86 Maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
- "Gautham R. Shenoy" <gautham.shenoy@amd.com>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Linux ACPI <linux-acpi@vger.kernel.org>
-Subject:
- [PATCH v1 0/5] x86/smp: Restore the elimination of
- mwait_play_dead_cpuid_hint()
-Date: Thu, 05 Jun 2025 17:03:01 +0200
-Message-ID: <2226957.irdbgypaU6@rjwysocki.net>
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="e51u7eqb"
+ARC-Seal: i=1; a=rsa-sha256; t=1749136492; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=ENI8hMjvEmJfVrQRZSFpDbyKHVOtvfZuTm5qF/vEk1X9P4OigUMMG7qLVI2qosebz8ddrxGGYzEZZiDtjkR/dCK0ZzXU3/xZFoNQI6xUCziEB0er4zPVxDzJaiJQt0t0dnHoGf0FOh/E7kyj9Lb841Ko3RteQbTAgBr7G0EjjoA=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1749136492; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=/GuYrfRIt3NP/tsfwxH5PFscLlX5erdLhDtZ3+v8kg0=; 
+	b=CiS2fKxauqWUQMP1ejrx8adcDEkkl3oZ9DnqHwWhoP2htA9pVuSul4sJER3KjYov9/oJHH+vXa3rrpAceqawTxO200NM8svS0Pbuz5sYizX1xmOcNiZIW3eUU/NUpsLul3u+Q05GGFSkV1fBADbU+vzKAf4pLubew6rSiEdAO4Q=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
+	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1749136492;
+	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
+	h=From:From:To:To:Cc:Cc:Subject:Subject:Date:Date:Message-ID:In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:Content-Type:Message-Id:Reply-To;
+	bh=/GuYrfRIt3NP/tsfwxH5PFscLlX5erdLhDtZ3+v8kg0=;
+	b=e51u7eqbnLxwYY5yZzmLXXP5HnH4XLEy+59bYwU7yq79RAHad1ASKDdWUvA4NKtU
+	WuBzAfplXeyVY87JQsYejDcYPp1lcBqOWM5b+r0qfTjEoxE3JGEyEtz3kpv7NbmYyMh
+	S0FMhUYFU5gwxET6NfPaMpw+TuQSLF2t0mAg7jGE=
+Received: by mx.zohomail.com with SMTPS id 1749136491036595.9387295759052;
+	Thu, 5 Jun 2025 08:14:51 -0700 (PDT)
+From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+To: Chanwoo Choi <cw00.choi@samsung.com>,
+ MyungJoo Ham <myungjoo.ham@samsung.com>,
+ Kyungmin Park <kyungmin.park@samsung.com>, Heiko Stuebner <heiko@sntech.de>,
+ Sascha Hauer <s.hauer@pengutronix.de>,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+ Sebastian Reichel <sebastian.reichel@collabora.com>,
+ Diederik de Haas <didi.debian@cknow.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-rockchip@lists.infradead.org, kernel@collabora.com,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 2/2] PM / devfreq: rockchip-dfi: add support for LPDDR5
+Date: Thu, 05 Jun 2025 17:14:46 +0200
+Message-ID: <4244538.aeNJFYEL58@workhorse>
+In-Reply-To: <DADLSAEF1YPO.V0CQK084KFFO@cknow.org>
+References:
+ <20250530-rk3588-dfi-improvements-v1-0-6e077c243a95@collabora.com>
+ <20250530-rk3588-dfi-improvements-v1-2-6e077c243a95@collabora.com>
+ <DADLSAEF1YPO.V0CQK084KFFO@cknow.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -51,47 +62,78 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 5.63.189.50
-X-CLIENT-HOSTNAME: 5.63.189.50
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: dmFkZTFgxoheEI+NWfLhkXW46nOJRwoQPjyhtjzK2PMeqp+IFBJDv0dbEecaOBBQv3ODI5hHoLvKO4qggjV7wMyUKH7rvpHM+2q0khd4cBskzjMXa5OVP6/fvVR4NX+IAE5MxbqJhaHV/vLI25++Oxhw0XvJ7Tw1sFvnxsCKjMaiNir/+zhHMbLDTXMAKwoMw0omSoSUQQcZvFJ3WoDQZACckhevk32yYB4ONnkF33LKMXdb51mmTA7HQ7cV8udNC0KF6dGNnLw14bB1fQ1KCQnmYPrUcnheafZ9YxO/DRArbD7H2nOxZzsT37izNVqDHA/Ekyf57/cQFQp8EyOMgRwfFYdCqY4sdDZ3bAYNLDffVlO7RVG9gvXiWPM4sr5/zc6m+y93dNVw/ZMAQ4micCAd0lhuTTl/FJdeD00HpzHXNaK6SUO9i/8mCO7qfOfojK/6TNe+EQEy2XQh/ErVRhx7lseeN4BNoMpGyb5M7au63GWlsF+FkMls3U8c+pOy9tFEUmjA2koqWVQpvzSEL+7Ry6ZFV5q06EH7Mm6LC9lB1JOXiWlxjHg8rGDuksaF0wGoZ7fbeFSzTC57fjeTVg53UmmsFHwz6KoZZ7aJnvrB7EYQVoHKKjUuSFd+9Vct5D+vsS9T9uyBeW4C0Thj/zoF2bXbvDzsXzYYYojt89IjKIl/mQ
-X-DCC--Metrics: v370.home.net.pl 1024; Body=12 Fuz1=12 Fuz2=12
+Content-Type: text/plain; charset="utf-8"
 
-Hi Everyone,
+Hello Diederik,
 
-The purpose of this series is to reapply the code changes from commit
-96040f7273e2 ("x86/smp: Eliminate mwait_play_dead_cpuid_hint()") that
-has been reverted because of an issue introduced by it.  This takes
-place in the last patch ([5/5]) and the previous patches make
-preparatory changes needed to avoid breaking systems in the field
-once again.
+On Wednesday, 4 June 2025 10:24:33 Central European Summer Time Diederik de Haas wrote:
+> Hi Nicolas,
+> 
+> On Fri May 30, 2025 at 3:38 PM CEST, Nicolas Frattaroli wrote:
+> > [...]
+> > +	case ROCKCHIP_DDRTYPE_LPDDR5:
+> > +		ddrmon_ver = readl_relaxed(dfi->regs);
+> > +		if (ddrmon_ver < 0x40) {
+> > +			*ctrl = DDRMON_CTRL_LPDDR5 | dfi->lp5_bank_mode;
+> > +			*mask |= DDRMON_CTRL_LP5_BANK_MODE_MASK;
+> > +			break;
+> > +		}
+> > +
+> > +		/*
+> > +		 * As it is unknown whether the unpleasant special case
+> > +		 * behaviour used by the vendor kernel is needed for any
+> > +		 * shipping hardware, ask users to report if they have
+> > +		 * some of that hardware.
+> > +		 */
+> > +		dev_err(&dfi->edev->dev,
+> > +			"unsupported DDRMON version 0x%04X, please let linux-rockchip know!\n",
+> > +			ddrmon_ver);
+> > +		return -EOPNOTSUPP;
+> 
+> I'm guessing you mean the linux-rockchip mailing list here? If so, I
+> think it's better to make that explicit as 'Joe User' who may run into
+> this issue may not be aware of that mailing list. The 'linux' and
+> 'rockchip' name combo is used in quite a few places.
 
-The problem with commit 96040f7273e2 was that on SMT-capable systems
-booting with "nosmt" in the kernel command line, the "dead" SMT siblings
-were stuck in idle state C1 after initialization because they were
-initialized before a proper cpuidle driver for the given platform got
-ready.  That prevented the whole processor from entering deep package
-C-states later on and pretty much ruined idle power (including power
-in suspend-to-idle).
+I agree it's ambiguous, the message as it is right now is the way it is
+because we're not allowed to linebreak user-facing messages for grep-
+ability and I also don't want to exceed 100 lines of width (though this
+is the one case where we're allowed to).
 
-To prevent that from happening, patches [1-4/5] use the approach that
-has been used for some time to address an analogous issue during resume
-from hibernation, in which case the "dead" SMT siblings are also in C1
-when the image kernel gets control back and they need to be put into
-sufficiently deep C-states.  Namely, they are taken online and then
-back offline immediately to make that happen.
+I suppose I should just replace it with the e-mail address of the list.
+That should be clear enough and this error message also won't end up in
+random boot logs strewn across the internet if it really is just some
+engineering sample hardware or similar that's affected.
 
-The general idea is to take the "dead" SMT siblings online and then
-back offline immediately when a proper cpuidle driver gets ready, but
-some changes are made to avoid doing that twice in a row in vain.
-For this purpose, the intel_idle driver initialization is pushed
-to an earlier initialization phase (patch [1/5]) and the ACPI
-processor driver only "rescans" the "dead" SMT siblings when
-the ACPI idle driver is the current cpuidle driver.  It also
-avoids doing this on architectures other than x86 (patch [4/5]).
+Kind regards,
+Nicolas Frattaroli
 
-Thanks!
+> 
+> Cheers,
+>   Diederik
+> 
+> > +	default:
+> > +		dev_err(&dfi->edev->dev, "unsupported memory type 0x%X\n",
+> > +			dfi->ddr_type);
+> > +		return -EOPNOTSUPP;
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> >  static int rockchip_dfi_enable(struct rockchip_dfi *dfi)
+> >  {
+> >  	void __iomem *dfi_regs = dfi->regs;
+> >  	int i, ret = 0;
+> > +	u32 ctrl;
+> > +	u32 ctrl_mask;
+> >  
+> >  	mutex_lock(&dfi->mutex);
+> >  
+> > @@ -136,8 +186,11 @@ static int rockchip_dfi_enable(struct rockchip_dfi *dfi)
+> > <snip>
+> 
+
 
 
 
