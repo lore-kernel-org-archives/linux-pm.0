@@ -1,199 +1,131 @@
-Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com [209.85.214.182])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F1D5236421
-	for <linux-pm@vger.kernel.org>; Fri,  6 Jun 2025 22:24:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4DA6A126C17;
+	Fri,  6 Jun 2025 23:23:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749248683; cv=none; b=d0nw2bjLrwSstPmS+At0d7uBbBb7MtG72fByMLiX6EMkKYOtI//ltOUlqq9mnASwuTPrJvkcKOk6SMMcffHkSkvlg8qZkpjSAWlcc0th+4EoAoxG1EWrHtTgz8W4lfYxVpXkEI9JRvH1kQokjRbiXEjIuKu97qZCSo9MsrZPnRM=
+	t=1749252224; cv=none; b=c6rbyqTQo48+lY2F5HScMnHghuBVtWF998nSjCgazHWjekXgokHii9do3vQrm4FuOq3T1vg0USRC2rH8gckU3GWo7qz5S96gc6d/QWdNx2lfdx0Eq2yJ55TzuYUrNzO9x2uzfWHsU2oVRdOISH2+uwl2s2LjCCaI3u/hOCDIAic=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749248683; c=relaxed/simple;
-	bh=l/GaUTCtB9M9NLyUMV1ziE5vtpFqMU3SOb/ryyWlAwU=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=Dom0UYH97BjvC/2oumWtCM6yqlqGdzF3I7A2zNIgC9exoT/v+I0+6HMyLg54dK/WfFpLIwFGggAoLJeidHW5W9rWtY4GdQ+QMt39nbTvlGfwbqjo4vE25dN43xlCydY86RLGKSswuIhU8P0GHM2ULoSMRxOgvf7O9ACgt7bJoBI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=c+IN61WG; arc=none smtp.client-ip=209.85.214.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1749252224; c=relaxed/simple;
+	bh=nk0adjKeA8nMvS/JXyOJRsJFhrbYKZB2dialpfkhKwg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JDt6+TMYFc+W8Ac3omdJpjwL6nMCL0BLBNjPD1w3MCgUMA708CzLAtl3/2Lxrt5vdZ/gwBkR+I4pLV1Bf9lueGhtr1EP8vSPXvlO+7qTor+sugQ143JwiqdpLw8hR1J3uyHVQotQ/6Nc5LFEJVN7Sw9Pm6mmHHv16F/ubEjld/Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=kNiFaxTS; arc=none smtp.client-ip=198.175.65.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="c+IN61WG"
-Received: by mail-pl1-f182.google.com with SMTP id d9443c01a7336-235f9e87f78so20865065ad.2
-        for <linux-pm@vger.kernel.org>; Fri, 06 Jun 2025 15:24:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1749248680; x=1749853480; darn=vger.kernel.org;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=0pYG25uNc2n9fOHMKUGQ8EBdQt5+P5oxxO35w9SxQS0=;
-        b=c+IN61WGnVRfaeh/PvgYBYwR7I+V0v0JAfS+nhevDlqpLL2U/oMmtMkL4PGH8bwIVq
-         yLe0vGCygIO6xk6YFE3gkW+1bKqLpG8rQvcBXg0YqCfov+tWLLEKFxQnaV0otbKp3A+n
-         b7TlcA5F1dNLYwvAKy+8IGFOmk9pu/18tTkelW+4ai2QlX2KvLUueI5ke0QdWUqCHsNS
-         E38nmY1EFAI4HIyT2gojJaAJXkzY5tEgbz3ATstBN21Xs9Q8g7N2vBLTpubfQeza+u2k
-         Rkg78a2UnwjPkPnT12dg39IBU0KJYZ4aV9ygITdz99zv23ZMo427nzQesEldd9v+UCCb
-         UPHA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749248680; x=1749853480;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=0pYG25uNc2n9fOHMKUGQ8EBdQt5+P5oxxO35w9SxQS0=;
-        b=ol9Td0nU4zVJTje+RHYNGCStG8o9w8EkbXSyhc4BVvAXuROY4xcUKgZfFdrsR3DNHx
-         kBy0Fl6efSDV9eMZBYOtNWqDcgUVEQQR4LxxdzFfFq74gp39dEtUvh6zFFORACVcNvvs
-         +N+d1zo6nELHBJVNxVQrcjmf5Z0tv4AjOLKXM4HdHSoAXNkp96XbBHgHndzMrXFjmKhS
-         TsVFsAV811uIZHeDQPvJG2+Ojaw0HTlgzKo5qiCNcW5aGSY8lCu19f3hdHZMH5hqh05d
-         fDBsUlsJfUwdIv2MuzFgQJ8ZNCIkeuVvdtkskpKWEDdXiS2ReUsIfPorSQZRd523lj5n
-         cP1Q==
-X-Forwarded-Encrypted: i=1; AJvYcCXSEEVd+FX/V2Vj5pF98DFihdh0xa9kzPZTJQSR6hbN+Oh6m+yb+A4FgTJKFJRUz7XPwyZKfaxTyw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwIM7d7WA5TgEJwDqs1ACvRz+iu0vZW1D+ot1YGnhmYUvSMlNDQ
-	qz7Un+vC/X9xhMUXb+2/eQ/4Bxm2KQmObAPd9pP9HtJWM0ng3e44RZpfwvqa1/L+RD0=
-X-Gm-Gg: ASbGncupT0Y2b4YRVCxGOcUq/XeVpskLkCjuFFuIkfdNgjCSXTHLdkk7Bb260mI0+F/
-	QsYACwY9MyVN8z5EJgMIXJuXRzpLZG6XYCVIR0oViS5+G7K1rM/pDlVWV5W+Gmoa/aU6WSqGOX7
-	xR3Fcc2EBLkHviW1ybJytilRAnoTMYIY/CAUi8QS9V+boQ9GJwN9rwLyGfIwK99dmiTmiybQY6J
-	c+iMjeGNQkNS+wJ+cs7MSOHF90sPPX+68AtbqWZBTeDSSkI+hmFYqbNV+f2geZPBSyV2PQ70/S8
-	mETElNMy8JK3I7D2Ig8tVLGAuj2H2dgzNHfcEecTB5oWwzdIxfVVR0qWaMLj
-X-Google-Smtp-Source: AGHT+IGaFH7zJsEzEYshn2+g3clbSYNKEpXNRLHwkKBWDVvppEVYcd31LnIc2/CbFDj/U8yN0FJ7XQ==
-X-Received: by 2002:a17:902:ea0d:b0:235:eb8b:9968 with SMTP id d9443c01a7336-23601d71213mr73856945ad.36.1749248680262;
-        Fri, 06 Jun 2025 15:24:40 -0700 (PDT)
-Received: from localhost ([97.126.182.119])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-23603405205sm17150335ad.160.2025.06.06.15.24.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 06 Jun 2025 15:24:39 -0700 (PDT)
-From: Kevin Hilman <khilman@baylibre.com>
-To: Rob Herring <robh@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Krzysztof Kozlowski
- <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, "Rafael J.
- Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- arm-scmi@vger.kernel.org
-Subject: Re: [PATCH RFC v2 2/2] pmdomain: core: use DT map to support hierarchy
-In-Reply-To: <20250530135741.GA1598718-robh@kernel.org>
-References: <20250528-pmdomain-hierarchy-onecell-v2-0-7885ae45e59c@baylibre.com>
- <20250528-pmdomain-hierarchy-onecell-v2-2-7885ae45e59c@baylibre.com>
- <20250530135741.GA1598718-robh@kernel.org>
-Date: Fri, 06 Jun 2025 15:24:38 -0700
-Message-ID: <7hecvwld95.fsf@baylibre.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="kNiFaxTS"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1749252222; x=1780788222;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=nk0adjKeA8nMvS/JXyOJRsJFhrbYKZB2dialpfkhKwg=;
+  b=kNiFaxTStnfLTYAK74XsPw1UuJxUThXB3gWxPNIeZpZqhS4yz1AXOv78
+   o1az6wQDN1QeKmB27eRutzqteC+TIjyrE1mzM3sK/xbqXjnGq6g4urpR0
+   4D8LVng8Bl6BPSxyJlWZJrcOiXssRcr0D6+Zgsl/gxtTG8RN2oNXVG6xt
+   bs7vj4cFnJVls11JbxxHLQHPboZc6RsWYT1mglSLsuhSdQRqgvuT2C/e0
+   fq3c98pkvkShoy97HYNU3AQRa+9PBkdfVFE+itk61JOwFyh/MXBzqIIj0
+   bg6rjlpEvBgaZQCGCneI+MlDHIfSS/tVUbH29d9cTi3nXMOzdyx4XgnmO
+   Q==;
+X-CSE-ConnectionGUID: XN57pPFnSBGJvLcoXMwsRA==
+X-CSE-MsgGUID: cPj8855RSPGPXpNQEGBfvg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11456"; a="62809855"
+X-IronPort-AV: E=Sophos;i="6.16,216,1744095600"; 
+   d="scan'208";a="62809855"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Jun 2025 16:23:41 -0700
+X-CSE-ConnectionGUID: 6vARsndVQ9OefKbRucXDKQ==
+X-CSE-MsgGUID: VYhtg7hyTXqW0/RCPetyWA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.16,216,1744095600"; 
+   d="scan'208";a="145878058"
+Received: from lkp-server01.sh.intel.com (HELO e8142ee1dce2) ([10.239.97.150])
+  by orviesa010.jf.intel.com with ESMTP; 06 Jun 2025 16:23:37 -0700
+Received: from kbuild by e8142ee1dce2 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1uNgPO-0005Kt-2q;
+	Fri, 06 Jun 2025 23:23:34 +0000
+Date: Sat, 7 Jun 2025 07:23:21 +0800
+From: kernel test robot <lkp@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Yury Norov <yury.norov@gmail.com>, Miguel Ojeda <ojeda@kernel.org>,
+	Alex Gaynor <alex.gaynor@gmail.com>,
+	Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>,
+	=?iso-8859-1?Q?Bj=F6rn?= Roy Baron <bjorn3_gh@protonmail.com>,
+	Benno Lossin <lossin@kernel.org>,
+	Andreas Hindborg <a.hindborg@kernel.org>,
+	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
+	Danilo Krummrich <dakr@kernel.org>
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	rust-for-linux@vger.kernel.org
+Subject: Re: [PATCH] rust: cpumask: Validate CPU number in set() and clear()
+Message-ID: <202506070707.giDP6xhc-lkp@intel.com>
+References: <8b5fc7889a7aacbd9f1f7412c99f02c736bde190.1749183428.git.viresh.kumar@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8b5fc7889a7aacbd9f1f7412c99f02c736bde190.1749183428.git.viresh.kumar@linaro.org>
 
-Hi Rob,
+Hi Viresh,
 
-Rob Herring <robh@kernel.org> writes:
+kernel test robot noticed the following build errors:
 
-> On Wed, May 28, 2025 at 02:58:52PM -0700, Kevin Hilman wrote:
->> Currently, PM domains can only support hierarchy for simple
->> providers (e.g. ones with #power-domain-cells = 0).
->> 
->> Add support for oncell providers as well by adding support for a nexus
->> node map, as described in section 2.5.1 of the DT spec.
->> 
->> For example, an SCMI PM domain provider might be a subdomain of
->> multiple parent domains. In this example, the parent domains are
->> MAIN_PD and WKUP_PD:
->> 
->>     scmi_pds: protocol@11 {
->>         reg = <0x11>;
->>         #power-domain-cells = <1>;
->>         power-domain-map = <15 &MAIN_PD>,
->>                            <19 &WKUP_PD>;
->>     };
->> 
->> With the new map, child domain 15 (scmi_pds 15) becomes a
->> subdomain of MAIN_PD, and child domain 19 (scmi_pds 19) becomes a
->> subdomain of WKUP_PD.
->> 
->> Signed-off-by: Kevin Hilman <khilman@baylibre.com>
+[auto build test ERROR on rafael-pm/linux-next]
+[also build test ERROR on rafael-pm/bleeding-edge linus/master next-20250606]
+[cannot apply to v6.15]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-[...]
+url:    https://github.com/intel-lab-lkp/linux/commits/Viresh-Kumar/rust-cpumask-Validate-CPU-number-in-set-and-clear/20250606-121822
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+patch link:    https://lore.kernel.org/r/8b5fc7889a7aacbd9f1f7412c99f02c736bde190.1749183428.git.viresh.kumar%40linaro.org
+patch subject: [PATCH] rust: cpumask: Validate CPU number in set() and clear()
+config: um-randconfig-001-20250607 (https://download.01.org/0day-ci/archive/20250607/202506070707.giDP6xhc-lkp@intel.com/config)
+compiler: clang version 21.0.0git (https://github.com/llvm/llvm-project f819f46284f2a79790038e1f6649172789734ae8)
+rustc: rustc 1.78.0 (9b00956e5 2024-04-29)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250607/202506070707.giDP6xhc-lkp@intel.com/reproduce)
 
->> +/**
->> + * of_genpd_parse_domains_map() - Parse power-domains-map property for Nexus mapping
->> + * @np: Device node pointer associated with the PM domain provider.
->> + * @data: Pointer to the onecell data associated with the PM domain provider.
->> + *
->> + * Parse the power-domains-map property to establish parent-child relationships
->> + * for PM domains using Nexus node mapping as defined in the device tree
->> + * specification section v2.5.1.
->> + *
->> + * The power-domains-map property format is:
->> + * power-domains-map = <child_specifier target_phandle [target_specifier]>, ...;
->> + *
->> + * Where:
->> + * - child_specifier: The child domain ID that should be mapped
->> + * - target_phandle: Phandle to the parent PM domain provider
->> + * - target_specifier: Optional arguments for the parent provider (if it has #power-domain-cells > 0)
->> + *
->> + * Returns 0 on success, -ENOENT if property doesn't exist, or negative error code.
->> + */
->> +static int of_genpd_parse_domains_map(struct device_node *np,
->> +				      struct genpd_onecell_data *data)
->> +{
->> +	struct of_phandle_args parent_args;
->> +	struct generic_pm_domain *parent_genpd, *child_genpd;
->> +	u32 *map_entries;
->> +	int map_len, child_cells, i, ret;
->> +	u32 child_id;
->> +
->> +	/* Check if power-domains-map property exists */
->> +	map_len = of_property_count_u32_elems(np, "power-domains-map");
->> +	if (map_len <= 0)
->> +		return -ENOENT;
->
-> Don't implement your own map parsing. Use or extend 
-> of_parse_phandle_with_args_map().
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202506070707.giDP6xhc-lkp@intel.com/
 
-So I've been wrestling with this for a bit, and I need some guidance.
-TBH, these "nexus node maps" and of_parse_phandle_with_args_map() are
-breaking my brain.
+All errors (new ones prefixed by >>):
 
-So, my node looks like this:
+   ***
+   *** Rust bindings generator 'bindgen' < 0.69.5 together with libclang >= 19.1
+   *** may not work due to a bug (https://github.com/rust-lang/rust-bindgen/pull/2824),
+   *** unless patched (like Debian's).
+   ***   Your bindgen version:  0.65.1
+   ***   Your libclang version: 21.0.0
+   ***
+   ***
+   *** Please see Documentation/rust/quick-start.rst for details
+   *** on how to set up the Rust support.
+   ***
+>> error[E0425]: cannot find value `nr_cpu_ids` in crate `bindings`
+   --> rust/kernel/cpumask.rs:96:38
+   |
+   96 |         if unsafe { cpu >= bindings::nr_cpu_ids } {
+   |                                      ^^^^^^^^^^ not found in `bindings`
+--
+>> error[E0425]: cannot find value `nr_cpu_ids` in crate `bindings`
+   --> rust/kernel/cpumask.rs:113:45
+   |
+   113 |         if unsafe { cpu as u32 >= bindings::nr_cpu_ids } {
+   |                                             ^^^^^^^^^^ not found in `bindings`
 
-	scmi_pds: protocol@11 {
-		reg = <0x11>;
-		#power-domain-cells = <1>;
-		bootph-all;
-
-		power-domain-map = <15 &MAIN_PD>,
-				   <19 &WKUP_PD>;
-	};
-
-my first attempt was to iterate over the child domains by calling:
-
-  of_parse_phandle_with_args_map(np, "power-domains", "power-domain", i,  &mapped_args);  
-
-but this doesn't find any entries because my node doesn't have the
-"base" property.  So I gathered (perhaps mistakenly) that I was missing
-something, so I added:
-
-		power-domains = <&MAIN_PD>, <&WKUP_PD>;
-
-to that node and try to iterate again. Now I got a match for i=0 (it
-returns the node for MAIN_PD) and i=1 (it returns the node for WKUP_PD)
-
-So I gather from that that the index arg to of_parse_phandle_with_args_map()
-is the index into the -map array.  OK, fine.
-
-So I know that the 0th entry in my -map points to &MAIN_PD, an dthe 1st
-entry in the -map points to &WKUP_PD, but I don't see how to get the
-child ID without (re)parsing the -map again myself because
-of_parse_phandle_with_args_map() doesn't give me any information about
-the child ID.
-
-I can maybe see that in other usecases, the caller might not need the
-child ID because it's being (re)mapped, but I need the child ID because
-it's the pmdomain belonging to the child ID that I need to add as a
-subdomain to the pmdomain of the parent.
-
-However, thinking through this, I'm now realizing that maybe the problem
-is that I cannot have a sparse -map table.  For this to work properly,
-maybe my <15 &MAIN_PD> needs to be the 15th entry in the table (or
-technically 16th if it's zero based)?
-
-But before I go down any more rabbit holes, I wanted to check with folks
-who understand this stuff and see if I'm on the right track or if I've
-missed the boat on how to use of_parse_phandle_with_args_map().
-
-Guidance, suggetions and/or public riducle are welcome. ;)
-
-Kevin
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
