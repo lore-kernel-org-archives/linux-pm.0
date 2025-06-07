@@ -1,224 +1,128 @@
-Received: from mout.perfora.net (mout.perfora.net [74.208.4.197])
+Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de [80.237.130.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B88BD42A83;
-	Fri,  6 Jun 2025 23:42:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.208.4.197
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65DE51D6193
+	for <linux-pm@vger.kernel.org>; Sat,  7 Jun 2025 07:51:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.237.130.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749253337; cv=none; b=PLYIJNxj5LDM8+4oyr2YwQslDYnkgUjPkjkUsN2NsS5JqLZikHTJEGvbFU5c4h6tC6CMpUJ0PQk2RqdNSIuuONygPH4UvshKFurXpRvPpqQYtWNO28/uj/ZCZMesRAcs0gpSpO+cqcxiGwkTCz/RonIdGAGy7Qh9yu0hS5kpF04=
+	t=1749282669; cv=none; b=bT6zOwc+jkgh9BBNuQZUgPlzJjpH2ovevtnOaOWJkWDW5EMML+3V3WAgqxnAKGw8uPLWnSLsygslYE8JEYIINGj7IbmAkug4zhPJ2kIJnVVMF3gbfiGQEy2lefWXuCLSYQ+HIT+U5Js4ZK7eeGtcLV/LFLxZ1qAb3MiU0ZWTW3U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749253337; c=relaxed/simple;
-	bh=C+IR39tUkiTTCkYcCBh9yKbjRvfgTXZzNOf0olfsY2o=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=sMsTREQqlCH0eHvrYclMWm5sOOCdBdQSSsvV+Pa9DcNfi8rFEXewsfeXDW+13/PFy4UiXSJP/WAEexVoWSZbrZ5/NrqFpf6iW6JLWaFYdUN63GfDXizv1ne55JVR/CHy71qwBDMPRnKebiDeMAQyVOIV8lwdWqw1lnPSWLsKNCM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=codesensesolutions.com; spf=pass smtp.mailfrom=codesensesolutions.com; dkim=pass (2048-bit key) header.d=codesensesolutions.com header.i=joe.walter@codesensesolutions.com header.b=zjb+416c; arc=none smtp.client-ip=74.208.4.197
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=codesensesolutions.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=codesensesolutions.com
+	s=arc-20240116; t=1749282669; c=relaxed/simple;
+	bh=AXJAH3uY48Ed4CsD26WXNULA89MjIzh0wjE3KUViDzc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=mbntCTuShWPWR06a2uSOS7mGNp3lcf2PJzSznvGW0FA8Q8HCgMcKEV/xc6vsdoQxSDakxQmCn6SaaHxpHeqNjrvDavhtndhU5S4u3TdcbXrwuw7LocS3k7hqH8DO7VF0hPlSoGN94Aq7l71miCpgQW2B0lAZdicwYJC2d8JBMb0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=leemhuis.info; spf=pass smtp.mailfrom=leemhuis.info; dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b=rKRk0A5D; arc=none smtp.client-ip=80.237.130.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=leemhuis.info
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=leemhuis.info
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=codesensesolutions.com header.i=joe.walter@codesensesolutions.com header.b="zjb+416c"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codesensesolutions.com; s=s1-ionos; t=1749253333; x=1749858133;
-	i=joe.walter@codesensesolutions.com;
-	bh=pQc42KUwgUGS2WmegoHpY8vL7gP3oEBUaiYeFR/4kEU=;
-	h=X-UI-Sender-Class:From:To:Cc:Subject:Date:Message-ID:
-	 MIME-Version:Content-Transfer-Encoding:cc:
-	 content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=zjb+416cjfA7p7tRTUMQlYA0s6YDBM0i0oqaC8AU2OaWfSflCkguOKKzRlxcAuS6
-	 ICBc7yqG2qeHzlFf3V4kJaSyqmwgbOdEgqTE6cdzthxls0/L8FDDkyGrGRb7UHqCp
-	 9/4bDhDFZgKpZyAREmlRWxqccbAoiOKYubE91ZrtnY1HO500m8SvuMhCiY+Gpqh50
-	 Zvc2Grkvn1Ofvj5yr+YsBndVSnMEEmNdEPEL9q8qZrUAIIaJnUjvyWQZ/y8WSFOUl
-	 fX0F557POdkZhz/9kAvCon2oR6eK57MOSEw3iMudHdl4G2BRttGtb5VZ53DiRAXKI
-	 RwRbU082CwS8KXYRqA==
-X-UI-Sender-Class: 55c96926-9e95-11ee-ae09-1f7a4046a0f6
-Received: from jennycraig-lappy ([50.225.178.2]) by mrelay.perfora.net
- (mreueus002 [74.208.5.2]) with ESMTPSA (Nemesis) id 0LufTy-1uo75S2j0y-015Ev5;
- Sat, 07 Jun 2025 01:16:46 +0200
-From: Joe Walter <joe.walter@codesensesolutions.com>
-To: srinivas.pandruvada@linux.intel.com,
-	rafael@kernel.org
-Cc: viresh.kumar@linaro.org,
-	lenb@kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Joe Walter <joe.walter@codesensesolutions.com>
-Subject: [PATCH] cpufreq: intel_pstate: Add DMI quirk for Dell Inspiron systems
-Date: Fri,  6 Jun 2025 16:15:30 -0700
-Message-ID: <20250606231530.3032-1-joe.walter@codesensesolutions.com>
-X-Mailer: git-send-email 2.48.1
+	dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b="rKRk0A5D"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=leemhuis.info; s=he214686; h=Content-Transfer-Encoding:Content-Type:
+	In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:From:
+	Sender:Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
+	Content-Transfer-Encoding:Content-ID:Content-Description:In-Reply-To:
+	References; bh=kJGMj6Xl38XkbHW0TqppSMwXqreutrH7MRsAkcagsPw=; t=1749282665;
+	x=1749714665; b=rKRk0A5DIlZ9Pvh1I/axE3qd8TbWCngP2TJCCL0Yz2s29nqL1jKIwloyrFL9A
+	Cn99N0diLJJ6oLVq1kHCcVdzQj7wqKirK3y8NQm4EwOKcGNhVCsihCaOiF1xCyLCAuGguoX2TFLU5
+	zqkiObTBzII+ClyQPAUTHMwpQBS/+Cn4H57xCmTkslxHYryrrDVNAxH0cjiNQB9d0cR4upGSSXxWy
+	YK5ynwtyJJm+kGmkkHzHzLUIaqXV9ZwGk7h9iR0P9s74iXZ1Bkn7uUUYeY+13J9vHWmFKGqM4vZqk
+	DGCQ7LCPtEUBImjOGoq6TqprEnt7oibvBGyiImzjiA4HcvjaYg==;
+Received: from [212.47.9.51] (helo=[10.120.34.54]); authenticated
+	by wp530.webpack.hosteurope.de running ExIM with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128)
+	id 1uNoKP-007FMt-20;
+	Sat, 07 Jun 2025 09:50:57 +0200
+Message-ID: <b9533ccd-b38d-437e-8315-3ca4672d1b69@leemhuis.info>
+Date: Sat, 7 Jun 2025 09:50:56 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:b7KUDsQQohqjJEPY3hwinrLqrGma3HlyZ//5hJXZdUkCbxMasKf
- tA5PM14YqECe8vVZvIpNJyBqexiAClOqvYSFcmqQVVsdhMW5Og+aDg4/PcQmonElTqKwyJl
- e6pKz4BPZaLwlaHc2eToT+H2e8ywh8AZl2VobclYF+sy1gy07s58FxXPrsGQSPrE3AJEg0x
- XPR7A92SnruTgA+4IakLA==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:GgFBluPKg9M=;rD/a9TXfcYdxfMvNOJTUkrceQBq
- qWt1ysC7kgkujgoCQYQyZKxLtkR/uNa6C2uTjEcesblAUjeXna64Z8UHNBItKdfKL8Qs1vLNw
- 0gI5DTrwcSJlMqLXTcTBnQ+vVg3Ki8O2nR7+tM+LFhmnCmIKqTLVTUs3Nw+ZTmsyGGDk1A0Jw
- //wmpPX898uhz4662RcFg2J/qyMTnyMrbCrTmKmtZtW6XNA6+3B7O3+9nWvBiNJ/MdwTvJFOL
- fRYGOK4SrHzkG1Z1ai8oUUQFNh7Weit38lVS9QCFyrIGQNivQCJJbhCVmzte/Rrddq4nq3vbe
- zrkUQfx9SDjJka6Iho2FQuDsrpiWDzF9clUkkwY6a6krOd7aklwQFRrZDdc4elu8cotiNN/FM
- mB+8dr3fQWTye1FG38BipHLq6i+1voZrMQp+DH5BVWfXBOEY/CMwJROpCXeNxEIPYqHstZjfV
- lL0/Xa5aemtC9BZkVEszplMeYRuhbdjqJcgYxM1jdOiTywabhs70iMZfc55VRgB3jnYOIFh/Y
- B/JHc0urEyeK7vm4GdP5HVYYP0HtZqNkoN0wEF+rm2e3Mz1JolLlMEPwqyVVgCTDTYnjN3E3N
- Itm0pk4tGJcT8br0P6BHxDvJ+uSM8cQxpzxTTBbYPF5LuKEb6gz4D54yiMeEUqdidQrh652JP
- fEA3wnkb9W55ineoefbKk11iR7KwEeVc0gOXYod5ic3rpvSIrV4rqao1yukmcYBJj3+/REBFd
- Tz1PCA+dvgfd4MbNHVWa0qgkAdu5WXMPqgGlWcEJO2VFKtpV4YJDyA5fFmIo7/ChzRq79bnwZ
- HX4JwjJSXGC1yVs8hCEmz9DBwvtVIZ7jsi8hAQHGqfJLU9OoSNbzNYz2X6bIq+GZYRAHRN+70
- mxJjjPcbH9uJrqrqUzpVxo9xCC/by/At3mD/uD/vmlR0Niog5vZ3FkpyVlDN1neAexIvKowqM
- p4QLqb8rOCRSCo5Vg+6OcBF6q4EOkdxM41zY2D4lrR5vTlmutUtdgiBjnwFpuVo94m9PrYu24
- JYJQ7pV/m/tb2HhMiMwvuVcxHL5+C+eL+L+vJEn0GDWxibDEQNl4NCIZtfnYvR9ns0u3oFRTb
- uMZd82VlG87d4dLPtWXLz9PQzVzU3YnJWH5TfmUUyu+d9UkXLrt2g5csgDNjfaBokFVdmEKUt
- Se/hji7SGPTKeQM00KKK5C31mYWNdyUM/rn/6vG28IPh4qE2boAHhWEMInwpZusBRsd1dGbKD
- bqhrtJ1oAlSOzbJ8Oy/ibTVpqoWz6jspkWNaxiebZhBvT/nLNkUnCEaNSEszvYA5imgEZW5Su
- BOoZeYcPgtD4gl/3sGBYZF4aU916tw5K5frSg01r7NF7+VVTDSvJZuoa+MLKriTgPFIlWGaG2
- j4cq9vsJqZC9H9/T8wdkAHOHIroQU9JhuMiqU=
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpupower: split unitdir from libdir in Makefile
+To: Shuah Khan <skhan@linuxfoundation.org>
+Cc: linux-pm list <linux-pm@vger.kernel.org>,
+ Thomas Renninger <trenn@suse.com>, Shuah Khan <shuah@kernel.org>,
+ "John B. Wyatt IV" <jwyatt@redhat.com>, John Kacur <jkacur@redhat.com>,
+ Justin Forbes <jforbes@redhat.com>,
+ Francesco Poli <invernomuto@paranoici.org>
+References: <20250521211656.65646-1-invernomuto@paranoici.org>
+ <6deefc69-856e-44d7-b970-2f0127090539@leemhuis.info>
+ <20250523002113.ca1ff066061da6049721c275@paranoici.org>
+ <af43cc33-2f10-4664-982c-444a5f9717cc@linuxfoundation.org>
+From: Thorsten Leemhuis <linux@leemhuis.info>
+Content-Language: de-DE, en-US
+Autocrypt: addr=linux@leemhuis.info; keydata=
+ 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 n7RI
+In-Reply-To: <af43cc33-2f10-4664-982c-444a5f9717cc@linuxfoundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-bounce-key: webpack.hosteurope.de;linux@leemhuis.info;1749282665;b207441d;
+X-HE-SMSGID: 1uNoKP-007FMt-20
 
-Some Dell Inspiron systems experience frequency scaling issues with
-intel_pstate driver where the CPU gets locked at 900MHz after load.
+On 23.05.25 19:06, Shuah Khan wrote:
+> On 5/22/25 16:21, Francesco Poli wrote:
+>> On Thu, 22 May 2025 13:43:49 +0200 Thorsten Leemhuis wrote:
+>>
+>>> On 21.05.25 23:14, Francesco Poli (wintermute) wrote:
+>>>> Improve the installation procedure for the systemd service unit
+>>>> 'cpupower.service', to be more flexible. Some distros install libraries
+>>>> to /usr/lib64/, but systemd service units have to be installed to
+>>>> /usr/lib/systemd/system: as a consequence, the installation procedure
+>>>> should not assume that systemd service units can be installed to
+>>>> ${libdir}/systemd/system ...
+>>>> Define a dedicated variable ("unitdir") in the Makefile.
+>>> Many thx for doing this!
+>> You're welcome!   :-)
+> 
+> Thank you both. Applied to m,y cpupower branch. Will include it
+> in my next pr to PM maintainer.
 
-Add DMI quirk table to detect affected Dell Inspiron models and prevent
-intel_pstate from loading, allowing acpi-cpufreq to handle frequency
-scaling instead.
+Thx. Sorry for pestering, but will you send that PR any time soon? The
+current state of things in mainline creates small problems downstream;
+not a big deal, but would be nice to get this resolved properly rather
+sooner than later my mainlining this change.
 
-Affected models:
-- Dell Inspiron 15 7000 Gaming
-- Dell Inspiron 7567
-- Dell Inspiron 7559
-
-Tested-by: Joe Walter <joe.walter@codesensesolutions.com>
-Signed-off-by: Joe Walter <joe.walter@codesensesolutions.com>
-=2D--
- drivers/cpufreq/intel_pstate.c | 65 ++++++++++++++++++++++------------
- 1 file changed, 42 insertions(+), 23 deletions(-)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate=
-.c
-index 1b1f62ccec92..3aeb04755afa 100644
-=2D-- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -28,7 +28,6 @@
- #include <linux/pm_qos.h>
- #include <linux/bitfield.h>
- #include <trace/events/power.h>
--#include <linux/dmi.h>
- #include <linux/units.h>
-=20
- #include <asm/cpu.h>
-@@ -48,6 +47,7 @@
- #ifdef CONFIG_ACPI
- #include <acpi/processor.h>
- #include <acpi/cppc_acpi.h>
-+#include <linux/dmi.h>
- #endif
-=20
- #define FRAC_BITS 8
-@@ -299,25 +299,6 @@ struct pstate_funcs {
-=20
- static struct pstate_funcs pstate_funcs __read_mostly;
-=20
--/* DMI quirk table for systems that should prefer acpi-cpufreq over intel=
-_pstate */
--static int intel_pstate_prefer_acpi_cpufreq(const struct dmi_system_id *i=
-d)
--{
--	pr_info("Preferring acpi-cpufreq for %s due to performance issues with i=
-ntel_pstate\n",
--		id->ident);
--	return 1;
--}
--
--static const struct dmi_system_id intel_pstate_acpi_cpufreq_prefer[] =3D =
-{
--	{
--		.callback =3D intel_pstate_prefer_acpi_cpufreq,
--		.ident =3D "Dell Inspiron 15 7000 Gaming",
--		.matches =3D {
--			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
--			DMI_MATCH(DMI_PRODUCT_NAME, "Inspiron 15 7000 Gaming"),
--		},
--	},
--	{ }
--};
- static bool hwp_active __ro_after_init;
- static int hwp_mode_bdw __ro_after_init;
- static bool per_cpu_limits __ro_after_init;
-@@ -2799,6 +2780,41 @@ static const struct x86_cpu_id intel_pstate_cpu_ids=
-[] =3D {
- };
- MODULE_DEVICE_TABLE(x86cpu, intel_pstate_cpu_ids);
-=20
-+/* DMI quirk table for systems that should prefer acpi-cpufreq over intel=
-_pstate */
-+static int intel_pstate_prefer_acpi_cpufreq(const struct dmi_system_id *i=
-d)
-+{
-+	pr_info("Detected %s, preferring acpi-cpufreq\n", id->ident);
-+	return 0;
-+}
-+
-+static const struct dmi_system_id intel_pstate_acpi_cpufreq_prefer[] =3D =
-{
-+	{
-+		.ident =3D "Dell Inspiron 15 7000 Gaming",
-+		.matches =3D {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Inspiron 15 7000 Gaming"),
-+		},
-+		.callback =3D intel_pstate_prefer_acpi_cpufreq,
-+	},
-+	{
-+		.ident =3D "Dell Inspiron 7567",
-+		.matches =3D {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Inspiron 7567"),
-+		},
-+		.callback =3D intel_pstate_prefer_acpi_cpufreq,
-+	},
-+	{
-+		.ident =3D "Dell Inspiron 7559",
-+		.matches =3D {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Inspiron 7559"),
-+		},
-+		.callback =3D intel_pstate_prefer_acpi_cpufreq,
-+	},
-+	{}
-+};
-+
- #ifdef CONFIG_ACPI
- static const struct x86_cpu_id intel_pstate_cpu_oob_ids[] __initconst =3D=
- {
- 	X86_MATCH(INTEL_BROADWELL_D,		core_funcs),
-@@ -3825,6 +3841,12 @@ static int __init intel_pstate_init(void)
- 	const struct x86_cpu_id *id;
- 	int rc;
-=20
-+
-+	/* Early DMI check - prevent intel_pstate on problematic systems */
-+	if (dmi_check_system(intel_pstate_acpi_cpufreq_prefer)) {
-+		pr_info("intel_pstate: system prefers acpi-cpufreq, not loading\n");
-+		return -ENODEV;
-+	}
- 	if (boot_cpu_data.x86_vendor !=3D X86_VENDOR_INTEL)
- 		return -ENODEV;
-=20
-@@ -3887,9 +3909,6 @@ static int __init intel_pstate_init(void)
- 		pr_info("Invalid MSRs\n");
- 		return -ENODEV;
- 	}
--/* Check for systems that should prefer acpi-cpufreq */
--	if (!default_driver && dmi_check_system(intel_pstate_acpi_cpufreq_prefer=
-))
--		default_driver =3D &intel_cpufreq;
- 	/* Without HWP start in the passive mode. */
- 	if (!default_driver)
- 		default_driver =3D &intel_cpufreq;
-=2D-=20
-2.48.1
-
+Ciao, Thorsten
