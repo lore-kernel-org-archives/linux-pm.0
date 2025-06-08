@@ -1,37 +1,37 @@
-Received: from mxout2.routing.net (mxout2.routing.net [134.0.28.12])
+Received: from mxout4.routing.net (mxout4.routing.net [134.0.28.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9162F256C7E;
-	Sun,  8 Jun 2025 21:22:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 593BF2586E8;
+	Sun,  8 Jun 2025 21:23:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749417777; cv=none; b=KuSa8Lf2R4uKEYk3FmLoN4eX09E7pcjam2hTeaB8bocko7SiTd/bzrDyBTAkQnqkjJem9cHnl7AATyzXWmDKYN6Tr40HUVOvHVSc6de93zikhCcUUxJ1wvFh6B+AlzRhsViw1vHrIuJ9xoxXwtfak6TQIHaA62jsunZXYN54WVM=
+	t=1749417789; cv=none; b=D2BBpDPG46aHCAhP44gilB/LdOxS3Lq7VEHB4KeChg2xac9QrgYTrmhe+TEetHXBjE58V7piu/ATmsW4PnN0pVZJw0ktlfGDTgWHc4nW+9lqo43nq0FEPtzeif/jQ2wiktL7k9i7zkTD+OHjCIp8RZ59QdJBuX7VMkZjxJ6Um5s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749417777; c=relaxed/simple;
-	bh=fZLuQPeOl14zIa/0HXnv2tiCosuE0hcu6dbY+kfKfF8=;
+	s=arc-20240116; t=1749417789; c=relaxed/simple;
+	bh=cyWdCCwdTOm6awHacCn+5KtDkL7jycH2KOpN1v9QDIg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TuS77gR/greWtHaWq1YohTWWNOwIxQn2Q6HgnKrUXnLOcbNLW9QTzpRylxzTBO7QWBSytidXNkUAR5D0AM4HKM5AH3KKUQqhHif+SFanihOmZXqC9DdsuoNGUf7F4cu1m7gX/CH2NXgLNP2SbGkguMo27l+GBqcnGb/TXlZgTS8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=TQxTKRuu; arc=none smtp.client-ip=134.0.28.12
+	 MIME-Version; b=WgLa/d3LpxVXZhfTalfXfglnfJVtkGRgLGCMhGjM2jxoYV+xogMxA8R3V7Gx7MsHO4nU7d8GTZfyNqLHtI/l32egOEhx3IQeD9AWrY4yZX48zzFckibiI1xbOxkqSDSSPUM1DKt/S+ENG5nu/Ovh9hC6IGpjVN3y51eFLQjfdP0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=ECl7hcJU; arc=none smtp.client-ip=134.0.28.9
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="TQxTKRuu"
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="ECl7hcJU"
 Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout2.routing.net (Postfix) with ESMTP id 0D8BA5FC98;
-	Sun,  8 Jun 2025 21:15:01 +0000 (UTC)
+	by mxout4.routing.net (Postfix) with ESMTP id 40301100252;
+	Sun,  8 Jun 2025 21:15:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=20200217; t=1749417301;
+	s=20200217; t=1749417300;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=XoNcIQ8Um1C/enfr1gGh+4SBvlXfZ8gJB4yjeTKjzUU=;
-	b=TQxTKRuuHyKsXl5302ThGCchcSqCeBDCqcaxe8v50SED11wcwx5Avsw6BBxsQIn10j5EVj
-	0Y+yda2MLdxbMA9Kq7p0PK+gmSVKfJL5sa9xg8O6R1vap6wGaTvHklle/3KaOzGQCHQmgK
-	tXTUyiZn41ICIBcBIdx0IISAlSZQ4jU=
+	bh=YWGa+NZ5Jq1T+ZAcsp9vpV8h57UNEkpbrj+QyOwJwlI=;
+	b=ECl7hcJUQIHXBT/aIooApyrrRrWwBR5yclHVmUg6T1v/1rxZKERbsnTk/JfYwrnw62QtAY
+	ZmPwau+O/UYHjLiaXijnTp4tOHMGajgIi4T1fP925mieGDPfwcz+gyR+P/3cKOfv+/hrvP
+	r4vRuMaTSz6s0HAmMxHUbyYRa3AE5UU=
 Received: from frank-u24.. (fttx-pool-80.245.77.166.bambit.de [80.245.77.166])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id A5A371226F5;
-	Sun,  8 Jun 2025 21:15:00 +0000 (UTC)
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id D125D1226F5;
+	Sun,  8 Jun 2025 21:14:59 +0000 (UTC)
 From: Frank Wunderlich <linux@fw-web.de>
 To: MyungJoo Ham <myungjoo.ham@samsung.com>,
 	Kyungmin Park <kyungmin.park@samsung.com>,
@@ -64,9 +64,9 @@ Cc: Frank Wunderlich <frank-w@public-files.de>,
 	netdev@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v3 05/13] arm64: dts: mediatek: mt7988: add cci node
-Date: Sun,  8 Jun 2025 23:14:38 +0200
-Message-ID: <20250608211452.72920-6-linux@fw-web.de>
+Subject: [PATCH v3 03/13] dt-bindings: net: dsa: mediatek,mt7530: add internal mdio bus
+Date: Sun,  8 Jun 2025 23:14:36 +0200
+Message-ID: <20250608211452.72920-4-linux@fw-web.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250608211452.72920-1-linux@fw-web.de>
 References: <20250608211452.72920-1-linux@fw-web.de>
@@ -80,89 +80,40 @@ Content-Transfer-Encoding: 8bit
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-Add cci devicetree node for cpu frequency scaling.
+Mt7988 buildin switch has own mdio bus where ge-phys are connected.
+Add related property for this.
 
-Signed-off-by: Daniel Golle <daniel@makrotopia.org>
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 ---
-v3:
-- add mt7988-cci compatible as suggested by angelo
+v2:
+- change from patternproperty to property
+- add unevaluatedProperties and mediatek,pio subproperty
 ---
- arch/arm64/boot/dts/mediatek/mt7988a.dtsi | 33 +++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+ .../devicetree/bindings/net/dsa/mediatek,mt7530.yaml   | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt7988a.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
-index c46b31f8d653..560ec86dbec0 100644
---- a/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
-@@ -12,6 +12,35 @@ / {
- 	#address-cells = <2>;
- 	#size-cells = <2>;
+diff --git a/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml b/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
+index 9b983fdbf3c7..815a90808901 100644
+--- a/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
++++ b/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
+@@ -136,6 +136,16 @@ properties:
+       See Documentation/devicetree/bindings/regulator/mt6323-regulator.txt for
+       details for the regulator setup on these boards.
  
-+	cci: cci {
-+		compatible = "mediatek,mt7988-cci", "mediatek,mt8183-cci";
-+		clocks = <&mcusys CLK_MCU_BUS_DIV_SEL>,
-+			 <&topckgen CLK_TOP_XTAL>;
-+		clock-names = "cci", "intermediate";
-+		operating-points-v2 = <&cci_opp>;
-+	};
++  mdio:
++    $ref: /schemas/net/mdio.yaml#
++    unevaluatedProperties: false
 +
-+	cci_opp: opp-table-cci {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+		opp-480000000 {
-+			opp-hz = /bits/ 64 <480000000>;
-+			opp-microvolt = <850000>;
-+		};
-+		opp-660000000 {
-+			opp-hz = /bits/ 64 <660000000>;
-+			opp-microvolt = <850000>;
-+		};
-+		opp-900000000 {
-+			opp-hz = /bits/ 64 <900000000>;
-+			opp-microvolt = <850000>;
-+		};
-+		opp-1080000000 {
-+			opp-hz = /bits/ 64 <1080000000>;
-+			opp-microvolt = <900000>;
-+		};
-+	};
++    properties:
++      mediatek,pio:
++        $ref: /schemas/types.yaml#/definitions/phandle
++        description:
++          Phandle pointing to the mediatek pinctrl node.
 +
- 	cpus {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -25,6 +54,7 @@ cpu0: cpu@0 {
- 				 <&topckgen CLK_TOP_XTAL>;
- 			clock-names = "cpu", "intermediate";
- 			operating-points-v2 = <&cluster0_opp>;
-+			mediatek,cci = <&cci>;
- 		};
- 
- 		cpu1: cpu@1 {
-@@ -36,6 +66,7 @@ cpu1: cpu@1 {
- 				 <&topckgen CLK_TOP_XTAL>;
- 			clock-names = "cpu", "intermediate";
- 			operating-points-v2 = <&cluster0_opp>;
-+			mediatek,cci = <&cci>;
- 		};
- 
- 		cpu2: cpu@2 {
-@@ -47,6 +78,7 @@ cpu2: cpu@2 {
- 				 <&topckgen CLK_TOP_XTAL>;
- 			clock-names = "cpu", "intermediate";
- 			operating-points-v2 = <&cluster0_opp>;
-+			mediatek,cci = <&cci>;
- 		};
- 
- 		cpu3: cpu@3 {
-@@ -58,6 +90,7 @@ cpu3: cpu@3 {
- 				 <&topckgen CLK_TOP_XTAL>;
- 			clock-names = "cpu", "intermediate";
- 			operating-points-v2 = <&cluster0_opp>;
-+			mediatek,cci = <&cci>;
- 		};
- 
- 		cluster0_opp: opp-table-0 {
+   mediatek,mcm:
+     type: boolean
+     description:
 -- 
 2.43.0
 
