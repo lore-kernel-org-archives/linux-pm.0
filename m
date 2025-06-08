@@ -1,37 +1,37 @@
 Received: from mxout1.routing.net (mxout1.routing.net [134.0.28.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9495918CBE1;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 949A41A5B91;
 	Sun,  8 Jun 2025 21:22:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749417737; cv=none; b=IXmIixfxTGP6I+2ihipDMvNda6FW+vY6Syc+p/zoQB++g4KvlfzI55MhQ/1/bF3KZnQOBrjYh1E3Q0r0S4iDGNGtKHAOTwPfeErIZeVW5MxrHKlGxAl/Q5bRZ6QIcLzidrSyoMPmGolxj+aD3cmvAat3NmYcQmMkC7mrSruDpOA=
+	t=1749417738; cv=none; b=WoQVfM6bpfyqXujYO1XR9gp2+MpiD7rlCas8OgttkspnfRM4W52jAvm2/f/DtFXu7Tx7l4yb9uwQpkjlgOkDKOYWOyzuEHbpERy2QwPA6PuhcyWbRYZD6at9aIZi1WUVDy/ZZQnxcvRUP4ebKPbC2rUotO2wkOYmPvy7gPywfJg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749417737; c=relaxed/simple;
-	bh=YgR2lE90UIU0P3ZSP894Ns873m5uky+bEMrwkq/n4Vc=;
+	s=arc-20240116; t=1749417738; c=relaxed/simple;
+	bh=htqcoHAk8wG4t8I4v7JXMnGKMG3faePy59bduotEJlY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=VEvXWeNPo6Y8NBiGjqDXkDkUcj4NZWc1BhcYicqCgEDwCHEfNBm6z1oVZZC+n4cSSnXj/rghHcgZqlRZHJDUw37qL1yHH6SZ6kgyVhCaGvgwbWJsYXi6/3xlWwwbEKoJ6w00XpFtD0ZHxfyH4zB92E9LjgvQf5cjh/sF8Z3t/mA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=SV8MICNG; arc=none smtp.client-ip=134.0.28.11
+	 MIME-Version; b=W76Hk+bxrORB5EHE5OQRpdldB8mEvBbYEkZwGmUhEuGtrSYE8VaQ3bPy44DBB6juiIUBR/UfkDxAB0BN1KBceLuvytQ/kabG0KUHVu+nwujTXXA0iD+Jg74lEVTaDsFFzfWOJgk15zbxc+5OT1spWK9eoDkNJbsV3h9C8+FqJO8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=KpiNgaca; arc=none smtp.client-ip=134.0.28.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="SV8MICNG"
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="KpiNgaca"
 Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout1.routing.net (Postfix) with ESMTP id 4871C3FE8B;
-	Sun,  8 Jun 2025 21:15:04 +0000 (UTC)
+	by mxout1.routing.net (Postfix) with ESMTP id D61C23FD96;
+	Sun,  8 Jun 2025 21:14:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=20200217; t=1749417304;
+	s=20200217; t=1749417300;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=EDifwxY7gQOfgk+tbRvfbMg2JVV/EadqzCD4+/695V0=;
-	b=SV8MICNG8wUHu62OpXIGmq4wfS9Jt4huC9Fk77hLCeJ52SIK35Z2So274RLS//UsWTeTLh
-	osYkKhaQZXdcj0ixy9lUe/G8AaE5F2joGJU6PJeRMWCoiDUo5PDHTcr3TticQn/Wlx1Htu
-	a/9xieXRv5R2iRv/AVKkTKWAEiOMbSQ=
+	bh=K8bX81MxPTi+Jhd3n3SJZqbc7e3SnaNqOjwZqHrKmH0=;
+	b=KpiNgacaDEvmnOScUpbA2d8BGHEjQiHUk6Pp89YEl1H0XNOFjF1kcWUCROGCrSAspM59xc
+	XGL3EW10RO9tDO9Kg9NwL6ibdO/ci+VCfH8RKFCJ1ZrDKhfa7vhLPamQZUBjKt+eSRrIn8
+	zqxv+H5NsCdBq8N34RgDTWEbw0L/YSs=
 Received: from frank-u24.. (fttx-pool-80.245.77.166.bambit.de [80.245.77.166])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id E14CF1226F5;
-	Sun,  8 Jun 2025 21:15:03 +0000 (UTC)
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 70BCD1226D6;
+	Sun,  8 Jun 2025 21:14:59 +0000 (UTC)
 From: Frank Wunderlich <linux@fw-web.de>
 To: MyungJoo Ham <myungjoo.ham@samsung.com>,
 	Kyungmin Park <kyungmin.park@samsung.com>,
@@ -64,9 +64,9 @@ Cc: Frank Wunderlich <frank-w@public-files.de>,
 	netdev@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v3 13/13] arm64: dts: mediatek: mt7988a-bpi-r4: configure switch phys and leds
-Date: Sun,  8 Jun 2025 23:14:46 +0200
-Message-ID: <20250608211452.72920-14-linux@fw-web.de>
+Subject: [PATCH v3 02/13] dt-bindings: net: dsa: mediatek,mt7530: add dsa-port definition for mt7988
+Date: Sun,  8 Jun 2025 23:14:35 +0200
+Message-ID: <20250608211452.72920-3-linux@fw-web.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250608211452.72920-1-linux@fw-web.de>
 References: <20250608211452.72920-1-linux@fw-web.de>
@@ -80,96 +80,47 @@ Content-Transfer-Encoding: 8bit
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-Assign pinctrl to switch phys and leds.
+Add own dsa-port binding for SoC with internal switch where only phy-mode
+'internal' is valid.
 
-Signed-off-by: Daniel Golle <daniel@makrotopia.org>
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 ---
-v2:
-- add labels and led-function and include after dropping from soc dtsi
----
- .../dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi | 61 +++++++++++++++++++
- 1 file changed, 61 insertions(+)
+ .../bindings/net/dsa/mediatek,mt7530.yaml          | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
-index d8b9cd794ee3..f10d3617dcac 100644
---- a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
-@@ -4,6 +4,7 @@
+diff --git a/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml b/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
+index 51205f9f2985..9b983fdbf3c7 100644
+--- a/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
++++ b/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
+@@ -190,6 +190,18 @@ required:
+   - reg
  
- #include <dt-bindings/gpio/gpio.h>
- #include <dt-bindings/regulator/richtek,rt5190a-regulator.h>
-+#include <dt-bindings/leds/common.h>
- 
- #include "mt7988a.dtsi"
- 
-@@ -151,6 +152,66 @@ &gmac2 {
- 	phy-mode = "usxgmii";
- };
- 
-+&gsw_phy0 {
-+	pinctrl-names = "gbe-led";
-+	pinctrl-0 = <&gbe0_led0_pins>;
-+};
+ $defs:
++  builtin-dsa-port:
++    patternProperties:
++      "^(ethernet-)?ports$":
++        patternProperties:
++          "^(ethernet-)?port@[0-6]$":
++            if:
++              required: [ ethernet ]
++            then:
++              properties:
++                phy-mode:
++                  const: internal
 +
-+&gsw_phy0_led0 {
-+	status = "okay";
-+	function = LED_FUNCTION_WAN;
-+	color = <LED_COLOR_ID_GREEN>;
-+};
-+
-+&gsw_port0 {
-+	label = "wan";
-+};
-+
-+&gsw_phy1 {
-+	pinctrl-names = "gbe-led";
-+	pinctrl-0 = <&gbe1_led0_pins>;
-+};
-+
-+&gsw_phy1_led0 {
-+	status = "okay";
-+	function = LED_FUNCTION_LAN;
-+	color = <LED_COLOR_ID_GREEN>;
-+};
-+
-+&gsw_port1 {
-+	label = "lan1";
-+};
-+
-+&gsw_phy2 {
-+	pinctrl-names = "gbe-led";
-+	pinctrl-0 = <&gbe2_led0_pins>;
-+};
-+
-+&gsw_phy2_led0 {
-+	status = "okay";
-+	function = LED_FUNCTION_LAN;
-+	color = <LED_COLOR_ID_GREEN>;
-+};
-+
-+&gsw_port2 {
-+	label = "lan2";
-+};
-+
-+&gsw_phy3 {
-+	pinctrl-names = "gbe-led";
-+	function = LED_FUNCTION_LAN;
-+	pinctrl-0 = <&gbe3_led0_pins>;
-+};
-+
-+&gsw_phy3_led0 {
-+	status = "okay";
-+	color = <LED_COLOR_ID_GREEN>;
-+};
-+
-+&gsw_port3 {
-+	label = "lan3";
-+};
-+
- &i2c0 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&i2c0_pins>;
+   mt7530-dsa-port:
+     patternProperties:
+       "^(ethernet-)?ports$":
+@@ -297,7 +309,7 @@ allOf:
+             - airoha,en7581-switch
+             - airoha,an7583-switch
+     then:
+-      $ref: "#/$defs/mt7530-dsa-port"
++      $ref: "#/$defs/builtin-dsa-port"
+       properties:
+         gpio-controller: false
+         mediatek,mcm: false
 -- 
 2.43.0
 
