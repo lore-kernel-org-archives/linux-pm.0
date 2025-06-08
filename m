@@ -1,44 +1,75 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mxout3.routing.net (mxout3.routing.net [134.0.28.8])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 569CA224FA
-	for <linux-pm@vger.kernel.org>; Sun,  8 Jun 2025 20:40:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95DDB1EDA26;
+	Sun,  8 Jun 2025 21:15:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.8
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749415234; cv=none; b=kYZ12Vn5j/hBYJsN0N/2EpDC9NIQnySlljfeVQtf9GUswOOcLsA3VpKyaaP6uUkxNvKnsJ7x+qBjdgFNjsCwscc2gAVxYL3/5GtTUa2ZwsEP18lDtHpVDRvHtgn5Ojc5iKxXGQ67jbMwjDEb0X5LyLgIxq1szdQDKyc17basClg=
+	t=1749417312; cv=none; b=HEpBY34eSjO7wfOG79UxIyFRHsVLSitfpg4FECIs4eNCpV873mfkJrWJNAbN1mwjJUCPQxbDC5zKltvzcRj/qVufwE0JYKsn1bjjo4MZEfDamrz6LluJ7ZQVHoUCA/vIgsc4fg4Brq6dv6hLC3MMP0BAC6SSVgsx+Wu6SMoM4Hg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749415234; c=relaxed/simple;
-	bh=tC4bN7/oX2CSIZDOv0m5Rw+30FigfgLCD5+SuQCMSBU=;
+	s=arc-20240116; t=1749417312; c=relaxed/simple;
+	bh=2ayB3FFSLyItlEfwkpXppGL8M59c1GXDrtM74vNQrsI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fo6iTERzLRdWgNlzfCiboMGNTqm5r1hBVGe7XIq+/kJrJ7J1xdKpvYbJ6ZbO+Cofy5CwOuaCUKuv3AYiwdXWAccVIBCauHES40flSfqtJyUo2fWvHRFIbwHcOGFRClXWDErdenFXpp3IR1da0oFbGsF8YUrifUp5Z5huT2P2wqY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dzaMzJsW; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=o6FjMgzmhvdGfsxGlKsmk9yg2hN/l8h8CHAD7snDAg2AcM0SepYjn7O46DAcEPOfgznoYvIjygcSYLRbLcg+gzuifc0wSDGhMAPqFnFADwf492FvG8Bd1CT4Aeoxb3BmMKjjZW5hlMCBhF116MmUhae52hAfJDeNbPShZ7P8WoA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=UsbzlzOR; arc=none smtp.client-ip=134.0.28.8
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dzaMzJsW"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF818C4CEF1;
-	Sun,  8 Jun 2025 20:40:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1749415234;
-	bh=tC4bN7/oX2CSIZDOv0m5Rw+30FigfgLCD5+SuQCMSBU=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=dzaMzJsWWI/NIKeIK4RzB1hUVOWUNxf6v7WeyZAbGoCDbiysPCNGpkAWrr4mCSTP4
-	 A0MipYmRY6e8nwvIq71qqOwYFX8OhWSe2ZB6iPBs312ONx8YQN866DIbebvf2+chBT
-	 nngYk/6j3fw2SeN2ffm4zD5bZB+A4L2kiIqYK7WqYlzy41vVhuuw8kbfsS4AYMXJeg
-	 GfkoksrXS9sa8DC+gNOy1osX0i9J+xHHIm2TweZZsFMdy0syZrWLRMqT/C69Wo/Ffn
-	 ilSQdv8m8MkThz5qDFzeCZ8oQH631Pf4jce0qUXmByzprsYZyfGhgh2Ul4mT8NQ5gx
-	 rM80Scya9kyNg==
-From: Hans de Goede <hansg@kernel.org>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hansg@kernel.org>,
-	Mark Brown <broonie@kernel.org>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	linux-pm@vger.kernel.org
-Subject: [PATCH 10/10] power: supply: bq24190: Free battery_info
-Date: Sun,  8 Jun 2025 22:40:10 +0200
-Message-ID: <20250608204010.37482-11-hansg@kernel.org>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20250608204010.37482-1-hansg@kernel.org>
-References: <20250608204010.37482-1-hansg@kernel.org>
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="UsbzlzOR"
+Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
+	by mxout3.routing.net (Postfix) with ESMTP id 3CF8560163;
+	Sun,  8 Jun 2025 21:15:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
+	s=20200217; t=1749417302;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=swK23DCVf3KYOYwkgLxTlVXj4MpCXZYzSoeROC7b2Yg=;
+	b=UsbzlzORKw1rVN6aqZXL+ORgBb2a0MLXDPlVGvB/JOi28f9Yrixmyt0Gk9K+Zr8RMQAiF6
+	krwY1cnEeWCmx3JThEjbRxf5CProA3+bXGIYaY/+RhRlZ418cHLGYKN/TYGlXN2P8MPFIa
+	ZMEts3NQw3waDf/K6VojFkZc8D59Fz0=
+Received: from frank-u24.. (fttx-pool-80.245.77.166.bambit.de [80.245.77.166])
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id D5CCC1226D6;
+	Sun,  8 Jun 2025 21:15:01 +0000 (UTC)
+From: Frank Wunderlich <linux@fw-web.de>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	Georgi Djakov <djakov@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Vladimir Oltean <olteanv@gmail.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Cc: Frank Wunderlich <frank-w@public-files.de>,
+	Jia-Wei Chang <jia-wei.chang@mediatek.com>,
+	Johnson Wang <johnson.wang@mediatek.com>,
+	=?UTF-8?q?Ar=C4=B1n=C3=A7=20=C3=9CNAL?= <arinc.unal@arinc9.com>,
+	Landen Chao <Landen.Chao@mediatek.com>,
+	DENG Qingfang <dqfext@gmail.com>,
+	Sean Wang <sean.wang@mediatek.com>,
+	Daniel Golle <daniel@makrotopia.org>,
+	Lorenzo Bianconi <lorenzo@kernel.org>,
+	Felix Fietkau <nbd@nbd.name>,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-mediatek@lists.infradead.org
+Subject: [PATCH v3 08/13] arm64: dts: mediatek: mt7988a-bpi-r4: add proc-supply for cci
+Date: Sun,  8 Jun 2025 23:14:41 +0200
+Message-ID: <20250608211452.72920-9-linux@fw-web.de>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250608211452.72920-1-linux@fw-web.de>
+References: <20250608211452.72920-1-linux@fw-web.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -47,33 +78,30 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Call power_supply_put_battery_info() when bq24190_get_config() is done with
-it. The "struct power_supply_battery_info *info" pointer runs out of scope
-at the end of bq24190_get_config() so there is no need to keep it around
-after this.
+From: Frank Wunderlich <frank-w@public-files.de>
 
-Note technically this is not a memleak fix, since all battery_info data is
-devm_alloc()-ed so it would still be free-ed when the driver is unbound.
-This just frees it as soon as the driver is done with it.
+CCI requires proc-supply. Add it on board level.
 
-Signed-off-by: Hans de Goede <hansg@kernel.org>
+Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
 ---
- drivers/power/supply/bq24190_charger.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index f0d97ab45bd8..cc6dad8f8e58 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -1982,6 +1982,8 @@ static int bq24190_get_config(struct bq24190_dev_info *bdi)
- 		v = info->constant_charge_voltage_max_uv;
- 		if (v >= bq24190_cvc_vreg_values[0] && v <= bdi->vreg_max)
- 			bdi->vreg = bdi->vreg_max = v;
-+
-+		power_supply_put_battery_info(bdi->charger, info);
- 	}
+diff --git a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
+index 81ba045e0e0e..afa9e3b2b16a 100644
+--- a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
+@@ -40,6 +40,10 @@ reg_3p3v: regulator-3p3v {
+ 	};
+ };
  
- 	return 0;
++&cci {
++	proc-supply = <&rt5190_buck3>;
++};
++
+ &cpu0 {
+ 	proc-supply = <&rt5190_buck3>;
+ };
 -- 
-2.49.0
+2.43.0
 
