@@ -1,106 +1,120 @@
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Received: from mxout3.routing.net (mxout3.routing.net [134.0.28.8])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 156151DED52;
-	Sun,  8 Jun 2025 21:23:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.67.10.101
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C458125A2C6;
+	Sun,  8 Jun 2025 21:24:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.8
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749417828; cv=none; b=GhvHF04KAwWSwRtqcPLZW3/FhonhG/60AfTDC4U35Xrfe0FTmXhFQgGyQHF8TSyQvIoII3kiCWc9kZ86i/irrSIfgzDibY/pWvqfNGCkaznRWQJFB8a7eu7MrupTPzG1K1tbPw41roShtPbs7s2ezIbUVyg3UVlQ+qkhWCMsaQY=
+	t=1749417870; cv=none; b=BUx4RxHQqGCd6Sw+EGMR9u1nlW19c+NTBBqMF6XvR53qalNq1GWm/9V2uHuO6vkTOvKYAuiWgiVpu4X5mCISyh5W26dF6kEiOYVE+aeTdCwe6FEcSpru9p4yojESUw8QSyr7qlDl0yFcXnhSAAlO+caJDYE+NbSVcYQcNjctfXM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749417828; c=relaxed/simple;
-	bh=WJEH2etwcynU+UPKgXiBrqtDc3afsRIYVIBs2k0FJhI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=eg3hpcDWsyaDLHJh3VFG7A+E+F0nPogprDSqlGbm1EZnCKA+keChYwFHkjDf/EZcRDveZV3kNHC8i58DuvqBiiRvflWMLceOFUglf1v/ksTqHDoimZCvMFkG0ogX9FnDk1LaYWydetC/QEElAb2G25fIL3ytQtHRSHoteTVekt0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; spf=pass smtp.mailfrom=lunn.ch; dkim=pass (1024-bit key) header.d=lunn.ch header.i=@lunn.ch header.b=AE0wCESV; arc=none smtp.client-ip=156.67.10.101
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lunn.ch
+	s=arc-20240116; t=1749417870; c=relaxed/simple;
+	bh=O72E25aK/3ZkC3cwWJsVfUho1re17lDAC2kSAlOWlow=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=bJh6McJ/s+jO4khbneYCSqhBaFQA4llGI/H7PW9RRAaSGJSZVR6/TdidtO1W0Ogi58yhayinz9AAMk/x2fgEQCm/yVvaNYquRCXyc3vkjvPgQWtkgb1O7H//eRY4yaPYr5gohO/DJJZbj83myDLHLcWfStKtPhMAhGz5vsgv1ZI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=DeAsXqnG; arc=none smtp.client-ip=134.0.28.8
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=lunn.ch header.i=@lunn.ch header.b="AE0wCESV"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=t6K1DK8TwWXVFwtnP7hylwxjWAnaQ8nQe4sIAcH0KiI=; b=AE0wCESVzCTtp0M8ElqNVDGXRM
-	oGFM+uCGOfAOyb9B0QkwBlohtYwCV54AeYrviLNRh09FEZZ1gi+HBm2qSYdOXZkp2gl1Os+5gOl2n
-	JGHmqqGaG2RRZpE83eoNbG+VjkxTaZ/EzB1CHOFam8alz/6jwvvpf+eXZzU2QF1nwqtY=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1uONU2-00F6eS-Px; Sun, 08 Jun 2025 23:23:14 +0200
-Date: Sun, 8 Jun 2025 23:23:14 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-To: Frank Wunderlich <linux@fw-web.de>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>,
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="DeAsXqnG"
+Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
+	by mxout3.routing.net (Postfix) with ESMTP id 9F1B960131;
+	Sun,  8 Jun 2025 21:15:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
+	s=20200217; t=1749417300;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Brur4C1KRH7ZUhiNhHqibnXMQBZX0rV+SrS3MM3LTAE=;
+	b=DeAsXqnGnNiR+K6UcO6MlVhSX5geCOb64eEHO2CbkFl/v9XdVnfvtEGo4DMRcYwBTjvoUe
+	aKsVLmrTBi2FR1u3eGvGAP6Q7n736kKaKAR0eyhHVSKhJQRTTVSOz59Rv7FJaoFC3NtkqS
+	xrYyBpK/WoL7Kodeoc5LepRVogpCb3g=
+Received: from frank-u24.. (fttx-pool-80.245.77.166.bambit.de [80.245.77.166])
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 436781226D6;
+	Sun,  8 Jun 2025 21:15:00 +0000 (UTC)
+From: Frank Wunderlich <linux@fw-web.de>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>,
 	Kyungmin Park <kyungmin.park@samsung.com>,
 	Chanwoo Choi <cw00.choi@samsung.com>,
-	Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
+	Georgi Djakov <djakov@kernel.org>,
+	Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>,
+	Andrew Lunn <andrew@lunn.ch>,
 	Vladimir Oltean <olteanv@gmail.com>,
 	"David S. Miller" <davem@davemloft.net>,
 	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
 	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Frank Wunderlich <frank-w@public-files.de>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Cc: Frank Wunderlich <frank-w@public-files.de>,
 	Jia-Wei Chang <jia-wei.chang@mediatek.com>,
 	Johnson Wang <johnson.wang@mediatek.com>,
-	=?utf-8?B?QXLEsW7DpyDDnE5BTA==?= <arinc.unal@arinc9.com>,
+	=?UTF-8?q?Ar=C4=B1n=C3=A7=20=C3=9CNAL?= <arinc.unal@arinc9.com>,
 	Landen Chao <Landen.Chao@mediatek.com>,
 	DENG Qingfang <dqfext@gmail.com>,
 	Sean Wang <sean.wang@mediatek.com>,
 	Daniel Golle <daniel@makrotopia.org>,
-	Lorenzo Bianconi <lorenzo@kernel.org>, Felix Fietkau <nbd@nbd.name>,
-	linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	Lorenzo Bianconi <lorenzo@kernel.org>,
+	Felix Fietkau <nbd@nbd.name>,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: Re: [PATCH v3 06/13] arm64: dts: mediatek: mt7988: add basic
- ethernet-nodes
-Message-ID: <cc73b532-f31b-443e-8127-0e5667c3f9c3@lunn.ch>
+Subject: [PATCH v3 04/13] dt-bindings: interconnect: add mt7988-cci compatible
+Date: Sun,  8 Jun 2025 23:14:37 +0200
+Message-ID: <20250608211452.72920-5-linux@fw-web.de>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250608211452.72920-1-linux@fw-web.de>
 References: <20250608211452.72920-1-linux@fw-web.de>
- <20250608211452.72920-7-linux@fw-web.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250608211452.72920-7-linux@fw-web.de>
+Content-Transfer-Encoding: 8bit
 
-> +			gmac0: mac@0 {
-> +				compatible = "mediatek,eth-mac";
-> +				reg = <0>;
-> +				phy-mode = "internal";
-> +
-> +				fixed-link {
-> +					speed = <10000>;
-> +					full-duplex;
-> +					pause;
-> +				};
+From: Frank Wunderlich <frank-w@public-files.de>
 
-Maybe i've asked this before? What is on the other end of this link?
-phy-mode internal and fixed link seems an odd combination. It might
-just need some comments, if this is internally connected to a switch.
+Add compatible for Mediatek MT7988 SoC with mediatek,mt8183-cci fallback
+which is taken by driver.
 
-> +			mdio_bus: mdio-bus {
-> +				#address-cells = <1>;
-> +				#size-cells = <0>;
-> +
-> +				/* internal 2.5G PHY */
-> +				int_2p5g_phy: ethernet-phy@f {
-> +					reg = <15>;
+Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
+---
+v2:
+- no RFC
+- drop "items" as sugested by conor
+---
+ .../bindings/interconnect/mediatek,cci.yaml           | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-It is a bit odd mixing hex and decimal.
+diff --git a/Documentation/devicetree/bindings/interconnect/mediatek,cci.yaml b/Documentation/devicetree/bindings/interconnect/mediatek,cci.yaml
+index 58611ba2a0f4..4d72525f407e 100644
+--- a/Documentation/devicetree/bindings/interconnect/mediatek,cci.yaml
++++ b/Documentation/devicetree/bindings/interconnect/mediatek,cci.yaml
+@@ -17,9 +17,14 @@ description: |
+ 
+ properties:
+   compatible:
+-    enum:
+-      - mediatek,mt8183-cci
+-      - mediatek,mt8186-cci
++    oneOf:
++      - enum:
++          - mediatek,mt8183-cci
++          - mediatek,mt8186-cci
++      - items:
++          - enum:
++              - mediatek,mt7988-cci
++          - const: mediatek,mt8183-cci
+ 
+   clocks:
+     items:
+-- 
+2.43.0
 
-> +					compatible = "ethernet-phy-ieee802.3-c45";
-
-I _think_ the coding standard say the compatible should be first.
-
-> +					phy-mode = "internal";
-
-A phy should not have a phy-mode.
-
-	Andrew
