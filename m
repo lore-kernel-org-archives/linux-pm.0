@@ -1,45 +1,45 @@
 Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A8D029995D;
-	Tue, 10 Jun 2025 12:33:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73A8829A9F9;
+	Tue, 10 Jun 2025 12:33:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749558823; cv=pass; b=Zun8K4bdMROy3CmLjpQuBzjlvSoZTRB4Iwl7+83tlv8yuVp8Zc1niJuTaXyOOxAFGZoRYyqTjT1OJUhaWqICOyJqJSo4g8FvXWx1ZjVTCNQYUxaBEs7e9w0FnzHR+x4TMI9p5iAuvJjovA9c4bqNoSpV80CGDPxihjBFqfUGAeQ=
+	t=1749558829; cv=pass; b=Ne86769+fzIC0rmGQSCEmS+uPWTPGZnYhtXGXFayvfsZ3oppgINacUHt30FW7vXZwb16fYMf2KEI1Y+xAjs9Hm//PcDaDOHR8HBE2Xjl7Jz+V0QYDURmSKudeLX7UvT13Gksem+7AUw9GBpfr6ZCS4sd/qAO3l7e8wRHm1fHVTQ=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749558823; c=relaxed/simple;
-	bh=Lf9hRi2Hv/rjejHYm5za9H/gGB7HC7UFEiwPeqNhP40=;
+	s=arc-20240116; t=1749558829; c=relaxed/simple;
+	bh=t9viSWGdCUsetfJpuZXGAiDLYQfdL/8Vs7cSbUINsf4=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=N+doT4hlCJ4Kk+otr8Owv7dCAx9W6WzEy11hCtswQ7/OLVjer7Kl0hCb+c9CT7eV5QhvDefMgkWo2dw8WDSR4gglmRU6s7CHUS9/vg8bpz/IvyjsfRcLSkUiXCR9wF7ncKciV5MOwo9xf3A7wUdsz/ECQud3UwgGx9Dl8sM3Z6U=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=cNRaHvXI; arc=pass smtp.client-ip=136.143.188.112
+	 In-Reply-To:To:Cc; b=KyOgBumDRkGHeMQcokYPTxT1/d6g/JYPil8wlaNSsVzdOB6Xmin5VOhXeMv8fEyms7dd0FJqKBP3rXC625bstEytPpOvMqq/VUcQNtiil7WC9hJ5dYMgeQyJdF+m9OUz7u46SaVioEjFfLTRD/mIXwcqRekX+fi0OQ4zJr5YIE4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=W0/9qBAL; arc=pass smtp.client-ip=136.143.188.112
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="cNRaHvXI"
-ARC-Seal: i=1; a=rsa-sha256; t=1749558789; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="W0/9qBAL"
+ARC-Seal: i=1; a=rsa-sha256; t=1749558800; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=C0NIdLDVjeOCesvTZq2L9rnrZukICHkKxD/12q6mGJuRjQXarXGP4Qaykh6lRyYLqUr5zgrMBDZfGhRjFaZqO7wUjAMQFK5nt6Jn8tDdTUqkkP+dxFTxUNJil1iqw+sXV6+Ip8vY21UewOXM3w7hdpNof7iy2tIdJydCRXi2RrQ=
+	b=KbETfOGiZH37xLuUpi6vn8QuiB/V4pokvPC0Ot+3pQky05cYm3c8lXBexPKI/5EJZfSSaaB87zOMY+Y2VYo3EGdHSHXJJILp6RZZle9Im3mkyzCsnxMUH6ZQT5DU9mEbN2dmj89fIfNud7gfDNGD25Rxsay3jfPbBpzwJZjBKag=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1749558789; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=fo/5ReHXGoPgQe93o0uJItzDhOE9nEKG5rKyvbqubVA=; 
-	b=jF4iaXHPRe4i5Aewm4oBOMM8C6jUs2r1rTMBEA1y5DWpCIqorSO92XQ0y4M057NNSSy6w7Qf/qrZ/BdtSD8lg+xnmCzLupPmEjA4md7U6lmflbOnitRhH7GlbcfM1J6kByIdV7Niih3kCpVliufruSExPVIe1X+Rk5FplgvDUAU=
+	t=1749558800; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=um6+orYZmvWyjIKPMULKaYcq3cJ+8tX54fBBdRjWSS4=; 
+	b=WaisFqSs5i/OiwKTdC0UVe5P3Uwu29gpu+iQy42U9l6WmR6XXRiaWE4kpfdslPZN61ArPZxQQXcMvPsSl0UizXUKxcmsRdoE3E2O2vOtPFea1uMjFVAghVXT2gd9RiFxmfEWRaCrT6uOt5CZNVCNq4eWCAeSVGWmNYvonAnxZQ0=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1749558789;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1749558799;
 	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
 	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
-	bh=fo/5ReHXGoPgQe93o0uJItzDhOE9nEKG5rKyvbqubVA=;
-	b=cNRaHvXIWVJReOYg4HeGT+J1fPkuOBXIVlPbAU0jPaQ85anBS3bbdEqo569Xap1c
-	yN6lN6O/jr+gK0oWpxSNIfKadE4rol5/Bxh9m9Pr1z7IgPuMafvCgYf5Mj7AanmboY3
-	Ld3MFnE9W9b1dymXwZ6ynPfwirvpk/7X2L7B2ghk=
-Received: by mx.zohomail.com with SMTPS id 1749558788630995.5984225388834;
-	Tue, 10 Jun 2025 05:33:08 -0700 (PDT)
+	bh=um6+orYZmvWyjIKPMULKaYcq3cJ+8tX54fBBdRjWSS4=;
+	b=W0/9qBAL+3hppBxV14yeK/+YXV9ZLHBdKRb1IcsGBA7q/OdEWF51zA3ektCeiYGJ
+	A7KcbEuelECBy6fus3Q64ZJVF0Rmrfa+Lu6PsO43vd+494aTq7xnAPVNEpSFF3sVR8U
+	Qsa68HZvAeWbF9+JwfzSeRqkZxOR1A57QLNkBOT0=
+Received: by mx.zohomail.com with SMTPS id 1749558797642874.6088758885295;
+	Tue, 10 Jun 2025 05:33:17 -0700 (PDT)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Tue, 10 Jun 2025 14:32:41 +0200
-Subject: [PATCH v6 5/7] thermal: rockchip: support reading trim values from
- OTP
+Date: Tue, 10 Jun 2025 14:32:43 +0200
+Subject: [PATCH v6 7/7] arm64: dts: rockchip: Add thermal trim OTP and
+ tsadc nodes
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,7 +48,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250610-rk3576-tsadc-upstream-v6-5-b6e9efbf1015@collabora.com>
+Message-Id: <20250610-rk3576-tsadc-upstream-v6-7-b6e9efbf1015@collabora.com>
 References: <20250610-rk3576-tsadc-upstream-v6-0-b6e9efbf1015@collabora.com>
 In-Reply-To: <20250610-rk3576-tsadc-upstream-v6-0-b6e9efbf1015@collabora.com>
 To: Alexey Charkov <alchark@gmail.com>, 
@@ -65,431 +65,92 @@ Cc: Sebastian Reichel <sebastian.reichel@collabora.com>,
  Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 X-Mailer: b4 0.14.2
 
-Many of the Rockchip SoCs support storing trim values for the sensors in
-factory programmable memory. These values specify a fixed offset from
-the sensor's returned temperature to get a more accurate picture of what
-temperature the silicon is actually at.
+Thanks to Heiko's work getting OTP working on the RK3576, we can specify
+the thermal sensor trim values which are stored there now, and with my
+driver addition to rockchip_thermal, we can make use of these.
 
-The way this is implemented is with various OTP cells, which may be
-absent. There may both be whole-TSADC trim values, as well as per-sensor
-trim values.
-
-In the downstream driver, whole-chip trim values override the per-sensor
-trim values. This rewrite of the functionality changes the semantics to
-something I see as slightly more useful: allow the whole-chip trim
-values to serve as a fallback for lacking per-sensor trim values,
-instead of overriding already present sensor trim values.
-
-Additionally, the chip may specify an offset (trim_base, trim_base_frac)
-in degrees celsius and degrees decicelsius respectively which defines
-what the basis is from which the trim, if any, should be calculated
-from. By default, this is 30 degrees Celsius, but the chip can once
-again specify a different value through OTP cells.
-
-The implementation of these trim calculations have been tested
-extensively on an RK3576, where it was confirmed to get rid of pesky 1.8
-degree Celsius offsets between certain sensors.
+Add them to the devicetree for the SoC.
 
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
- drivers/thermal/rockchip_thermal.c | 221 +++++++++++++++++++++++++++++++++----
- 1 file changed, 202 insertions(+), 19 deletions(-)
+ arch/arm64/boot/dts/rockchip/rk3576.dtsi | 57 ++++++++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 89e3180667e2a8f0ef5542b0db4d9e19a21a24d3..3beff9b6fac3abe8948b56132b618ff1bed57217 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -9,6 +9,7 @@
- #include <linux/interrupt.h>
- #include <linux/io.h>
- #include <linux/module.h>
-+#include <linux/nvmem-consumer.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/of_irq.h>
-@@ -69,16 +70,18 @@ struct chip_tsadc_table {
-  * struct rockchip_tsadc_chip - hold the private data of tsadc chip
-  * @chn_offset: the channel offset of the first channel
-  * @chn_num: the channel number of tsadc chip
-- * @tshut_temp: the hardware-controlled shutdown temperature value
-+ * @trim_slope: used to convert the trim code to a temperature in millicelsius
-+ * @tshut_temp: the hardware-controlled shutdown temperature value, with no trim
-  * @tshut_mode: the hardware-controlled shutdown mode (0:CRU 1:GPIO)
-  * @tshut_polarity: the hardware-controlled active polarity (0:LOW 1:HIGH)
-  * @initialize: SoC special initialize tsadc controller method
-  * @irq_ack: clear the interrupt
-  * @control: enable/disable method for the tsadc controller
-- * @get_temp: get the temperature
-+ * @get_temp: get the raw temperature, unadjusted by trim
-  * @set_alarm_temp: set the high temperature interrupt
-  * @set_tshut_temp: set the hardware-controlled shutdown temperature
-  * @set_tshut_mode: set the hardware-controlled shutdown mode
-+ * @get_trim_code: convert a hardware temperature code to one adjusted for by trim
-  * @table: the chip-specific conversion table
-  */
- struct rockchip_tsadc_chip {
-@@ -86,6 +89,9 @@ struct rockchip_tsadc_chip {
- 	int chn_offset;
- 	int chn_num;
+diff --git a/arch/arm64/boot/dts/rockchip/rk3576.dtsi b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
+index dbc527ec60cfac0bbdb881a27d3ff765366be99e..c388fbb510ade0f06e64c1025dcfa59b8187bc97 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3576.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
+@@ -1919,6 +1919,30 @@ gpu_leakage: gpu-leakage@21 {
+ 			log_leakage: log-leakage@22 {
+ 				reg = <0x22 0x1>;
+ 			};
++			bigcore_tsadc_trim: bigcore-tsadc-trim@24 {
++				reg = <0x24 0x2>;
++				bits = <0 10>;
++			};
++			litcore_tsadc_trim: litcore-tsadc-trim@26 {
++				reg = <0x26 0x2>;
++				bits = <0 10>;
++			};
++			ddr_tsadc_trim: ddr-tsadc-trim@28 {
++				reg = <0x28 0x2>;
++				bits = <0 10>;
++			};
++			npu_tsadc_trim: npu-tsadc-trim@2a {
++				reg = <0x2a 0x2>;
++				bits = <0 10>;
++			};
++			gpu_tsadc_trim: gpu-tsadc-trim@2c {
++				reg = <0x2c 0x2>;
++				bits = <0 10>;
++			};
++			soc_tsadc_trim: soc-tsadc-trim@64 {
++				reg = <0x64 0x2>;
++				bits = <0 10>;
++			};
+ 		};
  
-+	/* Used to convert trim code to trim temp */
-+	int trim_slope;
+ 		sai0: sai@2a600000 {
+@@ -2443,6 +2467,39 @@ tsadc: tsadc@2ae70000 {
+ 			rockchip,hw-tshut-temp = <120000>;
+ 			rockchip,hw-tshut-mode = <0>; /* tshut mode 0:CRU 1:GPIO */
+ 			rockchip,hw-tshut-polarity = <0>; /* tshut polarity 0:LOW 1:HIGH */
++			#address-cells = <1>;
++			#size-cells = <0>;
 +
- 	/* The hardware-controlled tshut property */
- 	int tshut_temp;
- 	enum tshut_mode tshut_mode;
-@@ -105,6 +111,8 @@ struct rockchip_tsadc_chip {
- 	int (*set_tshut_temp)(const struct chip_tsadc_table *table,
- 			      int chn, void __iomem *reg, int temp);
- 	void (*set_tshut_mode)(int chn, void __iomem *reg, enum tshut_mode m);
-+	int (*get_trim_code)(const struct chip_tsadc_table *table,
-+			     int code, int trim_base, int trim_base_frac);
++			sensor@0 {
++				reg = <0>;
++				nvmem-cells = <&soc_tsadc_trim>;
++				nvmem-cell-names = "trim";
++			};
++			sensor@1 {
++				reg = <1>;
++				nvmem-cells = <&bigcore_tsadc_trim>;
++				nvmem-cell-names = "trim";
++			};
++			sensor@2 {
++				reg = <2>;
++				nvmem-cells = <&litcore_tsadc_trim>;
++				nvmem-cell-names = "trim";
++			};
++			sensor@3 {
++				reg = <3>;
++				nvmem-cells = <&ddr_tsadc_trim>;
++				nvmem-cell-names = "trim";
++			};
++			sensor@4 {
++				reg = <4>;
++				nvmem-cells = <&npu_tsadc_trim>;
++				nvmem-cell-names = "trim";
++			};
++			sensor@5 {
++				reg = <5>;
++				nvmem-cells = <&gpu_tsadc_trim>;
++				nvmem-cell-names = "trim";
++			};
+ 		};
  
- 	/* Per-table methods */
- 	struct chip_tsadc_table table;
-@@ -114,12 +122,16 @@ struct rockchip_tsadc_chip {
-  * struct rockchip_thermal_sensor - hold the information of thermal sensor
-  * @thermal:  pointer to the platform/configuration data
-  * @tzd: pointer to a thermal zone
-+ * @of_node: pointer to the device_node representing this sensor, if any
-  * @id: identifier of the thermal sensor
-+ * @trim_temp: per-sensor trim temperature value
-  */
- struct rockchip_thermal_sensor {
- 	struct rockchip_thermal_data *thermal;
- 	struct thermal_zone_device *tzd;
-+	struct device_node *of_node;
- 	int id;
-+	int trim_temp;
- };
- 
- /**
-@@ -132,7 +144,11 @@ struct rockchip_thermal_sensor {
-  * @pclk: the advanced peripherals bus clock
-  * @grf: the general register file will be used to do static set by software
-  * @regs: the base address of tsadc controller
-- * @tshut_temp: the hardware-controlled shutdown temperature value
-+ * @trim_base: major component of sensor trim value, in Celsius
-+ * @trim_base_frac: minor component of sensor trim value, in Decicelsius
-+ * @trim: fallback thermal trim value for each channel
-+ * @tshut_temp: the hardware-controlled shutdown temperature value, with no trim
-+ * @trim_temp: the fallback trim temperature for the whole sensor
-  * @tshut_mode: the hardware-controlled shutdown mode (0:CRU 1:GPIO)
-  * @tshut_polarity: the hardware-controlled active polarity (0:LOW 1:HIGH)
-  */
-@@ -149,7 +165,12 @@ struct rockchip_thermal_data {
- 	struct regmap *grf;
- 	void __iomem *regs;
- 
-+	int trim_base;
-+	int trim_base_frac;
-+	int trim;
-+
- 	int tshut_temp;
-+	int trim_temp;
- 	enum tshut_mode tshut_mode;
- 	enum tshut_polarity tshut_polarity;
- };
-@@ -249,6 +270,9 @@ struct rockchip_thermal_data {
- 
- #define GRF_CON_TSADC_CH_INV			(0x10001 << 1)
- 
-+
-+#define RK_MAX_TEMP				(180000)
-+
- /**
-  * struct tsadc_table - code to temperature conversion table
-  * @code: the value of adc channel
-@@ -1061,6 +1085,15 @@ static void rk_tsadcv4_tshut_mode(int chn, void __iomem *regs,
- 	writel_relaxed(val_cru, regs + TSADCV3_HSHUT_CRU_INT_EN);
- }
- 
-+static int rk_tsadcv2_get_trim_code(const struct chip_tsadc_table *table,
-+				    int code, int trim_base, int trim_base_frac)
-+{
-+	int temp = trim_base * 1000 + trim_base_frac * 100;
-+	u32 base_code = rk_tsadcv2_temp_to_code(table, temp);
-+
-+	return code - base_code;
-+}
-+
- static const struct rockchip_tsadc_chip px30_tsadc_data = {
- 	/* cpu, gpu */
- 	.chn_offset = 0,
-@@ -1298,6 +1331,8 @@ static const struct rockchip_tsadc_chip rk3576_tsadc_data = {
- 	.set_alarm_temp = rk_tsadcv3_alarm_temp,
- 	.set_tshut_temp = rk_tsadcv3_tshut_temp,
- 	.set_tshut_mode = rk_tsadcv4_tshut_mode,
-+	.get_trim_code = rk_tsadcv2_get_trim_code,
-+	.trim_slope = 923,
- 	.table = {
- 		.id = rk3588_code_table,
- 		.length = ARRAY_SIZE(rk3588_code_table),
-@@ -1413,7 +1448,7 @@ static int rockchip_thermal_set_trips(struct thermal_zone_device *tz, int low, i
- 		__func__, sensor->id, low, high);
- 
- 	return tsadc->set_alarm_temp(&tsadc->table,
--				     sensor->id, thermal->regs, high);
-+				     sensor->id, thermal->regs, high + sensor->trim_temp);
- }
- 
- static int rockchip_thermal_get_temp(struct thermal_zone_device *tz, int *out_temp)
-@@ -1425,6 +1460,8 @@ static int rockchip_thermal_get_temp(struct thermal_zone_device *tz, int *out_te
- 
- 	retval = tsadc->get_temp(&tsadc->table,
- 				 sensor->id, thermal->regs, out_temp);
-+	*out_temp -= sensor->trim_temp;
-+
- 	return retval;
- }
- 
-@@ -1433,6 +1470,104 @@ static const struct thermal_zone_device_ops rockchip_of_thermal_ops = {
- 	.set_trips = rockchip_thermal_set_trips,
- };
- 
-+/**
-+ * rockchip_get_efuse_value - read an OTP cell from a device node
-+ * @np: pointer to the device node with the nvmem-cells property
-+ * @cell_name: name of cell that should be read
-+ * @value: pointer to where the read value will be placed
-+ *
-+ * Return: Negative errno on failure, during which *value will not be touched,
-+ * or 0 on success.
-+ */
-+static int rockchip_get_efuse_value(struct device_node *np, const char *cell_name,
-+				    int *value)
-+{
-+	struct nvmem_cell *cell;
-+	int ret = 0;
-+	size_t len;
-+	u8 *buf;
-+	int i;
-+
-+	cell = of_nvmem_cell_get(np, cell_name);
-+	if (IS_ERR(cell))
-+		return PTR_ERR(cell);
-+
-+	buf = nvmem_cell_read(cell, &len);
-+
-+	nvmem_cell_put(cell);
-+
-+	if (IS_ERR(buf))
-+		return PTR_ERR(buf);
-+
-+	if (len > sizeof(*value)) {
-+		ret = -ERANGE;
-+		goto exit;
-+	}
-+
-+	/* Copy with implicit endian conversion */
-+	*value = 0;
-+	for (i = 0; i < len; i++)
-+		*value |= (int) buf[i] << (8 * i);
-+
-+exit:
-+	kfree(buf);
-+	return ret;
-+}
-+
-+static int rockchip_get_trim_configuration(struct device *dev, struct device_node *np,
-+					   struct rockchip_thermal_data *thermal)
-+{
-+	const struct rockchip_tsadc_chip *tsadc = thermal->chip;
-+	int trim_base = 0, trim_base_frac = 0, trim = 0;
-+	int trim_code;
-+	int ret;
-+
-+	thermal->trim_base = 0;
-+	thermal->trim_base_frac = 0;
-+	thermal->trim = 0;
-+
-+	if (!tsadc->get_trim_code)
-+		return 0;
-+
-+	ret = rockchip_get_efuse_value(np, "trim_base", &trim_base);
-+	if (ret < 0) {
-+		if (ret == -ENOENT) {
-+			trim_base = 30;
-+			dev_dbg(dev, "trim_base is absent, defaulting to 30\n");
-+		} else {
-+			dev_err(dev, "failed reading nvmem value of trim_base: %pe\n",
-+				ERR_PTR(ret));
-+			return ret;
-+		}
-+	}
-+	ret = rockchip_get_efuse_value(np, "trim_base_frac", &trim_base_frac);
-+	if (ret < 0) {
-+		if (ret == -ENOENT) {
-+			dev_dbg(dev, "trim_base_frac is absent, defaulting to 0\n");
-+		} else {
-+			dev_err(dev, "failed reading nvmem value of trim_base_frac: %pe\n",
-+				ERR_PTR(ret));
-+			return ret;
-+		}
-+	}
-+	thermal->trim_base = trim_base;
-+	thermal->trim_base_frac = trim_base_frac;
-+
-+	/*
-+	 * If the tsadc node contains the trim property, then it is used in the
-+	 * absence of per-channel trim values
-+	 */
-+	if (!rockchip_get_efuse_value(np, "trim", &trim))
-+		thermal->trim = trim;
-+	if (trim) {
-+		trim_code = tsadc->get_trim_code(&tsadc->table, trim,
-+						 trim_base, trim_base_frac);
-+		thermal->trim_temp = thermal->chip->trim_slope * trim_code;
-+	}
-+
-+	return 0;
-+}
-+
- static int rockchip_configure_from_dt(struct device *dev,
- 				      struct device_node *np,
- 				      struct rockchip_thermal_data *thermal)
-@@ -1493,6 +1628,8 @@ static int rockchip_configure_from_dt(struct device *dev,
- 	if (IS_ERR(thermal->grf))
- 		dev_warn(dev, "Missing rockchip,grf property\n");
- 
-+	rockchip_get_trim_configuration(dev, np, thermal);
-+
- 	return 0;
- }
- 
-@@ -1503,23 +1640,50 @@ rockchip_thermal_register_sensor(struct platform_device *pdev,
- 				 int id)
- {
- 	const struct rockchip_tsadc_chip *tsadc = thermal->chip;
-+	struct device *dev = &pdev->dev;
-+	int trim = thermal->trim;
-+	int trim_code, tshut_temp;
-+	int trim_temp = 0;
- 	int error;
- 
-+	if (thermal->trim_temp)
-+		trim_temp = thermal->trim_temp;
-+
-+	if (tsadc->get_trim_code && sensor->of_node) {
-+		error = rockchip_get_efuse_value(sensor->of_node, "trim", &trim);
-+		if (error < 0 && error != -ENOENT) {
-+			dev_err(dev, "failed reading trim of sensor %d: %pe\n",
-+				id, ERR_PTR(error));
-+			return error;
-+		}
-+		if (trim) {
-+			trim_code = tsadc->get_trim_code(&tsadc->table, trim,
-+							 thermal->trim_base,
-+							 thermal->trim_base_frac);
-+			trim_temp = thermal->chip->trim_slope * trim_code;
-+		}
-+	}
-+
-+	sensor->trim_temp = trim_temp;
-+
-+	dev_dbg(dev, "trim of sensor %d is %d\n", id, sensor->trim_temp);
-+
-+	tshut_temp = min(thermal->tshut_temp + sensor->trim_temp, RK_MAX_TEMP);
-+
- 	tsadc->set_tshut_mode(id, thermal->regs, thermal->tshut_mode);
- 
--	error = tsadc->set_tshut_temp(&tsadc->table, id, thermal->regs,
--			      thermal->tshut_temp);
-+	error = tsadc->set_tshut_temp(&tsadc->table, id, thermal->regs, tshut_temp);
- 	if (error)
--		dev_err(&pdev->dev, "%s: invalid tshut=%d, error=%d\n",
--			__func__, thermal->tshut_temp, error);
-+		dev_err(dev, "%s: invalid tshut=%d, error=%d\n",
-+			__func__, tshut_temp, error);
- 
- 	sensor->thermal = thermal;
- 	sensor->id = id;
--	sensor->tzd = devm_thermal_of_zone_register(&pdev->dev, id, sensor,
-+	sensor->tzd = devm_thermal_of_zone_register(dev, id, sensor,
- 						    &rockchip_of_thermal_ops);
- 	if (IS_ERR(sensor->tzd)) {
- 		error = PTR_ERR(sensor->tzd);
--		dev_err(&pdev->dev, "failed to register sensor %d: %d\n",
-+		dev_err(dev, "failed to register sensor %d: %d\n",
- 			id, error);
- 		return error;
- 	}
-@@ -1542,9 +1706,11 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- {
- 	struct device_node *np = pdev->dev.of_node;
- 	struct rockchip_thermal_data *thermal;
-+	struct device_node *child;
- 	int irq;
- 	int i;
- 	int error;
-+	u32 chn;
- 
- 	irq = platform_get_irq(pdev, 0);
- 	if (irq < 0)
-@@ -1595,6 +1761,18 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 	thermal->chip->initialize(thermal->grf, thermal->regs,
- 				  thermal->tshut_polarity);
- 
-+	for_each_available_child_of_node(np, child) {
-+		if (!of_property_read_u32(child, "reg", &chn)) {
-+			if (chn < thermal->chip->chn_num)
-+				thermal->sensors[chn].of_node = child;
-+			else
-+				dev_warn(&pdev->dev,
-+					 "sensor address (%d) too large, ignoring its trim\n",
-+					 chn);
-+		}
-+
-+	}
-+
- 	for (i = 0; i < thermal->chip->chn_num; i++) {
- 		error = rockchip_thermal_register_sensor(pdev, thermal,
- 						&thermal->sensors[i],
-@@ -1664,8 +1842,11 @@ static int __maybe_unused rockchip_thermal_suspend(struct device *dev)
- static int __maybe_unused rockchip_thermal_resume(struct device *dev)
- {
- 	struct rockchip_thermal_data *thermal = dev_get_drvdata(dev);
--	int i;
-+	const struct rockchip_tsadc_chip *tsadc = thermal->chip;
-+	struct rockchip_thermal_sensor *sensor;
-+	int tshut_temp;
- 	int error;
-+	int i;
- 
- 	error = clk_enable(thermal->clk);
- 	if (error)
-@@ -1679,21 +1860,23 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
- 
- 	rockchip_thermal_reset_controller(thermal->reset);
- 
--	thermal->chip->initialize(thermal->grf, thermal->regs,
--				  thermal->tshut_polarity);
-+	tsadc->initialize(thermal->grf, thermal->regs, thermal->tshut_polarity);
- 
- 	for (i = 0; i < thermal->chip->chn_num; i++) {
--		int id = thermal->sensors[i].id;
-+		sensor = &thermal->sensors[i];
-+
-+		tshut_temp = min(thermal->tshut_temp + sensor->trim_temp,
-+				 RK_MAX_TEMP);
- 
--		thermal->chip->set_tshut_mode(id, thermal->regs,
-+		tsadc->set_tshut_mode(sensor->id, thermal->regs,
- 					      thermal->tshut_mode);
- 
--		error = thermal->chip->set_tshut_temp(&thermal->chip->table,
--					      id, thermal->regs,
--					      thermal->tshut_temp);
-+		error = tsadc->set_tshut_temp(&thermal->chip->table,
-+					      sensor->id, thermal->regs,
-+					      tshut_temp);
- 		if (error)
- 			dev_err(dev, "%s: invalid tshut=%d, error=%d\n",
--				__func__, thermal->tshut_temp, error);
-+				__func__, tshut_temp, error);
- 	}
- 
- 	thermal->chip->control(thermal->regs, true);
+ 		i2c9: i2c@2ae80000 {
 
 -- 
 2.49.0
