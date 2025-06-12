@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F0962DECA3;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 74FB32DECC0;
 	Thu, 12 Jun 2025 21:12:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749762722; cv=none; b=fqDiTfLpZEx5x/HEkWirnXEAA3vvZaYWtkmlS6W+82EArLueAZLG7ig6/3lLNLaa+o2JkILjR+hRRI6QGbkVosQ5rA7RhL69OEdpunSTXPtk+zaQi8RBe9Wb+3HWST3NBjdLR+kJbDC6FCe2MrCDBuxTU0UWv4vh8J5AJzL3qvQ=
+	t=1749762722; cv=none; b=LwOSKIVOaG/W6n681cQQi4vxWgUo/D1efRWpTHkvTCn2/Qg1FTIy6cioC4Nw/TPSku6BDitSAri/vjeUgPiYi/L7p/y/o7PCsZ1i2Ivey0104GcrNWFR38rQ3cjshkU1LPpkIsGmKXFKkb+T2fb7OO14x4sP+1Zt2UJAdL+WZmc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1749762722; c=relaxed/simple;
-	bh=F/Z4decNsz4B5o9bV+TnqdRPSE6G0uWtE1olsYTJyJw=;
+	bh=YLmWDKsoMcAj1FZaEwVkOxK9EAmBzZd5KoPvpjLJcOY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=VfKlm5hbzGLodH/mnyF9y8SlnYPtZYnXh0IVS0IcmQWl92hX5Qih23MFa4RzwDEQcdmNj1FEn8KJTmoIEEWmzCMCaxSVuFkWI4bfV68mDCM6JeODcMliCYfa8jDz+M0op7vibLkwPz48yZ/RC4VtJ0yRrvHYdDCoKX4bgsnqfFc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kA5XHzVq; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=nuX3q4Evh/VNdhD6CSAhuu10OXywKLMsRMvv2k9Rbx6FkDLwJGXEuzh2qHFTxsdQ8gJVCDL1wL06SrfBGc9SjOO24jTlEA1fWzfYUApo6e33fouYw6ChrRW0oSUQfCIKqOgSWd2n47sDpY9qKlKqQIBHUla+1I9vPUHS+MNecIU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ILb+w7sr; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kA5XHzVq"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id C75B0C4AF1C;
-	Thu, 12 Jun 2025 21:12:01 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ILb+w7sr"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 22CBBC4CEEA;
+	Thu, 12 Jun 2025 21:12:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1749762721;
-	bh=F/Z4decNsz4B5o9bV+TnqdRPSE6G0uWtE1olsYTJyJw=;
+	s=k20201202; t=1749762722;
+	bh=YLmWDKsoMcAj1FZaEwVkOxK9EAmBzZd5KoPvpjLJcOY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=kA5XHzVqJvgGcVKM9DXo7DqZXxZRzPNluPUT67R3nqfpYeewQtfAdlM0Lij/aERAj
-	 jqplxG/MYLbXxhcd/DB1QJVt5TT0666VO6gvruTPFZGCpwFDaHL5PUX1KJEwXgyZ8X
-	 e4fN4LVfF8DRBJc4YjfCEzGNvxCqrrDs0m8DOqxSdTaVZcFoL6JLaAkrFKKtygAYJs
-	 o4TXZKw69sNPcyJLmEwDezwdmY5vZJZUUjw65osYte2zTSUN7AJHBHkrFBIQ1fIB65
-	 LLX/jzFuc41sN8JRkSpF1kQNCXhEWgCIP4HfvdzN7Sn/JeQJAmLrzy3hFmBK9PhbKU
-	 Rj0DHmAxJ2S1A==
+	b=ILb+w7src221ykDUIlgdnxftZvH7pDzQLP/oP119e29bcKTtc3Dyd/Vj2ALFMPc4j
+	 dCH6K4e/wNt9AV6XUJPr0ALhcpnOG/VRmFarkc28P2/z9mQRwvhHLx6QLcfrSn7NN7
+	 saoQKx8o1dzj/SMkzddTg+5pxgdmn2dHmzSoKPdd1tfsvLooxysXBeq8TCPNagpoim
+	 2jEawWZX6uNd5Iwl/nMY+gS4dHUSlWWPv56RifRy+CosSDi9wFTk6laOTUKf3if8E0
+	 1z5LBYVFXX9NXXPwwbHBsXerkIRaNVI9G6iWjElrpBx8BQOe9EBbh3WpATYN0s383D
+	 0njfal/862z+w==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B92EFC71148;
-	Thu, 12 Jun 2025 21:12:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16BC0C61CE8;
+	Thu, 12 Jun 2025 21:12:02 +0000 (UTC)
 From: Sven Peter <sven@kernel.org>
-Date: Thu, 12 Jun 2025 21:11:29 +0000
-Subject: [PATCH 05/11] i2c: apple: Drop default ARCH_APPLE in Kconfig
+Date: Thu, 12 Jun 2025 21:11:32 +0000
+Subject: [PATCH 08/11] Input: apple_z2: Drop default ARCH_APPLE in Kconfig
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +40,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250612-apple-kconfig-defconfig-v1-5-0e6f9cb512c1@kernel.org>
+Message-Id: <20250612-apple-kconfig-defconfig-v1-8-0e6f9cb512c1@kernel.org>
 References: <20250612-apple-kconfig-defconfig-v1-0-0e6f9cb512c1@kernel.org>
 In-Reply-To: <20250612-apple-kconfig-defconfig-v1-0-0e6f9cb512c1@kernel.org>
 To: Janne Grunau <j@jannau.net>, Alyssa Rosenzweig <alyssa@rosenzweig.io>, 
@@ -61,13 +61,13 @@ Cc: asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
  linux-input@vger.kernel.org, dmaengine@vger.kernel.org, 
  linux-sound@vger.kernel.org, Sven Peter <sven@kernel.org>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=979; i=sven@kernel.org;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=977; i=sven@kernel.org;
  h=from:subject:message-id;
- bh=F/Z4decNsz4B5o9bV+TnqdRPSE6G0uWtE1olsYTJyJw=;
- b=owGbwMvMwCHmIlirolUq95LxtFoSQ4a309Tjlzsdfh/YrRvMdvlWd/X9b492KIXyqdx64bvnh
- ea2t4u0OkpZGMQ4GGTFFFm277c3ffLwjeDSTZfew8xhZQIZwsDFKQATMV3G8IfjxgbDMtONC+JW
- vj3Zcn/W0gvHX8tm3fhgcvNZsNPBjuRbjAxL6xJk8nXf2sqf7lvLznvmksb5tFtZEtVWLD1LZf0
- 8zJkA
+ bh=YLmWDKsoMcAj1FZaEwVkOxK9EAmBzZd5KoPvpjLJcOY=;
+ b=owGbwMvMwCHmIlirolUq95LxtFoSQ4a308x5ms0KdxX5tjYJ+Vj+5Z5Y0a+jEJPxyPLHDGfmt
+ WoFV1d0lLIwiHEwyIopsmzfb2/65OEbwaWbLr2HmcPKBDKEgYtTACayJYDhn5p5R+rBA11SHwMi
+ Nsu6Gr/++XbFTaMtTNlxm/kPzgiKFWT4719YvrYm885Mtqi0lv7rPbL+R2V+MDMtXcYevXvGWll
+ LFgA=
 X-Developer-Key: i=sven@kernel.org; a=openpgp;
  fpr=A1E3E34A2B3C820DBC4955E5993B08092F131F93
 X-Endpoint-Received: by B4 Relay for sven@kernel.org/default with
@@ -81,21 +81,21 @@ Thus, drop `default ARCH_APPLE` from Kconfig.
 
 Signed-off-by: Sven Peter <sven@kernel.org>
 ---
- drivers/i2c/busses/Kconfig | 1 -
+ drivers/input/touchscreen/Kconfig | 1 -
  1 file changed, 1 deletion(-)
 
-diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-index 48c5ab8320090cc383cea32337fb391c2b01a904..93440702b8eaf0fba4cca337eb2fd2959801a570 100644
---- a/drivers/i2c/busses/Kconfig
-+++ b/drivers/i2c/busses/Kconfig
-@@ -992,7 +992,6 @@ config I2C_APPLE
- 	tristate "Apple SMBus platform driver"
- 	depends on !I2C_PASEMI
- 	depends on ARCH_APPLE || COMPILE_TEST
+diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
+index 91a2b584dab1469a3c907c0f1accfa10c4c4a3ca..196905162945d59e775c3e0bff6540a82842229a 100644
+--- a/drivers/input/touchscreen/Kconfig
++++ b/drivers/input/touchscreen/Kconfig
+@@ -105,7 +105,6 @@ config TOUCHSCREEN_ADC
+ 
+ config TOUCHSCREEN_APPLE_Z2
+ 	tristate "Apple Z2 touchscreens"
 -	default ARCH_APPLE
+ 	depends on SPI && (ARCH_APPLE || COMPILE_TEST)
  	help
- 	  Say Y here if you want to use the I2C controller present on Apple
- 	  Silicon chips such as the M1.
+ 	  Say Y here if you have an ARM Apple device with
 
 -- 
 2.34.1
