@@ -1,87 +1,133 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E442C1624EA;
-	Thu, 12 Jun 2025 05:12:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 364F7153598;
+	Thu, 12 Jun 2025 06:10:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.167.242.64
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749705149; cv=none; b=IJjfbwEvpBx+ysMWhQvXVgzeIXTkbDV8U+PUtXf6m1YEjXsLWV5SHU6dO6XP+rPxymnbgIuooUfGpx3Lk5wkMbCgeYqMXrwyCLH85Liep8wlZ6SHFzptHQ6altLsSwn/8EZvUU0Tuw092iLWq3Vbyf54rJBmnsjjrFxErdMyRPI=
+	t=1749708606; cv=none; b=I586AfYb3rdSzNH5E3yxhlSNuv50BIaCLIZ+V6O9DdtriqMzWcn8TgYinPk2Of66+tTDaLXYBJnM7CE67wI3IGtxk7mpUkugeeE1So1U6JDGJAlbJm9NLQV9ejod+tN2+bPjkobMLhQ6pIEI1/DSXQptkkOMBYPWkAy0mri8DFE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749705149; c=relaxed/simple;
-	bh=Uk8NoJXMqKCQMySusUG8IkaskY8HP0DNCxqK77i8ox8=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=HC0qcinrj/XPFSfZ6w4JRGzJs+dAPqGI/AYjZT+QoYzJ9t7m3+/a1v2CMd2I7uWEc525ONKQeUPMI5/YKEpUa6rwwt2ISm2Uur90yLYcNedhPVGXyNv2letBoSJ4holaVNxPJBqwrxk6DqEhlCWYHvoZdA5QNVgWKr+KJhY7gWU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=iHvdsVAK; arc=none smtp.client-ip=192.198.163.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1749708606; c=relaxed/simple;
+	bh=i8PWqD4P60CAuVZ7Gnxu56jRgxjKhfnbhFQBOFOxYPw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TRaOQJou+DsaGMgE27k4FPuuvmrXkOs9ucv9X3ssac+KtOjkWuUEix0bOj/EabKjWsQKlu0h369LbxLysl6U4i0ZpubpyYKGPDmIv8iokbVdLX/zYjkA/1zE1/fkfDLDLNoCc0jsWT512ljveG1NBVUTx6yf9lx9a3RD5KIFxhU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=GS550hFw; arc=none smtp.client-ip=213.167.242.64
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="iHvdsVAK"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1749705148; x=1781241148;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=Uk8NoJXMqKCQMySusUG8IkaskY8HP0DNCxqK77i8ox8=;
-  b=iHvdsVAKLXDzCtbKrTw3alEI/R7O4x1eo3Q+9llS2UgoWwIPpmqBILkt
-   j78EAs6MnqKykDyVYZsnSVniuSlZDs9AUZBYX7Q1KDbgpGbkldyLCeeb3
-   9ujdRYa1prq97IC52cns+nE0WryR/Zhs3FIiLpM0R1i77ZJnM2dwgTuTK
-   tzVZaHUjJCk2bjwA34RkTIlwkvgdEWK22KdCJ8A+HrmHqPeGcvP1EmbRS
-   ax1lC1s7Lc+rFrXFeV1Tve2lCcDxqnHwaEbc4/NQjGp1DA0lr7XSctokG
-   QkZDfN7g3xRtlGShRjZTCz33QdYMyNidYYxdOoFu6OQqLbvdQDb8yh2/N
-   g==;
-X-CSE-ConnectionGUID: Ddgagn96Q0yieImEy6i2Yw==
-X-CSE-MsgGUID: MNCJ5OfAR4SfNb/rsGec5Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11461"; a="51087453"
-X-IronPort-AV: E=Sophos;i="6.16,229,1744095600"; 
-   d="scan'208";a="51087453"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Jun 2025 22:12:27 -0700
-X-CSE-ConnectionGUID: G1DwcKiNSP6bUW3bbdKbyQ==
-X-CSE-MsgGUID: an/NkHhmRcKOY5ZIpStM4g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,229,1744095600"; 
-   d="scan'208";a="178366806"
-Received: from wqiao.bj.intel.com ([10.238.158.145])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Jun 2025 22:12:24 -0700
-From: Qiao Wei <wei.qiao@intel.com>
-To: rafael@kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: rui.zhang@intel.com,
-	xiange.pi@intel.com,
-	lili.li@intel.com,
-	furong.zhou@intel.com,
-	Qiao Wei <wei.qiao@intel.com>
-Subject: [linux-drivers-review]  [PATCH] powercap: intel_rapl: Add support for Bartlett Lake platform
-Date: Thu, 12 Jun 2025 12:45:38 +0800
-Message-Id: <20250612044538.2970661-1-wei.qiao@intel.com>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="GS550hFw"
+Received: from [192.168.88.20] (91-158-153-178.elisa-laajakaista.fi [91.158.153.178])
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id C3C24250;
+	Thu, 12 Jun 2025 08:09:49 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
+	s=mail; t=1749708590;
+	bh=i8PWqD4P60CAuVZ7Gnxu56jRgxjKhfnbhFQBOFOxYPw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=GS550hFw+nJb/FK5Nx2uzBtRkHj00NFY09rVTblYEDtONh65dodWEsjEWfQc2fCt6
+	 m353b0o/OgbkJGVPAhAZz8kboB11gVYvUDzCn1m2H952qcLmviH7yeT9EYLqPuflWk
+	 gix4oZKAiG40KM4yp3ssHV/m5O7V4uV6zvGDGDdE=
+Message-ID: <4a682199-1da1-404b-addf-f0afa65d4c08@ideasonboard.com>
+Date: Thu, 12 Jun 2025 09:09:54 +0300
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 00/21] pmdomain: Add generic ->sync_state() support to
+ genpd
+To: Ulf Hansson <ulf.hansson@linaro.org>,
+ Saravana Kannan <saravanak@google.com>, Stephen Boyd <sboyd@kernel.org>,
+ linux-pm@vger.kernel.org
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Michael Grzeschik <m.grzeschik@pengutronix.de>,
+ Bjorn Andersson <andersson@kernel.org>, Abel Vesa <abel.vesa@linaro.org>,
+ Peng Fan <peng.fan@oss.nxp.com>, Johan Hovold <johan@kernel.org>,
+ Maulik Shah <maulik.shah@oss.qualcomm.com>,
+ Michal Simek <michal.simek@amd.com>, Konrad Dybcio <konradybcio@kernel.org>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+References: <20250523134025.75130-1-ulf.hansson@linaro.org>
+Content-Language: en-US
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Autocrypt: addr=tomi.valkeinen@ideasonboard.com; keydata=
+ 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
+In-Reply-To: <20250523134025.75130-1-ulf.hansson@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Add support for Bartlett Lake platform to the RAPL common driver.
 
-Signed-off-by: Qiao Wei <wei.qiao@intel.com>
----
- drivers/powercap/intel_rapl_common.c | 1 +
- 1 file changed, 1 insertion(+)
+On 23/05/2025 16:39, Ulf Hansson wrote:
+> Changes in v2:
+> 	- Well, quite a lot as I discovered various problems when doing
+> 	additional testing of corner-case. I suggest re-review from scratch,
+> 	even if I decided to keep some reviewed-by tags.
+> 	- Added patches to allow some drivers that needs to align or opt-out
+> 	from the new common behaviour in genpd.
+> 
+> If a PM domain (genpd) is powered-on during boot, there is probably a good
+> reason for it. Therefore it's known to be a bad idea to allow such genpd to be
+> powered-off before all of its consumer devices have been probed. This series
+> intends to fix this problem.
+> 
+> We have been discussing these issues at LKML and at various Linux-conferences
+> in the past. I have therefore tried to include the people I can recall being
+> involved, but I may have forgotten some (my apologies), feel free to loop them
+> in.
+> 
+> I have tested this with QEMU with a bunch of local test-drivers and DT nodes.
+> Let me know if you want me to share this code too.
+> 
+> Please help review and test!
+> Finally, a big thanks to Saravana for all the support!
 
-diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
-index e3be40adc0d7a..c0789df34b2f7 100644
---- a/drivers/powercap/intel_rapl_common.c
-+++ b/drivers/powercap/intel_rapl_common.c
-@@ -1261,6 +1261,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
- 	X86_MATCH_VFM(INTEL_RAPTORLAKE,		&rapl_defaults_core),
- 	X86_MATCH_VFM(INTEL_RAPTORLAKE_P,        &rapl_defaults_core),
- 	X86_MATCH_VFM(INTEL_RAPTORLAKE_S,	&rapl_defaults_core),
-+	X86_MATCH_VFM(INTEL_BARTLETTLAKE,	&rapl_defaults_core),
- 	X86_MATCH_VFM(INTEL_METEORLAKE,		&rapl_defaults_core),
- 	X86_MATCH_VFM(INTEL_METEORLAKE_L,	&rapl_defaults_core),
- 	X86_MATCH_VFM(INTEL_SAPPHIRERAPIDS_X,	&rapl_defaults_spr_server),
--- 
-2.34.1
+For TI AM62A and Xilinx ZynqMP ZCU106:
+
+Tested-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+
+ Tomi
 
