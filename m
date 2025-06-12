@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17CC726E717;
-	Thu, 12 Jun 2025 14:59:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4971E271449;
+	Thu, 12 Jun 2025 14:59:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749740361; cv=none; b=QTSxfqS/gZzH5Rg+2ji8E0Z6CrUts2Fo0pCE6V4rDx1F+USRq3+jidaD7Wi7mm4DcXZ318g23LyMohIF8z0eeqXqaeGfjZa0sKBfH0SN7l8dCBHYp7IGccztUJnXMjNxgJ+5zJl5D3YRgYJSQBWbE3uzzcmQdfiJrdxSqremF7c=
+	t=1749740361; cv=none; b=KRNy6HXbZVIQbA0O9vttSz6Mfuw/GdzcX4viA2LQqrKoRNfiPuNu+3EWBCmborSZcED1HqHx2Kc5rV85jCFTb7faCzeiaZl3VvZaaySjvKesqc4KiC6lhxclUTmHSIC2GcAZePpApat0lCx21sFoGC8IaaTOd7hqc3z25ScfWOU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1749740361; c=relaxed/simple;
-	bh=QysRRjuCWc6j3iKQgJIbDem1pu8+n6bfP3GRgktYOX8=;
+	bh=wRc4J5lTl3LwyvIrnX2/agSOnDCKGpnt1Cg19jfH7QY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=OeEJ10PSO6LjNt01ClV/nbddh99hXgrQnVyocRA21A7aSxivF4PgQQG1objG3eT3aGVXWBBXEVbI/CtLQNEuCMhrC5smux9J/VZt39FTTKCYrfDJAsL1D2xOt5KGQiWy4nJu38bjG1nqZ6LMmu6Lv3qjbBRB53rncS2WIaKRkRY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mIlpMjxZ; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=Ec50X0fXCrCE83jaht0GKIADzo5nqCcFbX5CYsZ5l6gMokcLLUHqk2wj5ya8c/fBYxWIEIOO6bSQnSi8S1UVWXsOC8ISidp5f4TctoiAaGzE+v2kV3trYcaGc64WCV7w5UnbwYKfhzDGXBxBpcC4zsQnNJbU9ygibNMDRObLwd8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=uYPOu05T; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mIlpMjxZ"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id BE99EC4CEF2;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="uYPOu05T"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id F0313C4CEFD;
 	Thu, 12 Jun 2025 14:59:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1749740360;
-	bh=QysRRjuCWc6j3iKQgJIbDem1pu8+n6bfP3GRgktYOX8=;
+	s=k20201202; t=1749740361;
+	bh=wRc4J5lTl3LwyvIrnX2/agSOnDCKGpnt1Cg19jfH7QY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=mIlpMjxZiNEyYr5cuaIzTP5bVge9RBxIS8u75pAS/gLMp9UDyhVLvWz5vJDvZLUL/
-	 5Zw+MXB+ohzgMTPvqulTAVS4H7aObRtdp2W8gnLpS+THSGOaER7tHt/cRkDp+JzeI0
-	 SBd4j5HN0lk68qkSxB+l53b537usTpZejZ8pXHtfBavw//PF4GxZb5w5snfxFYoUGk
-	 Gkbr0ws9nuzBw1cnaGwbOesAm4igQP/xFwIugENML6OaVoyABueo6fnUbbA/NOKRue
-	 ohNASTGU2rwTV0POHzrOKozTkcb6CxUE3zcW6WD3SQLxN1wfdv2LHK2mP7dWkHJgoW
-	 HE1nfm0ATEjiw==
+	b=uYPOu05TZV6b9+Oiy6usPKKPFsd41unYSUWamiyaJ1402I0LUEN7VxBYN9a9GWOUZ
+	 7PQiQReMWwbmIsura8WuJ+hfOhz0C4ZHXfAkVwEr4YVv5m0HyZcTxWmrBdmAF0aFig
+	 V7gh59GVpW08A9DX+ma28yuNfMiHB28AdQIxiLfkkJvR0zCgbGAuA9ogLDMcdMfP2q
+	 rvvM52FrcRWqMiTY2I1vr8LbSl13CxRPE90G2sSZ8xB1SoXw7kvD4QjfxkOIe+7sLF
+	 lmqLd0eRC5U/bNFGFILM4uzOj1qTQBM4w/dvcDIZGZjCM/y28HjAs5twyU2PTaEQ2E
+	 xw/+4br67H64A==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B05EAC61CE8;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E39BFC61CE8;
 	Thu, 12 Jun 2025 14:59:20 +0000 (UTC)
 From: Samuel Kayode via B4 Relay <devnull+samuel.kayode.savoirfairelinux.com@kernel.org>
-Date: Thu, 12 Jun 2025 10:55:44 -0400
-Subject: [PATCH v7 2/6] mfd: pf1550: add core mfd driver
+Date: Thu, 12 Jun 2025 10:55:46 -0400
+Subject: [PATCH v7 4/6] input: pf1550: add onkey support
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +40,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250612-pf1550-v7-2-0e393b0f45d7@savoirfairelinux.com>
+Message-Id: <20250612-pf1550-v7-4-0e393b0f45d7@savoirfairelinux.com>
 References: <20250612-pf1550-v7-0-0e393b0f45d7@savoirfairelinux.com>
 In-Reply-To: <20250612-pf1550-v7-0-0e393b0f45d7@savoirfairelinux.com>
 To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -58,12 +58,12 @@ Cc: imx@lists.linux.dev, devicetree@vger.kernel.org,
  Samuel Kayode <samuel.kayode@savoirfairelinux.com>, 
  Abel Vesa <abelvesa@kernel.org>, Frank Li <Frank.Li@nxp.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1749740359; l=22885;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1749740359; l=8165;
  i=samuel.kayode@savoirfairelinux.com; s=20250527;
  h=from:subject:message-id;
- bh=gpqvEwRbJegK7BX3jaJnUFIUpg7uBJXuQOq8mSq33eo=;
- b=1HjTnOhU8zpPUtThbx61Be7lQPTrRrhvIs0VRYGQy5AcYT5puBHvcT1AassSrJR6ojAQZ6Qn9
- WYDGPbbZI4wCJVYyNTKBjzY52XPO/hUEBMSvDg0Wb64FH0es8CZq09m
+ bh=/30u4M/fqrOybLKaLrNjTNbzn9NVPxvcjfIrn5ELRPQ=;
+ b=5rCQh20UGfSKVbUrrvYuIsnTH0vkOAQtZ8XlS6Mxmk/qHHrAzJtJ/4ynMVTyPcjWOnxK1459h
+ MG1cjkq/gyoAnd4w86Zd2TDp3VG2DwZCKQi7iHN85G6xTocbEllEbMV
 X-Developer-Key: i=samuel.kayode@savoirfairelinux.com; a=ed25519;
  pk=TPSQGQ5kywnnPyGs0EQqLajLFbdDu17ahXz8/gxMfio=
 X-Endpoint-Received: by B4 Relay for
@@ -73,698 +73,268 @@ Reply-To: samuel.kayode@savoirfairelinux.com
 
 From: Samuel Kayode <samuel.kayode@savoirfairelinux.com>
 
-Add the core mfd driver for pf1550 PMIC. There are 3 subdevices for
-which the drivers will be added in subsequent patches.
+Add support for the onkey of the pf1550 PMIC.
 
 Reviewed-by: Frank Li <Frank.Li@nxp.com>
 Signed-off-by: Samuel Kayode <samuel.kayode@savoirfairelinux.com>
 ---
 v7:
- - Address Frank's feedback:
-   - Ensure reverse christmas tree order for local variable definitions
-   - Drop unnecessary driver data definition in id table
-v6:
- - Address Frank's feedback:
-   - Ensure lowercase when defining register addresses
-   - Use GENMASK macro for masking
-   - Hardcode IRQ flags in pf1550_add_child_device
-   - Add dvs_enb variable for SW2 regulator
-   - Drop chip type variable
-v5:
- - Use top level interrupt to manage interrupts for the sub-drivers as
-   recommended by Mark Brown. The regmap_irq_sub_irq_map would have been used
-   if not for the irregular charger irq address. For all children, the mask
-   register is directly after the irq register (i.e., 0x08, 0x09) except
-   for the charger: 0x80, 0x82. Meaning .mask_base would be applicable
-   for all but the charger
- - Fix bad offset for temperature interrupts of regulator
+- Use reverese christmas tree style
+- Drop unecessary 0 in id table's driver data
 v4:
- - Use struct resource to define irq so platform_get_irq can be used in
-   children as suggested by Dmitry
- - Let mfd_add_devices create the mappings for the interrupts
- - ack_base and init_ack_masked defined for charger and regulator irq
-   chips
- - No need to define driver_data in table id
+- Address Dmitry's feedback
+  - Drop irq variable in onkey_drv_data
+  - Drop keycode variable in onkey_drv_data
+  - Define wakeup as type bool
+  - Use platform_get_irq
+  - Use type const for struct pf1550_dev in onkey_drv_data
+  - Replace (error < 0) with (error) in if statement when applicable
+  - No need to define driver_data in table id
+- Define driver.pm with pm_sleep_ptr
 v3:
- - Address Dmitry's feedback:
-   - Place Table IDs next to each other
-   - Drop of_match_ptr
-   - Replace dev_err with dev_err_probe in probe method
-   - Drop useless log in probe
- - Map all irqs instead of doing it in the sub-devices as recommended by
-   Dmitry.
+- Address Dmitry's feedback
+  - Drop compatible string
+  - Remove dependency on OF
+  - Use generic device properties
+  - Drop unnecessary includes
+  - Drop unnecessary initializations in probe
+  - Always use the KEY_POWER property for onkey->keycode
+  - Do mapping of irqs in MFD driver
+  - Define onkey->input before interrupts are active
+  - Drop unnecessary input_free_device since devm
+  - Manage onkey irqs instead of the main interrupt line.
+- Fix integer overflow when unmasking onkey irqs in onkey_resume.
 v2:
- - Address feedback from Enric Balletbo Serra
+- Add driver for onkey
 ---
- drivers/mfd/Kconfig        |  14 ++
- drivers/mfd/Makefile       |   2 +
- drivers/mfd/pf1550.c       | 339 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/mfd/pf1550.h | 254 +++++++++++++++++++++++++++++++++
- 4 files changed, 609 insertions(+)
+ drivers/input/misc/Kconfig        |  11 +++
+ drivers/input/misc/Makefile       |   1 +
+ drivers/input/misc/pf1550-onkey.c | 183 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 195 insertions(+)
 
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 96992af22565205716d72db0494c7bf2567b045e..de3fc9c5e88b5c2a2c7325e2ceeb8f9c3ca057de 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -558,6 +558,20 @@ config MFD_MX25_TSADC
- 	  i.MX25 processors. They consist of a conversion queue for general
- 	  purpose ADC and a queue for Touchscreens.
+diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
+index f5496ca0c0d2bfcb7968503ccd1844ff43bbc1c0..47b3c43ff0550f14d61990997976366436411adc 100644
+--- a/drivers/input/misc/Kconfig
++++ b/drivers/input/misc/Kconfig
+@@ -179,6 +179,17 @@ config INPUT_PCSPKR
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called pcspkr.
  
-+config MFD_PF1550
-+	tristate "NXP PF1550 PMIC Support"
-+	depends on I2C=y && OF
-+	select MFD_CORE
-+	select REGMAP_I2C
-+	select REGMAP_IRQ
++config INPUT_PF1550_ONKEY
++	tristate "NXP PF1550 Onkey support"
++	depends on MFD_PF1550
 +	help
-+	  Say yes here to add support for NXP PF1550.
-+	  This is a companion Power Management IC with regulators, onkey,
-+	  and charger control on chip.
-+	  This driver provides common support for accessing the device;
-+	  additional drivers must be enabled in order to use the functionality
-+	  of the device.
++	  Say Y here if you want support for PF1550 PMIC. Onkey can trigger
++	  release and 1s(push hold), 2s, 3s, 4s, 8s interrupt for long press
++	  detect.
 +
- config MFD_HI6421_PMIC
- 	tristate "HiSilicon Hi6421 PMU/Codec IC"
- 	depends on OF
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 5e5cc279af6036a6b3ea1f1f0feeddf45b85f15c..7391d1b81d1ee499507b4ac24ff00eb2e344d60b 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -120,6 +120,8 @@ obj-$(CONFIG_MFD_MC13XXX)	+= mc13xxx-core.o
- obj-$(CONFIG_MFD_MC13XXX_SPI)	+= mc13xxx-spi.o
- obj-$(CONFIG_MFD_MC13XXX_I2C)	+= mc13xxx-i2c.o
- 
-+obj-$(CONFIG_MFD_PF1550)	+= pf1550.o
++	  To compile this driver as a module, choose M here. The module will be
++	  called pf1550-onkey.
 +
- obj-$(CONFIG_MFD_CORE)		+= mfd-core.o
- 
- ocelot-soc-objs			:= ocelot-core.o ocelot-spi.o
-diff --git a/drivers/mfd/pf1550.c b/drivers/mfd/pf1550.c
+ config INPUT_PM8941_PWRKEY
+ 	tristate "Qualcomm PM8941 power key support"
+ 	depends on MFD_SPMI_PMIC
+diff --git a/drivers/input/misc/Makefile b/drivers/input/misc/Makefile
+index 6d91804d0a6f761a094e6c380f878f74c3054d63..c652337de464c1eeaf1515d0bc84d10de0cb3a74 100644
+--- a/drivers/input/misc/Makefile
++++ b/drivers/input/misc/Makefile
+@@ -62,6 +62,7 @@ obj-$(CONFIG_INPUT_PCAP)		+= pcap_keys.o
+ obj-$(CONFIG_INPUT_PCF50633_PMU)	+= pcf50633-input.o
+ obj-$(CONFIG_INPUT_PCF8574)		+= pcf8574_keypad.o
+ obj-$(CONFIG_INPUT_PCSPKR)		+= pcspkr.o
++obj-$(CONFIG_INPUT_PF1550_ONKEY)	+= pf1550-onkey.o
+ obj-$(CONFIG_INPUT_PM8941_PWRKEY)	+= pm8941-pwrkey.o
+ obj-$(CONFIG_INPUT_PM8XXX_VIBRATOR)	+= pm8xxx-vibrator.o
+ obj-$(CONFIG_INPUT_PMIC8XXX_PWRKEY)	+= pmic8xxx-pwrkey.o
+diff --git a/drivers/input/misc/pf1550-onkey.c b/drivers/input/misc/pf1550-onkey.c
 new file mode 100644
-index 0000000000000000000000000000000000000000..f42c35b6f3c7ce63d615545e85fb2a143fccb488
+index 0000000000000000000000000000000000000000..a93346f5de9ed9c7e64c3a5f559d66380dc35472
 --- /dev/null
-+++ b/drivers/mfd/pf1550.c
-@@ -0,0 +1,339 @@
++++ b/drivers/input/misc/pf1550-onkey.c
+@@ -0,0 +1,183 @@
 +// SPDX-License-Identifier: GPL-2.0
 +//
-+// pf1550.c - mfd core driver for the PF1550
-+//
-+// Copyright (C) 2016 Freescale Semiconductor, Inc.
-+// Robin Gong <yibin.gong@freescale.com>
++// Driver for the PF1550 ON_KEY
++// Copyright (C) 2016 Freescale Semiconductor, Inc. All Rights Reserved.
 +//
 +// Portions Copyright (c) 2025 Savoir-faire Linux Inc.
 +// Samuel Kayode <samuel.kayode@savoirfairelinux.com>
 +//
-+// This driver is based on max77693.c
-+//
 +
 +#include <linux/err.h>
-+#include <linux/i2c.h>
++#include <linux/input.h>
 +#include <linux/interrupt.h>
++#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/mfd/core.h>
 +#include <linux/mfd/pf1550.h>
-+#include <linux/of.h>
-+#include <linux/regmap.h>
++#include <linux/platform_device.h>
 +
-+static const struct regmap_config pf1550_regmap_config = {
-+	.reg_bits = 8,
-+	.val_bits = 8,
-+	.max_register = PF1550_PMIC_REG_END,
++#define PF1550_ONKEY_IRQ_NR	6
++
++struct onkey_drv_data {
++	struct device *dev;
++	const struct pf1550_dev *pf1550;
++	bool wakeup;
++	struct input_dev *input;
 +};
 +
-+static const struct regmap_irq pf1550_irqs[] = {
-+	REGMAP_IRQ_REG(PF1550_IRQ_CHG,		 0, IRQ_CHG),
-+	REGMAP_IRQ_REG(PF1550_IRQ_REGULATOR,     0, IRQ_REGULATOR),
-+	REGMAP_IRQ_REG(PF1550_IRQ_ONKEY,	 0, IRQ_ONKEY),
-+};
-+
-+static const struct regmap_irq_chip pf1550_irq_chip = {
-+	.name			= "pf1550",
-+	.status_base		= PF1550_PMIC_REG_INT_CATEGORY,
-+	.init_ack_masked	= 1,
-+	.num_regs		= 1,
-+	.irqs			= pf1550_irqs,
-+	.num_irqs		= ARRAY_SIZE(pf1550_irqs),
-+};
-+
-+static const struct regmap_irq pf1550_regulator_irqs[] = {
-+	REGMAP_IRQ_REG(PF1550_PMIC_IRQ_SW1_LS,         0, PMIC_IRQ_SW1_LS),
-+	REGMAP_IRQ_REG(PF1550_PMIC_IRQ_SW2_LS,         0, PMIC_IRQ_SW2_LS),
-+	REGMAP_IRQ_REG(PF1550_PMIC_IRQ_SW3_LS,         0, PMIC_IRQ_SW3_LS),
-+	REGMAP_IRQ_REG(PF1550_PMIC_IRQ_SW1_HS,         3, PMIC_IRQ_SW1_HS),
-+	REGMAP_IRQ_REG(PF1550_PMIC_IRQ_SW2_HS,         3, PMIC_IRQ_SW2_HS),
-+	REGMAP_IRQ_REG(PF1550_PMIC_IRQ_SW3_HS,         3, PMIC_IRQ_SW3_HS),
-+	REGMAP_IRQ_REG(PF1550_PMIC_IRQ_LDO1_FAULT,    16, PMIC_IRQ_LDO1_FAULT),
-+	REGMAP_IRQ_REG(PF1550_PMIC_IRQ_LDO2_FAULT,    16, PMIC_IRQ_LDO2_FAULT),
-+	REGMAP_IRQ_REG(PF1550_PMIC_IRQ_LDO3_FAULT,    16, PMIC_IRQ_LDO3_FAULT),
-+	REGMAP_IRQ_REG(PF1550_PMIC_IRQ_TEMP_110,      24, PMIC_IRQ_TEMP_110),
-+	REGMAP_IRQ_REG(PF1550_PMIC_IRQ_TEMP_125,      24, PMIC_IRQ_TEMP_125),
-+};
-+
-+static const struct regmap_irq_chip pf1550_regulator_irq_chip = {
-+	.name			= "pf1550-regulator",
-+	.status_base		= PF1550_PMIC_REG_SW_INT_STAT0,
-+	.ack_base		= PF1550_PMIC_REG_SW_INT_STAT0,
-+	.mask_base		= PF1550_PMIC_REG_SW_INT_MASK0,
-+	.use_ack                = 1,
-+	.init_ack_masked	= 1,
-+	.num_regs		= 25,
-+	.irqs			= pf1550_regulator_irqs,
-+	.num_irqs		= ARRAY_SIZE(pf1550_regulator_irqs),
-+};
-+
-+static const struct resource regulator_resources[] = {
-+	DEFINE_RES_IRQ(PF1550_PMIC_IRQ_SW1_LS),
-+	DEFINE_RES_IRQ(PF1550_PMIC_IRQ_SW2_LS),
-+	DEFINE_RES_IRQ(PF1550_PMIC_IRQ_SW3_LS),
-+	DEFINE_RES_IRQ(PF1550_PMIC_IRQ_SW1_HS),
-+	DEFINE_RES_IRQ(PF1550_PMIC_IRQ_SW2_HS),
-+	DEFINE_RES_IRQ(PF1550_PMIC_IRQ_SW3_HS),
-+	DEFINE_RES_IRQ(PF1550_PMIC_IRQ_LDO1_FAULT),
-+	DEFINE_RES_IRQ(PF1550_PMIC_IRQ_LDO2_FAULT),
-+	DEFINE_RES_IRQ(PF1550_PMIC_IRQ_LDO3_FAULT),
-+	DEFINE_RES_IRQ(PF1550_PMIC_IRQ_TEMP_110),
-+	DEFINE_RES_IRQ(PF1550_PMIC_IRQ_TEMP_125),
-+};
-+
-+static const struct regmap_irq pf1550_onkey_irqs[] = {
-+	REGMAP_IRQ_REG(PF1550_ONKEY_IRQ_PUSHI,  0, ONKEY_IRQ_PUSHI),
-+	REGMAP_IRQ_REG(PF1550_ONKEY_IRQ_1SI,    0, ONKEY_IRQ_1SI),
-+	REGMAP_IRQ_REG(PF1550_ONKEY_IRQ_2SI,    0, ONKEY_IRQ_2SI),
-+	REGMAP_IRQ_REG(PF1550_ONKEY_IRQ_3SI,    0, ONKEY_IRQ_3SI),
-+	REGMAP_IRQ_REG(PF1550_ONKEY_IRQ_4SI,    0, ONKEY_IRQ_4SI),
-+	REGMAP_IRQ_REG(PF1550_ONKEY_IRQ_8SI,    0, ONKEY_IRQ_8SI),
-+};
-+
-+static const struct regmap_irq_chip pf1550_onkey_irq_chip = {
-+	.name			= "pf1550-onkey",
-+	.status_base		= PF1550_PMIC_REG_ONKEY_INT_STAT0,
-+	.ack_base		= PF1550_PMIC_REG_ONKEY_INT_STAT0,
-+	.mask_base		= PF1550_PMIC_REG_ONKEY_INT_MASK0,
-+	.use_ack                = 1,
-+	.init_ack_masked	= 1,
-+	.num_regs		= 1,
-+	.irqs			= pf1550_onkey_irqs,
-+	.num_irqs		= ARRAY_SIZE(pf1550_onkey_irqs),
-+};
-+
-+static const struct resource onkey_resources[] = {
-+	DEFINE_RES_IRQ(PF1550_ONKEY_IRQ_PUSHI),
-+	DEFINE_RES_IRQ(PF1550_ONKEY_IRQ_1SI),
-+	DEFINE_RES_IRQ(PF1550_ONKEY_IRQ_2SI),
-+	DEFINE_RES_IRQ(PF1550_ONKEY_IRQ_3SI),
-+	DEFINE_RES_IRQ(PF1550_ONKEY_IRQ_4SI),
-+	DEFINE_RES_IRQ(PF1550_ONKEY_IRQ_8SI),
-+};
-+
-+static const struct regmap_irq pf1550_charger_irqs[] = {
-+	REGMAP_IRQ_REG(PF1550_CHARG_IRQ_BAT2SOCI,	0, CHARG_IRQ_BAT2SOCI),
-+	REGMAP_IRQ_REG(PF1550_CHARG_IRQ_BATI,           0, CHARG_IRQ_BATI),
-+	REGMAP_IRQ_REG(PF1550_CHARG_IRQ_CHGI,           0, CHARG_IRQ_CHGI),
-+	REGMAP_IRQ_REG(PF1550_CHARG_IRQ_VBUSI,          0, CHARG_IRQ_VBUSI),
-+	REGMAP_IRQ_REG(PF1550_CHARG_IRQ_THMI,           0, CHARG_IRQ_THMI),
-+};
-+
-+static const struct regmap_irq_chip pf1550_charger_irq_chip = {
-+	.name			= "pf1550-charger",
-+	.status_base		= PF1550_CHARG_REG_CHG_INT,
-+	.ack_base		= PF1550_CHARG_REG_CHG_INT,
-+	.mask_base		= PF1550_CHARG_REG_CHG_INT_MASK,
-+	.use_ack                = 1,
-+	.init_ack_masked	= 1,
-+	.num_regs		= 1,
-+	.irqs			= pf1550_charger_irqs,
-+	.num_irqs		= ARRAY_SIZE(pf1550_charger_irqs),
-+};
-+
-+static const struct resource charger_resources[] = {
-+	DEFINE_RES_IRQ(PF1550_CHARG_IRQ_BAT2SOCI),
-+	DEFINE_RES_IRQ(PF1550_CHARG_IRQ_BATI),
-+	DEFINE_RES_IRQ(PF1550_CHARG_IRQ_CHGI),
-+	DEFINE_RES_IRQ(PF1550_CHARG_IRQ_VBUSI),
-+	DEFINE_RES_IRQ(PF1550_CHARG_IRQ_THMI),
-+};
-+
-+static const struct mfd_cell pf1550_regulator_cell = {
-+	.name = "pf1550-regulator",
-+	.num_resources = ARRAY_SIZE(regulator_resources),
-+	.resources = regulator_resources,
-+};
-+
-+static const struct mfd_cell pf1550_onkey_cell = {
-+	.name = "pf1550-onkey",
-+	.num_resources = ARRAY_SIZE(onkey_resources),
-+	.resources = onkey_resources,
-+};
-+
-+static const struct mfd_cell pf1550_charger_cell = {
-+	.name = "pf1550-charger",
-+	.num_resources = ARRAY_SIZE(charger_resources),
-+	.resources = charger_resources,
-+};
-+
-+static int pf1550_read_otp(const struct pf1550_dev *pf1550, unsigned int index,
-+			   unsigned int *val)
++static irqreturn_t pf1550_onkey_irq_handler(int irq, void *data)
 +{
-+	int ret = 0;
++	struct onkey_drv_data *onkey = data;
++	struct platform_device *pdev = to_platform_device(onkey->dev);
++	int i, state, irq_type = -1;
 +
-+	ret = regmap_write(pf1550->regmap, PF1550_PMIC_REG_KEY, 0x15);
-+	if (ret)
-+		goto read_err;
-+	ret = regmap_write(pf1550->regmap, PF1550_CHARG_REG_CHGR_KEY2, 0x50);
-+	if (ret)
-+		goto read_err;
-+	ret = regmap_write(pf1550->regmap, PF1550_TEST_REG_KEY3, 0xab);
-+	if (ret)
-+		goto read_err;
-+	ret = regmap_write(pf1550->regmap, PF1550_TEST_REG_FMRADDR, index);
-+	if (ret)
-+		goto read_err;
-+	ret = regmap_read(pf1550->regmap, PF1550_TEST_REG_FMRDATA, val);
-+	if (ret)
-+		goto read_err;
++	for (i = 0; i < PF1550_ONKEY_IRQ_NR; i++)
++		if (irq == platform_get_irq(pdev, i))
++			irq_type = i;
 +
-+	return 0;
++	switch (irq_type) {
++	case PF1550_ONKEY_IRQ_PUSHI:
++		state = 0;
++		break;
++	case PF1550_ONKEY_IRQ_1SI:
++	case PF1550_ONKEY_IRQ_2SI:
++	case PF1550_ONKEY_IRQ_3SI:
++	case PF1550_ONKEY_IRQ_4SI:
++	case PF1550_ONKEY_IRQ_8SI:
++		state = 1;
++		break;
++	default:
++		dev_err(onkey->dev, "onkey interrupt: irq %d occurred\n",
++			irq_type);
++		return IRQ_HANDLED;
++	}
 +
-+read_err:
-+	dev_err_probe(pf1550->dev, ret, "read otp reg %x found!\n", index);
-+	return ret;
++	input_event(onkey->input, EV_KEY, KEY_POWER, state);
++	input_sync(onkey->input);
++
++	return IRQ_HANDLED;
 +}
 +
-+static int pf1550_add_child_device(struct pf1550_dev *pmic,
-+				   const struct mfd_cell *cell,
-+				   struct regmap_irq_chip_data *pdata,
-+				   int pirq,
-+				   const struct regmap_irq_chip *chip,
-+				   struct regmap_irq_chip_data **data)
++static int pf1550_onkey_probe(struct platform_device *pdev)
 +{
-+	struct device *dev = pmic->dev;
-+	struct irq_domain *domain;
-+	int irq, ret;
++	struct onkey_drv_data *onkey;
++	struct input_dev *input;
++	int i, irq, error;
 +
-+	irq = regmap_irq_get_virq(pdata, pirq);
-+	if (irq < 0)
-+		return dev_err_probe(dev, irq,
-+				     "Failed to get parent vIRQ(%d) for chip %s\n",
-+				     pirq, chip->name);
-+
-+	ret = devm_regmap_add_irq_chip(dev, pmic->regmap, irq,
-+				       IRQF_ONESHOT | IRQF_SHARED |
-+				       IRQF_TRIGGER_FALLING, 0, chip, data);
-+	if (ret)
-+		return dev_err_probe(dev, ret,
-+				     "Failed to add %s IRQ chip\n",
-+				     chip->name);
-+
-+	domain = regmap_irq_get_domain(*data);
-+
-+	return devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE, cell, 1,
-+				    NULL, 0, domain);
-+}
-+
-+static int pf1550_i2c_probe(struct i2c_client *i2c)
-+{
-+	const struct mfd_cell *regulator = &pf1550_regulator_cell;
-+	const struct mfd_cell *charger = &pf1550_charger_cell;
-+	const struct mfd_cell *onkey = &pf1550_onkey_cell;
-+	unsigned int reg_data = 0, otp_data = 0;
-+	struct pf1550_dev *pf1550;
-+	int ret = 0;
-+
-+	pf1550 = devm_kzalloc(&i2c->dev, sizeof(*pf1550), GFP_KERNEL);
-+	if (!pf1550)
++	onkey = devm_kzalloc(&pdev->dev, sizeof(*onkey), GFP_KERNEL);
++	if (!onkey)
 +		return -ENOMEM;
 +
-+	i2c_set_clientdata(i2c, pf1550);
-+	pf1550->dev = &i2c->dev;
-+	pf1550->i2c = i2c;
-+	pf1550->irq = i2c->irq;
-+	pf1550->dvs_enb = false;
++	onkey->dev = &pdev->dev;
 +
-+	pf1550->regmap = devm_regmap_init_i2c(i2c, &pf1550_regmap_config);
-+	if (IS_ERR(pf1550->regmap))
-+		return dev_err_probe(pf1550->dev, PTR_ERR(pf1550->regmap),
-+				     "failed to allocate register map\n");
++	onkey->pf1550 = dev_get_drvdata(pdev->dev.parent);
++	if (!onkey->pf1550->regmap)
++		return dev_err_probe(&pdev->dev, -ENODEV,
++				     "failed to get regmap\n");
 +
-+	ret = regmap_read(pf1550->regmap, PF1550_PMIC_REG_DEVICE_ID, &reg_data);
-+	if (ret < 0 || reg_data != PF1550_DEVICE_ID)
-+		return dev_err_probe(pf1550->dev, ret ?: -EINVAL,
-+				     "device not found!\n");
++	onkey->wakeup = device_property_read_bool(pdev->dev.parent,
++						  "wakeup-source");
 +
-+	/* regulator DVS */
-+	ret = pf1550_read_otp(pf1550, 0x1f, &otp_data);
-+	if (ret)
-+		return ret;
++	input = devm_input_allocate_device(&pdev->dev);
++	if (!input)
++		return dev_err_probe(&pdev->dev, -ENOMEM,
++				     "failed to allocate the input device\n");
 +
-+	if (otp_data & BIT(3))
-+		pf1550->dvs_enb = true;
++	input->name = pdev->name;
++	input->phys = "pf1550-onkey/input0";
++	input->id.bustype = BUS_HOST;
 +
-+	/* add top level interrupts */
-+	ret = devm_regmap_add_irq_chip(pf1550->dev, pf1550->regmap, pf1550->irq,
-+				       IRQF_ONESHOT | IRQF_SHARED |
-+				       IRQF_TRIGGER_FALLING,
-+				       0, &pf1550_irq_chip,
-+				       &pf1550->irq_data);
-+	if (ret)
-+		return ret;
++	input_set_capability(input, EV_KEY, KEY_POWER);
 +
-+	ret = pf1550_add_child_device(pf1550, regulator, pf1550->irq_data,
-+				      PF1550_IRQ_REGULATOR,
-+				      &pf1550_regulator_irq_chip,
-+				      &pf1550->irq_data_regulator);
-+	if (ret)
-+		return ret;
++	onkey->input = input;
++	platform_set_drvdata(pdev, onkey);
 +
-+	ret = pf1550_add_child_device(pf1550, onkey, pf1550->irq_data,
-+				      PF1550_IRQ_ONKEY,
-+				      &pf1550_onkey_irq_chip,
-+				      &pf1550->irq_data_onkey);
-+	if (ret)
-+		return ret;
++	for (i = 0; i < PF1550_ONKEY_IRQ_NR; i++) {
++		irq = platform_get_irq(pdev, i);
++		if (irq < 0)
++			return irq;
 +
-+	ret = pf1550_add_child_device(pf1550, charger, pf1550->irq_data,
-+				      PF1550_IRQ_CHG,
-+				      &pf1550_charger_irq_chip,
-+				      &pf1550->irq_data_charger);
-+	return ret;
-+}
-+
-+static int pf1550_suspend(struct device *dev)
-+{
-+	struct i2c_client *i2c = container_of(dev, struct i2c_client, dev);
-+	struct pf1550_dev *pf1550 = i2c_get_clientdata(i2c);
-+
-+	if (device_may_wakeup(dev)) {
-+		enable_irq_wake(pf1550->irq);
-+		disable_irq(pf1550->irq);
++		error = devm_request_threaded_irq(&pdev->dev, irq, NULL,
++						  pf1550_onkey_irq_handler,
++						  IRQF_NO_SUSPEND,
++						  "pf1550-onkey", onkey);
++		if (error)
++			return dev_err_probe(&pdev->dev, error,
++					     "failed: irq request (IRQ: %d)\n",
++					     i);
 +	}
++
++	error = input_register_device(input);
++	if (error)
++		return dev_err_probe(&pdev->dev, error,
++				     "failed to register input device\n");
++
++	device_init_wakeup(&pdev->dev, onkey->wakeup);
 +
 +	return 0;
 +}
 +
-+static int pf1550_resume(struct device *dev)
++static int pf1550_onkey_suspend(struct device *dev)
 +{
-+	struct i2c_client *i2c = container_of(dev, struct i2c_client, dev);
-+	struct pf1550_dev *pf1550 = i2c_get_clientdata(i2c);
++	struct platform_device *pdev = to_platform_device(dev);
++	struct onkey_drv_data *onkey = platform_get_drvdata(pdev);
++	int i, irq;
 +
-+	if (device_may_wakeup(dev)) {
-+		disable_irq_wake(pf1550->irq);
-+		enable_irq(pf1550->irq);
-+	}
++	if (!device_may_wakeup(&pdev->dev))
++		regmap_write(onkey->pf1550->regmap,
++			     PF1550_PMIC_REG_ONKEY_INT_MASK0,
++			     ONKEY_IRQ_PUSHI | ONKEY_IRQ_1SI | ONKEY_IRQ_2SI |
++			     ONKEY_IRQ_3SI | ONKEY_IRQ_4SI | ONKEY_IRQ_8SI);
++	else
++		for (i = 0; i < PF1550_ONKEY_IRQ_NR; i++) {
++			irq = platform_get_irq(pdev, i);
++			if (irq > 0)
++				enable_irq_wake(irq);
++		}
 +
 +	return 0;
 +}
 +
-+static DEFINE_SIMPLE_DEV_PM_OPS(pf1550_pm, pf1550_suspend, pf1550_resume);
++static int pf1550_onkey_resume(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct onkey_drv_data *onkey = platform_get_drvdata(pdev);
++	int i, irq;
 +
-+static const struct i2c_device_id pf1550_i2c_id[] = {
-+	{ "pf1550" },
++	if (!device_may_wakeup(&pdev->dev))
++		regmap_write(onkey->pf1550->regmap,
++			     PF1550_PMIC_REG_ONKEY_INT_MASK0,
++			     ~((u8)(ONKEY_IRQ_PUSHI | ONKEY_IRQ_1SI |
++			     ONKEY_IRQ_2SI | ONKEY_IRQ_3SI | ONKEY_IRQ_4SI |
++			     ONKEY_IRQ_8SI)));
++	else
++		for (i = 0; i < PF1550_ONKEY_IRQ_NR; i++) {
++			irq = platform_get_irq(pdev, i);
++			if (irq > 0)
++				disable_irq_wake(irq);
++		}
++
++	return 0;
++}
++
++static SIMPLE_DEV_PM_OPS(pf1550_onkey_pm_ops, pf1550_onkey_suspend,
++			 pf1550_onkey_resume);
++
++static const struct platform_device_id pf1550_onkey_id[] = {
++	{ "pf1550-onkey", },
 +	{ /* sentinel */ }
 +};
-+MODULE_DEVICE_TABLE(i2c, pf1550_i2c_id);
++MODULE_DEVICE_TABLE(platform, pf1550_onkey_id);
 +
-+static const struct of_device_id pf1550_dt_match[] = {
-+	{ .compatible = "nxp,pf1550" },
-+	{ /* sentinel */ }
-+};
-+MODULE_DEVICE_TABLE(of, pf1550_dt_match);
-+
-+static struct i2c_driver pf1550_i2c_driver = {
++static struct platform_driver pf1550_onkey_driver = {
 +	.driver = {
-+		   .name = "pf1550",
-+		   .pm = pm_sleep_ptr(&pf1550_pm),
-+		   .of_match_table = pf1550_dt_match,
++		.name = "pf1550-onkey",
++		.pm   = pm_sleep_ptr(&pf1550_onkey_pm_ops),
 +	},
-+	.probe = pf1550_i2c_probe,
-+	.id_table = pf1550_i2c_id,
++	.probe = pf1550_onkey_probe,
++	.id_table = pf1550_onkey_id,
 +};
-+module_i2c_driver(pf1550_i2c_driver);
++module_platform_driver(pf1550_onkey_driver);
 +
-+MODULE_DESCRIPTION("NXP PF1550 multi-function core driver");
-+MODULE_AUTHOR("Robin Gong <yibin.gong@freescale.com>");
++MODULE_AUTHOR("Freescale Semiconductor");
++MODULE_DESCRIPTION("PF1550 onkey Driver");
 +MODULE_LICENSE("GPL");
-diff --git a/include/linux/mfd/pf1550.h b/include/linux/mfd/pf1550.h
-new file mode 100644
-index 0000000000000000000000000000000000000000..64ff475215cced21a5ebc24f799f48315a51d260
---- /dev/null
-+++ b/include/linux/mfd/pf1550.h
-@@ -0,0 +1,254 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * pf1550.h - mfd head file for PF1550
-+ *
-+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
-+ * Robin Gong <yibin.gong@freescale.com>
-+ *
-+ * Portions Copyright (c) 2025 Savoir-faire Linux Inc.
-+ * Samuel Kayode <samuel.kayode@savoirfairelinux.com>
-+ */
-+
-+#ifndef __LINUX_MFD_PF1550_H
-+#define __LINUX_MFD_PF1550_H
-+
-+#include <linux/i2c.h>
-+#include <linux/regmap.h>
-+
-+enum pf1550_pmic_reg {
-+	/* PMIC regulator part */
-+	PF1550_PMIC_REG_DEVICE_ID		= 0x00,
-+	PF1550_PMIC_REG_OTP_FLAVOR		= 0x01,
-+	PF1550_PMIC_REG_SILICON_REV		= 0x02,
-+
-+	PF1550_PMIC_REG_INT_CATEGORY		= 0x06,
-+	PF1550_PMIC_REG_SW_INT_STAT0		= 0x08,
-+	PF1550_PMIC_REG_SW_INT_MASK0		= 0x09,
-+	PF1550_PMIC_REG_SW_INT_SENSE0		= 0x0a,
-+	PF1550_PMIC_REG_SW_INT_STAT1		= 0x0b,
-+	PF1550_PMIC_REG_SW_INT_MASK1		= 0x0c,
-+	PF1550_PMIC_REG_SW_INT_SENSE1		= 0x0d,
-+	PF1550_PMIC_REG_SW_INT_STAT2		= 0x0e,
-+	PF1550_PMIC_REG_SW_INT_MASK2		= 0x0f,
-+	PF1550_PMIC_REG_SW_INT_SENSE2		= 0x10,
-+	PF1550_PMIC_REG_LDO_INT_STAT0		= 0x18,
-+	PF1550_PMIC_REG_LDO_INT_MASK0		= 0x19,
-+	PF1550_PMIC_REG_LDO_INT_SENSE0		= 0x1a,
-+	PF1550_PMIC_REG_TEMP_INT_STAT0		= 0x20,
-+	PF1550_PMIC_REG_TEMP_INT_MASK0		= 0x21,
-+	PF1550_PMIC_REG_TEMP_INT_SENSE0		= 0x22,
-+	PF1550_PMIC_REG_ONKEY_INT_STAT0		= 0x24,
-+	PF1550_PMIC_REG_ONKEY_INT_MASK0		= 0x25,
-+	PF1550_PMIC_REG_ONKEY_INT_SENSE0	= 0x26,
-+	PF1550_PMIC_REG_MISC_INT_STAT0		= 0x28,
-+	PF1550_PMIC_REG_MISC_INT_MASK0		= 0x29,
-+	PF1550_PMIC_REG_MISC_INT_SENSE0		= 0x2a,
-+
-+	PF1550_PMIC_REG_COINCELL_CONTROL	= 0x30,
-+
-+	PF1550_PMIC_REG_SW1_VOLT		= 0x32,
-+	PF1550_PMIC_REG_SW1_STBY_VOLT		= 0x33,
-+	PF1550_PMIC_REG_SW1_SLP_VOLT		= 0x34,
-+	PF1550_PMIC_REG_SW1_CTRL		= 0x35,
-+	PF1550_PMIC_REG_SW1_CTRL1		= 0x36,
-+	PF1550_PMIC_REG_SW2_VOLT		= 0x38,
-+	PF1550_PMIC_REG_SW2_STBY_VOLT		= 0x39,
-+	PF1550_PMIC_REG_SW2_SLP_VOLT		= 0x3a,
-+	PF1550_PMIC_REG_SW2_CTRL		= 0x3b,
-+	PF1550_PMIC_REG_SW2_CTRL1		= 0x3c,
-+	PF1550_PMIC_REG_SW3_VOLT		= 0x3e,
-+	PF1550_PMIC_REG_SW3_STBY_VOLT		= 0x3f,
-+	PF1550_PMIC_REG_SW3_SLP_VOLT		= 0x40,
-+	PF1550_PMIC_REG_SW3_CTRL		= 0x41,
-+	PF1550_PMIC_REG_SW3_CTRL1		= 0x42,
-+	PF1550_PMIC_REG_VSNVS_CTRL		= 0x48,
-+	PF1550_PMIC_REG_VREFDDR_CTRL		= 0x4a,
-+	PF1550_PMIC_REG_LDO1_VOLT		= 0x4c,
-+	PF1550_PMIC_REG_LDO1_CTRL		= 0x4d,
-+	PF1550_PMIC_REG_LDO2_VOLT		= 0x4f,
-+	PF1550_PMIC_REG_LDO2_CTRL		= 0x50,
-+	PF1550_PMIC_REG_LDO3_VOLT		= 0x52,
-+	PF1550_PMIC_REG_LDO3_CTRL		= 0x53,
-+	PF1550_PMIC_REG_PWRCTRL0		= 0x58,
-+	PF1550_PMIC_REG_PWRCTRL1		= 0x59,
-+	PF1550_PMIC_REG_PWRCTRL2		= 0x5a,
-+	PF1550_PMIC_REG_PWRCTRL3		= 0x5b,
-+	PF1550_PMIC_REG_SW1_PWRDN_SEQ		= 0x5f,
-+	PF1550_PMIC_REG_SW2_PWRDN_SEQ		= 0x60,
-+	PF1550_PMIC_REG_SW3_PWRDN_SEQ		= 0x61,
-+	PF1550_PMIC_REG_LDO1_PWRDN_SEQ		= 0x62,
-+	PF1550_PMIC_REG_LDO2_PWRDN_SEQ		= 0x63,
-+	PF1550_PMIC_REG_LDO3_PWRDN_SEQ		= 0x64,
-+	PF1550_PMIC_REG_VREFDDR_PWRDN_SEQ	= 0x65,
-+
-+	PF1550_PMIC_REG_STATE_INFO		= 0x67,
-+	PF1550_PMIC_REG_I2C_ADDR		= 0x68,
-+	PF1550_PMIC_REG_IO_DRV0			= 0x69,
-+	PF1550_PMIC_REG_IO_DRV1			= 0x6a,
-+	PF1550_PMIC_REG_RC_16MHZ		= 0x6b,
-+	PF1550_PMIC_REG_KEY			= 0x6f,
-+
-+	/* charger part */
-+	PF1550_CHARG_REG_CHG_INT		= 0x80,
-+	PF1550_CHARG_REG_CHG_INT_MASK		= 0x82,
-+	PF1550_CHARG_REG_CHG_INT_OK		= 0x84,
-+	PF1550_CHARG_REG_VBUS_SNS		= 0x86,
-+	PF1550_CHARG_REG_CHG_SNS		= 0x87,
-+	PF1550_CHARG_REG_BATT_SNS		= 0x88,
-+	PF1550_CHARG_REG_CHG_OPER		= 0x89,
-+	PF1550_CHARG_REG_CHG_TMR		= 0x8a,
-+	PF1550_CHARG_REG_CHG_EOC_CNFG		= 0x8d,
-+	PF1550_CHARG_REG_CHG_CURR_CNFG		= 0x8e,
-+	PF1550_CHARG_REG_BATT_REG		= 0x8f,
-+	PF1550_CHARG_REG_BATFET_CNFG		= 0x91,
-+	PF1550_CHARG_REG_THM_REG_CNFG		= 0x92,
-+	PF1550_CHARG_REG_VBUS_INLIM_CNFG	= 0x94,
-+	PF1550_CHARG_REG_VBUS_LIN_DPM		= 0x95,
-+	PF1550_CHARG_REG_USB_PHY_LDO_CNFG	= 0x96,
-+	PF1550_CHARG_REG_DBNC_DELAY_TIME	= 0x98,
-+	PF1550_CHARG_REG_CHG_INT_CNFG		= 0x99,
-+	PF1550_CHARG_REG_THM_ADJ_SETTING	= 0x9a,
-+	PF1550_CHARG_REG_VBUS2SYS_CNFG		= 0x9b,
-+	PF1550_CHARG_REG_LED_PWM		= 0x9c,
-+	PF1550_CHARG_REG_FAULT_BATFET_CNFG	= 0x9d,
-+	PF1550_CHARG_REG_LED_CNFG		= 0x9e,
-+	PF1550_CHARG_REG_CHGR_KEY2		= 0x9f,
-+
-+	PF1550_TEST_REG_FMRADDR			= 0xc4,
-+	PF1550_TEST_REG_FMRDATA			= 0xc5,
-+	PF1550_TEST_REG_KEY3			= 0xdf,
-+
-+	PF1550_PMIC_REG_END			= 0xff,
-+};
-+
-+#define PF1550_DEVICE_ID		0x7c
-+
-+#define PF1550_CHG_TURNON		0x2
-+
-+#define PF1550_CHG_PRECHARGE		0
-+#define PF1550_CHG_CONSTANT_CURRENT	1
-+#define PF1550_CHG_CONSTANT_VOL		2
-+#define PF1550_CHG_EOC			3
-+#define PF1550_CHG_DONE			4
-+#define PF1550_CHG_TIMER_FAULT		6
-+#define PF1550_CHG_SUSPEND		7
-+#define PF1550_CHG_OFF_INV		8
-+#define PF1550_CHG_BAT_OVER		9
-+#define PF1550_CHG_OFF_TEMP		10
-+#define PF1550_CHG_LINEAR_ONLY		12
-+#define PF1550_CHG_SNS_MASK		0xf
-+#define PF1550_CHG_INT_MASK             0x51
-+
-+#define PF1550_BAT_NO_VBUS		0
-+#define PF1550_BAT_LOW_THAN_PRECHARG	1
-+#define PF1550_BAT_CHARG_FAIL		2
-+#define PF1550_BAT_HIGH_THAN_PRECHARG	4
-+#define PF1550_BAT_OVER_VOL		5
-+#define	PF1550_BAT_NO_DETECT		6
-+#define PF1550_BAT_SNS_MASK		0x7
-+
-+#define PF1550_VBUS_UVLO		BIT(2)
-+#define PF1550_VBUS_IN2SYS		BIT(3)
-+#define PF1550_VBUS_OVLO		BIT(4)
-+#define PF1550_VBUS_VALID		BIT(5)
-+
-+#define PF1550_CHARG_REG_BATT_REG_CHGCV_MASK		0x3f
-+#define PF1550_CHARG_REG_BATT_REG_VMINSYS_SHIFT		6
-+#define PF1550_CHARG_REG_BATT_REG_VMINSYS_MASK		GENMASK(7, 6)
-+#define PF1550_CHARG_REG_THM_REG_CNFG_REGTEMP_SHIFT	2
-+#define PF1550_CHARG_REG_THM_REG_CNFG_REGTEMP_MASK	GENMASK(3, 2)
-+
-+/* top level interrupt masks */
-+#define IRQ_REGULATOR		(BIT(1) | BIT(2) | BIT(3) | BIT(4) | BIT(6))
-+#define IRQ_ONKEY		BIT(5)
-+#define IRQ_CHG			BIT(0)
-+
-+/* regulator interrupt masks */
-+#define PMIC_IRQ_SW1_LS		BIT(0)
-+#define PMIC_IRQ_SW2_LS		BIT(1)
-+#define PMIC_IRQ_SW3_LS		BIT(2)
-+#define PMIC_IRQ_SW1_HS		BIT(0)
-+#define PMIC_IRQ_SW2_HS		BIT(1)
-+#define PMIC_IRQ_SW3_HS		BIT(2)
-+#define PMIC_IRQ_LDO1_FAULT	BIT(0)
-+#define PMIC_IRQ_LDO2_FAULT	BIT(1)
-+#define PMIC_IRQ_LDO3_FAULT	BIT(2)
-+#define PMIC_IRQ_TEMP_110	BIT(0)
-+#define PMIC_IRQ_TEMP_125	BIT(1)
-+
-+/* onkey interrupt masks */
-+#define ONKEY_IRQ_PUSHI		BIT(0)
-+#define ONKEY_IRQ_1SI		BIT(1)
-+#define ONKEY_IRQ_2SI		BIT(2)
-+#define ONKEY_IRQ_3SI		BIT(3)
-+#define ONKEY_IRQ_4SI		BIT(4)
-+#define ONKEY_IRQ_8SI		BIT(5)
-+
-+/* charger interrupt masks */
-+#define CHARG_IRQ_BAT2SOCI	BIT(1)
-+#define CHARG_IRQ_BATI		BIT(2)
-+#define CHARG_IRQ_CHGI		BIT(3)
-+#define CHARG_IRQ_VBUSI		BIT(5)
-+#define CHARG_IRQ_DPMI		BIT(6)
-+#define CHARG_IRQ_THMI		BIT(7)
-+
-+enum pf1550_irq {
-+	PF1550_IRQ_CHG,
-+	PF1550_IRQ_REGULATOR,
-+	PF1550_IRQ_ONKEY,
-+};
-+
-+enum pf1550_pmic_irq {
-+	PF1550_PMIC_IRQ_SW1_LS,
-+	PF1550_PMIC_IRQ_SW2_LS,
-+	PF1550_PMIC_IRQ_SW3_LS,
-+	PF1550_PMIC_IRQ_SW1_HS,
-+	PF1550_PMIC_IRQ_SW2_HS,
-+	PF1550_PMIC_IRQ_SW3_HS,
-+	PF1550_PMIC_IRQ_LDO1_FAULT,
-+	PF1550_PMIC_IRQ_LDO2_FAULT,
-+	PF1550_PMIC_IRQ_LDO3_FAULT,
-+	PF1550_PMIC_IRQ_TEMP_110,
-+	PF1550_PMIC_IRQ_TEMP_125,
-+};
-+
-+enum pf1550_onkey_irq {
-+	PF1550_ONKEY_IRQ_PUSHI,
-+	PF1550_ONKEY_IRQ_1SI,
-+	PF1550_ONKEY_IRQ_2SI,
-+	PF1550_ONKEY_IRQ_3SI,
-+	PF1550_ONKEY_IRQ_4SI,
-+	PF1550_ONKEY_IRQ_8SI,
-+};
-+
-+enum pf1550_charg_irq {
-+	PF1550_CHARG_IRQ_BAT2SOCI,
-+	PF1550_CHARG_IRQ_BATI,
-+	PF1550_CHARG_IRQ_CHGI,
-+	PF1550_CHARG_IRQ_VBUSI,
-+	PF1550_CHARG_IRQ_THMI,
-+};
-+
-+enum pf1550_regulators {
-+	PF1550_SW1,
-+	PF1550_SW2,
-+	PF1550_SW3,
-+	PF1550_VREFDDR,
-+	PF1550_LDO1,
-+	PF1550_LDO2,
-+	PF1550_LDO3,
-+};
-+
-+struct pf1550_dev {
-+	bool dvs_enb;
-+	struct device *dev;
-+	struct i2c_client *i2c;
-+	struct regmap *regmap;
-+	struct regmap_irq_chip_data *irq_data_regulator;
-+	struct regmap_irq_chip_data *irq_data_onkey;
-+	struct regmap_irq_chip_data *irq_data_charger;
-+	struct regmap_irq_chip_data *irq_data;
-+	int irq;
-+};
-+
-+#endif /* __LINUX_MFD_PF1550_H */
 
 -- 
 2.49.0
