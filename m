@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05DA12D8DAE;
-	Thu, 12 Jun 2025 21:12:01 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5559F2DCC0C;
+	Thu, 12 Jun 2025 21:12:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749762722; cv=none; b=bXivmsp89UzwUOUJpajduQ7/QHNCBrOJ8MIb6KGkPhN+BKgHGKrU/iob8BZNn8Ak4O38uL2005U8p9NTy27bB5NT4UZhvoaGdfLgOS57FnfCmDkX6MoncTCbbX8FjzWeQdejlg93KjDkSvbfmpymLPZR60kJdgU4VtFWIgxn/Rg=
+	t=1749762722; cv=none; b=JgsDn9eZbu5FdO6W4+ERMehQU5U6dAvbM4mgdGw2B0psnSj9dQ6UmtEwmauQqGf6jTLy/xngOCrPNgWc9e2nEM94BioncQMGAUCmjqSmQNxlVM3IHNBgnQUBQp+SM7vnUX/rOJGDYTx0SJpthhFZ07qOKEmsoyPhRg++wzS7SoQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1749762722; c=relaxed/simple;
-	bh=OOlbVfIgzSBqrQXeX6P9ycG03p+lP2ZHx7YjgEpCU6M=;
+	bh=fpXgaicKdFrQeAEZR+OxW2abaKNb7vcivYXBy1nvPSI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=exeibING0NtuWOdNKsYBfbc3SxUuTyyGod3xAtFK4x8LeF1xwAqQ9TOsBIeolFpc3FEKFfXwq2QRCkCuKnd4l7yj5cHcKgsyDIx2SFQzIFUTBwh/c//VIUq6GRDz8lmzv4cC9ZFG/uKFbp2br4If1vwI4jFGx90b6MtDeAkhZI0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UVmNVb2G; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=bs8nq6E7gTdVDr9vMnGLB5Dax76Stjkn+5Y0iBMiuXt+H5DEwDA6nvpksbBItYJK6tp7S7oMGpK++mk/OM0teuwanMmMJh9jjPf081SbuZv1BAwzvS+s4q0vpXvqG17a+KhzXhTuU0pJQgeQ8JaQcYjJERPoaG8opMk0mlnDS2E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ACfor1YF; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UVmNVb2G"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 8277AC4CEF0;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ACfor1YF"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id B6BF6C4CEF9;
 	Thu, 12 Jun 2025 21:12:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1749762721;
-	bh=OOlbVfIgzSBqrQXeX6P9ycG03p+lP2ZHx7YjgEpCU6M=;
+	bh=fpXgaicKdFrQeAEZR+OxW2abaKNb7vcivYXBy1nvPSI=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=UVmNVb2Gfw6soyav8Jw1t1IwyIz2kFnRbuRi3hmFF12qeTZUMUy5tTozoCDUiKMVi
-	 oEBrxso0VJoAcEmJzA/yVAa/NTGp6St9onOGoTy2+frh21hxPqXhTvdQF4Q9s9Kvt3
-	 fYJNnrH6GHUjk3tsjqvYosY+p17eN8lNq2vrZd+M66jP+Bv/qB3Q3YRw0EqVLqGnAp
-	 F1m5yFZNrTFG2gym27EcynxVevQvMslRVAjpky2045VYi7H8iF+B7fvsFVcdkm0fkl
-	 DyJ62B7/DdeEGtgwENgDH8eRicdujy/J0AHuRRmAg/bFp1p/xxfmolWK23eiMRmgFj
-	 NHX0R/Tmp/Ikg==
+	b=ACfor1YFhhOjLScqQiuTFP+IDgfpmfy7NrgT5UGaZGhgm7vHH8kZ7XVjq54Z3c7q2
+	 OI9zkxbaqMy9JKx326OKRHMsnIUL4QGmrvge9T3FJ4G8hpMFiWHWz9ymd/aEIYXoFv
+	 /YB34ck21DXGx/AMa20FmQBERMhVFbT/YC4c2UTcW0EqK6SetoI23NJsiiV9au8BP6
+	 ENqcXMd1SmaNzgOlOdfz0hwB6ojcj5baWyoOPmzEIeYPd/xDkJ7oC0IYaM7n8XYoIz
+	 9foP5brZ3s1Tjh3Zy7O8BI5xU1qUxNWAb2lcJ1/RSkkuJKe+IPwV5Yan9CuxQ+rA6r
+	 7bip7TobVm0Pw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DE42C71144;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A59DDC7114C;
 	Thu, 12 Jun 2025 21:12:01 +0000 (UTC)
 From: Sven Peter <sven@kernel.org>
-Date: Thu, 12 Jun 2025 21:11:25 +0000
-Subject: [PATCH 01/11] pmdomain: apple: Drop default ARCH_APPLE in Kconfig
+Date: Thu, 12 Jun 2025 21:11:28 +0000
+Subject: [PATCH 04/11] nvmem: apple: drop default ARCH_APPLE in Kconfig
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +40,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250612-apple-kconfig-defconfig-v1-1-0e6f9cb512c1@kernel.org>
+Message-Id: <20250612-apple-kconfig-defconfig-v1-4-0e6f9cb512c1@kernel.org>
 References: <20250612-apple-kconfig-defconfig-v1-0-0e6f9cb512c1@kernel.org>
 In-Reply-To: <20250612-apple-kconfig-defconfig-v1-0-0e6f9cb512c1@kernel.org>
 To: Janne Grunau <j@jannau.net>, Alyssa Rosenzweig <alyssa@rosenzweig.io>, 
@@ -61,13 +61,13 @@ Cc: asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
  linux-input@vger.kernel.org, dmaengine@vger.kernel.org, 
  linux-sound@vger.kernel.org, Sven Peter <sven@kernel.org>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1001; i=sven@kernel.org;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=998; i=sven@kernel.org;
  h=from:subject:message-id;
- bh=OOlbVfIgzSBqrQXeX6P9ycG03p+lP2ZHx7YjgEpCU6M=;
- b=owGbwMvMwCHmIlirolUq95LxtFoSQ4a304RI+5uRSxcm2H0JiO3dduZX2HrBD36b5tV1dlZfM
- EnjkDLrKGVhEONgkBVTZNm+3970ycM3gks3XXoPM4eVCWQIAxenAEzk7F5GhhlGi+Uymmt3XJY6
- o5eV9aXOS3nGtZvsb97re8a/Led9msbwP7ByVZLoA4uPsRrqS1llrFVnWH9h/9D1rOtKQJZHCsM
- 0LgA=
+ bh=fpXgaicKdFrQeAEZR+OxW2abaKNb7vcivYXBy1nvPSI=;
+ b=owGbwMvMwCHmIlirolUq95LxtFoSQ4a305RfC9buXhnFJeT7ZtXOyWKTBGNcT2RszDk+S+0de
+ 2zXh3OHO0pZGMQ4GGTFFFm277c3ffLwjeDSTZfew8xhZQIZwsDFKQATCXjKyPD/N8fWXytyO9w3
+ H9vLsvuOyryjh7QOM79euYrv9Y67GdKMDP9sbNttXszX8c1ZPtvgjVDNNqH+83FLjxxlkLlnnn+
+ /yo4BAA==
 X-Developer-Key: i=sven@kernel.org; a=openpgp;
  fpr=A1E3E34A2B3C820DBC4955E5993B08092F131F93
 X-Endpoint-Received: by B4 Relay for sven@kernel.org/default with
@@ -81,21 +81,21 @@ Thus, drop `default ARCH_APPLE` from Kconfig.
 
 Signed-off-by: Sven Peter <sven@kernel.org>
 ---
- drivers/pmdomain/apple/Kconfig | 1 -
+ drivers/nvmem/Kconfig | 1 -
  1 file changed, 1 deletion(-)
 
-diff --git a/drivers/pmdomain/apple/Kconfig b/drivers/pmdomain/apple/Kconfig
-index 12237cbcfaa983083367bad70b1b54ded9ac9824..a8973f8057fba74cd3e8c7d15cd2972081c6697d 100644
---- a/drivers/pmdomain/apple/Kconfig
-+++ b/drivers/pmdomain/apple/Kconfig
-@@ -9,7 +9,6 @@ config APPLE_PMGR_PWRSTATE
- 	select MFD_SYSCON
- 	select PM_GENERIC_DOMAINS
- 	select RESET_CONTROLLER
+diff --git a/drivers/nvmem/Kconfig b/drivers/nvmem/Kconfig
+index d370b2ad11e7eb3a3549a75edaada2d84c1e8dd7..edd811444ce5f4a1de1c59496f27bec417da2bbc 100644
+--- a/drivers/nvmem/Kconfig
++++ b/drivers/nvmem/Kconfig
+@@ -31,7 +31,6 @@ source "drivers/nvmem/layouts/Kconfig"
+ config NVMEM_APPLE_EFUSES
+ 	tristate "Apple eFuse support"
+ 	depends on ARCH_APPLE || COMPILE_TEST
 -	default ARCH_APPLE
  	help
- 	  The PMGR block in Apple SoCs provides high-level power state
- 	  controls for SoC devices. This driver manages them through the
+ 	  Say y here to enable support for reading eFuses on Apple SoCs
+ 	  such as the M1. These are e.g. used to store factory programmed
 
 -- 
 2.34.1
