@@ -1,256 +1,166 @@
-Received: from AS8PR03CU001.outbound.protection.outlook.com (mail-westeuropeazon11012054.outbound.protection.outlook.com [52.101.71.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f178.google.com (mail-pl1-f178.google.com [209.85.214.178])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B00941E487;
-	Thu, 12 Jun 2025 02:33:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.71.54
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749695633; cv=fail; b=ZyYtVpeqry1w4NRBSq1UoQ3C178hmQEf2UUxkfTCyUGpciqkoYHiVg/gnRgiueyfrpFqcJTA+TVnlt5/uKrTDh65zR8jjfqQMqYKtKjSz0B160tkca+pzhu6hvTwGgYzLR0x6ge8kyA50eAxfZbbKRXa2EHOdpwm5auvgP5+/KQ=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749695633; c=relaxed/simple;
-	bh=kF6ieQ2kJIj0bIR2SaJ+ErRFQpA7X9ODQVOnzOetSq8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=r6TjAD7a+yEpBa046xp6gCvJe33okrnmbAlZdoY4RCtuNezZ89BvJbKJGoTSr5bACQ/6/th1vFv+1yVX+g6R1egQROcLNJwoiImFuP0V/VcSmp+fuK70Vxe2/N7bPZrh0OOwYaakO9dDRwke6CdGiXtS7YYEskMB2pwVywOKQYQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=nhxomPW1; arc=fail smtp.client-ip=52.101.71.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 883473C1F
+	for <linux-pm@vger.kernel.org>; Thu, 12 Jun 2025 05:01:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.178
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1749704483; cv=none; b=pTtKZ720CuENzDEVIj4fphTNdqhlwTrOr/EJ3rpZXEEJFWgVRMbBgP0Eec9u06fjvkYOAROfEzLDSY99J7YxyAQsTxzUhjIJKuApON0fCxkwxgLI7FU5KOTahjMzKXNNVVTnT3eYQnSe5Ls9PVryURnxGbTZw4//XY8G66kWfRE=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1749704483; c=relaxed/simple;
+	bh=9pHjVMGg2ruxdwaHtiPTktq8Zbd4RUe/LdD/4hfxsW8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ZkiQTMk6KnTwbcWPq1qWRckOt0rydQZoxKVPqjC1+hlRqwBR7BtnLxoieDb4mEr9gbYryqC+JrpShD0g2OJorF7mD+9qiyhGwlisRnQ5PjBeR8u1eyIgYmgL5/FYVedpg/mzah9WJp27AwEG2+qqKxiMI477k19XiqLODMIsfDs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=viLNnXJn; arc=none smtp.client-ip=209.85.214.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="nhxomPW1"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=uwah5lHZd3uHwmPH31RBZ3d5bYsJrWlTELjYoKKbe3M+yho3PqW9EPS5QSsJRsVDZXTYQjw01QCgMLKoaXJeufJNVb6KKlfns8p+YD8CL+ORecXEt4oAsbVaZCUgmCRm4ba7colR8ys7AhkuVYh5GOA7+yeaI51eYdZTkEhUzfSiPKW7nCuEypai/flfGM36/ncQFdFss4tkv0ugawr/RxkrXMd2nUH7zz4XMW4fjsFSG453Ca/UdLqie99bqXVb8SYCRsLtHjMpWh/SQkEYqHk/F6oShmaVbWcSe5YKM2+SJzV0hlCh9fgSx9OSFg27XQ9/Oh8bqqwNsY/LQIb+wQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=FRU7ooNIVf0rQwd4utOxJq4l+EGGiKU4yv35DgR8Y8g=;
- b=bVsYTmsExvn7FdszANdq6k2kdA71xBR4LGwA0rIaGzm3NOqbmP8hXft8JAMg6gIxqZQJhNBHqqWAhC/mTjkXGuG5V2joilBtQ64QK/JOHVmUtWr07JVVyjZMXgRoLtbq5eORCZ7UOD5+KFJNebsaRa38nIFtQwe0m0E4+pk08uVtoSdNbM+Wx/XCCjpUjuhLSiGRhhmhEMFc0AG0MlB/xKQ9KFHecHcaX5xrrQTSMbC9hGQ/TQk2/e2JpWPAM5W0oCnhW2QJLDTWHlNfoueRBh+kepJaQKVPJU3Eo1MQxYa3K2KETRP2ycjlBeKpEuZKgVwonCHa1m2hdwLDxpdpww==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=FRU7ooNIVf0rQwd4utOxJq4l+EGGiKU4yv35DgR8Y8g=;
- b=nhxomPW1L71bYLkFb/hGOgKivtG2Qpm0mZP3bIkPODMtkEKSjRFy9zSjDfpeHcsP81cwoMXn/o+WZXQcHGrWUyLOeVj+Fi3C+aSme1+LjFBWCAEtxxh6AwUmhgXWIu8BGg9o5t61wFZonru8216o5dw/NKThihEXirREfPCW7YpP/JO9fNp/hJfzcKcT6aQA/ztO1AtRdBhTxOwD2djDX4h72XOqwopXpsQGMg36Q4PZkNKwE+x4COYh4Gr5tRFgVTmR+zOCXk/D0iwgBpQyHbhnskn/QohRb5iaglcdlEAlC0LedV9EDaa7tcwFOmonaBMhFpNTAYHFk5epLCVcGw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from PAXPR04MB8459.eurprd04.prod.outlook.com (2603:10a6:102:1da::15)
- by GVXPR04MB10732.eurprd04.prod.outlook.com (2603:10a6:150:215::8) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8835.22; Thu, 12 Jun
- 2025 02:33:45 +0000
-Received: from PAXPR04MB8459.eurprd04.prod.outlook.com
- ([fe80::165a:30a2:5835:9630]) by PAXPR04MB8459.eurprd04.prod.outlook.com
- ([fe80::165a:30a2:5835:9630%3]) with mapi id 15.20.8813.024; Thu, 12 Jun 2025
- 02:33:45 +0000
-Date: Thu, 12 Jun 2025 11:43:52 +0800
-From: Peng Fan <peng.fan@oss.nxp.com>
-To: Cristian Marussi <cristian.marussi@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>, arm-scmi@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, Peng Fan <peng.fan@nxp.com>
-Subject: Re: [PATCH 0/3] firmware: arm_scmi: perf/cpufreq: Enable
- notification only if supported by platform
-Message-ID: <20250612034351.GA7552@nxa18884-linux>
-References: <20250611-scmi-perf-v1-0-df2b548ba77c@nxp.com>
- <20250611-cherubic-solemn-toucanet-aac5af@sudeepholla>
- <aEmFnJVG8lXTDNmO@pluto>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aEmFnJVG8lXTDNmO@pluto>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-ClientProxiedBy: SI1PR02CA0024.apcprd02.prod.outlook.com
- (2603:1096:4:1f4::12) To PAXPR04MB8459.eurprd04.prod.outlook.com
- (2603:10a6:102:1da::15)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="viLNnXJn"
+Received: by mail-pl1-f178.google.com with SMTP id d9443c01a7336-234d3261631so4070435ad.1
+        for <linux-pm@vger.kernel.org>; Wed, 11 Jun 2025 22:01:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1749704481; x=1750309281; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Ta897ANnsOKw/3ZrDJN+Z/Yd5TG55/Y0TTXdSO5Wgwo=;
+        b=viLNnXJngWrQpc05n6uWOIH+yg1CAoaDc7rhmN8TZqE/BcUNz5fRkH4TA/7J10XIU4
+         bLlDIsTEezVSVLmDgi//cx0s+pPkgNEhlQzceBU4QKLmDFk3SMpc260bVNjkSta4LU9j
+         oW3Tl/sK/FxI+fYwQfhQwXXLWXOKxkRPAh+fIKInhaOW580yODdPTF1+yxwLZUfNpv9W
+         y/CW6bdwqbeEbs5+k9h74F4eqlEMl9aGleAYQltTPbJy0mZhaCObpnWxEr9t+ASzXm4e
+         L1LZKeFoccFh76AoUCGp2BjsfKQRG+au3B7knpxKzDlf8EU9ytWTgNLDPzZ6PFhrBrn9
+         2aLg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1749704481; x=1750309281;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Ta897ANnsOKw/3ZrDJN+Z/Yd5TG55/Y0TTXdSO5Wgwo=;
+        b=NnUd+b/Qn8eLaQVo8+zFrGQSFWHoLKbw0h1undNdA/NO7qfOGog7KL88TxVn/lt9yx
+         tO9N6FvljWr/l5dwuOZonDWw9WeLWJ7KA19uj+8Xsr9/izDBWoiucExUwBPSupjJ3n5E
+         eM0ea9nAesrq+2NXMLFj6QKM71bnU52H+c3jfEP4OXKG/Pn1w7ACztS8DuJxoukmpsMQ
+         7bahe7bmTlBu0fD4TgRIhIC/XHgjof4SM4qY/dxZw0OiWLm+eevVbbFSSbwzyCGzHPGa
+         fjiH4jkUnCVzzwIYwVxuarcBhVSmezg5br87WG04ReXhertOtMZzo/SMAmm8FH7EPK+y
+         MC+Q==
+X-Forwarded-Encrypted: i=1; AJvYcCWHNh69QTm/oWyMIHJ+Vs+F3TlIElT1EXgomANzq5LocaqvxHLWn0L3/KSi8sdpWsB2KAfj2lbIQg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyKBMSbwfTyUj2wM4PA0UwPJ2UnbUoXOW460OVN8eguXqtesaJ5
+	R8XJgaA0zkJibACLEJKa9xq3Ary8Q2Y3HjoKVHAMxdpYr20kB8vMxQC5/u1btHHOhA0=
+X-Gm-Gg: ASbGncs1gOETVJrXrVe0Ll8oIKX7Bnj+U+7Tu0DcxbG5LTq59tOzCXRt/RLHvvU57Kx
+	2HZ4m2aqXKqtE0D9YuCLO39SX7AbWnY7Aeyfy4dEdDdMImcinRLxBAdTcs3HhLODkHSRjKXT8aJ
+	z0F1msQjDBmbsRHnsrjsA7ZVLwG5fKSlxKT23W+9lIWMTZehA9guSp6BB0Hu/nijvL1BukjtLiA
+	zM8gU1jKfGrdYQIRFIMPgVaOm/Mxzr0wi16qkCK3A5xGO6/gDoULa4ob8oCF3vqZsGaMIpmZz5v
+	LKhZYMarHUZ8N1K0MymlHl68NOVgCrjRIlW8iHK1fYI9l5+J0uf4gFyJKOPW7i5cUjum1spvMQ=
+	=
+X-Google-Smtp-Source: AGHT+IHFd17mtrnTaIfhEeysW8IO5ia6VXlIvrfEaCUzdPUvSOMJM3AaKiJKr973WWitYYB9zcOAZA==
+X-Received: by 2002:a17:902:ef0c:b0:234:986c:66f9 with SMTP id d9443c01a7336-2364ca0c6e4mr33957475ad.22.1749704480788;
+        Wed, 11 Jun 2025 22:01:20 -0700 (PDT)
+Received: from localhost ([122.172.81.72])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2364e6d9c45sm4698395ad.140.2025.06.11.22.01.19
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 11 Jun 2025 22:01:20 -0700 (PDT)
+Date: Thu, 12 Jun 2025 10:31:17 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Boqun Feng <boqun.feng@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Miguel Ojeda <ojeda@kernel.org>,
+	Alex Gaynor <alex.gaynor@gmail.com>, Gary Guo <gary@garyguo.net>,
+	=?utf-8?B?QmrDtnJu?= Roy Baron <bjorn3_gh@protonmail.com>,
+	Benno Lossin <lossin@kernel.org>,
+	Andreas Hindborg <a.hindborg@kernel.org>,
+	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Yury Norov <yury.norov@gmail.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V3 2/3] rust: Use CpuId in place of raw CPU numbers
+Message-ID: <20250612050117.3oi6belkf5lrreoh@vireshk-i7>
+References: <cover.1749554685.git.viresh.kumar@linaro.org>
+ <e790f17123beb45c6a811135ec3df8f0bd761c0e.1749554685.git.viresh.kumar@linaro.org>
+ <aEmq8fs1fHSB3z4i@tardis.local>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PAXPR04MB8459:EE_|GVXPR04MB10732:EE_
-X-MS-Office365-Filtering-Correlation-Id: f5edfc34-ef0d-442d-9bb1-08dda9598def
-X-MS-Exchange-SharedMailbox-RoutingAgent-Processed: True
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|376014|52116014|38350700014;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?cD4K+O555B6MSTZFrwLmoMT3QKBuetnCf+BhnOBB+uHf3t5ZYIH3rsUaHnok?=
- =?us-ascii?Q?5LEvlza1lLKo+eMMyPyUyakiwN72ppucccEocn37CgVgurtSVXtxHvMqvSwT?=
- =?us-ascii?Q?GbTqR9k4t2qRzVZ0iFUwjGofMzOFs3xB8R5YnWBO3VKwPElGsMNX6CXcLmc1?=
- =?us-ascii?Q?nKUm1Z/0yq9bIz6TgyE60wu+lZY5g/3U1ZAefmB8b4ESbVRXZcVufqpbLcer?=
- =?us-ascii?Q?LRzNGTi3osYdAgQglhFnbyVqU5ycVWqGoC95n+jrXZuqiSIAW6yivQVy+tFr?=
- =?us-ascii?Q?hz9pWI3EedSaEUx0ED1zCjkalZk+/32Nh4IVq/FbbPa0pueuRBaQMPF7X2Yo?=
- =?us-ascii?Q?3QvmzEQoBiAL/5Sc6V2/IKbDu/rkx84tg2OCEpmvMwSm2qibPxQSu9uw5RhI?=
- =?us-ascii?Q?Hlh2GYDVD1Pf0RigYAsWBAYzaeamkdorM02RhfqhKfSmY374gkHwLNsg29CB?=
- =?us-ascii?Q?NHs3UwdZKYBuxAP/NYIH1Vi4qTHzFqizhxCPw39bZvNi9P6A+ef1UZv5kU0K?=
- =?us-ascii?Q?BYn1spu5DaN7P/iFAZYNMvv3N8Bix3RW4MpQxXlHLnAehJ3u4gA2fiX/TV7j?=
- =?us-ascii?Q?/jOyWOOMkkMf+nH5Y8Sck6Aq8i4w6EYkL1zvqxuCer1VYV6rLL8OAKNCMrDu?=
- =?us-ascii?Q?nMgDPZ3TUrFWeECuYi+KPmIfuljnZBYiY6UxxKN0oEe2Wf6CA1vPgtGR+jH9?=
- =?us-ascii?Q?eJa+whzb/gHHtOdMfFZarojZVXwReVXEQaHMZQx4Eh8Mymh9XoPQCQhA5lyB?=
- =?us-ascii?Q?n+W9h5kZeV5IQsBuXp3eMYsD6rJrjhYN79GCk0f3VPsvJzuP7THRcVkJQ7XM?=
- =?us-ascii?Q?nTl2SBSLYCw50MOw+9kr5V3ng4ZVU46FPPFybiiiMIW5tjMYeN6PaxJcEsJw?=
- =?us-ascii?Q?3Leid6z4ewbKjk71srypEB29RPDXmcyGQK0Sc/KHt6W9s6PcvhF2JMuU3j/E?=
- =?us-ascii?Q?nP3kx4e9j+k2AP1XK0QWHHqq1AMY2+k6i7JsQ0FLXIEKfVC6IrmRgIM0N8Dm?=
- =?us-ascii?Q?l1PvL/qm6zNwlnkNgFvE5SxVpeGEydVBnE2JwTVL3peR0P+IpDw1ESb98CLX?=
- =?us-ascii?Q?ubjDbGfH2JyUhME8urqMJ6R3lUEIdSPwPTeYtNL1IjxUb46Bjc1rHJJQ1LhV?=
- =?us-ascii?Q?94LFWHko4vUIniAN0J//zhMsOrHccCXZcW0VFiTFZfn/qAcek5DWmR7REaUu?=
- =?us-ascii?Q?IMLj2sDYHjoB74W6n9IWam82oSVTCFJnV6Bp3jKCW81TqPcVVdHF55XgdGnQ?=
- =?us-ascii?Q?IrrFgwvjLP8Zjw1N5skeqkrWT7GI6ZfhWI4OavjO25tBwGhtlT99BMXpioQL?=
- =?us-ascii?Q?a8uBy3I9ncnyG1yca22COCxiaOmtmsRgDVYkEmPCtlHlgUpqXh+yDObsyRHQ?=
- =?us-ascii?Q?ToFuVXK3gdlHHzNq4MGBwGoD9IopZ+cQCp9/xWtq9/ADCXtDP4vhkOATAWFq?=
- =?us-ascii?Q?zNUqzbzqP+r4LfPUwRsXG25I8nor61hWj1cy8SxE5mC22i55poDAtN1rh0vR?=
- =?us-ascii?Q?QzlGUFC0B65mk8s=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB8459.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(52116014)(38350700014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?ooJmSgTSmxjRa5mYPDrIwoeexrDHIv45S7TJ/FvMh2Sq6+PgKv4ak2OMq1rg?=
- =?us-ascii?Q?v+3oscDjj/JAEx1Mi2rVED9Xivr20h+cvQw7BOrTwqXh/6+V62Fc5J5CW73g?=
- =?us-ascii?Q?Cd2oHj/14jyqLJinBmGO0YRGyA2Y/X9zFnVPXObykA8aws9h8FDeKKuG/T0n?=
- =?us-ascii?Q?/CJ19pcxxUEw65lEMpwmaRcD43L7WoUzBq2OeVoGja/WcbkBC0Ll9ZsrO8zj?=
- =?us-ascii?Q?pkYOGh5FjsQ86Q1oVKDQD28f8eWcVs8T7jEXTlr/k1AkgPYrBbg7FSrHDdUJ?=
- =?us-ascii?Q?wu8yCPL8m9UeYoFT8+WaXhs2ojNCy0FfD54ngO0tEBeqfrpsdBIKA80Q6Vk0?=
- =?us-ascii?Q?dNEfYmxPt/niUIqRb6Rmev7eli7m8lBxeAnn7j4Qqzmep5KB3oKTPFC/jFC3?=
- =?us-ascii?Q?HaQLmahuTw8MKMPfJzQiryIzWozb5qg54Ae16GO4F6lzO4vwnbZqEwTZfbW0?=
- =?us-ascii?Q?qghGAmQwI83mTH5O+lB9HszZJ6SBZAygXH0DNgm0j97aVxK1hNYj8to1yQuF?=
- =?us-ascii?Q?PHALCGC5u/5xCOanvGLr51eZHWPHAu4g+DfhHuCETM/B9gMco+thBZHtHEsh?=
- =?us-ascii?Q?2c846cHljBFvBrZaOvwttuhJdY8s/969XRPsYVaIEXlRsVhoTpfzJmdklU9E?=
- =?us-ascii?Q?Jb059vPDwkexUGJHu+KW91G+Qvmvn/3QTjMntXo7MejF83BcqQqNzVC4IqQE?=
- =?us-ascii?Q?eoF2RMpw+88XiOkPnktF6gr656iskIYr1kw4GeXPvT99dtz5+KiAz3wvc+zJ?=
- =?us-ascii?Q?PQcBvzz68J2HMr99wL5SNHzMM6GcUwluJIKscG+7tYiBfEV9K3jyTQL5hNUM?=
- =?us-ascii?Q?6U0be6KVfuaM7MuBi+ccTFBAJKO6yC4+N5nH+TkWa7hMnBotXF320PUF5Te+?=
- =?us-ascii?Q?RvjJMPZzF/wgsnBh/9AyHlMgB/AIMCW+vOHJk8iR1SJ4JLwGBDRg9XCH8hPD?=
- =?us-ascii?Q?4fTTZvaocm99YrEpKr0uzt6yyS/YmRBJIqRkwTs72VHSA9Z2dYsUntVxbM4L?=
- =?us-ascii?Q?A6GjZO52rxnQYZMF+8qfFgf1YKf03q7/L4gksPXjgaYqC1xnFBhku7UcS91C?=
- =?us-ascii?Q?Pgng3OefQ5xMlz7iqf15tZMMjRAwx4YWDW9Zl1vhj75gAgHhrun1vsWgrmFw?=
- =?us-ascii?Q?W0buAzJSx1OrGLWBnTWMR3MRU6uPjdZela9hOiFuCpdKDD4kwAUfzkFBcMCt?=
- =?us-ascii?Q?sZPHJqkophB6JV7mVhBIc/njb9/+TxRQILoPg+oD3w9knF/YxEgciWFtZOtS?=
- =?us-ascii?Q?go4jcKgq42QvFig4BrNDwcUkv8LJUG9tq0WUccCDdieEUwHZrpFQmSzAqang?=
- =?us-ascii?Q?RdFk2gvKg+huKmuR6ujJqVFoYsi29W3I8RN3AFfM2ovSBzaO6OtEBgnXSKt0?=
- =?us-ascii?Q?C5UtK2vlk7gtK0KCUFbA4iIjpovsuhAGbf/R5FwlAyR5uAkGwWjSz4odSlPU?=
- =?us-ascii?Q?Spz8J/plsFYCc+tyyVVxLoaL++zzdbrzLc2EYdZVmX6xu9E7Lz7BTYWuevAR?=
- =?us-ascii?Q?YwZPQB0d1y2dY1mlb8cFq5hMsBckSZlHnEYK6BxzL6RddBRDtKpbtcfDzmEd?=
- =?us-ascii?Q?k2gpH9wo93Ce6m1HMvjHCD2HQm47ll8gxwJRycSS?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: f5edfc34-ef0d-442d-9bb1-08dda9598def
-X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB8459.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Jun 2025 02:33:45.7234
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: wB0CTJQ9wKzup9EKnZ5Pc4zBqNMfwU7J9yE0C1wTrPOgmfHEPcOURbDPYSM7zIFeQLpW/mtyn4qO6E3pbTs+jA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVXPR04MB10732
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <aEmq8fs1fHSB3z4i@tardis.local>
 
-On Wed, Jun 11, 2025 at 02:33:37PM +0100, Cristian Marussi wrote:
->On Wed, Jun 11, 2025 at 01:17:11PM +0100, Sudeep Holla wrote:
->> On Wed, Jun 11, 2025 at 03:52:42PM +0800, Peng Fan (OSS) wrote:
->> > PERFORMANCE_NOTIFY_LIMITS and PERFORMANCE_NOTIFY_LEVEL are optional
->> > commands. If use these commands on platforms that not support the two,
->> > there is error log:
->> >   SCMI Notifications - Failed to ENABLE events for key:13000008 !
->> >   scmi-cpufreq scmi_dev.4: failed to register for limits change notifier for domain 8
->> > 
->> 
->
->Hi,
->
->I had a quick look/refresh to this stuff from years ago...
->
->...wont be so short to explain :P
->
->In general when you register a notifier_block for some SCMI events,
->the assumption was that a driver using proto_X_ops could want to register
->NOT only for proto_X events BUT also for other protos...in such a case you
->are NOT guaranteed that such other proto_Y was initialized when your
->driver probes and tries to register the notifier...indeed it could be
->that such proto_Y could be a module that has still to be loaded !
->
->...in this scenario you can end-up quickly in a hell of probe-dependency
->if you write a driver asking for SCMI events that can or cannot be still
->readily available when the driver probes...
->
->....so the decision was to simply place such notifier registration requests
->on hold on a pending list...whenever the needed missing protocol is
->loaded/inialized the notifier registration is completed...if the proto_Y
->never arrives nothing happens...and your driver caller can probe
->successfully anyway...
->
->This means in such a corner-case the notifier registration is sort of
->asynchonous and eventual errors detected later, when the protocol is
->finally initialized and notifiers finalized, cannot be easily reported
->(BUT I think we could improve on this ... thinking about this...)
->
->...BUT....
->
->....this is NOT our case NOR the most common case...the usual scenario,
->like cpufreq, is that a driver using proto_X_ops tries to register for
->that same proto_X events and in such a case we can detect that such
->domain is unsupported and fail while avoiding to send any message indeed....
->
->....so....:P...while I was going through this rabbit-hole....this issues
->started to feel familiar...O_o....
->
->... indeed I realized that the function that you (Peng) now invoke to
->set the per-domain perf_limit_notify flag was introduced just for these
->reasons to check and avoid such situation for all protocols in the core:
->
->
->commit 8733e86a80f5a7abb7b4b6ca3f417b32c3eb68e3
->Author: Cristian Marussi <cristian.marussi@arm.com>
->Date:   Mon Feb 12 12:32:23 2024 +0000
->
->    firmware: arm_scmi: Check for notification support
->    
->    When registering protocol events, use the optional .is_notify_supported
->    callback provided by the protocol to check if that specific notification
->    type is available for that particular resource on the running system,
->    marking it as unsupported otherwise.
->    
->    Then, when a notification enable request is received, return an error if
->    it was previously marked as unsuppported, so avoiding to send a needless
->    notification enable command and check the returned value for failure.
->    
->    Signed-off-by: Cristian Marussi <cristian.marussi@arm.com>
->    Link: https://lore.kernel.org/r/20240212123233.1230090-2-cristian.marussi@arm.com
->    Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->
->
->...so my suspect is that we are ALREADY avoiding to send unneeded
->messages when a domain does NOT support notifications for ALL
->protocols...it is just that we are a bit too noisy...
->
->@Peng do you observe the message being sent instead ? (so maybe the
->above has a bug...) or it is just the message ?
+On 11-06-25, 09:12, Boqun Feng wrote:
+> I generally found that `u32::from(cpu)` is more clear than `cpu.into()`,
+> but it's up to you. Same for the rest of `cpu.into()` cases.
 
-Just the message.
+Updated as:
 
-arm-scmi arm-scmi.0.auto: SCMI Notifications - Notification NOT supported - proto_id:19  evt_id:0  src_id:8
-SCMI Notifications - Failed to ENABLE events for key:13000008 !
-scmi-cpufreq scmi_dev.4: failed to register for limits change notifier for domain 8
+diff --git a/rust/kernel/cpu.rs b/rust/kernel/cpu.rs
+index 7549594fad7f..abc780d7a8ec 100644
+--- a/rust/kernel/cpu.rs
++++ b/rust/kernel/cpu.rs
+@@ -129,7 +129,7 @@ fn from(id: CpuId) -> Self {
+ /// any references to the CPU device within the notifier's callback.
+ pub unsafe fn from_cpu(cpu: CpuId) -> Result<&'static Device> {
+     // SAFETY: It is safe to call `get_cpu_device()` for any CPU.
+-    let ptr = unsafe { bindings::get_cpu_device(cpu.into()) };
++    let ptr = unsafe { bindings::get_cpu_device(u32::from(cpu)) };
+     if ptr.is_null() {
+         return Err(ENODEV);
+     }
+diff --git a/rust/kernel/cpufreq.rs b/rust/kernel/cpufreq.rs
+index ea6106db5c29..11b03e9d7e89 100644
+--- a/rust/kernel/cpufreq.rs
++++ b/rust/kernel/cpufreq.rs
+@@ -527,7 +527,7 @@ pub fn generic_suspend(&mut self) -> Result {
+     #[inline]
+     pub fn generic_get(&self) -> Result<u32> {
+         // SAFETY: By the type invariant, the pointer stored in `self` is valid.
+-        Ok(unsafe { bindings::cpufreq_generic_get(self.cpu().into()) })
++        Ok(unsafe { bindings::cpufreq_generic_get(u32::from(self.cpu())) })
+     }
+ 
+     /// Provides a wrapper to the register with energy model using the OPP core.
+@@ -682,7 +682,7 @@ fn clear_data<T: ForeignOwnable>(&mut self) -> Option<T> {
+ impl<'a> PolicyCpu<'a> {
+     fn from_cpu(cpu: CpuId) -> Result<Self> {
+         // SAFETY: It is safe to call `cpufreq_cpu_get` for any valid CPU.
+-        let ptr = from_err_ptr(unsafe { bindings::cpufreq_cpu_get(cpu.into()) })?;
++        let ptr = from_err_ptr(unsafe { bindings::cpufreq_cpu_get(u32::from(cpu)) })?;
+ 
+         Ok(Self(
+             // SAFETY: The `ptr` is guaranteed to be valid and remains valid for the lifetime of
+diff --git a/rust/kernel/cpumask.rs b/rust/kernel/cpumask.rs
+index 11ddd43edcb5..19c607709b5f 100644
+--- a/rust/kernel/cpumask.rs
++++ b/rust/kernel/cpumask.rs
+@@ -94,7 +94,7 @@ pub fn as_raw(&self) -> *mut bindings::cpumask {
+     #[inline]
+     pub fn set(&mut self, cpu: CpuId) {
+         // SAFETY: By the type invariant, `self.as_raw` is a valid argument to `__cpumask_set_cpu`.
+-        unsafe { bindings::__cpumask_set_cpu(cpu.into(), self.as_raw()) };
++        unsafe { bindings::__cpumask_set_cpu(u32::from(cpu), self.as_raw()) };
+     }
+ 
+     /// Clear `cpu` in the cpumask.
+@@ -106,7 +106,7 @@ pub fn set(&mut self, cpu: CpuId) {
+     pub fn clear(&mut self, cpu: CpuId) {
+         // SAFETY: By the type invariant, `self.as_raw` is a valid argument to
+         // `__cpumask_clear_cpu`.
+-        unsafe { bindings::__cpumask_clear_cpu(cpu.into(), self.as_raw()) };
++        unsafe { bindings::__cpumask_clear_cpu(i32::from(cpu), self.as_raw()) };
+     }
+ 
+     /// Test `cpu` in the cpumask.
+@@ -115,7 +115,7 @@ pub fn clear(&mut self, cpu: CpuId) {
+     #[inline]
+     pub fn test(&self, cpu: CpuId) -> bool {
+         // SAFETY: By the type invariant, `self.as_raw` is a valid argument to `cpumask_test_cpu`.
+-        unsafe { bindings::cpumask_test_cpu(cpu.into(), self.as_raw()) }
++        unsafe { bindings::cpumask_test_cpu(i32::from(cpu), self.as_raw()) }
+     }
+ 
+     /// Set all CPUs in the cpumask.
 
-It just make user has a feeling that there must be something wrong, especially
-those not know the internals.
-
-And from the error message, "Failed to ENABLE events for key..", we not
-know which protocol, and whether notification supported.
-
-I was thinking to propogate the error value, but __scmi_enable_evt
-always use -EINVAL if not success.
-
->
->> I wonder if it makes sense to quiesce the warnings from the core if the
->> platform doesn't support notifications.
-
-If not quiesce, we might need to make it clear from the error message,
-saying whether X events are supported for Y protocols or not, not just
-a "Failed to ENABLE events for key.."
-
-Thanks,
-Peng
+-- 
+viresh
