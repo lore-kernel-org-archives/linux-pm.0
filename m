@@ -1,30 +1,31 @@
-Received: from relay.hostedemail.com (smtprelay0011.hostedemail.com [216.40.44.11])
+Received: from relay.hostedemail.com (smtprelay0014.hostedemail.com [216.40.44.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D0F026C397;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 833B8270ED4;
 	Thu, 12 Jun 2025 14:52:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=216.40.44.11
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=216.40.44.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749739958; cv=none; b=c9I8W12YzzWVZu4mTPAVKsEk5seYehqEtVeAmuME51M6+T38ILa0Rb6WilqoCRnYDFdfwZr/DXVV+znXmAkDI5rx0+YnjCjwX0ytMxYEAnAwAs+GjuQqwjGe5+tNYt466OdNyVqD6tdbkdi3jIAoKPRb3eNYRfLxixvxeC7Q4mI=
+	t=1749739959; cv=none; b=f5mbiOXl7EN8RscO2hWTSGgsH/Yp3OaEE4iuzmljTYj09iVAFq99VVPjKWHBL8D4LEvtxPXqzmXr908AITR6jPvlXxpQoTPu+2AQzSEqA+ffIuSlMq86Ml8uDhor2qD1fgo0PEgih5DTPRmEV3cvTY73INZM42JSV7EBk+oBXGM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749739958; c=relaxed/simple;
-	bh=SNJt80qACwYsMfBYoQhUvMzRumLNnmU93cx7xgvWIhA=;
-	h=Message-ID:Date:From:To:Cc:Subject; b=a+4Xd1Q3GB2UuDcVg2a4IiLLVzHtVfdtdoA/p+vq1rjY0GeDmERupajVOzpPp+BNqw238XzHKP/3wHLCnuXUXORm6rGk+3DMnDgLv2zjHecRWuMwhNi/YbV7w9YIVlG1xdPoHycPAC+bk2HBHSWGka4fshwTdc+LpVd0ww8fsM0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org; spf=pass smtp.mailfrom=goodmis.org; arc=none smtp.client-ip=216.40.44.11
+	s=arc-20240116; t=1749739959; c=relaxed/simple;
+	bh=IRJXCXJo+dhajKqs/GVW4X4ORkkZ2S8OHxOKkOQph4A=;
+	h=Message-ID:Date:From:To:Cc:Subject:References:MIME-Version:
+	 Content-Type; b=HkgO1C+mmXMuSdVmiiYPph+AmNE/x05quzIzLufr3sS8fVRL2dYAwocxU4Xo7HIPPZAPDyTVUpwNhzsllnLg1Nmej918o7n3q4KBy49AzxNKwpZRJVT/TXJqf/d0hJQHAN9OvdcMpX7TsQlrQEvXdhWiKtVJ+xfjzaam9CEuvwM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org; spf=pass smtp.mailfrom=goodmis.org; arc=none smtp.client-ip=216.40.44.14
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=goodmis.org
-Received: from omf08.hostedemail.com (a10.router.float.18 [10.200.18.1])
-	by unirelay07.hostedemail.com (Postfix) with ESMTP id 14D5E16172E;
+Received: from omf10.hostedemail.com (a10.router.float.18 [10.200.18.1])
+	by unirelay01.hostedemail.com (Postfix) with ESMTP id 7925A1D8149;
 	Thu, 12 Jun 2025 14:52:34 +0000 (UTC)
-Received: from [HIDDEN] (Authenticated sender: nevets@goodmis.org) by omf08.hostedemail.com (Postfix) with ESMTPA id 50B2120027;
+Received: from [HIDDEN] (Authenticated sender: nevets@goodmis.org) by omf10.hostedemail.com (Postfix) with ESMTPA id 926A542;
 	Thu, 12 Jun 2025 14:52:32 +0000 (UTC)
 Received: from rostedt by gandalf with local (Exim 4.98.2)
 	(envelope-from <rostedt@goodmis.org>)
-	id 1uPjJf-00000001lO7-3fv0;
-	Thu, 12 Jun 2025 10:54:07 -0400
-Message-ID: <20250612145310.563358597@goodmis.org>
+	id 1uPjJg-00000001lP7-0woS;
+	Thu, 12 Jun 2025 10:54:08 -0400
+Message-ID: <20250612145408.074769245@goodmis.org>
 User-Agent: quilt/0.68
-Date: Thu, 12 Jun 2025 10:53:10 -0400
+Date: Thu, 12 Jun 2025 10:53:12 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org,
  linux-trace-kernel@vger.kernel.org,
@@ -38,43 +39,57 @@ Cc: Masami Hiramatsu <mhiramat@kernel.org>,
  Viresh Kumar <viresh.kumar@linaro.org>,
  Madhavan Srinivasan <maddy@linux.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 0/4] PM: tracing: Don't compile in unused trace events
-X-Rspamd-Queue-Id: 50B2120027
-X-Stat-Signature: 671yypn3d1k3f91qa3qgzfbjcctxm555
-X-Rspamd-Server: rspamout07
-X-Session-Marker: 6E657665747340676F6F646D69732E6F7267
-X-Session-ID: U2FsdGVkX1+HKFgC2IAPMdV6bVqFLIbbF0jglEfehXs=
-X-HE-Tag: 1749739952-202480
-X-HE-Meta: U2FsdGVkX18Zx3d1zrK96W9dRamojZiOj5sofUya+o14Daoe7ojSHmOmb2s5GCt5YqPHpM1G8bLnUG/WIUTBXwRBtJwYtlfgrxTX17b23DSwS0eZSUvTQkJFnB1mcwNkl+rR+yNlKs3HsGqZZZ/lU0baogzv2nP/UhAXHDG1oSB1QhuzC4BYT4Fr94+ZQJSMoxez9+vSEX6GDuWdy6ulboooEBha/F2H9AGjz8NDn6k4bqAf61sU3pb9w5KRCdc/TsCnaSiurMzym7k84yRzZW3IhWukYIFB5JY/R4GhyA8=
+Subject: [PATCH 2/4] PM: tracing: Hide psci_domain_idle events under ARM_PSCI_CPUIDLE
+References: <20250612145310.563358597@goodmis.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+X-Stat-Signature: t1gxukcmttsd57ypqjtoxhrrxmtqcbd4
+X-Rspamd-Server: rspamout04
+X-Rspamd-Queue-Id: 926A542
+X-Session-Marker: 6E657665747340676F6F646D69732E6F7267
+X-Session-ID: U2FsdGVkX1+DsACEpXW1Hxr3qrAKke4Xko/DKEfchDw=
+X-HE-Tag: 1749739952-596550
+X-HE-Meta: U2FsdGVkX1/IfiTNa6p40H7QmDBnX3sN/6qr5uRq/JvAr7V1bDaJdMzuHdv9rphnCS17FRaeM9YiG/hUMr8hC+mmUkKa0GYv6prfsggZcR30qEBOVcLhtOrcpWkG9Ke5VWnCKzJPAS+oVNTXZLKmnVNRgI8rHLYI+4BIgQ5P+8REpPm0IUyhvyqcvcR6ZrGJXdrvG26x+XwbyxFfx9pCY+/T72i8WHl5FLPqyaya7yCJu7mTuCI++6kdd2AdXw0heORM81ecFOTnPWDnlqGe5AJqYMSrMlgjV4UQkUVFoiPDyxArJdqWfPCA3AWG5OghmNV9H+jgpkjvSB7BKhddo4QqgJNLqXdaKjxk7wGsIF82E/1scem3bHrh9pxweG2gg0+cvTokxC3MRJ/u9tEdqw==
+
+From: Steven Rostedt <rostedt@goodmis.org>
+
+The events psci_domain_idle_enter and psci_domain_idle_exit events are
+only called when CONFIG_ARM_PSCI_CPUIDLE is defined. As each event can
+take up to 5K (less for DEFINE_EVENT()) regardless if they are used or
+not, it's best not to define them when they are not used. Add #ifdef
+around these events when they are not used.
+
+Signed-off-by: Steven Rostedt (Google) <rostedt@goodmis.org>
+---
+ include/trace/events/power.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index 913181cebfe9..a10ad300d660 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -62,6 +62,7 @@ TRACE_EVENT(cpu_idle_miss,
+ 		(unsigned long)__entry->state, (__entry->below)?"below":"above")
+ );
+ 
++#ifdef CONFIG_ARM_PSCI_CPUIDLE
+ DECLARE_EVENT_CLASS(psci_domain_idle,
+ 
+ 	TP_PROTO(unsigned int cpu_id, unsigned int state, bool s2idle),
+@@ -98,6 +99,7 @@ DEFINE_EVENT(psci_domain_idle, psci_domain_idle_exit,
+ 
+ 	TP_ARGS(cpu_id, state, s2idle)
+ );
++#endif
+ 
+ TRACE_EVENT(pstate_sample,
+ 
+-- 
+2.47.2
 
 
-I have code that makes unsued events trigger a warning. I'm currently cleaning
-up the kernel to remove the majority of events that are defined but not used.
-When an event is defined, it can take up to 5K of text and meta data per
-event. An event should not be created if it is not being used.
-
-The powernv_throttle event is only used by the powernv code so I moved it to
-its own header file and it gets created when the powernv code is compiled in.
-
-For the other power events, I just added #ifdef around them with the configs
-that enable them.
-
-Steven Rostedt (4):
-      PM: cpufreq: powernv/tracing: Move powernv_throttle trace event
-      PM: tracing: Hide psci_domain_idle events under ARM_PSCI_CPUIDLE
-      PM: tracing: Hide device_pm_callback events under PM_SLEEP
-      PM: tracing: Hide power_domain_target event under ARCH_OMAP2PLUS
-
-----
- drivers/cpufreq/Makefile          |  1 +
- drivers/cpufreq/powernv-cpufreq.c |  4 +++-
- drivers/cpufreq/powernv-trace.h   | 44 +++++++++++++++++++++++++++++++++++++++
- include/trace/events/power.h      | 28 ++++++-------------------
- kernel/trace/power-traces.c       |  1 -
- 5 files changed, 54 insertions(+), 24 deletions(-)
- create mode 100644 drivers/cpufreq/powernv-trace.h
