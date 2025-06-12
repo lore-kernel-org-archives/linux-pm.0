@@ -1,786 +1,118 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vk1-f177.google.com (mail-vk1-f177.google.com [209.85.221.177])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8004F271472;
-	Thu, 12 Jun 2025 14:59:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA35922094;
+	Thu, 12 Jun 2025 15:54:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749740361; cv=none; b=AVKx7j5gD1bLpYGAa4Qkt8Ca6l7mSjod0iFRBo8SfqvaRyziSj3n+6FwaXdBjnUGQoOee8GhHMxd2+DaNOYHOJjuFx/44tNgcih7OsJ5NzagwYMBFQPLn/BR0JxhVuVTihZ3jyGtDF3lxPPdcEq9/R9lnugj9axQZRrkzWNwj80=
+	t=1749743653; cv=none; b=Uke2NhumC4gkEPTdixfZ2yMN+WSuMrD1ADmUZEUIX7Tk7EIvX6xWLD6hR2+BuG5WwLBHWE9Gec/3kF4YdYPhbuEqgHBsXzxzQWB9JOQL5UqmoobYZS3B8JvFZH9+s7E5tlDD4mw3hMePuOafVEOrKbo4oETwdlc0hYnYViyewC4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749740361; c=relaxed/simple;
-	bh=4jKuiBXbyFv0NxIcW0Nc+1X4atGKKZRdLmrK5bbmLWM=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=n/WI/stjv199erS2H4bE7L2qfY4E0Zpuz5R/KJ4bzfRgjSFmi8o6L7u5KYrv7OcGkZcSjIefreNLJdA3ZtX3m5yAt8zzNc1m5OQ83pasmUlciDU6VT4PnxBK1Z8+U/HoBcoXSEkWdr6kUMFrW/l6jfkwWdBKLZhvC8VUO0VS8Cw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HAVrzlRP; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HAVrzlRP"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 192F2C4AF48;
-	Thu, 12 Jun 2025 14:59:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1749740361;
-	bh=4jKuiBXbyFv0NxIcW0Nc+1X4atGKKZRdLmrK5bbmLWM=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=HAVrzlRPHydMiWjb65NX4B62uqQBXhoDKuXJ3Qu6aHxYgnJgarhZye8F0KDpjnVOM
-	 eeKRnQCtQnxzDOPdmC+amkJcaGAaigfG/6C/dhrTzsiwMmL+tXI8O4/7Xi3RlrQB3L
-	 flFPQruVHhUfUQvDMwv1VHT4Chydu2oOH24KG7JD6eGX3Bd2af2JBPOKkiKPsjEAOr
-	 3sxLCZjfQiwnMI9OjpDsoqeBySgv3P7FHzrJbyV3mZ6qWB3imrC9q6fvc3bewJJwQp
-	 67R7lnQAAmMM1Z5xeqQeTPFbyT1xHZns9KYbWtNFTbRQbvml6ikEi//ooGmlYI/dOW
-	 Qw/GW148UhHTQ==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B3EEC71136;
-	Thu, 12 Jun 2025 14:59:21 +0000 (UTC)
-From: Samuel Kayode via B4 Relay <devnull+samuel.kayode.savoirfairelinux.com@kernel.org>
-Date: Thu, 12 Jun 2025 10:55:47 -0400
-Subject: [PATCH v7 5/6] power: supply: pf1550: add battery charger support
+	s=arc-20240116; t=1749743653; c=relaxed/simple;
+	bh=Lozr22R6CO+RNvwVhifH/eSDDg9MlLQKcOlojkNqxc8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=XdPRtZ+04TiEXzaDq4DThV1C333xqU4VygjfUKGnyykOEBYDm32UuzpXdo7FxR8irvLNeGIzWaWRt8+kdpaXnUsKiCbeqU5PloBzL/zHH8XSZJxmVykWMifMC0DaVhOkuBTfEZ+Ss6Wk5X1lGhLYGth00d8d1G3DVDIxGsYei0s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vk1-f177.google.com with SMTP id 71dfb90a1353d-53125ca7837so635169e0c.0;
+        Thu, 12 Jun 2025 08:54:11 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1749743649; x=1750348449;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=MCWdKGDkn0LPrrpZul9GwNXUtPRdna1q2f9cpPPTLvA=;
+        b=CJnRmZoQ0g9EeciCPu5VSgLQ6+Yp0sVzbIUuG7Hw0r3haTpYwF21HW+9STnyJy6O9c
+         ulAGUTqJFZZfKyYx/K9NAHZq9OU4XUGGSQzDF0D5+rG37dGfugK7tLcJ9ORfzhwnEdQ2
+         ti8J6zb1CBNoqI5l8cnMvtPfjuH+ukszGhAyaFPr5OHh/UeB8CYRcL6oquxChjyuBW1c
+         75JQwTuG2WmdTRREClWXwkFWny5EXotZJgDPDhfxb/VpPjOPKrPKDBDm9xXULB56wR/y
+         lvFSnQs1LIR/19ZvQ0vyI13j1dumLw5yZsi3MMq44nbsnXSUxfJ5PsmbxY6ihEIRP5TX
+         q5zg==
+X-Forwarded-Encrypted: i=1; AJvYcCUOVp7hSMWtR+LrlA6Frd0BnR/loTzLXVGb6IfRJO7daV1nKfwc2ox2u1PSzwU5k4/23/kwwAeqEMm9w3uvmGLhsmg=@vger.kernel.org, AJvYcCUkZcsR3Ss3sCr5/R3dPXHOmKXPpE59twdWjwVLTketmtnJNYDJ3kPULDU99nRe4YSVsXlAh0JNFYH4SYA=@vger.kernel.org, AJvYcCVbnRcHQmj3qmkwUVH4uDHh359MlnmZw+hxJIOKJLUIRCe8QteOwLNd3L6MdTDZ+eKj8BmX18AmuyG77/kodmX/YFI=@vger.kernel.org, AJvYcCWsUzdGiOMYf+//lkaORyRFeoFsvPxny/1EZNLGOuHbmdEiHkak0tkMBCrPcOAZESHHA/eWlS5GaNs=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yypo7DB0NRFCzgTV2JyaYjQsPVhDNqsZD6nC0sYs4+DFYO0wRw9
+	IuOIFBrVs9ll+nasIhuD6sCSZpN4pXFZAn6GFed51DM3bval9f63U43ztnW7OMh2
+X-Gm-Gg: ASbGncthSQPf+5XFYpGw9rz9RnmwgYBPMmsSf/aO4NlXWcmxPqrPSxGDsrvwSA9nc4H
+	ggZO0xyU9NMVKfNL9/DIvmHoyCTz6LJlXydyT5ii9OKpBxwbMzA4WWWKHnEt1eOtI0xP5oqIygC
+	BXv7X5BOdhCV0UqHWyPrt92Qw7A56FZ3Qg8EVoZDF5565LsBmqC9jBMZZmi2DDcEd0eihrZDaHv
+	TC3LVQlK8rQJOJrFvxrxWMoJEl68PPviRzP6aON/dNAOtcnjNHHQ0BUfbi0eRLatc2HG+VET7T0
+	p4Cngyb27KvSLopSDYHIODbb0e/lmWwZP/BGq0WtzpTGFLKU7/woo9Ole8Kme1yukA/DyeO0Jhi
+	uLI5Vk/aaialT3Ga+tExBWS59
+X-Google-Smtp-Source: AGHT+IHPQH4Y8zIYDo7jnYGjuCCKNfPDnUxt8yyPNZacUMOEktQBFF58LQrKvZEwDw2RZYYcI0kOoA==
+X-Received: by 2002:a05:6122:81dc:b0:52d:cc6f:81a2 with SMTP id 71dfb90a1353d-5312dc21da3mr2539414e0c.6.1749743649358;
+        Thu, 12 Jun 2025 08:54:09 -0700 (PDT)
+Received: from mail-vs1-f49.google.com (mail-vs1-f49.google.com. [209.85.217.49])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-87f01259249sm340861241.9.2025.06.12.08.54.08
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 12 Jun 2025 08:54:08 -0700 (PDT)
+Received: by mail-vs1-f49.google.com with SMTP id ada2fe7eead31-4e7c7680591so656668137.1;
+        Thu, 12 Jun 2025 08:54:08 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUowVZxKTEwyQURYu7qTx9yNZ323/WGFV047Wy0s8MyKJSqJakBSpr/fIRonZdUt8U/qYz+nzu2uBpnToQ=@vger.kernel.org, AJvYcCVoNcpLFUGR19ERv5s2F4O+s4f3gt2yrCOjsUIjHjkRDU5Ku3VtOHRDbhtwC+IjSZvd/m/n1ATo8/JTQeNO69kadlQ=@vger.kernel.org, AJvYcCWqS1F10E6wubpH3w+gSsedHbklQtjSgYWni/MiuXsqtgfkDi3N7ItySzSw3ImnZ/ZtlX1LjN5gket2VllD36d9ohg=@vger.kernel.org, AJvYcCXRxK2ji42gfTE/fVcDTmDx9S+YlJO6PiHjtQMXYx+6S9XvQe4yrwGqZ8l0aJedtkRtAtuCkiclT4g=@vger.kernel.org
+X-Received: by 2002:a05:6102:5113:b0:4e4:3c3a:f163 with SMTP id
+ ada2fe7eead31-4e7cd7a4049mr3737309137.7.1749743648153; Thu, 12 Jun 2025
+ 08:54:08 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250612-pf1550-v7-5-0e393b0f45d7@savoirfairelinux.com>
-References: <20250612-pf1550-v7-0-0e393b0f45d7@savoirfairelinux.com>
-In-Reply-To: <20250612-pf1550-v7-0-0e393b0f45d7@savoirfairelinux.com>
-To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
- Mark Brown <broonie@kernel.org>, 
- Dmitry Torokhov <dmitry.torokhov@gmail.com>, 
- Sebastian Reichel <sre@kernel.org>, Frank Li <Frank.li@nxp.com>
-Cc: imx@lists.linux.dev, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, 
- linux-pm@vger.kernel.org, Abel Vesa <abelvesa@kernel.org>, 
- Abel Vesa <abelvesa@linux.com>, Robin Gong <b38343@freescale.com>, 
- Robin Gong <yibin.gong@nxp.com>, 
- Enric Balletbo i Serra <eballetbo@gmail.com>, 
- Samuel Kayode <samuel.kayode@savoirfairelinux.com>, 
- Abel Vesa <abelvesa@kernel.org>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1749740359; l=19939;
- i=samuel.kayode@savoirfairelinux.com; s=20250527;
- h=from:subject:message-id;
- bh=/yN/l0BikADEEP0vzrb21IoVaQGp0QTV/kT77lS8EFc=;
- b=BW8Bf4A6+qOX+6CMKUnlz3jmjMgJYteQtmrfRugSc70NwkHYYwRPWWQtXRUEXPrIqP7/0Ou8l
- RA2ddzv0nJJBQw8ePS/JvidxW3rZ1oSSK3MeHhoceXurQmJqKKAz0Eh
-X-Developer-Key: i=samuel.kayode@savoirfairelinux.com; a=ed25519;
- pk=TPSQGQ5kywnnPyGs0EQqLajLFbdDu17ahXz8/gxMfio=
-X-Endpoint-Received: by B4 Relay for
- samuel.kayode@savoirfairelinux.com/20250527 with auth_id=412
-X-Original-From: Samuel Kayode <samuel.kayode@savoirfairelinux.com>
-Reply-To: samuel.kayode@savoirfairelinux.com
+References: <20250610193403161UQCV5cVGXCRVDheTb7jvi@zte.com.cn>
+In-Reply-To: <20250610193403161UQCV5cVGXCRVDheTb7jvi@zte.com.cn>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 12 Jun 2025 17:53:55 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdV2Ar95nrmH=NTwY+pkrg6nD-sNoVG7MJY7ofJF4N3bNA@mail.gmail.com>
+X-Gm-Features: AX0GCFsIwHF9_aoZ54iuAPGFucIDRqFn8Tjpa14cAUcOdjFvqEv5PYmW-DjzBPU
+Message-ID: <CAMuHMdV2Ar95nrmH=NTwY+pkrg6nD-sNoVG7MJY7ofJF4N3bNA@mail.gmail.com>
+Subject: Re: [PATCH v2] pmdomain: Use str_enable_disable-like helpers
+To: shao.mingyin@zte.com.cn
+Cc: ulf.hansson@linaro.org, changhuang.liang@starfivetech.com, 
+	geert+renesas@glider.be, magnus.damm@gmail.com, heiko@sntech.de, 
+	krzk@kernel.org, alim.akhtar@samsung.com, walker.chen@starfivetech.com, 
+	sebastian.reichel@collabora.com, detlev.casanova@collabora.com, 
+	finley.xiao@rock-chips.com, shawn.lin@rock-chips.com, pgwipeout@gmail.com, 
+	qiu.yutan@zte.com.cn, linux-pm@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, 
+	linux-samsung-soc@vger.kernel.org, yang.yang29@zte.com.cn, 
+	xu.xin16@zte.com.cn, yang.tao172@zte.com.cn, ye.xingchen@zte.com.cn
+Content-Type: text/plain; charset="UTF-8"
 
-From: Samuel Kayode <samuel.kayode@savoirfairelinux.com>
+Hi Mingyin,
 
-Add support for the battery charger for pf1550 PMIC.
+On Tue, 10 Jun 2025 at 13:34, <shao.mingyin@zte.com.cn> wrote:
+> From: Shao Mingyin <shao.mingyin@zte.com.cn>
+>
+> Replace ternary (condition ? "enable" : "disable") syntax and ternary
+> (condition ? "on" : "off") syntax with helpers from
+> string_choices.h because:
+> 1. Simple function call with one argument is easier to read.  Ternary
+>    operator has three arguments and with wrapping might lead to quite
+>    long code.
+> 2. Is slightly shorter thus also easier to read.
+> 3. It brings uniformity in the text - same string.
+> 4. Allows deduping by the linker, which results in a smaller binary
+>    file.
+>
+> Signed-off-by: Shao Mingyin <shao.mingyin@zte.com.cn>
+> ---
+> v2:
+>  %sable ==> %s in jh71xx_pmu_dev()
 
-Signed-off-by: Samuel Kayode <samuel.kayode@savoirfairelinux.com>
----
-v7:
-- Use reverse christmas tree order
-- Drop unecessary 0 in id table's driver data field
-- Store virqs to avoid reinvoking platform_get_irq in the interrupt
-  service routine
-- Drop manufacturer and model global variables
-v6:
-- Drop lock entirely
-- Reverse christmas tree order for variables defined in probe as
-  suggested by Frank
-- return pf1550_reg_init
-v5:
-- Drop lock for battery and charger delayed_work
-- More conservative locking in vbus delayed_work
-- Apply lock when setting power supply type during register initialization
-v4:
-- Finish handling of some interrupts in threaded irq handler
-- Use platform_get_irq
-v3:
-- Use struct power_supply_get_battery_info to get constant charge
-  voltage if specified
-- Use virqs mapped in MFD driver
-v2:
-- Address feedback from Enric Balletbo Serra
----
- drivers/power/supply/Kconfig          |  11 +
- drivers/power/supply/Makefile         |   1 +
- drivers/power/supply/pf1550-charger.c | 632 ++++++++++++++++++++++++++++++++++
- 3 files changed, 644 insertions(+)
+Thanks for the update!
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index 79ddb006e2dad6bf96b71ed570a37c006b5f9433..6d0c872edac1f45da314632e671af1aeda4c87b8 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -471,6 +471,17 @@ config CHARGER_88PM860X
- 	help
- 	  Say Y here to enable charger for Marvell 88PM860x chip.
- 
-+config CHARGER_PF1550
-+	tristate "NXP PF1550 battery charger driver"
-+	depends on MFD_PF1550
-+	help
-+	  Say Y to enable support for the NXP PF1550 battery charger.
-+	  The device is a single cell Li-Ion/Li-Polymer battery charger for
-+	  portable application.
-+
-+	  This driver can also be built as a module. If so, the module will be
-+	  called pf1550-charger.
-+
- config BATTERY_RX51
- 	tristate "Nokia RX-51 (N900) battery driver"
- 	depends on TWL4030_MADC
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index 4f5f8e3507f80da02812f0d08c2d81ddff0a272f..7f68380099c59dab71b73120150612a23e16a745 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -64,6 +64,7 @@ obj-$(CONFIG_CHARGER_RT9467)	+= rt9467-charger.o
- obj-$(CONFIG_CHARGER_RT9471)	+= rt9471.o
- obj-$(CONFIG_BATTERY_TWL4030_MADC)	+= twl4030_madc_battery.o
- obj-$(CONFIG_CHARGER_88PM860X)	+= 88pm860x_charger.o
-+obj-$(CONFIG_CHARGER_PF1550)	+= pf1550-charger.o
- obj-$(CONFIG_BATTERY_RX51)	+= rx51_battery.o
- obj-$(CONFIG_AB8500_BM)		+= ab8500_bmdata.o ab8500_charger.o ab8500_fg.o ab8500_btemp.o ab8500_chargalg.o
- obj-$(CONFIG_CHARGER_CPCAP)	+= cpcap-charger.o
-diff --git a/drivers/power/supply/pf1550-charger.c b/drivers/power/supply/pf1550-charger.c
-new file mode 100644
-index 0000000000000000000000000000000000000000..1693fb2afdd444e088827edc476fa271fb0937e0
---- /dev/null
-+++ b/drivers/power/supply/pf1550-charger.c
-@@ -0,0 +1,632 @@
-+// SPDX-License-Identifier: GPL-2.0
-+//
-+// pf1550_charger.c - charger driver for the PF1550
-+//
-+// Copyright (C) 2016 Freescale Semiconductor, Inc.
-+// Robin Gong <yibin.gong@freescale.com>
-+//
-+// Portions Copyright (c) 2025 Savoir-faire Linux Inc.
-+// Samuel Kayode <samuel.kayode@savoirfairelinux.com>
-+//
-+
-+#include <linux/interrupt.h>
-+#include <linux/mfd/pf1550.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/power_supply.h>
-+
-+#define PF1550_CHARGER_NAME		"pf1550-charger"
-+#define PF1550_DEFAULT_CONSTANT_VOLT	4200000
-+#define PF1550_DEFAULT_MIN_SYSTEM_VOLT	3500000
-+#define PF1550_DEFAULT_THERMAL_TEMP	75
-+#define PF1550_CHARGER_IRQ_NR		5
-+
-+struct pf1550_charger {
-+	struct device *dev;
-+	const struct pf1550_dev *pf1550;
-+	struct power_supply *charger;
-+	struct power_supply_desc psy_desc;
-+	struct delayed_work vbus_sense_work;
-+	struct delayed_work chg_sense_work;
-+	struct delayed_work bat_sense_work;
-+	int virqs[PF1550_CHARGER_IRQ_NR];
-+
-+	u32 constant_volt;
-+	u32 min_system_volt;
-+	u32 thermal_regulation_temp;
-+};
-+
-+static int pf1550_get_charger_state(struct regmap *regmap, int *val)
-+{
-+	unsigned int data;
-+	int ret;
-+
-+	ret = regmap_read(regmap, PF1550_CHARG_REG_CHG_SNS, &data);
-+	if (ret < 0)
-+		return ret;
-+
-+	data &= PF1550_CHG_SNS_MASK;
-+
-+	switch (data) {
-+	case PF1550_CHG_PRECHARGE:
-+	case PF1550_CHG_CONSTANT_CURRENT:
-+		*val = POWER_SUPPLY_STATUS_CHARGING;
-+		break;
-+	case PF1550_CHG_CONSTANT_VOL:
-+		*val = POWER_SUPPLY_STATUS_CHARGING;
-+		break;
-+	case PF1550_CHG_EOC:
-+		*val = POWER_SUPPLY_STATUS_CHARGING;
-+		break;
-+	case PF1550_CHG_DONE:
-+		*val = POWER_SUPPLY_STATUS_FULL;
-+		break;
-+	case PF1550_CHG_TIMER_FAULT:
-+	case PF1550_CHG_SUSPEND:
-+		*val = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+		break;
-+	case PF1550_CHG_OFF_INV:
-+	case PF1550_CHG_OFF_TEMP:
-+	case PF1550_CHG_LINEAR_ONLY:
-+		*val = POWER_SUPPLY_STATUS_DISCHARGING;
-+		break;
-+	default:
-+		*val = POWER_SUPPLY_STATUS_UNKNOWN;
-+	}
-+
-+	return 0;
-+}
-+
-+static int pf1550_get_charge_type(struct regmap *regmap, int *val)
-+{
-+	unsigned int data;
-+	int ret;
-+
-+	ret = regmap_read(regmap, PF1550_CHARG_REG_CHG_SNS, &data);
-+	if (ret < 0)
-+		return ret;
-+
-+	data &= PF1550_CHG_SNS_MASK;
-+
-+	switch (data) {
-+	case PF1550_CHG_SNS_MASK:
-+		*val = POWER_SUPPLY_CHARGE_TYPE_TRICKLE;
-+		break;
-+	case PF1550_CHG_CONSTANT_CURRENT:
-+	case PF1550_CHG_CONSTANT_VOL:
-+	case PF1550_CHG_EOC:
-+		*val = POWER_SUPPLY_CHARGE_TYPE_FAST;
-+		break;
-+	case PF1550_CHG_DONE:
-+	case PF1550_CHG_TIMER_FAULT:
-+	case PF1550_CHG_SUSPEND:
-+	case PF1550_CHG_OFF_INV:
-+	case PF1550_CHG_BAT_OVER:
-+	case PF1550_CHG_OFF_TEMP:
-+	case PF1550_CHG_LINEAR_ONLY:
-+		*val = POWER_SUPPLY_CHARGE_TYPE_NONE;
-+		break;
-+	default:
-+		*val = POWER_SUPPLY_CHARGE_TYPE_UNKNOWN;
-+	}
-+
-+	return 0;
-+}
-+
-+/*
-+ * Supported health statuses:
-+ *  - POWER_SUPPLY_HEALTH_DEAD
-+ *  - POWER_SUPPLY_HEALTH_GOOD
-+ *  - POWER_SUPPLY_HEALTH_OVERVOLTAGE
-+ *  - POWER_SUPPLY_HEALTH_UNKNOWN
-+ */
-+static int pf1550_get_battery_health(struct regmap *regmap, int *val)
-+{
-+	unsigned int data;
-+	int ret;
-+
-+	ret = regmap_read(regmap, PF1550_CHARG_REG_BATT_SNS, &data);
-+	if (ret < 0)
-+		return ret;
-+
-+	data &= PF1550_BAT_SNS_MASK;
-+
-+	switch (data) {
-+	case PF1550_BAT_NO_DETECT:
-+		*val = POWER_SUPPLY_HEALTH_DEAD;
-+		break;
-+	case PF1550_BAT_NO_VBUS:
-+	case PF1550_BAT_LOW_THAN_PRECHARG:
-+	case PF1550_BAT_CHARG_FAIL:
-+	case PF1550_BAT_HIGH_THAN_PRECHARG:
-+		*val = POWER_SUPPLY_HEALTH_GOOD;
-+		break;
-+	case PF1550_BAT_OVER_VOL:
-+		*val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-+		break;
-+	default:
-+		*val = POWER_SUPPLY_HEALTH_UNKNOWN;
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static int pf1550_get_present(struct regmap *regmap, int *val)
-+{
-+	unsigned int data;
-+	int ret;
-+
-+	ret = regmap_read(regmap, PF1550_CHARG_REG_BATT_SNS, &data);
-+	if (ret < 0)
-+		return ret;
-+
-+	data &= PF1550_BAT_SNS_MASK;
-+	*val = (data == PF1550_BAT_NO_DETECT) ? 0 : 1;
-+
-+	return 0;
-+}
-+
-+static int pf1550_get_online(struct regmap *regmap, int *val)
-+{
-+	unsigned int data;
-+	int ret;
-+
-+	ret = regmap_read(regmap, PF1550_CHARG_REG_VBUS_SNS, &data);
-+	if (ret < 0)
-+		return ret;
-+
-+	*val = (data & PF1550_VBUS_VALID) ? 1 : 0;
-+
-+	return 0;
-+}
-+
-+static void pf1550_chg_bat_work(struct work_struct *work)
-+{
-+	struct pf1550_charger *chg = container_of(to_delayed_work(work),
-+						  struct pf1550_charger,
-+						  bat_sense_work);
-+	unsigned int data;
-+
-+	if (!chg->charger)
-+		return;
-+
-+	if (regmap_read(chg->pf1550->regmap, PF1550_CHARG_REG_BATT_SNS, &data)) {
-+		dev_err(chg->dev, "Read BATT_SNS error.\n");
-+		return;
-+	}
-+
-+	switch (data & PF1550_BAT_SNS_MASK) {
-+	case PF1550_BAT_NO_VBUS:
-+		dev_dbg(chg->dev, "No valid VBUS input.\n");
-+		break;
-+	case PF1550_BAT_LOW_THAN_PRECHARG:
-+		dev_dbg(chg->dev, "VBAT < VPRECHG.LB.\n");
-+		break;
-+	case PF1550_BAT_CHARG_FAIL:
-+		dev_dbg(chg->dev, "Battery charging failed.\n");
-+		break;
-+	case PF1550_BAT_HIGH_THAN_PRECHARG:
-+		dev_dbg(chg->dev, "VBAT > VPRECHG.LB.\n");
-+		break;
-+	case PF1550_BAT_OVER_VOL:
-+		dev_dbg(chg->dev, "VBAT > VBATOV.\n");
-+		break;
-+	case PF1550_BAT_NO_DETECT:
-+		dev_dbg(chg->dev, "Battery not detected.\n");
-+		break;
-+	default:
-+		dev_err(chg->dev, "Unknown value read:%x\n",
-+			data & PF1550_CHG_SNS_MASK);
-+	}
-+}
-+
-+static void pf1550_chg_chg_work(struct work_struct *work)
-+{
-+	struct pf1550_charger *chg = container_of(to_delayed_work(work),
-+						  struct pf1550_charger,
-+						  chg_sense_work);
-+	unsigned int data;
-+
-+	if (!chg->charger)
-+		return;
-+
-+	if (regmap_read(chg->pf1550->regmap, PF1550_CHARG_REG_CHG_SNS, &data)) {
-+		dev_err(chg->dev, "Read CHG_SNS error.\n");
-+		return;
-+	}
-+
-+	switch (data & PF1550_CHG_SNS_MASK) {
-+	case PF1550_CHG_PRECHARGE:
-+		dev_dbg(chg->dev, "In pre-charger mode.\n");
-+		break;
-+	case PF1550_CHG_CONSTANT_CURRENT:
-+		dev_dbg(chg->dev, "In fast-charge constant current mode.\n");
-+		break;
-+	case PF1550_CHG_CONSTANT_VOL:
-+		dev_dbg(chg->dev, "In fast-charge constant voltage mode.\n");
-+		break;
-+	case PF1550_CHG_EOC:
-+		dev_dbg(chg->dev, "In EOC mode.\n");
-+		break;
-+	case PF1550_CHG_DONE:
-+		dev_dbg(chg->dev, "In DONE mode.\n");
-+		break;
-+	case PF1550_CHG_TIMER_FAULT:
-+		dev_info(chg->dev, "In timer fault mode.\n");
-+		break;
-+	case PF1550_CHG_SUSPEND:
-+		dev_info(chg->dev, "In thermistor suspend mode.\n");
-+		break;
-+	case PF1550_CHG_OFF_INV:
-+		dev_info(chg->dev, "Input invalid, charger off.\n");
-+		break;
-+	case PF1550_CHG_BAT_OVER:
-+		dev_info(chg->dev, "Battery over-voltage.\n");
-+		break;
-+	case PF1550_CHG_OFF_TEMP:
-+		dev_info(chg->dev, "Temp high, charger off.\n");
-+		break;
-+	case PF1550_CHG_LINEAR_ONLY:
-+		dev_dbg(chg->dev, "In Linear mode, not charging.\n");
-+		break;
-+	default:
-+		dev_err(chg->dev, "Unknown value read:%x\n",
-+			data & PF1550_CHG_SNS_MASK);
-+	}
-+}
-+
-+static void pf1550_chg_vbus_work(struct work_struct *work)
-+{
-+	struct pf1550_charger *chg = container_of(to_delayed_work(work),
-+						  struct pf1550_charger,
-+						  vbus_sense_work);
-+	bool psy_changed = false;
-+	unsigned int data;
-+
-+	if (!chg->charger)
-+		return;
-+
-+	if (regmap_read(chg->pf1550->regmap, PF1550_CHARG_REG_VBUS_SNS, &data)) {
-+		dev_err(chg->dev, "Read VBUS_SNS error.\n");
-+		return;
-+	}
-+
-+	if (data & PF1550_VBUS_UVLO) {
-+		chg->psy_desc.type = POWER_SUPPLY_TYPE_BATTERY;
-+		psy_changed = true;
-+		dev_dbg(chg->dev, "VBUS detached.\n");
-+	}
-+	if (data & PF1550_VBUS_IN2SYS)
-+		dev_dbg(chg->dev, "VBUS_IN2SYS_SNS.\n");
-+	if (data & PF1550_VBUS_OVLO)
-+		dev_dbg(chg->dev, "VBUS_OVLO_SNS.\n");
-+	if (data & PF1550_VBUS_VALID) {
-+		chg->psy_desc.type = POWER_SUPPLY_TYPE_MAINS;
-+		psy_changed = true;
-+		dev_dbg(chg->dev, "VBUS attached.\n");
-+	}
-+
-+	if (psy_changed)
-+		power_supply_changed(chg->charger);
-+}
-+
-+static irqreturn_t pf1550_charger_irq_handler(int irq, void *data)
-+{
-+	struct pf1550_charger *chg = data;
-+	struct device *dev = chg->dev;
-+	int i, irq_type = -1;
-+
-+	for (i = 0; i < PF1550_CHARGER_IRQ_NR; i++)
-+		if (irq == chg->virqs[i])
-+			irq_type = i;
-+
-+	switch (irq_type) {
-+	case PF1550_CHARG_IRQ_BAT2SOCI:
-+		dev_info(dev, "BAT to SYS Overcurrent interrupt.\n");
-+		break;
-+	case PF1550_CHARG_IRQ_BATI:
-+		schedule_delayed_work(&chg->bat_sense_work,
-+				      msecs_to_jiffies(10));
-+		break;
-+	case PF1550_CHARG_IRQ_CHGI:
-+		schedule_delayed_work(&chg->chg_sense_work,
-+				      msecs_to_jiffies(10));
-+		break;
-+	case PF1550_CHARG_IRQ_VBUSI:
-+		schedule_delayed_work(&chg->vbus_sense_work,
-+				      msecs_to_jiffies(10));
-+		break;
-+	case PF1550_CHARG_IRQ_THMI:
-+		dev_info(dev, "Thermal interrupt.\n");
-+		break;
-+	default:
-+		dev_err(dev, "unknown interrupt occurred.\n");
-+	}
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static enum power_supply_property pf1550_charger_props[] = {
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_CHARGE_TYPE,
-+	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_MODEL_NAME,
-+	POWER_SUPPLY_PROP_MANUFACTURER,
-+};
-+
-+static int pf1550_charger_get_property(struct power_supply *psy,
-+				       enum power_supply_property psp,
-+				       union power_supply_propval *val)
-+{
-+	struct pf1550_charger *chg = power_supply_get_drvdata(psy);
-+	struct regmap *regmap = chg->pf1550->regmap;
-+	int ret = 0;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		ret = pf1550_get_charger_state(regmap, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-+		ret = pf1550_get_charge_type(regmap, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_HEALTH:
-+		ret = pf1550_get_battery_health(regmap, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_PRESENT:
-+		ret = pf1550_get_present(regmap, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		ret = pf1550_get_online(regmap, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_MODEL_NAME:
-+		val->strval = "PF1550";
-+		break;
-+	case POWER_SUPPLY_PROP_MANUFACTURER:
-+		val->strval = "NXP";
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+
-+static int pf1550_set_constant_volt(struct pf1550_charger *chg,
-+				    unsigned int uvolt)
-+{
-+	unsigned int data;
-+
-+	if (uvolt >= 3500000 && uvolt <= 4440000)
-+		data = 8 + (uvolt - 3500000) / 20000;
-+	else
-+		return dev_err_probe(chg->dev, -EINVAL,
-+				     "Wrong value for constant voltage\n");
-+
-+	dev_dbg(chg->dev, "Charging constant voltage: %u (0x%x)\n", uvolt,
-+		data);
-+
-+	return regmap_update_bits(chg->pf1550->regmap,
-+				  PF1550_CHARG_REG_BATT_REG,
-+				  PF1550_CHARG_REG_BATT_REG_CHGCV_MASK, data);
-+}
-+
-+static int pf1550_set_min_system_volt(struct pf1550_charger *chg,
-+				      unsigned int uvolt)
-+{
-+	unsigned int data;
-+
-+	switch (uvolt) {
-+	case 3500000:
-+		data = 0x0;
-+		break;
-+	case 3700000:
-+		data = 0x1;
-+		break;
-+	case 4300000:
-+		data = 0x2;
-+		break;
-+	default:
-+		return dev_err_probe(chg->dev, -EINVAL,
-+				     "Wrong value for minimum system voltage\n");
-+	}
-+
-+	data <<= PF1550_CHARG_REG_BATT_REG_VMINSYS_SHIFT;
-+
-+	dev_dbg(chg->dev, "Minimum system regulation voltage: %u (0x%x)\n",
-+		uvolt, data);
-+
-+	return regmap_update_bits(chg->pf1550->regmap,
-+				  PF1550_CHARG_REG_BATT_REG,
-+				  PF1550_CHARG_REG_BATT_REG_VMINSYS_MASK, data);
-+}
-+
-+static int pf1550_set_thermal_regulation_temp(struct pf1550_charger *chg,
-+					      unsigned int cells)
-+{
-+	unsigned int data;
-+
-+	switch (cells) {
-+	case 60:
-+		data = 0x0;
-+		break;
-+	case 75:
-+		data = 0x1;
-+		break;
-+	case 90:
-+		data = 0x2;
-+		break;
-+	case 105:
-+		data = 0x3;
-+		break;
-+	default:
-+		return dev_err_probe(chg->dev, -EINVAL,
-+				     "Wrong value for thermal temperature\n");
-+	}
-+
-+	data <<= PF1550_CHARG_REG_THM_REG_CNFG_REGTEMP_SHIFT;
-+
-+	dev_dbg(chg->dev, "Thermal regulation loop temperature: %u (0x%x)\n",
-+		cells, data);
-+
-+	return regmap_update_bits(chg->pf1550->regmap,
-+				  PF1550_CHARG_REG_THM_REG_CNFG,
-+				  PF1550_CHARG_REG_THM_REG_CNFG_REGTEMP_MASK,
-+				  data);
-+}
-+
-+/*
-+ * Sets charger registers to proper and safe default values.
-+ */
-+static int pf1550_reg_init(struct pf1550_charger *chg)
-+{
-+	struct device *dev = chg->dev;
-+	unsigned int data;
-+	int ret;
-+
-+	/* Unmask charger interrupt, mask DPMI and reserved bit */
-+	ret =  regmap_write(chg->pf1550->regmap, PF1550_CHARG_REG_CHG_INT_MASK,
-+			    PF1550_CHG_INT_MASK);
-+	if (ret)
-+		return dev_err_probe(dev, ret,
-+				     "Error unmask charger interrupt\n");
-+
-+	ret = regmap_read(chg->pf1550->regmap, PF1550_CHARG_REG_VBUS_SNS,
-+			  &data);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "Read charg vbus_sns error\n");
-+
-+	if (data & PF1550_VBUS_VALID)
-+		chg->psy_desc.type = POWER_SUPPLY_TYPE_MAINS;
-+
-+	ret = pf1550_set_constant_volt(chg, chg->constant_volt);
-+	if (ret)
-+		return ret;
-+
-+	ret = pf1550_set_min_system_volt(chg, chg->min_system_volt);
-+	if (ret)
-+		return ret;
-+
-+	ret = pf1550_set_thermal_regulation_temp(chg,
-+						 chg->thermal_regulation_temp);
-+	if (ret)
-+		return ret;
-+
-+	/* Turn on charger */
-+	ret = regmap_write(chg->pf1550->regmap, PF1550_CHARG_REG_CHG_OPER,
-+			   PF1550_CHG_TURNON);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "Error turn on charger\n");
-+
-+	return 0;
-+}
-+
-+static void pf1550_dt_parse_dev_info(struct pf1550_charger *chg)
-+{
-+	struct power_supply_battery_info *info;
-+	struct device *dev = chg->dev;
-+
-+	if (device_property_read_u32(dev->parent, "nxp,min-system-microvolt",
-+				     &chg->min_system_volt))
-+		chg->min_system_volt = PF1550_DEFAULT_MIN_SYSTEM_VOLT;
-+
-+	if (device_property_read_u32(dev->parent,
-+				     "nxp,thermal-regulation-celsius",
-+				     &chg->thermal_regulation_temp))
-+		chg->thermal_regulation_temp = PF1550_DEFAULT_THERMAL_TEMP;
-+
-+	if (power_supply_get_battery_info(chg->charger, &info))
-+		chg->constant_volt = PF1550_DEFAULT_CONSTANT_VOLT;
-+	else
-+		chg->constant_volt = info->constant_charge_voltage_max_uv;
-+}
-+
-+static int pf1550_charger_probe(struct platform_device *pdev)
-+{
-+	const struct pf1550_dev *pf1550 = dev_get_drvdata(pdev->dev.parent);
-+	struct power_supply_config psy_cfg = {};
-+	struct pf1550_charger *chg;
-+	int i, irq, ret;
-+
-+	chg = devm_kzalloc(&pdev->dev, sizeof(*chg), GFP_KERNEL);
-+	if (!chg)
-+		return -ENOMEM;
-+
-+	chg->dev = &pdev->dev;
-+	chg->pf1550 = pf1550;
-+
-+	if (!chg->pf1550->regmap)
-+		return dev_err_probe(&pdev->dev, -ENODEV,
-+				     "failed to get regmap\n");
-+
-+	platform_set_drvdata(pdev, chg);
-+
-+	INIT_DELAYED_WORK(&chg->vbus_sense_work, pf1550_chg_vbus_work);
-+	INIT_DELAYED_WORK(&chg->chg_sense_work, pf1550_chg_chg_work);
-+	INIT_DELAYED_WORK(&chg->bat_sense_work, pf1550_chg_bat_work);
-+
-+	for (i = 0; i < PF1550_CHARGER_IRQ_NR; i++) {
-+		irq = platform_get_irq(pdev, i);
-+		if (irq < 0)
-+			return irq;
-+
-+		chg->virqs[i] = irq;
-+
-+		ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
-+						pf1550_charger_irq_handler,
-+						IRQF_NO_SUSPEND,
-+						"pf1550-charger", chg);
-+		if (ret)
-+			return dev_err_probe(&pdev->dev, ret,
-+					     "failed irq request\n");
-+	}
-+
-+	psy_cfg.drv_data = chg;
-+
-+	chg->psy_desc.name = PF1550_CHARGER_NAME;
-+	chg->psy_desc.type = POWER_SUPPLY_TYPE_BATTERY;
-+	chg->psy_desc.get_property = pf1550_charger_get_property;
-+	chg->psy_desc.properties = pf1550_charger_props;
-+	chg->psy_desc.num_properties = ARRAY_SIZE(pf1550_charger_props);
-+
-+	chg->charger = devm_power_supply_register(&pdev->dev, &chg->psy_desc,
-+						  &psy_cfg);
-+	if (IS_ERR(chg->charger))
-+		return dev_err_probe(&pdev->dev, PTR_ERR(chg->charger),
-+				     "failed: power supply register\n");
-+
-+	pf1550_dt_parse_dev_info(chg);
-+
-+	return pf1550_reg_init(chg);
-+}
-+
-+static void pf1550_charger_remove(struct platform_device *pdev)
-+{
-+	struct pf1550_charger *chg = platform_get_drvdata(pdev);
-+
-+	cancel_delayed_work_sync(&chg->bat_sense_work);
-+	cancel_delayed_work_sync(&chg->chg_sense_work);
-+	cancel_delayed_work_sync(&chg->vbus_sense_work);
-+}
-+
-+static const struct platform_device_id pf1550_charger_id[] = {
-+	{ "pf1550-charger", },
-+	{ /* sentinel */ }
-+};
-+MODULE_DEVICE_TABLE(platform, pf1550_charger_id);
-+
-+static struct platform_driver pf1550_charger_driver = {
-+	.driver = {
-+		.name	= "pf1550-charger",
-+	},
-+	.probe		= pf1550_charger_probe,
-+	.remove		= pf1550_charger_remove,
-+	.id_table	= pf1550_charger_id,
-+};
-+module_platform_driver(pf1550_charger_driver);
-+
-+MODULE_AUTHOR("Robin Gong <yibin.gong@freescale.com>");
-+MODULE_DESCRIPTION("PF1550 charger driver");
-+MODULE_LICENSE("GPL");
+While I already provided my Rb-tag on Krzysztof's original [1], your
+version is whitespace-damaged (TABs replaced by spaces), and thus
+cannot be applied.
+
+[1] https://lore.kernel.org/all/CAMuHMdXJ57mATWW4AnBedn+D7TQ4PadkJ642daquFtAo=wZFrQ@mail.gmail.com/
+
+Gr{oetje,eeting}s,
+
+                        Geert
 
 -- 
-2.49.0
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
