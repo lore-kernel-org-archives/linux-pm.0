@@ -1,133 +1,310 @@
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 364F7153598;
-	Thu, 12 Jun 2025 06:10:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.167.242.64
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 890001E378C;
+	Thu, 12 Jun 2025 06:46:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749708606; cv=none; b=I586AfYb3rdSzNH5E3yxhlSNuv50BIaCLIZ+V6O9DdtriqMzWcn8TgYinPk2Of66+tTDaLXYBJnM7CE67wI3IGtxk7mpUkugeeE1So1U6JDGJAlbJm9NLQV9ejod+tN2+bPjkobMLhQ6pIEI1/DSXQptkkOMBYPWkAy0mri8DFE=
+	t=1749710810; cv=none; b=MmzMRam2GgGMtgOa45bQQw8vnx4VTYEXtcTTENI1UzXbitcCPWkk1tfi4ZFYhnNTPLAChcIDilUd3EcSt8IfNCY9yVJ/338C/HGY63b+2dOHrigivF6YJexSxqEGDzkOMDyEB0U8NuAIgE/4+X8O/OI2tVnvJgjmcfMKFNXE8Hw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749708606; c=relaxed/simple;
-	bh=i8PWqD4P60CAuVZ7Gnxu56jRgxjKhfnbhFQBOFOxYPw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=TRaOQJou+DsaGMgE27k4FPuuvmrXkOs9ucv9X3ssac+KtOjkWuUEix0bOj/EabKjWsQKlu0h369LbxLysl6U4i0ZpubpyYKGPDmIv8iokbVdLX/zYjkA/1zE1/fkfDLDLNoCc0jsWT512ljveG1NBVUTx6yf9lx9a3RD5KIFxhU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=GS550hFw; arc=none smtp.client-ip=213.167.242.64
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
+	s=arc-20240116; t=1749710810; c=relaxed/simple;
+	bh=8tdgdYgfMaFIYKxuLPz3G1JT90EuYmnj28QnPFEq9YU=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=BXyxi48RT7TeauibGpY4IFAARa6opSc4gezQHXk1cZTONAmrqPeWuxtTQefBpQr6tRLcuKnhjJazVEKS5O815JGN79k/u/NON6+vl1W5u9nClI1qwb5aaWW+I3od7KUYu3jlIWAZ7c7P+sTEtMd/nHp9odP83fSH1TL0i9hwC0M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=rzwN99A7; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="GS550hFw"
-Received: from [192.168.88.20] (91-158-153-178.elisa-laajakaista.fi [91.158.153.178])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id C3C24250;
-	Thu, 12 Jun 2025 08:09:49 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1749708590;
-	bh=i8PWqD4P60CAuVZ7Gnxu56jRgxjKhfnbhFQBOFOxYPw=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=GS550hFw+nJb/FK5Nx2uzBtRkHj00NFY09rVTblYEDtONh65dodWEsjEWfQc2fCt6
-	 m353b0o/OgbkJGVPAhAZz8kboB11gVYvUDzCn1m2H952qcLmviH7yeT9EYLqPuflWk
-	 gix4oZKAiG40KM4yp3ssHV/m5O7V4uV6zvGDGDdE=
-Message-ID: <4a682199-1da1-404b-addf-f0afa65d4c08@ideasonboard.com>
-Date: Thu, 12 Jun 2025 09:09:54 +0300
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="rzwN99A7"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 22A02C4CEF0;
+	Thu, 12 Jun 2025 06:46:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1749710810;
+	bh=8tdgdYgfMaFIYKxuLPz3G1JT90EuYmnj28QnPFEq9YU=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=rzwN99A7FaWXA8SCybauJwdq6kGfD4lJLaVAqDz4RuqWYTqt3AV60JT7jYrlyJgad
+	 KVedWqihxkQX/mfpFe7nawjsca8JsclFiTbSmPaPQFg8a40zrIdofXSsgTtNbAMZVk
+	 QAIbx0IQx1/YQzXZggaPYRc49XeeYQ6VAjHFQLN2PUf2JTyulLiMiCO8uhSO6BVOGD
+	 76au7k0ul6nt+2N5mm+KCYqQrVdfCRbCzDsPmrULH8GOZWkx8zPXuQ+b0O49avNMQa
+	 xQuDmDxCAA9XZz0GNrvq2rtSyMcPWZgnO2h/kcFYrpF/bDg43+xpDnHLUKJFL5x92d
+	 jk5TEzPtNrGGg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E58FC71136;
+	Thu, 12 Jun 2025 06:46:50 +0000 (UTC)
+From: George Moussalem via B4 Relay <devnull+george.moussalem.outlook.com@kernel.org>
+Date: Thu, 12 Jun 2025 10:46:14 +0400
+Subject: [PATCH v13 2/2] arm64: dts: qcom: ipq5018: Add tsens node
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 00/21] pmdomain: Add generic ->sync_state() support to
- genpd
-To: Ulf Hansson <ulf.hansson@linaro.org>,
- Saravana Kannan <saravanak@google.com>, Stephen Boyd <sboyd@kernel.org>,
- linux-pm@vger.kernel.org
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Michael Grzeschik <m.grzeschik@pengutronix.de>,
- Bjorn Andersson <andersson@kernel.org>, Abel Vesa <abel.vesa@linaro.org>,
- Peng Fan <peng.fan@oss.nxp.com>, Johan Hovold <johan@kernel.org>,
- Maulik Shah <maulik.shah@oss.qualcomm.com>,
- Michal Simek <michal.simek@amd.com>, Konrad Dybcio <konradybcio@kernel.org>,
- Thierry Reding <thierry.reding@gmail.com>,
- Jonathan Hunter <jonathanh@nvidia.com>,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <20250523134025.75130-1-ulf.hansson@linaro.org>
-Content-Language: en-US
-From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
-Autocrypt: addr=tomi.valkeinen@ideasonboard.com; keydata=
- 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
-In-Reply-To: <20250523134025.75130-1-ulf.hansson@linaro.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <20250612-ipq5018-tsens-v13-2-a210f3683240@outlook.com>
+References: <20250612-ipq5018-tsens-v13-0-a210f3683240@outlook.com>
+In-Reply-To: <20250612-ipq5018-tsens-v13-0-a210f3683240@outlook.com>
+To: Amit Kucheria <amitk@kernel.org>, 
+ Thara Gopinath <thara.gopinath@gmail.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>, 
+ Sricharan Ramabadhran <quic_srichara@quicinc.com>, 
+ George Moussalem <george.moussalem@outlook.com>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Dmitry Baryshkov <lumag@kernel.org>, Dmitry Baryshkov <lumag@kernel.org>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1749710807; l=5419;
+ i=george.moussalem@outlook.com; s=20250321; h=from:subject:message-id;
+ bh=MsKWr8/oQjZxIGUe4c9vPMrH2HVq4c/DwY1iNr6WoVs=;
+ b=B4oK/7A/MVXqMX7hGZTLTshh4CBlGG/3Z6xMK3hA7jSC7r8rTa0V2+GsDZt3fB/PcfAvO9A87
+ x3wEfZoJtEICoQDS1EH4STHKXnbHtPgSY7f9lnMK0Qc2LUyZrB8v/W/
+X-Developer-Key: i=george.moussalem@outlook.com; a=ed25519;
+ pk=/PuRTSI9iYiHwcc6Nrde8qF4ZDhJBlUgpHdhsIjnqIk=
+X-Endpoint-Received: by B4 Relay for george.moussalem@outlook.com/20250321
+ with auth_id=364
+X-Original-From: George Moussalem <george.moussalem@outlook.com>
+Reply-To: george.moussalem@outlook.com
 
+From: Sricharan Ramabadhran <quic_srichara@quicinc.com>
 
-On 23/05/2025 16:39, Ulf Hansson wrote:
-> Changes in v2:
-> 	- Well, quite a lot as I discovered various problems when doing
-> 	additional testing of corner-case. I suggest re-review from scratch,
-> 	even if I decided to keep some reviewed-by tags.
-> 	- Added patches to allow some drivers that needs to align or opt-out
-> 	from the new common behaviour in genpd.
-> 
-> If a PM domain (genpd) is powered-on during boot, there is probably a good
-> reason for it. Therefore it's known to be a bad idea to allow such genpd to be
-> powered-off before all of its consumer devices have been probed. This series
-> intends to fix this problem.
-> 
-> We have been discussing these issues at LKML and at various Linux-conferences
-> in the past. I have therefore tried to include the people I can recall being
-> involved, but I may have forgotten some (my apologies), feel free to loop them
-> in.
-> 
-> I have tested this with QEMU with a bunch of local test-drivers and DT nodes.
-> Let me know if you want me to share this code too.
-> 
-> Please help review and test!
-> Finally, a big thanks to Saravana for all the support!
+IPQ5018 has tsens V1.0 IP with 5 sensors, though 4 are in use.
+There is no RPM, so tsens has to be manually enabled. Adding the tsens
+and nvmem nodes and adding 4 thermal sensors (zones). The critical trip
+temperature is set to 120'C with an action to reboot.
 
-For TI AM62A and Xilinx ZynqMP ZCU106:
+In addition, adding a cooling device to the CPU thermal zone which uses
+CPU frequency scaling.
 
-Tested-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Signed-off-by: Sricharan Ramabadhran <quic_srichara@quicinc.com>
+Signed-off-by: George Moussalem <george.moussalem@outlook.com>
+---
+ arch/arm64/boot/dts/qcom/ipq5018.dtsi | 178 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 178 insertions(+)
 
- Tomi
+diff --git a/arch/arm64/boot/dts/qcom/ipq5018.dtsi b/arch/arm64/boot/dts/qcom/ipq5018.dtsi
+index 130360014c5e14c778e348d37e601f60325b0b14..1b33ccf1a1b1af721b9690ae2c35eb82985205f5 100644
+--- a/arch/arm64/boot/dts/qcom/ipq5018.dtsi
++++ b/arch/arm64/boot/dts/qcom/ipq5018.dtsi
+@@ -9,6 +9,7 @@
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
+ #include <dt-bindings/clock/qcom,gcc-ipq5018.h>
+ #include <dt-bindings/reset/qcom,gcc-ipq5018.h>
++#include <dt-bindings/thermal/thermal.h>
+ 
+ / {
+ 	interrupt-parent = <&intc>;
+@@ -39,6 +40,7 @@ cpu0: cpu@0 {
+ 			next-level-cache = <&l2_0>;
+ 			clocks = <&apcs_glb APCS_ALIAS0_CORE_CLK>;
+ 			operating-points-v2 = <&cpu_opp_table>;
++			#cooling-cells = <2>;
+ 		};
+ 
+ 		cpu1: cpu@1 {
+@@ -49,6 +51,7 @@ cpu1: cpu@1 {
+ 			next-level-cache = <&l2_0>;
+ 			clocks = <&apcs_glb APCS_ALIAS0_CORE_CLK>;
+ 			operating-points-v2 = <&cpu_opp_table>;
++			#cooling-cells = <2>;
+ 		};
+ 
+ 		l2_0: l2-cache {
+@@ -182,6 +185,117 @@ pcie0_phy: phy@86000 {
+ 			status = "disabled";
+ 		};
+ 
++		qfprom: qfprom@a0000 {
++			compatible = "qcom,ipq5018-qfprom", "qcom,qfprom";
++			reg = <0x000a0000 0x1000>;
++			#address-cells = <1>;
++			#size-cells = <1>;
++
++			tsens_mode: mode@249 {
++				reg = <0x249 0x1>;
++				bits = <0 3>;
++			};
++
++			tsens_base1: base1@249 {
++				reg = <0x249 0x2>;
++				bits = <3 8>;
++			};
++
++			tsens_base2: base2@24a {
++				reg = <0x24a 0x2>;
++				bits = <3 8>;
++			};
++
++			tsens_s0_p1: s0-p1@24b {
++				reg = <0x24b 0x2>;
++				bits = <2 6>;
++			};
++
++			tsens_s0_p2: s0-p2@24c {
++				reg = <0x24c 0x1>;
++				bits = <1 6>;
++			};
++
++			tsens_s1_p1: s1-p1@24c {
++				reg = <0x24c 0x2>;
++				bits = <7 6>;
++			};
++
++			tsens_s1_p2: s1-p2@24d {
++				reg = <0x24d 0x2>;
++				bits = <5 6>;
++			};
++
++			tsens_s2_p1: s2-p1@24e {
++				reg = <0x24e 0x2>;
++				bits = <3 6>;
++			};
++
++			tsens_s2_p2: s2-p2@24f {
++				reg = <0x24f 0x1>;
++				bits = <1 6>;
++			};
++
++			tsens_s3_p1: s3-p1@24f {
++				reg = <0x24f 0x2>;
++				bits = <7 6>;
++			};
++
++			tsens_s3_p2: s3-p2@250 {
++				reg = <0x250 0x2>;
++				bits = <5 6>;
++			};
++
++			tsens_s4_p1: s4-p1@251 {
++				reg = <0x251 0x2>;
++				bits = <3 6>;
++			};
++
++			tsens_s4_p2: s4-p2@254 {
++				reg = <0x254 0x1>;
++				bits = <0 6>;
++			};
++		};
++
++		tsens: thermal-sensor@4a9000 {
++			compatible = "qcom,ipq5018-tsens";
++			reg = <0x004a9000 0x1000>,
++			      <0x004a8000 0x1000>;
++
++			nvmem-cells = <&tsens_mode>,
++				      <&tsens_base1>,
++				      <&tsens_base2>,
++				      <&tsens_s0_p1>,
++				      <&tsens_s0_p2>,
++				      <&tsens_s1_p1>,
++				      <&tsens_s1_p2>,
++				      <&tsens_s2_p1>,
++				      <&tsens_s2_p2>,
++				      <&tsens_s3_p1>,
++				      <&tsens_s3_p2>,
++				      <&tsens_s4_p1>,
++				      <&tsens_s4_p2>;
++
++			nvmem-cell-names = "mode",
++					   "base1",
++					   "base2",
++					   "s0_p1",
++					   "s0_p2",
++					   "s1_p1",
++					   "s1_p2",
++					   "s2_p1",
++					   "s2_p2",
++					   "s3_p1",
++					   "s3_p2",
++					   "s4_p1",
++					   "s4_p2";
++
++			interrupts = <GIC_SPI 184 IRQ_TYPE_EDGE_RISING>;
++			interrupt-names = "uplow";
++			#qcom,sensors = <5>;
++			#thermal-sensor-cells = <1>;
++		};
++
+ 		tlmm: pinctrl@1000000 {
+ 			compatible = "qcom,ipq5018-tlmm";
+ 			reg = <0x01000000 0x300000>;
+@@ -631,6 +745,70 @@ pcie@0 {
+ 		};
+ 	};
+ 
++	thermal-zones {
++		cpu-thermal {
++			thermal-sensors = <&tsens 2>;
++
++			trips {
++				cpu-critical {
++					temperature = <120000>;
++					hysteresis = <1000>;
++					type = "critical";
++				};
++
++				cpu_alert: cpu-passive {
++					temperature = <100000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++
++			cooling-maps {
++				map0 {
++					trip = <&cpu_alert>;
++					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++				};
++			};
++		};
++
++		gephy-thermal {
++			thermal-sensors = <&tsens 4>;
++
++			trips {
++				gephy-critical {
++					temperature = <120000>;
++					hysteresis = <1000>;
++					type = "critical";
++				};
++			};
++		};
++
++		top-glue-thermal {
++			thermal-sensors = <&tsens 3>;
++
++			trips {
++				top-glue-critical {
++					temperature = <120000>;
++					hysteresis = <1000>;
++					type = "critical";
++				};
++			};
++		};
++
++		ubi32-thermal {
++			thermal-sensors = <&tsens 1>;
++
++			trips {
++				ubi32-critical {
++					temperature = <120000>;
++					hysteresis = <1000>;
++					type = "critical";
++				};
++			};
++		};
++	};
++
+ 	timer {
+ 		compatible = "arm,armv8-timer";
+ 		interrupts = <GIC_PPI 2 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+
+-- 
+2.49.0
+
 
