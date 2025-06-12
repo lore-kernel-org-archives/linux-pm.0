@@ -1,103 +1,187 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from sender4-op-o12.zoho.com (sender4-op-o12.zoho.com [136.143.188.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71A9713D539;
-	Thu, 12 Jun 2025 18:47:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749754021; cv=none; b=NlFWtEBDsPKNVlr/t5N8PHNhcFrWXQNp4A0dy/EzwDIllodns/ofcvxoRWZdOABwGyY2DMOEdOOGfrWPPpPmkXBFAfh6Y5cMFpA+GegczrGIFiKCPmmc0io29bT7PC8ERkhAmK5A+WPNmpODfHxHMKojA0wPj8IFrOvkySfAYGY=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749754021; c=relaxed/simple;
-	bh=rae+Xy+GVeClcCuswO7WbVtIsL71ZmU4FtcEUBegmnw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=JrOLie8W7A/P4toljWIbIMYpinyAPdpYs2TiHSo1k7Z0FtOg+YWtVsXlCzk01L+ah4Sy5oBdVtsRoQ9GUeLRuIGjVVprsUCPcqT5E4MJpmgxPoeuUJt2lr6zB7ukStZ/DJnmwpMrzfYXu4b654V4fVVltobY+1J8WB78tVFMDhA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OjiiOam3; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC93429B79A;
+	Thu, 12 Jun 2025 18:57:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.12
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1749754666; cv=pass; b=CdfuQOfkrxx1YsSAoWiLn/32KcTzQ6j9Z5T2e8qh3CpStaY4cqMAm0iY1ZkmyuObez+wLM728E12tGyu8gc+1E3XOZ7co8v6xuCibB2DfyEJSYCdoV8Xdqq+mhDtZC48O2Wrhqab+0/jJEeT5PkGXXonoFzZ5sNuOwkzQxP7rFQ=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1749754666; c=relaxed/simple;
+	bh=DOjLcN7JYMWYvv8PMGFF9zi/uwWzwjQlakjixJIMOh0=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=qLxYLr/xbhaUv3g4R3JN4hC88SU5WrNe3nebsmi4t35b6vMSHmAKBWlnY8vLueDbxbZLaHjXvuuU8sKHMSLitWgJvP+l9bNFvfH6Q8Ax9DYUqLAQrXaMx0qtMnWZKriA12Zo80ErbDFW8aTsuOI4H3jjOFcRfMEZR00/jx5x2jo=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=DDS22aPh; arc=pass smtp.client-ip=136.143.188.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OjiiOam3"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 037DAC4CEF1;
-	Thu, 12 Jun 2025 18:47:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1749754021;
-	bh=rae+Xy+GVeClcCuswO7WbVtIsL71ZmU4FtcEUBegmnw=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=OjiiOam3P0ES7NiE+EZJjuXt7LqkCLNruQnPCNpX06jpVlpRfuT+ibrxnDfCr0Qgc
-	 aVmenVGPayEVh2vBYKeO9OxkFdANxN+sF9dpZl1f50vhu/3TPnrU6fxMxryjugHJ0F
-	 OKC1MjSo8BZ23PZF3xzP0Pw8eXOEpdfMIwAETx+6iXATUZ93/ovbHZklNkYigseKK1
-	 JRcZtE7lzdX62ZT87N0AZ+XGacFN00z4cIWuGiWW2U8AK/gPVPESeseWd5DA9iYXhT
-	 6WAamqnLjbDyz5qKvoz8e790Q2osebh0BfhNUmWJDrQD/hrQJK+PMqsG/tGOBfkszj
-	 Rjk7GyUDVfOlA==
-Received: by mail-oo1-f54.google.com with SMTP id 006d021491bc7-6065251725bso871119eaf.1;
-        Thu, 12 Jun 2025 11:47:00 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCW1rHUBy2kx3KRoTGpddzPz9vqOvfzo9fqma0Dy5HIZttUG/Gv5k2u+6UmF3uDDutOvhPp1sjwKGw==@vger.kernel.org, AJvYcCW5JliNhPEphbk4qbS3oLyS/PPN+mgniZbpA0rIvZKbikGRfSqxnRXqXOEJOe/MXbxYJ4oMmB094zIIHWylep3up4C/@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz3RQllC2Qm/q7CRxpFFUr73tr2qJWC6gkW/5FOVkdJqtp76mtm
-	SOI2xKwz7TGVS7sU5GrTHOvZ4RDhvlDdYZ+UbR83QyzUV0mLIa1MAlAk7ni8ifMsnLR8e7gqCTa
-	556zKbwyesbYOrwzPWSnQPXlBcS3lQxc=
-X-Google-Smtp-Source: AGHT+IGVBH3lWI6ocKqXpduli60MAl5yPrTXUSBJUCNvpZ8YMVLXnRTpp4jSJe5p38bu5Vi5w5+ShdNClwr7F6Qn4V8=
-X-Received: by 2002:a05:6820:1a09:b0:60f:3be9:187a with SMTP id
- 006d021491bc7-61107aa1b27mr172114eaf.8.1749754020209; Thu, 12 Jun 2025
- 11:47:00 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="DDS22aPh"
+ARC-Seal: i=1; a=rsa-sha256; t=1749754599; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=VjTrVaWfz9jfeFDYITSFocj41PBevLpWCKD+yFugt6G1+9d/Hw9jBQso8N/gjAPvpi60iwOZlPdJti4Lm1c8Stdx7ZAV2s32I+igmfs7sfjSiZzNcOGemQ8U3YJi+genYO6P68iKZU887RanvFG2jmIT4EG6ifQWvG3TTwOzVmc=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1749754599; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=IjOHGVHF7xIfJfArpDhRS/Px27x14OeLJOrr4ltwi/o=; 
+	b=Hv21Y4ICiKV6kkRup/0kBvaRTAUVqzMvXMTU7oOyjqRyNnKpWlnVTSU85nEPPqG4UtY6ATHj7UGqD9ilByEshaOxWumLRru0Myi5xN/KMure37YfQFtqQmaal02l69q9GpbUglMNHzB8ITpQ0V3kVy+XbtmczpJfHsjaGkX3vq4=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
+	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1749754599;
+	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
+	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
+	bh=IjOHGVHF7xIfJfArpDhRS/Px27x14OeLJOrr4ltwi/o=;
+	b=DDS22aPhBDFhm0N/TbbfWtmcvGpPgih6ABqWtgdiQi1WLz5vBE40IBeFLnhixWy+
+	XeH5bQ1OypUI3HKN9tCAk6z/OJYWnm4DYfBAd0Uz/qp47NLT/xrxRESq5KVRWH0tPYk
+	0l1ydpt0eehm25ZaFWLKUMNlC9fEHBBWV4iUkEww=
+Received: by mx.zohomail.com with SMTPS id 1749754596390629.9899321699246;
+	Thu, 12 Jun 2025 11:56:36 -0700 (PDT)
+From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+Date: Thu, 12 Jun 2025 20:56:03 +0200
+Subject: [PATCH 01/20] bitfield: introduce HWORD_UPDATE bitfield macros
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250612145310.563358597@goodmis.org>
-In-Reply-To: <20250612145310.563358597@goodmis.org>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 12 Jun 2025 20:46:48 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0iTrDBV7wG0gzpg3hzjBFWUdohquyVGta93uOhyoWpiLw@mail.gmail.com>
-X-Gm-Features: AX0GCFtmIZhBJxZjxq0ItKlhq1D_VGfvqSHyPe_kp82oXVvS-MbMbDdYCDMbVmA
-Message-ID: <CAJZ5v0iTrDBV7wG0gzpg3hzjBFWUdohquyVGta93uOhyoWpiLw@mail.gmail.com>
-Subject: Re: [PATCH 0/4] PM: tracing: Don't compile in unused trace events
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, linux-trace-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	Masami Hiramatsu <mhiramat@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Andrew Morton <akpm@linux-foundation.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250612-byeword-update-v1-1-f4afb8f6313f@collabora.com>
+References: <20250612-byeword-update-v1-0-f4afb8f6313f@collabora.com>
+In-Reply-To: <20250612-byeword-update-v1-0-f4afb8f6313f@collabora.com>
+To: Yury Norov <yury.norov@gmail.com>, 
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>, 
+ Jaehoon Chung <jh80.chung@samsung.com>, 
+ Ulf Hansson <ulf.hansson@linaro.org>, Heiko Stuebner <heiko@sntech.de>, 
+ Shreeya Patel <shreeya.patel@collabora.com>, 
+ Mauro Carvalho Chehab <mchehab@kernel.org>, 
+ Sandy Huang <hjc@rock-chips.com>, Andy Yan <andy.yan@rock-chips.com>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Vinod Koul <vkoul@kernel.org>, Kishon Vijay Abraham I <kishon@kernel.org>, 
+ Nicolas Frattaroli <frattaroli.nicolas@gmail.com>, 
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+ Andrew Lunn <andrew+netdev@lunn.ch>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+ Alexandre Torgue <alexandre.torgue@foss.st.com>, 
+ Shawn Lin <shawn.lin@rock-chips.com>, 
+ Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+ =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
+ Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Bjorn Helgaas <bhelgaas@google.com>, Chanwoo Choi <cw00.choi@samsung.com>, 
+ MyungJoo Ham <myungjoo.ham@samsung.com>, 
+ Kyungmin Park <kyungmin.park@samsung.com>, Qin Jian <qinjian@cqplus1.com>, 
+ Michael Turquette <mturquette@baylibre.com>, 
+ Stephen Boyd <sboyd@kernel.org>, Nathan Chancellor <nathan@kernel.org>, 
+ Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, 
+ Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>
+Cc: kernel@collabora.com, linux-kernel@vger.kernel.org, 
+ linux-mmc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-rockchip@lists.infradead.org, linux-media@vger.kernel.org, 
+ dri-devel@lists.freedesktop.org, linux-phy@lists.infradead.org, 
+ linux-sound@vger.kernel.org, netdev@vger.kernel.org, 
+ linux-stm32@st-md-mailman.stormreply.com, linux-pci@vger.kernel.org, 
+ linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, llvm@lists.linux.dev, 
+ Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+X-Mailer: b4 0.14.2
 
-On Thu, Jun 12, 2025 at 4:52=E2=80=AFPM Steven Rostedt <rostedt@goodmis.org=
-> wrote:
->
->
-> I have code that makes unsued events trigger a warning. I'm currently cle=
-aning
-> up the kernel to remove the majority of events that are defined but not u=
-sed.
-> When an event is defined, it can take up to 5K of text and meta data per
-> event. An event should not be created if it is not being used.
->
-> The powernv_throttle event is only used by the powernv code so I moved it=
- to
-> its own header file and it gets created when the powernv code is compiled=
- in.
->
-> For the other power events, I just added #ifdef around them with the conf=
-igs
-> that enable them.
->
-> Steven Rostedt (4):
->       PM: cpufreq: powernv/tracing: Move powernv_throttle trace event
->       PM: tracing: Hide psci_domain_idle events under ARM_PSCI_CPUIDLE
->       PM: tracing: Hide device_pm_callback events under PM_SLEEP
->       PM: tracing: Hide power_domain_target event under ARCH_OMAP2PLUS
->
-> ----
->  drivers/cpufreq/Makefile          |  1 +
->  drivers/cpufreq/powernv-cpufreq.c |  4 +++-
->  drivers/cpufreq/powernv-trace.h   | 44 +++++++++++++++++++++++++++++++++=
-++++++
->  include/trace/events/power.h      | 28 ++++++-------------------
->  kernel/trace/power-traces.c       |  1 -
->  5 files changed, 54 insertions(+), 24 deletions(-)
->  create mode 100644 drivers/cpufreq/powernv-trace.h
+Hardware of various vendors, but very notably Rockchip, often uses
+32-bit registers where the upper 16-bit half of the register is a
+write-enable mask for the lower half.
 
-For the series:
+This type of hardware setup allows for more granular concurrent register
+write access.
 
-Acked-by: Rafael J. Wysocki <rafael@kernel.org>
+Over the years, many drivers have hand-rolled their own version of this
+macro, usually without any checks, often called something like
+HIWORD_UPDATE or FIELD_PREP_HIWORD, commonly with slightly different
+semantics between them.
 
-Thanks!
+Clearly there is a demand for such a macro, and thus the demand should
+be satisfied in a common header file.
+
+Add two macros: HWORD_UPDATE, and HWORD_UPDATE_CONST. The latter is a
+version that can be used in initializers, like FIELD_PREP_CONST. The
+macro names are chosen to not clash with any potential other macros that
+drivers may already have implemented themselves, while retaining a
+familiar name.
+
+Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+---
+ include/linux/bitfield.h | 47 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
+
+diff --git a/include/linux/bitfield.h b/include/linux/bitfield.h
+index 6d9a53db54b66c0833973c880444bd289d9667b1..b90d88db7405f95b78cdd6f3426263086bab5aa6 100644
+--- a/include/linux/bitfield.h
++++ b/include/linux/bitfield.h
+@@ -8,6 +8,7 @@
+ #define _LINUX_BITFIELD_H
+ 
+ #include <linux/build_bug.h>
++#include <linux/limits.h>
+ #include <linux/typecheck.h>
+ #include <asm/byteorder.h>
+ 
+@@ -142,6 +143,52 @@
+ 		(((typeof(_mask))(_val) << __bf_shf(_mask)) & (_mask))	\
+ 	)
+ 
++/**
++ * HWORD_UPDATE() - prepare a bitfield element with a mask in the upper half
++ * @_mask: shifted mask defining the field's length and position
++ * @_val:  value to put in the field
++ *
++ * HWORD_UPDATE() masks and shifts up the value, as well as bitwise ORs the
++ * result with the mask shifted up by 16.
++ *
++ * This is useful for a common design of hardware registers where the upper
++ * 16-bit half of a 32-bit register is used as a write-enable mask. In such a
++ * register, a bit in the lower half is only updated if the corresponding bit
++ * in the upper half is high.
++ */
++#define HWORD_UPDATE(_mask, _val)					 \
++	({								 \
++		__BF_FIELD_CHECK(_mask, ((u16) 0U), _val,		 \
++				 "HWORD_UPDATE: ");			 \
++		(((typeof(_mask))(_val) << __bf_shf(_mask)) & (_mask)) | \
++		((_mask) << 16);					 \
++	})
++
++/**
++ * HWORD_UPDATE_CONST() - prepare a constant bitfield element with a mask in
++ *                        the upper half
++ * @_mask: shifted mask defining the field's length and position
++ * @_val:  value to put in the field
++ *
++ * HWORD_UPDATE_CONST() masks and shifts up the value, as well as bitwise ORs
++ * the result with the mask shifted up by 16.
++ *
++ * This is useful for a common design of hardware registers where the upper
++ * 16-bit half of a 32-bit register is used as a write-enable mask. In such a
++ * register, a bit in the lower half is only updated if the corresponding bit
++ * in the upper half is high.
++ *
++ * Unlike HWORD_UPDATE(), this is a constant expression and can therefore
++ * be used in initializers. Error checking is less comfortable for this
++ * version.
++ */
++#define HWORD_UPDATE_CONST(_mask, _val)					  \
++	(								  \
++		FIELD_PREP_CONST(_mask, _val) |				  \
++		(BUILD_BUG_ON_ZERO(const_true((u64) (_mask) > U16_MAX)) + \
++		 ((_mask) << 16))					  \
++	)
++
+ /**
+  * FIELD_GET() - extract a bitfield element
+  * @_mask: shifted mask defining the field's length and position
+
+-- 
+2.49.0
+
