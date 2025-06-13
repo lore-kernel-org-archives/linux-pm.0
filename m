@@ -1,128 +1,146 @@
-Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52C802D2380;
-	Fri, 13 Jun 2025 09:45:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.97.179.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DCF12DECBE;
+	Fri, 13 Jun 2025 09:45:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749807934; cv=none; b=Zxdb50HwOXQ+MZkN445eYm5A28nh/otgkwCpXz3JzyJRp4B4N/1G80US5gI72Bj9DO7PCXLzQfXhJoyDtr3z5iODMJUCTkfzQ3GmSEu7L5BrpXaj0AMTYMkhCuxeSWbP35k7RlA2sglm8gAoHpoFPAqTPufTHgFYvaEDBoz3BWk=
+	t=1749807936; cv=none; b=DEpJ3CUEJJxeFkVAdvEX2EDEHPzVgy1Xpdb0k5FtVVm+KBX6hEiGp+ig73z5T05XFJDSVCu344+3/BlFF0oyfT667F2uBVUwlsdIGWAqJJggpG34i1pwjKgPD8e6AYdPy+wwjVFSNzHPEEWMUxHcqGd4yqNEO1JxbZsO/zN9NcM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749807934; c=relaxed/simple;
-	bh=vAKsyCspG8k8udPYGoB1XYGveWuf+Ep6ooFyi7c4f5s=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WVJDQ5HlS5LiNHX4irRp800v89FyjkEOHbDtjHw7IM4ohxGVw6WWfIEHPsH/rvIKqcCnj2Cjhz/2trq0DIxjBEnqklksrzsRm+fAgA/+QHiDQaE3T3NeJSGrU063OBvuHSKrrgwWtJl+dQNRQbSlHZJJR05RiHZOg3lukNGLdZE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com; spf=pass smtp.mailfrom=igalia.com; dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b=nBTdM5Aj; arc=none smtp.client-ip=213.97.179.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=igalia.com
+	s=arc-20240116; t=1749807936; c=relaxed/simple;
+	bh=KZ0BWcWO/Nnu1q5NglmWAod4+nGJ2WWcd5CNjfdsUO4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=C9EoiobhyFhlJHavrBmsG1n+E6i3WdZmYFHOznN4EK5SPkXrYWe2NMjFT40hEIOxrFOoVlfGVl2pzfj5BMW6Gk/oEb7Qmc6rpJjsZOgtRzjDCBhO27CRVCaPJ/tKePnxZAtQLRgi8I7+/lN6ecOXCKPM9qlOSk2AI7QpeBOkCcE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aCQ+ArOM; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b="nBTdM5Aj"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
-	s=20170329; h=Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
-	List-Post:List-Owner:List-Archive;
-	bh=Wen9AkqmFZV2LJKf63UmyrtgMUsT3rWAuQ+Twr5vmA0=; b=nBTdM5AjSL0/jxbmxvaIP2xgX3
-	Egma//eS1PxWm1sFCV5AOsFUOgMEb0lbC7j0pYhJL8sJORcSBFgYE/TXXF0tgzrKIj4BUEd4Uhjjs
-	9Y+wHqIGhTCPo9j8BRzkcGEKuwauLoR8YhslD3Er33D/BBd6gcxBQim+14FbXWJ1lApALC6UfqWNK
-	CitODjMus1BLxzrJ3uuo8mlCHqmTOinTlOBnTxLTe6IN4Gr/rLq/8PhJ4h0JRSQtmCfath3QsVpor
-	XESOGF0bfuW9Gx0wLP2LVJTi9oHwVtllVqZAxJte8SbwP3qjbsE7QJuFy2X8wf3Hg2UlIJA0sx054
-	2n7p0YCg==;
-Received: from [58.29.143.236] (helo=localhost)
-	by fanzine2.igalia.com with utf8esmtpsa 
-	(Cipher TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim)
-	id 1uQ0yT-002xfI-Iz; Fri, 13 Jun 2025 11:45:26 +0200
-From: Changwoo Min <changwoo@igalia.com>
-To: lukasz.luba@arm.com,
-	rafael@kernel.org,
-	len.brown@intel.com,
-	pavel@kernel.org
-Cc: christian.loehle@arm.com,
-	tj@kernel.org,
-	kernel-dev@igalia.com,
-	linux-pm@vger.kernel.org,
-	sched-ext@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Changwoo Min <changwoo@igalia.com>
-Subject: [PATCH v2 09/10] PM: EM: Implement em_notify_pd_created/updated().
-Date: Fri, 13 Jun 2025 18:44:27 +0900
-Message-ID: <20250613094428.267791-10-changwoo@igalia.com>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20250613094428.267791-1-changwoo@igalia.com>
-References: <20250613094428.267791-1-changwoo@igalia.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aCQ+ArOM"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7727C4CEEB;
+	Fri, 13 Jun 2025 09:45:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1749807936;
+	bh=KZ0BWcWO/Nnu1q5NglmWAod4+nGJ2WWcd5CNjfdsUO4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=aCQ+ArOMfZ8sj9/trk2RN4zzQmNDRm57UcCwHqzSNmBb3apdfrSNyzaknWyYLRPjh
+	 6E3L22twogCDgusyUyZzDGlDING27CHkfgVwL7Qfe5BDfSkbBp55e6vFTCsUCYhfWa
+	 iFB8yIknypSzugsOXAz7FH6q/xY/0xFIUp7GlroH+Qbv1fuibs4wDOAL+dnSd7SmBh
+	 PUekiEcVEkwP6WVmzgXHMenCSFCR5E17+KZjgA7/phOXpz9JEn4cTHyKgpHeTYwm+V
+	 Fhc+PM/4QdvEhSmY2I4S88xQ+fYARMAcOlJnmoU94LA5kiKThUq2MTXDYd0v0NZdZI
+	 bcsXM5H49D58w==
+Date: Fri, 13 Jun 2025 11:45:22 +0200
+From: Niklas Cassel <cassel@kernel.org>
+To: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+Cc: Yury Norov <yury.norov@gmail.com>,
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+	Jaehoon Chung <jh80.chung@samsung.com>,
+	Ulf Hansson <ulf.hansson@linaro.org>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Shreeya Patel <shreeya.patel@collabora.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Sandy Huang <hjc@rock-chips.com>,
+	Andy Yan <andy.yan@rock-chips.com>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Vinod Koul <vkoul@kernel.org>,
+	Kishon Vijay Abraham I <kishon@kernel.org>,
+	Nicolas Frattaroli <frattaroli.nicolas@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	Shawn Lin <shawn.lin@rock-chips.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Rob Herring <robh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>,
+	Qin Jian <qinjian@cqplus1.com>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
+	Bill Wendling <morbo@google.com>,
+	Justin Stitt <justinstitt@google.com>, kernel@collabora.com,
+	linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-rockchip@lists.infradead.org, linux-media@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-phy@lists.infradead.org,
+	linux-sound@vger.kernel.org, netdev@vger.kernel.org,
+	linux-stm32@st-md-mailman.stormreply.com, linux-pci@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
+	llvm@lists.linux.dev
+Subject: Re: [PATCH 17/20] PCI: dw-rockchip: switch to HWORD_UPDATE macro
+Message-ID: <aEvzMnxgsjfryCOo@ryzen>
+References: <20250612-byeword-update-v1-0-f4afb8f6313f@collabora.com>
+ <20250612-byeword-update-v1-17-f4afb8f6313f@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250612-byeword-update-v1-17-f4afb8f6313f@collabora.com>
 
-Implement two event notifications when a performance domain is created
-(EM_CMD_PD_CREATED) and updated (EM_CMD_PD_UPDATED). The message format
-of these two event notifications is the same as EM_CMD_GET_PD_TABLE --
-containing the performance domain's ID and its energy model table.
+Hello Nicolas,
 
-Signed-off-by: Changwoo Min <changwoo@igalia.com>
----
- kernel/power/em_netlink.c | 38 ++++++++++++++++++++++++++++++++++++--
- 1 file changed, 36 insertions(+), 2 deletions(-)
+On Thu, Jun 12, 2025 at 08:56:19PM +0200, Nicolas Frattaroli wrote:
+> 
+> PCIE_CLIENT_RC_MODE/PCIE_CLIENT_EP_MODE was another field that wasn't
+> super clear on what the bit field modification actually is. As far as I
+> can tell, switching to RC mode doesn't actually write the correct value
+> to the field if any of its bits have been set previously, as it only
+> updates one bit of a 4 bit field.
+> 
+> Replace it by actually writing the full values to the field, using the
+> new HWORD_UPDATE macro, which grants us the benefit of better
+> compile-time error checking.
 
-diff --git a/kernel/power/em_netlink.c b/kernel/power/em_netlink.c
-index 4e34799fd1f8..d42da92d1af4 100644
---- a/kernel/power/em_netlink.c
-+++ b/kernel/power/em_netlink.c
-@@ -215,14 +215,48 @@ int em_nl_get_pd_table_doit(struct sk_buff *skb, struct genl_info *info)
- 
- 
- /**************************** Event encoding *********************************/
-+static int __em_notify_pd_table(const struct em_perf_domain *pd, int ntf_type)
-+{
-+	struct sk_buff *msg;
-+	int msg_sz, ret;
-+	void *hdr;
-+
-+	if (!genl_has_listeners(&em_nl_family, &init_net, EM_NLGRP_EVENT))
-+		return 0;
-+
-+	msg_sz = __em_nl_get_pd_table_size(pd);
-+
-+	msg = genlmsg_new(msg_sz, GFP_KERNEL);
-+	if (!msg)
-+		return -ENOMEM;
-+
-+	hdr = genlmsg_put(msg, 0, 0, &em_nl_family, 0, ntf_type);
-+	if (!hdr)
-+		goto out_free_msg;
-+
-+	ret = __em_nl_get_pd_table(msg, pd);
-+	if (ret)
-+		goto out_free_msg;
-+
-+	genlmsg_end(msg, hdr);
-+
-+	genlmsg_multicast(&em_nl_family, msg, 0, EM_NLGRP_EVENT, GFP_KERNEL);
-+
-+	return 0;
-+
-+out_free_msg:
-+	nlmsg_free(msg);
-+	return ret;
-+}
-+
- int em_notify_pd_created(const struct em_perf_domain *pd)
- {
--	return -EOPNOTSUPP;
-+	return __em_notify_pd_table(pd, EM_CMD_PD_CREATED);
- }
- 
- int em_notify_pd_updated(const struct em_perf_domain *pd)
- {
--	return -EOPNOTSUPP;
-+	return __em_notify_pd_table(pd, EM_CMD_PD_UPDATED);
- }
- 
- static int __em_notify_pd_deleted_size(const struct em_perf_domain *pd)
--- 
-2.49.0
+The current code looks like this:
+#define  PCIE_CLIENT_RC_MODE            HIWORD_UPDATE_BIT(0x40)
+#define  PCIE_CLIENT_EP_MODE            HIWORD_UPDATE(0xf0, 0x0)
 
+The device_type field is defined like this:
+4'h0: PCI Express endpoint
+4'h1: Legacy PCI Express endpoint
+4'h4: Root port of PCI Express root complex
+
+The reset value of the device_type field is 0x0 (EP mode).
+
+So switching between RC mode / EP mode should be fine.
+
+But I agree, theoretically there could be a bug if e.g. bootloader
+has set the device_type to 0x1 (Legacy EP).
+
+So if you want, you could send a patch:
+-#define  PCIE_CLIENT_RC_MODE            HIWORD_UPDATE_BIT(0x40)
++#define  PCIE_CLIENT_RC_MODE            HIWORD_UPDATE(0xf0, 0x40)
+
+With:
+Fixes: 0e898eb8df4e ("PCI: rockchip-dwc: Add Rockchip RK356X host controller driver")
+
+But I also think that your current patch is fine as-is.
+
+I do however think that you can drop this line:
++#define  PCIE_CLIENT_MODE_LEGACY       0x1U
+
+Since the define is never used.
+
+
+Also, is there any point in adding the U suffix?
+
+Usually you see UL or ULL suffix, when that is needed, but there actually
+seems to be extremely few hits of simply U suffix:
+$ git grep 0x1U | grep -v UL
+
+
+Kind regards,
+Niklas
