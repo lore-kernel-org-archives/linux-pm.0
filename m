@@ -1,44 +1,43 @@
-Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com [210.118.77.12])
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 918902E88AC
-	for <linux-pm@vger.kernel.org>; Sat, 14 Jun 2025 18:09:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.118.77.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55CD42E92C9
+	for <linux-pm@vger.kernel.org>; Sat, 14 Jun 2025 18:09:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.118.77.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749924563; cv=none; b=dZqHlBnLvTf55BCLaMHiORe+rnVy7gf6NrCKeeugmexyIWI/7/mnEPH6L3xjlMQgVZtS2niPthEy9HEtCQlzxEF9sL5yGudVtuoBJfeIqZYE9Wy5wsYZ3tBc34kzXjWyRVF0vUhkFABWCuyo/xrH8pJvOBmYezfTyZjgQzwqHlk=
+	t=1749924564; cv=none; b=PLeYowHpkXAcVeICKUmMhcCAdW+hStED151Kp6k5CUmkAek+IzZAIXqqtG/xdWndwQ3mjNLZAEg1xbcaBX9WWBVVCyVyRVZTn0jAlZL8X08N6GFzbC361MTQQ8KfwSG//wQzMCDWzwNrT7jY6ISnYrF7qHytc3w9DkFSSy+/7Lc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749924563; c=relaxed/simple;
-	bh=eR9cdrCin/2WwM2JFOAyF853o0XIv/Jp7dJICn3jmFA=;
+	s=arc-20240116; t=1749924564; c=relaxed/simple;
+	bh=+FCGWdAtwyli9hmDGM/DZkGvYRIHHdirgtTtklQpQFE=;
 	h=From:Date:Subject:MIME-Version:Message-Id:In-Reply-To:To:Cc:
-	 Content-Type:References; b=Ne6TMTXEPaRDfLPuM+xWMdXgv4sj5tt77Wx9oV8juGzyQEcxxT1W3XU6f7WZq/AfscvGly44ayLrsFhMwZJM9NI2I6u+JMkmYUNFExx9/zV17DWvN7sClE8G33AVHtHENzQX5pwiLFu4lDTf6k/9XpwYPGRUf0yWDMWd8UZnSD0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com; spf=pass smtp.mailfrom=samsung.com; dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b=qoJ4DxsR; arc=none smtp.client-ip=210.118.77.12
+	 Content-Type:References; b=ARmr7RiPZ3QrZWQ0fbo+4SzxaTw3NZpboYV2ZFHNjAWoQ1eAZdIdB6RDu4TvoTpJGxOXZtouczoJq6oZzK12VALbJmkr/uPENTG414/YrWlfY3g8Wdyo7afkFIbhKScsFJGUv2NsrSLq8j3Km6pnLcpG8qrCWBQuKUSrQedeOL8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com; spf=pass smtp.mailfrom=samsung.com; dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b=rNxhmXun; arc=none smtp.client-ip=210.118.77.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=samsung.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="qoJ4DxsR"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="rNxhmXun"
 Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-	by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20250614180913euoutp023786c97bd4981163a42efd87b5a28eab~I_xwYH7Mt2365423654euoutp022
-	for <linux-pm@vger.kernel.org>; Sat, 14 Jun 2025 18:09:13 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20250614180913euoutp023786c97bd4981163a42efd87b5a28eab~I_xwYH7Mt2365423654euoutp022
+	by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20250614180917euoutp012730d23e0ecc1141881f5dd64f98ccba~I_x0L4cQJ0844508445euoutp01R
+	for <linux-pm@vger.kernel.org>; Sat, 14 Jun 2025 18:09:17 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20250614180917euoutp012730d23e0ecc1141881f5dd64f98ccba~I_x0L4cQJ0844508445euoutp01R
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-	s=mail20170921; t=1749924553;
-	bh=4SD9BrnW26vlYTv5xxgtljWZoRvQzpufshnL3EiSwm8=;
+	s=mail20170921; t=1749924557;
+	bh=hjL1qzi8D7La8kSdLlE+umaAk+GjyLvHnJK5f6ac4FQ=;
 	h=From:Date:Subject:In-Reply-To:To:Cc:References:From;
-	b=qoJ4DxsRi8sEwWUB9y4YHfgjGEL3yF+0Zo7/r0xn3Li+Mh6raI8/k7AeL59cZvaRg
-	 j9qWI3dDDbOdsuTQM0Hz+oAcIz8+teA1j+GrS05ZcdaIDxg2i56JAb6UP7Sol9ZpPy
-	 em4kiov8brjNd7N5nI+GMkdq1/iIsvoSjKdrL22g=
+	b=rNxhmXunDy3tyMaGIEJvg/elwWMNnxQdcHr7tbU7pmGA5SZ2idbAyDYEPF93myeqI
+	 Ok3zIW3rIuZrlbE5GiAmtOG5OMu8eElIxrFjB5eANL6scLi1AYmfbp5uUV2aBwa1JO
+	 vLpeVJvmV5XBdyMY/IF0zXxoyAECekDQIkBss9rI=
 Received: from eusmtip1.samsung.com (unknown [203.254.199.221]) by
-	eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-	20250614180912eucas1p283681bf6a16249417e5e6d8eb25b969c~I_xvxBwqg2666126661eucas1p22;
-	Sat, 14 Jun 2025 18:09:12 +0000 (GMT)
+	eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+	20250614180916eucas1p1ee5f075be14d88aa828ec4e55c26bae9~I_xy87uAa2846328463eucas1p1D;
+	Sat, 14 Jun 2025 18:09:16 +0000 (GMT)
 Received: from AMDC4942.eu.corp.samsungelectronics.net (unknown
 	[106.210.136.40]) by eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
-	20250614180911eusmtip148cda267a8f953c22a047410b87efabf~I_xuqY_Yz2797327973eusmtip1d;
-	Sat, 14 Jun 2025 18:09:11 +0000 (GMT)
+	20250614180914eusmtip11a36fd21833595591f4f509910fb1977~I_xx41LnK2797327973eusmtip1e;
+	Sat, 14 Jun 2025 18:09:14 +0000 (GMT)
 From: Michal Wilczynski <m.wilczynski@samsung.com>
-Date: Sat, 14 Jun 2025 20:06:11 +0200
-Subject: [PATCH v4 5/8] dt-bindings: gpu: img,powervr-rogue: Add TH1520 GPU
- compatible
+Date: Sat, 14 Jun 2025 20:06:14 +0200
+Subject: [PATCH v4 8/8] drm/imagination: Enable PowerVR driver for RISC-V
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -46,7 +45,7 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250614-apr_14_for_sending-v4-5-8e3945c819cd@samsung.com>
+Message-Id: <20250614-apr_14_for_sending-v4-8-8e3945c819cd@samsung.com>
 In-Reply-To: <20250614-apr_14_for_sending-v4-0-8e3945c819cd@samsung.com>
 To: Drew Fustini <drew@pdp7.com>, Guo Ren <guoren@kernel.org>,  Fu Wei
 	<wefu@redhat.com>, Rob Herring <robh@kernel.org>,  Krzysztof Kozlowski
@@ -62,62 +61,45 @@ To: Drew Fustini <drew@pdp7.com>, Guo Ren <guoren@kernel.org>,  Fu Wei
 	<ulf.hansson@linaro.org>,  Marek Szyprowski <m.szyprowski@samsung.com>
 Cc: linux-riscv@lists.infradead.org, devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org,  Krzysztof Kozlowski
-	<krzysztof.kozlowski@linaro.org>
+	dri-devel@lists.freedesktop.org
 X-Mailer: b4 0.15-dev
-X-CMS-MailID: 20250614180912eucas1p283681bf6a16249417e5e6d8eb25b969c
+X-CMS-MailID: 20250614180916eucas1p1ee5f075be14d88aa828ec4e55c26bae9
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20250614180912eucas1p283681bf6a16249417e5e6d8eb25b969c
+X-RootMTR: 20250614180916eucas1p1ee5f075be14d88aa828ec4e55c26bae9
 X-EPHeader: CA
-X-CMS-RootMailID: 20250614180912eucas1p283681bf6a16249417e5e6d8eb25b969c
+X-CMS-RootMailID: 20250614180916eucas1p1ee5f075be14d88aa828ec4e55c26bae9
 References: <20250614-apr_14_for_sending-v4-0-8e3945c819cd@samsung.com>
-	<CGME20250614180912eucas1p283681bf6a16249417e5e6d8eb25b969c@eucas1p2.samsung.com>
+	<CGME20250614180916eucas1p1ee5f075be14d88aa828ec4e55c26bae9@eucas1p1.samsung.com>
 
-Update the img,powervr-rogue.yaml to include the T-HEAD TH1520 SoC's
-specific GPU compatible string.
+Several RISC-V boards feature Imagination GPUs that are compatible with
+the PowerVR driver. An example is the IMG BXM-4-64 GPU on the Lichee Pi
+4A board. This commit adjusts the driver's Kconfig dependencies to allow
+the PowerVR driver to be compiled on the RISC-V architecture.
 
-The thead,th1520-gpu compatible, along with its full chain
-img,img-bxm-4-64, and img,img-rogue, is added to the
-list of recognized GPU types.
+By enabling compilation on RISC-V, we expand support for these GPUs,
+providing graphics acceleration capabilities and enhancing hardware
+compatibility on RISC-V platforms.
 
-The power-domains property requirement for img,img-bxm-4-64 is also
-ensured by adding it to the relevant allOf condition.
-
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Michal Wilczynski <m.wilczynski@samsung.com>
 ---
- Documentation/devicetree/bindings/gpu/img,powervr-rogue.yaml | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ drivers/gpu/drm/imagination/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/gpu/img,powervr-rogue.yaml b/Documentation/devicetree/bindings/gpu/img,powervr-rogue.yaml
-index 4450e2e73b3ccf74d29f0e31e2e6687d7cbe5d65..9b241a0c1f5941dc58a1e23970f6d3773d427c22 100644
---- a/Documentation/devicetree/bindings/gpu/img,powervr-rogue.yaml
-+++ b/Documentation/devicetree/bindings/gpu/img,powervr-rogue.yaml
-@@ -21,6 +21,11 @@ properties:
-           # work with newer dts.
-           - const: img,img-axe
-           - const: img,img-rogue
-+      - items:
-+          - enum:
-+              - thead,th1520-gpu
-+          - const: img,img-bxm-4-64
-+          - const: img,img-rogue
-       - items:
-           - enum:
-               - ti,j721s2-gpu
-@@ -93,7 +98,9 @@ allOf:
-       properties:
-         compatible:
-           contains:
--            const: img,img-axe-1-16m
-+            enum:
-+              - img,img-axe-1-16m
-+              - img,img-bxm-4-64
-     then:
-       properties:
-         power-domains:
+diff --git a/drivers/gpu/drm/imagination/Kconfig b/drivers/gpu/drm/imagination/Kconfig
+index 5f9fff43d6baadc42ebf48d91729bfbf27e06caa..d1e5a18e8e84dc57452cd4bf0fe89dfb90a7bb29 100644
+--- a/drivers/gpu/drm/imagination/Kconfig
++++ b/drivers/gpu/drm/imagination/Kconfig
+@@ -3,7 +3,7 @@
+ 
+ config DRM_POWERVR
+ 	tristate "Imagination Technologies PowerVR (Series 6 and later) & IMG Graphics"
+-	depends on ARM64
++	depends on (ARM64 || RISCV)
+ 	depends on DRM
+ 	depends on PM
+ 	select DRM_EXEC
 
 -- 
 2.34.1
