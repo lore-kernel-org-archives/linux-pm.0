@@ -1,86 +1,96 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CCB6828A737;
-	Mon, 16 Jun 2025 17:50:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA5FC2853E5;
+	Mon, 16 Jun 2025 18:19:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750096240; cv=none; b=fYWdi5/dh3afUUAisvUurr7gIRkyzLDdsxZAEh5sVeKmWwZjlJsu7WAxzaMFb/b3AOtrvTWSOdZnV+rN7m7wF4IncMc6NxCkGS34GQgk08jVf6Eea+JcYI+sIiekkgM0qDjQFiJAsSBFkhYGPTUMiWQbSl2eDSUX/ACC7Sc/3/8=
+	t=1750097964; cv=none; b=VLxU1vCtUCABzevzoadYphhDYzTopogmgzJIVmMZrhRUfxWPYSM4umAyFPrGSetfBteu227tLdUCc+yGMVazo3An2m/aT6CSM5AOg7tmik6brrMkQgndZU5s97fH3sIxq7wnLUTAZN3eqRRsQqfUp2ewFvH8zIDBdhzDrZ3t+ts=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750096240; c=relaxed/simple;
-	bh=kzKMod4I7trzDSgNu24uRFQQmwK7y0+QIxuaSSqQlpQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=S9Ti30IWSF9Ki1g1CK+OzKVu3JhxGwFNDhsq0UVFRTphq/nXOM3Li4fBkgocBjWKWvGB9Up/zDMJIbpqpjC1gm8If5fAs30baHZsQ/CGMmzfAFMP4N2VjnrMe296joxd5a8dREBNzOoP2D9LsHLYz+4WwR2mkafhqgpfo9be/84=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=h7ow5wJg; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1750097964; c=relaxed/simple;
+	bh=D4eLze5Axvit8hLX0d5/vlrb0Iv++TCuRDiYVH+TJOM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=aknOozEXp4jGHbNR6eP8TRMmMfTw6/wXJtsKsy1pnx1JAhOqVGn9O6JGz4QrroZ+0IjS5sxPEBy26B2iuxk3Mzz2F9nWdj8bUwOPPxPhoi9ymNyNB9Xtptfm9wz7m4QOQXmVIq449NBVM/88WJAYhP2DmU9uaTsXhfV6uQvnjLQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=SAeJUQgu; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="h7ow5wJg"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1A46AC4CEF0;
-	Mon, 16 Jun 2025 17:50:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1750096240;
-	bh=kzKMod4I7trzDSgNu24uRFQQmwK7y0+QIxuaSSqQlpQ=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=h7ow5wJgVkPm9yWdKVjD60KWlSRkSmm6cw/oTDox6/0rJnALyI2LzVVZmftnEbk1a
-	 cj19J5s9m/xSEt0Q1lGfyisLPD/xhUWj3eJ09ZV7Cq2eDPmHpFKxV9ttKVAXRYO9xL
-	 t3i75y+Zn+c41hwcIVmbXzN/gyJv/L/HXJ9RMmvRcJWAYVbn7Jsm+qspDe1DC5VhaI
-	 cwuktwZSEI59MRvzFnWWFepW6VoI0xSUtYpv3awwFbio469BFaBdVvfj8WcGXMvj9t
-	 TFKV9Aoh0KnDwKQtpZ/8VlqOm2A7m2x7gAcDDj2Nru3AaKfILw0lJ+N9Iz9jFs4TIV
-	 bTShavQtFBzpQ==
-From: Mario Limonciello <superm1@kernel.org>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Alex Deucher <alexander.deucher@amd.com>,
-	Bjorn Helgaas <bhelgaas@google.com>
-Cc: amd-gfx@lists.freedesktop.org (open list:RADEON and AMDGPU DRM DRIVERS),
-	linux-pm@vger.kernel.org (open list:HIBERNATION (aka Software Suspend, aka swsusp)),
-	linux-pci@vger.kernel.org (open list:PCI SUBSYSTEM),
-	linux-kernel@vger.kernel.org (open list),
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Danilo Krummrich <dakr@kernel.org>,
-	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
-	"Martin K . Petersen" <martin.petersen@oracle.com>,
-	dri-devel@lists.freedesktop.org (open list:DRM DRIVERS),
-	linux-scsi@vger.kernel.org (open list:SCSI SUBSYSTEM),
-	linux-usb@vger.kernel.org (open list:USB SUBSYSTEM),
-	Mario Limonciello <mario.limonciello@amd.com>
-Subject: [PATCH v4 5/5] usb: sl811-hcd: Add PM_EVENT_POWEROFF into suspend callbacks
-Date: Mon, 16 Jun 2025 12:50:19 -0500
-Message-ID: <20250616175019.3471583-6-superm1@kernel.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20250616175019.3471583-1-superm1@kernel.org>
-References: <20250616175019.3471583-1-superm1@kernel.org>
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="SAeJUQgu"
+Received: from kreacher.localnet (unknown [5.63.189.50])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 8119366DC60;
+	Mon, 16 Jun 2025 20:19:19 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1750097960;
+	bh=D4eLze5Axvit8hLX0d5/vlrb0Iv++TCuRDiYVH+TJOM=;
+	h=From:Subject:Date;
+	b=SAeJUQgudqQJESLvdmzjn7dL5BgbpVN/e0qT9VLREuEFIUa6ynhibUJ/F9RVKB0NF
+	 2+k3Sfo1MhnHlER3AhT6uYWfTWWFeOc5gWzVumMwu5ipu5VEOWA49sx2+uBs1hgucl
+	 ds2IKisES3SKizu4mzruO6jKPFjUf5uluLwqy1ispkWKiM0CDLIz9CYyE7R1yOzbo2
+	 4gQrSUOeoP2N5yiWl5CrNwnX+F2uN9jbKTxo1MnoyslqKC1MEqz0e8jwReDSxHblfl
+	 4VpYyoW51EqbDrYM27FffizrgIqjias4LCKaNXmPLLQRVAEJwZHiMxmeB4MzlhOkjr
+	 L5fu5BYBTWKsA==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Shashank Balaji <shashank.mahadasyam@sony.com>,
+ Russell Haley <yumpusamongus@gmail.com>
+Subject:
+ [PATCH v1] cpufreq: intel_pstate: Always use HWP_DESIRED_PERF in passive mode
+Date: Mon, 16 Jun 2025 20:19:19 +0200
+Message-ID: <6173276.lOV4Wx5bFT@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 5.63.189.50
+X-CLIENT-HOSTNAME: 5.63.189.50
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: dmFkZTF/I4x6zZceSr9PpSvCQ9iNejtSEb4amLQZYAOrXMGCwU3OPukZULDXLJRB2Ru/igCon2RjW5s/5tXTxXUbO4u2LLgc7+RQyZFuID53nbnaLXshf7Pa7GSn7fhNSfsecRRfQR9H6mHErZLFTVqaoS6sdnnM8kaYymqvDuhRZnasowwmF/Rnd/HfXRMw8GQG4zUE946pZo1MLH0KQfwO9rAhzoVDoLNDvD5qlqXn+FdCjRcAcD9lZ1EYhHFXyhaXw2MYRV4OXUQwwmf4uDzEcvT1EWQxCzyuh/qXTaAk0v6gHJ0+W6gmwB5Mbo1ayn+BI43KxwcVPBhZWO9lE4ef5c1/crmURsPWB7OKlACH63XR0HvlnAQblV4EuAldnPzSM3SnIfkxOtda+rDBCIMRNjHAAl1OH+wDD2TNNDOMjWIC6JgFMDSFz6sVjlzPyxacQ31SZAlnnGI5KLh2XNd1t4yjc4JG8GngHmds0UOUc28Eneysb7waTukQ6PrNZgkztlpDV8ubwwcJtsBXYvODr8qToZfB0dRnBlHn+7hfJlpvKVpWdDI4vLmz/ztO8tvD3p9FJwgpqnry/iLXuqeRZW9iyysaClNhbB6kRExudVvbJh8ETKwxtjHNyZbBNkSIRmnHhusI5BfJhagZ7Bni7YvyNGYbM2XsgZsHjfhlKuuYsA
+X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
 
-From: Mario Limonciello <mario.limonciello@amd.com>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-When the ACPI core uses hibernation callbacks for shutdown drivers
-will receive PM_EVENT_POWEROFF and should handle it the same as
-PM_EVENT_HIBERNATE would have been used.
+In the passive mode, intel_cpufreq_update_pstate() sets HWP_MIN_PERF in
+accordance with the target frequency to ensure delivering adequate
+performance, but it sets HWP_DESIRED_PERF to 0, so the processor has no
+indication that the desired performance level is actually equal to the
+floor one.  This may cause it to choose a performance point way above
+the desired level.
 
-Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+Moreover, this is inconsistent with intel_cpufreq_adjust_perf() which
+actually sets HWP_DESIRED_PERF in accordance with the target performance
+value.
+
+Address this by adjusting intel_cpufreq_update_pstate() to pass
+target_pstate as both the minimum and the desired performance levels
+to intel_cpufreq_hwp_update().
+
+Fixes: a365ab6b9dfb ("cpufreq: intel_pstate: Implement the ->adjust_perf() callback")
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
-v3: https://lore.kernel.org/linux-pm/20250609024619.407257-1-superm1@kernel.org/T/#me6db0fb946e3d604a8f3d455128844ed802c82bb
----
- drivers/usb/host/sl811-hcd.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/cpufreq/intel_pstate.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/usb/host/sl811-hcd.c b/drivers/usb/host/sl811-hcd.c
-index ea3cab99c5d40..5d6dba681e503 100644
---- a/drivers/usb/host/sl811-hcd.c
-+++ b/drivers/usb/host/sl811-hcd.c
-@@ -1748,6 +1748,7 @@ sl811h_suspend(struct platform_device *dev, pm_message_t state)
- 		break;
- 	case PM_EVENT_SUSPEND:
- 	case PM_EVENT_HIBERNATE:
-+	case PM_EVENT_POWEROFF:
- 	case PM_EVENT_PRETHAW:		/* explicitly discard hw state */
- 		port_power(sl811, 0);
- 		break;
--- 
-2.43.0
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -3249,8 +3249,8 @@
+ 		int max_pstate = policy->strict_target ?
+ 					target_pstate : cpu->max_perf_ratio;
+ 
+-		intel_cpufreq_hwp_update(cpu, target_pstate, max_pstate, 0,
+-					 fast_switch);
++		intel_cpufreq_hwp_update(cpu, target_pstate, max_pstate,
++					 target_pstate, fast_switch);
+ 	} else if (target_pstate != old_pstate) {
+ 		intel_cpufreq_perf_ctl_update(cpu, target_pstate, fast_switch);
+ 	}
+
+
 
