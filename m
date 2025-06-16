@@ -1,228 +1,123 @@
-Received: from mxout4.routing.net (mxout4.routing.net [134.0.28.9])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3E0928D8EE;
-	Mon, 16 Jun 2025 09:59:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 678AD2741B9;
+	Mon, 16 Jun 2025 10:32:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750067947; cv=none; b=nTUwVm31coJFom3tuiWi8kcTaucCZyz6A8vnpjgwtpjK3Ff1nUqLUiLwnKnkkXe87/LO6CZgXhtR6o07MSI1LHKKhPgsGkknHz5vW5U88qwcrXdVJFrG1Hh8vXRPZQsUcsVydTXKiJ+RxKt8jf5CJWla4o5QT62zhlghoTd8piY=
+	t=1750069981; cv=none; b=ASVCJ4lTSVnR7o+T5UyNkJq19VJgCAsPqZip7hKqJHSNdgW3zDxBcpUjDpy1ckCoXeBHBwEBdzEM91LY3PsEaf8dvrw82US5BsS/XqqpNTrJEZl0XoY3hYwcU197ejhQ62TsKEb3hsBNR1xpzVhfyMrmavjjSuroJLeApeYMt4A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750067947; c=relaxed/simple;
-	bh=oEHCeCyYmhRvcoDsSzTQBlneOLnSQNdeNvfMRFj69TE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Fa7D1tn1zxUU8J2eE9prJuUd3OlAywQRgSZnZyizzpnX3vCIyC1g7E+RGHxP++SYIa39HUwWIenuRKX5box+3tp7QE58XC6nz6z4FAejTjsag7ZCYnE/mE0t4deRDMGD+MsbLRudvCaRinRGxQUH/9tddKNcFomRZzj9UjEaRsQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=j0Ysww2v; arc=none smtp.client-ip=134.0.28.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
+	s=arc-20240116; t=1750069981; c=relaxed/simple;
+	bh=zbYNG3njVAtH1dEsJCylZZ7mhn29KltrlG0PxCAQEX4=;
+	h=MIME-Version:Message-ID:From:To:Cc:Subject:Content-Type:Date:
+	 In-Reply-To:References; b=KfJrd2H/EtOHaXGaVfS8hoDCToOtvVUjF8fcD879RcogEd9SZTPjECYAmsc43Y29szJoJbtOhmgJNSBzmgrHX/BEnKCxgjoqHu2XrwKFN4RdEwi3FzbNYw08IMywJOERYDfDCF7K5HzDjP1yRpV4WWE+KnrnG/DY42KbDiTdOI0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=public-files.de; spf=pass smtp.mailfrom=public-files.de; dkim=pass (2048-bit key) header.d=public-files.de header.i=frank-w@public-files.de header.b=hZEMnAZW; arc=none smtp.client-ip=212.227.17.22
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=public-files.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=public-files.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="j0Ysww2v"
-Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout4.routing.net (Postfix) with ESMTP id 7292B100947;
-	Mon, 16 Jun 2025 09:58:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=20200217; t=1750067923;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=zCArQQjnZOoBXdfm7YKc01KniAiMbD7wl2wyNkiAMyg=;
-	b=j0Ysww2vk4736GogUkpaDc0OLO5b9m7c91QkacYMAfba4I6tkiF1iuTWrLO+Me1Ew9ZF5p
-	WDeglTwBcvwB8dPyvGlLpwW3K/ESJz6Wlle5DErBl1TRPZWfRAlW2wxTqDdhfHxYXEj8yf
-	mP/zjDpj0WHwgeoZ0NMHSrZfXJPoCc4=
-Received: from frank-u24.. (fttx-pool-194.15.87.210.bambit.de [194.15.87.210])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 172B1122704;
-	Mon, 16 Jun 2025 09:58:43 +0000 (UTC)
-From: Frank Wunderlich <linux@fw-web.de>
-To: MyungJoo Ham <myungjoo.ham@samsung.com>,
-	Kyungmin Park <kyungmin.park@samsung.com>,
-	Chanwoo Choi <cw00.choi@samsung.com>,
-	Georgi Djakov <djakov@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Andrew Lunn <andrew@lunn.ch>,
-	Vladimir Oltean <olteanv@gmail.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Cc: Frank Wunderlich <frank-w@public-files.de>,
-	Jia-Wei Chang <jia-wei.chang@mediatek.com>,
-	Johnson Wang <johnson.wang@mediatek.com>,
-	=?UTF-8?q?Ar=C4=B1n=C3=A7=20=C3=9CNAL?= <arinc.unal@arinc9.com>,
-	Landen Chao <Landen.Chao@mediatek.com>,
-	DENG Qingfang <dqfext@gmail.com>,
-	Sean Wang <sean.wang@mediatek.com>,
-	Daniel Golle <daniel@makrotopia.org>,
-	Lorenzo Bianconi <lorenzo@kernel.org>,
-	Felix Fietkau <nbd@nbd.name>,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	netdev@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-mediatek@lists.infradead.org
-Subject: [PATCH v4 09/13] arm64: dts: mediatek: mt7988a-bpi-r4: drop unused pins
-Date: Mon, 16 Jun 2025 11:58:19 +0200
-Message-ID: <20250616095828.160900-10-linux@fw-web.de>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20250616095828.160900-1-linux@fw-web.de>
-References: <20250616095828.160900-1-linux@fw-web.de>
+	dkim=pass (2048-bit key) header.d=public-files.de header.i=frank-w@public-files.de header.b="hZEMnAZW"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=public-files.de;
+	s=s31663417; t=1750069959; x=1750674759; i=frank-w@public-files.de;
+	bh=zbYNG3njVAtH1dEsJCylZZ7mhn29KltrlG0PxCAQEX4=;
+	h=X-UI-Sender-Class:MIME-Version:Message-ID:From:To:Cc:Subject:
+	 Content-Type:Date:In-Reply-To:References:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=hZEMnAZW/7mUOevdHKb5DW58hT1pv0jATDArPLJLr/bMpiQlhBtjWGcggVguBZIC
+	 8bKreWfebe4JKxHucnkEJoHb+Y+f6VZhokMOi9bBfdoqkArsxnUOBoepBMfhBMAIN
+	 EG0cAY68KIUipno2njp79/5AK70PJR5dirqfuaRVQ9sMMgiv1NMTtbjstL54iSyDE
+	 uxJZabGCkQFe/wgkELZRA/iN4TYTUskglFymhOXcifousmL3UUH1QPR0h0pnEd6EF
+	 jzcK7WaWDOv0syCGlM9sCAMY3moi4+LKX0SSA8rU/3TH4ie8gZO2NEMi1/juKlcLy
+	 KDbTwkE+LB4dExakkg==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [100.67.37.206] ([100.67.37.206]) by
+ trinity-msg-rest-gmx-gmx-live-b647dc579-4qvpp (via HTTP); Mon, 16 Jun 2025
+ 10:32:39 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-
+Message-ID: <trinity-137d83ca-9fe9-4bc3-8482-ddaac9077b0d-1750069959310@trinity-msg-rest-gmx-gmx-live-b647dc579-4qvpp>
 From: Frank Wunderlich <frank-w@public-files.de>
+To: robh@kernel.org, krzk+dt@kernel.org, lorenzo@kernel.org
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
+ angelogioacchino.delregno@collabora.com, linux@fw-web.de,
+ frank-w@public-files.de
+Subject: Aw: [PATCH v4 01/13] dt-bindings: net: mediatek,net: update for
+ mt7988
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 16 Jun 2025 10:32:39 +0000
+In-Reply-To: <20250616095828.160900-2-linux@fw-web.de>
+References: <20250616095828.160900-1-linux@fw-web.de>
+ <20250616095828.160900-2-linux@fw-web.de>
+X-UI-CLIENT-META-MAIL-DROP: W10=
+X-Provags-ID: V03:K1:+PsAnRdYyRCcfuZ2aEIpeS3SraFNWACiWUPVZYdvuwi0fRlgjDTUG7NvRhmFPpU/PlGQH
+ dNyNcklHMTkuXYr8XJh8tnSgdBzJJxsP97ipbekVAmzMHwLit/DoXqHvswlgmM8vY68NDpsdRFnz
+ JZ43nEv+mjbp9r8pzElylUKBIayKmn7DDvtZFUEkBUUiOpmGzVc+xz6i6dCatSZhG8ngMqhptyCv
+ PwzVg8qBXpdER0VlWJGyLWCd32Mx5/UN0VZD7/oMg/Ds52L9LDgEzwQRPYYu/dQJ9Tdzl9qoZCl4
+ JuDd5aCHCZjc8rdsPA5ReRt77vgnj1w9JUjnQG9WDxxyjrrEpLDoZvti9XhWeRPwHw=
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:tTrr5nZYwHw=;IXSYPgh53TyZcIkZciMzpWDlETX
+ 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
+ nlSOZp
+Content-Transfer-Encoding: quoted-printable
 
-Pins were moved from SoC dtsi to Board level dtsi without cleaning up
-to needed ones. Drop the unused pins now.
+Hi Rob, Krzysztof and Lorenzo,
 
-Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
----
- .../dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi | 89 -------------------
- 1 file changed, 89 deletions(-)
+I got message from your mailserver, that my patch-mails are detected as Sp=
+am and blocked (to=20
+other address than i used - seems like forwarding from kernel.org to gmail=
+.com). I want to make
+sure, you get it...
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
-index afa9e3b2b16a..30affedf84d4 100644
---- a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
-@@ -223,18 +223,6 @@ &pcie3 {
- };
- 
- &pio {
--	mdio0_pins: mdio0-pins {
--		mux {
--			function = "eth";
--			groups = "mdc_mdio0";
--		};
--
--		conf {
--			pins = "SMI_0_MDC", "SMI_0_MDIO";
--			drive-strength = <8>;
--		};
--	};
--
- 	i2c0_pins: i2c0-g0-pins {
- 		mux {
- 			function = "i2c";
-@@ -249,20 +237,6 @@ mux {
- 		};
- 	};
- 
--	i2c1_sfp_pins: i2c1-sfp-g0-pins {
--		mux {
--			function = "i2c";
--			groups = "i2c1_sfp";
--		};
--	};
--
--	i2c2_0_pins: i2c2-g0-pins {
--		mux {
--			function = "i2c";
--			groups = "i2c2_0";
--		};
--	};
--
- 	i2c2_1_pins: i2c2-g1-pins {
- 		mux {
- 			function = "i2c";
-@@ -298,34 +272,6 @@ mux {
- 		};
- 	};
- 
--	gbe0_led1_pins: gbe0-led1-pins {
--		mux {
--			function = "led";
--			groups = "gbe0_led1";
--		};
--	};
--
--	gbe1_led1_pins: gbe1-led1-pins {
--		mux {
--			function = "led";
--			groups = "gbe1_led1";
--		};
--	};
--
--	gbe2_led1_pins: gbe2-led1-pins {
--		mux {
--			function = "led";
--			groups = "gbe2_led1";
--		};
--	};
--
--	gbe3_led1_pins: gbe3-led1-pins {
--		mux {
--			function = "led";
--			groups = "gbe3_led1";
--		};
--	};
--
- 	i2p5gbe_led0_pins: 2p5gbe-led0-pins {
- 		mux {
- 			function = "led";
-@@ -333,13 +279,6 @@ mux {
- 		};
- 	};
- 
--	i2p5gbe_led1_pins: 2p5gbe-led1-pins {
--		mux {
--			function = "led";
--			groups = "2p5gbe_led1";
--		};
--	};
--
- 	mmc0_pins_emmc_45: mmc0-emmc-45-pins {
- 		mux {
- 			function = "flash";
-@@ -361,40 +300,12 @@ mux {
- 		};
- 	};
- 
--	snfi_pins: snfi-pins {
--		mux {
--			function = "flash";
--			groups = "snfi";
--		};
--	};
--
--	spi0_pins: spi0-pins {
--		mux {
--			function = "spi";
--			groups = "spi0";
--		};
--	};
--
- 	spi0_flash_pins: spi0-flash-pins {
- 		mux {
- 			function = "spi";
- 			groups = "spi0", "spi0_wp_hold";
- 		};
- 	};
--
--	spi2_pins: spi2-pins {
--		mux {
--			function = "spi";
--			groups = "spi2";
--		};
--	};
--
--	spi2_flash_pins: spi2-flash-pins {
--		mux {
--			function = "spi";
--			groups = "spi2", "spi2_wp_hold";
--		};
--	};
- };
- 
- &pwm {
--- 
-2.43.0
+I see it in dt-bindings patchwork, so replacing the content with a link.
 
+https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20250616095=
+828.160900-2-linux@fw-web.de/
+
+only kept angelo, me and ML in this response to not spam people too much.
+
+regards Frank
