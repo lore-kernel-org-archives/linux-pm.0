@@ -1,37 +1,37 @@
 Received: from mxout4.routing.net (mxout4.routing.net [134.0.28.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 856A5277C81;
-	Mon, 16 Jun 2025 09:58:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3E0928D8EE;
+	Mon, 16 Jun 2025 09:59:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750067942; cv=none; b=iagUVOUbaV/nM3fHmL6HrmQJmGoy8naAo7HDB2WJLlM0ajYlN91TUIqS+WF2GrpW6rRwST/0WxN50UkLlBhHGYx3pII5Q4t+Qgh5I7myBalneHzeskMoszxoywPP9tgA9pZTOQxYpkfjigu4VtGft7SJnREnsTKfavyN+HDPEEs=
+	t=1750067947; cv=none; b=nTUwVm31coJFom3tuiWi8kcTaucCZyz6A8vnpjgwtpjK3Ff1nUqLUiLwnKnkkXe87/LO6CZgXhtR6o07MSI1LHKKhPgsGkknHz5vW5U88qwcrXdVJFrG1Hh8vXRPZQsUcsVydTXKiJ+RxKt8jf5CJWla4o5QT62zhlghoTd8piY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750067942; c=relaxed/simple;
-	bh=CXJdMVM7yfnfOWdD19oSNPqLnLxqQfuOKdmhOWln+X4=;
+	s=arc-20240116; t=1750067947; c=relaxed/simple;
+	bh=oEHCeCyYmhRvcoDsSzTQBlneOLnSQNdeNvfMRFj69TE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=XKgc8KlRT7BasuyJPIWYO/lYkGjm+18hjbLq6C/OiuYWwGkSQsIr/B8G8LziTsWmF7s8iICA/JL5D9PVYLl9nTV3wTyJSbC1BvGyHXXxxetmWXGrQHGWoGuyct7/kcavIz27HlZ8gH9Vu1wAAQzzoDMhBBHg5wF3pW/ARKfwhjo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=AYtavwrT; arc=none smtp.client-ip=134.0.28.9
+	 MIME-Version; b=Fa7D1tn1zxUU8J2eE9prJuUd3OlAywQRgSZnZyizzpnX3vCIyC1g7E+RGHxP++SYIa39HUwWIenuRKX5box+3tp7QE58XC6nz6z4FAejTjsag7ZCYnE/mE0t4deRDMGD+MsbLRudvCaRinRGxQUH/9tddKNcFomRZzj9UjEaRsQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=j0Ysww2v; arc=none smtp.client-ip=134.0.28.9
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="AYtavwrT"
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="j0Ysww2v"
 Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout4.routing.net (Postfix) with ESMTP id D8DC810093E;
-	Mon, 16 Jun 2025 09:58:41 +0000 (UTC)
+	by mxout4.routing.net (Postfix) with ESMTP id 7292B100947;
+	Mon, 16 Jun 2025 09:58:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=20200217; t=1750067922;
+	s=20200217; t=1750067923;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=SHQ5vPeo13GqSQMpnsgrtHpzp9AC7Cqs5ZLxrZU37Ag=;
-	b=AYtavwrTzhH3Jgi9vODa7fCqs16ThzVMTPwbbnrPN8Dd9WVq12XvC3ilaxkbU4xddMnFhP
-	xUlfN52Zoq5LjggC6OPkNJgR0b3ehD5IDyaV5k5jjoBMxdW3AKlyiZwJllfOUANq0h4yDQ
-	pnI4gMorcrun6dOSQFFdv7WIlpII1T8=
+	bh=zCArQQjnZOoBXdfm7YKc01KniAiMbD7wl2wyNkiAMyg=;
+	b=j0Ysww2vk4736GogUkpaDc0OLO5b9m7c91QkacYMAfba4I6tkiF1iuTWrLO+Me1Ew9ZF5p
+	WDeglTwBcvwB8dPyvGlLpwW3K/ESJz6Wlle5DErBl1TRPZWfRAlW2wxTqDdhfHxYXEj8yf
+	mP/zjDpj0WHwgeoZ0NMHSrZfXJPoCc4=
 Received: from frank-u24.. (fttx-pool-194.15.87.210.bambit.de [194.15.87.210])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 7AAB7122704;
-	Mon, 16 Jun 2025 09:58:41 +0000 (UTC)
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 172B1122704;
+	Mon, 16 Jun 2025 09:58:43 +0000 (UTC)
 From: Frank Wunderlich <linux@fw-web.de>
 To: MyungJoo Ham <myungjoo.ham@samsung.com>,
 	Kyungmin Park <kyungmin.park@samsung.com>,
@@ -64,9 +64,9 @@ Cc: Frank Wunderlich <frank-w@public-files.de>,
 	netdev@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v4 05/13] arm64: dts: mediatek: mt7988: add cci node
-Date: Mon, 16 Jun 2025 11:58:15 +0200
-Message-ID: <20250616095828.160900-6-linux@fw-web.de>
+Subject: [PATCH v4 09/13] arm64: dts: mediatek: mt7988a-bpi-r4: drop unused pins
+Date: Mon, 16 Jun 2025 11:58:19 +0200
+Message-ID: <20250616095828.160900-10-linux@fw-web.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250616095828.160900-1-linux@fw-web.de>
 References: <20250616095828.160900-1-linux@fw-web.de>
@@ -80,90 +80,149 @@ Content-Transfer-Encoding: 8bit
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-Add cci devicetree node for cpu frequency scaling.
+Pins were moved from SoC dtsi to Board level dtsi without cleaning up
+to needed ones. Drop the unused pins now.
 
-Signed-off-by: Daniel Golle <daniel@makrotopia.org>
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
 Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
-v3:
-- add mt7988-cci compatible as suggested by angelo
----
- arch/arm64/boot/dts/mediatek/mt7988a.dtsi | 33 +++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+ .../dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi | 89 -------------------
+ 1 file changed, 89 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt7988a.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
-index c46b31f8d653..560ec86dbec0 100644
---- a/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
-@@ -12,6 +12,35 @@ / {
- 	#address-cells = <2>;
- 	#size-cells = <2>;
+diff --git a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
+index afa9e3b2b16a..30affedf84d4 100644
+--- a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
+@@ -223,18 +223,6 @@ &pcie3 {
+ };
  
-+	cci: cci {
-+		compatible = "mediatek,mt7988-cci", "mediatek,mt8183-cci";
-+		clocks = <&mcusys CLK_MCU_BUS_DIV_SEL>,
-+			 <&topckgen CLK_TOP_XTAL>;
-+		clock-names = "cci", "intermediate";
-+		operating-points-v2 = <&cci_opp>;
-+	};
-+
-+	cci_opp: opp-table-cci {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+		opp-480000000 {
-+			opp-hz = /bits/ 64 <480000000>;
-+			opp-microvolt = <850000>;
-+		};
-+		opp-660000000 {
-+			opp-hz = /bits/ 64 <660000000>;
-+			opp-microvolt = <850000>;
-+		};
-+		opp-900000000 {
-+			opp-hz = /bits/ 64 <900000000>;
-+			opp-microvolt = <850000>;
-+		};
-+		opp-1080000000 {
-+			opp-hz = /bits/ 64 <1080000000>;
-+			opp-microvolt = <900000>;
-+		};
-+	};
-+
- 	cpus {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -25,6 +54,7 @@ cpu0: cpu@0 {
- 				 <&topckgen CLK_TOP_XTAL>;
- 			clock-names = "cpu", "intermediate";
- 			operating-points-v2 = <&cluster0_opp>;
-+			mediatek,cci = <&cci>;
+ &pio {
+-	mdio0_pins: mdio0-pins {
+-		mux {
+-			function = "eth";
+-			groups = "mdc_mdio0";
+-		};
+-
+-		conf {
+-			pins = "SMI_0_MDC", "SMI_0_MDIO";
+-			drive-strength = <8>;
+-		};
+-	};
+-
+ 	i2c0_pins: i2c0-g0-pins {
+ 		mux {
+ 			function = "i2c";
+@@ -249,20 +237,6 @@ mux {
  		};
+ 	};
  
- 		cpu1: cpu@1 {
-@@ -36,6 +66,7 @@ cpu1: cpu@1 {
- 				 <&topckgen CLK_TOP_XTAL>;
- 			clock-names = "cpu", "intermediate";
- 			operating-points-v2 = <&cluster0_opp>;
-+			mediatek,cci = <&cci>;
+-	i2c1_sfp_pins: i2c1-sfp-g0-pins {
+-		mux {
+-			function = "i2c";
+-			groups = "i2c1_sfp";
+-		};
+-	};
+-
+-	i2c2_0_pins: i2c2-g0-pins {
+-		mux {
+-			function = "i2c";
+-			groups = "i2c2_0";
+-		};
+-	};
+-
+ 	i2c2_1_pins: i2c2-g1-pins {
+ 		mux {
+ 			function = "i2c";
+@@ -298,34 +272,6 @@ mux {
  		};
+ 	};
  
- 		cpu2: cpu@2 {
-@@ -47,6 +78,7 @@ cpu2: cpu@2 {
- 				 <&topckgen CLK_TOP_XTAL>;
- 			clock-names = "cpu", "intermediate";
- 			operating-points-v2 = <&cluster0_opp>;
-+			mediatek,cci = <&cci>;
+-	gbe0_led1_pins: gbe0-led1-pins {
+-		mux {
+-			function = "led";
+-			groups = "gbe0_led1";
+-		};
+-	};
+-
+-	gbe1_led1_pins: gbe1-led1-pins {
+-		mux {
+-			function = "led";
+-			groups = "gbe1_led1";
+-		};
+-	};
+-
+-	gbe2_led1_pins: gbe2-led1-pins {
+-		mux {
+-			function = "led";
+-			groups = "gbe2_led1";
+-		};
+-	};
+-
+-	gbe3_led1_pins: gbe3-led1-pins {
+-		mux {
+-			function = "led";
+-			groups = "gbe3_led1";
+-		};
+-	};
+-
+ 	i2p5gbe_led0_pins: 2p5gbe-led0-pins {
+ 		mux {
+ 			function = "led";
+@@ -333,13 +279,6 @@ mux {
  		};
+ 	};
  
- 		cpu3: cpu@3 {
-@@ -58,6 +90,7 @@ cpu3: cpu@3 {
- 				 <&topckgen CLK_TOP_XTAL>;
- 			clock-names = "cpu", "intermediate";
- 			operating-points-v2 = <&cluster0_opp>;
-+			mediatek,cci = <&cci>;
+-	i2p5gbe_led1_pins: 2p5gbe-led1-pins {
+-		mux {
+-			function = "led";
+-			groups = "2p5gbe_led1";
+-		};
+-	};
+-
+ 	mmc0_pins_emmc_45: mmc0-emmc-45-pins {
+ 		mux {
+ 			function = "flash";
+@@ -361,40 +300,12 @@ mux {
  		};
+ 	};
  
- 		cluster0_opp: opp-table-0 {
+-	snfi_pins: snfi-pins {
+-		mux {
+-			function = "flash";
+-			groups = "snfi";
+-		};
+-	};
+-
+-	spi0_pins: spi0-pins {
+-		mux {
+-			function = "spi";
+-			groups = "spi0";
+-		};
+-	};
+-
+ 	spi0_flash_pins: spi0-flash-pins {
+ 		mux {
+ 			function = "spi";
+ 			groups = "spi0", "spi0_wp_hold";
+ 		};
+ 	};
+-
+-	spi2_pins: spi2-pins {
+-		mux {
+-			function = "spi";
+-			groups = "spi2";
+-		};
+-	};
+-
+-	spi2_flash_pins: spi2-flash-pins {
+-		mux {
+-			function = "spi";
+-			groups = "spi2", "spi2_wp_hold";
+-		};
+-	};
+ };
+ 
+ &pwm {
 -- 
 2.43.0
 
