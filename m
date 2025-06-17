@@ -1,16 +1,16 @@
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 694732DF3D8
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE7952D12EB
 	for <linux-pm@vger.kernel.org>; Tue, 17 Jun 2025 09:50:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750153807; cv=none; b=DR0xiOZKPJXWMg1NOAz3RRrBFSBIrnTaBnDuwp36i5G5mP9s40N8f88Dkqtz2Gab58Gp1KAkRV0grNhDQDAbOEx2sDiOe2ZNzUKw86o4dO3/XCpymVRmE3aAWrH3ZxW33O/U/34Fu2crdd2jc1nINGrgP9AbvSrR/9/2BF9E9ik=
+	t=1750153807; cv=none; b=ZouVFxkvRJU25b5T+8ma/xh3mW7chC9cTa88H2Ed20slwZXpXQNWjpB7j+4cee0aDRTx9wALaU8huSRDoEoG3DsSViAa1Of8NIkzAFNvF2GpYKeR4SHR+xb3N2dD1+lmDFxpJFcLvZk/cmRw2xSeEydGkVccQ6TWNmCbd4a189w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1750153807; c=relaxed/simple;
-	bh=penylcrZjRjoRlt2DxZgzg5QOoQPPyQfH7KISVKYXtg=;
+	bh=CSE1xGwJPwkE21FMhoW6TOA0Bu55dDPTRRyrNaMKYnQ=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=OmqTW1/94HI8huDsYnTs5GInqgtM7MGnPnEXyuftSuNu7o8REeyYvgTgDSNOWKeMRR5QnE+sioji2a0/WVqCVry8opTl5lc45LWq/bIV+BadcBrPhTvXbitzSN1Sntf7Ij2V1TB6RyuxbCb4Wk8QY4qDgPn+EUWUXK4CbM8hgBc=
+	 MIME-Version; b=F9wuN1C2S2/dM2CXVX43oIojqVh0/ScKKVcaetBBRF6uGraKqQ6pd5HK8LzJbd+UYHb1eYKvBJrLHpMR4QkuMegnBP7qXuLoAxmDC8ebC+Ltts7OyOHOa+OsnTZPrCA7MbxEawxMuDj0ryl6ahlEbF/xEnzRYn6eGzkh2/piHaM=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
@@ -18,16 +18,16 @@ Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <ore@pengutronix.de>)
-	id 1uRSwt-0005fI-0H; Tue, 17 Jun 2025 11:49:47 +0200
+	id 1uRSwt-0005ew-0H; Tue, 17 Jun 2025 11:49:47 +0200
 Received: from dude04.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::ac])
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.96)
 	(envelope-from <ore@pengutronix.de>)
-	id 1uRSws-003x59-1O;
+	id 1uRSws-003x4z-0r;
 	Tue, 17 Jun 2025 11:49:46 +0200
 Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.96)
 	(envelope-from <ore@pengutronix.de>)
-	id 1uRSws-00FBhl-11;
+	id 1uRSws-00FBgX-0Y;
 	Tue, 17 Jun 2025 11:49:46 +0200
 From: Oleksij Rempel <o.rempel@pengutronix.de>
 To: Sebastian Reichel <sre@kernel.org>,
@@ -36,7 +36,7 @@ To: Sebastian Reichel <sre@kernel.org>,
 	Tzung-Bi Shih <tzungbi@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: Oleksij Rempel <o.rempel@pengutronix.de>,
-	Matti Vaittinen <mazziesaccount@gmail.com>,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
 	kernel@pengutronix.de,
 	linux-kernel@vger.kernel.org,
 	Liam Girdwood <lgirdwood@gmail.com>,
@@ -47,12 +47,13 @@ Cc: Oleksij Rempel <o.rempel@pengutronix.de>,
 	linux-pm@vger.kernel.org,
 	=?UTF-8?q?S=C3=B8ren=20Andersen?= <san@skov.dk>,
 	Guenter Roeck <groeck@chromium.org>,
+	Matti Vaittinen <mazziesaccount@gmail.com>,
 	Ahmad Fatoum <a.fatoum@pengutronix.de>,
 	Andrew Morton <akpm@linux-foundation.org>,
 	chrome-platform@lists.linux.dev
-Subject: [PATCH v10 7/7] Documentation: Add sysfs documentation for PSCRR reboot reason tracking
-Date: Tue, 17 Jun 2025 11:49:45 +0200
-Message-Id: <20250617094945.3619360-8-o.rempel@pengutronix.de>
+Subject: [PATCH v10 4/7] nvmem: provide consumer access to cell size metrics
+Date: Tue, 17 Jun 2025 11:49:42 +0200
+Message-Id: <20250617094945.3619360-5-o.rempel@pengutronix.de>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20250617094945.3619360-1-o.rempel@pengutronix.de>
 References: <20250617094945.3619360-1-o.rempel@pengutronix.de>
@@ -68,105 +69,87 @@ X-SA-Exim-Mail-From: ore@pengutronix.de
 X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
 X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
-Add documentation for the Power State Change Reason Recorder (PSCRR)
-sysfs interface, which allows tracking of system shutdown and reboot
-reasons. The documentation provides details on available sysfs entries
-under `/sys/kernel/pscrr/`, explaining their functionality, example usage,
-and how they interact with different backend storage options (e.g., NVMEM).
+Add nvmem_cell_get_size() function to provide access to cell size
+metrics. In some cases we may get cell size less as consumer would
+expect it. So, nvmem_cell_write() would fail with incorrect buffer size.
 
 Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
-Reviewed-by: Matti Vaittinen <mazziesaccount@gmail.com>
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
-changes v8:
-- Simplify and clarify example sysfs value comments
-- Add note that not all values are meaningful on every system
-changes v7:
-- document expected values
+changes v10:
+- add Reviewed-by: Sebastian Reichel ...
+changes v6:
+- update function comment for nvmem_cell_get_size()
 ---
- .../ABI/testing/sysfs-kernel-reboot-pscrr     | 74 +++++++++++++++++++
- 1 file changed, 74 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-kernel-reboot-pscrr
+ drivers/nvmem/core.c           | 29 +++++++++++++++++++++++++++++
+ include/linux/nvmem-consumer.h |  7 +++++++
+ 2 files changed, 36 insertions(+)
 
-diff --git a/Documentation/ABI/testing/sysfs-kernel-reboot-pscrr b/Documentation/ABI/testing/sysfs-kernel-reboot-pscrr
-new file mode 100644
-index 000000000000..96369422ed6e
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-kernel-reboot-pscrr
-@@ -0,0 +1,74 @@
-+What:		/sys/kernel/pscrr/reason
-+Date:		April 2025
-+KernelVersion:  6.16
-+Contact:	Oleksij Rempel <o.rempel@pengutronix.de>
-+Description:
-+		This file provides access to the current power state
-+		change reason. If supported, the reason may be stored
-+		persistently in an NVMEM cell or another backend.
+diff --git a/drivers/nvmem/core.c b/drivers/nvmem/core.c
+index fd2a9698d1c9..59c295a11d86 100644
+--- a/drivers/nvmem/core.c
++++ b/drivers/nvmem/core.c
+@@ -1810,6 +1810,35 @@ int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len)
+ 
+ EXPORT_SYMBOL_GPL(nvmem_cell_write);
+ 
++/**
++ * nvmem_cell_get_size() - Retrieve the storage size of an NVMEM cell.
++ * @cell: Pointer to the NVMEM cell structure.
++ * @bytes: Optional pointer to store the cell size in bytes (can be NULL).
++ * @bits: Optional pointer to store the cell size in bits (can be NULL).
++ *
++ * This function allows consumers to retrieve the size of a specific NVMEM
++ * cell before performing read/write operations. It is useful for validating
++ * buffer sizes to prevent mismatched writes.
++ *
++ * Return: 0 on success or negative on failure.
++ */
++int nvmem_cell_get_size(struct nvmem_cell *cell, size_t *bytes, size_t *bits)
++{
++	struct nvmem_cell_entry *entry = cell->entry;
 +
-+		Reading this file returns an integer representing the
-+		current shutdown or reboot cause.
++	if (!entry->nvmem)
++		return -EINVAL;
 +
-+		Writing an integer value to this file sets the reason
-+		to be stored for system analysis on next reboot.
++	if (bytes)
++		*bytes = entry->bytes;
 +
-+		Example usage:
-+		  Read:
-+			$ cat /sys/kernel/pscrr/reason
-+			1   # (Example: Under-voltage shutdown)
++	if (bits)
++		*bits = entry->nbits;
 +
-+		  Write:
-+			$ echo 4 > /sys/kernel/pscrr/reason
-+			# Sets the reason to 4 (Example: Over-temperature shutdown)
++	return 0;
++}
++EXPORT_SYMBOL_GPL(nvmem_cell_get_size);
 +
-+		Note:
-+		  Not all systems support all reason values. Hardware or
-+		  configuration may limit which reasons are applicable.
+ static int nvmem_cell_read_common(struct device *dev, const char *cell_id,
+ 				  void *val, size_t count)
+ {
+diff --git a/include/linux/nvmem-consumer.h b/include/linux/nvmem-consumer.h
+index 34c0e58dfa26..bcb0e17e415d 100644
+--- a/include/linux/nvmem-consumer.h
++++ b/include/linux/nvmem-consumer.h
+@@ -56,6 +56,7 @@ void nvmem_cell_put(struct nvmem_cell *cell);
+ void devm_nvmem_cell_put(struct device *dev, struct nvmem_cell *cell);
+ void *nvmem_cell_read(struct nvmem_cell *cell, size_t *len);
+ int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len);
++int nvmem_cell_get_size(struct nvmem_cell *cell, size_t *bytes, size_t *bits);
+ int nvmem_cell_read_u8(struct device *dev, const char *cell_id, u8 *val);
+ int nvmem_cell_read_u16(struct device *dev, const char *cell_id, u16 *val);
+ int nvmem_cell_read_u32(struct device *dev, const char *cell_id, u32 *val);
+@@ -128,6 +129,12 @@ static inline int nvmem_cell_write(struct nvmem_cell *cell,
+ 	return -EOPNOTSUPP;
+ }
+ 
++static inline int nvmem_cell_get_size(struct nvmem_cell *cell, size_t *bytes,
++				      size_t *bits)
++{
++	return -EOPNOTSUPP;
++}
 +
-+		Values are defined in:
-+		  - include/linux/reboot.h (enum psc_reason)
-+
-+		Supported Values:
-+		  (from include/linux/reboot.h)
-+
-+		+-------+---------------------------+--------------------------+
-+		| Value | Symbol                    | Description              |
-+		+-------+---------------------------+--------------------------+
-+		| 0     | PSCR_UNKNOWN              | Unknown or unspecified   |
-+		|       |                           | power state change reason|
-+		+-------+---------------------------+--------------------------+
-+		| 1     | PSCR_UNDER_VOLTAGE        | Supply voltage dropped   |
-+		|       |                           | below safe threshold     |
-+		+-------+---------------------------+--------------------------+
-+		| 2     | PSCR_OVER_CURRENT         | Excessive current draw or|
-+		|       |                           | potential short circuit  |
-+		+-------+---------------------------+--------------------------+
-+		| 3     | PSCR_REGULATOR_FAILURE    | Voltage regulator failure|
-+		|       |                           | preventing stable supply |
-+		+-------+---------------------------+--------------------------+
-+		| 4     | PSCR_OVER_TEMPERATURE     | Unsafe system temperature|
-+		|       |                           | detected by sensors      |
-+		+-------+---------------------------+--------------------------+
-+		| 5     | PSCR_EC_PANIC             | Reboot triggered by EC   |
-+		|       |                           | (Embedded Controller)    |
-+		+-------+---------------------------+--------------------------+
-+
-+What:		/sys/kernel/pscrr/reason_boot
-+Date:		April 2025
-+KernelVersion:  6.16
-+Contact:	Oleksij Rempel <o.rempel@pengutronix.de>
-+Description:
-+		This file provides the last recorded power state change
-+		reason from before the current boot. If a supported backend
-+		is configured (e.g., NVMEM), the value is retained across
-+		reboots.
-+
-+		Example usage:
-+		  Read:
-+			$ cat /sys/kernel/pscrr/reason_boot
-+			4   # (Example: Over-temperature shutdown)
-+
-+		Supported values:
-+		  Same as /sys/kernel/pscrr/reason (see above).
-+
+ static inline int nvmem_cell_read_u8(struct device *dev,
+ 				     const char *cell_id, u8 *val)
+ {
 -- 
 2.39.5
 
