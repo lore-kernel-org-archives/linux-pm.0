@@ -1,472 +1,211 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f41.google.com (mail-ej1-f41.google.com [209.85.218.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5917A2E7F34
-	for <linux-pm@vger.kernel.org>; Wed, 18 Jun 2025 12:03:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0AA20293C78
+	for <linux-pm@vger.kernel.org>; Wed, 18 Jun 2025 12:13:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750248201; cv=none; b=MurGPba7Vgf+VMOTakbZ2YH5EY458/ifRLUF1G9hJZvi3lZREeEFxXMRtJTFW9r7PLa/9liI91CiNm58EbVFQpV+cFRcmoNlEAWPH6SmnG5zMIpzmpAmHlsdROECiyWcavTZdeB0gw3l4SgxcK3V/opXy/hYSLe1eFIpp05S2cs=
+	t=1750248792; cv=none; b=LfLkl+rjfr0a8vrP6wOnQp92IUiCNCHRCJPdwGlTbGOV95iXEXpJEwDphMwgxDFazcM+bISexYCz8sc/HLNJgRjuJ1c2psRNm0ySOeXUWOw/AYQQa1sb5kTfTMzVthkt7yv/SqLu1bNYr90iCUJV4kN0ABWooykwQaxThEupvgw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750248201; c=relaxed/simple;
-	bh=Y30I38ls6vwt1MZJ6UGNjJ2BCk+pBoSNDOuwRRQvTJQ=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=XGi3juIgJ2CwaX8Hn6cp9nKl5tfbrXoaBgVBkSY7JKv5gQaVEDtgiHC72kucnXF+efgLbafZxAwwbQGWEwlMNWzssQFltkqsdrm3LISICcRNE5/JVSNYf6HprfsjFNXOsm2ky3fPY/nZyt6JdLbIu8PThb/5m40+xoO2yeqk1ws=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ore@pengutronix.de>)
-	id 1uRrVJ-0007EV-Fn; Wed, 18 Jun 2025 14:02:57 +0200
-Received: from dude04.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::ac])
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <ore@pengutronix.de>)
-	id 1uRrVI-0048CK-1P;
-	Wed, 18 Jun 2025 14:02:56 +0200
-Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.96)
-	(envelope-from <ore@pengutronix.de>)
-	id 1uRrVI-00DBM3-17;
-	Wed, 18 Jun 2025 14:02:56 +0200
-From: Oleksij Rempel <o.rempel@pengutronix.de>
-To: Sebastian Reichel <sre@kernel.org>,
-	Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-	Benson Leung <bleung@chromium.org>,
-	Tzung-Bi Shih <tzungbi@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Oleksij Rempel <o.rempel@pengutronix.de>,
-	Matti Vaittinen <mazziesaccount@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	kernel@pengutronix.de,
-	linux-kernel@vger.kernel.org,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	linux-pm@vger.kernel.org,
-	=?UTF-8?q?S=C3=B8ren=20Andersen?= <san@skov.dk>,
-	Guenter Roeck <groeck@chromium.org>,
-	Ahmad Fatoum <a.fatoum@pengutronix.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	chrome-platform@lists.linux.dev
-Subject: [PATCH v11 2/7] reboot: hw_protection_trigger: use standardized numeric shutdown/reboot reasons instead of strings
-Date: Wed, 18 Jun 2025 14:02:50 +0200
-Message-Id: <20250618120255.3141862-3-o.rempel@pengutronix.de>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250618120255.3141862-1-o.rempel@pengutronix.de>
-References: <20250618120255.3141862-1-o.rempel@pengutronix.de>
+	s=arc-20240116; t=1750248792; c=relaxed/simple;
+	bh=S+Z1yIM9Z7AMg6puDBieh0UvRmQ1svKpeSk5WrhTYRI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=O0M+qajhD/kf7igiQ3Bf9ODtRnxhLl7zZP8OjI1D/SQInLdrxbEzg5fC8eZUe2Fw4ERY7zNTKofHRG3C9sxxzkzeJa8SZizEQM1bay97tjMK/IcJFENJRhD3gPAmgWgRWzFNARS41qwzbkGw2T+Q898QQuwf4xbXQz5pL7N/C9M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=PS7QpX9j; arc=none smtp.client-ip=209.85.218.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="PS7QpX9j"
+Received: by mail-ej1-f41.google.com with SMTP id a640c23a62f3a-adfb562266cso650974266b.0
+        for <linux-pm@vger.kernel.org>; Wed, 18 Jun 2025 05:13:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1750248789; x=1750853589; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=bKGxDPrsrGFp0Bze86vZksL2+DNrY5eWcc4p55uZfLg=;
+        b=PS7QpX9jMPQvzX6sjDOFk1szG0lEk5c7rjgLVAuJwXtzlY6vEyyRUzXguADzoyQ4SB
+         m6/bF3TJYKJoOmWygsQxIvHxXdUfS5B6tmZXK2V6Us5YU+fVDUXsgmOPFVoYgGhfOP0M
+         n3QJTx0Y0LiGBjXOpcJTfM4ISpnPspoPeBqm1YCzPP8Vk7FHqrNir2jbzQsN9GiijjqC
+         j4h3tnLRGeJFnL74BniE57h4mB4Z1CoN9t0YcCu8y7MGxXqRGmQQVcltuPiaXXaWo6vY
+         d0+y44N0lUfMCItGFvsbkGYezUAkQdbNCBZ9qGliEUmk/pFoiFXkwz+d6+knE8pFXj50
+         B2pg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1750248789; x=1750853589;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=bKGxDPrsrGFp0Bze86vZksL2+DNrY5eWcc4p55uZfLg=;
+        b=J8AaMvsxi5dyfmu3rDx3Nf3S5jPL01eoxZ3PDqz8xweVDOnXLLflfwJttvIV22IIYK
+         p0dfuBTcBdmh6llsSE3Lb8b85wu9tpS0kOKGcXYuQ9K6voMcLjCv8L5pyVxwl8tG2SMS
+         m/zAc82ijnnA6gpIruM6q2fPUQRWZ8o4/P+bKR+jzniBqbfyAeu9AedjFT8LtQbOw3ik
+         iuaNVVGXgf66Ew2yPjlaPLAwM/Bgk5dIm4h+8EYzTC4JnUxoaZq13FFMxzP8b0HmXkmK
+         vtHJti0TPaEJFzgTg35vzMXlNZD04+Lda7QOAKMSmAAEN4CrJa+3xo5hX+/7IrDUw1ri
+         Qy2w==
+X-Forwarded-Encrypted: i=1; AJvYcCXE9uM+IFNOBFn9vCXiXz7WuB45fUllOYfWmrzVIW0qF8Rt7hAiFQ0CtkIzEhctslw/bwF36BzCrw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx/+ooGAksAFOU5ppYNzl4ka+6P9JmVKnK5UaZTrFyXQVWKHw9h
+	+MnZ6sryzloCmBqKoRCAnQl8JqSBUdnNYTzJj8YcsDov++/fMQlbKWBEWAnBdLgQY7gpWO0RPIP
+	7WeJIqpvCn65M34oPQTl8yai9Y/KHXsaNOQi5br1JvQ==
+X-Gm-Gg: ASbGnct1Gaz16I94GmYTmj3cjz5qRI20lUNI5V6qk9yEstVTOyy7yQ/BmMm10L4Adwm
+	r/LUsY2LrVbdylLJJgoM+RsVjZZXT4InaEv7/ZqQ/ec+sYkre+oRWYTyR8sDtQZJ+Em/K9lEDUu
+	V8smzw6yiEl7zlaB0xuOwhEUHu+65Ocr/OISEopXEs/ec=
+X-Google-Smtp-Source: AGHT+IGTSzjogHCi/geFRfkS1k64vxCFzHGvVMOvmRTwVeChVfJIOBt9QznhX1/YRhdAVy4BHCTh3ig3roxkOz/SlaA=
+X-Received: by 2002:a17:907:fd18:b0:add:fa4e:8a7e with SMTP id
+ a640c23a62f3a-adfad4104cemr1503686066b.32.1750248789286; Wed, 18 Jun 2025
+ 05:13:09 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ore@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+References: <20250617193450.183889-1-hiagofranco@gmail.com> <20250617193450.183889-4-hiagofranco@gmail.com>
+In-Reply-To: <20250617193450.183889-4-hiagofranco@gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Wed, 18 Jun 2025 14:12:31 +0200
+X-Gm-Features: AX0GCFv-WhPn_WVjSMi4ptgdlE0BOC7_hZaPLP8zfqr856nDVAxKNS58yS5OlAM
+Message-ID: <CAPDyKFq0EswFPF2nabJfQQ52D3Usy8AOUEH1WJWKsEhvOhO60w@mail.gmail.com>
+Subject: Re: [PATCH v5 3/3] remoteproc: imx_rproc: detect and attach to
+ pre-booted remote cores
+To: Hiago De Franco <hiagofranco@gmail.com>
+Cc: Mathieu Poirier <mathieu.poirier@linaro.org>, linux-pm@vger.kernel.org, 
+	linux-remoteproc@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Bjorn Andersson <andersson@kernel.org>, 
+	Hiago De Franco <hiago.franco@toradex.com>, imx@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	Peng Fan <peng.fan@oss.nxp.com>, daniel.baluta@nxp.com, iuliana.prodan@oss.nxp.com, 
+	"Rafael J . Wysocki" <rafael@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-Prepares the kernel for the Power State Change Reason (PSCR) recorder,
-which will store shutdown and reboot reasons in persistent storage.
+On Tue, 17 Jun 2025 at 21:36, Hiago De Franco <hiagofranco@gmail.com> wrote:
+>
+> From: Hiago De Franco <hiago.franco@toradex.com>
+>
+> When the remote core is started before Linux boots (e.g., by the
+> bootloader), the driver currently is not able to attach because it only
+> checks for cores running in different partitions. If the core was kicked
+> by the bootloader, it is in the same partition as Linux and it is
+> already up and running.
+>
+> This adds power mode verification through dev_pm_genpd_is_on(), enabling
+> the driver to detect when the remote core is already running and
+> properly attach to it if all the power domain devices are on.
+>
+> To accomplish this, we need to avoid passing any attach_data or flags to
+> dev_pm_domain_attach_list(), letting the platform device become a
+> consumer of the power domain provider. With that the current power state
+> of the genpds will not change, allowing the detection of the remote core
+> power state.
+>
+> We enable and sync the device runtime PM during probe to make sure the
+> power domains are correctly managed when the core is controlled by the
+> kernel.
+>
+> Suggested-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Signed-off-by: Hiago De Franco <hiago.franco@toradex.com>
 
-Instead of using string-based reason descriptions, which are often too
-large to fit within limited storage spaces (e.g., RTC clocks with only 8
-bits of battery-backed storage), we introduce `enum psc_reason`. This
-enumerates predefined reasons for power state changes, making it
-efficient to store and retrieve shutdown causes.
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Key changes:
-- Introduced `enum psc_reason`, defining structured reasons for power state
-  changes.
-- Replaced string-based shutdown reasons with `psc_reason` identifiers.
-- Implemented `get_psc_reason()` and `set_psc_reason()` for tracking the
-  last shutdown cause.
-- Added `psc_reason_to_str()` to map enum values to human-readable strings.
-- Updated `hw_protection_trigger()` to use `psc_reason` instead of string
-  parameters.
-- Updated all consumers of `hw_protection_trigger()` to pass an appropriate
-  `psc_reason` value instead of a string.
-- All structured logs now go through a single `pr_emerg()` in
-  `__hw_protection_trigger()`, providing consistent output:
-    HARDWARE PROTECTION <action>: <reason-code> (<reason-string>)
+Kind regards
+Uffe
 
-Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
-Reviewed-by: Matti Vaittinen <mazziesaccount@gmail.com>
-Acked-by: Mark Brown <broonie@kernel.org>
-Acked-by: Tzung-Bi Shih <tzungbi@kernel.org>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
-changes v11:
-- add missing break reported by kernel test robot <lkp@intel.com>
-  https://lore.kernel.org/oe-kbuild-all/202506180402.ly0g2TQe-lkp@intel.com/
-changes v10
-- regulator_handle_critical: set pscr = PSCR_UNKNOWN for default case
-- add Acked-by: Daniel Lezcano ..
-changes v9:
-- Remove redundant pr_crit() messages before hw_protection_trigger()
-- Replace psc_reason_to_str() switch with static const string array
-- Mark psc_last_reason as static
-changes v8:
-- add Acked/Reviewed-by.
-changes v6:
-- added in this version
----
- drivers/platform/chrome/cros_ec_lpc.c |  2 +-
- drivers/regulator/core.c              | 16 ++---
- drivers/regulator/irq_helpers.c       |  9 +--
- drivers/thermal/thermal_core.c        |  3 +-
- include/linux/reboot.h                | 77 +++++++++++++++++++++++-
- kernel/reboot.c                       | 85 +++++++++++++++++++++++++--
- 6 files changed, 170 insertions(+), 22 deletions(-)
-
-diff --git a/drivers/platform/chrome/cros_ec_lpc.c b/drivers/platform/chrome/cros_ec_lpc.c
-index 7d9a78289c96..20d792f99f13 100644
---- a/drivers/platform/chrome/cros_ec_lpc.c
-+++ b/drivers/platform/chrome/cros_ec_lpc.c
-@@ -455,7 +455,7 @@ static void cros_ec_lpc_acpi_notify(acpi_handle device, u32 value, void *data)
- 		blocking_notifier_call_chain(&ec_dev->panic_notifier, 0, ec_dev);
- 		kobject_uevent_env(&ec_dev->dev->kobj, KOBJ_CHANGE, (char **)env);
- 		/* Begin orderly shutdown. EC will force reset after a short period. */
--		__hw_protection_trigger("CrOS EC Panic", -1, HWPROT_ACT_SHUTDOWN);
-+		__hw_protection_trigger(PSCR_EC_PANIC, -1, HWPROT_ACT_SHUTDOWN);
- 		/* Do not query for other events after a panic is reported */
- 		return;
- 	}
-diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index ab74d86f822a..e909cdae634a 100644
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -5324,26 +5324,26 @@ EXPORT_SYMBOL_GPL(regulator_bulk_free);
- static void regulator_handle_critical(struct regulator_dev *rdev,
- 				      unsigned long event)
- {
--	const char *reason = NULL;
-+	enum psc_reason pscr;
- 
- 	if (!rdev->constraints->system_critical)
- 		return;
- 
- 	switch (event) {
- 	case REGULATOR_EVENT_UNDER_VOLTAGE:
--		reason = "System critical regulator: voltage drop detected";
-+		pscr = PSCR_UNDER_VOLTAGE;
- 		break;
- 	case REGULATOR_EVENT_OVER_CURRENT:
--		reason = "System critical regulator: over-current detected";
-+		pscr = PSCR_OVER_CURRENT;
- 		break;
- 	case REGULATOR_EVENT_FAIL:
--		reason = "System critical regulator: unknown error";
-+		pscr = PSCR_REGULATOR_FAILURE;
-+		break;
-+	default:
-+		pscr = PSCR_UNKNOWN;
- 	}
- 
--	if (!reason)
--		return;
--
--	hw_protection_trigger(reason,
-+	hw_protection_trigger(pscr,
- 			      rdev->constraints->uv_less_critical_window_ms);
- }
- 
-diff --git a/drivers/regulator/irq_helpers.c b/drivers/regulator/irq_helpers.c
-index 5742faee8071..25f5ba3a3a6a 100644
---- a/drivers/regulator/irq_helpers.c
-+++ b/drivers/regulator/irq_helpers.c
-@@ -64,15 +64,16 @@ static void regulator_notifier_isr_work(struct work_struct *work)
- reread:
- 	if (d->fatal_cnt && h->retry_cnt > d->fatal_cnt) {
- 		if (!d->die)
--			return hw_protection_trigger("Regulator HW failure? - no IC recovery",
-+			return hw_protection_trigger(PSCR_REGULATOR_FAILURE,
- 						     REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
-+
- 		ret = d->die(rid);
- 		/*
- 		 * If the 'last resort' IC recovery failed we will have
- 		 * nothing else left to do...
- 		 */
- 		if (ret)
--			return hw_protection_trigger("Regulator HW failure. IC recovery failed",
-+			return hw_protection_trigger(PSCR_REGULATOR_FAILURE,
- 						     REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
- 
- 		/*
-@@ -263,13 +264,13 @@ static irqreturn_t regulator_notifier_isr(int irq, void *data)
- 	if (d->fatal_cnt && h->retry_cnt > d->fatal_cnt) {
- 		/* If we have no recovery, just try shut down straight away */
- 		if (!d->die) {
--			hw_protection_trigger("Regulator failure. Retry count exceeded",
-+			hw_protection_trigger(PSCR_REGULATOR_FAILURE,
- 					      REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
- 		} else {
- 			ret = d->die(rid);
- 			/* If die() failed shut down as a last attempt to save the HW */
- 			if (ret)
--				hw_protection_trigger("Regulator failure. Recovery failed",
-+				hw_protection_trigger(PSCR_REGULATOR_FAILURE,
- 						      REGULATOR_FORCED_SAFETY_SHUTDOWN_WAIT_MS);
- 		}
- 	}
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 17ca5c082643..9f13213f0722 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -377,11 +377,10 @@ static void thermal_zone_device_halt(struct thermal_zone_device *tz,
- 	 * Its a must for forced_emergency_poweroff_work to be scheduled.
- 	 */
- 	int poweroff_delay_ms = CONFIG_THERMAL_EMERGENCY_POWEROFF_DELAY_MS;
--	const char *msg = "Temperature too high";
- 
- 	dev_emerg(&tz->device, "%s: critical temperature reached\n", tz->type);
- 
--	__hw_protection_trigger(msg, poweroff_delay_ms, action);
-+	__hw_protection_trigger(PSCR_OVER_TEMPERATURE, poweroff_delay_ms, action);
- }
- 
- void thermal_zone_device_critical(struct thermal_zone_device *tz)
-diff --git a/include/linux/reboot.h b/include/linux/reboot.h
-index aa08c3bbbf59..6477910c6a9e 100644
---- a/include/linux/reboot.h
-+++ b/include/linux/reboot.h
-@@ -178,6 +178,73 @@ void ctrl_alt_del(void);
- extern void orderly_poweroff(bool force);
- extern void orderly_reboot(void);
- 
-+
-+/**
-+ * enum psc_reason - Enumerates reasons for power state changes.
-+ *
-+ * This enum defines various reasons why a system might transition into a
-+ * shutdown, reboot, or kexec state. While originally intended for hardware
-+ * protection events, `psc_reason` can be extended to track other system
-+ * transitions, such as controlled reboots triggered by software or
-+ * maintenance operations.
-+ *
-+ * The values in this enumeration provide structured and standardized
-+ * identifiers that replace free-form string descriptions. They are designed
-+ * to be stored efficiently, making them suitable for use in environments
-+ * with limited storage, such as battery-backed RTC registers, non-volatile
-+ * memory, or bootloader communication mechanisms.
-+ *
-+ * Importantly, the order of these values **must remain stable**, as
-+ * bootloaders, user-space tools, or post-mortem investigation utilities
-+ * may rely on their numerical representation for consistent behavior.
-+ *
-+ * @PSCR_UNKNOWN: Unknown or unspecified reason for the power state change.
-+ *	This value serves as a default when no explicit cause is recorded.
-+ *
-+ * @PSCR_UNDER_VOLTAGE: Shutdown or reboot triggered due to supply voltage
-+ *      dropping below a safe threshold. This helps prevent instability or
-+ *      corruption caused by insufficient power.
-+ *
-+ * @PSCR_OVER_CURRENT: System shutdown or reboot due to excessive current draw,
-+ *      which may indicate a short circuit, an overloaded power rail, or other
-+ *      hardware faults requiring immediate action.
-+ *
-+ * @PSCR_REGULATOR_FAILURE: A critical failure in a voltage regulator, causing
-+ *      improper power delivery. This may be due to internal component failure,
-+ *      transient conditions, or external load issues requiring mitigation.
-+ *
-+ * @PSCR_OVER_TEMPERATURE: System shutdown or reboot due to excessive thermal
-+ *	conditions. This attempts to prevent hardware damage when temperature
-+ *	sensors detect unsafe levels, often impacting CPUs, GPUs, or power
-+ *	components.
-+ *
-+ * @PSCR_EC_PANIC: Shutdown or reboot triggered by an Embedded Controller (EC)
-+ *	panic. The EC is a microcontroller responsible for low-level system
-+ *	management, including power sequencing, thermal control, and battery
-+ *	management. An EC panic may indicate critical firmware issues, power
-+ *	management errors, or an unrecoverable hardware fault requiring
-+ *	immediate response.
-+ *
-+ * @PSCR_REASON_COUNT: Number of defined power state change reasons. This
-+ *	value is useful for range checking and potential future extensions
-+ *	while maintaining compatibility.
-+ */
-+enum psc_reason {
-+	PSCR_UNKNOWN,
-+	PSCR_UNDER_VOLTAGE,
-+	PSCR_OVER_CURRENT,
-+	PSCR_REGULATOR_FAILURE,
-+	PSCR_OVER_TEMPERATURE,
-+	PSCR_EC_PANIC,
-+
-+	/* Number of reasons */
-+	PSCR_REASON_COUNT,
-+};
-+
-+#define PSCR_MAX_REASON	(PSCR_REASON_COUNT - 1)
-+
-+const char *psc_reason_to_str(enum psc_reason reason);
-+
- /**
-  * enum hw_protection_action - Hardware protection action
-  *
-@@ -191,13 +258,13 @@ extern void orderly_reboot(void);
-  */
- enum hw_protection_action { HWPROT_ACT_DEFAULT, HWPROT_ACT_SHUTDOWN, HWPROT_ACT_REBOOT };
- 
--void __hw_protection_trigger(const char *reason, int ms_until_forced,
-+void __hw_protection_trigger(enum psc_reason reason, int ms_until_forced,
- 			     enum hw_protection_action action);
- 
- /**
-  * hw_protection_trigger - Trigger default emergency system hardware protection action
-  *
-- * @reason:		Reason of emergency shutdown or reboot to be printed.
-+ * @reason:		Reason of emergency shutdown or reboot.
-  * @ms_until_forced:	Time to wait for orderly shutdown or reboot before
-  *			triggering it. Negative value disables the forced
-  *			shutdown or reboot.
-@@ -206,11 +273,15 @@ void __hw_protection_trigger(const char *reason, int ms_until_forced,
-  * hardware from further damage. The exact action taken is controllable at
-  * runtime and defaults to shutdown.
-  */
--static inline void hw_protection_trigger(const char *reason, int ms_until_forced)
-+static inline void hw_protection_trigger(enum psc_reason reason,
-+					 int ms_until_forced)
- {
- 	__hw_protection_trigger(reason, ms_until_forced, HWPROT_ACT_DEFAULT);
- }
- 
-+enum psc_reason get_psc_reason(void);
-+void set_psc_reason(enum psc_reason reason);
-+
- /*
-  * Emergency restart, callable from an interrupt handler.
-  */
-diff --git a/kernel/reboot.c b/kernel/reboot.c
-index ec087827c85c..87972b4a77b2 100644
---- a/kernel/reboot.c
-+++ b/kernel/reboot.c
-@@ -13,6 +13,7 @@
- #include <linux/kexec.h>
- #include <linux/kmod.h>
- #include <linux/kmsg_dump.h>
-+#include <linux/power/power_on_reason.h>
- #include <linux/reboot.h>
- #include <linux/suspend.h>
- #include <linux/syscalls.h>
-@@ -49,6 +50,7 @@ int reboot_default = 1;
- int reboot_cpu;
- enum reboot_type reboot_type = BOOT_ACPI;
- int reboot_force;
-+static enum psc_reason psc_last_reason = PSCR_UNKNOWN;
- 
- struct sys_off_handler {
- 	struct notifier_block nb;
-@@ -1010,10 +1012,82 @@ static void hw_failure_emergency_schedule(enum hw_protection_action action,
- 			      msecs_to_jiffies(action_delay_ms));
- }
- 
-+/**
-+ * get_psc_reason - Retrieve the last recorded power state change reason.
-+ *
-+ * This function returns the most recent power state change reason stored
-+ * in `psc_last_reason`. The value is set using `set_psc_reason()` when a
-+ * shutdown, reboot, or kexec event occurs.
-+ *
-+ * The reason can be used for system diagnostics, post-mortem analysis, or
-+ * debugging unexpected power state changes. Bootloaders or user-space tools
-+ * may retrieve this value to determine why the system last transitioned to
-+ * a new power state.
-+ *
-+ * Return: A value from `enum psc_reason`, indicating the last known power
-+ * state change reason.
-+ */
-+enum psc_reason get_psc_reason(void)
-+{
-+	return READ_ONCE(psc_last_reason);
-+}
-+EXPORT_SYMBOL_GPL(get_psc_reason);
-+
-+/**
-+ * set_psc_reason - Set the reason for the last power state change.
-+ *
-+ * @reason: A value from `enum psc_reason` indicating the cause of the power
-+ *          state change.
-+ *
-+ * This function records the reason for a shutdown, reboot, or kexec event
-+ * by storing it in `psc_last_reason`. It ensures that the value remains
-+ * consistent within the running system, allowing retrieval via
-+ * `get_psc_reason()` for diagnostics, logging, or post-mortem analysis.
-+ *
-+ * Persistence Consideration:
-+ * - This function **does not persist** the recorded reason across power cycles.
-+ * - After a system reset or complete power loss, the recorded reason is lost.
-+ * - To store power state change reasons persistently, additional tools such as
-+ *   the Power State Change Reason Recorder (PSCRR) framework should be used.
-+ */
-+void set_psc_reason(enum psc_reason reason)
-+{
-+	WRITE_ONCE(psc_last_reason, reason);
-+}
-+EXPORT_SYMBOL_GPL(set_psc_reason);
-+
-+static const char * const pscr_reason_strs[] = {
-+	[PSCR_UNKNOWN]            = POWER_ON_REASON_UNKNOWN,
-+	[PSCR_UNDER_VOLTAGE]      = POWER_ON_REASON_BROWN_OUT,
-+	[PSCR_OVER_CURRENT]       = POWER_ON_REASON_OVER_CURRENT,
-+	[PSCR_REGULATOR_FAILURE]  = POWER_ON_REASON_REGULATOR_FAILURE,
-+	[PSCR_OVER_TEMPERATURE]   = POWER_ON_REASON_OVER_TEMPERATURE,
-+	[PSCR_EC_PANIC]           = POWER_ON_REASON_EC_PANIC,
-+};
-+
-+/**
-+ * psc_reason_to_str - Converts a power state change reason enum to a string.
-+ * @reason: The `psc_reason` enum value to be converted.
-+ *
-+ * This function provides a human-readable string representation of the power
-+ * state change reason, making it easier to interpret logs and debug messages.
-+ *
-+ * Return:
-+ * - A string corresponding to the given `psc_reason` value.
-+ * - `"Invalid"` if the value is not recognized.
-+ */
-+const char *psc_reason_to_str(enum psc_reason reason)
-+{
-+	if (reason < 0 || reason >= PSCR_REASON_COUNT)
-+		return "Invalid";
-+	return pscr_reason_strs[reason];
-+}
-+EXPORT_SYMBOL_GPL(psc_reason_to_str);
-+
- /**
-  * __hw_protection_trigger - Trigger an emergency system shutdown or reboot
-  *
-- * @reason:		Reason of emergency shutdown or reboot to be printed.
-+ * @reason:		Reason of emergency shutdown or reboot.
-  * @ms_until_forced:	Time to wait for orderly shutdown or reboot before
-  *			triggering it. Negative value disables the forced
-  *			shutdown or reboot.
-@@ -1025,7 +1099,7 @@ static void hw_failure_emergency_schedule(enum hw_protection_action action,
-  * pending even if the previous request has given a large timeout for forced
-  * shutdown/reboot.
-  */
--void __hw_protection_trigger(const char *reason, int ms_until_forced,
-+void __hw_protection_trigger(enum psc_reason reason, int ms_until_forced,
- 			     enum hw_protection_action action)
- {
- 	static atomic_t allow_proceed = ATOMIC_INIT(1);
-@@ -1033,8 +1107,11 @@ void __hw_protection_trigger(const char *reason, int ms_until_forced,
- 	if (action == HWPROT_ACT_DEFAULT)
- 		action = hw_protection_action;
- 
--	pr_emerg("HARDWARE PROTECTION %s (%s)\n",
--		 hw_protection_action_str(action), reason);
-+	set_psc_reason(reason);
-+
-+	pr_emerg("HARDWARE PROTECTION %s: %i (%s)\n",
-+		 hw_protection_action_str(action), reason,
-+		 psc_reason_to_str(reason));
- 
- 	/* Shutdown should be initiated only once. */
- 	if (!atomic_dec_and_test(&allow_proceed))
--- 
-2.39.5
-
+> ---
+> v4 -> v5:
+>  - pm_runtime_get_sync() removed in favor of
+>    pm_runtime_resume_and_get(). Now it also checks the return value of
+>    this function.
+>  - Added pm_runtime_disable() and pm_runtime_put() to imx_rproc_remove()
+>    function.
+> v3 -> v4:
+>  - Changed to use the new dev_pm_genpd_is_on() function instead, as
+>    suggested by Ulf. This will now get the power status of the two
+>    remote cores power domains to decided if imx_rpoc needs to attach or
+>    not. In order to do that, pm_runtime_enable() and
+>    pm_runtime_get_sync() were introduced and pd_data was removed.
+> v2 -> v3:
+>  - Unchanged.
+> v1 -> v2:
+>  - Dropped unecessary include. Removed the imx_rproc_is_on function, as
+>    suggested.
+> ---
+>  drivers/remoteproc/imx_rproc.c | 37 +++++++++++++++++++++++++++++-----
+>  1 file changed, 32 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/remoteproc/imx_rproc.c b/drivers/remoteproc/imx_rproc.c
+> index 627e57a88db2..b53083f2553e 100644
+> --- a/drivers/remoteproc/imx_rproc.c
+> +++ b/drivers/remoteproc/imx_rproc.c
+> @@ -18,6 +18,7 @@
+>  #include <linux/of_reserved_mem.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/pm_domain.h>
+> +#include <linux/pm_runtime.h>
+>  #include <linux/reboot.h>
+>  #include <linux/regmap.h>
+>  #include <linux/remoteproc.h>
+> @@ -890,10 +891,8 @@ static int imx_rproc_partition_notify(struct notifier_block *nb,
+>  static int imx_rproc_attach_pd(struct imx_rproc *priv)
+>  {
+>         struct device *dev = priv->dev;
+> -       int ret;
+> -       struct dev_pm_domain_attach_data pd_data = {
+> -               .pd_flags = PD_FLAG_DEV_LINK_ON,
+> -       };
+> +       int ret, i;
+> +       bool detached = true;
+>
+>         /*
+>          * If there is only one power-domain entry, the platform driver framework
+> @@ -902,7 +901,22 @@ static int imx_rproc_attach_pd(struct imx_rproc *priv)
+>         if (dev->pm_domain)
+>                 return 0;
+>
+> -       ret = dev_pm_domain_attach_list(dev, &pd_data, &priv->pd_list);
+> +       ret = dev_pm_domain_attach_list(dev, NULL, &priv->pd_list);
+> +       /*
+> +        * If all the power domain devices are already turned on, the remote
+> +        * core is already up when the kernel booted (e.g. kicked by the
+> +        * bootloader). In this case attach to it.
+> +        */
+> +       for (i = 0; i < ret; i++) {
+> +               if (!dev_pm_genpd_is_on(priv->pd_list->pd_devs[i])) {
+> +                       detached = false;
+> +                       break;
+> +               }
+> +       }
+> +
+> +       if (detached)
+> +               priv->rproc->state = RPROC_DETACHED;
+> +
+>         return ret < 0 ? ret : 0;
+>  }
+>
+> @@ -1146,6 +1160,15 @@ static int imx_rproc_probe(struct platform_device *pdev)
+>                 }
+>         }
+>
+> +       if (dcfg->method == IMX_RPROC_SCU_API) {
+> +               pm_runtime_enable(dev);
+> +               ret = pm_runtime_resume_and_get(dev);
+> +               if (ret) {
+> +                       dev_err(dev, "pm_runtime get failed: %d\n", ret);
+> +                       goto err_put_clk;
+> +               }
+> +       }
+> +
+>         ret = rproc_add(rproc);
+>         if (ret) {
+>                 dev_err(dev, "rproc_add failed\n");
+> @@ -1171,6 +1194,10 @@ static void imx_rproc_remove(struct platform_device *pdev)
+>         struct rproc *rproc = platform_get_drvdata(pdev);
+>         struct imx_rproc *priv = rproc->priv;
+>
+> +       if (priv->dcfg->method == IMX_RPROC_SCU_API) {
+> +               pm_runtime_disable(priv->dev);
+> +               pm_runtime_put(priv->dev);
+> +       }
+>         clk_disable_unprepare(priv->clk);
+>         rproc_del(rproc);
+>         imx_rproc_put_scu(rproc);
+> --
+> 2.39.5
+>
