@@ -1,66 +1,65 @@
-Received: from mail-pf1-f176.google.com (mail-pf1-f176.google.com [209.85.210.176])
+Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2789E2475CB
-	for <linux-pm@vger.kernel.org>; Thu, 19 Jun 2025 07:59:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C70663085D7
+	for <linux-pm@vger.kernel.org>; Thu, 19 Jun 2025 08:16:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750319970; cv=none; b=KaTAX+n2MqX+KV7NbR4IcWzUrie3gjt33S5iJaapAiPKpwPWZ92cu+WhDRHEPV2m/k7jGn3s0nluQmXvfDlopPCtuZKT1mKwDaJWATKlRwtIEHmbZkwT8HBCcwJf8PxO+HM0q1lEJgTKVTOe6OGUZt3x9z+ZAjOXxdouK7/jUyU=
+	t=1750320966; cv=none; b=APsX2Gh24JIjtDILLMF6dSYyUA/qfAtlbO9REYODnq72u3uyHAlubG4R1GeRL6ocMvGAvItzbnwAWM+KFsbu9e7/SgCSDV653eiae14CJ9TRClH5QhKK3DY/1ql69MBPO6AtEabAuIPZwxcyKQJms9mlKxsHRVt1qfWEhlh5wbY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750319970; c=relaxed/simple;
-	bh=qmTIT7TE5o1AMakCWk3TpcXBKxAE1s7w+sHy2Jg1Ohg=;
+	s=arc-20240116; t=1750320966; c=relaxed/simple;
+	bh=zbCaHIDni1is8/1VUzP5in34Xsb1zCdrBhY2rcfVogM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=tZRFxAWHGUpNruUCQcchyNOUDshOLQo853r27M4uWyOcU9ZQsgvn43ysSRVAu6lRgNPJHIjKEvIbEX9lXwnqs9yHOkiQiWdjL/tQ/kvyw5oLVwpN55Qxvh8UrrIO/ilT0DPHhlBeepYk0ZZl00BBXnR12TYVFByVm7Uvfyb1e2Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=JQbawT8v; arc=none smtp.client-ip=209.85.210.176
+	 Content-Type:Content-Disposition:In-Reply-To; b=qmsf1SOz9VhUKSIAqK3AXaxMUwHJt5yiZy430b/CvKDnAB7oxXImA0a6liKg0zAzUvuliEnDVN1erTf2GHiPTVN2exsq2bouMkq5MtqHHVAq6GP1kKhPpxuIkIYSnIwXMrKjDGPBpLZpbozBhQrwrGMwINOfyyE2RJeTuiZnzrQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=qQsG0xbj; arc=none smtp.client-ip=209.85.214.171
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="JQbawT8v"
-Received: by mail-pf1-f176.google.com with SMTP id d2e1a72fcca58-747fc77bb2aso367639b3a.3
-        for <linux-pm@vger.kernel.org>; Thu, 19 Jun 2025 00:59:28 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qQsG0xbj"
+Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-23526264386so5946655ad.2
+        for <linux-pm@vger.kernel.org>; Thu, 19 Jun 2025 01:16:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1750319968; x=1750924768; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1750320964; x=1750925764; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=cInoigfZTtwglkgDR0xmxDXjKijNgKERgzu95Txxg1s=;
-        b=JQbawT8vXjHrPpgSDiE1rFd2j3uEEi2DZDhzu88zYO3p+PlrjE6vhHDKVEsEQWUVMJ
-         x+d15zGQnG6RnIVCxnTDYczGQygUO7tM2sxWQSCZuZIxbvgJIoIopgUsyv7XF9uHyHOY
-         /4xHhVxUQfdMFX2ryT8mLwsh+PIm1Kj7ut68LllZCgzSY9yTF8+x5UC7FDyqM0fD0INi
-         h3BaUmQvk1fS6bBdpbdNYEmPQxYbKqkSI0wEh3byA/Iq2Wf0ajZJ8OGptrLMlU8w4/ly
-         YYtEQ9fqQs/tjsMuVT7aidnMegCf3Ns6Mt9BwJS9nmzJ5dbPQubeK+96JusCVNMH3tYT
-         Ovpw==
+        bh=K0QlyepxER9o+isFGhwtQG1hSRbSpj4GjpamIkQZ6oo=;
+        b=qQsG0xbjn3QQjdKCT6K4nV5hSKDGkVVfOVAlZXb+BZmsHZkxUJb0hSMauTp9X9yAFj
+         tI5HpZA3l2xoYCOWyOebCUcHUdeQ1QbCG/o31/qBTVqPQSVerGuxP10z010M+IHY2vGM
+         kK438Sj9uBUAYFW0g17ZLSuNwtZeeBThCQ2xUU+qEeNs2+9FVnFU7StpQO+cDKZRJ70+
+         +osnwZvUoPy/eMs9f2KAft8sX4G791n6AtFovKHTdh9YwaAjFpBF7FflFlXU7BbKu0Pp
+         7FVzarF7RAH9M0lEv1WfPnUEqCf3A2HrEIyVuHb34j0wrZJM+oUoaGEAD/uAidf7EE+G
+         +5Jw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1750319968; x=1750924768;
+        d=1e100.net; s=20230601; t=1750320964; x=1750925764;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=cInoigfZTtwglkgDR0xmxDXjKijNgKERgzu95Txxg1s=;
-        b=m63WhUIKWtlWgvxgR6iJXihHvyRRQQsQr/DoC9hVQjQGA1SGDb04EoX/Nh6Ae4ViQG
-         3BbivVMxqil/apo3Zysdtc3EZUs09FaO5GAdNcTwvHecprNAmuXp0NC/eTw3Wq5plvrW
-         1vvgz+pqSDL93DazPk3mjglNKIA7IcSJ17MXjQmhMajUa+Z8eFQ4f166WhhiU07BDwd6
-         MKLJVxgmqQfyiiCJ84gs8qtMwJWuUZ0dSFR1rGMGBgJ3e3BmW0UmQNn/7WMDbXtCARQy
-         aZBWbCdD1GT7OPgVymF7E8IG/sfGe03b1xoynuxIJ5Xj867w/nXXPF0fvMBGm6IagEPb
-         6M9A==
-X-Forwarded-Encrypted: i=1; AJvYcCVY4KK4OaGpopUFRSWbdLzvIttgd4nu1PR4bVftUUrlakHcbaGErBHjoBxbBbRL+7EV0EsntmE8/Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzIncCSiF1/E3x9OKcPwzF4XJzBweKZ32hO4ZYN0sO6dLbm9G0/
-	0t/AQCuiWARb7DaQAj80qqLrTYelBVCyR3YLTC28IzCeZZ0eIiJ1cnXbEHBRXoMB0O4=
-X-Gm-Gg: ASbGncvHXd5Zh1iJkPWiSIwLvNJLs0y5EA/eiIKb7KaXKxX1J7b03Nli3S5pIBVN6Bl
-	OPnXiQ6tO1TuBeZ66WGIt54c7QGt5EG6FZ6ma5Vv+VQviCf86YoaOK9KhiyfJX5HmV1w0q8KSCI
-	vLLhLinXVy87dD2C5zp2VIZ/Jc1ss4wb2Dgwpo1CAMmCkVZdLuscpmjqPz3Y+jncCafnACXbhv1
-	74ksteDgxFI3EM0dDKY/iX8UL3Gqk+S/eeqdXERSNItXgZI19gkSIs+p+lz5Kywht37WyGS9QCV
-	rsgclUddv5jDK8uLygrjMygTKVThpYeENlnFkN+q8uSfhlutyH95CuAIm8NpJfo=
-X-Google-Smtp-Source: AGHT+IEHfU6bbYUYkS6wqhh+4RphCH4wKMlMEHQgk9iyWb8pXPgDQPEQZzKXARvmNYDg3J/wIX8yOg==
-X-Received: by 2002:a05:6a00:3928:b0:742:a111:ee6f with SMTP id d2e1a72fcca58-7489ce3cd70mr22825218b3a.10.1750319968295;
-        Thu, 19 Jun 2025 00:59:28 -0700 (PDT)
+        bh=K0QlyepxER9o+isFGhwtQG1hSRbSpj4GjpamIkQZ6oo=;
+        b=RMs0lvHpRWUa+3JR4Tzajo3x6y49A53+sT+noMSo1yTuSt2bn+wv2Tw6oYL7PcKsHF
+         GJ5TLor8LBLYohGFbQmTsPmJHUWiQGVzraOEbqNOjEkvohPEiQShE+KLUgUzAwXcnI2K
+         JI7SXRMPqO/sLGetBkQdUbvX7Ef0nESuawxKVXMOUSRCD5xA4AswPgKtW80CQLz2CB+U
+         mYXQ8DrV77pJsIrTp1BoBiTxr/CvAz3NcvMiiLR+xxBoWAHGVUzxY1tMl+EGLXzCn09W
+         7bJHqppEbkZBd8Prs2rrULbpw6S7PhWKU+KI+2jzASvmq1lTSpz9oK1PcFOAgDIgc8/W
+         +kKA==
+X-Forwarded-Encrypted: i=1; AJvYcCU2aUwt9cgqpsJi1ydUVk96J3kmH9DmINqWqImJByjLRD/i6KmYlcv9dKmhyFNkZHi18UXLSr8idg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwIVk8ifqs4LYSXfUeRpiMC4Ym6xWVKTpP/9Bl2xj7rQcPsh7Ix
+	nXCzkuhWANBVWN1KDRHU6QSYPkX5csakFkW3AxVHp71DL+Cp+S639iYLZXG803iTDeA=
+X-Gm-Gg: ASbGncs4t63FRHBTJ84XpVaJ3GsPSMY1Eu9FQuCKwMSPAo13Q/31QUo7mFTMPFLDPEa
+	RbhTKaJviLfof2AksemK/0b8p7fFVlKCwh2NYfsEJIagkBNaUd12pfpHP1hDTchdC0iJwQn5nh3
+	UDvHqnvMJ+Eur3fO6DGlLud82vKSZzKvOqaKLW1xzwu2nNFmO1A3uIDKnKiUfjmIQOo3l4k/by/
+	IxfomHbMDcTmxgfYGVtrFCSPQa2Vv/d/Pb/XnmrZa9mw9LoyWC0EMHKf+Bu5UpPmvpifUlOOHVd
+	HYhY9W4FHqp3sn/0ilZRHl77qCu47C6xpGJcfbs9MXpezg+Ma7QbSyz00ukY5N8=
+X-Google-Smtp-Source: AGHT+IEawLEh5ih0nom5h84EhiR42/JMCNTCVEdgMiTCqrC/LqbAHFqUFmpjyl3R9tYM3sjCCxQHtw==
+X-Received: by 2002:a17:902:ce0f:b0:234:986c:66d5 with SMTP id d9443c01a7336-2366b3137b5mr354396845ad.5.1750320964113;
+        Thu, 19 Jun 2025 01:16:04 -0700 (PDT)
 Received: from localhost ([122.172.81.72])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7488ffecfc5sm12951000b3a.13.2025.06.19.00.59.27
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2365d8a4d6csm114635095ad.88.2025.06.19.01.16.03
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Jun 2025 00:59:27 -0700 (PDT)
-Date: Thu, 19 Jun 2025 13:29:25 +0530
+        Thu, 19 Jun 2025 01:16:03 -0700 (PDT)
+Date: Thu, 19 Jun 2025 13:46:01 +0530
 From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Cc: Abhinav Ananthu <abhinav.ogl@gmail.com>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
+To: Abhinav Ananthu <abhinav.ogl@gmail.com>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Miguel Ojeda <ojeda@kernel.org>,
 	Alex Gaynor <alex.gaynor@gmail.com>,
 	Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>,
@@ -72,10 +71,8 @@ Cc: Abhinav Ananthu <abhinav.ogl@gmail.com>,
 	rust-for-linux@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH v3] rust: cpufreq: Ensure C ABI compatibility in all
  unsafe
-Message-ID: <20250619075925.b2s4ngza75kc3dsj@vireshk-i7>
+Message-ID: <20250619081601.yeulh36lhrqxo4ep@vireshk-i7>
 References: <20250613101815.18092-1-abhinav.ogl@gmail.com>
- <20250619065713.hm5ye2uhikaei2xo@vireshk-i7>
- <CANiq72muPYoPGLrb7jYWMqbWgknMuWJSPMdFPRQMFduFsDTs0Q@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -84,17 +81,28 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CANiq72muPYoPGLrb7jYWMqbWgknMuWJSPMdFPRQMFduFsDTs0Q@mail.gmail.com>
+In-Reply-To: <20250613101815.18092-1-abhinav.ogl@gmail.com>
 
-On 19-06-25, 09:32, Miguel Ojeda wrote:
-> In any case, from now on, one should just refer to them directly as
-> `c_*` (please use the `kernel` prelude for that) -- please see:
+On 13-06-25, 15:48, Abhinav Ananthu wrote:
+> Update all `unsafe extern "C"` callback functions in the cpufreq module to
+> use `kernel::ffi` types (`c_int`, `c_uint`, etc.) instead of Rust-native
+> types like `i32`, `u32`, or `usize`.
 > 
->     https://docs.kernel.org/rust/coding-guidelines.html#c-ffi-types
+> This change ensures that all Rust callbacks have signatures that are
+> ABI-compatible with their corresponding C counterparts, which is critical
+> for FFI correctness and safety.
 > 
-> I hope that helps!
+> Suggested-by: Miguel Ojeda <ojeda@kernel.org>
+> Link: https://github.com/Rust-for-Linux/linux/issues/1170
+> Signed-off-by: Abhinav Ananthu <abhinav.ogl@gmail.com>
+> ---
+>  rust/kernel/cpufreq.rs | 26 +++++++++++++-------------
+>  1 file changed, 13 insertions(+), 13 deletions(-)
 
-Thanks.
+Applied. Thanks.
+
+There are few users of kernel::ffi::* in cpufreq.rs and opp.rs, if you want to
+convert them as well.
 
 -- 
 viresh
