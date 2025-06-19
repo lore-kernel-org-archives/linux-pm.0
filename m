@@ -1,161 +1,302 @@
-Received: from mail-pg1-f174.google.com (mail-pg1-f174.google.com [209.85.215.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0A86170A23
-	for <linux-pm@vger.kernel.org>; Thu, 19 Jun 2025 02:50:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C42C288A8;
+	Thu, 19 Jun 2025 03:54:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750301421; cv=none; b=K4Zjeput0qNDsWuuujRuMwE9dXOfEec6JwyfHMygHvBi5RxA97iQrf/O9QBoD1wrlRQ2vDEtUgg2B8aTW43T9E2uNkD1+9JXs6aGV8o0fKXFFSTq1svD+5g3NHC99rnP9crUD4usYI6DDuFgw8Zar4SZ0lFfxtTZztZYDz+AN+Q=
+	t=1750305270; cv=none; b=TM3112E1zy6APTqOiRc51r9YodFlwfsCNyMWuu+ASj/eGQFxUWItBwRr6mXUGWnMGG5/y68g+6yZdJdBp452r1EyTfkuVQltGZuI4ccN3OZbhkV/zZpZ89qxnlWYGREL+QyWLnp1HnBdFOI5lGh6l5PF7ba/p9XAC+GzA1J/EUE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750301421; c=relaxed/simple;
-	bh=iJcBSfG+nm1MBrPhYrWZUr0TYe4Yf60WLTUAK/r6mlw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ESUetTOOlRV0L0ZeI6d0H/tHpTq7y+tT5liggTJ4S344OqXFzm8NvF+hNvjKhIexqllcw70LYzTW6znvJQGXhxW1fkpQsKlvetZGWpZLVEYejEsF6FyzGgOlmma1rWIspbr3T3wUhHeb7OD56cqD0GmAxqMoya3WfSmzBcRsMIc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pdp7.com; spf=none smtp.mailfrom=pdp7.com; dkim=pass (2048-bit key) header.d=pdp7-com.20230601.gappssmtp.com header.i=@pdp7-com.20230601.gappssmtp.com header.b=zClKA5Nd; arc=none smtp.client-ip=209.85.215.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pdp7.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=pdp7.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=pdp7-com.20230601.gappssmtp.com header.i=@pdp7-com.20230601.gappssmtp.com header.b="zClKA5Nd"
-Received: by mail-pg1-f174.google.com with SMTP id 41be03b00d2f7-b2f1032e1c4so386907a12.3
-        for <linux-pm@vger.kernel.org>; Wed, 18 Jun 2025 19:50:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=pdp7-com.20230601.gappssmtp.com; s=20230601; t=1750301419; x=1750906219; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=tB8e1qVEfhuTIR6cCezHfjL1333Oy60fxLgjuSXst14=;
-        b=zClKA5NdFcZ7xzosWBVTfvmjeZPelkG4jwrzZbQyED0OmTl33fOCymfsbml1aK8kpS
-         9RPQQi47CRyXeiYOKxKUtzgRn6kp+42sc0jRVTyMZbk/YyOmzAIXJpGFtjcmiYMpwSFg
-         BpiiDip0wgt4aHHg4ylo4fPxR/0PpQpo1px11+/UNF5KnxbPfVhqNNv8bfISlgrj8K0m
-         T6nyAKD8jXiZK9YWJbNk+GM2uMjlBpqqNaWfETMCwX+Nt+lI1FP0c0MkCyDLY3+90LAt
-         yexXJsaieGoEt/z+o8QCYZk2u6GppGJJf9v+5bJmXyxKTk05cEy0VVjJrhK7VZLBAYW8
-         ZqAw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1750301419; x=1750906219;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=tB8e1qVEfhuTIR6cCezHfjL1333Oy60fxLgjuSXst14=;
-        b=NvQxKL0++hN4P045/1AN4YKzw8SEatFJ9bH7q2FZm/8pKrGcWRTKZWp+2R3huia/IM
-         DsFXLerJRUbX1KW5MGk1EX18taeS6GHt+umZL130AFP8dJ8/ywOdZSiApw0AswJ0m+L5
-         SVxw8D/7D+QJlvxBIM4+M8nQ6L0KQcgaVZAY0jPx32VlENhFMs/unlxRw1+nDZ2mpRRZ
-         80UG6QcT+8vmd0wG1EgGwXwLQBc8TIZi9cKgThpc0XbFNmT9J9bExcfHyRKM93rEP5CP
-         aI3lJ/kpkVKbhf23wUtde09gXJvXMHUUCiddIDK0YUmNRIEFt5Fr2BVA0oqZq6gAr6NZ
-         zjmQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWZ2Dd81lo1dtNJswfBlZGFWzo0HTfIiDKXgyDN7orO/gPpBDswtWZJfWzXv7KO/NmCYqA00fZGOA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwhLew3jCso8ErY3dntnWLmwfI6vzRTrJWEcyUs+dNttsxalg5w
-	o06VdxNpcUHjWKokbY109fkKg5i1/HAVmhJPyAOEzHZs9Dhaq1CeH+O9Tb9AbA0PI7Y=
-X-Gm-Gg: ASbGncvBX59/s9yXIyG+BG/q2+8VpmRgeMoiVnXEpDAJO4SX40fvqzBsCsyzKPUtQ7t
-	puSd87094rJ58bn5F7onOQTDUyWWWEPZYvo1QV3OBtU69u71D8HQR1798+kEyqq27Shmyh3DTuA
-	aCjDs8ijkMGcaMZUJw0o/e7w1HY0soVMaOnYrIJ+CrZQGuQkouDI6X39dzvvHu4adtUhmUwa27N
-	v0kN436/f5IRSnlLB4lt0FpEXYwQ+3pxAIaHSC1ik/GoRGcPTlqDs8U6Y+M9LLAmh1HT+l4Y25+
-	p2ORNJXCEsILSbOD/ADYM0VigGAaOWIEPOpNR5tfhKH24Wnz/FgTxG0X74GmWm6mur/I3qk=
-X-Google-Smtp-Source: AGHT+IFubn9Xjjn7fmMto+xZqblm2yd0WPXfa0iuVG1BkV+6lAGb7+2YAe7yAyYCgSsbecVsjsPVIw==
-X-Received: by 2002:a17:90b:524b:b0:311:ab20:159a with SMTP id 98e67ed59e1d1-313f1d1c00cmr26840306a91.29.1750301418839;
-        Wed, 18 Jun 2025 19:50:18 -0700 (PDT)
-Received: from x1 (97-120-250-80.ptld.qwest.net. [97.120.250.80])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3158a25617asm985583a91.33.2025.06.18.19.50.17
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Jun 2025 19:50:18 -0700 (PDT)
-Date: Wed, 18 Jun 2025 19:50:16 -0700
-From: Drew Fustini <drew@pdp7.com>
-To: Michal Wilczynski <m.wilczynski@samsung.com>
-Cc: Guo Ren <guoren@kernel.org>, Fu Wei <wefu@redhat.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Frank Binns <frank.binns@imgtec.com>,
-	Matt Coster <matt.coster@imgtec.com>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	linux-riscv@lists.infradead.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v5 7/8] riscv: dts: thead: th1520: Add IMG BXM-4-64 GPU
- node
-Message-ID: <aFN66I9GsCb9qC4G@x1>
-References: <20250618-apr_14_for_sending-v5-0-27ed33ea5c6f@samsung.com>
- <CGME20250618102233eucas1p228b24f58e4cb3d15b0f273530b582cea@eucas1p2.samsung.com>
- <20250618-apr_14_for_sending-v5-7-27ed33ea5c6f@samsung.com>
+	s=arc-20240116; t=1750305270; c=relaxed/simple;
+	bh=IFX+3v+vUS9YCIeKiKTjDAaKXNEZMuRRJOChFHrQovk=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=si+u/c6MbWouryokLkSCGiTns59koG1Y45LAijbEq0Q9U8F8iCZGzlvWkEz3MLUxJA8Vk1Ivr8aWCcKFuKMDzGJZtKhyZL+GXOMvVHlp2pM8aydeap47eqR4yw5Rm9/TpUJbQ+rm1OiouLKXHeGlnIRB4NQmfgZ0vMI4HtIbHr4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 141b5b664cc111f0b29709d653e92f7d-20250619
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.45,REQID:c2a26077-7b1e-40b0-b404-faf2d230091b,IP:0,U
+	RL:0,TC:0,Content:0,EDM:-25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+	N:release,TS:-25
+X-CID-META: VersionHash:6493067,CLOUDID:ff7e6dd868d25dd7e522693d27707afc,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:102,TC:nil,Content:0|50,EDM:1,IP:nil,URL
+	:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,SP
+	R:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 0
+X-CID-BAS: 0,_,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-UUID: 141b5b664cc111f0b29709d653e92f7d-20250619
+Received: from mail.kylinos.cn [(10.44.16.175)] by mailgw.kylinos.cn
+	(envelope-from <zhangzihuan@kylinos.cn>)
+	(Generic MTA)
+	with ESMTP id 401056050; Thu, 19 Jun 2025 11:54:19 +0800
+Received: from mail.kylinos.cn (localhost [127.0.0.1])
+	by mail.kylinos.cn (NSMail) with SMTP id 9EAF2E00891C;
+	Thu, 19 Jun 2025 11:54:19 +0800 (CST)
+X-ns-mid: postfix-685389EB-2938696
+Received: from localhost.localdomain (unknown [172.25.120.24])
+	by mail.kylinos.cn (NSMail) with ESMTPA id E482BE008900;
+	Thu, 19 Jun 2025 11:53:58 +0800 (CST)
+From: Zihuan Zhang <zhangzihuan@kylinos.cn>
+To: rafael@kernel.org,
+	pavel@kernel.org,
+	len.brown@intel.com
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Zihuan Zhang <zhangzihuan@kylinos.cn>
+Subject: [PATCH v2 0/4] PM: freezer: Add retry stats and D-state task logging for debugging
+Date: Thu, 19 Jun 2025 11:53:51 +0800
+Message-Id: <20250619035355.33402-1-zhangzihuan@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250618-apr_14_for_sending-v5-7-27ed33ea5c6f@samsung.com>
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jun 18, 2025 at 12:22:13PM +0200, Michal Wilczynski wrote:
-> Add a device tree node for the IMG BXM-4-64 GPU present in the T-HEAD
-> TH1520 SoC used by the Lichee Pi 4A board. This node enables support for
-> the GPU using the drm/imagination driver.
-> 
-> By adding this node, the kernel can recognize and initialize the GPU,
-> providing graphics acceleration capabilities on the Lichee Pi 4A and
-> other boards based on the TH1520 SoC.
-> 
-> Add fixed clock gpu_mem_clk, as the MEM clock on the T-HEAD SoC can't be
-> controlled programatically.
-> 
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Signed-off-by: Michal Wilczynski <m.wilczynski@samsung.com>
-> ---
->  arch/riscv/boot/dts/thead/th1520.dtsi | 22 ++++++++++++++++++++++
->  1 file changed, 22 insertions(+)
-> 
-> diff --git a/arch/riscv/boot/dts/thead/th1520.dtsi b/arch/riscv/boot/dts/thead/th1520.dtsi
-> index f3f5db0201ab8c0306d4d63072a1573431e51893..c8447eef36c3a6e92d768658b6b19dfeb59a47c4 100644
-> --- a/arch/riscv/boot/dts/thead/th1520.dtsi
-> +++ b/arch/riscv/boot/dts/thead/th1520.dtsi
-> @@ -225,6 +225,13 @@ aonsys_clk: clock-73728000 {
->  		#clock-cells = <0>;
->  	};
->  
-> +	gpu_mem_clk: mem-clk {
-> +		compatible = "fixed-clock";
-> +		clock-frequency = <0>;
-> +		clock-output-names = "gpu_mem_clk";
-> +		#clock-cells = <0>;
-> +	};
-> +
->  	stmmac_axi_config: stmmac-axi-config {
->  		snps,wr_osr_lmt = <15>;
->  		snps,rd_osr_lmt = <15>;
-> @@ -500,6 +507,21 @@ clk: clock-controller@ffef010000 {
->  			#clock-cells = <1>;
->  		};
->  
-> +		gpu: gpu@ffef400000 {
-> +			compatible = "thead,th1520-gpu", "img,img-bxm-4-64",
-> +				     "img,img-rogue";
-> +			reg = <0xff 0xef400000 0x0 0x100000>;
-> +			interrupt-parent = <&plic>;
-> +			interrupts = <102 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&clk_vo CLK_GPU_CORE>,
-> +				 <&gpu_mem_clk>,
-> +				 <&clk_vo CLK_GPU_CFG_ACLK>;
-> +			clock-names = "core", "mem", "sys";
-> +			power-domains = <&aon TH1520_GPU_PD>;
-> +			power-domain-names = "a";
-> +			resets = <&rst TH1520_RESET_ID_GPU>;
-> +		};
-> +
->  		rst: reset-controller@ffef528000 {
->  			compatible = "thead,th1520-reset";
->  			reg = <0xff 0xef528000 0x0 0x4f>;
-> 
-> -- 
-> 2.34.1
-> 
+In our internal testing of system suspend and process freezing behavior,
+we observed that the time taken to freeze userspace processes is often
+non-deterministic. On certain systems (e.g. desktop with Xorg), the freez=
+er
+frequently requires 5 to 6 retry iterations before all tasks are frozen.
+Upon investigation, we found that this instability is primarily caused by
+user processes entering D-state (TASK_UNINTERRUPTIBLE) during the freeze
+window. Since such tasks cannot be frozen and are not killable by signals=
+,
+they cause the freezer to repeatedly sleep and retry, resulting in:
+- Increased system suspend latency (from hundreds of milliseconds up to s=
+everal milliseconds)
+- Elevated CPU usage due to repeated full task list scans
+- In worst cases, freezer may fail
+This patchset introduces two debugging aids to help analyze and mitigate
+this issue:
 
-Reviewed-by: Drew Fustini <drew@pdp7.com>
+- Patch 1: Add retry counter and report how many rounds freezing took
+- Patch 2: Log all D-state tasks in each freeze iteration
+- Patch 3: ensures pm_pr_dbg() works properly
+- Patch 4: simplifies state check
+
+These tools make it easier to identify problematic tasks and evaluate
+the impact of uninterruptible waits on suspend/resume stability.
+Tested on systems where D-state tasks (e.g. from Xorg or poll-heavy
+drivers) regularly delay suspend.
+
+With our patch:
+dmesg | grep -E 'elap|round'
+[   63.227193] freeze round: 0, task to freeze: 681
+[   63.228110] freeze round: 1, task to freeze: 1
+[   63.230248] freeze round: 2, task to freeze: 1
+[   63.234247] freeze round: 3, task to freeze: 1
+[   63.242270] freeze round: 4, task to freeze: 1
+[   63.250272] freeze round: 5, task to freeze: 1
+[   63.258516] freeze round: 6, task to freeze: 1
+[   63.266478] freeze round: 7, task to freeze: 0
+[   63.266481] Freezing user space processes completed (elapsed 0.039 sec=
+onds)
+[   63.266641] freeze round: 0, task to freeze: 4
+[   63.267347] freeze round: 1, task to freeze: 0
+[   63.267349] Freezing remaining freezable tasks completed (elapsed 0.00=
+0 seconds)
+[   74.452100] freeze round: 0, task to freeze: 686
+[   74.452781] freeze round: 1, task to freeze: 1
+[   74.454915] freeze round: 2, task to freeze: 1
+[   74.458947] freeze round: 3, task to freeze: 1
+[   74.466938] freeze round: 4, task to freeze: 1
+[   74.474950] freeze round: 5, task to freeze: 1
+[   74.482954] freeze round: 6, task to freeze: 1
+[   74.491320] freeze round: 7, task to freeze: 0
+[   74.491324] Freezing user space processes completed (elapsed 0.039 sec=
+onds)
+[   74.491485] freeze round: 0, task to freeze: 4
+[   74.492748] freeze round: 1, task to freeze: 0
+[   74.492750] Freezing remaining freezable tasks completed (elapsed 0.00=
+1 seconds)
+[   85.642102] freeze round: 0, task to freeze: 685
+[   85.642841] freeze round: 1, task to freeze: 1
+[   85.644974] freeze round: 2, task to freeze: 1
+[   85.648978] freeze round: 3, task to freeze: 1
+[   85.656972] freeze round: 4, task to freeze: 1
+[   85.665231] freeze round: 5, task to freeze: 1
+[   85.673492] freeze round: 6, task to freeze: 1
+[   85.682035] freeze round: 7, task to freeze: 0
+[   85.682039] Freezing user space processes completed (elapsed 0.040 sec=
+onds)
+[   85.682198] freeze round: 0, task to freeze: 4
+[   85.682972] freeze round: 1, task to freeze: 0
+[   85.682974] Freezing remaining freezable tasks completed (elapsed 0.00=
+0 seconds)
+[   96.863597] freeze round: 0, task to freeze: 678
+[   96.864298] freeze round: 1, task to freeze: 1
+[   96.866430] freeze round: 2, task to freeze: 1
+[   96.870477] freeze round: 3, task to freeze: 1
+[   96.878486] freeze round: 4, task to freeze: 1
+[   96.886463] freeze round: 5, task to freeze: 1
+[   96.894745] freeze round: 6, task to freeze: 1
+[   96.903120] freeze round: 7, task to freeze: 0
+[   96.903124] Freezing user space processes completed (elapsed 0.040 sec=
+onds)
+[   96.903288] freeze round: 0, task to freeze: 4
+[   96.904480] freeze round: 1, task to freeze: 0
+[   96.904482] Freezing remaining freezable tasks completed (elapsed 0.00=
+1 seconds)
+[  108.026657] freeze round: 0, task to freeze: 678
+[  108.027363] freeze round: 1, task to freeze: 1
+[  108.029476] freeze round: 2, task to freeze: 1
+[  108.033527] freeze round: 3, task to freeze: 1
+[  108.041510] freeze round: 4, task to freeze: 1
+[  108.049774] freeze round: 5, task to freeze: 1
+[  108.057485] freeze round: 6, task to freeze: 0
+[  108.057487] Freezing user space processes completed (elapsed 0.031 sec=
+onds)
+[  108.057604] freeze round: 0, task to freeze: 4
+[  108.058474] freeze round: 1, task to freeze: 0
+[  108.058476] Freezing remaining freezable tasks completed (elapsed 0.00=
+0 seconds)
+[  119.171536] freeze round: 0, task to freeze: 678
+[  119.172301] freeze round: 1, task to freeze: 1
+[  119.174402] freeze round: 2, task to freeze: 1
+[  119.178445] freeze round: 3, task to freeze: 1
+[  119.186442] freeze round: 4, task to freeze: 1
+[  119.194445] freeze round: 5, task to freeze: 1
+[  119.202425] freeze round: 6, task to freeze: 1
+[  119.210572] freeze round: 7, task to freeze: 0
+[  119.210576] Freezing user space processes completed (elapsed 0.039 sec=
+onds)
+[  119.210733] freeze round: 0, task to freeze: 4
+[  119.211435] freeze round: 1, task to freeze: 0
+[  119.211437] Freezing remaining freezable tasks completed (elapsed 0.00=
+0 seconds)
+[  130.577681] freeze round: 0, task to freeze: 688
+[  130.578819] freeze round: 1, task to freeze: 3
+[  130.580489] freeze round: 2, task to freeze: 3
+[  130.584525] freeze round: 3, task to freeze: 3
+[  130.592511] freeze round: 4, task to freeze: 3
+[  130.600496] freeze round: 5, task to freeze: 3
+[  130.608495] freeze round: 6, task to freeze: 3
+[  130.616642] freeze round: 7, task to freeze: 2
+[  130.624597] freeze round: 8, task to freeze: 1
+[  130.632868] freeze round: 9, task to freeze: 1
+[  130.640430] freeze round: 10, task to freeze: 0
+[  130.640434] Freezing user space processes completed (elapsed 0.063 sec=
+onds)
+[  130.640592] freeze round: 0, task to freeze: 4
+[  130.641397] freeze round: 1, task to freeze: 0
+[  130.641399] Freezing remaining freezable tasks completed (elapsed 0.00=
+0 seconds)
+[  142.024896] freeze round: 0, task to freeze: 687
+[  142.025680] freeze round: 1, task to freeze: 3
+[  142.027855] freeze round: 2, task to freeze: 3
+[  142.031872] freeze round: 3, task to freeze: 3
+[  142.039876] freeze round: 4, task to freeze: 3
+[  142.048215] freeze round: 5, task to freeze: 3
+[  142.055875] freeze round: 6, task to freeze: 3
+[  142.063839] freeze round: 7, task to freeze: 2
+[  142.071957] freeze round: 8, task to freeze: 2
+[  142.080048] freeze round: 9, task to freeze: 2
+[  142.088052] freeze round: 10, task to freeze: 2
+[  142.096595] freeze round: 11, task to freeze: 2
+[  142.104908] freeze round: 12, task to freeze: 1
+[  142.112904] freeze round: 13, task to freeze: 1
+[  142.121407] freeze round: 14, task to freeze: 0
+[  142.121411] Freezing user space processes completed (elapsed 0.097 sec=
+onds)
+[  142.121573] freeze round: 0, task to freeze: 4
+[  142.122944] freeze round: 1, task to freeze: 0
+[  142.122948] Freezing remaining freezable tasks completed (elapsed 0.00=
+1 seconds)
+[  153.374096] freeze round: 0, task to freeze: 687
+[  153.374840] freeze round: 1, task to freeze: 3
+[  153.377042] freeze round: 2, task to freeze: 3
+[  153.381074] freeze round: 3, task to freeze: 3
+[  153.389017] freeze round: 4, task to freeze: 2
+[  153.397331] freeze round: 5, task to freeze: 2
+[  153.405600] freeze round: 6, task to freeze: 1
+[  153.413910] freeze round: 7, task to freeze: 0
+[  153.413913] Freezing user space processes completed (elapsed 0.040 sec=
+onds)
+[  153.414073] freeze round: 0, task to freeze: 4
+[  153.414974] freeze round: 1, task to freeze: 0
+[  153.414976] Freezing remaining freezable tasks completed (elapsed 0.00=
+1 seconds)
+[  164.640178] freeze round: 0, task to freeze: 687
+[  164.640865] freeze round: 1, task to freeze: 3
+[  164.643050] freeze round: 2, task to freeze: 3
+[  164.647084] freeze round: 3, task to freeze: 3
+[  164.655014] freeze round: 4, task to freeze: 2
+[  164.663304] freeze round: 5, task to freeze: 2
+[  164.671018] freeze round: 6, task to freeze: 2
+[  164.679274] freeze round: 7, task to freeze: 1
+[  164.687812] freeze round: 8, task to freeze: 0
+[  164.687815] Freezing user space processes completed (elapsed 0.048 sec=
+onds)
+[  164.687971] freeze round: 0, task to freeze: 4
+[  164.688969] freeze round: 1, task to freeze: 0
+[  164.688971] Freezing remaining freezable tasks completed (elapsed 0.00=
+1 seconds)
+
+
+With our patch:
+[   62.880497] PM: suspend entry (deep)
+[   63.130639] Filesystems sync: 0.249 seconds
+[   63.130643] PM: Preparing system for sleep (deep)
+[   63.226398] Freezing user space processes
+[   63.227193] freeze round: 0, task to freeze: 681
+[   63.228110] freeze round: 1, task to freeze: 1
+[   63.230064] task:Xorg            state:D stack:0     pid:1404  tgid:14=
+04  ppid:1348   task_flags:0x400100 flags:0x00004004
+[   63.230068] Call Trace:
+[   63.230069]  <TASK>
+[   63.230071]  __schedule+0x52e/0xea0
+[   63.230077]  schedule+0x27/0x80
+[   63.230079]  schedule_timeout+0xf2/0x100
+[   63.230082]  wait_for_completion+0x85/0x130
+[   63.230085]  __flush_work+0x21f/0x310
+[   63.230087]  ? __pfx_wq_barrier_func+0x10/0x10
+[   63.230091]  drm_mode_rmfb+0x138/0x1b0
+[   63.230093]  ? __pfx_drm_mode_rmfb_work_fn+0x10/0x10
+[   63.230095]  ? __pfx_drm_mode_rmfb_ioctl+0x10/0x10
+[   63.230097]  drm_ioctl_kernel+0xa5/0x100
+[   63.230099]  drm_ioctl+0x270/0x4b0
+[   63.230101]  ? __pfx_drm_mode_rmfb_ioctl+0x10/0x10
+[   63.230104]  ? syscall_exit_work+0x108/0x140
+[   63.230107]  radeon_drm_ioctl+0x4a/0x80 [radeon]
+[   63.230141]  __x64_sys_ioctl+0x93/0xe0
+[   63.230144]  ? syscall_trace_enter+0xfa/0x1c0
+[   63.230146]  do_syscall_64+0x7d/0x2c0
+[   63.230148]  ? do_syscall_64+0x1f3/0x2c0
+[   63.230150]  entry_SYSCALL_64_after_hwframe+0x76/0x7e
+[   63.230153] RIP: 0033:0x7f1aa132550b
+[   63.230154] RSP: 002b:00007ffebab69678 EFLAGS: 00000246 ORIG_RAX: 0000=
+000000000010
+[   63.230156] RAX: ffffffffffffffda RBX: 00007ffebab696bc RCX: 00007f1aa=
+132550b
+[   63.230158] RDX: 00007ffebab696bc RSI: 00000000c00464af RDI: 000000000=
+000000e
+[   63.230159] RBP: 00000000c00464af R08: 00007f1aa0c41220 R09: 000055a71=
+ce32310
+[   63.230160] R10: 0000000000000087 R11: 0000000000000246 R12: 000055a71=
+b813660
+[   63.230161] R13: 000000000000000e R14: 0000000003a8f5cd R15: 000055a71=
+b6bbfb0
+[   63.230164]  </TASK>
+[   63.230248] freeze round: 2, task to freeze: 1
+
+Changes in v2:
+- Add retry count statistics and print D-state process=20
+
+Zihuan Zhang (4):
+  PM: freezer: Add retry count statistics for freeze pass iterations
+  PM: freezer: Print tasks stuck in D-state during freeze
+  PM: suspend: Assign pm_suspend_target_state earlier for valid debug
+    logs
+  PM: suspend: Simplify state check using sleep_state_supported()
+
+ kernel/power/process.c |  7 +++++++
+ kernel/power/suspend.c | 17 +++++++----------
+ 2 files changed, 14 insertions(+), 10 deletions(-)
+
+--=20
+2.25.1
+
