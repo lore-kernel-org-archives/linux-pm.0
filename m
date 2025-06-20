@@ -1,37 +1,37 @@
 Received: from mxout1.routing.net (mxout1.routing.net [134.0.28.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3F98244673;
-	Fri, 20 Jun 2025 08:36:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49838246BA5;
+	Fri, 20 Jun 2025 08:36:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750408581; cv=none; b=iuCYT5Wdluvx0qvQMzCA14v1QkKi0I7Um6efGG8uImyM0QSskjFFH8XiMQ9rZSZJFxqoFxIxvfMxs7XMieU9e/iYBRqfooDLrZS/vAEqceY73lXCrUY5ldwFvw/kWLwKVEtSEZopZPYe/XT80bZMrNVquFnKZGTyG0A4X8h7Ojs=
+	t=1750408582; cv=none; b=A178bbC1JQCP5mcXGBU4Zy442LhQvDh+bF3JvA9JN61rJmLaSN0S7SD4VoABKT9mHyyqzuB4Gi+u5Q+o/SXJ7A8TDgBAsS3QGz6Anx+9PG7k7xRwNNV9zlUOWxN/7NtBpCvpIy8iwUyBPq9LXjpoFTWznOgXUjiPQE+FRJ+VaeI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750408581; c=relaxed/simple;
-	bh=htqcoHAk8wG4t8I4v7JXMnGKMG3faePy59bduotEJlY=;
+	s=arc-20240116; t=1750408582; c=relaxed/simple;
+	bh=CXJdMVM7yfnfOWdD19oSNPqLnLxqQfuOKdmhOWln+X4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Fy9L8jisdbq/5xllisr9zQHc/8+rY4UFEsFkilMCTHm/HVg9yBRzt6IhWTG5eD2zoWqFXOEXb/Rchs1gt4uXn96pcWEviRVm+uJD7ijp1iRGyr6vDQSbC4/6jT8jDcivijTZD7GKjqZyF8pL1unXkAHjrG9rP9hVu9WhwlEzaIA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=sjnIMHGT; arc=none smtp.client-ip=134.0.28.11
+	 MIME-Version; b=lvRKD1bkJhNVcYL07FjzxysoGulZLPQgnMp2AFzQH2W3NbRzwlLPHVnIZRvH8r5DU7QvDWMBFBx8ukl0eL8W/dr2VRxS5Gpd4mJGLhUB6SLpNufpxHF69+3YFQ2DHl3axQgS1lPqBvRssa+zZYxjpa6LDLt8O3BFKdOBwlwijdw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=HsFxjOL6; arc=none smtp.client-ip=134.0.28.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="sjnIMHGT"
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="HsFxjOL6"
 Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout1.routing.net (Postfix) with ESMTP id 6123741AC8;
-	Fri, 20 Jun 2025 08:36:11 +0000 (UTC)
+	by mxout1.routing.net (Postfix) with ESMTP id 8FA8941AE9;
+	Fri, 20 Jun 2025 08:36:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=20200217; t=1750408571;
+	s=20200217; t=1750408572;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=K8bX81MxPTi+Jhd3n3SJZqbc7e3SnaNqOjwZqHrKmH0=;
-	b=sjnIMHGTre+UsiPou/aJH2uJXpZVdY/Ivk7VD0y0N8KPzVpuU1fHgCpEEN/VaBqyLelcsq
-	14Ba3Ex2tR1XDjqseE80YFF+gaSj4+jyXMzWJd43409NKLBL/xYITJKSJU+TumvrR1gy/m
-	Abgkp208bVDM1G08CdoSrAB37W2JURQ=
+	bh=SHQ5vPeo13GqSQMpnsgrtHpzp9AC7Cqs5ZLxrZU37Ag=;
+	b=HsFxjOL6xr78sS0UZvlk17MX0bUy1nOZtZytUDxRf1BEuLbjtqgakU/FXyByBpBAtFuaku
+	ta9ASaqs9le8Y/ohNIVU+W1f1bKPAAypURXbjRNZBV2l0LxMq9jwblCRdC3EqwyCpwd4TV
+	yWHnhDQlBe8+1oKAGnt+nPXnRzcfdRA=
 Received: from frank-u24.. (fttx-pool-157.180.225.81.bambit.de [157.180.225.81])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 0260D1226F1;
-	Fri, 20 Jun 2025 08:36:10 +0000 (UTC)
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 3374C122700;
+	Fri, 20 Jun 2025 08:36:12 +0000 (UTC)
 From: Frank Wunderlich <linux@fw-web.de>
 To: MyungJoo Ham <myungjoo.ham@samsung.com>,
 	Kyungmin Park <kyungmin.park@samsung.com>,
@@ -64,9 +64,9 @@ Cc: Frank Wunderlich <frank-w@public-files.de>,
 	netdev@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v5 02/13] dt-bindings: net: dsa: mediatek,mt7530: add dsa-port definition for mt7988
-Date: Fri, 20 Jun 2025 10:35:33 +0200
-Message-ID: <20250620083555.6886-3-linux@fw-web.de>
+Subject: [PATCH v5 05/13] arm64: dts: mediatek: mt7988: add cci node
+Date: Fri, 20 Jun 2025 10:35:36 +0200
+Message-ID: <20250620083555.6886-6-linux@fw-web.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250620083555.6886-1-linux@fw-web.de>
 References: <20250620083555.6886-1-linux@fw-web.de>
@@ -80,47 +80,90 @@ Content-Transfer-Encoding: 8bit
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-Add own dsa-port binding for SoC with internal switch where only phy-mode
-'internal' is valid.
+Add cci devicetree node for cpu frequency scaling.
 
+Signed-off-by: Daniel Golle <daniel@makrotopia.org>
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- .../bindings/net/dsa/mediatek,mt7530.yaml          | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+v3:
+- add mt7988-cci compatible as suggested by angelo
+---
+ arch/arm64/boot/dts/mediatek/mt7988a.dtsi | 33 +++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml b/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
-index 51205f9f2985..9b983fdbf3c7 100644
---- a/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
-+++ b/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
-@@ -190,6 +190,18 @@ required:
-   - reg
+diff --git a/arch/arm64/boot/dts/mediatek/mt7988a.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
+index c46b31f8d653..560ec86dbec0 100644
+--- a/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
+@@ -12,6 +12,35 @@ / {
+ 	#address-cells = <2>;
+ 	#size-cells = <2>;
  
- $defs:
-+  builtin-dsa-port:
-+    patternProperties:
-+      "^(ethernet-)?ports$":
-+        patternProperties:
-+          "^(ethernet-)?port@[0-6]$":
-+            if:
-+              required: [ ethernet ]
-+            then:
-+              properties:
-+                phy-mode:
-+                  const: internal
++	cci: cci {
++		compatible = "mediatek,mt7988-cci", "mediatek,mt8183-cci";
++		clocks = <&mcusys CLK_MCU_BUS_DIV_SEL>,
++			 <&topckgen CLK_TOP_XTAL>;
++		clock-names = "cci", "intermediate";
++		operating-points-v2 = <&cci_opp>;
++	};
 +
-   mt7530-dsa-port:
-     patternProperties:
-       "^(ethernet-)?ports$":
-@@ -297,7 +309,7 @@ allOf:
-             - airoha,en7581-switch
-             - airoha,an7583-switch
-     then:
--      $ref: "#/$defs/mt7530-dsa-port"
-+      $ref: "#/$defs/builtin-dsa-port"
-       properties:
-         gpio-controller: false
-         mediatek,mcm: false
++	cci_opp: opp-table-cci {
++		compatible = "operating-points-v2";
++		opp-shared;
++		opp-480000000 {
++			opp-hz = /bits/ 64 <480000000>;
++			opp-microvolt = <850000>;
++		};
++		opp-660000000 {
++			opp-hz = /bits/ 64 <660000000>;
++			opp-microvolt = <850000>;
++		};
++		opp-900000000 {
++			opp-hz = /bits/ 64 <900000000>;
++			opp-microvolt = <850000>;
++		};
++		opp-1080000000 {
++			opp-hz = /bits/ 64 <1080000000>;
++			opp-microvolt = <900000>;
++		};
++	};
++
+ 	cpus {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+@@ -25,6 +54,7 @@ cpu0: cpu@0 {
+ 				 <&topckgen CLK_TOP_XTAL>;
+ 			clock-names = "cpu", "intermediate";
+ 			operating-points-v2 = <&cluster0_opp>;
++			mediatek,cci = <&cci>;
+ 		};
+ 
+ 		cpu1: cpu@1 {
+@@ -36,6 +66,7 @@ cpu1: cpu@1 {
+ 				 <&topckgen CLK_TOP_XTAL>;
+ 			clock-names = "cpu", "intermediate";
+ 			operating-points-v2 = <&cluster0_opp>;
++			mediatek,cci = <&cci>;
+ 		};
+ 
+ 		cpu2: cpu@2 {
+@@ -47,6 +78,7 @@ cpu2: cpu@2 {
+ 				 <&topckgen CLK_TOP_XTAL>;
+ 			clock-names = "cpu", "intermediate";
+ 			operating-points-v2 = <&cluster0_opp>;
++			mediatek,cci = <&cci>;
+ 		};
+ 
+ 		cpu3: cpu@3 {
+@@ -58,6 +90,7 @@ cpu3: cpu@3 {
+ 				 <&topckgen CLK_TOP_XTAL>;
+ 			clock-names = "cpu", "intermediate";
+ 			operating-points-v2 = <&cluster0_opp>;
++			mediatek,cci = <&cci>;
+ 		};
+ 
+ 		cluster0_opp: opp-table-0 {
 -- 
 2.43.0
 
