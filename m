@@ -1,29 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6CF51F8BDD;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A97F71F9ED2;
 	Sun, 22 Jun 2025 19:13:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750619599; cv=none; b=Jen5svB2A4ISNHveLD0KSQOLj39DtqGvcrKpLUU6IkUVJt2TrsPqf1oFNbTPPefNrOhEYICklqhQALc9fov4BYVZsufMwgCgDX2OP8fFotsVCbGyBiu5HOVEZnTH7OCjTOMfpabNzrqGpg3AKT+79NI7HJuscj+RG5fGUy+f4eI=
+	t=1750619599; cv=none; b=MbZGBq9pyvfdnaGUOuADkBr3vWCkarW2a2iQlQZjaWbUWmD0YXbGAP1XQGyKsyJMenyaei23uQFTjaV7gtNiv0o+RvCvBrcT3bZEAMEESreKh8/7VN/LEFn6a9dkrb6ro7Up1if8UiNcV+fD1zYiJygP/TYJdQ7p1mIKdXDEltM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1750619599; c=relaxed/simple;
-	bh=3qeHhRn0NPMyUpnXPj+s7izmuPSJ9qVI/8HvcHHTCIk=;
+	bh=BJ4KJ1VPwN2wcWmzFfKjKMPyZmpiic3rGbnsBJ16YaU=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=m/fgGpxP5iUwbKABH0uaTOfYY9s2tnBQN4vl8Osw5ZERkb5EFzAjoOHTDaZllpuww6h3fX6mbE3jWRztaAppMvlJ6YmGNLldgzW+IszCO4eTnQdRdEyE/ERBrkyNJz/nF1hh1W/B/WGRLLnRj11zoNTCTgfNKshc7PkBqJBLWJk=
+	 MIME-Version:Content-Type; b=gS+nIvE0FzJTPNaKbjyUYwHPOIwr3oOR7gmIp/qOIGAT8IfJNyVtwQj+HUmxAdyobBa2jZwwEMinr06XlkmijXjDmOez/EWnDBJMcGooXpwX7jABeLINHeZoW3dZ55V19p5lK+lKy+BWhdrAclpmS6IyyfMYdLYGQqfGuln66vQ=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 39DC3C4AF0B;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 37C3FC4CEF0;
 	Sun, 22 Jun 2025 19:13:19 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 51F9E180959; Sun, 22 Jun 2025 21:13:17 +0200 (CEST)
+	id 5CF0418095C; Sun, 22 Jun 2025 21:13:17 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: sre@kernel.org, philipp@uvos.xyz, Charles Han <hanchunchao@inspur.com>
+To: krzk@kernel.org, sre@kernel.org, akpm@linux-foundation.org, 
+ lee@kernel.org, Charles Han <hanchunchao@inspur.com>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20250519024741.5846-1-hanchunchao@inspur.com>
-References: <20250519024741.5846-1-hanchunchao@inspur.com>
-Subject: Re: [PATCH] power: supply: cpcap-charger: Fix null check for
- power_supply_get_by_name
-Message-Id: <175061959732.285737.9614627733052759738.b4-ty@collabora.com>
+In-Reply-To: <20250519061601.8755-1-hanchunchao@inspur.com>
+References: <20250516095346.24169-1-hanchunchao@inspur.com>
+ <20250519061601.8755-1-hanchunchao@inspur.com>
+Subject: Re: [PATCH V3] charger: max14577: Handle NULL pdata when CONFIG_OF
+ is not set
+Message-Id: <175061959737.285737.2823091107062731598.b4-ty@collabora.com>
 Date: Sun, 22 Jun 2025 21:13:17 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -36,17 +38,21 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.2
 
 
-On Mon, 19 May 2025 10:47:41 +0800, Charles Han wrote:
-> In the cpcap_usb_detect() function, the power_supply_get_by_name()
-> function may return `NULL` instead of an error pointer.
-> To prevent potential null pointer dereferences, Added a null check.
+On Mon, 19 May 2025 14:16:01 +0800, Charles Han wrote:
+> When the kernel is not configured  CONFIG_OF, the max14577_charger_dt_init
+> function returns NULL. Fix the max14577_charger_probe functionby returning
+>  -ENODATA instead of potentially passing a NULL pointer to PTR_ERR.
 > 
+> Fix below smatch warning.
+> smatch warnings:
+> drivers/power/supply/max14577_charger.c:576 max14577_charger_probe() warn: passing zero to 'PTR_ERR'
 > 
+> [...]
 
 Applied, thanks!
 
-[1/1] power: supply: cpcap-charger: Fix null check for power_supply_get_by_name
-      commit: d9fa3aae08f99493e67fb79413c0e95d30fca5e9
+[1/1] charger: max14577: Handle NULL pdata when CONFIG_OF is not set
+      commit: 2937f5d2e24eefef8cb126244caec7fe3307f724
 
 Best regards,
 -- 
