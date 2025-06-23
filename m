@@ -1,38 +1,38 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E04B0262FEB;
-	Mon, 23 Jun 2025 12:02:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05076264A60;
+	Mon, 23 Jun 2025 12:02:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750680129; cv=none; b=FYnbUSmPrMTNLzvdMdRWzswsrmiHNndptZKevOHNaIULbidz2mnXzQBQZUJnlrh8W4or/A1ZAZl/GmixzH21CPesRAliUrUK0veGUUAL3ov5M2SKC27WSfHmrl4GbG2rPWXxJEsf+IanZoNXAmtM9++WcSJZKiMzOxsuvdKfPiY=
+	t=1750680129; cv=none; b=ctqMz09seuvnvyM46NlSLfsFf33nSHnHdapclIxPZr/xWxJil1VBWJdKSrkRYn3nRQPTb1PLUw+BNG8bqchkxOJN/7DFkbKpKNUlWdGBq7lHUhKoIsjTQk/G7i4RpQ2391xUlPzNc5kSrzWK/J8hAGQboDSwt9T3hMUiDXJH7B4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1750680129; c=relaxed/simple;
-	bh=krJcrD2Z1XeZCY9Pux4rl8w6PbLLBO+GPtEQXG5pc/o=;
+	bh=kS1FKeIiY4VaHPD7evpKdiT1ch7pGWqfaXruUb6PTY8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=MHA+9XdL/l8v68ll+7tDkssmEAXxoi48o5xR0c6oEYVAX6akq1I7n4uN86EXXgBXl8QjcCn1XdGvdbto7qUopByVZ+WiYURqb6gFKrQzwUlKcV/MramukDMBX48W9FcOfiOIEYHDq2j9uYwzjalP7UbR425S5y8pmeN58E1EeCY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=hFfbwRY0; arc=none smtp.client-ip=148.251.105.195
+	 MIME-Version; b=SlzVv0dkezsZuRm5xUx6IqG71mRe7TxTjUPFKUZz+WPMKpB7o6i2/EEeh+jnNWq6UuO+CYmCFdImnN0FX9GXsUZYtU0DVAMzmkPRFwfzHOaip9Q2YTZT4fIzVviGoGzasbdj6KDAqgWSSd+iPW0GKProdCjqoLsCovcCtN06Fb0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=Sn9zTKy0; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="hFfbwRY0"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="Sn9zTKy0"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1750680124;
-	bh=krJcrD2Z1XeZCY9Pux4rl8w6PbLLBO+GPtEQXG5pc/o=;
+	s=mail; t=1750680126;
+	bh=kS1FKeIiY4VaHPD7evpKdiT1ch7pGWqfaXruUb6PTY8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=hFfbwRY02aNzMUS/eRquVSmq0qhBQvT9zVtq3SpzXj30tiWlP/mFdjgbd3uxy3ACG
-	 BYv7CoznICwJe/s0u5woVNj2Pvxu5uftDcAGTmQ86t5qJw9NoxrpiU/XWrx5w9PJCA
-	 nM3fqS0EK83Y/d5dCybPYoDI4LS/nzZVAVNVnrjYgIQun+HXQhH/3TO6YMS8m7VRuS
-	 3jHBOmz55mOIJy5wDGYJIdfLEFzHf1EN8yhEzy4ChZsvDIpI0y/LZQ9/o33LAbp/8f
-	 uQkjSxEyRXOB73ExpnAeyvKKz15HWtQ5ilPTG5nAoR9aqnGEO8b0JBNvKnqxOZ8jOm
-	 c0FlXMUfXWs/w==
+	b=Sn9zTKy0w+DK2Q2Qiti3CtuaLd4wdZtctGm+tkfpTp/UB/zVsBkieH/VCrfVMChbI
+	 w8gPupRTvNXljb6+ZNfKFfXjbpmbBt49XMyIghOuYSTuQHmZfGdiQXjcOEZrjXlpBR
+	 OLOyvD4Kq09UEZ3HlCpf3xgLR2NKCdjfmOaVgmaYhNEA9yTAoolMbo8oCmh+VueC2c
+	 jcRGVCu+sJ6nbc4zK+gDvy4TeNu1i5bp7+rLqCcDPoOVsBrZXTpgrzjCxhj1G6OGxv
+	 hj7BvLEJcxvlWNecj9/2hecMzavd/AORlHc5hNlDToiOYAx3QSmr8wtb5OoGJYEFut
+	 rZ9JR7x2sC+MQ==
 Received: from IcarusMOD.eternityproject.eu (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 8D39E17E1580;
-	Mon, 23 Jun 2025 14:02:03 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id A0CD617E35D3;
+	Mon, 23 Jun 2025 14:02:05 +0200 (CEST)
 From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 To: linux-mediatek@lists.infradead.org
 Cc: robh@kernel.org,
@@ -52,9 +52,9 @@ Cc: robh@kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-pm@vger.kernel.org,
 	kernel@collabora.com
-Subject: [PATCH v1 06/13] pmdomain: mediatek: Add support for RTFF Hardware in MT8196/MT6991
-Date: Mon, 23 Jun 2025 14:01:47 +0200
-Message-ID: <20250623120154.109429-7-angelogioacchino.delregno@collabora.com>
+Subject: [PATCH v1 08/13] pmdomain: mediatek: Add support for secure HWCCF infra power on
+Date: Mon, 23 Jun 2025 14:01:49 +0200
+Message-ID: <20250623120154.109429-9-angelogioacchino.delregno@collabora.com>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250623120154.109429-1-angelogioacchino.delregno@collabora.com>
 References: <20250623120154.109429-1-angelogioacchino.delregno@collabora.com>
@@ -66,198 +66,144 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-New generation SoCs use a new RTFF Hardware to save power during
-operation of various IPs, other than managing isolation of the
-internal buck converters during powerup/down of power domains.
+Some SoCs, like the MediaTek Dimensity 9400 (MT6991), have granular
+power controls and will disable power to the infracfg to save power
+when the platform is in deeper sleep states (or when no IP in the
+the infracfg macro-block is in use).
 
-Since some of the power domains need different RTFF handling, add
-a new scpys_rtff_type enumeration and hold the value for each
-power domain in struct scpsys_domain_data.
+These chips also cannot control the infracfg power states directly
+via AP register writes as those are protected by the secure world.
 
-If RTFF HW is available, the RTFF additional power sequences are
-handled in scpsys_ctl_pwrseq_{on,off}().
+Add a new MTK_SCPD_INFRA_PWR_CTL cap and, if present, make a call
+to the secure world to poweron the infracfg block, as the HWV IP
+resides in there, when executing HWV domains power sequences.
 
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- drivers/pmdomain/mediatek/mtk-pm-domains.c | 94 +++++++++++++++++++++-
- drivers/pmdomain/mediatek/mtk-pm-domains.h | 18 +++++
- 2 files changed, 111 insertions(+), 1 deletion(-)
+ drivers/pmdomain/mediatek/mtk-pm-domains.c | 40 ++++++++++++++++++++--
+ drivers/pmdomain/mediatek/mtk-pm-domains.h |  1 +
+ 2 files changed, 39 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomain/mediatek/mtk-pm-domains.c
-index d14616d4aaab..8711773e75d4 100644
+index 977e4e7de831..101ce20d5be4 100644
 --- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
 +++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
-@@ -39,6 +39,12 @@
- #define PWR_SRAM_CLKISO_BIT		BIT(5)
- #define PWR_SRAM_ISOINT_B_BIT		BIT(6)
+@@ -15,6 +15,7 @@
+ #include <linux/regmap.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/soc/mediatek/infracfg.h>
++#include <linux/soc/mediatek/mtk_sip_svc.h>
  
-+#define PWR_RTFF_SAVE			BIT(24)
-+#define PWR_RTFF_NRESTORE		BIT(25)
-+#define PWR_RTFF_CLK_DIS		BIT(26)
-+#define PWR_RTFF_SAVE_FLAG		BIT(27)
-+#define PWR_RTFF_UFS_CLK_DIS		BIT(28)
+ #include "mt6735-pm-domains.h"
+ #include "mt6795-pm-domains.h"
+@@ -51,6 +52,8 @@
+ #define PWR_RTFF_SAVE_FLAG		BIT(27)
+ #define PWR_RTFF_UFS_CLK_DIS		BIT(28)
+ 
++#define MTK_SIP_KERNEL_HWCCF_CONTROL	MTK_SIP_SMC_CMD(0x540)
 +
  struct scpsys_domain {
  	struct generic_pm_domain genpd;
  	const struct scpsys_domain_data *data;
-@@ -247,7 +253,7 @@ static int scpsys_regulator_disable(struct regulator *supply)
- static int scpsys_ctl_pwrseq_on(struct scpsys_domain *pd)
- {
- 	struct scpsys *scpsys = pd->scpsys;
--	bool tmp;
-+	bool do_rtff_nrestore, tmp;
- 	int ret;
- 
- 	/* subsys power on */
-@@ -260,10 +266,72 @@ static int scpsys_ctl_pwrseq_on(struct scpsys_domain *pd)
- 	if (ret < 0)
- 		return ret;
- 
-+	if (pd->data->rtff_type == SCPSYS_RTFF_TYPE_PCIE_PHY)
-+		regmap_set_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_CLK_DIS);
-+
- 	regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_CLK_DIS_BIT);
- 	regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_ISO_BIT);
-+
-+	/* Wait for RTFF HW to sync buck isolation state if this is PCIe PHY RTFF */
-+	if (pd->data->rtff_type == SCPSYS_RTFF_TYPE_PCIE_PHY)
-+		udelay(5);
-+
- 	regmap_set_bits(scpsys->base, pd->data->ctl_offs, PWR_RST_B_BIT);
- 
-+	/*
-+	 * RTFF HW state may be modified by secure world or remote processors.
-+	 *
-+	 * With the only exception of STOR_UFS, which always needs save/restore,
-+	 * check if this power domain's RTFF is already on before trying to do
-+	 * the NRESTORE procedure, otherwise the system will lock up.
-+	 */
-+	switch (pd->data->rtff_type) {
-+	case SCPSYS_RTFF_TYPE_GENERIC:
-+	case SCPSYS_RTFF_TYPE_PCIE_PHY:
-+	{
-+		u32 ctl_status;
-+
-+		regmap_read(scpsys->base, pd->data->ctl_offs, &ctl_status);
-+		do_rtff_nrestore = ctl_status & PWR_RTFF_SAVE_FLAG;
-+		break;
-+	}
-+	case SCPSYS_RTFF_TYPE_STOR_UFS:
-+		/* STOR_UFS always needs NRESTORE */
-+		do_rtff_nrestore = true;
-+		break;
-+	default:
-+		do_rtff_nrestore = false;
-+		break;
-+	}
-+
-+	/* Return early if RTFF NRESTORE shall not be done */
-+	if (!do_rtff_nrestore)
-+		return 0;
-+
-+	switch (pd->data->rtff_type) {
-+	case SCPSYS_RTFF_TYPE_GENERIC:
-+		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_SAVE_FLAG);
-+		regmap_set_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_CLK_DIS);
-+		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_NRESTORE);
-+		regmap_set_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_NRESTORE);
-+		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_CLK_DIS);
-+		break;
-+	case SCPSYS_RTFF_TYPE_PCIE_PHY:
-+		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_SAVE_FLAG);
-+		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_NRESTORE);
-+		regmap_set_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_NRESTORE);
-+		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_CLK_DIS);
-+		break;
-+	case SCPSYS_RTFF_TYPE_STOR_UFS:
-+		regmap_set_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_UFS_CLK_DIS);
-+		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_NRESTORE);
-+		regmap_set_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_NRESTORE);
-+		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_UFS_CLK_DIS);
-+		break;
-+	default:
-+		break;
-+	}
-+
- 	return 0;
+@@ -116,6 +119,15 @@ static bool scpsys_hwv_domain_is_enable_done(struct scpsys_domain *pd)
+ 	return (val[0] & mask) && (val[1] & mask) && !(val[2] & mask);
  }
  
-@@ -271,8 +339,32 @@ static void scpsys_ctl_pwrseq_off(struct scpsys_domain *pd)
++static int scpsys_sec_infra_power_on(bool on)
++{
++	struct arm_smccc_res res;
++	unsigned long cmd = on ? 1 : 0;
++
++	arm_smccc_smc(MTK_SIP_KERNEL_HWCCF_CONTROL, cmd, 0, 0, 0, 0, 0, 0, &res);
++	return res.a0;
++}
++
+ static int scpsys_sram_enable(struct scpsys_domain *pd)
  {
- 	struct scpsys *scpsys = pd->scpsys;
+ 	u32 expected_ack, pdn_ack = pd->data->sram_pdn_ack_bits;
+@@ -291,9 +303,15 @@ static int scpsys_hwv_power_on(struct generic_pm_domain *genpd)
+ 	u32 val;
+ 	int ret;
  
-+	switch (pd->data->rtff_type) {
-+	case SCPSYS_RTFF_TYPE_GENERIC:
-+	case SCPSYS_RTFF_TYPE_PCIE_PHY:
-+		regmap_set_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_CLK_DIS);
-+		regmap_set_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_SAVE);
-+		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_SAVE);
-+		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_CLK_DIS);
-+		regmap_set_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_SAVE_FLAG);
-+		break;
-+	case SCPSYS_RTFF_TYPE_STOR_UFS:
-+		regmap_set_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_UFS_CLK_DIS);
-+		regmap_set_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_SAVE);
-+		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_SAVE);
-+		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RTFF_UFS_CLK_DIS);
-+		break;
-+	default:
-+		break;
++	if (MTK_SCPD_CAPS(pd, MTK_SCPD_INFRA_PWR_CTL)) {
++		ret = scpsys_sec_infra_power_on(true);
++		if (ret)
++			return ret;
 +	}
 +
- 	/* subsys power off */
- 	regmap_set_bits(scpsys->base, pd->data->ctl_offs, PWR_ISO_BIT);
+ 	ret = scpsys_regulator_enable(pd->supply);
+ 	if (ret)
+-		return ret;
++		goto err_infra;
+ 
+ 	ret = clk_bulk_prepare_enable(pd->num_clks, pd->clks);
+ 	if (ret)
+@@ -344,6 +362,9 @@ static int scpsys_hwv_power_on(struct generic_pm_domain *genpd)
+ 	/* It's done! Disable the HWV low power subsystem clocks */
+ 	clk_bulk_disable_unprepare(pd->num_subsys_clks, pd->subsys_clks);
+ 
++	if (MTK_SCPD_CAPS(pd, MTK_SCPD_INFRA_PWR_CTL))
++		scpsys_sec_infra_power_on(false);
 +
-+	/* Wait for RTFF HW to sync buck isolation state if this is PCIe PHY RTFF */
-+	if (pd->data->rtff_type == SCPSYS_RTFF_TYPE_PCIE_PHY)
-+		udelay(1);
-+
- 	regmap_set_bits(scpsys->base, pd->data->ctl_offs, PWR_CLK_DIS_BIT);
- 	regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RST_B_BIT);
- 	regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_ON_2ND_BIT);
-diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.h b/drivers/pmdomain/mediatek/mtk-pm-domains.h
-index 4abdc8de25c8..e1dae6409d4a 100644
---- a/drivers/pmdomain/mediatek/mtk-pm-domains.h
-+++ b/drivers/pmdomain/mediatek/mtk-pm-domains.h
-@@ -108,6 +108,22 @@ struct scpsys_bus_prot_data {
- 	u8 flags;
+ 	return 0;
+ 
+ err_disable_subsys_clks:
+@@ -352,6 +373,9 @@ static int scpsys_hwv_power_on(struct generic_pm_domain *genpd)
+ 	clk_bulk_disable_unprepare(pd->num_clks, pd->clks);
+ err_reg:
+ 	scpsys_regulator_disable(pd->supply);
++err_infra:
++	if (MTK_SCPD_CAPS(pd, MTK_SCPD_INFRA_PWR_CTL))
++		scpsys_sec_infra_power_on(false);
+ 	return ret;
  };
  
-+/**
-+ * enum scpsys_rtff_type - Type of RTFF Hardware for power domain
-+ * @SCPSYS_RTFF_NONE:          RTFF HW not present or domain not RTFF managed
-+ * @SCPSYS_RTFF_TYPE_GENERIC:  Non-CPU, peripheral-generic RTFF HW
-+ * @SCPSYS_RTFF_TYPE_PCIE_PHY: PCI-Express PHY specific RTFF HW
-+ * @SCPSYS_RTFF_TYPE_STOR_UFS: Storage (UFS) specific RTFF HW
-+ * @SCPSYS_RTFF_TYPE_MAX:      Number of supported RTFF HW Types
-+ */
-+enum scpsys_rtff_type {
-+	SCPSYS_RTFF_NONE = 0,
-+	SCPSYS_RTFF_TYPE_GENERIC,
-+	SCPSYS_RTFF_TYPE_PCIE_PHY,
-+	SCPSYS_RTFF_TYPE_STOR_UFS,
-+	SCPSYS_RTFF_TYPE_MAX
-+};
+@@ -363,9 +387,15 @@ static int scpsys_hwv_power_off(struct generic_pm_domain *genpd)
+ 	u32 val;
+ 	int ret;
+ 
++	if (MTK_SCPD_CAPS(pd, MTK_SCPD_INFRA_PWR_CTL)) {
++		ret = scpsys_sec_infra_power_on(true);
++		if (ret)
++			return ret;
++	}
 +
- /**
-  * struct scpsys_domain_data - scp domain data for power on/off flow
-  * @name: The name of the power domain.
-@@ -118,6 +134,7 @@ struct scpsys_bus_prot_data {
-  * @ext_buck_iso_offs: The offset for external buck isolation
-  * @ext_buck_iso_mask: The mask for external buck isolation
-  * @caps: The flag for active wake-up action.
-+ * @rtff_type: The power domain RTFF HW type
-  * @bp_cfg: bus protection configuration for any subsystem
-  */
- struct scpsys_domain_data {
-@@ -129,6 +146,7 @@ struct scpsys_domain_data {
- 	int ext_buck_iso_offs;
- 	u32 ext_buck_iso_mask;
- 	u16 caps;
-+	enum scpsys_rtff_type rtff_type;
- 	const struct scpsys_bus_prot_data bp_cfg[SPM_MAX_BUS_PROT_DATA];
- 	int pwr_sta_offs;
- 	int pwr_sta2nd_offs;
+ 	ret = clk_bulk_prepare_enable(pd->num_subsys_clks, pd->subsys_clks);
+ 	if (ret)
+-		return ret;
++		goto err_infra;
+ 
+ 	/* Make sure the HW Voter is idle and able to accept commands */
+ 	ret = regmap_read_poll_timeout_atomic(scpsys->base, hwv->done, val,
+@@ -407,10 +437,16 @@ static int scpsys_hwv_power_off(struct generic_pm_domain *genpd)
+ 
+ 	scpsys_regulator_disable(pd->supply);
+ 
++	if (MTK_SCPD_CAPS(pd, MTK_SCPD_INFRA_PWR_CTL))
++		scpsys_sec_infra_power_on(false);
++
+ 	return 0;
+ 
+ err_disable_subsys_clks:
+ 	clk_bulk_disable_unprepare(pd->num_subsys_clks, pd->subsys_clks);
++err_infra:
++	if (MTK_SCPD_CAPS(pd, MTK_SCPD_INFRA_PWR_CTL))
++		scpsys_sec_infra_power_on(false);
+ 	return ret;
+ };
+ 
+diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.h b/drivers/pmdomain/mediatek/mtk-pm-domains.h
+index 6fe06c4a06e1..8adf23d4d0f9 100644
+--- a/drivers/pmdomain/mediatek/mtk-pm-domains.h
++++ b/drivers/pmdomain/mediatek/mtk-pm-domains.h
+@@ -16,6 +16,7 @@
+ #define MTK_SCPD_SRAM_PDN_INVERTED	BIT(9)
+ #define MTK_SCPD_MODEM_PWRSEQ		BIT(10)
+ #define MTK_SCPD_SKIP_RESET_B		BIT(11)
++#define MTK_SCPD_INFRA_PWR_CTL		BIT(12)
+ #define MTK_SCPD_CAPS(_scpd, _x)	((_scpd)->data ?		\
+ 					 (_scpd)->data->caps & (_x) :	\
+ 					 (_scpd)->hwv_data->caps & (_x))
 -- 
 2.49.0
 
