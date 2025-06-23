@@ -1,88 +1,97 @@
-Received: from xry111.site (xry111.site [89.208.246.23])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30BF725BEE2;
-	Mon, 23 Jun 2025 15:08:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.208.246.23
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5970279DA5;
+	Mon, 23 Jun 2025 15:12:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750691315; cv=none; b=QA0wAazh7PYLnB3s4HRMhcvrv1Te1m4WBFkI+fQ4K+x5kq13YLO6+2M1L0OgLBGd8qS96T2ebbQs1ume/lgD7SBGH1mmLWQWLm4v8ynQzzP5XXfs33zldE7g/aqxPDG1zfsL3oflUJ1Bn/4K43RGdia2ZGK1qWy8mScXgHtPahs=
+	t=1750691539; cv=none; b=BlJInVy+2P2tujAKWio+UCjbfkavGUMrVl8iHqMIaaP/MigxIe0Lib1zk9HdV6OzOK/eKLx2ASsGxHav07RxMbggyTiO4YW+rI0uTDfNWIyJyQbQzQ8mgdklhnpLDSCA5mLXPQYHk/GAOISEc/HyBPZa0IbxfaCVH9+9uuNyvsE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750691315; c=relaxed/simple;
-	bh=a71/2Ue33rw39RNd+lnzupReDwpTHqZ0pqweFgks0U8=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=WNYKoJ7d+CeUYIibeFkoyzFbbnz9Uscb7Av/idozSQU/eeqDyzoffI8SD+/+/KJ8TKqgLY5CpuBUny0hIB7NfXHyU4g36RxTHP93vgTYEf8Zwz1ZwZ/Qs39Vr5/CTQW1LnDEbbaIU4T4BqBRg8nutGvgy0UUKuwPBvHRqGpoqhI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=xry111.site; spf=pass smtp.mailfrom=xry111.site; dkim=pass (1024-bit key) header.d=xry111.site header.i=@xry111.site header.b=G7dTtAD4; arc=none smtp.client-ip=89.208.246.23
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=xry111.site
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=xry111.site
+	s=arc-20240116; t=1750691539; c=relaxed/simple;
+	bh=12ZF/3Iz/jRD7RCu2S2dOBg4sjwvSJtH7M61B9OeA48=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ienbWmm5oYGrCBJ2ut44X8q/LRhaMVXpQj7OVYQzEeyntF4eCj8RY84G4DG2UC3fZzTrU5kWlPfzhCn+a4ZzySGw8qNBAAxMXxqx1ycfCQiu8PGBkM/p0kM6gc1fv5Aqs6qV1UaFsLCoJJzFBSgg0eU3jRPHEkoYmOEU+vwi37w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Qh3DLwXx; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=xry111.site header.i=@xry111.site header.b="G7dTtAD4"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=xry111.site;
-	s=default; t=1750690805;
-	bh=jLvrxNOLfc3fbfwBKLMN+s9XeJSBspgyoztJCta+7KA=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
-	b=G7dTtAD4paR3Aidw88ZgTEGiysPNxyQQXKctAEaPLfZxvlwHO7cGpnWKpdUBnWpAM
-	 6vzcFS99bQeYkfMVlW0g+8hNJ5v1ucv0o4Eh6B74fR+25YwgjNdBgmMEQbCu0Lbr98
-	 Glur/qvFbunCzQHlj4derg77OyhNbX1HLyIOm8rA=
-Received: from [IPv6:2409:8a4c:e21:5211::e90] (unknown [IPv6:2409:8a4c:e21:5211::e90])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature ECDSA (secp384r1) server-digest SHA384)
-	(Client did not present a certificate)
-	(Authenticated sender: xry111@xry111.site)
-	by xry111.site (Postfix) with ESMTPSA id A708A65F62;
-	Mon, 23 Jun 2025 10:59:58 -0400 (EDT)
-Message-ID: <9246b226e356ea0db044a592fed8853dd593f7f7.camel@xry111.site>
-Subject: Re: [PATCH] cpufreq: loongson3: Support older SMC firmware
-From: Xi Ruoyao <xry111@xry111.site>
-To: Yao Zi <ziyao@disroot.org>, Huacai Chen <chenhuacai@kernel.org>, WANG
- Xuerui <kernel@xen0n.name>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh
- Kumar	 <viresh.kumar@linaro.org>
-Cc: Jiaxun Yang <jiaxun.yang@flygoat.com>, Mingcong Bai <jeffbai@aosc.io>, 
- Kexy Biscuit <kexybiscuit@aosc.io>, loongarch@lists.linux.dev,
- linux-pm@vger.kernel.org, 	linux-kernel@vger.kernel.org
-Date: Mon, 23 Jun 2025 22:59:50 +0800
-In-Reply-To: <20250623123321.5622-1-ziyao@disroot.org>
-References: <20250623123321.5622-1-ziyao@disroot.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2 
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Qh3DLwXx"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 702C2C4AF0B;
+	Mon, 23 Jun 2025 15:12:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1750691539;
+	bh=12ZF/3Iz/jRD7RCu2S2dOBg4sjwvSJtH7M61B9OeA48=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=Qh3DLwXx/NSlPRvOnJnOFWoQy7rDiK/fTVDmINqCDKUFPLm7IPD94ZTP4WhRA1Mys
+	 0gM0x0Ylhdx7/AQ3A3H8y8lEcGRSHSNNlHNk5ylYbidaAfSXlrtqKhUJhiX8qgHqQB
+	 yO5LdL1iKGyy1clLfWC8BpK42U9YqKFqqjAhmeMosFVcBAvt3yly0IOUFDCD2GPkJb
+	 nA6idP7jul+vVcOPJG7yPHHz2YsS4b+L1BGyq/xYV5QprPsPqSX8bph+MYkQ++Lxhz
+	 BAnebiqvJpizcnmCJCgggNXJjC/l9KYF9wa+aR6zpB1ZHPO08S1NWpCpKmWK/MkLGD
+	 PW/ECNZM/Shhg==
+Received: by mail-oi1-f170.google.com with SMTP id 5614622812f47-40aa391ce1aso968731b6e.2;
+        Mon, 23 Jun 2025 08:12:19 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWYIQ1IPTBqYxv/kikdCod6ybFXtsaWW+8vBmGtY0cGTBYq5HJMv5I9SLd1nbgo9nayo7DZjI506ns=@vger.kernel.org, AJvYcCXZbu9+NlCSG+O/0nVEVr5NzFzutWWrKADFC7Gfj77apKvtcHDahSoaum+Y4zPsBVc2a/HK/XKA07axJKY=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yytbs02OmmHMYAn9I0wGKrgbLJUXazmdbdQAwm58rWR+TcfnWPH
+	9CWEwcjChICMAhxZMUX3VInU+Gzxdw/tsdlpCMdsTHjAn1IqSffSXqQagf6pf12JM+kwR32fl1g
+	dWK2nhwwnkwsCkxkvJB/0kBwNlWNYSXw=
+X-Google-Smtp-Source: AGHT+IEBml7id1FC3IcQeJHdDnN3Cd9NMilzSCz3He8y6icp7TSWvpJKDcau8RHB2WVp/w+RzAfect7ghiJ5r405u2o=
+X-Received: by 2002:a05:6808:1393:b0:40a:a8ad:bc23 with SMTP id
+ 5614622812f47-40ac6f548b9mr9153054b6e.28.1750691538763; Mon, 23 Jun 2025
+ 08:12:18 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+References: <20250623133402.3120230-1-zhenglifeng1@huawei.com> <20250623133402.3120230-8-zhenglifeng1@huawei.com>
+In-Reply-To: <20250623133402.3120230-8-zhenglifeng1@huawei.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Mon, 23 Jun 2025 17:12:06 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hizEYaJw77feqAoHJWYuANvbdxZ6BbogZ52sTU2eKTUA@mail.gmail.com>
+X-Gm-Features: AX0GCFtgPB5gTucv4-tiZOvPfCU6hXae24gBOBT_WjKzdXsriDQmIoZKGSe3bac
+Message-ID: <CAJZ5v0hizEYaJw77feqAoHJWYuANvbdxZ6BbogZ52sTU2eKTUA@mail.gmail.com>
+Subject: Re: [PATCH 7/7] cpufreq: Exit governor when failed to start old governor
+To: Lifeng Zheng <zhenglifeng1@huawei.com>
+Cc: rafael@kernel.org, viresh.kumar@linaro.org, ionela.voinescu@arm.com, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linuxarm@huawei.com, 
+	jonathan.cameron@huawei.com, zhanjie9@hisilicon.com, lihuisong@huawei.com, 
+	yubowen8@huawei.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2025-06-23 at 12:33 +0000, Yao Zi wrote:
+On Mon, Jun 23, 2025 at 3:34=E2=80=AFPM Lifeng Zheng <zhenglifeng1@huawei.c=
+om> wrote:
+>
+> Detect the result of starting old governor in cpufreq_set_policy(). If it
+> fails, exit the governor and clear policy->governor.
+>
+> Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 7b82ffb50283..2b431845a8a3 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2715,10 +2715,12 @@ static int cpufreq_set_policy(struct cpufreq_poli=
+cy *policy,
+>         pr_debug("starting governor %s failed\n", policy->governor->name)=
+;
+>         if (old_gov) {
+>                 policy->governor =3D old_gov;
+> -               if (cpufreq_init_governor(policy))
+> +               if (cpufreq_init_governor(policy)) {
+>                         policy->governor =3D NULL;
+> -               else
+> -                       cpufreq_start_governor(policy);
+> +               } else if (cpufreq_start_governor(policy)) {
+> +                       cpufreq_exit_governor(policy);
 
-/* snip */
+This may introduce a governor module reference imbalance AFAICS.
 
-> -static struct cpufreq_driver loongson3_cpufreq_driver =3D {
-> +static struct cpufreq_driver loongson3_cpufreq_smc0_driver =3D {
-> =C2=A0	.name =3D "loongson3",
-
-How about using different names for the drivers?
-
-> =C2=A0	.flags =3D CPUFREQ_CONST_LOOPS,
-> -	.init =3D loongson3_cpufreq_cpu_init,
-> +	.init =3D loongson3_cpufreq_cpu_smc0_init,
-> =C2=A0	.exit =3D loongson3_cpufreq_cpu_exit,
-> =C2=A0	.online =3D loongson3_cpufreq_cpu_online,
-> =C2=A0	.offline =3D loongson3_cpufreq_cpu_offline,
-> -	.get =3D loongson3_cpufreq_get,
-> -	.target_index =3D loongson3_cpufreq_target,
-> +	.target_index =3D loongson3_cpufreq_smc0_target,
-> +	.verify =3D cpufreq_generic_frequency_table_verify,
-> +	.suspend =3D cpufreq_generic_suspend,
-> +};
-> +
-> +static struct cpufreq_driver loongson3_cpufreq_smc1_driver =3D {
-> +	.name =3D "loongson3",
-
-Tested on a 3A6000 laptop with the schedutil policy.  On idle one core
-is at 2000MHz and other cores are at 250MHz, when building the kernel
-all cores are at 2000MHz.
-
-Tested-by: Xi Ruoyao <xry111@xry111.site>
-
---=20
-Xi Ruoyao <xry111@xry111.site>
+> +                       policy->governor =3D NULL;
+> +               }
+>         }
+>
+>         return ret;
+> --
