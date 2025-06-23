@@ -1,97 +1,161 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA3F3245023;
-	Mon, 23 Jun 2025 12:45:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF52B246BAC;
+	Mon, 23 Jun 2025 12:55:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750682756; cv=none; b=r/qZBTMVOI8aC52zGz9SXBYn+NLuCUjmMBCPupWFyjjVmRzmggJVbsVwn0wzubIzRvgnZErG+hCCK/I1p8Pb3VxIiqRiPXe0eHXBloFTgrV5zi4J55NAJHQUxFHBqXOGOmKKT6Jbukqba/cVr3e6VIQGwKyabf5UaRvYQrwfsWU=
+	t=1750683361; cv=none; b=NFSI+6W/X3yOJRA5hKejKGT2927c09nevk8KkiDlLC+0l+/mtZ4QvobHlkw5lJxF44VSI1TuCLdnW0CeTPfAnPx0zO7GE/UigfATdfVHMZXaR7sWYIC6jaNnNJR9zojyx+HeysxhVtmapGzHuifEFY19t853awtQbLRSQD5MC2o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750682756; c=relaxed/simple;
-	bh=9DsE9pgH0OjJ0Mzzhwz4Z+mnCC9niQMJkihdpIBDL0k=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=rXIpspbB+K1cvt6m8uT8hvi5WGZoV15qTAoKjwYo0JxhWFtgJJ6Injb6PYnEWe19/QZVkz+MrPAKIX0PbC9Faa5Nnv4U+zz3Gc7aT3jtWbZP8xPlcsP1U+UAtZSNWs50ZqBdSATua2gFvIymsw3nG6Kt80p93pz0RNVm4TQZ+Ys=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=M05T7r7m; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1750683361; c=relaxed/simple;
+	bh=V4Q+QmBN8f/u1avjxFazjPy4gpKWukS/z0vO/9apM/0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=t7384Uzq1vUByV6/8bQry2wfcmB4tVU86myt/yCRYEvIocFrUJQGhQrWClvFshx+LZJ4tm6k6NSvlct2VzZRleRmn6RPwsXhZfYVGwUK+SyOJ4kOpkUwzXG98BXA5O6sSxpTDqfJTX8PIdd7gzM0P+iH1ZZ7dccGIBd23HULnec=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=ZYFNfqii; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="M05T7r7m"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AEE24C4CEEA;
-	Mon, 23 Jun 2025 12:45:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1750682754;
-	bh=9DsE9pgH0OjJ0Mzzhwz4Z+mnCC9niQMJkihdpIBDL0k=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=M05T7r7mavmT+UvPHXVjlQhqT31sQt5wbhaMxzjFcZIU3mZhaJddruoqab6QxTw32
-	 wy5XpXOITGcbg7wDs/BcjXo1IRM4BUUFfrJ7iNzz9AJ7CA4+NmlCXz9HRZITc0Xfz/
-	 wjhvMsAO4kVjbDngriL1bB++M1KjkLQVzzyKvBBVBRFanV4IDx7yAe+2twpogWAhaE
-	 6XB8OWRZtzIn/rJ2POQUK21Uph7nbpR7uyd3IQIh85bPuewZxbgGnuUBv8Y5oOXrtu
-	 oPMRyN9ZvamesgV9CCZBVQRpbSHP1OQU4tDMWGz18wtkAH8yztzgJfNuk5s+TtOmXC
-	 waE0GwyEJJqLw==
-Message-ID: <0cb7ae0e-3bc6-434f-9c34-0995b83ffd02@kernel.org>
-Date: Mon, 23 Jun 2025 07:45:52 -0500
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="ZYFNfqii"
+Received: from kreacher.localnet (unknown [5.63.189.50])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 4E41B66E251;
+	Mon, 23 Jun 2025 14:55:50 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1750683350;
+	bh=V4Q+QmBN8f/u1avjxFazjPy4gpKWukS/z0vO/9apM/0=;
+	h=From:Subject:Date;
+	b=ZYFNfqiihwniBQS/NP4CR2kJjxTAndH5aWuQNy1u0gYkFpKhoMNnMtOvWxz/MX1gn
+	 JDsIey/tTn8gUztai0pcS9jTfCzCocr4/NByvUROUMNHjVJIvPR+GxQuZNMXHRlTUZ
+	 csU47/kdDFyM/F2hTuuqInxd490095Z+/pmp1DoiawaUikb5ZL9OXOevjA6WYpQHeC
+	 KlgZMec/fHuAHvEGwLkybs94QgYtWtJ1dCXn1OQCYMxjOnPInSRZBblCCoE6wKUHmo
+	 LwSAedliNdBYUCMV0Tonlk58tx32ZuUQ9aOvLN2qYShxtwqtuXk6ICdylD9qbsq8EN
+	 MNErQUq5aT/Mg==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ Chris Bainbridge <chris.bainbridge@gmail.com>,
+ Ulf Hansson <ulf.hansson@linaro.org>, Saravana Kannan <saravanak@google.com>,
+ Sudeep Holla <sudeep.holla@arm.com>
+Subject:
+ [RFT][PATCH v4 2/2] PM: sleep: Make async suspend handle suppliers like
+ parents
+Date: Mon, 23 Jun 2025 14:55:05 +0200
+Message-ID: <3384525.44csPzL39Z@rjwysocki.net>
+In-Reply-To: <5011988.GXAFRqVoOG@rjwysocki.net>
+References: <5011988.GXAFRqVoOG@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 2/2] PCI: Fix runtime PM usage count underflow on
- device unplug
-To: Lukas Wunner <lukas@wunner.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>,
- "open list:PCI SUBSYSTEM" <linux-pci@vger.kernel.org>,
- linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>,
- Mario Limonciello <mario.limonciello@amd.com>
-References: <20250620025535.3425049-3-superm1@kernel.org>
- <aFcCaw_IZr-JuUYY@wunner.de>
- <8d4d98b6-fec5-466f-bd2c-059d702c7860@kernel.org>
- <aFeJ83O9PRUrM2Ir@wunner.de>
- <295bf182-7fed-4ffd-93a4-fb5ddf5f1bb4@kernel.org>
- <aFj3jUAM42lSyfpe@wunner.de> <aFkEI2jXg7YiwL7b@wunner.de>
- <aFkm8njX-NEIiTcv@wunner.de>
- <CAJZ5v0jfuAjhskbwG1XHByGpdgP1pSHwVSMnz3jcOy7VDyjnRQ@mail.gmail.com>
- <7dde3873-4239-4be8-801a-dcf37472664d@kernel.org>
- <aFlGPaITSa3IAB8s@wunner.de>
-Content-Language: en-US
-From: Mario Limonciello <superm1@kernel.org>
-In-Reply-To: <aFlGPaITSa3IAB8s@wunner.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 5.63.189.50
+X-CLIENT-HOSTNAME: 5.63.189.50
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: dmFkZTGbsflNZg5WlL1okd/rknFH3L9TOvw1i1+BFVQgEjWPACFv7scvKhz9Lxr8KFtFY1/6oLlmNLGKeOm6MiwNWEiDb2QqV30VfAg39R9JTe6j4le2ApJYOuj7glc2VGRiXJjVqORc7lqRIRGBoDDSMffnRX6Jo05mAodd6PSkis+iuUYcebzak/RQKaE9dZC9q5Joz9Z5qFETF/XfZ/sg1H3WtrMe+sDRi0dujNVP0mv8kRxi9pi5Avrg5/T2dhxFe8BzwTug8heoDwNIJ012V85iKjqq7snsgqEfidxfEif7MuFGW3WvnrhmGnKSJsgAZS38L9g4Roltro/4goJ5Gd/bTuAR2gStEFlbODicBv1Pz0GRpzGq3G3uZZSUv/ScqTcOP/jFu4mO+FKxS98t9kunPZsHQxV1yj5K28jo0WzezbuHQikvWfLgEQHPKq4K3xETU3iXp8nGsFSzH3jt9UG1Fdixq45nGTqemuek7dWOeBXLfaXFPSgkrn1UdL3rI9NnUcg+OBq2p+HdoLjH+5qRfHIoING9nT4Kg34tqyWkm5IlnV//aYVmB1wTJLmiXMjgLvhJXgRTDguVV3VR4m5/G2aDL9LZfrB/SABIOxhsm6i/7z3O2i8krNRUgzMgfZBN1kiOJEDdA5RkFHl2FRcxmYIyKF0k316GB5+UgrDUgg
+X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
+
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+Avoid starting "async" suspend processing upfront for devices that have
+consumers and start "async" suspend processing for a device's suppliers
+right after suspending the device itself.
+
+Suggested-by: Saravana Kannan <saravanak@google.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+v3 -> v4: Rebase and update the changelog.
+
+---
+ drivers/base/power/main.c |   37 +++++++++++++++++++++++++++++++------
+ 1 file changed, 31 insertions(+), 6 deletions(-)
+
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1257,10 +1257,15 @@
+ 		return false;
+ 	}
+ 
+-	return true;
++	/*
++	 * Since this function is required to run under dpm_list_mtx, the
++	 * list_empty() below will only return true if the device's list of
++	 * consumers is actually empty before calling it.
++	 */
++	return list_empty(&dev->links.consumers);
+ }
+ 
+-static void dpm_async_suspend_parent(struct device *dev, async_func_t func)
++static bool dpm_async_suspend_parent(struct device *dev, async_func_t func)
+ {
+ 	guard(mutex)(&dpm_list_mtx);
+ 
+@@ -1272,11 +1277,31 @@
+ 	 * deleted before it.
+ 	 */
+ 	if (!device_pm_initialized(dev))
+-		return;
++		return false;
+ 
+ 	/* Start processing the device's parent if it is "async". */
+ 	if (dev->parent)
+ 		dpm_async_with_cleanup(dev->parent, func);
++
++	return true;
++}
++
++static void dpm_async_suspend_superior(struct device *dev, async_func_t func)
++{
++	struct device_link *link;
++	int idx;
++
++	if (!dpm_async_suspend_parent(dev, func))
++		return;
++
++	idx = device_links_read_lock();
++
++	/* Start processing the device's "async" suppliers. */
++	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
++		if (READ_ONCE(link->status) != DL_STATE_DORMANT)
++			dpm_async_with_cleanup(link->supplier, func);
++
++	device_links_read_unlock(idx);
+ }
+ 
+ /**
+@@ -1400,7 +1425,7 @@
+ 	if (error || async_error)
+ 		return error;
+ 
+-	dpm_async_suspend_parent(dev, async_suspend_noirq);
++	dpm_async_suspend_superior(dev, async_suspend_noirq);
+ 
+ 	return 0;
+ }
+@@ -1596,7 +1621,7 @@
+ 	if (error || async_error)
+ 		return error;
+ 
+-	dpm_async_suspend_parent(dev, async_suspend_late);
++	dpm_async_suspend_superior(dev, async_suspend_late);
+ 
+ 	return 0;
+ }
+@@ -1887,7 +1912,7 @@
+ 	if (error || async_error)
+ 		return error;
+ 
+-	dpm_async_suspend_parent(dev, async_suspend);
++	dpm_async_suspend_superior(dev, async_suspend);
+ 
+ 	return 0;
+ }
 
 
 
-On 6/23/25 7:19 AM, Lukas Wunner wrote:
-> On Mon, Jun 23, 2025 at 06:37:33AM -0500, Mario Limonciello wrote:
->> On 6/23/25 5:11 AM, Rafael J. Wysocki wrote:
->>> On Mon, Jun 23, 2025 at 12:05???PM Lukas Wunner <lukas@wunner.de> wrote:
->>>> On Mon, Jun 23, 2025 at 09:37:07AM +0200, Lukas Wunner wrote:
->>>>> On Mon, Jun 23, 2025 at 08:43:25AM +0200, Lukas Wunner wrote:
->>>>>> On Sun, Jun 22, 2025 at 01:39:26PM -0500, Mario Limonciello wrote:
->>>>>>> I did this check and yes specifically on this PCIe port with
->>>>>>> the underflow the d3 possible lookup returns false during
->>>>>>> pcie_portdrv_remove().  It returns true during
->>>>>>> pcie_portdrv_probe().
->>>>>>
->>>>>> That's not supposed to happen.  The expectation is that
->>>>>> pci_bridge_d3_possible() always returns the same value.
->>>>>
->>>>> I'm wondering if the patch below fixes the issue?
->>
->> Yes this works, thanks!
-> 
-> Could you still check what the value read from the Slot Capabilities
-> register is in pciehp_is_native() (if the patch is not applied)?
-> 
-> I guess it must be something else than "all ones" and I'd like to
-> understand why.
-> 
-> Thanks,
-> 
-> Lukas
-
-At probe:
-0x00240060
-
-At remove:
-0x00000000
