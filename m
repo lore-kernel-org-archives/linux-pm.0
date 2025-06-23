@@ -1,63 +1,63 @@
-Received: from mail-oi1-f178.google.com (mail-oi1-f178.google.com [209.85.167.178])
+Received: from mail-oi1-f179.google.com (mail-oi1-f179.google.com [209.85.167.179])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9BBE253F1B;
-	Mon, 23 Jun 2025 16:24:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 110B82BDC2E;
+	Mon, 23 Jun 2025 16:24:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750695898; cv=none; b=aYgVg4Wkw2QRuXg+NCTa3DbvsNhgsTTn8QBG1bLO2krz6NIJQAa80C3vNQD8kvUkSmtP+cZADArMlgy7ue+HMXp9eE/OwRZrWqx347jSk2KmwHAjw+6rLXGHX8aS2QiXGcpc0fBDmnBu0BPtSdaULGHObOd4t79IoH6/CiDNlnc=
+	t=1750695899; cv=none; b=gVvmKl48PnjKoovZEju2GqTE5J268CCPQBIiLm/yjRLEn21jgZQXd/eCHc/xDsVdY+Q3s3Gai9Nzm5a7dSpKrcY+tP1RUdGbucd5oJ4GGcCcABCi5qXNBaIXamQ5ZlkTv0c/iGbYf+C75Pn+RZGTHNYP7NMu1YL9IzkY50NT5s0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750695898; c=relaxed/simple;
-	bh=+eezEszo803GeuExIGDpnHdLZr3dhhhUaw1Im1f7ILg=;
+	s=arc-20240116; t=1750695899; c=relaxed/simple;
+	bh=Mdk7K5PAingZoH1jC5RtW78HJUAbyvJ5t1SpqtsZsJY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fDcqvP37HK/N7KiCQZk3YNnvaDqijOFHRR/G4Gtexmwyf1dE6wcYlqeok4XqboICd0gkwFqhCt3P7Hoe760zZ1gcn25nZZ5zaPZLbOsc7I+nroZ8NH56X2dHf+OReqZktjUCQM3cGyvqMjZU2S/qAXaCoBbmYZ2noL/wDh+tCNo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=i3U7fKDV; arc=none smtp.client-ip=209.85.167.178
+	 MIME-Version; b=ZkSFdG+woT0Bp0M5mmOun5pi4jT8gVdhmwez6wGN/WXSMd09vmFBs6ZPys8AChn7NopKeoFYnzoPwBx9HQUTG7Ik7wYK5yCMsJAqWfglP/VG/TmzejH3DD7b54I33tRck+cxMESOB5YWJf8FU4nRLP4jp9bdmqzn8x3+rCGbW6I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=FTdoJYUX; arc=none smtp.client-ip=209.85.167.179
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="i3U7fKDV"
-Received: by mail-oi1-f178.google.com with SMTP id 5614622812f47-407a6c6a6d4so939584b6e.1;
-        Mon, 23 Jun 2025 09:24:56 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="FTdoJYUX"
+Received: by mail-oi1-f179.google.com with SMTP id 5614622812f47-40a4bf1ebb7so2868539b6e.0;
+        Mon, 23 Jun 2025 09:24:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1750695896; x=1751300696; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1750695897; x=1751300697; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=S2nJMywOhw7Zd8eC2O3g7tAJAQSlLbrE7mdKTgKRmEc=;
-        b=i3U7fKDVHIDPJ5jndxHZMTxwxS3SQhAG3Sg8jFhEG7cOxQkQTJzXCLv2SqYvNsI4r2
-         O9/kbMWeE3zC8JNjWT865E2WLv7xdHxgD1/ORsk+2CqkNa4taoH/NCipVj9UUeST18In
-         ZPFFNq6xxp9Uu6HF3T6WoVPiD6/IGfbhhHuURlBVlmQbcFm2mpzvmbJsdGLo+cX0i/Kf
-         40BTsdqk42041g2vwwGujVKmVD1cLDzyUqZAUJGuueA+8W+6kjVi2jb9/ZjhpIsj9HkU
-         0e+jmMDgUtJhQhU1k1gYzGOlRj8e7HPMsaFdnezLTWlNThYqm7iOACPKrEIvvC6knUTw
-         Vikw==
+        bh=bE/VSQwUqsUSgxDurcv65dzlzK9yg98M1pQULytqQNc=;
+        b=FTdoJYUXUJshU+irP03EstWWjphXXuYBqoaf/veLDqSCah+xlb51Zpc+DuiNeQHkwd
+         adLqQbSxRu54eD3zpzHC6Le+8MRFR84WfcJqGWOI91pJPbMaPmmyVmmIsn/wwH1ak2+v
+         6Og70JSKHHVqsdNCbA301E6Nc7Sdszt08dzw62CELyV8HiyjkSiUPDqwYK51m41HigL7
+         s0zleJaFsMZIYw0l88lDvDacl0UbfI2jwoETEx+wmdcuUgX2iqdjBgOfDBp5g983xKXs
+         G3ztL4nzSA9NXY+aDesu8YjqJ8zR6smzy+Vra16YZPAp88EaeMVqZIn4lnbpMpR/qX5G
+         ORPA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1750695896; x=1751300696;
+        d=1e100.net; s=20230601; t=1750695897; x=1751300697;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=S2nJMywOhw7Zd8eC2O3g7tAJAQSlLbrE7mdKTgKRmEc=;
-        b=nS7Y+d2xcpqYmw3lcndae8sjDFI+kSZf460Ir7dx+F7gA27MYaGdAj9uTSnX1K1F5V
-         YctLtwt1Q9Sro8uLaJuC5fquk4Ru6SlRJQ0j4NrRFpkaOl6o8OOflmL7yMdetXLvovN3
-         onmvsmHoPN5CK2nvM5v3ooGszy3K2QhZwXU2ijBja1C0VGNrovPNMEE4teZipOx3Bf49
-         5ZUapWMskqD6c+y02sOKH0r2XM7CSWlfH99OiYhen7AB458SCZ0o3uK2L9YePa+CfIiV
-         mXj52gmw+uG5hWBOaAcbrS9SlVuEuoXAzbBO2/CKzlo2kDRK278X5mpw3Z53QsGmU9QF
-         1Bkw==
-X-Forwarded-Encrypted: i=1; AJvYcCV4Sql6zz5iKV61YRWjw42wkM/sExY6LPCDhtZtVXj2+Nt0V6dWgD+tISYjMweKxcRyUJ9H97C3Pl0R@vger.kernel.org
-X-Gm-Message-State: AOJu0YxTeM+8iDjnaf8FMnqpPMHDrlbGbicB90ivzJqH0gscut++BBh2
-	n5Zd1541MrjnxOQrAr2/z4UjMZwOiCbGDz2vCaYn9DZAuPS9ocVkCBauvLTRvA==
-X-Gm-Gg: ASbGncuJd5khjG1ce+Mz9PxjB7YZoYGJvg9LLtfmURkW+q4HL46b1R3rzUIRTQ4bcOx
-	En1aqL3dQ7oDjKGtGtvKezl4Ax44obg4GfNlRTI0pKg8AfNcK9C+/Dxs/rWDphEAD/+34LXl+hZ
-	GuEl72POFiINw/Q1EzrZIuIhJhJMvIlsdH4OHZYw0zzm3OHjhYay4vo7mkS8uUhWHozZ44sZRKy
-	4N5r4rAEt0AWtGipRHOcifYDJ6WiA8+xpVMXtSxtCoYfE4HYM9uDYEkFeS/sUiA+AinTfxlBP6Y
-	d3p+fGtnnryFaQ+qY5OIqRRg51rT/Hx/y+wCzZIgcpeSDAxQwTYsnZjsI2fdfUZKvYdjiWuCiVW
-	ohiJOoA==
-X-Google-Smtp-Source: AGHT+IHNm3PA6LMiwTFwM8fT2V2lpXspStLdibiEEbd7PDxNkK85qmSDmseeLom6ONaWkXsBG/DcNw==
-X-Received: by 2002:a05:6808:2384:b0:40a:59fd:1368 with SMTP id 5614622812f47-40ac6e43b41mr10501539b6e.4.1750695895476;
-        Mon, 23 Jun 2025 09:24:55 -0700 (PDT)
+        bh=bE/VSQwUqsUSgxDurcv65dzlzK9yg98M1pQULytqQNc=;
+        b=hteVpQtwILwR4SWD/u6NYH/a9+0BtGEr+QF8FhKcRjX452wAPWsF8oeF7RtphEro/z
+         wqdvetrTLHgWAej7cskom8uqGbm1IB/CqoaoDRIBiUxjU3nh+0fdXNqiSIE17kzAsDT5
+         suFh51rB4HtrabvK1z07vE42OA40McyGVFlU/d8HWydti8/S3PGKONSPA+9I2GEf5Vc2
+         WjGdG2TahA07aWz536vtamXjW/T45965kb4vq1fSnmc/7MnAy5q1Q5nqjSZVJLYaw31y
+         YMD1gWeZQhimAkGj3sJcPdwWjCJN6EPb6SB3htM5wRDj9wuXRk3dmlltb6m1OAoZfplp
+         c1kQ==
+X-Forwarded-Encrypted: i=1; AJvYcCU/rs4ez+jD0FArG/WnrEwHHk9tfQv7hg/ljfp7eUAedyGK53nZagiEffsCnZj+7NDV/q10yIjZAa2p@vger.kernel.org
+X-Gm-Message-State: AOJu0YzPXnFpMJoKVqBJ7Ib+UlY9ARWIUgkDiR8PEHxSWYQ+nLqPl6ZH
+	J+CvWzwwzzR15WELIUlOaNcWx96Xz6Gg2+O6ZQwNFT0f45yo0J26NkxFGjnCnA==
+X-Gm-Gg: ASbGncvvK8/9+m5+kIBDQRr7YjJRXSATXIdSz2b4j33Gzg2H/O77YB7Ck3X1/TSnk38
+	0Dshl9TP/n/+dXq2BX1oGr9y4jgDnhtGbCOcjVKRMpZByJAsuLvBcl4av2HcWyoI9QBgUk6Xjre
+	JxDHxharQjj7zzTLt3+6GGslDrXvBfHM5Rnv2UpLZUkiXY8+yogEyuAlOR9v2RLypFoCtgUXXZo
+	h+3hcosZKWWlDGwr1iGh7fYhaZhGCdt44snvLHCgzhF6roVPOOSpsrMD4ny0+QGfdiZI+lU3y5c
+	QUiKvCrCX6pfVWwbBX4uODk0OBAHxgDjJtIWY9l/eiRqGVPxl/+w+k0facg+4xqeqa2cO0a+hrW
+	cdRCNHQ==
+X-Google-Smtp-Source: AGHT+IEyNlYYYEw0jtUMR828uFlRRvNG1fa3ZJD1W0IvhRnecGbB83rA3AV2U09osMRUnWxUZ2z0rQ==
+X-Received: by 2002:a05:6808:2201:b0:3fa:3a0:137b with SMTP id 5614622812f47-40ac7006f6cmr9213109b6e.29.1750695896783;
+        Mon, 23 Jun 2025 09:24:56 -0700 (PDT)
 Received: from localhost.localdomain ([2600:1700:fb0:1bc0:61a2:e42d:d809:3616])
-        by smtp.gmail.com with ESMTPSA id 5614622812f47-40ac6ced44esm1427308b6e.24.2025.06.23.09.24.54
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-40ac6ced44esm1427308b6e.24.2025.06.23.09.24.56
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Jun 2025 09:24:55 -0700 (PDT)
+        Mon, 23 Jun 2025 09:24:56 -0700 (PDT)
 From: Chris Morgan <macroalpha82@gmail.com>
 To: linux-pm@vger.kernel.org
 Cc: linux-rockchip@lists.infradead.org,
@@ -71,9 +71,9 @@ Cc: linux-rockchip@lists.infradead.org,
 	robh@kernel.org,
 	lee@kernel.org,
 	Chris Morgan <macromorgan@hotmail.com>
-Subject: [PATCH V3 2/5] mfd: bq257xx: Add support for BQ25703A core driver
-Date: Mon, 23 Jun 2025 11:22:20 -0500
-Message-ID: <20250623162223.184304-3-macroalpha82@gmail.com>
+Subject: [PATCH V3 4/5] regulator: bq257xx: Add bq257xx boost regulator driver
+Date: Mon, 23 Jun 2025 11:22:22 -0500
+Message-ID: <20250623162223.184304-5-macroalpha82@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250623162223.184304-1-macroalpha82@gmail.com>
 References: <20250623162223.184304-1-macroalpha82@gmail.com>
@@ -87,280 +87,244 @@ Content-Transfer-Encoding: 8bit
 
 From: Chris Morgan <macromorgan@hotmail.com>
 
-The Texas Instruments BQ25703A is an integrated charger manager and
-boost converter.
-
-The MFD driver initalizes the device for the regulator driver
-and power supply driver.
+Add support for the boost regulator found in the Texas Instruments
+BQ25703. The boost regulator is capable of outputting between 4.48
+and 20.8 volts and between 0 and 6.35 amps.
 
 Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
 ---
- drivers/mfd/Kconfig         |  11 ++++
- drivers/mfd/Makefile        |   1 +
- drivers/mfd/bq257xx.c       | 104 ++++++++++++++++++++++++++++++++++
- include/linux/mfd/bq257xx.h | 108 ++++++++++++++++++++++++++++++++++++
- 4 files changed, 224 insertions(+)
- create mode 100644 drivers/mfd/bq257xx.c
- create mode 100644 include/linux/mfd/bq257xx.h
+ drivers/regulator/Kconfig             |   8 ++
+ drivers/regulator/Makefile            |   1 +
+ drivers/regulator/bq257xx-regulator.c | 189 ++++++++++++++++++++++++++
+ 3 files changed, 198 insertions(+)
+ create mode 100644 drivers/regulator/bq257xx-regulator.c
 
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 6fb3768e3d71..d8b39e8a8a17 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -1585,6 +1585,17 @@ config MFD_TI_LMU
- 	  LM36274.  It consists of backlight, LED and regulator driver.
- 	  It provides consistent device controls for lighting functions.
+diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+index 6d8988387da4..53cd33afe6d5 100644
+--- a/drivers/regulator/Kconfig
++++ b/drivers/regulator/Kconfig
+@@ -297,6 +297,14 @@ config REGULATOR_BD96801
+ 	  This driver can also be built as a module. If so, the module
+ 	  will be called bd96801-regulator.
  
-+config MFD_BQ257XX
-+	tristate "TI BQ257XX Buck/Boost Charge Controller"
-+	depends on I2C
-+	select MFD_CORE
-+	select REGMAP_I2C
++config REGULATOR_BQ257XX
++	tristate "TI BQ257XX regulator family"
++	depends on MFD_BQ257XX
++	depends on GPIOLIB || COMPILE_TEST
 +	help
-+	  Support Texas Instruments BQ25703 Buck/Boost converter with
-+	  charge controller. It consists of regulators that provide
-+	  system voltage and OTG voltage, and a charger manager for
-+	  batteries containing one or more cells.
++	  Say Y to enable support for the boost regulator function of
++	  the BQ257XX family of charger circuits.
 +
- config MFD_OMAP_USB_HOST
- 	bool "TI OMAP USBHS core and TLL driver"
- 	depends on USB_EHCI_HCD_OMAP || USB_OHCI_HCD_OMAP3
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 79495f9f3457..06da932cce5d 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -13,6 +13,7 @@ obj-$(CONFIG_MFD_SM501)		+= sm501.o
- obj-$(CONFIG_ARCH_BCM2835)	+= bcm2835-pm.o
- obj-$(CONFIG_MFD_BCM590XX)	+= bcm590xx.o
- obj-$(CONFIG_MFD_BD9571MWV)	+= bd9571mwv.o
-+obj-$(CONFIG_MFD_BQ257XX)	+= bq257xx.o
- obj-$(CONFIG_MFD_CGBC)		+= cgbc-core.o
- obj-$(CONFIG_MFD_CROS_EC_DEV)	+= cros_ec_dev.o
- obj-$(CONFIG_MFD_CS42L43)	+= cs42l43.o
-diff --git a/drivers/mfd/bq257xx.c b/drivers/mfd/bq257xx.c
+ config REGULATOR_CPCAP
+ 	tristate "Motorola CPCAP regulator"
+ 	depends on MFD_CPCAP
+diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+index c0bc7a0f4e67..d6024189a248 100644
+--- a/drivers/regulator/Makefile
++++ b/drivers/regulator/Makefile
+@@ -38,6 +38,7 @@ obj-$(CONFIG_REGULATOR_BD71828) += bd71828-regulator.o
+ obj-$(CONFIG_REGULATOR_BD718XX) += bd718x7-regulator.o
+ obj-$(CONFIG_REGULATOR_BD9571MWV) += bd9571mwv-regulator.o
+ obj-$(CONFIG_REGULATOR_BD957XMUF) += bd9576-regulator.o
++obj-$(CONFIG_REGULATOR_BQ257XX) += bq257xx-regulator.o
+ obj-$(CONFIG_REGULATOR_DA903X)	+= da903x-regulator.o
+ obj-$(CONFIG_REGULATOR_BD96801) += bd96801-regulator.o
+ obj-$(CONFIG_REGULATOR_DA9052)	+= da9052-regulator.o
+diff --git a/drivers/regulator/bq257xx-regulator.c b/drivers/regulator/bq257xx-regulator.c
 new file mode 100644
-index 000000000000..27fbb64110ed
+index 000000000000..cae08fbba9f8
 --- /dev/null
-+++ b/drivers/mfd/bq257xx.c
-@@ -0,0 +1,104 @@
++++ b/drivers/regulator/bq257xx-regulator.c
+@@ -0,0 +1,189 @@
 +// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * BQ257XX Core Driver
++/* BQ257XX Battery Charger Driver
 + * Copyright (C) 2024 Chris Morgan <macromorgan@hotmail.com>
++ * Based off of BQ256XX Battery Charger driver and
++ * RK808 Regulator driver.
 + */
 +
-+#include <linux/device.h>
-+#include <linux/i2c.h>
++#include <linux/bitfield.h>
++#include <linux/err.h>
++#include <linux/gpio/consumer.h>
 +#include <linux/mfd/bq257xx.h>
-+#include <linux/mfd/core.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
 +#include <linux/regmap.h>
++#include <linux/regulator/driver.h>
++#include <linux/regulator/of_regulator.h>
 +
-+static const struct regmap_range bq25703_readonly_reg_ranges[] = {
-+	regmap_reg_range(BQ25703_CHARGER_STATUS, BQ25703_MANUFACT_DEV_ID),
++struct bq257xx_reg_data {
++	struct bq257xx_device *bq;
++	struct regulator_dev *bq257xx_reg;
++	struct gpio_desc *otg_en_gpio;
++	struct regulator_desc desc;
 +};
 +
-+static const struct regmap_access_table bq25703_writeable_regs = {
-+	.no_ranges = bq25703_readonly_reg_ranges,
-+	.n_no_ranges = ARRAY_SIZE(bq25703_readonly_reg_ranges),
-+};
-+
-+static const struct regmap_range bq25703_volatile_reg_ranges[] = {
-+	regmap_reg_range(BQ25703_CHARGE_OPTION_0, BQ25703_IIN_HOST),
-+	regmap_reg_range(BQ25703_CHARGER_STATUS, BQ25703_ADC_OPTION),
-+};
-+
-+static const struct regmap_access_table bq25703_volatile_regs = {
-+	.yes_ranges = bq25703_volatile_reg_ranges,
-+	.n_yes_ranges = ARRAY_SIZE(bq25703_volatile_reg_ranges),
-+};
-+
-+static const struct regmap_config bq25703_regmap_config = {
-+	.reg_bits = 8,
-+	.val_bits = 16,
-+	.max_register = BQ25703_ADC_OPTION,
-+	.cache_type = REGCACHE_RBTREE,
-+	.wr_table = &bq25703_writeable_regs,
-+	.volatile_table = &bq25703_volatile_regs,
-+	.val_format_endian = REGMAP_ENDIAN_LITTLE,
-+};
-+
-+static const struct mfd_cell bq25703_cells[] = {
-+	MFD_CELL_NAME("bq257xx-regulator"),
-+	MFD_CELL_NAME("bq257xx-charger"),
-+};
-+
-+static int bq257xx_probe(struct i2c_client *client)
++static int bq25703_vbus_get_cur_limit(struct regulator_dev *rdev)
 +{
-+	struct bq257xx_device *ddata;
-+	const struct mfd_cell *cells;
-+	int nr_cells;
++	struct bq257xx_reg_data *pdata = rdev_get_drvdata(rdev);
 +	int ret;
++	unsigned int reg;
 +
-+	ddata = devm_kzalloc(&client->dev, sizeof(*ddata), GFP_KERNEL);
-+	if (!ddata)
-+		return -ENOMEM;
-+
-+	ddata->client = client;
-+
-+	cells = bq25703_cells;
-+	nr_cells = ARRAY_SIZE(bq25703_cells);
-+	ddata->regmap = devm_regmap_init_i2c(client, &bq25703_regmap_config);
-+	if (IS_ERR(ddata->regmap)) {
-+		dev_err(&client->dev, "Failed to allocate register map\n");
-+		return PTR_ERR(ddata->regmap);
-+	}
-+
-+	i2c_set_clientdata(client, ddata);
-+
-+	ret = devm_mfd_add_devices(&client->dev, PLATFORM_DEVID_AUTO,
-+				   cells, nr_cells, NULL, 0, NULL);
-+	if (ret) {
-+		dev_err(&client->dev, "Failed to register child devices %d\n", ret);
++	ret = regmap_read(pdata->bq->regmap, BQ25703_OTG_CURRENT, &reg);
++	if (ret)
 +		return ret;
-+	}
-+
-+	return ret;
++	return FIELD_GET(BQ25703_OTG_CUR_MASK, reg) * BQ25703_OTG_CUR_STEP_UA;
 +}
 +
-+static const struct i2c_device_id bq257xx_i2c_ids[] = {
-+	{ "bq25703a" },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(i2c, bq257xx_i2c_ids);
++/*
++ * Check if the minimum current and maximum current requested are
++ * sane values, then set the register accordingly.
++ */
++static int bq25703_vbus_set_cur_limit(struct regulator_dev *rdev,
++				      int min_uA, int max_uA)
++{
++	struct bq257xx_reg_data *pdata = rdev_get_drvdata(rdev);
++	unsigned int reg;
 +
-+static const struct of_device_id bq257xx_of_match[] = {
-+	{ .compatible = "ti,bq25703a" },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, bq257xx_of_match);
++	if ((min_uA > BQ25703_OTG_CUR_MAX_UA) || (max_uA < 0))
++		return -EINVAL;
 +
-+static struct i2c_driver bq257xx_driver = {
++	reg = (max_uA / BQ25703_OTG_CUR_STEP_UA);
++
++	/* Catch rounding errors since our step is 50000uA. */
++	if ((reg * BQ25703_OTG_CUR_STEP_UA) < min_uA)
++		return -EINVAL;
++
++	return regmap_write(pdata->bq->regmap, BQ25703_OTG_CURRENT,
++			    FIELD_PREP(BQ25703_OTG_CUR_MASK, reg));
++}
++
++static int bq25703_vbus_enable(struct regulator_dev *rdev)
++{
++	struct bq257xx_reg_data *pdata = rdev_get_drvdata(rdev);
++
++	if (pdata->otg_en_gpio)
++		gpiod_set_value_cansleep(pdata->otg_en_gpio, 1);
++	return regulator_enable_regmap(rdev);
++}
++
++static int bq25703_vbus_disable(struct regulator_dev *rdev)
++{
++	struct bq257xx_reg_data *pdata = rdev_get_drvdata(rdev);
++
++	if (pdata->otg_en_gpio)
++		gpiod_set_value_cansleep(pdata->otg_en_gpio, 0);
++	return regulator_disable_regmap(rdev);
++}
++
++static const struct regulator_ops bq25703_vbus_ops = {
++	.enable = bq25703_vbus_enable,
++	.disable = bq25703_vbus_disable,
++	.is_enabled = regulator_is_enabled_regmap,
++	.list_voltage = regulator_list_voltage_linear,
++	.get_voltage_sel = regulator_get_voltage_sel_regmap,
++	.set_voltage_sel = regulator_set_voltage_sel_regmap,
++	.get_current_limit = bq25703_vbus_get_cur_limit,
++	.set_current_limit = bq25703_vbus_set_cur_limit,
++};
++
++static const struct regulator_desc bq25703_vbus_desc = {
++	.name = "usb_otg_vbus",
++	.of_match = of_match_ptr("usb-otg-vbus"),
++	.regulators_node = of_match_ptr("regulators"),
++	.type = REGULATOR_VOLTAGE,
++	.owner = THIS_MODULE,
++	.ops = &bq25703_vbus_ops,
++	.min_uV = BQ25703_OTG_VOLT_MIN_UV,
++	.uV_step = BQ25703_OTG_VOLT_STEP_UV,
++	.n_voltages = BQ25703_OTG_VOLT_NUM_VOLT,
++	.enable_mask = BQ25703_EN_OTG_MASK,
++	.enable_reg = BQ25703_CHARGE_OPTION_3,
++	.enable_val = BQ25703_EN_OTG_MASK,
++	.disable_val = 0,
++	.vsel_reg = BQ25703_OTG_VOLT,
++	.vsel_mask = BQ25703_OTG_VOLT_MASK,
++};
++
++/* Get optional GPIO for OTG regulator enable. */
++static void bq257xx_reg_dt_parse_gpio(struct platform_device *pdev)
++{
++	struct device_node *child, *subchild;
++	struct bq257xx_reg_data *pdata = platform_get_drvdata(pdev);
++
++	child = of_get_child_by_name(pdev->dev.of_node,
++				     pdata->desc.regulators_node);
++	if (!child)
++		return;
++
++	subchild = of_get_child_by_name(child, pdata->desc.of_match);
++	if (!subchild)
++		return;
++
++	of_node_put(child);
++
++	pdata->otg_en_gpio = devm_fwnode_gpiod_get_index(&pdev->dev,
++							 of_fwnode_handle(subchild),
++							 "enable", 0,
++							 GPIOD_OUT_LOW,
++							 pdata->desc.of_match);
++
++	of_node_put(subchild);
++
++	if (IS_ERR_OR_NULL(pdata->otg_en_gpio)) {
++		dev_err(&pdev->dev, "Error getting enable gpio: %ld\n",
++			PTR_ERR(pdata->otg_en_gpio));
++		return;
++	}
++}
++
++static int bq257xx_regulator_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct bq257xx_device *bq = dev_get_drvdata(pdev->dev.parent);
++	struct bq257xx_reg_data *pdata;
++	struct device_node *np = dev->of_node;
++	struct regulator_init_data *init_data;
++	struct regulator_config cfg = {};
++
++	pdev->dev.of_node = pdev->dev.parent->of_node;
++	pdev->dev.of_node_reused = true;
++
++	pdata = devm_kzalloc(&pdev->dev, sizeof(struct bq257xx_reg_data), GFP_KERNEL);
++	if (!pdata)
++		return -ENOMEM;
++
++	pdata->bq = bq;
++	pdata->desc = bq25703_vbus_desc;
++
++	platform_set_drvdata(pdev, pdata);
++	bq257xx_reg_dt_parse_gpio(pdev);
++
++	cfg.dev = &pdev->dev;
++	cfg.init_data = init_data;
++	cfg.driver_data = pdata;
++	cfg.of_node = np;
++	cfg.regmap = dev_get_regmap(pdev->dev.parent, NULL);
++	if (!cfg.regmap)
++		return -ENODEV;
++
++	pdata->bq257xx_reg = devm_regulator_register(dev, &pdata->desc, &cfg);
++	if (IS_ERR(pdata->bq257xx_reg)) {
++		return dev_err_probe(&pdev->dev, PTR_ERR(pdata->bq257xx_reg),
++				     "error registering bq257xx regulator");
++	}
++
++	return 0;
++}
++
++static struct platform_driver bq257xx_reg_driver = {
 +	.driver = {
-+		.name = "bq257xx",
-+		.of_match_table = bq257xx_of_match,
++		.name = "bq257xx-regulator",
 +	},
-+	.probe = bq257xx_probe,
-+	.id_table = bq257xx_i2c_ids,
++	.probe = bq257xx_regulator_probe,
 +};
-+module_i2c_driver(bq257xx_driver);
 +
-+MODULE_DESCRIPTION("bq257xx buck/boost/charger driver");
++module_platform_driver(bq257xx_reg_driver);
++
++MODULE_DESCRIPTION("bq257xx regulator driver");
 +MODULE_AUTHOR("Chris Morgan <macromorgan@hotmail.com>");
 +MODULE_LICENSE("GPL");
-diff --git a/include/linux/mfd/bq257xx.h b/include/linux/mfd/bq257xx.h
-new file mode 100644
-index 000000000000..153a96248f32
---- /dev/null
-+++ b/include/linux/mfd/bq257xx.h
-@@ -0,0 +1,108 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Register definitions for TI BQ257XX
-+ * Copyright (C) 2020 Texas Instruments Incorporated - http://www.ti.com/
-+ */
-+
-+#define BQ25703_CHARGE_OPTION_0			0x00
-+#define BQ25703_CHARGE_CURRENT			0x02
-+#define BQ25703_MAX_CHARGE_VOLT			0x04
-+#define BQ25703_OTG_VOLT			0x06
-+#define BQ25703_OTG_CURRENT			0x08
-+#define BQ25703_INPUT_VOLTAGE			0x0a
-+#define BQ25703_MIN_VSYS			0x0c
-+#define BQ25703_IIN_HOST			0x0e
-+#define BQ25703_CHARGER_STATUS			0x20
-+#define BQ25703_PROCHOT_STATUS			0x22
-+#define BQ25703_IIN_DPM				0x24
-+#define BQ25703_ADCIBAT_CHG			0x28
-+#define BQ25703_ADCIINCMPIN			0x2a
-+#define BQ25703_ADCVSYSVBAT			0x2c
-+#define BQ25703_MANUFACT_DEV_ID			0x2e
-+#define BQ25703_CHARGE_OPTION_1			0x30
-+#define BQ25703_CHARGE_OPTION_2			0x32
-+#define BQ25703_CHARGE_OPTION_3			0x34
-+#define BQ25703_ADC_OPTION			0x3a
-+
-+#define BQ25703_EN_LWPWR			BIT(15)
-+#define BQ25703_WDTMR_ADJ_MASK			GENMASK(14, 13)
-+#define BQ25703_WDTMR_DISABLE			0
-+#define BQ25703_WDTMR_5_SEC			1
-+#define BQ25703_WDTMR_88_SEC			2
-+#define BQ25703_WDTMR_175_SEC			3
-+
-+#define BQ25703_ICHG_MASK			GENMASK(12, 6)
-+#define BQ25703_ICHG_STEP_UA			64000
-+#define BQ25703_ICHG_MIN_UA			64000
-+#define BQ25703_ICHG_MAX_UA			8128000
-+
-+#define BQ25703_MAX_CHARGE_VOLT_MASK		GENMASK(15, 4)
-+#define BQ25703_VBATREG_STEP_UV			16000
-+#define BQ25703_VBATREG_MIN_UV			1024000
-+#define BQ25703_VBATREG_MAX_UV			19200000
-+
-+#define BQ25703_OTG_VOLT_MASK			GENMASK(13, 6)
-+#define BQ25703_OTG_VOLT_STEP_UV		64000
-+#define BQ25703_OTG_VOLT_MIN_UV			4480000
-+#define BQ25703_OTG_VOLT_MAX_UV			20800000
-+#define BQ25703_OTG_VOLT_NUM_VOLT		256
-+
-+#define BQ25703_OTG_CUR_MASK			GENMASK(14, 8)
-+#define BQ25703_OTG_CUR_STEP_UA			50000
-+#define BQ25703_OTG_CUR_MAX_UA			6350000
-+
-+#define BQ25703_MINVSYS_MASK			GENMASK(13, 8)
-+#define BQ25703_MINVSYS_STEP_UV			256000
-+#define BQ25703_MINVSYS_MIN_UV			1024000
-+#define BQ25703_MINVSYS_MAX_UV			16128000
-+
-+#define BQ25703_STS_AC_STAT			BIT(15)
-+#define BQ25703_STS_IN_FCHRG			BIT(10)
-+#define BQ25703_STS_IN_PCHRG			BIT(9)
-+#define BQ25703_STS_FAULT_ACOV			BIT(7)
-+#define BQ25703_STS_FAULT_BATOC			BIT(6)
-+#define BQ25703_STS_FAULT_ACOC			BIT(5)
-+
-+#define BQ25703_IINDPM_MASK			GENMASK(14, 8)
-+#define BQ25703_IINDPM_STEP_UA			50000
-+#define BQ25703_IINDPM_MIN_UA			50000
-+#define BQ25703_IINDPM_MAX_UA			6400000
-+#define BQ25703_IINDPM_DEFAULT_UA		3300000
-+#define BQ25703_IINDPM_OFFSET_UA		50000
-+
-+#define BQ25703_ADCIBAT_DISCHG_MASK		GENMASK(6, 0)
-+#define BQ25703_ADCIBAT_CHG_MASK		GENMASK(14, 8)
-+#define BQ25703_ADCIBAT_CHG_STEP_UA		64000
-+#define BQ25703_ADCIBAT_DIS_STEP_UA		256000
-+
-+#define BQ25703_ADCIIN				GENMASK(15, 8)
-+#define BQ25703_ADCIINCMPIN_STEP		50000
-+
-+#define BQ25703_ADCVSYS_MASK			GENMASK(15, 8)
-+#define BQ25703_ADCVBAT_MASK			GENMASK(7, 0)
-+#define BQ25703_ADCVSYSVBAT_OFFSET_UV		2880000
-+#define BQ25703_ADCVSYSVBAT_STEP		64000
-+
-+#define BQ25703_ADC_CH_MASK			GENMASK(7, 0)
-+#define BQ25703_ADC_CONV_EN			BIT(15)
-+#define BQ25703_ADC_START			BIT(14)
-+#define BQ25703_ADC_FULL_SCALE			BIT(13)
-+#define BQ25703_ADC_CMPIN_EN			BIT(7)
-+#define BQ25703_ADC_VBUS_EN			BIT(6)
-+#define BQ25703_ADC_PSYS_EN			BIT(5)
-+#define BQ25703_ADC_IIN_EN			BIT(4)
-+#define BQ25703_ADC_IDCHG_EN			BIT(3)
-+#define BQ25703_ADC_ICHG_EN			BIT(2)
-+#define BQ25703_ADC_VSYS_EN			BIT(1)
-+#define BQ25703_ADC_VBAT_EN			BIT(0)
-+
-+#define BQ25703_EN_OTG_MASK			BIT(12)
-+
-+enum bq257xx_id {
-+	BQ25703A,
-+};
-+
-+struct bq257xx_device {
-+	struct i2c_client *client;
-+	struct regmap *regmap;
-+};
 -- 
 2.43.0
 
