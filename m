@@ -1,38 +1,38 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E2732652B0;
-	Mon, 23 Jun 2025 12:02:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28AD1266EFC;
+	Mon, 23 Jun 2025 12:02:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750680131; cv=none; b=QmERydGbEx4TV1st+pu2PW7fOFkdcG8Pa+D8dlPGIQ2KDSf2hymCr3bHTbo9j/aOgYrytH5xPQtf/F21fDdP7caSofOqBOADdPALvr5OdXKgrweNqe/Kb5NODjz+AuSblJMXrL9Drsmc+G1XBjSnngNw50Dbkf6FaZDxn+FzfS0=
+	t=1750680133; cv=none; b=srwcUNlWD2N3qDMqNuUcOX7V1xZJW1mhjbqmGGud6bZXRIIk9IxRmqVd4gLIlQ0MR+mwtpXvQNkDAB8wcvp+bfjFMyjxVCi8BNx8PiWExlXi7qF2DGCwHCQF2RKzh0u8aKWj5UI/KaKBB9dzFEEp9oueN/WSnaM1ZMlVu7NnD+s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750680131; c=relaxed/simple;
-	bh=eim72WFFw0hgS/DlK1JwbuAVE47pGc2rjtb1MD+9DwM=;
+	s=arc-20240116; t=1750680133; c=relaxed/simple;
+	bh=4dKUDczoGa8qRf5DezoFpKNCqMG6eX7Drv2Hgw9/NU4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Umwk2xRbg8mCa1zKQkev3TRSYkpTLdgb3SuRpucLJ6Tg3iQuCuEOjrz26+I4OHdEbyr+tzHgknaLEGHLM/YDR1FbwDhGc09hQSdQ6eXNwIQvdBLIO3WH2MH6w5IMfEx8VTmvHsoXEYPPYCP/jFgSvx1JS9Ml8NUt/P2uGV1EO4A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=Bax/+hUX; arc=none smtp.client-ip=148.251.105.195
+	 MIME-Version; b=thBafs1ZFgArPyynJflfdwdsGMVs3ULTH30SxMkZNjjMZiTOiCszh4gohS4aCyD6vg83wCrq1M2vV7Aq+lcFjxGdNnwRvdWhM4WSNPZQjwCOBYXCW1vm8ltIwt1QbDIpKI9OW6QMj7f0N2CV2D/nyxhUmYe5uf0MLweAAU2jyvo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=K1GIhk6h; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="Bax/+hUX"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="K1GIhk6h"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1750680127;
-	bh=eim72WFFw0hgS/DlK1JwbuAVE47pGc2rjtb1MD+9DwM=;
+	s=mail; t=1750680129;
+	bh=4dKUDczoGa8qRf5DezoFpKNCqMG6eX7Drv2Hgw9/NU4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Bax/+hUXRf3vYM5Uir6RHyrcs6CzrgdYjTAPJ2N0cYFZUev4eGTmA63KLEsSHX7pV
-	 OXwWZ5Tj+R8BnTi9U4qdast8r36NC4bRR3KdtLhY5En4FK8TWV10VcozqjvtpJ2Nbb
-	 WV6fLizrVVvQhpdppzRrgRfuQvLEKzRuAaTAJMPuOKkCbL++nHoIeVDwxzXaMF948x
-	 SEwq9RWWs+7rMpsDuD2bmIE7gMzsmR6XQK0MnI1Wbgh+TGdE3B55wv072kUQWZFWLO
-	 JEaGKkrJLwQbAgHeVrT3gP+kYwbxAuM6VB/RLbTBgdSjxOn7PvqSSeEwewmvp+I0Yd
-	 kFSnfXkamNkfw==
+	b=K1GIhk6hefmyESPFFNmpyVCTUjipAWfpTZ6FhEgKsIL72MJ63mobznJmA8+udb+V1
+	 N6RLlAbzhfb/35KcZhk8WqOADYXgg9eSK4YJnXpeIcn0Dvc4ZVwY0acXEEkUh44PWD
+	 fWIlY6ofF5c4cdH8KdoCF/In7D5ee2uj1Zb8AwUQ44JqghmM/LLmWx9nGBkytjA4Ss
+	 B6OAV61/tQ378rSi9O3PY+BdBWP9iMCtCRLVCrNotCwjJF4YAFcxdnrThRXlvvIUqc
+	 zeZHr279I1LOg18e9cbv0z38ak0XQ4SJSg2ECaJqpJjrEPsYXuxz0ywIKJDBC978PJ
+	 wDGZg4EmGnptg==
 Received: from IcarusMOD.eternityproject.eu (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id AD86717E35E7;
-	Mon, 23 Jun 2025 14:02:06 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id C6EAA17E0342;
+	Mon, 23 Jun 2025 14:02:08 +0200 (CEST)
 From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 To: linux-mediatek@lists.infradead.org
 Cc: robh@kernel.org,
@@ -52,9 +52,9 @@ Cc: robh@kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-pm@vger.kernel.org,
 	kernel@collabora.com
-Subject: [PATCH v1 09/13] pmdomain: mediatek: Convert all SoCs to new style regmap retrieval
-Date: Mon, 23 Jun 2025 14:01:50 +0200
-Message-ID: <20250623120154.109429-10-angelogioacchino.delregno@collabora.com>
+Subject: [PATCH v1 11/13] dt-bindings: power: Add support for MT8196 power controllers
+Date: Mon, 23 Jun 2025 14:01:52 +0200
+Message-ID: <20250623120154.109429-12-angelogioacchino.delregno@collabora.com>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250623120154.109429-1-angelogioacchino.delregno@collabora.com>
 References: <20250623120154.109429-1-angelogioacchino.delregno@collabora.com>
@@ -66,234 +66,108 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add the bus_prot_blocks handle and declare num_bus_prot_blocks to
-allow all of the currently supported AArch64 MediaTek SoCs to use
-the new style regmap retrieval in the driver when a new style
-devicetree declaring the mediatek,bus-protection phandle(s) in
-the main power controller node is found.
+Add support for the power controllers found in the MediaTek MT8196
+Chromebook SoC.
+
+This chip has three power controllers, two of which located in the
+SCP subsystems (where one can be directly controlled and the other
+can be controlled only through the HW Voter IP), and one located
+in the Multimedia HFRP subsystem, controllable only through the HW
+Voter IP.
 
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- drivers/pmdomain/mediatek/mt6795-pm-domains.h | 5 +++++
- drivers/pmdomain/mediatek/mt8167-pm-domains.h | 5 +++++
- drivers/pmdomain/mediatek/mt8173-pm-domains.h | 5 +++++
- drivers/pmdomain/mediatek/mt8183-pm-domains.h | 5 +++++
- drivers/pmdomain/mediatek/mt8186-pm-domains.h | 5 +++++
- drivers/pmdomain/mediatek/mt8188-pm-domains.h | 6 ++++++
- drivers/pmdomain/mediatek/mt8192-pm-domains.h | 5 +++++
- drivers/pmdomain/mediatek/mt8195-pm-domains.h | 5 +++++
- drivers/pmdomain/mediatek/mt8365-pm-domains.h | 6 ++++++
- 9 files changed, 47 insertions(+)
+ .../power/mediatek,power-controller.yaml      |  4 ++
+ .../dt-bindings/power/mediatek,mt8196-power.h | 58 +++++++++++++++++++
+ 2 files changed, 62 insertions(+)
+ create mode 100644 include/dt-bindings/power/mediatek,mt8196-power.h
 
-diff --git a/drivers/pmdomain/mediatek/mt6795-pm-domains.h b/drivers/pmdomain/mediatek/mt6795-pm-domains.h
-index a3f7785b04bd..dc8e9f8877ad 100644
---- a/drivers/pmdomain/mediatek/mt6795-pm-domains.h
-+++ b/drivers/pmdomain/mediatek/mt6795-pm-domains.h
-@@ -9,6 +9,9 @@
- /*
-  * MT6795 power domain support
-  */
-+static enum scpsys_bus_prot_block scpsys_bus_prot_blocks_mt6795[] = {
-+	BUS_PROT_BLOCK_INFRA
-+};
+diff --git a/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml b/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
+index 2530c873bb3c..f55fe2c3060d 100644
+--- a/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
++++ b/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
+@@ -33,6 +33,9 @@ properties:
+       - mediatek,mt8188-power-controller
+       - mediatek,mt8192-power-controller
+       - mediatek,mt8195-power-controller
++      - mediatek,mt8196-hwv-hfrp-power-controller
++      - mediatek,mt8196-hwv-scp-power-controller
++      - mediatek,mt8196-power-controller
+       - mediatek,mt8365-power-controller
  
- static const struct scpsys_domain_data scpsys_domain_data_mt6795[] = {
- 	[MT6795_POWER_DOMAIN_VDEC] = {
-@@ -107,6 +110,8 @@ static const struct scpsys_domain_data scpsys_domain_data_mt6795[] = {
- static const struct scpsys_soc_data mt6795_scpsys_data = {
- 	.domains_data = scpsys_domain_data_mt6795,
- 	.num_domains = ARRAY_SIZE(scpsys_domain_data_mt6795),
-+	.bus_prot_blocks = scpsys_bus_prot_blocks_mt6795,
-+	.num_bus_prot_blocks = ARRAY_SIZE(scpsys_bus_prot_blocks_mt6795),
- };
- 
- #endif /* __SOC_MEDIATEK_MT6795_PM_DOMAINS_H */
-diff --git a/drivers/pmdomain/mediatek/mt8167-pm-domains.h b/drivers/pmdomain/mediatek/mt8167-pm-domains.h
-index 8a0e898b79ab..f6ee48a711a1 100644
---- a/drivers/pmdomain/mediatek/mt8167-pm-domains.h
-+++ b/drivers/pmdomain/mediatek/mt8167-pm-domains.h
-@@ -12,6 +12,9 @@
- /*
-  * MT8167 power domain support
-  */
-+static enum scpsys_bus_prot_block scpsys_bus_prot_blocks_mt8167[] = {
-+	BUS_PROT_BLOCK_INFRA
-+};
- 
- static const struct scpsys_domain_data scpsys_domain_data_mt8167[] = {
- 	[MT8167_POWER_DOMAIN_MM] = {
-@@ -99,6 +102,8 @@ static const struct scpsys_domain_data scpsys_domain_data_mt8167[] = {
- static const struct scpsys_soc_data mt8167_scpsys_data = {
- 	.domains_data = scpsys_domain_data_mt8167,
- 	.num_domains = ARRAY_SIZE(scpsys_domain_data_mt8167),
-+	.bus_prot_blocks = scpsys_bus_prot_blocks_mt8167,
-+	.num_bus_prot_blocks = ARRAY_SIZE(scpsys_bus_prot_blocks_mt8167),
- };
- 
- #endif /* __SOC_MEDIATEK_MT8167_PM_DOMAINS_H */
-diff --git a/drivers/pmdomain/mediatek/mt8173-pm-domains.h b/drivers/pmdomain/mediatek/mt8173-pm-domains.h
-index 7be0f47f5214..561a644b5d1c 100644
---- a/drivers/pmdomain/mediatek/mt8173-pm-domains.h
-+++ b/drivers/pmdomain/mediatek/mt8173-pm-domains.h
-@@ -9,6 +9,9 @@
- /*
-  * MT8173 power domain support
-  */
-+static enum scpsys_bus_prot_block scpsys_bus_prot_blocks_mt8173[] = {
-+	BUS_PROT_BLOCK_INFRA
-+};
- 
- static const struct scpsys_domain_data scpsys_domain_data_mt8173[] = {
- 	[MT8173_POWER_DOMAIN_VDEC] = {
-@@ -118,6 +121,8 @@ static const struct scpsys_domain_data scpsys_domain_data_mt8173[] = {
- static const struct scpsys_soc_data mt8173_scpsys_data = {
- 	.domains_data = scpsys_domain_data_mt8173,
- 	.num_domains = ARRAY_SIZE(scpsys_domain_data_mt8173),
-+	.bus_prot_blocks = scpsys_bus_prot_blocks_mt8173,
-+	.num_bus_prot_blocks = ARRAY_SIZE(scpsys_bus_prot_blocks_mt8173),
- };
- 
- #endif /* __SOC_MEDIATEK_MT8173_PM_DOMAINS_H */
-diff --git a/drivers/pmdomain/mediatek/mt8183-pm-domains.h b/drivers/pmdomain/mediatek/mt8183-pm-domains.h
-index c4c1b63d85b1..3742782a2702 100644
---- a/drivers/pmdomain/mediatek/mt8183-pm-domains.h
-+++ b/drivers/pmdomain/mediatek/mt8183-pm-domains.h
-@@ -9,6 +9,9 @@
- /*
-  * MT8183 power domain support
-  */
-+static enum scpsys_bus_prot_block scpsys_bus_prot_blocks_mt8183[] = {
-+	BUS_PROT_BLOCK_INFRA, BUS_PROT_BLOCK_SMI
-+};
- 
- static const struct scpsys_domain_data scpsys_domain_data_mt8183[] = {
- 	[MT8183_POWER_DOMAIN_AUDIO] = {
-@@ -290,6 +293,8 @@ static const struct scpsys_domain_data scpsys_domain_data_mt8183[] = {
- static const struct scpsys_soc_data mt8183_scpsys_data = {
- 	.domains_data = scpsys_domain_data_mt8183,
- 	.num_domains = ARRAY_SIZE(scpsys_domain_data_mt8183),
-+	.bus_prot_blocks = scpsys_bus_prot_blocks_mt8183,
-+	.num_bus_prot_blocks = ARRAY_SIZE(scpsys_bus_prot_blocks_mt8183),
- };
- 
- #endif /* __SOC_MEDIATEK_MT8183_PM_DOMAINS_H */
-diff --git a/drivers/pmdomain/mediatek/mt8186-pm-domains.h b/drivers/pmdomain/mediatek/mt8186-pm-domains.h
-index cbac715c38fa..00b9861af7c9 100644
---- a/drivers/pmdomain/mediatek/mt8186-pm-domains.h
-+++ b/drivers/pmdomain/mediatek/mt8186-pm-domains.h
-@@ -13,6 +13,9 @@
- /*
-  * MT8186 power domain support
-  */
-+static enum scpsys_bus_prot_block scpsys_bus_prot_blocks_mt8186[] = {
-+	BUS_PROT_BLOCK_INFRA
-+};
- 
- static const struct scpsys_domain_data scpsys_domain_data_mt8186[] = {
- 	[MT8186_POWER_DOMAIN_MFG0] = {
-@@ -361,6 +364,8 @@ static const struct scpsys_domain_data scpsys_domain_data_mt8186[] = {
- static const struct scpsys_soc_data mt8186_scpsys_data = {
- 	.domains_data = scpsys_domain_data_mt8186,
- 	.num_domains = ARRAY_SIZE(scpsys_domain_data_mt8186),
-+	.bus_prot_blocks = scpsys_bus_prot_blocks_mt8186,
-+	.num_bus_prot_blocks = ARRAY_SIZE(scpsys_bus_prot_blocks_mt8186),
- };
- 
- #endif /* __SOC_MEDIATEK_MT8186_PM_DOMAINS_H */
-diff --git a/drivers/pmdomain/mediatek/mt8188-pm-domains.h b/drivers/pmdomain/mediatek/mt8188-pm-domains.h
-index 007235be9efe..3a989e83e9b7 100644
---- a/drivers/pmdomain/mediatek/mt8188-pm-domains.h
-+++ b/drivers/pmdomain/mediatek/mt8188-pm-domains.h
-@@ -14,6 +14,10 @@
-  * MT8188 power domain support
-  */
- 
-+static enum scpsys_bus_prot_block scpsys_bus_prot_blocks_mt8188[] = {
-+	BUS_PROT_BLOCK_INFRA
-+};
+   '#power-domain-cells':
+@@ -160,6 +163,7 @@ allOf:
+           contains:
+             enum:
+               - mediatek,mt8183-power-controller
++              - mediatek,mt8196-power-controller
+     then:
+       properties:
+         mediatek,bus-protection:
+diff --git a/include/dt-bindings/power/mediatek,mt8196-power.h b/include/dt-bindings/power/mediatek,mt8196-power.h
+new file mode 100644
+index 000000000000..c12f0fe8f4c1
+--- /dev/null
++++ b/include/dt-bindings/power/mediatek,mt8196-power.h
+@@ -0,0 +1,58 @@
++/* SPDX-License-Identifier: (GPL-2.0 OR MIT) */
++/*
++ * Copyright (c) 2025 Collabora Ltd
++ *                    AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
++ */
 +
- static const struct scpsys_domain_data scpsys_domain_data_mt8188[] = {
- 	[MT8188_POWER_DOMAIN_MFG0] = {
- 		.name = "mfg0",
-@@ -685,6 +689,8 @@ static const struct scpsys_domain_data scpsys_domain_data_mt8188[] = {
- static const struct scpsys_soc_data mt8188_scpsys_data = {
- 	.domains_data = scpsys_domain_data_mt8188,
- 	.num_domains = ARRAY_SIZE(scpsys_domain_data_mt8188),
-+	.bus_prot_blocks = scpsys_bus_prot_blocks_mt8188,
-+	.num_bus_prot_blocks = ARRAY_SIZE(scpsys_bus_prot_blocks_mt8188),
- };
- 
- #endif /* __SOC_MEDIATEK_MT8188_PM_DOMAINS_H */
-diff --git a/drivers/pmdomain/mediatek/mt8192-pm-domains.h b/drivers/pmdomain/mediatek/mt8192-pm-domains.h
-index 6f139eed3769..5d62fac5f682 100644
---- a/drivers/pmdomain/mediatek/mt8192-pm-domains.h
-+++ b/drivers/pmdomain/mediatek/mt8192-pm-domains.h
-@@ -9,6 +9,9 @@
- /*
-  * MT8192 power domain support
-  */
-+static enum scpsys_bus_prot_block scpsys_bus_prot_blocks_mt8192[] = {
-+	BUS_PROT_BLOCK_INFRA
-+};
- 
- static const struct scpsys_domain_data scpsys_domain_data_mt8192[] = {
- 	[MT8192_POWER_DOMAIN_AUDIO] = {
-@@ -380,6 +383,8 @@ static const struct scpsys_domain_data scpsys_domain_data_mt8192[] = {
- static const struct scpsys_soc_data mt8192_scpsys_data = {
- 	.domains_data = scpsys_domain_data_mt8192,
- 	.num_domains = ARRAY_SIZE(scpsys_domain_data_mt8192),
-+	.bus_prot_blocks = scpsys_bus_prot_blocks_mt8192,
-+	.num_bus_prot_blocks = ARRAY_SIZE(scpsys_bus_prot_blocks_mt8192),
- };
- 
- #endif /* __SOC_MEDIATEK_MT8192_PM_DOMAINS_H */
-diff --git a/drivers/pmdomain/mediatek/mt8195-pm-domains.h b/drivers/pmdomain/mediatek/mt8195-pm-domains.h
-index 59aa031ae632..9405e8f62eaf 100644
---- a/drivers/pmdomain/mediatek/mt8195-pm-domains.h
-+++ b/drivers/pmdomain/mediatek/mt8195-pm-domains.h
-@@ -13,6 +13,9 @@
- /*
-  * MT8195 power domain support
-  */
-+static enum scpsys_bus_prot_block scpsys_bus_prot_blocks_mt8195[] = {
-+	BUS_PROT_BLOCK_INFRA
-+};
- 
- static const struct scpsys_domain_data scpsys_domain_data_mt8195[] = {
- 	[MT8195_POWER_DOMAIN_PCIE_MAC_P0] = {
-@@ -661,6 +664,8 @@ static const struct scpsys_domain_data scpsys_domain_data_mt8195[] = {
- static const struct scpsys_soc_data mt8195_scpsys_data = {
- 	.domains_data = scpsys_domain_data_mt8195,
- 	.num_domains = ARRAY_SIZE(scpsys_domain_data_mt8195),
-+	.bus_prot_blocks = scpsys_bus_prot_blocks_mt8195,
-+	.num_bus_prot_blocks = ARRAY_SIZE(scpsys_bus_prot_blocks_mt8195),
- };
- 
- #endif /* __SOC_MEDIATEK_MT8195_PM_DOMAINS_H */
-diff --git a/drivers/pmdomain/mediatek/mt8365-pm-domains.h b/drivers/pmdomain/mediatek/mt8365-pm-domains.h
-index 6fbd5ef8d672..33265ab8ce76 100644
---- a/drivers/pmdomain/mediatek/mt8365-pm-domains.h
-+++ b/drivers/pmdomain/mediatek/mt8365-pm-domains.h
-@@ -33,6 +33,10 @@
- 			      _sta_mask, _sta,				\
- 			      BUS_PROT_INVERTED | BUS_PROT_REG_UPDATE)
- 
-+static enum scpsys_bus_prot_block scpsys_bus_prot_blocks_mt8365[] = {
-+	BUS_PROT_BLOCK_INFRA, BUS_PROT_BLOCK_INFRA_NAO, BUS_PROT_BLOCK_SMI
-+};
++#ifndef _DT_BINDINGS_POWER_MT8196_POWER_H
++#define _DT_BINDINGS_POWER_MT8196_POWER_H
 +
- static const struct scpsys_domain_data scpsys_domain_data_mt8365[] = {
- 	[MT8365_POWER_DOMAIN_MM] = {
- 		.name = "mm",
-@@ -190,6 +194,8 @@ static const struct scpsys_domain_data scpsys_domain_data_mt8365[] = {
- static const struct scpsys_soc_data mt8365_scpsys_data = {
- 	.domains_data = scpsys_domain_data_mt8365,
- 	.num_domains = ARRAY_SIZE(scpsys_domain_data_mt8365),
-+	.bus_prot_blocks = scpsys_bus_prot_blocks_mt8365,
-+	.num_bus_prot_blocks = ARRAY_SIZE(scpsys_bus_prot_blocks_mt8365),
- };
- 
- #endif /* __SOC_MEDIATEK_MT8365_PM_DOMAINS_H */
++/* SCPSYS Secure Power Manager - Direct Control */
++#define MT8196_POWER_DOMAIN_MD				0
++#define MT8196_POWER_DOMAIN_CONN			1
++#define MT8196_POWER_DOMAIN_SSUSB_P0			2
++#define MT8196_POWER_DOMAIN_SSUSB_DP_PHY_P0		3
++#define MT8196_POWER_DOMAIN_SSUSB_P1			4
++#define MT8196_POWER_DOMAIN_SSUSB_P23			5
++#define MT8196_POWER_DOMAIN_SSUSB_PHY_P2		6
++#define MT8196_POWER_DOMAIN_PEXTP_MAC0			7
++#define MT8196_POWER_DOMAIN_PEXTP_MAC1			8
++#define MT8196_POWER_DOMAIN_PEXTP_MAC2			9
++#define MT8196_POWER_DOMAIN_PEXTP_PHY0			10
++#define MT8196_POWER_DOMAIN_PEXTP_PHY1			11
++#define MT8196_POWER_DOMAIN_PEXTP_PHY2			12
++#define MT8196_POWER_DOMAIN_AUDIO			13
++#define MT8196_POWER_DOMAIN_ADSP_TOP_DORMANT		14
++#define MT8196_POWER_DOMAIN_ADSP_INFRA			15
++#define MT8196_POWER_DOMAIN_ADSP_AO			16
++
++/* SCPSYS Secure Power Manager - HW Voter */
++#define MT8196_POWER_DOMAIN_MM_PROC_DORMANT		0
++#define MT8196_POWER_DOMAIN_SSR				1
++
++/* HFRPSYS MultiMedia Power Control (MMPC) - HW Voter */
++#define MT8196_POWER_DOMAIN_VDE0			0
++#define MT8196_POWER_DOMAIN_VDE1			1
++#define MT8196_POWER_DOMAIN_VDE_VCORE0			2
++#define MT8196_POWER_DOMAIN_VEN0			3
++#define MT8196_POWER_DOMAIN_VEN1			4
++#define MT8196_POWER_DOMAIN_VEN2			5
++#define MT8196_POWER_DOMAIN_DISP_VCORE			6
++#define MT8196_POWER_DOMAIN_DIS0_DORMANT		7
++#define MT8196_POWER_DOMAIN_DIS1_DORMANT		8
++#define MT8196_POWER_DOMAIN_OVL0_DORMANT		9
++#define MT8196_POWER_DOMAIN_OVL1_DORMANT		10
++#define MT8196_POWER_DOMAIN_DISP_EDPTX_DORMANT		11
++#define MT8196_POWER_DOMAIN_DISP_DPTX_DORMANT		12
++#define MT8196_POWER_DOMAIN_MML0_SHUTDOWN		13
++#define MT8196_POWER_DOMAIN_MML1_SHUTDOWN		14
++#define MT8196_POWER_DOMAIN_MM_INFRA0			15
++#define MT8196_POWER_DOMAIN_MM_INFRA1			16
++#define MT8196_POWER_DOMAIN_MM_INFRA_AO			17
++#define MT8196_POWER_DOMAIN_CSI_BS_RX			18
++#define MT8196_POWER_DOMAIN_CSI_LS_RX			19
++#define MT8196_POWER_DOMAIN_DSI_PHY0			20
++#define MT8196_POWER_DOMAIN_DSI_PHY1			21
++#define MT8196_POWER_DOMAIN_DSI_PHY2			22
++
++#endif /* _DT_BINDINGS_POWER_MT8188_POWER_H */
 -- 
 2.49.0
 
