@@ -1,38 +1,38 @@
 Received: from relay.smtp-ext.broadcom.com (relay.smtp-ext.broadcom.com [192.19.144.207])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A30E32F431E;
-	Wed, 25 Jun 2025 23:13:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E7C42882BB;
+	Wed, 25 Jun 2025 23:13:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.19.144.207
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750893197; cv=none; b=D4Hbi6/gZPCRhN+9JuqviKIMIFUl3UntGPihlAh5cGtMThc5D+FuuW/s7QRLo7LB0eUVrB3Xxz0wVz0/jSfJ6k+/jkmS9X/PkYHX4ODHNwkuKHRxkCFFCmNnMMQSI4yn4XMA8/JdWNlLUN2U5D/FVaxc3yJKsZvb01mCJ9dsQLA=
+	t=1750893198; cv=none; b=nAmOayCkziNmquI0hsUeZhAvBdHQ9KP6f6q6m1tbliq55Ko1GNZne8/vgOGpIONN5+9nTTxPFlkfTAPEmHDfpeQYTygceR1F0TeCUAXn+OGe2ZTi7+SRxTQ++EX5DxNKm+tcg/MTi54TTcguXs43cg8lHx0TXVLsEe5gRHtPL74=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750893197; c=relaxed/simple;
-	bh=mwgMJbIMd1cGCE56ZD9loB+RHx1P8Kz4vvhCxEjNYMo=;
+	s=arc-20240116; t=1750893198; c=relaxed/simple;
+	bh=kwtrQd8jQfG3xqO5cSsDB6/JeSPHR7GEIi1bA+z+jE0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=cVlQK5FGCijh1LwyPf5J7pscg6c+kxopjQ3R8b6GBaKLB6xahaMW+beKAypmjuaHZ28P0Tfi7rTUddp61Z2zZBBL3+5uNlX+o7zvClj2BBxHBRQm4CAMfq+sNH8vjaKUflKaqiTqzB0l0nuw0OeHqbMoT+iY7Q0EYc89kA/I9IQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com; spf=fail smtp.mailfrom=broadcom.com; dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b=H/Hr1Is/; arc=none smtp.client-ip=192.19.144.207
+	 MIME-Version; b=M2VTmQGfB1R0V940XeAPrh8X6PUQId6hev53ycBOXDqIqCfMhOawsiu2djmxvhLHH4OEhOny04lLFxfLGQdYhN/ypc2CoomPBgD+ij+wk8PtnAPhUYPcPyvAWDAHZZwT1BiDPom4WOVcwNjg99DGOXfriwQuVdDE02PtYxGIKYM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com; spf=fail smtp.mailfrom=broadcom.com; dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b=KT1eXZq4; arc=none smtp.client-ip=192.19.144.207
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=broadcom.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="H/Hr1Is/"
+	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="KT1eXZq4"
 Received: from mail-lvn-it-01.broadcom.com (mail-lvn-it-01.lvn.broadcom.net [10.36.132.253])
-	by relay.smtp-ext.broadcom.com (Postfix) with ESMTP id 94E64C00280D;
-	Wed, 25 Jun 2025 16:13:08 -0700 (PDT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 relay.smtp-ext.broadcom.com 94E64C00280D
+	by relay.smtp-ext.broadcom.com (Postfix) with ESMTP id 112CEC002821;
+	Wed, 25 Jun 2025 16:13:10 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 relay.smtp-ext.broadcom.com 112CEC002821
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=broadcom.com;
-	s=dkimrelay; t=1750893188;
-	bh=mwgMJbIMd1cGCE56ZD9loB+RHx1P8Kz4vvhCxEjNYMo=;
+	s=dkimrelay; t=1750893190;
+	bh=kwtrQd8jQfG3xqO5cSsDB6/JeSPHR7GEIi1bA+z+jE0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=H/Hr1Is/YTl+Gjszyje15GJJ65krWUazF6z+3b4W0kxHa5UpZJoBFhttdHtZOOnoC
-	 VsU33v4CCkxBdbH1bzQa35+AULxg9vKMM5Yi6K+FQp2qTYnEX4Vsq4lNbVDMmx8puB
-	 3/7/p7UaQ7tYgXJ0xih1VhCFtGJZ2OeOwzlI/UVM=
+	b=KT1eXZq4cH0bxwix13W2RyMzszIK7A+0qxsqPJ9dgSDXIT8TRmA372dJtbsstQDgG
+	 KKof7qqPM1F0BYtm1K6+PXABNnX/MQKY6BR/1kv3WDbZmlwuPDrX2+MoY943qm6CJJ
+	 uwqJl90/BgdSavRL/ugc/gFdIj2TVo92DIUqeDaM=
 Received: from fainelli-desktop.igp.broadcom.net (fainelli-desktop.dhcp.broadcom.net [10.67.48.245])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail-lvn-it-01.broadcom.com (Postfix) with ESMTPSA id CE7FC18000853;
-	Wed, 25 Jun 2025 16:13:07 -0700 (PDT)
+	by mail-lvn-it-01.broadcom.com (Postfix) with ESMTPSA id 7630118000530;
+	Wed, 25 Jun 2025 16:13:09 -0700 (PDT)
 From: Florian Fainelli <florian.fainelli@broadcom.com>
 To: linux-kernel@vger.kernel.org
 Cc: Florian Fainelli <florian.fainelli@broadcom.com>,
@@ -83,9 +83,9 @@ Cc: Florian Fainelli <florian.fainelli@broadcom.com>,
 	maple-tree@lists.infradead.org (open list:MAPLE TREE),
 	linux-modules@vger.kernel.org (open list:MODULE SUPPORT),
 	linux-fsdevel@vger.kernel.org (open list:PROC FILESYSTEM)
-Subject: [PATCH 05/16] MAINTAINERS: Include interrupts.py under IRQ SUBSYSTEM entry
-Date: Wed, 25 Jun 2025 16:10:42 -0700
-Message-ID: <20250625231053.1134589-6-florian.fainelli@broadcom.com>
+Subject: [PATCH 08/16] MAINTAINERS: Include GDB scripts under MEMORY MANAGEMENT entry
+Date: Wed, 25 Jun 2025 16:10:45 -0700
+Message-ID: <20250625231053.1134589-9-florian.fainelli@broadcom.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250625231053.1134589-1-florian.fainelli@broadcom.com>
 References: <20250625231053.1134589-1-florian.fainelli@broadcom.com>
@@ -97,27 +97,30 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Include the GDB scripts file under scripts/gdb/linux/interrupts.py under
-the IRQ SUBSYSTEM entry since it parses internal data structures that
-depend upon that subsystem.
+Include the GDB scripts file under scripts/gdb/linux/ that deal with
+memory mamagenement code under the MEMORY MANAGEMENT subsystem since
+they parses internal data structures that depend upon that subsystem.
 
 Signed-off-by: Florian Fainelli <florian.fainelli@broadcom.com>
 ---
- MAINTAINERS | 1 +
- 1 file changed, 1 insertion(+)
+ MAINTAINERS | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index cfb0d60ef069..e1eda0d9d671 100644
+index cad5d613cab0..52b37196d024 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -12803,6 +12803,7 @@ F:	include/linux/irqnr.h
- F:	include/linux/irqreturn.h
- F:	kernel/irq/
- F:	lib/group_cpus.c
-+F:	scripts/gdb/linux/interrupts.py
- 
- IRQCHIP DRIVERS
- M:	Thomas Gleixner <tglx@linutronix.de>
+@@ -15812,6 +15812,10 @@ F:	include/linux/mmu_notifier.h
+ F:	include/linux/pagewalk.h
+ F:	include/trace/events/ksm.h
+ F:	mm/
++F:	scripts/gdb/linux/mm.py
++F:	scripts/gdb/linux/page_owner.py
++F:	scripts/gdb/linux/pgtable.py
++F:	scripts/gdb/linux/slab.py
+ F:	tools/mm/
+ F:	tools/testing/selftests/mm/
+ N:	include/linux/page[-_]*
 -- 
 2.43.0
 
