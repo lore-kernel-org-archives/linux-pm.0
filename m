@@ -1,206 +1,119 @@
-Received: from mout-p-102.mailbox.org (mout-p-102.mailbox.org [80.241.56.152])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f44.google.com (mail-lf1-f44.google.com [209.85.167.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F37832D5C8D;
-	Wed, 25 Jun 2025 18:18:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.152
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D43882BF01C
+	for <linux-pm@vger.kernel.org>; Wed, 25 Jun 2025 19:15:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750875488; cv=none; b=ohAleVt/MEc9kpnEetMxLGSmF36O67nQ4kTjlkZ3LyDVSAIRMmw9kEcj6MjthSMtaz6lHdfGqNn+jIJ4p27w/HcAirxMjH/QCojbwZjZh2wBRYw5zeCHonzZadZHWkdaqCbJDBWYY5m8dGru043p8LSy4PDv3dKzCk5z9eEaMuE=
+	t=1750878907; cv=none; b=Qd0vOMhDgsRsuSqfeKhRl3a5mAIWh8AT4miBiGc238MObIStOF8oeWO2dMO3fc7nAvG0mFnX4LD8zQllGgI2b6ghGsTiVMSGZw8zJfB2cV+fJPysJUg/eubUDlP+y+WTvAm+Rh1fpckFUUfoNPQ/F9uU/YMRQdfzQGl2Bk8idlY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750875488; c=relaxed/simple;
-	bh=W/zbPpbf0RvPEMTTCTLW12hN74dRuApMwJ7JDHdUseg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=nvQ7tpP/b43VetE+FYtnXJ6l6DmNKod2R8Fn5b5cKdUdKFYzo2BeahNVRmx3aIBUSCeUitfX/8Jp3/KBgkATN/bz6oKWaYRunUa0AV7eFcF11s3Ka1BMLO4eNGvvwS3kXjCc6G+TKvpZinPsZBoF8A6GanTWgCaM/M9zPCJ5W+4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=OEvezP42; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=dTc7ONhb; arc=none smtp.client-ip=80.241.56.152
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
+	s=arc-20240116; t=1750878907; c=relaxed/simple;
+	bh=ZovO7nkOrLL9nxNDPkAositSdpf1H/zY80uV73Q8ZrQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Rs5MHmD8Lc6pc8jmnBMiD5ZRpnJ5ejxAUvpD+7DyDbTI98IlOlCnhVRbO/CfoqjcGPxfG0qjVRX/W8lD2Cr9Tj9KkfpnYyhNQYSqtyJR/fzaphidb10i9/mmHmPZVfgHIAQT3F/Esu8CKL8Q1eU9RT4gcFsFhByH81QlqjEXTQ8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; spf=none smtp.mailfrom=bgdev.pl; dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b=fLpnq0jh; arc=none smtp.client-ip=209.85.167.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bgdev.pl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="OEvezP42";
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="dTc7ONhb"
-Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mout-p-102.mailbox.org (Postfix) with ESMTPS id 4bS96H2Hrkz9tdq;
-	Wed, 25 Jun 2025 20:17:59 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1750875479;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=bwkEg6xzPXySEtSLWRflCbZ9TrAwuDzKxLBcHCDf3+g=;
-	b=OEvezP42eSR8jz8C+AIx5Z9xYQfGWdxCJoIDC4n6Q+lwyvajnWkGXWbJIBIBgjhMZrFmd9
-	7zjYMLUhR/eLDhbJp7YQXr4/3YQyYKF+Vpnhnmp7lKHsmgpAwMKErWJQoLPHCXcWH0UTAm
-	Qc1yc8dpHkgvDuwdCg1vZQlYYugfDIRBDFgJOCy2a3uLKwBcebyfbrgwwb+NIAwPUMCJnp
-	beEcqD8/Z1ppl4oNM0r8NktvkRN4FRgoSFpEkPQol0U+zzqua+wyvIL37a+rAhuMzH4g+0
-	ebHSKWSBCoaIqaMgTX4oxj3m8T3kXcUZAE2lQwBfKdM47eeDFykQ57v7UmM56Q==
-From: Marek Vasut <marek.vasut+renesas@mailbox.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1750875477;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=bwkEg6xzPXySEtSLWRflCbZ9TrAwuDzKxLBcHCDf3+g=;
-	b=dTc7ONhb/cMvQ34/cuN2vTHpC3rBGJXgX7eHzkYlLHxMNF1QU+eYhBaJBxIAIqxB0L2Gxo
-	E2cEFmxHvUS9Ygp1PoVWTIPsDmy2Z4knC0tUN+iPKGuN+NHd2uDWkk/6AsCzXggFNk+BwM
-	W1uiKcThS1NdOVaFmPyvFDshXzybtFCJms9KDc+qWn6RSdqC4Gk8sU+ALhPdu3ufaeCRWG
-	P/tuKkTv1NNrw/WBCKJgzBja4loUu70nVpaFhHDu6Xngbd0jAoF1H+FHYFheTtsTk1zoTH
-	+DKUx0thdRpIdvD+LXn6E8wIcqm8d8doijYil+FBSq3xUsHehX03GBwwu+buZQ==
-To: linux-pm@vger.kernel.org
-Cc: Marek Vasut <marek.vasut+renesas@mailbox.org>,
-	=?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>,
-	=?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Zhang Rui <rui.zhang@intel.com>,
-	linux-renesas-soc@vger.kernel.org
-Subject: [PATCH v2 1/2] thermal: rcar_gen3: Add support for per-SoC default trim values
-Date: Wed, 25 Jun 2025 20:16:57 +0200
-Message-ID: <20250625181739.28391-1-marek.vasut+renesas@mailbox.org>
+	dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b="fLpnq0jh"
+Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-553d52cb80dso340053e87.1
+        for <linux-pm@vger.kernel.org>; Wed, 25 Jun 2025 12:15:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1750878904; x=1751483704; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=z+nO7EW7s/VWpRpXMmnbCZRaJqIoHvIZE+sg3t4NDGI=;
+        b=fLpnq0jhBTUamh1+q29Gn67BH6xXxBTITB4Nl0+VAeH1Wok6gSKFqJ/pZOmjhnqcch
+         vBQb67m9FqdpsMJrpYGsYrxPlSTu2VJ2lCXHuS77uH+oj+icHS5FKI5wDL/P8AJEoG94
+         WWhMh50ATqDziJ0L37/cj40nzj9FWgyGn7pUNA0DLSO99VCSezCvgkGOxcr5z5MWRu3L
+         RbZFU5SGo5bqyNISRsn4VJBN9hfr5zuWX0hcg4gADRcu76YdEz7QuoNsSIeXY/27SHWn
+         FQeLnSSFvR+azacn676//wnbO723oskygb9BpImAQEf97nQx0LG3qMfvmxOg+rGzYoLc
+         9Law==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1750878904; x=1751483704;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=z+nO7EW7s/VWpRpXMmnbCZRaJqIoHvIZE+sg3t4NDGI=;
+        b=JDl371EFChsL8adSdpu7u5oh3ynTi0iSWvsn6d9URmDTV0ZgV6V8qZSSTBZDYfWTnr
+         AX447OsAQWkggT7r4dgHnO9PzR2B1scpTnn0eIscE92mABc1GwgjDyfhquXaTjBfxoka
+         zr8WwN8lg3ae8GDjXeh9oPS8NwolVFRx+r2sUTh5M1hALjjaHC8M7Oy/myTHocemrV6p
+         7UJz4TVNq86QdvOWnQ2bFp0WIEiWuhs6LGW6DPtd6HMTlzeT8TKJexQWHvrrbk3vsd9d
+         u0gbY+3swbZpbdj8k2jJfOaJiXO7/gX5pMBzND12Ly9z8ng3e0WdX9Yig9UBmbJzRGk/
+         PV1A==
+X-Forwarded-Encrypted: i=1; AJvYcCVSGMXQJ5Og3FZrq092b/kr//bpLryl+IyTVWSnRDPfqIexv0OF3nA/amvS2KoHr9KisNbBjwtAPA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy44U4SqjyqwKOf4kH1ALpeJqzDu5hOj4Fy1+09tLS7BEisf5aT
+	OtW2gzTmB7ed8aCFsFi4/smhHu12rPQMRiWL4yJ8Fk755QratodCu31CQSeZA5ui4iwItIXIh8c
+	z4O51Pc7ffi1Ir0VeJOSGoxwZ7L9ANVnIYMNcAbOEDw==
+X-Gm-Gg: ASbGncsMgS+EIVg1PedKFxHa8m9M4eTkKoqpiScfEeQhObUk21PW782uXH/kvW9Pq5p
+	i9nH8c5l9Ztn0xSHhfwTUsoG0LkaRVP+lAbV+1t2Z41HQxfJy1V8j2PVGJ4qtCZK2J702gR9ehs
+	a5+rePGjEB9yicPJCk2ZMuyap4NIWRsTeRiVmEJRdsS2Q3t4GSuVG/gdRyJfj3XiRM6+gkl1bZh
+	u8=
+X-Google-Smtp-Source: AGHT+IHiy8uQHEJstlc44iLzXYCv+/voqeXmoVlZJZj8RwfXYP5wtTyCCwGrLUkGxOoxzeeSzpmhiDT6FCJq3MOd9Vs=
+X-Received: by 2002:a05:6512:3b97:b0:550:d4fc:a0d with SMTP id
+ 2adb3069b0e04-55502caae30mr266969e87.24.1750878903790; Wed, 25 Jun 2025
+ 12:15:03 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-MBO-RS-ID: f54eb5a1f0d9a894733
-X-MBO-RS-META: 18e7xn8q8jtt1pzuuhueajpxgth6w58r
-X-Rspamd-Queue-Id: 4bS96H2Hrkz9tdq
+References: <20250625-topic-wcn6855_pwrseq-v1-1-cfb96d599ff8@oss.qualcomm.com>
+In-Reply-To: <20250625-topic-wcn6855_pwrseq-v1-1-cfb96d599ff8@oss.qualcomm.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Wed, 25 Jun 2025 21:14:52 +0200
+X-Gm-Features: Ac12FXydmvIBgtZ0Bi7QXSKV1DZmvRjRc8QGW87jPOBPQsfn7d_l6wCJbPac4qE
+Message-ID: <CAMRc=MeUU842TVDsPNn_Wcy8KtCQ_nz0qYt+muQJEn87g0kS+g@mail.gmail.com>
+Subject: Re: [PATCH] power: sequencing: qcom-wcn: Fix bluetooth-wifi copypasta
+ for WCN6855
+To: Konrad Dybcio <konradybcio@kernel.org>
+Cc: Dmitry Baryshkov <lumag@kernel.org>, Marijn Suijten <marijn.suijten@somainline.org>, 
+	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The Working Sample R-Car SoCs may not yet have thermal sensor trimming
-values programmed into fuses, those fuses are blank instead. For such
-SoCs, the driver includes fallback trimming values. Those values are
-currently applied to all SoCs which use this driver.
+On Wed, Jun 25, 2025 at 5:55=E2=80=AFPM Konrad Dybcio <konradybcio@kernel.o=
+rg> wrote:
+>
+> From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+>
+> Prevent a name conflict (which is surprisingly not caught by the
+> framework).
+>
+> Fixes: bd4c8bafcf50 ("power: sequencing: qcom-wcn: improve support for wc=
+n6855")
+> Signed-off-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+> ---
+>  drivers/power/sequencing/pwrseq-qcom-wcn.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/power/sequencing/pwrseq-qcom-wcn.c b/drivers/power/s=
+equencing/pwrseq-qcom-wcn.c
+> index e8f5030f2639a69254ad5efe0a313d2f3d10fa1d..7d8d6b3407495c28a780d5bb0=
+668b2b35837b48a 100644
+> --- a/drivers/power/sequencing/pwrseq-qcom-wcn.c
+> +++ b/drivers/power/sequencing/pwrseq-qcom-wcn.c
+> @@ -155,7 +155,7 @@ static const struct pwrseq_unit_data pwrseq_qcom_wcn_=
+bt_unit_data =3D {
+>  };
+>
+>  static const struct pwrseq_unit_data pwrseq_qcom_wcn6855_bt_unit_data =
+=3D {
+> -       .name =3D "wlan-enable",
+> +       .name =3D "bluetooth-enable",
+>         .deps =3D pwrseq_qcom_wcn6855_unit_deps,
+>         .enable =3D pwrseq_qcom_wcn_bt_enable,
+>         .disable =3D pwrseq_qcom_wcn_bt_disable,
+>
+> ---
 
-Introduce support for per-SoC fallback trimming values in preparation
-for SoCs which do not use these current trimming values. No functional
-change is intended here.
+Thanks for the catch. Unlike target names, the unit names are mostly
+for human convenience. That's why it didn't really break anything. If
+you have no objections, I will queue it for v6.17 as I have already a
+bunch of changes queued up and there's no point bothering Torvalds
+with a one-liner that's not urgent.
 
-Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-Signed-off-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
----
-Cc: "Niklas Söderlund" <niklas.soderlund@ragnatech.se>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Lukasz Luba <lukasz.luba@arm.com>
-Cc: Magnus Damm <magnus.damm@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-renesas-soc@vger.kernel.org
----
-V2: - :%s@\<rcar_gen3_thermal_fuse_default_info\>@rcar_gen3_thermal_fuse_default@g
-    - Put rcar_gen3_thermal_fuse_default_info_gen3 on single line
-    - Add RB from Niklas
----
- drivers/thermal/renesas/rcar_gen3_thermal.c | 41 ++++++++++++++-------
- 1 file changed, 27 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/thermal/renesas/rcar_gen3_thermal.c b/drivers/thermal/renesas/rcar_gen3_thermal.c
-index 24a702ee4c1f..413b373523e4 100644
---- a/drivers/thermal/renesas/rcar_gen3_thermal.c
-+++ b/drivers/thermal/renesas/rcar_gen3_thermal.c
-@@ -73,11 +73,17 @@ struct rcar_gen3_thermal_fuse_info {
- 	u32 mask;
- };
- 
-+struct rcar_gen3_thermal_fuse_default {
-+	u32 ptat[3];
-+	u32 thcodes[TSC_MAX_NUM][3];
-+};
-+
- struct rcar_thermal_info {
- 	int scale;
- 	int adj_below;
- 	int adj_above;
- 	const struct rcar_gen3_thermal_fuse_info *fuses;
-+	const struct rcar_gen3_thermal_fuse_default *fuse_defaults;
- };
- 
- struct equation_set_coef {
-@@ -289,6 +295,7 @@ static void rcar_gen3_thermal_fetch_fuses(struct rcar_gen3_thermal_priv *priv)
- 
- static bool rcar_gen3_thermal_read_fuses(struct rcar_gen3_thermal_priv *priv)
- {
-+	const struct rcar_gen3_thermal_fuse_default *fuse_defaults = priv->info->fuse_defaults;
- 	unsigned int i;
- 	u32 thscp;
- 
-@@ -297,24 +304,16 @@ static bool rcar_gen3_thermal_read_fuses(struct rcar_gen3_thermal_priv *priv)
- 	if (!priv->info->fuses ||
- 	    (thscp & THSCP_COR_PARA_VLD) != THSCP_COR_PARA_VLD) {
- 		/* Default THCODE values in case FUSEs are not set. */
--		static const int thcodes[TSC_MAX_NUM][3] = {
--			{ 3397, 2800, 2221 },
--			{ 3393, 2795, 2216 },
--			{ 3389, 2805, 2237 },
--			{ 3415, 2694, 2195 },
--			{ 3356, 2724, 2244 },
--		};
--
--		priv->ptat[0] = 2631;
--		priv->ptat[1] = 1509;
--		priv->ptat[2] = 435;
-+		priv->ptat[0] = fuse_defaults->ptat[0];
-+		priv->ptat[1] = fuse_defaults->ptat[1];
-+		priv->ptat[2] = fuse_defaults->ptat[2];
- 
- 		for (i = 0; i < priv->num_tscs; i++) {
- 			struct rcar_gen3_thermal_tsc *tsc = priv->tscs[i];
- 
--			tsc->thcode[0] = thcodes[i][0];
--			tsc->thcode[1] = thcodes[i][1];
--			tsc->thcode[2] = thcodes[i][2];
-+			tsc->thcode[0] = fuse_defaults->thcodes[i][0];
-+			tsc->thcode[1] = fuse_defaults->thcodes[i][1];
-+			tsc->thcode[2] = fuse_defaults->thcodes[i][2];
- 		}
- 
- 		return false;
-@@ -361,11 +360,23 @@ static const struct rcar_gen3_thermal_fuse_info rcar_gen3_thermal_fuse_info_gen4
- 	.mask = GEN4_FUSE_MASK,
- };
- 
-+static const struct rcar_gen3_thermal_fuse_default rcar_gen3_thermal_fuse_default_info_gen3 = {
-+	.ptat = { 2631, 1509, 435 },
-+	.thcodes = {
-+		{ 3397, 2800, 2221 },
-+		{ 3393, 2795, 2216 },
-+		{ 3389, 2805, 2237 },
-+		{ 3415, 2694, 2195 },
-+		{ 3356, 2724, 2244 },
-+	},
-+};
-+
- static const struct rcar_thermal_info rcar_m3w_thermal_info = {
- 	.scale = 157,
- 	.adj_below = -41,
- 	.adj_above = 116,
- 	.fuses = &rcar_gen3_thermal_fuse_info_gen3,
-+	.fuse_defaults = &rcar_gen3_thermal_fuse_default_info_gen3,
- };
- 
- static const struct rcar_thermal_info rcar_gen3_thermal_info = {
-@@ -373,6 +384,7 @@ static const struct rcar_thermal_info rcar_gen3_thermal_info = {
- 	.adj_below = -41,
- 	.adj_above = 126,
- 	.fuses = &rcar_gen3_thermal_fuse_info_gen3,
-+	.fuse_defaults = &rcar_gen3_thermal_fuse_default_info_gen3,
- };
- 
- static const struct rcar_thermal_info rcar_gen4_thermal_info = {
-@@ -380,6 +392,7 @@ static const struct rcar_thermal_info rcar_gen4_thermal_info = {
- 	.adj_below = -41,
- 	.adj_above = 126,
- 	.fuses = &rcar_gen3_thermal_fuse_info_gen4,
-+	.fuse_defaults = &rcar_gen3_thermal_fuse_default_info_gen3,
- };
- 
- static const struct of_device_id rcar_gen3_thermal_dt_ids[] = {
--- 
-2.47.2
-
+Bartosz
