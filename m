@@ -1,119 +1,101 @@
-Received: from mail-lf1-f44.google.com (mail-lf1-f44.google.com [209.85.167.44])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D43882BF01C
-	for <linux-pm@vger.kernel.org>; Wed, 25 Jun 2025 19:15:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2521A25D521;
+	Wed, 25 Jun 2025 19:25:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750878907; cv=none; b=Qd0vOMhDgsRsuSqfeKhRl3a5mAIWh8AT4miBiGc238MObIStOF8oeWO2dMO3fc7nAvG0mFnX4LD8zQllGgI2b6ghGsTiVMSGZw8zJfB2cV+fJPysJUg/eubUDlP+y+WTvAm+Rh1fpckFUUfoNPQ/F9uU/YMRQdfzQGl2Bk8idlY=
+	t=1750879550; cv=none; b=leMuE5qwAV4P7kvaCZhIk3l8zbmdNpnrs6011yZa9/+ivBMN6z3QY5il3Djc6b0J6cmW9Fpl5uItSl81ZosYRxAsLJPQVFDVYThpWIU0ACwlyBR3Vf8iRQp4XbEhiJ5w+M4J4PH1WIM38hDt6c2wbvydZ9gDuOgPV1XQUAEpx48=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750878907; c=relaxed/simple;
-	bh=ZovO7nkOrLL9nxNDPkAositSdpf1H/zY80uV73Q8ZrQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Rs5MHmD8Lc6pc8jmnBMiD5ZRpnJ5ejxAUvpD+7DyDbTI98IlOlCnhVRbO/CfoqjcGPxfG0qjVRX/W8lD2Cr9Tj9KkfpnYyhNQYSqtyJR/fzaphidb10i9/mmHmPZVfgHIAQT3F/Esu8CKL8Q1eU9RT4gcFsFhByH81QlqjEXTQ8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; spf=none smtp.mailfrom=bgdev.pl; dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b=fLpnq0jh; arc=none smtp.client-ip=209.85.167.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bgdev.pl
+	s=arc-20240116; t=1750879550; c=relaxed/simple;
+	bh=fL07ed664b8KHRpK4by83bnQ93V9mCeY948pv7sxCyU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=sMOOZ5Na41aRcct6lSWYkNIRvC6rgRM63bPpRDwAhmjfWM+rthPEPvL28Kb4OJAuFtsQf2l2gJVxiJYDIdq9OCmxUoWprcW3hPQhz70mQJKhbffZlbvrmxwDyQ3jrcT1SN4HqFPk8CFOql6RmcoNJlcUVFu3mmtQQmxB8ZEupmc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=JacgysDP; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.b="fLpnq0jh"
-Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-553d52cb80dso340053e87.1
-        for <linux-pm@vger.kernel.org>; Wed, 25 Jun 2025 12:15:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1750878904; x=1751483704; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=z+nO7EW7s/VWpRpXMmnbCZRaJqIoHvIZE+sg3t4NDGI=;
-        b=fLpnq0jhBTUamh1+q29Gn67BH6xXxBTITB4Nl0+VAeH1Wok6gSKFqJ/pZOmjhnqcch
-         vBQb67m9FqdpsMJrpYGsYrxPlSTu2VJ2lCXHuS77uH+oj+icHS5FKI5wDL/P8AJEoG94
-         WWhMh50ATqDziJ0L37/cj40nzj9FWgyGn7pUNA0DLSO99VCSezCvgkGOxcr5z5MWRu3L
-         RbZFU5SGo5bqyNISRsn4VJBN9hfr5zuWX0hcg4gADRcu76YdEz7QuoNsSIeXY/27SHWn
-         FQeLnSSFvR+azacn676//wnbO723oskygb9BpImAQEf97nQx0LG3qMfvmxOg+rGzYoLc
-         9Law==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1750878904; x=1751483704;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=z+nO7EW7s/VWpRpXMmnbCZRaJqIoHvIZE+sg3t4NDGI=;
-        b=JDl371EFChsL8adSdpu7u5oh3ynTi0iSWvsn6d9URmDTV0ZgV6V8qZSSTBZDYfWTnr
-         AX447OsAQWkggT7r4dgHnO9PzR2B1scpTnn0eIscE92mABc1GwgjDyfhquXaTjBfxoka
-         zr8WwN8lg3ae8GDjXeh9oPS8NwolVFRx+r2sUTh5M1hALjjaHC8M7Oy/myTHocemrV6p
-         7UJz4TVNq86QdvOWnQ2bFp0WIEiWuhs6LGW6DPtd6HMTlzeT8TKJexQWHvrrbk3vsd9d
-         u0gbY+3swbZpbdj8k2jJfOaJiXO7/gX5pMBzND12Ly9z8ng3e0WdX9Yig9UBmbJzRGk/
-         PV1A==
-X-Forwarded-Encrypted: i=1; AJvYcCVSGMXQJ5Og3FZrq092b/kr//bpLryl+IyTVWSnRDPfqIexv0OF3nA/amvS2KoHr9KisNbBjwtAPA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy44U4SqjyqwKOf4kH1ALpeJqzDu5hOj4Fy1+09tLS7BEisf5aT
-	OtW2gzTmB7ed8aCFsFi4/smhHu12rPQMRiWL4yJ8Fk755QratodCu31CQSeZA5ui4iwItIXIh8c
-	z4O51Pc7ffi1Ir0VeJOSGoxwZ7L9ANVnIYMNcAbOEDw==
-X-Gm-Gg: ASbGncsMgS+EIVg1PedKFxHa8m9M4eTkKoqpiScfEeQhObUk21PW782uXH/kvW9Pq5p
-	i9nH8c5l9Ztn0xSHhfwTUsoG0LkaRVP+lAbV+1t2Z41HQxfJy1V8j2PVGJ4qtCZK2J702gR9ehs
-	a5+rePGjEB9yicPJCk2ZMuyap4NIWRsTeRiVmEJRdsS2Q3t4GSuVG/gdRyJfj3XiRM6+gkl1bZh
-	u8=
-X-Google-Smtp-Source: AGHT+IHiy8uQHEJstlc44iLzXYCv+/voqeXmoVlZJZj8RwfXYP5wtTyCCwGrLUkGxOoxzeeSzpmhiDT6FCJq3MOd9Vs=
-X-Received: by 2002:a05:6512:3b97:b0:550:d4fc:a0d with SMTP id
- 2adb3069b0e04-55502caae30mr266969e87.24.1750878903790; Wed, 25 Jun 2025
- 12:15:03 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="JacgysDP"
+Received: from kreacher.localnet (unknown [5.63.189.50])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 7CC6966E7BD;
+	Wed, 25 Jun 2025 21:25:39 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1750879540;
+	bh=fL07ed664b8KHRpK4by83bnQ93V9mCeY948pv7sxCyU=;
+	h=From:Subject:Date;
+	b=JacgysDPvCJAfvx00Lg1BilMrYnnZzEwW9oP7TgcyTF4UuBOf8BzZ0Uygn7kNv4hy
+	 W30SmVsxXcrd7jNrh4444w3Uwl7yRPn+i64znnGuszKRpZ7pv2lqN2I7bWPsBNLInt
+	 qbrIDBhQb4bGPGRVgEQ5Z+IWypTSEJsO7RCrn02dHPvKFkLrkRwTc2Wpx9/eOgojPT
+	 xvkAMFlmSpFRv8RsaMJODXmkBeIVsfTkZGeOvmkOI4oUcEEvPiyhQ/HNHscMXCfkJI
+	 W1XYbbPBxmemjnWUb+YYGt1L3PGpItwFUj4U1+vl1RgPJEAlhRU4wiK9dX8+JSqMnr
+	 H7b1uCFMYh4Eg==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Linux ACPI <linux-acpi@vger.kernel.org>,
+ Linux PCI <linux-pci@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>,
+ Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject:
+ [PATCH v1 8/9] ACPI: PM: Set/clear power.strict_midlayer during attach/detach
+Date: Wed, 25 Jun 2025 21:24:27 +0200
+Message-ID: <1916173.atdPhlSkOF@rjwysocki.net>
+In-Reply-To: <22759968.EfDdHjke4D@rjwysocki.net>
+References: <22759968.EfDdHjke4D@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250625-topic-wcn6855_pwrseq-v1-1-cfb96d599ff8@oss.qualcomm.com>
-In-Reply-To: <20250625-topic-wcn6855_pwrseq-v1-1-cfb96d599ff8@oss.qualcomm.com>
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Wed, 25 Jun 2025 21:14:52 +0200
-X-Gm-Features: Ac12FXydmvIBgtZ0Bi7QXSKV1DZmvRjRc8QGW87jPOBPQsfn7d_l6wCJbPac4qE
-Message-ID: <CAMRc=MeUU842TVDsPNn_Wcy8KtCQ_nz0qYt+muQJEn87g0kS+g@mail.gmail.com>
-Subject: Re: [PATCH] power: sequencing: qcom-wcn: Fix bluetooth-wifi copypasta
- for WCN6855
-To: Konrad Dybcio <konradybcio@kernel.org>
-Cc: Dmitry Baryshkov <lumag@kernel.org>, Marijn Suijten <marijn.suijten@somainline.org>, 
-	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-CLIENT-IP: 5.63.189.50
+X-CLIENT-HOSTNAME: 5.63.189.50
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: dmFkZTFsHB4ndHl+EixzVvfcW9Mmmy1kJBTax7trknkJLaM7+K738OXHPnCLWL71aVWNGrvB6SMUqGuVyxhuQ+ooiLNs2MbM4c4D0d0tOrBg/iqNv0NqZnl4bI7AjHbqvRt2zNkln610HrDv5mcESQciqXkjUvPbGU2EDCNxbdy4W0+PztFwXuz2PoVolx+WqtpeqA/IjF5HnJOewYMwBLd3YUcwVvpscrXqL25wGO+dHcovAc/0P/JFJdFj7a2OZUqN+PhZCSQpVtIs9I8x2nQlmx9gfVUTLdqVFWNLWvDXpj2m/7jpvs2hYMUoWA1lIxHkWnadOR0nWIatMTQTpWUFdoNAnsp4krQvH27ZQg3rDTlJj3aETi5LzRYEBJyx/qw/ZRd23vJwz9J/wza1zzh5NAgsfGrrGEU5yvBImkk0/nuuedQ4UxCufzCEzWgP8wg8Hq2diqWUpw14NDJSDymQz7XKmBYUojlq+QfGjEEJ4K1o8XvbVnU/S8T9z6GkHmLEbxE9WfHJ32tBUUDKtJhhT3rWAlJKnpcgdtwA85SkI2Tq6u2txG44GBsTB/ad+HGFUuXwENwtADqabvgHnxul6UxXOclNmFnd+7+gcwZ8X8fsNk8QzDQD50zWjtYlswCS0W9FaAdT9M1vGnbyxRMjoG9QxReXkcKImqO/vXzLdtq0VA
+X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 
-On Wed, Jun 25, 2025 at 5:55=E2=80=AFPM Konrad Dybcio <konradybcio@kernel.o=
-rg> wrote:
->
-> From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
->
-> Prevent a name conflict (which is surprisingly not caught by the
-> framework).
->
-> Fixes: bd4c8bafcf50 ("power: sequencing: qcom-wcn: improve support for wc=
-n6855")
-> Signed-off-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-> ---
->  drivers/power/sequencing/pwrseq-qcom-wcn.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/power/sequencing/pwrseq-qcom-wcn.c b/drivers/power/s=
-equencing/pwrseq-qcom-wcn.c
-> index e8f5030f2639a69254ad5efe0a313d2f3d10fa1d..7d8d6b3407495c28a780d5bb0=
-668b2b35837b48a 100644
-> --- a/drivers/power/sequencing/pwrseq-qcom-wcn.c
-> +++ b/drivers/power/sequencing/pwrseq-qcom-wcn.c
-> @@ -155,7 +155,7 @@ static const struct pwrseq_unit_data pwrseq_qcom_wcn_=
-bt_unit_data =3D {
->  };
->
->  static const struct pwrseq_unit_data pwrseq_qcom_wcn6855_bt_unit_data =
-=3D {
-> -       .name =3D "wlan-enable",
-> +       .name =3D "bluetooth-enable",
->         .deps =3D pwrseq_qcom_wcn6855_unit_deps,
->         .enable =3D pwrseq_qcom_wcn_bt_enable,
->         .disable =3D pwrseq_qcom_wcn_bt_disable,
->
-> ---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Thanks for the catch. Unlike target names, the unit names are mostly
-for human convenience. That's why it didn't really break anything. If
-you have no objections, I will queue it for v6.17 as I have already a
-bunch of changes queued up and there's no point bothering Torvalds
-with a one-liner that's not urgent.
+The ACPI general PM domain does not expect its runtime PM callbacks,
+acpi_subsys_runtime_suspend() and acpi_subsys_runtime_resume(), to
+be invoked at any point during system-wide suspend and resume, so
+make it express that expectation by setting power.strict_midlayer
+for devices that it is attached to.  Also make it clear that flag
+when it detaches from those devices.
 
-Bartosz
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+This depends on
+
+https://lore.kernel.org/linux-acpi/4665476.LvFx2qVVIh@rjwysocki.net/
+
+---
+ drivers/acpi/device_pm.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/drivers/acpi/device_pm.c
++++ b/drivers/acpi/device_pm.c
+@@ -1404,6 +1404,7 @@
+ 	struct acpi_device *adev = ACPI_COMPANION(dev);
+ 
+ 	if (adev && dev->pm_domain == &acpi_general_pm_domain) {
++		dev_pm_strict_midlayer(dev, false);
+ 		dev_pm_domain_set(dev, NULL);
+ 		acpi_remove_pm_notifier(adev);
+ 		if (power_off) {
+@@ -1463,6 +1464,7 @@
+ 
+ 	acpi_add_pm_notifier(adev, dev, acpi_pm_notify_work_func);
+ 	dev_pm_domain_set(dev, &acpi_general_pm_domain);
++	dev_pm_strict_midlayer(dev, true);
+ 	if (power_on) {
+ 		acpi_dev_pm_full_power(adev);
+ 		acpi_device_wakeup_disable(adev);
+
+
+
