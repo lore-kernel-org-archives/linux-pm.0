@@ -1,38 +1,38 @@
 Received: from relay.smtp-ext.broadcom.com (relay.smtp-ext.broadcom.com [192.19.144.207])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B79A92FA63D;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF8B12FA646;
 	Wed, 25 Jun 2025 23:13:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.19.144.207
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750893199; cv=none; b=mQylrrBWGjHbVel8LYAc9I0fVirIhj7a8Tr3/qAjvm5Bqfbi5iAILBRammJ0hMVzZ0edPS8wOnc1UkizOxoLvvIw9oZG65lvpuvMatlp12yQelrI1eP/S6U3sMy9jySL5RAIay1Xp3QZ818BjXOQ17Lt0P9IG7eKz6DgxqhIOOY=
+	t=1750893199; cv=none; b=qaTHNta4PIqwHcU72mUIKkOtdgy7xuo2A73a1j7uaBYjLnXME5Vd7dIp6K6jDTbT+XFxsEA2P9PjrYNw0t50M1L4zo9SFFnS2KTAuIGB9qIV/uyGnsFVg2sZSCM2PraH9YZRcfA0K7ZAQZaMYK0ljSMBDNPZdORAIry7IeB7ub8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1750893199; c=relaxed/simple;
-	bh=1kPqRyPuxPhUp0LAfl7zNlpZyOssFSDpGaQMnKk+vIQ=;
+	bh=vJKxu81Bu7+XfGaA30puQn2EqmTYh9aEWm5+YU8RJd4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Xy55AYn62kwtSRvKjipLxPkFwFkXO5PjVayhyT+dXei6XFwqCJ1SMtGWDAQGreTqiDUyGYInmsqT1qYbKWr0ELNn9HzIHu8GYm9+gUBVVTG3gR6bpccOoHoe4iefdIzezFPuFG3GG7yTVilGgEbEr76+PW0ysVdXvwlMfvMfLNA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com; spf=fail smtp.mailfrom=broadcom.com; dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b=pKoUJLsG; arc=none smtp.client-ip=192.19.144.207
+	 MIME-Version; b=romC88PKcNHmdCpgQA4sb5G20IVMG1wm/ATOoB226q+E7wAnNkS8f3z5J50u/7Fm3H5K5KUseDww1z85bQxB8gFw3LwpD2Ro08+77fgzwkUODurzKGWoyr3j4DgXpxJ/8UUaDw9Q/ULLjHoxi5g91IvZSoViPeWMyzRiV1HkfgY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com; spf=fail smtp.mailfrom=broadcom.com; dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b=cS/h4p5V; arc=none smtp.client-ip=192.19.144.207
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=broadcom.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="pKoUJLsG"
+	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="cS/h4p5V"
 Received: from mail-lvn-it-01.broadcom.com (mail-lvn-it-01.lvn.broadcom.net [10.36.132.253])
-	by relay.smtp-ext.broadcom.com (Postfix) with ESMTP id A9C5AC00282F;
-	Wed, 25 Jun 2025 16:13:11 -0700 (PDT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 relay.smtp-ext.broadcom.com A9C5AC00282F
+	by relay.smtp-ext.broadcom.com (Postfix) with ESMTP id B9D87C002831;
+	Wed, 25 Jun 2025 16:13:12 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 relay.smtp-ext.broadcom.com B9D87C002831
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=broadcom.com;
-	s=dkimrelay; t=1750893191;
-	bh=1kPqRyPuxPhUp0LAfl7zNlpZyOssFSDpGaQMnKk+vIQ=;
+	s=dkimrelay; t=1750893192;
+	bh=vJKxu81Bu7+XfGaA30puQn2EqmTYh9aEWm5+YU8RJd4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=pKoUJLsGhtrUoV2zMoCimfCZUoxkymIf3LT6X9j4MnTQZsxG8si3MCsQu5ePphbcg
-	 DLabmpxDWll6CeF8/Tx6i7lU7TvzxvkaRKN8noVPWBbmAzm7In2vbf9Sc4CsH/A8AB
-	 L814xKrrRZDKVepcnQlJVAeXE23jsJ70JYaY8MUo=
+	b=cS/h4p5VjNW+qE6Z8BUlElgikJNuDLV3On0zzioZ4+b6/2USGo4/U3r3Elno1+dyv
+	 GLM9lt9f0met0IggAz3wZqWzmPHHTWX7uDzEhisQxQSr92NgatA9nrWaG0h6LPq7A1
+	 kCrgAAbQym5kKW0G27pINITa5jvr4WlBr5Oi6o4s=
 Received: from fainelli-desktop.igp.broadcom.net (fainelli-desktop.dhcp.broadcom.net [10.67.48.245])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail-lvn-it-01.broadcom.com (Postfix) with ESMTPSA id 1A0C318000853;
-	Wed, 25 Jun 2025 16:13:11 -0700 (PDT)
+	by mail-lvn-it-01.broadcom.com (Postfix) with ESMTPSA id 2C99718000853;
+	Wed, 25 Jun 2025 16:13:12 -0700 (PDT)
 From: Florian Fainelli <florian.fainelli@broadcom.com>
 To: linux-kernel@vger.kernel.org
 Cc: Florian Fainelli <florian.fainelli@broadcom.com>,
@@ -83,9 +83,9 @@ Cc: Florian Fainelli <florian.fainelli@broadcom.com>,
 	maple-tree@lists.infradead.org (open list:MAPLE TREE),
 	linux-modules@vger.kernel.org (open list:MODULE SUPPORT),
 	linux-fsdevel@vger.kernel.org (open list:PROC FILESYSTEM)
-Subject: [PATCH 11/16] MAINTAINERS: Include timerlist.py under POSIX CLOCKS and TIMERS entry
-Date: Wed, 25 Jun 2025 16:10:48 -0700
-Message-ID: <20250625231053.1134589-12-florian.fainelli@broadcom.com>
+Subject: [PATCH 13/16] MAINTAINERS: Include proc.py under PROC FILESYSTEM entry
+Date: Wed, 25 Jun 2025 16:10:50 -0700
+Message-ID: <20250625231053.1134589-14-florian.fainelli@broadcom.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250625231053.1134589-1-florian.fainelli@broadcom.com>
 References: <20250625231053.1134589-1-florian.fainelli@broadcom.com>
@@ -97,9 +97,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Include the GDB scripts file under scripts/gdb/linux/timerlist.py under
-the POSIX CLOCKS and TIMERS subsystem since it parses internal data
-structures that depend upon that subsystem.
+Include the GDB scripts file under scripts/gdb/linux/proc.py under the
+PROC FILESYSTEM subsystem since it parses internal data structures that
+depend upon that subsystem.
 
 Signed-off-by: Florian Fainelli <florian.fainelli@broadcom.com>
 ---
@@ -107,17 +107,17 @@ Signed-off-by: Florian Fainelli <florian.fainelli@broadcom.com>
  1 file changed, 1 insertion(+)
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 687f2b7cd382..224825ddea83 100644
+index 0931440c890b..610828010cca 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -19866,6 +19866,7 @@ F:	include/trace/events/timer*
- F:	kernel/time/itimer.c
- F:	kernel/time/posix-*
- F:	kernel/time/namespace.c
-+F:	scripts/gdb/linux/timerlist.py
+@@ -19998,6 +19998,7 @@ S:	Maintained
+ F:	Documentation/filesystems/proc.rst
+ F:	fs/proc/
+ F:	include/linux/proc_fs.h
++F:	scripts/gdb/linux/proc.py
+ F:	tools/testing/selftests/proc/
  
- POWER MANAGEMENT CORE
- M:	"Rafael J. Wysocki" <rafael@kernel.org>
+ PROC SYSCTL
 -- 
 2.43.0
 
