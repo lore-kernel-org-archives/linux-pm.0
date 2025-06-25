@@ -1,65 +1,66 @@
-Received: from mail-ed1-f45.google.com (mail-ed1-f45.google.com [209.85.208.45])
+Received: from mail-ed1-f51.google.com (mail-ed1-f51.google.com [209.85.208.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4346729B79A
-	for <linux-pm@vger.kernel.org>; Wed, 25 Jun 2025 09:13:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 187F829B239
+	for <linux-pm@vger.kernel.org>; Wed, 25 Jun 2025 09:13:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750842817; cv=none; b=h9XuTgjxyrcZOkCMsFWxrf8C2lDpVIo2Wn7N1xeC831j23JCS2ZqK+hqZ339lgSksc5tXCMxmSOQPwkyBXdwc+70rkKtQyDzCqLTZQKSwTTveYqlofh7ZUUjHAv+Lt1HKdDZWVk4W3RS66unFeCkTO9Bdxs5BTayij5HyTs0d+s=
+	t=1750842819; cv=none; b=UGmvoPMgmUib/Kfe4j/qm+U7XgAsRm2RacUeJJp/VRtp1rp+68E2E+O9lxVD4QHLCUyf62JLNbJrvRA09ifuVA3KRZr8YsEJfE1pBG71TgkEgkAuq/2T0q2e/KJxNtJkzjQgkcednQNH2FbNeTpox6xBl91CfhOmEoB9++xjkQc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750842817; c=relaxed/simple;
-	bh=4sR5fPpma/GrOJli/eLiVTPPr/9TVkwqVfopkbkw2Yg=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=CW+v+Svt2lpGDXc5GkLHUXXiGEgWujFY+6i6pKO8u+aSibWuNbRGsWsumAeq2cZTCn3XDrxSUuQHJrz3onv5tNDTs5K+bbtsuHpdVZQ150gyW4uEREp9YzQjS48nOFVCEtXrtUoonjEPY/WfW/9U0zdC3cnzS72clFFVmUo2vRY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com; spf=pass smtp.mailfrom=fairphone.com; dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b=CandxWgS; arc=none smtp.client-ip=209.85.208.45
+	s=arc-20240116; t=1750842819; c=relaxed/simple;
+	bh=9nfrU5ijXkLs3ISq6JmH8/jsRdoXO3aCH4+beJtQ9Jo=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=fxGBf3crGBC1+Pe3nQ7AiCDiUD/ByxUBjUrziWPIfrrBqajusUbkvFEai08xSzMROAQBqVfAj1rqVE+EnSAYfd9e19BGo2HqJX8pfcOfisSHfznP6BSbiQbQ4dPdrzECc3A1V/5JulPY056AZG0mIeUBvPhImEqOS4g2P891XxY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com; spf=pass smtp.mailfrom=fairphone.com; dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b=eA7ge5S4; arc=none smtp.client-ip=209.85.208.51
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fairphone.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b="CandxWgS"
-Received: by mail-ed1-f45.google.com with SMTP id 4fb4d7f45d1cf-604bff84741so2817673a12.2
-        for <linux-pm@vger.kernel.org>; Wed, 25 Jun 2025 02:13:35 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b="eA7ge5S4"
+Received: by mail-ed1-f51.google.com with SMTP id 4fb4d7f45d1cf-60497d07279so13537723a12.3
+        for <linux-pm@vger.kernel.org>; Wed, 25 Jun 2025 02:13:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1750842814; x=1751447614; darn=vger.kernel.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=ks2KgKPEFickNI0g8cLhP0+7PkHVzo+kxkQrWM9s9Jg=;
-        b=CandxWgSEa4zslHSRGyTO6dsjXvFLFADwNBqczzvZvsMIgh29Buk46VcZDX8xeg0Ve
-         SNE3FQcpEUor9G3ujm8oSMA/zk0ior8Gxc7scTMWmFh0J2TUp3rKu2vOzkVehQEwuOef
-         9k/V43W9L/DbiPEMV4PRyKjJKXspK0OGtAiAWaXJ7PpZWga9vUVSi8mQN/hWAhyOMQuH
-         QFBmHRXNiJ6LotIPeHhnp2BNHTbmX3WIAGYxsCTT3AAYIzrY+SPez1BcwDATg13wQN7o
-         dnrlZvgpYqzOEyx3Oj3MbdHTkKDdC5+OcGOFSjDnN0bKO7sDqq6zuRJsRgn3nQ3S59xU
-         Favw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1750842814; x=1751447614;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=fairphone.com; s=fair; t=1750842815; x=1751447615; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=ks2KgKPEFickNI0g8cLhP0+7PkHVzo+kxkQrWM9s9Jg=;
-        b=IQMoues7gHaLdIlLZ3XD7/RX2nF5DKhutqmypI/J0fkTffb4lZPCAaEeRUCI6phtDD
-         V02VKk+SoZJjCCwV27U/2W5qvQ8jteMFJsIqJ+zMpeiebaD5LNnBmGXsr+cyUvHkpDDb
-         R0jJSW+WzYtDBgcl0zGCrdMjvguH0ZDXcyv2aiQtxoF9DFD8DlRtPde5CPyEgvUFI6/5
-         JBogXh70Tz9LTReky55owhgtus8h7WVHhO/USOoO0UCU7vHksXLqq9VVAaAmiTC1JKU3
-         IpMduRKsWAPMLQC/IMbppH0g0OoQ5lGKOArE7IDADpsj2dNprA2a10rff5s0wVCYIwCr
-         ErNg==
-X-Forwarded-Encrypted: i=1; AJvYcCWKXBEnycCBBBOl40ncj3jmSreCX3b40PZAFpPskdVY+T6yM8wGNaROhHq+Afx+Cwei4rpxwHWTCA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywxz/r/XNOKvWqB8lZFsZpSOVFIlTgYbcsEtpiThIqKT+ULhRzA
-	7HVXmL8JUMce6m/Fk61uTwZhny3zb3ZtliHzXNncR41pJo76VIV+5EY3MQotVSzZulg=
-X-Gm-Gg: ASbGncv9X1eCv0WVlg+vwhzDz72KeU29ukxOLoPgZ8M5cBtF0KhqRe8KtOzNXxnT3vh
-	Bq55aSZgmPiwvp1eucJI4WBROmwIpJnx6xPctm3LQ+LnN4dq+baNAPqkaOREZImzj/VOoo2KUPy
-	BeKepNu/HV3mAfUODOK4bnX2QdeVchJTofIhLyUsEBBAj9skuglOGh/x85xutUyDFLoU1C6h3Xn
-	xf89WipnU1CTAIWbWWyEx0A6DH7y03W0lUai5WgtyfwAY52K0XSgMyi+zLXMIOQKeQQKqJKmfO4
-	iX+EcvfAS6/1Nt/LXzDOfbbWRGfXl0fuBkv7I2KXLotLwMasvF16gK7pnJNNmm1qps6Zsyxo310
-	mrpBiB5GSpNKxJu1M81IadIjU08McIMlGSw487rsefNM=
-X-Google-Smtp-Source: AGHT+IG3W5RmwW0KXa53tzqdC7aGtVxDcyIrcDLyCjEyycANLI9U+Z+hJ/jXQi64INJPHjABBmW7Xw==
-X-Received: by 2002:a17:907:7289:b0:ae0:35fb:5c83 with SMTP id a640c23a62f3a-ae0be9dc2c3mr227506966b.28.1750842813609;
-        Wed, 25 Jun 2025 02:13:33 -0700 (PDT)
+        bh=FMZlZn1FzWmvG3BoKQGh9OFPo1eSirohwNwNt3ELPYQ=;
+        b=eA7ge5S4JRP2/uJmdJEMhOIkZUly0Zmgyc1A3SPrgm7stLOIffj+Q+mWP7P4A9BBSj
+         EFGv/jS6AVxD1ALdRNRtwFmXZcJ3/w1T1wUUH0mzwS8c3g2WhXKHBjy8v3t88hd8MB1Q
+         VdZFmRgd6AwvctTkv53dL3KF5zI/EAitOGL4Im6eOeWKm3tYZ052i2c0PXRJmhlXhobj
+         kB3XAWAk6iwn5Dgmdwu844OBKRsI74RdC026q9Y0SdEB8QwsW1HDjAwNs5m9kZPg7GgM
+         S8CeTzYg3y9dXAiPQk07I0knw1YRfly0P5mHoPLqgTiTRlCbPxv7D+aXTZRyN+FHpDWH
+         VPCQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1750842815; x=1751447615;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=FMZlZn1FzWmvG3BoKQGh9OFPo1eSirohwNwNt3ELPYQ=;
+        b=BRLCKw6iY0jcVkY5zALK4/ZPMsGVWNoGdc4OHGI8h8LDdRiz+wIqoDRqnmfa0IvX/h
+         e1bGQGlJxxmU1lFAJz6XOIqB9O3XwaW+NP32+JCELfFnJni7vq5O9+aPMnkh2Ot58sT4
+         vf/8Ff6aFYvkdSpYYgsIi3d+ROmFqdnQ5/4z3LrGGkLh3qIF24gTULAT5XiS7BxeZ+pP
+         snRRSGDDjWIPcGNnZ+JADxU044AVdVpp7uwZfqqjlhbKlU6ahFlf811naUEKTx/eJA/a
+         VpvrIIBo7piWpj84xS3MODQvjQXon23obk1T2e90364pEtsIu1+bIu0sU2RLLh0SlIt8
+         8ItQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUqaOkqSShD8QNHpOFg7yClAnctMEOsLGDhrpj7kUfpHPieXRdS/4i3q56fPy2p5whfknpjh0LKYw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwzcwHTdiDW198dBIj1rDtMfY9Mel5BNEy/ErXV2j/miSqZAcvT
+	Ylyg2hRPl59X79PQ4s4AFpW4gc5J/M3ClXM946P96yNYPBXzM9sFYErK/cVvqRGzV+o=
+X-Gm-Gg: ASbGncvAH4+voLJDyWs6eARcZGFQwsBIw0f+oJ4J+1KOnhKDxBWj+RmK9VO2Kl9tTZI
+	jkU3R02q1xcKFWFE+GlurIg/sZOhqJPIW4ZJ6sPuF4M2t4r38sWW++MwjMIIEnrvn+5Fr1LKDYn
+	Nbv7YMT8mbhDuKUFuTXiej4LmddtdwVM/9sNlSMLufrnIz+Kgh5Y8m2AsUxDaj/H5vL6XQ4hhdU
+	e32LLliPToTx721J79JmhY7qe0xJ7S7YtHl5PqSVOU1rWzlfdMevkUwh8CkkzeyA/hzH0D9XEBm
+	f+epYmu5KUW4ks11+iOM9TvdOeGuK6siaTIfMkhHPLOXJ2hIXB+KGAn6lG9M4iljmTLkDUqA644
+	JZVbUL+zX+w1DuNplVhtnYjVh0DQKGxzz
+X-Google-Smtp-Source: AGHT+IHR1URjo8kysJSi6uPXEzBhsvfZoEJcjoRVk7llj5UViGsHOgTyjXQnr8py7j8eqC46rqIeDA==
+X-Received: by 2002:a17:907:7ba2:b0:ad8:a41a:3cd2 with SMTP id a640c23a62f3a-ae0be8601a5mr251120666b.16.1750842815320;
+        Wed, 25 Jun 2025 02:13:35 -0700 (PDT)
 Received: from otso.local (144-178-202-138.static.ef-service.nl. [144.178.202.138])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ae0541b719fsm1002786366b.128.2025.06.25.02.13.33
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ae0541b719fsm1002786366b.128.2025.06.25.02.13.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Jun 2025 02:13:33 -0700 (PDT)
+        Wed, 25 Jun 2025 02:13:34 -0700 (PDT)
 From: Luca Weiss <luca.weiss@fairphone.com>
-Subject: [PATCH 0/2] Add SM7635 RPMHPD power domains
-Date: Wed, 25 Jun 2025 11:13:22 +0200
-Message-Id: <20250625-sm7635-rpmhpd-v1-0-92d3cb32dd7e@fairphone.com>
+Date: Wed, 25 Jun 2025 11:13:24 +0200
+Subject: [PATCH 2/2] pmdomain: qcom: rpmhpd: Add SM7635 power domains
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -68,10 +69,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIALK9W2gC/x3MQQqAIBBA0avIrBPM0KCrRItyppyFJgoRiHdPW
- r7F/xUKZaYCi6iQ6eHCd+wYBwHO7/EiydgNWmmjrFayhNlORuYUfEKJ7jDolLWONPQmZTr5/X/
- r1toHeTYSf18AAAA=
-X-Change-ID: 20250620-sm7635-rpmhpd-dcb5dc066ce2
+Message-Id: <20250625-sm7635-rpmhpd-v1-2-92d3cb32dd7e@fairphone.com>
+References: <20250625-sm7635-rpmhpd-v1-0-92d3cb32dd7e@fairphone.com>
+In-Reply-To: <20250625-sm7635-rpmhpd-v1-0-92d3cb32dd7e@fairphone.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
  Ulf Hansson <ulf.hansson@linaro.org>
@@ -80,30 +80,59 @@ Cc: ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
  Luca Weiss <luca.weiss@fairphone.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1750842812; l=624;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1750842813; l=1696;
  i=luca.weiss@fairphone.com; s=20250611; h=from:subject:message-id;
- bh=4sR5fPpma/GrOJli/eLiVTPPr/9TVkwqVfopkbkw2Yg=;
- b=8C1xOSR+fZgfOr54HLuwAQbc2nKk/SYaba1UqxJmSlY8b+huwWPWF6bTrhmee79uk+3mUFy71
- 0mNZhETK1znDIZB43YvACA7IC+galriMioJlCwd9mFhd0P0OjvZYVvO
+ bh=9nfrU5ijXkLs3ISq6JmH8/jsRdoXO3aCH4+beJtQ9Jo=;
+ b=u2IIEsL/Lq+rFYqYNgYUPLYZBe9VGsPrucUzo4X8uUASFhFjqXoJ0tEda7goamJCvjMP1HbpI
+ TCC5bg3HHe1CwjBNKAJ5CFVJWveJ23h+idmV9LvlI8RPuz/mcfSfIw9
 X-Developer-Key: i=luca.weiss@fairphone.com; a=ed25519;
  pk=O1aw+AAust5lEmgrNJ1Bs7PTY0fEsJm+mdkjExA69q8=
 
-Add support for the rpmhpd power domains in the SM7635 SoC.
+Add the power domains exposed by RPMH in the Qualcomm SM7635 platform.
 
 Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
 ---
-Luca Weiss (2):
-      dt-bindings: power: qcom,rpmpd: document the SM7635 RPMh Power Domains
-      pmdomain: qcom: rpmhpd: Add SM7635 power domains
+ drivers/pmdomain/qcom/rpmhpd.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
- .../devicetree/bindings/power/qcom,rpmpd.yaml         |  1 +
- drivers/pmdomain/qcom/rpmhpd.c                        | 19 +++++++++++++++++++
- 2 files changed, 20 insertions(+)
----
-base-commit: 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
-change-id: 20250620-sm7635-rpmhpd-dcb5dc066ce2
+diff --git a/drivers/pmdomain/qcom/rpmhpd.c b/drivers/pmdomain/qcom/rpmhpd.c
+index 078323b85b5648e33dd89e08cf31bdc5ab76d553..1a747b6a604c5c66e75abce10b337874e15df030 100644
+--- a/drivers/pmdomain/qcom/rpmhpd.c
++++ b/drivers/pmdomain/qcom/rpmhpd.c
+@@ -407,6 +407,24 @@ static const struct rpmhpd_desc sm7150_desc = {
+ 	.num_pds = ARRAY_SIZE(sm7150_rpmhpds),
+ };
+ 
++/* SM7635 RPMH powerdomains */
++static struct rpmhpd *sm7635_rpmhpds[] = {
++	[RPMHPD_CX] = &cx,
++	[RPMHPD_CX_AO] = &cx_ao,
++	[RPMHPD_EBI] = &ebi,
++	[RPMHPD_GFX] = &gfx,
++	[RPMHPD_LCX] = &lcx,
++	[RPMHPD_LMX] = &lmx,
++	[RPMHPD_MSS] = &mss,
++	[RPMHPD_MX] = &mx,
++	[RPMHPD_MX_AO] = &mx_ao,
++};
++
++static const struct rpmhpd_desc sm7635_desc = {
++	.rpmhpds = sm7635_rpmhpds,
++	.num_pds = ARRAY_SIZE(sm7635_rpmhpds),
++};
++
+ /* SM8150 RPMH powerdomains */
+ static struct rpmhpd *sm8150_rpmhpds[] = {
+ 	[SM8150_CX] = &cx_w_mx_parent,
+@@ -742,6 +760,7 @@ static const struct of_device_id rpmhpd_match_table[] = {
+ 	{ .compatible = "qcom,sm4450-rpmhpd", .data = &sm4450_desc },
+ 	{ .compatible = "qcom,sm6350-rpmhpd", .data = &sm6350_desc },
+ 	{ .compatible = "qcom,sm7150-rpmhpd", .data = &sm7150_desc },
++	{ .compatible = "qcom,sm7635-rpmhpd", .data = &sm7635_desc },
+ 	{ .compatible = "qcom,sm8150-rpmhpd", .data = &sm8150_desc },
+ 	{ .compatible = "qcom,sm8250-rpmhpd", .data = &sm8250_desc },
+ 	{ .compatible = "qcom,sm8350-rpmhpd", .data = &sm8350_desc },
 
-Best regards,
 -- 
-Luca Weiss <luca.weiss@fairphone.com>
+2.50.0
 
