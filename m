@@ -1,71 +1,137 @@
-Received: from forward502a.mail.yandex.net (forward502a.mail.yandex.net [178.154.239.82])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yb1-f180.google.com (mail-yb1-f180.google.com [209.85.219.180])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EAE0C221FA8;
-	Thu, 26 Jun 2025 10:17:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.82
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 645E01891A9
+	for <linux-pm@vger.kernel.org>; Thu, 26 Jun 2025 10:21:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750933033; cv=none; b=AZwRxLFcAVNWlBvokR9X6Vl8ytLaQiyiF+evScmMu1NOeEZc7AIDgkNGdiHSNE7ULBL+mJv4iiG9BvPX6loi5C0hGvHtNjM631BQi9IZmpeX7iiFmXXgUdRm1doQinNEITEGAwM3SeNb19O4vWRvMbhJ+bontLQ1PsflUpeVyJ0=
+	t=1750933268; cv=none; b=i3bh3xvls6C72RaDxbuDmS6YYuvSWspiGgETYka6D2C5qRIks6HuxQJP1MdyZ6wNNSALmXXRvaH0jq6lA/CMJVxnHDJ2sWyIgJh/+9D4I0nnMnC86K6jx6wVDyle5RqhHs117XSxhOwQN0Z5DETkrrKeKsJrlq35Iy+2GieyYIs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750933033; c=relaxed/simple;
-	bh=LW0ekEF132zirr3/C0iPKEdjIqOsqdj1sSpsqbrp2ng=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=o6wZiBnn92kA+9s0e4Kl+Ks+ldeeoCQpEWE/Rk75EqNXXrJbM+wMnZjq0pgk8hI4yrx6H3cYqov5bHhnawg24JdFTMAlRHxQsmM4/mX9+srkZ9zztJK2qOqINyl5RjtNBoTQV2h+JGw49L0/O9sQgS5viBCtq7+w4Jf3r2elD0E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev; spf=pass smtp.mailfrom=onurozkan.dev; dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b=AqlIhmXM; arc=none smtp.client-ip=178.154.239.82
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=onurozkan.dev
+	s=arc-20240116; t=1750933268; c=relaxed/simple;
+	bh=c08UXPYZtjpEMhL4kGvfOaWGJO+poU22yY2ilFqSmcA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=UjB2Ht5+yaILX4bPGMPmpMErdWT6zO1tlqjXZUYqgLdxnLVnnK/BLqJVEaHjIeR8RyIN6tWdyHSZ9wJWpNCEApEh2jxdSqGOO0Asq7m7b9qvvpicu3WQnY0rORMfkGJkXeovY6A0pttW7HjiK4OUbJrutiHlDKUvA8yxwCOMUbQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=j0Ry1Z2r; arc=none smtp.client-ip=209.85.219.180
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b="AqlIhmXM"
-Received: from mail-nwsmtp-smtp-production-main-91.iva.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-91.iva.yp-c.yandex.net [IPv6:2a02:6b8:c0c:3b23:0:640:a115:0])
-	by forward502a.mail.yandex.net (Yandex) with ESMTPS id 07922620DB;
-	Thu, 26 Jun 2025 13:09:50 +0300 (MSK)
-Received: by mail-nwsmtp-smtp-production-main-91.iva.yp-c.yandex.net (smtp/Yandex) with ESMTPSA id a9SiQLjLaGk0-QaEKKLEt;
-	Thu, 26 Jun 2025 13:09:49 +0300
-X-Yandex-Fwd: 1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=onurozkan.dev;
-	s=mail; t=1750932589;
-	bh=LW0ekEF132zirr3/C0iPKEdjIqOsqdj1sSpsqbrp2ng=;
-	h=Cc:Message-ID:Subject:Date:References:To:From:In-Reply-To;
-	b=AqlIhmXMu1HgwANBpx1gwlwJSdK2mFxNBgcLe+XjtbneZPYgMay/fVYeeo+s26nPJ
-	 svmn6k/mORV0xESmCEZ/Tj7807Mbiz/7+no8e+O6h0JNq/Jpb1tnoIlhaBhLIlKnNv
-	 BDm8/sEIgXcritMKpV/XG8thJ+TlOLfvDkAPnOUw=
-Authentication-Results: mail-nwsmtp-smtp-production-main-91.iva.yp-c.yandex.net; dkim=pass header.i=@onurozkan.dev
-Date: Thu, 26 Jun 2025 13:09:36 +0300
-From: Onur <work@onurozkan.dev>
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-kselftest@vger.kernel.org, kunit-dev@googlegroups.com
-Cc: airlied@gmail.com, simona@ffwll.ch, ojeda@kernel.org,
- alex.gaynor@gmail.com, boqun.feng@gmail.com, gary@garyguo.net,
- bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
- aliceryhl@google.com, tmgross@umich.edu, rafael@kernel.org,
- viresh.kumar@linaro.org, gregkh@linuxfoundation.org,
- maarten.lankhorst@linux.intel.com, mripard@kernel.org, tzimmermann@suse.de,
- davidgow@google.com, nm@ti.com
-Subject: Re: [PATCH 2/2] rust: drop unnecessary lints caught by
- `#[expect(...)]`
-Message-ID: <20250626130936.3c8b25dc@nimda>
-In-Reply-To: <20250626100448.27921-3-work@onurozkan.dev>
-References: <20250626100448.27921-1-work@onurozkan.dev>
-	<20250626100448.27921-3-work@onurozkan.dev>
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.49; x86_64-unknown-linux-gnu)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="j0Ry1Z2r"
+Received: by mail-yb1-f180.google.com with SMTP id 3f1490d57ef6-e8600c87293so584617276.1
+        for <linux-pm@vger.kernel.org>; Thu, 26 Jun 2025 03:21:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1750933265; x=1751538065; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=EgWe1yEUe01r1E8Tw1sTfxB+GfHH0ZziUvZh1CX89D4=;
+        b=j0Ry1Z2rbrHJ+ZMvicemzIgGcSDadTcbHP3hHnFupm7bwKB+1XyO2EgBX32uMDgBOG
+         2mbz9ms0z3BUkx6d2Dt4mfp60k9dTQyO5Ft4WV6ZOioSbXFbLittcGKI83+08NqhM9gp
+         +pyBuETk9YzhYzlEEyqRB5Lok9YIoMMN8a9t0OoEf6HsS5pIBqvTJGF3ZHaBFNaNIggW
+         cH/eoY85HSVulwaAjccdTn+0il4MRKcNKKHNbQssidnyJM/kcNjpHwvIje+dhdTwXZ5e
+         sF1Pnasi/hgGsqMMyrvct6YbCM14/wGAfbULuJPQJabimZjQzyz7yfWtxy6M1aysRcTf
+         HGlw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1750933265; x=1751538065;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=EgWe1yEUe01r1E8Tw1sTfxB+GfHH0ZziUvZh1CX89D4=;
+        b=vpf5R0BTvMusOsehtEWSI+tZQJGAnKWGPkiFwU1wGZMQMqyy6S8X2XDlwy31SWc3mi
+         /wjhqAsmMqRANHrjImikkEOk69cyOSlzROoxzbH5DqZmISjL0k3Taq3wVnsM6A/vmOSD
+         kllLnzWHQ4jU1HhkOExh7UnW2S3wmOalnrtweQBfVAz+fnGzmiayEpFQNq88MKb2UCxZ
+         Yx0uB4q3HE/5AI3IL0+EVK+xYS/A6rKbHqyXxl40R7mdxbCgaBLp9a0Xn2gM6AxSrL5N
+         RPZ1HfW1kUfjZ1bA4vXtQjuD/56TntD9F7kdPAPzj4sHTDTKXbIJHqiqIEEJAiyju5Vc
+         +XKg==
+X-Forwarded-Encrypted: i=1; AJvYcCXW1ifaQoNolX35+h1mbRQWFY+fONoQjuAoyovLaRCDm3h2Cqz3UkfIVukrcEsc5co9U6ifYjK/GA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx2XkySs4H+3f6BI79dQg1fnkNeoFBH/QyM0zllN3eNOaV4DrI8
+	qlitqqGX96EAySEoBNEJBdI5wVRYU0QJEjC7BD2S5EWG9HS3bYTBnsIlGk6dWJfxhKD8E3WYhzW
+	2D4DXupETbh1aD6Ur/+iD3I2E1UgE0UKfbwh1LNa60g==
+X-Gm-Gg: ASbGncvzc4nyvpZ1rui91jkgiUjDaMDzjNQKy56IFuwuTr1YoM47wmOpVhLf+8C4wtV
+	fRdyl8evsJAllvpYkvOAHS89Br1WnA+bv4YzfTzzW2rwy2AIf622T1WuYIdjd1dk9VY3BFNqqtt
+	EkZXQpZzk2oC/HfoFM8pOpFBbCtpDCUT8XZuaPmvcaU08X
+X-Google-Smtp-Source: AGHT+IEyk3mms1+5t/8MuCL0xllpmb6YLFcWeRD/hQ0f5nW0B1ALuSQjWxbP5EYpCLmojQnL9hQoN2Or3EhNmCkqm78=
+X-Received: by 2002:a05:6902:2b90:b0:e84:2adb:2548 with SMTP id
+ 3f1490d57ef6-e86017a744amr8247814276.24.1750933265396; Thu, 26 Jun 2025
+ 03:21:05 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+References: <22759968.EfDdHjke4D@rjwysocki.net> <2045419.usQuhbGJ8B@rjwysocki.net>
+ <CAPDyKFq8ea+YogkAExUOBc2TEqi1z9WZswqgP29bLbursFUApg@mail.gmail.com>
+ <CAJZ5v0h-9UnvhrQ7YaaYPG5CktwV-i+ZeqAri8OhJQb4TVp82w@mail.gmail.com>
+ <CAPDyKFoW5ag69LBnxvP5oGH1VAErBn17CAOzh=MX2toxAHwLxA@mail.gmail.com> <CAJZ5v0jx643Os_hvAwoOvYbP3VPhAhgWBqQJk+Rp8zn=w49w9Q@mail.gmail.com>
+In-Reply-To: <CAJZ5v0jx643Os_hvAwoOvYbP3VPhAhgWBqQJk+Rp8zn=w49w9Q@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Thu, 26 Jun 2025 12:20:29 +0200
+X-Gm-Features: Ac12FXxpBZ3tZsz4pEVg98bpJK1QwSul4p2Gdnai6PYvcQNw3Uyzytb7ot0tbss
+Message-ID: <CAPDyKFpnvg3w9B_R7F-xrhXU+upFSJv5c=buVR5FyFnqoach_g@mail.gmail.com>
+Subject: Re: [PATCH v1 4/9] PM: Move pm_runtime_force_suspend/resume() under CONFIG_PM_SLEEP
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, 
+	LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, 
+	Linux PCI <linux-pci@vger.kernel.org>, 
+	Mika Westerberg <mika.westerberg@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 26 Jun 2025 13:04:48 +0300
-Onur =C3=96zkan <work@onurozkan.dev> wrote:
+On Thu, 26 Jun 2025 at 12:13, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> On Thu, Jun 26, 2025 at 12:05=E2=80=AFPM Ulf Hansson <ulf.hansson@linaro.=
+org> wrote:
+> >
+> > On Thu, 26 Jun 2025 at 11:41, Rafael J. Wysocki <rafael@kernel.org> wro=
+te:
+> > >
+> > > On Thu, Jun 26, 2025 at 11:38=E2=80=AFAM Ulf Hansson <ulf.hansson@lin=
+aro.org> wrote:
+> > > >
+> > > > On Wed, 25 Jun 2025 at 21:25, Rafael J. Wysocki <rjw@rjwysocki.net>=
+ wrote:
+> > > > >
+> > > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > >
+> > > > > Since pm_runtime_force_suspend/resume() and pm_runtime_need_not_r=
+esume()
+> > > > > are only used during system-wide PM transitions, there is no reas=
+on to
+> > > > > compile them in if CONFIG_PM_SLEEP is unset.
+> > > > >
+> > > > > Accordingly, move them all under CONFIG_PM_SLEEP and make the sta=
+tic
+> > > > > inline stubs for pm_runtime_force_suspend/resume() return an erro=
+r
+> > > > > to indicate that they should not be used outside CONFIG_PM_SLEEP.
+> > > > >
+> > > >
+> > > > Just realized that there seems to be some drivers that actually mak=
+e
+> > > > use of pm_runtime_force_suspend() from their ->remove() callbacks.
+> > > >
+> > > > To not break them, we probably need to leave this code to stay unde=
+r CONFIG_PM.
+> > >
+> > > OK, pm_runtime_force_suspend() need not be under CONFIG_PM_SLEEP.
+> > > That's not the case for the other two functions though AFAICS.
+> >
+> > Right, but maybe better to keep them to avoid confusion?
+>
+> There really is no point holding pm_runtime_need_not_resume() outside
+> CONFIG_PM_SLEEP and pm_runtime_force_resume() really should not be
+> used anywhere outside system resume flows.
 
-> From: onur-ozkan <work@onurozkan.dev>
->=20
-> They are no longer needed.
->=20
-> Signed-off-by: onur-ozkan <work@onurozkan.dev>
+Right, I am fine moving it if you insist.
 
-Oh crap... This should be "Onur =C3=96zkan" not "onur-ozkan".
-I forgot to update that in my 2nd computer, which was used
-to send this patch.
+>
+> > At least the corresponding flag is needed.
+>
+> What flag do you mean?  If pm_runtime_force_suspend() does not go
+> under CONFIG_PM_SLEEP, needs_force_resume will not go under it either
+> (so I'll drop the next patch altogether).
+
+Yes, that's my point. needs_force_resume needs to stay within CONFIG_PM.
+
+Kind regards
+Uffe
