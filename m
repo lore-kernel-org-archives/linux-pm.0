@@ -1,108 +1,156 @@
-Received: from forward103b.mail.yandex.net (forward103b.mail.yandex.net [178.154.239.150])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yb1-f174.google.com (mail-yb1-f174.google.com [209.85.219.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 768D8221FD2;
-	Thu, 26 Jun 2025 10:06:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.150
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66E5F21CA10
+	for <linux-pm@vger.kernel.org>; Thu, 26 Jun 2025 10:10:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750932367; cv=none; b=odzwAFGp3uj0KSKTZcjAihp7hDMMB0dbE8pX52D41sqpJef/sPogipCdzGIdUMtqAqPhiEOB6NLmgzP8IYE2LQkE8Jr5zelP0SsdBdBipUx8Lu0RpdZ/0XuI844KgyykVARBn7L9I1WPjt/dg8yIC3vjB06VghY1Wp0woDbTfEE=
+	t=1750932647; cv=none; b=NRMpJd1e6WjWKqeyFCg2cA8hD0hcj7PMFcDhZ8KH38yYM1KTxfU5xMbd8IX3Wt2GiJSfdFrCwY7z4KyaR8dVLJWjEYKyBMOgjqG1aHqwWR35KHqgzQZZY4Wv0HzinC41QhMlHExqQcUTVunu3r3mUuSD7Grr+yj1KEaxHrUKry0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750932367; c=relaxed/simple;
-	bh=GJyOYBeBxAOaaQMlngdo/qAS2pBRzdCbDeXsTknGx4w=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=GDbkNaaR6dqAKZ+omX5Y55jA8Lakx3/aXpEO+C5M0ZQUPP7wyDjz0wJzgtMWFcWGJG0vMrGtyg3tXPiMqtiCTfmSbM7mpXUsjpFQDPWKWZeuVlSfGdnH/uQa/a32qfR32zPYsAMFSUY+6/KHshuZYaHjxae+gs6GnT9IK54ghqk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev; spf=pass smtp.mailfrom=onurozkan.dev; dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b=Z4gyJwgj; arc=none smtp.client-ip=178.154.239.150
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=onurozkan.dev
+	s=arc-20240116; t=1750932647; c=relaxed/simple;
+	bh=B8L42uYW7SBVGI49Vdor/dHyRQyBsuPa0eVEeRQde+0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=cWOkC3UJTjqEf19kd7PPfEOzHS76yb9Fyb0ysIntLuno6M5LRpWimDumRlmCb8HlgUlDBG4qNEQ96+iMmHe/8iPPXj8vXOnfUdpjttZDtWawID2mGncWzoziN0vA2ouHbxsMunRE7jTYGMDCdtmAvKQ0W3x6GTdFAwBgg7NDN2M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=xNhqTy26; arc=none smtp.client-ip=209.85.219.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b="Z4gyJwgj"
-Received: from mail-nwsmtp-smtp-production-main-74.sas.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-74.sas.yp-c.yandex.net [IPv6:2a02:6b8:c1e:299f:0:640:8fbe:0])
-	by forward103b.mail.yandex.net (Yandex) with ESMTPS id 9157D60B26;
-	Thu, 26 Jun 2025 13:06:03 +0300 (MSK)
-Received: by mail-nwsmtp-smtp-production-main-74.sas.yp-c.yandex.net (smtp/Yandex) with ESMTPSA id R5SeXwKLg8c0-J9H8A4Mi;
-	Thu, 26 Jun 2025 13:06:02 +0300
-X-Yandex-Fwd: 1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=onurozkan.dev;
-	s=mail; t=1750932362;
-	bh=kqMshCxPmW4F8K7H4VL6x56CsNX+GRFgU1LhbTWjh9M=;
-	h=Message-ID:Date:In-Reply-To:Cc:Subject:References:To:From;
-	b=Z4gyJwgjYAUli756zmvo2jRbrLkMVpzwlLO7EhKLDKm4EPGXCW7SAWDPk9sB4TpbY
-	 S9bPtm1/3Lk7qF1ki07xwwwuuD15gNobC/mMxYK6+IPlXQ/lsq7ONnHJrweIpQZfP8
-	 GI5g9qcCityQTziF7DjFoRc83njKOK3q71+cIasI=
-Authentication-Results: mail-nwsmtp-smtp-production-main-74.sas.yp-c.yandex.net; dkim=pass header.i=@onurozkan.dev
-From: =?UTF-8?q?Onur=20=C3=96zkan?= <work@onurozkan.dev>
-To: linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	kunit-dev@googlegroups.com
-Cc: airlied@gmail.com,
-	simona@ffwll.ch,
-	ojeda@kernel.org,
-	alex.gaynor@gmail.com,
-	boqun.feng@gmail.com,
-	gary@garyguo.net,
-	bjorn3_gh@protonmail.com,
-	lossin@kernel.org,
-	a.hindborg@kernel.org,
-	aliceryhl@google.com,
-	tmgross@umich.edu,
-	rafael@kernel.org,
-	viresh.kumar@linaro.org,
-	gregkh@linuxfoundation.org,
-	maarten.lankhorst@linux.intel.com,
-	mripard@kernel.org,
-	tzimmermann@suse.de,
-	davidgow@google.com,
-	nm@ti.com,
-	onur-ozkan <work@onurozkan.dev>
-Subject: [PATCH 2/2] rust: drop unnecessary lints caught by `#[expect(...)]`
-Date: Thu, 26 Jun 2025 13:04:48 +0300
-Message-ID: <20250626100448.27921-3-work@onurozkan.dev>
-X-Mailer: git-send-email 2.50.0
-In-Reply-To: <20250626100448.27921-1-work@onurozkan.dev>
-References: <20250626100448.27921-1-work@onurozkan.dev>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="xNhqTy26"
+Received: by mail-yb1-f174.google.com with SMTP id 3f1490d57ef6-e740a09eae0so690800276.1
+        for <linux-pm@vger.kernel.org>; Thu, 26 Jun 2025 03:10:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1750932644; x=1751537444; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=RGpPhbuPUiSKZV2cLRZKatSz/MduhYBSX2W+AJmzppM=;
+        b=xNhqTy26NqMOtI0l/BaqO+24iM5Y/HMAyoiTybTwe/cquVyjO9sHaB2tLwwNCJdtZJ
+         kDr+VSDWYX+EHhyUlXvt9C/4G3emIDBIPaqDLFQzIZ3eIWlnPDMyEgsSvJ5lNcfdJk7o
+         f6Z7Mt3HvokUk74v/gg8NVURwq/pApa3iMcIpBAJUSVKInMjNxo6WvbIhyNrTRjGsuu1
+         W6T/9ljDPEm6TXthjCUuOyxo8Fv74qbgfo/Bb6PaZn6Erxyz3XqyvpsORDRLrV7iUmRb
+         3dJVsa0CgRgutrMloxPmWRNF7VsPvIo9EU3qSQu/alyh5YMSoifbnguFMvmVMoE0Zrmi
+         QxTA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1750932644; x=1751537444;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=RGpPhbuPUiSKZV2cLRZKatSz/MduhYBSX2W+AJmzppM=;
+        b=PMnlLfsIVE4Wmz4gcaLLTO4zmXUd68Y6Ct6OF46mDuBUXHCEqMvwj31sOiaenoxt2L
+         mdU6C2hH7AEYqMxIPLG7D17MF6eXMZsCYR8MWgUsKk9e/CcWxtJTBJrf4mZIsb33y5ig
+         abPDmeY9J9q2t4q6CMis/Xhl2PQ3qqV5BDB1eWliWNaxPfVlcVtk6Pkp9zGVTso++dlF
+         jeIkZa1+8eA3F4HRb3NsJtIkhaIF1AMt44NPSlC8U8VherkPNsKTn+1Up0H+bOtzw69C
+         +zFufVWcfTsDLjbqnKTnAew7ucKY1WljemC+WgVOAKefPPP7lNROb5P+JMf4vuYbCQdN
+         lIlQ==
+X-Gm-Message-State: AOJu0Yxu8BqwPsKFM8DZN0ls4a75SiBSNYx25yN17glZqmSWsJELrsKP
+	mVmnk4/RppKPvMufyI73gAqz8YEQJe39MoHWpIxtcJpUHe3EG7bTMrkv3f8Lpm0PXZvgwNeN8rM
+	52X/r5GaYH6e8d8Z1X/JVVDhof8572ekdaOpvyEz4rQ==
+X-Gm-Gg: ASbGncvBjuBwkaqPLxaTk1uYGAeHWPfRDyEjlJn4pL6/T0fNjpYr10f0r8ew/be171S
+	hpgc5Cgx5Nt1FdwGxM/bh7pv6kdl9VB1s+A8FETKsGcML8lBCptuyEtv1DFUSfhHktRYlVoNDs6
+	Meql0DQq6M9arqI5CFRjF3/vd7KelRi1lLDyj4xWs71m8f
+X-Google-Smtp-Source: AGHT+IH7V0BHGImGWUq2RO4C48YNB3kmbkrWJ44nvQyWOyJ0pUkhrpvVs4zkHxSn5wG/qh/yfZkJEJHOsJHa3ZprjII=
+X-Received: by 2002:a05:6902:2e0f:b0:e84:1dd0:45a2 with SMTP id
+ 3f1490d57ef6-e860177f40fmr7990971276.40.1750932644320; Thu, 26 Jun 2025
+ 03:10:44 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <22759968.EfDdHjke4D@rjwysocki.net> <3306233.5fSG56mABF@rjwysocki.net>
+In-Reply-To: <3306233.5fSG56mABF@rjwysocki.net>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Thu, 26 Jun 2025 12:10:08 +0200
+X-Gm-Features: Ac12FXwF7Q7jxkXkEaRsyFNpxSklkmW_lcm577wfPtPxTWlGaikqzxB0LYBa_fQ
+Message-ID: <CAPDyKForsegoD+J6rumvnhHna7W+DVdb5zdKGiRB-TFv27sy7A@mail.gmail.com>
+Subject: Re: [PATCH v1 0/9] PM: Check power.needs_force_resume in pm_runtime_force_suspend()
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, 
+	Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, 
+	Mika Westerberg <mika.westerberg@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
 
-From: onur-ozkan <work@onurozkan.dev>
+On Wed, 25 Jun 2025 at 21:25, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Add a power.needs_force_resume check to pm_runtime_force_suspend() so
+> it need not rely on the runtime PM status of the device when deciding
+> whether or not to return early.
+>
+> With the new check in place, pm_runtime_force_suspend() will also skip
+> devices with the runtime PM status equal to RPM_ACTIVE if they have
+> power.needs_force_resume set, so it won't need to change the RPM
+> status of the device to RPM_SUSPENDED in addition to setting
+> power.needs_force_resume in the case when pm_runtime_need_not_resume()
+> return false.
+>
+> This allows the runtime PM status update to be removed from
+> pm_runtime_force_resume(), so the runtime PM status remains unchanged
+> between the pm_runtime_force_suspend() and pm_runtime_force_resume()
+> calls.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/base/power/runtime.c |   21 ++++++++-------------
+>  1 file changed, 8 insertions(+), 13 deletions(-)
+>
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -1975,7 +1975,7 @@
+>         int ret;
+>
+>         pm_runtime_disable(dev);
+> -       if (pm_runtime_status_suspended(dev))
+> +       if (pm_runtime_status_suspended(dev) || dev->power.needs_force_resume)
+>                 return 0;
+>
+>         callback = RPM_GET_CALLBACK(dev, runtime_suspend);
+> @@ -1990,15 +1990,16 @@
+>         /*
+>          * If the device can stay in suspend after the system-wide transition
+>          * to the working state that will follow, drop the children counter of
+> -        * its parent, but set its status to RPM_SUSPENDED anyway in case this
+> -        * function will be called again for it in the meantime.
+> +        * its parent and the usage counters of its suppliers.  Otherwise, set
+> +        * power.needs_force_resume to let pm_runtime_force_resume() know that
+> +        * the device needs to be taken care of and to prevent this function
+> +        * from handling the device again in case the device is passed to it
+> +        * once more subsequently.
+>          */
+> -       if (pm_runtime_need_not_resume(dev)) {
+> +       if (pm_runtime_need_not_resume(dev))
+>                 pm_runtime_set_suspended(dev);
+> -       } else {
+> -               __update_runtime_status(dev, RPM_SUSPENDED);
+> +       else
+>                 dev->power.needs_force_resume = true;
+> -       }
+>
+>         return 0;
+>
+> @@ -2029,12 +2030,6 @@
+>         if (!dev->power.needs_force_resume)
+>                 goto out;
+>
+> -       /*
+> -        * The value of the parent's children counter is correct already, so
+> -        * just update the status of the device.
+> -        */
+> -       __update_runtime_status(dev, RPM_ACTIVE);
+> -
+>         callback = RPM_GET_CALLBACK(dev, runtime_resume);
+>
+>         dev_pm_disable_wake_irq_check(dev, false);
+>
 
-They are no longer needed.
+As I mentioned for patch4, pm_runtime_force_suspend() is being used
+from driver's ->remove() callback too.
 
-Signed-off-by: onur-ozkan <work@onurozkan.dev>
----
- rust/kernel/cpufreq.rs | 1 -
- rust/kernel/error.rs   | 1 -
- 2 files changed, 2 deletions(-)
+If such a driver/device gets probed again, we need a fresh start. It
+seems like we need to clear the needs_force_resume flag in
+pm_runtime_reinit(). In fact, that looks like an existing bug, even
+before $subject patch, right?
 
-diff --git a/rust/kernel/cpufreq.rs b/rust/kernel/cpufreq.rs
-index 7b20dff23a68..97de9b0573da 100644
---- a/rust/kernel/cpufreq.rs
-+++ b/rust/kernel/cpufreq.rs
-@@ -907,7 +907,6 @@ fn register_em(_policy: &mut Policy) {
- /// or CPUs, so it is safe to share it.
- unsafe impl<T: Driver> Sync for Registration<T> {}
- 
--#[expect(clippy::non_send_fields_in_send_ty)]
- /// SAFETY: Registration with and unregistration from the cpufreq subsystem can happen from any
- /// thread.
- unsafe impl<T: Driver> Send for Registration<T> {}
-diff --git a/rust/kernel/error.rs b/rust/kernel/error.rs
-index 1ff2d57c2f14..05c6e71c0afb 100644
---- a/rust/kernel/error.rs
-+++ b/rust/kernel/error.rs
-@@ -413,7 +413,6 @@ pub fn from_err_ptr<T>(ptr: *mut T) -> Result<*mut T> {
-         // SAFETY: The FFI function does not deref the pointer.
-         let err = unsafe { bindings::PTR_ERR(const_ptr) };
- 
--        #[expect(clippy::unnecessary_cast)]
-         // CAST: If `IS_ERR()` returns `true`,
-         // then `PTR_ERR()` is guaranteed to return a
-         // negative value greater-or-equal to `-bindings::MAX_ERRNO`,
--- 
-2.50.0
-
+Kind regards
+Uffe
