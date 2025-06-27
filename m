@@ -1,132 +1,111 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f177.google.com (mail-pg1-f177.google.com [209.85.215.177])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F25E1C84C6;
-	Fri, 27 Jun 2025 17:31:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB3031F8724;
+	Fri, 27 Jun 2025 19:15:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751045493; cv=none; b=UkTn2yYfLvOKMpmMhY52JeimpSAL2ojjl3apz6p+pv1NFbdhkm6/mIXXwtGQksd6dPkBCaH5nDRsiIl8WOOEZivIl+tLg8s5gRfeG3jGo7aDV9Zf8AFq6PCJDa6f7NnSbyyT193FiKZHcI8hficEGPdhccxhqxHruci4JxyYwSQ=
+	t=1751051733; cv=none; b=rKuoJxePZ7beQ5eRupHkuag2wCp/S4KlhuzEkvEtTmRn+hNSjMFxHHY/AXOqnfUkY+acqtklF9Om4PA+LDc4a7CJHUU3SGcOIc9Lx/2byWgWJT4sxb2rJRvtCSNlQ6fJ9h/Zup2p+tYBpgXEd7UerJgYawo4PUYzAZy4k7lrTIM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751045493; c=relaxed/simple;
-	bh=2y4LiuOlJjR+L5bvSaQ8uJfBRplCVc+eNj3QdtNcQfU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=odlGN4MW7zOuMuOOGLh7qyIjwE6zum+6ocm166B+WTlxTyWAVYg5ogRlJpvDywwHm3iQVEfiYFFyBKWNKeqg4Ui3dYv4EM/epp7qtCHgELh9M5rHVqyUUgujMvkjtNxXpNCgN1+HAFMeo87ALJIB1fXwEGTkOe81vBk5WKTaHew=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ILADB2LJ; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1751051733; c=relaxed/simple;
+	bh=4jrabYQ0JtI6OuhTCr7VLTvejtfzNWRPfphd7z7CjYs=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:Cc:
+	 References:In-Reply-To; b=VDCWTSURH6OAMFRPRDuNNgGmfVgTZOBj6KCFti1skkhsI0vxsXlcQoVHYIkvVZmdvLsigKtHsUYzB621IwCXxthaF/5Hk04Bua/zubiW53JcqqzPimIV6YatToW2qJNtbLFbGkVxyluS35IQnydbJIkHZKunQsgVRw/ArfmF/6s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ed3n96Gv; arc=none smtp.client-ip=209.85.215.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ILADB2LJ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CF5EBC4CEF3;
-	Fri, 27 Jun 2025 17:31:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1751045492;
-	bh=2y4LiuOlJjR+L5bvSaQ8uJfBRplCVc+eNj3QdtNcQfU=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=ILADB2LJ/2bckd4i7hGoVPC88dNjlVFl4Aiih7dAYsQ13NtbWlBoWdSK02zKXWnX4
-	 yB0AC6W64qxQ4dTs+/QFr0iCGtzCivrc9+x+jrn2azlNNrwqEpVYxm9QTqUZ2ljkSB
-	 OWGJgqYfcHeRsZDnXMCQHfFhnrfApVqfixSKhXCU34uW4DAG2XUSjpASIxq1kt8Pn8
-	 2xB2sXuvx1DQ4B05BX4ovMdg3AWbIQhm5v7ikLO74H0niCLWI6vP7FNxCPgWRLoPwZ
-	 +mV5YFQVs4DQGUf8kIs56XWyn0yHJPy3EPC2PT0UeEF2pgancT4W+pG+UzWuB0djqu
-	 zIoP9nup7ZGhA==
-Received: by mail-ot1-f44.google.com with SMTP id 46e09a7af769-739dcdb012fso32716a34.2;
-        Fri, 27 Jun 2025 10:31:32 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCW+4WqWyV/5W8R5FDyyHXF7j1MHzQblzBsFClX4FO/ad4ftFgPDy9Ie+NW4Snw3L8QeWIv903j4Cim2oVg=@vger.kernel.org, AJvYcCWII2Y9QfLCUVlhM6He1quRogpla1HxEQyXiLFJP43djt513ly5uajWehY/Q/ez/+mbVH+i4Co08aM=@vger.kernel.org
-X-Gm-Message-State: AOJu0YwaE0LRpaQLo4JUeWu1MNlEHEcEzJDiINVYNjRw1QVc7w+Shz2c
-	HLlBZDVwzxjjqJt3fqPtUyw/m8Tru5UMZccKm7GcCb21a601smaImxsxlxJ0BPvF10hPg96BkzD
-	4sh8NDcti9rPxTgWFW9RSvogWfqoW+MQ=
-X-Google-Smtp-Source: AGHT+IHB+/g6e9V47pnpxmAmye3lJ/VxkZKU9rFdui8UdjiRcXh5PipvblPCywHW5A97MRQySwHSI6k66JTeOktv4h8=
-X-Received: by 2002:a05:6830:f98:b0:72b:8c4b:8ef2 with SMTP id
- 46e09a7af769-73afc6bf7f8mr3074163a34.24.1751045492030; Fri, 27 Jun 2025
- 10:31:32 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ed3n96Gv"
+Received: by mail-pg1-f177.google.com with SMTP id 41be03b00d2f7-b321bd36a41so350149a12.2;
+        Fri, 27 Jun 2025 12:15:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1751051731; x=1751656531; darn=vger.kernel.org;
+        h=in-reply-to:references:cc:to:from:subject:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=MC33Lr444cQjbDQpogG91dDKBJUHhtcvW36ZB7YX1Y8=;
+        b=ed3n96GvXcwUQ2W9eZuvVbhwpTgg8M5ol8CtCHyOFSaVKo7yga9uAqO50reIF+NLYs
+         pKTQqggdzBYAhuapGSPn596Q56mzuOlJawi48UTAi9Y9q7EBIrwakvAQ5Gv4Vga/uySE
+         MFPvG0SC4oVsTqXB2/oyWc6nE/t+mmUGyBGh70tiuBjcChk7neHTw0xB7qSDpQ08wUy6
+         PKIUzNNC6zUbrYfinjLQE4B+dQvffV7ObFztj7jwFz4W6GE4rRSZVL1ziAgMOthJ8uGo
+         chjKNLvINE9egH0/tHhJwl8GZlhoVDH/8Tv1mUWBxOsbqX0z1Zp7vrCeOzb36ZU1nkeu
+         p36g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1751051731; x=1751656531;
+        h=in-reply-to:references:cc:to:from:subject:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=MC33Lr444cQjbDQpogG91dDKBJUHhtcvW36ZB7YX1Y8=;
+        b=aE9lYnPRRuF0RlytBAeXf+NU1CinkPhnJVK7rnRKTE9tPg/74eDpQtY1I50bXC5V1E
+         fTYQxLfdydDtU4vpPGgd7YU3klmlyzSRqAcrsFBfC/jtmoDcelA8rGYd5snyXPxzRb2c
+         mKma5B/Ac89QzZfOuft7wdz0xz/c+MOADQk2qk9TbIcHc3Sj0dUIX4GpWK4wZkLp63Xe
+         hmmvwX+nz4hSmOUq8A08EQHbqL7mBMr6/0iuNhQySfWej4Ht/1Exm0GcprbI3v4wIkof
+         09QfBE49Bz/ZOulQ49AKEjOX+dfMc02khWZd/PRMqcXJsST9WmXe1mtqhgRHjYwQIRty
+         6V8g==
+X-Forwarded-Encrypted: i=1; AJvYcCVmQUizcrQGbI0uWoqKUfZImqiRu1YkEW79NUDsNKRED/z5aSPs6XO8cjdYpYWyUkpXI5p0UfWhOg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzUPrtVYAcUysfXwtKD/+6k5UATl41BQgMwpa93fdM3FqpvEsVO
+	LEdaViqVY9JEXo+DkggZPWTktl2rBmiZ2pT8xs9zMctX/vomfGuiUnbS
+X-Gm-Gg: ASbGncvImzK3qIuq4bUB7WPwyiBHscr3B0Y35SqjM7/sMu524DTAnFCwWCK8pg4lS7c
+	QsOyszEXiSh/4VthoLJo/hxlPhSns0IZPbtCzKvRZvScwUzV9epYkwlsDg0jXkWYxVi8QnZD81o
+	K5iMx57+fRMLGcdbjSeqxGTdeHkoLxO7a403+SPWBGbaAqVqwuCQZi4ig4ewba/XJ012Nr0HvW/
+	QL06mvpYYAyDKkV60qFjC4a+n4THdneWofp3ectvdLQRxvoi4IKrgwrRpghB8Z/Q/sBdNwWIci5
+	7lQYfw1piMGsxJZoodltrKQ3KpfDSiDgI9vTRWC8nudFlO1cvvF5ygM=
+X-Google-Smtp-Source: AGHT+IHcuG/PKrysKfVFrUFi9VUefuigkudHVP3viNjydqJL6P0UaWxAMZQHOs8+lKRCAE9NOXqMXA==
+X-Received: by 2002:a17:903:2ece:b0:235:f70:fd44 with SMTP id d9443c01a7336-23ac45ce9d3mr68539455ad.21.1751051730662;
+        Fri, 27 Jun 2025 12:15:30 -0700 (PDT)
+Received: from localhost ([181.88.247.122])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-23acb39b97dsm23407155ad.121.2025.06.27.12.15.28
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 27 Jun 2025 12:15:30 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-References: <5011988.GXAFRqVoOG@rjwysocki.net> <CAPDyKFpBTz0M8DmWHLLm7x4c8G5PpQNv0Zj7mrZ9BewTBi1skg@mail.gmail.com>
- <5a6d0684-3340-43ed-b520-933654515943@amd.com> <CAJZ5v0iJ65xxuHtJrWp1sC76FUzPHNpXB+xtHB=e4qTRSgAC4w@mail.gmail.com>
- <0412561d-6ed3-4823-b510-8600fd4fd1fa@amd.com>
-In-Reply-To: <0412561d-6ed3-4823-b510-8600fd4fd1fa@amd.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 27 Jun 2025 19:31:20 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0iRomtiFhYTndO016=zH+vDMkxJgq+EvqYfTFs-+cC8tA@mail.gmail.com>
-X-Gm-Features: Ac12FXzzh0eSx2KHI7hyIDyZLwvuHa7xQTAMjvI3UWpAcrW0CcTmHGRyDsKBLD8
-Message-ID: <CAJZ5v0iRomtiFhYTndO016=zH+vDMkxJgq+EvqYfTFs-+cC8tA@mail.gmail.com>
-Subject: Re: [RFT][PATCH v4 0/2] PM: sleep: Handle async suppliers like
- parents and async consumers like children
-To: Mario Limonciello <mario.limonciello@amd.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, 
-	"Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, 
-	LKML <linux-kernel@vger.kernel.org>, 
-	Chris Bainbridge <chris.bainbridge@gmail.com>, Saravana Kannan <saravanak@google.com>, 
-	Sudeep Holla <sudeep.holla@arm.com>
-Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 27 Jun 2025 16:15:26 -0300
+Message-Id: <DAXK1634VYQI.1PEUCTQIYAF3Y@gmail.com>
+Subject: Re: HP Omnibook Ultra Flip 14 - power profiles
+From: "Kurt Borja" <kuurtb@gmail.com>
+To: "Armin Wolf" <W_Armin@gmx.de>,
+ =?utf-8?q?Benjamin_Hasselgren-Hall=C3=A9n?= <benjamin@benis.se>
+Cc: "platform-driver-x86@vger.kernel.org"
+ <platform-driver-x86@vger.kernel.org>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, "Daniel Lezcano" <daniel.lezcano@linaro.org>, "Zhang
+ Rui" <rui.zhang@intel.com>, "Linux PM" <linux-pm@vger.kernel.org>
+X-Mailer: aerc 0.20.1-0-g2ecb8770224a-dirty
+References: <GXa7F-PA_8BE7nlK9r8dkdSv7c-DW52GvOUiyYHQ6RyoZDxIpNAocWDPYQDeS7WEZeUisqQH_bqmgSV-eaRmuw5r68MGKxyU9X_4Erd0RYQ=@benis.se> <1037e223-a6ad-4d12-9619-f69a29cecba1@gmx.de> <5I8UDmgF_DcJBmBE0zgCXjuvmmhLamDCHkpnkAwRjSAkCa5xcFUvU-SmAeymxTajjDPR8avuW55RxOjhd8idK6jLy-hz8i-Ma3RHSaFy2Gs=@benis.se> <9642ad7e-3e57-45f9-bfd9-beac3e55418e@gmx.de> <GXC8NQl6AY_N7nQAOCRLt7SDGjFNll_TnqQyzYnP_b1weGkRqITOR-kHKcM66lPonOCo9xO2nSWXr7yycwfFuKmjRMtXVlJKya8-qvvkGik=@benis.se> <de8321ce-e595-460a-81d7-f7dae8a7b790@gmx.de> <X-40AqXfdmQw5shUOk3VSaHSXmwJYWHPmDDMLyGUH6GpMt56ty5SbNg8EVfyI_uC9J07uqZ2TtGJmmpB_x8-xpcVOw29fnKzJZ4n9L0x78A=@benis.se> <9439ec38-aadd-4aac-ba51-a8786ba50239@gmx.de>
+In-Reply-To: <9439ec38-aadd-4aac-ba51-a8786ba50239@gmx.de>
 
-On Fri, Jun 27, 2025 at 4:01=E2=80=AFPM Mario Limonciello
-<mario.limonciello@amd.com> wrote:
->
-> On 6/27/2025 5:40 AM, Rafael J. Wysocki wrote:
-> > On Fri, Jun 27, 2025 at 12:28=E2=80=AFAM Mario Limonciello
-> > <mario.limonciello@amd.com> wrote:
-> >>
-> >> On 6/26/2025 4:46 AM, Ulf Hansson wrote:
-> >>> On Mon, 23 Jun 2025 at 14:55, Rafael J. Wysocki <rjw@rjwysocki.net> w=
-rote:
-> >>>>
-> >>>> Hi Everyone,
-> >>>>
-> >>>> These two patches complement the recently made PM core changes relat=
-ed to
-> >>>> the async suspend and resume of devices.  They should apply on top o=
-f
-> >>>> 6.16-rc3.
-> >>>>
-> >>>> They were sent along with the other changes mentioned above:
-> >>>>
-> >>>> https://lore.kernel.org/linux-pm/2229735.Mh6RI2rZIc@rjwysocki.net/
-> >>>> https://lore.kernel.org/linux-pm/2651185.Lt9SDvczpP@rjwysocki.net/
-> >>>>
-> >>>> (and this is v4 because they have been rebased in the meantime), but=
- they don't
-> >>>> make any difference on my test-bed x86 systems, so I'd appreciate a =
-confirmation
-> >>>> that they are actually needed on ARM (or another architecture using =
-DT).
-> >>>>
-> >>>> Thanks!
-> >>>
-> >>> Hi Rafael,
-> >>>
-> >>> I haven't yet got the time to test these, but the code looks good to
-> >>> me, so feel free to add for the series:
-> >>>
-> >>> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> >>>
-> >>> Kind regards
-> >>> Uffe
-> >>
-> >> I passed this series to some internal guys to test on a wide variety o=
-f
-> >> AMD x86 hardware.  The initial testing looks good.
-> >> Will keep you apprised if anything pops up.
-> >
-> > Thanks!
-> >
-> > It would also help if you could check whether or not there is any
-> > measurable performance (that is, system suspend and resume time)
-> > difference between "before" and "after".
->
-> Sure thing.
->
-> Just to make sure we have an aligned measurement methodology:
->
-> I asked them to do this both with and without the patches.
->
-> * set /sys/power/pm_debug_messages before running and then capture all
-> the timing prints.
-> * add up all suspend events and get a total
-> * add up all resume events and get a total
-> * repeat 5 times
-> * calculate averages for the 5 runs
+Hi all,
 
-Sounds good!
+On Fri Jun 27, 2025 at 2:10 PM -03, Armin Wolf wrote:
+> Am 26.06.25 um 15:20 schrieb Benjamin Hasselgren-Hall=C3=A9n:
+>
+>> Hi again,
+>>
+>> dmesg: https://drive.benis.se/s/2crz7zPzkrzaqXN
+>
+> The following message intrigues me:
+>
+> 	platform_profile: Failed to get profile for handler hp-wmi
+
+This might be a regression.
+
+This was reported a couple months ago and I completely forgot until I
+saw this thread. See [1].
+
+@Benjamin: Can you please check if your power profiles work on Linux
+v6.12 (LTS)?
+
+Also try:
+
+$ cat /sys/firmware/acpi/platform_profile
+
+
+[1] https://bugzilla.kernel.org/show_bug.cgi?id=3D220008
+
+--=20
+ ~ Kurt
