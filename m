@@ -1,96 +1,90 @@
-Received: from forward102b.mail.yandex.net (forward102b.mail.yandex.net [178.154.239.149])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FDB521D3CC;
-	Fri, 27 Jun 2025 06:55:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.149
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6FE821858D;
+	Fri, 27 Jun 2025 06:58:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751007303; cv=none; b=FuoUt1W91hT2hDdmsWe7BPosH+lLHjy0NgmZcr/Mum2fSpyWKyRhCHQDWmZrO1jSUPgpcoPqKx84ktgDOpkKYMNKuU3ZoBrQE+5TW7pkBM1O9Ib/UmxjtRUCwNLLKn80FIEaY6MijokXb2wVXJmk0J1ViHrRFkPqUzJ0e84ncFA=
+	t=1751007526; cv=none; b=KJXFDvWnnRDrbOBMfjSYUr7neKCCYtL2KPHDLGloYMR4C2e+/v8VGwE12g7iugVS0HYNFv4ILExYxzGtOzlAWgDdlzwKA9ZLyEwktSmsw3ZFAHKPw0KNepmWQE+Xr2BHQ0LR8sbyWAsMyb9FH0GuxDsa31PHKeMHCJN0mAzsnU8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751007303; c=relaxed/simple;
-	bh=5jNHxYiPINqgM7TZSD4XvG1CJYs9BSX4iWIo7g+ug3w=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=edG4yjMblc3QZH4bWnQ1TN9L7alu0bAXEBYvgCOoDvMFePJGPVa3qWhclV5QTmHHhBVvQ5EZ65ARW2fImbsWEOITlXxaAbfX0vjj7oaWZNCShtCfgQnONb2d68wLaVddvXoJ8R0nEY9L94vB06GhATXMix2ZjX5WSdfZhkd77hk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev; spf=pass smtp.mailfrom=onurozkan.dev; dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b=ddps08uT; arc=none smtp.client-ip=178.154.239.149
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=onurozkan.dev
+	s=arc-20240116; t=1751007526; c=relaxed/simple;
+	bh=U00Wt6aru37Pu+FP5KMXq1ujUHGShgCuBTIQu4QJPGc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JzFbcmqI/hIhPRYPcPSQE3Bp6C6h6iXWP0/Npyk8bkz2O52kuSzB6eBg/xuvqM8w4SCtDd96Me44IAA6AVFZDIzU92W0xQciXZ2OF11Z7gRK4rWUd1zDeP93Vwm14wwekzux0+vktL5kOf4f+RSJ1oBZYhKbWGqrYz1ohk6eYAs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CaWXwu0i; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b="ddps08uT"
-Received: from mail-nwsmtp-smtp-production-main-87.sas.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-87.sas.yp-c.yandex.net [IPv6:2a02:6b8:c23:2ea3:0:640:da3e:0])
-	by forward102b.mail.yandex.net (Yandex) with ESMTPS id 67D3960D56;
-	Fri, 27 Jun 2025 09:54:53 +0300 (MSK)
-Received: by mail-nwsmtp-smtp-production-main-87.sas.yp-c.yandex.net (smtp/Yandex) with ESMTPSA id PsPIlP9LwSw0-30PUW0YP;
-	Fri, 27 Jun 2025 09:54:52 +0300
-X-Yandex-Fwd: 1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=onurozkan.dev;
-	s=mail; t=1751007292;
-	bh=ry/nljdjBuoojwts/DOYg5GF1XJZ/JGUBkyIcJh8zZo=;
-	h=Cc:Message-ID:References:Date:In-Reply-To:Subject:To:From;
-	b=ddps08uTBCP09eSC4n4fKqSw9gwwa9whkwZ2+r2vs3xRJa3djOaGCs+k0ZfslHT1f
-	 WqGEpbVVJHEPKoi4RS+uptc9l0msnV8s3ASVNsLadBCeAu2d4NIJFIp3Mbuz4ZPns1
-	 0egVE0dgDMhXQz3qqQZJio+kJczBWlqTF8U0kI1o=
-Authentication-Results: mail-nwsmtp-smtp-production-main-87.sas.yp-c.yandex.net; dkim=pass header.i=@onurozkan.dev
-From: =?UTF-8?q?Onur=20=C3=96zkan?= <work@onurozkan.dev>
-To: rust-for-linux@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	kunit-dev@googlegroups.com
-Cc: airlied@gmail.com,
-	simona@ffwll.ch,
-	ojeda@kernel.org,
-	alex.gaynor@gmail.com,
-	boqun.feng@gmail.com,
-	gary@garyguo.net,
-	bjorn3_gh@protonmail.com,
-	lossin@kernel.org,
-	a.hindborg@kernel.org,
-	aliceryhl@google.com,
-	tmgross@umich.edu,
-	rafael@kernel.org,
-	viresh.kumar@linaro.org,
-	gregkh@linuxfoundation.org,
-	maarten.lankhorst@linux.intel.com,
-	mripard@kernel.org,
-	tzimmermann@suse.de,
-	davidgow@google.com,
-	nm@ti.com,
-	=?UTF-8?q?Onur=20=C3=96zkan?= <work@onurozkan.dev>
-Subject: [PATCH v2 2/3] rust: remove `#[allow(clippy::unnecessary_cast)]`
-Date: Fri, 27 Jun 2025 09:53:19 +0300
-Message-ID: <20250627065320.9315-3-work@onurozkan.dev>
-X-Mailer: git-send-email 2.50.0
-In-Reply-To: <20250627065320.9315-1-work@onurozkan.dev>
-References: <20250627065320.9315-1-work@onurozkan.dev>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CaWXwu0i"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 67C10C4CEE3;
+	Fri, 27 Jun 2025 06:58:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1751007526;
+	bh=U00Wt6aru37Pu+FP5KMXq1ujUHGShgCuBTIQu4QJPGc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=CaWXwu0iXbiZA7oWvep3mRF5ME28JAE5DrKZo+jVpHw1zwJENwHfmNG0joHXYb2Kf
+	 SYky40oOM059O/S9O0lCI8BONxLA8agBRfmtrSq5dLu/5rzqHGvTB43N2x/6X5Bn3S
+	 lKwRIAaP9aUCJsHo8FaTSb61FkG5kbVjkI0IPdEz6WkC3JpPza/S6JW4rpFNV5/0NI
+	 oYEHRapl89QIDbBjMrqZLhqz4i/2hOVy30S5FXErywoPVa9QDFSM+JinwJP0OTn18N
+	 Hwv47z7D7GEuBxF6WXi19mtkCFkZIXMJinHvtQhXVATvPxcIKujcHYgMXu3rnj65mJ
+	 QP9ZGi+loBpag==
+Date: Fri, 27 Jun 2025 08:58:42 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Chris Morgan <macroalpha82@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, 
+	devicetree@vger.kernel.org, broonie@kernel.org, lgirdwood@gmail.com, sre@kernel.org, 
+	heiko@sntech.de, conor+dt@kernel.org, krzk+dt@kernel.org, robh@kernel.org, 
+	lee@kernel.org, Chris Morgan <macromorgan@hotmail.com>
+Subject: Re: [PATCH V4 1/5] dt-bindings: mfd: ti,bq25703a: Add TI BQ25703A
+ Charger
+Message-ID: <20250627-lurking-amorphous-elephant-e14c7f@krzk-bin>
+References: <20250626195343.54653-1-macroalpha82@gmail.com>
+ <20250626195343.54653-2-macroalpha82@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20250626195343.54653-2-macroalpha82@gmail.com>
 
-This isn't needed anymore since `kernel::ffi::c_int` type
-is always `i32` which differs from `err` (isize).
+On Thu, Jun 26, 2025 at 02:53:39PM -0500, Chris Morgan wrote:
+> From: Chris Morgan <macromorgan@hotmail.com>
+> 
+> Document the Texas instruments BQ25703A series of charger managers/
+> buck/boost regulators.
+> 
+> Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
 
-Signed-off-by: Onur Özkan <work@onurozkan.dev>
----
- rust/kernel/error.rs | 1 -
- 1 file changed, 1 deletion(-)
+Didn't you receive tag?
 
-diff --git a/rust/kernel/error.rs b/rust/kernel/error.rs
-index a59613918d4c..05c6e71c0afb 100644
---- a/rust/kernel/error.rs
-+++ b/rust/kernel/error.rs
-@@ -413,7 +413,6 @@ pub fn from_err_ptr<T>(ptr: *mut T) -> Result<*mut T> {
-         // SAFETY: The FFI function does not deref the pointer.
-         let err = unsafe { bindings::PTR_ERR(const_ptr) };
+> ---
+>  .../devicetree/bindings/mfd/ti,bq25703a.yaml  | 117 ++++++++++++++++++
+>  1 file changed, 117 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/mfd/ti,bq25703a.yaml
 
--        #[allow(clippy::unnecessary_cast)]
-         // CAST: If `IS_ERR()` returns `true`,
-         // then `PTR_ERR()` is guaranteed to return a
-         // negative value greater-or-equal to `-bindings::MAX_ERRNO`,
---
-2.50.0
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+
+<form letter>
+This is a friendly reminder during the review process.
+
+It looks like you received a tag and forgot to add it.
+
+If you do not know the process, here is a short explanation:
+Please add Acked-by/Reviewed-by/Tested-by tags when posting new
+versions of patchset, under or above your Signed-off-by tag, unless
+patch changed significantly (e.g. new properties added to the DT
+bindings). Tag is "received", when provided in a message replied to you
+on the mailing list. Tools like b4 can help here. However, there's no
+need to repost patches *only* to add the tags. The upstream maintainer
+will do that for tags received on the version they apply.
+
+Please read:
+https://elixir.bootlin.com/linux/v6.12-rc3/source/Documentation/process/submitting-patches.rst#L577
+
+If a tag was not added on purpose, please state why and what changed.
+</form letter>
+
+Best regards,
+Krzysztof
 
