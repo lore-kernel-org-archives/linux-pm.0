@@ -1,111 +1,113 @@
-Received: from mail-pg1-f177.google.com (mail-pg1-f177.google.com [209.85.215.177])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB3031F8724;
-	Fri, 27 Jun 2025 19:15:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E4F220C03E;
+	Fri, 27 Jun 2025 19:29:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751051733; cv=none; b=rKuoJxePZ7beQ5eRupHkuag2wCp/S4KlhuzEkvEtTmRn+hNSjMFxHHY/AXOqnfUkY+acqtklF9Om4PA+LDc4a7CJHUU3SGcOIc9Lx/2byWgWJT4sxb2rJRvtCSNlQ6fJ9h/Zup2p+tYBpgXEd7UerJgYawo4PUYzAZy4k7lrTIM=
+	t=1751052583; cv=none; b=bh5FCqSww+sihfc+gUQgAUpGpwLHjSL/9YQ3thPBQK0ogylUcVBgkWWPumDZs/v64vV+11M2NM8nMQg3WExIyPGmI5qp571LsWMncXk/wQteqa/Dm5ZqbMBWCP1RTBHeX04oAg2KRpURCowA85LvmHpkfbp6jGlXHuW3f5TQy8M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751051733; c=relaxed/simple;
-	bh=4jrabYQ0JtI6OuhTCr7VLTvejtfzNWRPfphd7z7CjYs=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:Cc:
-	 References:In-Reply-To; b=VDCWTSURH6OAMFRPRDuNNgGmfVgTZOBj6KCFti1skkhsI0vxsXlcQoVHYIkvVZmdvLsigKtHsUYzB621IwCXxthaF/5Hk04Bua/zubiW53JcqqzPimIV6YatToW2qJNtbLFbGkVxyluS35IQnydbJIkHZKunQsgVRw/ArfmF/6s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ed3n96Gv; arc=none smtp.client-ip=209.85.215.177
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1751052583; c=relaxed/simple;
+	bh=kY9pRbBGXyFt52NNCZFJytbQXz3mokYgEYHz3UNvujM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=mAcq8KCUHi/Yft9qqpdu41sy/F/KI/DgVGvcARwjI1rCLmhJDdk0xtndOr69Vp2OAZq1oFBKPX4f7JJmvSa6wilq3A8j8iPNiLWdhAjrlfRgx+IfeEIZoYC51SlMCnz5NWvOLTkt77LahrrNbHE2HTzZlxVcNq/q0JL1QrSEi/c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=chxIXNcN; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ed3n96Gv"
-Received: by mail-pg1-f177.google.com with SMTP id 41be03b00d2f7-b321bd36a41so350149a12.2;
-        Fri, 27 Jun 2025 12:15:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1751051731; x=1751656531; darn=vger.kernel.org;
-        h=in-reply-to:references:cc:to:from:subject:message-id:date
-         :content-transfer-encoding:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=MC33Lr444cQjbDQpogG91dDKBJUHhtcvW36ZB7YX1Y8=;
-        b=ed3n96GvXcwUQ2W9eZuvVbhwpTgg8M5ol8CtCHyOFSaVKo7yga9uAqO50reIF+NLYs
-         pKTQqggdzBYAhuapGSPn596Q56mzuOlJawi48UTAi9Y9q7EBIrwakvAQ5Gv4Vga/uySE
-         MFPvG0SC4oVsTqXB2/oyWc6nE/t+mmUGyBGh70tiuBjcChk7neHTw0xB7qSDpQ08wUy6
-         PKIUzNNC6zUbrYfinjLQE4B+dQvffV7ObFztj7jwFz4W6GE4rRSZVL1ziAgMOthJ8uGo
-         chjKNLvINE9egH0/tHhJwl8GZlhoVDH/8Tv1mUWBxOsbqX0z1Zp7vrCeOzb36ZU1nkeu
-         p36g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751051731; x=1751656531;
-        h=in-reply-to:references:cc:to:from:subject:message-id:date
-         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=MC33Lr444cQjbDQpogG91dDKBJUHhtcvW36ZB7YX1Y8=;
-        b=aE9lYnPRRuF0RlytBAeXf+NU1CinkPhnJVK7rnRKTE9tPg/74eDpQtY1I50bXC5V1E
-         fTYQxLfdydDtU4vpPGgd7YU3klmlyzSRqAcrsFBfC/jtmoDcelA8rGYd5snyXPxzRb2c
-         mKma5B/Ac89QzZfOuft7wdz0xz/c+MOADQk2qk9TbIcHc3Sj0dUIX4GpWK4wZkLp63Xe
-         hmmvwX+nz4hSmOUq8A08EQHbqL7mBMr6/0iuNhQySfWej4Ht/1Exm0GcprbI3v4wIkof
-         09QfBE49Bz/ZOulQ49AKEjOX+dfMc02khWZd/PRMqcXJsST9WmXe1mtqhgRHjYwQIRty
-         6V8g==
-X-Forwarded-Encrypted: i=1; AJvYcCVmQUizcrQGbI0uWoqKUfZImqiRu1YkEW79NUDsNKRED/z5aSPs6XO8cjdYpYWyUkpXI5p0UfWhOg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzUPrtVYAcUysfXwtKD/+6k5UATl41BQgMwpa93fdM3FqpvEsVO
-	LEdaViqVY9JEXo+DkggZPWTktl2rBmiZ2pT8xs9zMctX/vomfGuiUnbS
-X-Gm-Gg: ASbGncvImzK3qIuq4bUB7WPwyiBHscr3B0Y35SqjM7/sMu524DTAnFCwWCK8pg4lS7c
-	QsOyszEXiSh/4VthoLJo/hxlPhSns0IZPbtCzKvRZvScwUzV9epYkwlsDg0jXkWYxVi8QnZD81o
-	K5iMx57+fRMLGcdbjSeqxGTdeHkoLxO7a403+SPWBGbaAqVqwuCQZi4ig4ewba/XJ012Nr0HvW/
-	QL06mvpYYAyDKkV60qFjC4a+n4THdneWofp3ectvdLQRxvoi4IKrgwrRpghB8Z/Q/sBdNwWIci5
-	7lQYfw1piMGsxJZoodltrKQ3KpfDSiDgI9vTRWC8nudFlO1cvvF5ygM=
-X-Google-Smtp-Source: AGHT+IHcuG/PKrysKfVFrUFi9VUefuigkudHVP3viNjydqJL6P0UaWxAMZQHOs8+lKRCAE9NOXqMXA==
-X-Received: by 2002:a17:903:2ece:b0:235:f70:fd44 with SMTP id d9443c01a7336-23ac45ce9d3mr68539455ad.21.1751051730662;
-        Fri, 27 Jun 2025 12:15:30 -0700 (PDT)
-Received: from localhost ([181.88.247.122])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-23acb39b97dsm23407155ad.121.2025.06.27.12.15.28
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 27 Jun 2025 12:15:30 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="chxIXNcN"
+Received: from kreacher.localnet (unknown [5.63.189.50])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 2E32866DE29;
+	Fri, 27 Jun 2025 21:29:33 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1751052573;
+	bh=kY9pRbBGXyFt52NNCZFJytbQXz3mokYgEYHz3UNvujM=;
+	h=From:Subject:Date;
+	b=chxIXNcNZweVjZDYMbATeSQQTOp1C6QSshPZptPOHzlZGHjAzY1XSkiQEBFM4jBos
+	 WMIB42fmWiYWKEdiUnqjTlFp6vWCN6/PGWkER0kxElUSF6IvDXxVdCTh0dqTyksPel
+	 9f7JGBZgy8xSCLFnKyGZRqIk6U8A28K7y0+I0rDih0q7ZYZxYPR9MJJObxJUh+sD7U
+	 oEUWk7YgzjkfHQCwkUVcwdsdSzOQUos5dzPDtXbZBpP6VGSMUqwHiVVF85yDpXT775
+	 59U2Es4hoaVyAupPRyHLOAe6bz3fEa1L4rvhTTueBYOI8QDl8NA8FCu/ooi/08scp9
+	 Jf1LLtdYYJyFw==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Linux ACPI <linux-acpi@vger.kernel.org>,
+ Linux PCI <linux-pci@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>,
+ Mika Westerberg <mika.westerberg@linux.intel.com>,
+ Bjorn Helgaas <helgaas@kernel.org>
+Subject: [PATCH v3 9/9] PCI/PM: Set power.strict_midlayer in pci_pm_init()
+Date: Fri, 27 Jun 2025 21:29:16 +0200
+Message-ID: <1925097.atdPhlSkOF@rjwysocki.net>
+In-Reply-To: <5018768.GXAFRqVoOG@rjwysocki.net>
+References: <5018768.GXAFRqVoOG@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 27 Jun 2025 16:15:26 -0300
-Message-Id: <DAXK1634VYQI.1PEUCTQIYAF3Y@gmail.com>
-Subject: Re: HP Omnibook Ultra Flip 14 - power profiles
-From: "Kurt Borja" <kuurtb@gmail.com>
-To: "Armin Wolf" <W_Armin@gmx.de>,
- =?utf-8?q?Benjamin_Hasselgren-Hall=C3=A9n?= <benjamin@benis.se>
-Cc: "platform-driver-x86@vger.kernel.org"
- <platform-driver-x86@vger.kernel.org>, "Rafael J. Wysocki"
- <rafael@kernel.org>, "Daniel Lezcano" <daniel.lezcano@linaro.org>, "Zhang
- Rui" <rui.zhang@intel.com>, "Linux PM" <linux-pm@vger.kernel.org>
-X-Mailer: aerc 0.20.1-0-g2ecb8770224a-dirty
-References: <GXa7F-PA_8BE7nlK9r8dkdSv7c-DW52GvOUiyYHQ6RyoZDxIpNAocWDPYQDeS7WEZeUisqQH_bqmgSV-eaRmuw5r68MGKxyU9X_4Erd0RYQ=@benis.se> <1037e223-a6ad-4d12-9619-f69a29cecba1@gmx.de> <5I8UDmgF_DcJBmBE0zgCXjuvmmhLamDCHkpnkAwRjSAkCa5xcFUvU-SmAeymxTajjDPR8avuW55RxOjhd8idK6jLy-hz8i-Ma3RHSaFy2Gs=@benis.se> <9642ad7e-3e57-45f9-bfd9-beac3e55418e@gmx.de> <GXC8NQl6AY_N7nQAOCRLt7SDGjFNll_TnqQyzYnP_b1weGkRqITOR-kHKcM66lPonOCo9xO2nSWXr7yycwfFuKmjRMtXVlJKya8-qvvkGik=@benis.se> <de8321ce-e595-460a-81d7-f7dae8a7b790@gmx.de> <X-40AqXfdmQw5shUOk3VSaHSXmwJYWHPmDDMLyGUH6GpMt56ty5SbNg8EVfyI_uC9J07uqZ2TtGJmmpB_x8-xpcVOw29fnKzJZ4n9L0x78A=@benis.se> <9439ec38-aadd-4aac-ba51-a8786ba50239@gmx.de>
-In-Reply-To: <9439ec38-aadd-4aac-ba51-a8786ba50239@gmx.de>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 5.63.189.50
+X-CLIENT-HOSTNAME: 5.63.189.50
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: dmFkZTGRmHXmKxezHgHnenmfNBRxuxS5icg2UpqKuDHPuOJctsue4XUZZKRq+I3k43I7hGGWSVpCO2RMCqeSIExCba3+jEV4RHupFvblFZsJZEOU7KXO+apCLF7BrBbkfQgmVa3qfzu3l1CWWL3sTxIklFfy+SfQ3LU6S7g6b40rVIMKuT9PeVQ7vN73+o7FRm9i7DCswR8ZH2qLd5FKGiCRHAdTIZCJcdKbCzlNjgCJP7j9sC140zaF4s84pWcODIanBShuw8pSTZor6gJPE1mce69YOKvKUPMQL94xAmz+P6IQ2jB2WOr72U/SFpTenbJ1S72cePd03wWASkAhj+PgKNE/kKaG855T+EyLZWoLbf4OYEM2kSOJ7GiNom/yotNU5itFRBu9ztylBE6t5JhKLjiXKijes9NEspnrfifqNeEp1Iti6cizTPhSednvuVLBvTgy22/fO5Hdwix0ZC67F4Is0PRCrSBuuF7KbGU4LIhBJv8/XKtYrzsYSiRbLVUBf0HTlsKeaxYAbcVoxU997JTOkabLjeefj/4PDUXPX7gfPxWiQoKCdoQ2q3YeD5r9SIpwTX4Q1yW1rAk3Ubk30v+V+PvNb2Z1gR5NzsHGaG4RHE0g6QLLpAkF++EbO6hrRRakssNrfSdFb0IgXU7vRUp7COxhzJFOT/Q8mdjKYmP8ow
+X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 
-Hi all,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On Fri Jun 27, 2025 at 2:10 PM -03, Armin Wolf wrote:
-> Am 26.06.25 um 15:20 schrieb Benjamin Hasselgren-Hall=C3=A9n:
->
->> Hi again,
->>
->> dmesg: https://drive.benis.se/s/2crz7zPzkrzaqXN
->
-> The following message intrigues me:
->
-> 	platform_profile: Failed to get profile for handler hp-wmi
+The PCI bus type does not expect its runtime PM suspend callback
+function, pci_pm_runtime_suspend(), to be invoked at all during system-
+wide suspend and resume, and it does not expect its runtime resume
+callback function, pci_pm_runtime_resume(), to be invoked at any point
+when runtime PM is disabled for the given device during system-wide
+suspend and resume, so make it express that expectation by setting
+power.strict_midlayer for all PCI devices in pci_pm_prepare() and
+clear it in pci_pm_complete().
 
-This might be a regression.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+---
 
-This was reported a couple months ago and I completely forgot until I
-saw this thread. See [1].
+v2 -> v3:
+   * Update subject prefix (Bjorn).
+   * Update the changelog to be more precise.
+   * Add Acked-by from Bjorn.
 
-@Benjamin: Can you please check if your power profiles work on Linux
-v6.12 (LTS)?
+v1 -> v2:
+   * Set and clear the new flag in "prepare" and "complete" to allow
+     pm_runtime_force_suspend() invoked from driver remove callbacks to
+     work.
+   * Update subject and changelog.
 
-Also try:
+---
+ drivers/pci/pci-driver.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-$ cat /sys/firmware/acpi/platform_profile
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -708,6 +708,8 @@
+ 	struct pci_dev *pci_dev = to_pci_dev(dev);
+ 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+ 
++	dev_pm_set_strict_midlayer(dev, true);
++
+ 	if (pm && pm->prepare) {
+ 		int error = pm->prepare(dev);
+ 		if (error < 0)
+@@ -749,6 +751,8 @@
+ 		if (pci_dev->current_state < pre_sleep_state)
+ 			pm_request_resume(dev);
+ 	}
++
++	dev_pm_set_strict_midlayer(dev, false);
+ }
+ 
+ #else /* !CONFIG_PM_SLEEP */
 
 
-[1] https://bugzilla.kernel.org/show_bug.cgi?id=3D220008
 
---=20
- ~ Kurt
