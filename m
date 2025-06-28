@@ -1,37 +1,37 @@
-Received: from mxout4.routing.net (mxout4.routing.net [134.0.28.9])
+Received: from mxout2.routing.net (mxout2.routing.net [134.0.28.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FBEE224B14;
-	Sat, 28 Jun 2025 09:11:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6ADBF2264BC;
+	Sat, 28 Jun 2025 09:11:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751101864; cv=none; b=ggQN/vlEsiXO77JiAoFBaskxpKZDImZtwMe9MIm5W9j24lgnJGBUydbNqZvtbz/5H4eOfzZLSTpT2xPiwiGCJAEuo5MgqgiE1lguvjcjj0biNX4m14OY65D+fQyk/t1hzMuwsMXjiKyaPkeEo261mR/HB0VWtLZRsAGLOLc8+QU=
+	t=1751101865; cv=none; b=DlCd/1V6jePzoPpI5YOfsKYN4VqAprV5kIA46CETpo7JqBUTUJlYAnh0qfdJ9eXGiqVWiZvFjzMHa/ezoaCZrx4Wv+F/Z3zjzKJ2t+OL6jlDINuiZK2zz2iRHVUw1TFf1dVfNF00J4ySh+lxMUjmjiqKRXsNsaTn1vyQ/t5yesM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751101864; c=relaxed/simple;
-	bh=gPrGHtbLr6wNB43kPK+9dUxlp1aSRU8byJ8ozBbRMGw=;
+	s=arc-20240116; t=1751101865; c=relaxed/simple;
+	bh=oEHCeCyYmhRvcoDsSzTQBlneOLnSQNdeNvfMRFj69TE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=DLYEuilinzg/9ZdGVyuGg0I/k3tZtn6ezhLZQAEQ18VdhoIM9ZmkBZ6mA/Szcs+V5qDedaGP9y/M05jjzDfU8Y2fUFOIahQnr11pLP0XSFbZTP3nMyT7/zEjsKbxtmbj1hTljjJ8kv0fzfALBVe4sdp5K71EtM5x7p9FPA/CAgA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=mWudAFyR; arc=none smtp.client-ip=134.0.28.9
+	 MIME-Version; b=g6QC45PfUDE/XJrOCfMGocKYYaEFWvIaOk//XoCIWrxiXLpPAQTeQUTzq/w5BD0QJz7azrWEH02s/Ku4kF6KWUHid94Yrbn9c/tMl3cI5adL55PuxNKpNrMq4iq2mo/7nOR0CwWxerjLIiATaS+pQJokSQSliQRBmokzyZ4GTgI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=NA+1GxSS; arc=none smtp.client-ip=134.0.28.12
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="mWudAFyR"
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="NA+1GxSS"
 Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout4.routing.net (Postfix) with ESMTP id E29AF1012C7;
-	Sat, 28 Jun 2025 09:10:53 +0000 (UTC)
+	by mxout2.routing.net (Postfix) with ESMTP id B2F2860276;
+	Sat, 28 Jun 2025 09:10:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=20200217; t=1751101853;
+	s=20200217; t=1751101854;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=2Up+TpRAQJFsd3iE9H547AQliakgI9CQqLhSEL2RQMo=;
-	b=mWudAFyRKc5vJ1Nv/ipL2L9dbatHBVzl4YvJ7/OQRGZbgeU+nySu0LqK4KBJ9QCwuDNAAY
-	cP87iWrYCDYEOHbV9Py21Xbi1sgl3aITzL0Y1H52HLb3YHM9barH44QtF5NkA4nQCyXM8S
-	nbcWU+g3uT8pi6KneZCSovBYWnwV+uY=
+	bh=zCArQQjnZOoBXdfm7YKc01KniAiMbD7wl2wyNkiAMyg=;
+	b=NA+1GxSSDuEqbCyzF2WJa3x7c+Oq77hshvVwamfGDOOsLiaffWi0pdETpcdH5yz+ztlFxs
+	/f2d7Tcy5sZqIHnFbi1cNYFXOp9YrGmpiTn9C9qWFOa2FrUZl7lVgn4mM2t/86dTexB/VD
+	vUhgt0WVFxupAoJgw832fJjt4dGA1D8=
 Received: from frank-u24.. (fttx-pool-217.61.150.139.bambit.de [217.61.150.139])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 88BB812272D;
-	Sat, 28 Jun 2025 09:10:53 +0000 (UTC)
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 5899212272D;
+	Sat, 28 Jun 2025 09:10:54 +0000 (UTC)
 From: Frank Wunderlich <linux@fw-web.de>
 To: MyungJoo Ham <myungjoo.ham@samsung.com>,
 	Kyungmin Park <kyungmin.park@samsung.com>,
@@ -63,9 +63,9 @@ Cc: Frank Wunderlich <frank-w@public-files.de>,
 	netdev@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v6 09/15] arm64: dts: mediatek: mt7988: add switch node
-Date: Sat, 28 Jun 2025 11:10:33 +0200
-Message-ID: <20250628091043.57645-10-linux@fw-web.de>
+Subject: [PATCH v6 11/15] arm64: dts: mediatek: mt7988a-bpi-r4: drop unused pins
+Date: Sat, 28 Jun 2025 11:10:35 +0200
+Message-ID: <20250628091043.57645-12-linux@fw-web.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250628091043.57645-1-linux@fw-web.de>
 References: <20250628091043.57645-1-linux@fw-web.de>
@@ -79,182 +79,149 @@ Content-Transfer-Encoding: 8bit
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-Add mt7988 builtin mt753x switch nodes.
+Pins were moved from SoC dtsi to Board level dtsi without cleaning up
+to needed ones. Drop the unused pins now.
 
-Signed-off-by: Daniel Golle <daniel@makrotopia.org>
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
 Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
-v4:
-- drop phy-mode for gsw-phy
-- reorder phy-mode after phy-handle
-- drop interrupt parent from switch
+ .../dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi | 89 -------------------
+ 1 file changed, 89 deletions(-)
 
-v2:
-- drop labels and led-function too (have to be in board)
----
- arch/arm64/boot/dts/mediatek/mt7988a.dtsi | 148 ++++++++++++++++++++++
- 1 file changed, 148 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/mediatek/mt7988a.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
-index cf765a6b1fa8..767782a207a4 100644
---- a/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
-@@ -742,6 +742,154 @@ ethsys: clock-controller@15000000 {
- 			#reset-cells = <1>;
- 		};
+diff --git a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
+index afa9e3b2b16a..30affedf84d4 100644
+--- a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
+@@ -223,18 +223,6 @@ &pcie3 {
+ };
  
-+		switch: switch@15020000 {
-+			compatible = "mediatek,mt7988-switch";
-+			reg = <0 0x15020000 0 0x8000>;
-+			interrupt-controller;
-+			#interrupt-cells = <1>;
-+			interrupts = <GIC_SPI 209 IRQ_TYPE_LEVEL_HIGH>;
-+			resets = <&ethwarp MT7988_ETHWARP_RST_SWITCH>;
-+
-+			ports {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+
-+				gsw_port0: port@0 {
-+					reg = <0>;
-+					phy-handle = <&gsw_phy0>;
-+					phy-mode = "internal";
-+				};
-+
-+				gsw_port1: port@1 {
-+					reg = <1>;
-+					phy-handle = <&gsw_phy1>;
-+					phy-mode = "internal";
-+				};
-+
-+				gsw_port2: port@2 {
-+					reg = <2>;
-+					phy-handle = <&gsw_phy2>;
-+					phy-mode = "internal";
-+				};
-+
-+				gsw_port3: port@3 {
-+					reg = <3>;
-+					phy-handle = <&gsw_phy3>;
-+					phy-mode = "internal";
-+				};
-+
-+				port@6 {
-+					reg = <6>;
-+					ethernet = <&gmac0>;
-+					phy-mode = "internal";
-+
-+					fixed-link {
-+						speed = <10000>;
-+						full-duplex;
-+						pause;
-+					};
-+				};
-+			};
-+
-+			mdio {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				mediatek,pio = <&pio>;
-+
-+				gsw_phy0: ethernet-phy@0 {
-+					compatible = "ethernet-phy-ieee802.3-c22";
-+					reg = <0>;
-+					interrupts = <0>;
-+					nvmem-cells = <&phy_calibration_p0>;
-+					nvmem-cell-names = "phy-cal-data";
-+
-+					leds {
-+						#address-cells = <1>;
-+						#size-cells = <0>;
-+
-+						gsw_phy0_led0: led@0 {
-+							reg = <0>;
-+							status = "disabled";
-+						};
-+
-+						gsw_phy0_led1: led@1 {
-+							reg = <1>;
-+							status = "disabled";
-+						};
-+					};
-+				};
-+
-+				gsw_phy1: ethernet-phy@1 {
-+					compatible = "ethernet-phy-ieee802.3-c22";
-+					reg = <1>;
-+					interrupts = <1>;
-+					nvmem-cells = <&phy_calibration_p1>;
-+					nvmem-cell-names = "phy-cal-data";
-+
-+					leds {
-+						#address-cells = <1>;
-+						#size-cells = <0>;
-+
-+						gsw_phy1_led0: led@0 {
-+							reg = <0>;
-+							status = "disabled";
-+						};
-+
-+						gsw_phy1_led1: led@1 {
-+							reg = <1>;
-+							status = "disabled";
-+						};
-+					};
-+				};
-+
-+				gsw_phy2: ethernet-phy@2 {
-+					compatible = "ethernet-phy-ieee802.3-c22";
-+					reg = <2>;
-+					interrupts = <2>;
-+					nvmem-cells = <&phy_calibration_p2>;
-+					nvmem-cell-names = "phy-cal-data";
-+
-+					leds {
-+						#address-cells = <1>;
-+						#size-cells = <0>;
-+
-+						gsw_phy2_led0: led@0 {
-+							reg = <0>;
-+							status = "disabled";
-+						};
-+
-+						gsw_phy2_led1: led@1 {
-+							reg = <1>;
-+							status = "disabled";
-+						};
-+					};
-+				};
-+
-+				gsw_phy3: ethernet-phy@3 {
-+					compatible = "ethernet-phy-ieee802.3-c22";
-+					reg = <3>;
-+					interrupts = <3>;
-+					nvmem-cells = <&phy_calibration_p3>;
-+					nvmem-cell-names = "phy-cal-data";
-+
-+					leds {
-+						#address-cells = <1>;
-+						#size-cells = <0>;
-+
-+						gsw_phy3_led0: led@0 {
-+							reg = <0>;
-+							status = "disabled";
-+						};
-+
-+						gsw_phy3_led1: led@1 {
-+							reg = <1>;
-+							status = "disabled";
-+						};
-+					};
-+				};
-+			};
-+		};
-+
- 		ethwarp: clock-controller@15031000 {
- 			compatible = "mediatek,mt7988-ethwarp";
- 			reg = <0 0x15031000 0 0x1000>;
+ &pio {
+-	mdio0_pins: mdio0-pins {
+-		mux {
+-			function = "eth";
+-			groups = "mdc_mdio0";
+-		};
+-
+-		conf {
+-			pins = "SMI_0_MDC", "SMI_0_MDIO";
+-			drive-strength = <8>;
+-		};
+-	};
+-
+ 	i2c0_pins: i2c0-g0-pins {
+ 		mux {
+ 			function = "i2c";
+@@ -249,20 +237,6 @@ mux {
+ 		};
+ 	};
+ 
+-	i2c1_sfp_pins: i2c1-sfp-g0-pins {
+-		mux {
+-			function = "i2c";
+-			groups = "i2c1_sfp";
+-		};
+-	};
+-
+-	i2c2_0_pins: i2c2-g0-pins {
+-		mux {
+-			function = "i2c";
+-			groups = "i2c2_0";
+-		};
+-	};
+-
+ 	i2c2_1_pins: i2c2-g1-pins {
+ 		mux {
+ 			function = "i2c";
+@@ -298,34 +272,6 @@ mux {
+ 		};
+ 	};
+ 
+-	gbe0_led1_pins: gbe0-led1-pins {
+-		mux {
+-			function = "led";
+-			groups = "gbe0_led1";
+-		};
+-	};
+-
+-	gbe1_led1_pins: gbe1-led1-pins {
+-		mux {
+-			function = "led";
+-			groups = "gbe1_led1";
+-		};
+-	};
+-
+-	gbe2_led1_pins: gbe2-led1-pins {
+-		mux {
+-			function = "led";
+-			groups = "gbe2_led1";
+-		};
+-	};
+-
+-	gbe3_led1_pins: gbe3-led1-pins {
+-		mux {
+-			function = "led";
+-			groups = "gbe3_led1";
+-		};
+-	};
+-
+ 	i2p5gbe_led0_pins: 2p5gbe-led0-pins {
+ 		mux {
+ 			function = "led";
+@@ -333,13 +279,6 @@ mux {
+ 		};
+ 	};
+ 
+-	i2p5gbe_led1_pins: 2p5gbe-led1-pins {
+-		mux {
+-			function = "led";
+-			groups = "2p5gbe_led1";
+-		};
+-	};
+-
+ 	mmc0_pins_emmc_45: mmc0-emmc-45-pins {
+ 		mux {
+ 			function = "flash";
+@@ -361,40 +300,12 @@ mux {
+ 		};
+ 	};
+ 
+-	snfi_pins: snfi-pins {
+-		mux {
+-			function = "flash";
+-			groups = "snfi";
+-		};
+-	};
+-
+-	spi0_pins: spi0-pins {
+-		mux {
+-			function = "spi";
+-			groups = "spi0";
+-		};
+-	};
+-
+ 	spi0_flash_pins: spi0-flash-pins {
+ 		mux {
+ 			function = "spi";
+ 			groups = "spi0", "spi0_wp_hold";
+ 		};
+ 	};
+-
+-	spi2_pins: spi2-pins {
+-		mux {
+-			function = "spi";
+-			groups = "spi2";
+-		};
+-	};
+-
+-	spi2_flash_pins: spi2-flash-pins {
+-		mux {
+-			function = "spi";
+-			groups = "spi2", "spi2_wp_hold";
+-		};
+-	};
+ };
+ 
+ &pwm {
 -- 
 2.43.0
 
