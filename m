@@ -1,37 +1,37 @@
-Received: from mxout2.routing.net (mxout2.routing.net [134.0.28.12])
+Received: from mxout1.routing.net (mxout1.routing.net [134.0.28.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6ADBF2264BC;
-	Sat, 28 Jun 2025 09:11:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E5F618FDA5;
+	Sat, 28 Jun 2025 09:17:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751101865; cv=none; b=DlCd/1V6jePzoPpI5YOfsKYN4VqAprV5kIA46CETpo7JqBUTUJlYAnh0qfdJ9eXGiqVWiZvFjzMHa/ezoaCZrx4Wv+F/Z3zjzKJ2t+OL6jlDINuiZK2zz2iRHVUw1TFf1dVfNF00J4ySh+lxMUjmjiqKRXsNsaTn1vyQ/t5yesM=
+	t=1751102238; cv=none; b=Pq2mALwmujWlaqdCxbkq2FavqA7TbZ9oBTClswFm4GlhMdPv2K7g5u6p12duo/gEEo9jNQX2zB87yXDYLh5qB/G28wd0jjDLZ72onuNxGLAZzRTAV7P8TUV8CsBw+iwZQfNTusY/8YZgraQhvTsKOryHVG76TknlpE7DE2FmLGM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751101865; c=relaxed/simple;
-	bh=oEHCeCyYmhRvcoDsSzTQBlneOLnSQNdeNvfMRFj69TE=;
+	s=arc-20240116; t=1751102238; c=relaxed/simple;
+	bh=JgZ1cPMKbEPkJlrteoo8n9KC9VeiMg4oo1zrlG+bnQQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=g6QC45PfUDE/XJrOCfMGocKYYaEFWvIaOk//XoCIWrxiXLpPAQTeQUTzq/w5BD0QJz7azrWEH02s/Ku4kF6KWUHid94Yrbn9c/tMl3cI5adL55PuxNKpNrMq4iq2mo/7nOR0CwWxerjLIiATaS+pQJokSQSliQRBmokzyZ4GTgI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=NA+1GxSS; arc=none smtp.client-ip=134.0.28.12
+	 MIME-Version; b=J6Cf0hl910MZ7ojN96eaNvfdsfulmLHyqcJTWqDjxypVS/hGuvl13yT3htnJdWkQarxVpACzjte4BRrLKysgEjzAO/BWiiJFG42r+iL52ulAhTmaXxTfJsTXvYSRdxIITpigdrN7grUOovDLQMMlur50VMVPyVPzrm3yKwgoGdQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=HhNXOnrx; arc=none smtp.client-ip=134.0.28.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="NA+1GxSS"
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="HhNXOnrx"
 Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout2.routing.net (Postfix) with ESMTP id B2F2860276;
-	Sat, 28 Jun 2025 09:10:54 +0000 (UTC)
+	by mxout1.routing.net (Postfix) with ESMTP id 039E141B98;
+	Sat, 28 Jun 2025 09:10:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=20200217; t=1751101854;
+	s=20200217; t=1751101852;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=zCArQQjnZOoBXdfm7YKc01KniAiMbD7wl2wyNkiAMyg=;
-	b=NA+1GxSSDuEqbCyzF2WJa3x7c+Oq77hshvVwamfGDOOsLiaffWi0pdETpcdH5yz+ztlFxs
-	/f2d7Tcy5sZqIHnFbi1cNYFXOp9YrGmpiTn9C9qWFOa2FrUZl7lVgn4mM2t/86dTexB/VD
-	vUhgt0WVFxupAoJgw832fJjt4dGA1D8=
+	bh=R99PFLgv7EGPI4uV/VSEzfV0kYW/ZQPDNvpGbpm2GOY=;
+	b=HhNXOnrxpy9EHODacj5PdX10JsTlN3CHjWtsocQwoAvlDUlfP8sPBXAoQgtCmo0RHN/g93
+	dNtIm1A5wvnvOaCIynf9mkqUXuCVHeWU+0Sx5VgbJEOR9CvFYYun3lztmV2VlzocyyLu9a
+	hUXB1b971w0HQ67OYToQsHj9zcPxc3Q=
 Received: from frank-u24.. (fttx-pool-217.61.150.139.bambit.de [217.61.150.139])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 5899212272D;
-	Sat, 28 Jun 2025 09:10:54 +0000 (UTC)
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 958321226F5;
+	Sat, 28 Jun 2025 09:10:51 +0000 (UTC)
 From: Frank Wunderlich <linux@fw-web.de>
 To: MyungJoo Ham <myungjoo.ham@samsung.com>,
 	Kyungmin Park <kyungmin.park@samsung.com>,
@@ -63,9 +63,9 @@ Cc: Frank Wunderlich <frank-w@public-files.de>,
 	netdev@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v6 11/15] arm64: dts: mediatek: mt7988a-bpi-r4: drop unused pins
-Date: Sat, 28 Jun 2025 11:10:35 +0200
-Message-ID: <20250628091043.57645-12-linux@fw-web.de>
+Subject: [PATCH v6 04/15] dt-bindings: net: dsa: mediatek,mt7530: add dsa-port definition for mt7988
+Date: Sat, 28 Jun 2025 11:10:28 +0200
+Message-ID: <20250628091043.57645-5-linux@fw-web.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250628091043.57645-1-linux@fw-web.de>
 References: <20250628091043.57645-1-linux@fw-web.de>
@@ -79,149 +79,48 @@ Content-Transfer-Encoding: 8bit
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-Pins were moved from SoC dtsi to Board level dtsi without cleaning up
-to needed ones. Drop the unused pins now.
+Add own dsa-port binding for SoC with internal switch where only phy-mode
+'internal' is valid.
 
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- .../dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi | 89 -------------------
- 1 file changed, 89 deletions(-)
+ .../bindings/net/dsa/mediatek,mt7530.yaml          | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
-index afa9e3b2b16a..30affedf84d4 100644
---- a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
-@@ -223,18 +223,6 @@ &pcie3 {
- };
+diff --git a/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml b/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
+index 51205f9f2985..9b983fdbf3c7 100644
+--- a/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
++++ b/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
+@@ -190,6 +190,18 @@ required:
+   - reg
  
- &pio {
--	mdio0_pins: mdio0-pins {
--		mux {
--			function = "eth";
--			groups = "mdc_mdio0";
--		};
--
--		conf {
--			pins = "SMI_0_MDC", "SMI_0_MDIO";
--			drive-strength = <8>;
--		};
--	};
--
- 	i2c0_pins: i2c0-g0-pins {
- 		mux {
- 			function = "i2c";
-@@ -249,20 +237,6 @@ mux {
- 		};
- 	};
- 
--	i2c1_sfp_pins: i2c1-sfp-g0-pins {
--		mux {
--			function = "i2c";
--			groups = "i2c1_sfp";
--		};
--	};
--
--	i2c2_0_pins: i2c2-g0-pins {
--		mux {
--			function = "i2c";
--			groups = "i2c2_0";
--		};
--	};
--
- 	i2c2_1_pins: i2c2-g1-pins {
- 		mux {
- 			function = "i2c";
-@@ -298,34 +272,6 @@ mux {
- 		};
- 	};
- 
--	gbe0_led1_pins: gbe0-led1-pins {
--		mux {
--			function = "led";
--			groups = "gbe0_led1";
--		};
--	};
--
--	gbe1_led1_pins: gbe1-led1-pins {
--		mux {
--			function = "led";
--			groups = "gbe1_led1";
--		};
--	};
--
--	gbe2_led1_pins: gbe2-led1-pins {
--		mux {
--			function = "led";
--			groups = "gbe2_led1";
--		};
--	};
--
--	gbe3_led1_pins: gbe3-led1-pins {
--		mux {
--			function = "led";
--			groups = "gbe3_led1";
--		};
--	};
--
- 	i2p5gbe_led0_pins: 2p5gbe-led0-pins {
- 		mux {
- 			function = "led";
-@@ -333,13 +279,6 @@ mux {
- 		};
- 	};
- 
--	i2p5gbe_led1_pins: 2p5gbe-led1-pins {
--		mux {
--			function = "led";
--			groups = "2p5gbe_led1";
--		};
--	};
--
- 	mmc0_pins_emmc_45: mmc0-emmc-45-pins {
- 		mux {
- 			function = "flash";
-@@ -361,40 +300,12 @@ mux {
- 		};
- 	};
- 
--	snfi_pins: snfi-pins {
--		mux {
--			function = "flash";
--			groups = "snfi";
--		};
--	};
--
--	spi0_pins: spi0-pins {
--		mux {
--			function = "spi";
--			groups = "spi0";
--		};
--	};
--
- 	spi0_flash_pins: spi0-flash-pins {
- 		mux {
- 			function = "spi";
- 			groups = "spi0", "spi0_wp_hold";
- 		};
- 	};
--
--	spi2_pins: spi2-pins {
--		mux {
--			function = "spi";
--			groups = "spi2";
--		};
--	};
--
--	spi2_flash_pins: spi2-flash-pins {
--		mux {
--			function = "spi";
--			groups = "spi2", "spi2_wp_hold";
--		};
--	};
- };
- 
- &pwm {
+ $defs:
++  builtin-dsa-port:
++    patternProperties:
++      "^(ethernet-)?ports$":
++        patternProperties:
++          "^(ethernet-)?port@[0-6]$":
++            if:
++              required: [ ethernet ]
++            then:
++              properties:
++                phy-mode:
++                  const: internal
++
+   mt7530-dsa-port:
+     patternProperties:
+       "^(ethernet-)?ports$":
+@@ -297,7 +309,7 @@ allOf:
+             - airoha,en7581-switch
+             - airoha,an7583-switch
+     then:
+-      $ref: "#/$defs/mt7530-dsa-port"
++      $ref: "#/$defs/builtin-dsa-port"
+       properties:
+         gpio-controller: false
+         mediatek,mcm: false
 -- 
 2.43.0
 
