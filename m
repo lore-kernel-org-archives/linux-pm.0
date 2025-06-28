@@ -1,33 +1,34 @@
 Received: from forward101a.mail.yandex.net (forward101a.mail.yandex.net [178.154.239.84])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9643198A09;
-	Sat, 28 Jun 2025 04:10:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8182D198A09;
+	Sat, 28 Jun 2025 04:10:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.84
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751083827; cv=none; b=drxVzr38LMgs8TW5mAurKbJnFIcEoe/RrTgqP7Fstnpo83q32FSO28X2iU+E4iCrrA5ImvRbzoaFG/eIeiuSvz6OXdk3n7lKb/pf9q8ZG21yY/BoSDCbosJ9VF2tNHffidpHx5RhLbzOO+02pXH2bFHPgkW3XGzP+P1pYRtGop4=
+	t=1751083834; cv=none; b=oPJznQIh9HvLhxcVzKn58dQQSkS0Y/dT+x20VUrsERZWKoPIbg1wMKxSCNVczvQk7Lrfh+INtsUMYnEFuayqDPdX4e7SlDOGlzAHMBrpXdb09GJx1Y4Cdahx3qSODoFOG5C3NxksNr4/x2RDuUYtTxwrjHlqIoQb40MQSpRMa5g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751083827; c=relaxed/simple;
-	bh=W15WxcBu1Leih0HLUaMwgxmTlMpK5/pvdo3CF6H9c2A=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=m2oNJEKIHgm1Owe3oT/+9JSKia8r9Um5vPmBm5IP+dt1lqgcMxvzp5Q4ii3ZO3efCxYRwx1UWkoOcZqx7ZjBCEL0ffq2hGdzFOegRBr/cevqv2xWCmCVYqZiox8fg/YhIMOmujAV3VSLHpF+RSOgFw9aup9tOWvZVHb1NSQIDqw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev; spf=pass smtp.mailfrom=onurozkan.dev; dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b=ppysf/M9; arc=none smtp.client-ip=178.154.239.84
+	s=arc-20240116; t=1751083834; c=relaxed/simple;
+	bh=MHf2LFg84werqxYDZJfhmApfMPTrh5lfupXyN5hzHB8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=OlLQssDJ9HrJzHp5X0oUriEO7OIwoRrGr7GPd+Z2FafI45kImzxI0otDGnBv/gTr8o5Rd8cTHk2IpZycBVVj4EYIcmEX/GLTB2qxCVpmD7nEtbC237+/KOX5vH9jqXk8ac89hG5KjqmgtUvYVZIYvDY+xF9ItajN4xEUCmKGqdI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev; spf=pass smtp.mailfrom=onurozkan.dev; dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b=GHbUrAZG; arc=none smtp.client-ip=178.154.239.84
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=onurozkan.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b="ppysf/M9"
+	dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b="GHbUrAZG"
 Received: from mail-nwsmtp-smtp-production-main-84.vla.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-84.vla.yp-c.yandex.net [IPv6:2a02:6b8:c1f:623d:0:640:ecee:0])
-	by forward101a.mail.yandex.net (Yandex) with ESMTPS id 6D30A60A75;
-	Sat, 28 Jun 2025 07:10:17 +0300 (MSK)
-Received: by mail-nwsmtp-smtp-production-main-84.vla.yp-c.yandex.net (smtp/Yandex) with ESMTPSA id w9OeTYGL2iE0-wkCFADBG;
-	Sat, 28 Jun 2025 07:10:15 +0300
+	by forward101a.mail.yandex.net (Yandex) with ESMTPS id B848360A75;
+	Sat, 28 Jun 2025 07:10:29 +0300 (MSK)
+Received: by mail-nwsmtp-smtp-production-main-84.vla.yp-c.yandex.net (smtp/Yandex) with ESMTPSA id w9OeTYGL2iE0-wEEruX1y;
+	Sat, 28 Jun 2025 07:10:29 +0300
 X-Yandex-Fwd: 1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=onurozkan.dev;
-	s=mail; t=1751083816;
-	bh=LIANWbwXoHTm5UELKt2HfrArvsZZLzkN8O1bfaimzTo=;
-	h=Message-ID:Date:Cc:Subject:To:From;
-	b=ppysf/M9yRMHt7PJWMvunNhEFc3jDKIon+AI6fMpspyjMwruGqFFzHVq6WfcgEayb
-	 Woyv+EC34ptpE4cA9NY3pO3L+IKmngs//3joY5jrNTM5fOXPnyWHnznnb/HQK2xDBO
-	 FFo5AaQ3AnrceMKg5TF6kGJIT6BswhSXfjPZhD4A=
+	s=mail; t=1751083829;
+	bh=MHf2LFg84werqxYDZJfhmApfMPTrh5lfupXyN5hzHB8=;
+	h=Cc:Message-ID:References:Date:In-Reply-To:Subject:To:From;
+	b=GHbUrAZGDm9qgkioODj+bY6jK80Gh5LgMq0CoOURuNdnzkzoty9FJhBluy56alMFo
+	 re2yi/QbQYkk1XhDNoZJ6SoY9EZIPjoJCPSM6fArN7R0FdxEkqyNkHyNnlLLe4mA7z
+	 XCHvLJriBg2BFre9gzd79EFZ4IZfNu1VE+LIqSYY=
 Authentication-Results: mail-nwsmtp-smtp-production-main-84.vla.yp-c.yandex.net; dkim=pass header.i=@onurozkan.dev
 From: =?UTF-8?q?Onur=20=C3=96zkan?= <work@onurozkan.dev>
 To: rust-for-linux@vger.kernel.org,
@@ -55,10 +56,12 @@ Cc: airlied@gmail.com,
 	davidgow@google.com,
 	nm@ti.com,
 	=?UTF-8?q?Onur=20=C3=96zkan?= <work@onurozkan.dev>
-Subject: [PATCH v3 0/3] replace `allow(...)` lints with `expect(...)`
-Date: Sat, 28 Jun 2025 07:09:53 +0300
-Message-ID: <20250628040956.2181-1-work@onurozkan.dev>
+Subject: [PATCH v3 3/3] rust: remove `#[allow(clippy::non_send_fields_in_send_ty)]`
+Date: Sat, 28 Jun 2025 07:09:56 +0300
+Message-ID: <20250628040956.2181-4-work@onurozkan.dev>
 X-Mailer: git-send-email 2.50.0
+In-Reply-To: <20250628040956.2181-1-work@onurozkan.dev>
+References: <20250628040956.2181-1-work@onurozkan.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -68,30 +71,25 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Changes in v3:
-  - `#![expect(internal_features)]` is reverted from
-  `rust/compiler_builtins.rs` which was done in the
-  first 2 versions.
+Clippy no longer complains about this lint.
 
-Onur Özkan (3):
-  replace `#[allow(...)]` with `#[expect(...)]`
-  rust: remove `#[allow(clippy::unnecessary_cast)]`
-  rust: remove `#[allow(clippy::non_send_fields_in_send_ty)]`
+Signed-off-by: Onur Özkan <work@onurozkan.dev>
+---
+ rust/kernel/cpufreq.rs | 1 -
+ 1 file changed, 1 deletion(-)
 
- drivers/gpu/nova-core/regs.rs       | 2 +-
- rust/kernel/alloc/allocator_test.rs | 2 +-
- rust/kernel/cpufreq.rs              | 1 -
- rust/kernel/devres.rs               | 2 +-
- rust/kernel/driver.rs               | 2 +-
- rust/kernel/drm/ioctl.rs            | 8 ++++----
- rust/kernel/error.rs                | 3 +--
- rust/kernel/init.rs                 | 6 +++---
- rust/kernel/kunit.rs                | 2 +-
- rust/kernel/opp.rs                  | 4 ++--
- rust/kernel/types.rs                | 2 +-
- rust/macros/helpers.rs              | 2 +-
- 12 files changed, 17 insertions(+), 19 deletions(-)
+diff --git a/rust/kernel/cpufreq.rs b/rust/kernel/cpufreq.rs
+index 11b03e9d7e89..97de9b0573da 100644
+--- a/rust/kernel/cpufreq.rs
++++ b/rust/kernel/cpufreq.rs
+@@ -907,7 +907,6 @@ fn register_em(_policy: &mut Policy) {
+ /// or CPUs, so it is safe to share it.
+ unsafe impl<T: Driver> Sync for Registration<T> {}
 
+-#[allow(clippy::non_send_fields_in_send_ty)]
+ /// SAFETY: Registration with and unregistration from the cpufreq subsystem can happen from any
+ /// thread.
+ unsafe impl<T: Driver> Send for Registration<T> {}
 --
 2.50.0
 
