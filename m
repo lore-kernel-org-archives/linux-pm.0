@@ -1,35 +1,34 @@
-Received: from mx4.wp.pl (mx4.wp.pl [212.77.101.11])
+Received: from mx3.wp.pl (mx3.wp.pl [212.77.101.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9CC5B227E9B
-	for <linux-pm@vger.kernel.org>; Sat, 28 Jun 2025 22:38:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.77.101.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 856BE15A856
+	for <linux-pm@vger.kernel.org>; Sat, 28 Jun 2025 22:45:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.77.101.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751150339; cv=none; b=UV/o4T59VDbYL2VorAZVYrgBPykz6zBGOtn1xp2c10HuALq8c/73HD58c4jCjMbYe4fL95AJsA7Au0b96Y6fnp2cuxFH1uqR0u4Zi68UjfXZ8DsAq6zYfbxjoFUVcyQZoTetXMCcyNoQXMxYOlVtTDF+/m4QOd+nMfRD/8qDgc4=
+	t=1751150724; cv=none; b=cIHKt+P0d2a4vfcFswEDGMtt1+4Y/1yKBcTqRbslaiBFxgEZFkcI6zTfyUInqJmYcCnqzEX/cQFNPdoct1Zm2ZGSuAH49SpHcOssR7dKnnkPqDeeqCswDRjxmPyQGtTg8G9u7A4xMgThzTIBJ3bF/ObvRqCOI8wK5Qxb2W4MgO8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751150339; c=relaxed/simple;
-	bh=DgGr4XC6BtQAmRfjLMb66i8MKOj0SqYngC4BMS74CPs=;
-	h=From:To:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=lWBLC2FR/kNl/G4m6t4SQ4acs8seSXu+x8T2MfHGdIdd572X7HcASEHVNC03G9RDbllIIExEHmdUAoYH2b2rh5HEafc9pLZechY0agTiYnDX94pRo1HsK5zHxjIkGFt5LM3jMMBkBd34Pr9SZipKFznYwzw99cIBtSzmNTZE9Jo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=wp.pl; spf=pass smtp.mailfrom=wp.pl; dkim=pass (2048-bit key) header.d=wp.pl header.i=@wp.pl header.b=DA4EkO1k; arc=none smtp.client-ip=212.77.101.11
+	s=arc-20240116; t=1751150724; c=relaxed/simple;
+	bh=7G0+FpKbZ9GaPLV5BcrFUCj+7GnonYzZAuHe72qYZkI=;
+	h=From:To:Subject:Date:Message-Id:MIME-Version; b=MoECh5IyW4yFt4LXx6Sdl65Gu1sNgg9qXYU3un5cMVWgZSEzCNFh++xb16xp8ta84ZAbaLudq5V70a0u0yOVGL1LXrzW/1wIDy39oUqqRjJj9LBZjFhV/Zq3N9SruHyFMTMjXQ0GI2lKdALd7Em39R7FiPeZ4rst3cKEDZuSDxw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=wp.pl; spf=pass smtp.mailfrom=wp.pl; dkim=pass (2048-bit key) header.d=wp.pl header.i=@wp.pl header.b=K/FNRWU7; arc=none smtp.client-ip=212.77.101.10
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=wp.pl
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wp.pl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=wp.pl header.i=@wp.pl header.b="DA4EkO1k"
-Received: (wp-smtpd smtp.wp.pl 31775 invoked from network); 29 Jun 2025 00:38:50 +0200
+	dkim=pass (2048-bit key) header.d=wp.pl header.i=@wp.pl header.b="K/FNRWU7"
+Received: (wp-smtpd smtp.wp.pl 29690 invoked from network); 29 Jun 2025 00:38:39 +0200
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wp.pl; s=20241105;
-          t=1751150330; bh=PLFZP/c9fNvh8aFmRu8dwrDO4a59iqD2hrb5gF14geE=;
+          t=1751150319; bh=1Kv/5FIXJr4w7f7JBuDHHoZ7UQF55jJFpe21AqRti80=;
           h=From:To:Subject;
-          b=DA4EkO1km60TxTqeraujBDCqDogUVqwBDW2gBzfS1/Ql17TfWYvX3NRrSTg632jPr
-           KRonXKDXCv7MhYi0BwjNpjoSs4DumxQV1TglAgLsh5xFARZbFkEiGrOPvxsCjN0cd1
-           D3jBp++nicZwmEJdUarKweJAw8vq4MtasIy4WUMA3pqqFdADD3be4nmj7RBW0KEof7
-           iQ27EiYbdton953KwsGw2UHMQx0KNueCnN0aNcXxCUJyChlEhSK1B7PiMovmbHVipL
-           xKsOb3ULAMmc2szMwdNtvPxZBs2M3VVp1aU+kmDCKJiKQC0HEjND19uE9dh65AfNkB
-           hKD3oZItvq5hA==
+          b=K/FNRWU7zM9HVqBDxaqZKuZqrcf8NBx4gZQKCR1NaMbM3e8LVAYyZcT8SbFdmVOAF
+           3MfJFhwI2Q6hQRIf43qP2SiZfhebNSe1BVjg8rW8v9NfsBmnnOK8MtoevrRM4Iff3E
+           WJNIPjumyEPJ26UbmwVhk9tjQBUw+OW6vbE3lXxwzWynH9wuygI7DelNq7lmTraXVI
+           HMJ4B0rwju5WHn41jls9oaPfv78qeVbfXokqCs85ufqLZkwcTZ7lxLQbE/2CT5lSa9
+           9OZvSEkdqvI3YMiFDMYn2CN7g9xkTCgOH4Xqw+nR0U6Jb7CYNOeb+sqtwarsWD1yky
+           3C9s35tSRffeg==
 Received: from 83.24.145.121.ipv4.supernova.orange.pl (HELO laptop-olek.lan) (olek2@wp.pl@[83.24.145.121])
           (envelope-sender <olek2@wp.pl>)
           by smtp.wp.pl (WP-SMTPD) with ECDHE-RSA-AES256-GCM-SHA384 encrypted SMTP
-          for <rafael@kernel.org>; 29 Jun 2025 00:38:50 +0200
+          for <rafael@kernel.org>; 29 Jun 2025 00:38:39 +0200
 From: Aleksander Jan Bajkowski <olek2@wp.pl>
 To: rafael@kernel.org,
 	daniel.lezcano@linaro.org,
@@ -52,12 +51,10 @@ To: rafael@kernel.org,
 	linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH 3/3] dt-bindings: iio: adc: Add support for MT7981
-Date: Sun, 29 Jun 2025 00:38:37 +0200
-Message-Id: <20250628223837.848244-4-olek2@wp.pl>
+Subject: [PATCH 0/3] Add thermal sensors support for MT7981
+Date: Sun, 29 Jun 2025 00:38:34 +0200
+Message-Id: <20250628223837.848244-1-olek2@wp.pl>
 X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250628223837.848244-1-olek2@wp.pl>
-References: <20250628223837.848244-1-olek2@wp.pl>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -65,30 +62,23 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-WP-MailID: e666d4a039fb80211d7087c5597d3d6c
+X-WP-MailID: b810258631e11cb24906138186427c35
 X-WP-AV: skaner antywirusowy Poczty Wirtualnej Polski
-X-WP-SPAM: NO 0000000 [IZMh]                               
+X-WP-SPAM: NO 000000A [4TMU]                               
 
-The temperature sensor in the MT7981 is same as in the MT7986.
-Add compatible string for mt7981.
+This patch adds support for the temperature sensor in the MT7981 SoC.
+This sensor is exactly the same as the one in the MT7986.
 
-Signed-off-by: Aleksander Jan Bajkowski <olek2@wp.pl>
----
- .../devicetree/bindings/iio/adc/mediatek,mt2701-auxadc.yaml      | 1 +
- 1 file changed, 1 insertion(+)
+Aleksander Jan Bajkowski (3):
+  arm64: dts: mediatek: add thermal sensor support on mt7981
+  thermal/drivers/mediatek: Add support for MT7981 SoC
+  dt-bindings: iio: adc: Add support for MT7981
 
-diff --git a/Documentation/devicetree/bindings/iio/adc/mediatek,mt2701-auxadc.yaml b/Documentation/devicetree/bindings/iio/adc/mediatek,mt2701-auxadc.yaml
-index b489c984c1bb..ceb914dde15b 100644
---- a/Documentation/devicetree/bindings/iio/adc/mediatek,mt2701-auxadc.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/mediatek,mt2701-auxadc.yaml
-@@ -26,6 +26,7 @@ properties:
-           - mediatek,mt2712-auxadc
-           - mediatek,mt6765-auxadc
-           - mediatek,mt7622-auxadc
-+          - mediatek,mt7981-auxadc
-           - mediatek,mt7986-auxadc
-           - mediatek,mt8173-auxadc
-       - items:
+ .../iio/adc/mediatek,mt2701-auxadc.yaml       |  1 +
+ arch/arm64/boot/dts/mediatek/mt7981b.dtsi     | 29 ++++++++++++++++++-
+ drivers/thermal/mediatek/auxadc_thermal.c     |  4 +++
+ 3 files changed, 33 insertions(+), 1 deletion(-)
+
 -- 
 2.39.5
 
