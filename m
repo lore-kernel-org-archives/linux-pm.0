@@ -1,112 +1,194 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mxout1.routing.net (mxout1.routing.net [134.0.28.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0EAFE1FBC91;
-	Sat, 28 Jun 2025 16:31:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 962981581F8;
+	Sat, 28 Jun 2025 16:55:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751128290; cv=none; b=pr01PVPTSHTCBt2jf6lX0J65fsenBWujCNNue20F0PmOZICJfXkFFg9knj92X6zDAafrMSOf3XoKM2PDazOih37dRdPr7ZC4sPgRM+mU7X5SSK914i+y4B1ds7+gONDaGemG1d54naVry+MrIg9NzkC2pRa9X7PCtMPauGpuaJM=
+	t=1751129707; cv=none; b=NQwKqu7XgIHnDqQiknqEBzEE51abTR6yhYoaFhCBmaP8siaDTn3U0HCVw8/Zeu3pRlaL4NNcHMIne2CbWjD6cXYq0m+82QYWPXP6UQSsd5tZJEHLVMk/BMDj1VxyJDX1KpNQy4HI1R9So+OMKKWgI49qGhNDxFBv0O7xS+s7Nuc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751128290; c=relaxed/simple;
-	bh=ysZnhmJGpruuPPRq6A2SjBxDODaSwvv2FXxAy1Z+NAw=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=JOA7oGGwB2aC+X81oeXVdQfFUc3s7Z0mB1RRtEbv1HqtQ8VK3pgKHcLz1fHKDRPegMi/EtpQ5irUiIYqhalOQaRqFsGQCDtu8B7XHv0Fh/WwhfX5H/spCuw8XxGp1QxAqF891Y53T+HM5zHxbXQv2dQ2jkXVOl+SNqx9kvW1URk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=tQLRPRhw; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1751129707; c=relaxed/simple;
+	bh=HAhzoKN7G1KtoPciI/+zmlcllV2W45PghPH0il3DhXQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=QR6djTOk8QYgCVSbjIN3HaLt/9pH5qPWchUo6jueGk0VeZPWw/9l5Y5HmM4WpY+sifADgrxS9Oj4bmSfOReBJ0VWZ/K6oSfIOHg2jWzpPTo+yCokThlWa0SsAT4LLyrxgeMpI8Da0pMhXcqLTrP4eIqEjVdaSe9VhCla5i3uW28=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=jIgqKts/; arc=none smtp.client-ip=134.0.28.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="tQLRPRhw"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3B22FC4CEEA;
-	Sat, 28 Jun 2025 16:31:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1751128289;
-	bh=ysZnhmJGpruuPPRq6A2SjBxDODaSwvv2FXxAy1Z+NAw=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=tQLRPRhw66r3jlKJvSsokpA4kp2y7IfYSnOzLuHFlNANWAlwbsQKroxvqexfBCtBT
-	 ibCgevepYqNNLNmW+b2sHYFpjTzJrmi1/EE6mHmgURM78btgzKj0RPx/P7SiXFQGoP
-	 8r79mIpKkjRINMdE9p8XvawckltNbQwre6ka0DlFEJA6nm5yQdRpcZfDdLHkI01hC3
-	 zB37K3GcFxk/xjQYjuiRVn6U7nnJwraiWyV2ZlqKucdanxoovTqdr7W5DokKX0VB4Q
-	 Vqb22IaqoYwQttdDphBj9SOG+Fk11E4AV3YYnxtJWiZU3OFioexl9vp6reRWFlRSpm
-	 TEOPM9ofze1AA==
-Date: Sat, 28 Jun 2025 17:31:12 +0100
-From: Jonathan Cameron <jic23@kernel.org>
-To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-Cc: robh@kernel.org, krzysztof.kozlowski@linaro.org, krzk+dt@kernel.org,
- conor+dt@kernel.org, agross@kernel.org, andersson@kernel.org,
- lumag@kernel.org, dmitry.baryshkov@oss.qualcomm.com,
- konradybcio@kernel.org, daniel.lezcano@linaro.org, sboyd@kernel.org,
- amitk@kernel.org, thara.gopinath@gmail.com, lee@kernel.org,
- rafael@kernel.org, subbaraman.narayanamurthy@oss.qualcomm.com,
- david.collins@oss.qualcomm.com, anjelique.melendez@oss.qualcomm.com,
- quic_kamalw@quicinc.com, rui.zhang@intel.com, lukasz.luba@arm.com,
- devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
- linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, cros-qcom-dts-watchers@chromium.org,
- quic_skakitap@quicinc.com, neil.armstrong@linaro.org,
- stephan.gerhold@linaro.org
-Subject: Re: [PATCH V6 4/5] iio: adc: Add support for QCOM PMIC5 Gen3 ADC
-Message-ID: <20250628173112.63d9334e@jic23-huawei>
-In-Reply-To: <ff19780e-5bbd-4074-9db3-b4f27922a093@oss.qualcomm.com>
-References: <20250509110959.3384306-1-jishnu.prakash@oss.qualcomm.com>
-	<20250509110959.3384306-5-jishnu.prakash@oss.qualcomm.com>
-	<20250511140418.33171ca3@jic23-huawei>
-	<ff19780e-5bbd-4074-9db3-b4f27922a093@oss.qualcomm.com>
-X-Mailer: Claws Mail 4.3.0 (GTK 3.24.48; x86_64-pc-linux-gnu)
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="jIgqKts/"
+Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
+	by mxout1.routing.net (Postfix) with ESMTP id C82DF3FF6D;
+	Sat, 28 Jun 2025 16:55:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
+	s=20200217; t=1751129703;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Ur7OEb8O6wWAj2JmAIuRdccr+v8pY9TEOfH19t452AE=;
+	b=jIgqKts/5yQVynjSem4QnjH1n4RBm5aaTfnElAcrXqopRAe+28xAL0q1+La+24PHbx4dwM
+	Jk0v8GT2xKECfxeRKztZ1PlUn7F3zILjxwcNhOu5m0PJEsCoUU9WqPjFqTtJE1xgkQT6xy
+	TcgaaP5f6KctosGot9naubNeIgUEI98=
+Received: from frank-u24.. (fttx-pool-217.61.150.139.bambit.de [217.61.150.139])
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 6B8D512272D;
+	Sat, 28 Jun 2025 16:55:02 +0000 (UTC)
+From: Frank Wunderlich <linux@fw-web.de>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	Georgi Djakov <djakov@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Vladimir Oltean <olteanv@gmail.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Cc: Frank Wunderlich <frank-w@public-files.de>,
+	Johnson Wang <johnson.wang@mediatek.com>,
+	=?UTF-8?q?Ar=C4=B1n=C3=A7=20=C3=9CNAL?= <arinc.unal@arinc9.com>,
+	Landen Chao <Landen.Chao@mediatek.com>,
+	DENG Qingfang <dqfext@gmail.com>,
+	Sean Wang <sean.wang@mediatek.com>,
+	Daniel Golle <daniel@makrotopia.org>,
+	Lorenzo Bianconi <lorenzo@kernel.org>,
+	Felix Fietkau <nbd@nbd.name>,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-mediatek@lists.infradead.org
+Subject: [PATCH v7 01/14] dt-bindings: net: mediatek,net: allow irq names
+Date: Sat, 28 Jun 2025 18:54:36 +0200
+Message-ID: <20250628165451.85884-2-linux@fw-web.de>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250628165451.85884-1-linux@fw-web.de>
+References: <20250628165451.85884-1-linux@fw-web.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
+From: Frank Wunderlich <frank-w@public-files.de>
 
+In preparation for MT7988 and RSS/LRO allow the interrupt-names
+property. Also increase the maximum IRQ count to 8 (4 FE + 4 RSS),
+but set boundaries for all compatibles same as irq count.
 
-> >> +	.hw_settle_1 = (unsigned int [VADC_HW_SETTLE_SAMPLES_MAX])
-> >> +				{ 15, 100, 200, 300, 400, 500, 600, 700,
-> >> +				  1000, 2000, 4000, 8000, 16000, 32000,
-> >> +				  64000, 128000 },  
-> > Andy often points this out, but I'll do it this time. Fixed numbers (typically power of 2)
-> > elements per line make it much easier to see which element is which in these arrays.
-> > Reduce the indent a little to allow that here.  
-> 
-> Does this look fine?
-> 
-> 	.hw_settle_1 = (unsigned int [VADC_HW_SETTLE_SAMPLES_MAX])
-> 			  { 15, 100, 200, 300, 
-> 			    400, 500, 600, 700,
-> 			    1000, 2000, 4000, 8000,
-> 			    16000, 32000, 64000, 128000 },
-Look good.
+Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+---
+v7: fixed wrong rebase
+v6: new patch splitted from the mt7988 changes
+---
+ .../devicetree/bindings/net/mediatek,net.yaml | 38 ++++++++++++++++++-
+ 1 file changed, 37 insertions(+), 1 deletion(-)
 
-> >> +static int adc5_gen3_probe(struct platform_device *pdev)
-> >> +{  
-> >   
-> >> +
-> >> +	platform_set_drvdata(pdev, indio_dev);
-> >> +	init_completion(&adc->complete);
-> >> +	mutex_init(&adc->lock);  
-> > If spinning again for other reasons, in new code I have slight preference for
-> > 	ret = devm_mutex_init(&adc->lock);
-> > 	if (ret)
-> > 		return ret;
-> > 
-> > It was never worth bothering with release until we had devm managed form but
-> > now we do the code complexity cost is low enough to make it reasonable.
-> >   
-> >> +	indio_dev->name = pdev->name;  
-> > 
-> > Just to check.  Does that end up as a part number or similar?  
-> 
-> I printed this name and it appeared like this:
-> 
-> indio_dev->name: c426000.spmi:pmic@0:adc@9000
-> 
-> It only gets the DT node names, which are generic, there are 
-> no part numbers in this name.
-I thought it might be something along those lines.
+diff --git a/Documentation/devicetree/bindings/net/mediatek,net.yaml b/Documentation/devicetree/bindings/net/mediatek,net.yaml
+index 9e02fd80af83..6672db206b38 100644
+--- a/Documentation/devicetree/bindings/net/mediatek,net.yaml
++++ b/Documentation/devicetree/bindings/net/mediatek,net.yaml
+@@ -40,7 +40,19 @@ properties:
+ 
+   interrupts:
+     minItems: 1
+-    maxItems: 4
++    maxItems: 8
++
++  interrupt-names:
++    minItems: 1
++    items:
++      - const: fe0
++      - const: fe1
++      - const: fe2
++      - const: fe3
++      - const: pdma0
++      - const: pdma1
++      - const: pdma2
++      - const: pdma3
+ 
+   power-domains:
+     maxItems: 1
+@@ -135,6 +147,10 @@ allOf:
+           minItems: 3
+           maxItems: 3
+ 
++        interrupt-names:
++          minItems: 3
++          maxItems: 3
++
+         clocks:
+           minItems: 4
+           maxItems: 4
+@@ -166,6 +182,9 @@ allOf:
+         interrupts:
+           maxItems: 1
+ 
++        interrupt-namess:
++          maxItems: 1
++
+         clocks:
+           minItems: 2
+           maxItems: 2
+@@ -192,6 +211,10 @@ allOf:
+           minItems: 3
+           maxItems: 3
+ 
++        interrupt-names:
++          minItems: 3
++          maxItems: 3
++
+         clocks:
+           minItems: 11
+           maxItems: 11
+@@ -232,6 +255,10 @@ allOf:
+           minItems: 3
+           maxItems: 3
+ 
++        interrupt-names:
++          minItems: 3
++          maxItems: 3
++
+         clocks:
+           minItems: 17
+           maxItems: 17
+@@ -274,6 +301,9 @@ allOf:
+         interrupts:
+           minItems: 4
+ 
++        interrupt-names:
++          minItems: 4
++
+         clocks:
+           minItems: 15
+           maxItems: 15
+@@ -312,6 +342,9 @@ allOf:
+         interrupts:
+           minItems: 4
+ 
++        interrupt-names:
++          minItems: 4
++
+         clocks:
+           minItems: 15
+           maxItems: 15
+@@ -350,6 +383,9 @@ allOf:
+         interrupts:
+           minItems: 4
+ 
++        interrupt-names:
++          minItems: 4
++
+         clocks:
+           minItems: 24
+           maxItems: 24
+-- 
+2.43.0
 
-indio_dev->name should be the part number so hard code it rather than
-getting it from the pdev->name
-
-
-Jonathan
