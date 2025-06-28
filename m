@@ -1,37 +1,37 @@
 Received: from mxout2.routing.net (mxout2.routing.net [134.0.28.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25917225387;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 260B122D781;
 	Sat, 28 Jun 2025 09:18:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751102296; cv=none; b=n/SFA3QVOGceVJeiNfjTzpCKvM++rCWSCYSKnEN9SfgPz3LoWlqWOy9/GQDjmA4ID5lJwaeueLelOpVFDm6Zo6QcYP5Umm+0AiOWrg10tHapq5UE/Ao8Qj3H2R0+ZQWrXp/m4nJwvpDxCWR5E/3mwB2+gE6p16gJdp8LGzJINiM=
+	t=1751102297; cv=none; b=FsZFmE87yJhTlNHQf6X+WleutrdOM97YakKlgDQUhDOSwFqe07rxwYqyW5J2xEJQc5d5OLwBvae3gOoraFDdPTH8jBa0PHGAs76hlwaFDxAkKC4rDqdEPbX2QTlFwAkZnW4WkRe6cmHBr85FAdmZ+hE+ZG8Bc6vYhiAbagGfR7U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751102296; c=relaxed/simple;
-	bh=Hfaa0gy3uc6c4TBbK3YEGBZqHHPIma4PeUvbj0qjqyE=;
+	s=arc-20240116; t=1751102297; c=relaxed/simple;
+	bh=CXJdMVM7yfnfOWdD19oSNPqLnLxqQfuOKdmhOWln+X4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=r9sgDL4x8xSTI34hcxzQUk1TSf2JJl6ZxoA0u2wibd18ArLlg9HEkQwevi0wRIlgLm9BuzfB6MPeFolbYNEQi3ckx3XPQ5DwIHA3s6LD1W6iZmpIvUFvGD4NuCXdp/tTU82eciWkXD0SCSqdjXmFR/1BIZMDX8De/bIwWyOMD0A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=AjLz9Omz; arc=none smtp.client-ip=134.0.28.12
+	 MIME-Version; b=YGPgGOvKgX9bvq83yR1KxZML59xwakRQ9KzqE+yCKveFo4pHU9khoEvBkibQZCaZiyRbK9l6elliXTrcd4k/dvTpxhD9dAFhTJPr6kz8yD+3AJjaiKCBmyeBN+Y/Si0oiHaUMAu85JI+sK8ioUHy8zd7/xSUGZH2fGy5/5iSs4c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=OJl61i4w; arc=none smtp.client-ip=134.0.28.12
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="AjLz9Omz"
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="OJl61i4w"
 Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout2.routing.net (Postfix) with ESMTP id 920895FD7B;
-	Sat, 28 Jun 2025 09:10:51 +0000 (UTC)
+	by mxout2.routing.net (Postfix) with ESMTP id 26A2B601EA;
+	Sat, 28 Jun 2025 09:10:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=20200217; t=1751101851;
+	s=20200217; t=1751101853;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=DgeEoJwP1RRKkglcECdGpkEEfNbWqvY35txVx4ntqiU=;
-	b=AjLz9OmzYbggR4Ei1+YPIRF1/sNAVGGSlsI/4Z7ZjbytXLQ9j9wcZpPaQrcjjmARskZkHp
-	T17tmyPEjUCgU2g8LYa7l3TxXAJC0y2jpiska5emk0t0/2BbGdUlV/ZRTmPJz8anEqRC43
-	qsjNZkd+CitzoEwR8MRKESJdsfdm1PE=
+	bh=SHQ5vPeo13GqSQMpnsgrtHpzp9AC7Cqs5ZLxrZU37Ag=;
+	b=OJl61i4w2r/wDPM1tGfm8/8OPZ+kfX6xnX4H5olTFdvH1P56Bi3tvDF4wJXup6QWaBWYoJ
+	my4TlWMxW50bd1r4gfm7i06RMWk/hdCSUOPRrKziQw4NEfBWFeP1KnU/KK5E3oqgn6GxGU
+	kYylN55GWY0gOSJd++IxB3xapRESAhg=
 Received: from frank-u24.. (fttx-pool-217.61.150.139.bambit.de [217.61.150.139])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 3618212272D;
-	Sat, 28 Jun 2025 09:10:51 +0000 (UTC)
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id BFFF512272D;
+	Sat, 28 Jun 2025 09:10:52 +0000 (UTC)
 From: Frank Wunderlich <linux@fw-web.de>
 To: MyungJoo Ham <myungjoo.ham@samsung.com>,
 	Kyungmin Park <kyungmin.park@samsung.com>,
@@ -63,9 +63,9 @@ Cc: Frank Wunderlich <frank-w@public-files.de>,
 	netdev@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v6 03/15] dt-bindings: net: mediatek,net: update for mt7988
-Date: Sat, 28 Jun 2025 11:10:27 +0200
-Message-ID: <20250628091043.57645-4-linux@fw-web.de>
+Subject: [PATCH v6 07/15] arm64: dts: mediatek: mt7988: add cci node
+Date: Sat, 28 Jun 2025 11:10:31 +0200
+Message-ID: <20250628091043.57645-8-linux@fw-web.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250628091043.57645-1-linux@fw-web.de>
 References: <20250628091043.57645-1-linux@fw-web.de>
@@ -79,76 +79,90 @@ Content-Transfer-Encoding: 8bit
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-Update binding for mt7988 which has 3 gmac and a sram for dma
-operations.
+Add cci devicetree node for cpu frequency scaling.
 
-MT7988 has 4 FE IRQs (currently only 2 are used) and 4 IRQs for use
-with RSS/LRO later.
-
+Signed-off-by: Daniel Golle <daniel@makrotopia.org>
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
-v6:
-- split out the interrupt-names into separate patch
-- update irq(name) min count to 4
-- add sram-property
-- drop second reg entry and minitems as there is only 1 item left again
-
-v5:
-- fix v4 logmessage and change description a bit describing how i get
-  the irq count.
-- update binding for 8 irqs with different names (rx,tx => fe0..fe3)
-  including the 2 reserved irqs which can be used later
-- change rx-ringX to pdmaX to be closer to hardware documentation
-
-v4:
-- increase max interrupts to 6 because of adding RSS/LRO interrupts (4)
-  and dropping 2 reserved irqs (0+3) around rx+tx
-- dropped Robs RB due to this change
-- allow interrupt names
-- add interrupt-names without reserved IRQs on mt7988
-  this requires mtk driver patch:
-  https://patchwork.kernel.org/project/netdevbpf/patch/20250616080738.117993-2-linux@fw-web.de/
-
-v2:
-- change reg to list of items
+v3:
+- add mt7988-cci compatible as suggested by angelo
 ---
- Documentation/devicetree/bindings/net/mediatek,net.yaml | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ arch/arm64/boot/dts/mediatek/mt7988a.dtsi | 33 +++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/net/mediatek,net.yaml b/Documentation/devicetree/bindings/net/mediatek,net.yaml
-index 6672db206b38..74a139000f60 100644
---- a/Documentation/devicetree/bindings/net/mediatek,net.yaml
-+++ b/Documentation/devicetree/bindings/net/mediatek,net.yaml
-@@ -28,7 +28,8 @@ properties:
-       - ralink,rt5350-eth
+diff --git a/arch/arm64/boot/dts/mediatek/mt7988a.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
+index c46b31f8d653..560ec86dbec0 100644
+--- a/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
+@@ -12,6 +12,35 @@ / {
+ 	#address-cells = <2>;
+ 	#size-cells = <2>;
  
-   reg:
--    maxItems: 1
-+    items:
-+      - description: Register for accessing the MACs.
- 
-   clocks:
-     minItems: 2
-@@ -66,6 +67,10 @@ properties:
-       - const: gmac
-       - const: ppe
- 
-+  sram:
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+    description: phandle to mmio SRAM
++	cci: cci {
++		compatible = "mediatek,mt7988-cci", "mediatek,mt8183-cci";
++		clocks = <&mcusys CLK_MCU_BUS_DIV_SEL>,
++			 <&topckgen CLK_TOP_XTAL>;
++		clock-names = "cci", "intermediate";
++		operating-points-v2 = <&cci_opp>;
++	};
 +
-   mediatek,ethsys:
-     $ref: /schemas/types.yaml#/definitions/phandle
-     description:
-@@ -418,7 +423,7 @@ allOf:
-             - const: xgp3
++	cci_opp: opp-table-cci {
++		compatible = "operating-points-v2";
++		opp-shared;
++		opp-480000000 {
++			opp-hz = /bits/ 64 <480000000>;
++			opp-microvolt = <850000>;
++		};
++		opp-660000000 {
++			opp-hz = /bits/ 64 <660000000>;
++			opp-microvolt = <850000>;
++		};
++		opp-900000000 {
++			opp-hz = /bits/ 64 <900000000>;
++			opp-microvolt = <850000>;
++		};
++		opp-1080000000 {
++			opp-hz = /bits/ 64 <1080000000>;
++			opp-microvolt = <900000>;
++		};
++	};
++
+ 	cpus {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+@@ -25,6 +54,7 @@ cpu0: cpu@0 {
+ 				 <&topckgen CLK_TOP_XTAL>;
+ 			clock-names = "cpu", "intermediate";
+ 			operating-points-v2 = <&cluster0_opp>;
++			mediatek,cci = <&cci>;
+ 		};
  
- patternProperties:
--  "^mac@[0-1]$":
-+  "^mac@[0-2]$":
-     type: object
-     unevaluatedProperties: false
-     allOf:
+ 		cpu1: cpu@1 {
+@@ -36,6 +66,7 @@ cpu1: cpu@1 {
+ 				 <&topckgen CLK_TOP_XTAL>;
+ 			clock-names = "cpu", "intermediate";
+ 			operating-points-v2 = <&cluster0_opp>;
++			mediatek,cci = <&cci>;
+ 		};
+ 
+ 		cpu2: cpu@2 {
+@@ -47,6 +78,7 @@ cpu2: cpu@2 {
+ 				 <&topckgen CLK_TOP_XTAL>;
+ 			clock-names = "cpu", "intermediate";
+ 			operating-points-v2 = <&cluster0_opp>;
++			mediatek,cci = <&cci>;
+ 		};
+ 
+ 		cpu3: cpu@3 {
+@@ -58,6 +90,7 @@ cpu3: cpu@3 {
+ 				 <&topckgen CLK_TOP_XTAL>;
+ 			clock-names = "cpu", "intermediate";
+ 			operating-points-v2 = <&cluster0_opp>;
++			mediatek,cci = <&cci>;
+ 		};
+ 
+ 		cluster0_opp: opp-table-0 {
 -- 
 2.43.0
 
