@@ -1,36 +1,36 @@
-Received: from forward500d.mail.yandex.net (forward500d.mail.yandex.net [178.154.239.208])
+Received: from forward500b.mail.yandex.net (forward500b.mail.yandex.net [178.154.239.144])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3970C1E32D6;
-	Sat, 28 Jun 2025 12:55:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.208
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E86C31D5147;
+	Sat, 28 Jun 2025 13:11:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.144
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751115352; cv=none; b=RPF15Z87HsviIqOkjPXhDDTH6VKM9m9f/ZMz2fjk0rYuOLYHIrwbdraJd1+xml3m+3YlUpv0GJeBePJ1MlIKLUrFjHbaSu3lwgnDnRxpChke4dsPQ+qnjg5UPX3CVHxn42OhKoUsGg6iicFY3sqCiOoCOaGGOlWAK9Dexn4Z7zM=
+	t=1751116300; cv=none; b=cEvs4JQMd7QcWLTH/1MjuPPaX2r9+p6fzenJjJS+u3MWjGmArwZt7RlaXXbi1aI+Dk5Qhi8Lf1ESAXcOQ5UbBa4K/uvMbRX/rzH7dj/IEE1aDoEpALAgfERneBrpYG9lw1yHGtu8AdXxVREayKhilUcR0VmkDjBW5FUDs6js8MM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751115352; c=relaxed/simple;
-	bh=S7++PTAr4xAkYMbCgcR89+yGuk3BpPCWsV/+d4CP3oM=;
+	s=arc-20240116; t=1751116300; c=relaxed/simple;
+	bh=6kZvgVMupLbitw2H5D7pjE1sklGrjkR/+x5bw4n7WvM=;
 	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Nc4IZIHFYmemK581LmI265LGQzOjU05eIdigeVZXtkYyNulAkHoQK4g07CzsJ83YguTC66tFnQgLCNwOmS44VH15+tiB1Y98IsR1uFj+Xr1sy58/zKf8/rMm4rvPk5Qz0cN4zExwuOWtFS7m39Tjgsi29j3bMmTA9lqpzMLMAHo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev; spf=pass smtp.mailfrom=onurozkan.dev; dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b=Rv9Y53q4; arc=none smtp.client-ip=178.154.239.208
+	 MIME-Version:Content-Type; b=tpB1f6eaGrOo5WHZL1iEFK59nsjfs4UvdqdASykD4/WRPqbBuGKwQhMGhy5BlWGosw4LZ1Bbhv9CiVaeWxRMBBbrGkbjjqbcSY4SgEABH+iuFVSwWqHPmsxePKLqHx3ieI50TvGSkPP/PRPTMgNNlGvoKCqsiB19rP3aCgCzmHo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev; spf=pass smtp.mailfrom=onurozkan.dev; dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b=G7+w4WaU; arc=none smtp.client-ip=178.154.239.144
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=onurozkan.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b="Rv9Y53q4"
-Received: from mail-nwsmtp-smtp-production-main-73.iva.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-73.iva.yp-c.yandex.net [IPv6:2a02:6b8:c0c:bca0:0:640:380a:0])
-	by forward500d.mail.yandex.net (Yandex) with ESMTPS id 58A7B6186F;
-	Sat, 28 Jun 2025 15:48:43 +0300 (MSK)
-Received: by mail-nwsmtp-smtp-production-main-73.iva.yp-c.yandex.net (smtp/Yandex) with ESMTPSA id bmWfNHHLlSw0-XeRbLXHj;
-	Sat, 28 Jun 2025 15:48:42 +0300
+	dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b="G7+w4WaU"
+Received: from mail-nwsmtp-smtp-production-main-87.sas.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-87.sas.yp-c.yandex.net [IPv6:2a02:6b8:c23:2ea3:0:640:da3e:0])
+	by forward500b.mail.yandex.net (Yandex) with ESMTPS id D29C8617DB;
+	Sat, 28 Jun 2025 16:11:26 +0300 (MSK)
+Received: by mail-nwsmtp-smtp-production-main-87.sas.yp-c.yandex.net (smtp/Yandex) with ESMTPSA id JBXavsRLuqM0-Q8zSRzbz;
+	Sat, 28 Jun 2025 16:11:25 +0300
 X-Yandex-Fwd: 1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=onurozkan.dev;
-	s=mail; t=1751114922;
-	bh=ET/LhC8QU7n+a3hSVOWcQEFar31KwcGnUYMpx7mD4JY=;
+	s=mail; t=1751116285;
+	bh=HzkPC5GsYJpkwV6UXiIKTgXXNu7YWQ9eeCJ+zRRh5uw=;
 	h=Cc:Message-ID:Subject:Date:References:To:From:In-Reply-To;
-	b=Rv9Y53q41/X4ucraT7PqIEN6T52TlIy8XH/+OGQzaNmNRU786Bf+1FVa/020sI15D
-	 14EbGI63y5peJj2y0CaM/gokUSC1Ouhz1H0fejxfK/09EL75jgHCH5xGbVgXNi1dWw
-	 4blxx8kcKKplcizUveC+JUbOMrpvNWRPI36Qb4YA=
-Authentication-Results: mail-nwsmtp-smtp-production-main-73.iva.yp-c.yandex.net; dkim=pass header.i=@onurozkan.dev
-Date: Sat, 28 Jun 2025 15:48:35 +0300
+	b=G7+w4WaULXDt7zxL4Yp7M+GSS3CyHJdK7zOVFr9HlZIbYluzXadVctSQxCzI99BFa
+	 Vnletnp5uAoEMmg+YpWE+tj4RyTKbMyoajwsMGurOTbVr1KHAxtvnxwmy7ko0/avvK
+	 nxeNM3oYDLGTdKykNrGOHrLoRK9BleaBPa8/HZWE=
+Authentication-Results: mail-nwsmtp-smtp-production-main-87.sas.yp-c.yandex.net; dkim=pass header.i=@onurozkan.dev
+Date: Sat, 28 Jun 2025 16:11:17 +0300
 From: Onur <work@onurozkan.dev>
 To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
 Cc: viresh.kumar@linaro.org, rust-for-linux@vger.kernel.org,
@@ -44,13 +44,15 @@ Cc: viresh.kumar@linaro.org, rust-for-linux@vger.kernel.org,
  mripard@kernel.org, tzimmermann@suse.de, davidgow@google.com, nm@ti.com
 Subject: Re: [PATCH v3 3/3] rust: remove
  `#[allow(clippy::non_send_fields_in_send_ty)]`
-Message-ID: <20250628154835.4e2e4a92@nimda.home>
-In-Reply-To: <CANiq72kY9DA_JD_XkF01ZSmXbD8iaFthVZ66X+9N5aa_WObt+A@mail.gmail.com>
+Message-ID: <20250628161117.7786b3a4@nimda.home>
+In-Reply-To: <CANiq72mxJM-7WAP8xVDukmiXq=ntThyFESFLs1+dmZJSS2q60Q@mail.gmail.com>
 References: <20250628040956.2181-1-work@onurozkan.dev>
 	<20250628040956.2181-4-work@onurozkan.dev>
 	<CANiq72kjdj4KbDhfnTbm8jZpLC1+WPB3E6M8D8M2NLnphMs5vg@mail.gmail.com>
 	<20250628133013.703461c8@nimda.home>
 	<CANiq72kY9DA_JD_XkF01ZSmXbD8iaFthVZ66X+9N5aa_WObt+A@mail.gmail.com>
+	<20250628154237.0f367cee@nimda.home>
+	<CANiq72mxJM-7WAP8xVDukmiXq=ntThyFESFLs1+dmZJSS2q60Q@mail.gmail.com>
 X-Mailer: Claws Mail 4.3.1 (GTK 3.24.49; x86_64-unknown-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -58,22 +60,43 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-On Sat, 28 Jun 2025 14:18:53 +0200
+On Sat, 28 Jun 2025 14:51:15 +0200
 Miguel Ojeda <miguel.ojeda.sandonis@gmail.com> wrote:
 
+> On Sat, Jun 28, 2025 at 2:42=E2=80=AFPM Onur <work@onurozkan.dev> wrote:
+> >
+> > Yes, I am sure. Just to clarify, I am not testing 5e7c9b84ad08. I am
+> > testing c6af9a1191d042839e56abff69e8b0302d117988 where
+> > `#[allow(clippy::non_send_fields_in_send_ty)]` was added on
+> > `unsafe impl<T: Driver> Send for Registration<T> {}`.
+> >
+> > Switching from `allow` to `expect` produced the following result on
+> > my end:
+>=20
+> Yes, of course it does -- what I am telling you (and what 5e7c9b84ad08
+> says) is that the lint is disabled.
+>=20
+> And since it is disabled, if you change the line to `expect`, then it
+> will obviously complain.
+>=20
+> If you actually enabled the lint with e.g.
+>=20
+>     #![warn(clippy::non_send_fields_in_send_ty)]
+>=20
+> at the top of the file, and then used `expect`, it will build fine.
 
-> > IMO, we should require people to add a comment explaining the reason
-> > for adding these lint rules to the codebase. It would make both
-> > reading and modifying the code much simpler and clearer.
-> 
-> Do you mean using the lint reasons feature? IIRC we discussed at some
-> point doing that when the feature was added (we enabled it for the
-> `expect` side of things).
 
-Yeah, I meant that it't taking more effort than it should, like digging
-through historical changes in the relevant parts of the source code,
-trying to figuring out whether it was just a false positive or if there
-was a specific reason behind it, etc.
+Aha, I see. I missed that. I guess `allow` was added when the author
+had this lint enabled on their checkout, but their work was merged when
+lint removal was merged before that.
+
+Do you want me to update the patch description by including
+5e7c9b84ad08 ref and send v4?
+
+Sorry for misunderstanding by the way!
+
+Many thanks,
+Onur
