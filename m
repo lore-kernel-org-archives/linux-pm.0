@@ -1,33 +1,38 @@
-Received: from out-180.mta0.migadu.com (out-180.mta0.migadu.com [91.218.175.180])
+Received: from mxout4.routing.net (mxout4.routing.net [134.0.28.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CF2D230BF6
-	for <linux-pm@vger.kernel.org>; Sat, 28 Jun 2025 09:03:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B4D1B224AEF;
+	Sat, 28 Jun 2025 09:11:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751101432; cv=none; b=S01N3ZZE3cYEmFDOPbGoIJFfwkQaJi8nAULggTeuA44OmhGpPLIzveCQbqrrmQ0cgOs3sccajf9C2jj2YZy7QsylVEAvGuqJgvBWDf8kJXUyPnxDQkr4q3j06ZWU0cKnbki34/Sj4aW332Ur5af7zbbrU4ALqKm5VCBWXjrXDCY=
+	t=1751101863; cv=none; b=T+OSDzVDMEB9SqEzps9mzjKLkAw0L3Bar1WlbgeToK2tIEM1Yev1N4RrgqoMDhGjXM2SMo4wsRtt9HimX2/lsFzG1fPYoiL3XMmHV2akFM7i6JofeMtotK7zndz1Cl5lFuRS3SN3fwqquQb6A7XbFZnDP8UNNZT6RU6Dq25WXZc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751101432; c=relaxed/simple;
-	bh=/2RYzQamWMFGRk3UZGy8S3jPYaE9HT85GHRvJ+BZpds=;
+	s=arc-20240116; t=1751101863; c=relaxed/simple;
+	bh=vasLuAIVGN71piVbyel+Q8mRVI3PJ2R3OaDC4gFrR5k=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Qczgzoe7IXv/wpcR34mUawVb4VXu4KU91PQHwjk5PqdiCXs0QAt3OZldT8HdQQrBBOn7pEbmY6JnsIuXMF7xDIgiQxQTAo+6NxkBtUxTHL4xPVe0U7jct9S5vFwYa3H/NVZ4Tb56ztn0EktZHKqeenGfHPLVXAdndNGi2D+zdQ4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=IJypZ3Wn; arc=none smtp.client-ip=91.218.175.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+	 MIME-Version; b=DNm9TvGrF7IPuti4/LupS2+ZKDwMklVd8r9FhRs7R1N70zbdAgfK3RQ90moxkb7UKKIp7uBZMc7csmXbyX9L3U9yWUG261/h2widSAvSGwoqkqE80V5nzLC+eDj8hvTZN7rUGgpp9BCdZaPzTzzS/mJ0F14GGqanncrsSHRrJwI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=u9GW4OQz; arc=none smtp.client-ip=134.0.28.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="IJypZ3Wn"
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1751101428;
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="u9GW4OQz"
+Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
+	by mxout4.routing.net (Postfix) with ESMTP id 23ACA1012D4;
+	Sat, 28 Jun 2025 09:10:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
+	s=20200217; t=1751101855;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=hvtxU4D3ohmA54ipUVXLZQjWygAPvZxaNNALd63s61k=;
-	b=IJypZ3WnWhqvaXlHovteJEr+LrXxj4zgXSnIBxxW0XLxrYRU/9Yc54loK5qLY8zEV8+EV8
-	t1ffnWcIXhPi+kIHSi2UdMRw+4j7q75Oe8t6NUXdoEmCti4VSwk+yvg1G5GDIwELGHjXca
-	thg2WxuGcTG+S7BtnFP7ufjPL4tDkdY=
-From: Frank Wunderlich <frank.wunderlich@linux.dev>
+	bh=7sHWoK+S4dor/cCGOhSqusJFB/am18LqdmWaQ7hQvKA=;
+	b=u9GW4OQzOc7exqNlyrupVC5dvGApSPBP01ub9s1y8CHn9MRHiDm8ASmvngNGAUT/hoOzd3
+	aPpr+la+tXw9KAcqYE764SjOCPlvFc8IOecVitfGMurjhvBGkcBcGIORvcDQvX+zs2hvOe
+	4tJAeSCDGvuvN0uef0l8eQg4zVaEecI=
+Received: from frank-u24.. (fttx-pool-217.61.150.139.bambit.de [217.61.150.139])
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id BF1011226F5;
+	Sat, 28 Jun 2025 09:10:54 +0000 (UTC)
+From: Frank Wunderlich <linux@fw-web.de>
 To: MyungJoo Ham <myungjoo.ham@samsung.com>,
 	Kyungmin Park <kyungmin.park@samsung.com>,
 	Chanwoo Choi <cw00.choi@samsung.com>,
@@ -58,11 +63,12 @@ Cc: Frank Wunderlich <frank-w@public-files.de>,
 	netdev@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v6 05/15] dt-bindings: net: dsa: mediatek,mt7530: add internal mdio bus
-Date: Sat, 28 Jun 2025 11:03:16 +0200
-Message-ID: <20250628090330.57264-6-frank.wunderlich@linux.dev>
-In-Reply-To: <20250628090330.57264-1-frank.wunderlich@linux.dev>
-References: <20250628090330.57264-1-frank.wunderlich@linux.dev>
+Subject: [PATCH v6 12/15] arm64: dts: mediatek: mt7988a-bpi-r4: add gpio leds
+Date: Sat, 28 Jun 2025 11:10:36 +0200
+Message-ID: <20250628091043.57645-13-linux@fw-web.de>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250628091043.57645-1-linux@fw-web.de>
+References: <20250628091043.57645-1-linux@fw-web.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -70,45 +76,51 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-Mt7988 buildin switch has own mdio bus where ge-phys are connected.
-Add related property for this.
+Bananapi R4 has a green and a blue led which can be switched by gpio.
+Green led is for running state so default on.
+
+Green led also shares pin with eeprom writeprotect where led off allows
+writing to eeprom.
 
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
-v2:
-- change from patternproperty to property
-- add unevaluatedProperties and mediatek,pio subproperty
----
- .../devicetree/bindings/net/dsa/mediatek,mt7530.yaml   | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ .../dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml b/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
-index 9b983fdbf3c7..815a90808901 100644
---- a/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
-+++ b/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
-@@ -136,6 +136,16 @@ properties:
-       See Documentation/devicetree/bindings/regulator/mt6323-regulator.txt for
-       details for the regulator setup on these boards.
+diff --git a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
+index 30affedf84d4..21eb91c8609f 100644
+--- a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
+@@ -21,6 +21,25 @@ fan: pwm-fan {
+ 		status = "okay";
+ 	};
  
-+  mdio:
-+    $ref: /schemas/net/mdio.yaml#
-+    unevaluatedProperties: false
++	gpio-leds {
++		compatible = "gpio-leds";
 +
-+    properties:
-+      mediatek,pio:
-+        $ref: /schemas/types.yaml#/definitions/phandle
-+        description:
-+          Phandle pointing to the mediatek pinctrl node.
++		led_green: led-green {
++			function = LED_FUNCTION_STATUS;
++			color = <LED_COLOR_ID_GREEN>;
++			gpios = <&pio 79 GPIO_ACTIVE_HIGH>;
++			default-state = "on";
++		};
 +
-   mediatek,mcm:
-     type: boolean
-     description:
++		led_blue: led-blue {
++			function = LED_FUNCTION_WPS;
++			color = <LED_COLOR_ID_BLUE>;
++			gpios = <&pio 63 GPIO_ACTIVE_HIGH>;
++			default-state = "off";
++		};
++	};
++
++
+ 	reg_1p8v: regulator-1p8v {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "fixed-1.8V";
 -- 
 2.43.0
 
