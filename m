@@ -1,37 +1,37 @@
-Received: from mxout4.routing.net (mxout4.routing.net [134.0.28.9])
+Received: from mxout1.routing.net (mxout1.routing.net [134.0.28.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A205246788;
-	Sat, 28 Jun 2025 16:55:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D42325A620;
+	Sat, 28 Jun 2025 16:55:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751129709; cv=none; b=VsTwC99EHMgBAIXFbLlNFAe+IF0FeACXdYkB9e3X7jFdz3WhHfCWPYj7RxTKbEdLRY3MW9HuEYCnDyPXVh49D6rTVVZ6JctE/0I3zuu+KqmuXjuw3X8nSJtDQwBaZ6M8vMjcJLh/U5F5EWk0XcjvPm2PbbebeaInQqzV+tEP1qo=
+	t=1751129711; cv=none; b=A/qo5UbXu2Jng8opOMtQbRaZ0vKvoh5RNuzTXh0RUZg3e4DuRjq4FfUb2aZTnzT/XngkVvzafIrx/OthOurm8Nu67Q614QxpcM0uMTnuJUgRzvX6iN/8NfPU4Ijv5T69HIdmk3h0Yr2seyFjhX9+G18vCLpNQ7WLNl3zLr3E9JU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751129709; c=relaxed/simple;
-	bh=qfBix3/voP9oHESfM587vBtlQy1ugMjpeEneZpd9Poc=;
+	s=arc-20240116; t=1751129711; c=relaxed/simple;
+	bh=Dgdiq1horuDoHLdNztjJFaG+cA4sLMSMTTMWhbKe7+Q=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=chre16LT9bNAp+I+EVqTPdspFM9wn3I88kmZIx6IzmLhJcp1XGtKR9jv7zWRZIzsyRYWU8ZfP7vi1H7ErPSYKeRce3IyXqGs9A9L7blSvJC16cxo7lBBh7n9n/bCeLiU851Kzu5NssflIrK6DOYuexhNpaG+DsNmktSbiERK8Zo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=JNHTztD2; arc=none smtp.client-ip=134.0.28.9
+	 MIME-Version; b=Ee5LYfdTQ7QCnw4cwNnSLslDYKeFNZ/2gyTSZwSbtZ31P51LiEscNqHULpxVv6Uqxbv/AY9UvQX72KUBoMo4GwJp1OfGtmBBXHYYzCZiApigCaJCkwVr5im/I90+nJxek2kKUk5AFNxBrUramlGzX0RqySBuvLAXBcOv4auMkzo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=C9NZI/8M; arc=none smtp.client-ip=134.0.28.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="JNHTztD2"
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="C9NZI/8M"
 Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout4.routing.net (Postfix) with ESMTP id 2DB0210086D;
-	Sat, 28 Jun 2025 16:55:05 +0000 (UTC)
+	by mxout1.routing.net (Postfix) with ESMTP id 0700340373;
+	Sat, 28 Jun 2025 16:55:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=20200217; t=1751129705;
+	s=20200217; t=1751129706;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=7dT9YZ7gi77SwhEBS1HcRZe6Y8Dtm4B6SBBEYc1Een0=;
-	b=JNHTztD2rNDeODxpnUxdV7FV2TyV0Zh+9+UVDQn+Zkgynjb5szObfsnNt3THmj5oU5q/HR
-	8rLEWWg8EyRk39J+TBraNV2N33v+gl04lkKZAhsf9Ibt1hPkYkGFgmj9F1P8cf3836VMAZ
-	jZAGOYjqbW6mklqr240ixYmx+HfYtvw=
+	bh=DIMuNne++IWVgY0azMoYkvyXCjaefI/n17TVM+rpZxc=;
+	b=C9NZI/8MAu8+mhyQdSakPXSwZELFqyLuGRIKMtiKDFgT2XSApJd57ZIfVzGVOiO38ouGzr
+	3ougfS5ifP4LgEgkS64U7g3/Idq2D+4jbBO0Apr4KIKAui3899MRkcMqcvGXGZGmiwL04Z
+	3JLL8bU9QVQVW+daGT4Gls5ZIyCYZMg=
 Received: from frank-u24.. (fttx-pool-217.61.150.139.bambit.de [217.61.150.139])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id C743612272D;
-	Sat, 28 Jun 2025 16:55:04 +0000 (UTC)
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 9F34D12272D;
+	Sat, 28 Jun 2025 16:55:05 +0000 (UTC)
 From: Frank Wunderlich <linux@fw-web.de>
 To: MyungJoo Ham <myungjoo.ham@samsung.com>,
 	Kyungmin Park <kyungmin.park@samsung.com>,
@@ -63,9 +63,9 @@ Cc: Frank Wunderlich <frank-w@public-files.de>,
 	netdev@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v7 07/14] arm64: dts: mediatek: mt7988: add basic ethernet-nodes
-Date: Sat, 28 Jun 2025 18:54:42 +0200
-Message-ID: <20250628165451.85884-8-linux@fw-web.de>
+Subject: [PATCH v7 09/14] arm64: dts: mediatek: mt7988a-bpi-r4: add proc-supply for cci
+Date: Sat, 28 Jun 2025 18:54:44 +0200
+Message-ID: <20250628165451.85884-10-linux@fw-web.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250628165451.85884-1-linux@fw-web.de>
 References: <20250628165451.85884-1-linux@fw-web.de>
@@ -79,202 +79,29 @@ Content-Transfer-Encoding: 8bit
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-Add basic ethernet related nodes.
+CCI requires proc-supply. Add it on board level.
 
-Mac1+2 needs pcs (sgmii+usxgmii) to work correctly which will be linked
-later when driver is merged.
-
-Signed-off-by: Daniel Golle <daniel@makrotopia.org>
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
-v6:
-- fix whitespace-errors for pdma irqs (spaces vs. tabs)
-- move sram from eth reg to own sram node (needs CONFIG_SRAM)
+ arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-v5:
-- add reserved irqs and change names to fe0..fe3
-- change rx-ringX to pdmaX to be closer to documentation
-
-v4:
-- comment for fixed-link on gmac0
-- update 2g5 phy node
-  - unit-name dec instead of hex to match reg property
-  - move compatible before reg
-  - drop phy-mode
-- add interrupts for RSS
-- add interrupt-names and drop reserved irqs for ethernet
-- some reordering
-- eth-reg and clock whitespace-fix based on angelos review
----
- arch/arm64/boot/dts/mediatek/mt7988a.dtsi | 137 +++++++++++++++++++++-
- 1 file changed, 134 insertions(+), 3 deletions(-)
-
-diff --git a/arch/arm64/boot/dts/mediatek/mt7988a.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
-index 560ec86dbec0..cf765a6b1fa8 100644
---- a/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
-@@ -680,7 +680,28 @@ xphyu3port0: usb-phy@11e13000 {
- 			};
- 		};
- 
--		clock-controller@11f40000 {
-+		xfi_tphy0: phy@11f20000 {
-+			compatible = "mediatek,mt7988-xfi-tphy";
-+			reg = <0 0x11f20000 0 0x10000>;
-+			clocks = <&xfi_pll CLK_XFIPLL_PLL_EN>,
-+				 <&topckgen CLK_TOP_XFI_PHY_0_XTAL_SEL>;
-+			clock-names = "xfipll", "topxtal";
-+			resets = <&watchdog 14>;
-+			mediatek,usxgmii-performance-errata;
-+			#phy-cells = <0>;
-+		};
-+
-+		xfi_tphy1: phy@11f30000 {
-+			compatible = "mediatek,mt7988-xfi-tphy";
-+			reg = <0 0x11f30000 0 0x10000>;
-+			clocks = <&xfi_pll CLK_XFIPLL_PLL_EN>,
-+				 <&topckgen CLK_TOP_XFI_PHY_1_XTAL_SEL>;
-+			clock-names = "xfipll", "topxtal";
-+			resets = <&watchdog 15>;
-+			#phy-cells = <0>;
-+		};
-+
-+		xfi_pll: clock-controller@11f40000 {
- 			compatible = "mediatek,mt7988-xfi-pll";
- 			reg = <0 0x11f40000 0 0x1000>;
- 			resets = <&watchdog 16>;
-@@ -714,19 +735,129 @@ phy_calibration_p3: calib@97c {
- 			};
- 		};
- 
--		clock-controller@15000000 {
-+		ethsys: clock-controller@15000000 {
- 			compatible = "mediatek,mt7988-ethsys", "syscon";
- 			reg = <0 0x15000000 0 0x1000>;
- 			#clock-cells = <1>;
- 			#reset-cells = <1>;
- 		};
- 
--		clock-controller@15031000 {
-+		ethwarp: clock-controller@15031000 {
- 			compatible = "mediatek,mt7988-ethwarp";
- 			reg = <0 0x15031000 0 0x1000>;
- 			#clock-cells = <1>;
- 			#reset-cells = <1>;
- 		};
-+
-+		eth: ethernet@15100000 {
-+			compatible = "mediatek,mt7988-eth";
-+			reg = <0 0x15100000 0 0x80000>;
-+			interrupts = <GIC_SPI 196 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 197 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 198 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 199 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 189 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 190 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 191 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 192 IRQ_TYPE_LEVEL_HIGH>;
-+			interrupt-names = "fe0", "fe1", "fe2", "fe3", "pdma0",
-+					  "pdma1", "pdma2", "pdma3";
-+			clocks = <&ethsys CLK_ETHDMA_CRYPT0_EN>,
-+				 <&ethsys CLK_ETHDMA_FE_EN>,
-+				 <&ethsys CLK_ETHDMA_GP2_EN>,
-+				 <&ethsys CLK_ETHDMA_GP1_EN>,
-+				 <&ethsys CLK_ETHDMA_GP3_EN>,
-+				 <&ethwarp CLK_ETHWARP_WOCPU2_EN>,
-+				 <&ethwarp CLK_ETHWARP_WOCPU1_EN>,
-+				 <&ethwarp CLK_ETHWARP_WOCPU0_EN>,
-+				 <&ethsys CLK_ETHDMA_ESW_EN>,
-+				 <&topckgen CLK_TOP_ETH_GMII_SEL>,
-+				 <&topckgen CLK_TOP_ETH_REFCK_50M_SEL>,
-+				 <&topckgen CLK_TOP_ETH_SYS_200M_SEL>,
-+				 <&topckgen CLK_TOP_ETH_SYS_SEL>,
-+				 <&topckgen CLK_TOP_ETH_XGMII_SEL>,
-+				 <&topckgen CLK_TOP_ETH_MII_SEL>,
-+				 <&topckgen CLK_TOP_NETSYS_SEL>,
-+				 <&topckgen CLK_TOP_NETSYS_500M_SEL>,
-+				 <&topckgen CLK_TOP_NETSYS_PAO_2X_SEL>,
-+				 <&topckgen CLK_TOP_NETSYS_SYNC_250M_SEL>,
-+				 <&topckgen CLK_TOP_NETSYS_PPEFB_250M_SEL>,
-+				 <&topckgen CLK_TOP_NETSYS_WARP_SEL>,
-+				 <&ethsys CLK_ETHDMA_XGP1_EN>,
-+				 <&ethsys CLK_ETHDMA_XGP2_EN>,
-+				 <&ethsys CLK_ETHDMA_XGP3_EN>;
-+			clock-names = "crypto", "fe", "gp2", "gp1", "gp3",
-+				      "ethwarp_wocpu2", "ethwarp_wocpu1",
-+				      "ethwarp_wocpu0", "esw", "top_eth_gmii_sel",
-+				      "top_eth_refck_50m_sel", "top_eth_sys_200m_sel",
-+				      "top_eth_sys_sel", "top_eth_xgmii_sel",
-+				      "top_eth_mii_sel", "top_netsys_sel",
-+				      "top_netsys_500m_sel", "top_netsys_pao_2x_sel",
-+				      "top_netsys_sync_250m_sel",
-+				      "top_netsys_ppefb_250m_sel",
-+				      "top_netsys_warp_sel","xgp1", "xgp2", "xgp3";
-+			assigned-clocks = <&topckgen CLK_TOP_NETSYS_2X_SEL>,
-+					  <&topckgen CLK_TOP_NETSYS_GSW_SEL>,
-+					  <&topckgen CLK_TOP_USXGMII_SBUS_0_SEL>,
-+					  <&topckgen CLK_TOP_USXGMII_SBUS_1_SEL>,
-+					  <&topckgen CLK_TOP_SGM_0_SEL>,
-+					  <&topckgen CLK_TOP_SGM_1_SEL>;
-+			assigned-clock-parents = <&apmixedsys CLK_APMIXED_NET2PLL>,
-+						 <&topckgen CLK_TOP_NET1PLL_D4>,
-+						 <&topckgen CLK_TOP_NET1PLL_D8_D4>,
-+						 <&topckgen CLK_TOP_NET1PLL_D8_D4>,
-+						 <&apmixedsys CLK_APMIXED_SGMPLL>,
-+						 <&apmixedsys CLK_APMIXED_SGMPLL>;
-+			sram = <&eth_sram>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			mediatek,ethsys = <&ethsys>;
-+			mediatek,infracfg = <&topmisc>;
-+
-+			gmac0: mac@0 {
-+				compatible = "mediatek,eth-mac";
-+				reg = <0>;
-+				phy-mode = "internal";
-+
-+				/* Connected to internal switch */
-+				fixed-link {
-+					speed = <10000>;
-+					full-duplex;
-+					pause;
-+				};
-+			};
-+
-+			gmac1: mac@1 {
-+				compatible = "mediatek,eth-mac";
-+				reg = <1>;
-+				status = "disabled";
-+			};
-+
-+			gmac2: mac@2 {
-+				compatible = "mediatek,eth-mac";
-+				reg = <2>;
-+				status = "disabled";
-+			};
-+
-+			mdio_bus: mdio-bus {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+
-+				/* internal 2.5G PHY */
-+				int_2p5g_phy: ethernet-phy@15 {
-+					compatible = "ethernet-phy-ieee802.3-c45";
-+					reg = <15>;
-+				};
-+			};
-+		};
-+
-+		eth_sram: sram@15400000 {
-+			compatible = "mmio-sram";
-+			reg = <0 0x15400000 0 0x200000>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges = <0 0x15400000 0 0x200000>;
-+		};
+diff --git a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
+index 81ba045e0e0e..afa9e3b2b16a 100644
+--- a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
+@@ -40,6 +40,10 @@ reg_3p3v: regulator-3p3v {
  	};
+ };
  
- 	thermal-zones {
++&cci {
++	proc-supply = <&rt5190_buck3>;
++};
++
+ &cpu0 {
+ 	proc-supply = <&rt5190_buck3>;
+ };
 -- 
 2.43.0
 
