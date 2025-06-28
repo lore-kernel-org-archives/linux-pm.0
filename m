@@ -1,36 +1,36 @@
-Received: from mxout4.routing.net (mxout4.routing.net [134.0.28.9])
+Received: from mxout2.routing.net (mxout2.routing.net [134.0.28.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC25E2343C9;
-	Sat, 28 Jun 2025 09:18:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25917225387;
+	Sat, 28 Jun 2025 09:18:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751102290; cv=none; b=Ggl/npa+pRncNlA6ldE5fP/w8RJrPB5Nz5HcMnBUgvjR/o9BV9m347HJiuibQqZJ2jN3ZmI7T8Dva8gsrogR7z+3oCK9SZaBlGExg7iyAvKMVHY+NufOo2iVsFkBboVw4JLxb8tSiR9bDtLGQwac6lBKg3TfMG11hkkvEZIpReU=
+	t=1751102296; cv=none; b=n/SFA3QVOGceVJeiNfjTzpCKvM++rCWSCYSKnEN9SfgPz3LoWlqWOy9/GQDjmA4ID5lJwaeueLelOpVFDm6Zo6QcYP5Umm+0AiOWrg10tHapq5UE/Ao8Qj3H2R0+ZQWrXp/m4nJwvpDxCWR5E/3mwB2+gE6p16gJdp8LGzJINiM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751102290; c=relaxed/simple;
-	bh=/2RYzQamWMFGRk3UZGy8S3jPYaE9HT85GHRvJ+BZpds=;
+	s=arc-20240116; t=1751102296; c=relaxed/simple;
+	bh=Hfaa0gy3uc6c4TBbK3YEGBZqHHPIma4PeUvbj0qjqyE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=lzMmxtkZ9pG6Wi1L5AfF6MJg8IEnrkCCHLRIKtpfhp+U8jR11DCP0AV/GHCLchcMeywdaBRKCoHmFo/4/Gybye1rBakQ6pBzlRH7LUaPt6QGO0CNZkU9oEw33rvOR1SgOl4LwSf4czK2vt/qx7vQsOCsBooO2i6el8yBsMbGGwM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=qlxuqrTS; arc=none smtp.client-ip=134.0.28.9
+	 MIME-Version; b=r9sgDL4x8xSTI34hcxzQUk1TSf2JJl6ZxoA0u2wibd18ArLlg9HEkQwevi0wRIlgLm9BuzfB6MPeFolbYNEQi3ckx3XPQ5DwIHA3s6LD1W6iZmpIvUFvGD4NuCXdp/tTU82eciWkXD0SCSqdjXmFR/1BIZMDX8De/bIwWyOMD0A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=AjLz9Omz; arc=none smtp.client-ip=134.0.28.12
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="qlxuqrTS"
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="AjLz9Omz"
 Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout4.routing.net (Postfix) with ESMTP id 5CDB21012C4;
-	Sat, 28 Jun 2025 09:10:52 +0000 (UTC)
+	by mxout2.routing.net (Postfix) with ESMTP id 920895FD7B;
+	Sat, 28 Jun 2025 09:10:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=20200217; t=1751101852;
+	s=20200217; t=1751101851;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=hvtxU4D3ohmA54ipUVXLZQjWygAPvZxaNNALd63s61k=;
-	b=qlxuqrTS5nFWaF2uTQ5fu9KBUin17+dYeGjY7EoJw0zgyAeOQRbnwt58j5fEXNmYHYhpgT
-	IAXK0/0UXS53bAE9ryANBFYUL+k8u6sMr0PyHXDzeCgur5+57eY3pCSpJaXbxtHlMkAolA
-	coqXajh4Ca3ZF4gKos5MYrfdK7P5rH0=
+	bh=DgeEoJwP1RRKkglcECdGpkEEfNbWqvY35txVx4ntqiU=;
+	b=AjLz9OmzYbggR4Ei1+YPIRF1/sNAVGGSlsI/4Z7ZjbytXLQ9j9wcZpPaQrcjjmARskZkHp
+	T17tmyPEjUCgU2g8LYa7l3TxXAJC0y2jpiska5emk0t0/2BbGdUlV/ZRTmPJz8anEqRC43
+	qsjNZkd+CitzoEwR8MRKESJdsfdm1PE=
 Received: from frank-u24.. (fttx-pool-217.61.150.139.bambit.de [217.61.150.139])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 0279512272D;
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 3618212272D;
 	Sat, 28 Jun 2025 09:10:51 +0000 (UTC)
 From: Frank Wunderlich <linux@fw-web.de>
 To: MyungJoo Ham <myungjoo.ham@samsung.com>,
@@ -63,9 +63,9 @@ Cc: Frank Wunderlich <frank-w@public-files.de>,
 	netdev@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v6 05/15] dt-bindings: net: dsa: mediatek,mt7530: add internal mdio bus
-Date: Sat, 28 Jun 2025 11:10:29 +0200
-Message-ID: <20250628091043.57645-6-linux@fw-web.de>
+Subject: [PATCH v6 03/15] dt-bindings: net: mediatek,net: update for mt7988
+Date: Sat, 28 Jun 2025 11:10:27 +0200
+Message-ID: <20250628091043.57645-4-linux@fw-web.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250628091043.57645-1-linux@fw-web.de>
 References: <20250628091043.57645-1-linux@fw-web.de>
@@ -79,41 +79,76 @@ Content-Transfer-Encoding: 8bit
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-Mt7988 buildin switch has own mdio bus where ge-phys are connected.
-Add related property for this.
+Update binding for mt7988 which has 3 gmac and a sram for dma
+operations.
+
+MT7988 has 4 FE IRQs (currently only 2 are used) and 4 IRQs for use
+with RSS/LRO later.
 
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
-v2:
-- change from patternproperty to property
-- add unevaluatedProperties and mediatek,pio subproperty
----
- .../devicetree/bindings/net/dsa/mediatek,mt7530.yaml   | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+v6:
+- split out the interrupt-names into separate patch
+- update irq(name) min count to 4
+- add sram-property
+- drop second reg entry and minitems as there is only 1 item left again
 
-diff --git a/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml b/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
-index 9b983fdbf3c7..815a90808901 100644
---- a/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
-+++ b/Documentation/devicetree/bindings/net/dsa/mediatek,mt7530.yaml
-@@ -136,6 +136,16 @@ properties:
-       See Documentation/devicetree/bindings/regulator/mt6323-regulator.txt for
-       details for the regulator setup on these boards.
+v5:
+- fix v4 logmessage and change description a bit describing how i get
+  the irq count.
+- update binding for 8 irqs with different names (rx,tx => fe0..fe3)
+  including the 2 reserved irqs which can be used later
+- change rx-ringX to pdmaX to be closer to hardware documentation
+
+v4:
+- increase max interrupts to 6 because of adding RSS/LRO interrupts (4)
+  and dropping 2 reserved irqs (0+3) around rx+tx
+- dropped Robs RB due to this change
+- allow interrupt names
+- add interrupt-names without reserved IRQs on mt7988
+  this requires mtk driver patch:
+  https://patchwork.kernel.org/project/netdevbpf/patch/20250616080738.117993-2-linux@fw-web.de/
+
+v2:
+- change reg to list of items
+---
+ Documentation/devicetree/bindings/net/mediatek,net.yaml | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/net/mediatek,net.yaml b/Documentation/devicetree/bindings/net/mediatek,net.yaml
+index 6672db206b38..74a139000f60 100644
+--- a/Documentation/devicetree/bindings/net/mediatek,net.yaml
++++ b/Documentation/devicetree/bindings/net/mediatek,net.yaml
+@@ -28,7 +28,8 @@ properties:
+       - ralink,rt5350-eth
  
-+  mdio:
-+    $ref: /schemas/net/mdio.yaml#
-+    unevaluatedProperties: false
+   reg:
+-    maxItems: 1
++    items:
++      - description: Register for accessing the MACs.
+ 
+   clocks:
+     minItems: 2
+@@ -66,6 +67,10 @@ properties:
+       - const: gmac
+       - const: ppe
+ 
++  sram:
++    $ref: /schemas/types.yaml#/definitions/phandle
++    description: phandle to mmio SRAM
 +
-+    properties:
-+      mediatek,pio:
-+        $ref: /schemas/types.yaml#/definitions/phandle
-+        description:
-+          Phandle pointing to the mediatek pinctrl node.
-+
-   mediatek,mcm:
-     type: boolean
+   mediatek,ethsys:
+     $ref: /schemas/types.yaml#/definitions/phandle
      description:
+@@ -418,7 +423,7 @@ allOf:
+             - const: xgp3
+ 
+ patternProperties:
+-  "^mac@[0-1]$":
++  "^mac@[0-2]$":
+     type: object
+     unevaluatedProperties: false
+     allOf:
 -- 
 2.43.0
 
