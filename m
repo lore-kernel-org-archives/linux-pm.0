@@ -1,101 +1,97 @@
-Received: from mail-yb1-f172.google.com (mail-yb1-f172.google.com [209.85.219.172])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx4.wp.pl (mx4.wp.pl [212.77.101.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 711E4220698
-	for <linux-pm@vger.kernel.org>; Sat, 28 Jun 2025 22:13:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C9292222D5
+	for <linux-pm@vger.kernel.org>; Sat, 28 Jun 2025 22:38:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.77.101.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751148785; cv=none; b=Jn18f8t9uYurKGXYSbvq2b6OO3sSuUeremVXlMuUVzt33LImAkfCYwmLWer6Txd9sbaHtQExcbUg5QfTCvlREvKQ6sK9/iZ2thvIQCOd2jiLDoeh8ptz8GoBm5J7SLykRelFl1SQS1S4Tbw3nLWlr/qfbCMGOXQCrqCOm+WMQhs=
+	t=1751150333; cv=none; b=dlbZhl8jDekUlK6vFUBLuDT74REWNCmZUgaVRKO2nw5KuTbGS3TV0mtn/B5gShMd1SbtYlaLMcjA8GsJkS1JAS9bjLSTo/CkWmexQhhP7lzYZOzNOsLGWeefMgU2VQel48gcWEM0cnAu2LEXkWIENFr2ltjJlHmxLCvpMKmmpo8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751148785; c=relaxed/simple;
-	bh=4hIoRo/BUe44/U6WOEvGpQ6TzxbhSycnGnHZnPeiuxw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=nJN+UUSqEHs0dkoLYr7jJcyFWIGRIC5NvCHte1IzzJhKJS5XYWT4zPAJJr5LPPgwcT3KuCnFunCs3ty2CWGp7cnXRkV/+TbpdXNpoBCSQEOq8LLE8YUdodSgQar2T9fhvG/KyArCY3Z+kBMrv3eZS4Uj3YwA3zVju+GE86piwS0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=atero.ai; spf=pass smtp.mailfrom=atero.ai; dkim=pass (2048-bit key) header.d=atero-ai.20230601.gappssmtp.com header.i=@atero-ai.20230601.gappssmtp.com header.b=JornGeAG; arc=none smtp.client-ip=209.85.219.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=atero.ai
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=atero.ai
+	s=arc-20240116; t=1751150333; c=relaxed/simple;
+	bh=XyXSzTh2k1kUsY/wpFoMC2iSmO2Wiat8DO0p2n4qvd4=;
+	h=From:To:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=dZi5KUXzptCpwnOmkjgHmEGCpmV16sQA2ZwVVVzW+y5ZTv4yBmvnSdVf59fbT2PnUNQOSAMT6NzUpk4IAvfutnxrt3tZDOv23HJPcuAm9RP2F5yOHZC0JMrEC8xTt7ffzxq/y44AgzRpU85cQ3ZHuwEWacVRorZjJfjiY0oz3lc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=wp.pl; spf=pass smtp.mailfrom=wp.pl; dkim=pass (2048-bit key) header.d=wp.pl header.i=@wp.pl header.b=snyhA2IH; arc=none smtp.client-ip=212.77.101.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=wp.pl
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wp.pl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=atero-ai.20230601.gappssmtp.com header.i=@atero-ai.20230601.gappssmtp.com header.b="JornGeAG"
-Received: by mail-yb1-f172.google.com with SMTP id 3f1490d57ef6-e733a6ff491so787792276.2
-        for <linux-pm@vger.kernel.org>; Sat, 28 Jun 2025 15:13:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=atero-ai.20230601.gappssmtp.com; s=20230601; t=1751148782; x=1751753582; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=pG0Jf3AyAuPPLWWO8w92wLQs80Toybr3R2SUNpvAU3s=;
-        b=JornGeAGRFCFIZA8nfxooZmGGi0dL4DlXy1++S/NqKp/VM2aSAhoS3rmm9RSrywob6
-         /NULLDBEppbz6jUhkqSZcFKsmKifVXIUuViOTaUENtsuprg/BXolyLuc53rtwXDwf0fC
-         +E1vs4IdLB0fqxWz1beKbCm/1TmQz0MrLHI0dUxuqmTHjmDP993X+0VYtkxSrT6PWxAA
-         5QNpKmBLQC0RRqpI6T1ZpCjGjJPPGh5Vwc+o6Dhp4BcayJtJUqt7WGcVbSo61qFejsRV
-         R+zHfm2hR7cxYON2cvQ2mmCenazbbMcXdz1S2SR+nxnce4rmkXLya8o8Car7Z98PPMZL
-         Mf9w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751148782; x=1751753582;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=pG0Jf3AyAuPPLWWO8w92wLQs80Toybr3R2SUNpvAU3s=;
-        b=iF20++SEnsfi/XCQ0seT1ItKHonbPOc7WJ2V0H2owooye9K+nw3d/5LVCYBKDSAw6S
-         e4AbajyO0iqNbTYEloUTfc++CyBTBJ6C/z9Td4Xf8FMYDB+NcxjK/Fy2s0a421RmapnE
-         5mPs3uKudEkSlyC1YMxFU+t+iLT+ZxnjBBWg6h6DQimkYm+chFVY2vJAc9n+Qxq2Ufo7
-         E8cRuvKOPp/9Rd89Qpi4uwKjKkq4Ba0aIOwedr0m8tdipf9t8+tMuQc2vjHA8S7YzKW3
-         JjxIPoec25bKSKXZpYq7VCnLPo6Hdq03iZEpsbpF7XKBekAlVtXd+0146CDV+jPTzvIj
-         C+7g==
-X-Forwarded-Encrypted: i=1; AJvYcCVxVic0yYTOkl8A3X99XDci7WyFpLw7LV+tddjvTCIv3gCHzWG7lkVAYLnnWHAoNssVLecgjTVgzQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzIpV5JbvL+RbogpRQZmUzDkbaFX3j5vCZl97QtyDCMI8KrpQkV
-	DI9uaVv7WejyEki/YK8D4NSAWCqw6LaqLfryt9fPD4ILF3jeYxIxGwWIXVALaxuMgxhjP3rxQ4c
-	vHyOb9UeBCl+qB+2hk+K8qD96nGzXrEInHVVEKfAqBA==
-X-Gm-Gg: ASbGncth0Aw8jQwSFj62ke9yOQEJ3kzTD+BsnzeC6nMiCcVkUnettSbbc0LazBUlyvg
-	dkhicK6+pGkGHfYCF+iTjWhygMI3C+rGtPw9o8jw37xdUn30vZvk86Ckyi5pbPBM17AijNxFqAa
-	IhTmfuALS5lfyvoyFNyuFP7BoOQmNHQ0LL988kCtztI37R
-X-Google-Smtp-Source: AGHT+IGmZPJroRvvxHKmgN9a0X1tAnR5pbdtgYaEXaOTqCbeF41sWs4hBEm9ibaXTwBW1beTqacoRcXW+Uum57AXsr0=
-X-Received: by 2002:a05:690c:a0a4:10b0:714:4e0:ba42 with SMTP id
- 00721157ae682-7151714574fmr86419067b3.1.1751148782373; Sat, 28 Jun 2025
- 15:13:02 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=wp.pl header.i=@wp.pl header.b="snyhA2IH"
+Received: (wp-smtpd smtp.wp.pl 30624 invoked from network); 29 Jun 2025 00:38:44 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wp.pl; s=20241105;
+          t=1751150324; bh=g4D4A8XAdpX1i4Oxx8GKbKsEsP87KOS/0voX/OWNYJ0=;
+          h=From:To:Subject;
+          b=snyhA2IHcT9W6z5L2uRF9hYG2TAKfFXK42R8PScodBY/tr+9V01QIGJI/a2Pacg3I
+           7bNjQyij1sT9Ura0N5nxwA7mdRyT/bwRX26Yv7rzIKBPqe79CY0jylSSmK77Aq9p/f
+           sixeZUB7vK9+iTmZ1NNqUmeNgnAJWrE4rYQe4H2KYhXdZ0YuTzLS5+fQJIZaiHJu1V
+           UEAof7cKFtPMJZnFQGbaAYJJg7yY+nCyGNZHC3cY18kQ0YHyop6ksYsv39vfgBmTja
+           w+LTDyvsAbgm4XaCUv4LSC7gG12bkh93zR+9kgzDKBu7CmQht6uoUPwvdk9iEz673H
+           LytEWgEI4M79w==
+Received: from 83.24.145.121.ipv4.supernova.orange.pl (HELO laptop-olek.lan) (olek2@wp.pl@[83.24.145.121])
+          (envelope-sender <olek2@wp.pl>)
+          by smtp.wp.pl (WP-SMTPD) with ECDHE-RSA-AES256-GCM-SHA384 encrypted SMTP
+          for <rafael@kernel.org>; 29 Jun 2025 00:38:44 +0200
+From: Aleksander Jan Bajkowski <olek2@wp.pl>
+To: rafael@kernel.org,
+	daniel.lezcano@linaro.org,
+	rui.zhang@intel.com,
+	lukasz.luba@arm.com,
+	jic23@kernel.org,
+	dlechner@baylibre.com,
+	nuno.sa@analog.com,
+	andy@kernel.org,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	matthias.bgg@gmail.com,
+	angelogioacchino.delregno@collabora.com,
+	olek2@wp.pl,
+	zhiyong.tao@mediatek.com,
+	linux-pm@vger.kernel.org,
+	linux-iio@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-mediatek@lists.infradead.org
+Subject: [PATCH 2/3] thermal/drivers/mediatek: Add support for MT7981 SoC
+Date: Sun, 29 Jun 2025 00:38:36 +0200
+Message-Id: <20250628223837.848244-3-olek2@wp.pl>
+X-Mailer: git-send-email 2.39.5
+In-Reply-To: <20250628223837.848244-1-olek2@wp.pl>
+References: <20250628223837.848244-1-olek2@wp.pl>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250618231632.113471-1-sivany32@gmail.com> <CAJZ5v0jXPten8QwruK_Dqzvc0izLCfecMPBWMMoP8cnG4mDY0Q@mail.gmail.com>
-In-Reply-To: <CAJZ5v0jXPten8QwruK_Dqzvc0izLCfecMPBWMMoP8cnG4mDY0Q@mail.gmail.com>
-From: Elazar Leibovich <elazarl@atero.ai>
-Date: Sun, 29 Jun 2025 01:12:51 +0300
-X-Gm-Features: Ac12FXz7nWMf_ruYnnpMIxVSTL1Pb61zrmsTZHgUhqpM3MMbLMfc5P52r-Ru3vw
-Message-ID: <CAFcvxdMozCv1mJFKemQKhOnZPLpfkWs3d97bHUijRdw7MdFO1w@mail.gmail.com>
-Subject: Re: [PATCH] powercap: dtpm_cpu: Fix NULL pointer dereference race
- during CPU offlining
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Sivan Zohar-Kotzer <sivany32@gmail.com>, Daniel Lezcano <daniel.lezcano@kernel.org>, elazarl@gmail.com, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-WP-MailID: f11e1f19f95536b631eb315c46069eaa
+X-WP-AV: skaner antywirusowy Poczty Wirtualnej Polski
+X-WP-SPAM: NO 0000000 [AQOB]                               
 
-On Fri, Jun 27, 2025 at 11:07=E2=80=AFPM Rafael J. Wysocki <rafael@kernel.o=
-rg> wrote:
-> > * DTPM power calculations are triggered (e.g., via sysfs reads) while C=
-PU is online
-> > * The CPU goes offline during the calculation, before em_cpu_get() is c=
-alled
-> > * em_cpu_get() now returns NULL since the energy model was unregistered
->
-> But energy models for CPUs are never unregistered.
->
+The temperature sensor support on the MT7981 is exactly the same
+as on the MT7986.
 
-Can't the following happen (extremely rare, but still):
+Signed-off-by: Aleksander Jan Bajkowski <olek2@wp.pl>
+---
+ drivers/thermal/mediatek/auxadc_thermal.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-CPU gets set to impossible during shutdown sequence, e.g.
+diff --git a/drivers/thermal/mediatek/auxadc_thermal.c b/drivers/thermal/mediatek/auxadc_thermal.c
+index 9ee2e7283435..020324901505 100644
+--- a/drivers/thermal/mediatek/auxadc_thermal.c
++++ b/drivers/thermal/mediatek/auxadc_thermal.c
+@@ -1149,6 +1149,10 @@ static const struct of_device_id mtk_thermal_of_match[] = {
+ 		.compatible = "mediatek,mt7622-thermal",
+ 		.data = (void *)&mt7622_thermal_data,
+ 	},
++	{
++		.compatible = "mediatek,mt7981-thermal",
++		.data = (void *)&mt7986_thermal_data,
++	},
+ 	{
+ 		.compatible = "mediatek,mt7986-thermal",
+ 		.data = (void *)&mt7986_thermal_data,
+-- 
+2.39.5
 
-// arch/alpha/kernel/process.c
-common_shutdown_1(void *generic_ptr)
-...
-        set_cpu_possible(boot_cpuid, false);
-
-Just before `get_cpu_device` is called by `em_cpu_get`.
-Then `get_cpu_device` returns NULL for impossible CPU, causing
-`em_cpu_get` to return NULL.
-
-It's not a common scenario, but it seems NULL checking doesn't cost much,
-and can assure us no rare case is crashing the system.
