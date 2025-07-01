@@ -1,34 +1,34 @@
-Received: from forward102b.mail.yandex.net (forward102b.mail.yandex.net [178.154.239.149])
+Received: from forward103b.mail.yandex.net (forward103b.mail.yandex.net [178.154.239.150])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E7E121CC5D;
-	Tue,  1 Jul 2025 05:36:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.149
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F91D221F37;
+	Tue,  1 Jul 2025 05:36:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.150
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751348193; cv=none; b=mxjAGi/7F8xr8PVD3z4dTUdchTqnHfQ1zfgsTEK9Z0XkQNcR4IVvI8Co+n3jr6FI9kcPrzuRDanUTXx014yPdc3at4YMIkf+iGNZ4V/otxn+ZrU4FCFlFHerECFIfhO+kBjZ0tnhyw5pN0l23sGR5PtSDpCGGPx6i1bdjph/YiY=
+	t=1751348193; cv=none; b=UEKC40YUOIVUzzGOuBsdov6vWeOZuPUenLNMvaWA3IYagwdjASMxLY9YIvOv143UOiHY7BGgTuRrAgW8sjNsWd0GrdfszOR4MXgqlDSYI+bcgRAO7jnPjlCR9enAunvZb4A8mMhpOGBdIydFfDmdJOgXtLG1HJGi+V/kr3xdHnM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1751348193; c=relaxed/simple;
-	bh=vrPJWN941QVnpQ/d7LvVaOBwHEMzgQZ+babRIJu8FRk=;
+	bh=uAnU3kDp5eULh9YY0m4O2RAbhlB1sslSRQ44j/FLrBk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Fjces62qlTcX9IBENjtnUM2bmOE8Il5Oj5XvegZkoUgDEYPt8c56e7iz825SUmCuhhnVZPH5bp5RcQmZsr9u9oLVndg559QwNG0ZeLmZkB6kAYxjap6grgQYEy3wXdEozjFHy58jd8jhZoz3r0MbAmwb4avW/v9hFyAMLGp69hY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev; spf=pass smtp.mailfrom=onurozkan.dev; dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b=Dlik2Jxw; arc=none smtp.client-ip=178.154.239.149
+	 MIME-Version:Content-Type; b=Bo+f6lNQoSKrIgCW7AMlvYvBn3WYQ+g9uYU18zAptXiJ/RAsqyF4InpQBESf1eKArPs0sIX/g3pqgK6l7te8d1wwps8BemoM8hmMpa6XpFaKPpxV+W9LpchZ/FDf98/LuNILbVDW+glzH2cmDhIIR8R9XwPbe1JD2q+v+L1Xebw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev; spf=pass smtp.mailfrom=onurozkan.dev; dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b=MIjsTkTC; arc=none smtp.client-ip=178.154.239.150
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=onurozkan.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b="Dlik2Jxw"
+	dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b="MIjsTkTC"
 Received: from mail-nwsmtp-smtp-production-main-73.sas.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-73.sas.yp-c.yandex.net [IPv6:2a02:6b8:c23:2f3c:0:640:5ff5:0])
-	by forward102b.mail.yandex.net (Yandex) with ESMTPS id CC1BB60D55;
-	Tue,  1 Jul 2025 08:36:22 +0300 (MSK)
-Received: by mail-nwsmtp-smtp-production-main-73.sas.yp-c.yandex.net (smtp/Yandex) with ESMTPSA id 6aSk1O9Lw4Y0-pYGl2S2K;
-	Tue, 01 Jul 2025 08:36:21 +0300
+	by forward103b.mail.yandex.net (Yandex) with ESMTPS id A961860A78;
+	Tue,  1 Jul 2025 08:36:29 +0300 (MSK)
+Received: by mail-nwsmtp-smtp-production-main-73.sas.yp-c.yandex.net (smtp/Yandex) with ESMTPSA id 6aSk1O9Lw4Y0-plAPQCWS;
+	Tue, 01 Jul 2025 08:36:29 +0300
 X-Yandex-Fwd: 1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=onurozkan.dev;
-	s=mail; t=1751348182;
-	bh=Fu/EvnRcgzeSqzXsKWwb9gUgTOQaKWQ8C0GMLKqO88M=;
+	s=mail; t=1751348189;
+	bh=pm/en0ZhUL0BgyJub87GJFGa1ribxd2XG0S8lpom2u0=;
 	h=Cc:Message-ID:References:Date:In-Reply-To:Subject:To:From;
-	b=Dlik2Jxwp+xx0rQZbJ7/IiXcdzuBneu412xiV+Jx3/QOrGK2Ak+7+5ItER6Bnhgcz
-	 bEKGqoLIzYWXQhtODA2h7Wdl9TylA1EtQl1L13xCoDyyDnEN+5JhoVxp83HjUCuhPv
-	 IKaT1v0aHLCl7RmldGah7CfH/vXKQbaMxspqqrsM=
+	b=MIjsTkTCDCjKX3QrRdPaFBQlNPTevzwkWwI/P0mKU877VgJ/Se5ZWPTTVtJyZYsa+
+	 JuSCScKvINjAMNUpMwLuquV8ZwAPWEFLX1xNyjaN/oxZEKz95zdAT+T2jfjS590qLn
+	 CvWEC1xfrD8hya+GobD0iRUpI3uMoIg1gY2VzoJk=
 Authentication-Results: mail-nwsmtp-smtp-production-main-73.sas.yp-c.yandex.net; dkim=pass header.i=@onurozkan.dev
 From: =?UTF-8?q?Onur=20=C3=96zkan?= <work@onurozkan.dev>
 To: rust-for-linux@vger.kernel.org,
@@ -56,9 +56,9 @@ Cc: airlied@gmail.com,
 	davidgow@google.com,
 	nm@ti.com,
 	=?UTF-8?q?Onur=20=C3=96zkan?= <work@onurozkan.dev>
-Subject: [PATCH v4 2/6] rust: switch to `#[expect(...)]` in init and kunit
-Date: Tue,  1 Jul 2025 08:35:53 +0300
-Message-ID: <20250701053557.20859-3-work@onurozkan.dev>
+Subject: [PATCH v4 4/6] rust: switch to `#[expect(...)]` in devres, driver and ioctl
+Date: Tue,  1 Jul 2025 08:35:55 +0300
+Message-ID: <20250701053557.20859-5-work@onurozkan.dev>
 X-Mailer: git-send-email 2.50.0
 In-Reply-To: <20250701053557.20859-1-work@onurozkan.dev>
 References: <20250701053557.20859-1-work@onurozkan.dev>
@@ -82,50 +82,74 @@ No functional changes.
 
 Signed-off-by: Onur Özkan <work@onurozkan.dev>
 ---
- rust/kernel/init.rs  | 6 +++---
- rust/kernel/kunit.rs | 2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ rust/kernel/devres.rs    | 2 +-
+ rust/kernel/driver.rs    | 2 +-
+ rust/kernel/drm/ioctl.rs | 8 ++++----
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/rust/kernel/init.rs b/rust/kernel/init.rs
-index 8d228c237954..288b1c2a290d 100644
---- a/rust/kernel/init.rs
-+++ b/rust/kernel/init.rs
-@@ -30,7 +30,7 @@
- //! ## General Examples
- //!
- //! ```rust,ignore
--//! # #![allow(clippy::disallowed_names)]
-+//! # #![expect(clippy::disallowed_names)]
- //! use kernel::types::Opaque;
- //! use pin_init::pin_init_from_closure;
- //!
-@@ -67,11 +67,11 @@
- //! ```
- //!
- //! ```rust,ignore
--//! # #![allow(unreachable_pub, clippy::disallowed_names)]
-+//! # #![expect(unreachable_pub, clippy::disallowed_names)]
- //! use kernel::{prelude::*, types::Opaque};
- //! use core::{ptr::addr_of_mut, marker::PhantomPinned, pin::Pin};
- //! # mod bindings {
--//! #     #![allow(non_camel_case_types)]
-+//! #     #![expect(non_camel_case_types)]
- //! #     pub struct foo;
- //! #     pub unsafe fn init_foo(_ptr: *mut foo) {}
- //! #     pub unsafe fn destroy_foo(_ptr: *mut foo) {}
-diff --git a/rust/kernel/kunit.rs b/rust/kernel/kunit.rs
-index 4b8cdcb21e77..91710a1d7b87 100644
---- a/rust/kernel/kunit.rs
-+++ b/rust/kernel/kunit.rs
-@@ -280,7 +280,7 @@ macro_rules! kunit_unsafe_test_suite {
-             static mut KUNIT_TEST_SUITE: ::kernel::bindings::kunit_suite =
-                 ::kernel::bindings::kunit_suite {
-                     name: KUNIT_TEST_SUITE_NAME,
--                    #[allow(unused_unsafe)]
-+                    #[expect(unused_unsafe)]
-                     // SAFETY: `$test_cases` is passed in by the user, and
-                     // (as documented) must be valid for the lifetime of
-                     // the suite (i.e., static).
+diff --git a/rust/kernel/devres.rs b/rust/kernel/devres.rs
+index 57502534d985..0e9510cf4625 100644
+--- a/rust/kernel/devres.rs
++++ b/rust/kernel/devres.rs
+@@ -157,7 +157,7 @@ fn remove_action(this: &Arc<Self>) -> bool {
+         success
+     }
+
+-    #[allow(clippy::missing_safety_doc)]
++    #[expect(clippy::missing_safety_doc)]
+     unsafe extern "C" fn devres_callback(ptr: *mut kernel::ffi::c_void) {
+         let ptr = ptr as *mut DevresInner<T>;
+         // Devres owned this memory; now that we received the callback, drop the `Arc` and hence the
+diff --git a/rust/kernel/driver.rs b/rust/kernel/driver.rs
+index ec9166cedfa7..fc7bd65b01f1 100644
+--- a/rust/kernel/driver.rs
++++ b/rust/kernel/driver.rs
+@@ -168,7 +168,7 @@ fn of_id_info(dev: &device::Device) -> Option<&'static Self::IdInfo> {
+     }
+
+     #[cfg(not(CONFIG_OF))]
+-    #[allow(missing_docs)]
++    #[expect(missing_docs)]
+     fn of_id_info(_dev: &device::Device) -> Option<&'static Self::IdInfo> {
+         None
+     }
+diff --git a/rust/kernel/drm/ioctl.rs b/rust/kernel/drm/ioctl.rs
+index 445639404fb7..3ae8d2d8263f 100644
+--- a/rust/kernel/drm/ioctl.rs
++++ b/rust/kernel/drm/ioctl.rs
+@@ -9,28 +9,28 @@
+ const BASE: u32 = uapi::DRM_IOCTL_BASE as u32;
+
+ /// Construct a DRM ioctl number with no argument.
+-#[allow(non_snake_case)]
++#[expect(non_snake_case)]
+ #[inline(always)]
+ pub const fn IO(nr: u32) -> u32 {
+     ioctl::_IO(BASE, nr)
+ }
+
+ /// Construct a DRM ioctl number with a read-only argument.
+-#[allow(non_snake_case)]
++#[expect(non_snake_case)]
+ #[inline(always)]
+ pub const fn IOR<T>(nr: u32) -> u32 {
+     ioctl::_IOR::<T>(BASE, nr)
+ }
+
+ /// Construct a DRM ioctl number with a write-only argument.
+-#[allow(non_snake_case)]
++#[expect(non_snake_case)]
+ #[inline(always)]
+ pub const fn IOW<T>(nr: u32) -> u32 {
+     ioctl::_IOW::<T>(BASE, nr)
+ }
+
+ /// Construct a DRM ioctl number with a read-write argument.
+-#[allow(non_snake_case)]
++#[expect(non_snake_case)]
+ #[inline(always)]
+ pub const fn IOWR<T>(nr: u32) -> u32 {
+     ioctl::_IOWR::<T>(BASE, nr)
 --
 2.50.0
 
