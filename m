@@ -1,74 +1,114 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0837422DF9E;
-	Wed,  2 Jul 2025 07:34:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DBD092309B3;
+	Wed,  2 Jul 2025 07:46:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751441655; cv=none; b=BSBnrdype8E/ASZYCGczKSlEa829enFEyTkieEiZ2+wVWd4W0+ordN7irsQJFlNvwfCX1od3E0Suivq88UQkxKh//Epb44HZ+xuC0NQLft7bNhHitw9iwP40vgtcdrNn0ol3t6ODRgzG/4z6elegOwt5mV+sQRe68VUEHRVALJ4=
+	t=1751442409; cv=none; b=nH6IKyq4IVjsYDevVssfcuS/bMJClS+8xl+5p6PJr7Vg/KZm4yseNKNL7+9Rzf5wVqlF5AiBj4Aclr/bUhu7d5E+7OUv6XYYenFw/vpbZCuHqvrU5hbeX9CFIz3MwgLaRllCclIGswPyKo6z/1Jx77BDdKDyb2ekthowvbgm+u0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751441655; c=relaxed/simple;
-	bh=hP4hON7E7oXvPH0f+fMbPL2IxVBYqXaro2alxaWbcoo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XyKYLi2h+EPZNSsfwEFnMd9vAOIcRJJbxp7UPqJd8FJ9GXrsSYqNNgKKqhnkU4SzdX2V9xn2faC+LSRZ5uI8MhPcVKSrCfWzgmmHhKkuGhhs5+gQ9gJBQFE1Bomf7y8QnZv+hPy1HUejN5lhmNEwKfT1ekJn0A6RMvRZzQrYErY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=E/a6/TsN; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1751442409; c=relaxed/simple;
+	bh=UPGQs6o7IxPKQ3JcTYGvuyxfO5biIaF57rUkGXslPb4=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=cvN40lHstZ+nzIxJY/iNub5bnd1MaU2w1ccMn3KnI9Lyw9qSDn/c/rIXQs1gj9dQa9qzefLE9uH883D9qHf75A4Kfz00ApBK835bbMre2FggqhkBxlEbwNtIpHVasFnsMQUtTzkTUPJCmr4qCW7N2r34P8oEdLJI0kCfw/D87h0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AnV4Ri9J; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="E/a6/TsN"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D4068C4CEEE;
-	Wed,  2 Jul 2025 07:34:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1751441654;
-	bh=hP4hON7E7oXvPH0f+fMbPL2IxVBYqXaro2alxaWbcoo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=E/a6/TsNsNnMYUxaIXN827neJHzWqgazQ3TV8Ous25tztEpY6hR3c7mBETYq0TyL4
-	 vuemE43LrGprxUXhuRxN0m3dudlWn8yjnciyTEBVayDdM6690odTKiqJahl3NRQPJg
-	 kS5zlbBr74aXYyq4tOj3Xc7Bq3A/vuzl89M4UlAI=
-Date: Wed, 2 Jul 2025 09:34:12 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Saravana Kannan <saravanak@google.com>, Stephen Boyd <sboyd@kernel.org>,
-	linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rafael@kernel.org>,
-	Michael Grzeschik <m.grzeschik@pengutronix.de>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Abel Vesa <abel.vesa@linaro.org>, Peng Fan <peng.fan@oss.nxp.com>,
-	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
-	Johan Hovold <johan@kernel.org>,
-	Maulik Shah <maulik.shah@oss.qualcomm.com>,
-	Michal Simek <michal.simek@amd.com>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Thierry Reding <thierry.reding@gmail.com>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Hiago De Franco <hiago.franco@toradex.com>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 17/24] driver core: Export get_dev_from_fwnode()
-Message-ID: <2025070205-ignore-passive-17b4@gregkh>
-References: <20250701114733.636510-1-ulf.hansson@linaro.org>
- <20250701114733.636510-18-ulf.hansson@linaro.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AnV4Ri9J"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 8C270C4CEF8;
+	Wed,  2 Jul 2025 07:46:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1751442408;
+	bh=UPGQs6o7IxPKQ3JcTYGvuyxfO5biIaF57rUkGXslPb4=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=AnV4Ri9JJmbRqp+2AmdUWHshc+V6XXIpGoF5GH5eK9UPuYZfVvnpeu34Efkxpr1Ux
+	 DQdgL1zW1Zb72KyiaUuNj7xOQTKoASEA3FduGQSYUbaOSCxcx1XjX7Pl2EvBePrAO6
+	 aPI7EHIS5BkfW4IyRyUrT1BNVE7zTZ3jKaRdTT8rKHKwmk8AtztSlQ25FqEonfdwPm
+	 w6J8A2aqmGWPZuHxBiXrASK64mVUe+EFdKQBmJSXCC99kiCdK6nhGIZrZskCUcIFl5
+	 as2dLtwTRpZXKwO61NrPmUMfV8RhQrs83QmE1bpW5m/SzUAqJR9xtxuCBaYFeDztSP
+	 7A4m+9PwFTyyQ==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F09BC83013;
+	Wed,  2 Jul 2025 07:46:48 +0000 (UTC)
+From: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>
+Date: Wed, 02 Jul 2025 02:46:25 -0500
+Subject: [PATCH v5 2/3] cpufreq: dt: Add register helper
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250701114733.636510-18-ulf.hansson@linaro.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250702-tegra124-cpufreq-v5-2-66ab3640a570@gmail.com>
+References: <20250702-tegra124-cpufreq-v5-0-66ab3640a570@gmail.com>
+In-Reply-To: <20250702-tegra124-cpufreq-v5-0-66ab3640a570@gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>, 
+ Thierry Reding <thierry.reding@gmail.com>, 
+ Jonathan Hunter <jonathanh@nvidia.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-tegra@vger.kernel.org, Aaron Kling <webgeek1234@gmail.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1751442407; l=1698;
+ i=webgeek1234@gmail.com; s=20250217; h=from:subject:message-id;
+ bh=o7BSnjiEeAr40p8PQoKLMNpDwUQoKoaMMFdZbO3EPoY=;
+ b=u4mb1O8HXeuudeU1EGdFvH0aUkecR25S5gJX5CVbPdk8NDZc+4BN+f4lUC6Z8GIrCWEn/rh6x
+ cV07wFV9m6NAs9gOIagCuROX0B+zZJCWw3Xj6o336YmaPmLC3ICPw5n
+X-Developer-Key: i=webgeek1234@gmail.com; a=ed25519;
+ pk=TQwd6q26txw7bkK7B8qtI/kcAohZc7bHHGSD7domdrU=
+X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
+ auth_id=342
+X-Original-From: Aaron Kling <webgeek1234@gmail.com>
+Reply-To: webgeek1234@gmail.com
 
-On Tue, Jul 01, 2025 at 01:47:19PM +0200, Ulf Hansson wrote:
-> It has turned out get_dev_from_fwnode() is useful at a few other places
-> outside of the driver core, as in gpiolib.c for example. Therefore let's
-> make it available as a common helper function.
-> 
-> Suggested-by: Saravana Kannan <saravanak@google.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Tested-by: Hiago De Franco <hiago.franco@toradex.com> # Colibri iMX8X
-> Tested-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com> # TI AM62A,Xilinx ZynqMP ZCU106
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/base/core.c    | 8 ++++++--
->  include/linux/device.h | 1 +
->  2 files changed, 7 insertions(+), 2 deletions(-)
-> 
+From: Aaron Kling <webgeek1234@gmail.com>
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cpufreq-dt currently exports no functions. This means that drivers that
+are based on cpufreq-dt have no way of establishing a depmod dependency
+on it. This helper allows that link.
+
+Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
+---
+ drivers/cpufreq/cpufreq-dt.c | 11 +++++++++++
+ drivers/cpufreq/cpufreq-dt.h |  2 ++
+ 2 files changed, 13 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index e80dd982a3e23f6e678d691daba2d8bfda28d93c..506437489b4db241a7a6259274ae84e688772e66 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -329,6 +329,17 @@ static struct platform_driver dt_cpufreq_platdrv = {
+ };
+ module_platform_driver(dt_cpufreq_platdrv);
+ 
++struct platform_device *cpufreq_dt_pdev_register(struct device *dev)
++{
++	struct platform_device_info cpufreq_dt_devinfo = {};
++
++	cpufreq_dt_devinfo.name = "cpufreq-dt";
++	cpufreq_dt_devinfo.parent = dev;
++
++	return platform_device_register_full(&cpufreq_dt_devinfo);
++}
++EXPORT_SYMBOL_GPL(cpufreq_dt_pdev_register);
++
+ MODULE_ALIAS("platform:cpufreq-dt");
+ MODULE_AUTHOR("Viresh Kumar <viresh.kumar@linaro.org>");
+ MODULE_AUTHOR("Shawn Guo <shawn.guo@linaro.org>");
+diff --git a/drivers/cpufreq/cpufreq-dt.h b/drivers/cpufreq/cpufreq-dt.h
+index 28c8af7ec5ef3ad0aa94f43ad9129600ca094329..fc1889aeb4f1f15fa7c46c2380021bbf40b62f11 100644
+--- a/drivers/cpufreq/cpufreq-dt.h
++++ b/drivers/cpufreq/cpufreq-dt.h
+@@ -22,4 +22,6 @@ struct cpufreq_dt_platform_data {
+ 	int (*resume)(struct cpufreq_policy *policy);
+ };
+ 
++struct platform_device *cpufreq_dt_pdev_register(struct device *dev);
++
+ #endif /* __CPUFREQ_DT_H__ */
+
+-- 
+2.50.0
+
+
