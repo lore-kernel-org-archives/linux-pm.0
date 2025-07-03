@@ -1,188 +1,136 @@
-Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 848AE13B2A4;
-	Thu,  3 Jul 2025 13:32:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 413FB2E03F4;
+	Thu,  3 Jul 2025 13:35:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751549552; cv=none; b=HPDp+Lw6EKjfMKaj/yzuhRrr/g1+VaPF3iEakEGe9FEPC/9dLdBNkj+pkSuudu3BoCmCnHv9D5IHnMMz+aexdE5WGyMp/b9aFkroZLxbxRcCgU8F5IaUn0rCGby0DWMEKbO5Xc5OL++265Zc7n/rnU1EnWjCID1zqzcAquYjchg=
+	t=1751549704; cv=none; b=kmedMZQAPN6cCKZoW5HSQehSOoQ2NrkWiNr2ylSH8pMvmi1e4U1dP804OmQRpTliCx2XkKujSJ5OnPjv5pIa/a6t1+lt6uv12BB/iS7q75lFUpAsKVKdsZl50GsRukei2yFOMMLNll8QgVMvY0nvyh3e7VQs3P9MbYkLTD2aE5c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751549552; c=relaxed/simple;
-	bh=zGKkOzJI2At6lwlypOoOWjmLIZuzEOoWGySWBtnvhTE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=QuGOt5Tjua0awFDy/q5Ijprop5Dwbl08q6C03jDaG6tL7Fo/F2ZxROiji6obs/vVJdzJH8NKInyhq60gGb3paY+AlW2KTrnBNvLVzhT8dG4azXUtKDN0J9G7vkY8AMoCUbpqZXcmYZvnTFEKheQNBIHZfyzWSBtuT/63607hb+A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hTO3y/sR; arc=none smtp.client-ip=209.85.221.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1751549704; c=relaxed/simple;
+	bh=WVh03UrKKMZebFsj28jXXmaKIXAvdki6/0YMrcBckWE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Zi8HJ/nUIMNVoHRg6ubGqlEUBPO+Z4oja+qKfwmZLG7YfmL4XEKBK5E8avJaqNh4amLFooSIo/63Q5oxxxAcDrSv7TXI23qJYN0g1aq5XjgxBNSX+eSbswM3h34wzamKHPH52ob6jzLocVz0swHojAtM38l0WiueIzgMmjH1uco=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iqPzRx1r; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hTO3y/sR"
-Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-3a507e88b0aso4464076f8f.1;
-        Thu, 03 Jul 2025 06:32:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1751549548; x=1752154348; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=VzTZN1Rgi3KEaXkVhx7sTEQ+GfRghm0dQNuxhM8Lk7o=;
-        b=hTO3y/sRMpU7KHb3YXqVcBt+kadH6BFfvfVvNGab6ykLtzoVBAAQj7JGijc5gVtE/t
-         pcCmw3gSHjgCMJBM7KVr8+FF/Sub/vSBYM8vGNH0TnO/paI/DgWKJqjdaQEZBx636iqH
-         Q9UnM5MkcoacKIe2KcGSrGPq+nkb65oqX6AhDSlnjY5KmF3n4fOBLXKR5XolXZNFoS4h
-         lREs5XWG1TsOE9AJKU+pCxURgUuNqUBn29xe/TayZ+ux25OTv0OB1lvg8TVPyKQpo69H
-         y6bumlK4kOM1TcXnePBCjeTVFS5PMGQeM5B250hdAx9axyb4Ak6P8CLqxpWBUKD5d5m9
-         KUVQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751549548; x=1752154348;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=VzTZN1Rgi3KEaXkVhx7sTEQ+GfRghm0dQNuxhM8Lk7o=;
-        b=Pyj3SwcsXH6Ev6kBO34HAa4E6b5SXqm1DpN3HqaSnee3IYVL39L9ELcTzzNrT2JlM1
-         HaZIhNRYn/BgvsjbInEXWT+JZFagZSTOtMUgrDfdni/tgrva9RPkJJh8MI8kcV7sBUsj
-         ztba2L8lwegFrvDnjngkSI9BjY6qQ1rgRgA/0WiHCMK3OVojccdJ7Oh6VqX5gq4qMKKS
-         ClhUMaI2EdEbZ2/NX65TrHLGEDxQY3G9crzRwSkfuGYtj6kuUkVIell++sZVK7d/4TrB
-         /v07lrYEmdUEJSuMilECVcDfpKg03WgRweWqWmumgN1r5VJ+pBCq6721ViG8XNd3S4eg
-         kT5w==
-X-Forwarded-Encrypted: i=1; AJvYcCX4JWNlMzmnkzaBZXbYgnKPECJdwhnUW9Jk3JkUMNbssktk23N2FsJR93bVm6Aq4BlohP6co0azeg==@vger.kernel.org, AJvYcCXrxJzTZfBbS4SwViw0PcgyBrxXptbHhW2GCFCF+zHqJ+XmIRb85JtOh6hqvVohueHw4Pj7fTWSgTaNouQ=@vger.kernel.org
-X-Gm-Message-State: AOJu0YweNZYxmxS8PN/4GruUTg+wbUIq+LbCSt32KC9E15NwFepoecUX
-	6iBy1P86kivv3YAGG4Ss4LLWlkkvoOW/sqCF+U2FZuuUccv9B7M0+4tMUogf4Q==
-X-Gm-Gg: ASbGnctC1+YMIWFtYKImV3UAOJE7HxWGL5ipMNIDvQ9BGq/o5mbJzXx94jDhPkYTIxC
-	y7QwWMsJPLEstSkgRfCjbDVS6EKnvjj2UgGDhx/+Mpd+HDgqAjlm/lUawkdV7h5gGV8SfJEBX/D
-	9lqH4D9KafAhJENQjynsvOp58htF9GNCo8hdCgdHMBwbhwvTeh3UtUWe6PAXGWQZEF+JF7R00YT
-	2m/ZSg+/fqUHEhYHpsRZdOV62Ye1kzV7DhDGpPYjB3D18PPnkWTDYnMRaIHmhcxfNt/n1VEKjbb
-	TCWw2VHOsrplvId2C2C9kb/CRdm2WCv2X1TOwLIx41gyO8GdnoaJHrEjHpV5XFEK/iHfPgd2CKp
-	LkqlqW7wOOpfanU79b2txNu6AJptv9n19H6g+ARnNRwh1w9vJ
-X-Google-Smtp-Source: AGHT+IGWpisDXiFyyqwzWsMXcKSEHmRXU6edUilLRNhMLwl6kmpAmMNt1c/YASvIJDD2NqdC0Xef1A==
-X-Received: by 2002:a5d:64e4:0:b0:3a4:efbb:6df3 with SMTP id ffacd0b85a97d-3b32b14582dmr2868264f8f.10.1751549547337;
-        Thu, 03 Jul 2025 06:32:27 -0700 (PDT)
-Received: from orome (p200300e41f4e9b00f22f74fffe1f3a53.dip0.t-ipconnect.de. [2003:e4:1f4e:9b00:f22f:74ff:fe1f:3a53])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-454a999c8cdsm27218775e9.24.2025.07.03.06.32.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 03 Jul 2025 06:32:25 -0700 (PDT)
-Date: Thu, 3 Jul 2025 15:32:24 +0200
-From: Thierry Reding <thierry.reding@gmail.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Oliver Neukum <oneukum@suse.com>, linux-pm@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
-Subject: Re: Forcing devices into idle
-Message-ID: <e635l6gfpg7amck2hnu4l47tnc54lr6e26v7y3ohaywil6pjwr@4trxzfdigo62>
-References: <rlzpjdsg6cbgxc553j6m25ysb6tyldy4lnxsjjn4hdzv7rszpp@y6rfcrbjfook>
- <fbfc6bf9-d7c6-4df5-85d0-b1d357159d88@suse.com>
- <CAJZ5v0hPh19h9uVRVHSXiLaHxm3PR9A3W5+j=2=-B-YCyBr=uw@mail.gmail.com>
- <hjkm55hus3ctueydf7ebfb25hbdw6w3spdzx7maauzlzmnakas@noqexx2pxxtj>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iqPzRx1r"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C778FC4CEE3;
+	Thu,  3 Jul 2025 13:35:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1751549703;
+	bh=WVh03UrKKMZebFsj28jXXmaKIXAvdki6/0YMrcBckWE=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=iqPzRx1rrUSaHtuwZ6DJdTYB4GQ8FkakwKL7eBHFP2oehlq+8Nov6LTzI/Tg1Z+Bi
+	 U1Wk7TKZ43JEscCnyQSP//4x/umWagmt6mZL4g8ihF46qG/rAlBQuXKqcrJvDUbUOM
+	 /P18XaYsiwTr8aZBWMftAC0fI7pMsMr5T32ksODQvTWWXEYZ1/+R++z1gDkNk8NsQS
+	 p3lvKj2/JIRESxM8SRQYnlp/w1/pbF6sIxw/kuTSHUheZbU4G2gV5X5SwvRHYYajhZ
+	 g6yDDuLDW+YJ2McJcemnXp4Pwq4Q+e/nmkYMiID3987fADkBz6QY6IKGbrLVJkhw4L
+	 CgH+9by2T3vOg==
+Received: by mail-oo1-f50.google.com with SMTP id 006d021491bc7-611b246727cso2843307eaf.0;
+        Thu, 03 Jul 2025 06:35:03 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCVAWiFLEzhLFYvFzYxMkrRjr1AI1LjOeKfi4m8IRVTV8hwF5Po2gQwfiZ5taAEn2dzKLhtRlXIT4LTf942z3ZPF6kgn@vger.kernel.org, AJvYcCVlkxsOB8FrgRH/0u8yFqh2QAchvdlsb47ve3qSkp5zlXXVUiqsXPfyHaqeBlFPtSPSl1ZRi4EP6g==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy3u1wpG02eNGwbbw4wlSlcrYoBw4CHGoKKNybg1smw2F6IXLRe
+	9df5mM46RLAm6kdM2kAo0jAVwSj9DXAjI2lGBwERn3d9pcu2zcvqlWnZtYWcl1UfmUO+g6WCgZ8
+	puifWlSzDrnD6/rnaolak98boPNGnLYg=
+X-Google-Smtp-Source: AGHT+IFXCo3QjWMLEfAx2AHr/+WcA8i4kKNZBECRqwWrpQd2bXdgx/R657LBUV+shBDZm70G215NOPFVkIIseBbBgRw=
+X-Received: by 2002:a05:6820:218:b0:612:c547:7984 with SMTP id
+ 006d021491bc7-612c54780dbmr3207808eaf.1.1751549703080; Thu, 03 Jul 2025
+ 06:35:03 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="kl7qpfexrmgtjonf"
-Content-Disposition: inline
-In-Reply-To: <hjkm55hus3ctueydf7ebfb25hbdw6w3spdzx7maauzlzmnakas@noqexx2pxxtj>
-
-
---kl7qpfexrmgtjonf
-Content-Type: text/plain; protected-headers=v1; charset=utf-8
-Content-Disposition: inline
+References: <20250611032310.10610-1-qiwu.chen@transsion.com>
+In-Reply-To: <20250611032310.10610-1-qiwu.chen@transsion.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 3 Jul 2025 15:34:51 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0g-7ZrnKO5s--zXmaA+M07tiLBy1x-hsw4JqLPvCtt4aQ@mail.gmail.com>
+X-Gm-Features: Ac12FXwcnbbdlK2F_TNpx83OutHKwJ5zPO-Qu4_o-BgPDR5aZCj7-ZW1Q4QnlV8
+Message-ID: <CAJZ5v0g-7ZrnKO5s--zXmaA+M07tiLBy1x-hsw4JqLPvCtt4aQ@mail.gmail.com>
+Subject: Re: [RESEND PATCH] cpuidle: Add find_deepest_state trace event
+To: "qiwu.chen" <qiwuchen55@gmail.com>
+Cc: rafael@kernel.org, daniel.lezcano@linaro.org, rostedt@goodmis.org, 
+	mhiramat@kernel.org, linux-pm@vger.kernel.org, 
+	linux-trace-kernel@vger.kernel.org, "qiwu.chen" <qiwu.chen@transsion.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: Forcing devices into idle
-MIME-Version: 1.0
 
-On Thu, Jul 03, 2025 at 02:06:00PM +0200, Thierry Reding wrote:
-> On Thu, Jul 03, 2025 at 01:12:15PM +0200, Rafael J. Wysocki wrote:
-> > On Thu, Jul 3, 2025 at 12:33=E2=80=AFPM Oliver Neukum <oneukum@suse.com=
-> wrote:
-> > >
-> > > On 03.07.25 12:08, Thierry Reding wrote:
-> > >
-> > > > Any thoughts on how to solve this? Is the pm_runtime_{put,get}_sync=
-()
-> > > > method acceptable? If not, are there other alternatives to achieve =
-the
-> > > > same thing that I'm not aware of? Would it be useful to add a new s=
-et of
-> > > > APIs to force devices into an idle state (which could be semantical=
-ly
-> > > > different from runtime suspend)? Or is this all too specific for any
-> > > > kind of generic API?
-> > >
-> > > Basically what you need is what happens when the system prepares to
-> > > do a snapshot for S4. However, if you just perform FREEZE and then TH=
-AW,
-> > > devices will assume that user space has been frozen. You need a way
-> > > to substitute for that assumption.
-> >=20
-> > Well, you just need to freeze user space beforehand.
->=20
-> Freezing userspace seems a bit heavy-handed. There's only a very few
-> devices that need to be put into reset (such as the GPU), so most of
-> userspace should be fine to continue to run. For the GPU the idea is
-> to block all incoming requests while the device is forced into idle,
-> and then to resume processing these requests after the VPR resize.
->=20
-> But maybe freezing userspace isn't the heavy operation that I think it
-> is. Ideally we do not want to suspend things for too long to avoid
-> stuttering on the userspace side.
->=20
-> Also, I think we'd want the freezing to be triggered by the VPR driver
-> because userspace ideally doesn't know when the resizing happens. The
-> DMA BUF heap API that I'm trying to use is too simple for that, and
-> only the VPR driver knows when a resize needs to happen.
->=20
-> Is it possible to trigger the freeze from a kernel driver? Or localize
-> the freezing of userspace to only the processes that are accessing a
-> given device?
->=20
-> Other than that, freeze() and thaw() seem like the right callbacks for
-> this.
+On Wed, Jun 11, 2025 at 5:23=E2=80=AFAM qiwu.chen <qiwuchen55@gmail.com> wr=
+ote:
+>
+> Add a new trace event namely cpuidle_find_deepest_state to trace
+> the found deepest idle state during CPUidle flow.
+>
+> The new trace event will help developers debug CPUidle issues by
+> providing more detailed information about the CPUidle states.
 
-I've prototyped this using the sledgehammer freeze_processes() and
-thaw_processes() functions and the entire process seems to be pretty
-quick. I can get through most of it in ~30 ms. This is on a mostly
-idle test system, so I expect this to go up significantly if there
-is a high load.
+I wonder what exactly this is needed for.
 
-On the other hand, this will drastically simplify the GPU driver
-implementation, because by the time ->freeze() is called, all userspace
-will be frozen, so there's no need to do any blocking on the kernel
-side.
+The function being traced is used mostly during suspend-to-idle, so is
+this what you have in mind or something else?
 
-What I have now is roughly this:
+In any case, the changelog needs to be more specific about the reason
+why the new trace event is needed.
 
-	freeze_processes();
-
-	for each VPR device dev:
-		pm_generic_freeze(dev);
-
-	resize_vpr();
-
-	for each VPR device dev:
-		pm_generic_thaw(dev);
-
-	thaw_processes()
-
-I still can't shake the feeling that this is sketchy, but it seems to
-work. Is there anything blatantly wrong about this?
-
-Thierry
-
---kl7qpfexrmgtjonf
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAmhmhmUACgkQ3SOs138+
-s6F+6g//aRuHpYkzTMvccJ4QyH5yNDpNqRpGvN9HG7a5R6V0sul3YDjRBFiTSJ5U
-87wncw9HcxnM/em3AHaqPeoGjLL5R95Sz1owAMh1TPxUHWfVlUfSqB5TCyd7dJ0S
-O+F1EIjuVJrOcdd8P9gccBZLzJEkIGCdBe1ZAVWBapuj1wxAQxhPXZme/grtCiet
-dzUbcHuZzkxThASpUDs0ftezwiamiW0W3xYKS+PjWC1sstlw7E2EIcsOTYyomLOA
-LxcncWBzXYiApIwLuQtEI71We/5bATYbUJHdN1lo0Wc5tGlTFxgnKPRYME2WUit6
-l2M6/3TfHPZOD7RxicU8NIeB1kBk5IefqiZ54SzH6BVuRV66gD56UmjxJP66K6vc
-3OIgbXNeKwTsbMdd2Ho3fV9qEMfWdswH/YXev+WojMCGJLXQNzo9E6fO2bNH6FWA
-5nHvK2/Ms2z6Q06Mbm+VSFnWSpcRf81vyqXFvD3ODX44hemA+tnEVB20T1/gEESe
-Y8cuNsa0Jk6agmgQAA6Gpftne8R5gSO/gyQJrTJKBv+oTlR31P439/cd9nTB5pzT
-aK0cD+JGCPoZZww4fuYwww5DwSRAq+/viU7Og71OF859E/BwOP6l5G2UDX7Qew9I
-6Ekqjd9864mv0m9wIkDkLSM9gEU8E6qKMWQKyMrPzbJIQ1TJCpw=
-=tnZJ
------END PGP SIGNATURE-----
-
---kl7qpfexrmgtjonf--
+> Signed-off-by: qiwu.chen <qiwu.chen@transsion.com>
+> ---
+>  drivers/cpuidle/cpuidle.c    |  2 ++
+>  include/trace/events/power.h | 24 ++++++++++++++++++++++++
+>  2 files changed, 26 insertions(+)
+>
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index 0835da449db8..9065aa396892 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -103,6 +103,8 @@ static int find_deepest_state(struct cpuidle_driver *=
+drv,
+>                 latency_req =3D s->exit_latency_ns;
+>                 ret =3D i;
+>         }
+> +       trace_cpuidle_find_deepest_state(dev->cpu, s2idle, ret);
+> +
+>         return ret;
+>  }
+>
+> diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+> index 9253e83b9bb4..82b5ac8c46e6 100644
+> --- a/include/trace/events/power.h
+> +++ b/include/trace/events/power.h
+> @@ -62,6 +62,30 @@ TRACE_EVENT(cpu_idle_miss,
+>                 (unsigned long)__entry->state, (__entry->below)?"below":"=
+above")
+>  );
+>
+> +TRACE_EVENT(cpuidle_find_deepest_state,
+> +
+> +       TP_PROTO(unsigned int cpu_id, bool s2idle, unsigned int deepest_s=
+tate),
+> +
+> +       TP_ARGS(cpu_id, s2idle, deepest_state),
+> +
+> +       TP_STRUCT__entry(
+> +               __field(u32,            cpu_id)
+> +               __field(bool,           s2idle)
+> +               __field(u32,            deepest_state)
+> +       ),
+> +
+> +       TP_fast_assign(
+> +               __entry->cpu_id =3D cpu_id;
+> +               __entry->s2idle =3D s2idle;
+> +               __entry->deepest_state =3D deepest_state;
+> +       ),
+> +
+> +       TP_printk("cpu_id=3D%lu is_s2idle=3D%s deepest_state=3D%lu",
+> +                (unsigned long)__entry->cpu_id,
+> +                (__entry->s2idle)?"yes":"no",
+> +                (unsigned long)__entry->deepest_state)
+> +);
+> +
+>  DECLARE_EVENT_CLASS(psci_domain_idle,
+>
+>         TP_PROTO(unsigned int cpu_id, unsigned int state, bool s2idle),
+> --
+> 2.25.1
+>
