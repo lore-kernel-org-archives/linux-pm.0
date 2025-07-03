@@ -1,125 +1,458 @@
-Received: from dggsgout11.his.huawei.com (dggsgout11.his.huawei.com [45.249.212.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-f176.google.com (mail-lj1-f176.google.com [209.85.208.176])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C9B528B516;
-	Thu,  3 Jul 2025 13:48:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9A94139CE3;
+	Thu,  3 Jul 2025 13:56:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751550501; cv=none; b=tFWC7S7QbAAoEedqm+e9DgAdsWfES2Uf03a4657qlOGewLLqvAFZOFE34VtOT3aon5W8ZT656cNTdnTZ7xM+l515bdlBBrsLa1whkitMgkEecse/xHLRTeScnGQcdXW/UCwLjTJXOaHdSL3Qy5L+7lakh0GZm6aZMMQ0WMLYoHY=
+	t=1751550993; cv=none; b=Wj/LoNRbKq54unr1qlwZohgBa6pnnNYAg9tAhid0PJ7r32e0+Z1pKeVZeru4UO6H+ClSB5DrJ8ZAFC8poNHGDBNqUwxKcw6Z+z+vbWnY06SX7echjZkqUo3l0a8jiTDNoomNeWn18Ywuo05SitZfu5TLV01t7NPSCx8wMxxl+OM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751550501; c=relaxed/simple;
-	bh=8IvgdlogpP7JuvdzwJQsuveomKygW/XCJS9EI4AtOQQ=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=CA7MJHTfoyeFykBApoURGAQJcbzl3hYw0aRDe+SJD8TgjUReuHRe2sOw5kZdvDLmV9MHTByRevbA5qAJLLEqFajBPjyYMu2lYoSgSyH2I+4qo5dgxI13TLxwoQLuWGUsoUkEdG8dK4V6GDHN1Dw7nVUE8LtRH9rewg5AnOhMPAY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com; spf=pass smtp.mailfrom=huaweicloud.com; arc=none smtp.client-ip=45.249.212.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huaweicloud.com
-Received: from mail.maildlp.com (unknown [172.19.163.216])
-	by dggsgout11.his.huawei.com (SkyGuard) with ESMTPS id 4bXylN3bTtzYQtrF;
-	Thu,  3 Jul 2025 21:48:16 +0800 (CST)
-Received: from mail02.huawei.com (unknown [10.116.40.252])
-	by mail.maildlp.com (Postfix) with ESMTP id 5C96B1A12D0;
-	Thu,  3 Jul 2025 21:48:15 +0800 (CST)
-Received: from hulk-vt.huawei.com (unknown [10.67.174.121])
-	by APP3 (Coremail) with SMTP id _Ch0CgDXOCYJimZoV+8fAg--.35082S2;
-	Thu, 03 Jul 2025 21:48:15 +0800 (CST)
-From: Chen Ridong <chenridong@huaweicloud.com>
-To: peterz@infradead.org,
-	rafael@kernel.org,
-	pavel@kernel.org,
-	timvp@google.com,
-	tj@kernel.org,
-	mkoutny@suse.com
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	lujialin4@huawei.com,
-	chenridong@huawei.com
-Subject: [PATCH next] sched,freezer: prevent tasks from escaping being frozen
-Date: Thu,  3 Jul 2025 13:34:27 +0000
-Message-Id: <20250703133427.3301899-1-chenridong@huaweicloud.com>
-X-Mailer: git-send-email 2.34.1
+	s=arc-20240116; t=1751550993; c=relaxed/simple;
+	bh=Eu9yAhGMxFnFCRgXqutb86wxfbf2J7wghtSIo5kDSOk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=oj+IJAiCoywqFABrRNjJ6o7SCsbRYHbP0LZGeUkBQBFi2RVTeqd3sxecyniNapEysNtrUMdq0JCGDHAUZHi+IM+QI/N4PSCN2f6F9ijrPiNIttQmF/NAPqSATRI/5aKMsnpX4hNovOO941bOnoHtDK2GiwX5/bY5oAlEwNQtvqc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ELAsMRoN; arc=none smtp.client-ip=209.85.208.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ELAsMRoN"
+Received: by mail-lj1-f176.google.com with SMTP id 38308e7fff4ca-32ac52f78c1so81823651fa.3;
+        Thu, 03 Jul 2025 06:56:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1751550989; x=1752155789; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=XroVTgiipbMk92z/0akuSiUYeZttfe/ce+IMaIERceI=;
+        b=ELAsMRoN9rNoDFctbRVCqtQnhFS/csCUuv3CNbWNRO4ja2tlSKz1bTPaZWAdASFud9
+         k+R+gnJyorPTZaWBmu5QbNd35WR7T7IqAk3bA6RVxEfqN2Vpm6ACkznyKZbsRyfD3g3P
+         fdRxFNW5X/2dcKey9jZzZ0dYtrPD+NKe/s/jLHDT52HioV1CWGqd1QxVkG8eq+Hc8lDS
+         1Rhecx/dAL2XB8FW1F88J8hS70RIZgM2hTZuGcrL7uDdVrQ/UmW4wwe6M/XWj0wpnUDg
+         Q6PUxfyOKIhw2OAFLsXy5Ws2IbMTkYjggg2gMV3CjsTMHGyG/Co5B3VtmQhHlmJ+VWYw
+         WGLA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1751550989; x=1752155789;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=XroVTgiipbMk92z/0akuSiUYeZttfe/ce+IMaIERceI=;
+        b=FMZm2QKjQmywUko0t1yOxEgVYC1D0xxV2HJV66GQHFLsSUeuW6TLXFqZr0G+wQeEqg
+         0N6sE25YeYacMYVkEkPBzoxCKIa5HeCI43CHHFjOEqVbJt7MY0xwX6+yzQC7xeLLEOcz
+         QGOK1bZ2g4aBe/P8NRmtovSj5rNWXQV7HQPBwNqxIgzZYDhpil5dwD+iFGp6h5JwUzE9
+         KnJW/XNOWpLwOVKr/V2cWvKCH2IPyBLj+axmZ3yigaj3YQlf9TH4a9VPQs7vqtsvOE1E
+         iZP0vo2S0mLDoOT6qJKVXdAwCjleZ/IwAgU3b8/n6X7FL9faZk6KPdUvgoepaFbcnswe
+         oTsg==
+X-Forwarded-Encrypted: i=1; AJvYcCUE/qgEa8HkhOCAsZta5PwGJpbZpwkoijRRK2sLCj4L93rdx7TKzeQYN+VK3LOanGURGK3p2qrogHD4@vger.kernel.org, AJvYcCV+bIxAEylHJZBNkyT9i0++XcPaovPzt59xezl8+gVnE+hYCnxHbUEhT/p5oZgDwjmwETDqK5C2Js+4Wj4=@vger.kernel.org, AJvYcCWSiAOtJE8IBRuGb1DZ/hqu+KW6getzWpXAime2Up4+TWX3NUZM061L7zTpor8OBasRHw3acUlx@vger.kernel.org, AJvYcCWkmcFWZWQYh6253M5TMQU54NKqtwQ0cNhTYdtC8jBaJ+yWwsk5oWMwGWPniPa5OMvE6RzLl9C3IDg=@vger.kernel.org, AJvYcCWrLEtxzssrvqxx6xehC9Zfjzr8huIF5lTxC2Wdy3pa8OEczigJ4oShTX2CH2l2CTetfj5JnrdH8zG8oOnxt/Y=@vger.kernel.org, AJvYcCWxyymn4QVFvHavmIv34spWudq1wuu6Dfn14m+qHfupSgw+tu/b1xX3Kl+aL4o2dzuYmsAzZ7MGIZ99ZZz1@vger.kernel.org, AJvYcCXOG/UkMwvXpw3wWIZSicK9UyElkUNwYsty/Quvp5hq9zorX1YEHYtFq3d82zPDTlXAgeS4UEfBHGo/@vger.kernel.org, AJvYcCXXvCRKXJEk0oCBSHjx3zHi/XtWqpiddL3WLaiWOY9lKQQMByIRG9WMkqq9/GOX11cBBKM33v0GvsqMtk/rfPoO@vger.kernel.org, AJvYcCXzbV1CX5iFF+QWFm4o9BDYiSBfxoVkZtCmhujpctznZ4THc6AhAvscdgEuBiaWi5UMF7XdwZ6Pfqe8@vger.kernel.org
+X-Gm-Message-State: AOJu0YwQqHnZFPge/f8UxDxO1P8yy9AcfEPtuPonjypigpf/e0MP8hgw
+	UiTgvY5f/QE8b6/TNvfUd4NzTHwhAL3DSugvJKZm4E71Mg/yfb7JzC4bIdmM32xY16GMSnJy6M6
+	ViWwXrcVL+B0Wf4gqMqFZ4LY+tlwKPR5p08bAqEvtCg==
+X-Gm-Gg: ASbGncujHwKgUQH4qe51LmI3RgpMp/eMTSWtV6f27OOiumBMMgRAm0GYjCH0YJaPkyM
+	Ht03qMUoR5fCeXrwXVCZzAeG1XN2QayUxdAJZ1ulIVpNZPGJeacQhyycQowPX6o5UQAvSxQTws+
+	ZsVr+f1tbN95m69Sf+n7nRQnDg73G12EdqJ8AlbSaWHtLq
+X-Google-Smtp-Source: AGHT+IHecHJqinQ0GtjAARewm2enIQAyyQD5rKLXQHe+ItluA3s82XioLx3xqz+ougAgIvj7CA1kgvJIs3FoZ5ExGxI=
+X-Received: by 2002:a2e:a369:0:b0:32c:bc69:e921 with SMTP id
+ 38308e7fff4ca-32e0cfaac22mr12120091fa.9.1751550988404; Thu, 03 Jul 2025
+ 06:56:28 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_Ch0CgDXOCYJimZoV+8fAg--.35082S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7Kr15JrykWFyUJrWDKF1xXwb_yoW8uFyUp3
-	95Wa1UGw10qr42ywnxta1v9398K39rJr4UG34kCF18Xa1YqasxWr4xCry3Wr4jvr1I9r9x
-	JayYg34SyayUCa7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUvFb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k2
-	6cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4
-	vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Ar0_tr1l84ACjcxK6xIIjxv20xvEc7Cj
-	xVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x
-	0267AKxVW0oVCq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG
-	6I80ewAv7VC0I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFV
-	Cjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4IIrI8v6xkF7I0E8cxan2IY04v7MxkF7I0E
-	n4kS14v26r1q6r43MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I
-	0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWU
-	tVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcV
-	CY1x0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAF
-	wI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVWUJVW8JbIYCTnIWIevJa73UjIFyTuYvj
-	xUF1v3UUUUU
-X-CM-SenderInfo: hfkh02xlgr0w46kxt4xhlfz01xgou0bp/
+References: <20250701-cstr-core-v13-0-29f7d3eb97a6@gmail.com>
+ <20250701-cstr-core-v13-2-29f7d3eb97a6@gmail.com> <DB2BDSN1JH51.14ZZPETJORBC6@kernel.org>
+In-Reply-To: <DB2BDSN1JH51.14ZZPETJORBC6@kernel.org>
+From: Tamir Duberstein <tamird@gmail.com>
+Date: Thu, 3 Jul 2025 09:55:52 -0400
+X-Gm-Features: Ac12FXwkwRINIecE-FwYN90tPuGpGFKpT2Ln86Mwgefjv5UkGbvTZ6CcK0fiY_k
+Message-ID: <CAJ-ks9nC=AyBPXRY3nJ0NuZvjFskzMcOkVNrBEfXD2hZ5uRntQ@mail.gmail.com>
+Subject: Re: [PATCH v13 2/5] rust: support formatting of foreign types
+To: Benno Lossin <lossin@kernel.org>
+Cc: Michal Rostecki <vadorovsky@protonmail.com>, Miguel Ojeda <ojeda@kernel.org>, 
+	Alex Gaynor <alex.gaynor@gmail.com>, Boqun Feng <boqun.feng@gmail.com>, 
+	Gary Guo <gary@garyguo.net>, =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+	Andreas Hindborg <a.hindborg@kernel.org>, Alice Ryhl <aliceryhl@google.com>, 
+	Trevor Gross <tmgross@umich.edu>, Brendan Higgins <brendan.higgins@linux.dev>, 
+	David Gow <davidgow@google.com>, Rae Moar <rmoar@google.com>, 
+	Danilo Krummrich <dakr@kernel.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Luis Chamberlain <mcgrof@kernel.org>, Russ Weight <russ.weight@linux.dev>, 
+	FUJITA Tomonori <fujita.tomonori@gmail.com>, Rob Herring <robh@kernel.org>, 
+	Saravana Kannan <saravanak@google.com>, Peter Zijlstra <peterz@infradead.org>, 
+	Ingo Molnar <mingo@redhat.com>, Will Deacon <will@kernel.org>, Waiman Long <longman@redhat.com>, 
+	Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, 
+	Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>, Andrew Lunn <andrew@lunn.ch>, 
+	Heiner Kallweit <hkallweit1@gmail.com>, Russell King <linux@armlinux.org.uk>, 
+	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, 
+	Arnd Bergmann <arnd@arndb.de>, Jens Axboe <axboe@kernel.dk>, 
+	=?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
+	Dave Ertman <david.m.ertman@intel.com>, Ira Weiny <ira.weiny@intel.com>, 
+	Leon Romanovsky <leon@kernel.org>, Breno Leitao <leitao@debian.org>, 
+	Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, rust-for-linux@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org, 
+	kunit-dev@googlegroups.com, dri-devel@lists.freedesktop.org, 
+	netdev@vger.kernel.org, devicetree@vger.kernel.org, llvm@lists.linux.dev, 
+	linux-pci@vger.kernel.org, nouveau@lists.freedesktop.org, 
+	linux-block@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-clk@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Chen Ridong <chenridong@huawei.com>
+On Thu, Jul 3, 2025 at 5:32=E2=80=AFAM Benno Lossin <lossin@kernel.org> wro=
+te:
+>
+> On Tue Jul 1, 2025 at 6:49 PM CEST, Tamir Duberstein wrote:
+> > Introduce a `fmt!` macro which wraps all arguments in
+> > `kernel::fmt::Adapter` and a `kernel::fmt::Display` trait. This enables
+> > formatting of foreign types (like `core::ffi::CStr`) that do not
+> > implement `core::fmt::Display` due to concerns around lossy conversions=
+ which
+> > do not apply in the kernel.
+> >
+> > Replace all direct calls to `format_args!` with `fmt!`.
+> >
+> > Replace all implementations of `core::fmt::Display` with implementation=
+s
+> > of `kernel::fmt::Display`.
+> >
+> > Suggested-by: Alice Ryhl <aliceryhl@google.com>
+> > Link: https://rust-for-linux.zulipchat.com/#narrow/channel/288089-Gener=
+al/topic/Custom.20formatting/with/516476467
+> > Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > Reviewed-by: Alice Ryhl <aliceryhl@google.com>
+> > Signed-off-by: Tamir Duberstein <tamird@gmail.com>
+> > ---
+> >  drivers/block/rnull.rs       |  2 +-
+> >  drivers/gpu/nova-core/gpu.rs |  4 +-
+> >  rust/kernel/block/mq.rs      |  2 +-
+> >  rust/kernel/device.rs        |  2 +-
+> >  rust/kernel/fmt.rs           | 89 ++++++++++++++++++++++++++++++++++++=
++++
+> >  rust/kernel/kunit.rs         |  6 +--
+> >  rust/kernel/lib.rs           |  1 +
+> >  rust/kernel/prelude.rs       |  3 +-
+> >  rust/kernel/print.rs         |  4 +-
+> >  rust/kernel/seq_file.rs      |  2 +-
+> >  rust/kernel/str.rs           | 22 ++++------
+> >  rust/macros/fmt.rs           | 99 ++++++++++++++++++++++++++++++++++++=
+++++++++
+> >  rust/macros/lib.rs           | 19 +++++++++
+> >  rust/macros/quote.rs         |  7 ++++
+> >  scripts/rustdoc_test_gen.rs  |  2 +-
+> >  15 files changed, 236 insertions(+), 28 deletions(-)
+>
+> This would be a lot easier to review if he proc-macro and the call
+> replacement were different patches.
+>
+> Also the `kernel/fmt.rs` file should be a different commit.
 
-The commit cff5f49d433f ("cgroup_freezer: cgroup_freezing: Check if not
-frozen") modified the cgroup_freezing() logic to also verify that the
-FROZEN flag is not set, which affects the return value of the freezing()
-function.
+Can you help me understand why? The changes you ask to be separated
+would all be in different files, so why would separate commits make it
+easier to review?
 
-In __refrigerator(), the FROZEN flag is set before checking whether the
-task should be frozen. This creates a race condition where:
-1. The task's FROZEN flag is set.
-2. The cgroup freezer state changes to FROZEN (Can be triggered by reading
-   freezer.state).
-3. freezing() is called and returns false.
+I prefer to keep things in one commit because the changes are highly
+interdependent. The proc macro doesn't make sense without
+kernel/fmt.rs and kernel/fmt.rs is useless without the proc macro.
 
-As a result, the task may escape being frozen when it should be.
+>
+> > diff --git a/rust/kernel/fmt.rs b/rust/kernel/fmt.rs
+> > new file mode 100644
+> > index 000000000000..348d16987de6
+> > --- /dev/null
+> > +++ b/rust/kernel/fmt.rs
+> > @@ -0,0 +1,89 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +
+> > +//! Formatting utilities.
+> > +
+> > +use core::fmt;
+>
+> I think we should pub export all types that we are still using from
+> `core::fmt`. For example `Result`, `Formatter`, `Debug` etc.
+>
+> That way I can still use the same pattern of importing `fmt` and then
+> writing
+>
+>     impl fmt::Display for MyType {
+>         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {}
+>     }
 
-To fix this, move the setting of the FROZEN flag to occur just before
-schedule(). This ensures the flag is only set when we're certain the
-task must be switched out.
+Great idea, done for the next spin. It would be nice to be able to
+lint against references to `core::fmt` outside of kernel/fmt.rs.
 
-Fixes: cff5f49d433f ("cgroup_freezer: cgroup_freezing: Check if not frozen")
-Reported-by: Zhong Jiawei<zhongjiawei1@huawei.com>
-Signed-off-by: Chen Ridong <chenridong@huawei.com>
----
- kernel/freezer.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+> > +
+> > +/// Internal adapter used to route allow implementations of formatting=
+ traits for foreign types.
+> > +///
+> > +/// It is inserted automatically by the [`fmt!`] macro and is not mean=
+t to be used directly.
+> > +///
+> > +/// [`fmt!`]: crate::prelude::fmt!
+> > +#[doc(hidden)]
+> > +pub struct Adapter<T>(pub T);
+> > +
+> > +macro_rules! impl_fmt_adapter_forward {
+> > +    ($($trait:ident),* $(,)?) =3D> {
+> > +        $(
+> > +            impl<T: fmt::$trait> fmt::$trait for Adapter<T> {
+> > +                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Resu=
+lt {
+> > +                    let Self(t) =3D self;
+> > +                    fmt::$trait::fmt(t, f)
+> > +                }
+> > +            }
+> > +        )*
+> > +    };
+> > +}
+> > +
+> > +impl_fmt_adapter_forward!(Debug, LowerHex, UpperHex, Octal, Binary, Po=
+inter, LowerExp, UpperExp);
+> > +
+> > +/// A copy of [`fmt::Display`] that allows us to implement it for fore=
+ign types.
+> > +///
+> > +/// Types should implement this trait rather than [`fmt::Display`]. To=
+gether with the [`Adapter`]
+> > +/// type and [`fmt!`] macro, it allows for formatting foreign types (e=
+.g. types from core) which do
+> > +/// not implement [`fmt::Display`] directly.
+> > +///
+> > +/// [`fmt!`]: crate::prelude::fmt!
+> > +pub trait Display {
+> > +    /// Same as [`fmt::Display::fmt`].
+> > +    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result;
+> > +}
+> > +
+> > +impl<T: ?Sized + Display> Display for &T {
+> > +    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+> > +        Display::fmt(*self, f)
+> > +    }
+> > +}
+> > +
+> > +impl<T: ?Sized + Display> fmt::Display for Adapter<&T> {
+> > +    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+> > +        let Self(t) =3D self;
+> > +        Display::fmt(t, f)
+>
+> Why not `Display::fmt(&self.0, f)`?
 
-diff --git a/kernel/freezer.c b/kernel/freezer.c
-index 8d530d0949ff..89edd7550d27 100644
---- a/kernel/freezer.c
-+++ b/kernel/freezer.c
-@@ -71,12 +71,6 @@ bool __refrigerator(bool check_kthr_stop)
- 	for (;;) {
- 		bool freeze;
- 
--		raw_spin_lock_irq(&current->pi_lock);
--		WRITE_ONCE(current->__state, TASK_FROZEN);
--		/* unstale saved_state so that __thaw_task() will wake us up */
--		current->saved_state = TASK_RUNNING;
--		raw_spin_unlock_irq(&current->pi_lock);
--
- 		spin_lock_irq(&freezer_lock);
- 		freeze = freezing(current) && !(check_kthr_stop && kthread_should_stop());
- 		spin_unlock_irq(&freezer_lock);
-@@ -84,6 +78,12 @@ bool __refrigerator(bool check_kthr_stop)
- 		if (!freeze)
- 			break;
- 
-+		raw_spin_lock_irq(&current->pi_lock);
-+		WRITE_ONCE(current->__state, TASK_FROZEN);
-+		/* unstale saved_state so that __thaw_task() will wake us up */
-+		current->saved_state = TASK_RUNNING;
-+		raw_spin_unlock_irq(&current->pi_lock);
-+
- 		was_frozen = true;
- 		schedule();
- 	}
--- 
-2.34.1
+I like destructuring because it shows me that there's only one field.
+With `self.0` I don't see that.
 
+> > +    }
+> > +}
+> > +
+> > +macro_rules! impl_display_forward {
+> > +    ($(
+> > +        $( { $($generics:tt)* } )? $ty:ty $( { where $($where:tt)* } )=
+?
+> > +    ),* $(,)?) =3D> {
+> > +        $(
+> > +            impl$($($generics)*)? Display for $ty $(where $($where)*)?=
+ {
+> > +                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Resu=
+lt {
+> > +                    fmt::Display::fmt(self, f)
+> > +                }
+> > +            }
+> > +        )*
+> > +    };
+> > +}
+> > +
+> > +impl_display_forward!(
+> > +    bool,
+> > +    char,
+> > +    core::panic::PanicInfo<'_>,
+> > +    fmt::Arguments<'_>,
+> > +    i128,
+> > +    i16,
+> > +    i32,
+> > +    i64,
+> > +    i8,
+> > +    isize,
+> > +    str,
+> > +    u128,
+> > +    u16,
+> > +    u32,
+> > +    u64,
+> > +    u8,
+> > +    usize,
+> > +    {<T: ?Sized>} crate::sync::Arc<T> {where crate::sync::Arc<T>: fmt:=
+:Display},
+> > +    {<T: ?Sized>} crate::sync::UniqueArc<T> {where crate::sync::Unique=
+Arc<T>: fmt::Display},
+> > +);
+>
+> > diff --git a/rust/macros/fmt.rs b/rust/macros/fmt.rs
+> > new file mode 100644
+> > index 000000000000..edc37c220a89
+> > --- /dev/null
+> > +++ b/rust/macros/fmt.rs
+> > @@ -0,0 +1,99 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +
+> > +use proc_macro::{Ident, TokenStream, TokenTree};
+> > +use std::collections::BTreeSet;
+> > +
+> > +/// Please see [`crate::fmt`] for documentation.
+> > +pub(crate) fn fmt(input: TokenStream) -> TokenStream {
+> > +    let mut input =3D input.into_iter();
+> > +
+> > +    let first_opt =3D input.next();
+> > +    let first_owned_str;
+> > +    let mut names =3D BTreeSet::new();
+> > +    let first_lit =3D {
+> > +        let Some((mut first_str, first_lit)) =3D (match first_opt.as_r=
+ef() {
+> > +            Some(TokenTree::Literal(first_lit)) =3D> {
+> > +                first_owned_str =3D first_lit.to_string();
+> > +                Some(first_owned_str.as_str()).and_then(|first| {
+> > +                    let first =3D first.strip_prefix('"')?;
+> > +                    let first =3D first.strip_suffix('"')?;
+> > +                    Some((first, first_lit))
+>
+> You're only using first_lit to get the span later, so why not just get
+> the span directly here?
+
+Good point. I was probably using it for more stuff in an earlier iteration.
+
+>
+> > +                })
+> > +            }
+> > +            _ =3D> None,
+> > +        }) else {
+> > +            return first_opt.into_iter().chain(input).collect();
+> > +        };
+> > +        while let Some((_, rest)) =3D first_str.split_once('{') {
+>
+> Let's put a comment above this loop mentioning [1] and saying that it
+> parses the identifiers from the format arguments.
+>
+> [1]: https://doc.rust-lang.org/std/fmt/index.html#syntax
+
+=F0=9F=91=8D
+
+>
+> > +            first_str =3D rest;
+> > +            if let Some(rest) =3D first_str.strip_prefix('{') {
+> > +                first_str =3D rest;
+> > +                continue;
+> > +            }
+> > +            if let Some((name, rest)) =3D first_str.split_once('}') {
+> > +                first_str =3D rest;
+> > +                let name =3D name.split_once(':').map_or(name, |(name,=
+ _)| name);
+> > +                if !name.is_empty() && !name.chars().all(|c| c.is_asci=
+i_digit()) {
+> > +                    names.insert(name);
+> > +                }
+> > +            }
+> > +        }
+> > +        first_lit
+> > +    };
+> > +
+> > +    let first_span =3D first_lit.span();
+> > +    let adapter =3D quote_spanned! {
+> > +        first_span =3D> ::kernel::fmt::Adapter
+> > +    };
+>
+> I think we should follow the formatting convention from the quote crate:
+>
+>     let adapter =3D quote_spanned!(first_span=3D> ::kernel::fmt::Adapter)=
+;
+
+Sure.
+
+>
+> > +
+> > +    let mut args =3D TokenStream::from_iter(first_opt);
+> > +    {
+> > +        let mut flush =3D |args: &mut TokenStream, current: &mut Token=
+Stream| {
+>
+> You don't need to pass `args` as a closure argument, since you always
+> call it with `&mut args`.
+
+This doesn't work because of the borrow checker. If I wrote what you
+suggest, then `args` is mutably borrowed by the closure, which
+prohibits the mutable borrow needed for the .extend() call here:
+
+        for tt in input {
+            match &tt {
+                TokenTree::Punct(p) if p.as_char() =3D=3D ',' =3D> {
+                    flush(&mut args, &mut current);
+                    &mut args
+                }
+                _ =3D> &mut current,
+            }
+            .extend([tt]);
+        }
+
+>
+> > +            let current =3D std::mem::take(current);
+> > +            if !current.is_empty() {
+> > +                let (lhs, rhs) =3D (|| {
+> > +                    let mut current =3D current.into_iter();
+> > +                    let mut acc =3D TokenStream::new();
+> > +                    while let Some(tt) =3D current.next() {
+> > +                        // Split on `=3D` only once to handle cases li=
+ke `a =3D b =3D c`.
+> > +                        if matches!(&tt, TokenTree::Punct(p) if p.as_c=
+har() =3D=3D '=3D') {
+> > +                            names.remove(acc.to_string().as_str());
+> > +                            // Include the `=3D` itself to keep the ha=
+ndling below uniform.
+> > +                            acc.extend([tt]);
+> > +                            return (Some(acc), current.collect::<Token=
+Stream>());
+> > +                        }
+> > +                        acc.extend([tt]);
+> > +                    }
+> > +                    (None, acc)
+> > +                })();
+> > +                args.extend(quote_spanned! {
+> > +                    first_span =3D> #lhs #adapter(&#rhs)
+> > +                });
+> > +            }
+> > +        };
+> > +
+> > +        let mut current =3D TokenStream::new();
+>
+> Define this before the closure, then you don't need to pass it as an
+> argument.
+
+Same reason as above. Borrow checker says no.
+
+>
+> ---
+> Cheers,
+> Benno
+>
+> > +        for tt in input {
+> > +            match &tt {
+> > +                TokenTree::Punct(p) if p.as_char() =3D=3D ',' =3D> {
+> > +                    flush(&mut args, &mut current);
+> > +                    &mut args
+> > +                }
+> > +                _ =3D> &mut current,
+> > +            }
+> > +            .extend([tt]);
+> > +        }
+> > +        flush(&mut args, &mut current);
+> > +    }
+> > +
+> > +    for name in names {
+> > +        let name =3D Ident::new(name, first_span);
+> > +        args.extend(quote_spanned! {
+> > +            first_span =3D> , #name =3D #adapter(&#name)
+> > +        });
+> > +    }
+> > +
+> > +    quote_spanned! {
+> > +        first_span =3D> ::core::format_args!(#args)
+> > +    }
+> > +}
