@@ -1,102 +1,100 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+Received: from desiato.infradead.org (desiato.infradead.org [90.155.92.199])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F0362EFD89;
-	Fri,  4 Jul 2025 07:54:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E93E0326231;
+	Fri,  4 Jul 2025 07:57:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.92.199
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751615697; cv=none; b=S8x+dbsu5FRAXajPCFHebmU/jCDO7ycBYXEjrEHcNlMDBevpsDxh+KHypwi6HcS0XeEWYDi0tE8tG25BLPEBXkc/B/MBjAA3LnI8s5puW2Mg4KGSvqpJ0eWrvLJ0ruH8rBExtX2IgYPRgs02wvLS7OIOgkKaKQlSTLjIkXmpOnk=
+	t=1751615845; cv=none; b=Aa4vhqTgIZu2wIE48O0DcObBTS1zri+VfnAoe9aokw5G5qdSF3sFEpFX7BNeQt6dS6v5qf40DQVxi8I5HrG5QVe0cEBh6lQnivIyyybW5M8SeNf7hQME0IA3AdEDG5jw5oG5ZWXXEJAVI4i+m5xWAVZY0pEm0n5lN/XKAvKfb8k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751615697; c=relaxed/simple;
-	bh=RIcCzYI0omisWFmazd0VVo2FRQVujzPyYzOVgfw8bqU=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=MinmPCeaslNPxAf4PGS8cgSx0itxN9tRYlpV/lcAXzdPlvZuULJgW9mFWnxWsm29N/22A4dMN3IiYQ/6ssWlegWGtY1LKAV8JFrL3LEzLDVR9IMLvenLaT8mkGBv56WXUw/pykrRd+EnPmwQehr3/I2+8xTPVrjjPTJbvpuC6UI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=mqwWl0I9; arc=none smtp.client-ip=198.175.65.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1751615845; c=relaxed/simple;
+	bh=MgFEolINa2mqHDNtnOb4oERRABfY40yjNkoZlWQnkZk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=XBnpWD9HzOuvSXGueVapoIlmwa8kA2sJQttSDjgPBEALCMcon28OLMbvsqBdo4rQLXCB173R2EViyNyX0TZGI9ghZoADZbGnBtgb380bfXZxbCRlf9Q7dm06e62Us/moPwCtVK61l1MF79QEy4vCHWZGPwWhlIcCLpgwgpb2ErI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=ok/N6c8Q; arc=none smtp.client-ip=90.155.92.199
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="mqwWl0I9"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1751615695; x=1783151695;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=RIcCzYI0omisWFmazd0VVo2FRQVujzPyYzOVgfw8bqU=;
-  b=mqwWl0I9ibhLYvlBirTdSdWx6FTAlLYkytS8w83HjBq1ae+seaFiARkc
-   uDPI1Rhp4L3ek6Y3Oh9ZeXjNu9N+tCkSyQCAXQ9M1kMBxCVr/drU88kLr
-   KorVUUFrkVINxizGp9AEztanG9WuIPWPpGng1XwjqtFRcPKlY1qDOSsBm
-   8sxqYT9qGIaP/CTv9Q4i5+pB1tIsHgGW+dBCeQiH4F6PKT59/UHyTrFWj
-   GFeXph3e1cCe5g455HCWLBFjmrpia+tjOwTX2b++pGG+roUenvEwQm1fT
-   WjLCgkP7JzLpxYwK31vR2eoV6bRh6WA/p22nkiKLW7vrTmmDjJ/IQPwyI
-   Q==;
-X-CSE-ConnectionGUID: ZbCvDpDYSKqhYYJ1Kz6ktg==
-X-CSE-MsgGUID: 7v9BHGmeSUOHvqrA9GDaXA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11483"; a="64194227"
-X-IronPort-AV: E=Sophos;i="6.16,286,1744095600"; 
-   d="scan'208";a="64194227"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Jul 2025 00:54:47 -0700
-X-CSE-ConnectionGUID: kNh7sPjLQEKh+YsQsQJClw==
-X-CSE-MsgGUID: 4T0DHlcURkeMStImsUv7Sw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,286,1744095600"; 
-   d="scan'208";a="158616612"
-Received: from jkrzyszt-mobl2.ger.corp.intel.com (HELO svinhufvud.fi.intel.com) ([10.245.244.244])
-  by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Jul 2025 00:54:45 -0700
-Received: from svinhufvud.lan (localhost [IPv6:::1])
-	by svinhufvud.fi.intel.com (Postfix) with ESMTP id 1751144BAC;
-	Fri,  4 Jul 2025 10:54:43 +0300 (EEST)
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6 krs, Bertel Jungin Aukio 5, 02600 Espoo
-From: Sakari Ailus <sakari.ailus@linux.intel.com>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 55/80] power: supply: twl4030_charger: Remove redundant pm_runtime_mark_last_busy() calls
-Date: Fri,  4 Jul 2025 10:54:42 +0300
-Message-Id: <20250704075442.3221330-1-sakari.ailus@linux.intel.com>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250704075225.3212486-1-sakari.ailus@linux.intel.com>
-References: <20250704075225.3212486-1-sakari.ailus@linux.intel.com>
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ok/N6c8Q"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=L0bdJ55ZuGgGGTacDM0SpqaswUQMNdvtMXzThUW4T3M=; b=ok/N6c8QoiKqC9VyX88ZXrEXhj
+	wYv0ERTE0LGnSRzAhporwVm9X77AJX2ZvnFfYvToGVRee3PmRp3WHJNQ/np0X8up+AEOzJxtcp4AP
+	YiaXVYTagHG0IOgYDVNGWvFeSRQ2vo5vuZgT9xcbJ25kTnpd9T++xGJlaAptP6ZB0CWWstc5mOXsG
+	jRA9U7UeBhZEk+88wlppPBF9K8Xk2IbeQCkjnKN9Tl2InP9wGhHcokumn0kAuZRQte7cgkRX9w2Zd
+	BlNA4mFA2b55FUgMR2PBc4zVbAL0xBrGo1ZxqlFKSS1IAQcA8996dTYayewmhcF2sHJSkva3ffrcx
+	Mj1+WNSA==;
+Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
+	by desiato.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1uXbIN-00000007pyj-3Jvg;
+	Fri, 04 Jul 2025 07:57:20 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id B4906300233; Fri, 04 Jul 2025 09:57:18 +0200 (CEST)
+Date: Fri, 4 Jul 2025 09:57:18 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Chen Ridong <chenridong@huaweicloud.com>
+Cc: Michal Koutn?? <mkoutny@suse.com>, rafael@kernel.org, pavel@kernel.org,
+	timvp@google.com, tj@kernel.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, lujialin4@huawei.com,
+	chenridong@huawei.com
+Subject: Re: [PATCH next] sched,freezer: prevent tasks from escaping being
+ frozen
+Message-ID: <20250704075718.GA2001818@noisy.programming.kicks-ass.net>
+References: <20250703133427.3301899-1-chenridong@huaweicloud.com>
+ <n23vsu6y6cjf2vwdbfcjl2mj7venvpzpblncoa7adn3q5r4lph@qsfa3deqtamc>
+ <f4c4f465-72b9-4682-99e6-c249ecab8572@huaweicloud.com>
+ <8dae8006-e63d-467f-bb7c-e8470878e534@huaweicloud.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8dae8006-e63d-467f-bb7c-e8470878e534@huaweicloud.com>
 
-pm_runtime_put_autosuspend(), pm_runtime_put_sync_autosuspend(),
-pm_runtime_autosuspend() and pm_request_autosuspend() now include a call
-to pm_runtime_mark_last_busy(). Remove the now-reduntant explicit call to
-pm_runtime_mark_last_busy().
+On Fri, Jul 04, 2025 at 11:11:52AM +0800, Chen Ridong wrote:
 
-Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
----
-The cover letter of the set can be found here
-<URL:https://lore.kernel.org/linux-pm/20250704075225.3212486-1-sakari.ailus@linux.intel.com>.
+Your patches are mangled; please educate your MUA.
 
-In brief, this patch depends on PM runtime patches adding marking the last
-busy timestamp in autosuspend related functions. The patches are here, on
-rc2:
+> --- a/kernel/freezer.c
+> +++ b/kernel/freezer.c
+> @@ -71,19 +71,20 @@ bool __refrigerator(bool check_kthr_stop)
+>         for (;;) {
+>                 bool freeze;
+> 
+> -               raw_spin_lock_irq(&current->pi_lock);
+> -               WRITE_ONCE(current->__state, TASK_FROZEN);
+> -               /* unstale saved_state so that __thaw_task() will wake
+> us up */
+> -               current->saved_state = TASK_RUNNING;
+> -               raw_spin_unlock_irq(&current->pi_lock);
+> -
+>                 spin_lock_irq(&freezer_lock);
+> -               freeze = freezing(current) && !(check_kthr_stop &&
+> kthread_should_stop());
+> +               freeze = (freezing(current) || !cgroup_thawed(current))
+> +                        && !(check_kthr_stop && kthread_should_stop());
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
-                pm-runtime-6.17-rc1
+This makes no sense to me; why can't this stay in cgroup_freezing()?
 
- drivers/power/supply/twl4030_charger.c | 1 -
- 1 file changed, 1 deletion(-)
+Also, can someone please fix that broken comment style there.
 
-diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
-index 9dcb5457bef4..04216b2bfb6c 100644
---- a/drivers/power/supply/twl4030_charger.c
-+++ b/drivers/power/supply/twl4030_charger.c
-@@ -512,7 +512,6 @@ static int twl4030_charger_enable_usb(struct twl4030_bci *bci, bool enable)
- 		ret |= twl_i2c_write_u8(TWL_MODULE_MAIN_CHARGE, 0x2a,
- 					TWL4030_BCIMDKEY);
- 		if (bci->usb_enabled) {
--			pm_runtime_mark_last_busy(bci->transceiver->dev);
- 			pm_runtime_put_autosuspend(bci->transceiver->dev);
- 			bci->usb_enabled = 0;
- 		}
--- 
-2.39.5
+>                 spin_unlock_irq(&freezer_lock);
+> 
+>                 if (!freeze)
+>                         break;
+> 
+> +               raw_spin_lock_irq(&current->pi_lock);
+> +               WRITE_ONCE(current->__state, TASK_FROZEN);
+> +               /* unstale saved_state so that __thaw_task() will wake
+> us up */
+> +               current->saved_state = TASK_RUNNING;
+> +               raw_spin_unlock_irq(&current->pi_lock);
+> +
 
+And I'm not quite sure I understand this hunk either. If we bail out,
+current->__state is reset to TASK_RUNNING, so what's the problem?
