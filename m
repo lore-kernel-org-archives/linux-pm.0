@@ -1,380 +1,178 @@
-Received: from mail-pf1-f178.google.com (mail-pf1-f178.google.com [209.85.210.178])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1073A2D94BA
-	for <linux-pm@vger.kernel.org>; Fri,  4 Jul 2025 15:37:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7219D2DAFCD
+	for <linux-pm@vger.kernel.org>; Fri,  4 Jul 2025 16:35:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751643472; cv=none; b=W6wOxIJjJBDYnfy3lvUIUMLUgb9VPEAgWWUUCBIUXvBovrHZB2/COQQ0xRXa/oyJ4cjZXye0q3tuPXH0Ego3jy3jihplc03mDkQBjB+Q19T6Au/4Z3L7AefbZ6FXg3U2nzNI9Z6VsSyDGob/Em8HOY77+fanD+Wv8lS4s3D+NEY=
+	t=1751646928; cv=none; b=TnwQ9gRY9mzAdwEbSyhtgvvpAL3Fsro00FiVPKyr+l+ecitpv7dw/EZ4HnqaDdnjTGcw37it34zdZYAxcjzavCJuoPLTSenJueahy87vHl2PGN1TcFe/MBpzcKPYlUZRt0SKmdzYSbtsQKwEH2edxIDoKqqcJxE9qZwY0Dh7L6s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751643472; c=relaxed/simple;
-	bh=AqCAt1wI7tAF5McZIeuIhOgu1S/knglyj60+bdPhkbc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=nAc5QQVBrxSwV+H+LafEwfuKkptUZ4JMkm5ZqpXaBQHVRROrjuCixTf2e/Hp09QzurzpMDwFIo2blDcksSGOWKrPPmXHXF+QuvLODGkpX7nYyujYIkX9Zdrkd0UFjEeQaVqGg08gHCYVDeUo/OA2mNdd1ari1I8NW5qfU9/8gCk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=ziC6Hxfi; arc=none smtp.client-ip=209.85.210.178
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1751646928; c=relaxed/simple;
+	bh=gfgsNf97a4gh+Kj/WAFR7Au3voGVBKemXRNGvFV/pQo=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=PC1uHOkz/vu5N9k8D2pV2sTAWRhy+hbMEQ0g1pX0m0rvPMt3N/+QvxXzZ5F872jHSp8qzqGODfZn3JWZjH2D54NEQWrnbd7AaXefpU+L7Wf2g2oVzhllUwQFkewgIezZ7LzU6SawITPUXdSW8fhuaGvBALb0K9JfS0FU8hXT/S8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=O9Pjmo1M; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ziC6Hxfi"
-Received: by mail-pf1-f178.google.com with SMTP id d2e1a72fcca58-74b56b1d301so698018b3a.1
-        for <linux-pm@vger.kernel.org>; Fri, 04 Jul 2025 08:37:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1751643466; x=1752248266; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=pfUDmHeepnt8bgi+nNBa1jZtXWQ+k/4Kcm7pPkbYwkQ=;
-        b=ziC6HxfiLCtBqhZc6qt3dRh9L9ae72vgX1Ji1xziuE7879XZZFlH1Ev6cUvMZVzBZ1
-         O92b/dh2zytrc+ZXGOcAoPQH1g8mVBtafQttlkHaGoy1frvu4PF2TWOYe3ObJ04hAHVg
-         bboZhbngbVsriRB8rKU33i1Tw0TkTdaWTD02QE9f8QOjLx8kYvv+e3N+H7vp6E7T+fo/
-         mfUkLX3ryWGvVzsFCbWeXs06y/klclfuBaUCuduiEXNHbtF1cV9s4SS60QxgVaHohdB6
-         d/cp57q63oet12DVmfw7+gKkxEa2Pypkx/e4lGeu7kSm9iYte7J3PMTwlWgdT5qFCUkN
-         RSuw==
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="O9Pjmo1M"
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5648VVjD010221
+	for <linux-pm@vger.kernel.org>; Fri, 4 Jul 2025 16:35:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	FfzLENn8AreWFlLbfZZwByLrmHBduXBntme3gzzOYSg=; b=O9Pjmo1MDjryCOMZ
+	QWV+ISc4yHeTnhBN6wCYr+Mryws5Gya7KyT62gT869o1Zq035KV/9fBs0buRW4iv
+	eMP7+YCgnPZZ7v0Oi2RAc7f+KKrK/r1KmQjNHyeu2F1BcD65hmnKmqgl7s+E5z/I
+	XW7OKxInpCkAvhjXD9qIO4dtba7sEwQq+eE4apwTM9wIMbHMeJa/9lxM9z5aQ6kb
+	Mn0akcBYiYyuRDdKYXH0tJuBVJhh73o77ZXifket71vSgyk7DKuSb+DUywmTzh9J
+	R+CUZa7xN733kATqiOMJqnuaZ+3H4Znps/E6+9Duu3tMMkwBTJtimqhf3Qfpq1pv
+	9SwwYA==
+Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 47j8s9vh1e-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 04 Jul 2025 16:35:26 +0000 (GMT)
+Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-7d3cbf784acso282343185a.0
+        for <linux-pm@vger.kernel.org>; Fri, 04 Jul 2025 09:35:26 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751643466; x=1752248266;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=pfUDmHeepnt8bgi+nNBa1jZtXWQ+k/4Kcm7pPkbYwkQ=;
-        b=EaxG7YRE2wpaeXHJJ6AYdpK5wem2I8bMoyto8ovJw9uStb1QnErpauEc+1cOHb2GdR
-         spuQWKe88KtPW+Hfj8rv9omm96pmaPUhLvl+mde0GALvN6hlcz3T3rlesrLlZONIuCig
-         LbPlR8YdPufmgJgSh59Czis8yhmt7rrbkO3PJ2xETOmNqVlQ3jxH972Qc/1I92RNaVyn
-         GV23zeWt4cKRQ2vg9Q8zhJ5WBIZThjuc/rlRhoiOi+4YB67u+8Gw9aBoZFf6gBj+jMPh
-         GLRJBjJTyp/ATlh61eFOLOa/U2Q04tagLdqrhZodQdHRXcOJpqrRSiS7gaeS3Y9rOx7d
-         GLOw==
-X-Forwarded-Encrypted: i=1; AJvYcCVEX+TgUTFnuYqqZEfbPHiC/SHc7uJg7wthTGsu2JDoFOk+6L2b1Zsjt994QoLeevSojCThMC9oTQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwS/ktv0XaH1qBv7iWU+2b4CSEpIaf1WYE/+OnIftkGOOGMJvi6
-	0NITxeg1we/pveq4ih5zrUj4qQ6i2FoCTSHXKNdF4ljFRqppdpRvybfm020wiaX0ZLc=
-X-Gm-Gg: ASbGncs0qmTcIlSD7xeTQ0TyVum5rWSFhW2ayWXh0j32xoHXG8HbTldsz28hWlLSgoI
-	OTq5iVVh55h3Gv3AxqWuXij2d7mcu220N2KiTsQX+NN+QI6GcTmLovw8adbWR0rM8VnCFRoKx9V
-	74+rGMdUjk0B3ShmpDwLaihITbyO50ieVoxDVsQBXygbolLztG8CezITB9SykshVr4fjKgM2a7q
-	BZ07f14MRjvEiaaeIeTaZcmATHH8SIoKd9LOvLE/rLAFCmDTrP0lSxo5sWu7zP5QVxQA+dwgFcD
-	h7IW8D0heH3Udchd2oSKZ0q2vEExdvyD+G2VYJEDTWgayu1uPuRpshzQOAjCU/yfRA==
-X-Google-Smtp-Source: AGHT+IFPI2zhve4aVtUtekaO97BS+JFBRK74WkSk2tLAhK9T3VoR5MF+THO0XUOGjGGiMHNpLBAJwA==
-X-Received: by 2002:a17:90a:d604:b0:312:1143:cf8c with SMTP id 98e67ed59e1d1-31aadd86742mr4003854a91.16.1751643466282;
-        Fri, 04 Jul 2025 08:37:46 -0700 (PDT)
-Received: from p14s ([2604:3d09:148c:c800:ebf3:da99:de93:f600])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-31a9cb7e88esm5358629a91.0.2025.07.04.08.37.43
+        d=1e100.net; s=20230601; t=1751646926; x=1752251726;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=FfzLENn8AreWFlLbfZZwByLrmHBduXBntme3gzzOYSg=;
+        b=kBiEncpdiOiOEhq8wdZwu/BtM31CmMkD/9o4wq6xi3EH43MnWclGOJyja8xMTlBRuB
+         XHWUwpKIUH3tw8UMHoNGS+/qxnkBySUzdGdwE7UcnG2wJoQqQArQMI/4/PYqAJxEtK2a
+         D0zp2FNJ+0b1T1Mj+RBENRpfCRuB0qoG+bp3Nyd7cMOULkNBPmG6PTje7Oz7q0wJ0zJ9
+         IMuvuMZ1UbpN3S3HUDF1k+lASOKFRkaMBG16dGxSCv1/jaM7jLV9UjC5JamKWnuRHq/T
+         syRWmdHEhOdIv/cJUYKFxKEGKoxER6CbUPlmnoRb3bVR2aJR4wskRsBf7lBqBAxXe+sP
+         k7Cw==
+X-Forwarded-Encrypted: i=1; AJvYcCUIOfOc1XLwmUAnlvEM+wEmFl5Z4V8Mv2ZNEy6M3DRd/R1wuVc4otrT8CS4rHYZhUkAzL8CT1hVJg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxwoH/cv2zCA0FfeelXDVq8rXQM8j0be5bjzHUnEPsN1jL+GlNA
+	cgXLIsHyK0OmuZQ8n20eCeGxo1xPoSKJRs0887WQYK8UZX4TpAxOKFOpDmRazUzYgeCovFm6ubY
+	pNBSpw3o/LECDHQOckK27zfxAA0gkBYx1tXMZwvTxBI2jfk5MtJEQjVdoyv3ylg==
+X-Gm-Gg: ASbGncuqHzf4K9TDEOJOGJQFSYT1YuBTYRO/DkxEKajPik7IWC/pI5KJezhdveCtcVy
+	yscwmXVvmIjQEE/0zdSOKuWpyYQqejOlblC3jogX4qQLUoldZ3m4B5ImrYKZNE02ewJXzFqOl0h
+	yit03fZybdaYGD6sTHwgkLLimcotPWGx2HlFV1WHuvG72UgoHFe0Dv4j4ninreJkvqP8Mxj3nYf
+	aKLbxmXxvjU6H1rPLSGbiycQGOJteOOrlDTRAVAyGFyoR9vrssFeXGhfu5Gs8gE7BQrsYjzJ5SJ
+	6neoHeyGVfDS4JQDygt/+yOaArGkTSgkAYo6wF1/HIyTP6l0w4/3GJJ5PWbd+x2WMdrhnIJxQsM
+	RrWECgxQ4xS+ds3Z73oi581AyG2/RHDKMee8=
+X-Received: by 2002:a05:620a:2487:b0:7d4:5361:bb7e with SMTP id af79cd13be357-7d5ddaa7e54mr403616985a.8.1751646925610;
+        Fri, 04 Jul 2025 09:35:25 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IGSiIrbj5T8wan4VzNj4OM6LypfF2CYwdOWFucarddTghF4qTmlqyWy4L3a86W6cPqRfAe6hw==
+X-Received: by 2002:a05:620a:2487:b0:7d4:5361:bb7e with SMTP id af79cd13be357-7d5ddaa7e54mr403613185a.8.1751646925135;
+        Fri, 04 Jul 2025 09:35:25 -0700 (PDT)
+Received: from umbar.lan (2001-14ba-a0c3-3a00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a0c3:3a00:264b:feff:fe8b:be8a])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-556383d33f3sm298321e87.68.2025.07.04.09.35.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 04 Jul 2025 08:37:45 -0700 (PDT)
-Date: Fri, 4 Jul 2025 09:37:42 -0600
-From: Mathieu Poirier <mathieu.poirier@linaro.org>
-To: Claudiu <claudiu.beznea@tuxon.dev>
-Cc: linux@armlinux.org.uk, gregkh@linuxfoundation.org,
-	david.m.ertman@intel.com, ira.weiny@intel.com, leon@kernel.org,
-	rafael@kernel.org, dakr@kernel.org, len.brown@intel.com,
-	pavel@kernel.org, andersson@kernel.org, mturquette@baylibre.com,
-	sboyd@kernel.org, maarten.lankhorst@linux.intel.com,
-	mripard@kernel.org, tzimmermann@suse.de, airlied@gmail.com,
-	simona@ffwll.ch, wsa+renesas@sang-engineering.com,
-	ulf.hansson@linaro.org, vkoul@kernel.org,
-	yung-chuan.liao@linux.intel.com, pierre-louis.bossart@linux.dev,
-	broonie@kernel.org, robh@kernel.org, jirislaby@kernel.org,
-	saravanak@google.com, jic23@kernel.org, dmitry.torokhov@gmail.com,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
-	linux-i2c@vger.kernel.org, linux-mmc@vger.kernel.org,
-	linux-remoteproc@vger.kernel.org, linux-sound@vger.kernel.org,
-	linux-spi@vger.kernel.org, linux-serial@vger.kernel.org,
-	bhelgaas@google.com, geert@linux-m68k.org,
-	linux-iio@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
-	fabrizio.castro.jz@renesas.com,
-	Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>
-Subject: Re: [PATCH v5 1/3] PM: domains: Add flags to specify power on
- attach/detach
-Message-ID: <aGf1Rjy7WLEuNGme@p14s>
-References: <20250703112708.1621607-1-claudiu.beznea.uj@bp.renesas.com>
- <20250703112708.1621607-2-claudiu.beznea.uj@bp.renesas.com>
+        Fri, 04 Jul 2025 09:35:24 -0700 (PDT)
+From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Date: Fri, 04 Jul 2025 19:35:14 +0300
+Subject: [PATCH v2 02/28] interconnect: qcom: sc8180x: specify num_nodes
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250703112708.1621607-2-claudiu.beznea.uj@bp.renesas.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250704-rework-icc-v2-2-875fac996ef5@oss.qualcomm.com>
+References: <20250704-rework-icc-v2-0-875fac996ef5@oss.qualcomm.com>
+In-Reply-To: <20250704-rework-icc-v2-0-875fac996ef5@oss.qualcomm.com>
+To: Georgi Djakov <djakov@kernel.org>, Bjorn Andersson <andersson@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1448;
+ i=dmitry.baryshkov@oss.qualcomm.com; h=from:subject:message-id;
+ bh=gfgsNf97a4gh+Kj/WAFR7Au3voGVBKemXRNGvFV/pQo=;
+ b=owEBbQGS/pANAwAKAYs8ij4CKSjVAcsmYgBoaALE8wL7DGkOZpUsG21ISBXejjozAU1TYZo0u
+ gCLksE44X+JATMEAAEKAB0WIQRMcISVXLJjVvC4lX+LPIo+Aiko1QUCaGgCxAAKCRCLPIo+Aiko
+ 1UIsB/95IXcFcAp3rJaW5SDpehXV0cFUM15twIA1QVGZv5Fl7nmafvVlVszgSMExLecPYn3itU9
+ zbUe8MawNQdHFGmcUliKp9po/zHYAPA4WMopMGcBE8vC+85ngz+PgP596VO2JNJmZs4v9EwHN0A
+ cC4lgR0EjRnpmyu8BcVw4+w9Kq35deM2bPFVh7y3vhOp9PrbMEyS1EE1btjvli3VooETB+UcJE2
+ rCB8iS90r872pMwSfKqfVXzTgFO5Lkb46kbgkO+rpUHmFcJ2+7/WC5oPsvDiLJoystwam2UZBLl
+ RMZGN/cRomBLO+lEYcMDA1eYgCEiVa0Z+FUW6EDSARXNH5R/
+X-Developer-Key: i=dmitry.baryshkov@oss.qualcomm.com; a=openpgp;
+ fpr=8F88381DD5C873E4AE487DA5199BF1243632046A
+X-Authority-Analysis: v=2.4 cv=H/Pbw/Yi c=1 sm=1 tr=0 ts=686802ce cx=c_pps
+ a=HLyN3IcIa5EE8TELMZ618Q==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=Wb1JkmetP80A:10 a=EUspDBNiAAAA:8 a=vjf1cmd32cIfnlU9i4cA:9 a=QEXdDO2ut3YA:10
+ a=bTQJ7kPSJx9SKPbeHEYW:22
+X-Proofpoint-ORIG-GUID: rKQpAzhA20Oib1Qoh-yd7VaqnS8kFD-F
+X-Proofpoint-GUID: rKQpAzhA20Oib1Qoh-yd7VaqnS8kFD-F
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNzA0MDEyNiBTYWx0ZWRfX3KHb84043VxY
+ 8dhBAiUSmk/8+1wPsse6/J+Za4hKiNDsJ2J5cDge4zSZ1sNZW63+M+4Uido0x4Mh8QMxJP/xqEQ
+ 0F2EppI+CwyoKDh2h/sJOqIeuAI6mKN7+3G2Oq8YHP0Imp8lo8tQdgzPQael5/oWmsTLi3VwZIo
+ 8w1iG+gmeGf3i+RO0etxTJZUcqjNzIW+LiW3w/wTHRudC6uUkXMajMwPRt1ukSnEW8uJrIC1UdU
+ +3nvAfm2DRtKKbo5GJhvLHM6Qy/L+45wyvXX/Tkr7XOIK3sogegFDO4+Ug2GyZbfucOkpMzZmA0
+ EX6J9Q/aMNOBuCIVv1af0CgSvLg4IjDwQ700loB6YwHjtqVqt+WjlNNoHvTE1LvB3msvjl3dg5z
+ HXPNBKX/6ssJdZ1yPjoLtUEZNyERA4mSsggEnhJHYMtQkOtP1IEUSUPt5/3VmKTqQPbgXhoj
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.7,FMLib:17.12.80.40
+ definitions=2025-07-04_06,2025-07-04_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 malwarescore=0 suspectscore=0 mlxlogscore=906
+ priorityscore=1501 clxscore=1015 mlxscore=0 lowpriorityscore=0 spamscore=0
+ adultscore=0 bulkscore=0 phishscore=0 classifier=spam authscore=0 authtc=n/a
+ authcc= route=outbound adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2505280000 definitions=main-2507040126
 
-On Thu, Jul 03, 2025 at 02:27:06PM +0300, Claudiu wrote:
-> From: Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>
-> 
-> Calling dev_pm_domain_attach()/dev_pm_domain_detach() in bus driver
-> probe/remove functions can affect system behavior when the drivers attached
-> to the bus use devres-managed resources. Since devres actions may need to
-> access device registers, calling dev_pm_domain_detach() too early, i.e.,
-> before these actions complete, can cause failures on some systems. One such
-> example is Renesas RZ/G3S SoC-based platforms.
-> 
-> If the device clocks are managed via PM domains, invoking
-> dev_pm_domain_detach() in the bus driver's remove function removes the
-> device's clocks from the PM domain, preventing any subsequent
-> pm_runtime_resume*() calls from enabling those clocks.
-> 
-> The second argument of dev_pm_domain_attach() specifies whether the PM
-> domain should be powered on during attachment. Likewise, the second
-> argument of dev_pm_domain_detach() indicates whether the domain should be
-> powered off during detachment.
-> 
-> Upcoming commits address the issue described above (initially for the
-> platform bus only) by deferring the call to dev_pm_domain_detach() until
-> after devres_release_all() in device_unbind_cleanup(). The detach_power_off
-> field in struct dev_pm_info stores the detach power off info from the
-> second argument of dev_pm_domain_attach().
-> 
-> Because there are cases where the device's PM domain power-on/off behavior
-> must be conditional (e.g., in i2c_device_probe()), the patch introduces
-> PD_FLAG_ATTACH_POWER_ON and PD_FLAG_DETACH_POWER_OFF flags to be passed to
-> dev_pm_domain_attach().
-> 
-> Finally, dev_pm_domain_attach() and its users are updated to use the newly
-> introduced PD_FLAG_ATTACH_POWER_ON and PD_FLAG_DETACH_POWER_OFF macros.
-> 
-> This is a preparatory commit.
-> 
-> Signed-off-by: Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>
-> ---
-> 
-> Changes in v5:
-> - none; this patch is new
-> 
->  drivers/amba/bus.c                       |  4 ++--
->  drivers/base/auxiliary.c                 |  2 +-
->  drivers/base/platform.c                  |  2 +-
->  drivers/base/power/common.c              |  6 +++---
->  drivers/clk/qcom/apcs-sdx55.c            |  2 +-
->  drivers/gpu/drm/display/drm_dp_aux_bus.c |  2 +-
->  drivers/i2c/i2c-core-base.c              |  2 +-
->  drivers/mmc/core/sdio_bus.c              |  2 +-
->  drivers/rpmsg/rpmsg_core.c               |  2 +-
+Specify .num_nodes for several BCMs which missed this declaration.
 
-Reviewed-by: Mathieu Poirier <mathieu.poirier@linaro.org>
+Fixes: 04548d4e2798 ("interconnect: qcom: sc8180x: Reformat node and bcm definitions")
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+---
+ drivers/interconnect/qcom/sc8180x.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
->  drivers/soundwire/bus_type.c             |  2 +-
->  drivers/spi/spi.c                        |  2 +-
->  drivers/tty/serdev/core.c                |  2 +-
->  include/linux/pm_domain.h                | 10 ++++++++--
->  13 files changed, 23 insertions(+), 17 deletions(-)
-> 
-> diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
-> index 71482d639a6d..74e34a07ef72 100644
-> --- a/drivers/amba/bus.c
-> +++ b/drivers/amba/bus.c
-> @@ -138,7 +138,7 @@ static int amba_read_periphid(struct amba_device *dev)
->  	void __iomem *tmp;
->  	int i, ret;
->  
-> -	ret = dev_pm_domain_attach(&dev->dev, true);
-> +	ret = dev_pm_domain_attach(&dev->dev, PD_FLAG_ATTACH_POWER_ON);
->  	if (ret) {
->  		dev_dbg(&dev->dev, "can't get PM domain: %d\n", ret);
->  		goto err_out;
-> @@ -291,7 +291,7 @@ static int amba_probe(struct device *dev)
->  		if (ret < 0)
->  			break;
->  
-> -		ret = dev_pm_domain_attach(dev, true);
-> +		ret = dev_pm_domain_attach(dev, PD_FLAG_ATTACH_POWER_ON);
->  		if (ret)
->  			break;
->  
-> diff --git a/drivers/base/auxiliary.c b/drivers/base/auxiliary.c
-> index dba7c8e13a53..44cd3f85b659 100644
-> --- a/drivers/base/auxiliary.c
-> +++ b/drivers/base/auxiliary.c
-> @@ -217,7 +217,7 @@ static int auxiliary_bus_probe(struct device *dev)
->  	struct auxiliary_device *auxdev = to_auxiliary_dev(dev);
->  	int ret;
->  
-> -	ret = dev_pm_domain_attach(dev, true);
-> +	ret = dev_pm_domain_attach(dev, PD_FLAG_ATTACH_POWER_ON);
->  	if (ret) {
->  		dev_warn(dev, "Failed to attach to PM Domain : %d\n", ret);
->  		return ret;
-> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-> index 075ec1d1b73a..df1ec34fdf56 100644
-> --- a/drivers/base/platform.c
-> +++ b/drivers/base/platform.c
-> @@ -1396,7 +1396,7 @@ static int platform_probe(struct device *_dev)
->  	if (ret < 0)
->  		return ret;
->  
-> -	ret = dev_pm_domain_attach(_dev, true);
-> +	ret = dev_pm_domain_attach(_dev, PD_FLAG_ATTACH_POWER_ON);
->  	if (ret)
->  		goto out;
->  
-> diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
-> index 781968a128ff..fecb85fa85ac 100644
-> --- a/drivers/base/power/common.c
-> +++ b/drivers/base/power/common.c
-> @@ -83,7 +83,7 @@ EXPORT_SYMBOL_GPL(dev_pm_put_subsys_data);
->  /**
->   * dev_pm_domain_attach - Attach a device to its PM domain.
->   * @dev: Device to attach.
-> - * @power_on: Used to indicate whether we should power on the device.
-> + * @flags: indicate whether we should power on/off the device on attach/detach
->   *
->   * The @dev may only be attached to a single PM domain. By iterating through
->   * the available alternatives we try to find a valid PM domain for the device.
-> @@ -100,14 +100,14 @@ EXPORT_SYMBOL_GPL(dev_pm_put_subsys_data);
->   * Returns 0 on successfully attached PM domain, or when it is found that the
->   * device doesn't need a PM domain, else a negative error code.
->   */
-> -int dev_pm_domain_attach(struct device *dev, bool power_on)
-> +int dev_pm_domain_attach(struct device *dev, u32 flags)
->  {
->  	int ret;
->  
->  	if (dev->pm_domain)
->  		return 0;
->  
-> -	ret = acpi_dev_pm_attach(dev, power_on);
-> +	ret = acpi_dev_pm_attach(dev, !!(flags & PD_FLAG_ATTACH_POWER_ON));
->  	if (!ret)
->  		ret = genpd_dev_pm_attach(dev);
->  
-> diff --git a/drivers/clk/qcom/apcs-sdx55.c b/drivers/clk/qcom/apcs-sdx55.c
-> index 3ba01622d8f0..90dd1f1855c2 100644
-> --- a/drivers/clk/qcom/apcs-sdx55.c
-> +++ b/drivers/clk/qcom/apcs-sdx55.c
-> @@ -111,7 +111,7 @@ static int qcom_apcs_sdx55_clk_probe(struct platform_device *pdev)
->  	 * driver, there seems to be no better place to do this. So do it here!
->  	 */
->  	cpu_dev = get_cpu_device(0);
-> -	ret = dev_pm_domain_attach(cpu_dev, true);
-> +	ret = dev_pm_domain_attach(cpu_dev, PD_FLAG_ATTACH_POWER_ON);
->  	if (ret) {
->  		dev_err_probe(dev, ret, "can't get PM domain: %d\n", ret);
->  		goto err;
-> diff --git a/drivers/gpu/drm/display/drm_dp_aux_bus.c b/drivers/gpu/drm/display/drm_dp_aux_bus.c
-> index 7b9afcf48836..2d279e82922f 100644
-> --- a/drivers/gpu/drm/display/drm_dp_aux_bus.c
-> +++ b/drivers/gpu/drm/display/drm_dp_aux_bus.c
-> @@ -58,7 +58,7 @@ static int dp_aux_ep_probe(struct device *dev)
->  		container_of(aux_ep, struct dp_aux_ep_device_with_data, aux_ep);
->  	int ret;
->  
-> -	ret = dev_pm_domain_attach(dev, true);
-> +	ret = dev_pm_domain_attach(dev, PD_FLAG_ATTACH_POWER_ON);
->  	if (ret)
->  		return dev_err_probe(dev, ret, "Failed to attach to PM Domain\n");
->  
-> diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
-> index 2ad2b1838f0f..38eabf1173da 100644
-> --- a/drivers/i2c/i2c-core-base.c
-> +++ b/drivers/i2c/i2c-core-base.c
-> @@ -573,7 +573,7 @@ static int i2c_device_probe(struct device *dev)
->  		goto err_clear_wakeup_irq;
->  
->  	do_power_on = !i2c_acpi_waive_d0_probe(dev);
-> -	status = dev_pm_domain_attach(&client->dev, do_power_on);
-> +	status = dev_pm_domain_attach(&client->dev, do_power_on ? PD_FLAG_ATTACH_POWER_ON : 0);
->  	if (status)
->  		goto err_clear_wakeup_irq;
->  
-> diff --git a/drivers/mmc/core/sdio_bus.c b/drivers/mmc/core/sdio_bus.c
-> index b66b637e2d57..656601754966 100644
-> --- a/drivers/mmc/core/sdio_bus.c
-> +++ b/drivers/mmc/core/sdio_bus.c
-> @@ -161,7 +161,7 @@ static int sdio_bus_probe(struct device *dev)
->  	if (!id)
->  		return -ENODEV;
->  
-> -	ret = dev_pm_domain_attach(dev, false);
-> +	ret = dev_pm_domain_attach(dev, 0);
->  	if (ret)
->  		return ret;
->  
-> diff --git a/drivers/rpmsg/rpmsg_core.c b/drivers/rpmsg/rpmsg_core.c
-> index 6ee36adcbdba..bece5e635ee9 100644
-> --- a/drivers/rpmsg/rpmsg_core.c
-> +++ b/drivers/rpmsg/rpmsg_core.c
-> @@ -479,7 +479,7 @@ static int rpmsg_dev_probe(struct device *dev)
->  	struct rpmsg_endpoint *ept = NULL;
->  	int err;
->  
-> -	err = dev_pm_domain_attach(dev, true);
-> +	err = dev_pm_domain_attach(dev, PD_FLAG_ATTACH_POWER_ON);
->  	if (err)
->  		goto out;
->  
-> diff --git a/drivers/soundwire/bus_type.c b/drivers/soundwire/bus_type.c
-> index 75d6f16efced..bc1e653080d9 100644
-> --- a/drivers/soundwire/bus_type.c
-> +++ b/drivers/soundwire/bus_type.c
-> @@ -101,7 +101,7 @@ static int sdw_drv_probe(struct device *dev)
->  	/*
->  	 * attach to power domain but don't turn on (last arg)
->  	 */
-> -	ret = dev_pm_domain_attach(dev, false);
-> +	ret = dev_pm_domain_attach(dev, 0);
->  	if (ret)
->  		return ret;
->  
-> diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
-> index 1bc0fdbb1bd7..8200b47b2295 100644
-> --- a/drivers/spi/spi.c
-> +++ b/drivers/spi/spi.c
-> @@ -427,7 +427,7 @@ static int spi_probe(struct device *dev)
->  	if (spi->irq < 0)
->  		spi->irq = 0;
->  
-> -	ret = dev_pm_domain_attach(dev, true);
-> +	ret = dev_pm_domain_attach(dev, PD_FLAG_ATTACH_POWER_ON);
->  	if (ret)
->  		return ret;
->  
-> diff --git a/drivers/tty/serdev/core.c b/drivers/tty/serdev/core.c
-> index 0213381fa358..d16c207a1a9b 100644
-> --- a/drivers/tty/serdev/core.c
-> +++ b/drivers/tty/serdev/core.c
-> @@ -399,7 +399,7 @@ static int serdev_drv_probe(struct device *dev)
->  	const struct serdev_device_driver *sdrv = to_serdev_device_driver(dev->driver);
->  	int ret;
->  
-> -	ret = dev_pm_domain_attach(dev, true);
-> +	ret = dev_pm_domain_attach(dev, PD_FLAG_ATTACH_POWER_ON);
->  	if (ret)
->  		return ret;
->  
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 0b18160901a2..62a35a78ce9b 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -36,10 +36,16 @@
->   *				isn't specified, the index just follows the
->   *				index for the attached PM domain.
->   *
-> + * PD_FLAG_ATTACH_POWER_ON:	Power on the domain during attach.
-> + *
-> + * PD_FLAG_DETACH_POWER_OFF:	Power off the domain during detach.
-> + *
->   */
->  #define PD_FLAG_NO_DEV_LINK		BIT(0)
->  #define PD_FLAG_DEV_LINK_ON		BIT(1)
->  #define PD_FLAG_REQUIRED_OPP		BIT(2)
-> +#define PD_FLAG_ATTACH_POWER_ON		BIT(3)
-> +#define PD_FLAG_DETACH_POWER_OFF	BIT(4)
->  
->  struct dev_pm_domain_attach_data {
->  	const char * const *pd_names;
-> @@ -501,7 +507,7 @@ struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
->  #endif /* CONFIG_PM_GENERIC_DOMAINS_OF */
->  
->  #ifdef CONFIG_PM
-> -int dev_pm_domain_attach(struct device *dev, bool power_on);
-> +int dev_pm_domain_attach(struct device *dev, u32 flags);
->  struct device *dev_pm_domain_attach_by_id(struct device *dev,
->  					  unsigned int index);
->  struct device *dev_pm_domain_attach_by_name(struct device *dev,
-> @@ -518,7 +524,7 @@ int dev_pm_domain_start(struct device *dev);
->  void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd);
->  int dev_pm_domain_set_performance_state(struct device *dev, unsigned int state);
->  #else
-> -static inline int dev_pm_domain_attach(struct device *dev, bool power_on)
-> +static inline int dev_pm_domain_attach(struct device *dev, u32 flags)
->  {
->  	return 0;
->  }
-> -- 
-> 2.43.0
-> 
+diff --git a/drivers/interconnect/qcom/sc8180x.c b/drivers/interconnect/qcom/sc8180x.c
+index a741badaa966e0b1d0e0117f73f5d37c6ef9f19d..4dd1d2f2e8216271c15b91b726d4f0c46994ae78 100644
+--- a/drivers/interconnect/qcom/sc8180x.c
++++ b/drivers/interconnect/qcom/sc8180x.c
+@@ -1492,34 +1492,40 @@ static struct qcom_icc_bcm bcm_sh3 = {
+ 
+ static struct qcom_icc_bcm bcm_sn0 = {
+ 	.name = "SN0",
++	.num_nodes = 1,
+ 	.nodes = { &slv_qns_gemnoc_sf }
+ };
+ 
+ static struct qcom_icc_bcm bcm_sn1 = {
+ 	.name = "SN1",
++	.num_nodes = 1,
+ 	.nodes = { &slv_qxs_imem }
+ };
+ 
+ static struct qcom_icc_bcm bcm_sn2 = {
+ 	.name = "SN2",
+ 	.keepalive = true,
++	.num_nodes = 1,
+ 	.nodes = { &slv_qns_gemnoc_gc }
+ };
+ 
+ static struct qcom_icc_bcm bcm_co2 = {
+ 	.name = "CO2",
++	.num_nodes = 1,
+ 	.nodes = { &mas_qnm_npu }
+ };
+ 
+ static struct qcom_icc_bcm bcm_sn3 = {
+ 	.name = "SN3",
+ 	.keepalive = true,
++	.num_nodes = 2,
+ 	.nodes = { &slv_srvc_aggre1_noc,
+ 		  &slv_qns_cnoc }
+ };
+ 
+ static struct qcom_icc_bcm bcm_sn4 = {
+ 	.name = "SN4",
++	.num_nodes = 1,
+ 	.nodes = { &slv_qxs_pimem }
+ };
+ 
+
+-- 
+2.39.5
+
