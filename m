@@ -1,37 +1,37 @@
-Received: from mxout3.routing.net (mxout3.routing.net [134.0.28.8])
+Received: from mxout4.routing.net (mxout4.routing.net [134.0.28.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D445191F7E;
-	Sun,  6 Jul 2025 13:22:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.8
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 889781E1E04;
+	Sun,  6 Jul 2025 13:22:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751808158; cv=none; b=rXtkL5XHJPmUYztu5+7airpWg6PzteM24c7P9dCohzIWH2Jxreu6jL29HsUFpofm/fEGiqUPvuX4o21sAml29jWKyYmElgObiWKy4Hn99ssJDixgxKY27wvH/XA8ovyCSjutessbIgIObNVyl+UPXDArKbYsoJRFcrYA+dvwRBQ=
+	t=1751808160; cv=none; b=Kl5gRVInJyKVF6hTgbqkaMM7hmvI4al9A5WSb9LgH6/OzQO3T9DJTNfJJDSjtwBvOqVNhU5La13argOGo4pbszVJCK1lDGh2zCM68m+S3ioUg0dUWLqzc0XfJVpOj045wMPmN3kPxJPWEYs2P9Qd64hnFlZhCzbgoY/ftfhWj3E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751808158; c=relaxed/simple;
-	bh=nNNXCz0QoVlTtDWFNzY0gqKDOSoNeIlY3uahvtlyf00=;
+	s=arc-20240116; t=1751808160; c=relaxed/simple;
+	bh=P/EOW+pd0YQ7LiMHFX+KMFe53eWNEXq3yNdzkShDgOU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=PHDzp5QqxPb91bDsiNQMB2j67InPLbO8TlgewM9srwaKGH5d/sxLCzmnsBhFsgUfhcHtEef8QTuwkbPWhix02OklV+ucDVCGFNNv8JxfJEFOZv7ubgqbcbTYQtF3XDWDbEvUj7HdJina9tB5NOgQH0BjYKDW6GOhw1Bu8QbcGt8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=HHVo/YJL; arc=none smtp.client-ip=134.0.28.8
+	 MIME-Version; b=KEKiQ8VWUvhGHH7zMfgXpIUo2bh/tDOMk1YUNInL43XFgt50fYOZD/B0XbsQIpS0GhRHCs+H4qjOGGI8a5hg1Yv618PRWQPGH5i5Lkn7k42ES4g98rrX0ndYjHvZoHq9FeQo2vYRz0EAlLRkmU4VA+sGwx9KAjk7KITyYcBbp5Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=BjU1b/o6; arc=none smtp.client-ip=134.0.28.9
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="HHVo/YJL"
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="BjU1b/o6"
 Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout3.routing.net (Postfix) with ESMTP id 8A230604DC;
-	Sun,  6 Jul 2025 13:22:28 +0000 (UTC)
+	by mxout4.routing.net (Postfix) with ESMTP id 6E83610086F;
+	Sun,  6 Jul 2025 13:22:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=20200217; t=1751808148;
+	s=20200217; t=1751808152;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=AKLGNFT60/m9GUw3XIxCW7kQ4f+bA70MARehu2D8Bjk=;
-	b=HHVo/YJL16+z5Nb0XQhrqvB5SFG6D9j/isP+KpY+kF72N2OQRDNcEeMmkdDPxM0l1fqIWi
-	BYFcGGKTdXSxJkgKBb7nW6j4IP3yuctvV81sCADm/z4MIhoHMrkAS/OXV789B4TXaDg0RH
-	lv+69pcvXKWCNSOD0FoWoadIpxJ4FOc=
+	bh=c58atM53j6xJlfjeW4uz3/6gYrG19vaD/Ky2Z6w23+4=;
+	b=BjU1b/o6pQ7kRwr4nqibAbFjyNYczelPqWnOp1UnA45UV3QT9FmhyjX1jlZgvdUj2p442s
+	9pst1lIvTUbRBIirRXdMGO+KES6d/3zAucTh6zi1G6+Lao6BwhNdBcGIGAUe0dX6uMgyax
+	J+W2xxZReqv801T3nBPs6gK5acNOxAE=
 Received: from frank-u24.. (fttx-pool-194.15.86.111.bambit.de [194.15.86.111])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 34B8E1226A5;
-	Sun,  6 Jul 2025 13:22:28 +0000 (UTC)
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 162421226A5;
+	Sun,  6 Jul 2025 13:22:32 +0000 (UTC)
 From: Frank Wunderlich <linux@fw-web.de>
 To: MyungJoo Ham <myungjoo.ham@samsung.com>,
 	Kyungmin Park <kyungmin.park@samsung.com>,
@@ -63,9 +63,9 @@ Cc: Frank Wunderlich <frank-w@public-files.de>,
 	netdev@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v8 04/16] dt-bindings: net: mediatek,net: add sram property
-Date: Sun,  6 Jul 2025 15:21:59 +0200
-Message-ID: <20250706132213.20412-5-linux@fw-web.de>
+Subject: [PATCH v8 14/16] arm64: dts: mediatek: mt7988a-bpi-r4: add aliases for ethernet
+Date: Sun,  6 Jul 2025 15:22:09 +0200
+Message-ID: <20250706132213.20412-15-linux@fw-web.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250706132213.20412-1-linux@fw-web.de>
 References: <20250706132213.20412-1-linux@fw-web.de>
@@ -79,64 +79,31 @@ Content-Transfer-Encoding: 8bit
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-Meditak Filogic SoCs (MT798x) have dedicated MMIO-SRAM for dma operations.
-
-MT7981 and MT7986 currently use static offset to ethernet MAC register
-which will be changed in separate patch once this way is accepted.
-
-Add "sram" property to map ethernet controller to dedicated mmio-sram node.
+Add aliases for gmacs to allow bootloader setting mac-adresses.
 
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
-v8:
-- splitted out mac subnode pattern
-- dropped reg naming change
-- rephrased description
-- drop change of reg-name
+ arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-v6:
-- split out the interrupt-names into separate patch
-- update irq(name) min count to 4
-- add sram-property
-- drop second reg entry and minitems as there is only 1 item left again
-
-v5:
-- fix v4 logmessage and change description a bit describing how i get
-  the irq count.
-- update binding for 8 irqs with different names (rx,tx => fe0..fe3)
-  including the 2 reserved irqs which can be used later
-- change rx-ringX to pdmaX to be closer to hardware documentation
-
-v4:
-- increase max interrupts to 6 because of adding RSS/LRO interrupts (4)
-  and dropping 2 reserved irqs (0+3) around rx+tx
-- dropped Robs RB due to this change
-- allow interrupt names
-- add interrupt-names without reserved IRQs on mt7988
-  this requires mtk driver patch:
-  https://patchwork.kernel.org/project/netdevbpf/patch/20250616080738.117993-2-linux@fw-web.de/
-
-v2:
-- change reg to list of items
----
- Documentation/devicetree/bindings/net/mediatek,net.yaml | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/net/mediatek,net.yaml b/Documentation/devicetree/bindings/net/mediatek,net.yaml
-index da7bda20786a..afacd30b37c0 100644
---- a/Documentation/devicetree/bindings/net/mediatek,net.yaml
-+++ b/Documentation/devicetree/bindings/net/mediatek,net.yaml
-@@ -66,6 +66,10 @@ properties:
-       - const: gmac
-       - const: ppe
+diff --git a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
+index 21eb91c8609f..20073eb4d1bd 100644
+--- a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
+@@ -8,6 +8,12 @@
+ #include "mt7988a.dtsi"
  
-+  sram:
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+    description: phandle to mmio SRAM
+ / {
++	aliases {
++		ethernet0 = &gmac0;
++		ethernet1 = &gmac1;
++		ethernet2 = &gmac2;
++	};
 +
-   mediatek,ethsys:
-     $ref: /schemas/types.yaml#/definitions/phandle
-     description:
+ 	chosen {
+ 		stdout-path = "serial0:115200n8";
+ 	};
 -- 
 2.43.0
 
