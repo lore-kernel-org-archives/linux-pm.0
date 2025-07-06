@@ -1,37 +1,37 @@
 Received: from mxout2.routing.net (mxout2.routing.net [134.0.28.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D7BD1DF256;
-	Sun,  6 Jul 2025 13:22:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49C04215F48;
+	Sun,  6 Jul 2025 13:22:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751808160; cv=none; b=bUj+R4+q8gqDYirndznXvz699Q+gOdgzixRqr7cs0Mao/RKC/hmOuh54pZIrUX04rdqD2WqwLULnl5jFJXeBiTHcairOTF0feMrlRpEArdv/Wgvzk3WEc84KYic8glfxI+DyKZSeLjVtLu9ORvBltm5YjgChlzHAWB1dAfikyuk=
+	t=1751808161; cv=none; b=gue/PF6SAOA9jEcKp6+01w9Tg3btgaXBdovfj+D8+tRAP70wbxuhgeLlfNZzlPTojdk++JgTI7oBXN0+bFN2uJRD6BO3iyHnlJs1DaBWVdc/BnoVeqcB3dr5TYcUL1fTFSMafAVH1Fr/2TPubH24x8RHGzsgQJFc3t5+yh/i5Pw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751808160; c=relaxed/simple;
-	bh=6rXB9uhFua0CDavnN2LWnw7HTLqju5HTq/AgWYbkQns=;
+	s=arc-20240116; t=1751808161; c=relaxed/simple;
+	bh=Dgdiq1horuDoHLdNztjJFaG+cA4sLMSMTTMWhbKe7+Q=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=t3RicHcndx4YWn79eOh1b5KM0S5I1tuVvXUq5phTv/X2N7IRpWMCWu1wU4B8jW6eXNqpYyLCLcLlmeXoI16450ywQozH+l2obh9a+CBMiQFK2Mw40A1DvaY53InBZ8a49DlzPBiCMyXIB3CXLyufYhks1ZRro/q4i8W7hNZ37iY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=xEeUP1Ni; arc=none smtp.client-ip=134.0.28.12
+	 MIME-Version; b=OoKf2HP5tntH0lZoJguORYE7nUL3xMa9f42ooDzmEr7JZSXbuabfiuwJ5un81ZWDobglm81vBvJFzwRaQN+r8s4ebYWlBO+g4w4O5sYqMxCbCIhXfypgR6FYP1fFd66CembMikOlEWHdQCL5qWuqaXZfZYrM0gCo3YQZsTk/us4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=sBTYlbOS; arc=none smtp.client-ip=134.0.28.12
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="xEeUP1Ni"
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="sBTYlbOS"
 Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout2.routing.net (Postfix) with ESMTP id CDC625FD70;
-	Sun,  6 Jul 2025 13:22:32 +0000 (UTC)
+	by mxout2.routing.net (Postfix) with ESMTP id 442CA5FD63;
+	Sun,  6 Jul 2025 13:22:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=20200217; t=1751808152;
+	s=20200217; t=1751808151;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Po3wYPbug5oitTRavuGEWn/QaJpRE4HKrgqN22L2B/4=;
-	b=xEeUP1NiwhakivHU3ZoFgBpcXk03oJPO8y47empujIbr9D1EINc/ySTO0wUJtvMaZAtXsW
-	+l83DM6N52kDa92ffDaQb9AvWqm55fN6jPYPXhBvQJb6wcu0afeOHCDQfl00Dkzy1berP/
-	TxKPbRg5EHJo2KeGbUswggKNqIRu2hQ=
+	bh=DIMuNne++IWVgY0azMoYkvyXCjaefI/n17TVM+rpZxc=;
+	b=sBTYlbOSykDALHtZxOMy4zffw2Ybr9cFinbjeUEfdFi0MpYRiuQgPbsZJWNj8muxrC8m+6
+	z/FQC2SfxLA7bzihB+ZEa0cVtoLw7uDYHrAQBPVHzx+9B8GhJXBtaAUQQoqCKIb5HD8Zxw
+	aMRzJKFY64k7F3nkYpQB3DhsJgp9xh8=
 Received: from frank-u24.. (fttx-pool-194.15.86.111.bambit.de [194.15.86.111])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 751A71226F8;
-	Sun,  6 Jul 2025 13:22:32 +0000 (UTC)
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id DFCF31226F8;
+	Sun,  6 Jul 2025 13:22:30 +0000 (UTC)
 From: Frank Wunderlich <linux@fw-web.de>
 To: MyungJoo Ham <myungjoo.ham@samsung.com>,
 	Kyungmin Park <kyungmin.park@samsung.com>,
@@ -63,9 +63,9 @@ Cc: Frank Wunderlich <frank-w@public-files.de>,
 	netdev@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v8 15/16] arm64: dts: mediatek: mt7988a-bpi-r4: add sfp cages and link to gmac
-Date: Sun,  6 Jul 2025 15:22:10 +0200
-Message-ID: <20250706132213.20412-16-linux@fw-web.de>
+Subject: [PATCH v8 11/16] arm64: dts: mediatek: mt7988a-bpi-r4: add proc-supply for cci
+Date: Sun,  6 Jul 2025 15:22:06 +0200
+Message-ID: <20250706132213.20412-12-linux@fw-web.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250706132213.20412-1-linux@fw-web.de>
 References: <20250706132213.20412-1-linux@fw-web.de>
@@ -79,111 +79,29 @@ Content-Transfer-Encoding: 8bit
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-Add SFP cages to Bananapi-R4 board. The 2.5g phy variant only contains the
-wan-SFP, so add this to common dtsi and the lan-sfp only to the dual-SFP
-variant.
+CCI requires proc-supply. Add it on board level.
 
-Signed-off-by: Daniel Golle <daniel@makrotopia.org>
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
 Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
-v4:
-- update 2g5-board (reorder and drop phy-connection-type)
-- order sfp properties
-v3:
-- enable mac with 2.5g phy on r4 phy variant because driver is now mainline
----
- .../mediatek/mt7988a-bananapi-bpi-r4-2g5.dts  | 11 +++++++++++
- .../dts/mediatek/mt7988a-bananapi-bpi-r4.dts  | 19 +++++++++++++++++++
- .../dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi | 19 +++++++++++++++++++
- 3 files changed, 49 insertions(+)
+ arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4-2g5.dts b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4-2g5.dts
-index 53de9c113f60..6f0c81e3fd94 100644
---- a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4-2g5.dts
-+++ b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4-2g5.dts
-@@ -9,3 +9,14 @@ / {
- 	model = "Banana Pi BPI-R4 (1x SFP+, 1x 2.5GbE)";
- 	chassis-type = "embedded";
- };
-+
-+&gmac1 {
-+	phy = <&int_2p5g_phy>;
-+	phy-mode = "internal";
-+	status = "okay";
-+};
-+
-+&int_2p5g_phy {
-+	pinctrl-0 = <&i2p5gbe_led0_pins>;
-+	pinctrl-names = "i2p5gbe-led";
-+};
-diff --git a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dts b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dts
-index 36bd1ef2efab..4b3796ba82e3 100644
---- a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dts
-+++ b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dts
-@@ -8,6 +8,25 @@ / {
- 	compatible = "bananapi,bpi-r4", "mediatek,mt7988a";
- 	model = "Banana Pi BPI-R4 (2x SFP+)";
- 	chassis-type = "embedded";
-+
-+	/* SFP2 cage (LAN) */
-+	sfp2: sfp2 {
-+		compatible = "sff,sfp";
-+		i2c-bus = <&i2c_sfp2>;
-+		maximum-power-milliwatt = <3000>;
-+
-+		los-gpios = <&pio 2 GPIO_ACTIVE_HIGH>;
-+		mod-def0-gpios = <&pio 83 GPIO_ACTIVE_LOW>;
-+		rate-select0-gpios = <&pio 3 GPIO_ACTIVE_LOW>;
-+		tx-disable-gpios = <&pio 0 GPIO_ACTIVE_HIGH>;
-+		tx-fault-gpios = <&pio 1 GPIO_ACTIVE_HIGH>;
-+	};
-+};
-+
-+&gmac1 {
-+	managed = "in-band-status";
-+	phy-mode = "usxgmii";
-+	sfp = <&sfp2>;
- };
- 
- &pca9545 {
 diff --git a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
-index 20073eb4d1bd..4d709ee527df 100644
+index 81ba045e0e0e..afa9e3b2b16a 100644
 --- a/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
 +++ b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dtsi
-@@ -63,6 +63,19 @@ reg_3p3v: regulator-3p3v {
- 		regulator-boot-on;
- 		regulator-always-on;
- 	};
-+
-+	/* SFP1 cage (WAN) */
-+	sfp1: sfp1 {
-+		compatible = "sff,sfp";
-+		i2c-bus = <&i2c_sfp1>;
-+		maximum-power-milliwatt = <3000>;
-+
-+		los-gpios = <&pio 54 GPIO_ACTIVE_HIGH>;
-+		mod-def0-gpios = <&pio 82 GPIO_ACTIVE_LOW>;
-+		rate-select0-gpios = <&pio 21 GPIO_ACTIVE_LOW>;
-+		tx-disable-gpios = <&pio 70 GPIO_ACTIVE_HIGH>;
-+		tx-fault-gpios = <&pio 69 GPIO_ACTIVE_HIGH>;
-+	};
- };
- 
- &cci {
-@@ -133,6 +146,12 @@ map-cpu-active-low {
+@@ -40,6 +40,10 @@ reg_3p3v: regulator-3p3v {
  	};
  };
  
-+&gmac2 {
-+	managed = "in-band-status";
-+	phy-mode = "usxgmii";
-+	sfp = <&sfp1>;
++&cci {
++	proc-supply = <&rt5190_buck3>;
 +};
 +
- &i2c0 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&i2c0_pins>;
+ &cpu0 {
+ 	proc-supply = <&rt5190_buck3>;
+ };
 -- 
 2.43.0
 
