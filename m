@@ -1,37 +1,37 @@
 Received: from mxout4.routing.net (mxout4.routing.net [134.0.28.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AFA8C21D5AA;
-	Sun,  6 Jul 2025 13:22:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76A1222FDEA;
+	Sun,  6 Jul 2025 13:28:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751808163; cv=none; b=BEPw7SnCeGOLuB8ZC5tGd4QS0qXpZtxTJuicM4wA8A2CjVkpPua6t8Vj7seDZdM2OMkPY59cRI7A8vaBN+XXY5IR7gy7V7hm0pj7l53lin8OKAwsNGmjTuJ1HfzfRojMJI1rfM5qTyzc/Yj/Sb2okI0R2il3efQciMinxbskkEg=
+	t=1751808489; cv=none; b=bV2i2Xk9B9CyDGQAxahjpel67Z8DTG42zoIFOyvcujaFK4kjn5Qj4m6zVahsXes0spHToO9MwE3EgV4IEP137M6i/3NcbUmCm1qfoCTXaZBlH5Z99oRi8yUgE3KKcQqI726Rylu1hya9mGN0lNCm1VkBtO7NL7rcCQ5KPrqD0rw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751808163; c=relaxed/simple;
-	bh=exQ/2CQAlL19culfJFiJUORb3TZY55oQ3uWrzU2G+TM=;
+	s=arc-20240116; t=1751808489; c=relaxed/simple;
+	bh=iyhUbnvRK9c3a6z3CgOQJwdtebP7P79sf017YIg+RyA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=QSjiLZqFVLnZ92kch9xnN+TRLS2MPA9pdFvMToDz+MICV9nfu0jkS85+KMRVZYh3jwUnbGRLOUzsYw8+cIT5yQXNKumvHNrXjjRfSCJMyDoz3M6x9DJfqof5ms7qXCxWl5WR5MTCJmbhWlGQaWa/51yzrD3VYLOojFZt6/T/UEE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=wDqJU8AX; arc=none smtp.client-ip=134.0.28.9
+	 MIME-Version; b=fxHKvCLFqUdAJ6Zaz2waherNoMUe9lqEWUSE/Xx1i16B+l4Npz4saClQu4R4XxZgVxHzPPGgMoJu+aVC/nvgjIf4yTDeNZ7Vhiia6Jku/yAg8QDGRpJm+JZbE6/ynpSfBxvC8QpYwbRDuh8I8lBZptlTbWu/Lcux4pQYn7k+p2k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=d7WKfi7x; arc=none smtp.client-ip=134.0.28.9
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="wDqJU8AX"
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="d7WKfi7x"
 Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout4.routing.net (Postfix) with ESMTP id D92A210085A;
-	Sun,  6 Jul 2025 13:22:30 +0000 (UTC)
+	by mxout4.routing.net (Postfix) with ESMTP id 2FABD100813;
+	Sun,  6 Jul 2025 13:22:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=20200217; t=1751808150;
+	s=20200217; t=1751808148;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=7+G2ewwh12FRHs0BmRpZAB4ebqu3ayA7q35EEAvJ0xA=;
-	b=wDqJU8AXCwgyVuiIX+YUQ/N0L9RYQwa40jaLr4zalM0Fie6x9/XHLxBIQT/XUyk6Iz4mJh
-	XpTy7gMyh9O9I6jp0pP8tXX1WHpqibSgbCs6Wprrs4NO8LQnEe9zBZw8cFzF/FABRE01aw
-	Dcc9S2+6+VZ9d8Myn5vDBHrQt0AA/yA=
+	bh=71EqQ6Np0u0pAiJm9Ys2o5R9RiJdK+KyILbtVMDBcO0=;
+	b=d7WKfi7xOy9dRKe30aW0RihUiYxjU3MrC1XaYr0/tT8J6vYKj/UBt84kkBGaknzIVqSyTb
+	3HPTIyhYkM9e9GstWQrAS+nKatQyc0njUiqilY8nnhKg8/OHa3fxyxc0NdgZEzKT7K9m4E
+	zZArF2M7VlVKH7nZIJosywqrr6O7Cp8=
 Received: from frank-u24.. (fttx-pool-194.15.86.111.bambit.de [194.15.86.111])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 7FAFA1226A5;
-	Sun,  6 Jul 2025 13:22:30 +0000 (UTC)
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id CBFBB1226F8;
+	Sun,  6 Jul 2025 13:22:27 +0000 (UTC)
 From: Frank Wunderlich <linux@fw-web.de>
 To: MyungJoo Ham <myungjoo.ham@samsung.com>,
 	Kyungmin Park <kyungmin.park@samsung.com>,
@@ -63,9 +63,9 @@ Cc: Frank Wunderlich <frank-w@public-files.de>,
 	netdev@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v8 10/16] arm64: dts: mediatek: mt7988: add switch node
-Date: Sun,  6 Jul 2025 15:22:05 +0200
-Message-ID: <20250706132213.20412-11-linux@fw-web.de>
+Subject: [PATCH v8 03/16] dt-bindings: net: mediatek,net: allow irq names
+Date: Sun,  6 Jul 2025 15:21:58 +0200
+Message-ID: <20250706132213.20412-4-linux@fw-web.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250706132213.20412-1-linux@fw-web.de>
 References: <20250706132213.20412-1-linux@fw-web.de>
@@ -79,182 +79,129 @@ Content-Transfer-Encoding: 8bit
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-Add mt7988 builtin mt753x switch nodes.
+In preparation for MT7988 and RSS/LRO allow the interrupt-names
+property.
+In this way driver can request the interrupts by name which is much
+more readable in the driver code and SoC's dtsi than relying on a
+specific order.
 
-Signed-off-by: Daniel Golle <daniel@makrotopia.org>
+Frame-engine-IRQs (fe0..3):
+MT7621, MT7628: 1 IRQ
+MT7622, MT7623: 3 IRQs (only two used by the driver for now)
+MT7981, MT7986: 4 IRQs (only two used by the driver for now)
+
+RSS/LRO IRQs (pdma0..3) only on Filogic (MT798x) with count of 4.
+
+Set boundaries for all compatibles same as irq count.
+
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
-v4:
-- drop phy-mode for gsw-phy
-- reorder phy-mode after phy-handle
-- drop interrupt parent from switch
-
-v2:
-- drop labels and led-function too (have to be in board)
+v8:
+  - fixed typo in mt7621 section "interrupt-namess"
+  - separated interrupt count from interrupt-names
+  - rephrased description a bit to explain the "why"
+v7: fixed wrong rebase
+v6: new patch splitted from the mt7988 changes
 ---
- arch/arm64/boot/dts/mediatek/mt7988a.dtsi | 148 ++++++++++++++++++++++
- 1 file changed, 148 insertions(+)
+ .../devicetree/bindings/net/mediatek,net.yaml | 36 +++++++++++++++++++
+ 1 file changed, 36 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt7988a.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
-index 897b5a82b53e..366203a72d6d 100644
---- a/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
-@@ -742,6 +742,154 @@ ethsys: clock-controller@15000000 {
- 			#reset-cells = <1>;
- 		};
+diff --git a/Documentation/devicetree/bindings/net/mediatek,net.yaml b/Documentation/devicetree/bindings/net/mediatek,net.yaml
+index 766224e4ed86..da7bda20786a 100644
+--- a/Documentation/devicetree/bindings/net/mediatek,net.yaml
++++ b/Documentation/devicetree/bindings/net/mediatek,net.yaml
+@@ -42,6 +42,18 @@ properties:
+     minItems: 1
+     maxItems: 8
  
-+		switch: switch@15020000 {
-+			compatible = "mediatek,mt7988-switch";
-+			reg = <0 0x15020000 0 0x8000>;
-+			interrupt-controller;
-+			#interrupt-cells = <1>;
-+			interrupts = <GIC_SPI 209 IRQ_TYPE_LEVEL_HIGH>;
-+			resets = <&ethwarp MT7988_ETHWARP_RST_SWITCH>;
++  interrupt-names:
++    minItems: 1
++    items:
++      - const: fe0
++      - const: fe1
++      - const: fe2
++      - const: fe3
++      - const: pdma0
++      - const: pdma1
++      - const: pdma2
++      - const: pdma3
 +
-+			ports {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
+   power-domains:
+     maxItems: 1
+ 
+@@ -135,6 +147,10 @@ allOf:
+           minItems: 3
+           maxItems: 3
+ 
++        interrupt-names:
++          minItems: 3
++          maxItems: 3
 +
-+				gsw_port0: port@0 {
-+					reg = <0>;
-+					phy-handle = <&gsw_phy0>;
-+					phy-mode = "internal";
-+				};
+         clocks:
+           minItems: 4
+           maxItems: 4
+@@ -166,6 +182,9 @@ allOf:
+         interrupts:
+           maxItems: 1
+ 
++        interrupt-names:
++          maxItems: 1
 +
-+				gsw_port1: port@1 {
-+					reg = <1>;
-+					phy-handle = <&gsw_phy1>;
-+					phy-mode = "internal";
-+				};
+         clocks:
+           minItems: 2
+           maxItems: 2
+@@ -192,6 +211,10 @@ allOf:
+           minItems: 3
+           maxItems: 3
+ 
++        interrupt-names:
++          minItems: 3
++          maxItems: 3
 +
-+				gsw_port2: port@2 {
-+					reg = <2>;
-+					phy-handle = <&gsw_phy2>;
-+					phy-mode = "internal";
-+				};
+         clocks:
+           minItems: 11
+           maxItems: 11
+@@ -232,6 +255,10 @@ allOf:
+           minItems: 3
+           maxItems: 3
+ 
++        interrupt-names:
++          minItems: 3
++          maxItems: 3
 +
-+				gsw_port3: port@3 {
-+					reg = <3>;
-+					phy-handle = <&gsw_phy3>;
-+					phy-mode = "internal";
-+				};
+         clocks:
+           minItems: 17
+           maxItems: 17
+@@ -274,6 +301,9 @@ allOf:
+         interrupts:
+           minItems: 4
+ 
++        interrupt-names:
++          minItems: 4
 +
-+				port@6 {
-+					reg = <6>;
-+					ethernet = <&gmac0>;
-+					phy-mode = "internal";
+         clocks:
+           minItems: 15
+           maxItems: 15
+@@ -312,6 +342,9 @@ allOf:
+         interrupts:
+           minItems: 4
+ 
++        interrupt-names:
++          minItems: 4
 +
-+					fixed-link {
-+						speed = <10000>;
-+						full-duplex;
-+						pause;
-+					};
-+				};
-+			};
+         clocks:
+           minItems: 15
+           maxItems: 15
+@@ -350,6 +383,9 @@ allOf:
+         interrupts:
+           minItems: 4
+ 
++        interrupt-names:
++          minItems: 4
 +
-+			mdio {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				mediatek,pio = <&pio>;
-+
-+				gsw_phy0: ethernet-phy@0 {
-+					compatible = "ethernet-phy-ieee802.3-c22";
-+					reg = <0>;
-+					interrupts = <0>;
-+					nvmem-cells = <&phy_calibration_p0>;
-+					nvmem-cell-names = "phy-cal-data";
-+
-+					leds {
-+						#address-cells = <1>;
-+						#size-cells = <0>;
-+
-+						gsw_phy0_led0: led@0 {
-+							reg = <0>;
-+							status = "disabled";
-+						};
-+
-+						gsw_phy0_led1: led@1 {
-+							reg = <1>;
-+							status = "disabled";
-+						};
-+					};
-+				};
-+
-+				gsw_phy1: ethernet-phy@1 {
-+					compatible = "ethernet-phy-ieee802.3-c22";
-+					reg = <1>;
-+					interrupts = <1>;
-+					nvmem-cells = <&phy_calibration_p1>;
-+					nvmem-cell-names = "phy-cal-data";
-+
-+					leds {
-+						#address-cells = <1>;
-+						#size-cells = <0>;
-+
-+						gsw_phy1_led0: led@0 {
-+							reg = <0>;
-+							status = "disabled";
-+						};
-+
-+						gsw_phy1_led1: led@1 {
-+							reg = <1>;
-+							status = "disabled";
-+						};
-+					};
-+				};
-+
-+				gsw_phy2: ethernet-phy@2 {
-+					compatible = "ethernet-phy-ieee802.3-c22";
-+					reg = <2>;
-+					interrupts = <2>;
-+					nvmem-cells = <&phy_calibration_p2>;
-+					nvmem-cell-names = "phy-cal-data";
-+
-+					leds {
-+						#address-cells = <1>;
-+						#size-cells = <0>;
-+
-+						gsw_phy2_led0: led@0 {
-+							reg = <0>;
-+							status = "disabled";
-+						};
-+
-+						gsw_phy2_led1: led@1 {
-+							reg = <1>;
-+							status = "disabled";
-+						};
-+					};
-+				};
-+
-+				gsw_phy3: ethernet-phy@3 {
-+					compatible = "ethernet-phy-ieee802.3-c22";
-+					reg = <3>;
-+					interrupts = <3>;
-+					nvmem-cells = <&phy_calibration_p3>;
-+					nvmem-cell-names = "phy-cal-data";
-+
-+					leds {
-+						#address-cells = <1>;
-+						#size-cells = <0>;
-+
-+						gsw_phy3_led0: led@0 {
-+							reg = <0>;
-+							status = "disabled";
-+						};
-+
-+						gsw_phy3_led1: led@1 {
-+							reg = <1>;
-+							status = "disabled";
-+						};
-+					};
-+				};
-+			};
-+		};
-+
- 		ethwarp: clock-controller@15031000 {
- 			compatible = "mediatek,mt7988-ethwarp";
- 			reg = <0 0x15031000 0 0x1000>;
+         clocks:
+           minItems: 24
+           maxItems: 24
 -- 
 2.43.0
 
