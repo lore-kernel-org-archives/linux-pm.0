@@ -1,159 +1,106 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9640D202996;
-	Mon,  7 Jul 2025 10:06:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A7611BD9F0;
+	Mon,  7 Jul 2025 10:10:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751882768; cv=none; b=JoMOk5FP4AgPNHUl0ya4kxumsKiDNMoPXRNubIZlNeUCKSFSpcmWFDePcEAsdmHXzYp0/6SKG3OfsTZ3z1+F24PCPQIyZ2/kxDDdI6T6KvWMCsUN0ibhcaUu57Uy8TfsbgaoMDS0IygKwNVlzWzJE4p5EfBqM3mxQf0ntZYaZtc=
+	t=1751883029; cv=none; b=DKQ87Glu+DwMLynAS+t1Js0ecw1NZMwl/WHBFa6OeVWaxYNep4JjsWoqj1/alxUFQCQWTTiacq4eMg9sex7NXJhwY8xJuaKMZQo/PH285ZT8o92HYc/YKysAaOciTU8f+2d/b/x5pac0yge5CTNPo0iR0+5CeWmprZB04QE2DXw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751882768; c=relaxed/simple;
-	bh=T8iIMPb9brgtZdi72SAWfhA8roPO7vUHjVTHHnOQNVI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gvE8ynq4IWgbfi2LC4xnm05WJ1BqF12s3MLqMU7GjvH3uEJZfTlgUJ7e7hzlCG3gfNGKUYr4WYlNTBGqjLbWnAlxgTbLc9ckiFbGnjjKKq6WHi9CyJro4KPi3QoswmEzBNqbcBukpn9dLhjCxQ+htNV9HPb0GqKHJQXoo6YiC4E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=Nyz3P/mV; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1751883029; c=relaxed/simple;
+	bh=j/74EfwCut4e9GXyoPFJK6hkdne1vf1ui/JxX20Cg08=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=HP7NJMrHPBxqV3t2AA9S/DDlzPU634SoejiJpOsg1UDRbYy+hYQm3W0F+BptgVnoPzwUP8ZdfTVPfQJuk5cITQGtcnM3NbMttjH/TES7uTgpGA6ZPRnHJWKLOzOvcuUCXVlOglrLbVwf08byz2VCBzPe17QIU/hIVuxHwT/dwhc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=n1gWQ1su; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="Nyz3P/mV"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1751882764;
-	bh=T8iIMPb9brgtZdi72SAWfhA8roPO7vUHjVTHHnOQNVI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=Nyz3P/mVFjxZfpeCi+JHgh8VJSn0xoox1dJhCSYXuFxwdM0sNvNwafLR/zAZnTyb5
-	 G312aUFagNYKNK6E1I1kbqOBbGEQkEaPk40y50SsokLo9okJt1SW3p3dOjBTz8bjv2
-	 Wky154Wu8MeJEVP0vKR5wGEm2/jwK6+2GqTN0ztwuL7vAUWf4ynz1JywSUZ+P8mrze
-	 6w8T8cHr3PtE+/HkwOM7xpiDiZ/Mj812jWdPqEYXBopHPpm4vjZUl1FlU/tTZY1Euk
-	 7RxWXNpMj991IsirfIg5/V1rgvS+ANZm9yFs7dZ88Ag05O5oT3IDfGNEQODCHAOFaZ
-	 EgqL5tUpvw0nQ==
-Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
-	(No client certificate requested)
-	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 3BAA017E07C9;
-	Mon,  7 Jul 2025 12:06:03 +0200 (CEST)
-Message-ID: <90a3191f-882d-4302-afd5-e73e751b5b95@collabora.com>
-Date: Mon, 7 Jul 2025 12:06:02 +0200
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="n1gWQ1su"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=I57VkaSapJBkG6/ifvRIJbA8dsl3ex8n0FkR8Qwg0oo=; b=n1gWQ1suNLDJNKLEaSVcpE/Y3w
+	FtbPZFxfG36Bs3zzKQcN1N2Way4NA/P0t4RTiSV9hEwNiq+64AtqjxqfI8A/C2pVr2mplyi5jFjVy
+	gG9xIPkQLC/Rm9smpT4eBihU22tXgI59B71HuZE2P/AP1f9qt7M0874JcHDy9aCpb1CPN/xYXZSl5
+	RiWPRYeCcoH6mNtEAtG1vrx8jIKc4g3wK1RDQHS9wL/NF1LpCqR3bvY1RcysmKeraVKEJtYgRziye
+	WyNezsefN+BqeWqvw3M/VcR0gbHJQ2CeiUco1TQ5hpPlQaEHjj/8znPS697ZoCNhQYo0eAHA4fXpT
+	0lZzL5HQ==;
+Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
+	by casper.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1uYink-0000000CW8r-42Vw;
+	Mon, 07 Jul 2025 10:10:21 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id 9A160300399; Mon, 07 Jul 2025 12:10:19 +0200 (CEST)
+Date: Mon, 7 Jul 2025 12:10:19 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Chen Ridong <chenridong@huaweicloud.com>
+Cc: timvp@google.com, Michal Koutn?? <mkoutny@suse.com>, rafael@kernel.org,
+	pavel@kernel.org, tj@kernel.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, lujialin4@huawei.com,
+	chenridong@huawei.com
+Subject: Re: [PATCH next] sched,freezer: prevent tasks from escaping being
+ frozen
+Message-ID: <20250707101019.GE1613200@noisy.programming.kicks-ass.net>
+References: <20250703133427.3301899-1-chenridong@huaweicloud.com>
+ <n23vsu6y6cjf2vwdbfcjl2mj7venvpzpblncoa7adn3q5r4lph@qsfa3deqtamc>
+ <f4c4f465-72b9-4682-99e6-c249ecab8572@huaweicloud.com>
+ <8dae8006-e63d-467f-bb7c-e8470878e534@huaweicloud.com>
+ <20250704075718.GA2001818@noisy.programming.kicks-ass.net>
+ <85fc85e8-af92-4d58-8271-9bf4aeb0a63d@huaweicloud.com>
+ <bdc5a4d3-6942-4ba2-a13d-35f2e13c0b37@huaweicloud.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v8 02/16] dt-bindings: net: mediatek,net: allow up to 8
- IRQs
-To: Frank Wunderlich <linux@fw-web.de>, Krzysztof Kozlowski <krzk@kernel.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>,
- Kyungmin Park <kyungmin.park@samsung.com>,
- Chanwoo Choi <cw00.choi@samsung.com>, Georgi Djakov <djakov@kernel.org>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Andrew Lunn <andrew@lunn.ch>,
- Vladimir Oltean <olteanv@gmail.com>, "David S. Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Matthias Brugger <matthias.bgg@gmail.com>,
- Johnson Wang <johnson.wang@mediatek.com>, =?UTF-8?B?QXLEsW7DpyDDnE5BTA==?=
- <arinc.unal@arinc9.com>, Landen Chao <Landen.Chao@mediatek.com>,
- DENG Qingfang <dqfext@gmail.com>, Sean Wang <sean.wang@mediatek.com>,
- Daniel Golle <daniel@makrotopia.org>, Lorenzo Bianconi <lorenzo@kernel.org>,
- Felix Fietkau <nbd@nbd.name>, Frank Wunderlich <frank-w@public-files.de>,
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org
-References: <20250706132213.20412-1-linux@fw-web.de>
- <20250706132213.20412-3-linux@fw-web.de>
- <20250707-modest-awesome-baboon-aec601@krzk-bin>
- <B875B8FF-FEDB-4BBD-8843-9BA6E4E89A45@fw-web.de>
-From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Content-Language: en-US
-In-Reply-To: <B875B8FF-FEDB-4BBD-8843-9BA6E4E89A45@fw-web.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <bdc5a4d3-6942-4ba2-a13d-35f2e13c0b37@huaweicloud.com>
 
-Il 07/07/25 09:30, Frank Wunderlich ha scritto:
-> Am 7. Juli 2025 08:31:11 MESZ schrieb Krzysztof Kozlowski <krzk@kernel.org>:
->> On Sun, Jul 06, 2025 at 03:21:57PM +0200, Frank Wunderlich wrote:
->>> From: Frank Wunderlich <frank-w@public-files.de>
->>>
->>> Increase the maximum IRQ count to 8 (4 FE + 4 RSS/LRO).
->>
->> Because? Hardware was updated? It was missing before?
+On Mon, Jul 07, 2025 at 12:02:47PM +0800, Chen Ridong wrote:
+
+> >> And I'm not quite sure I understand this hunk either. If we bail out,
+> >> current->__state is reset to TASK_RUNNING, so what's the problem?
+> > 
+> > The issue occurs in this race scenario:
+> > 
+> > echo FROZEN > freezer.state
+> >   freeze_cgroup()
+> >     freeze_task()
+> >       fake_signal_wake_up() // wakes task to freeze it
+> > 
+> > In task context:
+> > get_signal
+> >   try_to_freeze
+> >     __refrigerator
+> >       WRITE_ONCE(current->__state, TASK_FROZEN); // set TASK_FROZEN
+> >       // race: cgroup state updates to frozen
+
+I suppose this is me not quite knowing how this cgroup freezer works;
+how does it race? what code marks the task frozen?
+
+> >       freezing(current) now return false
+> >       // We bail out, the task is not frozen but it should be frozen.
+> > 
+> > I hope this explanation clarifies the issue I encountered.
+> > 
 > 
-> There is no RSS support in driver yet,so IRQs were not added to existing DTS yet.
+> Hi, Peter, Tim
 > 
+> I was looking at the WARN_ON_ONCE(freezing(p)) check in __thaw_task
+> and started wondering: since we already have !frozen(p) check, is this
+> warning still needed? If we can remove it, maybe reverting commit
+> cff5f49d433f ("cgroup_freezer: cgroup_freezing: Check if not frozen")
+> would be a better approach.
 
-That's the problem. It's the hardware that you should've described, not the driver.
+I suppose that is possible; modern sensibilities require we write that
+function something like so:
 
-In short, you should've allowed the interrupts from the get-go, and you wouldn't
-be in this situation now :-)
-
->>>
->>> Frame-engine-IRQs (max 4):
->>> MT7621, MT7628: 1 IRQ
->>> MT7622, MT7623: 3 IRQs (only two used by the driver for now)
->>> MT7981, MT7986, MT7988: 4 IRQs (only two used by the driver for now)
->>
->> You updated commit msg - looks fine - but same problem as before in your
->> code. Now MT7981 has 4-8 interrupts, even though you say here it has only
->> 4.
-> 
-> Ethernet works with 4,but can be 8 for MT798x.
-> I cannot increase the MinItems here as it will
-> throw error because currently only 4 are defined in DTS.same for MT7986.
->>>
->>> Mediatek Filogic SoCs (mt798x) have 4 additional IRQs for RSS and/or
->>> LRO.
->>
->> Although I don't know how to treat this. Just say how many interrupts
->> are there (MT7981, MT7986, MT7988: 4 FE and 4 RSS), not 4 but later
->> actually 4+4.
-> 
-> First block is for Frame Engine IRQs and second for RSS/LRO. Only mention total count
-> across all SoCs is imho more confusing.
-> 
->> I also do not understand why 7 interrupts is now valid... Are these not
->> connected physically?
-> 
-> 7 does not make sense but i know no way to allow 8 with min 4 without between (5-7).
-> 
->> Best regards,
->> Krzysztof
-> 
-> Hi
-> 
-> Thanks for taking time for review again.
-> 
-> First block are the frame engine IRQs which are max 4 and on all SoCs.
-> The RSS IRQs are only valid on Filogic (MT798x),so there a total of 8, but on
-> MT7981 and MT7986 not yet added as i prepare the RSS/LRO driver in background.
-> We just want to add the IRQs for MT7988 now.
-> regards Frank
-
-Again, it's not the driver but the hardware that you're describing.
-
-As long as you are fixing the description of the hardware, even for all three,
-I am personally even fine with breaking the ABI, because the hardware description
-has been wrong for all that time.
-
-Just don't send those as Fixes commits, but next time you upstream something you
-must keep in mind that in bindings/dts you're describing hardware - the driver is
-something that should not drive any decision in what you write in bindings.
-
-We're humans, so stuff like this happens - I'm not saying that you shall not make
-mistakes - but again please, for the next time, please please please keep in mind
-what I just said :-)
-
-Now the options are two:
-  - Break the ABI; or
-  - Allow 4 or 8 interrupts (not 5, not 6, not 7)
-
-and that - not just on MT7988 but also on 81 and 86 in one go.
-
-Not sure if the second one is feasible, and I'm considering the first option only
-because of that; if the second option can be done, act like I never ever considered
-the first.
-
-Cheers,
-Angelo
+void __thaw_task(struct task_struct *p)
+{
+	guard(spinlock_irqsave)(&freezer_lock);
+	if (frozen(p) && !task_call_func(p, __restore_freezer_state, NULL))
+		wake_up_state(p, TASK_FROZEN);
+}
