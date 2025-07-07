@@ -1,112 +1,119 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC60621CA1D;
-	Mon,  7 Jul 2025 10:49:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C40B31C1F2F;
+	Mon,  7 Jul 2025 10:56:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751885396; cv=none; b=EqMofoGK80gJxIZvnsKlR+0ZjDvTqLDkativnXkIVmw8+Z350eXJsI3IdA0y8oz68kiYzqaptEDwwrB+8PJfrLL7EzjMbQDqz7iTv1CYdYOH+Mzh3s+6HiyKx0exleP7VV1Sat6Egv7xl6rL5SKnGHYjjOyo3TRcv0I3mTqGDfw=
+	t=1751885779; cv=none; b=PLg014seH1FMfcU98ZKN+na0nwwLfIMDK8NQcGZwoQlLHkNVsHx8VYJt9TtujCiZ2QE95I94pbmnjSdjhlH/0zxwCkKkJ556kqak0qE8RDewkIyp6eS0a8mbc1y5UZBx4Ua0FLZMdAAjasX1gRAjF9PV0C44K90M8izQzyuhaZ8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751885396; c=relaxed/simple;
-	bh=utlkw0o5NARZFk83JwXbp9lywwmgReSbAqfiKiWu4X0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=AYMUrI6Caz3hmlb+MbnV6Et8TYGg5sRESqJVBmS1mr2WCzOaA6wBMkDT75/q/YNo1b5sgyyZBXwuihX/jGD0kUiQJiECeCw2sDnsyh62jSGTfYsORPYOIPx94zM4e4iR8O5LNnpZChtFbwMutwUO3hgXrdhLVjfhtBm1UPWkSmw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=oz8v7duM; arc=none smtp.client-ip=148.251.105.195
+	s=arc-20240116; t=1751885779; c=relaxed/simple;
+	bh=KHr4A5nG0FU7osUHbAlxCjMzJS9aprXshutzewcPyjI=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=NXK1VT78Hmf23fbL5/Ba1bAWXa7HxV2BZiL78tP4Op/S+tLBUsPdOpF1P8Y8SI6qPhocfolaWFgLS4aDW72FvHrAYk7U4AzkLbp1PVcVFP6n/V1lBo9xCsWWnIj5V33Jrg4sSUsTK/DhTaPtVOtA/wYxzNKa1Otoy/sI/cEFUTo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=gUXl0ElY; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="oz8v7duM"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="gUXl0ElY"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1751885392;
-	bh=utlkw0o5NARZFk83JwXbp9lywwmgReSbAqfiKiWu4X0=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=oz8v7duMOV+G+tHbirtD/TgsoaVCm/SBdJXqX0p0ME6pE/uG9hl2Gx8g81dhEP2pg
-	 5Ptd7ycGg754PAl23h2yWs7NhLW5sip1kvKL2cRUe0BSvBP1j4i/GOx04Cxwu1uG4E
-	 fujalaUTbE9aEAMNP4s5sDJY4A+cPfEA9OrAgpEHX6YcJ1/zDjh9VX1M74RMbz0SR+
-	 /UuWnlvw5F29HFVj7EIuxcXqzssN4EPFIa6CkJLLDkb527++3XPGFnTU9YFJbOSc3h
-	 jE061XUCbiuFsosE1XDZoxEu9gR5DkwwazcHtt53BVwsI1Wm7q+eFX1phnLk59vdk+
-	 UA5xhFzFB1z3A==
-Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	s=mail; t=1751885776;
+	bh=KHr4A5nG0FU7osUHbAlxCjMzJS9aprXshutzewcPyjI=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=gUXl0ElYdw1eO6ewpMWumjDgKHXeIxg9jAQu97kgZ8/B3VOxoMaVj3Hn4yVipnFlz
+	 rqw8e+0tevEqCCGenOvbXymjP5dAmA/1ca6MgJI6wQ2Xzi7rN900EaDSt+jfS0w7Nh
+	 TyYEWFK07bJ21IFfLqxjqyhd0AJXRnQ3bSRa+y9f4EUQ+A0T2oikH3t1uwXZgS5uTy
+	 SWrS73PA8A7O6BGZbCNC5/twH/dWwSealJ0RTM7pd0cokSne+lEUGE99AT0Hhr09oH
+	 +nS+IKq6ZQTivkTnRHu6liMVpNfa8Tf5/S+wM/+H3bFrQVbRwixW4JRvwP6kRHwmu1
+	 eS1oBIJuAjusQ==
+Received: from IcarusMOD.eternityproject.eu (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 0089017E04EE;
-	Mon,  7 Jul 2025 12:49:51 +0200 (CEST)
-Message-ID: <36353ccd-07fc-4415-9db2-54977b25054a@collabora.com>
-Date: Mon, 7 Jul 2025 12:49:51 +0200
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 2437F17E053B;
+	Mon,  7 Jul 2025 12:56:15 +0200 (CEST)
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+To: linux-mediatek@lists.infradead.org
+Cc: robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	matthias.bgg@gmail.com,
+	angelogioacchino.delregno@collabora.com,
+	ulf.hansson@linaro.org,
+	y.oudjana@protonmail.com,
+	fshao@chromium.org,
+	wenst@chromium.org,
+	lihongbo22@huawei.com,
+	mandyjh.liu@mediatek.com,
+	mbrugger@suse.com,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-pm@vger.kernel.org,
+	kernel@collabora.com,
+	=?UTF-8?q?N=C3=ADcolas=20F=2E=20R=2E=20A=2E=20Prado?= <nfraprado@collabora.com>
+Subject: [PATCH v2 01/10] dt-bindings: memory: mtk-smi: Document #access-controller-cells
+Date: Mon,  7 Jul 2025 12:55:56 +0200
+Message-ID: <20250707105605.98248-2-angelogioacchino.delregno@collabora.com>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20250707105605.98248-1-angelogioacchino.delregno@collabora.com>
+References: <20250707105605.98248-1-angelogioacchino.delregno@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 00/10] pmdomain: Partial refactor, support modem and RTFF
-To: =?UTF-8?B?TsOtY29sYXMgRi4gUi4gQS4gUHJhZG8=?= <nfraprado@collabora.com>,
- linux-mediatek@lists.infradead.org
-Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
- matthias.bgg@gmail.com, ulf.hansson@linaro.org, y.oudjana@protonmail.com,
- fshao@chromium.org, wenst@chromium.org, lihongbo22@huawei.com,
- mandyjh.liu@mediatek.com, mbrugger@suse.com, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-pm@vger.kernel.org, kernel@collabora.com
-References: <20250703110247.99927-1-angelogioacchino.delregno@collabora.com>
- <5bfcd5e059e86a96807426bfc6543209d09b557f.camel@collabora.com>
-From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Content-Language: en-US
-In-Reply-To: <5bfcd5e059e86a96807426bfc6543209d09b557f.camel@collabora.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Il 03/07/25 20:27, Nícolas F. R. A. Prado ha scritto:
-> On Thu, 2025-07-03 at 13:02 +0200, AngeloGioacchino Del Regno wrote:
->> This series is a subset of [1], leaving out the Hardware Voter
->> specific
->> bits for MT8196 until the discussion around it reaches a conclusion.
-> [..]
->> Compared to v1 in [1]:
->>   - Changed mediatek,bus-protection to access-controllers
->>     as suggested by Rob (thanks!)
->>   - Added commits to document #access-controller-cells on all of
->>     the access control providers
-> [..]
->> [1]
->> https://lore.kernel.org/all/20250623120154.109429-1-angelogioacchino.delregno@collabora.com
->>
->> AngeloGioacchino Del Regno (10):
->>    dt-bindings: memory: mtk-smi: Document #access-controller-cells
->>    dt-bindings: clock: mediatek: Document #access-controller-cells
->>    dt-bindings: power: mediatek: Document access-controllers property
->>    pmdomain: mediatek: Refactor bus protection regmaps retrieval
->>    pmdomain: mediatek: Handle SoCs with inverted SRAM power-down bits
->>    pmdomain: mediatek: Move ctl sequences out of power_on/off
->> functions
->>    pmdomain: mediatek: Add support for modem power sequences
->>    pmdomain: mediatek: Add support for RTFF Hardware in MT8196/MT6991
->>    pmdomain: mediatek: Convert all SoCs to new style regmap retrieval
->>    arm64: dts: mediatek: Convert all SoCs to use access-controllers
-> 
-> As already pointed out by rob's bot you're missing adding the
-> properties to
-> 
-> mediatek,mt8195-sys-clock.yaml
-> mediatek,mt8188-sys-clock.yaml
-> 
-> on patch 2. But other than that, for the whole series (since the tag
-> wasn't added from the previous version):
-> 
+Some of the SMI Common HW provides access control to at least
+the power controller: document the #access-controller-cells
+property and allow specifying it only for MT8183 and MT8365
+as those are the only known SoCs with an SMI acting as access
+controller.
 
-Oh I did, trust me I did.
-But then I forgot to squash the changes in the patch that I've sent.
+Reviewed-by: Nícolas F. R. A. Prado <nfraprado@collabora.com>
+Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+---
+ .../memory-controllers/mediatek,smi-common.yaml  | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-This all means that I need more coffee: fixing that now (both the patches
-and getting more coffee :-P).
-
-Thanks btw!
-Angelo
-
-> Reviewed-by: Nícolas F. R. A. Prado <nfraprado@collabora.com>
-> 
-
+diff --git a/Documentation/devicetree/bindings/memory-controllers/mediatek,smi-common.yaml b/Documentation/devicetree/bindings/memory-controllers/mediatek,smi-common.yaml
+index 0762e0ff66ef..74b355a08493 100644
+--- a/Documentation/devicetree/bindings/memory-controllers/mediatek,smi-common.yaml
++++ b/Documentation/devicetree/bindings/memory-controllers/mediatek,smi-common.yaml
+@@ -74,6 +74,9 @@ properties:
+     minItems: 2
+     maxItems: 4
+ 
++  '#access-controller-cells':
++    const: 0
++
+   mediatek,smi:
+     $ref: /schemas/types.yaml#/definitions/phandle
+     description: a phandle to the smi-common node above. Only for sub-common.
+@@ -168,6 +171,19 @@ allOf:
+             - const: apb
+             - const: smi
+ 
++  - if:  # for SMI providing access control
++      properties:
++        compatible:
++          enum:
++            - mediatek,mt8183-smi-common
++            - mediatek,mt8365-smi-common
++    then:
++      properties:
++        '#access-controller-cells': true
++    else:
++      properties:
++        '#access-controller-cells': false
++
+ additionalProperties: false
+ 
+ examples:
+-- 
+2.49.0
 
