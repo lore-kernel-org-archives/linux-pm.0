@@ -1,35 +1,35 @@
-Received: from mx3.wp.pl (mx3.wp.pl [212.77.101.9])
+Received: from mx4.wp.pl (mx4.wp.pl [212.77.101.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 600F0227E83
-	for <linux-pm@vger.kernel.org>; Tue,  8 Jul 2025 22:04:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.77.101.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86AF024729F
+	for <linux-pm@vger.kernel.org>; Tue,  8 Jul 2025 22:04:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.77.101.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752012259; cv=none; b=VPFqEiT5sy/eXjKHSBBiAzT1T3ktJfzAKBTfLkTFj1MWj+8fgh3uIeik0zRYeH6AbJDFLSCv9ohJmGPWAUGCBX7PewK8oJr+FkqBZBv/qx0ktKCwLDG/vv2gIn/HryB2X5wOk0idLzJO0NwzUI34W3KS99RZKSGm8lAf2jck/j4=
+	t=1752012261; cv=none; b=tbJ1iGZwtGu92GnS32mSbiGlsBdUKDUfUTnivX9dAawRLuEYhZr7AN+nGgXW099YJtZ8mssbV+FqKbfyeXqs+t6/GVtxITpyZhQGTA1i3qsX+RKv9Jm3TFUA+WH10b23YD9p+DP7YxBW98RMZs7cyON3lR9IwK9Vmg7pkYkJ4pE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1752012259; c=relaxed/simple;
-	bh=Nvvb3b/gGfyOjhKPQN7T7eI9idEiaO/M3PTjidpAikE=;
+	s=arc-20240116; t=1752012261; c=relaxed/simple;
+	bh=JEwjDFc86PrkewUj6jreBP+U0UYWAlrwDl5oWy0MiqM=;
 	h=From:To:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=KsUEpAXvzClS53yLgZX1SwD3+tllMJ+NPsXozYp2F8oRIbc7MYwPc4vsTjXlU04moXVZArnA3WjyZxHLdipLQPc5qC8K5Wnl0zzJbJLpOOpBI8ZTz7oU8ClzEV2sle4eRG0V9/x+tfu997m6SzVlkCThfUb+d/6SaAnCXml37yM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=wp.pl; spf=pass smtp.mailfrom=wp.pl; dkim=pass (2048-bit key) header.d=wp.pl header.i=@wp.pl header.b=IGiWjfSK; arc=none smtp.client-ip=212.77.101.9
+	 MIME-Version:Content-Type; b=Mqf2l71NGy2fDET0/lwqq2RiIRhTApFm9L0eREKY6L398MVympZHnD15N/xcWw0PhmWdlbr0Dfo/qLaZXpaiqB2duNCGkwYxLd/GcVkD3B6TXI2uMTwU7eWhecOR4O+9nVbMa7uWBL+p5Na1sZ5WAov/pM+oMVdLdTcUOByU4f8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=wp.pl; spf=pass smtp.mailfrom=wp.pl; dkim=pass (2048-bit key) header.d=wp.pl header.i=@wp.pl header.b=QXRHR7qJ; arc=none smtp.client-ip=212.77.101.12
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=wp.pl
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wp.pl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=wp.pl header.i=@wp.pl header.b="IGiWjfSK"
-Received: (wp-smtpd smtp.wp.pl 9932 invoked from network); 9 Jul 2025 00:04:13 +0200
+	dkim=pass (2048-bit key) header.d=wp.pl header.i=@wp.pl header.b="QXRHR7qJ"
+Received: (wp-smtpd smtp.wp.pl 8905 invoked from network); 9 Jul 2025 00:04:10 +0200
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wp.pl; s=20241105;
-          t=1752012253; bh=p0DP/yEP8mz0tV12G5LR9PQ4AN9dj0wNDnAmLxZaMVk=;
+          t=1752012250; bh=7zoO974m1IZgYR3D++13RTWoZ8Kdq6ybz200zav34PI=;
           h=From:To:Subject;
-          b=IGiWjfSKBf4/nudFRpbvz4M2qi5dOEUcoDZVGGIr3PBsISx2DYgsF1nItLnHYNlFF
-           +i7jhIFAUie0xU7mW6cF7V+xj11rU4wt2rwi5TSTBXyT3UhR6/G2WsaBMnmLWQCdnw
-           bBdlFqj220eBcdvpb56l+gNdLb7uP30px4YC0EWNt95hyrnOP77KJm4sM03o5TYMQ4
-           MEV8DRCQw9HhSJkKDoymm5uM1WLJl2ezgZl8VMXqlHmLs/bWPutT2rrPMdVBKSel4b
-           VEMn4mQRJkTfb+WOe9mQFYOfwo79Z3uxdydbWWdwrRkMVyjayd53rVTWV4x3xuy/4W
-           YyL/Isf8NER+w==
+          b=QXRHR7qJJvAHQZdMNvlf/AyebVRU2/hfT/WxggoNBkAjDF18RcjFIYu57JoqrgVLr
+           VZMZqOj8FsxM4bOG8MzsT1wZ3pAQ9QyZ0ozo+cy+iOfVXSIAs+FwSHVDNj/+/4CS4R
+           uLui1CBCj+lrmJScrQaQjxXGRUSHrB5+QVCi0tsDOchZLUgqej2cK8tgBmOmACe/6H
+           5Vv4184pQaIfRaDIWaopmPi75gAaR8uvi6EINO3y9Z40H8NKsu/hJ+Xu1fxAg6qkAJ
+           vnx75Wh0PF27JArkiOr2uu7ERdXWmlIHiu42yRLPgn8EPPPKwvctMEIGqFaTgexeFt
+           ngQ/k7zJ9P7dw==
 Received: from 83.24.138.239.ipv4.supernova.orange.pl (HELO laptop-olek.lan) (olek2@wp.pl@[83.24.138.239])
           (envelope-sender <olek2@wp.pl>)
           by smtp.wp.pl (WP-SMTPD) with ECDHE-RSA-AES256-GCM-SHA384 encrypted SMTP
-          for <rafael@kernel.org>; 9 Jul 2025 00:04:13 +0200
+          for <rafael@kernel.org>; 9 Jul 2025 00:04:10 +0200
 From: Aleksander Jan Bajkowski <olek2@wp.pl>
 To: rafael@kernel.org,
 	daniel.lezcano@linaro.org,
@@ -53,9 +53,9 @@ To: rafael@kernel.org,
 	linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v3 3/3] arm64: dts: mediatek: add thermal sensor support on mt7981
-Date: Wed,  9 Jul 2025 00:04:05 +0200
-Message-Id: <20250708220405.1072393-4-olek2@wp.pl>
+Subject: [PATCH v3 2/3] dt-bindings: thermal: mediatek: add falback compatible string for MT7981 and MT8516
+Date: Wed,  9 Jul 2025 00:04:04 +0200
+Message-Id: <20250708220405.1072393-3-olek2@wp.pl>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20250708220405.1072393-1-olek2@wp.pl>
 References: <20250708220405.1072393-1-olek2@wp.pl>
@@ -65,74 +65,60 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-WP-MailID: 995d0e042c99d6c3b46f7c20e293c2da
+X-WP-MailID: 30c928d7f745ab1bbbf0f926fc259679
 X-WP-AV: skaner antywirusowy Poczty Wirtualnej Polski
-X-WP-SPAM: NO 0000000 [cbMx]                               
+X-WP-SPAM: NO 0000001 [gXKh]                               
 
-The temperature sensor in the MT7981 is same as in the MT7986.
+The ‘mediatek,mt7981-thermal’ and ‘mediatek,mt8516-thermal’ strings
+aren't definied in the driver. Both should have fallback compatible
+strings. This commit fixes this issue.
 
+Fixes: 788494ba0999 ("dt-bindings: thermal: convert Mediatek Thermal to the json-schema")
 Signed-off-by: Aleksander Jan Bajkowski <olek2@wp.pl>
 ---
- arch/arm64/boot/dts/mediatek/mt7981b.dtsi | 31 ++++++++++++++++++++++-
- 1 file changed, 30 insertions(+), 1 deletion(-)
+ .../bindings/thermal/mediatek,thermal.yaml    | 27 ++++++++++++-------
+ 1 file changed, 17 insertions(+), 10 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt7981b.dtsi b/arch/arm64/boot/dts/mediatek/mt7981b.dtsi
-index 5cbea9cd411f..277c11247c13 100644
---- a/arch/arm64/boot/dts/mediatek/mt7981b.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt7981b.dtsi
-@@ -76,7 +76,7 @@ watchdog: watchdog@1001c000 {
- 			#reset-cells = <1>;
- 		};
+diff --git a/Documentation/devicetree/bindings/thermal/mediatek,thermal.yaml b/Documentation/devicetree/bindings/thermal/mediatek,thermal.yaml
+index d96a2e32bd8f..1c10d7adc77a 100644
+--- a/Documentation/devicetree/bindings/thermal/mediatek,thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/mediatek,thermal.yaml
+@@ -20,16 +20,23 @@ allOf:
  
--		clock-controller@1001e000 {
-+		apmixedsys: clock-controller@1001e000 {
- 			compatible = "mediatek,mt7981-apmixedsys";
- 			reg = <0 0x1001e000 0 0x1000>;
- 			#clock-cells = <1>;
-@@ -184,6 +184,31 @@ spi@1100b000 {
- 			status = "disabled";
- 		};
+ properties:
+   compatible:
+-    enum:
+-      - mediatek,mt2701-thermal
+-      - mediatek,mt2712-thermal
+-      - mediatek,mt7622-thermal
+-      - mediatek,mt7981-thermal
+-      - mediatek,mt7986-thermal
+-      - mediatek,mt8173-thermal
+-      - mediatek,mt8183-thermal
+-      - mediatek,mt8365-thermal
+-      - mediatek,mt8516-thermal
++    oneOf:
++      - enum:
++          - mediatek,mt2701-thermal
++          - mediatek,mt2712-thermal
++          - mediatek,mt7622-thermal
++          - mediatek,mt7986-thermal
++          - mediatek,mt8173-thermal
++          - mediatek,mt8183-thermal
++          - mediatek,mt8365-thermal
++      - items:
++          - enum:
++              - mediatek,mt7981-thermal
++          - const: mediatek,mt7986-thermal
++      - items:
++          - enum:
++              - mediatek,mt8516-thermal
++          - const: mediatek,mt2701-thermal
  
-+		thermal@1100c800 {
-+			compatible = "mediatek,mt7981-thermal",
-+				     "mediatek,mt7986-thermal";
-+			reg = <0 0x1100c800 0 0x800>;
-+			interrupts = <GIC_SPI 138 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&infracfg CLK_INFRA_THERM_CK>,
-+				 <&infracfg CLK_INFRA_ADC_26M_CK>;
-+			clock-names = "therm", "auxadc";
-+			nvmem-cells = <&thermal_calibration>;
-+			nvmem-cell-names = "calibration-data";
-+			#thermal-sensor-cells = <1>;
-+			mediatek,auxadc = <&auxadc>;
-+			mediatek,apmixedsys = <&apmixedsys>;
-+		};
-+
-+		auxadc: adc@1100d000 {
-+			compatible = "mediatek,mt7981-auxadc",
-+				     "mediatek,mt7986-auxadc";
-+			reg = <0 0x1100d000 0 0x1000>;
-+			clocks = <&infracfg CLK_INFRA_ADC_26M_CK>;
-+			clock-names = "main";
-+			#io-channel-cells = <1>;
-+			status = "disabled";
-+		};
-+
- 		pio: pinctrl@11d00000 {
- 			compatible = "mediatek,mt7981-pinctrl";
- 			reg = <0 0x11d00000 0 0x1000>,
-@@ -211,6 +236,10 @@ efuse@11f20000 {
- 			reg = <0 0x11f20000 0 0x1000>;
- 			#address-cells = <1>;
- 			#size-cells = <1>;
-+
-+			thermal_calibration: thermal-calib@274 {
-+				reg = <0x274 0xc>;
-+			};
- 		};
- 
- 		clock-controller@15000000 {
+   reg:
+     maxItems: 1
 -- 
 2.39.5
 
