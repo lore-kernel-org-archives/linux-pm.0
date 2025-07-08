@@ -1,197 +1,145 @@
-Received: from mail-yw1-f178.google.com (mail-yw1-f178.google.com [209.85.128.178])
+Received: from mail-ed1-f41.google.com (mail-ed1-f41.google.com [209.85.208.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CBCD2D8DA8
-	for <linux-pm@vger.kernel.org>; Tue,  8 Jul 2025 14:42:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDD212D9ED2
+	for <linux-pm@vger.kernel.org>; Tue,  8 Jul 2025 14:58:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751985724; cv=none; b=aJt9rKVtSPG4cWnZ2ysMIIWKLA3HszYST1+wMl6doiYi4aiHeESuOh/vJkdaVOFrUGNzqHays/eKlWFLY/fH8EpMjnRq7D8w72F4jRCZiJjvTa0gibTgdR0/lyAHL5m4R4DlgqjI80aGnOvTyyA/NDH8g8uEviL1l5wR4gOUEp0=
+	t=1751986708; cv=none; b=trROfdLlnjWtwPwxtEvVSqS6FO6oqXs7m67oAqUie++5HZSNCXgyNRIHF1a51wCMtmZnC+AIepDATsLxS0KHzKdMTdWDY0VEkqUIA7N2rff0Giq/U9zYe9LHVZTdb/mXJEqxaRTNNxS6yFMmNH1y3S9GiH4nOswKq+pnhq/OyME=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751985724; c=relaxed/simple;
-	bh=0mcJIAv963kRXxd7avSTBLgnDGUQ9rev3Q2V/CY3u5A=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Acq4gy4+aFRQzcfUO7vvIVMa0ExGbrAa00cA73B1WxC96uhUIm5hnmj1qNJh9edfzmtWkcfn3YVE/738oXUDghtsxMnR6XdJVGDYrGsue6gnog7QKTeOD7MSamn2vByFI8huzQRxuvXWyDGWKMErWiEgVimmzWLJCHhFn1qSCSc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=xXpJK1BP; arc=none smtp.client-ip=209.85.128.178
+	s=arc-20240116; t=1751986708; c=relaxed/simple;
+	bh=8s0xa7L5BjSxz1JQE/gd29Vqw8ZPITgvO9C8rgWyOmE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=X1wDWQIEhOPlrNKjoew8VCgFfZ1rrqH2/turvZjv36CoSooMOEVW7j0WDlBMTpVcyoHK6d5E+nS5rsTAgHWE8jo3ASGawYcRgJsGLollAfhz79vig/HaoKEypHBGDAxXNs8I9m6ZWii7OjXk0/MvDlLGn7ihepQ56UJPen0KcQg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=ltm6PWML; arc=none smtp.client-ip=209.85.208.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="xXpJK1BP"
-Received: by mail-yw1-f178.google.com with SMTP id 00721157ae682-70e77831d68so39000267b3.2
-        for <linux-pm@vger.kernel.org>; Tue, 08 Jul 2025 07:42:01 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ltm6PWML"
+Received: by mail-ed1-f41.google.com with SMTP id 4fb4d7f45d1cf-60c9d8a169bso7275866a12.1
+        for <linux-pm@vger.kernel.org>; Tue, 08 Jul 2025 07:58:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1751985721; x=1752590521; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=8X1Ax/c7OCSOjjpVTfEgcVIxTR2rSGaImcIXzMGcrTo=;
-        b=xXpJK1BP1mJ5cfutK6YTy+9rxQqlLmPf/5yCt51bnenUS5QZiZkMLAf9+KcRkERi2s
-         hzTV9WTDnxrt5U5eZ0hlP4JhDmuVQCkNWm8kCr3T5WV7EvzygknJgi1ryShfUoIEW1d+
-         dnlRXb47uOyrHrPYjltQUAN0vyxjjoYdA+i5KBTXFl63+QfLj5sImx43PoFIER/GxmeL
-         EaT0W77k7gle5XsuK7j/cqosZT2sePJmkOFuXLZweaNI4w6dctjCftqP+aflKLhRB07a
-         L+vIgBO6PIGr8TYhUAXvQ6+s4AOx1AqHb8mj/yxmvDx8ZU6v6oESwiJWi81nXHbXV5Yw
-         90qg==
+        d=linaro.org; s=google; t=1751986705; x=1752591505; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=B4jT32HA4W2Qzu0z0BHKWxYGrYNQ+ge5ttUU4NoaGyc=;
+        b=ltm6PWMLLvzPXSej1/qnr/0tD4n2ONwu0CbcMgOU3gnLVgw8r0n6mcNIB2kVo5Kl5u
+         IjCpQL12ruy8RhrIeInMjmwj6MTWxPBVkX2HT6clbQkMZKagDqmgS9FBYGM0nLY9dgit
+         7VvjzUsBX32LtCvF/egtwSWaQ1ies0z46gDb10CsjrKOtx6YiDf2lGlfWfxjsszWMT7f
+         ZO/CpztCZZh6YKaicfcde+QL+SQ5pHSK87OXW6AKD09qEVGP/icXxd14NWB6Q+iIs65x
+         9Z5rS4bN1ojFPqgnaXYdNcGFryjUNvTAz6kUs/cUknWzHG9fgGrjXSdo/qTrxuf4M9RT
+         Kbig==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751985721; x=1752590521;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=8X1Ax/c7OCSOjjpVTfEgcVIxTR2rSGaImcIXzMGcrTo=;
-        b=INA5fVYIRS6XFqYJw/PR5Mo3iN89HNsNgjRWcYEOWHENEBMS0ynTyqNhivOPVwtQcg
-         n6uVqApxLnbTPzh0nBhwOBOhGAChnWlF+trN4n5jiboxZl2GYXGsTgzYqAiAs0OPrqxR
-         8MQS4FCPT87RnV2mAseRleK40h21fHUgqvWjCnIOG0jD1RaPhLM8yFXDNOfby6jQHW2P
-         Ie48kiHFbC0iSoxp2M+sh9z9ywiejzHfyv0uplS2gUfPEY6ogcKvDGcZ/d1AjExgSP2a
-         xhorckukfM+oF8vuW03FKozJCODpZvXdTzEMjUZBodc5opfb2CjA04OoLwlfDMv4rlNl
-         zi7Q==
-X-Gm-Message-State: AOJu0YysN+rqbZDr+nJE4qj3j6vvRej88isniUxAzl/3P7LH6585Y/Qt
-	8zj5ZNKGGHIw92Wc0uwe8+zU7wdXYSa18R8xvrfC2q+CaUyypg6Or6zolPY+Ny2q0MCcEtGGdqt
-	KDcfmXkoS2xz2SPb7pvUDoQVWEPvtS4YPO54JUlFOojpuRzgkvaRG/BA=
-X-Gm-Gg: ASbGncs1L45ZWKiNce72Ir2HpLKg64L9QmpuwNropu3wbE9E+J89ZFwaBO/WFn8qVXy
-	pbRTv64qpOAJPNNCnauNRhzrloY2FDx5COCm36jXQdsNVE6gZPmPhPcGmxyJM85vIS0p+NLroSK
-	L9A+YuepHvX6Qke3bjZZgn0pyRVSnkdyUef3/iH83PeYAP
-X-Google-Smtp-Source: AGHT+IG5S+08e/JdbYjJIFZyOr0+cJ0P3N9YKEaV/R7CFPKmW7CVIaQwpF7t7Nsv3w8b90GP+LHZk0meEqPMhgNNqQo=
-X-Received: by 2002:a05:690c:b84:b0:70f:84c8:3105 with SMTP id
- 00721157ae682-71668d73139mr239782947b3.37.1751985720735; Tue, 08 Jul 2025
- 07:42:00 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1751986705; x=1752591505;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=B4jT32HA4W2Qzu0z0BHKWxYGrYNQ+ge5ttUU4NoaGyc=;
+        b=ZeufJiB0WQF6qRpqIB1aEe9RffxzZv39bHtNMw/9X14XWUCvNXI+lCR5eUJ6jhcYOm
+         c8cNih4eb86VUtLcsfCxHzZviWMw96fWg7FPiMENADaNX1DgSBc41L1pmqQQgdK8gvKj
+         A55DImhvcK1liiAPnoxa2kzsqW7ZxRn6+glqhhRp0SGcr/Wq+CNI16OCtI8cbNy6TlxS
+         6M7zvtZkemfDiPUVsuOuO0JYM1tMcK4Vm1wT17zfz06U+DY4IBOLrEU0Da8VriDgxBqq
+         4lhY85Hr+9VMUak1mqD6gewLgRSdcj9OpqxG6iJvMSC/8R1+DjRukEIIPPyDsq0Pk/bT
+         qBTQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUdbON2v5FIMooo3KK/HEJ/GGffohT3J9/Lz8JfedQ2SZyiiY4I86+dU+wiJ/O/xqU0DCIk7uUNIg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw8wHBPW9tTugPdzXuVqUafqOK4dMPXTqOcmCS0ExuTwaIWd0sz
+	31CcKVYepMAZAH0vhsOtZx4evfojKOi7RjfQsJ4uHHF00gD7QEe2hXRtsNstSUYtTFPZVi3fmAN
+	XuVeNTkQ=
+X-Gm-Gg: ASbGncvqFaFiSWTaEyEF1IMZrIEZLiL36Punb3unLQXA/8q0V3TXTc3WJVB2o6vUSkX
+	Kl0x++T5lM4+MiEh02idN6/KPdZLNrGi4gWeu1Sv+MJ98IPr9OzxchSNTjT9lqnAa2XYuI9PFGR
+	+NEAVL9X/NbSJv6lVbwiR4xbd2R/n1p8AdmgvqYpH0xIN/H5qfxnNKzL5zTIMQrOhnxfYs04pSb
+	6RLaNgmKhMOf+FegKv5Evvqle1+bgrYubh9Vt+wbuztu6Fe0x+Ok20k4jvukOMzSN7GSvoawUkW
+	lLzP8Z8yeOEekD+z/P/ndrYHj3Cm9qVneGLI49HLs9ya09y4bYiISeYggB2N7DJFChwGaVk=
+X-Google-Smtp-Source: AGHT+IEyVGRav48RsWOQ+IbAhO5COYztnDZYY9ox0Xfv6AASPPJWInKbHNlJUCQb/6Tlb54HYzvLrQ==
+X-Received: by 2002:a50:c052:0:b0:610:5794:d83c with SMTP id 4fb4d7f45d1cf-6105794dc39mr1106147a12.19.1751986705123;
+        Tue, 08 Jul 2025 07:58:25 -0700 (PDT)
+Received: from [192.168.0.251] ([82.76.204.12])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-60fca66e566sm7314471a12.11.2025.07.08.07.58.23
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 08 Jul 2025 07:58:24 -0700 (PDT)
+Message-ID: <fae52bad-b78f-4518-989f-9624c6a749d8@linaro.org>
+Date: Tue, 8 Jul 2025 15:58:22 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250708-pmdomain_qos-v1-1-7c502f4c901a@oss.qualcomm.com>
-In-Reply-To: <20250708-pmdomain_qos-v1-1-7c502f4c901a@oss.qualcomm.com>
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Tue, 8 Jul 2025 16:41:25 +0200
-X-Gm-Features: Ac12FXydQdF3ospRk6QaRRhIc30sIrq41cRq2xIJwRbfj9xsGxlUOl2OgbqnTok
-Message-ID: <CAPDyKFrL63Jv4_cUbrjAaU4UtNNDVMpALt41Mu6NbGcAefmWUA@mail.gmail.com>
-Subject: Re: [PATCH] pmdomain: governor: Consider CPU latency tolerance from pm_domain_cpu_gov
-To: Maulik Shah <maulik.shah@oss.qualcomm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] PM: add kernel parameter to disable asynchronous
+ suspend/resume
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, Pavel Machek <pavel@kernel.org>,
+ Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ peter.griffin@linaro.org, andre.draszik@linaro.org, willmcvicker@google.com,
+ kernel-team@android.com
+References: <20250708-pm-async-off-v1-1-1b200cc03d9c@linaro.org>
+ <CAJZ5v0gMk+Jt5WBUB=+cvv2YoU+49nRxL4KPRGm9TAdzkUvQhQ@mail.gmail.com>
+Content-Language: en-US
+From: Tudor Ambarus <tudor.ambarus@linaro.org>
+In-Reply-To: <CAJZ5v0gMk+Jt5WBUB=+cvv2YoU+49nRxL4KPRGm9TAdzkUvQhQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Tue, 8 Jul 2025 at 07:15, Maulik Shah <maulik.shah@oss.qualcomm.com> wrote:
->
-> pm_domain_cpu_gov is selecting a cluster idle state but does not consider
-> latency tolerance of child CPUs. This results in deeper cluster idle state
-> whose latency does not meet latency tolerance requirement.
->
-> Select deeper idle state only if global and device latency tolerance of all
-> child CPUs meet.
->
-> Test results on SM8750 with 300 usec PM-QoS on CPU0 which is less than
-> domain idle state entry (2150) + exit (1983) usec latency mentioned in
-> devicetree, demonstrate the issue.
->
->         # echo 300 > /sys/devices/system/cpu/cpu0/power/pm_qos_resume_latency_us
->
-> Before: (Usage is incrementing)
-> ======
->         # cat /sys/kernel/debug/pm_genpd/power-domain-cluster0/idle_states
->         State          Time Spent(ms) Usage      Rejected   Above      Below
->         S0             29817          537        8          270        0
->
->         # cat /sys/kernel/debug/pm_genpd/power-domain-cluster0/idle_states
->         State          Time Spent(ms) Usage      Rejected   Above      Below
->         S0             30348          542        8          271        0
->
-> After: (Usage is not incrementing due to latency tolerance)
-> ======
->         # cat /sys/kernel/debug/pm_genpd/power-domain-cluster0/idle_states
->         State          Time Spent(ms) Usage      Rejected   Above      Below
->         S0             39319          626        14         307        0
->
->         # cat /sys/kernel/debug/pm_genpd/power-domain-cluster0/idle_states
->         State          Time Spent(ms) Usage      Rejected   Above      Below
->         S0             39319          626        14         307        0
->
-> Signed-off-by: Maulik Shah <maulik.shah@oss.qualcomm.com>
 
-Thanks for posting this! I am actually carrying a local patch in my
-tree for this, just haven't reached the point of posting it. :-)
 
-> ---
->  drivers/pmdomain/governor.c | 18 ++++++++++++++++--
->  1 file changed, 16 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/pmdomain/governor.c b/drivers/pmdomain/governor.c
-> index c1e148657c873a6b5b4d9c0f058d54cb020c56e2..d5ac4c1b5b5a432f0072209d17379e58ec891202 100644
-> --- a/drivers/pmdomain/governor.c
-> +++ b/drivers/pmdomain/governor.c
-> @@ -8,6 +8,7 @@
->  #include <linux/pm_domain.h>
->  #include <linux/pm_qos.h>
->  #include <linux/hrtimer.h>
-> +#include <linux/cpu.h>
->  #include <linux/cpuidle.h>
->  #include <linux/cpumask.h>
->  #include <linux/ktime.h>
-> @@ -349,6 +350,8 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
->         struct cpuidle_device *dev;
->         ktime_t domain_wakeup, next_hrtimer;
->         ktime_t now = ktime_get();
-> +       struct device *device;
+On 7/8/25 3:38 PM, Rafael J. Wysocki wrote:
+> On Tue, Jul 8, 2025 at 4:28 PM Tudor Ambarus <tudor.ambarus@linaro.org> wrote:
+>>
+>> On some platforms, device dependencies are not properly represented by
+>> device links, which can cause issues when asynchronous power management
+>> is enabled. While it is possible to disable this via sysfs, doing so
+>> at runtime can race with the first system suspend event.
+>>
+>> This patch introduces a kernel command-line parameter, "pm_async", which
+>> can be set to "off" to globally disable asynchronous suspend and resume
+>> operations from early boot. This provides a robust way to fall back to
+>> synchronous (sequential) operation, which can stabilize platforms with
+>> problematic dependencies and also serve as a useful debugging tool.
+>>
+>> The default behavior remains unchanged (asynchronous enabled). To disable
+>> it, boot the kernel with the "pm_async=off" parameter.
+> 
+> IIUC, this effectively is a way to change the initial value of the
+> existing pm_async sysfs knob.
+> 
+> Might be worth mentioning in the changelog.
+> 
 
-Nitpick: Maybe rename to "cpu_dev" to better distinguish between the
-cpuidle_device *dev, above?
+Right. Will update shortly.
 
-> +       s64 cpu_constraint, global_constraint;
->         s64 idle_duration_ns;
->         int cpu, i;
->
-> @@ -359,6 +362,7 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
->         if (!(genpd->flags & GENPD_FLAG_CPU_DOMAIN))
->                 return true;
->
-> +       global_constraint = cpu_latency_qos_limit();
->         /*
->          * Find the next wakeup for any of the online CPUs within the PM domain
->          * and its subdomains. Note, we only need the genpd->cpus, as it already
-> @@ -372,8 +376,16 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
->                         if (ktime_before(next_hrtimer, domain_wakeup))
->                                 domain_wakeup = next_hrtimer;
->                 }
-> +
-> +               device = get_cpu_device(cpu);
-> +               if (device) {
-> +                       cpu_constraint = dev_pm_qos_read_value(device, DEV_PM_QOS_RESUME_LATENCY);
+>> Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
+>> ---
+>> Dealing with the pixel6 downstream drivers to cope with the changes from
+>> https://lore.kernel.org/linux-pm/10629535.nUPlyArG6x@rjwysocki.net/.
+>>
+>> Similar to what people already reported it seems pixel6 lacks proper
+>> device links dependencies downstream causing i2c and spi client drivers
+>> to fail to suspend. Add kernel param to disable async suspend/resume.
+>> ---
+>>  Documentation/admin-guide/kernel-parameters.txt | 9 +++++++++
+>>  kernel/power/main.c                             | 9 +++++++++
+>>  2 files changed, 18 insertions(+)
+>>
+>> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+>> index f1f2c0874da9ddfc95058c464fdf5dabaf0de713..55ba3e747d86c09a0696e105a1d9cd99218f0c07 100644
+>> --- a/Documentation/admin-guide/kernel-parameters.txt
+>> +++ b/Documentation/admin-guide/kernel-parameters.txt
+>> @@ -5000,6 +5000,15 @@
+>>                         that number, otherwise (e.g., 'pmu_override=on'), MMCR1
+>>                         remains 0.
+>>
+>> +       pm_async        [PM]
+>> +                       If set to "off", disables asynchronous suspend and
+>> +                       resume of devices during system-wide power transitions.
+>> +                       This can be useful on platforms where device
+>> +                       dependencies are not well-defined, or for debugging
+>> +                       power management issues. Defaults to "on" (asynchronous
+>> +                       operations enabled).
+> 
+> And here too because it is now unclear how this relates to the pm_sync
+> under /sys/power/.
 
-We should be able to use dev_pm_qos_raw_resume_latency() here, similar
-to how cpuidle_governor_latency_req() does it. I think it's better as
-it avoids acquiring/releasing the spinlock.
-
-> +                       if (cpu_constraint < global_constraint)
-> +                               global_constraint = cpu_constraint;
-> +               }
->         }
->
-> +       global_constraint *= NSEC_PER_USEC;
->         /* The minimum idle duration is from now - until the next wakeup. */
->         idle_duration_ns = ktime_to_ns(ktime_sub(domain_wakeup, now));
->         if (idle_duration_ns <= 0)
-> @@ -389,8 +401,10 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
->          */
->         i = genpd->state_idx;
->         do {
-> -               if (idle_duration_ns >= (genpd->states[i].residency_ns +
-> -                   genpd->states[i].power_off_latency_ns)) {
-> +               if ((idle_duration_ns >= (genpd->states[i].residency_ns +
-> +                   genpd->states[i].power_off_latency_ns)) &&
-> +                   (global_constraint >= (genpd->states[i].power_on_latency_ns +
-> +                   genpd->states[i].power_off_latency_ns))) {
->                         genpd->state_idx = i;
->                         genpd->gd->last_enter = now;
->                         genpd->gd->reflect_residency = true;
->
-> ---
-> base-commit: 50c8770a42faf8b1c7abe93e7c114337f580a97d
-> change-id: 20250703-pmdomain_qos-25b8dbb623ea
->
-> Best regards,
-> --
-> Maulik Shah <maulik.shah@oss.qualcomm.com>
->
-
-Besides the minor things above, this looks good to me.
-
-Kind regards
-Uffe
+Sounds good.
