@@ -1,129 +1,87 @@
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+Received: from desiato.infradead.org (desiato.infradead.org [90.155.92.199])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B83C22D7B1;
-	Wed,  9 Jul 2025 11:45:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 261B42D6631;
+	Wed,  9 Jul 2025 11:46:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.92.199
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752061543; cv=none; b=E97oZLVJS1qoKp/xlm3ReHXTIquJMDWa9aHD943KsJhHL6xXqYiZcbbyZv0u7y99fwAj/VQ9kUfq/33p0MXI9mKMkbwSwUvGO/OI4VghYpFulIiLzWQAaLvg0VElYU+OTegLx7dOchKiWRyiwlp4g9CYETorbvDyS7f3KRFWx6w=
+	t=1752061573; cv=none; b=MVKH5RWlFZW9bWHtUOt8QGh2h741zOQLavYkJXYPBSWM7xxg7Iu95aLnqwpf0PWxMcKzQyghX6sVtB88JjcoKAv5z4drULe58RI7CwIlAtpuPP+52TrwGttg+AqW6YXicYb++/ivg+/C8nExn3R8u8vDHoHjJmp1oj3qSuLm/OY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1752061543; c=relaxed/simple;
-	bh=X6wAIxGJg9I2gSKZsvbsMKrCF5bbQXnk8/bFYe5BAsM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=N/KDXhMyeF5ye9QFywAj1EnuNqKlc5p/Ezz+nra1Jbmb0n4P2RYVbLuW8kI5J4OHr+E4KF2JASRfJjskcQGn3NDznzvnnW3vyJ65UiKsai8bBwt8GB0eNcgMn7Ql9kS0Kje7fanZ5rrXVIVYultg9p2SodqNwA3Cgkb5J3NjE/o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=Rmpm5GBU; arc=none smtp.client-ip=79.96.170.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
+	s=arc-20240116; t=1752061573; c=relaxed/simple;
+	bh=uq4UpVskpKbhmoV00LTVEDbec/v4DfnlwbjqA08nMS8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=gvQiakcrG/fRDKTGShjPl/R1h7lgJBkFY9ZFTDY8Y6+BmYDpcUbhouGua3IvYLRl54XECnCdaicixtKFPteYMUkLLcVl+L+M8nWkXoSXQoI/N/Iu7WQy1qaQLmYCE8DD8U6Be4wpABcqy4M8gRN8OtaJQvCphO6/hCWjt5WR9R8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=of0ESy9t; arc=none smtp.client-ip=90.155.92.199
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="Rmpm5GBU"
-Received: from kreacher.localnet (unknown [5.63.189.50])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 030A666F54B;
-	Wed,  9 Jul 2025 12:41:46 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
-	s=dkim; t=1752057706;
-	bh=X6wAIxGJg9I2gSKZsvbsMKrCF5bbQXnk8/bFYe5BAsM=;
-	h=From:Subject:Date;
-	b=Rmpm5GBUH+Zmx/vvUbAZXikgmsRho/utlcWCZSfh9wO9asrGNTXDL/Fq7DnyQWyg7
-	 adlFR0NPE5vf2m6AAIAzn/GkFdsVwJSr4c1pYCI52Qm2OJd4p+cRC0Ick1aGcEth+f
-	 QebO+jdSoYFkhEU6S/icMvh/i5R4+ws/07VeFyVPElKbruwG4hJFJqx2pBAN/YxGdD
-	 Io4PIe2R36+x3/TP60XjuVpF/Iic6b/Q4E65+xt5ptqii0KPIuiEuqDP078rgXEDKa
-	 SNfAT7wUbqPmt+jM0mq2teVnEn00vHgt3tI3YprzT9y8OKNXethstrxPMPFcczd24+
-	 SokYF2FGiyEMg==
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Sakari Ailus <sakari.ailus@linux.intel.com>, Alex Elder <elder@linaro.org>,
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
- Ulf Hansson <ulf.hansson@linaro.org>
-Subject:
- [PATCH v1] PM: runtime: Take active children into account in
- pm_runtime_get_if_in_use()
-Date: Wed, 09 Jul 2025 12:41:45 +0200
-Message-ID: <12700973.O9o76ZdvQC@rjwysocki.net>
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="of0ESy9t"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=XvhQ5ICy3rxiHubpxE0vtAH0tzROu3Gr0Lu954QIDBg=; b=of0ESy9tooae3SCd13vLoosQY+
+	H7Y3nHO3ZpaPCCekYGkKGqxTZmoi3p0mT1d00EDMcm3q7+iU1Ea6jnV8eX0rPweyIiiNoa9O5cYuS
+	yLRlHaqUipTzYvX2J2TE/Z6QgnMglmQizBjVe+Y82Crpe8gl29irmrZosjJFw9hcfxJUMLSTwnJz3
+	TiUNd34YMt476pdXBqBfS5MMTdjSljpX0WHRhxW7UMMHDriJQ4F3ZpX8pGqibE5YQFwGnPwdHabXO
+	74xY2Ug4JBPZuB+FK//NjxTAzI1ISqNi/R8BKZB/1OK3fV7ljOonlu87UwrZzQr3/SUb/GyBwdaMs
+	rJihTdcQ==;
+Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
+	by desiato.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1uZTFX-00000008rbo-4Bqz;
+	Wed, 09 Jul 2025 11:46:08 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id A575030029B; Wed, 09 Jul 2025 13:46:06 +0200 (CEST)
+Date: Wed, 9 Jul 2025 13:46:06 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: x86 Maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+	Linux PM <linux-pm@vger.kernel.org>,
+	Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Subject: Re: [PATCH v1] x86/sched: Print debug messages on hybrid asym
+ capacity changes
+Message-ID: <20250709114606.GJ1613200@noisy.programming.kicks-ass.net>
+References: <4664631.LvFx2qVVIh@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 5.63.189.50
-X-CLIENT-HOSTNAME: 5.63.189.50
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: dmFkZTGJaDV5ofXpT6ZlS8J9pKL9OR28C4yBvUyYiGiZ7jq6SJce9VIYVdnK0DAaDhHJahS06XJlgCaTLYGe+73iY1ji8yDQD22axo89159c2Aa2yFD5ZuaRyQhwvu7CTmlcD+EZfyBfZMvObbN2lC/qFHTHCpdy9KzDPNsEXHMYEnpCxkznSDh9sEgvYE9X30clwWIEHJpuFl/mBkipSk7+TMr2kRlmWWdvSXiHOg+QdqJppeKCITPwH5928F7DX0kHPaac7YOtcXQg+bn6oO/tic86wKEaeJauphPhIcKjXKP7W//RSVwg49n8uutHVo+KJh9j3M5rWAXZ2OK/YjmZuxXcN1drPykQQ5G8/1MlrwnM5xEdC0fAdO8kilmykN/+efjGAetV8zxoCPvam9p60hErsu6KVTi2+tqlchuwtnQ317h08M3G0MRnWYPnxf8HUDCuy3Od2c22qMW/huSo8qFkCwyFrrr0v5cEZ35DQfsD890Gk8TEjiEx2ucy6zGQSps5YaC/JrgfPYcVyYAbLSWPKfkHM2VQ6k4WEJ/Lg1yqK2gYX9w23tk4VQfPS2xVgOn1D93NRxHx87z9TeeS9fQ7+k0hI6IBCmzxYgTF2ztZNFInrGB8GHJjTz/J/aLU0fqHigHSaTEgPOADmbxQkYWkkS3QqZbkP4dOZ/cHV0diLg
-X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4664631.LvFx2qVVIh@rjwysocki.net>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wed, Jul 09, 2025 at 12:47:17PM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: [PATCH v1] x86/sched: Print debug messages on hybrid asym capacity changes
+> 
+> Make arch_set_cpu_capacity() print a debug message including the
+> capacity and maximum frequency ratio used in scale-invariant utilization
+> computations for a given CPU and in capacity-aware scheduling (CAS) or
+> energy-aware scheduling (EAS).
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  arch/x86/kernel/cpu/aperfmperf.c |    4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> --- a/arch/x86/kernel/cpu/aperfmperf.c
+> +++ b/arch/x86/kernel/cpu/aperfmperf.c
+> @@ -416,6 +416,10 @@
+>  			   div_u64(cap << SCHED_CAPACITY_SHIFT, max_cap));
+>  		WRITE_ONCE(per_cpu_ptr(arch_cpu_scale, cpu)->freq_ratio,
+>  			   div_u64(cap_freq << SCHED_CAPACITY_SHIFT, base_freq));
+> +
+> +		pr_debug("CPU%d: capacity = %lu, freq_ratio = %lu\n", cpu,
+> +			 per_cpu_ptr(arch_cpu_scale, cpu)->capacity,
+> +			 per_cpu_ptr(arch_cpu_scale, cpu)->freq_ratio);
+>  	} else {
+>  		WARN_ONCE(1, "Hybrid CPU capacity scaling not enabled");
+>  	}
 
-For all practical purposes, there is no difference between the situation
-in which a given device is not ignoring children and its active child
-count is nonzero and the situation in which its runtime PM usage counter
-is nonzero.  However, pm_runtime_get_if_in_use() will only increment the
-device's usage counter and return 1 in the latter case.
+There's already a printk in the calling function
+hybrid_set_cpu_capacity(), so now we get _2_ prints per CPU. That's a
+bit excessive, no?
 
-For consistency, make it do so in the former case either by adjusting
-pm_runtime_get_conditional() and update the related kerneldoc comments
-accordingly.
-
-Fixes: c0ef3df8dbae ("PM: runtime: Simplify pm_runtime_get_if_active() usage")
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/runtime.c |   27 ++++++++++++++++++---------
- 1 file changed, 18 insertions(+), 9 deletions(-)
-
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -1203,10 +1203,12 @@
-  *
-  * Return -EINVAL if runtime PM is disabled for @dev.
-  *
-- * Otherwise, if the runtime PM status of @dev is %RPM_ACTIVE and either
-- * @ign_usage_count is %true or the runtime PM usage counter of @dev is not
-- * zero, increment the usage counter of @dev and return 1. Otherwise, return 0
-- * without changing the usage counter.
-+ * Otherwise, if its runtime PM status is %RPM_ACTIVE and (1) @ign_usage_count
-+ * is set, or (2) @dev is not ignoring children and its active child count is
-+ * nonero, or (3) the runtime PM usage counter of @dev is not zero, increment
-+ * the usage counter of @dev and return 1.
-+ *
-+ * Otherwise, return 0 without changing the usage counter.
-  *
-  * If @ign_usage_count is %true, this function can be used to prevent suspending
-  * the device when its runtime PM status is %RPM_ACTIVE.
-@@ -1228,7 +1230,8 @@
- 		retval = -EINVAL;
- 	} else if (dev->power.runtime_status != RPM_ACTIVE) {
- 		retval = 0;
--	} else if (ign_usage_count) {
-+	} else if (ign_usage_count || (!dev->power.ignore_children &&
-+		   atomic_read(&dev->power.child_count) > 0)) {
- 		retval = 1;
- 		atomic_inc(&dev->power.usage_count);
- 	} else {
-@@ -1261,10 +1264,16 @@
-  * @dev: Target device.
-  *
-  * Increment the runtime PM usage counter of @dev if its runtime PM status is
-- * %RPM_ACTIVE and its runtime PM usage counter is greater than 0, in which case
-- * it returns 1. If the device is in a different state or its usage_count is 0,
-- * 0 is returned. -EINVAL is returned if runtime PM is disabled for the device,
-- * in which case also the usage_count will remain unmodified.
-+ * %RPM_ACTIVE and its runtime PM usage counter is greater than 0 or it is not
-+ * ignoring children and its active child count is nonzero.  1 is returned in
-+ * this case.
-+ *
-+ * If @dev is in a different state or it is not in use (that is, its usage
-+ * counter is 0, or it is ignoring children, or its active child count is 0),
-+ * 0 is returned.
-+ *
-+ * -EINVAL is returned if runtime PM is disabled for the device, in which case
-+ * also the usage counter of @dev is not updated.
-  */
- int pm_runtime_get_if_in_use(struct device *dev)
- {
-
-
-
+Also, should this print be conditional on sched_debug_verbose?
