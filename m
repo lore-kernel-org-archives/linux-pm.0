@@ -1,37 +1,37 @@
-Received: from mxout4.routing.net (mxout4.routing.net [134.0.28.9])
+Received: from mxout1.routing.net (mxout1.routing.net [134.0.28.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD7E928D8E4;
-	Wed,  9 Jul 2025 11:12:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6BB6A292B48;
+	Wed,  9 Jul 2025 11:12:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752059528; cv=none; b=stvdi72bUp8ztG0Lv75OfL0dIGIXNDIzlhjrqftASuyAoPAPEy7pJ9A2x9kZkQfzJ337WtGQ3cO6lg5PL1GtdWwJrm/xhdKXWyuhXHrF0LV/gWE4WdKR7xWwf44WfxVLj8C3ELQXcRMY55tleRZcE04xEMvPvMQpyPADrQzLRpQ=
+	t=1752059530; cv=none; b=hfmzHgd1mOGnAUrumjAADWZLFsryN6p5gdowTU4EYDvUb2g0EMyhYmWnbJSglbJwMASdWzouliqemcVBf2nrNsn1mWbdLdNBV3lH1AqyfIzauc9cdy4vQhS90B6zxeKssau3ijvrGpUICJtUV2mr4qgis28lSXmyFlw4V95hleI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1752059528; c=relaxed/simple;
-	bh=CObOU1nPBTDZB7mIJgDVNzak8Lzgdng0yMMxU3zsrmg=;
+	s=arc-20240116; t=1752059530; c=relaxed/simple;
+	bh=exQ/2CQAlL19culfJFiJUORb3TZY55oQ3uWrzU2G+TM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=vGVbYINkiGvq7d4JvOT56BOv4zadpyA2NvVgk4Arly5W8Gf14ZheT55Bpcm42WU1uPAa1+Xuv6r5gXZfcCmOy7MR9wo5/cplAGNRt6JWq0c7XTmgc7phZ6mP+DADIS6eCYM/dQPJZlpkNWecTpgni0u5jPHlMpKoNlZ0fy0yz5I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=qSlqOF4l; arc=none smtp.client-ip=134.0.28.9
+	 MIME-Version; b=Y8qDCrHeyO5OvPM9wlrz9pyWLskL6FkjDMDPsNkNqN8H/CF6PVjzyK95WIfbBgLtHQBaTIHPidApnITSoCLnNX7U0jCbuZmjDqgyNqJNCRbQeulvJp31LHDgxwpquKmQs67iB5dtjmhsfqkpw4o90A8wf64JY/jd16ATe+6VdUE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=fLHoX1zq; arc=none smtp.client-ip=134.0.28.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="qSlqOF4l"
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="fLHoX1zq"
 Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout4.routing.net (Postfix) with ESMTP id 20E831008E0;
-	Wed,  9 Jul 2025 11:11:59 +0000 (UTC)
+	by mxout1.routing.net (Postfix) with ESMTP id 40ADD407C9;
+	Wed,  9 Jul 2025 11:12:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=20200217; t=1752059519;
+	s=20200217; t=1752059520;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=MnTvkXnLPnEsvcW3pJgPQSCioz7Knyu5VGFT/VMkz+g=;
-	b=qSlqOF4lz0CDSZ1vHo349SAGdLFIJeKBU8e/U06hL1eUlc8BDTtkLkOAojH3JuPafkL0gD
-	yGEZMpQudM81sWcM7HXIZDZv9o8dx0vDf94YoppkyimDJveOIt3JOdRBAWDTBWgIGTP8LP
-	IcJcS0+ctJIT/fo9afDXdD8D1HXfjAo=
+	bh=7+G2ewwh12FRHs0BmRpZAB4ebqu3ayA7q35EEAvJ0xA=;
+	b=fLHoX1zqlaK1vwYtIYOEsvkDkwPcDvx8iZ+Wf5SoVJnkO3cLG/zaz9hF7RqXaj7iICQXaD
+	okI3RjyweohELDJsF9AGrpJ9VpdPQMOPOm6Hg0r1xxx7uYiNsMJtHodCd6Uqv92FFmO6Sw
+	PyFP+PD6vDUeTekJ+tuPkrZqG7QzqMY=
 Received: from frank-u24.. (fttx-pool-217.61.157.99.bambit.de [217.61.157.99])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id BA1F01226CC;
-	Wed,  9 Jul 2025 11:11:58 +0000 (UTC)
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id DE05A1226D4;
+	Wed,  9 Jul 2025 11:11:59 +0000 (UTC)
 From: Frank Wunderlich <linux@fw-web.de>
 To: MyungJoo Ham <myungjoo.ham@samsung.com>,
 	Kyungmin Park <kyungmin.park@samsung.com>,
@@ -63,9 +63,9 @@ Cc: Frank Wunderlich <frank-w@public-files.de>,
 	netdev@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v9 07/13] arm64: dts: mediatek: mt7986: add sram node
-Date: Wed,  9 Jul 2025 13:09:43 +0200
-Message-ID: <20250709111147.11843-8-linux@fw-web.de>
+Subject: [PATCH v9 10/13] arm64: dts: mediatek: mt7988: add switch node
+Date: Wed,  9 Jul 2025 13:09:46 +0200
+Message-ID: <20250709111147.11843-11-linux@fw-web.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250709111147.11843-1-linux@fw-web.de>
 References: <20250709111147.11843-1-linux@fw-web.de>
@@ -79,51 +79,182 @@ Content-Transfer-Encoding: 8bit
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-Currently sram is allocated in driver via offset from reg of ethernet
-node. Change it to use a dedicated sram node like mt7988.
+Add mt7988 builtin mt753x switch nodes.
 
+Signed-off-by: Daniel Golle <daniel@makrotopia.org>
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- arch/arm64/boot/dts/mediatek/mt7986a.dtsi | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+v4:
+- drop phy-mode for gsw-phy
+- reorder phy-mode after phy-handle
+- drop interrupt parent from switch
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt7986a.dtsi b/arch/arm64/boot/dts/mediatek/mt7986a.dtsi
-index 559990dcd1d1..550f569451fb 100644
---- a/arch/arm64/boot/dts/mediatek/mt7986a.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt7986a.dtsi
-@@ -523,7 +523,7 @@ wed1: wed@15011000 {
- 
- 		eth: ethernet@15100000 {
- 			compatible = "mediatek,mt7986-eth";
--			reg = <0 0x15100000 0 0x80000>;
-+			reg = <0 0x15100000 0 0x40000>;
- 			interrupts = <GIC_SPI 196 IRQ_TYPE_LEVEL_HIGH>,
- 				     <GIC_SPI 197 IRQ_TYPE_LEVEL_HIGH>,
- 				     <GIC_SPI 198 IRQ_TYPE_LEVEL_HIGH>,
-@@ -553,6 +553,7 @@ eth: ethernet@15100000 {
- 					  <&topckgen CLK_TOP_SGM_325M_SEL>;
- 			assigned-clock-parents = <&apmixedsys CLK_APMIXED_NET2PLL>,
- 						 <&apmixedsys CLK_APMIXED_SGMPLL>;
-+			sram = <&eth_sram>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			mediatek,ethsys = <&ethsys>;
-@@ -562,6 +563,15 @@ eth: ethernet@15100000 {
- 			status = "disabled";
+v2:
+- drop labels and led-function too (have to be in board)
+---
+ arch/arm64/boot/dts/mediatek/mt7988a.dtsi | 148 ++++++++++++++++++++++
+ 1 file changed, 148 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/mediatek/mt7988a.dtsi b/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
+index 897b5a82b53e..366203a72d6d 100644
+--- a/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
+@@ -742,6 +742,154 @@ ethsys: clock-controller@15000000 {
+ 			#reset-cells = <1>;
  		};
  
-+		/*15100000+0x40000*/
-+		eth_sram: sram@15140000 {
-+			compatible = "mmio-sram";
-+			reg = <0 0x15140000 0 0x40000>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges = <0 0x15140000 0 0x40000>;
++		switch: switch@15020000 {
++			compatible = "mediatek,mt7988-switch";
++			reg = <0 0x15020000 0 0x8000>;
++			interrupt-controller;
++			#interrupt-cells = <1>;
++			interrupts = <GIC_SPI 209 IRQ_TYPE_LEVEL_HIGH>;
++			resets = <&ethwarp MT7988_ETHWARP_RST_SWITCH>;
++
++			ports {
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				gsw_port0: port@0 {
++					reg = <0>;
++					phy-handle = <&gsw_phy0>;
++					phy-mode = "internal";
++				};
++
++				gsw_port1: port@1 {
++					reg = <1>;
++					phy-handle = <&gsw_phy1>;
++					phy-mode = "internal";
++				};
++
++				gsw_port2: port@2 {
++					reg = <2>;
++					phy-handle = <&gsw_phy2>;
++					phy-mode = "internal";
++				};
++
++				gsw_port3: port@3 {
++					reg = <3>;
++					phy-handle = <&gsw_phy3>;
++					phy-mode = "internal";
++				};
++
++				port@6 {
++					reg = <6>;
++					ethernet = <&gmac0>;
++					phy-mode = "internal";
++
++					fixed-link {
++						speed = <10000>;
++						full-duplex;
++						pause;
++					};
++				};
++			};
++
++			mdio {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				mediatek,pio = <&pio>;
++
++				gsw_phy0: ethernet-phy@0 {
++					compatible = "ethernet-phy-ieee802.3-c22";
++					reg = <0>;
++					interrupts = <0>;
++					nvmem-cells = <&phy_calibration_p0>;
++					nvmem-cell-names = "phy-cal-data";
++
++					leds {
++						#address-cells = <1>;
++						#size-cells = <0>;
++
++						gsw_phy0_led0: led@0 {
++							reg = <0>;
++							status = "disabled";
++						};
++
++						gsw_phy0_led1: led@1 {
++							reg = <1>;
++							status = "disabled";
++						};
++					};
++				};
++
++				gsw_phy1: ethernet-phy@1 {
++					compatible = "ethernet-phy-ieee802.3-c22";
++					reg = <1>;
++					interrupts = <1>;
++					nvmem-cells = <&phy_calibration_p1>;
++					nvmem-cell-names = "phy-cal-data";
++
++					leds {
++						#address-cells = <1>;
++						#size-cells = <0>;
++
++						gsw_phy1_led0: led@0 {
++							reg = <0>;
++							status = "disabled";
++						};
++
++						gsw_phy1_led1: led@1 {
++							reg = <1>;
++							status = "disabled";
++						};
++					};
++				};
++
++				gsw_phy2: ethernet-phy@2 {
++					compatible = "ethernet-phy-ieee802.3-c22";
++					reg = <2>;
++					interrupts = <2>;
++					nvmem-cells = <&phy_calibration_p2>;
++					nvmem-cell-names = "phy-cal-data";
++
++					leds {
++						#address-cells = <1>;
++						#size-cells = <0>;
++
++						gsw_phy2_led0: led@0 {
++							reg = <0>;
++							status = "disabled";
++						};
++
++						gsw_phy2_led1: led@1 {
++							reg = <1>;
++							status = "disabled";
++						};
++					};
++				};
++
++				gsw_phy3: ethernet-phy@3 {
++					compatible = "ethernet-phy-ieee802.3-c22";
++					reg = <3>;
++					interrupts = <3>;
++					nvmem-cells = <&phy_calibration_p3>;
++					nvmem-cell-names = "phy-cal-data";
++
++					leds {
++						#address-cells = <1>;
++						#size-cells = <0>;
++
++						gsw_phy3_led0: led@0 {
++							reg = <0>;
++							status = "disabled";
++						};
++
++						gsw_phy3_led1: led@1 {
++							reg = <1>;
++							status = "disabled";
++						};
++					};
++				};
++			};
 +		};
 +
- 		wo_ccif0: syscon@151a5000 {
- 			compatible = "mediatek,mt7986-wo-ccif", "syscon";
- 			reg = <0 0x151a5000 0 0x1000>;
+ 		ethwarp: clock-controller@15031000 {
+ 			compatible = "mediatek,mt7988-ethwarp";
+ 			reg = <0 0x15031000 0 0x1000>;
 -- 
 2.43.0
 
