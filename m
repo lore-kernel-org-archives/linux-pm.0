@@ -1,41 +1,38 @@
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+Received: from szxga06-in.huawei.com (szxga06-in.huawei.com [45.249.212.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B11272951BA;
-	Wed,  9 Jul 2025 10:42:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.188
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDEAF28DF23;
+	Wed,  9 Jul 2025 10:41:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.32
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752057723; cv=none; b=ow3jkI2Ao632SZwTe++FIVbPrkiRsJiupyqdWHUiTUB9Jff2Pb4LDWI3sli7T82SZb4d1uR9jLKPRqS7D1GU71ntyvsIKDdhxjFWpUCdOSka+qbQA3Ci9nDeEjhiX3i5ZDLPAHBJCiK0hx5QL7W5xPzncd3WQX774lIwGe56fAY=
+	t=1752057723; cv=none; b=knRVq7xH5MI6iXApfErWN836NxuUePqTF+aNRzAIziujztZxUXoWA0HlgYUrLwgEOjKkldILrPNED7GrWLhu5IQRyTp39D71NCHzKR9gTqVtcjX+hh9Zmdl3AfTO2pQ5T/oN5jZbXLzjH5w0sDULWwJ+zMpbQNP4uHBADkp6Qqg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1752057723; c=relaxed/simple;
-	bh=Q8dzJtRwoGAms35MU2OrgpE4DVsdeE9HVSREh7i9vI4=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=eFAUpyY0r1DDzNp1/6cpIrYk8dDUYUM1RAqLbtvFad4zyZkaugji4PkXHtOmUFHjiwzGpZ41I+/tYkXsi8MACm13WJXpDA0EXABUEciburQHE//BWoVSv3Zz9FXy4oJW/qtwCEiZQKaKEHSEq3HK7gB4gsRmxOQhfzhd4lem0m8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.188
+	bh=wN9wjk0Pdo/dhut5zvBXxW2nGB/Hp2vsGhoBr49ktIo=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Idn/sqhkzwVR3AdO5AWcHwf2rDJwPzYhWn4fAiJUzSoTSAIay56y7P4stiGORXxpVCk7AfNiSdIA6QgyUqfqdZ2G/yy79dDT12JT139t6+0hi+ZGDKUXsOaIJSjyyYgDKAgDgpzpkB7oLHOCaTGDcAwz8DkiRX3fVufXNLZ07bk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.32
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.163.252])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4bcZJN09rzztSmc;
-	Wed,  9 Jul 2025 18:40:52 +0800 (CST)
+Received: from mail.maildlp.com (unknown [172.19.163.17])
+	by szxga06-in.huawei.com (SkyGuard) with ESMTP id 4bcZLl08XPz16THx;
+	Wed,  9 Jul 2025 18:42:55 +0800 (CST)
 Received: from kwepemh100008.china.huawei.com (unknown [7.202.181.93])
-	by mail.maildlp.com (Postfix) with ESMTPS id 885D2180B64;
-	Wed,  9 Jul 2025 18:41:58 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 4835D1A0188;
+	Wed,  9 Jul 2025 18:41:57 +0800 (CST)
 Received: from localhost.localdomain (10.50.165.33) by
  kwepemh100008.china.huawei.com (7.202.181.93) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Wed, 9 Jul 2025 18:41:57 +0800
+ 15.2.1544.11; Wed, 9 Jul 2025 18:41:56 +0800
 From: Lifeng Zheng <zhenglifeng1@huawei.com>
 To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <ionela.voinescu@arm.com>
 CC: <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
 	<linuxarm@huawei.com>, <jonathan.cameron@huawei.com>,
 	<zhanjie9@hisilicon.com>, <lihuisong@huawei.com>, <yubowen8@huawei.com>,
 	<zhenglifeng1@huawei.com>
-Subject: [PATCH v2 3/4] cpufreq: Move the check of cpufreq_driver->get into cpufreq_verify_current_freq()
-Date: Wed, 9 Jul 2025 18:41:44 +0800
-Message-ID: <20250709104145.2348017-4-zhenglifeng1@huawei.com>
+Subject: [PATCH v2 0/4] cpufreq: Some optimizations for cpufreq.c
+Date: Wed, 9 Jul 2025 18:41:41 +0800
+Message-ID: <20250709104145.2348017-1-zhenglifeng1@huawei.com>
 X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20250709104145.2348017-1-zhenglifeng1@huawei.com>
-References: <20250709104145.2348017-1-zhenglifeng1@huawei.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -47,50 +44,35 @@ Content-Type: text/plain
 X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
  kwepemh100008.china.huawei.com (7.202.181.93)
 
-Move the check of cpufreq_driver->get into cpufreq_verify_current_freq() in
-case of calling it without check.
+This patch series makes some minor optimizations for cpufreq.c to make
+codes cleaner.
 
-Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+Changelog:
+
+v2:
+
+ - drop patch 3 and 4 as they have been applied
+ - drop patch 6
+ - move invariance initialization instead of add a
+   static_branch_disable_cpuslocked() in error path
+ - add a Fixes tag in patch 2
+
 ---
- drivers/cpufreq/cpufreq.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+Discussions of previous versions:
+v1: https://lore.kernel.org/all/20250623133402.3120230-1-zhenglifeng1@huawei.com/
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 2175d2df95b6..84f175a55fc5 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1800,6 +1800,9 @@ static unsigned int cpufreq_verify_current_freq(struct cpufreq_policy *policy, b
- {
- 	unsigned int new_freq;
- 
-+	if (!cpufreq_driver->get)
-+		return 0;
-+
- 	new_freq = cpufreq_driver->get(policy->cpu);
- 	if (!new_freq)
- 		return 0;
-@@ -1922,10 +1925,7 @@ unsigned int cpufreq_get(unsigned int cpu)
- 
- 	guard(cpufreq_policy_read)(policy);
- 
--	if (cpufreq_driver->get)
--		return __cpufreq_get(policy);
--
--	return 0;
-+	return __cpufreq_get(policy);
- }
- EXPORT_SYMBOL(cpufreq_get);
- 
-@@ -2479,8 +2479,7 @@ int cpufreq_start_governor(struct cpufreq_policy *policy)
- 
- 	pr_debug("%s: for CPU %u\n", __func__, policy->cpu);
- 
--	if (cpufreq_driver->get)
--		cpufreq_verify_current_freq(policy, false);
-+	cpufreq_verify_current_freq(policy, false);
- 
- 	if (policy->governor->start) {
- 		ret = policy->governor->start(policy);
+Lifeng Zheng (4):
+  cpufreq: Move cpufreq-based invariance initialization to where all
+    other initializations have been successfully done in
+    cpufreq_register_driver()
+  cpufreq: Init policy->rwsem before it may be possibly used
+  cpufreq: Move the check of cpufreq_driver->get into
+    cpufreq_verify_current_freq()
+  cpufreq: Exit governor when failed to start old governor
+
+ drivers/cpufreq/cpufreq.c | 40 ++++++++++++++++++++-------------------
+ 1 file changed, 21 insertions(+), 19 deletions(-)
+
 -- 
 2.33.0
 
