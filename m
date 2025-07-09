@@ -1,128 +1,129 @@
-Received: from mail-ej1-f51.google.com (mail-ej1-f51.google.com [209.85.218.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CCF46226D16
-	for <linux-pm@vger.kernel.org>; Wed,  9 Jul 2025 11:33:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B83C22D7B1;
+	Wed,  9 Jul 2025 11:45:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.96.170.134
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752060786; cv=none; b=P87aIcY1RW90NF8qzNPW8v3uYwMUqFdxNmPfG48N8euRnC4LFoFDd+/MMBSyoAaYV7UxqY/+hcBEMRVFhH3La+C7gkm7nFyM513RzZGrcxjT2XAheG0qD3pFMvXTsjZ50R65ZhGrh8yW/tU1PNAUIPPiomirhyOeaL1yeFB0lIU=
+	t=1752061543; cv=none; b=E97oZLVJS1qoKp/xlm3ReHXTIquJMDWa9aHD943KsJhHL6xXqYiZcbbyZv0u7y99fwAj/VQ9kUfq/33p0MXI9mKMkbwSwUvGO/OI4VghYpFulIiLzWQAaLvg0VElYU+OTegLx7dOchKiWRyiwlp4g9CYETorbvDyS7f3KRFWx6w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1752060786; c=relaxed/simple;
-	bh=DnetqG4IpAFzDIBOiu8occs+wrG3pJXMqq/lD/+CZz4=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
-	 References:In-Reply-To; b=H+LYBycIxx86PQLLLfwkSrsG0PP8ztIF4O5YXJX+udtHtdS9X91TWx4XQT7R/3DIP3XB7IwFWlS75gOYxDNPXwox0LKkTGyiPdbqqd05dDtia8z+M6xoQpY2J6BrrO/Kd79wsTw76+q2pn9pGiGnfslXj+U4VAwVNDWy8RVmp0k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com; spf=pass smtp.mailfrom=fairphone.com; dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b=U/O3yJ0D; arc=none smtp.client-ip=209.85.218.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fairphone.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fairphone.com
+	s=arc-20240116; t=1752061543; c=relaxed/simple;
+	bh=X6wAIxGJg9I2gSKZsvbsMKrCF5bbQXnk8/bFYe5BAsM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=N/KDXhMyeF5ye9QFywAj1EnuNqKlc5p/Ezz+nra1Jbmb0n4P2RYVbLuW8kI5J4OHr+E4KF2JASRfJjskcQGn3NDznzvnnW3vyJ65UiKsai8bBwt8GB0eNcgMn7Ql9kS0Kje7fanZ5rrXVIVYultg9p2SodqNwA3Cgkb5J3NjE/o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net; spf=pass smtp.mailfrom=rjwysocki.net; dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b=Rmpm5GBU; arc=none smtp.client-ip=79.96.170.134
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rjwysocki.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b="U/O3yJ0D"
-Received: by mail-ej1-f51.google.com with SMTP id a640c23a62f3a-ae3cd8fdd77so1143076366b.1
-        for <linux-pm@vger.kernel.org>; Wed, 09 Jul 2025 04:33:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1752060782; x=1752665582; darn=vger.kernel.org;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-transfer-encoding:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=KxzY42f4mxHddEBUOVLLBJrN9aKCSop49so8dLkLQco=;
-        b=U/O3yJ0DN6baKxv96FqzOocjvo45nVp8hpkpdara9EBtCODvwbHYkh85hmgXQuepCQ
-         6r+M7hwY/lWt7+6gGFPu/PgBusr4yBAW0SBJPSOjroaY3T/b2oY/IhMWRD0DHIc5FECB
-         KEJkW4b2jbJlXiQjYZoNJqO4C5Dw9R5Cm5dnlNSxoT3SVMPLsiBWsApd3ArSED2iJRF7
-         kNPCzd9j3+jTSuCY0CCcEdqhf5laX7gIPG24ABli63mSv+h+tw6Dl+HgQ2x5angC6rX0
-         1h6oYofb4mNsVNb3jbyVYROXUtfcyHKdIi5b4dPflY+h7ge6u6z3C/7Y2+Qt9V+jLQW7
-         awuw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1752060782; x=1752665582;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=KxzY42f4mxHddEBUOVLLBJrN9aKCSop49so8dLkLQco=;
-        b=bfl7BvpFeo+N8L6N6E8/4dZSamlu1kTfNh7ATDQwPRPbI2zwrqzCY+n+vPk35It7jj
-         oHGN9vGcowAwpPExJN0mm62TW6A72nacy1QCVJlhZ3a2Bd1DycP1mWhzINCV+2nlqdZQ
-         xC7z4z+3vZ30Ypsr4Bif0cxbACb+dVZM23w1KdAQQFVmABKIROmwn0qqpmAOkTT3Ickr
-         YsIwQiHN2Al/eTdhsEhnIjMm7inVdrhxlSdadhhhx9/8I0B5CxYy4Emv3PIbuKk9X7UX
-         6i7kCLHfuQ3kOcfKsvV0y0+ZHzpq1tzGWKUeOuCoqAvJxd6x3T72h15mVSE5/vC3UYnX
-         ZXLA==
-X-Forwarded-Encrypted: i=1; AJvYcCXuawZgrnI0vJZhR33d1G0LKk3ei5Z7DJ4sYVYJD8/Cdw4fUyHZqBPegQb1IyZ18WEXcHgHyJUB6A==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxb61tNgAvt82WhhwfOkXxAaU/bLLk7hOwKBP4QpyGJfZah6J4L
-	H7CBT+4zgYFyT9WMy39/LTaSZ0p4KHncaRk9eG0RRf0L9jvK78ViIKoa9oc5z38dMb8=
-X-Gm-Gg: ASbGnctpsxajoiPSx3jGXrr4dCeqOArj9o2t8LGUKYTYOdn6hU3KzsBrQajPBYG7Q0+
-	nepl2WbhX2OVwatJinBMxyHkIMHiF5VcGcpLB5KNi/gJVC3mTegshIps6DoOIi668eToUmH+jwd
-	QKsbAONwFyBGNUfpvHKB+Zde2kRZY3hWuYbgMjJE9yvDgqs60F0U7jBQTL0/foe3k9CQ7y3ih6X
-	VKS0GzTBKY4Q10BQZl/kZiiz7RxN65chpb73Wrx6eii7PRlUb6WeUomt1c4x4h58YlfMUis4x5p
-	CSiECggUPuP7sV5gE5RUpHXgYW2FUgEC0X9sR+4KkyrLdC6IewcU4tOsgZIVV8cM2yAwNYAyHJW
-	vI3EF8ls/OyF/qWjQTukL28QeZkpoYqMLct5NHhNjMw==
-X-Google-Smtp-Source: AGHT+IGHM8DEDRJmkix2Dsy2SirVJ7BbYv4bV5HgWFOqwJ5zCocvDi8X0Hn8U2z4qSsef7dQPV0KjQ==
-X-Received: by 2002:a17:907:6ea3:b0:ad8:a41a:3cba with SMTP id a640c23a62f3a-ae6cfc3c275mr235877666b.43.1752060781983;
-        Wed, 09 Jul 2025 04:33:01 -0700 (PDT)
-Received: from localhost (144-178-202-139.static.ef-service.nl. [144.178.202.139])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ae3f6bb1edfsm1080433666b.180.2025.07.09.04.33.01
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 09 Jul 2025 04:33:01 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=rjwysocki.net header.i=@rjwysocki.net header.b="Rmpm5GBU"
+Received: from kreacher.localnet (unknown [5.63.189.50])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by cloudserver094114.home.pl (Postfix) with ESMTPSA id 030A666F54B;
+	Wed,  9 Jul 2025 12:41:46 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rjwysocki.net;
+	s=dkim; t=1752057706;
+	bh=X6wAIxGJg9I2gSKZsvbsMKrCF5bbQXnk8/bFYe5BAsM=;
+	h=From:Subject:Date;
+	b=Rmpm5GBUH+Zmx/vvUbAZXikgmsRho/utlcWCZSfh9wO9asrGNTXDL/Fq7DnyQWyg7
+	 adlFR0NPE5vf2m6AAIAzn/GkFdsVwJSr4c1pYCI52Qm2OJd4p+cRC0Ick1aGcEth+f
+	 QebO+jdSoYFkhEU6S/icMvh/i5R4+ws/07VeFyVPElKbruwG4hJFJqx2pBAN/YxGdD
+	 Io4PIe2R36+x3/TP60XjuVpF/Iic6b/Q4E65+xt5ptqii0KPIuiEuqDP078rgXEDKa
+	 SNfAT7wUbqPmt+jM0mq2teVnEn00vHgt3tI3YprzT9y8OKNXethstrxPMPFcczd24+
+	 SokYF2FGiyEMg==
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Sakari Ailus <sakari.ailus@linux.intel.com>, Alex Elder <elder@linaro.org>,
+ Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+ Ulf Hansson <ulf.hansson@linaro.org>
+Subject:
+ [PATCH v1] PM: runtime: Take active children into account in
+ pm_runtime_get_if_in_use()
+Date: Wed, 09 Jul 2025 12:41:45 +0200
+Message-ID: <12700973.O9o76ZdvQC@rjwysocki.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 09 Jul 2025 13:33:01 +0200
-Message-Id: <DB7HPNBDW93U.2RC0AF8T8RG5Y@fairphone.com>
-Cc: "Rob Herring" <robh@kernel.org>, "Krzysztof Kozlowski"
- <krzk+dt@kernel.org>, "Conor Dooley" <conor+dt@kernel.org>, "Bjorn
- Andersson" <andersson@kernel.org>, <~postmarketos/upstreaming@lists.sr.ht>,
- <phone-devel@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
- <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
- <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v2 0/2] Add Milos RPMHPD power domains
-From: "Luca Weiss" <luca.weiss@fairphone.com>
-To: "Ulf Hansson" <ulf.hansson@linaro.org>
-X-Mailer: aerc 0.20.1-0-g2ecb8770224a-dirty
-References: <20250707-sm7635-rpmhpd-v2-0-b4aa37acb065@fairphone.com>
- <CAPDyKFonLENQbafjo621hHPkoWjMNoQ5GRNeNndpezMNnM1=sA@mail.gmail.com>
-In-Reply-To: <CAPDyKFonLENQbafjo621hHPkoWjMNoQ5GRNeNndpezMNnM1=sA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 5.63.189.50
+X-CLIENT-HOSTNAME: 5.63.189.50
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: dmFkZTGJaDV5ofXpT6ZlS8J9pKL9OR28C4yBvUyYiGiZ7jq6SJce9VIYVdnK0DAaDhHJahS06XJlgCaTLYGe+73iY1ji8yDQD22axo89159c2Aa2yFD5ZuaRyQhwvu7CTmlcD+EZfyBfZMvObbN2lC/qFHTHCpdy9KzDPNsEXHMYEnpCxkznSDh9sEgvYE9X30clwWIEHJpuFl/mBkipSk7+TMr2kRlmWWdvSXiHOg+QdqJppeKCITPwH5928F7DX0kHPaac7YOtcXQg+bn6oO/tic86wKEaeJauphPhIcKjXKP7W//RSVwg49n8uutHVo+KJh9j3M5rWAXZ2OK/YjmZuxXcN1drPykQQ5G8/1MlrwnM5xEdC0fAdO8kilmykN/+efjGAetV8zxoCPvam9p60hErsu6KVTi2+tqlchuwtnQ317h08M3G0MRnWYPnxf8HUDCuy3Od2c22qMW/huSo8qFkCwyFrrr0v5cEZ35DQfsD890Gk8TEjiEx2ucy6zGQSps5YaC/JrgfPYcVyYAbLSWPKfkHM2VQ6k4WEJ/Lg1yqK2gYX9w23tk4VQfPS2xVgOn1D93NRxHx87z9TeeS9fQ7+k0hI6IBCmzxYgTF2ztZNFInrGB8GHJjTz/J/aLU0fqHigHSaTEgPOADmbxQkYWkkS3QqZbkP4dOZ/cHV0diLg
+X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 
-On Wed Jul 9, 2025 at 1:30 PM CEST, Ulf Hansson wrote:
-> On Mon, 7 Jul 2025 at 12:18, Luca Weiss <luca.weiss@fairphone.com> wrote:
->>
->> Add support for the rpmhpd power domains in the Milos SoC.
->>
->> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
->
-> The series applied for next (with a minor update to the commit message
-> for patch1, according to suggestions from Krzysztof), thanks!
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Thank you!
+For all practical purposes, there is no difference between the situation
+in which a given device is not ignoring children and its active child
+count is nonzero and the situation in which its runtime PM usage counter
+is nonzero.  However, pm_runtime_get_if_in_use() will only increment the
+device's usage counter and return 1 in the latter case.
 
->
-> Kind regards
-> Uffe
->
->
->
->> ---
->> Changes in v2:
->> - Rebrand SM7635 to Milos as requested: https://lore.kernel.org/linux-ar=
-m-msm/aGMI1Zv6D+K+vWZL@hu-bjorande-lv.qualcomm.com/
->> - Link to v1: https://lore.kernel.org/r/20250625-sm7635-rpmhpd-v1-0-92d3=
-cb32dd7e@fairphone.com
->>
->> ---
->> Luca Weiss (2):
->>       dt-bindings: power: qcom,rpmpd: document the Milos RPMh Power Doma=
-ins
->>       pmdomain: qcom: rpmhpd: Add Milos power domains
->>
->>  .../devicetree/bindings/power/qcom,rpmpd.yaml         |  1 +
->>  drivers/pmdomain/qcom/rpmhpd.c                        | 19 ++++++++++++=
-+++++++
->>  2 files changed, 20 insertions(+)
->> ---
->> base-commit: 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
->> change-id: 20250620-sm7635-rpmhpd-dcb5dc066ce2
->>
->> Best regards,
->> --
->> Luca Weiss <luca.weiss@fairphone.com>
->>
+For consistency, make it do so in the former case either by adjusting
+pm_runtime_get_conditional() and update the related kerneldoc comments
+accordingly.
+
+Fixes: c0ef3df8dbae ("PM: runtime: Simplify pm_runtime_get_if_active() usage")
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/power/runtime.c |   27 ++++++++++++++++++---------
+ 1 file changed, 18 insertions(+), 9 deletions(-)
+
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -1203,10 +1203,12 @@
+  *
+  * Return -EINVAL if runtime PM is disabled for @dev.
+  *
+- * Otherwise, if the runtime PM status of @dev is %RPM_ACTIVE and either
+- * @ign_usage_count is %true or the runtime PM usage counter of @dev is not
+- * zero, increment the usage counter of @dev and return 1. Otherwise, return 0
+- * without changing the usage counter.
++ * Otherwise, if its runtime PM status is %RPM_ACTIVE and (1) @ign_usage_count
++ * is set, or (2) @dev is not ignoring children and its active child count is
++ * nonero, or (3) the runtime PM usage counter of @dev is not zero, increment
++ * the usage counter of @dev and return 1.
++ *
++ * Otherwise, return 0 without changing the usage counter.
+  *
+  * If @ign_usage_count is %true, this function can be used to prevent suspending
+  * the device when its runtime PM status is %RPM_ACTIVE.
+@@ -1228,7 +1230,8 @@
+ 		retval = -EINVAL;
+ 	} else if (dev->power.runtime_status != RPM_ACTIVE) {
+ 		retval = 0;
+-	} else if (ign_usage_count) {
++	} else if (ign_usage_count || (!dev->power.ignore_children &&
++		   atomic_read(&dev->power.child_count) > 0)) {
+ 		retval = 1;
+ 		atomic_inc(&dev->power.usage_count);
+ 	} else {
+@@ -1261,10 +1264,16 @@
+  * @dev: Target device.
+  *
+  * Increment the runtime PM usage counter of @dev if its runtime PM status is
+- * %RPM_ACTIVE and its runtime PM usage counter is greater than 0, in which case
+- * it returns 1. If the device is in a different state or its usage_count is 0,
+- * 0 is returned. -EINVAL is returned if runtime PM is disabled for the device,
+- * in which case also the usage_count will remain unmodified.
++ * %RPM_ACTIVE and its runtime PM usage counter is greater than 0 or it is not
++ * ignoring children and its active child count is nonzero.  1 is returned in
++ * this case.
++ *
++ * If @dev is in a different state or it is not in use (that is, its usage
++ * counter is 0, or it is ignoring children, or its active child count is 0),
++ * 0 is returned.
++ *
++ * -EINVAL is returned if runtime PM is disabled for the device, in which case
++ * also the usage counter of @dev is not updated.
+  */
+ int pm_runtime_get_if_in_use(struct device *dev)
+ {
+
+
 
