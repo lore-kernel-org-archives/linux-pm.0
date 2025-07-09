@@ -1,106 +1,117 @@
-Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C76FB2E92C6;
-	Wed,  9 Jul 2025 15:47:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED62F23B60A;
+	Wed,  9 Jul 2025 15:53:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752076080; cv=none; b=GqrmjbMZR5sUIyKxPcglAJDEqp48DpakDKmeBkIpA6TRJLhBGBwIhwOxsiOpFk37MeVPEelHviJxo8kcMr88d2afPgff4bPPbICiEMTl3ZuU7pLvaogOJbEvw6F2mUZHi4ZRiqHFCo/P+0GDKay/jRkON7QKuQlRAlwnI9oK2EA=
+	t=1752076427; cv=none; b=I+CMo4YYzAmpVmgZTNVJeCdwPU1mSM4i4L0kby9MHg98afk/+hE/U+/Q4N7DjgUputsMUSNZQOqtpXCDz/73btulxik20y+Lu+tecAfhneLYAEG3hGGaOdXCP0cqYEdKWnc7XA6O9MLV5jDMK40iL3FNjqf5y1QMPUZPM4jcaeY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1752076080; c=relaxed/simple;
-	bh=SOheTdsRFKozeT9Fp2mcGWDzaSdmePACoK8QhwFtSik=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=pyrrFscxZLEkc1QpFTSw0+0P+s3saQWABukVIndKiU9+qzG++Nlrc0yjxFhOQyObB9AfvD1d6sU7GVx7Yg8NxY4HJz/KTFVbcCqmUa043pGPRmb10bGIECon0yUkqE5pykvTuX8WUCMcyD8YTt3x3koTsCGpGGfSz7JWVBbdGOI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=lfgKfkIS; arc=none smtp.client-ip=90.155.50.34
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+	s=arc-20240116; t=1752076427; c=relaxed/simple;
+	bh=auLp4VPpxKVh9axnEXKMdMv55v6kyflUZ74PwOJ/8jI=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=Bseqt6vshyt1pkPoOh4nfy8BP/FuJCbmxbYPy6VderZ28uX1qZM7UDmwAI9RpV4zxjpGcSvs7t3VrxEtL+bDJd2YjSDincJV4N+EgTTVYtQqziegTVF80U8oBg5lnVVsST6S1Nn75gotzdB/kNOVIiKsYAxvyJEaAqXRFVqm4hw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LG1dnL7n; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="lfgKfkIS"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
-	In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
-	:Reply-To:Content-ID:Content-Description;
-	bh=Ks2OjtLyTmyTH0uiJf+Wx9c4m1e3G4yvXwX2JOxKTn0=; b=lfgKfkISo1BG4DBxjL6yDIGKUN
-	WNWbUSFg3ukA6KIC9DR7hg1cy2zM5iK8LW9f7DGpreu/u6Rz2PU7m6zoURZ7t8A/YFarYuoYfkzVA
-	izANtTATbD5a5FaCp/jSl7pca5nBRRqH0sXLnaN30spveEcr1zFhnmidRxwrZNejWdoYFXcJm+qp5
-	2NgVydLM5IVw9uWFI+y09MsYGXokEusbRqHBUIoIrqzTk6DEGbvQaEB2X1d8fBJTaw4z5yOgNnLux
-	6nHNKYs5tnwu5NzUN5K8Vei6A7ZwhKZ5MLElhwNC1B2l214FoNH6/4lWOfq8cDrxLDhbj0JC7Ycyr
-	1ofov0Zg==;
-Received: from [50.53.25.54] (helo=[192.168.254.17])
-	by casper.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uZX1V-00000004fEx-3k3o;
-	Wed, 09 Jul 2025 15:47:54 +0000
-Message-ID: <47d5f907-f2a9-4a4a-91b3-0cf6ea997678@infradead.org>
-Date: Wed, 9 Jul 2025 08:47:48 -0700
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LG1dnL7n"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6CD4CC4CEF1;
+	Wed,  9 Jul 2025 15:53:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1752076426;
+	bh=auLp4VPpxKVh9axnEXKMdMv55v6kyflUZ74PwOJ/8jI=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=LG1dnL7nG4nUS3ck9K7yd8b+l1y6z5ShY5H86pQPSZSjlx5yUkdgGMC4c+lLZKmkL
+	 rcY2xYW7ZdP3a+dPejo0S5Qrk+wwzEX9HO0pc8m6wJZ4mHqM6cEYkS78AVjUrC/FIA
+	 B/DdrJPbYb+7C50teX7uiTZfhdkR9FEDuCLh5vQA1oDbK4iX5Nv5PTyzei/w4DJ/hn
+	 1p+joPPlAt8JeaCEjOOSo0CalTl1AejkZi50+79N7Fck+E4blkD74VptzBQtW5GeDh
+	 /Hw50Ptt0/pymZz/DTIDXipeRl4/YHZC+lofDlBWvicZR9JiYe8joTTmblaQarbIKr
+	 1FnG7jaXZgT9g==
+Received: by wens.tw (Postfix, from userid 1000)
+	id 51A1C5FF71; Wed,  9 Jul 2025 23:53:44 +0800 (CST)
+From: Chen-Yu Tsai <wens@kernel.org>
+To: Chen-Yu Tsai <wens@csie.org>,
+	Jernej Skrabec <jernej@kernel.org>,
+	Samuel Holland <samuel@sholland.org>,
+	Ulf Hansson <ulf.hansson@linaro.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
+Cc: linux-sunxi@lists.linux.dev,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Andre Przywara <andre.przywara@arm.com>
+Subject: [PATCH v2 4/4] arm64: dts: allwinner: a523: Add power controller device nodes
+Date: Wed,  9 Jul 2025 23:53:43 +0800
+Message-Id: <20250709155343.3765227-5-wens@kernel.org>
+X-Mailer: git-send-email 2.39.5
+In-Reply-To: <20250709155343.3765227-1-wens@kernel.org>
+References: <20250709155343.3765227-1-wens@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] PM: add kernel parameter to disable asynchronous
- suspend/resume
-To: Tudor Ambarus <tudor.ambarus@linaro.org>, Jonathan Corbet
- <corbet@lwn.net>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Pavel Machek <pavel@kernel.org>, Len Brown <len.brown@intel.com>
-Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, peter.griffin@linaro.org,
- andre.draszik@linaro.org, willmcvicker@google.com, kernel-team@android.com
-References: <20250709-pm-async-off-v3-1-cb69a6fc8d04@linaro.org>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20250709-pm-async-off-v3-1-cb69a6fc8d04@linaro.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
+From: Chen-Yu Tsai <wens@csie.org>
 
+The A523 SoC family has two power controllers, one based on the existing
+PPU, and one newer one based on ARM's PCK-600.
 
-On 7/9/25 5:31 AM, Tudor Ambarus wrote:
-> On some platforms, device dependencies are not properly represented by
-> device links, which can cause issues when asynchronous power management
-> is enabled. While it is possible to disable this via sysfs, doing so
-> at runtime can race with the first system suspend event.
-> 
-> This patch introduces a kernel command-line parameter, "pm_async", which
-> can be set to "off" to globally disable asynchronous suspend and resume
-> operations from early boot. It effectively provides a way to set the
-> initial value of the existing pm_async sysfs knob at boot time. This
-> offers a robust method to fall back to synchronous (sequential) operation,
-> which can stabilize platforms with problematic dependencies and also
-> serve as a useful debugging tool.
-> 
-> The default behavior remains unchanged (asynchronous enabled). To disable
-> it, boot the kernel with the "pm_async=off" parameter.
-> 
-> Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
-> ---
-> Dealing with the pixel6 downstream drivers to cope with the changes from
-> https://lore.kernel.org/linux-pm/10629535.nUPlyArG6x@rjwysocki.net/.
-> 
-> Similar to what people already reported it seems pixel6 lacks proper
-> device links dependencies downstream causing i2c and spi client drivers
-> to fail to suspend. Add kernel param to disable async suspend/resume.
-> ---
-> Changes in v3:
-> - update documentation with "pm_async=" and "Format: off" (Randy)
-> - reword documentation to make it clear "on" isn't a selectable option
->   for pm_async because it's the default behavior.
-> - Link to v2: https://lore.kernel.org/r/20250708-pm-async-off-v2-1-7fada54f01c0@linaro.org
-> 
-> Changes in v2:
-> - update the documentation and the commit message to describe that the
->   "pm_async" kernel parameter provides a way to change the initial value
->   of the existing /sys/power/pm_async sysfs knob.
-> - Link to v1: https://lore.kernel.org/r/20250708-pm-async-off-v1-1-1b200cc03d9c@linaro.org
-> ---
->  Documentation/admin-guide/kernel-parameters.txt | 12 ++++++++++++
->  kernel/power/main.c                             |  9 +++++++++
->  2 files changed, 21 insertions(+)
-> 
+Add device nodes for both of them.
 
-Acked-by: Randy Dunlap <rdunlap@infradead.org>
+Reviewed-by: Andre Przywara <andre.przywara@arm.com>
+Signed-off-by: Chen-Yu Tsai <wens@csie.org>
+---
+ arch/arm64/boot/dts/allwinner/sun55i-a523.dtsi | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-Thanks.
+diff --git a/arch/arm64/boot/dts/allwinner/sun55i-a523.dtsi b/arch/arm64/boot/dts/allwinner/sun55i-a523.dtsi
+index cf0bc39aab04..dd6fa22f960f 100644
+--- a/arch/arm64/boot/dts/allwinner/sun55i-a523.dtsi
++++ b/arch/arm64/boot/dts/allwinner/sun55i-a523.dtsi
+@@ -7,6 +7,8 @@
+ #include <dt-bindings/clock/sun55i-a523-r-ccu.h>
+ #include <dt-bindings/reset/sun55i-a523-ccu.h>
+ #include <dt-bindings/reset/sun55i-a523-r-ccu.h>
++#include <dt-bindings/power/allwinner,sun55i-a523-ppu.h>
++#include <dt-bindings/power/allwinner,sun55i-a523-pck600.h>
+ 
+ / {
+ 	interrupt-parent = <&gic>;
+@@ -576,6 +578,14 @@ mdio0: mdio {
+ 			};
+ 		};
+ 
++		ppu: power-controller@7001400 {
++			compatible = "allwinner,sun55i-a523-ppu";
++			reg = <0x07001400 0x400>;
++			clocks = <&r_ccu CLK_BUS_R_PPU1>;
++			resets = <&r_ccu RST_BUS_R_PPU1>;
++			#power-domain-cells = <1>;
++		};
++
+ 		r_ccu: clock-controller@7010000 {
+ 			compatible = "allwinner,sun55i-a523-r-ccu";
+ 			reg = <0x7010000 0x250>;
+@@ -622,6 +632,14 @@ r_i2c_pins: r-i2c-pins {
+ 			};
+ 		};
+ 
++		pck600: power-controller@7060000 {
++			compatible = "allwinner,sun55i-a523-pck-600";
++			reg = <0x07060000 0x8000>;
++			clocks = <&r_ccu CLK_BUS_R_PPU0>;
++			resets = <&r_ccu RST_BUS_R_PPU0>;
++			#power-domain-cells = <1>;
++		};
++
+ 		r_i2c0: i2c@7081400 {
+ 			compatible = "allwinner,sun55i-a523-i2c",
+ 				     "allwinner,sun8i-v536-i2c",
 -- 
-~Randy
+2.39.5
+
