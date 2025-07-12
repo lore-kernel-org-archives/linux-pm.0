@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1310A1BEF8C;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 13170219A9B;
 	Sat, 12 Jul 2025 07:40:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752306046; cv=none; b=t5Pi/rvF+SNVbOyT779teoUnABlDeUTIlSP+liB2bTuHDNDaGp2zIF8GVbgSJEujuWiI+tgKBdLER8/3PLxUh+Yx/fgiZZqeFVwaLA0QVioy86WQ7HJ32k0qdOaljQuQPOQ4+h/KKRLR8yaQ4WSbKy+0VEkRb3Y1cnHaGGdsdvE=
+	t=1752306046; cv=none; b=M8aU49uR28uoBm5SYr2//KW3GoYkd+q6/yb1uwjeaHiUyEsmLJdLa1v7GiplYkcmRj2/g1fugOwHPXPetcl59eX6WBOblGfRgS+8TEq1GOVWXRcFavUmcuJzUZp6zsuBBQrZJhXGT7fSzsjVm+ZIS7zntmFbVdUl7HZ0BVyXLAI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1752306046; c=relaxed/simple;
-	bh=Q6nAgSUeScunA7Cy3L5NXY072V+uXnej/Z2sR3Zl66U=;
+	bh=X99T3zLCk1wsD+6/htrl/rppok06x79Qi4swnOe3K4Y=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=Shi/wBPklWHBPVjeHnS4hD0+1MXmYVMW/I/WZ6nv+07CRmi4edO2tRBXKESl3amh9XNoqf81vlvjwkNs8B6dyMbc2Fqz1c0RU2ThjIovH82e/yCKiu3C4XYnyrEhjNU1/3VRqWM7Jw1HKHg3YMo0+LdZuAs52r+MOZPCppKVJvA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jK0Zw/U0; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=kEXEPhheLNJkUsTz0Kb/KGk64A1Eoi/04KVu/GAoOjWUSdPnslF88cGwojCQsoW1e9HrbRj4BWqAMA2LEYMZcy+OUldRk5bhZQ9Wt6vwN7ywoz7YZDDOjKLeyNftkk3oKBDtz50ydEo4j/xzI10wxvg3hyFOD+shJ8zQ4GfTncs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EXx/CJqo; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jK0Zw/U0"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6C6A2C4CEF4;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EXx/CJqo"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 68302C4CEEF;
 	Sat, 12 Jul 2025 07:40:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1752306045;
-	bh=Q6nAgSUeScunA7Cy3L5NXY072V+uXnej/Z2sR3Zl66U=;
+	bh=X99T3zLCk1wsD+6/htrl/rppok06x79Qi4swnOe3K4Y=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=jK0Zw/U0hjtPWLjojRMurFzl7NBY1lwGSl9bxABYDqnkVy49Y5AbPiq4vmbQcnG0K
-	 BVsnmuEznH36Y65UXGM1DHpmPfVhsnWf7gsNwoYpJY6DKr0HfgEnFc3dGOUaQs8A4t
-	 kRRa7VKcYRwAQd4M0XIumlRD2KkooOc1PB7uGzkEzIZyKeCkEBjLjnM9JfaMkdzvQ8
-	 Ick0/v0ciqMHuVAMKHGmxd3IOvHnsV4vNmamV/UEITLvKYeVbFPsfhQo2ZYj4Tki7T
-	 E/9zs0IdmvmhPs85b+SXWaX5y7K2qCAJ+9zl6Mlwr26Lej9Eiu5XFO66612y46Tlq1
-	 t4F1KIvEqCIrg==
+	b=EXx/CJqomtgwnQpJxpChoXEzdGcCj3/cylxa19BsoEuF0KP+/Czb+5Qtsht5dfxae
+	 CfCBnGkU+sEjBuJwqDtweKUohnCss917/CIaza7JWUQ3OFHlXvX8vaTPjiXn+eBYU0
+	 2WcoqImW+GvOtb8a5k8TEwlEhQ1kSXqarPhnGgwZOtdCPoHGicfosFiasQmE1w6bGJ
+	 7IuM4LeZbRDp37GcVCxW57q1z/0Pl/kVMIakyV71AUstnUZbJSwNYX87eXGsGFibXO
+	 u+1ztghFrTCkXwcjHJ+jb4uR1pyzPBel0NZ3C5lRFk5V/FQcOIsKDrBZ1Olu6oWM7p
+	 sLY6aEXeVsQow==
 Received: by wens.tw (Postfix, from userid 1000)
-	id 9ED7D5FB60; Sat, 12 Jul 2025 15:40:42 +0800 (CST)
+	id B4E6C5FF71; Sat, 12 Jul 2025 15:40:42 +0800 (CST)
 From: Chen-Yu Tsai <wens@kernel.org>
 To: Chen-Yu Tsai <wens@csie.org>,
 	Jernej Skrabec <jernej@kernel.org>,
@@ -42,9 +42,9 @@ Cc: Andre Przywara <andre.przywara@arm.com>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org
-Subject: [PATCH v3 5/5] arm64: dts: allwinner: a523: Add power controller device nodes
-Date: Sat, 12 Jul 2025 15:40:21 +0800
-Message-Id: <20250712074021.805953-6-wens@kernel.org>
+Subject: [PATCH v3 2/5] pmdomain: sunxi: sun20i-ppu: add A523 support
+Date: Sat, 12 Jul 2025 15:40:18 +0800
+Message-Id: <20250712074021.805953-3-wens@kernel.org>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20250712074021.805953-1-wens@kernel.org>
 References: <20250712074021.805953-1-wens@kernel.org>
@@ -58,64 +58,51 @@ Content-Transfer-Encoding: 8bit
 
 From: Chen-Yu Tsai <wens@csie.org>
 
-The A523 SoC family has two power controllers, one based on the existing
-PPU, and one newer one based on ARM's PCK-600.
+A523 has a PPU like the one in the Allwinner D1 SoC.
 
-Add device nodes for both of them.
+Add a compatible entry and a list of power domain names for it.
 
 Reviewed-by: Andre Przywara <andre.przywara@arm.com>
 Signed-off-by: Chen-Yu Tsai <wens@csie.org>
-
 ---
-Changes since v2:
-- Fixed pck-600 header path
----
- arch/arm64/boot/dts/allwinner/sun55i-a523.dtsi | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ drivers/pmdomain/sunxi/sun20i-ppu.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/allwinner/sun55i-a523.dtsi b/arch/arm64/boot/dts/allwinner/sun55i-a523.dtsi
-index cf0bc39aab04..2ac6580b2497 100644
---- a/arch/arm64/boot/dts/allwinner/sun55i-a523.dtsi
-+++ b/arch/arm64/boot/dts/allwinner/sun55i-a523.dtsi
-@@ -7,6 +7,8 @@
- #include <dt-bindings/clock/sun55i-a523-r-ccu.h>
- #include <dt-bindings/reset/sun55i-a523-ccu.h>
- #include <dt-bindings/reset/sun55i-a523-r-ccu.h>
-+#include <dt-bindings/power/allwinner,sun55i-a523-ppu.h>
-+#include <dt-bindings/power/allwinner,sun55i-a523-pck-600.h>
+diff --git a/drivers/pmdomain/sunxi/sun20i-ppu.c b/drivers/pmdomain/sunxi/sun20i-ppu.c
+index 9f002748d224..b65876a68cc1 100644
+--- a/drivers/pmdomain/sunxi/sun20i-ppu.c
++++ b/drivers/pmdomain/sunxi/sun20i-ppu.c
+@@ -193,6 +193,19 @@ static const struct sun20i_ppu_desc sun8i_v853_ppu_desc = {
+ 	.num_domains	= ARRAY_SIZE(sun8i_v853_ppu_pd_names),
+ };
  
- / {
- 	interrupt-parent = <&gic>;
-@@ -576,6 +578,14 @@ mdio0: mdio {
- 			};
- 		};
- 
-+		ppu: power-controller@7001400 {
-+			compatible = "allwinner,sun55i-a523-ppu";
-+			reg = <0x07001400 0x400>;
-+			clocks = <&r_ccu CLK_BUS_R_PPU1>;
-+			resets = <&r_ccu RST_BUS_R_PPU1>;
-+			#power-domain-cells = <1>;
-+		};
++static const char *const sun55i_a523_ppu_pd_names[] = {
++	"DSP",
++	"NPU",
++	"AUDIO",
++	"SRAM",
++	"RISCV",
++};
 +
- 		r_ccu: clock-controller@7010000 {
- 			compatible = "allwinner,sun55i-a523-r-ccu";
- 			reg = <0x7010000 0x250>;
-@@ -622,6 +632,14 @@ r_i2c_pins: r-i2c-pins {
- 			};
- 		};
- 
-+		pck600: power-controller@7060000 {
-+			compatible = "allwinner,sun55i-a523-pck-600";
-+			reg = <0x07060000 0x8000>;
-+			clocks = <&r_ccu CLK_BUS_R_PPU0>;
-+			resets = <&r_ccu RST_BUS_R_PPU0>;
-+			#power-domain-cells = <1>;
-+		};
++static const struct sun20i_ppu_desc sun55i_a523_ppu_desc = {
++	.names		= sun55i_a523_ppu_pd_names,
++	.num_domains	= ARRAY_SIZE(sun55i_a523_ppu_pd_names),
++};
 +
- 		r_i2c0: i2c@7081400 {
- 			compatible = "allwinner,sun55i-a523-i2c",
- 				     "allwinner,sun8i-v536-i2c",
+ static const struct of_device_id sun20i_ppu_of_match[] = {
+ 	{
+ 		.compatible	= "allwinner,sun20i-d1-ppu",
+@@ -202,6 +215,10 @@ static const struct of_device_id sun20i_ppu_of_match[] = {
+ 		.compatible	= "allwinner,sun8i-v853-ppu",
+ 		.data		= &sun8i_v853_ppu_desc,
+ 	},
++	{
++		.compatible	= "allwinner,sun55i-a523-ppu",
++		.data		= &sun55i_a523_ppu_desc,
++	},
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(of, sun20i_ppu_of_match);
 -- 
 2.39.5
 
