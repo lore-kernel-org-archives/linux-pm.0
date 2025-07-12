@@ -1,33 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 13170219A9B;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 131C921A42F;
 	Sat, 12 Jul 2025 07:40:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752306046; cv=none; b=M8aU49uR28uoBm5SYr2//KW3GoYkd+q6/yb1uwjeaHiUyEsmLJdLa1v7GiplYkcmRj2/g1fugOwHPXPetcl59eX6WBOblGfRgS+8TEq1GOVWXRcFavUmcuJzUZp6zsuBBQrZJhXGT7fSzsjVm+ZIS7zntmFbVdUl7HZ0BVyXLAI=
+	t=1752306046; cv=none; b=l1PuUPBw6LJJHlT/7iYersPphICFCdnhytsgmz9guf5mPbBBhSP5t66wnuQLwjDOFM3HAMdrCFWTxWQUDsl6X1QKlYBfNXP03tEENs+AS54RkZtBQDlhse7yZeg8OL/kHzMLnmxsnDGaJYHAalPWgAQPzVjnD2XgdEAYWsQTezI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1752306046; c=relaxed/simple;
-	bh=X99T3zLCk1wsD+6/htrl/rppok06x79Qi4swnOe3K4Y=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=kEXEPhheLNJkUsTz0Kb/KGk64A1Eoi/04KVu/GAoOjWUSdPnslF88cGwojCQsoW1e9HrbRj4BWqAMA2LEYMZcy+OUldRk5bhZQ9Wt6vwN7ywoz7YZDDOjKLeyNftkk3oKBDtz50ydEo4j/xzI10wxvg3hyFOD+shJ8zQ4GfTncs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EXx/CJqo; arc=none smtp.client-ip=10.30.226.201
+	bh=j3RoFO1dhVwL6jmvjZyPBg5Kvfp8mEXq3Fmz3LtyzAE=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=GV3/+xQbl1XffCZPnzV8h/Xt4G5SR2cIj61VUAxm6qHG+pz7KSqy7eXIzWqchm7ZUY6YHlv9y5eqZfwVZP6MEPlpNL4O0nsPXPRjcC4QPepbhftc/9oPpXnxOEKdFHMBkxPxlDj0Doap5jogNFF7l3nSzAcyakiJFm9xZP5pnWM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Y0ycObuO; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EXx/CJqo"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 68302C4CEEF;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Y0ycObuO"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6E930C4AF09;
 	Sat, 12 Jul 2025 07:40:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1752306045;
-	bh=X99T3zLCk1wsD+6/htrl/rppok06x79Qi4swnOe3K4Y=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=EXx/CJqomtgwnQpJxpChoXEzdGcCj3/cylxa19BsoEuF0KP+/Czb+5Qtsht5dfxae
-	 CfCBnGkU+sEjBuJwqDtweKUohnCss917/CIaza7JWUQ3OFHlXvX8vaTPjiXn+eBYU0
-	 2WcoqImW+GvOtb8a5k8TEwlEhQ1kSXqarPhnGgwZOtdCPoHGicfosFiasQmE1w6bGJ
-	 7IuM4LeZbRDp37GcVCxW57q1z/0Pl/kVMIakyV71AUstnUZbJSwNYX87eXGsGFibXO
-	 u+1ztghFrTCkXwcjHJ+jb4uR1pyzPBel0NZ3C5lRFk5V/FQcOIsKDrBZ1Olu6oWM7p
-	 sLY6aEXeVsQow==
+	bh=j3RoFO1dhVwL6jmvjZyPBg5Kvfp8mEXq3Fmz3LtyzAE=;
+	h=From:To:Cc:Subject:Date:From;
+	b=Y0ycObuOUGsRDhtbaZJzXbYT2gZ+H8JuiqMmoSCKBcG7pIgJ1MBTxIW2yOwoIHLfd
+	 YaeIcr9Y1le8FnCQO/CRvhrgcqT6jGMvo1swNgYSicKZYTbV7HVNi5dMKXZQEA/GZW
+	 h5UUEmc/hJ6E806EGKK8T1lCwGC7z/ZssU866tgZ7Qg5VVfRuafWG6fjkUNWDnBGPH
+	 pvzaYuUvIWYQX/X69W4rPVBzvJvXRE89ko+cYKNanbXgsmyS/D/19YtHTyN3Gf3ziV
+	 eQ27XgYp9IDfQCkHcNGhAubbl66xGh/s2Bn+QeB3x18cBk+LId2xCxdfif+VtNSQQt
+	 xMSCV4X3DGdgw==
 Received: by wens.tw (Postfix, from userid 1000)
-	id B4E6C5FF71; Sat, 12 Jul 2025 15:40:42 +0800 (CST)
+	id 4FCC05FE7F; Sat, 12 Jul 2025 15:40:42 +0800 (CST)
 From: Chen-Yu Tsai <wens@kernel.org>
 To: Chen-Yu Tsai <wens@csie.org>,
 	Jernej Skrabec <jernej@kernel.org>,
@@ -42,12 +41,10 @@ Cc: Andre Przywara <andre.przywara@arm.com>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org
-Subject: [PATCH v3 2/5] pmdomain: sunxi: sun20i-ppu: add A523 support
-Date: Sat, 12 Jul 2025 15:40:18 +0800
-Message-Id: <20250712074021.805953-3-wens@kernel.org>
+Subject: [PATCH v3 0/5] allwinner: a523: Add power controllers
+Date: Sat, 12 Jul 2025 15:40:16 +0800
+Message-Id: <20250712074021.805953-1-wens@kernel.org>
 X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250712074021.805953-1-wens@kernel.org>
-References: <20250712074021.805953-1-wens@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -58,51 +55,86 @@ Content-Transfer-Encoding: 8bit
 
 From: Chen-Yu Tsai <wens@csie.org>
 
-A523 has a PPU like the one in the Allwinner D1 SoC.
+Hi folks,
 
-Add a compatible entry and a list of power domain names for it.
+This is v3 of my A523 power controllers series.
 
-Reviewed-by: Andre Przywara <andre.przywara@arm.com>
-Signed-off-by: Chen-Yu Tsai <wens@csie.org>
----
- drivers/pmdomain/sunxi/sun20i-ppu.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+Changes since v2:
+- pck600 driver:
+  - Fixed whitespace issue
+  - Added explanation about possible PCK-600 lineage and document
+    references to driver
+  - Changed Kconfig option to tristate
+  - Rewrote Kconfig option help text to make it clear that the driver
+    is required for certain peripherals to work
+  - Made it depend on ARCH_SUNXI or COMPILE_TEST
+  - Made it enabled by default for ARCH_SUNXI
+  - Renamed PPU_PWSR_PWR_STATUS to PPU_PWR_STATUS, and added a comment
+    to note the macro is shared between two registers
+- New patch changing sun20i-ppu driver to tristate, and enable by
+  default for ARCH_SUNXI
+- Fixed pck-600 header path in dtsi file
+- Link to v2:
+  https://lore.kernel.org/all/20250709155343.3765227-1-wens@kernel.org/
 
-diff --git a/drivers/pmdomain/sunxi/sun20i-ppu.c b/drivers/pmdomain/sunxi/sun20i-ppu.c
-index 9f002748d224..b65876a68cc1 100644
---- a/drivers/pmdomain/sunxi/sun20i-ppu.c
-+++ b/drivers/pmdomain/sunxi/sun20i-ppu.c
-@@ -193,6 +193,19 @@ static const struct sun20i_ppu_desc sun8i_v853_ppu_desc = {
- 	.num_domains	= ARRAY_SIZE(sun8i_v853_ppu_pd_names),
- };
- 
-+static const char *const sun55i_a523_ppu_pd_names[] = {
-+	"DSP",
-+	"NPU",
-+	"AUDIO",
-+	"SRAM",
-+	"RISCV",
-+};
-+
-+static const struct sun20i_ppu_desc sun55i_a523_ppu_desc = {
-+	.names		= sun55i_a523_ppu_pd_names,
-+	.num_domains	= ARRAY_SIZE(sun55i_a523_ppu_pd_names),
-+};
-+
- static const struct of_device_id sun20i_ppu_of_match[] = {
- 	{
- 		.compatible	= "allwinner,sun20i-d1-ppu",
-@@ -202,6 +215,10 @@ static const struct of_device_id sun20i_ppu_of_match[] = {
- 		.compatible	= "allwinner,sun8i-v853-ppu",
- 		.data		= &sun8i_v853_ppu_desc,
- 	},
-+	{
-+		.compatible	= "allwinner,sun55i-a523-ppu",
-+		.data		= &sun55i_a523_ppu_desc,
-+	},
- 	{ }
- };
- MODULE_DEVICE_TABLE(of, sun20i_ppu_of_match);
+Changes since v1:
+- Re-order compatible string entries
+- Fix name of header file to match compatible string
+- Link to v1:
+  https://lore.kernel.org/all/20250627152918.2606728-1-wens@kernel.org/
+
+This series adds the power controllers found in the Allwinner A523
+family of SoCs. There are two power controllers. One is the same type
+as those found in the D1 SoC, just with a different number of valid
+power domains. The second is (I assume) a unit based on ARM's PCK-600
+power controller. Some of the registers and values match up, but there
+are extra registers for delay controls in the PCK-600's reserved
+register range.
+
+Patch 1 adds new compatible string entries for both of these
+controllers.
+
+Patch 2 adds support for the A523 PPU to the existing D1 PPU driver.
+
+Patch 3 adds a new driver of the PCK-600 unit in the A523 SoC.
+
+Patch 4 aligns Kconfig dependencies and default for SUN20I_PPU with the
+new PCK-600 driver.
+
+Patch 5 adds device nodes for both of these controllers.
+
+
+Please have a look. The power controllers are critical for enabling more
+peripherals, such as display output, camera input, video codecs, the NPU,
+and a second DWMAC-compatible ethernet interface.
+
+
+Thanks
+ChenYu
+
+
+Chen-Yu Tsai (5):
+  dt-bindings: power: Add A523 PPU and PCK600 power controllers
+  pmdomain: sunxi: sun20i-ppu: add A523 support
+  pmdomain: sunxi: add driver for Allwinner A523's PCK-600 power
+    controller
+  pmdomain: sunxi: sun20i-ppu: change to tristate and enable for
+    ARCH_SUNXI
+  arm64: dts: allwinner: a523: Add power controller device nodes
+
+ .../power/allwinner,sun20i-d1-ppu.yaml        |   4 +-
+ .../arm64/boot/dts/allwinner/sun55i-a523.dtsi |  18 ++
+ drivers/pmdomain/sunxi/Kconfig                |  19 +-
+ drivers/pmdomain/sunxi/Makefile               |   1 +
+ drivers/pmdomain/sunxi/sun20i-ppu.c           |  17 ++
+ drivers/pmdomain/sunxi/sun55i-pck600.c        | 234 ++++++++++++++++++
+ .../power/allwinner,sun55i-a523-pck-600.h     |  15 ++
+ .../power/allwinner,sun55i-a523-ppu.h         |  12 +
+ 8 files changed, 316 insertions(+), 4 deletions(-)
+ create mode 100644 drivers/pmdomain/sunxi/sun55i-pck600.c
+ create mode 100644 include/dt-bindings/power/allwinner,sun55i-a523-pck-600.h
+ create mode 100644 include/dt-bindings/power/allwinner,sun55i-a523-ppu.h
+
 -- 
 2.39.5
 
