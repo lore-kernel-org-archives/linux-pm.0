@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB8A22D3A7D;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 971202D322E;
 	Tue, 15 Jul 2025 04:03:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752552231; cv=none; b=LpFODl5VF2UwD39KQJJ3a+EqJd8AZ3RpazIJk5gzqAJxIttTIfDuQWHTG3QFD3jNy8u4kuv7Fxxzj7qj4zTFM4jlUpjvztjCsecXTSoIgoAKqd+lTz95eOQYqr3lXILruAQEq/vcTolNiuZm+MGaGTNvPPEm/o8qOwj+v6BOHcs=
+	t=1752552231; cv=none; b=KRcPufYQsA0ghNvQPT37kW8tKcSCBl7yqoZbpvUH3JVjBNy2qGb6snKLlW0zsGDNVDufrItgzr3Ir6xOeFqMscplnd3O9kRtYCqvaTIe1yopdEz9e+pa3RdgLAuEvtiKNPFd7wp8YpkyIf1Kls7GirsJp7NkgcprpxKjAgv/UZw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1752552231; c=relaxed/simple;
-	bh=8XHtSfC2ebH34+htWvEVWam88ECVhbOPEjKTBosP36M=;
+	bh=NXtp7w76eILz7UJorQaVSrmzzRCcq8QUVDUca4Vg+Qc=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=XM83EE50gSdZjuA56OQglmkWYD/pcuzOzcypNF+8ESBBD78etZq7fJpyuY/19W4JhWQ1Qq3vmw5jGjseVtvp1ymGwNkx7RXPdB5+U2u4Zk1pW+HIgt15EDu0TkWLcA55tQ6m741YWbsFfo5xDSeTnSYlO7nKN5nms9h8g3biY78=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=g/l2XBgv; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=KT1do4gmzCPoEKwYqnv0mWQRUqI6gAFdqhrKM72sYsJK8CRULpmrSojlCgj5yvOhBvM7AkXx4EHBVcRM3y7R2+gsl2/+49/UW819UUNboToqRYgkRpjhndntmL1VeCKUcFTNXyFKrcnADQAtsJRyqD7JsU+mDTlIiVCTwfn1ryo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=npUfWfvb; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="g/l2XBgv"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 7EC91C4CEF1;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="npUfWfvb"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 4514DC16AAE;
 	Tue, 15 Jul 2025 04:03:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1752552231;
-	bh=8XHtSfC2ebH34+htWvEVWam88ECVhbOPEjKTBosP36M=;
+	bh=NXtp7w76eILz7UJorQaVSrmzzRCcq8QUVDUca4Vg+Qc=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=g/l2XBgvd8t+W6vEh/KOnsx4FBK4zAHQi5sEFcvjPZ4vc9KMsd/uJUUBWkg07WDnb
-	 Kkmf2IUfqfJo0As0P4IgRq+GwXK7YphNXQLzSNHF1KKBfOMZf7XwSAiMOHrJ25uOs5
-	 fzuSqgM9Ly3nQe+37FcBFmHzLAaLPeCBtdWuCkjRVPtaV7+SMRQ2wVgZLHWlkXNelb
-	 RdM84H4cYS/S/J4L2EaQ5sAqNWRe4OQg/RMmjcnwnDcbxiEaZW/kT87Ff10Z+iXKXt
-	 ZkzdZuQ3xqcrJHJfYFGVFPi6sPte4GiAgDHya8qDYUAruuh3O4VHc/B0FYHaacl/eD
-	 FfyYlP74vLY3w==
+	b=npUfWfvbA7lJFIhCallO/I0yc9wr3VBfo5zQc5Ga12ufBUuaKaEe6Rw+hv9A9YKi0
+	 XABQxXUBM0WBelHvxxjl60F8krg+avKwzxLgIGTtQNxXDoppmJCFBUksLHCZJEK5FM
+	 bU8R4B/MjXh8+ewgjsWvY0VLaAiA07QlfQdt+kMMykoOF6ILPYSGti1+yUrewjteh/
+	 c0+UVha9A/PWPoWJUUjCpUBCrvmwbgsN7i/6xNkbcaySHu5FhA0z1oJzZFw7JV7GIV
+	 sDkf3fNNY1LHFeifiGbaIOmeNxDJ0pzOg2/VqIRi5K48v0ZzCg99PpbgufgiKN+bW4
+	 spIHTtVeemPVQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 747D7C83F2E;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38F11C83F21;
 	Tue, 15 Jul 2025 04:03:51 +0000 (UTC)
 From: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>
-Date: Mon, 14 Jul 2025 23:02:56 -0500
-Subject: [PATCH 13/17] thermal: tegra: Add Tegra210B01 Support
+Date: Mon, 14 Jul 2025 23:02:52 -0500
+Subject: [PATCH 09/17] soc/tegra: pmc: Add Tegra210B01 support
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +40,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250714-t210b01-v1-13-e3f5f7de5dce@gmail.com>
+Message-Id: <20250714-t210b01-v1-9-e3f5f7de5dce@gmail.com>
 References: <20250714-t210b01-v1-0-e3f5f7de5dce@gmail.com>
 In-Reply-To: <20250714-t210b01-v1-0-e3f5f7de5dce@gmail.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -61,13 +61,13 @@ Cc: devicetree@vger.kernel.org, linux-tegra@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-phy@lists.infradead.org, 
  linux-usb@vger.kernel.org, Thierry Reding <treding@nvidia.com>, 
  linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, 
- Aaron Kling <webgeek1234@gmail.com>
+ Aaron Kling <webgeek1234@gmail.com>, Azkali Manad <a.ffcc7@gmail.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1752552229; l=4724;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1752552229; l=7406;
  i=webgeek1234@gmail.com; s=20250217; h=from:subject:message-id;
- bh=ZTHZksfHlIxysbAaJHHhbZR9I6Z/OnRkEYYXQcE8KVM=;
- b=8bwnEv+juqDwOC653qmsqpRvdzpkcOy+aV1SQ5AXOhYjO+I7luZqUcUhrFn/V12PUyySpevTJ
- rschJRrtETMCPrFH4PwCgkuKQ4zsJb+1XHs5LFtfJ2zabx2dj9ychbW
+ bh=hzjKnBO/Bhd6FTOOojs+tMJUMscvli8+8bMrtnhg7WI=;
+ b=UJmfrzgea8bspNX1hqX9xywhLGh0IZF0nArp+5yu5aCmw2r06knUY1zdSnE1/2YiY0a4myVOp
+ UX1Qtl6NQrVBmO8Tqnr3Q7wMX/qdPqYi0cM8Fbhe88EFYoSZ/kkyFtJ
 X-Developer-Key: i=webgeek1234@gmail.com; a=ed25519;
  pk=TQwd6q26txw7bkK7B8qtI/kcAohZc7bHHGSD7domdrU=
 X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
@@ -75,151 +75,147 @@ X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
 X-Original-From: Aaron Kling <webgeek1234@gmail.com>
 Reply-To: webgeek1234@gmail.com
 
-From: Aaron Kling <webgeek1234@gmail.com>
+From: Azkali Manad <a.ffcc7@gmail.com>
 
-Add Tegra210B01 SOC_THERM configuration
-
-Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
 ---
- drivers/thermal/tegra/soctherm.c          |  4 ++
- drivers/thermal/tegra/soctherm.h          |  1 +
- drivers/thermal/tegra/tegra210-soctherm.c | 78 +++++++++++++++++++++++++++++++
- 3 files changed, 83 insertions(+)
+ drivers/soc/tegra/pmc.c | 117 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 117 insertions(+)
 
-diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-index 926f1052e6de04fc4d5ff78334b52ffe98cdf4ca..e07ae0e5553f38b78f30bb88a0e02aca995d7b5a 100644
---- a/drivers/thermal/tegra/soctherm.c
-+++ b/drivers/thermal/tegra/soctherm.c
-@@ -2065,6 +2065,10 @@ static const struct of_device_id tegra_soctherm_of_match[] = {
- 		.compatible = "nvidia,tegra210-soctherm",
- 		.data = &tegra210_soctherm,
- 	},
-+	{
-+		.compatible = "nvidia,tegra210b01-soctherm",
-+		.data = &tegra210b01_soctherm,
-+	},
- #endif
- 	{ },
- };
-diff --git a/drivers/thermal/tegra/soctherm.h b/drivers/thermal/tegra/soctherm.h
-index 70501e73d586230d3caca8dea0966afd7f23142a..0d80e739b67da23571137db0cc3140c8967fa071 100644
---- a/drivers/thermal/tegra/soctherm.h
-+++ b/drivers/thermal/tegra/soctherm.h
-@@ -147,6 +147,7 @@ extern const struct tegra_soctherm_soc tegra132_soctherm;
- 
- #ifdef CONFIG_ARCH_TEGRA_210_SOC
- extern const struct tegra_soctherm_soc tegra210_soctherm;
-+extern const struct tegra_soctherm_soc tegra210b01_soctherm;
- #endif
- 
- #endif
-diff --git a/drivers/thermal/tegra/tegra210-soctherm.c b/drivers/thermal/tegra/tegra210-soctherm.c
-index d0ff793f18c561230497b57b325ae87f12a7b83a..80f67c1fd496d613147ecc6618c4934d03b1e67e 100644
---- a/drivers/thermal/tegra/tegra210-soctherm.c
-+++ b/drivers/thermal/tegra/tegra210-soctherm.c
-@@ -44,6 +44,14 @@ static const struct tegra_tsensor_configuration tegra210_tsensor_config = {
- 	.tsample_ate = 480,
+diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
+index e0d67bfe955cdea6b4703952741b0b9970084d66..689354c280883f7096f007ae714dad1b379a2852 100644
+--- a/drivers/soc/tegra/pmc.c
++++ b/drivers/soc/tegra/pmc.c
+@@ -3732,6 +3732,122 @@ static const struct tegra_pmc_soc tegra210_pmc_soc = {
+ 	.has_single_mmio_aperture = true,
  };
  
-+static const struct tegra_tsensor_configuration tegra210b01_tsensor_config = {
-+	.tall = 16300,
-+	.tiddq_en = 1,
-+	.ten_count = 1,
-+	.tsample = 240,
-+	.tsample_ate = 480,
++static const struct tegra_io_pad_soc tegra210b01_io_pads[] = {
++	TEGRA_IO_PAD(TEGRA_IO_PAD_AUDIO, 17, 0x1b8, 0x1bc, 5, "audio"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_AUDIO_HV, 29, 0x1c0, 0x1c4, 18, "audio-hv"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_CAM, 4, 0x1c0, 0x1c4, 10, "cam"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_CSIA, 0, 0x1b8, 0x1bc, UINT_MAX, "csia"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_CSIB, 1, 0x1b8, 0x1bc, UINT_MAX, "csib"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_CSIC, 10, 0x1c0, 0x1c4, UINT_MAX, "csic"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_CSID, 11, 0x1c0, 0x1c4, UINT_MAX, "csid"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_CSIE, 12, 0x1c0, 0x1c4, UINT_MAX, "csie"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_CSIF, 13, 0x1c0, 0x1c4, UINT_MAX, "csif"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_DBG, 25, 0x1b8, 0x1bc, 19, "dbg"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_DEBUG_NONAO, 26, 0x1b8, 0x1bc, UINT_MAX, "debug-nonao"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_DMIC, 18, 0x1c0, 0x1c4, 20, "dmic"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_DP, 19, 0x1c0, 0x1c4, UINT_MAX, "dp"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_DSI, 2, 0x1b8, 0x1bc, UINT_MAX, "dsi"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_DSIB, 7, 0x1c0, 0x1c4, UINT_MAX, "dsib"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_DSIC, 8, 0x1c0, 0x1c4, UINT_MAX, "dsic"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_DSID, 9, 0x1c0, 0x1c4, UINT_MAX, "dsid"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_EMMC, 3, 0x1c0, 0x1c4, UINT_MAX, "emmc"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_EMMC2, 5, 0x1c0, 0x1c4, UINT_MAX, "emmc2"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_GPIO, 27, 0x1b8, 0x1bc, 21, "gpio"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_HDMI, 28, 0x1b8, 0x1bc, UINT_MAX, "hdmi"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_HSIC, 19, 0x1b8, 0x1bc, UINT_MAX, "hsic"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_LVDS, 25, 0x1c0, 0x1c4, UINT_MAX, "lvds"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_MIPI_BIAS, 3, 0x1b8, 0x1bc, UINT_MAX, "mipi-bias"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_PEX_BIAS, 4, 0x1b8, 0x1bc, UINT_MAX, "pex-bias"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_PEX_CLK1, 5, 0x1b8, 0x1bc, UINT_MAX, "pex-clk1"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_PEX_CLK2, 6, 0x1b8, 0x1bc, UINT_MAX, "pex-clk2"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_PEX_CNTRL, UINT_MAX, UINT_MAX, UINT_MAX, 11, "pex-cntrl"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_SDMMC1, 1, 0x1c0, 0x1c4, 12, "sdmmc1"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_SDMMC3, 2, 0x1c0, 0x1c4, 13, "sdmmc3"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_SPI, 14, 0x1c0, 0x1c4, 22, "spi"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_SPI_HV, 15, 0x1c0, 0x1c4, 23, "spi-hv"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_UART, 14, 0x1b8, 0x1bc, 2, "uart"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_USB0, 9, 0x1b8, 0x1bc, UINT_MAX, "usb0"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_USB1, 10, 0x1b8, 0x1bc, UINT_MAX, "usb1"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_USB2, 11, 0x1b8, 0x1bc, UINT_MAX, "usb2"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_USB3, 18, 0x1b8, 0x1bc, UINT_MAX, "usb3"),
++	TEGRA_IO_PAD(TEGRA_IO_PAD_USB_BIAS, 12, 0x1b8, 0x1bc, UINT_MAX, "usb-bias"),
 +};
 +
- static const struct tegra_tsensor_group tegra210_tsensor_group_cpu = {
- 	.id = TEGRA124_SOCTHERM_SENSOR_CPU,
- 	.name = "cpu",
-@@ -125,6 +133,12 @@ static const struct tegra_tsensor_group *tegra210_tsensor_groups[] = {
- 	&tegra210_tsensor_group_mem,
- };
- 
-+static const struct tegra_tsensor_group *tegra210b01_tsensor_groups[] = {
-+	&tegra210_tsensor_group_cpu,
-+	&tegra210_tsensor_group_gpu,
-+	&tegra210_tsensor_group_pll,
++static const struct pinctrl_pin_desc tegra210b01_pin_descs[] = {
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_AUDIO, "audio"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_AUDIO_HV, "audio-hv"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_CAM, "cam"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_CSIA, "csia"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_CSIB, "csib"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_CSIC, "csic"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_CSID, "csid"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_CSIE, "csie"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_CSIF, "csif"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_DBG, "dbg"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_DEBUG_NONAO, "debug-nonao"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_DMIC, "dmic"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_DP, "dp"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_DSI, "dsi"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_DSIB, "dsib"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_DSIC, "dsic"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_DSID, "dsid"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_EMMC, "emmc"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_EMMC2, "emmc2"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_GPIO, "gpio"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_HDMI, "hdmi"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_HSIC, "hsic"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_LVDS, "lvds"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_MIPI_BIAS, "mipi-bias"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_PEX_BIAS, "pex-bias"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_PEX_CLK1, "pex-clk1"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_PEX_CLK2, "pex-clk2"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_PEX_CNTRL, "pex-cntrl"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_SDMMC1, "sdmmc1"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_SDMMC3, "sdmmc3"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_SPI, "spi"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_SPI_HV, "spi-hv"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_UART, "uart"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_USB0, "usb0"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_USB1, "usb1"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_USB2, "usb2"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_USB3, "usb3"),
++	TEGRA_IO_PIN_DESC(TEGRA_IO_PAD_USB_BIAS, "usb-bias"),
 +};
 +
- static const struct tegra_tsensor tegra210_tsensors[] = {
- 	{
- 		.name = "cpu0",
-@@ -193,6 +207,58 @@ static const struct tegra_tsensor tegra210_tsensors[] = {
- 	},
- };
- 
-+static const struct tegra_tsensor tegra210b01_tsensors[] = {
-+	{
-+		.name = "cpu0",
-+		.base = 0xc0,
-+		.config = &tegra210_tsensor_config,
-+		.calib_fuse_offset = 0x098,
-+		.fuse_corr_alpha = 1085000,
-+		.fuse_corr_beta = 3244200,
-+		.group = &tegra210_tsensor_group_cpu,
-+	}, {
-+		.name = "cpu1",
-+		.base = 0xe0,
-+		.config = &tegra210_tsensor_config,
-+		.calib_fuse_offset = 0x084,
-+		.fuse_corr_alpha = 1126200,
-+		.fuse_corr_beta = -67500,
-+		.group = &tegra210_tsensor_group_cpu,
-+	}, {
-+		.name = "cpu2",
-+		.base = 0x100,
-+		.config = &tegra210_tsensor_config,
-+		.calib_fuse_offset = 0x088,
-+		.fuse_corr_alpha = 1098400,
-+		.fuse_corr_beta = 2251100,
-+		.group = &tegra210_tsensor_group_cpu,
-+	}, {
-+		.name = "cpu3",
-+		.base = 0x120,
-+		.config = &tegra210_tsensor_config,
-+		.calib_fuse_offset = 0x12c,
-+		.fuse_corr_alpha = 1108000,
-+		.fuse_corr_beta = 602700,
-+		.group = &tegra210_tsensor_group_cpu,
-+	}, {
-+		.name = "gpu",
-+		.base = 0x180,
-+		.config = &tegra210_tsensor_config,
-+		.calib_fuse_offset = 0x154,
-+		.fuse_corr_alpha = 1074300,
-+		.fuse_corr_beta = 2734900,
-+		.group = &tegra210_tsensor_group_gpu,
-+	}, {
-+		.name = "pllx",
-+		.base = 0x1a0,
-+		.config = &tegra210_tsensor_config,
-+		.calib_fuse_offset = 0x160,
-+		.fuse_corr_alpha = 1039700,
-+		.fuse_corr_beta = 6829100,
-+		.group = &tegra210_tsensor_group_pll,
-+	},
++static const struct tegra_pmc_soc tegra210b01_pmc_soc = {
++	.supports_core_domain = false,
++	.num_powergates = ARRAY_SIZE(tegra210_powergates),
++	.powergates = tegra210_powergates,
++	.num_cpu_powergates = ARRAY_SIZE(tegra210_cpu_powergates),
++	.cpu_powergates = tegra210_cpu_powergates,
++	.has_tsense_reset = true,
++	.has_gpu_clamps = true,
++	.needs_mbist_war = true,
++	.has_impl_33v_pwr = false,
++	.maybe_tz_only = true,
++	.num_io_pads = ARRAY_SIZE(tegra210b01_io_pads),
++	.io_pads = tegra210b01_io_pads,
++	.num_pin_descs = ARRAY_SIZE(tegra210b01_pin_descs),
++	.pin_descs = tegra210b01_pin_descs,
++	.regs = &tegra20_pmc_regs,
++	.init = tegra20_pmc_init,
++	.setup_irq_polarity = tegra20_pmc_setup_irq_polarity,
++	.powergate_set = tegra114_powergate_set,
++	.irq_set_wake = tegra210_pmc_irq_set_wake,
++	.irq_set_type = tegra210_pmc_irq_set_type,
++	.reset_sources = tegra210_reset_sources,
++	.num_reset_sources = ARRAY_SIZE(tegra210_reset_sources),
++	.reset_levels = NULL,
++	.num_reset_levels = 0,
++	.num_wake_events = ARRAY_SIZE(tegra210_wake_events),
++	.wake_events = tegra210_wake_events,
++	.pmc_clks_data = tegra_pmc_clks_data,
++	.num_pmc_clks = ARRAY_SIZE(tegra_pmc_clks_data),
++	.has_blink_output = true,
++	.has_usb_sleepwalk = true,
++	.has_single_mmio_aperture = true,
 +};
 +
- /*
-  * Mask/shift bits in FUSE_TSENSOR_COMMON and
-  * FUSE_TSENSOR_COMMON, which are described in
-@@ -226,3 +292,15 @@ const struct tegra_soctherm_soc tegra210_soctherm = {
- 	.use_ccroc = false,
- 	.thermtrips = tegra210_tsensor_thermtrips,
- };
-+
-+const struct tegra_soctherm_soc tegra210b01_soctherm = {
-+	.tsensors = tegra210b01_tsensors,
-+	.num_tsensors = ARRAY_SIZE(tegra210b01_tsensors),
-+	.ttgs = tegra210b01_tsensor_groups,
-+	.num_ttgs = ARRAY_SIZE(tegra210b01_tsensor_groups),
-+	.tfuse = &tegra210_soctherm_fuse,
-+	.thresh_grain = TEGRA210_THRESH_GRAIN,
-+	.bptt = TEGRA210_BPTT,
-+	.use_ccroc = false,
-+	.thermtrips = tegra210_tsensor_thermtrips,
-+};
+ static const struct tegra_io_pad_soc tegra186_io_pads[] = {
+ 	TEGRA_IO_PAD(TEGRA_IO_PAD_CSIA, 0, 0x74, 0x78, UINT_MAX, "csia"),
+ 	TEGRA_IO_PAD(TEGRA_IO_PAD_CSIB, 1, 0x74, 0x78, UINT_MAX, "csib"),
+@@ -4253,6 +4369,7 @@ static const struct of_device_id tegra_pmc_match[] = {
+ 	{ .compatible = "nvidia,tegra194-pmc", .data = &tegra194_pmc_soc },
+ 	{ .compatible = "nvidia,tegra186-pmc", .data = &tegra186_pmc_soc },
+ 	{ .compatible = "nvidia,tegra210-pmc", .data = &tegra210_pmc_soc },
++	{ .compatible = "nvidia,tegra210b01-pmc", .data = &tegra210b01_pmc_soc },
+ 	{ .compatible = "nvidia,tegra132-pmc", .data = &tegra124_pmc_soc },
+ 	{ .compatible = "nvidia,tegra124-pmc", .data = &tegra124_pmc_soc },
+ 	{ .compatible = "nvidia,tegra114-pmc", .data = &tegra114_pmc_soc },
 
 -- 
 2.50.0
