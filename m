@@ -1,140 +1,253 @@
-Received: from dggsgout12.his.huawei.com (dggsgout12.his.huawei.com [45.249.212.56])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 103922853E3;
-	Thu, 17 Jul 2025 09:09:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF61F288CBE;
+	Thu, 17 Jul 2025 09:40:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752743399; cv=none; b=jUJsdLMBNBzs8gGk+F8X03v3zBDkESLcRW8Qi/XaRcomBinm4Yuyuie0RRVKaI8WICgB2yFTKT486J909DDiAHa3wcj3gg761t0xjrF2/jsG2EXZt7spBy4tdG9EV2rKXxJQcevv3giBtHfa0+0dpcOAmNrokdY/yaL4rRLoiWQ=
+	t=1752745216; cv=none; b=AqZaVqPF1r8xte/vVXPt3MIslsbRmsitjdskSXh0Qv/spuCVR1ZhFhtJIuioU4g7hfOZpNpok6KYR0qn+Zfu/WqKw6u5TMkjo8Rr7tC0B/yNusReClifNdMY2I+a3iMD0kcEhiz+cekbW5CF8rX/YyIOXtWlodhnYin67RPKAhQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1752743399; c=relaxed/simple;
-	bh=o3gwy3cmXZ5u7CCyVRTqx5YCgW2C5UAu/72gyYlsKAU=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=DD5w3+Vk1Ht3OqX92CRW4pw8kQ8r+7J7lHHYSQ1WeHOir65BeEwAL5zmFoScjERAyXTYQXC2jI7+T9ZC66aiIefWnpcQY7KK+//QIxqJr3HuQGyTVyd8sA75Ru0Rto+QlDOIn5GbTNNJe+RKIAr4l3e03fv0MVKLpxboTpNRt2k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com; spf=pass smtp.mailfrom=huaweicloud.com; arc=none smtp.client-ip=45.249.212.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huaweicloud.com
-Received: from mail.maildlp.com (unknown [172.19.163.216])
-	by dggsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4bjRvf3c9LzKHSbD;
-	Thu, 17 Jul 2025 17:09:50 +0800 (CST)
-Received: from mail02.huawei.com (unknown [10.116.40.128])
-	by mail.maildlp.com (Postfix) with ESMTP id 1AB101A4497;
-	Thu, 17 Jul 2025 17:09:49 +0800 (CST)
-Received: from hulk-vt.huawei.com (unknown [10.67.174.121])
-	by APP4 (Coremail) with SMTP id gCh0CgCnIhPNvXhosUc4Ag--.62465S3;
-	Thu, 17 Jul 2025 17:09:48 +0800 (CST)
-From: Chen Ridong <chenridong@huaweicloud.com>
-To: tj@kernel.org,
-	hannes@cmpxchg.org,
-	mkoutny@suse.com,
-	rafael@kernel.org,
-	pavel@kernel.org,
-	timvp@google.com
-Cc: cgroups@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	lujialin4@huawei.com,
-	chenridong@huawei.com
-Subject: [PATCH v2 -next 1/2] sched,freezer: Remove unnecessary warning in __thaw_task
-Date: Thu, 17 Jul 2025 08:55:49 +0000
-Message-Id: <20250717085550.3828781-2-chenridong@huaweicloud.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20250717085550.3828781-1-chenridong@huaweicloud.com>
-References: <20250717085550.3828781-1-chenridong@huaweicloud.com>
+	s=arc-20240116; t=1752745216; c=relaxed/simple;
+	bh=n/jEGmNwmstPDrrsksmS7Eun3jba5X+4dX/kbanNKYw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=qpK304jt9lbqBo9Shn2GMHJqiQ0P9U3LgBjVdwxxk6jv5PRiXlo+NJy90Ri3C2zr44p5lAsXhdpGBXSGsRjpWiAYJODDlw1iSSkbtB/q6WtArAujYSUEd59sRve5L/5Y3TXEu2XjB2y2yfjB4IuYMnKHI64vlktxlci0oFZ8/fY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=eLBpKFoL; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="eLBpKFoL"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3AD3CC4CEE3;
+	Thu, 17 Jul 2025 09:40:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1752745216;
+	bh=n/jEGmNwmstPDrrsksmS7Eun3jba5X+4dX/kbanNKYw=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=eLBpKFoLhhM4XYYE2FkftIhVy1C5Vv5jMDARviBBZE7eDzWIDsKWNlVdHfVC4CqjV
+	 HLTGY45sO5bGtBDGpGpgIBrsceQEVdb7Aa6ueHxmiYHbctgYb0pKIeyZYwzxn5JZ/c
+	 KM3aMcOYAKk+7lKCaiNBS51q2udhyM0xNlEfqszg9Oqnzr/w3dasrFQB4S9CtJf/6s
+	 EmeV105c6j9u8wCEzPcKSZPwR1Und1vZJ6afXi8JonYuPFmpvUWBQgYgxXYTS0IopC
+	 9QGqZPa5J7poCwI0Ri+vl7L16QHU0qmJf6z8MzOReYi5QaH2/XpSvck+TfzZ51vhRD
+	 0FJAf6Mp0HGFw==
+Received: by mail-oo1-f45.google.com with SMTP id 006d021491bc7-61208b86da2so187328eaf.2;
+        Thu, 17 Jul 2025 02:40:16 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCVkB7Fi8FfTBmRWzycl835QN6FJ+6A5UcSv//zHSyogsgM8H+2mwR38TUHvriCUkgxBSArDqe3Yp01Urgk=@vger.kernel.org, AJvYcCW3L8L6AeQMdla/h9dcoPdS9iPh28IQ0k1Tgzk3Gg/j6mj1iR0VJeGMAJnbbA+8YEyp0NzLXu5mPjI=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxmC99nX0kObSOFSI3afAmW5rr0HXuodCLXjjd2oOPt0taymNjP
+	97fCO5oQ2ttGjqLM3I6KYU3lKZvcTNQBqM0xopyxt+uj+Ta89GSYxR/gr6Ly+9YvXw1I8Kye+h5
+	5W7wrDUrwvxu51Bmt3bzA10gmiULd88A=
+X-Google-Smtp-Source: AGHT+IHyFjB0hVzWZMrgRfqjqyCBvNUF3k8laQHHTCdJ62HP30es2BBivCx9gqjaAWEnntZ0aahfFQqpXc1LqYLpVgI=
+X-Received: by 2002:a05:6820:4b87:b0:610:fc12:cbb4 with SMTP id
+ 006d021491bc7-6159fe1ef24mr5129587eaf.1.1752745215456; Thu, 17 Jul 2025
+ 02:40:15 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:gCh0CgCnIhPNvXhosUc4Ag--.62465S3
-X-Coremail-Antispam: 1UD129KBjvJXoW7Kr15JrykWFWrGF48Xr47Jwb_yoW8KFW3pw
-	s3Gw47Kr48tr1jyrWUJa1jqFyDKws3Xw4UGrykWr1rXF43XasYqrn7Ar90gryjvF97KryY
-	y3Z0gr40y3ykZ3JanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUmmb4IE77IF4wAFF20E14v26ryj6rWUM7CY07I20VC2zVCF04k2
-	6cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28IrcIa0xkI8VA2jI8067AKxVWUGw
-	A2048vs2IY020Ec7CjxVAFwI0_Gr0_Xr1l8cAvFVAK0II2c7xJM28CjxkF64kEwVA0rcxS
-	w2x7M28EF7xvwVC0I7IYx2IY67AKxVWDJVCq3wA2z4x0Y4vE2Ix0cI8IcVCY1x0267AKxV
-	WxJr0_GcWl84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_
-	GcCE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx
-	0E2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWU
-	JVW8JwACjcxG0xvY0x0EwIxGrwACI402YVCY1x02628vn2kIc2xKxwCY1x0262kKe7AKxV
-	WUtVW8ZwCF04k20xvY0x0EwIxGrwCF54CYxVCY1x0262kKe7AKxVWUtVW8ZwCFx2IqxVCF
-	s4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r
-	1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWU
-	JVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r
-	1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1U
-	YxBIdaVFxhVjvjDU0xZFpf9x07jehFxUUUUU=
-X-CM-SenderInfo: hfkh02xlgr0w46kxt4xhlfz01xgou0bp/
+References: <6198088.lOV4Wx5bFT@rjwysocki.net> <CAGETcx-ddJMua5_VMNofr2vZ9n5Oyo4iT6Bac825L8tFqqQsxg@mail.gmail.com>
+In-Reply-To: <CAGETcx-ddJMua5_VMNofr2vZ9n5Oyo4iT6Bac825L8tFqqQsxg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 17 Jul 2025 11:40:04 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jBQbDx2G0ZUy+Jx2yAdt_KCOJhOEbpQfLar=yWwvbhOA@mail.gmail.com>
+X-Gm-Features: Ac12FXw6-PWegMeVz_LQhekIZH8m6qssTfLXZ96WnnZI-UK1ShtRgVUHOqFUplU
+Message-ID: <CAJZ5v0jBQbDx2G0ZUy+Jx2yAdt_KCOJhOEbpQfLar=yWwvbhOA@mail.gmail.com>
+Subject: Re: [PATCH v1] PM: sleep: Rearrange suspend/resume error handling in
+ the core
+To: Saravana Kannan <saravanak@google.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
+	LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Chen Ridong <chenridong@huawei.com>
+On Wed, Jul 16, 2025 at 11:52=E2=80=AFPM Saravana Kannan <saravanak@google.=
+com> wrote:
+>
+> On Wed, Jul 16, 2025 at 12:31=E2=80=AFPM Rafael J. Wysocki <rafael@kernel=
+.org> wrote:
+> >
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > Notice that device_suspend_noirq(), device_suspend_late() and
+> > device_suspend() all set async_error on errors, so they don't really
+> > need to return a value.  Accordingly, make them all void and use
+> > async_error in their callers instead of their return values.
+> >
+> > Moreover, since async_error is updated concurrently without locking
+> > during asynchronous suspend and resume processing, use READ_ONCE() and
+> > WRITE_ONCE() for accessing it in those places to ensure that all of the
+> > accesses will be carried out as expected.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >
+> > Based on the current linux-pm.git material in linux-next.
+> >
+> > ---
+> >  drivers/base/power/main.c |   79 ++++++++++++++++++++-----------------=
+---------
+> >  1 file changed, 35 insertions(+), 44 deletions(-)
+> >
+> > --- a/drivers/base/power/main.c
+> > +++ b/drivers/base/power/main.c
+> > @@ -767,7 +767,7 @@
+> >         TRACE_RESUME(error);
+> >
+> >         if (error) {
+> > -               async_error =3D error;
+> > +               WRITE_ONCE(async_error, error);
+> >                 dpm_save_failed_dev(dev_name(dev));
+> >                 pm_dev_err(dev, state, async ? " async noirq" : " noirq=
+", error);
+> >         }
+> > @@ -824,7 +824,7 @@
+> >         mutex_unlock(&dpm_list_mtx);
+> >         async_synchronize_full();
+> >         dpm_show_time(starttime, state, 0, "noirq");
+> > -       if (async_error)
+> > +       if (READ_ONCE(async_error))
+> >                 dpm_save_failed_step(SUSPEND_RESUME_NOIRQ);
+> >
+> >         trace_suspend_resume(TPS("dpm_resume_noirq"), state.event, fals=
+e);
+> > @@ -910,7 +910,7 @@
+> >         complete_all(&dev->power.completion);
+> >
+> >         if (error) {
+> > -               async_error =3D error;
+> > +               WRITE_ONCE(async_error, error);
+> >                 dpm_save_failed_dev(dev_name(dev));
+> >                 pm_dev_err(dev, state, async ? " async early" : " early=
+", error);
+> >         }
+> > @@ -971,7 +971,7 @@
+> >         mutex_unlock(&dpm_list_mtx);
+> >         async_synchronize_full();
+> >         dpm_show_time(starttime, state, 0, "early");
+> > -       if (async_error)
+> > +       if (READ_ONCE(async_error))
+> >                 dpm_save_failed_step(SUSPEND_RESUME_EARLY);
+> >
+> >         trace_suspend_resume(TPS("dpm_resume_early"), state.event, fals=
+e);
+> > @@ -1086,7 +1086,7 @@
+> >         TRACE_RESUME(error);
+> >
+> >         if (error) {
+> > -               async_error =3D error;
+> > +               WRITE_ONCE(async_error, error);
+> >                 dpm_save_failed_dev(dev_name(dev));
+> >                 pm_dev_err(dev, state, async ? " async" : "", error);
+> >         }
+> > @@ -1150,7 +1150,7 @@
+> >         mutex_unlock(&dpm_list_mtx);
+> >         async_synchronize_full();
+> >         dpm_show_time(starttime, state, 0, NULL);
+> > -       if (async_error)
+> > +       if (READ_ONCE(async_error))
+> >                 dpm_save_failed_step(SUSPEND_RESUME);
+> >
+> >         cpufreq_resume();
+> > @@ -1387,7 +1387,7 @@
+> >   * The driver of @dev will not receive interrupts while this function =
+is being
+> >   * executed.
+> >   */
+> > -static int device_suspend_noirq(struct device *dev, pm_message_t state=
+, bool async)
+> > +static void device_suspend_noirq(struct device *dev, pm_message_t stat=
+e, bool async)
+> >  {
+> >         pm_callback_t callback =3D NULL;
+> >         const char *info =3D NULL;
+> > @@ -1398,7 +1398,7 @@
+> >
+> >         dpm_wait_for_subordinate(dev, async);
+> >
+> > -       if (async_error)
+> > +       if (READ_ONCE(async_error))
+> >                 goto Complete;
+> >
+> >         if (dev->power.syscore || dev->power.direct_complete)
+> > @@ -1431,7 +1431,7 @@
+> >  Run:
+> >         error =3D dpm_run_callback(callback, dev, state, info);
+> >         if (error) {
+> > -               async_error =3D error;
+> > +               WRITE_ONCE(async_error, error);
+> >                 dpm_save_failed_dev(dev_name(dev));
+> >                 pm_dev_err(dev, state, async ? " async noirq" : " noirq=
+", error);
+> >                 goto Complete;
+> > @@ -1457,12 +1457,10 @@
+> >         complete_all(&dev->power.completion);
+> >         TRACE_SUSPEND(error);
+> >
+> > -       if (error || async_error)
+> > -               return error;
+> > +       if (error || READ_ONCE(async_error))
+> > +               return;
+> >
+> >         dpm_async_suspend_superior(dev, async_suspend_noirq);
+> > -
+> > -       return 0;
+> >  }
+> >
+> >  static void async_suspend_noirq(void *data, async_cookie_t cookie)
+> > @@ -1477,7 +1475,7 @@
+> >  {
+> >         ktime_t starttime =3D ktime_get();
+> >         struct device *dev;
+> > -       int error =3D 0;
+> > +       int error;
+>
+> Are we still keeping around the error variable ... (question continues
+> further down)
+> >
+> >         trace_suspend_resume(TPS("dpm_suspend_noirq"), state.event, tru=
+e);
+> >
+> > @@ -1508,13 +1506,13 @@
+> >
+> >                 mutex_unlock(&dpm_list_mtx);
+> >
+> > -               error =3D device_suspend_noirq(dev, state, false);
+> > +               device_suspend_noirq(dev, state, false);
+> >
+> >                 put_device(dev);
+> >
+> >                 mutex_lock(&dpm_list_mtx);
+> >
+> > -               if (error || async_error) {
+> > +               if (READ_ONCE(async_error)) {
+> >                         dpm_async_suspend_complete_all(&dpm_late_early_=
+list);
+> >                         /*
+> >                          * Move all devices to the target list to resum=
+e them
+> > @@ -1528,9 +1526,8 @@
+> >         mutex_unlock(&dpm_list_mtx);
+> >
+> >         async_synchronize_full();
+> > -       if (!error)
+> > -               error =3D async_error;
+> >
+> > +       error =3D READ_ONCE(async_error);
+>
+> Just to cache the value locally so that the value used for the "if()"
+> check is the one that's sent to dpm_show_time()?
 
-Commit cff5f49d433f ("cgroup_freezer: cgroup_freezing: Check if not
-frozen") modified the cgroup_freezing() logic to verify that the FROZEN
-flag is not set, affecting the return value of the freezing() function,
-in order to address a warning in __thaw_task.
+Generally, yes.
 
-A race condition exists that may allow tasks to escape being frozen. The
-following scenario demonstrates this issue:
+To be more precise, the READ_ONCE() is not really necessary after the
+async_synchronize_full(), so "bare" async_error could be used going
+forward, but then I would need to add a comment explaining this here
+and in two other places, so I chose to just use the existing local
+variable to store the value.
 
-CPU 0 (get_signal path)		CPU 1 (freezer.state reader)
-try_to_freeze			read freezer.state
-__refrigerator			freezer_read
-				update_if_frozen
-WRITE_ONCE(current->__state, TASK_FROZEN);
-				...
-				/* Task is now marked frozen */
-				/* frozen(task) == true */
-				/* Assuming other tasks are frozen */
-				freezer->state |= CGROUP_FROZEN;
-/* freezing(current) returns false */
-/* because cgroup is frozen (not freezing) */
-break out
-__set_current_state(TASK_RUNNING);
-/* Bug: Task resumes running when it should remain frozen */
+> Put another way, why can't we also delete the local "error" variable?
 
-The existing !frozen(p) check in __thaw_task makes the
-WARN_ON_ONCE(freezing(p)) warning redundant. Removing this warning enables
-reverting commit cff5f49d433f ("cgroup_freezer: cgroup_freezing: Check if
-not frozen") to resolve the issue.
+It could be deleted, but I preferred to make fewer changes in this patch.
 
-This patch removes the warning from __thaw_task. A subsequent patch will
-revert commit cff5f49d433f ("cgroup_freezer: cgroup_freezing: Check if
-not frozen") to complete the fix.
+> Assuming we need to keep "error":
+>
+> Reviewed-by: Saravana Kannan <saravanak@google.com>
 
-Reported-by: Zhong Jiawei<zhongjiawei1@huawei.com>
-Signed-off-by: Chen Ridong <chenridong@huawei.com>
----
- kernel/freezer.c | 15 +++------------
- 1 file changed, 3 insertions(+), 12 deletions(-)
-
-diff --git a/kernel/freezer.c b/kernel/freezer.c
-index 8d530d0949ff..6a96149aede9 100644
---- a/kernel/freezer.c
-+++ b/kernel/freezer.c
-@@ -201,18 +201,9 @@ static int __restore_freezer_state(struct task_struct *p, void *arg)
- 
- void __thaw_task(struct task_struct *p)
- {
--	unsigned long flags;
--
--	spin_lock_irqsave(&freezer_lock, flags);
--	if (WARN_ON_ONCE(freezing(p)))
--		goto unlock;
--
--	if (!frozen(p) || task_call_func(p, __restore_freezer_state, NULL))
--		goto unlock;
--
--	wake_up_state(p, TASK_FROZEN);
--unlock:
--	spin_unlock_irqrestore(&freezer_lock, flags);
-+	guard(spinlock_irqsave)(&freezer_lock);
-+	if (frozen(p) && !task_call_func(p, __restore_freezer_state, NULL))
-+		wake_up_state(p, TASK_FROZEN);
- }
- 
- /**
--- 
-2.34.1
-
+Thanks!
