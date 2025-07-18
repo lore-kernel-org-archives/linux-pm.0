@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D2941DDC37;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D2E71EDA03;
 	Fri, 18 Jul 2025 06:37:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752820663; cv=none; b=dYwXjrP1YIsnjugQ/NpRCFzObKD3yQQPWf4VCQcdpfzVKpLGnyKV23GW33M4F/ZzhMwaV+LWv8KiAudn0xGYlziP4GW/Zl1E3E2nSxleJqbOqSAc/xrq7LFWopaB/fMVIP3IjmLZA1HwZZQdj64U7JzunUPYYykMll32A1YNWFs=
+	t=1752820663; cv=none; b=kYGlzoY+YOvkpZ4tQRMo8p2II+qXiZxAwaesQ27wcP6EqFk4BN5MGj1sDrYq32jtVuwOAnsrlMtNi29D/2MvKxxRHOQtrVbgCJHk6MBLIZmleXXAFyJYNDP1SJ5VlJ+b3O60TbVCeG1JKnzw3s7vrSc42kccAr0hkQl2i0yE+0k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1752820663; c=relaxed/simple;
-	bh=Vg/Qxml+vCOWtwi27g4HsyyOYy1gOhqTGm45155VutI=;
+	bh=B1nEStj0+V6pHpYPik8DbbNYwrpA6YOZBXo8D/XPxu0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Pvnzs/tx2bpEgpE+g/icGnn+VaA4lkIRV1fSD2QsFlKd2c/dPnHCq7u9eNZHmYZidk/tfxJRsVXDXaK595evpGPSaIghvGcjIrf1QcHTsmjEnYCNsSTvk6Wujh8oxcMLNNXn60r57WWIdb4DKvsQN6huwRAvWRd+Fv/1i7wJxt4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RKi/tRqn; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=TW8bcBBsDgbeGh7hBlv/ZUs6N3rfbQTiwZF2mRz+AGbEOzAFg7B9Q31cyTHNhmzHLJEM0Ur4dajBc7Sv5xaiuClXIBOFM7Ow1+kxpvfbxf4oeWrZBSnIfFDD4V7wh9/bc+prxsz4OAFagUXkGXK04x5imxaqyo350a4HQ2QdhcA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YtQQVS/B; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RKi/tRqn"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id B6296C4CEF5;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YtQQVS/B"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 9CFC4C4CEF1;
 	Fri, 18 Jul 2025 06:37:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1752820662;
-	bh=Vg/Qxml+vCOWtwi27g4HsyyOYy1gOhqTGm45155VutI=;
+	bh=B1nEStj0+V6pHpYPik8DbbNYwrpA6YOZBXo8D/XPxu0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=RKi/tRqnJbZLGLSOWIEaui7ZZ4H5r7Z6HkMGueXQOKAn1EMtAKt+AXCQ0tn5c3duV
-	 fmGfub+iVN9LqkTwXCfvaj7JaQTwprkvyZyaUPtSuKPUy4URG0634UdKbV8f14YxMM
-	 vuNph1+sf2bKI246Q9nMVT4XDrxZsuOqg5LYrR8QMZGF5UdYi1ttduvfodrI4rfvFe
-	 ef3D611H6MAJ6UKKr1vbSphdVAobgoV4BOjhpqieMBmSVObPCpiJtjSxpTNMcrHhr8
-	 7Cznuaj53YsTbVDhRONyWNtsdhcw9ATUiNEWL2PwNaLgSucXRqdnUjtyAlt4YzLax2
-	 nr3PowNkt9KgA==
+	b=YtQQVS/BzrykY3H/cp2lg0p+1AfWPfffaHya0Cf6TsGBeSqlG/RqDlysYrD5WOqO+
+	 gLNBbTCwaijMD/babk6iPvGVdxBdG7BPFP2BufXf/ny+YJMBmZk4juthhfsKqc8Xvu
+	 5zqe+UQDjyyvYM1QlB9VYKOmjNTM140ZwOMMu9z0flUt04hLKfSRdH3V7HFtDfify2
+	 uwBMeoPYM9ZAeS7IoSQ/xOOpg4abDZR8KAlCGQkxTSgrCsKpzcg4PM3JlokL1V7r0a
+	 lf4S3ZAN35h84kmOzRQXwkSoxp54ea9pXGTCY7aa1Uq/TuTbvShuWSOpKSZcqoR/Gw
+	 wycuuz7fYKq2w==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8F27C83F17;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A042C83F1A;
 	Fri, 18 Jul 2025 06:37:42 +0000 (UTC)
 From: Xianwei Zhao via B4 Relay <devnull+xianwei.zhao.amlogic.com@kernel.org>
-Date: Fri, 18 Jul 2025 14:37:43 +0800
-Subject: [PATCH 3/3] arm64: dts: amlogic: c3: Add tempsensor controller
- node
+Date: Fri, 18 Jul 2025 14:37:41 +0800
+Subject: [PATCH 1/3] dt-bindings: thermal: amlogic: Add compatible string
+ for C3
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250718-c3-thermal-v1-3-674f9a991690@amlogic.com>
+Message-Id: <20250718-c3-thermal-v1-1-674f9a991690@amlogic.com>
 References: <20250718-c3-thermal-v1-0-674f9a991690@amlogic.com>
 In-Reply-To: <20250718-c3-thermal-v1-0-674f9a991690@amlogic.com>
 To: Guillaume La Roque <glaroque@baylibre.com>, 
@@ -59,11 +59,11 @@ Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org,
  Xianwei Zhao <xianwei.zhao@amlogic.com>, 
  Liming Xue <liming.xue@amlogic.com>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1752820661; l=1117;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1752820661; l=908;
  i=xianwei.zhao@amlogic.com; s=20231208; h=from:subject:message-id;
- bh=vWhNDYyE9xSECm6+/EYb548/qKTRV6MGziQpMJtR/5A=;
- b=GfoyeV+CAv/f/E7OEN1Tz3QApTOrFtWdFN5Z5fCvJjhDvbhe1bPYlFP48Z45K0KrxlaDpsS2P
- Ibg/ocitfAYCay1tzVjxBphiYRlbiSXlUKkB0nSscl7y3h139ZVkMri
+ bh=m70FS+G7MWgfpyXfqF/GcZI0oweMwKZErmLTKjbvs28=;
+ b=jQEBxT6KzSsfZPc7EiS43IuLrjjutZFmEj5PLSOauRyZSFDl29n1k0oACNtSGEWNkiRyKb0OH
+ EgxLAOKTAYqD9OUrtKAr8ZvUD1osLlLp2J+2YpAaXQVqL0LYm5VUYM3
 X-Developer-Key: i=xianwei.zhao@amlogic.com; a=ed25519;
  pk=o4fDH8ZXL6xQg5h17eNzRljf6pwZHWWjqcOSsj3dW24=
 X-Endpoint-Received: by B4 Relay for xianwei.zhao@amlogic.com/20231208 with
@@ -73,36 +73,28 @@ Reply-To: xianwei.zhao@amlogic.com
 
 From: Xianwei Zhao <xianwei.zhao@amlogic.com>
 
-Add the Tempsensor controller node for C3 SoC family.
+Add the compatible properties for Amlogic C3 SoC family.
+C3 family supports only one thermal node - CPU thermal
+sensor.
 
 Signed-off-by: Liming Xue <liming.xue@amlogic.com>
 Signed-off-by: Xianwei Zhao <xianwei.zhao@amlogic.com>
 ---
- arch/arm64/boot/dts/amlogic/amlogic-c3.dtsi | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm64/boot/dts/amlogic/amlogic-c3.dtsi b/arch/arm64/boot/dts/amlogic/amlogic-c3.dtsi
-index cb9ea3ca6ee0..c853390eca6c 100644
---- a/arch/arm64/boot/dts/amlogic/amlogic-c3.dtsi
-+++ b/arch/arm64/boot/dts/amlogic/amlogic-c3.dtsi
-@@ -727,6 +727,17 @@ clkc_pll: clock-controller@8000 {
- 					      "fix";
- 			};
+diff --git a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
+index 70b273271754..095b92aa5ace 100644
+--- a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
+@@ -22,6 +22,7 @@ properties:
+               - amlogic,g12a-ddr-thermal
+           - const: amlogic,g12a-thermal
+       - const: amlogic,a1-cpu-thermal
++      - const: amlogic,c3-cpu-thermal
  
-+			temperature-sensor@20000 {
-+				compatible = "amlogic,c3-cpu-thermal";
-+				reg = <0x0 0x20000 0x0 0x50>;
-+				interrupts = <GIC_SPI 30 IRQ_TYPE_LEVEL_HIGH>;
-+				clocks = <&clkc_periphs CLKID_TS>;
-+				assigned-clocks = <&clkc_periphs CLKID_TS>;
-+				assigned-clock-rates = <500000>;
-+				amlogic,ao-secure = <&sec_ao>;
-+				#thermal-sensor-cells = <0>;
-+			};
-+
- 			eth_phy: mdio-multiplexer@28000 {
- 				compatible = "amlogic,g12a-mdio-mux";
- 				reg = <0x0 0x28000 0x0 0xa4>;
+   reg:
+     maxItems: 1
 
 -- 
 2.37.1
