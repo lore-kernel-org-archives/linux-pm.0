@@ -1,59 +1,59 @@
-Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
+Received: from mail-lf1-f54.google.com (mail-lf1-f54.google.com [209.85.167.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 388DF12CDA5;
-	Sun, 20 Jul 2025 23:17:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98E99BA27;
+	Sun, 20 Jul 2025 23:19:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1753053476; cv=none; b=JJYI4K5/SIvLPynBl9TkUm8z+yCFfv3wnVSwl8jGfDq1RmbHDsc2rAGg5g9pYM6sMsiu8blltmi4/fxtv4OzcsHxj0E+IYLo7pfoyfP4qOG6paZl1Y92qrZs0Az2kzXlv5xhCHbVLypJLvkXiZSWVjbhT64hXlhNG3vy//bQE4Q=
+	t=1753053565; cv=none; b=ZIKokbHfSWBnt0DqDYS8cjzjOe3bhWf1eZ1KVWEWDdc+KfGkXmTIH0UzP9QE7udiPCk6Q9MunEhKKQLwl3ul/EMDMxeU51R4Mb1Pw9Nh7fIBi9fNhf0Wv8Fug4Keo+sLNda3Mga+8y/8xrUWtQoiZxso/ASIPCq/FyGW9qZ2TrU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1753053476; c=relaxed/simple;
-	bh=pGT0xhBqBHbFWdDdZyKQSNOHcvRWrnAJlLeBlypIO4U=;
+	s=arc-20240116; t=1753053565; c=relaxed/simple;
+	bh=xDAokI7VKG3qDXjdagIu3rwbLTsdtMxhhRz34acfjGk=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Py66W2eVdtmU9E3GpXKIf9U3eAscquXpJ2c+p3NxVoCGR4uXrI7dtT8mxkvWLytfuOXxSfQCxD8YH66Ih7yDQVwN1jgmRMkH1v596qzU7KHv30tcICY9/941ghAiPFZN/kUd48hmpjvfACetpFs1sEdBEdoXpvaBuk4iieDFSjQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=YcWBSNQl; arc=none smtp.client-ip=209.85.216.49
+	 To:Cc:Content-Type; b=gy8epWbgb8pGxQolgsLxMFRHbXx1+2iB2rtCyBH6FOW6ttN4W+WoqdjzuVRHifw/avcZNY5kNc0f9fK8PYzbad5yMoKP3KrNkhG3l+uCvIhbTrG4ZOfhIjK3GNz30MdjUnCsHPwTeE+d560E/lY3+zdTMtaT0QC8JoTGNntPZHw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=SY756J/k; arc=none smtp.client-ip=209.85.167.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YcWBSNQl"
-Received: by mail-pj1-f49.google.com with SMTP id 98e67ed59e1d1-313dc7be67aso445654a91.0;
-        Sun, 20 Jul 2025 16:17:55 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SY756J/k"
+Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-558facbc19cso3094789e87.3;
+        Sun, 20 Jul 2025 16:19:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1753053474; x=1753658274; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1753053562; x=1753658362; darn=vger.kernel.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=pGT0xhBqBHbFWdDdZyKQSNOHcvRWrnAJlLeBlypIO4U=;
-        b=YcWBSNQlR9TdbApMN9pMaQTM+twSMQuRt1F0Z5QCXPzJfw7XhCG61LLo7JbE10+WZc
-         osctkkBVhThv+I3DMOHp+uECmzldd4NkHd9NyDwoGYugfym4ZV9vxiCygJTgp5Mep1Oj
-         h9DktY8S6ZtyZLqYi1ub7yjEmPnPNBQb9lBdqTimST0F3Bu9oC4MbELsMT6Nho0IHaHw
-         dGSbKMADNIyZYIaeqvn2JwBUZHABSLrfr/zb/NnkjF1y/CQJqTJwp9HtpYPzEtl7qU48
-         Nhr2AiEzD6CrofRZ7qCRARBKja+p59n/EUD7Isze75hBXX2EaDA4w0eQvOJKaEz7zmhm
-         h4lg==
+        bh=xDAokI7VKG3qDXjdagIu3rwbLTsdtMxhhRz34acfjGk=;
+        b=SY756J/kDsQz773IZiSx+op1zXzawDij2+hYibx9rgYTVzeMPY07fLv+kN//+JkQDT
+         d9UFAc+ocLpMw80geWBq3W3EueMgcobpJq5BOAGQG0qCg/d2NcZZtVMQ6yL+ehDcBXkN
+         2VKn52rKqwpcXtiPsYRh3L4lHXQwFGInjacIdy4RInls9VpKSKfB43jMMee3FXkDtB/P
+         4BcvmjGK5U0FEyvfDg1L9k7akfeY/2V9gvRWqO4d0BaPGvmfLqQJViatly4Wkjt1yUUX
+         ucVNENpjmVo3P4S/Hr7nm7YF/RvQy3aSf5sZ5OaFalhqm4ixEDcgTCVlREIBoho6cTYp
+         W8qg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1753053474; x=1753658274;
+        d=1e100.net; s=20230601; t=1753053562; x=1753658362;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=pGT0xhBqBHbFWdDdZyKQSNOHcvRWrnAJlLeBlypIO4U=;
-        b=ru6nWfZR2e2zW9IKUd1EglgOZ77IFRDfN9Zip1A2I2LgIy2RvpuNI1MQ4OVd0JWgfc
-         Nw7BOytReg8yd5KizFpA4/sysHZDN6ukWsfBH/frZbEQRBSVUbZxK7s/6DcxagYOaL2M
-         kOybltVgqTn3c6h7xYkEX7vfjlaCKlGjzgYYZ8PL4gho0Pp9qjXSvnYNg0rBxjJklHCj
-         4U+TRqv7hEeDQH34rY8brxJ5VaC91Q4vnudjr4BEKQ1mehfbvoumT7gH94S2dNJOLDBO
-         4pvNqTqVWQ1Ma/0/6lEx18VR/21W7ErxcF+n9nYzpmvS78ZN0fQ4cLD9zyf5Hct5q+22
-         Xaig==
-X-Forwarded-Encrypted: i=1; AJvYcCVuOXp4zf9Q4gIIhdNI1aGhtzrL9fX5OYIyCZYF5EDwVut+B3OilKzKxHDQbYQk3YBpyBPuZwId5nNOJjQ=@vger.kernel.org, AJvYcCWeqxaSeKiD9MTpA+bryRsbmkXukRk+WYj+tIcqlEZltKzdLM4RsV8j5VWzsrkSJUC2ZJjWeGduYzLxARFbkYo=@vger.kernel.org, AJvYcCXUcxtteZi3QhPiTOpy4dn+eAoQz6pNE6lqLBG5xo5bTOE8fzoQ/4ywwLJBT4APnCxdJNIuW8e/tjo=@vger.kernel.org
-X-Gm-Message-State: AOJu0YxdkEGfwVbVKIXPd2XUSCAi/J8H/igKY0X4D1eo8m9k3nsbvFi/
-	+GTg7OAaODLjr2SEXd+hiNboUTTmR4L+V6u3d0J10s/czjDo6DDWUWHVN1YkYbPJmfqZVGABYaJ
-	WxE0Wml3sWtjyOGkW5GJeSsUws9MwWJk=
-X-Gm-Gg: ASbGnctVL24F2+wZanyaVJDBqbE4t7dv9+NKQiOszVldqepp8KcHqzVoTvUXcb+1QcU
-	WHoxBgRZ63PWzwhVh2cVNhgzxwd87j1f7GeipNEDEYgySF89qu9mpgEPByeHkWw6zx9dswj4aE1
-	ct11aNWZA25UjUf1jAjAeBnzVyPYCK/E2/xLcFquARjzCCAqMTtj1LeGod4xSpinEd8RBMh21eZ
-	RXaZGnA
-X-Google-Smtp-Source: AGHT+IEbrcR8MgMgRAo5KnPtJx24JMikPAIly+rpRUggWdS/YqBt5ySVGDI/rtXvTVmG4G/B9031gk3IdnUlb0cu6aI=
-X-Received: by 2002:a17:90b:5285:b0:313:2bfc:94c with SMTP id
- 98e67ed59e1d1-31c9e7afd78mr10304315a91.8.1753053474405; Sun, 20 Jul 2025
- 16:17:54 -0700 (PDT)
+        bh=xDAokI7VKG3qDXjdagIu3rwbLTsdtMxhhRz34acfjGk=;
+        b=vMNepCBiLAMKtQW8w09uX5sEBsa0U8vw6vOAXpiCseDqt0gDTkLtfVDLXHO9nlqkhM
+         /6PCg7/ahTq+BQ7xGjq1/FnkcvP+A4oPmyVyh3Ea/vG0R33Kt7nlx08wr0jlo6sqCqp+
+         u2KQn787F/8MwI5kFOGKILUK6TW8S6pCvkhFLgYm3plf9juAJ5CFYCz8FB7TKtzWYVPp
+         jn0+iXL0/KpS3jND/yJrbObnkTQLXUP1Byl0zelRWZdCpfhH9n0btMHZ38o4tnCwHDC4
+         dYfinXxW6uwL53/9TfS+B6/uzdszxtVrY+VMqC82sVU61RY+f8m3SzZmVyiyuCipDznc
+         8sTw==
+X-Forwarded-Encrypted: i=1; AJvYcCVnhewABzO4fbuS3DWm9Kr4SeDB36LgGl6deI+fwBU96E1oNeEU3uUKZkej0Ggk/VomrmGxVF0NUI8iS1LJLKQ=@vger.kernel.org, AJvYcCVpCRa6+ZKR+SBvMwFUzerk7Na23dycjYlCvOHVJrdkiC/o2Q0prq1ABf1JlSTVtNFBVS0br/k/Mi1NDAw=@vger.kernel.org, AJvYcCXzsArgkyySdbctM2BCSVNiMyrEVbbxuIS7zxBScpkI1fguQ2/mhLO+n3EiCytGuOeX8jih8kr70Tg=@vger.kernel.org
+X-Gm-Message-State: AOJu0YyVUC5WSWxwR8xrOJXWZWZDVFi9qlpJwk/aAp/her5JXHvvq7kK
+	TZln9fucldMhizADCp5+y3RVPmWjcFFbnYCykRFeWRp4Bc5bZxMKh0pQCP1QqgfRF2mHtnQSP0J
+	f9qKkpup8rSwD8uhLX4ctjZ0ISCXVLgc=
+X-Gm-Gg: ASbGncvmm4nvTG6lbMAI5W2Ms4DJYK+RzKIRqN+Eapu98wuUAC1q61bqJROjL3m55FM
+	hvzPnmgVfJG5Fi3OGZPNarX/izNYXtp5JhRDuGZoXiBw965qegpxEH88W2tUL/2fkvJ81FkdssP
+	EAlvDE+HdrmB4cLy6M6MzpoWMqXeTE4SaP53K2lPZnKD83XPHaahlKAAqGLaSxmsjEYIo5JuRSn
+	UCYg0jkkBcSigBWgOIRcwUMGDzSvAwcHHPUCEt9/g==
+X-Google-Smtp-Source: AGHT+IGncn/UOc3MBb99EG9F6oXxwGB/WmBF9SrY2hp0XbPoeHN72PD8Hhix3KJ3ohY4uA9MMfu2RuCp7hWDXpSP5rc=
+X-Received: by 2002:a05:6512:3da5:b0:553:2ef3:f73d with SMTP id
+ 2adb3069b0e04-55a23ef8338mr6237754e87.14.1753053561595; Sun, 20 Jul 2025
+ 16:19:21 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -62,13 +62,14 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 References: <20250704-core-cstr-prepare-v1-0-a91524037783@gmail.com>
  <20250704-core-cstr-prepare-v1-1-a91524037783@gmail.com> <CAJ-ks9nBrT4C5xYk4eWUFX_nX5XXBYHEGo+fLtLWJE-D9Y5hKQ@mail.gmail.com>
-In-Reply-To: <CAJ-ks9nBrT4C5xYk4eWUFX_nX5XXBYHEGo+fLtLWJE-D9Y5hKQ@mail.gmail.com>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Mon, 21 Jul 2025 01:17:40 +0200
-X-Gm-Features: Ac12FXzxtp1UNQgsWc3xcIVA0zM-1eUXS6ehJ4njC6usGr6NPOzcDPlluaIG_s4
-Message-ID: <CANiq72=pS1iPePhi2Vs2AkLs3+tV=TASStPuSCnRNnHNHaawsw@mail.gmail.com>
+ <CANiq72=pS1iPePhi2Vs2AkLs3+tV=TASStPuSCnRNnHNHaawsw@mail.gmail.com>
+In-Reply-To: <CANiq72=pS1iPePhi2Vs2AkLs3+tV=TASStPuSCnRNnHNHaawsw@mail.gmail.com>
+From: Tamir Duberstein <tamird@gmail.com>
+Date: Sun, 20 Jul 2025 19:18:45 -0400
+X-Gm-Features: Ac12FXz7n_zGqqSP_crmNt9QLWB3OIlBXY-oQtBefFezfU4rnULUsaaSqCUStUY
+Message-ID: <CAJ-ks9krjd2kt8G9e12Fh2Nu=XtKWRZspOkHsmKQdjEU1j2XiA@mail.gmail.com>
 Subject: Re: [PATCH 1/6] rust: kernel: remove `fmt!`, fix clippy::uninlined-format-args
-To: Tamir Duberstein <tamird@gmail.com>
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
 Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
 	Danilo Krummrich <dakr@kernel.org>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
 	Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
@@ -81,15 +82,18 @@ Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.o
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jul 21, 2025 at 1:04=E2=80=AFAM Tamir Duberstein <tamird@gmail.com>=
- wrote:
+On Sun, Jul 20, 2025 at 7:17=E2=80=AFPM Miguel Ojeda
+<miguel.ojeda.sandonis@gmail.com> wrote:
 >
-> Just noticed a tiny typo here: it should say "can *be* taken".
+> On Mon, Jul 21, 2025 at 1:04=E2=80=AFAM Tamir Duberstein <tamird@gmail.co=
+m> wrote:
+> >
+> > Just noticed a tiny typo here: it should say "can *be* taken".
+> >
+> > Miguel, if you can fix that on apply, please do - but if not, no worrie=
+s.
 >
-> Miguel, if you can fix that on apply, please do - but if not, no worries.
+> Done! (We could also have removed that sentence too, since it sounds a
+> bit like something one would write after the `---` line).
 
-Done! (We could also have removed that sentence too, since it sounds a
-bit like something one would write after the `---` line).
-
-Cheers,
-Miguel
+Yeah, agreed. Removing it would be fine by me as well!
