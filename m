@@ -1,38 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FAFA21CA07;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6BA17211A27;
 	Mon, 21 Jul 2025 02:17:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1753064241; cv=none; b=tNdMlOwgDk0NIor7FKJy1VNdFPF80yOrJ54HUZ+fgOV8E3foxUIxY8YSDLYcHph1fQmbmoBSDtQyNrL72x+wAgJ0JGYfn4CyOBl9TyYT1lEvHxKSiQYJI+tG9/4JM/reWYo0kesakb8qhQTN/p10mJEFMFxyS7/FbqHxf4rDdiM=
+	t=1753064241; cv=none; b=hak2NOpCLsyBarCiz8QXmjdqAn5cYvNf2J10l3aaEaVVbz3rIeG07ANOBxtkmsIQCl5cQMJVJw/wQpqpUVJPoK3dTKJlOtf18MPOLvjSgMbBjcXL6jfGTSRihzetpGcnAkOjGGNkKnc4IFhaj9Ppzq9llm4QRRlhpCz+qnzq3eA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1753064241; c=relaxed/simple;
-	bh=0Sl9ne1fNA79gjabf0syuWDSWv557+WLdkh+UrDoEwc=;
+	bh=HKncAPxSIMFbw/2kZa81BXmIQwYXT5pSJU8eZyb16Cw=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=MPgibWhm149JN//NVJgCs9ahKfzCQx4FqlCQNV5Q95CvF3RWy+iaurUp+srWoKWu/wZwGfNLBoyY4u5RhAFdGAPwOpa96+e2FWlG7/pHafCsRkDlgD84uQoPFQjA+tXDw4h1dMhh5EW27V/NX1Jngjwu8BsATTtXYL64jos+/Nc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iEBvMVGd; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=Z+MrGtqa5dtMXXqXCbT/GR5B/qg7/4csop+fi7N7efPcOkSDPIFt8YOAdtkqPGM06qEYeIGdy78UjzYdbcIPBijOeoi14HJhC9mj697pmGU6kI+dVbeAy7s+bs92pvrfSpYvIyOCqIOSFbk1Ke4MLxFCImHre8tmTk2CwGf+bUU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=sDF8p2SV; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iEBvMVGd"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 6C964C4CEFC;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="sDF8p2SV"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 4C4DFC4CEEB;
 	Mon, 21 Jul 2025 02:17:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1753064241;
-	bh=0Sl9ne1fNA79gjabf0syuWDSWv557+WLdkh+UrDoEwc=;
+	bh=HKncAPxSIMFbw/2kZa81BXmIQwYXT5pSJU8eZyb16Cw=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=iEBvMVGdnmrpx3Gorr8MU9SBlunmSv+vZj9fsDtcAeC0Bw8XXdxqiWxZi08LSbRGY
-	 az9vNgK8NarxoRl4Y3E5RC2OVQLMk+EW+/r6rt0V+THT1g6wBilMDqsW8d4TmDutnN
-	 TO93MYMT+HfrgiWF7uRpa63xTFr8tuLi8NMxk83lulxzatf0uDssNsTuCDZ18J+d4G
-	 5PX6VEKR3jvkVXYmB5j+7Ur/QjxyQgVxVwEWlC9O3gfSc+ohJDGJEhCoMmKG7S3gjG
-	 p16IamcvwtNCoTrauC6wtIDbN0J/2TP5KHwZNZ9ntpeDNQhjL5AMXTYMoaZ1VPKUN8
-	 SpafUfr2VGuQw==
+	b=sDF8p2SVWKxAW8J8sVNoycp3TMCvNEy5tH33ogmoNDZGN4d0EPFFba4hOSIc5pKYA
+	 PvRMaAac86/chcGIv6ZLiPvUZojhVXBetuzUjjWJbrnegEVtVm0QU9z340HRuqepo5
+	 W9Rso2yyrnDBaM/oyuqmJWrkoflU+nTgSt63zvjVmgqB5VhqYGOy6Hp/QCC/66LJgn
+	 uMrywjTTh6IwMgg06aKRsuwSyUXCWozEuJuaTz2CrDMMyvyTR1QLdg8x0Mxm05aI5J
+	 ZrfBFjrOAMvEyEwTcPU6P3LzYHQP8B8c7M+qM0nyf1/DwRwbBqnwTOxmPrrXkvq0v2
+	 VoyTRw9K4A/4Q==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63029C87FC6;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4443EC83F17;
 	Mon, 21 Jul 2025 02:17:21 +0000 (UTC)
 From: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>
-Date: Sun, 20 Jul 2025 21:15:11 -0500
-Subject: [PATCH v2 17/17] arm64: tegra: Add support for NVIDIA Shield TV
- Pro 2019
+Date: Sun, 20 Jul 2025 21:15:09 -0500
+Subject: [PATCH v2 15/17] arm64: tegra: Add BPMP node for Tegra210
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,7 +40,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250720-t210b01-v2-17-9cb209f1edfc@gmail.com>
+Message-Id: <20250720-t210b01-v2-15-9cb209f1edfc@gmail.com>
 References: <20250720-t210b01-v2-0-9cb209f1edfc@gmail.com>
 In-Reply-To: <20250720-t210b01-v2-0-9cb209f1edfc@gmail.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -64,11 +63,11 @@ Cc: devicetree@vger.kernel.org, linux-tegra@vger.kernel.org,
  linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, 
  Aaron Kling <webgeek1234@gmail.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1753064238; l=3522;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1753064238; l=1355;
  i=webgeek1234@gmail.com; s=20250217; h=from:subject:message-id;
- bh=lBbPA4YnfIve2RzYnMMZrMuioshaXo0K/YzU1CSGgG0=;
- b=uZ18x9hPOETwB5r3x1VYui41gkdHxgunkMehPDkapwffmjyk9Z9GL845wi0QzejmISzNQ7Qte
- Wh8pVLrwHUIC3gw1diFucLnJPehp2XDs65AuWnzCj/LV+jaGFCmrF1V
+ bh=Hy6C9irOt/10mikaBceHy3GtlZHG/JQi0cSRGeXarHY=;
+ b=EfHg7uCuTKPxSk0yEqtg1tdc8FokfNrH8aTGAsexCfz0kAHF4YypdOpv+MuIC8f81hsYMrDlp
+ IZ/nwyRzRXeDveBxKSISA5ao0hXZ9iMk5PH60qtWJwALZHzNE1O/kwh
 X-Developer-Key: i=webgeek1234@gmail.com; a=ed25519;
  pk=TQwd6q26txw7bkK7B8qtI/kcAohZc7bHHGSD7domdrU=
 X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
@@ -78,123 +77,40 @@ Reply-To: webgeek1234@gmail.com
 
 From: Aaron Kling <webgeek1234@gmail.com>
 
-Add initial device-tree support for NVIDIA Shield TV Pro 2019 (a.k.a
-MDarcy) based up the Tegra210B01 SoC with 3 GiB of LPDDR4 RAM.
-
-This is very basic, intended for checking initial Tegra210B01 support.
-More complete support for the device will be added later.
+The Tegra210 soc supports bpmp offload for power management among other
+things. This was considered insecure partway through the soc's lifecycle
+and support was removed in the bootloader. However, Tegra210B01 returned
+to using the bpmp. Plus old bootloaders on the original Tegra210 still
+work with the existing driver. So add the node to the common Tegra210
+soc dtsi, but disabled by default.
 
 Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
 ---
- arch/arm64/boot/dts/nvidia/Makefile                |  1 +
- .../boot/dts/nvidia/tegra210b01-p2894-0050-a08.dts | 10 ++++
- arch/arm64/boot/dts/nvidia/tegra210b01-p2894.dtsi  | 70 ++++++++++++++++++++++
- 3 files changed, 81 insertions(+)
+ arch/arm64/boot/dts/nvidia/tegra210.dtsi | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/nvidia/Makefile b/arch/arm64/boot/dts/nvidia/Makefile
-index 0fbb8a494dba5089d9b7243e766bd6028b7f3744..bc6f3e268020b6fdbc90b2fb2ec1daf30c80af0e 100644
---- a/arch/arm64/boot/dts/nvidia/Makefile
-+++ b/arch/arm64/boot/dts/nvidia/Makefile
-@@ -20,6 +20,7 @@ dtb-$(CONFIG_ARCH_TEGRA_210_SOC) += tegra210-p2571.dtb
- dtb-$(CONFIG_ARCH_TEGRA_210_SOC) += tegra210-p3450-0000.dtb
- dtb-$(CONFIG_ARCH_TEGRA_210_SOC) += tegra210-smaug.dtb
- dtb-$(CONFIG_ARCH_TEGRA_210_SOC) += tegra210-p2894-0050-a08.dtb
-+dtb-$(CONFIG_ARCH_TEGRA_210_SOC) += tegra210b01-p2894-0050-a08.dtb
- dtb-$(CONFIG_ARCH_TEGRA_186_SOC) += tegra186-p2771-0000.dtb
- dtb-$(CONFIG_ARCH_TEGRA_186_SOC) += tegra186-p3509-0000+p3636-0001.dtb
- dtb-$(CONFIG_ARCH_TEGRA_194_SOC) += tegra194-p2972-0000.dtb
-diff --git a/arch/arm64/boot/dts/nvidia/tegra210b01-p2894-0050-a08.dts b/arch/arm64/boot/dts/nvidia/tegra210b01-p2894-0050-a08.dts
-new file mode 100644
-index 0000000000000000000000000000000000000000..f18266b3d8ae341feaef5a1a911752f6a5ce2d0f
---- /dev/null
-+++ b/arch/arm64/boot/dts/nvidia/tegra210b01-p2894-0050-a08.dts
-@@ -0,0 +1,10 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/dts-v1/;
+diff --git a/arch/arm64/boot/dts/nvidia/tegra210.dtsi b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
+index 402b0ede1472af625d9d9e811f5af306d436cc98..3361de1ab41b37e430d399df2bf77d64226f33e8 100644
+--- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
+@@ -968,6 +968,17 @@ cec@70015000 {
+ 		status = "disabled";
+ 	};
+ 
++	bpmp: bpmp@70016000 {
++		compatible = "nvidia,tegra210-bpmp";
++		reg = <0x0 0x70016000 0x0 0x2000
++		       0x0 0x60001000 0x0 0x1000>;
++		status = "disabled";
 +
-+#include "tegra210b01-p2894.dtsi"
-+
-+/ {
-+	model = "NVIDIA Shield TV Pro 2019";
-+	compatible = "nvidia,p2894-0050-a08", "nvidia,darcy", "nvidia,tegra210b01",
-+		"nvidia,tegra210";
-+};
-diff --git a/arch/arm64/boot/dts/nvidia/tegra210b01-p2894.dtsi b/arch/arm64/boot/dts/nvidia/tegra210b01-p2894.dtsi
-new file mode 100644
-index 0000000000000000000000000000000000000000..97c9bd8f293539e76d57b6cfee49c60fb482d6ab
---- /dev/null
-+++ b/arch/arm64/boot/dts/nvidia/tegra210b01-p2894.dtsi
-@@ -0,0 +1,70 @@
-+// SPDX-License-Identifier: GPL-2.0
-+#include "tegra210b01.dtsi"
-+
-+/ {
-+	aliases {
-+		serial0 = &uarta;
++		interrupts = <GIC_SPI 6 IRQ_TYPE_EDGE_RISING>,
++			     <GIC_SPI 4 IRQ_TYPE_EDGE_RISING>;
++		interrupt-names = "tx", "rx";
 +	};
 +
-+	chosen {
-+		stdout-path = "serial0:115200n8";
-+	};
-+
-+	memory@80000000 {
-+		device_type = "memory";
-+		reg = <0x0 0x80000000 0x0 0xc0000000>;
-+	};
-+
-+	serial@70006000 {
-+		/delete-property/ dmas;
-+		/delete-property/ dma-names;
-+		status = "okay";
-+	};
-+
-+	pmc@7000e400 {
-+		nvidia,invert-interrupt;
-+		nvidia,suspend-mode = <0>;
-+		nvidia,cpu-pwr-good-time = <0>;
-+		nvidia,cpu-pwr-off-time = <0>;
-+		nvidia,core-pwr-good-time = <4587 3876>;
-+		nvidia,core-pwr-off-time = <39065>;
-+		nvidia,core-power-req-active-high;
-+		nvidia,sys-clock-req-active-high;
-+		status = "okay";
-+	};
-+
-+	mmc@700b0600 {
-+		bus-width = <8>;
-+		non-removable;
-+		status = "okay";
-+	};
-+
-+	clk32k_in: clock-32k {
-+		compatible = "fixed-clock";
-+		clock-frequency = <32768>;
-+		#clock-cells = <0>;
-+	};
-+
-+	cpus {
-+		cpu@0 {
-+			enable-method = "psci";
-+		};
-+
-+		cpu@1 {
-+			enable-method = "psci";
-+		};
-+
-+		cpu@2 {
-+			enable-method = "psci";
-+		};
-+
-+		cpu@3 {
-+			enable-method = "psci";
-+		};
-+	};
-+
-+	psci {
-+		compatible = "arm,psci-1.0";
-+		method = "smc";
-+	};
-+};
+ 	mc: memory-controller@70019000 {
+ 		compatible = "nvidia,tegra210-mc";
+ 		reg = <0x0 0x70019000 0x0 0x1000>;
 
 -- 
 2.50.1
