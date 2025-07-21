@@ -1,142 +1,220 @@
-Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de [81.169.146.219])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E21DE28F53F;
-	Mon, 21 Jul 2025 13:36:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=81.169.146.219
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1753104987; cv=pass; b=VMJ+4IjtgvBf/7azjdkjh8VTNDV2c12F7AsSD+vIcIKrXFTU/agupHyTrco9v086Kfy3tco9AeVydwZbxelDnC6eNos4no0hcOfjXk6XZ7eJ3gJ8zaoiDT2DbhtSGB2xKzCJarXGVd6piEprUhj5be0Qz1rrthWxEeOCzLRFXa8=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1753104987; c=relaxed/simple;
-	bh=35cYQVm4zLLoIB57342iho+QScl4DbuVrkRFPA2X2eg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=gS4Tf2N9DGxbKNa8Yp7cuRCW3OiE6g2z031aLKT5Qqk0/kTL+KYSHfT/UMB0Gs6iQ3mLYPSNIKCIjiCycZutkWZAnqQkH7eVe6Xzg0xNMp7ojzTmM7Dqfw58taa/uxdB8eo0eu2XLcxMJQe795PFJU919zwx9tkMg65DEvtfLPc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=goldelico.com; spf=pass smtp.mailfrom=goldelico.com; dkim=pass (2048-bit key) header.d=goldelico.com header.i=@goldelico.com header.b=QO/ILNeI; dkim=permerror (0-bit key) header.d=goldelico.com header.i=@goldelico.com header.b=lmstuex2; arc=pass smtp.client-ip=81.169.146.219
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=goldelico.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=goldelico.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 778B72D9ED6
+	for <linux-pm@vger.kernel.org>; Mon, 21 Jul 2025 13:56:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.41
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1753106219; cv=none; b=r02+2JOQ3Si6y7OoXsK8ZVU5z64vWWt4lqz1KxdmgIkX5Y9DbRbyW7+qj5f3qfQMXaGltCFjYtaavzqE0c02UMAlLYhrKiYei77MiOQrmtqftI4/R3gS3REvW8wB2+iM7Tv/2CgO3hcwNMfH7GBpAcJk8nxYfyi2IQyPcpzVFQI=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1753106219; c=relaxed/simple;
+	bh=rHLuKPZS15Ci3FRNHUt3wjlIpfOccnEveLsn8wj5Hzw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=iYmZfVoFlbFEnDIkHAql6Zk5pGfo9H7Lebu4YBDOKrxWygBtpENL6O4z9UOsuJXsyFiSR6RqD6DOkQx65xThfvKYE9yVjnvbL0w3duc1OhMKhhVsEdSDc6+UAYvzPAj2XGsHdqGHBdgRNA4pizprOXvLBoDFUb+M70UZxAXituk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=WhYyygO8; arc=none smtp.client-ip=209.85.128.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=goldelico.com header.i=@goldelico.com header.b="QO/ILNeI";
-	dkim=permerror (0-bit key) header.d=goldelico.com header.i=@goldelico.com header.b="lmstuex2"
-ARC-Seal: i=1; a=rsa-sha256; t=1753101976; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=mJh1WY17HpmgjV7HDUlAP1Bh/BhPBIW+FHPa7axDyS16/jnrHUh+M5meG6w6lPuYK6
-    sqZKVqXkrF94GWIj2tHOx2axEl2NmeJ+7lF0YhHxh407iTKVoaTFRLxVfkwd7vwcqXM9
-    xHBbFZI6gazUWmYo9ImCEcsmlRHy4ky72EVnwi6kc+IZU2gwhXRn5XnDhJkxqQM8OgG1
-    lRp9IXEC3c/mZ9UmUQZl9l56lnDvBQyj8Hr0+YKs8SjiEr5nLY6kdQIiGCfi1OIGM44E
-    qW4kJB4IPxzAL33GigOG2QOxMc0mQHoWQBw8+9mvQjxedrycpQg339ByWiauK5dfgQLx
-    PWvw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1753101976;
-    s=strato-dkim-0002; d=strato.com;
-    h=Message-ID:Date:Subject:Cc:To:From:Cc:Date:From:Subject:Sender;
-    bh=T0De6Am+nfTD1/T8qRHYoVSqpbNHuCwxHjsiXItzmwA=;
-    b=fu9jHWa5LH3jxD+pm56rfm8wZzBtHYnBvIVMUzAsCTwyQ6udgWK2AUoLybSzwly7vB
-    Ceq1ZDDae/zJIKY4jzPC0K6i9KI39e3cChuppC2u6ys3wf8JjcMpQGSDK/vDogMuRcAd
-    cvU5mXkZRQIVugLd1WtqMkGwjYbzuoXLDit357VL+JwT1MHm4IB2RGJHaLQvoRFPmkTS
-    hKze1ilnAiqDlG2Y6szx003mlLxvqh7stB1Aflc8x3Cx87NiqG+QHEk83jvHuMlfqRfz
-    RmPHlJMnUePikJRm+Ihacd3k60Z1vBLZP2DlcLALNvGW46fqtaoQz+ax8pII8b3SXiKx
-    WCgA==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo00
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1753101976;
-    s=strato-dkim-0002; d=goldelico.com;
-    h=Message-ID:Date:Subject:Cc:To:From:Cc:Date:From:Subject:Sender;
-    bh=T0De6Am+nfTD1/T8qRHYoVSqpbNHuCwxHjsiXItzmwA=;
-    b=QO/ILNeIWdVFZisaq+VoQcWIoYG7Bq7fnMJEPqqAa0GIn+5mfy2HoZ9K7q+ZaX4/aN
-    JuhCf/76n2RhkoNc6qevV1BSpToxZnKtPj7ti8az/8U8UoidqKQrZ3WbRS4+IbqPUORm
-    rE13eQd7uH7yTJrOjkMbh2VFdG9hGehMdMK2IVgw96lnbRkmsXmgYwch4cvaGGY3a+KA
-    j9cz+cXEuc9wejUUoAaZBnjaqliwiq7oecQh6ohQ68lZoTt5mSOfPx1u9zwEHeMnUL5+
-    p98J5XKSIMezodOWf0IZ+SGgw14wKyJK4TI7Ap4f+IoW9jqu71CSHzw+fRIb57bS4DxG
-    NCXQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1753101976;
-    s=strato-dkim-0003; d=goldelico.com;
-    h=Message-ID:Date:Subject:Cc:To:From:Cc:Date:From:Subject:Sender;
-    bh=T0De6Am+nfTD1/T8qRHYoVSqpbNHuCwxHjsiXItzmwA=;
-    b=lmstuex2SU9y8xFDtxbkpKSm/E/OCCSjWALYFN/SgXMr84M7OUd5XWnD2zIapNrpxE
-    0NIs9kGKMacDTwAH0lDQ==
-X-RZG-AUTH: ":JGIXVUS7cutRB/49FwqZ7WcJeFKiMhflhwDubTJ9qVpwcQVkPW4I1HrVi5pbyciNjWBMoAEyQro/p8z/o50zTNRbUr3m"
-Received: from iMac.fritz.box
-    by smtp.strato.de (RZmta 52.1.2 AUTH)
-    with ESMTPSA id Q307a416LCkFEp5
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Mon, 21 Jul 2025 14:46:15 +0200 (CEST)
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-To: Sebastian Reichel <sre@kernel.org>,
-	Jerry Lv <Jerry.Lv@axis.com>
-Cc: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	letux-kernel@openphoenux.org,
-	stable@vger.kernel.org,
-	kernel@pyra-handheld.com,
-	andreas@kemnade.info,
-	"H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: [PATCH] power: supply: bq27xxx: fix error return in case of no bq27000 hdq battery
-Date: Mon, 21 Jul 2025 14:46:09 +0200
-Message-ID: <bc405a6f782792dc41e01f9ddf9eadca3589fcdc.1753101969.git.hns@goldelico.com>
-X-Mailer: git-send-email 2.50.0
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="WhYyygO8"
+Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-45617887276so29594965e9.2
+        for <linux-pm@vger.kernel.org>; Mon, 21 Jul 2025 06:56:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1753106216; x=1753711016; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=JHT+Ky9a2/UvB6vMaIGkjzmNbUyHiZwcZw1UdHqqBQM=;
+        b=WhYyygO8jgGzYI+zkSc+DW7KHpdJolupUWNMnoXZO9w4t/kEKBLwxtsEYKC918bc9W
+         yOtksjzd+qwKmn2sVZ+nvf2nHjSGq4459z6ls0xJ3XIuHTFUPESfb1Ac3gRVmEA1WRiT
+         q5Mvj5yyFsY3d/8cCcukAD7Yzg/SPYsnWK8rwyCzICQilZMpc7uFnicEXh0vdAoVJ3VJ
+         kFNFiRvuHR3oGrn8RQtJokNY+7/QkAurx5uB3nFqUYf7T0/MYolXouQCUt/nJgc+dBKT
+         Nqib2YMojLqI2lRu3MjuKC3dZvWlroLH32cAWKLZZmIAphW5A89lJmJdR4m2n0D/KFNM
+         xaWQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1753106216; x=1753711016;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=JHT+Ky9a2/UvB6vMaIGkjzmNbUyHiZwcZw1UdHqqBQM=;
+        b=sBlayckmg2izr6qo4H99+pigU18gsdZu2WiLqnTsv682l2gQJ8vsJhnhDRu1RtOodP
+         h0aLVXUPD0xNlEbJRIeBuz37f7ofmW9H4CjAVTTVZlWTC6Qkv87wobMhLPnaw+JCv7jz
+         xvr/KP9ypfeknatcgl1fTCKZIKtMuJA/NbCUQEZjG1zdUzJvPNA2RD783IeGQDwsgytt
+         ZCBqN16hPPsgaZPgneFRxrvXanAuorZZ+85hniUE5vztnYtFvI3ppsx65T8P2baeyaPt
+         EcsALtkQ4FFTpZiKg/yCmOOUyOhCjVQ1ZP6rnnmK4kPMDkOLnM0YHHMQQ6zT6bMlIQ+i
+         i8cw==
+X-Forwarded-Encrypted: i=1; AJvYcCWX+eIL5j1L05/gxI8n9CKOqyv//ro6zOx+8aYQEHrgSU2IzJqRWK+T3C//rvEUfUqpPm1awVtqFQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyxyjHYvbBCdIu2IZRF9XF+sVEscUm4+EBeEN4clx9pf0svlLN+
+	FkX9Tqjfpg1Eikgl1sfyVzGr3jR1i1T7udSBKjwMo2PqMbpBS7LUjuzkSDHVBkj1ygE=
+X-Gm-Gg: ASbGncv6M4zaIbCICGVf3x/Ibk33cEY/6pfKo+1whGad+u4Yv5B/IZZrxLMDHBJcaIm
+	TdbbBLKwJIPDvSUPBc/kIazw8xqvLGsO8NW3wNUZxakKOcejkHJfB/GU8fkqT3Hwyrl0D5YgfzN
+	gGQI4knA0nJXa0MlGPDrtndtmwLsgrrlYKUDoqEiexI02gWtalHothe1z/8hl4R8LR5yYs7MSLI
+	SjZ6of5Fj6Dei9amcm9Wuikt2L7ZJ8Q+quX/H/5Cw+SWs8VOg/HlxNlP63y3TVHfD+heOryaEWQ
+	hqEMnAu/GSRxgl7CC4GJlzc3b2taOO1i9GcPQcyY1DsbwDAX1nb2YbCBKELLPQrpwCcVLrrJKfv
+	ZVKvaj8kfRiYCzPhTAIO1+PjEFEi6jojuupyhZPsJ3aSONN0VMxgWK05JZB4K6+8=
+X-Google-Smtp-Source: AGHT+IEnENRwxRTagl2ObT85GvHrjPuSySOktSH3L1SkrP+cMadSvWvWuVZBD4+Hw6mPbY0X9wHrDg==
+X-Received: by 2002:a05:600c:4706:b0:456:19eb:2e09 with SMTP id 5b1f17b1804b1-4562edaa08cmr189313405e9.8.1753106215717;
+        Mon, 21 Jul 2025 06:56:55 -0700 (PDT)
+Received: from [192.168.1.36] (p549d4bd0.dip0.t-ipconnect.de. [84.157.75.208])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4563b74f9c0sm102889435e9.28.2025.07.21.06.56.54
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 21 Jul 2025 06:56:54 -0700 (PDT)
+Message-ID: <c21ff3ce-c81a-4419-84fd-d394d0a06af6@linaro.org>
+Date: Mon, 21 Jul 2025 15:56:53 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1 2/7] nvmem: qcom-spmi-sdam: Migrate to
+ devm_spmi_subdevice_alloc_and_add()
+Content-Language: en-US
+To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+ sboyd@kernel.org
+Cc: jic23@kernel.org, dlechner@baylibre.com, nuno.sa@analog.com,
+ andy@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org,
+ srini@kernel.org, vkoul@kernel.org, kishon@kernel.org, sre@kernel.org,
+ krzysztof.kozlowski@linaro.org, u.kleine-koenig@baylibre.com,
+ linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-phy@lists.infradead.org,
+ linux-pm@vger.kernel.org, kernel@collabora.com, wenst@chromium.org
+References: <20250721075525.29636-1-angelogioacchino.delregno@collabora.com>
+ <20250721075525.29636-3-angelogioacchino.delregno@collabora.com>
+ <e724e6a2-21a8-436a-8809-ce73c0afa433@linaro.org>
+ <b06969d2-0c35-44c7-bb2c-162942186c53@collabora.com>
+From: Casey Connolly <casey.connolly@linaro.org>
+In-Reply-To: <b06969d2-0c35-44c7-bb2c-162942186c53@collabora.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="us-ascii"
 
-Since commit
 
-commit f16d9fb6cf03 ("power: supply: bq27xxx: Retrieve again when busy")
 
-the console log of some devices with hdq but no bq27000 battery
-(like the Pandaboard) is flooded with messages like:
+On 21/07/2025 14:45, AngeloGioacchino Del Regno wrote:
+> Il 21/07/25 12:44, Casey Connolly ha scritto:
+>> Hi Angelo,
+>>
+>> On 21/07/2025 09:55, AngeloGioacchino Del Regno wrote:
+>>> Some Qualcomm PMICs integrate a SDAM device, internally located in
+>>> a specific address range reachable through SPMI communication.
+>>>
+>>> Instead of using the parent SPMI device (the main PMIC) as a kind
+>>> of syscon in this driver, register a new SPMI sub-device for SDAM
+>>> and initialize its own regmap with this sub-device's specific base
+>>> address, retrieved from the devicetree.
+>>>
+>>> This allows to stop manually adding the register base address to
+>>> every R/W call in this driver, as this can be, and is now, handled
+>>> by the regmap API instead.
+>>
+>> This is honestly a really nice improvement :D>
+> 
+> Thanks! :-D
+> 
+>>> Signed-off-by: AngeloGioacchino Del Regno
+>>> <angelogioacchino.delregno@collabora.com>
+>>> ---
+>>>   drivers/nvmem/qcom-spmi-sdam.c | 41 +++++++++++++++++++++++++---------
+>>>   1 file changed, 30 insertions(+), 11 deletions(-)
+>>>
+>>> diff --git a/drivers/nvmem/qcom-spmi-sdam.c b/drivers/nvmem/qcom-
+>>> spmi-sdam.c
+>>> index 4f1cca6eab71..1b80e8563a33 100644
+>>> --- a/drivers/nvmem/qcom-spmi-sdam.c
+>>> +++ b/drivers/nvmem/qcom-spmi-sdam.c
+>>> @@ -9,6 +9,7 @@
+>>>   #include <linux/nvmem-provider.h>
+>>>   #include <linux/platform_device.h>
+>>>   #include <linux/regmap.h>
+>>> +#include <linux/spmi.h>
+>>>     #define SDAM_MEM_START            0x40
+>>>   #define REGISTER_MAP_ID            0x40
+>>> @@ -20,7 +21,6 @@
+>>>   struct sdam_chip {
+>>>       struct regmap            *regmap;
+>>>       struct nvmem_config        sdam_config;
+>>> -    unsigned int            base;
+>>>       unsigned int            size;
+>>>   };
+>>>   @@ -73,7 +73,7 @@ static int sdam_read(void *priv, unsigned int
+>>> offset, void *val,
+>>>           return -EINVAL;
+>>>       }
+>>>   -    rc = regmap_bulk_read(sdam->regmap, sdam->base + offset, val,
+>>> bytes);
+>>> +    rc = regmap_bulk_read(sdam->regmap, offset, val, bytes);
+>>>       if (rc < 0)
+>>>           dev_err(dev, "Failed to read SDAM offset %#x len=%zd,
+>>> rc=%d\n",
+>>>                           offset, bytes, rc);
+>>> @@ -100,7 +100,7 @@ static int sdam_write(void *priv, unsigned int
+>>> offset, void *val,
+>>>           return -EINVAL;
+>>>       }
+>>>   -    rc = regmap_bulk_write(sdam->regmap, sdam->base + offset, val,
+>>> bytes);
+>>> +    rc = regmap_bulk_write(sdam->regmap, offset, val, bytes);
+>>>       if (rc < 0)
+>>>           dev_err(dev, "Failed to write SDAM offset %#x len=%zd,
+>>> rc=%d\n",
+>>>                           offset, bytes, rc);
+>>> @@ -110,28 +110,47 @@ static int sdam_write(void *priv, unsigned int
+>>> offset, void *val,
+>>>     static int sdam_probe(struct platform_device *pdev)
+>>>   {
+>>> +    struct regmap_config sdam_regmap_config = {
+>>> +        .reg_bits = 16,
+>>> +        .val_bits = 16,
+>>
+>> I believe registers are 8 bits wide, at least on Qualcomm platforms.
+>>
+> 
+> I used 16 because usually that's the usual default for SPMI - but if
+> you're sure
+> about Qualcomm platforms having 8-bits wide registers and you can
+> confirm that,
+> I can change both of those to 8 in a jiffy.
 
-[   34.247833] power_supply bq27000-battery: driver failed to report 'status' property: -1
+reg_bits should be 16, only val_bits needs changing.
 
-as soon as user-space is finding a /sys entry and trying to read the
-"status" property.
+> 
+> I anyway have to send a v2 because I forgot an error check - so changing
+> this is
+> not a problem at all for me.
+> 
+> But.
+> 
+> Before me changing - can you please please please double check and confirm?
+> 
+> If you can also check the register width of the others that I converted,
+> I'd really
+> appreciate that (I have no datasheets for qcom so it's a bit of a
+> guessing game for
+> me here... :-P), just so that we get everything right from the get-
+> go ... even if
+> a mismatch wouldn't really cause issues in the current state of things.
+> 
+> That's because - I just noticed - in qcom-spmi-pmic.c, reg_bits is 16,
+> but val_bits
+> is 8 (which basically means "the registers are 16-bits wide, but we
+> always only
+> care about the lower 8 bits).
 
-It turns out that the offending commit changes the logic to now return the
-value of cache.flags if it is <0. This is likely under the assumption that
-it is an error number. In normal errors from bq27xxx_read() this is indeed
-the case.
+yeah that's right, so as of today where we don't have the subdevices we
+always get 8 bit values from the registers.
 
-But there is special code to detect if no bq27000 is installed or accessible
-through hdq/1wire and wants to report this. In that case, the cache.flags
-are set (historically) to constant -1 which did make reading properties
-return -ENODEV. So everything appeared to be fine before the return value was
-fixed. Now the -1 is returned as -ENOPERM instead of -ENODEV, triggering the
-error condition in power_supply_format_property() which then floods the
-console log.
+I don't have so much access to docs anymore but I only ever remember
+seeing 8 bit wide registers on Qualcomm PMICs, I've never seen anything
+wider, I can think of a few drivers where changing this to 16 would for
+sure cause havoc.
 
-So we change the detection of missing bq27000 battery to simply set
+Kind regards,
 
-	cache.flags = -ENODEV
-
-instead of -1.
-
-Fixes: f16d9fb6cf03 ("power: supply: bq27xxx: Retrieve again when busy")
-Cc: Jerry Lv <Jerry.Lv@axis.com>
-Cc: stable@vger.kernel.org
-Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
----
- drivers/power/supply/bq27xxx_battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 93dcebbe11417..efe02ad695a62 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -1920,7 +1920,7 @@ static void bq27xxx_battery_update_unlocked(struct bq27xxx_device_info *di)
- 
- 	cache.flags = bq27xxx_read(di, BQ27XXX_REG_FLAGS, has_singe_flag);
- 	if ((cache.flags & 0xff) == 0xff)
--		cache.flags = -1; /* read error */
-+		cache.flags = -ENODEV; /* read error */
- 	if (cache.flags >= 0) {
- 		cache.capacity = bq27xxx_battery_read_soc(di);
- 
+> 
+> Thanks again!
+> 
+> Cheers,
+> Angelo
 -- 
-2.50.0
+// Casey (she/her)
 
