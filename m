@@ -1,161 +1,95 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f181.google.com (mail-pg1-f181.google.com [209.85.215.181])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA1DE4502F;
-	Mon, 21 Jul 2025 12:46:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 304332D63F3;
+	Mon, 21 Jul 2025 12:54:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1753101968; cv=none; b=J7UQQbdoKY26z0zTOSKv2BG/3RT3DajMqj5cOO4DxN1ojgVHugr6NslpgizKW0QEE6tH8ml/HBndHLOoTqC2g561+g9h6YKTj0XoVD5sbbrg1Wd0zxohZJMDyzwJqbiWXuw/mp4LPN1re+45QW4FSgpV9spJiF5EC2DzM5P/HjI=
+	t=1753102483; cv=none; b=NMRcY8G3y985wG36Ox8228emlqQv15riW0p3cQdXsYC3l6aM2gQcOtPXHNVWUPQj0u3ie/RmTas82V0zvqwBEUyEIQYqloagl6ZZU8GffHqvb2ACNHH1kgLgTT4CWmVE7Bs2VioFBe0IGNFqvjfDpT9c/4HOXYpGfmQc9/yYCh0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1753101968; c=relaxed/simple;
-	bh=WGUQgDlE1s2YTapj41wUMa0BgEKsNgWIMJNz10NotwM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=IOpX2dO0Im+6qwpknhtgLJX2nygwMqgzmEEY2dS+s44YpRLx5T6WxCfeF/OlaFZKZnOTbzUaZSCCgWPAu9sDXV12aCLT38RxNopGq+MRRU1n+6pH1EV8SLjeYII13O1GwG1GIkfydu8GjS4a063SpNBN+crwPaBENz61ShKb/50=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=kSPo9cv7; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1753102483; c=relaxed/simple;
+	bh=Bq5VgfjTkqyHZmMsa4CuFn3fXsUBDjAcxmYxO2xVUQQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=u6SKVCc1VJuQ8QStNszNLawe51ZC2jZhlkFwPiKdpW0DDlMNETS1xRzD2yKG9EugOGh8wKsQaLb17CwLAdo13B0COhWxmD90KRv5z7WK6ADBKrmXxLbvmyoQWTaL1z2COFCsGaSp1GFGIF9rACDiJDBr7T2CRZHKSo384GGjcUA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=RjTTJYCm; arc=none smtp.client-ip=209.85.215.181
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="kSPo9cv7"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1753101960;
-	bh=WGUQgDlE1s2YTapj41wUMa0BgEKsNgWIMJNz10NotwM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=kSPo9cv75vw9UZ0CR4OLbjZU8t3subAZ5maiKshA0TNSuGgefVTXxIYzo/HTqAlgl
-	 LIyQd3zMu9eP/O31LM7EpmNAo7PT495/rRzlRj82cqeKI/VrrXYPFmxeiLrX6PuuIP
-	 FCR9FhRLbhFcUXn4dj+LLZYLFUw9GKsIwj9PUOM2iGTpKqPdSIXa/f18ZCZA86UKME
-	 +Z9Ijtncdp/ontJplBRxZ1+jGDXvsgzV1EH1u0r6UTWn6d68hOKx4jkrUJoRPRYeOd
-	 GyogLDsta52fywRoObfEo9lSGMyOW6s0xxYE1qPFDVgWDaYnWQfFay4V3JnABrkBmc
-	 u7FkwJT88NMNw==
-Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
-	(No client certificate requested)
-	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 53ADF17E0CA1;
-	Mon, 21 Jul 2025 14:45:59 +0200 (CEST)
-Message-ID: <b06969d2-0c35-44c7-bb2c-162942186c53@collabora.com>
-Date: Mon, 21 Jul 2025 14:45:58 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RjTTJYCm"
+Received: by mail-pg1-f181.google.com with SMTP id 41be03b00d2f7-b34dde96cbfso242553a12.2;
+        Mon, 21 Jul 2025 05:54:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1753102481; x=1753707281; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Bq5VgfjTkqyHZmMsa4CuFn3fXsUBDjAcxmYxO2xVUQQ=;
+        b=RjTTJYCmZ/NPbd2kt1bt168pUdPJ9FFWUggiAluPZaUwSno8aldNeim5NoYXnw7JLs
+         +weY5AEIKikwhMpsYcCUUum8ZEyez1OFF3bykCAw8ZTcC87VDCXqZaTiWugoejrdIFx/
+         tqjTcqdo6nRIQuqjIhDjBM8AsDaCzFbb4Iwz8zJXbN2ZsqOGe45AILWxmSUofKJPOeWZ
+         u7e8IYfbrjrcoVB8ysxFpgS+fdqnwM5rRzNixGXX7FJMvv8NOz9wW190aGOxZfVA+MIC
+         lofYLT9dJzGhxddq+bLGJpqGekjSt+oT3tFbSxEUVTPbv+0UcmIA5qQpipxEce49A8Fh
+         eYRw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1753102481; x=1753707281;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Bq5VgfjTkqyHZmMsa4CuFn3fXsUBDjAcxmYxO2xVUQQ=;
+        b=JT2K6kQYGwrGD4NwutlrXribZ7Lgk9YzQvT0KdiupulbG4tJODtu4VdIA5/dR91gAC
+         b4qFi3Q6Th60cUjBf6SCHGtDwcQAN+yWUjK6e7hz6rRzjYrNxdCYWLZ13A8rPEHMSU7H
+         LTEo+NfjJhTemZ8gbvA1vjvZnbBXESnznyGz5WIPaGJqbZPzDu6M3dySl2elNfzPwtNe
+         jDqO4CUaD0XjHGVpcZrFLedmU5nH5vppz8vkp+XZQQyUyRg4pjaRBA264dY5HMF1gPX3
+         aU39r0FowLkNzWa7zPITxmTO47anZCVnRwdI4LAxfuXwnYkcF91V2sPY7RgpcKg0RrVi
+         u6TA==
+X-Forwarded-Encrypted: i=1; AJvYcCUMYpmBZ6tS19HodDEZnGseI3Hj++IBLnhOL0SCNaGeokAc+qeGGHxmC8fsztE8q4y+VfKw1m5QdU0TBvXn7pI=@vger.kernel.org, AJvYcCVzzjCI1jFSLdlIZUrIHYbAzWRY9CrxQFeGLgYPL6+gK2+dXqQ+Tb0z+yM1Ml/2yIL0YbZReIqwYahHPAo=@vger.kernel.org, AJvYcCX4z1i9mDeKgT/ECgKji/RH85W9DPHtXWic4Up3SGFqmzJ6tADOybwLMZNBsbl5zB0gw/a+b9wbe1o=@vger.kernel.org
+X-Gm-Message-State: AOJu0YwA3KnFRfq2qLB2GhP1qyuuHRt06DaSu1QW3gQMltXeb3MAys3F
+	Pz4/vI2t1Xl0W48AOnErbCNfw/F9NfsHUTjyzVaFo/W846rDEA/ZP7p2rDeL5FMy7CqlJafVOUS
+	nK3lnie4kmtHQyTFBlIPK48IxF1ko/fw=
+X-Gm-Gg: ASbGncsUxJ+bS99blCsMhmOHfs0l1FTZfpixRybTeRXUsn1kh1jUHAue0qvkTKxVYzb
+	Yxd2sT04emAye5I/saK959xinuaw37qghbwVQ/HDf9Qw3QbPA7iRprafNimTIw2v6xOmNatZlpx
+	XZn9aVe5qONRY88dsa5tjOED3nGYomVC9D3FDFCS2q3uNqTLRiuJ55wF+Rqih+Yn0LUfkQQbUMO
+	N9Nvb9MzRIC2B/BkZk=
+X-Google-Smtp-Source: AGHT+IFI0uNUbtO1EL18MgqcISBuZun5VUryvqrsQhtAKtldt6P/mlWmjlPr/GgmBjbnB7SvG/K7ChJXEi849ooHmqA=
+X-Received: by 2002:a17:90b:562c:b0:312:25dd:1c8a with SMTP id
+ 98e67ed59e1d1-31c9e6e8348mr11443694a91.2.1753102481364; Mon, 21 Jul 2025
+ 05:54:41 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 2/7] nvmem: qcom-spmi-sdam: Migrate to
- devm_spmi_subdevice_alloc_and_add()
-To: Casey Connolly <casey.connolly@linaro.org>, sboyd@kernel.org
-Cc: jic23@kernel.org, dlechner@baylibre.com, nuno.sa@analog.com,
- andy@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org,
- srini@kernel.org, vkoul@kernel.org, kishon@kernel.org, sre@kernel.org,
- krzysztof.kozlowski@linaro.org, u.kleine-koenig@baylibre.com,
- linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-phy@lists.infradead.org,
- linux-pm@vger.kernel.org, kernel@collabora.com, wenst@chromium.org
-References: <20250721075525.29636-1-angelogioacchino.delregno@collabora.com>
- <20250721075525.29636-3-angelogioacchino.delregno@collabora.com>
- <e724e6a2-21a8-436a-8809-ce73c0afa433@linaro.org>
-From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Content-Language: en-US
-In-Reply-To: <e724e6a2-21a8-436a-8809-ce73c0afa433@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20250704-core-cstr-prepare-v1-0-a91524037783@gmail.com>
+ <20250704-core-cstr-prepare-v1-1-a91524037783@gmail.com> <20250721073717.i6hr4iesfupzvtwf@vireshk-i7>
+In-Reply-To: <20250721073717.i6hr4iesfupzvtwf@vireshk-i7>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Mon, 21 Jul 2025 14:54:29 +0200
+X-Gm-Features: Ac12FXy9X7WoYLkMFLbQ__okKUv8h09D5Y5ZLeDybojK9NFQlmOXBw1vbHf4mSI
+Message-ID: <CANiq72mZxcwDX2X3RfRpHzqkmU6GBVadKPLJYF03Hj14O2x4PA@mail.gmail.com>
+Subject: Re: [PATCH 1/6] rust: kernel: remove `fmt!`, fix clippy::uninlined-format-args
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Tamir Duberstein <tamird@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+	Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
+	Alex Gaynor <alex.gaynor@gmail.com>, Boqun Feng <boqun.feng@gmail.com>, 
+	Gary Guo <gary@garyguo.net>, =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+	Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, nouveau@lists.freedesktop.org, 
+	dri-devel@lists.freedesktop.org, rust-for-linux@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Il 21/07/25 12:44, Casey Connolly ha scritto:
-> Hi Angelo,
-> 
-> On 21/07/2025 09:55, AngeloGioacchino Del Regno wrote:
->> Some Qualcomm PMICs integrate a SDAM device, internally located in
->> a specific address range reachable through SPMI communication.
->>
->> Instead of using the parent SPMI device (the main PMIC) as a kind
->> of syscon in this driver, register a new SPMI sub-device for SDAM
->> and initialize its own regmap with this sub-device's specific base
->> address, retrieved from the devicetree.
->>
->> This allows to stop manually adding the register base address to
->> every R/W call in this driver, as this can be, and is now, handled
->> by the regmap API instead.
-> 
-> This is honestly a really nice improvement :D>
+On Mon, Jul 21, 2025 at 9:37=E2=80=AFAM Viresh Kumar <viresh.kumar@linaro.o=
+rg> wrote:
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Thanks! :-D
-
->> Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
->> ---
->>   drivers/nvmem/qcom-spmi-sdam.c | 41 +++++++++++++++++++++++++---------
->>   1 file changed, 30 insertions(+), 11 deletions(-)
->>
->> diff --git a/drivers/nvmem/qcom-spmi-sdam.c b/drivers/nvmem/qcom-spmi-sdam.c
->> index 4f1cca6eab71..1b80e8563a33 100644
->> --- a/drivers/nvmem/qcom-spmi-sdam.c
->> +++ b/drivers/nvmem/qcom-spmi-sdam.c
->> @@ -9,6 +9,7 @@
->>   #include <linux/nvmem-provider.h>
->>   #include <linux/platform_device.h>
->>   #include <linux/regmap.h>
->> +#include <linux/spmi.h>
->>   
->>   #define SDAM_MEM_START			0x40
->>   #define REGISTER_MAP_ID			0x40
->> @@ -20,7 +21,6 @@
->>   struct sdam_chip {
->>   	struct regmap			*regmap;
->>   	struct nvmem_config		sdam_config;
->> -	unsigned int			base;
->>   	unsigned int			size;
->>   };
->>   
->> @@ -73,7 +73,7 @@ static int sdam_read(void *priv, unsigned int offset, void *val,
->>   		return -EINVAL;
->>   	}
->>   
->> -	rc = regmap_bulk_read(sdam->regmap, sdam->base + offset, val, bytes);
->> +	rc = regmap_bulk_read(sdam->regmap, offset, val, bytes);
->>   	if (rc < 0)
->>   		dev_err(dev, "Failed to read SDAM offset %#x len=%zd, rc=%d\n",
->>   						offset, bytes, rc);
->> @@ -100,7 +100,7 @@ static int sdam_write(void *priv, unsigned int offset, void *val,
->>   		return -EINVAL;
->>   	}
->>   
->> -	rc = regmap_bulk_write(sdam->regmap, sdam->base + offset, val, bytes);
->> +	rc = regmap_bulk_write(sdam->regmap, offset, val, bytes);
->>   	if (rc < 0)
->>   		dev_err(dev, "Failed to write SDAM offset %#x len=%zd, rc=%d\n",
->>   						offset, bytes, rc);
->> @@ -110,28 +110,47 @@ static int sdam_write(void *priv, unsigned int offset, void *val,
->>   
->>   static int sdam_probe(struct platform_device *pdev)
->>   {
->> +	struct regmap_config sdam_regmap_config = {
->> +		.reg_bits = 16,
->> +		.val_bits = 16,
-> 
-> I believe registers are 8 bits wide, at least on Qualcomm platforms.
-> 
-
-I used 16 because usually that's the usual default for SPMI - but if you're sure
-about Qualcomm platforms having 8-bits wide registers and you can confirm that,
-I can change both of those to 8 in a jiffy.
-
-I anyway have to send a v2 because I forgot an error check - so changing this is
-not a problem at all for me.
-
-But.
-
-Before me changing - can you please please please double check and confirm?
-
-If you can also check the register width of the others that I converted, I'd really
-appreciate that (I have no datasheets for qcom so it's a bit of a guessing game for
-me here... :-P), just so that we get everything right from the get-go ... even if
-a mismatch wouldn't really cause issues in the current state of things.
-
-That's because - I just noticed - in qcom-spmi-pmic.c, reg_bits is 16, but val_bits
-is 8 (which basically means "the registers are 16-bits wide, but we always only
-care about the lower 8 bits).
-
-Thanks again!
+Thanks Viresh -- I will add this one if I rebase, since Stephen
+already solved a conflict with it (I should have pinged earlier I
+guess, sorry; I thought you guys didn't Ack so far since it was
+trivial, but thanks to you both for them).
 
 Cheers,
-Angelo
+Miguel
