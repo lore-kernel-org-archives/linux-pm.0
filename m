@@ -1,177 +1,361 @@
 Received: from mail-ot1-f52.google.com (mail-ot1-f52.google.com [209.85.210.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E0D0487BF
-	for <linux-pm@vger.kernel.org>; Tue, 22 Jul 2025 16:31:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E94F727990B;
+	Tue, 22 Jul 2025 16:50:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1753201899; cv=none; b=EzNUg4JunQfkhTn6/Q9irZyby+vLecRzL23W5/9OWc5PMkq+5TOZ435RVfNCSKz+6YuJ3Yby8h8F3SyEHyjnThzLDXKHnhT+zedr3Xkw2uMAXxuOVKA6Ps4DLxnEldCW8lValUbitInOlaSRV/1H/VkefDEfoksKXMtaIdstMBE=
+	t=1753203039; cv=none; b=rhYes7xb+Rrl8bpZnjPkh6BGyleDghQsKJjkHS7eiLUej0FVSMA1bTvjIMpTM3a8AmvlvgcIkGZ7lCHh6TyG3gCY6lX0EWYQnGz8nQrAXcxWxwpxAmLnNGsZE1bCtOxGBrt7VF0Uv01G1DLwNV8fRCMoFAh2tfl/e+NnOPTXEiw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1753201899; c=relaxed/simple;
-	bh=8O69cNoFD7AllVOnd5n3rFHoG9oHmmDpmVgaClQAryo=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=GxmoRp2T6ahrb0Hf5rgnowjOvkmt8n9mEY6YezRa6knMbAOnZES04LHIKAl8Xb1yy6OfISzj/uBqtvhz3YGzvhM6stWPPFR9gz6qVoUV22PcqLCMTUIYB+gELOciM4Q6GWDPSQ/t6LMdcxrXFgHnpKRH4M8UNcH07NHr9Eh4QvU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kfocus.org; spf=pass smtp.mailfrom=kfocus.org; dkim=pass (2048-bit key) header.d=kfocus-org.20230601.gappssmtp.com header.i=@kfocus-org.20230601.gappssmtp.com header.b=dzuAxxHP; arc=none smtp.client-ip=209.85.210.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kfocus.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kfocus.org
+	s=arc-20240116; t=1753203039; c=relaxed/simple;
+	bh=g2rXYNTRc+j8bm3HN78DO4LOecybDfdWCX9GydLpuJY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=uZIaoxmcjG87slrfcDBpuRAaSuu29o9J3WDY66Ke4zqCWP+iz5o6tqjrO/KohPvMkxkVREfh4uSiSq5QL3gx8RUPRL9xb9nKc2iV8RBTrNW5wonGTpvh4lNLgxfvE611II4APcssvqhgfLSYcYnyKK/9BDtFTCUtCVrgVrhrbSM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=T3175MEi; arc=none smtp.client-ip=209.85.210.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kfocus-org.20230601.gappssmtp.com header.i=@kfocus-org.20230601.gappssmtp.com header.b="dzuAxxHP"
-Received: by mail-ot1-f52.google.com with SMTP id 46e09a7af769-73e5792cb9dso1757991a34.2
-        for <linux-pm@vger.kernel.org>; Tue, 22 Jul 2025 09:31:37 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="T3175MEi"
+Received: by mail-ot1-f52.google.com with SMTP id 46e09a7af769-73e9f2d8f41so1448346a34.3;
+        Tue, 22 Jul 2025 09:50:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kfocus-org.20230601.gappssmtp.com; s=20230601; t=1753201896; x=1753806696; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:organization:references
-         :in-reply-to:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=OKxVxL/LAoBoT2zvn03u4QS0XQT3tH4BCQl9mQgSLO0=;
-        b=dzuAxxHPKGNG32wdvuNFFPEEsCrKFAvl6ijzTDMJfF71Bsk+IG9dZr4QM9A7pLpz0T
-         5hwQUUanf/P2gc+C4CHWId/U4Ipp7u7hifC/o6FTFyf2e1MZehowxAb78g7rAGj4360f
-         ll/+oxuLTf2SqfqjZZ2xPdkGU7DDLTuQgzHuqlwKn9Sy90qZxNjtg1DHFoplgcbNwtop
-         BP+sYEszlmEUW9bIuX2g1m2UDThJGa1IJDNk9UJX1Mm7ubTHb/WvyE+FXeG3bjAaJApF
-         r09Avfai9W+ZSaJtaxO5dxt4qihhes0w4WdCsNVERNVdkY0js+Ln+cD1GrJn3WVUHB0/
-         TtvQ==
+        d=gmail.com; s=20230601; t=1753203037; x=1753807837; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=9a9Jk+vOMvVx0BnxTyEuby9NcTo1TaK4G2C5CMSCa6E=;
+        b=T3175MEiFfKv8GYQGnF4GsDAhiTjla58M1wTnvPGrGI4WBgyTDgI1/lm/QRqA9cSvZ
+         JC6grOZrZhXGeB5mdAWrVdwpTl/U04/GuGX6D7P7LiGhieo84Iffy8ScmUAjSVZB3Rv4
+         Mb01K0pFwODa+uE37LsmilEGpPYEjkWr2OGDNu3sQNYyzBDLZPUWSdZbtSkzruCkDkbk
+         u3X9zopcRRYiKBQ8uHcRVhU6oplqtswrv+i5fmLj0sLAHwfanY+FLNHGmifz0GO/1qme
+         Y5ei8M/tkOWCEpYdmmKG5Zx6b20i6qmfAFkZgUPMA9381oLhUu+DCxkzGJ7BWVREviax
+         7sng==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1753201896; x=1753806696;
-        h=content-transfer-encoding:mime-version:organization:references
-         :in-reply-to:message-id:subject:cc:to:from:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=OKxVxL/LAoBoT2zvn03u4QS0XQT3tH4BCQl9mQgSLO0=;
-        b=LkVhRH/Q9ES+tqpUF9RfGX/Lt3j8ddMnrBFnpDeQSLauhLHlPZSocssohqhwJkkaYF
-         bNHHmEj07IgCFSDsSJJSG5RyxgAh249jTuDLCeLV526ZKxiN1uZIwHqx6XGwfZqDK24E
-         fD9Kdxkm2iotJsPUTCaFEV2Sg7rddKJxKtNbYWXD4sAjJJs7tLHJj4H9HBKn81WVIBqz
-         QcidhTXOiQ4zdE2gcZCzrWq6cbvc1bhqGU/7B3wqZKtI/bTnZuOEN9/zIAbOP+FhfG+V
-         GiYBzJc9Hs39mMHa0pFU02CKC045OBnW6SVLw2ACo0y+zI0aADeoif0dwsjBBWPiSutN
-         E2LQ==
-X-Gm-Message-State: AOJu0Yy8CA1OpkLH0sXkaECzJkoblVWIK/htZoxO1ninXx6oCu5c0F1B
-	4MStf6uNs+COwd3H91yGTQ1rNkCquxXI43M+Fd1kI+GqhtyDX6GsfpBIakdQPnbxH+w=
-X-Gm-Gg: ASbGnctZrDSzziIHqgv84I5JD7xTvChiWE5BleY3ReO7dcaH0yc0PHbt8bOeM67VWb8
-	LzNqg9Pbldpb6pP+LLVR2W/XIBWHb81fbTRqXnzfrxy5C9l0wzXsRpc5EPrhCXJIV0jLaYIB2KE
-	VRGYjpBHQs/rzw/sj3I7NO0z1MEYNklLzbKaCbWtIsdTl/pzRxvMhI7zw8r9AGJ+tpuzchUBIxM
-	6PKdtXl4hVWMYocfWuyGLyH1oDc4ZqHb1/7T5LWlLUcgmesJw2jB+vFdmtpGI9DU6AP3gqC4puU
-	8musvPOzy7NBnLQH3Wls+qREzndp30SmSne4X8cn0lgcNnvZbTHcaxkx8RO4l8fFgiCHAE75xVb
-	5J5aBS4h+Uu37MC5s18f+
-X-Google-Smtp-Source: AGHT+IEJXPfNhEgj6Ylfn91LH0XYYsRLvRZhaGuYQ2/jHp5T9SVcaV36Pthzwfk9FBWVTgeM/c78VA==
-X-Received: by 2002:a05:6830:d07:b0:72b:84a7:47e0 with SMTP id 46e09a7af769-73e649c8a5dmr18665143a34.1.1753201896532;
-        Tue, 22 Jul 2025 09:31:36 -0700 (PDT)
-Received: from kf-m2g5 ([2607:fb90:bf84:45ad:48e4:ec32:d2d1:cd6e])
-        by smtp.gmail.com with ESMTPSA id 8926c6da1cb9f-5084c786c5dsm2627468173.15.2025.07.22.09.31.35
+        d=1e100.net; s=20230601; t=1753203037; x=1753807837;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=9a9Jk+vOMvVx0BnxTyEuby9NcTo1TaK4G2C5CMSCa6E=;
+        b=Qo/iNhGvFmiGEfha+tKUR0no0Vx8V+Qp+nCNeetyy7aZR8DQ0Xxi+40BRQsSIA86jl
+         tmeS6Y8WZTONYWNYo/C+ww7KlTwx8PwCLFxi35TcfksRDrg5qmFwW/UPceuoI0R/18DT
+         mT0BbQhi2vMpLahXvDNSa+sDcvOBNZtZSohlVuY5HCsQsAgNn48XuwtH+/nwff1z8dYp
+         zejyIMqAvq9Q4tbcPcZQN1IRz1kznTDJ7YTjs+CdGS7rpbVwnnYMqPS+yq8EHFbsyVMd
+         qCjKO+9SZXt1I2wMKL98qalUMo6ODEIIlla3HOLXeCcTk7zNXb0J9xFr3dAAexYuKAJz
+         lH6g==
+X-Forwarded-Encrypted: i=1; AJvYcCViL2mdTyT1lRUr/2ZImfPau+mxIitvx8A/cSiaOZ5k9LO2b13qVRoIkykGa00WOmRjdSlqKWTJMO52@vger.kernel.org
+X-Gm-Message-State: AOJu0YwNDTlXhmTGswDYH4kMXByEdXHO6xj6lNO8WL3bcBaGbUJahqYF
+	pQrJIuIyBfQiOUg+6cNN7trEg/8pJ870nmnleA0wlE+dVMYoUgsSO5ysChXo2w==
+X-Gm-Gg: ASbGnctUWZYc+PVcONS/Ukh64gXvmA45baH9sWOFr8RO/3cqCvuGoxL+medyMY5y8vI
+	+atFU7ThVQIRZSqmGP0g+MvAvRHlPLebIa2Kp5T/i631ae/MyR64dnt1Hd7jg9dpUcEH720QeL9
+	g+y798w8RCtfltyWrysuBaqbNk9bTNR6ETWXngBODhAIo17WG3dAcPmtBezyf3gRuThuG/N5EB8
+	gud5h996QLiamYgGZ5ENJ7QVwfBD6RCJongxo+Z1Ugo7lccWA8jDS5dxOE/3xp0yqpvSPJMAzu7
+	xksSCcG/XS1N6d7A4036ZzE5f5+8nhUjZnYyK9o07GVg5z1sICY/qcIoc/JRfjueJbjs0CZfwfB
+	tj43iRRyfhHa7jZNWcsOouCDtVt0DcWWR0cI93K+l0Q==
+X-Google-Smtp-Source: AGHT+IFIZEAKigzvHX2YVGvGqkRBpxE4AmHN+1zh9M4r2jHkbZeZXXSM1URaKw/fh4Ts8cg1kyAKxA==
+X-Received: by 2002:a05:6808:250a:b0:400:32b9:7926 with SMTP id 5614622812f47-41d032fc802mr15432099b6e.6.1753203036733;
+        Tue, 22 Jul 2025 09:50:36 -0700 (PDT)
+Received: from localhost.localdomain ([2600:1700:fb0:1bc0:a130:f3a0:d203:abc8])
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-41fd59531d8sm2935217b6e.42.2025.07.22.09.50.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 22 Jul 2025 09:31:36 -0700 (PDT)
-Date: Tue, 22 Jul 2025 11:31:33 -0500
-From: Aaron Rainbolt <arainbolt@kfocus.org>
-To: srinivas.pandruvada@linux.intel.com, lenb@kernel.org, rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
- kernel-team@lists.ubuntu.com
-Subject: Re: [BUG] intel_pstate: CPU frequencies miscalculated/incorrectly
- detected on Arrow Lake hardware
-Message-ID: <20250722113133.3a048c7a@kf-m2g5>
-In-Reply-To: <20250517223323.6e13bf58@kf-m2g5>
-References: <20250517223323.6e13bf58@kf-m2g5>
-Organization: Kubuntu Focus
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.41; x86_64-pc-linux-gnu)
+        Tue, 22 Jul 2025 09:50:36 -0700 (PDT)
+From: Chris Morgan <macroalpha82@gmail.com>
+To: linux-pm@vger.kernel.org
+Cc: linux-rockchip@lists.infradead.org,
+	devicetree@vger.kernel.org,
+	broonie@kernel.org,
+	lgirdwood@gmail.com,
+	sre@kernel.org,
+	heiko@sntech.de,
+	conor+dt@kernel.org,
+	krzk+dt@kernel.org,
+	robh@kernel.org,
+	lee@kernel.org,
+	Chris Morgan <macromorgan@hotmail.com>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v5 2/5] mfd: bq257xx: Add support for BQ25703A core driver
+Date: Tue, 22 Jul 2025 11:48:09 -0500
+Message-ID: <20250722164813.2110874-3-macroalpha82@gmail.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250722164813.2110874-1-macroalpha82@gmail.com>
+References: <20250722164813.2110874-1-macroalpha82@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Sat, 17 May 2025 22:33:23 -0500
-Aaron Rainbolt <arainbolt@kfocus.org> wrote:
+From: Chris Morgan <macromorgan@hotmail.com>
 
-> We have tested three systems with Arrow Lake CPUs, and all of them
-> report incorrect max and base frequencies. Two systems have Ultra 9
-> 275 HX CPUs, and one has an Ultra 5 225 H. The problem occurs with
-> both the Ubuntu 6.11 kernel and the 6.14.6 mainline kernel.
->=20
-> How these values are misreported appears to depend on the CPU. On the
-> Ultra 9 275HX systems when running Ubuntu=E2=80=99s 6.11.0-1015-oem kerne=
-l,
-> the max reported frequency on a golden core is 5000000; however, the
-> CPU spec says it should be 5400000. In contrast, on an Ultra 5 225H
-> system, the max reported frequency on a golden core is 6200000;
-> however, the spec says it should be 4900000.=20
->=20
-> This bug is troublesome to end users because many CPU monitoring apps
-> will report the CPU is running quite a bit slower or faster than the
-> spec. Tools such as cpupower-gui, cpufreq-info, and cpufreq-set all
-> show incorrect values because they read cpuinfo_max_freq and
-> base_frequency, and write scaling_max_freq values in
-> /sys/devices/system/cpu/cpufreq/policy* directories.=20
->=20
-> The following bash script shows the incorrect values read from the
-> cpuinfo_max_freq and base_frequency files. It also shows how the
-> actual max frequencies attained are as expected. The example values
-> shown come from an Ultra 9 275 HX CPU.
->=20
->     echo; echo '=3D=3D BEGIN =3D=3D';
->     echo 'Ensure turbo is on';
->     cd /sys/devices/system/cpu;
->     echo '0' |sudo tee intel_pstate/no_turbo > /dev/null;
->     if grep -q '0' intel_pstate/no_turbo; then echo 'Turbo is on'; fi
->=20
->     echo; echo 'Find top 2 golden cores';
->     cd /sys/devices/system/cpu/cpufreq/;
->     grep . policy*/cpuinfo_max_freq \
->       | awk -F: '{print $2" "$1}' |sort -rn | head -n2;
->     #> 5000000 policy2/cpuinfo_max_freq
->     #> 5000000 policy3/cpuinfo_max_freq =20
->=20
->     echo; echo 'Confirm misreporting: per spec, this should be
-> 5400000!'; grep . policy2/cpuinfo_max_freq; # 500000
->=20
->     echo; echo 'Confirm misreporting: per spec, this should be
-> 2700000!' grep . policy2/base_frequency; # 2500000
->=20
->     echo; echo '# Run a CPU benchmark now, then press [ Enter ] to
-> see top 3 freqs.'; echo 'This will take 6 seconds to complete.';
->     read -r -p '# You should see that the freqs match the CPU specs.
-> ';\ for i in {0..5}; do
->       grep . policy*/scaling_cur_freq | awk -F: '{print $2" "$1}';
->       sleep 1;
->     done |sort -rn |head -n3=20
->     #> 5400000 policy2/scaling_cur_freq
->     #> 5320159 policy2/scaling_cur_freq
->     #> 5241886 policy3/scaling_cur_freq =20
->=20
->     echo; echo '=3D=3D END   =3D=3D'; echo;
->=20
-> The actual results, when running the above script, shows the
-> cpuinfo_max_freq and base_frequencies values do not match those
-> specified by Intel. With the 6.11.0-1021-oem Ubuntu Kernel, we see the
-> following:
->=20
-> | Turbo? | Core | Freq (spec) | Freq (report) | Freq (actual) |
-> | Yes    | P    | 5.4 GHz     | 5.0 GHz       | 5.4 GHz       |
-> | No     | P    | 2.7 GHz     | 2.5 GHz       | 2.7 GHz       |
-> | Yes    | E    | 4.6 GHz     | 4.6 GHz       | 4.6 GHz       |
-> | No     | E    | 2.1 GHz     | 2.1 GHz       | 2.1 GHz       |
->=20
-> We have verified the cores are operating at their specified
-> frequencies by running a demanding CPU benchmark while graphing
-> frequencies with KDE System Monitor, on all 3 systems. This tool
-> appeared to graph scaling_cur_freq values. Notice E-cores appear to
-> be correctly reported. Also, all systems misinterpret values written
-> to scaling_max_req with the apparent same error deltas: on the Ultra
-> 9 275 HX, setting this value to 5000000 results in actual max
-> frequencies of 5400000. Setting it to 2500000 results in max 2700000.
-> Setting it to 1650000 results in max 2100000.
->=20
-> The behavior with the 6.14.6 kernel is worse than with 6.11, with all
-> values under-reported. Actual frequencies were not tested on 6.14.6:
->=20
-> | Turbo? | Core | Freq (spec) | Freq (report) |
-> | Yes    | P    | 5.4 GHz     | 3.9 GHz       |
-> | No     | P    | 2.7 GHz     | 2.0 GHz       |
-> | Yes    | E    | 4.6 GHz     | 3.3 GHz       |
-> | No     | E    | 2.1 GHz     | 1.5 GHz       |
->=20
-> Is it possible the math currently used for calculating CPU frequencies
-> is no longer correct for Arrow Lake CPUs? This seems similar to the
-> issue that was fixed by commit f5c8cf2 (cpufreq: intel_pstate: hybrid:
-> Use known scaling factor for P-cores).
+The Texas Instruments BQ25703A is an integrated charger manager and
+boost converter.
 
-Following up on this, is there any update or possible fix we could
-test?
+The MFD driver initalizes the device for the regulator driver
+and power supply driver.
+
+Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ drivers/mfd/Kconfig         |  11 ++++
+ drivers/mfd/Makefile        |   1 +
+ drivers/mfd/bq257xx.c       |  97 ++++++++++++++++++++++++++++++++
+ include/linux/mfd/bq257xx.h | 108 ++++++++++++++++++++++++++++++++++++
+ 4 files changed, 217 insertions(+)
+ create mode 100644 drivers/mfd/bq257xx.c
+ create mode 100644 include/linux/mfd/bq257xx.h
+
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index 6fb3768e3d71..d8b39e8a8a17 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -1585,6 +1585,17 @@ config MFD_TI_LMU
+ 	  LM36274.  It consists of backlight, LED and regulator driver.
+ 	  It provides consistent device controls for lighting functions.
+ 
++config MFD_BQ257XX
++	tristate "TI BQ257XX Buck/Boost Charge Controller"
++	depends on I2C
++	select MFD_CORE
++	select REGMAP_I2C
++	help
++	  Support Texas Instruments BQ25703 Buck/Boost converter with
++	  charge controller. It consists of regulators that provide
++	  system voltage and OTG voltage, and a charger manager for
++	  batteries containing one or more cells.
++
+ config MFD_OMAP_USB_HOST
+ 	bool "TI OMAP USBHS core and TLL driver"
+ 	depends on USB_EHCI_HCD_OMAP || USB_OHCI_HCD_OMAP3
+diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+index 79495f9f3457..06da932cce5d 100644
+--- a/drivers/mfd/Makefile
++++ b/drivers/mfd/Makefile
+@@ -13,6 +13,7 @@ obj-$(CONFIG_MFD_SM501)		+= sm501.o
+ obj-$(CONFIG_ARCH_BCM2835)	+= bcm2835-pm.o
+ obj-$(CONFIG_MFD_BCM590XX)	+= bcm590xx.o
+ obj-$(CONFIG_MFD_BD9571MWV)	+= bd9571mwv.o
++obj-$(CONFIG_MFD_BQ257XX)	+= bq257xx.o
+ obj-$(CONFIG_MFD_CGBC)		+= cgbc-core.o
+ obj-$(CONFIG_MFD_CROS_EC_DEV)	+= cros_ec_dev.o
+ obj-$(CONFIG_MFD_CS42L43)	+= cs42l43.o
+diff --git a/drivers/mfd/bq257xx.c b/drivers/mfd/bq257xx.c
+new file mode 100644
+index 000000000000..03325a04d44b
+--- /dev/null
++++ b/drivers/mfd/bq257xx.c
+@@ -0,0 +1,97 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * BQ257XX Core Driver
++ * Copyright (C) 2025 Chris Morgan <macromorgan@hotmail.com>
++ */
++
++#include <linux/device.h>
++#include <linux/i2c.h>
++#include <linux/mfd/bq257xx.h>
++#include <linux/mfd/core.h>
++#include <linux/regmap.h>
++
++static const struct regmap_range bq25703_readonly_reg_ranges[] = {
++	regmap_reg_range(BQ25703_CHARGER_STATUS, BQ25703_MANUFACT_DEV_ID),
++};
++
++static const struct regmap_access_table bq25703_writeable_regs = {
++	.no_ranges = bq25703_readonly_reg_ranges,
++	.n_no_ranges = ARRAY_SIZE(bq25703_readonly_reg_ranges),
++};
++
++static const struct regmap_range bq25703_volatile_reg_ranges[] = {
++	regmap_reg_range(BQ25703_CHARGE_OPTION_0, BQ25703_IIN_HOST),
++	regmap_reg_range(BQ25703_CHARGER_STATUS, BQ25703_ADC_OPTION),
++};
++
++static const struct regmap_access_table bq25703_volatile_regs = {
++	.yes_ranges = bq25703_volatile_reg_ranges,
++	.n_yes_ranges = ARRAY_SIZE(bq25703_volatile_reg_ranges),
++};
++
++static const struct regmap_config bq25703_regmap_config = {
++	.reg_bits = 8,
++	.val_bits = 16,
++	.max_register = BQ25703_ADC_OPTION,
++	.cache_type = REGCACHE_RBTREE,
++	.wr_table = &bq25703_writeable_regs,
++	.volatile_table = &bq25703_volatile_regs,
++	.val_format_endian = REGMAP_ENDIAN_LITTLE,
++};
++
++static int bq257xx_probe(struct i2c_client *client)
++{
++	struct bq257xx_device *ddata;
++	struct mfd_cell cells[] = {
++		MFD_CELL_NAME("bq257xx-regulator"),
++		MFD_CELL_NAME("bq257xx-charger"),
++	};
++	int ret;
++
++	ddata = devm_kzalloc(&client->dev, sizeof(*ddata), GFP_KERNEL);
++	if (!ddata)
++		return -ENOMEM;
++
++	ddata->client = client;
++	ddata->regmap = devm_regmap_init_i2c(client, &bq25703_regmap_config);
++	if (IS_ERR(ddata->regmap)) {
++		return dev_err_probe(&client->dev, PTR_ERR(ddata->regmap),
++				     "Failed to allocate register map\n");
++	}
++
++	i2c_set_clientdata(client, ddata);
++
++	ret = devm_mfd_add_devices(&client->dev, PLATFORM_DEVID_AUTO,
++				   cells, ARRAY_SIZE(cells), NULL, 0, NULL);
++	if (ret)
++		return dev_err_probe(&client->dev, ret,
++				     "Failed to register child devices\n");
++
++	return ret;
++}
++
++static const struct i2c_device_id bq257xx_i2c_ids[] = {
++	{ "bq25703a" },
++	{}
++};
++MODULE_DEVICE_TABLE(i2c, bq257xx_i2c_ids);
++
++static const struct of_device_id bq257xx_of_match[] = {
++	{ .compatible = "ti,bq25703a" },
++	{}
++};
++MODULE_DEVICE_TABLE(of, bq257xx_of_match);
++
++static struct i2c_driver bq257xx_driver = {
++	.driver = {
++		.name = "bq257xx",
++		.of_match_table = bq257xx_of_match,
++	},
++	.probe = bq257xx_probe,
++	.id_table = bq257xx_i2c_ids,
++};
++module_i2c_driver(bq257xx_driver);
++
++MODULE_DESCRIPTION("bq257xx buck/boost/charger driver");
++MODULE_AUTHOR("Chris Morgan <macromorgan@hotmail.com>");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/mfd/bq257xx.h b/include/linux/mfd/bq257xx.h
+new file mode 100644
+index 000000000000..153a96248f32
+--- /dev/null
++++ b/include/linux/mfd/bq257xx.h
+@@ -0,0 +1,108 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Register definitions for TI BQ257XX
++ * Copyright (C) 2020 Texas Instruments Incorporated - http://www.ti.com/
++ */
++
++#define BQ25703_CHARGE_OPTION_0			0x00
++#define BQ25703_CHARGE_CURRENT			0x02
++#define BQ25703_MAX_CHARGE_VOLT			0x04
++#define BQ25703_OTG_VOLT			0x06
++#define BQ25703_OTG_CURRENT			0x08
++#define BQ25703_INPUT_VOLTAGE			0x0a
++#define BQ25703_MIN_VSYS			0x0c
++#define BQ25703_IIN_HOST			0x0e
++#define BQ25703_CHARGER_STATUS			0x20
++#define BQ25703_PROCHOT_STATUS			0x22
++#define BQ25703_IIN_DPM				0x24
++#define BQ25703_ADCIBAT_CHG			0x28
++#define BQ25703_ADCIINCMPIN			0x2a
++#define BQ25703_ADCVSYSVBAT			0x2c
++#define BQ25703_MANUFACT_DEV_ID			0x2e
++#define BQ25703_CHARGE_OPTION_1			0x30
++#define BQ25703_CHARGE_OPTION_2			0x32
++#define BQ25703_CHARGE_OPTION_3			0x34
++#define BQ25703_ADC_OPTION			0x3a
++
++#define BQ25703_EN_LWPWR			BIT(15)
++#define BQ25703_WDTMR_ADJ_MASK			GENMASK(14, 13)
++#define BQ25703_WDTMR_DISABLE			0
++#define BQ25703_WDTMR_5_SEC			1
++#define BQ25703_WDTMR_88_SEC			2
++#define BQ25703_WDTMR_175_SEC			3
++
++#define BQ25703_ICHG_MASK			GENMASK(12, 6)
++#define BQ25703_ICHG_STEP_UA			64000
++#define BQ25703_ICHG_MIN_UA			64000
++#define BQ25703_ICHG_MAX_UA			8128000
++
++#define BQ25703_MAX_CHARGE_VOLT_MASK		GENMASK(15, 4)
++#define BQ25703_VBATREG_STEP_UV			16000
++#define BQ25703_VBATREG_MIN_UV			1024000
++#define BQ25703_VBATREG_MAX_UV			19200000
++
++#define BQ25703_OTG_VOLT_MASK			GENMASK(13, 6)
++#define BQ25703_OTG_VOLT_STEP_UV		64000
++#define BQ25703_OTG_VOLT_MIN_UV			4480000
++#define BQ25703_OTG_VOLT_MAX_UV			20800000
++#define BQ25703_OTG_VOLT_NUM_VOLT		256
++
++#define BQ25703_OTG_CUR_MASK			GENMASK(14, 8)
++#define BQ25703_OTG_CUR_STEP_UA			50000
++#define BQ25703_OTG_CUR_MAX_UA			6350000
++
++#define BQ25703_MINVSYS_MASK			GENMASK(13, 8)
++#define BQ25703_MINVSYS_STEP_UV			256000
++#define BQ25703_MINVSYS_MIN_UV			1024000
++#define BQ25703_MINVSYS_MAX_UV			16128000
++
++#define BQ25703_STS_AC_STAT			BIT(15)
++#define BQ25703_STS_IN_FCHRG			BIT(10)
++#define BQ25703_STS_IN_PCHRG			BIT(9)
++#define BQ25703_STS_FAULT_ACOV			BIT(7)
++#define BQ25703_STS_FAULT_BATOC			BIT(6)
++#define BQ25703_STS_FAULT_ACOC			BIT(5)
++
++#define BQ25703_IINDPM_MASK			GENMASK(14, 8)
++#define BQ25703_IINDPM_STEP_UA			50000
++#define BQ25703_IINDPM_MIN_UA			50000
++#define BQ25703_IINDPM_MAX_UA			6400000
++#define BQ25703_IINDPM_DEFAULT_UA		3300000
++#define BQ25703_IINDPM_OFFSET_UA		50000
++
++#define BQ25703_ADCIBAT_DISCHG_MASK		GENMASK(6, 0)
++#define BQ25703_ADCIBAT_CHG_MASK		GENMASK(14, 8)
++#define BQ25703_ADCIBAT_CHG_STEP_UA		64000
++#define BQ25703_ADCIBAT_DIS_STEP_UA		256000
++
++#define BQ25703_ADCIIN				GENMASK(15, 8)
++#define BQ25703_ADCIINCMPIN_STEP		50000
++
++#define BQ25703_ADCVSYS_MASK			GENMASK(15, 8)
++#define BQ25703_ADCVBAT_MASK			GENMASK(7, 0)
++#define BQ25703_ADCVSYSVBAT_OFFSET_UV		2880000
++#define BQ25703_ADCVSYSVBAT_STEP		64000
++
++#define BQ25703_ADC_CH_MASK			GENMASK(7, 0)
++#define BQ25703_ADC_CONV_EN			BIT(15)
++#define BQ25703_ADC_START			BIT(14)
++#define BQ25703_ADC_FULL_SCALE			BIT(13)
++#define BQ25703_ADC_CMPIN_EN			BIT(7)
++#define BQ25703_ADC_VBUS_EN			BIT(6)
++#define BQ25703_ADC_PSYS_EN			BIT(5)
++#define BQ25703_ADC_IIN_EN			BIT(4)
++#define BQ25703_ADC_IDCHG_EN			BIT(3)
++#define BQ25703_ADC_ICHG_EN			BIT(2)
++#define BQ25703_ADC_VSYS_EN			BIT(1)
++#define BQ25703_ADC_VBAT_EN			BIT(0)
++
++#define BQ25703_EN_OTG_MASK			BIT(12)
++
++enum bq257xx_id {
++	BQ25703A,
++};
++
++struct bq257xx_device {
++	struct i2c_client *client;
++	struct regmap *regmap;
++};
+-- 
+2.43.0
+
