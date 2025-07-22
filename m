@@ -1,139 +1,110 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EDAD242D78
-	for <linux-pm@vger.kernel.org>; Tue, 22 Jul 2025 11:12:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ECACB288524;
+	Tue, 22 Jul 2025 11:26:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1753182728; cv=none; b=qyj6V4IYsWSCxw7KbSS1oWO+ChAKDUyklEdanzPEuy8h5/eTw9djiGf0z6NZpsP/7Mc2LliSDC98Z48WHLtJ6uz+It/SkwB04IYLcNKHdjJqYF+iPAa0z2vdLpRCraZxydxLTDPDXUWnEPkfDo+pTaA0/sk6k8UtXaYuiVLEkMw=
+	t=1753183590; cv=none; b=qwbxeXkLCaI5JwnoWyhYTd5IHJX9OcILfvZTlqzcbX9NT4ajsRdAzlCCKBolvWoRt5xjoE0kOV2xVe8RAfcBFvq3CYngRALmWNop8BVrn7fFhn7u4R9eY1i6kA5cVXbeJ3uFdGajVpPG2+yMnyvT2hU61up22vfcEDdjVnOibIY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1753182728; c=relaxed/simple;
-	bh=AdS/HEGQYIwXAPgGKh/dj7/4HJqP4YWiQMnvmpzNaGA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JBNujKx4roZcdruEShuXL86POozcDvskMB6pXWK1geSu7nJkHSTKdc1HTLR1yg08Qf5da6JVNSAtZNMS7V0B1vMcFcHSSoEecuu/Cn0P1s4CnpGjw1HVUWqUlQKjx2WqlP76vuW6TDagnNb9+vr6HcMhSiCDGqnM4GOXCpTIRHA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=kuDjK8lV; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1753183590; c=relaxed/simple;
+	bh=YRA1hYrEORFOB7GQuzTQX4VTQhnY9esTD7J0wHpqIjg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=MULoCRE6w/E6jQLrNjMxOWgB3TAONPxKuyDlJwmE88C4BEdgeJVZNsZERQ36il4OAYIUT1pnxyc4omyZAHrPm7+BPWPyoalATbgr8qtN3RrOZ6YOHRz5yErcyWqjIYrhhwdMQqOY0djThAZJhGJ4NOAl4MN9cqtpzJ2kXSHRfQs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fMDuRiiD; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="kuDjK8lV"
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 56M40lAY001178
-	for <linux-pm@vger.kernel.org>; Tue, 22 Jul 2025 11:12:05 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	Lp9oCAfC0uqs28+yLNSlWvHOEvpNJYHHvb1kBs8yoFw=; b=kuDjK8lVrMQ29mM2
-	NnvkBJtssHyZ940GjxnoRNMKZIaxrrUx8OXjNq0M/7BtxrF5bJvbBeYk6ggjByLo
-	PwzeE6UzPYbeH2HjAjXIWWUlV2lGbdSN2XiTlUTL9IgR/r9Zn7QKGAkBaD9K5lyN
-	RIKWxENkALQGIO+ipEuOmfCiHWx3pFg+M73KWyqTq/Rz26jIV2vpsG6lgUxrkti2
-	Lh3UHvoSbhksgHnFKlfDBWl+tzn/5QD0hSvpBlrkZIXA2MLcqD25MBwTkjLj/obA
-	SmTVTcuY9IMCN16lD/Tackv2Syvpf+s7q0WFRV6BqDaEkCr62XhpKPUTbzRoxzuf
-	HnrRrQ==
-Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 48044dh2vk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 22 Jul 2025 11:12:05 +0000 (GMT)
-Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-7deca3ef277so11257285a.1
-        for <linux-pm@vger.kernel.org>; Tue, 22 Jul 2025 04:12:05 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1753182725; x=1753787525;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Lp9oCAfC0uqs28+yLNSlWvHOEvpNJYHHvb1kBs8yoFw=;
-        b=vMvFBrGVO4gQihOWAmZ0lZbaZ4UFI6yFjPlddmF281FTwJlwH1/asDWgeIK1ZEVoSO
-         dQCV3tbOBIXIdV0YQzw56DTx5aBAzmTPg5J5h7uGCOYG/foJwruhfzaSZ0vjsSi3Qu1B
-         fZn4qTJH2MGCxcCZaxEcqoqWxNxhUr7lHFMHaGj1pMTRGTmoBHNlZw+eUTTl68/n8XNg
-         mBQDqZS42rYz0MY2ulaY9D9du/cKbP8XUZWn5BBrtZkiWPxnauDiu071mEKoFKdAISGp
-         FCLRRKe8VLFmkemmfOKE6xv1wVtkalnlmkPiVl+xjWk77o4ssNJZJ4hPnvV9m9Fdan83
-         Ts1w==
-X-Forwarded-Encrypted: i=1; AJvYcCVaLXxQYNVXAF3Mju1S6nc6NtD72lVIMQ3MHegnYsOPw1VlowoTxPWvYud2rjTtszRexWSEegaAJQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwJuQVvWxkowfGzr0ekbfrLECA7po+DR9+oaC5xM8g6GucZjim7
-	743rtI1ozDAx3xGnINgn121RkBa+WbRcAmeEseynar06V6wmxuf9TMOiTTeunQ/QrBNxIVA2AzF
-	oYzmZSotZ6p5Bc1+4Q0uOZx/6NQJwPSqHFahpJFyfWQtu59jcUC6gdukakm84ow==
-X-Gm-Gg: ASbGnctPrbeLGhALGL6f8Z8ZV375cnztBLq07GqxPu+d/GlJMCloz9BiLoJiu8394kz
-	rZOp3z4xuNsmGFjpS1ECH7WW4u9ECLO4+ZZ0Jr0vLXoM98pi14t2JMxfw1Ndzz3xnSKU/UBKBiE
-	AQj1YIP2O62VUu/7VlFkl/nRpSFXcj/JZpJkR/DdAJOXUEjUjuyLJd2EIfGeU0m9WmYtysN8APr
-	YS4AEcv5waBPxRnpkk913M4WJuM7dBNg33dOMFdkYNPyJsh5NDU2LTBlsXQGzAkihUHDlQ2XGEk
-	ZQzFXHHMuA/MKCqjqvcp++GXpNt2+XA8Q1YEKysdwwQSJkZKq+FCB/WzqnJQSzS05N5+FXqGdVE
-	cYaNOrctAKogJ2EcC3DTA
-X-Received: by 2002:a05:620a:4894:b0:7e3:2c3a:aac5 with SMTP id af79cd13be357-7e342b70ea4mr1315161685a.12.1753182724450;
-        Tue, 22 Jul 2025 04:12:04 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGsVndy6GfF1/rbOfATVToveGOqPm5CxByBr7sl2oaOgD0x8vxoWl1Wqyb/DMzWWuenDTrgHg==
-X-Received: by 2002:a05:620a:4894:b0:7e3:2c3a:aac5 with SMTP id af79cd13be357-7e342b70ea4mr1315159785a.12.1753182723749;
-        Tue, 22 Jul 2025 04:12:03 -0700 (PDT)
-Received: from [192.168.143.225] (078088045245.garwolin.vectranet.pl. [78.88.45.245])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-612c8f36f96sm6863713a12.23.2025.07.22.04.12.00
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 22 Jul 2025 04:12:02 -0700 (PDT)
-Message-ID: <41dda9bd-12c8-485a-a6d0-69d040d724cd@oss.qualcomm.com>
-Date: Tue, 22 Jul 2025 13:11:59 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fMDuRiiD"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 9351AC4CEF4;
+	Tue, 22 Jul 2025 11:26:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1753183589;
+	bh=YRA1hYrEORFOB7GQuzTQX4VTQhnY9esTD7J0wHpqIjg=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=fMDuRiiDGlEukblcq+Qoss2+dwTvSbp68Ai0QD2ZMx3d1k2uH2NHhoSkCaJWWD+Ys
+	 EDw1L90A9QfaunFIXb+LlTd3f/Q3sXWgopqjgu4IngkLeV1L0WNnttQaymjzRheil0
+	 6n5MU2Xb80XxVzC/G+ZswxE1eWP+GvrkBiJG4i1L/m2JRREGkQEsac6Q3XuPRzRXSU
+	 xNgsmfXYR/tIyV9q47W1rH/HVsiA505r6uULUM9hZUr2oF6sxgOBcfeba8dH48/MeA
+	 1ikiJgNdQuHiYYVzy/krJu8gFKFnXW/o19jR8pESpv7YYCZEhOiZFDmOoymAYWn7z2
+	 /eEJ8r8m/rSVQ==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 843D7C83F27;
+	Tue, 22 Jul 2025 11:26:29 +0000 (UTC)
+From: Xianwei Zhao via B4 Relay <devnull+xianwei.zhao.amlogic.com@kernel.org>
+Date: Tue, 22 Jul 2025 19:26:27 +0800
+Subject: [PATCH v2 1/3] dt-bindings: thermal: amlogic: Add compatible
+ string for C3
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/7] nvmem: qcom-spmi-sdam: Migrate to
- devm_spmi_subdevice_alloc_and_add()
-To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-        sboyd@kernel.org
-Cc: jic23@kernel.org, dlechner@baylibre.com, nuno.sa@analog.com,
-        andy@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org,
-        srini@kernel.org, vkoul@kernel.org, kishon@kernel.org, sre@kernel.org,
-        krzysztof.kozlowski@linaro.org, u.kleine-koenig@baylibre.com,
-        linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-phy@lists.infradead.org,
-        linux-pm@vger.kernel.org, kernel@collabora.com, wenst@chromium.org,
-        casey.connolly@linaro.org
-References: <20250722101317.76729-1-angelogioacchino.delregno@collabora.com>
- <20250722101317.76729-3-angelogioacchino.delregno@collabora.com>
-Content-Language: en-US
-From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-In-Reply-To: <20250722101317.76729-3-angelogioacchino.delregno@collabora.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=BJ6zrEQG c=1 sm=1 tr=0 ts=687f7205 cx=c_pps
- a=50t2pK5VMbmlHzFWWp8p/g==:117 a=FpWmc02/iXfjRdCD7H54yg==:17
- a=IkcTkHD0fZMA:10 a=Wb1JkmetP80A:10 a=QX4gbG5DAAAA:8 a=EUspDBNiAAAA:8
- a=Y_nGuXgBD960inqFf4MA:9 a=QEXdDO2ut3YA:10 a=IoWCM6iH3mJn3m4BftBB:22
- a=AbAUZ8qAyYyZVLSsDulk:22
-X-Proofpoint-GUID: FGRQOEcMsvTPo_i-R1BPMUNggqrtP2ef
-X-Proofpoint-ORIG-GUID: FGRQOEcMsvTPo_i-R1BPMUNggqrtP2ef
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNzIyMDA5MSBTYWx0ZWRfX1nzS3yeZgyWY
- f8ZFHaTYY0PGbaUszXFvuI8eUjzXzTYXMtfov/PL/5k0NRDmqZ5dshL6Vg9OhHCZnVKuwW0lc2k
- Zk3GKjn6z0IC1WUlrKezDCN7fTi3qSZ30s9A0+O/BEhiSztJpWA7qKiw4wkbVMFBIa4l7m7uX1X
- sOl22lZpbs35FHq4eKCM4RVU1pbYIyXysyzpkYfm/cbk/RN2sffTo9kGoFodTNQA+C7oceuxsdn
- nJ5dNVUPsK3KIdxPbRx2YpPtTCzAzwK7nssVGvi7uIrgplD8T6zCyXrVEIiYssVtSoEZ++OLVPa
- Ok1iH5+e9Z5YXfp7JZ27XJZQdxSu5YrCdZNCP3pV3eIMOsrsOTxX+4KONhC7Jay8tBshrqS5KEK
- P6O2D5e8wqKEk1g+Xg8Pv+4rBtrHWyZjZz81J8CMYCqNTZV1NrdJLkRj3klg8dTPUuaCrKRe
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-07-22_02,2025-07-21_02,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 lowpriorityscore=0 clxscore=1015 spamscore=0
- mlxlogscore=813 suspectscore=0 impostorscore=0 phishscore=0 adultscore=0
- mlxscore=0 malwarescore=0 bulkscore=0 classifier=spam authscore=0 authtc=n/a
- authcc= route=outbound adjust=0 reason=mlx scancount=1
- engine=8.19.0-2505280000 definitions=main-2507220091
+Message-Id: <20250722-c3-thermal-v2-1-b2231b4be79e@amlogic.com>
+References: <20250722-c3-thermal-v2-0-b2231b4be79e@amlogic.com>
+In-Reply-To: <20250722-c3-thermal-v2-0-b2231b4be79e@amlogic.com>
+To: Guillaume La Roque <glaroque@baylibre.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Neil Armstrong <neil.armstrong@linaro.org>, 
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>
+Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, 
+ Xianwei Zhao <xianwei.zhao@amlogic.com>, 
+ Liming Xue <liming.xue@amlogic.com>
+X-Mailer: b4 0.12.4
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1753183587; l=1117;
+ i=xianwei.zhao@amlogic.com; s=20231208; h=from:subject:message-id;
+ bh=F245QN28IAzyYVKe5LdflpfqaXIiAZXvhwVaz2WE8mk=;
+ b=q+REDs12RZEfw/hMQsKiHAKbppF7thzkQndT/LP7EhRcH5t87fMSM1iDpgzs5MsZeD8FmYgmc
+ K4d+gMdl/vnDxBp1OybqgW5ji0qQu7ttbckZPAsqLorPzjHq0G3M111
+X-Developer-Key: i=xianwei.zhao@amlogic.com; a=ed25519;
+ pk=o4fDH8ZXL6xQg5h17eNzRljf6pwZHWWjqcOSsj3dW24=
+X-Endpoint-Received: by B4 Relay for xianwei.zhao@amlogic.com/20231208 with
+ auth_id=107
+X-Original-From: Xianwei Zhao <xianwei.zhao@amlogic.com>
+Reply-To: xianwei.zhao@amlogic.com
 
-On 7/22/25 12:13 PM, AngeloGioacchino Del Regno wrote:
-> Some Qualcomm PMICs integrate a SDAM device, internally located in
-> a specific address range reachable through SPMI communication.
-> 
-> Instead of using the parent SPMI device (the main PMIC) as a kind
-> of syscon in this driver, register a new SPMI sub-device for SDAM
-> and initialize its own regmap with this sub-device's specific base
-> address, retrieved from the devicetree.
-> 
-> This allows to stop manually adding the register base address to
-> every R/W call in this driver, as this can be, and is now, handled
-> by the regmap API instead.
-> 
-> Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-> ---
+From: Xianwei Zhao <xianwei.zhao@amlogic.com>
 
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Add the compatible properties for Amlogic C3 SoC family.
+C3 family supports only one thermal node - CPU thermal
+sensor.
 
-Konrad
+Signed-off-by: Liming Xue <liming.xue@amlogic.com>
+Signed-off-by: Xianwei Zhao <xianwei.zhao@amlogic.com>
+---
+ Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
+index 70b273271754..27ddb67c7743 100644
+--- a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
+@@ -16,12 +16,14 @@ $ref: thermal-sensor.yaml#
+ properties:
+   compatible:
+     oneOf:
++      - enum:
++          - amlogic,a1-cpu-thermal
++          - amlogic,c3-cpu-thermal
+       - items:
+           - enum:
+               - amlogic,g12a-cpu-thermal
+               - amlogic,g12a-ddr-thermal
+           - const: amlogic,g12a-thermal
+-      - const: amlogic,a1-cpu-thermal
+ 
+   reg:
+     maxItems: 1
+
+-- 
+2.37.1
+
+
