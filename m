@@ -1,52 +1,52 @@
 Received: from mg.richtek.com (mg.richtek.com [220.130.44.152])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C6AE2D052;
-	Mon, 28 Jul 2025 02:47:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA74C1FBE80;
+	Mon, 28 Jul 2025 02:55:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.130.44.152
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1753670854; cv=none; b=Jyh5B6ag+4Jl3iLTmlbasqJet+mEFyNuv7/yCTa8E/2Ldk5Vog89B01kmQulqBu9H/K2nbGab5F2R/gJHVD7owES/D8Axmg4zbYY3YOCbmvPX+b4hjupgFaJJUMLNuFamygWhZEE9SK62k6SoITUB67S6/oCdkyAiGEtRleyCCA=
+	t=1753671331; cv=none; b=cHPsmbtkNd0Tz7qfGG8kjgc1lBf8QL1xCA23Ox1l/R+xOCp5GWMAGn52/5hmPUt8lDPKHxXw9EcHITQf8+inLXs0PDN9YPxhh9a8BmJiobFohUuFcY4EDr6ZMBhdGgXbqED0RkKfsmGbwXpradedSc9ZnW0jDCBjgxyZxQo+Qwg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1753670854; c=relaxed/simple;
-	bh=BAAxqp9vI+vv9l8n78TpipaFS/tAj3zESdpvGUii4ZY=;
+	s=arc-20240116; t=1753671331; c=relaxed/simple;
+	bh=53mj4tIwur33Mk75aJKG2K9HfhifJ92nV/eqHlmhM/U=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=dH23IQulATvH7UEaHhJkb6WPB4eUUWmb9Q+t2JG2/BFmSjt9CpdCktJa/+TKGI7uPIF2su0UhBrEx6aPBV50nQe0QM79FjKzBdzA0YF8BsKRMi+JGRpPwkKLOLNC0GfRxi5fZLx2tOWBVsRoaumQtmffDxZl1VVDP9BviCcf7PY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=richtek.com; spf=pass smtp.mailfrom=richtek.com; dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b=UzPT5M42; dkim=fail (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b=HBzph/Wu reason="length tag value exceeds body size"; arc=none smtp.client-ip=220.130.44.152; dmarc=pass (p=quarantine dis=none) header.from=richtek.com; spf=pass smtp.mailfrom=richtek.com; arc=none smtp.client-ip=220.130.44.152
+	 MIME-Version:Content-Type; b=p6ec+sHP1gtMty73nGwvjRJ2UBi1lRcQlC2SjnRH8gZhqcKJBDXIOWUN5nhheGirQ1n9U+BmSTZV87mV5ObGVr+FXBvOzpaHUFWoeBzMltVzCWz5oZr7vFLplJoh1ZXRY1pmSxwbhkK0o6ceeDOhLs9IKw8C2i+SQkr3JLVP4AA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=richtek.com; spf=pass smtp.mailfrom=richtek.com; dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b=P2pdD3lI; dkim=fail (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b=HBzph/Wu reason="length tag value exceeds body size"; arc=none smtp.client-ip=220.130.44.152; dmarc=pass (p=quarantine dis=none) header.from=richtek.com; spf=pass smtp.mailfrom=richtek.com; arc=none smtp.client-ip=220.130.44.152
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=richtek.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=richtek.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b="UzPT5M42";
+	dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b="P2pdD3lI";
 	dkim=fail reason="length tag value exceeds body size" (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b="HBzph/Wu"
 X-MailGates: (SIP:2,PASS,NONE)(compute_score:DELIVER,40,3)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=richtek.com;
-	s=richtek; t=1753670841;
-	bh=Aj/KlS5ZA8REOezi8S1UBVmo1gYS5o5doKhuSAWCKF4=; l=269;
+	s=richtek; t=1753671325;
+	bh=rH5H2qzUPBwA91EKNrnav/O5zSrCiN45VYvC6I+auwQ=; l=322;
 	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=UzPT5M42gsDGuItPUcrY233lx0obDfFzBlV5UbSGZbq+WiyVzutWwEcIDf6St8dYl
-	 gLRRJJRYck65xV2sloUaG7wvh0NrRC197NLxwxwLbF+HoxaHccDKKcvlMZ+z/Gz8SZ
-	 CGRLHd44Z8YNqsIwB7zybU8B1GiDrU+QenqlN9NxWo+CFIsAwgRBIj+pfcvmkHnoYD
-	 Da5vQxXr0bTEwxgHm61UmMB9F6fY0RhxfVnvOntydcqc3cGFl1xJPxhCX201oRMJE9
-	 un1u3HZJD0JORi5PGS3vor6PRoLTSPWwrYa/NMPs3BCjWTYrE3NsbQJo5+Lf3vPP+z
-	 IOf19mRxeUM9A==
+	b=P2pdD3lI/xSz8Av6a1Me2f3b0dYWb8WDV3ssM3sMug0amjmG0kx7NL5eQrd55kbLT
+	 Hv08tSAov3DSoSNfDareNmlq558MHn965h0GY2NCisnYj9RMXBBiieo8ixjxxQzA7D
+	 1jeovl6rUgRrniK4BECCYqAGLNb2WMffAkZuWf454mLOVpzFXfH6Lg8gohcFAuuFQh
+	 RP8m8z5RoranPJuiaoTyHZ2LjX0/IISw39vQ6rrag8e1TrIt7F68c6Y3IduopROGEk
+	 qBWC+/avPFVoC9hZq0aaZUn989OVNa6p9IfbII2omLyJh/fB+EDRqgKXtsdBqL6GEQ
+	 RWJDxXOPKyURw==
 Received: from 192.168.10.47
-	by mg.richtek.com with MailGates ESMTPS Server V6.0(244605:0:AUTH_RELAY)
+	by mg.richtek.com with MailGates ESMTPS Server V6.0(244573:0:AUTH_RELAY)
 	(envelope-from <cy_huang@richtek.com>)
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256/256); Mon, 28 Jul 2025 10:47:09 +0800 (CST)
-Received: from ex3.rt.l (192.168.10.46) by ex4.rt.l (192.168.10.47) with
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256/256); Mon, 28 Jul 2025 10:55:19 +0800 (CST)
+Received: from ex4.rt.l (192.168.10.47) by ex4.rt.l (192.168.10.47) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 28 Jul
- 2025 10:47:08 +0800
-Received: from git-send.richtek.com (192.168.10.154) by ex3.rt.l
+ 2025 10:55:18 +0800
+Received: from git-send.richtek.com (192.168.10.154) by ex4.rt.l
  (192.168.10.45) with Microsoft SMTP Server id 15.2.1544.11 via Frontend
- Transport; Mon, 28 Jul 2025 10:47:08 +0800
+ Transport; Mon, 28 Jul 2025 10:55:18 +0800
 From: cy_huang@richtek.com
 To: cy_huang@richtek.com,
 	Sebastian Reichel <sre@kernel.org>
 CC: <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>, "Sebastian
  Reichel" <sebastian.reichel@collabora.com>
 Subject: Re: [PATCH] power: supply: rt9467: Add properties for VBUS and IBUS reading
-Date: Mon, 28 Jul 2025 10:47:47 +0800
-Message-ID: <54fd32fc23fd959da8aa6508d572ee96de5f6eec.1752542001.git.cy_huang@richtek.com>
+Date: Mon, 28 Jul 2025 10:54:37 +0800
+Message-ID: <20250728025558.2796502-1-cy_huang@richtek.com>
 X-Mailer: git-send-email 2.43.5
 In-Reply-To: <54fd32fc23fd959da8aa6508d572ee96de5f6eec.1752542001.git.cy_huang@richtek.com>
 References: <54fd32fc23fd959da8aa6508d572ee96de5f6eec.1752542001.git.cy_huang@richtek.com>
@@ -69,7 +69,6 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 8bit
-Message-ID: <20250728024747.x5Bs7s2WCagqgAQZ3jgO06hmTlyk94Kzv0JbtjY3_IE@z>
 
 From: <cy_huang@richtek.com>
 
@@ -77,6 +76,7 @@ From: <cy_huang@richtek.com>
 > 
 > Since there's the existing ADC function, add properties 'VOLTAGE_NOW'
 > and 'CURRENT_NOW' to report the current VBUS and IBUS value, respectively.
+Sorry, seems message-id conflict. Re-send it again.
 
 Hi, any comment about this patch?
 
