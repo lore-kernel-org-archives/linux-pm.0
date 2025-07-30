@@ -1,38 +1,38 @@
-Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 516C67082F;
-	Wed, 30 Jul 2025 03:23:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.190
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D058613B797;
+	Wed, 30 Jul 2025 03:23:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.187
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1753845800; cv=none; b=RM/5QJysnA55bM2SvLrKtMHQYOcGjFG2Tza5fi9OokTha4FCVvv2NOfH/VdtUrNQJbJtjtEcjoFWEO+R0i+M7BwCKNv5Zssg7v3wRNxlOxx6ecIQxMHW0susy8LspFPNgLPdL7QOT5vhnFQoG+K0CuXaUDMi7pJbyi6HgjSosQw=
+	t=1753845802; cv=none; b=sFxq0grOBPdmNrSBFZQuAC0Zo+GaQb7XKOd9VuSMX+jA8Db//1ue9/NyFfVecpdgeku6nnYJxJMt6ghhWQP8+auTelZKufmmaQKwVKYmhnEaEnuB9lJ2Fi2CZOks5mXmz2BTn3xnfrIm/kp5KH5bdG+e4FwxO0k3dvwxJITtJpM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1753845800; c=relaxed/simple;
-	bh=tzCNHp0ESR+PV5haOei97I13pxR2/0b/4S413xF/154=;
+	s=arc-20240116; t=1753845802; c=relaxed/simple;
+	bh=mEeeApHgOAP/P2OpIQHR7pNXuGBj5SUI7JRX/dnOVtc=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=UoLJ6VgWKaCCPDVeZkdzhf3xTrLFX4LKOqXqD22WkuU9dUGkBMu2wdTnDOnKuUmIyUC1xtfUuWIA180DtCD1RMForitEn+eKGvlFduIiKxlHAu4tOPNkLEYQXRq9BaylyoBp2n32XEpDNPCfHeOeQvoQD5c3lHZYn85EGC5k1ew=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.190
+	 MIME-Version:Content-Type; b=TasqGbY/edDGRq0T4SMBXN4Sqdy87mrrzG720cjh2N/CkWy1ONlKWY4ERUnExFPsJbtrnKUqcuD/wTP2JV5b51F/B8W07dsBb0zmhoaJ5MS5JsMMpGHg0LFSYW6AZtSaTB56dvziSMTQDOT/6GK19qS4FAdF4p/bOKh/5odsfFc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.187
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.19.88.163])
-	by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4bsHVs3W9fzphCC;
-	Wed, 30 Jul 2025 11:19:01 +0800 (CST)
+Received: from mail.maildlp.com (unknown [172.19.88.194])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4bsHX83HFZz13Mq9;
+	Wed, 30 Jul 2025 11:20:08 +0800 (CST)
 Received: from kwepemk500012.china.huawei.com (unknown [7.202.194.97])
-	by mail.maildlp.com (Postfix) with ESMTPS id A555B18005F;
+	by mail.maildlp.com (Postfix) with ESMTPS id 2FA101401F3;
 	Wed, 30 Jul 2025 11:23:14 +0800 (CST)
 Received: from localhost.localdomain (10.50.165.33) by
  kwepemk500012.china.huawei.com (7.202.194.97) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Wed, 30 Jul 2025 11:23:14 +0800
+ 15.2.1544.11; Wed, 30 Jul 2025 11:23:13 +0800
 From: Bowen Yu <yubowen8@huawei.com>
 To: <rafael@kernel.org>, <viresh.kumar@linaro.org>
 CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
 	<linuxarm@huawei.com>, <jonathan.cameron@huawei.com>,
 	<zhanjie9@hisilicon.com>, <lihuisong@huawei.com>, <zhenglifeng1@huawei.com>,
 	<yubowen8@huawei.com>
-Subject: [PATCH 2/2] cpufreq: CPPC: Fix error handling in cppc_scale_freq_workfn()
-Date: Wed, 30 Jul 2025 11:23:12 +0800
-Message-ID: <20250730032312.167062-3-yubowen8@huawei.com>
+Subject: [PATCH 1/2] cpufreq: CPPC: Don't warn on failing to read perf counters on offline cpus
+Date: Wed, 30 Jul 2025 11:23:11 +0800
+Message-ID: <20250730032312.167062-2-yubowen8@huawei.com>
 X-Mailer: git-send-email 2.33.0
 In-Reply-To: <20250730032312.167062-1-yubowen8@huawei.com>
 References: <20250730032312.167062-1-yubowen8@huawei.com>
@@ -49,44 +49,39 @@ X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
 
 From: Jie Zhan <zhanjie9@hisilicon.com>
 
-Perf counters could be 0 if the cpu is in a low-power idle state. Just try
-it again next time and update the frequency scale when the cpu is active
-and perf counters successfully return.
-
-Also, remove the FIE source on an actual failure.
+Reading perf counters on offline cpus should be expected to fail, e.g. it
+returns -EFAULT as counters are shown to be 0. Remove the unnecessary
+warning print on this failure path.
 
 Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
+Signed-off-by: Bowen Yu <yubowen8@huawei.com> # Changing loglevel to debug
 ---
- drivers/cpufreq/cppc_cpufreq.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ drivers/cpufreq/cppc_cpufreq.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 904006027df2..e95844d3d366 100644
+index a1fd0ff22bc5..904006027df2 100644
 --- a/drivers/cpufreq/cppc_cpufreq.c
 +++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -78,12 +78,23 @@ static void cppc_scale_freq_workfn(struct kthread_work *work)
- 	struct cppc_cpudata *cpu_data;
- 	unsigned long local_freq_scale;
- 	u64 perf;
-+	int ret;
+@@ -144,16 +144,14 @@ static void cppc_cpufreq_cpu_fie_init(struct cpufreq_policy *policy)
+ 		init_irq_work(&cppc_fi->irq_work, cppc_irq_work);
  
- 	cppc_fi = container_of(work, struct cppc_freq_invariance, work);
- 	cpu_data = cppc_fi->cpu_data;
- 
--	if (cppc_get_perf_ctrs(cppc_fi->cpu, &fb_ctrs)) {
-+	ret = cppc_get_perf_ctrs(cppc_fi->cpu, &fb_ctrs);
-+	/*
-+	 * Perf counters could be 0 if the cpu is in a low-power idle state.
-+	 * Just try it again next time.
-+	 */
-+	if (ret == -EFAULT)
-+		return;
-+
-+	if (ret) {
- 		pr_warn("%s: failed to read perf counters\n", __func__);
-+		topology_clear_scale_freq_source(SCALE_FREQ_SOURCE_CPPC,
-+						 cpu_data->shared_cpu_map);
- 		return;
+ 		ret = cppc_get_perf_ctrs(cpu, &cppc_fi->prev_perf_fb_ctrs);
+-		if (ret) {
+-			pr_warn("%s: failed to read perf counters for cpu:%d: %d\n",
+-				__func__, cpu, ret);
+-
++		if (ret && cpu_online(cpu)) {
+ 			/*
+ 			 * Don't abort if the CPU was offline while the driver
+ 			 * was getting registered.
+ 			 */
+-			if (cpu_online(cpu))
+-				return;
++			pr_debug("%s: failed to read perf counters for cpu:%d: %d\n",
++				__func__, cpu, ret);
++			return;
+ 		}
  	}
  
 -- 
