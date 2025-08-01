@@ -1,40 +1,40 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45D952036FE;
-	Fri,  1 Aug 2025 07:28:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8313E20D50C;
+	Fri,  1 Aug 2025 07:28:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1754033328; cv=none; b=lDMHh4G6tEmo7MKcrBXWp8kadb0FGZpw2bi8yoE1SrVcG1UUBUymLtEAKgTa3yqGAIdh6VqnApOk6JSx2VDoW0VQNv56F6gggy6KYUfyEAAnA0+dCXyrJJ9L1ghu8hHmGs4CMaRK2oFO1Y+1fMl3wFhuBYscrbBQBd6atTDqnvU=
+	t=1754033329; cv=none; b=Tie/vejR8cK1kyUttPxqG5IxbiK2EzcrE6cCIH4C40Y6VypFUMMj/kvXKltp1Kw3h2YYX3DDlY7qUiF+WiYd7Tzw6Tb33FLn7k/DGk6DbMGc+79XdcAuZtEE/qpFHr5lQ1XvS+e22FJEnTclXQZ9At/0t1luigMsKxTVQiN69/I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1754033328; c=relaxed/simple;
-	bh=jXYnqKd+evMLO6CdXgt/eiSiWPrES/uLOFR0c+/Ng1M=;
+	s=arc-20240116; t=1754033329; c=relaxed/simple;
+	bh=EMVwpG37bgqFGohQRsO75cPRK1G/rDe+DuVSBLIxMoE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=IJ2id01bhaU//XdiNbiyAJwgZ4+24NiVfRu4k8b9Nbou+3j456k1b0NEzPYuKg4hYXF2iwDRtobCCrY4m2iONALeD/2lv38gSmwN9d4S9vIOqCVaRv801zkwp7xEBwDwZMnuT1MQaWFvH4aW6Py+qI01wcEhN8OB0KmmUfHSKqU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=Yn+pVNue; arc=none smtp.client-ip=148.251.105.195
+	 In-Reply-To:Content-Type; b=gi+U1a0OGghPlQSkW5M0XAum7ovsKQIBlIn5ZrD4VML6S5957yg8uJzewmvx/39wkUOhm59zYTampTuJQIS1BRbK9J+XYigvyQhUQgXH1uJB/Bdg/exggeznTYDwRjs7Hm38DHa7QVUbeoQWAR7JA9npxL6NX1xPv4lw/C5DoHI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=Rv/vt5CW; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="Yn+pVNue"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="Rv/vt5CW"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1754033319;
-	bh=jXYnqKd+evMLO6CdXgt/eiSiWPrES/uLOFR0c+/Ng1M=;
+	s=mail; t=1754033325;
+	bh=EMVwpG37bgqFGohQRsO75cPRK1G/rDe+DuVSBLIxMoE=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=Yn+pVNuew58PUcsiidTiHFo6YO3PUcK4wnCs5F1lV+vwHfnMx/QXXLdYdpBMl3Z44
-	 nHEgMMNpc+DogNWCPVIWvux0fT7edEKTJ2Y6gCuJXRt8sTF96ifOHmrlKyxBOlJrEy
-	 k1BejyM4RzROH646ZXaLvyI1F046zUdrRtV8p07pzyww7qJZcMOZ23twBM7oSdXsQn
-	 aBC6KHRUBnacIHI6RNY8Rwrk9LPSiJtZUNuLchABUmt4uOHer02BEHwp5WlaIg8F9u
-	 9g6mGjue0qPQhzw0INM70tWhdKJNjedk/4mTPQ76a6dnpnqiHR+Jadl41U+PK6iHMQ
-	 615It7xfCE+3A==
+	b=Rv/vt5CWaBk8BqZWNiED+VbmzHUIAXxWMxdTcUPLrmLi10vKiAtp1cKRY+V0iE1ZD
+	 PaPec3XSKqyv+KDbm6EE45aF1txbnslJVvFR8gA1qjPfooxhat61e/KgEqpsgqKUQd
+	 SRNx5waZ6VNSvFXqn82bKC++hZDC2ATUsPnpx0lZx7VbibglljfcpJQu6yYlMEHQLr
+	 C1UaOsXc8OR9TxTUKihAhw6Aauty/tNKioToAT2jcC3JsMQGzboCe77M0tq1GXOc6m
+	 G56FCbMuA909y8UMBUtc9Kv0fZBLw2bTVb+BDpz/6UkW9YLfdELD9idlmZEptc2IhT
+	 dyfiif+0lF9TA==
 Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(No client certificate requested)
 	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 496BA17E130E;
-	Fri,  1 Aug 2025 09:28:38 +0200 (CEST)
-Message-ID: <ff101a12-2b71-4641-af57-f70f4055cd78@collabora.com>
-Date: Fri, 1 Aug 2025 09:28:37 +0200
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id A297D17E1324;
+	Fri,  1 Aug 2025 09:28:44 +0200 (CEST)
+Message-ID: <fe21aa13-d92c-4f3e-8311-2d75468ecb4a@collabora.com>
+Date: Fri, 1 Aug 2025 09:28:44 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -42,8 +42,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 3/9] thermal/drivers/mediatek/lvts: Guard against zero
- temp_factor in lvts_raw_to_temp
+Subject: Re: [PATCH v2 4/9] thermal: mediatek: lvts: Add platform ops to
+ support alternative conversion logic
 To: Laura Nao <laura.nao@collabora.com>, srini@kernel.org, robh@kernel.org,
  krzk+dt@kernel.org, conor+dt@kernel.org, rafael@kernel.org,
  daniel.lezcano@linaro.org, rui.zhang@intel.com, lukasz.luba@arm.com,
@@ -56,21 +56,80 @@ Cc: wenst@chromium.org, nfraprado@collabora.com, arnd@arndb.de,
  linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
  kernel@collabora.com
 References: <20250730152128.311109-1-laura.nao@collabora.com>
- <20250730152128.311109-4-laura.nao@collabora.com>
+ <20250730152128.311109-5-laura.nao@collabora.com>
 From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 Content-Language: en-US
-In-Reply-To: <20250730152128.311109-4-laura.nao@collabora.com>
+In-Reply-To: <20250730152128.311109-5-laura.nao@collabora.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 Il 30/07/25 17:21, Laura Nao ha scritto:
-> Add a guard against zero temp_factor in lvts_raw_to_temp() to prevent
-> division by zero and ensure safe conversion.
+> Introduce lvts_platform_ops struct to support SoC-specific versions of
+> lvts_raw_to_temp() and lvts_temp_to_raw() conversion functions.
 > 
-> Fixes: 6725a29321e4 ("thermal/drivers/mediatek/lvts_thermal: Make coeff configurable")
-> Reviewed-by: Chen-Yu Tsai <wenst@chromium.org>
+> This is in preparation for supporting SoCs like MT8196/MT6991, which
+> require a different lvts_temp_to_raw() implementation.
+> 
 > Signed-off-by: Laura Nao <laura.nao@collabora.com>
+> ---
+>   drivers/thermal/mediatek/lvts_thermal.c | 46 +++++++++++++++++++++++--
+>   1 file changed, 43 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
+> index 8398af657ba2..6e4a35ecaf34 100644
+> --- a/drivers/thermal/mediatek/lvts_thermal.c
+> +++ b/drivers/thermal/mediatek/lvts_thermal.c
+> @@ -125,8 +125,14 @@ struct lvts_ctrl_data {
+>   			continue; \
+>   		else
+>   
+> +struct lvts_platform_ops {
+> +	int (*lvts_raw_to_temp)(u32 raw_temp, int temp_factor);
+> +	u32 (*lvts_temp_to_raw)(int temperature, int temp_factor);
+> +};
+> +
+>   struct lvts_data {
+>   	const struct lvts_ctrl_data *lvts_ctrl;
+> +	struct lvts_platform_ops ops;
+
+You can constify this one - but then there's something else that we can do here
+to waste a bit less memory.
+
+	const struct lvts_platform_ops *ops;
+
+const struct lvts_platform_ops lvts_platform_ops_v1 = {
+	.lvts_raw_to_temp = lvts_raw_to_temp,
+	.lvts_temp_to_raw = lvts_temp_to_raw,
+};
+
+static const struct lvts_data mt8195_lvts_mcu_data = {
+	[..... stuff .....],
+	.ops = lvts_platform_ops_v1,
+};
+
+....and goes on the same for all the others.
+
+
+
+>   	const u32 *conn_cmd;
+>   	const u32 *init_cmd;
+>   	int num_cal_offsets;
+> @@ -300,6 +306,7 @@ static int lvts_get_temp(struct thermal_zone_device *tz, int *temp)
+>   	struct lvts_ctrl *lvts_ctrl = container_of(lvts_sensor, struct lvts_ctrl,
+>   						   sensors[lvts_sensor->id]);
+>   	const struct lvts_data *lvts_data = lvts_ctrl->lvts_data;
+> +	const struct lvts_platform_ops *ops = &lvts_data->ops;
+
+...then here, and everywhere else, it would be just
+
+	const struct lvts_platform_ops *ops = lvts_data->ops;
+
+
+After implementing the proposed change, exactly how I wrote them:
 
 Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+
+Cheers,
+Angelo
 
 
