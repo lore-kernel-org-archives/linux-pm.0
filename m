@@ -1,73 +1,78 @@
-Received: from out30-110.freemail.mail.aliyun.com (out30-110.freemail.mail.aliyun.com [115.124.30.110])
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A19041F09A8;
-	Fri,  1 Aug 2025 06:36:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=115.124.30.110
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 893032AE72;
+	Fri,  1 Aug 2025 07:28:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1754030172; cv=none; b=VEJJ+P+z3ZCf8iVC3HzO1A37Fyupv3A7Ld8dEKg9u9iQKi1iUwqlGHodPtgfP4UW/MNThyWnw9Nb2CnvBGyYJk1KWbd2kAsAICMUtajy3L1FPlzeZcxkiCoYmKAsllTlJEIa4+7mj2GLuKo9KcheV2l0mRFEKOhmiyqFvInOh9g=
+	t=1754033324; cv=none; b=uZStF9ncWN6kgloXNel/i8XjwnCD85SgOQ/OzJ4YTY0HyBJHbfoJdQqxzp/xmFfiKuVRckA11SoyfmN72uKMI5dzoeqXofGuhXP8dBG8NCAVXmoae3jhrS0oXTnjdhRwR1Tj+tEiukaAsm4rNofItBbO9Xu5fssSwIeyCNhNRR4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1754030172; c=relaxed/simple;
-	bh=pM/QBuIYaRKXnp5dOtfsp04gUrSP40de5purZtlACYs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=rlGhTsft6aIJRSXtK6Ac4SQhuyDLt+h5ySbFVm4T8DP+5NFYtDiBb1t78Xz+t8VrXb2Urt6AHCNP8Wdng/ACGmfNeoxzKIEwHLYkFJ9oAP2N6SAboTwt6TP7QvJxcoaM7G3yh3s/L9CJNDP4G54/vfv2k3b8TTRJfjOY2/nawrU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; spf=pass smtp.mailfrom=linux.alibaba.com; dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b=Zj3vTsvo; arc=none smtp.client-ip=115.124.30.110
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.alibaba.com
+	s=arc-20240116; t=1754033324; c=relaxed/simple;
+	bh=7KLAjQU7uvnuJrjcRbN+uwgaq2T+iGTStYmHqkE2XI4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ECTnWG3idNXJl0ZM9gK7KMu7IntRkBf9k5fyX/G6pJbqerLXz9VVyhK0uBHEVbYBWUps3krb++LwokUUqm098DwKSI2BwTFMsr8us5wS+hXiBs5/vnPUspznzCrfxewaN5snzoDdTUByWGh9qh3WfK5ZZHTyy+zRXn1rdkON2So=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=P8TTs6Yc; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b="Zj3vTsvo"
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1754030157; h=From:To:Subject:Date:Message-ID:MIME-Version;
-	bh=nH/yQqjXFlgNpji/ayBxu2aP+izc9H8eGxFTy7MIHfs=;
-	b=Zj3vTsvoApX8ORjvcwRK4tooNssFU+avcS7H+3kzKbqusdLKMG9ZOK9YIrOpQkcxA76Zw3/ijLZrASuzoy1gjWUYrG/8MuzuBD3B6m2c1CB882qzB7RpSxj8DA2hT1epCCc2Po3dsf9HP+copUi87CsJHHV4Ag7zw7Y7ivBWhkU=
-Received: from localhost(mailfrom:jiapeng.chong@linux.alibaba.com fp:SMTPD_---0Wkcn-QC_1754030141 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Fri, 01 Aug 2025 14:35:56 +0800
-From: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
-To: rafael@kernel.org
-Cc: daniel.lezcano@linaro.org,
-	rui.zhang@intel.com,
-	lukasz.luba@arm.com,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Jiapeng Chong <jiapeng.chong@linux.alibaba.com>,
-	Abaci Robot <abaci@linux.alibaba.com>
-Subject: [PATCH -next] thermal/drivers/mediatek/lvts_thermal: remove unneeded semicolon
-Date: Fri,  1 Aug 2025 14:35:40 +0800
-Message-ID: <20250801063540.2959610-1-jiapeng.chong@linux.alibaba.com>
-X-Mailer: git-send-email 2.43.5
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="P8TTs6Yc"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1754033314;
+	bh=7KLAjQU7uvnuJrjcRbN+uwgaq2T+iGTStYmHqkE2XI4=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=P8TTs6YcAyYzT/Oz3XBZE39tCTA7VDmrnuQ+oYoFUw1BBaaQ2RPrLR0fRPSIjoPfg
+	 bRzMfqLT2EEM5so0Vqk19QzUPReBKN9N/WrjNkCQc5Cqxvj4TijUjTBOLsszov7L0a
+	 rFT6Qc0RoGYefG49GsFw8A5jsRnB3oualIu6oaZjhwnGIBnXSy754z6Jx4dRwEJrmu
+	 3whvOfwdMkpW9X1ryA/kLuTqaqTID7B2TvL+KIsATaAsIpkzmUqFpBFySmqJLarxI/
+	 TGWwvS2hN/Ji7/YKNpeYOmQy051BaukHH8wvqM0PwU1u5/0PcPs5/f8gTuNEkzdWK2
+	 Ih9r/CyJn6STw==
+Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: kholk11)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 74F5A17E0F3C;
+	Fri,  1 Aug 2025 09:28:33 +0200 (CEST)
+Message-ID: <489baf5c-b1ed-4605-88ab-866b3e4b99de@collabora.com>
+Date: Fri, 1 Aug 2025 09:28:32 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 7/9] thermal/drivers/mediatek/lvts: Support MSR offset
+ for 16-bit calibration data
+To: Laura Nao <laura.nao@collabora.com>, srini@kernel.org, robh@kernel.org,
+ krzk+dt@kernel.org, conor+dt@kernel.org, rafael@kernel.org,
+ daniel.lezcano@linaro.org, rui.zhang@intel.com, lukasz.luba@arm.com,
+ matthias.bgg@gmail.com
+Cc: wenst@chromium.org, nfraprado@collabora.com, arnd@arndb.de,
+ colin.i.king@gmail.com, u.kleine-koenig@baylibre.com,
+ andrew-ct.chen@mediatek.com, lala.lin@mediatek.com, bchihi@baylibre.com,
+ frank-w@public-files.de, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
+ kernel@collabora.com
+References: <20250730152128.311109-1-laura.nao@collabora.com>
+ <20250730152128.311109-8-laura.nao@collabora.com>
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Content-Language: en-US
+In-Reply-To: <20250730152128.311109-8-laura.nao@collabora.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-No functional modification involved.
+Il 30/07/25 17:21, Laura Nao ha scritto:
+> On MT8196/MT6991, per-sensor calibration data read from eFuses is
+> 16-bit. When the LVTS controller operates in 16-bit mode, a fixed offset
+> must be added to MSR values during post-processing to obtain correct
+> temperature readings. Introduce a new msr_offset field in lvts_data,
+> program the respective register and apply the offset to the calibration
+> data read from eFuses.
+> 
+> Signed-off-by: Laura Nao <laura.nao@collabora.com>
 
-./drivers/thermal/mediatek/lvts_thermal.c:642:2-3: Unneeded semicolon.
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 
-Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-Closes: https://bugzilla.openanolis.cn/show_bug.cgi?id=23244
-Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
----
- drivers/thermal/mediatek/lvts_thermal.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
-index f4d1e66d7db9..ab55b20cda47 100644
---- a/drivers/thermal/mediatek/lvts_thermal.c
-+++ b/drivers/thermal/mediatek/lvts_thermal.c
-@@ -639,7 +639,7 @@ static int lvts_sensor_init(struct device *dev, struct lvts_ctrl *lvts_ctrl,
- 
- 		lvts_sensor[i].low_thresh = INT_MIN;
- 		lvts_sensor[i].high_thresh = INT_MIN;
--	};
-+	}
- 
- 	lvts_ctrl->valid_sensor_mask = lvts_ctrl_data->valid_sensor_mask;
- 
--- 
-2.43.5
 
