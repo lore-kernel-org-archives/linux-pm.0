@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD2E927057C;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE64E271A9A;
 	Mon,  4 Aug 2025 14:25:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1754317522; cv=none; b=kNbusrA/it5Kwyf7S1pls4IclHQn2FRhqy6Vp6WCqLrclgbcJJbEkLwwgGotG7UcSCV7swZHQWp4mYgRlydCMuk9RfWMLOVIj7PUwUEDSw+6XDzrDWzUrjxCQcbi5E0MW7YzTtkqrpHe9Kkm14iQm2X2/VtZgK0FIHnjCW9I/zQ=
+	t=1754317522; cv=none; b=AkiUPgmVeKC2qjXRGxUzqx/NPR/IzxmpN8D4w/YWA/JKttZMQwtHNI8WbZBqjCClf6rWa84D4nVc/Q/eFvR9Eh+/JHI+1Bzeyi7WPS+FZkraxvaSHtNF6XlnMw+c05EhNUAGMQJmUjSrvW5b6UIlzDJ29tkhUs/dLeiD6FwXIGw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1754317522; c=relaxed/simple;
-	bh=phXVktnsQFsRlCPE6gQZzgzGOtAWOzVU4TdMa++7y/o=;
+	bh=SUEmfllbxCfuPwlmfLNSQ5Zq6XjkIAA05us9mJD3pTY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=RqyWAh1wIfMns+iUEwqnDODD0Akb39XRM+819VDYeUDBHsvfEyq9MyCxivxHTfGH8p9gK60RqqHXbZo3cRqH5D1QbWeoJXCIEaSfWjKS1+HLV0WF+SD/8D5SAEH2eXW53vqO1vHz3DGJOLYT46GlWNgqFPgXopTTJAE7WF3aPJY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AIzpMlPD; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=UUUZa4V8NGpokc1MAWVJ+ggdQ/OfsIYDmn0nYH4CqStCM2pWjBuJ+6cny/48jihGAIEou6Yzx+kUWA8SYk9oICin78NekjiOJt7mBwSP1j4GAStx0OVF0ImIt68Aqpga395B1i2Xs/q6Ip1TNv/qcH+0iW/R1d74KfTZpIFZTTU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=uDLoSEjz; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AIzpMlPD"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 3BCB0C4CEF0;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="uDLoSEjz"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 57C23C4CEFA;
 	Mon,  4 Aug 2025 14:25:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1754317522;
-	bh=phXVktnsQFsRlCPE6gQZzgzGOtAWOzVU4TdMa++7y/o=;
+	bh=SUEmfllbxCfuPwlmfLNSQ5Zq6XjkIAA05us9mJD3pTY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=AIzpMlPDVnGXezvDECm4IubKoW3sHxSkk8/TRBOLjyRdhxEOIQDpagLmRRRwdme8a
-	 2WFkjR0Fo/edEN7jD1ZgYrVyk8p6AssX3jqUx6pnz6OViiEiIyWuvHffBhz/hY96F3
-	 uL0CpFBSjNcH+xeemMpj9iBp32mdO4wLhryOx2FxsjxI9vfdn1sRvbK0xrfXopMW4D
-	 Q+LmALnrUqMgcblaiMJEsx/+cnXhr8+VBe+hUrWDCqCVWzgY7TWNPwsbr2i8e2LTWn
-	 DjmAU4q86kLWDwrNwCEj+MwqewIzYZO6PLkethQD4sWI/Jv7fIuThcKhxlwvehTqg7
-	 Z04lOp14fcpzA==
+	b=uDLoSEjzgY7QQQV+umULTFZuwx+xylsxVX1YDLNRl4T1Q3WovI9DeTCl7qi+6lVsf
+	 MblQfE/YyybwAGYTB6jGC+cJ2PNfeA03I+5Z9VHFKIIlWYJVnc0XL+wNMhb4eAizck
+	 4J0GOUmZu1pKC+l+yP3chWK9We0LgfrhgM0/GA6Esp7lmOfYHJ2pqZ/E7xZC18Pxon
+	 P7SV4YviMDVrP+FXbVHxmKgFlrr7O/wIJPGd85+c72A/UeictqJeWuVT7rpkhdnAwR
+	 VSy1ORKB84K46Zb/iR9kBH25x/C8aCpOjfpSs7E9NrlbOprxhAvh+wpmFpAVWDQnyX
+	 FxpBjkjaE4Bmw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3036CC87FD1;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EB71C87FCF;
 	Mon,  4 Aug 2025 14:25:22 +0000 (UTC)
 From: Thomas Antoine via B4 Relay <devnull+t.antoine.uclouvain.be@kernel.org>
-Date: Mon, 04 Aug 2025 16:26:39 +0200
-Subject: [PATCH v5 2/4] dt-bindings: power: supply: add support for
- MAX77759 fuel gauge
+Date: Mon, 04 Aug 2025 16:26:41 +0200
+Subject: [PATCH v5 4/4] arm64: dts: exynos: google: add Maxim MAX77759
+ Fuel-gauge
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250804-b4-gs101_max77759_fg-v5-2-03a40e6c0e3d@uclouvain.be>
+Message-Id: <20250804-b4-gs101_max77759_fg-v5-4-03a40e6c0e3d@uclouvain.be>
 References: <20250804-b4-gs101_max77759_fg-v5-0-03a40e6c0e3d@uclouvain.be>
 In-Reply-To: <20250804-b4-gs101_max77759_fg-v5-0-03a40e6c0e3d@uclouvain.be>
 To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -56,11 +56,11 @@ Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
  devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
  linux-samsung-soc@vger.kernel.org, Thomas Antoine <t.antoine@uclouvain.be>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1754317658; l=3442;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1754317658; l=4842;
  i=t.antoine@uclouvain.be; s=20241202; h=from:subject:message-id;
- bh=/JRl4+oKCLeCuqYwla/ChjnUkO3GOKVE7rQTxDRH5UQ=;
- b=tgtf8lqDV0ObDF50iRsgPV1Unq9+iIRAg+SVhyYpWX3tGCMpZB1+Vp5TRqf0bItrLaWJRaSXD
- jP8ijQYNxeMAs3RY+62WWnpJ1nea18tByTxj2rCoBfOakT7zAYND03I
+ bh=WF3EeuQVRCI8z8XyGntN8UgYyyixrVyY5uSQUCZ94dw=;
+ b=v68T20khFe1UGQ2JyoNgy4ms6kbeJYjj9SRA+1t4Mx+n0o6kAgF3AMdV/EemaH96ywtN6rd6t
+ EPtpPJzp0m8A2BonUtQTkzYgodWp+grRpoUrNC1z/wYrp6tl5qw45Kw
 X-Developer-Key: i=t.antoine@uclouvain.be; a=ed25519;
  pk=sw7UYl31W1LTpgWRiX4xIF5x6ok7YWZ6XZnHqy/d3dY=
 X-Endpoint-Received: by B4 Relay for t.antoine@uclouvain.be/20241202 with
@@ -70,108 +70,148 @@ Reply-To: t.antoine@uclouvain.be
 
 From: Thomas Antoine <t.antoine@uclouvain.be>
 
-The Maxim MAX77759 is a companion PMIC for USB Type-C. It contains
-Battery Charger, Fuel Gauge, temperature sensors, USB Type-C Port
-Controller (TCPC), NVMEM, and additional GPIO interfaces
+Add the node for the Maxim MAX77759 fuel gauge as a slave of the i2c.
 
-Use max77759-fg compatible to avoid conflict with drivers for other
-functions.
+The TODO is still applicable given there are other slaves on the
+bus (e.g. PCA9468, other MAX77759 functions and the MAX20339 OVP).
 
-The battery node is used to pass the REPCAP and ICHGTERM values
-needed for the initialization of the fuel gauge.
+For the device specific values (full design capacity and terminal
+current), the device should check an EEPROM at address 0x50 of the
+hsi2c_8 for a battery id stored in register 0x17. A set of parameters
+for the initialization of the fuel gauge should be chosen based on
+this id. Those sets are defined here:
 
-The nvmem cells are used to get initialization values and to backup
-the learning and the number of cycles. It should work out of the box
-with gs101-oriole and gs101-raven which were previously running
-Android.
+Link: https://android.googlesource.com/kernel/gs/+/refs/heads/android-gs-raviole-5.10-android15/arch/arm64/boot/dts/google/gs101-oriole-battery-data.dtsi
+Link: https://android.googlesource.com/kernel/gs/+/refs/heads/android-gs-raviole-5.10-android15/arch/arm64/boot/dts/google/gs101-raven-battery-data.dtsi
+
+This does not seem to be a standard pattern in the kernel currently
+so it is not implemented. Values observed on tested devices are
+instead used. The driver or the devicetree should be should be
+extended in the future to take versions into account.
+
+The pinctrl name follows the convention proposed in
+Link: https://lore.kernel.org/all/20250524-b4-max77759-mfd-dts-v2-2-b479542eb97d@linaro.org/
 
 Signed-off-by: Thomas Antoine <t.antoine@uclouvain.be>
 ---
- .../bindings/power/supply/maxim,max77759.yaml      | 76 ++++++++++++++++++++++
- 1 file changed, 76 insertions(+)
+ arch/arm64/boot/dts/exynos/google/gs101-oriole.dts | 10 ++++++++
+ .../boot/dts/exynos/google/gs101-pixel-common.dtsi | 30 ++++++++++++++++++++++
+ arch/arm64/boot/dts/exynos/google/gs101-raven.dts  | 11 ++++++++
+ 3 files changed, 51 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/maxim,max77759.yaml b/Documentation/devicetree/bindings/power/supply/maxim,max77759.yaml
-new file mode 100644
-index 0000000000000000000000000000000000000000..5e160e3ad86849f9ee0be54e20e195fc455eba6d
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/maxim,max77759.yaml
-@@ -0,0 +1,76 @@
-+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/power/supply/maxim,max77759.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/arch/arm64/boot/dts/exynos/google/gs101-oriole.dts b/arch/arm64/boot/dts/exynos/google/gs101-oriole.dts
+index 8df42bedbc036b5e97f6238d64820370043ffef2..18d147f6ea4a1a76c375996557349c866b9dad72 100644
+--- a/arch/arm64/boot/dts/exynos/google/gs101-oriole.dts
++++ b/arch/arm64/boot/dts/exynos/google/gs101-oriole.dts
+@@ -13,6 +13,12 @@
+ / {
+ 	model = "Oriole";
+ 	compatible = "google,gs101-oriole", "google,gs101";
 +
-+title: Maxim Integrated MAX77759 fuel gauge
++	battery: battery {
++		compatible = "simple-battery";
++		charge-full-design-microamp-hours = <4524000>;
++		charge-term-current-microamp = <45000>;
++	};
+ };
+ 
+ &cont_splash_mem {
+@@ -27,3 +33,7 @@ &framebuffer0 {
+ 	format = "a8r8g8b8";
+ 	status = "okay";
+ };
 +
-+maintainers:
-+  - Thomas Antoine <t.antoine@uclouvain.be>
++&fuel_gauge {
++	monitored-battery = <&battery>;
++};
+diff --git a/arch/arm64/boot/dts/exynos/google/gs101-pixel-common.dtsi b/arch/arm64/boot/dts/exynos/google/gs101-pixel-common.dtsi
+index d6ddcc13f7b20c6dfbe92e86abafe965870d0c78..3362ad89ef6bacb7349259cf9e14452193ff7361 100644
+--- a/arch/arm64/boot/dts/exynos/google/gs101-pixel-common.dtsi
++++ b/arch/arm64/boot/dts/exynos/google/gs101-pixel-common.dtsi
+@@ -10,6 +10,7 @@
+ 
+ #include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/input/input.h>
++#include <dt-bindings/interrupt-controller/irq.h>
+ #include <dt-bindings/usb/pd.h>
+ #include "gs101-pinctrl.h"
+ #include "gs101.dtsi"
+@@ -99,6 +100,16 @@ &hsi2c_8 {
+ 	eeprom: eeprom@50 {
+ 		compatible = "atmel,24c08";
+ 		reg = <0x50>;
 +
-+properties:
-+  compatible:
-+    const: maxim,max77759-fg
++		nvmem-layout {
++			compatible = "fixed-layout";
++			#address-cells = <1>;
++			#size-cells = <1>;
 +
-+  reg:
-+    maxItems: 1
++			fg_state: fgstate@42 {
++				reg = <0x42 0x17>;
++			};
++		};
+ 	};
+ };
+ 
+@@ -188,6 +199,18 @@ usbc0_role_sw: endpoint {
+ 			};
+ 		};
+ 	};
 +
-+  interrupts:
-+    maxItems: 1
++	fuel_gauge: fuel-gauge@36 {
++		compatible = "maxim,max77759-fg";
++		reg = <0x36>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&if_pmic_fg_int>;
++		interrupt-parent = <&gpa9>;
++		interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
++		shunt-resistor-micro-ohms = <5000>;
++		nvmem-cell-names = "fg_state";
++		nvmem-cells = <&fg_state>;
++	};
+ };
+ 
+ &pinctrl_far_alive {
+@@ -214,6 +237,13 @@ typec_int: typec-int-pins {
+ };
+ 
+ &pinctrl_gpio_alive {
++	if_pmic_fg_int: if-pmic-fg-int-pins {
++		samsung,pins = "gpa9-3";
++		samsung,pin-function = <GS101_PIN_FUNC_EINT>;
++		samsung,pin-pud = <GS101_PIN_PULL_UP>;
++		samsung,pin-drv = <GS101_PIN_DRV_2_5_MA>;
++	};
 +
-+  shunt-resistor-micro-ohms:
-+    description: The value of the current sense resistor in microohms.
+ 	key_power: key-power-pins {
+ 		samsung,pins = "gpa10-1";
+ 		samsung,pin-function = <GS101_PIN_FUNC_EINT>;
+diff --git a/arch/arm64/boot/dts/exynos/google/gs101-raven.dts b/arch/arm64/boot/dts/exynos/google/gs101-raven.dts
+index 1e7e6b34b8649bc700a745c579a0268f0f6a9524..f91800879ea94b8fb0008c5e1f828072cabc1ac7 100644
+--- a/arch/arm64/boot/dts/exynos/google/gs101-raven.dts
++++ b/arch/arm64/boot/dts/exynos/google/gs101-raven.dts
+@@ -13,6 +13,13 @@
+ / {
+ 	model = "Raven";
+ 	compatible = "google,gs101-raven", "google,gs101";
 +
-+  monitored-battery:
-+    description: |
-+      The fuel gauge needs the following battery properties:
-+      - charge-full-design-microamp-hours
-+      - charge-term-current-microamp
++	battery: battery {
++		compatible = "simple-battery";
 +
-+  nvmem-cells:
-+    maxItems: 1
-+    description: |
-+      Saved fuel gauge state. This state will be used during the initialization
-+      and saved on exit. It must be initialized beforehand.
-+      Its layout must be composed of
-+        - RCOMP0 (characterization of the open-circuit voltage)
-+        - TCOMPO (temperature compensation information)
-+        - FULLCAPREP (reported full capacity)
-+        - QRTABLE00, QRTABLE10, QRTABLE20, QRTABLE30 (cell capacity information)
-+        - cv_mixcap (remaining capacity of the cell without empty compensation)
-+        - cv_halftime (time-to-full characterization time constant)
-+      They must all be aligned on 2 bytes. A valid CRC8 checksum must
-+      also be found at the end (polynomial x^8 + x^2 + x + 1).
++		charge-full-design-microamp-hours = <4904000>;
++		charge-term-current-microamp = <49000>;
++	};
+ };
+ 
+ &cont_splash_mem {
+@@ -27,3 +34,7 @@ &framebuffer0 {
+ 	format = "a8r8g8b8";
+ 	status = "okay";
+ };
 +
-+  nvmem-cell-names:
-+    const: fg_state
-+
-+required:
-+  - compatible
-+  - reg
-+  - shunt-resistor-micro-ohms
-+  - monitored-battery
-+  - nvmem-cells
-+  - nvmem-cell-names
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    i2c {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+
-+      fuel-gauge@36 {
-+        compatible = "maxim,max77759-fg";
-+        reg = <0x36>;
-+        interrupt-parent = <&gpa9>;
-+        interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
-+        shunt-resistor-micro-ohms = <5000>;
-+        monitored-battery = <&battery>;
-+        nvmem-cell-names = "fg_state";
-+        nvmem-cells = <&fg_state>;
-+      };
-+    };
++&fuel_gauge {
++	monitored-battery = <&battery>;
++};
 
 -- 
 2.50.1
