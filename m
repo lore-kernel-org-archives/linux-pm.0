@@ -1,38 +1,38 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C0F8235BE8;
-	Tue,  5 Aug 2025 07:48:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B41602459FE;
+	Tue,  5 Aug 2025 07:48:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1754380123; cv=none; b=LdSMql9ccBhEzcBZmb4u182esDCZi8Y2GRlFuKChbAofpS8alGsxdjt2JunybNW7l9sI1rG4n+2bQLdjdbMn4mIgdna6f+f7FUp2BIngaZv06sVY3XJGW+WxunK/QMjxtYu+/S5A6dkUV+3DlV7G1Vwn9YZB24OTkCuk5CgKVfg=
+	t=1754380124; cv=none; b=g0EpEOgN7RoMVyHWA2qt0KvT0sQkzjnmJqf+r48bDKARIHeXy/R2FRGA4h/3oEg9u4IsrHerrJycaL65guAwRfmq28SXp/ENc1baGB/f1jGy53aZhNNt6GDC1KXZT0mV1j6tFemYCqOY18mdlGWnGKI5+PcABGVIDap8gAEVWLg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1754380123; c=relaxed/simple;
-	bh=t7Rehz1Jrb0D0nap14L/kwRSRhOnQ0fHBCl9LYwxpeg=;
+	s=arc-20240116; t=1754380124; c=relaxed/simple;
+	bh=tJ7o+S9MAcZ9O3MH3doLENuVw9J+TQdb5QZwH7DfNpQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=k+n2spN9kaZNKqDI2JtLZPua+289qI/pwyPw4cgmf3SO3wnGP5b5yPiseGUBmJ3k4d4iP6t0dqSdd89CvVS0X9DoSNX7qiLxBPvA8xMMEiwEcS63CtcPHa4GDeP2/ewDQdYIlqaEdeqO1ZkI3BlX20G5NvYSQGzBhAFJlgJH+nc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=qqZTmbMe; arc=none smtp.client-ip=148.251.105.195
+	 MIME-Version:Content-Type; b=lW9kvB9zhVgmwzFl/49/bDl3qOv2op53WthYqzLtK8wSD5jxkvgmV4C2YWeJPSK+X1ZbgJiW1alwCM3tpNFNgabgUICkGYY/tUi/0WJztP6Jb6koh/HcWu0rxsWf2dKsM8EI9qJ4YY/+AQrIgmzbI5zNKkJseXKb6jaAuTAMKD8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=Te7FJuIY; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="qqZTmbMe"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="Te7FJuIY"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1754380119;
-	bh=t7Rehz1Jrb0D0nap14L/kwRSRhOnQ0fHBCl9LYwxpeg=;
+	s=mail; t=1754380121;
+	bh=tJ7o+S9MAcZ9O3MH3doLENuVw9J+TQdb5QZwH7DfNpQ=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=qqZTmbMeyuJR1FWoWPIBn1q+u7lDZJx4B4wh8yjAynf3RZJxGZ/opTOFlFSkWsW1S
-	 iBtcbDLbFd/TLDVUf/tY69GZWW8AhBPmfkDtHiDyxwTisq5hqv5JRtiug6edzvMT8B
-	 woC6N3DzykUt9EJ4eDT+1kg671SfdT8VD2D5pIrsRGVo64VbOOENky9pRjHTv5TVNE
-	 o0687OyuN3EnnLhUjtELTcm9Cn00gabEy6gpe7F2omk2ME0PQsUIkq1gMLRuHP+Sm8
-	 mwupupeSJbWle1e6j2jSyP5V+ZPbdSDNt7zI7Z4X4HaEI9Vr8Y/uJf/kcf4mEWDJCm
-	 fL4J9S+Dx3LVg==
+	b=Te7FJuIYX4k8bxrEzVJiBqwlSeToot3AKjttZZfEOcss2xzPB8DLGPpWLr9pVAz6J
+	 MGYAB8mwkGZCI1QCEpuGWFXKjbg3mjV3fctSRqLDflqwPCzg/F/F7nZTmWu85+CQVd
+	 IDWhFOybo3A7iW0AJXtRN54RcRkfonVxpp5XQ6pDthTQlxdSI3V4oDHhmpWC7MhM++
+	 d7qlvKueRic9HFOI3r9Wn7AeV0OY3rQbJehTgsR0aoPzpADAPviJx2NTrkmX+XNTZz
+	 HtYlgew1Yc/fJ7v8CAR+h/pwQPYYFxP5z0F1bvAvLzNp/jTx03t3RY8x6SGJsx5yUr
+	 ut47shYnDfKjg==
 Received: from IcarusMOD.eternityproject.eu (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 4CBB117E07E6;
-	Tue,  5 Aug 2025 09:48:38 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 4BA0417E09F0;
+	Tue,  5 Aug 2025 09:48:40 +0200 (CEST)
 From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 To: linux-mediatek@lists.infradead.org
 Cc: robh@kernel.org,
@@ -53,9 +53,9 @@ Cc: robh@kernel.org,
 	linux-pm@vger.kernel.org,
 	kernel@collabora.com,
 	=?UTF-8?q?N=C3=ADcolas=20F=2E=20R=2E=20A=2E=20Prado?= <nfraprado@collabora.com>
-Subject: [PATCH v3 03/10] dt-bindings: power: mediatek: Document access-controllers property
-Date: Tue,  5 Aug 2025 09:47:39 +0200
-Message-ID: <20250805074746.29457-4-angelogioacchino.delregno@collabora.com>
+Subject: [PATCH v3 05/10] pmdomain: mediatek: Handle SoCs with inverted SRAM power-down bits
+Date: Tue,  5 Aug 2025 09:47:41 +0200
+Message-ID: <20250805074746.29457-6-angelogioacchino.delregno@collabora.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20250805074746.29457-1-angelogioacchino.delregno@collabora.com>
 References: <20250805074746.29457-1-angelogioacchino.delregno@collabora.com>
@@ -68,91 +68,98 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Allow specifying access-controllers in the main power controller
-node and deprecate the old mediatek,infracfg, mediatek,infracfg-nao
-and mediatek,smi properties located in the children.
+Some SoCs, and even some subsystems in the same SoC, may have the
+logic for SRAM power-down inverted, as in, setting the bit means
+"power down" and unsetting means "power up": this is because some
+hardware subsystems use this as a power-lock indication and some
+use this as a power down one (for example, usually, the modem ss
+has it inverted!).
 
-This is done in order to both simplify the power controller
-nodes and in preparation for adding support for new generation
-SoCs like MT8196/MT6991 and other variants, which will need
-to set protection on new busses.
+In preparation for adding support for power domains with inverted
+SRAM_PDN bits, add a new MTK_SCPD_SRAM_PDN_INVERTED flag and check
+for it in scpsys_sram_enable() and scpsys_sram_disable().
 
 Reviewed-by: Nícolas F. R. A. Prado <nfraprado@collabora.com>
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- .../power/mediatek,power-controller.yaml      | 37 +++++++++++++++++++
- 1 file changed, 37 insertions(+)
+ drivers/pmdomain/mediatek/mtk-pm-domains.c | 27 ++++++++++++++++------
+ drivers/pmdomain/mediatek/mtk-pm-domains.h |  1 +
+ 2 files changed, 21 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml b/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
-index 9c7cc632abee..500d98921581 100644
---- a/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
-+++ b/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
-@@ -44,6 +44,15 @@ properties:
-   '#size-cells':
-     const: 0
+diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+index 48dc5f188438..6118a389244a 100644
+--- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
++++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+@@ -79,16 +79,23 @@ static bool scpsys_domain_is_on(struct scpsys_domain *pd)
  
-+  access-controllers:
-+    description:
-+      A number of phandles to external blocks to set and clear the required
-+      bits to enable or disable bus protection, necessary to avoid any bus
-+      faults while enabling or disabling a power domain.
-+      For example, this may hold phandles to INFRACFG and SMI.
-+    minItems: 1
-+    maxItems: 3
-+
- patternProperties:
-   "^power-domain@[0-9a-f]+$":
-     $ref: "#/$defs/power-domain-node"
-@@ -123,14 +132,17 @@ $defs:
-       mediatek,infracfg:
-         $ref: /schemas/types.yaml#/definitions/phandle
-         description: phandle to the device containing the INFRACFG register range.
-+        deprecated: true
+ static int scpsys_sram_enable(struct scpsys_domain *pd)
+ {
+-	u32 pdn_ack = pd->data->sram_pdn_ack_bits;
++	u32 expected_ack, pdn_ack = pd->data->sram_pdn_ack_bits;
+ 	struct scpsys *scpsys = pd->scpsys;
+ 	unsigned int tmp;
+ 	int ret;
  
-       mediatek,infracfg-nao:
-         $ref: /schemas/types.yaml#/definitions/phandle
-         description: phandle to the device containing the INFRACFG-NAO register range.
-+        deprecated: true
+-	regmap_clear_bits(scpsys->base, pd->data->ctl_offs, pd->data->sram_pdn_bits);
++	if (MTK_SCPD_CAPS(pd, MTK_SCPD_SRAM_PDN_INVERTED)) {
++		regmap_set_bits(scpsys->base, pd->data->ctl_offs, pd->data->sram_pdn_bits);
++		expected_ack = pdn_ack;
++	} else {
++		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, pd->data->sram_pdn_bits);
++		expected_ack = 0;
++	}
  
-       mediatek,smi:
-         $ref: /schemas/types.yaml#/definitions/phandle
-         description: phandle to the device containing the SMI register range.
-+        deprecated: true
+ 	/* Either wait until SRAM_PDN_ACK all 1 or 0 */
+ 	ret = regmap_read_poll_timeout(scpsys->base, pd->data->ctl_offs, tmp,
+-				       (tmp & pdn_ack) == 0, MTK_POLL_DELAY_US, MTK_POLL_TIMEOUT);
++				       (tmp & pdn_ack) == expected_ack,
++				       MTK_POLL_DELAY_US, MTK_POLL_TIMEOUT);
+ 	if (ret < 0)
+ 		return ret;
  
-     required:
-       - reg
-@@ -138,6 +150,31 @@ $defs:
- required:
-   - compatible
+@@ -103,7 +110,7 @@ static int scpsys_sram_enable(struct scpsys_domain *pd)
  
-+allOf:
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - mediatek,mt8183-power-controller
-+    then:
-+      properties:
-+        access-controllers:
-+          minItems: 2
-+          maxItems: 2
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - mediatek,mt8365-power-controller
-+    then:
-+      properties:
-+        access-controllers:
-+          minItems: 3
-+          maxItems: 3
-+
- additionalProperties: false
+ static int scpsys_sram_disable(struct scpsys_domain *pd)
+ {
+-	u32 pdn_ack = pd->data->sram_pdn_ack_bits;
++	u32 expected_ack, pdn_ack = pd->data->sram_pdn_ack_bits;
+ 	struct scpsys *scpsys = pd->scpsys;
+ 	unsigned int tmp;
  
- examples:
+@@ -113,12 +120,18 @@ static int scpsys_sram_disable(struct scpsys_domain *pd)
+ 		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_SRAM_ISOINT_B_BIT);
+ 	}
+ 
+-	regmap_set_bits(scpsys->base, pd->data->ctl_offs, pd->data->sram_pdn_bits);
++	if (MTK_SCPD_CAPS(pd, MTK_SCPD_SRAM_PDN_INVERTED)) {
++		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, pd->data->sram_pdn_bits);
++		expected_ack = 0;
++	} else {
++		regmap_set_bits(scpsys->base, pd->data->ctl_offs, pd->data->sram_pdn_bits);
++		expected_ack = pdn_ack;
++	}
+ 
+ 	/* Either wait until SRAM_PDN_ACK all 1 or 0 */
+ 	return regmap_read_poll_timeout(scpsys->base, pd->data->ctl_offs, tmp,
+-					(tmp & pdn_ack) == pdn_ack, MTK_POLL_DELAY_US,
+-					MTK_POLL_TIMEOUT);
++					(tmp & pdn_ack) == expected_ack,
++					MTK_POLL_DELAY_US, MTK_POLL_TIMEOUT);
+ }
+ 
+ static struct regmap *scpsys_bus_protect_get_regmap(struct scpsys_domain *pd,
+diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.h b/drivers/pmdomain/mediatek/mtk-pm-domains.h
+index 4f2d331a866a..fbbfb23a8739 100644
+--- a/drivers/pmdomain/mediatek/mtk-pm-domains.h
++++ b/drivers/pmdomain/mediatek/mtk-pm-domains.h
+@@ -13,6 +13,7 @@
+ #define MTK_SCPD_EXT_BUCK_ISO		BIT(6)
+ #define MTK_SCPD_HAS_INFRA_NAO		BIT(7)
+ #define MTK_SCPD_STRICT_BUS_PROTECTION	BIT(8)
++#define MTK_SCPD_SRAM_PDN_INVERTED	BIT(9)
+ #define MTK_SCPD_CAPS(_scpd, _x)	((_scpd)->data->caps & (_x))
+ 
+ #define SPM_VDE_PWR_CON			0x0210
 -- 
 2.50.1
 
