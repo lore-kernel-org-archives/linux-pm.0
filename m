@@ -1,272 +1,158 @@
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vk1-f181.google.com (mail-vk1-f181.google.com [209.85.221.181])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 347B8134AC;
-	Tue,  5 Aug 2025 09:35:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=85.215.255.51
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1754386510; cv=pass; b=XItjcH+YSs+O/EVMy3YJAR5BwbXTaAAHiOV35vPjEdIPDVxiUbz2kdnr64JsVYc2CTRkA1kYjppjSFVZi8I0+RoDQWE7uJi9LsSMbYrobWX75/X9EnDCcHtuLbRpVRMBkZeil/8HePABh3Wgx+3RWEuXRGx9sSPQAHiy+Sa7j1A=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1754386510; c=relaxed/simple;
-	bh=9MfVy+lxDrD75Ox5ECCp+msLJBjzC81QBDPWn23C6JQ=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=FfltaG73A5G/ljMZqC4t4lvolIphz9LaglCHfv4ygxyMba/IgFsc8Qyx2uaRfj55yb0p2C9olmjGZnsxB/+YxXah43FyBB2WULGnXq/VfHVdLLavkhUEuFCSPobzYWDoR2nYk8BPzIuNtf4XugpgUJ9XV5tdei+H5oCpJAzunkY=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=goldelico.com; spf=pass smtp.mailfrom=goldelico.com; dkim=pass (2048-bit key) header.d=goldelico.com header.i=@goldelico.com header.b=GJ2ytIwv; dkim=permerror (0-bit key) header.d=goldelico.com header.i=@goldelico.com header.b=aVVZmfBJ; arc=pass smtp.client-ip=85.215.255.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=goldelico.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=goldelico.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=goldelico.com header.i=@goldelico.com header.b="GJ2ytIwv";
-	dkim=permerror (0-bit key) header.d=goldelico.com header.i=@goldelico.com header.b="aVVZmfBJ"
-ARC-Seal: i=1; a=rsa-sha256; t=1754386137; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=l/w6KcKOuIS7LUdG4Ix/jF/a9zUEXzHZ92ukmnfKVNfuR3hxpFm5BarUNBkdxb6ta8
-    YSBioEWKSRDg7cY7mhnDRo+GdXrzao8vX6OClB+d8I7MkCZOkji1lM2Qwyi2AY5XD99b
-    pxl0zkk8jz8IOF/2UaY0qfKHI2Gc3vpfw+gDsR5MEC2NMi6Wo2UaK28WXC5QukBjqwHn
-    TltYClzZnWNppw603e5mPopOxL1TEx/Cv66pUXamlhpcNvOuYXf8ETLz51Rx9d5Dr4+m
-    hg1IZ3pTMPAZX7XsqnelQx6ES99UvTASqe/yTn7aoZMG5Zce2h3N8QsuZ84zcBSQ7jgu
-    xuYg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1754386137;
-    s=strato-dkim-0002; d=strato.com;
-    h=To:References:Message-Id:Cc:Date:In-Reply-To:From:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=8G8/k+nPGic7BC3JBra8A7ttqgGnR4V1hT1DFa/NooQ=;
-    b=Zp2kUXyNc/4Tb4Je1p9zrxn/JqIwarui7zyNVPO10rTPAi2jdLZzRloUws4g0Whrfd
-    xwdHQV09h2JbKD13uClEfH34B80DDwQu3qWGIjfImplEXTmfcCeUYPPxdCMWkjtniXJw
-    Pkxm06rHK+9dnhWu1QUJpnedu1gXpBnTgJ//zQ5UuU+d9tgNhgdbH3xIF9AzY2nbmP9U
-    TyLdpeiFgW2wPlzqBCVy2whG+75xrr1BQ1pLmlT6bobZMIcSkvFVlxbfyJ7lH35mjAaH
-    Z5KiUVfg5csf/m13nyMrvvKmXH86hmOOJZSFn8x6JNb7O05uwmQKQAcq77uahmz6DMeD
-    ScBg==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo01
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1754386137;
-    s=strato-dkim-0002; d=goldelico.com;
-    h=To:References:Message-Id:Cc:Date:In-Reply-To:From:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=8G8/k+nPGic7BC3JBra8A7ttqgGnR4V1hT1DFa/NooQ=;
-    b=GJ2ytIwv2wtppNHHYkPqi8gJ8cz3f6xR4iQH6OlvNRL9+4v3Oun2ORtbMtYwEgCCY2
-    KJMemsk6VMjkq5f4rzV6y7xTCVhVhwJmBdlNw5NtigJYCQUHl1Z0rkm6RZ5qdnKJ1mkb
-    P5T0NyKPgxjvbxSghYnVdtrfx7w12USQ+cqceUEXT5j8A4uIEmtq6tIkus2taVkugisG
-    9y7usO2m3BTYBG9fjdoHy9jav4Yw5jisna9Z2p9+xpIOc7yq/YtGDSMf9OPD2YgoABEC
-    8wg2l2UnKyqlXY8O9YPF5sWyOU9t0U63OQlyEPAhcxOqfp5dNI45y1vUGnLY3i6U69oH
-    kblA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1754386137;
-    s=strato-dkim-0003; d=goldelico.com;
-    h=To:References:Message-Id:Cc:Date:In-Reply-To:From:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=8G8/k+nPGic7BC3JBra8A7ttqgGnR4V1hT1DFa/NooQ=;
-    b=aVVZmfBJYcCxals6j19JWh2TdATsM+QGnx3sH9asI8m0YdeytJJ2C5uYfMItOkLJFI
-    fogqAp5X4Avngv4OlmDw==
-X-RZG-AUTH: ":JGIXVUS7cutRB/49FwqZ7WcJeFKiMhflhwDubTJ9o12DNOsPj0lFzL1yfjEZ"
-Received: from smtpclient.apple
-    by smtp.strato.de (RZmta 52.1.2 DYNA|AUTH)
-    with ESMTPSA id Q307a41759Sujl3
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve X9_62_prime256v1 with 256 ECDH bits, eq. 3072 bits RSA))
-	(Client did not present a certificate);
-    Tue, 5 Aug 2025 11:28:56 +0200 (CEST)
-Content-Type: text/plain;
-	charset=utf-8
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84D47134AC;
+	Tue,  5 Aug 2025 09:35:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.181
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1754386534; cv=none; b=MGDhl3n8iAKbSuUWOG5sYjF3AK3Br7s6nF78n2rW3FWwaOF7TqKpAGe1/DUtKerqHL010R0iI/mVb5uvgF6rHQVH7DdYasApR+b31v/+htNpmkzumeOLZLI5HZFfpdlfYIeeVWytaH5PPlnbDIwH4qEfUm9EvMn+pyXCmuQmabY=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1754386534; c=relaxed/simple;
+	bh=qusNSIcbQGI1rXZqa62J/1BR26z3I4Oa2dRZ9+B8Z8s=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=sYCj51OyIlARYEoZv3aH0lvZmc73JrOTCihmrUcDYcITHY3YrLqoFFr8gyZ172NdrGSC30UK6gqW+nb++gsTNs43NMQrx/7+LuyIJwCq6VQqXUKMOsLlMIFefJV4jSu8ZBllgP8ckIzRKEUvoxreyAJnqbQSZ+1bqFDEy/l3z2w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.181
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vk1-f181.google.com with SMTP id 71dfb90a1353d-53987d78f0bso470224e0c.2;
+        Tue, 05 Aug 2025 02:35:32 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1754386531; x=1754991331;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=kSnbT0XIAXfQmqgeyBFr4CFfPWqdXisju5F5x0bhLeE=;
+        b=fmwL6Rn+7p8uRhBTf9yCY+c0a+nmfpmVVaQYq+VbUvSeH+ZLHxuJ9D0TSxECUQ9YW6
+         132xZtkLlIf4sYZ6a6drYj4+uEADnXkZ38YToWtDVIj/g4YB/4TGRpfvXXh9tY8Y3p08
+         wYv2f3htvk/OFt8EH6BL7gEVlXsmGnQxmByraFcvPmnQyXJeg2Q5QiuLVxhNJy+r3Moa
+         zAvXVcErztjcUjf5qmHWj9QyI1g+CeaXwN8PJGk8GsDx+kvGVSzonjULQTQfDugGFCMi
+         uz4OtbRQMYQELk0SfrHY2R/PlsXjXotK4OYlfjdsyaZ2iIcIpbID19f2VUMeFMBAgWCB
+         3/Kg==
+X-Forwarded-Encrypted: i=1; AJvYcCUQmrOuQOFOcuSGmvivRIYzo5m8F0leO+Rc7e8EK/am+BLWRTV8I13cuvqG2atImXMFAOmuVo+n1wkr@vger.kernel.org, AJvYcCW5vaTQCFIfWGPkyS6YFPaRiXbRzJDt8L4uK3bB0deiFXEm4rO5e/ajnAGMB++fSFYLsJhiytf8vhQ=@vger.kernel.org, AJvYcCXMyMYqW4OEmnwkcOlLpgoed9CIh0gUNI6DYoZFjud8Q/R+hiskTzI759rEHm76R6DPityezX4coM28pOts@vger.kernel.org, AJvYcCXbmwK6/WdQSRaDcnFoj1bx4Sn4RAUJ3fPjhz3uakM64gDv7FxrC6XHSaLYpQqQ5CZaedYrgFS/KayB+JXlgFkIvh4=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzi7LDLM5wg4NkEV0dlfOos860iGS99Yw9J687OzpHj2RkYSNnK
+	E2AXJ3XKRbm8qISsf+K56U8skl96lGOMocy+XcnKnEvKXZY1PFAIxCzGeOizPO8h
+X-Gm-Gg: ASbGncsBJRAMMEZ8hiCQXo0Nb+z/IlqpwGnuVLthRgMvytfrulp9p3WywqOA9cR1+H2
+	SBkMKTyIhJ6B/LWuW/Ic0qoG48peuzd97ffxpHKIwa0sPNtE31qiFTHyERpZFnmsM4kL59JmlwC
+	ySxl5t2pz4dy3DsPQKOAsnHe+v7JTEcCCL6xVRwqmvzx5n4Li+wJRq4oZ4SnFSrMh0MWOtMVABV
+	99eemY8o7wQdySbbQh71W04Du8seYNssKcB/lEN8cSehXeDAPOBY6O4MKKUJlJBTRAKgn7LqDev
+	jlsQBr1K3hL7Tehhrp8aKc6wA/5fkPvJcrstW0DfABbRkE/B2uEwvdCwIgTHBp6PHTDPbSDh+J9
+	oi4vH8BALAjdsW7wxWwAGLjLGE4FpFQBuTtJYd2pdOtckOK4mA8mh2OI9uDfKUt6a
+X-Google-Smtp-Source: AGHT+IEcMUpg4IRJa6tMOmYaR0YNGdJsgM/6OrAlixI+P0fFmi7QVp6CU5AtAL4642KBkjSiFMeONw==
+X-Received: by 2002:a05:6122:30ac:b0:531:45f1:604d with SMTP id 71dfb90a1353d-5395f2ae17amr5226227e0c.6.1754386530928;
+        Tue, 05 Aug 2025 02:35:30 -0700 (PDT)
+Received: from mail-vk1-f171.google.com (mail-vk1-f171.google.com. [209.85.221.171])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-53936b169ffsm3350536e0c.6.2025.08.05.02.35.30
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 05 Aug 2025 02:35:30 -0700 (PDT)
+Received: by mail-vk1-f171.google.com with SMTP id 71dfb90a1353d-5397c00ad9eso557643e0c.0;
+        Tue, 05 Aug 2025 02:35:30 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCVAad7dRD1D4amrFC9RD2mRg7zxw04u7qiixhp3Nj/uVt59/dZjEUZrZ/NDZl5YfRg0/SvZvOkkayNU@vger.kernel.org, AJvYcCVNg64lgPFd+hq2w/RQANmTO/CELUnxnfJumfyTwRqW0aHeg9EbtWn3T4/ZVWi0ENaTEvza3fcppmE=@vger.kernel.org, AJvYcCWQO/qz4tdJx5NKq4atuLdGZYTVKamPx5cqAaWBMViWRpwKv2uCSCSZ8dSaPuxehNnMpktG3ca+wUPKOLnsS6KdaQc=@vger.kernel.org, AJvYcCXWmzBJ7FoAyCMaklaxnTMJy/YkJWAaiX6MiBLR2xiU5WpAeXpecM4KH4BKXEid5EagLubRWpK0D1repWCJ@vger.kernel.org
+X-Received: by 2002:a05:6122:45a8:b0:539:1154:d12d with SMTP id
+ 71dfb90a1353d-5395f3d53c5mr6039151e0c.8.1754386530476; Tue, 05 Aug 2025
+ 02:35:30 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3826.600.51.1.1\))
-Subject: Re: [PATCH] power: supply: bq27xxx: fix error return in case of no
- bq27000 hdq battery
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-In-Reply-To: <VI1PR02MB10076D58D8B86F8FB50E59AADF422A@VI1PR02MB10076.eurprd02.prod.outlook.com>
-Date: Tue, 5 Aug 2025 11:28:46 +0200
-Cc: Sebastian Reichel <sre@kernel.org>,
- =?utf-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "letux-kernel@openphoenux.org" <letux-kernel@openphoenux.org>,
- "stable@vger.kernel.org" <stable@vger.kernel.org>,
- "kernel@pyra-handheld.com" <kernel@pyra-handheld.com>,
- "andreas@kemnade.info" <andreas@kemnade.info>,
- Hermes Zhang <Hermes.Zhang@axis.com>
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <2437B077-0F51-4724-8861-7E0BEE9DB5F0@goldelico.com>
-References: <bc405a6f782792dc41e01f9ddf9eadca3589fcdc.1753101969.git.hns@goldelico.com>
- <VI1PR02MB10076D58D8B86F8FB50E59AADF422A@VI1PR02MB10076.eurprd02.prod.outlook.com>
-To: Jerry Lv <Jerry.Lv@axis.com>
-X-Mailer: Apple Mail (2.3826.600.51.1.1)
+MIME-Version: 1.0
+References: <20250522182252.1593159-1-john.madieu.xa@bp.renesas.com>
+ <20250522182252.1593159-4-john.madieu.xa@bp.renesas.com> <CAMuHMdW0CTM+d-N0FgP=dKoSTdmRr2Rpg2Rtzj33gDk8qW+FUw@mail.gmail.com>
+ <OSCPR01MB146471D101C6D66C1B81336A1FF22A@OSCPR01MB14647.jpnprd01.prod.outlook.com>
+ <CAMuHMdV2DsJ5_0sW+f6anrqpr5kjLoe9w++E_xKJjdG7TJmGcQ@mail.gmail.com> <OSCPR01MB146472833398C4E61B9C5B160FF22A@OSCPR01MB14647.jpnprd01.prod.outlook.com>
+In-Reply-To: <OSCPR01MB146472833398C4E61B9C5B160FF22A@OSCPR01MB14647.jpnprd01.prod.outlook.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 5 Aug 2025 11:35:19 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdXw4XDkwBOqM47TKa8d_jHBMTM1ZGhK9qm5KQWDfGjGSw@mail.gmail.com>
+X-Gm-Features: Ac12FXxpv2aIssezzomIJ8wXTe3X5W750Cl4L5fOJJ3Y3hKhZG4oZQOOSu5ZvVo
+Message-ID: <CAMuHMdXw4XDkwBOqM47TKa8d_jHBMTM1ZGhK9qm5KQWDfGjGSw@mail.gmail.com>
+Subject: Re: [PATCH v6 3/5] thermal: renesas: rzg3e: Add thermal driver for
+ the Renesas RZ/G3E SoC
+To: John Madieu <john.madieu.xa@bp.renesas.com>
+Cc: "conor+dt@kernel.org" <conor+dt@kernel.org>, 
+	"daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "krzk+dt@kernel.org" <krzk+dt@kernel.org>, 
+	"rafael@kernel.org" <rafael@kernel.org>, Biju Das <biju.das.jz@bp.renesas.com>, 
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, 
+	"john.madieu@gmail.com" <john.madieu@gmail.com>, 
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
+	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, 
+	"linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, 
+	"lukasz.luba@arm.com" <lukasz.luba@arm.com>, "magnus.damm" <magnus.damm@gmail.com>, 
+	"robh@kernel.org" <robh@kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, 
+	"sboyd@kernel.org" <sboyd@kernel.org>, 
+	"niklas.soderlund+renesas@ragnatech.se" <niklas.soderlund+renesas@ragnatech.se>
+Content-Type: text/plain; charset="UTF-8"
 
-Hi Jerry,
+Hi John,
 
-> Am 05.08.2025 um 10:53 schrieb Jerry Lv <Jerry.Lv@axis.com>:
->=20
->=20
->=20
->=20
-> ________________________________________
-> From: H. Nikolaus Schaller <hns@goldelico.com>
-> Sent: Monday, July 21, 2025 8:46 PM
-> To: Sebastian Reichel; Jerry Lv
-> Cc: Pali Roh=C3=A1r; linux-pm@vger.kernel.org; =
-linux-kernel@vger.kernel.org; letux-kernel@openphoenux.org; =
-stable@vger.kernel.org; kernel@pyra-handheld.com; andreas@kemnade.info; =
-H. Nikolaus Schaller
-> Subject: [PATCH] power: supply: bq27xxx: fix error return in case of =
-no bq27000 hdq battery
->=20
-> [You don't often get email from hns@goldelico.com. Learn why this is =
-important at https://aka.ms/LearnAboutSenderIdentification ]
->=20
-> Since commit
->=20
-> commit f16d9fb6cf03 ("power: supply: bq27xxx: Retrieve again when =
-busy")
->=20
-> the console log of some devices with hdq but no bq27000 battery
-> (like the Pandaboard) is flooded with messages like:
->=20
-> [   34.247833] power_supply bq27000-battery: driver failed to report =
-'status' property: -1
->=20
-> as soon as user-space is finding a /sys entry and trying to read the
-> "status" property.
->=20
-> It turns out that the offending commit changes the logic to now return =
-the
-> value of cache.flags if it is <0. This is likely under the assumption =
-that
-> it is an error number. In normal errors from bq27xxx_read() this is =
-indeed
-> the case.
->=20
-> But there is special code to detect if no bq27000 is installed or =
-accessible
-> through hdq/1wire and wants to report this. In that case, the =
-cache.flags
-> are set (historically) to constant -1 which did make reading =
-properties
-> return -ENODEV. So everything appeared to be fine before the return =
-value was
-> fixed. Now the -1 is returned as -ENOPERM instead of -ENODEV, =
-triggering the
-> error condition in power_supply_format_property() which then floods =
-the
-> console log.
->=20
-> So we change the detection of missing bq27000 battery to simply set
->=20
->        cache.flags =3D -ENODEV
->=20
-> instead of -1.
->=20
-> Fixes: f16d9fb6cf03 ("power: supply: bq27xxx: Retrieve again when =
-busy")
-> Cc: Jerry Lv <Jerry.Lv@axis.com>
-> Cc: stable@vger.kernel.org
-> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
-> ---
-> drivers/power/supply/bq27xxx_battery.c | 2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/power/supply/bq27xxx_battery.c =
-b/drivers/power/supply/bq27xxx_battery.c
-> index 93dcebbe11417..efe02ad695a62 100644
-> --- a/drivers/power/supply/bq27xxx_battery.c
-> +++ b/drivers/power/supply/bq27xxx_battery.c
-> @@ -1920,7 +1920,7 @@ static void =
-bq27xxx_battery_update_unlocked(struct bq27xxx_device_info *di)
->=20
->        cache.flags =3D bq27xxx_read(di, BQ27XXX_REG_FLAGS, =
-has_singe_flag);
->        if ((cache.flags & 0xff) =3D=3D 0xff)
-> -               cache.flags =3D -1; /* read error */
-> +               cache.flags =3D -ENODEV; /* read error */
->        if (cache.flags >=3D 0) {
->                cache.capacity =3D bq27xxx_battery_read_soc(di);
->=20
-> --
-> 2.50.0
->=20
->=20
->=20
-> In our device, we use the I2C to get data from the gauge bq27z561.=20
-> During our test, when try to get the status register by bq27xxx_read() =
-in the bq27xxx_battery_update_unlocked(),=20
-> we found sometimes the returned value is 0xFFFF, but it will update to =
-some other value very quickly.
+On Tue, 5 Aug 2025 at 11:22, John Madieu <john.madieu.xa@bp.renesas.com> wrote:
+> > From: Geert Uytterhoeven <geert@linux-m68k.org>
+> > On Tue, 5 Aug 2025 at 10:27, John Madieu <john.madieu.xa@bp.renesas.com>
+> > wrote:
+> > > > From: Geert Uytterhoeven <geert@linux-m68k.org> On Thu, 22 May 2025
+> > > > at 20:23, John Madieu <john.madieu.xa@bp.renesas.com>
+> > > > wrote:
+> > > > > The RZ/G3E SoC integrates a Temperature Sensor Unit (TSU) block
+> > > > > designed to monitor the chip's junction temperature. This sensor
+> > > > > is connected to channel 1 of the APB port clock/reset and provides
+> > > > temperature measurements.
+> > > >
+> > > > RZ/V2H and RZ/V2N have a second set of trim values for the second
+> > > > TSU instance.  So I guess you want to specify the offset in DT instead.
+> > >
+> > > What do you think of 'renesas,tsu-channel' property or alike Property
+> > > to specify the channel being used ?
+> >
+> > While I agree instance IDs canbe useful (sometimes), the DT maintainers do
+> > not like them very much, cfr. commit 6a57cf210711c068 ("docs: dt:
+> > writing-bindings: Document discouraged instance IDs"), which prefers
+> > cell/phandle arguments.
+> >
+> > For this particular case:
+> >   1. The instance ID for the single TSU on RZ/G3E would be one, not zero
+> >      (oh, the SYS_LSI_OTPTSU1TRMVAL[01] register names do contain "TSU1"),
+> >   2. It will break the moment a new SoC is released that stores trim
+> >      values at different offsets in the SYSC block.
+> >
+> > Hence a property containing a SYSC phandle and register offset sounds
+> > better to me.
+>
+> This sounds good to me. I see something like:
+>
+> renesas,tsu-channel1 = <&sysc off1>;
+> renesas,tsu-channel2 = <&sysc off2>; /* Optional, for V2H */
+>
+> /* or */
+>
+> renesas,tsu-channel-map = <&sysc off1 off2>;
+>
+> I would go for the first option to make it easier for V2H
+> (while adding support for it later) so it can choose using
+> either, or both, regardless of the index.
+>
+> What do you think ?
 
-Strange. Do you have an idea if this is an I2C communication effect or =
-really reported from the bq27z561 chip?
+As the property would be part of the TSU node, it would always
+refer to that specific channel/instance, so e.g.
 
-> So the returned 0xFFFF does not indicate "No such device", if we force =
-to set the cache.flags to "-ENODEV" or "-1" manually in this case,=20
-> the bq27xxx_battery_get_property() will just return the cache.flags =
-until it is updated at lease 5 seconds later,
-> it means we cannot get any property in these 5 seconds.
+    renesas,tsu-trim = <&sysc 0x320>;
 
-Ok I see. So there should be a different rule for the bq27z561.
+for the first TSU instance, and
 
->=20
-> In fact, for the I2C driver, if no bq27000 is installed or accessible,=20=
+    renesas,tsu-trim = <&sysc 0x330>;
 
-> the bq27xxx_battery_i2c_read() will return "-ENODEV" directly when no =
-device,
-> or the i2c_transfer() will return the negative error according to real =
-case.
+for the second instance.
 
-Yes, that is what I2C can easily report. But for AFAIK for HDQ there is =
-no -ENODEV
-detection in the protocol. So the bq27000 has this special check.
+P.S. Please don't write "V2H" on its own, as both R-Car V2H and RZ/V2H
+     exist in the Renesas SoC portfolio ;-)
 
->=20
->        bq27xxx_battery_i2c_read() {
->                ...
->        if (!client->adapter)
->         return -ENODEV;
->                ...
->                ret =3D i2c_transfer(client->adapter, msg, =
-ARRAY_SIZE(msg));
->                ...
->                if (ret < 0)
->        return ret;
->                ...
->        }
->=20
-> But there is no similar check in the bq27xxx_battery_hdq_read() for =
-the HDQ/1-wire driver.
->=20
-> Could we do the same check in the bq27xxx_battery_hdq_read(),
-> instead of changing the cache.flags manually when the last byte in the =
-returned data is 0xFF?
+Gr{oetje,eeting}s,
 
-So your suggestion is to modify bq27xxx_battery_hdq_read to check for =
-BQ27XXX_REG_FLAGS and
-value 0xff and convert to -ENODEV?
+                        Geert
 
-Well, it depends on the data that has been successfully reported. So =
-making bq27xxx_battery_hdq_read()
-have some logic to evaluate the data seems to just move the problem to a =
-different place.
-Especially as this is a generic function that can read any register it =
-is counter-intuitive to
-analyse the data.
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-> Or could we just force to set the returned value to "-ENODEV" only =
-when the last byte get from bq27xxx_battery_hdq_read() is 0xFF?
-
-In summary I am not sure if that improves anything. It just makes the =
-existing code more difficult=20
-to understand.
-
-What about checking bq27xxx_battery_update_unlocked() for
-
-       if (!(di->opts & BQ27Z561_O_BITS) && (cache.flags & 0xff) =3D=3D =
-0xff)
-
-to protect your driver from this logic?
-
-This would not touch or break the well tested bq27000 logic and prevent =
-the new bq27z561
-driver to trigger a false positive?
-
-BR and thanks,
-Nikolaus
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
