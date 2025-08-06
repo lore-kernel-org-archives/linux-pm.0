@@ -1,102 +1,222 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8F61288CAC
-	for <linux-pm@vger.kernel.org>; Wed,  6 Aug 2025 09:57:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6AEF433C8;
+	Wed,  6 Aug 2025 11:28:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1754474223; cv=none; b=PQVyw62PqBgScoLpbx2iFrgdzGsw8aHLWf2NsPhbZZ12zXQghe1oakUaBCZ8/4CGEeigDO+6YN4smJbtKDGfZ+7USptrqDckDTM4zFdN7i2XXZBHF3/zr7La58wfjjyvMyZNlgXhVlQg+UAWLzQsBchD7Z7dBZuKu2yM4d8U3bw=
+	t=1754479716; cv=none; b=BxxKx28MojFIV1wsULHxvm2fKE8nkre8MdYS+EUDp1jN2cCd5MqGTUI+C/QLmgrWb5I43OMwjf+J5mwfsU0Q5OTh99gTXLQol7cUU0fwqM96WoFtXq8jtRZG5gHj7iVAaKWbqYOxfCnPqDYeoHfIM7XB9I46NrUs4nRoMf2bxq8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1754474223; c=relaxed/simple;
-	bh=UnRhCBGz/g5M0sDRDevsbQoDZqubHqeSfzdgXcUdUSU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=F34jTshX5FV7Lr6B8qsWJlUuKr5qzXoLFRAOOKgwn3qRDDvLuP792DBF7yCwR8Z6vojy2XXRA4GlUUC9rFhK9wImcLKl+s1ZP4EeTTrVmtUgfhyEBR6bG25Sy9ojvzBUL6QqV7AKsHzj3E3irSviX9jn7DqRTb2v0Dal7xzafW0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=DpLxhWyW; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1754479716; c=relaxed/simple;
+	bh=TCVDOI/nwq+wdsjFCcWQPH7JtA88k92LN5FhWHD/Se4=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=SOffdCm1lWjv0zfqv1xrM2d5nMAMO25ChKc2CAPIX7X8y4pkpYGXQSiUtjElB8F9QcXFZ/IoxRMCf9dXY0bFLZswSj2BzjjP9DsU3PtT0/1G9TY92LvBTujsT8rrBZ4LFqROHrtVk5XxWaFUbjhp/6GNwpwxEbM05B8nZzbe7JA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=GcZQYoMy; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="DpLxhWyW"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1754474221;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=UnRhCBGz/g5M0sDRDevsbQoDZqubHqeSfzdgXcUdUSU=;
-	b=DpLxhWyWvKk6KSvW39PraU/8DUTauEI+aUC96gGUFbfQjThLUBe3cAwqK6RhEA9aBhNcSO
-	M5EPqLphNPDDHu8oePlpvPytak4L/JUdCfwzq124L2JX8H1ILfvELoZ5i7cydfVxsFIZne
-	PugJrFLsDNC8+FkktlsccIoTcI+TguA=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-349-tH6ka12zNIaD3mUGkj9S9w-1; Wed, 06 Aug 2025 05:56:59 -0400
-X-MC-Unique: tH6ka12zNIaD3mUGkj9S9w-1
-X-Mimecast-MFC-AGG-ID: tH6ka12zNIaD3mUGkj9S9w_1754474218
-Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-3b7961b3c82so2959705f8f.0
-        for <linux-pm@vger.kernel.org>; Wed, 06 Aug 2025 02:56:59 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1754474218; x=1755079018;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=UnRhCBGz/g5M0sDRDevsbQoDZqubHqeSfzdgXcUdUSU=;
-        b=DJKIJHKW8B9hR2IOPpAv7zEVQfBXXM/Gdv+RByVeQW3MFc175gT0doLwcSM0zEoPru
-         S35dcSKVfqsl4aDaYAK3tOBbJsbXULMi3Y9saFeqqddozDLi5GgswXEqku78ZbC9AYjU
-         eJvqrNOwqLka9imJac3USlgJtTqPFcRzF6gkoXtVV7Ajwpl7atmo990uQopjNhWdo8qm
-         7qSF2FcgMnijuywyNhASA10vwKUboZuFAu6boCWfBC7wR3y3KBFtdkDqVFTs+VD4U9Xa
-         ifjckdGqIKQgtkVzcsqJPJFOKP8ZlGrPQLzMoA9joT6UNOs+2YHNoj4f9gGMXhEGH2WE
-         sd5Q==
-X-Forwarded-Encrypted: i=1; AJvYcCUrEt6T9W5aPF7lLvIdECxOjJzas6c3J2A7AwS3a4CqdcfHotjJ2S6BMP3YzR4Flr/4xDxh57KhAg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxV8LMyJwic1mUl++ASfZfQ2Ano+DU25ADglKLEqMtV4FG+bOL0
-	/Y+vT2fji/7g66Ni03O4cRNDafB+mjEbMkPYYHp6gIls7T7TmigOOV9KA3UJfHNyBD5sXu2kq4a
-	KRY6w/ZlrdkuYs0WUuOaGUM7cPFEp+RrgZBloBPgEsqfLK6uH+nGpKJ9iQI+ww4VouMpCqhD5B7
-	NlcjQ7f9FWpCOtEMRh+7vqBayrGfD1404aNGY=
-X-Gm-Gg: ASbGncsPMRs0yqbY+YuwXdjkdxW5Ln4618egxRklVfKNNomvmC4w6iBNvSvNwYwBVjN
-	CBu5NCxS67cMtXEKEYWtD3Zg0jBaBjDk2yExOLIKcW/0N2UvKp6s/FrLvx2/63JY7vmY1R79KeB
-	4Q74S1mZ8WCvWoTlnVqtoAmg==
-X-Received: by 2002:a5d:5849:0:b0:3b7:92ec:68ec with SMTP id ffacd0b85a97d-3b8f41bb8c4mr1730013f8f.14.1754474218381;
-        Wed, 06 Aug 2025 02:56:58 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IFmkIlZiBIO0pxwuhv5ZEuhlp3NbgCJIQMCznSJgwMIdEJJHMlTE317CHbrVdWmT1WXyuHGPX1pWe6egu5BZuE=
-X-Received: by 2002:a5d:5849:0:b0:3b7:92ec:68ec with SMTP id
- ffacd0b85a97d-3b8f41bb8c4mr1729994f8f.14.1754474217980; Wed, 06 Aug 2025
- 02:56:57 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="GcZQYoMy"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5766Pffu022272;
+	Wed, 6 Aug 2025 11:28:30 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	KDQY8rvGFxV8xSkYF3XKEk+e/YEErkkSbNklOb1V5YE=; b=GcZQYoMyT7cOwm48
+	ic2pIw2qOSfA475sJfOcbEUqeyrJ+4IhO+KPfdy84JmGd/i8mG5CXJR7EjllJJ+D
+	+0LdmVxz2+hJvI+ziHerxp4iyEpzj0+DEe5JG4yOk8nQ0Lk21FV8R+OFMPtlYTpU
+	gEj7wcTFnS8svyl9BkoEMG9s2m7ctgGzNaTWIztjfs2DAMeLkmc2VZk5oiwage9W
+	okO0sV4VEz4ktkIp8K3s+FrCrCIKIkLGn2VDFH3EcfKt1HqmsfPkdHIwjJWgWvoQ
+	u2EDUjTStP+YXeswsBtt4Qf2ZWD/Oam3for02c8olqvCPmx30kA/V1M4K14uZ4pG
+	v76opQ==
+Received: from nasanppmta03.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 48bpy8af4s-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 06 Aug 2025 11:28:30 +0000 (GMT)
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+	by NASANPPMTA03.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 576BSTSa005526
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 6 Aug 2025 11:28:29 GMT
+Received: from hu-varada-blr.qualcomm.com (10.80.80.8) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1748.10; Wed, 6 Aug 2025 04:28:24 -0700
+From: Varadarajan Narayanan <quic_varada@quicinc.com>
+To: <andersson@kernel.org>, <mturquette@baylibre.com>, <sboyd@kernel.org>,
+        <robh@kernel.org>, <krzk+dt@kernel.org>, <conor+dt@kernel.org>,
+        <konradybcio@kernel.org>, <rafael@kernel.org>,
+        <viresh.kumar@linaro.org>, <ilia.lin@kernel.org>, <djakov@kernel.org>,
+        <quic_varada@quicinc.com>, <linux-arm-msm@vger.kernel.org>,
+        <linux-clk@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
+CC: Sricharan Ramabadhran <quic_srichara@quicinc.com>,
+        Krzysztof Kozlowski
+	<krzysztof.kozlowski@linaro.org>,
+        Md Sadre Alam <quic_mdalam@quicinc.com>
+Subject: [PATCH v6 1/4] dt-bindings: clock: ipq5424-apss-clk: Add ipq5424 apss clock controller
+Date: Wed, 6 Aug 2025 16:58:04 +0530
+Message-ID: <20250806112807.2726890-2-quic_varada@quicinc.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20250806112807.2726890-1-quic_varada@quicinc.com>
+References: <20250806112807.2726890-1-quic_varada@quicinc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <CACTEcX6oXBot1VBApOyKVMVXsAN9BsvQMLa8J0iKpNeB-eLttQ@mail.gmail.com>
- <642d439ea1be8e48ee5c47fd3921a786452fb931@intel.com> <CACTEcX5Y3PNXNkhnK1dGFe+k3sigOZNpj66KKGAS9XeHqRu35w@mail.gmail.com>
- <0b15e33603a46f6cc7ad7d09a156044f11367169@intel.com> <CACTEcX47bUd2tp=LYkQnhK29Js=vLN0JfXL8Aq6mOFBVYumpzQ@mail.gmail.com>
- <CABgObfZKKeqMrAUyS8CB4ARkW_8Z9QREgpgYcq2jxoQ9ppS6MA@mail.gmail.com>
- <CACTEcX7oa+Shj=uYiRMoWpng+RZXDeQrOa-VTRmzVVtXJMCgLQ@mail.gmail.com> <CACTEcX7hsRkzYEBg4pQd5s36p_ZXJM=dtxSGmBjfkt5sWrXP8g@mail.gmail.com>
-In-Reply-To: <CACTEcX7hsRkzYEBg4pQd5s36p_ZXJM=dtxSGmBjfkt5sWrXP8g@mail.gmail.com>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Wed, 6 Aug 2025 11:56:45 +0200
-X-Gm-Features: Ac12FXxUD7IfHIB3LF4bE0A3e_MF7VVLU9X5HEvxDOG2SUB9XsZW8ohxIfMVMqA
-Message-ID: <CABgObfZagg8_w100tEnbU0_adUWPcnQYzxy8aAyUqVASjxWujQ@mail.gmail.com>
-Subject: Re: [REGRESSION] tty lockup and WWAN loss after hibernate/suspend in
- 6.8+ on ThinkPad X1 Carbon Gen 10
-To: Andy Mindful <andy.mindful@gmail.com>
-Cc: regressions@lists.linux.dev, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org, 
-	dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, 
-	rafael@kernel.org, ville.syrjala@linux.intel.com, tglx@linutronix.de, 
-	Christian Brauner <brauner@kernel.org>, Jani Nikula <jani.nikula@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: k_TRDbaaXds3vAZb_x9dK6tYu4b58Yg0
+X-Proofpoint-ORIG-GUID: k_TRDbaaXds3vAZb_x9dK6tYu4b58Yg0
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODA2MDAwOSBTYWx0ZWRfX8BELyzMyBRuy
+ nyxM1fVlNJyW2VT4PcZKMq6sMmjm3Goegx9cYmYSbvKjnvHvl7xDOtPV7bCz076M+6Tcy+Jy4XZ
+ U8egppWzVmeO++pHiDaz8LaMZJSXcMzCl+sgOYlNAYienC9WzSq1qEk8fRXRIgsQqkbcCSErIV2
+ CK/VTcUtm2yYIKKPw0aWsKVO7FHTbDUVUL9x+xRRrNaHCQeiKkzyPHut6Vf/G2PN3eqpTz1pSRL
+ M0Yrk6N5krNdQgFxdGK7KnzbNTJsLzP/PF1T52EGY5KrNYxT5c2BT2KvICZGcHlVjgDk9qgauVx
+ +FvMbVY0tx5YTioQao5M1CDJzVcx/xqad/1Ttps75UwXDqgfgyzmoENUsCoFEssLSIZF+lHQOIR
+ blyATGaP
+X-Authority-Analysis: v=2.4 cv=GrlC+l1C c=1 sm=1 tr=0 ts=68933c5e cx=c_pps
+ a=JYp8KDb2vCoCEuGobkYCKw==:117 a=JYp8KDb2vCoCEuGobkYCKw==:17
+ a=GEpy-HfZoHoA:10 a=2OwXVqhp2XgA:10 a=gEfo2CItAAAA:8 a=COk6AnOGAAAA:8
+ a=KKAkSRfTAAAA:8 a=uz76iGCsBMoyf62TQt8A:9 a=sptkURWiP4Gy88Gu7hUp:22
+ a=TjNXssC_j7lpFel5tvFf:22 a=cvBusfyB2V15izCimMoJ:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-08-06_03,2025-08-06_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 malwarescore=0 clxscore=1015 suspectscore=0 priorityscore=1501
+ phishscore=0 adultscore=0 bulkscore=0 impostorscore=0 classifier=typeunknown
+ authscore=0 authtc= authcc= route=outbound adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2507300000 definitions=main-2508060009
 
-On Wed, Aug 6, 2025 at 10:40=E2=80=AFAM Andy Mindful <andy.mindful@gmail.co=
-m> wrote:
->
-> Hello,
->
-> Can somebody advise how to properly bisect issues in linux-stable
-> repository between v6.7.11 to v6.8-rc1 tags?
+From: Sricharan Ramabadhran <quic_srichara@quicinc.com>
 
-If you can test 6.7 and bisect between 6.7 and 6.8-rc1 that would be
-the easiest.
+The CPU core in ipq5424 is clocked by a huayra PLL with RCG support.
+The RCG and PLL have a separate register space from the GCC.
+Also the L3 cache has a separate pll and needs to be scaled along
+with the CPU.
 
-Paolo
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Co-developed-by: Md Sadre Alam <quic_mdalam@quicinc.com>
+Signed-off-by: Md Sadre Alam <quic_mdalam@quicinc.com>
+Signed-off-by: Sricharan Ramabadhran <quic_srichara@quicinc.com>
+[ Added interconnect related changes ]
+Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
+---
+v6: Add 'Reviewed-by: Krzysztof Kozlowski'
+    Drop 'clock-names'
+
+v5: Remove previous maintainers
+    Change clock@fa80000 to clock-controller@fa80000 in example
+    Have one item per line for clocks and clock-names in example
+
+v4: Add self to 'maintainers'
+    s/gpll0/clk_ref/ in clock-names
+    s/apss-clock/clock/ in example's node name
+
+v2: Add #interconnect-cells to help enable L3 pll as ICC clock
+    Add master/slave ids
+---
+ .../bindings/clock/qcom,ipq5424-apss-clk.yaml | 55 +++++++++++++++++++
+ include/dt-bindings/clock/qcom,apss-ipq.h     |  6 ++
+ .../dt-bindings/interconnect/qcom,ipq5424.h   |  3 +
+ 3 files changed, 64 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/clock/qcom,ipq5424-apss-clk.yaml
+
+diff --git a/Documentation/devicetree/bindings/clock/qcom,ipq5424-apss-clk.yaml b/Documentation/devicetree/bindings/clock/qcom,ipq5424-apss-clk.yaml
+new file mode 100644
+index 000000000000..def739fa0a8c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/clock/qcom,ipq5424-apss-clk.yaml
+@@ -0,0 +1,55 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/clock/qcom,ipq5424-apss-clk.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Qualcomm APSS IPQ5424 Clock Controller
++
++maintainers:
++  - Varadarajan Narayanan <quic_varada@quicinc.com>
++
++description:
++  The CPU core in ipq5424 is clocked by a huayra PLL with RCG support.
++  The RCG and PLL have a separate register space from the GCC.
++
++properties:
++  compatible:
++    enum:
++      - qcom,ipq5424-apss-clk
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    items:
++      - description: Reference to the XO clock.
++      - description: Reference to the GPLL0 clock.
++
++  '#clock-cells':
++    const: 1
++
++  '#interconnect-cells':
++    const: 1
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - '#clock-cells'
++  - '#interconnect-cells'
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/qcom,ipq5424-gcc.h>
++
++    apss_clk: clock-controller@fa80000 {
++      compatible = "qcom,ipq5424-apss-clk";
++      reg = <0x0fa80000 0x20000>;
++      clocks = <&xo_board>,
++               <&gcc GPLL0>;
++      #clock-cells = <1>;
++      #interconnect-cells = <1>;
++    };
+diff --git a/include/dt-bindings/clock/qcom,apss-ipq.h b/include/dt-bindings/clock/qcom,apss-ipq.h
+index 77b6e05492e2..0bb41e5efdef 100644
+--- a/include/dt-bindings/clock/qcom,apss-ipq.h
++++ b/include/dt-bindings/clock/qcom,apss-ipq.h
+@@ -8,5 +8,11 @@
+ 
+ #define APCS_ALIAS0_CLK_SRC			0
+ #define APCS_ALIAS0_CORE_CLK			1
++#define APSS_PLL_EARLY				2
++#define APSS_SILVER_CLK_SRC			3
++#define APSS_SILVER_CORE_CLK			4
++#define L3_PLL					5
++#define L3_CLK_SRC				6
++#define L3_CORE_CLK				7
+ 
+ #endif
+diff --git a/include/dt-bindings/interconnect/qcom,ipq5424.h b/include/dt-bindings/interconnect/qcom,ipq5424.h
+index a770356112ee..afd7e0683a24 100644
+--- a/include/dt-bindings/interconnect/qcom,ipq5424.h
++++ b/include/dt-bindings/interconnect/qcom,ipq5424.h
+@@ -21,4 +21,7 @@
+ #define MASTER_CNOC_USB			16
+ #define SLAVE_CNOC_USB			17
+ 
++#define MASTER_CPU			0
++#define SLAVE_L3			1
++
+ #endif /* INTERCONNECT_QCOM_IPQ5424_H */
+-- 
+2.34.1
 
