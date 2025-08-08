@@ -1,133 +1,127 @@
-Received: from mail.savoirfairelinux.com (mail.savoirfairelinux.com [208.88.110.44])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA93C1B7F4;
-	Fri,  8 Aug 2025 14:03:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=208.88.110.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A8DA25BEE7
+	for <linux-pm@vger.kernel.org>; Fri,  8 Aug 2025 14:03:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1754661803; cv=none; b=YIiULVEMxeiVaJr4YJeiRl7Ivb+x7hGkS+Vbgw9N4M/+/jUs436HfLwoLFUcc7f64c+sXS/xQ47RMPY0M8lXe/TDRSASb8aJQ92aYj7Djhf0Bvx81KDR5sqUPqjMwmTQJFvf0Ap0R7Huq3E+LNAb+hoZuozUvC2VBCvti+10IWs=
+	t=1754661834; cv=none; b=REBEFnUst93Pc2hQBRjUo0LdcCdgkSiM7/BbD/ojdKEMLki9pyGcRHBUOlJMAhXZUPLC0cO0pXKrOZsG/jQn1ncaWeeoVatiE3BldL90XyosQ/BnlSZo5IpWlRnESi70ngFGRpi18Mah7tuKBdKWfqcmqcbpFfzknWbr+dLCP0g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1754661803; c=relaxed/simple;
-	bh=QwyJWn1v3WAqphWgHvxIPI2oFVDIAeFdWM4Gnk/jbpE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=KFXBIkw+uryb8RX64qU85ek5Cy98Y9VzTeO99+/i6Ri4blflvbda6jKd+OQFcpT9hcN3JK++7/Yf1onf5nDgcnpvWBC2K82lhV9aY/rhZbSZsggSQDG4hNGc/r5RCMmi2i6aAkkYOGvT/PeK78lBtfBV31ZJ13TvE1plKkflBOw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=savoirfairelinux.com; spf=pass smtp.mailfrom=savoirfairelinux.com; dkim=pass (2048-bit key) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.b=kyJqnXwX; arc=none smtp.client-ip=208.88.110.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=savoirfairelinux.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=savoirfairelinux.com
+	s=arc-20240116; t=1754661834; c=relaxed/simple;
+	bh=KNSFSQ6elscxyJktPMiz3bx6RWsh26XGE1bHk9J/sMk=;
+	h=From:To:Cc:Subject:Date:Message-Id; b=BxpIWgMcomk1Qfgv+dgzFDywC/QI+V9JAf4pSpHn9YVMkY/uAinA8UyaY/3RNPt90ffrJdYZkbkN3S0Z5C93y0X3lPSd3KqE4UEOW/8zPlRgYqVTcP4+W5iVfcZY4cEqzjMkjVJ6N8elzktEkveD0X9Xz1zZaVBccWSRdpid0iM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=DKviQFxg; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.b="kyJqnXwX"
-Received: from localhost (localhost [127.0.0.1])
-	by mail.savoirfairelinux.com (Postfix) with ESMTP id 832FD3D8511E;
-	Fri,  8 Aug 2025 10:03:20 -0400 (EDT)
-Received: from mail.savoirfairelinux.com ([127.0.0.1])
- by localhost (mail.savoirfairelinux.com [127.0.0.1]) (amavis, port 10032)
- with ESMTP id UiYRFzM-k5nG; Fri,  8 Aug 2025 10:03:19 -0400 (EDT)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.savoirfairelinux.com (Postfix) with ESMTP id AD3743D8511F;
-	Fri,  8 Aug 2025 10:03:19 -0400 (EDT)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.savoirfairelinux.com AD3743D8511F
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=savoirfairelinux.com; s=DFC430D2-D198-11EC-948E-34200CB392D2;
-	t=1754661799; bh=iGxSN543u6zBI2HpCOyAq8UQ3mK2B6N3dnkwlQ0/x54=;
-	h=Date:From:To:Message-ID:MIME-Version;
-	b=kyJqnXwX/YgUnbw8wKN2P/80haewqhbsbZZvlkPIlsRvkErKhnKJLZSuMhk2qosTg
-	 2YVazIXK3CAEtm6tsGf71CYOseFIYTtzwxzDeY2lnKx+3YuwgbNXpWsHVDvZSRRXPp
-	 7UvDQEM81tkhIlOnRfFneaBHFo04fkMEUpXY0NPHl7PdwFbAzcRJvCFFGSHNi0SkR5
-	 HM4F1R0UOX0x/7UYCaNq2EYfY85OlEW2gp0TsPtzsBKQS9Sf0sLhg++MzWETVToUel
-	 LiHoa3DzJma1+gdvuWOL8z/vDI85zC/oNSFSjh4ft2Dqmn7DrGZKBkoK3BW7Z4vtk5
-	 AbP6Tz33IUWdQ==
-X-Virus-Scanned: amavis at mail.savoirfairelinux.com
-Received: from mail.savoirfairelinux.com ([127.0.0.1])
- by localhost (mail.savoirfairelinux.com [127.0.0.1]) (amavis, port 10026)
- with ESMTP id Rp1CR3m8GihI; Fri,  8 Aug 2025 10:03:19 -0400 (EDT)
-Received: from fedora (unknown [192.168.51.254])
-	by mail.savoirfairelinux.com (Postfix) with ESMTPSA id 524F03D8511E;
-	Fri,  8 Aug 2025 10:03:19 -0400 (EDT)
-Date: Fri, 8 Aug 2025 10:03:18 -0400
-From: Samuel Kayode <samuel.kayode@savoirfairelinux.com>
-To: Sean Nyekjaer <sean@geanix.com>
-Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Sebastian Reichel <sre@kernel.org>, Frank Li <Frank.li@nxp.com>,
-	imx@lists.linux.dev, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-	linux-pm@vger.kernel.org, Abel Vesa <abelvesa@kernel.org>,
-	Abel Vesa <abelvesa@linux.com>, Robin Gong <b38343@freescale.com>,
-	Robin Gong <yibin.gong@nxp.com>,
-	Enric Balletbo i Serra <eballetbo@gmail.com>,
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: Re: [PATCH v9 1/6] dt-bindings: mfd: add pf1550
-Message-ID: <aJYDpp9Y6vLmzUfg@fedora>
-References: <20250716-pf1550-v9-0-502a647f04ef@savoirfairelinux.com>
- <20250716-pf1550-v9-1-502a647f04ef@savoirfairelinux.com>
- <gj565636v5qgohhf5usklfqydkc6lzifzhrbquoyawbwvhdlma@kajszdivkp2e>
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="DKviQFxg"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5787Tfn1007842
+	for <linux-pm@vger.kernel.org>; Fri, 8 Aug 2025 14:03:52 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:date:from:message-id:subject:to; s=qcppdkim1; bh=DYlHBOVdDgh8
+	f6X0diGns/kpdvEmUjNJzPbxdtZIxq8=; b=DKviQFxgcNbCFRu7UrIYxRN6rqLv
+	xxwgRnJ8I9LDf13Igcj6+VdmT+8/lKTNIQlVhfWSMawT2ypn8UGhCaHKy8emHAXF
+	raleNzgVAZ3GhwucBTNmC2l00pmtWIrhDafhdAbRHX+aJiY2QTfANWQDLSzwHcmv
+	osW+7toivqOUvuJFMIcIjnU9RtYzpqEPX4eR3EDCmlZUXbPnF8eglulnQvQiVqSs
+	3FP3kvHbDpB/LZ4QhbUpAPmVHCXxhHJOpn3Z2b//SUvQf6aXMI1yZy/842f6PJXz
+	ekRBLC/y2EOj9q3EUdz+nsPCha5ANKekfzcZI+DlYPpQZ2YxwZJkwv+mWA==
+Received: from mail-pf1-f200.google.com (mail-pf1-f200.google.com [209.85.210.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 48bpy727dm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 08 Aug 2025 14:03:51 +0000 (GMT)
+Received: by mail-pf1-f200.google.com with SMTP id d2e1a72fcca58-76bfc40bdceso1577634b3a.1
+        for <linux-pm@vger.kernel.org>; Fri, 08 Aug 2025 07:03:51 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1754661830; x=1755266630;
+        h=message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=DYlHBOVdDgh8f6X0diGns/kpdvEmUjNJzPbxdtZIxq8=;
+        b=UA/1tPb9tUM1djokRBvQEkjz992yPL8vfzr21LJxhKw2/CVdMmo6GHB8505TD6V5RL
+         tHexcMlpKZ+hkGh+9Y+tejwwK8LGWtgkGmhAcwLTcG6gWSHiRmVT/xkS1MtlMchC4jwS
+         LFg10qd4MuF7eINas8AnaNLOcnaD+HLqyClSUvKxa8YR9fzuD2nSPfJ92wsjg90GxOfX
+         PhFV2fmu+zqtNuSk6bRPjXTo4KJ8uOVnSRWD6pAF1jpHvMRZFcZ/fsXfzf7ePhb1QwQL
+         XMsdnc0QfEIm+bFo0rDzav90o+uWZKQ+xjmcWJ/tQfitES6/mOySAQkL/pfUVq5zbp6g
+         MjeQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUh+CYF/8F4yCHBc1LIIG1h6RJ+sZuz6DUYcZfQLHPxZImV+1VmK3htSWeIs4yqtMYzqDiNptFdWw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw9sx7UG4AgIgrolho/N7TvlatMfuBOR6WqPHUKNmnkEx7NwEIJ
+	WnAvSJa0WLP9YRkJMTC1I2I89oMbtkIOlLjdGA3ig5NB4RdOArUZFb3UCCqEWWIw2k+KnzfT5fe
+	KrphtBMRIe6OQYKDYzZFV+OBslQ4IVa9s1ggdBReQttmCjx+cgbECabzu+Vw75Q==
+X-Gm-Gg: ASbGnctHcUJygj2FqQIIodVaCBCWFZRHuWkqoqFvDF09VqDNp3H1KC8aqYWCVWntHfu
+	CO/uvcj20so35WkJBj5BiCJIf8hiz7401z4hO1YdWNLOUOIr51reE1YVSGOeg1gn0JmfnblamdD
+	ltymuMVqgls84FOwrzukD/sNfN9/RZniJsDppISG+xgZxuebjProKpMsxTQn/lJXm0HXYp/wTmE
+	u2ri4QoQvRDx1C4ay9aeh3v3W7y4zR5ZpMALFpwxkXnxTLgiLlc6cd/ssA6R0q3MggC6Uy7xw0x
+	myolC9cgBbmofMTia4pClmNmQ+dkDIMVEyh+WSTEGn+G33gPIrZQLRM78Rx3Y2wzHwtaj9wn5A=
+	=
+X-Received: by 2002:a05:6a00:14c8:b0:76b:ed75:81a with SMTP id d2e1a72fcca58-76c460db4a0mr4025996b3a.5.1754661829760;
+        Fri, 08 Aug 2025 07:03:49 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHhEiM/0PtRwCDBt4ZjihWPSb0Kaib7rt7yZ/T3fusuqcHUJsYFV6dtXZ0fUfu8FH+LqK+L1Q==
+X-Received: by 2002:a05:6a00:14c8:b0:76b:ed75:81a with SMTP id d2e1a72fcca58-76c460db4a0mr4025894b3a.5.1754661829052;
+        Fri, 08 Aug 2025 07:03:49 -0700 (PDT)
+Received: from hu-okukatla-hyd.qualcomm.com ([202.46.23.25])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-76c2078afd8sm8595621b3a.117.2025.08.08.07.03.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 08 Aug 2025 07:03:48 -0700 (PDT)
+From: Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>
+To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>
+Cc: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>,
+        Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Mike Tipton <mike.tipton@oss.qualcomm.com>
+Subject: [PATCH 0/3] Enable QoS configuration on SA8775P
+Date: Fri,  8 Aug 2025 19:32:57 +0530
+Message-Id: <20250808140300.14784-1-odelu.kukatla@oss.qualcomm.com>
+X-Mailer: git-send-email 2.17.1
+X-Proofpoint-ORIG-GUID: NdPm8Pika7EFFQmqzbfptfQ3-CJii_iB
+X-Proofpoint-GUID: NdPm8Pika7EFFQmqzbfptfQ3-CJii_iB
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODA2MDAwOSBTYWx0ZWRfX+xM5v+uGyPh3
+ wc+H/Ja+b86QQmV0Ks0LwGliN8ni3HlfwETztfxNDMFgZGfS0tH/cQHQ3vGEu706PqVNqQA4aNi
+ jPiIA/lComuSsdmXfhNfDCn8TUrwh8eMaYEWnNz1DsQfErXSQcJnsT+Sasd1vv+uOKIMP3Pdnj9
+ Edo4iJl9ymDZAAnWDF0e8Kqt1APGrO/mBtMKdzd9FsZkUkrvw7Rm4bO/s5lRNTG3Bw48heZcgs1
+ edr9CW432u23lhHT4h1cNqq4+uHLC1+LT+Cmt4RXRXxo81KMDSctrYGnbIAw/oQFL3uJevSOMtw
+ 1iP5jVVsdxHhGHngRtC9LxCBt28KYpPwYLqPJHBmhfX80yO+AQpFa5wxRbp3ZbqpndWpFQWT64w
+ m4/2rg5U
+X-Authority-Analysis: v=2.4 cv=LNVmQIW9 c=1 sm=1 tr=0 ts=689603c7 cx=c_pps
+ a=mDZGXZTwRPZaeRUbqKGCBw==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
+ a=2OwXVqhp2XgA:10 a=pgtP2bmdoZ-auWmCWbcA:9 a=zc0IvFSfCIW2DFIPzwfm:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-08-08_04,2025-08-06_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 bulkscore=0 clxscore=1011 malwarescore=0 adultscore=0
+ phishscore=0 priorityscore=1501 impostorscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2508060009
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <gj565636v5qgohhf5usklfqydkc6lzifzhrbquoyawbwvhdlma@kajszdivkp2e>
 
-On Fri, Aug 08, 2025 at 10:10:35AM +0000, Sean Nyekjaer wrote:
-> Does it make sense to show that the driver support suspend to mem
-> states? Like...
-I don't see any reason not to. So, I can add that in the next version.
-> 
-> 
-> 			sw1_reg: sw1 {
-> 				regulator-name = "sw1";
-> 				regulator-min-microvolt = <1325000>;
-> 				regulator-max-microvolt = <1325000>;
-> 				regulator-always-on;
-> 
-> 				regulator-state-mem {
-> 					regulator-on-in-suspend;
-> 					regulator-suspend-max-microvolt = <900000>;
-> 					regulator-suspend-min-microvolt = <900000>;
-> 				};
-> 			};
-> 
-> 			sw2_reg: sw2 {
-> 				regulator-name = "sw2";
-> 				regulator-min-microvolt = <1350000>;
-> 				regulator-max-microvolt = <1350000>;
-> 				regulator-always-on;
-> 
-> 				regulator-state-mem {
-> 					regulator-on-in-suspend;
-> 				};
-> 			};
-> 
-> 			sw3_reg: sw3 {
-> 				regulator-name = "sw3";
-> 				regulator-min-microvolt = <3300000>;
-> 				regulator-max-microvolt = <3300000>;
-> 				regulator-always-on;
-> 
-> 				regulator-state-mem {
-> 					regulator-on-in-suspend;
-> 				};
-> 			};
-> 
-> 			vldo1_reg: ldo1 {
-> 				regulator-name = "ldo1";
-> 				regulator-min-microvolt = <2900000>;
-> 				regulator-max-microvolt = <2900000>;
-> 				regulator-always-on;
-> 
-> 				regulator-state-mem {
-> 					regulator-off-in-suspend;
-> 				};
-> 			};
-Will include these in the next version.
+This series enables QoS configuration for QNOC type device which
+can be found on SA8775P platform. It enables QoS configuration
+for master ports with predefined priority and urgency forwarding.
+This helps in prioritizing the traffic originating from different
+interconnect masters at NOC (Network On Chip).
 
-Thanks,
-Sam
+Odelu Kukatla (3):
+  dt-bindings: interconnect: add clocks property to enable QoS on
+    sa8775p
+  interconnect: qcom: sa8775p: enable QoS configuration
+  arm64: dts: qcom: sa8775p: Add clocks for QoS configuration
+
+ .../interconnect/qcom,sa8775p-rpmh.yaml       |  78 +++-
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi         | 163 ++++---
+ drivers/interconnect/qcom/sa8775p.c           | 439 ++++++++++++++++++
+ 3 files changed, 607 insertions(+), 73 deletions(-)
+
+-- 
+2.17.1
+
