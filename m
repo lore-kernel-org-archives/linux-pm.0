@@ -1,63 +1,63 @@
-Received: from mail-oa1-f54.google.com (mail-oa1-f54.google.com [209.85.160.54])
+Received: from mail-oa1-f53.google.com (mail-oa1-f53.google.com [209.85.160.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69A1E2D29C2;
-	Tue, 12 Aug 2025 21:45:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 57A572D7394;
+	Tue, 12 Aug 2025 21:45:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755035132; cv=none; b=fipCnfSgSI8zjKveKUoovRTA7w2V+r5DeFD7dR+XRwkyJ8LIM0xW2qe1/mEt/5Q8Ij72jnn8hr3mfW2BidikYHvjmuQJOZ++rlw0zwGfLI3wYZo205+GDhDO7o7KzN6h4LetwB977EcahGRK4udNukGoPN3OVE6EnyFZscPRL3c=
+	t=1755035132; cv=none; b=nUksnFSAvyQko0Zh+L6c0vfXa4z4+RZ3hGZFJKWBdUWYrE5W/t5RVLP95VFnH5ZKMeY2EqolnZTOolzskmxy/94i099Ydga5fN2m4nzsdwfyBrglwpFSz7iou/a8WD4ONXffWOodCxboiFxezFNEgx/VuzQNQQVJkeR5ne3wkh0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1755035132; c=relaxed/simple;
-	bh=FXqikd7lM8TIygftfUNscSIXW/aypGEewnLURGMoYS4=;
+	bh=a2VaGbnudM1PA9g6aSsfgVl1WnSIPcWzvBS/7G/JRIQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=N2Gyw8WX2e1jvQGDF7S9iTdsOOXzDFGfGBKrpyQpOnjk8u4qaR8SqzW071rzGB9q9OkMqhvU++LbZk7OLiAjRMVgeUQ3yklxMgsCu4T78A1OKWeDnZalpJLIprZ8sVrr+/vSv1KL+ocy8zTxINzzhMEc38Knqz73wUnCAY/6jak=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=a7EZhhEm; arc=none smtp.client-ip=209.85.160.54
+	 MIME-Version; b=VlCnyUc0oPE6tdLkUUvo4lfDtK0xf4olJkv4XnjIpqXI+0H37VOHuzemJhNv8/Mt0Ldv+i+qTxXlFZbDKdFLXaXrTgcaNtCRqetg8GGI0ypZf89H19GoXHSvjhexFzDa5hujWCft08xOqM3QfhXjebx5b4TfPIYpWMlXGdpMcLs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=RXZidM4l; arc=none smtp.client-ip=209.85.160.53
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="a7EZhhEm"
-Received: by mail-oa1-f54.google.com with SMTP id 586e51a60fabf-30b8c77361eso1320212fac.0;
-        Tue, 12 Aug 2025 14:45:30 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RXZidM4l"
+Received: by mail-oa1-f53.google.com with SMTP id 586e51a60fabf-302effd5978so3002493fac.2;
+        Tue, 12 Aug 2025 14:45:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1755035129; x=1755639929; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1755035130; x=1755639930; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=FYUIE6EtDEMmzx1PuvsC+UkQrzZzO4WBp9vLdegU9Zc=;
-        b=a7EZhhEmQGK/kFer7j3Y4b1+T1fqgTsZen9Ko8Ih/xgaSlmiEk/Lhdmif9p0ftm6Wt
-         i1uXyEF8iPgrTBAaMFxLOn28moYyqiS9OpdzkjBuqwRdJDDU+Y9BMeBt4kkbge3Zv6KA
-         808hV96x5vtGjSYQEK/ACG86Te+p5CCIbicE/kubpf5a7xF+5pfIEHPXlKRNBryYvYMd
-         Drf6AJ5+GX2kdaLxqgXDcbJ8KatoI+8FOIheoH5JhM8xoRXyF+BZJtv7wfMxhjY6t/wO
-         3dX9HSwaP6MHKkgKKYMGOUtV6c4BIkSP3zLj+8FBhHl1KVCGjQOFtWO1TXzRTK423eG3
-         4qeg==
+        bh=UbxwAPRbZLLGWs9r1VP1FnvbCoc9pGEKPj76nnKqTXY=;
+        b=RXZidM4l1rdVVwjJKNLW5VePVqs3gjpZI2Ne8w4mmkQTd55YOp6YgDFLGpoNNX8Tbp
+         2e8lH3E5zwnb73nHy3YkbLr12kJ/OdBc9bkilFMPzCgig8nQBesYT03rpAhlGN02bQfb
+         0MB5rxhhH34CJ4SVkT40n20RR3BOYl1q1ORC9C44AgYukkz08Y0oy4BBuQV3/8lLO5l5
+         EchFvpQWMeE/VqpteEJt/dPCgdjd5BkmK0/Y2VCs290ridf3v1U650Bftj9NpYnaznCo
+         sjiuFBaGlzFHFzDGSlWst9gJykZcwM/NFHN88pJmW5TSb2Tms4z7QBsQc9CCtWBTh/mv
+         sQXg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1755035129; x=1755639929;
+        d=1e100.net; s=20230601; t=1755035130; x=1755639930;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=FYUIE6EtDEMmzx1PuvsC+UkQrzZzO4WBp9vLdegU9Zc=;
-        b=lkoWmSJ9Ust7lFzfJ7snXM/j/fRJGijPPGh+zmzUPC0kALbqQAL28nVCujzNzkbiVC
-         +9Wamvj5ppG78VmXNz/OEOCGOYJBuUX4WW9vHIw4NDEuybRbwxKqkwSalRINXWaosLBN
-         2F3T25NTXVsPqvHnV8nqkoAu7asowxckEu7bZjhjX+M0bDOfDglSmgFsmxfI+hWWnjd8
-         za8iQUibaGHhRTZfxF1O+9MMq6VA5mIGIIlq/rYtxqr2scSpwzsKj+W5mS/TtzbXdvPE
-         ZCd0WYD9bJqsphZ6m9UmoS/DzoZTEt8RaXJo2pIdmegbxybWL+czUxt511ESA3AeBiQl
-         UZzQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUt3kbuIClxorxCjda3k6BItJYjiGzckIO+d7AnUmWnfu2SWoBqb/pGA3UIQFCiO58wqLpTdDbix0Y1@vger.kernel.org
-X-Gm-Message-State: AOJu0YzW0XIbDOLKe1oLOLtb4xlnAFQkGF0GDF3PQADknFn5OuNCW5om
-	k1z4VlUr6oleph0Obpqs70ImTdj+GyKDbBrr8rC1+p769K1LQOMU2G2F
-X-Gm-Gg: ASbGncvumDmiQ4VLYsngCreEpdC0J6ciAUc8NXF97ju0Qd7sHY8FTKmbGZ6LxJIyInL
-	kg++T/E7NybYNRMQ5HF3zfopMhdrJWca1TD0ACtkBKOeEH19gHvZsELgwrnlTkep8KzSkz1QmxI
-	yFWGJq5Lj66/ZKotLLX+nq4l43ITvuNKFKqcMY8Nq+OFNAJNF6q4FnyD7MVB7IBnHkdcA1Y9RBX
-	kA8p+71eDt1W1nuoYLWpODDmH1EKSlZLAZNLNCvMltJddqKB+FZiNCVOruI11At19++urYFSGoZ
-	Les9fKV5DXa2ZZdo79GEUmWRDGeOw38H4qr8tXu600unu1ZDo5GEdaUhbeHW2y/q6Ivq7l4KdU8
-	q2y8GUMLmq9SC3Tpz7n4WnAoKpK3o2ONVANCY3gJwvg==
-X-Google-Smtp-Source: AGHT+IEtaNx5+eAZtJ5bsjmgNHF9tRLBfste1swNtOCNzcs6rI/brooh7S+1eyprfkbxKrhiBw1pyw==
-X-Received: by 2002:a05:6871:a514:b0:30b:b90a:6b20 with SMTP id 586e51a60fabf-30cb5c205f4mr523045fac.23.1755035129142;
-        Tue, 12 Aug 2025 14:45:29 -0700 (PDT)
+        bh=UbxwAPRbZLLGWs9r1VP1FnvbCoc9pGEKPj76nnKqTXY=;
+        b=m/eqHZTQC7D8xgoLNpUB0XGdENTahwMytoU6DJDBfGFUQ7zDuzP0372ucawERWcZDd
+         Jd4Mi+kpiVCWDh6+yLGG76bqR6ppijKQywfi4d1KTzToZqFekQ2vwqG/Qf3kVGmdoj+i
+         WkOzDL6cEaPikbmPuiIwjRo2WtqEuiBmhh0VTKUUDyLcLW86vn7EdJ4NLO9cJ1joj7p+
+         RmsH4Z9m5n1xbYLyAEzMNVhj7IP+NT+QM4B2oqJwNoUvXRLL4JI7XKiYgOXI5Za9IK//
+         kQxVl75Rv/1ywBg1HRPb2FfnIz5Gon/PoPf0bqsnvFIsOU8QIbzP10itjuJw21nzmGZh
+         jzMA==
+X-Forwarded-Encrypted: i=1; AJvYcCVWQ2cB6p98bqwSZKhY7irrOjbYkXJfbuGiBWPSl1MmJ14NrCcDSZD24tEE5Izk0f4Bjc9VEIKQaF7j@vger.kernel.org
+X-Gm-Message-State: AOJu0YwQQFLZsx3RQG2t00BYAjpOKNgtb1YyBmIjMq2iZQNDb5KTF0xR
+	l1ogSr6FJa38VM33DVsjFOCa0GJHJrWrWgbiHhBPGszcd/axWo/jqIrNadde/w==
+X-Gm-Gg: ASbGncttPqbkkOO7VJbrNb6/F+oF6lBMKJPVqrCHQ6h7OYT38N2RRB4CNjxn+hJK3Ix
+	CvT6l4ujXJblgOZzVa63sZqnkKcPkrXuA10aPBmv/pFtYc+PlBE+ensOzymxTfxu4hls3dZTrkP
+	5ddIHWTVhMxb/A9fs6wWGtJiMrfGsaGxmKzl62908ONRvxSTY/9QFr4nIzrTanWaElsiNkb0oSv
+	jOy+YVpvReZrEaFKt5QYAvxmBcKgzSfjWa8qakBjhHXkT6d6DIY0h6IyT+F9dRcETUvjIxl8yV5
+	45TsrarUEsIGnGTSD6GJm2cHjiJedIwIjKpuGNakuo/wGSfNXQPfaislQbH2ElWNUJSlZBgmFll
+	T8NWNVL5j+jdMqNgjbpdLTF/fmHpqP/sVORUbtKd3vQ==
+X-Google-Smtp-Source: AGHT+IFMDIBEwkoAFWfmFPeE4jkHvh48lkAdk+3gMISL3QZlC5MqVz0RueEmO5dX/CZAEbTgNvD+eA==
+X-Received: by 2002:a05:6871:5312:b0:30b:aa71:3ea9 with SMTP id 586e51a60fabf-30cb5a0f92cmr496984fac.8.1755035130298;
+        Tue, 12 Aug 2025 14:45:30 -0700 (PDT)
 Received: from localhost.localdomain ([2600:1700:fb0:1bc0:d904:cea9:a76b:d0a3])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-30c10c7a694sm4092741fac.9.2025.08.12.14.45.28
+        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-30c10c7a694sm4092741fac.9.2025.08.12.14.45.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 12 Aug 2025 14:45:28 -0700 (PDT)
+        Tue, 12 Aug 2025 14:45:30 -0700 (PDT)
 From: Chris Morgan <macroalpha82@gmail.com>
 To: linux-rockchip@lists.infradead.org
 Cc: linux-pm@vger.kernel.org,
@@ -70,11 +70,10 @@ Cc: linux-pm@vger.kernel.org,
 	conor+dt@kernel.org,
 	krzk+dt@kernel.org,
 	robh@kernel.org,
-	Chris Morgan <macromorgan@hotmail.com>,
-	Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCH V6 3/5] power: supply: bq257xx: Add support for BQ257XX charger
-Date: Tue, 12 Aug 2025 16:42:58 -0500
-Message-ID: <20250812214300.123129-4-macroalpha82@gmail.com>
+	Chris Morgan <macromorgan@hotmail.com>
+Subject: [PATCH V6 5/5] arm64: dts: rockchip: Add USB and charger to Gameforce Ace
+Date: Tue, 12 Aug 2025 16:43:00 -0500
+Message-ID: <20250812214300.123129-6-macroalpha82@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250812214300.123129-1-macroalpha82@gmail.com>
 References: <20250812214300.123129-1-macroalpha82@gmail.com>
@@ -88,805 +87,171 @@ Content-Transfer-Encoding: 8bit
 
 From: Chris Morgan <macromorgan@hotmail.com>
 
-Add support for the charger function of the BQ257XX. The device is
-capable of charging batteries with a layout of 1 to 4 cells in
-series.
+Add support for the BQ25703A charger manager and boost regulator to
+the Gameforce Ace. Add the USB-C port and PHY as well as they all
+depend on each other for operation.
 
 Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/power/supply/Kconfig           |   7 +
- drivers/power/supply/Makefile          |   1 +
- drivers/power/supply/bq257xx_charger.c | 750 +++++++++++++++++++++++++
- 3 files changed, 758 insertions(+)
- create mode 100644 drivers/power/supply/bq257xx_charger.c
+ .../dts/rockchip/rk3588s-gameforce-ace.dts    | 122 ++++++++++++++++++
+ 1 file changed, 122 insertions(+)
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index 79ddb006e2da..11893c50c5d2 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -767,6 +767,13 @@ config CHARGER_BQ2515X
- 	  rail, ADC for battery and system monitoring, and push-button
- 	  controller.
+diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-gameforce-ace.dts b/arch/arm64/boot/dts/rockchip/rk3588s-gameforce-ace.dts
+index 55fc7cbef58d..f5894672fcbd 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3588s-gameforce-ace.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3588s-gameforce-ace.dts
+@@ -612,6 +612,56 @@ &i2c6 {
+ 	pinctrl-0 = <&i2c6m3_xfer>;
+ 	status = "okay";
  
-+config CHARGER_BQ257XX
-+	tristate "TI BQ257XX battery charger family"
-+	depends on MFD_BQ257XX
-+	help
-+	  Say Y to enable support for the TI BQ257XX family of battery
-+	  charging integrated circuits.
++	fusb302: typec@22 {
++		compatible = "fcs,fusb302";
++		reg = <0x22>;
++		interrupt-parent = <&gpio0>;
++		interrupts = <RK_PC7 IRQ_TYPE_LEVEL_LOW>;
++		pinctrl-0 = <&usbc0_int>;
++		pinctrl-names = "default";
++		vbus-supply = <&usb_otg_vbus>;
 +
- config CHARGER_BQ25890
- 	tristate "TI BQ25890 battery charger driver"
- 	depends on I2C
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index f943c9150b32..a7d91244bb82 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -97,6 +97,7 @@ obj-$(CONFIG_CHARGER_BQ24190)	+= bq24190_charger.o
- obj-$(CONFIG_CHARGER_BQ24257)	+= bq24257_charger.o
- obj-$(CONFIG_CHARGER_BQ24735)	+= bq24735-charger.o
- obj-$(CONFIG_CHARGER_BQ2515X)	+= bq2515x_charger.o
-+obj-$(CONFIG_CHARGER_BQ257XX)	+= bq257xx_charger.o
- obj-$(CONFIG_CHARGER_BQ25890)	+= bq25890_charger.o
- obj-$(CONFIG_CHARGER_BQ25980)	+= bq25980_charger.o
- obj-$(CONFIG_CHARGER_BQ256XX)	+= bq256xx_charger.o
-diff --git a/drivers/power/supply/bq257xx_charger.c b/drivers/power/supply/bq257xx_charger.c
-new file mode 100644
-index 000000000000..e4a13491196f
---- /dev/null
-+++ b/drivers/power/supply/bq257xx_charger.c
-@@ -0,0 +1,750 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * BQ257XX Battery Charger Driver
-+ * Copyright (C) 2025 Chris Morgan <macromorgan@hotmail.com>
-+ */
++		connector {
++			compatible = "usb-c-connector";
++			data-role = "dual";
++			label = "USB-C";
++			op-sink-microwatt = <1000000>;
++			power-role = "dual";
++			self-powered;
++			sink-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)
++				     PDO_FIXED(9000, 3000, PDO_FIXED_USB_COMM)
++				     PDO_FIXED(12000, 3000, PDO_FIXED_USB_COMM)>;
++			source-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)>;
++			try-power-role = "sink";
 +
-+#include <linux/bitfield.h>
-+#include <linux/i2c.h>
-+#include <linux/interrupt.h>
-+#include <linux/mfd/bq257xx.h>
-+#include <linux/platform_device.h>
-+#include <linux/power_supply.h>
-+#include <linux/property.h>
-+#include <linux/regmap.h>
++			ports {
++				#address-cells = <1>;
++				#size-cells = <0>;
 +
-+/* Forward declaration of driver data. */
-+struct bq257xx_chg;
++				port@0 {
++					reg = <0>;
++					usbc0_orien_sw: endpoint {
++						remote-endpoint = <&usbdp_phy0_orientation_switch>;
++					};
++				};
 +
-+/**
-+ * struct bq257xx_chip_info - chip specific routines
-+ * @bq257xx_hw_init: init function for hw
-+ * @bq257xx_hw_shutdown: shutdown function for hw
-+ * @bq257xx_get_state: get and update state of hardware
-+ * @bq257xx_set_ichg: set maximum charge current (in uA)
-+ * @bq257xx_set_vbatreg: set maximum charge voltage (in uV)
-+ * @bq257xx_set_iindpm: set maximum input current (in uA)
-+ */
-+struct bq257xx_chip_info {
-+	int (*bq257xx_hw_init)(struct bq257xx_chg *pdata);
-+	void (*bq257xx_hw_shutdown)(struct bq257xx_chg *pdata);
-+	int (*bq257xx_get_state)(struct bq257xx_chg *pdata);
-+	int (*bq257xx_set_ichg)(struct bq257xx_chg *pdata, int ichg);
-+	int (*bq257xx_set_vbatreg)(struct bq257xx_chg *pdata, int vbatreg);
-+	int (*bq257xx_set_iindpm)(struct bq257xx_chg *pdata, int iindpm);
++				port@1 {
++					reg = <1>;
++					usbc0_role_sw: endpoint {
++						remote-endpoint = <&dwc3_0_role_switch>;
++					};
++				};
++
++				port@2 {
++					reg = <2>;
++					dp_altmode_mux: endpoint {
++						remote-endpoint = <&usbdp_phy0_dp_altmode_mux>;
++					};
++				};
++			};
++		};
++	};
++
+ 	rtc_hym8563: rtc@51 {
+ 		compatible = "haoyu,hym8563";
+ 		reg = <0x51>;
+@@ -640,8 +690,34 @@ battery@62 {
+ 			 0x2F 0x00 0x64 0xA5 0xB5 0x1C 0xF0 0x49>;
+ 		cellwise,monitor-interval-ms = <5000>;
+ 		monitored-battery = <&battery>;
++		power-supplies = <&bq25703>;
+ 		status = "okay";
+ 	};
++
++	bq25703: charger@6b {
++		compatible = "ti,bq25703a";
++		reg = <0x6b>;
++		input-current-limit-microamp = <5000000>;
++		interrupt-parent = <&gpio0>;
++		interrupts = <RK_PD5 IRQ_TYPE_LEVEL_LOW>;
++		monitored-battery = <&battery>;
++		pinctrl-0 = <&charger_int_h>;
++		pinctrl-names = "default";
++		power-supplies = <&fusb302>;
++
++		regulators {
++			usb_otg_vbus: vbus {
++				enable-gpios = <&gpio4 RK_PA6 GPIO_ACTIVE_HIGH>;
++				pinctrl-0 = <&boost_enable_h>;
++				pinctrl-names = "default";
++				regulator-max-microamp = <960000>;
++				regulator-max-microvolt = <5088000>;
++				regulator-min-microamp = <512000>;
++				regulator-min-microvolt = <4992000>;
++				regulator-name = "usb_otg_vbus";
++			};
++		};
++	};
+ };
+ 
+ &i2c7 {
+@@ -853,6 +929,12 @@ usbc0_int: usbc0-int {
+ 			rockchip,pins =
+ 				<0 RK_PC7 RK_FUNC_GPIO &pcfg_pull_up>;
+ 		};
++
++		usbc_sbu_dc: usbc-sbu-dc {
++			rockchip,pins =
++				<4 RK_PA0 RK_FUNC_GPIO &pcfg_pull_none>,
++				<4 RK_PA1 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
+ 	};
+ 
+ 	vcc3v3-lcd {
+@@ -1286,6 +1368,46 @@ bluetooth {
+ 	};
+ };
+ 
++&usb_host0_xhci {
++	usb-role-switch;
++	status = "okay";
++
++	port {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		dwc3_0_role_switch: endpoint@0 {
++			reg = <0>;
++			remote-endpoint = <&usbc0_role_sw>;
++		};
++	};
 +};
 +
-+/**
-+ * struct bq257xx_chg - driver data for charger
-+ * @chip: hw specific functions
-+ * @bq: parent MFD device
-+ * @charger: power supply device
-+ * @online: charger input is present
-+ * @fast_charge: charger is in fast charge mode
-+ * @pre_charge: charger is in pre-charge mode
-+ * @ov_fault: charger reports over voltage fault
-+ * @batoc_fault: charger reports battery over current fault
-+ * @oc_fault: charger reports over current fault
-+ * @usb_type: USB type reported from parent power supply
-+ * @supplied: Status of parent power supply
-+ * @iindpm_max: maximum input current limit (uA)
-+ * @vbat_max: maximum charge voltage (uV)
-+ * @ichg_max: maximum charge current (uA)
-+ * @vsys_min: minimum system voltage (uV)
-+ */
-+struct bq257xx_chg {
-+	const struct bq257xx_chip_info *chip;
-+	struct bq257xx_device *bq;
-+	struct power_supply *charger;
-+	bool online;
-+	bool fast_charge;
-+	bool pre_charge;
-+	bool ov_fault;
-+	bool batoc_fault;
-+	bool oc_fault;
-+	int usb_type;
-+	int supplied;
-+	u32 iindpm_max;
-+	u32 vbat_max;
-+	u32 ichg_max;
-+	u32 vsys_min;
++&usbdp_phy0 {
++	mode-switch;
++	orientation-switch;
++	pinctrl-0 = <&usbc_sbu_dc>;
++	pinctrl-names = "default";
++	sbu1-dc-gpios = <&gpio4 RK_PA0 GPIO_ACTIVE_HIGH>;
++	sbu2-dc-gpios = <&gpio4 RK_PA1 GPIO_ACTIVE_HIGH>;
++	rockchip,dp-lane-mux = <2 3>;
++	status = "okay";
++
++	port {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		usbdp_phy0_orientation_switch: endpoint@0 {
++			reg = <0>;
++			remote-endpoint = <&usbc0_orien_sw>;
++		};
++
++		usbdp_phy0_dp_altmode_mux: endpoint@1 {
++			reg = <1>;
++			remote-endpoint = <&dp_altmode_mux>;
++		};
++	};
 +};
 +
-+/**
-+ * bq25703_get_state() - Get the current state of the device
-+ * @pdata: driver platform data
-+ *
-+ * Get the current state of the charger. Check if the charger is
-+ * powered, what kind of charge state (if any) the device is in,
-+ * and if there are any active faults.
-+ *
-+ * Return: Returns 0 on success, or error on failure to read device.
-+ */
-+static int bq25703_get_state(struct bq257xx_chg *pdata)
-+{
-+	unsigned int reg;
-+	int ret;
-+
-+	ret = regmap_read(pdata->bq->regmap, BQ25703_CHARGER_STATUS, &reg);
-+	if (ret)
-+		return ret;
-+
-+	pdata->online = reg & BQ25703_STS_AC_STAT;
-+	pdata->fast_charge = reg & BQ25703_STS_IN_FCHRG;
-+	pdata->pre_charge = reg & BQ25703_STS_IN_PCHRG;
-+	pdata->ov_fault = reg & BQ25703_STS_FAULT_ACOV;
-+	pdata->batoc_fault = reg & BQ25703_STS_FAULT_BATOC;
-+	pdata->oc_fault = reg & BQ25703_STS_FAULT_ACOC;
-+
-+	return 0;
-+}
-+
-+/**
-+ * bq25703_get_min_vsys() - Get the minimum system voltage
-+ * @pdata: driver platform data
-+ * @intval: value for minimum voltage
-+ *
-+ * Return: Returns 0 on success or error on failure to read.
-+ */
-+static int bq25703_get_min_vsys(struct bq257xx_chg *pdata, int *intval)
-+{
-+	unsigned int reg;
-+	int ret;
-+
-+	ret = regmap_read(pdata->bq->regmap, BQ25703_MIN_VSYS,
-+			  &reg);
-+	if (ret)
-+		return ret;
-+
-+	reg = FIELD_GET(BQ25703_MINVSYS_MASK, reg);
-+	*intval = (reg * BQ25703_MINVSYS_STEP_UV) + BQ25703_MINVSYS_MIN_UV;
-+
-+	return ret;
-+}
-+
-+/**
-+ * bq25703_set_min_vsys() - Set the minimum system voltage
-+ * @pdata: driver platform data
-+ * @vsys: voltage value to set in uV.
-+ *
-+ * This function takes a requested minimum system voltage value, clamps
-+ * it between the minimum supported value by the charger and a user
-+ * defined minimum system value, and then writes the value to the
-+ * appropriate register.
-+ *
-+ * Return: Returns 0 on success or error if an error occurs.
-+ */
-+static int bq25703_set_min_vsys(struct bq257xx_chg *pdata, int vsys)
-+{
-+	unsigned int reg;
-+	int vsys_min = pdata->vsys_min;
-+
-+	vsys = clamp(vsys, BQ25703_MINVSYS_MIN_UV, vsys_min);
-+	reg = ((vsys - BQ25703_MINVSYS_MIN_UV) / BQ25703_MINVSYS_STEP_UV);
-+	reg = FIELD_PREP(BQ25703_MINVSYS_MASK, reg);
-+
-+	return regmap_write(pdata->bq->regmap, BQ25703_MIN_VSYS,
-+			    reg);
-+}
-+
-+/**
-+ * bq25703_get_cur() - Get the reported current from the battery
-+ * @pdata: driver platform data
-+ * @intval: value of reported battery current
-+ *
-+ * Read the reported current from the battery. Since value is always
-+ * positive set sign to negative if discharging.
-+ *
-+ * Return: Returns 0 on success or error if unable to read value.
-+ */
-+static int bq25703_get_cur(struct bq257xx_chg *pdata, int *intval)
-+{
-+	unsigned int reg;
-+	int ret;
-+
-+	ret = regmap_read(pdata->bq->regmap, BQ25703_ADCIBAT_CHG, &reg);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (pdata->online)
-+		*intval = FIELD_GET(BQ25703_ADCIBAT_CHG_MASK, reg) *
-+			  BQ25703_ADCIBAT_CHG_STEP_UA;
-+	else
-+		*intval = -(FIELD_GET(BQ25703_ADCIBAT_DISCHG_MASK, reg) *
-+			    BQ25703_ADCIBAT_DIS_STEP_UA);
-+
-+	return ret;
-+}
-+
-+/**
-+ * bq25703_get_ichg_cur() - Get the maximum reported charge current
-+ * @pdata: driver platform data
-+ * @intval: value of maximum reported charge current
-+ *
-+ * Get the maximum reported charge current from the battery.
-+ *
-+ * Return: Returns 0 on success or error if unable to read value.
-+ */
-+static int bq25703_get_ichg_cur(struct bq257xx_chg *pdata, int *intval)
-+{
-+	unsigned int reg;
-+	int ret;
-+
-+	ret = regmap_read(pdata->bq->regmap, BQ25703_CHARGE_CURRENT, &reg);
-+	if (ret)
-+		return ret;
-+
-+	*intval = FIELD_GET(BQ25703_ICHG_MASK, reg) * BQ25703_ICHG_STEP_UA;
-+
-+	return ret;
-+}
-+
-+/**
-+ * bq25703_set_ichg_cur() - Set the maximum charge current
-+ * @pdata: driver platform data
-+ * @ichg: current value to set in uA.
-+ *
-+ * This function takes a requested maximum charge current value, clamps
-+ * it between the minimum supported value by the charger and a user
-+ * defined maximum charging value, and then writes the value to the
-+ * appropriate register.
-+ *
-+ * Return: Returns 0 on success or error if an error occurs.
-+ */
-+static int bq25703_set_ichg_cur(struct bq257xx_chg *pdata, int ichg)
-+{
-+	unsigned int reg;
-+	int ichg_max = pdata->ichg_max;
-+
-+	ichg = clamp(ichg, BQ25703_ICHG_MIN_UA, ichg_max);
-+	reg = FIELD_PREP(BQ25703_ICHG_MASK, (ichg / BQ25703_ICHG_STEP_UA));
-+
-+	return regmap_write(pdata->bq->regmap, BQ25703_CHARGE_CURRENT,
-+			    reg);
-+}
-+
-+/**
-+ * bq25703_get_chrg_volt() - Get the maximum set charge voltage
-+ * @pdata: driver platform data
-+ * @intval: maximum charge voltage value
-+ *
-+ * Return: Returns 0 on success or error if unable to read value.
-+ */
-+static int bq25703_get_chrg_volt(struct bq257xx_chg *pdata, int *intval)
-+{
-+	unsigned int reg;
-+	int ret;
-+
-+	ret = regmap_read(pdata->bq->regmap, BQ25703_MAX_CHARGE_VOLT,
-+			  &reg);
-+	if (ret)
-+		return ret;
-+
-+	*intval = FIELD_GET(BQ25703_MAX_CHARGE_VOLT_MASK, reg) *
-+		  BQ25703_VBATREG_STEP_UV;
-+
-+	return ret;
-+}
-+
-+/**
-+ * bq25703_set_chrg_volt() - Set the maximum charge voltage
-+ * @pdata: driver platform data
-+ * @vbat: voltage value to set in uV.
-+ *
-+ * This function takes a requested maximum charge voltage value, clamps
-+ * it between the minimum supported value by the charger and a user
-+ * defined maximum charging value, and then writes the value to the
-+ * appropriate register.
-+ *
-+ * Return: Returns 0 on success or error if an error occurs.
-+ */
-+static int bq25703_set_chrg_volt(struct bq257xx_chg *pdata, int vbat)
-+{
-+	unsigned int reg;
-+	int vbat_max = pdata->vbat_max;
-+
-+	vbat = clamp(vbat, BQ25703_VBATREG_MIN_UV, vbat_max);
-+
-+	reg = FIELD_PREP(BQ25703_MAX_CHARGE_VOLT_MASK,
-+			 (vbat / BQ25703_VBATREG_STEP_UV));
-+
-+	return regmap_write(pdata->bq->regmap, BQ25703_MAX_CHARGE_VOLT,
-+			    reg);
-+}
-+
-+/**
-+ * bq25703_get_iindpm() - Get the maximum set input current
-+ * @pdata: driver platform data
-+ * @intval: maximum input current value
-+ *
-+ * Read the actual input current limit from the device into intval.
-+ * This can differ from the value programmed due to some autonomous
-+ * functions that may be enabled (but are not currently). This is why
-+ * there is a different register used.
-+ *
-+ * Return: Returns 0 on success or error if unable to read register
-+ * value.
-+ */
-+static int bq25703_get_iindpm(struct bq257xx_chg *pdata, int *intval)
-+{
-+	unsigned int reg;
-+	int ret;
-+
-+	ret = regmap_read(pdata->bq->regmap, BQ25703_IIN_DPM, &reg);
-+	if (ret)
-+		return ret;
-+
-+	reg = FIELD_GET(BQ25703_IINDPM_MASK, reg);
-+	*intval = (reg * BQ25703_IINDPM_STEP_UA) + BQ25703_IINDPM_OFFSET_UA;
-+
-+	return ret;
-+}
-+
-+/**
-+ * bq25703_set_iindpm() - Set the maximum input current
-+ * @pdata: driver platform data
-+ * @iindpm: current value in uA.
-+ *
-+ * This function takes a requested maximum input current value, clamps
-+ * it between the minimum supported value by the charger and a user
-+ * defined maximum input value, and then writes the value to the
-+ * appropriate register.
-+ *
-+ * Return: Returns 0 on success or error if an error occurs.
-+ */
-+static int bq25703_set_iindpm(struct bq257xx_chg *pdata, int iindpm)
-+{
-+	unsigned int reg;
-+	int iindpm_max = pdata->iindpm_max;
-+
-+	iindpm = clamp(iindpm, BQ25703_IINDPM_MIN_UA, iindpm_max);
-+
-+	reg = ((iindpm - BQ25703_IINDPM_OFFSET_UA) / BQ25703_IINDPM_STEP_UA);
-+
-+	return regmap_write(pdata->bq->regmap, BQ25703_IIN_HOST,
-+			    FIELD_PREP(BQ25703_IINDPM_MASK, reg));
-+}
-+
-+/**
-+ * bq25703_get_vbat() - Get the reported voltage from the battery
-+ * @pdata: driver platform data
-+ * @intval: value of reported battery voltage
-+ *
-+ * Read value of battery voltage into intval.
-+ *
-+ * Return: Returns 0 on success or error if unable to read value.
-+ */
-+static int bq25703_get_vbat(struct bq257xx_chg *pdata, int *intval)
-+{
-+	unsigned int reg;
-+	int ret;
-+
-+	ret = regmap_read(pdata->bq->regmap, BQ25703_ADCVSYSVBAT, &reg);
-+	if (ret)
-+		return ret;
-+
-+	reg = FIELD_GET(BQ25703_ADCVBAT_MASK, reg);
-+	*intval = (reg * BQ25703_ADCVSYSVBAT_STEP) + BQ25703_ADCVSYSVBAT_OFFSET_UV;
-+
-+	return ret;
-+}
-+
-+/**
-+ * bq25703_hw_init() - Set all the required registers to init the charger
-+ * @pdata: driver platform data
-+ *
-+ * Initialize the BQ25703 by first disabling the watchdog timer (which
-+ * shuts off the charger in the absence of periodic writes). Then, set
-+ * the charge current, charge voltage, minimum system voltage, and
-+ * input current limit. Disable low power mode to allow ADCs and
-+ * interrupts. Enable the ADC, start the ADC, set the ADC scale to
-+ * full, and enable each individual ADC channel.
-+ *
-+ * Return: Returns 0 on success or error code on error.
-+ */
-+static int bq25703_hw_init(struct bq257xx_chg *pdata)
-+{
-+	struct regmap *regmap = pdata->bq->regmap;
-+	int ret = 0;
-+
-+	regmap_update_bits(regmap, BQ25703_CHARGE_OPTION_0,
-+			   BQ25703_WDTMR_ADJ_MASK,
-+			   FIELD_PREP(BQ25703_WDTMR_ADJ_MASK,
-+			   BQ25703_WDTMR_DISABLE));
-+
-+	ret = pdata->chip->bq257xx_set_ichg(pdata, pdata->ichg_max);
-+	if (ret)
-+		return ret;
-+
-+	ret = pdata->chip->bq257xx_set_vbatreg(pdata, pdata->vbat_max);
-+	if (ret)
-+		return ret;
-+
-+	ret = bq25703_set_min_vsys(pdata, pdata->vsys_min);
-+	if (ret)
-+		return ret;
-+
-+	ret = pdata->chip->bq257xx_set_iindpm(pdata, pdata->iindpm_max);
-+	if (ret)
-+		return ret;
-+
-+	regmap_update_bits(regmap, BQ25703_CHARGE_OPTION_0,
-+			   BQ25703_EN_LWPWR, !BQ25703_EN_LWPWR);
-+
-+	regmap_update_bits(regmap, BQ25703_ADC_OPTION,
-+			   BQ25703_ADC_CONV_EN, BQ25703_ADC_CONV_EN);
-+
-+	regmap_update_bits(regmap, BQ25703_ADC_OPTION,
-+			   BQ25703_ADC_START, BQ25703_ADC_START);
-+
-+	regmap_update_bits(regmap, BQ25703_ADC_OPTION,
-+			   BQ25703_ADC_FULL_SCALE, BQ25703_ADC_FULL_SCALE);
-+
-+	regmap_update_bits(regmap, BQ25703_ADC_OPTION,
-+			   BQ25703_ADC_CH_MASK,
-+			   (BQ25703_ADC_CMPIN_EN | BQ25703_ADC_VBUS_EN |
-+			   BQ25703_ADC_PSYS_EN | BQ25703_ADC_IIN_EN |
-+			   BQ25703_ADC_IDCHG_EN | BQ25703_ADC_ICHG_EN |
-+			   BQ25703_ADC_VSYS_EN | BQ25703_ADC_VBAT_EN));
-+
-+	return ret;
-+}
-+
-+/**
-+ * bq25703_hw_shutdown() - Set registers for shutdown
-+ * @pdata: driver platform data
-+ *
-+ * Enable low power mode for the device while in shutdown.
-+ */
-+static void bq25703_hw_shutdown(struct bq257xx_chg *pdata)
-+{
-+	regmap_update_bits(pdata->bq->regmap, BQ25703_CHARGE_OPTION_0,
-+			   BQ25703_EN_LWPWR, BQ25703_EN_LWPWR);
-+}
-+
-+static int bq257xx_set_charger_property(struct power_supply *psy,
-+		enum power_supply_property prop,
-+		const union power_supply_propval *val)
-+{
-+	struct bq257xx_chg *pdata = power_supply_get_drvdata(psy);
-+
-+	switch (prop) {
-+	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-+		return pdata->chip->bq257xx_set_iindpm(pdata, val->intval);
-+
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
-+		return pdata->chip->bq257xx_set_vbatreg(pdata, val->intval);
-+
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
-+		return pdata->chip->bq257xx_set_ichg(pdata, val->intval);
-+
-+	default:
-+		break;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static int bq257xx_get_charger_property(struct power_supply *psy,
-+				enum power_supply_property psp,
-+				union power_supply_propval *val)
-+{
-+	struct bq257xx_chg *pdata = power_supply_get_drvdata(psy);
-+	int ret = 0;
-+
-+	ret = pdata->chip->bq257xx_get_state(pdata);
-+	if (ret)
-+		return ret;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		if (!pdata->online)
-+			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
-+		else if (pdata->fast_charge || pdata->pre_charge)
-+			val->intval = POWER_SUPPLY_STATUS_CHARGING;
-+		else
-+			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+		break;
-+
-+	case POWER_SUPPLY_PROP_HEALTH:
-+		if (pdata->ov_fault || pdata->batoc_fault)
-+			val->intval = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-+		else if (pdata->oc_fault)
-+			val->intval = POWER_SUPPLY_HEALTH_OVERCURRENT;
-+		else
-+			val->intval = POWER_SUPPLY_HEALTH_GOOD;
-+		break;
-+
-+	case POWER_SUPPLY_PROP_MANUFACTURER:
-+		val->strval = "Texas Instruments";
-+		break;
-+
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		val->intval = pdata->online;
-+		break;
-+
-+	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-+		return bq25703_get_iindpm(pdata, &val->intval);
-+
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
-+		return bq25703_get_chrg_volt(pdata, &val->intval);
-+
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+		return bq25703_get_cur(pdata, &val->intval);
-+
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		return bq25703_get_vbat(pdata, &val->intval);
-+
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
-+		return bq25703_get_ichg_cur(pdata, &val->intval);
-+
-+	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
-+		return bq25703_get_min_vsys(pdata, &val->intval);
-+
-+	case POWER_SUPPLY_PROP_USB_TYPE:
-+		val->intval = pdata->usb_type;
-+		break;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+
-+static enum power_supply_property bq257xx_power_supply_props[] = {
-+	POWER_SUPPLY_PROP_MANUFACTURER,
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
-+	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
-+	POWER_SUPPLY_PROP_VOLTAGE_MIN,
-+	POWER_SUPPLY_PROP_USB_TYPE,
-+};
-+
-+static int bq257xx_property_is_writeable(struct power_supply *psy,
-+					 enum power_supply_property prop)
-+{
-+	switch (prop) {
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
-+	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+/**
-+ * bq257xx_external_power_changed() - Handler for external power change
-+ * @psy: Power supply data
-+ *
-+ * When the external power into the charger is changed, check the USB
-+ * type so that it can be reported. Additionally, update the max input
-+ * current and max charging current to the value reported if it is a
-+ * USB PD charger, otherwise use the default value. Note that each time
-+ * a charger is removed the max charge current register is erased, so
-+ * it must be set again each time the input changes or the device will
-+ * not charge.
-+ */
-+static void bq257xx_external_power_changed(struct power_supply *psy)
-+{
-+	struct bq257xx_chg *pdata = power_supply_get_drvdata(psy);
-+	union power_supply_propval val;
-+	int ret;
-+	int imax = pdata->iindpm_max;
-+
-+	pdata->chip->bq257xx_get_state(pdata);
-+
-+	pdata->supplied = power_supply_am_i_supplied(pdata->charger);
-+	if (pdata->supplied < 0)
-+		return;
-+
-+	if (pdata->supplied == 0)
-+		goto out;
-+
-+	ret = power_supply_get_property_from_supplier(psy,
-+						      POWER_SUPPLY_PROP_USB_TYPE,
-+						      &val);
-+	if (ret)
-+		return;
-+
-+	pdata->usb_type = val.intval;
-+
-+	if ((pdata->usb_type == POWER_SUPPLY_USB_TYPE_PD) ||
-+	    (pdata->usb_type == POWER_SUPPLY_USB_TYPE_PD_DRP) ||
-+	    (pdata->usb_type == POWER_SUPPLY_USB_TYPE_PD_PPS)) {
-+		ret = power_supply_get_property_from_supplier(psy,
-+							      POWER_SUPPLY_PROP_CURRENT_MAX,
-+							      &val);
-+		if (ret)
-+			return;
-+
-+		if (val.intval)
-+			imax = val.intval;
-+	}
-+
-+	if (pdata->supplied) {
-+		pdata->chip->bq257xx_set_ichg(pdata, pdata->ichg_max);
-+		pdata->chip->bq257xx_set_iindpm(pdata, imax);
-+		pdata->chip->bq257xx_set_vbatreg(pdata, pdata->vbat_max);
-+	}
-+
-+out:
-+	power_supply_changed(psy);
-+}
-+
-+static irqreturn_t bq257xx_irq_handler_thread(int irq, void *private)
-+{
-+	struct bq257xx_chg *pdata = private;
-+
-+	bq257xx_external_power_changed(pdata->charger);
-+	return IRQ_HANDLED;
-+}
-+
-+static const struct power_supply_desc bq257xx_power_supply_desc = {
-+	.name = "bq257xx-charger",
-+	.type = POWER_SUPPLY_TYPE_USB,
-+	.usb_types = BIT(POWER_SUPPLY_USB_TYPE_C) |
-+		     BIT(POWER_SUPPLY_USB_TYPE_PD) |
-+		     BIT(POWER_SUPPLY_USB_TYPE_PD_DRP) |
-+		     BIT(POWER_SUPPLY_USB_TYPE_PD_PPS) |
-+		     BIT(POWER_SUPPLY_USB_TYPE_UNKNOWN),
-+	.properties = bq257xx_power_supply_props,
-+	.num_properties = ARRAY_SIZE(bq257xx_power_supply_props),
-+	.get_property = bq257xx_get_charger_property,
-+	.set_property = bq257xx_set_charger_property,
-+	.property_is_writeable = bq257xx_property_is_writeable,
-+	.external_power_changed = bq257xx_external_power_changed,
-+};
-+
-+static const struct bq257xx_chip_info bq25703_chip_info = {
-+		.bq257xx_hw_init = &bq25703_hw_init,
-+		.bq257xx_hw_shutdown = &bq25703_hw_shutdown,
-+		.bq257xx_get_state = &bq25703_get_state,
-+		.bq257xx_set_ichg = &bq25703_set_ichg_cur,
-+		.bq257xx_set_vbatreg = &bq25703_set_chrg_volt,
-+		.bq257xx_set_iindpm = &bq25703_set_iindpm,
-+};
-+
-+/**
-+ * bq257xx_parse_dt() - Parse the device tree for required properties
-+ * @pdata: driver platform data
-+ * @psy_cfg: power supply config data
-+ * @dev: device struct
-+ *
-+ * Read the device tree to identify the minimum system voltage, the
-+ * maximum charge current, the maximum charge voltage, and the maximum
-+ * input current.
-+ *
-+ * Return: Returns 0 on success or error code on error.
-+ */
-+static int bq257xx_parse_dt(struct bq257xx_chg *pdata,
-+		struct power_supply_config *psy_cfg, struct device *dev)
-+{
-+	struct power_supply_battery_info *bat_info;
-+	int ret;
-+
-+	ret = power_supply_get_battery_info(pdata->charger,
-+					    &bat_info);
-+	if (ret)
-+		return dev_err_probe(dev, ret,
-+				     "Unable to get battery info\n");
-+
-+	if ((bat_info->voltage_min_design_uv <= 0) ||
-+	    (bat_info->constant_charge_voltage_max_uv <= 0) ||
-+	    (bat_info->constant_charge_current_max_ua <= 0))
-+		return dev_err_probe(dev, -EINVAL,
-+				     "Required bat info missing or invalid\n");
-+
-+	pdata->vsys_min = bat_info->voltage_min_design_uv;
-+	pdata->vbat_max = bat_info->constant_charge_voltage_max_uv;
-+	pdata->ichg_max = bat_info->constant_charge_current_max_ua;
-+
-+	power_supply_put_battery_info(pdata->charger, bat_info);
-+
-+	ret = device_property_read_u32(dev,
-+				       "input-current-limit-microamp",
-+				       &pdata->iindpm_max);
-+	if (ret)
-+		pdata->iindpm_max = BQ25703_IINDPM_DEFAULT_UA;
-+
-+	return 0;
-+}
-+
-+static int bq257xx_charger_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct bq257xx_device *bq = dev_get_drvdata(pdev->dev.parent);
-+	struct bq257xx_chg *pdata;
-+	struct power_supply_config psy_cfg = { };
-+	int ret;
-+
-+	device_set_of_node_from_dev(dev, pdev->dev.parent);
-+
-+	pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
-+	if (!pdata)
-+		return -ENOMEM;
-+
-+	pdata->bq = bq;
-+	pdata->chip = &bq25703_chip_info;
-+
-+	platform_set_drvdata(pdev, pdata);
-+
-+	psy_cfg.drv_data = pdata;
-+	psy_cfg.fwnode = dev_fwnode(dev);
-+
-+	pdata->charger = devm_power_supply_register(dev,
-+						    &bq257xx_power_supply_desc,
-+						    &psy_cfg);
-+	if (IS_ERR(pdata->charger))
-+		return dev_err_probe(dev, PTR_ERR(pdata->charger),
-+				     "Power supply register charger failed\n");
-+
-+	ret = bq257xx_parse_dt(pdata, &psy_cfg, dev);
-+	if (ret)
-+		return ret;
-+
-+	ret = pdata->chip->bq257xx_hw_init(pdata);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "Cannot initialize the charger\n");
-+
-+	platform_set_drvdata(pdev, pdata);
-+
-+	if (bq->client->irq) {
-+		ret = devm_request_threaded_irq(dev, bq->client->irq, NULL,
-+						bq257xx_irq_handler_thread,
-+						IRQF_TRIGGER_RISING |
-+						IRQF_TRIGGER_FALLING |
-+						IRQF_ONESHOT,
-+						dev_name(&bq->client->dev), pdata);
-+		if (ret < 0)
-+			dev_err_probe(dev, ret, "Charger get irq failed\n");
-+	}
-+
-+	return ret;
-+}
-+
-+static void bq257xx_charger_shutdown(struct platform_device *pdev)
-+{
-+	struct bq257xx_chg *pdata = platform_get_drvdata(pdev);
-+
-+	pdata->chip->bq257xx_hw_shutdown(pdata);
-+}
-+
-+static struct platform_driver bq257xx_chg_driver = {
-+	.driver = {
-+		.name = "bq257xx-charger",
-+	},
-+	.probe = bq257xx_charger_probe,
-+	.shutdown = bq257xx_charger_shutdown,
-+};
-+module_platform_driver(bq257xx_chg_driver);
-+
-+MODULE_DESCRIPTION("bq257xx charger driver");
-+MODULE_AUTHOR("Chris Morgan <macromorgan@hotmail.com>");
-+MODULE_LICENSE("GPL");
+ &vop {
+ 	status = "okay";
+ };
 -- 
 2.43.0
 
