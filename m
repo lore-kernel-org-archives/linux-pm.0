@@ -1,37 +1,37 @@
 Received: from mg.richtek.com (mg.richtek.com [220.130.44.152])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9F9F8F4A;
-	Thu, 14 Aug 2025 07:30:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6714526C398;
+	Thu, 14 Aug 2025 07:30:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.130.44.152
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755156631; cv=none; b=Nu9krd6LCxo0XgKT+LNek8431fk+PLw+qkPB98eRNqtqhcAgcYOvxp9gQl4ueVmyOOFEBBuDiR5BLmOVB4cv3ZQbxLtcOQUN2lYUgMLXSMFqDOwy8mTcZFGN1MyXp1RRGlRxwf44E1bdnp8PJmk9dODMH2UZG5LaMgFxaTUjaR4=
+	t=1755156633; cv=none; b=h187jAin3oFa/FRSuunEDLss7euCcH8M3XqKbZeLQXPdZUf8pHEZPmHFiAFVv/rkSmUuFrKKPodTPkQC0tJcwDplMEasNMJCdOXGal4g07/ojxUfBz6ovbDs9YR+J3nRz99yAAd0hRdz3Rp3RCxOkDNlykC1w0UY7z4TLfCCEuo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1755156631; c=relaxed/simple;
-	bh=9trR5UxdHWDqSG6vyDQcemhL3UOInGnpau/LcAXDx44=;
+	s=arc-20240116; t=1755156633; c=relaxed/simple;
+	bh=DkySQ9C6S2kjZcTV+DRFTNGRLwaEe/YY6YKOlioQj/4=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=pcVFFaEkYGciAqVZklCuvc7IciPjYd26/dZ7/iFWvrLuf58XhgWy+9+k9lj9mXE4PmZfngmjWxacNx8cnJtnV52AIh9G4xzDW/YMbVeNxel6bF1eqDMp/XFfBttcm4h2ayNwOLtiTpXOFd5caXvzxgRChpYw3zH8OQNafPX1y3k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=richtek.com; spf=pass smtp.mailfrom=richtek.com; dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b=GGUCt4jZ; arc=none smtp.client-ip=220.130.44.152
+	 MIME-Version:Content-Type; b=p1PYnMw+iMyiNatfP2nhpNb8heSqgFjZb4LML0XrKe3xKnHNZsQ/evp6S5ovAKDBjYA3k03hz3a0bf0vfb06L0H3HM+M1wuxZonrTL6OeFtVYE+pQLZUIXOYBuF6vLnS51w/wInamoD7RGtOz40U9Q83dYzwIZyPH/vZRPJgYVg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=richtek.com; spf=pass smtp.mailfrom=richtek.com; dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b=stogpr7V; arc=none smtp.client-ip=220.130.44.152
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=richtek.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=richtek.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b="GGUCt4jZ"
+	dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b="stogpr7V"
 X-MailGates: (SIP:2,PASS,NONE)(compute_score:DELIVER,40,3)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=richtek.com;
-	s=richtek; t=1755156626;
-	bh=dkZBtvIeapL8oPDdpjQQ5aagXVeprBU+s6xz6iCqmRw=; l=2741;
+	s=richtek; t=1755156627;
+	bh=x6e4i3YoKlDiQe2/JuPqV82fMICTL+9U6m2WYDkZjpo=; l=2264;
 	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=GGUCt4jZ0B93tRNXCyGEnXR3BMV841A4vqUw1MTVvbmDrF1K63PxE6Y6v/aOB96Kt
-	 SB4wz7Ie2G8Q58ru6VnVBEafeKZUoRGFBlqRNmzPm0QYEcPYcNR45i6LHkC/W4FjC8
-	 fNX4GW5rrTmkEOq3GTDP+Otizr9JOVGtlYTEcoNl5zRMM3BnqIfpM3Eeg0kjgbIYEw
-	 lLFM9ClOoWfqGk1UJkGeUB/pW9S9x6580FQV9mM30zBYElviP1Do2HEqD6tGvfjPfU
-	 RtKuOJaZX3C+dwdPIiD0XOZxN/TAEB06OIUogka7mY97l+dTAGMaPfc81RgIGEnyim
-	 k11/ViOt3YNjw==
-Received: from 192.168.10.47
-	by mg.richtek.com with MailGates ESMTPS Server V6.0(817437:0:AUTH_RELAY)
+	b=stogpr7V5+s86LPBnv+mtcDQhWLvdk+gu6uV95mJEJMDfQNKS1j8Fjfh6LKWw9XYe
+	 tZ1RvTTS2u6CvwfReUYKXkk2Ug2AXb9NYSdO9kgHa8LHzI7yyCrB7jvferWnKUNYss
+	 olJ/m5mSZenL5Tpbji+cTugQRJ86tSA5D8h23cPa5FdtyfuL9xjxWF2Q7bQUI3elm2
+	 AiiH2KiPu0syQuTa2c7Dx6ZfZlSfmuC42oPj/LF4MMfbZSig41hojcG0o+pP/HOnaZ
+	 IP9NaBNnSuodH61dTz84j0aX6vHuyVK9kQL88Gs8gDYAcGyngeACKCmPszuoc2A2gx
+	 0JiEtGr5ilVPg==
+Received: from 192.168.10.46
+	by mg.richtek.com with MailGates ESMTPS Server V6.0(817463:0:AUTH_RELAY)
 	(envelope-from <cy_huang@richtek.com>)
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256/256); Thu, 14 Aug 2025 15:30:19 +0800 (CST)
-Received: from ex4.rt.l (192.168.10.47) by ex4.rt.l (192.168.10.47) with
+Received: from ex4.rt.l (192.168.10.47) by ex3.rt.l (192.168.10.46) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Thu, 14 Aug
  2025 15:30:19 +0800
@@ -43,11 +43,10 @@ To: Sebastian Reichel <sre@kernel.org>, Krzysztof Kozlowski
 	<krzk+dt@kernel.org>
 CC: Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
 	"ChiYuan Huang" <cy_huang@richtek.com>, <devicetree@vger.kernel.org>,
-	<linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>, "Krzysztof
- Kozlowski" <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH RESEND v2 1/3] dt-bindings: power: supply: Add Richtek RT9756 smart cap divider charger
-Date: Thu, 14 Aug 2025 15:31:06 +0800
-Message-ID: <b27544e3bad860d806e3791df696929ca844dc5b.1755154950.git.cy_huang@richtek.com>
+	<linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH RESEND v2 3/3] Documentation: power: rt9756: Document exported sysfs entries
+Date: Thu, 14 Aug 2025 15:31:08 +0800
+Message-ID: <33c2cd77282b78e9b29e59959f27a52d86593ebf.1755154950.git.cy_huang@richtek.com>
 X-Mailer: git-send-email 2.43.5
 In-Reply-To: <cover.1755154950.git.cy_huang@richtek.com>
 References: <cover.1755154950.git.cy_huang@richtek.com>
@@ -62,98 +61,78 @@ Content-Type: text/plain
 
 From: ChiYuan Huang <cy_huang@richtek.com>
 
-Add the document for Richtek RT9756 smart cap divider charger.
+Document the settings exported by rt9756 charger driver through sysfs
+entries:
+
+- watchdog_timer
+- battery_voltage
+- battery_current
+- operation_mode
 
 Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
-V2
-- Add reference to 'power-supply.yaml'
-- Remove 'wakeup-source' from required property list
-- Use 'unevaluatedProperties' to replace 'additionalProperties'
----
- .../bindings/power/supply/richtek,rt9756.yaml | 72 +++++++++++++++++++
- 1 file changed, 72 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/richtek,rt9756.yaml
+ .../ABI/testing/sysfs-class-power-rt9756      | 52 +++++++++++++++++++
+ 1 file changed, 52 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-power-rt9756
 
-diff --git a/Documentation/devicetree/bindings/power/supply/richtek,rt9756.yaml b/Documentation/devicetree/bindings/power/supply/richtek,rt9756.yaml
+diff --git a/Documentation/ABI/testing/sysfs-class-power-rt9756 b/Documentation/ABI/testing/sysfs-class-power-rt9756
 new file mode 100644
-index 000000000000..a88bf6cd1927
+index 000000000000..2d0f7ef1b855
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/richtek,rt9756.yaml
-@@ -0,0 +1,72 @@
-+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/power/supply/richtek,rt9756.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
++++ b/Documentation/ABI/testing/sysfs-class-power-rt9756
+@@ -0,0 +1,52 @@
++What:		/sys/class/power_supply/rt9756-*/watchdog_timer
++Date:		Aug 2025
++KernelVersion:	6.17
++Contact:	ChiYuan Huang <cy_huang@richtek.com>
++Description:
++		This entry shows and sets the watchdog timer when rt9756 charger
++		operates in charging mode. When the timer expires, the device
++		will disable the charging. To prevent the timer expires, any
++		host communication can make the timer restarted.
 +
-+title: Richtek RT9756 Smart Cap Divider Charger
++		Access: Read, Write
 +
-+maintainers:
-+  - ChiYuan Huang <cy_huang@richtek.com>
++		Valid values:
++		- 500, 1000, 5000, 30000, 40000, 80000, 128000 or 255000 (milliseconds),
++		- 0: disabled
 +
-+description: |
-+  The RT9756/RT9757 is a high efficiency and high charge current charger.
++What:		/sys/class/power_supply/rt9756-*/battery_voltage
++Date:		Aug 2025
++KernelVersion:	6.17
++Contact:	ChiYuan Huang <cy_huang@richtek.com>
++Description:
++		Reports the current BAT voltage.
 +
-+  The efficiency is up to 98.2% when VBAT = 4V, IBAT = 2A in DIV2 mode and 99.1%
-+  when VBAT=4V, IBAT=1A in bypass mode. The maximum charger current is up to 8A
-+  in DIV2 mode and 5A in bypass mode. The device integrates smart cap divider
-+  topology, direct charging mode, external over-voltage protection control, an
-+  input reverse blocking NFET and 2-way regulation, a dual phase charge pump
-+  core, 8-Channel high speed ADCs and USB BC 1.2 detection.
++		Access: Read-Only
 +
-+  RT9770 is almost the same with RT9756/57, only BC 1.2 detection function is
-+  removed to shrink the die size.
++		Valid values: Represented in microvolts
 +
-+allOf:
-+  - $ref: power-supply.yaml#
++What:		/sys/class/power_supply/rt9756-*/battery_current
++Date:		Aug 2025
++KernelVersion:	6.17
++Contact:	ChiYuan Huang <cy_huang@richtek.com>
++Description:
++		Reports the current BAT current.
 +
-+properties:
-+  compatible:
-+    oneOf:
-+      - enum:
-+          - richtek,rt9756
-+          - richtek,rt9770
-+      - items:
-+          - enum:
-+              - richtek,rt9757
-+          - const: richtek,rt9756
++		Access: Read-Only
 +
-+  reg:
-+    maxItems: 1
++		Valid values: Represented in microamps
 +
-+  wakeup-source: true
++What:		/sys/class/power_supply/rt9756-*/operation_mode
++Date:		Aug 2025
++KernelVersion:	6.17
++Contact:	ChiYuan Huang <cy_huang@richtek.com>
++Description:
++		This entry shows and set the operation mode when rt9756 charger
++		operates in charging phase. If 'bypass' mode is used, internal
++		path will connect vbus directly to vbat. Else, default 'div2'
++		mode for the switch-cap charging.
 +
-+  interrupts:
-+    maxItems: 1
++		Access: Read, Write
 +
-+  shunt-resistor-micro-ohms:
-+    description: Battery current sense resistor mounted.
-+    default: 2000
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    i2c {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+
-+      charger@6f {
-+        compatible = "richtek,rt9756";
-+        reg = <0x6f>;
-+        wakeup-source;
-+        interrupts-extended = <&gpio_intc 32 IRQ_TYPE_EDGE_FALLING>;
-+        shunt-resistor-micro-ohms = <5000>;
-+      };
-+    };
++		Valid values:
++		- 'bypass' or 'div2'
 -- 
 2.34.1
 
