@@ -1,115 +1,136 @@
-Received: from mx.olsak.net (mx.olsak.net [37.205.8.231])
+Received: from mail-pg1-f169.google.com (mail-pg1-f169.google.com [209.85.215.169])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17FDE23BCEE;
-	Thu, 14 Aug 2025 22:08:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=37.205.8.231
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9460E27A906
+	for <linux-pm@vger.kernel.org>; Thu, 14 Aug 2025 22:56:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.169
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755209412; cv=none; b=iTPDmYHf5BSEacUBFYlJLTVgxv7Ki1hLEDzjHlKO36X03vq776D7UVBFDS+y9duV49GOccn5AZkJOTLiFj0iJEW3u7Xup4JGvxlotjsJpyydL55KBly48LdmiCURO9apuOK5L3H44MqvCb9LbLZ+w63F+aSctHDvhPiQtv1JZYs=
+	t=1755212181; cv=none; b=m0UwEgIsLypXfd7YP/wesbURIVHNWVMGB+cqK5mPtbM0nwAZQF9Vgg1/NCPpptMtBSfkW7qf489IPguStTpJfW7ejpb+6V8Y0b2kZKh4atP9nlgcrk5lUJEYp7+Gs68ru/r3EMRsL5LSHt9vWb7+BTYM4hdQ6Bja6B7o76FVlyo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1755209412; c=relaxed/simple;
-	bh=73+i7s5/6//7zCSSfaQ+2ayeMbsLNPENCWgflm8i12w=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=hDuucB5ryk6gAlCFC9qLAXOoWhP4cAEJo6MrGuUF0j0ELlAMFIKEq4awuz+EMBIi9z1rtFPeQR6FDRKLmNEbXEzT1Ft0ns/hI20CvaThoobvOlKyjrwXmYiWY5UsuqFIrJIwYa8X2doHJwVIMiV9GKw749ZLWaWSkXdk76/DGQ4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dujemihanovic.xyz; spf=pass smtp.mailfrom=dujemihanovic.xyz; dkim=pass (2048-bit key) header.d=dujemihanovic.xyz header.i=@dujemihanovic.xyz header.b=RW4vGmT3; arc=none smtp.client-ip=37.205.8.231
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dujemihanovic.xyz
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=dujemihanovic.xyz
+	s=arc-20240116; t=1755212181; c=relaxed/simple;
+	bh=TuQdYyfC1yIWhxjScSpcNegwCVaacUXhoF1hDJbeJi4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=KATJfRO4Uzd5yiAnmLDOUoUHdL4Dh20FA89Ut0mGL/p+E5qBAFYybPh7JNQiwYnKeU6yEKt/l+QENiik9kAVYH3S0i9lg0mpq64MRUQAxy3/qXK6Qtm9hkr83/hM5fs3y55+baR35rBqUcdx0UuOYaLhQAbLpyJYkd6CSBgvb7A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=WMZiefd7; arc=none smtp.client-ip=209.85.215.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=dujemihanovic.xyz header.i=@dujemihanovic.xyz header.b="RW4vGmT3"
-DKIM-Signature: a=rsa-sha256; bh=4I4y9p6g8uF8af8xJlIXiua7qXTwOk9TC6eFyAo4fSU=;
- c=relaxed/relaxed; d=dujemihanovic.xyz;
- h=Subject:Subject:Sender:To:To:Cc:Cc:From:From:Date:Date:MIME-Version:MIME-Version:Content-Type:Content-Type:Content-Transfer-Encoding:Content-Transfer-Encoding:Reply-To:In-Reply-To:In-Reply-To:Message-Id:Message-Id:References:References:Autocrypt:Autocrypt:Openpgp;
- i=@dujemihanovic.xyz; s=default; t=1755209309; v=1; x=1755641309;
- b=RW4vGmT3R7bc2vG9KFYpnuFLleUhLnYO+7xmmnOO0qdejks4AnsXnAKLztVj3Zok4BR+BaR8
- qYT7D32NS5vPehpUhEJ0PnzmKeHK3wBbJDuuiZ1i0yXx8LUtiZlh554u9JwAQrlIcc5wzZuxNFa
- 333pGYlnUW/r8vBL9RcmcoEFlOp1d2xkyKfegGcSwQcrz2IWdXxEUxW6JGCmqkyNXgu1KD+XxMz
- oz8x/c9TjraSLSa16/Idxa8o+qGdnStRy4QPuCp7XtpHUKf+VIvQa268KD2WQGpCe3zSDljGll3
- PMGvK+jX3bMshWzcDkRHDGMmY2kWOLzLj/AcgvT6NiOJw==
-Received: by mx.olsak.net (envelope-sender <duje@dujemihanovic.xyz>) with
- ESMTPS id f24866f2; Fri, 15 Aug 2025 00:08:29 +0200
-From: Duje =?UTF-8?B?TWloYW5vdmnEhw==?= <duje@dujemihanovic.xyz>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Michael Turquette <mturquette@baylibre.com>,
- Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
- Ulf Hansson <ulf.hansson@linaro.org>, David Wronek <david@mainlining.org>,
- Karel Balej <balejk@matfyz.cz>, phone-devel@vger.kernel.org,
- ~postmarketos/upstreaming@lists.sr.ht, linux-arm-kernel@lists.infradead.org,
- linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH RFC 2/5] dt-bindings: power: Add Marvell PXA1908 domains
-Date: Fri, 15 Aug 2025 00:08:28 +0200
-Message-ID: <1950265.tdWV9SEqCh@radijator>
-In-Reply-To: <dfaa36d6-41b2-46c1-ba14-e2fb5c9815e6@kernel.org>
-References:
- <20250806-pxa1908-genpd-v1-0-16409309fc72@dujemihanovic.xyz>
- <2017616.PYKUYFuaPT@radijator>
- <dfaa36d6-41b2-46c1-ba14-e2fb5c9815e6@kernel.org>
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="WMZiefd7"
+Received: by mail-pg1-f169.google.com with SMTP id 41be03b00d2f7-b47173749dbso899968a12.1
+        for <linux-pm@vger.kernel.org>; Thu, 14 Aug 2025 15:56:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1755212179; x=1755816979; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=wcrBnBmOS7pCtFakKhA5D/9PwZjIEBEaJU2UeFpetNc=;
+        b=WMZiefd7EEBvmIqgx+vkFbOiCPwgt81mPJmbhuRZNFKunRh0XcpxywCB8n0edMd1fm
+         tj4dggWHlTXtEY8dxheksC3P/sWIN2rf3aDXUgOC548sWom5ko9rd53szYYJp6rkMEZW
+         AMXZVCOnjq+fXXqoMbZZIWunFxAAXAiuudxTQ=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1755212179; x=1755816979;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=wcrBnBmOS7pCtFakKhA5D/9PwZjIEBEaJU2UeFpetNc=;
+        b=gWkPzgkHIwM2EVgpNanaRoM/WUS7W5t2D3ssT5bRtwwnWDMsIBP18khkioVoq3rZ2+
+         B9uw7EN34lcFN4fwXhCSPLww4jBeKMNEmupCXeNE4olU1ON34Jl+RmX9RDxeHixVWTp6
+         SplaAeRSUimj+2fUEQr06ApjHW4WCatskjrnrshWCvnsIdz4IlSgGqafebF8lj75hiO+
+         EXc1lTyboAeQoODlX42MM3qN6tTsfIUwPgbf+xTG53i49qj2K+5NSmSV1N5HS7TCkc6v
+         Ty4dKK6pRuf1k8t2WmJIjT9d52Q501ZG30vJXBckD/Th2fiPirbBvr83pihiktrqjD7k
+         dkQw==
+X-Gm-Message-State: AOJu0YxF7/vw+DEcYGXuMxU/wfthHilzGLAFu0XPWjGpK0Fi+f/kqma8
+	5QK66vFBVy+uXpbp8WY5HKKVNe0l7qJjvA0Xz9VjubkqhVlAeH3Fr8JN2ioftI8MYA==
+X-Gm-Gg: ASbGncuO0DFAYcuibygPLji/ngiEEnRUr3xyo/EHgB5fcn8gb5any5O/pFYxipPFoOh
+	jamfxJeafuAa9RRBpZh8D59lJOqgcIS5CmDfHt62Gd2fvT5gL1hlLptoNXWpnwJUMf4k+32D2e2
+	7ZxoAesA0OJaYuTqSZfAfTvoi94UT34G19kLb/3mbBOfATZKGMMF2JaHZyopIBgUvje+B4xvsmJ
+	EbAYR3nneSN0DIFLpefK940aj5Igqwu+jMY5VaalH06vdKZzdfajdEwu2sf3xCo+EZRBjEaJ8kX
+	EggMmqqDU6/Qx5T4hRimJJIO3vGhw4XeBCT5NpBmk4P5PB408MOAXb67oVtg3kGyhYglv38gcaf
+	CPPQLb+GnA9CButoM5xociV8I5OOMSgc2Ldgf/KYLGVY0i+ir/iqWsXAxwDLB
+X-Google-Smtp-Source: AGHT+IFKhveKatQOIvJc1bpP9TW96f0hvtojyrJRdLEgZ5SXv1DdmapB8La5Xfq6q01JNnvP8SEd6w==
+X-Received: by 2002:a17:903:2d2:b0:240:640a:c560 with SMTP id d9443c01a7336-244584fe05emr81234325ad.24.1755212178838;
+        Thu, 14 Aug 2025 15:56:18 -0700 (PDT)
+Received: from localhost ([2a00:79e0:2e14:7:8aeb:b204:6721:5e9a])
+        by smtp.gmail.com with UTF8SMTPSA id d9443c01a7336-241d1ef48fbsm362033935ad.36.2025.08.14.15.56.17
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 14 Aug 2025 15:56:17 -0700 (PDT)
+Date: Thu, 14 Aug 2025 15:56:16 -0700
+From: Brian Norris <briannorris@chromium.org>
+To: Sakari Ailus <sakari.ailus@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <len.brown@intel.com>, Pavel Machek <pavel@kernel.org>,
+	Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Subject: Re: [PATCH v2 1/6] pm: runtime: Document return values of suspend
+ related API functions
+Message-ID: <aJ5pkEJuixTaybV4@google.com>
+References: <20250616061212.2286741-1-sakari.ailus@linux.intel.com>
+ <20250616061212.2286741-2-sakari.ailus@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Autocrypt: addr=duje@dujemihanovic.xyz;
- keydata=
- mDMEZokhzhYJKwYBBAHaRw8BAQdAWJZ0hsI/ytTqHGFV8x6tzd5sB596cTeeDB4CQsTf+wC0KUR
- 1amUgTWloYW5vdmnEhyA8ZHVqZS5taWhhbm92aWNAc2tvbGUuaHI+iJkEMBYKAEEWIQRt/0HWDf
- MUtbdrpjCtMZNSRY+tAwUCaJ5XkSMdIEFkZHJlc3MgYm91bmNlcyBhcyBvZiB+MzEvMDgvMjAyN
- QAKCRCtMZNSRY+tA/N/AQDth3Xl3wNcETvWPqqfYfyw4BFqbOD05A/W0/G0ZIjFzgD+PZVts3sN
- p5WuEwIxUrWxwavWJQBJwhXeWdru5ol82gmImQQTFgoAQRYhBG3/QdYN8xS1t2umMK0xk1JFj60
- DBQJmiSH/AhsDBQkJZgGABQsJCAcCAiICBhUKCQgLAgQWAgMBAh4HAheAAAoJEK0xk1JFj60Dlw
- 8A/i4lPOL7NaYoYePDql8MaJaR9qoUi+D+HtD3t0Koi7ztAQCdizXbuqP3AVNxy5Gpb1ozgp9Xq
- h2MRcNmJCHA1YhWAbQoRHVqZSBNaWhhbm92acSHIDxkdWplQGR1amVtaWhhbm92aWMueHl6PoiZ
- BBMWCgBBFiEEbf9B1g3zFLW3a6YwrTGTUkWPrQMFAmaJIc4CGwMFCQlmAYAFCwkIBwICIgIGFQo
- JCAsCBBYCAwECHgcCF4AACgkQrTGTUkWPrQPUYAEAlVKitl0w6Wun+hC0JIf8bnc0TnrH8kcDxV
- f5lAF38fcA/j8RxR/p558NTFUyHZt2Sa5AqxVkaA4aJekySytWe1YGuDgEZokhzhIKKwYBBAGXV
- QEFAQEHQMRz0l4Dnk6Vl9YqC+ZGDDpr8SkFDyYOXqdBMGad3VccAwEIB4h+BBgWCgAmFiEEbf9B
- 1g3zFLW3a6YwrTGTUkWPrQMFAmaJIc4CGwwFCQlmAYAACgkQrTGTUkWPrQMbkwD+K6jiXYYMRnV
- l/5dpL//wXB1cM72ceR9tXYweMXg1lfABAOugzMF0xypW9zwYAEWVNOAaPsqtEPPYfBY3IXxl6m
- sB
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250616061212.2286741-2-sakari.ailus@linux.intel.com>
 
-On Monday, 11 August 2025 08:38:15 Central European Summer Time=20
-Krzysztof Kozlowski wrote:
-> On 08/08/2025 21:46, Duje Mihanovi=C4=87 wrote:
-> > On Friday, 8 August 2025 09:34:54 Central European Summer Time Krzyszto=
-f=20
-> > Kozlowski wrote:
-> >> On Wed, Aug 06, 2025 at 07:33:21PM +0200, Duje Mihanovi=C4=87 wrote:
-> >>> +          A number of phandles to clocks that need to be enabled dur=
-ing
-> >>> domain +          power up.
-> >>=20
-> >> This does not exist in your example, so it is just confusing.
-> >=20
-> > This is because I have not implemented any of the clocks used by the
-> > domains at this moment.
-> >=20
-> > Actually, I am not sure anymore whether it is necessary to assign
-> > clocks to the domains as I have just yesterday successfully brought up
-> > the GPU with some out-of-tree code and that did not require giving the
-> > domains any clocks even though the vendor kernel does this. Should I
-> > just go with that and drop all clock handling from the power domain
-> > driver, at which point there would be no need for the individual domain
-> > nodes? If not, how should I in the future assign clocks to the domains?
->=20
-> I am asking to see complete binding with complete DTS in example and
-> submitted to SoC maintainer.
+Hi,
 
-Hm, so if in the example (and the actual DTS) each domain is assigned a clo=
-ck,=20
-can I then keep the domain and domain controller nodes like Mediatek and=20
-Rockchip have?
+On Mon, Jun 16, 2025 at 09:12:07AM +0300, Sakari Ailus wrote:
+> Document return values for device suspend and idle related API functions.
+> 
+> Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
 
-Does SoC maintainer here mean the SoC mailing list or the maintainer of the=
-=20
-particular SoC family in question?
+I appreciate the documentation attempt here. I've often found it a maze
+trying to weave through the indirection and figure out the actual API
+contract for some of these.
 
-Regards,
-=2D-
-Duje
+But I have a few questions below:
+
+> ---
+>  include/linux/pm_runtime.h | 147 ++++++++++++++++++++++++++++++++++---
+>  1 file changed, 138 insertions(+), 9 deletions(-)
+> 
+> diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+> index e7cb70fcc0af..9dd2e4031a27 100644
+> --- a/include/linux/pm_runtime.h
+> +++ b/include/linux/pm_runtime.h
 
 
+> @@ -464,6 +525,17 @@ static inline int pm_runtime_resume_and_get(struct device *dev)
+>   *
+>   * Decrement the runtime PM usage counter of @dev and if it turns out to be
+>   * equal to 0, queue up a work item for @dev like in pm_request_idle().
+> + *
+> + * Return:
+> + * * 0: Success.
+> + * * -EINVAL: Runtime PM error.
+> + * * -EACCES: Runtime PM disabled.
+> + * * -EAGAIN: Runtime PM usage_count non-zero or Runtime PM status change ongoing.
 
+^^ Is the "usage_count non-zero" true? For RPM_GET_PUT, we drop the
+refcount, and if it's still nonzero, we simply return 0.
+
+> + * * -EBUSY: Runtime PM child_count non-zero.
+> + * * -EPERM: Device PM QoS resume latency 0.
+> + * * -EINPROGRESS: Suspend already in progress.
+> + * * -ENOSYS: CONFIG_PM not enabled.
+> + * * 1: Device already suspended.
+
+This part isn't very clear to me: can we even hit this case? If the
+usage count was already 0, we'd hit EINVAL, since this is a PUT
+operation. If the usage count was non-zero, we can't already be
+suspended. At a minimum, we'd be RESUMING (e.g., an async resume), no?
+
+>   */
+>  static inline int pm_runtime_put(struct device *dev)
+>  {
+
+If these are indeed errors, I expect they're repeated on some of the
+other related APIs too (like pm_runtime_put_sync(), pm_runtime_idle(),
+and probably more).
+
+I ask mostly for my own understanding, but I might consider patching the
+docs if I'm not hallucinating these errors.
+
+Brian
