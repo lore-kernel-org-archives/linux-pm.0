@@ -1,48 +1,48 @@
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22C802264B1;
-	Fri, 15 Aug 2025 22:46:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2DDD2405FD;
+	Fri, 15 Aug 2025 22:46:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755297977; cv=none; b=hk0Xvz8DOz8raUz+auTq91GJjJrtqzQgqJCngbsYvXpIydmzALGezhRI4Vs8bnl4Eys9xFynVCDgmLxJqqo8zwiEytYuuzEqXOWX9WaB6C4WkHGrqr3OAYGc4GGYOzHttCh2aALLpSX0eRV0lE8oeJE3E0C/sx3AFLF6pd3PGf8=
+	t=1755297979; cv=none; b=dBdNYUiN3kuf+iWU5YtWOW9IT7HbtfUuCn763E7TcTZmlNIskScEWVbbN+KmxZrlmIXColER6umvE13u/Rasw03MmxDLZFwvndz4qHHY9n0WND3NjP+/r5FWTwNvrt3xN5veLJlWSfXtgV/9Fa2IngG7hOlV/PgW01YjLe8hy0I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1755297977; c=relaxed/simple;
-	bh=nTrDeurMGxl2lF9oLF6Hn3KKDLdUdZ8Q5sKmSFjl8e0=;
+	s=arc-20240116; t=1755297979; c=relaxed/simple;
+	bh=powQdZtRV1wI6Xf73edribso9Z6LvnZixCxT06oB804=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=YbI71WM1QEnzIOFF2CRECLx0ohUMKB7NdYy7kA+w6/FvCJ0Xl05ymrDKpiv4q//+qZOUNX4sDjoCJc4shZa+dHRV/ZytGFPhLFoxkSCi6g1Ny3R9DK0XjEi+vEQ+1NvP0LwPaAPeZ3B4E7SgHDF/ZGVvFujxIClVBpXLpm9Czew=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=KFb9IImI; arc=none smtp.client-ip=192.198.163.15
+	 MIME-Version; b=SrISnGnypwl1o12q9H81NbuvplA4Ku3qfolTrPADZ3gcf2QEg9F/RS0xKFLaMTHXCw6xjOR+gFZOB/dBpNeBDabwwboHp/HMu9JrJTPb0Zeg56pvGbDELeH63NmxC7+rpOZ7TQ3B9puIUIdDD2MxHQj+orpykn5n0qbqOeJfXT0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=QPb56MwM; arc=none smtp.client-ip=192.198.163.15
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="KFb9IImI"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="QPb56MwM"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1755297976; x=1786833976;
+  t=1755297978; x=1786833978;
   h=from:to:subject:date:message-id:in-reply-to:references:
    mime-version:content-transfer-encoding;
-  bh=nTrDeurMGxl2lF9oLF6Hn3KKDLdUdZ8Q5sKmSFjl8e0=;
-  b=KFb9IImIvvxstLGFZuU3LknuiGoMHF1vQjct+ijdILC3liOE9BJl35/l
-   1kl7iP2kR2E6waEF/YcFAsvOk9+B14HTLngTMmB0FyDsHS7C7MsSxr5Tk
-   fxMDpPWPruuSDDLkQd80PJi1MQa8eUjUcyGsWwLPhb7C0rolqCpByIIe9
-   Dk69uaLLwOeJH80EpPOpnEgrGlqCKMs4S6hXPg1x39k/qHnFRu70v0O81
-   8A+1zqu0yO3adfaohCilRBbVwAu5ej6dW0gVMokqfuLgT1nws78Jn586g
-   L++BWrA7c84WO1WC4bfN3Fvc7pkIqxqHoNBj9ApOoCi5f4DWFHdiIplWp
+  bh=powQdZtRV1wI6Xf73edribso9Z6LvnZixCxT06oB804=;
+  b=QPb56MwM44Oe/dUnU+h8lH9xpzUCydMAgIejAvC1YbMlHZOxN1nndkpe
+   5lBsmjJEU1czgTe1pk8+mxdv98v5Fl7c+SoSw8kG+/9R/jA3i2ntMhMQs
+   AOOSWcTGLYGCdBSYtA6eGHplYBh91fAOeg4d9wpOHu1iW9NaTU7lvxcsI
+   0H0XVJBPe+aXJqT3gy4sTc3q8GFbib1MXQWS+EBZRqcmYALifp+Fyxprm
+   GlCNP+jnoYNtBWjDs45wTjULVFGwBt1iluubUmWo0ZnvV8jKlPMUa/fL5
+   7iLw/MRrC+z4kD0qiJZRIm9wHjLOAvj1+BS2tOT7buynDlN0NGpEurCTB
    A==;
-X-CSE-ConnectionGUID: IUETszo9RROLRk1t3Tz2bw==
-X-CSE-MsgGUID: D3sm64vSSDuw4HU9IhJmFg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11523"; a="57724934"
+X-CSE-ConnectionGUID: 80zCV9AHTqy8tio2vg3Wzg==
+X-CSE-MsgGUID: vnuC1515TuqojXMUniz/zQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11523"; a="57724944"
 X-IronPort-AV: E=Sophos;i="6.17,293,1747724400"; 
-   d="scan'208";a="57724934"
+   d="scan'208";a="57724944"
 Received: from orviesa009.jf.intel.com ([10.64.159.149])
-  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Aug 2025 15:46:15 -0700
-X-CSE-ConnectionGUID: cBbYpqoQQO2z8r5nmljPpw==
-X-CSE-MsgGUID: UOtyGzYqTIaE5gbALmp4zg==
+  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Aug 2025 15:46:16 -0700
+X-CSE-ConnectionGUID: 3a1FmGBUR8S8hWxIKcVpsA==
+X-CSE-MsgGUID: 2G9ZV59xQCSEUtZIJFmjdw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.17,293,1747724400"; 
-   d="scan'208";a="166734409"
+   d="scan'208";a="166734411"
 Received: from jdoman-mobl3.amr.corp.intel.com (HELO xpardee-desk.lan) ([10.124.223.173])
-  by orviesa009-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Aug 2025 15:46:14 -0700
+  by orviesa009-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Aug 2025 15:46:16 -0700
 From: Xi Pardee <xi.pardee@linux.intel.com>
 To: xi.pardee@linux.intel.com,
 	irenic.rajneesh@gmail.com,
@@ -52,9 +52,9 @@ To: xi.pardee@linux.intel.com,
 	platform-driver-x86@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org
-Subject: [PATCH v3 1/6] platform/x86:intel/pmc: Enable SSRAM support for Lunar Lake
-Date: Fri, 15 Aug 2025 15:45:59 -0700
-Message-ID: <20250815224611.2460255-2-xi.pardee@linux.intel.com>
+Subject: [PATCH v3 3/6] platform/x86:intel/pmc: Improve function to show substate header
+Date: Fri, 15 Aug 2025 15:46:01 -0700
+Message-ID: <20250815224611.2460255-4-xi.pardee@linux.intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250815224611.2460255-1-xi.pardee@linux.intel.com>
 References: <20250815224611.2460255-1-xi.pardee@linux.intel.com>
@@ -64,60 +64,80 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Enable Lunar Lake platforms to achieve PMC information from
-Intel PMC SSRAM Telemetry driver and substate requirements data
-from telemetry region.
+Refactor pmc_core_substate_req_header_show() to accept a new argument.
+This is a preparation patch to introduce a new way to show Low Power
+Mode substate requirement data for platforms starting from Panther
+Lake. Increased the size for the name column as the Low Power Mode
+requirement register name is longer in newer platforms.
 
 Signed-off-by: Xi Pardee <xi.pardee@linux.intel.com>
-Reviewed-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
 ---
- drivers/platform/x86/intel/pmc/lnl.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ drivers/platform/x86/intel/pmc/core.c | 22 ++++++++++++++++------
+ 1 file changed, 16 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/platform/x86/intel/pmc/lnl.c b/drivers/platform/x86/intel/pmc/lnl.c
-index da513c234714b..e08a77c778c2c 100644
---- a/drivers/platform/x86/intel/pmc/lnl.c
-+++ b/drivers/platform/x86/intel/pmc/lnl.c
-@@ -13,6 +13,10 @@
+diff --git a/drivers/platform/x86/intel/pmc/core.c b/drivers/platform/x86/intel/pmc/core.c
+index a1dd80bdbd413..cbfdcdc50ad21 100644
+--- a/drivers/platform/x86/intel/pmc/core.c
++++ b/drivers/platform/x86/intel/pmc/core.c
+@@ -11,6 +11,11 @@
  
- #include "core.h"
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
  
-+#define SOCM_LPM_REQ_GUID	0x15099748
-+
-+static const u8 LNL_LPM_REG_INDEX[] = {0, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20};
-+
- static const struct pmc_bit_map lnl_ltr_show_map[] = {
- 	{"SOUTHPORT_A",		CNP_PMC_LTR_SPA},
- 	{"SOUTHPORT_B",		CNP_PMC_LTR_SPB},
-@@ -528,6 +532,16 @@ static const struct pmc_reg_map lnl_socm_reg_map = {
- 	.lpm_live_status_offset = MTL_LPM_LIVE_STATUS_OFFSET,
- 	.s0ix_blocker_maps = lnl_blk_maps,
- 	.s0ix_blocker_offset = LNL_S0IX_BLOCKER_OFFSET,
-+	.lpm_reg_index = LNL_LPM_REG_INDEX,
++enum header_type {
++	HEADER_STATUS,
++	HEADER_VALUE
 +};
 +
-+static struct pmc_info lnl_pmc_info_list[] = {
-+	{
-+		.guid	= SOCM_LPM_REQ_GUID,
-+		.devid	= PMC_DEVID_LNL_SOCM,
-+		.map	= &lnl_socm_reg_map,
-+	},
-+	{}
- };
+ #include <linux/bitfield.h>
+ #include <linux/debugfs.h>
+ #include <linux/delay.h>
+@@ -828,17 +833,22 @@ static int pmc_core_substate_l_sts_regs_show(struct seq_file *s, void *unused)
+ }
+ DEFINE_SHOW_ATTRIBUTE(pmc_core_substate_l_sts_regs);
  
- #define LNL_NPU_PCI_DEV		0x643e
-@@ -557,6 +571,8 @@ static int lnl_core_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_in
+-static void pmc_core_substate_req_header_show(struct seq_file *s, int pmc_index)
++static void pmc_core_substate_req_header_show(struct seq_file *s, int pmc_index,
++					      enum header_type type)
+ {
+ 	struct pmc_dev *pmcdev = s->private;
+ 	int mode;
+ 
+-	seq_printf(s, "%30s |", "Element");
++	seq_printf(s, "%40s |", "Element");
+ 	pmc_for_each_mode(mode, pmcdev)
+ 		seq_printf(s, " %9s |", pmc_lpm_modes[mode]);
+ 
+-	seq_printf(s, " %9s |", "Status");
+-	seq_printf(s, " %11s |\n", "Live Status");
++	if (type == HEADER_STATUS) {
++		seq_printf(s, " %9s |", "Status");
++		seq_printf(s, " %11s |\n", "Live Status");
++	} else {
++		seq_printf(s, " %9s |\n", "Value");
++	}
  }
  
- struct pmc_dev_info lnl_pmc_dev = {
-+	.pci_func = 2,
-+	.regmap_list = lnl_pmc_info_list,
- 	.map = &lnl_socm_reg_map,
- 	.suspend = cnl_suspend,
- 	.resume = lnl_resume,
+ static int pmc_core_substate_req_regs_show(struct seq_file *s, void *unused)
+@@ -872,7 +882,7 @@ static int pmc_core_substate_req_regs_show(struct seq_file *s, void *unused)
+ 			continue;
+ 
+ 		/* Display the header */
+-		pmc_core_substate_req_header_show(s, pmc_index);
++		pmc_core_substate_req_header_show(s, pmc_index, HEADER_STATUS);
+ 
+ 		/* Loop over maps */
+ 		for (mp = 0; mp < num_maps; mp++) {
+@@ -910,7 +920,7 @@ static int pmc_core_substate_req_regs_show(struct seq_file *s, void *unused)
+ 				}
+ 
+ 				/* Display the element name in the first column */
+-				seq_printf(s, "pmc%d: %26s |", pmc_index, map[i].name);
++				seq_printf(s, "pmc%d: %34s |", pmc_index, map[i].name);
+ 
+ 				/* Loop over the enabled states and display if required */
+ 				pmc_for_each_mode(mode, pmcdev) {
 -- 
 2.43.0
 
