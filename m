@@ -1,101 +1,103 @@
-Received: from fllvem-ot04.ext.ti.com (fllvem-ot04.ext.ti.com [198.47.19.246])
+Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D268A26E143;
-	Mon, 18 Aug 2025 19:26:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.246
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A0ED259CA7;
+	Mon, 18 Aug 2025 19:47:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.11.138.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755545218; cv=none; b=Y7rwA5ypfDlQfaEcyHRkUj97Cs5ZG5O02NM2tfEUPglj/YMZHICea5Hf2JBL05pPHgMy8c1LbnO/n0gfIUECLnr1m+u0qHTWO0P36aWzs1mYzbf7ho11Y0SF387ihlbB/1s61VA2lUpa3Al2UDAw9RFcHAWxB8q9OKIordTqLMw=
+	t=1755546472; cv=none; b=sn+pfAMCdOgWuyz/CwWwGB9RE3qAzdZ7AwkEvU9yUR4u4czLKCxE2cF4ALuf+Y3FtPQqkaoziZjhXlVY+CBC6yyiKYxoPG1sZqxsEgeSmUOQNHzLrjxNtLExmUw5/LqwN8cdJQEAMuRwCS42xktGuH/FP2BuAyGnLZTz3+4fPz4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1755545218; c=relaxed/simple;
-	bh=lgO6Fv74/3EhDqY7ISz2ttn0thbzJcrFVWcR+68l4S0=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=R8sz8f9pNdP1OYL8TlOXeFBNRxzYsV0kTG/G7Nb+LjlFMWFpQnJryXGSZn+ovCn3EcGaE2jraJX/zPqXWtSbTwNj+CzXSsxe7lJagNYcloNGAzVMLcOkK8lypwasFBKoeZstFCq82y8hJTI3O+tOP8kF0Rn/a6fIsEDBvyoogmE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=Zb4RTiFB; arc=none smtp.client-ip=198.47.19.246
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
+	s=arc-20240116; t=1755546472; c=relaxed/simple;
+	bh=902WPU4xQKWeQ0OCIkYgyMri7TjMAcWjbBE7PZsEiGs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=tTwpxsPCXvMptGRY5z4jQNejo832bXqg2v8OW/AbLEjxYTXZsMCsEi5TqNJy4AKkoOE4HLN9oOtaws2roPBSsfxUgLcsd2p3eDs87StQ+Iz86o1PFB20ixCI/4DC8e2oHf9vnAnXFC5Q5lktIBydN3vrDzQB9ZTqSk+Vo75uvDU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=sntech.de; spf=pass smtp.mailfrom=sntech.de; dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.b=cUYjT4gb; arc=none smtp.client-ip=185.11.138.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=sntech.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sntech.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="Zb4RTiFB"
-Received: from fllvem-sh03.itg.ti.com ([10.64.41.86])
-	by fllvem-ot04.ext.ti.com (8.15.2/8.15.2) with ESMTP id 57IJQXvn3147286;
-	Mon, 18 Aug 2025 14:26:33 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1755545193;
-	bh=VpHXmYx68i0rBEZSPh5Z9xmDRv11T/PfxoDuADg+r/U=;
-	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=Zb4RTiFB6SD/V954Oonj/k+ByfKZ2/FbvAjQNBQOPqXRi4AVJfMtcQ+n8K5snxWr+
-	 LwxPJfbzXgQM0sp8+a7NUJsimp3U3IXYL90syqBXc6AI3p+o/Ft+CNrgir8j8SOsRz
-	 Vr1PZuiZaw9udI3pG0E1wxwOI/oqfTgFRD0nnZJU=
-Received: from DFLE111.ent.ti.com (dfle111.ent.ti.com [10.64.6.32])
-	by fllvem-sh03.itg.ti.com (8.18.1/8.18.1) with ESMTPS id 57IJQXmW039961
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-SHA256 bits=128 verify=FAIL);
-	Mon, 18 Aug 2025 14:26:33 -0500
-Received: from DFLE112.ent.ti.com (10.64.6.33) by DFLE111.ent.ti.com
- (10.64.6.32) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.55; Mon, 18
- Aug 2025 14:26:33 -0500
-Received: from lelvem-mr06.itg.ti.com (10.180.75.8) by DFLE112.ent.ti.com
- (10.64.6.33) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.55 via
- Frontend Transport; Mon, 18 Aug 2025 14:26:33 -0500
-Received: from judy-hp.dhcp.ti.com (judy-hp.dhcp.ti.com [128.247.81.105])
-	by lelvem-mr06.itg.ti.com (8.18.1/8.18.1) with ESMTP id 57IJQWxX1525949;
-	Mon, 18 Aug 2025 14:26:32 -0500
-From: Judith Mendez <jm@ti.com>
-To: Judith Mendez <jm@ti.com>, Nishanth Menon <nm@ti.com>,
-        Krzysztof Kozlowski
-	<krzk+dt@kernel.org>
-CC: Vignesh Raghavendra <vigneshr@ti.com>, Tero Kristo <kristo@kernel.org>,
-        Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
-        "Rafael J
- . Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>, Bryan
- Brattlof <bb@ti.com>,
-        <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
-Subject: [PATCH 2/3] cpufreq: ti: Allow all silicon revisions to support OPPs
-Date: Mon, 18 Aug 2025 14:26:31 -0500
-Message-ID: <20250818192632.2982223-3-jm@ti.com>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20250818192632.2982223-1-jm@ti.com>
-References: <20250818192632.2982223-1-jm@ti.com>
+	dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.b="cUYjT4gb"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
+	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Reply-To;
+	bh=SxySystUolElsZ8oKWT++LDXpxEDwIiYseF8Su16NVY=; b=cUYjT4gbI1gpOVIT6pOU121qvn
+	b8fbNHhgBZLchyPkNK3cCqiRG83om9upg7EDR7oikdkFM4YHZyQR0hzvs3UtJZh0LJyAtb/qLhbwC
+	hvgICRpdHczCYEB0xWfy60mkhOqd+AoK5FSy6YWf6132x9cwzR56KWZRqIMDaOhCk76CMIG1eZS4R
+	QiUy0PTJ9MPLQl7O5Ii7n1gG2tTTTfnzQNLfnF1EPG175XaoJw2P5Hn8Mi7jtcWllX7lTQuDFIiGA
+	hrfqqImWPmywOQgarHM0q4cKzo4jH3a7a3UrPThYDDKTPosGGx/zN0ynts1Vk8VcLy7OJVD/TlSe0
+	3GcLbiMw==;
+Received: from i53875ad4.versanet.de ([83.135.90.212] helo=diego.localnet)
+	by gloria.sntech.de with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <heiko@sntech.de>)
+	id 1uo5pU-0001Ei-Lz; Mon, 18 Aug 2025 21:47:40 +0200
+From: Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>
+To: Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org,
+ linux-kernel@vger.kernel.org, kernel@collabora.com
+Subject: Re: [PATCH] thermal: rockchip: shut up GRF warning
+Date: Mon, 18 Aug 2025 21:47:39 +0200
+Message-ID: <2890475.6YUMPnJmAY@diego>
+In-Reply-To: <b6cqwtj73twqxstslbhuulkgsmpds2hdyfsn7yewllkbtj7jz3@2kk74kgtefvp>
+References:
+ <20250818-thermal-rockchip-grf-warning-v1-1-134152c97097@kernel.org>
+ <8402789.eFmWaWnqpD@diego>
+ <b6cqwtj73twqxstslbhuulkgsmpds2hdyfsn7yewllkbtj7jz3@2kk74kgtefvp>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
 
-More silicon revisions are being defined for AM62x, AM62Px, and AM62ax
-SoCs. These silicon may also support currently establishes OPPs, so remove
-the revision limitation in ti-cpufreq and thus determine if an OPP applies
-with speed grade efuse parsing.
+Am Montag, 18. August 2025, 21:23:54 Mitteleurop=C3=A4ische Sommerzeit schr=
+ieb Sebastian Reichel:
+> On Mon, Aug 18, 2025 at 08:44:15PM +0200, Heiko St=C3=BCbner wrote:
+> > Am Montag, 18. August 2025, 19:26:15 Mitteleurop=C3=A4ische Sommerzeit =
+schrieb Sebastian Reichel:
+> > > @@ -1621,12 +1656,16 @@ static int rockchip_configure_from_dt(struct =
+device *dev,
+> > >  		return -EINVAL;
+> > >  	}
+> > > =20
+> > > -	/* The tsadc wont to handle the error in here since some SoCs didn't
+> > > -	 * need this property.
+> > > -	 */
+> > > -	thermal->grf =3D syscon_regmap_lookup_by_phandle(np, "rockchip,grf"=
+);
+> > > -	if (IS_ERR(thermal->grf))
+> > > -		dev_warn(dev, "Missing rockchip,grf property\n");
+> > > +	if (thermal->chip->grf_mode !=3D GRF_NONE) {
+> > > +		thermal->grf =3D syscon_regmap_lookup_by_phandle(np, "rockchip,grf=
+");
+> > > +		if (IS_ERR(thermal->grf)) {
+> > > +			ret =3D PTR_ERR(thermal->grf);
+> > > +			if (thermal->chip->grf_mode =3D=3D GRF_OPTIONAL)
+> > > +				dev_warn(dev, "Missing rockchip,grf property\n");
+> >=20
+> > I guess it might make it easier for people seeing the log, if we could
+> > insert an "optional" into that message for the optional tier.
+>=20
+> Sure, I can add an "optional". I'm not sure how "optional" they
+> really are, though. Code like this looks quite fishy to me:
+>=20
+> if (grf)
+>     regmap_write(grf, ..., RK3568_GRF_TSADC_TSEN);
+>=20
+> I marked these as optional, as the driver should probe without the
+> GRF. But to me it looks like most platforms with optional GRF
+> support should have been made mandatory in the first place.
 
-Signed-off-by: Judith Mendez <jm@ti.com>
----
- drivers/cpufreq/ti-cpufreq.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+okay ... then I take it back, and we should leave out the optional.
 
-diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
-index f7be09dc63e3..90c896d02649 100644
---- a/drivers/cpufreq/ti-cpufreq.c
-+++ b/drivers/cpufreq/ti-cpufreq.c
-@@ -311,9 +311,9 @@ static struct ti_cpufreq_soc_data am3517_soc_data = {
- };
- 
- static const struct soc_device_attribute k3_cpufreq_soc[] = {
--	{ .family = "AM62X", .revision = "SR1.0" },
--	{ .family = "AM62AX", .revision = "SR1.0" },
--	{ .family = "AM62PX", .revision = "SR1.0" },
-+	{ .family = "AM62X", },
-+	{ .family = "AM62AX", },
-+	{ .family = "AM62PX", },
- 	{ /* sentinel */ }
- };
- 
--- 
-2.49.0
+That way people may wonder and possibly verify their soc variant
+or build setup.
+
+
+Heiko
+
 
