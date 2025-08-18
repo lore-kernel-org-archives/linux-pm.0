@@ -1,53 +1,53 @@
-Received: from relay.smtp-ext.broadcom.com (relay.smtp-ext.broadcom.com [192.19.166.228])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98893278146;
-	Mon, 18 Aug 2025 16:14:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.19.166.228
+Received: from relmlie6.idc.renesas.com (relmlor2.renesas.com [210.160.252.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 1F383340D93;
+	Mon, 18 Aug 2025 16:29:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.160.252.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755533701; cv=none; b=P0YBSxvF0LP4arrjl4chJJv5Naqz/IlbEwWnQ2izB/THhH5WepLkHsZFDl+oxhrkrCCRpUlatEm/gahQVkvEDLt0m5Bc5B7UiTLi3pafECjeVlkagyX+mQKnXuWfKVz/MwkfAq8uQ0nUaYg7deLG42FJmDH/sQpxPlaFRi6/mSw=
+	t=1755534580; cv=none; b=DMg514VuLbYCzhrAnIOuxAycdA9wt7Efa+azAmNLUOvvaIUrpS57EqOQZwrlpiRSmw6fMog6t/OVHHfGjfNX98O9zggBS1e+YFWWJV2hyPQv11O8zyOeygDxqPq1d+N1psSakAKG9QLTDqEPgVak/shwF/ICuvIxNoW8/KbLHBg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1755533701; c=relaxed/simple;
-	bh=Crynj0KpYqual1/+N1DhoLywG80ccPOdKO1wbUlhKtQ=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=s9j+DSeEiLRTHQXUaw69/IgUTXwBGutLDfkLRene5bAAcvNTGANS7mh6PuHzB64C2I7Rvev/iWTW8RRRMD5pDZxYHsLfoH4ru2t/56JxVMxc9HdiJ0Kc2WSCRq9lP73GFNN/pck2ZnwCcvEaoP5ZS4oBYPamt+lORZh+fjZryu4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com; spf=fail smtp.mailfrom=broadcom.com; dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b=tyklk9Lt; arc=none smtp.client-ip=192.19.166.228
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=broadcom.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="tyklk9Lt"
-Received: from mail-acc-it-01.broadcom.com (mail-acc-it-01.acc.broadcom.net [10.35.36.83])
-	by relay.smtp-ext.broadcom.com (Postfix) with ESMTP id 6FE2CC009BE2;
-	Mon, 18 Aug 2025 09:08:40 -0700 (PDT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 relay.smtp-ext.broadcom.com 6FE2CC009BE2
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=broadcom.com;
-	s=dkimrelay; t=1755533320;
-	bh=Crynj0KpYqual1/+N1DhoLywG80ccPOdKO1wbUlhKtQ=;
-	h=From:To:Cc:Subject:Date:From;
-	b=tyklk9LtR8WtVWv5s5RuPNr2iiJYYrEBq6Hn+n8qg7W9Fp50jM+uGLwyzKltuG3Rr
-	 su/L2riiDDzlNn1jFzsHq5shbPj26+nKL916s2IjlD2MT4e7CBIPtcg7y8gFF40m36
-	 cSGNshL1RjmslXnPNXLYIklrYI4Eq0TeZy5qIALI=
-Received: from stbirv-lnx-1.igp.broadcom.net (stbirv-lnx-1.igp.broadcom.net [10.67.48.32])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail-acc-it-01.broadcom.com (Postfix) with ESMTPSA id 51D7C4002F44;
-	Mon, 18 Aug 2025 12:08:34 -0400 (EDT)
-From: Florian Fainelli <florian.fainelli@broadcom.com>
-To: linux-kernel@vger.kernel.org
-Cc: Florian Fainelli <florian.fainelli@broadcom.com>,
-	Sudeep Holla <sudeep.holla@arm.com>,
-	Cristian Marussi <cristian.marussi@arm.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Mike Tipton <quic_mdtipton@quicinc.com>,
-	Peng Fan <peng.fan@nxp.com>,
-	arm-scmi@vger.kernel.org,
+	s=arc-20240116; t=1755534580; c=relaxed/simple;
+	bh=sWixPrj/xUZwKk83qjqVRt/FSAGhLX6Txw5BH/bUg48=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=HeFIIgHCqzYQm1Xn02JKrzQICINOotYWa0CRh/GPW9EQBc8+s4oO24/G3G1bz0PreWtQiBY7DNVb8kupGpJFCmEPw/TLdB4Z22Y2K+9d28rrO1ADD1qGzE3m/nwnmqBNjtOePwS0GHIS2P/KbomVp6FgeEX3i/t+38cjHJWciaQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=bp.renesas.com; spf=pass smtp.mailfrom=bp.renesas.com; arc=none smtp.client-ip=210.160.252.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=bp.renesas.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bp.renesas.com
+X-CSE-ConnectionGUID: h1IS55V5SKerW13Du0w6kQ==
+X-CSE-MsgGUID: fJJ8iPRoTieiYOPXfAFIZw==
+Received: from unknown (HELO relmlir6.idc.renesas.com) ([10.200.68.152])
+  by relmlie6.idc.renesas.com with ESMTP; 19 Aug 2025 01:29:30 +0900
+Received: from ubuntu.adwin.renesas.com (unknown [10.24.0.173])
+	by relmlir6.idc.renesas.com (Postfix) with ESMTP id B32B34016EE4;
+	Tue, 19 Aug 2025 01:29:23 +0900 (JST)
+From: John Madieu <john.madieu.xa@bp.renesas.com>
+To: geert+renesas@glider.be,
+	magnus.damm@gmail.com,
+	mturquette@baylibre.com,
+	sboyd@kernel.org,
+	rafael@kernel.org,
+	daniel.lezcano@linaro.org,
+	rui.zhang@intel.com,
+	lukasz.luba@arm.com,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	p.zabel@pengutronix.de,
+	catalin.marinas@arm.com,
+	will@kernel.org
+Cc: john.madieu@gmail.com,
+	linux-renesas-soc@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	biju.das.jz@bp.renesas.com,
 	linux-arm-kernel@lists.infradead.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v3] cpufreq: scmi: Account for malformed DT in scmi_dev_used_by_cpus()
-Date: Mon, 18 Aug 2025 08:50:48 -0700
-Message-Id: <20250818155048.551054-1-florian.fainelli@broadcom.com>
-X-Mailer: git-send-email 2.34.1
+	John Madieu <john.madieu.xa@bp.renesas.com>
+Subject: [PATCH v7 2/6] dt-bindings: thermal: r9a09g047-tsu: Document the TSU unit
+Date: Mon, 18 Aug 2025 18:28:48 +0200
+Message-ID: <20250818162859.9661-3-john.madieu.xa@bp.renesas.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250818162859.9661-1-john.madieu.xa@bp.renesas.com>
+References: <20250818162859.9661-1-john.madieu.xa@bp.renesas.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -56,68 +56,130 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Broadcom STB platforms were early adopters (2017) of the SCMI framework and as
-a result, not all deployed systems have a Device Tree entry where SCMI
-protocol 0x13 (PERFORMANCE) is declared as a clock provider, nor are the
-CPU Device Tree node(s) referencing protocol 0x13 as their clock
-provider. This was clarified in commit e11c480b6df1 ("dt-bindings:
-firmware: arm,scmi: Extend bindings for protocol@13") in 2023.
+The Renesas RZ/G3E SoC includes a Thermal Sensor Unit (TSU) block designed
+to measure the junction temperature. The device provides real-time
+temperature measurements for thermal management, utilizing a single
+dedicated channel (channel 1) for temperature sensing.
 
-For those platforms, we allow the checks done by scmi_dev_used_by_cpus()
-to continue, and in the event of not having done an early return, we key
-off the documented compatible string and give them a pass to continue to
-use scmi-cpufreq.
-
-Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
-Fixes: 6c9bb8692272 ("cpufreq: scmi: Skip SCMI devices that aren't used by the CPUs")
-Signed-off-by: Florian Fainelli <florian.fainelli@broadcom.com>
+Signed-off-by: John Madieu <john.madieu.xa@bp.renesas.com>
 ---
-Changes in v3:
 
-- corrected multi-line comment
-- added details about when STB platforms used SCMI and which commit
-  clarifid the binding requirements
+Changes:
 
-Changes in v2:
+v1 -> v2:
+ * Fixes reg property specifier to get rid of yamlint warnings
+ * Fixes IRQ name to reflect TSU expectations
 
-- do not leverage the SCMI quirks framework which in spirit is for
-  dealing with SCMI firmware implementations, this right here,
-  specifically pertains to an older Device Tree. This also makes it
-  easier to backport that change into stable trees where the commit in
-  the Fixes tag is already present. There is no dependency upon the
-  presence of the SCMI quirks framework
+v2 -> v3:
+ * Removees useless 'renesas,tsu-operating-mode' property 
 
- drivers/cpufreq/scmi-cpufreq.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+v3 -> v4:
+ * Fixes commit message
+ * Fixes interrupt description
+ * Removes trip point definition
 
-diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
-index ef078426bfd5..38c165d526d1 100644
---- a/drivers/cpufreq/scmi-cpufreq.c
-+++ b/drivers/cpufreq/scmi-cpufreq.c
-@@ -15,6 +15,7 @@
- #include <linux/energy_model.h>
- #include <linux/export.h>
- #include <linux/module.h>
-+#include <linux/of.h>
- #include <linux/pm_opp.h>
- #include <linux/pm_qos.h>
- #include <linux/slab.h>
-@@ -424,6 +425,15 @@ static bool scmi_dev_used_by_cpus(struct device *scmi_dev)
- 			return true;
- 	}
- 
-+	/*
-+	 * Older Broadcom STB chips had a "clocks" property for CPU node(s)
-+	 * that did not match the SCMI performance protocol node, if we got
-+	 * there, it means we had such an older Device Tree, therefore return
-+	 * true to preserve backwards compatibility.
-+	 */
-+	if (of_machine_is_compatible("brcm,brcmstb"))
-+		return true;
+v5: no changes
+v6: no changes
+v7: Adds documentation for 'renesas,tsu-trim' and removes Rb tag from Krzysztof
+    due to this change
+
+ .../thermal/renesas,r9a09g047-tsu.yaml        | 87 +++++++++++++++++++
+ 1 file changed, 87 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/renesas,r9a09g047-tsu.yaml
+
+diff --git a/Documentation/devicetree/bindings/thermal/renesas,r9a09g047-tsu.yaml b/Documentation/devicetree/bindings/thermal/renesas,r9a09g047-tsu.yaml
+new file mode 100644
+index 000000000000..70d2af6fcd78
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/renesas,r9a09g047-tsu.yaml
+@@ -0,0 +1,87 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/thermal/renesas,r9a09g047-tsu.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
- 	return false;
- }
- 
++title: Renesas RZ/G3E Temperature Sensor Unit (TSU)
++
++maintainers:
++  - John Madieu <john.madieu.xa@bp.renesas.com>
++
++description:
++  The Temperature Sensor Unit (TSU) is an integrated thermal sensor that
++  monitors the chip temperature on the Renesas RZ/G3E SoC. The TSU provides
++  real-time temperature measurements for thermal management.
++
++properties:
++  compatible:
++    const: renesas,r9a09g047-tsu
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++
++  resets:
++    maxItems: 1
++
++  power-domains:
++    maxItems: 1
++
++  interrupts:
++    items:
++      - description: Conversion complete interrupt signal (pulse)
++      - description: Comparison result interrupt signal (level)
++
++  interrupt-names:
++    items:
++      - const: adi
++      - const: adcmpi
++
++  "#thermal-sensor-cells":
++    const: 0
++
++  renesas,tsu-trim:
++    $ref: /schemas/types.yaml#/definitions/phandle-array
++    items:
++      - items:
++          - description: phandle to system controller
++          - description: offset of trim registers
++    description: |
++      Phandle and offset to the system controller containing the TSU
++      calibration trim values. The offset points to the first trim
++      register (OTPTSU1TRMVAL0), with the second trim register
++      (OTPTSU1TRMVAL1) located at offset + 4.
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - resets
++  - power-domains
++  - interrupts
++  - interrupt-names
++  - "#thermal-sensor-cells"
++  - renesas,tsu-trim
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/renesas,r9a09g047-cpg.h>
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++
++    tsu: thermal@14002000 {
++        compatible = "renesas,r9a09g047-tsu";
++        reg = <0x14002000 0x1000>;
++        clocks = <&cpg CPG_MOD 0x10a>;
++        resets = <&cpg 0xf8>;
++        power-domains = <&cpg>;
++        interrupts = <GIC_SPI 250 IRQ_TYPE_EDGE_RISING>,
++                     <GIC_SPI 251 IRQ_TYPE_LEVEL_HIGH>;
++        interrupt-names = "adi", "adcmpi";
++        #thermal-sensor-cells = <0>;
++        renesas,tsu-trim = <&sys 0x330>;
++    };
 -- 
-2.34.1
+2.25.1
 
