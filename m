@@ -1,33 +1,33 @@
-Received: from fllvem-ot04.ext.ti.com (fllvem-ot04.ext.ti.com [198.47.19.246])
+Received: from lelvem-ot01.ext.ti.com (lelvem-ot01.ext.ti.com [198.47.23.234])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E31E225485F;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 182F42737E7;
 	Mon, 18 Aug 2025 19:26:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.19.246
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.234
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755545204; cv=none; b=ntCmzjfyGSACWBtxhuUDVTWBbMQmCHCC+eXTDvaIw7qP/mHVlXQemfeTOGDbTj7Ew4F360HblCrp7wOI4uJR4P8TgR2posnq8MqG2Qq40vSjQMEpUqh90plYfu1PoercoYrdOexyy51gmcIo1OUs0yDgwtTMGI2iGn4E1z/UjqU=
+	t=1755545204; cv=none; b=EolY2rIR74ElroUofuQtEROsXzD/z3AjAzpOTigl6htBBcVAQE8/nG9huiXMpuRLl5a8kcNIjv5WH9FGX0QGvTNtTGyctehXtPo6D3y0M0EBFGn7RgYGF6wht0LBo7HJ9GPci18lqG9RgK4YUoc8T208Candh5edUOWpHzsczoY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1755545204; c=relaxed/simple;
-	bh=oK5JvcFSaN1TyJd7K80UpjNFRv/JIpUuvFuQza7IXW0=;
+	bh=eoLXwqOOfIRrHS8VYQfB6OgLGsfrMp71CnW1YYlCn0o=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=W3erDDKomOAYNoqR7aHRN/z032j2aw8vGqTaPbRc9xvEPxCoE7XRpHUrjyTA4q5aBzKY+sD8RuL7IyN0BLaNIMdMUl2Vb+NNfYTmwrWq7CUx/rNIvRer6u2/zgEvZ4hXkQPYixLj15RmSXXBK6uE3NnhtevzQOYdCzW2Z4/mKPI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=X8pqcuQ/; arc=none smtp.client-ip=198.47.19.246
+	 MIME-Version:Content-Type; b=o1Z2sO7N83pN7MKhDfJPVvbrnnZPAEYlTwHGeGAWRrB6SXv8LDj5Y54KoZlDcwbtJFMLU1x2yU0kr8QqbFBeFfhjq4GHtXwhCoVIfly1RrZBADC7mgasvaMjy55hd6rbCXJqBp99JWJXiotflmcIWP0TwdBftRVS7o8Xn3PXx/4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=g5ZitLUM; arc=none smtp.client-ip=198.47.23.234
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="X8pqcuQ/"
-Received: from lelvem-sh01.itg.ti.com ([10.180.77.71])
-	by fllvem-ot04.ext.ti.com (8.15.2/8.15.2) with ESMTP id 57IJQXuk3147282;
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="g5ZitLUM"
+Received: from fllvem-sh03.itg.ti.com ([10.64.41.86])
+	by lelvem-ot01.ext.ti.com (8.15.2/8.15.2) with ESMTP id 57IJQXQe2784525;
 	Mon, 18 Aug 2025 14:26:33 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
 	s=ti-com-17Q1; t=1755545193;
-	bh=c0AbO84hZjW14Lbl5aei9qWkHXX8f1YDrWxIY9FYFGQ=;
+	bh=UXRkk2zDcggKtqTefi0QIESttIf8M0uGEmhb4YEPw9E=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=X8pqcuQ/ugEyTyfesAmTyosbJdqjoo2nFd+3AIK8OPXWyhm9riVCN1Qm/9a3+xigZ
-	 G61KYB6BgJVvUjqL1cX1uXptmVoaZeMP2rsMyl7g6sPXBJw4CB04OML4JHG+sqGcHi
-	 wSCCVTUC7WBEnnLUH/sha1uhfFiSw1F99xX9+CQc=
+	b=g5ZitLUMZVY9XhusOnJzaZgC1dVg3TOVuLIw1Yth2hbrBTzQqnOshzzCjp4gkVGox
+	 9DdrO9tyNhC3l5IyFmx5mhBAztHm+ilBLZyRAZWb5fdIECK1XGlidR/nUWUl1KUhqO
+	 Y6eFxa7yK/sUNchkvG0VhP+eIMIJioPNoTbFoOik=
 Received: from DFLE113.ent.ti.com (dfle113.ent.ti.com [10.64.6.34])
-	by lelvem-sh01.itg.ti.com (8.18.1/8.18.1) with ESMTPS id 57IJQXeb4032550
+	by fllvem-sh03.itg.ti.com (8.18.1/8.18.1) with ESMTPS id 57IJQXMO039962
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-SHA256 bits=128 verify=FAIL);
 	Mon, 18 Aug 2025 14:26:33 -0500
 Received: from DFLE109.ent.ti.com (10.64.6.30) by DFLE113.ent.ti.com
@@ -39,8 +39,8 @@ Received: from lelvem-mr06.itg.ti.com (10.180.75.8) by DFLE109.ent.ti.com
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.55 via
  Frontend Transport; Mon, 18 Aug 2025 14:26:33 -0500
 Received: from judy-hp.dhcp.ti.com (judy-hp.dhcp.ti.com [128.247.81.105])
-	by lelvem-mr06.itg.ti.com (8.18.1/8.18.1) with ESMTP id 57IJQWxW1525949;
-	Mon, 18 Aug 2025 14:26:32 -0500
+	by lelvem-mr06.itg.ti.com (8.18.1/8.18.1) with ESMTP id 57IJQWxY1525949;
+	Mon, 18 Aug 2025 14:26:33 -0500
 From: Judith Mendez <jm@ti.com>
 To: Judith Mendez <jm@ti.com>, Nishanth Menon <nm@ti.com>,
         Krzysztof Kozlowski
@@ -53,9 +53,9 @@ CC: Vignesh Raghavendra <vigneshr@ti.com>, Tero Kristo <kristo@kernel.org>,
  Brattlof <bb@ti.com>,
         <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
-Subject: [PATCH 1/3] cpufreq: ti: Support more speed grades on AM62Px SoC
-Date: Mon, 18 Aug 2025 14:26:30 -0500
-Message-ID: <20250818192632.2982223-2-jm@ti.com>
+Subject: [PATCH 3/3] arm64: dts: ti: k3-am62p: Fix supported hardware for 1GHz OPP
+Date: Mon, 18 Aug 2025 14:26:32 -0500
+Message-ID: <20250818192632.2982223-4-jm@ti.com>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250818192632.2982223-1-jm@ti.com>
 References: <20250818192632.2982223-1-jm@ti.com>
@@ -69,39 +69,31 @@ Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
 
-As the AM62Px SoC family matures more speed grades are being defined.
-Add support for speed grades U and T which both support all currently
-established OPPs.
+The 1GHz OPP is supported on speed grade "O" as well according to the
+device datasheet [0], so fix the opp-supported-hw property to support
+this speed grade for 1GHz OPP.
 
+[0] https://www.ti.com/lit/gpn/am62p
+Fixes: 76d855f05801 ("arm64: dts: ti: k3-am62p: add opp frequencies")
+Cc: stable@vger.kernel.org
 Signed-off-by: Judith Mendez <jm@ti.com>
 ---
- drivers/cpufreq/ti-cpufreq.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/arm64/boot/dts/ti/k3-am62p5.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
-index 5a5147277cd0..f7be09dc63e3 100644
---- a/drivers/cpufreq/ti-cpufreq.c
-+++ b/drivers/cpufreq/ti-cpufreq.c
-@@ -72,7 +72,9 @@ enum {
+diff --git a/arch/arm64/boot/dts/ti/k3-am62p5.dtsi b/arch/arm64/boot/dts/ti/k3-am62p5.dtsi
+index 202378d9d5cf..8982a7b9f1a6 100644
+--- a/arch/arm64/boot/dts/ti/k3-am62p5.dtsi
++++ b/arch/arm64/boot/dts/ti/k3-am62p5.dtsi
+@@ -135,7 +135,7 @@ opp-800000000 {
  
- #define AM62P5_EFUSE_O_MPU_OPP			15
- #define AM62P5_EFUSE_S_MPU_OPP			19
-+#define AM62P5_EFUSE_T_MPU_OPP			20
- #define AM62P5_EFUSE_U_MPU_OPP			21
-+#define AM62P5_EFUSE_V_MPU_OPP			22
+ 		opp-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+-			opp-supported-hw = <0x01 0x0006>;
++			opp-supported-hw = <0x01 0x0007>;
+ 			clock-latency-ns = <6000000>;
+ 		};
  
- #define AM62P5_SUPPORT_O_MPU_OPP		BIT(0)
- #define AM62P5_SUPPORT_U_MPU_OPP		BIT(2)
-@@ -153,7 +155,9 @@ static unsigned long am62p5_efuse_xlate(struct ti_cpufreq_data *opp_data,
- 	unsigned long calculated_efuse = AM62P5_SUPPORT_O_MPU_OPP;
- 
- 	switch (efuse) {
-+	case AM62P5_EFUSE_V_MPU_OPP:
- 	case AM62P5_EFUSE_U_MPU_OPP:
-+	case AM62P5_EFUSE_T_MPU_OPP:
- 	case AM62P5_EFUSE_S_MPU_OPP:
- 		calculated_efuse |= AM62P5_SUPPORT_U_MPU_OPP;
- 		fallthrough;
 -- 
 2.49.0
 
