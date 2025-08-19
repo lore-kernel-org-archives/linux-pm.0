@@ -1,244 +1,131 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0FCB3101A8
-	for <linux-pm@vger.kernel.org>; Tue, 19 Aug 2025 05:35:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA44F266560
+	for <linux-pm@vger.kernel.org>; Tue, 19 Aug 2025 06:14:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755581717; cv=none; b=vFn6sVIHvNQ5SLGbDv2Ce2Q3VVyxhXlA/ShKqZo0bZy4KJiPess5WHHStkDJ5uCJwHO6KDxFMNS3/3Z+jYSBRWn3S3Ts3ENHpLHvwvm0jHijF99m4JJRYKAF9riIu8VPUfhZaW+AJ4las/sLheD6ByYqc1LKKWi5EV3Vh69xYa0=
+	t=1755584095; cv=none; b=Epr6PHkpyxg83Ls5c+qNSJHESgFF7P2keOvJB2i6hQVtQVp3WmKHPTe/2N6Df3QrTQMaRU/YHtdsIhu9FduMUlhk04EnkYCGxehcdd4oWNMcnc/CiarUXHm2baXtbzuAnAqSbSYLezN9zcUzzD5IsyQ3aGAe9wpjhNMFzhclGzc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1755581717; c=relaxed/simple;
-	bh=2rSyjnOXNH6jZxqRWat3S+IfaQ+klyL79lUq0adK6VI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Yha6kqxlPDj9lbspKdR87VI3sNSIbXJe5ZkunU0cGmz/qHPRYVTT6Rz81Y0XHe6jQ8CP/TfMLuLK/ndSWuVmTmN+TVxRJhNuuSwAv6vqD4VzIRtfyg7FWAbPQfqxmgthVheHqmjBgIoo57N73gURgzUsryNXvMkhb+KSKQN0oIo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=YCxSDkLu; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1755584095; c=relaxed/simple;
+	bh=2YJR7pEFPy7xq1orNpVNhiTcdNQif4qFtdmH0fu7uU8=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=SpnavGWBtbFJGbsUWx5FJSz6PHq4D3b1WVtPDNf8e3r4GlPLJDgojrRq3hNKWx/9F69wa/SUtkXKLbVucT5T374E26JOzjlyyNoYE/wNMNG9YeomlE2QiBlu015D+IhGlOnFnXyNY2sSe1O6ELR6LjWrlExannjENDwgBeaPLIs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=ibAhJEFU; arc=none smtp.client-ip=209.85.221.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="YCxSDkLu"
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 57IMTLWp032554
-	for <linux-pm@vger.kernel.org>; Tue, 19 Aug 2025 05:35:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	B8vAYM0Ri6HzYPqPusEESOhjr79e1ErFVtCFN1cMUUQ=; b=YCxSDkLu5yz2f4Q3
-	RcDI3dRVpQtdarphXwI7VUURtKhFouxoneOiEpR6SkW/U/Om50feVe2HUmcbm+nZ
-	AUbOtfMWinS5JdeFxIYwfirwbeCPQ0xZMVT0tO2TwJqOn9rreFHikevzQXnCC0V/
-	JT8Hnz6t18U/n+JlgPRQ0jyjUnmr3GuMSP35QNI5xoMgwc8eMfsTYE3L6qRUk0Nh
-	Vv3qsJvZ/tZkFWIwDJh3Y0h+u9uHnSJ5LShHd9yhjF2P3Q9/2LnQUZZX962t0yoR
-	SiIM94zAQGblgcawe1ippuoVDNQIMr0QxGBDrQv240dmXijMZc+Pc2G8+PTw5ZRP
-	z6HoIQ==
-Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 48jj2ufcc1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 19 Aug 2025 05:35:14 +0000 (GMT)
-Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-24458194d82so50477615ad.2
-        for <linux-pm@vger.kernel.org>; Mon, 18 Aug 2025 22:35:14 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ibAhJEFU"
+Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-3b9e411c820so2609879f8f.1
+        for <linux-pm@vger.kernel.org>; Mon, 18 Aug 2025 23:14:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1755584092; x=1756188892; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:message-id:subject:cc
+         :to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=cfC6tmyznTQhu0WfGzgV8ZZbOGfzSI/Lw/Z1TOmfLRk=;
+        b=ibAhJEFUO+vTpE3pCQcYDTbQCLdspElFpc5VKzca0gq8l5CsysS8U/avlwCT3tYhxv
+         WStZb/+53HEANlYP5qSgfpBMT5Z56yNK4j2r37i0x7n4GsMDgE4UQ26g4ZwxnSBauBEj
+         OqpB9DvcBSSIpt/705aPhux5DXhQi2aJjobyQ8nymEtpKxLbwYoHrTjstzi0SKUfefq1
+         md9d300NgHcvbKKWumyooFsauU16I3KjsyNQLu0poMC7k5ORhbAC+uUvEIOjZjwstAKN
+         7Cn+sJoSSSddJpdE59XFv3rtCa/yzOfhT5vxIAgH89hfpekDS10ZyPM3QehmN8/flfwm
+         vQHw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1755581707; x=1756186507;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=B8vAYM0Ri6HzYPqPusEESOhjr79e1ErFVtCFN1cMUUQ=;
-        b=Z063C4J6p9UCyNu9zS7SIevn0ujRdb6LvE7+mi4upU3c4d1iCWyV5mZOvazAMHPZyF
-         BeQ7AAOyv4oH2N6VtwPqRuEO8G2POGOhAcRtanITHHIPSdFiKbPHZjDqOuSAeUFWzU4z
-         uM/R+c5kafse6+yKfbiB3q+i80/bFXU9A54EkxDgmUZJVQIypDSeDYPfru/hSjyiyFNv
-         PIlp0bMq4wKGFTEvVogV55YAwBdK8yqzDxSyc7PZ38HwfghFSsVF3XH7tWDDqVINqms8
-         wC3J3WKim1L6ciMtGg2mVQfVsXpdISqWqXZGO8bK65yS6TU77oLISdS2kJg5Wdxi4Xf1
-         zSdw==
-X-Gm-Message-State: AOJu0Yyn5uvulC7inUBaVwWStVnaVoWefHOKZq2igRdMh22+YzHy33oD
-	6h4YbSYKaFw8yJyiAWjOZO3dDY3zOIWwpTETSvGV4GaLrt0mA5nNgY+FA6LVV59wk4PZKg28Nbi
-	2G8gGXIabO/R3FRQJ2pCnDS5mcB8lF9AjO49Slk+nAVFTc6KQ1Swu2b+3RleUgQ==
-X-Gm-Gg: ASbGnctXdjD6IyUfi9P85fggGGVGdtRVtlPD2jBMzPMX1u2RQ5nAr1MoFsGdKy23EEq
-	Tzb+NGGjkvLUzyNeKXEHIJDbFtz56d/SUrDz652UVi/2kwuyHtMf8Q3VDVsFtcIR7bvazd8zZoV
-	Nk4kzn+sWJ6ceWxzfKcVujUIAXilk1bSBgxhs2k+wVrFBX8fyh6lzMjXriD4h4U11CNfBlQNhMl
-	OsC81RD/aFOn57pw7DGAzRYTgM0Y6ZKBKsrUlXCWuHktI8pdxY/vCrjjNEKIgKuV/g3nZX+k86R
-	dLvviyVDHlZmgi7nU5jxRYKjjC7hB6sBEj/KK4GxtHJpOfMLy4QmY8e0d3ZIAoj56rssdFLMZew
-	=
-X-Received: by 2002:a17:902:d4ca:b0:244:9a88:bf6 with SMTP id d9443c01a7336-245e0526b3dmr20781915ad.38.1755581706749;
-        Mon, 18 Aug 2025 22:35:06 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IG3T2DWF0sM5aMCv7IQ1WuvOo+eJnBtoWO3vhU5xsD6yPrx9RP8y2lOdkUyfyrc1jBjsJmiIg==
-X-Received: by 2002:a17:902:d4ca:b0:244:9a88:bf6 with SMTP id d9443c01a7336-245e0526b3dmr20781465ad.38.1755581706220;
-        Mon, 18 Aug 2025 22:35:06 -0700 (PDT)
-Received: from hu-krichai-hyd.qualcomm.com ([202.46.23.25])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2446d50f710sm97004785ad.86.2025.08.18.22.35.01
+        d=1e100.net; s=20230601; t=1755584092; x=1756188892;
+        h=in-reply-to:content-disposition:mime-version:message-id:subject:cc
+         :to:from:date:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=cfC6tmyznTQhu0WfGzgV8ZZbOGfzSI/Lw/Z1TOmfLRk=;
+        b=mUkI3GxpL+UA9BPx+gVaBRGRHc734GaCbkiClleaR/8t9ODSV7xFDU+IAjW3W1+giw
+         BJU2KDXPmhCO8jlSi6MRc4wAz46JeG09e+AoCrxm0/HOlGCuKK7EbBsJdc6qtjolCnGs
+         +giwWxf3R0uFJesoPABbeyfU+Aza4rxhOskYGD6kTDkfUnrecAtMUHwkIlYNZ8tbOfP3
+         E58D33U0axlcCwHCAI+PyZd8jxU1mTVc9S7kxTdwhmhwPCKFumRNbuFku6LJSo7B3tUO
+         RmD06i6gE978pg2oSRA1gie7JKTBXqGMLQMHD/yQeU/NvpJ1T99SQkxj1hAwJ/dnBOFq
+         zBMA==
+X-Forwarded-Encrypted: i=1; AJvYcCVPjlJSSyYH19troqcu4jZJSPxtPvFNxvIdBAn/8+mns3I7k4/bMIs2hpo6mPY52yw+Ad3fUvsmbQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw48QNQEXm6oifwvqrVA/inyQ6dDhUCuU0ub8EConN1ddB0knnc
+	i8XN6WdWmOsu9W+ClPflTmqQeQkCHt4hj1reAchrlC7jcOryR4AwiEzZfhmXXxAv/2Q=
+X-Gm-Gg: ASbGnct9iK6NG6ManaZkALqXFMyYpD64LM/0tcHKad/hGzP0NblrGW3bAZLiA0g4QdJ
+	mFMbxjP82gqQCrbSjE4F8dNIBvDVPiIbiCbwAAlc29lRE+et12/w3e8FQCAnvq85Zy5w76ecZqq
+	cUAW39v+Lj4a1aCcAH8jj4ZZk6i5uyq/pNW0BEABrFfvjWZuypB5+Z2IZYvVgk0mQ7rpCvnxp6t
+	LfDpqtOeYfsh7vlDA7fMmvkL9q0gEfgmi7MqXW/85/o39XrULihOFpde1XrlWqm/OGKLIUJfmry
+	NEFdfGUiR8M4rBbHfOnDz3h5OTT1ECqoVrf6KQ9zwLx+Qi5jyowQzkfXaxy6ImaHPa98G0jU6/Y
+	HDUvQ5sP1apm6qaiJehJoJ0x4/TMP88NRze2lAA==
+X-Google-Smtp-Source: AGHT+IGGFEZgyeEaX2pBRfjbPpLg1ixzuD1sw99+W5A5gTT8EacRooGmmANMREXLdZz4noMb1+AVvg==
+X-Received: by 2002:a05:6000:4014:b0:3b9:148b:e66 with SMTP id ffacd0b85a97d-3c0ed2e8f63mr910658f8f.54.1755584091917;
+        Mon, 18 Aug 2025 23:14:51 -0700 (PDT)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-3c0754f3b7esm2146290f8f.30.2025.08.18.23.14.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 18 Aug 2025 22:35:05 -0700 (PDT)
-From: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-Date: Tue, 19 Aug 2025 11:04:43 +0530
-Subject: [PATCH v3 2/3] arm64: dts: qcom: sm8450: Add opp-level to indicate
- PCIe data rates
+        Mon, 18 Aug 2025 23:14:51 -0700 (PDT)
+Date: Tue, 19 Aug 2025 09:14:48 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: oe-kbuild@lists.linux.dev, Andreas Kemnade <andreas@kemnade.info>,
+	Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>,
+	Matti Vaittinen <mazziesaccount@gmail.com>,
+	Lee Jones <lee@kernel.org>, Sebastian Reichel <sre@kernel.org>
+Cc: lkp@intel.com, oe-kbuild-all@lists.linux.dev,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	Andreas Kemnade <andreas@kemnade.info>
+Subject: Re: [PATCH 2/2] power: supply: Add bd718(15/28/78) charger driver
+Message-ID: <202508191303.UzPStkjj-lkp@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250819-opp_pcie-v3-2-f8bd7e05ce41@oss.qualcomm.com>
-References: <20250819-opp_pcie-v3-0-f8bd7e05ce41@oss.qualcomm.com>
-In-Reply-To: <20250819-opp_pcie-v3-0-f8bd7e05ce41@oss.qualcomm.com>
-To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Manivannan Sadhasivam <mani@kernel.org>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
-        Rob Herring <robh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pci@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org,
-        Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1755581690; l=3189;
- i=krishna.chundru@oss.qualcomm.com; s=20230907; h=from:subject:message-id;
- bh=2rSyjnOXNH6jZxqRWat3S+IfaQ+klyL79lUq0adK6VI=;
- b=JlhlQ7TUFYilxYzRYBEH44c1xz4YIwI0fcVfxHuf0FM5xfY9kBMX68LMdQPURjW1d48qfMVRb
- jBzsfMXLcBvDWMTBKEoi+XFYXQByPcCDsCWFyRQW4zGN/lvwwIpaDi7
-X-Developer-Key: i=krishna.chundru@oss.qualcomm.com; a=ed25519;
- pk=10CL2pdAKFyzyOHbfSWHCD0X0my7CXxj8gJScmn1FAg=
-X-Authority-Analysis: v=2.4 cv=MJ9gmNZl c=1 sm=1 tr=0 ts=68a40d12 cx=c_pps
- a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
- a=IkcTkHD0fZMA:10 a=2OwXVqhp2XgA:10 a=EUspDBNiAAAA:8 a=qQkGquXN9PvF_GGjQ98A:9
- a=QEXdDO2ut3YA:10 a=GvdueXVYPmCkWapjIL-Q:22
-X-Proofpoint-ORIG-GUID: zMXv2zaoiei1dToUpyPXIJFF8WlBaiEC
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODE2MDAzMSBTYWx0ZWRfXzu+kTLnQCfcI
- tfoVGzZaZZ2tYeTJkD7FOwyJ6IrR60D1frGECDXoPMwv3g/kwBNRrvH0jXcn8/S5dF1jXuZHrMs
- dsfDaZtVA4G/rt8080WFAZIf4zWUbAgzxTNfoejOhjucBbwyuH4zYs7JfdVgz8XsTfZWAJQwi5u
- eKxYq8sE3K+SPBlblXo7kDQZj5xkRWICdVbCq6Qx1OuyfZJRBfEa2d7XcUujiGmbOS41/eFHwLP
- xJD+nBLNx6P96Gp/tB7kdJZseVW6INllL4hfg66I6dVDOmUnPQOJYfr6/7HpTpODXc7pDHKJYve
- tbZJVcmnLxBYWxyxlEPqCkBJ+K5Uo/vJG/PtPDFlmjip28bZD+e2pPEbttKN1ESUcVmy/s+RJl6
- 7P/1BP0x
-X-Proofpoint-GUID: zMXv2zaoiei1dToUpyPXIJFF8WlBaiEC
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-08-19_01,2025-08-14_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 impostorscore=0 phishscore=0 bulkscore=0 malwarescore=0
- spamscore=0 clxscore=1015 priorityscore=1501 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2508160031
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250816-bd71828-charger-v1-2-71b11bde5c73@kemnade.info>
 
-Add opp-level to indicate PCIe data rates and also define OPP enteries
-for each link width and data rate. Append the opp level to name of the
-opp node to indicate both frequency and level.
+Hi Andreas,
 
-Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
----
- arch/arm64/boot/dts/qcom/sm8450.dtsi | 41 +++++++++++++++++++++++++++++-------
- 1 file changed, 33 insertions(+), 8 deletions(-)
+kernel test robot noticed the following build warnings:
 
-diff --git a/arch/arm64/boot/dts/qcom/sm8450.dtsi b/arch/arm64/boot/dts/qcom/sm8450.dtsi
-index 33574ad706b915136546c7f92c7cd0b8a0d62b7e..d7f8706ca4949e253a4102474c92b393a345262f 100644
---- a/arch/arm64/boot/dts/qcom/sm8450.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm8450.dtsi
-@@ -2052,6 +2052,7 @@ opp-2500000 {
- 					opp-hz = /bits/ 64 <2500000>;
- 					required-opps = <&rpmhpd_opp_low_svs>;
- 					opp-peak-kBps = <250000 1>;
-+					opp-level = <1>;
- 				};
- 
- 				/* GEN 2 x1 */
-@@ -2059,6 +2060,7 @@ opp-5000000 {
- 					opp-hz = /bits/ 64 <5000000>;
- 					required-opps = <&rpmhpd_opp_low_svs>;
- 					opp-peak-kBps = <500000 1>;
-+					opp-level = <2>;
- 				};
- 
- 				/* GEN 3 x1 */
-@@ -2066,6 +2068,7 @@ opp-8000000 {
- 					opp-hz = /bits/ 64 <8000000>;
- 					required-opps = <&rpmhpd_opp_nom>;
- 					opp-peak-kBps = <984500 1>;
-+					opp-level = <3>;
- 				};
- 			};
- 
-@@ -2210,45 +2213,67 @@ pcie1_opp_table: opp-table {
- 				compatible = "operating-points-v2";
- 
- 				/* GEN 1 x1 */
--				opp-2500000 {
-+				opp-2500000-1 {
- 					opp-hz = /bits/ 64 <2500000>;
- 					required-opps = <&rpmhpd_opp_low_svs>;
- 					opp-peak-kBps = <250000 1>;
-+					opp-level = <1>;
- 				};
- 
--				/* GEN 1 x2 and GEN 2 x1 */
--				opp-5000000 {
-+				/* GEN 1 x2 */
-+				opp-5000000-1 {
-+					opp-hz = /bits/ 64 <5000000>;
-+					required-opps = <&rpmhpd_opp_low_svs>;
-+					opp-peak-kBps = <500000 1>;
-+					opp-level = <1>;
-+				};
-+
-+				/* GEN 2 x1 */
-+				opp-5000000-2 {
- 					opp-hz = /bits/ 64 <5000000>;
- 					required-opps = <&rpmhpd_opp_low_svs>;
- 					opp-peak-kBps = <500000 1>;
-+					opp-level = <2>;
- 				};
- 
- 				/* GEN 2 x2 */
--				opp-10000000 {
-+				opp-10000000-2 {
- 					opp-hz = /bits/ 64 <10000000>;
- 					required-opps = <&rpmhpd_opp_low_svs>;
- 					opp-peak-kBps = <1000000 1>;
-+					opp-level = <2>;
- 				};
- 
- 				/* GEN 3 x1 */
--				opp-8000000 {
-+				opp-8000000-3 {
- 					opp-hz = /bits/ 64 <8000000>;
- 					required-opps = <&rpmhpd_opp_nom>;
- 					opp-peak-kBps = <984500 1>;
-+					opp-level = <3>;
-+				};
-+
-+				/* GEN 3 x2 */
-+				opp-16000000-3 {
-+					opp-hz = /bits/ 64 <16000000>;
-+					required-opps = <&rpmhpd_opp_nom>;
-+					opp-peak-kBps = <1969000 1>;
-+					opp-level = <3>;
- 				};
- 
--				/* GEN 3 x2 and GEN 4 x1 */
--				opp-16000000 {
-+				/* GEN 4 x1 */
-+				opp-16000000-4 {
- 					opp-hz = /bits/ 64 <16000000>;
- 					required-opps = <&rpmhpd_opp_nom>;
- 					opp-peak-kBps = <1969000 1>;
-+					opp-level = <4>;
- 				};
- 
- 				/* GEN 4 x2 */
--				opp-32000000 {
-+				opp-32000000-4 {
- 					opp-hz = /bits/ 64 <32000000>;
- 					required-opps = <&rpmhpd_opp_nom>;
- 					opp-peak-kBps = <3938000 1>;
-+					opp-level = <4>;
- 				};
- 			};
- 
+url:    https://github.com/intel-lab-lkp/linux/commits/Andreas-Kemnade/mfd-bd71828-bd71815-prepare-for-power-supply-support/20250817-032146
+base:   8f5ae30d69d7543eee0d70083daf4de8fe15d585
+patch link:    https://lore.kernel.org/r/20250816-bd71828-charger-v1-2-71b11bde5c73%40kemnade.info
+patch subject: [PATCH 2/2] power: supply: Add bd718(15/28/78) charger driver
+config: loongarch-randconfig-r073-20250818 (https://download.01.org/0day-ci/archive/20250819/202508191303.UzPStkjj-lkp@intel.com/config)
+compiler: loongarch64-linux-gcc (GCC) 15.1.0
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
+| Closes: https://lore.kernel.org/r/202508191303.UzPStkjj-lkp@intel.com/
+
+smatch warnings:
+drivers/power/supply/bd71828-power.c:298 bd71828_get_temp() error: uninitialized symbol 't'.
+drivers/power/supply/bd71828-power.c:559 bd71828_battery_get_property() error: uninitialized symbol 'tmp'.
+
+vim +/t +298 drivers/power/supply/bd71828-power.c
+
+c57d31029550a0 Andreas Kemnade 2025-08-16  286  static int bd71828_get_temp(struct bd71828_power *pwr, int *temp)
+c57d31029550a0 Andreas Kemnade 2025-08-16  287  {
+c57d31029550a0 Andreas Kemnade 2025-08-16  288  	uint16_t t;
+c57d31029550a0 Andreas Kemnade 2025-08-16  289  	int ret;
+c57d31029550a0 Andreas Kemnade 2025-08-16  290  	int tmp = 200 * 10000;
+c57d31029550a0 Andreas Kemnade 2025-08-16  291  
+c57d31029550a0 Andreas Kemnade 2025-08-16  292  	ret = bd7182x_read16_himask(pwr, pwr->regs->btemp_vth,
+c57d31029550a0 Andreas Kemnade 2025-08-16  293  				    BD71828_MASK_VM_BTMP_U, &t);
+c57d31029550a0 Andreas Kemnade 2025-08-16  294  	if (ret || t > 3200)
+c57d31029550a0 Andreas Kemnade 2025-08-16  295  		dev_err(pwr->dev,
+c57d31029550a0 Andreas Kemnade 2025-08-16  296  			"Failed to read system min average voltage\n");
+
+We should return the error here.
+
+c57d31029550a0 Andreas Kemnade 2025-08-16  297  
+c57d31029550a0 Andreas Kemnade 2025-08-16 @298  	tmp -= 625ULL * (unsigned int)t;
+
+If bd7182x_read16_himask() fails then t is uninitialized or invalid.
+
+c57d31029550a0 Andreas Kemnade 2025-08-16  299  	*temp = tmp / 1000;
+c57d31029550a0 Andreas Kemnade 2025-08-16  300  
+c57d31029550a0 Andreas Kemnade 2025-08-16  301  	return ret;
+c57d31029550a0 Andreas Kemnade 2025-08-16  302  }
 
 -- 
-2.34.1
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
