@@ -1,131 +1,106 @@
-Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA44F266560
-	for <linux-pm@vger.kernel.org>; Tue, 19 Aug 2025 06:14:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B58532848A2;
+	Tue, 19 Aug 2025 07:30:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.187
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755584095; cv=none; b=Epr6PHkpyxg83Ls5c+qNSJHESgFF7P2keOvJB2i6hQVtQVp3WmKHPTe/2N6Df3QrTQMaRU/YHtdsIhu9FduMUlhk04EnkYCGxehcdd4oWNMcnc/CiarUXHm2baXtbzuAnAqSbSYLezN9zcUzzD5IsyQ3aGAe9wpjhNMFzhclGzc=
+	t=1755588611; cv=none; b=LP4Mc1SLR8Lc340BOte7Nc3AtEWIhXRG5Oli8vs6BMB4N4194PVDwk4V7ui1YXcWEuyuL9WhidU01eMvkjIjjgCYR+yMQBEKp8saLZk3+x6xyvKi9x5wnUhTMRnXZR0S/7bPcwfUquc/HAVgMNIBk7jXiHN1nzdzvHVoWmX1HhY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1755584095; c=relaxed/simple;
-	bh=2YJR7pEFPy7xq1orNpVNhiTcdNQif4qFtdmH0fu7uU8=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=SpnavGWBtbFJGbsUWx5FJSz6PHq4D3b1WVtPDNf8e3r4GlPLJDgojrRq3hNKWx/9F69wa/SUtkXKLbVucT5T374E26JOzjlyyNoYE/wNMNG9YeomlE2QiBlu015D+IhGlOnFnXyNY2sSe1O6ELR6LjWrlExannjENDwgBeaPLIs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=ibAhJEFU; arc=none smtp.client-ip=209.85.221.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ibAhJEFU"
-Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-3b9e411c820so2609879f8f.1
-        for <linux-pm@vger.kernel.org>; Mon, 18 Aug 2025 23:14:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1755584092; x=1756188892; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:message-id:subject:cc
-         :to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=cfC6tmyznTQhu0WfGzgV8ZZbOGfzSI/Lw/Z1TOmfLRk=;
-        b=ibAhJEFUO+vTpE3pCQcYDTbQCLdspElFpc5VKzca0gq8l5CsysS8U/avlwCT3tYhxv
-         WStZb/+53HEANlYP5qSgfpBMT5Z56yNK4j2r37i0x7n4GsMDgE4UQ26g4ZwxnSBauBEj
-         OqpB9DvcBSSIpt/705aPhux5DXhQi2aJjobyQ8nymEtpKxLbwYoHrTjstzi0SKUfefq1
-         md9d300NgHcvbKKWumyooFsauU16I3KjsyNQLu0poMC7k5ORhbAC+uUvEIOjZjwstAKN
-         7Cn+sJoSSSddJpdE59XFv3rtCa/yzOfhT5vxIAgH89hfpekDS10ZyPM3QehmN8/flfwm
-         vQHw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1755584092; x=1756188892;
-        h=in-reply-to:content-disposition:mime-version:message-id:subject:cc
-         :to:from:date:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=cfC6tmyznTQhu0WfGzgV8ZZbOGfzSI/Lw/Z1TOmfLRk=;
-        b=mUkI3GxpL+UA9BPx+gVaBRGRHc734GaCbkiClleaR/8t9ODSV7xFDU+IAjW3W1+giw
-         BJU2KDXPmhCO8jlSi6MRc4wAz46JeG09e+AoCrxm0/HOlGCuKK7EbBsJdc6qtjolCnGs
-         +giwWxf3R0uFJesoPABbeyfU+Aza4rxhOskYGD6kTDkfUnrecAtMUHwkIlYNZ8tbOfP3
-         E58D33U0axlcCwHCAI+PyZd8jxU1mTVc9S7kxTdwhmhwPCKFumRNbuFku6LJSo7B3tUO
-         RmD06i6gE978pg2oSRA1gie7JKTBXqGMLQMHD/yQeU/NvpJ1T99SQkxj1hAwJ/dnBOFq
-         zBMA==
-X-Forwarded-Encrypted: i=1; AJvYcCVPjlJSSyYH19troqcu4jZJSPxtPvFNxvIdBAn/8+mns3I7k4/bMIs2hpo6mPY52yw+Ad3fUvsmbQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw48QNQEXm6oifwvqrVA/inyQ6dDhUCuU0ub8EConN1ddB0knnc
-	i8XN6WdWmOsu9W+ClPflTmqQeQkCHt4hj1reAchrlC7jcOryR4AwiEzZfhmXXxAv/2Q=
-X-Gm-Gg: ASbGnct9iK6NG6ManaZkALqXFMyYpD64LM/0tcHKad/hGzP0NblrGW3bAZLiA0g4QdJ
-	mFMbxjP82gqQCrbSjE4F8dNIBvDVPiIbiCbwAAlc29lRE+et12/w3e8FQCAnvq85Zy5w76ecZqq
-	cUAW39v+Lj4a1aCcAH8jj4ZZk6i5uyq/pNW0BEABrFfvjWZuypB5+Z2IZYvVgk0mQ7rpCvnxp6t
-	LfDpqtOeYfsh7vlDA7fMmvkL9q0gEfgmi7MqXW/85/o39XrULihOFpde1XrlWqm/OGKLIUJfmry
-	NEFdfGUiR8M4rBbHfOnDz3h5OTT1ECqoVrf6KQ9zwLx+Qi5jyowQzkfXaxy6ImaHPa98G0jU6/Y
-	HDUvQ5sP1apm6qaiJehJoJ0x4/TMP88NRze2lAA==
-X-Google-Smtp-Source: AGHT+IGGFEZgyeEaX2pBRfjbPpLg1ixzuD1sw99+W5A5gTT8EacRooGmmANMREXLdZz4noMb1+AVvg==
-X-Received: by 2002:a05:6000:4014:b0:3b9:148b:e66 with SMTP id ffacd0b85a97d-3c0ed2e8f63mr910658f8f.54.1755584091917;
-        Mon, 18 Aug 2025 23:14:51 -0700 (PDT)
-Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-3c0754f3b7esm2146290f8f.30.2025.08.18.23.14.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 18 Aug 2025 23:14:51 -0700 (PDT)
-Date: Tue, 19 Aug 2025 09:14:48 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: oe-kbuild@lists.linux.dev, Andreas Kemnade <andreas@kemnade.info>,
-	Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>,
-	Matti Vaittinen <mazziesaccount@gmail.com>,
-	Lee Jones <lee@kernel.org>, Sebastian Reichel <sre@kernel.org>
-Cc: lkp@intel.com, oe-kbuild-all@lists.linux.dev,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	Andreas Kemnade <andreas@kemnade.info>
-Subject: Re: [PATCH 2/2] power: supply: Add bd718(15/28/78) charger driver
-Message-ID: <202508191303.UzPStkjj-lkp@intel.com>
+	s=arc-20240116; t=1755588611; c=relaxed/simple;
+	bh=B7cxUmOPIsERLccuPdLVQ0iR/od4JFn901Rk8cBMZAw=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=ilVNZwSQ2dtxk6rFsP81JAQMyxainu+QrlKN+xjb0ksNQFJhWe634x1uAb7pUDkCtD9X/deNDoD6cTunfHkZ6kUJXG7qIBy9LEb6jr4YSJZ4zldDRZpRwDbYlWc5DAiRCCYSIhknosHJ7j2aIcL1Lrir9A798pHShaCnCgSexZw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=45.249.212.187
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.19.163.174])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4c5h390yk0z13NF3;
+	Tue, 19 Aug 2025 15:26:29 +0800 (CST)
+Received: from kwepemh100008.china.huawei.com (unknown [7.202.181.93])
+	by mail.maildlp.com (Postfix) with ESMTPS id F1917140158;
+	Tue, 19 Aug 2025 15:30:00 +0800 (CST)
+Received: from localhost.localdomain (10.50.165.33) by
+ kwepemh100008.china.huawei.com (7.202.181.93) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Tue, 19 Aug 2025 15:30:00 +0800
+From: Lifeng Zheng <zhenglifeng1@huawei.com>
+To: <catalin.marinas@arm.com>, <will@kernel.org>, <rafael@kernel.org>,
+	<viresh.kumar@linaro.org>, <beata.michalska@arm.com>, <sudeep.holla@arm.com>
+CC: <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linuxarm@huawei.com>,
+	<jonathan.cameron@huawei.com>, <vincent.guittot@linaro.org>,
+	<yangyicong@hisilicon.com>, <zhanjie9@hisilicon.com>, <lihuisong@huawei.com>,
+	<yubowen8@huawei.com>, <zhangpengjie2@huawei.com>,
+	<linhongye@h-partners.com>, <zhenglifeng1@huawei.com>
+Subject: [PATCH v5 2/3] cpufreq: Add a new function to get cpufreq policy without checking if the CPU is online
+Date: Tue, 19 Aug 2025 15:29:30 +0800
+Message-ID: <20250819072931.1647431-3-zhenglifeng1@huawei.com>
+X-Mailer: git-send-email 2.33.0
+In-Reply-To: <20250819072931.1647431-1-zhenglifeng1@huawei.com>
+References: <20250819072931.1647431-1-zhenglifeng1@huawei.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250816-bd71828-charger-v1-2-71b11bde5c73@kemnade.info>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
+ kwepemh100008.china.huawei.com (7.202.181.93)
 
-Hi Andreas,
+cpufreq_cpu_get_raw() gets cpufreq policy only if the CPU is in
+policy->cpus mask, which means the CPU is already online. But in some
+cases, the policy is needed before the CPU is added to cpus mask. Add a
+function to get the policy in these cases.
 
-kernel test robot noticed the following build warnings:
+Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+---
+ drivers/cpufreq/cpufreq.c | 6 ++++++
+ include/linux/cpufreq.h   | 5 +++++
+ 2 files changed, 11 insertions(+)
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Andreas-Kemnade/mfd-bd71828-bd71815-prepare-for-power-supply-support/20250817-032146
-base:   8f5ae30d69d7543eee0d70083daf4de8fe15d585
-patch link:    https://lore.kernel.org/r/20250816-bd71828-charger-v1-2-71b11bde5c73%40kemnade.info
-patch subject: [PATCH 2/2] power: supply: Add bd718(15/28/78) charger driver
-config: loongarch-randconfig-r073-20250818 (https://download.01.org/0day-ci/archive/20250819/202508191303.UzPStkjj-lkp@intel.com/config)
-compiler: loongarch64-linux-gcc (GCC) 15.1.0
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
-| Closes: https://lore.kernel.org/r/202508191303.UzPStkjj-lkp@intel.com/
-
-smatch warnings:
-drivers/power/supply/bd71828-power.c:298 bd71828_get_temp() error: uninitialized symbol 't'.
-drivers/power/supply/bd71828-power.c:559 bd71828_battery_get_property() error: uninitialized symbol 'tmp'.
-
-vim +/t +298 drivers/power/supply/bd71828-power.c
-
-c57d31029550a0 Andreas Kemnade 2025-08-16  286  static int bd71828_get_temp(struct bd71828_power *pwr, int *temp)
-c57d31029550a0 Andreas Kemnade 2025-08-16  287  {
-c57d31029550a0 Andreas Kemnade 2025-08-16  288  	uint16_t t;
-c57d31029550a0 Andreas Kemnade 2025-08-16  289  	int ret;
-c57d31029550a0 Andreas Kemnade 2025-08-16  290  	int tmp = 200 * 10000;
-c57d31029550a0 Andreas Kemnade 2025-08-16  291  
-c57d31029550a0 Andreas Kemnade 2025-08-16  292  	ret = bd7182x_read16_himask(pwr, pwr->regs->btemp_vth,
-c57d31029550a0 Andreas Kemnade 2025-08-16  293  				    BD71828_MASK_VM_BTMP_U, &t);
-c57d31029550a0 Andreas Kemnade 2025-08-16  294  	if (ret || t > 3200)
-c57d31029550a0 Andreas Kemnade 2025-08-16  295  		dev_err(pwr->dev,
-c57d31029550a0 Andreas Kemnade 2025-08-16  296  			"Failed to read system min average voltage\n");
-
-We should return the error here.
-
-c57d31029550a0 Andreas Kemnade 2025-08-16  297  
-c57d31029550a0 Andreas Kemnade 2025-08-16 @298  	tmp -= 625ULL * (unsigned int)t;
-
-If bd7182x_read16_himask() fails then t is uninitialized or invalid.
-
-c57d31029550a0 Andreas Kemnade 2025-08-16  299  	*temp = tmp / 1000;
-c57d31029550a0 Andreas Kemnade 2025-08-16  300  
-c57d31029550a0 Andreas Kemnade 2025-08-16  301  	return ret;
-c57d31029550a0 Andreas Kemnade 2025-08-16  302  }
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index fc7eace8b65b..78ca68ea754d 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -198,6 +198,12 @@ struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_cpu_get_raw);
+ 
++struct cpufreq_policy *cpufreq_cpu_policy(unsigned int cpu)
++{
++	return per_cpu(cpufreq_cpu_data, cpu);
++}
++EXPORT_SYMBOL_GPL(cpufreq_cpu_policy);
++
+ unsigned int cpufreq_generic_get(unsigned int cpu)
+ {
+ 	struct cpufreq_policy *policy = cpufreq_cpu_get_raw(cpu);
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 95f3807c8c55..26b3c3310d5b 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -205,6 +205,7 @@ struct cpufreq_freqs {
+ 
+ #ifdef CONFIG_CPU_FREQ
+ struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu);
++struct cpufreq_policy *cpufreq_cpu_policy(unsigned int cpu);
+ struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu);
+ void cpufreq_cpu_put(struct cpufreq_policy *policy);
+ #else
+@@ -212,6 +213,10 @@ static inline struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
+ {
+ 	return NULL;
+ }
++static inline struct cpufreq_policy *cpufreq_cpu_policy(unsigned int cpu)
++{
++	return NULL;
++}
+ static inline struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
+ {
+ 	return NULL;
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.33.0
 
