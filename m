@@ -1,125 +1,230 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E583326A09F;
-	Wed, 20 Aug 2025 19:48:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0AFFF258ECB;
+	Wed, 20 Aug 2025 20:14:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.11.138.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755719310; cv=none; b=LQi5UXs56Eka+OeILuH8sgE4ji1qijgV13NHYC7wW4pzKDcvWlJ6FGy++KlcWj9I/mKa4m8U31WOqWeebe9PGs9Zna5Zug9LbXSfUCri6OCnxwNQKGgXuaZAV+4qdN4l5cOKeM681v7L7+hNE/xy2QaczLU1Tbu/o2yOPVkp+wU=
+	t=1755720889; cv=none; b=ARKPamCUHTCQGxkBLMJKuQ+2IdvbAg/5ETLlFoyWT9YiPO9Ua0b7LAbCBOqRTsEfu2EmEou/DLS+8trjnIea4zyjaJu58MenKlnFhlo+4OkC2Beor9FM2oP9uL8bv6HtOeDNGRvOMKcs7NuZWu4YSt+5lspNV9DC8o3958OviB4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1755719310; c=relaxed/simple;
-	bh=ZAdsCPJer5cp70aNhszFdULfEcYeJDeg4An1kUlxQno=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XFt0Hqu+tRzQFUco7paNqJ1ve0V65eQCW/+2XUNwW7L3Et6am5ssuvUhQKYf5/bvktNBfdDJ6OdsvgF7JOgbWHJhelqQVDkROkzJJ92Yc4W3SDk78mWbTM2X1se/xv17RZrwmGW/Dg9GrV/268JTsSonW9hXWgf214XcRX7xM1w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=uVa9a26W; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1755720889; c=relaxed/simple;
+	bh=OYoQcEjqjEWN54IYrDCVW3FZ94KEGQeZ0DWa/rQ7XXk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=I6q4QqmE6qwPzhKh63vFFodKPIyDhZW3Xt9fhtdp5u7qT76fy3I27qw/lJaAGo49mJLI7hr6KVDGTFi5sqs2UJ5xwhi/8VExXGJWpzwCY3QKoqnBBalClHItLbfo8TLpi0GyJ6Nwal/PkwlKaobJhyTovalf6pWwzl5AH2f/f7o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=sntech.de; spf=pass smtp.mailfrom=sntech.de; dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.b=uNgAee0A; arc=none smtp.client-ip=185.11.138.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=sntech.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sntech.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="uVa9a26W"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1396CC4CEE7;
-	Wed, 20 Aug 2025 19:48:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1755719309;
-	bh=ZAdsCPJer5cp70aNhszFdULfEcYeJDeg4An1kUlxQno=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=uVa9a26WlpOd2lExJFNhW8+6lwgSbRgExkhkldbI0j4xzDmMulzGbeeGY6QqW1fkc
-	 5I+GOYGIT80lsYnM86pUsgDPyrDe8Wxqbm65JRjPrDfaIncSDwgtY/Y6TC1DROvb2F
-	 hmIyFjb6NKBu+6fJBmPjZSQVj9R1J5LCEogNn1DGtGIAAt+SIKqG1oqlnddN5O6EJ4
-	 //ea56WkFOEwm2khUhByKpGg2AVMm7Q5zTuymgE4qk+O9GZV5QpTICjhzLU6cwD299
-	 nvQaVGRCkzZrMwnHZDEOTyBjTFkVd4ACMTQs4P+rbb4dtD+KsqB1r0PUXfJcslaDcP
-	 P3ADJFHe9jCDQ==
-Date: Wed, 20 Aug 2025 20:48:23 +0100
-From: Conor Dooley <conor@kernel.org>
-To: Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Heiko Stuebner <heiko@sntech.de>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Robin Murphy <robin.murphy@arm.com>,
-	Diederik de Haas <didi.debian@cknow.org>, linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org,
-	devicetree@vger.kernel.org, kernel@collabora.com
-Subject: Re: [PATCH v2 3/3] dt-bindings: thermal: rockchip: tighten grf
- requirements
-Message-ID: <20250820-await-chomp-9812902c0f74@spud>
-References: <20250820-thermal-rockchip-grf-warning-v2-0-c7e2d35017b8@kernel.org>
- <20250820-thermal-rockchip-grf-warning-v2-3-c7e2d35017b8@kernel.org>
+	dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.b="uNgAee0A"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
+	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Reply-To;
+	bh=orUs2/nYGmuIZffKa3ygk24Xcz/f3v8T/gGJABvohnY=; b=uNgAee0ATx8Curr1iJ4NFAI4xP
+	V6hJDPmKw1k5DmUmChKESsDxLzimZtB1ym8LdJnC2HEtbOBuNIoN9hbK15/hY9h14JTxLKoYyTDKT
+	ljcWP7X9X2kvmm+gtL814jx6IyGy+Pkv/C1mRby+92thh1a4NaTDbDd4az+xVq1cCRt3kibUji2g9
+	PaV7NVNh7guLYUhnl8lbM8DMcq/fhymiDf1QGFADgpNZGIVGHgQFAFtKWNJMj2ZRA3ZKelN+WMXEr
+	2ftqAAEtddgzGkJCf1SdHp2ENYG+3IUHsGsgTdm84+nnTDUA2hM405YxEv8IU9KyqX5eDeYlFzmdR
+	yRwnOk/w==;
+Received: from i53875a0d.versanet.de ([83.135.90.13] helo=diego.localnet)
+	by gloria.sntech.de with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <heiko@sntech.de>)
+	id 1uopCQ-0001tM-EZ; Wed, 20 Aug 2025 22:14:22 +0200
+From: Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+ Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc: Robin Murphy <robin.murphy@arm.com>,
+ Diederik de Haas <didi.debian@cknow.org>, linux-pm@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org,
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+ kernel@collabora.com, Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: Re: [PATCH v2 2/3] thermal: rockchip: shut up GRF warning
+Date: Wed, 20 Aug 2025 22:14:21 +0200
+Message-ID: <3452417.9LS3J3VOpE@diego>
+In-Reply-To:
+ <20250820-thermal-rockchip-grf-warning-v2-2-c7e2d35017b8@kernel.org>
+References:
+ <20250820-thermal-rockchip-grf-warning-v2-0-c7e2d35017b8@kernel.org>
+ <20250820-thermal-rockchip-grf-warning-v2-2-c7e2d35017b8@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="Q0FCgrQS2OQS+FoE"
-Content-Disposition: inline
-In-Reply-To: <20250820-thermal-rockchip-grf-warning-v2-3-c7e2d35017b8@kernel.org>
-
-
---Q0FCgrQS2OQS+FoE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
 
-On Wed, Aug 20, 2025 at 07:40:49PM +0200, Sebastian Reichel wrote:
-> Instead of having an optional rockchip,grf property, forbid using it on
-> platforms without registers in a GRF being needed for thermal monitoring
-> and make it mandatory on the platforms actually needing it.
-
-I am assuming that "needing it" means that it was actually mandatory but
-the binding was just missing the required required entry. If so
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
-
+Am Mittwoch, 20. August 2025, 19:40:48 Mitteleurop=C3=A4ische Sommerzeit sc=
+hrieb Sebastian Reichel:
+> Most of the recent Rockchip devices do not have a GRF associated
+> with the tsadc IP. Let's avoid printing a warning on those devices.
 >=20
 > Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+
+As we talked about in v1, the variants now having grf_required set,
+had it set in their devicetree nodes all the time - the grf handle
+was added _with_ the tsadc node.
+
+So this does not cause any regression and just makes the
+warning go away for platforms that do not use any GRF registers.
+
+
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+
+
 > ---
->  .../devicetree/bindings/thermal/rockchip-thermal.yaml     | 15 +++++++++=
-++++++
->  1 file changed, 15 insertions(+)
+>  drivers/thermal/rockchip_thermal.c | 23 ++++++++++++++++++-----
+>  1 file changed, 18 insertions(+), 5 deletions(-)
 >=20
-> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.y=
-aml b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
-> index 573f447cc26ed7100638277598b0e745d436fd01..9fa5c4c49d76e3a689f317978=
-75124e7fb30d3df 100644
-> --- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
-> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
-> @@ -119,6 +119,21 @@ required:
->    - resets
+> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchi=
+p_thermal.c
+> index 7b18a705dfade6fa7318b28c2b57544a4446c1cc..c49ddf70f86e7beaf0190b1b3=
+e93f5e6b2f72b2c 100644
+> --- a/drivers/thermal/rockchip_thermal.c
+> +++ b/drivers/thermal/rockchip_thermal.c
+> @@ -74,6 +74,7 @@ struct chip_tsadc_table {
+>   * @tshut_temp: the hardware-controlled shutdown temperature value, with=
+ no trim
+>   * @tshut_mode: the hardware-controlled shutdown mode (0:CRU 1:GPIO)
+>   * @tshut_polarity: the hardware-controlled active polarity (0:LOW 1:HIG=
+H)
+> + * @grf_required: true, if a GRF is required for proper functionality
+>   * @initialize: SoC special initialize tsadc controller method
+>   * @irq_ack: clear the interrupt
+>   * @control: enable/disable method for the tsadc controller
+> @@ -97,6 +98,9 @@ struct rockchip_tsadc_chip {
+>  	enum tshut_mode tshut_mode;
+>  	enum tshut_polarity tshut_polarity;
 > =20
->  allOf:
-> +  - if:
-> +      properties:
-> +        compatible:
-> +          contains:
-> +            enum:
-> +              - rockchip,px30-tsadc
-> +              - rockchip,rk3366-tsadc
-> +              - rockchip,rk3399-tsadc
-> +              - rockchip,rk3568-tsadc
-> +    then:
-> +      required:
-> +        - rockchip,grf
-> +    else:
-> +      properties:
-> +        rockchip,grf: false
->    - if:
->        not:
->          properties:
+> +	/* GRF availability */
+> +	bool grf_required;
+> +
+>  	/* Chip-wide methods */
+>  	void (*initialize)(struct regmap *grf,
+>  			   void __iomem *reg, enum tshut_polarity p);
+> @@ -1098,6 +1102,7 @@ static const struct rockchip_tsadc_chip px30_tsadc_=
+data =3D {
+>  	/* cpu, gpu */
+>  	.chn_offset =3D 0,
+>  	.chn_num =3D 2, /* 2 channels for tsadc */
+> +	.grf_required =3D true,
+>  	.tshut_mode =3D TSHUT_MODE_CRU, /* default TSHUT via CRU */
+>  	.tshut_temp =3D 95000,
+>  	.initialize =3D rk_tsadcv4_initialize,
+> @@ -1119,6 +1124,7 @@ static const struct rockchip_tsadc_chip rv1108_tsad=
+c_data =3D {
+>  	/* cpu */
+>  	.chn_offset =3D 0,
+>  	.chn_num =3D 1, /* one channel for tsadc */
+> +	.grf_required =3D false,
+>  	.tshut_mode =3D TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+>  	.tshut_polarity =3D TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
+>  	.tshut_temp =3D 95000,
+> @@ -1141,6 +1147,7 @@ static const struct rockchip_tsadc_chip rk3228_tsad=
+c_data =3D {
+>  	/* cpu */
+>  	.chn_offset =3D 0,
+>  	.chn_num =3D 1, /* one channel for tsadc */
+> +	.grf_required =3D false,
+>  	.tshut_mode =3D TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+>  	.tshut_polarity =3D TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
+>  	.tshut_temp =3D 95000,
+> @@ -1163,6 +1170,7 @@ static const struct rockchip_tsadc_chip rk3288_tsad=
+c_data =3D {
+>  	/* cpu, gpu */
+>  	.chn_offset =3D 1,
+>  	.chn_num =3D 2, /* two channels for tsadc */
+> +	.grf_required =3D false,
+>  	.tshut_mode =3D TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+>  	.tshut_polarity =3D TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
+>  	.tshut_temp =3D 95000,
+> @@ -1185,6 +1193,7 @@ static const struct rockchip_tsadc_chip rk3328_tsad=
+c_data =3D {
+>  	/* cpu */
+>  	.chn_offset =3D 0,
+>  	.chn_num =3D 1, /* one channels for tsadc */
+> +	.grf_required =3D false,
+>  	.tshut_mode =3D TSHUT_MODE_CRU, /* default TSHUT via CRU */
+>  	.tshut_temp =3D 95000,
+>  	.initialize =3D rk_tsadcv2_initialize,
+> @@ -1206,6 +1215,7 @@ static const struct rockchip_tsadc_chip rk3366_tsad=
+c_data =3D {
+>  	/* cpu, gpu */
+>  	.chn_offset =3D 0,
+>  	.chn_num =3D 2, /* two channels for tsadc */
+> +	.grf_required =3D true,
+>  	.tshut_mode =3D TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+>  	.tshut_polarity =3D TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
+>  	.tshut_temp =3D 95000,
+> @@ -1228,6 +1238,7 @@ static const struct rockchip_tsadc_chip rk3368_tsad=
+c_data =3D {
+>  	/* cpu, gpu */
+>  	.chn_offset =3D 0,
+>  	.chn_num =3D 2, /* two channels for tsadc */
+> +	.grf_required =3D false,
+>  	.tshut_mode =3D TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+>  	.tshut_polarity =3D TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
+>  	.tshut_temp =3D 95000,
+> @@ -1250,6 +1261,7 @@ static const struct rockchip_tsadc_chip rk3399_tsad=
+c_data =3D {
+>  	/* cpu, gpu */
+>  	.chn_offset =3D 0,
+>  	.chn_num =3D 2, /* two channels for tsadc */
+> +	.grf_required =3D true,
+>  	.tshut_mode =3D TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+>  	.tshut_polarity =3D TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
+>  	.tshut_temp =3D 95000,
+> @@ -1272,6 +1284,7 @@ static const struct rockchip_tsadc_chip rk3568_tsad=
+c_data =3D {
+>  	/* cpu, gpu */
+>  	.chn_offset =3D 0,
+>  	.chn_num =3D 2, /* two channels for tsadc */
+> +	.grf_required =3D true,
+>  	.tshut_mode =3D TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+>  	.tshut_polarity =3D TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
+>  	.tshut_temp =3D 95000,
+> @@ -1294,6 +1307,7 @@ static const struct rockchip_tsadc_chip rk3576_tsad=
+c_data =3D {
+>  	/* top, big_core, little_core, ddr, npu, gpu */
+>  	.chn_offset =3D 0,
+>  	.chn_num =3D 6, /* six channels for tsadc */
+> +	.grf_required =3D false,
+>  	.tshut_mode =3D TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+>  	.tshut_polarity =3D TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
+>  	.tshut_temp =3D 95000,
+> @@ -1318,6 +1332,7 @@ static const struct rockchip_tsadc_chip rk3588_tsad=
+c_data =3D {
+>  	/* top, big_core0, big_core1, little_core, center, gpu, npu */
+>  	.chn_offset =3D 0,
+>  	.chn_num =3D 7, /* seven channels for tsadc */
+> +	.grf_required =3D false,
+>  	.tshut_mode =3D TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+>  	.tshut_polarity =3D TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
+>  	.tshut_temp =3D 95000,
+> @@ -1594,12 +1609,10 @@ static int rockchip_configure_from_dt(struct devi=
+ce *dev,
+>  		return -EINVAL;
+>  	}
+> =20
+> -	/* The tsadc wont to handle the error in here since some SoCs didn't
+> -	 * need this property.
+> -	 */
+>  	thermal->grf =3D syscon_regmap_lookup_by_phandle(np, "rockchip,grf");
+> -	if (IS_ERR(thermal->grf))
+> -		dev_warn(dev, "Missing rockchip,grf property\n");
+> +	if (IS_ERR(thermal->grf) && thermal->chip->grf_required)
+> +		return dev_err_probe(dev, PTR_ERR(thermal->grf),
+> +				     "Missing rockchip,grf property\n");
+> =20
+>  	rockchip_get_trim_configuration(dev, np, thermal);
+> =20
 >=20
-> --=20
-> 2.50.1
 >=20
 
---Q0FCgrQS2OQS+FoE
-Content-Type: application/pgp-signature; name="signature.asc"
 
------BEGIN PGP SIGNATURE-----
 
-iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaKYmhwAKCRB4tDGHoIJi
-0lk7AP9pdXnawAo7vHzgRoCDQLvEYOnbJv5NOJbb8mHXjbf0lAEAsFcbnQidHn69
-nDsAJTevUWIbM9hHfimNJ3pk9is+lg8=
-=v71N
------END PGP SIGNATURE-----
 
---Q0FCgrQS2OQS+FoE--
