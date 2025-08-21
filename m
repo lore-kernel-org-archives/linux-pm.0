@@ -1,35 +1,35 @@
 Received: from mx.olsak.net (mx.olsak.net [37.205.8.231])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B712281530;
-	Thu, 21 Aug 2025 11:19:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA16A305050;
+	Thu, 21 Aug 2025 11:19:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=37.205.8.231
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755775171; cv=none; b=uyLFhClpBtJHMAGLwXf0bG5ecps3P4zHOZmgCT0rTGqtFjtQJenlObDW9ziUCvIGYZZ8jAH6Aa1LtC0YdBPsADc3Y8RdbS5ZbJ/AHFx+hx1y3DpMlj8GzMzQ1vRwJvpZlv2+b+IRrLU/S4gk2tCTa26polF4VXxiELCxUKaB4WE=
+	t=1755775171; cv=none; b=u5CJhV9qyZ2DRI+XoXCSrZ8Din1oTQ9FEWofrawfO32XWhtePtMA8g4d9ELiA/80xiyfZr1p+X3YyPCD0PsX9hlwfyjXqW7N3orOjfYN6U1K8+hniIVTIbm8PSPjIqAUiNqcnFgwWqZ01jvIPKF7x/280zqWKvkk0iaM1QgOsfw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1755775171; c=relaxed/simple;
-	bh=QZBYqJR9GIOU0pjiUfjKPUr1zZosXiQty5puvKsrKBs=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=rHOIlpKyuQzGE28insZ4BGNHZ33Se5pIjpGrFMBY5TQ6ahnt2SKymOUDl6ZZT6NNZxyqc5xu0QGYLOe4Snk1nqgiy2R9CSOHc6Oxc7BBkjYAFccdl5O7Ho0+GHBJYTHBS5ZAq3NvmXxmihc3o7Lq56kQZn5V2vb72sUj4zcLBTI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dujemihanovic.xyz; spf=pass smtp.mailfrom=dujemihanovic.xyz; dkim=pass (2048-bit key) header.d=dujemihanovic.xyz header.i=@dujemihanovic.xyz header.b=LfGu6AX6; arc=none smtp.client-ip=37.205.8.231
+	bh=va+Fk/D/QIqK+E/Wc67U3aTPeSCsla0Fk/GDekTcvpo=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=YUW3jpiqmgRKjK64Mko3LqRz7H/A96spGu3GRZR4hYUAMhCpTYukqnt4loyEUqb4/DiIHozBeOyTJi/O9GyudbaUdXgHZx/hd6cBGRzdZbCJoNrTcUnBmu97ckeJu7dgN/x9Yyw/g1yAqbU3KhvG50Lbw73X21hkCinG4oH2Xqc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dujemihanovic.xyz; spf=pass smtp.mailfrom=dujemihanovic.xyz; dkim=pass (2048-bit key) header.d=dujemihanovic.xyz header.i=@dujemihanovic.xyz header.b=asvtgowC; arc=none smtp.client-ip=37.205.8.231
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dujemihanovic.xyz
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=dujemihanovic.xyz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=dujemihanovic.xyz header.i=@dujemihanovic.xyz header.b="LfGu6AX6"
-DKIM-Signature: a=rsa-sha256; bh=zuDXhUaVbI1o+IrkCJM4dgOmXoR3k3IRboJF1ey+iOo=;
+	dkim=pass (2048-bit key) header.d=dujemihanovic.xyz header.i=@dujemihanovic.xyz header.b="asvtgowC"
+DKIM-Signature: a=rsa-sha256; bh=TeoXivUMSMZOUdm9E1b1+7fzZ8rfIj1eekPuvAamVYo=;
  c=relaxed/relaxed; d=dujemihanovic.xyz;
- h=Subject:Subject:Sender:To:To:Cc:Cc:From:From:Date:Date:MIME-Version:MIME-Version:Content-Type:Content-Type:Content-Transfer-Encoding:Content-Transfer-Encoding:Reply-To:In-Reply-To:Message-Id:Message-Id:References:Autocrypt:Openpgp;
- i=@dujemihanovic.xyz; s=default; t=1755775103; v=1; x=1756207103;
- b=LfGu6AX6zn3iHGQrTUMlYAzfuvKD9+w7FLpMrRhe+UpBuYg+uqjoyFw+mjHz5okN1A9i+N8e
- hYc2N2WdQBjQQ9hpylriRcHU4LOkyTGs+DMtM3c7/JXU/L9vOm1cYHPAr5A0iBXlziY/erduAUT
- Nn1e5icbR0XnrLVwaU7sf5uDW0cz4l3SEvIj056wXLcAlc2FTCjWVUHmN3E/eoI79kr5bcNRhlE
- qnnmWFi7YQEEnt0CIt+7UG1HW07AehFx3+1BQbPPP6ih6eothChCcOZj7cx0kxrqXiNhcnV8VrE
- /Q6zoB+ycVLDF4hTvFx0eb//6q5h7H45k/NZRtu6GEniA==
+ h=Subject:Subject:Sender:To:To:Cc:Cc:From:From:Date:Date:MIME-Version:MIME-Version:Content-Type:Content-Type:Content-Transfer-Encoding:Content-Transfer-Encoding:Reply-To:In-Reply-To:In-Reply-To:Message-Id:Message-Id:References:References:Autocrypt:Openpgp;
+ i=@dujemihanovic.xyz; s=default; t=1755775106; v=1; x=1756207106;
+ b=asvtgowCtq20brGTP/+zGKWPSmk7nzucKC1QLpj1yp6vFIhGM+aWKw1zvSdf4LAQm/JkAIFW
+ RzwUPYet8nZeVXUky2OHG8GmKHcGIAqhYQnqAdZQjMB2LZLzxCQ8iGkVeBDATkGMcMPOcv84HXB
+ aTdmHAKG9BVHONsiWguJP+ra2Zg8n2QSAvdAuMcyFlmb4ADrq70gao7r5wVLlh5I+cvY1Pj6eTx
+ Y8k2J606NyysMyPeWWKJzxtht+albinI9zqFZH82NwKdHKjmeALhuQMuXhdf2zomkrPHSTPT8ex
+ FwiAMoC7wFqheOmCw2KAXIX1YV55tTFuVMLD7gTrKQTDQ==
 Received: by mx.olsak.net (envelope-sender <duje@dujemihanovic.xyz>) with
- ESMTPS id 4292832e; Thu, 21 Aug 2025 13:18:23 +0200
+ ESMTPS id 8a00f894; Thu, 21 Aug 2025 13:18:26 +0200
 From: =?utf-8?q?Duje_Mihanovi=C4=87?= <duje@dujemihanovic.xyz>
-Subject: [PATCH v2 0/4] Marvell PXA1908 power domains
-Date: Thu, 21 Aug 2025 13:17:42 +0200
-Message-Id: <20250821-pxa1908-genpd-v2-0-eba413edd526@dujemihanovic.xyz>
+Date: Thu, 21 Aug 2025 13:17:46 +0200
+Subject: [PATCH v2 4/4] arm64: dts: marvell: pxa1908: Add power domains
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -38,11 +38,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAFYAp2gC/13OQQ6CMBCF4auQWVszLYKUlfcwLLAdYEykpNUGJ
- NzdSuLG5f+S+TIrBPJMAepsBU+RA7sxhTpkYIZ27EmwTQ0KVYEV5mKaW6mxEj2NkxWy0LKyt0K
- VaCDdTJ46nnfv2qQeODydX3Y+yu/6k8o/KUqBQpYn1DnqzpzVxb7u9OD0hItsjvPyhmbbtg+EU
- vYusgAAAA==
-X-Change-ID: 20250803-pxa1908-genpd-15918db5260c
+Message-Id: <20250821-pxa1908-genpd-v2-4-eba413edd526@dujemihanovic.xyz>
+References: <20250821-pxa1908-genpd-v2-0-eba413edd526@dujemihanovic.xyz>
+In-Reply-To: <20250821-pxa1908-genpd-v2-0-eba413edd526@dujemihanovic.xyz>
 To: Michael Turquette <mturquette@baylibre.com>, 
  Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -54,56 +52,75 @@ Cc: David Wronek <david@mainlining.org>, Karel Balej <balejk@matfyz.cz>,
  linux-pm@vger.kernel.org, 
  =?utf-8?q?Duje_Mihanovi=C4=87?= <duje@dujemihanovic.xyz>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1713;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2261;
  i=duje@dujemihanovic.xyz; s=20240706; h=from:subject:message-id;
- bh=QZBYqJR9GIOU0pjiUfjKPUr1zZosXiQty5puvKsrKBs=;
- b=owGbwMvMwCW21nBykGv/WmbG02pJDBnLGerCXv1py7VieHLCO7a/P9lJIrJWStb+pPKuK9GVK
- m1CjBYdpSwMYlwMsmKKLLn/Ha/xfhbZuj17mQHMHFYmkCEMXJwCMJFVuxj+F/soLiya3nja7EVK
- oG3xCZ+Z0/PCZfq2l1b2LN1vy5knyfC/zlGj7nn3+ecyVTKffffWZi4y+ZBhlNVs3j6/t4z7wS1
- mAA==
+ bh=va+Fk/D/QIqK+E/Wc67U3aTPeSCsla0Fk/GDekTcvpo=;
+ b=owGbwMvMwCW21nBykGv/WmbG02pJDBnLGepcbFdqhfmViLZPVj0cq7ZL9GhW1OvV3mc8ru8/s
+ mWZo09fRykLgxgXg6yYIkvuf8drvJ9Ftm7PXmYAM4eVCWQIAxenAExkz3ZGhm/V0TL3F3t622xN
+ PuvnkHnqonntpp/MmxzYWtqTD0z0v8DwP8nKcda89cyF5jW5WgpuM2yN2XyW2h59VHdWzS3zR7s
+ JCwA=
 X-Developer-Key: i=duje@dujemihanovic.xyz; a=openpgp;
  fpr=6DFF41D60DF314B5B76BA630AD319352458FAD03
 
-Hello,
-
-This series implements support for the power domains found in Marvell's
-PXA1908 SoC. The domains control power for the graphics, video and image
-processors along with the DSI PHY.
+Update the APMU clock controller's compatible to allow the new power
+domain driver to probe. Also add the first two power domain consumers:
+IOMMU (fixes probing) and framebuffer.
 
 Signed-off-by: Duje Mihanović <duje@dujemihanovic.xyz>
 ---
-Changes in v2:
-- Move driver to clk subsystem (domains are instantiated by clock
-  driver)
-- Drop power controller schema
-- Drop RFC prefix
-- Rebase on v6.17-rc2
-- Link to v1: https://lore.kernel.org/r/20250806-pxa1908-genpd-v1-0-16409309fc72@dujemihanovic.xyz
-
+v2:
+- Drop power controller node
+- &pd -> &apmu
 ---
-Duje Mihanović (4):
-      dt-bindings: clock: marvell,pxa1908: Add syscon compatible to apmu
-      dt-bindings: power: Add Marvell PXA1908 domains
-      clk: mmp: Add PXA1908 power domain driver
-      arm64: dts: marvell: pxa1908: Add power domains
+ arch/arm64/boot/dts/marvell/mmp/pxa1908-samsung-coreprimevelte.dts | 1 +
+ arch/arm64/boot/dts/marvell/mmp/pxa1908.dtsi                       | 5 ++++-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
- .../devicetree/bindings/clock/marvell,pxa1908.yaml |  30 ++-
- MAINTAINERS                                        |   5 +
- .../marvell/mmp/pxa1908-samsung-coreprimevelte.dts |   1 +
- arch/arm64/boot/dts/marvell/mmp/pxa1908.dtsi       |   5 +-
- drivers/clk/Kconfig                                |   1 +
- drivers/clk/mmp/Kconfig                            |  14 ++
- drivers/clk/mmp/Makefile                           |   5 +-
- drivers/clk/mmp/clk-pxa1908-apmu.c                 |   2 +-
- drivers/clk/mmp/clk.h                              |   2 +
- drivers/clk/mmp/pxa1908-power-domains.c            | 253 +++++++++++++++++++++
- include/dt-bindings/power/marvell,pxa1908-power.h  |  17 ++
- 11 files changed, 326 insertions(+), 9 deletions(-)
----
-base-commit: c17b750b3ad9f45f2b6f7e6f7f4679844244f0b9
-change-id: 20250803-pxa1908-genpd-15918db5260c
+diff --git a/arch/arm64/boot/dts/marvell/mmp/pxa1908-samsung-coreprimevelte.dts b/arch/arm64/boot/dts/marvell/mmp/pxa1908-samsung-coreprimevelte.dts
+index 47a4f01a7077bfafe2cc50d0e59c37685ec9c2e9..d61922f326a4654a45ab4312ea512ac1b8b01c50 100644
+--- a/arch/arm64/boot/dts/marvell/mmp/pxa1908-samsung-coreprimevelte.dts
++++ b/arch/arm64/boot/dts/marvell/mmp/pxa1908-samsung-coreprimevelte.dts
+@@ -23,6 +23,7 @@ chosen {
+ 		fb0: framebuffer@17177000 {
+ 			compatible = "simple-framebuffer";
+ 			reg = <0 0x17177000 0 (480 * 800 * 4)>;
++			power-domains = <&apmu PXA1908_POWER_DOMAIN_DSI>;
+ 			width = <480>;
+ 			height = <800>;
+ 			stride = <(480 * 4)>;
+diff --git a/arch/arm64/boot/dts/marvell/mmp/pxa1908.dtsi b/arch/arm64/boot/dts/marvell/mmp/pxa1908.dtsi
+index cf2b9109688ce560eec8a1397251ead68d78a239..ae85b90eeb408a8f4014ec7b60048ae1fd3d4044 100644
+--- a/arch/arm64/boot/dts/marvell/mmp/pxa1908.dtsi
++++ b/arch/arm64/boot/dts/marvell/mmp/pxa1908.dtsi
+@@ -3,6 +3,7 @@
+ 
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
+ #include <dt-bindings/clock/marvell,pxa1908.h>
++#include <dt-bindings/power/marvell,pxa1908-power.h>
+ 
+ / {
+ 	model = "Marvell Armada PXA1908";
+@@ -79,6 +80,7 @@ smmu: iommu@c0010000 {
+ 			#iommu-cells = <1>;
+ 			interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>,
+ 				<GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>;
++			power-domains = <&apmu PXA1908_POWER_DOMAIN_VPU>;
+ 			status = "disabled";
+ 		};
+ 
+@@ -291,9 +293,10 @@ sdh2: mmc@81000 {
+ 			};
+ 
+ 			apmu: clock-controller@82800 {
+-				compatible = "marvell,pxa1908-apmu";
++				compatible = "marvell,pxa1908-apmu", "syscon";
+ 				reg = <0x82800 0x400>;
+ 				#clock-cells = <1>;
++				#power-domain-cells = <1>;
+ 			};
+ 		};
+ 	};
 
-Best regards,
 -- 
-Duje Mihanović <duje@dujemihanovic.xyz>
+2.50.1
 
