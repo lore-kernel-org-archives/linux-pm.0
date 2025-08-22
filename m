@@ -1,281 +1,217 @@
-Received: from mail.manjaro.org (mail.manjaro.org [116.203.91.91])
-	(using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2321922172C;
-	Fri, 22 Aug 2025 03:21:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=116.203.91.91
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50ACE219E8;
+	Fri, 22 Aug 2025 03:30:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755832877; cv=none; b=L+aHX7n5708OOoNTphF+CEmVekH2dg/Tb3vuJqbG2sct9iB2eT5O3wJ/2jH08OzFpqwP3JmD0QS+pSASqUALPTKvxfOt7gzgGpEtpgGHdRmis+Cu5LeH0FZEFqID2DhcsdHVdOl4Qkzb+K3T1iOAtpSS4fcLZoJ//vvObpYHuBI=
+	t=1755833428; cv=none; b=nqEERDallrieIqMut+R0C99Fk/inSvdjdfun6WuSeyop3ugGPt30KkUF+bXmYKNCuusQM44eBRSueDcEQfraYvtcJsSF90p/yZY3hGZj7mSkOjYyeg3k6TSaY8ZUcG7XiszewR0tYI1GuerA+zpv+eoJaJowJ7l3zqF6YE8Kpjc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1755832877; c=relaxed/simple;
-	bh=hBBwFfmvRDgCwPWHrlxdOefK8GCSbJwUcdCgQ0eKL8s=;
-	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
-	 Message-ID:Content-Type; b=IvobziPK2Mv/2plTL/byAf5x+k7hOoX5A1ZjIA58eq0dcVz15lyj2G6Lilw4aiamg4iif+m3NZAOGECGiV4DrrEt8GRfB0cXCP8Gr7VDzD3jqb4FVDwuPzV0gIHQPxdbSaE8jhtt1/wi3Yd3TF8AHbsQKEL25TwWWP/fA8jdKrA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=manjaro.org; spf=pass smtp.mailfrom=manjaro.org; dkim=pass (2048-bit key) header.d=manjaro.org header.i=@manjaro.org header.b=m/iT3Gel; arc=none smtp.client-ip=116.203.91.91
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=manjaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=manjaro.org
+	s=arc-20240116; t=1755833428; c=relaxed/simple;
+	bh=KwOIsol5h/iDF4mvK9j6iFK2kUiXnb117cWVP5RNnMQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=rNm3i+y6Tbrb8D5hpA2zJ5rstSyBSCOTm8Oi4McbEBnWQ50E2ucWxHxwaNxnRXUWjFxLptvxRt1BY0bzjBRzHVdq5vziR3FD7lln6CGKcN9pnzdVLGZuFigtdXGYg0+uU/EhoLKttIPaTc1+aEVi7Kgy4iTstGQr+fTFWNdsUxY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=JGeTEV1j; arc=none smtp.client-ip=192.198.163.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=manjaro.org header.i=@manjaro.org header.b="m/iT3Gel"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="JGeTEV1j"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1755833426; x=1787369426;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=KwOIsol5h/iDF4mvK9j6iFK2kUiXnb117cWVP5RNnMQ=;
+  b=JGeTEV1je3k0l75NQSrk3F6qTTbI0bttTunbnSzhqxF6AAYidOIR2GpT
+   mnCkYE+I2D8OqjGEtr95MFqAF//AN+9t1yOH9PX4Ps6suAUS64p4LXur9
+   FTqP6B9cQztgy5NUQLZGmIx8d7bzqYk/uuquKI5eOCVfE7+W3MZosQQTY
+   IM7pTz2TnsQebijYW09LNNgTIbJQU+/31gHqsGqFDOCa1j/CkCu1kkNIh
+   X6QfXh1ZNFDV5kuaPylU3Art/I+cf3PPEOYFt3tXASCyVXGTUQP5PsfKL
+   5VdFcGYhnetJTMojuoe6A7Xu7t0ZYzy8cmlF3VLOx6qNlmf15RHUg0+kC
+   Q==;
+X-CSE-ConnectionGUID: pgoOMIOKTPGXWTtrvYzFlA==
+X-CSE-MsgGUID: i5jDh8SrQGWGn1QAZ+DL5A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11529"; a="68840351"
+X-IronPort-AV: E=Sophos;i="6.17,309,1747724400"; 
+   d="scan'208";a="68840351"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Aug 2025 20:30:25 -0700
+X-CSE-ConnectionGUID: piP44CNZT1C00NyXEf25jA==
+X-CSE-MsgGUID: Z3Ruye5qTxW+djvFTvDuww==
+X-ExtLoop1: 1
+Received: from mjruhl-desk.amr.corp.intel.com (HELO localhost) ([10.124.221.244])
+  by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Aug 2025 20:30:25 -0700
+Date: Thu, 21 Aug 2025 20:30:22 -0700
+From: David Box <david.e.box@linux.intel.com>
+To: rafael@kernel.org, bhelgaas@google.com, vicamo.yang@canonical.com, 
+	kenny@panix.com, ilpo.jarvinen@linux.intel.com, nirmal.patel@linux.intel.com, 
+	mani@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V2 1/2] PCI/ASPM: Add host-bridge API to override default
+ ASPM/CLKPM link state
+Message-ID: <5t2ekrhtixmzo7we2ylfys22fzbxkue2fsjoimgpn2wijme5o5@sudgicai3fjc>
+References: <20250822031159.4005529-1-david.e.box@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=manjaro.org; s=2021;
-	t=1755832276;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=h3v0SnafxKU18FwdsFkXkfhEoVhOWX6Xg3ytYgsgU7E=;
-	b=m/iT3GelGjtSI/56+p2/pI2ZDBaFTJ7bOFtj2h4mIKJrOkKIsUixAMmImGhx58H6Kpom9P
-	0kjf7V9Cz4BvIQhdrME3LeVF1ug+pkOLdLLaK4h1xXJ1mnbgLZphRvhFolYEQZVdgXIDOZ
-	5YbIYKb2OETmV2JXYGzl4fWBWbbeLv9/WwhwfrXzd1xRAxj/xMwjp5EhTFUuTXm4vrJxi4
-	zkqKUSMvdUclVn77aLLOvXUCdkJae0rh0T/BCkJg3SkK+76Muj1wWdtRfASRRldKQAExq6
-	lUaTRuIYgIXsTAVu5rpJcQ4ugqB6Q0D9CDmguShjx1mXZm3bWHL8me4+HOScwg==
-Date: Fri, 22 Aug 2025 05:11:15 +0200
-From: Dragan Simic <dsimic@manjaro.org>
-To: Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano
- <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Lukasz Luba
- <lukasz.luba@arm.com>, Heiko Stuebner <heiko@sntech.de>, Rob Herring
- <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Robin Murphy <robin.murphy@arm.com>, Diederik de Haas
- <didi.debian@cknow.org>, linux-pm@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org,
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- kernel@collabora.com
-Subject: Re: [PATCH v2 1/3] thermal: rockchip: unify struct
- rockchip_tsadc_chip format
-In-Reply-To: <20250820-thermal-rockchip-grf-warning-v2-1-c7e2d35017b8@kernel.org>
-References: <20250820-thermal-rockchip-grf-warning-v2-0-c7e2d35017b8@kernel.org>
- <20250820-thermal-rockchip-grf-warning-v2-1-c7e2d35017b8@kernel.org>
-Message-ID: <2bc3023e4b6e15b388f8765551018eed@manjaro.org>
-X-Sender: dsimic@manjaro.org
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Authentication-Results: ORIGINATING;
-	auth=pass smtp.auth=dsimic@manjaro.org smtp.mailfrom=dsimic@manjaro.org
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20250822031159.4005529-1-david.e.box@linux.intel.com>
 
-Hello Sebastian,
-
-On 2025-08-20 19:40, Sebastian Reichel wrote:
-> Unify all chip descriptions to the version without any empty
-> lines.
+On Thu, Aug 21, 2025 at 08:11:57PM -0700, David E. Box wrote:
+> Synthetic PCIe hierarchies, such as those created by Intel VMD, are not
+> enumerated by firmware and do not receive BIOS-provided ASPM or CLKPM
+> defaults. Devices in such domains may therefore run without the intended
+> power management.
 > 
-> Suggested-by: Heiko Stuebner <heiko@sntech.de>
-> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+> Add a host-bridge mechanism that lets controller drivers supply their own
+> defaults. A new aspm_default_link_state field in struct pci_host_bridge is
+> set via pci_host_set_default_pcie_link_state(). During link initialization,
+> if this field is non-zero, ASPM and CLKPM defaults come from it instead of
+> BIOS.
+> 
+> This enables drivers like VMD to align link power management with platform
+> expectations and avoids embedding controller-specific quirks in ASPM core
+> logic.
+> 
+> Link: https://patchwork.ozlabs.org/project/linux-pci/patch/20250720190140.2639200-1-david.e.box%40linux.intel.com/
+> Signed-off-by: David E. Box <david.e.box@linux.intel.com>
 > ---
->  drivers/thermal/rockchip_thermal.c | 27 ---------------------------
->  1 file changed, 27 deletions(-)
 
-Thanks for the patch, it's perfectly reasonable and obviously correct.
-Please feel free to include
+Besides the review I'd appreciate a Tested-by on this patch. Thanks.
 
-Reviewed-by: Dragan Simic <dsimic@manjaro.org>
+David
 
-> diff --git a/drivers/thermal/rockchip_thermal.c
-> b/drivers/thermal/rockchip_thermal.c
-> index
-> 3beff9b6fac3abe8948b56132b618ff1bed57217..7b18a705dfade6fa7318b28c2b57544a4446c1cc
-> 100644
-> --- a/drivers/thermal/rockchip_thermal.c
-> +++ b/drivers/thermal/rockchip_thermal.c
-> @@ -1098,10 +1098,8 @@ static const struct rockchip_tsadc_chip
-> px30_tsadc_data = {
->  	/* cpu, gpu */
->  	.chn_offset = 0,
->  	.chn_num = 2, /* 2 channels for tsadc */
-> -
->  	.tshut_mode = TSHUT_MODE_CRU, /* default TSHUT via CRU */
->  	.tshut_temp = 95000,
-> -
->  	.initialize = rk_tsadcv4_initialize,
->  	.irq_ack = rk_tsadcv3_irq_ack,
->  	.control = rk_tsadcv3_control,
-> @@ -1109,7 +1107,6 @@ static const struct rockchip_tsadc_chip
-> px30_tsadc_data = {
->  	.set_alarm_temp = rk_tsadcv2_alarm_temp,
->  	.set_tshut_temp = rk_tsadcv2_tshut_temp,
->  	.set_tshut_mode = rk_tsadcv2_tshut_mode,
-> -
->  	.table = {
->  		.id = rk3328_code_table,
->  		.length = ARRAY_SIZE(rk3328_code_table),
-> @@ -1122,11 +1119,9 @@ static const struct rockchip_tsadc_chip
-> rv1108_tsadc_data = {
->  	/* cpu */
->  	.chn_offset = 0,
->  	.chn_num = 1, /* one channel for tsadc */
-> -
->  	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
->  	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
->  	.tshut_temp = 95000,
-> -
->  	.initialize = rk_tsadcv2_initialize,
->  	.irq_ack = rk_tsadcv3_irq_ack,
->  	.control = rk_tsadcv3_control,
-> @@ -1134,7 +1129,6 @@ static const struct rockchip_tsadc_chip
-> rv1108_tsadc_data = {
->  	.set_alarm_temp = rk_tsadcv2_alarm_temp,
->  	.set_tshut_temp = rk_tsadcv2_tshut_temp,
->  	.set_tshut_mode = rk_tsadcv2_tshut_mode,
-> -
->  	.table = {
->  		.id = rv1108_table,
->  		.length = ARRAY_SIZE(rv1108_table),
-> @@ -1147,11 +1141,9 @@ static const struct rockchip_tsadc_chip
-> rk3228_tsadc_data = {
->  	/* cpu */
->  	.chn_offset = 0,
->  	.chn_num = 1, /* one channel for tsadc */
-> -
->  	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
->  	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
->  	.tshut_temp = 95000,
-> -
->  	.initialize = rk_tsadcv2_initialize,
->  	.irq_ack = rk_tsadcv3_irq_ack,
->  	.control = rk_tsadcv3_control,
-> @@ -1159,7 +1151,6 @@ static const struct rockchip_tsadc_chip
-> rk3228_tsadc_data = {
->  	.set_alarm_temp = rk_tsadcv2_alarm_temp,
->  	.set_tshut_temp = rk_tsadcv2_tshut_temp,
->  	.set_tshut_mode = rk_tsadcv2_tshut_mode,
-> -
->  	.table = {
->  		.id = rk3228_code_table,
->  		.length = ARRAY_SIZE(rk3228_code_table),
-> @@ -1172,11 +1163,9 @@ static const struct rockchip_tsadc_chip
-> rk3288_tsadc_data = {
->  	/* cpu, gpu */
->  	.chn_offset = 1,
->  	.chn_num = 2, /* two channels for tsadc */
-> -
->  	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
->  	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
->  	.tshut_temp = 95000,
-> -
->  	.initialize = rk_tsadcv2_initialize,
->  	.irq_ack = rk_tsadcv2_irq_ack,
->  	.control = rk_tsadcv2_control,
-> @@ -1184,7 +1173,6 @@ static const struct rockchip_tsadc_chip
-> rk3288_tsadc_data = {
->  	.set_alarm_temp = rk_tsadcv2_alarm_temp,
->  	.set_tshut_temp = rk_tsadcv2_tshut_temp,
->  	.set_tshut_mode = rk_tsadcv2_tshut_mode,
-> -
->  	.table = {
->  		.id = rk3288_code_table,
->  		.length = ARRAY_SIZE(rk3288_code_table),
-> @@ -1197,10 +1185,8 @@ static const struct rockchip_tsadc_chip
-> rk3328_tsadc_data = {
->  	/* cpu */
->  	.chn_offset = 0,
->  	.chn_num = 1, /* one channels for tsadc */
-> -
->  	.tshut_mode = TSHUT_MODE_CRU, /* default TSHUT via CRU */
->  	.tshut_temp = 95000,
-> -
->  	.initialize = rk_tsadcv2_initialize,
->  	.irq_ack = rk_tsadcv3_irq_ack,
->  	.control = rk_tsadcv3_control,
-> @@ -1208,7 +1194,6 @@ static const struct rockchip_tsadc_chip
-> rk3328_tsadc_data = {
->  	.set_alarm_temp = rk_tsadcv2_alarm_temp,
->  	.set_tshut_temp = rk_tsadcv2_tshut_temp,
->  	.set_tshut_mode = rk_tsadcv2_tshut_mode,
-> -
->  	.table = {
->  		.id = rk3328_code_table,
->  		.length = ARRAY_SIZE(rk3328_code_table),
-> @@ -1221,11 +1206,9 @@ static const struct rockchip_tsadc_chip
-> rk3366_tsadc_data = {
->  	/* cpu, gpu */
->  	.chn_offset = 0,
->  	.chn_num = 2, /* two channels for tsadc */
-> -
->  	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
->  	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
->  	.tshut_temp = 95000,
-> -
->  	.initialize = rk_tsadcv3_initialize,
->  	.irq_ack = rk_tsadcv3_irq_ack,
->  	.control = rk_tsadcv3_control,
-> @@ -1233,7 +1216,6 @@ static const struct rockchip_tsadc_chip
-> rk3366_tsadc_data = {
->  	.set_alarm_temp = rk_tsadcv2_alarm_temp,
->  	.set_tshut_temp = rk_tsadcv2_tshut_temp,
->  	.set_tshut_mode = rk_tsadcv2_tshut_mode,
-> -
->  	.table = {
->  		.id = rk3228_code_table,
->  		.length = ARRAY_SIZE(rk3228_code_table),
-> @@ -1246,11 +1228,9 @@ static const struct rockchip_tsadc_chip
-> rk3368_tsadc_data = {
->  	/* cpu, gpu */
->  	.chn_offset = 0,
->  	.chn_num = 2, /* two channels for tsadc */
-> -
->  	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
->  	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
->  	.tshut_temp = 95000,
-> -
->  	.initialize = rk_tsadcv2_initialize,
->  	.irq_ack = rk_tsadcv2_irq_ack,
->  	.control = rk_tsadcv2_control,
-> @@ -1258,7 +1238,6 @@ static const struct rockchip_tsadc_chip
-> rk3368_tsadc_data = {
->  	.set_alarm_temp = rk_tsadcv2_alarm_temp,
->  	.set_tshut_temp = rk_tsadcv2_tshut_temp,
->  	.set_tshut_mode = rk_tsadcv2_tshut_mode,
-> -
->  	.table = {
->  		.id = rk3368_code_table,
->  		.length = ARRAY_SIZE(rk3368_code_table),
-> @@ -1271,11 +1250,9 @@ static const struct rockchip_tsadc_chip
-> rk3399_tsadc_data = {
->  	/* cpu, gpu */
->  	.chn_offset = 0,
->  	.chn_num = 2, /* two channels for tsadc */
-> -
->  	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
->  	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
->  	.tshut_temp = 95000,
-> -
->  	.initialize = rk_tsadcv3_initialize,
->  	.irq_ack = rk_tsadcv3_irq_ack,
->  	.control = rk_tsadcv3_control,
-> @@ -1283,7 +1260,6 @@ static const struct rockchip_tsadc_chip
-> rk3399_tsadc_data = {
->  	.set_alarm_temp = rk_tsadcv2_alarm_temp,
->  	.set_tshut_temp = rk_tsadcv2_tshut_temp,
->  	.set_tshut_mode = rk_tsadcv2_tshut_mode,
-> -
->  	.table = {
->  		.id = rk3399_code_table,
->  		.length = ARRAY_SIZE(rk3399_code_table),
-> @@ -1296,11 +1272,9 @@ static const struct rockchip_tsadc_chip
-> rk3568_tsadc_data = {
->  	/* cpu, gpu */
->  	.chn_offset = 0,
->  	.chn_num = 2, /* two channels for tsadc */
-> -
->  	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
->  	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
->  	.tshut_temp = 95000,
-> -
->  	.initialize = rk_tsadcv7_initialize,
->  	.irq_ack = rk_tsadcv3_irq_ack,
->  	.control = rk_tsadcv3_control,
-> @@ -1308,7 +1282,6 @@ static const struct rockchip_tsadc_chip
-> rk3568_tsadc_data = {
->  	.set_alarm_temp = rk_tsadcv2_alarm_temp,
->  	.set_tshut_temp = rk_tsadcv2_tshut_temp,
->  	.set_tshut_mode = rk_tsadcv2_tshut_mode,
-> -
->  	.table = {
->  		.id = rk3568_code_table,
->  		.length = ARRAY_SIZE(rk3568_code_table),
+> 
+> Changes in V1 from RFC:
+> 
+>   -- Rename field to aspm_dflt_link_state since it stores
+>      PCIE_LINK_STATE_XXX flags, not a policy enum.
+>   -- Move the field to struct pci_host_bridge since it's being applied to
+>      the entire host bridge per Mani's suggestion.
+>   -- During testing noticed that clkpm remained disabled and this was
+>      also handled by the formerly used pci_enable_link_state(). Add a
+>      check in pcie_clkpm_cap_init() as well to enable clkpm during init.
+> 
+> Changes in V2:
+> 
+>   -- Host field name changed to aspm_default_link_state.
+>   -- Added get/set functions for aspm_default_link_state. Only the
+>      setter is exported. Added a kernel-doc describing usage and
+>      particulars around meaning of 0.
+> 
+>  drivers/pci/pcie/aspm.c | 42 +++++++++++++++++++++++++++++++++++++++--
+>  include/linux/pci.h     |  9 +++++++++
+>  2 files changed, 49 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/pci/pcie/aspm.c b/drivers/pci/pcie/aspm.c
+> index 919a05b97647..b4f0b4805a35 100644
+> --- a/drivers/pci/pcie/aspm.c
+> +++ b/drivers/pci/pcie/aspm.c
+> @@ -373,6 +373,39 @@ static void pcie_set_clkpm(struct pcie_link_state *link, int enable)
+>  	pcie_set_clkpm_nocheck(link, enable);
+>  }
+>  
+> +/**
+> + * pci_host_set_default_pcie_link_state - set controller-provided default ASPM/CLKPM mask
+> + * @host: host bridge on which to apply the defaults
+> + * @state: PCIE_LINK_STATE_XXX flags
+> + *
+> + * Allows a PCIe controller driver to specify the default ASPM and/or
+> + * Clock Power Management (CLKPM) link state mask that will be used
+> + * for links under this host bridge during ASPM/CLKPM capability init.
+> + *
+> + * The value is consumed in pcie_aspm_cap_init() and pcie_clkpm_cap_init()
+> + * to override the firmware-discovered defaults.
+> + *
+> + * Interpretation of aspm_default_link_state:
+> + *   - Nonzero: bitmask of PCIE_LINK_STATE_* values to be used as defaults
+> + *   - Zero:    no override provided; ASPM/CLKPM defaults fall back to
+> + *              values discovered in hardware/firmware
+> + *
+> + * Note: zero is always treated as "unset", not as "force ASPM/CLKPM off".
+> + */
+> +void pci_host_set_default_pcie_link_state(struct pci_host_bridge *host,
+> +					  unsigned int state)
+> +{
+> +	host->aspm_default_link_state = state;
+> +}
+> +EXPORT_SYMBOL_GPL(pci_host_set_default_pcie_link_state);
+> +
+> +static u32 pci_host_get_default_pcie_link_state(struct pci_dev *parent)
+> +{
+> +	struct pci_host_bridge *host = pci_find_host_bridge(parent->bus);
+> +
+> +	return host ? host->aspm_default_link_state : 0;
+> +}
+> +
+>  static void pcie_clkpm_cap_init(struct pcie_link_state *link, int blacklist)
+>  {
+>  	int capable = 1, enabled = 1;
+> @@ -394,7 +427,10 @@ static void pcie_clkpm_cap_init(struct pcie_link_state *link, int blacklist)
+>  			enabled = 0;
+>  	}
+>  	link->clkpm_enabled = enabled;
+> -	link->clkpm_default = enabled;
+> +	if (pci_host_get_default_pcie_link_state(link->pdev) & PCIE_LINK_STATE_CLKPM)
+> +		link->clkpm_default = 1;
+> +	else
+> +		link->clkpm_default = enabled;
+>  	link->clkpm_capable = capable;
+>  	link->clkpm_disable = blacklist ? 1 : 0;
+>  }
+> @@ -866,7 +902,9 @@ static void pcie_aspm_cap_init(struct pcie_link_state *link, int blacklist)
+>  	}
+>  
+>  	/* Save default state */
+> -	link->aspm_default = link->aspm_enabled;
+> +	link->aspm_default = pci_host_get_default_pcie_link_state(parent);
+> +	if (!link->aspm_default)
+> +		link->aspm_default = link->aspm_enabled;
+>  
+>  	/* Setup initial capable state. Will be updated later */
+>  	link->aspm_capable = link->aspm_support;
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 59876de13860..8947cbaf9fa6 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -620,6 +620,10 @@ struct pci_host_bridge {
+>  	unsigned int	size_windows:1;		/* Enable root bus sizing */
+>  	unsigned int	msi_domain:1;		/* Bridge wants MSI domain */
+>  
+> +#ifdef CONFIG_PCIEASPM
+> +	unsigned int	aspm_default_link_state;	/* Controller-provided default */
+> +#endif
+> +
+>  	/* Resource alignment requirements */
+>  	resource_size_t (*align_resource)(struct pci_dev *dev,
+>  			const struct resource *res,
+> @@ -1849,6 +1853,8 @@ int pci_disable_link_state(struct pci_dev *pdev, int state);
+>  int pci_disable_link_state_locked(struct pci_dev *pdev, int state);
+>  int pci_enable_link_state(struct pci_dev *pdev, int state);
+>  int pci_enable_link_state_locked(struct pci_dev *pdev, int state);
+> +void pci_host_set_default_pcie_link_state(struct pci_host_bridge *host,
+> +					  unsigned int state);
+>  void pcie_no_aspm(void);
+>  bool pcie_aspm_support_enabled(void);
+>  bool pcie_aspm_enabled(struct pci_dev *pdev);
+> @@ -1861,6 +1867,9 @@ static inline int pci_enable_link_state(struct pci_dev *pdev, int state)
+>  { return 0; }
+>  static inline int pci_enable_link_state_locked(struct pci_dev *pdev, int state)
+>  { return 0; }
+> +static inline void
+> +pci_host_set_default_pcie_link_state(struct pci_host_bridge *host,
+> +				     unsigned int state) { }
+>  static inline void pcie_no_aspm(void) { }
+>  static inline bool pcie_aspm_support_enabled(void) { return false; }
+>  static inline bool pcie_aspm_enabled(struct pci_dev *pdev) { return false; }
+> 
+> base-commit: c17b750b3ad9f45f2b6f7e6f7f4679844244f0b9
+> -- 
+> 2.43.0
+> 
+> 
