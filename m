@@ -1,119 +1,170 @@
-Received: from forward501a.mail.yandex.net (forward501a.mail.yandex.net [178.154.239.81])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0084AEC2;
-	Fri, 22 Aug 2025 05:19:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.81
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A46CB28505F;
+	Fri, 22 Aug 2025 05:20:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755839985; cv=none; b=Ze+8rpe9Z/ZThC5JJidZLWq9oTdTJxKbDODd+PWp2kkuVSCh4bDDpUuW+bGHWXg3x+AZ0xiVAfy9oPCPcx6j8e6rMCs3JQvXDT5IL6SvUjSGXpaHIAsmcU5eYMAMvDADqsHX+xCveqXijV++ifBOlrP5No7ynia085phmtuPXXE=
+	t=1755840009; cv=none; b=qVBQL3SieXuGAMZh1i7S5xooFF06lwujO+asxZYObW2mNnAqbPNXDaCK7QdwSTW9UZa2NEIZFtndgyQgZUKZuz47dhCi5B0jjuIY8PlEwprEPmyqgC500vQSa7neK2J8DmrGyxidlohrUYTXj5w4wKKKfkmkKwJbEjxc+YSxM9A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1755839985; c=relaxed/simple;
-	bh=yDltWIurWHSj98BfITo9fI6oEAxULSFiwhBkEYZybB0=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=u9o6aVUwbKUmUNYGlfORMEMC/YTKIx86OUarcRXsR6OeOBoyMkYbPDLwDm3158Uj1yAZIpiJ3fRU1JS+/w/E/RAWVesVebBvAP0OuiGdB8wG+TWEaKhbD0lc2GHdErmUfwhohewWlAZ3xLJqSHNbR13qDZdJt4+NbGuE/hNW7vU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev; spf=pass smtp.mailfrom=onurozkan.dev; dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b=comBnp5l; arc=none smtp.client-ip=178.154.239.81
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=onurozkan.dev
+	s=arc-20240116; t=1755840009; c=relaxed/simple;
+	bh=GrMumvBLGMCAFUAXwfZUYHjPyRNBWCX8dH7XHX+DxJM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=T2gqlPRHvZaZzCXUNuKv2O7dGUNSXedu7paC90eB/20/W5xG8+Yfbs9sgO8of945I6ZVmfriedU3HZbennu0HzgaKf4Jn05Kyg8VSgebk+lsZwjjenFzyqggyn6FwwanfAXOBJBfxMvR9NVCHAVi0O9VtixhUsdfq08c4LXhGqM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fuwGjPDX; arc=none smtp.client-ip=209.85.221.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b="comBnp5l"
-Received: from mail-nwsmtp-smtp-production-main-60.vla.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-60.vla.yp-c.yandex.net [IPv6:2a02:6b8:c1f:1f21:0:640:a2e6:0])
-	by forward501a.mail.yandex.net (Yandex) with ESMTPS id 9FFA980F75;
-	Fri, 22 Aug 2025 08:13:50 +0300 (MSK)
-Received: by mail-nwsmtp-smtp-production-main-60.vla.yp-c.yandex.net (smtp/Yandex) with ESMTPSA id kDML0F8Mn8c0-YATuAjhl;
-	Fri, 22 Aug 2025 08:13:49 +0300
-X-Yandex-Fwd: 1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=onurozkan.dev;
-	s=mail; t=1755839630;
-	bh=vXSYq5gxkBuW0CJdxd13UHRDVKuqteSU5VS1DhuTh94=;
-	h=Cc:Message-ID:Subject:Date:References:To:From:In-Reply-To;
-	b=comBnp5l+KTUZWjLohAMmx23tCbrutpzp/+LisNRGjWxlhFVY+yxsIa2JUQtiGBdB
-	 js9UO9O7yB1nlW5u8niU12o4WKhUl5fVNLttepGasnPhKGiCwdHYzbB9syZSaiGQwn
-	 TKiUKP4AllJM2i8ITcu04RRJHgXTDIYOS2AHmN2s=
-Authentication-Results: mail-nwsmtp-smtp-production-main-60.vla.yp-c.yandex.net; dkim=pass header.i=@onurozkan.dev
-Date: Fri, 22 Aug 2025 08:13:43 +0300
-From: Onur =?UTF-8?B?w5Z6a2Fu?= <work@onurozkan.dev>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rust-for-linux@vger.kernel.org, vireshk@kernel.org, nm@ti.com,
- sboyd@kernel.org, ojeda@kernel.org, alex.gaynor@gmail.com,
- boqun.feng@gmail.com, gary@garyguo.net, bjorn3_gh@protonmail.com,
- lossin@kernel.org, a.hindborg@kernel.org, aliceryhl@google.com,
- tmgross@umich.edu, dakr@kernel.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] rust: opp: use to_result for error handling
-Message-ID: <20250822081343.4041a3d5@nimda.home>
-In-Reply-To: <20250821092137.wttiixhiidt27hnq@vireshk-i7>
-References: <20250821091606.7470-1-work@onurozkan.dev>
-	<20250821092137.wttiixhiidt27hnq@vireshk-i7>
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.49; x86_64-unknown-linux-gnu)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fuwGjPDX"
+Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-3b9e415a68fso1427453f8f.2;
+        Thu, 21 Aug 2025 22:20:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1755840006; x=1756444806; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=qnn/5PSHpSjfU2b5+BfRC0bYY4gLtCL0ez5DFkTN+5o=;
+        b=fuwGjPDXjl0O9/URBiyeOrBTpY35kBMcOhd9Y8TaC7mqOI3BeV7n0nHzP2OaIDkkN7
+         b12F3gm1IEX4HHNq/5dGl62dbtZEFgPiCrGXw6fY/F7qBq/5is4KPqaJGoNnGM/0SFSF
+         ugGtDiKh+m3JQ8MRqCGE05L/PQg2uwLV6ZxAYp+PFjolBp+uzRmjHSX8opd4sKmdiMS2
+         d67ToGa3CkL9YcvLUeIIfB4aS7GzVQeayukIj+49yLKFXML2ZldZOBk6EfNOZNQFXcDn
+         OaBzAI8WCqn8MhEeWaSXQ/ra8R7gYtBB2hn01Exi2/xqns28p9d0Lo4QlcQM9OKZWaDR
+         6rCg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1755840006; x=1756444806;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=qnn/5PSHpSjfU2b5+BfRC0bYY4gLtCL0ez5DFkTN+5o=;
+        b=EUZJURWuvpEUx2R3hJmrqwGBWB2DAditdEV4liicBTi4OUOFJTkSY7nmIt0SqlXDjt
+         cunWa9/BAXR8OsSj8k/xOEQcKfTmlfstQfo/L3QvuNF9JCm0CG1lAaGeP9U3e5A4taSb
+         wlX1LWnsgEtFtHA85zuouW/h4PFL+yEU4PXDYB7LIL9UYOQoY3hBzLsxzOCciyZOn9D4
+         +WFeR9aZnByPBiggjzgnN9IV6sMcU0KeKtxIp5iX6uyd4gxK8pPYmiv+U0xzVmOtCzP4
+         LTWwE+vm4Kfyj11r+RfEqaevuhO4qzgLHLfkWt0qHS3r2WJjhG/M+u45I5CXJItvP0mX
+         t95A==
+X-Forwarded-Encrypted: i=1; AJvYcCVIWJggNoVmFKj5TKFXXKGhVhDpc3vE8diRLjxaXFXeywMCFXz2wl0AYHvzBlUU0395V9q+4MZK60M=@vger.kernel.org, AJvYcCVQGglQZRFOqsdDGt1lD1Xdo8ty8PoDLjMgRYtxzinEFJ1emRTyTll4+gi+51aR3++ddKTj43SjcFJlOxVg@vger.kernel.org, AJvYcCVUirCLxnb9gv56BkCcb5kNQzvvsBnkJh98exuN9YLO4oG+8lqVMAN6pgyf5g75aa3jQdOjFUfcF5M=@vger.kernel.org, AJvYcCVuD7n6n3hp9nXbuYCwV0/HlPFdtx8Ls12BMAAgCUMRmZAp5sgk7Z3peBqR6+uzbSY1PGpCtwEAf25UB9w=@vger.kernel.org
+X-Gm-Message-State: AOJu0YwqEBj1oBLweIXMO830NAkriYPTlK/wp3mfx7BytyGuN+Z5MmXE
+	jkxUY1pfDzeqWRR89O4DfTZ5hB4U/hAH+gN7NP8+Snac6McZsAFJmq4+qE6KR/Bfo4UBspmvVf+
+	Lmoch1a7i4Ryes+UjsNlWXEYHOuTR3L8=
+X-Gm-Gg: ASbGncsqO4vO22zT1UQTDYh1TKnTFiNp5DVVNbQiFZcHJSV4ROLVFMO/1KDEPd2YcDi
+	L305918R7hjIvj5YwQpoG4O8Puc8xiXCrlog/J+QAL9k+y25ULffaa0FFmK6+PrxRr6YeUvrgra
+	GGGfxWtRDMD/ZppWtbIExYajGoxRl8b5XJ3awSkjl4YeCyfOLPuP54gFjxS2RyC/z96D4egmIcN
+	ZMghXK/1YEMFL9B7Mo=
+X-Google-Smtp-Source: AGHT+IGayn+dYhiP+xVrv/kU7JYYwK/92uVhgjhPGNmyjhxABuhQYzDSr93Xpts5u+oiyuEsnRxb+FaGnuuk9Io8Iho=
+X-Received: by 2002:a05:6000:2283:b0:3a6:f2a7:d0bb with SMTP id
+ ffacd0b85a97d-3c5da54ee0amr988708f8f.12.1755840005776; Thu, 21 Aug 2025
+ 22:20:05 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+References: <20250321095556.91425-1-clamor95@gmail.com> <20250321095556.91425-4-clamor95@gmail.com>
+ <117069551.nniJfEyVGO@senjougahara>
+In-Reply-To: <117069551.nniJfEyVGO@senjougahara>
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+Date: Fri, 22 Aug 2025 08:19:53 +0300
+X-Gm-Features: Ac12FXxiZO-Cd4dYwR186y5TmAKHb9LT42IjQgUuEeVgtUMAOTz0EvTyxIUsxCY
+Message-ID: <CAPVz0n24N1-iAoQFpzw7r7sz2E4Xhd8fB-gaoPesdc7XaR2HcQ@mail.gmail.com>
+Subject: Re: [PATCH v1 3/3] ARM: tegra: Add DFLL clock support on Tegra 4
+To: Mikko Perttunen <mperttunen@nvidia.com>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, 
+	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, linux-tegra@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, 
+	linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 21 Aug 2025 14:51:37 +0530
-Viresh Kumar <viresh.kumar@linaro.org> wrote:
-
-> On 21-08-25, 12:16, Onur =C3=96zkan wrote:
-> > Simplifies error handling by replacing the manual check
-> > of the return value with the `to_result` helper.
-> >=20
-> > Signed-off-by: Onur =C3=96zkan <work@onurozkan.dev>
+=D0=BF=D1=82, 22 =D1=81=D0=B5=D1=80=D0=BF. 2025=E2=80=AF=D1=80. =D0=BE 06:0=
+5 Mikko Perttunen <mperttunen@nvidia.com> =D0=BF=D0=B8=D1=88=D0=B5:
+>
+> On Friday, March 21, 2025 6:55=E2=80=AFPM Svyatoslav Ryhel wrote:
+> > Add DFLL clock node to common Tegra114 device tree along with clocks
+> > property to cpu node.
+> >
+> > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
 > > ---
-> >  rust/kernel/opp.rs | 16 +++++-----------
-> >  1 file changed, 5 insertions(+), 11 deletions(-)
-> >=20
-> > diff --git a/rust/kernel/opp.rs b/rust/kernel/opp.rs
-> > index 08126035d2c6..9d79c2816af5 100644
-> > --- a/rust/kernel/opp.rs
-> > +++ b/rust/kernel/opp.rs
-> > @@ -12,7 +12,7 @@
-> >      clk::Hertz,
-> >      cpumask::{Cpumask, CpumaskVar},
-> >      device::Device,
-> > -    error::{code::*, from_err_ptr, from_result, to_result, Error,
-> > Result, VTABLE_DEFAULT_ERROR},
-> > +    error::{code::*, from_err_ptr, from_result, to_result, Result,
-> > VTABLE_DEFAULT_ERROR}, ffi::c_ulong,
-> >      prelude::*,
-> >      str::CString,
-> > @@ -500,11 +500,8 @@ pub fn set(self, dev: &Device) ->
-> > Result<ConfigToken> { // requirements. The OPP core guarantees not
-> > to access fields of [`Config`] after this call // and so we don't
-> > need to save a copy of them for future use. let ret =3D unsafe {
-> > bindings::dev_pm_opp_set_config(dev.as_raw(), &mut config) };
-> > -        if ret < 0 {
-> > -            Err(Error::from_errno(ret))
-> > -        } else {
-> > -            Ok(ConfigToken(ret))
-> > -        }
-> > +
-> > +        to_result(ret).map(|()| ConfigToken(ret))
-> >      }
-> >=20
-> >      /// Config's clk callback.
-> > @@ -713,11 +710,8 @@ pub fn opp_count(&self) -> Result<u32> {
-> >          // SAFETY: The requirements are satisfied by the existence
-> > of [`Device`] and its safety // requirements.
-> >          let ret =3D unsafe {
-> > bindings::dev_pm_opp_get_opp_count(self.dev.as_raw()) };
-> > -        if ret < 0 {
-> > -            Err(Error::from_errno(ret))
-> > -        } else {
-> > -            Ok(ret as u32)
-> > -        }
-> > +
-> > +        to_result(ret).map(|()| ret as u32)
-> >      }
->=20
-> I would get rid of `ret` as well in both the cases, like it is done by
-> other users of `to_result()`.
->=20
+> >  arch/arm/boot/dts/nvidia/tegra114.dtsi | 34 ++++++++++++++++++++++++++
+> >  1 file changed, 34 insertions(+)
+> >
+> > diff --git a/arch/arm/boot/dts/nvidia/tegra114.dtsi
+> > b/arch/arm/boot/dts/nvidia/tegra114.dtsi index 341ec0962460..25d063a47c=
+a5
+> > 100644
+> > --- a/arch/arm/boot/dts/nvidia/tegra114.dtsi
+> > +++ b/arch/arm/boot/dts/nvidia/tegra114.dtsi
+> > @@ -4,6 +4,7 @@
+> >  #include <dt-bindings/memory/tegra114-mc.h>
+> >  #include <dt-bindings/pinctrl/pinctrl-tegra.h>
+> >  #include <dt-bindings/interrupt-controller/arm-gic.h>
+> > +#include <dt-bindings/reset/tegra114-car.h>
+> >  #include <dt-bindings/soc/tegra-pmc.h>
+> >
+> >  #include "tegra114-peripherals-opp.dtsi"
+> > @@ -710,6 +711,30 @@ mipi: mipi@700e3000 {
+> >               #nvidia,mipi-calibrate-cells =3D <1>;
+> >       };
+> >
+> > +     dfll: clock@70110000 {
+> > +             compatible =3D "nvidia,tegra114-dfll";
+> > +             reg =3D <0x70110000 0x100>, /* DFLL control */
+> > +                   <0x70110000 0x100>, /* I2C output control */
+> > +                   <0x70110100 0x100>, /* Integrated I2C controller */
+> > +                   <0x70110200 0x100>; /* Look-up table RAM */
+> > +             interrupts =3D <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
+> > +             clocks =3D <&tegra_car TEGRA114_CLK_DFLL_SOC>,
+> > +                      <&tegra_car TEGRA114_CLK_DFLL_REF>,
+> > +                      <&tegra_car TEGRA114_CLK_I2C5>;
+> > +             clock-names =3D "soc", "ref", "i2c";
+> > +             resets =3D <&tegra_car TEGRA114_RST_DFLL_DVCO>;
+> > +             reset-names =3D "dvco";
+> > +             #clock-cells =3D <0>;
+> > +             clock-output-names =3D "dfllCPU_out";
+> > +             nvidia,sample-rate =3D <11500>;
+>
+> Should this be 12500? That would match Tegra124 and a downstream kernel f=
+or
+> Tegra114 I have.
+>
 
-`ret` is returned at the end unlike other `to_result` usages in other
-functions.
+I referred to tegratab and macallan boards in 3.4 kernel which give
+11500, maybe sample-rate was changed to 12500 later with tegra124
+addition?
 
--Onur
+> > +             nvidia,droop-ctrl =3D <0x00000f00>;
+> > +             nvidia,force-mode =3D <1>;
+> > +             nvidia,cf =3D <10>;
+> > +             nvidia,ci =3D <0>;
+> > +             nvidia,cg =3D <2>;
+> > +             status =3D "disabled";
+> > +     };
+> > +
+> >       mmc@78000000 {
+> >               compatible =3D "nvidia,tegra114-sdhci";
+> >               reg =3D <0x78000000 0x200>;
+> > @@ -841,6 +866,15 @@ cpu@0 {
+> >                       device_type =3D "cpu";
+> >                       compatible =3D "arm,cortex-a15";
+> >                       reg =3D <0>;
+> > +
+> > +                     clocks =3D <&tegra_car TEGRA114_CLK_CCLK_G>,
+> > +                              <&tegra_car TEGRA114_CLK_CCLK_LP>,
+> > +                              <&tegra_car TEGRA114_CLK_PLL_X>,
+> > +                              <&tegra_car TEGRA114_CLK_PLL_P>,
+> > +                              <&dfll>;
+> > +                     clock-names =3D "cpu_g", "cpu_lp", "pll_x", "pll_=
+p",
+> "dfll";
+> > +                     /* FIXME: what's the actual transition time? */
+> > +                     clock-latency =3D <300000>;
+> >               };
+> >
+> >               cpu@1 {
+>
+>
+>
+>
