@@ -1,114 +1,119 @@
-Received: from mail-lf1-f54.google.com (mail-lf1-f54.google.com [209.85.167.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from forward501a.mail.yandex.net (forward501a.mail.yandex.net [178.154.239.81])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 717BA28505F;
-	Fri, 22 Aug 2025 05:17:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0084AEC2;
+	Fri, 22 Aug 2025 05:19:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.81
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755839872; cv=none; b=XQtx6z717GMCAbcCJr7/Hl7PvuGXtvgbB6SRQlA5U4OrsQ5WoGUAuBRh8uVac8KVcSRilxCTvQy2zFLDgUHRNCA3oZ95w6/9VHKQSxfqdPcXBC2muyI0jEDbnGgoD4aFOwe28pQYe90bQ4oGbY7t1KKaMsArp+8WVJRvub1bgtk=
+	t=1755839985; cv=none; b=Ze+8rpe9Z/ZThC5JJidZLWq9oTdTJxKbDODd+PWp2kkuVSCh4bDDpUuW+bGHWXg3x+AZ0xiVAfy9oPCPcx6j8e6rMCs3JQvXDT5IL6SvUjSGXpaHIAsmcU5eYMAMvDADqsHX+xCveqXijV++ifBOlrP5No7ynia085phmtuPXXE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1755839872; c=relaxed/simple;
-	bh=AB60qIhIhcIch7DTjDb61PjbSqMJsqIbyQYnTPNHunI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=sQtYAEZQ759mn1JswcNbOeh3XBcbEXdcKv8h/0Ty8JJn+FLHQfynl5LHR32bM9YiTj7Y6yB/8nuBqhmD23tSBgOqwKie3ymb5AR2zZBzaiogU8D4OUGJbVaWHVNauDs8nFx74rZMvsZc/Ylejvjf4nTQxVE6zbJ4JLYzq39Kg+s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KCg8obaA; arc=none smtp.client-ip=209.85.167.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1755839985; c=relaxed/simple;
+	bh=yDltWIurWHSj98BfITo9fI6oEAxULSFiwhBkEYZybB0=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=u9o6aVUwbKUmUNYGlfORMEMC/YTKIx86OUarcRXsR6OeOBoyMkYbPDLwDm3158Uj1yAZIpiJ3fRU1JS+/w/E/RAWVesVebBvAP0OuiGdB8wG+TWEaKhbD0lc2GHdErmUfwhohewWlAZ3xLJqSHNbR13qDZdJt4+NbGuE/hNW7vU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev; spf=pass smtp.mailfrom=onurozkan.dev; dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b=comBnp5l; arc=none smtp.client-ip=178.154.239.81
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=onurozkan.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=onurozkan.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KCg8obaA"
-Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-55ce4b9c904so1969773e87.0;
-        Thu, 21 Aug 2025 22:17:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1755839868; x=1756444668; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=iSaBW0x71qieK9bpCWJ9scXNoxXVJRabKHQeklCtRJ4=;
-        b=KCg8obaA7dj/KjIln0c0xIER9pdWEkxdRcBecGGKsVAkaklIIU/8Bi3Eo3gDpDI2mE
-         sJa6lPCPqbGXk/2UfEb8gyk1jHyIqO6mjvMRi1A3Y1GdOLeewmZ2NeSt7HOYbs1Nx3ME
-         GxaArEyszgsenxBjjEwRYeT9d4fAaZeqhPnmGOYsSW9vS7ofohy9FXKVPh1hdDPjScr9
-         pDkoIWlSnk4klGuIZrB/UwW/XGggBRcSDpoCJU0Cf1boNDOu/8mRge+TFhjxhamY4Dy0
-         wbRdYO1E7XJ7CR2swZega/73YMeienYaMgp41IlPrl8GY97CRA3n808abA/9Pz5IoYeW
-         CbsQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1755839868; x=1756444668;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=iSaBW0x71qieK9bpCWJ9scXNoxXVJRabKHQeklCtRJ4=;
-        b=lfX7CA3wOopVRrE60E5brIaSZhCH5zW1cqS/XsqMYajTUK04tve93932BPyaZkxgLx
-         kLJlenOcw3uP0L/LKhGm4umPqGOFm4IfnU2j43VosmcN5T8XUCIwVqrFkwau1Zb/UG+N
-         0LYWHehE+jsyX3WYJ1Ru2PKinB614vISmRgB/cPMPmLN2EMM+JBPtN1zix24myKk8aih
-         m+TBmVa46uwXKQ9DX1RcKBxgRn64/S3GBAeb/t+uwS6kV30cgusqqiZ5jnjcHeCo4+ja
-         E7K8jbCnhnU62cPRKiMlaMAYsCPI7ZHYLGB4+q9GI20kHoanjgPlnu76a1wZmAEzwN0d
-         mEVw==
-X-Forwarded-Encrypted: i=1; AJvYcCW64sQ8UB38Bv0o3U51//oYiB1DQK91YJgJFU7spsMilc4Q5hyWDxKzZXPUHL793pPYhwyrzMB6Dw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwDRalStN/7ddYFVuoprtGoqjk7hsNLDfsMwuwAQQgqrp3ZDHq/
-	+zeChy2EbV+EW6Tvhsw82TW6g8pA8IXHWbgqmyvxJ3OsuFpctsM4yivh
-X-Gm-Gg: ASbGncvQHIcjcKHCtdNMOLkTeisDiaBOCu8BaZVugFlYmGT/Lcs6RtU9pAlLgD4RS2/
-	QgvN+n5qRi6PluY9/dBf9Ajqpm3l9tVi7sf1AHhXncjdcT/1hB+AWxesahR+nVDFp4/fXo4cvy2
-	l6KRQQvH5JhE8n7GOY0eNDgY3ao7P2U0JeWUilnErpDTKcLmFVryumbfb9BpnEcnTDxBTbFgLiX
-	t96vxSElvoedzaxZjG9b8ghURLEULEAjakN4kWWbVKw0vmMqEE5mrRmhMONAiKDvXLD+h2eLcur
-	IaG1h8qff/ljLiPKyCzHgWjAuppOpDhYw6eVihXko47Acsiap7123+5HK+vqoCACdOxLKJ4fukz
-	JtXfjeL8yL+hzPu4Z8O/pChbbsuCN4qXvQaYBcatvkBOkGdQj+EJ3KWTGH1/F5fvJ7v5sxVG2Lh
-	vnFl0=
-X-Google-Smtp-Source: AGHT+IG8RWq1klFTMuD28Avdtf+hTkHAWutzP/vryHUsjUB+d7h2rG/l8/gP/xUbz5TgiMZrKZSm4g==
-X-Received: by 2002:a05:6512:1087:b0:553:2884:5fb3 with SMTP id 2adb3069b0e04-55e0da1b488mr1683506e87.12.1755839868274;
-        Thu, 21 Aug 2025 22:17:48 -0700 (PDT)
-Received: from ?IPV6:2a10:a5c0:800d:dd00:8fdf:935a:2c85:d703? ([2a10:a5c0:800d:dd00:8fdf:935a:2c85:d703])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-55cef426b59sm3303088e87.142.2025.08.21.22.17.47
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 21 Aug 2025 22:17:47 -0700 (PDT)
-Message-ID: <9756dc55-ec54-4c96-b72a-6b9c0501d7e6@gmail.com>
-Date: Fri, 22 Aug 2025 08:17:46 +0300
+	dkim=pass (1024-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b="comBnp5l"
+Received: from mail-nwsmtp-smtp-production-main-60.vla.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-60.vla.yp-c.yandex.net [IPv6:2a02:6b8:c1f:1f21:0:640:a2e6:0])
+	by forward501a.mail.yandex.net (Yandex) with ESMTPS id 9FFA980F75;
+	Fri, 22 Aug 2025 08:13:50 +0300 (MSK)
+Received: by mail-nwsmtp-smtp-production-main-60.vla.yp-c.yandex.net (smtp/Yandex) with ESMTPSA id kDML0F8Mn8c0-YATuAjhl;
+	Fri, 22 Aug 2025 08:13:49 +0300
+X-Yandex-Fwd: 1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=onurozkan.dev;
+	s=mail; t=1755839630;
+	bh=vXSYq5gxkBuW0CJdxd13UHRDVKuqteSU5VS1DhuTh94=;
+	h=Cc:Message-ID:Subject:Date:References:To:From:In-Reply-To;
+	b=comBnp5l+KTUZWjLohAMmx23tCbrutpzp/+LisNRGjWxlhFVY+yxsIa2JUQtiGBdB
+	 js9UO9O7yB1nlW5u8niU12o4WKhUl5fVNLttepGasnPhKGiCwdHYzbB9syZSaiGQwn
+	 TKiUKP4AllJM2i8ITcu04RRJHgXTDIYOS2AHmN2s=
+Authentication-Results: mail-nwsmtp-smtp-production-main-60.vla.yp-c.yandex.net; dkim=pass header.i=@onurozkan.dev
+Date: Fri, 22 Aug 2025 08:13:43 +0300
+From: Onur =?UTF-8?B?w5Z6a2Fu?= <work@onurozkan.dev>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rust-for-linux@vger.kernel.org, vireshk@kernel.org, nm@ti.com,
+ sboyd@kernel.org, ojeda@kernel.org, alex.gaynor@gmail.com,
+ boqun.feng@gmail.com, gary@garyguo.net, bjorn3_gh@protonmail.com,
+ lossin@kernel.org, a.hindborg@kernel.org, aliceryhl@google.com,
+ tmgross@umich.edu, dakr@kernel.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] rust: opp: use to_result for error handling
+Message-ID: <20250822081343.4041a3d5@nimda.home>
+In-Reply-To: <20250821092137.wttiixhiidt27hnq@vireshk-i7>
+References: <20250821091606.7470-1-work@onurozkan.dev>
+	<20250821092137.wttiixhiidt27hnq@vireshk-i7>
+X-Mailer: Claws Mail 4.3.1 (GTK 3.24.49; x86_64-unknown-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 3/3] MAINTAINERS: Add entry for BD71828 charger
-To: Andreas Kemnade <andreas@kemnade.info>, Lee Jones <lee@kernel.org>,
- Sebastian Reichel <sre@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- Krzysztof Kozlowski <krzk@kernel.org>
-References: <20250821-bd71828-charger-v3-0-cc74ac4e0fb9@kemnade.info>
- <20250821-bd71828-charger-v3-3-cc74ac4e0fb9@kemnade.info>
-Content-Language: en-US, en-AU, en-GB, en-BW
-From: Matti Vaittinen <mazziesaccount@gmail.com>
-In-Reply-To: <20250821-bd71828-charger-v3-3-cc74ac4e0fb9@kemnade.info>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-On 21/08/2025 21:23, Andreas Kemnade wrote:
-> Add an entry for BD71828 charger driver.
-> 
-> Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
-> Suggested-by: Matti Vaittinen <mazziesaccount@gmail.com>
+On Thu, 21 Aug 2025 14:51:37 +0530
+Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-Reviewed-by: Matti Vaittinen <mazziesaccount@gmail.com>
+> On 21-08-25, 12:16, Onur =C3=96zkan wrote:
+> > Simplifies error handling by replacing the manual check
+> > of the return value with the `to_result` helper.
+> >=20
+> > Signed-off-by: Onur =C3=96zkan <work@onurozkan.dev>
+> > ---
+> >  rust/kernel/opp.rs | 16 +++++-----------
+> >  1 file changed, 5 insertions(+), 11 deletions(-)
+> >=20
+> > diff --git a/rust/kernel/opp.rs b/rust/kernel/opp.rs
+> > index 08126035d2c6..9d79c2816af5 100644
+> > --- a/rust/kernel/opp.rs
+> > +++ b/rust/kernel/opp.rs
+> > @@ -12,7 +12,7 @@
+> >      clk::Hertz,
+> >      cpumask::{Cpumask, CpumaskVar},
+> >      device::Device,
+> > -    error::{code::*, from_err_ptr, from_result, to_result, Error,
+> > Result, VTABLE_DEFAULT_ERROR},
+> > +    error::{code::*, from_err_ptr, from_result, to_result, Result,
+> > VTABLE_DEFAULT_ERROR}, ffi::c_ulong,
+> >      prelude::*,
+> >      str::CString,
+> > @@ -500,11 +500,8 @@ pub fn set(self, dev: &Device) ->
+> > Result<ConfigToken> { // requirements. The OPP core guarantees not
+> > to access fields of [`Config`] after this call // and so we don't
+> > need to save a copy of them for future use. let ret =3D unsafe {
+> > bindings::dev_pm_opp_set_config(dev.as_raw(), &mut config) };
+> > -        if ret < 0 {
+> > -            Err(Error::from_errno(ret))
+> > -        } else {
+> > -            Ok(ConfigToken(ret))
+> > -        }
+> > +
+> > +        to_result(ret).map(|()| ConfigToken(ret))
+> >      }
+> >=20
+> >      /// Config's clk callback.
+> > @@ -713,11 +710,8 @@ pub fn opp_count(&self) -> Result<u32> {
+> >          // SAFETY: The requirements are satisfied by the existence
+> > of [`Device`] and its safety // requirements.
+> >          let ret =3D unsafe {
+> > bindings::dev_pm_opp_get_opp_count(self.dev.as_raw()) };
+> > -        if ret < 0 {
+> > -            Err(Error::from_errno(ret))
+> > -        } else {
+> > -            Ok(ret as u32)
+> > -        }
+> > +
+> > +        to_result(ret).map(|()| ret as u32)
+> >      }
+>=20
+> I would get rid of `ret` as well in both the cases, like it is done by
+> other users of `to_result()`.
+>=20
 
-> ---
->   MAINTAINERS | 6 ++++++
->   1 file changed, 6 insertions(+)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index fe168477caa45..044eb41ba4797 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -21848,6 +21848,12 @@ L:	linux-serial@vger.kernel.org
->   S:	Odd Fixes
->   F:	drivers/tty/serial/rp2.*
->   
-> +ROHM BD71828 CHARGER
-> +M:	Andreas Kemnade <andreas@kemnade.info>
-> +M:	Matti Vaittinen <mazziesaccount@gmail.com>
-> +S:	Maintained
-> +F:	drivers/power/supply/bd71828-charger.c
-> +
->   ROHM BD79703 DAC
->   M:	Matti Vaittinen <mazziesaccount@gmail.com>
->   S:	Supported
-> 
+`ret` is returned at the end unlike other `to_result` usages in other
+functions.
 
+-Onur
