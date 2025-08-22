@@ -1,137 +1,196 @@
-Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DD4A28505F;
-	Fri, 22 Aug 2025 05:21:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6BE49284B39;
+	Fri, 22 Aug 2025 05:41:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755840085; cv=none; b=RMtP1gdAndZ12sSsqFjBs5dTHGBVNzHpxSZmj3bDo+TPtCYp+AjYaSER8NTdVjq4oycz/NZ2sjLbe6rjp4IZNIf1XgAwUM6KJZS2mdpqJm4/m3OKTR3Nn6JSqYLFJBYoh+yOiv7uInTfX+y4bAvGpgTOkLm02hHljEo5zB5KAbQ=
+	t=1755841289; cv=none; b=emJJVcg105MAIoYcfkmR4vZQLanoi9lZn26aJAY/zQcm1IkTZBMr69uGid1HZG7Mzpagfpgu/Cq9c+WWQSQHcwouxAfk2PopqdSThv70oL7An6ZdEdwdF0rzWQlwmLJ81iVO/eHkdBkHHSQTyHsCb1CywxOTsjOCQ5/9OFpb86U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1755840085; c=relaxed/simple;
-	bh=Dhq1EKRGFfvC0kDVCsgNN7STDq697m7sI8COfgZ3d7s=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=jKsCo4ZzSs8hqRGf++wZOhgno7iBPrMhnIUHlQxCYYTIBm0X0fQYtEfTL60AhW6lMIlgK7KJyJDHm2Ke3j+hCx7DNuSNN4mIEk4x3PAcZf8h+zyG9pY7u84uzknT3CD1ehYjtiipOrOgk65qINjWaEgLXysCbNx6+XjaLIAPQEo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=m/iCU1SY; arc=none smtp.client-ip=209.85.221.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1755841289; c=relaxed/simple;
+	bh=MkL21viVLE82recvc2SokjMWpd4F/UILyRs//82QGlE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=DzTO/AyHzbJBkQ9JmRthE5CwzWKljpnVzjCzTTlIa9VtumV+E9Z9d37puIPmlx28X1BHgHZBrPpHbftQ/AXCD1Oq6PHGfHp4BiQ2os69o2mhPvbi9Pu3pIX/X+C69E80S9w74VzihYdzSYF4FvFU4z4d0XmtksUV7jeXcQ7p5to=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=A2FW8kax; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="m/iCU1SY"
-Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-3b9e415a68fso1427916f8f.2;
-        Thu, 21 Aug 2025 22:21:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1755840079; x=1756444879; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=TvKEBQ7yPvPn1i4lpaL5alLsJpeWrgoaDHAdkYx11l8=;
-        b=m/iCU1SYRu718c6/x/8TpawGrR2G2KzAH/C51S8PLBBJiQJwZCKUZHQA0kC1ShxFvz
-         /qE1Q/X6+nUm6XdxWC+1hGXljcQJHNI6M/2I8Bv/XmHk8Y/S/Y7vqD+AZn+HUna1MnKP
-         9ZJzH+A1eYx90h90WxUUWa0VQC98aCHfhPlWhsGWnPv3AjJBQC7wIOmJPofBcEyaYx0m
-         Vo6dCDDSe4XR1J2R++ZREU+tXsqz8E0xWC+rqnXICsJKLlGnpD5YrDe+RlnnO4Kg+Jky
-         K7aqWzM6A/wnaEi0BiEDMR0/9jNzkx6DL+BbQzWmzrfowo8vF/9GrnJ+tIm40BBZQt6L
-         vjUw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1755840079; x=1756444879;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=TvKEBQ7yPvPn1i4lpaL5alLsJpeWrgoaDHAdkYx11l8=;
-        b=YkRE8lFtfGC/t87b5RbofzT5aRFLtLdz7D8WqamOX1DMFLkTuKO75tk0aptUM6MyWg
-         Z5eeTfTtBQKhhoZ355fVrK8Smo20/pv6Y5fuyaLWK8ATYU5JhoRMNT5dr3iGMcnz/BBD
-         lCg3mhu7+wFDSEyBkudLDGNz3U7aWxDyoPLtyGLYUwgZVcKGQJL0KPhBHy03uV9e5D08
-         8wY9t9rwwKBONDety1Lim6gMFtReuDqvbsmQtjlKSN8xmwWnkp0howFehl1ebQrwPjCj
-         fGWQBl2tXW2mXADrM3iGnV4fbdBumPsfiXB5IFAIdO/useH9E3LPZlVszwuNewf8NeNo
-         PqyQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUKVvzsCgab6F1th+yCqLs1WlqCIK2DGUYWgz9xjXSCsCTBrKJMgKEJGNdwoX4AwEr8c2PahCUdGqV1h+hU@vger.kernel.org, AJvYcCWfLb2w3CBuhAE7JK3RWawoilp6A0pwq7Iz7ErgAZ4++j5eeMD7WBqRbyiQsQfNtk0M0cOg8cdAW5Kqqu0=@vger.kernel.org, AJvYcCXYSL8kX2tKA5OmiTz2/q6kEXgQe3CZg8k/5tZMCJUpHHKWv4dpenETTAG8GdQfmvB62nPNSsFo63s=@vger.kernel.org, AJvYcCXltKUZa25oaQ9UMl6GqB0ZXR1fez6Z25Fu+siF+b9zFuz45s5IVwo5VqaHqMWyitO8LH6CEswtobY=@vger.kernel.org
-X-Gm-Message-State: AOJu0YwK/NGyEKpaNQYmXt1EpFKHQX0DqEj2X5TWUvPTLbS9qH8Hw9wx
-	zbRFOZj8ezfjG3jIpOr7rtKQmZ0+iua9fv5qtjHIUXijkm7NwmaxX4HjDGxhM3w1mcuJ+F1z/A0
-	I4ToJxeps4ewTGV4V2MHk/hnmyQZxARs=
-X-Gm-Gg: ASbGncvpISFwkoizkgq6QFNhA7b0iJTwceujTvFdNbcK20Hs30ij3ZJGf6qh25p8Sf6
-	bEeXEze43g3+j/wRsZu3zv8n3fcK8bQ034Qf2SeKRt6U9+DSUFY6LnhSjSGJCkpC75VajnCskm9
-	vMpYjII6XHLsChItrngPJk68naOv5AiDXKYr9NRt3AQL3L+htRuh1licQghnUL+RpWmpSWtZZJO
-	b/EfNzO
-X-Google-Smtp-Source: AGHT+IHhSYM0k9SEsMbFsBYZmOGa9t1h6A8KV8hrooA4h0OepLG5bv3p8xVbgieNLPz08xT6yLEXjRsFtXNtt8Gd+nY=
-X-Received: by 2002:a05:6000:26cb:b0:3b9:1c80:e1ce with SMTP id
- ffacd0b85a97d-3c5dc540663mr842412f8f.36.1755840078612; Thu, 21 Aug 2025
- 22:21:18 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="A2FW8kax"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 09532C113CF;
+	Fri, 22 Aug 2025 05:41:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1755841289;
+	bh=MkL21viVLE82recvc2SokjMWpd4F/UILyRs//82QGlE=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=A2FW8kaxWLxFoIEn8WF6eH5qTF+uVqSyCDmMciNOPclVw4GYbVczzZwOqhXi0DnuE
+	 s3DI2YhQPF9O8d28Izc/Mhr6tq+1Z4fWV2nabrD+8FESSfRuC2DT6ev6aQiOV9fOUc
+	 ARxMkbfG54Zf6wd82kmLUtIGo6zTPEWWxnrFmnZg0/Ze0h9vXZFw/P1i3JUrD/25kb
+	 vwO/Q8puDvGHvqgmEOW7RUV0D9N+a+R6STWkKxwS+DcLGb7nIfQcvEycjiS5R1+Q2Z
+	 r4MbotS+N2u6yIYfmmR3YB/sYYpD4DCRhK4a5n6W033qnwfFlsdo8Di/zwg55oQwrW
+	 D3pxX61DKU/NQ==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EAAB8CA0EED;
+	Fri, 22 Aug 2025 05:41:28 +0000 (UTC)
+From: Xianwei Zhao via B4 Relay <devnull+xianwei.zhao.amlogic.com@kernel.org>
+Date: Fri, 22 Aug 2025 13:39:55 +0800
+Subject: [PATCH 1/5] dt-bindings: power: add Amlogic S6 S7 S7D power
+ domains
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250321095556.91425-1-clamor95@gmail.com> <20250321095556.91425-2-clamor95@gmail.com>
- <1914341.atdPhlSkOF@senjougahara>
-In-Reply-To: <1914341.atdPhlSkOF@senjougahara>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Fri, 22 Aug 2025 08:21:07 +0300
-X-Gm-Features: Ac12FXxmta7mBPhCxb7W9OiXb4BXH_cyVWGMx9ucUxlZujEVGMRlnBeWr0rx2Ho
-Message-ID: <CAPVz0n0zuvXxT=G18ujhV26nbvuCKtyXNC3cxenxGuj8wHWZ8w@mail.gmail.com>
-Subject: Re: [PATCH v1 1/3] drivers: cpufreq: add Tegra 4 support
-To: Mikko Perttunen <mperttunen@nvidia.com>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
-	Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, 
-	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, linux-tegra@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, 
-	linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250822-pm-s6-s7-s7d-v1-1-82e3f3aff327@amlogic.com>
+References: <20250822-pm-s6-s7-s7d-v1-0-82e3f3aff327@amlogic.com>
+In-Reply-To: <20250822-pm-s6-s7-s7d-v1-0-82e3f3aff327@amlogic.com>
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Neil Armstrong <neil.armstrong@linaro.org>, 
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
+ Jianxin Pan <jianxin.pan@amlogic.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ linux-pm@vger.kernel.org, Xianwei Zhao <xianwei.zhao@amlogic.com>, 
+ "hongyu.chen1" <hongyu.chen1@amlogic.com>
+X-Mailer: b4 0.12.4
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1755841286; l=4197;
+ i=xianwei.zhao@amlogic.com; s=20231208; h=from:subject:message-id;
+ bh=rDe2MvG1qbv0VUQE4y/E8LC5I45fmELEIBYCB0B5NkY=;
+ b=MxArxjiZLEg5X5S2V8GYItRjycPJtxsQAxo+PCbv7Qh+80U93vSBt/w1iFUzp2AIkO+OCPim/
+ aNKISq1F598C8eEN6/OwOEHW1ECi7huZNruPlQjTep8MrYjxtTKVaW9
+X-Developer-Key: i=xianwei.zhao@amlogic.com; a=ed25519;
+ pk=o4fDH8ZXL6xQg5h17eNzRljf6pwZHWWjqcOSsj3dW24=
+X-Endpoint-Received: by B4 Relay for xianwei.zhao@amlogic.com/20231208 with
+ auth_id=107
+X-Original-From: Xianwei Zhao <xianwei.zhao@amlogic.com>
+Reply-To: xianwei.zhao@amlogic.com
 
-=D0=BF=D1=82, 22 =D1=81=D0=B5=D1=80=D0=BF. 2025=E2=80=AF=D1=80. =D0=BE 05:5=
-8 Mikko Perttunen <mperttunen@nvidia.com> =D0=BF=D0=B8=D1=88=D0=B5:
->
-> On Friday, March 21, 2025 6:55=E2=80=AFPM Svyatoslav Ryhel wrote:
-> > Tegra 4 is fully compatible with existing Tegra K1 cpufreq driver.
-> >
-> > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> > ---
-> >  drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
-> >  drivers/cpufreq/tegra124-cpufreq.c   | 5 +++--
-> >  2 files changed, 4 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c
-> > b/drivers/cpufreq/cpufreq-dt-platdev.c index 18942bfe9c95..7d15a1224d37
-> > 100644
-> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> > @@ -140,6 +140,7 @@ static const struct of_device_id blocklist[] __init=
-const
-> > =3D {
-> >
-> >       { .compatible =3D "nvidia,tegra20", },
-> >       { .compatible =3D "nvidia,tegra30", },
-> > +     { .compatible =3D "nvidia,tegra114", },
-> >       { .compatible =3D "nvidia,tegra124", },
-> >       { .compatible =3D "nvidia,tegra210", },
-> >       { .compatible =3D "nvidia,tegra234", },
-> > diff --git a/drivers/cpufreq/tegra124-cpufreq.c
-> > b/drivers/cpufreq/tegra124-cpufreq.c index 514146d98bca..6ff2ccc08e5e
-> > 100644
-> > --- a/drivers/cpufreq/tegra124-cpufreq.c
-> > +++ b/drivers/cpufreq/tegra124-cpufreq.c
-> > @@ -189,8 +189,9 @@ static int __init tegra_cpufreq_init(void)
-> >       int ret;
-> >       struct platform_device *pdev;
-> >
-> > -     if (!(of_machine_is_compatible("nvidia,tegra124") ||
-> > -             of_machine_is_compatible("nvidia,tegra210")))
-> > +     if (!(of_machine_is_compatible("nvidia,tegra114") ||
-> > +           of_machine_is_compatible("nvidia,tegra124") ||
-> > +           of_machine_is_compatible("nvidia,tegra210")))
-> >               return -ENODEV;
-> >
-> >       /*
->
-> I also prefer using Tegra114 and Tegra124 in the commit message, perhaps =
-with
-> the marketing names in parentheses, as the chip IDs are more consistent a=
-nd
-> (IMO) easier to decipher than the product names.
->
-> Reviewed-by: Mikko Perttunen <mperttunen@nvidia.com>
->
+From: "hongyu.chen1" <hongyu.chen1@amlogic.com>
 
-Yes, this was applied in v2 already and all other my Tegra patches,
-this exact commit was already picked from v2.
+Add devicetree binding document and related header file for
+Amlogic S6 S7 S7D secure power domains.
+
+Signed-off-by: hongyu.chen1 <hongyu.chen1@amlogic.com>
+Signed-off-by: Xianwei Zhao <xianwei.zhao@amlogic.com>
+---
+ .../bindings/power/amlogic,meson-sec-pwrc.yaml     |  3 +++
+ include/dt-bindings/power/amlogic,s6-pwrc.h        | 29 ++++++++++++++++++++++
+ include/dt-bindings/power/amlogic,s7-pwrc.h        | 20 +++++++++++++++
+ include/dt-bindings/power/amlogic,s7d-pwrc.h       | 27 ++++++++++++++++++++
+ 4 files changed, 79 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml b/Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml
+index 15d74138baa3..12b71688dd34 100644
+--- a/Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml
++++ b/Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml
+@@ -24,6 +24,9 @@ properties:
+       - amlogic,a5-pwrc
+       - amlogic,c3-pwrc
+       - amlogic,t7-pwrc
++      - amlogic,s6-pwrc
++      - amlogic,s7-pwrc
++      - amlogic,s7d-pwrc
+ 
+   "#power-domain-cells":
+     const: 1
+diff --git a/include/dt-bindings/power/amlogic,s6-pwrc.h b/include/dt-bindings/power/amlogic,s6-pwrc.h
+new file mode 100644
+index 000000000000..2c005864ae73
+--- /dev/null
++++ b/include/dt-bindings/power/amlogic,s6-pwrc.h
+@@ -0,0 +1,29 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR MIT) */
++/*
++ * Copyright (C) 2025 Amlogic, Inc. All rights reserved
++ */
++#ifndef _DT_BINDINGS_AMLOGIC_S6_POWER_H
++#define _DT_BINDINGS_AMLOGIC_S6_POWER_H
++
++#define PWRC_S6_DSPA_ID				0
++#define PWRC_S6_DOS_HEVC_ID			1
++#define PWRC_S6_DOS_VDEC_ID			2
++#define PWRC_S6_VPU_HDMI_ID			3
++#define PWRC_S6_U2DRD_ID			4
++#define PWRC_S6_U3DRD_ID			5
++#define PWRC_S6_SD_EMMC_C_ID			6
++#define PWRC_S6_GE2D_ID				7
++#define PWRC_S6_AMFC_ID				8
++#define PWRC_S6_VC9000E_ID			9
++#define PWRC_S6_DEWARP_ID			10
++#define PWRC_S6_VICP_ID				11
++#define PWRC_S6_SD_EMMC_A_ID			12
++#define PWRC_S6_SD_EMMC_B_ID			13
++#define PWRC_S6_ETH_ID				14
++#define PWRC_S6_PCIE_ID				15
++#define PWRC_S6_NNA_4T_ID			16
++#define PWRC_S6_AUDIO_ID			17
++#define PWRC_S6_AUCPU_ID			18
++#define PWRC_S6_ADAPT_ID			19
++
++#endif
+diff --git a/include/dt-bindings/power/amlogic,s7-pwrc.h b/include/dt-bindings/power/amlogic,s7-pwrc.h
+new file mode 100644
+index 000000000000..3f21d095f784
+--- /dev/null
++++ b/include/dt-bindings/power/amlogic,s7-pwrc.h
+@@ -0,0 +1,20 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR MIT) */
++/*
++ * Copyright (C) 2025 Amlogic, Inc. All rights reserved
++ */
++#ifndef _DT_BINDINGS_AMLOGIC_S7_POWER_H
++#define _DT_BINDINGS_AMLOGIC_S7_POWER_H
++
++#define PWRC_S7_DOS_HEVC_ID			0
++#define PWRC_S7_DOS_VDEC_ID		        1
++#define PWRC_S7_VPU_HDMI_ID		        2
++#define PWRC_S7_USB_COMB_ID		        3
++#define PWRC_S7_SD_EMMC_C_ID			4
++#define PWRC_S7_GE2D_ID				5
++#define PWRC_S7_SD_EMMC_A_ID			6
++#define PWRC_S7_SD_EMMC_B_ID			7
++#define PWRC_S7_ETH_ID				8
++#define PWRC_S7_AUCPU_ID			9
++#define PWRC_S7_AUDIO_ID			10
++
++#endif
+diff --git a/include/dt-bindings/power/amlogic,s7d-pwrc.h b/include/dt-bindings/power/amlogic,s7d-pwrc.h
+new file mode 100644
+index 000000000000..c6998553670a
+--- /dev/null
++++ b/include/dt-bindings/power/amlogic,s7d-pwrc.h
+@@ -0,0 +1,27 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR MIT) */
++/*
++ * Copyright (C) 2025 Amlogic, Inc. All rights reserved
++ */
++#ifndef _DT_BINDINGS_AMLOGIC_S7D_POWER_H
++#define _DT_BINDINGS_AMLOGIC_S7D_POWER_H
++
++#define PWRC_S7D_DOS_HCODEC_ID			0
++#define PWRC_S7D_DOS_HEVC_ID			1
++#define PWRC_S7D_DOS_VDEC_ID			2
++#define PWRC_S7D_VPU_HDMI_ID			3
++#define PWRC_S7D_USB_U2DRD_ID			4
++#define PWRC_S7D_USB_U2H_ID			5
++#define PWRC_S7D_SSD_EMMC_C_ID			6
++#define PWRC_S7D_GE2D_ID			7
++#define PWRC_S7D_AMFC_ID			8
++#define PWRC_S7D_EMMC_A_ID			9
++#define PWRC_S7D_EMMC_B_ID			10
++#define PWRC_S7D_ETH_ID				11
++#define PWRC_S7D_AUCPU_ID			12
++#define PWRC_S7D_AUDIO_ID			13
++#define PWRC_S7D_SRAMA_ID			14
++#define PWRC_S7D_DMC0_ID			15
++#define PWRC_S7D_DMC1_ID			16
++#define PWRC_S7D_DDR_ID				17
++
++#endif
+
+-- 
+2.37.1
+
+
