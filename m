@@ -1,137 +1,94 @@
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 374A319A;
-	Sun, 24 Aug 2025 00:08:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0ACF225D6;
+	Sun, 24 Aug 2025 02:56:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1755994092; cv=none; b=On5gLs5t45pO8ABmIyYMTjqCHUmhKorIeSAQsXSBDtZsIppO9+AocU/XhjNj2hvWO/0BrktIIyw8C+7l4ukTYv0rF9y/p12VbAIhbqJISgwxfNuaEgsZbb1mYIH5u60Od+2yyVOG8xL3HAHdBr1d9Oh75zFcIcTo2xzda4bXi8c=
+	t=1756004161; cv=none; b=BtiPnOWRucpmRfXFB0JOVlg8Lu9TSO+ILNNy7YiOQCA2EmahifTTHqgdSfZ+YWugiEADKQjPGMnvx2bSOaPbq26jiXZmBZljDxXYh8ANMOP4WkVWDjGwLB+XzCL07OcssFDteOIKXRFvMdyHLdQ29z1c4Zf7QXQ+qcYk47oxkec=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1755994092; c=relaxed/simple;
-	bh=L9aGCyqYIqfiE/709OdRQZek+aVPISbBSeqD8LeS+PY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=S3TdV2ZP5iwM/4vW7A6CTxcrntEEIaebXQmx9Yx7Iziqr8c9Cz1I8PTS/5oryRWuhyrbhtXTG78Egf0CEn4aofE+sMslChI5ivSUjrL5I2VezYOvZhSgRf+5BnDsCENl6+Bs5zyfsdyMIi/DjtY4cyWx5GsqLNa/1ieygS5f0Q4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=13TqfuMa; arc=none smtp.client-ip=198.137.202.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+	s=arc-20240116; t=1756004161; c=relaxed/simple;
+	bh=+OE4zk2QOOZCHgX82O6BSFFjtdDPcgXJ/GXAHDpLonY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=nex6bnfdpy0VIVp/yzfeAaRKfZ7lzCtGp6VzonLAdoyAT3zgZfzMI7tolsTyE7Hm/iwFXr/qopyLNrHXRnBlhgrCRKyKGWdycThdZYu6AWNHPggFngnZrFDqCbKyMyD9zEz/i3j/1Oz4ofnT34d/+PwUuEaIDBnnQ9mlTNty0bM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LnR50E6Q; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="13TqfuMa"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=MyBjjN2I/3jlsDrVJT+yGV+wBVpUEwoIMa9ewpZMCMg=; b=13TqfuMa5/zhkRt1zTNt8DhjeH
-	d7iQITJGOl0IJWojBPtm6GzoTnyNr5cmPKHVCauU0ACUxyJbiv36OckcHHWc/10jTi61ty7ZZZ9PC
-	pvP6X9nmj/dtb7/tZa4OdA/gsr3beaKLMxsy9xtG+XBTU5hRv23DYpvCL0dxpAUc4wtzEgOM2icI4
-	6RrgjZfEH9POix9PWwuL+QPjurX3mP0jng2c+Bzs0v2N9Z7t2EWvMzemOJS2X8miZYcY8P5NV6m2W
-	pBbIhMmbQplHRrd4Ndt+2hgmAV+71wRxWZ15Ninr6FcrkiiAwe0y3fGmACK5TT5D538ALyoiuSuFG
-	jSAPqudQ==;
-Received: from [50.53.25.54] (helo=[192.168.254.17])
-	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1upyHD-00000005U69-0Xmu;
-	Sun, 24 Aug 2025 00:08:03 +0000
-Message-ID: <769e0ce4-1f96-4de5-a8a9-48166d6e3a91@infradead.org>
-Date: Sat, 23 Aug 2025 17:08:01 -0700
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LnR50E6Q"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63AD6C4CEE7;
+	Sun, 24 Aug 2025 02:55:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1756004160;
+	bh=+OE4zk2QOOZCHgX82O6BSFFjtdDPcgXJ/GXAHDpLonY=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=LnR50E6QfsaE6+wSpYXZysqcrTN9KQ+uP78ptO2NQxUXzvuVhewgxe/RoHsPCj1Sp
+	 0TPHDcTpz+Gi5fIOUZFS2d6U04pj2K7nG62H+y3MZ3Do3cxXUFcFUfCa0dCY+JxyPQ
+	 pEc569a7+UMwpbFtugTZ3Avhot3Yq1IOAq3PLMe6ztbrUbodgT1sT9dFiEnawpcw0X
+	 zKsTHT8dNv8kZfBwhvNf18xNaDnEs4qFV7ZGrq1QMtY/NKv6aT0hIWDSpCAaATdEnW
+	 e7Zc+yEHilL1pDTvx8Gnble7gd712hzuqq5IZ33VC/WcogO5syktkLFKpCnRJyiDVy
+	 3QVTZ+mKw9CYg==
+From: Bjorn Andersson <andersson@kernel.org>
+To: Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>,
+	Rob Clark <robin.clark@oss.qualcomm.com>,
+	Sean Paul <sean@poorly.run>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Dmitry Baryshkov <lumag@kernel.org>,
+	Abhinav Kumar <abhinav.kumar@linux.dev>,
+	Jessica Zhang <jessica.zhang@oss.qualcomm.com>,
+	Marijn Suijten <marijn.suijten@somainline.org>,
+	David Airlie <airlied@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Viresh Kumar <vireshk@kernel.org>,
+	Nishanth Menon <nm@ti.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Akhil P Oommen <akhilpo@oss.qualcomm.com>
+Cc: linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	freedreno@lists.freedesktop.org,
+	devicetree@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Jens Glathe <jens.glathe@oldschoolsolutions.biz>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+	Aleksandrs Vinarskis <alex.vinarskis@gmail.com>,
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Subject: Re: (subset) [PATCH v4 0/4] Support for Adreno X1-45 GPU
+Date: Sat, 23 Aug 2025 21:55:33 -0500
+Message-ID: <175600415279.952266.17398839743993518772.b4-ty@kernel.org>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20250623-x1p-adreno-v4-0-d2575c839cbb@oss.qualcomm.com>
+References: <20250623-x1p-adreno-v4-0-d2575c839cbb@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 6/7] cpufreq: CPPC: Add sysfs for min/max_perf and
- perf_limited
-To: Sumit Gupta <sumitg@nvidia.com>, rafael@kernel.org,
- viresh.kumar@linaro.org, lenb@kernel.org, robert.moore@intel.com,
- corbet@lwn.net, pierre.gondois@arm.com, zhenglifeng1@huawei.com,
- ray.huang@amd.com, gautham.shenoy@amd.com, mario.limonciello@amd.com,
- perry.yuan@amd.com, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
- linux-doc@vger.kernel.org, acpica-devel@lists.linux.dev,
- linux-kernel@vger.kernel.org
-Cc: linux-tegra@vger.kernel.org, treding@nvidia.com, jonathanh@nvidia.com,
- vsethi@nvidia.com, ksitaraman@nvidia.com, sanjayc@nvidia.com,
- bbasu@nvidia.com
-References: <20250823200121.1320197-1-sumitg@nvidia.com>
- <20250823200121.1320197-7-sumitg@nvidia.com>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20250823200121.1320197-7-sumitg@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
 
-
-On 8/23/25 1:01 PM, Sumit Gupta wrote:
-> Add sysfs interfaces for Minimum Performance, Maximum Performance
-> and Performance Limited Register in the cppc_cpufreq driver.
+On Mon, 23 Jun 2025 19:42:05 +0530, Akhil P Oommen wrote:
+> Add support for X1-45 GPU found in X1P41200 chipset (8 cpu core
+> version). X1-45 is a smaller version of X1-85 with lower core count and
+> smaller memories. From UMD perspective, this is similar to "FD735"
+> present in Mesa.
 > 
-> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
-> ---
->  .../ABI/testing/sysfs-devices-system-cpu      | 43 +++++++++++++++++++
->  1 file changed, 43 insertions(+)
+> Tested Glmark & Vkmark on Debian Gnome desktop.
 > 
-> diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-> index ab8cd337f43a..4bce0dbc48c9 100644
-> --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-> +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-> @@ -327,6 +327,49 @@ Description:	Energy performance preference
->  
->  		This file is only present if the cppc-cpufreq driver is in use.
->  
-> +What:           /sys/devices/system/cpu/cpuX/cpufreq/min_perf
-> +Date:           Aug 2025
-> +Contact:        linux-pm@vger.kernel.org
-> +Description:    Minimum Performance
+> [...]
 
-Preferably these 4 lines above use tab(s) after the ':' for indentation
-instead of spaces. (in 3 places, i.e., each sysfs file entry).
+Applied, thanks!
 
-> +
-> +		Read/write a 32 bits value from/to this file. This file
-> +		conveys the minimum performance level at which the platform
-> +		may run. Minimum performance may be set to any performance
-> +		value in the range [Lowest Performance, Highest Performance],
-> +		inclusive but must be set to a value that is less than or
-> +		equal to that specified by the Maximum Performance Register.
-> +
-> +		Writing to this file only has meaning when Autonomous Selection
-> +		is enabled.
-> +
-> +		This file is only present if the cppc-cpufreq driver is in use.
-> +
-> +What:           /sys/devices/system/cpu/cpuX/cpufreq/max_perf
-> +Date:           Aug 2025
-> +Contact:        linux-pm@vger.kernel.org
-> +Description:    Minimum Performance
-> +
-> +		Read/write a 32 bits value from/to this file. This file conveys
-> +		the maximum performance level at which the platform may run.
-> +		Maximum performance may be set to any performance value in the
-> +		range [Lowest Performance, Highest Performance], inclusive.
-> +
-> +		Writing to this file only has meaning when Autonomous Selection is
-> +		enabled.
-> +
-> +		This file is only present if the cppc-cpufreq driver is in use.
-> +
-> +What:           /sys/devices/system/cpu/cpuX/cpufreq/perf_limited
-> +Date:           Aug 2025
-> +Contact:        linux-pm@vger.kernel.org
-> +Description:    Minimum Performance
-> +
-> +		Read/write a 32 bits value from/to this file. This file indicates
-> +		to OSPM that an unpredictable event has limited processor
-> +		performance, and the delivered performance may be less than
-> +		desired/minimum performance.
-> +
-> +		This file is only present if the cppc-cpufreq driver is in use.
->  
->  What:		/sys/devices/system/cpu/cpu*/cache/index3/cache_disable_{0,1}
->  Date:		August 2008
+[2/4] arm64: defconfig: Enable X1P42100 GPUCC driver
+      commit: cf0ed173d27a2a832642aa441eb28a4dca53fd19
 
-Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
-
-Thanks.
-
+Best regards,
 -- 
-~Randy
+Bjorn Andersson <andersson@kernel.org>
