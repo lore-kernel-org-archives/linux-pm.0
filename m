@@ -1,137 +1,109 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f181.google.com (mail-pg1-f181.google.com [209.85.215.181])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2D732E5435;
-	Sun, 24 Aug 2025 18:09:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 660CA1CD1F;
+	Sun, 24 Aug 2025 20:09:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756058964; cv=none; b=adjHMGrbnPyXSLCOz/fBzTc8kX1Vo1vU7hOC3MVy+O4jnb7mkRKQWQmdiotCCN2eqlGntffgSp4+ICYCwp5pgXOlTbunVZFL32rK1heqjWp4pLLvVdiaRHHxLqkX0m4Xp7ZdgzgLmLJbC7qrb64P6LtyO/d54zw5sVllhPVxWdg=
+	t=1756066149; cv=none; b=BHASfKJSDbDquKKhALnXs5/JdTgZdTEadj5ESyNFvjuKXrf69BbZ3A1tMAACQfmG0ksBncYKVRzhczPfgU2jsse3auu0cYnzHdW0FnQHrHt6kFgHYGprmLXr2DqqlrqQ6Zi4e5mtGuaAfLYzzCZ+PkgMi7qNJjOKJekNeOKRQQg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756058964; c=relaxed/simple;
-	bh=6xwCyuADMxUWNMqY6ctIoE11fZEZ1HKzp+/zu1QHHaI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=mLM017s70UooMcn1jIn8QFXLm5GkYUH+RU1VmsaZ5EINmIT4xSj8HLP9ZJvyh1kCVbqUgmeBTQuPC1jZ/4uGheOpqEuHOHKQOTqtzSwN85b4ZIvRna+LQfUCJ3w1qV5Aze3xL5/oYJXjdleyWDZmAFvU56e+vnzmhbq2jiprT1g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=L7YkPPbO; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1756066149; c=relaxed/simple;
+	bh=ifaq3JmFy6c2hSmtcLUr1xyhxnA70o4yY0KL/8hEoN8=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=f0eYEBL5Egp5BAmyB0lZeM6dKzuJ76lBvfN2vs57InAcMwybdYyyP2kik6+ukb0/YoSJupArO4DbaHQVlHMXBvSxdmPCI4k0V4KmssOayR57SX83NsDyUS6GOboYCThQD73MtAusMDf40R9RVIovjTRqay1N7epSejCUcjmeDac=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=S/7nVS+h; arc=none smtp.client-ip=209.85.215.181
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="L7YkPPbO"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8DCF3C4CEEB;
-	Sun, 24 Aug 2025 18:09:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756058964;
-	bh=6xwCyuADMxUWNMqY6ctIoE11fZEZ1HKzp+/zu1QHHaI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=L7YkPPbOmOrD9BnBR4Wdcf0+6tQC8kef/OFN2zPv4IDHgMXl2YS+jWoO+eXBexl1Z
-	 PAnI317KEYx2/LkOuM/a0gxoQ7ZTVhHPLqbGnxRrNHixhHS0UzMrZ20gG95Ancth0N
-	 I6WgO/NXTrrkq7TN9xKgLgKdwSIqDsWM+5IexId/uUknEkQkJBM+115MtbR0DByfOF
-	 RhhRY5jYIqrVNXYicspO+ZrHyw3KDOmLJOjw6JPYYa5Vg6H+KIfiUEBQSNk3GFd+Sr
-	 KtLDdWTDgj7mjF2rLZ3zLcOLt/SKSX/0dxYbKcLwOfXXsVVPxGeXy9+TJScHqXx/dB
-	 3TXMhO6irsqmA==
-Message-ID: <539ede1a-eab6-4e8d-b108-11033cb39512@kernel.org>
-Date: Sun, 24 Aug 2025 19:14:36 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="S/7nVS+h"
+Received: by mail-pg1-f181.google.com with SMTP id 41be03b00d2f7-b49cfd967b9so558638a12.3;
+        Sun, 24 Aug 2025 13:09:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1756066147; x=1756670947; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=wKsZ491OP7hlZbw5HTmLns54/Ml7auODI+8Ckx9ZQ9o=;
+        b=S/7nVS+h8KUTNlURgwGvRusKu/MFOKwCs4qlSqxdNtygOrNh6JI2I38rhgNVbAQ3Ey
+         1nz3z1VlZnLwHQLdkNK94A+b2C0H9JCZuHWZV6t6hXLPYklh9C5PGkaMtLpBalOpkhVq
+         LnIrGh+70e3HsCAufxkhApIHX2itBnd6tBsuHOYaYkATeDhFW/0docCO4juiIWiQl6Nr
+         p6HqZuBjoBPko+I9uwKB0rdMVAgIa1al9DURsOx9yqQJ/K7k20H/GxNv/LM9ao5ZXcbq
+         +FIqjeHAcjKHInqmHWOI4/VOT4pDrX0LNfj6yvPvgz1opda5ad77sHPbexR3ua8PNK+f
+         XBEQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1756066147; x=1756670947;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=wKsZ491OP7hlZbw5HTmLns54/Ml7auODI+8Ckx9ZQ9o=;
+        b=XPms8k8RO/0Up3L44b63bwOObkjUFXA4rbSFSzvT8WwO1z6awQUruwx/qWyJCa3fIs
+         Ap6uQbWOH9YbFmZxHVdq/gREvS85GV2PwNS1p9DOvhou5Gf7qibQevXQ5zJrDUXpF8i4
+         ivj1HfKGtoM/FLK6IgyeSSBOlZJyf7WA8x4jfEjiDgU6FUIbTqhPCIkpSnaTbTbUeSqt
+         qXgtP8RF2O2GiLkDaPkUGiywaWdLWLnuyWvgVgWkQKhiFCLujI4XihKaxtYSQlQUF7bQ
+         ZyPudxq2cjDcaCHJASioifUr62uEe5GmFM3cTTKvDWAq26pAZ5OYLrfr2nvy6qMbans4
+         vFAQ==
+X-Forwarded-Encrypted: i=1; AJvYcCU/slx6Exy9bCjhdKSL4wxFULS+jchPH8bzl7yK2Xi76zUT99pJ75O7JYXtEh55t2uJOFfJjl+B0LXLYJM=@vger.kernel.org, AJvYcCXLnDmautkOSVrtOZAKI5YYnnduLXwmrHTksTu5MjwDPROQtgTyt7wuoeTqDza8qcLJFV5UUAQKlr4=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxb38FNKIfHKBnifnPWQmBOVj4+4av/r3+eZm+VF2+FDbnekGP7
+	eGKv1eI2uSU1GMNH8IOpfSgaWqndNvB140yQ1++Vul3zzvwLqsjGugcl
+X-Gm-Gg: ASbGncswDZSI8Ldh6P0YD9wDbRJRnkzxG7oSDM7vfvTnm++JFYE9m7l5JmVmsrQnuUA
+	eYCikJcCZddp7y08FvgzAf9hSsEBxeK93mhYxgBJHlMyu5wJwiR0l1zFEVVU79QeIKx+HQmidJl
+	uW5m7K/LJ+Qv2XpRkmG/J6YGsTjOx/sRHonP1T6OyZjxRF8abwFGQ5pDXD+MhDKR7V33txL8uLL
+	O6GSBaeggu/Tm1acS3OBxeF+8jztuKb27wV45JWvUiSHwQpvtbNqbd8BPcdXEvo5pHHsaeX1Fe1
+	sAD6JZY+TLlvIGvrpme8XOUTifqCzSiqKjqHC258GNkrQJ8LrbuP/i1rs6xozQXkCVFpBJoXtXt
+	gD7QIFp6x3FFU1kEq86qFYb+qpptwrx7fve0FfAp/nVZUYWtpa78LBN9Q6ND20UjEREtImbuZFg
+	==
+X-Google-Smtp-Source: AGHT+IFfgdzWlxSxSC6eqyPCOJa/vlWcJRzwYmzWAoFJk6n/bfg69IRTk7d6f/LyPO3DzTQg1K23Tg==
+X-Received: by 2002:a17:903:2012:b0:240:2145:e51d with SMTP id d9443c01a7336-2462ef440e3mr90841585ad.31.1756066147454;
+        Sun, 24 Aug 2025 13:09:07 -0700 (PDT)
+Received: from visitorckw-System-Product-Name.. ([140.113.216.168])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2466877a02bsm49389595ad.2.2025.08.24.13.09.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 24 Aug 2025 13:09:07 -0700 (PDT)
+From: Kuan-Wei Chiu <visitorckw@gmail.com>
+To: ray.huang@amd.com,
+	gautham.shenoy@amd.com,
+	mario.limonciello@amd.com,
+	perry.yuan@amd.com
+Cc: jserv@ccns.ncku.edu.tw,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Kuan-Wei Chiu <visitorckw@gmail.com>
+Subject: [PATCH] tools/power/x86/amd_pstate_tracer: Fix python gnuplot package names
+Date: Mon, 25 Aug 2025 04:09:02 +0800
+Message-Id: <20250824200902.163745-1-visitorckw@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 4/4] arm64: dts: exynos: google: add Maxim MAX77759
- Fuel-gauge
-To: t.antoine@uclouvain.be, Sebastian Reichel <sre@kernel.org>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Dimitri Fedrau <dima.fedrau@gmail.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Peter Griffin <peter.griffin@linaro.org>,
- =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>,
- Tudor Ambarus <tudor.ambarus@linaro.org>,
- Alim Akhtar <alim.akhtar@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-samsung-soc@vger.kernel.org
-References: <20250804-b4-gs101_max77759_fg-v5-0-03a40e6c0e3d@uclouvain.be>
- <20250804-b4-gs101_max77759_fg-v5-4-03a40e6c0e3d@uclouvain.be>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <20250804-b4-gs101_max77759_fg-v5-4-03a40e6c0e3d@uclouvain.be>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 04/08/2025 16:26, Thomas Antoine via B4 Relay wrote:
-> From: Thomas Antoine <t.antoine@uclouvain.be>
-> 
-> Add the node for the Maxim MAX77759 fuel gauge as a slave of the i2c.
-> 
-> The TODO is still applicable given there are other slaves on the
-> bus (e.g. PCA9468, other MAX77759 functions and the MAX20339 OVP).
-> 
-> For the device specific values (full design capacity and terminal
-> current), the device should check an EEPROM at address 0x50 of the
-> hsi2c_8 for a battery id stored in register 0x17. A set of parameters
-> for the initialization of the fuel gauge should be chosen based on
-> this id. Those sets are defined here:
-> 
-> Link: https://android.googlesource.com/kernel/gs/+/refs/heads/android-gs-raviole-5.10-android15/arch/arm64/boot/dts/google/gs101-oriole-battery-data.dtsi
-> Link: https://android.googlesource.com/kernel/gs/+/refs/heads/android-gs-raviole-5.10-android15/arch/arm64/boot/dts/google/gs101-raven-battery-data.dtsi
-> 
-> This does not seem to be a standard pattern in the kernel currently
-> so it is not implemented. Values observed on tested devices are
-> instead used. The driver or the devicetree should be should be
-> extended in the future to take versions into account.
-> 
-> The pinctrl name follows the convention proposed in
-> Link: https://lore.kernel.org/all/20250524-b4-max77759-mfd-dts-v2-2-b479542eb97d@linaro.org/
-> 
-> Signed-off-by: Thomas Antoine <t.antoine@uclouvain.be>
-> ---
->  arch/arm64/boot/dts/exynos/google/gs101-oriole.dts | 10 ++++++++
->  .../boot/dts/exynos/google/gs101-pixel-common.dtsi | 30 ++++++++++++++++++++++
->  arch/arm64/boot/dts/exynos/google/gs101-raven.dts  | 11 ++++++++
->  3 files changed, 51 insertions(+)
+The prerequisites section listed non-existent packages
+"phython-gnuplot" and "phython3-gnuplot", which may mislead users and
+cause installation failures.
 
-Code looks fine, so same comment as for defconfig change.
+Update the names to the correct distribution package names
+"python-gnuplot" and "python3-gnuplot", helping users avoid confusion
+and saving time for those following the instructions.
 
-Best regards,
-Krzysztof
+Signed-off-by: Kuan-Wei Chiu <visitorckw@gmail.com>
+---
+ tools/power/x86/amd_pstate_tracer/amd_pstate_trace.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/power/x86/amd_pstate_tracer/amd_pstate_trace.py b/tools/power/x86/amd_pstate_tracer/amd_pstate_trace.py
+index feb9f9421c7b..875b086550d1 100755
+--- a/tools/power/x86/amd_pstate_tracer/amd_pstate_trace.py
++++ b/tools/power/x86/amd_pstate_tracer/amd_pstate_trace.py
+@@ -11,7 +11,7 @@ Prerequisites:
+     gnuplot 5.0 or higher
+     gnuplot-py 1.8 or higher
+     (Most of the distributions have these required packages. They may be called
+-     gnuplot-py, phython-gnuplot or phython3-gnuplot, gnuplot-nox, ... )
++     gnuplot-py, python-gnuplot or python3-gnuplot, gnuplot-nox, ... )
+ 
+     Kernel config for Linux trace is enabled
+ 
+-- 
+2.34.1
+
