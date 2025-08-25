@@ -1,162 +1,98 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 632FD274FD0;
-	Mon, 25 Aug 2025 13:23:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.20
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F8F62AF00
+	for <linux-pm@vger.kernel.org>; Mon, 25 Aug 2025 13:29:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756128207; cv=none; b=Ad1M82ou+LYg3q63gVhwEnVAr7w+UD41+4diTnsKX4g0RbHSsZ4Hf6VR+T3MGxZtL6ILrFokFi3tgezWOidQAatRogdIKbYavd6ZOG/tv/k9FNcFuK7cshuvTmqDVeOzONM0kz+g6ciWIZPit3DxQrpKUo+XlmI4MlHQPwKGSVw=
+	t=1756128542; cv=none; b=Da4ANS9yshGMmx64ggOzo5HzHkxxdcABLJ7wwjViBFhSkxbrt2e27HyOerqCVsPSWXYdqmM5WPbkXX0VQ3kHT8JT61zmooY/a9KR0aUSJ5zvliWzzC+60Hepfs26USerrle+JeOsCi38MDjCjJOI3CM/v8TZgHzDXRE1A+Zl0ws=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756128207; c=relaxed/simple;
-	bh=ccYU6C74a+JTG6kZjCkh15K+sN1WrW9c0TizBulC32M=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=cbnLebHYaRENFm0TBhKgJPBOM+y/nEAsuESb3LcI/rhAvZDF3LaWpF3R+XM1O3EvHEgRs8NS5aVrdpu+cBOpmtqmqncDaTkSbzFKiRAIBvPofxtvGffkmm9JzIw6jBlj7n3V1WL3xGDpyGExWPVygWy48dttnxrsTcJVPeRykTs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ioRcutCW; arc=none smtp.client-ip=198.175.65.20
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1756128542; c=relaxed/simple;
+	bh=0yff2LpoJnHEQt5aTGtyODb0eaeMmkFCh6B9O8f7CpY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=VMDVQkJ7dFdKINEtUbg+PHW31t9Nmu/kPAPXhwnP7c8hG9veLtBl0jWitFgMxzLW81UfPpCEyhSIOy/QKq8gE2fweCPmdKpTbsAV+COxXlFIUWciDAk3BJZUtQnuJy2KQJtG3rBZCmr7D2ZovKSRmeOrMpCsT8KSp6uOu2rZaJU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=FyTy47B3; arc=none smtp.client-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ioRcutCW"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1756128205; x=1787664205;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=ccYU6C74a+JTG6kZjCkh15K+sN1WrW9c0TizBulC32M=;
-  b=ioRcutCWo7mCP41sm71c2GcDd6tRJGTUfpsGKEKqTBNdB49RbONG1Ejh
-   JBcer9Lbv6n3gE0DEVD49/fx8JirfuyNPuPUwb1sdaJZZM4bAtSGB0Ajy
-   tJSEKRDpB8WP3jQWJsg1uUawgFb4l3m39qG2OkhAkxUtx+XYfHUGKVLXS
-   3AUUsfs4Yf2WSNND5jlsoZ3F3VwGE+FntF6zjh/9PlsGrGZUhOemt7LmK
-   g4b1I/SpWU83SxvMgzU0FVKLLFU1H79boNm7FLJueOi3K+b1x3mAusBqI
-   y+mRzpa4uq4NZacDqSh5QZ39b6jvftfXvQHkMghUx37YOceqjUVt8S6dE
-   Q==;
-X-CSE-ConnectionGUID: 8/cweqmLRDSWdI8vtsufiQ==
-X-CSE-MsgGUID: kgozc2KlRHSRI2zLfR/Jcg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11533"; a="58048409"
-X-IronPort-AV: E=Sophos;i="6.18,213,1751266800"; 
-   d="scan'208";a="58048409"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Aug 2025 06:23:21 -0700
-X-CSE-ConnectionGUID: ZmzszRI5Q1+NU5LTSuXwVw==
-X-CSE-MsgGUID: TYYHUkuwR6qMCeSJdL8rVg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.18,213,1751266800"; 
-   d="scan'208";a="169485283"
-Received: from spandruv-desk.jf.intel.com ([10.54.75.16])
-  by orviesa008.jf.intel.com with ESMTP; 25 Aug 2025 06:23:21 -0700
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-To: rafael@kernel.org,
-	daniel.lezcano@linaro.org,
-	lukasz.luba@arm.com
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 4/4] thermal: intel: int340x: Add module parameter to change slider offset
-Date: Mon, 25 Aug 2025 06:23:15 -0700
-Message-ID: <20250825132315.75521-5-srinivas.pandruvada@linux.intel.com>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20250825132315.75521-1-srinivas.pandruvada@linux.intel.com>
-References: <20250825132315.75521-1-srinivas.pandruvada@linux.intel.com>
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="FyTy47B3"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1756128540;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Xs+Tu3bRpdzcsjYBxYYo8Y02jOXY+XlScB6sBjefWzs=;
+	b=FyTy47B36qb7YdJc/fbX3iELxXvpj/2Uv1qacpmbWl9Py0Qm8UisQUhN70DY2jIyPXVYyX
+	tKN2nXRGOphewJbCP1A22ok+CJztn+i23YI2gicDcv18D+9zIk47JKyxvKsHPgpFnRO52s
+	8EQ5sxFeGpT2JdHCVe6RMpeafUds9bI=
+Received: from mail-qv1-f72.google.com (mail-qv1-f72.google.com
+ [209.85.219.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-583-3IWPCdkCMoKCTvvvGJif2w-1; Mon, 25 Aug 2025 09:28:58 -0400
+X-MC-Unique: 3IWPCdkCMoKCTvvvGJif2w-1
+X-Mimecast-MFC-AGG-ID: 3IWPCdkCMoKCTvvvGJif2w_1756128538
+Received: by mail-qv1-f72.google.com with SMTP id 6a1803df08f44-70d903d0cbaso79769236d6.0
+        for <linux-pm@vger.kernel.org>; Mon, 25 Aug 2025 06:28:58 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1756128538; x=1756733338;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Xs+Tu3bRpdzcsjYBxYYo8Y02jOXY+XlScB6sBjefWzs=;
+        b=Vxq2faC5+JGLSKOKwwvRXz1FKJueQLyXzxCsnUqBrH3HgnCfjSH4OpbgvpRIZNotmf
+         DxwY2eL1rz6vwWlFyvLFSVgToidVp0rzlOcba6tj10aq4kZSmIW9d1DOtLkHuqbIYTI4
+         C17HAKI/yiQztOYIItA20KqtOUvheUum49qD0knftLtAhGMq3gYqlJuRqdfmKxiTNPRa
+         QcZ3VukMzbGB8vQIYH+sTNSYO5D4/3c9gtc1wCn/kSa6KlTs4ci24p//fTqDuMu77zzs
+         w1V20ALFT5sAstPtm3iAPCsp+ZZTqzWB2BlfGSKDFuRmFaudOH9tLhwbakmZvNB31Bvx
+         LH3w==
+X-Forwarded-Encrypted: i=1; AJvYcCUxS94H74YrP4SDRUogGpQuXTelVzx/EpMZwrYqazO8jmkT5Eq0N5h/0a/gNob0AWBTmZYqrBjSew==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwIhrohaIwcnR8bL/VXpiIr7f+kVPK/yj10HyCj3N8ckUcXyt97
+	eKbyeGmRA4NWwSRp2z4gBhAFj017yPEGVt88TKjDuaP+0sDl6ZA93ZdaQ0E8mu8kt126q8gY48I
+	RX+9YqJQsC6ZVQCipuluMw2tMR1frr8QsdGIyqxjMQr3tGjO81YdE/uSdgmSs
+X-Gm-Gg: ASbGncvHJvL73ILLULqpDCZlTQrncM1GYvBDuQwb2K6mjYO9Ez+8/xBwK2zwBiKXeV+
+	mLA/ZfO0JZ3ypWqCdMZafZqBlj0o9D7MJQy461+OgsDA8wURqfMLF0D0coRkarSeZZaaDXmRmfn
+	bGaBRCQik0ev5KPQux5vQnSsqJjBxmj+aYlJigzVwfnBNpjUOB1LI/h2aazedMvcnKvoueDS2dQ
+	leKKSuJiatRbu3DUgt+vQDdZ4Te43QLPChxDvOYBOwNVhue7bcoYpb++pqbSUQj00QhnVBv23Fj
+	qQfKFU51NDHpvwU40PDAy0GKPxEKrdhSyg==
+X-Received: by 2002:a05:6214:518b:b0:70b:adf9:bce2 with SMTP id 6a1803df08f44-70d9837efe9mr94799966d6.20.1756128538238;
+        Mon, 25 Aug 2025 06:28:58 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHu0YB1Y5ZYTZ2o7B0Gvk4C/QMLdG541HyJVolkrvoTFoJmhnpSpmIS4mvxM9BASZEQVvZlUg==
+X-Received: by 2002:a05:6214:518b:b0:70b:adf9:bce2 with SMTP id 6a1803df08f44-70d9837efe9mr94799686d6.20.1756128537742;
+        Mon, 25 Aug 2025 06:28:57 -0700 (PDT)
+Received: from thinkpad2024 ([71.217.64.1])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-70da717df65sm45334096d6.30.2025.08.25.06.28.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 25 Aug 2025 06:28:57 -0700 (PDT)
+Date: Mon, 25 Aug 2025 09:28:55 -0400
+From: "John B. Wyatt IV" <jwyatt@redhat.com>
+To: lenmn dza <lenmndza@gmail.com>
+Cc: "trenn@suse.com" <trenn@suse.com>,
+	"shuah@kernel.org" <shuah@kernel.org>,
+	"skhan@linuxfoundation.org" <skhan@linuxfoundation.org>,
+	"sageofredondo@gmail.com" <sageofredondo@gmail.com>,
+	"jkacur@redhat.com" <jkacur@redhat.com>,
+	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cpupower: Add Intel boost state and frequency monitor
+Message-ID: <aKxlFxZOlqfjaF_B@thinkpad2024>
+References: <TYSPR06MB7600C90A1D3FA792F3284771BC3FA@TYSPR06MB7600.apcprd06.prod.outlook.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <TYSPR06MB7600C90A1D3FA792F3284771BC3FA@TYSPR06MB7600.apcprd06.prod.outlook.com>
 
-SoC slider value is set by the user (or the default when user has not
-modified it). To enhance power efficiency dynamically, the firmware can
-optionally auto-adjust the slider value based on the current workload.
-This adjustment is governed by an additional parameter known as the
-"slider offset". This offset permits the firmware to increase the slider
-value up to and including "SoC slider + slider offset".
+Please resend with the patches inline.
 
-Add a module parameter to specify this "slier offset" value.
+Please see: https://www.kernel.org/doc/html/latest/process/submitting-patches.html#no-mime-no-links-no-compression-no-attachments-just-plain-text
 
-By default, the SoC slider offset is set to 0. This means that SoC is not
-allowed to switch slider position.
-
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
-v2:
-- Edit description and add comment in the code for the slider_offset
-
- .../processor_thermal_soc_slider.c            | 48 +++++++++++++++++++
- 1 file changed, 48 insertions(+)
-
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_soc_slider.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_soc_slider.c
-index 393ce5246447..0d79f6a8cb50 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_soc_slider.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_soc_slider.c
-@@ -90,6 +90,47 @@ static const struct kernel_param_ops slider_def_balance_ops = {
- module_param_cb(slider_balance, &slider_def_balance_ops, NULL, 0644);
- MODULE_PARM_DESC(slider_balance, "Set slider default value for balance.");
- 
-+static u8 slider_offset;
-+
-+static int slider_def_offset_set(const char *arg, const struct kernel_param *kp)
-+{
-+	u8 offset;
-+	int ret;
-+
-+	guard(mutex)(&slider_param_lock);
-+
-+	ret = kstrtou8(arg, 16, &offset);
-+	if (!ret) {
-+		if (offset > SOC_SLIDER_VALUE_MAXIMUM)
-+			return -EINVAL;
-+
-+		slider_offset = offset;
-+	}
-+
-+	return ret;
-+}
-+
-+static int slider_def_offset_get(char *buf, const struct kernel_param *kp)
-+{
-+	guard(mutex)(&slider_param_lock);
-+	return sysfs_emit(buf, "%02x\n", slider_offset);
-+}
-+
-+static const struct kernel_param_ops slider_offset_ops = {
-+	.set = slider_def_offset_set,
-+	.get = slider_def_offset_get,
-+};
-+
-+/*
-+ * To enhance power efficiency dynamically, the firmware can optionally
-+ * auto-adjust the slider value based on the current workload. This
-+ * adjustment is controller by the "slider_offset" module parameter.
-+ * This offset permits the firmware to increase the slider value
-+ * up to and including "SoC slider + slider offset,".
-+ */
-+module_param_cb(slider_offset, &slider_offset_ops, NULL, 0644);
-+MODULE_PARM_DESC(slider_offset, "Set slider offset.");
-+
- /* Convert from platform power profile option to SoC slider value */
- static int convert_profile_to_power_slider(enum platform_profile_option profile)
- {
-@@ -130,6 +171,8 @@ static inline void write_soc_slider(struct proc_thermal_device *proc_priv, u64 v
- 	writeq(val, proc_priv->mmio_base + SOC_POWER_SLIDER_OFFSET);
- }
- 
-+#define SLIDER_OFFSET_MASK	GENMASK_ULL(6, 4)
-+
- static void set_soc_power_profile(struct proc_thermal_device *proc_priv, int slider)
- {
- 	u64 val;
-@@ -137,6 +180,11 @@ static void set_soc_power_profile(struct proc_thermal_device *proc_priv, int sli
- 	val = read_soc_slider(proc_priv);
- 	val &= ~SLIDER_MASK;
- 	val |= (FIELD_PREP(SLIDER_MASK, slider) | BIT(SLIDER_ENABLE_BIT));
-+
-+	/* Set the slider offset from module params */
-+	val &= ~SLIDER_OFFSET_MASK;
-+	val |= FIELD_PREP(SLIDER_OFFSET_MASK, slider_offset);
-+
- 	write_soc_slider(proc_priv, val);
- }
- 
 -- 
-2.43.0
+Sincerely,
+John Wyatt
+Software Engineer, Core Kernel
+Red Hat
 
