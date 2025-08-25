@@ -1,45 +1,46 @@
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40BC71F4CAF;
-	Mon, 25 Aug 2025 13:23:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 998A42727F9;
+	Mon, 25 Aug 2025 13:23:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756128203; cv=none; b=pxayYe+bukAN3R+e0AWshCjVBMpDTBEGZsZAFuBWEiqNLhto+RnR2SHOqF8o0PcckPb9qtbiuHmxFSmNANE8uKNzOr9FZa71Rdy7LOGhFGJFUPhYbg8h3Nj4bouOapUr93abjedgD5YUW6org+qvInSkQspMHDfNSN0ST7Fmdi4=
+	t=1756128205; cv=none; b=O3kfzluLnpbldv0iC0qBGn3Kf4eRdPEd/n1OsDjTlJOfcOaT2VUwgFAes0DEFJX9CEm7e3pKKRTpY2uG3OYThi4QWStSNytD7//KAnnzGXqOTgjeJyBNM8kc0ETyU3WH9eNiHIr4C+VUPbl6C/bXlvh7JOVOPnKYpxxTfULd94g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756128203; c=relaxed/simple;
-	bh=4LQdlvrviPqpRYcasxXN05G9N8Xmoc1Rl+Jzae5Eshk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=tzzpIsxF4fNOSyxPjHWOMBholGWP+ghGaQbR6wpwkvYEfBPE+xUYAFWhVTt7CYJt1lComtD+nGHAtJg6Uq3QxirXo5HxD7xdgoVGz01hTSVmtRqy/q5P2Ef0mWhTuN3rlQnlvXHpcilXQNu6pkqwCjkNuog+zWHmyYBsm7EFDM4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=jhF6RABk; arc=none smtp.client-ip=198.175.65.20
+	s=arc-20240116; t=1756128205; c=relaxed/simple;
+	bh=tYIs86E0WF9abR3jj8G1FDvDW6aeVENFNN9gTh43cAc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=O0Vux6S4UuV35rhIoKzdTv0dFPzqvHbEOSOdEaqJa8S9usmW58f+JxXWgYpzNt6nuKWQF4q2rxrbiaxiVIQ9nk4P2OJD/gXvdwH0rntqyqcFm57JI9Hpdvp5dWUn/k/CXcmbbIywAK9ozqC+tqhOisVeJWMf8RRCXiiDw845uVc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=FKHFNu2y; arc=none smtp.client-ip=198.175.65.20
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="jhF6RABk"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="FKHFNu2y"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1756128201; x=1787664201;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=4LQdlvrviPqpRYcasxXN05G9N8Xmoc1Rl+Jzae5Eshk=;
-  b=jhF6RABkOUtTGEilW3dJEShlWdPNNKRmCQeAahOKRlXmijwVwJtfUHGr
-   WdHUnmzU/sJ31BEG3S929914oLL9y6x1vN2kiNEnLPOMFsDJGwLnR10ea
-   9L26PoLI6yMa3WoKVr/E8XKUL9aSFASVwS8blicYSik28rjUpOqqhZrTQ
-   bPE1hslKXuz97dFbFJYfWL6pYSEwTSqSlcQIaptbPfLmIjsPonF7rs0Qf
-   TmMYYXuR6prsmx0kDR8mMpRLCYJIPUgVMlnQCzPXoEIKreIwC4QHQS6Gi
-   FiDWqXnRSGMGM6JPjbTCo0XlF1xAoweFCbcpKg0kfxUASoCyHBpxemmOI
-   Q==;
-X-CSE-ConnectionGUID: CQLTimxUQTqujNrD0op6ww==
-X-CSE-MsgGUID: L3Wk425PR26l6sqw6uXlyQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11533"; a="58048394"
+  t=1756128204; x=1787664204;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=tYIs86E0WF9abR3jj8G1FDvDW6aeVENFNN9gTh43cAc=;
+  b=FKHFNu2yjaE55X9Q6ChaiH3oZjN9NM/b2Qq4F8EbloOGlm2rTLdo7oru
+   cMHmzbsNtSrbeleRI/WWs/pyWFmG3N1aBUKyLZLDgxEGBbNTF+tWI0ZZl
+   yLljrMK8TbTyBiRij9cYtyFB3hNn1uc9vnq7644+0DlVRzJ7Mex6jMKhR
+   z/bi29xZHkAgrglkqnVYNaAkPuUH4mqj8L+NJF8SuJOBEznb8W5zv+BU4
+   tCwkcW9+y9PuAHvsj9SkfEGc6UCVB232LTzwbg5mR5xJv4GMZW5QiE7qU
+   d8hco3zRl/Tb+au0/J0tyKFtEpnrATq2c4Tl+xk47YpUbDTJ46TgMYZHF
+   g==;
+X-CSE-ConnectionGUID: hE3b3zwSRX+Y/o8RHX9quQ==
+X-CSE-MsgGUID: GwnaSCknTwm/iZeVelzOLA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11533"; a="58048401"
 X-IronPort-AV: E=Sophos;i="6.18,213,1751266800"; 
-   d="scan'208";a="58048394"
+   d="scan'208";a="58048401"
 Received: from orviesa008.jf.intel.com ([10.64.159.148])
   by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Aug 2025 06:23:21 -0700
-X-CSE-ConnectionGUID: jWuIzmwnRv2EWqxpGSgovw==
-X-CSE-MsgGUID: ChziJ6TgRBmWWOnj5ebbVQ==
+X-CSE-ConnectionGUID: qnhYEOj6SASEOWdIwH+pMQ==
+X-CSE-MsgGUID: 8FQ6OM01Qf+Rs7VRK+Gt6A==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.18,213,1751266800"; 
-   d="scan'208";a="169485274"
+   d="scan'208";a="169485278"
 Received: from spandruv-desk.jf.intel.com ([10.54.75.16])
   by orviesa008.jf.intel.com with ESMTP; 25 Aug 2025 06:23:21 -0700
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
@@ -49,10 +50,12 @@ To: rafael@kernel.org,
 Cc: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 0/4] thermal: intel: int340x: New power slider interface
-Date: Mon, 25 Aug 2025 06:23:11 -0700
-Message-ID: <20250825132315.75521-1-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v2 2/4] thermal: intel: int340x: Enable power slider interface for Panther Lake
+Date: Mon, 25 Aug 2025 06:23:13 -0700
+Message-ID: <20250825132315.75521-3-srinivas.pandruvada@linux.intel.com>
 X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20250825132315.75521-1-srinivas.pandruvada@linux.intel.com>
+References: <20250825132315.75521-1-srinivas.pandruvada@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -61,29 +64,31 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Using the Linux platform-profile API, add support for system-wide energy
-performance preferences. This feature is enabled for Panther Lake CPUs.
+Set the PROC_THERMAL_FEATURE_SOC_POWER_SLIDER feature flag in
+proc_thermal_pci_ids[] for Panther Lake to enable power slider interface.
 
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
 v2:
-- Merge patch 5/5 to 1/5 (now 1/4)
-- Some minor code changes
+- Change header to include "Panther Lake" and edit description
 
-Srinivas Pandruvada (4):
-  thermal: intel: int340x: Add support for power slider
-  thermal: intel: int340x: Enable power slider interface for Panther
-    Lake
-  thermal: intel: int340x: Add module parameter for balanced Slider
-  thermal: intel: int340x: Add module parameter to change slider offset
+ .../intel/int340x_thermal/processor_thermal_device_pci.c       | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
- drivers/thermal/intel/int340x_thermal/Kconfig |   1 +
- .../thermal/intel/int340x_thermal/Makefile    |   1 +
- .../processor_thermal_device.c                |  20 ++
- .../processor_thermal_device.h                |   6 +
- .../processor_thermal_device_pci.c            |   3 +-
- .../processor_thermal_soc_slider.c            | 283 ++++++++++++++++++
- 6 files changed, 313 insertions(+), 1 deletion(-)
- create mode 100644 drivers/thermal/intel/int340x_thermal/processor_thermal_soc_slider.c
-
+diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
+index d4d7e8e147d2..e2471768d355 100644
+--- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
++++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
+@@ -498,7 +498,8 @@ static const struct pci_device_id proc_thermal_pci_ids[] = {
+ 	{ PCI_DEVICE_DATA(INTEL, PTL_THERMAL, PROC_THERMAL_FEATURE_RAPL |
+ 	  PROC_THERMAL_FEATURE_DLVR | PROC_THERMAL_FEATURE_DVFS |
+ 	  PROC_THERMAL_FEATURE_MSI_SUPPORT | PROC_THERMAL_FEATURE_WT_HINT |
+-	  PROC_THERMAL_FEATURE_POWER_FLOOR | PROC_THERMAL_FEATURE_PTC) },
++	  PROC_THERMAL_FEATURE_POWER_FLOOR | PROC_THERMAL_FEATURE_PTC |
++	  PROC_THERMAL_FEATURE_SOC_POWER_SLIDER) },
+ 	{ PCI_DEVICE_DATA(INTEL, WCL_THERMAL, PROC_THERMAL_FEATURE_MSI_SUPPORT |
+ 	  PROC_THERMAL_FEATURE_RAPL | PROC_THERMAL_FEATURE_DLVR |
+ 	  PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_WT_HINT |
 -- 
 2.43.0
 
