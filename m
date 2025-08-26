@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A614B23D2BF;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6D24248869;
 	Tue, 26 Aug 2025 07:18:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756192717; cv=none; b=jxIkXyuy+NElj1oP5b/7S5XssNlNk//igRioCh0sukaqA5HHHjgcpREZoGwjxJk1L5VEYl7e8vNoicP5MuWCbI5x91z7au/bCHbYHdOn9OcDA0/HB1sedtIVYNTO4JwGPymhYk0qkk6BbMroyFHLy/pwpflVDkjTS7B+9JML9j8=
+	t=1756192717; cv=none; b=JbeuPTch0v4avqtjW7u3Odamic7zxnKO1aozqoHXpg8idhs3FHfGEuYGE+pgAnBRKEBweaJJRdjrxY47+tbeCkQg8/VaulRRVJWD76P5qd9Tkdep+Y7i1e/MWK+s659oQH5NteEPIcxYV3O8Wy0emfEtGyjagVF4LuQx+CSvShM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1756192717; c=relaxed/simple;
-	bh=1bEUIqbwLDzhfj/xPCZr0TVilOMdMwgwUhKvUU4pTss=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=YKxCdf4mdynEkwrKEzq78YcLm9MlBZOHylj2bzXOgcjPX+Jz0Mh7Grj4UblvhzhAZdpFRcczHRoLdLyo07Gpm1g4rLT20nEbp5pGqTXCt/3fKg1iWt23QF2Mw8zNZO1h4jli0BKTL6dxJGYKT2VvifAQS6y2AIv346fhbKwk/Ho=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Us5ImE58; arc=none smtp.client-ip=10.30.226.201
+	bh=HaCeFgeBKgW1ML1s8fwj4FRsXH/GRZ7CayunP31zXgw=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=NobFsqbPg85KBUURayYlH/F9EegCH1Fr3tHeHv9eQpKNl7QY5n8cV43xIkI2iQ4Jotpo8OYo4M2qyJdHjp/id/EmDlHwGj8e4FQ6HzPZLtXt9QzD94HZTlB7nugRT4wHMYS8FWeCFrsTi7TSAIXRG50WGzE5cNqkXKFXCG3XMJk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Sg1qdmW6; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Us5ImE58"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 3AF87C4CEF1;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Sg1qdmW6"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 64C60C19422;
 	Tue, 26 Aug 2025 07:18:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1756192717;
-	bh=1bEUIqbwLDzhfj/xPCZr0TVilOMdMwgwUhKvUU4pTss=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=Us5ImE58r+yUHGD5UrDEyiu7vqiYuSWbaPrrzBilohfwRGfWLsnlo6lDPPijWXHnJ
-	 pDL5SxIYmlhrO7lrJbqomfs/YkLy18zVFjeVCH3g3D95Nmolbdc7kFoEj1K/m3tFaD
-	 5U4sfybcUwI9xqmdJTQAYoTuhnMD3VQLl/dWqw0baFZzXddckhWbNsE5EzYiS1v6Xq
-	 +9wb1qjr+vQp/BnG0xt/oQwd9Qub3bSZdVpGrYox7GKKNGw0ngUyUuFAg46elexYr+
-	 Gl9vRuoVDe1zkbbKwNc6xNt8qdMCyvvvcQYrZjwKq570gINouZO+ad6HY3U0wvd3QU
-	 X2FH7UhI8MpdA==
+	bh=HaCeFgeBKgW1ML1s8fwj4FRsXH/GRZ7CayunP31zXgw=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=Sg1qdmW6KN/HncXfO3wKeYhwhbeEhF1/JVyZKgjIkbqIULLqhzfM6KdbEJ3R6F20l
+	 hORrUlVDDStMfDAlDujkBePmP3HVA1jwhFbLeUoSddcAod6zSeckGB2U5gDtts3WKW
+	 vploHqTQymjDEaZuImpd7xQCg6upJWO+VIWo00qaxblwp1l5fwcjHsayEgdjZhM5aH
+	 9RvBJbAOq7HiOVNdbM/Lv4ZjkA7IsbI5NFUesYcpTKynNRVFJkfEN+oTUPq1fN6szq
+	 IdcGUhxHAv6E3rqeq0l2CP/Ib0um8qXP4aRDog0MHLjlQC2rl2gSC6IVFkOs901s5F
+	 3X4hAl1UDDEqg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21D77CA0FE9;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A717CA0FF2;
 	Tue, 26 Aug 2025 07:18:37 +0000 (UTC)
 From: Fenglin Wu via B4 Relay <devnull+fenglin.wu.oss.qualcomm.com@kernel.org>
-Subject: [PATCH v3 0/8] power: supply: Add several features support in
- qcom-battmgr driver
-Date: Tue, 26 Aug 2025 15:18:27 +0800
-Message-Id: <20250826-qcom_battmgr_update-v3-0-74ea410ef146@oss.qualcomm.com>
+Date: Tue, 26 Aug 2025 15:18:31 +0800
+Subject: [PATCH v3 4/8] power: supply: qcom_battmgr: Add state_of_health
+ property
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,11 +41,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAMNfrWgC/23OzQqDMAwH8FeRnlfpx1pxp73HGFLbTAtz1baWD
- fHdV4XBDl4C/5D8kgUF8BYCuhQL8pBssO6VAz8VSPfq1QG2JmfECBNEMIIn7YamVTEOnW/m0ag
- ImAtJjRZMaiJQ3hw9POx7V2/3nHsbovOf/UiiW/fn8UMvUUwwa1tpzkCUkHB1IZTTrJ55eChzQ
- Rub2B/Fj19LLFM18KqiNVdSyANqXdcvQAWPLAgBAAA=
-X-Change-ID: 20250520-qcom_battmgr_update-3561dc526c05
+Message-Id: <20250826-qcom_battmgr_update-v3-4-74ea410ef146@oss.qualcomm.com>
+References: <20250826-qcom_battmgr_update-v3-0-74ea410ef146@oss.qualcomm.com>
+In-Reply-To: <20250826-qcom_battmgr_update-v3-0-74ea410ef146@oss.qualcomm.com>
 To: Sebastian Reichel <sre@kernel.org>, 
  Bjorn Andersson <andersson@kernel.org>, 
  Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -63,11 +61,11 @@ Cc: Subbaraman Narayanamurthy <subbaraman.narayanamurthy@oss.qualcomm.com>,
  kernel@oss.qualcomm.com, devicetree@vger.kernel.org, 
  linux-usb@vger.kernel.org, Fenglin Wu <fenglin.wu@oss.qualcomm.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1756192715; l=4089;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1756192715; l=2199;
  i=fenglin.wu@oss.qualcomm.com; s=20240327; h=from:subject:message-id;
- bh=1bEUIqbwLDzhfj/xPCZr0TVilOMdMwgwUhKvUU4pTss=;
- b=wO/b1NhAiQ3HkyQBnOSotfw2AX4bRBUPRQDCyNksFGTYEuFDK8o3eGTobVg2J6MMmZL5CHmj2
- /DoJKOJCjIeBy4megS9gfXWqPR5x+hs3WQa4jOW2mTI09eJ6OvCwyyT
+ bh=4hGGGPKO891NP5TSVeZv1e7gVhGgtpNPWpkz9SPxNA8=;
+ b=YjCFlxxMJuxHvuVm1mXz8AWq6HWeT0K66Z4CJWQRfxpuRlYQE+UZZqYualrbre/q8Y20Axujp
+ bLXB+wqf4XXAoi97DSzP/Ujv3/CMuSZR2aUqvAs6XEZM37GcTughtVb
 X-Developer-Key: i=fenglin.wu@oss.qualcomm.com; a=ed25519;
  pk=BF8SA4IVDk8/EBCwlBehKtn2hp6kipuuAuDAHh9s+K4=
 X-Endpoint-Received: by B4 Relay for fenglin.wu@oss.qualcomm.com/20240327
@@ -75,85 +73,66 @@ X-Endpoint-Received: by B4 Relay for fenglin.wu@oss.qualcomm.com/20240327
 X-Original-From: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
 Reply-To: fenglin.wu@oss.qualcomm.com
 
-Add following features in qcom-battmgr drivers as the battery management
-firmware has provided such capabilities:
- - Add resistance power supply property in core driver and qcom-battmgr
-   driver to get battery resistance
- - Add state_of_health power supply property in core driver and
-   qcom-battmgr driver to get battery health percentage
- - Add charge control start/end threshold control by using
-   charge_control_start_threshold and charge_control_end_threshold power
-   supply properties
+From: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
 
-The changes have been tested on QRD8650 and X1E80100-CRD devices based on
-qcom/linux.git for-next commit a679f3f6931cdb0c2ef5dc0c26f895ae3f6c1ddc.
+Add state_of_health property to read battery health percentage from
+battery management firmware.
 
 Signed-off-by: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
 ---
-Changes in v3:
-- Change power supply property "RESISTANCE" to "INTERNAL_RESISTANCE" and
-  update the ABI document accordingly.
-- Update the ABI document for "STATE_OF_HEALTH" property to explain it
-  better.
-- Drop following patches, as they were made due to my misunderstanding of
-  the compats fallback behavior. Thank you to Krzysztof for the correction
-  with patience.
-    [PATCH v2 6/8] dt-bindings: soc: qcom: pmic-glink: Move X1E80100 out of fallbacks
-    [PATCH v2 7/8] usb: typec: ucsi_glink: Add UCSI quirk for X1E80100 platform
-    [PATCH v2 8/8] arm64: dts: qcom: x1*: Remove qcom,sm8550-pmic-glink fallback
-- Addressed several comments in [PATCH v2 5/8]:
-   - Separated the compat string addition change
-   - Fixed the coding style issues in several places to address this
-     checkpatch error:
-       "CHECK: Alignment should match open parenthesis"
-   - Add logic to read charge control thresholds from SDAM registers in driver
-     probe. It addresses the issue on X1E80100, where there is no interface
-     to retrieve the thresholds from the battery management firmware after
-     boot-up.
-- Add a DT binding change for charge_limit_xx "nvmem" DT properties.
-- Add a DT change to specifiy charge_limit_xx "nvmem" properties for X1E80100
-  devices.
-- Link to v2: https://lore.kernel.org/r/20250530-qcom_battmgr_update-v2-0-9e377193a656@oss.qualcomm.com
+ drivers/power/supply/qcom_battmgr.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-Changes in v2:
-- Corrected "qcom-battmgr" to "qcom_battmgr" in the commit subject of
-  patch 4/5.
-- Added charge control support for X1E80100 platform in patch 5.
-- X1E80100 is no longer a fallback of SM8550 in pmic-glink battmgr support,
-  hence added patch 6 in the pmic-glink binding to move X1E80100 out of the
-  fallbacks.
-- Added patch 7 in glink-ucsi driver to include UCSI quirk for X1E80100
-  platform
-- Added patch 8 to remove "qcom,sm8550-pmic-glink" compatible string in
-  x1* board files.
-- Rebased the changes on qcom/linux.git for-next commit 44ef9ab4baaf496d227ab98d368016700f0b9300.
-- Link to v1: https://lore.kernel.org/r/20250523-qcom_battmgr_update-v1-0-2bb6d4e0a56e@oss.qualcomm.com
+diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
+index 55477ae92fd56ede465b32d6f7ed9da78ebd869c..008e241e3eac3574a78459a2256e006e48c9f508 100644
+--- a/drivers/power/supply/qcom_battmgr.c
++++ b/drivers/power/supply/qcom_battmgr.c
+@@ -256,6 +256,7 @@ struct qcom_battmgr_status {
+ 	unsigned int voltage_ocv;
+ 	unsigned int temperature;
+ 	unsigned int resistance;
++	unsigned int soh_percent;
+ 
+ 	unsigned int discharge_time;
+ 	unsigned int charge_time;
+@@ -421,6 +422,7 @@ static const u8 sm8350_bat_prop_map[] = {
+ 	[POWER_SUPPLY_PROP_TIME_TO_FULL_AVG] = BATT_TTF_AVG,
+ 	[POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG] = BATT_TTE_AVG,
+ 	[POWER_SUPPLY_PROP_INTERNAL_RESISTANCE] = BATT_RESISTANCE,
++	[POWER_SUPPLY_PROP_STATE_OF_HEALTH] = BATT_SOH,
+ 	[POWER_SUPPLY_PROP_POWER_NOW] = BATT_POWER_NOW,
+ };
+ 
+@@ -588,6 +590,9 @@ static int qcom_battmgr_bat_get_property(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_INTERNAL_RESISTANCE:
+ 		val->intval = battmgr->status.resistance;
+ 		break;
++	case POWER_SUPPLY_PROP_STATE_OF_HEALTH:
++		val->intval = battmgr->status.soh_percent;
++		break;
+ 	case POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG:
+ 		val->intval = battmgr->status.discharge_time;
+ 		break;
+@@ -672,6 +677,7 @@ static const enum power_supply_property sm8350_bat_props[] = {
+ 	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
+ 	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
+ 	POWER_SUPPLY_PROP_INTERNAL_RESISTANCE,
++	POWER_SUPPLY_PROP_STATE_OF_HEALTH,
+ 	POWER_SUPPLY_PROP_POWER_NOW,
+ };
+ 
+@@ -1141,6 +1147,9 @@ static void qcom_battmgr_sm8350_callback(struct qcom_battmgr *battmgr,
+ 		case BATT_CAPACITY:
+ 			battmgr->status.percent = le32_to_cpu(resp->intval.value) / 100;
+ 			break;
++		case BATT_SOH:
++			battmgr->status.soh_percent = le32_to_cpu(resp->intval.value);
++			break;
+ 		case BATT_VOLT_OCV:
+ 			battmgr->status.voltage_ocv = le32_to_cpu(resp->intval.value);
+ 			break;
 
----
-Fenglin Wu (8):
-      power: supply: core: Add resistance power supply property
-      power: supply: core: Add state_of_health power supply property
-      power: supply: qcom_battmgr: Add resistance power supply property
-      power: supply: qcom_battmgr: Add state_of_health property
-      power: supply: qcom_battmgr: update compats for SM8550 and X1E80100
-      dt-bindings: soc: qcom,pmic-glink: Add charge limit nvmem properties
-      power: supply: qcom_battmgr: Add charge control support
-      arm64: dts: qcom: x1e80100-crd: Add charge limit nvmem
-
- Documentation/ABI/testing/sysfs-class-power        |  31 ++
- .../bindings/soc/qcom/qcom,pmic-glink.yaml         |  14 +
- arch/arm64/boot/dts/qcom/x1-crd.dtsi               |   2 +
- arch/arm64/boot/dts/qcom/x1e80100-pmics.dtsi       |  20 ++
- drivers/power/supply/power_supply_sysfs.c          |   2 +
- drivers/power/supply/qcom_battmgr.c                | 316 ++++++++++++++++++++-
- include/linux/power_supply.h                       |   2 +
- 7 files changed, 378 insertions(+), 9 deletions(-)
----
-base-commit: abbf1025002e4966bfcbf8a069234e485d49edf1
-change-id: 20250520-qcom_battmgr_update-3561dc526c05
-
-Best regards,
 -- 
-Fenglin Wu <fenglin.wu@oss.qualcomm.com>
+2.34.1
 
 
