@@ -1,37 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 164C81E1E1C;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E21717B505;
 	Tue, 26 Aug 2025 20:16:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756239383; cv=none; b=Up/CjsPZupdV5016t7oHgl9e+E6QNBKs4QArnpZ3DzJOWOKxRbBczVq//2HRvcMYQYDsQZ2JvjriQ7OosJUqr0LHSojD3sn0dx5whcXyTolvH/7Fc3MdPcsNlNOyiXrxQUlcI4l/vEXtgk7pff7y78f1QFWK4aesx9W+o8t511w=
+	t=1756239383; cv=none; b=mqbFcXRY08h8032GBdGbAlLetdAQyzhk6g+dgREeryFthYBQk3kqKGjX57PndpPYa2BOTmljk+I+WPntNjWTFQJl+Yy/lXII+dQlV3K/YYXh5pRI/kEP8ylq92uI1W3f3SgyCNksoiQimu7Lgy75aDp5kJ9nYykXNQK9VshbMrU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1756239383; c=relaxed/simple;
-	bh=oVlsbr0Om4iJks3GxT0/vdOhBTnl82lkeLSHLSp9gLY=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=fPGKYec61tsyieI1AXPYbEEZTZM+JaEIvajMOBoiKglcv/1TroGEXbxGXdKGGX+v/y5XJ/ph+w58dBV94FatyA6+niOfV/TmBEmxOt0urIcaB4RmkgRrVxlnVzpQiMnE3HlWT4a28oJ8er0aDW/J/IcL8N6gfqKkLocOi35ZrAY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QpkkL+vP; arc=none smtp.client-ip=10.30.226.201
+	bh=F4eCXDpiPLysUuWKZGHe3bREw0x2ZaT5IN5Hy4x12FY=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=B3rJBTRLc8t5Wr3C/phBzWUOJSrDpXB2HxocrSNRVNKRNMf1MN7aeKz1NQxvdLT0rkQue+UOOduYWr0DVNcPoLH0+LUrvOebrvWsTzhcJDkvMFeYVQgrt+sKhSmgqCXSeDgs2ucKbb2pVsrTXY60iKxX0ZfRqNFiJfkFf3irTM4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=S1GnltAn; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QpkkL+vP"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id A70E7C4CEF1;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="S1GnltAn"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id BFA68C4CEF4;
 	Tue, 26 Aug 2025 20:16:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1756239382;
-	bh=oVlsbr0Om4iJks3GxT0/vdOhBTnl82lkeLSHLSp9gLY=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=QpkkL+vPRt6pHKcbP9uQQdLTsaJCV5XmSd58KL0cM/7EXXD5OsOCkOdcv/JaI7LRv
-	 4x0LphWz71fZX1HjqGPgqPcpKqX3JzNdlSdckmjs8cQRubw5KBpCJCsvpvxdjSiaaC
-	 ZJCtxOPrZOqTtP8XTfOZEOu+3vrTZd5YqzvWCGG7KIOms3MKPvO9G3/af4kxXz7PDR
-	 l6GWrqDmuPZGS+I8QXTCmMvF72m0bpapz24Q6rtBa9JaVoXGKB/XD0FJ2+ijbHuELE
-	 ONTlkZLV6BkD+rTFNRXBnLTIg6fdIIKQzOk6IqsGhwGrkRu2bAQ+4Li46kBDUHENBI
-	 tW4Wm6Xhf9U0Q==
+	bh=F4eCXDpiPLysUuWKZGHe3bREw0x2ZaT5IN5Hy4x12FY=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=S1GnltAnW2Rmqpa1OBaayvFQV3qnq5hgI100N9vBuc/oa20zEur0ZlB0ZpZLa1Aa0
+	 z84bZJqVqawIe2A4WSyeoiKsEAApoE1lOlWDHd3hbNGpF0kDuZB1BFgVJ+7NaZZ1xy
+	 fGF09acCLKozOvxcHWrFBE1Z+Z5MKLvNlZlrx31yRJIfdkchiH5vs63FhbACP1/Z+Y
+	 fPpVbadCmDZNhCtjJHXKs89MsEa+CUqWjnTjeFGAdZesIneR4HyRV5GXwClgTDNyEb
+	 ZcOoNjFQvwdx5jps6Gdb7WgUWtbsblBc5f76gKOzqlsKhrECWoW0dNFRxGWfEtPhaY
+	 5CeQ6+jZ37IlQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92D46CA0FF0;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AEF53CA0FF8;
 	Tue, 26 Aug 2025 20:16:22 +0000 (UTC)
 From: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>
-Subject: [PATCH 0/2] cpufreq: tegra186: Fix initialization and scaling
-Date: Tue, 26 Aug 2025 15:15:58 -0500
-Message-Id: <20250826-tegra186-cpufreq-fixes-v1-0-97f98d3e0adb@gmail.com>
+Date: Tue, 26 Aug 2025 15:16:00 -0500
+Subject: [PATCH 2/2] cpufreq: tegra186: Initialize all cores to base
+ frequencies
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,10 +41,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAP4VrmgC/x3LSwqAMAwA0atI1gZswVq8irioNdFs/KQqgnh3i
- 8vHMA8kUqEEbfGA0iVJ1iXDlAXEOSwToYzZYCtbV946PGjSYLzDuJ2stCPLTQkbHpi9ic4HC3n
- elP6Q365/3w/l+hYNaAAAAA==
-X-Change-ID: 20250826-tegra186-cpufreq-fixes-7fbff81c68a2
+Message-Id: <20250826-tegra186-cpufreq-fixes-v1-2-97f98d3e0adb@gmail.com>
+References: <20250826-tegra186-cpufreq-fixes-v1-0-97f98d3e0adb@gmail.com>
+In-Reply-To: <20250826-tegra186-cpufreq-fixes-v1-0-97f98d3e0adb@gmail.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>, 
  Viresh Kumar <viresh.kumar@linaro.org>, 
  Thierry Reding <thierry.reding@gmail.com>, 
@@ -54,11 +54,11 @@ Cc: Thierry Reding <treding@nvidia.com>, linux-pm@vger.kernel.org,
  Aaron Kling <webgeek1234@gmail.com>, 
  Mikko Perttunen <mperttunen@nvidia.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1756239382; l=642;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1756239382; l=1607;
  i=webgeek1234@gmail.com; s=20250217; h=from:subject:message-id;
- bh=oVlsbr0Om4iJks3GxT0/vdOhBTnl82lkeLSHLSp9gLY=;
- b=d0y1cj3ZkD/6aUt8GB3zzQTUIqnLEBNCe3MPJ4VbUdTLeQrc51CV9spvqZVqsh390XQB1Chh5
- CEiqpLaufuZBR41VwhRHMCw2W3CqPKrdcp4Cl0ushvieYvHN/Bj0EE5
+ bh=9bUHeyaYYD5fuQRhqyZoy/YoCxZst0rIRpuE3PyDvxs=;
+ b=Zu2irhRctxFYy8ShV3iS/NGGP7/GCtf5cIRe2O/vva1S8TPz5Mtf7QMi+4k9PQMx4+NC44Htj
+ iBUqMvyf3/KBGshN+/S06gfLre71hS+9D7kdJZnQidiJcID01Pj5nzs
 X-Developer-Key: i=webgeek1234@gmail.com; a=ed25519;
  pk=TQwd6q26txw7bkK7B8qtI/kcAohZc7bHHGSD7domdrU=
 X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
@@ -66,23 +66,50 @@ X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
 X-Original-From: Aaron Kling <webgeek1234@gmail.com>
 Reply-To: webgeek1234@gmail.com
 
-This series fixes an issue with shared policy per cluster not scaling
-all cpus and with some cores being initialized by the subsystem.
+From: Aaron Kling <webgeek1234@gmail.com>
 
+During initialization, the EDVD_COREx_VOLT_FREQ registers for some cores
+are still at reset values and not reflecting the actual frequency. This
+causes get calls to fail. Set all cores to their respective base
+frequency during probe to initialize the registers to working values.
+
+Suggested-by: Mikko Perttunen <mperttunen@nvidia.com>
 Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
 ---
-Aaron Kling (2):
-      cpufreq: tegra186: Set target frequency for all cpus in policy
-      cpufreq: tegra186: Initialize all cores to base frequencies
+ drivers/cpufreq/tegra186-cpufreq.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
- drivers/cpufreq/tegra186-cpufreq.c | 19 ++++++++++++++++---
- 1 file changed, 16 insertions(+), 3 deletions(-)
----
-base-commit: 1b237f190eb3d36f52dffe07a40b5eb210280e00
-change-id: 20250826-tegra186-cpufreq-fixes-7fbff81c68a2
+diff --git a/drivers/cpufreq/tegra186-cpufreq.c b/drivers/cpufreq/tegra186-cpufreq.c
+index 6c394b429b6182faffabf222e5af501393dbbba9..ef288705f00b0918d0f8963ef9cc9fc53be88091 100644
+--- a/drivers/cpufreq/tegra186-cpufreq.c
++++ b/drivers/cpufreq/tegra186-cpufreq.c
+@@ -229,7 +229,8 @@ static int tegra186_cpufreq_probe(struct platform_device *pdev)
+ {
+ 	struct tegra186_cpufreq_data *data;
+ 	struct tegra_bpmp *bpmp;
+-	unsigned int i = 0, err;
++	unsigned int i = 0, err, edvd_offset;
++	u32 edvd_val, cpu;
+ 
+ 	data = devm_kzalloc(&pdev->dev,
+ 			    struct_size(data, clusters, TEGRA186_NUM_CLUSTERS),
+@@ -257,6 +258,14 @@ static int tegra186_cpufreq_probe(struct platform_device *pdev)
+ 			err = PTR_ERR(cluster->table);
+ 			goto put_bpmp;
+ 		}
++
++		for (cpu = 0; cpu < ARRAY_SIZE(tegra186_cpus); cpu++) {
++			if (data->cpus[cpu].bpmp_cluster_id == i) {
++				edvd_val = cluster->table[0].driver_data;
++				edvd_offset = data->cpus[cpu].edvd_offset;
++				writel(edvd_val, data->regs + edvd_offset);
++			}
++		}
+ 	}
+ 
+ 	tegra186_cpufreq_driver.driver_data = data;
 
-Best regards,
 -- 
-Aaron Kling <webgeek1234@gmail.com>
+2.50.1
 
 
