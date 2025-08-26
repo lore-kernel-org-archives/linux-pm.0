@@ -1,121 +1,146 @@
-Received: from mail-lj1-f179.google.com (mail-lj1-f179.google.com [209.85.208.179])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 291CF1CEAC2;
-	Tue, 26 Aug 2025 07:17:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9084F17A2E1;
+	Tue, 26 Aug 2025 07:18:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756192677; cv=none; b=FUg6mQLiN/E6kEFwHsCb1ZeDG1FoNvAS464iqwPMv+TRohO1M6cfjRCVKMRP7HNy/zkGuDXCsGhvZ6ZOUVJPk3AW7mGh6yNmp8BAjmgGvOFv/AUsF7U78p4owCoS6SG175jKScZLPcfzKukkpBSQ+6K4mETLCfc/wwJEkDdRHOE=
+	t=1756192717; cv=none; b=A13+bizRgoGZzMd346jLr08yyNq6ehIIkRgUd79+xogCJ80pmPM1WYdpoeafBCNI7aEDVk0XYAqhAJqX155oVURh2P+DJehdLGusmAYFwABEg8W1ANMMwks80D37AsZ9ThylmDxj4Nh8RPHUTrIisZacZbPwXE0X7ptSlpx/6jY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756192677; c=relaxed/simple;
-	bh=YRgjxHWGx0sm+DrsEHB20sbddHUAvH5kG7RAji1bxw8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=pEkw4Btaum7sG+0XfIV7n3ar9VDuiSSNhLDFkAH4r6dHhqpGNsghF9qW/itQqnZ11wrWM9xCfwQsRYjZv4HRx/lzhd4mFcTiW6onibvOKaFgJHyd4G+uTDXe9eSeTvU5T1PdsghQm8s/ZPmKKDaMeEYvkGvexonJhjrhkK9B8AY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ArjZKrN3; arc=none smtp.client-ip=209.85.208.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1756192717; c=relaxed/simple;
+	bh=th/xW83aBeFoGO0hEkmPF1u8WTaW4iQP3V4pb7YIS3E=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=CfmYUsU/aDDVQiHoAS6HK4owiLX/7627U7proOtmPHnYZ829oJ12Qu2LjMQsXrxGp5AeuhxKCudk/bSroZCEzpn7eDlxyZAdMMfqY6y8ARVgRC6HkIXOW6dQ8xm35zeV4B+cT1CYWUbjCjPPVXc9sEjkoAe44iw2uALVvYgL91w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=T3WLIEZl; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ArjZKrN3"
-Received: by mail-lj1-f179.google.com with SMTP id 38308e7fff4ca-333f92a69d4so38030081fa.2;
-        Tue, 26 Aug 2025 00:17:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1756192674; x=1756797474; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=YRgjxHWGx0sm+DrsEHB20sbddHUAvH5kG7RAji1bxw8=;
-        b=ArjZKrN3qZDZHSWjj4fL4BHDDYr5P4wdE2JiktOhUqbTMP9k4loAqLZZeetv6X/7Gn
-         JGnAdTqU5+kRM4qxI0ep8KuZfXMDAwRavNN11tL5t/Z+082e80565cOSCGCtviEzFYH5
-         Om0nlyOhDvtDT1Ty8Las6ESOoFm1Kik00tx7B9DTm9aiBosglQ7/0RYmkis/Aa+tNzjj
-         Y5O6ZFZYHgu7Ci2NTLGIKVn/n+uMHA4xuzTYHALFK5woJhgIsmqUEwsXIBTLsHuDnEDP
-         RWjbZOKLPZOQpFXOeDDCBGzWNRpTVxioWjT5gdLaza2L1Sly+mojlBqPWjJ3VT4KzCG4
-         EuyA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756192674; x=1756797474;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=YRgjxHWGx0sm+DrsEHB20sbddHUAvH5kG7RAji1bxw8=;
-        b=fShFD/hFmvaLOHSH/INn/xekJipndM/3EV0XTmTxidN34JplDiSjfPIpKbhNwtU/pc
-         Smi0LXu0dtYOd9/nMexx6XuPgStsL03MLNoQej4dBX3+AW5cYO5GwAnoLu67+kJS//IF
-         7gThsEQLgK72kSO1B7e3pigvjedDHpFZJKjPy5hrLKw6wHoYXtS1iC+QswUq0wvPIjIU
-         6czYMY8O8nElveaHe9IBTZnw649ecliPWKH6S686+kg09fBHWHgUX6uPIuLW5989fZnU
-         21UFdT1o1IuZB+GIfAAx73UmTa0INQ5ErhR/ErP+Hjsa7ZbxQ7ulweqWqLAL+bVRU3V+
-         mTUA==
-X-Forwarded-Encrypted: i=1; AJvYcCUT2WqE8s/BdARz0t0ZyNhspqX65KfgKNKNqJBSuAzVeZ8RUlwRHi0wV5O+KAAgTp5rSurKwrftgD0Wb+M=@vger.kernel.org, AJvYcCVb+3zT990J33s7N1zBUnIPhv2k7qAJB7d3BBz+Mj9DeV8WN7ILtlNUWPMQWEkznKR881S+PyK5qgBWdvg=@vger.kernel.org, AJvYcCWt1w+udS7attN12uunpSKSD7emdqessLLJX5ycNc9RIy359ACR9+V4Nj87FM33+s6Uluw/f24UnxA=@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywg91Iu+EAfSN7rDsZ/u5WtS3HQtgWKQQJiEw7Pwel+V8O2/yqP
-	Mx5S3IfG5rRcchs9X3+0zTL2pzRdrjyv3lmjluYkTkm6aUKAFeN2AXxzX8frtFOVbrZzBCv5Lnp
-	qhLJPAbHBQ2Gi3JIo4RHrls3gcANFWIw=
-X-Gm-Gg: ASbGnct6G5aUP7ML1ry+3yz9ES9A705lSFaYYVJ3YrUk0RS/9KNi9laOaUGtiHodnMj
-	SQEfgvXqIb2cbmOlGzF0aQrTeDRZZgLXdMQO9vb4VpauX/P0kBYvtePZJwi0A7GmPRJ1HmcPno8
-	ZwV5Be1zgEigLSmtlh7nwqcVTbs/l5pGGpWi1fN3E17GRGYEp3fH8PPIyaPFsMe2ja8fIaMLE9o
-	ZD9L7mWh/ukUEZTQQ==
-X-Google-Smtp-Source: AGHT+IGfTjMTFaJeXNnkMRpfv5ianH6N4g5+7UuQNvCIsLnQlNqu0cDp8GJerw9dH+q9DCMcpodGRYFrSvJPoqvnMi4=
-X-Received: by 2002:a05:651c:304d:b0:32a:c14b:7d95 with SMTP id
- 38308e7fff4ca-33650fc9ccemr31652321fa.20.1756192673883; Tue, 26 Aug 2025
- 00:17:53 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="T3WLIEZl"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 5FD8EC4AF0C;
+	Tue, 26 Aug 2025 07:18:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1756192717;
+	bh=th/xW83aBeFoGO0hEkmPF1u8WTaW4iQP3V4pb7YIS3E=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=T3WLIEZltJNuYPW/xK4FBjaimp+Yn5DYp0Ppjrf7R2T0YI65E6mHN3dzOeUsO/ST1
+	 bGRz5aVty+bisR3OK6PV972PLe9lHyDX6O8y+INkLjDBdlqRNqCAz9Riwc5SCjkcxq
+	 bNF3fCfDJNGnZpGq16v3tWpmdZI0Ku0qs97B8IOMqqT4TMu/DQyReNYuG8acBw1sWk
+	 HBFW4+ZdwX6GTVaF6oORxwWKrL9UXKpIqIOQO6wh2fzpmJQdShOr5Jj3Y72wJy+UUL
+	 CylE2NvlrTuStEU1dU5l5R5N+Ayyar38WEgZRTLHSo2F56/eeT19f0RnKhfU7QZaHO
+	 lyH38rdS90Hlg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AA37CA0FEB;
+	Tue, 26 Aug 2025 07:18:37 +0000 (UTC)
+From: Fenglin Wu via B4 Relay <devnull+fenglin.wu.oss.qualcomm.com@kernel.org>
+Date: Tue, 26 Aug 2025 15:18:30 +0800
+Subject: [PATCH v3 3/8] power: supply: qcom_battmgr: Add resistance power
+ supply property
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250825-tegra186-cpufreq-ndiv-v1-1-4669bf8f2992@gmail.com>
- <CALHNRZ8oaGaAhMVVzfeNf+M+-OvMnCnMd-fRdffmOSTBZiEXCQ@mail.gmail.com> <2325429.iZASKD2KPV@senjougahara>
-In-Reply-To: <2325429.iZASKD2KPV@senjougahara>
-From: Aaron Kling <webgeek1234@gmail.com>
-Date: Tue, 26 Aug 2025 02:17:42 -0500
-X-Gm-Features: Ac12FXzhTw64z9ytVZyAaPNZ9y_0Q90vFsq7OuSpHiqP53-mgbnKIywtdtAt8Yk
-Message-ID: <CALHNRZ8HfD+ftrQSJJLE_vsxGq3xyPxD3=m6Xg=LQKXR1nZvPQ@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: tegra186: Default divider to 35 if register read fails
-To: Mikko Perttunen <mperttunen@nvidia.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
-	linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250826-qcom_battmgr_update-v3-3-74ea410ef146@oss.qualcomm.com>
+References: <20250826-qcom_battmgr_update-v3-0-74ea410ef146@oss.qualcomm.com>
+In-Reply-To: <20250826-qcom_battmgr_update-v3-0-74ea410ef146@oss.qualcomm.com>
+To: Sebastian Reichel <sre@kernel.org>, 
+ Bjorn Andersson <andersson@kernel.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+ Bryan O'Donoghue <bryan.odonoghue@linaro.org>, 
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Cc: Subbaraman Narayanamurthy <subbaraman.narayanamurthy@oss.qualcomm.com>, 
+ David Collins <david.collins@oss.qualcomm.com>, 
+ =?utf-8?q?Gy=C3=B6rgy_Kurucz?= <me@kuruczgy.com>, linux-pm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+ kernel@oss.qualcomm.com, devicetree@vger.kernel.org, 
+ linux-usb@vger.kernel.org, Fenglin Wu <fenglin.wu@oss.qualcomm.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1756192715; l=2473;
+ i=fenglin.wu@oss.qualcomm.com; s=20240327; h=from:subject:message-id;
+ bh=zi7yrMpAus4YPx9C7Vqz+BBGGIxG0pJ58Kd1/KkUxEk=;
+ b=CGPIfUQGXSxWECziA/MijgMweL4PH+LcwC3O9EtYxiQEW5JF0pSXMZ9tsttAcqeNqz8mBfzos
+ hbLS+gt0sLUCP4OJl475PPqHyByr9ZSLeVV1d+CfGmMIo3qK8Bg5ZjT
+X-Developer-Key: i=fenglin.wu@oss.qualcomm.com; a=ed25519;
+ pk=BF8SA4IVDk8/EBCwlBehKtn2hp6kipuuAuDAHh9s+K4=
+X-Endpoint-Received: by B4 Relay for fenglin.wu@oss.qualcomm.com/20240327
+ with auth_id=406
+X-Original-From: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
+Reply-To: fenglin.wu@oss.qualcomm.com
 
-On Mon, Aug 25, 2025 at 11:48=E2=80=AFPM Mikko Perttunen <mperttunen@nvidia=
-.com> wrote:
->
-> On Monday, August 25, 2025 2:08=E2=80=AFPM Aaron Kling wrote:
-> > On Mon, Aug 25, 2025 at 12:03=E2=80=AFAM Aaron Kling via B4 Relay
-> >
-> > <devnull+webgeek1234.gmail.com@kernel.org> wrote:
-> > > From: Aaron Kling <webgeek1234@gmail.com>
-> > >
-> > > Several of the cores fail to read any registers and thus fail to
-> > > initialize cpufreq. With shared policies, this only affects the Denve=
-r
->
-> By failing to read any registers, do you just mean that they read as 0?
+From: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
 
-Yes, that is correct.
+Add power supply property to get battery internal resistance from
+the battery management firmware.
 
-> I suspect the issue may be that the EDVD_COREx_VOLT_FREQ registers are ju=
-st
-> used to request VF transitions. If no one has requested anything, the reg=
-ister
-> will be at its reset value, zero.
->
-> AIUI, in downstream, the driver retrieves the CPU clock rate by measuring=
- it
-> instead of calculating it from an NDIV value, hence it would not run into=
- this
-> issue. I think the conclusion would be that if the register reads as zero=
-, we
-> cannot assume any clock rate. Is it possible to tell the cpufreq framewor=
-k
-> that we don't know the rate and it should ask us to set the rate to somet=
-hing?
-> Or otherwise at probe time do this by ourselves.
+Signed-off-by: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
+---
+ drivers/power/supply/qcom_battmgr.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-This is a very helpful pointer. If I initialize all cores to their
-respective base frequencies during probe, the subsequent get's work as
-intended. I want to do a little more verification before sending in
-another patch as I also found another issue with my previous shared
-policy patch. I will submit a new series once that is done, so this
-patch can be abandoned.
+diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
+index fe27676fbc7cd12292caa6fb3b5b46a18c426e6d..55477ae92fd56ede465b32d6f7ed9da78ebd869c 100644
+--- a/drivers/power/supply/qcom_battmgr.c
++++ b/drivers/power/supply/qcom_battmgr.c
+@@ -2,6 +2,7 @@
+ /*
+  * Copyright (c) 2019-2020, The Linux Foundation. All rights reserved.
+  * Copyright (c) 2022, Linaro Ltd
++ * Copyright (c) 2025 Qualcomm Innovation Center, Inc. All rights reserved.
+  */
+ #include <linux/auxiliary_bus.h>
+ #include <linux/module.h>
+@@ -254,6 +255,7 @@ struct qcom_battmgr_status {
+ 	unsigned int voltage_now;
+ 	unsigned int voltage_ocv;
+ 	unsigned int temperature;
++	unsigned int resistance;
+ 
+ 	unsigned int discharge_time;
+ 	unsigned int charge_time;
+@@ -418,6 +420,7 @@ static const u8 sm8350_bat_prop_map[] = {
+ 	[POWER_SUPPLY_PROP_MODEL_NAME] = BATT_MODEL_NAME,
+ 	[POWER_SUPPLY_PROP_TIME_TO_FULL_AVG] = BATT_TTF_AVG,
+ 	[POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG] = BATT_TTE_AVG,
++	[POWER_SUPPLY_PROP_INTERNAL_RESISTANCE] = BATT_RESISTANCE,
+ 	[POWER_SUPPLY_PROP_POWER_NOW] = BATT_POWER_NOW,
+ };
+ 
+@@ -582,6 +585,9 @@ static int qcom_battmgr_bat_get_property(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_TEMP:
+ 		val->intval = battmgr->status.temperature;
+ 		break;
++	case POWER_SUPPLY_PROP_INTERNAL_RESISTANCE:
++		val->intval = battmgr->status.resistance;
++		break;
+ 	case POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG:
+ 		val->intval = battmgr->status.discharge_time;
+ 		break;
+@@ -665,6 +671,7 @@ static const enum power_supply_property sm8350_bat_props[] = {
+ 	POWER_SUPPLY_PROP_MODEL_NAME,
+ 	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
+ 	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
++	POWER_SUPPLY_PROP_INTERNAL_RESISTANCE,
+ 	POWER_SUPPLY_PROP_POWER_NOW,
+ };
+ 
+@@ -1174,6 +1181,9 @@ static void qcom_battmgr_sm8350_callback(struct qcom_battmgr *battmgr,
+ 		case BATT_TTE_AVG:
+ 			battmgr->status.discharge_time = le32_to_cpu(resp->intval.value);
+ 			break;
++		case BATT_RESISTANCE:
++			battmgr->status.resistance = le32_to_cpu(resp->intval.value);
++			break;
+ 		case BATT_POWER_NOW:
+ 			battmgr->status.power_now = le32_to_cpu(resp->intval.value);
+ 			break;
 
-Aaron
+-- 
+2.34.1
+
+
