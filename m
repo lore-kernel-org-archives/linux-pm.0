@@ -1,122 +1,133 @@
-Received: from mail-ej1-f41.google.com (mail-ej1-f41.google.com [209.85.218.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC47126B96A;
-	Thu, 28 Aug 2025 21:35:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.41
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7A44A2C08A8;
+	Thu, 28 Aug 2025 21:44:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756416906; cv=none; b=SrUe/OLv5SmxX9HWqmaAOnMTiJakaSytSvHKNfpmG5IokhjxnXsuFtYALnY+MQD5cjqN3DC7fqTPD6M+ZRu1SmHFqzMy81/xnwNgqJt2JGwOQWvygkZ+opwqXXYXME5wEswyi62rHrvfTCf9V/G6TkeAdX7IBnZw4Y7X6hNayMc=
+	t=1756417487; cv=none; b=STkKXhhqKBtj/NxfmBxik/33bp0nIL9vfSu5YgnnZx3XCPAalzlGwqf8ITS2RHJ+qNleDs01mFmC4mf6GnvyM+zT8aVh9xSuhRMy/EmYo7IG9ZJGH3chWMIcFBPgZmlQDxXiYxCVwBJW2KMznXGPbJpFLbZJ15uoREB7moTij58=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756416906; c=relaxed/simple;
-	bh=I7wEGxMZdqIIi5xw7IylI92kj9j17xHEIgaigxtGPcs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=D1kExjRlQCLsz8qfyi0kHKCqEsReD8ChHbzT3Iotuu3TkKy5s3EGrh/38gxOuzlUTsxPjSoFZv/rYyTlYUomryyuEv082sNHM5PKmIYFiJxNFucOM+j2Lyp4teTXMn7nacCj+FKqZpbQBQxxrSugtfVLiWpSp/IrTFMJcHBkQGM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Ijr8VXhy; arc=none smtp.client-ip=209.85.218.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ijr8VXhy"
-Received: by mail-ej1-f41.google.com with SMTP id a640c23a62f3a-afe9358fe77so151330566b.1;
-        Thu, 28 Aug 2025 14:35:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1756416903; x=1757021703; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=R6RgA1Amq2gbjziZJHa66M8vo8i+nRkKhXZ8PDenMzI=;
-        b=Ijr8VXhyp/0dG7zVlTKYc9eIGUTtNsZGCY+gBuh0DJ8TBEfnbf1ywdFM/S24muYKTG
-         sZm31NUv11IIKmJw96pjqMY4BNfkPMnQfWvBcnJrhQ0yEu4NlIDluV6AtuaW//WumOkE
-         htk4rG/F3QAgKYkeFJsRMX3zQSxoB7eXcRyhNUro7I9CPJ6HhvJWqDAdyQcI/1Cz8f5V
-         eByYwxxi5AN0Oj6VOMBbKjUjzK9gqY7+tidYUgDUp29Ky9OkhpdUZB9KzAYbOf5X3FOU
-         DkVdXGF+iZl3J36XSmkZA1IWT19uhi2dvWJi0PBkAJCQ5oR9lwqOFQJbkrywz4Rt48s3
-         vqUQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756416903; x=1757021703;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=R6RgA1Amq2gbjziZJHa66M8vo8i+nRkKhXZ8PDenMzI=;
-        b=qZ3cZU6AXUlXtmABx071zfyJWnAWnXvgmOGjUVG85FSJ322TpolcUknBwq37u4SzmU
-         c+BIN4B0tp/WR+hPFE9azBJdfEt9gFWCFM2ni6lfRjCAU+Zy1qwFwYF6Nb8qUf4VqsXO
-         L+zpb0UT9Cr8f7ICEHx47Viyxl8GW4RqMSwN1aSgIQ33Ruli1jp8sl7eYMtPShGRFISF
-         5QyJ9kJ1m4mgu1eRCJ9aaY4W96t6beWiUBIdYj1njJ23gBPLw9ggDkPk24N2BiFDwctd
-         cVF4hOFp1/54ZDWzFr/nXSAEA+42+SUp+cOxXJsUKXbm7DkKnrLF5/SFmYrfhV/JhxB4
-         Uaqg==
-X-Forwarded-Encrypted: i=1; AJvYcCWx57evTdzTu6RuUtbgdDg6xmpvBbNGV7+bx55LnirCaHv4RLzvf7TIuJ6EW9W2Y1h6lyEPSr1SF5nNPrQ=@vger.kernel.org
-X-Gm-Message-State: AOJu0YzhtLPLYa7a/kshFIUVBLS2CHHFy20IzRebjsaKHnng4QkLIbwe
-	PzXqYPiLQIz0DrN+JxQInog7UTdt3t7AUtXRgCMOMjYyDuvw4z1YBjmF
-X-Gm-Gg: ASbGncuQFu8bTpJXWEs5WcMWeopEy5SqKJVKNWUZEJaTywJrfvBt54Ptio2kAGbct8w
-	yi34XoZjn3MLIjKN8ANaWXZeAXX7cHE3Umk/UtNmpKsC3PO1PtzPdvDMwcVQNghPdBg5YBhTCw1
-	JP5tjNTdM9SLgckY5yHx5Lln06SKEIwGQkDTrluN0/5+V821aBVwf+RpEgByiKL3RWR/Wdp3lJb
-	XxMeAYF/GBREk+M1rOIMatZbiHx0bek1ROZFVBNiblOGp5D6wtWx5b3HqeGNNfy+QELa920PbHj
-	36cPD6PjX/UtVEveeV3k6aQnmQowh45Uu2QtY7VLglCAJfZEuJx+wHAYy9nBeiZEuiD9gHaVErX
-	TAewBitAQoxfVLIRVlL02Mu1TjlRGxRdR68EbUBBh73Othf9gv1e701IIus9UdXYP0kXTtQVgHz
-	HWzUoIIY513scPREx6+7O3STMkHZAnTSL2
-X-Google-Smtp-Source: AGHT+IGsOjVY1xHlu7Ck4nnZUfJdc0rldLUjOBL0O+XsSoXmmaDai4XSpeQvLDGVBVp9yQQrqrCOBQ==
-X-Received: by 2002:a17:907:970c:b0:afe:af91:2e44 with SMTP id a640c23a62f3a-afeaf9139e5mr1005452266b.14.1756416902804;
-        Thu, 28 Aug 2025 14:35:02 -0700 (PDT)
-Received: from fedora (2a02-8389-2240-6380-b418-985e-6bb5-99d0.cable.dynamic.v6.surfer.at. [2a02:8389:2240:6380:b418:985e:6bb5:99d0])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-afefcc1c6b9sm45032866b.80.2025.08.28.14.35.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 28 Aug 2025 14:35:02 -0700 (PDT)
-From: Dennis Beier <nanovim@gmail.com>
-To: rafael@kernel.org,
-	viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Dennis Beier <nanovim@gmail.com>
-Subject: [PATCH RESEND] cpufreq/longhaul: handle NULL policy in longhaul_exit
-Date: Thu, 28 Aug 2025 23:29:36 +0200
-Message-ID: <20250828213427.27593-1-nanovim@gmail.com>
-X-Mailer: git-send-email 2.50.1
+	s=arc-20240116; t=1756417487; c=relaxed/simple;
+	bh=D0Iy2kssQWepKr3rrvAwXGm8QXT4WEE6XtWLMJ/4ooU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=W3OHY2sHQMUvwLhcF8K4zpz8S3s1PAhBIEfCZiaXkKGDMKqX/y9dbTjkH9+258hk4IHxlta5Z3T43qKg7Gp21lr/oJMETxZg92+LXTlHvnsSa/dN/BlKEOtUqCXtDWegw7t920Ijgzu8tEmIX500lZaYKY1ZKvbgOLw+OCXamuM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1B0461655;
+	Thu, 28 Aug 2025 14:44:35 -0700 (PDT)
+Received: from [10.57.58.232] (unknown [10.57.58.232])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id AB5A53F738;
+	Thu, 28 Aug 2025 14:44:42 -0700 (PDT)
+Message-ID: <39dccf98-41da-4c54-a200-50f367cd0147@arm.com>
+Date: Thu, 28 Aug 2025 22:44:41 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] Revert "intel_idle: Rescan "dead" SMT siblings during,
+ initialization"
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: linux-pm <linux-pm@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+References: <724616a2-6374-4ba3-8ce3-ea9c45e2ae3b@arm.com>
+ <CAJZ5v0gGchbaQWRq39JbrX8chca7uefef763coJeup+vUOfyCw@mail.gmail.com>
+ <CAJZ5v0h=OG-wgcZBD8mZ51+kb7j3yeDZQt9XfO=fdasLRgQkEg@mail.gmail.com>
+ <CAJZ5v0jdMHd7cRktE8xsQZMTkSK44LZCyFdWzDVLcasvfhJP-g@mail.gmail.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <CAJZ5v0jdMHd7cRktE8xsQZMTkSK44LZCyFdWzDVLcasvfhJP-g@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
+On 8/28/25 20:06, Rafael J. Wysocki wrote:
+> On Thu, Aug 28, 2025 at 6:13 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>
+>> On Thu, Aug 28, 2025 at 4:44 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>>
+>>> On Thu, Aug 28, 2025 at 4:26 PM Christian Loehle
+>>> <christian.loehle@arm.com> wrote:
+>>>>
+>>>> This reverts commit a430c11f401589a0f4f57fd398271a5d85142c7a.
+>>>>
+>>>> Calling arch_cpu_rescan_dead_smt_siblings() in intel_idle_init with
+>>>> boot parameter nosmt and maxcpus active hotplugged boot-offline CPUs
+>>>> in (and leave them online) which weren't supposed to be online.
+>>>>
+>>>> With the revert and nosmt and maxcpus=12 on a raptor lake:
+>>>> cpu     online  capacity
+>>>> cpu0    1       1009
+>>>> cpu1    0       -
+>>>> cpu2    1       1009
+>>>> cpu3    0       -
+>>>> cpu4    1       1009
+>>>> cpu5    0       -
+>>>> cpu6    1       1009
+>>>> cpu7    0       -
+>>>> cpu8    1       1024
+>>>> cpu9    0       -
+>>>> cpu10   1       1024
+>>>> cpu11   0       -
+>>>> cpu12   1       1009
+>>>> cpu13   0       -
+>>>> cpu14   1       1009
+>>>> cpu15   0       -
+>>>> cpu16   1       623
+>>>> cpu17   1       623
+>>>> cpu18   1       623
+>>>> cpu19   1       623
+>>>> cpu20   0       -
+>>>> cpu21   0       -
+>>>> cpu22   0       -
+>>>> cpu23   0       -
+>>>>
+>>>> Previously:
+>>>> cpu     online  capacity
+>>>> cpu0    1       1009
+>>>> cpu1    0       -
+>>>> cpu2    1       1009
+>>>> cpu3    0       -
+>>>> cpu4    1       1009
+>>>> cpu5    0       -
+>>>> cpu6    1       1009
+>>>> cpu7    0       -
+>>>> cpu8    1       1024
+>>>> cpu9    0       -
+>>>> cpu10   1       1024
+>>>> cpu11   0       -
+>>>> cpu12   1       1009
+>>>> cpu13   0       -
+>>>> cpu14   1       1009
+>>>> cpu15   0       -
+>>>> cpu16   1       623
+>>>> cpu17   1       623
+>>>> cpu18   1       623
+>>>> cpu19   1       623
+>>>> cpu20   1       623
+>>>> cpu21   1       623
+>>>> cpu22   1       623
+>>>> cpu23   1       623
+>>>>
+>>>> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
+>>>> ---
+>>>> Rafael, I don't immediately see how to fix this properly so I won't
+>>>> try to, feel free to treat this as a bug report.
+>>>
+>>> Sure, thanks for reporting this!
+>>>
+>>> Well, I think that cpuhp_smt_enable() is missing a check.  It looks to
+>>> me like it should do the topology_is_primary_thread(cpu) check like
+>>> cpuhp_smt_disable().
+>>>
+>>> I'll cut a test patch for this later.
+>>
+>> Something like the attached one, perhaps.  I haven't tested it yet,
+>> but I'll do that later.
+> 
+> Works here AFAICS, but my test system is not hybrid.
 
-Resending this patch to include cpufreq maintainers.
-
----
-
-longhaul_exit() was calling cpufreq_cpu_get(0) without checking
-for a NULL policy pointer. On some systems, this could lead to a
-NULL dereference and a kernel warning or panic.
-
-This patch adds a check using unlikely() and prints a warning
-if the policy is NULL, then returns early. Also, the loop variable
-is now declared inside the for-loop to match modern kernel style.
-
-Bugzilla: #219962
-
-Signed-off-by: Dennis Beier <nanovim@gmail.com>
-
----
- drivers/cpufreq/longhaul.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-index ba0e08c8486a..9698d56bfe6c 100644
---- a/drivers/cpufreq/longhaul.c
-+++ b/drivers/cpufreq/longhaul.c
-@@ -951,9 +951,14 @@ static int __init longhaul_init(void)
- static void __exit longhaul_exit(void)
- {
- 	struct cpufreq_policy *policy = cpufreq_cpu_get(0);
--	int i;
-+	if (unlikely(!policy)) {
-+		pr_warn_once("longhaul_exit: policy is NULL\n");
-+
-+		return;
-+	}
-+
- 
--	for (i = 0; i < numscales; i++) {
-+	for (int i = 0; i < numscales; i++) {
- 		if (mults[i] == maxmult) {
- 			struct cpufreq_freqs freqs;
- 
--- 
-2.50.1
-
+Yep, on my end as well, thanks!
+Tested-by: Christian Loehle <christian.loehle@arm.com>
