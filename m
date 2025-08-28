@@ -1,62 +1,62 @@
 Received: from flow-a7-smtp.messagingengine.com (flow-a7-smtp.messagingengine.com [103.168.172.142])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C567341AB3;
-	Thu, 28 Aug 2025 14:02:35 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 936AB3148B6;
+	Thu, 28 Aug 2025 14:02:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.142
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756389760; cv=none; b=G2KYtbsPX26Yu410cPvoWjtymrmPhkiFwLvvDiUHQvsqMMymT3SMSf6n8LIiAnqqEf0fIQias/bN2wf0TI2gj8tsREaq4z6r8l7fZoOqyR1QCzAk4pARB2JgvpdXeHi6lsX3Np0N8UWpiWHSbxFM19dAfND1KzKsKu9Slv79Iyw=
+	t=1756389762; cv=none; b=N/Z3Q8sRqoPmkQY9MzWVhJOTBPvn4azD+hVF+kdryeU219Bp27VTNy1UK/Kx2Tqohg0/Fa7wSY7/d9eleTY0f1meRDrmcD2O85gyJjV+vsDsV364okfKbXZGrhCJAD9GKfTCxNSrauqin+SjSUhMCWGeMiSXbxEXoIVCPK3kP5I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756389760; c=relaxed/simple;
-	bh=LYUm5MKTe08602cGu8u8E3B9OdZDIm6atzI54Orhqx4=;
+	s=arc-20240116; t=1756389762; c=relaxed/simple;
+	bh=aO8Zd5On2fiIPyEmnZb81gCm0UyoBHSPiEjjfuybQOs=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=KMAYE0Z4iONuKB4PSUB0AIqysM6jPZbkyb1ulg/CmhjXC1zXBkxBOaD33Ee9tyiDSxvTMDjqFvEjwFpRPrC5w1sH2IuDTBDslOx+qcCVpm6FJ2hg0h2+AvlLLU1GHnkC6pjF8gx39/BZ+NyxdwXnX+qSSOK6mm8ggzPm3fspPq4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=jannau.net; spf=pass smtp.mailfrom=jannau.net; dkim=pass (2048-bit key) header.d=jannau.net header.i=@jannau.net header.b=FbYBLVUW; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=YOffeU27; arc=none smtp.client-ip=103.168.172.142
+	 In-Reply-To:To:Cc; b=FCMhMbmGBw3Vva5JLHzVakF0kZLJhhfZvTXftGyWQfQGF7DzXp/WfukoYXaM/FWDpA7M2bmlCBUrIujhsYHCqrxta+oUhLwB2jGqpMxBFebSWREFg5B1d5uJB4gxHFLK0MU4rugG+NS6QQEGBB3WHAzHjf11p6cryqR6exxmBSs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=jannau.net; spf=pass smtp.mailfrom=jannau.net; dkim=pass (2048-bit key) header.d=jannau.net header.i=@jannau.net header.b=SuGn7NYh; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=FfuwlVmy; arc=none smtp.client-ip=103.168.172.142
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=jannau.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=jannau.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=jannau.net header.i=@jannau.net header.b="FbYBLVUW";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="YOffeU27"
-Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
-	by mailflow.phl.internal (Postfix) with ESMTP id F37991380DD1;
-	Thu, 28 Aug 2025 10:02:34 -0400 (EDT)
-Received: from phl-mailfrontend-02 ([10.202.2.163])
-  by phl-compute-01.internal (MEProxy); Thu, 28 Aug 2025 10:02:34 -0400
+	dkim=pass (2048-bit key) header.d=jannau.net header.i=@jannau.net header.b="SuGn7NYh";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="FfuwlVmy"
+Received: from phl-compute-10.internal (phl-compute-10.internal [10.202.2.50])
+	by mailflow.phl.internal (Postfix) with ESMTP id F01151380DDA;
+	Thu, 28 Aug 2025 10:02:39 -0400 (EDT)
+Received: from phl-mailfrontend-01 ([10.202.2.162])
+  by phl-compute-10.internal (MEProxy); Thu, 28 Aug 2025 10:02:39 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=jannau.net; h=cc
 	:cc:content-transfer-encoding:content-type:content-type:date
 	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm2; t=1756389754;
-	 x=1756396954; bh=0c1Yq4NBGY94JfOOYTzzvaGSbCj2I2fSGp+vlrbADJ8=; b=
-	FbYBLVUW1+wdeWT+scP15DCsvQgxFv3tYARBw02gda323j84ZoZnBL75fyP/hud2
-	1fy+3sSAczxZcgUJ/OySh3eB3ER3KDsHH6d7SxoRVkT4smrhihtNipceQ5DA8+pb
-	FdGjajY6Efwe0Hg3i0d8PI1W27oE3gxcr4k2B0+4857fOdRn9Vd53+lerk1LUOBF
-	61yFoWL7wVUz9mlkvjLJ0l0I0CDmPsdbg29ZH0WMqwv/FYvYNL9JzP3lSNMNerj9
-	nonaRm//aGiusJJ7XY5jB8NVq7Bh7j+3GxW2vzKVQxMYmuG9YkxK4R0iWo7/LYyj
-	PZAeh8QxcJaDwOTtFjB3EQ==
+	:references:reply-to:subject:subject:to:to; s=fm2; t=1756389759;
+	 x=1756396959; bh=h9kk3UQVuhe0QchQqhupjbVTv41iYj+XrqLiQ4MV5FM=; b=
+	SuGn7NYhMvuuPzbvlj812BjSauShq7hSEREWCgyEXuHhsc44VEAGWsMB86ks2Ll4
+	ipw1ni6qKuE1e0iytRFrxpt6MPtKlrZr8K/ah/CU4PWpLBHQQnLpVA0PFYgzOkjC
+	7d/whfZ6MHYbTg+AArLkK68xgrT4eN7Vs4/PhzxpyDPSpb1+cGa9MJwCLywWJJY+
+	oglCV3icbifv3Mj45IYL0tVeKBtXcjhwFVKwz4gausZ2FZ7PKqJhRsEEne3Ntv5l
+	7Ol7rnoFXtLpI7GppBcZZEpDp14FCYjYkStaMAK2g8197g1g9EPM1SO+R3IeXj/E
+	KX83vlgvo6/H0gXlakoj2g==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:content-type:date:date:feedback-id:feedback-id
 	:from:from:in-reply-to:in-reply-to:message-id:mime-version
 	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1756389754; x=
-	1756396954; bh=0c1Yq4NBGY94JfOOYTzzvaGSbCj2I2fSGp+vlrbADJ8=; b=Y
-	OffeU27Q4ymbWQHMKXttmd6lcyp0eKGehrZn34cpTZrtA28hKALKL12E6aI0T3ne
-	ROun1pQbBO4N0Ue6OxY3Iq0Tdu4bKvLEHEDsxkJnexNI8P8X0cKg0791AkoOTNFm
-	VEkuBGofZyMxOJziueglPiwWn6CbNDS+1sb49OZajjkZEarF6HjW/QS5kYfVqRiD
-	WbZPyQVVNBacqdIn9az/nKSrI3DTvIUZMj66sxU7iUQt3Sb8gPBgTNhCAMcJ6GOu
-	wVS6OmZlfMuLxrO2nSCyvv+55y1/ILz6owaXkJZ7YPCs0zavcNPWUepG90zI2DBo
-	aRYAt1Zg0wMD5MX+9qWsg==
-X-ME-Sender: <xms:emGwaIxkUoNmsvxn1koHcctinTDyhV-PtFOnsfwsifMgWRHFS-3-DA>
-    <xme:emGwaDt7njyTkNsAD2vFDlqRm69hUMSivRjM3sxD6HuxpTLRlAD3v_BkvuuYyjJou
-    Mx8jb0xAiCxkpNvPx4>
-X-ME-Received: <xmr:emGwaDSGXEhHGoJVUN3NG1UeAn2OOh-ifXvQfdM4KitswSH08zX3k9B_6Gjdm0UCbRhC_mimaNO4jmLYg9Lblz_sqtH4Rq5mc0sjhQ>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtdefgddukeduvddvucetufdoteggodetrf
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1756389759; x=
+	1756396959; bh=h9kk3UQVuhe0QchQqhupjbVTv41iYj+XrqLiQ4MV5FM=; b=F
+	fuwlVmy0Hza7tm25HTMHuj9L44BVjxlNDlAChnS+qfxRZ8pFdjdLmm3Wa3AdL7i4
+	Q7n+2L9Jn0AS8e7Pa2J9gjxtzMuGNDIxRpH33C/IuSVhkWuqYfkW2DqaDoX+E3En
+	S15VOZWkfaSkqWo1YGgge0qvFXq1G9A0w4rsPUzvfKRl8nPVdzr2SJ5i3aSCVdz8
+	g+7RyNtGTWuMP+i7hl3Xz+JDtN/+W89bf63BQb7OrLafwNa5o/9qZx3js+5QGRP0
+	QKcBNJDJMNSNjlTveMfwd8gNIRjtMmK9g+JImlnbJ5P3mIvrw1vjn+r90U/cqafB
+	WjJFIBbpueCVtu94aGkRg==
+X-ME-Sender: <xms:f2GwaEuodKJ0pr-YQgIKgs54JEVwG71m7fj1Ts9djZTSdWFawjg5QA>
+    <xme:f2GwaAQWynsuHAkMyEjug9BEqW94gvCUD6VU2o0sVAP6hraeh-6UohOWwHKiEarIM
+    SmNw0GD1hv0NUqtHzQ>
+X-ME-Received: <xmr:f2GwaKdydnV6X9cQWfTFCoVyIypqoOqE6S2pukKktUmep1hCsbiGIdoJbR9JdZPNgSBuIlSh02gH2qQasYETCUnHgfZLaKzjsRGvSQ>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtdefgddukeduvdduucetufdoteggodetrf
     dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceu
     rghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujf
     gurhephfffufggtgfgkfhfjgfvvefosehtjeertdertdejnecuhfhrohhmpeflrghnnhgv
     ucfirhhunhgruhcuoehjsehjrghnnhgruhdrnhgvtheqnecuggftrfgrthhtvghrnhepve
     ekkefgjeettdduueejgeeuteduffefteejudegieevuedvieffteeljeelgfeknecuffho
-    mhgrihhnpehkvghrnhgvlhdrohhrghenucevlhhushhtvghrufhiiigvpedunecurfgrrh
+    mhgrihhnpehkvghrnhgvlhdrohhrghenucevlhhushhtvghrufhiiigvpedtnecurfgrrh
     grmhepmhgrihhlfhhrohhmpehjsehjrghnnhgruhdrnhgvthdpnhgspghrtghpthhtohep
     ieegpdhmohguvgepshhmthhpohhuthdprhgtphhtthhopehlihhnuhigqdhgphhiohesvh
     hgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehjohhhrghnnhgvshesshhiphhs
@@ -66,18 +66,17 @@ X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtdefgddukeduvddvucetufdote
     gvthhtvghnihhssehophgvnhgsshgurdhorhhgpdhrtghpthhtohepkhgsuhhstghhsehk
     vghrnhgvlhdrohhrghdprhgtphhtthhopehsrghgihesghhrihhmsggvrhhgrdhmvgdprh
     gtphhtthhopehlihhnuhigqdhivdgtsehvghgvrhdrkhgvrhhnvghlrdhorhhg
-X-ME-Proxy: <xmx:emGwaBdX2yz5tgE5PwgNTT0tJHt1DdqUAHN9NHEXM3QFnLuyj-YWhg>
-    <xmx:emGwaJQxMWS3y4rBv2W_wCciSQ3DWzNgBFN-rx-Nq7ED7kCdGAnTOw>
-    <xmx:emGwaJkvKUxEpmpcTjaXAcsGp7pwCDQzr4jSSeFneY5XbVbLvq-yKQ>
-    <xmx:emGwaDEtxLJ2XkMUVcvqDz24kHncDaUPA4dM0axCpYdwspD4V5zBdg>
-    <xmx:emGwaJTey83ugS_EdGRIb3F2JEynf3SL7bPwU6s2YEoR8JMFuRA0jYjJ>
+X-ME-Proxy: <xmx:f2GwaORNv_H_9jU0Bpg2yzdbwiwMg6QNm99vW4yv35SCbV1vmLNzhg>
+    <xmx:f2GwaKkd27iTLPU25YCtVC4LqzOKZuzTxW9HtW26JRsg3MtNm8MzUQ>
+    <xmx:f2GwaAHqKC1FouaOqxgVybVnmqKZHWp_xFLZp1nCMHQpZd2BQDSarw>
+    <xmx:f2GwaCwMgZoR5tkEACBabuSZTmaGlJYmrChJUoSgndV9OGveYHxigg>
+    <xmx:f2GwaLn8DXk6GBmYMuQcN8bbjTC2M9RnAtjGPs1apY0aS4tXL1kW82zo>
 Feedback-ID: i47b949f6:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
- 28 Aug 2025 10:02:33 -0400 (EDT)
+ 28 Aug 2025 10:02:38 -0400 (EDT)
 From: Janne Grunau <j@jannau.net>
-Date: Thu, 28 Aug 2025 16:01:38 +0200
-Subject: [PATCH 19/37] dt-bindings: mfd: apple,smc: Add t6020-smc
- compatible
+Date: Thu, 28 Aug 2025 16:01:40 +0200
+Subject: [PATCH 21/37] spmi: apple: Add "apple,t8103-spmi" compatible
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -86,7 +85,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250828-dt-apple-t6020-v1-19-507ba4c4b98e@jannau.net>
+Message-Id: <20250828-dt-apple-t6020-v1-21-507ba4c4b98e@jannau.net>
 References: <20250828-dt-apple-t6020-v1-0-507ba4c4b98e@jannau.net>
 In-Reply-To: <20250828-dt-apple-t6020-v1-0-507ba4c4b98e@jannau.net>
 To: Sven Peter <sven@kernel.org>, Alyssa Rosenzweig <alyssa@rosenzweig.io>,
@@ -132,60 +131,39 @@ Cc: asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
  linux-sound@vger.kernel.org, linux-spi@vger.kernel.org, 
  linux-nvme@lists.infradead.org, Janne Grunau <j@jannau.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1601; i=j@jannau.net;
- s=yk2024; h=from:subject:message-id;
- bh=LYUm5MKTe08602cGu8u8E3B9OdZDIm6atzI54Orhqx4=;
- b=owGbwMvMwCW2UNrmdq9+ahrjabUkhowNiZavnLu/MAbvnXJzVTuvMCun4ZzcqSsjon9nmXuZT
- Cl7vSSvo5SFQYyLQVZMkSVJ+2UHw+oaxZjaB2Ewc1iZQIYwcHEKwESYOBj+cESXrHXxzqvcXTlv
- 8fJzh18yr+xVlzt0teWx1pY8GROZEEaGrSJxorM+H+Ka0b1CfYq9QcBx9q3t7ZGxazxF7945nba
- CCwA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=985; i=j@jannau.net; s=yk2024;
+ h=from:subject:message-id; bh=aO8Zd5On2fiIPyEmnZb81gCm0UyoBHSPiEjjfuybQOs=;
+ b=owGbwMvMwCW2UNrmdq9+ahrjabUkhowNiVabjIIL/9jxcsUoGk8+PUvQeG28jf8Ebf4cac03N
+ baONUs6SlkYxLgYZMUUWZK0X3YwrK5RjKl9EAYzh5UJZAgDF6cATITzISPD6ecTp5syCbYa35WM
+ OmbvVrXbgOOwivDhTxrL/3ceqBHrYfhf7zHn/8LFXS137SW9mvdrKP57d20r0/nZ8YfCrgveT97
+ NBAA=
 X-Developer-Key: i=j@jannau.net; a=openpgp;
  fpr=8B336A6BE4E5695E89B8532B81E806F586338419
 
 After discussion with the devicetree maintainers we agreed to not extend
-lists with the generic compatible "apple,smc" anymore [1]. Use
-"apple,t8103-smc" as base compatible as it is the SoC the driver and
+lists with the generic compatible "apple,spmi" anymore [1]. Use
+"apple,t8103-spmi" as base compatible as it is the SoC the driver and
 bindings were written for.
-
-SMC on Apple's M2 Pro/Max/Ultra SoCs is compatible with the existing
-driver so add its per-SoC compatible with the new base compatible as
-fallback used by the driver.
 
 [1]: https://lore.kernel.org/asahi/12ab93b7-1fc2-4ce0-926e-c8141cfe81bf@kernel.org/
 
 Signed-off-by: Janne Grunau <j@jannau.net>
 ---
- Documentation/devicetree/bindings/mfd/apple,smc.yaml | 17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
+ drivers/spmi/spmi-apple-controller.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/mfd/apple,smc.yaml b/Documentation/devicetree/bindings/mfd/apple,smc.yaml
-index 8a10e270d421ecd703848f64af597de351fcfd74..5429538f7e2e914fa4babc273350a5bf194273b0 100644
---- a/Documentation/devicetree/bindings/mfd/apple,smc.yaml
-+++ b/Documentation/devicetree/bindings/mfd/apple,smc.yaml
-@@ -15,12 +15,17 @@ description:
+diff --git a/drivers/spmi/spmi-apple-controller.c b/drivers/spmi/spmi-apple-controller.c
+index 697b3e8bb023566f17911fc222666d84f5e14c91..87e3ee9d4f2aa5517808827f5dd365055c08446a 100644
+--- a/drivers/spmi/spmi-apple-controller.c
++++ b/drivers/spmi/spmi-apple-controller.c
+@@ -149,6 +149,7 @@ static int apple_spmi_probe(struct platform_device *pdev)
+ }
  
- properties:
-   compatible:
--    items:
--      - enum:
--          - apple,t6000-smc
--          - apple,t8103-smc
--          - apple,t8112-smc
--      - const: apple,smc
-+    oneOf:
-+      - items:
-+          - const: apple,t6020-smc
-+          - const: apple,t8103-smc
-+      - items:
-+          - enum:
-+              # Do not add additional SoC to this list.
-+              - apple,t6000-smc
-+              - apple,t8103-smc
-+              - apple,t8112-smc
-+          - const: apple,smc
- 
-   reg:
-     items:
+ static const struct of_device_id apple_spmi_match_table[] = {
++	{ .compatible = "apple,t8103-spmi", },
+ 	{ .compatible = "apple,spmi", },
+ 	{}
+ };
 
 -- 
 2.51.0
