@@ -1,58 +1,94 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42C141F4CAF;
-	Thu, 28 Aug 2025 11:07:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E7602E371F;
+	Thu, 28 Aug 2025 11:09:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.188
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756379235; cv=none; b=U/AzuM8eaDXzZwE9e7Pg5SV2RF2X9itSw1/Yt9BWd3tlyI4G7aDvoC9b0Mzs74aBFo1GElu5Pgq4gUeXRj83skwBhO2i2w11kelh3bAvFqt35tewebq9Y5Ca+pJzjHkecKNt3tvj2Zju5fKbWOlDklfeU3U2C/qDCTpFPLPz9zo=
+	t=1756379390; cv=none; b=t5gs2AMzdDIP3EnC227ZO2PytQhTPexSVM/TjI56/LqNLB5fQq2zkz1tEGYrrDU8kkq/fOnHzXGbdRBBz4MfkPEScAqvmC1TU3ydOEAN5XWpjnSfgcqb5/z+1jMYDGFSvU5V9yx8Pf9PH6zyqazxAh7vtUnd8u2UA77/oSp8hjE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756379235; c=relaxed/simple;
-	bh=Azv4ohzdARRa6uGnEwoC67fTOgWZYWIdsIJ0un0crY8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lfaTfLRaYvm4azL2GB4iL6wQtbiMcbIe3kzmnX6Nkg+okkIzew/9qXISzzSEv6UaF1cTr1Ewc47RhKyPvCSigccsPk3qsgB1mJsegHTGsqr0IGmfNNQl+ohj/X9Mncn9Dp2OrxOv69Raw67CDOIVsp5TtJDwEwBZ8LMhE0X0Hsc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=x9GfOVyw; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="x9GfOVyw"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 51D4FC4CEEB;
-	Thu, 28 Aug 2025 11:07:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1756379234;
-	bh=Azv4ohzdARRa6uGnEwoC67fTOgWZYWIdsIJ0un0crY8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=x9GfOVywmxB9/ON3yP/7Nwe8fxbQ4c8L9ew5jaUjqwOKsnn3qfPjrSdEByU5MrLDh
-	 VmlLpLj87G5QnToxvmV4odDEiqtD1tiDCclortx+iYZ+TuMgcr9hQQTum3Xefcwvpv
-	 CU1DQYGUlQp2g/HPF35LEqdLnEIZ4s9m6btIHYCY=
-Date: Thu, 28 Aug 2025 13:07:11 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Sudeep Holla <sudeep.holla@arm.com>,
-	Danilo Krummrich <dakr@kernel.org>
-Subject: Re: [PATCH v1 0/2] driver core/PM: Two updates related to power.no_pm
-Message-ID: <2025082851-progress-unsliced-ade4@gregkh>
-References: <12749467.O9o76ZdvQC@rafael.j.wysocki>
+	s=arc-20240116; t=1756379390; c=relaxed/simple;
+	bh=+k4eAvJpmjns5X1DgKnXte3sMig9v+VmdsKLWI7eltU=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Fr4LiTG0pHD+HC8Bd0bdvYiK/5KrChkPtWI1SgO2pFpC6/a6KIwkKwjct+huvJrDEaD2hlBjXimkDukOQQTV4BsNqD38EszrEqmrnSEP5D5tXrxkg5yMnMVUbRoMgYe1dzCd4Gril0f2jqlZPZOH2BRtS7OaoewVnRiHGAdmBy0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=45.249.212.188
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
+Received: from mail.maildlp.com (unknown [172.19.88.194])
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4cCJYT4l2RztT9q;
+	Thu, 28 Aug 2025 19:08:45 +0800 (CST)
+Received: from kwepemo100006.china.huawei.com (unknown [7.202.195.47])
+	by mail.maildlp.com (Postfix) with ESMTPS id 1B8E8140123;
+	Thu, 28 Aug 2025 19:09:43 +0800 (CST)
+Received: from localhost.localdomain (10.90.31.46) by
+ kwepemo100006.china.huawei.com (7.202.195.47) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Thu, 28 Aug 2025 19:09:42 +0800
+From: Jie Zhan <zhanjie9@hisilicon.com>
+To: <viresh.kumar@linaro.org>, <rafael@kernel.org>, <ionela.voinescu@arm.com>,
+	<beata.michalska@arm.com>, <zhenglifeng1@huawei.com>
+CC: <linux-pm@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linuxarm@huawei.com>,
+	<zhanjie9@hisilicon.com>, <jonathan.cameron@huawei.com>
+Subject: [PATCH v2 0/2] cpufreq: CPPC: Rework FIE warning prints and cppc_scale_freq_tick()
+Date: Thu, 28 Aug 2025 19:02:10 +0800
+Message-ID: <20250828110212.2108653-1-zhanjie9@hisilicon.com>
+X-Mailer: git-send-email 2.30.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <12749467.O9o76ZdvQC@rafael.j.wysocki>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
+ kwepemo100006.china.huawei.com (7.202.195.47)
 
-On Thu, Aug 28, 2025 at 12:55:50PM +0200, Rafael J. Wysocki wrote:
-> Hi All,
-> 
-> Applying this series will cause power.no_pm to be set for faux devices (so they
-> don't get processed unnecessarily during system-wide suspend/resume transitions)
-> and power.no_callbacks to be set along with power.no_pm (for consistency).
+Reading performance feedback counters on offline or low-power idle CPUs may
+return 0, which is interpreted as -EFAULT.
 
-Oh, nice!  I forgot about that entirely.  Should these be backported to
-older kernels as well?
+This leads to two issues related to the CPPC FIE:
 
-thanks,
+1. When booting a subset of CPUs in policy->related_cpus (some CPUs under
+the cpufreq policy is offline), there are warnings of "failed to read perf
+counters for cpu" during the CPPC FIE initialization.
 
-greg k-h
+2. On our platform with the CPC regs in System Memory and a power-down idle
+state enabled, if the CPPC FIE is registered successfully, there are
+repeated warnings of "failed to read perf counters" because
+cppc_scale_freq_workfn() is trying to access the counters of remote CPUs
+that enters the idle state.
+
+To solve the above issues:
+
+Patch 1 removes the warning when the CPPC FIE initialization fails to read
+counters on offline CPUs and changes the log leve to debug.  This can be
+applied separately.
+
+Patch 2 moves the update of FIE arch_freq_scale into ticks for non-PCC regs
+and maintains the existing mechanism for PCC regs, such that reading
+counters would be triggered on the local CPU only.  This inherently solves
+the issue in [1].  We have tested this on Kunpeng SoCs with the CPC regs
+both in System Memory and FFH.  More tests on other platforms are welcome
+though.
+[1] https://lore.kernel.org/linux-pm/20250730032312.167062-3-yubowen8@huawei.com/
+
+Changelog:
+
+v2:
+- Update the cover letter and the commit log based on v1 discussion
+- Update FIE arch_freq_scale in ticks for non-PCC regs
+
+v1:
+https://lore.kernel.org/linux-pm/20250730032312.167062-1-yubowen8@huawei.com/
+
+Jie Zhan (2):
+  cpufreq: CPPC: Don't warn if FIE init fails to read counters
+  cpufreq: CPPC: Update FIE arch_freq_scale in ticks for non-PCC regs
+
+ drivers/cpufreq/cppc_cpufreq.c | 64 +++++++++++++++++++++-------------
+ 1 file changed, 39 insertions(+), 25 deletions(-)
+
+-- 
+2.33.0
+
