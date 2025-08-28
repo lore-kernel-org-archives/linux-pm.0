@@ -1,38 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 678512F2908;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 678CF322DD1;
 	Thu, 28 Aug 2025 16:57:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756400246; cv=none; b=nqWRTXYKTXbyVePw8WSAN84DBXAGf5ixKaYoqeCN/mT3pnB1ya3L8FtM57Oo7LEX6zRZNteF/9lbcF+kItSY/HVqnuqLP9RYjOnr8QLVU8oEodiwwezVpN7TfdSxMkEwb36I0LahkX7m2cgHxE6WS9T3/c8EpKLrAIlKrLTom7o=
+	t=1756400246; cv=none; b=aHjWo3SHpeL/dULwA8dDdOFqGZXHFmtUJBR9xBUgQ67q0e5szlBtsPQDrrUdGFfwjY1293TRXNOq1xTuDH/ZQb72syClM+tiGZnEn0W4R79f8UNARZfAQdHtav63B4HEMSb3lVAIqbl8ORKIW+hDqzuU8ROasj5cyzUUjxUMbdM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1756400246; c=relaxed/simple;
-	bh=qYSyZU0PA0XW8kSg/t1otLbzZhDMJW98vrjp/AywmYY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=F6MwLkbOCJsTEVfzQtBOolAnxCzDBibxSFToj9GYEIYdZ81DCVHxNwoLpzkuoLiklaxB/h7VrgwePvDK9Z2eHEwfaRlu/P/fs8N/MsDQwudY7ZqnlLYeQvpMQxFIyD/LgCkmWjNHdKaIig5XNAOrnq3WiL2BvRySSmVhQLNgMH0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cNouSF/U; arc=none smtp.client-ip=10.30.226.201
+	bh=MyGuywaVJRTnrDuohxHecg+wMfhfMcnjDHdSphNISLY=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=touLe/oiw878fchlwZrOrsU5hteURvmLtHbRfOaPq218gxfQKfzcfqHgMbgJmiVZlI4b8/zjfwkGeUgGfurpjUabfsUChpoz5z1utR3bWpdtAVYQHXbYaC/7XEfioY0vleKxCB89ERwmlcwDmpsnfh6sW9ma4JQZg20nWG3TdfY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QXQaLCDX; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cNouSF/U"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id DB9A1C4CEF5;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QXQaLCDX"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id CCE27C4CEEB;
 	Thu, 28 Aug 2025 16:57:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1756400245;
-	bh=qYSyZU0PA0XW8kSg/t1otLbzZhDMJW98vrjp/AywmYY=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=cNouSF/UMhBXna3ntSSdKPLw4W5PXSNUYdI8WHvzeKZfQxLmKZyluNJSCzoH9MHKy
-	 68jAPAkdv4zLmGeRPDVEMW+RdnWZJoB+BpwNTEJpd3ziB3btj4EC1bI0pO4RpegkoJ
-	 joPMmTEBIHSGKphiAhKlczQ/XBus0xKUpv0rwisQt11WFCuGFaoTdUtYgdLWFUyc5g
-	 te9xi3RC6GYN7MRsDb4NOhYN9LV6J0Isuzfv2esHmZ7UYWmp4JLQ7VOIh4OH62N5/+
-	 +60rx2BJPQlB97dbAaje9jc5/MMiejnraCvqc60F2MB7TV9RKmnxvXNYtPyzUmguFH
-	 8Lyo9W3f9k0rg==
+	bh=MyGuywaVJRTnrDuohxHecg+wMfhfMcnjDHdSphNISLY=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=QXQaLCDXrSNvTZGGSJ04PeY2E5N2CecKyGaPF5I1bMKQnQUOP17iRP98ODBmpBI7L
+	 1toEuUbyvT1yGWjs7pX7Zmx9ZIAK5JLmbBsWgyanglknNmpu44nt70Q2P4Vozv6wxG
+	 7B1WwdvCs0Y8Pgw5wp2hHi5aPZ86HYD1BtcPCnBuS9aI0J9d/3qh8LUe/rzlvvcK28
+	 mx1mNDW907AMJHhbFVN4oe+9lW7Oz47FvaKrYhJDrWm9N1kKkESx6Gb4NCwN2z3cF2
+	 +F76GaiZL9AQce89qXS4Yl2ymtZJl/uk1DKn3HVWNk+Q+Vmg8nvtUhO41wPsEYz2X7
+	 EbvIY8TVD0DkA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA718CA0EED;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC9D1CA0FF7;
 	Thu, 28 Aug 2025 16:57:25 +0000 (UTC)
 From: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>
-Date: Thu, 28 Aug 2025 11:57:20 -0500
-Subject: [PATCH v2 1/2] cpufreq: tegra186: Set target frequency for all
- cpus in policy
+Subject: [PATCH v2 0/2] cpufreq: tegra186: Fix initialization and scaling
+Date: Thu, 28 Aug 2025 11:57:19 -0500
+Message-Id: <20250828-tegra186-cpufreq-fixes-v2-0-fcffe4de1e15@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,9 +40,11 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250828-tegra186-cpufreq-fixes-v2-1-fcffe4de1e15@gmail.com>
-References: <20250828-tegra186-cpufreq-fixes-v2-0-fcffe4de1e15@gmail.com>
-In-Reply-To: <20250828-tegra186-cpufreq-fixes-v2-0-fcffe4de1e15@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAG+KsGgC/4WNTQ6CMBCFr0Jm7Zi2xlJceQ/DorRTmET+WiQaw
+ t2tXMDl916+9zZIFJkS3IoNIq2ceBwyqFMBrrNDS8g+MyihrsIojQu10Uqj0U2vEGnGwG9KWIY
+ mBCOdNlZBlqdIR5HdR52547SM8XP8rPKX/p1cJQqsylAZfyFhfXNve8vPsxt7qPd9/wKAUAMDv
+ AAAAA==
+X-Change-ID: 20250826-tegra186-cpufreq-fixes-7fbff81c68a2
 To: "Rafael J. Wysocki" <rafael@kernel.org>, 
  Viresh Kumar <viresh.kumar@linaro.org>, 
  Thierry Reding <thierry.reding@gmail.com>, 
@@ -51,13 +52,14 @@ To: "Rafael J. Wysocki" <rafael@kernel.org>,
  Sumit Gupta <sumitg@nvidia.com>
 Cc: Thierry Reding <treding@nvidia.com>, linux-pm@vger.kernel.org, 
  linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Aaron Kling <webgeek1234@gmail.com>
+ Aaron Kling <webgeek1234@gmail.com>, 
+ Mikko Perttunen <mperttunen@nvidia.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1756400245; l=1316;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1756400245; l=820;
  i=webgeek1234@gmail.com; s=20250217; h=from:subject:message-id;
- bh=WE4FtNYlrqayHn8j1oFAZqsXZWGEdS20pQxJDsMXhig=;
- b=YyfT3NrbM2MhkdJH27FSwoRxJ9E03NvtZF1d+41tAofWnw75lpvLJkGUwXsyuj5UXtnP0vxW+
- Jtj/BIbg8kpCKyrA/AJVxPlvlqo9afivyUPh0qaJjuKHxZwDG7uLA5g
+ bh=MyGuywaVJRTnrDuohxHecg+wMfhfMcnjDHdSphNISLY=;
+ b=jTkl4Ze5C2Hk4Gg/ssP9hc3eZzVbpeg/G2YMW+0uFbkBSrM1Is5s3uDGl/NemC36ypPtUO2wc
+ +E51dc/pgphCnTJY1zDIBifWBCbDNfAi8M2T/L6m6zrLM1j8mr5kqk3
 X-Developer-Key: i=webgeek1234@gmail.com; a=ed25519;
  pk=TQwd6q26txw7bkK7B8qtI/kcAohZc7bHHGSD7domdrU=
 X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
@@ -65,42 +67,28 @@ X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
 X-Original-From: Aaron Kling <webgeek1234@gmail.com>
 Reply-To: webgeek1234@gmail.com
 
-From: Aaron Kling <webgeek1234@gmail.com>
+This series fixes an issue with shared policy per cluster not scaling
+all cpus and with some cores being initialized by the subsystem.
 
-The original commit set all cores in a cluster to a shared policy, but
-did not update set_target to apply a frequency change to all cores for
-the policy. This caused most cores to remain stuck at their boot
-frequency.
-
-Fixes: be4ae8c19492 ("cpufreq: tegra186: Share policy per cluster")
 Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
 ---
- drivers/cpufreq/tegra186-cpufreq.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+Changes in v2:
+- Set max freq instead of base freq in patch 2
+- Link to v1: https://lore.kernel.org/r/20250826-tegra186-cpufreq-fixes-v1-0-97f98d3e0adb@gmail.com
 
-diff --git a/drivers/cpufreq/tegra186-cpufreq.c b/drivers/cpufreq/tegra186-cpufreq.c
-index cbabb726c6645d2e5f1857a47e5643c8552d1933..6c394b429b6182faffabf222e5af501393dbbba9 100644
---- a/drivers/cpufreq/tegra186-cpufreq.c
-+++ b/drivers/cpufreq/tegra186-cpufreq.c
-@@ -93,10 +93,14 @@ static int tegra186_cpufreq_set_target(struct cpufreq_policy *policy,
- {
- 	struct tegra186_cpufreq_data *data = cpufreq_get_driver_data();
- 	struct cpufreq_frequency_table *tbl = policy->freq_table + index;
--	unsigned int edvd_offset = data->cpus[policy->cpu].edvd_offset;
-+	unsigned int edvd_offset;
- 	u32 edvd_val = tbl->driver_data;
-+	u32 cpu;
- 
--	writel(edvd_val, data->regs + edvd_offset);
-+	for_each_cpu(cpu, policy->cpus) {
-+		edvd_offset = data->cpus[cpu].edvd_offset;
-+		writel(edvd_val, data->regs + edvd_offset);
-+	}
- 
- 	return 0;
- }
+---
+Aaron Kling (2):
+      cpufreq: tegra186: Set target frequency for all cpus in policy
+      cpufreq: tegra186: Initialize all cores to max frequencies
 
+ drivers/cpufreq/tegra186-cpufreq.c | 26 +++++++++++++++++++++-----
+ 1 file changed, 21 insertions(+), 5 deletions(-)
+---
+base-commit: 1b237f190eb3d36f52dffe07a40b5eb210280e00
+change-id: 20250826-tegra186-cpufreq-fixes-7fbff81c68a2
+
+Best regards,
 -- 
-2.50.1
+Aaron Kling <webgeek1234@gmail.com>
 
 
