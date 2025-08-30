@@ -1,67 +1,66 @@
-Received: from mail-ed1-f51.google.com (mail-ed1-f51.google.com [209.85.208.51])
+Received: from mail-ej1-f50.google.com (mail-ej1-f50.google.com [209.85.218.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5430774BE1;
-	Sat, 30 Aug 2025 20:45:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 227D52472BA;
+	Sat, 30 Aug 2025 20:45:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756586729; cv=none; b=IGcNgT8Cryxk2qomNsnRP2hRszwr/0/9tyNFhNDJg8zZ98qyAmuN5B15zGGb/3RNX/Qb0flGLr4ff6GdTxosLCZ0FCilPY/wDyN0/ZgtfCnmTwZ7IDfjmpf0pg09Ap3wj216fzjmasLQRXaj0DD0n7N2OcQPnNdpdIb495UU+ao=
+	t=1756586730; cv=none; b=D17ykFNcYHAc8ofdVq+UDefST+PUNdoR8ItohDjzk4QHlm1Rq72zPRkOTVAsjyPu7bejmIm01B6K2bl79EWT1EOpEqLB4IJ/i7H7EM3aaZmhFDtaitbk9VasV2Igh974sigRxROZkqpQFzqyLaB58Nru3eeAM9ViLUZZ0zmyzFM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756586729; c=relaxed/simple;
-	bh=HOFral57BQL8UYkTuj9H3P5RIa5oSgklRaCCxDv4muA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Yp3dPFrpzlKhOyAzG4rV+ArbsyH++o1eiTl20Gd4n6R7eySGZIAI2kTrbQsOddqRgtxKsdJd9TacMlh+TLFKuo07lNtFc/rfWvsa+StHfHs8sovor28MQawTflnok4/qFTT60Wl1dFsKN1mKr6vvtQjej29TuQgZP68MsZJmxnE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ZqJ+Lmeq; arc=none smtp.client-ip=209.85.208.51
+	s=arc-20240116; t=1756586730; c=relaxed/simple;
+	bh=bsMbeskizZ3+m+ew2tNDknotQDjax91iTAZv7fXPpnQ=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=UmdeEIG+52w4MqXje9CqxNiY2zgW8ADz/uF/bei0farqrAizgo5Z0KYhp2iMsRIkWxEbimPtuBnOghWaIBLQToemVjkIX/n1cQPGSTZeLkVHOpb3BiHuPU+lCWNgxWj739I95QH8VvjGtG+vsKtWX5H2GfMy97Fb7W5PxyV7ZYg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=aQlPsZuy; arc=none smtp.client-ip=209.85.218.50
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZqJ+Lmeq"
-Received: by mail-ed1-f51.google.com with SMTP id 4fb4d7f45d1cf-61cb4370e7bso4760520a12.3;
-        Sat, 30 Aug 2025 13:45:27 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aQlPsZuy"
+Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-affc2eb83c5so160454066b.2;
+        Sat, 30 Aug 2025 13:45:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1756586726; x=1757191526; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=3ct1QxM5jLU79bjOOr6iNioQP9jRwP1CqDRkzzfxBLo=;
-        b=ZqJ+LmeqMBZZV+3x5nA6OY88TaoWBUlRnu40YOO3PHX8t+wr6tQQ7a8O7liX4vkO9H
-         3O9RvmtRm3tUjuezdAsdC5r9xHnAA6jOo39loTF2L2BYuEC2+vwqYGAljCZNjjQLwIUX
-         SPbFs/E9d3iJREG2OeUOcC5BQOFT4oqd8FH2YXk9VTqFSI3MR2cxDy95fD3ReUeizuRd
-         oPLwHYLTURRAV94UpyG0XOnBcldMJNVlF3wuGcRdsDGMng9RFCIpPfiJ9rpM06TFZbTA
-         onuYLX4ILCjb+0PUhw1SIhzmrtZ2tYvRS7SlbAzXLwHXTxUpmxz7Gl5OvcmkcZ3wV06g
-         N96w==
+        d=gmail.com; s=20230601; t=1756586727; x=1757191527; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=jpjDZlCCSxzX1q0S8x/0HEmKCcPEymF68KMYns7ekvw=;
+        b=aQlPsZuyiljjfUxVQkBKFEaI32Qp5T488IHSc9lhM+iUIKneuswI0qM1hx9U2mImzG
+         U8uOFQC81+7ZTR27CuXWHLbIp/QfhhO1xx6kl7Gn1K9K9sH/BFKa1YlHh4KqfNrvWNq7
+         V+A/FfCrwUfAAS9MeCuLTS2f9zAor7WCHfghFRrtJeNuLVE0n9BiuEuW7AI8+CjeOB8Y
+         iN03ibxwLNZQw34lnHnoGTZWnGmlVeHcIxUYym8cTOVN2LoTPEetsRf0Q3HlLa2C3toB
+         h57jRVxTD00NKuZzGCmQ4YmXY5t/CcdGmnqnYOPchFiGJI8ZvYw2aVX091u/h7J1mGNU
+         f0Dw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756586726; x=1757191526;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=3ct1QxM5jLU79bjOOr6iNioQP9jRwP1CqDRkzzfxBLo=;
-        b=sB19Uwr6UkPw/s5Fq/0hqhTZBc9usYCJpKpnZix0uS18V6rXwMFy4fpnPnZoFR9gwW
-         D+9e0PL9D4b54SVP60yMcj/TKt+JeOCtQIGojUohLXPLH/yKpYbEKUQmbYUUGEffKhQt
-         LczUWIfHpZ+b55trHujLBTAVyeu+bwI5VHx/s6VUmq7mmowiqqI+WHaHbfTP0nPQp6yr
-         aRPS2neBORAxA6B3yNl45BsbKUdo7Nn0P0h0CVIHtXV52knlLfx+OEU06E6kECAxa39F
-         fq5J7aMxZfL3yufQLlwrVp/EtsYo8FsWD9GMpnlQsu/Tp0VCyCAtf+u3h1ADcKfWeI8T
-         +1IQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVaMW1N7srR2v4yFOK4vJYSEjgmVw+Jm43RygK6z40D4Lg9ULFm+WUAvEYlBbwU1RlTFf1o+eLpFS93p8U=@vger.kernel.org, AJvYcCXhv3RfBYcpDRNx9x89xLrIX8c5d5vqs/Ebs0bXZRpd85+aT9Wv0AivckRYf57iwiiHTO1M6UoeivA=@vger.kernel.org
-X-Gm-Message-State: AOJu0YwtLXyrIQJaSSBaYrI+nL3vtM9OB2cAkpveUtiqRE4MVLddR6Ir
-	bqdqerosl/deO4m+YnrYr+DyTdEDMYm4DgXSdK7Xs1DxSyIDiyPOlB8m
-X-Gm-Gg: ASbGncushcZ6jj2gpOmAkAZnhUCrNj/RSHioVaOGUY0o3UtQjHtzja0gbtSs3FoEOwp
-	tDmdmd7FbOjGaTOpe1FcaRSxkXBCoylKr05QiwE5OZxJLduxZZzQcdp+vj735U4DzpMH1PWdYEE
-	R6IOeLR34c9tvImaol3wcQPLdNajUTMEVDD+PRdjRY1UWT0vykh9HghIFuxNnjwiBxMG+9h1NDv
-	C7aMYJzqqis6qY9Z3whQvVaLIrmL9YBcW1GQjtRxXV0E9gV+p3q8I/d1x7N5qjzBd16AKgRQAj/
-	blp0P7dWMVD63LeK9qHyCIDOFz7OJPH36Y2TD8vhBEbKuUbaL0WgcIWXTb4EDO8kCqT6i2AK0fR
-	JPmNl8tLGCOE3ThbycWQb
-X-Google-Smtp-Source: AGHT+IEQRyppa0QSBTQh0CeerNcczwcEPlPK/lBjlkglQelkcWfT6C9l2x6in5SD/WajZ68Szzr99g==
-X-Received: by 2002:a05:6402:1d52:b0:61c:b8af:f7a with SMTP id 4fb4d7f45d1cf-61d26ec2b87mr2540179a12.34.1756586725573;
-        Sat, 30 Aug 2025 13:45:25 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1756586727; x=1757191527;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=jpjDZlCCSxzX1q0S8x/0HEmKCcPEymF68KMYns7ekvw=;
+        b=hviv3pZPXOFh1xwDKCXYg8QWbXxdXf5UWL6kWbRBmmWOIGOq5DB65UluOKphrcv2LV
+         DZLLWYMIt4+Q/H6weg5X9w60UGba70kNqDeyWKxLhynPWrMmaCV2CaO7+Hg8jJQU4fi+
+         aVWfdYg5QpFw8T5BTBmGF8yzSJ1IK/FJiweM95de6ye2edEe9diiWRv/oDt/5My1Exvk
+         5PPvulu5Siu5mwXVubyvHAcZxWsJ8XZwTs4P5S8b4NYK6Kdglxu1r6kScaGV6jWmkBt/
+         +ojFltmoTh0bPNvTpvovMR22V+NXWGFTnOry5BfR/1H8r58z3PMo0qvV1ZOX4hnBNfwn
+         AOcg==
+X-Forwarded-Encrypted: i=1; AJvYcCVVoewHixmYu20ktS22SoermrH1JxaYhWunTXjAb8lSll9Z702jfTuPnVQZmnk1U3FLO2wCmwALv4Y=@vger.kernel.org, AJvYcCVsji1PbJ+sx6CwdYcgjgFCu1l9REajW3GMM1RF7hTbHZ/X6LK97gVk6MgzTzK6pz1kz+uxHhYKI3bwwFw=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yyh/G7wInKe7ZathGO2AfEm76eL9in8/0dwU6QIe5/xNKxsarGO
+	sfcewdzOvt9Er6Hr/TLtb7jJrjWdgifrxHsTUbyt+dWkxGlxvyRdSR9M
+X-Gm-Gg: ASbGncsOAfsjFrgN+OqWsS7a53v0L3I3MUPKKw2gAQOpANf1KJyH9kV/09807wMkNiE
+	TV6qfNpalyFv0fG9S/OBefGTuzMcnUKKgY0u5dQL4ahiDTZcutw97D8PYFiGDLrfLCFiZjZCWIh
+	1QbJONbpImn4EGvzW7qi+nESOy2N62tcp2AbRqsHmMCMAv+xqkE8nJC2N7OTYGVCtsGA9gz7mR0
+	1Yx//2PSrvskVwaLSZH9ulEXZbAh4oeIdW8I+G7Buh2aA2cam/6KeBHNbhXU911jnhX85faqLG8
+	aVvTHpvOKGFI6yCQXLtMv7LVGuqcK07GmXjj5twbNF9hRJqCcxNe6uJgM3gKaJZUwKm5xvZg9qQ
+	czCgEItQQijp1cFkxDkHJ66anQRhFOMVlb+ZTTWRtyg==
+X-Google-Smtp-Source: AGHT+IGRPOBFp3JnR5dh8ZPVi2wj7ba20iZDFAa8VCsY76wVE2IHKKw+IPXNfg5o4YNN8RcvH2tAhw==
+X-Received: by 2002:a17:907:7b97:b0:aff:3dda:31c1 with SMTP id a640c23a62f3a-b01d8c90d25mr336896366b.28.1756586722770;
+        Sat, 30 Aug 2025 13:45:22 -0700 (PDT)
 Received: from [127.0.1.1] ([46.53.240.27])
-        by smtp.googlemail.com with ESMTPSA id 4fb4d7f45d1cf-61cfc52ade4sm4066630a12.45.2025.08.30.13.45.24
+        by smtp.googlemail.com with ESMTPSA id 4fb4d7f45d1cf-61cfc52ade4sm4066630a12.45.2025.08.30.13.45.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 30 Aug 2025 13:45:25 -0700 (PDT)
+        Sat, 30 Aug 2025 13:45:22 -0700 (PDT)
 From: Dzmitry Sankouski <dsankouski@gmail.com>
-Date: Sat, 30 Aug 2025 23:45:15 +0300
-Subject: [PATCH 2/9] power: supply: max77705_charger: refactoring: rename
- charger to chg
+Subject: [PATCH 0/9] power: supply: fixes and improvements for
+ max77(705,976) chargers
+Date: Sat, 30 Aug 2025 23:45:13 +0300
+Message-Id: <20250830-max77705_77976_charger_improvement-v1-0-e976db3fd432@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -70,9 +69,10 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250830-max77705_77976_charger_improvement-v1-2-e976db3fd432@gmail.com>
-References: <20250830-max77705_77976_charger_improvement-v1-0-e976db3fd432@gmail.com>
-In-Reply-To: <20250830-max77705_77976_charger_improvement-v1-0-e976db3fd432@gmail.com>
+X-B4-Tracking: v=1; b=H4sIANpis2gC/z3OzQ6CMBAE4FchPdtQfld9FWOabVmgCRTcImIM7
+ 27x4HGSmS/zEYHYURDX5COYVhfc5GPITomwPfqOpGtiFrnKK3UulBxxAwBVaYAL1DqWuCPWbpx
+ 5Wmkkv0gq2jID0yJWtYiQwUDSMHrbH5Qp07AgP4aFbO/TP/gMxup5ekWtocGtxO9jPTO1bvtdv
+ N33/QsEi/KnsgAAAA==
 To: Chanwoo Choi <cw00.choi@samsung.com>, 
  Krzysztof Kozlowski <krzk@kernel.org>, Lee Jones <lee@kernel.org>, 
  Sebastian Reichel <sre@kernel.org>, 
@@ -82,260 +82,46 @@ Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
  linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
  Dzmitry Sankouski <dsankouski@gmail.com>
 X-Mailer: b4 0.14.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1756586721; l=9595;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1756586721; l=1532;
  i=dsankouski@gmail.com; s=20240619; h=from:subject:message-id;
- bh=HOFral57BQL8UYkTuj9H3P5RIa5oSgklRaCCxDv4muA=;
- b=XE3RU4/PIIfJARxmFZwN5DajvTyDB0oBjPYR5EAAPejjT4hD3fivgtXjO5I4Vd3zI21lO2iC0
- hS+BZD3OQ+pC/wTxFgHU9vpzFskgMqxe/ovlMfK86UdWOQMEquEibwH
+ bh=bsMbeskizZ3+m+ew2tNDknotQDjax91iTAZv7fXPpnQ=;
+ b=M4Ae+v/739Xx/y0sC4GaVmEXLngxEioXHIikybdcf00uIaI2oVpXGYsL2+O97r9tF7+tD1dXz
+ szHiz3uDEL0D24A7D9Kt5z8z82rQNOv9Gn8vaXHzh+gWbzmspPd4y4n
 X-Developer-Key: i=dsankouski@gmail.com; a=ed25519;
  pk=YJcXFcN1EWrzBYuiE2yi5Mn6WLn6L1H71J+f7X8fMag=
 
-Rename struct max77705_charger_data variable to chg for consistency.
+This series consists of:
+- max77705: interrupt handling fix
+- max77705: make input current limit and charge current limit properties
+  writable
+- max77705: add adaptive input current limit feature
+- max77705: switch to regfields
+- max77705: refactoring
+- max77976: change property for current charge limit value
 
 Signed-off-by: Dzmitry Sankouski <dsankouski@gmail.com>
 ---
- drivers/power/supply/max77705_charger.c | 80 ++++++++++++++++-----------------
- 1 file changed, 40 insertions(+), 40 deletions(-)
+Dzmitry Sankouski (9):
+      power: supply: max77705_charger: move active discharge setting to mfd parent
+      power: supply: max77705_charger: refactoring: rename charger to chg
+      power: supply: max77705_charger: use regfields for config registers
+      power: supply: max77705_charger: return error when config fails
+      power: supply: max77705_charger: add writable properties
+      power: supply: max77705_charger: rework interrupts
+      power: supply: max77705_charger: use REGMAP_IRQ_REG_LINE macro
+      power: supply: max77705_charger: implement aicl feature
+      power: supply: max77976_charger: fix constant current reporting
 
-diff --git a/drivers/power/supply/max77705_charger.c b/drivers/power/supply/max77705_charger.c
-index 3b75c82b9b9e..7855f890e0a9 100644
---- a/drivers/power/supply/max77705_charger.c
-+++ b/drivers/power/supply/max77705_charger.c
-@@ -42,9 +42,9 @@ static enum power_supply_property max77705_charger_props[] = {
- 
- static int max77705_chgin_irq(void *irq_drv_data)
- {
--	struct max77705_charger_data *charger = irq_drv_data;
-+	struct max77705_charger_data *chg = irq_drv_data;
- 
--	queue_work(charger->wqueue, &charger->chgin_work);
-+	queue_work(chg->wqueue, &chg->chgin_work);
- 
- 	return 0;
- }
-@@ -109,19 +109,19 @@ static int max77705_get_online(struct regmap *regmap, int *val)
- 	return 0;
- }
- 
--static int max77705_check_battery(struct max77705_charger_data *charger, int *val)
-+static int max77705_check_battery(struct max77705_charger_data *chg, int *val)
- {
- 	unsigned int reg_data;
- 	unsigned int reg_data2;
--	struct regmap *regmap = charger->regmap;
-+	struct regmap *regmap = chg->regmap;
- 
- 	regmap_read(regmap, MAX77705_CHG_REG_INT_OK, &reg_data);
- 
--	dev_dbg(charger->dev, "CHG_INT_OK(0x%x)\n", reg_data);
-+	dev_dbg(chg->dev, "CHG_INT_OK(0x%x)\n", reg_data);
- 
- 	regmap_read(regmap, MAX77705_CHG_REG_DETAILS_00, &reg_data2);
- 
--	dev_dbg(charger->dev, "CHG_DETAILS00(0x%x)\n", reg_data2);
-+	dev_dbg(chg->dev, "CHG_DETAILS00(0x%x)\n", reg_data2);
- 
- 	if ((reg_data & MAX77705_BATP_OK) || !(reg_data2 & MAX77705_BATP_DTLS))
- 		*val = true;
-@@ -131,9 +131,9 @@ static int max77705_check_battery(struct max77705_charger_data *charger, int *va
- 	return 0;
- }
- 
--static int max77705_get_charge_type(struct max77705_charger_data *charger, int *val)
-+static int max77705_get_charge_type(struct max77705_charger_data *chg, int *val)
- {
--	struct regmap *regmap = charger->regmap;
-+	struct regmap *regmap = chg->regmap;
- 	unsigned int reg_data;
- 
- 	regmap_read(regmap, MAX77705_CHG_REG_CNFG_09, &reg_data);
-@@ -159,9 +159,9 @@ static int max77705_get_charge_type(struct max77705_charger_data *charger, int *
- 	return 0;
- }
- 
--static int max77705_get_status(struct max77705_charger_data *charger, int *val)
-+static int max77705_get_status(struct max77705_charger_data *chg, int *val)
- {
--	struct regmap *regmap = charger->regmap;
-+	struct regmap *regmap = chg->regmap;
- 	unsigned int reg_data;
- 
- 	regmap_read(regmap, MAX77705_CHG_REG_CNFG_09, &reg_data);
-@@ -234,10 +234,10 @@ static int max77705_get_vbus_state(struct regmap *regmap, int *value)
- 	return 0;
- }
- 
--static int max77705_get_battery_health(struct max77705_charger_data *charger,
-+static int max77705_get_battery_health(struct max77705_charger_data *chg,
- 					int *value)
- {
--	struct regmap *regmap = charger->regmap;
-+	struct regmap *regmap = chg->regmap;
- 	unsigned int bat_dtls;
- 
- 	regmap_read(regmap, MAX77705_CHG_REG_DETAILS_01, &bat_dtls);
-@@ -245,16 +245,16 @@ static int max77705_get_battery_health(struct max77705_charger_data *charger,
- 
- 	switch (bat_dtls) {
- 	case MAX77705_BATTERY_NOBAT:
--		dev_dbg(charger->dev, "%s: No battery and the charger is suspended\n",
-+		dev_dbg(chg->dev, "%s: No battery and the chg is suspended\n",
- 			__func__);
- 		*value = POWER_SUPPLY_HEALTH_NO_BATTERY;
- 		break;
- 	case MAX77705_BATTERY_PREQUALIFICATION:
--		dev_dbg(charger->dev, "%s: battery is okay but its voltage is low(~VPQLB)\n",
-+		dev_dbg(chg->dev, "%s: battery is okay but its voltage is low(~VPQLB)\n",
- 			__func__);
- 		break;
- 	case MAX77705_BATTERY_DEAD:
--		dev_dbg(charger->dev, "%s: battery dead\n", __func__);
-+		dev_dbg(chg->dev, "%s: battery dead\n", __func__);
- 		*value = POWER_SUPPLY_HEALTH_DEAD;
- 		break;
- 	case MAX77705_BATTERY_GOOD:
-@@ -262,11 +262,11 @@ static int max77705_get_battery_health(struct max77705_charger_data *charger,
- 		*value = POWER_SUPPLY_HEALTH_GOOD;
- 		break;
- 	case MAX77705_BATTERY_OVERVOLTAGE:
--		dev_dbg(charger->dev, "%s: battery ovp\n", __func__);
-+		dev_dbg(chg->dev, "%s: battery ovp\n", __func__);
- 		*value = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
- 		break;
- 	default:
--		dev_dbg(charger->dev, "%s: battery unknown\n", __func__);
-+		dev_dbg(chg->dev, "%s: battery unknown\n", __func__);
- 		*value = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
- 		break;
- 	}
-@@ -274,9 +274,9 @@ static int max77705_get_battery_health(struct max77705_charger_data *charger,
- 	return 0;
- }
- 
--static int max77705_get_health(struct max77705_charger_data *charger, int *val)
-+static int max77705_get_health(struct max77705_charger_data *chg, int *val)
- {
--	struct regmap *regmap = charger->regmap;
-+	struct regmap *regmap = chg->regmap;
- 	int ret, is_online = 0;
- 
- 	ret = max77705_get_online(regmap, &is_online);
-@@ -287,15 +287,15 @@ static int max77705_get_health(struct max77705_charger_data *charger, int *val)
- 		if (ret || (*val != POWER_SUPPLY_HEALTH_GOOD))
- 			return ret;
- 	}
--	return max77705_get_battery_health(charger, val);
-+	return max77705_get_battery_health(chg, val);
- }
- 
--static int max77705_get_input_current(struct max77705_charger_data *charger,
-+static int max77705_get_input_current(struct max77705_charger_data *chg,
- 					int *val)
- {
- 	unsigned int reg_data;
- 	int get_current = 0;
--	struct regmap *regmap = charger->regmap;
-+	struct regmap *regmap = chg->regmap;
- 
- 	regmap_read(regmap, MAX77705_CHG_REG_CNFG_09, &reg_data);
- 
-@@ -313,11 +313,11 @@ static int max77705_get_input_current(struct max77705_charger_data *charger,
- 	return 0;
- }
- 
--static int max77705_get_charge_current(struct max77705_charger_data *charger,
-+static int max77705_get_charge_current(struct max77705_charger_data *chg,
- 					int *val)
- {
- 	unsigned int reg_data;
--	struct regmap *regmap = charger->regmap;
-+	struct regmap *regmap = chg->regmap;
- 
- 	regmap_read(regmap, MAX77705_CHG_REG_CNFG_02, &reg_data);
- 	reg_data &= MAX77705_CHG_CC;
-@@ -327,12 +327,12 @@ static int max77705_get_charge_current(struct max77705_charger_data *charger,
- 	return 0;
- }
- 
--static int max77705_set_float_voltage(struct max77705_charger_data *charger,
-+static int max77705_set_float_voltage(struct max77705_charger_data *chg,
- 					int float_voltage)
- {
- 	int float_voltage_mv;
- 	unsigned int reg_data = 0;
--	struct regmap *regmap = charger->regmap;
-+	struct regmap *regmap = chg->regmap;
- 
- 	float_voltage_mv = float_voltage / 1000;
- 	reg_data = float_voltage_mv <= 4000 ? 0x0 :
-@@ -345,12 +345,12 @@ static int max77705_set_float_voltage(struct max77705_charger_data *charger,
- 				(reg_data << MAX77705_CHG_CV_PRM_SHIFT));
- }
- 
--static int max77705_get_float_voltage(struct max77705_charger_data *charger,
-+static int max77705_get_float_voltage(struct max77705_charger_data *chg,
- 					int *val)
- {
- 	unsigned int reg_data = 0;
- 	int voltage_mv;
--	struct regmap *regmap = charger->regmap;
-+	struct regmap *regmap = chg->regmap;
- 
- 	regmap_read(regmap, MAX77705_CHG_REG_CNFG_04, &reg_data);
- 	reg_data &= MAX77705_CHG_PRM_MASK;
-@@ -365,28 +365,28 @@ static int max77705_chg_get_property(struct power_supply *psy,
- 					enum power_supply_property psp,
- 					union power_supply_propval *val)
- {
--	struct max77705_charger_data *charger = power_supply_get_drvdata(psy);
--	struct regmap *regmap = charger->regmap;
-+	struct max77705_charger_data *chg = power_supply_get_drvdata(psy);
-+	struct regmap *regmap = chg->regmap;
- 
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_ONLINE:
- 		return max77705_get_online(regmap, &val->intval);
- 	case POWER_SUPPLY_PROP_PRESENT:
--		return max77705_check_battery(charger, &val->intval);
-+		return max77705_check_battery(chg, &val->intval);
- 	case POWER_SUPPLY_PROP_STATUS:
--		return max77705_get_status(charger, &val->intval);
-+		return max77705_get_status(chg, &val->intval);
- 	case POWER_SUPPLY_PROP_CHARGE_TYPE:
--		return max77705_get_charge_type(charger, &val->intval);
-+		return max77705_get_charge_type(chg, &val->intval);
- 	case POWER_SUPPLY_PROP_HEALTH:
--		return max77705_get_health(charger, &val->intval);
-+		return max77705_get_health(chg, &val->intval);
- 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
--		return max77705_get_input_current(charger, &val->intval);
-+		return max77705_get_input_current(chg, &val->intval);
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
--		return max77705_get_charge_current(charger, &val->intval);
-+		return max77705_get_charge_current(chg, &val->intval);
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
--		return max77705_get_float_voltage(charger, &val->intval);
-+		return max77705_get_float_voltage(chg, &val->intval);
- 	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
--		val->intval = charger->bat_info->voltage_max_design_uv;
-+		val->intval = chg->bat_info->voltage_max_design_uv;
- 		break;
- 	case POWER_SUPPLY_PROP_MODEL_NAME:
- 		val->strval = max77705_charger_model;
-@@ -410,10 +410,10 @@ static const struct power_supply_desc max77705_charger_psy_desc = {
- 
- static void max77705_chgin_isr_work(struct work_struct *work)
- {
--	struct max77705_charger_data *charger =
-+	struct max77705_charger_data *chg =
- 		container_of(work, struct max77705_charger_data, chgin_work);
- 
--	power_supply_changed(charger->psy_chg);
-+	power_supply_changed(chg->psy_chg);
- }
- 
- static void max77705_charger_initialize(struct max77705_charger_data *chg)
+ drivers/mfd/max77705.c                  |   3 +
+ drivers/power/supply/max77705_charger.c | 386 +++++++++++++++++++++-----------
+ drivers/power/supply/max77976_charger.c |  12 +-
+ include/linux/power/max77705_charger.h  | 146 ++++++------
+ 4 files changed, 344 insertions(+), 203 deletions(-)
+---
+base-commit: 3cace99d63192a7250461b058279a42d91075d0c
+change-id: 20250830-max77705_77976_charger_improvement-e3f417bfaa56
 
+Best regards,
 -- 
-2.39.5
+Dzmitry Sankouski <dsankouski@gmail.com>
 
