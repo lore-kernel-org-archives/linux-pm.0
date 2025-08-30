@@ -1,286 +1,138 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f45.google.com (mail-ed1-f45.google.com [209.85.208.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 90255214A9B;
-	Sat, 30 Aug 2025 17:58:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A47B2AE77;
+	Sat, 30 Aug 2025 20:45:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756576706; cv=none; b=ODJVnPn2hzbJA0/S9CaEneRCgBXI2NBkBxbkfGrU9xdnupCIIhcRwbJ/s36fXSIGxcnL7CNHM1a9ufIU3Od4+9cooseQxiaNc3dhIQfnk/xJjEGfwqmYeqN1ZGdTxHqpUqMmiV/9Ao2rUnzC/ej+yCyUYuVfXG9qmYKYS86W6xE=
+	t=1756586728; cv=none; b=rR/zUMnLHBFM1g/SJFh00/jG5TG4A8mJ4OvwXOIo8Qzi2DJwr6IloVwjQyOfi1bI+dkKKbHp49nZSANWJFi+lXoNLIsY8U//17uRoKdFIA/vlWEtuqfnK1A3a/HFsQTivT4vUv62XdoBpVxbLWhQ1v8o/OlP6QbdURXNoQIs+yc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756576706; c=relaxed/simple;
-	bh=gLEo2uJLmeD2rR9NOYEoCgLlxswyya3IZn7gOnZtxFA=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=hRw/oqjmKFRpn+NpvyiNQtgVa9z36J0c5ZeLHKTRpbIZeK+UXdBPpQgBQ4qt7wfqld9cJGoI8V04sUz8CeXaP9Dt/pOYqdS183orDePfsz/Sv3BYpPKKsWhkr21T75IyuEbEd0q0nmmXdyel8xeWaJLC7mBa41ukmqomuH+TFHg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YpOHG9Z0; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1756586728; c=relaxed/simple;
+	bh=0oqeEqIjS3+OtMIvtyosNybEOk1gpo3FJfz9EF2M1t0=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=E46FSxe3yBbsZHk1bgLVeeF0Q4fkg/me/MOM+MdLT+XBEHhObUKn1b/nbe3RRAGo4Vu7mTvzdjUzYCxnmRYjFxNK6Is3V0kq9pMe12U+cEudWSDnnVeu9ZhRYXB+n5cgAlZuDClFsR+7F5t87wt6mxI3HJXPWA7W13eHTQ2hYco=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=eIocmTUT; arc=none smtp.client-ip=209.85.208.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YpOHG9Z0"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98409C4CEEB;
-	Sat, 30 Aug 2025 17:58:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756576706;
-	bh=gLEo2uJLmeD2rR9NOYEoCgLlxswyya3IZn7gOnZtxFA=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=YpOHG9Z0DYuWh8xIkWjRHdBtNFjJj/psL6PFm0jZXSPaYqOcl/AXbIBmDcX2hD9YY
-	 8hqmvUXWIV/Dlu3PwzLO32cecNlaiqLGkI01yDFerWB/YxVgQvW4SU5/5Ln0iTuUrH
-	 Wf4sqaFG9npL4Jk5DlAN/UIj2lgCuc2ICc3uHsE9UIDYkc2C9V46embsFkYdO0Nymp
-	 HbRHSjKj7SVMR1/VHT4R1kQ87fuH8PHNjxongb+aFjm2eiucDO6KCmUqVzSM4mF2Sh
-	 wMmiSTN0M+SXl/yqkOiFN694gPvF3RFsg7hc+FN2vATTpXyP1qnh+h4otBQ2k2Llha
-	 OuX3pFTa8QG4A==
-Date: Sat, 30 Aug 2025 18:58:09 +0100
-From: Jonathan Cameron <jic23@kernel.org>
-To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-Cc: robh@kernel.org, krzysztof.kozlowski@linaro.org, krzk+dt@kernel.org,
- conor+dt@kernel.org, agross@kernel.org, andersson@kernel.org,
- lumag@kernel.org, dmitry.baryshkov@oss.qualcomm.com,
- konradybcio@kernel.org, daniel.lezcano@linaro.org, sboyd@kernel.org,
- amitk@kernel.org, thara.gopinath@gmail.com, lee@kernel.org,
- rafael@kernel.org, subbaraman.narayanamurthy@oss.qualcomm.com,
- david.collins@oss.qualcomm.com, anjelique.melendez@oss.qualcomm.com,
- kamal.wadhwa@oss.qualcomm.com, rui.zhang@intel.com, lukasz.luba@arm.com,
- devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
- linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, cros-qcom-dts-watchers@chromium.org,
- quic_kotarake@quicinc.com, neil.armstrong@linaro.org,
- stephan.gerhold@linaro.org
-Subject: Re: [PATCH V7 5/5] thermal: qcom: add support for PMIC5 Gen3 ADC
- thermal monitoring
-Message-ID: <20250830185809.5bc010cb@jic23-huawei>
-In-Reply-To: <20250826083657.4005727-6-jishnu.prakash@oss.qualcomm.com>
-References: <20250826083657.4005727-1-jishnu.prakash@oss.qualcomm.com>
-	<20250826083657.4005727-6-jishnu.prakash@oss.qualcomm.com>
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.50; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eIocmTUT"
+Received: by mail-ed1-f45.google.com with SMTP id 4fb4d7f45d1cf-6188b6f7f15so3452992a12.2;
+        Sat, 30 Aug 2025 13:45:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1756586725; x=1757191525; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=+OT8QGzf3PZ88uIRwWvPBWTj8UBsZ2B/sy/goy6AP/4=;
+        b=eIocmTUT8ZkbRQySKlBmMkwsrQ9NFJF4siEAHv4lwEUva323ojtwotMHDCGGSZ1EW7
+         Ra2wGBFNw7TXupcZF/CBvELH2LOIYzHGbMZYOf6YcngaktUJkeHZqKRAufGeyrt+bJdN
+         nU3t6lv527X1z9NRC/KVN8nzStZjqYS4BmY35GtkZpw9Z8D8DaJ+weKbVuTZGIkhkie7
+         CSWlrN3fXSj//TNXFAUUuUI0OopdyRS+2C1e+pP4Rc8Y9BmiPfVMZI8p0jp07BVe1h9w
+         QmzZnIslVwXlZJM6M9dIeM6b/eHTHFM0weMfiReO280TDnfcHKVE2oQTNC+HGDBdJZnD
+         ziZA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1756586725; x=1757191525;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=+OT8QGzf3PZ88uIRwWvPBWTj8UBsZ2B/sy/goy6AP/4=;
+        b=DaxQnxUkLBTYM6VwKE5EFWeYNjn6jPyiEoNs4lkszOUY7oc6VB18iNfKH/9Vf5f254
+         1sEMZTfpyhoWUS3l6M36B7XriBZ7M5u/S/KXISvLe99m9EiKF3RlFQNF2ou4hpvThlWX
+         rP6P0Wz8zUxqHgPu1QVECVLHQZQxdKnwmenYqs9PZvvvPVMfC44bMjlYP9MZWxjW01uV
+         eaOgPPNO1a27+QM5mawgBd+08o0cBBKylAETND2XQezVbjgsJt1ZZv+A2+YceJxfuMer
+         9QwBQC0cHprgodvvwMjx9mYjJrIZRxeI13Td1Xq80+8O5gXqknQrvQ7gTnVr0fCTfIRw
+         En2A==
+X-Forwarded-Encrypted: i=1; AJvYcCWzSudB2Pnu5iYK6WjFNov/rYAq+AW7MU5YN/k4EvoVJpNd85NZNyhSNW8/0i2yaYaI+kgshWZZBZE=@vger.kernel.org, AJvYcCXg308B4KC+jhvSY+3MEj8i9Kge0sZNpCf/SQxHyWRhyscGRjWqN6NyAvwj/1+vg7I2JskIBba1k/AjwLw=@vger.kernel.org
+X-Gm-Message-State: AOJu0YyIS8ukr3N0WR19v57xucY0FlDBHuj7MvfmoEBw9sT1Xz24346i
+	GAwEIMMD/BA2bwEPuMawyD+qP5ZfOxUx+OxIcFu42gSsM65IFIB6iBAa
+X-Gm-Gg: ASbGncsRXLT24cSPvNoEXww5Wy41dqqOcvyDm973IXcjnnrU/3XjsAF6BTsVnUtFcaP
+	CqTKqQKOV06fnI/zlH6jWwB+/NkDthV899RYYh93JnB3sl2OEjXqgi0ydPYpVXBMpnHGimsLRed
+	O3+nmOUrrSPHuYFOGiTeYE77o/WPzeEGyYFHq/DQ4bt4Q7uzJhB2maN8ryTmZ093kvc1+syjf3S
+	8b9DR7iGYCUDJBr1JlcXCFKzf/LqYM1Hhw+768mrLBWf6uLO5wIlqf67POP03FQBCYM9n+VLMbV
+	gGH+5JFybUMPLJKM3havINJ0rtcDAtF9rR2V3wp7KAmOy1T2kcUFo8+g6qR/jXdat9Oz5nbaFwt
+	C3cCX0fDj0wAt+tVAqMzPT2UssdmX+4c=
+X-Google-Smtp-Source: AGHT+IHAqv/GT7/pawlzbjWrE+HOablGq165Qzr6HPOo3iQMAThPKQPpNlXpi7UmzyKa4WqP6rVgaQ==
+X-Received: by 2002:a05:6402:5cb:b0:61a:1a57:31a with SMTP id 4fb4d7f45d1cf-61d2689316cmr2269651a12.14.1756586724504;
+        Sat, 30 Aug 2025 13:45:24 -0700 (PDT)
+Received: from [127.0.1.1] ([46.53.240.27])
+        by smtp.googlemail.com with ESMTPSA id 4fb4d7f45d1cf-61cfc52ade4sm4066630a12.45.2025.08.30.13.45.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 30 Aug 2025 13:45:24 -0700 (PDT)
+From: Dzmitry Sankouski <dsankouski@gmail.com>
+Date: Sat, 30 Aug 2025 23:45:14 +0300
+Subject: [PATCH 1/9] power: supply: max77705_charger: move active discharge
+ setting to mfd parent
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <20250830-max77705_77976_charger_improvement-v1-1-e976db3fd432@gmail.com>
+References: <20250830-max77705_77976_charger_improvement-v1-0-e976db3fd432@gmail.com>
+In-Reply-To: <20250830-max77705_77976_charger_improvement-v1-0-e976db3fd432@gmail.com>
+To: Chanwoo Choi <cw00.choi@samsung.com>, 
+ Krzysztof Kozlowski <krzk@kernel.org>, Lee Jones <lee@kernel.org>, 
+ Sebastian Reichel <sre@kernel.org>, 
+ Luca Ceresoli <luca.ceresoli@bootlin.com>
+Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, 
+ Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ Dzmitry Sankouski <dsankouski@gmail.com>
+X-Mailer: b4 0.14.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1756586721; l=1767;
+ i=dsankouski@gmail.com; s=20240619; h=from:subject:message-id;
+ bh=0oqeEqIjS3+OtMIvtyosNybEOk1gpo3FJfz9EF2M1t0=;
+ b=56US90twcnleZmymZxonRD5YfMUAoFqPRf2D5R9IUSCwqV/29oO2NNVViutmNK/bRgHdQNDlc
+ adHUabLC/NdDjZsTOCYMxBLiTYdPdwODfjGdryg8Oc+cMitwlzMHodL
+X-Developer-Key: i=dsankouski@gmail.com; a=ed25519;
+ pk=YJcXFcN1EWrzBYuiE2yi5Mn6WLn6L1H71J+f7X8fMag=
 
-On Tue, 26 Aug 2025 14:06:57 +0530
-Jishnu Prakash <jishnu.prakash@oss.qualcomm.com> wrote:
+Active discharge setting is a part of MFD top level i2c device, hence
+cannot be controlled by charger. Writing to MAX77705_PMIC_REG_MAINCTRL1
+register from charger driver is a mistake.
 
-> Add support for ADC_TM part of PMIC5 Gen3.
-> 
-> This is an auxiliary driver under the Gen3 ADC driver, which implements the
-> threshold setting and interrupt generating functionalities of QCOM ADC_TM
-> drivers, used to support thermal trip points.
-> 
-> Signed-off-by: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-Hi Jishnu,
+Move active discharge setting to MFD parent driver.
 
-A few comment inline from a fresh read
+Fixes: a6a494c8e3ce ("power: supply: max77705: Add charger driver for Maxim 77705")
 
-Jonathan
+Signed-off-by: Dzmitry Sankouski <dsankouski@gmail.com>
+---
+ drivers/mfd/max77705.c                  | 3 +++
+ drivers/power/supply/max77705_charger.c | 3 ---
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/mfd/max77705.c b/drivers/mfd/max77705.c
+index 6b263bacb8c2..ff07d0e0d5f8 100644
+--- a/drivers/mfd/max77705.c
++++ b/drivers/mfd/max77705.c
+@@ -108,6 +108,9 @@ static int max77705_i2c_probe(struct i2c_client *i2c)
+ 	if (pmic_rev != MAX77705_PASS3)
+ 		return dev_err_probe(dev, -ENODEV, "Rev.0x%x is not tested\n", pmic_rev);
+ 
++	/* Active Discharge Enable */
++	regmap_update_bits(max77705->regmap, MAX77705_PMIC_REG_MAINCTRL1, 1, 1);
++
+ 	ret = devm_regmap_add_irq_chip(dev, max77705->regmap,
+ 					i2c->irq,
+ 					IRQF_ONESHOT | IRQF_SHARED, 0,
+diff --git a/drivers/power/supply/max77705_charger.c b/drivers/power/supply/max77705_charger.c
+index 329b430d0e50..3b75c82b9b9e 100644
+--- a/drivers/power/supply/max77705_charger.c
++++ b/drivers/power/supply/max77705_charger.c
+@@ -487,9 +487,6 @@ static void max77705_charger_initialize(struct max77705_charger_data *chg)
+ 	regmap_update_bits(regmap, MAX77705_CHG_REG_CNFG_00,
+ 				MAX77705_WDTEN_MASK, 0);
+ 
+-	/* Active Discharge Enable */
+-	regmap_update_bits(regmap, MAX77705_PMIC_REG_MAINCTRL1, 1, 1);
+-
+ 	/* VBYPSET=5.0V */
+ 	regmap_update_bits(regmap, MAX77705_CHG_REG_CNFG_11, MAX77705_VBYPSET_MASK, 0);
+ 
 
-> diff --git a/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c b/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c
-> new file mode 100644
-> index 000000000000..9ec0d4e058b8
-> --- /dev/null
-> +++ b/drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c
-> @@ -0,0 +1,535 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
-> + */
+-- 
+2.39.5
 
-
-> +
-> +static void tm_handler_work(struct work_struct *work)
-> +{
-> +	struct adc_tm5_gen3_chip *adc_tm5 = container_of(work, struct adc_tm5_gen3_chip,
-> +							 tm_handler_work);
-> +	struct adc_tm5_gen3_channel_props *chan_prop;
-> +	u8 tm_status[2] = {0};
-> +	u8 buf[16] = {0};
-
-Small preference for { };
-which is effectively the same but for structures (so not relevant here) that is
-also defined by newer c specs to initialize holes which the {0}; version is not
-(but actually does in compilers with the settings the kernel uses).
-
-> +	int i, ret = 0, sdam_index = -1;
-> +
-> +	for (i = 0; i < adc_tm5->nchannels; i++) {
-> +		bool upper_set = false, lower_set = false;
-> +		int temp, offset;
-> +		u16 code = 0;
-> +
-> +		chan_prop = &adc_tm5->chan_props[i];
-> +		offset = chan_prop->tm_chan_index;
-> +
-> +		adc5_gen3_mutex_lock(adc_tm5->dev);
-> +		if (chan_prop->sdam_index != sdam_index) {
-> +			sdam_index = chan_prop->sdam_index;
-> +			ret = adc5_gen3_tm_status_check(adc_tm5, sdam_index,
-> +							tm_status, buf);
-> +			if (ret) {
-> +				adc5_gen3_mutex_unlock(adc_tm5->dev);
-> +				break;
-> +			}
-> +		}
-> +
-> +		if ((tm_status[0] & BIT(offset)) && chan_prop->high_thr_en)
-> +			upper_set = true;
-		upper_set = ((tm_status[0] & BIT(offset)) && chan_prop->high_thr_en;
-
-seems as clear to me and avoid need to initialize above.
-
-The
-	for (i...) {
-		if (x)
-			b = true;
-	}
-
-pattern made me thing this was a check that built up over iterations, but it's
-not so avoiding that is probably a good thing as well!
-
-> +
-> +		if ((tm_status[1] & BIT(offset)) && chan_prop->low_thr_en)
-> +			lower_set = true;
-> +		adc5_gen3_mutex_unlock(adc_tm5->dev);
-> +
-> +		if (!(upper_set || lower_set))
-> +			continue;
-> +
-> +		code = get_unaligned_le16(&buf[2 * offset]);
-> +		pr_debug("ADC_TM threshold code:%#x\n", code);
-> +
-> +		ret = adc5_gen3_therm_code_to_temp(adc_tm5->dev,
-> +						   &chan_prop->common_props,
-> +						   code, &temp);
-> +		if (ret) {
-> +			dev_err(adc_tm5->dev,
-> +				"Invalid temperature reading, ret = %d, code=%#x\n",
-> +				ret, code);
-> +			continue;
-> +		}
-> +
-> +		chan_prop->last_temp = temp;
-> +		chan_prop->last_temp_set = true;
-> +		thermal_zone_device_update(chan_prop->tzd, THERMAL_TRIP_VIOLATED);
-> +	}
-> +}
-
-
-> +
-> +static int adc_tm5_gen3_configure(struct adc_tm5_gen3_channel_props *prop,
-> +				  int low_temp, int high_temp)
-> +{
-> +	struct adc_tm5_gen3_chip *adc_tm5 = prop->chip;
-> +	u8 conv_req = 0, buf[ADC_TM5_GEN3_CONFIG_REGS];
-Spit these sort of complex mix of types of declaration up.
-	u8 buf[*];
-	u8 conv_reg = 0;
-
-etc as it helps readability.  Generally I wouldn't mix assignment and
-non assignment and also not arrays or pointers and non pointers etc.
-
-> +	u16 adc_code;
-> +	int ret;
-
-> +
-> +	/* Select HW settle delay for channel */
-> +	buf[6] = FIELD_PREP(ADC5_GEN3_HW_SETTLE_DELAY_MASK,
-> +			    prop->common_props.hw_settle_time_us);
-> +
-> +	/* High temperature corresponds to low voltage threshold */
-> +	if (high_temp != INT_MAX) {
-> +		prop->low_thr_en = true;
-Perhaps neater as a assignment then use of the bool
-
-	prop->low_thr_en = (hightemp != INT_MAX);
-	if (prp->low_thr_en) {
-		adc_code = qcom_adc_tm5_gen2_temp_res_scale(high_temp);
-		put_unaligned_le16(adc_code, &buf[8]);
-	}
-
-Applies to below similar case as well.
-
-	
-> +		adc_code = qcom_adc_tm5_gen2_temp_res_scale(high_temp);
-> +		put_unaligned_le16(adc_code, &buf[8]);
-> +	} else {
-> +		prop->low_thr_en = false;
-> +	}
-> +
-> +	/* Low temperature corresponds to high voltage threshold */
-> +	if (low_temp != -INT_MAX) {
-> +		prop->high_thr_en = true;
-> +		adc_code = qcom_adc_tm5_gen2_temp_res_scale(low_temp);
-> +		put_unaligned_le16(adc_code, &buf[10]);
-> +	} else {
-> +		prop->high_thr_en = false;
-> +	}
-> +
-> +	buf[7] = 0;
-> +	if (prop->high_thr_en)
-> +		buf[7] |= ADC5_GEN3_HIGH_THR_INT_EN;
-> +	if (prop->low_thr_en)
-> +		buf[7] |= ADC5_GEN3_LOW_THR_INT_EN;
-> +
-> +	ret = adc5_gen3_write(adc_tm5->dev_data, prop->sdam_index, ADC5_GEN3_SID,
-> +			      buf, sizeof(buf));
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	conv_req = ADC5_GEN3_CONV_REQ_REQ;
-> +	return adc5_gen3_write(adc_tm5->dev_data, prop->sdam_index,
-> +			       ADC5_GEN3_CONV_REQ, &conv_req, sizeof(conv_req));
-> +}
-
-> +
-> +static int adc_tm5_probe(struct auxiliary_device *aux_dev,
-> +			 const struct auxiliary_device_id *id)
-> +{
-> +	struct adc_tm5_gen3_chip *adc_tm5;
-> +	struct tm5_aux_dev_wrapper *aux_dev_wrapper;
-> +	struct device *dev = &aux_dev->dev;
-> +	int i, ret;
-> +
-> +	adc_tm5 = devm_kzalloc(dev, sizeof(*adc_tm5), GFP_KERNEL);
-> +	if (!adc_tm5)
-> +		return -ENOMEM;
-> +
-> +	aux_dev_wrapper = container_of(aux_dev, struct tm5_aux_dev_wrapper,
-> +				       aux_dev);
-> +
-> +	adc_tm5->dev = dev;
-> +	adc_tm5->dev_data = aux_dev_wrapper->dev_data;
-> +	adc_tm5->nchannels = aux_dev_wrapper->n_tm_channels;
-> +	adc_tm5->chan_props = devm_kcalloc(dev, aux_dev_wrapper->n_tm_channels,
-> +					   sizeof(*adc_tm5->chan_props), GFP_KERNEL);
-> +	if (!adc_tm5->chan_props)
-> +		return -ENOMEM;
-> +
-> +	for (i = 0; i < adc_tm5->nchannels; i++) {
-> +		adc_tm5->chan_props[i].common_props = aux_dev_wrapper->tm_props[i];
-> +		adc_tm5->chan_props[i].timer = MEAS_INT_1S;
-> +		adc_tm5->chan_props[i].sdam_index = (i + 1) / 8;
-> +		adc_tm5->chan_props[i].tm_chan_index = (i + 1) % 8;
-> +		adc_tm5->chan_props[i].chip = adc_tm5;
-> +	}
-> +
-> +	ret = devm_add_action_or_reset(dev, adc5_gen3_disable, adc_tm5);
-
-I'd normally expect a pairing of a devm action with whatever it is undoing.
-If not add a comment for why that isn't the case here.
-
-> +	if (ret)
-> +		return ret;
-> +
-> +	INIT_WORK(&adc_tm5->tm_handler_work, tm_handler_work);
-
-> +}
-> +
-> +static const struct auxiliary_device_id adctm5_auxiliary_id_table[] = {
-> +	{ .name = "qcom_spmi_adc5_gen3.adc5_tm_gen3", },
-> +	{}
-
-For IIO drivers I'm trying to slowly standardize some formatting choices.
-For these I picked (for no particular reason)
-	{ }
-
-> +};
