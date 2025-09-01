@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD30422259D;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A92B621A44C;
 	Mon,  1 Sep 2025 03:34:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756697664; cv=none; b=dcYT0k3MqJxJ0r4etfwIpMC4bkjeTDshregaUaDPY4dAnB4RHUOedp6KTRyz0f0W/j9Pv9HIzQuHy3a5k7eVqmeabEvYFMTSH4B3n6bgf6Bs+8jWUCrnnrgEL2xdvlq9DvXu/oqcyJxJm0jFMh1Cs8nQI3XgnIEACFcT4JzrmdE=
+	t=1756697664; cv=none; b=qj7du3Q13QNtvaY09oXGZ/UoVm7heLCejyp+bvy4NFZ+7lESrSdaxNducVDDDjnnGkgokDC0l9mSgtRt7Q9+XLZ66sVletZWxush7famfSj8AWxj+c6o+H0z2wcxfpCBb5zd9mtYCId138PCTVu6DKV/i6ZeSHSD89cPlNp83tU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1756697664; c=relaxed/simple;
-	bh=so/6Lvkh7D0Xbak/MOpijQ4NlkUCx9YkMr63SoPhB/c=;
+	bh=Xn+ybIf5wWAcb8hNG2nsT0N6L4btyoE000xLVBr1gP0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=fTn7ndJAvehfmrEZiL0jgS2kzi5beBPzxg1IUIe2MvY0xhwU8cySvjh1KPHMgdzoRJfFQ1Nj8ePnhCxf6U7DuuzTeWKHKcN+jPWe02V73BrTekExP2esK+PTj3HlECRm1tfzl5hduRK+kXbrfqqzjbI3GdtR5RX1eswOGFxYO2w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VLS7Fvic; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=LR772WtPkcQ/zDbgp5lSuKvWSBJJ2Weo1vprDhIdARuRS8iVHH0GxKqe2/tOnDvUY+pfKe+xQVZI9/jDUwvbAJ7raAo4AROm3JIEJIqImF8LB8bjKk/2wL8rj2KkeEsXMVPkbeYM8PX1cp06ioT6fTUwuc7GXf4enlSAO9lPI68=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=E7dT4s4u; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VLS7Fvic"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 8550DC4CEFE;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="E7dT4s4u"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 4672EC4CEF9;
 	Mon,  1 Sep 2025 03:34:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1756697664;
-	bh=so/6Lvkh7D0Xbak/MOpijQ4NlkUCx9YkMr63SoPhB/c=;
+	bh=Xn+ybIf5wWAcb8hNG2nsT0N6L4btyoE000xLVBr1gP0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=VLS7FvicJB73h/hQpHWm5ZkzAnk6LhVSJDmQpPyqElayefDO5sVO0V0W96fXLmR01
-	 kfc4cWv2cJIJ35f/0i4Wknm0XgiHqwZ6K6EorE0qJJU0nl888d2m2m7p3XCfFmsW+x
-	 ZNuGyH1SMtX2sIIAtHDsp9kq7FnJbvr4Fy1MaYCfGLMCkfJC63nI6IXHJtqPg+GGWS
-	 CEmRzMRj7lPN+zp71t6eY/asnb3Rp2FFM7XKnargmT/5TwfEjDMrFdFuMels2/wiQ6
-	 f6zgKbX1kkXOj7EfEAMNM2zJMXVPDPfLYRLE8Ql1C+T1gGbM/JiJx/PNS4YEKBAA7n
-	 3O5sVYKEeIp6w==
+	b=E7dT4s4uj5iY/WLFJIi5x2nA/jk/2vtuzYeoriFcf9Guiel9GO/o2NAmv1qp8Ua6m
+	 jaGrCPsNykO04YxhBVaEmPIeXeMjUmsMEir9G5Q+Zhz5NCkHNKcmkcCiMKeDUJb9PN
+	 /tBADGgccPjNa75eRtxm1j6GTXjhBE/7UpBFm6DIkkGicMrXOHuELOIeoKTkFiB68Y
+	 3NarNrQd0saYMOTWqdU4tst4uD9KL8UdtRLfaEe5nTluD8QpDI1NJ/wztZ/HO82i7N
+	 GjjIH2EI+3Lo4gsJ3yXgYJcuiKtcvhmq3XVNVPJ/fk/96zk5RKDnVupO4ScgqjLhB2
+	 PjJ0jJKj3vvZA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B523CA0FF0;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BF0BCA0FFD;
 	Mon,  1 Sep 2025 03:34:24 +0000 (UTC)
 From: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>
-Date: Sun, 31 Aug 2025 22:33:55 -0500
-Subject: [PATCH 7/8] arm64: tegra: Add CPU OPP tables for Tegra186
+Date: Sun, 31 Aug 2025 22:33:51 -0500
+Subject: [PATCH 3/8] cpufreq: tegra186: add OPP support and set bandwidth
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +40,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250831-tegra186-icc-v1-7-607ddc53b507@gmail.com>
+Message-Id: <20250831-tegra186-icc-v1-3-607ddc53b507@gmail.com>
 References: <20250831-tegra186-icc-v1-0-607ddc53b507@gmail.com>
 In-Reply-To: <20250831-tegra186-icc-v1-0-607ddc53b507@gmail.com>
 To: Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -54,11 +54,11 @@ Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
  linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, 
  Aaron Kling <webgeek1234@gmail.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1756697663; l=9142;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1756697663; l=8391;
  i=webgeek1234@gmail.com; s=20250217; h=from:subject:message-id;
- bh=uZssU7heZXFbFMQlclW4XJXqxgp1LYUFan3iXKZGfg4=;
- b=Ut80MIVW4RXnH3jvkUnUAiwq+QegOCSZSYE5EXuRxYleYXFMGY8nBPPfLOnQjsUK79zZehu//
- y/59Sr+Zri9Dpis7gg/enSEIkJ0OWvNlRDwlRNkyIwlk4onv1GVZ/3W
+ bh=SYljLpZrMUdQVKhVJSgn7SMPQ/Jz9FENJ8qw6fDjJeE=;
+ b=JM/BN5eF4P4tqSshghA55uQcM9eXaeamx9ujkPolv33A89I/LaqDwHag30cAV7tMc6uOdGWW0
+ ybQbUWydE2jBPhIZgGmQAACxNxqFiYq9Q/u5SasMuQT4pn/TnpR5BF4
 X-Developer-Key: i=webgeek1234@gmail.com; a=ed25519;
  pk=TQwd6q26txw7bkK7B8qtI/kcAohZc7bHHGSD7domdrU=
 X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
@@ -68,385 +68,262 @@ Reply-To: webgeek1234@gmail.com
 
 From: Aaron Kling <webgeek1234@gmail.com>
 
-Add OPP table and interconnects property to scale DDR frequency with
-CPU frequency for better performance. Each operating point entry of
-the OPP table has CPU freq to per MC channel bandwidth mapping. One
-table is added for each cluster because the different cpu types have
-different scaling curves.
+Add support to use OPP table from DT in Tegra186 cpufreq driver.
+Tegra SoC's receive the frequency lookup table (LUT) from BPMP-FW.
+Cross check the OPP's present in DT against the LUT from BPMP-FW
+and enable only those DT OPP's which are present in LUT also.
+
+The OPP table in DT has CPU Frequency to bandwidth mapping where
+the bandwidth value is per MC channel. DRAM bandwidth depends on the
+number of MC channels which can vary as per the boot configuration.
+This per channel bandwidth from OPP table will be later converted by
+MC driver to final bandwidth value by multiplying with number of
+channels before being handled in the EMC driver.
+
+If OPP table is not present in DT, then use the LUT from BPMP-FW
+directy as the CPU frequency table and not do the DRAM frequency
+scaling which is same as the current behavior.
 
 Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
 ---
- arch/arm64/boot/dts/nvidia/tegra186.dtsi | 317 +++++++++++++++++++++++++++++++
- 1 file changed, 317 insertions(+)
+ drivers/cpufreq/tegra186-cpufreq.c | 152 +++++++++++++++++++++++++++++++++++--
+ 1 file changed, 145 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/nvidia/tegra186.dtsi b/arch/arm64/boot/dts/nvidia/tegra186.dtsi
-index 5778c93af3e6e72f5f14a9fcee1e7abf80d2d2c5..d3f6a938a9b019a043ce2de7ec17bd00155b3eb2 100644
---- a/arch/arm64/boot/dts/nvidia/tegra186.dtsi
-+++ b/arch/arm64/boot/dts/nvidia/tegra186.dtsi
-@@ -1943,6 +1943,8 @@ cpus {
- 		denver_0: cpu@0 {
- 			compatible = "nvidia,tegra186-denver";
- 			device_type = "cpu";
-+			operating-points-v2 = <&dnv_opp_tbl>;
-+			interconnects = <&mc TEGRA_ICC_MC_CPU_CLUSTER0 &emc>;
- 			i-cache-size = <0x20000>;
- 			i-cache-line-size = <64>;
- 			i-cache-sets = <512>;
-@@ -1956,6 +1958,8 @@ denver_0: cpu@0 {
- 		denver_1: cpu@1 {
- 			compatible = "nvidia,tegra186-denver";
- 			device_type = "cpu";
-+			operating-points-v2 = <&dnv_opp_tbl>;
-+			interconnects = <&mc TEGRA_ICC_MC_CPU_CLUSTER0 &emc>;
- 			i-cache-size = <0x20000>;
- 			i-cache-line-size = <64>;
- 			i-cache-sets = <512>;
-@@ -1969,6 +1973,8 @@ denver_1: cpu@1 {
- 		ca57_0: cpu@2 {
- 			compatible = "arm,cortex-a57";
- 			device_type = "cpu";
-+			operating-points-v2 = <&a57_opp_tbl>;
-+			interconnects = <&mc TEGRA_ICC_MC_CPU_CLUSTER1 &emc>;
- 			i-cache-size = <0xC000>;
- 			i-cache-line-size = <64>;
- 			i-cache-sets = <256>;
-@@ -1982,6 +1988,8 @@ ca57_0: cpu@2 {
- 		ca57_1: cpu@3 {
- 			compatible = "arm,cortex-a57";
- 			device_type = "cpu";
-+			operating-points-v2 = <&a57_opp_tbl>;
-+			interconnects = <&mc TEGRA_ICC_MC_CPU_CLUSTER1 &emc>;
- 			i-cache-size = <0xC000>;
- 			i-cache-line-size = <64>;
- 			i-cache-sets = <256>;
-@@ -1995,6 +2003,8 @@ ca57_1: cpu@3 {
- 		ca57_2: cpu@4 {
- 			compatible = "arm,cortex-a57";
- 			device_type = "cpu";
-+			operating-points-v2 = <&a57_opp_tbl>;
-+			interconnects = <&mc TEGRA_ICC_MC_CPU_CLUSTER1 &emc>;
- 			i-cache-size = <0xC000>;
- 			i-cache-line-size = <64>;
- 			i-cache-sets = <256>;
-@@ -2008,6 +2018,8 @@ ca57_2: cpu@4 {
- 		ca57_3: cpu@5 {
- 			compatible = "arm,cortex-a57";
- 			device_type = "cpu";
-+			operating-points-v2 = <&a57_opp_tbl>;
-+			interconnects = <&mc TEGRA_ICC_MC_CPU_CLUSTER1 &emc>;
- 			i-cache-size = <0xC000>;
- 			i-cache-line-size = <64>;
- 			i-cache-sets = <256>;
-@@ -2182,4 +2194,309 @@ timer {
- 		interrupt-parent = <&gic>;
- 		always-on;
- 	};
-+
-+	dnv_opp_tbl: opp-table-cluster0 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp-998400000 {
-+			  opp-hz = /bits/ 64 <998400000>;
-+			  opp-peak-kBps = <816000>;
-+		};
-+
-+		opp-1036800000 {
-+			  opp-hz = /bits/ 64 <1036800000>;
-+			  opp-peak-kBps = <816000>;
-+		};
-+
-+		opp-1075200000 {
-+			  opp-hz = /bits/ 64 <1075200000>;
-+			  opp-peak-kBps = <816000>;
-+		};
-+
-+		opp-1113600000 {
-+			  opp-hz = /bits/ 64 <1113600000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1152000000 {
-+			  opp-hz = /bits/ 64 <1152000000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1190400000 {
-+			  opp-hz = /bits/ 64 <1190400000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1228800000 {
-+			  opp-hz = /bits/ 64 <1228800000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1267200000 {
-+			  opp-hz = /bits/ 64 <1267200000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1305600000 {
-+			  opp-hz = /bits/ 64 <1305600000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1344000000 {
-+			  opp-hz = /bits/ 64 <1344000000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1382400000 {
-+			  opp-hz = /bits/ 64 <1382400000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1420800000 {
-+			  opp-hz = /bits/ 64 <1420800000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1459200000 {
-+			  opp-hz = /bits/ 64 <1459200000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1497600000 {
-+			  opp-hz = /bits/ 64 <1497600000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1536000000 {
-+			  opp-hz = /bits/ 64 <1536000000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1574400000 {
-+			  opp-hz = /bits/ 64 <1574400000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1612800000 {
-+			  opp-hz = /bits/ 64 <1612800000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1651200000 {
-+			  opp-hz = /bits/ 64 <1651200000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1689600000 {
-+			  opp-hz = /bits/ 64 <1689600000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1728000000 {
-+			  opp-hz = /bits/ 64 <1728000000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1766400000 {
-+			  opp-hz = /bits/ 64 <1766400000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1804800000 {
-+			  opp-hz = /bits/ 64 <1804800000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1843200000 {
-+			  opp-hz = /bits/ 64 <1843200000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1881600000 {
-+			  opp-hz = /bits/ 64 <1881600000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1920000000 {
-+			  opp-hz = /bits/ 64 <1920000000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1958400000 {
-+			  opp-hz = /bits/ 64 <1958400000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1996800000 {
-+			  opp-hz = /bits/ 64 <1996800000>;
-+			  opp-peak-kBps = <3732000>;
-+		};
-+
-+		opp-2035200000 {
-+			  opp-hz = /bits/ 64 <2035200000>;
-+			  opp-peak-kBps = <3732000>;
-+		};
-+	};
-+
-+	a57_opp_tbl: opp-table-cluster1 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp-883200000 {
-+			  opp-hz = /bits/ 64 <883200000>;
-+			  opp-peak-kBps = <816000>;
-+		};
-+
-+		opp-921600000 {
-+			  opp-hz = /bits/ 64 <921600000>;
-+			  opp-peak-kBps = <816000>;
-+		};
-+
-+		opp-960000000 {
-+			  opp-hz = /bits/ 64 <960000000>;
-+			  opp-peak-kBps = <816000>;
-+		};
-+
-+		opp-998400000 {
-+			  opp-hz = /bits/ 64 <998400000>;
-+			  opp-peak-kBps = <816000>;
-+		};
-+
-+		opp-1036800000 {
-+			  opp-hz = /bits/ 64 <1036800000>;
-+			  opp-peak-kBps = <816000>;
-+		};
-+
-+		opp-1075200000 {
-+			  opp-hz = /bits/ 64 <1075200000>;
-+			  opp-peak-kBps = <816000>;
-+		};
-+
-+		opp-1113600000 {
-+			  opp-hz = /bits/ 64 <1113600000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1152000000 {
-+			  opp-hz = /bits/ 64 <1152000000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1190400000 {
-+			  opp-hz = /bits/ 64 <1190400000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1228800000 {
-+			  opp-hz = /bits/ 64 <1228800000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1267200000 {
-+			  opp-hz = /bits/ 64 <1267200000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1305600000 {
-+			  opp-hz = /bits/ 64 <1305600000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1344000000 {
-+			  opp-hz = /bits/ 64 <1344000000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1382400000 {
-+			  opp-hz = /bits/ 64 <1382400000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1420800000 {
-+			  opp-hz = /bits/ 64 <1420800000>;
-+			  opp-peak-kBps = <1600000>;
-+		};
-+
-+		opp-1459200000 {
-+			  opp-hz = /bits/ 64 <1459200000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1497600000 {
-+			  opp-hz = /bits/ 64 <1497600000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1536000000 {
-+			  opp-hz = /bits/ 64 <1536000000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1574400000 {
-+			  opp-hz = /bits/ 64 <1574400000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1612800000 {
-+			  opp-hz = /bits/ 64 <1612800000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1651200000 {
-+			  opp-hz = /bits/ 64 <1651200000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1689600000 {
-+			  opp-hz = /bits/ 64 <1689600000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1728000000 {
-+			  opp-hz = /bits/ 64 <1728000000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1766400000 {
-+			  opp-hz = /bits/ 64 <1766400000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1804800000 {
-+			  opp-hz = /bits/ 64 <1804800000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1843200000 {
-+			  opp-hz = /bits/ 64 <1843200000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1881600000 {
-+			  opp-hz = /bits/ 64 <1881600000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1920000000 {
-+			  opp-hz = /bits/ 64 <1920000000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1958400000 {
-+			  opp-hz = /bits/ 64 <1958400000>;
-+			  opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp-1996800000 {
-+			  opp-hz = /bits/ 64 <1996800000>;
-+			  opp-peak-kBps = <3732000>;
-+		};
-+
-+		opp-2035200000 {
-+			  opp-hz = /bits/ 64 <2035200000>;
-+			  opp-peak-kBps = <3732000>;
-+		};
-+	};
+diff --git a/drivers/cpufreq/tegra186-cpufreq.c b/drivers/cpufreq/tegra186-cpufreq.c
+index bd94beebc4cc2fe6870e13ca55343cedb9729e99..f0abb44e2ed00a301161565e4c4f62cfed4a5814 100644
+--- a/drivers/cpufreq/tegra186-cpufreq.c
++++ b/drivers/cpufreq/tegra186-cpufreq.c
+@@ -18,6 +18,7 @@
+ #define EDVD_CORE_VOLT_FREQ_F_SHIFT	0
+ #define EDVD_CORE_VOLT_FREQ_F_MASK	0xffff
+ #define EDVD_CORE_VOLT_FREQ_V_SHIFT	16
++#define KHZ				1000
+ 
+ struct tegra186_cpufreq_cpu {
+ 	unsigned int bpmp_cluster_id;
+@@ -58,7 +59,7 @@ static const struct tegra186_cpufreq_cpu tegra186_cpus[] = {
  };
+ 
+ struct tegra186_cpufreq_cluster {
+-	struct cpufreq_frequency_table *table;
++	struct cpufreq_frequency_table *bpmp_lut;
+ 	u32 ref_clk_khz;
+ 	u32 div;
+ };
+@@ -66,16 +67,121 @@ struct tegra186_cpufreq_cluster {
+ struct tegra186_cpufreq_data {
+ 	void __iomem *regs;
+ 	const struct tegra186_cpufreq_cpu *cpus;
++	bool icc_dram_bw_scaling;
+ 	struct tegra186_cpufreq_cluster clusters[];
+ };
+ 
++static int tegra_cpufreq_set_bw(struct cpufreq_policy *policy, unsigned long freq_khz)
++{
++	struct tegra186_cpufreq_data *data = cpufreq_get_driver_data();
++	struct dev_pm_opp *opp;
++	struct device *dev;
++	int ret;
++
++	dev = get_cpu_device(policy->cpu);
++	if (!dev)
++		return -ENODEV;
++
++	opp = dev_pm_opp_find_freq_exact(dev, freq_khz * KHZ, true);
++	if (IS_ERR(opp))
++		return PTR_ERR(opp);
++
++	ret = dev_pm_opp_set_opp(dev, opp);
++	if (ret)
++		data->icc_dram_bw_scaling = false;
++
++	dev_pm_opp_put(opp);
++	return ret;
++}
++
++static int tegra_cpufreq_init_cpufreq_table(struct cpufreq_policy *policy,
++					    struct cpufreq_frequency_table *bpmp_lut,
++					    struct cpufreq_frequency_table **opp_table)
++{
++	struct tegra186_cpufreq_data *data = cpufreq_get_driver_data();
++	struct cpufreq_frequency_table *freq_table = NULL;
++	struct cpufreq_frequency_table *pos;
++	struct device *cpu_dev;
++	struct dev_pm_opp *opp;
++	unsigned long rate;
++	int ret, max_opps;
++	int j = 0;
++
++	cpu_dev = get_cpu_device(policy->cpu);
++	if (!cpu_dev) {
++		pr_err("%s: failed to get cpu%d device\n", __func__, policy->cpu);
++		return -ENODEV;
++	}
++
++	/* Initialize OPP table mentioned in operating-points-v2 property in DT */
++	ret = dev_pm_opp_of_add_table_indexed(cpu_dev, 0);
++	if (!ret) {
++		max_opps = dev_pm_opp_get_opp_count(cpu_dev);
++		if (max_opps <= 0) {
++			dev_err(cpu_dev, "Failed to add OPPs\n");
++			return max_opps;
++		}
++
++		/* Disable all opps and cross-validate against LUT later */
++		for (rate = 0; ; rate++) {
++			opp = dev_pm_opp_find_freq_ceil(cpu_dev, &rate);
++			if (IS_ERR(opp))
++				break;
++
++			dev_pm_opp_put(opp);
++			dev_pm_opp_disable(cpu_dev, rate);
++		}
++	} else {
++		dev_err(cpu_dev, "Invalid or empty opp table in device tree\n");
++		data->icc_dram_bw_scaling = false;
++		return ret;
++	}
++
++	freq_table = kcalloc((max_opps + 1), sizeof(*freq_table), GFP_KERNEL);
++	if (!freq_table)
++		return -ENOMEM;
++
++	/*
++	 * Cross check the frequencies from BPMP-FW LUT against the OPP's present in DT.
++	 * Enable only those DT OPP's which are present in LUT also.
++	 */
++	cpufreq_for_each_valid_entry(pos, bpmp_lut) {
++		opp = dev_pm_opp_find_freq_exact(cpu_dev, pos->frequency * KHZ, false);
++		if (IS_ERR(opp))
++			continue;
++
++		dev_pm_opp_put(opp);
++
++		ret = dev_pm_opp_enable(cpu_dev, pos->frequency * KHZ);
++		if (ret < 0)
++			return ret;
++
++		freq_table[j].driver_data = pos->driver_data;
++		freq_table[j].frequency = pos->frequency;
++		j++;
++	}
++
++	freq_table[j].driver_data = pos->driver_data;
++	freq_table[j].frequency = CPUFREQ_TABLE_END;
++
++	*opp_table = &freq_table[0];
++
++	dev_pm_opp_set_sharing_cpus(cpu_dev, policy->cpus);
++
++	tegra_cpufreq_set_bw(policy, freq_table[j - 1].frequency);
++
++	return ret;
++}
++
+ static int tegra186_cpufreq_init(struct cpufreq_policy *policy)
+ {
+ 	struct tegra186_cpufreq_data *data = cpufreq_get_driver_data();
+ 	unsigned int cluster = data->cpus[policy->cpu].bpmp_cluster_id;
++	struct cpufreq_frequency_table *freq_table;
++	struct cpufreq_frequency_table *bpmp_lut;
+ 	u32 cpu;
++	int ret;
+ 
+-	policy->freq_table = data->clusters[cluster].table;
+ 	policy->cpuinfo.transition_latency = 300 * 1000;
+ 	policy->driver_data = NULL;
+ 
+@@ -85,6 +191,20 @@ static int tegra186_cpufreq_init(struct cpufreq_policy *policy)
+ 			cpumask_set_cpu(cpu, policy->cpus);
+ 	}
+ 
++	bpmp_lut = data->clusters[cluster].bpmp_lut;
++
++	if (data->icc_dram_bw_scaling) {
++		ret = tegra_cpufreq_init_cpufreq_table(policy, bpmp_lut, &freq_table);
++		if (!ret) {
++			policy->freq_table = freq_table;
++			return 0;
++		}
++	}
++
++	data->icc_dram_bw_scaling = false;
++	policy->freq_table = bpmp_lut;
++	pr_info("OPP tables missing from DT, EMC frequency scaling disabled\n");
++
+ 	return 0;
+ }
+ 
+@@ -102,6 +222,10 @@ static int tegra186_cpufreq_set_target(struct cpufreq_policy *policy,
+ 		writel(edvd_val, data->regs + edvd_offset);
+ 	}
+ 
++	if (data->icc_dram_bw_scaling)
++		tegra_cpufreq_set_bw(policy, tbl->frequency);
++
++
+ 	return 0;
+ }
+ 
+@@ -136,7 +260,7 @@ static struct cpufreq_driver tegra186_cpufreq_driver = {
+ 	.init = tegra186_cpufreq_init,
+ };
+ 
+-static struct cpufreq_frequency_table *init_vhint_table(
++static struct cpufreq_frequency_table *tegra_cpufreq_bpmp_read_lut(
+ 	struct platform_device *pdev, struct tegra_bpmp *bpmp,
+ 	struct tegra186_cpufreq_cluster *cluster, unsigned int cluster_id,
+ 	int *num_rates)
+@@ -231,6 +355,7 @@ static int tegra186_cpufreq_probe(struct platform_device *pdev)
+ {
+ 	struct tegra186_cpufreq_data *data;
+ 	struct tegra_bpmp *bpmp;
++	struct device *cpu_dev;
+ 	unsigned int i = 0, err, edvd_offset;
+ 	int num_rates = 0;
+ 	u32 edvd_val, cpu;
+@@ -256,9 +381,9 @@ static int tegra186_cpufreq_probe(struct platform_device *pdev)
+ 	for (i = 0; i < TEGRA186_NUM_CLUSTERS; i++) {
+ 		struct tegra186_cpufreq_cluster *cluster = &data->clusters[i];
+ 
+-		cluster->table = init_vhint_table(pdev, bpmp, cluster, i, &num_rates);
+-		if (IS_ERR(cluster->table)) {
+-			err = PTR_ERR(cluster->table);
++		cluster->bpmp_lut = tegra_cpufreq_bpmp_read_lut(pdev, bpmp, cluster, i, &num_rates);
++		if (IS_ERR(cluster->bpmp_lut)) {
++			err = PTR_ERR(cluster->bpmp_lut);
+ 			goto put_bpmp;
+ 		} else if (!num_rates) {
+ 			err = -EINVAL;
+@@ -267,7 +392,7 @@ static int tegra186_cpufreq_probe(struct platform_device *pdev)
+ 
+ 		for (cpu = 0; cpu < ARRAY_SIZE(tegra186_cpus); cpu++) {
+ 			if (data->cpus[cpu].bpmp_cluster_id == i) {
+-				edvd_val = cluster->table[num_rates - 1].driver_data;
++				edvd_val = cluster->bpmp_lut[num_rates - 1].driver_data;
+ 				edvd_offset = data->cpus[cpu].edvd_offset;
+ 				writel(edvd_val, data->regs + edvd_offset);
+ 			}
+@@ -276,6 +401,19 @@ static int tegra186_cpufreq_probe(struct platform_device *pdev)
+ 
+ 	tegra186_cpufreq_driver.driver_data = data;
+ 
++	/* Check for optional OPPv2 and interconnect paths on CPU0 to enable ICC scaling */
++	cpu_dev = get_cpu_device(0);
++	if (!cpu_dev) {
++		err = -EPROBE_DEFER;
++		goto put_bpmp;
++	}
++
++	if (dev_pm_opp_of_get_opp_desc_node(cpu_dev)) {
++		err = dev_pm_opp_of_find_icc_paths(cpu_dev, NULL);
++		if (!err)
++			data->icc_dram_bw_scaling = true;
++	}
++
+ 	err = cpufreq_register_driver(&tegra186_cpufreq_driver);
+ 
+ put_bpmp:
 
 -- 
 2.50.1
