@@ -1,37 +1,36 @@
 Received: from mail-106111.protonmail.ch (mail-106111.protonmail.ch [79.135.106.111])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 756332EDD58;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE7512ED84C;
 	Mon,  1 Sep 2025 07:49:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.135.106.111
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756712980; cv=none; b=dTCqa0BddygTM5rcFjZAQ0gcf+OaWWXwF+0N11jCZNDnsG5iIVxyboBbBawvp/oar/JoXIfcbgTf8k9KOXfMc/0/j2tWsPIRY+eruPzf5U2GHA25TNmWCoKytKAHVwENKRaSvghiJfvcPYnSsWcJ88zh6FFk24bZCrx/aZ4WpaU=
+	t=1756712980; cv=none; b=n2c2HTrrv0kWgZyxzeAooc0oRhaORgspXHanFK87IFaisnGWba5OpybLC5AG78B9xwVQpFEK5pBKs9Mq6hRv0F3cYJhy47z3SyV58dexiqG/VRiILK67hxTTN/XCglyDpwvr84W5kbFqwQBMybYgdWDWQRaJCc1qdnMCiH0Kiwg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1756712980; c=relaxed/simple;
-	bh=r9nUuwoD87Rj7kZagZ8izL76U2V+u1v93bacmflcxCQ=;
+	bh=6oRmmzziaTgPC0bksMOkEHu7AoqHaS3P3gyUbOWU46A=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=htT051N4HET2oL+8raty48V/4DduUe4u/E6a7gRuBYUVHXuB3KZeDqA8d/8Xxwj9l0Gyuuk+K6+Rd1GQ4GxcSW40AFyWpKtb/jTwULV3uPIXFvF5y9USzGCvoM6cPCyDJz7hi1lMo3+RKcqNKKGtyZr3BoK5BZWbf/4v5VTti/s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=geanix.com; spf=pass smtp.mailfrom=geanix.com; dkim=pass (2048-bit key) header.d=geanix.com header.i=@geanix.com header.b=MRPqy7dq; arc=none smtp.client-ip=79.135.106.111
+	 In-Reply-To:To:Cc; b=AT6MeBxtUZ7Iek8oRLltLK9ur5ik/ebIdqHjmkE4R+7hCkmcVZcx5/jDYdSI6FocUmSsj68jDObRZNLb1JDGWsYX+Td9tXuopgCmzAhp4bfkJYYsH/f81w/aDu3DLgo9d+bk5n4ftnaa76bZaOsLQcUT3V+9WbvYYjfVog9obPI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=geanix.com; spf=pass smtp.mailfrom=geanix.com; dkim=pass (2048-bit key) header.d=geanix.com header.i=@geanix.com header.b=wJwT4E/h; arc=none smtp.client-ip=79.135.106.111
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=geanix.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=geanix.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=geanix.com header.i=@geanix.com header.b="MRPqy7dq"
+	dkim=pass (2048-bit key) header.d=geanix.com header.i=@geanix.com header.b="wJwT4E/h"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=geanix.com;
-	s=protonmail2; t=1756712975; x=1756972175;
-	bh=sJIvh1vBl0u9m0tMjb9AY4bqs0pUmjpLM1koudDIegA=;
+	s=protonmail2; t=1756712970; x=1756972170;
+	bh=vFveFwTnn7yrm9XsyVQ58MSODxhrcS6ozaHd9fgq5VU=;
 	h=From:Date:Subject:Message-Id:References:In-Reply-To:To:Cc:From:To:
 	 Cc:Date:Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
-	b=MRPqy7dqWi9pAmW58CWkkZLal/H5XZaGzNSZSUP2pXcINutTuTS4z9i/TmOv6/a9x
-	 xdUJw20dYA6PsVAMEMMTwG55fpeI78pyjpaWqwPfv/u4BSzV5txmNsYwwDvcF17FZy
-	 ENycMlwlfKFLsIeI8jbEgE3gc+Yp7b7pKWoZTGrc3KFwZXeNGGXqHXlVb1c0TDLhHn
-	 qaTKLkD+W6UiYSuSJpFq4I8jiKi/4A9LdwVRzb2VmhbjPHWtYlII+snAjW8RxqGUk4
-	 tORjJqkHUAem5gAsYY9B6pFLPDjRRG2Zw8jtTz4L6B42A6qfNh4IXjnMc0EB5SBxFd
-	 vM0z8w+NcWi/Q==
-X-Pm-Submission-Id: 4cFgxp0vc6z1DDC8
+	b=wJwT4E/hWSXoWpD4U2xYwzaLLQhxo2Ao19MyqNDyDpajgy9AKtXwCyizEuNdl5flU
+	 uaIuyCWNOai7jeqwYWhWt9BYpNvs2LAND5GkH2jIyoHMRi+kpzxTihFVYX93Dj2TvN
+	 jddcnJVf7gm8tYJYJXvUL3LPbQwyhhxtZuMTvWD0LEoS9MfDnv4LlKyivTWy2fAMP1
+	 NmPpgOUzct/lpF+gbD8UogmDpC6xrnvkdKbPQ5/VnCE473SnSwCUD5v8K67x5wvP+e
+	 WcRj/fNIuK0cb1uRgwOpNF2rg72AHc6XFmvS9FlThz79fumfHbL5ZYP73LgqZ1FRkK
+	 Ze7f+pnnIDlRg==
+X-Pm-Submission-Id: 4cFgxj00Ghz1DDC3
 From: Sean Nyekjaer <sean@geanix.com>
-Date: Mon, 01 Sep 2025 09:49:16 +0200
-Subject: [PATCH v3 4/5] iio: imu: inv_icm42600: Use
- devm_regulator_get_enable() for vdd regulator
+Date: Mon, 01 Sep 2025 09:49:13 +0200
+Subject: [PATCH v3 1/5] iio: imu: inv_icm42600: Simplify pm_runtime setup
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +39,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250901-icm42pmreg-v3-4-ef1336246960@geanix.com>
+Message-Id: <20250901-icm42pmreg-v3-1-ef1336246960@geanix.com>
 References: <20250901-icm42pmreg-v3-0-ef1336246960@geanix.com>
 In-Reply-To: <20250901-icm42pmreg-v3-0-ef1336246960@geanix.com>
 To: Jean-Baptiste Maneyrol <jean-baptiste.maneyrol@tdk.com>, 
@@ -54,84 +53,77 @@ Cc: linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
  Sean Nyekjaer <sean@geanix.com>
 X-Mailer: b4 0.14.2
 
-The vdd regulator is not used for runtime power management, so it does
-not need explicit enable/disable handling.
-Use devm_regulator_get_enable() to let the regulator be managed
-automatically by devm.
+Rework the power management in inv_icm42600_core_probe() to use
+devm_pm_runtime_set_active_enabled(), which simplifies the runtime PM
+setup by handling activation and enabling in one step.
+Remove the separate inv_icm42600_disable_pm callback, as it's no longer
+needed with the devm-managed approach.
+Using devm_pm_runtime_enable() also fixes the missing disable of
+autosuspend.
+Update inv_icm42600_disable_vddio_reg() to only disable the regulator if
+the device is not suspended i.e. powered-down, preventing unbalanced
+disables.
+Also remove redundant error msg on regulator_disable(), the regulator
+framework already emits an error message when regulator_disable() fails.
 
-This simplifies the code by removing the manual enable and cleanup
-logic.
+This simplifies the PM setup and avoids manipulating the usage counter
+unnecessarily.
 
+Fixes: 31c24c1e93c3 ("iio: imu: inv_icm42600: add core of new inv_icm42600 driver")
 Signed-off-by: Sean Nyekjaer <sean@geanix.com>
 ---
- drivers/iio/imu/inv_icm42600/inv_icm42600.h      |  1 -
- drivers/iio/imu/inv_icm42600/inv_icm42600_core.c | 29 +++++-------------------
- 2 files changed, 6 insertions(+), 24 deletions(-)
+ drivers/iio/imu/inv_icm42600/inv_icm42600_core.c | 24 +++++++-----------------
+ 1 file changed, 7 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/iio/imu/inv_icm42600/inv_icm42600.h b/drivers/iio/imu/inv_icm42600/inv_icm42600.h
-index 1430ab4f1dea5d5ba6277d74275fc44a6cd30eb8..c8b48a5c5ed0677bb35201d32934936faaf7a1a6 100644
---- a/drivers/iio/imu/inv_icm42600/inv_icm42600.h
-+++ b/drivers/iio/imu/inv_icm42600/inv_icm42600.h
-@@ -167,7 +167,6 @@ struct inv_icm42600_state {
- 	enum inv_icm42600_chip chip;
- 	const char *name;
- 	struct regmap *map;
--	struct regulator *vdd_supply;
- 	struct regulator *vddio_supply;
- 	int irq;
- 	struct iio_mount_matrix orientation;
 diff --git a/drivers/iio/imu/inv_icm42600/inv_icm42600_core.c b/drivers/iio/imu/inv_icm42600/inv_icm42600_core.c
-index ee780f530dc8612cd25dc2216b153ef4e8c32b7b..4bf436c46f1cfd7e7e1bb911d94a0a566d63e791 100644
+index a4d42e7e21807f7954def431e9cf03dffaa5bd5e..76d8e4f14d87a552a35d7a9e0cb3305781d85ca9 100644
 --- a/drivers/iio/imu/inv_icm42600/inv_icm42600_core.c
 +++ b/drivers/iio/imu/inv_icm42600/inv_icm42600_core.c
-@@ -697,17 +697,6 @@ static int inv_icm42600_enable_regulator_vddio(struct inv_icm42600_state *st)
- 	return 0;
- }
- 
--static void inv_icm42600_disable_vdd_reg(void *_data)
--{
--	struct inv_icm42600_state *st = _data;
--	const struct device *dev = regmap_get_device(st->map);
--	int ret;
--
--	ret = regulator_disable(st->vdd_supply);
--	if (ret)
--		dev_err(dev, "failed to disable vdd error %d\n", ret);
--}
--
+@@ -711,20 +711,12 @@ static void inv_icm42600_disable_vdd_reg(void *_data)
  static void inv_icm42600_disable_vddio_reg(void *_data)
  {
  	struct inv_icm42600_state *st = _data;
-@@ -765,23 +754,17 @@ int inv_icm42600_core_probe(struct regmap *regmap, int chip,
+-	const struct device *dev = regmap_get_device(st->map);
+-	int ret;
+-
+-	ret = regulator_disable(st->vddio_supply);
+-	if (ret)
+-		dev_err(dev, "failed to disable vddio error %d\n", ret);
+-}
++	struct device *dev = regmap_get_device(st->map);
+ 
+-static void inv_icm42600_disable_pm(void *_data)
+-{
+-	struct device *dev = _data;
++	if (pm_runtime_status_suspended(dev))
++		return;
+ 
+-	pm_runtime_put_sync(dev);
+-	pm_runtime_disable(dev);
++	regulator_disable(st->vddio_supply);
+ }
+ 
+ int inv_icm42600_core_probe(struct regmap *regmap, int chip,
+@@ -824,16 +816,14 @@ int inv_icm42600_core_probe(struct regmap *regmap, int chip,
  		return ret;
- 	}
  
--	st->vdd_supply = devm_regulator_get(dev, "vdd");
--	if (IS_ERR(st->vdd_supply))
--		return PTR_ERR(st->vdd_supply);
-+	ret = devm_regulator_get_enable(dev, "vdd");
-+	if (ret)
-+		return dev_err_probe(dev, ret,
-+				     "Failed to get vdd regulator\n");
-+
-+	msleep(INV_ICM42600_POWER_UP_TIME_MS);
- 
- 	st->vddio_supply = devm_regulator_get(dev, "vddio");
- 	if (IS_ERR(st->vddio_supply))
- 		return PTR_ERR(st->vddio_supply);
- 
--	ret = regulator_enable(st->vdd_supply);
--	if (ret)
--		return ret;
--	msleep(INV_ICM42600_POWER_UP_TIME_MS);
--
--	ret = devm_add_action_or_reset(dev, inv_icm42600_disable_vdd_reg, st);
--	if (ret)
--		return ret;
--
- 	ret = inv_icm42600_enable_regulator_vddio(st);
+ 	/* setup runtime power management */
+-	ret = pm_runtime_set_active(dev);
++	ret = devm_pm_runtime_set_active_enabled(dev);
  	if (ret)
  		return ret;
+-	pm_runtime_get_noresume(dev);
+-	pm_runtime_enable(dev);
++
+ 	pm_runtime_set_autosuspend_delay(dev, INV_ICM42600_SUSPEND_DELAY_MS);
+ 	pm_runtime_use_autosuspend(dev);
+-	pm_runtime_put(dev);
+ 
+-	return devm_add_action_or_reset(dev, inv_icm42600_disable_pm, dev);
++	return ret;
+ }
+ EXPORT_SYMBOL_NS_GPL(inv_icm42600_core_probe, "IIO_ICM42600");
+ 
 
 -- 
 2.50.1
