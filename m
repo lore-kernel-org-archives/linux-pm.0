@@ -1,125 +1,138 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 6DE3B238C08;
-	Mon,  1 Sep 2025 07:29:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-106111.protonmail.ch (mail-106111.protonmail.ch [79.135.106.111])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 756332EDD58;
+	Mon,  1 Sep 2025 07:49:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.135.106.111
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756711771; cv=none; b=hUmeWMhlAwHvdiBxlJ+RdV4pPg60cZkdRnKtd0FrgF8fl2mRNahzEjBWwmBbYSNpeivKNEmGgFGf45GbxyjLsNqbDuQUc9TrtibLOa2jBxliR9EQJkdTqASyS8kvp6ZqZc6EPqUEJfmLUkXtemejLnJLZd0YKG/L3GCrYgsl1+o=
+	t=1756712980; cv=none; b=dTCqa0BddygTM5rcFjZAQ0gcf+OaWWXwF+0N11jCZNDnsG5iIVxyboBbBawvp/oar/JoXIfcbgTf8k9KOXfMc/0/j2tWsPIRY+eruPzf5U2GHA25TNmWCoKytKAHVwENKRaSvghiJfvcPYnSsWcJ88zh6FFk24bZCrx/aZ4WpaU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756711771; c=relaxed/simple;
-	bh=wXdcPFZWX2vCfAvMrw2gMSpLcpUqjA2fjEZ53dSHtAY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mG2yzrUre+34dYS1mlcnshpRt0uaIplym29JZB2ZvKD87bGF2AomJi/z+vakMjW8Ig1dl75vMRJDZkw8cj8yfd0hyVZw4Ai8TnTtzR4wM001HVwx2O0S6dTwMGSYB/eifgqWeU6y5gl8caaeOeRlrxoCdDtmKNyTdkHRskPhGHU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3029D1A25;
-	Mon,  1 Sep 2025 00:29:20 -0700 (PDT)
-Received: from localhost (ionvoi01-desktop.cambridge.arm.com [10.2.80.58])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 201C93F63F;
-	Mon,  1 Sep 2025 00:29:28 -0700 (PDT)
-Date: Mon, 1 Sep 2025 08:29:26 +0100
-From: Ionela Voinescu <ionela.voinescu@arm.com>
-To: Lifeng Zheng <zhenglifeng1@huawei.com>
-Cc: catalin.marinas@arm.com, will@kernel.org, rafael@kernel.org,
-	viresh.kumar@linaro.org, beata.michalska@arm.com,
-	sudeep.holla@arm.com, linux-arm-kernel@lists.infradead.org,
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxarm@huawei.com, jonathan.cameron@huawei.com,
-	vincent.guittot@linaro.org, yangyicong@hisilicon.com,
-	zhanjie9@hisilicon.com, lihuisong@huawei.com, yubowen8@huawei.com,
-	zhangpengjie2@huawei.com, linhongye@h-partners.com
-Subject: Re: [PATCH v5 3/3] arm64: topology: Setup AMU FIE for online CPUs
- only
-Message-ID: <aLVJdy3M1NRBR5LF@arm.com>
-References: <20250819072931.1647431-1-zhenglifeng1@huawei.com>
- <20250819072931.1647431-4-zhenglifeng1@huawei.com>
+	s=arc-20240116; t=1756712980; c=relaxed/simple;
+	bh=r9nUuwoD87Rj7kZagZ8izL76U2V+u1v93bacmflcxCQ=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=htT051N4HET2oL+8raty48V/4DduUe4u/E6a7gRuBYUVHXuB3KZeDqA8d/8Xxwj9l0Gyuuk+K6+Rd1GQ4GxcSW40AFyWpKtb/jTwULV3uPIXFvF5y9USzGCvoM6cPCyDJz7hi1lMo3+RKcqNKKGtyZr3BoK5BZWbf/4v5VTti/s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=geanix.com; spf=pass smtp.mailfrom=geanix.com; dkim=pass (2048-bit key) header.d=geanix.com header.i=@geanix.com header.b=MRPqy7dq; arc=none smtp.client-ip=79.135.106.111
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=geanix.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=geanix.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=geanix.com header.i=@geanix.com header.b="MRPqy7dq"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=geanix.com;
+	s=protonmail2; t=1756712975; x=1756972175;
+	bh=sJIvh1vBl0u9m0tMjb9AY4bqs0pUmjpLM1koudDIegA=;
+	h=From:Date:Subject:Message-Id:References:In-Reply-To:To:Cc:From:To:
+	 Cc:Date:Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
+	b=MRPqy7dqWi9pAmW58CWkkZLal/H5XZaGzNSZSUP2pXcINutTuTS4z9i/TmOv6/a9x
+	 xdUJw20dYA6PsVAMEMMTwG55fpeI78pyjpaWqwPfv/u4BSzV5txmNsYwwDvcF17FZy
+	 ENycMlwlfKFLsIeI8jbEgE3gc+Yp7b7pKWoZTGrc3KFwZXeNGGXqHXlVb1c0TDLhHn
+	 qaTKLkD+W6UiYSuSJpFq4I8jiKi/4A9LdwVRzb2VmhbjPHWtYlII+snAjW8RxqGUk4
+	 tORjJqkHUAem5gAsYY9B6pFLPDjRRG2Zw8jtTz4L6B42A6qfNh4IXjnMc0EB5SBxFd
+	 vM0z8w+NcWi/Q==
+X-Pm-Submission-Id: 4cFgxp0vc6z1DDC8
+From: Sean Nyekjaer <sean@geanix.com>
+Date: Mon, 01 Sep 2025 09:49:16 +0200
+Subject: [PATCH v3 4/5] iio: imu: inv_icm42600: Use
+ devm_regulator_get_enable() for vdd regulator
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250819072931.1647431-4-zhenglifeng1@huawei.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250901-icm42pmreg-v3-4-ef1336246960@geanix.com>
+References: <20250901-icm42pmreg-v3-0-ef1336246960@geanix.com>
+In-Reply-To: <20250901-icm42pmreg-v3-0-ef1336246960@geanix.com>
+To: Jean-Baptiste Maneyrol <jean-baptiste.maneyrol@tdk.com>, 
+ rafael@kernel.org, Jonathan Cameron <jic23@kernel.org>, 
+ David Lechner <dlechner@baylibre.com>, 
+ =?utf-8?q?Nuno_S=C3=A1?= <nuno.sa@analog.com>, 
+ Andy Shevchenko <andy@kernel.org>
+Cc: linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-pm@vger.kernel.org, Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>, 
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>, 
+ Sean Nyekjaer <sean@geanix.com>
+X-Mailer: b4 0.14.2
 
-Hi,
+The vdd regulator is not used for runtime power management, so it does
+not need explicit enable/disable handling.
+Use devm_regulator_get_enable() to let the regulator be managed
+automatically by devm.
 
-On Tuesday 19 Aug 2025 at 15:29:31 (+0800), Lifeng Zheng wrote:
-> When boot with maxcpu=1 restrict, and LPI(Low Power Idle States) is on,
-> only CPU0 will go online. The support AMU flag of CPU0 will be set but the
-> flags of other CPUs will not. This will cause AMU FIE set up fail for CPU0
-> when it shares a cpufreq policy with other CPU(s). After that, when other
-> CPUs are finally online and the support AMU flags of them are set, they'll
-> never have a chance to set up AMU FIE, even though they're eligible.
-> 
-> To solve this problem, the process of setting up AMU FIE needs to be
-> modified as follows:
-> 
-> 1. Set up AMU FIE only for the online CPUs.
-> 
-> 2. Try to set up AMU FIE each time a CPU goes online and do the
-> freq_counters_valid() check. If this check fails, clear scale freq source
-> of all the CPUs related to the same policy, in case they use different
-> source of the freq scale.
-> 
-> At the same time, this change also be applied to cpufreq when calling
-> arch_set_freq_scale.
-> 
-> Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
-> ---
->  arch/arm64/kernel/topology.c | 54 ++++++++++++++++++++++++++++++++++--
->  drivers/cpufreq/cpufreq.c    |  4 +--
->  2 files changed, 54 insertions(+), 4 deletions(-)
-> 
-[..]
->  
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 78ca68ea754d..d1890a2af1af 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -417,7 +417,7 @@ void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
->  
->  	cpufreq_notify_post_transition(policy, freqs, transition_failed);
->  
-> -	arch_set_freq_scale(policy->related_cpus,
-> +	arch_set_freq_scale(policy->cpus,
->  			    policy->cur,
->  			    arch_scale_freq_ref(policy->cpu));
->  
-> @@ -2219,7 +2219,7 @@ unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
->  		return 0;
->  
->  	policy->cur = freq;
-> -	arch_set_freq_scale(policy->related_cpus, freq,
-> +	arch_set_freq_scale(policy->cpus, freq,
->  			    arch_scale_freq_ref(policy->cpu));
+This simplifies the code by removing the manual enable and cleanup
+logic.
 
-I think it might be good to keep these calls to arch_set_freq_scale() for
-all related CPUs and not only online ones. This can result in CPUs coming
-out of hotplug with a wrong scale factor, because while they were out, any
-frequency transitions of the policy only modified the scale factor of
-online CPUs. When they come out of hotplug, arch_set_freq_scale() will not
-be called for them until there's a new frequency transition.
+Signed-off-by: Sean Nyekjaer <sean@geanix.com>
+---
+ drivers/iio/imu/inv_icm42600/inv_icm42600.h      |  1 -
+ drivers/iio/imu/inv_icm42600/inv_icm42600_core.c | 29 +++++-------------------
+ 2 files changed, 6 insertions(+), 24 deletions(-)
 
-I understand that if this is not changed to only pass online CPUs,
-supports_scale_freq_counters() will now fail when called in
-topology_set_freq_scale() for scenarios when only some CPUs in a policy
-are online - e.g. the scenario in your commit message. But I think a
-simple change in supports_scale_freq_counters() that instead checks that
-at least one CPU in the policy supports AMU-based FIE, instead of all,
-is a better fix that does not break the cpufreq-based FIE. If at least
-one CPU is marked as supporting AMUs for FIE we know that the AMU setup
-path is in progress and we should bail out of
-topology_set_freq_scale()/arch_set_freq_scale(). 
+diff --git a/drivers/iio/imu/inv_icm42600/inv_icm42600.h b/drivers/iio/imu/inv_icm42600/inv_icm42600.h
+index 1430ab4f1dea5d5ba6277d74275fc44a6cd30eb8..c8b48a5c5ed0677bb35201d32934936faaf7a1a6 100644
+--- a/drivers/iio/imu/inv_icm42600/inv_icm42600.h
++++ b/drivers/iio/imu/inv_icm42600/inv_icm42600.h
+@@ -167,7 +167,6 @@ struct inv_icm42600_state {
+ 	enum inv_icm42600_chip chip;
+ 	const char *name;
+ 	struct regmap *map;
+-	struct regulator *vdd_supply;
+ 	struct regulator *vddio_supply;
+ 	int irq;
+ 	struct iio_mount_matrix orientation;
+diff --git a/drivers/iio/imu/inv_icm42600/inv_icm42600_core.c b/drivers/iio/imu/inv_icm42600/inv_icm42600_core.c
+index ee780f530dc8612cd25dc2216b153ef4e8c32b7b..4bf436c46f1cfd7e7e1bb911d94a0a566d63e791 100644
+--- a/drivers/iio/imu/inv_icm42600/inv_icm42600_core.c
++++ b/drivers/iio/imu/inv_icm42600/inv_icm42600_core.c
+@@ -697,17 +697,6 @@ static int inv_icm42600_enable_regulator_vddio(struct inv_icm42600_state *st)
+ 	return 0;
+ }
+ 
+-static void inv_icm42600_disable_vdd_reg(void *_data)
+-{
+-	struct inv_icm42600_state *st = _data;
+-	const struct device *dev = regmap_get_device(st->map);
+-	int ret;
+-
+-	ret = regulator_disable(st->vdd_supply);
+-	if (ret)
+-		dev_err(dev, "failed to disable vdd error %d\n", ret);
+-}
+-
+ static void inv_icm42600_disable_vddio_reg(void *_data)
+ {
+ 	struct inv_icm42600_state *st = _data;
+@@ -765,23 +754,17 @@ int inv_icm42600_core_probe(struct regmap *regmap, int chip,
+ 		return ret;
+ 	}
+ 
+-	st->vdd_supply = devm_regulator_get(dev, "vdd");
+-	if (IS_ERR(st->vdd_supply))
+-		return PTR_ERR(st->vdd_supply);
++	ret = devm_regulator_get_enable(dev, "vdd");
++	if (ret)
++		return dev_err_probe(dev, ret,
++				     "Failed to get vdd regulator\n");
++
++	msleep(INV_ICM42600_POWER_UP_TIME_MS);
+ 
+ 	st->vddio_supply = devm_regulator_get(dev, "vddio");
+ 	if (IS_ERR(st->vddio_supply))
+ 		return PTR_ERR(st->vddio_supply);
+ 
+-	ret = regulator_enable(st->vdd_supply);
+-	if (ret)
+-		return ret;
+-	msleep(INV_ICM42600_POWER_UP_TIME_MS);
+-
+-	ret = devm_add_action_or_reset(dev, inv_icm42600_disable_vdd_reg, st);
+-	if (ret)
+-		return ret;
+-
+ 	ret = inv_icm42600_enable_regulator_vddio(st);
+ 	if (ret)
+ 		return ret;
 
-Hope it helps,
-Ionela.
+-- 
+2.50.1
 
->  	cpufreq_stats_record_transition(policy, freq);
->  
-> -- 
-> 2.33.0
-> 
-> 
