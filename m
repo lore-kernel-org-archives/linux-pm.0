@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A92B621A44C;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B55EF223336;
 	Mon,  1 Sep 2025 03:34:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756697664; cv=none; b=qj7du3Q13QNtvaY09oXGZ/UoVm7heLCejyp+bvy4NFZ+7lESrSdaxNducVDDDjnnGkgokDC0l9mSgtRt7Q9+XLZ66sVletZWxush7famfSj8AWxj+c6o+H0z2wcxfpCBb5zd9mtYCId138PCTVu6DKV/i6ZeSHSD89cPlNp83tU=
+	t=1756697664; cv=none; b=tB31hezxHKCC34A4pQBnzqG4/C3aLg61PBL/bRzBgv7+GmlWRulQ0q1CdJ3S3F835U+L022DaeCShy/DEXWzueKcdJHL6aJvuZTOUY2ArkEK+PLhqECUVFKP7/FZDJYXLRtOMnHH191k+XxDBpFw1YpMMVOSYe6wavs6mpfLUD0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1756697664; c=relaxed/simple;
-	bh=Xn+ybIf5wWAcb8hNG2nsT0N6L4btyoE000xLVBr1gP0=;
+	bh=A3ft+SxI4NFHmoZ4Cc4iWC22ct2WO9bN7Z4S5URvJxI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=LR772WtPkcQ/zDbgp5lSuKvWSBJJ2Weo1vprDhIdARuRS8iVHH0GxKqe2/tOnDvUY+pfKe+xQVZI9/jDUwvbAJ7raAo4AROm3JIEJIqImF8LB8bjKk/2wL8rj2KkeEsXMVPkbeYM8PX1cp06ioT6fTUwuc7GXf4enlSAO9lPI68=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=E7dT4s4u; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=Mwpk2K4/PjTVeFwGk+qKAMd1dNs0SfhJRYKwEy/ayz+gbAz63f1h6ca7Zr91Q8UgsXGHReIbkwHHNTiUVwhvZKCxAcA7IKjSNR+vzzSVwOdJVmGvp5scusdhBhiody4hG7uN3AdOsoUwhGfwR5ZwgmiIeYUPeugOTAXHCKgc+18=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Q8oKW5oG; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="E7dT4s4u"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 4672EC4CEF9;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Q8oKW5oG"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 73DC0C4CEFB;
 	Mon,  1 Sep 2025 03:34:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1756697664;
-	bh=Xn+ybIf5wWAcb8hNG2nsT0N6L4btyoE000xLVBr1gP0=;
+	bh=A3ft+SxI4NFHmoZ4Cc4iWC22ct2WO9bN7Z4S5URvJxI=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=E7dT4s4uj5iY/WLFJIi5x2nA/jk/2vtuzYeoriFcf9Guiel9GO/o2NAmv1qp8Ua6m
-	 jaGrCPsNykO04YxhBVaEmPIeXeMjUmsMEir9G5Q+Zhz5NCkHNKcmkcCiMKeDUJb9PN
-	 /tBADGgccPjNa75eRtxm1j6GTXjhBE/7UpBFm6DIkkGicMrXOHuELOIeoKTkFiB68Y
-	 3NarNrQd0saYMOTWqdU4tst4uD9KL8UdtRLfaEe5nTluD8QpDI1NJ/wztZ/HO82i7N
-	 GjjIH2EI+3Lo4gsJ3yXgYJcuiKtcvhmq3XVNVPJ/fk/96zk5RKDnVupO4ScgqjLhB2
-	 PjJ0jJKj3vvZA==
+	b=Q8oKW5oGmOw8O+shj9t4pDY93VEmSAdN7Z7KuOiBwmLWt0k468E2vTlO1idy/Gujr
+	 6BkYF+auWKJ4Wyrt3/qoUP7JgQQ47pGhgZdoQvKcQCmeCcIpkZR8lzUgcQ2f9t/JvR
+	 ZHsTaOzvT3S6cp7E9txyjO9rLh2Dpgw3LrZwjxOJ2zJ0U1LUDPKIli2OCmmZZMwo9E
+	 PXX+2MzRVq6nm7YUIstFuGhjmYuoaWvJMh4VtzqYuZeXLo7rQV46x0AIOjcaRCxuGN
+	 4x5BT80/OVMeNl2XgKgB/N04zy+myXbIhMHxIraMD1Dp4dgWxP/+I6glLIItagaPzj
+	 pzizn4hLuqTxw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BF0BCA0FFD;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68FAACA1006;
 	Mon,  1 Sep 2025 03:34:24 +0000 (UTC)
 From: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>
-Date: Sun, 31 Aug 2025 22:33:51 -0500
-Subject: [PATCH 3/8] cpufreq: tegra186: add OPP support and set bandwidth
+Date: Sun, 31 Aug 2025 22:33:54 -0500
+Subject: [PATCH 6/8] memory: tegra194: Support icc scaling
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +40,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250831-tegra186-icc-v1-3-607ddc53b507@gmail.com>
+Message-Id: <20250831-tegra186-icc-v1-6-607ddc53b507@gmail.com>
 References: <20250831-tegra186-icc-v1-0-607ddc53b507@gmail.com>
 In-Reply-To: <20250831-tegra186-icc-v1-0-607ddc53b507@gmail.com>
 To: Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -54,11 +54,11 @@ Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
  linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, 
  Aaron Kling <webgeek1234@gmail.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1756697663; l=8391;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1756697663; l=2712;
  i=webgeek1234@gmail.com; s=20250217; h=from:subject:message-id;
- bh=SYljLpZrMUdQVKhVJSgn7SMPQ/Jz9FENJ8qw6fDjJeE=;
- b=JM/BN5eF4P4tqSshghA55uQcM9eXaeamx9ujkPolv33A89I/LaqDwHag30cAV7tMc6uOdGWW0
- ybQbUWydE2jBPhIZgGmQAACxNxqFiYq9Q/u5SasMuQT4pn/TnpR5BF4
+ bh=3MNvz35Who37oCQFtQGQqKBjr1XzOGhEfbsNxRdRmLQ=;
+ b=TGq11u2xqhFk9NEklHX1xe5Id5DwjuqDgQuyjthSvSyvBOWqYDQtDwfJjz3lYhu+S+pfV4IcI
+ oVruREOrSbbBcow1e1JNQVoKM0z2lx9PN+SVhwsWNCMesUDgN9NjNO9
 X-Developer-Key: i=webgeek1234@gmail.com; a=ed25519;
  pk=TQwd6q26txw7bkK7B8qtI/kcAohZc7bHHGSD7domdrU=
 X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
@@ -68,262 +68,95 @@ Reply-To: webgeek1234@gmail.com
 
 From: Aaron Kling <webgeek1234@gmail.com>
 
-Add support to use OPP table from DT in Tegra186 cpufreq driver.
-Tegra SoC's receive the frequency lookup table (LUT) from BPMP-FW.
-Cross check the OPP's present in DT against the LUT from BPMP-FW
-and enable only those DT OPP's which are present in LUT also.
-
-The OPP table in DT has CPU Frequency to bandwidth mapping where
-the bandwidth value is per MC channel. DRAM bandwidth depends on the
-number of MC channels which can vary as per the boot configuration.
-This per channel bandwidth from OPP table will be later converted by
-MC driver to final bandwidth value by multiplying with number of
-channels before being handled in the EMC driver.
-
-If OPP table is not present in DT, then use the LUT from BPMP-FW
-directy as the CPU frequency table and not do the DRAM frequency
-scaling which is same as the current behavior.
+Add Interconnect framework support to dynamically set the DRAM
+bandwidth from different clients. The MC driver is added as an ICC
+provider and the EMC driver is already a provider.
 
 Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
 ---
- drivers/cpufreq/tegra186-cpufreq.c | 152 +++++++++++++++++++++++++++++++++++--
- 1 file changed, 145 insertions(+), 7 deletions(-)
+ drivers/memory/tegra/tegra194.c | 59 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 58 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/tegra186-cpufreq.c b/drivers/cpufreq/tegra186-cpufreq.c
-index bd94beebc4cc2fe6870e13ca55343cedb9729e99..f0abb44e2ed00a301161565e4c4f62cfed4a5814 100644
---- a/drivers/cpufreq/tegra186-cpufreq.c
-+++ b/drivers/cpufreq/tegra186-cpufreq.c
-@@ -18,6 +18,7 @@
- #define EDVD_CORE_VOLT_FREQ_F_SHIFT	0
- #define EDVD_CORE_VOLT_FREQ_F_MASK	0xffff
- #define EDVD_CORE_VOLT_FREQ_V_SHIFT	16
-+#define KHZ				1000
- 
- struct tegra186_cpufreq_cpu {
- 	unsigned int bpmp_cluster_id;
-@@ -58,7 +59,7 @@ static const struct tegra186_cpufreq_cpu tegra186_cpus[] = {
+diff --git a/drivers/memory/tegra/tegra194.c b/drivers/memory/tegra/tegra194.c
+index 26035ac3a1eb51a3d8ce3830427b4412b48baf3c..e478587586e7f01afd41ff74d26a9a3f1d881347 100644
+--- a/drivers/memory/tegra/tegra194.c
++++ b/drivers/memory/tegra/tegra194.c
+@@ -1340,9 +1340,66 @@ static const struct tegra_mc_client tegra194_mc_clients[] = {
+ 				.security = 0x7fc,
+ 			},
+ 		},
++	}, {
++		.id = TEGRA_ICC_MC_CPU_CLUSTER0,
++		.name = "sw_cluster0",
++		.type = TEGRA_ICC_NISO,
++	}, {
++		.id = TEGRA_ICC_MC_CPU_CLUSTER1,
++		.name = "sw_cluster1",
++		.type = TEGRA_ICC_NISO,
++	}, {
++		.id = TEGRA_ICC_MC_CPU_CLUSTER2,
++		.name = "sw_cluster2",
++		.type = TEGRA_ICC_NISO,
++	}, {
++		.id = TEGRA_ICC_MC_CPU_CLUSTER3,
++		.name = "sw_cluster3",
++		.type = TEGRA_ICC_NISO,
+ 	},
  };
  
- struct tegra186_cpufreq_cluster {
--	struct cpufreq_frequency_table *table;
-+	struct cpufreq_frequency_table *bpmp_lut;
- 	u32 ref_clk_khz;
- 	u32 div;
- };
-@@ -66,16 +67,121 @@ struct tegra186_cpufreq_cluster {
- struct tegra186_cpufreq_data {
- 	void __iomem *regs;
- 	const struct tegra186_cpufreq_cpu *cpus;
-+	bool icc_dram_bw_scaling;
- 	struct tegra186_cpufreq_cluster clusters[];
- };
- 
-+static int tegra_cpufreq_set_bw(struct cpufreq_policy *policy, unsigned long freq_khz)
++static int tegra194_mc_icc_set(struct icc_node *src, struct icc_node *dst)
 +{
-+	struct tegra186_cpufreq_data *data = cpufreq_get_driver_data();
-+	struct dev_pm_opp *opp;
-+	struct device *dev;
-+	int ret;
-+
-+	dev = get_cpu_device(policy->cpu);
-+	if (!dev)
-+		return -ENODEV;
-+
-+	opp = dev_pm_opp_find_freq_exact(dev, freq_khz * KHZ, true);
-+	if (IS_ERR(opp))
-+		return PTR_ERR(opp);
-+
-+	ret = dev_pm_opp_set_opp(dev, opp);
-+	if (ret)
-+		data->icc_dram_bw_scaling = false;
-+
-+	dev_pm_opp_put(opp);
-+	return ret;
++	/* TODO: program PTSA */
++	return 0;
 +}
 +
-+static int tegra_cpufreq_init_cpufreq_table(struct cpufreq_policy *policy,
-+					    struct cpufreq_frequency_table *bpmp_lut,
-+					    struct cpufreq_frequency_table **opp_table)
++static int tegra194_mc_icc_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
++				     u32 peak_bw, u32 *agg_avg, u32 *agg_peak)
 +{
-+	struct tegra186_cpufreq_data *data = cpufreq_get_driver_data();
-+	struct cpufreq_frequency_table *freq_table = NULL;
-+	struct cpufreq_frequency_table *pos;
-+	struct device *cpu_dev;
-+	struct dev_pm_opp *opp;
-+	unsigned long rate;
-+	int ret, max_opps;
-+	int j = 0;
++	struct icc_provider *p = node->provider;
++	struct tegra_mc *mc = icc_provider_to_tegra_mc(p);
 +
-+	cpu_dev = get_cpu_device(policy->cpu);
-+	if (!cpu_dev) {
-+		pr_err("%s: failed to get cpu%d device\n", __func__, policy->cpu);
-+		return -ENODEV;
++	if (node->id == TEGRA_ICC_MC_CPU_CLUSTER0 ||
++	    node->id == TEGRA_ICC_MC_CPU_CLUSTER1 ||
++	    node->id == TEGRA_ICC_MC_CPU_CLUSTER2 ||
++	    node->id == TEGRA_ICC_MC_CPU_CLUSTER3) {
++		if (mc)
++			peak_bw = peak_bw * mc->num_channels;
 +	}
 +
-+	/* Initialize OPP table mentioned in operating-points-v2 property in DT */
-+	ret = dev_pm_opp_of_add_table_indexed(cpu_dev, 0);
-+	if (!ret) {
-+		max_opps = dev_pm_opp_get_opp_count(cpu_dev);
-+		if (max_opps <= 0) {
-+			dev_err(cpu_dev, "Failed to add OPPs\n");
-+			return max_opps;
-+		}
++	*agg_avg += avg_bw;
++	*agg_peak = max(*agg_peak, peak_bw);
 +
-+		/* Disable all opps and cross-validate against LUT later */
-+		for (rate = 0; ; rate++) {
-+			opp = dev_pm_opp_find_freq_ceil(cpu_dev, &rate);
-+			if (IS_ERR(opp))
-+				break;
-+
-+			dev_pm_opp_put(opp);
-+			dev_pm_opp_disable(cpu_dev, rate);
-+		}
-+	} else {
-+		dev_err(cpu_dev, "Invalid or empty opp table in device tree\n");
-+		data->icc_dram_bw_scaling = false;
-+		return ret;
-+	}
-+
-+	freq_table = kcalloc((max_opps + 1), sizeof(*freq_table), GFP_KERNEL);
-+	if (!freq_table)
-+		return -ENOMEM;
-+
-+	/*
-+	 * Cross check the frequencies from BPMP-FW LUT against the OPP's present in DT.
-+	 * Enable only those DT OPP's which are present in LUT also.
-+	 */
-+	cpufreq_for_each_valid_entry(pos, bpmp_lut) {
-+		opp = dev_pm_opp_find_freq_exact(cpu_dev, pos->frequency * KHZ, false);
-+		if (IS_ERR(opp))
-+			continue;
-+
-+		dev_pm_opp_put(opp);
-+
-+		ret = dev_pm_opp_enable(cpu_dev, pos->frequency * KHZ);
-+		if (ret < 0)
-+			return ret;
-+
-+		freq_table[j].driver_data = pos->driver_data;
-+		freq_table[j].frequency = pos->frequency;
-+		j++;
-+	}
-+
-+	freq_table[j].driver_data = pos->driver_data;
-+	freq_table[j].frequency = CPUFREQ_TABLE_END;
-+
-+	*opp_table = &freq_table[0];
-+
-+	dev_pm_opp_set_sharing_cpus(cpu_dev, policy->cpus);
-+
-+	tegra_cpufreq_set_bw(policy, freq_table[j - 1].frequency);
-+
-+	return ret;
++	return 0;
 +}
 +
- static int tegra186_cpufreq_init(struct cpufreq_policy *policy)
- {
- 	struct tegra186_cpufreq_data *data = cpufreq_get_driver_data();
- 	unsigned int cluster = data->cpus[policy->cpu].bpmp_cluster_id;
-+	struct cpufreq_frequency_table *freq_table;
-+	struct cpufreq_frequency_table *bpmp_lut;
- 	u32 cpu;
-+	int ret;
- 
--	policy->freq_table = data->clusters[cluster].table;
- 	policy->cpuinfo.transition_latency = 300 * 1000;
- 	policy->driver_data = NULL;
- 
-@@ -85,6 +191,20 @@ static int tegra186_cpufreq_init(struct cpufreq_policy *policy)
- 			cpumask_set_cpu(cpu, policy->cpus);
- 	}
- 
-+	bpmp_lut = data->clusters[cluster].bpmp_lut;
++static int tegra194_mc_icc_get_init_bw(struct icc_node *node, u32 *avg, u32 *peak)
++{
++	*avg = 0;
++	*peak = 0;
 +
-+	if (data->icc_dram_bw_scaling) {
-+		ret = tegra_cpufreq_init_cpufreq_table(policy, bpmp_lut, &freq_table);
-+		if (!ret) {
-+			policy->freq_table = freq_table;
-+			return 0;
-+		}
-+	}
++	return 0;
++}
 +
-+	data->icc_dram_bw_scaling = false;
-+	policy->freq_table = bpmp_lut;
-+	pr_info("OPP tables missing from DT, EMC frequency scaling disabled\n");
++static const struct tegra_mc_icc_ops tegra194_mc_icc_ops = {
++	.xlate = tegra_mc_icc_xlate,
++	.aggregate = tegra194_mc_icc_aggregate,
++	.get_bw = tegra194_mc_icc_get_init_bw,
++	.set = tegra194_mc_icc_set,
++};
 +
- 	return 0;
- }
- 
-@@ -102,6 +222,10 @@ static int tegra186_cpufreq_set_target(struct cpufreq_policy *policy,
- 		writel(edvd_val, data->regs + edvd_offset);
- 	}
- 
-+	if (data->icc_dram_bw_scaling)
-+		tegra_cpufreq_set_bw(policy, tbl->frequency);
-+
-+
- 	return 0;
- }
- 
-@@ -136,7 +260,7 @@ static struct cpufreq_driver tegra186_cpufreq_driver = {
- 	.init = tegra186_cpufreq_init,
+ const struct tegra_mc_soc tegra194_mc_soc = {
+ 	.num_clients = ARRAY_SIZE(tegra194_mc_clients),
+ 	.clients = tegra194_mc_clients,
+@@ -1355,7 +1412,7 @@ const struct tegra_mc_soc tegra194_mc_soc = {
+ 		   MC_INT_SECURITY_VIOLATION | MC_INT_DECERR_EMEM,
+ 	.has_addr_hi_reg = true,
+ 	.ops = &tegra186_mc_ops,
+-	.icc_ops = &tegra_mc_icc_ops,
++	.icc_ops = &tegra194_mc_icc_ops,
+ 	.ch_intmask = 0x00000f00,
+ 	.global_intstatus_channel_shift = 8,
  };
- 
--static struct cpufreq_frequency_table *init_vhint_table(
-+static struct cpufreq_frequency_table *tegra_cpufreq_bpmp_read_lut(
- 	struct platform_device *pdev, struct tegra_bpmp *bpmp,
- 	struct tegra186_cpufreq_cluster *cluster, unsigned int cluster_id,
- 	int *num_rates)
-@@ -231,6 +355,7 @@ static int tegra186_cpufreq_probe(struct platform_device *pdev)
- {
- 	struct tegra186_cpufreq_data *data;
- 	struct tegra_bpmp *bpmp;
-+	struct device *cpu_dev;
- 	unsigned int i = 0, err, edvd_offset;
- 	int num_rates = 0;
- 	u32 edvd_val, cpu;
-@@ -256,9 +381,9 @@ static int tegra186_cpufreq_probe(struct platform_device *pdev)
- 	for (i = 0; i < TEGRA186_NUM_CLUSTERS; i++) {
- 		struct tegra186_cpufreq_cluster *cluster = &data->clusters[i];
- 
--		cluster->table = init_vhint_table(pdev, bpmp, cluster, i, &num_rates);
--		if (IS_ERR(cluster->table)) {
--			err = PTR_ERR(cluster->table);
-+		cluster->bpmp_lut = tegra_cpufreq_bpmp_read_lut(pdev, bpmp, cluster, i, &num_rates);
-+		if (IS_ERR(cluster->bpmp_lut)) {
-+			err = PTR_ERR(cluster->bpmp_lut);
- 			goto put_bpmp;
- 		} else if (!num_rates) {
- 			err = -EINVAL;
-@@ -267,7 +392,7 @@ static int tegra186_cpufreq_probe(struct platform_device *pdev)
- 
- 		for (cpu = 0; cpu < ARRAY_SIZE(tegra186_cpus); cpu++) {
- 			if (data->cpus[cpu].bpmp_cluster_id == i) {
--				edvd_val = cluster->table[num_rates - 1].driver_data;
-+				edvd_val = cluster->bpmp_lut[num_rates - 1].driver_data;
- 				edvd_offset = data->cpus[cpu].edvd_offset;
- 				writel(edvd_val, data->regs + edvd_offset);
- 			}
-@@ -276,6 +401,19 @@ static int tegra186_cpufreq_probe(struct platform_device *pdev)
- 
- 	tegra186_cpufreq_driver.driver_data = data;
- 
-+	/* Check for optional OPPv2 and interconnect paths on CPU0 to enable ICC scaling */
-+	cpu_dev = get_cpu_device(0);
-+	if (!cpu_dev) {
-+		err = -EPROBE_DEFER;
-+		goto put_bpmp;
-+	}
-+
-+	if (dev_pm_opp_of_get_opp_desc_node(cpu_dev)) {
-+		err = dev_pm_opp_of_find_icc_paths(cpu_dev, NULL);
-+		if (!err)
-+			data->icc_dram_bw_scaling = true;
-+	}
-+
- 	err = cpufreq_register_driver(&tegra186_cpufreq_driver);
- 
- put_bpmp:
 
 -- 
 2.50.1
