@@ -1,37 +1,37 @@
-Received: from mail-106111.protonmail.ch (mail-106111.protonmail.ch [79.135.106.111])
+Received: from mail-244108.protonmail.ch (mail-244108.protonmail.ch [109.224.244.108])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C33582ED868;
-	Mon,  1 Sep 2025 07:49:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.135.106.111
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D3BF22EE27D
+	for <linux-pm@vger.kernel.org>; Mon,  1 Sep 2025 07:49:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=109.224.244.108
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756712981; cv=none; b=XBJq5mY+31oHw6jIj3sykjTDYt3Q7YcfG+XzmJe6GUw9JKB6ai7COdc+Uq2ra2dklEkJqh5L32nqQAoRNYiNukWaZNgfg2EgI0sbfC32/HMXwdH1WYVSXr7X8B7declSVspvXdXpVGrjhQYLtRxFo5ESA/nYWUdKJti+2hWuJWM=
+	t=1756712982; cv=none; b=XTg28Vmpcs7fODSmbwJbzKIptvSDPLOcmOttJY/7lM/unihMXlY22dn1G0szSCnzYjsrIKZ5cCoB6KDvcIU+YVSKtOc4pKbCw75QpB5iKgNGXatAAYQ0cvvbTBM8i/aV4hZmvb7yr/CRwYgf5pirNMMlMW/O9cxg44rh1nUk8kI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756712981; c=relaxed/simple;
-	bh=ckswT7WvNXDa0dxPs+Xa4V9wybPv1JkK4ISQKyqpDf4=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=X3/F4+IY9dq/U1HccPgaz69cWFdNYOQWVQBTHegCxDhY2gkiqcmFwf2CIhVbgfeo3MDUH21g0QVKEid8QgS4uvacbATvm4vylejCC15BbIA80C3aMAp8MVNxMBIYyyaswE+SY3lH0CPjAhktwpOD2Cxupe7IR6Gmb8fcH2YeWzM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=geanix.com; spf=pass smtp.mailfrom=geanix.com; dkim=pass (2048-bit key) header.d=geanix.com header.i=@geanix.com header.b=KGepfKR8; arc=none smtp.client-ip=79.135.106.111
+	s=arc-20240116; t=1756712982; c=relaxed/simple;
+	bh=k5EcpY+/DFBwpLrWYB9YJb0ZadsqeSt/t/hsL/nFUQ4=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=c0g8kWwUI/yhtJYD8QQoWTDkl49mdf9yWEXhQSBa0iX4/ZVj6M+vDs4UCIqM+AOO9yBsEV9DG0sEEuoQfooLBeWw0gL9tLRX9Uwl4Y82PtCpQVILWT1j6QUXl99DdKF8FXcfW19XIshGkOitOvb4BWDUreshpJyUS8OkICz/ZIs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=geanix.com; spf=pass smtp.mailfrom=geanix.com; dkim=pass (2048-bit key) header.d=geanix.com header.i=@geanix.com header.b=m8Uy+0IJ; arc=none smtp.client-ip=109.224.244.108
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=geanix.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=geanix.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=geanix.com header.i=@geanix.com header.b="KGepfKR8"
+	dkim=pass (2048-bit key) header.d=geanix.com header.i=@geanix.com header.b="m8Uy+0IJ"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=geanix.com;
-	s=protonmail2; t=1756712969; x=1756972169;
-	bh=pBWhhUuZsW1wCrcE3zlawXKxQZz9uOBaHWsIB7cQ3YM=;
-	h=From:Subject:Date:Message-Id:To:Cc:From:To:Cc:Date:Subject:
-	 Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
-	b=KGepfKR8fyzh0xN7LfYLo9tattgzL7MzfvW8fCyPOH/o30fDDwZHlsImyCNI8mtMC
-	 ozmA84kBFXwjSbzqHPq7PrbS9aCXB0EU+jhiM7UBjMs30zE+tzqGCA9AyU9Oa9IAPJ
-	 bpjP5uaJwpiFI/Dq0gDnZGkwrcScUG0/RcnurCn6gM1SLGgdO5gO9HePJSzdlCJzJ6
-	 xkE3Mlp/WgR7wODtPUQSneTSfBZXl7mXfId/tf+deHLqGLbrEkxIy9Y6TIqe65PVjn
-	 a8h+EJBHQbMMCs5//KNLVmPnXf3WrPMQqaWYm/+hrXEfKx+vVRkDJCRPRsNbiF69EF
-	 QQsUMQdDtJ9gQ==
-X-Pm-Submission-Id: 4cFgxg04Sgz1DDBx
+	s=protonmail2; t=1756712972; x=1756972172;
+	bh=xYd9qNsZ4IIvksv/lLIifpsYugqw4UBhFpRtcHQXVY0=;
+	h=From:Date:Subject:Message-Id:References:In-Reply-To:To:Cc:From:To:
+	 Cc:Date:Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
+	b=m8Uy+0IJFM5eCxJ2Kpp9IWSWv2zKkg8ZOXJFjyntKr0moNVIJspOoYO5005tITCUp
+	 dI5GY1O62/fK3vVdQSbAhTvxxQT2QrktlSgCZCqyYdeOjIR48UvEYVm6eSyljUUJUd
+	 CweRWFF55+oeXIDdfOuqUW4bR/oFZ3hwSGPTkTnGopLFia6/qGp7LIYCX2Pj0ygP2E
+	 TYQYnKZpp6TzcX7zvm9rx8I2LgljmYfuus4V4eTgi5UaDAL0OV8cghahUVFocAng9d
+	 bpEbCVi0oOEsOdDqOgEIqDJ+KCX7lHrAVJQOnAfiZYdx0uaW0OfDwOi2rfv8PpiftS
+	 CmesOsZQvbuuQ==
+X-Pm-Submission-Id: 4cFgxk74cKz1DDC5
 From: Sean Nyekjaer <sean@geanix.com>
-Subject: [PATCH v3 0/5] iio: imu: inv_icm42600: pm_runtime fixes + various
- changes
-Date: Mon, 01 Sep 2025 09:49:12 +0200
-Message-Id: <20250901-icm42pmreg-v3-0-ef1336246960@geanix.com>
+Date: Mon, 01 Sep 2025 09:49:14 +0200
+Subject: [PATCH v3 2/5] iio: imu: inv_icm42600: Drop redundant pm_runtime
+ reinitialization in resume
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,11 +40,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAPhPtWgC/1WOzQqDMBAGX0X23JS4SUnSk+9RerBxq3vwh6QEi
- /jujUJpPexhPphhF4gUmCJciwUCJY48DhnUqQDf1UNLgpvMgBIv0kgr2Pcapz5QK1A3Np8z1mv
- IwhToyfMeu90zdxxfY3jv7VRu6zfj/jOpFFKoRpJxyjv3wKqleuD57Mcetk7Cn2uPLyTMbq2tR
- OPIGCwP7rquH1sTuu7hAAAA
-X-Change-ID: 20250708-icm42pmreg-24d824d978c4
+Message-Id: <20250901-icm42pmreg-v3-2-ef1336246960@geanix.com>
+References: <20250901-icm42pmreg-v3-0-ef1336246960@geanix.com>
+In-Reply-To: <20250901-icm42pmreg-v3-0-ef1336246960@geanix.com>
 To: Jean-Baptiste Maneyrol <jean-baptiste.maneyrol@tdk.com>, 
  rafael@kernel.org, Jonathan Cameron <jic23@kernel.org>, 
  David Lechner <dlechner@baylibre.com>, 
@@ -56,52 +54,33 @@ Cc: linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
  Sean Nyekjaer <sean@geanix.com>
 X-Mailer: b4 0.14.2
 
-This series was triggered by "Runtime PM usage count underflow!" when
-unloading the module(s).
-By testing the driver in various use cases and reading code it was
-obvious that it could need some tiding up.
+Remove unnecessary calls to pm_runtime_disable(), pm_runtime_set_active(),
+and pm_runtime_enable() from the resume path. These operations are not
+required here and can interfere with proper pm_runtime state handling,
+especially when resuming from a pm_runtime suspended state.
 
-@Rafael:
-Is checking pm_runtime_status_suspended() is a viable option?
-To avoid calling regulator_disable 2x during remove()?
-
+Fixes: 31c24c1e93c3 ("iio: imu: inv_icm42600: add core of new inv_icm42600 driver")
 Signed-off-by: Sean Nyekjaer <sean@geanix.com>
 ---
-Changes in v3:
-- Return early if pm_runtime_status_suspended() is set.
-- Fixed various comments from Andy in "use guard() to release mutexes" 
-- Link to v2: https://lore.kernel.org/r/20250808-icm42pmreg-v2-0-a480279e7721@geanix.com
+ drivers/iio/imu/inv_icm42600/inv_icm42600_core.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-Changes in v2:
-- Removed patch iio: imu: inv_icm42600: Use inv_icm42600_disable_vddio_reg()
-- Moved changes from patch iio: imu: inv_icm42600: Remove redundant
-  error msg on regulator_disable() into iio: imu: inv_icm42600: Simplify
-  pm_runtime setup.
-- Move associated sleep close to enabling of vdd
-- Pass regulator as the parameter to inv_icm42600_disable_vddio_reg()
-- Use devm_pm_runtime_set_active_enabled() to simplify even more
-- Added a new commit that uses guard() to release mutexes
-- Link to v1: https://lore.kernel.org/r/20250709-icm42pmreg-v1-0-3d0e793c99b2@geanix.com
+diff --git a/drivers/iio/imu/inv_icm42600/inv_icm42600_core.c b/drivers/iio/imu/inv_icm42600/inv_icm42600_core.c
+index 76d8e4f14d87a552a35d7a9e0cb3305781d85ca9..41b275ecc7e25ea0b8cdf59be514cdf8a4957ab4 100644
+--- a/drivers/iio/imu/inv_icm42600/inv_icm42600_core.c
++++ b/drivers/iio/imu/inv_icm42600/inv_icm42600_core.c
+@@ -917,10 +917,6 @@ static int inv_icm42600_resume(struct device *dev)
+ 			goto out_unlock;
+ 	}
+ 
+-	pm_runtime_disable(dev);
+-	pm_runtime_set_active(dev);
+-	pm_runtime_enable(dev);
+-
+ 	/* restore sensors state */
+ 	ret = inv_icm42600_set_pwr_mgmt0(st, st->suspended.gyro,
+ 					 st->suspended.accel,
 
----
-Sean Nyekjaer (5):
-      iio: imu: inv_icm42600: Simplify pm_runtime setup
-      iio: imu: inv_icm42600: Drop redundant pm_runtime reinitialization in resume
-      iio: imu: inv_icm42600: Avoid configuring if already pm_runtime suspended
-      iio: imu: inv_icm42600: Use devm_regulator_get_enable() for vdd regulator
-      iio: imu: inv_icm42600: use guard() to release mutexes
-
- drivers/iio/imu/inv_icm42600/inv_icm42600.h        |   1 -
- drivers/iio/imu/inv_icm42600/inv_icm42600_accel.c  |  25 ++---
- drivers/iio/imu/inv_icm42600/inv_icm42600_buffer.c |  27 +++--
- drivers/iio/imu/inv_icm42600/inv_icm42600_core.c   | 119 +++++++--------------
- drivers/iio/imu/inv_icm42600/inv_icm42600_gyro.c   |  20 ++--
- 5 files changed, 67 insertions(+), 125 deletions(-)
----
-base-commit: dfbbee0907fb30a1dd31ff1a84e1bd34bd824369
-change-id: 20250708-icm42pmreg-24d824d978c4
-
-Best regards,
 -- 
-Sean Nyekjaer <sean@geanix.com>
+2.50.1
 
