@@ -1,119 +1,176 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ADFAD2D4B4E;
-	Tue,  2 Sep 2025 13:41:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD33430496B;
+	Tue,  2 Sep 2025 13:45:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756820485; cv=none; b=PAroHw0YlzwWQwkKiyyEu6wL2y444E6oI+cLFKQe8CW1s4pw5S30GXjFXUfp132yFKh0OpvCWn/XIKPpnHQ/JLwCoZCyJB7lvkYvZSDrHiz9ImJVkBwAyWqg2sYWWy54Pj6ZT42sMHFmUGjGajE1UMeG9FGxNryUbbdxJDxeRbk=
+	t=1756820734; cv=none; b=e9+lcxHXCwbErWf0P1MvNPdULQ9GzWko3i6J1DXUx+dGtqNlXuStlnZMeyZMxFE0LzKx+yfPA71UU4rzlRJbdqZdQrXtfBsWySDVAaVOPWk+MPnLpbCWd5C9JbFasJ09O1x0nd0GqmWgsrif1mqGome3h5VKWuQN4kXL9WBmNOI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756820485; c=relaxed/simple;
-	bh=ZVVlpLZtW001ia11Gv9DKuA1Yfy1spmGwT9D/HHzZoQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BZMi56pzJjlG7bkR0IYpS5DsbrI2q+VdnQ3kdtAp3axnEuuYEGN5kY+j8qe/geZl8S7xx7hQbb0BYcGyCXdP1up67ADewuEvOXFvOcMEMVbt1MnqPFkG3gsy/AH0IbUjv9JQQTeabDF3AWj2C3m2rc18/1BFq6tv6chrvyCNeCU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZwWBlnAw; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1756820734; c=relaxed/simple;
+	bh=WhUCck38woFRSX+t14QPpBmFmTWLoKWxKgmD29RbU2Q=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=cdF5+WxQCnUR7B5P4Qjp6IWiso0AQo7c19WYbbekaYV1FexOXxyioBh9+5Ncm6jfSs7rzsQPCa/tpTl/FKKOrmlqQWOmwezL2b4QQgpKr5DIvpXv0VeTgKgXAtxwEcbyQxz6FmbxEcCP1JftsteYuHf45+edquuo1GvOuwXe4Ek=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fytxUB97; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZwWBlnAw"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8CD18C4CEFB;
-	Tue,  2 Sep 2025 13:41:21 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fytxUB97"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C816C4CEF4;
+	Tue,  2 Sep 2025 13:45:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756820485;
-	bh=ZVVlpLZtW001ia11Gv9DKuA1Yfy1spmGwT9D/HHzZoQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ZwWBlnAwxUOSjTlgMlo3w+hpjeXp789p38pxg3MIVv/SyyuAuKaCsP2HtTYFPQbsw
-	 ipI91tkwRXxx5v0GyencRIJ6MkFv5P19K+B3LE0Vm4Hg5FuK/63AVmU86O/ExS7rI2
-	 MJJeyRBvBDhbvqH+XHEbxDOo3MWE2FCu8PpuinsrqurB/LmexmeYwCKa5oqVKpR1pv
-	 sb4pvmADBKBbuEsmhW7C758YcnSXtO8cWz5qGDFyTb2cc/hH1cjcLUbRX2sONdxr8d
-	 eLgLq30LcHJb7jUHQR/7f3+HJst8lWyDKdB5cWtbDiGeupGHw3ntvh6czNTJYy6JDI
-	 14ROImnYnTqLw==
-Date: Tue, 2 Sep 2025 14:41:18 +0100
-From: Lee Jones <lee@kernel.org>
-To: samuel.kayode@savoirfairelinux.com
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Sebastian Reichel <sre@kernel.org>, Frank Li <Frank.li@nxp.com>,
-	imx@lists.linux.dev, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-	linux-pm@vger.kernel.org, Abel Vesa <abelvesa@kernel.org>,
-	Abel Vesa <abelvesa@linux.com>, Robin Gong <b38343@freescale.com>,
-	Robin Gong <yibin.gong@nxp.com>,
-	Enric Balletbo i Serra <eballetbo@gmail.com>,
-	Sean Nyekjaer <sean@geanix.com>,
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: Re: [PATCH v10 5/6] power: supply: pf1550: add battery charger
- support
-Message-ID: <20250902134118.GP2163762@google.com>
-References: <20250820-pf1550-v10-0-4c0b6e4445e3@savoirfairelinux.com>
- <20250820-pf1550-v10-5-4c0b6e4445e3@savoirfairelinux.com>
+	s=k20201202; t=1756820734;
+	bh=WhUCck38woFRSX+t14QPpBmFmTWLoKWxKgmD29RbU2Q=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=fytxUB97SJZVHYz23yFigJ5IZXcddMgJS70zYUwHnAIesVwl4UhfVvMbUy5NF+lQH
+	 UdQIAIr9FXRsFK8cc8BttQoSN9SjjAk05DcEoLaWPLqEHMcf4dsWWZtn0C+a1Ihj67
+	 OtAslUnk4a+7CcBvomEDmBbJ1OD6w4stx0/uYyZjcEz/zF1kNXBR8O4hQ3WkSxs/Ps
+	 xuJ9Ak7RAAYG3gq1m9B0g5UcFrxtzEv/aUK+M9ejpCkBghJnI3iFg1wnkeztwCPLhE
+	 FEMRY+vYx/LjjjdrsKNeaHjrfCUBKAqyfKecCyig4gtJYbXOUFl7vMxnKWz/v6Kg7q
+	 bp0WjyeUJviwA==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ LKML <linux-kernel@vger.kernel.org>, Danilo Krummrich <dakr@kernel.org>,
+ Ulf Hansson <ulf.hansson@linaro.org>, Saravana Kannan <saravanak@google.com>,
+ Johannes Berg <johannes@sipsolutions.net>
+Subject: [PATCH v1 2/2] PM: core: Add two macros for walking device links
+Date: Tue, 02 Sep 2025 15:45:14 +0200
+Message-ID: <1944671.tdWV9SEqCh@rafael.j.wysocki>
+Organization: Linux Kernel Development
+In-Reply-To: <6202205.lOV4Wx5bFT@rafael.j.wysocki>
+References: <6202205.lOV4Wx5bFT@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20250820-pf1550-v10-5-4c0b6e4445e3@savoirfairelinux.com>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-Power:
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> From: Samuel Kayode <samuel.kayode@savoirfairelinux.com>
-> 
-> Add support for the battery charger for pf1550 PMIC.
-> 
-> Reviewed-by: Frank Li <Frank.Li@nxp.com>
-> Tested-by: Sean Nyekjaer <sean@geanix.com>
-> Signed-off-by: Samuel Kayode <samuel.kayode@savoirfairelinux.com>
-> ---
-> v9:
-> - Fix thermal regulation temperature ranges
-> - Fix default thermal regulation temperature
-> - Drop unused `data` variable in reg_init
-> - Select charger operation mode based on application - suggested by Sean
-> v8:
-> - Drop PF1550_CHARGER_NAME
-> - Drop unnecessary POWER_SUPPLY_STATUS_CHARGING s
-> - Replace POWER_SUPPLY_HEALTH_DEAD with POWER_SUPPLY_HEALTH_NO_BATTERY
-> - Drop check for charger in delayed_work s
-> - Use dev_warn when battery is over-voltage
-> - Define two power supplies: charger and battery
-> - Use devm_delayed_work_autocancel to automate cleanup and fix race
->   condition
-> v7:
-> - Use reverse christmas tree order
-> - Drop unecessary 0 in id table's driver data field
-> - Store virqs to avoid reinvoking platform_get_irq in the interrupt
->   service routine
-> - Drop manufacturer and model global variables
-> v6:
-> - Drop lock entirely
-> - Reverse christmas tree order for variables defined in probe as
->   suggested by Frank
-> - return pf1550_reg_init
-> v5:
-> - Drop lock for battery and charger delayed_work
-> - More conservative locking in vbus delayed_work
-> - Apply lock when setting power supply type during register initialization
-> v4:
-> - Finish handling of some interrupts in threaded irq handler
-> - Use platform_get_irq
-> v3:
-> - Use struct power_supply_get_battery_info to get constant charge
->   voltage if specified
-> - Use virqs mapped in MFD driver
-> v2:
-> - Address feedback from Enric Balletbo Serra
-> ---
->  drivers/power/supply/Kconfig          |  11 +
->  drivers/power/supply/Makefile         |   1 +
->  drivers/power/supply/pf1550-charger.c | 636 ++++++++++++++++++++++++++++++++++
->  3 files changed, 648 insertions(+)
+Add separate macros for walking links to suppliers and consumers of a
+device to help device links users to avoid exposing the internals of
+struct dev_links_info in their code and possible coding mistakes related
+to that.
 
-Once Sebastian takes this, I'll merge the set.
+Accordingly, use the new macros to replace open-coded device links list
+walks in the core power management code.
 
--- 
-Lee Jones [李琼斯]
+No intentional functional impact.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/base.h          |    8 ++++++++
+ drivers/base/power/main.c    |   18 +++++++-----------
+ drivers/base/power/runtime.c |    3 +--
+ 3 files changed, 16 insertions(+), 13 deletions(-)
+
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -251,6 +251,14 @@
+ void fw_devlink_drivers_done(void);
+ void fw_devlink_probing_done(void);
+ 
++#define dev_for_each_link_to_supplier(__link, __dev)	\
++	list_for_each_entry_srcu(__link, &(__dev)->links.suppliers, c_node, \
++				 device_links_read_lock_held())
++
++#define dev_for_each_link_to_consumer(__link, __dev)	\
++	list_for_each_entry_srcu(__link, &(__dev)->links.consumers, s_node, \
++				 device_links_read_lock_held())
++
+ /* device pm support */
+ void device_pm_move_to_tail(struct device *dev);
+ 
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -40,10 +40,6 @@
+ 
+ typedef int (*pm_callback_t)(struct device *);
+ 
+-#define list_for_each_entry_srcu_locked(pos, head, member) \
+-	list_for_each_entry_srcu(pos, head, member, \
+-			device_links_read_lock_held())
+-
+ /*
+  * The entries in the dpm_list list are in a depth first order, simply
+  * because children are guaranteed to be discovered after parents, and
+@@ -281,7 +277,7 @@
+ 	 * callbacks freeing the link objects for the links in the list we're
+ 	 * walking.
+ 	 */
+-	list_for_each_entry_srcu_locked(link, &dev->links.suppliers, c_node)
++	dev_for_each_link_to_supplier(link, dev)
+ 		if (READ_ONCE(link->status) != DL_STATE_DORMANT)
+ 			dpm_wait(link->supplier, async);
+ 
+@@ -338,7 +334,7 @@
+ 	 * continue instead of trying to continue in parallel with its
+ 	 * unregistration).
+ 	 */
+-	list_for_each_entry_srcu_locked(link, &dev->links.consumers, s_node)
++	dev_for_each_link_to_consumer(link, dev)
+ 		if (READ_ONCE(link->status) != DL_STATE_DORMANT)
+ 			dpm_wait(link->consumer, async);
+ 
+@@ -675,7 +671,7 @@
+ 	idx = device_links_read_lock();
+ 
+ 	/* Start processing the device's "async" consumers. */
+-	list_for_each_entry_srcu_locked(link, &dev->links.consumers, s_node)
++	dev_for_each_link_to_consumer(link, dev)
+ 		if (READ_ONCE(link->status) != DL_STATE_DORMANT)
+ 			dpm_async_with_cleanup(link->consumer, func);
+ 
+@@ -1330,7 +1326,7 @@
+ 	idx = device_links_read_lock();
+ 
+ 	/* Start processing the device's "async" suppliers. */
+-	list_for_each_entry_srcu_locked(link, &dev->links.suppliers, c_node)
++	dev_for_each_link_to_supplier(link, dev)
+ 		if (READ_ONCE(link->status) != DL_STATE_DORMANT)
+ 			dpm_async_with_cleanup(link->supplier, func);
+ 
+@@ -1384,7 +1380,7 @@
+ 
+ 	idx = device_links_read_lock();
+ 
+-	list_for_each_entry_srcu_locked(link, &dev->links.suppliers, c_node)
++	dev_for_each_link_to_supplier(link, dev)
+ 		link->supplier->power.must_resume = true;
+ 
+ 	device_links_read_unlock(idx);
+@@ -1813,7 +1809,7 @@
+ 
+ 	idx = device_links_read_lock();
+ 
+-	list_for_each_entry_srcu_locked(link, &dev->links.suppliers, c_node) {
++	dev_for_each_link_to_supplier(link, dev) {
+ 		spin_lock_irq(&link->supplier->power.lock);
+ 		link->supplier->power.direct_complete = false;
+ 		spin_unlock_irq(&link->supplier->power.lock);
+@@ -2065,7 +2061,7 @@
+ 
+ 	idx = device_links_read_lock();
+ 
+-	list_for_each_entry_srcu_locked(link, &dev->links.suppliers, c_node) {
++	dev_for_each_link_to_supplier(link, dev) {
+ 		if (!device_link_test(link, DL_FLAG_PM_RUNTIME))
+ 			continue;
+ 
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -1903,8 +1903,7 @@
+ 
+ 	idx = device_links_read_lock();
+ 
+-	list_for_each_entry_srcu(link, &dev->links.suppliers, c_node,
+-				 device_links_read_lock_held())
++	dev_for_each_link_to_supplier(link, dev)
+ 		if (device_link_test(link, DL_FLAG_PM_RUNTIME)) {
+ 			link->supplier_preactivated = true;
+ 			pm_runtime_get_sync(link->supplier);
+
+
+
