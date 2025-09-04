@@ -1,257 +1,225 @@
-Received: from mail-oa1-f43.google.com (mail-oa1-f43.google.com [209.85.160.43])
+Received: from mail-yw1-f180.google.com (mail-yw1-f180.google.com [209.85.128.180])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0DDB2F616F;
-	Thu,  4 Sep 2025 16:08:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFB7C1F4262
+	for <linux-pm@vger.kernel.org>; Thu,  4 Sep 2025 16:13:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757002096; cv=none; b=tRtLv1cDYOGc9Xa0clfMmwyPiaf+1Xm77xVYgxShsgZA02Zzz1ukbNRzKbMdVZIAfBCjSpn+9zacTJ6H2e68u2UzU1nsT/JGKqERG5RINkSFjZl/okJNHxRQK8HdE48IVM8KESjDtIX2fobIpLmIRL9szOk3+p25XK+a2VBldeM=
+	t=1757002441; cv=none; b=qmqqzdj0dXyslzoWwxthNL+/yP0eZqwKIwK3/Xc2taoptrGVMU/Z/57kRNlcroj2l6WccJqU53v+mZfEIapeElQ6DCJWkD9Pf8L0am7Dz83GDfyAWzB4/xQpMPe8i+Ms4p6lY4Xjx5+Y0fuIz6p8iSuw9GgschZImscVKit7ySs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757002096; c=relaxed/simple;
-	bh=a2VaGbnudM1PA9g6aSsfgVl1WnSIPcWzvBS/7G/JRIQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=L06X2B901/BDZynr3gfyR3Ee54id8vA3lt1P8kaoKhTOX0dbV1lkEwntQW/kfu6faYoxqpXhohHV+WGE4QwMlRF7LCnhWEQTyoFPCFx6v9fLse2C2PQ4d+iE5JA6P8nr4a6PsF9uoLa5HwxmT9t3BCwH9lW8R6uso67fFkC6ynI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=b5Kv8QxH; arc=none smtp.client-ip=209.85.160.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1757002441; c=relaxed/simple;
+	bh=SCIQY83Ai8L6ppcKGEoiXaAz3OxldpZnLcgYpg99d7Q=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=IQQZirAUrQN23K3gVw9b/7P1zP91YCRJr/1jS80xur/gRThVaBnvspM+2B37sDLMN6T1LB7kbBdKJCem8pWVOCoVtU6jFtQKt05LxAIRkF2/CsPsE6p2VtC2QqtmpbAtgcn3Yqj+ijIi8E0znEq1lWuDmwmBD/dziMB1fV5Yaqs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=tUTZoGyb; arc=none smtp.client-ip=209.85.128.180
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="b5Kv8QxH"
-Received: by mail-oa1-f43.google.com with SMTP id 586e51a60fabf-30cce892b7dso515566fac.1;
-        Thu, 04 Sep 2025 09:08:13 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="tUTZoGyb"
+Received: by mail-yw1-f180.google.com with SMTP id 00721157ae682-71d71bcab69so12853257b3.0
+        for <linux-pm@vger.kernel.org>; Thu, 04 Sep 2025 09:13:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1757002093; x=1757606893; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=UbxwAPRbZLLGWs9r1VP1FnvbCoc9pGEKPj76nnKqTXY=;
-        b=b5Kv8QxHHDAos5XoTu4bO404EVcgLO57Pa8EYF+JizuIYsegCFsstQnu5zcNVJZTQX
-         cTPoK841LozEWPiLrHWpCfZCFyQypi1AqiIt+tDfKIjFKoRe79aaKDi+7aia+lDgFA+o
-         CYY6EFUJuJj4RPoQ08d6BxnM+9UZnO5UNon9HfF4bQG2bWU7Leb8gflmMhoxtmbLl/vR
-         nPBtbYReUVRIzOUAQmpUcS0sQJwO+RYDoZrsiONLNg6dEGsMZOJ1biQpqW9jAJQJEp4T
-         kYLWU2sFZpChYjCcE0JTcr6XF+qtQcnM0yKZCA1EPOypislecWpqbKJPzrJEdPDbE59+
-         9BaQ==
+        d=linaro.org; s=google; t=1757002439; x=1757607239; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=34lNRxMzfknWqY04/AB2pJSWANkSMT5gO6BsVZXifm4=;
+        b=tUTZoGybKf5NO1TbvCn5D/0BXtDiAhaC56u/iaiXBs7ktFYED47SF49PI42QVnnatd
+         wJ5XQ6n7KiAjrxaw6i6wvksPkMLlqjZgf3CTfzp7VksIlu52YFCyau6lOAov6MVOB89j
+         dCj6e5yQXs6MfJ+LASfl5BklE/9NnpM3TBXBxlwlKk9N19S4MHP6PJgkOR3Q5MMOEI2P
+         9Qa9R2q1PQHe24UvPOrkwgr4w07kPHC922eJFUWacf6i3x3yYhXhF2vpVsXsn3MAiD9K
+         XnPheOr2gvrpRBn8pWAmwALFcvoG6Py3Xl/2CF5KPpPetrnS36eXJ7hQOaZqBxmf2FcC
+         tVJw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1757002093; x=1757606893;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=UbxwAPRbZLLGWs9r1VP1FnvbCoc9pGEKPj76nnKqTXY=;
-        b=XLzK/SaDiJkbVtfUbPKd7Fkcoi1Jz8jHh9mRavp3uYhFpl5qaLRzx0Wjxs/fCrS0ED
-         g0x5h5pBkvApk3ldt0cH2mUaG+O63/lF/XwGkAgaU6NiCHESzwPC/nLSu/5gJtOP4q+M
-         +yf3OIYVFjkiNWYhm1o5ro47W/KgnPhQwbc8kzSQCvo+3WAIVeNMsQLhNSsKHo0ZUpTV
-         c4bNKvXc4R5/lVzfRC5xvrnMAL7FZeL+p4bXamoRL5JaszTN1JHOysw8+zR/BeiZNoFe
-         Z76STbNuZhFipXgubSgCAsW2wKsyKiOVmgpC+mtyhaefdzR4G6fafF9dEFiLpMo+GERn
-         KcHQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUvktY6UQHC25JtQkycPnG3VyhqLTGEKToAexgFdsTnamrFh3GwnKna4FQcWdsCFBb6QKpFrgGqlV9v@vger.kernel.org
-X-Gm-Message-State: AOJu0YyEevHs0bOtvTyk2p/AowRDpssr7twQGmrfKG30iTX5LkatuUYc
-	kvNIRFHSVJI55wLCviF8zUAJ/YekWjQgQIjJnVJlr22iKLEyNfCTJuij
-X-Gm-Gg: ASbGnctFzo2/1H0zr4gtWoZ0ERzKmqIYayz5zs8PayIbyBQdgpJ68BA6/jFEw1qlJS/
-	et2dnOpgZeU/BiTBrzWIHpvG1rAegxIBWTodLzEXGQjh0xhEnLhnRIionaJLhKx2RlK67FGuNV9
-	zXqRlD1+neqJxrorQIdY70PosyV/CvJmbBrGIcz03M8XpT6w7Bz4ux15I7aNAccjdFI89KZWUBN
-	DyMkdNsOqsE82zxm0KLY+YiAmrxjyYUeMZszpXLf99Cq/pgxplcbprjgkd6wfIpxQw+2XYJLge8
-	myAmyIC0XzC4bpYB48VPhl+AQ7ScwuWD/oRvkvrVPySmZNHpM/959sDuYwfEHzGJNeRCtGBR/Ml
-	qzelSSrYZ/xrtNvVZFdOZCnXpue9TiRPjLwaK0fnLgxl2IPa+cwhe
-X-Google-Smtp-Source: AGHT+IHjB2+IkhRCLJgIXDZnkVz9/1NAMGeK1BR80GdOB6f5va7pWqIXQ3joMoysK4vHfou5xDfW9w==
-X-Received: by 2002:a05:6871:eb03:b0:30b:de9b:705c with SMTP id 586e51a60fabf-3196307f013mr10559358fac.5.1757002092703;
-        Thu, 04 Sep 2025 09:08:12 -0700 (PDT)
-Received: from localhost.localdomain ([2600:1700:fb0:1bc0:c51e:64e3:dc5d:9652])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-319b5fcbf6asm2437593fac.20.2025.09.04.09.08.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 04 Sep 2025 09:08:12 -0700 (PDT)
-From: Chris Morgan <macroalpha82@gmail.com>
-To: linux-rockchip@lists.infradead.org
-Cc: linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	broonie@kernel.org,
-	lee@kernel.org,
-	lgirdwood@gmail.com,
-	sre@kernel.org,
-	heiko@sntech.de,
-	conor+dt@kernel.org,
-	krzk+dt@kernel.org,
-	robh@kernel.org,
-	Chris Morgan <macromorgan@hotmail.com>
-Subject: [PATCH v8 5/5] arm64: dts: rockchip: Add USB and charger to Gameforce Ace
-Date: Thu,  4 Sep 2025 11:05:30 -0500
-Message-ID: <20250904160530.66178-6-macroalpha82@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20250904160530.66178-1-macroalpha82@gmail.com>
-References: <20250904160530.66178-1-macroalpha82@gmail.com>
+        d=1e100.net; s=20230601; t=1757002439; x=1757607239;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=34lNRxMzfknWqY04/AB2pJSWANkSMT5gO6BsVZXifm4=;
+        b=cJxqexXwI+39u7Qmd1iGEIDQ+38I08pX5cKn4mjuhJamiSGuZk127xTq/tXLNgBJV7
+         +RnxecmqTpslBN0A+DvLF+UPffs6g6hzm6x5fnb3KfO0Dsyt7/icLw8dF+LZrNWsFp1l
+         o1qfovHxtPjVFM6uYY2NFC+toOXegBeWwtfK/VC1m6Fik1RZHJlA/UKTfi/VmO0O5Znx
+         a2Dmd5nvVMwqLcZ+q1A51LJr71kAovAm8N8wmyBiw3EWFqTmndWU+/dg36z8AKvxlIGB
+         GajqC7oWHJ4H7EdxtqBr/vsZq/YtkbVApGDOXbVGPpQotwMdXLSKHHuTi23OAWrwzcDR
+         NZaw==
+X-Gm-Message-State: AOJu0YwkAS2ZSLH64uQRqYP9BcG01j/cMaDh0Y60qnWDcnSeSZuS2xNu
+	NhmpxysbcrtNrrMA+Vc4P3jyoD+RccSUzzYKtL65VapufVIoxA+suo5v0On8iWl9BCcoGC5qUcj
+	Oc6yiOlGaL+uYiysy+/u/Pf9WQU3ydXdtzKa2hXoq9Q==
+X-Gm-Gg: ASbGncvaFs8Ah3TihKWbigY7apE2q0/7EmZJ1OiC5+b0Kn5ihdodH3waQY4qjKeF3rD
+	iHAaXscd6zaCYBcxVxNJ7ADwia1Lr8RULtI1cK3nv3LjoC2R+bYPBAQFbh52rjTpvhToLsUBNoP
+	A0yPz1xCTCF3ABxLnrH27s0lJZKIUnU1pQgKvCi+WdQL0C3QU+JwBal+IRotq3xMjlOiDfm+46B
+	XSU35cWhe8n8KAdsWs=
+X-Google-Smtp-Source: AGHT+IFe25JJfIitrkNKnpsxQsW1d7VW/a+cN6wV++u6O89PnozjGikgZBb8eB5tx+iecXdZ104l7hvqarDF0/07phY=
+X-Received: by 2002:a05:690c:892:b0:71f:b944:1035 with SMTP id
+ 00721157ae682-72276570b19mr190820407b3.50.1757002438362; Thu, 04 Sep 2025
+ 09:13:58 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20250902-rk3576-lockup-regression-v1-1-c4a0c9daeb00@collabora.com>
+ <CAPDyKFpAOLiBOoAhv+GQcobU_g_AWrB9iyOGmodROLtRmR30JA@mail.gmail.com> <3332408.jE0xQCEvom@workhorse>
+In-Reply-To: <3332408.jE0xQCEvom@workhorse>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Thu, 4 Sep 2025 18:13:22 +0200
+X-Gm-Features: Ac12FXz9UlnEpxChoPr8ZDpfm4GCrxu0_n8TKBl4W_IvQlCRnoCLN10fhI0kdWY
+Message-ID: <CAPDyKFqBgKxhUCaNwUAMHUKorCPH44AfCe1VncO7jU-soy39Dg@mail.gmail.com>
+Subject: Re: [PATCH] pmdomian: core: don't unset stay_on during sync_state
+To: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	kernel@collabora.com, linux-rockchip@lists.infradead.org, 
+	Cristian Ciocaltea <cristian.ciocaltea@collabora.com>, 
+	Sebastian Reichel <sebastian.reichel@collabora.com>, Heiko Stuebner <heiko@sntech.de>
+Content-Type: text/plain; charset="UTF-8"
 
-From: Chris Morgan <macromorgan@hotmail.com>
+On Thu, 4 Sept 2025 at 14:50, Nicolas Frattaroli
+<nicolas.frattaroli@collabora.com> wrote:
+>
+> On Thursday, 4 September 2025 11:17:01 Central European Summer Time Ulf Hansson wrote:
+> > On Tue, 2 Sept 2025 at 20:23, Nicolas Frattaroli
+> > <nicolas.frattaroli@collabora.com> wrote:
+> > >
+> > > This reverts commit de141a9aa52d6b2fbeb63f98975c2c72276f0878.
+> >
+> > I can't find this commit hash. What tree are you using when testing this?
+> >
+> > Are you trying to revert 0e789b491ba04c31de5c71249487593e386baa67 ?
+>
+> Probably, I did the revert on a rebased branch and then rebased the revert
+> onto v6.17-rc4 so it likely is the wrong hash here. I'll fix this in v2 if
+> there is a v2 (it might actually become a different patch, see huge text
+> below, sorry!)
+>
+> >
+> > >
+> > > On RK3576, the UFS controller's power domain has a quirk that requires
+> > > it to stay enabled, infrastricture for which was added in Commit
+> > > cd3fa304ba5c ("pmdomain: core: Introduce dev_pm_genpd_rpm_always_on()").
+> > >
+> > > Unfortunately, Commit de141a9aa52d ("pmdomain: core: Leave powered-on
+> > > genpds on until sync_state") appears to break this quirk wholesale. The
+> > > result is that RK3576 devices with the UFS controller enabled but unused
+> > > will freeze once pmdomain shuts off unused domains.
+> > >
+> > > Revert it until a better fix can be found.
+> >
+> > This sounds a bit vague to me, can you please clarify and elaborate a
+> > bit more so I can try to help.
+> >
+> > What does "UFS controller enabled but unused" actually mean? Has the
+> > UFS controller driver been probed successfully and thus its
+> > corresponding device been attached to its PM domain?
+>
+> It means the UFS controller driver has probed, but does not find a
+> UFS storage chip connected to it, and therefore reports a probe
+> failure. This is a possibility on single-board computers like the
+> Radxa ROCK 4D, where the UFS storage is a separate module that plugs
+> into some headers.
+>
+> > Moreover, the behaviour of dev_pm_genpd_rpm_always_on() is orthogonal
+> > to what 0e789b491ba0 ("pmdomain: core: Leave powered-on genpds on
+> > until sync_state") brings along with its corresponding sync_state
+> > series for genpd [1]. Again, more information is needed to understand
+> > what goes wrong.
+>
+> The reason why Rockchip's UFS driver needs this function is that once
+> the RK3576_PD_USB power domain is turned on on the RK3576 SoC, it should
+> not be toggled off again until a whole SoC suspend/resume cycle because
+> the off/on operation is seemingly not idempotent.
 
-Add support for the BQ25703A charger manager and boost regulator to
-the Gameforce Ace. Add the USB-C port and PHY as well as they all
-depend on each other for operation.
+So how about adding some prints in the genpd->power_on|off() callbacks
+to see what goes on during boot. Along with some prints in the UFS
+driver's ->probe().
 
-Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
----
- .../dts/rockchip/rk3588s-gameforce-ace.dts    | 122 ++++++++++++++++++
- 1 file changed, 122 insertions(+)
+In particular, what is the difference before and after the revert.
 
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-gameforce-ace.dts b/arch/arm64/boot/dts/rockchip/rk3588s-gameforce-ace.dts
-index 55fc7cbef58d..f5894672fcbd 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588s-gameforce-ace.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588s-gameforce-ace.dts
-@@ -612,6 +612,56 @@ &i2c6 {
- 	pinctrl-0 = <&i2c6m3_xfer>;
- 	status = "okay";
- 
-+	fusb302: typec@22 {
-+		compatible = "fcs,fusb302";
-+		reg = <0x22>;
-+		interrupt-parent = <&gpio0>;
-+		interrupts = <RK_PC7 IRQ_TYPE_LEVEL_LOW>;
-+		pinctrl-0 = <&usbc0_int>;
-+		pinctrl-names = "default";
-+		vbus-supply = <&usb_otg_vbus>;
-+
-+		connector {
-+			compatible = "usb-c-connector";
-+			data-role = "dual";
-+			label = "USB-C";
-+			op-sink-microwatt = <1000000>;
-+			power-role = "dual";
-+			self-powered;
-+			sink-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)
-+				     PDO_FIXED(9000, 3000, PDO_FIXED_USB_COMM)
-+				     PDO_FIXED(12000, 3000, PDO_FIXED_USB_COMM)>;
-+			source-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)>;
-+			try-power-role = "sink";
-+
-+			ports {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+
-+				port@0 {
-+					reg = <0>;
-+					usbc0_orien_sw: endpoint {
-+						remote-endpoint = <&usbdp_phy0_orientation_switch>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					usbc0_role_sw: endpoint {
-+						remote-endpoint = <&dwc3_0_role_switch>;
-+					};
-+				};
-+
-+				port@2 {
-+					reg = <2>;
-+					dp_altmode_mux: endpoint {
-+						remote-endpoint = <&usbdp_phy0_dp_altmode_mux>;
-+					};
-+				};
-+			};
-+		};
-+	};
-+
- 	rtc_hym8563: rtc@51 {
- 		compatible = "haoyu,hym8563";
- 		reg = <0x51>;
-@@ -640,8 +690,34 @@ battery@62 {
- 			 0x2F 0x00 0x64 0xA5 0xB5 0x1C 0xF0 0x49>;
- 		cellwise,monitor-interval-ms = <5000>;
- 		monitored-battery = <&battery>;
-+		power-supplies = <&bq25703>;
- 		status = "okay";
- 	};
-+
-+	bq25703: charger@6b {
-+		compatible = "ti,bq25703a";
-+		reg = <0x6b>;
-+		input-current-limit-microamp = <5000000>;
-+		interrupt-parent = <&gpio0>;
-+		interrupts = <RK_PD5 IRQ_TYPE_LEVEL_LOW>;
-+		monitored-battery = <&battery>;
-+		pinctrl-0 = <&charger_int_h>;
-+		pinctrl-names = "default";
-+		power-supplies = <&fusb302>;
-+
-+		regulators {
-+			usb_otg_vbus: vbus {
-+				enable-gpios = <&gpio4 RK_PA6 GPIO_ACTIVE_HIGH>;
-+				pinctrl-0 = <&boost_enable_h>;
-+				pinctrl-names = "default";
-+				regulator-max-microamp = <960000>;
-+				regulator-max-microvolt = <5088000>;
-+				regulator-min-microamp = <512000>;
-+				regulator-min-microvolt = <4992000>;
-+				regulator-name = "usb_otg_vbus";
-+			};
-+		};
-+	};
- };
- 
- &i2c7 {
-@@ -853,6 +929,12 @@ usbc0_int: usbc0-int {
- 			rockchip,pins =
- 				<0 RK_PC7 RK_FUNC_GPIO &pcfg_pull_up>;
- 		};
-+
-+		usbc_sbu_dc: usbc-sbu-dc {
-+			rockchip,pins =
-+				<4 RK_PA0 RK_FUNC_GPIO &pcfg_pull_none>,
-+				<4 RK_PA1 RK_FUNC_GPIO &pcfg_pull_none>;
-+		};
- 	};
- 
- 	vcc3v3-lcd {
-@@ -1286,6 +1368,46 @@ bluetooth {
- 	};
- };
- 
-+&usb_host0_xhci {
-+	usb-role-switch;
-+	status = "okay";
-+
-+	port {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		dwc3_0_role_switch: endpoint@0 {
-+			reg = <0>;
-+			remote-endpoint = <&usbc0_role_sw>;
-+		};
-+	};
-+};
-+
-+&usbdp_phy0 {
-+	mode-switch;
-+	orientation-switch;
-+	pinctrl-0 = <&usbc_sbu_dc>;
-+	pinctrl-names = "default";
-+	sbu1-dc-gpios = <&gpio4 RK_PA0 GPIO_ACTIVE_HIGH>;
-+	sbu2-dc-gpios = <&gpio4 RK_PA1 GPIO_ACTIVE_HIGH>;
-+	rockchip,dp-lane-mux = <2 3>;
-+	status = "okay";
-+
-+	port {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		usbdp_phy0_orientation_switch: endpoint@0 {
-+			reg = <0>;
-+			remote-endpoint = <&usbc0_orien_sw>;
-+		};
-+
-+		usbdp_phy0_dp_altmode_mux: endpoint@1 {
-+			reg = <1>;
-+			remote-endpoint = <&dp_altmode_mux>;
-+		};
-+	};
-+};
-+
- &vop {
- 	status = "okay";
- };
--- 
-2.43.0
+> This does not preclude
+> turning off the power domain if the device isn't used at all, e.g. the DT
+> node is absent. This is why the affected PDs are not marked as always-on
+> in the PD init data for the SoC, as the device driver is the best place to
+> set this during runtime.
+>
+> The way I got to this commit is through a bisect between the UFS node
+> being enabled on the ROCK 4D (commit 00abee2b18342d6c2f6f37225682fa7ca0d33142)
+> and v6.17-rc4. The bisect landed on the pmdomain merge commit
+> (commit fc8f5028eb0cc5aee0501a99f59a04f748fbff1c) as the first bad commit,
+> so I checked out v6.16, cherry-picked the UFS node enablement, made sure it
+> works fine with that, and then rebased the 44 pmdomain commits that this
+> merge commit merged onto this base. I verified that the tip of that then
+> exhibited the faulty behaviour, namely that my ROCK 4D was locking up
+> some time after boot, right after the kernel log message
+>
+>     [   33.756516] vdd_npu_s0: disabling
+>
+> so presumably when unused regulators and domains were being disabled.
+> Aside note: setting vdd_npu_s0 to always-on also works to work around
+> the issue, and I'm not quite sure why, because this regulator is not
+> used for anything right now so this may be some peculiar SoC silicon
+> design where VDD_NPU is leaking into the part that the UFS PD actually
+> should be gating, preventing the lockup on accident.
+>
+> Anyway, so I did a bisect between the UFS introduction and the rebased
+> tip of the pmdomain branch, and landed on the commit I'm reverting.
+>
+> The problem exhibits itself not when the affect PD is first turned off,
+> but when the NPU regulator is turned off. How could this be relevant to
+> power domains at all? I have no idea.
+>
+> I admit that I don't understand the commit I'm reverting, as it talks of
+> keeping powered-on genpds on, but the code sets a member called "stay_on"
+> to false.
+>
+> However, reverting it 100% reproducibly fixes the observed lockup. The
+> lockup does not occur if an UFS module is connected to the SBC.
+>
+> It seems `dev_pm_genpd_rpm_always_on` is never run if UFS experiences
+> a probe failure, so I'm not entirely sure how this specific commit
+> changes the behaviour in a way that makes it unhappy. I agree the
+> solution is probably not a revert here. Also, adding an unconditional
+> `dev_pm_genpd_rpm_always_on` in the failing UFS probe path doesn't
+> work, likely because the driver is unbound. Maybe this is a complete
+> red herring and `dev_pm_genpd_rpm_always_on` is unrelated.
+>
+> The only other device that uses RK3576_PD_USB is the usb_drd0_dwc3
+> usb controller. This node is not enabled in my rebase-pd-onto-ufs-enable
+> branch, so even assuming the problem is that the usb driver is missing
+> the same `dev_pm_genpd_rpm_always_on` call, that shouldn't matter
+> becuase nothing else is using that power domain. Unless, of course, our
+> description of that power domain is incomplete, which is possible.
+>
+> The problem may be that this was always racey and the genpd changes
+> just made the race go wrong more often.
+>
+> Another observation: my kernel log during afflicted bootups contains
+>
+>     rockchip-pm-domain 27380000.power-management:power-controller: sync_state() pending due to 2a2d0000.ufshc
+>
+> A further observation: pd_ignore_unused does not fix it. Looking at
+> the revert and experimenting, removing the `stay_on = false` is not
+> what actually fixes my problem, but removing the
+> `#ifndef CONFIG_PM_GENERIC_DOMAINS_OF`, even without setting
+> pd_ignore_unused, fixes my issue.
+>
+> This is probably a big enough clue to suss out what's going on; that
+> I *need* "[    2.868987] PM: genpd: Disabling unused power domains"
+> to run quite early before the regulator that feeds VDD_NPU is disabled
+> after the bootup completes unless an UFS module is present or the UFS
+> controller is disabled makes me think this is another peculiarity of
+> the RK3576 power domains hardware, because none of this I just wrote
+> sounds like the words of a sane human.
 
+Thanks a lot for sharing more information!
+
+As I just responded to Heiko's email, my guess is that PM domain needs
+the genpd->power_off() callback to be invoked first, before it can be
+properly powered-on via genpd->power_on().
+
+In some way we need to make sure the PM domain (genpd) is in a correct
+state before we call pm_genpd_init(). Exactly how, I think you can
+explore with different approaches.
+
+[...]
+
+Kind regards
+Uffe
