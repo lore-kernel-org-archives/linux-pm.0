@@ -1,111 +1,142 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E2AD028934F
-	for <linux-pm@vger.kernel.org>; Thu,  4 Sep 2025 08:17:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.13
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45ECB2BEFE8;
+	Thu,  4 Sep 2025 08:19:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1756973855; cv=none; b=PCwECA+XSn04KXof8Nya4hYvEBW5WDs4zHNvrMc1TIzxpnR8bYcPBQJuNU+kA6BkCgZ7k2EdVu0/qnmW+A/H4qQoK0BZJcDEyjah0wR2TUAMs1mzsN30s4+HJnRdXh9exV94I9MinUlE9S5z+vIgFTVrAEhxq8bTsKBa+EoUlCw=
+	t=1756973974; cv=none; b=SKtBDwSw0vOEq3rjZGa0DZMDWbFToRTs3OAQa+yaqecvpC/OIE7z/h3c/j5FkxYC2eLEDKjxqrQamukT0219KRDA8uuUCGVWj/V7siC+p2AqeFpYN/chaRGcuA+CU8S6SMNd9POHuHdKWBReXjtSmh73EXYTCbRiBl6nJR/Dw/U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1756973855; c=relaxed/simple;
-	bh=zWt2mCW6m0/ZqG/NuHpwedi6EWHPLxwbzCT/6aoTX/M=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=jkhg2aoN55sML1L5DNNTZxcqzT042PDnJIKVGiuAidEVoIRL+mwhP2LNxzZeiuW/kWAfCazyHVKmZgyc460OXppVCy7j8/hdYy7UGauP0d8TgP9GE6f7dmZSQakFGxsDDxvIcP7F2g5gnoK8wbH5yyM5MlKNptJuO6dzOjLJ7v8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Wz2BLhUI; arc=none smtp.client-ip=198.175.65.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1756973974; c=relaxed/simple;
+	bh=kxMA6xJIchs9QR1tfO7hgVmWfcdv0CoNQonnp5feJiU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=cDGUBSocC5l8WAzr/4qUa/qCLzNzGmSH7Oxle9/6qN+nsjcu8M7ua0t08jM6DY2t4VGRFIlzlLAYcTq6191zMppIcPSjJNXD9CXSuOYX7oNZaN9tKLgltyFP4ZpM6TkNn/FabkxPRtRbj1RkPk1An/bN/TVkqL0UITf5qKWbBXQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=pmFoytlr; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Wz2BLhUI"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1756973854; x=1788509854;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=zWt2mCW6m0/ZqG/NuHpwedi6EWHPLxwbzCT/6aoTX/M=;
-  b=Wz2BLhUIbKpGADIcM9PhyIUKPfNafZwUcY6ZhFCwrbTCeJiLiqHUfco5
-   +HEtB9beoCDFE3dHuFy67KwcNRw8/toSYKi+gXgtDcB5W6EBVG9atGeG6
-   uDIfdQf4YoGMvEXrr+YFI8MWt3ecuuf1Rn33S28WzFPHEQGhOXgIOZsaa
-   izVjKqagwz6LQIAv32tpstcJKx0cl/JoB80LMUkor2HIrc7h/PToqHMRq
-   bZmzJcQs8WqHCZROhfx2HuPraTWit+M3a2CgKdR+wuU/QW42arvxWD4rI
-   CVGvpf6N/J8BjQyVvGBWPz0lyFSUNIZ5h1xQqI4yYQnRgwW6yJ83gt7C0
-   w==;
-X-CSE-ConnectionGUID: XjyvHW/JRwO34MQHnkGuAQ==
-X-CSE-MsgGUID: nJCP9ZagTEKW9dixWhhWWA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11542"; a="70400652"
-X-IronPort-AV: E=Sophos;i="6.18,237,1751266800"; 
-   d="scan'208";a="70400652"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2025 01:17:34 -0700
-X-CSE-ConnectionGUID: umYDvqqXQTC2duhn5F/98g==
-X-CSE-MsgGUID: 7oFNmmJEQzSrnPdAUNFWoA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.18,237,1751266800"; 
-   d="scan'208";a="172655343"
-Received: from baandr0id001.iind.intel.com ([10.66.253.151])
-  by fmviesa010.fm.intel.com with ESMTP; 04 Sep 2025 01:17:31 -0700
-From: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
-To: rafael@kernel.org,
-	viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org,
-	Kaushlendra Kumar <kaushlendra.kumar@intel.com>
-Subject: [PATCH] cpufreq: acpi-cpufreq: Optimize SMP calls in drv_write() function
-Date: Thu,  4 Sep 2025 13:46:00 +0530
-Message-Id: <20250904081600.2706572-1-kaushlendra.kumar@intel.com>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="pmFoytlr"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 08B01C4CEF0;
+	Thu,  4 Sep 2025 08:19:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1756973974;
+	bh=kxMA6xJIchs9QR1tfO7hgVmWfcdv0CoNQonnp5feJiU=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=pmFoytlrB60TuzrpAsR5wdSCNjdICXeOP+kFtNbfcpuUsFZNrj/dlrtSbLiRxNHCt
+	 WvJ1kfQmjsmELWl3mCa7Ptd7+4zagRgZkj6rY+8veiUupCeHu6kFQREvU8nXOsYG1m
+	 vaJhW91XH9hO5tuQaPpaIraXRCFEZUwpwMuVCWzTmQvnzSvJQ8frE8KOiQ04mvx279
+	 Ml4X1THzPtoEv1qmJsyeYJVpphzSOhndH7OQdDTxF4vcCN9BaNikA1IAJ6oJBvoNtV
+	 FoqlfUTF0kfHaWGjcCGrObVyf6SSzTgq5+BEPZxMXZgKP15fM/Zv3wf56Ueppn4QMt
+	 tJ6g215RFgbEw==
+Message-ID: <08062eb7-1b7d-4fc3-86ea-af70069065eb@kernel.org>
+Date: Thu, 4 Sep 2025 10:19:29 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/8] Support dynamic EMC frequency scaling on
+ Tegra186/Tegra194
+To: Aaron Kling <webgeek1234@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-tegra@vger.kernel.org,
+ linux-pm@vger.kernel.org
+References: <20250831-tegra186-icc-v1-0-607ddc53b507@gmail.com>
+ <20250902-glittering-toucan-of-feminism-95fd9f@kuoka>
+ <CALHNRZ_CNvq_srzBZytrO6ZReg81Z6g_-Sa+=26kBEHx_c8WQA@mail.gmail.com>
+ <47c7adc9-fa91-4d4e-9be4-912623c627d6@kernel.org>
+ <CALHNRZ8rxyRvb1GCifeXRKjPkkBE+sK6VnPc2nS01iZV_NcjaQ@mail.gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 a/A=
+In-Reply-To: <CALHNRZ8rxyRvb1GCifeXRKjPkkBE+sK6VnPc2nS01iZV_NcjaQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-The current drv_write() implementation performs redundant work by calling
-do_drv_write() on the current CPU and then issuing smp_call_function_many()
-to all CPUs in the mask, including the current CPU again. This results in
-duplicate MSR writes on the current CPU and unnecessary IPI overhead.
+On 03/09/2025 08:37, Aaron Kling wrote:
+> On Wed, Sep 3, 2025 at 1:20 AM Krzysztof Kozlowski <krzk@kernel.org> wrote:
+>>
+>> On 02/09/2025 18:51, Aaron Kling wrote:
+>>> On Tue, Sep 2, 2025 at 3:23 AM Krzysztof Kozlowski <krzk@kernel.org> wrote:
+>>>>
+>>>> On Sun, Aug 31, 2025 at 10:33:48PM -0500, Aaron Kling wrote:
+>>>>> This series borrows the concept used on Tegra234 to scale EMC based on
+>>>>> CPU frequency and applies it to Tegra186 and Tegra194. Except that the
+>>>>> bpmp on those archs does not support bandwidth manager, so the scaling
+>>>>> iteself is handled similar to how Tegra124 currently works.
+>>>>>
+>>>>
+>>>> Three different subsystems and no single explanation of dependencies and
+>>>> how this can be merged.
+>>>
+>>> The only cross-subsystem hard dependency is that patches 5 and 6 need
+>>> patches 1 and 2 respectively. Patch 5 logically needs patch 3 to
+>>> operate as expected, but there should not be compile compile or probe
+>>> failures if those are out of order. How would you expect this to be
+>>> presented in a cover letter?
+>>
+>> Also, placing cpufreq patch between two memory controller patches means
+>> you really make it more difficult to apply it for the maintainers.
+>> Really, think thoroughly how this patchset is supposed to be read.
+> 
+> This is making me more confused. My understanding was that a series
+> like this that has binding, driver, and dt changes would flow like
+> that: all bindings first, all driver changes in the middle, and all dt
 
-Optimize the function by:
-- Executing do_drv_write() locally when current CPU is
-  in the target mask
-- Use a temporary mask to exclude the current CPU from
-  smp_call_function_many.
-- Falling back to smp_call_function_many() for the target
-  CPUs when current CPU is not in the target mask
+You mix completely independent subsystems, that's the main problem.
+Don't send v3 before you understand it or we finish the discussion here.
 
-Signed-off-by: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
----
- drivers/cpufreq/acpi-cpufreq.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+> changes last. Are you suggesting that this should be: cpufreq driver
+> -> bindings -> memory drivers -> dt? Are the bindings supposed to be
+> pulled with the driver changes? I had understood those to be managed
+> separately.
+What does the submitting patches doc in DT say?
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 4f7f9201598d..081d2d8a13da 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -330,6 +330,7 @@ static void drv_write(struct acpi_cpufreq_data *data,
- 		      const struct cpumask *mask, u32 val)
- {
- 	struct acpi_processor_performance *perf = to_perf_data(data);
-+	struct cpumask tmp_mask;
- 	struct drv_cmd cmd = {
- 		.reg = &perf->control_register,
- 		.val = val,
-@@ -338,10 +339,14 @@ static void drv_write(struct acpi_cpufreq_data *data,
- 	int this_cpu;
- 
- 	this_cpu = get_cpu();
--	if (cpumask_test_cpu(this_cpu, mask))
-+	if (cpumask_test_cpu(this_cpu, mask)) {
- 		do_drv_write(&cmd);
-+		cpumask_andnot(&tmp_mask, mask, cpumask_of(this_cpu));
-+		smp_call_function_many(&tmp_mask, do_drv_write, &cmd, 1);
-+	} else {
-+		smp_call_function_many(mask, do_drv_write, &cmd, 1);
-+	}
- 
--	smp_call_function_many(mask, do_drv_write, &cmd, 1);
- 	put_cpu();
- }
- 
--- 
-2.34.1
-
+Best regards,
+Krzysztof
