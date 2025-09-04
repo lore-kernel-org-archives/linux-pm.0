@@ -1,178 +1,281 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-f175.google.com (mail-yw1-f175.google.com [209.85.128.175])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBFB021ABB1;
-	Thu,  4 Sep 2025 16:02:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 014332367DC
+	for <linux-pm@vger.kernel.org>; Thu,  4 Sep 2025 16:08:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.175
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757001763; cv=none; b=Tb3wa7kYzmiXkw2BUjAF/cpeMwWTqjZsPSTUF5o/a2V4VBYh2cgqlFdv5DQPofDMNcIzR2ZvqQK6bHLl+T6Jzf2xAMlb/2ZO4UfzEPZrX2wy1XLf1NHVjYUg6XxgFPd7O/0z6Fek0PDCfNGSJ70zi81vDQX1QrJw00Mb8Ddnrko=
+	t=1757002082; cv=none; b=RS92Nxy9SilYXfmU+/z/OG9LFpecb3X5PQWEZlmIlX9irDWSs+QQ//nLE+54lAs7bwabWOqkIvifTapVM4DWSzldEjahBvZsU8w4G8l3/cBcQXZ/VPjAAEXPkvUg69EACwfX5ku3nGgY8e7mOeX9UEy6SYowy+ecfcdEne89MwI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757001763; c=relaxed/simple;
-	bh=pheMGAkf0K4IQpbn9e9J7dH+mfy1I5P57UhKPRN2+9E=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mc1QhABdk1+Wu1vRbxWg8NI6UNwufKcBZlS1kJczgV2n6L/PcWsTpkZe7tKVnf5TNVg9lVySy46laaCrcX2ILpTALc7g+46IUq3d1+Fr0+mTYyVdjVdzS74Ahga5laIVlub9UYV3q7Zqzl8ibZZu4lVYDNX3uJ/kkKKcxUNEYzo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=FwmLMlkD; arc=none smtp.client-ip=192.198.163.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1757002082; c=relaxed/simple;
+	bh=cnXHYCpRCNjx5SUFDPlawJkSPyB4ySmqM9hVB3TT2RI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=mJGdm/YbeABt2gP6I4BX7VffG5aFzJqojA8yeOEluvhkLQs5asCdI9kY9powKswudI68FcvGBpVpDw0Jy2yy/fNWUlNVsgp8zPXBpB0SQOrockafwKYocm4Tl5CkNq/LLc+i3xVxYUrQI7CdHECVo7MCSEXNNb2Wka7U0bn7nCA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Rqhxcr1L; arc=none smtp.client-ip=209.85.128.175
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="FwmLMlkD"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1757001762; x=1788537762;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=pheMGAkf0K4IQpbn9e9J7dH+mfy1I5P57UhKPRN2+9E=;
-  b=FwmLMlkDh0NLHWQ6w2MfJYTWNdZy5DJAvt6mdm/SftJcdYIi0ybd9pSg
-   up4joPsi+PjkcHIJUwCKNtnc10fbMCP7yWRIoNG7bKJsxlmGOlLnnq4d1
-   dP7grKwxa25c1laTIReif41Htx81vviGckfNIcgBs36Pn+91j9LPV2hiY
-   FtUdff8qzbhHtjDeFXMAfU17MpiZwCPLehI5xFXdNaw6rdIsoCtZKnWtp
-   OAl3wQMRjKqc0eRSI/DZ26wOpMbcR9wYTYO4eMsbbqU7tAjV1ayyN50N1
-   eMW4OxmyqWYrjUe0Ga1Ww0tAuTqkuODlLT8X9tnwuZijAjRT1Viq3G9rj
-   w==;
-X-CSE-ConnectionGUID: +nczk9iOQtG9W1JvHxNn9w==
-X-CSE-MsgGUID: Mn0dZ2xuTd+jpm8u2+1ULg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11543"; a="70052121"
-X-IronPort-AV: E=Sophos;i="6.18,238,1751266800"; 
-   d="scan'208";a="70052121"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2025 09:02:41 -0700
-X-CSE-ConnectionGUID: 6JtMA/ekS4WYbDsrSQY6Ug==
-X-CSE-MsgGUID: 9My3ZJtmQ9aLsqt9H3Ce7w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.18,238,1751266800"; 
-   d="scan'208";a="171162722"
-Received: from aschofie-mobl2.amr.corp.intel.com (HELO localhost) ([10.124.222.85])
-  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2025 09:02:40 -0700
-Date: Thu, 4 Sep 2025 09:02:38 -0700
-From: David Box <david.e.box@linux.intel.com>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: rafael@kernel.org, bhelgaas@google.com, vicamo.yang@canonical.com, 
-	kenny@panix.com, ilpo.jarvinen@linux.intel.com, nirmal.patel@linux.intel.com, 
-	mani@kernel.org, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V3 1/2] PCI/ASPM: Add host-bridge API to override default
- ASPM/CLKPM link state
-Message-ID: <ywuno3ssrgl3limng35j4hep6l7qvx5zmyuutrv4nqhd7r34pf@4apznk3xyyiv>
-References: <ng67s7imjpj7i5ym7unvmewzhyk4ybgpkgw5aizicfs423vsxh@hvpfmk32ooe4>
- <20250903230450.GA1236832@bhelgaas>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Rqhxcr1L"
+Received: by mail-yw1-f175.google.com with SMTP id 00721157ae682-71d603cebd9so15189247b3.1
+        for <linux-pm@vger.kernel.org>; Thu, 04 Sep 2025 09:08:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1757002080; x=1757606880; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ngovn7ElXG+7WyoV0hjjDgFN9akcGWmEQfLRohWixno=;
+        b=Rqhxcr1LH0GBWIxBEVrDsRajEAUrXouW8oKXT2/eoZeoIbDMfa0L7f8Evbz/9faa7F
+         7Bt7tljzTJIO/vfaFG6Cp2dYgKYyaSy3RwnE+8GCKa07ctgP32wyxDiH/gcWHfYjNB5K
+         7N6C1nNS79eHY2c1DGGIIDFOHzCslTiUVn2XID5qBRoh4rIN/d5i8bU/uSS1f8qiszzw
+         t8M0gd9/HDtUMjdKYOax5vk9Hc5u07Q1VYeS+K8AScUifnnd/o/BB7l5uAksB+ZTb+iC
+         lUUdwpLFhHY1bquLOw0VSPcljUiuTKutaAwqlABPh8NlPxdE3gWG92gtnRBS73KzyZwz
+         6SuA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757002080; x=1757606880;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=ngovn7ElXG+7WyoV0hjjDgFN9akcGWmEQfLRohWixno=;
+        b=Ihs2fnuHuQ20L3fDL63zWbETAj9aSFM55nGF7dYRh/eHdUtuHhCKxjcPtzNksCeQ0J
+         +q5LsDSF6Q7ZpgjU2luyrR3KCch7G4E80cOobN8A9YMXKLlsEDUWgU4VH9wkFcSGaP8N
+         a7YKpkFaCCE9+YD5stunoBiyzyTJost6CZ0gU2MzO5ECTzJjCPltD3W/b2NPT3BBhAcN
+         nCGPk4fw85d8WMgLobCUl4i+J7g7KZIVKDKIZVKQOwug5jh8GGjKZbrEcfwBmq6c5jJH
+         oWDKu/gBCCohkn96E46nR6KXWDSjwJ1Hb4iknqwz/Fao4woQ/bLWtQ0UzMycImRwlGJl
+         GKBg==
+X-Gm-Message-State: AOJu0YzgkmbNG/KvcTQ3sXydCG17l1HZApnS8OSP32AaTz1GsdP/BVYL
+	plT7gaqJHhPh259wRUsUY8ND4X/BcT2Guw/nHSx1UYqnzEfoO/kNd5THDIQKOGtDr7DQ3nwNai2
+	C1q3OkfdUgKOTAP2Iknyes1f/r5MPizyrLLzUyLPaIg==
+X-Gm-Gg: ASbGnct0itccXPAtct3ykyQLQZWAy4XJW/lOQ4lFInmUXuoUXsWwyCdSzFnWzDp7Bc2
+	rvuE33bLIeAyRxE0qUhfgR01muZKJpS8Spnk64zAiGQ4W4wNxATPdf0Fq236KT9JMXEg0z4eLIP
+	VT/zUJxIXE7XJrmQSJqHH/i6d0/vJzk6Z90HwfoF6d4AWIW6dxbGHrxfe81OXXjbzGTjBtzgoDH
+	An+RAVfrGhXqXcZ8H0=
+X-Google-Smtp-Source: AGHT+IEqH74Cg4iFEkHgdi0JpstCrWnwWXCtc1QVg5UcVB0OzflJy4/ZXz5pYBSrJ2p+olLRHuT9lTjmfhHY5q+VLGI=
+X-Received: by 2002:a05:690c:4513:b0:721:6a43:c960 with SMTP id
+ 00721157ae682-722763cfc0amr205545067b3.21.1757002079724; Thu, 04 Sep 2025
+ 09:07:59 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20250903230450.GA1236832@bhelgaas>
+References: <20250902-rk3576-lockup-regression-v1-1-c4a0c9daeb00@collabora.com>
+ <117136352.nniJfEyVGO@diego> <878503621.0ifERbkFSE@diego>
+In-Reply-To: <878503621.0ifERbkFSE@diego>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Thu, 4 Sep 2025 18:07:23 +0200
+X-Gm-Features: Ac12FXygP8QcUyXMTTe5VNxf5L6rnNsUUgEJRbWZ5YyIweFbnGJhrePkXqyAfZM
+Message-ID: <CAPDyKFpZOgrOtAcpopkk0s+OYr6f+_yFz1v1E+4NHgUsnDhLtg@mail.gmail.com>
+Subject: Re: [PATCH] pmdomian: core: don't unset stay_on during sync_state
+To: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	kernel@collabora.com, linux-rockchip@lists.infradead.org, 
+	Cristian Ciocaltea <cristian.ciocaltea@collabora.com>, 
+	Sebastian Reichel <sebastian.reichel@collabora.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Sep 03, 2025 at 06:04:50PM -0500, Bjorn Helgaas wrote:
-> On Fri, Aug 29, 2025 at 12:54:20PM -0700, David Box wrote:
-> > On Thu, Aug 28, 2025 at 03:43:45PM -0500, Bjorn Helgaas wrote:
-> > > On Mon, Aug 25, 2025 at 01:35:22PM -0700, David E. Box wrote:
-> > > > Synthetic PCIe hierarchies, such as those created by Intel VMD, are not
-> > > > enumerated by firmware and do not receive BIOS-provided ASPM or CLKPM
-> > > > defaults. Devices in such domains may therefore run without the intended
-> > > > power management.
-> > > > 
-> > > > Add a host-bridge mechanism that lets controller drivers supply their own
-> > > > defaults. A new aspm_default_link_state field in struct pci_host_bridge is
-> > > > set via pci_host_set_default_pcie_link_state(). During link initialization,
-> > > > if this field is non-zero, ASPM and CLKPM defaults come from it instead of
-> > > > BIOS.
-> > > > 
-> > > > This enables drivers like VMD to align link power management with platform
-> > > > expectations and avoids embedding controller-specific quirks in ASPM core
-> > > > logic.
-> > > 
-> > > I think this kind of sidesteps the real issue.  Drivers for host
-> > > controllers or PCI devices should tell us about *broken* things, but
-> > > not about things advertised by the hardware and available for use.
-> > 
-> > I agree with the principle. The intent isn’t for VMD (or any controller) to
-> > override valid platform policy. It’s to handle synthetic domains where the
-> > platform doesn’t provide any policy path (no effective _OSC/FADT for the child
-> > hierarchy). In those cases, the controller is the only agent that knows the
-> > topology and can supply sane defaults.
-> > 
-> > I’m happy to tighten the patch to explicitly cover synthetic domains only.
-> > Instead of an API, we could have a boolean flag 'aspm_synthetic_domain'. When
-> > set by the controller, we can do:
-> > 
-> >     if (host_bridge->aspm_synthetic_domain)
-> >             link->aspm_default = PCIE_LINK_STATE_ALL;
-> > 
-> > This at least addresses your concern about policy decision, leaving it to the
-> > core to determine how these domains are handled rather than an ABI that lets
-> > domains set policy.
-> > 
-> > > The only documented policy controls I'm aware of for ASPM are:
-> > > 
-> > >   - FADT "PCIe ASPM Controls" bit ("if set, OS must not enable ASPM
-> > >     control on this platform")
-> > > 
-> > >   - _OSC negotiation for control of the PCIe Capability (OS is only
-> > >     allowed to write PCI_EXP_LNKCTL if platform has granted control to
-> > >     the OS)
-> > > 
-> > > I think what we *should* be doing is enabling ASPM when it's
-> > > advertised, subject to those platform policy controls and user choices
-> > > like CONFIG_PCIEASPM_PERFORMANCE/POWERSAVE/etc and sysfs attributes.
-> > > 
-> > > So basically I think link->aspm_default should be PCIE_LINK_STATE_ALL
-> > > without drivers doing anything at all.  Maybe we have to carve out
-> > > exceptions, e.g., "VMD hierarchies are exempt from _OSC," or "devices
-> > > on x86 systems before 2026 can't enable more ASPM than BIOS did," or
-> > > whatever.  Is there any baby step we can make in that direction?
-> > > 
-> > > This feels a little scary, so feel free to convince me it can't be
-> > > done :)
-> > 
-> > I understand your direction of enabling all advertised states by
-> > default (subject to FADT/_OSC and user settings). To explore that,
-> > I’ll send an RFC in parallel with this patch that proposes a baby
-> > step, e.g.  add instrumentation so we can see where BIOS left
-> > capabilities unused, and make it opt-in via a boot param so we can
-> > evaluate impact safely.
-> 
-> The instrumentation, absolutely.  We need something about what was
-> already enabled and when we change things.
-> 
-> > So this series will handle the VMD gap directly, and the RFC can
-> > kick off the wider discussion about defaults on ACPI-managed hosts.
-> > Does that sound like a reasonable approach and split?
-> 
-> I don't really want a parallel approach because I don't think it would
-> ever converge again.  BUT I think you're still OK for VMD, because I
-> think the default should be PCIE_LINK_STATE_ALL, and when we carve out
-> the exceptions that would not be in vmd.c, and it's easy to say that
-> there's no exception for VMD.
+On Thu, 4 Sept 2025 at 17:55, Heiko St=C3=BCbner <heiko@sntech.de> wrote:
+>
+> Am Donnerstag, 4. September 2025, 17:49:16 Mitteleurop=C3=A4ische Sommerz=
+eit schrieb Heiko St=C3=BCbner:
+> > Hi,
+> >
+> > Am Dienstag, 2. September 2025, 20:23:04 Mitteleurop=C3=A4ische Sommerz=
+eit schrieb Nicolas Frattaroli:
+> > > This reverts commit de141a9aa52d6b2fbeb63f98975c2c72276f0878.
+> > >
+> > > On RK3576, the UFS controller's power domain has a quirk that require=
+s
+> > > it to stay enabled, infrastricture for which was added in Commit
+> > > cd3fa304ba5c ("pmdomain: core: Introduce dev_pm_genpd_rpm_always_on()=
+").
+> > >
+> > > Unfortunately, Commit de141a9aa52d ("pmdomain: core: Leave powered-on
+> > > genpds on until sync_state") appears to break this quirk wholesale. T=
+he
+> > > result is that RK3576 devices with the UFS controller enabled but unu=
+sed
+> > > will freeze once pmdomain shuts off unused domains.
+> > >
+> > > Revert it until a better fix can be found.
+> > >
+> > > Fixes: de141a9aa52d ("pmdomain: core: Leave powered-on genpds on unti=
+l sync_state")
+> > > Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+> >
+> > just an observation independent of the conversation in the other thread=
+.
+> > This patch/revert whatever fixes an actual issue for me.
+>
+> ah and just saw Nicolas' mail from 6 minutes earlier.
+>
+> So I guess what saves me here is the rocket driver being built as a
+> module, power-domain getting turned off early, rocket probes with
+> pd off and then gets its supplies as expected.
 
-While I agree this is a better overall direction, it still won’t cover VMD in
-the “FADT disallows OS ASPM control” case. VMD (and others) are already using
-pci_enable_link_state() to set PCIE_LINK_STATE_ALL. But that doesn’t apply when
-aspm_disabled = 1, which is the primary issue this patch addresses — moving away
-from a runtime control setting to init-time and allowing policy to be set even
-when aspm_disabled = 1.
+Okay, so to follow up on your analysis.
 
-I want to be clear that this is needed because VMD is NOT fully ACPI-compliant.
-There is AML code, but it’s deliberately obfuscated to prevent the OS from
-enumerating the devices natively [1]. VMD was designed to give the driver
-complete control over the domain configuration, and that includes power
-management settings.
+I am thinking that the PM domain "looks like" it's properly powered-on
+during boot/init, while in-fact it may not.
 
-So I can send a patch to make the default PCIE_LINK_STATE_ALL, but I would still
-need a follow-on in that series that does something like:
+In other words, calling pm_genpd_init() and stating that the genpd is
+powered-on seems to be the problem here. Could a proper power-off be
+done before calling pm_genpd_init() and then leaving it off until
+later?
 
-	if (host_bridge->synthetic_domain)
-		link->aspm_default = PCIE_LINK_STATE_ALL;
+Kind regards
+Uffe
 
-
-That carve-out is still required, because without it synthetic domains like VMD
-would inherit invalid or nonexistent BIOS defaults. The key difference is that
-only vmd.c would set itself as synthetic_domain; ASPM core still decides what
-policy applies.
-
-[1] https://lore.kernel.org/linux-pci/4352365.LvFx2qVVIh@kreacher/
-
-David
+>
+>
+> Heiko
+>
+>
+> >
+> > On the rk3588 the NPU power-domains are a hirarchy of
+> >
+> > PD_NPU
+> >       PD_NPUTOP (core0)
+> >               PD_NPU1 (core1)
+> >               PD_NPU2 (core2)
+> >
+> > and the PD_NPU does need a supply regulator.
+> >
+> > (1) With "just" v6.17-rc + the rocket driver probing and then idling, I=
+ get:
+> >
+> > # cat /sys/kernel/debug/regulator/regulator_summary
+> >  regulator                      use open bypass  opmode voltage current=
+     min     max
+> > -----------------------------------------------------------------------=
+----------------
+> >  dc_12v                           4    3      0 unknown 12000mV     0mA=
+ 12000mV 12000mV
+> > [...]
+> >     vcc5v0_baseboard              2    1      0 unknown  5000mV     0mA=
+  5000mV  5000mV
+> >        vcc5v0_sys                18   18      0 unknown  5000mV     0mA=
+  5000mV  5000mV
+> > [...]
+> >           vdd_npu_s0              0    0      0  normal   800mV     0mA=
+   550mV   950mV
+> >           vcc_1v2_s3              2    1      0 unknown  1200mV     0mA=
+  1200mV  1200mV
+> >              fe1b0000.ethernet-phy   1                                 =
+0mA     0mV     0mV
+> >           vdd_gpu_s0              1    2      0  normal   675mV     0mA=
+   550mV   950mV
+> >              fb000000.gpu-mali    1                                 0mA=
+   675mV   850mV
+> >              fd8d8000.power-management:power-controller-domain   0     =
+                            0mA     0mV     0mV
+> > [...]
+> >
+> > #  cat /sys/kernel/debug/pm_genpd/pm_genpd_summary
+> > domain                          status          children        perform=
+ance
+> >     /device                         runtime status                  man=
+aged by
+> > -----------------------------------------------------------------------=
+-------
+> > [...]
+> > gpu                             off-0                           0
+> >     fb000000.gpu                    suspended                   0      =
+     SW
+> > npu2                            off-0                           0
+> >     fdada000.iommu                  suspended                   0      =
+     SW
+> >     fdad0000.npu                    suspended                   0      =
+     SW
+> > npu1                            off-0                           0
+> >     fdaca000.iommu                  suspended                   0      =
+     SW
+> >     fdac0000.npu                    suspended                   0      =
+     SW
+> > nputop                          off-0                           0
+> >                                                 npu1, npu2
+> >     fdab9000.iommu                  suspended                   0      =
+     SW
+> >     fdab0000.npu                    suspended                   0      =
+     SW
+> > npu                             on                              0
+> >                                                 nputop
+> >
+> > Observe that the PD_NPU never got its regulator and the domain also
+> > never actually gets turned off. While the domains directly attached to
+> > the cores get turned off.
+> >
+> >
+> > (2) with Nicolas's patch applied on top, I get the correct behaviour,
+> > that was also happening with v6.16 before
+> >
+> > # cat /sys/kernel/debug/regulator/regulator_summary
+> >  regulator                      use open bypass  opmode voltage current=
+     min     max
+> > -----------------------------------------------------------------------=
+----------------
+> >  dc_12v                           4    3      0 unknown 12000mV     0mA=
+ 12000mV 12000mV
+> > [...]
+> >     vcc5v0_baseboard              2    1      0 unknown  5000mV     0mA=
+  5000mV  5000mV
+> >        vcc5v0_sys                18   18      0 unknown  5000mV     0mA=
+  5000mV  5000mV
+> > [...]
+> >           vdd_npu_s0              0    1      0  normal   800mV     0mA=
+   550mV   950mV
+> >              fd8d8000.power-management:power-controller-domain   0     =
+                            0mA     0mV     0mV
+> >           vdd_cpu_big1_s0         2    1      0  normal  1000mV     0mA=
+   550mV  1050mV
+> >              cpu6-cpu             1                                 0mA=
+  1000mV  1000mV
+> >           vdd_gpu_s0              1    2      0  normal   675mV     0mA=
+   550mV   950mV
+> >              fb000000.gpu-mali    1                                 0mA=
+   675mV   850mV
+> >              fd8d8000.power-management:power-controller-domain   0     =
+                            0mA     0mV     0mV
+> > [...]
+> >
+> > # cat /sys/kernel/debug/pm_genpd/pm_genpd_summary
+> > domain                          status          children        perform=
+ance
+> >     /device                         runtime status                  man=
+aged by
+> > -----------------------------------------------------------------------=
+-------
+> > [...]
+> > gpu                             off-0                           0
+> >     fb000000.gpu                    suspended                   0      =
+     SW
+> > npu2                            off-0                           0
+> >     fdada000.iommu                  suspended                   0      =
+     SW
+> >     fdad0000.npu                    suspended                   0      =
+     SW
+> > npu1                            off-0                           0
+> >     fdaca000.iommu                  suspended                   0      =
+     SW
+> >     fdac0000.npu                    suspended                   0      =
+     SW
+> > nputop                          off-0                           0
+> >                                                 npu1, npu2
+> >     fdab9000.iommu                  suspended                   0      =
+     SW
+> >     fdab0000.npu                    suspended                   0      =
+     SW
+> > npu                             off-0                           0
+> >                                                 nputop
+> >
+> > The regulator handling is working correctly and also the parent PD_NPU
+> > domain gets turned off when its children are off.
+> >
+> >
+> > Heiko
+> >
+>
+>
+>
+>
