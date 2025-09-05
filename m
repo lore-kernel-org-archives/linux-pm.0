@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4100235E4D3;
-	Fri,  5 Sep 2025 13:54:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19A5535CED2;
+	Fri,  5 Sep 2025 13:54:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757080457; cv=none; b=DxCUOffGCzkWdFwtQMunBYqWZx2PTHB7DE8wYN81PQPGhZP1yesZIOE5j4xCwQi9ZeRVoy/eWPoI5KtqvpE8iVUTGuYae/UcGUN0/KlUGdfXWhVSeC9qt2iX2Dzf6cnkGIRTXIAQAbKNXSDNV2IcI7+W0WLuaZDVZn7intEAqAE=
+	t=1757080461; cv=none; b=s0TKKnsRK3oCrOERzRmNwmxtfVLtiiDF4AZwr5G19fYNvveiABVlX8u96sFfIWXutpazsl6TVtOuyvr6njMNLxSI0iOGQuu+CR3X5BuG5zC96Dt7YKyslN3rpKe7wJpQBuTdmm9TtvK2xTMeQaIdt0EUrJqp8KKRRy6k0x3TCPg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757080457; c=relaxed/simple;
-	bh=RJ+j94DaXb8OxhldXX6ve0r5pnX/7/TjVN81rxWNQgw=;
+	s=arc-20240116; t=1757080461; c=relaxed/simple;
+	bh=/UIL3+WZ7W7nXE8WmYcAAMrqnGI16yhjDphQT5v2ZUw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=d/cK1JPsTqPpegZp4Y9z2YlyGlt9YSXSPO+Fb6s8b/ZVLGVkHHHy2EInkDzpFiAg8BqXS04b5B/tUxa6OBlRmoYdgrcbdlmdWOuvpL/ITHDZCV9frwjpJplfeVg7rqkztIUkMA7D5gBTPwKtCTgEsRUulu4ksyTgcO+i2rEReSc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=orSAr+VF; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=gn5+mvTjFKhGE4ieHOTnEJqyyxj3488YS+mRLS2rCF+B1Kf4w/WrwfVDBkTmDcQSx5Y0ZFbNwwUakqGyy0LLTaxwHy9TvFM9Ac23SakBMNcNi8/dNwn+5cZwO1Qj5nlJX8+6rYj6GFJ1/Kfy9tWTK8IBTZHxXbuU7rK8jlORx8A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Fc1kqRMb; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="orSAr+VF"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F1B66C4CEF5;
-	Fri,  5 Sep 2025 13:54:13 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Fc1kqRMb"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EF8B4C4CEF5;
+	Fri,  5 Sep 2025 13:54:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1757080455;
-	bh=RJ+j94DaXb8OxhldXX6ve0r5pnX/7/TjVN81rxWNQgw=;
+	s=k20201202; t=1757080459;
+	bh=/UIL3+WZ7W7nXE8WmYcAAMrqnGI16yhjDphQT5v2ZUw=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=orSAr+VFnHMv6CEPlVHki4kzzlI32VkC1PWu+WEHV5NlynT9S/GeF0qYHHNhNm5fZ
-	 I5zNSNCk5EIiVfUvoGsBvIWcTb9E2dr931cSCNn9xdJ8Rcd6i+YHvhNahYhUkYGf+z
-	 wMd9RPkSp2BUpncEVYCDtICQnB2pkcbzRK83IGLvKvmnq82gvoiZVglWiijgyZLmAv
-	 jyW84r3gd1W12x8LLQt84ahXpwBl4vwPlNRnh1b8x8++BJ2VIYer0h6VQF33lVA0L5
-	 pzIqLp3VbVZkJ4fjtCIQKaVL2tl91LUsh+7phC/euJG4uFojrWRodDtVLkO6Khqa5K
-	 MMGT6Nka9gkfg==
+	b=Fc1kqRMbUuMMUQw4YBHwYNhK89erJwY2h9fP496hLCXNqNa9KBrNa4mXv/2SCcrLn
+	 /u80c294kFE9OlCaylkXg0seaDXVFwbDi7puW0bfRT9wBUQ81rD5T0ZN0QS7if49u4
+	 jyNn8EqkFsyKQGDfSqTjOHcDCwCjpKUYGPLtwiDklit1PNQEUsanpdRVT/JwfYi0Oc
+	 vL33w/vi1upNbogSdLva7ZXuzClbOyThYXHy6svgGg2N5XSvbhhastxEEUOaRrwWCt
+	 DyivHbo8+Ht0W/flYiXyr+To/Uv32WshuMji6K9GcTZndWDt4mPal3oF6oR83USxQ+
+	 hzAAY0qf5/ChA==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
@@ -33,10 +33,10 @@ Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
  Zihuan Zhang <zhangzihuan@kylinos.cn>,
  Jonathan Cameron <jonathan.cameron@huawei.com>
 Subject:
- [PATCH v1 2/3] cpufreq: intel_pstate: Rearrange freq QoS updates using
- __free()
-Date: Fri, 05 Sep 2025 15:52:54 +0200
-Message-ID: <3026597.e9J7NaK4W3@rafael.j.wysocki>
+ [PATCH v1 1/3] cpufreq: intel_pstate: Fix object lifecycle issue in
+ update_qos_request()
+Date: Fri, 05 Sep 2025 15:52:03 +0200
+Message-ID: <2255671.irdbgypaU6@rafael.j.wysocki>
 Organization: Linux Kernel Development
 In-Reply-To: <5028967.GXAFRqVoOG@rafael.j.wysocki>
 References: <5028967.GXAFRqVoOG@rafael.j.wysocki>
@@ -51,115 +51,51 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Move the code from the for_each_possible_cpu() loop in update_qos_request()
-to a separate function and use __free() for cpufreq policy reference
-counting in it to avoid having to call cpufreq_cpu_put() repeatedly (or
-using goto).
+The cpufreq_cpu_put() call in update_qos_request() takes place too early
+because the latter subsequently calls freq_qos_update_request() that
+indirectly accesses the policy object in question through the QoS request
+object passed to it.
 
-While at it, rename update_qos_request() to update_qos_requests()
-because it updates multiple requests in one go.
+Fortunately, update_qos_request() is called under intel_pstate_driver_lock,
+so this issue does not matter for changing the intel_pstate operation
+mode, but it theoretically can cause a crash to occur on CPU device hot
+removal (which currently can only happen in virt, but it is formally
+supported nevertheless).
 
-No intentional functional impact.
+Address this issue by modifying update_qos_request() to drop the
+reference to the policy later.
 
-Link: https://lore.kernel.org/linux-pm/CAJZ5v0gN1T5woSF0tO=TbAh+2-sWzxFjWyDbB7wG2TFCOU01iQ@mail.gmail.com/
+Fixes: da5c504c7aae ("cpufreq: intel_pstate: Implement QoS supported freq constraints")
+Cc: 5.4+ <stable@vger.kernel.org> # 5.4+
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c |   65 ++++++++++++++++++++---------------------
- 1 file changed, 32 insertions(+), 33 deletions(-)
+ drivers/cpufreq/intel_pstate.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -1693,43 +1693,42 @@ unlock_driver:
- 	return count;
- }
+@@ -1708,10 +1708,10 @@ static void update_qos_request(enum freq
+ 			continue;
  
--static void update_qos_request(enum freq_qos_req_type type)
-+static void update_cpu_qos_request(int cpunum, enum freq_qos_req_type type)
- {
-+	struct cpudata *cpu = all_cpu_data[cpunum];
- 	struct freq_qos_request *req;
--	struct cpufreq_policy *policy;
--	int i;
-+	unsigned int freq, perf_pct;
- 
--	for_each_possible_cpu(i) {
--		struct cpudata *cpu = all_cpu_data[i];
--		unsigned int freq, perf_pct;
--
--		policy = cpufreq_cpu_get(i);
--		if (!policy)
--			continue;
--
--		req = policy->driver_data;
--		if (!req) {
--			cpufreq_cpu_put(policy);
--			continue;
--		}
--
--		if (hwp_active)
--			intel_pstate_get_hwp_cap(cpu);
--
--		if (type == FREQ_QOS_MIN) {
--			perf_pct = global.min_perf_pct;
--		} else {
--			req++;
--			perf_pct = global.max_perf_pct;
--		}
-+	struct cpufreq_policy *policy __free(put_cpufreq_policy) = cpufreq_cpu_get(cpunum);
-+	if (!policy)
-+		return;
-+
-+	req = policy->driver_data;
-+	if (!req)
-+		return;
-+
-+	if (hwp_active)
-+		intel_pstate_get_hwp_cap(cpu);
-+
-+	if (type == FREQ_QOS_MIN) {
-+		perf_pct = global.min_perf_pct;
-+	} else {
-+		req++;
-+		perf_pct = global.max_perf_pct;
-+	}
- 
--		freq = DIV_ROUND_UP(cpu->pstate.turbo_freq * perf_pct, 100);
-+	freq = DIV_ROUND_UP(cpu->pstate.turbo_freq * perf_pct, 100);
- 
--		if (freq_qos_update_request(req, freq) < 0)
--			pr_warn("Failed to update freq constraint: CPU%d\n", i);
-+	if (freq_qos_update_request(req, freq) < 0)
-+		pr_warn("Failed to update freq constraint: CPU%d\n", cpunum);
-+}
- 
+ 		req = policy->driver_data;
 -		cpufreq_cpu_put(policy);
--	}
-+static void update_qos_requests(enum freq_qos_req_type type)
-+{
-+	int i;
+-
+-		if (!req)
++		if (!req) {
++			cpufreq_cpu_put(policy);
+ 			continue;
++		}
+ 
+ 		if (hwp_active)
+ 			intel_pstate_get_hwp_cap(cpu);
+@@ -1727,6 +1727,8 @@ static void update_qos_request(enum freq
+ 
+ 		if (freq_qos_update_request(req, freq) < 0)
+ 			pr_warn("Failed to update freq constraint: CPU%d\n", i);
 +
-+	for_each_possible_cpu(i)
-+		update_cpu_qos_request(i, type);
++		cpufreq_cpu_put(policy);
+ 	}
  }
- 
- static ssize_t store_max_perf_pct(struct kobject *a, struct kobj_attribute *b,
-@@ -1758,7 +1757,7 @@ static ssize_t store_max_perf_pct(struct
- 	if (intel_pstate_driver == &intel_pstate)
- 		intel_pstate_update_policies();
- 	else
--		update_qos_request(FREQ_QOS_MAX);
-+		update_qos_requests(FREQ_QOS_MAX);
- 
- 	mutex_unlock(&intel_pstate_driver_lock);
- 
-@@ -1792,7 +1791,7 @@ static ssize_t store_min_perf_pct(struct
- 	if (intel_pstate_driver == &intel_pstate)
- 		intel_pstate_update_policies();
- 	else
--		update_qos_request(FREQ_QOS_MIN);
-+		update_qos_requests(FREQ_QOS_MIN);
- 
- 	mutex_unlock(&intel_pstate_driver_lock);
  
 
 
