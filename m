@@ -1,179 +1,165 @@
-Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C7BA15DBC1
-	for <linux-pm@vger.kernel.org>; Fri,  5 Sep 2025 08:47:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=203.254.224.33
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 100CA30BBBE;
+	Fri,  5 Sep 2025 09:02:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757062068; cv=none; b=LK+R0hDsn02utRhYU3W7YVJOYbSdp87cZqXRwVZfJNe4SKAB1yxDF3/CAaGf/kiE/ZBGKhxSrDD7mr3TZrUvgLT0TxGDA92ohGcCbcJ8WqDkq01ZVkmDA+QaV0eePftovF0Syw63lNpfl6eKoi5soBQQ70Qlvz3K9S+FDglDbZ0=
+	t=1757062970; cv=none; b=oQmzOf1D5Cr66Le6LhRLdg3/T4OQtsbVtkH/ec5U6QX/LlKjxwDmuha3K7WnjPrY4CaJJzqWlRWKkGNIN2cg2V4kUC5tEaBmSq2ojD9nemN3qPyo53CPD+xcpbrVK2/PxG27sh2PusoCoOComquM0kWWJmUZ1bTT5rz609jspiY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757062068; c=relaxed/simple;
-	bh=fOZPrfeirJR+JDRPn+8B9LZz7+N94QcXaMJ5P19eoWc=;
-	h=From:To:Cc:In-Reply-To:Subject:Date:Message-ID:MIME-Version:
-	 Content-Type:References; b=j/4cXyiDlcTBKEymHNnW7X+NnGf9N0nlx8dRFjQpoGcByrp/Lu90fRyWu2xLhBwvCX2HuAvP9066aycpPC7C+P6zbAHmS5xbL0/wuG5+CfoHprWhm9RwtcWEGiUPJX1A6B9AFqoeHaLPiPkoDdxtzHWGYMesw2ocQzKwZ4bwafg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com; spf=pass smtp.mailfrom=samsung.com; dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b=VokOjQNR; arc=none smtp.client-ip=203.254.224.33
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=samsung.com
+	s=arc-20240116; t=1757062970; c=relaxed/simple;
+	bh=htQCVoc2LB/ZnnX+4UcaXgxK1ZhVp38DyEImWWT66k0=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=RuLRrlhbiC9fqKLaF15P5BnK3lYfHWRQNPrbVq7EhkrgWlNSaXIfvlBadCWU0fOFgPl3ShhWaSzhCoZIYkDBVh874EY+d41WOBE3QVa7z+vPfnqKABTGQmee7oMxZ0oouXIcw71LdNswasc5z5GXPNZTOKF2tBbuHZmS1MiJ3qQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=fihQykp9; arc=none smtp.client-ip=192.198.163.10
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="VokOjQNR"
-Received: from epcas2p3.samsung.com (unknown [182.195.41.55])
-	by mailout3.samsung.com (KnoxPortal) with ESMTP id 20250905084744epoutp03eb0bdeecc1333c1bf0156aef81e61eeb~iVqNV10650472604726epoutp03U
-	for <linux-pm@vger.kernel.org>; Fri,  5 Sep 2025 08:47:44 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout3.samsung.com 20250905084744epoutp03eb0bdeecc1333c1bf0156aef81e61eeb~iVqNV10650472604726epoutp03U
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-	s=mail20170921; t=1757062064;
-	bh=mGHoIy1u5YwF44RSJWPpqSfDEUJvtheqWLknK2zHyFU=;
-	h=From:To:Cc:In-Reply-To:Subject:Date:References:From;
-	b=VokOjQNRa8qIcm/dtJHJLnFz4cy+2SXpSsrUeiIjUgZb52kFbUykbkZSNSPzbAbpK
-	 JskakR2E3dhwPWqjxKeaJ7obpfG0rmiJLZoVzkCT6YyyodrgQJeq8uqzTMY0Z4Ywax
-	 4WlxLolGlOritOGvJtNx2tTBdqjH62OcyBmCan/A=
-Received: from epsnrtp01.localdomain (unknown [182.195.42.153]) by
-	epcas2p1.samsung.com (KnoxPortal) with ESMTPS id
-	20250905084743epcas2p1209d3973b38799f3420a2824b3332e6b~iVqM0BAPM2283222832epcas2p11;
-	Fri,  5 Sep 2025 08:47:43 +0000 (GMT)
-Received: from epcas2p4.samsung.com (unknown [182.195.36.68]) by
-	epsnrtp01.localdomain (Postfix) with ESMTP id 4cJ8zC2rZ7z6B9mB; Fri,  5 Sep
-	2025 08:44:23 +0000 (GMT)
-Received: from epsmtip1.samsung.com (unknown [182.195.34.30]) by
-	epcas2p3.samsung.com (KnoxPortal) with ESMTPA id
-	20250905084422epcas2p3adcac9df0246c693fccd56c6321633a0~iVnRzknAo1169711697epcas2p3z;
-	Fri,  5 Sep 2025 08:44:22 +0000 (GMT)
-Received: from KORCO115296 (unknown [12.36.150.221]) by epsmtip1.samsung.com
-	(KnoxPortal) with ESMTPA id
-	20250905084422epsmtip1c3a98abb7296146ebad52327dc761bfb~iVnRuW2Wo1642316423epsmtip1R;
-	Fri,  5 Sep 2025 08:44:22 +0000 (GMT)
-From: =?UTF-8?B?7IaQ7Iug?= <shin.son@samsung.com>
-To: "'Krzysztof Kozlowski'" <krzk@kernel.org>
-Cc: "'Bartlomiej Zolnierkiewicz'" <bzolnier@gmail.com>, "'Rafael J .
- Wysocki'" <rafael@kernel.org>, "'Daniel Lezcano'"
-	<daniel.lezcano@linaro.org>, "'Zhang Rui'" <rui.zhang@intel.com>, "'Lukasz
- Luba'" <lukasz.luba@arm.com>, "'Rob Herring'" <robh@kernel.org>, "'Conor
- Dooley'" <conor+dt@kernel.org>, "'Alim Akhtar'" <alim.akhtar@samsung.com>,
-	<linux-pm@vger.kernel.org>, <linux-samsung-soc@vger.kernel.org>,
-	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-kernel@vger.kernel.org>
-In-Reply-To: <20250904-chocolate-kangaroo-of-order-2cced3@kuoka>
-Subject: RE: [PATCH v2 1/3] dt-bindings: thermal: samsung: Add tmu-name and
- sensor-index-ranges properties
-Date: Fri, 5 Sep 2025 17:44:22 +0900
-Message-ID: <022001dc1e41$46f7ba60$d4e72f20$@samsung.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="fihQykp9"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1757062968; x=1788598968;
+  h=from:to:cc:subject:in-reply-to:references:date:
+   message-id:mime-version;
+  bh=htQCVoc2LB/ZnnX+4UcaXgxK1ZhVp38DyEImWWT66k0=;
+  b=fihQykp9rMh2Df0VkK2sSIg2rz3xJVTsQb98e64ih0RJ4Q8bX10oTDrK
+   4+XoV44ikzhRDYsPIaNvB2H5N5FVith3qBUNJL2r31Zx63Gj+8oFBvvlS
+   aVNIYDLPzhHg6OEnqJ2lgV4TSIzfXsBE5u5BrmKGZwvXSXBLxBth1JQ+6
+   zXBJ8hAWq26bCBkfS0EVNMa4FabtDy5jEpYNtXgL9PtIgLCrLpVyWWlYU
+   Q01mypXEWB3VbD+QnF8w5VHvQW7bpLzKu5rGm+HoIW+lbxWLO5EcYeu8e
+   JxlnSCRhU3r/3ELoB9qPLsAMzj5xFHrVVlSkrk/LK7R/43ihWbeZDoR5W
+   w==;
+X-CSE-ConnectionGUID: OMTj4lt5R1iAZ7RTr1c/Lg==
+X-CSE-MsgGUID: Xrf8LTIpQwKlpTdG4pKf7Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11543"; a="70790573"
+X-IronPort-AV: E=Sophos;i="6.18,240,1751266800"; 
+   d="scan'208";a="70790573"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Sep 2025 02:02:44 -0700
+X-CSE-ConnectionGUID: DmcS02mySRiIcT7eRjaRww==
+X-CSE-MsgGUID: /vGvNcxbSwGSPkSECRYcOg==
+X-ExtLoop1: 1
+Received: from dhhellew-desk2.ger.corp.intel.com (HELO localhost) ([10.245.246.159])
+  by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Sep 2025 02:02:40 -0700
+From: Jani Nikula <jani.nikula@linux.intel.com>
+To: Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
+Cc: Randy Dunlap <rdunlap@infradead.org>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>,
+ Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Jonathan Corbet
+ <corbet@lwn.net>, linux-doc@vger.kernel.org, Mauro Carvalho Chehab
+ <mchehab@kernel.org>, "James E.J. Bottomley"
+ <James.Bottomley@HansenPartnership.com>
+Subject: Re: [PATCH v4] kernel.h: add comments for system_states
+In-Reply-To: <20250904063631.2364995-1-rdunlap@infradead.org>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+References: <20250904063631.2364995-1-rdunlap@infradead.org>
+Date: Fri, 05 Sep 2025 12:02:37 +0300
+Message-ID: <6089e22ddfdc135040cdeb69329d817846026728@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Mailer: Microsoft Outlook 15.0
-Thread-Index: AQJcDpuT0zWDya8nliyk6vzs/32vBQIURjbqAvLO/ccDYiYaWLNA+7WQ
-Content-Language: ko
-X-CMS-MailID: 20250905084422epcas2p3adcac9df0246c693fccd56c6321633a0
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-Sendblock-Type: AUTO_CONFIDENTIAL
-CMS-TYPE: 102P
-cpgsPolicy: CPGSC10-234,Y
-X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20250903073653epcas2p4cb25058c97aab9a30c7e68ef5f10fb91
-References: <20250903073634.1898865-1-shin.son@samsung.com>
-	<CGME20250903073653epcas2p4cb25058c97aab9a30c7e68ef5f10fb91@epcas2p4.samsung.com>
-	<20250903073634.1898865-2-shin.son@samsung.com>
-	<20250904-chocolate-kangaroo-of-order-2cced3@kuoka>
+Content-Type: text/plain
 
-Hello Krzysztof Kozlowski,
+On Wed, 03 Sep 2025, Randy Dunlap <rdunlap@infradead.org> wrote:
+> Provide some basic comments about the system_states and what they imply.
+> Also convert the comments to kernel-doc format.
+>
+> However, kernel-doc does not support kernel-doc notation on extern
+> struct/union/typedef/enum/etc. So I made this a DOC: block so that
+> I can use (insert) it into a Documentation (.rst) file and have it
+> look decent.
 
-> -----Original Message-----
-> From: Krzysztof Kozlowski =5Bmailto:krzk=40kernel.org=5D
-> Sent: Thursday, September 4, 2025 5:00 PM
-> To: Shin Son <shin.son=40samsung.com>
-> Cc: Bartlomiej Zolnierkiewicz <bzolnier=40gmail.com>; Rafael J . Wysocki
-> <rafael=40kernel.org>; Daniel Lezcano <daniel.lezcano=40linaro.org>; Zhan=
-g Rui
-> <rui.zhang=40intel.com>; Lukasz Luba <lukasz.luba=40arm.com>; Rob Herring
-> <robh=40kernel.org>; Conor Dooley <conor+dt=40kernel.org>; Alim Akhtar
-> <alim.akhtar=40samsung.com>; linux-pm=40vger.kernel.org; linux-samsung-
-> soc=40vger.kernel.org; devicetree=40vger.kernel.org; linux-arm-
-> kernel=40lists.infradead.org; linux-kernel=40vger.kernel.org
-> Subject: Re: =5BPATCH v2 1/3=5D dt-bindings: thermal: samsung: Add tmu-na=
-me
-> and sensor-index-ranges properties
->=20
-> On Wed, Sep 03, 2025 at 04:36:32PM +0900, Shin Son wrote:
-> > The exynosautov920 TMU requires per-sensor interrupt enablement for
-> > its critical trip points.
-> > Add a DT property to the Samsung thermal bindings to support this
-> > requirement:
->=20
-> That's pretty redundant sentence.
+The simple workaround is to separate the enum type and the variable:
 
-I'll remove this sentence.
+/**
+ * kernel-doc for the enum
+ */
+enum system_states {
+	...
+};
 
-> >
-> > - **samsung,hw-sensor-indices**: Defines the sensors currently
-> >                                  mapped to the TMU hardware.
-> > 				 Indices not listed are absent or fused off
->=20
-> Don't write here any code, but concise prose dxescribing hardware.
->=20
-> If sensors are fused out, you certainly can read their status from efuse,
-> no?
+/**
+ * kernel-doc for the variable
+ */
+extern enum system_states system_state;
 
-=22fused out=22 was a wrong expression =E2=80=94=20sensors=20are=20not=20in=
-dicated=20in=20any=20register.=20Sorry=20for=20the=20confusion.=0D=0AThe=20=
-hardware=20does=20not=20provide=20a=20bitmask=20of=20present=20sensors.=0D=
-=0ATherefore,=20the=20DT=20must=20explicitly=20list=20which=20indices=20bel=
-ong=20to=20this=20TMU=20instance.=0D=0A=0D=0AAdditionally,=20I'll=20rephras=
-e=20this=20sentence=20to=20clearly=20describe=20the=20TMU=20hardware=20only=
-.=0D=0A=0D=0A>=20=0D=0A>=20This=20is=20really=20vague=20description=20of=20=
-hardware.=20I=20don't=20understand=20why=20you=0D=0A>=20are=20changing=20se=
-nsor-cells,=20why=20older=20variants=20of=20tmu=20gets=20now=20cells=3D1=0D=
-=0A>=20(missing=20constraints?).=0D=0A>=20=0D=0A>=20Why=20older=20variants=
-=20also=20get=20that=20property=20for=20sensors?=20It=20does=20not=20make=
-=0D=0A>=20sense=20there,=20because=20they=20have=20one-to-one=20mapping=20b=
-etween=20TMU=20and=20sensor.=0D=0A=0D=0AOlder=20variants=20should=20be=20fi=
-xed=20to=200,=0D=0Abut=20my=20patch=20mistakenly=20opened=20it=20with=20an=
-=20enum=20so=20that=201=20was=20also=20allowed=20there,=20I'll=20fix=20this=
-.=0D=0AI'll=20also=20restrict=20the=20sensor=20indices=20property=20to=20v9=
-20=20only.=0D=0A=0D=0A>=20=0D=0A>=20>=0D=0A>=20>=20Additionally,=20add=20my=
-self=20to=20the=20bindings'=20maintainers=20list,=20as=20I=20plan=0D=0A>=20=
->=20to=20actively=20work=20on=20the=20exynosautov920=20TMU=20support=20and=
-=20handle=20further=0D=0A>=20>=20updates=20in=20this=20area.=0D=0A>=20>=0D=
-=0A>=20>=20Signed-off-by:=20Shin=20Son=20<shin.son=40samsung.com>=0D=0A>=20=
->=20---=0D=0A>=20>=20=20.../bindings/thermal/samsung,exynos-thermal.yaml=20=
-=7C=2016=0D=0A>=20>=20+++++++++++++++-=0D=0A>=20>=20=201=20file=20changed,=
-=2015=20insertions(+),=201=20deletion(-)=0D=0A>=20>=0D=0A>=20>=20diff=20--g=
-it=0D=0A>=20>=20a/Documentation/devicetree/bindings/thermal/samsung,exynos-=
-thermal.yam=0D=0A>=20>=20l=0D=0A>=20>=20b/Documentation/devicetree/bindings=
-/thermal/samsung,exynos-thermal.yam=0D=0A>=20>=20l=20index=2029a08b0729ee..=
-abd89902d33a=20100644=0D=0A>=20>=20---=0D=0A>=20>=20a/Documentation/devicet=
-ree/bindings/thermal/samsung,exynos-thermal.yam=0D=0A>=20>=20l=0D=0A>=20>=
-=20+++=20b/Documentation/devicetree/bindings/thermal/samsung,exynos-thermal=
-=0D=0A>=20>=20+++=20.yaml=0D=0A>=20>=20=40=40=20-8,6=20+8,7=20=40=40=20titl=
-e:=20Samsung=20Exynos=20SoC=20Thermal=20Management=20Unit=0D=0A>=20>=20(TMU=
-)=0D=0A>=20>=0D=0A>=20>=20=20maintainers:=0D=0A>=20>=20=20=20=20-=20Krzyszt=
-of=20Kozlowski=20<krzk=40kernel.org>=0D=0A>=20>=20+=20=20-=20Shin=20Son=20<=
-shin.son=40samsung.com>=0D=0A>=20>=0D=0A>=20>=20=20description:=20=7C=0D=0A=
->=20>=20=20=20=20For=20multi-instance=20tmu=20each=20instance=20should=20ha=
-ve=20an=20alias=20correctly=0D=0A>=20>=20numbered=20=40=40=20-27,6=20+28,7=
-=20=40=40=20properties:=0D=0A>=20>=20=20=20=20=20=20=20=20-=20samsung,exyno=
-s5420-tmu-ext-triminfo=0D=0A>=20>=20=20=20=20=20=20=20=20-=20samsung,exynos=
-5433-tmu=0D=0A>=20>=20=20=20=20=20=20=20=20-=20samsung,exynos7-tmu=0D=0A>=
-=20>=20+=20=20=20=20=20=20-=20samsung,exynosautov920-tmu=0D=0A>=20>=0D=0A>=
-=20>=20=20=20=20clocks:=0D=0A>=20>=20=20=20=20=20=20minItems:=201=0D=0A>=20=
->=20=40=40=20-62,11=20+64,22=20=40=40=20properties:=0D=0A>=20>=20=20=20=20=
-=20=20minItems:=201=0D=0A>=20>=0D=0A>=20>=20=20=20=20'=23thermal-sensor-cel=
-ls':=0D=0A>=20>=20-=20=20=20=20const:=200=0D=0A>=20>=20+=20=20=20=20enum:=
-=0D=0A>=20>=20+=20=20=20=20=20=20-=200=0D=0A>=20>=20+=20=20=20=20=20=20-=20=
-1=0D=0A>=20>=0D=0A>=20>=20=20=20=20vtmu-supply:=0D=0A>=20>=20=20=20=20=20=
-=20description:=20The=20regulator=20node=20supplying=20voltage=20to=20TMU.=
-=0D=0A>=20>=0D=0A>=20>=20+=20=20samsung,hw-sensor-indices:=0D=0A>=20>=20+=
-=20=20=20=20description:=20=7C=0D=0A>=20=0D=0A>=20Drop=20=7C=0D=0A=0D=0AI'l=
-l=20drop=20this.=0D=0A=0D=0A>=20=0D=0A>=20>=20+=20=20=20=20=20=20List=20of=
-=20hardware=20sensor=20indices=20that=20are=20physically=20present=20and=0D=
-=0A>=20usable=0D=0A>=20>=20+=20=20=20=20=20=20in=20this=20TMU=20instance.=
-=20Indices=20not=20listed=20are=20either=20unmapped=20or=0D=0A>=20unused.=
-=0D=0A>=20>=20+=20=20=20=20=24ref:=20/schemas/types.yaml=23/definitions/uin=
-t32-array=0D=0A>=20>=20+=20=20=20=20minItems:=201=0D=0A>=20>=20+=20=20=20=
-=20maxItems:=2016=0D=0A>=20>=20+=20=20=20=20uniqueItems:=20true=0D=0A>=20=
-=0D=0A>=20Best=20regards,=0D=0A>=20Krzysztof=0D=0A=0D=0AThanks.=0D=0A=0D=0A=
-Best=20regards,=0D=0AShin=20Son=0D=0A=0D=0A
+BR,
+Jani.
+
+>
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> Acked-by: Rafael J. Wysocki <rafael@kernel.org> # v1
+> ---
+> v2: add Rafael's Ack.
+> v3: add Andrew
+> v4: add DOC: so that this DOC: block can be used in Documentation/
+>     add Greg K-H
+>     add Jon Corbet, Mauro Chehab, & linux-doc
+>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: Jonathan Corbet <corbet@lwn.net>
+> Cc: linux-doc@vger.kernel.org
+> Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+> Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+> ---
+>  Documentation/driver-api/pm/devices.rst |    8 ++++++++
+>  include/linux/kernel.h                  |   18 ++++++++++++++++--
+>  2 files changed, 24 insertions(+), 2 deletions(-)
+>
+> --- linux-next-20250819.orig/include/linux/kernel.h
+> +++ linux-next-20250819/include/linux/kernel.h
+> @@ -164,8 +164,22 @@ extern int root_mountflags;
+>  
+>  extern bool early_boot_irqs_disabled;
+>  
+> -/*
+> - * Values used for system_state. Ordering of the states must not be changed
+> +/**
+> + * DOC: General system_states available for drivers
+> + *
+> + * enum system_states - Values used for system_state.
+> + *
+> + * * @SYSTEM_BOOTING:	%0, no init needed
+> + * * @SYSTEM_SCHEDULING:	system is ready for scheduling; OK to use RCU
+> + * * @SYSTEM_FREEING_INITMEM: system is freeing all of initmem; almost running
+> + * * @SYSTEM_RUNNING:	system is up and running
+> + * * @SYSTEM_HALT:	system entered clean system halt state
+> + * * @SYSTEM_POWER_OFF:	system entered shutdown/clean power off state
+> + * * @SYSTEM_RESTART:	system entered emergency power off or normal restart
+> + * * @SYSTEM_SUSPEND:	system entered suspend or hibernate state
+> + *
+> + * Note:
+> + * Ordering of the states must not be changed
+>   * as code checks for <, <=, >, >= STATE.
+>   */
+>  extern enum system_states {
+> --- linux-next-20250819.orig/Documentation/driver-api/pm/devices.rst
+> +++ linux-next-20250819/Documentation/driver-api/pm/devices.rst
+> @@ -241,6 +241,14 @@ before reactivating its class I/O queues
+>  More power-aware drivers might prepare the devices for triggering system wakeup
+>  events.
+>  
+> +System states available for drivers
+> +-----------------------------------
+> +
+> +These system states are available for drivers to help them determine how to
+> +handle state transitions.
+> +
+> +.. kernel-doc:: include/linux/kernel.h
+> +   :doc: General system_states available for drivers
+>  
+>  Call Sequence Guarantees
+>  ------------------------
+>
+
+-- 
+Jani Nikula, Intel
