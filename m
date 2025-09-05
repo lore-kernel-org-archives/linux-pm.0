@@ -1,64 +1,133 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C894635FC15;
-	Fri,  5 Sep 2025 13:54:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFD8B35E4EF;
+	Fri,  5 Sep 2025 14:04:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757080463; cv=none; b=bTCMM0IkIRIqZpUYW9zhLVGoLUiJIc88ngv37O+OBGlQ5XkKNQFca6WQo+vwgTw/va8iISx+R1Me++cwc5HxCdyVJ7KmubUqK0nT3Vgw2U6edxzqbvt8ng/DLkhi4CK3S2JicgWkX13RHV7tmfQFO3Lpc5vE4ssAi+ePLsPyGdE=
+	t=1757081043; cv=none; b=QC3Dh4160lQfSqL/dOW96EqDa3SdP934Ud0rUJtA3Aj5FSjrpc2G6b65zPRmcAEMG6zHjUFrURdp/SzZPmhbO4/0tJRXh51ctwdLUfqShqN1chyLuWUc9CDAhlT0K8SJkHfez683HrdY3KriFR2ppQcjw4/FURWyK8MdCsbDziQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757080463; c=relaxed/simple;
-	bh=Bsw0k/oK1h1Nvfo7P+P+96zY5fjM2tcLk5FWQiu2w/8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Ra7S1q2tkCQyRm/f51Cvoydj4Rkr9PbLVkGzr/VtMbP4xJ0Uk5LjLAJ7SN0Cowkw7FO50g/TGGoFRLuc79qxa1/GIrKMPCkO4u1xklG1FzPKupLcSSBu9zQadDQATiF1BgZHRhENqSKeRya+L7FpUbRGWzp13eKFkspAjeAj/Xs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ojZhWTsn; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1757081043; c=relaxed/simple;
+	bh=vLqJNc0A6hQb9mRJjRAtSBWmOnC+voVxwxvdDZ0+Z/A=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=tTkbJneWWcKpQMUJKUIbs2L9J2CHDB6KhSwLw5DIoIqispF/v/XKFsMi/Q2bw56ikoCFUlvsBNp/m+IbTxyhG1OM+wvCM59uSvyossLLRkXFFKPvvgWw+jS3ZhWj9nhrjjuWu2Xx29KywO+OFwP6jl4wL0LYFojf6A7xDBNpDo4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MTaHxfhN; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ojZhWTsn"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D5781C4CEF5;
-	Fri,  5 Sep 2025 13:54:21 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MTaHxfhN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9B2EDC4CEF5;
+	Fri,  5 Sep 2025 14:04:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1757080463;
-	bh=Bsw0k/oK1h1Nvfo7P+P+96zY5fjM2tcLk5FWQiu2w/8=;
-	h=From:To:Cc:Subject:Date:From;
-	b=ojZhWTsnaPbmtaivCKybQdQdh9Z7XBI/VD2Mk4NkJkrYfiTVFp9yKt3n/mOp78Wa1
-	 RCAUwOKIHSOYBThTmtLgi5IaabxjqCQsYpjjyGyDF4b5Vm2zgJHpjdjLVR2ZVROb2J
-	 jx/ABr9cWUIjnPldRxi217o9J8QETn8NeDv7Dcf5BbEDnHKsH+TAK3FBArMCCbcRXH
-	 bUDPzKl9UElyBfVVwqkpGYPXZvOTz9MrHo/dXi3eofyw+tBxcDXe0MGSHuebQ5sNhY
-	 /qlPaZMc0ylNggpM2lUKwmCv1p8F6mlNOcEb+FI/9V4FraRqQ7NvbdmgI258VacQ0Q
-	 zFGQTF2tWhugQ==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
- Zihuan Zhang <zhangzihuan@kylinos.cn>,
- Jonathan Cameron <jonathan.cameron@huawei.com>
-Subject: [PATCH v1 0/3] cpufreq: intel_pstate: A fix,
- a __free()-based simplification, and a follow-up adjustment
-Date: Fri, 05 Sep 2025 15:51:11 +0200
-Message-ID: <5028967.GXAFRqVoOG@rafael.j.wysocki>
-Organization: Linux Kernel Development
+	s=k20201202; t=1757081043;
+	bh=vLqJNc0A6hQb9mRJjRAtSBWmOnC+voVxwxvdDZ0+Z/A=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=MTaHxfhNiDNPB/c+PF+Rkv1CX++GdBS3i4CNIOFPB/R3zBQVNqAa3JNNEdiSQtKij
+	 yR6KsCT4rQgwmnariJHnWZ6OcHbhaA7DvgeYM+vUxxdM2J382RINWKm1p1CQnYAOYA
+	 k2TRDWbvXUTOe19E6mcZ80yySOmCWSlKADZAn5zu9npoGtvnvAaukOSwAopXRdejnm
+	 0dIABSSLYdxmhxM/AHglkHhZhazR6mhyMCXlUpUACCEVJN4hHf/Pna0576TY47h0Lm
+	 t7iWUYx6TrVSYt8dumohOhczbcbTENASnEBvMLO14LbxFnwAuGZ3kbzCvWEvZHaYZ7
+	 QJFpGzbtcPQJw==
+Received: by mail-oo1-f53.google.com with SMTP id 006d021491bc7-61e4dbce8d6so838686eaf.2;
+        Fri, 05 Sep 2025 07:04:03 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCX3FsHxsGC88N4iRxpwvHwIH4zBhgsOUGpZr3nM9WaiDS6lZx8vLO1Mt/4a8hmJyTDohwwOHHZmRQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzmz+rtvWAitP8Ekg6+ovw8+wB1Yf96nvDfLPgAw1cbN0W9kMW5
+	F8jdCxQG2TpeZ5RujZONwQrekXGAmu1esY42d95BIAlXQ0uShWGOrQPtzR7vxXPhEauBCKVhm4q
+	/CTgkoQqIBE7nbaK1YpzT/+0kcRU7JkE=
+X-Google-Smtp-Source: AGHT+IFGYg6KR687l3jjJ5aWJrWE/jrYh5yHsuVW/HQn98XowY1NzkAL0yqwlXJWr6w89dFoIbOwW+qxIGABCbyVZQY=
+X-Received: by 2002:a05:6808:1812:b0:438:3ae6:d5a5 with SMTP id
+ 5614622812f47-4383ae6d76cmr3862443b6e.35.1757081042920; Fri, 05 Sep 2025
+ 07:04:02 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <20250905090602.105725-1-marco.crivellari@suse.com> <20250905090602.105725-2-marco.crivellari@suse.com>
+In-Reply-To: <20250905090602.105725-2-marco.crivellari@suse.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 5 Sep 2025 16:03:51 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jr1-dD9_cWrgunkXEsqE25CsHwpB5U0Zn_z7ztXRbSeg@mail.gmail.com>
+X-Gm-Features: Ac12FXxna5eDr0zHh9hqw_XJXOHz4EJRyDl-Eo8VYSEcg1USqbB15o5H4-CujtQ
+Message-ID: <CAJZ5v0jr1-dD9_cWrgunkXEsqE25CsHwpB5U0Zn_z7ztXRbSeg@mail.gmail.com>
+Subject: Re: [PATCH 1/1] PM: WQ_PERCPU added to alloc_workqueue users
+To: Marco Crivellari <marco.crivellari@suse.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, 
+	Frederic Weisbecker <frederic@kernel.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
+	Michal Hocko <mhocko@suse.com>, "Rafael J . Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	Len Brown <len.brown@intel.com>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi All,
+On Fri, Sep 5, 2025 at 11:06=E2=80=AFAM Marco Crivellari
+<marco.crivellari@suse.com> wrote:
+>
+> Currently if a user enqueue a work item using schedule_delayed_work() the
+> used wq is "system_wq" (per-cpu wq) while queue_delayed_work() use
+> WORK_CPU_UNBOUND (used when a cpu is not specified). The same applies to
+> schedule_work() that is using system_wq and queue_work(), that makes use
+> again of WORK_CPU_UNBOUND.
+> This lack of consistentcy cannot be addressed without refactoring the API=
+.
+>
+> alloc_workqueue() treats all queues as per-CPU by default, while unbound
+> workqueues must opt-in via WQ_UNBOUND.
+>
+> This default is suboptimal: most workloads benefit from unbound queues,
+> allowing the scheduler to place worker threads where they=E2=80=99re need=
+ed and
+> reducing noise when CPUs are isolated.
+>
+> This default is suboptimal: most workloads benefit from unbound queues,
+> allowing the scheduler to place worker threads where they=E2=80=99re need=
+ed and
+> reducing noise when CPUs are isolated.
 
-This series is following up a discussion on a patch submitted by Zihuan Zhang,
-and this message in particular:
+Duplicate paragraph.
 
-https://lore.kernel.org/linux-pm/CAJZ5v0gN1T5woSF0tO=TbAh+2-sWzxFjWyDbB7wG2TFCOU01iQ@mail.gmail.com/
+> This patch adds a new WQ_PERCPU flag to explicitly request the use of
 
-The first patch fixes the bug described in the message linked above, the
-second one makes a __free()-based simplification based on it, and the
-third one makes one more adjustment on top of the two previous patches.
+Using phrases like "this patch" in kernel patch changelogs is
+discouraged because the patches become commits when they go into git
+and then the language becomes slightly odd.  You can say "this change"
+instead.
 
-Please see the changelogs for details.
+> the per-CPU behavior. Both flags coexist for one release cycle to allow
+> callers to transition their calls.
+>
+> Once migration is complete, WQ_UNBOUND can be removed and unbound will
+> become the implicit default.
+>
+> With the introduction of the WQ_PERCPU flag (equivalent to !WQ_UNBOUND),
+> any alloc_workqueue() caller that doesn=E2=80=99t explicitly specify WQ_U=
+NBOUND
+> must now use WQ_PERCPU.
+>
+> All existing users have been updated accordingly.
+>
+> Suggested-by: Tejun Heo <tj@kernel.org>
+> Signed-off-by: Marco Crivellari <marco.crivellari@suse.com>
+> ---
+>  kernel/power/main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/kernel/power/main.c b/kernel/power/main.c
+> index 6254814d4817..eb55ef540032 100644
+> --- a/kernel/power/main.c
+> +++ b/kernel/power/main.c
+> @@ -1012,7 +1012,7 @@ EXPORT_SYMBOL_GPL(pm_wq);
+>
+>  static int __init pm_start_workqueue(void)
+>  {
+> -       pm_wq =3D alloc_workqueue("pm", WQ_FREEZABLE, 0);
+> +       pm_wq =3D alloc_workqueue("pm", WQ_FREEZABLE | WQ_PERCPU, 0);
 
-Thanks!
+I have no strong opinion on the change itself.
 
+While preserving the current behavior is prudent, this particular
+workqueue may as well be better off as WQ_UNBOUND.
 
-
+>
+>         return pm_wq ? 0 : -ENOMEM;
+>  }
+> --
