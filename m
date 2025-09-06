@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3FDF329BDBA;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3FF7029BDBD;
 	Sat,  6 Sep 2025 20:17:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757189856; cv=none; b=ZlGTFX4RhO5z6UdF2hnE0R6xadFcvM+NnmeDBOAMwg+M2RBBMqlS/5QcE+12lHTxqVK1cQHdGtBKAjcDvCOYRa5t/WODiVsozpgtzPUo7pRSrB0TqaCaOcreZ9tPBUsyA/6XAFxbpEUrdnnCJUgfLsrVUOc8U9ETA4hoU5iWhvE=
+	t=1757189856; cv=none; b=swcjJ5vyh7y49TPLA3ldqr3XRA3Vk2hbYmc6Bo3O33Vzf5tblTFOayK8j7JhekX/WNrF57GBz7eKHYSky/WP7vB9kJwC+lgTitlDw9+hzEtrvDrpFT2C7xD9yXt6v29dnAfXENzxEXtvhbO2o8BNHMjI1dkDZt2YVAdai6fcX4k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1757189856; c=relaxed/simple;
-	bh=Xd0tRNw2ps86hJT24DbMzh+hXIm82G3Vlj9OA8R/33g=;
+	bh=+IqvVuotGYuZApHW8p/VIh20PCQhO97R0C9yu9c5l84=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=aefqzDMtMgl+NkiYYq/VtFS5C/Wl/aFyETKgANTb2zaehOr+68hlkw48jzkqQH3OpAWKzr6MgXFYo3ZCbu6n/ExL6h9SLhbbu/tk7xghK6WiSymTe3dfTNNGhCjpBEhp7eK7sgn6cr1OYIP60GEpQMFAnF0gmbeMyH6Fc6g0kR8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cWFCuawi; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=Xy/S5iYbSaiacMGPO6UCDs9MnmYZqrk86bKeX3qyA7nLWIOwEeYxEr+WX8UgmBxCLYuOzn6QBgejHka5s+A7HemoobQRIYIVZVil+Cwv1+ZQ1yKp5IBq4Z1vc/R0YUxJ53dwubz59bVFkp+dJPvn2wA5c1EACF19dBEPW9LRqls=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=H07Addjb; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cWFCuawi"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id E1E6FC4CEFB;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="H07Addjb"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id C5AA0C113CF;
 	Sat,  6 Sep 2025 20:17:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1757189855;
-	bh=Xd0tRNw2ps86hJT24DbMzh+hXIm82G3Vlj9OA8R/33g=;
+	bh=+IqvVuotGYuZApHW8p/VIh20PCQhO97R0C9yu9c5l84=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=cWFCuawiwmQk8/U/EPLBLf4vuXJX5OkY3QbR7IigiT6ClvN950THAMmRcQ7A3Kwht
-	 XMkr4f18TEOW7jY6BK9c/bk6hy1ZaDoa52FI6wBgDQEeFCmRAcT939ppwy3FHcqJn8
-	 nER79AXdx/xe3BPjYobd3NA3YQJqBdtXI8fkgkz+QyU0VRCIcu3tn5lkU41a8/1SQS
-	 l3Iv5eVU+iISgI02Hsao55RMzo4fwJQapOtLzAQIWJ8iKTzEunLDhGV+L5ax/roAQX
-	 zsfnfqI3DLCeLnnHJe4Ckj2cczVB2AU4TkiKxqBFGgIj1gm45heKMsB1HkJcQJAsWu
-	 06nfreBkNZLig==
+	b=H07AddjbTgLGf/R77VrRRDTTjEkQ+VhQlNdD9XVBeMywcaBE5HT/5eFnoS9HyaJwt
+	 dJoyKFsh+ylIgi1zQZRIkRYoX01PbrdheHtCN6a0SMhsI+tZuhh/JgQ6viCfdGeDiZ
+	 kQqiRhgG2vTIdXK5yOf55YwOxAJPr+RgcVr+MtkIdFGmIQQ6j9ZmAbu9xybDTgra/7
+	 ULQA1tZklmO+qhYU/yy1MJ78Xqyfekh9IdYxWwVQwKmTziKsza1Ssr/KpngS9zniEf
+	 /gxy4WGlaPtdkM1HGgCZddnN6pF34P9W/FJvqYPMrHmNGXxhcP2HXP1zkFehXelyqw
+	 ExRazu1yA6FOg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA3E0CA0FED;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC2B5CA101F;
 	Sat,  6 Sep 2025 20:17:35 +0000 (UTC)
 From: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>
-Date: Sat, 06 Sep 2025 15:16:59 -0500
-Subject: [PATCH v3 9/9] arm64: tegra: Add OPP tables on Tegra210
+Date: Sat, 06 Sep 2025 15:16:57 -0500
+Subject: [PATCH v3 7/9] arm64: tegra: tegra210: Add actmon
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +40,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250906-t210-actmon-v3-9-1403365d571e@gmail.com>
+Message-Id: <20250906-t210-actmon-v3-7-1403365d571e@gmail.com>
 References: <20250906-t210-actmon-v3-0-1403365d571e@gmail.com>
 In-Reply-To: <20250906-t210-actmon-v3-0-1403365d571e@gmail.com>
 To: Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -55,11 +55,11 @@ Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
  linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, 
  Aaron Kling <webgeek1234@gmail.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1757189854; l=4992;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1757189854; l=1154;
  i=webgeek1234@gmail.com; s=20250217; h=from:subject:message-id;
- bh=BuMztMnAqa18LOpanMPfXZmvaUGQqA9O6CgvPF/UAwU=;
- b=eFekEBzfuYZIf1hLENyeEVVI0RDYPqtMvwfaX/vi62E9SVvKpTam39MEI9y+C+rFiqKSEsrLY
- xGPnyw0KE7LD34sZeDYucAIjzLZGZs2S9RNw/rRzkwoeSH4lmkGsSbd
+ bh=JRVT2B6B9kttupzRP71VsPsEx2g3JnQatmD4nEG5i7w=;
+ b=Ek2dia8bo7+jRy6ILec8xFU4HhpqJTduARxdJ90BYhcVDJ30+9pSw1KR2przrw90mgmht2y+g
+ 2GS4YdII+IJD08nUJWFzre6HyYF9EqXNbEt9tkvd5XeAskPtEpEylPn
 X-Developer-Key: i=webgeek1234@gmail.com; a=ed25519;
  pk=TQwd6q26txw7bkK7B8qtI/kcAohZc7bHHGSD7domdrU=
 X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
@@ -69,188 +69,36 @@ Reply-To: webgeek1234@gmail.com
 
 From: Aaron Kling <webgeek1234@gmail.com>
 
-This adds OPP tables for actmon and emc, enabling dynamic frequency
-scaling for ram.
+This enables the action monitor to facilitate dynamic frequency scaling.
 
 Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
 ---
- .../boot/dts/nvidia/tegra210-peripherals-opp.dtsi  | 135 +++++++++++++++++++++
- arch/arm64/boot/dts/nvidia/tegra210.dtsi           |   7 ++
- 2 files changed, 142 insertions(+)
+ arch/arm64/boot/dts/nvidia/tegra210.dtsi | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/nvidia/tegra210-peripherals-opp.dtsi b/arch/arm64/boot/dts/nvidia/tegra210-peripherals-opp.dtsi
-new file mode 100644
-index 0000000000000000000000000000000000000000..bf2527d737932a1f41aa83d61f44d87ba52b0519
---- /dev/null
-+++ b/arch/arm64/boot/dts/nvidia/tegra210-peripherals-opp.dtsi
-@@ -0,0 +1,135 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+/ {
-+	/* EMC DVFS OPP table */
-+	emc_icc_dvfs_opp_table: opp-table-dvfs0 {
-+		compatible = "operating-points-v2";
-+
-+		opp-40800000-800 {
-+			opp-microvolt = <800000 800000 1150000>;
-+			opp-hz = /bits/ 64 <40800000>;
-+			opp-supported-hw = <0x0003>;
-+		};
-+
-+		opp-68000000-800 {
-+			opp-microvolt = <800000 800000 1150000>;
-+			opp-hz = /bits/ 64 <68000000>;
-+			opp-supported-hw = <0x0003>;
-+		};
-+
-+		opp-102000000-800 {
-+			opp-microvolt = <800000 800000 1150000>;
-+			opp-hz = /bits/ 64 <102000000>;
-+			opp-supported-hw = <0x0003>;
-+		};
-+
-+		opp-204000000-800 {
-+			opp-microvolt = <800000 800000 1150000>;
-+			opp-hz = /bits/ 64 <204000000>;
-+			opp-supported-hw = <0x0007>;
-+			opp-suspend;
-+		};
-+
-+		opp-408000000-812 {
-+			opp-microvolt = <812000 812000 1150000>;
-+			opp-hz = /bits/ 64 <408000000>;
-+			opp-supported-hw = <0x0003>;
-+		};
-+
-+		opp-665600000-825 {
-+			opp-microvolt = <825000 825000 1150000>;
-+			opp-hz = /bits/ 64 <665600000>;
-+			opp-supported-hw = <0x0003>;
-+		};
-+
-+		opp-800000000-825 {
-+			opp-microvolt = <825000 825000 1150000>;
-+			opp-hz = /bits/ 64 <800000000>;
-+			opp-supported-hw = <0x0003>;
-+		};
-+
-+		opp-1065600000-837 {
-+			opp-microvolt = <837000 837000 1150000>;
-+			opp-hz = /bits/ 64 <1065600000>;
-+			opp-supported-hw = <0x0003>;
-+		};
-+
-+		opp-1331200000-850 {
-+			opp-microvolt = <850000 850000 1150000>;
-+			opp-hz = /bits/ 64 <1331200000>;
-+			opp-supported-hw = <0x0003>;
-+		};
-+
-+		opp-1600000000-887 {
-+			opp-microvolt = <887000 887000 1150000>;
-+			opp-hz = /bits/ 64 <1600000000>;
-+			opp-supported-hw = <0x0007>;
-+		};
-+	};
-+
-+	/* EMC bandwidth OPP table */
-+	emc_bw_dfs_opp_table: opp-table-dvfs1 {
-+		compatible = "operating-points-v2";
-+
-+		opp-40800000 {
-+			opp-hz = /bits/ 64 <40800000>;
-+			opp-supported-hw = <0x0003>;
-+			opp-peak-kBps = <652800>;
-+		};
-+
-+		opp-68000000 {
-+			opp-hz = /bits/ 64 <68000000>;
-+			opp-supported-hw = <0x0003>;
-+			opp-peak-kBps = <1088000>;
-+		};
-+
-+		opp-102000000 {
-+			opp-hz = /bits/ 64 <102000000>;
-+			opp-supported-hw = <0x0003>;
-+			opp-peak-kBps = <1632000>;
-+		};
-+
-+		opp-204000000 {
-+			opp-hz = /bits/ 64 <204000000>;
-+			opp-supported-hw = <0x0007>;
-+			opp-peak-kBps = <3264000>;
-+			opp-suspend;
-+		};
-+
-+		opp-408000000 {
-+			opp-hz = /bits/ 64 <408000000>;
-+			opp-supported-hw = <0x0003>;
-+			opp-peak-kBps = <6528000>;
-+		};
-+
-+		opp-665600000 {
-+			opp-hz = /bits/ 64 <665600000>;
-+			opp-supported-hw = <0x0003>;
-+			opp-peak-kBps = <10649600>;
-+		};
-+
-+		opp-800000000 {
-+			opp-hz = /bits/ 64 <800000000>;
-+			opp-supported-hw = <0x001F>;
-+			opp-peak-kBps = <12800000>;
-+		};
-+
-+		opp-1065600000 {
-+			opp-hz = /bits/ 64 <1065600000>;
-+			opp-supported-hw = <0x0003>;
-+			opp-peak-kBps = <17049600>;
-+		};
-+
-+		opp-1331200000 {
-+			opp-hz = /bits/ 64 <1331200000>;
-+			opp-supported-hw = <0x0003>;
-+			opp-peak-kBps = <21299200>;
-+		};
-+
-+		opp-1600000000 {
-+			opp-hz = /bits/ 64 <1600000000>;
-+			opp-supported-hw = <0x0007>;
-+			opp-peak-kBps = <25600000>;
-+		};
-+	};
-+};
 diff --git a/arch/arm64/boot/dts/nvidia/tegra210.dtsi b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-index 2fcc7a28690f7100d49e8b93c4fb77de7947b002..f2961c9e12db1cf91254b75389779955f2a0956d 100644
+index 402b0ede1472af625d9d9e811f5af306d436cc98..6da10db893add44a98fde1666c382511212fd43c 100644
 --- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
 +++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-@@ -9,6 +9,8 @@
- #include <dt-bindings/thermal/tegra124-soctherm.h>
- #include <dt-bindings/soc/tegra-pmc.h>
- 
-+#include "tegra210-peripherals-opp.dtsi"
-+
- / {
- 	compatible = "nvidia,tegra210";
- 	interrupt-parent = <&lic>;
-@@ -516,6 +518,9 @@ actmon@6000c800 {
- 		clock-names = "actmon", "emc";
- 		resets = <&tegra_car 119>;
- 		reset-names = "actmon";
-+		operating-points-v2 = <&emc_bw_dfs_opp_table>;
-+		interconnects = <&mc TEGRA210_MC_MPCORER &emc>;
-+		interconnect-names = "cpu-read";
- 		#cooling-cells = <2>;
+@@ -485,6 +485,18 @@ flow-controller@60007000 {
+ 		reg = <0x0 0x60007000 0x0 0x1000>;
  	};
  
-@@ -1024,6 +1029,8 @@ emc: external-memory-controller@7001b000 {
- 		clock-names = "emc";
- 		interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>;
- 		nvidia,memory-controller = <&mc>;
-+		operating-points-v2 = <&emc_icc_dvfs_opp_table>;
++	actmon@6000c800 {
++		compatible = "nvidia,tegra210-actmon", "nvidia,tegra124-actmon";
++		reg = <0x0 0x6000c800 0x0 0x400>;
++		interrupts = <GIC_SPI 45 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&tegra_car TEGRA210_CLK_ACTMON>,
++			 <&tegra_car TEGRA210_CLK_EMC>;
++		clock-names = "actmon", "emc";
++		resets = <&tegra_car 119>;
++		reset-names = "actmon";
++		#cooling-cells = <2>;
++	};
 +
- 		#interconnect-cells = <0>;
- 		#cooling-cells = <2>;
- 	};
+ 	gpio: gpio@6000d000 {
+ 		compatible = "nvidia,tegra210-gpio", "nvidia,tegra30-gpio";
+ 		reg = <0x0 0x6000d000 0x0 0x1000>;
 
 -- 
 2.50.1
