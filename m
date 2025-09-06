@@ -1,33 +1,29 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0AD9829D297;
-	Sat,  6 Sep 2025 21:45:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 828042C11F1;
+	Sat,  6 Sep 2025 21:45:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757195111; cv=none; b=fEQIPrqdbIKKmuUJpk/tlnTBQj0CBFMPsWrdcehSIv2U2KF6rBf3fHy1ih4c7w/gFADcksV/+ncd2ydWv5k+rSjEkL0ArQzIv25ImvvYW0LfzGLKS5iZQ6Kt3TeXs176IDsqCN7q6+xoi6qmQtyZou6fAyBWtjNR8VWN77gX0Pw=
+	t=1757195112; cv=none; b=pqpRAwS8dV8BYf7McKQk5aeCYAIS8ItAfot3rp6LRTkzDvjJuDiJqjrdawF4gkk483+oJbMAW8b5mziexDUtoNTTFRb2bXN+VMxwdckhm63Y6uYphjqwWaPF134AJ0uXSFih4/ANY3/Iu42aXAC4CpecEMW1jXE8wi3Szl7tWuY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757195111; c=relaxed/simple;
-	bh=CkWfFx///imCZ4ylARdnUZRuL4uo4svqlC6355p4Q+4=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=CmC6GL9GRk5tI9LxZH6X9Zve/UXFeYR1CrMUn6F2jTokDRd0Ldoa+n3IDdeXURpuQmzid2obydCY3973hvcCqYzbeelflaThQljeszg3IAHinQLkeGv0HirV7/PYGGq0usjl9fRI0E3xwMibboWmz1oHn2pavn9/4Z7TanqmNyA=
+	s=arc-20240116; t=1757195112; c=relaxed/simple;
+	bh=bhMIE6MSZqFNo1JsDbth9BZC3YvbClPalVRDfH8OFiY=;
+	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=l8AkXLKocAvi5Z94ZeEz6FqoFp0CmhqMvsR9Kn+HTD7xJiiDbmj6J9zceyX0/T4xwWMzC8gDDTfasukOBAR7+CZCrXu1N7Aw8MgLjVAYHuzj2sIMK0VZet81CN/JDWeBCtauWWGq44xRoTbNQ8WTCoTJ5cMYP8tS+hfb+RbIICA=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7860AC4CEF8;
-	Sat,  6 Sep 2025 21:45:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E1060C4CEE7;
+	Sat,  6 Sep 2025 21:45:11 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id C88E1180B26; Sat, 06 Sep 2025 23:45:07 +0200 (CEST)
+	id D49F4180B44; Sat, 06 Sep 2025 23:45:07 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, 
- Matthias Brugger <matthias.bgg@gmail.com>, 
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
- Waqar Hameed <waqar.hameed@axis.com>
-Cc: kernel@axis.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org
-In-Reply-To: <pndzfcekt8w.a.out@axis.com>
-References: <pndzfcekt8w.a.out@axis.com>
-Subject: Re: [PATCH v2] power: supply: Remove error prints for
- devm_add_action_or_reset()
-Message-Id: <175719510781.45380.7018471850966283088.b4-ty@collabora.com>
+To: Tobias Schrammm <t.schramm@manjaro.org>, 
+ Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, Qianfeng Rong <rongqianfeng@vivo.com>
+In-Reply-To: <20250814143654.289715-1-rongqianfeng@vivo.com>
+References: <20250814143654.289715-1-rongqianfeng@vivo.com>
+Subject: Re: [PATCH] power: supply: use max() to improve code
+Message-Id: <175719510786.45380.16502433728208652784.b4-ty@collabora.com>
 Date: Sat, 06 Sep 2025 23:45:07 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -40,20 +36,16 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.2
 
 
-On Tue, 05 Aug 2025 11:33:35 +0200, Waqar Hameed wrote:
-> When `devm_add_action_or_reset()` fails, it is due to a failed memory
-> allocation and will thus return `-ENOMEM`. `dev_err_probe()` doesn't do
-> anything when error is `-ENOMEM`. Therefore, remove the useless call to
-> `dev_err_probe()` when `devm_add_action_or_reset()` fails, and just
-> return the value instead.
+On Thu, 14 Aug 2025 22:36:53 +0800, Qianfeng Rong wrote:
+> Use max() to reduce the code in cw_battery_get_property() and improve
+> its readability.
 > 
 > 
-> [...]
 
 Applied, thanks!
 
-[1/1] power: supply: Remove error prints for devm_add_action_or_reset()
-      commit: 32f350d58544e2529dc8798275684e97f0a2df6f
+[1/1] power: supply: use max() to improve code
+      commit: d48d4e4f141b38944da3b0a9c21ce6828ec31d83
 
 Best regards,
 -- 
