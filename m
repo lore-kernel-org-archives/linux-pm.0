@@ -1,189 +1,88 @@
-Received: from relmlie6.idc.renesas.com (relmlor2.renesas.com [210.160.252.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3AABC32275D;
-	Tue,  9 Sep 2025 11:44:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.160.252.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68BB7322755;
+	Tue,  9 Sep 2025 11:44:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757418247; cv=none; b=KJhngmqFzwxoI0V4Tm2yh86nOLEk21n9leU8frqVRC3xotEvmMTdtA1I0IRqlSOSE9Dcx17GEPMuUKorWKbZTDMxd5A59Ykkaef5i72f7cTOLU3WuX0IjJEPQdLWLwuRMLHdeGz0sbA3KqvSuol4si6iE7M0/NuVBO7cL4g7leg=
+	t=1757418259; cv=none; b=P1u+f1jj48mLnI3BLGFpnOJETK/hRC+mt73sTelWeSv2Qj+BGOLxhQ290V9lV0bl3y7lhoPNIfhTdqa/yR9ZXwpb9kLAE7JVP+02YfGGBNjZ+psghIS7Kg40Ex2WTP2d9YmX69lzv+lFlJNtxoXSoaAx/fUXQhPOZbCP/evqk7w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757418247; c=relaxed/simple;
-	bh=sJzNiat9/vvoEo8GWmbDdFvAXzNFVsgoXdR8gHDWEXw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=qrZGZUtf0FN5IO4SlUqofd0KKiRh3ETwh+jdwzEyqLLhqdk4s1DlcU6BWIpCGjKURQi5BCFPkIhuf49ci+MTvAH8hntzklpbIUBcDxPXgDySYAlTskK+aYs1+b9ENUO2MAnEnAthMIDHIWP9Os2lwJBYjknB5q1a6Im8A20YXf4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=bp.renesas.com; spf=pass smtp.mailfrom=bp.renesas.com; arc=none smtp.client-ip=210.160.252.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=bp.renesas.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bp.renesas.com
-X-CSE-ConnectionGUID: tjNF6jKfSvaScX9qEndaTg==
-X-CSE-MsgGUID: vGn9OjD3TcuZ2jYxLOtZLQ==
-Received: from unknown (HELO relmlir5.idc.renesas.com) ([10.200.68.151])
-  by relmlie6.idc.renesas.com with ESMTP; 09 Sep 2025 20:39:01 +0900
-Received: from ubuntu.adwin.renesas.com (unknown [10.24.0.1])
-	by relmlir5.idc.renesas.com (Postfix) with ESMTP id A3FFA401E4F5;
-	Tue,  9 Sep 2025 20:38:54 +0900 (JST)
-From: John Madieu <john.madieu.xa@bp.renesas.com>
-To: catalin.marinas@arm.com,
-	conor+dt@kernel.org,
-	daniel.lezcano@linaro.org,
-	geert+renesas@glider.be,
-	krzk+dt@kernel.org,
-	lukasz.luba@arm.com,
-	magnus.damm@gmail.com,
-	mturquette@baylibre.com,
-	p.zabel@pengutronix.de,
-	robh@kernel.org,
-	rui.zhang@intel.com,
-	sboyd@kernel.org,
-	will@kernel.org
-Cc: biju.das.jz@bp.renesas.com,
-	devicetree@vger.kernel.org,
-	john.madieu@gmail.com,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-renesas-soc@vger.kernel.org,
-	rafael@kernel.org,
-	John Madieu <john.madieu.xa@bp.renesas.com>
-Subject: [PATCH v8 1/4] dt-bindings: thermal: r9a09g047-tsu: Document the TSU unit
-Date: Tue,  9 Sep 2025 13:38:36 +0200
-Message-ID: <20250909113840.122785-2-john.madieu.xa@bp.renesas.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20250909113840.122785-1-john.madieu.xa@bp.renesas.com>
-References: <20250909113840.122785-1-john.madieu.xa@bp.renesas.com>
+	s=arc-20240116; t=1757418259; c=relaxed/simple;
+	bh=koEjJ0K44gXpZTQ9arL7K8K/MOY3Y3pz7eVFwI3QSeQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ATT3/gXETMC8FyZPDhx9XI/IN+gslvvDsFdCjA6yUOZYgcfgpNzc0jwZOIF23FBD5vp12z+z77k94vvwHncgG50aQ6aafL7HzbCwLges8Tzopng6zsarg06JbwPLUbH1f0oqXtRP+xoI1W0rwcgmvVsLWbW1XwsNQWWWahalQD8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=b9RvPHIY; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="b9RvPHIY"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6D54AC4CEF4;
+	Tue,  9 Sep 2025 11:44:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1757418258;
+	bh=koEjJ0K44gXpZTQ9arL7K8K/MOY3Y3pz7eVFwI3QSeQ=;
+	h=From:To:Cc:Subject:Date:From;
+	b=b9RvPHIY1GM/AnSy30vF1LEwI4Xe7UsqU3J43Gpus4dGa6Q/QjZ91FQ0QQkQlLAEQ
+	 Z3DVK7GFq0gSyJQY9bVG2KaHlun6ux04B7hbfC5EvzWJMWzuFFaaZza+O+IbTTvtn4
+	 cZd0/qsYka+coYNMOkXiFBzTYnQsAX7bRpABdom/wLLjEV+Lvuw6b2ulVMHCvP+cfy
+	 /QLP246EKj9avFDHIhsaZ2MoZM37KP+xJtftCALZPWk3JivKoynUOFIeyiuQvz/jMi
+	 ahKS/GJ9kWJWnF+6x2fvGj5wLZ4mtxlmQdOi/tdhB+hW3efa1zHmDDmpkE9j4cx4Nw
+	 ULMSvI4GLC7Sg==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+ Randy Dunlap <rdunlap@infradead.org>, Linux PM <linux-pm@vger.kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Peter Zijlstra <peterz@infradead.org>
+Subject:
+ [PATCH v1] smp: Fix up and expand the smp_call_function_many() kerneldoc
+Date: Tue, 09 Sep 2025 13:44:14 +0200
+Message-ID: <6191405.lOV4Wx5bFT@rafael.j.wysocki>
+Organization: Linux Kernel Development
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-The Renesas RZ/G3E SoC includes a Thermal Sensor Unit (TSU) block designed
-to measure the junction temperature. The device provides real-time
-temperature measurements for thermal management, utilizing a single
-dedicated channel (channel 1) for temperature sensing.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
-Signed-off-by: John Madieu <john.madieu.xa@bp.renesas.com>
+The smp_call_function_many() kerneldoc comment got out of sync with the
+function definition (bool parameter "wait" is incorrectly described as a
+bitmask in it), so fix it up by copying the "wait" description from the
+smp_call_function() kerneldoc and add information regarding the handling
+of the local CPU to it.
+
+Fixes: 49b3bd213a9f ("smp: Fix all kernel-doc warnings")
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
+ kernel/smp.c |   11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-Changes:
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -884,16 +884,15 @@ static void smp_call_function_many_cond(
+  * @mask: The set of cpus to run on (only runs on online subset).
+  * @func: The function to run. This must be fast and non-blocking.
+  * @info: An arbitrary pointer to pass to the function.
+- * @wait: Bitmask that controls the operation. If %SCF_WAIT is set, wait
+- *        (atomically) until function has completed on other CPUs. If
+- *        %SCF_RUN_LOCAL is set, the function will also be run locally
+- *        if the local CPU is set in the @cpumask.
+- *
+- * If @wait is true, then returns once @func has returned.
++ * @wait: If true, wait (atomically) until function has completed
++ *        on other CPUs.
+  *
+  * You must not call this function with disabled interrupts or from a
+  * hardware interrupt handler or from a bottom half handler. Preemption
+  * must be disabled when calling this function.
++ *
++ * @func is not called on the local CPU even if @mask contains it.  Consider
++ * using on_each_cpu_cond_mask() instead if this is not desirable.
+  */
+ void smp_call_function_many(const struct cpumask *mask,
+ 			    smp_call_func_t func, void *info, bool wait)
 
-v1 -> v2:
- * Fixes reg property specifier to get rid of yamlint warnings
- * Fixes IRQ name to reflect TSU expectations
 
-v2 -> v3:
- * Removees useless 'renesas,tsu-operating-mode' property 
-
-v3 -> v4:
- * Fixes commit message
- * Fixes interrupt description
- * Removes trip point definition
-
-v5: no changes
-v6: no changes
-v7: Adds documentation for 'renesas,tsu-trim' and removes Rb tag from Krzysztof
-    due to this change
-
-v8: Address Rob's comments (about node naming and line wrapping) and collect
-    Rb tag
-
- .../thermal/renesas,r9a09g047-tsu.yaml        | 87 +++++++++++++++++++
- 1 file changed, 87 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/renesas,r9a09g047-tsu.yaml
-
-diff --git a/Documentation/devicetree/bindings/thermal/renesas,r9a09g047-tsu.yaml b/Documentation/devicetree/bindings/thermal/renesas,r9a09g047-tsu.yaml
-new file mode 100644
-index 000000000000..8d3f3c24f0f2
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/renesas,r9a09g047-tsu.yaml
-@@ -0,0 +1,87 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/renesas,r9a09g047-tsu.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Renesas RZ/G3E Temperature Sensor Unit (TSU)
-+
-+maintainers:
-+  - John Madieu <john.madieu.xa@bp.renesas.com>
-+
-+description:
-+  The Temperature Sensor Unit (TSU) is an integrated thermal sensor that
-+  monitors the chip temperature on the Renesas RZ/G3E SoC. The TSU provides
-+  real-time temperature measurements for thermal management.
-+
-+properties:
-+  compatible:
-+    const: renesas,r9a09g047-tsu
-+
-+  reg:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+
-+  resets:
-+    maxItems: 1
-+
-+  power-domains:
-+    maxItems: 1
-+
-+  interrupts:
-+    items:
-+      - description: Conversion complete interrupt signal (pulse)
-+      - description: Comparison result interrupt signal (level)
-+
-+  interrupt-names:
-+    items:
-+      - const: adi
-+      - const: adcmpi
-+
-+  "#thermal-sensor-cells":
-+    const: 0
-+
-+  renesas,tsu-trim:
-+    $ref: /schemas/types.yaml#/definitions/phandle-array
-+    items:
-+      - items:
-+          - description: phandle to system controller
-+          - description: offset of trim registers
-+    description:
-+      Phandle and offset to the system controller containing the TSU
-+      calibration trim values. The offset points to the first trim register
-+      (OTPTSU1TRMVAL0), with the second trim register (OTPTSU1TRMVAL1) located
-+      at offset + 4.
-+
-+required:
-+  - compatible
-+  - reg
-+  - clocks
-+  - resets
-+  - power-domains
-+  - interrupts
-+  - interrupt-names
-+  - "#thermal-sensor-cells"
-+  - renesas,tsu-trim
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/renesas,r9a09g047-cpg.h>
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+
-+    thermal-sensor@14002000 {
-+        compatible = "renesas,r9a09g047-tsu";
-+        reg = <0x14002000 0x1000>;
-+        clocks = <&cpg CPG_MOD 0x10a>;
-+        resets = <&cpg 0xf8>;
-+        power-domains = <&cpg>;
-+        interrupts = <GIC_SPI 250 IRQ_TYPE_EDGE_RISING>,
-+                     <GIC_SPI 251 IRQ_TYPE_LEVEL_HIGH>;
-+        interrupt-names = "adi", "adcmpi";
-+        #thermal-sensor-cells = <0>;
-+        renesas,tsu-trim = <&sys 0x330>;
-+    };
--- 
-2.25.1
 
