@@ -1,37 +1,37 @@
 Received: from terminus.zytor.com (terminus.zytor.com [198.137.202.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3826D35CED7;
-	Tue,  9 Sep 2025 18:31:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FDF3369335;
+	Tue,  9 Sep 2025 18:31:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.136
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757442676; cv=none; b=fHCg3rISJ4YFhyV/K1JUEPHb2j2My9IPhtOAjKScYQmY1k1d8ENvNuogZoSEdiuXroaJu0JCg7TLqPvjk0a1kZbORVp6Gj+Kw6jj0KIFxqVZvQQCCsuUpCwB/Pc6TxdvAbNVnmDGcZtHGRxWzEHHSGjl7hZMQCeYDee0e6I/14U=
+	t=1757442678; cv=none; b=ukUUMxihSRUoSR4UOb13k/60cG4hMAbzAB6U6BsSjVD4A/8D5MEH4WJLqsZFFtnVyV37rlUlM7j1py4sEGLp4sbPjJwJOrft93nGTEfb24wf7brWvCp+j2rNR+HKj4RPP9/5ZkSEBYsfULgZ4qgfmxaLti3bcohQbYqucCBZemo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757442676; c=relaxed/simple;
-	bh=eG2woZ+kFwRQ0XwCkPjEmZrtbRPZheKNNf6fBdX4ihU=;
+	s=arc-20240116; t=1757442678; c=relaxed/simple;
+	bh=YvG9wzsxF8aLwI3x38k4boAr/eQEGEwnfUnhh9m/Lko=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=VVYBS3+GWMK0wQyY89pI6bbDg6sJQuOGhVwROWLS1OSOsZoBIuQqOYhB28HFZWg58Thqng4nj9VjwC52c9NDiB6MZ6VA6l8Lqg4743JIMY1crpFNDKegDbHD64wlJ9UsAVPjGCfi3lERuPpokBEoIDAg3InIHzSkvBcpbc+dpyE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zytor.com; spf=pass smtp.mailfrom=zytor.com; dkim=pass (2048-bit key) header.d=zytor.com header.i=@zytor.com header.b=LeD1FJs0; arc=none smtp.client-ip=198.137.202.136
+	 MIME-Version; b=Sgwgmt2NZ21C452LQnj0HNAuIJXqILdJfKfRTyil+pNbi5iK9NLdOVuH8pdlF5DuIocceiwQ4ldegvhpq6fTnLOHhemsDfJ5fArkVaoIjSHWNPLMwV7S/D9VswscQKcGhOWWMvhfZAIdSBoccKJTmND0vILUvVYo7fG7qeHb2oU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zytor.com; spf=pass smtp.mailfrom=zytor.com; dkim=pass (2048-bit key) header.d=zytor.com header.i=@zytor.com header.b=Aco6tO1/; arc=none smtp.client-ip=198.137.202.136
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zytor.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zytor.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=zytor.com header.i=@zytor.com header.b="LeD1FJs0"
+	dkim=pass (2048-bit key) header.d=zytor.com header.i=@zytor.com header.b="Aco6tO1/"
 Received: from terminus.zytor.com (terminus.zytor.com [IPv6:2607:7c80:54:3:0:0:0:136])
 	(authenticated bits=0)
-	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 589ISSD31542432
+	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 589ISSD01542432
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NO);
-	Tue, 9 Sep 2025 11:28:37 -0700
-DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 589ISSD31542432
+	Tue, 9 Sep 2025 11:28:33 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 589ISSD01542432
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zytor.com;
-	s=2025082201; t=1757442518;
-	bh=/0xrBFM9KuTP0Yc5xMbS29+JMSoGkR58rrbqJHNfId0=;
+	s=2025082201; t=1757442514;
+	bh=HVybEPweDFMJeKmIOe5kBRf/0VPeqdUx2A3Io4WOENA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=LeD1FJs0lSm2tkwyEFw+xjRSeHHFvuTxIAiydqm7a/vI1JPPn+apsJHqtwyQhzRtx
-	 ahoAUb1I+msNYPymCZk3UDyW2fT0ZdxN6qO7JM4cfl2FgPQtbCQH5Y9lIPoMMlGfAK
-	 PHRTsZks9I/HC0NIdKCNGdSQhc8fdXIbyjuLbHK8v2SPoOH9iMh8nRkM5ffuoQ/GPP
-	 GIMHZWwap9ubhWZ2kHHQPmpXcHt+5C8dCQtCQZ6R5hfljBJ/oJ+yQLbSz904dpWx9Z
-	 8qglf9FyRAitIKg5FdI5IYGZwnA24sRQCrNEF7sN8kAJdsrAurLNDJKClB+61fbYwe
-	 2kSTQeUMe+ppA==
+	b=Aco6tO1/1poE6VoJz66GPXFg63X91avFlzlWYlAgCfyQmVydRcNgvSCIb8iexZwIr
+	 BtMz4NLxebvx7H2XvyYfDqz5zySBdZ9KTeSVlINzG3Nc9JYsBUCCrbyEJHtBQREnHw
+	 9fQu9ny2mmSaUuLTf1EFTq7ObuIktd1IjiYwitBYdgXGxf85QhMf7gEqvsoIoaev1B
+	 KhWLGgdEyknVuk/WS8SqPF+KPsKXl7Mr0HSt9dylZbwPr1RDyMk1Bz3gXYMertqvmG
+	 BGWXpWFpH7nS0D36WLEYRwgJtmh/TgIgQiMXVwkMOSKmFv1QWFgY2hAtdnk+WyRrwh
+	 x+iIG8j8eom1A==
 From: "Xin Li (Intel)" <xin@zytor.com>
 To: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
         linux-pm@vger.kernel.org
@@ -42,9 +42,9 @@ Cc: seanjc@google.com, pbonzini@redhat.com, tglx@linutronix.de,
         peterz@infradead.org, andrew.cooper3@citrix.com,
         kprateek.nayak@amd.com, arjan@linux.intel.com, chao.gao@intel.com,
         rick.p.edgecombe@intel.com, dan.j.williams@intel.com
-Subject: [RFC PATCH v1 4/5] x86/reboot: Remove emergency_reboot_disable_virtualization()
-Date: Tue,  9 Sep 2025 11:28:24 -0700
-Message-ID: <20250909182828.1542362-5-xin@zytor.com>
+Subject: [RFC PATCH v1 1/5] x86/boot: Shift VMXON from KVM init to CPU startup phase
+Date: Tue,  9 Sep 2025 11:28:21 -0700
+Message-ID: <20250909182828.1542362-2-xin@zytor.com>
 X-Mailer: git-send-email 2.51.0
 In-Reply-To: <20250909182828.1542362-1-xin@zytor.com>
 References: <20250909182828.1542362-1-xin@zytor.com>
@@ -56,282 +56,406 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Remove emergency_reboot_disable_virtualization() now that virtualization
-is disabled after the CPU shuts down its local APIC and just before it
-powers off.
+Move the VMXON setup from the KVM initialization path to the CPU startup
+phase to guarantee that hardware virtualization is enabled early and
+without interruption.
 
-Also remove kvm_arch_{enable,disable}_virtualization() as they are no
-longer needed.
+As a result, KVM, often loaded as a kernel module, no longer needs to worry
+about whether or not VMXON has been executed on a CPU (e.g., CPU offline
+events or system reboots while KVM is loading).
 
 Signed-off-by: Xin Li (Intel) <xin@zytor.com>
 ---
- arch/x86/include/asm/kvm_host.h |  1 -
- arch/x86/include/asm/reboot.h   | 11 -----
- arch/x86/kernel/reboot.c        | 72 ---------------------------------
- arch/x86/kvm/svm/svm.c          |  8 ----
- arch/x86/kvm/vmx/main.c         |  1 -
- arch/x86/kvm/vmx/vmx.c          |  4 --
- arch/x86/kvm/x86.c              | 10 -----
- include/linux/kvm_host.h        |  8 ----
- virt/kvm/kvm_main.c             | 14 -------
- 9 files changed, 129 deletions(-)
+ arch/x86/include/asm/processor.h |   1 +
+ arch/x86/include/asm/vmx.h       |   5 ++
+ arch/x86/kernel/cpu/common.c     |  91 ++++++++++++++++++++++++
+ arch/x86/kvm/vmx/vmcs.h          |   5 --
+ arch/x86/kvm/vmx/vmx.c           | 117 ++-----------------------------
+ arch/x86/power/cpu.c             |   7 +-
+ 6 files changed, 107 insertions(+), 119 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index f19a76d3ca0e..131cd3dfae35 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -1697,7 +1697,6 @@ struct kvm_x86_ops {
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index bde58f6510ac..59660428f46d 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -230,6 +230,7 @@ void init_cpu_devs(void);
+ void get_cpu_vendor(struct cpuinfo_x86 *c);
+ extern void early_cpu_init(void);
+ extern void identify_secondary_cpu(unsigned int cpu);
++extern void cpu_enable_virtualization(void);
+ extern void print_cpu_info(struct cpuinfo_x86 *);
+ void print_cpu_msr(struct cpuinfo_x86 *);
  
- 	int (*enable_virtualization_cpu)(void);
- 	void (*disable_virtualization_cpu)(void);
--	cpu_emergency_virt_cb *emergency_disable_virtualization_cpu;
+diff --git a/arch/x86/include/asm/vmx.h b/arch/x86/include/asm/vmx.h
+index cca7d6641287..736d04c1b2fc 100644
+--- a/arch/x86/include/asm/vmx.h
++++ b/arch/x86/include/asm/vmx.h
+@@ -20,6 +20,11 @@
+ #include <asm/trapnr.h>
+ #include <asm/vmxfeatures.h>
  
- 	void (*hardware_unsetup)(void);
- 	bool (*has_emulated_msr)(struct kvm *kvm, u32 index);
-diff --git a/arch/x86/include/asm/reboot.h b/arch/x86/include/asm/reboot.h
-index ecd58ea9a837..a671a1145906 100644
---- a/arch/x86/include/asm/reboot.h
-+++ b/arch/x86/include/asm/reboot.h
-@@ -25,17 +25,6 @@ void __noreturn machine_real_restart(unsigned int type);
- #define MRR_BIOS	0
- #define MRR_APM		1
++struct vmcs_hdr {
++	u32 revision_id:31;
++	u32 shadow_vmcs:1;
++};
++
+ #define VMCS_CONTROL_BIT(x)	BIT(VMX_FEATURE_##x & 0x1f)
  
--typedef void (cpu_emergency_virt_cb)(void);
--#if IS_ENABLED(CONFIG_KVM_X86)
--void cpu_emergency_register_virt_callback(cpu_emergency_virt_cb *callback);
--void cpu_emergency_unregister_virt_callback(cpu_emergency_virt_cb *callback);
--void cpu_emergency_disable_virtualization(void);
--#else
--static inline void cpu_emergency_register_virt_callback(cpu_emergency_virt_cb *callback) {}
--static inline void cpu_emergency_unregister_virt_callback(cpu_emergency_virt_cb *callback) {}
--static inline void cpu_emergency_disable_virtualization(void) {}
--#endif /* CONFIG_KVM_X86 */
--
- typedef void (*nmi_shootdown_cb)(int, struct pt_regs*);
- void nmi_shootdown_cpus(nmi_shootdown_cb callback);
- void run_crash_ipi_callback(struct pt_regs *regs);
-diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
-index d8c3e2d8481f..0916dd0ca86f 100644
---- a/arch/x86/kernel/reboot.c
-+++ b/arch/x86/kernel/reboot.c
-@@ -530,78 +530,6 @@ static inline void kb_wait(void)
+ /*
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index 34a054181c4d..e36877b5a240 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -72,6 +72,7 @@
+ #include <asm/tdx.h>
+ #include <asm/posted_intr.h>
+ #include <asm/runtime-const.h>
++#include <asm/vmx.h>
  
- static inline void nmi_shootdown_cpus_on_restart(void);
+ #include "cpu.h"
  
--#if IS_ENABLED(CONFIG_KVM_X86)
--/* RCU-protected callback to disable virtualization prior to reboot. */
--static cpu_emergency_virt_cb __rcu *cpu_emergency_virt_callback;
--
--void cpu_emergency_register_virt_callback(cpu_emergency_virt_cb *callback)
--{
--	if (WARN_ON_ONCE(rcu_access_pointer(cpu_emergency_virt_callback)))
--		return;
--
--	rcu_assign_pointer(cpu_emergency_virt_callback, callback);
--}
--EXPORT_SYMBOL_GPL(cpu_emergency_register_virt_callback);
--
--void cpu_emergency_unregister_virt_callback(cpu_emergency_virt_cb *callback)
--{
--	if (WARN_ON_ONCE(rcu_access_pointer(cpu_emergency_virt_callback) != callback))
--		return;
--
--	rcu_assign_pointer(cpu_emergency_virt_callback, NULL);
--	synchronize_rcu();
--}
--EXPORT_SYMBOL_GPL(cpu_emergency_unregister_virt_callback);
--
--/*
-- * Disable virtualization, i.e. VMX or SVM, to ensure INIT is recognized during
-- * reboot.  VMX blocks INIT if the CPU is post-VMXON, and SVM blocks INIT if
-- * GIF=0, i.e. if the crash occurred between CLGI and STGI.
-- */
--void cpu_emergency_disable_virtualization(void)
--{
--	cpu_emergency_virt_cb *callback;
--
--	/*
--	 * IRQs must be disabled as KVM enables virtualization in hardware via
--	 * function call IPIs, i.e. IRQs need to be disabled to guarantee
--	 * virtualization stays disabled.
--	 */
--	lockdep_assert_irqs_disabled();
--
--	rcu_read_lock();
--	callback = rcu_dereference(cpu_emergency_virt_callback);
--	if (callback)
--		callback();
--	rcu_read_unlock();
--}
--
--static void emergency_reboot_disable_virtualization(void)
--{
--	local_irq_disable();
--
--	/*
--	 * Disable virtualization on all CPUs before rebooting to avoid hanging
--	 * the system, as VMX and SVM block INIT when running in the host.
--	 *
--	 * We can't take any locks and we may be on an inconsistent state, so
--	 * use NMIs as IPIs to tell the other CPUs to disable VMX/SVM and halt.
--	 *
--	 * Do the NMI shootdown even if virtualization is off on _this_ CPU, as
--	 * other CPUs may have virtualization enabled.
--	 */
--	if (rcu_access_pointer(cpu_emergency_virt_callback)) {
--		/* Safely force _this_ CPU out of VMX/SVM operation. */
--		cpu_emergency_disable_virtualization();
--
--		/* Disable VMX/SVM and halt on other CPUs. */
--		nmi_shootdown_cpus_on_restart();
--	}
--}
--#else
--static void emergency_reboot_disable_virtualization(void) { }
--#endif /* CONFIG_KVM_X86 */
--
- void __attribute__((weak)) mach_reboot_fixups(void)
- {
- }
-diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-index d9931c6c4bc6..795e5961c1d9 100644
---- a/arch/x86/kvm/svm/svm.c
-+++ b/arch/x86/kvm/svm/svm.c
-@@ -497,13 +497,6 @@ static inline void kvm_cpu_svm_disable(void)
- 	}
+@@ -1923,6 +1924,84 @@ static void generic_identify(struct cpuinfo_x86 *c)
+ #endif
  }
  
--static void svm_emergency_disable_virtualization_cpu(void)
--{
--	kvm_rebooting = true;
++static bool is_vmx_supported(void)
++{
++	int cpu = raw_smp_processor_id();
++
++	if (!(cpuid_ecx(1) & (1 << (X86_FEATURE_VMX & 31)))) {
++		/* May not be an Intel CPU */
++		pr_info("VMX not supported by CPU%d\n", cpu);
++		return false;
++	}
++
++	if (!this_cpu_has(X86_FEATURE_MSR_IA32_FEAT_CTL) ||
++	    !this_cpu_has(X86_FEATURE_VMX)) {
++		pr_err("VMX not enabled (by BIOS) in MSR_IA32_FEAT_CTL on CPU%d\n", cpu);
++		return false;
++	}
++
++	return true;
++}
++
++/* IA-32 SDM Vol 3B: VMCS size is never greater than 4kB. */
++union vmxon_vmcs {
++	struct vmcs_hdr hdr;
++	char data[PAGE_SIZE];
++};
++
++static DEFINE_PER_CPU_PAGE_ALIGNED(union vmxon_vmcs, vmxon_vmcs);
++
++/*
++ * Executed during the CPU startup phase to execute VMXON to enable VMX. This
++ * ensures that KVM, often loaded as a kernel module, no longer needs to worry
++ * about whether or not VMXON has been executed on a CPU (e.g., CPU offline
++ * events or system reboots while KVM is loading).
++ *
++ * VMXON is not expected to fault, but fault handling is kept as a precaution
++ * against any unexpected code paths that might trigger it and can be removed
++ * later if unnecessary.
++ */
++void cpu_enable_virtualization(void)
++{
++	u64 vmxon_pointer = __pa(this_cpu_ptr(&vmxon_vmcs));
++	int cpu = raw_smp_processor_id();
++	u64 basic_msr;
++
++	if (!is_vmx_supported())
++		return;
++
++	if (cr4_read_shadow() & X86_CR4_VMXE) {
++		pr_err("VMX already enabled on CPU%d\n", cpu);
++		return;
++	}
++
++	memset(this_cpu_ptr(&vmxon_vmcs), 0, PAGE_SIZE);
++
++	/*
++	 * Even though not explicitly documented by TLFS, VMXArea passed as
++	 * VMXON argument should still be marked with revision_id reported by
++	 * physical CPU.
++	 */
++	rdmsrq(MSR_IA32_VMX_BASIC, basic_msr);
++	this_cpu_ptr(&vmxon_vmcs)->hdr.revision_id = vmx_basic_vmcs_revision_id(basic_msr);
++
++	intel_pt_handle_vmx(1);
++
++	cr4_set_bits(X86_CR4_VMXE);
++
++	asm goto("1: vmxon %[vmxon_pointer]\n\t"
++		 _ASM_EXTABLE(1b, %l[fault])
++		 : : [vmxon_pointer] "m"(vmxon_pointer)
++		 : : fault);
++
++	return;
++
++fault:
++	pr_err("VMXON faulted on CPU%d\n", cpu);
++	cr4_clear_bits(X86_CR4_VMXE);
++	intel_pt_handle_vmx(0);
++}
++
+ /*
+  * This does the hard work of actually picking apart the CPU stuff...
+  */
+@@ -2120,6 +2199,12 @@ void identify_secondary_cpu(unsigned int cpu)
+ 
+ 	tsx_ap_init();
+ 	c->initialized = true;
++
++	/*
++	 * Enable AP virtualization immediately after initializing the per-CPU
++	 * cpuinfo_x86 structure, ensuring that this_cpu_has() operates correctly.
++	 */
++	cpu_enable_virtualization();
+ }
+ 
+ void print_cpu_info(struct cpuinfo_x86 *c)
+@@ -2551,6 +2636,12 @@ void __init arch_cpu_finalize_init(void)
+ 	*c = boot_cpu_data;
+ 	c->initialized = true;
+ 
++	/*
++	 * Enable BSP virtualization right after the BSP cpuinfo_x86 structure
++	 * is initialized to ensure this_cpu_has() works as expected.
++	 */
++	cpu_enable_virtualization();
++
+ 	alternative_instructions();
+ 
+ 	if (IS_ENABLED(CONFIG_X86_64)) {
+diff --git a/arch/x86/kvm/vmx/vmcs.h b/arch/x86/kvm/vmx/vmcs.h
+index b25625314658..da5631924432 100644
+--- a/arch/x86/kvm/vmx/vmcs.h
++++ b/arch/x86/kvm/vmx/vmcs.h
+@@ -13,11 +13,6 @@
+ 
+ #define ROL16(val, n) ((u16)(((u16)(val) << (n)) | ((u16)(val) >> (16 - (n)))))
+ 
+-struct vmcs_hdr {
+-	u32 revision_id:31;
+-	u32 shadow_vmcs:1;
+-};
 -
--	kvm_cpu_svm_disable();
--}
--
- static void svm_disable_virtualization_cpu(void)
- {
- 	/* Make sure we clean up behind us */
-@@ -5050,7 +5043,6 @@ static struct kvm_x86_ops svm_x86_ops __initdata = {
- 	.hardware_unsetup = svm_hardware_unsetup,
- 	.enable_virtualization_cpu = svm_enable_virtualization_cpu,
- 	.disable_virtualization_cpu = svm_disable_virtualization_cpu,
--	.emergency_disable_virtualization_cpu = svm_emergency_disable_virtualization_cpu,
- 	.has_emulated_msr = svm_has_emulated_msr,
- 
- 	.vcpu_create = svm_vcpu_create,
-diff --git a/arch/x86/kvm/vmx/main.c b/arch/x86/kvm/vmx/main.c
-index dbab1c15b0cd..ce46b80368c9 100644
---- a/arch/x86/kvm/vmx/main.c
-+++ b/arch/x86/kvm/vmx/main.c
-@@ -864,7 +864,6 @@ struct kvm_x86_ops vt_x86_ops __initdata = {
- 
- 	.enable_virtualization_cpu = vmx_enable_virtualization_cpu,
- 	.disable_virtualization_cpu = vt_op(disable_virtualization_cpu),
--	.emergency_disable_virtualization_cpu = vmx_emergency_disable_virtualization_cpu,
- 
- 	.has_emulated_msr = vt_op(has_emulated_msr),
- 
+ struct vmcs {
+ 	struct vmcs_hdr hdr;
+ 	u32 abort;
 diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index b033288e645a..fdb9bc19f037 100644
+index aa157fe5b7b3..f6742df0c4ff 100644
 --- a/arch/x86/kvm/vmx/vmx.c
 +++ b/arch/x86/kvm/vmx/vmx.c
-@@ -669,10 +669,6 @@ static int vmx_set_guest_uret_msr(struct vcpu_vmx *vmx,
- 	return ret;
+@@ -468,7 +468,6 @@ noinline void invept_error(unsigned long ext, u64 eptp)
+ 	vmx_insn_failed("invept failed: ext=0x%lx eptp=%llx\n", ext, eptp);
  }
  
--void vmx_emergency_disable_virtualization_cpu(void)
--{
--}
--
- static void __loaded_vmcs_clear(void *arg)
- {
- 	struct loaded_vmcs *loaded_vmcs = arg;
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 604490b1cb19..8b9f64770684 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -12543,16 +12543,6 @@ void kvm_vcpu_deliver_sipi_vector(struct kvm_vcpu *vcpu, u8 vector)
- }
- EXPORT_SYMBOL_GPL(kvm_vcpu_deliver_sipi_vector);
- 
--void kvm_arch_enable_virtualization(void)
--{
--	cpu_emergency_register_virt_callback(kvm_x86_ops.emergency_disable_virtualization_cpu);
--}
--
--void kvm_arch_disable_virtualization(void)
--{
--	cpu_emergency_unregister_virt_callback(kvm_x86_ops.emergency_disable_virtualization_cpu);
--}
--
- int kvm_arch_enable_virtualization_cpu(void)
- {
- 	struct kvm *kvm;
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 15656b7fba6c..151305b33bce 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -1603,14 +1603,6 @@ static inline void kvm_create_vcpu_debugfs(struct kvm_vcpu *vcpu) {}
- #endif
- 
- #ifdef CONFIG_KVM_GENERIC_HARDWARE_ENABLING
--/*
-- * kvm_arch_{enable,disable}_virtualization() are called on one CPU, under
-- * kvm_usage_lock, immediately after/before 0=>1 and 1=>0 transitions of
-- * kvm_usage_count, i.e. at the beginning of the generic hardware enabling
-- * sequence, and at the end of the generic hardware disabling sequence.
-- */
--void kvm_arch_enable_virtualization(void);
--void kvm_arch_disable_virtualization(void);
+-static DEFINE_PER_CPU(struct vmcs *, vmxarea);
+ DEFINE_PER_CPU(struct vmcs *, current_vmcs);
  /*
-  * kvm_arch_{enable,disable}_virtualization_cpu() are called on "every" CPU to
-  * do the actual twiddling of hardware bits.  The hooks are called on all
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 6c07dd423458..6e86c6a45a71 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -5566,16 +5566,6 @@ static DEFINE_PER_CPU(bool, virtualization_enabled);
- static DEFINE_MUTEX(kvm_usage_lock);
- static int kvm_usage_count;
+  * We maintain a per-CPU linked-list of VMCS loaded on that CPU. This is needed
+@@ -2736,43 +2735,14 @@ static int setup_vmcs_config(struct vmcs_config *vmcs_conf,
+ 	return 0;
+ }
  
--__weak void kvm_arch_enable_virtualization(void)
+-static bool __kvm_is_vmx_supported(void)
 -{
+-	int cpu = smp_processor_id();
 -
+-	if (!(cpuid_ecx(1) & feature_bit(VMX))) {
+-		pr_err("VMX not supported by CPU %d\n", cpu);
+-		return false;
+-	}
+-
+-	if (!this_cpu_has(X86_FEATURE_MSR_IA32_FEAT_CTL) ||
+-	    !this_cpu_has(X86_FEATURE_VMX)) {
+-		pr_err("VMX not enabled (by BIOS) in MSR_IA32_FEAT_CTL on CPU %d\n", cpu);
+-		return false;
+-	}
+-
+-	return true;
 -}
 -
--__weak void kvm_arch_disable_virtualization(void)
+-static bool kvm_is_vmx_supported(void)
 -{
+-	bool supported;
 -
+-	migrate_disable();
+-	supported = __kvm_is_vmx_supported();
+-	migrate_enable();
+-
+-	return supported;
 -}
 -
- static int kvm_enable_virtualization_cpu(void)
+ int vmx_check_processor_compat(void)
  {
- 	if (__this_cpu_read(virtualization_enabled))
-@@ -5675,8 +5665,6 @@ int kvm_enable_virtualization(void)
- 	if (kvm_usage_count++)
- 		return 0;
+ 	int cpu = raw_smp_processor_id();
+ 	struct vmcs_config vmcs_conf;
+ 	struct vmx_capability vmx_cap;
  
--	kvm_arch_enable_virtualization();
+-	if (!__kvm_is_vmx_supported())
+-		return -EIO;
++	if (!(cr4_read_shadow() & X86_CR4_VMXE))
++		return -EOPNOTSUPP;
+ 
+ 	if (setup_vmcs_config(&vmcs_conf, &vmx_cap) < 0) {
+ 		pr_err("Failed to setup VMCS config on CPU %d\n", cpu);
+@@ -2787,34 +2757,12 @@ int vmx_check_processor_compat(void)
+ 	return 0;
+ }
+ 
+-static int kvm_cpu_vmxon(u64 vmxon_pointer)
+-{
+-	u64 msr;
 -
- 	r = cpuhp_setup_state(CPUHP_AP_KVM_ONLINE, "kvm/cpu:online",
- 			      kvm_online_cpu, kvm_offline_cpu);
- 	if (r)
-@@ -5707,7 +5695,6 @@ int kvm_enable_virtualization(void)
- 	unregister_syscore_ops(&kvm_syscore_ops);
- 	cpuhp_remove_state(CPUHP_AP_KVM_ONLINE);
- err_cpuhp:
--	kvm_arch_disable_virtualization();
- 	--kvm_usage_count;
- 	return r;
- }
-@@ -5722,7 +5709,6 @@ void kvm_disable_virtualization(void)
+-	cr4_set_bits(X86_CR4_VMXE);
+-
+-	asm goto("1: vmxon %[vmxon_pointer]\n\t"
+-			  _ASM_EXTABLE(1b, %l[fault])
+-			  : : [vmxon_pointer] "m"(vmxon_pointer)
+-			  : : fault);
+-	return 0;
+-
+-fault:
+-	WARN_ONCE(1, "VMXON faulted, MSR_IA32_FEAT_CTL (0x3a) = 0x%llx\n",
+-		  rdmsrq_safe(MSR_IA32_FEAT_CTL, &msr) ? 0xdeadbeef : msr);
+-	cr4_clear_bits(X86_CR4_VMXE);
+-
+-	return -EFAULT;
+-}
+-
+ int vmx_enable_virtualization_cpu(void)
+ {
+ 	int cpu = raw_smp_processor_id();
+-	u64 phys_addr = __pa(per_cpu(vmxarea, cpu));
+-	int r;
  
- 	unregister_syscore_ops(&kvm_syscore_ops);
- 	cpuhp_remove_state(CPUHP_AP_KVM_ONLINE);
--	kvm_arch_disable_virtualization();
- }
- EXPORT_SYMBOL_GPL(kvm_disable_virtualization);
+-	if (cr4_read_shadow() & X86_CR4_VMXE)
+-		return -EBUSY;
++	if (!(cr4_read_shadow() & X86_CR4_VMXE))
++		return -EOPNOTSUPP;
  
+ 	/*
+ 	 * This can happen if we hot-added a CPU but failed to allocate
+@@ -2823,14 +2771,6 @@ int vmx_enable_virtualization_cpu(void)
+ 	if (kvm_is_using_evmcs() && !hv_get_vp_assist_page(cpu))
+ 		return -EFAULT;
+ 
+-	intel_pt_handle_vmx(1);
+-
+-	r = kvm_cpu_vmxon(phys_addr);
+-	if (r) {
+-		intel_pt_handle_vmx(0);
+-		return r;
+-	}
+-
+ 	return 0;
+ }
+ 
+@@ -2931,47 +2871,6 @@ int alloc_loaded_vmcs(struct loaded_vmcs *loaded_vmcs)
+ 	return -ENOMEM;
+ }
+ 
+-static void free_kvm_area(void)
+-{
+-	int cpu;
+-
+-	for_each_possible_cpu(cpu) {
+-		free_vmcs(per_cpu(vmxarea, cpu));
+-		per_cpu(vmxarea, cpu) = NULL;
+-	}
+-}
+-
+-static __init int alloc_kvm_area(void)
+-{
+-	int cpu;
+-
+-	for_each_possible_cpu(cpu) {
+-		struct vmcs *vmcs;
+-
+-		vmcs = alloc_vmcs_cpu(false, cpu, GFP_KERNEL);
+-		if (!vmcs) {
+-			free_kvm_area();
+-			return -ENOMEM;
+-		}
+-
+-		/*
+-		 * When eVMCS is enabled, alloc_vmcs_cpu() sets
+-		 * vmcs->revision_id to KVM_EVMCS_VERSION instead of
+-		 * revision_id reported by MSR_IA32_VMX_BASIC.
+-		 *
+-		 * However, even though not explicitly documented by
+-		 * TLFS, VMXArea passed as VMXON argument should
+-		 * still be marked with revision_id reported by
+-		 * physical CPU.
+-		 */
+-		if (kvm_is_using_evmcs())
+-			vmcs->hdr.revision_id = vmx_basic_vmcs_revision_id(vmcs_config.basic);
+-
+-		per_cpu(vmxarea, cpu) = vmcs;
+-	}
+-	return 0;
+-}
+-
+ static void fix_pmode_seg(struct kvm_vcpu *vcpu, int seg,
+ 		struct kvm_segment *save)
+ {
+@@ -8204,8 +8103,6 @@ void vmx_hardware_unsetup(void)
+ 
+ 	if (nested)
+ 		nested_vmx_hardware_unsetup();
+-
+-	free_kvm_area();
+ }
+ 
+ void vmx_vm_destroy(struct kvm *kvm)
+@@ -8499,10 +8396,6 @@ __init int vmx_hardware_setup(void)
+ 
+ 	vmx_set_cpu_caps();
+ 
+-	r = alloc_kvm_area();
+-	if (r && nested)
+-		nested_vmx_hardware_unsetup();
+-
+ 	kvm_set_posted_intr_wakeup_handler(pi_wakeup_handler);
+ 
+ 	/*
+@@ -8554,7 +8447,7 @@ int __init vmx_init(void)
+ 
+ 	KVM_SANITY_CHECK_VM_STRUCT_SIZE(kvm_vmx);
+ 
+-	if (!kvm_is_vmx_supported())
++	if (!(cr4_read_shadow() & X86_CR4_VMXE))
+ 		return -EOPNOTSUPP;
+ 
+ 	/*
+diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
+index 916441f5e85c..0eec314b79c2 100644
+--- a/arch/x86/power/cpu.c
++++ b/arch/x86/power/cpu.c
+@@ -206,11 +206,11 @@ static void notrace __restore_processor_state(struct saved_context *ctxt)
+ 	/* cr4 was introduced in the Pentium CPU */
+ #ifdef CONFIG_X86_32
+ 	if (ctxt->cr4)
+-		__write_cr4(ctxt->cr4);
++		__write_cr4(ctxt->cr4 & ~X86_CR4_VMXE);
+ #else
+ /* CONFIG X86_64 */
+ 	wrmsrq(MSR_EFER, ctxt->efer);
+-	__write_cr4(ctxt->cr4);
++	__write_cr4(ctxt->cr4 & ~X86_CR4_VMXE);
+ #endif
+ 	write_cr3(ctxt->cr3);
+ 	write_cr2(ctxt->cr2);
+@@ -291,6 +291,9 @@ static void notrace __restore_processor_state(struct saved_context *ctxt)
+ 	 * because some of the MSRs are "emulated" in microcode.
+ 	 */
+ 	msr_restore_context(ctxt);
++
++	if (ctxt->cr4 & X86_CR4_VMXE)
++		cpu_enable_virtualization();
+ }
+ 
+ /* Needed by apm.c */
 -- 
 2.51.0
 
