@@ -1,138 +1,116 @@
-Received: from mail-lf1-f49.google.com (mail-lf1-f49.google.com [209.85.167.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73D0D32255F
-	for <linux-pm@vger.kernel.org>; Tue,  9 Sep 2025 11:11:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 938773218C7;
+	Tue,  9 Sep 2025 11:39:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757416305; cv=none; b=fSFrmGGv7vXcPG0A3TT1w4eA0xezqzG0odKap61J36DeBFZPj98pyHiNRpyxLAZTl60VizD4ykoN6q8tWQUwXCt55MFy9rZA2X7hVla1jDfDuqm8itlAgTPC9z1El+J3PDA9wt4DhmIGh5igltYlWqz5tc8JWNKM0lie9xqwMUs=
+	t=1757417960; cv=none; b=Kp5KuBiCNYclU6Pox90E5IYhVlQOow0ym8i9mE8H3wWx6kkLurA+FnXwfo0JYxUV0ACvorr6lEsHy+p7DMb23P5VbDd9ZYJclE/4bEXpM0nGSkGhskZgco9iHNpr0NLWeFxVuyIXQk/X0QYsE/U+a3wVpQ8Dwj3YuJ3lwGfnPco=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757416305; c=relaxed/simple;
-	bh=qX2XQlnL77P0KB6EClM0+xTAM+le4yDduPWYxg1F5ZA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=d/gHMNWdPYiWjPEH1DzNMWFcN3/kr00UywNsOZaHXExM/WUG0bV2ZDQlucJndeCVRHpkKE9/1R2fKaVMo2R0fD5nznY3jez6MtQrOwZBv2xrxYpVo7zvf9YmvLhFo7tLRU0uZtkhv9+einFNwsrNVx3pSUti7YrO/E3nEA3/KJM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=uuAI8+kr; arc=none smtp.client-ip=209.85.167.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1757417960; c=relaxed/simple;
+	bh=/lQPn8R9xF5EP26Yw19J4XYjAXrahPPIh8/YXIx3HiY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=GWV1bwnDLEKxdSQx1RrEovK8Q9+qdjxpw6+1dIGu0MqRRtX2jJojZVkh35hMX4ImcBrSJ0jjjEuNkF/WesjApk4ARFpOafr/cxJZdJgh93VU0pZ4bsph0oppdVwTC97OP2QkJYEKNG7TdYw1eElK3QnsVgc2Ml9UIVDRXpEDWz4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=OkyQYxWb; arc=none smtp.client-ip=192.198.163.10
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="uuAI8+kr"
-Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-55f7ab2a84eso5446812e87.1
-        for <linux-pm@vger.kernel.org>; Tue, 09 Sep 2025 04:11:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1757416300; x=1758021100; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=7s4ue+vxLshDaVNog/qaeHRfYjor1s3xeCpGVICPA0U=;
-        b=uuAI8+kr6UZrPmjAi2JGqIXdQhh8kzvyBETXnFVd/rchL+995Q8kDzBZfYdR0m6oQ5
-         IysC6wrN9/l6r7cHhbfbTiAycr3ojx493iByx6XlgS50dzcv9O288iSamqMuuEvHQUXy
-         KC8sVTWScjQgGU0vYIUcmodQdoYDUsGfnRS93Sr6xFtjQvw9VEp3Vvca9KJBAcarsr5W
-         V3wMjAaDNHR/m6YSHHwUsJYtI2uSV/OkbLAPJAurqynpJwM5ZRbDK8KZOkTylUP15Guk
-         y8833WK5DN2PVhSteql9nSnHbZjKhWR+Qta4P6YJgVaLRXFYhy7iprbgswtjjA3/N2i6
-         2V1A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1757416300; x=1758021100;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=7s4ue+vxLshDaVNog/qaeHRfYjor1s3xeCpGVICPA0U=;
-        b=l4iHryPxEyrpRIO/d1scEEY2uCMg91QYval4HCzcT5ubpy9MeuOYi7UkoTu/MnP/cE
-         iEES6ZAskVRDUtmRfNFnIYVabuvPrzezeRsS//Q959dnEAJ1CY4A6L6Fr679kxKw8UHH
-         ASewnxFttXVlWW5TXtXWD2Hsd9BxLlWCE2HbUi36fvN+AqnEmh1yCost4f+ktlpE5CBX
-         3Rf8jT6yRCvBCYjcUrylOrFlt5jubaltyFQHkur0gvwqg5oI17B4s2xavF5qedIMog23
-         tH2Tv+ognwzk5EXu9EufsmfOOfBlP/b/wDwe9NlDF1UZkhRtU6QuD0goQdqxFrXueiAQ
-         5T8w==
-X-Forwarded-Encrypted: i=1; AJvYcCW+UzNof/o5Pi0W2B4hiwnyK85dS4QAvCwo8Zoa+cpO1jZPYjApTa0DPWl9hMIeq5t3XByDZz71xg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx8CfZIOznKu+SxVUvmJeet64dboG4nPI9/9RxaaMlr5w4d83ZD
-	Zx1938FcYVnt/Cwnq069JvV6qB7TW54DEb0adDaJjUfW/rVxceIsXdGUiWnqWqywvVw=
-X-Gm-Gg: ASbGnctE8YhTwzkSOsJVsm308HWW7sBgaSsxSUIn+CdzBqw8yYYgaFsg2APKdfgnFJv
-	FQWqSoA23ulIteXwzzrCqOGAI0xIDJiBKJYAWOo2JrXjFTSrbZ7pcXmARR9BiCn2l1/y0es9CBN
-	YCAkRrbqAlaVRSuMV/HqZmVfT6o2A4RiXd4skgfpprGf/mJmStcx/y2bun9W8oyWwYJoGX0mDOg
-	yXRjIRVVGOZfcKmV5aOprK+UKsECWOoiH50V78IZWAODAY2GIJ0bcsOPvx/A5650TbbfcNbHgOp
-	tWAfnlP5nChdLs7C9VypRoVMrER7lR9FhJKAU6tjRV2CqfH/cPzy0p+1CgzTrCFz++3T40z2hVw
-	XKmHQs7vJwIb4/79JYT8El46cOiCrM2SDaYjXEmUkqasnLXb11RPviZzNs8/fF20ZpqyfRfl3Fc
-	Ly+C88z08=
-X-Google-Smtp-Source: AGHT+IH3If1E1wmdYnnMVHOIWDwlC5uh1BOrgxWYASzxhPPmZmGZqHrDzK8CUhRE0KdKbGrCF4Hbhg==
-X-Received: by 2002:a05:6512:10ca:b0:55f:5942:43ca with SMTP id 2adb3069b0e04-56260f37a43mr3913159e87.20.1757416300440;
-        Tue, 09 Sep 2025 04:11:40 -0700 (PDT)
-Received: from uffe-tuxpro14.. (h-178-174-189-39.A498.priv.bahnhof.se. [178.174.189.39])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-568190f8040sm445440e87.148.2025.09.09.04.11.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 09 Sep 2025 04:11:40 -0700 (PDT)
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
-	Saravana Kannan <saravanak@google.com>,
-	linux-pm@vger.kernel.org
-Cc: Stephen Boyd <sboyd@kernel.org>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Heiko Stuebner <heiko@sntech.de>,
-	Sebastian Reichel <sebastian.reichel@collabora.com>,
-	Sebin Francis <sebin.francis@ti.com>,
-	Diederik de Haas <didi.debian@cknow.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Abel Vesa <abel.vesa@linaro.org>,
-	Peng Fan <peng.fan@oss.nxp.com>,
-	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
-	Johan Hovold <johan@kernel.org>,
-	Maulik Shah <maulik.shah@oss.qualcomm.com>,
-	Michal Simek <michal.simek@amd.com>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Thierry Reding <thierry.reding@gmail.com>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5] pmdomain: renesas: rmobile-sysc: Don't keep unused PM domains powered-on
-Date: Tue,  9 Sep 2025 13:11:24 +0200
-Message-ID: <20250909111130.132976-6-ulf.hansson@linaro.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20250909111130.132976-1-ulf.hansson@linaro.org>
-References: <20250909111130.132976-1-ulf.hansson@linaro.org>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="OkyQYxWb"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1757417959; x=1788953959;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=/lQPn8R9xF5EP26Yw19J4XYjAXrahPPIh8/YXIx3HiY=;
+  b=OkyQYxWbkAQMB7ukdQbxXcL41zwyNLj5lGFlzvIN3sS2kNta5KQ4Mner
+   Io1QBoiWZpJWflT3CaNxC30cmOqcR6r2M1lBQaliYjLsYKKBXvtPN1ywu
+   sycndcqCzVh4p+k/qiuFuNhwaotGArdvkI1B6l8VpQVRKv++vhSZTPnBb
+   QYr2eTd+1LHjK2Zj4i87kXjOXlsD0RGsuNPDRpU2NqWdW9NMvHDi/KtYd
+   K6AGsLCZ5CXxqa8ZLmjWdpjLGpa/hrWLjBdhZQ1WafDPevTNyEYTlmPOr
+   DJaPCJO6hr6fJcZBOBBcwLVFEH60JfgUt0ytUiPD9UWvqqEKDb8LxPXKS
+   w==;
+X-CSE-ConnectionGUID: NhFTDtjUQi2k/b1KqxJv9Q==
+X-CSE-MsgGUID: 6ttpKTHnTj6m54WDMtSAhw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11547"; a="71072876"
+X-IronPort-AV: E=Sophos;i="6.18,251,1751266800"; 
+   d="scan'208";a="71072876"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Sep 2025 04:39:18 -0700
+X-CSE-ConnectionGUID: BaPjKtCAQWKpUWbsyb3AOw==
+X-CSE-MsgGUID: 6QhrmVOxSlW3s04C9Z9qjA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.18,251,1751266800"; 
+   d="scan'208";a="177412667"
+Received: from smile.fi.intel.com ([10.237.72.51])
+  by fmviesa005.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Sep 2025 04:39:15 -0700
+Received: from andy by smile.fi.intel.com with local (Exim 4.98.2)
+	(envelope-from <andriy.shevchenko@intel.com>)
+	id 1uvwgq-00000001QS8-1aCJ;
+	Tue, 09 Sep 2025 14:39:12 +0300
+Date: Tue, 9 Sep 2025 14:39:12 +0300
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Sean Nyekjaer <sean@geanix.com>
+Cc: Jean-Baptiste Maneyrol <jean-baptiste.maneyrol@tdk.com>,
+	rafael@kernel.org, Jonathan Cameron <jic23@kernel.org>,
+	David Lechner <dlechner@baylibre.com>,
+	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>, linux-iio@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
+	Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: Re: [PATCH v4 5/5] iio: imu: inv_icm42600: use guard() to release
+ mutexes
+Message-ID: <aMAR4Jx3pWQ1_rjX@smile.fi.intel.com>
+References: <20250909-icm42pmreg-v4-0-2bf763662c5c@geanix.com>
+ <20250909-icm42pmreg-v4-5-2bf763662c5c@geanix.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250909-icm42pmreg-v4-5-2bf763662c5c@geanix.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-The recent changes to genpd makes a genpd OF provider that is powered-on at
-initialization to stay powered-on, until the ->sync_state() callback is
-invoked for it.
+On Tue, Sep 09, 2025 at 09:11:11AM +0200, Sean Nyekjaer wrote:
+> Replace explicit mutex_lock() and mutex_unlock() with the guard() macro
+> for cleaner and safer mutex handling.
 
-This may not happen at all, if we wait for a consumer device to be probed,
-leading to wasting energy. There are ways to enforce the ->sync_state()
-callback to be invoked, through sysfs or via the probe-defer-timeout, but
-none of them in its current form are a good fit for rmobile-sysc PM
-domains.
+...
 
-Let's therefore opt-out from this behaviour of genpd for now, by using the
-GENPD_FLAG_NO_STAY_ON.
+>  	/* exit if FIFO is already on */
+>  	if (st->fifo.on) {
+> -		ret = 0;
+> -		goto out_on;
 
-Link: https://lore.kernel.org/all/20250701114733.636510-1-ulf.hansson@linaro.org/
-Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Fixes: 0e789b491ba0 ("pmdomain: core: Leave powered-on genpds on until sync_state")
-Fixes: 13a4b7fb6260 ("pmdomain: core: Leave powered-on genpds on until late_initcall_sync")
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/pmdomain/renesas/rmobile-sysc.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Probably you wanted the same comment here
 
-diff --git a/drivers/pmdomain/renesas/rmobile-sysc.c b/drivers/pmdomain/renesas/rmobile-sysc.c
-index 8eedc9a1d825..a6bf7295e909 100644
---- a/drivers/pmdomain/renesas/rmobile-sysc.c
-+++ b/drivers/pmdomain/renesas/rmobile-sysc.c
-@@ -100,7 +100,8 @@ static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
- 	struct generic_pm_domain *genpd = &rmobile_pd->genpd;
- 	struct dev_power_governor *gov = rmobile_pd->gov;
- 
--	genpd->flags |= GENPD_FLAG_PM_CLK | GENPD_FLAG_ACTIVE_WAKEUP;
-+	genpd->flags |= GENPD_FLAG_PM_CLK | GENPD_FLAG_ACTIVE_WAKEUP |
-+		GENPD_FLAG_NO_STAY_ON;
- 	genpd->attach_dev = cpg_mstp_attach_dev;
- 	genpd->detach_dev = cpg_mstp_detach_dev;
- 
+	/* increase FIFO on counter */
+
+> +		st->fifo.on++;
+> +		return 0;
+>  	}
+
+...
+
+>  	/* exit if there are several sensors using the FIFO */
+>  	if (st->fifo.on > 1) {
+> -		ret = 0;
+> -		goto out_off;
+
+In the similar way
+
+	/* decrease FIFO on counter */
+
+> +		st->fifo.on--;
+> +		return 0;
+>  	}
+
 -- 
-2.43.0
+With Best Regards,
+Andy Shevchenko
+
 
