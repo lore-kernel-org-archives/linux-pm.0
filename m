@@ -1,83 +1,80 @@
-Received: from relmlie6.idc.renesas.com (relmlor2.renesas.com [210.160.252.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 034D1321F30;
-	Tue,  9 Sep 2025 11:39:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.160.252.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22AFB31B82C;
+	Tue,  9 Sep 2025 11:41:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757417970; cv=none; b=unR4unYP13Y+ZFoTUR6Lrs/ZI0EldmD0Y39fr4JaoHSsR3VR5pn0t55U/ekk+TIERci4a964V6a6jZcNRqSw7/1/XUTuX6oYqsHsYfmd3IQeSpzqZWigJZXZvA1f5xvM+aKKHEvKD16I7XzrBjCo7qFD7EkqI+K0b3VYi6yRN30=
+	t=1757418095; cv=none; b=JeaNYTaSvYHOcV2nZKxUi9S6106oxr7M3OTcdlPQfz3OpA0paMecMxluF5Kk25zycojLh8/heZ0NIeQla6iOUndibmHQRKw+g0fYS64pzHZAyIqFv6aRereveqZxyC1l5Ux1NobVV4Ev4lT2IDlTUsqSlx9Ipf906gYOcqwuKhc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757417970; c=relaxed/simple;
-	bh=lRskdyx/ldMzFy43RfhautzRN8AuxYl0mLasWJggHGU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ouCoQGKE32ydvmDr/YGNer338nHO6NcwhV+tvNZL9/WGZKpq259DjJtay2YGB78odDftzXlgErP55guhZ4lPi9pjK0CaTrmaCq4Ha5KdmVyb/PZrruQ1rWPjV+zQHWguE9Oap7CkvpoT6gZ57HZP9Ohp/OuiCaxyrRkKCDtfvAs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=bp.renesas.com; spf=pass smtp.mailfrom=bp.renesas.com; arc=none smtp.client-ip=210.160.252.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=bp.renesas.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bp.renesas.com
-X-CSE-ConnectionGUID: 507sXnTvQliEhFBs3Q4Mdg==
-X-CSE-MsgGUID: Qc/LLW2OR6SwhPfPrNNvTA==
-Received: from unknown (HELO relmlir5.idc.renesas.com) ([10.200.68.151])
-  by relmlie6.idc.renesas.com with ESMTP; 09 Sep 2025 20:39:26 +0900
-Received: from ubuntu.adwin.renesas.com (unknown [10.24.0.1])
-	by relmlir5.idc.renesas.com (Postfix) with ESMTP id 4AF0E401E4F5;
-	Tue,  9 Sep 2025 20:39:17 +0900 (JST)
-From: John Madieu <john.madieu.xa@bp.renesas.com>
-To: catalin.marinas@arm.com,
-	conor+dt@kernel.org,
-	daniel.lezcano@linaro.org,
-	geert+renesas@glider.be,
-	krzk+dt@kernel.org,
-	lukasz.luba@arm.com,
-	magnus.damm@gmail.com,
-	mturquette@baylibre.com,
-	p.zabel@pengutronix.de,
-	robh@kernel.org,
-	rui.zhang@intel.com,
-	sboyd@kernel.org,
-	will@kernel.org
-Cc: biju.das.jz@bp.renesas.com,
-	devicetree@vger.kernel.org,
-	john.madieu@gmail.com,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-renesas-soc@vger.kernel.org,
-	rafael@kernel.org,
-	John Madieu <john.madieu.xa@bp.renesas.com>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH v8 4/4] arm64: defconfig: Enable the Renesas RZ/G3E thermal driver
-Date: Tue,  9 Sep 2025 13:38:39 +0200
-Message-ID: <20250909113840.122785-5-john.madieu.xa@bp.renesas.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20250909113840.122785-1-john.madieu.xa@bp.renesas.com>
-References: <20250909113840.122785-1-john.madieu.xa@bp.renesas.com>
+	s=arc-20240116; t=1757418095; c=relaxed/simple;
+	bh=csnciOLr7bNNQ5Y0SzQdIQW4n35Ea4AWAZOFdz0lb74=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=OdrEvyhVKEWO4QnTHmCeZb771jXp94eJeoSonJxCaQ93YAJqDBXuZJFMZ2tTKWx2XU50pBg+Y2qGFI0qERaLKw6A1yqzdu1QqY7DrH6MuQ9CAWdcyM05vT+g6F72dAQpnDZm4VGQA0pTq4UOfjprh8R3PqRWIaBHd29XIK8FwhE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=E3IhVLci; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="E3IhVLci"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 51586C4CEF4;
+	Tue,  9 Sep 2025 11:41:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1757418094;
+	bh=csnciOLr7bNNQ5Y0SzQdIQW4n35Ea4AWAZOFdz0lb74=;
+	h=From:To:Cc:Subject:Date:From;
+	b=E3IhVLciZ4eOif8XOYK5Wf7e8WOLhx6X5lT5LEXmD7fe1BDvutk03xuusIgC1v+3r
+	 C3FPsD9kiwEJaZFgMomw0UjrFvpKHRxX2Si6PzRmJYWlFyZTmTGMIQzZo96ZIdZ7JR
+	 lz60YkARr4DTwZ3RDk9z4prp9EclbCmfVfl5OHFTqDNBtJlpXvpRnzYhaEDnklCc2c
+	 PVXRQms3YnhSAjw59oAGABuD7gkjm1sx1AKZu7KaI9fJvt1q0QGF0EmsX/3PQdTABD
+	 upNSeKZslIOIdq4pnKtadTV8wiNTACBb2avYcevV4sJKSDqVsWhmD1rSPjt8wtVhun
+	 aQiEA9I7/B2qw==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Linux ACPI <linux-acpi@vger.kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ "Gautham R . Shenoy" <gautham.sheoy@amd.com>
+Subject: [PATCH v1] cpufreq: ACPI: Use on_each_cpu_mask() in drv_write()
+Date: Tue, 09 Sep 2025 13:41:30 +0200
+Message-ID: <2797300.mvXUDI8C0e@rafael.j.wysocki>
+Organization: Linux Kernel Development
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-Enable the Renesas RZ/G3E thermal driver, as used on the Renesas
-RZ/G3E SMARC EVK board.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Signed-off-by: John Madieu <john.madieu.xa@bp.renesas.com>
+Make drv_write() call on_each_cpu_mask() instead of using an open-coded
+equivalent of the latter.
+
+No intentional functional impact.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- arch/arm64/configs/defconfig | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/cpufreq/acpi-cpufreq.c |    8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
-diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
-index 58f87d09366c..8def47e094d0 100644
---- a/arch/arm64/configs/defconfig
-+++ b/arch/arm64/configs/defconfig
-@@ -728,6 +728,7 @@ CONFIG_ROCKCHIP_THERMAL=m
- CONFIG_RCAR_THERMAL=y
- CONFIG_RCAR_GEN3_THERMAL=y
- CONFIG_RZG2L_THERMAL=y
-+CONFIG_RZG3E_THERMAL=y
- CONFIG_ARMADA_THERMAL=y
- CONFIG_MTK_THERMAL=m
- CONFIG_MTK_LVTS_THERMAL=m
--- 
-2.25.1
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -335,14 +335,8 @@ static void drv_write(struct acpi_cpufre
+ 		.val = val,
+ 		.func.write = data->cpu_freq_write,
+ 	};
+-	int this_cpu;
+ 
+-	this_cpu = get_cpu();
+-	if (cpumask_test_cpu(this_cpu, mask))
+-		do_drv_write(&cmd);
+-
+-	smp_call_function_many(mask, do_drv_write, &cmd, 1);
+-	put_cpu();
++	on_each_cpu_mask(mask, do_drv_write, &cmd, true);
+ }
+ 
+ static u32 get_cur_val(const struct cpumask *mask, struct acpi_cpufreq_data *data)
+
+
 
