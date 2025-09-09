@@ -1,37 +1,37 @@
 Received: from terminus.zytor.com (terminus.zytor.com [198.137.202.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD09A302CAB;
-	Tue,  9 Sep 2025 18:31:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9408315D36;
+	Tue,  9 Sep 2025 18:31:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.136
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757442669; cv=none; b=VVORG+NyNFhw3u7s7SfwW2CA/1YOygQzBySqtWidNtrUCdKnWTtxiDjlemW1cQwKNGY3EOPjEjD0THRMyh8KMuLuAcCX4ClNv44HaBC0/XZ7DI89a1byXrou58Sg6bSMJ7Yi0K9We4hG5AXHyk/QY3LRiQSmdhjTUQ9ZdK8cM/8=
+	t=1757442672; cv=none; b=owJURECSWCsDWRE0klyyK6necAMqQf4gzAK58hhzvoQku2mAML7jUfSAMBeNwh/pSLANfQgBbk3sqpIJKMuxhETeolSleK80EBsbQ9Gr4oUhHKsdqPbUh2IKocDZxHcCCcOi24EXQinb4baYzeS9AIL16t5odQDROzajvHy5RyA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757442669; c=relaxed/simple;
-	bh=sfspnZ2Xc2kJrFia0AEmuo7v4zNy/L4pJcSHT2DDcEU=;
+	s=arc-20240116; t=1757442672; c=relaxed/simple;
+	bh=HEvgvIs0kv3+YnLHTQm+OjDhCZE9wzcQuOd/LrNUFOk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=EnwGi/Xm6B+GVlOfcYDR/OCoWA3+dRQ9t8fRhom++I1GlqhmfcyFExYClXHgWhrWjMzEMFSy0wctFdaSl51OqQ+4NEvHPdpfPDvNcMk8TLB1dyqaOoD9OxpOKmLvHUiVLZPJ/DgzEAc9Qy2lvaYapkdnAVvsyV00LJED4QlFCKI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zytor.com; spf=pass smtp.mailfrom=zytor.com; dkim=pass (2048-bit key) header.d=zytor.com header.i=@zytor.com header.b=K0XYalmI; arc=none smtp.client-ip=198.137.202.136
+	 MIME-Version; b=NAghoBdfTP7MaNFlxd8mtBRVceB+1bdhShG6brG8Xv37g8yyhHITqA3hZD+ua9gUIwM6hNQfsaqJumywuHTTcUWpC/sQUsGTDolyTkzhxiMTHRPqh0lR8h9YBgYwDbe1TzgBtct2UzbfPVwPVl6FGD67sur4srIe8YCNRc/gZgU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zytor.com; spf=pass smtp.mailfrom=zytor.com; dkim=pass (2048-bit key) header.d=zytor.com header.i=@zytor.com header.b=AgQtQoNs; arc=none smtp.client-ip=198.137.202.136
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zytor.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zytor.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=zytor.com header.i=@zytor.com header.b="K0XYalmI"
+	dkim=pass (2048-bit key) header.d=zytor.com header.i=@zytor.com header.b="AgQtQoNs"
 Received: from terminus.zytor.com (terminus.zytor.com [IPv6:2607:7c80:54:3:0:0:0:136])
 	(authenticated bits=0)
-	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 589ISSD41542432
+	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 589ISSD11542432
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NO);
-	Tue, 9 Sep 2025 11:28:38 -0700
-DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 589ISSD41542432
+	Tue, 9 Sep 2025 11:28:34 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 589ISSD11542432
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zytor.com;
-	s=2025082201; t=1757442519;
-	bh=VNqB3TSQtWjm3nTUpaiiCNmmIt4N6RO62SGzcJafqTc=;
+	s=2025082201; t=1757442515;
+	bh=SZ8zwIvAVHeG6H+RqdqYuMY80Tz/rqBpKv4EQG1K4EU=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=K0XYalmIS1uPRvoH9QT4rdaZNgD7TlcWwAMi105/AZuIXlG+KazrqQpNOVCh3UJD2
-	 35rcqk5TDE/DbC6P5R08BLn8gwF55lXku3ke1rXbwq2Q8Gj13jXkV2mFr7JT6mAyI2
-	 1zS6jamxihp/awKQQ0aqvqUshvdslpBL0Lpb4yyg+8ZMatfPOzGdx8eZKsVBdrN32u
-	 /STpPCnrH+ES0wKIQgNW6WpXo/SomJDNKLvcGJb3+Uy2foM3lPZC3j0UYkv/hrZpaQ
-	 nvIZ4sXrIMSSTT5MrEK2bpvinUDiTy2KLWS1dV31bM3zQRLflD6iNWdXWZZxlbdLJS
-	 Z5rVJOG4thPwA==
+	b=AgQtQoNsI/4gLVufq8ZwtMdH3xKl4x3Ws1GKVuXcBOumt5xbsBy19eAmJsF83LSDj
+	 6heQXnKtBUtPxzm+eNX46wqgHH5Gt4sPjLWe82hD9oCp/61GO8mq0hXdJKQXGh32nm
+	 L6oFUREuuTxmMaT1BNPA2nj8QdRzyiqOKdWAiViKHdC5BfP5Ys/xGvBO4NKCYyVINq
+	 mdsPngeebB63buqLF2pI5qEigMKzbXphRbRb5F4MVQ3ANOmuts/VjOD3ppdeH2Tuu9
+	 Ul4mVRzoc551uljkC64DPn+9SGQPCvLmKodsgKsfsXx6tG9BSTZAl+OR4IsDz4VW3K
+	 4vEOueSmE6DPg==
 From: "Xin Li (Intel)" <xin@zytor.com>
 To: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
         linux-pm@vger.kernel.org
@@ -42,9 +42,9 @@ Cc: seanjc@google.com, pbonzini@redhat.com, tglx@linutronix.de,
         peterz@infradead.org, andrew.cooper3@citrix.com,
         kprateek.nayak@amd.com, arjan@linux.intel.com, chao.gao@intel.com,
         rick.p.edgecombe@intel.com, dan.j.williams@intel.com
-Subject: [RFC PATCH v1 5/5] KVM: Remove kvm_rebooting and its references
-Date: Tue,  9 Sep 2025 11:28:25 -0700
-Message-ID: <20250909182828.1542362-6-xin@zytor.com>
+Subject: [RFC PATCH v1 2/5] x86/boot: Move VMXOFF from KVM teardown to CPU shutdown phase
+Date: Tue,  9 Sep 2025 11:28:22 -0700
+Message-ID: <20250909182828.1542362-3-xin@zytor.com>
 X-Mailer: git-send-email 2.51.0
 In-Reply-To: <20250909182828.1542362-1-xin@zytor.com>
 References: <20250909182828.1542362-1-xin@zytor.com>
@@ -56,210 +56,269 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Drop kvm_rebooting and all related uses.  Virtualization is now disabled
-immediately before a CPU shuts down, eliminating any chance of executing
-virtualization instructions during reboot.
+Relocate VMXOFF from the KVM module unload path to the CPU shutdown phase.
+This simplifies proper virtualization cleanup during system shutdown, CPU
+hotplug (online/offline cycles), and suspend-to-disk (S4) transitions.
+
+Since INIT interrupts are blocked during VMX operation, VMXOFF must run
+just before a CPU shuts down to allow it to be brought back online later.
+
+As a result, VMX instructions are no longer expected to fault.
 
 Signed-off-by: Xin Li (Intel) <xin@zytor.com>
 ---
- arch/x86/kvm/svm/vmenter.S | 42 ++++++++++++--------------------------
- arch/x86/kvm/vmx/tdx.c     |  4 +---
- arch/x86/kvm/vmx/vmenter.S |  2 --
- arch/x86/kvm/x86.c         |  8 ++------
- include/linux/kvm_host.h   |  1 -
- virt/kvm/kvm_main.c        | 15 ++------------
- 6 files changed, 18 insertions(+), 54 deletions(-)
+ arch/x86/include/asm/processor.h |  1 +
+ arch/x86/kernel/cpu/common.c     | 37 ++++++++++++++++++++++++++++++++
+ arch/x86/kernel/crash.c          |  4 ++++
+ arch/x86/kernel/process.c        |  3 +++
+ arch/x86/kernel/reboot.c         | 11 ++++++----
+ arch/x86/kernel/smp.c            |  5 +++++
+ arch/x86/kernel/smpboot.c        |  6 ++++++
+ arch/x86/kvm/vmx/vmx.c           | 30 --------------------------
+ arch/x86/power/cpu.c             |  3 +++
+ 9 files changed, 66 insertions(+), 34 deletions(-)
 
-diff --git a/arch/x86/kvm/svm/vmenter.S b/arch/x86/kvm/svm/vmenter.S
-index 235c4af6b692..d530f62679b9 100644
---- a/arch/x86/kvm/svm/vmenter.S
-+++ b/arch/x86/kvm/svm/vmenter.S
-@@ -145,7 +145,6 @@ SYM_FUNC_START(__svm_vcpu_run)
- 	 */
- 	mov SVM_vmcb01_pa(%_ASM_DI), %_ASM_AX
- 1:	vmload %_ASM_AX
--2:
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 59660428f46d..0bfd4eb1e9e2 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -231,6 +231,7 @@ void get_cpu_vendor(struct cpuinfo_x86 *c);
+ extern void early_cpu_init(void);
+ extern void identify_secondary_cpu(unsigned int cpu);
+ extern void cpu_enable_virtualization(void);
++extern void cpu_disable_virtualization(void);
+ extern void print_cpu_info(struct cpuinfo_x86 *);
+ void print_cpu_msr(struct cpuinfo_x86 *);
  
- 	/* Get svm->current_vmcb->pa into RAX. */
- 	mov SVM_current_vmcb(%_ASM_DI), %_ASM_AX
-@@ -173,8 +172,8 @@ SYM_FUNC_START(__svm_vcpu_run)
- 	VM_CLEAR_CPU_BUFFERS
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index e36877b5a240..39b9be9a2fb1 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -2002,6 +2002,43 @@ void cpu_enable_virtualization(void)
+ 	intel_pt_handle_vmx(0);
+ }
  
- 	/* Enter guest mode */
--3:	vmrun %_ASM_AX
--4:
-+2:	vmrun %_ASM_AX
++/*
++ * Because INIT interrupts are blocked during VMX operation, this function
++ * must be called just before a CPU shuts down to ensure it can be brought
++ * back online later.
++ *
++ * Consequently, VMX instructions are no longer expected to fault.
++ *
++ * Although VMXOFF should not fault, fault handling is retained as a
++ * precaution against any unexpected code paths that might trigger it and
++ * can be removed later if unnecessary.
++ */
++void cpu_disable_virtualization(void)
++{
++	int cpu = raw_smp_processor_id();
 +
- 	/* Pop @svm to RAX while it's the only available register. */
- 	pop %_ASM_AX
- 
-@@ -200,13 +199,11 @@ SYM_FUNC_START(__svm_vcpu_run)
- 	mov %_ASM_AX, %_ASM_DI
- 
- 	mov SVM_vmcb01_pa(%_ASM_DI), %_ASM_AX
--5:	vmsave %_ASM_AX
--6:
-+3:	vmsave %_ASM_AX
- 
- 	/* Restores GSBASE among other things, allowing access to percpu data.  */
- 	pop %_ASM_AX
--7:	vmload %_ASM_AX
--8:
-+4:	vmload %_ASM_AX
- 
- 	/* IMPORTANT: Stuff the RSB immediately after VM-Exit, before RET! */
- 	FILL_RETURN_BUFFER %_ASM_AX, RSB_CLEAR_LOOPS, X86_FEATURE_RSB_VMEXIT
-@@ -269,23 +266,12 @@ SYM_FUNC_START(__svm_vcpu_run)
- 	RESTORE_GUEST_SPEC_CTRL_BODY
- 	RESTORE_HOST_SPEC_CTRL_BODY (%_ASM_SP)
- 
--10:	cmpb $0, _ASM_RIP(kvm_rebooting)
--	jne 2b
--	ud2
--30:	cmpb $0, _ASM_RIP(kvm_rebooting)
--	jne 4b
--	ud2
--50:	cmpb $0, _ASM_RIP(kvm_rebooting)
--	jne 6b
--	ud2
--70:	cmpb $0, _ASM_RIP(kvm_rebooting)
--	jne 8b
--	ud2
--
--	_ASM_EXTABLE(1b, 10b)
--	_ASM_EXTABLE(3b, 30b)
--	_ASM_EXTABLE(5b, 50b)
--	_ASM_EXTABLE(7b, 70b)
-+5:	ud2
++	if (!is_vmx_supported())
++		return;
 +
-+	_ASM_EXTABLE(1b, 5b)
-+	_ASM_EXTABLE(2b, 5b)
-+	_ASM_EXTABLE(3b, 5b)
-+	_ASM_EXTABLE(4b, 5b)
- 
- SYM_FUNC_END(__svm_vcpu_run)
- 
-@@ -343,7 +329,7 @@ SYM_FUNC_START(__svm_sev_es_vcpu_run)
- 
- 	/* Enter guest mode */
- 1:	vmrun %rax
--2:
++	if (!(cr4_read_shadow() & X86_CR4_VMXE)) {
++		pr_err("VMX not enabled or already disabled on CPU%d\n", cpu);
++		return;
++	}
 +
- 	/* IMPORTANT: Stuff the RSB immediately after VM-Exit, before RET! */
- 	FILL_RETURN_BUFFER %rax, RSB_CLEAR_LOOPS, X86_FEATURE_RSB_VMEXIT
- 
-@@ -365,11 +351,9 @@ SYM_FUNC_START(__svm_sev_es_vcpu_run)
- 	RESTORE_GUEST_SPEC_CTRL_BODY
- 	RESTORE_HOST_SPEC_CTRL_BODY %sil
- 
--3:	cmpb $0, kvm_rebooting(%rip)
--	jne 2b
--	ud2
-+2:	ud2
- 
--	_ASM_EXTABLE(1b, 3b)
-+	_ASM_EXTABLE(1b, 2b)
- 
- SYM_FUNC_END(__svm_sev_es_vcpu_run)
- #endif /* CONFIG_KVM_AMD_SEV */
-diff --git a/arch/x86/kvm/vmx/tdx.c b/arch/x86/kvm/vmx/tdx.c
-index 66744f5768c8..cfe5f8b63973 100644
---- a/arch/x86/kvm/vmx/tdx.c
-+++ b/arch/x86/kvm/vmx/tdx.c
-@@ -2052,10 +2052,8 @@ int tdx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t fastpath)
- 	 * Handle TDX SW errors, including TDX_SEAMCALL_UD, TDX_SEAMCALL_GP and
- 	 * TDX_SEAMCALL_VMFAILINVALID.
- 	 */
--	if (unlikely((vp_enter_ret & TDX_SW_ERROR) == TDX_SW_ERROR)) {
--		KVM_BUG_ON(!kvm_rebooting, vcpu->kvm);
-+	if (unlikely((vp_enter_ret & TDX_SW_ERROR) == TDX_SW_ERROR))
- 		goto unhandled_exit;
--	}
- 
- 	if (unlikely(tdx_failed_vmentry(vcpu))) {
- 		/*
-diff --git a/arch/x86/kvm/vmx/vmenter.S b/arch/x86/kvm/vmx/vmenter.S
-index 0a6cf5bff2aa..3457b5e1f856 100644
---- a/arch/x86/kvm/vmx/vmenter.S
-+++ b/arch/x86/kvm/vmx/vmenter.S
-@@ -293,8 +293,6 @@ SYM_INNER_LABEL_ALIGN(vmx_vmexit, SYM_L_GLOBAL)
- 	RET
- 
- .Lfixup:
--	cmpb $0, _ASM_RIP(kvm_rebooting)
--	jne .Lvmfail
- 	ud2
- .Lvmfail:
- 	/* VM-Fail: set return value to 1 */
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 8b9f64770684..1abc4550fd76 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -687,15 +687,11 @@ static void drop_user_return_notifiers(void)
- 
++	asm goto("1: vmxoff\n\t"
++		 _ASM_EXTABLE(1b, %l[fault])
++		 ::: "cc", "memory" : fault);
++
++exit:
++	cr4_clear_bits(X86_CR4_VMXE);
++	intel_pt_handle_vmx(0);
++	return;
++
++fault:
++	pr_err("VMXOFF faulted on CPU%d\n", cpu);
++	goto exit;
++}
++
  /*
-  * Handle a fault on a hardware virtualization (VMX or SVM) instruction.
-- *
-- * Hardware virtualization extension instructions may fault if a reboot turns
-- * off virtualization while processes are running.  Usually after catching the
-- * fault we just panic; during reboot instead the instruction is ignored.
+  * This does the hard work of actually picking apart the CPU stuff...
   */
- noinstr void kvm_spurious_fault(void)
- {
--	/* Fault while not rebooting.  We want the trace. */
--	BUG_ON(!kvm_rebooting);
-+	/* We want the trace. */
-+	BUG_ON(true);
- }
- EXPORT_SYMBOL_GPL(kvm_spurious_fault);
+diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
+index c6b12bed173d..772c6d350b50 100644
+--- a/arch/x86/kernel/crash.c
++++ b/arch/x86/kernel/crash.c
+@@ -111,6 +111,7 @@ void native_machine_crash_shutdown(struct pt_regs *regs)
  
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 151305b33bce..2d9c306db4f0 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -2276,7 +2276,6 @@ static inline bool kvm_check_request(int req, struct kvm_vcpu *vcpu)
+ 	crash_smp_send_stop();
  
- #ifdef CONFIG_KVM_GENERIC_HARDWARE_ENABLING
- extern bool enable_virt_at_load;
--extern bool kvm_rebooting;
- #endif
++	/* Kept to VMCLEAR loaded VMCSs */
+ 	cpu_emergency_disable_virtualization();
  
- extern unsigned int halt_poll_ns;
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 6e86c6a45a71..0037761c1a51 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -5559,9 +5559,6 @@ bool enable_virt_at_load = true;
- module_param(enable_virt_at_load, bool, 0444);
- EXPORT_SYMBOL_GPL(enable_virt_at_load);
- 
--__visible bool kvm_rebooting;
--EXPORT_SYMBOL_GPL(kvm_rebooting);
--
- static DEFINE_PER_CPU(bool, virtualization_enabled);
- static DEFINE_MUTEX(kvm_usage_lock);
- static int kvm_usage_count;
-@@ -5610,18 +5607,10 @@ static int kvm_offline_cpu(unsigned int cpu)
- static void kvm_shutdown(void)
- {
  	/*
--	 * Disable hardware virtualization and set kvm_rebooting to indicate
--	 * that KVM has asynchronously disabled hardware virtualization, i.e.
--	 * that relevant errors and exceptions aren't entirely unexpected.
--	 * Some flavors of hardware virtualization need to be disabled before
--	 * transferring control to firmware (to perform shutdown/reboot), e.g.
--	 * on x86, virtualization can block INIT interrupts, which are used by
--	 * firmware to pull APs back under firmware control.  Note, this path
--	 * is used for both shutdown and reboot scenarios, i.e. neither name is
--	 * 100% comprehensive.
-+	 * Note, this path is used for both shutdown and reboot scenarios, i.e.
-+	 * neither name is 100% comprehensive.
- 	 */
- 	pr_info("kvm: exiting hardware virtualization\n");
--	kvm_rebooting = true;
- 	on_each_cpu(kvm_disable_virtualization_cpu, NULL, 1);
+@@ -141,6 +142,9 @@ void native_machine_crash_shutdown(struct pt_regs *regs)
+ 	x86_platform.guest.enc_kexec_finish();
+ 
+ 	crash_save_cpu(regs, smp_processor_id());
++
++	/* Disable virtualization on the last running CPU, usually the BSP */
++	cpu_disable_virtualization();
  }
  
+ #if defined(CONFIG_KEXEC_FILE) || defined(CONFIG_CRASH_HOTPLUG)
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 1b7960cf6eb0..a0f6397b81ab 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -827,6 +827,9 @@ void __noreturn stop_this_cpu(void *dummy)
+ 	disable_local_APIC();
+ 	mcheck_cpu_clear(c);
+ 
++	/* Disable virtualization, usually this is an AP */
++	cpu_disable_virtualization();
++
+ 	/*
+ 	 * Use wbinvd on processors that support SME. This provides support
+ 	 * for performing a successful kexec when going from SME inactive
+diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+index 964f6b0a3d68..7433e634018f 100644
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -764,6 +764,9 @@ void native_machine_shutdown(void)
+ 
+ 	if (kexec_in_progress)
+ 		x86_platform.guest.enc_kexec_finish();
++
++	/* Disable virtualization on the last running CPU, usually the BSP */
++	cpu_disable_virtualization();
+ }
+ 
+ static void __machine_emergency_restart(int emergency)
+@@ -873,14 +876,14 @@ static int crash_nmi_callback(unsigned int val, struct pt_regs *regs)
+ 	if (shootdown_callback)
+ 		shootdown_callback(cpu, regs);
+ 
+-	/*
+-	 * Prepare the CPU for reboot _after_ invoking the callback so that the
+-	 * callback can safely use virtualization instructions, e.g. VMCLEAR.
+-	 */
++	/* Kept to VMCLEAR loaded VMCSs */
+ 	cpu_emergency_disable_virtualization();
+ 
+ 	atomic_dec(&waiting_for_crash_ipi);
+ 
++	/* Disable virtualization, usually this is an AP */
++	cpu_disable_virtualization();
++
+ 	if (smp_ops.stop_this_cpu) {
+ 		smp_ops.stop_this_cpu();
+ 		BUG();
+diff --git a/arch/x86/kernel/smp.c b/arch/x86/kernel/smp.c
+index b014e6d229f9..eb6a389ba1a9 100644
+--- a/arch/x86/kernel/smp.c
++++ b/arch/x86/kernel/smp.c
+@@ -124,7 +124,9 @@ static int smp_stop_nmi_callback(unsigned int val, struct pt_regs *regs)
+ 	if (raw_smp_processor_id() == atomic_read(&stopping_cpu))
+ 		return NMI_HANDLED;
+ 
++	/* Kept to VMCLEAR loaded VMCSs */
+ 	cpu_emergency_disable_virtualization();
++
+ 	stop_this_cpu(NULL);
+ 
+ 	return NMI_HANDLED;
+@@ -136,7 +138,10 @@ static int smp_stop_nmi_callback(unsigned int val, struct pt_regs *regs)
+ DEFINE_IDTENTRY_SYSVEC(sysvec_reboot)
+ {
+ 	apic_eoi();
++
++	/* Kept to VMCLEAR loaded VMCSs */
+ 	cpu_emergency_disable_virtualization();
++
+ 	stop_this_cpu(NULL);
+ }
+ 
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 33e166f6ab12..fe3b04f33b3f 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -1229,6 +1229,12 @@ int native_cpu_disable(void)
+          */
+ 	apic_soft_disable();
+ 
++	/*
++	 * IPIs have been disabled as mentioned above, so virtualization
++	 * can now be safely shut down.
++	 */
++	cpu_disable_virtualization();
++
+ 	return 0;
+ }
+ 
+diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+index f6742df0c4ff..26af0a8ae08f 100644
+--- a/arch/x86/kvm/vmx/vmx.c
++++ b/arch/x86/kvm/vmx/vmx.c
+@@ -674,29 +674,6 @@ static int vmx_set_guest_uret_msr(struct vcpu_vmx *vmx,
+ 	return ret;
+ }
+ 
+-/*
+- * Disable VMX and clear CR4.VMXE (even if VMXOFF faults)
+- *
+- * Note, VMXOFF causes a #UD if the CPU is !post-VMXON, but it's impossible to
+- * atomically track post-VMXON state, e.g. this may be called in NMI context.
+- * Eat all faults as all other faults on VMXOFF faults are mode related, i.e.
+- * faults are guaranteed to be due to the !post-VMXON check unless the CPU is
+- * magically in RM, VM86, compat mode, or at CPL>0.
+- */
+-static int kvm_cpu_vmxoff(void)
+-{
+-	asm goto("1: vmxoff\n\t"
+-			  _ASM_EXTABLE(1b, %l[fault])
+-			  ::: "cc", "memory" : fault);
+-
+-	cr4_clear_bits(X86_CR4_VMXE);
+-	return 0;
+-
+-fault:
+-	cr4_clear_bits(X86_CR4_VMXE);
+-	return -EIO;
+-}
+-
+ void vmx_emergency_disable_virtualization_cpu(void)
+ {
+ 	int cpu = raw_smp_processor_id();
+@@ -719,8 +696,6 @@ void vmx_emergency_disable_virtualization_cpu(void)
+ 		if (v->shadow_vmcs)
+ 			vmcs_clear(v->shadow_vmcs);
+ 	}
+-
+-	kvm_cpu_vmxoff();
+ }
+ 
+ static void __loaded_vmcs_clear(void *arg)
+@@ -2788,12 +2763,7 @@ void vmx_disable_virtualization_cpu(void)
+ {
+ 	vmclear_local_loaded_vmcss();
+ 
+-	if (kvm_cpu_vmxoff())
+-		kvm_spurious_fault();
+-
+ 	hv_reset_evmcs();
+-
+-	intel_pt_handle_vmx(0);
+ }
+ 
+ struct vmcs *alloc_vmcs_cpu(bool shadow, int cpu, gfp_t flags)
+diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
+index 0eec314b79c2..d2c865fdb069 100644
+--- a/arch/x86/power/cpu.c
++++ b/arch/x86/power/cpu.c
+@@ -129,6 +129,9 @@ static void __save_processor_state(struct saved_context *ctxt)
+ 	ctxt->misc_enable_saved = !rdmsrq_safe(MSR_IA32_MISC_ENABLE,
+ 					       &ctxt->misc_enable);
+ 	msr_save_context(ctxt);
++
++	/* Now CR4 is saved, disable VMX and clear CR4.VMXE */
++	cpu_disable_virtualization();
+ }
+ 
+ /* Needed by apm.c */
 -- 
 2.51.0
 
