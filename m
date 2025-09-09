@@ -1,177 +1,162 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51DE733CEB3;
-	Tue,  9 Sep 2025 13:35:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7FB0B31CA52;
+	Tue,  9 Sep 2025 13:40:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757424936; cv=none; b=a35kh62Xa3IqAyw78O7jbJNAaBL96a/SsNvXmRj4qo2A1XK0csrBgGnXLx6t1cUG/T4OQmt++/srq5Ps56vf4LmekJrjMT1VmljqVocmqBLnES6oC33va2vsagfmnaknGczFqrVbxhA6pKQmOwVDtWGBzvr0alhx1rsvn6ltBTI=
+	t=1757425223; cv=none; b=Me9gqcD8nV+v0H1DxKchaUhPl0TkVcr0F90A0UWhbN4FDkCZ5UTS7qRVfxYLcXwwFPg8iGu++Lyg8hPDplJr6UNGfRpmnHwBJlC1IDoZYNSkWWU8OIJy2SP2M+xbzxRvLAdY+8pQaGBR739hWBsHmoZPkM3kKgv8tCoo6Y1Mpmw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757424936; c=relaxed/simple;
-	bh=q/TuvV+VDTC7OJJrPjtPHnQkCgkRMuerUtgEffTRbWA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=EysxYSI0wDsBiirCaEGxgqP3eKI1HC2CSW8/tkhjaU/csZVYttWiL3CLPF1vsHYYdeUEUhwsKVcJIuxqxi13ICpegyoK1xhAEhWKPPliQCzWC78MhS2NAPBtHdPAUJAiB9OWWAHqJTRrvKRySIY/5tTL8D9w6h/s9JXL4hZHgb4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bcTL97WP; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1757425223; c=relaxed/simple;
+	bh=NlXEF3VmiXF2+P9u5NoblgQUs0TpNmThc3On54QrJMw=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
+	 In-Reply-To:To:CC; b=MFf/ZYl7yFeSRe25KYBP3UP5Qbw7KmBKFW/b2rxVUiZmeC5kNp+xOaRb53s5zoz+PQTaQqigHV1d7ELh6T3RQ0NyRzo6vVaGtiF8GD8C4CuvC1z80qJt+Vhg90jwFDOmTb0XGVs1NqTRb/wTEc8gA1LydQG3syvYTlLX/vWhIhU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=bq/pHbki; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bcTL97WP"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D3746C4CEF4;
-	Tue,  9 Sep 2025 13:35:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1757424935;
-	bh=q/TuvV+VDTC7OJJrPjtPHnQkCgkRMuerUtgEffTRbWA=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=bcTL97WPR30sJwWuiSSqWApQD3S2RkrDhgHXI/NUtmB/Qbx79IoewRux7JBjHLXuE
-	 qV1JPKzQyAg3VfeB5Iv5i5S97Wcw9PE8s0kVjFOUNcIlMzD98XcaFxHWClBOI4zEfm
-	 JcKbnftr3tV4HzDSsyWHz/7R/7yBHHJp1OjlXduvp+RdPMperEUAQS7nDStvNFIqp4
-	 I/KxkT5IsCvKHDZPdFYOko6p3SEK+Wu/AIb20FcnbWekybYaTO5PG4tgUs98oFAZfg
-	 3KdyzeBhN6NcHcplOThx+NvgbzJX2unkWIYybQTbuIQRzsILCWhnj+Q9UMf49f+3zx
-	 mhIXybEdmXhAw==
-Received: by mail-ot1-f45.google.com with SMTP id 46e09a7af769-74526ca7a46so2202549a34.2;
-        Tue, 09 Sep 2025 06:35:35 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCVjoD+H3CYWVvlkx/8i1rMVDcmUOFbdMCvdmtQlIOA23NDSHexFS/p5eMFPOmYrQlH5ljyT6cd7F48=@vger.kernel.org, AJvYcCXLhj2s5Ce5sDj0/UIYtouMbkfNFhuThD2G/Ojj5AK0imZWt2ZfLKRADbLhGy9dB+cRP6J7kXtBpbJP9YY=@vger.kernel.org
-X-Gm-Message-State: AOJu0YwFtDpITpCQot5rFYd1ykFlQsQ+Kc2u+r9oNvp60EzkVI5YYR/G
-	TPc/afKQMbxl6oC5tG0sxNfpQ1tsckVf9JWzXf+Ms1dsPGxCL8hWk8s6oI3gVS9vidCGRh3GlBa
-	2dTOJEqUrejt7wpFeXozp5OVbBXNu5TM=
-X-Google-Smtp-Source: AGHT+IHoy2mCBTxWELrYMkWJAMOCdDAUsD/1GZxzrEjUjQiP0ZRkn3VaAyZ2ZxlO09WOGQdD0Fwn08QuYUjAg3qtdNs=
-X-Received: by 2002:a05:6870:3509:b0:308:51fe:ea07 with SMTP id
- 586e51a60fabf-32262631adbmr5057727fac.1.1757424935050; Tue, 09 Sep 2025
- 06:35:35 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="bq/pHbki"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5899LR49009159;
+	Tue, 9 Sep 2025 13:39:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	yd/oPuUfVOJcMQA/lTcKzDkbSGoGxeZhh5S6dzLVh+I=; b=bq/pHbki52n+xlpE
+	YPJ324wYDd4eq6QDmKcf4GXVJiszfNFz3t/gg4FPsISNDVKTuO0+c1BQGNpUBZy0
+	pgJu6hOH10Vwq7EZNza4MUUU52clxkOJ1GbzesJg5r/hvLNw8xp155HrRbnnCVaM
+	2xz+Wf/D+3sN2sAiQs50kwuUHSfxqotOfXUXWI37JGmdLTcMtVxZwVXgdt7oLaIK
+	gzAm02A8i8YUhdQYXR8FI1YR85GHxTUlFED9MdUi13ECx2UWwjXFEdReJx1NjPGt
+	G9RkAZQhMxXZMLisVPK830mIWjU5gjRdGl8kPxHItvfMdEV4A+7aQkVlZ2oH06KJ
+	7iBATQ==
+Received: from nasanppmta01.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 491qhdw5vf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 09 Sep 2025 13:39:52 +0000 (GMT)
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+	by NASANPPMTA01.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 589DdqZL022907
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 9 Sep 2025 13:39:52 GMT
+Received: from nsssdc-sh01-lnx.ap.qualcomm.com (10.80.80.8) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1748.24; Tue, 9 Sep 2025 06:39:46 -0700
+From: Luo Jie <quic_luoj@quicinc.com>
+Date: Tue, 9 Sep 2025 21:39:13 +0800
+Subject: [PATCH v5 04/10] clk: qcom: gcc-ipq5424: Enable NSS NoC clocks to
+ use icc-clk
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250908075443.208570-1-aboorvad@linux.ibm.com> <0b59d09e-a508-4bca-a110-ab2b12c2284a@arm.com>
-In-Reply-To: <0b59d09e-a508-4bca-a110-ab2b12c2284a@arm.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 9 Sep 2025 15:35:24 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0jP5pwev09wQSTq=HDrdW6Er0niSWWkPB5RLXdYhV0-dw@mail.gmail.com>
-X-Gm-Features: Ac12FXwffpTVnydBkt37R3v4F8sg6i8IRB2SgIi3TxGqpa7FsuQr9tRNNpCkCZc
-Message-ID: <CAJZ5v0jP5pwev09wQSTq=HDrdW6Er0niSWWkPB5RLXdYhV0-dw@mail.gmail.com>
-Subject: Re: [PATCH v3 1/1] cpuidle: menu: Add residency threshold for
- non-polling state selection
-To: Christian Loehle <christian.loehle@arm.com>
-Cc: Aboorva Devarajan <aboorvad@linux.ibm.com>, rafael@kernel.org, daniel.lezcano@linaro.org, 
-	gautam@linux.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-ID: <20250909-qcom_ipq5424_nsscc-v5-4-332c49a8512b@quicinc.com>
+References: <20250909-qcom_ipq5424_nsscc-v5-0-332c49a8512b@quicinc.com>
+In-Reply-To: <20250909-qcom_ipq5424_nsscc-v5-0-332c49a8512b@quicinc.com>
+To: Bjorn Andersson <andersson@kernel.org>,
+        Michael Turquette
+	<mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        "Varadarajan
+ Narayanan" <quic_varada@quicinc.com>,
+        Georgi Djakov <djakov@kernel.org>, "Rob
+ Herring" <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        "Conor
+ Dooley" <conor+dt@kernel.org>,
+        Anusha Rao <quic_anusha@quicinc.com>,
+        "Manikanta Mylavarapu" <quic_mmanikan@quicinc.com>,
+        Devi Priya
+	<quic_devipriy@quicinc.com>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        "Richard
+ Cochran" <richardcochran@gmail.com>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>
+CC: <linux-arm-msm@vger.kernel.org>, <linux-clk@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>,
+        Krzysztof Kozlowski
+	<krzysztof.kozlowski@linaro.org>,
+        <netdev@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+        <quic_kkumarcs@quicinc.com>, <quic_linchen@quicinc.com>,
+        <quic_leiwei@quicinc.com>, <quic_pavir@quicinc.com>,
+        <quic_suruchia@quicinc.com>, Luo Jie
+	<quic_luoj@quicinc.com>,
+        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+X-Mailer: b4 0.14.1
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1757425161; l=1747;
+ i=quic_luoj@quicinc.com; s=20250209; h=from:subject:message-id;
+ bh=NlXEF3VmiXF2+P9u5NoblgQUs0TpNmThc3On54QrJMw=;
+ b=6rzlGrtf5VhelZUnQeSdhadmQ0GIDdRH7Skgdahrg9hSitkSO+i7pqegpxcL3hyrJnwKQ+IHu
+ pIyIV6y/E/zBH7izgJW0shEFonjzUJtrsD5W6qfWXotJ59+Zr3hegHl
+X-Developer-Key: i=quic_luoj@quicinc.com; a=ed25519;
+ pk=pzwy8bU5tJZ5UKGTv28n+QOuktaWuriznGmriA9Qkfc=
+X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: 6n1DAXKtfqOxuJKqmubf_sc1-PbXpfnE
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTA4MDAzNCBTYWx0ZWRfX80FPbKVtPCXK
+ cZwGom+2lhm5RF+56rWVvNKPdSyqsXhDpAD7TEdejeMGm5BKx5vxtVWfjF5++MPvMZPcE54tZkQ
+ YqmIcbHLgqUqbYRdG6nnwq94Sk1KetllO2qSGTXgOPE/HWtmDhv5OLQWwNLVRPJvxCaqyDgIM69
+ Q9bogFwA9vuDdlXamwm14X98XgAUCKLdCfaW/1NIWKKXjl8unqB+FyOmOhxEfb+sX59EiSsOPpv
+ k9gac+QzMkUVAcH2b0o4bkkPQzJJ7VLSKaNhO4ykOCYVoKL4PbRXQeWOnvLcOtsSGz4HpttXyfB
+ I2+5SHDfS/4JWLCtoFEhZadfWxX8KJQb4a/cPmrdppvq6vHnd0eZx+gIfM2HvemK3r2Hro71Phr
+ ymIikCZu
+X-Authority-Analysis: v=2.4 cv=YOCfyQGx c=1 sm=1 tr=0 ts=68c02e28 cx=c_pps
+ a=JYp8KDb2vCoCEuGobkYCKw==:117 a=JYp8KDb2vCoCEuGobkYCKw==:17
+ a=GEpy-HfZoHoA:10 a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=EUspDBNiAAAA:8
+ a=COk6AnOGAAAA:8 a=gl6uzLfi5yNa2Npxn2gA:9 a=QEXdDO2ut3YA:10
+ a=TjNXssC_j7lpFel5tvFf:22
+X-Proofpoint-ORIG-GUID: 6n1DAXKtfqOxuJKqmubf_sc1-PbXpfnE
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-09-09_01,2025-09-08_02,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 phishscore=0 clxscore=1015 adultscore=0 impostorscore=0
+ suspectscore=0 priorityscore=1501 spamscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2509080034
 
-On Tue, Sep 9, 2025 at 3:32=E2=80=AFPM Christian Loehle
-<christian.loehle@arm.com> wrote:
->
-> On 9/8/25 08:54, Aboorva Devarajan wrote:
-> > On virtualized PowerPC (pseries) systems, where only one polling state
-> > (Snooze) and one deep state (CEDE) are available, selecting CEDE when
-> > the predicted idle duration exceeds the target residency of the CEDE
-> > state can hurt performance. In such cases, the entry/exit overhead of
-> > CEDE outweighs the power savings, leading to unnecessary state transiti=
-ons
-> > and higher latency.
-> >
-> > Menu governor currently contains a special-case rule that prioritizes
-> > the first non-polling state over polling, even when its target residenc=
-y
-> > is much longer than the predicted idle duration. On PowerPC/pseries,
-> > where the gap between the polling state (Snooze) and the first non-poll=
-ing
-> > state (CEDE) is large, this behavior causes performance regressions.
-> >
-> > This patch refines the special case by adding an extra requirement:
-> > the first non-polling state may only be chosen if its
-> > target_residency_ns is below the defined RESIDENCY_THRESHOLD_NS. If thi=
-s
-> > condition is not met, the non-polling state is not selected, and pollin=
-g
-> > state is retained instead.
-> >
-> > This change is limited to the single special-case condition for the fir=
-st
-> > non-polling state. The general state selection logic in the menu govern=
-or
-> > remains unchanged.
-> >
-> > Performance improvement observed with pgbench on PowerPC (pseries)
-> > system:
-> > +---------------------------+------------+------------+------------+
-> > | Metric                    | Baseline   | Patched    | Change (%) |
-> > +---------------------------+------------+------------+------------+
-> > | Transactions/sec (TPS)    | 495,210    | 536,982    | +8.45%     |
-> > | Avg latency (ms)          | 0.163      | 0.150      | -7.98%     |
-> > +---------------------------+------------+------------+------------+
-> > CPUIdle state usage:
-> > +--------------+--------------+-------------+
-> > | Metric       | Baseline     | Patched     |
-> > +--------------+--------------+-------------+
-> > | Total usage  | 12,735,820   | 13,918,442  |
-> > | Above usage  | 11,401,520   | 1,598,210   |
-> > | Below usage  | 20,145       | 702,395     |
-> > +--------------+--------------+-------------+
-> >
-> > Above/Total and Below/Total usage percentages which indicates
-> > mispredictions:
-> > +------------------------+-----------+---------+
-> > | Metric                 | Baseline  | Patched |
-> > +------------------------+-----------+---------+
-> > | Above % (Above/Total)  | 89.56%    | 11.49%  |
-> > | Below % (Below/Total)  | 0.16%     | 5.05%   |
-> > | Total cpuidle miss (%) | 89.72%    | 16.54%  |
-> > +------------------------+-----------+---------+
-> >
-> > The results show that restricting non-polling state selection to
-> > cases where its residency is within the threshold reduces misprediction=
-s,
-> > lowers unnecessary state transitions, and improves overall throughput.
-> >
-> > Signed-off-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
-> > ---
-> >
-> > v2: https://lore.kernel.org/all/20250317060357.29451-1-aboorvad@linux.i=
-bm.com/
-> >
-> > Changes in v2 -> v3:
-> >   - Modifed the patch following Rafael's feedback, incorporated a resid=
-ency threshold check
-> >     (s->target_residency_ns < RESIDENCY_THRESHOLD_NS) as suggested.
-> >   - Updated commit message accordingly.
-> > ---
-> >  drivers/cpuidle/governors/menu.c | 8 +++++---
-> >  1 file changed, 5 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governo=
-rs/menu.c
-> > index b2e3d0b0a116..d25b04539109 100644
-> > --- a/drivers/cpuidle/governors/menu.c
-> > +++ b/drivers/cpuidle/governors/menu.c
-> > @@ -316,11 +316,13 @@ static int menu_select(struct cpuidle_driver *drv=
-, struct cpuidle_device *dev,
-> >
-> >               if (s->target_residency_ns > predicted_ns) {
-> >                       /*
-> > -                      * Use a physical idle state, not busy polling, u=
-nless
-> > -                      * a timer is going to trigger soon enough.
-> > +                      * Use a physical idle state instead of busy poll=
-ing
-> > +                      * if the next timer doesn't expire soon and its
-> > +                      * target residency is below the residency thresh=
-old.
-> >                        */
-> >                       if ((drv->states[idx].flags & CPUIDLE_FLAG_POLLIN=
-G) &&
-> > -                         s->target_residency_ns <=3D data->next_timer_=
-ns) {
-> > +                         s->target_residency_ns <=3D data->next_timer_=
-ns &&
-> > +                         s->target_residency_ns < RESIDENCY_THRESHOLD_=
-NS) {
-> >                               predicted_ns =3D s->target_residency_ns;
-> >                               idx =3D i;
-> >                               break;
->
-> To me that seems the least intrusive way the issue for your platform.
-> Rafael, can you live with this?
+Add NSS NoC clocks using the icc-clk framework to create interconnect
+paths. The network subsystem (NSS) can be connected to these NoCs.
 
-Yes, it's fine.
+Additionally, add the LPASS CNOC and SNOC nodes to establish the complete
+interconnect path.
 
-> Reviewed-by: Christian Loehle <christian.loehle@arm.com>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Signed-off-by: Luo Jie <quic_luoj@quicinc.com>
+---
+ drivers/clk/qcom/gcc-ipq5424.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/drivers/clk/qcom/gcc-ipq5424.c b/drivers/clk/qcom/gcc-ipq5424.c
+index 71afa1b86b72..6cfe4f2b2888 100644
+--- a/drivers/clk/qcom/gcc-ipq5424.c
++++ b/drivers/clk/qcom/gcc-ipq5424.c
+@@ -3250,6 +3250,16 @@ static const struct qcom_icc_hws_data icc_ipq5424_hws[] = {
+ 	{ MASTER_ANOC_PCIE3, SLAVE_ANOC_PCIE3, GCC_ANOC_PCIE3_2LANE_M_CLK },
+ 	{ MASTER_CNOC_PCIE3, SLAVE_CNOC_PCIE3, GCC_CNOC_PCIE3_2LANE_S_CLK },
+ 	{ MASTER_CNOC_USB, SLAVE_CNOC_USB, GCC_CNOC_USB_CLK },
++	{ MASTER_NSSNOC_NSSCC, SLAVE_NSSNOC_NSSCC, GCC_NSSNOC_NSSCC_CLK },
++	{ MASTER_NSSNOC_SNOC_0, SLAVE_NSSNOC_SNOC_0, GCC_NSSNOC_SNOC_CLK },
++	{ MASTER_NSSNOC_SNOC_1, SLAVE_NSSNOC_SNOC_1, GCC_NSSNOC_SNOC_1_CLK },
++	{ MASTER_NSSNOC_PCNOC_1, SLAVE_NSSNOC_PCNOC_1, GCC_NSSNOC_PCNOC_1_CLK },
++	{ MASTER_NSSNOC_QOSGEN_REF, SLAVE_NSSNOC_QOSGEN_REF, GCC_NSSNOC_QOSGEN_REF_CLK },
++	{ MASTER_NSSNOC_TIMEOUT_REF, SLAVE_NSSNOC_TIMEOUT_REF, GCC_NSSNOC_TIMEOUT_REF_CLK },
++	{ MASTER_NSSNOC_XO_DCD, SLAVE_NSSNOC_XO_DCD, GCC_NSSNOC_XO_DCD_CLK },
++	{ MASTER_NSSNOC_ATB, SLAVE_NSSNOC_ATB, GCC_NSSNOC_ATB_CLK },
++	{ MASTER_CNOC_LPASS_CFG, SLAVE_CNOC_LPASS_CFG, GCC_CNOC_LPASS_CFG_CLK },
++	{ MASTER_SNOC_LPASS, SLAVE_SNOC_LPASS, GCC_SNOC_LPASS_CLK },
+ };
+ 
+ static const struct of_device_id gcc_ipq5424_match_table[] = {
+
+-- 
+2.34.1
+
