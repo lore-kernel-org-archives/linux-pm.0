@@ -1,110 +1,153 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
+Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6423257858;
-	Wed, 10 Sep 2025 15:40:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 169B420E030;
+	Wed, 10 Sep 2025 16:22:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=68.232.154.123
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757518816; cv=none; b=RK3JLdVD0Y4/T9QnPsIv84xYyg574NOa1J2nBY5TKEfnJOYsOfck8QBGqfiBVkoykgJau/a6WVGas8RyTElXkjtw/XfsHEhMGDcthAluioEfJ/drbVWxqnCVrdqSIz8AhYFps45msIKzcPqg/BL58A2Zlr/MtF90z/BA2A2k7qM=
+	t=1757521354; cv=none; b=uauihxhhW36QvcIbEtAnlc0jYDpnk5ivexI0zI/ttP7h5HOzXrijfLj4QftF+npgIcMm8oahJ2KLf1VQLrDnMEVppyjhN8WPKhYy4Qa5kSCov6OZ1AEAuvedL7IXlCejG/mytxH62509PcBYa5YR4e96MVvulxeBOPdvAxZG4Ec=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757518816; c=relaxed/simple;
-	bh=QrYqOCxbruM21gMTV1jjXaaxQ+qUE8x/RiQoGBT0K+o=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=tOn5PRJ2bAbGj/bDR190Edex44C4ktxdihvHdkWlNFiCuKKkHA9/tM7n3tDHqB/nEHvr5zZkNdyhClrHh/WEJoOyrdxWS97krO0Xb6sdwCNemKrLwf5vRU7mJccWHfZyhTWkHtKvf4Dfw3IRKbP+zpVUQXblvcIdt1BFZEHFvzc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=STjT5T9w; arc=none smtp.client-ip=198.175.65.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1757521354; c=relaxed/simple;
+	bh=OA697MSbwYFaga1yasvj23HlhhxErDH/zxQeYPOWGmE=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=b+x8VbauVob4ll4+LtbX87Hout0QN8/PCu32rXaiU39CdH6Ed1+BEjeB4yzSSg4+fQ4HDqkAgAKBs0mfW/BMVvEUUJtDJkxX9wcArPYz7jAvcnXvielSiwJHtcnjGfU+e/OsBBHVzJvHW+AF9H/mPi8I+/7T8IHNtalh+3UsOdY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com; spf=pass smtp.mailfrom=microchip.com; dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b=nETLaO+O; arc=none smtp.client-ip=68.232.154.123
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=microchip.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="STjT5T9w"
+	dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b="nETLaO+O"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1757518815; x=1789054815;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=QrYqOCxbruM21gMTV1jjXaaxQ+qUE8x/RiQoGBT0K+o=;
-  b=STjT5T9wLzYfUmM4CKHyruc/d7bPZ9xZQ1q2y5Ns2wrd9OmjJsTGm/9X
-   goNSx2fiGHzfvXrBgyqSeaJcdMslyQT+I4n/18wnQvPDBUhBLpfqe61Dc
-   Q3ZaLaSj3SLhGmRZ3oyrIDxgBRwH4SWgHzR4RErj2+TvLm2Ae3KX6bI5V
-   PRD7KigPm9N85imHMv2Y4g2yu8KhS/JlzsUzgokJoDaWv4flsRu8ZnOKC
-   TuCcl4PLJtdwidYjausDN0kW+KsiCY9x45PnBVSAbdtQYWC+lPIACYQb/
-   rohie+viibtB8lPx6ihMwduPMNiLveZyuvjaxIvjPRqxBHY+tdJT53jnR
+  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
+  t=1757521352; x=1789057352;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=OA697MSbwYFaga1yasvj23HlhhxErDH/zxQeYPOWGmE=;
+  b=nETLaO+Of0l/+cWjZWUDkqcViJLV2y09vFw4cF/4xKmaLqdXkosVviOq
+   I6gOVKkrE8hcZf9C0IDKpvyFg7VaN81gj2JuhREo+szgtXJV3tY3nXVCu
+   Hcf1dEIqg/o38i8GWGjSr3URLUQvc61gL3VK6oRRRmb3Lr5GGSAN9bfMU
+   aIDAFkukDGrtfvzuEccjm8LYvMsetJDW9n3c92VtYdy4+dM4PAuRJMB3W
+   oAhqNtsi3HP5HslRCo4ISBU3NMGZK+ITOBwY2v0edinAaqkTdkzPGFW5G
+   /BKEAoNDFV0qkI1VWo8fgA3cmgX5MTkD7wq1dzbpa8S0c5XfSFtqGmaJ0
    g==;
-X-CSE-ConnectionGUID: +U/nWZRaRiytzSej8uOiaA==
-X-CSE-MsgGUID: Ov71n1XYSCa3AAAu8GMSnw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11531"; a="59896959"
-X-IronPort-AV: E=Sophos;i="6.17,312,1747724400"; 
-   d="scan'208";a="59896959"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
-  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Sep 2025 08:40:13 -0700
-X-CSE-ConnectionGUID: rfYVEpm3RD+hL8jvhNh9/g==
-X-CSE-MsgGUID: pCuS3oKHQ16SXeVuD0Ma4A==
-X-ExtLoop1: 1
+X-CSE-ConnectionGUID: tPE+SbpaSyCyxVMbhLqdoA==
+X-CSE-MsgGUID: +YSUaQIrRSOq/S/Erz+hxg==
 X-IronPort-AV: E=Sophos;i="6.18,254,1751266800"; 
-   d="scan'208";a="204413413"
-Received: from spandruv-desk2.jf.intel.com (HELO [10.98.25.49]) ([10.98.25.49])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Sep 2025 08:40:12 -0700
-Message-ID: <dfcf7e0e55a9110c9c90334c46637c61e4cb98c7.camel@linux.intel.com>
-Subject: Re: [PATCH 2/2] cpufreq: intel_pstate: Enable HWP without EPP
- feature
-From: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Date: Wed, 10 Sep 2025 08:40:11 -0700
-In-Reply-To: <CAJZ5v0iu87EJYfJV+6gTBXkc5B5pfXo97JEfBb_ddOMnMrTCTw@mail.gmail.com>
-References: <20250904000608.260817-1-srinivas.pandruvada@linux.intel.com>
-	 <20250904000608.260817-2-srinivas.pandruvada@linux.intel.com>
-	 <CAJZ5v0gwXiRTo_Lri3rduA-RqDhwgK4ymwX3ttxqhTw9W6d=fQ@mail.gmail.com>
-	 <CAJZ5v0jqLnnBL8fLJ3vxS_61rAigru8T1a9Q-k+cg2kptv_zUA@mail.gmail.com>
-	 <CAJZ5v0iu87EJYfJV+6gTBXkc5B5pfXo97JEfBb_ddOMnMrTCTw@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2 (3.56.2-1.fc42) 
+   d="scan'208";a="213715732"
+X-Amp-Result: SKIPPED(no attachment in message)
+Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
+  by esa6.microchip.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 10 Sep 2025 09:22:25 -0700
+Received: from chn-vm-ex02.mchp-main.com (10.10.85.144) by
+ chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.58; Wed, 10 Sep 2025 09:22:11 -0700
+Received: from ryan-Precision-3630-Tower.microchip.com (10.10.85.11) by
+ chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server id
+ 15.1.2507.58 via Frontend Transport; Wed, 10 Sep 2025 09:22:11 -0700
+From: <Ryan.Wanner@microchip.com>
+To: <claudiu.beznea@tuxon.dev>, <sre@kernel.org>, <robh@kernel.org>,
+	<krzk+dt@kernel.org>, <conor+dt@kernel.org>, <nicolas.ferre@microchip.com>,
+	<alexandre.belloni@bootlin.com>, <linux@armlinux.org.uk>
+CC: <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>, "Ryan
+ Wanner" <Ryan.Wanner@microchip.com>
+Subject: [PATCH 3/4] ARM: at91: pm: Remove 2.5V regulator
+Date: Wed, 10 Sep 2025 09:20:38 -0700
+Message-ID: <a6785a40648b315a07152bca261a42bbf0f356af.1757519351.git.Ryan.Wanner@microchip.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1757519351.git.Ryan.Wanner@microchip.com>
+References: <cover.1757519351.git.Ryan.Wanner@microchip.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-On Wed, 2025-09-10 at 12:08 +0200, Rafael J. Wysocki wrote:
-> On Sat, Sep 6, 2025 at 6:13=E2=80=AFPM Rafael J. Wysocki <rafael@kernel.o=
-rg>
-> wrote:
-> >=20
-> > On Fri, Sep 5, 2025 at 11:02=E2=80=AFPM Rafael J. Wysocki
-> > <rafael@kernel.org> wrote:
-> > >=20
-> > > On Thu, Sep 4, 2025 at 2:06=E2=80=AFAM Srinivas Pandruvada
-> > > <srinivas.pandruvada@linux.intel.com> wrote:
-> > > >=20
-> > > > When EPP feature is not available (CPUID CPUID.06H:EAX[10] is
-> > > > not set),
-> > > > intel_pstate will not enable HWP.
-> > > >=20
-> > > > Some processors support DEC feature (Dynamic Efficiency
-> > > > Control). But in
-> > > > this case HWP must be enabled.
-> > > >=20
-> > > > So, enable HWP even if EPP feature is not available but DEC
-> > > > feature is
-> > > > present.
-> > > >=20
-> > > > When EPP feature is not available don't publish sysfs
-> > > > attributes
-> > > > "energy_performance_available_preferences" and
-> > > > "energy_performance_preference", but continue to enable HWP.
-> > > >=20
-> > > >=20
+From: Ryan Wanner <Ryan.Wanner@microchip.com>
 
-[...]
+Remove 2.5V regulator since enabling and disabling this regulator is no
+longer supported.
 
-> >=20
-> > Attached is a new version, please let me know if it works for you.
->=20
-> Any chance to have a look at the latest patch?
-That patch looks good.
+Signed-off-by: Ryan Wanner <Ryan.Wanner@microchip.com>
+---
+ arch/arm/mach-at91/pm_suspend.S | 29 -----------------------------
+ include/soc/at91/sama7-sfrbu.h  |  7 -------
+ 2 files changed, 36 deletions(-)
 
-Thanks,
-Srinivas
+diff --git a/arch/arm/mach-at91/pm_suspend.S b/arch/arm/mach-at91/pm_suspend.S
+index 198236bdbbb3..36cae7b1a490 100644
+--- a/arch/arm/mach-at91/pm_suspend.S
++++ b/arch/arm/mach-at91/pm_suspend.S
+@@ -87,29 +87,6 @@ tmp3	.req	r6
+ 
+ 	.endm
+ 
+-/**
+- * Set state for 2.5V low power regulator
+- * @ena: 0 - disable regulator
+- *	 1 - enable regulator
+- *
+- * Side effects: overwrites r7, r8, r9, r10
+- */
+-	.macro at91_2_5V_reg_set_low_power ena
+-#ifdef CONFIG_SOC_SAMA7
+-	ldr	r7, .sfrbu
+-	mov	r8, #\ena
+-	ldr	r9, [r7, #AT91_SFRBU_25LDOCR]
+-	orr	r9, r9, #AT91_SFRBU_25LDOCR_LP
+-	cmp	r8, #1
+-	beq	lp_done_\ena
+-	bic	r9, r9, #AT91_SFRBU_25LDOCR_LP
+-lp_done_\ena:
+-	ldr	r10, =AT91_SFRBU_25LDOCR_LDOANAKEY
+-	orr	r9, r9, r10
+-	str	r9, [r7, #AT91_SFRBU_25LDOCR]
+-#endif
+-	.endm
+-
+ /*
+  * Set LPM
+  * @ena: 0 - disable LPM
+@@ -1055,9 +1032,6 @@ save_mck:
+ 
+ 	at91_plla_disable
+ 
+-	/* Enable low power mode for 2.5V regulator. */
+-	at91_2_5V_reg_set_low_power 1
+-
+ 	ldr	tmp3, .pm_mode
+ 	cmp	tmp3, #AT91_PM_ULP1
+ 	beq	ulp1_mode
+@@ -1070,9 +1044,6 @@ ulp1_mode:
+ 	b	ulp_exit
+ 
+ ulp_exit:
+-	/* Disable low power mode for 2.5V regulator. */
+-	at91_2_5V_reg_set_low_power 0
+-
+ 	ldr	pmc, .pmc_base
+ 
+ 	at91_plla_enable
+diff --git a/include/soc/at91/sama7-sfrbu.h b/include/soc/at91/sama7-sfrbu.h
+index 76b740810d34..8cee48d1ae2c 100644
+--- a/include/soc/at91/sama7-sfrbu.h
++++ b/include/soc/at91/sama7-sfrbu.h
+@@ -18,13 +18,6 @@
+ #define		AT91_SFRBU_PSWBU_SOFTSWITCH	(1 << 1)	/* Power switch BU source selection */
+ #define		AT91_SFRBU_PSWBU_CTRL		(1 << 0)	/* Power switch BU control */
+ 
+-#define AT91_SFRBU_25LDOCR			(0x0C)		/* SFRBU 2.5V LDO Control Register */
+-#define		AT91_SFRBU_25LDOCR_LDOANAKEY	(0x3B6E18 << 8)	/* Specific value mandatory to allow writing of other register bits. */
+-#define		AT91_SFRBU_25LDOCR_STATE	(1 << 3)	/* LDOANA Switch On/Off Control */
+-#define		AT91_SFRBU_25LDOCR_LP		(1 << 2)	/* LDOANA Low-Power Mode Control */
+-#define		AT91_SFRBU_PD_VALUE_MSK		(0x3)
+-#define		AT91_SFRBU_25LDOCR_PD_VALUE(v)	((v) & AT91_SFRBU_PD_VALUE_MSK)	/* LDOANA Pull-down value */
+-
+ #define AT91_FRBU_DDRPWR			(0x10)		/* SFRBU DDR Power Control Register */
+ #define		AT91_FRBU_DDRPWR_STATE		(1 << 0)	/* DDR Power Mode State */
+ 
+-- 
+2.43.0
 
