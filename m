@@ -1,25 +1,25 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 6D4F4289358;
-	Wed, 10 Sep 2025 13:59:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7F20E32145E;
+	Wed, 10 Sep 2025 13:59:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757512757; cv=none; b=JDDMXbjQiFPLmcfRzkRMKL5G2sJqM0VkQ0nY3sQL+nHsF9wMhiPxef+sWmR7c6yolbrwoQdw+TrXg85ujyBkLzfT7X+Q8KECNtfiHGeyTZ4O+JYuzPOBJPBCHoS0t9hBw8vkXI61gVNwrdqCwDyUuQr5AiPpgrEPaeDI6aiHmPg=
+	t=1757512778; cv=none; b=a7C+wJM2oeBcAReWfbyFPgJufrITMdUglNiY0iapGvEc/NFl071OANROqT5mqs+u/oa5SOrcA22/2cbcgQiXc3psbP5KTEL4qtAPH8PXJAU5bHsxvSuVQXEu2IEpL6eJJrno1tcMUeLoBZ7XaLhPJ2B1cBk4h7uCov+pE8utP18=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757512757; c=relaxed/simple;
-	bh=u+HJQufIiCIozy/YxwbprUuqZZx3WzySTZMP4USJNHA=;
+	s=arc-20240116; t=1757512778; c=relaxed/simple;
+	bh=59bDAbI5f2Vldbh2lqwJDMzAsheAlxTdO3L5GcbmjhI=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=tXapyjKJNwsDxx0gJ9byispWiV4FMMLMcGQK6mgngfFAeKyV283e9mXTNbsVZdkd+5aZRbnbIbJ3YmMhOUxUFIqurd19AJXTu1Pypa66JLgRx051DSryM2pG1VVTOS8NRwUB6rRfk6LikRfTvTEYq/oXFmBV4FmszVQiP5f/SCU=
+	 In-Reply-To:Content-Type; b=WsJeYLxhsFIeLOY9jV+lNopHHJ2BXb0jehH02kH3dLL//WoO6NHDHkPeUxe2BZ0owdNUtOs6oSXXxPRdea/nG+pID6ocQjTUPLw5nCmX9n+5Wup/o3AyJAfTM57AUd9Es+1GEi1FXSwwzIgKUuzoLBhHmWC+gryPgfZj5voVMQs=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2D0141595;
-	Wed, 10 Sep 2025 06:59:01 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 556841595;
+	Wed, 10 Sep 2025 06:59:27 -0700 (PDT)
 Received: from [10.1.25.55] (e122027.cambridge.arm.com [10.1.25.55])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 461F73F694;
-	Wed, 10 Sep 2025 06:59:03 -0700 (PDT)
-Message-ID: <b4fd2074-d00f-4726-a85d-541105cdc6fd@arm.com>
-Date: Wed, 10 Sep 2025 14:59:00 +0100
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 54D863F694;
+	Wed, 10 Sep 2025 06:59:30 -0700 (PDT)
+Message-ID: <2489d50a-a075-42bc-92a3-7570581fe508@arm.com>
+Date: Wed, 10 Sep 2025 14:59:28 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -27,8 +27,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RFC 06/10] drm/panthor: call into devfreq for current
- frequency
+Subject: Re: [PATCH RFC 08/10] drm/panthor: devfreq: expose get_dev_status and
+ make it more generic
 To: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
  AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
  Boris Brezillon <boris.brezillon@collabora.com>,
@@ -48,55 +48,33 @@ Cc: Chia-I Wu <olvaffe@gmail.com>, Chen-Yu Tsai <wenst@chromium.org>,
  linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
  linux-pm@vger.kernel.org, linux-hardening@vger.kernel.org
 References: <20250905-mt8196-gpufreq-v1-0-7b6c2d6be221@collabora.com>
- <20250905-mt8196-gpufreq-v1-6-7b6c2d6be221@collabora.com>
+ <20250905-mt8196-gpufreq-v1-8-7b6c2d6be221@collabora.com>
 From: Steven Price <steven.price@arm.com>
 Content-Language: en-GB
-In-Reply-To: <20250905-mt8196-gpufreq-v1-6-7b6c2d6be221@collabora.com>
+In-Reply-To: <20250905-mt8196-gpufreq-v1-8-7b6c2d6be221@collabora.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 05/09/2025 11:23, Nicolas Frattaroli wrote:
-> As it stands, panthor keeps a cached current frequency value for when it
-> wants to retrieve it. This doesn't work well for when things might
-> switch frequency without panthor's knowledge.
+> The only device-specific part of panthor's get_dev_status devfreq
+> callback is getting the clock frequency. All the other logic surrounding
+> what it does may be useful for other devfreq implementations however.
 > 
-> Instead, implement the get_cur_freq operation, and expose it through a
-> helper function to the rest of panthor.
+> Expose it in the panthor_devfreq.h header file, and make it call back
+> into get_cur_freq instead of poking the common clock framework directly.
 > 
 > Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-
-Reviewed-by: Steven Price <steven.price@arm.com>
-
 > ---
->  drivers/gpu/drm/panthor/panthor_devfreq.c | 33 +++++++++++++++++++++++++++----
->  drivers/gpu/drm/panthor/panthor_devfreq.h |  2 ++
->  drivers/gpu/drm/panthor/panthor_device.h  |  3 ---
->  drivers/gpu/drm/panthor/panthor_drv.c     |  4 +++-
->  4 files changed, 34 insertions(+), 8 deletions(-)
+>  drivers/gpu/drm/panthor/panthor_devfreq.c | 29 +++++++++++++++++------------
+>  drivers/gpu/drm/panthor/panthor_devfreq.h |  3 +++
+>  2 files changed, 20 insertions(+), 12 deletions(-)
 > 
 > diff --git a/drivers/gpu/drm/panthor/panthor_devfreq.c b/drivers/gpu/drm/panthor/panthor_devfreq.c
-> index 3686515d368db5bb329f4858d4a7247a4957cc24..8903f60c0a3f06313ac2008791c210ff32b6bd52 100644
+> index 02eb3ca15d1874e1cbafc6b614b196c5cc75b6a1..d495dd856299826c4bddc205087d8914d01d7fc4 100644
 > --- a/drivers/gpu/drm/panthor/panthor_devfreq.c
 > +++ b/drivers/gpu/drm/panthor/panthor_devfreq.c
-> @@ -62,7 +62,6 @@ static void panthor_devfreq_update_utilization(struct panthor_devfreq *pdevfreq)
->  static int panthor_devfreq_target(struct device *dev, unsigned long *freq,
->  				  u32 flags)
->  {
-> -	struct panthor_device *ptdev = dev_get_drvdata(dev);
->  	struct dev_pm_opp *opp;
->  	int err;
->  
-> @@ -72,8 +71,6 @@ static int panthor_devfreq_target(struct device *dev, unsigned long *freq,
->  	dev_pm_opp_put(opp);
->  
->  	err = dev_pm_opp_set_rate(dev, *freq);
-> -	if (!err)
-> -		ptdev->current_frequency = *freq;
->  
+> @@ -43,6 +43,15 @@ static int panthor_devfreq_target(struct device *dev, unsigned long *freq,
 >  	return err;
->  }
-> @@ -115,11 +112,21 @@ static int panthor_devfreq_get_dev_status(struct device *dev,
->  	return 0;
 >  }
 >  
 > +static int panthor_devfreq_get_cur_freq(struct device *dev, unsigned long *freq)
@@ -108,92 +86,68 @@ Reviewed-by: Steven Price <steven.price@arm.com>
 > +	return 0;
 > +}
 > +
+
+I don't see any reason why this was moved up here as part of this patch?
+Otherwise this looks fine to me.
+
+Thanks,
+Steve
+
+>  static void panthor_devfreq_reset(struct panthor_devfreq *pdevfreq)
+>  {
+>  	pdevfreq->busy_time = 0;
+> @@ -50,14 +59,18 @@ static void panthor_devfreq_reset(struct panthor_devfreq *pdevfreq)
+>  	pdevfreq->time_last_update = ktime_get();
+>  }
+>  
+> -static int panthor_devfreq_get_dev_status(struct device *dev,
+> -					  struct devfreq_dev_status *status)
+> +int panthor_devfreq_get_dev_status(struct device *dev,
+> +				   struct devfreq_dev_status *status)
+>  {
+>  	struct panthor_device *ptdev = dev_get_drvdata(dev);
+>  	struct panthor_devfreq *pdevfreq = ptdev->devfreq;
+> +	struct devfreq_dev_profile *p = pdevfreq->devfreq->profile;
+>  	unsigned long irqflags;
+> +	int ret;
+>  
+> -	status->current_frequency = clk_get_rate(ptdev->clks.core);
+> +	ret = p->get_cur_freq(dev, &status->current_frequency);
+> +	if (ret)
+> +		return ret;
+>  
+>  	spin_lock_irqsave(&pdevfreq->lock, irqflags);
+>  
+> @@ -79,15 +92,7 @@ static int panthor_devfreq_get_dev_status(struct device *dev,
+>  
+>  	return 0;
+>  }
+> -
+> -static int panthor_devfreq_get_cur_freq(struct device *dev, unsigned long *freq)
+> -{
+> -	struct panthor_device *ptdev = dev_get_drvdata(dev);
+> -
+> -	*freq = clk_get_rate(ptdev->clks.core);
+> -
+> -	return 0;
+> -}
+> +EXPORT_SYMBOL(panthor_devfreq_get_dev_status);
+>  
 >  static struct devfreq_dev_profile panthor_devfreq_profile = {
 >  	.timer = DEVFREQ_TIMER_DELAYED,
->  	.polling_ms = 50, /* ~3 frames */
->  	.target = panthor_devfreq_target,
->  	.get_dev_status = panthor_devfreq_get_dev_status,
-> +	.get_cur_freq = panthor_devfreq_get_cur_freq,
->  };
->  
->  int panthor_devfreq_init(struct panthor_device *ptdev)
-> @@ -198,7 +205,6 @@ int panthor_devfreq_init(struct panthor_device *ptdev)
->  		return PTR_ERR(opp);
->  
->  	panthor_devfreq_profile.initial_freq = cur_freq;
-> -	ptdev->current_frequency = cur_freq;
->  
->  	/*
->  	 * Set the recommend OPP this will enable and configure the regulator
-> @@ -296,3 +302,22 @@ void panthor_devfreq_record_idle(struct panthor_device *ptdev)
->  
->  	spin_unlock_irqrestore(&pdevfreq->lock, irqflags);
->  }
-> +
-> +unsigned long panthor_devfreq_get_freq(struct panthor_device *ptdev)
-> +{
-> +	struct panthor_devfreq *pdevfreq = ptdev->devfreq;
-> +	unsigned long freq = 0;
-> +	int ret;
-> +
-> +	if (!pdevfreq || !pdevfreq->devfreq)
-> +		return 0;
-> +
-> +	if (pdevfreq->devfreq->profile->get_cur_freq) {
-> +		ret = pdevfreq->devfreq->profile->get_cur_freq(ptdev->base.dev,
-> +							       &freq);
-> +		if (ret)
-> +			return 0;
-> +	}
-> +
-> +	return freq;
-> +}
 > diff --git a/drivers/gpu/drm/panthor/panthor_devfreq.h b/drivers/gpu/drm/panthor/panthor_devfreq.h
-> index b7631de695f7d79456478c87e8af5dc47673cd1d..f8e29e02f66cb3281ed4bb4c75cda9bd4df82b92 100644
+> index e8b5ccddd45c52ee3215e9c84c6ebd9109640282..a891cb5fdc34636444f141e10f5d45828fc35b51 100644
 > --- a/drivers/gpu/drm/panthor/panthor_devfreq.h
 > +++ b/drivers/gpu/drm/panthor/panthor_devfreq.h
-> @@ -18,4 +18,6 @@ void panthor_devfreq_suspend(struct panthor_device *ptdev);
+> @@ -52,6 +52,9 @@ void panthor_devfreq_suspend(struct panthor_device *ptdev);
 >  void panthor_devfreq_record_busy(struct panthor_device *ptdev);
 >  void panthor_devfreq_record_idle(struct panthor_device *ptdev);
 >  
-> +unsigned long panthor_devfreq_get_freq(struct panthor_device *ptdev);
+> +int panthor_devfreq_get_dev_status(struct device *dev,
+> +				   struct devfreq_dev_status *status);
 > +
+>  unsigned long panthor_devfreq_get_freq(struct panthor_device *ptdev);
+>  
 >  #endif /* __PANTHOR_DEVFREQ_H__ */
-> diff --git a/drivers/gpu/drm/panthor/panthor_device.h b/drivers/gpu/drm/panthor/panthor_device.h
-> index 4fc7cf2aeed577f623aac73ed287d6327645ecaa..a14239c8f9ca9229d8d6d36d327e6fd6d05f8f2f 100644
-> --- a/drivers/gpu/drm/panthor/panthor_device.h
-> +++ b/drivers/gpu/drm/panthor/panthor_device.h
-> @@ -200,9 +200,6 @@ struct panthor_device {
->  	/** @profile_mask: User-set profiling flags for job accounting. */
->  	u32 profile_mask;
->  
-> -	/** @current_frequency: Device clock frequency at present. Set by DVFS*/
-> -	unsigned long current_frequency;
-> -
->  	/** @fast_rate: Maximum device clock frequency. Set by DVFS */
->  	unsigned long fast_rate;
->  
-> diff --git a/drivers/gpu/drm/panthor/panthor_drv.c b/drivers/gpu/drm/panthor/panthor_drv.c
-> index 4c202fc5ce0504e3f08bf6c8f18a314890eb88ec..c85a16e1339eaa164a8719ffecf5214cafff1a55 100644
-> --- a/drivers/gpu/drm/panthor/panthor_drv.c
-> +++ b/drivers/gpu/drm/panthor/panthor_drv.c
-> @@ -25,6 +25,7 @@
->  #include <drm/gpu_scheduler.h>
->  #include <drm/panthor_drm.h>
->  
-> +#include "panthor_devfreq.h"
->  #include "panthor_device.h"
->  #include "panthor_fw.h"
->  #include "panthor_gem.h"
-> @@ -1519,7 +1520,8 @@ static void panthor_gpu_show_fdinfo(struct panthor_device *ptdev,
->  		drm_printf(p, "drm-cycles-panthor:\t%llu\n", pfile->stats.cycles);
->  
->  	drm_printf(p, "drm-maxfreq-panthor:\t%lu Hz\n", ptdev->fast_rate);
-> -	drm_printf(p, "drm-curfreq-panthor:\t%lu Hz\n", ptdev->current_frequency);
-> +	drm_printf(p, "drm-curfreq-panthor:\t%lu Hz\n",
-> +		   panthor_devfreq_get_freq(ptdev));
->  }
->  
->  static void panthor_show_internal_memory_stats(struct drm_printer *p, struct drm_file *file)
 > 
 
