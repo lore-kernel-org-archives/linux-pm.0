@@ -1,60 +1,58 @@
 Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D865A327A04;
-	Wed, 10 Sep 2025 16:22:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8287833471D;
+	Wed, 10 Sep 2025 16:22:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=68.232.154.123
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757521356; cv=none; b=OgMJFGIz6JTLxP8HWQ4jE8Ks1k6YX/EO9wLGpKJ80dzSykG9iA/CiOkMLwhlZWDyCK09B4PYKETjvBkoi5NBAsyKwYBf9r+2GtR2WP8hFFx6JTcmLWaHJt9nxy88UwACWg5q7l5tqW2tB4vH5gOLu6JR9OWMQR06vGbp63lJFLE=
+	t=1757521358; cv=none; b=to1vzLoV1DAdLYw74DJf2ysH2pIy3Iejb3ElX2Jx0/hdKuZK9Nv7pKnfYHnrfLnk4PBaRESZ/NYwDPxJdSeMN6tAqmNGswerkMdLLZH2KlAfzUH66s++EKcbEyMij65V4NUyE2Dxe8Lve/UF4x9v8bTWbIG4jSh0ApynwbfLmZo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757521356; c=relaxed/simple;
-	bh=5pieibsRPJo/V0RuJcEOBHWPfpUwqYwCzxf8IMfkT2k=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=m7QBkOxQzR25mMl8hx6KnuPXN8OtMyOOQYhS5DULtvUmZ+OineMsT//bssqR+jVTaUkUpkGN9Jr0qeBrGaSHTFIzXisAoBocQAsY8CKg+K4gkXoz7FWx+M7pkeN8uP6t77zrDp6bIUfFaU3GftnNm0jXLWskD2j0/2BSAbxPT0M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com; spf=pass smtp.mailfrom=microchip.com; dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b=XpsrgZLw; arc=none smtp.client-ip=68.232.154.123
+	s=arc-20240116; t=1757521358; c=relaxed/simple;
+	bh=xu3xFpP6OXvzUwoD4NKkxmtoukGTQw+z9PKBijHr5YA=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=MnmNK7thyulsHv1KOO8PLXhLv2BD0n/hNOsAkiT750nmg0iAcMGKfeRG9tFObZOYJFBTKZ0d2q38UABABhigDrlOpI52UV+NacLgPTQtLD05yOFRUljz/T0+Ro3fNI7ytU1zmywF2D2Kd85noATw5PL2AUOwYwM1cfeZJwLQF+U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com; spf=pass smtp.mailfrom=microchip.com; dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b=nth409R/; arc=none smtp.client-ip=68.232.154.123
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=microchip.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=microchip.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b="XpsrgZLw"
+	dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b="nth409R/"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1757521354; x=1789057354;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=5pieibsRPJo/V0RuJcEOBHWPfpUwqYwCzxf8IMfkT2k=;
-  b=XpsrgZLw63C06QJN+AIdW4Sje2XsuVahjVn46u2dw4xwzRAjg0FUcSWj
-   RDfNhgDfhRdzSKl+KvyOGkdDv4SGR/95j0/Axq5NLzzDuzjhPWQMXRrmA
-   BkGi1OZ6b86AUqK8m4qHgfSTczUIXu0vOiOiux3WjTLCR98DwbrAdNQSn
-   z8mxLvhPhcQWVwPvnNcQI+In1tV3JlzKwvposEdYBzOy1xKlhthyNFgsb
-   cttBOgBvFxoJNosB2rHnjK+g4cNQ5uo7wWx9lv5HntvW+R4kMfS6hQGwr
-   hZB87I1T9x/m0nmo9JbssGD3X+bOCUkY1ugDJgZuu5B5OWW9AvBUHZySu
-   g==;
-X-CSE-ConnectionGUID: tPE+SbpaSyCyxVMbhLqdoA==
-X-CSE-MsgGUID: f2/xiDzdRj6Lx1CeFsmEmQ==
+  t=1757521356; x=1789057356;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=xu3xFpP6OXvzUwoD4NKkxmtoukGTQw+z9PKBijHr5YA=;
+  b=nth409R/GpnW6Y0nRsBKm2/LQ9/gb391ByERLRV9sW9AxMrFq1WoXX2f
+   4h8ZwZSUxHW/XiB/IhYwKzDmVOiRQ0eRff3BHHqK+Yi6bhQhzkBhg2Git
+   566ptAWtb5MwmWpi0j3gqhJkYOZ0F/7ZLQ7IwNKGus3tXqBvukv5yb5TI
+   ewMvJ7MDgypx/dzaZeQlz2bwxW1wxpkqMqvg3ivT3N1/fIgiEZ4vAXGJP
+   HD+Vrs1MAlao86HI6vgsgg2/z6LOs8dhROfZonhC08Uk6fIcgCWDhre7w
+   HX4Q4LAF4NUTSeEB3E2Q5T35GJ3gsgqLw6eKGd/T1hEgqHMDdvNk+EtzQ
+   w==;
+X-CSE-ConnectionGUID: yOp9HMF6QSeW0ZytE26RNg==
+X-CSE-MsgGUID: 4CDB0pBtTlCSlNsC6aYZhQ==
 X-IronPort-AV: E=Sophos;i="6.18,254,1751266800"; 
-   d="scan'208";a="213715733"
+   d="scan'208";a="46875547"
 X-Amp-Result: SKIPPED(no attachment in message)
 Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
-  by esa6.microchip.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 10 Sep 2025 09:22:25 -0700
-Received: from chn-vm-ex02.mchp-main.com (10.10.85.144) by
- chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server
+  by esa2.microchip.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 10 Sep 2025 09:22:35 -0700
+Received: from chn-vm-ex02.mchp-main.com (10.10.87.72) by
+ chn-vm-ex02.mchp-main.com (10.10.87.72) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.58; Wed, 10 Sep 2025 09:22:11 -0700
+ 15.1.2507.58; Wed, 10 Sep 2025 09:22:10 -0700
 Received: from ryan-Precision-3630-Tower.microchip.com (10.10.85.11) by
  chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server id
- 15.1.2507.58 via Frontend Transport; Wed, 10 Sep 2025 09:22:11 -0700
+ 15.1.2507.58 via Frontend Transport; Wed, 10 Sep 2025 09:22:10 -0700
 From: <Ryan.Wanner@microchip.com>
 To: <claudiu.beznea@tuxon.dev>, <sre@kernel.org>, <robh@kernel.org>,
 	<krzk+dt@kernel.org>, <conor+dt@kernel.org>, <nicolas.ferre@microchip.com>,
 	<alexandre.belloni@bootlin.com>, <linux@armlinux.org.uk>
 CC: <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/4] ARM: dts: at91: sama7g5ek: add microchip,lpm-connection on shdwc node
-Date: Wed, 10 Sep 2025 09:20:39 -0700
-Message-ID: <ded286a183a5111d8165727111577b088f5d67f3.1757519351.git.Ryan.Wanner@microchip.com>
+	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>, "Ryan
+ Wanner" <Ryan.Wanner@microchip.com>
+Subject: [PATCH 0/4] AT91 Low Power Mode adjustments
+Date: Wed, 10 Sep 2025 09:20:35 -0700
+Message-ID: <cover.1757519351.git.Ryan.Wanner@microchip.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <cover.1757519351.git.Ryan.Wanner@microchip.com>
-References: <cover.1757519351.git.Ryan.Wanner@microchip.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -64,31 +62,32 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 
-From: Claudiu Beznea <claudiu.beznea@tuxon.dev>
+From: Ryan Wanner <Ryan.Wanner@microchip.com>
 
-Add microchip,lpm-connection binding to shdwc node. On SAMA7G5-EK REV4
-LPM is connected to GMAC1's PHY, 24MHz oscillator and PMIC. On board
-PMIC is not listed here as it is only treated on BSR mode
-uncoditionally.
+This patch set adds the LPM pin feature to the SAMA7 SoCs.
 
-Signed-off-by: Claudiu Beznea <claudiu.beznea@tuxon.dev>
-Signed-off-by: Ryan Wanner <Ryan.Wanner@microchip.com>
----
- arch/arm/boot/dts/microchip/at91-sama7g5ek.dts | 1 +
- 1 file changed, 1 insertion(+)
+This set also removes the 2.5V regulator since this is no longer
+supported.
 
-diff --git a/arch/arm/boot/dts/microchip/at91-sama7g5ek.dts b/arch/arm/boot/dts/microchip/at91-sama7g5ek.dts
-index 3924f62ff0fb..50e9a5a5732a 100644
---- a/arch/arm/boot/dts/microchip/at91-sama7g5ek.dts
-+++ b/arch/arm/boot/dts/microchip/at91-sama7g5ek.dts
-@@ -872,6 +872,7 @@ &sdmmc2 {
- 
- &shdwc {
- 	debounce-delay-us = <976>;
-+	microchip,lpm-connection = <&gmac1 &main_xtal>;
- 	status = "okay";
- 
- 	input@0 {
+Claudiu Beznea (2):
+  ARM: at91: PM: implement selection of LPM
+  ARM: dts: at91: sama7g5ek: add microchip,lpm-connection on shdwc node
+
+Ryan Wanner (1):
+  ARM: at91: pm: Remove 2.5V regulator
+
+Varshini Rajendran (1):
+  dt-bindings: power: reset: atmel,sama5d2-shdwc: add lpm binding
+
+ .../power/reset/atmel,sama5d2-shdwc.yaml      | 16 +++
+ .../arm/boot/dts/microchip/at91-sama7g5ek.dts |  1 +
+ arch/arm/mach-at91/pm.c                       | 98 ++++++++++++++++++-
+ arch/arm/mach-at91/pm.h                       |  1 +
+ arch/arm/mach-at91/pm_data-offsets.c          |  1 +
+ arch/arm/mach-at91/pm_suspend.S               | 75 +++++++-------
+ include/soc/at91/sama7-sfrbu.h                |  7 --
+ 7 files changed, 156 insertions(+), 43 deletions(-)
+
 -- 
 2.43.0
 
