@@ -1,181 +1,106 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 856F626D4F9;
-	Wed, 10 Sep 2025 17:24:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757525072; cv=none; b=D3FAtAw6N8Fnrv+GQZM6AKRxzO6NjkzG3fm9ZJU8V0Kkg5etlc80LQhCz2gtRjhgb/zhGmWgNTL0qWSV5qKSZ+sMck2ZFErOW1iKCO3wXsEIa0nxWTh+X/gbBwzYblPMpQe3MaMyVae9/x4FUEpNPI7vAQB4toq2ytRcwFNruZo=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757525072; c=relaxed/simple;
-	bh=1IdKMoeb2R+xnIWdnO7rRaMblx2EnlGCpTsdLPuakQM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HjOzRwi4w3fWsqAiejIcYKsM078aCK3NAi1eFwAJmrlymfinyO60PB2nCvBInInvdImzssKM0ezzhkYqoqrTh9yLVexPty4zTkQ0Z4NnPkDc1NbkQ8aL5D5BYmMyIR901yv/dvr6mhKVqbcUQukhfscMO5YOgezC8qkltm2tbEA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IaFCKbV8; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C2ED279792;
+	Wed, 10 Sep 2025 17:29:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1757525354; cv=pass; b=AJDfymteaxdK8KecixwmGmmmQgQ81P1rxbyDSoGIijT9arHRAoTpjngptT8QF90Kg3kCXsKpViiNoFQsGbDQ5rWY75ob/q44dRXCHd16+GPfFTR5Nr+f1tDn+Zb0TbZKG4qVMNw/qpr7JunrAa/gABo/ZgM84330oDdndYwtdgo=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1757525354; c=relaxed/simple;
+	bh=+sY7esOV4ftXk/7FoFtS2AcrS5EdQ0OEfrcxwpsWu0A=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=Wr1Qa8NFmNAcVSM1ydyniV8PC3tu4IsmkLMS+DLkoif8xqmrbKgUywWjW6D1+77AqZz6QBtCAQGqw8Lqc8VNkIOC9sMxinQTg1BfYp677OF4ElnaxBsOC4gn0M2Vb+M/eeA0HMjAe5QdC3TLklH1klXAVyVg6H35JNkSCSDbDDQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b=Y4gkSs61; arc=pass smtp.client-ip=136.143.188.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IaFCKbV8"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5BDA5C4CEEB;
-	Wed, 10 Sep 2025 17:24:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1757525072;
-	bh=1IdKMoeb2R+xnIWdnO7rRaMblx2EnlGCpTsdLPuakQM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=IaFCKbV81ZeaLR3AD5rUkKSYgXSVzQVcu9fg8JUs10Fq0M7K22m2AbssN0bP1q6Ux
-	 B6rCHuW3lfqsdW4bib8qfmqLO56KZGiYD5A5cVINpNmOAsbHhw5G115+3oHcsLHfnb
-	 i5zEbnRZGnzxhc3OVdJVVTLWIhsMcMtH7l21By5E23FkdULVegygSNCSK+ijas9uiy
-	 bDmf0B+MF82+JdaCthE501HqOmx9AtUJpCvQJ2yNu/bzldJWzYbJM/rO1KT9Ca2kMz
-	 6qfF3QG9IJYbXXJDYoKLjoXS8u8PunK0sQQq6K9X3EvjtNy52w0TRvV7aIZHzO3Bcy
-	 jfwyKi4rfvltg==
-Message-ID: <0bb2cb92-0d31-4e42-b6ef-2cc3fdf0df40@kernel.org>
-Date: Wed, 10 Sep 2025 12:24:29 -0500
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b="Y4gkSs61"
+ARC-Seal: i=1; a=rsa-sha256; t=1757525336; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=kjdNOp7l9h6y48lFjyoM0abO9ZJITEneqCk3f77o1YpPZYylfPEym1dEl9EGt3XigSUyAo8jml0Tb1idr5vVtQZ65VQwfa6XDURSCkN4ShwdyTYMLrQaAR3BwWWKkUglNG0QSzMWJaxymQxZPkEeBN7IdW9GEb/K+kydH1qRklc=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1757525336; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=5RBAS6Ybhl3OEyHFveyxQEmvr4mrg6ZvjRKJIqMrvgg=; 
+	b=OeWwqAa8+8dT4EJ2DQHltISEKU8Jllz2CtX4hiwrdbsj9H4ry6aJdCLUnZ99GyfWR1aQf8wD0XtoHOQUYrs49qSwvFaQiXFZjhHlscy2DR56wRTGEIod0drJzX04k+FCNgzoZZCq9VpkPe3KEr54Tb96HC8yIL3/HmtUPB0Ey4o=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=daniel.almeida@collabora.com;
+	dmarc=pass header.from=<daniel.almeida@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1757525336;
+	s=zohomail; d=collabora.com; i=daniel.almeida@collabora.com;
+	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
+	bh=5RBAS6Ybhl3OEyHFveyxQEmvr4mrg6ZvjRKJIqMrvgg=;
+	b=Y4gkSs61nnoWK3lu318TiRZ3CSjRi0kOJ0d6dPRKq9gDjQtMWw9cmxa+is7zXdSP
+	l7ConYaMEFfWD2aw3AOLpWVQdRuXwBdJXLmee8snKvrQsdu892oHy9ujq/nRxqd5ih9
+	2fypgzI8WFwYxsrxjT4pHoV+zS+MAdZygYVoeQmI=
+Received: by mx.zohomail.com with SMTPS id 1757525335231838.1458446552067;
+	Wed, 10 Sep 2025 10:28:55 -0700 (PDT)
+From: Daniel Almeida <daniel.almeida@collabora.com>
+Date: Wed, 10 Sep 2025 14:28:27 -0300
+Subject: [PATCH v2 1/2] rust: clk: implement Send and Sync
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 05/12] PCI/PM: Disable device wakeups when halting or
- powering off system
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: "Mario Limonciello (AMD)" <superm1@kernel.org>,
- "Rafael J . Wysocki" <rafael@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Danilo Krummrich <dakr@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
- =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
- "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
- "Martin K . Petersen" <martin.petersen@oracle.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- "open list:HIBERNATION (aka Software Suspend, aka swsusp)"
- <linux-pm@vger.kernel.org>,
- "open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>,
- "open list:DRM DRIVERS" <dri-devel@lists.freedesktop.org>,
- "open list:PCI SUBSYSTEM" <linux-pci@vger.kernel.org>,
- "open list:SCSI SUBSYSTEM" <linux-scsi@vger.kernel.org>,
- "open list:USB SUBSYSTEM" <linux-usb@vger.kernel.org>,
- "open list:TRACING" <linux-trace-kernel@vger.kernel.org>,
- AceLan Kao <acelan.kao@canonical.com>, Kai-Heng Feng <kaihengf@nvidia.com>,
- Mark Pearson <mpearson-lenovo@squebb.ca>,
- =?UTF-8?Q?Merthan_Karaka=C5=9F?= <m3rthn.k@gmail.com>,
- Eric Naim <dnaim@cachyos.org>, "Guilherme G . Piccoli" <gpiccoli@igalia.com>
-References: <20250910171132.GA1541776@bhelgaas>
-Content-Language: en-US
-From: Mario Limonciello <superm1@kernel.org>
-In-Reply-To: <20250910171132.GA1541776@bhelgaas>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <20250910-clk-type-state-v2-1-1b97c11bb631@collabora.com>
+References: <20250910-clk-type-state-v2-0-1b97c11bb631@collabora.com>
+In-Reply-To: <20250910-clk-type-state-v2-0-1b97c11bb631@collabora.com>
+To: Michael Turquette <mturquette@baylibre.com>, 
+ Stephen Boyd <sboyd@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
+ Alex Gaynor <alex.gaynor@gmail.com>, Boqun Feng <boqun.feng@gmail.com>, 
+ Gary Guo <gary@garyguo.net>, 
+ =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+ Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+ Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
+ Danilo Krummrich <dakr@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-clk@vger.kernel.org, rust-for-linux@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ Daniel Almeida <daniel.almeida@collabora.com>
+X-Mailer: b4 0.14.2
+X-ZohoMailClient: External
 
-On 9/10/25 12:11 PM, Bjorn Helgaas wrote:
-> On Wed, Sep 10, 2025 at 11:52:00AM -0500, Mario Limonciello wrote:
->> On 9/10/25 10:06 AM, Bjorn Helgaas wrote:
->>> On Tue, Sep 09, 2025 at 02:16:12PM -0500, Mario Limonciello (AMD) wrote:
->>>> PCI devices can be configured as wakeup sources from low power states.
->>>> However, when the system is halting or powering off such wakeups are
->>>> not expected and may lead to spurious behavior.
->>>
->>> I'm a little unclear on the nomenclature for these low power states,
->>> so I think it would be helpful to connect to the user action, e.g.,
->>> suspend/hibernate/etc, and the ACPI state, e.g.,
->>>
->>>     ... when the system is hibernating (e.g., transitioning to ACPI S4
->>>     and halting) or powering off (e.g., transitioning to ACPI S5 soft
->>>     off), such wakeups are not expected ...
->>
->> I will try to firm it up in the commit message.  But yes you're getting the
->> intent, having a wakeup occur at S5 would be unexpected, and would likely
->> change semantics of what people "think" powering off a machine means.
->>
->>> When I suspend or power off my laptop from the GUI user interface, I
->>> want to know if keyboard or mouse activity will resume or if I need to
->>> press the power button.
->>
->> The way the kernel is set up today you get a single wakeup sysfs file for a
->> device and that wakeup file means 3 things:
->> * abort the process of entering a suspend state or hibernate
->> * wake up the machine from a suspend state
->> * wake up the machine from hibernate
->>
->>>> ACPI r6.5, section 16.1.5 notes:
->>>>
->>>>       "Hardware does allow a transition to S0 due to power button press
->>>>        or a Remote Start."
->>>
->>> Important to note here that sec 16.1.5 is specifically for "S5
->>> Soft Off State".
->>>
->>> S4 is a sleeping state and presumably sec 16.1.6 ("Transitioning
->>> from the Working to the Sleeping State") applies.  That section
->>> mentions wakeup devices, so it's not obvious to me that PCI device
->>> wakeup should be disabled for S4.
->>
->> It actually /shouldn't/ be disabled for S4 - it should only be
->> disabled for S5.
->>
->> Are you implying a bug in the flow?  I didn't think there was one:
->>
->> During entering hibernate the poweroff() call will have system_state
->> = SYSTEM_SUSPEND so wakeups would be enabled.
->>
->> For powering off the system using hibernate flows poweroff() call
->> would have system_state = SYSTEM_HALT or SYSTEM_POWER_OFF.
-> 
-> OK.  I assumed that since you check for two states (SYSTEM_HALT or
-> SYSTEM_POWER_OFF), one must be hibernate (ending up in S4?) and the
-> other a soft power off (ending up in S5?).
-> 
-> But it sounds like there are two ways to power off.  I'm just confused
-> about the correspondence between hibernate, soft poweroff, S4, S5,
-> SYSTEM_HALT, and SYSTEM_POWER_OFF.
-> 
-> *Do* both SYSTEM_HALT and SYSTEM_POWER_OFF lead to S5 on an ACPI
-> system?  If so, what's the difference between them?
+From: Alice Ryhl <aliceryhl@google.com>
 
-The two functions are kernel_halt() and kernel_power_off().
+These traits are required for drivers to embed the Clk type in their own
+data structures because driver data structures are usually required to
+be Send. See e.g. [1] for the kind of workaround that drivers currently
+need due to lacking this annotation.
 
-And looking again, Ahhhh!  kernel_power_off() is the only thing that 
-actually leads to machine_power_off().  Halt just stops the CPUs.
+Link: https://lore.kernel.org/rust-for-linux/20250812-tyr-v2-1-9e0f3dc9da95@collabora.com/ [1]
+Signed-off-by: Daniel Almeida <daniel.almeida@collabora.com>
+Signed-off-by: Alice Ryhl <aliceryhl@google.com>
+Reviewed-by: Danilo Krummrich <dakr@kernel.org>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Reviewed-by: Daniel Almeida <daniel.almeida@collabora.com>
+---
+ rust/kernel/clk.rs | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-I think we should only be using the hibernate flows for SYSTEM_POWER_OFF.
+diff --git a/rust/kernel/clk.rs b/rust/kernel/clk.rs
+index 1e6c8c42fb3a321951e275101848b35e1ae5c2a8..0a290202da69669d670ddad2b6762a1d5f1d912e 100644
+--- a/rust/kernel/clk.rs
++++ b/rust/kernel/clk.rs
+@@ -129,6 +129,13 @@ mod common_clk {
+     #[repr(transparent)]
+     pub struct Clk(*mut bindings::clk);
+ 
++    // SAFETY: It is safe to call `clk_put` on another thread than where `clk_get` was called.
++    unsafe impl Send for Clk {}
++
++    // SAFETY: It is safe to call any combination of the `&self` methods in parallel, as the
++    // methods are synchronized internally.
++    unsafe impl Sync for Clk {}
++
+     impl Clk {
+         /// Gets [`Clk`] corresponding to a [`Device`] and a connection id.
+         ///
 
-This has implications for a lot of the patches.  Thanks a lot for 
-pointing this out. I'll walk the series again and change accordingly.
-
-> 
->>>> This implies that wakeups from PCI devices should not be relied upon
->>>> in these states. To align with this expectation and avoid unintended
->>>> wakeups, disable device wakeup capability during these transitions.
->>>>
->>>> Tested-by: Eric Naim <dnaim@cachyos.org>
->>>> Signed-off-by: Mario Limonciello (AMD) <superm1@kernel.org>
->>>> ---
->>>> v7:
->>>>    * Reword title
->>>>    * Reword commit
->>>> v5:
->>>>    * Re-order
->>>>    * Add tags
->>>> v4:
->>>>    * https://lore.kernel.org/linux-pci/20250616175019.3471583-1-superm1@kernel.org/
->>>> ---
->>>>    drivers/pci/pci-driver.c | 4 ++++
->>>>    1 file changed, 4 insertions(+)
->>>>
->>>> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
->>>> index 63665240ae87f..f201d298d7173 100644
->>>> --- a/drivers/pci/pci-driver.c
->>>> +++ b/drivers/pci/pci-driver.c
->>>> @@ -1139,6 +1139,10 @@ static int pci_pm_poweroff(struct device *dev)
->>>>    	struct pci_dev *pci_dev = to_pci_dev(dev);
->>>>    	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
->>>> +	if (device_may_wakeup(dev) &&
->>>> +	    (system_state == SYSTEM_HALT || system_state == SYSTEM_POWER_OFF))
->>>> +		device_set_wakeup_enable(dev, false);
->>>> +
->>>>    	if (pci_has_legacy_pm_support(pci_dev))
->>>>    		return pci_legacy_suspend(dev, PMSG_HIBERNATE);
->>>> -- 
->>>> 2.43.0
->>>>
->>
+-- 
+2.51.0
 
