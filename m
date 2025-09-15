@@ -1,232 +1,223 @@
-Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9FBF3191BA;
-	Mon, 15 Sep 2025 13:34:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757943296; cv=pass; b=Q1WYH9yQDGKQek84qimoDWHHYXInLT1OXAzKZPI6HSE/3R6GUOAMoTo7YHXGxiI7cefhPY+0URUdJ0uRzFnhpHzYQg83x3GoEHiOLDBs4X3i0DJnCUPN7Ylp4FzkJV/6VcUP3lOQVYGP1GpFXP8EVcr+PtLd5ULwt23fDHIifoI=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757943296; c=relaxed/simple;
-	bh=ao7uagQdF+wiUXAvY/n129ohD/vzWpXbHOuTR787tLg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Qfi9wfcmLfiiPs82A3Y3hji5JCBRFFameOeQOyQ85q1NduR/JYzloMYZ/B0FpwEoHJxVhtGlt8SRP0DS/7K8d6eicKtf4pabu13IVeY0Bk3OixuethvZmw9lIJUYIlCHbhCDxeGd5Do6EGfbM8camotmOEwZ4IG6SpacwSTMFSk=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=gWNKxYT3; arc=pass smtp.client-ip=136.143.188.112
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F2E0288C14;
+	Mon, 15 Sep 2025 13:36:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1757943389; cv=none; b=doMnxa6ELmdJdHveUn1vEtY2Efz3O8D4TAI1h+4oFVzQ2ztKg6qVDnCG59sxYQ0hX8AnFt+cVyBlT7q/zNHxrSIoAzbFWK9i8LDsKdZtBmQFWSb8haJBVmbY4NmvAgYhUJC/YnoDu3UqZ336sWyLTtxyWuWtule+E4IU02aGESI=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1757943389; c=relaxed/simple;
+	bh=RrQWimjg2kK8bT3Tfn+05zZzA3ddMAkW4+eVTyyOWPI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=HnKk/aFOE8hu2AIoSEI3MHa4XxFyELVM71n7eRVJavYdpZtTrePCKTA6mLMNdf/rZ/gk6vOsEWTAgK3Vhhm5Z+jamL+hYLfvPibeua7+q2QXHBA8Qg/Sqg23/T/3YjyjCdn2FuqP977VZ9cHDOOwrzMqbEjQh4TsuJGVs55ez0E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=g44Ap7LR; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="gWNKxYT3"
-ARC-Seal: i=1; a=rsa-sha256; t=1757943268; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=c1F1G4DYgw5XKvAkAjRv2+e5pa6Kb4MHPVcAp86w2aDjx1S3PNpV+R4d2PE20vWnXdshV38JE96eMy9QpPWqUIcPAiYyrGl3S0rg/1+1kjcrHt/VPmFrD5CyzpPEEb0uebAGBlaFShFMz/8CxMh72Ajip+F05G1vwir9hp7GL80=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1757943268; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=H9W8rcPrnhuT1ZCnz7GuLg7KS6O8tdbb1kw7ng7b4Ro=; 
-	b=fh7Mxm5/miP8QtX8RWjc/ndyuvcb9GFt5WPMxKhDvC75f91FJkisG0607fl8TNS0C9BpZA+YFW5y3jhfMRuY25eKwXsJw/Yd0YnTNgiwJklqUCkkhsT9l8HVJ2RSygKSrZt1U3g03OiHPGLPQiUY3kfVDgRaSiroZpns/8k2m6E=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
-	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1757943268;
-	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
-	h=From:From:To:To:Cc:Cc:Subject:Subject:Date:Date:Message-ID:In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:Content-Type:Message-Id:Reply-To;
-	bh=H9W8rcPrnhuT1ZCnz7GuLg7KS6O8tdbb1kw7ng7b4Ro=;
-	b=gWNKxYT3iacQ5bX9zFR8huYqQ2axP5nqfG6MKE6J9ibXD4ixDM4UhqL4WDyWCtfH
-	al312FY4BZubd/KRtEuOxsKXYi0jc0D1X6jaDnfeF3PwrPDRKLO2oykImMrec6F1VLd
-	H2GbJCrY8iLvjsGNSl8AF+GQiMNOX6JXhYalw8K0=
-Received: by mx.zohomail.com with SMTPS id 1757943266394997.9637917932183;
-	Mon, 15 Sep 2025 06:34:26 -0700 (PDT)
-From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-To: Chia-I Wu <olvaffe@gmail.com>
-Cc: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
- Boris Brezillon <boris.brezillon@collabora.com>,
- Steven Price <steven.price@arm.com>, Liviu Dudau <liviu.dudau@arm.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- Matthias Brugger <matthias.bgg@gmail.com>,
- MyungJoo Ham <myungjoo.ham@samsung.com>,
- Kyungmin Park <kyungmin.park@samsung.com>,
- Chanwoo Choi <cw00.choi@samsung.com>, Jassi Brar <jassisinghbrar@gmail.com>,
- Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- Chen-Yu Tsai <wenst@chromium.org>, kernel@collabora.com,
- dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
- linux-hardening@vger.kernel.org
-Subject: Re: [PATCH v2 05/10] mailbox: add MediaTek GPUEB IPI mailbox
-Date: Mon, 15 Sep 2025 14:38:02 +0200
-Message-ID: <8577914.T7Z3S40VBb@workhorse>
-In-Reply-To:
- <CAPaKu7Q+KAzEtKBWy8KO2Kp+H4y-Mqo34uo=jgH1_iooaDq3hA@mail.gmail.com>
-References:
- <20250912-mt8196-gpufreq-v2-0-779a8a3729d9@collabora.com>
- <20250912-mt8196-gpufreq-v2-5-779a8a3729d9@collabora.com>
- <CAPaKu7Q+KAzEtKBWy8KO2Kp+H4y-Mqo34uo=jgH1_iooaDq3hA@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="g44Ap7LR"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1757943385;
+	bh=RrQWimjg2kK8bT3Tfn+05zZzA3ddMAkW4+eVTyyOWPI=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=g44Ap7LRaJTyVhfQoQoHGsejO64m2J31G53D78xrOr4+FFz4z3xOCvP4AfA6tvVkx
+	 gp1dmAgOLj1cWESNMyhHcijNuakbwwWg5vSW+8ly1TrM1ECoCeEw7H5AhQ8SYNRm+n
+	 UH58C+OeagVyoxteY4LZyXDhSflPlQtiHkW7d1f0URvTQk32T+EvxdkjLliRgQ8Qn3
+	 9zLZvdGDFfpNhwIYwGDsyZsy6vQTy7nzeXTPkS6qSP/c4gSJS8q3nnLsXlcs+Uic+U
+	 KP7ROkE2G8EfPe56NT6tMariLZl7QG8EklpWtbeehk8aqjpLe+HXBsdVi9X/TJz5N0
+	 lwH/OvYImXJhA==
+Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: kholk11)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 3D73C17E1067;
+	Mon, 15 Sep 2025 15:36:24 +0200 (CEST)
+Message-ID: <a2f77d1b-26aa-47cb-a2b3-9495abbe78be@collabora.com>
+Date: Mon, 15 Sep 2025 15:36:23 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 10/10] drm/panthor: add support for MediaTek
+ MFlexGraphics
+To: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
+ Boris Brezillon <boris.brezillon@collabora.com>,
+ Steven Price <steven.price@arm.com>, Liviu Dudau <liviu.dudau@arm.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Matthias Brugger
+ <matthias.bgg@gmail.com>, MyungJoo Ham <myungjoo.ham@samsung.com>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ Chanwoo Choi <cw00.choi@samsung.com>, Jassi Brar <jassisinghbrar@gmail.com>,
+ Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+ Chia-I Wu <olvaffe@gmail.com>, Chen-Yu Tsai <wenst@chromium.org>
+Cc: kernel@collabora.com, dri-devel@lists.freedesktop.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
+ linux-pm@vger.kernel.org, linux-hardening@vger.kernel.org
+References: <20250912-mt8196-gpufreq-v2-0-779a8a3729d9@collabora.com>
+ <20250912-mt8196-gpufreq-v2-10-779a8a3729d9@collabora.com>
+ <ae482072-c13f-4cb4-be26-50592b086fe6@collabora.com>
+ <117198807.nniJfEyVGO@workhorse>
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Content-Language: en-US
+In-Reply-To: <117198807.nniJfEyVGO@workhorse>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Saturday, 13 September 2025 00:11:10 Central European Summer Time Chia-I=
- Wu wrote:
-> On Fri, Sep 12, 2025 at 11:38=E2=80=AFAM Nicolas Frattaroli
-> <nicolas.frattaroli@collabora.com> wrote:
-> <snipped>
-> > +static irqreturn_t mtk_gpueb_mbox_thread(int irq, void *data)
-> > +{
-> > +       struct mtk_gpueb_mbox_chan *ch =3D data;
-> > +       int status;
-> > +
-> > +       status =3D atomic_cmpxchg(&ch->rx_status,
-> > +                               MBOX_FULL | MBOX_CLOGGED, MBOX_FULL);
-> > +       if (status =3D=3D (MBOX_FULL | MBOX_CLOGGED)) {
-> > +               mtk_gpueb_mbox_read_rx(ch);
-> > +               writel(BIT(ch->num), ch->ebm->mbox_ctl + MBOX_CTL_IRQ_C=
-LR);
-> > +               mbox_chan_received_data(&ch->ebm->mbox.chans[ch->num],
-> > +                                       ch->rx_buf);
-> Given what other drivers do, and how mtk_mfg consumes the data, we should
->=20
->   char buf[MAX_OF_RX_LEN]; //  MAX_OF_RX_LEN is 32; we can also
-> allocate it during probe
->   mtk_gpueb_mbox_read_rx(ch);
->   mbox_chan_received_data(..., buf);
->=20
-> mtx_mfg makes a copy eventually anyway.
+Il 15/09/25 15:32, Nicolas Frattaroli ha scritto:
+> On Monday, 15 September 2025 12:28:09 Central European Summer Time AngeloGioacchino Del Regno wrote:
+>> Il 12/09/25 20:37, Nicolas Frattaroli ha scritto:
+>>> MediaTek uses some glue logic to control frequency and power on some of
+>>> their GPUs. This is best exposed as a devfreq driver, as it saves us
+>>> from having to hardcode OPPs into the device tree, and can be extended
+>>> with additional devfreq-y logic like more clever governors that use the
+>>> hardware's GPUEB MCU to set frame time targets and power limits.
+>>>
+>>> Add this driver to the panthor subdirectory. It needs to live here as it
+>>> needs to call into panthor's devfreq layer, and panthor for its part
+>>> also needs to call into this driver during probe to get a devfreq device
+>>> registered. Solving the cyclical dependency by having mediatek_mfg live
+>>> without knowledge of what a panthor is would require moving the devfreq
+>>> provider stuff into a generic devfreq subsystem solution, which I didn't
+>>> want to do.
+>>>
+>>> Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+>>> ---
+>>>    drivers/gpu/drm/panthor/Kconfig        |   13 +
+>>>    drivers/gpu/drm/panthor/Makefile       |    2 +
+>>>    drivers/gpu/drm/panthor/mediatek_mfg.c | 1053 ++++++++++++++++++++++++++++++++
+>>>    3 files changed, 1068 insertions(+)
+>>>
+>> [ ... snip ...]
+>>> +static int mtk_mfg_eb_on(struct mtk_mfg *mfg)
+>>> +{
+>>> +	struct device *dev = &mfg->pdev->dev;
+>>> +	u32 val;
+>>> +	int ret;
+>>> +
+>>> +	/*
+>>> +	 * If MFG is already on from e.g. the bootloader, we should skip doing
+>>> +	 * the power-on sequence, as it wouldn't work without powering it off
+>>> +	 * first.
+>>> +	 */
+>>> +	if ((readl(mfg->rpc + RPC_PWR_CON) & PWR_ACK_M) == PWR_ACK_M)
+>>> +		return 0;
+>>> +
+>>> +	ret = readl_poll_timeout(mfg->rpc + RPC_GHPM_RO0_CON, val,
+>>> +				 !(val & (GHPM_PWR_STATE_M | GHPM_STATE_M)),
+>>> +				 GPUEB_POLL_US, GPUEB_TIMEOUT_US);
+>>> +	if (ret) {
+>>> +		dev_err(dev, "timed out waiting for EB to power on\n");
+>>> +		return ret;
+>>> +	}
+>>> +
+>>> +	mtk_mfg_update_reg_bits(mfg->rpc + mfg->ghpm_en_reg, GHPM_ENABLE_M,
+>>> +				GHPM_ENABLE_M);
+>>> +
+>>> +	mtk_mfg_update_reg_bits(mfg->rpc + RPC_GHPM_CFG0_CON, GHPM_ON_SEQ_M, 0);
+>>> +	mtk_mfg_update_reg_bits(mfg->rpc + RPC_GHPM_CFG0_CON, GHPM_ON_SEQ_M,
+>>> +				GHPM_ON_SEQ_M);
+>>> +
+>>> +	mtk_mfg_update_reg_bits(mfg->rpc + mfg->ghpm_en_reg, GHPM_ENABLE_M, 0);
+>>> +
+>>> +
+>>> +	ret = readl_poll_timeout(mfg->rpc + RPC_PWR_CON, val,
+>>> +				 (val & PWR_ACK_M) == PWR_ACK_M,
+>>> +				 GPUEB_POLL_US, GPUEB_TIMEOUT_US);
+>>
+>> I wonder if you can check how much time does the GPUEB really take to poweron,
+>> just so that we might be able to reduce delay_us here.
+> 
+> I already did, that's where the 50us value is from as far as I remember.
+> 
 
-We don't right now, at least not until after the callback returns.
-So we need to have the copy in the mtk_mfg callback, not after the
-completion. That's fine and I do want to do this as this is what
-the mailbox framework seems to expect clients to do.
+Ah, perfect.
 
-> We don't need to maintain any
-> extra copy.
->=20
-> Then we might not need rx_status.
+>>
+>>> +	if (ret) {
+>>> +		dev_err(dev, "timed out waiting for EB power ack, val = 0x%X\n",
+>>> +			val);
+>>> +		return ret;
+>>> +	}
+>>> +
+>>> +	ret = readl_poll_timeout(mfg->gpr + GPR_LP_STATE, val,
+>>> +				 (val == EB_ON_RESUME),
+>>> +				 GPUEB_POLL_US, GPUEB_TIMEOUT_US);
+>>
+>> Same here - and I think this one is more critical, as I can see this suspend/resume
+>> control being used more extensively in the future.
+>>
+>> Specifically, I'm wondering if we could add runtime PM ops that will request EB
+>> suspend/resume - and also if doing so would make any sense.
+>>
+>> I am guessing that the "suspend" LP_STATE stops the internal state machine, making
+>> the EB MCU to either go in a low-power state or to anyway lower its power usage by
+>> at least suspending the iterations.
+> 
+> I think I briefly fiddled with this but then it did nothing other than
+> break everything. Is the current time it takes to resume a problem?
+> 
+>>
+>> Of course - here I mean that we could have
+>> 1. System suspend ops that powers off the EB completely like you're doing here and
+>> 2. Runtime PM op that may be called (very) aggressively
+>>
+>> ...this would obviously not be feasible if the EB suspend/resume (without complete
+>> poweron/off) takes too much time to actually happen.
+> 
+> We probably don't want to aggressively suspend the thing doing DVFS
+> while a workload is running, and if no workload is running, it
+> already suspends. I can't really say how normal desktop usage will
+> play out yet, but generally speaking I think it's a bit early to
+> find a comfortable place on the transition latency vs power draw
+> curve at this point.
+> 
 
-We can probably get rid of it if we keep the per-channel
-interrupt handler. Otherwise, we may still need clogged,
-as we don't want to process interrupts on channels we have
-no user for.
+Okay let's leave it for now and revisit that after everything is upstreamed.
+It's only an improvement anyway, not critical for functionality, and maybe
+not even feasible.
 
->=20
-> > +               atomic_set(&ch->rx_status, 0);
-> > +               return IRQ_HANDLED;
-> > +       }
-> > +
-> > +       return IRQ_NONE;
-> > +}
-> > +
-> > +static int mtk_gpueb_mbox_send_data(struct mbox_chan *chan, void *data)
-> > +{
-> > +       struct mtk_gpueb_mbox_chan *ch =3D chan->con_priv;
-> > +       int i;
-> > +       u32 *values =3D data;
-> > +
-> > +       if (atomic_read(&ch->rx_status))
-> > +               return -EBUSY;
-> > +
-> > +       /*
-> > +        * We don't want any fancy nonsense, just write the 32-bit valu=
-es in
-> > +        * order. memcpy_toio/__iowrite32_copy don't work here, because=
- fancy.
-> > +        */
-> > +       for (i =3D 0; i < ch->c->tx_len; i +=3D 4)
-> > +               writel(values[i / 4], ch->ebm->mbox_mmio + ch->c->tx_of=
-fset + i);
-> > +
-> > +       writel(BIT(ch->num), ch->ebm->mbox_ctl + MBOX_CTL_IRQ_SET);
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static int mtk_gpueb_mbox_startup(struct mbox_chan *chan)
-> > +{
-> > +       struct mtk_gpueb_mbox_chan *ch =3D chan->con_priv;
-> > +       int ret;
-> > +
-> > +       atomic_set(&ch->rx_status, 0);
-> > +
-> > +       ret =3D clk_enable(ch->ebm->clk);
-> > +       if (ret) {
-> > +               dev_err(ch->ebm->dev, "Failed to enable EB clock: %pe\n=
-",
-> > +                       ERR_PTR(ret));
-> > +               goto err_clog;
-> > +       }
-> > +
-> > +       writel(BIT(ch->num), ch->ebm->mbox_ctl + MBOX_CTL_IRQ_CLR);
-> > +
-> > +       ret =3D devm_request_threaded_irq(ch->ebm->dev, ch->ebm->irq, m=
-tk_gpueb_mbox_isr,
-> > +                                       mtk_gpueb_mbox_thread, IRQF_SHA=
-RED | IRQF_ONESHOT,
-> > +                                       ch->full_name, ch);
-> I don't think this warrants a per-channel irq thread.
->=20
-> mbox_chan_received_data is atomic. I think wecan start simple with
-> just a devm_request_irq for all channels. mtk_gpueb_mbox_isr can
->=20
->   read bits from MBOX_CTL_RX_STS
->   for each bit set:
->     read data from rx
->     mbox_chan_received_data
->   write bits to MBOX_CTL_IRQ_CLR
->=20
+>> [... snip ...]
+>>> +static int mtk_mfg_init_shared_mem(struct mtk_mfg *mfg)
+>>> +{
+>>> [... snip ...]
+>>> +
+>>> +	dev_info(dev, "initialised mem at phys 0x%016llX\n", mfg->sram_phys);
+>>
+>> I don't like exposing addresses in kmsg. Please just don't.
+> 
+> It's a physical address. This is not a kernel pointer, but something
+> that can be read from the DTS. But sure, I'll remove it I guess?
+> 
 
-I don't like this approach. It brings us back to having to process
-multiple channels per ISR, keep track of when the interrupt should
-be enabled and disabled based on how many channels are in use, and
-also is not in line with what e.g. omap-mailbox.c does.
+Yeah, please.
 
-Remember that `mbox_chan_received_data` synchronously calls the
-mailbox client's rx_callback. In mediatek_mfg's case, this is
-fairly small, though with the request to not make the rx buffer
-persist beyond the rx_callback it will gain an additional memory
-copy. But we can't guarantee that someone isn't going to put a
-slow operation in the path. Sure, it's going to be atomic, but
-waiting for a spinlock is atomic and not something an ISR would
-enjoy. I don't think mailbox clients would expect that if they
-take their time they'll stall the interrupt handler for every
-other channel.
+>> [... snip ...]
+>>
+>> Cheers,
+>> Angelo
+>>
+> 
+> You can assume me not responding to a part of the feedback in this
+> e-mail means I'll address it in the next revision of the patch
+> series.
+> 
 
-So we'd keep the interrupt disabled for all channels until the
-client that received a message has processed it.
+Alright!
 
-I can see myself getting rid of the handler and just having the
-thread function as the bottom half, but I'd really like to keep
-the one-IRQ-request-per-channel thing I've got going now as it
-made the code a lot easier to reason about. However, doing this
-would mean the interrupt is re-enabled after the generic upper
-half, when all the business logic that needs to not run
-concurrently for an individual channel is in the bottom half.
+Cheers,
+Angelo
 
-As far as I can tell, this would then mean we'd have to add
-some concurrency exclusion mechanism to the bottom half.
-
-Moving all the logic into the upper half handler function
-would make that handler somewhat longer, and I don't know
-if IRQF_ONESHOT masks the interrupt for all users of that
-IRQ number or just for those with that dev_id. If it's per
-dev_id, then I'm fine with moving stuff up there. But from
-my reading of the core IRQ handling code, that does not
-appear to be the case; one channel getting a reply would
-mask *all* channels of the mailbox until the upper half is
-completed, and if the upper half calls into a driver
-callback synchronously, that may take a hot minute.
-
-Put differently: Is there a problem with one thread per used
-channel, or are we going off vibes here? The way it currently
-works uses the shared interrupt to mark just that one channel
-as busy with rx_status before letting the IRQ for all channels
-be unmasked again, which seems ideal to me.
+> Kind regards,
+> Nicolas Frattaroli
+> 
+> 
 
 
