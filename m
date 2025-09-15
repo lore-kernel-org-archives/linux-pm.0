@@ -1,43 +1,45 @@
 Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3123630DEB4;
-	Mon, 15 Sep 2025 13:34:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 312B5312804;
+	Mon, 15 Sep 2025 13:34:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757943293; cv=pass; b=ZZd2fg7b3Ryev9d1rALQfenm4hlhRTRkApkMMoURkfzYEQNCJRgf1Z15Jzjbfe/wl8UwRtFMqZWclC2BuqScauRScP8s2kNKEojEOXi5EuNZ6VJsYlgxpn8bDUcvVnyLHYuWOYjns7wMIdhDZHh9Vj8CFDHx2zJ3LI092OOeKMI=
+	t=1757943294; cv=pass; b=YaRL1YNIWj77qxz2lbiY3TVFh1i3WFINFfMPSSJibnGNuF5UBDjax7EFpdBDX1UJMJt+eNGlLQKNNGOp/zwFjHOYv+Y66pCXu0GDw88/jevJ3iM4gTBz8n+2l0BoE+a2yXURyzTNGb5j/P6TbZsvhVrohthm1+xxHZv6u7RF0Vc=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757943293; c=relaxed/simple;
-	bh=20jyikSBUeyT4vng1BVzWe3sjyLs9KnrE87dBoLvcs8=;
+	s=arc-20240116; t=1757943294; c=relaxed/simple;
+	bh=uXelXmVecP0Kqw+0zkV1JM96ps5WyaV3Nq+mEOJy9gc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=qh4yUZAH55JeQPwe66fpt8U5oN1vWy25/ggeexIVdZDdjRzyKEeXMVyy9rmHBHUnDyGcyKe4la5NIScSk+9ibxK5CTHoTO7xSq3Xx7nq/nm20IdSkfT1NC6444P85F6nxc85geYBJtQQ51qhSvllbuJigk0cz0z/7mGnuveOF1Q=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=JaPRdf93; arc=pass smtp.client-ip=136.143.188.112
+	 MIME-Version:Content-Type; b=g61QNSde2eTxUHwAE9NLlpOE2lsyZ5ApzdMheR/vvIOw8GBL7G17zSCup0ITaMXeCrKdimCQBlHlJ7AQy95jFc1pNiK2ttuE05nx4X6dctmI1+/hARK7wB7f3JbhesXOg9UzxTnaUFey8NYNQLvtxGghUutnVk+rA1uhu8+C3aE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=fyI3FnhQ; arc=pass smtp.client-ip=136.143.188.112
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="JaPRdf93"
-ARC-Seal: i=1; a=rsa-sha256; t=1757943252; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="fyI3FnhQ"
+ARC-Seal: i=1; a=rsa-sha256; t=1757943260; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=VcDt09apkXkUPqUSPhPe0SRA9p6NfI7eRJdyWIzzMch+7gA70FlWYClpkVNNIDkCRiW8FjSk4Z4B0ESJYO6ee3Mlz/gkfx/iJWer9WbPVPEtVsJXiEcOoEjm7g2UC7Ot+rHWU+Fl0cau77lVf/DMf4j8OHIwf3C+ZHKk35G4tX4=
+	b=bhJcqyqaJf6fbb3wRy49gzrnP/jNHvzkV3C6IbBWWbpj76HcJ30Im2V6QFjc3xr8WihnltlgvHoicCrcqFkBqpTCy5WD4+CpXQNwi1S4IOUbDievVhxqcDIpbv+xwM30SUDbjjGcN6tEltRyzMjGr4sGdnoD5UxkLMBIpbrMqug=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1757943252; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=JXcBaV2RAfDhKm8EZS+sK4enClIyf2ne3a1dilgi9xY=; 
-	b=TLTGdSYp4xC65jkTH8EN2lCbZa8kV7SXj7dnEKDproxSS9RjaoOppJIrePAdJmvnR7je8IyXb3JZZR8D6CA1Q0tB4xBalsHeEpAr4aeyiqmq5RabIjYC+ea5kgJd8cBYQhDku2sTVXW9FNPPms9YH4I+nIUxYMN8esoQEuGg1Zg=
+	t=1757943260; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=FmQQaI5thj9GN9UIWV3zSwQzaVhJ4atEslX7ELWl7hI=; 
+	b=JTjpnyG0DIu0VCtIBYr4vNMuWUKVfHYXvlgjK3f8XTqynZDRpLrFVLGYARLrx9S8omXl7IeL7LZj/rQTlKz/S+um16FWoqldrGJdl7l77ZDWBCA6mWDamfXGXcsYGr5wdCswbeN1xSB4VzYUHsc3UNOxpZrp0qcXIrzXdYO4gZs=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1757943252;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1757943260;
 	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
 	h=From:From:To:To:Cc:Cc:Subject:Subject:Date:Date:Message-ID:In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:Content-Type:Message-Id:Reply-To;
-	bh=JXcBaV2RAfDhKm8EZS+sK4enClIyf2ne3a1dilgi9xY=;
-	b=JaPRdf93LIE/7iVb2KC2EHXu+4sEUuVS7aGz2C8x1og5DPXPLyjvMplIhLuE8pZ3
-	sQZuJgHphctSz/4SpJF+nPCqdjLwyZ+xH6or/X5vg//iZsA6ebKGVWP762yzDUtydcm
-	ruB1tsNh7YV1r7BrDX9IbzmU+/qmOAPgM+fOii0k=
-Received: by mx.zohomail.com with SMTPS id 1757943250997458.89106567723354;
-	Mon, 15 Sep 2025 06:34:10 -0700 (PDT)
+	bh=FmQQaI5thj9GN9UIWV3zSwQzaVhJ4atEslX7ELWl7hI=;
+	b=fyI3FnhQR5rKmaNNyvARvYaV2U4W3knN1mJ3Ej13dXI2ltCUB68fTvtj3BWR9hci
+	2o9rwMOsfvsJFJgASAIkOA7DivNiyrvpwvJ0yPD7txUGWv2nm508GLYKT0TGnWRLtPL
+	VCVR+V3Gxpa9bxqHObC70rrpPZHcl8XmPLygJypk=
+Received: by mx.zohomail.com with SMTPS id 1757943257975999.7821234845057;
+	Mon, 15 Sep 2025 06:34:17 -0700 (PDT)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-To: Boris Brezillon <boris.brezillon@collabora.com>,
+To: Chia-I Wu <olvaffe@gmail.com>
+Cc: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+ Boris Brezillon <boris.brezillon@collabora.com>,
  Steven Price <steven.price@arm.com>, Liviu Dudau <liviu.dudau@arm.com>,
  Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
  Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
@@ -49,157 +51,165 @@ To: Boris Brezillon <boris.brezillon@collabora.com>,
  Kyungmin Park <kyungmin.park@samsung.com>,
  Chanwoo Choi <cw00.choi@samsung.com>, Jassi Brar <jassisinghbrar@gmail.com>,
  Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- Chia-I Wu <olvaffe@gmail.com>, Chen-Yu Tsai <wenst@chromium.org>,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Cc: kernel@collabora.com, dri-devel@lists.freedesktop.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
- linux-pm@vger.kernel.org, linux-hardening@vger.kernel.org
+ Chen-Yu Tsai <wenst@chromium.org>, kernel@collabora.com,
+ dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
+ linux-hardening@vger.kernel.org
 Subject:
- Re: [PATCH v2 10/10] drm/panthor: add support for MediaTek MFlexGraphics
-Date: Mon, 15 Sep 2025 15:32:23 +0200
-Message-ID: <117198807.nniJfEyVGO@workhorse>
-In-Reply-To: <ae482072-c13f-4cb4-be26-50592b086fe6@collabora.com>
+ Re: [PATCH v2 09/10] drm/panthor: devfreq: add pluggable devfreq providers
+Date: Mon, 15 Sep 2025 15:09:38 +0200
+Message-ID: <24083992.6Emhk5qWAg@workhorse>
+In-Reply-To:
+ <CAPaKu7TEN++z8r68k_4-iCyMLMthqJBUX35pgXupAHPdfttrYg@mail.gmail.com>
 References:
  <20250912-mt8196-gpufreq-v2-0-779a8a3729d9@collabora.com>
- <20250912-mt8196-gpufreq-v2-10-779a8a3729d9@collabora.com>
- <ae482072-c13f-4cb4-be26-50592b086fe6@collabora.com>
+ <20250912-mt8196-gpufreq-v2-9-779a8a3729d9@collabora.com>
+ <CAPaKu7TEN++z8r68k_4-iCyMLMthqJBUX35pgXupAHPdfttrYg@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="utf-8"
 
-On Monday, 15 September 2025 12:28:09 Central European Summer Time AngeloGioacchino Del Regno wrote:
-> Il 12/09/25 20:37, Nicolas Frattaroli ha scritto:
-> > MediaTek uses some glue logic to control frequency and power on some of
-> > their GPUs. This is best exposed as a devfreq driver, as it saves us
-> > from having to hardcode OPPs into the device tree, and can be extended
-> > with additional devfreq-y logic like more clever governors that use the
-> > hardware's GPUEB MCU to set frame time targets and power limits.
-> > 
-> > Add this driver to the panthor subdirectory. It needs to live here as it
-> > needs to call into panthor's devfreq layer, and panthor for its part
-> > also needs to call into this driver during probe to get a devfreq device
-> > registered. Solving the cyclical dependency by having mediatek_mfg live
-> > without knowledge of what a panthor is would require moving the devfreq
-> > provider stuff into a generic devfreq subsystem solution, which I didn't
-> > want to do.
-> > 
-> > Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-> > ---
-> >   drivers/gpu/drm/panthor/Kconfig        |   13 +
-> >   drivers/gpu/drm/panthor/Makefile       |    2 +
-> >   drivers/gpu/drm/panthor/mediatek_mfg.c | 1053 ++++++++++++++++++++++++++++++++
-> >   3 files changed, 1068 insertions(+)
-> > 
-> [ ... snip ...]
-> > +static int mtk_mfg_eb_on(struct mtk_mfg *mfg)
-> > +{
-> > +	struct device *dev = &mfg->pdev->dev;
-> > +	u32 val;
-> > +	int ret;
+On Saturday, 13 September 2025 00:53:50 Central European Summer Time Chia-I=
+ Wu wrote:
+> On Fri, Sep 12, 2025 at 11:38=E2=80=AFAM Nicolas Frattaroli
+> <nicolas.frattaroli@collabora.com> wrote:
+> <snipped>
+> > diff --git a/drivers/gpu/drm/panthor/panthor_devfreq.h b/drivers/gpu/dr=
+m/panthor/panthor_devfreq.h
+> > index a891cb5fdc34636444f141e10f5d45828fc35b51..94c9768d5d038c4ba851692=
+9edb565a1f13443fb 100644
+> > --- a/drivers/gpu/drm/panthor/panthor_devfreq.h
+> > +++ b/drivers/gpu/drm/panthor/panthor_devfreq.h
+> > @@ -8,6 +8,7 @@
+> >
+> >  struct devfreq;
+> >  struct thermal_cooling_device;
+> > +struct platform_device;
+> >
+> >  struct panthor_device;
+> >
+> > @@ -43,6 +44,19 @@ struct panthor_devfreq {
+> >         spinlock_t lock;
+> >  };
+> >
+> > +struct panthor_devfreq_provider {
+> > +       /** @dev: device pointer to the provider device */
+> > +       struct device *dev;
+> > +       /**
+> > +        * @init: the provider's init callback that allocates a
+> > +        * &struct panthor_devfreq, adds it to panthor, and adds a devf=
+req
+> > +        * device to panthor. Will be called during panthor's probe.
+> > +        */
+> > +       int (*init)(struct panthor_device *ptdev, struct device *dev);
 > > +
-> > +	/*
-> > +	 * If MFG is already on from e.g. the bootloader, we should skip doing
-> > +	 * the power-on sequence, as it wouldn't work without powering it off
-> > +	 * first.
-> > +	 */
-> > +	if ((readl(mfg->rpc + RPC_PWR_CON) & PWR_ACK_M) == PWR_ACK_M)
-> > +		return 0;
+> > +       struct list_head node;
+> > +};
+> On mt8196, we have performance-domains to replace several other
+> properties: clocks, *-supply, power-domains, operating-points-v2.
+> There are also quirks, such as GPU_SHADER_PRESENT should be masked by
+> GF_REG_SHADER_PRESENT. It feels like that the scope of
+> panthor_devfreq_provider is more broader, and at least the naming is
+> not right.
+
+True, though I'm still not entirely sure whether mtk_mfg needs to do
+the GF_REG_SHADER_PRESENT thing. It's entirely possible this is just
+an efuse value the GPUEB reads and then puts in SRAM for us, and we
+could simply read this efuse cell ourselves. Among a list of questions
+about the hardware we're sending to MediaTek, whether this is an efuse
+cell and where it is placed is one of them.
+
+If it turns out to be the case that we can simply read an efuse in
+panthor in the other mt8196 integration code, then we can keep
+mtk_mfg basically entirely focused on the devfreq-y part. I'd really
+prefer this solution.
+
+However, assuming we can't go down this path either because this is
+not how the hardware works, or because MediaTek never replies, or
+because someone doesn't like reading efuses in panthor, I think
+generalising "devfreq_provider" to "performance_controller" or
+something like that would be a good move.
+
+In a way, the fused off core mask is part of the vague domain of
+"performance", and it'll also allow us to extend it with other
+things relevant to performance control in different vendor integration
+logic designs. I'm thinking memory bandwidth control and job scheduling
+preferences. E.g. if the interconnect tells us one core is spending a
+lot of time waiting on the interconnect, maybe because a different
+piece of the SoC that's active shares the same path on the
+interconnect, we could then communicate a scheduling preference for
+the other cores that have bandwidth headroom even if they are busier
+in compute. Maybe this doesn't make sense though because interconnect
+designs are fully switched these days or panthor's scheduler will
+already figure this out from job completion times.
+
+If any other SoC vendor or people working on hardware of those vendors
+want to chime in and say whether they've got any other uses for
+communicating more than just devfreq from glue logic to panthor, then
+this would be a great time to do it, so that we can get this interface
+right from the beginning.
+
+> Another issue is I am not sure if we need to expose panthor_device
+> internals to the provider. mtk_mfg accesses very few fields of
+> panthor_device. It seems we can make the two less coupled.
+>=20
+> I might change my view as mtk_mfg evolves and requires tigher
+> integration with panthor. But as is, I might prefer for mtk_mfg to
+> live under drivers/soc/mediatek and provide a header for panthor to
+> use in soc-specific path.
+
+I'm not very confident it's possible to cleanly decouple them without
+inventing a bunch of very panthor-and-mfg specific interfaces that
+masquerade as general solutions in the process. It'd also mean I'd
+have to duplicate all of `panthor_devfreq_get_dev_status` instead of
+just being able to reuse it, unless that is also exposed in said
+header file, which would need a better justification than "well there
+is one other user of it and we're trying to couple it more loosely".
+
+I know that it's almost independent, but unfortunately, even a tiny
+dependency between the two will mean that mediatek_mfg will need to
+know about panthor.
+
+Other things needed from panthor are the pdevfreq->gov_data, and
+the panthor struct device* itself, as well as stuff like "fast_rate"
+in the panthor_device struct.
+
+In the future, we may want to expand this driver with governors
+beyond SIMPLE_ONDEMAND, based on the job completion duration targets
+we can communicate to the GPUEB. That may either make the driver
+more tightly coupled or more loosely coupled, I don't really know
+yet.
+
+One advantage of looking to completely decouple them (though again,
+I doubt that's possible at the moment without questionable refactors)
+could be that we could also support panfrost devices that need this.
+
+>=20
+>=20
 > > +
-> > +	ret = readl_poll_timeout(mfg->rpc + RPC_GHPM_RO0_CON, val,
-> > +				 !(val & (GHPM_PWR_STATE_M | GHPM_STATE_M)),
-> > +				 GPUEB_POLL_US, GPUEB_TIMEOUT_US);
-> > +	if (ret) {
-> > +		dev_err(dev, "timed out waiting for EB to power on\n");
-> > +		return ret;
-> > +	}
+> >
+> >  int panthor_devfreq_init(struct panthor_device *ptdev);
+> >
+> > @@ -57,4 +71,6 @@ int panthor_devfreq_get_dev_status(struct device *dev,
+> >
+> >  unsigned long panthor_devfreq_get_freq(struct panthor_device *ptdev);
+> >
+> > +int panthor_devfreq_register_provider(struct panthor_devfreq_provider =
+*prov);
 > > +
-> > +	mtk_mfg_update_reg_bits(mfg->rpc + mfg->ghpm_en_reg, GHPM_ENABLE_M,
-> > +				GHPM_ENABLE_M);
-> > +
-> > +	mtk_mfg_update_reg_bits(mfg->rpc + RPC_GHPM_CFG0_CON, GHPM_ON_SEQ_M, 0);
-> > +	mtk_mfg_update_reg_bits(mfg->rpc + RPC_GHPM_CFG0_CON, GHPM_ON_SEQ_M,
-> > +				GHPM_ON_SEQ_M);
-> > +
-> > +	mtk_mfg_update_reg_bits(mfg->rpc + mfg->ghpm_en_reg, GHPM_ENABLE_M, 0);
-> > +
-> > +
-> > +	ret = readl_poll_timeout(mfg->rpc + RPC_PWR_CON, val,
-> > +				 (val & PWR_ACK_M) == PWR_ACK_M,
-> > +				 GPUEB_POLL_US, GPUEB_TIMEOUT_US);
-> 
-> I wonder if you can check how much time does the GPUEB really take to poweron,
-> just so that we might be able to reduce delay_us here.
+> >  #endif /* __PANTHOR_DEVFREQ_H__ */
+> >
+> > --
+> > 2.51.0
+> >
+>=20
 
-I already did, that's where the 50us value is from as far as I remember.
 
-> 
-> > +	if (ret) {
-> > +		dev_err(dev, "timed out waiting for EB power ack, val = 0x%X\n",
-> > +			val);
-> > +		return ret;
-> > +	}
-> > +
-> > +	ret = readl_poll_timeout(mfg->gpr + GPR_LP_STATE, val,
-> > +				 (val == EB_ON_RESUME),
-> > +				 GPUEB_POLL_US, GPUEB_TIMEOUT_US);
-> 
-> Same here - and I think this one is more critical, as I can see this suspend/resume
-> control being used more extensively in the future.
-> 
-> Specifically, I'm wondering if we could add runtime PM ops that will request EB
-> suspend/resume - and also if doing so would make any sense.
-> 
-> I am guessing that the "suspend" LP_STATE stops the internal state machine, making
-> the EB MCU to either go in a low-power state or to anyway lower its power usage by
-> at least suspending the iterations.
-
-I think I briefly fiddled with this but then it did nothing other than
-break everything. Is the current time it takes to resume a problem?
-
-> 
-> Of course - here I mean that we could have
-> 1. System suspend ops that powers off the EB completely like you're doing here and
-> 2. Runtime PM op that may be called (very) aggressively
-> 
-> ...this would obviously not be feasible if the EB suspend/resume (without complete
-> poweron/off) takes too much time to actually happen.
-
-We probably don't want to aggressively suspend the thing doing DVFS
-while a workload is running, and if no workload is running, it
-already suspends. I can't really say how normal desktop usage will
-play out yet, but generally speaking I think it's a bit early to
-find a comfortable place on the transition latency vs power draw
-curve at this point.
-
-> [... snip ...]
-> > +static int mtk_mfg_init_shared_mem(struct mtk_mfg *mfg)
-> > +{
-> > [... snip ...]
-> > +
-> > +	dev_info(dev, "initialised mem at phys 0x%016llX\n", mfg->sram_phys);
-> 
-> I don't like exposing addresses in kmsg. Please just don't.
-
-It's a physical address. This is not a kernel pointer, but something
-that can be read from the DTS. But sure, I'll remove it I guess?
-
-> [... snip ...]
-> 
-> Cheers,
-> Angelo
-> 
-
-You can assume me not responding to a part of the feedback in this
-e-mail means I'll address it in the next revision of the patch
-series.
-
-Kind regards,
-Nicolas Frattaroli
 
 
