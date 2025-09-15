@@ -1,89 +1,160 @@
-Received: from mail-m16.yeah.net (mail-m16.yeah.net [220.197.32.18])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9BC92FF15D;
-	Mon, 15 Sep 2025 12:21:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.32.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98ED6315789
+	for <linux-pm@vger.kernel.org>; Mon, 15 Sep 2025 13:18:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757938908; cv=none; b=qWRGAHV9GrZ2XJ1XZZc/n51uhOK/GNpJWDm6q5CLW7TWXW41o15eHwC+mr99ur9/dtwqin/sT1p55LJpUwQXoiPvfcfJE7BQxkfndkQMAuPkTHGhLyCjTRSo/YyBwLtScF4E1oAUqsuHnQ3Ej0cl3zVwm1OPNBtqj1lHFTv2Fag=
+	t=1757942336; cv=none; b=YULA+Pls8fyVV4uwKwsMIh2QDtkbSKPZsswk8OvmOf9Enaz8gvXrE6mYWGMlpClvkMufpeeSIo/jLhwmSt8EV6BvUF8yKTWk0JS7SGJbRgSlMB9W34VlMOb/MTR6LFVLL6yBGZoqUuJJugZK8EoNIiQ+oeeAwhLQ4Or38TaWNA8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757938908; c=relaxed/simple;
-	bh=z2kNIlcXBW6MfC2xnrcVa0oHxwllCrJCejQCNVLE0eQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZiH9A/Vmohr2aOxV5Bv8HE1n1yWRhdHuv31Wr9lJ/6dYcwoQNJK1s/z8ASoiaZmLiSt5Ro7Pl72S7eR5W23nILJCCfwjDq8oJmGN2mckG1yJA0FUzPYJ5liVCxJR+7fH5sxjlLYSRa8VCwsY+KH+dZ+jWT94p9x1TddCqCry9ic=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=yeah.net; spf=pass smtp.mailfrom=yeah.net; dkim=pass (1024-bit key) header.d=yeah.net header.i=@yeah.net header.b=jrFESGPW; arc=none smtp.client-ip=220.197.32.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=yeah.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yeah.net
+	s=arc-20240116; t=1757942336; c=relaxed/simple;
+	bh=coOwMyQHXkTz8FDu4+hP/GBgwN4J5NtDSuvxSzgJTgU=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=qkyiWGe7YnXX9tnFZTg9bOa6k5tAmxSa/Hh+d1p1O8Aaza8n9wVmIyp42ev5IvDUkVeYsEBEKRXhSTqu45A8HFJtMeZNhirYeIWNjDZ9LZ+KvN50bH91hH6oAVOSuHNB1bgHpVDaTSHL9fcnYgMLb+2LKvHq1zqyyUCSC1h/6U8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=I97rt8Wy; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=yeah.net header.i=@yeah.net header.b="jrFESGPW"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yeah.net;
-	s=s110527; h=Date:From:To:Subject:Message-ID:MIME-Version:
-	Content-Type; bh=OOyfLZgtX27UDIP2iLeBPK7IHVGLm6yCXP8suJxPQlk=;
-	b=jrFESGPWhXpollyfx2m2Rmh87nxknxI0bHyUfUBTA7k8Zz0Jk6COaBKi03L4dr
-	I/WOcZ6ziU5uN2cHpS83VNHtD/12Jduq12MQIgeUSo9BAs7jjeUHXdEG6fBpvZa0
-	aa5V28EzrTFTAgUQpbIXpKUut6KGamE3qez/pMsnrO1SQ=
-Received: from dragon (unknown [])
-	by gzsmtp1 (Coremail) with SMTP id Mc8vCgB3b7qDBMhoodmEBA--.36439S3;
-	Mon, 15 Sep 2025 20:20:20 +0800 (CST)
-Date: Mon, 15 Sep 2025 20:20:18 +0800
-From: Shawn Guo <shawnguo2@yeah.net>
-To: Qais Yousef <qyousef@layalina.io>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>,
-	stable@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: cap the default transition delay at 10 ms
-Message-ID: <aMgEgvTyHEzaEJ1v@dragon>
-References: <20250910065312.176934-1-shawnguo2@yeah.net>
- <CAJZ5v0gL5s99h0eq1U4ngaUfPq_AcfgPruSD096JtBWVMjSZwQ@mail.gmail.com>
- <aMQbIu5QNvPoAsSF@dragon>
- <20250914174326.i7nqmrzjtjq7kpqm@airbuntu>
- <aMfAQXE4sRjru9I_@dragon>
- <20250915100207.5amkmknirijnvuoh@airbuntu>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="I97rt8Wy"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 423EDC4CEF5
+	for <linux-pm@vger.kernel.org>; Mon, 15 Sep 2025 13:18:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1757942336;
+	bh=coOwMyQHXkTz8FDu4+hP/GBgwN4J5NtDSuvxSzgJTgU=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=I97rt8Wy/HHyb6Jf09V1zJXWto0w0vNSlKzz5aSR4qpNptlGuHqaQkNo+QA3hTBev
+	 jlFmnqbGvrfkro5DdG45KAf5is9c8Jfk9ziGqqJqJ9+Oj9rD6RYruICf/5AppYF4Yz
+	 H+lkblPSUv+O5NqNZymziuQKz/OeavBGHjeRCtqMYLCG+yKNtOL4IUlhodqyhuxzqT
+	 yPOz+m4j/MKvbVsK5YvIgCa/nrL2mBmOEf+hNqhLQEJEstjZDoAR657PZfAzRgI130
+	 C3r678zl49iNII/XPyPo/NbAvBglhMvR1kwAlG/Qg25fRtSlpdv2FmMWA3rU05tKgf
+	 2xGuvSifuIE7g==
+Received: by mail-ot1-f44.google.com with SMTP id 46e09a7af769-7459d088020so2012752a34.3
+        for <linux-pm@vger.kernel.org>; Mon, 15 Sep 2025 06:18:56 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWYk/Lber6YtYHEjO0am60E6vcJ3chHufPlOiJRFg2JD9JfRXkQnDxMPOG773oYIMRQHR1HANrxVg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzsEEWMUzpH9CJLY1EaBD8uCG+velrHBiuqSUPhs6Ecr4AcMXWV
+	PQvWoEev6RlwskI3pVzsSyPjc4FV+fhNAlcHglsbeGlhoa9ZvCNlw4eM8AGPihdLGc6iOAZC3vd
+	ORydKBveNlmb0rfAlLl/mZJgWdD95cAE=
+X-Google-Smtp-Source: AGHT+IEpcuRSc3MDHlFe9TDySxc24ll0ZsZy+5Xvb8x8nLaNBT9Lv9dKicdTazMGgmSAUaLhaDM/ulAOWO9IeV6FrUg=
+X-Received: by 2002:a05:6830:8d2:b0:73e:94d4:ec6 with SMTP id
+ 46e09a7af769-75355daf04dmr7268800a34.28.1757942335532; Mon, 15 Sep 2025
+ 06:18:55 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250915100207.5amkmknirijnvuoh@airbuntu>
-X-CM-TRANSID:Mc8vCgB3b7qDBMhoodmEBA--.36439S3
-X-Coremail-Antispam: 1Uf129KBjvJXoW7try8Ww1fWrWDKFyDAw48Crg_yoW8GF43pF
-	W7K3W2kF1kGF4Dtws2yw4Uuw1Ykwn5tr4UGry8WF1rA398Wrn0gw4Iga1Y9FW3Jr4DCw1q
-	qr40g3srZayYyaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07Ut9N3UUUUU=
-X-CM-SenderInfo: pvkd40hjxrjqh1hdxhhqhw/1tbiEh3JZWjHo9vN3AABsk
+References: <20250910065312.176934-1-shawnguo2@yeah.net> <CAJZ5v0gL5s99h0eq1U4ngaUfPq_AcfgPruSD096JtBWVMjSZwQ@mail.gmail.com>
+ <aMQbIu5QNvPoAsSF@dragon> <20250914174326.i7nqmrzjtjq7kpqm@airbuntu> <aMfAQXE4sRjru9I_@dragon>
+In-Reply-To: <aMfAQXE4sRjru9I_@dragon>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Mon, 15 Sep 2025 15:18:44 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0i8L8w_ojua1ir3CGcwGSvE+3Jj0Sh5Cs1Yi8i4BX1Lbw@mail.gmail.com>
+X-Gm-Features: Ac12FXyAwdW-riCrTAP42SIBJxPCzjL2s62SpRjg0mEC2Yp-NeONok5neIsFcF4
+Message-ID: <CAJZ5v0i8L8w_ojua1ir3CGcwGSvE+3Jj0Sh5Cs1Yi8i4BX1Lbw@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: cap the default transition delay at 10 ms
+To: Shawn Guo <shawnguo2@yeah.net>
+Cc: Qais Yousef <qyousef@layalina.io>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>, stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Sep 15, 2025 at 11:02:07AM +0100, Qais Yousef wrote:
-> On 09/15/25 15:29, Shawn Guo wrote:
-> > On Sun, Sep 14, 2025 at 06:43:26PM +0100, Qais Yousef wrote:
-> > > > > Why do you want to address the issue in the cpufreq core instead of
-> > > > > doing that in the cpufreq-dt driver?
-> > > > 
-> > > > My intuition was to fix the regression at where the regression was
-> > > > introduced by recovering the code behavior.
-> > > 
-> > > Isn't the right fix here is at the driver level still? We can only give drivers
-> > > what they ask for. If they ask for something wrong and result in something
-> > > wrong, it is still their fault, no?
-> > 
-> > I'm not sure.  The cpufreq-dt driver is following suggestion to use
-> > CPUFREQ_ETERNAL, which has the implication that core will figure out
-> > a reasonable default value for platforms where the latency is unknown.
-> > And that was exactly the situation before the regression.  How does it
-> > become the fault of cpufreq-dt driver?
-> 
-> Rafael and Viresh would know better, but amd-pstate chooses to fallback to
-> specific values if cppc returned CPUFREQ_ETERNAL.
-> 
-> Have you tried to look why dev_pm_opp_get_max_transition_latency() returns
-> 0 for your platform? I think this is the problem that was being masked before.
+On Mon, Sep 15, 2025 at 9:29=E2=80=AFAM Shawn Guo <shawnguo2@yeah.net> wrot=
+e:
+>
+> On Sun, Sep 14, 2025 at 06:43:26PM +0100, Qais Yousef wrote:
+> > > > Why do you want to address the issue in the cpufreq core instead of
+> > > > doing that in the cpufreq-dt driver?
+> > >
+> > > My intuition was to fix the regression at where the regression was
+> > > introduced by recovering the code behavior.
+> >
+> > Isn't the right fix here is at the driver level still? We can only give=
+ drivers
+> > what they ask for. If they ask for something wrong and result in someth=
+ing
+> > wrong, it is still their fault, no?
+>
+> I'm not sure.  The cpufreq-dt driver is following suggestion to use
+> CPUFREQ_ETERNAL,
 
-My platform doesn't scale voltage along with frequency, and the platform
-DT doesn't specify 'clock-latency-ns' which is an optional property
-after all.
+Fair enough.
 
-Shawn
+Actually, there are a few other drivers that fall back to
+CPUFREQ_ETERNAL if they cannot determine transition_latency.
 
+> which has the implication that core will figure out a reasonable default =
+value for
+> platforms where the latency is unknown.
+
+Is this expectation realistic, though?  I'm not sure.
+
+The core can only use a hard-coded default fallback number, but would
+that number be really suitable for all of the platforms in question?
+
+> And that was exactly the situation before the regression.  How does it
+> become the fault of cpufreq-dt driver?
+
+The question is not about who's fault it is, but what's the best place
+to address this issue.
+
+I think that addressing it in cpufreq_policy_transition_delay_us() is
+a bit confusing because it is related to initialization and the new
+branch becomes pure overhead for the drivers that don't set
+cpuinfo.transition_latency to CPUFREQ_ETERNAL.
+
+However, addressing it at the initialization time would effectively
+mean that the core would do something like:
+
+if (policy->cpuinfo.transition_latency =3D=3D CPUFREQ_ETERNAL)
+        policy->cpuinfo.transition_latency =3D
+CPUFREQ_DEFAULT_TANSITION_LATENCY_NS;
+
+but then it would be kind of more straightforward to update everybody
+using CPUFREQ_ETERNAL to set cpuinfo.transition_latency to
+CPUFREQ_DEFAULT_TANSITION_LATENCY_NS directly (and then get rid of
+CPUFREQ_ETERNAL entirely).
+
+> > Alternatively maybe we can add special handling for CPUFREQ_ETERNAL val=
+ue,
+> > though I'd suggest to return 1ms (similar to the case of value being 0)=
+. Maybe
+> > we can redefine CPUFREQ_ETERNAL to be 0, but not sure if this can have =
+side
+> > effects.
+>
+> Changing CPUFREQ_ETERNAL to 0 looks so risky to me.  What about adding
+> an explicit check for CPUFREQ_ETERNAL?
+>
+> ---8<---
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index fc7eace8b65b..053f3a0288bc 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -549,11 +549,15 @@ unsigned int cpufreq_policy_transition_delay_us(str=
+uct cpufreq_policy *policy)
+>         if (policy->transition_delay_us)
+>                 return policy->transition_delay_us;
+>
+> +       if (policy->cpuinfo.transition_latency =3D=3D CPUFREQ_ETERNAL)
+> +               goto default_delay;
+
+Can't USEC_PER_MSEC be just returned directly from here?
+
+> +
+>         latency =3D policy->cpuinfo.transition_latency / NSEC_PER_USEC;
+>         if (latency)
+>                 /* Give a 50% breathing room between updates */
+>                 return latency + (latency >> 1);
+
+Side note for self: The computation above can be done once at the
+policy initialization time and transition_latency can be stored in us
+(and only converted to ns when the corresponding sysfs attribute is
+read).  It can be even set to USEC_PER_MSEC if zero.
+
+> +default_delay:
+>         return USEC_PER_MSEC;
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_policy_transition_delay_us);
+>
+> --->8---
