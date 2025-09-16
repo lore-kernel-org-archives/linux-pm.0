@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1AB3E323F62;
-	Tue, 16 Sep 2025 20:25:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6225932B48A;
+	Tue, 16 Sep 2025 20:25:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758054326; cv=none; b=laoctTQJ7siX5M+PSlDvYV12Sarc9dA6P2RGTTDIrfmCkvkt8MCc9qlScVJ8d2W3OwtfkrsWvwubvW7iKus+3hNuJmxrqT9IbeQD0TuB2w0Efu9Rviax9zyT9VRp4AI6I+9YHBaQHj8gpZ7JqFQqoCRFRKwAY7DJCXeG13Dxifo=
+	t=1758054326; cv=none; b=I2TlkuR0Xq65RUQAk0gV94b2ZPuSmI+fpn8+4f95/+e1wFAM/n9S5QLe9QRNEiZYu/gSswX8PeWDbukzLcRxoez3NvD9Q2tKq9QKEJw+y/TbYMp5FtXTm+o2TLFjx0k4dzQBp5gpa3Ld0KBS/6rTThweHxtqqRGumVs7hFsmtng=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1758054326; c=relaxed/simple;
-	bh=9/G5ZTxTD+BBqSrE/vwGnDJrgre4QIYgA6oTXtY5stk=;
+	bh=OdDjeUrsbxYe5gyTTAMfg2jz6GQSgqKAHbK2zdue/s0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=LYYF5L4yWTP3vOsZ2zjLl5ZZlAFVKOW/2gQf9u6Rhe7UOer/Z6SwmJu+bQ/9pO6SqCDI2kY2PffipfdmiN7dJqg6n4mxesPYP28d5lHd3W8qii68fl8uNPeMmT0DJeSSe5KwWFDE0p/hytADPti6stHeJKdmFjp1RjCs2LJ5G90=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZHT/sSOT; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=sF2vgUrV30vGKA9XxMnjLz8kCh95O0Ky2G/zwCEKlSyJ2BUyZK4ejXz1CY8PzEwJlcOd+p+RWN5zMSFQAC+/9QmbNU4F2N9582oNMVSEkQsICNU46tBJkYUEDtDgLjLiuGVntGBMfBoyYzaNLmhS/lpmvegZB+vdawJ68akaBvI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=C4KS5aRU; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZHT/sSOT"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 976CEC2BCB0;
-	Tue, 16 Sep 2025 20:25:25 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="C4KS5aRU"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 380DDC2BCC7;
+	Tue, 16 Sep 2025 20:25:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1758054325;
-	bh=9/G5ZTxTD+BBqSrE/vwGnDJrgre4QIYgA6oTXtY5stk=;
+	s=k20201202; t=1758054326;
+	bh=OdDjeUrsbxYe5gyTTAMfg2jz6GQSgqKAHbK2zdue/s0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=ZHT/sSOTHa6bfD8o5gNbnFzThRXuOKzVKaCBbDd++aCO1eYwOQO3sx6i/8TQNdsRm
-	 CnItc8YCH+Hc/lqSokDvLem0ywUkeptdh4TyA7yKAxpHwd5jvO55giobsAt8iIQia7
-	 2j4AtVR/JuSKey5ESfUTcfeLy/3piMc78dssNL+4UnUSREhw77IiDGBzFN8AZj+H8W
-	 DS87xqFh7+KVEYlFCNwgO76XwqhZnIeNWaNzhdtHmHnFl774FsaJkWksqdgJcSkElH
-	 O7aHwpnMQ1DoBKVCeB10K/o9B/Uz9jSWUHW4Hc9UXo8BsOi3EtZxVn2xtQDqDVcqQG
-	 UnPsSqCCoGlew==
+	b=C4KS5aRUOYF5wocufmuf97G4mdCvA4nqIq9eLu19lXxVMcFNMoBpkUUMWb4pbTgBJ
+	 ev7r8X+MwmWhTbKLeUKNLxnwEVqwIxJwNNhzOmI/YOA0siR6PT4BQLZwSZX0O5a1Jt
+	 hijKOleuESsXTOoj1c/EyAeMFKHNgLc7Ub9UQxLhkjvBSKnb/YtGWjXFJNPWsq8jtA
+	 5/dmiJMUYbNh+SiwUTO/UZne2p2opGbfb3/ohuFeWeZ7UapxJfYQGdkfYbWmnVjARk
+	 gbqGeCj2FYlDkOvodxgSy2LIYFKHVOIYWr8kyx7GMYvz1u7jTSBwbmMlLGmuxJnX96
+	 fDLNmC7KpIeMw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DF7FCAC59D;
-	Tue, 16 Sep 2025 20:25:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23638CAC59D;
+	Tue, 16 Sep 2025 20:25:26 +0000 (UTC)
 From: Dang Huynh via B4 Relay <devnull+dang.huynh.mainlining.org@kernel.org>
-Date: Wed, 17 Sep 2025 03:25:08 +0700
-Subject: [PATCH 11/25] dts: unisoc: rda8810pl: Enable clock/reset driver
+Date: Wed, 17 Sep 2025 03:25:17 +0700
+Subject: [PATCH 20/25] dts: unisoc: rda8810pl: Enable IFC
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +40,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250917-rda8810pl-drivers-v1-11-9ca9184ca977@mainlining.org>
+Message-Id: <20250917-rda8810pl-drivers-v1-20-9ca9184ca977@mainlining.org>
 References: <20250917-rda8810pl-drivers-v1-0-9ca9184ca977@mainlining.org>
 In-Reply-To: <20250917-rda8810pl-drivers-v1-0-9ca9184ca977@mainlining.org>
 To: Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -61,11 +61,11 @@ Cc: linux-arm-kernel@lists.infradead.org, linux-unisoc@lists.infradead.org,
  dmaengine@vger.kernel.org, linux-hardening@vger.kernel.org, 
  linux-mmc@vger.kernel.org, Dang Huynh <dang.huynh@mainlining.org>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1758054322; l=1103;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1758054322; l=799;
  i=dang.huynh@mainlining.org; s=20250917; h=from:subject:message-id;
- bh=iisWV1yQIJV2H6A79OICiudNGMDM/d8wOSexhp4+9s4=;
- b=Uvbh1qdCuPgMg2Cya3wHJFP9B0zxFrsqfkRbRH3160/AsRSPEzMZMlwk9yvCgAuRqcoJQnphz
- LShcA3DOx1LBDlnxtXB3POz/cK5m8ZeoMMoHjCQKsqRFMuyqcxZ4qHk
+ bh=ESVrh/e66fpCx8hkda0seGPWiRBFpNz918jLvjzC/2M=;
+ b=xjdSUQMpB1QsdnW8tgHCeT8pweYzkXjix4jRKL4LWTM9cauqSrIz8lT0CyfI+75tbl+ectZHh
+ CfYuGRCaLUQBLS7JKFKy7prh17FG7FrBkJ57XLn48PXdB9/L1RvywvP
 X-Developer-Key: i=dang.huynh@mainlining.org; a=ed25519;
  pk=RyzH4CL4YU/ItXYUurA51EVBidfx4lIy8/E4EKRJCUk=
 X-Endpoint-Received: by B4 Relay for dang.huynh@mainlining.org/20250917
@@ -75,40 +75,30 @@ Reply-To: dang.huynh@mainlining.org
 
 From: Dang Huynh <dang.huynh@mainlining.org>
 
-Enable RDA8810PL Clock and Reset driver so we can use it for various
-subsystems.
+Enable IFC so we can use it with I2C, SPI, SDMMC.
 
 Signed-off-by: Dang Huynh <dang.huynh@mainlining.org>
 ---
- arch/arm/boot/dts/unisoc/rda8810pl.dtsi | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/arm/boot/dts/unisoc/rda8810pl.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/arch/arm/boot/dts/unisoc/rda8810pl.dtsi b/arch/arm/boot/dts/unisoc/rda8810pl.dtsi
-index 45a2fd3e04cea5aac4fb6b40a6b332ce3eee4f2c..1f7a6908d68367441e5dc865216cc7a5c39feb35 100644
+index e90ae7845de7b79e55e9cd339a82313b423e0252..4b3ae19e9da41ee9ffa76dd4fff01824c07ce045 100644
 --- a/arch/arm/boot/dts/unisoc/rda8810pl.dtsi
 +++ b/arch/arm/boot/dts/unisoc/rda8810pl.dtsi
-@@ -8,6 +8,7 @@
- 
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/interrupt-controller/irq.h>
-+#include <dt-bindings/clock/rda,8810pl-apclk.h>
- 
- / {
- 	compatible = "rda,8810pl";
-@@ -79,6 +80,13 @@ apb@20900000 {
- 		#size-cells = <1>;
- 		ranges = <0x0 0x20900000 0x100000>;
- 
-+		ap_syscon: syscon@0 {
-+			compatible = "rda,8810pl-apsyscon", "syscon";
-+			reg = <0x0 0x1000>;
-+			#clock-cells = <1>;
-+			#reset-cells = <1>;
-+		};
+@@ -212,6 +212,12 @@ uart3: serial@90000 {
+ 			interrupts = <11 IRQ_TYPE_LEVEL_HIGH>;
+ 			status = "disabled";
+ 		};
 +
- 		timer@10000 {
- 			compatible = "rda,8810pl-timer";
- 			reg = <0x10000 0x1000>;
++		ifc: dma-controller@f0000 {
++			compatible = "rda,8810pl-ifc";
++			reg = <0xf0000 0x1000>;
++			#dma-cells = <1>;
++		};
+ 	};
+ 
+ 	l2: cache-controller@21100000 {
 
 -- 
 2.51.0
