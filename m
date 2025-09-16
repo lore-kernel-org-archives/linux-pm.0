@@ -1,37 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0C3B313D7A;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E19E731B820;
 	Tue, 16 Sep 2025 20:25:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758054326; cv=none; b=RXvA6vqsDUfFjswO5bjHKgKXOWpVSzN6tBX6qgQJRTfo/d8XOz6nUm/gU3M+YvtpSGKVEn1G/39zjamrLAh/AeVHAGe03Tet5XgebtZDyHYZ8lwegFROJczSs9eZbazdDirkbN12zkiU6EBHsBYzU9SrKJhbOALd4ujDQ9s9MnA=
+	t=1758054326; cv=none; b=bAFzep2i4tX+7kUTakDwKQh7blccoqZ6ETIjWxXfzySyG/8IQH6EcWwN2fUwkIY8Gsa0O38AR54PY/C+svKslrH5xhKH2FbkRNuLfZEwgx2SItqdlubogOL5houV+9aO4TGej/LIAvSWwrb/1/5sBx18fBQPMy3wiAxhVMuy3SU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1758054326; c=relaxed/simple;
-	bh=6a7uRpDFFwmJD90P9fw5aBw9D1Bqy2wqv4v3bXssn10=;
+	bh=s5jfml22S4HZXK96jIcDhIwNffw2qcJ0QY0RssdtAYg=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=kX8gxeEH/T/Y8rqkq4/qCuC+VKE9hJdxGzGaeAT5CSnSVPtEaYZLy9+MmYwTc2BzD8bGqonrBlG32FZX2wiNZOSp3XBi6nMdL+FdNftZExcwO9BZdHKrXPxioP5C78oA1Yyqb4eDEjGMrH4SdNUoxXm4AJeXjMLpxzWec6Oj4Bg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nbqz4/4M; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=PoM3RIMhF5Ex/WwsL8HFUqt1KdtXn4M6pSnmI2b8zPenYo5bZImfnKwlUDsbyUqf6So4tH03DYptE1BYTggKfQ0pb5Hg6hIKq+CM0ob4bCq3nucXoiCM3PVMNOqZgwkU017fbJAfGdFt1xMolLDWl6wttFs+kbBPQAVkuiLGplg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Birj6Lfi; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nbqz4/4M"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 4CB05C116B1;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Birj6Lfi"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 78A3DC2BCC4;
 	Tue, 16 Sep 2025 20:25:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1758054325;
-	bh=6a7uRpDFFwmJD90P9fw5aBw9D1Bqy2wqv4v3bXssn10=;
+	bh=s5jfml22S4HZXK96jIcDhIwNffw2qcJ0QY0RssdtAYg=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=nbqz4/4Ms1V2NDIjE037IPoihF7TCtIfauQ00yIKCPcNACiZj1p6MjSeyTuT7et+C
-	 HSpG9aPw2oPL5OlRPiQPdxlCrelFCwZ8U5lfiLf8evTMNqe6oaFl9bJD3+/ZJ3rSi0
-	 MriJ2iJqJBZHmS+UFuME7QhY6k0Y9l3d4S0kDey0yhdJLxmnItCz2suMhmTYoXphLj
-	 1FPLlTURZ9QVfMpAWxlboym9P9yKkxc6xyODFY8HSC9AhWrbHUnyeWvoAlZ6STnwjM
-	 vsQvTh4PX2qIqsf0fOGDazevcjcYeimA74M2fYaSGbFTwWE4G8oBjBgGI9DqjQD/Ai
-	 QnXzBuQt/MWPw==
+	b=Birj6LfivaNjxqb8uCvp/d+CR1xUfaMr/nE+QUIambTVTGHnn8cCDzqmT4pGj1Pfu
+	 WKL6K68MdfVk1K/Wma+iBl8XbHykjT4D6/Rotfj0uLFRn2yLMFYaXlRzHA123sYELY
+	 vpOMj6KWEEedSp3OSnrm2/zhHGscp2bEI84xoV4NykeqhcWb8l8OcI7UF8P7Ub60DQ
+	 2PoZ9BLaxo9GDQ9B3WLuUPieOFYlYoyw2d7OIIb9KW269AEHOXKwlj+FLUYt6lWRGI
+	 io6TfrMkaogxPet+GDXEyVlsqojpzOufXEWzMtJpQNuh6yYF8Rwj6dMoTTN8KYvBpx
+	 gnfQNM9yHCtYw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41236CAC59F;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E18FCAC5A0;
 	Tue, 16 Sep 2025 20:25:25 +0000 (UTC)
 From: Dang Huynh via B4 Relay <devnull+dang.huynh.mainlining.org@kernel.org>
-Date: Wed, 17 Sep 2025 03:25:03 +0700
-Subject: [PATCH 06/25] rtc: Add driver for RDA Micro SoC
+Date: Wed, 17 Sep 2025 03:25:06 +0700
+Subject: [PATCH 09/25] dt-bindings: clock: Add RDA Micro RDA8810PL
+ clock/reset controller
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250917-rda8810pl-drivers-v1-6-9ca9184ca977@mainlining.org>
+Message-Id: <20250917-rda8810pl-drivers-v1-9-9ca9184ca977@mainlining.org>
 References: <20250917-rda8810pl-drivers-v1-0-9ca9184ca977@mainlining.org>
 In-Reply-To: <20250917-rda8810pl-drivers-v1-0-9ca9184ca977@mainlining.org>
 To: Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -61,11 +62,11 @@ Cc: linux-arm-kernel@lists.infradead.org, linux-unisoc@lists.infradead.org,
  dmaengine@vger.kernel.org, linux-hardening@vger.kernel.org, 
  linux-mmc@vger.kernel.org, Dang Huynh <dang.huynh@mainlining.org>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1758054322; l=12867;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1758054322; l=3631;
  i=dang.huynh@mainlining.org; s=20250917; h=from:subject:message-id;
- bh=cSJlbB/SvEEJA+EINZDwWhdF79lGvQa4JzoffiXw/8A=;
- b=Kerwaw//6fBvHo9376TQSXrx+rBI8DCHbXxwdiEX7xIvpmGu5dhndFwWTM6Vg5geOi9Y7Neu5
- CSES8aJIaDmCPO9wetq+ZJzdPpI13ZweHRK6Z2NhRw7BxkASASNYofo
+ bh=F0hJeg4vF8n1IM7OJY4KSBkC9cZRnfQ7Ctr7Iv83zwo=;
+ b=W5aQqbp5wDQi2g8XC9wV9RV6i8ghSROwrftQm0G26e3EgJ7UwRgy8QFcZDW/kC8joRM4uC3Vz
+ OnZu0YIn94TBd4gvxz2dnv/wUco20c3tMi/KuPVnqJ9wsl7lNQZzVrw
 X-Developer-Key: i=dang.huynh@mainlining.org; a=ed25519;
  pk=RyzH4CL4YU/ItXYUurA51EVBidfx4lIy8/E4EKRJCUk=
 X-Endpoint-Received: by B4 Relay for dang.huynh@mainlining.org/20250917
@@ -75,430 +76,150 @@ Reply-To: dang.huynh@mainlining.org
 
 From: Dang Huynh <dang.huynh@mainlining.org>
 
-The RDA Micro SoC has built-in RTC, it supports read/write date
-as well as alarm.
+Add documentation describing the RDA8810PL Clock and Reset
+controller.
 
 Signed-off-by: Dang Huynh <dang.huynh@mainlining.org>
 ---
- MAINTAINERS           |   6 +
- drivers/rtc/Kconfig   |  11 ++
- drivers/rtc/Makefile  |   1 +
- drivers/rtc/rtc-rda.c | 356 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 374 insertions(+)
+ .../bindings/clock/rda,8810pl-apsyscon.yaml        | 44 ++++++++++++
+ include/dt-bindings/clock/rda,8810pl-apclk.h       | 79 ++++++++++++++++++++++
+ 2 files changed, 123 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index fa7f80bd7b2f8bd2099acb9f38070498e7b1cc7e..0549b1d0657f2caaf86a723db139cf9d84d59c4a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -21393,6 +21393,12 @@ S:	Supported
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rcu/linux.git rcu/dev
- F:	tools/testing/selftests/rcutorture
- 
-+RDA MICRO REAL TIME CLOCK DRIVER
-+M:	Dang Huynh <dang.huynh@mainlining.org>
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/rtc/rda,8810pl-rtc.yaml
-+F:	drivers/rtc/rtc-rda.c
-+
- RDACM20 Camera Sensor
- M:	Jacopo Mondi <jacopo+renesas@jmondi.org>
- M:	Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 64f6e9756aff4a1f6f6c50f9b4fc2140f66a8578..287fc3bbd474ab78a9bd3b8813e8b9d475c07198 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -1471,6 +1471,17 @@ config RTC_DRV_OMAP
- 	  This driver can also be built as a module, if so, module
- 	  will be called rtc-omap.
- 
-+config RTC_DRV_RDA
-+	tristate "RDA Micro RTC"
-+	depends on ARCH_RDA || COMPILE_TEST
-+	select REGMAP_MMIO
-+	help
-+	  If you say yes here you get support for the built-in RTC on
-+	  RDA Micro SoC.
-+
-+	  This driver can also be built as a module, if so, the module
-+	  will be called rtc-rda.
-+
- config RTC_DRV_S3C
- 	tristate "Samsung S3C series SoC RTC"
- 	depends on ARCH_EXYNOS || ARCH_S3C64XX || ARCH_S5PV210 || \
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index 789bddfea99d8fcd024566891c37ee73e527cf93..02f73062bb158fe4738a3043c58ee40f8a58b3c6 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -141,6 +141,7 @@ obj-$(CONFIG_RTC_DRV_PS3)	+= rtc-ps3.o
- obj-$(CONFIG_RTC_DRV_PXA)	+= rtc-pxa.o
- obj-$(CONFIG_RTC_DRV_R7301)	+= rtc-r7301.o
- obj-$(CONFIG_RTC_DRV_R9701)	+= rtc-r9701.o
-+obj-$(CONFIG_RTC_DRV_RDA)	+= rtc-rda.o
- obj-$(CONFIG_RTC_DRV_RC5T583)	+= rtc-rc5t583.o
- obj-$(CONFIG_RTC_DRV_RC5T619)	+= rtc-rc5t619.o
- obj-$(CONFIG_RTC_DRV_RK808)	+= rtc-rk808.o
-diff --git a/drivers/rtc/rtc-rda.c b/drivers/rtc/rtc-rda.c
+diff --git a/Documentation/devicetree/bindings/clock/rda,8810pl-apsyscon.yaml b/Documentation/devicetree/bindings/clock/rda,8810pl-apsyscon.yaml
 new file mode 100644
-index 0000000000000000000000000000000000000000..bb5aa25fb7d0ad538a0f7f67a80d08fe67af1c5d
+index 0000000000000000000000000000000000000000..988b609403a96abc4964ab366daa6fec0514595c
 --- /dev/null
-+++ b/drivers/rtc/rtc-rda.c
-@@ -0,0 +1,356 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * RTC driver for RDA Micro
-+ *
-+ * Copyright (C) 2013-2014 RDA Microelectronics Inc.
-+ * Copyright (C) 2024 Dang Huynh <dang.huynh@mainlining.org>
-+ */
++++ b/Documentation/devicetree/bindings/clock/rda,8810pl-apsyscon.yaml
+@@ -0,0 +1,44 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/clock/rda,8810pl-apsyscon.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+#include <linux/of.h>
-+#include <linux/module.h>
-+#include <linux/rtc.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm.h>
-+#include <linux/regmap.h>
++title: RDA Micro RDA8810PL AP Clock Controller
 +
-+struct rda_rtc {
-+	struct rtc_device *rtc_dev;
-+	struct regmap *regmap;
-+};
++maintainers:
++  - Dang Huynh <dang.huynh@mainlining.org>
 +
-+/* RTC Registers */
-+#define RDA_RTC_CTRL_REG 0x0
-+#define RDA_RTC_CMD_REG 0x4
-+#define RDA_RTC_STA_REG 0x8
-+#define RDA_RTC_CAL_LOAD_LOW_REG 0xC
-+#define RDA_RTC_CAL_LOAD_HIGH_REG 0x10
-+#define RDA_RTC_CUR_LOAD_LOW_REG 0x14
-+#define RDA_RTC_CUR_LOAD_HIGH_REG 0x18
-+#define RDA_RTC_ALARM_LOW_REG 0x1C
-+#define RDA_RTC_ALARM_HIGH_REG 0x20
++properties:
++  compatible:
++    items:
++      - const: rda,8810pl-apsyscon
++      - const: syscon
 +
-+/* RTC Bits */
-+#define RDA_RTC_CMD_CAL_LOAD BIT(0)
-+#define RDA_RTC_CMD_ALARM_LOAD BIT(4)
-+#define RDA_RTC_CMD_ALARM_ENABLE BIT(5)
-+#define RDA_RTC_CMD_ALARM_DISABLE BIT(6)
-+#define RDA_RTC_CMD_INVALID BIT(31)
-+#define RDA_RTC_STA_ALARM_ENABLE BIT(20)
-+#define RDA_RTC_STA_NOT_PROG BIT(31)
++  reg:
++    maxItems: 1
 +
-+/* RTC Masks */
-+#define RDA_SEC_MASK GENMASK(7, 0)
-+#define RDA_MIN_MASK GENMASK(15, 8)
-+#define RDA_HRS_MASK GENMASK(23, 16)
++  '#clock-cells':
++    const: 1
 +
-+#define RDA_MDAY_MASK GENMASK(7, 0)
-+#define RDA_MON_MASK GENMASK(11, 8)
-+#define RDA_YEAR_MASK GENMASK(22, 16)
-+#define RDA_WDAY_MASK GENMASK(26, 24)
++  '#reset-cells':
++    const: 1
 +
-+static int rda_rtc_settime(struct device *dev, struct rtc_time *tm)
-+{
-+	struct rda_rtc *rtc = dev_get_drvdata(dev);
-+	u32 high, low;
-+	int ret;
++required:
++  - compatible
++  - reg
++  - "#clock-cells"
++  - "#reset-cells"
 +
-+	ret = rtc_valid_tm(tm);
-+	if (ret < 0)
-+		return ret;
++additionalProperties: false
 +
-+	/*
-+	 * The number of years since 1900 in kernel,
-+	 * but it is defined since 2000 by HW.
-+	 * The number of mons' range is from 0 to 11 in kernel,
-+	 * but it is defined from 1 to 12 by HW.
-+	 */
-+	low = FIELD_PREP(RDA_SEC_MASK, tm->tm_sec) |
-+		FIELD_PREP(RDA_MIN_MASK, tm->tm_min) |
-+		FIELD_PREP(RDA_HRS_MASK, tm->tm_hour);
++examples:
++  - |
++    #include <dt-bindings/clock/rda,8810pl-apclk.h>
 +
-+	high = FIELD_PREP(RDA_MDAY_MASK, tm->tm_mday) |
-+		FIELD_PREP(RDA_MON_MASK, tm->tm_mon + 1) |
-+		FIELD_PREP(RDA_YEAR_MASK, tm->tm_year - 100) |
-+		FIELD_PREP(RDA_WDAY_MASK, tm->tm_wday);
++    ap_syscon: syscon@0 {
++      compatible = "rda,8810pl-apsyscon", "syscon";
++      reg = <0x0 0x1000>;
++      #clock-cells = <1>;
++      #reset-cells = <1>;
++    };
+diff --git a/include/dt-bindings/clock/rda,8810pl-apclk.h b/include/dt-bindings/clock/rda,8810pl-apclk.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..372358e72436a28c0775519f49626c9c5f4c6046
+--- /dev/null
++++ b/include/dt-bindings/clock/rda,8810pl-apclk.h
+@@ -0,0 +1,79 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-3-Clause) */
 +
-+	ret = regmap_write(rtc->regmap, RDA_RTC_CAL_LOAD_LOW_REG, low);
-+	if (ret < 0) {
-+		dev_err(dev, "Failed to update RTC low register: %d\n", ret);
-+		return ret;
-+	}
++#ifndef _DT_BINDINGS_CLK_RDA8810_H_
++#define _DT_BINDINGS_CLK_RDA8810_H_
 +
-+	ret = regmap_write(rtc->regmap, RDA_RTC_CAL_LOAD_HIGH_REG, high);
-+	if (ret < 0) {
-+		dev_err(dev, "Failed to update RTC low register: %d\n", ret);
-+		return ret;
-+	}
++/* soc clocks */
++#define CLK_CPU 0
++#define CLK_BUS 1
++#define CLK_MEM 2
 +
-+	ret = regmap_update_bits(rtc->regmap, RDA_RTC_CMD_REG, RDA_RTC_CMD_CAL_LOAD, 1);
-+	if (ret < 0) {
-+		dev_err(dev, "Failed to update RTC cal load register: %d\n", ret);
-+		return ret;
-+	}
++#define CLK_USB 3
++#define CLK_AXI 4
++#define CLK_GCG 5
++#define CLK_AHB1 6
++#define CLK_APB1 7
++#define CLK_APB2 8
 +
-+	return 0;
-+}
++#define CLK_GPU 9
++#define CLK_VPU 10
++#define CLK_VOC 11
++#define CLK_SFLSH 12
 +
-+static int rda_rtc_readtime(struct device *dev, struct rtc_time *tm)
-+{
-+	struct rda_rtc *rtc = dev_get_drvdata(dev);
-+	unsigned int high, low;
-+	int ret;
++#define CLK_UART1 13
++#define CLK_UART2 14
++#define CLK_UART3 15
 +
-+	/*
-+	 * Check if RTC data is valid.
-+	 *
-+	 * When this bit is set, it means the data in the RTC is invalid
-+	 * or not configured.
-+	 */
-+	ret = regmap_test_bits(rtc->regmap, RDA_RTC_STA_REG, RDA_RTC_STA_NOT_PROG);
-+	if (ret < 0) {
-+		dev_err(dev, "Failed to read RTC status: %d\n", ret);
-+		return ret;
-+	} else if (ret > 0)
-+		return -EINVAL;
++#define CLK_VOC2 16
++#define CLK_EMMC 17
 +
-+	ret = regmap_read(rtc->regmap, RDA_RTC_CUR_LOAD_HIGH_REG, &high);
-+	if (ret) {
-+		dev_err(dev, "Failed to read RTC high reg: %d\n", ret);
-+		return ret;
-+	}
++#define CLK_COUNT (CLK_EMMC + 1)
 +
-+	ret = regmap_read(rtc->regmap, RDA_RTC_CUR_LOAD_LOW_REG, &low);
-+	if (ret) {
-+		dev_err(dev, "Failed to read RTC low reg: %d\n", ret);
-+		return ret;
-+	}
++/* resets */
++#define RST_CPU 0
 +
-+	tm->tm_sec = FIELD_GET(RDA_SEC_MASK, low);
-+	tm->tm_min = FIELD_GET(RDA_MIN_MASK, low);
-+	tm->tm_hour = FIELD_GET(RDA_HRS_MASK, low);
-+	tm->tm_mday = FIELD_GET(RDA_MDAY_MASK, high);
-+	tm->tm_mon = FIELD_GET(RDA_MON_MASK, high);
-+	tm->tm_year = FIELD_GET(RDA_YEAR_MASK, high);
-+	tm->tm_wday = FIELD_GET(RDA_WDAY_MASK, high);
++#define RST_AXI_VOC 1
++#define RST_AXI_DMA 2
++#define RST_AXI_CONNECT 3
++#define RST_AXI_VPU 4
 +
-+	/*
-+	 * The number of years since 1900 in kernel,
-+	 * but it is defined since 2000 by HW.
-+	 */
-+	tm->tm_year += 100;
-+	/*
-+	 * The number of mons' range is from 0 to 11 in kernel,
-+	 * but it is defined from 1 to 12 by HW.
-+	 */
-+	tm->tm_mon -= 1;
++#define RST_GCG_GOUDA 5
++#define RST_GCG_CAMERA 6
++#define RST_GCG_LCDC 7
 +
-+	return 0;
-+}
++#define RST_AHB1_USBC 8
++#define RST_AHB1_SPIFLASH 9
 +
-+static int rda_rtc_readalarm(struct device *dev, struct rtc_wkalrm *alrm)
-+{
-+	struct rda_rtc *rtc = dev_get_drvdata(dev);
-+	struct rtc_time *tm = &alrm->time;
-+	unsigned int high, low;
-+	int ret;
++#define RST_APB1_TIMER 10
++#define RST_APB1_KEYPAD 11
++#define RST_APB1_GPIO 12
++#define RST_APB1_PWM 13
++#define RST_APB1_AIF 14
++#define RST_APB1_AUIFC 15
++#define RST_APB1_I2C1 16
++#define RST_APB1_I2C2 17
++#define RST_APB1_I2C3 18
++#define RST_APB1_COMREGS 19
++#define RST_APB1_DMC 20
++#define RST_APB1_DDRPHY_P 21
 +
-+	ret = regmap_read(rtc->regmap, RDA_RTC_ALARM_HIGH_REG, &high);
-+	if (ret) {
-+		dev_err(dev, "Failed to read alarm low reg: %d\n", ret);
-+		return ret;
-+	}
++#define RST_APB2_IFC 22
++#define RST_APB2_UART1 23
++#define RST_APB2_UART2 24
++#define RST_APB2_UART3 25
++#define RST_APB2_SPI1 26
++#define RST_APB2_SPI2 27
++#define RST_APB2_SPI3 28
++#define RST_APB2_SDMMC1 29
++#define RST_APB2_SDMMC2 30
++#define RST_APB2_SDMMC3 31
++#define RST_APB2_NAND 32
 +
-+	ret = regmap_read(rtc->regmap, RDA_RTC_ALARM_LOW_REG, &low);
-+	if (ret) {
-+		dev_err(dev, "Failed to read alarm low reg: %d\n", ret);
-+		return ret;
-+	}
++#define RST_MEM_GPU 33
++#define RST_MEM_VPU 34
++#define RST_MEM_DMC 35
++#define RST_MEM_DDRPHY_P 36
 +
-+	tm->tm_sec = FIELD_GET(RDA_SEC_MASK, low);
-+	tm->tm_min = FIELD_GET(RDA_MIN_MASK, low);
-+	tm->tm_hour = FIELD_GET(RDA_HRS_MASK, low);
-+	tm->tm_mday = FIELD_GET(RDA_MDAY_MASK, high);
-+	tm->tm_mon = FIELD_GET(RDA_MON_MASK, high);
-+	tm->tm_year = FIELD_GET(RDA_YEAR_MASK, high);
-+	tm->tm_wday = FIELD_GET(RDA_WDAY_MASK, high);
++#define RST_COUNT (RST_MEM_DDRPHY_P + 1)
 +
-+	/*
-+	 * The number of years since 1900 in kernel,
-+	 * but it is defined since 2000 by HW.
-+	 */
-+	tm->tm_year += 100;
-+	/*
-+	 * The number of mons' range is from 0 to 11 in kernel,
-+	 * but it is defined from 1 to 12 by HW.
-+	 */
-+	tm->tm_mon -= 1;
-+
-+	return 0;
-+}
-+
-+static int rda_rtc_alarm_irq_enable(struct device *dev, unsigned int enabled)
-+{
-+	struct rda_rtc *rtc = dev_get_drvdata(dev);
-+
-+	if (enabled)
-+		return regmap_update_bits(rtc->regmap, RDA_RTC_CMD_REG,
-+				RDA_RTC_CMD_ALARM_ENABLE, 1);
-+
-+	return regmap_update_bits(rtc->regmap, RDA_RTC_CMD_REG,
-+			RDA_RTC_CMD_ALARM_DISABLE, 1);
-+}
-+
-+static int rda_rtc_setalarm(struct device *dev, struct rtc_wkalrm *alrm)
-+{
-+	struct rda_rtc *rtc = dev_get_drvdata(dev);
-+	struct rtc_time *tm = &alrm->time;
-+	u32 high, low;
-+	int ret;
-+
-+	ret = rtc_valid_tm(tm);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* TODO: Check if it's necessary to disable IRQ first */
-+	rda_rtc_alarm_irq_enable(dev, 0);
-+
-+	/*
-+	 * The number of years since 1900 in kernel,
-+	 * but it is defined since 2000 by HW.
-+	 * The number of mons' range is from 0 to 11 in kernel,
-+	 * but it is defined from 1 to 12 by HW.
-+	 */
-+	low = FIELD_PREP(RDA_SEC_MASK, tm->tm_sec) |
-+		FIELD_PREP(RDA_MIN_MASK, tm->tm_min) |
-+		FIELD_PREP(RDA_HRS_MASK, tm->tm_hour);
-+
-+	high = FIELD_PREP(RDA_MDAY_MASK, tm->tm_mday) |
-+		FIELD_PREP(RDA_MON_MASK, tm->tm_mon + 1) |
-+		FIELD_PREP(RDA_YEAR_MASK, tm->tm_year - 100) |
-+		FIELD_PREP(RDA_WDAY_MASK, tm->tm_wday);
-+
-+
-+	ret = regmap_write(rtc->regmap, RDA_RTC_ALARM_LOW_REG, low);
-+	if (ret < 0) {
-+		dev_err(dev, "Failed to set low alarm register: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = regmap_write(rtc->regmap, RDA_RTC_ALARM_HIGH_REG, high);
-+	if (ret < 0) {
-+		dev_err(dev, "Failed to set low alarm register: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = regmap_update_bits(rtc->regmap, RDA_RTC_CMD_REG, RDA_RTC_CMD_ALARM_LOAD, 1);
-+	if (ret < 0) {
-+		dev_err(dev, "Failed to set alarm register: %d\n", ret);
-+		return ret;
-+	}
-+
-+	dev_dbg(dev, "Alarm set: %4d-%02d-%02d %02d:%02d:%02d\n",
-+			2000 + (tm->tm_year - 100), tm->tm_mon + 1, tm->tm_mday,
-+			tm->tm_hour, tm->tm_min, tm->tm_sec);
-+
-+	return 0;
-+}
-+
-+static int rda_rtc_proc(struct device *dev, struct seq_file *seq)
-+{
-+	struct rda_rtc *rtc = dev_get_drvdata(dev);
-+	int ret;
-+
-+	ret = regmap_test_bits(rtc->regmap, RDA_RTC_STA_REG, RDA_RTC_STA_ALARM_ENABLE);
-+	if (ret < 0) {
-+		dev_err(dev, "Failed to read alarm status: %d\n", ret);
-+		return ret;
-+	}
-+
-+	seq_printf(seq, "alarm enable\t: %s\n", (ret > 0) ? "yes" : "no");
-+
-+	return 0;
-+}
-+
-+static const struct rtc_class_ops rda_rtc_ops = {
-+	.read_time = rda_rtc_readtime,
-+	.set_time = rda_rtc_settime,
-+	.read_alarm = rda_rtc_readalarm,
-+	.set_alarm = rda_rtc_setalarm,
-+	.proc = rda_rtc_proc,
-+	.alarm_irq_enable = rda_rtc_alarm_irq_enable,
-+};
-+
-+#ifdef CONFIG_PM_SLEEP
-+static int rda_rtc_suspend(struct platform_device *pdev, pm_message_t state)
-+{
-+	/* TODO: Check if it's okay to turn on alarm IRQ when it's not set */
-+	return rda_rtc_alarm_irq_enable(&pdev->dev, 1);
-+}
-+
-+static int rda_rtc_resume(struct platform_device *pdev)
-+{
-+	/* If alarms were left, we turn them off. */
-+	return rda_rtc_alarm_irq_enable(&pdev->dev, 0);
-+}
-+#endif
-+
-+static SIMPLE_DEV_PM_OPS(rda_rtc_pm_ops, rda_rtc_suspend, rda_rtc_resume);
-+
-+static const struct regmap_config regmap_config = {
-+	.reg_bits = 32,
-+	.val_bits = 32,
-+	.reg_stride = 4,
-+};
-+
-+static int rda_rtc_probe(struct platform_device *pdev)
-+{
-+	struct rda_rtc *rda_rtc;
-+	void __iomem *base;
-+
-+	rda_rtc = devm_kzalloc(&pdev->dev, sizeof(*rda_rtc), GFP_KERNEL);
-+	if (!rda_rtc)
-+		return -ENOMEM;
-+
-+	base = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(base))
-+		return dev_err_probe(&pdev->dev, PTR_ERR(base),
-+				"failed to remap resource\n");
-+
-+	rda_rtc->regmap = devm_regmap_init_mmio(&pdev->dev, base, &regmap_config);
-+	if (!rda_rtc->regmap)
-+		return dev_err_probe(&pdev->dev, PTR_ERR(rda_rtc->regmap),
-+				"can't find regmap\n");
-+
-+	rda_rtc->rtc_dev = devm_rtc_allocate_device(&pdev->dev);
-+	if (IS_ERR(rda_rtc->rtc_dev))
-+		return dev_err_probe(&pdev->dev, PTR_ERR(rda_rtc->rtc_dev),
-+				"failed to allocate rtc device\n");
-+
-+	rda_rtc->rtc_dev->ops = &rda_rtc_ops;
-+	rda_rtc->rtc_dev->range_min = RTC_TIMESTAMP_BEGIN_2000;
-+	rda_rtc->rtc_dev->range_max = RTC_TIMESTAMP_END_2127;
-+
-+	platform_set_drvdata(pdev, rda_rtc);
-+
-+	return devm_rtc_register_device(rda_rtc->rtc_dev);
-+}
-+
-+static const struct of_device_id rda_rtc_id_table[] = {
-+	{ .compatible = "rda,8810pl-rtc", },
-+	{ /* sentinel */ },
-+};
-+MODULE_DEVICE_TABLE(of, rda_rtc_id_table);
-+
-+static struct platform_driver rda_rtc_driver = {
-+	.probe = rda_rtc_probe,
-+	.driver = {
-+		.name = "rtc-rda",
-+		.pm = &rda_rtc_pm_ops,
-+		.of_match_table = rda_rtc_id_table,
-+	},
-+};
-+module_platform_driver(rda_rtc_driver);
-+
-+MODULE_AUTHOR("Dang Huynh <dang.huynh@mainlining.org>");
-+MODULE_DESCRIPTION("RDA Micro RTC driver");
-+MODULE_LICENSE("GPL");
++#endif /* _DT_BINDINGS_CLK_RDA8810_H_ */
 
 -- 
 2.51.0
