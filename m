@@ -1,157 +1,212 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0FC3A283FE1
-	for <linux-pm@vger.kernel.org>; Tue, 16 Sep 2025 20:06:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04FCF2DF15A;
+	Tue, 16 Sep 2025 20:09:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758053199; cv=none; b=EQaJQ0SzC30aPbD/RH0I++JHYlabjCMmiz27jAdUUsXIEOCQIDhGTA3aTWtw8jx8iV0aS1mmIPetXFrpC+SvDXvntZli7wZYclujLMjjVjjT8f3wvAA0PfZehRn8Wstu/NHvYexyw3g3DfyL99A8QpjlQKfmlL0zl/UR4os4EoU=
+	t=1758053386; cv=none; b=sESXzhB4wBz9iTg1eeLoko6r/an7UVIYE61LErQ4apZ/hYXcqbLJgUnLQqO9kPvInl60lkTu+YaNwPRFjynAes35U2wKIfYuc891YSdawlHon3RkJ4T702bi61b48m2oVZZ9qp1v921qVJdIRFr99/khrGNgttf1OWV5tal6q/A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758053199; c=relaxed/simple;
-	bh=sgYmSPXr5fJEn+ksoOyt6N70CNWy742OaZOeIXzvKEk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=nEL5Pwcz9tiw8rIthc9BR/qX0bPokxP4vfXp1y0prMP1lRlJD2J513SZImRmOSIQ6Ta2u1Xa/1FS/9XOIXq3I0HKxT7kVUe56JiC1jInga7WNckrrGydj75ofiAO3bdzccRoqIMgMhn37X519Wk7nJWudregJw743VizycsG95A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=pGytgli2; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1758053386; c=relaxed/simple;
+	bh=F0hJeg4vF8n1IM7OJY4KSBkC9cZRnfQ7Ctr7Iv83zwo=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=ZU5s9z2JxuRtJZBbIfd+4HwlY1BqjEwjrppxf1OSNC+wi3F04sPAWxe9PC1cVpyqDO+7KZBSrvQcD3OqeVe0uV4o38MiZ8jPRB384obZMup5PuYoPzPMB2LZLvjy37E06YwapKT5c9gDajwNHEXqaUZdbTLzQ2fMcKQUOX7F+00=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=GAvx5qwG; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=UzO03XcR; arc=none smtp.client-ip=5.75.144.95
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="pGytgli2"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B0512C4CEF7
-	for <linux-pm@vger.kernel.org>; Tue, 16 Sep 2025 20:06:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1758053198;
-	bh=sgYmSPXr5fJEn+ksoOyt6N70CNWy742OaZOeIXzvKEk=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=pGytgli2fZqIFFSPD4nEJRarafpTfU7+HzOmQ4CrN2CjEOk4ppBUfuubssvHpkzrF
-	 Yq1Fu3JhenEJhBau9+SeBigC14UAXOKsIezP4Fx7i+c2SSYg7JmRNu0H+7xAQEjo71
-	 rg7BXNu5OtLeDuJtpfEqyONbSEfwBrBKai/4f3qtNYNZFKyEs0XUriJ7IUEsVYR1l3
-	 sgi7Um57l/zNJ55jX7gV8lA9nsst8AZcGh+Lr1JpsYDXDKsADdMKhLSbEKryyd1axR
-	 K3vczRqSxgpFXlvYuZ6R54wUd/hu+zQa8K+QEPSaOlYmNzqghDusF5TeByeZsS7KsJ
-	 /4SEXhXmAz//g==
-Received: by mail-ot1-f51.google.com with SMTP id 46e09a7af769-74c1251df00so2989027a34.0
-        for <linux-pm@vger.kernel.org>; Tue, 16 Sep 2025 13:06:38 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCWAQwDoaGseMPg8p7UnjYdJcqK+rgIN4oOmxnopsnM7J/k37igPALAXrwuATsVrhdVE0XCd9OjI1g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyhdQVxXeZ89gT8Ceazt6zB2EabP6/0NyRpZIX17mO2N/54c6mu
-	QtrpPXx+qHSE0BLIp/vZW8KVw8+guUITVCxvDm9Xi9kskdhlQoRcu2AmHSNp60PQ6L3tIGj4qa7
-	GbE1OvAbTAziphv1wW8lC5550vHY0lwA=
-X-Google-Smtp-Source: AGHT+IEgzjAAkbMDY4awbYDp3Kq0/fxmVwsoGjHomqpd9a5KNX9ogTaPcgxeatr4pPDlCJhtFOK6MLyI7Ue0IaNcehc=
-X-Received: by 2002:a05:6808:689b:10b0:439:b491:401b with SMTP id
- 5614622812f47-43b8d87c7bbmr8034409b6e.10.1758053197833; Tue, 16 Sep 2025
- 13:06:37 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="GAvx5qwG";
+	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="UzO03XcR"
+DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
+	h=To:Message-Id:Subject:Date:From; t=1758053336; bh=WlrpMszuag375++3au3AQMu
+	mLE/Z1ZoZmJDjJqd8ieY=; b=GAvx5qwGFbxhNRkxwhc5JSYB1VRIMjT5ITBEWXUjVNyQ0BNZ7n
+	sPJRK49nsYSihF6htA0vNokgdRIR+nQd0zL96pFlmWIrCntfk8gd5ENYJKXzz0hxoB2VikAnAhM
+	pZFG08Xt/Aw1XeI2Ygsr5tq4QthZmwtGBBU3En3e3ezDluZx5QW73yYfSUWU3hpBrQDL9fBKirG
+	ReGGVxNrWIv22KM00QZaDIvPKsnL+PUP3+VPkjeLArQes/PIm5LGDaEN334/+3Q162yDD8Z9OVz
+	Sv+iSk9BiyPut/O3rwwaTq54MfwPbnUKeTZ1bw0Vta8J/i5rFf6L154KEr+qR+hTahQ==;
+DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
+	h=To:Message-Id:Subject:Date:From; t=1758053336; bh=WlrpMszuag375++3au3AQMu
+	mLE/Z1ZoZmJDjJqd8ieY=; b=UzO03XcRaN3wGrSqDtBkO/u7EMhC+mKUBkEupBvSBqMoLn/K9o
+	n56YX+PHZY+jiYPCh5W/1ggBp9Tr5ku7pFAw==;
+From: Dang Huynh <dang.huynh@mainlining.org>
+Date: Wed, 17 Sep 2025 03:07:26 +0700
+Subject: [PATCH 09/25] dt-bindings: clock: Add RDA Micro RDA8810PL
+ clock/reset controller
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250830053404.763995-1-srosek@google.com> <CAJZ5v0hShKgPB42p4dOgKoRuMCkGhe+ZHMeAuFQO0Soa1ty_LQ@mail.gmail.com>
- <CAF3aWvHTXiODVE72Q33KDS51j4QA7gXVSsvdRnvsHdBv4NzCfw@mail.gmail.com>
-In-Reply-To: <CAF3aWvHTXiODVE72Q33KDS51j4QA7gXVSsvdRnvsHdBv4NzCfw@mail.gmail.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 16 Sep 2025 22:06:26 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0gTUj0zj3rZP+0iQAhsqMaLnN0K5RYpeH+ViS+GMKPHfw@mail.gmail.com>
-X-Gm-Features: AS18NWDo9e7e7lAfAdBG6Gzab9UFwhygJIWaLVvGXMJwbkP1bC1WNNPO2W6V_JU
-Message-ID: <CAJZ5v0gTUj0zj3rZP+0iQAhsqMaLnN0K5RYpeH+ViS+GMKPHfw@mail.gmail.com>
-Subject: Re: [PATCH v1 00/12] ACPI: DPTF: Move INT340X enumeration from DPTF
- core to thermal drivers
-To: =?UTF-8?Q?S=C5=82awomir_Rosek?= <srosek@google.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Alex Hung <alexhung@gmail.com>, 
-	Hans de Goede <hansg@kernel.org>, Ilpo Jarvinen <ilpo.jarvinen@linux.intel.com>, 
-	AceLan Kao <acelan.kao@canonical.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Tomasz Nowicki <tnowicki@google.com>, 
-	Stanislaw Kardach <skardach@google.com>, Michal Krawczyk <mikrawczyk@google.com>, 
-	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, 
-	platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250917-rda8810pl-drivers-v1-9-74866def1fe3@mainlining.org>
+References: <20250917-rda8810pl-drivers-v1-0-74866def1fe3@mainlining.org>
+In-Reply-To: <20250917-rda8810pl-drivers-v1-0-74866def1fe3@mainlining.org>
+To: Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Linus Walleij <linus.walleij@linaro.org>, 
+ Bartosz Golaszewski <brgl@bgdev.pl>, 
+ Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+ Michael Turquette <mturquette@baylibre.com>, 
+ Stephen Boyd <sboyd@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
+ Sebastian Reichel <sre@kernel.org>, Vinod Koul <vkoul@kernel.org>, 
+ Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, 
+ Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-unisoc@lists.infradead.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-gpio@vger.kernel.org, linux-rtc@vger.kernel.org, 
+ linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, 
+ dmaengine@vger.kernel.org, linux-hardening@vger.kernel.org, 
+ linux-mmc@vger.kernel.org, Dang Huynh <dang.huynh@mainlining.org>
+X-Mailer: b4 0.14.2
 
-Hi,
+Add documentation describing the RDA8810PL Clock and Reset
+controller.
 
-On Mon, Sep 15, 2025 at 7:13=E2=80=AFPM S=C5=82awomir Rosek <srosek@google.=
-com> wrote:
->
-> Hi Rafael,
->
-> First of all I would like to apologize for the late reply and thank
-> you for your comments.
->
-> On Mon, Sep 1, 2025 at 10:49=E2=80=AFAM Rafael J. Wysocki <rafael@kernel.=
-org> wrote:
-> >
-> > On Sat, Aug 30, 2025 at 7:34=E2=80=AFAM Slawomir Rosek <srosek@google.c=
-om> wrote:
-> > >
-> > > The Intel Dynamic Platform and Thermal Framework (DPTF) relies on
-> > > the INT340X ACPI device objects. The temperature information and
-> > > cooling ability are exposed to the userspace via those objects.
-> > >
-> > > Since kernel v3.17 the ACPI bus scan handler is introduced to prevent
-> > > enumeration of INT340X ACPI device objects on the platform bus unless
-> > > related thermal drivers are enabled. However, using the IS_ENABLED()
-> > > macro in the ACPI scan handler forces the kernel to be recompiled
-> > > when thermal drivers are enabled or disabled, which is a significant
-> > > limitation of its modularity. The IS_ENABLED() macro is particularly
-> > > problematic for the Android Generic Kernel Image (GKI) project which
-> > > uses unified core kernel while SoC/board support is moved to loadable
-> > > vendor modules.
-> > >
-> > > This patch set moves enumeration of INT340X ACPI device objects on
-> > > the platform bus from DPTF core to thermal drivers. It starts with
-> > > some code cleanup and reorganization to eventually remove IS_ENABLED(=
-)
-> > > macro from the ACPI bus scan handler. Brief list of changes is listed
-> > > below:
-> > >
-> > > 1) Remove SOC DTS thermal driver case from the ACPI scan handler
-> > >    since its dependency on INT340X driver is unrelated to DPTF
-> > > 2) Move all INT340X ACPI device ids to the common header and update
-> > >    the DPTF core and thermal drivers accordingly
-> > > 3) Move dynamic enumeration of ACPI device objects on the platform bu=
-s
-> > >    from the intel-hid and intel-vbtn drivers to the ACPI platform cor=
-e
-> > > 4) Move enumeration of INT340X ACPI device objects on the platform bu=
-s
-> > >    from DPTF core to thermal drivers using ACPI platform core methods
-> > >
-> > >
-> > > Slawomir Rosek (12):
-> > >   ACPI: DPTF: Ignore SoC DTS thermal while scanning
-> > >   ACPI: DPTF: Move INT3400 device IDs to header
-> > >   ACPI: DPTF: Move INT3401 device IDs to header
-> > >   ACPI: DPTF: Move INT3402 device IDs to header
-> > >   ACPI: DPTF: Move INT3403 device IDs to header
-> > >   ACPI: DPTF: Move INT3404 device IDs to header
-> > >   ACPI: DPTF: Move INT3406 device IDs to header
-> > >   ACPI: DPTF: Move INT3407 device IDs to header
-> >
-> > Please avoid sending multiple patches with the same subject,
-> > especially in one patch series.
-> >
-> > Thanks!
-> >
->
-> The subjects are quite similar but they are not exactly the same.
->
-> Originally the ACPI bus scan handler was added in 3230bbfce8a9
-> ("ACPI: introduce ACPI int340x thermal scan handler") to prevent
-> enumeration of ACPI device objects in range INT3401~INT340B
-> and only the INT3400 master device had their platform driver added
-> in 816cab931f28 ("Thermal: introduce int3400 thermal driver").
->
-> These days, however, each of INT3400~INT3407 device ID, representing
-> a different kind of thermal device, has its own platform driver.
-> Most of them, depending on X Lake generation, can also be enumerated
-> on the ACPI bus using INTC1XXXX device ID. In addition INT3408~INT340B
-> and some of The Wildcat Lake device IDs are not supported by any
-> platform driver.
->
-> To make the review process easier and minimize the risk of mistakes
-> I decided to create separe patch for each ID in range INT3400~INT3407.
-> The INT3400, INT3404 and INT3407 device ID can probably be renamed to
-> Thermal Core, Fan and Power device ID, respectively, but I am not sure
-> about the others.
->
-> Alternatively they can be squashed into a single patch which moves
-> all INT340X device IDs to the common header.
+Signed-off-by: Dang Huynh <dang.huynh@mainlining.org>
+---
+ .../bindings/clock/rda,8810pl-apsyscon.yaml        | 44 ++++++++++++
+ include/dt-bindings/clock/rda,8810pl-apclk.h       | 79 ++++++++++++++++++++++
+ 2 files changed, 123 insertions(+)
 
-Yes, please.
+diff --git a/Documentation/devicetree/bindings/clock/rda,8810pl-apsyscon.yaml b/Documentation/devicetree/bindings/clock/rda,8810pl-apsyscon.yaml
+new file mode 100644
+index 0000000000000000000000000000000000000000..988b609403a96abc4964ab366daa6fec0514595c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/clock/rda,8810pl-apsyscon.yaml
+@@ -0,0 +1,44 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/clock/rda,8810pl-apsyscon.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: RDA Micro RDA8810PL AP Clock Controller
++
++maintainers:
++  - Dang Huynh <dang.huynh@mainlining.org>
++
++properties:
++  compatible:
++    items:
++      - const: rda,8810pl-apsyscon
++      - const: syscon
++
++  reg:
++    maxItems: 1
++
++  '#clock-cells':
++    const: 1
++
++  '#reset-cells':
++    const: 1
++
++required:
++  - compatible
++  - reg
++  - "#clock-cells"
++  - "#reset-cells"
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/rda,8810pl-apclk.h>
++
++    ap_syscon: syscon@0 {
++      compatible = "rda,8810pl-apsyscon", "syscon";
++      reg = <0x0 0x1000>;
++      #clock-cells = <1>;
++      #reset-cells = <1>;
++    };
+diff --git a/include/dt-bindings/clock/rda,8810pl-apclk.h b/include/dt-bindings/clock/rda,8810pl-apclk.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..372358e72436a28c0775519f49626c9c5f4c6046
+--- /dev/null
++++ b/include/dt-bindings/clock/rda,8810pl-apclk.h
+@@ -0,0 +1,79 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-3-Clause) */
++
++#ifndef _DT_BINDINGS_CLK_RDA8810_H_
++#define _DT_BINDINGS_CLK_RDA8810_H_
++
++/* soc clocks */
++#define CLK_CPU 0
++#define CLK_BUS 1
++#define CLK_MEM 2
++
++#define CLK_USB 3
++#define CLK_AXI 4
++#define CLK_GCG 5
++#define CLK_AHB1 6
++#define CLK_APB1 7
++#define CLK_APB2 8
++
++#define CLK_GPU 9
++#define CLK_VPU 10
++#define CLK_VOC 11
++#define CLK_SFLSH 12
++
++#define CLK_UART1 13
++#define CLK_UART2 14
++#define CLK_UART3 15
++
++#define CLK_VOC2 16
++#define CLK_EMMC 17
++
++#define CLK_COUNT (CLK_EMMC + 1)
++
++/* resets */
++#define RST_CPU 0
++
++#define RST_AXI_VOC 1
++#define RST_AXI_DMA 2
++#define RST_AXI_CONNECT 3
++#define RST_AXI_VPU 4
++
++#define RST_GCG_GOUDA 5
++#define RST_GCG_CAMERA 6
++#define RST_GCG_LCDC 7
++
++#define RST_AHB1_USBC 8
++#define RST_AHB1_SPIFLASH 9
++
++#define RST_APB1_TIMER 10
++#define RST_APB1_KEYPAD 11
++#define RST_APB1_GPIO 12
++#define RST_APB1_PWM 13
++#define RST_APB1_AIF 14
++#define RST_APB1_AUIFC 15
++#define RST_APB1_I2C1 16
++#define RST_APB1_I2C2 17
++#define RST_APB1_I2C3 18
++#define RST_APB1_COMREGS 19
++#define RST_APB1_DMC 20
++#define RST_APB1_DDRPHY_P 21
++
++#define RST_APB2_IFC 22
++#define RST_APB2_UART1 23
++#define RST_APB2_UART2 24
++#define RST_APB2_UART3 25
++#define RST_APB2_SPI1 26
++#define RST_APB2_SPI2 27
++#define RST_APB2_SPI3 28
++#define RST_APB2_SDMMC1 29
++#define RST_APB2_SDMMC2 30
++#define RST_APB2_SDMMC3 31
++#define RST_APB2_NAND 32
++
++#define RST_MEM_GPU 33
++#define RST_MEM_VPU 34
++#define RST_MEM_DMC 35
++#define RST_MEM_DDRPHY_P 36
++
++#define RST_COUNT (RST_MEM_DDRPHY_P + 1)
++
++#endif /* _DT_BINDINGS_CLK_RDA8810_H_ */
+
+-- 
+2.51.0
+
