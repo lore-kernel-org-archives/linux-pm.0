@@ -1,44 +1,45 @@
 Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C70931A7F8;
-	Wed, 17 Sep 2025 12:23:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC0BC31A81E;
+	Wed, 17 Sep 2025 12:24:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758111844; cv=pass; b=IBSW/uM+PF5XwY2EZ5+LKORrsxvpzhlDp53G73dZXROsZoPVwg32HlHng8eUTVGqqhPTVo6mHD4YVKfJPvsfHv/e0vvLULwXxTQl9G6ocwbKMwFXs8EVWS8DDj0Nwdeu7GfSVNUkXCVwR8uu6Wwn+/KJGdSkp2D/DHYQMBVYW44=
+	t=1758111847; cv=pass; b=L/WtmdgyHP5KXE7kDQyxRUBH9fWWl0uFnDZFaz8NhFGpW6DLE7YfGYEJERZSop9pLwOh3UdNEd5ZyeNTQkok4U2OtqpknzUy16zJpUkdcNqcKjR5t6QbOTqiD8r6d0abTY+oZQtp1cNHsq66LhlSzBr6gGOZoQHbBnCwB+Etp8Q=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758111844; c=relaxed/simple;
-	bh=hNHMmIz6jcEA3/Yt5j8PNNjkdw1tXRlPD7BnSP+FpDQ=;
+	s=arc-20240116; t=1758111847; c=relaxed/simple;
+	bh=J+S5dkYsvaXSvVoWJtH+qdatS47qSJPWCgwwNDAH91E=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=igFiuG2mWBhkQDssNbsggeht8oGJy2zaq9CJXdmGMfDpyvGhbC/5OPbouc98UoLAPm4f97uFgBu99XVQkvy8gY/kMpZfax851UugZP9e8KBlCwII8OeS923UXOk5G+fEmZ8zg55t4g7kjUcGlJyCw2Y/Dwk1YnadjpWv/Z7NfRg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=QPMUjIHQ; arc=pass smtp.client-ip=136.143.188.112
+	 In-Reply-To:To:Cc; b=jH8+2ZXuESMoAggEHD1Y/cuYqTm8izJAcc5C7VRwLl6t06WMU24BXPHio5ulAYtlHJs6mkar/YrHmbo+8sJawUUI8U23BIbfQMyl7Kh5A44F9Dr0/JNLYcfUYBpV9CttT5JlFGhzqX4D/QE0ymCdjpw5q5u5PNaPKu3PTmhJjL8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=CC7KFq3D; arc=pass smtp.client-ip=136.143.188.112
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="QPMUjIHQ"
-ARC-Seal: i=1; a=rsa-sha256; t=1758111806; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="CC7KFq3D"
+ARC-Seal: i=1; a=rsa-sha256; t=1758111820; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=a8XoYQt60pePKrnVirjs/CoerURRZ1a9yNEbQflRUOUPUPyEBhumR6nPQvmZwREZOETwh9mpuO0KDmYIKhOEYT58Z7ijl015V/Tnwk/ZTDwJVdZ6kPFSAzMO2XbJculnEu2fRe8qa7cTbFE2t7mgQu/xsZTH19wbU51XWyKxZHw=
+	b=X4lGsA/AFF/RCp6a191pKiHy+/n4KdyVPDcXWvwZCXeCYlmjWUkJdzO+V43HP7jKOLZ1836uXsIErHsmHKKnOzyaMVMEjky0N7kFs6Bc5yuoqTZq69Tk1CYYEyP9fCMKFFTXxdOl9f5oXybG2XoIsxZS6hx8XWxpXo8fkP16jLw=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1758111806; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=uurEV4t79lUgHGzzrcapEhqlS/tLXxa4Px+GQkvoJNc=; 
-	b=Fa9KS/3tG/7o0wvNrltzeUXLfzZkuxEY9fnKPqlxsqOlMWtmroTNzz1h9Pt3pqmCLY+ugWokOo0h0GGMrNRW2U4jWBI5pnAzTaf6f3FRRWuhxTMg38Yq2Mi5YhVQlxX91A1wKpNUaeDIXejpmRVz+dw7KbSz3snKH/Vk0lFRx/U=
+	t=1758111820; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=UxZvjhEJCAiuvf/8CnR5ujZ+N4d9oN5GgfPWk3NAFVg=; 
+	b=YnbaT2gE3MaOYNFRcur0fwNzAbCw/wlqytH8xme1agDMgkxthdm6Xmq6qmP7JjPGY3JZ5OyQV2lbzQ7wl3IQxdVaX1ZsxM1o0iGh70Z7BxtX3X9iqPfqf9AwttzcKloNXb9lfmMXLnytJxBt/mJXTospIBeW+uQ6eW6kvqzoci8=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1758111806;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1758111820;
 	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
 	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
-	bh=uurEV4t79lUgHGzzrcapEhqlS/tLXxa4Px+GQkvoJNc=;
-	b=QPMUjIHQbBr8IpCEw43ARVZSwMwQHVOXEsxxUvhD9v9orGxJEBzNLj2r0GNIdeJV
-	QkE42+0jmvOZ0T3uNIN5r8HpnEFOHzMGLJ/Xpc0AwRR5uKNYkc8XSMlax1lGXSuV59q
-	QZXoxjTkAE73UL1/UznAb4a4isRrFfA1PVzmIXBI=
-Received: by mx.zohomail.com with SMTPS id 1758111803957814.8917413770764;
-	Wed, 17 Sep 2025 05:23:23 -0700 (PDT)
+	bh=UxZvjhEJCAiuvf/8CnR5ujZ+N4d9oN5GgfPWk3NAFVg=;
+	b=CC7KFq3DOnF7RUNIffWGykhuaXILFeC+Aja7ptU7aynskaQdEfwk5FnzP2DeAsKe
+	w6WO8+g9ZZWrzihBVo9ZjZ0e/Jk1VxnO7ML8hO9TtuzSmwnt2a9PCDn5o5ihigIherU
+	t847uE0HGRH/C9iudeWXqmy8SxZl3hv8PcyJpOWc=
+Received: by mx.zohomail.com with SMTPS id 1758111818475523.4296053697955;
+	Wed, 17 Sep 2025 05:23:38 -0700 (PDT)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Wed, 17 Sep 2025 14:22:35 +0200
-Subject: [PATCH v3 04/10] dt-bindings: mailbox: Add MT8196 GPUEB Mailbox
+Date: Wed, 17 Sep 2025 14:22:37 +0200
+Subject: [PATCH v3 06/10] drm/panthor: call into devfreq for current
+ frequency
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -47,7 +48,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250917-mt8196-gpufreq-v3-4-c4ede4b4399e@collabora.com>
+Message-Id: <20250917-mt8196-gpufreq-v3-6-c4ede4b4399e@collabora.com>
 References: <20250917-mt8196-gpufreq-v3-0-c4ede4b4399e@collabora.com>
 In-Reply-To: <20250917-mt8196-gpufreq-v3-0-c4ede4b4399e@collabora.com>
 To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
@@ -68,93 +69,147 @@ Cc: kernel@collabora.com, dri-devel@lists.freedesktop.org,
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
  linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, 
  linux-pm@vger.kernel.org, linux-hardening@vger.kernel.org, 
- Nicolas Frattaroli <nicolas.frattaroli@collabora.com>, 
- Conor Dooley <conor.dooley@microchip.com>
+ Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 X-Mailer: b4 0.14.2
 
-The MediaTek MT8196 SoC includes an embedded MCU referred to as "GPUEB",
-acting as glue logic to control power and frequency of the Mali GPU.
-This MCU runs special-purpose firmware for this use, and the main
-application processor communicates with it through a mailbox.
+As it stands, panthor keeps a cached current frequency value for when it
+wants to retrieve it. This doesn't work well for when things might
+switch frequency without panthor's knowledge.
 
-Add a binding that describes this mailbox.
+Instead, implement the get_cur_freq operation, and expose it through a
+helper function to the rest of panthor.
 
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Reviewed-by: Steven Price <steven.price@arm.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
- .../mailbox/mediatek,mt8196-gpueb-mbox.yaml        | 64 ++++++++++++++++++++++
- 1 file changed, 64 insertions(+)
+ drivers/gpu/drm/panthor/panthor_devfreq.c | 33 +++++++++++++++++++++++++++----
+ drivers/gpu/drm/panthor/panthor_devfreq.h |  2 ++
+ drivers/gpu/drm/panthor/panthor_device.h  |  3 ---
+ drivers/gpu/drm/panthor/panthor_drv.c     |  4 +++-
+ 4 files changed, 34 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/mailbox/mediatek,mt8196-gpueb-mbox.yaml b/Documentation/devicetree/bindings/mailbox/mediatek,mt8196-gpueb-mbox.yaml
-new file mode 100644
-index 0000000000000000000000000000000000000000..ab5b780cb83a708a3897ca1a440131d97b56c3a6
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mailbox/mediatek,mt8196-gpueb-mbox.yaml
-@@ -0,0 +1,64 @@
-+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/mailbox/mediatek,mt8196-gpueb-mbox.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/drivers/gpu/drm/panthor/panthor_devfreq.c b/drivers/gpu/drm/panthor/panthor_devfreq.c
+index 3686515d368db5bb329f4858d4a7247a4957cc24..8903f60c0a3f06313ac2008791c210ff32b6bd52 100644
+--- a/drivers/gpu/drm/panthor/panthor_devfreq.c
++++ b/drivers/gpu/drm/panthor/panthor_devfreq.c
+@@ -62,7 +62,6 @@ static void panthor_devfreq_update_utilization(struct panthor_devfreq *pdevfreq)
+ static int panthor_devfreq_target(struct device *dev, unsigned long *freq,
+ 				  u32 flags)
+ {
+-	struct panthor_device *ptdev = dev_get_drvdata(dev);
+ 	struct dev_pm_opp *opp;
+ 	int err;
+ 
+@@ -72,8 +71,6 @@ static int panthor_devfreq_target(struct device *dev, unsigned long *freq,
+ 	dev_pm_opp_put(opp);
+ 
+ 	err = dev_pm_opp_set_rate(dev, *freq);
+-	if (!err)
+-		ptdev->current_frequency = *freq;
+ 
+ 	return err;
+ }
+@@ -115,11 +112,21 @@ static int panthor_devfreq_get_dev_status(struct device *dev,
+ 	return 0;
+ }
+ 
++static int panthor_devfreq_get_cur_freq(struct device *dev, unsigned long *freq)
++{
++	struct panthor_device *ptdev = dev_get_drvdata(dev);
 +
-+title: MediaTek MFlexGraphics GPUEB Mailbox Controller
++	*freq = clk_get_rate(ptdev->clks.core);
 +
-+maintainers:
-+  - Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
++	return 0;
++}
 +
-+properties:
-+  compatible:
-+    enum:
-+      - mediatek,mt8196-gpueb-mbox
+ static struct devfreq_dev_profile panthor_devfreq_profile = {
+ 	.timer = DEVFREQ_TIMER_DELAYED,
+ 	.polling_ms = 50, /* ~3 frames */
+ 	.target = panthor_devfreq_target,
+ 	.get_dev_status = panthor_devfreq_get_dev_status,
++	.get_cur_freq = panthor_devfreq_get_cur_freq,
+ };
+ 
+ int panthor_devfreq_init(struct panthor_device *ptdev)
+@@ -198,7 +205,6 @@ int panthor_devfreq_init(struct panthor_device *ptdev)
+ 		return PTR_ERR(opp);
+ 
+ 	panthor_devfreq_profile.initial_freq = cur_freq;
+-	ptdev->current_frequency = cur_freq;
+ 
+ 	/*
+ 	 * Set the recommend OPP this will enable and configure the regulator
+@@ -296,3 +302,22 @@ void panthor_devfreq_record_idle(struct panthor_device *ptdev)
+ 
+ 	spin_unlock_irqrestore(&pdevfreq->lock, irqflags);
+ }
 +
-+  reg:
-+    items:
-+      - description: mailbox data registers
-+      - description: mailbox control registers
++unsigned long panthor_devfreq_get_freq(struct panthor_device *ptdev)
++{
++	struct panthor_devfreq *pdevfreq = ptdev->devfreq;
++	unsigned long freq = 0;
++	int ret;
 +
-+  reg-names:
-+    items:
-+      - const: data
-+      - const: ctl
++	if (!pdevfreq || !pdevfreq->devfreq)
++		return 0;
 +
-+  clocks:
-+    items:
-+      - description: main clock of the GPUEB MCU
++	if (pdevfreq->devfreq->profile->get_cur_freq) {
++		ret = pdevfreq->devfreq->profile->get_cur_freq(ptdev->base.dev,
++							       &freq);
++		if (ret)
++			return 0;
++	}
 +
-+  interrupts:
-+    items:
-+      - description: fires when a new message is received
++	return freq;
++}
+diff --git a/drivers/gpu/drm/panthor/panthor_devfreq.h b/drivers/gpu/drm/panthor/panthor_devfreq.h
+index b7631de695f7d79456478c87e8af5dc47673cd1d..f8e29e02f66cb3281ed4bb4c75cda9bd4df82b92 100644
+--- a/drivers/gpu/drm/panthor/panthor_devfreq.h
++++ b/drivers/gpu/drm/panthor/panthor_devfreq.h
+@@ -18,4 +18,6 @@ void panthor_devfreq_suspend(struct panthor_device *ptdev);
+ void panthor_devfreq_record_busy(struct panthor_device *ptdev);
+ void panthor_devfreq_record_idle(struct panthor_device *ptdev);
+ 
++unsigned long panthor_devfreq_get_freq(struct panthor_device *ptdev);
 +
-+  "#mbox-cells":
-+    const: 1
-+    description:
-+      The number of the mailbox channel.
-+
-+required:
-+  - compatible
-+  - reg
-+  - reg-names
-+  - clocks
-+  - interrupts
-+  - "#mbox-cells"
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/mediatek,mt8196-clock.h>
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+
-+    mailbox@4b09fd80 {
-+        compatible = "mediatek,mt8196-gpueb-mbox";
-+        reg = <0x4b09fd80 0x280>,
-+              <0x4b170000 0x7c>;
-+        reg-names = "data", "ctl";
-+        clocks = <&topckgen CLK_TOP_MFG_EB>;
-+        interrupts = <GIC_SPI 608 IRQ_TYPE_LEVEL_HIGH 0>;
-+        #mbox-cells = <1>;
-+    };
+ #endif /* __PANTHOR_DEVFREQ_H__ */
+diff --git a/drivers/gpu/drm/panthor/panthor_device.h b/drivers/gpu/drm/panthor/panthor_device.h
+index 9f0649ecfc4fc697a21a8b2fc4dd89c8ecf298df..f32c1868bf6d782d99df9dbd0babcea049c917e0 100644
+--- a/drivers/gpu/drm/panthor/panthor_device.h
++++ b/drivers/gpu/drm/panthor/panthor_device.h
+@@ -214,9 +214,6 @@ struct panthor_device {
+ 	/** @profile_mask: User-set profiling flags for job accounting. */
+ 	u32 profile_mask;
+ 
+-	/** @current_frequency: Device clock frequency at present. Set by DVFS*/
+-	unsigned long current_frequency;
+-
+ 	/** @fast_rate: Maximum device clock frequency. Set by DVFS */
+ 	unsigned long fast_rate;
+ 
+diff --git a/drivers/gpu/drm/panthor/panthor_drv.c b/drivers/gpu/drm/panthor/panthor_drv.c
+index ea4a37b566a8b215f2b7a09c333a696f1dcdb58f..4d59d94c353c3ca76f4b98a411c8f8284efafd08 100644
+--- a/drivers/gpu/drm/panthor/panthor_drv.c
++++ b/drivers/gpu/drm/panthor/panthor_drv.c
+@@ -25,6 +25,7 @@
+ #include <drm/gpu_scheduler.h>
+ #include <drm/panthor_drm.h>
+ 
++#include "panthor_devfreq.h"
+ #include "panthor_device.h"
+ #include "panthor_fw.h"
+ #include "panthor_gem.h"
+@@ -1519,7 +1520,8 @@ static void panthor_gpu_show_fdinfo(struct panthor_device *ptdev,
+ 		drm_printf(p, "drm-cycles-panthor:\t%llu\n", pfile->stats.cycles);
+ 
+ 	drm_printf(p, "drm-maxfreq-panthor:\t%lu Hz\n", ptdev->fast_rate);
+-	drm_printf(p, "drm-curfreq-panthor:\t%lu Hz\n", ptdev->current_frequency);
++	drm_printf(p, "drm-curfreq-panthor:\t%lu Hz\n",
++		   panthor_devfreq_get_freq(ptdev));
+ }
+ 
+ static void panthor_show_internal_memory_stats(struct drm_printer *p, struct drm_file *file)
 
 -- 
 2.51.0
