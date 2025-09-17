@@ -1,164 +1,95 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 245872F549F
-	for <linux-pm@vger.kernel.org>; Wed, 17 Sep 2025 02:27:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+Received: from mg.richtek.com (mg.richtek.com [220.130.44.152])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id AF52DA945;
+	Wed, 17 Sep 2025 02:28:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.130.44.152
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758076058; cv=none; b=pbryKrfpfwMnN3F8HTOd+dzWKk4g5pzJqM7QoHOvubCARey6/heVW1++BujGH/q5z6C5zFabrL3mXSXSOUCkTcv3fLQbwbeBO0evlzjkMhfh8rwaeCcXk7GHNOnJdQOXWyM8yCsk+F8gLLQPnzRu07+co8o05ca31qeL+iHR15Q=
+	t=1758076107; cv=none; b=MZ0d1kOEQo/PwV6Jg0tpjisD7TDQk+LyL4ElFKrVRGaPMaq93m/xGj/HSXKz/FOZFs0jfuqVvVFJ27wEAlmoSusg170OznY8NA2Y33uMpOLtdOtEmnF/D5G/95OpRPDRTKWu0V4XM2YsWwAIg9SSj52VuI90EPz01wDP35mN0+0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758076058; c=relaxed/simple;
-	bh=ZVOSah7WyUCxAwtViCyBrw8IIhcxsA5kP+tsBwbzwsU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=C9O6n3ap5i7/XEyABT2phnzc3079YUnF88USBGTm8VUfE83hQXFyD85w0maVxdqerKJH8LLkdkB+52nQUYB3FU2ItPJ1M8VMsNBeloSXxFElhVV4TH2oPL+QeEPLiMKYg0S6AzR+TcAjatddBYGJXPc2/3VWcoH3fx0zEeeQLnM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=gcO+71mJ; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1758076107; c=relaxed/simple;
+	bh=OnpiZSO0b+Sxjgg34yMJ7AAqILDqY4/TGFhPauWwkdg=;
+	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=h/uzYNlqZ7YDFWJgPRjcUJ+XTrBfB3bktYn9zRsX250gs2r2/u7d/D8RJ+5GnkUggt+ykBcf2M7RrQz+kiy2EZyWoDorx0ZjFP4oOfWWvgX+qbPj91mB0uxmf1eW55JoMpzxWwAsmdk2B3KiVE2n2yJK82yoIGCT6FUmnNj0R5g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=richtek.com; spf=pass smtp.mailfrom=richtek.com; dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b=y3rcKqy8; dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b=ZkWECd8F; arc=none smtp.client-ip=220.130.44.152
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=richtek.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=richtek.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="gcO+71mJ"
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58GLZtqS010412
-	for <linux-pm@vger.kernel.org>; Wed, 17 Sep 2025 02:27:36 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	VYlZBe92chnYNBC11wB4N82uu0aHrj9AIx2n54JzLec=; b=gcO+71mJL/8mZHVd
-	KTpDaJ5GD9zE9ZDehnMwHk6rKIja2rQLRRZgWlKeONk75jtlavNcmw90j2HVhWO8
-	8T+amM+VcWaGq8w9al1BypNRVR69vzy+Qn/xclMVMEvv9iXk2mscUkrrR/RLj66N
-	ceztjk2EYqB0VrSlUOMiZ+lg17bsIFEIL1V3kJtgtA1kOut9FtPFqLbHwrO80YtF
-	nzj8RUbROoDNrEPMJPV+Ct14KC9Gd5BzFw1jlJyptcEwmuPwCwgj1jVDSBoEjmqi
-	uAOmauBBVSfhuvAJql51f6bLwfL37i5S7YkJZgv/THUzbOU8F5SQOy8xp4BOGXRD
-	X84gvw==
-Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com [209.85.210.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 497fxw8k24-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 17 Sep 2025 02:27:36 +0000 (GMT)
-Received: by mail-pf1-f197.google.com with SMTP id d2e1a72fcca58-7725b77b795so5529180b3a.2
-        for <linux-pm@vger.kernel.org>; Tue, 16 Sep 2025 19:27:35 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758076055; x=1758680855;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=VYlZBe92chnYNBC11wB4N82uu0aHrj9AIx2n54JzLec=;
-        b=mQLKCxzM7FDl9ptw136GTyVU3H5pa9hxwkus5jrRSDbP9eXS3S/izPpYEp2N6zo915
-         WzF+syFeqLW0CbcbIr0A5epjycBn/lLHEbWBBLhmuRW3U4VVFHyDqwoBFpDmO5TiXGNw
-         cKkszBV2gGnAQOdIOTjnX4Skq/7w1X9d0wxLlvn82HcTFonDdp7+16eC72OKMflcIHP5
-         yjE9+MYI3/9N5AGEyPUBLRqxhErjnsGbunOBW3Wt/0wK8/SFTEZre3UUX4hY2qZKv0wP
-         WaKR+GLd+y5ZeKNHntdt7wGg0h7vYAdvXqXuJrXeje7f8wEVhavc11QLqW5ZX3ib9kiO
-         5k+Q==
-X-Forwarded-Encrypted: i=1; AJvYcCVdNi+oInnWYQPmX7K8OOaMeMSeU0NMfrHiJ2TOHjp34GSqbmiCf0YHvNfOILvKCww2I201HYsC8A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwkKTqUH3lmSDFGa5GgJlMtUJYLjfDx7x3FrUuGadb7JeebsAN9
-	M0hNaN5Jam4Qo9cviMo9EjxeRW1HwRsJQ7aZbdmFORBU8XZt2PlxzMgdcgsty+mxAY/m3+geE3/
-	iLzfsW5lgPkjG7kpMo0rzG9XmvlXorNg7XM64NuUpiiXMlZMR8tgcKohmMwMq5A==
-X-Gm-Gg: ASbGnctuPJO1eG/o1zm1r5bYd5IrIr/mSj/Mc7JvOle/NSK+a8Qj/107FTH4Ej6YV8q
-	zTevdP6lD7HU5fIV+FCdG8mNQaRnMKWQGyZuvZpOpSRMSVcQPlEvAsijvGT5RbqZJIdW4F/XeNX
-	nFOJMUw76QOjy2ZD+OKiLONDZO8XATDzwCvkBc5PF0IxhEtBKCWcSZJmWgwGiHtYVHzi8hr9TBp
-	Fres6Z8beyrlK3iQgNlZrC7c/qZeTJPPydFOTF9kUkiw99JiZPDDhVtd/Iw2e0tgcZ9q2MHW0zU
-	WvO58Sjs7v2X+SkOKcwlNe6AiGtWeOPm7PgTCquQdhCUlDUUQUtWYxsKvYZCL3+QlMIl98YvBdT
-	6VsK3ds9h83IDkgWnnRk3uv9HiKLtCyVQwg==
-X-Received: by 2002:a05:6a00:228c:b0:771:e1bf:bddc with SMTP id d2e1a72fcca58-77bf75c1492mr538635b3a.13.1758076055099;
-        Tue, 16 Sep 2025 19:27:35 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IFa3nKVRZ5lcOuXaoBxQLObp2Qb9gc/ezSveqX2YOxEc/wcuth8hVIukLM4KDYuJgtiHtLYwA==
-X-Received: by 2002:a05:6a00:228c:b0:771:e1bf:bddc with SMTP id d2e1a72fcca58-77bf75c1492mr538603b3a.13.1758076054636;
-        Tue, 16 Sep 2025 19:27:34 -0700 (PDT)
-Received: from [10.133.33.240] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7761853866bsm14036121b3a.95.2025.09.16.19.27.29
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 16 Sep 2025 19:27:34 -0700 (PDT)
-Message-ID: <a60a1d0e-0cdd-4e79-99cd-5dc543242a87@oss.qualcomm.com>
-Date: Wed, 17 Sep 2025 10:27:29 +0800
+	dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b="y3rcKqy8";
+	dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b="ZkWECd8F"
+X-MailGates: (SIP:2,PASS,NONE)(compute_score:DELIVER,40,3)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=richtek.com;
+	s=richtek; t=1758076102;
+	bh=+TW4aUZsbAAxJpYRNd4uBBxUv/b/AscrjcBfhNX6yts=; l=617;
+	h=Date:From:To:Subject:Message-ID:MIME-Version;
+	b=y3rcKqy8LsZm7aH00g8hocbILVzuKiweCuNIN4YCVk2W1EYBm21HE4VzPZ8Qto2B8
+	 2q8Umj35U72y8xsMpykTU8wF8XXUfKl7M27+ygFucAHrDIDT55yHhUAWI7o34N6wGA
+	 pIsO0Ch57cTos+qFhjgTTNQAWZjBu9fs1We+xqz48YsJgqxxMJ7Rwm0EPUqV5bKXzV
+	 NPIukXJHES2grvesbIRd+XEYjg6Pl/XVmoykd1ICFctEnhzL0eXfinKiDI9dsRpkTf
+	 nl5Mq4hZQGeiYH8H11Ilc4kuX7Grox8gYMXUuMCqcnLeuKgiMmBouOQ9qTdvsfPiqn
+	 B15qlGpFWKEzw==
+Received: from 192.168.8.21
+	by mg.richtek.com with MailGates ESMTP Server V3.0(1128080:0:AUTH_RELAY)
+	(envelope-from <prvs=13528E3224=cy_huang@richtek.com>); Wed, 17 Sep 2025 10:28:19 +0800 (CST)
+X-MailGates: (compute_score:DELIVER,40,3)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=richtek.com;
+	s=richtek; t=1758076099;
+	bh=+TW4aUZsbAAxJpYRNd4uBBxUv/b/AscrjcBfhNX6yts=; l=617;
+	h=Date:From:To:Subject:Message-ID:MIME-Version;
+	b=ZkWECd8FZM49zNKNCqNfRYfZGFICPA+ZCrWiuQG1eY9qPSf6EVO7pAA5NIdiinBI8
+	 Ab05PX5JnykuFqeJkOm+mT3gSDB/ATAvn9ZAf+8mw9i0SVVbONH5jJkfW0gyJDivOu
+	 x8HSy08jfNZUbA5AKMSWCNkhgK9Ul2uynoI4bHWVnN68UKyfo/uaHi9A0ZCbLI6IRu
+	 6yx8kGCOkJxGuhOzPmwUR1aiEYXefdGeGKvJtP+Eb2ejqkLQ4w/m8ErS9Plyw/P9ub
+	 c/UAfvy9u3WaDSRjUgnriuxX0asNLJGk2SVZrCN+ckpYLGue3AVGPLEoleQG/WISxi
+	 h2lpNVM5MKmKQ==
+Received: from 192.168.10.46
+	by mg.richtek.com with MailGates ESMTPS Server V6.0(2461095:0:AUTH_RELAY)
+	(envelope-from <cy_huang@richtek.com>)
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256/256); Wed, 17 Sep 2025 10:18:33 +0800 (CST)
+Received: from ex3.rt.l (192.168.10.46) by ex3.rt.l (192.168.10.46) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.26; Wed, 17 Sep
+ 2025 10:18:33 +0800
+Received: from git-send.richtek.com (192.168.10.154) by ex3.rt.l
+ (192.168.10.45) with Microsoft SMTP Server id 15.2.1748.26 via Frontend
+ Transport; Wed, 17 Sep 2025 10:18:33 +0800
+Date: Wed, 17 Sep 2025 10:19:44 +0800
+From: ChiYuan Huang <cy_huang@richtek.com>
+To: Sebastian Reichel <sre@kernel.org>, Krzysztof Kozlowski
+	<krzk+dt@kernel.org>
+CC: Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+	<devicetree@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RESEND v2 0/3] Add Richtek RT9756 Smart-Cap divider
+ charger
+Message-ID: <aMoawDH7V/ea4i62@git-send.richtek.com>
+References: <cover.1755154950.git.cy_huang@richtek.com>
+ <aLY3/dNLdF/Iiwq6@git-send.richtek.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 5/8] power: supply: qcom_battmgr: update compats for
- SM8550 and X1E80100
-To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Cc: Sebastian Reichel <sre@kernel.org>,
-        Bjorn Andersson
- <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Bryan O'Donoghue <bryan.odonoghue@linaro.org>,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        Subbaraman Narayanamurthy <subbaraman.narayanamurthy@oss.qualcomm.com>,
-        David Collins <david.collins@oss.qualcomm.com>,
-        =?UTF-8?Q?Gy=C3=B6rgy_Kurucz?= <me@kuruczgy.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, kernel@oss.qualcomm.com,
-        devicetree@vger.kernel.org, linux-usb@vger.kernel.org,
-        Neil Armstrong <neil.armstrong@linaro.org>
-References: <20250915-qcom_battmgr_update-v4-0-6f6464a41afe@oss.qualcomm.com>
- <20250915-qcom_battmgr_update-v4-5-6f6464a41afe@oss.qualcomm.com>
- <f3s2srlmvuj7wmh4rndffmbfrzylbuq4rsu7pqqrnqa5fgsmch@t5f4dgmqtgys>
- <c5e3ac07-e91e-4c9f-9256-497991b75200@oss.qualcomm.com>
- <aiplezjbovtaghgblua5xj3rag5kjwzt6sjrnygzbez5dtaxm3@vn6kwmskc4e2>
-Content-Language: en-US
-From: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
-In-Reply-To: <aiplezjbovtaghgblua5xj3rag5kjwzt6sjrnygzbez5dtaxm3@vn6kwmskc4e2>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=HbIUTjE8 c=1 sm=1 tr=0 ts=68ca1c98 cx=c_pps
- a=rEQLjTOiSrHUhVqRoksmgQ==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
- a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=EUspDBNiAAAA:8 a=KKAkSRfTAAAA:8
- a=lQXKqyNTGrdWrY9AsKwA:9 a=QEXdDO2ut3YA:10 a=2VI0MkxyNR6bbpdq8BZq:22
- a=cvBusfyB2V15izCimMoJ:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTE2MDIwMiBTYWx0ZWRfX5q15ByMJIkZI
- RCv6PB3w9+exDpe01c3Ncr6LDvrn2oJ6fgKMXBSX2Ubleh2PcIRCTo+24Wqq63MD2bkZ4n2/09x
- /AnLvf0O9rgJvKNw8ycdGsW/eIBNLcADwVrZod6fSe3ImIVvN7RYpkg1Z1X7Kq7U0cz+501qZeQ
- +gfHTItdF+V5UDAzA3SEhBSp+7igwpNAF1uSpjnT3c+GuZVYCobYAZBsXx/nxSCFpeMxTRf0+k7
- RHJbaewt6tGLuY8o41efcC1OIFN8hCvds6C2gWkGUHmnt4e0TtLo95BeZDY76RoOMIlTf8j/7Zz
- /wy/rsHqf8xFdpg5KC5RMyM3HRfv/9eCY4VwXn2QxzAM4hnyMG7vmhoDMHdSI2r+wGbQ2ZbdODL
- kMRTInS+
-X-Proofpoint-GUID: W336PDM7JijKCg7yfYUE9IzSB5GLWa8v
-X-Proofpoint-ORIG-GUID: W336PDM7JijKCg7yfYUE9IzSB5GLWa8v
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-09-16_02,2025-09-16_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 impostorscore=0 bulkscore=0 suspectscore=0 clxscore=1015
- adultscore=0 priorityscore=1501 phishscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2509160202
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <aLY3/dNLdF/Iiwq6@git-send.richtek.com>
 
-
-On 9/16/2025 6:16 PM, Dmitry Baryshkov wrote:
-> On Tue, Sep 16, 2025 at 10:40:03AM +0800, Fenglin Wu wrote:
->> On 9/15/2025 6:19 PM, Dmitry Baryshkov wrote:
->>> On Mon, Sep 15, 2025 at 04:49:57PM +0800, Fenglin Wu via B4 Relay wrote:
->>>> From: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
->>>>
->>>> Add variant definitions for SM8550 and X1E80100 platforms. Add a compat
->>>> for SM8550 and update match data for X1E80100 specifically so that they
->>>> could be handled differently in supporting charge control functionality.
->>> Why?
->> Is the question about why this was submitted as a separate patch, or about
->> the need for the change itself? The reason for the change is explained in
->> the commit text.
-> It's not, and that was my question. Why do you need to handle them
-> differently?
->
-> Please always start your commit message with the description of the
-> issue that you are facing.
->
-The simple answer is, the charge control functionality is only supported 
-in battery management firmware starting from SM8550 and X1E80100.
-
-I will add this statement in the commit text.
-
->> As for submitting it separately, that was done to address
->> Bryan's comments to split out the compats changes. Anyway, I will address
->> the further comments from Stephen to make the change bisectable.
->>>> Tested-by: Neil Armstrong <neil.armstrong@linaro.org> # on Thinkpad T14S OLED
->>>> Signed-off-by: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
->>>> ---
->>>>    drivers/power/supply/qcom_battmgr.c | 7 +++++--
->>>>    1 file changed, 5 insertions(+), 2 deletions(-)
->>>>
+On Tue, Sep 02, 2025 at 08:19:09AM +0800, ChiYuan Huang wrote:
+> On Thu, Aug 14, 2025 at 03:31:05PM +0800, cy_huang@richtek.com wrote:
+> > From: ChiYuan Huang <cy_huang@richtek.com>
+> > 
+> > This patch series adds support for RT9756 charger.
+> > 
+> > RESEND V2
+> > - Add 'Reviewed-by' tag in dt-binding patch
+> > 
+> > V2
+> > - Add reference to 'power-supply.yaml'
+> > - Remove 'wakeup-source' from required property list
+> > - Use 'unevaluatedProperties' to replace 'additionalProperties'
+> 
+> Ping......
+> It's been one month not receive any patch review comment.
+> 
+Ping again.
+> Regards,
+> ChiYuan.
