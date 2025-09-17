@@ -1,34 +1,34 @@
 Received: from mail.andi.de1.cc (mail.andi.de1.cc [178.238.236.174])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3DBB2905;
-	Wed, 17 Sep 2025 17:48:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76B9D2FF16B;
+	Wed, 17 Sep 2025 17:48:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.238.236.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758131318; cv=none; b=aSpkVqbPVkZ96NZ2O9Bz+0ysz2Y5/fJwm9tHEjL1kFrXq9e1f4lXFD++xos6pKG2MIzF7qMRdCiDqe/TcXvTpCvKiiPb8WlJAS6s23bF5hHbagd/tbtL6Cwjz+ztUswv+7FWDn/IXjYwlGDHlC2tsoyFemIdZW7u7+zuJ+Mxz2Q=
+	t=1758131321; cv=none; b=Eylruk6XsmWkbRDYViArxFPDwb4lA/Zc625bAbz4SNYzLarjpZVqLU9SFLg8VbNOXkmTIFKubRK46qvzsNLjbExtA83KlWuxM2o1x0+TBcEjNvNxljJZP4YQGdwEpY+rp5WGFdXVcpfcRICtqnjuhVXAwlxEltpqocfFxVGLFNI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758131318; c=relaxed/simple;
-	bh=GSUGXsM0hPD/9no8B1czLo60/9zR/+HtlWAnFKNnBZ8=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=VtH2d16vTRKGPNpTnIYJU3BMTXm5WLroWTrinyCXKyqq9TaDiTHOs43X7tK2XJ1xhn+T6DyoGA4Qb/D4/L1qfJe2oYyVqTvDVQVarqZ1rxpFLtEMSL5t8RUL1Wd7xt03mzNx7cNziemMwazNj3PuuVU2pFbLqgMK2uQVSb9yXdU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kemnade.info; spf=pass smtp.mailfrom=kemnade.info; dkim=pass (2048-bit key) header.d=kemnade.info header.i=@kemnade.info header.b=i3izcnhu; arc=none smtp.client-ip=178.238.236.174
+	s=arc-20240116; t=1758131321; c=relaxed/simple;
+	bh=/tS5VN8wqJ0W6f79Uht7zyfEMcAvhg6Jn1SC8qgkuXk=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=UFpZ2JqLqU1v9ExRR9RwJbtgSBNsT9lY2u7i6JTURZPwl2XH/YdsuHO/pKWqIhvgQjouLqABEuC+MBg7ySk9hb6g72l6Iq91nm7CT3FErQC9ivqIy8T+6WM/IeER9epih7v9suy9ekVwFiFKmvdN/YRujAjh7EmPfNgUvqxxF/I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kemnade.info; spf=pass smtp.mailfrom=kemnade.info; dkim=pass (2048-bit key) header.d=kemnade.info header.i=@kemnade.info header.b=lmGhiiIt; arc=none smtp.client-ip=178.238.236.174
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kemnade.info
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kemnade.info
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kemnade.info header.i=@kemnade.info header.b="i3izcnhu"
+	dkim=pass (2048-bit key) header.d=kemnade.info header.i=@kemnade.info header.b="lmGhiiIt"
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=kemnade.info; s=20220719; h=Cc:From:Sender:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:In-Reply-To:References;
-	bh=mPL5Z9jiDprrdY3LcG18iSElWnw3yrMIHCNC/RNzhY4=; b=i3izcnhuuM6TANkSqGR/ZKNhrm
-	b15FXGIRJm9jJxjnrUAxvyQ9eO0N9xYs/TQQ2qyDPGRTk8ASM2tzf3zdRnrHqfWoq7BAiwaPDVNeu
-	acaPnVAnMAYoX5KkzQQqnVziJ5J+jwy37NGP1OakJiu92LSDxzSG9tl8QKSk7Wqo8CXmp9VFf1XjU
-	vA8xTFsGHapN8KMDjccrAxBuRv4JdyxJCJiSu4FMIgEUz2IEP/oDHyP3MN7L+9UGpdmJGNDk378gC
-	jxdCZ6QJg8qc63g8AAHQgJnwq6FxDYz4IgOJUtR36ePWZF3dq6JDH9u7wLBeTmE8nMOtfRLg9gxYt
-	k/1GcSzg==;
+	d=kemnade.info; s=20220719; h=Cc:In-Reply-To:References:From:Sender:Reply-To:
+	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+	Resent-To:Resent-Cc:Resent-Message-ID;
+	bh=3q5kiib1kd62l3L+MK1D9QnKWb3L2UjvT/k4OiP6KHs=; b=lmGhiiItEIEn4oHqn9ygwJ2xTy
+	p3yRTkwf/diZ/RkOkOFIij3iPe7/Is1o2vW3k3imaDonJYd0Bn36PUoIb/DpRbfN9jP2JdJTDG4TE
+	umakduLqcB7QFk7k6idX3t8/GFVrJ2nPeQYWD0xFCyBO+94uMEkUFqPSZ4Sa2mrOWBiZYptxEBrhZ
+	9RFucdZT1SmlQwT4eqxuesEr6dpQ1QA/0Y63APO36ZDkyYwMFaOLE92u1id0BGfr7gxai7fKBp6W+
+	EtujfNVwHJbyWqL7H3dHq/6GcRmfuJEN1FNoArCuCdiRad9Co8/QIfbnYlbCSftt1qhs1tSYR5KyI
+	wSPrSAkw==;
 From: Andreas Kemnade <andreas@kemnade.info>
-Subject: [PATCH v4 0/3] power: supply: add charger for BD71828
-Date: Wed, 17 Sep 2025 19:48:01 +0200
-Message-Id: <20250917-bd71828-charger-v4-0-fbc85a910499@kemnade.info>
+Date: Wed, 17 Sep 2025 19:48:04 +0200
+Subject: [PATCH v4 3/3] MAINTAINERS: Add entry for BD71828 charger
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -37,84 +37,51 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAFH0ymgC/3XNwQ6CMAwG4FchOzuzdoOBJ9/DeGBbB4sRzDBEQ
- 3h3Byciemny90+/TmygGGhgp2xikcYwhL5LQR0yZtu6a4gHlzJDgbkooeDGaSix5KmNDUVeOSi
- 1VIVPg6WrRyQfXqt4uabchuHZx/f6YIRl+98agQuuwQAYR7nV8nyje1c7OobO92zhRtwQKPYEJ
- kKit1UhUFOFPwi5JWBPyERYq1VtFQlvqi9inucPmtbKNTcBAAA=
-X-Change-ID: 20250816-bd71828-charger-9d187346f734
+Message-Id: <20250917-bd71828-charger-v4-3-fbc85a910499@kemnade.info>
+References: <20250917-bd71828-charger-v4-0-fbc85a910499@kemnade.info>
+In-Reply-To: <20250917-bd71828-charger-v4-0-fbc85a910499@kemnade.info>
 To: Matti Vaittinen <mazziesaccount@gmail.com>, Lee Jones <lee@kernel.org>, 
  Sebastian Reichel <sre@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
  Krzysztof Kozlowski <krzk@kernel.org>, 
- Andreas Kemnade <andreas@kemnade.info>, 
- Matti Vaittinen <mazziesaccount@gmail.com>
+ Andreas Kemnade <andreas@kemnade.info>
 X-Mailer: b4 0.15-dev-50721
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2176; i=andreas@kemnade.info;
- h=from:subject:message-id; bh=GSUGXsM0hPD/9no8B1czLo60/9zR/+HtlWAnFKNnBZ8=;
- b=owGbwMvMwCUm/rzkS6lq2x3G02pJDBmnvqS/XGETOCvIVjn1jW7RbB7GrlbbKLYvGYbreaSvR
- Guq3JvVUcrCIMbFICumyPLLWsHtk8qz3OCpEfYwc1iZQIYwcHEKwER+WDEyXP9yZOlHhhVO0U9z
- GjyCQrsjOP6WMyzeU3aOX0r/5ufvExgZ1k7996zybauFss9Mn7U1rsuMjPiDbB1Yrf5sf3r/dbA
- SEwA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=782; i=andreas@kemnade.info;
+ h=from:subject:message-id; bh=/tS5VN8wqJ0W6f79Uht7zyfEMcAvhg6Jn1SC8qgkuXk=;
+ b=owGbwMvMwCUm/rzkS6lq2x3G02pJDBmnvmRJ2/T7mJxfkTn/YuAv0ZbG29mHNK7fdt9aJj+za
+ kboMhGNjlIWBjEuBlkxRZZf1gpun1Se5QZPjbCHmcPKBDKEgYtTACaS3crwV7p+qd3qBbdqBT9a
+ /Tq38av1Bu2ivcciGjgjBWTfOe09KsPwT/EOm7HHDf7DJZ12n0u/hu157XZQWjQ77sqGUDFVa31
+ RHgA=
 X-Developer-Key: i=andreas@kemnade.info; a=openpgp;
  fpr=EEC0DB858E66C0DA70620AC07DBD6AC74DE29324
 
-Add basic charger which does just read out simple registers without
-doing any sophisticated things. 
-
-This is a stripped down version of
-https://lore.kernel.org/lkml/dbd97c1b0d715aa35a8b4d79741e433d97c562aa.1637061794.git.matti.vaittinen@fi.rohmeurope.com/
-
-That version includes all the bells-and-whistles you might imagine
-around coloumb counter handling and capacity measurement which includes
-changes no the power supply core.
-Rather do a step by step approach to keep that reviewable.
+Add an entry for BD71828 charger driver.
 
 Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
+Suggested-by: Matti Vaittinen <mazziesaccount@gmail.com>
+Reviewed-by: Matti Vaittinen <mazziesaccount@gmail.com>
 ---
-Changes in v4:
-- applied mfd part kept for better overview
-- clean up messy file header
-- remove some superfluous ret = 0
-- move a define to the top
-- Link to v3: https://lore.kernel.org/r/20250821-bd71828-charger-v3-0-cc74ac4e0fb9@kemnade.info
+ MAINTAINERS | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Changes in v3:
-- remove unused defines
-- some minor style nits
-- add MAINTAINER entry
-- Link to v2: https://lore.kernel.org/r/20250820-bd71828-charger-v2-0-32fc96027e92@kemnade.info
+diff --git a/MAINTAINERS b/MAINTAINERS
+index fe168477caa45..044eb41ba4797 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -21848,6 +21848,12 @@ L:	linux-serial@vger.kernel.org
+ S:	Odd Fixes
+ F:	drivers/tty/serial/rp2.*
+ 
++ROHM BD71828 CHARGER
++M:	Andreas Kemnade <andreas@kemnade.info>
++M:	Matti Vaittinen <mazziesaccount@gmail.com>
++S:	Maintained
++F:	drivers/power/supply/bd71828-charger.c
++
+ ROHM BD79703 DAC
+ M:	Matti Vaittinen <mazziesaccount@gmail.com>
+ S:	Supported
 
-Changes in v2:
-- fix some be16 handling reported by bots
-- fix some style issues
-- do not sneak in additional chip ids
-- remove useless debug output 
-- remove wrong/useless alias
-- remove fuel gauge remains
-- fix error checks in temperature reading
-- sync properties in switch/case with list
-- Link to v1: https://lore.kernel.org/r/20250816-bd71828-charger-v1-0-71b11bde5c73@kemnade.info
-
----
-Andreas Kemnade (2):
-      power: supply: Add bd718(15/28/78) charger driver
-      MAINTAINERS: Add entry for BD71828 charger
-
-Matti Vaittinen (1):
-      mfd: bd71828, bd71815 prepare for power-supply support
-
- MAINTAINERS                          |    6 +
- drivers/mfd/rohm-bd71828.c           |   44 +-
- drivers/power/supply/Kconfig         |    9 +
- drivers/power/supply/Makefile        |    1 +
- drivers/power/supply/bd71828-power.c | 1051 ++++++++++++++++++++++++++++++++++
- include/linux/mfd/rohm-bd71828.h     |   63 ++
- 6 files changed, 1165 insertions(+), 9 deletions(-)
----
-base-commit: 8f5ae30d69d7543eee0d70083daf4de8fe15d585
-change-id: 20250816-bd71828-charger-9d187346f734
-
-Best regards,
---  
-Andreas Kemnade <andreas@kemnade.info>
+-- 
+2.47.3
 
