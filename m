@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 150B22DC320;
-	Wed, 17 Sep 2025 15:54:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 605932F7AD8;
+	Wed, 17 Sep 2025 15:54:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758124470; cv=none; b=Ca4r0vlt5mkPVrsTp9SJtNFE05/g8lojY5YdpxMWPk/T55WnhJtgeOoVvbHryMf+Oru5oIyxTga1680k7X/ojZ7U74AtFjixxAYPDPmxINXtERL0PSSAzt9R2/qPXr/lxgMlp5CRePcZeGmNX6NTGfean67xGongGwVlfDFBSGI=
+	t=1758124470; cv=none; b=imJgfEodN3ePf1oU6v6bvYotcSTj5Xpr/vayx/8lZmeSLemF2o++FjxWdn6nFdf9UYLYq/Fb6ti8kwzKaUkoz7kXixO0oTdTMpgeNoZ6TlM0rbIYoACDxTm7ZecWogNGPk2/73vvVsIGBKOyajWAvOVvQNhKb3L80nlNVBEc4YA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1758124470; c=relaxed/simple;
-	bh=SdZcfdOgfQT1VapBMcYSTO195l+3oQZ2Js3KUssxv2o=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=YKp2XdYjte0teHfsTr+b9viVCyRYbxpUP4+rdIQA+wSD0hsjgdWacI3JVd4/pml3/A4Awzx0kz1EHr1TGcj9r/N8eM+afsdH38lpBxrF5+Hd/vKG76C+968TGzLpjK7/ykiCtnfYLJ3r8Hlnuk0yHPn34Uur+0ri1F56MJXgxzA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ABbXpk4o; arc=none smtp.client-ip=10.30.226.201
+	bh=fbBe/o00J9syXUr/EFgv8OQJBLCd2xK4K5oIGU2imfE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=Hk3dV9MIuVXPI2KqSE9N7PI38QzmWaFOXqeufYzBj9j/vYU8dMGevsLBp91GsJvIEyNertKWwO6W2XnCTAxlG4vkIDLFX6jlIpoqashWN7KjUXB/NYucH95ALUl53UegInvpEDwU/QHw1ZTqdME/bhiJp1sLfS92nIzedkMe2gg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Rm4ro1Uk; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ABbXpk4o"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 92CCBC4CEE7;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Rm4ro1Uk"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id E312CC116C6;
 	Wed, 17 Sep 2025 15:54:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1758124469;
-	bh=SdZcfdOgfQT1VapBMcYSTO195l+3oQZ2Js3KUssxv2o=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=ABbXpk4on8Bn80XNeF7tCs+ycBTvH6nH+oXCHRd6jWOtwcqHnts373RryR9JJCk0C
-	 W1PMcPiZwrExiN3puGIXC+C4kR91UbrVy+vhkPB6i7vqozRYG7zq4aFcyh52Vkjgg0
-	 TBZTdsjW0RvioPA5rud96XzBrxZA/mwDwyt1mKF5ujkwfLxfcMh9bHypnqwOx2al0Z
-	 bo5076kWMMG+J+8SnBIble/M0fiVG69TyzTKls9Xdhf0xmg8x29dVG8nvVJvGuvwPu
-	 BbZoiJlIiSVy58M7Ji4k6VoZE5O4rCRA8xa7qPbqwJbxRx93Er3hr7L5ZE3bRgldKp
-	 HPFjGLtcuzcvg==
+	s=k20201202; t=1758124470;
+	bh=fbBe/o00J9syXUr/EFgv8OQJBLCd2xK4K5oIGU2imfE=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=Rm4ro1UkrxYpFMyftR1G2NYqlNyFhDWOk5Rpoi4AlDYIEY9AQ9ONp8GJicC8rK8+d
+	 DIRolOXDxGcHlBhjhLgsGoMyjz8t42ydaJrSxNOblF4QV2DquuyynFt7P/fOHuY7qA
+	 T7nhwwYDb/FkxZEic34hY/Afwm9jgod3wbDkhNbMB88CylxrSXxVHo8IX9Faat3E63
+	 Ouob/m30o+eEHJshcCLq2FzhUZ+IYFJBKaTyIrFOCx0yKJ42kWD6PTRFxe4Q5/5gvy
+	 L3y3b4TISwLkWL1CTE+Dz6KKbhBU2KzM98lWG6AQrQ4S/oZhFLMVI6xiJtlBaS6Cm7
+	 Waac/p508Vmow==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8207ACAC5A5;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7877CAC5A5;
 	Wed, 17 Sep 2025 15:54:29 +0000 (UTC)
 From: Samuel Kayode via B4 Relay <devnull+samuel.kayode.savoirfairelinux.com@kernel.org>
-Subject: [PATCH v11 0/6] add support for pf1550 PMIC MFD-based drivers
-Date: Wed, 17 Sep 2025 11:52:33 -0400
-Message-Id: <20250917-pf1550-v11-0-e0649822fcc9@savoirfairelinux.com>
+Date: Wed, 17 Sep 2025 11:52:37 -0400
+Subject: [PATCH v11 4/6] input: pf1550: add onkey support
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,13 +40,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAEHZymgC/33RTWrDMBAF4KsEresw+hnJzqr3KF3I0qgRNHEqO
- yYl5O6dOmCbQr2c4fFpeLqLnkqmXhx2d1FozH3uzjxI+bIT4ejPH1TlyAuhQCGgctUlSUSoogG
- ZIIJraxAcvhRK+TZJb+/PudDXlcHhuRSt76kK3emUh8NutHuJ4jd4zP3Qle/pglFPyb9vjbqCy
- mCyjUEdIsrX3o9dLsnnQp/5fL3t2Z200SyCBT0LhoU2xYSSCJsQNgRcCRJmAVmgCLEh7b0PbkO
- wa0HOgmVBm6RiTAQGaUNwa0HNgmMBSDe6hWQwbt1QL4KDpcmaBdtaaq0LoD1sCM1KkHYWGhYQl
- LfGJTCUNgQJC1GrpUpulf8zAN9hDBeh/zEej8cPNDg6uaECAAA=
-X-Change-ID: 20250527-pf1550-d401f0d07b80
+Message-Id: <20250917-pf1550-v11-4-e0649822fcc9@savoirfairelinux.com>
+References: <20250917-pf1550-v11-0-e0649822fcc9@savoirfairelinux.com>
+In-Reply-To: <20250917-pf1550-v11-0-e0649822fcc9@savoirfairelinux.com>
 To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
@@ -62,16 +58,14 @@ Cc: imx@lists.linux.dev, devicetree@vger.kernel.org,
  Sean Nyekjaer <sean@geanix.com>, 
  Christophe JAILLET <christophe.jaillet@wanadoo.fr>, 
  Samuel Kayode <samuel.kayode@savoirfairelinux.com>, 
- Abel Vesa <abelvesa@kernel.org>, 
- Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, 
- Frank Li <Frank.Li@nxp.com>
+ Abel Vesa <abelvesa@kernel.org>, Frank Li <Frank.Li@nxp.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1758124466; l=7914;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1758124466; l=8943;
  i=samuel.kayode@savoirfairelinux.com; s=20250527;
  h=from:subject:message-id;
- bh=SdZcfdOgfQT1VapBMcYSTO195l+3oQZ2Js3KUssxv2o=;
- b=WESgbZnBRl2T0eyj+9AwNzSwFB5XMpsbF/bNj3KQ2Uu/e483oQ6RamltEFWmJESflmH4YBkBp
- x6r/xbkHXj3DklZt3VcaZUwQwRBoDj8CcbAT1Vn0gk9jinE9UAML8fL
+ bh=B0aS/fg5yyo8mo7/rAQQwrd8SmjfQTSQvPX5R9q/q08=;
+ b=EA1etpZ2hx0hCe8RHp2g/sSlNfW0f+XvrviAFhh/OzcEiZoHUtGgBXx2OYiq8AdenMCD7GJc0
+ BtjJ8WywjsoDUEjE/VdhiHZliw4siq5Nv11gkmDLOxzYnSIfN1i/jSS
 X-Developer-Key: i=samuel.kayode@savoirfairelinux.com; a=ed25519;
  pk=TPSQGQ5kywnnPyGs0EQqLajLFbdDu17ahXz8/gxMfio=
 X-Endpoint-Received: by B4 Relay for
@@ -79,168 +73,297 @@ X-Endpoint-Received: by B4 Relay for
 X-Original-From: Samuel Kayode <samuel.kayode@savoirfairelinux.com>
 Reply-To: samuel.kayode@savoirfairelinux.com
 
-This series adds support for pf1550 PMIC. It provides the core driver and
-sub-drivers for the regulator, power supply and input subsystems.
+From: Samuel Kayode <samuel.kayode@savoirfairelinux.com>
 
-Patch 1 adds the DT binding document for the PMIC. Patches 2-5 adds the
-pertinent drivers. Last patch adds a MAINTAINERS entry for the drivers.
+Add support for the onkey of the pf1550 PMIC.
 
-The patches 3-5 depend on the core driver provided in patch 2.
-
-Changes since v1:
-   - DT bindings for all devices included
-   - Add onkey driver
-   - Add driver for the regulators
-   - Ensure charger is activated as some variants have it off by default
-   - Update mfd and charger driver per feedback from eballetbo@gmail.com
-   - Add myself as maintainer for these drivers
-   - Link to v1: https://lore.kernel.org/1523974819-8711-1-git-send-email-abel.vesa@nxp.com/
-
-Changes since v2:
-   - Rebase on recent mainline kernel v6.15
-   - Single yaml file containing dt bindings for all pf1550 devices
-   - irq mapping done in MFD driver as suggested by Dmitry Torokhov
-   - Drop unnecessary includes in drivers
-   - Replace dev_err with dev_err_probe in probe method of drivers
-   - Drop compatible string from drivers of the sub-devices
-   - Remove dependency on OF from drivers of the sub-devices
-   - onkey: move driver from input/keyboard into input/misc
-   - onkey: remove dependency on OF
-   - onkey: use onkey virqs instead of central irq
-   - onkey: fix integer overflow for regmap_write when unmasking
-     interrupts during pf1550_onkey_resume
-   - charger: add support for monitored-battery which is used in setting
-     a constant voltage for the charger.
-   - Address other feedback from Dmitry Torokhov and Krzysztof Kozlowski
-   - Link to v2: https://lore.kernel.org/cover.1747409892.git.samuel.kayode@savoirfairelinux.com/
-
-Changes since v3:
-   - Update manufacturer from Freescale to NXP in compatible,
-     dt-binding and Kconfigs
-   - Use C++ style comments for SPDX license in .c code
-   - Add portions copyright to source code
-   - irqs are defined as struct resource in mfd cell such that
-     platform_get_irq is used in the sub-devices
-   - Make struct pf1550_dev of type const in sub-device driver
-   - irq variable dropped from sub-device driver struct
-   - EXPORT_SYMBOL of global pf1550_read_otp function for use in
-     regulator driver
-   - Drop unneeded info in driver_data when defining device table id
-   - regulator: validate ramp_delay
-   - regulator: report overcurrent and over temperature events
-   - onkey: drop unnecessary keycode variable
-   - onkey: change wakeup variable to type bool
-   - onkey: replace (error < 0) with error in if statement when possible
-   - onkey: use pm_sleep_ptr when defining driver.pm
-   - charger: finish handling of some interrupts in threaded irq handler
-   - Link to v3: https://lore.kernel.org/20250527-pf1550-v3-0-45f69453cd51@savoirfairelinux.com/
-
-Changes since v4:
-   - Use top level interrupt to minimize number of registers checked on
-     each interrupt
-   - Fix bad offset for temperature interrupts of regulator irq chip
-   - Address Krzysztof's comments for dt-binding
-   - regulator: add comments to clarify difference in its interrupts
-   - regulator: issue warn event for _LS interrupt and error event for
-     _HS interrupt
-   - regulator: validate maximum and minimum ramp_delay
-   - charger: drop lock in battery and charger delayed_work
-   - charger: more conservative locking for vbus delayed_work
-   - charger: apply lock when setting power_supply type during register
-     intialization
-   - Link to v4: https://lore.kernel.org/r/20250603-pf1550-v4-0-bfdf51ee59cc@savoirfairelinux.com
-
-Changes since v5:
-   - Ensure lowercase when assigning hex values
-   - Add imx@lists.linux.dev to relevant mailing list in MAINTAINERS file
-   - Use GENMASK macro
-   - Drop unused chips variable
-   - Read the OTP in the mfd driver probe for new dvs_enb variable
-   - Hardcode IRQ flags in pf1550_add_child function
-   - charger: drop the mutex entirely
-   - charger: reverse christmas tree style local variable definition in
-     probe
-   - Link to v5: https://lore.kernel.org/r/20250610-pf1550-v5-0-ed0d9e3aaac7@savoirfairelinux.com
-
-Changes since v6:
-   - Use reverse christmas tree order
-   - Drop 0 in table id's driver data
-   - charger: store virq to avoid reinvoking platform_get_irq in ISR
-   - Link to v6: https://lore.kernel.org/r/20250611-pf1550-v6-0-34f2ddfe045e@savoirfairelinux.com
-
-Changes since v7:
-  - Thanks everyone for the reviews
-  - Use C++ comment only for SPDX license header in core, charger and
-    onkey drivers
-  - Drop filenames from comments
-  - Rename pf1550_dev to pf1550_ddata
-  - Define OTP register for accessing status of DVS
-  - core: rename from `mfd driver` to `core driver`
-  - core: add child devices in a cleaner manner
-  - charger: define two power supplies: battery and external power
-  - charger: use devm_delayed_work_autocancel
-  - Link to v7: https://lore.kernel.org/r/20250612-pf1550-v7-0-0e393b0f45d7@savoirfairelinux.com
-
-Changes since v8:
-  - Collect Frank's `Reviewed-by` tags
-  - core: use consistent whitespace
-  - regulator: add standby support for regulators requested by Sean Nyekjaer
-  - regulator: add support for SW1 DVS enable/disable
-  - regulator: fix improper DVS activation
-  - regulator: add map_voltage for regulators
-  - regulator: add enable/disable for regulators
-  - charger: use datasheet thermal regulation temperature ranges
-  - charger: select charger operation mode based on the application
-  - onkey: add support for disabling system power down via onkey
-  - dt-bindings: changed temperature ranges
-  - dt-bindings: added `disable-key-power`
-  - Link to v8: https://lore.kernel.org/r/20250707-pf1550-v8-0-6b6eb67c03a0@savoirfairelinux.com
-
-Changes since v9:
-  - add Sean's Tested-by tag
-  - core: style changes
-  - dt-bindings: add regulator-state-mem to examples
-  - onkey: use regmap_clear_bits to avoid overwriting all bits of the
-    PWRCTRL register
-  - Link to v9: https://lore.kernel.org/r/20250716-pf1550-v9-0-502a647f04ef@savoirfairelinux.com
-
-Changes since v10:
-  - add Sean's Tested-by tag on mfd patch
-  - charger: separate battery properties from charger properties
-  - Link to v10: https://lore.kernel.org/r/20250820-pf1550-v10-0-4c0b6e4445e3@savoirfairelinux.com
-
+Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Reviewed-by: Frank Li <Frank.Li@nxp.com>
+Tested-by: Sean Nyekjaer <sean@geanix.com>
 Signed-off-by: Samuel Kayode <samuel.kayode@savoirfairelinux.com>
 ---
-Samuel Kayode (6):
-      dt-bindings: mfd: add pf1550
-      mfd: pf1550: add core driver
-      regulator: pf1550: add support for regulator
-      input: pf1550: add onkey support
-      power: supply: pf1550: add battery charger support
-      MAINTAINERS: add an entry for pf1550 mfd driver
-
- .../devicetree/bindings/mfd/nxp,pf1550.yaml        | 161 ++++++
- MAINTAINERS                                        |  11 +
- drivers/input/misc/Kconfig                         |  11 +
- drivers/input/misc/Makefile                        |   1 +
- drivers/input/misc/pf1550-onkey.c                  | 197 +++++++
- drivers/mfd/Kconfig                                |  16 +
- drivers/mfd/Makefile                               |   2 +
- drivers/mfd/pf1550.c                               | 367 ++++++++++++
- drivers/power/supply/Kconfig                       |  11 +
- drivers/power/supply/Makefile                      |   1 +
- drivers/power/supply/pf1550-charger.c              | 641 +++++++++++++++++++++
- drivers/regulator/Kconfig                          |   9 +
- drivers/regulator/Makefile                         |   1 +
- drivers/regulator/pf1550-regulator.c               | 429 ++++++++++++++
- include/linux/mfd/pf1550.h                         | 273 +++++++++
- 15 files changed, 2131 insertions(+)
+v10:
+- Use regmap_clear_bits instead of regmap_write
+v9:
+- Requested by Sean:
+  - Add support for disabling power down of system by onkey
+v8:
+- Pick up `Acked-by` tag from Dmitry
+- Use C++ for SPDX license header comment and C type for rest of license
+  comment
+v7:
+- Use reverese christmas tree style
+- Drop unecessary 0 in id table's driver data
+v4:
+- Address Dmitry's feedback
+  - Drop irq variable in onkey_drv_data
+  - Drop keycode variable in onkey_drv_data
+  - Define wakeup as type bool
+  - Use platform_get_irq
+  - Use type const for struct pf1550_dev in onkey_drv_data
+  - Replace (error < 0) with (error) in if statement when applicable
+  - No need to define driver_data in table id
+- Define driver.pm with pm_sleep_ptr
+v3:
+- Address Dmitry's feedback
+  - Drop compatible string
+  - Remove dependency on OF
+  - Use generic device properties
+  - Drop unnecessary includes
+  - Drop unnecessary initializations in probe
+  - Always use the KEY_POWER property for onkey->keycode
+  - Do mapping of irqs in MFD driver
+  - Define onkey->input before interrupts are active
+  - Drop unnecessary input_free_device since devm
+  - Manage onkey irqs instead of the main interrupt line.
+- Fix integer overflow when unmasking onkey irqs in onkey_resume.
+v2:
+- Add driver for onkey
 ---
-base-commit: 0a4b866d08c6adaea2f4592d31edac6deeb4dcbd
-change-id: 20250527-pf1550-d401f0d07b80
+ drivers/input/misc/Kconfig        |  11 +++
+ drivers/input/misc/Makefile       |   1 +
+ drivers/input/misc/pf1550-onkey.c | 197 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 209 insertions(+)
 
-Best regards,
+diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
+index f5496ca0c0d2bfcb7968503ccd1844ff43bbc1c0..47b3c43ff0550f14d61990997976366436411adc 100644
+--- a/drivers/input/misc/Kconfig
++++ b/drivers/input/misc/Kconfig
+@@ -179,6 +179,17 @@ config INPUT_PCSPKR
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called pcspkr.
+ 
++config INPUT_PF1550_ONKEY
++	tristate "NXP PF1550 Onkey support"
++	depends on MFD_PF1550
++	help
++	  Say Y here if you want support for PF1550 PMIC. Onkey can trigger
++	  release and 1s(push hold), 2s, 3s, 4s, 8s interrupt for long press
++	  detect.
++
++	  To compile this driver as a module, choose M here. The module will be
++	  called pf1550-onkey.
++
+ config INPUT_PM8941_PWRKEY
+ 	tristate "Qualcomm PM8941 power key support"
+ 	depends on MFD_SPMI_PMIC
+diff --git a/drivers/input/misc/Makefile b/drivers/input/misc/Makefile
+index 6d91804d0a6f761a094e6c380f878f74c3054d63..c652337de464c1eeaf1515d0bc84d10de0cb3a74 100644
+--- a/drivers/input/misc/Makefile
++++ b/drivers/input/misc/Makefile
+@@ -62,6 +62,7 @@ obj-$(CONFIG_INPUT_PCAP)		+= pcap_keys.o
+ obj-$(CONFIG_INPUT_PCF50633_PMU)	+= pcf50633-input.o
+ obj-$(CONFIG_INPUT_PCF8574)		+= pcf8574_keypad.o
+ obj-$(CONFIG_INPUT_PCSPKR)		+= pcspkr.o
++obj-$(CONFIG_INPUT_PF1550_ONKEY)	+= pf1550-onkey.o
+ obj-$(CONFIG_INPUT_PM8941_PWRKEY)	+= pm8941-pwrkey.o
+ obj-$(CONFIG_INPUT_PM8XXX_VIBRATOR)	+= pm8xxx-vibrator.o
+ obj-$(CONFIG_INPUT_PMIC8XXX_PWRKEY)	+= pmic8xxx-pwrkey.o
+diff --git a/drivers/input/misc/pf1550-onkey.c b/drivers/input/misc/pf1550-onkey.c
+new file mode 100644
+index 0000000000000000000000000000000000000000..9be6377151cb3be824ab34ff37f983196b909324
+--- /dev/null
++++ b/drivers/input/misc/pf1550-onkey.c
+@@ -0,0 +1,197 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Driver for the PF1550 ONKEY
++ * Copyright (C) 2016 Freescale Semiconductor, Inc. All Rights Reserved.
++ *
++ * Portions Copyright (c) 2025 Savoir-faire Linux Inc.
++ * Samuel Kayode <samuel.kayode@savoirfairelinux.com>
++ */
++
++#include <linux/err.h>
++#include <linux/input.h>
++#include <linux/interrupt.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/mfd/pf1550.h>
++#include <linux/platform_device.h>
++
++#define PF1550_ONKEY_IRQ_NR	6
++
++struct onkey_drv_data {
++	struct device *dev;
++	const struct pf1550_ddata *pf1550;
++	bool wakeup;
++	struct input_dev *input;
++};
++
++static irqreturn_t pf1550_onkey_irq_handler(int irq, void *data)
++{
++	struct onkey_drv_data *onkey = data;
++	struct platform_device *pdev = to_platform_device(onkey->dev);
++	int i, state, irq_type = -1;
++
++	for (i = 0; i < PF1550_ONKEY_IRQ_NR; i++)
++		if (irq == platform_get_irq(pdev, i))
++			irq_type = i;
++
++	switch (irq_type) {
++	case PF1550_ONKEY_IRQ_PUSHI:
++		state = 0;
++		break;
++	case PF1550_ONKEY_IRQ_1SI:
++	case PF1550_ONKEY_IRQ_2SI:
++	case PF1550_ONKEY_IRQ_3SI:
++	case PF1550_ONKEY_IRQ_4SI:
++	case PF1550_ONKEY_IRQ_8SI:
++		state = 1;
++		break;
++	default:
++		dev_err(onkey->dev, "onkey interrupt: irq %d occurred\n",
++			irq_type);
++		return IRQ_HANDLED;
++	}
++
++	input_event(onkey->input, EV_KEY, KEY_POWER, state);
++	input_sync(onkey->input);
++
++	return IRQ_HANDLED;
++}
++
++static int pf1550_onkey_probe(struct platform_device *pdev)
++{
++	struct onkey_drv_data *onkey;
++	struct input_dev *input;
++	bool key_power = false;
++	int i, irq, error;
++
++	onkey = devm_kzalloc(&pdev->dev, sizeof(*onkey), GFP_KERNEL);
++	if (!onkey)
++		return -ENOMEM;
++
++	onkey->dev = &pdev->dev;
++
++	onkey->pf1550 = dev_get_drvdata(pdev->dev.parent);
++	if (!onkey->pf1550->regmap)
++		return dev_err_probe(&pdev->dev, -ENODEV,
++				     "failed to get regmap\n");
++
++	onkey->wakeup = device_property_read_bool(pdev->dev.parent,
++						  "wakeup-source");
++
++	if (device_property_read_bool(pdev->dev.parent,
++				      "nxp,disable-key-power")) {
++		error = regmap_clear_bits(onkey->pf1550->regmap,
++					  PF1550_PMIC_REG_PWRCTRL1,
++					  PF1550_ONKEY_RST_EN);
++		if (error)
++			return dev_err_probe(&pdev->dev, error,
++					     "failed: disable turn system off");
++	} else {
++		key_power = true;
++	}
++
++	input = devm_input_allocate_device(&pdev->dev);
++	if (!input)
++		return dev_err_probe(&pdev->dev, -ENOMEM,
++				     "failed to allocate the input device\n");
++
++	input->name = pdev->name;
++	input->phys = "pf1550-onkey/input0";
++	input->id.bustype = BUS_HOST;
++
++	if (key_power)
++		input_set_capability(input, EV_KEY, KEY_POWER);
++
++	onkey->input = input;
++	platform_set_drvdata(pdev, onkey);
++
++	for (i = 0; i < PF1550_ONKEY_IRQ_NR; i++) {
++		irq = platform_get_irq(pdev, i);
++		if (irq < 0)
++			return irq;
++
++		error = devm_request_threaded_irq(&pdev->dev, irq, NULL,
++						  pf1550_onkey_irq_handler,
++						  IRQF_NO_SUSPEND,
++						  "pf1550-onkey", onkey);
++		if (error)
++			return dev_err_probe(&pdev->dev, error,
++					     "failed: irq request (IRQ: %d)\n",
++					     i);
++	}
++
++	error = input_register_device(input);
++	if (error)
++		return dev_err_probe(&pdev->dev, error,
++				     "failed to register input device\n");
++
++	device_init_wakeup(&pdev->dev, onkey->wakeup);
++
++	return 0;
++}
++
++static int pf1550_onkey_suspend(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct onkey_drv_data *onkey = platform_get_drvdata(pdev);
++	int i, irq;
++
++	if (!device_may_wakeup(&pdev->dev))
++		regmap_write(onkey->pf1550->regmap,
++			     PF1550_PMIC_REG_ONKEY_INT_MASK0,
++			     ONKEY_IRQ_PUSHI | ONKEY_IRQ_1SI | ONKEY_IRQ_2SI |
++			     ONKEY_IRQ_3SI | ONKEY_IRQ_4SI | ONKEY_IRQ_8SI);
++	else
++		for (i = 0; i < PF1550_ONKEY_IRQ_NR; i++) {
++			irq = platform_get_irq(pdev, i);
++			if (irq > 0)
++				enable_irq_wake(irq);
++		}
++
++	return 0;
++}
++
++static int pf1550_onkey_resume(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct onkey_drv_data *onkey = platform_get_drvdata(pdev);
++	int i, irq;
++
++	if (!device_may_wakeup(&pdev->dev))
++		regmap_write(onkey->pf1550->regmap,
++			     PF1550_PMIC_REG_ONKEY_INT_MASK0,
++			     ~((u8)(ONKEY_IRQ_PUSHI | ONKEY_IRQ_1SI |
++			     ONKEY_IRQ_2SI | ONKEY_IRQ_3SI | ONKEY_IRQ_4SI |
++			     ONKEY_IRQ_8SI)));
++	else
++		for (i = 0; i < PF1550_ONKEY_IRQ_NR; i++) {
++			irq = platform_get_irq(pdev, i);
++			if (irq > 0)
++				disable_irq_wake(irq);
++		}
++
++	return 0;
++}
++
++static SIMPLE_DEV_PM_OPS(pf1550_onkey_pm_ops, pf1550_onkey_suspend,
++			 pf1550_onkey_resume);
++
++static const struct platform_device_id pf1550_onkey_id[] = {
++	{ "pf1550-onkey", },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(platform, pf1550_onkey_id);
++
++static struct platform_driver pf1550_onkey_driver = {
++	.driver = {
++		.name = "pf1550-onkey",
++		.pm   = pm_sleep_ptr(&pf1550_onkey_pm_ops),
++	},
++	.probe = pf1550_onkey_probe,
++	.id_table = pf1550_onkey_id,
++};
++module_platform_driver(pf1550_onkey_driver);
++
++MODULE_AUTHOR("Freescale Semiconductor");
++MODULE_DESCRIPTION("PF1550 onkey Driver");
++MODULE_LICENSE("GPL");
+
 -- 
-Samuel Kayode <samuel.kayode@savoirfairelinux.com>
+2.50.1
 
 
