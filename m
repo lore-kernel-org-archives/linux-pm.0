@@ -1,148 +1,144 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 675CB302770;
-	Wed, 17 Sep 2025 10:03:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73C9E2222D1;
+	Wed, 17 Sep 2025 10:15:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758103417; cv=none; b=ITsH/XO89vfX3AkL+3b79qtHV4Uw9Lfl/dtkI/1fctr5x7yOs8hPKeGL40aunsKeZPZ0UT767Ooz/owdNOzEoP3R6qn82j7M/lR3DBS+f1YmN3yXx9jFu6mKQ0WPxCXxgfTLKLhoR/sfARTpjGi2tPy53l32TuZIogsPIC1V53o=
+	t=1758104130; cv=none; b=OB9YdHf+tiiSAbMGY5bJrF0umtchy2qGPTnMdYMAf35xHIY9b9zkRIjcdncHaEnvcWCk6QIMjT47CcsVDVWqxl1eMKmrb3yf6Wbck/FAz3a+t3qaPclPwhdstxje1XahxJnABrox18NCXwAcULnXs6OujGVSFpjc3lDz/VAzHJI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758103417; c=relaxed/simple;
-	bh=nNlilHjh09UBY7rPl6XW3+rKwLzxl/XA9okrB109O1c=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NJDcS00zmTTRoXhU0aCTXg8f1UnMpCzcesaPTYA4tJ6s9fq/17MX2YbSjZUK7NC1ZqKYPJaPXK1K7kalAjVGbASJ5/vzqgVOrvAE/ilQRzuGedv0a8X13gqpbGyrvVjadw52lwy1mSd/iOqi6ufDyQWA6L+0jsaUIVcdBaO5kTk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B9Y0nfAD; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1758104130; c=relaxed/simple;
+	bh=NUKM72dsQsPVocfi0VrAIryfe6vjKQ5F2Pt17V7EWkc=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=qasIaLwQnASIKqPGC4AxGx+tdBXCF6muTSzIQhgd4FVLYABxg7xcAXGpEjlBn0+XIRuapje/KEu/NuVpQX6G/RlXRU85RnEuP5gpSJh+NyOwjTTnvDaOj2M9/MOb4OrnxMLCVZqgjRUyRV4w7NT1VCEkr9jK1nQKqtnQ/mwx32w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nvXcqzdj; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B9Y0nfAD"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 429F6C4CEF0;
-	Wed, 17 Sep 2025 10:03:27 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nvXcqzdj"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 1F1DDC4CEF7;
+	Wed, 17 Sep 2025 10:15:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1758103417;
-	bh=nNlilHjh09UBY7rPl6XW3+rKwLzxl/XA9okrB109O1c=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=B9Y0nfADZvNHly1cC+7nuDT0d/oTq9ziRK04kv1w1BF/BHhB5Xn0fiBbI0/UEecCV
-	 Jgfp0Qr3MqeK4/IlBzjJBUmHnx5pt1iVtl+Of1wkezd6WDc+IA/jvJ55WlzYfsS8nU
-	 GlOvOEc5T+rMEM1daFnDSK5IiYY4xJjJYth9BdXysxjB3CLYozkCtQecbSEQIlO86I
-	 TlfVla0IwqYaoS6wTPwZxzKj9uyGujA4XWYEuhUot/r6Hdefu7hbiz2HhoSqrPqgNf
-	 yf5mgQmqWgUVN5yPotT6+fV64FGqGLfxWPfsp136Spi+UEUH80ZpjCppqgefz6djDH
-	 z9q04unFly53w==
-Date: Wed, 17 Sep 2025 15:33:22 +0530
-From: Manivannan Sadhasivam <mani@kernel.org>
-To: dang.huynh@mainlining.org
-Cc: Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Linus Walleij <linus.walleij@linaro.org>, Bartosz Golaszewski <brgl@bgdev.pl>, 
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, Michael Turquette <mturquette@baylibre.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	Sebastian Reichel <sre@kernel.org>, Vinod Koul <vkoul@kernel.org>, Kees Cook <kees@kernel.org>, 
-	"Gustavo A. R. Silva" <gustavoars@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, 
-	linux-arm-kernel@lists.infradead.org, linux-unisoc@lists.infradead.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, linux-rtc@vger.kernel.org, 
-	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, dmaengine@vger.kernel.org, 
-	linux-hardening@vger.kernel.org, linux-mmc@vger.kernel.org
-Subject: Re: [PATCH 00/25] RDA8810PL Clock, RTC and MMC driver
-Message-ID: <lnfervvwctvemjdmyue2aohlsqpfd5gsuzjho3u6mtdtewl4vr@saqnionh72am>
-References: <20250917-rda8810pl-drivers-v1-0-9ca9184ca977@mainlining.org>
+	s=k20201202; t=1758104130;
+	bh=NUKM72dsQsPVocfi0VrAIryfe6vjKQ5F2Pt17V7EWkc=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=nvXcqzdjK5+hLjE6Tht7GpZdRxuJcN3Cd2qi9t0iZURMhLqU5ckgcKCbAaVJj1J4q
+	 dHPQzqNECICQPmDjqSdWBjqe1sAm+flPkHE9AqWuXz0xqRA/udOe3bcDxfk6h/VOxw
+	 UJLIAvRX8fht13glhS0AjQN3iRx39UmkBaoa/nHva3kg8jkXHPa3wHPnla1b7sIO0N
+	 nWvv3J6Nv3W6BrHRtIAlCfJFCz0X7q9Vo4By94EsOodtjuFv6WaqDdVS+m6OUpraMn
+	 m7L/035IDDikytHgOCJfwSt+qp7apF+WlPls9sAX8qsBW2Unsbvfz9VqEu7AaK7naj
+	 EE5fmHg05iIiw==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07F69CAC598;
+	Wed, 17 Sep 2025 10:15:30 +0000 (UTC)
+From: Fenglin Wu via B4 Relay <devnull+fenglin.wu.oss.qualcomm.com@kernel.org>
+Date: Wed, 17 Sep 2025 18:15:14 +0800
+Subject: [PATCH v5 1/9] power: supply: core: Add resistance power supply
+ property
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20250917-rda8810pl-drivers-v1-0-9ca9184ca977@mainlining.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250917-qcom_battmgr_update-v5-1-270ade9ffe13@oss.qualcomm.com>
+References: <20250917-qcom_battmgr_update-v5-0-270ade9ffe13@oss.qualcomm.com>
+In-Reply-To: <20250917-qcom_battmgr_update-v5-0-270ade9ffe13@oss.qualcomm.com>
+To: Sebastian Reichel <sre@kernel.org>, 
+ Bjorn Andersson <andersson@kernel.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+ Bryan O'Donoghue <bryan.odonoghue@linaro.org>, 
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Cc: Subbaraman Narayanamurthy <subbaraman.narayanamurthy@oss.qualcomm.com>, 
+ David Collins <david.collins@oss.qualcomm.com>, 
+ =?utf-8?q?Gy=C3=B6rgy_Kurucz?= <me@kuruczgy.com>, linux-pm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+ kernel@oss.qualcomm.com, devicetree@vger.kernel.org, 
+ linux-usb@vger.kernel.org, Fenglin Wu <fenglin.wu@oss.qualcomm.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1758104128; l=2838;
+ i=fenglin.wu@oss.qualcomm.com; s=20240327; h=from:subject:message-id;
+ bh=PTxob4cVzRUR26yIMTWBec2QDLrpnnMTw9w6sqWmfeM=;
+ b=iGK26AJvMnEB1U6pqbrTAVBKD/VM9E0r4i/umxn9oJIWg+LyIBuQ8Izdrz/OUASRENano95Ru
+ sFlk8lJdI2mCnBVu5izMIXO6Pe3q1rpB50l6YrZ12F5gnSlfRm46wfU
+X-Developer-Key: i=fenglin.wu@oss.qualcomm.com; a=ed25519;
+ pk=BF8SA4IVDk8/EBCwlBehKtn2hp6kipuuAuDAHh9s+K4=
+X-Endpoint-Received: by B4 Relay for fenglin.wu@oss.qualcomm.com/20240327
+ with auth_id=406
+X-Original-From: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
+Reply-To: fenglin.wu@oss.qualcomm.com
 
-On Wed, Sep 17, 2025 at 03:24:57AM GMT, Dang Huynh via B4 Relay wrote:
-> This patch series aims to add support for Clock/Reset, Real-Time Clock and
-> SDMMC on the RDA Micro RDA8810PL platform.
-> 
-> It also adds Intelligent Flow Controller (IOW, a DMA controller) which is
-> important for working with this MMC IP.
-> 
-> Tested on the Orange Pi 2G-IOT.
-> 
+From: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
 
-Thanks for work! Is it possible to split this patchset logically to ease
-reviewing and also merging? It currently touches different subsystems and has 25
-patches.
+Some battery drivers provide the ability to export internal resistance
+as a parameter. Add internal_resistance power supply property for that
+purpose.
 
-You could easily split this into different series adding Clock/Reset, RTC, IFC,
-SDMMC and other misc patches in one series.
+Signed-off-by: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
+---
+ Documentation/ABI/testing/sysfs-class-power | 16 ++++++++++++++++
+ drivers/power/supply/power_supply_sysfs.c   |  1 +
+ include/linux/power_supply.h                |  1 +
+ 3 files changed, 18 insertions(+)
 
-- Mani
-
-> Signed-off-by: Dang Huynh <dang.huynh@mainlining.org>
-> ---
-> Dang Huynh (25):
->       ARM: dts: unisoc: rda8810pl: Add label to GPIO nodes
->       drivers: gpio: rda: Make IRQ optional
->       dt-bindings: gpio: rda: Make interrupts optional
->       rtc: Add timestamp for the end of 2127
->       dt-bindings: rtc: Add RDA Micro RDA8810PL RTC
->       rtc: Add driver for RDA Micro SoC
->       ARM: dts: unisoc: rda8810pl: Enable Real-Time Clock
->       ARM: dts: unisoc: rda8810pl: Enable ARM PMU
->       dt-bindings: clock: Add RDA Micro RDA8810PL clock/reset controller
->       drivers: clk: Add Clock and Reset Driver for RDA Micro RDA8810PL SoC
->       dts: unisoc: rda8810pl: Enable clock/reset driver
->       dts: unisoc: rda8810pl: Add OPP for CPU and define L2 cache
->       dts: unisoc: orangepi: Disable UART with no users
->       dt-bindings: power: reset: Add RDA Micro Modem Reset
->       power: reset: Add basic power reset driver for RDA8810PL
->       dts: unisoc: rda8810pl: Enable modem reset
->       drivers: gpio: rda: Make direction register unreadable
->       dt-bindings: dma: Add RDA IFC DMA
->       dmaengine: Add RDA IFC driver
->       dts: unisoc: rda8810pl: Enable IFC
->       dt-bindings: mmc: Add RDA SDMMC controller
->       mmc: host: Add RDA Micro SD/MMC driver
->       dts: unisoc: rda8810pl: Add SDMMC controllers
->       dts: unisoc: orangepi-2g: Enable SD Card
->       dts: unisoc: orangepi-i96: Enable SD Card
-> 
->  .../bindings/clock/rda,8810pl-apsyscon.yaml        |  44 ++
->  Documentation/devicetree/bindings/dma/rda,ifc.yaml |  42 +
->  .../devicetree/bindings/gpio/gpio-rda.yaml         |   3 -
->  Documentation/devicetree/bindings/mmc/rda,mmc.yaml |  91 +++
->  .../bindings/power/reset/rda,md-reset.yaml         |  36 +
->  .../devicetree/bindings/rtc/rda,8810pl-rtc.yaml    |  30 +
->  MAINTAINERS                                        |  30 +
->  .../boot/dts/unisoc/rda8810pl-orangepi-2g-iot.dts  |  24 +-
->  .../arm/boot/dts/unisoc/rda8810pl-orangepi-i96.dts |  24 +-
->  arch/arm/boot/dts/unisoc/rda8810pl.dtsi            | 115 ++-
->  drivers/clk/Kconfig                                |   1 +
->  drivers/clk/Makefile                               |   1 +
->  drivers/clk/rda/Kconfig                            |  14 +
->  drivers/clk/rda/Makefile                           |   2 +
->  drivers/clk/rda/clk-rda8810.c                      | 770 +++++++++++++++++++
->  drivers/dma/Kconfig                                |  10 +
->  drivers/dma/Makefile                               |   1 +
->  drivers/dma/rda-ifc.c                              | 450 +++++++++++
->  drivers/gpio/gpio-rda.c                            |   4 +-
->  drivers/mmc/host/Kconfig                           |  12 +
->  drivers/mmc/host/Makefile                          |   1 +
->  drivers/mmc/host/rda-mmc.c                         | 853 +++++++++++++++++++++
->  drivers/power/reset/Kconfig                        |   9 +
->  drivers/power/reset/Makefile                       |   1 +
->  drivers/power/reset/rda-reboot.c                   |  58 ++
->  drivers/rtc/Kconfig                                |  11 +
->  drivers/rtc/Makefile                               |   1 +
->  drivers/rtc/rtc-rda.c                              | 356 +++++++++
->  include/dt-bindings/clock/rda,8810pl-apclk.h       |  79 ++
->  include/dt-bindings/dma/rda-ifc.h                  |  28 +
->  include/linux/rtc.h                                |   1 +
->  31 files changed, 3079 insertions(+), 23 deletions(-)
-> ---
-> base-commit: 590b221ed4256fd6c34d3dea77aa5bd6e741bbc1
-> change-id: 20250916-rda8810pl-drivers-9a5271452635
-> 
-> Best regards,
-> -- 
-> Dang Huynh <dang.huynh@mainlining.org>
-> 
-> 
+diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
+index 560124cc31770cde03bcdbbba0d85a5bd78b15a0..cea1a38f5a8fb754d4e6323967ef6cf2e20a68ce 100644
+--- a/Documentation/ABI/testing/sysfs-class-power
++++ b/Documentation/ABI/testing/sysfs-class-power
+@@ -552,6 +552,22 @@ Description:
+ 			Integer > 0: representing full cycles
+ 			Integer = 0: cycle_count info is not available
+ 
++What:		/sys/class/power_supply/<supply_name>/internal_resistance
++Date:		August 2025
++Contact:	linux-arm-msm@vger.kernel.org
++Description:
++		Represent the battery's internal resistance, often referred
++		to as Equivalent Series Resistance (ESR). It is a dynamic
++		parameter that reflects the opposition to current flow within
++		the cell. It is not a fixed value but varies significantly
++		based on several operational conditions, including battery
++		state of charge (SoC), temperature, and whether the battery
++		is in a charging or discharging state.
++
++		Access: Read
++
++		Valid values: Represented in microohms
++
+ **USB Properties**
+ 
+ What:		/sys/class/power_supply/<supply_name>/input_current_limit
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index a438f7983d4f6a832e9d479184c7c35453e1757c..cfa8f90a88ebc8fc1c7447198f138e5d2e699e5a 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -220,6 +220,7 @@ static struct power_supply_attr power_supply_attrs[] __ro_after_init = {
+ 	POWER_SUPPLY_ATTR(MANUFACTURE_YEAR),
+ 	POWER_SUPPLY_ATTR(MANUFACTURE_MONTH),
+ 	POWER_SUPPLY_ATTR(MANUFACTURE_DAY),
++	POWER_SUPPLY_ATTR(INTERNAL_RESISTANCE),
+ 	/* Properties of type `const char *' */
+ 	POWER_SUPPLY_ATTR(MODEL_NAME),
+ 	POWER_SUPPLY_ATTR(MANUFACTURER),
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index c4cb854971f53a244ba7742a15ce7a5515da6199..8bc3b7a67eb5693a16db9b7d123e7881711c6bf4 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -174,6 +174,7 @@ enum power_supply_property {
+ 	POWER_SUPPLY_PROP_MANUFACTURE_YEAR,
+ 	POWER_SUPPLY_PROP_MANUFACTURE_MONTH,
+ 	POWER_SUPPLY_PROP_MANUFACTURE_DAY,
++	POWER_SUPPLY_PROP_INTERNAL_RESISTANCE,
+ 	/* Properties of type `const char *' */
+ 	POWER_SUPPLY_PROP_MODEL_NAME,
+ 	POWER_SUPPLY_PROP_MANUFACTURER,
 
 -- 
-மணிவண்ணன் சதாசிவம்
+2.34.1
+
+
