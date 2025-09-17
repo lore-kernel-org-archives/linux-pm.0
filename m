@@ -1,232 +1,120 @@
-Received: from mail.andi.de1.cc (mail.andi.de1.cc [178.238.236.174])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 664012FF66E;
-	Wed, 17 Sep 2025 17:48:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.238.236.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C2442F616C
+	for <linux-pm@vger.kernel.org>; Wed, 17 Sep 2025 18:58:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758131323; cv=none; b=DE/cuDhwt2MDB5UGyVXOWLKZfVbXYDPZxwk3WEjL1tTrxiZMktn2eKU2R1t3C2HRnUs3c7I1gaaxsoASbRUH9CZRv1mdGiZdWCmXQ4A5o5s2NzlvHSgkn+dkD9nlD3/sZAbO6ememKYeEJYcFu8Qes9jPrO+Y353oxqbrUxm6lE=
+	t=1758135528; cv=none; b=d7cbELiuPY8vTp2uDH5owgqUVLofeLMwx4rX3R9TsMFVVtNnMmzrlEj1b/PhFgR+oxiQwtHE6m/IL/ou1Xd1H8qtRVV45qibwrRmAmuL4Bvy+3Mwjg+m3D2PxCetdcSAyUg+hxulhjuY905I273Wp0JkMgYPQMz88E6CplU2GyU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758131323; c=relaxed/simple;
-	bh=T8jSP/nM6p52WCx230tHmxgQZTrIyhdphnlgliU2MrA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Od3LfP+gAWXxJrNp8ZEsqg7MBRbTaewAr+d0KA0vTjk5F1LNK7e8kioo+WDEDjbU4Uzw7N/jqnaGAZsumj+V1cObWqOVRCICT3JZ5Q52MsI5VzvIr4bvPW1sa0Bm9fEPdfE7BfYT9+3uIclJbswYKNfL7wZjZ2plW93gJXOZ1cc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kemnade.info; spf=pass smtp.mailfrom=kemnade.info; dkim=pass (2048-bit key) header.d=kemnade.info header.i=@kemnade.info header.b=9W9AciBv; arc=none smtp.client-ip=178.238.236.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kemnade.info
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kemnade.info
+	s=arc-20240116; t=1758135528; c=relaxed/simple;
+	bh=qZ47U+uY1V1aqR0QgSujsnkp/ccycMFr96/IAqtBk4o=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=TvIWBZcU6yu4tDdNduf05SBOZNUYBWZbe2053UK1uh98qI9FHvo6/aK6w6MIkr3rkpyDeO28CBM9bVkWGKEsrjJOc/QJm9xVI8/WxOctk0wvhgvSbH6zpRGKUI4lFBEhrulnbGoemGbWykzqQx363xhI3NlRwvjFXDK7fwNy2Uc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OC2Jgq4W; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kemnade.info header.i=@kemnade.info header.b="9W9AciBv"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=kemnade.info; s=20220719; h=Cc:In-Reply-To:References:From:Sender:Reply-To:
-	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-	Resent-To:Resent-Cc:Resent-Message-ID;
-	bh=H1DU/m8mr++CuW8Z72z0QsfexEFDp7sdws2HKxbjT+0=; b=9W9AciBv5QQHD8CE6VCsXkMzNc
-	dkhwMQfPTniz0PFxqS7NDTcDtC4P5choULZ0YuBQo5Cfw0cFArx6Rien07KbP/MI+OOS3XXtCj+jV
-	3cRpUpEdDk+dTNrIq9ocCdZRoJZMP0CvzsCfjKe1tgDeRJDt/odhT6fRfdnMJbn8Yjbn7i3Ele3xK
-	28CSWbnlurEi26w/xFOsYfQBZyUq5aFWeiamkL5z5Kr5/NBljKQ6jKyju/K66cCgPjBcdLAefoPoc
-	difsHaYm/MargVmdjCunw9W0MM/Lh4pS14Kk6Eyh47WuYN4ZRVrDbcGbN/OG+IETo0wfWCvw93aui
-	lDCpiWBQ==;
-From: Andreas Kemnade <andreas@kemnade.info>
-Date: Wed, 17 Sep 2025 19:48:02 +0200
-Subject: [PATCH v4 1/3] mfd: bd71828, bd71815 prepare for power-supply
- support
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OC2Jgq4W"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C4AFCC4CEF7
+	for <linux-pm@vger.kernel.org>; Wed, 17 Sep 2025 18:58:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1758135527;
+	bh=qZ47U+uY1V1aqR0QgSujsnkp/ccycMFr96/IAqtBk4o=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=OC2Jgq4WzcVbLflvSOOVjUDkLyy70FncV2GNdzBDt4/Qeu2rIngaobwsV6D4y67/h
+	 vbNhebcLlxqIuMWwr+JJIjqOZyJ0SlKuwq+fEU1qs4+8KZl8NQpiK5jkjiICwPUdGt
+	 UcqKPGmuJ5o7+LzFpQYcWMmMrzOllQWuoBqxwvLwOoXjgJOh21eApVNyAtpB3B9hOz
+	 o7CZV0mzG6Ht9d+H/EIPIfA8bw2lQYEbSjew6MgcwKCiFeqaUbjw7e1P1LIML9/zfq
+	 HDNoohHmmwRVXBJM2ZaUb28HNbLQHYsHJFjDarhn4M5G+biPSgb+Qj6VpokygRa9Zt
+	 D8muUpHD6e0+w==
+Received: by mail-oo1-f48.google.com with SMTP id 006d021491bc7-621cecfcc04so110223eaf.2
+        for <linux-pm@vger.kernel.org>; Wed, 17 Sep 2025 11:58:47 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUm335G4jfPiJY4DKjpgQfpEflVhOgj0WDca9HhWH4HpC78DurJFy0OqWeWm4ZZBRhYtA56Bn0Ugw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyqMxDlliz55TKI6M1xKgWurrkTCKxtkEoBXeZrz1Z6U/Z5WqhD
+	xdR90VLR7A/8LFzrHFX9VmgijW+nJuFWIvcfMus8ISGZnmGLSBvPjKJE95NhFuz3xYX+9RcKIMm
+	CM7fglqT5EtiqM5IXonTW2YnzGZWAy2A=
+X-Google-Smtp-Source: AGHT+IEltsAuTUpyjSvRYRPajVO0elNn8WTQYTo1avIgYupEMA/sG+mB59YaRalHS0jLIMjI93RXyrNDHri/QJou2EU=
+X-Received: by 2002:a05:6820:80a:b0:61f:f591:8a2c with SMTP id
+ 006d021491bc7-624a0920a79mr1733768eaf.0.1758135527113; Wed, 17 Sep 2025
+ 11:58:47 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250917-bd71828-charger-v4-1-fbc85a910499@kemnade.info>
-References: <20250917-bd71828-charger-v4-0-fbc85a910499@kemnade.info>
-In-Reply-To: <20250917-bd71828-charger-v4-0-fbc85a910499@kemnade.info>
-To: Matti Vaittinen <mazziesaccount@gmail.com>, Lee Jones <lee@kernel.org>, 
- Sebastian Reichel <sre@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- Krzysztof Kozlowski <krzk@kernel.org>, 
- Andreas Kemnade <andreas@kemnade.info>, 
- Matti Vaittinen <mazziesaccount@gmail.com>
-X-Mailer: b4 0.15-dev-50721
-X-Developer-Signature: v=1; a=openpgp-sha256; l=7379; i=andreas@kemnade.info;
- h=from:subject:message-id; bh=dmgYEkH3Jz6Tq+5u+8yD7jG3DYrR4sIck3blNGqHI8g=;
- b=owGbwMvMwCUm/rzkS6lq2x3G02pJDBmnvmSdv/rxa9byu2u/TFWyO/blgfnu4ticyXyL7mX7n
- VZaJz+vsqOUhUGMi0FWTJHll7WC2yeVZ7nBUyPsYeawMoEMYeDiFICJ+FUzMlzuPj9vzmff7/4n
- 6zbxOKxI5pinxDHxQP85ScmpN+U/2cozMtxj05OpM1ZtenRMWOTzjA6hvbemzos+rsg0374nt+7
- 0JUYA
-X-Developer-Key: i=andreas@kemnade.info; a=openpgp;
- fpr=EEC0DB858E66C0DA70620AC07DBD6AC74DE29324
+References: <878qimv24u.wl-tiwai@suse.de> <87ikhptpgm.wl-tiwai@suse.de>
+In-Reply-To: <87ikhptpgm.wl-tiwai@suse.de>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 17 Sep 2025 20:58:36 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0htMKOcCoKts-B9BaE0VpS2oc9-cp=5VnNwS2Qe2iB+Kg@mail.gmail.com>
+X-Gm-Features: AS18NWCm0TDXKUZAEXCsqFOaRysUs4POiddI_TfFNgwgoOlM00T0qOv12UeLO9A
+Message-ID: <CAJZ5v0htMKOcCoKts-B9BaE0VpS2oc9-cp=5VnNwS2Qe2iB+Kg@mail.gmail.com>
+Subject: Re: PM runtime auto-cleanup macros
+To: Takashi Iwai <tiwai@suse.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Hi,
 
-Add core support for ROHM BD718(15/28/78) PMIC's charger blocks.
+Sorry for the delay.
 
-Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
----
- drivers/mfd/rohm-bd71828.c       | 44 ++++++++++++++++++++++------
- include/linux/mfd/rohm-bd71828.h | 63 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 98 insertions(+), 9 deletions(-)
+On Thu, Sep 11, 2025 at 9:31=E2=80=AFAM Takashi Iwai <tiwai@suse.de> wrote:
+>
+> On Wed, 10 Sep 2025 16:00:17 +0200,
+> Takashi Iwai wrote:
+> >
+> > Hi,
+> >
+> > while I worked on the code cleanups in the drivers with the recent
+> > auto-cleanup macros, I noticed that pm_runtime_get*() and _put*() can
+> > be also managed with the auto-cleanup gracefully, too.  Actually we
+> > already defined the __free(pm_runtime_put) in commit bfa4477751e9, and
+> > there is a (single) user of it in pci-sysfs.c.
+> >
+> > Now I wanted to extend it to pm_runtime_put_autosuspend() as:
+> >
+> > DEFINE_FREE(pm_runtime_put_autosuspend, struct device *,
+> >            if (_T) pm_runtime_put_autosuspend(_T))
+> >
+> > Then one can use it like
+> >
+> >       ret =3D pm_runtime_resume_and_get(dev);
+> >       if (ret < 0)
+> >               return ret;
+> >       struct device *pmdev __free(pm_runtime_put_autosuspend) =3D dev;
+> >
+> > that is similar as done in pci-sysfs.c.  So far, so good.
+> >
+> > But, I find putting the line like above at each place a bit ugly.
+> > So I'm wondering whether it'd be better to introduce some helper
+> > macros, e.g.
+> >
+> > #define pm_runtime_auto_clean(dev, var) \
+> >       struct device *var __free(pm_runtime_put) =3D (dev)
+>
+> It can be even simpler by assigning a temporary variable such as:
+>
+> #define pm_runtime_auto_clean(dev) \
+>         struct device *__pm_runtime_var ## __LINE__ __free(pm_runtime_put=
+) =3D (dev)
 
-diff --git a/drivers/mfd/rohm-bd71828.c b/drivers/mfd/rohm-bd71828.c
-index a14b7aa69c3c6..84a64c3b9c9f5 100644
---- a/drivers/mfd/rohm-bd71828.c
-+++ b/drivers/mfd/rohm-bd71828.c
-@@ -45,8 +45,8 @@ static const struct resource bd71828_rtc_irqs[] = {
- 
- static const struct resource bd71815_power_irqs[] = {
- 	DEFINE_RES_IRQ_NAMED(BD71815_INT_DCIN_RMV, "bd71815-dcin-rmv"),
--	DEFINE_RES_IRQ_NAMED(BD71815_INT_CLPS_OUT, "bd71815-clps-out"),
--	DEFINE_RES_IRQ_NAMED(BD71815_INT_CLPS_IN, "bd71815-clps-in"),
-+	DEFINE_RES_IRQ_NAMED(BD71815_INT_CLPS_OUT, "bd71815-dcin-clps-out"),
-+	DEFINE_RES_IRQ_NAMED(BD71815_INT_CLPS_IN, "bd71815-dcin-clps-in"),
- 	DEFINE_RES_IRQ_NAMED(BD71815_INT_DCIN_OVP_RES, "bd71815-dcin-ovp-res"),
- 	DEFINE_RES_IRQ_NAMED(BD71815_INT_DCIN_OVP_DET, "bd71815-dcin-ovp-det"),
- 	DEFINE_RES_IRQ_NAMED(BD71815_INT_DCIN_MON_RES, "bd71815-dcin-mon-res"),
-@@ -56,7 +56,7 @@ static const struct resource bd71815_power_irqs[] = {
- 	DEFINE_RES_IRQ_NAMED(BD71815_INT_VSYS_LOW_RES, "bd71815-vsys-low-res"),
- 	DEFINE_RES_IRQ_NAMED(BD71815_INT_VSYS_LOW_DET, "bd71815-vsys-low-det"),
- 	DEFINE_RES_IRQ_NAMED(BD71815_INT_VSYS_MON_RES, "bd71815-vsys-mon-res"),
--	DEFINE_RES_IRQ_NAMED(BD71815_INT_VSYS_MON_RES, "bd71815-vsys-mon-det"),
-+	DEFINE_RES_IRQ_NAMED(BD71815_INT_VSYS_MON_DET, "bd71815-vsys-mon-det"),
- 	DEFINE_RES_IRQ_NAMED(BD71815_INT_CHG_WDG_TEMP, "bd71815-chg-wdg-temp"),
- 	DEFINE_RES_IRQ_NAMED(BD71815_INT_CHG_WDG_TIME, "bd71815-chg-wdg"),
- 	DEFINE_RES_IRQ_NAMED(BD71815_INT_CHG_RECHARGE_RES, "bd71815-rechg-res"),
-@@ -87,10 +87,10 @@ static const struct resource bd71815_power_irqs[] = {
- 	DEFINE_RES_IRQ_NAMED(BD71815_INT_BAT_OVER_CURR_2_DET, "bd71815-bat-oc2-det"),
- 	DEFINE_RES_IRQ_NAMED(BD71815_INT_BAT_OVER_CURR_3_RES, "bd71815-bat-oc3-res"),
- 	DEFINE_RES_IRQ_NAMED(BD71815_INT_BAT_OVER_CURR_3_DET, "bd71815-bat-oc3-det"),
--	DEFINE_RES_IRQ_NAMED(BD71815_INT_TEMP_BAT_LOW_RES, "bd71815-bat-low-res"),
--	DEFINE_RES_IRQ_NAMED(BD71815_INT_TEMP_BAT_LOW_DET, "bd71815-bat-low-det"),
--	DEFINE_RES_IRQ_NAMED(BD71815_INT_TEMP_BAT_HI_RES, "bd71815-bat-hi-res"),
--	DEFINE_RES_IRQ_NAMED(BD71815_INT_TEMP_BAT_HI_DET, "bd71815-bat-hi-det"),
-+	DEFINE_RES_IRQ_NAMED(BD71815_INT_TEMP_BAT_LOW_RES, "bd71815-temp-bat-low-res"),
-+	DEFINE_RES_IRQ_NAMED(BD71815_INT_TEMP_BAT_LOW_DET, "bd71815-temp-bat-low-det"),
-+	DEFINE_RES_IRQ_NAMED(BD71815_INT_TEMP_BAT_HI_RES, "bd71815-temp-bat-hi-res"),
-+	DEFINE_RES_IRQ_NAMED(BD71815_INT_TEMP_BAT_HI_DET, "bd71815-temp-bat-hi-det"),
- };
- 
- static const struct mfd_cell bd71815_mfd_cells[] = {
-@@ -109,7 +109,30 @@ static const struct mfd_cell bd71815_mfd_cells[] = {
- 	},
- };
- 
--static const struct mfd_cell bd71828_mfd_cells[] = {
-+static const struct resource bd71828_power_irqs[] = {
-+	DEFINE_RES_IRQ_NAMED(BD71828_INT_CHG_TOPOFF_TO_DONE,
-+			     "bd71828-chg-done"),
-+	DEFINE_RES_IRQ_NAMED(BD71828_INT_DCIN_DET, "bd71828-pwr-dcin-in"),
-+	DEFINE_RES_IRQ_NAMED(BD71828_INT_DCIN_RMV, "bd71828-pwr-dcin-out"),
-+	DEFINE_RES_IRQ_NAMED(BD71828_INT_BAT_LOW_VOLT_RES,
-+			     "bd71828-vbat-normal"),
-+	DEFINE_RES_IRQ_NAMED(BD71828_INT_BAT_LOW_VOLT_DET, "bd71828-vbat-low"),
-+	DEFINE_RES_IRQ_NAMED(BD71828_INT_TEMP_BAT_HI_DET, "bd71828-btemp-hi"),
-+	DEFINE_RES_IRQ_NAMED(BD71828_INT_TEMP_BAT_HI_RES, "bd71828-btemp-cool"),
-+	DEFINE_RES_IRQ_NAMED(BD71828_INT_TEMP_BAT_LOW_DET, "bd71828-btemp-lo"),
-+	DEFINE_RES_IRQ_NAMED(BD71828_INT_TEMP_BAT_LOW_RES,
-+			     "bd71828-btemp-warm"),
-+	DEFINE_RES_IRQ_NAMED(BD71828_INT_TEMP_CHIP_OVER_VF_DET,
-+			     "bd71828-temp-hi"),
-+	DEFINE_RES_IRQ_NAMED(BD71828_INT_TEMP_CHIP_OVER_VF_RES,
-+			     "bd71828-temp-norm"),
-+	DEFINE_RES_IRQ_NAMED(BD71828_INT_TEMP_CHIP_OVER_125_DET,
-+			     "bd71828-temp-125-over"),
-+	DEFINE_RES_IRQ_NAMED(BD71828_INT_TEMP_CHIP_OVER_125_RES,
-+			     "bd71828-temp-125-under"),
-+};
-+
-+static struct mfd_cell bd71828_mfd_cells[] = {
- 	{ .name = "bd71828-pmic", },
- 	{ .name = "bd71828-gpio", },
- 	{ .name = "bd71828-led", .of_compatible = "rohm,bd71828-leds" },
-@@ -118,8 +141,11 @@ static const struct mfd_cell bd71828_mfd_cells[] = {
- 	 * BD70528 clock gate are the register address and mask.
- 	 */
- 	{ .name = "bd71828-clk", },
--	{ .name = "bd71827-power", },
- 	{
-+		.name = "bd71828-power",
-+		.resources = bd71828_power_irqs,
-+		.num_resources = ARRAY_SIZE(bd71828_power_irqs),
-+	}, {
- 		.name = "bd71828-rtc",
- 		.resources = bd71828_rtc_irqs,
- 		.num_resources = ARRAY_SIZE(bd71828_rtc_irqs),
-diff --git a/include/linux/mfd/rohm-bd71828.h b/include/linux/mfd/rohm-bd71828.h
-index ce786c96404a3..73a71ef691525 100644
---- a/include/linux/mfd/rohm-bd71828.h
-+++ b/include/linux/mfd/rohm-bd71828.h
-@@ -189,6 +189,69 @@ enum {
- /* Charger/Battey */
- #define BD71828_REG_CHG_STATE		0x65
- #define BD71828_REG_CHG_FULL		0xd2
-+#define BD71828_REG_CHG_EN		0x6F
-+#define BD71828_REG_DCIN_STAT		0x68
-+#define BD71828_MASK_DCIN_DET		0x01
-+#define BD71828_REG_VDCIN_U		0x9c
-+#define BD71828_MASK_CHG_EN		0x01
-+#define BD71828_CHG_MASK_DCIN_U		0x0f
-+#define BD71828_REG_BAT_STAT		0x67
-+#define BD71828_REG_BAT_TEMP		0x6c
-+#define BD71828_MASK_BAT_TEMP		0x07
-+#define BD71828_BAT_TEMP_OPEN		0x07
-+#define BD71828_MASK_BAT_DET		0x20
-+#define BD71828_MASK_BAT_DET_DONE	0x10
-+#define BD71828_REG_CHG_STATE		0x65
-+#define BD71828_REG_VBAT_U		0x8c
-+#define BD71828_MASK_VBAT_U		0x0f
-+#define BD71828_REG_VBAT_REX_AVG_U	0x92
-+
-+#define BD71828_REG_OCV_PWRON_U		0x8A
-+
-+#define BD71828_REG_VBAT_MIN_AVG_U	0x8e
-+#define BD71828_REG_VBAT_MIN_AVG_L	0x8f
-+
-+#define BD71828_REG_CC_CNT3		0xb5
-+#define BD71828_REG_CC_CNT2		0xb6
-+#define BD71828_REG_CC_CNT1		0xb7
-+#define BD71828_REG_CC_CNT0		0xb8
-+#define BD71828_REG_CC_CURCD_AVG_U	0xb2
-+#define BD71828_MASK_CC_CURCD_AVG_U	0x3f
-+#define BD71828_MASK_CC_CUR_DIR		0x80
-+#define BD71828_REG_VM_BTMP_U		0xa1
-+#define BD71828_REG_VM_BTMP_L		0xa2
-+#define BD71828_MASK_VM_BTMP_U		0x0f
-+#define BD71828_REG_COULOMB_CTRL	0xc4
-+#define BD71828_REG_COULOMB_CTRL2	0xd2
-+#define BD71828_MASK_REX_CC_CLR		0x01
-+#define BD71828_MASK_FULL_CC_CLR	0x10
-+#define BD71828_REG_CC_CNT_FULL3	0xbd
-+#define BD71828_REG_CC_CNT_CHG3		0xc1
-+
-+#define BD71828_REG_VBAT_INITIAL1_U	0x86
-+#define BD71828_REG_VBAT_INITIAL1_L	0x87
-+
-+#define BD71828_REG_VBAT_INITIAL2_U	0x88
-+#define BD71828_REG_VBAT_INITIAL2_L	0x89
-+
-+#define BD71828_REG_IBAT_U		0xb0
-+#define BD71828_REG_IBAT_L		0xb1
-+
-+#define BD71828_REG_IBAT_AVG_U		0xb2
-+#define BD71828_REG_IBAT_AVG_L		0xb3
-+
-+#define BD71828_REG_VSYS_AVG_U		0x96
-+#define BD71828_REG_VSYS_AVG_L		0x97
-+#define BD71828_REG_VSYS_MIN_AVG_U	0x98
-+#define BD71828_REG_VSYS_MIN_AVG_L	0x99
-+#define BD71828_REG_CHG_SET1		0x75
-+#define BD71828_REG_ALM_VBAT_LIMIT_U	0xaa
-+#define BD71828_REG_BATCAP_MON_LIMIT_U	0xcc
-+#define BD71828_REG_CONF		0x64
-+
-+#define BD71828_REG_DCIN_CLPS		0x71
-+
-+#define BD71828_REG_MEAS_CLEAR		0xaf
- 
- /* LEDs */
- #define BD71828_REG_LED_CTRL		0x4A
+Well, if there's something like
 
--- 
-2.47.3
+struct device *pm_runtime_resume_and_get_dev(struct device *dev)
+{
+        int ret =3D pm_runtime_resume_and_get(dev);
+        if (ret < 0)
+                return ERR_PTR(ret);
 
+        return dev;
+}
+
+It would be a matter of redefining the FREE to also take error
+pointers into account and you could do
+
+struct device *__dev __free(pm_runtim_put) =3D pm_runtime_resume_and_get_de=
+v(dev);
+if (IS_ERR(__dev))
+        return PTR_ERR(__dev);
