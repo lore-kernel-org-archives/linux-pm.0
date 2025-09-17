@@ -1,35 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5CF7285069;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5D5B286D62;
 	Wed, 17 Sep 2025 23:03:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758150220; cv=none; b=fpmdMbMmx6bqGX2PDBmrD/tfHLA21lSnD5IMuJtaaVkP3of90bg//p51stZ7hHS4kQJNq4Vk82KoATQH41ojHGO+eFlqB8L6RDVmx5rO+5MnPWEb6zWl0W2BHw1cQRzSPin6qpZIyKkh6l9vFzveQhPW+XaPXwoMdlahe81a6Xw=
+	t=1758150220; cv=none; b=i1qyZ1Q4xGDt1gdSazgsdW82J4XobmFCwJm6hWYhEyMGB8/di7cctxX/uA5v3CdpA3M96hrsJQRN6XNOkJejdrjsDf9EL6dmQKXD7sxC+MjHGnMs7qkVkdkWX5KGZaixFIdhTbtA8m/jtpFICt7UbLmuzCSsIuhONOcb25d8ZdU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1758150220; c=relaxed/simple;
-	bh=A4erDhLOSZwZWdu1NH8YutKuxYifPHzwmdYZj77gSr8=;
+	bh=9CtECTK0SVX0Fkdz1HxUIBD2ZUopRnHEfxtXI//qLEE=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=NDg6iuF5s/893JBN8EDbTRUOvmc/EjeaEzEv5fn2t/w2uINKmoJ1apazgGgMYeFHP3uscuqe66H7P0gvybYO986XuXKTNGYzfRjsup1ccuSdpkKhkBMQJJTKOovgzcieolBtZlr7c35VinfcctSKhNbASG56DBPTvQk1cRvhq+Q=
+	 MIME-Version:Content-Type; b=OL5unzy4YTMd92n7snSibY90Lpod2gLOyx9zpgISuyTarpSxNTADhJ4nzUBNZQAzxtrK+PYYjTBV0Mvl7qMUSmgEdez5qdRO3OOzL/IFrSX5sNfNv9XkZ/eY+0kFhr/hO7pAOloLtYvB0iuoldBDA5UofFjWpUn0bW0WjMVuICs=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D16EC4CEE7;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 306F6C4CEF9;
 	Wed, 17 Sep 2025 23:03:40 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 53E5718067D; Thu, 18 Sep 2025 01:03:38 +0200 (CEST)
+	id 65042180680; Thu, 18 Sep 2025 01:03:38 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
 To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- =?utf-8?q?Pali_Roh=C3=A1r?= <pali@kernel.org>, 
- "Andrew F. Davis" <afd@ti.com>, Svyatoslav Ryhel <clamor95@gmail.com>
+ Conor Dooley <conor+dt@kernel.org>, Svyatoslav Ryhel <clamor95@gmail.com>
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
  linux-kernel@vger.kernel.org
-In-Reply-To: <20250909143432.121323-2-clamor95@gmail.com>
-References: <20250909143432.121323-1-clamor95@gmail.com>
- <20250909143432.121323-2-clamor95@gmail.com>
-Subject: Re: [PATCH v1 1/1] dt-bindings: power: supply: bq27xxx: document
- optional interrupt
-Message-Id: <175815021832.129824.10659610018751144713.b4-ty@collabora.com>
+In-Reply-To: <20250912065146.28059-1-clamor95@gmail.com>
+References: <20250912065146.28059-1-clamor95@gmail.com>
+Subject: Re: [PATCH v1 0/1] dt-bindings: power: supply: bq24190: document
+ charge enable pin
+Message-Id: <175815021840.129824.12179531235914960284.b4-ty@collabora.com>
 Date: Thu, 18 Sep 2025 01:03:38 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -42,17 +39,22 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.2
 
 
-On Tue, 09 Sep 2025 17:34:32 +0300, Svyatoslav Ryhel wrote:
-> Document an optional interrupt found in some controllers of BQ27xxx
-> series. The pin to which the interrupt is connected is called SOC_INT or
-> GPOUT.
+On Fri, 12 Sep 2025 09:51:45 +0300, Svyatoslav Ryhel wrote:
+> Document active low Charge Enable pin. Battery charging is enabled when
+> REG01[5:4] = 01 and CE pin = Low. CE pin must be pulled high or low.
 > 
+> Svyatoslav Ryhel (1):
+>   dt-bindings: power: supply: bq24190: document charge enable pin
 > 
+> Documentation/devicetree/bindings/power/supply/bq24190.yaml | 6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> [...]
 
 Applied, thanks!
 
-[1/1] dt-bindings: power: supply: bq27xxx: document optional interrupt
-      commit: b4f7a727c29cd1fa6149a81f16408ee7c1f7de0c
+[1/1] dt-bindings: power: supply: bq24190: document charge enable pin
+      commit: c3a45c5fde95d319125812f629c579cc63c69941
 
 Best regards,
 -- 
