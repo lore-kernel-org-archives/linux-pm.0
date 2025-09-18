@@ -1,39 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 46FF32D594D;
-	Thu, 18 Sep 2025 21:10:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4736D2E0905;
+	Thu, 18 Sep 2025 21:19:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758229859; cv=none; b=bpmtY0j2sHwTT4/2lifuZHPhil8T13HFjXVg/M97RFIzvZpVEbqz+3319fsg9gNXraSh/ITVvuu7Nw67KyQ+FQXW3tfpw1aQaGc6pUjD8UCLSP/5qn+hhRMpsMDXov5lSkxSRHn9h1qWFKWlKhjwRsS6E5rufP2de4spXHYtdp0=
+	t=1758230364; cv=none; b=IvZGwLkvqlJ+PS5BpvVDYdHUOrS0Op2EnGPHW3nSxsU0kTJAmxvRR9NUtBMzdMUVBmtD+pDD/2X+Dv2ubO1kEeW7+RSqjR8rFVzDZsG6chIEbELQ3ciBUfkgYcN9/ZiyfyHZy7Ik8GyXTnUsg4qfh1ZbqlGB4jGlQ9yQnF3dlt4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758229859; c=relaxed/simple;
-	bh=tUpl+Aflsi7oOnWRgUhIJJTohUNGrnx1/nd3kTMjtSw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=S6PN7o5eOb9LCjlxzctXnE0aNTev38HHcm2lOyCeeDpHgJtSrIwuosz79B7/mSpUVfF2fkCkMxmZRdfagFYJ5/Tfwzt5gujk/MqEndd+tYdq6Hv8xgVke8QngU6un2WSV3ihTdVEj6EHgRLTmNMEwaimi7hXvbI84mOfzPmpv1o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OzU8NAzO; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1758230364; c=relaxed/simple;
+	bh=iTkv4/jd5yTn1fHHuhHFJZgChsiArWlObzMiZKolph8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ufmv7w+qmE6/vAsVCNdOgN1283gmzsgpi5aSerGaXgsJdRroppU5jdV7XdQ8vQ/UmgV6kRIbOjdq3AB9dGKAopfJeMtVXgUz9YGSmRl0nE6E7PLCDOoRwbvWFzILaTUDa+BPq1turd+tmg08wnWGaITSGHYD2DkPDWLWY8A+b3o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jEpdzMxg; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OzU8NAzO"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3F7B3C4CEF0;
-	Thu, 18 Sep 2025 21:10:56 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jEpdzMxg"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DFFECC4CEE7;
+	Thu, 18 Sep 2025 21:19:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1758229858;
-	bh=tUpl+Aflsi7oOnWRgUhIJJTohUNGrnx1/nd3kTMjtSw=;
+	s=k20201202; t=1758230363;
+	bh=iTkv4/jd5yTn1fHHuhHFJZgChsiArWlObzMiZKolph8=;
 	h=From:To:Cc:Subject:Date:From;
-	b=OzU8NAzOzy5wvDuipYo4thmodtRan5i2uOtKbTwV9kTZfU+9WlR+nLWiEicAIyGai
-	 yu45ebToE7ynhdpt4gSBm86MXMmNNEEjruI1OcScKDibqQl9iNR9GbQn22A2XrKPnQ
-	 du89HLhKQA9VuQyoka6aW5iry/Vhd6pUZ+BrOJMexbZ4VL86w8R+unAWGfpDoD1ZF5
-	 WlHBzxArfVfiQZlF2r9RmMqNBgCgmlHIwNeD/1anbu1iWoZ+E1YdE5UqMhFqmcsFxy
-	 KWiqP61fPTXSQl5evYo9rARJed1cRkCq+tRHds9Rz89FGgeSvS/vXYhL7MgSwAYA7I
-	 lGU8/5llCLyKg==
+	b=jEpdzMxgjcpf2Ds7XVlFkbFyRu83CKD+Bo5MdQiQIh1FE84EgJ3+JjpFGmxoLb3BJ
+	 QFkqqSVVZbimerKNTXQd6bo30FtYUyLFRuHoNyuO5NyIluhkBu/3ZAoPpttkFOMrTw
+	 S5IuVK86nhPezZc0km0xQKfK3tR6pH/DeYnlBi2Q61b9NhTixG2OcXhnx218x8qKrc
+	 pokmC9WDjhOWcaR0beBmtyQPznLn6maPaGLtAQPxAINkvPXo8V/v5+6Lxwj52AWKLL
+	 8+fy1JtousTenOntUmx0jublh0Utljoit+46p1aemZ7KQKyTfFF5LIFI3Ud3QNLUpe
+	 iHSrMyLEWqhrA==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: Huisong Li <lihuisong@huawei.com>, LKML <linux-kernel@vger.kernel.org>,
- Linux PM <linux-pm@vger.kernel.org>,
- Mario Limonciello <mario.limonciello@amd.com>,
- "Shenoy, Gautham Ranjal" <gautham.shenoy@amd.com>
-Subject: [PATCH v1 0/2] ACPI: processor: idle: Fix and cleanup
-Date: Thu, 18 Sep 2025 23:07:18 +0200
-Message-ID: <5926523.DvuYhMxLoT@rafael.j.wysocki>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject:
+ [PATCH v1] cpuidle: Fail cpuidle device registration if there is one already
+Date: Thu, 18 Sep 2025 23:19:20 +0200
+Message-ID: <3374815.aeNJFYEL58@rafael.j.wysocki>
 Organization: Linux Kernel Development
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -44,15 +43,49 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
 
-Hi All,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-One of the recent changes forgot to update a cpuidle driver check in the
-ACPI processor driver, so fix this (first patch).
+Refuse to register a cpuidle device if the given CPU has a cpuidle
+device already and print a message regarding it.
 
-In addition, redefine two functions whose return values are ignored as
-void (second patch).
+Without this, an attempt to register a new cpuidle device without
+unregistering the existing one leads to the removal of the existing
+cpuidle device without removing its sysfs interface.
 
-Thanks!
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpuidle/cpuidle.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -635,11 +635,17 @@ static void __cpuidle_device_init(struct
+ static int __cpuidle_register_device(struct cpuidle_device *dev)
+ {
+ 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
++	unsigned int cpu = dev->cpu;
+ 	int i, ret;
+ 
+ 	if (!try_module_get(drv->owner))
+ 		return -EINVAL;
+ 
++	if (per_cpu(cpuidle_devices, cpu)) {
++		pr_info("CPU%d: cpuidle device already registered\n", cpu);
++		return -EEXIST;
++	}
++
+ 	for (i = 0; i < drv->state_count; i++) {
+ 		if (drv->states[i].flags & CPUIDLE_FLAG_UNUSABLE)
+ 			dev->states_usage[i].disable |= CPUIDLE_STATE_DISABLED_BY_DRIVER;
+@@ -648,7 +654,7 @@ static int __cpuidle_register_device(str
+ 			dev->states_usage[i].disable |= CPUIDLE_STATE_DISABLED_BY_USER;
+ 	}
+ 
+-	per_cpu(cpuidle_devices, dev->cpu) = dev;
++	per_cpu(cpuidle_devices, cpu) = dev;
+ 	list_add(&dev->device_list, &cpuidle_detected_devices);
+ 
+ 	ret = cpuidle_coupled_register_device(dev);
 
 
 
