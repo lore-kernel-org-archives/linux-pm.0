@@ -1,45 +1,40 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E90322D594D;
-	Thu, 18 Sep 2025 21:10:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 46FF32D594D;
+	Thu, 18 Sep 2025 21:10:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758229856; cv=none; b=tTEpALf/ZU9esPDqjM5IpnzhjNA2tLT+QjhMQxQduQVkfS5C6/hn4i3zNrzMfmYWRkN749Qlmh4RSYop1ChbW/aT2tEJ3otDFWP6cqnB/78UxtD27wUYXpL6fO3nuTA72vTqGqj/U1RXJZ4bVSlTFgIOp5qZwTOucXKA6ExGyoc=
+	t=1758229859; cv=none; b=bpmtY0j2sHwTT4/2lifuZHPhil8T13HFjXVg/M97RFIzvZpVEbqz+3319fsg9gNXraSh/ITVvuu7Nw67KyQ+FQXW3tfpw1aQaGc6pUjD8UCLSP/5qn+hhRMpsMDXov5lSkxSRHn9h1qWFKWlKhjwRsS6E5rufP2de4spXHYtdp0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758229856; c=relaxed/simple;
-	bh=GTU39OVki/AXOb5+gpAep3ky1ReqWJfjSGGsMzkKEt0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=glQHFiw+kaA+R0BAMDLYNMwE1xawMXO8kAS1LeVD4vi8mjG8OIA9UAhm5T77SGrLfGkmR2L9X7WuWatmJ0KRRwANiuNAq53VAiUKgd7Neq4KMvZBL/w8kp013W7O8nlKtlhnE4GkULquayvTS5dxd7yDHUGcDaoXKPuJlbGO6is=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lallFBBP; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1758229859; c=relaxed/simple;
+	bh=tUpl+Aflsi7oOnWRgUhIJJTohUNGrnx1/nd3kTMjtSw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=S6PN7o5eOb9LCjlxzctXnE0aNTev38HHcm2lOyCeeDpHgJtSrIwuosz79B7/mSpUVfF2fkCkMxmZRdfagFYJ5/Tfwzt5gujk/MqEndd+tYdq6Hv8xgVke8QngU6un2WSV3ihTdVEj6EHgRLTmNMEwaimi7hXvbI84mOfzPmpv1o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OzU8NAzO; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lallFBBP"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1B0FC4CEE7;
-	Thu, 18 Sep 2025 21:10:52 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OzU8NAzO"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3F7B3C4CEF0;
+	Thu, 18 Sep 2025 21:10:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1758229854;
-	bh=GTU39OVki/AXOb5+gpAep3ky1ReqWJfjSGGsMzkKEt0=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=lallFBBPAjBv+IgXeDmK8xmeq2JTMVQdw4GaJ6Intk+3jX+WJSReW/BOdSwr4feAq
-	 Ag3GTgNXA6reTew+O10yNsdaKxfgC1ityw33jPbFezoRdzlKOgRwFG/t7sFrEJD36j
-	 KQ8rTOhk+4oAtUQxuPdsOqyCiy4YxX3UWDHHk5ckfnmDUoVgWPHFSY2u2lEQ56S1cd
-	 pHye5FXhyYjZhNT++H3Mn9vz4NpmHRXvb0p9Gfr+97L19JXuTX/pJ63JeHHOnXcs99
-	 xvmldGvVKzaCFPurUbfo9BPVuuufEE6S7THLXH2wsbf4bNclobVMUktueThchCs9v+
-	 yoy1MQnbLYAuw==
+	s=k20201202; t=1758229858;
+	bh=tUpl+Aflsi7oOnWRgUhIJJTohUNGrnx1/nd3kTMjtSw=;
+	h=From:To:Cc:Subject:Date:From;
+	b=OzU8NAzOzy5wvDuipYo4thmodtRan5i2uOtKbTwV9kTZfU+9WlR+nLWiEicAIyGai
+	 yu45ebToE7ynhdpt4gSBm86MXMmNNEEjruI1OcScKDibqQl9iNR9GbQn22A2XrKPnQ
+	 du89HLhKQA9VuQyoka6aW5iry/Vhd6pUZ+BrOJMexbZ4VL86w8R+unAWGfpDoD1ZF5
+	 WlHBzxArfVfiQZlF2r9RmMqNBgCgmlHIwNeD/1anbu1iWoZ+E1YdE5UqMhFqmcsFxy
+	 KWiqP61fPTXSQl5evYo9rARJed1cRkCq+tRHds9Rz89FGgeSvS/vXYhL7MgSwAYA7I
+	 lGU8/5llCLyKg==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux ACPI <linux-acpi@vger.kernel.org>
 Cc: Huisong Li <lihuisong@huawei.com>, LKML <linux-kernel@vger.kernel.org>,
  Linux PM <linux-pm@vger.kernel.org>,
  Mario Limonciello <mario.limonciello@amd.com>,
  "Shenoy, Gautham Ranjal" <gautham.shenoy@amd.com>
-Subject:
- [PATCH v1 1/2] ACPI: processor: Update cpuidle driver check in
- __acpi_processor_start()
-Date: Thu, 18 Sep 2025 23:09:17 +0200
-Message-ID: <5044465.31r3eYUQgx@rafael.j.wysocki>
+Subject: [PATCH v1 0/2] ACPI: processor: idle: Fix and cleanup
+Date: Thu, 18 Sep 2025 23:07:18 +0200
+Message-ID: <5926523.DvuYhMxLoT@rafael.j.wysocki>
 Organization: Linux Kernel Development
-In-Reply-To: <5926523.DvuYhMxLoT@rafael.j.wysocki>
-References: <5926523.DvuYhMxLoT@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -49,38 +44,15 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi All,
 
-Commit 7a8c994cbb2d ("ACPI: processor: idle: Optimize ACPI idle
-driver registration") moved the ACPI idle driver registration to
-acpi_processor_driver_init() and acpi_processor_power_init() does
-not register an idle driver any more, so the cpuidle driver check
-in __acpi_processor_start() needs to be updated to avoid calling
-acpi_processor_power_init() without a cpuidle driver (in which
-case the registration of the cpuidle device in that function
-would fail anyway).
+One of the recent changes forgot to update a cpuidle driver check in the
+ACPI processor driver, so fix this (first patch).
 
-Fixes: 7a8c994cbb2d ("ACPI: processor: idle: Optimize ACPI idle driver registration")
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+In addition, redefine two functions whose return values are ignored as
+void (second patch).
 
-Commit 7a8c994cbb2d is only in linux-next at this point.
-
----
- drivers/acpi/processor_driver.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/drivers/acpi/processor_driver.c
-+++ b/drivers/acpi/processor_driver.c
-@@ -166,7 +166,7 @@ static int __acpi_processor_start(struct
- 	if (result && !IS_ENABLED(CONFIG_ACPI_CPU_FREQ_PSS))
- 		dev_dbg(&device->dev, "CPPC data invalid or not present\n");
- 
--	if (!cpuidle_get_driver() || cpuidle_get_driver() == &acpi_idle_driver)
-+	if (cpuidle_get_driver() == &acpi_idle_driver)
- 		acpi_processor_power_init(pr);
- 
- 	acpi_pss_perf_init(pr);
+Thanks!
 
 
 
