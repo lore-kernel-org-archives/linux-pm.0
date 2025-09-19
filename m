@@ -1,142 +1,110 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CC49321445
-	for <linux-pm@vger.kernel.org>; Fri, 19 Sep 2025 16:32:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 977BB2512F1
+	for <linux-pm@vger.kernel.org>; Fri, 19 Sep 2025 16:37:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758299533; cv=none; b=m1RwcyEXRmQWOhWYcufD4ta39CAUKzA7HpGLf7FaQQBL7HoBTTyyVNiHcESXcEZhwzeazJuBQYPoBF9WXGq5lqNgnxuwJcoI/MjUYsIdmaRJP4N57rDhcOu+QpM7in+82VaLiTj3rATAMbUShM8Q6pu/CaPHU6Pu+jzQvH2jWbc=
+	t=1758299848; cv=none; b=ZqyhxYBFSJ9G5XdA6qkIFgEcNBRGMDGCCMEtCGFDlcHwq7ErBlUTL42z8bv2vI56binsVxzGl/KjJwFvd57nPzB9VNIzDFqGd2jFMYz8pdugQjSmfnaeesksjKZQSLyWAYJNss8nxildrWIiJMLlmNCRg4NK5t9whBWEWgZ5AFY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758299533; c=relaxed/simple;
-	bh=X4UMxA5PcHA5deWHb6V/zlMJzzYS71/Dlxr9mJ6VDG4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VF9Qx3JtAc/O5lcuI38uz9OQj2i+JoG/WkzUEjVA47H7b3X9e5t9LdO0fUkA5GjTASA9TLg58vYSHFTA9uNHSCnBNDjtA5BJHtgz878luKJWjQ/qRS7AAAV16OUSBST7lcjpGaPwPm0YBz7GbYkMMHZwVkqQ45sukz2cW0rUdNQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=C9f+WkJb; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Y90j7YCD; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=jqvXoi6f; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=JcgiSYiq; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1758299848; c=relaxed/simple;
+	bh=9uoHymsF5pX68JAjo3GeIAUB5sUaex0VrFvZfKwQZ2o=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Yi3Z1PdmsEVKTzmXPpv0MzMK6u5MoHiLDE5KpYmZrkT40s0zrSO5hLMYQW7I1YSy+r8xe93oJfk9qRvRiQbDsYyi33krhCG10zPTLMycV7LmwbMs/JsttyCJnqMHGcn6hcMulCPBhoaUyhyOCvzJmbtrhMiWYd8l2Gzx5tP2FCU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=v3+qTFoG; arc=none smtp.client-ip=209.85.221.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="C9f+WkJb";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Y90j7YCD";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="jqvXoi6f";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="JcgiSYiq"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id B3E1E2120F;
-	Fri, 19 Sep 2025 16:32:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1758299523; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=DGJ7Uqfb/EM/zLCvs2Uxp04+tMxwcKGLIRpShwvq/Dg=;
-	b=C9f+WkJbkOTZfQR49xLwPbnQjPW5OphUtM+yiNhoTFXGDfP5pN+kNGVXAgwshWkiCn8D+2
-	nJErlmBwrMGC4MyGEaxnzpQJ2yRruwc+CAI1XyfUubs9RuLR85TLhGnR8cdEBTYce788ez
-	Og6g74Nsk2Va7cF8jfYUFI3vpRy7l8U=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1758299523;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=DGJ7Uqfb/EM/zLCvs2Uxp04+tMxwcKGLIRpShwvq/Dg=;
-	b=Y90j7YCDmMVcCNmXCi4GiE16t0ptzm8d6hrmMW6v5w3E46VWH/lbxN1Ff99N1dIhU4wATP
-	ELvAXIejpxbqJwCg==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1758299522; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=DGJ7Uqfb/EM/zLCvs2Uxp04+tMxwcKGLIRpShwvq/Dg=;
-	b=jqvXoi6fIjIe8+pKHJHkfPUeNwazsSGJpMiYvsI7EhvStNAZZQhsc8p+lyYkDDQUCw9Gan
-	+rx0h27pHwfYykXaKATc7mUyguH/M8SMsl2AoDYDiF76LJvnUsa4g6xH8a8JzAGcE12fRR
-	gTWnaf3Xfj9u+8ngGznNnPNF7eTBeko=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1758299522;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=DGJ7Uqfb/EM/zLCvs2Uxp04+tMxwcKGLIRpShwvq/Dg=;
-	b=JcgiSYiq5fStJABFo8FPDFez/maRJpASKpk+oLlsRL2VgEspQWzIJK9e+xNPJHiqvONQlY
-	yKa42pWbgjswreDQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 7D49413A39;
-	Fri, 19 Sep 2025 16:32:02 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id sLxFHYKFzWg3UwAAD6G6ig
-	(envelope-from <tiwai@suse.de>); Fri, 19 Sep 2025 16:32:02 +0000
-From: Takashi Iwai <tiwai@suse.de>
-To: "Rafael J . Wysocki" <rafael@kernel.org>
-Cc: linux-pm@vger.kernel.org,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	linux-pci@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 0/3] PM: runtime: New class macros for auto-cleanup
-Date: Fri, 19 Sep 2025 18:31:41 +0200
-Message-ID: <20250919163147.4743-1-tiwai@suse.de>
-X-Mailer: git-send-email 2.50.1
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="v3+qTFoG"
+Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-3d118d8fa91so986645f8f.1
+        for <linux-pm@vger.kernel.org>; Fri, 19 Sep 2025 09:37:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1758299845; x=1758904645; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=U/knhkAXouYA6Xl6JtvTXAsRE/iUR0XbPvcQV+3XkA0=;
+        b=v3+qTFoGfh7ct5EmaNPLFc/HXb/1CKkEgnWzEM5nU31v3gzmJyQ14VNkJr8UqFnZuv
+         hs67aI3JXi00LEwCnlIWeKv99VJigwSQr4GAiVhrABZfNyQ1zp/zWTk5k3WqqcEurU9l
+         FHJ08GXmawfr6gpFAdfb/WaqUn6bBdKAgJeCZOYKOWoQ9+w6bzKXEdVRBnljKqIDBTDM
+         Fc67CK/6F7aqoT1HXLkS/hldE7TLpKzWenR9AXNwzknbcTKFS+6Vp2Lc03vl2YZMsIMJ
+         IivUfXhprRiyJR/oXv4Y6BSCGIxmh75JNBrcpS5s+0cf8xsHG5GJZdNsqCrH+mtpw4qh
+         blfA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1758299845; x=1758904645;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=U/knhkAXouYA6Xl6JtvTXAsRE/iUR0XbPvcQV+3XkA0=;
+        b=UG79E5gBJheelkuEbneEa3cnUKh7T/l9E7eBD4YppIDYXLrmDhg+CwuFqLX+WhRENV
+         TMaAPKLsLM8+GGCvCxULAn9VTbNPDuSEt8gbYcaqdOGcL2jMGz3MTXl/ibDjX2A1/6uU
+         7fKjXOqIdftGYmlKHybpFKC31pV75T5mLU/RYFDeyy3p3PU/tEG8sXN0vBnesafcGL9p
+         IOiwVbd78bSyH/17vXh7vQXAInm909PpIL6Rl+I/Jt8Z7WUt89XWoix7OkpATM313kPa
+         qaNU8SIVhTlPj/QUfL29bU5+IXSAVKkdK4/P1PP28+w3jrCQ8uSm7/1vQ/I19qOpX9fS
+         gwhQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVGNN+YGYZ2/5y5U25BKEg5e2G/5nq52i+dqLFHuRezm0xjPC7zrf/CHR3DyIA723OtMa4CCL0Fog==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyVGcdCoxFtiYm11YPSh2brHAqcLvJAearnMqn7JYvemq2AnP5t
+	M4NkznaPel1krpZzfelhgZ9EhtVx9CIHy5pb4Z9N/j8t5I88Ke97sigYsUZzmbz6axY=
+X-Gm-Gg: ASbGncvtfgMHYwjT2pjbVTyAe5BBO6CVzz2vHmT9egdaT624irKssihI8bgJjPQifvq
+	CYB+kuE51SWMzoLIgaMLsE/IVEoPPnSBaRE5ZMYzHcShcAekzU1E1s5gInjXSy58nwa6lkyjKmq
+	0bZD5ga1sFx3QJcZo5Ds+bxD30hJzjJ99KMvM4iygru+vWE+f4UGS5Aa+vj1z0Q1u0xGhNxet6k
+	csco/YkJa8+FM9GEy/DEJsE8xYtj4Sb38T618My57BKEdhn9RVTRdob5CKdE3IJdMiBYF9Cibd+
+	ab1stXQW+93rCrTstwASV9ggi1rTvApIxMBxJEq6pliPCuVsUEv77+OdEQ9iz4De/zG8tt/VpR1
+	lkCizfqYaypTP5Iutxkh3Fz/6k2+JBQeOUPEhsoVbb+lYywF/VSJTyOhC87borS4QsgJdwy1QIf
+	sTMg==
+X-Google-Smtp-Source: AGHT+IFLCUqUgGD2nd4xyiWXNaIfWMF8JqHjk07IMJDtnkFYT6wdV7TebvWGMsqzX6eS0i+DvItVtA==
+X-Received: by 2002:a05:6000:1ac8:b0:3ec:db87:ff53 with SMTP id ffacd0b85a97d-3ee16600969mr4237445f8f.12.1758299844844;
+        Fri, 19 Sep 2025 09:37:24 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:8ffd:205a:6719:49c1? ([2a05:6e02:1041:c10:8ffd:205a:6719:49c1])
+        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-3ee0fbc7478sm8450648f8f.38.2025.09.19.09.37.23
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 19 Sep 2025 09:37:24 -0700 (PDT)
+Message-ID: <71ad53ba-7b72-481f-9b62-1b268cbcd912@linaro.org>
+Date: Fri, 19 Sep 2025 18:37:23 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v9 0/4] thermal: renesas: Add support for RZ/G3E
+To: John Madieu <john.madieu.xa@bp.renesas.com>, conor+dt@kernel.org,
+ geert+renesas@glider.be, krzk+dt@kernel.org, lukasz.luba@arm.com,
+ magnus.damm@gmail.com, mturquette@baylibre.com, robh@kernel.org,
+ rui.zhang@intel.com, sboyd@kernel.org, will@kernel.org
+Cc: biju.das.jz@bp.renesas.com, catalin.marinas@arm.com,
+ devicetree@vger.kernel.org, john.madieu@gmail.com,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+ p.zabel@pengutronix.de, rafael@kernel.org
+References: <20250917170202.197929-1-john.madieu.xa@bp.renesas.com>
+Content-Language: en-US
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <20250917170202.197929-1-john.madieu.xa@bp.renesas.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Spam-Level: 
-X-Spamd-Result: default: False [-2.80 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	MID_CONTAINS_FROM(1.00)[];
-	R_MISSING_CHARSET(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-0.999];
-	MIME_GOOD(-0.10)[text/plain];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	TO_DN_SOME(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:mid];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RCPT_COUNT_FIVE(0.00)[5];
-	RCVD_TLS_ALL(0.00)[]
-X-Spam-Flag: NO
-X-Spam-Score: -2.80
 
-Hi,
-
-this is a patch series to introduce the new class macros for easier
-usage of PM runtime auto-cleanup features.
-
-There is only one existing user of __free(pm_runtime_put) in PCI core,
-and this is converted with CLASS() macro, too.
-Then the pm_runtime_put __free definition is dropped.
-
-The first patch was from Rafael (as found in the thread below), and I
-left no sign-off as I expect he'll get and sign later again.
+On 17/09/2025 19:01, John Madieu wrote:
+> This series adds support for the temperature sensor unit (TSU) found on the
+> Renesas RZ/G3E SoC.
+> 
+> The initial syscon patch [1] the series depends on has already been accepted.
+> 
+> Changes:
+> 
+> v9:
+>   * Remove driver-specific read/write indirection and use readl/writel
+>   * Use devm_mutex_init()
+>   * Switch to syscon_regmap_lookup_by_phandle_args()
 
 
-Link: https://lore.kernel.org/878qimv24u.wl-tiwai@suse.de
+Any more comments on the patches ?
 
-thanks,
-
-Takashi
-
-===
-
-Rafael J. Wysocki (1):
-  PM: runtime: Define class helpers for automatic PM runtime cleanup
-
-Takashi Iwai (2):
-  PCI: Use PM runtime class macro for the auto cleanup
-  PM: runtime: Drop unused pm_runtime_free __free() definition
-
- drivers/pci/pci-sysfs.c    |  5 +++--
- include/linux/pm_runtime.h | 45 ++++++++++++++++++++++++++++++++++++--
- 2 files changed, 46 insertions(+), 4 deletions(-)
 
 -- 
-2.50.1
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
