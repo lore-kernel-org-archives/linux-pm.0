@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45D9D22F755;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9D6526529A;
 	Fri, 19 Sep 2025 03:19:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758251940; cv=none; b=NNY0gt+A762ZWDlws+QWxHbY8/wJfZpkGOM6KbQf62yRD4A0iTORrFdI94Gay4mmia9EMXcvCVi4MWMRKOLOnl2h/xeAxcPZQXOy9+G38rjdyNOhOJ8iizC9gbMAxVe/I7K0u1o7aM68sAMgfVeK65ewj6WUw7+hohBMijb6FDU=
+	t=1758251940; cv=none; b=Kq/YCjC8tOsMcjGz46g1I7xPnAhiyhDBnkhAKft83LCJmprnua487CnrhRz/42dsxNP4jroX3fT/+IXw5/wtFqc6u+aVra08Oxb+bZVsGrW4iuq2Zg6uNAyCiIrPKdsWu7Zd6wvsTlfAZYekfF/NT/HJQRjwLz61fWuD6FAIaB0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1758251940; c=relaxed/simple;
-	bh=4y7Qat4TBsdLXPPTnpkcAV5ZsirjHTUE90pFEsVfYQU=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=p3o2+ZlmtYdsZx+//iO2wNMQZx6QWK9IBC58E/Zcp4iKTmB45l2sf88uKe1xht7Nxdy6l3zagxfMKBYbe2Ilbksf4krxbPh/08Xgenmfy5gGOSzg5J/G8FUvN8BzLDyea9/OthDZngbFMnlxirBSRSfQ4gvSwkAGAc4mfk6DfQs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LpZrw5N2; arc=none smtp.client-ip=10.30.226.201
+	bh=ggPk5dpFrY5d2ktYSzXrZSvVa0LXccEQketSd+fFRQo=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=IeIxCYg5jj0gbzqcozyAnrIClo5+1JM9DCEMb8RnJmOnv56saNAb7dg01UfdbROLKsLYUrQmPmzes/skeB4d8fN3/3YvA9XYK6+PYBJK1KdiosHrL6u9dMsgjacOZE3EAc5GMGrrppFK3J9S3WrWB8rjNyb6EYMOMlzbKL37OHk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ILDIsli4; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LpZrw5N2"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id D3949C4CEE7;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ILDIsli4"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id F3418C4CEEB;
 	Fri, 19 Sep 2025 03:18:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1758251939;
-	bh=4y7Qat4TBsdLXPPTnpkcAV5ZsirjHTUE90pFEsVfYQU=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=LpZrw5N2NMcaS44qvfLLKQGVNdtu1PGChzYuCBlRTn0ORcb4kyqdbnIMebNtS0moo
-	 Kojltwj3zp7LSyPJC+JUmg2E7zhfLr/rw+AH0bEE7tVgDJptTpwjnad4wSuklYoC1n
-	 4pIJ8rfYx0k3lZcgHftma3eXgO+smZadYT6h14lgClKLgcBIQXh2VYzA4awXsTOHjL
-	 YOJoffmWrIqudTBLjUmFBEN5dL9XY65QP6jRxHNmCMMwBOZptqt2W9l8wzS1GMEPph
-	 rT6oO9R/PxzgnHY6A6n2EDYCAybHNbwq3VaaUMPkoa3ihmJrSH/GFTjOlS+pOGTLRj
-	 akfYDoaJA5Q+w==
+	s=k20201202; t=1758251940;
+	bh=ggPk5dpFrY5d2ktYSzXrZSvVa0LXccEQketSd+fFRQo=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=ILDIsli4+KUscphy54iXEx04Nis5Q+lxBqWeu2hdMUXHej/8A0GN3QLyAke8fWvlb
+	 go6kMXMqsfGg0AvsdwHswXcDmuduGdWmOyjlUKcpPMK6qqv8MdH2SScrt50sNw3s0W
+	 /oo69yD8SwRb3usaorm+ur+zDKhvEX+2VitztkxT7BjHAYTUdArvP/Wwwlm/Tf0pwn
+	 hYW4GpRN5SDakfnBSXyVU5xJEUiAbm1YezaWaR3XMIH31H84A4eFZPSwueLC8VDKDk
+	 MlNGWMxjjvo6krgEfs4Mp4KRfWVU6BGdzxdSTNQr/VfqyMLRVgvGEzaVpA0JrXVAQ7
+	 8JmYFMCpgxa7g==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1DB7CAC5A5;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFEE5CAC5A8;
 	Fri, 19 Sep 2025 03:18:59 +0000 (UTC)
 From: Fenglin Wu via B4 Relay <devnull+fenglin.wu.oss.qualcomm.com@kernel.org>
-Subject: [PATCH v6 0/2] power: supply: Add several features support in
- qcom-battmgr driver
-Date: Fri, 19 Sep 2025 11:18:49 +0800
-Message-Id: <20250919-qcom_battmgr_update_new-v6-0-ed5c38867614@oss.qualcomm.com>
+Date: Fri, 19 Sep 2025 11:18:51 +0800
+Subject: [PATCH v6 2/2] power: supply: qcom_battmgr: handle charging state
+ change notifications
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,10 +41,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAJnLzGgC/x3MOQqAMBBA0avI1AaMG+pVREKWUacwahIXEO9us
- HzF/w94dIQeuuQBhyd5Wm1EnSagZ2knZGSiIc/yKmt5w3a9LkLJEJbJiWMzMqCweDEz8koVJS8
- b1BDrzeFI93/uh/f9ANHoCARpAAAA
-X-Change-ID: 20250918-qcom_battmgr_update_new-df15b34148ec
+Message-Id: <20250919-qcom_battmgr_update_new-v6-2-ed5c38867614@oss.qualcomm.com>
+References: <20250919-qcom_battmgr_update_new-v6-0-ed5c38867614@oss.qualcomm.com>
+In-Reply-To: <20250919-qcom_battmgr_update_new-v6-0-ed5c38867614@oss.qualcomm.com>
 To: kernel@oss.qualcomm.com, Bjorn Andersson <andersson@kernel.org>, 
  Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -56,14 +55,13 @@ Cc: Subbaraman Narayanamurthy <subbaraman.narayanamurthy@oss.qualcomm.com>,
  linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
  linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
  Fenglin Wu <fenglin.wu@oss.qualcomm.com>, 
- Neil Armstrong <neil.armstrong@linaro.org>, 
  Sebastian Reichel <sebastian.reichel@collabora.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1758251938; l=2035;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1758251938; l=2311;
  i=fenglin.wu@oss.qualcomm.com; s=20240327; h=from:subject:message-id;
- bh=4y7Qat4TBsdLXPPTnpkcAV5ZsirjHTUE90pFEsVfYQU=;
- b=WOa6mruhpl/a5xoK0bbi5B7WSOB8GVBHub+Ew2/i4Jf2teFL57OaUJls5SUrt/sj6vZ22ME4i
- 4tAFtj1DwqmCEl+u+Ezmk4KQ20wxFled2523tPSQhmWmd0ghBIRhRGI
+ bh=qjtOHMPRwa1lClP72psxdJHsxXcpoXRVZvAtkWmKRnw=;
+ b=uSCs45ufv9KjscLuuIBQVIsz9B6oD0bnb8skr2MyeHUxpvyB+mjw6PZYJ+JJWPdSprJZdl09D
+ L04pPpex0mCCrwVOWPbHq3B/2uNiPafD2rlsa9m2V1LjFpVdasPGKdn
 X-Developer-Key: i=fenglin.wu@oss.qualcomm.com; a=ed25519;
  pk=BF8SA4IVDk8/EBCwlBehKtn2hp6kipuuAuDAHh9s+K4=
 X-Endpoint-Received: by B4 Relay for fenglin.wu@oss.qualcomm.com/20240327
@@ -71,48 +69,65 @@ X-Endpoint-Received: by B4 Relay for fenglin.wu@oss.qualcomm.com/20240327
 X-Original-From: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
 Reply-To: fenglin.wu@oss.qualcomm.com
 
-This continues the effort of updating changes which haven't been accepted
-in patch v5. Including:
-  1. Add nvmem cells for x1-crd device to enable reading back charger
-     control threshold.
-  2. Add handling for notification 0x83 to avoid unexpected error messages.
+From: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
 
-Rebase the changes on linux-power-supply.git@for-next
+The X1E80100 battery management firmware sends a notification with
+code 0x83 when the battery charging state changes, such as switching
+between fast charge, taper charge, end of charge, or any other error
+charging states.
 
+The same notification code is used with bit[8] set when charging stops
+because the charge control end threshold is reached. Additionally,
+a 2-bit value is included in bit[10:9] with the same code to indicate
+the charging source capability, which is determined by the calculated
+power from voltage and current readings from PDOs: 2 means a strong
+charger over 60W, 1 indicates a weak charger, and 0 means there is no
+charging source.
+
+These 3-MSB [10:8] in the notification code is not much useful for now,
+hence just ignore them and trigger a power supply change event whenever
+0x83 notification code is received. This helps to eliminate the unknown
+notification error messages.
+
+Reported-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Closes: https://lore.kernel.org/all/r65idyc4of5obo6untebw4iqfj2zteiggnnzabrqtlcinvtddx@xc4aig5abesu/
 Signed-off-by: Fenglin Wu <fenglin.wu@oss.qualcomm.com>
 ---
-Changes in v6:
-- Dropped patch[1-7] as they have been accepted and present in linux-power-supply.git@for-next.
-- Formatted the commit text for easy reading, and correct the bit positions for the additional
-  notifications coming along with code 0x83.
-- Added "Reported-by" trailer.
-- Link to v5: https://lore.kernel.org/r/20250917-qcom_battmgr_update-v5-0-270ade9ffe13@oss.qualcomm.com
+ drivers/power/supply/qcom_battmgr.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Changes in v5:
-- Added additional explanation for "state_of_health" in ABI document as Sebastian suggested.
-- Removed "Tested-by" trailers in the patches unrelated to charge control feature.
-- Updated the copyright statement in qcom_battmgr.c according to the latest guidelines.
-- In [PATCH v4 5/8], add "X1E80100" in the "if" variant checks to ensure
-  the correctness even if only this patch is applied.
-- Format the entries for "nvmem-cells" DT properties.
-- Add a new change at last to fix the error messages for unsupported notifications
-- Link to v4: https://lore.kernel.org/r/20250915-qcom_battmgr_update-v4-0-6f6464a41afe@oss.qualcomm.com
+diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
+index 0fe14a109b70fcc15575730573a7a16d1d843613..3c2837ef3461730369b52a4edb096795a531926a 100644
+--- a/drivers/power/supply/qcom_battmgr.c
++++ b/drivers/power/supply/qcom_battmgr.c
+@@ -34,8 +34,9 @@ enum qcom_battmgr_variant {
+ #define NOTIF_BAT_PROPERTY		0x30
+ #define NOTIF_USB_PROPERTY		0x32
+ #define NOTIF_WLS_PROPERTY		0x34
+-#define NOTIF_BAT_INFO			0x81
+ #define NOTIF_BAT_STATUS		0x80
++#define NOTIF_BAT_INFO			0x81
++#define NOTIF_BAT_CHARGING_STATE	0x83
+ 
+ #define BATTMGR_BAT_INFO		0x9
+ 
+@@ -1209,12 +1210,14 @@ static void qcom_battmgr_notification(struct qcom_battmgr *battmgr,
+ 	}
+ 
+ 	notification = le32_to_cpu(msg->notification);
++	notification &= 0xff;
+ 	switch (notification) {
+ 	case NOTIF_BAT_INFO:
+ 		battmgr->info.valid = false;
+ 		fallthrough;
+ 	case NOTIF_BAT_STATUS:
+ 	case NOTIF_BAT_PROPERTY:
++	case NOTIF_BAT_CHARGING_STATE:
+ 		power_supply_changed(battmgr->bat_psy);
+ 		break;
+ 	case NOTIF_USB_PROPERTY:
 
----
-Fenglin Wu (2):
-      arm64: dts: qcom: x1e80100-crd: Add charge limit nvmem
-      power: supply: qcom_battmgr: handle charging state change notifications
-
- arch/arm64/boot/dts/qcom/x1-crd.dtsi         |  7 +++++++
- arch/arm64/boot/dts/qcom/x1e80100-pmics.dtsi | 20 ++++++++++++++++++++
- drivers/power/supply/qcom_battmgr.c          |  5 ++++-
- 3 files changed, 31 insertions(+), 1 deletion(-)
----
-base-commit: cc3e883a06251ba835f15672dbe8724f2687971b
-change-id: 20250918-qcom_battmgr_update_new-df15b34148ec
-
-Best regards,
 -- 
-Fenglin Wu <fenglin.wu@oss.qualcomm.com>
+2.34.1
 
 
