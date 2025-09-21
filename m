@@ -1,164 +1,189 @@
-Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B1C923AB9C;
-	Sat, 20 Sep 2025 18:43:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758393822; cv=pass; b=oXi3TDThrjO03ORoP1ePn/ICm7nUlySEXi6wI0WLbDCHv3CmDd1+55od62V3Bnjd5EcIxflr3QnWgQH88aADP/20dqMj9TYOTN+LBf/E2oBoMAWvQSfrs7Fw/ycpWoE5UCVAxHSjqAJiSNhk5fLs55h827cyPYT6987k0zrA2lM=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758393822; c=relaxed/simple;
-	bh=R5HRn2PgReoUKMx1eBc0jNxUugrZtBDmynmUJ5SSmPw=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=L1A+YFg2WqDNEwXRONETQI9Si59ec9OWe2btxMQ9Z8iz1EWDxJ5g7uLx/tj7bOOya6un3K+cu3ZZGGZOuypG0kscPvrrgTfcTG9hn7/MYkrA/+lTn6OPbGUkGgUlQtn+/JoeDol0NuUgn8I//FsozGEuehDDKlDRbZ2AR/Ys6L8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b=iC6oMZYR; arc=pass smtp.client-ip=136.143.188.112
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7DBE288AD;
+	Sun, 21 Sep 2025 03:19:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.97.179.56
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1758424800; cv=none; b=Iaw0K/2an0zLUaB3yvzpRSPyaLGmVVNHHcSEUWyfWZfobx0c+ydbMOw44faK4X+IrTpmI0DVDH03NdbDEm4D1gvWE3BB8hIvWlUiSoqKsIqnBsN/Yjd5INFcqVfETQr+nVdjNq4k5Yvr7np9+Gwio2R4LuxJQYE997nRlRWFHMs=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1758424800; c=relaxed/simple;
+	bh=IkKkOUgrYfrfI++CgQqK55HiHx+dTXxKBbBjq3m8pos=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=r8Wdriu6r525zDY8FxbJosKg7rBrrq6l/s0zbte3q1AyZ2WyZkMz7z255O+lRg5KMB9OZ6/g7cLWX03OvXlmanISDRngyD4fiEQ0ZX6i+AygIBSyhPZzQJvGRjQemT9kuZ6gMGLHjvT3jmZAVExrRtOVFbWkcAM2VfRVKUFHKEc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com; spf=pass smtp.mailfrom=igalia.com; dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b=JE1ZQmqj; arc=none smtp.client-ip=213.97.179.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=igalia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b="iC6oMZYR"
-ARC-Seal: i=1; a=rsa-sha256; t=1758393802; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=cEgYZDLzfRP3m0D9gSl5NMlItx9GewrgEUTZAiHK3nGSyIXs4DaNdHMHzfnKYiIACio1d4WeTBfmRlAWFVRdcfpggn2YdGsPmz1NJY9Vw0PQFLfGOw5lQ3b+8OhhzOtMu5tMEgfrYAlC33/OyhuUlYY6DN4FhcDLXQxEgY5hKlU=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1758393802; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=R5HRn2PgReoUKMx1eBc0jNxUugrZtBDmynmUJ5SSmPw=; 
-	b=DqxVBuq2QpZPyjeW57aAHrzuN/LZRdAqTtRxX2/7pWM9Jt872YpvI4tdTyUKnVMpmZOQcq8mM7oROAo/QcwJro9USQgCZH/3+ISIsouhddS8kGOTlnXkDxBtBZxoCuszdUsNqQlNR6aQ5DbWbF8FZEwThWEFNdCa6hR8Kxou4xs=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=daniel.almeida@collabora.com;
-	dmarc=pass header.from=<daniel.almeida@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1758393802;
-	s=zohomail; d=collabora.com; i=daniel.almeida@collabora.com;
-	h=Content-Type:Mime-Version:Subject:Subject:From:From:In-Reply-To:Date:Date:Cc:Cc:Content-Transfer-Encoding:Message-Id:Message-Id:References:To:To:Reply-To;
-	bh=R5HRn2PgReoUKMx1eBc0jNxUugrZtBDmynmUJ5SSmPw=;
-	b=iC6oMZYRwJzyxocUOTGpkz0W+HXvdWA/p+MCy8s4jLrgF/+jujT7eZb5sndiChgw
-	xzLdjOImTgm74cJIoy6Mip+/rXXKSL1nSEi+dWRHMfO+Ub3UwpbxXxtuMT4omCRgK3R
-	VdatzvX+GUurkMZ4u6vXlFq6VXMKjGTBv+beyh9U=
-Received: by mx.zohomail.com with SMTPS id 1758393800802877.2320752719693;
-	Sat, 20 Sep 2025 11:43:20 -0700 (PDT)
-Content-Type: text/plain;
-	charset=utf-8
+	dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b="JE1ZQmqj"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
+	s=20170329; h=Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=hq2n3geOz0i2CrRjSxWSg7ODeRVBE1QluJAJcN3K3OY=; b=JE1ZQmqjwI63A4G+byybHHFtaQ
+	jrv6lYCMuFVW9IDlvbjwLsvPWqpps96hHFurW507tMQpKz30XQIMTwuMPZz/9HpV9TB/58/YtTnPM
+	m0baaprpafolbVIMhLZS2+NW5OdJtV1J11GMzKFBS1370MvgwSEjzkqp87+Q7mzPnUz8EeQUn11rx
+	HPmLIDZUiXLlO8p14W9yt0WOLuJRfFU0g3SuEVfNpVbUB3FKKxMKXoP00bI/2RjH+TOwdcBQrNSS3
+	fDZ+uXRCGFSc8RL2Jf035QftNoow2mQ2X8Dmxp0lN5zTJCNCrJrNinRIq6bsnBHFLoBCi8St2izBP
+	nX+cJzZA==;
+Received: from [58.29.143.236] (helo=localhost)
+	by fanzine2.igalia.com with utf8esmtpsa 
+	(Cipher TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim)
+	id 1v0Ac2-00Ecfh-7q; Sun, 21 Sep 2025 05:19:43 +0200
+From: Changwoo Min <changwoo@igalia.com>
+To: lukasz.luba@arm.com,
+	rafael@kernel.org,
+	len.brown@intel.com,
+	pavel@kernel.org
+Cc: christian.loehle@arm.com,
+	tj@kernel.org,
+	kernel-dev@igalia.com,
+	linux-pm@vger.kernel.org,
+	sched-ext@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Changwoo Min <changwoo@igalia.com>
+Subject: [PATCH RESEND v4 01/10] PM: EM: Assign a unique ID when creating a performance domain
+Date: Sun, 21 Sep 2025 12:19:19 +0900
+Message-ID: <20250921031928.205869-2-changwoo@igalia.com>
+X-Mailer: git-send-email 2.51.0
+In-Reply-To: <20250921031928.205869-1-changwoo@igalia.com>
+References: <20250921031928.205869-1-changwoo@igalia.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3826.700.81\))
-Subject: Re: [PATCH v2 1/2] rust: clk: implement Send and Sync
-From: Daniel Almeida <daniel.almeida@collabora.com>
-In-Reply-To: <CAH5fLgib2a7UK0cYqy1cM6h_OZDMWf+JX+KpXXCJNTZchyfP5A@mail.gmail.com>
-Date: Sat, 20 Sep 2025 20:43:05 +0200
-Cc: Stephen Boyd <sboyd@kernel.org>,
- Boqun Feng <boqun.feng@gmail.com>,
- Michael Turquette <mturquette@baylibre.com>,
- Miguel Ojeda <ojeda@kernel.org>,
- Alex Gaynor <alex.gaynor@gmail.com>,
- Gary Guo <gary@garyguo.net>,
- =?utf-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>,
- Benno Lossin <lossin@kernel.org>,
- Andreas Hindborg <a.hindborg@kernel.org>,
- Trevor Gross <tmgross@umich.edu>,
- Danilo Krummrich <dakr@kernel.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- linux-clk@vger.kernel.org,
- rust-for-linux@vger.kernel.org,
- linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <0EAFA337-2E62-489E-9C22-61A6E1813C8A@collabora.com>
-References: <20250910-clk-type-state-v2-0-1b97c11bb631@collabora.com>
- <20250910-clk-type-state-v2-1-1b97c11bb631@collabora.com>
- <aMG6JVMcMxVuX7De@tardis-2.local>
- <3D936C1B-FBA9-4964-859C-84BB665BBE3B@collabora.com>
- <175834480479.4354.6269916774389395049@lazor>
- <CAH5fLgib2a7UK0cYqy1cM6h_OZDMWf+JX+KpXXCJNTZchyfP5A@mail.gmail.com>
-To: Alice Ryhl <aliceryhl@google.com>
-X-Mailer: Apple Mail (2.3826.700.81)
-X-ZohoMailClient: External
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
+It is necessary to refer to a specific performance domain from a
+userspace. For example, the energy model of a particular performance
+domain is updated.
 
+To this end, assign a unique ID to each performance domain to address it,
+and manage them in a global linked list to look up a specific one by
+matching ID. IDA is used for ID assignment, and the mutex is used to
+protect the global list from concurrent access.
 
-> On 20 Sep 2025, at 19:12, Alice Ryhl <aliceryhl@google.com> wrote:
->=20
-> On Sat, Sep 20, 2025 at 7:06=E2=80=AFAM Stephen Boyd =
-<sboyd@kernel.org> wrote:
->>=20
->> Quoting Daniel Almeida (2025-09-10 11:47:30)
->>> Hi Boqun,
->>>=20
->>>> On 10 Sep 2025, at 14:49, Boqun Feng <boqun.feng@gmail.com> wrote:
->>>>=20
->>>> On Wed, Sep 10, 2025 at 02:28:27PM -0300, Daniel Almeida wrote:
->>>>> From: Alice Ryhl <aliceryhl@google.com>
->>>>>=20
->>>>> These traits are required for drivers to embed the Clk type in =
-their own
->>>>> data structures because driver data structures are usually =
-required to
->>>>> be Send. See e.g. [1] for the kind of workaround that drivers =
-currently
->>>>> need due to lacking this annotation.
->>>>>=20
->>>>> Link: =
-https://lore.kernel.org/rust-for-linux/20250812-tyr-v2-1-9e0f3dc9da95@coll=
-abora.com/ [1]
->>>>> Signed-off-by: Daniel Almeida <daniel.almeida@collabora.com>
->>>>> Signed-off-by: Alice Ryhl <aliceryhl@google.com>
->>>>> Reviewed-by: Danilo Krummrich <dakr@kernel.org>
->>>>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->>>>> Reviewed-by: Daniel Almeida <daniel.almeida@collabora.com>
->>>>=20
->>>> This tag list looks a bit weird to me. Why is there a SoB from you
->>>> before Alice's SoB? At least for the usage I'm familiar with, =
-outside
->>>> the case of Co-developed-bys, multiple SoBs is used for recording =
-how
->>>> the patches are routed. For example, if I have a patch that has my =
-SoB
->>>> and I send it to you, you queue in your tree and then send out to =
-other
->>>> maintainers for merging, in general you would put your SoB after =
-mine in
->>>> that case. But I don't think that's case here? Alice's patch has =
-only
->>>> her SoB:
->>>>=20
->>>> =
-https://lore.kernel.org/rust-for-linux/20250904-clk-send-sync-v1-1-48d0233=
-20eb8@google.com/
->>>>=20
->>>> What's the intention of the SoB tag here?
->>>>=20
->>>> Otherwise the patch looks good to me. If we get the tag list =
-resolved,
->>>> feel free to add:
->>>>=20
->>>> Reviewed-by: Boqun Feng <boqun.feng@gmail.com>
->>>>=20
->>>> Regards,
->>>> Boqun
->>>>=20
->>>=20
->>> You have to include your SOB when submitting patches from others.
->>>=20
->>> This is something I tend to forget often, so I made sure it was =
-there. The
->>> order may be indeed off though.
->>=20
->> Yes the order is wrong. The first SoB should be the commit author.
->=20
-> One optoin is to just land the original patch:
-> =
-https://lore.kernel.org/all/20250904-clk-send-sync-v1-1-48d023320eb8@googl=
-e.com/
->=20
-> Alice
+Note that the mutex (em_pd_list_mutex) is not supposed to hold while
+holding em_pd_mutex to avoid ABBA deadlock.
 
-I guess this makes even more sense. I was hoping to land these two =
-together,
-but clearly this will not be possible for the time being as the second =
-patch
-has no r-b tags.
+Signed-off-by: Changwoo Min <changwoo@igalia.com>
+---
+ include/linux/energy_model.h |  4 ++++
+ kernel/power/energy_model.c  | 33 ++++++++++++++++++++++++++++++++-
+ 2 files changed, 36 insertions(+), 1 deletion(-)
 
-=E2=80=94 Daniel=
+diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
+index 61d50571ad88..43aa6153dc57 100644
+--- a/include/linux/energy_model.h
++++ b/include/linux/energy_model.h
+@@ -54,6 +54,8 @@ struct em_perf_table {
+ /**
+  * struct em_perf_domain - Performance domain
+  * @em_table:		Pointer to the runtime modifiable em_perf_table
++ * @node:		node in	em_pd_list (in energy_model.c)
++ * @id:			A unique ID number for each performance domain
+  * @nr_perf_states:	Number of performance states
+  * @min_perf_state:	Minimum allowed Performance State index
+  * @max_perf_state:	Maximum allowed Performance State index
+@@ -71,6 +73,8 @@ struct em_perf_table {
+  */
+ struct em_perf_domain {
+ 	struct em_perf_table __rcu *em_table;
++	struct list_head node;
++	int id;
+ 	int nr_perf_states;
+ 	int min_perf_state;
+ 	int max_perf_state;
+diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+index 8df55397414a..3fe562b6230e 100644
+--- a/kernel/power/energy_model.c
++++ b/kernel/power/energy_model.c
+@@ -23,6 +23,16 @@
+  */
+ static DEFINE_MUTEX(em_pd_mutex);
+ 
++/*
++ * Manage performance domains with IDs. One can iterate the performance domains
++ * through the list and pick one with their associated ID. The mutex serializes
++ * the list access. When holding em_pd_list_mutex, em_pd_mutex should not be
++ * taken to avoid potential deadlock.
++ */
++static DEFINE_IDA(em_pd_ida);
++static LIST_HEAD(em_pd_list);
++static DEFINE_MUTEX(em_pd_list_mutex);
++
+ static void em_cpufreq_update_efficiencies(struct device *dev,
+ 					   struct em_perf_state *table);
+ static void em_check_capacity_update(void);
+@@ -396,7 +406,7 @@ static int em_create_pd(struct device *dev, int nr_states,
+ 	struct em_perf_table *em_table;
+ 	struct em_perf_domain *pd;
+ 	struct device *cpu_dev;
+-	int cpu, ret, num_cpus;
++	int cpu, ret, num_cpus, id;
+ 
+ 	if (_is_cpu_device(dev)) {
+ 		num_cpus = cpumask_weight(cpus);
+@@ -420,6 +430,13 @@ static int em_create_pd(struct device *dev, int nr_states,
+ 
+ 	pd->nr_perf_states = nr_states;
+ 
++	INIT_LIST_HEAD(&pd->node);
++
++	id = ida_alloc(&em_pd_ida, GFP_KERNEL);
++	if (id < 0)
++		return -ENOMEM;
++	pd->id = id;
++
+ 	em_table = em_table_alloc(pd);
+ 	if (!em_table)
+ 		goto free_pd;
+@@ -444,6 +461,7 @@ static int em_create_pd(struct device *dev, int nr_states,
+ 	kfree(em_table);
+ free_pd:
+ 	kfree(pd);
++	ida_free(&em_pd_ida, id);
+ 	return -EINVAL;
+ }
+ 
+@@ -660,6 +678,13 @@ int em_dev_register_pd_no_update(struct device *dev, unsigned int nr_states,
+ unlock:
+ 	mutex_unlock(&em_pd_mutex);
+ 
++	if (_is_cpu_device(dev))
++		em_check_capacity_update();
++
++	mutex_lock(&em_pd_list_mutex);
++	list_add_tail(&dev->em_pd->node, &em_pd_list);
++	mutex_unlock(&em_pd_list_mutex);
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(em_dev_register_pd_no_update);
+@@ -678,6 +703,10 @@ void em_dev_unregister_perf_domain(struct device *dev)
+ 	if (_is_cpu_device(dev))
+ 		return;
+ 
++	mutex_lock(&em_pd_list_mutex);
++	list_del_init(&dev->em_pd->node);
++	mutex_unlock(&em_pd_list_mutex);
++
+ 	/*
+ 	 * The mutex separates all register/unregister requests and protects
+ 	 * from potential clean-up/setup issues in the debugfs directories.
+@@ -689,6 +718,8 @@ void em_dev_unregister_perf_domain(struct device *dev)
+ 	em_table_free(rcu_dereference_protected(dev->em_pd->em_table,
+ 						lockdep_is_held(&em_pd_mutex)));
+ 
++	ida_free(&em_pd_ida, dev->em_pd->id);
++
+ 	kfree(dev->em_pd);
+ 	dev->em_pd = NULL;
+ 	mutex_unlock(&em_pd_mutex);
+-- 
+2.51.0
+
