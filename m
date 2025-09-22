@@ -1,110 +1,229 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CB503090C5
-	for <linux-pm@vger.kernel.org>; Mon, 22 Sep 2025 12:50:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758545449; cv=none; b=RsVibHWBqB04wrVbeWJ6D1ft2KvAGyOAbMl66fgw/Qof5zE/IIPs0YJbsP6tr+fUeod89+4GYicTZb1vN4vd3cNgJcsA5kMIhSYOMf04guzEFZDbO0xW4sAy0WyaxdoDEW1SUZLuJFbBan9zuQ9JHSzxsiwAJv3CzpwGuzlbrSU=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758545449; c=relaxed/simple;
-	bh=lpopxTfeKK9nwMgyawU+4DnWEanmPTCaJR4h5qNJrG0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ovnHEm97rQr68bDBR1E0K2VIl764PDOJRGmetB74pQOPRQtS2OMzPHAa5h6FmmvGC0uba8cpcQYbJCDz5DF916TATYMvXk2VuotLZjgFoHYl+A+1HbRbKz3bm9CcadzVHTmgWIdxWYs6LPiAi0J79fGbwDkbbYr2qOpp3A/FuCo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Sd7qAck8; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D695434BA52;
+	Mon, 22 Sep 2025 13:00:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1758546029; cv=pass; b=e4WwvcK8oMwSvBeN72e64tDYxMwzH/Vb4zrjpDnMeJkI5d09JoNvch9ZQVGaYeyW+OsBR4YXIbuj6LVB/DJEsi0wpHodXRxLtATpjVseXiInTeFDj8UwqebJW+RanWVxcjDU0kHE3NfaL9+W1wt0i+1jzRYoAWFfS8Qn+Cd15NM=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1758546029; c=relaxed/simple;
+	bh=/2ip+Pe5E5puJpij5Sxc+vGKGB8BsGn8lS9jzPU3ObY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=DwE17angJbyWyam2yyYXj76k/BZ/4A7ZkINSnF4Nk838z0qgLxMxwZIb1mr//S74jbzrlV7zOtPwvfFt44+Z4YiQmRJnAZcf+nFZqY1P+6FOLRTw8smB5KwGTcGRMqDE3RApNbji4Zjbw2W2YYti7FpneqPrLA5P7B9JgriIIXw=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=SNh4iW/H; arc=pass smtp.client-ip=136.143.188.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Sd7qAck8"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 138B1C19422
-	for <linux-pm@vger.kernel.org>; Mon, 22 Sep 2025 12:50:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1758545449;
-	bh=lpopxTfeKK9nwMgyawU+4DnWEanmPTCaJR4h5qNJrG0=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=Sd7qAck8CXhmJEWpm1UFWeW/QCf9aY7RJ2+bXZY0RLQlGy4H6GjZchPlDMv+JvfqK
-	 sMFqN4dxahup142Z5OxbhapprbP6Tr3RdElJWjtsdjmwRXqdOptkR1UIjTSdDUtKxs
-	 6L6XpnAg76RgrMaAaZC1m5J5nWj6uEKDR9lta6ozYoG4t+Aeq1gTixjLPinRbioaBs
-	 UeIJTy2sLmyi3WhFdbmhdNgZYeHDdBPeFdKwKQcF3yq7IUCw77fA64XskMH6FhnjC5
-	 AdREgb8M2MFGP8y9F/ZNPhg6X93alunCM5nhrJ3yvpIRRg6K30V+a2lO+LtoEaIytM
-	 +LsxmlRoO+cwA==
-Received: by mail-oo1-f43.google.com with SMTP id 006d021491bc7-6236479c8d6so1837225eaf.3
-        for <linux-pm@vger.kernel.org>; Mon, 22 Sep 2025 05:50:49 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCXUJO4/pmBol1DKvKmRlrMlEHemPxrUwrm9OnFVnLx3tpN00RbEPXtG9QgpyMZchRtdWwSkzmOpdA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwMw8lRlFMS+ESDfKvd0m4/IpAvjqhZeSMc4SMbP3ywUZvBSH/R
-	DTkAyMA+blEwPSi5ZDCrTHN0bQ935n96DW25txyW++ModjCgP1WB62H3Z+GWX/SY1ltAN418LRy
-	ps1cohJFlcSrrvsbEJjlF2tugnW7ZAGk=
-X-Google-Smtp-Source: AGHT+IEaNSq0P2/zvgvVh0csdNsGuoVrCyDwcZf4ZEpxG3y4MENventscB+mJeJRuFcIXn/S/FNG4bPduBbpJyth4i0=
-X-Received: by 2002:a05:6808:4703:b0:439:af72:a13b with SMTP id
- 5614622812f47-43d6c0faba9mr6286864b6e.6.1758545448291; Mon, 22 Sep 2025
- 05:50:48 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="SNh4iW/H"
+ARC-Seal: i=1; a=rsa-sha256; t=1758545993; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=KXpsdfL0sLIEN6+ch4OPZF52ykGK/xd00kPCHOkG5Xlu8G1l9PuD8jlo98l/LK6vHA5/wZWezrGDBvHucrgPgoFZYN3uqpFmNUDfVwYPe6HjadufpYsFK6kU1+AYmqBjoGP2B4sSVB4Ccz2x8EPdJYThLbswqjHEWF+DQ9WJeLs=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1758545993; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=wAZGo74S2/BuMJzm9w/GphhXaDBG31Y3GtBvN2ub5vc=; 
+	b=Wujcwi5wk5ySWMkqq6JlwPpWHVpABorutQHdIRLY7OlPV9JQUQ5eY/QqFbV9oXyuPu/F5Rsuly/tX3f4FFKiiIhkSYEmERY9+WMw2FUbdSBy7hh3m1lDaZO/0vyS7C4GIjMChXERansH97pbxCQQMlUHP+2re8nbHZKl0ZcezY4=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
+	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1758545993;
+	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
+	h=From:From:To:To:Cc:Cc:Subject:Subject:Date:Date:Message-ID:In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:Content-Type:Message-Id:Reply-To;
+	bh=wAZGo74S2/BuMJzm9w/GphhXaDBG31Y3GtBvN2ub5vc=;
+	b=SNh4iW/HOcYjfz3V8ezrXt3Q2QL/Xw1vXwlLJ2bipi8+wTsUczNONCv/oBROfy1g
+	8DlhSadMqjFNmUgrwkUx5CM9AwTAsQjFuqZp8wT5clHOD7A+rAIaEflzgcaYOOA23mf
+	Stjg/mYFZWCQy8Z/G4n3Bj+ORsjgdlsKTo/WmY0o=
+Received: by mx.zohomail.com with SMTPS id 1758545990297867.0298207925075;
+	Mon, 22 Sep 2025 05:59:50 -0700 (PDT)
+From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+To: Jassi Brar <jassisinghbrar@gmail.com>
+Cc: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+ Boris Brezillon <boris.brezillon@collabora.com>,
+ Steven Price <steven.price@arm.com>, Liviu Dudau <liviu.dudau@arm.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ MyungJoo Ham <myungjoo.ham@samsung.com>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ Chanwoo Choi <cw00.choi@samsung.com>, Kees Cook <kees@kernel.org>,
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>, Chia-I Wu <olvaffe@gmail.com>,
+ Chen-Yu Tsai <wenst@chromium.org>, kernel@collabora.com,
+ dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
+ linux-hardening@vger.kernel.org
+Subject: Re: [PATCH v3 05/10] mailbox: add MediaTek GPUEB IPI mailbox
+Date: Mon, 22 Sep 2025 14:59:43 +0200
+Message-ID: <1933660.tdWV9SEqCh@workhorse>
+In-Reply-To:
+ <CABb+yY0_TZC0Dd3Rue=6Am4=Urs8hdkaa6RE=42t58SYUsLV0w@mail.gmail.com>
+References:
+ <20250917-mt8196-gpufreq-v3-0-c4ede4b4399e@collabora.com>
+ <20250917-mt8196-gpufreq-v3-5-c4ede4b4399e@collabora.com>
+ <CABb+yY0_TZC0Dd3Rue=6Am4=Urs8hdkaa6RE=42t58SYUsLV0w@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <6204724.lOV4Wx5bFT@rafael.j.wysocki> <3388279.44csPzL39Z@rafael.j.wysocki>
- <875xdaevab.wl-tiwai@suse.de>
-In-Reply-To: <875xdaevab.wl-tiwai@suse.de>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 22 Sep 2025 14:50:32 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hSBDg4fD7Gy6yEX31xO-3USJG_jFps71BRJJ2f0Oh90A@mail.gmail.com>
-X-Gm-Features: AS18NWCHbvmsov39JF3MuuKFmqx2CC8_RanaumRHVJhrorL1QgMM11HwPKkNNYg
-Message-ID: <CAJZ5v0hSBDg4fD7Gy6yEX31xO-3USJG_jFps71BRJJ2f0Oh90A@mail.gmail.com>
-Subject: Re: [PATCH v2 1/3] PM: runtime: Add auto-cleanup macros for "resume
- and get" operations
-To: Takashi Iwai <tiwai@suse.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
-	LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, 
-	Alex Williamson <alex.williamson@redhat.com>, Bjorn Helgaas <helgaas@kernel.org>, 
-	Zhang Qilong <zhangqilong3@huawei.com>, Ulf Hansson <ulf.hansson@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
 
-On Mon, Sep 22, 2025 at 10:38=E2=80=AFAM Takashi Iwai <tiwai@suse.de> wrote=
-:
->
-> On Sat, 20 Sep 2025 12:54:58 +0200,
-> Rafael J. Wysocki wrote:
-> >
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > It is generally useful to be able to automatically drop a device's
-> > runtime PM usage counter incremented by runtime PM operations that
-> > resume a device and bump up its usage counter [1].
-> >
-> > To that end, add DEFINE_CLASS() macros allowing pm_runtime_put()
-> > and pm_runtime_put_autosuspend() to be used for the auto-cleanup in
-> > those cases.
-> >
-> > Simply put, a piece of code like below:
-> >
-> >       pm_runtime_get_sync(dev);
-> >       .....
-> >       pm_runtime_put(dev);
-> >       return 0;
-> >
-> > can be transformed with CLASS() like:
-> >
-> >       CLASS(pm_runtime_get_active, pm)(dev);
-> >       if (IS_ERR(pm))
-> >               return PTR_ERR(pm);
-> >       .....
-> >       return 0;
-> >
-> > (note the new resume error handling).
->
-> Do we still allow the code without the error check even using CLASS()?
-> Although the error check should be handled, it's not mandatory for
-> now.  That said, the above example could be still in a form like:
->
->         CLASS(pm_runtime_get_active, pm)(dev);
->         .....
->         return 0;
->
-> while adding the proper error check is recommended?
+On Sunday, 21 September 2025 07:00:59 Central European Summer Time Jassi Br=
+ar wrote:
+> On Wed, Sep 17, 2025 at 7:23=E2=80=AFAM Nicolas Frattaroli
+> <nicolas.frattaroli@collabora.com> wrote:
+> ....
+>=20
+> > +#define MBOX_CTL_TX_STS                0x0000
+> > +#define MBOX_CTL_IRQ_SET       0x0004
+> > +#define MBOX_CTL_IRQ_CLR       0x0074
+> > +#define MBOX_CTL_RX_STS                0x0078
+> > +
+> 1) Please don't pollute the global namespace. Make these something
+> like MBOX_MTK_GPUEB_xxx. Here and elsewhere.
 
-I'd rather not encourage doing this.
+I tend to disagree. These don't pollute the global namespace, they're
+defined as part of the file, so only pollute its local scope. I'm not
+going to make 25 character long symbols just to work around an issue
+that doesn't exist, but may exist in the unlikely future where
+mailbox.h gets its own symbol named precisely the same way but
+whoever adds it doesn't try to compile test every single mailbox
+driver to make sure they didn't break anything.
 
-While it may still produce working code in some cases, one needs to
-remember that in case of a runtime resume error it will be running
-without a runtime PM reference it has attempted to acquire.
+> 2) You don't write short values, so maybe just 0x04, 0x04 0x74 and 0x78.
+>=20
+>=20
+> > +#define MBOX_FULL              BIT(0) /* i.e. we've received data */
+> > +#define MBOX_CLOGGED           BIT(1) /* i.e. the channel is shutdown =
+*/
+> > +
+> This is confusing. CLOGGED usually means malfunction, but it seems you
+> want to call it STOPPED or UNINIT?
+
+I don't agree that "CLOGGED usually means malfunction". To clog something
+is to impede its flow, which in this case is the correct terminology to
+refer to what's happened to the channel. "UNINIT" is wrong, it's initialised
+properly. "STOPPED" is also wrong, it's not stopped, it still sends, it just
+won't pass it on through.
+
+>=20
+>=20
+> > +#define MBOX_MAX_RX_SIZE       32 /* in bytes */
+> > +
+> > +struct mtk_gpueb_mbox {
+> > +       struct device *dev;
+> > +       struct clk *clk;
+> > +       void __iomem *mbox_mmio;
+> > +       void __iomem *mbox_ctl;
+> > +       struct mbox_controller mbox;
+> > +       struct mtk_gpueb_mbox_chan *ch;
+> > +       int irq;
+> > +       const struct mtk_gpueb_mbox_variant *v;
+> > +};
+> Other structures have kernel-doc, so why not here too?
+> ...
+>
+
+Because fully documenting all internal structures is not required
+for acceptance and writing redundant explanations for members that
+can be understood from name and context is redundant.
+
+> > +
+> > +static int mtk_gpueb_mbox_send_data(struct mbox_chan *chan, void *data)
+> > +{
+> > +       struct mtk_gpueb_mbox_chan *ch =3D chan->con_priv;
+> > +       int i;
+> > +       u32 *values =3D data;
+> > +
+> maybe order in decreasing lengths ?
+>=20
+>=20
+> > +
+> > +       /*
+> > +        * We don't want any fancy nonsense, just write the 32-bit valu=
+es in
+> > +        * order. memcpy_toio/__iowrite32_copy don't work here, because=
+ fancy.
+> > +        */
+> >
+> Please make the comment technical. Currently it just expresses your
+> distaste for fancy :)
+>=20
+
+Then I will have to make an assertive statement about memory semantics
+of those two calls and how they differ from writel, which I don't want
+to do, because it would likely be inaccurate or not the full picture
+as those two calls can do a variety of things depending on the platform.
+
+Saying that I want 32-bit writes in order is much simpler than explaining
+how the two mentioned calls some well-meaning future developer may wish
+to replace this with don't do that.
+
+> > +       for (i =3D 0; i < ch->c->tx_len; i +=3D 4)
+> > +               writel(values[i / 4], ch->ebm->mbox_mmio + ch->c->tx_of=
+fset + i);
+> > +
+>=20
+> ...
+> > +
+> > +static struct mbox_chan *
+> > +mtk_gpueb_mbox_of_xlate(struct mbox_controller *mbox,
+> > +                       const struct of_phandle_args *sp)
+> > +{
+> > +       struct mtk_gpueb_mbox *ebm =3D dev_get_drvdata(mbox->dev);
+> > +
+> > +       if (!sp->args_count)
+> > +               return ERR_PTR(-EINVAL);
+> > +
+> > +       if (sp->args[0] >=3D ebm->v->num_channels)
+> > +               return ERR_PTR(-ECHRNG);
+> > +
+> > +       return &mbox->chans[sp->args[0]];
+> > +}
+> >
+> Just use the default of_mbox_index_xlate()
+>=20
+> ....
+> > +
+> > +       for (i =3D 0; i < ebm->v->num_channels; i++) {
+>=20
+> You make this block a bit cleaner by using a temporary variable
+>         echan =3D &ebm->ch[i];
+> and using echan instead of ebm->ch[i] a dozen times below.
+>=20
+> > +               ebm->ch[i].c =3D &ebm->v->channels[i];
+> > +               if (ebm->ch[i].c->rx_len > MBOX_MAX_RX_SIZE) {
+> > +                       dev_err(ebm->dev, "Channel %s RX size (%d) too =
+large\n",
+> > +                               ebm->ch[i].c->name, ebm->ch[i].c->rx_le=
+n);
+> > +                       return -EINVAL;
+> > +               }
+> > +               ebm->ch[i].full_name =3D devm_kasprintf(ebm->dev, GFP_K=
+ERNEL, "%s:%s",
+> > +                                                     dev_name(ebm->dev=
+), ebm->ch[i].c->name);
+> > +               if (!ebm->ch[i].full_name)
+> > +                       return -ENOMEM;
+> > +
+> > +               ebm->ch[i].ebm =3D ebm;
+> > +               ebm->ch[i].num =3D i;
+> > +               spin_lock_init(&ebm->mbox.chans[i].lock);
+> > +               ebm->mbox.chans[i].con_priv =3D &ebm->ch[i];
+> > +               atomic_set(&ebm->ch[i].rx_status, MBOX_CLOGGED);
+> > +       }
+> > +
+>=20
+>=20
+> -j
+>=20
+
+
+
+
