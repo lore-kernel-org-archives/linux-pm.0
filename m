@@ -1,119 +1,112 @@
-Received: from mail-m16.yeah.net (mail-m16.yeah.net [220.197.32.18])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33CC8288C24;
-	Mon, 22 Sep 2025 13:01:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.32.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 295EC30AAAD;
+	Mon, 22 Sep 2025 13:19:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758546092; cv=none; b=SNUDwuHBcrBw1KKiw9Wn/Pz/wOr//Stv9HcIskmNXbLRkQwFv/+N9QuxfX0OdQhpwd9EBD4DX/UAacyq1gknKNKmM2sx0c5Svlyp4Xkt2ia12X4owa8WF1e9L92zvwsuTeEd4tzBb8MKNhhhP5gKF5frA68f24kyvO7O8m/pN18=
+	t=1758547164; cv=none; b=UX+N9/c9dAmrILGTW1Wjj6edreW/5iSMwZC4yWKsYRRCCfko0FL1ehoyCW3IN2WK5aoYdBLwjt0jfesZfNHbrx3gcWebeWH9TtEFbkmpIQvUZiLqEk3yorq2VEGE9XEWozIYwH/U142eGbXgYIRx8gSXObCOhg5CAdoCkRb5JVQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758546092; c=relaxed/simple;
-	bh=39MXPULtnQpLPowbOXB8BTSaKyc0RVXPG67R7milupw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BSwPjEdSt3Z8M9cUQGPsyXH1XM4OFXQ7Ziya9qIeunHOTZKlGSbnJZY1KjzYkTfuGYhxgdQJnQS/HyhFsZ6vJY9kbwtxNdlea/vTjanR9t8lAk4UZ5qjFVENeswlvbuA3ioQWGLkxiwIJzqshwy/4tqiu47a38jNw0N8bCz07YY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=yeah.net; spf=pass smtp.mailfrom=yeah.net; dkim=pass (1024-bit key) header.d=yeah.net header.i=@yeah.net header.b=M+vrnbNT; arc=none smtp.client-ip=220.197.32.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=yeah.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yeah.net
+	s=arc-20240116; t=1758547164; c=relaxed/simple;
+	bh=/2BPc+qmrsh2DgallaqxgQi03F/iwjA/IqFzKaKywSw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=kpFCnU77Ps/J8wKbRMw/0pwRzgz2/oEuWz0mPJaH3FivLKkRCzxYrYiW8TI6+UI7k4cusSKUrPwXqcH6+Gy4nxgobzSC+60xh5eMbH3yrEBCbAp+Gv+Ob47WgolwYaCjtn4e2y9ZxouPSMHtRKKiB8TZDBfhpFX1XmW9C2XAseg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LG/BtI+1; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=yeah.net header.i=@yeah.net header.b="M+vrnbNT"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yeah.net;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=mP
-	L4dda7cCLCvc6M0sl4DX1CFnt3sTxBX7BsAwf8coI=; b=M+vrnbNTCWg2hXeJCG
-	aH5DfOUOtqxbYNGAv2ot0Bx8jCK1WDaDw00TFTROXnyxLoH+cp9iDEXOiq96Ro+L
-	6W5k5luCg+j3fOytsobUbp4YAQJRH1fUvqHKpuL1pm5rI+wMReeAzlFwU8YchLjy
-	zmpn2PNisWXxkUh/A4F7UZoLo=
-Received: from localhost.localdomain (unknown [])
-	by gzsmtp2 (Coremail) with SMTP id Ms8vCgD3nyRMSNFo42AXBQ--.30063S2;
-	Mon, 22 Sep 2025 20:59:56 +0800 (CST)
-From: Shawn Guo <shawnguo2@yeah.net>
-To: "Rafael J . Wysocki" <rafael@kernel.org>
-Cc: Shawn Guo <shawnguo@kernel.org>,
-	Qais Yousef <qyousef@layalina.io>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH v2] cpufreq: Handle CPUFREQ_ETERNAL with a default transition latency
-Date: Mon, 22 Sep 2025 20:59:21 +0800
-Message-ID: <20250922125929.453444-1-shawnguo2@yeah.net>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LG/BtI+1"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1236AC4CEF0;
+	Mon, 22 Sep 2025 13:19:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1758547162;
+	bh=/2BPc+qmrsh2DgallaqxgQi03F/iwjA/IqFzKaKywSw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=LG/BtI+1o28ZEPga/55ETInxWu6RoXLXJhRGIZVOknyJhj1fvYNbUGyqjdViU14CO
+	 4NIo1Jz6kugezCY7caieIF2+gm0DpIGu0imUPyECzH5W5gjFvs+rKgKtukthw/N8/Q
+	 bx4CYhN1uy747NgWfTZfngQEIkc2GPyBY9J0mZY0HaOASfnHY5clIBprv22ChzIZj3
+	 hKO4LsUXrEUbB0a/IvFsk22pJgFcLigRkGNYe1tlsXWnGf4ePzKGilQsBvmaFTdN2p
+	 pmxKoTFv5oCMqFO4lxCEB6HHmgrRyqKU0WLl9jxgYm47kGQwuADxiJgjSfXq0IuDjP
+	 fPKTXU7AI/kMQ==
+Date: Mon, 22 Sep 2025 15:19:14 +0200
+From: Mark Brown <broonie@kernel.org>
+To: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+Cc: Jassi Brar <jassisinghbrar@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Boris Brezillon <boris.brezillon@collabora.com>,
+	Steven Price <steven.price@arm.com>,
+	Liviu Dudau <liviu.dudau@arm.com>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>, Kees Cook <kees@kernel.org>,
+	"Gustavo A. R. Silva" <gustavoars@kernel.org>,
+	Chia-I Wu <olvaffe@gmail.com>, Chen-Yu Tsai <wenst@chromium.org>,
+	kernel@collabora.com, dri-devel@lists.freedesktop.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
+	linux-hardening@vger.kernel.org
+Subject: Re: [PATCH v3 05/10] mailbox: add MediaTek GPUEB IPI mailbox
+Message-ID: <aNFM0oWk5S38KBRC@finisterre.sirena.org.uk>
+References: <20250917-mt8196-gpufreq-v3-0-c4ede4b4399e@collabora.com>
+ <20250917-mt8196-gpufreq-v3-5-c4ede4b4399e@collabora.com>
+ <CABb+yY0_TZC0Dd3Rue=6Am4=Urs8hdkaa6RE=42t58SYUsLV0w@mail.gmail.com>
+ <1933660.tdWV9SEqCh@workhorse>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:Ms8vCgD3nyRMSNFo42AXBQ--.30063S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxZr15GF13CF1fuF1xtrWUArb_yoW5XF4xpF
-	W5uw42yw4kJayvqwnFka18u34Fqa1DAry2ka4UWwnYvw43A3ZYq3WDKrW5tFZ5Aw4kGa1U
-	ZFyDA39rWF48ArJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jcUUUUUUUU=
-X-CM-SenderInfo: pvkd40hjxrjqh1hdxhhqhw/1tbiEhrQZWjRRUkGtwAAs5
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="hWOioVe/sP5fgiHB"
+Content-Disposition: inline
+In-Reply-To: <1933660.tdWV9SEqCh@workhorse>
+X-Cookie: Filmed before a live audience.
 
-From: Shawn Guo <shawnguo@kernel.org>
 
-A regression is seen with 6.6 -> 6.12 kernel upgrade on platforms where
-cpufreq-dt driver sets cpuinfo.transition_latency as CPUFREQ_ETERNAL (-1),
-due to that platform's DT doesn't provide the optional property
-'clock-latency-ns'.  The dbs sampling_rate was 10000 us on 6.6 and
-suddently becomes 6442450 us (4294967295 / 1000 * 1.5) on 6.12 for these
-platforms, because the default transition delay was dropped by the commits
-below.
+--hWOioVe/sP5fgiHB
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-  commit 37c6dccd6837 ("cpufreq: Remove LATENCY_MULTIPLIER")
-  commit a755d0e2d41b ("cpufreq: Honour transition_latency over transition_delay_us")
-  commit e13aa799c2a6 ("cpufreq: Change default transition delay to 2ms")
+On Mon, Sep 22, 2025 at 02:59:43PM +0200, Nicolas Frattaroli wrote:
+> On Sunday, 21 September 2025 07:00:59 Central European Summer Time Jassi Brar wrote:
 
-It slows down dbs governor's reacting to CPU loading change
-dramatically.  Also, as transition_delay_us is used by schedutil governor
-as rate_limit_us, it shows a negative impact on device idle power
-consumption, because the device gets slightly less time in the lowest OPP.
+> > > +#define MBOX_FULL              BIT(0) /* i.e. we've received data */
+> > > +#define MBOX_CLOGGED           BIT(1) /* i.e. the channel is shutdown */
 
-Fix the regressions by defining a default transition latency for
-handling the case of CPUFREQ_ETERNAL.
+> > This is confusing. CLOGGED usually means malfunction, but it seems you
+> > want to call it STOPPED or UNINIT?
 
-Cc: stable@vger.kernel.org
-Fixes: 37c6dccd6837 ("cpufreq: Remove LATENCY_MULTIPLIER")
-Signed-off-by: Shawn Guo <shawnguo@kernel.org>
----
-Changes for v2:
-- Follow Rafael's suggestion to define a default transition latency for
-  handling CPUFREQ_ETERNAL, and pave the way to get rid of
-  CPUFREQ_ETERNAL completely later.
+> I don't agree that "CLOGGED usually means malfunction". To clog something
+> is to impede its flow, which in this case is the correct terminology to
+> refer to what's happened to the channel. "UNINIT" is wrong, it's initialised
+> properly. "STOPPED" is also wrong, it's not stopped, it still sends, it just
+> won't pass it on through.
 
-v1: https://lkml.org/lkml/2025/9/10/294
+As a native English speaker I'd say that clogged has heavy overtones of
+broken and malfunction, like Jassi says it'd usually describe a fault
+condition.  Something like "blocked" might be more neutral.
 
- drivers/cpufreq/cpufreq.c | 3 +++
- include/linux/cpufreq.h   | 2 ++
- 2 files changed, 5 insertions(+)
+--hWOioVe/sP5fgiHB
+Content-Type: application/pgp-signature; name="signature.asc"
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index fc7eace8b65b..c69d10f0e8ec 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -549,6 +549,9 @@ unsigned int cpufreq_policy_transition_delay_us(struct cpufreq_policy *policy)
- 	if (policy->transition_delay_us)
- 		return policy->transition_delay_us;
- 
-+	if (policy->cpuinfo.transition_latency == CPUFREQ_ETERNAL)
-+		policy->cpuinfo.transition_latency = CPUFREQ_DEFAULT_TANSITION_LATENCY_NS;
-+
- 	latency = policy->cpuinfo.transition_latency / NSEC_PER_USEC;
- 	if (latency)
- 		/* Give a 50% breathing room between updates */
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 95f3807c8c55..935e9a660039 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -36,6 +36,8 @@
- /* Print length for names. Extra 1 space for accommodating '\n' in prints */
- #define CPUFREQ_NAME_PLEN		(CPUFREQ_NAME_LEN + 1)
- 
-+#define CPUFREQ_DEFAULT_TANSITION_LATENCY_NS	NSEC_PER_MSEC
-+
- struct cpufreq_governor;
- 
- enum cpufreq_table_sorting {
--- 
-2.43.0
+-----BEGIN PGP SIGNATURE-----
 
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmjRTMsACgkQJNaLcl1U
+h9BSwgf/UbyytmfMXNaOBq0OXuzH3MlTUpvtouJsg45qiXcqEzcGY0k6+RBIUbc6
+zI4fw9IG0Lv8B4Yrt1hanJqBJ/sKvd/eq065FqSbGMiG9Wyvivn0OGdw9IIP3Wxi
+4TpYVqVul1GtYt3Gp5D4HJbNOaeEZeaOsEUqU0EFD1X5NCviWF7atKprxkvd/e9k
+ZPOQdFVmh48Ln2hsCQ621I8Wemmu+gSVB1aSvD1awF36hp+cCvWz7vSus4z3nX5D
+71oUm+zLms7LtKb9Voz3ReEEmIKjbhG7dUF/xHul+Qg8FQqMxwcBPAyjFzl3g92I
+ZQuum9Wn2rVplW7pwOwJ5YvsRh8BdQ==
+=0rmc
+-----END PGP SIGNATURE-----
+
+--hWOioVe/sP5fgiHB--
