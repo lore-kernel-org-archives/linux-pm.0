@@ -1,234 +1,242 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from l2mail1.panix.com (l2mail1.panix.com [166.84.1.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A96F2877DC
-	for <linux-pm@vger.kernel.org>; Mon, 22 Sep 2025 18:55:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A9DD313525;
+	Mon, 22 Sep 2025 18:58:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=166.84.1.75
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758567357; cv=none; b=OtzK90S2GA/HGJj5cmutppdWOyRTqjBcrSzzykkJt6bbMGF53mQT3qoNoWiD6ZIrXQCyyUdGZHT6J+GzUwOyuYrAjTO6UooOBNDN7bGRhB8XCVP5VZ6dVbYGbgR3gEaCsEKIIvz2RDhba3Yg62gNxVd8go3evPzZDFyXE1gnZGQ=
+	t=1758567483; cv=none; b=biDCk4F6Gt6FFp98yTcVQ4ZHaBEba/ruqIYxmGg1CM8eazvxDHn3rGGInRV+/9hdAOQF6a3wTrL/8+wsJ/htpYgQD1u8nVA+VlL0VgVnUYMsGXZikK9bgbQIbhk8DCgoDXt7PVHFnjawiatTv5IM5CWyGf0sIzI2b3lZqakZFbs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758567357; c=relaxed/simple;
-	bh=rpnKJoDnQ69EXyGOvfTeBYWhyP/tp6zNGqSbpMUrvKg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=atizORLpEc6g5gsbMfnWUhuM2AKy2ZB1T/BeHJApDWzFgXR60UOlBEFTB0E0c+zckPcg1xeA9VOQ6wWjxKGBLnZ2Gk+6CKjpFeqj+0ql8WS1NWxpvp084Xn6ObQ5n1VO7R4UtbagN6zTuM7UBXETiUx0fs7cKhT13qKMb2OR7TA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=d/okeDMI; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1758567483; c=relaxed/simple;
+	bh=gIxHO3bd6VWvXQH4ocpPz5/pzsLIHtRehBIodT6MuV8=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=mt+6cFs/c+n9Zg+64UVjeJOMD2GJBcMg+vUuHD56opYR1DybBPUivSdwNCa1vhxcT+kvaKgw00oNMBrktUOPo8bVv8q2zhYVms5fsoj6pIYin45wrdapK28KlpSari/bk660Ux0qONyWajj8kblumlkBQKwFnDftYtr7BtguQfo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=panix.com; spf=pass smtp.mailfrom=panix.com; dkim=pass (1024-bit key) header.d=panix.com header.i=@panix.com header.b=EB46b3kd; arc=none smtp.client-ip=166.84.1.75
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=panix.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=panix.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="d/okeDMI"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2690FC19421
-	for <linux-pm@vger.kernel.org>; Mon, 22 Sep 2025 18:55:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1758567357;
-	bh=rpnKJoDnQ69EXyGOvfTeBYWhyP/tp6zNGqSbpMUrvKg=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=d/okeDMIkVgGG0vArFIpDH9r3pQZ/zzvpSk6qYKIjz8ge25oja5YdQSaOiiR4jBQ9
-	 Bx6Cwl90Zsq8Et7ss9h70bAtYy2qtxz8Rk1kndWIX7QmoXXH1SstHoUbkgoTkNR3L2
-	 Ioy1Za7FJ2dqtg+Bylhazi3ycV+2dUEpk+RXIfyF3rBHGuLcLn1ebyE5sjwnza/OTT
-	 hvj1NQbJW04L9JQsStG92S+LY3eYTUfsPcJesZ3hp0yFhS2xDn7QijevzPWE4QggmB
-	 qeY6VbOtM2KSsJCBbTLja680GgRgHzQXOe8FSepqG2d+loCkRvS+i5u/gObsd8z6oR
-	 10FNIbcNEx8ng==
-Received: by mail-oo1-f51.google.com with SMTP id 006d021491bc7-61bd4a3f39cso1141220eaf.0
-        for <linux-pm@vger.kernel.org>; Mon, 22 Sep 2025 11:55:57 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCVqjLdJkaJ8edp046hD0UUumOSp56kIPJusWtyL5BGmUx5wkc3PW7P+ngPzn5wxdJ2HIxG7L098gA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzYVS4LpMivl8P8q1x1BRmETAB88FCsnTA5QIC72a1zHeml87WR
-	3Zpu3N5Kz6ltlRCifkS+YsONOA+SIR8wQoOABWaEL7GtbdakFZ9SVDelP6FH+HEQEofWaD9MS1A
-	Bd0Ruw3zKuNPf/haelMs7jJdylvaFBdk=
-X-Google-Smtp-Source: AGHT+IFuqFHAX1fywg4rX28McVqobPBk9c7dx9KK8JP7Mwu8ueN867r8mO/48JVQvtJrzihyGJD313+CTMDHl4ULaVI=
-X-Received: by 2002:a05:6808:d50:b0:439:ae49:9157 with SMTP id
- 5614622812f47-43d6c279229mr6200623b6e.34.1758567356303; Mon, 22 Sep 2025
- 11:55:56 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=panix.com header.i=@panix.com header.b="EB46b3kd"
+Received: from mailbackend.panix.com (mailbackend.panix.com [166.84.1.89])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (1024 bits) server-digest SHA256)
+	(No client certificate requested)
+	by l2mail1.panix.com (Postfix) with ESMTPS id 4cVsLp1kH5zDWX;
+	Mon, 22 Sep 2025 14:38:26 -0400 (EDT)
+Received: from [10.50.4.39] (45-31-46-51.lightspeed.sndgca.sbcglobal.net [45.31.46.51])
+	by mailbackend.panix.com (Postfix) with ESMTPSA id 4cVsLd62b1z4K1J;
+	Mon, 22 Sep 2025 14:38:17 -0400 (EDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=panix.com; s=panix;
+	t=1758566298; bh=gIxHO3bd6VWvXQH4ocpPz5/pzsLIHtRehBIodT6MuV8=;
+	h=Date:Subject:From:To:Cc:References:In-Reply-To;
+	b=EB46b3kdjBxwGcRKe6eDGpvh5blP0ne7Vo1x7yWkGdMYQq4MzQ2XiEHoFu2tEa7If
+	 /ob5jKb1J2Is+52eMcM0LAeiiUEAH1mojr9ajTXSrwviTDYEMsPWLx8IEqlEN66BVe
+	 XE34+7KflLgHEnI6D/RiyBA8WQdmND3WQ0e/Z9pU=
+Message-ID: <1180051f-58a9-4f7e-9acb-4caa527a2ce6@panix.com>
+Date: Mon, 22 Sep 2025 11:38:16 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20250716123323.65441-1-ulf.hansson@linaro.org>
- <20250716123323.65441-2-ulf.hansson@linaro.org> <CAJZ5v0iq7UODJ83fkwnzfFR3HpG2_R-YRnip_cLwyUHZZ+rXyg@mail.gmail.com>
- <7hldnp6apf.fsf@baylibre.com> <CAJZ5v0j=9RXHrcVEBp0yy1Ae4_kC1y-WFQyBf89r3NtoL-tYQw@mail.gmail.com>
- <CAPDyKFpeVF_EHJDQ9u=LDuJ56g7ykYUQWHXV2WXTYLa-mYahVA@mail.gmail.com>
- <CAPDyKFpc-PHC1QhoSrNt9KnaGov749H1AwFZUwnDDzG7RDYBRw@mail.gmail.com>
- <CAJZ5v0hC=sEcC-mU8jArwVN3EA6+U=EmCa2e7TKO0sg6LJiz7g@mail.gmail.com> <CAPDyKFqG=bFSP2rJ3PXt5=6_nLdpJ+ir80krU1DrRCCMhwKQng@mail.gmail.com>
-In-Reply-To: <CAPDyKFqG=bFSP2rJ3PXt5=6_nLdpJ+ir80krU1DrRCCMhwKQng@mail.gmail.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 22 Sep 2025 20:55:44 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hYN5G_WpA6KDpeDgowc2i9AvrUBCq-egS==8RNVb6N=w@mail.gmail.com>
-X-Gm-Features: AS18NWAqpPudgPO9jCOlrdnlFpqqqtPd-tizRtXXuA2HtJo6NEEUaYVfGnJKui8
-Message-ID: <CAJZ5v0hYN5G_WpA6KDpeDgowc2i9AvrUBCq-egS==8RNVb6N=w@mail.gmail.com>
-Subject: Re: [RFC/PATCH 1/3] PM: QoS: Introduce a system-wakeup QoS limit
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Kevin Hilman <khilman@baylibre.com>, linux-pm@vger.kernel.org, 
-	Pavel Machek <pavel@kernel.org>, Len Brown <len.brown@intel.com>, 
-	Daniel Lezcano <daniel.lezcano@linaro.org>, Saravana Kannan <saravanak@google.com>, 
-	Maulik Shah <quic_mkshah@quicinc.com>, Prasad Sodagudi <psodagud@quicinc.com>, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH V3 1/2] PCI/ASPM: Add host-bridge API to override default
+ ASPM/CLKPM link state
+From: Kenneth Crudup <kenny@panix.com>
+To: "David E. Box" <david.e.box@linux.intel.com>, rafael@kernel.org,
+ bhelgaas@google.com, vicamo.yang@canonical.com,
+ ilpo.jarvinen@linux.intel.com, nirmal.patel@linux.intel.com, mani@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Kenneth C <kenny@panix.com>
+References: <20250825203542.3502368-1-david.e.box@linux.intel.com>
+ <603984dc-f29b-498d-9723-1d6aa27bc7fd@panix.com>
+Content-Language: en-US
+In-Reply-To: <603984dc-f29b-498d-9723-1d6aa27bc7fd@panix.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Thu, Sep 18, 2025 at 5:34=E2=80=AFPM Ulf Hansson <ulf.hansson@linaro.org=
-> wrote:
->
-> On Wed, 17 Sept 2025 at 21:24, Rafael J. Wysocki <rafael@kernel.org> wrot=
-e:
-> >
-> > Hi,
-> >
-> > Sorry for the delay.
-> >
-> > On Fri, Sep 12, 2025 at 3:58=E2=80=AFPM Ulf Hansson <ulf.hansson@linaro=
-.org> wrote:
-> > >
-> > > On Tue, 12 Aug 2025 at 11:26, Ulf Hansson <ulf.hansson@linaro.org> wr=
-ote:
-> > > >
-> > > > On Mon, 11 Aug 2025 at 21:16, Rafael J. Wysocki <rafael@kernel.org>=
- wrote:
-> > > > >
-> > > > > On Mon, Aug 11, 2025 at 7:16=E2=80=AFPM Kevin Hilman <khilman@bay=
-libre.com> wrote:
-> > > > > >
-> > > > > > "Rafael J. Wysocki" <rafael@kernel.org> writes:
-> > > > > >
-> > > > > > > On Wed, Jul 16, 2025 at 2:33=E2=80=AFPM Ulf Hansson <ulf.hans=
-son@linaro.org> wrote:
-> > > > > > >>
-> > > > > > >> Some platforms and devices supports multiple low-power-state=
-s than can be
-> > > > > > >> used for system-wide suspend. Today these states are selecte=
-d on per
-> > > > > > >> subsystem basis and in most cases it's the deepest possible =
-state that
-> > > > > > >> becomes selected.
-> > > > > > >>
-> > > > > > >> For some use-cases this is a problem as it isn't suitable or=
- even breaks
-> > > > > > >> the system-wakeup latency constraint, when we decide to ente=
-r these deeper
-> > > > > > >> states during system-wide suspend.
-> > > > > > >>
-> > > > > > >> Therefore, let's introduce an interface for user-space, allo=
-wing us to
-> > > > > > >> specify the system-wakeup QoS limit. Subsequent changes will=
- start taking
-> > > > > > >> into account the QoS limit.
-> > > > > > >
-> > > > > > > Well, this is not really a system-wakeup limit, but a CPU idl=
-e state
-> > > > > > > latency limit for states entered in the last step of suspend-=
-to-idle.
-> > > > > > >
-> > > > > > > It looks like the problem is that the existing CPU latency Qo=
-S is not
-> > > > > > > taken into account by suspend-to-idle, so instead of adding a=
-n
-> > > > > > > entirely new interface to overcome this, would it make sense =
-to add an
-> > > > > > > ioctl() to the existing one that would allow the user of it t=
-o
-> > > > > > > indicate that the given request should also be respected by
-> > > > > > > suspend-to-idle?
-> > > > > > >
-> > > > > > > There are two basic reasons why I think so:
-> > > > > > > (1) The requests that you want to be respected by suspend-to-=
-idle
-> > > > > > > should also be respected by the regular "runtime" idle, or at=
- least I
-> > > > > > > don't see a reason why it wouldn't be the case.
-> > > > > > > (2) The new interface introduced by this patch basically dupl=
-icates
-> > > > > > > the existing one.
-> > > > > >
-> > > > > > I also think that just using the existing /dev/cpu_dma_latency =
-is the
-> > > > > > right approach here, and simply teaching s2idle to respect this=
- value.
-> > > > > >
-> > > > > > I'm curious about the need for a new ioctl() though.  Under wha=
-t
-> > > > > > conditions do you want normal/runtime CPUidle to respect this v=
-alue and
-> > > > > > s2idle to not respect this value?
-> > > > >
-> > > > > In a typical PC environment s2idle is a replacement for ACPI S3 w=
-hich
-> > > > > does not take any QoS constraints into account, so users may want=
- to
-> > > > > set QoS limits for run-time and then suspend with the expectation=
- that
-> > > > > QoS will not affect it.
-> > > >
-> > > > Yes, I agree. To me, these are orthogonal use-cases which could hav=
-e
-> > > > different wakeup latency constraints.
-> > > >
-> > > > Adding an ioctl for /dev/cpu_dma_latency, as suggested by Rafael wo=
-uld
-> > > > allow this to be managed, I think.
-> > > >
-> > > > Although, I am not fully convinced yet that re-using
-> > > > /dev/cpu_dma_latency is the right path. The main reason is that I
-> > > > don't want us to limit the use-case to CPU latencies, but rather al=
-low
-> > > > the QoS constraint to be system-wide for any type of device. For
-> > > > example, it could be used by storage drivers too (like NVMe, UFS,
-> > > > eMMC), as a way to understand what low power state to pick as syste=
-m
-> > > > wide suspend. If you have a closer look at patch2 [1] , I suggest w=
-e
-> > > > extend the genpd-governor for *both* CPU-cluster-PM-domains and for
-> > > > other PM-domains too.
-> > > >
-> > > > Interested to hear your thoughts around this.
-> > >
-> > > Hey, just wanted to see if you have managed to digest this and have
-> > > any possible further comment?
-> >
-> > The reason why I thought about reusing /dev/cpu_dma_latency is because
-> > I think that the s2idle limit should also apply to cpuidle.  Of
-> > course, cpuidle may be limited further, but IMV it should observe the
-> > limit set on system suspend (it would be kind of inconsistent to allow
-> > cpuidle to use deeper idle states than can be used by s2idle).
->
-> Agreed!
->
-> >
-> > I also don't think that having a per-CPU s2idle limit would be
-> > particularly useful (and it might be problematic).
-> >
-> > Now, it is not as straightforward as I thought because someone may
-> > want to set a more restrictive limit on cpuidle, in which case they
-> > would need to open the same special device file twice etc and that
-> > would be quite cumbersome.
-> >
-> > So in the end I think that what you did in the $subject patch is
-> > better, but I still would like it to also affect cpuidle.
->
-> Okay. I will update the patches according to your suggestions!
->
-> >
-> > And it needs to be made clear that this is a limit on the resume
-> > latency of one device.  Worst case, the system wakeup latency may be a
-> > sum of those limits if the devices in question are resumed
-> > sequentially, so in fact this is a limit on the contribution of a
-> > given device to the system wakeup latency.
->
-> Indeed, that's a very good point! I will keep this in mind when
-> working on adding the documentation part.
+Any movement on this?
 
-Well, this also means that using one limit for all of the different
-devices is not likely to be very practical because the goal is to save
-as much energy as reasonably possible in system suspend while
-respecting a global resume latency constraint at the same time.
+Anything keeping it from being in pm-next (at least I haven't seen it in 
+a precursory look for it)?
 
-Using the same limit on a local contribution from each device to the
-combined latency is not likely to be effective here.  Rather, I'd
-expect that the best results can be achieved by setting different
-resume latency limits on different devices, depending on how much
-power they draw in each of their idle states and what the exit latency
-values for all of those states are.  In other words, this appears to
-be an optimization problem in which the resume latency limits for
-individual devices need to be chosen to satisfy the global resume
-latency constraint and minimize the total system power.
+Thanks,
 
-> Again, thanks a lot for your feedback!
+-Kenny
 
-Anytime!
+On 9/4/25 14:11, Kenneth Crudup wrote:
+> 
+> Tested-by: Kenneth R. Crudup <kenny@panix.com>
+> 
+> On 8/25/25 13:35, David E. Box wrote:
+>> Synthetic PCIe hierarchies, such as those created by Intel VMD, are not
+>> enumerated by firmware and do not receive BIOS-provided ASPM or CLKPM
+>> defaults. Devices in such domains may therefore run without the intended
+>> power management.
+>>
+>> Add a host-bridge mechanism that lets controller drivers supply their own
+>> defaults. A new aspm_default_link_state field in struct 
+>> pci_host_bridge is
+>> set via pci_host_set_default_pcie_link_state(). During link 
+>> initialization,
+>> if this field is non-zero, ASPM and CLKPM defaults come from it 
+>> instead of
+>> BIOS.
+>>
+>> This enables drivers like VMD to align link power management with 
+>> platform
+>> expectations and avoids embedding controller-specific quirks in ASPM core
+>> logic.
+>>
+>> Link: https://patchwork.ozlabs.org/project/linux-pci/ 
+>> patch/20250720190140.2639200-1-david.e.box%40linux.intel.com/
+>> Signed-off-by: David E. Box <david.e.box@linux.intel.com>
+>> Tested-by: Manivannan Sadhasivam <mani@kernel.org>
+>> Reviewed-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
+>> ---
+>> Changes in V3:
+>>    -- Changed pci_host_get_default_pcie_link_state() argument name from
+>>       parent to dev.
+>>    -- Applied changelog tags
+>>
+>> Changes in V2:
+>>
+>>    -- Host field name changed to aspm_default_link_state.
+>>    -- Added get/set functions for aspm_default_link_state. Only the
+>>       setter is exported. Added a kernel-doc describing usage and
+>>       particulars around meaning of 0.
+>>
+>> Changes in V1 from RFC:
+>>
+>>    -- Rename field to aspm_dflt_link_state since it stores
+>>       PCIE_LINK_STATE_XXX flags, not a policy enum.
+>>    -- Move the field to struct pci_host_bridge since it's being 
+>> applied to
+>>       the entire host bridge per Mani's suggestion.
+>>    -- During testing noticed that clkpm remained disabled and this was
+>>       also handled by the formerly used pci_enable_link_state(). Add a
+>>       check in pcie_clkpm_cap_init() as well to enable clkpm during init.
+>>
+>>   drivers/pci/pcie/aspm.c | 42 +++++++++++++++++++++++++++++++++++++++--
+>>   include/linux/pci.h     |  9 +++++++++
+>>   2 files changed, 49 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/pci/pcie/aspm.c b/drivers/pci/pcie/aspm.c
+>> index 919a05b97647..851ca3d68e55 100644
+>> --- a/drivers/pci/pcie/aspm.c
+>> +++ b/drivers/pci/pcie/aspm.c
+>> @@ -373,6 +373,39 @@ static void pcie_set_clkpm(struct pcie_link_state 
+>> *link, int enable)
+>>       pcie_set_clkpm_nocheck(link, enable);
+>>   }
+>> +/**
+>> + * pci_host_set_default_pcie_link_state - set controller-provided 
+>> default ASPM/CLKPM mask
+>> + * @host: host bridge on which to apply the defaults
+>> + * @state: PCIE_LINK_STATE_XXX flags
+>> + *
+>> + * Allows a PCIe controller driver to specify the default ASPM and/or
+>> + * Clock Power Management (CLKPM) link state mask that will be used
+>> + * for links under this host bridge during ASPM/CLKPM capability init.
+>> + *
+>> + * The value is consumed in pcie_aspm_cap_init() and 
+>> pcie_clkpm_cap_init()
+>> + * to override the firmware-discovered defaults.
+>> + *
+>> + * Interpretation of aspm_default_link_state:
+>> + *   - Nonzero: bitmask of PCIE_LINK_STATE_* values to be used as 
+>> defaults
+>> + *   - Zero:    no override provided; ASPM/CLKPM defaults fall back to
+>> + *              values discovered in hardware/firmware
+>> + *
+>> + * Note: zero is always treated as "unset", not as "force ASPM/CLKPM 
+>> off".
+>> + */
+>> +void pci_host_set_default_pcie_link_state(struct pci_host_bridge *host,
+>> +                      unsigned int state)
+>> +{
+>> +    host->aspm_default_link_state = state;
+>> +}
+>> +EXPORT_SYMBOL_GPL(pci_host_set_default_pcie_link_state);
+>> +
+>> +static u32 pci_host_get_default_pcie_link_state(struct pci_dev *dev)
+>> +{
+>> +    struct pci_host_bridge *host = pci_find_host_bridge(dev->bus);
+>> +
+>> +    return host ? host->aspm_default_link_state : 0;
+>> +}
+>> +
+>>   static void pcie_clkpm_cap_init(struct pcie_link_state *link, int 
+>> blacklist)
+>>   {
+>>       int capable = 1, enabled = 1;
+>> @@ -394,7 +427,10 @@ static void pcie_clkpm_cap_init(struct 
+>> pcie_link_state *link, int blacklist)
+>>               enabled = 0;
+>>       }
+>>       link->clkpm_enabled = enabled;
+>> -    link->clkpm_default = enabled;
+>> +    if (pci_host_get_default_pcie_link_state(link->pdev) & 
+>> PCIE_LINK_STATE_CLKPM)
+>> +        link->clkpm_default = 1;
+>> +    else
+>> +        link->clkpm_default = enabled;
+>>       link->clkpm_capable = capable;
+>>       link->clkpm_disable = blacklist ? 1 : 0;
+>>   }
+>> @@ -866,7 +902,9 @@ static void pcie_aspm_cap_init(struct 
+>> pcie_link_state *link, int blacklist)
+>>       }
+>>       /* Save default state */
+>> -    link->aspm_default = link->aspm_enabled;
+>> +    link->aspm_default = pci_host_get_default_pcie_link_state(parent);
+>> +    if (!link->aspm_default)
+>> +        link->aspm_default = link->aspm_enabled;
+>>       /* Setup initial capable state. Will be updated later */
+>>       link->aspm_capable = link->aspm_support;
+>> diff --git a/include/linux/pci.h b/include/linux/pci.h
+>> index 59876de13860..8947cbaf9fa6 100644
+>> --- a/include/linux/pci.h
+>> +++ b/include/linux/pci.h
+>> @@ -620,6 +620,10 @@ struct pci_host_bridge {
+>>       unsigned int    size_windows:1;        /* Enable root bus sizing */
+>>       unsigned int    msi_domain:1;        /* Bridge wants MSI domain */
+>> +#ifdef CONFIG_PCIEASPM
+>> +    unsigned int    aspm_default_link_state;    /* Controller- 
+>> provided default */
+>> +#endif
+>> +
+>>       /* Resource alignment requirements */
+>>       resource_size_t (*align_resource)(struct pci_dev *dev,
+>>               const struct resource *res,
+>> @@ -1849,6 +1853,8 @@ int pci_disable_link_state(struct pci_dev *pdev, 
+>> int state);
+>>   int pci_disable_link_state_locked(struct pci_dev *pdev, int state);
+>>   int pci_enable_link_state(struct pci_dev *pdev, int state);
+>>   int pci_enable_link_state_locked(struct pci_dev *pdev, int state);
+>> +void pci_host_set_default_pcie_link_state(struct pci_host_bridge *host,
+>> +                      unsigned int state);
+>>   void pcie_no_aspm(void);
+>>   bool pcie_aspm_support_enabled(void);
+>>   bool pcie_aspm_enabled(struct pci_dev *pdev);
+>> @@ -1861,6 +1867,9 @@ static inline int pci_enable_link_state(struct 
+>> pci_dev *pdev, int state)
+>>   { return 0; }
+>>   static inline int pci_enable_link_state_locked(struct pci_dev *pdev, 
+>> int state)
+>>   { return 0; }
+>> +static inline void
+>> +pci_host_set_default_pcie_link_state(struct pci_host_bridge *host,
+>> +                     unsigned int state) { }
+>>   static inline void pcie_no_aspm(void) { }
+>>   static inline bool pcie_aspm_support_enabled(void) { return false; }
+>>   static inline bool pcie_aspm_enabled(struct pci_dev *pdev) { return 
+>> false; }
+>>
+>> base-commit: c17b750b3ad9f45f2b6f7e6f7f4679844244f0b9
+> 
+
+-- 
+Kenneth R. Crudup / Sr. SW Engineer, Scott County Consulting, Orange 
+County CA
+
