@@ -1,95 +1,163 @@
-Received: from mail.zytor.com (terminus.zytor.com [198.137.202.136])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4231B1D6187;
-	Thu, 25 Sep 2025 15:33:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.136
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44231234973;
+	Thu, 25 Sep 2025 15:48:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758814402; cv=none; b=PT66vZXrZ/iUgGVBRhx/PWq4b8XilVM7VwpFtIu/G1pC9Lb0N5RRyHuywiW2JuXsKAzUbwfsXnD6F+5HMAOWGHiUZDvsm3p7XIcIrZ8/psuAtEagE+lMi4ZZeB5qbf3ni8PHRRF7d8mEUUpxS7gPt2riWCQ+en0ayuBYO580d/Q=
+	t=1758815283; cv=none; b=bfpR51njg6u0Z1ymFWyNVQ6WGbZ2dqhJC/uQXh87i01YQxqXlyUgPt6oMliBcVpYo8+x4y9UiyMDd+qGLPq3doz6D+/lvd0xD1C7a8u3IxPU7rpkN0H1VULQUTuRuxRpULzk9F8osVl54b/M/Mn/qQW4srEPlcQcjKEXHiX0NXQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758814402; c=relaxed/simple;
-	bh=u5FAkVs1d2yn2V+vcAWfPQaluNSH3+uZoP8oWWENrP8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=IbUmVP2GDio8+0xjxKVKFAG7mljCmwtZUXV2V3wC3RgxTJYFb9+Hy97+n4MJXIC++7HwVO9Oh9O3LZyNlrRFF+m+XzUtp47fhJ/kOd5mJVO/tCFZQ7uFXDr/hmoqWqdHcbgJ07gGfvuP36ICcbdmjdSOMDAKqKWY81KjlUlHPpk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zytor.com; spf=pass smtp.mailfrom=zytor.com; dkim=pass (2048-bit key) header.d=zytor.com header.i=@zytor.com header.b=XN7IDCL2; arc=none smtp.client-ip=198.137.202.136
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zytor.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zytor.com
+	s=arc-20240116; t=1758815283; c=relaxed/simple;
+	bh=wOTmxGtsrYB00Xp5bvu1cK9MEesyYzBVRKQiLZrnjHM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=eVaJXXYoXxSErXNMEAJILS6xkz7ZSa9emIPMzkhHs2bYAcmsfXUTW7mfbBTLzQAkXWHbSxkFzZaBJvFsjr4V+B+EKFDN9IwsGASLJeZtPAUpgwuOqzJ8CRI3Yns6eZ0LdSv61zhUsZThELfNniZkmzkVesoNXxEjqI5yycQMPhg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=tYG6YoVr; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=zytor.com header.i=@zytor.com header.b="XN7IDCL2"
-Received: from [IPV6:2601:646:8081:9484:60d0:6c9:beea:16a] ([IPv6:2601:646:8081:9484:60d0:6c9:beea:16a])
-	(authenticated bits=0)
-	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 58PFWQ7T2493900
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NO);
-	Thu, 25 Sep 2025 08:32:27 -0700
-DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 58PFWQ7T2493900
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zytor.com;
-	s=2025092201; t=1758814349;
-	bh=AlBarqxfhsKUEiXxrH663bEYPMkBt9GFIKZMwmsouDE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=XN7IDCL2hY74mA4XAqYEpQlWM22WhzIkHQDMT09Fa7KGN2qfZXMZH8A5+62nxAlYK
-	 hRT5jjh5KjF/gSUrUk81P2hu67RN0xhpMV05N3g8+TqWEHSVBCo5Lkyc/2RXaaCj5W
-	 WHTZhiQd8oCnOiRaueELO3jym5VFYB3Kda676ngVklxmqfoi+6ItqxjzP9br9U82U5
-	 LZ/EipCl9W8Em9a1jMStFuIREedWydmfnLgBLYsdklw4Gbtd3YwsVA/8RjGQUgifRu
-	 ufhw0YVOOxe1RXNMeE5ulR4YF+0nO2qqCdlXDiy5WK5175xuFfwrerCAa2tnhEZWkW
-	 PsBStTLa0kl5w==
-Message-ID: <113902a5-a635-4d21-8192-8c6d482e88bf@zytor.com>
-Date: Thu, 25 Sep 2025 08:32:21 -0700
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="tYG6YoVr"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E78CC4CEF0;
+	Thu, 25 Sep 2025 15:47:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1758815281;
+	bh=wOTmxGtsrYB00Xp5bvu1cK9MEesyYzBVRKQiLZrnjHM=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=tYG6YoVrAPVV9YhwxVY2jNwS95/9QPjXF2DtoB0yh04iQAkHtDdc58D/SngLNhBV/
+	 4kzm6EiYRX1ObHBWY+fmGtwNz2KEsIjzDWmZSIZaMHpbPltDDQjXJETCom+jSOBsKL
+	 ogHzr3o+X1u0bVNVu2Kq83+nO9wGZrmu5tVN5X9wfHDnVs6NsY50oL+rup5W+z0MKa
+	 jineUIkhTTundrxOa9fO2M2tObs9dO08UOJLaxOrfcxBqhX/k/rPbhJN0CY3ZYbcbw
+	 3eJptOfgOwuq55tENbrCkkimeTpjOpwIJP562O52rOygB/yzrQRjWzmcSeMkbNoLX1
+	 WxWVa6gDa4rBQ==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Shawn Guo <shawnguo@kernel.org>, Qais Yousef <qyousef@layalina.io>,
+ LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
+ Prashanth Prakash <pprakash@codeaurora.org>,
+ Pierre Gondois <pierre.gondois@arm.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ Linux ACPI <linux-acpi@vger.kernel.org>
+Subject: [PATCH v1 4/4] cpufreq: Drop unused symbol CPUFREQ_ETERNAL
+Date: Thu, 25 Sep 2025 17:47:27 +0200
+Message-ID: <9533136.CDJkKcVGEf@rafael.j.wysocki>
+Organization: Linux Kernel Development
+In-Reply-To: <8605612.T7Z3S40VBb@rafael.j.wysocki>
+References: <8605612.T7Z3S40VBb@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [External] Re: [RFC 0/5] parker: PARtitioned KERnel
-To: Fam Zheng <fam.zheng@bytedance.com>
-Cc: fam@euphon.net, Dave Hansen <dave.hansen@intel.com>,
-        linux-kernel@vger.kernel.org, Lukasz Luba <lukasz.luba@arm.com>,
-        linyongting@bytedance.com, songmuchun@bytedance.com,
-        satish.kumar@bytedance.com, Borislav Petkov <bp@alien8.de>,
-        Thomas Gleixner <tglx@linutronix.de>, yuanzhu@bytedance.com,
-        Ingo Molnar <mingo@redhat.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>, x86@kernel.org, liangma@bytedance.com,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>, guojinhui.liam@bytedance.com,
-        linux-pm@vger.kernel.org, Thom Hughes <thom.hughes@bytedance.com>
-References: <20250923153146.365015-1-fam.zheng@bytedance.com>
- <40419dea-666e-4a8d-97a7-fa571d7122f4@intel.com>
- <AEC34AE1-AEB5-4678-AC9D-39155E97D86C@zytor.com>
- <CABgc4wTjc9nxmB16LkxiOL5gYO9K8kr46OqM=asyUkX7cT50Sg@mail.gmail.com>
- <CABgc4wThvZrxBLb0JRiROCws12qLNUxwcb4cJa_W63qh41apjg@mail.gmail.com>
- <585D086B-733C-4274-B274-794F360E8E33@zytor.com>
- <CAG+v+KZL8teU5ReRNEJ2sdKgP02+K26DLMt2=KapZPfqcSWM3A@mail.gmail.com>
-Content-Language: en-US, sv-SE
-From: "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <CAG+v+KZL8teU5ReRNEJ2sdKgP02+K26DLMt2=KapZPfqcSWM3A@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 
-On 2025-09-25 00:26, Fam Zheng wrote:
->> From: "H. Peter Anvin"<hpa@zytor.com>
->> The difference is that this is highly invasive to the OS, which affects developers and users not wanting this feature.
-> 
-> Yeah that makes sense, thanks for clarifying. By having a hypervisor
-> at least in early boot of secondary kernels, we don't need to patch
-> device enumeration etc. In the kernel code.
-> 
-> Once the kernel is up, it can be then promoted to run directly on bare
-> metal, so zero performance overhead.
+=46rom: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Realistically you would remain in the hypervisor, but nothing or almost
-nothing will trap into the hypervisor, so again, zero or negligible
-performance overhead.  You also *can* put some isolation or protection
-features in the low-level hypervisor.
+Drop CPUFREQ_ETERNAL that has no users any more along with all
+references to it in the documentation.
 
-The important thing here is that the maintenance burden *and* the policy
-choices fall on the users of the feature, and as the upstream maintainers
-cannot and thus will not test this use case, it is likely to break on a
-regular basis.
+No functional impact.
 
-This is basically "paravirt_ops all over again." There are very good reasons
-we are trying to get rid of them.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+=2D--
+ Documentation/admin-guide/pm/cpufreq.rst                  |    4 ----
+ Documentation/cpu-freq/cpu-drivers.rst                    |    3 +--
+ Documentation/translations/zh_CN/cpu-freq/cpu-drivers.rst |    3 +--
+ Documentation/translations/zh_TW/cpu-freq/cpu-drivers.rst |    3 +--
+ include/linux/cpufreq.h                                   |    5 -----
+ 5 files changed, 3 insertions(+), 15 deletions(-)
 
-	-hpa
+=2D-- a/Documentation/admin-guide/pm/cpufreq.rst
++++ b/Documentation/admin-guide/pm/cpufreq.rst
+@@ -274,10 +274,6 @@ are the following:
+ 	The time it takes to switch the CPUs belonging to this policy from one
+ 	P-state to another, in nanoseconds.
+=20
+=2D	If unknown or if known to be so high that the scaling driver does not
+=2D	work with the `ondemand`_ governor, -1 (:c:macro:`CPUFREQ_ETERNAL`)
+=2D	will be returned by reads from this attribute.
+=2D
+ ``related_cpus``
+ 	List of all (online and offline) CPUs belonging to this policy.
+=20
+=2D-- a/Documentation/cpu-freq/cpu-drivers.rst
++++ b/Documentation/cpu-freq/cpu-drivers.rst
+@@ -109,8 +109,7 @@ Then, the driver must fill in the follow
+ +-----------------------------------+-------------------------------------=
+=2D+
+ |policy->cpuinfo.transition_latency | the time it takes on this CPU to	   |
+ |				    | switch between two frequencies in	   |
+=2D|				    | nanoseconds (if appropriate, else	   |
+=2D|				    | specify CPUFREQ_ETERNAL)		   |
++|				    | nanoseconds                          |
+ +-----------------------------------+-------------------------------------=
+=2D+
+ |policy->cur			    | The current operating frequency of   |
+ |				    | this CPU (if appropriate)		   |
+=2D-- a/Documentation/translations/zh_CN/cpu-freq/cpu-drivers.rst
++++ b/Documentation/translations/zh_CN/cpu-freq/cpu-drivers.rst
+@@ -112,8 +112,7 @@ CPUfreq=E6=A0=B8=E5=BF=83=E5=B1=82=E6=B3=A8=E5=86=8C=E4=
+=B8=80=E4=B8=AAcpufreq_driv
+ |                                   |                                     =
+ |
+ +-----------------------------------+-------------------------------------=
+=2D+
+ |policy->cpuinfo.transition_latency | CPU=E5=9C=A8=E4=B8=A4=E4=B8=AA=E9=A2=
+=91=E7=8E=87=E4=B9=8B=E9=97=B4=E5=88=87=E6=8D=A2=E6=89=80=E9=9C=80=E7=9A=84=
+=E6=97=B6=E9=97=B4=EF=BC=8C=E4=BB=A5  |
+=2D|                                   | =E7=BA=B3=E7=A7=92=E4=B8=BA=E5=8D=
+=95=E4=BD=8D=EF=BC=88=E5=A6=82=E4=B8=8D=E9=80=82=E7=94=A8=EF=BC=8C=E8=AE=BE=
+=E5=AE=9A=E4=B8=BA         |
+=2D|                                   | CPUFREQ_ETERNAL=EF=BC=89          =
+          |
++|                                   | =E7=BA=B3=E7=A7=92=E4=B8=BA=E5=8D=95=
+=E4=BD=8D                    |
+ |                                   |                                     =
+ |
+ +-----------------------------------+-------------------------------------=
+=2D+
+ |policy->cur                        | =E8=AF=A5CPU=E5=BD=93=E5=89=8D=E7=9A=
+=84=E5=B7=A5=E4=BD=9C=E9=A2=91=E7=8E=87(=E5=A6=82=E9=80=82=E7=94=A8)       =
+   |
+=2D-- a/Documentation/translations/zh_TW/cpu-freq/cpu-drivers.rst
++++ b/Documentation/translations/zh_TW/cpu-freq/cpu-drivers.rst
+@@ -112,8 +112,7 @@ CPUfreq=E6=A0=B8=E5=BF=83=E5=B1=A4=E8=A8=BB=E5=86=8A=E4=
+=B8=80=E5=80=8Bcpufreq_driv
+ |                                   |                                     =
+ |
+ +-----------------------------------+-------------------------------------=
+=2D+
+ |policy->cpuinfo.transition_latency | CPU=E5=9C=A8=E5=85=A9=E5=80=8B=E9=A0=
+=BB=E7=8E=87=E4=B9=8B=E9=96=93=E5=88=87=E6=8F=9B=E6=89=80=E9=9C=80=E7=9A=84=
+=E6=99=82=E9=96=93=EF=BC=8C=E4=BB=A5  |
+=2D|                                   | =E7=B4=8D=E7=A7=92=E7=88=B2=E5=96=
+=AE=E4=BD=8D=EF=BC=88=E5=A6=82=E4=B8=8D=E9=81=A9=E7=94=A8=EF=BC=8C=E8=A8=AD=
+=E5=AE=9A=E7=88=B2         |
+=2D|                                   | CPUFREQ_ETERNAL=EF=BC=89          =
+          |
++|                                   | =E7=B4=8D=E7=A7=92=E7=88=B2=E5=96=AE=
+=E4=BD=8D                    |
+ |                                   |                                     =
+ |
+ +-----------------------------------+-------------------------------------=
+=2D+
+ |policy->cur                        | =E8=A9=B2CPU=E7=95=B6=E5=89=8D=E7=9A=
+=84=E5=B7=A5=E4=BD=9C=E9=A0=BB=E7=8E=87(=E5=A6=82=E9=81=A9=E7=94=A8)       =
+   |
+=2D-- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -26,13 +26,8 @@
+  *********************************************************************/
+ /*
+  * Frequency values here are CPU kHz
+=2D *
+=2D * Maximum transition latency is in nanoseconds - if it's unknown,
+=2D * CPUFREQ_ETERNAL shall be used.
+  */
+=20
+=2D#define CPUFREQ_ETERNAL			(-1)
+=2D
+ #define CPUFREQ_DEFAULT_TANSITION_LATENCY_NS	NSEC_PER_MSEC
+=20
+ #define CPUFREQ_NAME_LEN		16
+
+
 
