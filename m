@@ -1,38 +1,38 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CFF482D94B7;
-	Thu, 25 Sep 2025 14:31:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 669572D9EF3;
+	Thu, 25 Sep 2025 14:31:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758810693; cv=none; b=n+lv990XGsEFg5iiD0Vn7JrAmo15IyA4QZAizzWUhszh+LznQFqGQOwDqgmgOqr34q5Za2gyU8XxzqTruu+fR9teeIVKSvcpN2RWg4cHLiXmtRG6D6BytlMh0r8ydtLzBjorbHvEgySxKeG+u4DxiheYFv3ZPvwnhdVcMFo6Ku4=
+	t=1758810695; cv=none; b=WX68l7Lt5ImdjVFNpD5yR8gnKZdESPh/vpCGGvKgINb2ykpDVUvIlc7a+SUa6vBW1NvmNq4IvjgRUNQyHebk4ydGrVEDeBAR0H6m8JnGkYMEJqo/rw9WUHyjeAGyWlcx5mV8iSBiQ/4219JMzuQSzRoQKmBth712vDVwavn0XjY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758810693; c=relaxed/simple;
-	bh=3fkmVe49ZqkNZbH1Ddxixn6eJb+ThovqAzK3HkVrxFs=;
+	s=arc-20240116; t=1758810695; c=relaxed/simple;
+	bh=kdhQOSWTYVrgxbYGEy8Sxj3IquAPonEI1tpFJXN2e1s=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=tCt0ccgQH81Q5GgsCuaiYSyAfC1bRb55NS6384d092H4wNVRyErV3bSWMjWV8dQTIEgzLxIxtbib9OaSlyzvywk09HA9y+2cyBUi7I4TtFygH6aioGJzx8RzpS4Q7BydKQdR3gThA2ok0ZD/MIDg7nQ3AXypzz1n1RdOpSbUeXE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=nwiWN0H5; arc=none smtp.client-ip=148.251.105.195
+	 MIME-Version:Content-Type; b=byi0RpZhcLcXdByvh6cAVOOzcEVy97kJxeJ+voHMntmgvnO7K3V4afBEFymV6yMqVuZm0sEmwUFxUG71sgYJ2MgnRdub3yif1/nA1cHp+RiOWGjMC7mCPdL/1E6nKpA0v4lnOuWKLg1VAaukXmXGvK/3ONLjZT8x73bYbTkkEY8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=EEq2Edtg; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="nwiWN0H5"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="EEq2Edtg"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1758810690;
-	bh=3fkmVe49ZqkNZbH1Ddxixn6eJb+ThovqAzK3HkVrxFs=;
+	s=mail; t=1758810691;
+	bh=kdhQOSWTYVrgxbYGEy8Sxj3IquAPonEI1tpFJXN2e1s=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=nwiWN0H5lhiw9Rka8oEhxPOK0qcEqmntHsIVnB/MfUgYc85hSxMu5ExsMAZZTzhlK
-	 tUR/4A7Nl5gJlPgwOQ+rRH5kPudgeq6s4RFwDCPdAI9+br3K/6MDX+XousJKWvoGuE
-	 Yp2XNgLnD747g7hOG4lboL0sGUpUYsmj6dxpu4X3RLieLYpueFwHnK3UGHUf0q71D9
-	 geDUCVc7PeQ7gCWeYFdLUctZVGcxzpMcZ+yG6GdVTYvMt+YylQoSlhkFNYDNr5V9si
-	 EP+CZNvngFF+T4tb9NdnS+Tpll/RV5v/lHu2/wnpTKZZFfl3b4dqXxGqsMDD2Y5ts4
-	 LsFDD0u4MCHRw==
+	b=EEq2EdtgxduBCYInjMo9FrZ0ixsEOk0HBrORtIIHw7b7lc8Ja7bTHwGSfBQNT9GtP
+	 Ndo0iRuVFMlSFwuPsgrDT2Rr4v6Gc5JmqWwfu7Tj/zxw3+rDsmwMNyM9pNBUaV1Buv
+	 Q9g7h+0iOsD3XO8OfmuCIWsJ1zqbGb5MHB23SyBMeDa4ZoEfPF3TdUqbjrR0yJKENB
+	 hqXpcu0WZJpA3Kfa2kpo1DPX6QIc5n+OG2SIzOkWdh8q10Z6MEXqPugIRYM08dzrTk
+	 qipsnBNAOxtBDsHm4Kj97ehhNKiM7DaBrptVWWvi0lP7zYreP9q+apZqXs1Mnx0POi
+	 P5Xky+ELgrdcw==
 Received: from IcarusMOD.eternityproject.eu (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 81DAF17E1389;
-	Thu, 25 Sep 2025 16:31:29 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 1582617E13CD;
+	Thu, 25 Sep 2025 16:31:31 +0200 (CEST)
 From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 To: ulf.hansson@linaro.org
 Cc: robh@kernel.org,
@@ -52,9 +52,9 @@ Cc: robh@kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org,
 	kernel@collabora.com
-Subject: [PATCH v2 1/5] dt-bindings: power: Add support for MT8196 power controllers
-Date: Thu, 25 Sep 2025 16:31:12 +0200
-Message-ID: <20250925143122.39796-2-angelogioacchino.delregno@collabora.com>
+Subject: [PATCH v2 3/5] pmdomain: mediatek: Add support for secure HWCCF infra power on
+Date: Thu, 25 Sep 2025 16:31:14 +0200
+Message-ID: <20250925143122.39796-4-angelogioacchino.delregno@collabora.com>
 X-Mailer: git-send-email 2.51.0
 In-Reply-To: <20250925143122.39796-1-angelogioacchino.delregno@collabora.com>
 References: <20250925143122.39796-1-angelogioacchino.delregno@collabora.com>
@@ -67,110 +67,145 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Add support for the power controllers found in the MediaTek MT8196
-Chromebook SoC.
+Some SoCs, like the MediaTek Dimensity 9400 (MT6991), have granular
+power controls and will disable power to the infracfg to save power
+when the platform is in deeper sleep states (or when no IP in the
+the infracfg macro-block is in use).
 
-This chip has three power controllers, two of which located in the
-SCP subsystems (where one can be directly controlled and the other
-can be controlled only through the HW Voter IP), and one located
-in the Multimedia HFRP subsystem, controllable only through the HW
-Voter IP.
+These chips also cannot control the infracfg power states directly
+via AP register writes as those are protected by the secure world.
 
-Acked-by: Rob Herring (Arm) <robh@kernel.org>
+Add a new MTK_SCPD_INFRA_PWR_CTL cap and, if present, make a call
+to the secure world to poweron the infracfg block, as the HWV IP
+resides in there, when executing HWV domains power sequences.
+
 Reviewed-by: Nícolas F. R. A. Prado <nfraprado@collabora.com>
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- .../power/mediatek,power-controller.yaml      |  4 ++
- .../dt-bindings/power/mediatek,mt8196-power.h | 58 +++++++++++++++++++
- 2 files changed, 62 insertions(+)
- create mode 100644 include/dt-bindings/power/mediatek,mt8196-power.h
+ drivers/pmdomain/mediatek/mtk-pm-domains.c | 40 ++++++++++++++++++++--
+ drivers/pmdomain/mediatek/mtk-pm-domains.h |  1 +
+ 2 files changed, 39 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml b/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
-index 500d98921581..f8a13928f615 100644
---- a/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
-+++ b/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
-@@ -33,6 +33,9 @@ properties:
-       - mediatek,mt8188-power-controller
-       - mediatek,mt8192-power-controller
-       - mediatek,mt8195-power-controller
-+      - mediatek,mt8196-hwv-hfrp-power-controller
-+      - mediatek,mt8196-hwv-scp-power-controller
-+      - mediatek,mt8196-power-controller
-       - mediatek,mt8365-power-controller
+diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+index 36767f740f57..f400b0c6b5fd 100644
+--- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
++++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+@@ -15,6 +15,7 @@
+ #include <linux/regmap.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/soc/mediatek/infracfg.h>
++#include <linux/soc/mediatek/mtk_sip_svc.h>
  
-   '#power-domain-cells':
-@@ -157,6 +160,7 @@ allOf:
-           contains:
-             enum:
-               - mediatek,mt8183-power-controller
-+              - mediatek,mt8196-power-controller
-     then:
-       properties:
-         access-controllers:
-diff --git a/include/dt-bindings/power/mediatek,mt8196-power.h b/include/dt-bindings/power/mediatek,mt8196-power.h
-new file mode 100644
-index 000000000000..c12f0fe8f4c1
---- /dev/null
-+++ b/include/dt-bindings/power/mediatek,mt8196-power.h
-@@ -0,0 +1,58 @@
-+/* SPDX-License-Identifier: (GPL-2.0 OR MIT) */
-+/*
-+ * Copyright (c) 2025 Collabora Ltd
-+ *                    AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-+ */
+ #include "mt6735-pm-domains.h"
+ #include "mt6795-pm-domains.h"
+@@ -51,6 +52,8 @@
+ #define PWR_RTFF_SAVE_FLAG		BIT(27)
+ #define PWR_RTFF_UFS_CLK_DIS		BIT(28)
+ 
++#define MTK_SIP_KERNEL_HWCCF_CONTROL	MTK_SIP_SMC_CMD(0x540)
 +
-+#ifndef _DT_BINDINGS_POWER_MT8196_POWER_H
-+#define _DT_BINDINGS_POWER_MT8196_POWER_H
+ struct scpsys_domain {
+ 	struct generic_pm_domain genpd;
+ 	const struct scpsys_domain_data *data;
+@@ -116,6 +119,15 @@ static bool scpsys_hwv_domain_is_enable_done(struct scpsys_domain *pd)
+ 	return (val[0] & mask) && (val[1] & mask) && !(val[2] & mask);
+ }
+ 
++static int scpsys_sec_infra_power_on(bool on)
++{
++	struct arm_smccc_res res;
++	unsigned long cmd = on ? 1 : 0;
 +
-+/* SCPSYS Secure Power Manager - Direct Control */
-+#define MT8196_POWER_DOMAIN_MD				0
-+#define MT8196_POWER_DOMAIN_CONN			1
-+#define MT8196_POWER_DOMAIN_SSUSB_P0			2
-+#define MT8196_POWER_DOMAIN_SSUSB_DP_PHY_P0		3
-+#define MT8196_POWER_DOMAIN_SSUSB_P1			4
-+#define MT8196_POWER_DOMAIN_SSUSB_P23			5
-+#define MT8196_POWER_DOMAIN_SSUSB_PHY_P2		6
-+#define MT8196_POWER_DOMAIN_PEXTP_MAC0			7
-+#define MT8196_POWER_DOMAIN_PEXTP_MAC1			8
-+#define MT8196_POWER_DOMAIN_PEXTP_MAC2			9
-+#define MT8196_POWER_DOMAIN_PEXTP_PHY0			10
-+#define MT8196_POWER_DOMAIN_PEXTP_PHY1			11
-+#define MT8196_POWER_DOMAIN_PEXTP_PHY2			12
-+#define MT8196_POWER_DOMAIN_AUDIO			13
-+#define MT8196_POWER_DOMAIN_ADSP_TOP_DORMANT		14
-+#define MT8196_POWER_DOMAIN_ADSP_INFRA			15
-+#define MT8196_POWER_DOMAIN_ADSP_AO			16
++	arm_smccc_smc(MTK_SIP_KERNEL_HWCCF_CONTROL, cmd, 0, 0, 0, 0, 0, 0, &res);
++	return res.a0;
++}
 +
-+/* SCPSYS Secure Power Manager - HW Voter */
-+#define MT8196_POWER_DOMAIN_MM_PROC_DORMANT		0
-+#define MT8196_POWER_DOMAIN_SSR				1
+ static int scpsys_sram_enable(struct scpsys_domain *pd)
+ {
+ 	u32 expected_ack, pdn_ack = pd->data->sram_pdn_ack_bits;
+@@ -291,9 +303,15 @@ static int scpsys_hwv_power_on(struct generic_pm_domain *genpd)
+ 	u32 val;
+ 	int ret;
+ 
++	if (MTK_SCPD_CAPS(pd, MTK_SCPD_INFRA_PWR_CTL)) {
++		ret = scpsys_sec_infra_power_on(true);
++		if (ret)
++			return ret;
++	}
 +
-+/* HFRPSYS MultiMedia Power Control (MMPC) - HW Voter */
-+#define MT8196_POWER_DOMAIN_VDE0			0
-+#define MT8196_POWER_DOMAIN_VDE1			1
-+#define MT8196_POWER_DOMAIN_VDE_VCORE0			2
-+#define MT8196_POWER_DOMAIN_VEN0			3
-+#define MT8196_POWER_DOMAIN_VEN1			4
-+#define MT8196_POWER_DOMAIN_VEN2			5
-+#define MT8196_POWER_DOMAIN_DISP_VCORE			6
-+#define MT8196_POWER_DOMAIN_DIS0_DORMANT		7
-+#define MT8196_POWER_DOMAIN_DIS1_DORMANT		8
-+#define MT8196_POWER_DOMAIN_OVL0_DORMANT		9
-+#define MT8196_POWER_DOMAIN_OVL1_DORMANT		10
-+#define MT8196_POWER_DOMAIN_DISP_EDPTX_DORMANT		11
-+#define MT8196_POWER_DOMAIN_DISP_DPTX_DORMANT		12
-+#define MT8196_POWER_DOMAIN_MML0_SHUTDOWN		13
-+#define MT8196_POWER_DOMAIN_MML1_SHUTDOWN		14
-+#define MT8196_POWER_DOMAIN_MM_INFRA0			15
-+#define MT8196_POWER_DOMAIN_MM_INFRA1			16
-+#define MT8196_POWER_DOMAIN_MM_INFRA_AO			17
-+#define MT8196_POWER_DOMAIN_CSI_BS_RX			18
-+#define MT8196_POWER_DOMAIN_CSI_LS_RX			19
-+#define MT8196_POWER_DOMAIN_DSI_PHY0			20
-+#define MT8196_POWER_DOMAIN_DSI_PHY1			21
-+#define MT8196_POWER_DOMAIN_DSI_PHY2			22
+ 	ret = scpsys_regulator_enable(pd->supply);
+ 	if (ret)
+-		return ret;
++		goto err_infra;
+ 
+ 	ret = clk_bulk_prepare_enable(pd->num_clks, pd->clks);
+ 	if (ret)
+@@ -344,6 +362,9 @@ static int scpsys_hwv_power_on(struct generic_pm_domain *genpd)
+ 	/* It's done! Disable the HWV low power subsystem clocks */
+ 	clk_bulk_disable_unprepare(pd->num_subsys_clks, pd->subsys_clks);
+ 
++	if (MTK_SCPD_CAPS(pd, MTK_SCPD_INFRA_PWR_CTL))
++		scpsys_sec_infra_power_on(false);
 +
-+#endif /* _DT_BINDINGS_POWER_MT8196_POWER_H */
+ 	return 0;
+ 
+ err_disable_subsys_clks:
+@@ -352,6 +373,9 @@ static int scpsys_hwv_power_on(struct generic_pm_domain *genpd)
+ 	clk_bulk_disable_unprepare(pd->num_clks, pd->clks);
+ err_reg:
+ 	scpsys_regulator_disable(pd->supply);
++err_infra:
++	if (MTK_SCPD_CAPS(pd, MTK_SCPD_INFRA_PWR_CTL))
++		scpsys_sec_infra_power_on(false);
+ 	return ret;
+ };
+ 
+@@ -363,9 +387,15 @@ static int scpsys_hwv_power_off(struct generic_pm_domain *genpd)
+ 	u32 val;
+ 	int ret;
+ 
++	if (MTK_SCPD_CAPS(pd, MTK_SCPD_INFRA_PWR_CTL)) {
++		ret = scpsys_sec_infra_power_on(true);
++		if (ret)
++			return ret;
++	}
++
+ 	ret = clk_bulk_prepare_enable(pd->num_subsys_clks, pd->subsys_clks);
+ 	if (ret)
+-		return ret;
++		goto err_infra;
+ 
+ 	/* Make sure the HW Voter is idle and able to accept commands */
+ 	ret = regmap_read_poll_timeout_atomic(scpsys->base, hwv->done, val,
+@@ -407,10 +437,16 @@ static int scpsys_hwv_power_off(struct generic_pm_domain *genpd)
+ 
+ 	scpsys_regulator_disable(pd->supply);
+ 
++	if (MTK_SCPD_CAPS(pd, MTK_SCPD_INFRA_PWR_CTL))
++		scpsys_sec_infra_power_on(false);
++
+ 	return 0;
+ 
+ err_disable_subsys_clks:
+ 	clk_bulk_disable_unprepare(pd->num_subsys_clks, pd->subsys_clks);
++err_infra:
++	if (MTK_SCPD_CAPS(pd, MTK_SCPD_INFRA_PWR_CTL))
++		scpsys_sec_infra_power_on(false);
+ 	return ret;
+ };
+ 
+diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.h b/drivers/pmdomain/mediatek/mtk-pm-domains.h
+index df4bf013709b..36adcfca80c6 100644
+--- a/drivers/pmdomain/mediatek/mtk-pm-domains.h
++++ b/drivers/pmdomain/mediatek/mtk-pm-domains.h
+@@ -16,6 +16,7 @@
+ #define MTK_SCPD_SRAM_PDN_INVERTED	BIT(9)
+ #define MTK_SCPD_MODEM_PWRSEQ		BIT(10)
+ #define MTK_SCPD_SKIP_RESET_B		BIT(11)
++#define MTK_SCPD_INFRA_PWR_CTL		BIT(12)
+ #define MTK_SCPD_CAPS(_scpd, _x)	((_scpd)->data ?		\
+ 					 (_scpd)->data->caps & (_x) :	\
+ 					 (_scpd)->hwv_data->caps & (_x))
 -- 
 2.51.0
 
