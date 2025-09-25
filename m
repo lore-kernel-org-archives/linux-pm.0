@@ -1,162 +1,93 @@
-Received: from mail-pf1-f173.google.com (mail-pf1-f173.google.com [209.85.210.173])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4DD8331CA6D
-	for <linux-pm@vger.kernel.org>; Thu, 25 Sep 2025 19:43:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.173
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B2AE31DDA4
+	for <linux-pm@vger.kernel.org>; Thu, 25 Sep 2025 19:43:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758829386; cv=none; b=OG1tq6RApOuoYLmJWDlkC9RgyuP+6WYjV6cvgYOtm4gZ8cLOpt/+BB3khOjdCOTyWOIoElbwHBkryPpR5KOxlofP4uzr99h2Ip380Xo3o+9WpQ1AZirpSGFbHRWiwUKniEXJmA8qbqb+xTt9OIz0DoNtRitlINQlBniG78w1kVI=
+	t=1758829389; cv=none; b=DwekHaABT2z3sfUwdFccoq4Gd9WSjUZl6jCQB7aZqCOn4LyMhbWm7kkFt8YRAZRuLjPI7kxy8DA7vb0ndcIVl+uLWH7mhVZJH8c40egzGlw5Roieh61McSEylnML3LGbVwdjHxhtGo8TqrKaUFjqtx3sEbApmGB0au21ZgRfpJw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758829386; c=relaxed/simple;
-	bh=LAZQD/pEHja6O8K/SPscN5qIKkE6Cr9T0qE9OsD7fIc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=uOTWPJAbPyuyoc4vXHnZZJMn+mfi8O3tklT+irZi1Nz1QptArMQN3ZuYfCbRTnkh3Pdh2/4uEA6v6GguR0j90Dg1h8wdO/4pCqDHNbhfQwYX2DU3eLe034Q7Jk3l5MY0siRuArzxxbL1fOWHIC5ul4vXgTdqwrZtI8e90YEbLdM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=NsJnY0DQ; arc=none smtp.client-ip=209.85.210.173
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	s=arc-20240116; t=1758829389; c=relaxed/simple;
+	bh=p9m63qbztqA2ZqEB3vay13lZfWLkiMoeU3IbsD91HtQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=lbY6IWDo03ohGdge0y+h5F+sRVw3duorwWtJZZvjP+TBYIq+cRf1o7HyYSboARpWlhP+LGOlybZ3WThMiFfZWMZjmJODa2ijxdPBaRrcMNVoEn7rtl5x5avTeU1cPgeT8J+E6hd7oFSrcESall0+3jPAm1VKvLbDeeRXA46Wo/M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SGz/XuAs; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="NsJnY0DQ"
-Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-781001e3846so1337520b3a.2
-        for <linux-pm@vger.kernel.org>; Thu, 25 Sep 2025 12:43:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1758829384; x=1759434184; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=f7MMUWfpwmVWVY6VmS+MHYWz1tm5Ol/92uheqg9vXNM=;
-        b=NsJnY0DQhGEjzx0Ecauop6kcdm3Ha4zgQduaZYWpjA6Lq2ePYMawgKF2Eh30sSshgh
-         r3hkoou7RO+me85EwOqG9CHsTC92qn8Rz6FV4iiaEYeV1E4Ll42UjWmaqiP7lK27TTGA
-         52gRp4mEMmr+YXnCXDGZkHBkXrtGMfPHRcBDo=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758829384; x=1759434184;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=f7MMUWfpwmVWVY6VmS+MHYWz1tm5Ol/92uheqg9vXNM=;
-        b=mGaA4U50Q7fETDEIEAtuJkaCcHpMzYTCQ5yvPiLhCbDI7/tMZtQ+pQb1A41i460yOz
-         6bFIv+lRf8+rd9RCdb3WmXZ2/AV1j2TIapZ4CtK+7lxQa3Tfwdnq/FTQFVvVUqE54lr2
-         FlE+bFkDa0zbNkzEbgDaPAjDKjTRVxTkRbdCOmQc+rCPTK+sj1ICgGC6TUyKbv6ejoCK
-         GXfNnjsqQEOxLRh0bZnjOXs/j8kDsaJQEBPPal5UPi/CtRX7nKkepVJk3yvwsktrG2St
-         vuNwpSTd/8FW/y9vaqj1FkDqEXtB4NHtEuodWZjMfUZHHDx9TQpCZwBMcKICvCyyaBJv
-         o+TQ==
-X-Forwarded-Encrypted: i=1; AJvYcCW4BxrfRLi/2U5E7N5QHEcrPnymVQ1MlNqYoEICdxpkZsljE8nJgHBgDkHC7Lvn+sX7I0JQ94tPAw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzX/YpOGti7e5Vy+S27OWy/26KptaIhCYh5MH4Q0XHfq+Mikb2R
-	MN1PfZD1KP0xohH7kuZvOOPAp9Shf4DxaKfgEeH4rQDQPR1YOP6Mj1KPUFG66KNkOg==
-X-Gm-Gg: ASbGncuURfFdQXlPXz85C/iH8HN09VKVZiXsPuzeHc6AajbQ1v24DHJYpu+gKOr0Tmh
-	Oq8rR7JLj0sCkEusnk5VWUusHVyt3WdONvf3e8tdVNLgp0brmlPMr1u5KSdsG8Dh5xWkM6QcOKD
-	xsJnYmhDPDl8yE9b7fFoqubchjrZV5NdBZ37MfzRj3QdvR89vaVUsnFSEi47jUIYi9BCV+5gowb
-	mAmjMtDOahz3UW2qtYIATpJJm5v+bCsgEYkrWjKYOTXpcLxkUkvS/qGfAghCDewwjYehJ9H/UZ4
-	/Jmqg1WMeiv/bC5liHQVSnMaLUxlvmlfxfme2cEFC2zZBoRAtoqIPMENDFpd1gRPXMJ7Vns+sbn
-	Dj29xIEZWIopX+mcQpXRmcCbLAYxPhLw1n6a1NZzMwujB+sgwPptl0A3DBlTq
-X-Google-Smtp-Source: AGHT+IHnkBZ9JmGUyM8gf2p4sZEIPwm5JSjjSFaLxm2T8Z3fLSOBYOHkNo6la9usss7KQlzkZV0D7Q==
-X-Received: by 2002:a05:6a20:e212:b0:2dd:5588:49eb with SMTP id adf61e73a8af0-2e7c79c5b13mr5645775637.19.1758829384529;
-        Thu, 25 Sep 2025 12:43:04 -0700 (PDT)
-Received: from localhost ([2a00:79e0:2e7c:8:ef44:9df6:231a:cd29])
-        by smtp.gmail.com with UTF8SMTPSA id d2e1a72fcca58-781023e5f41sm2606013b3a.42.2025.09.25.12.43.03
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 25 Sep 2025 12:43:04 -0700 (PDT)
-From: Brian Norris <briannorris@chromium.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>
-Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-	Len Brown <lenb@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	Sakari Ailus <sakari.ailus@linux.intel.com>,
-	kunit-dev@googlegroups.com,
-	linux-pm@vger.kernel.org,
-	Brian Norris <briannorris@chromium.org>,
-	Dhruva Gole <d-gole@ti.com>
-Subject: [PATCH v2 2/3] PM: runtime: Make put{,_sync}() return 1 when already suspended
-Date: Thu, 25 Sep 2025 12:42:15 -0700
-Message-ID: <20250925124216.v2.2.I2cdc7d58d89da55bfd53d78f81c7e08e4b10eb80@changeid>
-X-Mailer: git-send-email 2.51.0.536.g15c5d4f767-goog
-In-Reply-To: <20250925124216.v2.1.I443d97ccd1c67f32670eb93784ad735b11816743@changeid>
-References: <20250925124216.v2.1.I443d97ccd1c67f32670eb93784ad735b11816743@changeid>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SGz/XuAs"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D156BC116B1
+	for <linux-pm@vger.kernel.org>; Thu, 25 Sep 2025 19:43:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1758829388;
+	bh=p9m63qbztqA2ZqEB3vay13lZfWLkiMoeU3IbsD91HtQ=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=SGz/XuAsTcbinLOkMaW3WcuGwlFZyjFoUUa46dWdmi/brQ1lON5MX5V8MZ15S05C6
+	 rvD/OTN1fjCHqI0nvjZfQmiL09uMKwEcstJra8PLJkWUZFdNeZczW3E9pZnwoTuv5/
+	 nyXhQWuRWq70tnEAc8N5jQFOA2ev30fqyrgt4GTIikqMf4zxXC6F0S1JHjLEd7cXLQ
+	 iA19uDSt6bAT93TPe0gE/Ary/xQwOJSO0lpLZrXyXWBs4REdf77yB6wZaEVGueamSc
+	 sC4/68uoOFBQ22Si8MlcING/n/vVR0s/mae/eSwopo8dw610JUHoo6NKF7HtljFD8u
+	 KQzJfBLVQ9Acw==
+Received: by mail-oa1-f50.google.com with SMTP id 586e51a60fabf-30cceb749d7so596208fac.2
+        for <linux-pm@vger.kernel.org>; Thu, 25 Sep 2025 12:43:08 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUvfcmJSZlbrRFnz3cT6FgBOkRbx4hB7x/RjLKa4Xt9UCgQMBGSpqdfGr/K+yR6+t9rVzSxsvxn4Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxXSsM3DYSDp2kqf9GLLn3nAJn4cZ2FHTnPxkM2TXlETr6DNNaO
+	Mj87T5HN4ufw+gb2ttLVV1PF31EQD/E6ADXr33UlvBreFN/FBQzr2sGW1K+dvWWjtE2TFpL6ud+
+	ge3HfqQ0ljMlLqHQ+VAiZHk0zkhp6JtI=
+X-Google-Smtp-Source: AGHT+IE0ATqGlqZj1sCcE+gRnWpmVL5hKu3YF8bbl3xq78q2hcxItFzplLROHYVH/k48RmO/ChuvoYn9fUH38EOxfJA=
+X-Received: by 2002:a05:6871:487:b0:321:2c50:30cb with SMTP id
+ 586e51a60fabf-35ebfac6d20mr1946262fac.12.1758829388150; Thu, 25 Sep 2025
+ 12:43:08 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20250925185108.2968494-1-superm1@kernel.org>
+In-Reply-To: <20250925185108.2968494-1-superm1@kernel.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 25 Sep 2025 21:42:56 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jCnmQSXRfSxD8rmn1Y=yuq-tSeOv3AgryowLJErZYRgQ@mail.gmail.com>
+X-Gm-Features: AS18NWAaKYsDERrfCLjBdjk_K5aGDYw84ebSbsufMfMQNSWk0Kcqs8ZuEg2bUSE
+Message-ID: <CAJZ5v0jCnmQSXRfSxD8rmn1Y=yuq-tSeOv3AgryowLJErZYRgQ@mail.gmail.com>
+Subject: Re: [PATCH v3 0/3] Fixes for hybrid sleep
+To: "Mario Limonciello (AMD)" <superm1@kernel.org>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Samuel Zhang <guoqing.zhang@amd.com>, 
+	"open list:RADEON and AMDGPU DRM DRIVERS" <amd-gfx@lists.freedesktop.org>, 
+	"open list:HIBERNATION (aka Software Suspend, aka swsusp)" <linux-pm@vger.kernel.org>, Mario Limonciello <mario.limonciello@amd.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The pm_runtime.h docs say pm_runtime_put() and pm_runtime_put_sync()
-return 1 when already suspended, but this is not true -- they return
--EAGAIN. On the other hand, pm_runtime_put_sync_suspend() and
-pm_runtime_put_sync_autosuspend() *do* return 1.
+On Thu, Sep 25, 2025 at 8:51=E2=80=AFPM Mario Limonciello (AMD)
+<superm1@kernel.org> wrote:
+>
+> From: Mario Limonciello <mario.limonciello@amd.com>
+>
+> Ionut Nechita reported recently a hibernate failure, but in debugging
+> the issue it's actually not a hibernate failure; but a hybrid sleep
+> failure.
+>
+> Multiple changes related to the change of when swap is disabled in
+> the suspend sequence contribute to the failure.  See the individual
+> patches for details.
+>
+> Link: https://gitlab.freedesktop.org/drm/amd/-/issues/4573
+>
+> As it touches two subsystems it either needs to go through linux-pm
+> or drm.  Patch 3 has an Ack from Alex, this should merge through
+> linux-pm.
+> ---
+> v3:
+>  * Push all calls for gfp mask changes into power_down()
+> Mario Limonciello (AMD) (3):
+>   PM: hibernate: Fix hybrid-sleep
+>   PM: hibernate: Add pm_hibernation_mode_is_suspend()
+>   drm/amd: Fix hybrid sleep
+>
+>  drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c |  2 +-
+>  include/linux/suspend.h                 |  2 ++
+>  kernel/power/hibernate.c                | 14 ++++++++++++++
+>  3 files changed, 17 insertions(+), 1 deletion(-)
+>
+> --
 
-This is an artifact of the fact that the former are built on rpm_idle(),
-whereas the latter are built on rpm_suspend().
-
-There are precious few pm_runtime_put()/pm_runtime_put_sync() callers
-that check the return code at all, but most of them only log errors, and
-usually only for negative error codes. None of them should be treating
-this as an error, so:
-
- * at best, this may fix some case where a driver treats this condition
-   as an error, when it shouldn't;
-
- * at worst, this should make no effect; and
-
- * somewhere in between, we could potentially clear up non-fatal log
-   messages.
-
-Fix the pm_runtime_already_suspended_test() while tweaking the behavior.
-The test makes a lot more sense when these all return 1 when the device
-is already suspended:
-
-    pm_runtime_put_sync(dev);
-    pm_runtime_suspend(dev);
-    pm_runtime_autosuspend(dev);
-    pm_request_autosuspend(dev);
-    pm_runtime_put_sync_autosuspend(dev);
-
-Notably, I've avoided testing the return codes for these, since they
-really should be ignored by callers, and we may make them 'void'
-altogether:
-
-    pm_runtime_put(dev);
-    pm_runtime_put_autosuspend(dev);
-
-Signed-off-by: Brian Norris <briannorris@chromium.org>
-Reviewed-by: Dhruva Gole <d-gole@ti.com>
----
-
-Changes in v2:
- * Drop superfluous parentheses
- * Add Dhruva's Reviewed-by
-
- drivers/base/power/runtime-test.c | 2 +-
- drivers/base/power/runtime.c      | 3 +++
- 2 files changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/base/power/runtime-test.c b/drivers/base/power/runtime-test.c
-index 2e966fd96664..eca9885e807d 100644
---- a/drivers/base/power/runtime-test.c
-+++ b/drivers/base/power/runtime-test.c
-@@ -42,7 +42,7 @@ static void pm_runtime_already_suspended_test(struct kunit *test)
- 	pm_runtime_put(dev);
- 
- 	pm_runtime_get_noresume(dev);
--	KUNIT_EXPECT_EQ(test, -EAGAIN, pm_runtime_put_sync(dev));
-+	KUNIT_EXPECT_EQ(test, 1, pm_runtime_put_sync(dev));
- 
- 	KUNIT_EXPECT_EQ(test, 1, pm_runtime_suspend(dev));
- 	KUNIT_EXPECT_EQ(test, 1, pm_runtime_autosuspend(dev));
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 3e84dc4122de..faa68bf9ef3d 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -498,6 +498,9 @@ static int rpm_idle(struct device *dev, int rpmflags)
- 	if (retval < 0)
- 		;	/* Conditions are wrong. */
- 
-+	else if ((rpmflags & RPM_GET_PUT) && retval == 1)
-+		;	/* put() is allowed in RPM_SUSPENDED */
-+
- 	/* Idle notifications are allowed only in the RPM_ACTIVE state. */
- 	else if (dev->power.runtime_status != RPM_ACTIVE)
- 		retval = -EAGAIN;
--- 
-2.51.0.536.g15c5d4f767-goog
-
+All applied as 6.18 material, thanks!
