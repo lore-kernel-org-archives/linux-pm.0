@@ -1,185 +1,168 @@
-Received: from mail-pf1-f169.google.com (mail-pf1-f169.google.com [209.85.210.169])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70E6327A92A
-	for <linux-pm@vger.kernel.org>; Fri, 26 Sep 2025 10:23:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.169
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D4F621D3CA;
+	Fri, 26 Sep 2025 10:32:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758882212; cv=none; b=MwyFTNE6sxWK0ioshv3AC1LuumGrM66zzd61bvzQxcKg1yVGUxh9QurhDJXlVNDrKG7cbyjbNUGWjKUtL7rjwQDOaNC4RWxe+ZQgg6kRK9elyRG6HerRBUmxkJAPm/lWScBKQxeohWkJvAAP/uSQ2AVWfsoABNZVN1Hmk4Hk/YQ=
+	t=1758882730; cv=none; b=MV8tgl9wbrOanbygT9LOyV1dagHoZnQ1lJuQ7+M87fDuKY0qWjbgBPVG/CgM2jqi3cbCeb/fsK88Uovw+OfI10cPODvGnQV3oVi0w7XLwzFuw5uJ6WorQteT3dXz1PTXhfjInXvK/T1dkzx+SQEbtWL07HJlA46lAEVwzwAZRPc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758882212; c=relaxed/simple;
-	bh=4K0wqVJ9eczfWiqnopYF3vVChENOHFUsOcB5QiOAapo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=SNN2c8M6nvLALXsZqn3445f26mmNWtM1YpE1TKKQDWwyi5hUOY5sVH64DHCryYLcQqLRTRyU2uPgRK/ssGYa6VbSFUwrdXcCJkmwhObOqsnr3ZHs5G2zkg4cHZL6W2fu4GQqmLeMKLMcm1iYUK/+izoHXpKSytT+sO3o9oZycrU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=W/NchGsh; arc=none smtp.client-ip=209.85.210.169
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	s=arc-20240116; t=1758882730; c=relaxed/simple;
+	bh=zQ7iVOebrADHg1ETUTT0wq0YKxEAlyaSm+7dipeK7GM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=B5joB7ltoTwVlW3cFU0BOk25v1OypkcZRzqLr1eacAiIEbRsv8qWU5PWn/zDuljU0Exg8cwkIGj17Gp3uOtaKmYzKT9ZgP3Rgq7gJsrLM8eQvq3/VYXk3tPhf36RTAdjNzxvf3bswcHT6zE5K4MLjgoey+0KLCLdrmqXe9yJugw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=l3wxb2tk; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="W/NchGsh"
-Received: by mail-pf1-f169.google.com with SMTP id d2e1a72fcca58-78115430134so538745b3a.1
-        for <linux-pm@vger.kernel.org>; Fri, 26 Sep 2025 03:23:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1758882209; x=1759487009; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=w5mjd6nLxKs02Ww/P7pqDd7HAKGioYvOr/N7xDzcLcY=;
-        b=W/NchGshZGkPeVP8GG7wOKY5VR+lybtOt9IlroG7tBRzFRTjvtjhl6REcR6cClcOYO
-         6FVQAcXU2VtVyFJG0DE4GEDMM977Lpi+6PKFEOtYOHZTAWSUCpgM0MFj3ReMA7iIrn8G
-         wVQbZvkXzlc+/wzhl0QR3qqYULLjbZ8DV5qro=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758882209; x=1759487009;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=w5mjd6nLxKs02Ww/P7pqDd7HAKGioYvOr/N7xDzcLcY=;
-        b=Nf6SKv6aZ9BEf+kFGRKOP4BpvuMZmrnr8fF9Tz3hBj8FMeXWQjY3/sucDTakRRQnSR
-         lBa+hebkfWaM+9EaSlkIkgYpUyi4F8DuodeTfM88+ysmCLFYuHjHPf9uiEvhto9ln6XP
-         x8DSXoDLZPob9meRXHEMgC88UpWa0ziIDTjpMckB4vfbu0kkiKBDezM0+9QadRjv+XZ4
-         f5jVU8tlYCy7qvutgbjMijKjmLmGhdiQ9pErsk9WRkfWVEaUhq06nt4DuEtEKRhfT0ZI
-         BZTRQ42QGn4iByM0Z65LufpLN6iSCgeaMBHIiPbPQe4P7wGpx4RAnJHfT+LCRZVSUzwa
-         /Mtg==
-X-Forwarded-Encrypted: i=1; AJvYcCXlcBCl2IxqXqqDq0qMMEKBUXFB+xcdQWh+TwE5kujWSiHhCcK33KgSxGwEAuOogsjY7C1dORKxPQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwYsiGSxFadsMA9NLpXXGEUqX7jGjTl8XKmw2SV2RNELJDxRQGE
-	hOIruoig5EvTV88JJ7djb+HRdzy4+BDgLwf7Bu0A8VjlmFFJV08MxgN9RLNFvHGzvw==
-X-Gm-Gg: ASbGncuvupCkZktRpoXT/nDLOh5wivy1vPUQU36Uk1PnUKrxYCtgoGhL/4Or731KDl/
-	+944FbIeOALAnRyPZp88s3v7a/u0hbeR40nCpNiJVMAIOjxbkjRU6LyxAztmXyhoDSwv7BiXhHo
-	WAcz5xkQgM81SR4aQHF5+5KcnWSxsM4clxHD25oyjpapMM81hRLIubt67fUVaIg2ZO1jZCgZTWA
-	T6/f0S2DDh7V9466PuEgcUWVn8dVjbUb+dTdqv20v2un8IACVJ/W1irGT6VCe6QCmsZ2IdmMcWA
-	a7t8dyAbHCDh30qyhKqlMrBb5v4JY1fve8IJvxTGnaXD3CQA2Kj9vrBptir/ciPVwLA7cRGf3j3
-	XUiQQvDF890lKEuBMXrQI3nh0tDAnpkbidH1iDEhPlOWmrWbqD7o6FrdUjcaqKGzEqQba9AEdz2
-	xy/QATzhj/tjBQDkT006I=
-X-Google-Smtp-Source: AGHT+IGYRUggPUFZvLH1WiVKpxyZzaen0jkQTx9Ti3sbPmMgM6KTc3sQs3R4T678nozJvNs7/WD6Ig==
-X-Received: by 2002:a05:6a00:1896:b0:77f:4b9b:8c34 with SMTP id d2e1a72fcca58-780fceeb3b7mr7559015b3a.31.1758882208839;
-        Fri, 26 Sep 2025 03:23:28 -0700 (PDT)
-Received: from treapking.tpe.corp.google.com ([2a00:79e0:201d:8:2900:382d:6893:1b9b])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7810238f11esm4137236b3a.19.2025.09.26.03.23.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 26 Sep 2025 03:23:28 -0700 (PDT)
-From: Pin-yen Lin <treapking@chromium.org>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Saravana Kannan <saravanak@google.com>
-Cc: linux-kernel@vger.kernel.org,
-	Hsin-Te Yuan <yuanhsinte@chromium.org>,
-	Chen-Yu Tsai <wenst@chromium.org>,
-	linux-pm@vger.kernel.org,
-	Pin-yen Lin <treapking@chromium.org>
-Subject: [PATCH v4] PM: sleep: Don't wait for SYNC_STATE_ONLY device links
-Date: Fri, 26 Sep 2025 18:23:18 +0800
-Message-ID: <20250926102320.4053167-1-treapking@chromium.org>
-X-Mailer: git-send-email 2.51.0.536.g15c5d4f767-goog
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="l3wxb2tk"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE341C4CEF4;
+	Fri, 26 Sep 2025 10:32:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1758882730;
+	bh=zQ7iVOebrADHg1ETUTT0wq0YKxEAlyaSm+7dipeK7GM=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=l3wxb2tkEfrM3P24jZ7njaJrVdECP0LXrDU3m389Dx47Css5/SXsWQI6ccf9Ld/MT
+	 dtae7bHC5FWn4wce/iAB8pMSLEqggMgQxnU1LOQR2lJmjPTAp2Tl2WJvT2WR1bR8oa
+	 HLzqSiO0OdSUEOoMOnehxmm6MouWZDICN+pj/XlpRZvypHAyXOOrT99K+pPG5IlP72
+	 y565N8+BbpH1O0WiQ+ALSuyYWHpWeDN+aWZwEOZqLLYyYA9VodM2vUebueKdlxapO7
+	 UoxQPO7cTDktEr8hMfZrkDSRQCiEBSIBAxAcTY2NcMggtlyy3yFfZFhhj2iqpVF9Op
+	 aa3N/qx18WB7g==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Shawn Guo <shawnguo@kernel.org>, Qais Yousef <qyousef@layalina.io>,
+ LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
+ Pierre Gondois <pierre.gondois@arm.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ Linux ACPI <linux-acpi@vger.kernel.org>, Jie Zhan <zhanjie9@hisilicon.com>
+Subject: [PATCH v3 4/4] cpufreq: Drop unused symbol CPUFREQ_ETERNAL
+Date: Fri, 26 Sep 2025 12:31:47 +0200
+Message-ID: <3679164.iIbC2pHGDl@rafael.j.wysocki>
+Organization: Linux Kernel Development
+In-Reply-To: <5069803.31r3eYUQgx@rafael.j.wysocki>
+References: <5069803.31r3eYUQgx@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 
-Device links with DL_FLAG_SYNC_STATE_ONLY should not affect suspend
-and resume, and functions like device_reorder_to_tail() and
-device_link_add() doesn't try to reorder the consumers with such flag.
+=46rom: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-However, dpm_wait_for_consumers() and dpm_wait_for_suppliers() doesn't
-check this flag before triggering dpm_wait, leading to potential hang
-during suspend/resume.
+Drop CPUFREQ_ETERNAL that has no users any more along with all
+references to it in the documentation.
 
-This can be reproduced on MT8186 Corsola Chromebook with devicetree like:
+No functional impact.
 
-usb-a-connector {
-        compatible = "usb-a-connector";
-        port {
-                usb_a_con: endpoint {
-                        remote-endpoint = <&usb_hs>;
-                };
-        };
-};
+Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
+Reviewed-by: Jie Zhan <zhanjie9@hisilicon.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+=2D--
 
-usb_host {
-        compatible = "mediatek,mt8186-xhci", "mediatek,mtk-xhci";
-        port {
-                usb_hs: endpoint {
-                        remote-endpoint = <&usb_a_con>;
-                };
-        };
-};
+v1 -> v3: Add tags from Mario Limonciello and Jie Zhan
 
-In this case, the two nodes form a cycle and a SYNC_STATE_ONLY devlink
-between usb_host (supplier) and usb-a-connector (consumer) is created.
+=2D--
+ Documentation/admin-guide/pm/cpufreq.rst                  |    4 ----
+ Documentation/cpu-freq/cpu-drivers.rst                    |    3 +--
+ Documentation/translations/zh_CN/cpu-freq/cpu-drivers.rst |    3 +--
+ Documentation/translations/zh_TW/cpu-freq/cpu-drivers.rst |    3 +--
+ include/linux/cpufreq.h                                   |    5 -----
+ 5 files changed, 3 insertions(+), 15 deletions(-)
 
-Export device_link_flag_is_sync_state_only() and use it to check this in
-dpm_wait_for_consumers() and dpm_wait_for_suppliers() to fix this.
+=2D-- a/Documentation/admin-guide/pm/cpufreq.rst
++++ b/Documentation/admin-guide/pm/cpufreq.rst
+@@ -274,10 +274,6 @@ are the following:
+ 	The time it takes to switch the CPUs belonging to this policy from one
+ 	P-state to another, in nanoseconds.
+=20
+=2D	If unknown or if known to be so high that the scaling driver does not
+=2D	work with the `ondemand`_ governor, -1 (:c:macro:`CPUFREQ_ETERNAL`)
+=2D	will be returned by reads from this attribute.
+=2D
+ ``related_cpus``
+ 	List of all (online and offline) CPUs belonging to this policy.
+=20
+=2D-- a/Documentation/cpu-freq/cpu-drivers.rst
++++ b/Documentation/cpu-freq/cpu-drivers.rst
+@@ -109,8 +109,7 @@ Then, the driver must fill in the follow
+ +-----------------------------------+-------------------------------------=
+=2D+
+ |policy->cpuinfo.transition_latency | the time it takes on this CPU to	   |
+ |				    | switch between two frequencies in	   |
+=2D|				    | nanoseconds (if appropriate, else	   |
+=2D|				    | specify CPUFREQ_ETERNAL)		   |
++|				    | nanoseconds                          |
+ +-----------------------------------+-------------------------------------=
+=2D+
+ |policy->cur			    | The current operating frequency of   |
+ |				    | this CPU (if appropriate)		   |
+=2D-- a/Documentation/translations/zh_CN/cpu-freq/cpu-drivers.rst
++++ b/Documentation/translations/zh_CN/cpu-freq/cpu-drivers.rst
+@@ -112,8 +112,7 @@ CPUfreq=E6=A0=B8=E5=BF=83=E5=B1=82=E6=B3=A8=E5=86=8C=E4=
+=B8=80=E4=B8=AAcpufreq_driv
+ |                                   |                                     =
+ |
+ +-----------------------------------+-------------------------------------=
+=2D+
+ |policy->cpuinfo.transition_latency | CPU=E5=9C=A8=E4=B8=A4=E4=B8=AA=E9=A2=
+=91=E7=8E=87=E4=B9=8B=E9=97=B4=E5=88=87=E6=8D=A2=E6=89=80=E9=9C=80=E7=9A=84=
+=E6=97=B6=E9=97=B4=EF=BC=8C=E4=BB=A5  |
+=2D|                                   | =E7=BA=B3=E7=A7=92=E4=B8=BA=E5=8D=
+=95=E4=BD=8D=EF=BC=88=E5=A6=82=E4=B8=8D=E9=80=82=E7=94=A8=EF=BC=8C=E8=AE=BE=
+=E5=AE=9A=E4=B8=BA         |
+=2D|                                   | CPUFREQ_ETERNAL=EF=BC=89          =
+          |
++|                                   | =E7=BA=B3=E7=A7=92=E4=B8=BA=E5=8D=95=
+=E4=BD=8D                    |
+ |                                   |                                     =
+ |
+ +-----------------------------------+-------------------------------------=
+=2D+
+ |policy->cur                        | =E8=AF=A5CPU=E5=BD=93=E5=89=8D=E7=9A=
+=84=E5=B7=A5=E4=BD=9C=E9=A2=91=E7=8E=87(=E5=A6=82=E9=80=82=E7=94=A8)       =
+   |
+=2D-- a/Documentation/translations/zh_TW/cpu-freq/cpu-drivers.rst
++++ b/Documentation/translations/zh_TW/cpu-freq/cpu-drivers.rst
+@@ -112,8 +112,7 @@ CPUfreq=E6=A0=B8=E5=BF=83=E5=B1=A4=E8=A8=BB=E5=86=8A=E4=
+=B8=80=E5=80=8Bcpufreq_driv
+ |                                   |                                     =
+ |
+ +-----------------------------------+-------------------------------------=
+=2D+
+ |policy->cpuinfo.transition_latency | CPU=E5=9C=A8=E5=85=A9=E5=80=8B=E9=A0=
+=BB=E7=8E=87=E4=B9=8B=E9=96=93=E5=88=87=E6=8F=9B=E6=89=80=E9=9C=80=E7=9A=84=
+=E6=99=82=E9=96=93=EF=BC=8C=E4=BB=A5  |
+=2D|                                   | =E7=B4=8D=E7=A7=92=E7=88=B2=E5=96=
+=AE=E4=BD=8D=EF=BC=88=E5=A6=82=E4=B8=8D=E9=81=A9=E7=94=A8=EF=BC=8C=E8=A8=AD=
+=E5=AE=9A=E7=88=B2         |
+=2D|                                   | CPUFREQ_ETERNAL=EF=BC=89          =
+          |
++|                                   | =E7=B4=8D=E7=A7=92=E7=88=B2=E5=96=AE=
+=E4=BD=8D                    |
+ |                                   |                                     =
+ |
+ +-----------------------------------+-------------------------------------=
+=2D+
+ |policy->cur                        | =E8=A9=B2CPU=E7=95=B6=E5=89=8D=E7=9A=
+=84=E5=B7=A5=E4=BD=9C=E9=A0=BB=E7=8E=87(=E5=A6=82=E9=81=A9=E7=94=A8)       =
+   |
+=2D-- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -26,13 +26,8 @@
+  *********************************************************************/
+ /*
+  * Frequency values here are CPU kHz
+=2D *
+=2D * Maximum transition latency is in nanoseconds - if it's unknown,
+=2D * CPUFREQ_ETERNAL shall be used.
+  */
+=20
+=2D#define CPUFREQ_ETERNAL			(-1)
+=2D
+ #define CPUFREQ_DEFAULT_TANSITION_LATENCY_NS	NSEC_PER_MSEC
+=20
+ #define CPUFREQ_NAME_LEN		16
 
-Fixes: 05ef983e0d65a ("driver core: Add device link support for SYNC_STATE_ONLY flag")
-Signed-off-by: Pin-yen Lin <treapking@chromium.org>
----
 
-Changes in v4:
-- Remove inline for device_link_flag_is_sync_state_only()
-
-Changes in v3:
-- Squash to one patch and fix the export approach
-
-Changes in v2:
-- Update commit message
-- Use device_link_flag_is_sync_state_only()
-
- drivers/base/base.h       | 1 +
- drivers/base/core.c       | 2 +-
- drivers/base/power/main.c | 6 ++++--
- 3 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/base/base.h b/drivers/base/base.h
-index 123031a757d9..80415b140ce7 100644
---- a/drivers/base/base.h
-+++ b/drivers/base/base.h
-@@ -248,6 +248,7 @@ void device_links_driver_cleanup(struct device *dev);
- void device_links_no_driver(struct device *dev);
- bool device_links_busy(struct device *dev);
- void device_links_unbind_consumers(struct device *dev);
-+bool device_link_flag_is_sync_state_only(u32 flags);
- void fw_devlink_drivers_done(void);
- void fw_devlink_probing_done(void);
- 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index d22d6b23e758..a54ec6df1058 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -287,7 +287,7 @@ static bool device_is_ancestor(struct device *dev, struct device *target)
- #define DL_MARKER_FLAGS		(DL_FLAG_INFERRED | \
- 				 DL_FLAG_CYCLE | \
- 				 DL_FLAG_MANAGED)
--static inline bool device_link_flag_is_sync_state_only(u32 flags)
-+bool device_link_flag_is_sync_state_only(u32 flags)
- {
- 	return (flags & ~DL_MARKER_FLAGS) == DL_FLAG_SYNC_STATE_ONLY;
- }
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 2ea6e05e6ec9..73a1916170ae 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -282,7 +282,8 @@ static void dpm_wait_for_suppliers(struct device *dev, bool async)
- 	 * walking.
- 	 */
- 	list_for_each_entry_rcu_locked(link, &dev->links.suppliers, c_node)
--		if (READ_ONCE(link->status) != DL_STATE_DORMANT)
-+		if (READ_ONCE(link->status) != DL_STATE_DORMANT &&
-+		    !device_link_flag_is_sync_state_only(link->flags))
- 			dpm_wait(link->supplier, async);
- 
- 	device_links_read_unlock(idx);
-@@ -339,7 +340,8 @@ static void dpm_wait_for_consumers(struct device *dev, bool async)
- 	 * unregistration).
- 	 */
- 	list_for_each_entry_rcu_locked(link, &dev->links.consumers, s_node)
--		if (READ_ONCE(link->status) != DL_STATE_DORMANT)
-+		if (READ_ONCE(link->status) != DL_STATE_DORMANT &&
-+		    !device_link_flag_is_sync_state_only(link->flags))
- 			dpm_wait(link->consumer, async);
- 
- 	device_links_read_unlock(idx);
--- 
-2.51.0.536.g15c5d4f767-goog
 
