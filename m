@@ -1,193 +1,173 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vs1-f45.google.com (mail-vs1-f45.google.com [209.85.217.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D56424DFF4;
-	Fri, 26 Sep 2025 06:42:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35CF227FD46
+	for <linux-pm@vger.kernel.org>; Fri, 26 Sep 2025 06:57:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758868939; cv=none; b=SBxHz0jTCL2nR+y76B021lzO2K4vwjLEhRj6+nqfvPRyf+tjMbOvWMO5mwDsJDbMu81mpUDT5b34ohKa6nG1ytIbvzPDhYMWl9zQEuyuxSGCY8B4RFh2qis6uU4I5jnr4WaLmSlTxytKST9ewiXoW/NnMtwFXEH5LvjZPuy52R4=
+	t=1758869880; cv=none; b=TwQKJVoqo9tSO2p8Ty2ybYxrs3w1ycLVq1BBWfDajJjcHWZqaQRzx3g6w0ENfec2mWHH3eJ5hKnR3GT4tpzx6foRyBMX0ngR6V9wglziP9ZTq+eOxfE4eDO14QYoTdmd3tpXeYYkysw5ADqMfHFLm+Tl5ny9Hwo6e4Fc2dEr8J8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758868939; c=relaxed/simple;
-	bh=SgZxbyWjLLNAfsdL8p6PT1jsimc6gg1IOc/TL/1Qzag=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=rD4IcBKWongO7S5hNd9bO1KDoUO7kH9pDA7uf6ZXfwmy3ukvKAd60HWDmuhYRA34sstzcerYQR9nBW3L+lt6osSfXhSKDqMECf5tdREkNVhNy0PFYzEP2dK20YJizOz+oMdvf88yFSm7puzcR9hAal42mstGHU+CEP6jyRbdusQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=gl6MaZv4; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="gl6MaZv4"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id B473FC113CF;
-	Fri, 26 Sep 2025 06:42:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1758868938;
-	bh=SgZxbyWjLLNAfsdL8p6PT1jsimc6gg1IOc/TL/1Qzag=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=gl6MaZv44HK8AJnbO/eZIurVSJToxXJGaSXnR5NVCpN/GlRzO4QECsOEktPqW3/qh
-	 yt38fOrJRoYmakB6p3v5Ku4WjL5HzIwVw4Gg+zi4dZ6FjzQoZjqxR2c/ejoHEDRtBu
-	 aIdj7HH9DVjOLaIeLZO4nGgZFTTi9HzEwzOeaa879OWFziq5d04t2PFD+l4kUUqVGm
-	 1tZuknjwCEXVsX/UxYkoTS/67UcnjHmopG+ydqP8sge4pt7yEqjV2NjGI9N7aNQ18p
-	 3BS40I22akvJggFdzshoxEWwKIy4EfBTYzZhkzbp9JsATjVW7GtQrxsR4GMVArPAiJ
-	 WJlgcWfN1Pglg==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E618CAC5AC;
-	Fri, 26 Sep 2025 06:42:18 +0000 (UTC)
-From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Date: Fri, 26 Sep 2025 12:12:09 +0530
-Subject: [PATCH v2 1/2] interconnect: qcom: sdx75: Drop QPIC interconnect
- and BCM nodes
+	s=arc-20240116; t=1758869880; c=relaxed/simple;
+	bh=dw8VodF5d0G5wyZprT1Cfu9CVLPEqqgX7pSeump3QdM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=FH/d2lUso9eQ+2BopiArM/WG9gyXmsyA7jz1PolcjwdCD3P32EXkInXA2F/QxMl5OVTzhv8aafcFp2fymHX/irL/QuPaULUIn28QXFi8+1hc66NgZqwYe5WNDuSfPLWIsdgiMeoOROs5fkaVKTpUliXqbJ5f3fSLC059u0HALjQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.217.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vs1-f45.google.com with SMTP id ada2fe7eead31-5a392946c4aso1078571137.2
+        for <linux-pm@vger.kernel.org>; Thu, 25 Sep 2025 23:57:57 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1758869877; x=1759474677;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=vjQDtyvvVNH5A+YlQavoDIDNO01bRK+FCcEXT++J39I=;
+        b=abOogFM9Xqcm0JmK21aBjlp/E/Aqm68Az3T4CZNfpl3QF4TKvTMWoSqgAnSGLCpOR3
+         gNV7hx2y9riQCMCxLEBXr7xignGQmaA7pEL9BZU6QwUQXQyXphE14I9N0mUV42KEDjpy
+         TNWDDplWO/JgG1YUEQOpdX6e3jwCOzB1qrkJnt31cIKzWmyU2ozTJITrZFeuavC9jxN6
+         fCaH8AafOEwGhh+ab1uUR+NlkadAVWkT6X0LA9ZSYcS+SxSqmMAFhPh9MbzAOGDp4NAh
+         vn6L6uj7XZ8rS+IXZkuql99KbhhxUxMJeIhyBnmFjULjGxX3j6bXlYKXqaLpoHVqnvPl
+         BsTg==
+X-Forwarded-Encrypted: i=1; AJvYcCXP6pa3SFy/hDKZk7Wq1x7FpII8bLrVyBtos56XmFzioYJ0ueVDF0x6YdeC9Dvwa3lKYh7Lyb+nHA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx1AlPyRM+V3O303WZJ7Jd1ldIqDsk3jKdlG2BmS2O3N9H3XeOl
+	N/x4QRqNrfFLwdjrKXrMlOvZapaYfSb1UFTlaCNrLgVStkc8BAu+0XnxB4ngpE+q
+X-Gm-Gg: ASbGncuokAQlw07mmT5mxfrUdUrwW8ZBXmPL/q5Lb8GmpSozV4L+rl8AAAoeD3E5DV3
+	7wWD9uitTLr7XU+B6Qb5ge8fD7jhRP0uE2GGl5e/rK23dg37magB+WNoAABqdKMFTRdToV2UtAx
+	pQpL9sZDBZjFoX3PEtDgfC8b5OVgGRnQP53pkO/E1T6wDbTIKTxG4nsxAsrfXKahzweQcNZ3ry8
+	jb4WnTv34As/f2eSLCO55JrjcLO7Drw8DQCEfy4VuYryQysqGNGevFO8ZA6nUywZeuwdTCpl3Gw
+	r/vSCH3CASEDmyZ+rzeEkpcBA/gH79OZDVOIcKLcpIsoI6yXH2TSDiVMnKKOyA+7C3NGW6mBqtz
+	qPWB3WBI4adXjP2vGwnnNkuJMGcQDui3SqfzA3Nnagsd6y3Q3vS+4VwzmRKj1uYYBuaGnMyE=
+X-Google-Smtp-Source: AGHT+IHpqnlxeqq7oAKg8O8gK8igKoLznjENTWqGc66//PoghSILrMw2COD7QuQyZkev9zblrpQhgA==
+X-Received: by 2002:a05:6102:50a0:b0:592:b33e:3ba3 with SMTP id ada2fe7eead31-5acc4634c20mr2655832137.5.1758869876759;
+        Thu, 25 Sep 2025 23:57:56 -0700 (PDT)
+Received: from mail-vs1-f53.google.com (mail-vs1-f53.google.com. [209.85.217.53])
+        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-5ae389dcefcsm1077262137.10.2025.09.25.23.57.56
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 25 Sep 2025 23:57:56 -0700 (PDT)
+Received: by mail-vs1-f53.google.com with SMTP id ada2fe7eead31-59d576379b9so939706137.1
+        for <linux-pm@vger.kernel.org>; Thu, 25 Sep 2025 23:57:56 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWfkUpMseoSCoMDMR+Q6yGRyG+O/nAke9XLgSQA2Unb2EgqKedK1Xm5H9wEGT1a+ZWLQPxidbdiFA==@vger.kernel.org
+X-Received: by 2002:a05:6102:442c:b0:5a3:6a6f:21ad with SMTP id
+ ada2fe7eead31-5acd0182a34mr2333473137.30.1758869876161; Thu, 25 Sep 2025
+ 23:57:56 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250926-sdx75-icc-v2-1-20d6820e455c@oss.qualcomm.com>
-References: <20250926-sdx75-icc-v2-0-20d6820e455c@oss.qualcomm.com>
-In-Reply-To: <20250926-sdx75-icc-v2-0-20d6820e455c@oss.qualcomm.com>
-To: Georgi Djakov <djakov@kernel.org>, 
- Rohit Agarwal <quic_rohiagar@quicinc.com>, 
- Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, 
- Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, 
- devicetree@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>, 
- Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>, 
- Lakshmi Sowjanya D <quic_laksd@quicinc.com>, 
- Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
- stable@vger.kernel.org
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3921;
- i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=ce9KrwjYprM+n3TPtekMvu+4lvBF/x4wucCd3clZOxQ=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBo1jXI2cks4rWMXbxWFQdClTK5ARjHTM8HMBTgK
- Op4WYAzVIeJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaNY1yAAKCRBVnxHm/pHO
- 9TAGCACR61rPFciCybbh7xmNgzO05w+K312L5XRkHxS1qulGqH8jUQex/BtQjGQIgtWoZFJxoQ8
- Mq6xLKEK8sqcmGPKl/YRdoTZQkKNsWlB2pSAmViOKgugzGnbN86UBVKgJyRo8BpOn+NuhBGaCQc
- nFbhSVpAaciRwpJItgWlFyLFk/UJWTYPse7LNbYp8PbHWsoa/FdDsc/tbswdP9qMVY0NFFZXWlv
- N5qtX1doNpkBEDiJrP4CrKSK6i/y0V2Qt3OIT0oi+gURWoI/DgrVmTZG6izzPKP8DILUIrA4Zay
- 4Iia+UWwF/VR1Uzr7eefbjbkP+d+634UDZt7Ev59q1mq2fR+
-X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
- fpr=C668AEC3C3188E4C611465E7488550E901166008
-X-Endpoint-Received: by B4 Relay for
- manivannan.sadhasivam@oss.qualcomm.com/default with auth_id=461
-X-Original-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-Reply-To: manivannan.sadhasivam@oss.qualcomm.com
+References: <20250701114733.636510-1-ulf.hansson@linaro.org>
+ <CAPDyKFr=u0u2ijczExkntHK1miWZ6hRrEWBMiyUwShS3m6c29g@mail.gmail.com>
+ <CAMuHMdX1BacUfqtmV8g7NpRnY9aTdL=fh+jC7OryMLz4ijaOCg@mail.gmail.com>
+ <CAPDyKFqANQZmGXd8ccA5qWiGrCor2N=W_7dmV+OK8hMd_+zmmw@mail.gmail.com>
+ <CAMuHMdVrkr56XsRsbG7H-tLHVzmP+g-7=5Nrv9asC25ismwiYA@mail.gmail.com> <CAGETcx-L-KypYZEkdKRBfZHDhFMTUuwKEGVQ-7QPv=++6uwLSw@mail.gmail.com>
+In-Reply-To: <CAGETcx-L-KypYZEkdKRBfZHDhFMTUuwKEGVQ-7QPv=++6uwLSw@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 26 Sep 2025 08:57:45 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdWjhXjjw9wFw5Me-wAX0nA+gK2mdGxLyBJJCWDHZ58LeQ@mail.gmail.com>
+X-Gm-Features: AS18NWD2sqCNW31Hr76xpW5m_kx80ye1q9D4_pFDoOhvkwDietXEmUuVKInRsEY
+Message-ID: <CAMuHMdWjhXjjw9wFw5Me-wAX0nA+gK2mdGxLyBJJCWDHZ58LeQ@mail.gmail.com>
+Subject: Re: [PATCH v3 00/24] pmdomain: Add generic ->sync_state() support to genpd
+To: Saravana Kannan <saravanak@google.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org, 
+	"Rafael J . Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Michael Grzeschik <m.grzeschik@pengutronix.de>, Bjorn Andersson <andersson@kernel.org>, 
+	Abel Vesa <abel.vesa@linaro.org>, Peng Fan <peng.fan@oss.nxp.com>, 
+	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, Johan Hovold <johan@kernel.org>, 
+	Maulik Shah <maulik.shah@oss.qualcomm.com>, Michal Simek <michal.simek@amd.com>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, 
+	Jonathan Hunter <jonathanh@nvidia.com>, Hiago De Franco <hiago.franco@toradex.com>, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
+Hi Saravana,
 
-As like other SDX SoCs, SDX75 SoC's QPIC BCM resource was modeled as a
-RPMh clock in clk-rpmh driver. However, for SDX75, this resource was also
-described as an interconnect and BCM node mistakenly. It is incorrect to
-describe the same resource in two different providers, as it will lead to
-votes from clients overriding each other.
+On Fri, 26 Sept 2025 at 00:41, Saravana Kannan <saravanak@google.com> wrote=
+:
+> On Thu, Aug 7, 2025 at 2:43=E2=80=AFAM Geert Uytterhoeven <geert@linux-m6=
+8k.org> wrote:
+> > On Wed, 30 Jul 2025 at 12:29, Ulf Hansson <ulf.hansson@linaro.org> wrot=
+e:
+> > > On Wed, 30 Jul 2025 at 11:56, Geert Uytterhoeven <geert@linux-m68k.or=
+g> wrote:
+> > > > BTW, the "pending due to"-messages look weird to me.
+> > > > On R-Car M2-W (r8a7791.dtsi) I see e.g.:
+> > > >
+> > > >     genpd_provider ca15-cpu0: sync_state() pending due to e6020000.=
+watchdog
+> > > >     renesas-cpg-mssr e6150000.clock-controller: sync_state() pendin=
+g
+> > > > due to e6020000.watchdog
+> > > >
+> > > > ca15-cpu0 is the PM Domain holding the first CPU core, while
+> > > > the watchdog resides in the always-on Clock Domain, and uses the
+> > > > clock-controller for PM_CLK handling.
+> >
+> > Unfortunately the first PM Domain is "ca15-cpu0", which is blocked on
+> > these bogus pending states, and no PM Domain is powered off.
+>
+> Can you explain why you call these as bogus? Sorry if you already
+> explained it. But the reason I'm asking is to see if you can set a
+> flag for the watchdog device so fw_devlink will completely ignore it.
 
-Hence, drop the QPIC interconnect and BCM nodes and let the clients use
-clk-rpmh driver to vote for this resource.
+"bogus" refers to "1." below.
 
-Without this change, the NAND driver fails to probe on SDX75, as the
-interconnect sync state disables the QPIC nodes as there were no clients
-voting for this ICC resource. However, the NAND driver had already voted
-for this BCM resource through the clk-rpmh driver. Since both votes come
-from Linux, RPMh was unable to distinguish between these two and ends up
-disabling the QPIC resource during sync state.
+Furthermore, devices that are located in an alway-on domain should
+not block the sync state.
 
-Cc: stable@vger.kernel.org
-Fixes: 3642b4e5cbfe ("interconnect: qcom: Add SDX75 interconnect provider driver")
-Signed-off-by: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
-[mani: dropped the reference to bcm_qp0, reworded description]
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
----
- drivers/interconnect/qcom/sdx75.c | 26 --------------------------
- drivers/interconnect/qcom/sdx75.h |  2 --
- 2 files changed, 28 deletions(-)
+> It looks like there's a driver for this watchdog node? Why is it not
+> probing then?
 
-diff --git a/drivers/interconnect/qcom/sdx75.c b/drivers/interconnect/qcom/sdx75.c
-index 7ef1f17f3292e15959cb06e3d8d8c5f3c6ecd060..2def75f67eb8e0adf0a14a1bd13f24c401cc722a 100644
---- a/drivers/interconnect/qcom/sdx75.c
-+++ b/drivers/interconnect/qcom/sdx75.c
-@@ -16,15 +16,6 @@
- #include "icc-rpmh.h"
- #include "sdx75.h"
- 
--static struct qcom_icc_node qpic_core_master = {
--	.name = "qpic_core_master",
--	.id = SDX75_MASTER_QPIC_CORE,
--	.channels = 1,
--	.buswidth = 4,
--	.num_links = 1,
--	.links = { SDX75_SLAVE_QPIC_CORE },
--};
--
- static struct qcom_icc_node qup0_core_master = {
- 	.name = "qup0_core_master",
- 	.id = SDX75_MASTER_QUP_CORE_0,
-@@ -375,14 +366,6 @@ static struct qcom_icc_node xm_usb3 = {
- 	.links = { SDX75_SLAVE_A1NOC_CFG },
- };
- 
--static struct qcom_icc_node qpic_core_slave = {
--	.name = "qpic_core_slave",
--	.id = SDX75_SLAVE_QPIC_CORE,
--	.channels = 1,
--	.buswidth = 4,
--	.num_links = 0,
--};
--
- static struct qcom_icc_node qup0_core_slave = {
- 	.name = "qup0_core_slave",
- 	.id = SDX75_SLAVE_QUP_CORE_0,
-@@ -831,12 +814,6 @@ static struct qcom_icc_bcm bcm_mc0 = {
- 	.nodes = { &ebi },
- };
- 
--static struct qcom_icc_bcm bcm_qp0 = {
--	.name = "QP0",
--	.num_nodes = 1,
--	.nodes = { &qpic_core_slave },
--};
--
- static struct qcom_icc_bcm bcm_qup0 = {
- 	.name = "QUP0",
- 	.keepalive = true,
-@@ -898,14 +875,11 @@ static struct qcom_icc_bcm bcm_sn4 = {
- };
- 
- static struct qcom_icc_bcm * const clk_virt_bcms[] = {
--	&bcm_qp0,
- 	&bcm_qup0,
- };
- 
- static struct qcom_icc_node * const clk_virt_nodes[] = {
--	[MASTER_QPIC_CORE] = &qpic_core_master,
- 	[MASTER_QUP_CORE_0] = &qup0_core_master,
--	[SLAVE_QPIC_CORE] = &qpic_core_slave,
- 	[SLAVE_QUP_CORE_0] = &qup0_core_slave,
- };
- 
-diff --git a/drivers/interconnect/qcom/sdx75.h b/drivers/interconnect/qcom/sdx75.h
-index 24e88715992010d934a1a630979f864af3a8426c..34f51add59dc008c7378dec3c1409f0f55b93056 100644
---- a/drivers/interconnect/qcom/sdx75.h
-+++ b/drivers/interconnect/qcom/sdx75.h
-@@ -33,7 +33,6 @@
- #define SDX75_MASTER_QDSS_ETR			24
- #define SDX75_MASTER_QDSS_ETR_1			25
- #define SDX75_MASTER_QPIC			26
--#define SDX75_MASTER_QPIC_CORE			27
- #define SDX75_MASTER_QUP_0			28
- #define SDX75_MASTER_QUP_CORE_0			29
- #define SDX75_MASTER_SDCC_1			30
-@@ -76,7 +75,6 @@
- #define SDX75_SLAVE_QDSS_CFG			67
- #define SDX75_SLAVE_QDSS_STM			68
- #define SDX75_SLAVE_QPIC			69
--#define SDX75_SLAVE_QPIC_CORE			70
- #define SDX75_SLAVE_QUP_0			71
- #define SDX75_SLAVE_QUP_CORE_0			72
- #define SDX75_SLAVE_SDCC_1			73
+Because this particular revision of the SoC has a hardware bug that
+prevents the watchdog timer from rebooting the system, and the driver
+detects that.
 
--- 
-2.48.1
+Anyway, if the driver is not available, unused power domains should
+still be powered down, like before.
 
+> > If I remove the "sync_state =3D false" above, genpd_provider_sync_state=
+()
+> > considers all domains, and does power down all unused domains (even
+> > multiple times, as expected).
+> >
+> > Upon closer look, all "pending due to" messages I see claim that the
+> > first (index 0) PM Domain is pending on some devices, while all of
+> > these devices are part of a different domain (usually the always-on
+> > domain, which is always the last (32 or 64) on R-Car).
+> >
+> > So I think there are two issues:
+> >   1. Devices are not attributed to the correct PM Domain using
+> >      fw_devlink sync_state,
+>
+> Is it a fw_devlink issue? Or is this a multi-domain controller?
 
+This is a multi-domain controller.
+
+> >   2. One PM Domain of a multi-domain controller being blocked should
+> >      not block all other domains handled by the same controller.
+>
+> This is going to take a while to sort out. But the current behavior is
+> the safest. How grumpy will you be if we don't fix this :)
+
+Depending on your definition of "safe".  Keeping all power domains on
+increases power consumption and heat generation, and may cause e.g. CPU
+frequency throttling to kick in, slowing down operation of the system.
+
+Thanks!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
