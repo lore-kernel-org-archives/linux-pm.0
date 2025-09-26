@@ -1,74 +1,85 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from srv01.abscue.de (abscue.de [89.58.28.240])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D6112F99BC;
-	Fri, 26 Sep 2025 16:28:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C55A202F7B;
+	Fri, 26 Sep 2025 16:34:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.58.28.240
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758904081; cv=none; b=FlcB/YZXv+hqPqCVWEDpse99X66I+V4OT4KSM//RIl+8zkQ+rtYVw4efRDwtMR/Cgd7EOOVR3eezQdG5Z1GJCK0Y2mXqtrCX2EFYjTCzsjg8RDBmsTXKCkfoQkp6fhvNcxy45uzG2il/oiLUDeh7xEReXiuCYaDTVo+FYlpgBNo=
+	t=1758904474; cv=none; b=qgdk+zKPwnG4JuK0f42xPlZjuabZNdkunEjD+A+iDq6nEDXUqaeZWJRcygUcaH954MJYzGT5gyx/X47HAxBprN+IibZ7158QlWDwfeMp2Shw4VA0T5wIYdY9oE2KJfU/PaLWy/zDDPHv5Jt9yeLuTk/UycynJ4Gfxf7t5PeWKNs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758904081; c=relaxed/simple;
-	bh=vjohy+nNyGpberAIlWkBgS5rNJca1fy4OxfKMLhyzHA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=EMe+b6SOR5noj56u/rJaoY2igilzWvM0KH3tUVkbFkzz9n7yh1HlQOm4YSddnwoCALijGPMqMienSKqCYxF5rmmre15Dtxg89/1rPKaPSgMEvbtbpNFzI+8wimfAsNDslLCQohDtbgv3l6W8x94vF9Rx0v/qlH5RZuwGEHm90B4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FJnlHrNe; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FJnlHrNe"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BE15AC4CEF4;
-	Fri, 26 Sep 2025 16:27:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1758904081;
-	bh=vjohy+nNyGpberAIlWkBgS5rNJca1fy4OxfKMLhyzHA=;
-	h=From:To:Cc:Subject:Date:From;
-	b=FJnlHrNewbW9uZfkPhIN4QUg+E3ygvvEPwtbAeDYne87uvEngj/FF93oGYdc6f10K
-	 Kmnui0i9sklOZCfjO0yHf1TTVAXNd1O32Zp81KyoayEG22RAi0F2jDdN0o3w7y3NK2
-	 d+fGsubH5A/1OM1iRhMUbHTk4h4Bn2TY5JzSQF3y7+3xihC5w4fjcZuG0N2HtV92tM
-	 iiyedEn86ukoStF/rYGoeeoZ4Yy9wvBnYSotUdi0nmTtQuqus2rSnS9R0w/MwmtrNM
-	 dVy/D7dXdh2qdaSEDG0b6hgiNhdKQu4N1Gw/oTWiI9A4FHH4CqoBDVnjUqzvtcnPV1
-	 Izwz9noDeAlGw==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux PM <linux-pm@vger.kernel.org>,
- Jonathan Cameron <jonathan.cameron@huawei.com>
-Cc: Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>,
- Linux PCI <linux-pci@vger.kernel.org>,
- Alex Williamson <alex.williamson@redhat.com>,
- Bjorn Helgaas <helgaas@kernel.org>, Zhang Qilong <zhangqilong3@huawei.com>,
- Ulf Hansson <ulf.hansson@linaro.org>, Frank Li <Frank.Li@nxp.com>,
- Dhruva Gole <d-gole@ti.com>
-Subject: [PATCH v4 0/3] PM: runtime: Auto-cleanup macros for runtime PM
-Date: Fri, 26 Sep 2025 17:40:29 +0200
-Message-ID: <6196611.lOV4Wx5bFT@rafael.j.wysocki>
-Organization: Linux Kernel Development
+	s=arc-20240116; t=1758904474; c=relaxed/simple;
+	bh=tgqsf4Ecr3URSbxtzrxUja8Hphhy7XTQA2zzZlWR61k=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=PaSg3Z+cyhtFBfggRQb9dH2cMlg5VgWicyz2maZ2Z0MhGNNgUc5m2/B3B7zj+jxNEqtUj0TGt4bFwcANig+Ts6UD4ox1zkzCIomFcyiyK94atgtqXnuaCr7vZ4RKamm2rs6wMB+ejessJG0/+76Ar7kwdbqieplStf0imW/dxdM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=abscue.de; spf=pass smtp.mailfrom=abscue.de; arc=none smtp.client-ip=89.58.28.240
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=abscue.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=abscue.de
+Received: from srv01.abscue.de (localhost [127.0.0.1])
+	by spamfilter.srv.local (Postfix) with ESMTP id 42A1F1C2508;
+	Fri, 26 Sep 2025 18:27:07 +0200 (CEST)
+X-Spam-Level: 
+Received: from fluffy-mammal.metal.fwg-cag.de (unknown [IPv6:2001:9e8:cdf8:0:ec51:b786:a581:3dd1])
+	by srv01.abscue.de (Postfix) with ESMTPSA id A47B91C2505;
+	Fri, 26 Sep 2025 18:27:06 +0200 (CEST)
+From: =?utf-8?q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>
+Date: Fri, 26 Sep 2025 18:23:24 +0200
+Subject: [PATCH 2/5] dt-bindings: mfd: sc2731: Reference
+ sprd,sc2731-poweroff
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20250926-sc2730-reboot-v1-2-62ebfd3d31bb@abscue.de>
+References: <20250926-sc2730-reboot-v1-0-62ebfd3d31bb@abscue.de>
+In-Reply-To: <20250926-sc2730-reboot-v1-0-62ebfd3d31bb@abscue.de>
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Orson Zhai <orsonzhai@gmail.com>, 
+ Baolin Wang <baolin.wang@linux.alibaba.com>, 
+ Chunyan Zhang <zhang.lyra@gmail.com>, Lee Jones <lee@kernel.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, 
+ =?utf-8?q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>
+X-Mailer: b4 0.14.2
 
-Hi All,
+Reference the new sprd,sc2731-poweroff bindings and add an example.
 
-This supersedes
+Signed-off-by: Otto Pflüger <otto.pflueger@abscue.de>
+---
+ Documentation/devicetree/bindings/mfd/sprd,sc2731.yaml | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-https://lore.kernel.org/linux-pm/12763087.O9o76ZdvQC@rafael.j.wysocki/
+diff --git a/Documentation/devicetree/bindings/mfd/sprd,sc2731.yaml b/Documentation/devicetree/bindings/mfd/sprd,sc2731.yaml
+index b023e1ef8d3ccdb1d82d64ed1a60d5a712a1b910..a78d7e26b3a2c77b84da84fc23e52f3a22ab14df 100644
+--- a/Documentation/devicetree/bindings/mfd/sprd,sc2731.yaml
++++ b/Documentation/devicetree/bindings/mfd/sprd,sc2731.yaml
+@@ -52,6 +52,10 @@ properties:
+   '#size-cells':
+     const: 0
+ 
++  poweroff:
++    type: object
++    $ref: /schemas/power/reset/sprd,sc2731-poweroff.yaml#
++
+   regulators:
+     type: object
+     $ref: /schemas/regulator/sprd,sc2731-regulator.yaml#
+@@ -221,6 +225,10 @@ examples:
+           reg = <0xec8>;
+         };
+ 
++        poweroff {
++          compatible = "sprd,sc2731-poweroff";
++        };
++
+         regulators {
+           compatible = "sprd,sc2731-regulator";
+ 
 
-which was an update of
-
-https://lore.kernel.org/linux-pm/6204724.lOV4Wx5bFT@rafael.j.wysocki/
-
-that superseded both
-
-https://lore.kernel.org/linux-pm/5049058.31r3eYUQgx@rafael.j.wysocki/
-
-and
-
-https://lore.kernel.org/linux-pm/20250919163147.4743-1-tiwai@suse.de/
-
-It follows the Jonathan's suggestion to use ACQUIRE()/ACQUIRE_ERR()
-instead af raw CLASS() to make the code somewhat cleaner.
-
-Thanks!
-
-
+-- 
+2.50.0
 
