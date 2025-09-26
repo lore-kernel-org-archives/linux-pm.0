@@ -1,178 +1,120 @@
-Received: from srv01.abscue.de (abscue.de [89.58.28.240])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C5C323506F;
-	Fri, 26 Sep 2025 16:34:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.58.28.240
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1026229B1F;
+	Fri, 26 Sep 2025 16:41:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758904476; cv=none; b=s1TyUQy/x/tgPFGsw2oDvkoxbyqto5XJIKwN4tDWXJXY4zY6UxnfRltY6h0xkz3MlUGsUKbGFicsFjEkuTnd6ONvCXO6dLkGZ+xnV/9tcnJnyUlxtW5kROqYamFCX20SYdUbKcgNBaf64Yt8XMEMVpJ38znPkO6HhlkRt8P2trE=
+	t=1758904895; cv=none; b=lsdMCs5ga4qOlo5qdZ9i6pAQ2+nm/BnbBNlP7EyByHVxG4D9hZhAGAG8LLmLsAa86DzmpH71qyH32TBWq/oQhB9yvOEUmRZrr19I5bT8yACOycY9rF9hpkuPdBmWc/566KDChrSVuIvANjwlvjZbJIW/ODd1cVYVw8ZI9oCPBZ8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758904476; c=relaxed/simple;
-	bh=AZlUcOk3yWypTJbdqtn01NgPo10tnHCQOEM37R4XTQw=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=fS6KWBDIKYtOD3oRHyozOAa60OFLpDD9n/DF5Ys2ucqaqmnpiiDhaWTEFzDAY0aNR0xj1WlCJSeWCDr/uU2W6MN3d9ikOTZ1J17roKRGXp6DvA5UOsTeWTCXQTUaz5iuhQByFlb+FncdsuuiYQn/GsFvdsqpt2iPAr8BfU04uX0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=abscue.de; spf=pass smtp.mailfrom=abscue.de; arc=none smtp.client-ip=89.58.28.240
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=abscue.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=abscue.de
-Received: from srv01.abscue.de (localhost [127.0.0.1])
-	by spamfilter.srv.local (Postfix) with ESMTP id C1BF61C24F2;
-	Fri, 26 Sep 2025 18:27:08 +0200 (CEST)
-X-Spam-Level: 
-Received: from fluffy-mammal.metal.fwg-cag.de (unknown [IPv6:2001:9e8:cdf8:0:ec51:b786:a581:3dd1])
-	by srv01.abscue.de (Postfix) with ESMTPSA id A85EB1C2509;
-	Fri, 26 Sep 2025 18:27:07 +0200 (CEST)
-From: =?utf-8?q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>
-Date: Fri, 26 Sep 2025 18:23:26 +0200
-Subject: [PATCH 4/5] power: reset: sc27xx: Add support for SC2730 and OF
- match table
+	s=arc-20240116; t=1758904895; c=relaxed/simple;
+	bh=Adm6HvYSUc4fdo95/IlsLBb45FB8Zii6Mcrl6yg6xgE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=bMFdOV3pBNWyF2rjJbZ1hFk5uemjiyaJ6LVeIRFdvkhm/0xwR9mcRIhAHBhVHE4wx2AW4/AP8x0onH0a/AMXvTtXmzb9/manwvx4vjDwAICYVZNuXBQmcUJcgqQJ4MiW+vw8tWJBV4s0R6y9YbSEeaL3xVGHCL+sM5nxZmmHTQQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fViBS2mS; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fViBS2mS"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7B47BC4CEF4;
+	Fri, 26 Sep 2025 16:41:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1758904895;
+	bh=Adm6HvYSUc4fdo95/IlsLBb45FB8Zii6Mcrl6yg6xgE=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=fViBS2mS5Z08a7P2FivkLV6xsp+iGOicTArxX5PYY6agjVQHAbWzT0qPpp2BC2upB
+	 E9lL1+39xflCOd5Sdu8Fxq3HkGk4uI0OqP9fNWuvTjQS7TDMForkbRhFCYu/dHN2VC
+	 0pMzf4/OQu+KOQE/IjFlFX+BJAqataVBtNR0OZiZYSuMXHChFod2bD8WcYXcA1pup6
+	 hq8h0jlQwCu6mNW6Wzi6Ggn4uvE9efnLk99w2tVXbdpdLVHtnmvnedo4FqGBHsiSoq
+	 wwSCXUgkoboHxZH/3od+iOXzaMpg33kaekwdYrxgQqJi5quCkLcLFMXpjr3ViiqZtD
+	 EYXl8AE+9RIng==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Mario Limonciello <mario.limonciello@amd.com>
+Subject: [PATCH v1 2/2] PM: hibernate: Combine return paths in power_down()
+Date: Fri, 26 Sep 2025 18:41:21 +0200
+Message-ID: <3571055.QJadu78ljV@rafael.j.wysocki>
+Organization: Linux Kernel Development
+In-Reply-To: <3303305.5fSG56mABF@rafael.j.wysocki>
+References: <3303305.5fSG56mABF@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20250926-sc2730-reboot-v1-4-62ebfd3d31bb@abscue.de>
-References: <20250926-sc2730-reboot-v1-0-62ebfd3d31bb@abscue.de>
-In-Reply-To: <20250926-sc2730-reboot-v1-0-62ebfd3d31bb@abscue.de>
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Orson Zhai <orsonzhai@gmail.com>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, 
- Chunyan Zhang <zhang.lyra@gmail.com>, Lee Jones <lee@kernel.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, 
- =?utf-8?q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>
-X-Mailer: b4 0.14.2
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-Add register definitions for the SC2730 PMIC. Introduce a new struct
-sc27xx_poweroff_data for passing register information to the poweroff
-handler. Implement device tree matching to distinguish between SC2730
-and SC2731 and to probe the driver automatically.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Otto Pflüger <otto.pflueger@abscue.de>
+To avoid code duplication and improve clarity, combine the code
+paths in power_down() leading to a return from that function.
+
+No intentional functional impact.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/power/reset/sc27xx-poweroff.c | 67 +++++++++++++++++++++++++++++------
- 1 file changed, 57 insertions(+), 10 deletions(-)
+ kernel/power/hibernate.c |   32 ++++++++++++++------------------
+ 1 file changed, 14 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/power/reset/sc27xx-poweroff.c b/drivers/power/reset/sc27xx-poweroff.c
-index 20eb9f32cb2b99adeb16502172adf9d6257cd05f..5937f40021817ea38453705fcef6485ce79ac14c 100644
---- a/drivers/power/reset/sc27xx-poweroff.c
-+++ b/drivers/power/reset/sc27xx-poweroff.c
-@@ -7,16 +7,33 @@
- #include <linux/cpu.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
-+#include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/pm.h>
- #include <linux/reboot.h>
- #include <linux/regmap.h>
- #include <linux/syscore_ops.h>
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -708,21 +708,11 @@ static void power_down(void)
+ 	if (hibernation_mode == HIBERNATION_SUSPEND) {
+ 		pm_restore_gfp_mask();
+ 		error = suspend_devices_and_enter(mem_sleep_current);
+-		if (error) {
+-			hibernation_mode = hibernation_ops ?
+-						HIBERNATION_PLATFORM :
+-						HIBERNATION_SHUTDOWN;
+-		} else {
+-			/* Match pm_restore_gfp_mask() call in hibernate() */
+-			pm_restrict_gfp_mask();
++		if (!error)
++			goto rollback;
  
--#define SC27XX_PWR_PD_HW	0xc2c
-+#define SC2730_PWR_PD_HW	0x1820
-+#define SC2730_SLP_CTRL		0x1a48
-+#define SC2730_LDO_XTL_EN	BIT(2)
+-			/* Restore swap signature. */
+-			error = swsusp_unmark();
+-			if (error)
+-				pr_err("Swap will be unusable! Try swapon -a.\n");
+-
+-			return;
+-		}
++		hibernation_mode = hibernation_ops ? HIBERNATION_PLATFORM :
++						     HIBERNATION_SHUTDOWN;
+ 	}
+ #endif
+ 
+@@ -733,12 +723,9 @@ static void power_down(void)
+ 	case HIBERNATION_PLATFORM:
+ 		error = hibernation_platform_enter();
+ 		if (error == -EAGAIN || error == -EBUSY) {
+-			/* Match pm_restore_gfp_mask() in hibernate(). */
+-			pm_restrict_gfp_mask();
+-			swsusp_unmark();
+ 			events_check_enabled = false;
+ 			pr_info("Wakeup event detected during hibernation, rolling back.\n");
+-			return;
++			goto rollback;
+ 		}
+ 		fallthrough;
+ 	case HIBERNATION_SHUTDOWN:
+@@ -757,6 +744,15 @@ static void power_down(void)
+ 	pr_crit("Power down manually\n");
+ 	while (1)
+ 		cpu_relax();
 +
-+#define SC2731_PWR_PD_HW	0xc2c
-+#define SC2731_SLP_CTRL		0xdf0
-+#define SC2731_LDO_XTL_EN	BIT(3)
++rollback:
++	/* Match the pm_restore_gfp_mask() call in hibernate(). */
++	pm_restrict_gfp_mask();
 +
- #define SC27XX_PWR_OFF_EN	BIT(0)
--#define SC27XX_SLP_CTRL		0xdf0
--#define SC27XX_LDO_XTL_EN	BIT(3)
-+
-+struct sc27xx_poweroff_reg_info {
-+	u32 poweroff_reg;
-+	u32 slp_ctrl_reg;
-+	u32 ldo_xtl_en;
-+};
-+
-+struct sc27xx_poweroff_data {
-+	struct regmap *regmap;
-+	const struct sc27xx_poweroff_reg_info *regs;
-+};
- 
- /*
-  * On Spreadtrum platform, we need power off system through external SC27xx
-@@ -45,12 +62,14 @@ static struct syscore_ops poweroff_syscore_ops = {
- 
- static int sc27xx_poweroff_do_poweroff(struct sys_off_data *off_data)
- {
--	struct regmap *regmap = off_data->cb_data;
-+	struct sc27xx_poweroff_data *data = off_data->cb_data;
- 
- 	/* Disable the external subsys connection's power firstly */
--	regmap_write(regmap, SC27XX_SLP_CTRL, SC27XX_LDO_XTL_EN);
-+	regmap_write(data->regmap, data->regs->slp_ctrl_reg,
-+		     data->regs->ldo_xtl_en);
- 
--	regmap_write(regmap, SC27XX_PWR_PD_HW, SC27XX_PWR_OFF_EN);
-+	regmap_write(data->regmap, data->regs->poweroff_reg,
-+		     SC27XX_PWR_OFF_EN);
- 
- 	mdelay(1000);
- 
-@@ -61,10 +80,18 @@ static int sc27xx_poweroff_do_poweroff(struct sys_off_data *off_data)
- 
- static int sc27xx_poweroff_probe(struct platform_device *pdev)
- {
--	struct regmap *regmap;
-+	struct sc27xx_poweroff_data *data;
- 
--	regmap = dev_get_regmap(pdev->dev.parent, NULL);
--	if (!regmap)
-+	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	data->regs = of_device_get_match_data(&pdev->dev);
-+	if (!data->regs)
-+		return -EINVAL;
-+
-+	data->regmap = dev_get_regmap(pdev->dev.parent, NULL);
-+	if (!data->regmap)
- 		return -ENODEV;
- 
- 	register_syscore_ops(&poweroff_syscore_ops);
-@@ -73,13 +100,33 @@ static int sc27xx_poweroff_probe(struct platform_device *pdev)
- 					     SYS_OFF_MODE_POWER_OFF,
- 					     SYS_OFF_PRIO_DEFAULT,
- 					     sc27xx_poweroff_do_poweroff,
--					     regmap);
-+					     data);
++	/* Restore swap signature. */
++	error = swsusp_unmark();
++	if (error)
++		pr_err("Swap will be unusable! Try swapon -a.\n");
  }
  
-+static const struct sc27xx_poweroff_reg_info sc2730_pwr_regs = {
-+	.poweroff_reg = SC2730_PWR_PD_HW,
-+	.slp_ctrl_reg = SC2730_SLP_CTRL,
-+	.ldo_xtl_en = SC2730_LDO_XTL_EN,
-+};
-+
-+static const struct sc27xx_poweroff_reg_info sc2731_pwr_regs = {
-+	.poweroff_reg = SC2731_PWR_PD_HW,
-+	.slp_ctrl_reg = SC2731_SLP_CTRL,
-+	.ldo_xtl_en = SC2731_LDO_XTL_EN,
-+};
-+
-+static const struct of_device_id sc27xx_poweroff_of_match[] = {
-+	{ .compatible = "sprd,sc2730-poweroff", .data = &sc2730_pwr_regs },
-+	{ .compatible = "sprd,sc2731-poweroff", .data = &sc2731_pwr_regs },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, sc27xx_poweroff_of_match);
-+
- static struct platform_driver sc27xx_poweroff_driver = {
- 	.probe = sc27xx_poweroff_probe,
- 	.driver = {
- 		.name = "sc27xx-poweroff",
-+		.of_match_table = sc27xx_poweroff_of_match,
- 	},
- };
- module_platform_driver(sc27xx_poweroff_driver);
+ static int load_image_and_restore(void)
 
--- 
-2.50.0
+
 
