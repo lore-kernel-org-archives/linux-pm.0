@@ -1,57 +1,84 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC1EA2FF15E;
-	Fri, 26 Sep 2025 16:41:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C1453043D4;
+	Fri, 26 Sep 2025 16:47:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758904903; cv=none; b=GVmp6NBAyZKyxz9m/xkGuv/LwA3h5YaIYUyeeHYGQ6Ble493ancFQWuE2BUXP61MG7fXk/geMymKiI/1oBZTyoVRsH1IjA/uAu+ZXrmPkJArXOqcWp1e9I93G8SNwgUedXVeJa9PfyJXIAE7ZHomZdAMgU7lK0DhSIRdwJ6gvGo=
+	t=1758905249; cv=none; b=SA1kMLjfRNPRwYPl8hCFUS3oZulzHJ9gnjtIvwvp86fYohpJ4Y4qiXNzGvkjgHok2v3GDE+txWWnHQblmZiVFbsUtbQOrMb4fuG99bBjqnhlsUjw5FC9PHoJ//NBWLnVnb18dppMNhAOpYUdmOIqapnmt1TF7B/TSCq3lxICvy0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758904903; c=relaxed/simple;
-	bh=sIQb1psRMyrYgBpUcxTNkgQoDdrxh0AoWgTE8MqeSuM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=E7dIfbBfPKdB7l4mdVnqqpmIkC41dBShuO+Jht8ZkhXLVdBOodwkT3wWZ2s5Z7I9NOBtr6/6w6Lh4LRQkWNThPJ8iylgWs2hlbpeopewq7Lw/4UgOCrABKuGH1Zu44Z+CadR8X9I/MKsy8Z0rS7w0ihdm0CNxu1ZhIr+p9wo/3o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CqSnljLF; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1758905249; c=relaxed/simple;
+	bh=rrEBx18qzXSvz+cyceSpbHcd1Pd95v0VXH07nAr2mG0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=clGsEIkRU7jW0ZMT1z6SSNwQKvZkNCF+ILz2ozWpQkAr45CRB6dPoWBdwhRrWJGM5CDqOccsYmJmVP3Z+DEo0UlYd9j4p2kzud8NcwCuJUQfIIoquEQrXNY8gUarUgLWMABoDXPRXDEXad4FKlMsDtNgeUx9/mJTBqVX/sb0OFE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YdQC/krJ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CqSnljLF"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D5B5EC4CEF7;
-	Fri, 26 Sep 2025 16:41:41 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YdQC/krJ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 968C3C4CEF4;
+	Fri, 26 Sep 2025 16:47:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1758904903;
-	bh=sIQb1psRMyrYgBpUcxTNkgQoDdrxh0AoWgTE8MqeSuM=;
-	h=From:To:Cc:Subject:Date:From;
-	b=CqSnljLFo+f1++hp6Y782Qnl/XwJiA7TUnHWi5JdGSHKEqUJkW938yQKEeLKEcvml
-	 NeUKNTzGOFbiWriCif2PRIFlF9N8IZo0CrWm7OOIeb0tLckOTZwaakp0SV5HY3jnjv
-	 FHJQTM3CI3aZIcOB/5TAgPg3z2ICXVHdqbbSpXiYY1J9oHIQWi9/oLsMAb4bYam3h1
-	 gXYGQ+ONGHjFV6J705s8BzX+xoBCSBnqpSGWMh5VlNmTx1bN82+u3BDSRDGAAks+aw
-	 PAWIdeNxL+6i7AVBWGffaLOPYcwI6rZ+FahWQdrMQN2NZsAU6NQ1gnLLS63WJ0iYdI
-	 dvIkgDjp/Xoiw==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Mario Limonciello <mario.limonciello@amd.com>
-Subject:
- [PATCH v1 0/2] PM: hibernate: Fix GFP mask restoration issue and consolidate
- code
-Date: Fri, 26 Sep 2025 18:37:27 +0200
-Message-ID: <3303305.5fSG56mABF@rafael.j.wysocki>
-Organization: Linux Kernel Development
+	s=k20201202; t=1758905248;
+	bh=rrEBx18qzXSvz+cyceSpbHcd1Pd95v0VXH07nAr2mG0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=YdQC/krJzFBoouzCqqmrIKtiUm53faJ6TwL5uucxOvIeHAiGJ2QKkVydXU1KLkKob
+	 ejuvmGFGNSoPzFXLcspgIAL2EpOtfzRmYT1JecI8oHaNWhlIWk6F1l1Ll87eMOuEDh
+	 IrmMVUbNN6TdWf61AlxIEEUt4lYcM7zt/8JCsOUK40X0s8zBObtXnsXZOFcjOZdNJE
+	 bgIUYthyj6ZaRzRa9srXLAqUBijkBl49SAI83yHAUL26uE1eLnSo5q1FeQt2oSPWqX
+	 pyunpFS7ORCUaQNdB3E+NCSDNlC7LAQARKrROSppBJTtr1M/za/5Z7TqqtiJE5uqIG
+	 iYwduE56x2ywQ==
+Message-ID: <880b6e4d-58c3-4fb7-a378-12b842fcc7c9@kernel.org>
+Date: Fri, 26 Sep 2025 11:47:26 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1 1/2] PM: hibernate: Restrict GFP mask in power_down()
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <3303305.5fSG56mABF@rafael.j.wysocki>
+ <8625379.NyiUUSuA9g@rafael.j.wysocki>
+Content-Language: en-US
+From: Mario Limonciello <superm1@kernel.org>
+In-Reply-To: <8625379.NyiUUSuA9g@rafael.j.wysocki>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hi All,
-
-Unfortunately, there is another issue related to the pm_restrict_gfp_mask() and
-pm_restore_gfp_mask() calls that needs to be addressed (patch [1/2]) and on
-top of that, some code in power_down() can be consolidated to avoid duplication
-and improve clarity (patch [2/2]).
-
-Thanks!
-
-
+On 9/26/25 11:40 AM, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Commit 12ffc3b1513e ("PM: Restrict swap use to later in the
+> suspend sequence") caused hibernation_platform_enter() to call
+> pm_restore_gfp_mask() via dpm_resume_end(), so when power_down()
+> returns after aborting hibernation_platform_enter(), it needs
+> to match the pm_restore_gfp_mask() call in hibernate() that will
+> occur subsequently.
+> 
+> Address this by adding a pm_restrict_gfp_mask() call to the relevant
+> error path in power_down().
+> 
+> Fixes: 12ffc3b1513e ("PM: Restrict swap use to later in the suspend sequence")
+> Cc: 6.16+ <stable@vger.kernel.org> # 6.16+
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>> ---
+>   kernel/power/hibernate.c |    2 ++
+>   1 file changed, 2 insertions(+)
+> 
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -733,6 +733,8 @@ static void power_down(void)
+>   	case HIBERNATION_PLATFORM:
+>   		error = hibernation_platform_enter();
+>   		if (error == -EAGAIN || error == -EBUSY) {
+> +			/* Match pm_restore_gfp_mask() in hibernate(). */
+> +			pm_restrict_gfp_mask();
+>   			swsusp_unmark();
+>   			events_check_enabled = false;
+>   			pr_info("Wakeup event detected during hibernation, rolling back.\n");
+> 
+> 
+> 
 
