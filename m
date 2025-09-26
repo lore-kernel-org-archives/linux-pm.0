@@ -1,72 +1,244 @@
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22F8D2BD58C;
-	Fri, 26 Sep 2025 09:47:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.188
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F4AF2E0901
+	for <linux-pm@vger.kernel.org>; Fri, 26 Sep 2025 10:23:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758880064; cv=none; b=lbmXS6cYGm14h4J9Ii+nSt4cA1xH9bdV9tVqZX5+ifRO42fqiKknTBXo6qr8TLXPd0SCRkaUooMZ6XLqfxoBARFmkKlKbs/7eEvUgFOcEnjWBFCF5ZXyXySsRHHcVT116eeRaRJm1WWpPEDObVfwpBRSZ4EuQrqUG7RZW4FstjY=
+	t=1758882189; cv=none; b=qavd3j0jrdcz0Qu0/6bb6mXygNHIMcKQGxRcopC+uiNyC55Q0GUKtjv7UyeOvydbRlBjs8k8nhmesTG4Vd2xSFWQ0cM2IRLC7lpIwHrvPrDZvOBPbhcZFD78hYlEDt252m5YI2MyIuEGUNI5cCugPgL/xSdAAmWv6d2K6SYJA0Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758880064; c=relaxed/simple;
-	bh=A/2krd+kW51Ci9YgMe6nqKVo5aZEJW74+oXFZS4DwXg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=gAL0dRa8Gh5b1fIPyOrnEYHFqg7kchmhKCPoNrWcXFnqpK47jRtClOMNEzcAcL7quE0Ssi31VuXZGMsoB2CLUc3Fwqz6DY7PArFEjnoloV59xfNzhX6Nlzcu48Cpou29zmBTB75sfFAQSa/2z3vOPOLgkChFiuyu1x/IhNnEd7g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=45.249.212.188
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.163.48])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4cY5MW06vpzVmdT;
-	Fri, 26 Sep 2025 17:46:47 +0800 (CST)
-Received: from kwepemr500004.china.huawei.com (unknown [7.202.195.141])
-	by mail.maildlp.com (Postfix) with ESMTPS id 6BFD9180087;
-	Fri, 26 Sep 2025 17:47:39 +0800 (CST)
-Received: from [10.67.121.58] (10.67.121.58) by kwepemr500004.china.huawei.com
- (7.202.195.141) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Fri, 26 Sep
- 2025 17:47:38 +0800
-Message-ID: <5887881a-ace1-49dd-a4e4-4eb7b499f7c4@hisilicon.com>
-Date: Fri, 26 Sep 2025 17:47:38 +0800
+	s=arc-20240116; t=1758882189; c=relaxed/simple;
+	bh=wc1iT4jT8QYf12SNibn89XD5uwpvV5JIemr/1m+RcpU=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=NI7hmAKBpuK0iRS1fHI4JCUstj6jZ3Ez1INJYXWapCECDTw9EShh/gGqlLawIHVD/nXqV7sa2ijHoZ6I8O5hfIoJnorkOlh7CFwXrrR4/88X0oVQ7EkfW2WtCzqjf/cVtm2adh+VRUlTbN8FiNFBwt3DrUurbdAnlpe/MCrUtVs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WTjcAfb8; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WTjcAfb8"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A937C19421
+	for <linux-pm@vger.kernel.org>; Fri, 26 Sep 2025 10:23:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1758882189;
+	bh=wc1iT4jT8QYf12SNibn89XD5uwpvV5JIemr/1m+RcpU=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=WTjcAfb8OoE7Tv9Ibjw+dVeLWgDXPmAVBSpWI4eO9LNlqqgAiuwnBkt14U0e/YtsV
+	 K4OKpsFFRqidF5Hqni/LL6PQ5BnXjvwqJmq+SrqtgftlueREh9LbMpyCYqmpHwk12v
+	 CZAXpGxXR60wGPTuAY38/QxMrZb7G7g4UuI4zYNSVpXT8jPxB62l3Ez1WrMnI+Btbk
+	 pSs/fn36/diUurRcEtRmDtKMJkFIyYvdBxQHdiT/ox4nzWCwSLG0DVApNWTniSLMc/
+	 9SdUP0gWKihVD/jUukQxvAJcgQEU6aBeDE7ITRPs5TcFFnyErSodLHFTRAnYYsI3Hx
+	 6POMTz+ygIqpA==
+Received: by mail-oo1-f49.google.com with SMTP id 006d021491bc7-62184a28eaaso388783eaf.1
+        for <linux-pm@vger.kernel.org>; Fri, 26 Sep 2025 03:23:09 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCV+P7DfSnU+dVa2WBwkR1eEpgRxlroO6iuJYxt5wG1kVOgl+rICiZs1gLNRF6HGdDBAioh5K4Yi8Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyeTuZOOYBq50ePMe08z7cATodq+t9vubUMpicPxbMR9zdpLaFY
+	V7R02ljcR2H0fvFJrv/yrmkpAmCfvAyFkrbzXX/jvs8ylBEqCcNMmv+pd2Xvb9n+7giavgzePHs
+	qdX1Yym+/a29ho+sGFKpFwloWsewHBjs=
+X-Google-Smtp-Source: AGHT+IFfRxDAOzsyijqQBhKzBDonbGr4KKO2QNMSyM7669C59c/wNl2AlMCYY1pi6PVHDKEz3EJxmLo66uDOtzzOJNE=
+X-Received: by 2002:a05:6820:16a8:b0:639:4656:f9a3 with SMTP id
+ 006d021491bc7-63a361be79dmr2840692eaf.4.1758882188413; Fri, 26 Sep 2025
+ 03:23:08 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 4/4] cpufreq: Drop unused symbol CPUFREQ_ETERNAL
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM
-	<linux-pm@vger.kernel.org>
-CC: Shawn Guo <shawnguo@kernel.org>, Qais Yousef <qyousef@layalina.io>, LKML
-	<linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
-	Prashanth Prakash <pprakash@codeaurora.org>, Pierre Gondois
-	<pierre.gondois@arm.com>, Mario Limonciello <mario.limonciello@amd.com>,
+References: <8605612.T7Z3S40VBb@rafael.j.wysocki> <3925838.kQq0lBPeGt@rafael.j.wysocki>
+ <12773788.O9o76ZdvQC@rafael.j.wysocki> <9637c2c2-823d-457f-b9bd-c7acd762bf88@hisilicon.com>
+In-Reply-To: <9637c2c2-823d-457f-b9bd-c7acd762bf88@hisilicon.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 26 Sep 2025 12:22:57 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gVNa3ARV58pvJmDxE7VUNZe6Bxh=FoPwJ-4=a136XUNA@mail.gmail.com>
+X-Gm-Features: AS18NWBq29R0R47Y1q_1PGF14CENNNci8eqHEXsk24JfrzWWO_TsSOEZhNrTyew
+Message-ID: <CAJZ5v0gVNa3ARV58pvJmDxE7VUNZe6Bxh=FoPwJ-4=a136XUNA@mail.gmail.com>
+Subject: Re: [PATCH v2 3/4] ACPI: CPPC: Do not use CPUFREQ_ETERNAL as an error value
+To: Jie Zhan <zhanjie9@hisilicon.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
+	Mario Limonciello <mario.limonciello@amd.com>, Shawn Guo <shawnguo@kernel.org>, 
+	Qais Yousef <qyousef@layalina.io>, LKML <linux-kernel@vger.kernel.org>, 
+	Viresh Kumar <viresh.kumar@linaro.org>, Pierre Gondois <pierre.gondois@arm.com>, 
 	Linux ACPI <linux-acpi@vger.kernel.org>
-References: <8605612.T7Z3S40VBb@rafael.j.wysocki>
- <9533136.CDJkKcVGEf@rafael.j.wysocki>
-Content-Language: en-US
-From: Jie Zhan <zhanjie9@hisilicon.com>
-In-Reply-To: <9533136.CDJkKcVGEf@rafael.j.wysocki>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
- kwepemr500004.china.huawei.com (7.202.195.141)
+Content-Transfer-Encoding: quoted-printable
 
+On Fri, Sep 26, 2025 at 11:30=E2=80=AFAM Jie Zhan <zhanjie9@hisilicon.com> =
+wrote:
+>
+>
+>
+> On 9/26/2025 1:23 AM, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > Instead of using CPUFREQ_ETERNAL for signaling an error condition
+> > in cppc_get_transition_latency(), change the return value type of
+> > that function to int and make it return a proper negative error
+> > code on failures.
+> >
+> > No intentional functional impact.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> A minor comment inline.  Other than that,
+> Reviewed-by: Jie Zhan <zhanjie9@hisilicon.com>
 
+Thanks!
 
-On 9/25/2025 11:47 PM, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Drop CPUFREQ_ETERNAL that has no users any more along with all
-> references to it in the documentation.
-> 
-> No functional impact.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Reviewed-by: Jie Zhan <zhanjie9@hisilicon.com>
-> ---
->  Documentation/admin-guide/pm/cpufreq.rst                  |    4 ----
->  Documentation/cpu-freq/cpu-drivers.rst                    |    3 +--
->  Documentation/translations/zh_CN/cpu-freq/cpu-drivers.rst |    3 +--
->  Documentation/translations/zh_TW/cpu-freq/cpu-drivers.rst |    3 +--
->  include/linux/cpufreq.h                                   |    5 -----
->  5 files changed, 3 insertions(+), 15 deletions(-)
+> > ---
+> >
+> > v1 -> v2:
+> >    * Change cppc_get_transition_latency() return value data type to int
+> >    * Make it return -ENODATA on errors (Mario)
+> >    * Update its callers accordingly
+> >    * Adjust the subject and changelog
+> >    * Add a missing empty code line to cppc_get_transition_latency()
+> >
+> > The modifications of this patch don't affect any other patches in the s=
+eries:
+> >
+> > https://lore.kernel.org/linux-pm/8605612.T7Z3S40VBb@rafael.j.wysocki/
+> >
+> > ---
+> >  drivers/acpi/cppc_acpi.c       |   15 ++++++++-------
+> >  drivers/cpufreq/amd-pstate.c   |    8 ++++----
+> >  drivers/cpufreq/cppc_cpufreq.c |    4 ++--
+> >  include/acpi/cppc_acpi.h       |    6 +++---
+> >  4 files changed, 17 insertions(+), 16 deletions(-)
+> >
+> > --- a/drivers/acpi/cppc_acpi.c
+> > +++ b/drivers/acpi/cppc_acpi.c
+> > @@ -1876,7 +1876,7 @@ EXPORT_SYMBOL_GPL(cppc_set_perf);
+> >   * If desired_reg is in the SystemMemory or SystemIo ACPI address spac=
+e,
+> >   * then assume there is no latency.
+> >   */
+> > -unsigned int cppc_get_transition_latency(int cpu_num)
+> > +int cppc_get_transition_latency(int cpu_num)
+> >  {
+> >       /*
+> >        * Expected transition latency is based on the PCCT timing values
+> > @@ -1889,31 +1889,32 @@ unsigned int cppc_get_transition_latency
+> >        *              completion of a command before issuing the next c=
+ommand,
+> >        *              in microseconds.
+> >        */
+> > -     unsigned int latency_ns =3D 0;
+> >       struct cpc_desc *cpc_desc;
+> >       struct cpc_register_resource *desired_reg;
+> >       int pcc_ss_id =3D per_cpu(cpu_pcc_subspace_idx, cpu_num);
+> >       struct cppc_pcc_data *pcc_ss_data;
+> > +     int latency_ns =3D 0;
+> >
+> >       cpc_desc =3D per_cpu(cpc_desc_ptr, cpu_num);
+> >       if (!cpc_desc)
+> > -             return CPUFREQ_ETERNAL;
+> > +             return -ENODATA;
+> >
+> >       desired_reg =3D &cpc_desc->cpc_regs[DESIRED_PERF];
+> >       if (CPC_IN_SYSTEM_MEMORY(desired_reg) || CPC_IN_SYSTEM_IO(desired=
+_reg))
+> >               return 0;
+> > +
+> An extra line here.
+
+Yes, and it is intentional (see the changes between v1 and v2).
+
+> Alternatively, can we cleanup a bit:
+
+That can be done.
+
+> if (!CPC_IN_PCC(desired_reg) || pcc_ss_id < 0)
+>         return -ENODATA;
+>
+> >       else if (!CPC_IN_PCC(desired_reg))
+> > -             return CPUFREQ_ETERNAL;
+> > +             return -ENODATA;
+> >
+> >       if (pcc_ss_id < 0)
+> > -             return CPUFREQ_ETERNAL;
+> > +             return -ENODATA;
+> >
+> >       pcc_ss_data =3D pcc_data[pcc_ss_id];
+> >       if (pcc_ss_data->pcc_mpar)
+> >               latency_ns =3D 60 * (1000 * 1000 * 1000 / pcc_ss_data->pc=
+c_mpar);
+> >
+> > -     latency_ns =3D max(latency_ns, pcc_ss_data->pcc_nominal * 1000);
+> > -     latency_ns =3D max(latency_ns, pcc_ss_data->pcc_mrtt * 1000);
+> > +     latency_ns =3D max_t(int, latency_ns, pcc_ss_data->pcc_nominal * =
+1000);
+> > +     latency_ns =3D max_t(int, latency_ns, pcc_ss_data->pcc_mrtt * 100=
+0);
+> >
+> >       return latency_ns;
+> >  }
+> > --- a/drivers/cpufreq/amd-pstate.c
+> > +++ b/drivers/cpufreq/amd-pstate.c
+> > @@ -872,10 +872,10 @@ static void amd_pstate_update_limits(str
+> >   */
+> >  static u32 amd_pstate_get_transition_delay_us(unsigned int cpu)
+> >  {
+> > -     u32 transition_delay_ns;
+> > +     int transition_delay_ns;
+> >
+> >       transition_delay_ns =3D cppc_get_transition_latency(cpu);
+> > -     if (transition_delay_ns =3D=3D CPUFREQ_ETERNAL) {
+> > +     if (transition_delay_ns < 0) {
+> >               if (cpu_feature_enabled(X86_FEATURE_AMD_FAST_CPPC))
+> >                       return AMD_PSTATE_FAST_CPPC_TRANSITION_DELAY;
+> >               else
+> > @@ -891,10 +891,10 @@ static u32 amd_pstate_get_transition_del
+> >   */
+> >  static u32 amd_pstate_get_transition_latency(unsigned int cpu)
+> >  {
+> > -     u32 transition_latency;
+> > +     int transition_latency;
+> >
+> >       transition_latency =3D cppc_get_transition_latency(cpu);
+> > -     if (transition_latency  =3D=3D CPUFREQ_ETERNAL)
+> > +     if (transition_latency < 0)
+> >               return AMD_PSTATE_TRANSITION_LATENCY;
+> >
+> >       return transition_latency;
+> > --- a/drivers/cpufreq/cppc_cpufreq.c
+> > +++ b/drivers/cpufreq/cppc_cpufreq.c
+> > @@ -310,9 +310,9 @@ static int cppc_verify_policy(struct cpu
+> >
+> >  static unsigned int get_transition_latency_from_cppc(unsigned int cpu)
+> >  {
+> > -     unsigned int transition_latency_ns =3D cppc_get_transition_latenc=
+y(cpu);
+> > +     int transition_latency_ns =3D cppc_get_transition_latency(cpu);
+> >
+> > -     if (transition_latency_ns =3D=3D CPUFREQ_ETERNAL)
+> > +     if (transition_latency_ns < 0)
+> >               return CPUFREQ_DEFAULT_TRANSITION_LATENCY_NS / NSEC_PER_U=
+SEC;
+> >
+> >       return transition_latency_ns / NSEC_PER_USEC;
+> > --- a/include/acpi/cppc_acpi.h
+> > +++ b/include/acpi/cppc_acpi.h
+> > @@ -160,7 +160,7 @@ extern unsigned int cppc_khz_to_perf(str
+> >  extern bool acpi_cpc_valid(void);
+> >  extern bool cppc_allow_fast_switch(void);
+> >  extern int acpi_get_psd_map(unsigned int cpu, struct cppc_cpudata *cpu=
+_data);
+> > -extern unsigned int cppc_get_transition_latency(int cpu);
+> > +extern int cppc_get_transition_latency(int cpu);
+> >  extern bool cpc_ffh_supported(void);
+> >  extern bool cpc_supported_by_cpu(void);
+> >  extern int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val);
+> > @@ -216,9 +216,9 @@ static inline bool cppc_allow_fast_switc
+> >  {
+> >       return false;
+> >  }
+> > -static inline unsigned int cppc_get_transition_latency(int cpu)
+> > +static inline int cppc_get_transition_latency(int cpu)
+> >  {
+> > -     return CPUFREQ_ETERNAL;
+> > +     return -ENODATA;
+> >  }
+> >  static inline bool cpc_ffh_supported(void)
+> >  {
+> >
+> >
+> >
+> >
+>
