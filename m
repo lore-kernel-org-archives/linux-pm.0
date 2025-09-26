@@ -1,36 +1,36 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4664265621
-	for <linux-pm@vger.kernel.org>; Fri, 26 Sep 2025 02:54:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 513D3265621
+	for <linux-pm@vger.kernel.org>; Fri, 26 Sep 2025 02:54:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758855269; cv=none; b=WWgFbEABikJkhNl3CLkT7PKdpJz1eIXuIyzgvYy5Y+7XuoyTMUSqE/DS/59KTHz0KdaxG2JOQXaKIDyM+0cqWVuQhi2lpbZwdLpfJSuRNjj15b+pQIxcwchYCAS392x3xkRPk/QbomUAA2cazwU4X5z4XJx2p0WqRkF45cnnLd0=
+	t=1758855271; cv=none; b=vDyze6ZH8awnQIMgMu5uJibjdgpevEbMFdXrCw+3ZcmpZaxz4lebFxkccsNserAIPvT3zZjAfLR+Z3tY5ReWqDWMr3bGJKMQ3+fY4mNaNOhpFZguLMyHg/KJq8zBAelKplu+l8iCoWfQIU9WwapQQp549kgNuP536o4Cro+KG5w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758855269; c=relaxed/simple;
-	bh=fomFzH41n8L/dmbp9FfpGe6qotw3o+FsX9UHxv5cbis=;
+	s=arc-20240116; t=1758855271; c=relaxed/simple;
+	bh=lZBYbthi69gGHls+CV4OysSnZe128kOVH/Wpc1u5CdI=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fR3+dSYzbpBGwbmFSAbxdyJq5xAqKv05YeRDb8MPAlUhpYHrq59cPJLz21LPs4AV0V0iAu/kJVR6DaI+bJcCvv5Ev29EZEGLNeZX21wVfNffERpMOQmh03ZmPBm/k+bLxIG5TOFZB7PdnifTs5kNmz1mjMElMpBYYqBGNIIsM6s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=G/Muah3Y; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=Z6KXHyklbag5e3b4zNbQc9Xd7mf5z5n1VleUGL0rc2vz/tvTYkG1nvJKJr6vJGBjXZLix7+4ynvAlgDAv4j7u3uF2SjWetPSCCqteygb3rd1UqxZp+9fCKlLyEs7btQFmfdvwy4wh//ehnDcNaa6WKJR1fphTnjkbxCmtWaE9aU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FJSzKQLa; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="G/Muah3Y"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D2E72C113D0
-	for <linux-pm@vger.kernel.org>; Fri, 26 Sep 2025 02:54:28 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FJSzKQLa"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AD1A0C4CEF0
+	for <linux-pm@vger.kernel.org>; Fri, 26 Sep 2025 02:54:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1758855269;
-	bh=fomFzH41n8L/dmbp9FfpGe6qotw3o+FsX9UHxv5cbis=;
+	bh=lZBYbthi69gGHls+CV4OysSnZe128kOVH/Wpc1u5CdI=;
 	h=From:To:Subject:Date:In-Reply-To:References:Reply-To:From;
-	b=G/Muah3Y4jYmzU+04XWl5SUrxgaoY9ZQM+WVPzgr4Z4apJKNWvaNEkiMjq3YzYYv0
-	 ByLZoE0clW+GG5aSHA6DJnucPRDrS/D4bTJ7S49/B7dMeuQgtwQs1G0EXynall2sfE
-	 Srmlz64FlHKfEHZVJCz75U2bZ0iLmjW6u9W/x5JivCnQc+KeDdfYl2ojMGJChd/ToZ
-	 Z9PG3Cz9YIgylX2GXMu/hmFURU4bQAQn7I6TfPqJiopPULFjCAMpbv9m0GbOywqgLo
-	 03iipP8U5MeXnqtHlcc5ICNd51GEWpDebh/a0GZOBGLtdFMZLy1lrMfrg4EVBgHGYh
-	 2DyJRFKZXf9+A==
+	b=FJSzKQLa7VjlkgW+SMD9P/a0zO4L1wAfqSdlmtdgn22ihymS0C6ebzvsC1ynj0Wc1
+	 PlCC9ptcE638V0haCEkhAGZOUWYjM+EXjUYYOUZAKmYGKcnUl1COvEn4ACvUQ/cpqI
+	 /2EsatCmKWxQYDkT+pgc2OPYfr4uj792Vq0hQXjsKrRO5eFlBquSi+d6ohP80KONfH
+	 h6dcPmgjv0UGpfBSuDhXxmgZRpxohoZOLvkWnQ3fu7KOJP0vGZpzCQILeZzKWidciN
+	 DlwtG1Es4lN1T4MWyrqAKhaum7fI0sYqUav9QBDJper+kndoWZMu02SLGtuOUiVIXI
+	 ONkqp3S8Si2rw==
 From: Len Brown <lenb@kernel.org>
 To: linux-pm@vger.kernel.org
-Subject: [PATCH 5/7] tools/power x86_energy_perf_policy: Prefer driver HWP limits
-Date: Thu, 25 Sep 2025 22:51:07 -0400
-Message-ID: <908ec95eb51597b66814072889eaa75138c8792e.1758855052.git.len.brown@intel.com>
+Subject: [PATCH 7/7] tools/power x86_energy_perf_policy.8: Emphasize preference for SW interfaces
+Date: Thu, 25 Sep 2025 22:51:09 -0400
+Message-ID: <52388e341b04d67b1a1858ada14c19cc464aa4bb.1758855052.git.len.brown@intel.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <4902665808e17a711200c46558803f526cbb154a.1758855052.git.len.brown@intel.com>
 References: <4902665808e17a711200c46558803f526cbb154a.1758855052.git.len.brown@intel.com>
@@ -46,68 +46,62 @@ Content-Transfer-Encoding: 8bit
 
 From: Len Brown <len.brown@intel.com>
 
-When we are successful in using cpufreq min/max limits,
-skip setting the raw MSR limits entirely.
+This tool was originally written when Linux had no standard
+interface for EPB, or HWP support.
 
-This is necessary to avoid undoing any modification that
-the cpufreq driver makes to our sysfs request.
+Retain the capability to manage a system w/o any kernel PM support,
+but prefer the standard kernel interfaces, when avaialble.
 
-eg. intel_pstate may take our request for a limit
-that is valid according to HWP.CAP.MIN/MAX and clip
-it to be within the range available in PLATFORM_INFO.
+(not doing so led to a confusing conflict between a p-state limit
+ request made via cpufreq and modified by the intel-pstate driver,
+ versus the raw MSR write made by this utility)
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- .../x86_energy_perf_policy/x86_energy_perf_policy.c | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+ .../x86_energy_perf_policy.8                      | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
-index 0267f5ecaa77..150cfed95288 100644
---- a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
-+++ b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
-@@ -62,6 +62,7 @@ unsigned char turbo_update_value;
- unsigned char update_hwp_epp;
- unsigned char update_hwp_min;
- unsigned char update_hwp_max;
-+unsigned char hwp_limits_done_via_sysfs;
- unsigned char update_hwp_desired;
- unsigned char update_hwp_window;
- unsigned char update_hwp_use_pkg;
-@@ -951,8 +952,10 @@ int ratio_2_sysfs_khz(int ratio)
- }
- /*
-  * If HWP is enabled and cpufreq sysfs attribtes are present,
-- * then update sysfs, so that it will not become
-- * stale when we write to MSRs.
-+ * then update via sysfs. The intel_pstate driver may modify (clip)
-+ * this request, say, when HWP_CAP is outside of PLATFORM_INFO limits,
-+ * and the driver-chosen value takes precidence.
-+ *
-  * (intel_pstate's max_perf_pct and min_perf_pct will follow cpufreq,
-  *  so we don't have to touch that.)
-  */
-@@ -1007,6 +1010,8 @@ int update_sysfs(int cpu)
- 	if (update_hwp_max)
- 		update_cpufreq_scaling_freq(1, cpu, req_update.hwp_max);
+diff --git a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.8 b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.8
+index 78c6361898b1..0aa981c18e56 100644
+--- a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.8
++++ b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.8
+@@ -2,7 +2,7 @@
+ .\"  Distributed under the GPL, Copyleft 1994.
+ .TH X86_ENERGY_PERF_POLICY 8
+ .SH NAME
+-x86_energy_perf_policy \- Manage Energy vs. Performance Policy via x86 Model Specific Registers
++x86_energy_perf_policy \- Manage Energy vs. Performance Policy
+ .SH SYNOPSIS
+ .B x86_energy_perf_policy
+ .RB "[ options ] [ scope ] [field \ value]"
+@@ -19,9 +19,14 @@ x86_energy_perf_policy \- Manage Energy vs. Performance Policy via x86 Model Spe
+ .SH DESCRIPTION
+ \fBx86_energy_perf_policy\fP
+ displays and updates energy-performance policy settings specific to
+-Intel Architecture Processors.  Settings are accessed via Model Specific Register (MSR)
+-updates, no matter if the Linux cpufreq sub-system is enabled or not.
++Intel Architecture Processors.  It summarizes settings available
++in standard Linux interfaces (eg. cpufreq),
++and also decodes underlying Model Specific Register (MSRs).
++While \fBx86_energy_perf_policy\fP can manage energy-performance policy
++using only MSR access, it prefers standard
++Linux kernel interfaces, when they are available.
  
-+	hwp_limits_done_via_sysfs = 1;
-+
- 	return 0;
- }
- 
-@@ -1085,10 +1090,10 @@ int update_hwp_request_msr(int cpu)
- 	if (debug)
- 		print_hwp_request(cpu, &req, "old: ");
- 
--	if (update_hwp_min)
-+	if (update_hwp_min && !hwp_limits_done_via_sysfs)
- 		req.hwp_min = req_update.hwp_min;
- 
--	if (update_hwp_max)
-+	if (update_hwp_max && !hwp_limits_done_via_sysfs)
- 		req.hwp_max = req_update.hwp_max;
- 
- 	if (update_hwp_desired)
++.SH BACKGROUND
+ Policy in MSR_IA32_ENERGY_PERF_BIAS (EPB)
+ may affect a wide range of hardware decisions,
+ such as how aggressively the hardware enters and exits CPU idle states (C-states)
+@@ -200,7 +205,9 @@ runs only as root.
+ .SH FILES
+ .ta
+ .nf
+-/dev/cpu/*/msr
++EPB: /sys/devices/system/cpu/cpu*/power/energy_perf_bias
++EPP: /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference
++MSR: /dev/cpu/*/msr
+ .fi
+ .SH "SEE ALSO"
+ .nf
 -- 
 2.45.2
 
