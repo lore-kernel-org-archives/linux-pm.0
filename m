@@ -1,38 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D48C18DF8D;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D4F51DC1AB;
 	Fri, 26 Sep 2025 06:42:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758868939; cv=none; b=tzTii1n++Jw+Lw0i0DwlDvd0kBtGrc/K3F+z5pbaOsEAWcFukzx2xyD8g4EuktNrRXnzqgNr/XrmKfdKJqu9YMhakTlruXsoNY0ksHsMoYQMzdVi5IuaW/XuXOyOkEdZSoOaMinXc6pvEd2fFbMCgykp42DVT5mP2Mi+fPN8fRU=
+	t=1758868939; cv=none; b=tYXWbpxMloOw+GWfsT8e/pk4bj9i3UkLvAmPlaCg8UZV6gePLRMbXdfBu8zr5nGAtOPw/k50SllLKNPUisLdb18L44SfkDBW+fIgVRoM6jE7NURENVQ71oj2mO7yYPxBzntMi/1rHLxSn5GCOtIE0lH7OKVNex7DxW0lRpXGj+s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1758868939; c=relaxed/simple;
-	bh=w50rQbsUwHAX7rQjt1NnSquIVsSXVF6HpsxQbh+X4Zo=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=EUNU9PrD4o7K9WjykP3FSt3ua+mY79VUmMBJqQKIQfSvg56nqEIMCcShHZ0cHldNa7EZUW8/EdEmNrlHqKjemxFVC2u7YhOXC2Fed0YaLnKuSgrQ+l3BNzDGP6g/5bR0R7luBdqUPdW06oKoH+vTUMi/aQrm7jMJS3+iT2AhKQo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kMepNN9U; arc=none smtp.client-ip=10.30.226.201
+	bh=1hl/eyhRTaS4YhKyjRWY+YNFz7eL/tPWBIU1thtDpTM=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=QbP6J4pLvi0kA32BlAHugD2XbHrqhm1KYNqPAEAxtjOTdt8YFvFn4ymwW9ta6QImVxJbkhaVRhJeTMqtl/7lwF4iQ8K1wC34Rk5U6giNx+hq1QxgWoxsluLTHVHnaKNFIwNIerOr47NObQRy0l4Ol+SI2YTgWYWOfn9bXSJd1+0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hwsqQx6w; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kMepNN9U"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id A1395C4CEF4;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hwsqQx6w"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id BF597C4AF0C;
 	Fri, 26 Sep 2025 06:42:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1758868938;
-	bh=w50rQbsUwHAX7rQjt1NnSquIVsSXVF6HpsxQbh+X4Zo=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=kMepNN9UC2aPLOVPTZ5MKfKSZf79LxorNe66eTKPvAXTcQZ3g0NaD9ncRzgjibsiy
-	 YD4AR7sPd+Q0M+QUC7L0nJ9nbkTBm0zBrMH8qRpmU2/Z5MPuTBNhvpCMvtLbEJBqe4
-	 MWWQipCTbxTTVXopTIH7MpzRbL7sbxmoPZXtpN60/iJpINLIksz4gLcHM4MC4FADzT
-	 hm/gCwyUhUEerEMoHGlWLewwsoKMuUH5EPghNIFVYXVsneaFWEZp6SWLPAWUmDpNbB
-	 nCZcOXss6O5CUAQ4MR3XDHxe676/rzD5eIKQFJFoGRSNdA21dlzyx5XEahMVmh1dc7
-	 BOp7Q8UXKQs6w==
+	bh=1hl/eyhRTaS4YhKyjRWY+YNFz7eL/tPWBIU1thtDpTM=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=hwsqQx6wXXNfOk+GZ5DZACD4DI1pRU1+Av16R0Fk1mhc+FJfEfw8Fql6zjYBrU/ae
+	 JLkd1nHPErDmsqRIYIU0hnxwtH3nUMuLh+vIvMbO67a91urGlLoZeZZ777zzIAn73S
+	 lNTpxH5kpC1CeqOzj7BjUnzu2zIEBG2+s5x7CVTO4gllDlC4qTsfsKE5rYrCH02yrg
+	 P9PmvneirI4cbr8NFNrnWqNTnhP+Hzg2LM8z0rcOPNlJzaCnJi5srA9UQ2XKHzQrt5
+	 X/V1GSd++qsDzXyCqCJ21umwSXeAVmcP0agloS9hS0vp7HB5FcnoPXdAowK5At32qK
+	 w8Wn6hDHor8Og==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AC74CAC5B8;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD8C6CAC5AE;
 	Fri, 26 Sep 2025 06:42:18 +0000 (UTC)
 From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Subject: [PATCH v2 0/2] interconnect: qcom: sdx75: Drop QP0 interconnect
- and BCM nodes
-Date: Fri, 26 Sep 2025 12:12:08 +0530
-Message-Id: <20250926-sdx75-icc-v2-0-20d6820e455c@oss.qualcomm.com>
+Date: Fri, 26 Sep 2025 12:12:10 +0530
+Subject: [PATCH v2 2/2] dt-bindings: interconnect: qcom: Drop QPIC_CORE IDs
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,10 +40,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAME11mgC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyjHQUlJIzE
- vPSU3UzU4B8JSMDI1MDSyMz3eKUCnNT3czkZF0z82QjgyTjlFQLk0QloPqCotS0zAqwWdGxtbU
- A34DkpVsAAAA=
-X-Change-ID: 20250926-sdx75-icc-67c20b3de84a
+Message-Id: <20250926-sdx75-icc-v2-2-20d6820e455c@oss.qualcomm.com>
+References: <20250926-sdx75-icc-v2-0-20d6820e455c@oss.qualcomm.com>
+In-Reply-To: <20250926-sdx75-icc-v2-0-20d6820e455c@oss.qualcomm.com>
 To: Georgi Djakov <djakov@kernel.org>, 
  Rohit Agarwal <quic_rohiagar@quicinc.com>, 
  Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -56,19 +54,18 @@ Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
  devicetree@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>, 
  Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>, 
  Lakshmi Sowjanya D <quic_laksd@quicinc.com>, 
- Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
- stable@vger.kernel.org
+ Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2092;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1460;
  i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=w50rQbsUwHAX7rQjt1NnSquIVsSXVF6HpsxQbh+X4Zo=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBo1jXImIUMosVMEtE4ghqPdD1MJv1QPBohfPPr7
- jcaWqgcHH+JATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaNY1yAAKCRBVnxHm/pHO
- 9frcB/9Zc7MG+v8da1LYI1ZK1cOzGIBzmucX9iVFdcve/fQzbHEVk+Xq1Xuwi0WQZCcMB5HIfRv
- G0vwDGCkPB46Krt3X35JtJ6b7aiC4i+CGwWSQkFpuuzq9TZNyBT7Tw4EKIAEoLKjXeYQxaS+oLT
- Rw0Hu4Us1HOHpiiXrDAZguzfrQLgcta8Ck2Jnl1vI6ggK1mO6ffU3rUPsxthIvP+Dv0AX4Fpzc4
- nc7xJaLYWRTEOAMqaJHuP0NEf6934HaF5SG0481sz8cLPEUFzpgXA7R/PM0DjScLm7vrUmkm4HR
- uofBSBwY/gYOOAqxCwz7l43Iy4TaKB3YLAFy3ldMViMv0shN
+ bh=H39PzgE3sz0Da1E79p3mlCmC8enF7l/7/JpoIn/7roE=;
+ b=kA0DAAoBVZ8R5v6RzvUByyZiAGjWNcij4ji5d+OhMrWz2FxnQl6c2qbFTx8lbJJF8CcwRBhjD
+ 4kBMwQAAQoAHRYhBGelQyqBSMvYpFgnl1WfEeb+kc71BQJo1jXIAAoJEFWfEeb+kc71B90IAJ3O
+ NF6hWgKBnE3EgdacmcdNpOSGVehcU8hcZiamdB+PleuTeoN9pL3E+8hGmnsOfXJuGuZbdwLtr+V
+ teI4RWa5ME5PBIqvLB0R2e1l/ZB2vwAxv34z5QV/XFLCTT5lVQ/rJDRxprKSoZT6gwLOkG6gH2q
+ Gt5dHj3Aik2ILARl2jjCJP8uLUVGIeRp9dQBrsoK0ufZfvKJmcJC4qqlbz04qW6esskry0xA78t
+ osi7EffgvUa1YiIF0lCV4MvXBi+5ug4iw1Th2GcAhnGmgdhgDqhYRNoYDt82GIg6FmIVFFMG2Z6
+ I22cBZAFIaxY6cm/DBif1Qah/HCsCbQr7lkJ+Rg=
 X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
  fpr=C668AEC3C3188E4C611465E7488550E901166008
 X-Endpoint-Received: by B4 Relay for
@@ -76,57 +73,43 @@ X-Endpoint-Received: by B4 Relay for
 X-Original-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 Reply-To: manivannan.sadhasivam@oss.qualcomm.com
 
-Hi,
+From: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
 
-This series drops the QPIC interconnect and BCM nodes for the SDX75 SoC. The
-reason is that this QPIC BCM resource is already defined as a RPMh clock in
-clk-rpmh driver as like other SDX SoCs. So it is wrong to describe the same
-resource in two different providers.
+As like other SDX targets, SDX75 QPIC BCM resource is also modeled as a
+RPMh clock in clk-rpmh driver. However, for SDX75, this resource was also
+described as an interconnect node mistakenly.
 
-Also, without this series, the NAND driver fails to probe on SDX75 as the
-interconnect sync state disables the QPIC nodes as there were no clients voting
-for this ICC resource. However, the NAND driver had already voted for this BCM
-resource through the clk-rpmh driver. Since both votes come from Linux, RPMh was
-unable to distinguish between these two and ends up disabling the resource
-during sync state.
+Hence, drop the QPIC interconnect IDs and let the clients use clk-rpmh
+driver to vote for this resource.
 
-Cc: linux-arm-msm@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc: devicetree@vger.kernel.org
-Cc: Manivannan Sadhasivam <mani@kernel.org>
-Cc: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
-Cc: Lakshmi Sowjanya D <quic_laksd@quicinc.com>
-To: Georgi Djakov <djakov@kernel.org>
-To: Konrad Dybcio <konradybcio@kernel.org>
-To: Rob Herring <robh@kernel.org>
-To: Krzysztof Kozlowski <krzk+dt@kernel.org>
-To: Conor Dooley <conor+dt@kernel.org>
+Even though this change is an ABI break, it is necessary to avoid
+describing the same resource provider in two different drivers, as it may
+lead to votes from clients overriding each other.
+
+Fixes: 956329ec7c5e ("dt-bindings: interconnect: Add compatibles for SDX75")
+Signed-off-by: Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>
+[mani: kept the QUP defines value unchanged]
 Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-
-Changes in v2:
-
-- Taken over the series from Raviteja
-- Reordered the patches to avoid breaking build
-- Improved the patch descriptions and kept the values for other defines
-  unchanged
-
 ---
-Raviteja Laggyshetty (2):
-      interconnect: qcom: sdx75: Drop QPIC interconnect and BCM nodes
-      dt-bindings: interconnect: qcom: Drop QPIC_CORE IDs
+ include/dt-bindings/interconnect/qcom,sdx75.h | 2 --
+ 1 file changed, 2 deletions(-)
 
- drivers/interconnect/qcom/sdx75.c             | 26 --------------------------
- drivers/interconnect/qcom/sdx75.h             |  2 --
- include/dt-bindings/interconnect/qcom,sdx75.h |  2 --
- 3 files changed, 30 deletions(-)
----
-base-commit: 8f5ae30d69d7543eee0d70083daf4de8fe15d585
-change-id: 20250926-sdx75-icc-67c20b3de84a
+diff --git a/include/dt-bindings/interconnect/qcom,sdx75.h b/include/dt-bindings/interconnect/qcom,sdx75.h
+index e903f5f3dd8f63b257222b78e8ea41143d3dc86c..0e19ee8f168702a364f4101991ce9a6213da2eea 100644
+--- a/include/dt-bindings/interconnect/qcom,sdx75.h
++++ b/include/dt-bindings/interconnect/qcom,sdx75.h
+@@ -6,9 +6,7 @@
+ #ifndef __DT_BINDINGS_INTERCONNECT_QCOM_SDX75_H
+ #define __DT_BINDINGS_INTERCONNECT_QCOM_SDX75_H
+ 
+-#define MASTER_QPIC_CORE		0
+ #define MASTER_QUP_CORE_0		1
+-#define SLAVE_QPIC_CORE			2
+ #define SLAVE_QUP_CORE_0		3
+ 
+ #define MASTER_LLCC			0
 
-Best regards,
 -- 
-Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+2.48.1
 
 
