@@ -1,106 +1,163 @@
-Received: from mail-pl1-f173.google.com (mail-pl1-f173.google.com [209.85.214.173])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B1702AEE1
-	for <linux-pm@vger.kernel.org>; Mon, 29 Sep 2025 07:28:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.173
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1759130937; cv=none; b=msinT2sDFS+L9qE8VuoG0BmDf6NEYSGIJ3Rn3EMdCv8HLpDqzOEw4Cy4HINmrWtNeKlneDhHF7O40WlrQSLPTS51a8Vid5B6iuq6JhK2evclK9SvrF8uh4KTL+02bj3T2UHbIBXuNWM3xUDzrzjYO7gHwMGBG6kw13r+1jYiNHc=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1759130937; c=relaxed/simple;
-	bh=7F4Bd412NUjkHLR4AZb/VhkbRK5cWLJC7xh1AlsvUNs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BC3EwoVYiPbNPYApaZiccG6tCEqQEN4Y6brR0/ZyOGM7VY7Al757jiw6XHrUJifHNX6iDqLF1hfRn9l0U5l94AbGfz0cV8212GPOMrSz5Frj30R3nD/eDXkQP8vUfdQlkqaqCDpLCvLExkP5MAb+EGWpSJKz5TtGJU3bbA82OOA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=trkjQjo3; arc=none smtp.client-ip=209.85.214.173
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 336271EEE6;
+	Mon, 29 Sep 2025 07:47:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1759132064; cv=pass; b=QWBAmJsgUITRzB+xtYsW+Qqsf6f2SetpzPzT5bYV578rbEAKYmKxy20FP/jc1iemkI0tDfmglX5f7O3MCy8Jg/IT/LAN7H7YCSdSnKMF2VPnme//F7JeXrXs2T54G4NrY2t3/NWWc3cuuM5D/67IrgeKm7ejjlHhdwr84ClMp04=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1759132064; c=relaxed/simple;
+	bh=dE1cson/uP5XGOxL3Emzs0y6poaO/Pvzy72edBioZV0=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=U6QVD8dV1I5xYqpoLPTTSdSLwJo274NNmTLZyN4voDLpX1vd5PTzVxugcjptx/6HGHRG/dv7R2AeMvUGKttKZuPpaEiEEXs5ogjZYiCLh6YrOiXF2ZgTIfWLz0rbhIPvGhuIDO7gjAn2JrpZECsr4FLS+C33/fUjgTWVLcMSAbM=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=iVYsrEUy; arc=pass smtp.client-ip=136.143.188.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="trkjQjo3"
-Received: by mail-pl1-f173.google.com with SMTP id d9443c01a7336-27ee41e074dso38050295ad.1
-        for <linux-pm@vger.kernel.org>; Mon, 29 Sep 2025 00:28:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1759130936; x=1759735736; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=vUgMt/Iu4HigVywPOVpy02As/ACdmcQ/LQX8wXFvh6s=;
-        b=trkjQjo3Q2MEpSYrwvNmEMUqbWVJL/OxJtKREKXAxVUZ5AGXlMn0EFwKdUZCgLSyNF
-         G/p67cvOdfzzPdzVhUiQXbnzncKP4XPV6Kk3aHj/fqIV5Knes7WGjXsc2MWWpjseMX3P
-         N9pKj4HogYzZzZP/ytcnlMTFbDYIiex9p6WzZ/dLEvzINYFpX/E2bB8Ga7rg8SEvB5PP
-         76p5bSuUjuCO38o51VNVaF+A4Ebhnn2EzUDACODNFkQGeDpTuSjHnQGBSn1Ld5Prcq+h
-         sCxXuEH3VSagX2z9eWZuDYYGbeJV0WG9lo8T9Ow6gvrfZAz26XS9wA+q2ZWpuEmc/Lpp
-         undA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1759130936; x=1759735736;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=vUgMt/Iu4HigVywPOVpy02As/ACdmcQ/LQX8wXFvh6s=;
-        b=jOoZS6+dFnFTkpxjmBe3t29jOJgacosPH06qMWo+UP5IRbDP9l4ZE7fNra4Hvgfn1B
-         8/AUma4CjijsZ9xZOqjcvsrX0Mf2fpbQBgWTlNdC6f2DgLggA4wyQ3WD3a5Poqjnj3Ol
-         o7oS9zrSVewWaDivfZoGIWOAP2ZApsKcDFD0XJ1w7ceJe/6bVGkIG0bPGRXcc5it6QMP
-         VHKOH9UaeiMVJCeuq1/SgenqzJALYakehdSzAwVner5r37vEb5x3wrl0Cj5Zpn6Oxzfh
-         sYoTnQfLRmqDDPIEmErsNvKPuG9PntdQnXK1ksTCORAFLPOex5ElNX5KNSgW8WUlu3S9
-         hkXg==
-X-Gm-Message-State: AOJu0Yy4mQjWw0/wxiaP4LuBmfF34FzRirT2gcWn133ZXxI0NgHVcOIb
-	EAqEXJzuok6Le2YYX5JPt3MjNf0Wl/TqD2+1uvsodmCslMYuPOKza51K5niQb3hkbTM=
-X-Gm-Gg: ASbGncvzliY9LmEnlKxD7+XshtXMykHgozv+wAetSBlrpQZGxbXNeqaJJAlEDv1X4iJ
-	6ewrwaf2Spj2mTxMvTkpMoxxxywJQKs8SLWHvK0iAaXZHjRla9itZMEJ9lJLw0QFmP1X7VUMhik
-	amWEAICxqB8nXo3LEjpy3y36DbfS+HdnWFQ5tMKbKPhoyG7Km7EXAq90L4CjZ/zWtncS2HKMO/D
-	KezEQiFDPrBin07faRFb7AUAMhl1Ifdw7tmpNjXoi78kxD4Uk5cmKu+CdI04L1rnx9NkKT72I6M
-	nf1kw9K2cgwFJ/GzQG4q3pfEWcoACj8h5ZXfVq9sgVmFD1p9x9YbMReLuk4G16b5bAYzDj87kEu
-	Ivyn8LA0K20IY8o3TULVeRkNP
-X-Google-Smtp-Source: AGHT+IFV04UkDk6nLUCSmgZN+tUyoArW1g8+WIB0WCKL3KwMarnJ2CKoOoUMLY19056+D/VsX/c/Zg==
-X-Received: by 2002:a17:902:e890:b0:24c:a269:b6d5 with SMTP id d9443c01a7336-27ed493e891mr151642625ad.0.1759130935564;
-        Mon, 29 Sep 2025 00:28:55 -0700 (PDT)
-Received: from localhost ([122.172.87.183])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-27ed6997ae3sm123206695ad.106.2025.09.29.00.28.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 29 Sep 2025 00:28:55 -0700 (PDT)
-Date: Mon, 29 Sep 2025 12:58:52 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Shawn Guo <shawnguo@kernel.org>,
-	Qais Yousef <qyousef@layalina.io>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Prashanth Prakash <pprakash@codeaurora.org>,
-	Pierre Gondois <pierre.gondois@arm.com>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Linux ACPI <linux-acpi@vger.kernel.org>
-Subject: Re: [PATCH v1 0/4] cpufreq: Fixes and cleanups related to
- CPUFREQ_ETERNAL
-Message-ID: <20250929072852.2krpxwaq2uxwj6cp@vireshk-i7>
-References: <8605612.T7Z3S40VBb@rafael.j.wysocki>
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="iVYsrEUy"
+ARC-Seal: i=1; a=rsa-sha256; t=1759132040; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=AXJeHHdVsYunpaGV0EZwwtuCO2/LTO0cyhejNvyZZVABct3cRRyqAFBBmX3OWha1HiMDoROtUPiJ/dP00g1q553HlHaIEAnRNlzE1pTPnLdGg4VGLMEY66Q8RCkcUV/qK4M8l8JCDLPwhSLBzFu7+mr2zeR1S81nV7AVoD1o7/I=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1759132040; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=MyTZIankaLF5a06YDy1KIdFXkQpVaw5MiopvoWPWCGU=; 
+	b=BOMCXIf5TalahWald9axZvlXR3O3mF9OXUDF9UyyYdn8RS4yDxfN1JU75jqPw6BgLD25zvyi08jlcnxy/s+lauJk3NTtrcIakUBIGKeKjdk3eHnjuk1G/fvRccQjNuPRqM9q8tl4vNi/Sn/QuoUS+uiz/DLle3MFggQK3utD1WM=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
+	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1759132040;
+	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
+	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
+	bh=MyTZIankaLF5a06YDy1KIdFXkQpVaw5MiopvoWPWCGU=;
+	b=iVYsrEUydxJTh+wVLyYnd0P9NcdQIEOWP2mX2GSfvY7rMGrULt87vUuhNujPNa69
+	476/2aY39X82/Olsc7jF8hT/wMaBC1pKE6J8txvj7XpqPiDODGzmxYzYCZvjLh/VxzO
+	lHCpXG7LlkbK+bi4hecYNrsVFFaJmQ75wcBeeTRY=
+Received: by mx.zohomail.com with SMTPS id 1759132038945581.1909983747233;
+	Mon, 29 Sep 2025 00:47:18 -0700 (PDT)
+From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+Date: Mon, 29 Sep 2025 09:46:44 +0200
+Subject: [PATCH v5 1/7] dt-bindings: gpu: mali-valhall-csf: add
+ mediatek,mt8196-mali variant
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8605612.T7Z3S40VBb@rafael.j.wysocki>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250929-mt8196-gpufreq-v5-1-3056e5ecf765@collabora.com>
+References: <20250929-mt8196-gpufreq-v5-0-3056e5ecf765@collabora.com>
+In-Reply-To: <20250929-mt8196-gpufreq-v5-0-3056e5ecf765@collabora.com>
+To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ Boris Brezillon <boris.brezillon@collabora.com>, 
+ Jassi Brar <jassisinghbrar@gmail.com>, Chia-I Wu <olvaffe@gmail.com>, 
+ Chen-Yu Tsai <wenst@chromium.org>, Steven Price <steven.price@arm.com>, 
+ Liviu Dudau <liviu.dudau@arm.com>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Matthias Brugger <matthias.bgg@gmail.com>, Kees Cook <kees@kernel.org>, 
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>, 
+ Ulf Hansson <ulf.hansson@linaro.org>
+Cc: kernel@collabora.com, dri-devel@lists.freedesktop.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, 
+ linux-hardening@vger.kernel.org, linux-pm@vger.kernel.org, 
+ Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+X-Mailer: b4 0.14.2
 
-On 25-09-25, 17:42, Rafael J. Wysocki wrote:
-> Hi All,
-> 
-> The first patch in this series is meant to address the failure discussed in
-> 
-> https://lore.kernel.org/linux-pm/20250922125929.453444-1-shawnguo2@yeah.net/
-> 
-> but in a different way than proposed by Shawn.
-> 
-> The second one is a CPPC cpufreq driver fix preventing it from using an
-> overly large transition delay in the cases when that delay cannot be
-> obtained from the platform firmware.
-> 
-> Patch [3/4] makes CPPC use a specific symbol instead of CPUFREQ_ETERNAL for
-> signaling error conditions while attempting to retrieve a transition latency
-> value from the platform firmware.
-> 
-> The last patch removes CPUFREQ_ETERNAL (which has no users any more) from
-> cpufreq, including all references to it in cpufreq documentation.
+The Mali-based GPU on the MediaTek MT8196 SoC uses a separate MCU to
+control the power and frequency of the GPU. This is modelled as a power
+domain and clock provider.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+It lets us omit the OPP tables from the device tree, as those can now be
+enumerated at runtime from the MCU.
+
+Add the necessary schema logic to handle what this SoC expects in terms
+of clocks and power-domains.
+
+Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+---
+ .../bindings/gpu/arm,mali-valhall-csf.yaml         | 40 ++++++++++++++++++++--
+ 1 file changed, 38 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml b/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
+index 7ad5a3ffc5f5c753322eda9e74cc65de89d11c73..860691ce985e560536b6c515b82441ba6d367c46 100644
+--- a/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
++++ b/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
+@@ -45,7 +45,9 @@ properties:
+     minItems: 1
+     items:
+       - const: core
+-      - const: coregroup
++      - enum:
++          - coregroup
++          - stacks
+       - const: stacks
+ 
+   mali-supply: true
+@@ -92,7 +94,6 @@ required:
+   - interrupts
+   - interrupt-names
+   - clocks
+-  - mali-supply
+ 
+ additionalProperties: false
+ 
+@@ -109,6 +110,29 @@ allOf:
+         power-domains:
+           maxItems: 1
+         power-domain-names: false
++      required:
++        - mali-supply
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: mediatek,mt8196-mali
++    then:
++      properties:
++        mali-supply: false
++        sram-supply: false
++        operating-points-v2: false
++        power-domains:
++          maxItems: 1
++        power-domain-names: false
++        clocks:
++          maxItems: 2
++        clock-names:
++          items:
++            - const: core
++            - const: stacks
++      required:
++        - power-domains
+ 
+ examples:
+   - |
+@@ -144,5 +168,17 @@ examples:
+             };
+         };
+     };
++  - |
++    gpu@48000000 {
++        compatible = "mediatek,mt8196-mali", "arm,mali-valhall-csf";
++        reg = <0x48000000 0x480000>;
++        clocks = <&gpufreq 0>, <&gpufreq 1>;
++        clock-names = "core", "stacks";
++        interrupts = <GIC_SPI 606 IRQ_TYPE_LEVEL_HIGH 0>,
++                     <GIC_SPI 605 IRQ_TYPE_LEVEL_HIGH 0>,
++                     <GIC_SPI 604 IRQ_TYPE_LEVEL_HIGH 0>;
++        interrupt-names = "job", "mmu", "gpu";
++        power-domains = <&gpufreq>;
++    };
+ 
+ ...
 
 -- 
-viresh
+2.51.0
+
