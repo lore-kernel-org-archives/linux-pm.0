@@ -1,102 +1,109 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C3ED2D1319
-	for <linux-pm@vger.kernel.org>; Wed,  1 Oct 2025 11:41:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B02793A8F7
+	for <linux-pm@vger.kernel.org>; Wed,  1 Oct 2025 12:48:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1759318872; cv=none; b=gMp3mrJgEZKYsZsCZk5+iEvFRQMo7AMXhBNmDKwRdKUoAEj9HFOpfGqgPRYLkhAveZLoxCFSxyUdfvPOlAsJ6OpEiOrAoGO3LquBjJ5hwtE8D4y1BAaDjT5Qz15IzItKJj3p8QQAzmkTs2twXEvV8Nr5ypXdAapAVxoh1UkdTt0=
+	t=1759322894; cv=none; b=bF4fRX0NaPrja67a91P0WqskuZiK/duBjEqLTlZIjUHiGNZRD9gStlZEa6J9n6VNqTEsei7t55e4wTDAKuyh12EZeiXuhKtUuBV1u7Sfg89I1gHa+BQTH7GS2E++TxtigocCetp/S+KbhTvsaSEKHsGHU/8J2Ck30VSHfvL0ifk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1759318872; c=relaxed/simple;
-	bh=ntLsFEiu5iqg45mHvg0i/VhGZFLZ11eccVxGS2wRk6U=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=oA+EfDxCDorTrTsGJJp5sL09ZynRUXey3Qi7kqKL2m7XuPPMfdTt0+uSBKDB7Ru4n9pCYtHxKKQzjnWWcfFlyS/Gip3XjALT0RDzDn6f2Woa8bg0S60sHY3IUGbSgk0F1v1p31vXrXPLas9ei2P1QxweaO++N3JgAYQ0ITcCwdI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <s.hauer@pengutronix.de>)
-	id 1v3vCb-0006lA-Tm; Wed, 01 Oct 2025 13:40:57 +0200
-Received: from dude02.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::28])
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <s.hauer@pengutronix.de>)
-	id 1v3vCa-001PBZ-2z;
-	Wed, 01 Oct 2025 13:40:56 +0200
-Received: from localhost ([::1] helo=dude02.red.stw.pengutronix.de)
-	by dude02.red.stw.pengutronix.de with esmtp (Exim 4.98.2)
-	(envelope-from <s.hauer@pengutronix.de>)
-	id 1v3vCa-000000081FZ-3XfH;
-	Wed, 01 Oct 2025 13:40:56 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Date: Wed, 01 Oct 2025 13:40:55 +0200
-Subject: [PATCH 1/3] tools: lib: thermal: use pkg-config to locate libnl3
+	s=arc-20240116; t=1759322894; c=relaxed/simple;
+	bh=0uii14LP1LA92VKfWGfQYjpZpUG578uPPyL31hK9Quw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Rzx29XtO68EirNWc/zk1KMyK0wKGLRaXUa1nFDm2xZlkSacUiocbu9qIJw9Zj/ojlAeJTlNN1FLe93Eaam+2V4R0mFbM/h2N6i0wXHwUOLuXKE+YwnRbmPmn0JN/ObB00Sf6nfKDaHklGr2AG2obBIb4Aks5K4JnDm+BoGQPAUE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=uqlM3P7r; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="uqlM3P7r"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DC10CC4CEF4
+	for <linux-pm@vger.kernel.org>; Wed,  1 Oct 2025 12:48:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1759322893;
+	bh=0uii14LP1LA92VKfWGfQYjpZpUG578uPPyL31hK9Quw=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=uqlM3P7rUh0+4CNVBhtt4a4azofdgY5yYfMHcQ3ayXn/wFasa8dblPvyzQWfjAMMk
+	 hjhSVGlPtqFN2e9rcPE0J8SS+cmuHhfyv/H4bmJfDzdkQ7gOCvuRNF5beOyhOl+Qxt
+	 GCV3wJY9woTHaiOouEzKW78DMovoJhfuw2tiwLQmRj5OHTVuAAU+fsjwLxxdw/SGLX
+	 Rk0mAUx3XJo9pDmofNMBFYX6cwGPEHNrUAF5bzkexeomJtWPA7yNrfln3iogoKtmLc
+	 dTDYbEOHPjvayrxc1RseK2wW6lOsVsHENUYlS8+dQSHGiN8vSgaHmXtybzFj4z5IMx
+	 DHItzKJg1SNIQ==
+Received: by mail-oo1-f49.google.com with SMTP id 006d021491bc7-6401f1733d7so2976557eaf.0
+        for <linux-pm@vger.kernel.org>; Wed, 01 Oct 2025 05:48:13 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUAOePIwgpFcyX8LSQAV9rLfko9FAaCuxQl+HC6J7hRXuGgYnyyVx2A/KHfzrG0yRTK+l3elFu6wQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz0OIZIF3NMcwA443KrC0KkdBP+zJaPiOT6qseKnP5zwffsoPDp
+	GT1vmuJcAugqIuv5oFlyMOZ9VUDhI69UnBUKl6wIeT+loZkTue8VaoRxB3yiwjRv1aZ4/obJtdk
+	wVnA52Ly5Vxt0kQY26xO4zu8kzqaJFn8=
+X-Google-Smtp-Source: AGHT+IE0PDlgyrc/KZ+o6fYHXvzHEqU8maawZFuSQLk9j9AAHLsthxk6iO7ndPCFT24oNvs+b2+evShlrNyu4nRPNjI=
+X-Received: by 2002:a05:6808:1815:b0:43f:5e26:6638 with SMTP id
+ 5614622812f47-43fa402ce1cmr1766875b6e.4.1759322893148; Wed, 01 Oct 2025
+ 05:48:13 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20251001-libthermal-install-v1-1-3071fd3f6612@pengutronix.de>
-References: <20251001-libthermal-install-v1-0-3071fd3f6612@pengutronix.de>
-In-Reply-To: <20251001-libthermal-install-v1-0-3071fd3f6612@pengutronix.de>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Sascha Hauer <s.hauer@pengutronix.de>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1759318856; l=1159;
- i=s.hauer@pengutronix.de; s=20230412; h=from:subject:message-id;
- bh=ntLsFEiu5iqg45mHvg0i/VhGZFLZ11eccVxGS2wRk6U=;
- b=SzzkiOTwpcf1TJ7BXhQTDka+ROR3fSi5YXOWWngvPBI91pzkGsr8WKaLwOLEG8XdZfbJczaBN
- SiikRssdXKkBeXg/fz6lgNhXOKSGvAqYVX0bzugvjJzG0CfmrWa/X8L
-X-Developer-Key: i=s.hauer@pengutronix.de; a=ed25519;
- pk=4kuc9ocmECiBJKWxYgqyhtZOHj5AWi7+d0n/UjhkwTg=
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: s.hauer@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+References: <20251001083423.5jndpemysufxjx7f@vireshk-i7>
+In-Reply-To: <20251001083423.5jndpemysufxjx7f@vireshk-i7>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 1 Oct 2025 14:48:01 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0h5AJGwG1RAQWMg32H6510JO82VAWh8bw+z0HYNr2LbTg@mail.gmail.com>
+X-Gm-Features: AS18NWDsVfUidyLSFF8ymoMqk1gEG6WB5vBAJQGylXK7cgt8A_kCGuZKXk-2mjk
+Message-ID: <CAJZ5v0h5AJGwG1RAQWMg32H6510JO82VAWh8bw+z0HYNr2LbTg@mail.gmail.com>
+Subject: Re: [GIT PULL] cpufreq/arm fixes for 6.18-rc
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-To make libthermal more cross compile friendly use pkg-config to locate
-libnl3. Only if that fails fall back to hardcoded /usr/include/libnl3.
+Hi Viresh,
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+On Wed, Oct 1, 2025 at 10:34=E2=80=AFAM Viresh Kumar <viresh.kumar@linaro.o=
+rg> wrote:
+>
+> Hi Rafael,
+>
+> The following changes since commit 3e681899cc6e6c77eca55dd8c7cc57b27868e8=
+a2:
+>
+>   cpufreq: mediatek: avoid redundant conditions (2025-09-04 10:20:44 +053=
+0)
+>
+> are available in the Git repository at:
+>
+>   git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git tags/cpufr=
+eq-arm-updates-6.18-rc
+>
+> for you to fetch changes up to ba6018929165fc914c665f071f8e8cdbac844a49:
+>
+>   cpufreq: tegra186: Initialize all cores to max frequencies (2025-09-29 =
+14:55:50 +0530)
+>
+> ----------------------------------------------------------------
+> CPUFreq fixes for 6.18
+>
+> - Update frequency for all tegra CPUs (Aaron Kling).
+>
+> - Fix device leak in mediatek driver (Johan Hovold).
+>
+> - Rust cpufreq helper cleanup (Thorsten Blum).
+>
+> ----------------------------------------------------------------
+> Aaron Kling (2):
+>       cpufreq: tegra186: Set target frequency for all cpus in policy
+>       cpufreq: tegra186: Initialize all cores to max frequencies
+>
+> Johan Hovold (1):
+>       cpufreq: mediatek: fix device leak on probe failure
+>
+> Thorsten Blum (1):
+>       rust: cpufreq: streamline find_supply_names
+>
+>  drivers/cpufreq/mediatek-cpufreq.c | 14 +++++++++++---
+>  drivers/cpufreq/rcpufreq_dt.rs     | 10 +++-------
+>  drivers/cpufreq/tegra186-cpufreq.c | 35 +++++++++++++++++++++++++++-----=
 ---
- tools/lib/thermal/Makefile | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+>  3 files changed, 41 insertions(+), 18 deletions(-)
+>
+> --
 
-diff --git a/tools/lib/thermal/Makefile b/tools/lib/thermal/Makefile
-index a1f5e388644d31d36f973d3ddce48d036ee0a083..fdde0c4f85b4e511a16c43810590ed45b007a5ad 100644
---- a/tools/lib/thermal/Makefile
-+++ b/tools/lib/thermal/Makefile
-@@ -46,8 +46,12 @@ else
-   CFLAGS := -g -Wall
- endif
- 
-+NL3_CFLAGS = $(shell pkg-config --cflags libnl-3.0 2>/dev/null)
-+ifeq ($(NL3_CFLAGS),)
-+NL3_CFLAGS = -I/usr/include/libnl3
-+endif
-+
- INCLUDES = \
---I/usr/include/libnl3 \
- -I$(srctree)/tools/lib/thermal/include \
- -I$(srctree)/tools/lib/ \
- -I$(srctree)/tools/include \
-@@ -59,6 +63,7 @@ INCLUDES = \
- override CFLAGS += $(EXTRA_WARNINGS)
- override CFLAGS += -Werror -Wall
- override CFLAGS += -fPIC
-+override CFLAGS += $(NL3_CFLAGS)
- override CFLAGS += $(INCLUDES)
- override CFLAGS += -fvisibility=hidden
- override CFGLAS += -Wl,-L.
-
--- 
-2.47.3
-
+Pulled and added to linux-pm.git/linux-next, thanks!
