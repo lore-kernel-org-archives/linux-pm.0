@@ -1,323 +1,135 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f73.google.com (mail-ed1-f73.google.com [209.85.208.73])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99475305E2E;
-	Thu,  2 Oct 2025 09:37:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1F642D7DD0
+	for <linux-pm@vger.kernel.org>; Thu,  2 Oct 2025 11:34:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.73
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1759397836; cv=none; b=l98K+sJw8vkgUu3WoG49HT+a3mT93R+1M49xDDrpO5v3Z7mqWU3Q8cojbobpXJ7PQYA9XTH6cvOt3YzV2mSlZb2cgRtwSd+5lc0Ab3Vc5dw3FRaJ/c71cdys5a0WW3sdcsi83AhV8jufKWI1lSJX6dIgRy/+6HlaOtN2vUTl0wk=
+	t=1759404850; cv=none; b=H8LBD15D5KgCm2a/HYBU5mkEqcdtZC220pFHuAOW2VBw+Jj/2PkPQn5BLG3MqlKzQpfFc+6dXAjpQUEQY9MoI/pD+bJmK99hziEUEWzFzWnktMALbwbvh1suBD5SSHOY9dxKZ3z/VT5nCfiVvulMi8+EW7FNrpQh7YpJgysnJew=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1759397836; c=relaxed/simple;
-	bh=Pd64nNB5Ez9IHOMoFPksTepGl56Y6v+xlVxwhALiKto=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ZI2ULIEu22+eMtiBEM+k/iHOUu1izvbA0JgpOaP1oRAMPqODbOaU0g4yNQVPVzTMObK71FUrep/b0DpAFlNdj/SExK1QtCW1q68rJigCI/KDOg9kPjE0wwiAQFaHsACDFBS5C3k3jzmWKh9m4rAEh9Rr8DrOWG8cIL67krMEUFg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=iSFx0RA2; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1759404850; c=relaxed/simple;
+	bh=OSzoS5rtTLi/B+hMV5Q0JgIBDtwwSwS8cCrabNTJlVo=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=UnfoK1rAS/gL75JzXM0buzElYa5X6ehjdDfsHkgcKhqAV/t2aPu6X8dxGBftWghKs7LWSzPYvr39b+pamfbyO5qpUFn/icLmg4allZtSYgkpo75qfcDH1LbLNZ6X9bjp4WR8g8ooWiY4iol3M4EH9G6LdG5Ds7rnswn11CYX0io=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--srosek.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=hLlJpLf1; arc=none smtp.client-ip=209.85.208.73
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--srosek.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="iSFx0RA2"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1759397833;
-	bh=Pd64nNB5Ez9IHOMoFPksTepGl56Y6v+xlVxwhALiKto=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=iSFx0RA2b0yp5e6xsfyAStm79ODjWdI3PGZNaN5+eiqMymRgsaFePrVEw+zQ7+zZi
-	 7yT8JQE5hkZktEnPKHQqLefkMfLcfUQcWtmtQ/d74jizbqliw0dQ5Ur7VQB/MW/oEe
-	 hClF85ARBheLddfk5GLGsKRyCBYPpaTx+Ec12BUq4nXij2vaQfkfBiWloCSaodZHnO
-	 iIKsQv8wAKMHMKs2dDCJxEGPBcJJ+DMBj6Jg4abv6O6xr0bMGaqB63kjtQlIamAIaJ
-	 RVFJOTtByfRhueEIb2uldkBqa+6QNC9amwKsTfhRKb/dqzC2j3TQD09qfDI3q1eIEl
-	 YtfKNfGx56F6A==
-Received: from IcarusMOD.eternityproject.eu (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 2A10217E13C1;
-	Thu,  2 Oct 2025 11:37:12 +0200 (CEST)
-From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-To: sboyd@kernel.org
-Cc: jic23@kernel.org,
-	dlechner@baylibre.com,
-	nuno.sa@analog.com,
-	andy@kernel.org,
-	arnd@arndb.de,
-	gregkh@linuxfoundation.org,
-	srini@kernel.org,
-	vkoul@kernel.org,
-	kishon@kernel.org,
-	sre@kernel.org,
-	krzysztof.kozlowski@linaro.org,
-	u.kleine-koenig@baylibre.com,
-	angelogioacchino.delregno@collabora.com,
-	linux-arm-msm@vger.kernel.org,
-	linux-iio@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-phy@lists.infradead.org,
-	linux-pm@vger.kernel.org,
-	kernel@collabora.com,
-	wenst@chromium.org,
-	casey.connolly@linaro.org,
-	Jonathan Cameron <jonathan.cameron@huawei.com>,
-	Neil Armstrong <neil.armstrong@linaro.org>
-Subject: [PATCH v5 7/7] iio: adc: qcom-spmi-iadc: Remove regmap R/W wrapper functions
-Date: Thu,  2 Oct 2025 11:36:57 +0200
-Message-ID: <20251002093657.2055332-8-angelogioacchino.delregno@collabora.com>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20251002093657.2055332-1-angelogioacchino.delregno@collabora.com>
-References: <20251002093657.2055332-1-angelogioacchino.delregno@collabora.com>
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="hLlJpLf1"
+Received: by mail-ed1-f73.google.com with SMTP id 4fb4d7f45d1cf-6305c385adbso1008466a12.1
+        for <linux-pm@vger.kernel.org>; Thu, 02 Oct 2025 04:34:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1759404847; x=1760009647; darn=vger.kernel.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Kt82+dwcyqqy/z3wY/WnDR+0tOJqjHYe0Y3q58yXyz0=;
+        b=hLlJpLf1LBpyxi1QHdOwLXUB0LjIP5F3rOJbd4A+jwmBoL1PdHLmRBg0BYOmbykquh
+         uGDNak7CUUS1dToS5LW3PU+iNWM+twOgH7ITW6xH/AgD3qmgph8H5Gfz+WEK8dHcsECc
+         YHElEXWihUiBuPeeZQNm8CfkYMvQMzHL4bSWp6wMWMSI1Y3FgfSSQuiIRlyGFQ6lwARA
+         2v4CnCkFuDAnls5n7ehtNmB0x6XRmi+k0zHRcaWRh0ushvU6fbHdCTOLllSbbEYI3QlO
+         JF9tURnRyghVZefw6o97C4EWewyAEoQr7JphNoS5x2mohNwwdUsmx68k150O+gOenYnS
+         c8kg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1759404847; x=1760009647;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Kt82+dwcyqqy/z3wY/WnDR+0tOJqjHYe0Y3q58yXyz0=;
+        b=Qzuz9Vrof/sWrU7lK96YK3MrYIXAJj5Fy8pyBnStm2wgBTBSJzxBDHPTJMeSQ6pHq+
+         de3BlwRJGrowygSdhljlbR7TKj2+YI1FK8tsIK516kKNjDjsblUmczzy8y3z0rKbj+Mp
+         rHyM/DnPHK7FstPow1/itqArYjAXNbLWxYJyu1hVoHdu+I/clt+tZKtdTMxiHy9vpLja
+         sxEKOSngjzLlk2td98STjKCYF6QRtoNW8nHt9ChZsyJWbxzdeqG/tphQNKNtJMvTRCWA
+         nZX+XXsK07nEC5vA7VEbERxSQR+pKFtE36pk5BJ6kxKfU3V7Zw9hnOFEtkTldQcDXREH
+         XCzw==
+X-Forwarded-Encrypted: i=1; AJvYcCU90udp8msLmiOBnu6DXfXOggBCM2gRbFT1XtUj3uvLOwwFfAPH+MblIn3ipKuYDzg4oBT0vT/bAQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzkxi9RwR4KPemrOMnhGsXARy+upcma9AmO9JTfYcXqCt0DIEz6
+	qs8CbJ+eqcQMn2CoFxyDpKdudC2RNPl5zOxeckIGI9HccMRE/UwS5dDrBrFnVuruSHVHFZ+sepl
+	9Xk3bZA==
+X-Google-Smtp-Source: AGHT+IE+4068072UB8enIKGqreBK+V8kMqDIEgu9uXCRHP5CJrH3i0Dac1P6YuynTCl4M7Vi7LVvL4CfTWc=
+X-Received: from edsf20.prod.google.com ([2002:aa7:d854:0:b0:62f:c143:5d77])
+ (user=srosek job=prod-delivery.src-stubby-dispatcher) by 2002:aa7:c60c:0:b0:634:bc7b:440e
+ with SMTP id 4fb4d7f45d1cf-63678c9f531mr6099293a12.36.1759404847361; Thu, 02
+ Oct 2025 04:34:07 -0700 (PDT)
+Date: Thu,  2 Oct 2025 11:33:59 +0000
+In-Reply-To: <20251002113404.3117429-1-srosek@google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+References: <20251002113404.3117429-1-srosek@google.com>
+X-Mailer: git-send-email 2.51.0.618.g983fd99d29-goog
+Message-ID: <20251002113404.3117429-2-srosek@google.com>
+Subject: [PATCH v3 1/6] ACPI: DPTF: Ignore SoC DTS thermal while scanning
+From: Slawomir Rosek <srosek@google.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>, Alex Hung <alexhung@gmail.com>, 
+	Hans de Goede <hansg@kernel.org>, Ilpo Jarvinen <ilpo.jarvinen@linux.intel.com>, 
+	AceLan Kao <acelan.kao@canonical.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Tomasz Nowicki <tnowicki@google.com>, 
+	Stanislaw Kardach <skardach@google.com>, Michal Krawczyk <mikrawczyk@google.com>, 
+	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, 
+	platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Slawomir Rosek <srosek@google.com>
+Content-Type: text/plain; charset="UTF-8"
 
-This driver doesn't need to add any register base address to any
-regmap call anymore since it was migrated to register as a SPMI
-subdevice with its own regmap reg_base, which makes the regmap
-API to automatically add such base address internally.
+The Intel SoC DTS thermal driver on Baytrail platform uses IRQ 86 for
+critical overheating notification. The IRQ 86 is described in the _CRS
+control method of INT3401 device, thus Intel SoC DTS thermal driver
+requires INT3401 device to be enumerated.
 
-Since the iadc_{read,write,read_result}() functions now only do
-call regmap_{read,write,bulk_read}() and nothing else, simplify
-the driver by removing them and by calling regmap APIs directly.
+Since dependency on INT3401 device is unrelated to DPTF the IS_ENABLE()
+macro is removed from ACPI DPTF INT340X scan handler, instead Kconfig
+is updated to ensure proper enumeration of INT3401 device.
 
-Reviewed-by: Jonathan Cameron <jonathan.cameron@huawei.com>
-Tested-by: Neil Armstrong <neil.armstrong@linaro.org> # on SM8650-QRD
-Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Fixes: 014d9d5d0cc1 ("ACPI/int340x_thermal: enumerate INT3401 for Intel SoC DTS thermal driver")
+Signed-off-by: Slawomir Rosek <srosek@google.com>
 ---
- drivers/iio/adc/qcom-spmi-iadc.c | 83 ++++++++++++--------------------
- 1 file changed, 30 insertions(+), 53 deletions(-)
+ drivers/acpi/dptf/int340x_thermal.c | 7 +------
+ drivers/thermal/intel/Kconfig       | 3 ++-
+ 2 files changed, 3 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/iio/adc/qcom-spmi-iadc.c b/drivers/iio/adc/qcom-spmi-iadc.c
-index 67096952b229..7d46ec2d1a30 100644
---- a/drivers/iio/adc/qcom-spmi-iadc.c
-+++ b/drivers/iio/adc/qcom-spmi-iadc.c
-@@ -113,77 +113,59 @@ struct iadc_chip {
- 	struct completion complete;
- };
+diff --git a/drivers/acpi/dptf/int340x_thermal.c b/drivers/acpi/dptf/int340x_thermal.c
+index a222df059a16..947fe50c2ef6 100644
+--- a/drivers/acpi/dptf/int340x_thermal.c
++++ b/drivers/acpi/dptf/int340x_thermal.c
+@@ -11,10 +11,9 @@
  
--static int iadc_read(struct iadc_chip *iadc, u16 offset, u8 *data)
--{
--	unsigned int val;
--	int ret;
--
--	ret = regmap_read(iadc->regmap, offset, &val);
--	if (ret < 0)
--		return ret;
--
--	*data = val;
--	return 0;
--}
--
--static int iadc_write(struct iadc_chip *iadc, u16 offset, u8 data)
--{
--	return regmap_write(iadc->regmap, offset, data);
--}
--
- static int iadc_reset(struct iadc_chip *iadc)
+ #include "../internal.h"
+ 
+-#define INT3401_DEVICE 0X01
+ static const struct acpi_device_id int340x_thermal_device_ids[] = {
+ 	{"INT3400"},
+-	{"INT3401", INT3401_DEVICE},
++	{"INT3401"},
+ 	{"INT3402"},
+ 	{"INT3403"},
+ 	{"INT3404"},
+@@ -76,10 +75,6 @@ static int int340x_thermal_handler_attach(struct acpi_device *adev,
  {
--	u8 data;
-+	u32 data;
- 	int ret;
- 
--	ret = iadc_write(iadc, IADC_SEC_ACCESS, IADC_SEC_ACCESS_DATA);
-+	ret = regmap_write(iadc->regmap, IADC_SEC_ACCESS, IADC_SEC_ACCESS_DATA);
- 	if (ret < 0)
- 		return ret;
- 
--	ret = iadc_read(iadc, IADC_PERH_RESET_CTL3, &data);
-+	ret = regmap_read(iadc->regmap, IADC_PERH_RESET_CTL3, &data);
- 	if (ret < 0)
- 		return ret;
- 
--	ret = iadc_write(iadc, IADC_SEC_ACCESS, IADC_SEC_ACCESS_DATA);
-+	ret = regmap_write(iadc->regmap, IADC_SEC_ACCESS, IADC_SEC_ACCESS_DATA);
- 	if (ret < 0)
- 		return ret;
- 
- 	data |= IADC_FOLLOW_WARM_RB;
- 
--	return iadc_write(iadc, IADC_PERH_RESET_CTL3, data);
-+	return regmap_write(iadc->regmap, IADC_PERH_RESET_CTL3, data);
+ 	if (IS_ENABLED(CONFIG_INT340X_THERMAL))
+ 		acpi_create_platform_device(adev, NULL);
+-	/* Intel SoC DTS thermal driver needs INT3401 to set IRQ descriptor */
+-	else if (IS_ENABLED(CONFIG_INTEL_SOC_DTS_THERMAL) &&
+-		 id->driver_data == INT3401_DEVICE)
+-		acpi_create_platform_device(adev, NULL);
+ 	return 1;
  }
  
- static int iadc_set_state(struct iadc_chip *iadc, bool state)
- {
--	return iadc_write(iadc, IADC_EN_CTL1, state ? IADC_EN_CTL1_SET : 0);
-+	return regmap_write(iadc->regmap, IADC_EN_CTL1, state ? IADC_EN_CTL1_SET : 0);
- }
+diff --git a/drivers/thermal/intel/Kconfig b/drivers/thermal/intel/Kconfig
+index e0268fac7093..f9e275538e29 100644
+--- a/drivers/thermal/intel/Kconfig
++++ b/drivers/thermal/intel/Kconfig
+@@ -44,7 +44,8 @@ config INTEL_SOC_DTS_IOSF_CORE
  
- static void iadc_status_show(struct iadc_chip *iadc)
- {
--	u8 mode, sta1, chan, dig, en, req;
-+	u32 mode, sta1, chan, dig, en, req;
- 	int ret;
- 
--	ret = iadc_read(iadc, IADC_MODE_CTL, &mode);
-+	ret = regmap_read(iadc->regmap, IADC_MODE_CTL, &mode);
- 	if (ret < 0)
- 		return;
- 
--	ret = iadc_read(iadc, IADC_DIG_PARAM, &dig);
-+	ret = regmap_read(iadc->regmap, IADC_DIG_PARAM, &dig);
- 	if (ret < 0)
- 		return;
- 
--	ret = iadc_read(iadc, IADC_CH_SEL_CTL, &chan);
-+	ret = regmap_read(iadc->regmap, IADC_CH_SEL_CTL, &chan);
- 	if (ret < 0)
- 		return;
- 
--	ret = iadc_read(iadc, IADC_CONV_REQ, &req);
-+	ret = regmap_read(iadc->regmap, IADC_CONV_REQ, &req);
- 	if (ret < 0)
- 		return;
- 
--	ret = iadc_read(iadc, IADC_STATUS1, &sta1);
-+	ret = regmap_read(iadc->regmap, IADC_STATUS1, &sta1);
- 	if (ret < 0)
- 		return;
- 
--	ret = iadc_read(iadc, IADC_EN_CTL1, &en);
-+	ret = regmap_read(iadc->regmap, IADC_EN_CTL1, &en);
- 	if (ret < 0)
- 		return;
- 
-@@ -199,34 +181,34 @@ static int iadc_configure(struct iadc_chip *iadc, int channel)
- 
- 	/* Mode selection */
- 	mode = (IADC_OP_MODE_NORMAL << IADC_OP_MODE_SHIFT) | IADC_TRIM_EN;
--	ret = iadc_write(iadc, IADC_MODE_CTL, mode);
-+	ret = regmap_write(iadc->regmap, IADC_MODE_CTL, mode);
- 	if (ret < 0)
- 		return ret;
- 
- 	/* Channel selection */
--	ret = iadc_write(iadc, IADC_CH_SEL_CTL, channel);
-+	ret = regmap_write(iadc->regmap, IADC_CH_SEL_CTL, channel);
- 	if (ret < 0)
- 		return ret;
- 
- 	/* Digital parameter setup */
- 	decim = IADC_DEF_DECIMATION << IADC_DIG_DEC_RATIO_SEL_SHIFT;
--	ret = iadc_write(iadc, IADC_DIG_PARAM, decim);
-+	ret = regmap_write(iadc->regmap, IADC_DIG_PARAM, decim);
- 	if (ret < 0)
- 		return ret;
- 
- 	/* HW settle time delay */
--	ret = iadc_write(iadc, IADC_HW_SETTLE_DELAY, IADC_DEF_HW_SETTLE_TIME);
-+	ret = regmap_write(iadc->regmap, IADC_HW_SETTLE_DELAY, IADC_DEF_HW_SETTLE_TIME);
- 	if (ret < 0)
- 		return ret;
- 
--	ret = iadc_write(iadc, IADC_FAST_AVG_CTL, IADC_DEF_AVG_SAMPLES);
-+	ret = regmap_write(iadc->regmap, IADC_FAST_AVG_CTL, IADC_DEF_AVG_SAMPLES);
- 	if (ret < 0)
- 		return ret;
- 
- 	if (IADC_DEF_AVG_SAMPLES)
--		ret = iadc_write(iadc, IADC_FAST_AVG_EN, IADC_FAST_AVG_EN_SET);
-+		ret = regmap_write(iadc->regmap, IADC_FAST_AVG_EN, IADC_FAST_AVG_EN_SET);
- 	else
--		ret = iadc_write(iadc, IADC_FAST_AVG_EN, 0);
-+		ret = regmap_write(iadc->regmap, IADC_FAST_AVG_EN, 0);
- 
- 	if (ret < 0)
- 		return ret;
-@@ -239,19 +221,19 @@ static int iadc_configure(struct iadc_chip *iadc, int channel)
- 		return ret;
- 
- 	/* Request conversion */
--	return iadc_write(iadc, IADC_CONV_REQ, IADC_CONV_REQ_SET);
-+	return regmap_write(iadc->regmap, IADC_CONV_REQ, IADC_CONV_REQ_SET);
- }
- 
- static int iadc_poll_wait_eoc(struct iadc_chip *iadc, unsigned int interval_us)
- {
- 	unsigned int count, retry;
- 	int ret;
--	u8 sta1;
-+	u32 sta1;
- 
- 	retry = interval_us / IADC_CONV_TIME_MIN_US;
- 
- 	for (count = 0; count < retry; count++) {
--		ret = iadc_read(iadc, IADC_STATUS1, &sta1);
-+		ret = regmap_read(iadc->regmap, IADC_STATUS1, &sta1);
- 		if (ret < 0)
- 			return ret;
- 
-@@ -267,11 +249,6 @@ static int iadc_poll_wait_eoc(struct iadc_chip *iadc, unsigned int interval_us)
- 	return -ETIMEDOUT;
- }
- 
--static int iadc_read_result(struct iadc_chip *iadc, u16 *data)
--{
--	return regmap_bulk_read(iadc->regmap, IADC_DATA, data, 2);
--}
--
- static int iadc_do_conversion(struct iadc_chip *iadc, int chan, u16 *data)
- {
- 	unsigned int wait;
-@@ -296,7 +273,7 @@ static int iadc_do_conversion(struct iadc_chip *iadc, int chan, u16 *data)
- 	}
- 
- 	if (!ret)
--		ret = iadc_read_result(iadc, data);
-+		ret = regmap_bulk_read(iadc->regmap, IADC_DATA, data, sizeof(*data));
- exit:
- 	iadc_set_state(iadc, false);
- 	if (ret < 0)
-@@ -392,10 +369,10 @@ static int iadc_update_offset(struct iadc_chip *iadc)
- 
- static int iadc_version_check(struct iadc_chip *iadc)
- {
--	u8 val;
-+	u32 val;
- 	int ret;
- 
--	ret = iadc_read(iadc, IADC_PERPH_TYPE, &val);
-+	ret = regmap_read(iadc->regmap, IADC_PERPH_TYPE, &val);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -404,7 +381,7 @@ static int iadc_version_check(struct iadc_chip *iadc)
- 		return -EINVAL;
- 	}
- 
--	ret = iadc_read(iadc, IADC_PERPH_SUBTYPE, &val);
-+	ret = regmap_read(iadc->regmap, IADC_PERPH_SUBTYPE, &val);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -413,7 +390,7 @@ static int iadc_version_check(struct iadc_chip *iadc)
- 		return -EINVAL;
- 	}
- 
--	ret = iadc_read(iadc, IADC_REVISION2, &val);
-+	ret = regmap_read(iadc->regmap, IADC_REVISION2, &val);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -428,7 +405,7 @@ static int iadc_version_check(struct iadc_chip *iadc)
- static int iadc_rsense_read(struct iadc_chip *iadc, struct device_node *node)
- {
- 	int ret, sign, int_sense;
--	u8 deviation;
-+	u32 deviation;
- 
- 	ret = of_property_read_u32(node, "qcom,external-resistor-micro-ohms",
- 				   &iadc->rsense[IADC_EXT_RSENSE]);
-@@ -440,7 +417,7 @@ static int iadc_rsense_read(struct iadc_chip *iadc, struct device_node *node)
- 		return -EINVAL;
- 	}
- 
--	ret = iadc_read(iadc, IADC_NOMINAL_RSENSE, &deviation);
-+	ret = regmap_read(iadc->regmap, IADC_NOMINAL_RSENSE, &deviation);
- 	if (ret < 0)
- 		return ret;
- 
+ config INTEL_SOC_DTS_THERMAL
+ 	tristate "Intel SoCs DTS thermal driver"
+-	depends on X86 && PCI && ACPI
++	depends on X86_64 && PCI && ACPI
++	select INT340X_THERMAL
+ 	select INTEL_SOC_DTS_IOSF_CORE
+ 	help
+ 	  Enable this to register Intel SoCs (e.g. Bay Trail) platform digital
 -- 
-2.51.0
+2.51.0.618.g983fd99d29-goog
 
