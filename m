@@ -1,44 +1,44 @@
 Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22C7A1F4192;
-	Fri,  3 Oct 2025 20:15:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4875E21CFFA;
+	Fri,  3 Oct 2025 20:16:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1759522557; cv=pass; b=DPMPPSsiZ/AUHbihyCtSEYswqD3kpx0UMsBcLVrFhLfFelh4WslNpK0KeoXaxXA175LQ/7/qHEUWoann1ZSFhwQUS0fILHrH0xflvJZGeJgsvaC8LavYzuMKTZgWS/UPEAS65qfHQhmBDb2+26uhtp5GiDPKG9jFLU4QOVM0cfI=
+	t=1759522590; cv=pass; b=RzOPWyM7SV59Sxy3YcRhf2lW/ivajVP3bpu83TIJ0ixErcMKh02dOep1OUcTDIj38eNaqUXnoBLqbGxSscTt5nJATf7Fftvbq2bDOvyQdNMDpC6F9pTinU3s2REyqTn/APqJFW96CQj6XNa6D4lyhxv2lwf0moFR+mdz/BIZwwU=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1759522557; c=relaxed/simple;
-	bh=9/E91VDnCmTt6JDaQcpsJDHAs0TyOiRVnEX7ubrp3wY=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=nbc2A4PEWOu7SQiw3WgZ9SS/705Ra4zOACJc+DdkrYmyHUk0XETsAlznrQvyGYZ1n0btOYJJZSlUwELUO9ojXHri/JmvaE/dIA5TAXrKBSHlxOlHzPHwLiLpSzTuKOyjE+hd/gzojqPXXL7vIoIcfEe5N6bxi2RR4JQw7RmCeS0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=cxvCjjDY; arc=pass smtp.client-ip=136.143.188.112
+	s=arc-20240116; t=1759522590; c=relaxed/simple;
+	bh=ZbE1YnroBDaQ0XUKTJAV6ZnwpIamucD8LllROSuLueI=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=ef4AkuTcywlLPz6Moz6l+Yw5e1bi68qbrUjT8r0RmisKbDLglC5BPMdOCJjp0elRMM+x+x4WJaIUscbdCcdkb5rPMWgCjq4h2/TeqTgmP4Nz0dUtuTRwHPU2leiaeoh7d12/iXGGjc2KGqnzUhmzeL7QTGFcIfkPJBotmwxTzm4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=XYWVcKI8; arc=pass smtp.client-ip=136.143.188.112
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="cxvCjjDY"
-ARC-Seal: i=1; a=rsa-sha256; t=1759522527; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="XYWVcKI8"
+ARC-Seal: i=1; a=rsa-sha256; t=1759522557; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=TB3N59rMVl++Cqhev2whZyOKfFhhIUeLYogj6cIydwbvxKc7wormT8kUOfHMnZ7ACMPyrblQANWV1z9Tqabxnp0Wv0HYQSfH5CWyze/H0XPpAW0veqpaoy3dHkVI0xpjon+18diZ5+U7i4sD5Iae5zM/bAcec4nbP3jk5aSxE7k=
+	b=VN/MhKtTj2pApCwB/qfT6oVFbMpL9pOvFi631Dhu3Y+aQ+jzsJviom9gCMGUHKjHeGOYs6LG3GNm1i8BZ0OOpi0HZ0IXe5HlXKrDWzoPcC2J3qJfB9VUAcbGDRNFevavHo9wtTo47BR3/upr0m58BtETG70KOlMWIU6+I4iRDnM=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1759522527; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=0XYFQyicZ7vdEJ9Vg7FR/sH93Q/aXWh147Zd+X8iiNM=; 
-	b=CyNc8tIsgkU5lfk5hOpm9e/j232b99tCyyAGlr+tgPT3/f0ZR89+ntnvZ4IOmYiwftUeZYKk7d7bY+t0d7rcwagANZ/UUqR1cefNlAq/6nvFDOtALd5bH2Zgk7LQJJBttLvA9Yn5n5Ee0+Z7qsadycAE3i9TR42HDd6mM1cPeFg=
+	t=1759522557; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=OHTQN/hUpw0/OorijzZsSKvbyZcxrNCnQ1LFHlDK/ao=; 
+	b=bml/Cik+6vHKZrK35nBm7ZS1ae1MkgSRNoeYjMr3Kkb54kv95wsY5mqSfrEeho21Viwxk5CCSCh0Mz+C/KOkkA+NoVvA/q/dCcF2GWZPeKy0tFn7AxJHmKjITCe6afzPboPdgKHw56HvwQxectx1T6FGms8Gr1kVZotQGW8d3LY=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1759522527;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1759522557;
 	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
-	h=From:From:Subject:Subject:Date:Date:Message-Id:Message-Id:MIME-Version:Content-Type:Content-Transfer-Encoding:To:To:Cc:Cc:Reply-To;
-	bh=0XYFQyicZ7vdEJ9Vg7FR/sH93Q/aXWh147Zd+X8iiNM=;
-	b=cxvCjjDYjpP1WqSfbdwsluQufZwk45RBcoS+5ucpcZuW8ERuXSAEeBbOYKwFy4xL
-	r5gqsv6mDhB6QI8Pvwyz88i0HdDYDXbKmsr+4WMtIZeUOmzc85PN40CmgPkFf3W9iXb
-	QQ4M2kvMpnj1SKalREZAUrOUktgVXaYC17lbJI/M=
-Received: by mx.zohomail.com with SMTPS id 1759522524954776.4491951157889;
-	Fri, 3 Oct 2025 13:15:24 -0700 (PDT)
+	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
+	bh=OHTQN/hUpw0/OorijzZsSKvbyZcxrNCnQ1LFHlDK/ao=;
+	b=XYWVcKI84/TtGMLxdGr2E3KmRQioPpCatNhm1GKbBCqSozi6wPZS2LzdyH98BUei
+	ANZ39qM2itekLhc/Sr1kTd3DyhTdlcgqT16m8LW1NEgPITbgPlLMAmBQ8UeqqIM5TPx
+	jANfenI51Ffab2sImAEgc/0pzV4vW9EMoeM7axsM=
+Received: by mx.zohomail.com with SMTPS id 1759522554808477.6726764405163;
+	Fri, 3 Oct 2025 13:15:54 -0700 (PDT)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Subject: [PATCH v6 0/7] MT8196 GPU Frequency/Power Control Support
-Date: Fri, 03 Oct 2025 22:15:02 +0200
-Message-Id: <20251003-mt8196-gpufreq-v6-0-76498ad61d9e@collabora.com>
+Date: Fri, 03 Oct 2025 22:15:06 +0200
+Subject: [PATCH v6 4/7] mailbox: add MediaTek GPUEB IPI mailbox
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -47,13 +47,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAMYu4GgC/23Ry27DIBAF0F+xWJcIhpexqir/UXWBYZwg+ZEax
- 0oV5d+LnY0VZ3kRcy4j7iThGDGRqriTEeeY4tDnoD8K4s+uPyGNIWcCDBQrwdJuKrnV9HS5NiP
- +Ume0VNqwwEsgeegyYhNvK/j988z52jW70/OQ1C4h9UPXxakqerxNdLE5Y2KZ7zAlt7ZWxedaa
- rlgDLhSB861sKyknA7t7JoGj6fOxfaQsS+ylJ1jmobxb11m5mvbk2Dq9d0zp4yaWnsIukYAfvR
- D27p6GN3irdwMG4LDjoCFMNaVThiwwb4jxJYwO0JkwksMKGsprMV3hNwQIHaEzIT2QQsX0Iig3
- xFqS+z+cFaZEExpVOgbo9Ur8Xg8/gEfz+7SKQIAAA==
-X-Change-ID: 20250829-mt8196-gpufreq-a7645670d182
+Message-Id: <20251003-mt8196-gpufreq-v6-4-76498ad61d9e@collabora.com>
+References: <20251003-mt8196-gpufreq-v6-0-76498ad61d9e@collabora.com>
+In-Reply-To: <20251003-mt8196-gpufreq-v6-0-76498ad61d9e@collabora.com>
 To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
  Boris Brezillon <boris.brezillon@collabora.com>, 
  Jassi Brar <jassisinghbrar@gmail.com>, Chia-I Wu <olvaffe@gmail.com>, 
@@ -71,239 +67,393 @@ Cc: kernel@collabora.com, dri-devel@lists.freedesktop.org,
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
  linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, 
  linux-hardening@vger.kernel.org, linux-pm@vger.kernel.org, 
- Nicolas Frattaroli <nicolas.frattaroli@collabora.com>, 
- Conor Dooley <conor.dooley@microchip.com>
+ Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 X-Mailer: b4 0.14.2
 
-This series introduces two new drivers to accomplish controlling the
-frequency and power of the Mali GPU on MediaTek MT8196 SoCs.
+The MT8196 SoC uses an embedded MCU to control frequencies and power of
+the GPU. This controller is referred to as "GPUEB".
 
-The reason why it's not as straightforward as with other SoCs is that
-the MT8196 has quite complex glue logic in order to squeeze the maximum
-amount of performance possible out of the silicon. There's an additional
-MCU running a specialised firmware, which communicates with the
-application processor through a mailbox and some reserved memory, and is
-in charge of controlling the regulators, the PLL clocks, and the power
-gating of the GPU, all while also being in charge of any DVFS control.
+It communicates to the application processor, among other ways, through
+a mailbox.
 
-This set of drivers is enough to communicate desired OPP index limits to
-the aforementioned MCU, referred to as "GPUEB" from here on out. The
-GPUEB is still free to lower the effective frequency if the GPU has no
-jobs going on at all, even when a higher OPP is set.
+The mailbox exposes one interrupt, which appears to only be fired when a
+response is received, rather than a transaction is completed. For us,
+this means we unfortunately need to poll for txdone.
 
-The power- and frequency control driver, mtk-mfg-pmdomain, is now
-implemented as a power domain driver, with a set_performance_state
-operation. It also exposes itself as a clock provider, so that panthor
-can read the actual achieved DVFS clock rate as per the GPUEB firmware.
+The mailbox also requires the EB clock to be on when touching any of the
+mailbox registers.
 
-This power domain approach means that panthor does not need to know
-about how the frequency control works on this SoC, as the OPP core
-framework already takes care of it. The only exception is that panthor
-needs to not register OPPs from DT itself if there already is an OPP
-table present.
+Add a simple driver for it based on the common mailbox framework.
 
-The mailbox driver is a fairly bog-standard common mailbox framework
-driver, just specific to the firmware that runs on the GPUEB.
-
+Reviewed-by: Chia-I Wu <olvaffe@gmail.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
-Changes in v6:
-- mailbox: move buf definition into if condition, as per Chia-I Wu
-- panthor: remove the redundant NULL checks in panthor_devfreq_get_freq
-- mtk-mfg-pmdomain: adjust return style consistency
-- mtk-mfg-pmdomain: add docstring for mtk_mfg_send_ipi to explain it's
-  blocking
-- mtk-mfg-pmdomain: use CMD_FIX_DUAL_TARGET_OPPIDX instead of
-  CMD_FIX_TARGET_OPPIDX.
-- mtk-mfg-pmdomain: reword code comments to not be in the "we" style
-- mtk-mfg-pmdomain: shuffle around mbox allocations as per Angelo
-- mtk-mfg-pmdomain: don't pointlessly turn on EB clock in probe,
-  reducing the need for a comment explaining the bookkeeping
-- mtk-mfg-pmdomain: consistently use dev_err_probe and Capitalise first
-  letter of error string
-- mtk-mfg-pmdomain: get rid of redundant ret = dev_err_probe assignment
-- mtk-mfg-pmdomain: reintroduce stack OPP table, choose min(gpu, stack)
-  when adding frequencies. Fixes gaps in OPP levels where only stack
-  changed, but gpu had duplicates, which resulted in choosing a too slow
-  OPP
-- mtk-mfg-pmdomain: stub round_rate clk op to opt out of CCF always
-  "rounding" a devfreq rate request to the current rate
-- Link to v5: https://lore.kernel.org/r/20250929-mt8196-gpufreq-v5-0-3056e5ecf765@collabora.com
+ drivers/mailbox/Kconfig             |  10 ++
+ drivers/mailbox/Makefile            |   2 +
+ drivers/mailbox/mtk-gpueb-mailbox.c | 319 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 331 insertions(+)
 
-Changes in v5:
-- mtk-mfg-pmdomain binding: add memory-regions property, remove shmem
-  property, as we now correctly describe the shared memory as a regular
-  memory region
-- mtk-mfg-pmdomain binding: get rid of redundant |
-- drop "dt-bindings: sram: Add compatible for
-  mediatek,mt8196-gpufreq-sram" as part of the move to reserved memory
-- mtk-mfg-pmdomain: move to using reserved-memory for GPUEB shared
-  memory
-- mtk-mfg-pmdomain: demote some types to smaller sizes in struct
-  mtk_mfg, as per Angelo's suggestions
-- mtk-mfg-pmdomain: use units.h for Hz-to-KHz
-- mtk-mfg-pmdomain: change for loop in attach_dev to reduce indentation
-- mtk-mfg-pmdomain: simplify return in mtk_mfg_power_off
-- mtk-mfg-pmdomain: move of_device_id after probe
-- mtk_mfg_pmdomain: map mmio by index
-- mtk_mfg_pmdomain: add error checking to pm_genpd_init()
-- mtk_mfg_pmdomain: add remove function
-- mtk_mfg_pmdomain: remove last_opp member and logic, since OPP core
-  already does that for us
-- mtk_mfg_pmdomain: adjust comment in mtk_mfg_set_performance to explain
-  why we're doing what we're doing
-- mtk_mfg_pmdomain: call mtk_mfg_set_oppidx in mtk_mfg_power_on with
-  the performance_state we deferred setting while it was powered off
-- mtk_mfg_pmdomain: add inline function for PWR_ACK checking, as it's
-  now used twice with the added remove function
-- mtk-mfg-pmdomain: add suppress_bind_attrs so people don't play with
-  that
-- mtk-mfg-pmdomain: change KConfig from tristate to bool, as module
-  unloading results in strange likely firmware-induced hardware state
-  woes in the mali GPU
-- mtk-mfg-pmdomain: read IPI magic in power_on, don't zero it after
-  confirming that seemingly had no purpose
-- mtk-mfg-pmdomain: misc style changes
-- Link to v4: https://lore.kernel.org/r/20250923-mt8196-gpufreq-v4-0-6cd63ade73d6@collabora.com
+diff --git a/drivers/mailbox/Kconfig b/drivers/mailbox/Kconfig
+index c488725aa2a5d4b079c3284acc2d0e143c5ab08d..29f16f220384fc23fc735f827415f30f5cedb888 100644
+--- a/drivers/mailbox/Kconfig
++++ b/drivers/mailbox/Kconfig
+@@ -294,6 +294,16 @@ config MTK_CMDQ_MBOX
+ 	  critical time limitation, such as updating display configuration
+ 	  during the vblank.
+ 
++config MTK_GPUEB_MBOX
++	tristate "MediaTek GPUEB Mailbox Support"
++	depends on ARCH_MEDIATEK || COMPILE_TEST
++	help
++	  The MediaTek GPUEB mailbox is used to communicate with the embedded
++	  controller in charge of GPU frequency and power management on some
++	  MediaTek SoCs, such as the MT8196.
++	  Say Y or m here if you want to support the MT8196 SoC in your kernel
++	  build.
++
+ config ZYNQMP_IPI_MBOX
+ 	tristate "Xilinx ZynqMP IPI Mailbox"
+ 	depends on ARCH_ZYNQMP && OF
+diff --git a/drivers/mailbox/Makefile b/drivers/mailbox/Makefile
+index f9a11f5639aaf0faab254584ab23f00146ba7aa0..81820a4f55285580dcc4acdc713a50d94d6f16c0 100644
+--- a/drivers/mailbox/Makefile
++++ b/drivers/mailbox/Makefile
+@@ -63,6 +63,8 @@ obj-$(CONFIG_MTK_ADSP_MBOX)	+= mtk-adsp-mailbox.o
+ 
+ obj-$(CONFIG_MTK_CMDQ_MBOX)	+= mtk-cmdq-mailbox.o
+ 
++obj-$(CONFIG_MTK_GPUEB_MBOX)	+= mtk-gpueb-mailbox.o
++
+ obj-$(CONFIG_ZYNQMP_IPI_MBOX)	+= zynqmp-ipi-mailbox.o
+ 
+ obj-$(CONFIG_SUN6I_MSGBOX)	+= sun6i-msgbox.o
+diff --git a/drivers/mailbox/mtk-gpueb-mailbox.c b/drivers/mailbox/mtk-gpueb-mailbox.c
+new file mode 100644
+index 0000000000000000000000000000000000000000..925bcf21f650decdb6abd4c07e61b72bc6c3c94e
+--- /dev/null
++++ b/drivers/mailbox/mtk-gpueb-mailbox.c
+@@ -0,0 +1,319 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * MediaTek GPUEB mailbox driver for SoCs such as the MT8196
++ *
++ * Copyright (C) 2025, Collabora Ltd.
++ *
++ * Developers harmed in the making of this driver:
++ *  - Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
++ */
++
++#include <linux/atomic.h>
++#include <linux/clk.h>
++#include <linux/device.h>
++#include <linux/interrupt.h>
++#include <linux/io.h>
++#include <linux/iopoll.h>
++#include <linux/mailbox_controller.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++
++#define GPUEB_MBOX_CTL_TX_STS		0x00
++#define GPUEB_MBOX_CTL_IRQ_SET		0x04
++#define GPUEB_MBOX_CTL_IRQ_CLR		0x74
++#define GPUEB_MBOX_CTL_RX_STS		0x78
++
++#define GPUEB_MBOX_FULL			BIT(0) /* i.e. we've received data */
++#define GPUEB_MBOX_BLOCKED		BIT(1) /* i.e. the channel is shutdown */
++
++#define GPUEB_MBOX_MAX_RX_SIZE		32 /* in bytes */
++
++struct mtk_gpueb_mbox {
++	struct device *dev;
++	struct clk *clk;
++	void __iomem *mbox_mmio;
++	void __iomem *mbox_ctl;
++	struct mbox_controller mbox;
++	struct mtk_gpueb_mbox_chan *ch;
++	int irq;
++	const struct mtk_gpueb_mbox_variant *v;
++};
++
++/**
++ * struct mtk_gpueb_mbox_chan - per-channel runtime data
++ * @ebm: pointer to the parent &struct mtk_gpueb_mbox mailbox
++ * @full_name: descriptive name of channel for IRQ subsystem
++ * @num: channel number, starting at 0
++ * @rx_status: signifies whether channel reception is turned off, or full
++ * @c: pointer to the constant &struct mtk_gpueb_mbox_chan_desc channel data
++ */
++struct mtk_gpueb_mbox_chan {
++	struct mtk_gpueb_mbox *ebm;
++	char *full_name;
++	u8 num;
++	atomic_t rx_status;
++	const struct mtk_gpueb_mbox_chan_desc *c;
++};
++
++/**
++ * struct mtk_gpueb_mbox_chan_desc - per-channel constant data
++ * @name: name of this channel
++ * @num: index of this channel, starting at 0
++ * @tx_offset: byte offset measured from mmio base for outgoing data
++ * @tx_len: size, in bytes, of the outgoing data on this channel
++ * @rx_offset: bytes offset measured from mmio base for incoming data
++ * @rx_len: size, in bytes, of the incoming data on this channel
++ */
++struct mtk_gpueb_mbox_chan_desc {
++	const char *name;
++	const u8 num;
++	const u16 tx_offset;
++	const u8 tx_len;
++	const u16 rx_offset;
++	const u8 rx_len;
++};
++
++struct mtk_gpueb_mbox_variant {
++	const u8 num_channels;
++	const struct mtk_gpueb_mbox_chan_desc channels[] __counted_by(num_channels);
++};
++
++/**
++ * mtk_gpueb_mbox_read_rx - read RX buffer from MMIO into channel's RX buffer
++ * @buf: buffer to read into
++ * @chan: pointer to the channel to read
++ */
++static void mtk_gpueb_mbox_read_rx(void *buf, struct mtk_gpueb_mbox_chan *chan)
++{
++	memcpy_fromio(buf, chan->ebm->mbox_mmio + chan->c->rx_offset, chan->c->rx_len);
++}
++
++static irqreturn_t mtk_gpueb_mbox_isr(int irq, void *data)
++{
++	struct mtk_gpueb_mbox_chan *ch = data;
++	u32 rx_sts;
++
++	rx_sts = readl(ch->ebm->mbox_ctl + GPUEB_MBOX_CTL_RX_STS);
++
++	if (rx_sts & BIT(ch->num)) {
++		if (!atomic_cmpxchg(&ch->rx_status, 0, GPUEB_MBOX_FULL | GPUEB_MBOX_BLOCKED))
++			return IRQ_WAKE_THREAD;
++	}
++
++	return IRQ_NONE;
++}
++
++static irqreturn_t mtk_gpueb_mbox_thread(int irq, void *data)
++{
++	struct mtk_gpueb_mbox_chan *ch = data;
++	int status;
++
++	status = atomic_cmpxchg(&ch->rx_status, GPUEB_MBOX_FULL | GPUEB_MBOX_BLOCKED,
++				GPUEB_MBOX_FULL);
++	if (status == (GPUEB_MBOX_FULL | GPUEB_MBOX_BLOCKED)) {
++		u8 buf[GPUEB_MBOX_MAX_RX_SIZE] = {};
++
++		mtk_gpueb_mbox_read_rx(buf, ch);
++		writel(BIT(ch->num), ch->ebm->mbox_ctl + GPUEB_MBOX_CTL_IRQ_CLR);
++		mbox_chan_received_data(&ch->ebm->mbox.chans[ch->num], buf);
++		atomic_set(&ch->rx_status, 0);
++		return IRQ_HANDLED;
++	}
++
++	return IRQ_NONE;
++}
++
++static int mtk_gpueb_mbox_send_data(struct mbox_chan *chan, void *data)
++{
++	struct mtk_gpueb_mbox_chan *ch = chan->con_priv;
++	u32 *values = data;
++	int i;
++
++	if (atomic_read(&ch->rx_status))
++		return -EBUSY;
++
++	/*
++	 * We don't want any fancy nonsense, just write the 32-bit values in
++	 * order. memcpy_toio/__iowrite32_copy don't work here, as they may use
++	 * writes of different sizes or memory ordering characteristics depending
++	 * on the architecture, alignment and the current phase of the moon.
++	 */
++	for (i = 0; i < ch->c->tx_len; i += 4)
++		writel(values[i / 4], ch->ebm->mbox_mmio + ch->c->tx_offset + i);
++
++	writel(BIT(ch->num), ch->ebm->mbox_ctl + GPUEB_MBOX_CTL_IRQ_SET);
++
++	return 0;
++}
++
++static int mtk_gpueb_mbox_startup(struct mbox_chan *chan)
++{
++	struct mtk_gpueb_mbox_chan *ch = chan->con_priv;
++	int ret;
++
++	atomic_set(&ch->rx_status, 0);
++
++	ret = clk_enable(ch->ebm->clk);
++	if (ret) {
++		dev_err(ch->ebm->dev, "Failed to enable EB clock: %pe\n",
++			ERR_PTR(ret));
++		goto err_block;
++	}
++
++	writel(BIT(ch->num), ch->ebm->mbox_ctl + GPUEB_MBOX_CTL_IRQ_CLR);
++
++	ret = devm_request_threaded_irq(ch->ebm->dev, ch->ebm->irq, mtk_gpueb_mbox_isr,
++					mtk_gpueb_mbox_thread, IRQF_SHARED | IRQF_ONESHOT,
++					ch->full_name, ch);
++	if (ret) {
++		dev_err(ch->ebm->dev, "Failed to request IRQ: %pe\n",
++			ERR_PTR(ret));
++		goto err_unclk;
++	}
++
++	return 0;
++
++err_unclk:
++	clk_disable(ch->ebm->clk);
++err_block:
++	atomic_set(&ch->rx_status, GPUEB_MBOX_BLOCKED);
++
++	return ret;
++}
++
++static void mtk_gpueb_mbox_shutdown(struct mbox_chan *chan)
++{
++	struct mtk_gpueb_mbox_chan *ch = chan->con_priv;
++
++	atomic_set(&ch->rx_status, GPUEB_MBOX_BLOCKED);
++
++	devm_free_irq(ch->ebm->dev, ch->ebm->irq, ch);
++
++	clk_disable(ch->ebm->clk);
++}
++
++static bool mtk_gpueb_mbox_last_tx_done(struct mbox_chan *chan)
++{
++	struct mtk_gpueb_mbox_chan *ch = chan->con_priv;
++
++	return !(readl(ch->ebm->mbox_ctl + GPUEB_MBOX_CTL_TX_STS) & BIT(ch->num));
++}
++
++const struct mbox_chan_ops mtk_gpueb_mbox_ops = {
++	.send_data = mtk_gpueb_mbox_send_data,
++	.startup = mtk_gpueb_mbox_startup,
++	.shutdown = mtk_gpueb_mbox_shutdown,
++	.last_tx_done = mtk_gpueb_mbox_last_tx_done,
++};
++
++static int mtk_gpueb_mbox_probe(struct platform_device *pdev)
++{
++	struct mtk_gpueb_mbox_chan *ch;
++	struct mtk_gpueb_mbox *ebm;
++	unsigned int i;
++
++	ebm = devm_kzalloc(&pdev->dev, sizeof(*ebm), GFP_KERNEL);
++	if (!ebm)
++		return -ENOMEM;
++
++	ebm->dev = &pdev->dev;
++	ebm->v = of_device_get_match_data(ebm->dev);
++
++	ebm->irq = platform_get_irq(pdev, 0);
++	if (ebm->irq < 0)
++		return ebm->irq;
++
++	ebm->clk = devm_clk_get_prepared(ebm->dev, NULL);
++	if (IS_ERR(ebm->clk))
++		return dev_err_probe(ebm->dev, PTR_ERR(ebm->clk),
++				     "Failed to get 'eb' clock\n");
++
++	ebm->mbox_mmio = devm_platform_ioremap_resource(pdev, 0);
++	if (IS_ERR(ebm->mbox_mmio))
++		return dev_err_probe(ebm->dev, PTR_ERR(ebm->mbox_mmio),
++				     "Couldn't map mailbox data registers\n");
++
++	ebm->mbox_ctl = devm_platform_ioremap_resource(pdev, 1);
++	if (IS_ERR(ebm->mbox_ctl))
++		return dev_err_probe(
++			ebm->dev, PTR_ERR(ebm->mbox_ctl),
++			"Couldn't map mailbox control registers\n");
++
++	ebm->ch = devm_kmalloc_array(ebm->dev, ebm->v->num_channels,
++				     sizeof(*ebm->ch), GFP_KERNEL);
++	if (!ebm->ch)
++		return -ENOMEM;
++
++	ebm->mbox.chans = devm_kcalloc(ebm->dev, ebm->v->num_channels,
++				       sizeof(struct mbox_chan), GFP_KERNEL);
++	if (!ebm->mbox.chans)
++		return -ENOMEM;
++
++	for (i = 0; i < ebm->v->num_channels; i++) {
++		ch = &ebm->ch[i];
++		ch->c = &ebm->v->channels[i];
++		if (ch->c->rx_len > GPUEB_MBOX_MAX_RX_SIZE) {
++			dev_err(ebm->dev, "Channel %s RX size (%d) too large\n",
++				ch->c->name, ch->c->rx_len);
++			return -EINVAL;
++		}
++		ch->full_name = devm_kasprintf(ebm->dev, GFP_KERNEL, "%s:%s",
++					       dev_name(ebm->dev), ch->c->name);
++		if (!ch->full_name)
++			return -ENOMEM;
++
++		ch->ebm = ebm;
++		ch->num = i;
++		spin_lock_init(&ebm->mbox.chans[i].lock);
++		ebm->mbox.chans[i].con_priv = ch;
++		atomic_set(&ch->rx_status, GPUEB_MBOX_BLOCKED);
++	}
++
++	ebm->mbox.dev = ebm->dev;
++	ebm->mbox.num_chans = ebm->v->num_channels;
++	ebm->mbox.txdone_poll = true;
++	ebm->mbox.txpoll_period = 0; /* minimum hrtimer interval */
++	ebm->mbox.ops = &mtk_gpueb_mbox_ops;
++
++	dev_set_drvdata(ebm->dev, ebm);
++
++	return devm_mbox_controller_register(ebm->dev, &ebm->mbox);
++}
++
++static const struct mtk_gpueb_mbox_variant mtk_gpueb_mbox_mt8196 = {
++	.num_channels = 12,
++	.channels = {
++		{ "fast-dvfs-event", 0, 0x0000, 16, 0x00e0, 16 },
++		{ "gpufreq",         1, 0x0010, 32, 0x00f0, 32 },
++		{ "sleep",           2, 0x0030, 12, 0x0110,  4 },
++		{ "timer",           3, 0x003c, 24, 0x0114,  4 },
++		{ "fhctl",           4, 0x0054, 36, 0x0118,  4 },
++		{ "ccf",             5, 0x0078, 16, 0x011c, 16 },
++		{ "gpumpu",          6, 0x0088, 24, 0x012c,  4 },
++		{ "fast-dvfs",       7, 0x00a0, 24, 0x0130, 24 },
++		{ "ipir-c-met",      8, 0x00b8,  4, 0x0148, 16 },
++		{ "ipis-c-met",      9, 0x00bc, 16, 0x0158,  4 },
++		{ "brisket",        10, 0x00cc, 16, 0x015c, 16 },
++		{ "ppb",            11, 0x00dc,  4, 0x016c,  4 },
++	},
++};
++
++static const struct of_device_id mtk_gpueb_mbox_of_ids[] = {
++	{ .compatible = "mediatek,mt8196-gpueb-mbox", .data = &mtk_gpueb_mbox_mt8196 },
++	{ /* Sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, mtk_gpueb_mbox_of_ids);
++
++static struct platform_driver mtk_gpueb_mbox_drv = {
++	.probe = mtk_gpueb_mbox_probe,
++	.driver = {
++		.name = "mtk-gpueb-mbox",
++		.of_match_table = mtk_gpueb_mbox_of_ids,
++	}
++};
++module_platform_driver(mtk_gpueb_mbox_drv);
++
++MODULE_AUTHOR("Nicolas Frattaroli <nicolas.frattaroli@collabora.com>");
++MODULE_DESCRIPTION("MediaTek GPUEB mailbox driver");
++MODULE_LICENSE("GPL");
 
-Changes in v4:
-- rebase onto next-20250922, which includes Laura Nao's clock patches
-- refactor mediatek_mfg into a pmdomain driver called "mtk-mfg-pmdomain"
-- move mt8196-gpufreq binding to the power subdirectory
-- mali-valhall-csf binding: adjust for power-domains usage
-- mali-valhall-csf binding: use clocks on mt8196
-- mailbox: prefix defines with "GPUEB_"
-- mailbox: get rid of custom of_xlate
-- mailbox: rename "CLOGGED" to "BLOCKED"
-- mailbox: adjust send_data comment to include more technical info
-- mailbox: misc style improvements
-- panthor: drop "drm/panthor: devfreq: make get_dev_status use
-  get_cur_freq", as it is now not necessary and makes the code worse
-- panthor: drop "drm/panthor: devfreq: add pluggable devfreq providers"
-- panthor: drop "drm/panthor: add no_clocks soc_data member for MT8196",
-  as we now have clocks courtesy of gpufreq
-- panthor: check for existing opp table before registering a new one
-- mtk-mfg-pmdomain: add turbo_below variant data, which marks OPPs below
-  a certain index as turbo for the OPP subsystem
-- mtk-mfg-pmdomain: no longer read stack OPPs, as they weren't used
-- mtk-mfg-pmdomain: get rid of num gpu opp != num stack opp check.
-  That's the firmware's problem should it ever happen, not ours
-- mtk-mfg-pmdomain: some small name and whitespace changes on the defines
-- Link to v3: https://lore.kernel.org/r/20250917-mt8196-gpufreq-v3-0-c4ede4b4399e@collabora.com
-
-Changes in v3:
-- mali-valhall-csf binding: get rid of clocks for MT8196, rebase onto
-  Chia-I Wu's patch
-- mt8196-gpufreq binding: rename hw_revision to hw-revision
-- mt8196-gpufreq binding: rename clocks
-- mt8196-gpufreq binding: drop pointless label in example
-- mailbox binding: drop pointless label in example
-- mailbox: whitespace changes on defines
-- mailbox: remove rx_buf member from channel struct, use stack buffer
-- mailbox: check in probe that no rx_len exceeds MBOX_MAX_RX_SIZE
-- panthor: add no_clocks SoC data patch, also rebase onto Chia-I Wu's
-  series
-- panthor: refactor devfreq provider functionality to do allocation and
-  initialisation of panthor_devfreq struct in panthor in all cases
-- panthor: drop the patch that moves struct panthor_devfreq to a header
-  file, as it no longer needs to be exposed to devfreq providers
-- mediatek_mfg: refactor devfreq provider functionality to decouple it
-  more from panthor itself
-- mediatek_mfg: move SRAM magic to a #define
-- mediatek_mfg: begrudgingly rename member "padding_lol" to "reserved"
-- mediatek_mfg: use local struct device pointer var in more places
-- mediatek_mfg: change wording of sleep command failure error message,
-  but keep the format specifier because I don't want to throw bare
-  errnos at users
-- mediatek_mfg: remove unnecessary braces around dev_err EB power off
-  timeout message
-- mediatek_mfg: allocate rx_data for channels that expect a response
-- mediatek_mfg: memcpy the rx buffer from the common mailbox framework
-  in the rx callback to rx_data, as mssg now points to stack memory
-- mediatek_mfg: make SRAM clearing message dev_dbg
-- mediatek_mfg: no longer print physical address of SRAM
-- mediatek_mfg: expand on the GF_REG_OPP_TABLE_STK comment, toning down
-  its defeatist attitude in the process
-- mediatek_mfg: style fixes in mtk_mfg_get_closest_opp_idx
-- mediatek_mfg: rename clocks and hw-revision reg as per binding
-- Link to v2: https://lore.kernel.org/r/20250912-mt8196-gpufreq-v2-0-779a8a3729d9@collabora.com
-
-Changes in v2:
-- mali-valhall-csf binding: move from performance-controller to
-  performance-domains property
-- mali-valhall-csf binding: fix vendor name oopsie in compatible of if
-  condition
-- mt8196-gpufreq binding: move from performance-controller to
-  performance-domains by adding the cells property
-- mt8196-gpufreq binding: rename e2_id to hw_revision
-- mt8196-gpufreq binding: add description that mentions "MediaTek
-  Flexible Graphics"
-- mt8196-gpufreq binding: get rid of mailbox channels we're unlikely to
-  use any time soon, if ever
-- mt8196-gpufreq binding: change name of mailbox channels to use -
-  instead of _
-- mailbox binding: change reg-names to "data" and "ctl"
-- drm/panthor: mediatek_mfg: rename e2_id to hw_revision
-- drm/panthor: devfreq: switch from performance-controller to
-  performance-domains
-- drm/panthor: devfreq: get rid of the accidental get_cur_freq function
-  move
-- mailbox: rename mtk_gpueb_mbox_ch to mtk_gpueb_mbox_chan_desc
-- mailbox: use smaller types in mtk_gpueb_mbox_chan_desc where possible
-- mailbox: add per-channel runtime data struct
-- mailbox: request one threaded IRQ per channel, pass channel struct as
-  data
-- mailbox: make num_channels in variant struct u8
-- mailbox: get rid of no_response, as it was redundant
-- mailbox: enable and disable clock in mailbox startup/shutdown
-- mailbox: point con_priv of mailbox framework channel struct to this
-  driver's channel struct
-- mailbox: request and free the threaded IRQ in startup/shutdown
-- mailbox: only clear IRQ bit flag once RX data has been read from MMIO
-- mailbox: reduce needlessly large receive buffer size
-- mailbox: handle allocation errors wherever they could pop up
-- mailbox: style cleanups in mtk_gpueb_mbox_read_rx
-- mailbox: call platform_get_irq earlier on in probe
-- mailbox: set drvdata later on in probe
-- mailbox: ioremap resources by index, not name
-- mailbox: handle devm_mbox_controller_register errors
-- mailbox: rename channels to correspond to bindings
-- mailbox: document a few of the private driver structs to be kind to
-  the next person who will look at this code
-- Link to v1: https://lore.kernel.org/r/20250905-mt8196-gpufreq-v1-0-7b6c2d6be221@collabora.com
-
----
-Nicolas Frattaroli (7):
-      dt-bindings: gpu: mali-valhall-csf: add mediatek,mt8196-mali variant
-      dt-bindings: power: Add MT8196 GPU frequency control binding
-      dt-bindings: mailbox: Add MT8196 GPUEB Mailbox
-      mailbox: add MediaTek GPUEB IPI mailbox
-      drm/panthor: call into devfreq for current frequency
-      drm/panthor: Use existing OPP table if present
-      pmdomain: mediatek: Add support for MFlexGraphics
-
- .../bindings/gpu/arm,mali-valhall-csf.yaml         |   40 +-
- .../mailbox/mediatek,mt8196-gpueb-mbox.yaml        |   64 ++
- .../bindings/power/mediatek,mt8196-gpufreq.yaml    |  117 +++
- drivers/gpu/drm/panthor/panthor_devfreq.c          |   56 +-
- drivers/gpu/drm/panthor/panthor_devfreq.h          |    2 +
- drivers/gpu/drm/panthor/panthor_device.h           |    3 -
- drivers/gpu/drm/panthor/panthor_drv.c              |    4 +-
- drivers/mailbox/Kconfig                            |   10 +
- drivers/mailbox/Makefile                           |    2 +
- drivers/mailbox/mtk-gpueb-mailbox.c                |  319 ++++++
- drivers/pmdomain/mediatek/Kconfig                  |   16 +
- drivers/pmdomain/mediatek/Makefile                 |    1 +
- drivers/pmdomain/mediatek/mtk-mfg-pmdomain.c       | 1027 ++++++++++++++++++++
- 13 files changed, 1641 insertions(+), 20 deletions(-)
----
-base-commit: 4a7bcf9e0158d9976525370ff84401a1e955bbee
-change-id: 20250829-mt8196-gpufreq-a7645670d182
-prerequisite-message-id: <20250913002155.1163908-1-olvaffe@gmail.com>
-prerequisite-patch-id: a769ebe04bd74f45a3a5b9c1d1396f4b33b7783f
-prerequisite-patch-id: 9d71426f40b702e975f2a672509fcd20180ac36c
-
-Best regards,
 -- 
-Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+2.51.0
 
