@@ -1,45 +1,44 @@
 Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E057221710;
-	Fri,  3 Oct 2025 20:16:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E61BC236454;
+	Fri,  3 Oct 2025 20:16:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1759522591; cv=pass; b=G9+tvMA8TmIh+M2tm4KnWHVWNHBSmOyEqc57gcwRPcdZ0pqOwoG4MSAcTUiV8EzwmNgM8l6A1bPKCusKQwTcCsW1s8txlkRA7g6H3WAQdoAn5uARoOiRlybeHDDkFFsbsbb7tkeG/K0xKiWOckm/GR+ZJMeGsQN3bt0JCUPUxgE=
+	t=1759522592; cv=pass; b=bjE8MybEJxp6XCE1DCfPR2Xmv41izdBqSUCz0/SDVZ93s0VHKYqtVIVUrkTKrvRdgiHwo1ZRufjQUiOQh4AXRX53YZnG+HkOJlWJI8VWNRIcBrImUoZS52Q+o3PO2YDmFv4IuPtjHZz5oRa6XKhnk/Fn55rGCrpNYl35G5JAA1A=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1759522591; c=relaxed/simple;
-	bh=dE1cson/uP5XGOxL3Emzs0y6poaO/Pvzy72edBioZV0=;
+	s=arc-20240116; t=1759522592; c=relaxed/simple;
+	bh=5gWMGkdYhXs5j+k9aP3QPWoAud9qxdjD8VhYmvI25JA=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=KbkgUYwvZlyLEdVwCm6KkEm95acQqbfZmXRin94VLZZA6eLvRaduJtishbwjHIMBVAkR7M8kU0qXSUu+/ipmf4oIxrpXzgwpYndXgw2/0ZZCULbHp5K4v5PTKyDgBzEsfmMRbpvkWRKReEwPItBVg+RhF60ur0d2//cf4Wwq6gc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=F3vppZbG; arc=pass smtp.client-ip=136.143.188.112
+	 In-Reply-To:To:Cc; b=NJfvunyRqAdBni9GiDGVJ5mXClDYFSudR4WwqNzyEtx7qEovhDwQU0aGcBOr6kTyg2MQkUKisnRJKoJeXX9XXCmo6trvhdWdq//dzMFrflBejOnHgrfwPH/Rb0IkhMRWSD7wFQTay3m6sGvoxPbnnVYlWuW0THyAMTjCmT96yvw=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=Ne6J81sj; arc=pass smtp.client-ip=136.143.188.112
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="F3vppZbG"
-ARC-Seal: i=1; a=rsa-sha256; t=1759522541; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="Ne6J81sj"
+ARC-Seal: i=1; a=rsa-sha256; t=1759522551; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=EGsR7BrvMlzQiGzSUqbjkdcpwEhwClVLQUTL1hBcvpeHooPOYWyteFVMUQy7gMAxgR6pgD9cUKE/seb/k96UUrMbP1sRgBMaBRv0MUGbdI9RYNPC5fqtKvFIJ9QGRovR0JmVGe/NwSek+nqra/uumVBn4psyWqZP999MTNzy518=
+	b=ZHUrgik/Z3cz6MIsOzVAJyXkbEtMxNnHDDttdCbsV8+q25asbGRN0S0D+Jxos6mT2r/UxhMh4UGV+L6q0gGldAQnp1ZVFj81ejx45VDw1TQE8HcsTHdajK5OSUwlyDVmvPwNgWUCOQx7lUzoynxXUQ373546GSVnt2EpPow0PG0=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1759522541; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=MyTZIankaLF5a06YDy1KIdFXkQpVaw5MiopvoWPWCGU=; 
-	b=ToaYnCMsM4BUh7jGSRQ8/8t75GqCeAQ/T7mQkb5xeWgG82lfhuaS2dzueN2F7a5/XS6lBYIOWrhHoukEfuiGI7BcJVbZYpNiASdjclObl4QOtUGpKNzK9u+1awn/GLdUHAZizTnZfonEI9RjUlUqNPRKQHFv3aq1I2bLPIdJ2Qw=
+	t=1759522551; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=Wltohi1m5SDbJkLhV1v5gx0uRt+qjskx2yr9lkFdxy8=; 
+	b=W9A1gmJg71b2pDzj43GRq1TIjdQtPtDP+81cIabJFk1jC2vblqF7nxquaqKz7oF1+2cMyzmCfgMh+7NMclagZIezeZArTdDFCORNlsto0oWHgUmdkVNUOkvIPXEE0pebsFyxwZOaz7h2K678k1k2rUlcjGd2P26uPpVkwcD7ZbE=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1759522541;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1759522551;
 	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
 	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
-	bh=MyTZIankaLF5a06YDy1KIdFXkQpVaw5MiopvoWPWCGU=;
-	b=F3vppZbGfNEvnAj1nGUnzqTzc6d/RQ1wfXBA7LqXa42YxPWpj2GrjraNhfqCZGBw
-	FLgN9bMYm+JYnAQXmr9glUB6wM2Qi8IC0YVS8uOQSh8rLaYDfnoz6qsKoloN1Z45K7v
-	xTO58NJyA6YLK5A38oz0WodX4hCt86YREa8KBUDI=
-Received: by mx.zohomail.com with SMTPS id 1759522534788242.36207723608516;
-	Fri, 3 Oct 2025 13:15:34 -0700 (PDT)
+	bh=Wltohi1m5SDbJkLhV1v5gx0uRt+qjskx2yr9lkFdxy8=;
+	b=Ne6J81sjyHPkawZ8cmKyg6xfqKhdd+8T4LoRz3OcACs8C5/KeYaSZIgJSMwP+0Wd
+	q5SagKPgE5gwgIMOAEyYsG2XgG2Db3Y7tSn74spLl6b601t20n1Py1y5ZU0gti+8XQ0
+	fRiUFYvn4xb4Mj8gfNudTe2UhDuz0z64uqereuFE=
+Received: by mx.zohomail.com with SMTPS id 1759522549318401.20665073138446;
+	Fri, 3 Oct 2025 13:15:49 -0700 (PDT)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Fri, 03 Oct 2025 22:15:03 +0200
-Subject: [PATCH v6 1/7] dt-bindings: gpu: mali-valhall-csf: add
- mediatek,mt8196-mali variant
+Date: Fri, 03 Oct 2025 22:15:05 +0200
+Subject: [PATCH v6 3/7] dt-bindings: mailbox: Add MT8196 GPUEB Mailbox
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,7 +47,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251003-mt8196-gpufreq-v6-1-76498ad61d9e@collabora.com>
+Message-Id: <20251003-mt8196-gpufreq-v6-3-76498ad61d9e@collabora.com>
 References: <20251003-mt8196-gpufreq-v6-0-76498ad61d9e@collabora.com>
 In-Reply-To: <20251003-mt8196-gpufreq-v6-0-76498ad61d9e@collabora.com>
 To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
@@ -68,95 +67,95 @@ Cc: kernel@collabora.com, dri-devel@lists.freedesktop.org,
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
  linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, 
  linux-hardening@vger.kernel.org, linux-pm@vger.kernel.org, 
- Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+ Nicolas Frattaroli <nicolas.frattaroli@collabora.com>, 
+ Conor Dooley <conor.dooley@microchip.com>
 X-Mailer: b4 0.14.2
 
-The Mali-based GPU on the MediaTek MT8196 SoC uses a separate MCU to
-control the power and frequency of the GPU. This is modelled as a power
-domain and clock provider.
+The MediaTek MT8196 SoC includes an embedded MCU referred to as "GPUEB",
+acting as glue logic to control power and frequency of the Mali GPU.
+This MCU runs special-purpose firmware for this use, and the main
+application processor communicates with it through a mailbox.
 
-It lets us omit the OPP tables from the device tree, as those can now be
-enumerated at runtime from the MCU.
+Add a binding that describes this mailbox.
 
-Add the necessary schema logic to handle what this SoC expects in terms
-of clocks and power-domains.
-
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
- .../bindings/gpu/arm,mali-valhall-csf.yaml         | 40 ++++++++++++++++++++--
- 1 file changed, 38 insertions(+), 2 deletions(-)
+ .../mailbox/mediatek,mt8196-gpueb-mbox.yaml        | 64 ++++++++++++++++++++++
+ 1 file changed, 64 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml b/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
-index 7ad5a3ffc5f5c753322eda9e74cc65de89d11c73..860691ce985e560536b6c515b82441ba6d367c46 100644
---- a/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
-+++ b/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
-@@ -45,7 +45,9 @@ properties:
-     minItems: 1
-     items:
-       - const: core
--      - const: coregroup
-+      - enum:
-+          - coregroup
-+          - stacks
-       - const: stacks
- 
-   mali-supply: true
-@@ -92,7 +94,6 @@ required:
-   - interrupts
-   - interrupt-names
-   - clocks
--  - mali-supply
- 
- additionalProperties: false
- 
-@@ -109,6 +110,29 @@ allOf:
-         power-domains:
-           maxItems: 1
-         power-domain-names: false
-+      required:
-+        - mali-supply
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: mediatek,mt8196-mali
-+    then:
-+      properties:
-+        mali-supply: false
-+        sram-supply: false
-+        operating-points-v2: false
-+        power-domains:
-+          maxItems: 1
-+        power-domain-names: false
-+        clocks:
-+          maxItems: 2
-+        clock-names:
-+          items:
-+            - const: core
-+            - const: stacks
-+      required:
-+        - power-domains
- 
- examples:
-   - |
-@@ -144,5 +168,17 @@ examples:
-             };
-         };
-     };
+diff --git a/Documentation/devicetree/bindings/mailbox/mediatek,mt8196-gpueb-mbox.yaml b/Documentation/devicetree/bindings/mailbox/mediatek,mt8196-gpueb-mbox.yaml
+new file mode 100644
+index 0000000000000000000000000000000000000000..ab5b780cb83a708a3897ca1a440131d97b56c3a6
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mailbox/mediatek,mt8196-gpueb-mbox.yaml
+@@ -0,0 +1,64 @@
++# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/mailbox/mediatek,mt8196-gpueb-mbox.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: MediaTek MFlexGraphics GPUEB Mailbox Controller
++
++maintainers:
++  - Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
++
++properties:
++  compatible:
++    enum:
++      - mediatek,mt8196-gpueb-mbox
++
++  reg:
++    items:
++      - description: mailbox data registers
++      - description: mailbox control registers
++
++  reg-names:
++    items:
++      - const: data
++      - const: ctl
++
++  clocks:
++    items:
++      - description: main clock of the GPUEB MCU
++
++  interrupts:
++    items:
++      - description: fires when a new message is received
++
++  "#mbox-cells":
++    const: 1
++    description:
++      The number of the mailbox channel.
++
++required:
++  - compatible
++  - reg
++  - reg-names
++  - clocks
++  - interrupts
++  - "#mbox-cells"
++
++additionalProperties: false
++
++examples:
 +  - |
-+    gpu@48000000 {
-+        compatible = "mediatek,mt8196-mali", "arm,mali-valhall-csf";
-+        reg = <0x48000000 0x480000>;
-+        clocks = <&gpufreq 0>, <&gpufreq 1>;
-+        clock-names = "core", "stacks";
-+        interrupts = <GIC_SPI 606 IRQ_TYPE_LEVEL_HIGH 0>,
-+                     <GIC_SPI 605 IRQ_TYPE_LEVEL_HIGH 0>,
-+                     <GIC_SPI 604 IRQ_TYPE_LEVEL_HIGH 0>;
-+        interrupt-names = "job", "mmu", "gpu";
-+        power-domains = <&gpufreq>;
++    #include <dt-bindings/clock/mediatek,mt8196-clock.h>
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    #include <dt-bindings/interrupt-controller/irq.h>
++
++    mailbox@4b09fd80 {
++        compatible = "mediatek,mt8196-gpueb-mbox";
++        reg = <0x4b09fd80 0x280>,
++              <0x4b170000 0x7c>;
++        reg-names = "data", "ctl";
++        clocks = <&topckgen CLK_TOP_MFG_EB>;
++        interrupts = <GIC_SPI 608 IRQ_TYPE_LEVEL_HIGH 0>;
++        #mbox-cells = <1>;
 +    };
- 
- ...
 
 -- 
 2.51.0
