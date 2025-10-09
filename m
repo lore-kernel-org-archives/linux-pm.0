@@ -1,40 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBC5626159E;
-	Thu,  9 Oct 2025 19:27:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65B3D23A9AD;
+	Thu,  9 Oct 2025 19:34:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760038060; cv=none; b=WLqKIIz2tzi15vAwyKGuFCPw79vd4QgkAJU6OERzFCeLe/a3pLR9yPMvytT/cI+y2zYmAXSepFTjxH0M2c7M/kfe8YD2q85UjsktiLmo44zzC7uMtO2NEWyWkPH1eCnQEZRhu65nnV5rAtQA7w4qv1F9kMKGgyVwcssU7ZG2iEQ=
+	t=1760038459; cv=none; b=V0ylW/wWPhhSgMEWgOKxGBM/pqyhAeilLRlpo5La8c6OGgVdUNQ8hlqxn50pNTEaUxuLvAP4fpmvx1W4y6Nna04ihx1MZ8ziQWxLnPS2GRH1ZgCUpiAj/+4Iod9bJb6E3ZVFpNlnyNH13C7kS5MrGuEQo1jiqK2vLrMKyYe9WCg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760038060; c=relaxed/simple;
-	bh=Tp51SK1Bnq6NsOyH8IZ6wtxBO1hLhNNxRyxeKf+f7kk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=h5ywxEveqPvcuzfiKI0BSIs+4CAVOu1t/GEdAkbaOJyl9l1QTNPeoeFqL2F7aIpxWbSWCFHyNKaNAQhdMdOOrKj0WzJCm+pZ/2DO7ZAmdkmF/KVLzt+sFh7i7D1tS8JuG7qcRX4Su287ehVlqe0YrCK+Rq+pQ04Lr9gThnr9haM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UQRlecBR; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1760038459; c=relaxed/simple;
+	bh=8HiEbeLQ4eILUOcHGbv+e+VKBDpS1Nnq500kcdoPbsw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=rtFxZq6bRcNmCKH1o0DjVeMUT5fe8ehpZMfMyXQzeGv4454t4vd5k+acCG/RNd8wjgTZGg0drWIcP9v8nQjL/8FnXMYPahdLJkqOQt7NyYThuZka5rzk4NQX+qYt2PquYYY4YipPI8e9MYD7OV0k2R7kcMrWPFygVM1oDAPOjA4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ArEfk2SV; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UQRlecBR"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 608A2C4CEE7;
-	Thu,  9 Oct 2025 19:27:39 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ArEfk2SV"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 62E24C4CEF8;
+	Thu,  9 Oct 2025 19:34:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1760038060;
-	bh=Tp51SK1Bnq6NsOyH8IZ6wtxBO1hLhNNxRyxeKf+f7kk=;
+	s=k20201202; t=1760038459;
+	bh=8HiEbeLQ4eILUOcHGbv+e+VKBDpS1Nnq500kcdoPbsw=;
 	h=From:To:Cc:Subject:Date:From;
-	b=UQRlecBRgIeyv2E/o++7BlqxggSA7AZdzKg+09miGcuxxfyevZe5nHC1n68gp3WwU
-	 qzJrPNHlxWj8wWO7HFzrabKeHA5tvZblIuD4YC/uivIj5JaTPArZvpB8tVIWjETvsm
-	 05cEt/mo0FEgIj7cvyKNhO7U4961Oac1ITpA1WRCIM8HwqfnOlo+d9g9Ug7a2yoBS9
-	 0pxYeZ24NXUhS4OoX5KX2KFPFvexZo9UDpf8HJFZdWd2uhPlVy5Qkw6vnZBuvzr1zk
-	 QOYJ/MUCO/eyw8xDVviVbZbauE35POwajiQloK0PIUnmomQcqCGOFy33K3+ZCrYW6E
-	 bWC1i81d+kStw==
+	b=ArEfk2SVMHYlwTRXt3oSB9ij60lfrDwdFw0kQWHWZrzt4BZ+1oL1NMuIaLd1kaViw
+	 7h6ydT2mD9WuVZkxNeueenPhr4+E6QeWHamz+XMUQ3G32oGSf6Kfy7qoRMFIsT2Rn0
+	 252Er5IJA6XJ3vVvUxc5d6xaOD3mCcZzkKbuI7OYD8FB3+OlEHLGconF9aJEwOL7vc
+	 WV/cmQQfCiQVGEvFBUF5aiyfbSF0lTzwzHaSzRR++Gy5/tG5NmoveTjpeMJSpDFMyN
+	 8WvKVAh0wFNZtBqRCWxNVUwYR6Lv7j7xXNW5yZ3ReAz1Bj042/nnC0JhTYlwh05EEG
+	 6gf8Dj/1pvfLA==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Mario Limonciello <mario.limonciello@amd.com>
-Subject:
- [PATCH v1 0/3] ACPI: PM: s2idle: Tidy up the code and avoid invoking _DSM
- unnecessarily
-Date: Thu, 09 Oct 2025 21:25:07 +0200
-Message-ID: <4699399.LvFx2qVVIh@rafael.j.wysocki>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v1] PM: hibernate: Rework message printing in swsusp_save()
+Date: Thu, 09 Oct 2025 21:34:16 +0200
+Message-ID: <10750389.nUPlyArG6x@rafael.j.wysocki>
 Organization: Linux Kernel Development
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -45,20 +42,66 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
 
-Hi Everyone,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-There is an unused function related to s2idle on x86, so drop it (patch [1/3]).
+The messages printed by swsusp_save() are basically only useful for
+debug, so printing them every time a hibernation image is created at
+the "info" log level is not particularly useful.  Also printing a
+message on a failing memory allocation is redundant.
 
-Also, some callback functions used in struct platform_s2idle_ops on x86 can
-be made static, so do that (patch [2/3]).
+Use pm_deferred_pr_dbg() for printing those messages so they will only
+be printed when requested and the "deferred" variant is used because
+this code runs in a deeply atomic context (one CPU with interrupts
+off, no functional devices).  Also drop the useless message printed
+when memory allocations fails.
 
-Finally, the evaluation of LPS0 _DSM Function 1 is useless overhead unless
-printing PM debug messages has been enabled, so rearrange the code to only
-evaluate it when the data produced by it will be used (patch [3/3]).
+While at it, extend one of the messages in question so it is less
+cryptic.
 
-Please see changelogs of the individual patches for details.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ kernel/power/snapshot.c |   13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-Thanks!
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -2110,22 +2110,20 @@ asmlinkage __visible int swsusp_save(voi
+ {
+ 	unsigned int nr_pages, nr_highmem;
+ 
+-	pr_info("Creating image:\n");
++	pm_deferred_pr_dbg("Creating image:\n");
+ 
+ 	drain_local_pages(NULL);
+ 	nr_pages = count_data_pages();
+ 	nr_highmem = count_highmem_pages();
+-	pr_info("Need to copy %u pages\n", nr_pages + nr_highmem);
++	pm_deferred_pr_dbg("Need to copy %u pages\n", nr_pages + nr_highmem);
+ 
+ 	if (!enough_free_mem(nr_pages, nr_highmem)) {
+-		pr_err("Not enough free memory\n");
++		pm_deferred_pr_dbg("Not enough free memory for image creation\n");
+ 		return -ENOMEM;
+ 	}
+ 
+-	if (swsusp_alloc(&copy_bm, nr_pages, nr_highmem)) {
+-		pr_err("Memory allocation failed\n");
++	if (swsusp_alloc(&copy_bm, nr_pages, nr_highmem))
+ 		return -ENOMEM;
+-	}
+ 
+ 	/*
+ 	 * During allocating of suspend pagedir, new cold pages may appear.
+@@ -2144,7 +2142,8 @@ asmlinkage __visible int swsusp_save(voi
+ 	nr_zero_pages = nr_pages - nr_copy_pages;
+ 	nr_meta_pages = DIV_ROUND_UP(nr_pages * sizeof(long), PAGE_SIZE);
+ 
+-	pr_info("Image created (%d pages copied, %d zero pages)\n", nr_copy_pages, nr_zero_pages);
++	pm_deferred_pr_dbg("Image created (%d pages copied, %d zero pages)\n",
++			   nr_copy_pages, nr_zero_pages);
+ 
+ 	return 0;
+ }
 
 
 
