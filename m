@@ -1,154 +1,97 @@
-Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20DDB28935C;
-	Fri, 10 Oct 2025 12:09:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760098170; cv=pass; b=V4tyzUnViXDG3qezY/RCyMj/5ZHfCh5KB2gFa/g+VUwE3khAUUI/V1kJ4XmIxbLw45G4zzwwYVFFBDjivRDKWw4YSEX/tSCdofzzCFsjHa6RonP6gVFbxzWuj7G48/xfSJsMG4uJixreuLcaJOTNcuiJ2hhK9WkhSJr+g/KZ8z4=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760098170; c=relaxed/simple;
-	bh=4w3kqGVJTLViAam56F8blcy40H7IF16KUIpTWyq6UcM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MyPmSzdc1Xq4FFIq2XQAERS/BBpb0qzmKxCVC2gEYc/MF+zBmvJH8ocr0uHA0iNL9OwlaQ4x5rjMdTTpgHqV0DxQ2vJCEY2BCiJw/4qC/St6xBhIwnxBiu6Ug7GauAGIis4kVgoe/9xfPwjXAZQUgbMWBSH/s3lDd8xICo81DtA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=e++32knt; arc=pass smtp.client-ip=136.143.188.112
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BDDF22688C;
+	Fri, 10 Oct 2025 12:23:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1760098988; cv=none; b=YEwE4C5/zwi/tOXhUrYMIzuCB7GJAdQPlmuneXxxQzcRoZUWvd0hKxXDZUz47PqRxmoYlJVosYbpQJ+yOoMupZRtiElWc//qGzglISuNT8YhAsLwOJDqUQrIuQcPEQHgNQtnR+GsqYW/GBL8WMUv7Y0PDVQGc+yBffABs5jsXNY=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1760098988; c=relaxed/simple;
+	bh=R/kafU+m4XW/sdA5FXdw8G0Cze3OBc3X+cHKIZZOcF4=;
+	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
+	 Message-Id:Subject; b=PpPmyUjdu14W5B1kad7Gx1FzDeCJmvn1gNMXv+CKhp34sXNOnIHjmuDtPF/T7QcFpixwXXQRDER/yPvZ7FZ9EkLs6S8VkKWuhwFioYxnHGDKn63Zc7aqmR2fsdgqyEBxZ5hWGzK6glyAkq8b5gZsMc/LOF6shvgv5Spn3Awl0ds=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=O9Dedpxe; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="e++32knt"
-ARC-Seal: i=1; a=rsa-sha256; t=1760098144; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=dA7yAX/vP+3sun5ZXeCK2uinkx7VxnyIrLK/qFVhnYkyIFMtM7d0mDDrS+TVtokDdKLyrYnAAwSizRXhvpbRLgf2TDGGByKbFmsqPa6nviQqfy4lrZk6kcd0Ae7HWo39fKmeIXVQXcXiYB37IGKBh2MKy+Z7YhgN03NwLj9wa0Q=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1760098144; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=5TVVAycESmEEhj5tXHazMG2YgT7j35yrk8K3ETkT928=; 
-	b=LrRKByWE0juU2zdLzyEYdDD1mp9eVTrWVGP1NeYLCrsE0o38GKgbGP08xo0GlCT8Cc1Cofa+1c2eId5d3DQtwywqTNOjUuWeTQx4F7dsZJ62uZjwLStFKhuEdDXO2nVowLYnkS5SGG9WHyYd5Szo6DqN3gpyDQhcAanBlNNLICg=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
-	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1760098144;
-	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
-	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:References:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=5TVVAycESmEEhj5tXHazMG2YgT7j35yrk8K3ETkT928=;
-	b=e++32knteoigBVHQgzqdtxzmswEgQW44+hGhNEU0OeQ+GmGQTqbxF29o9ndVlZw3
-	q+VPMupP2hE/k9JBfai0xY/xICZijegXN+IN+7AcgZrFIMxvzzRnoLEmnPD5oHubILE
-	q0ozm8UE6yix73c5DQeKYJY4j46i0QaDOJzImgw0=
-Received: by mx.zohomail.com with SMTPS id 1760098141718220.0272880217807;
-	Fri, 10 Oct 2025 05:09:01 -0700 (PDT)
-Received: by venus (Postfix, from userid 1000)
-	id 8F261181905; Fri, 10 Oct 2025 14:08:53 +0200 (CEST)
-Date: Fri, 10 Oct 2025 14:08:53 +0200
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Saravana Kannan <saravanak@google.com>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	linux-pm@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, 
-	Nicolas Frattaroli <nicolas.frattaroli@collabora.com>, Heiko Stuebner <heiko@sntech.de>, 
-	Sebin Francis <sebin.francis@ti.com>, Diederik de Haas <didi.debian@cknow.org>, 
-	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, Jon Hunter <jonathanh@nvidia.com>, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] driver core: fw_devlink: Don't warn about
- sync_state() pending
-Message-ID: <f7zspguplzerupaorr4ex4xnpeyrcdcid473u3tx3ekbvcj233@wgle5id5z5on>
-References: <20251007094312.590819-1-ulf.hansson@linaro.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="O9Dedpxe"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CCBF7C4CEF1;
+	Fri, 10 Oct 2025 12:23:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1760098988;
+	bh=R/kafU+m4XW/sdA5FXdw8G0Cze3OBc3X+cHKIZZOcF4=;
+	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
+	b=O9DedpxeYgxvGTE3qra42PaTuxXlqEo5zRrbgWrcTkeypkLVm0UhI/8MjYFTlYxSr
+	 GQyYO+lHKGdK3xP2Z6a18q33zHaSDMw12VsGjxBVzv0jAauWJLW/sYXCkoguCZMQbH
+	 PVEwVpvxpHJh0bgZDc7do4OKGgEUrQ7q2gYbzlnLd/qmas0QOEb9VEvD01JZiCNuO7
+	 kA6S4rZTP9HCmWHPWdvMvjS0wbJiVoBDBOPmqFL2lGBMj2+k6Kclju/GlnuY3HU5Bl
+	 oqqBE0JUYniQaQczzfjK+XIw3Qp5TBo3uohK18Tgwv0aZSjoT9KVs1nkkt3IxrI84y
+	 FGOs0AkFl6tgw==
+Date: Fri, 10 Oct 2025 07:23:06 -0500
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="o7l652o277il7yvz"
-Content-Disposition: inline
-In-Reply-To: <20251007094312.590819-1-ulf.hansson@linaro.org>
-X-Zoho-Virus-Status: 1
-X-Zoho-Virus-Status: 1
-X-Zoho-AV-Stamp: zmail-av-1.4.3/260.58.11
-X-ZohoMailClient: External
+From: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: Peter Griffin <peter.griffin@linaro.org>, 
+ Ulf Hansson <ulf.hansson@linaro.org>, kernel-team@android.com, 
+ linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, 
+ Krzysztof Kozlowski <krzk@kernel.org>, linux-arm-kernel@lists.infradead.org, 
+ Marek Szyprowski <m.szyprowski@samsung.com>, linux-kernel@vger.kernel.org, 
+ Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org, 
+ Tudor Ambarus <tudor.ambarus@linaro.org>, 
+ Will McVicker <willmcvicker@google.com>, 
+ Alim Akhtar <alim.akhtar@samsung.com>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>
+To: =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
+In-Reply-To: <20251009-gs101-pd-v2-2-3f4a6db2af39@linaro.org>
+References: <20251009-gs101-pd-v2-0-3f4a6db2af39@linaro.org>
+ <20251009-gs101-pd-v2-2-3f4a6db2af39@linaro.org>
+Message-Id: <176009895995.7689.883182155048414797.robh@kernel.org>
+Subject: Re: [PATCH v2 02/10] dt-bindings: soc: samsung: exynos-pmu: move
+ gs101-pmu into separate binding
 
 
---o7l652o277il7yvz
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v2] driver core: fw_devlink: Don't warn about
- sync_state() pending
-MIME-Version: 1.0
-
-Hi,
-
-On Tue, Oct 07, 2025 at 11:43:12AM +0200, Ulf Hansson wrote:
-> Due to the wider deployment of the ->sync_state() support, for PM domains
-> for example, we are receiving reports about the sync_state() pending
-> message that is being logged in fw_devlink_dev_sync_state(). In particular
-> as it's printed at the warning level, which is questionable.
->=20
-> Even if it certainly is useful to know that the ->sync_state() condition
-> could not be met, there may be nothing wrong with it. For example, a driv=
-er
-> may be built as module and are still waiting to be initialized/probed. For
-> this reason let's move to the info level for now.
->=20
-> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Reported-by: Sebin Francis <sebin.francis@ti.com>
-> Reported-by: Diederik de Haas <didi.debian@cknow.org>
-> Reported-by: Jon Hunter <jonathanh@nvidia.com>
-> Reviewed-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-
--- Sebastian
-
+On Thu, 09 Oct 2025 16:25:04 +0100, André Draszik wrote:
+> The gs101-pmu binding is going to acquire various additional (pattern)
+> properties that don't apply to other PMUs supported by this binding.
+> 
+> To enable this, move google,gs101-pmu into a separate binding.
+> 
+> Signed-off-by: André Draszik <andre.draszik@linaro.org>
 > ---
->=20
-> Changes in v2:
-> 	- Due to discussions on v1 and because the default Kconfig is to use the
-> 	FW_DEVLINK_SYNC_STATE_STRICT, I suggest that for now it may be best to
-> 	keep the warning level for the "Timed out.." print and only change the
-> 	"sync_state pending..." message.
->=20
-> ---
->  drivers/base/core.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/base/core.c b/drivers/base/core.c
-> index d22d6b23e758..c62e428b95b0 100644
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -1784,7 +1784,7 @@ static int fw_devlink_dev_sync_state(struct device =
-*dev, void *data)
->  		return 0;
-> =20
->  	if (fw_devlink_sync_state =3D=3D FW_DEVLINK_SYNC_STATE_STRICT) {
-> -		dev_warn(sup, "sync_state() pending due to %s\n",
-> +		dev_info(sup, "sync_state() pending due to %s\n",
->  			 dev_name(link->consumer));
->  		return 0;
->  	}
-> --=20
-> 2.43.0
->=20
+>  .../bindings/soc/google/google,gs101-pmu.yaml      | 67 ++++++++++++++++++++++
+>  .../bindings/soc/samsung/exynos-pmu.yaml           | 20 -------
+>  MAINTAINERS                                        |  1 +
+>  3 files changed, 68 insertions(+), 20 deletions(-)
+> 
 
---o7l652o277il7yvz
-Content-Type: application/pgp-signature; name="signature.asc"
+My bot found errors running 'make dt_binding_check' on your patch:
 
------BEGIN PGP SIGNATURE-----
+yamllint warnings/errors:
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmjo91EACgkQ2O7X88g7
-+pomMhAAgIOiXn/XY2FB+L5+3ENCR0BvsBVlK+rVbqoS/fUE/D7K/rUt4yv/2O+p
-bt9dweSC0hd9Z0Zb11SMW9Txh1ChIxByF0g+OuoqvG2BtoQhdNVqkhATO9hDT6yX
-P7h0znsMPWh3BqxBn7r/kEyTY2fnUb8GPAD0LUx4ueKZtDBXBrGX/5P9idorPLkY
-lclBxSg6VAFOIgcFW8SEAMn1ZCvCF+5stTLuR7Mou68+M2Qfd61t+Yj0drYzCgAG
-joUXON246lHT8zLcSTKpkNro6KTMlL8SHtM5SPdJDnO7pS9dNI+B3MqD7TK9link
-s5j7Xyr8crIcpb9+iqcnIRcWe3h6VxJVNTf3TkPFz2svNmjrLOzH2Wdpy2V9zeGz
-rTI7ZuG74S/OiDI6TpVu7Hk+VKDfevhos/vyV1IgXU9LdCUHDisytirZc0j3t0tE
-DYdQQpCA83ZIFz6imfBJaTg+stf9FAwcFKpzpPe7w1w0RxXqt+3Sut8kUb3lLo3l
-H2F/q6mFL7Cemwo90QXtrDK6PKLa/WVS3IQB0/pyWqEHMGnsvXqT7lXwzRhiCc7L
-4kToIWU3haS2yG8vB+of3kOl6hPYhUJSMBy6Q/49qKn8ktDriMDC5+HeOUrPL7kl
-5He8aqTNVKGgRSzNLF0oVO9FyyKCQPcQCUKOcunDvPXD4f6y9Rw=
-=iRpS
------END PGP SIGNATURE-----
+dtschema/dtc warnings/errors:
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/soc/google/google,gs101-pmu.yaml: $id: Cannot determine base path from $id, relative path/filename doesn't match actual path or filename
+ 	 $id: http://devicetree.org/schemas/soc/samsung/google,gs101-pmu.yaml
+ 	file: /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/soc/google/google,gs101-pmu.yaml
 
---o7l652o277il7yvz--
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20251009-gs101-pd-v2-2-3f4a6db2af39@linaro.org
+
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
+
