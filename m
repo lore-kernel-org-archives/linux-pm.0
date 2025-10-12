@@ -1,109 +1,101 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from out-176.mta1.migadu.com (out-176.mta1.migadu.com [95.215.58.176])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0EE9375809;
-	Sun, 12 Oct 2025 18:41:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0AB202727F3
+	for <linux-pm@vger.kernel.org>; Sun, 12 Oct 2025 23:35:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760294488; cv=none; b=OU+wXTuElifw4g9KppFVpnqcBKbV1THoVvRRRtY0QljIaL8ozV6bsiIBgJ3jVIKpNzl3jP5yiknzq7J7so3a8jrLxGKfQRiFnYVXK1FU6fkkWRZ/AFCVZZrY+i6H+uXyFAE3KQR4kMeXxlKP5FgpV2ONO7Ek/Rz6SWsrx5Pljfo=
+	t=1760312128; cv=none; b=POQDhocWOFPSz+M2SeK9S0Qw/znfkGu/tEwZbvVEqtE5p+ijOkWYzPmnYhA8h9gM17eqy1nQ02OTUB0cKLC672MVnrmX3xGk9zPXKkCSy4omRGFv2tvSD8HKcyE2EQPcHekwcCsvhlwPo4oYOPS6mpA69cPZwOblb4Gr7c3t6Io=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760294488; c=relaxed/simple;
-	bh=PoUFRD1yzrjYJCi3ArphUQMDmoTrK9yIQsCtPXBJOks=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=UMJCV/GKkRbcHc6ojUOeMzve3NAhRzJ/0gO4oCf3xmhz8ab+MvrsNXmivATvE3pQ5pvF4OPufTKQu9ECXXxINKEInbuDiaSkxPqWE3bOmAiR6woDeptLBlxJTs4WBz/eUVR3KLoc/E6LWxyeWCmqT6J52v1MnvwuWT4Q55IaKhM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=krOIPd4f; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1760312128; c=relaxed/simple;
+	bh=gkLy2Qgcq7gN47EkW82rgH1br37FBToXcsjbZlxUg0U=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=dKNc7jTgsDUmUMggoKi0gMh7ePiL+aqO1eBUf6Q7ZFoPV4y55hYC2xTqiwG5G7VZk82QKyS0LoaIjqP7dFYfXzSGkKNxWmAqlOtpRP7CBv03y5skg1kGG8iam8o9AWNa2kmEhdx+hHuRNnqrmWvflOAcQIYQ86vyqhRYJTXmzec=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=packett.cool; spf=pass smtp.mailfrom=packett.cool; dkim=pass (2048-bit key) header.d=packett.cool header.i=@packett.cool header.b=D9dxE88R; arc=none smtp.client-ip=95.215.58.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=packett.cool
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=packett.cool
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="krOIPd4f"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7CDB7C4CEE7;
-	Sun, 12 Oct 2025 18:41:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1760294487;
-	bh=PoUFRD1yzrjYJCi3ArphUQMDmoTrK9yIQsCtPXBJOks=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=krOIPd4f4lyc27ACoYSnNCwCsujV1k6HK7G8mhBaU8D+fmiS+vu7emBKFtr+9Q9gQ
-	 C5MHEabrspBaERkLsNUHpszwwGT6gCzCUyzIx+8e461sNDdO5fJ2uVkuG8+1LJuH9P
-	 2fTucsdyNWjDEe7GzmpyKNGUWLzzIL7VsDshJNDQK+Y5U/XanapgdNbYb/gfmzB8N/
-	 /CIm+68VaDiByKwhKevpvQm7I+1PvR8tKHp+MagE/hj6T0CplhxbH1hGe30WYxED42
-	 T2RI7qfx7r8s+Z1H615AF9JCEMMtfuVSOa4SbmUo4Mk51H11xzd+60HO8HwUsoWeY2
-	 ziBIH32MkxkWw==
-Date: Sun, 12 Oct 2025 19:41:14 +0100
-From: Jonathan Cameron <jic23@kernel.org>
-To: Luca Weiss <luca.weiss@fairphone.com>
-Cc: David Lechner <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?=
- <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>, "Rafael J.
- Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>,
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, Rob
- Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor
- Dooley <conor+dt@kernel.org>, Laxman Dewangan <ldewangan@nvidia.com>, Bjorn
- Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>,
- Hans de Goede <hansg@kernel.org>, Jens Reidel <adrian@mainlining.org>,
- Casey Connolly <casey.connolly@linaro.org>,
- ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
- linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org
-Subject: Re: [PATCH RFC 3/6] thermal/drivers/generic-adc: Register as IIO
- device
-Message-ID: <20251012194114.094a61a3@jic23-huawei>
-In-Reply-To: <20251010-bat-temp-adc-v1-3-d51ec895dac6@fairphone.com>
-References: <20251010-bat-temp-adc-v1-0-d51ec895dac6@fairphone.com>
-	<20251010-bat-temp-adc-v1-3-d51ec895dac6@fairphone.com>
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.51; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=packett.cool header.i=@packett.cool header.b="D9dxE88R"
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=packett.cool;
+	s=key1; t=1760312123;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=aMQxUdZpKenu9e4nFmMim5iXKBYHWVcK5NULU+g21sU=;
+	b=D9dxE88R60fxDnkI3tHA8ApGl7LoVnog7o4mCXbJ0I6yg7FmmVNauMJuXlCWIXoboQe+SI
+	AFqAjTmXT5bhnGP0x96VTO5FpvHNo/vsxmB4a2y56Brdb9bhQJgOH3Wg0OEG8xfCPR1AUG
+	H2wz/tlhDlW31WPEofYF2kcee7xS+e0Yc3neKItfxuBZB0L4DhOifKNpoJ3Grcioqoyrd0
+	s93BbVG78dIVvjMdYUjyfBbvhWodQ8Dt43uGMwmatkckFRGoimAaeACR0082946XeCdWOc
+	7jHP/pQEeF2WJdnGAVa88oX9WT9hX0hEpLMUrcd+5yYIrZrIZcRB/e8yESiQBg==
+From: Val Packett <val@packett.cool>
+To: Sebastian Reichel <sre@kernel.org>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Fenglin Wu <fenglin.wu@oss.qualcomm.com>
+Cc: Val Packett <val@packett.cool>,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
+	linux-arm-msm@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] power: supply: qcom_battmgr: clamp charge control thresholds
+Date: Sun, 12 Oct 2025 20:32:18 -0300
+Message-ID: <20251012233333.19144-3-val@packett.cool>
+In-Reply-To: <20251012233333.19144-2-val@packett.cool>
+References: <20251012233333.19144-2-val@packett.cool>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-On Fri, 10 Oct 2025 13:22:01 +0200
-Luca Weiss <luca.weiss@fairphone.com> wrote:
+The sysfs API documentation says that drivers "round written values to
+the nearest supported value" for charge_control_end_threshold.
 
-> Register an IIO channel to allow reading the temperature using the IIO
-> interface.
-> 
-> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
-Just one question below.
+Let's do this for both thresholds, as userspace (e.g. upower) generally
+does not expect these writes to fail at all.
 
->  static int gadc_thermal_probe(struct platform_device *pdev)
->  {
->  	struct device *dev = &pdev->dev;
->  	struct gadc_thermal_info *gti;
-> +	struct iio_dev *indio_dev;
-> +	struct gadc_iio *data;
->  	int ret;
->  
->  	if (!dev->of_node) {
-> @@ -153,6 +192,23 @@ static int gadc_thermal_probe(struct platform_device *pdev)
->  
->  	devm_thermal_add_hwmon_sysfs(dev, gti->tz_dev);
->  
-> +	indio_dev = devm_iio_device_alloc(dev, sizeof(*data));
-> +	if (!indio_dev)
-> +		return -ENOMEM;
-> +
-> +	data = iio_priv(indio_dev);
-> +	data->gti = gti;
-> +
-> +	indio_dev->name = pdev->name;
-what does this end up as?
+Fixes: cc3e883a0625 ("power: supply: qcom_battmgr: Add charge control support")
+Signed-off-by: Val Packett <val@packett.cool>
+---
+ drivers/power/supply/qcom_battmgr.c | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
 
-obviously we don't really care what name the user space interface we
-aren't using advertises but this should be something part number like.
-
-> +	indio_dev->modes = INDIO_DIRECT_MODE;
-> +	indio_dev->info = &gadc_adc_info;
-> +	indio_dev->channels = gadc_adc_channels;
-> +	indio_dev->num_channels = ARRAY_SIZE(gadc_adc_channels);
-> +
-> +	ret = devm_iio_device_register(dev, indio_dev);
-> +	if (ret)
-> +		return dev_err_probe(dev, ret, "Failed to register IIO device\n");
-> +
->  	return 0;
->  }
->  
-> 
+diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
+index 3c2837ef3461..c8028606bba0 100644
+--- a/drivers/power/supply/qcom_battmgr.c
++++ b/drivers/power/supply/qcom_battmgr.c
+@@ -678,12 +678,7 @@ static int qcom_battmgr_set_charge_start_threshold(struct qcom_battmgr *battmgr,
+ 	u32 target_soc, delta_soc;
+ 	int ret;
+ 
+-	if (start_soc < CHARGE_CTRL_START_THR_MIN ||
+-	    start_soc > CHARGE_CTRL_START_THR_MAX) {
+-		dev_err(battmgr->dev, "charge control start threshold exceed range: [%u - %u]\n",
+-			CHARGE_CTRL_START_THR_MIN, CHARGE_CTRL_START_THR_MAX);
+-		return -EINVAL;
+-	}
++	start_soc = clamp(start_soc, CHARGE_CTRL_START_THR_MIN, CHARGE_CTRL_START_THR_MAX);
+ 
+ 	/*
+ 	 * If the new start threshold is larger than the old end threshold,
+@@ -716,12 +711,7 @@ static int qcom_battmgr_set_charge_end_threshold(struct qcom_battmgr *battmgr, i
+ 	u32 delta_soc = CHARGE_CTRL_DELTA_SOC;
+ 	int ret;
+ 
+-	if (end_soc < CHARGE_CTRL_END_THR_MIN ||
+-	    end_soc > CHARGE_CTRL_END_THR_MAX) {
+-		dev_err(battmgr->dev, "charge control end threshold exceed range: [%u - %u]\n",
+-			CHARGE_CTRL_END_THR_MIN, CHARGE_CTRL_END_THR_MAX);
+-		return -EINVAL;
+-	}
++	end_soc = clamp(end_soc, CHARGE_CTRL_END_THR_MIN, CHARGE_CTRL_END_THR_MAX);
+ 
+ 	if (battmgr->info.charge_ctrl_start && end_soc > battmgr->info.charge_ctrl_start)
+ 		delta_soc = end_soc - battmgr->info.charge_ctrl_start;
+-- 
+2.51.0
 
