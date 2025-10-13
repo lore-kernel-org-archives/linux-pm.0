@@ -1,79 +1,98 @@
-Received: from out-179.mta1.migadu.com (out-179.mta1.migadu.com [95.215.58.179])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f53.google.com (mail-lf1-f53.google.com [209.85.167.53])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95FFA2F0C7C
-	for <linux-pm@vger.kernel.org>; Sun, 12 Oct 2025 23:35:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 054DA1E4AE
+	for <linux-pm@vger.kernel.org>; Mon, 13 Oct 2025 02:18:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760312133; cv=none; b=bsGzmHyxJb7rJ/12+IsO6hJbCs1asMPaGvp+lawNWOZEEvmZG5301UMUFAI4CIwDdr+w/5gIqj1XTIOvbngE2Nz06cV8KqUI2SbxM8XqQgCGl+skK6AjU5N8Jxqx3IS2xb9DGeUlaqvTZmDHXl5CqvdOe660rC8xrovbTG1K/wA=
+	t=1760321933; cv=none; b=qU/eIZQmQAgOzhA2dPCX99/wZwIC2B4ysno4mQAZRgCw5oidok81H4zC4ipmq/Oq/U3Jc8JVzVkPdcjoR3vAPxr7QhAoQiC98a79b0ZEwzwnBP/DFDt9l/v04TRzSJzjguBeO1irIyo4qtY8VUZ8+GZY8//IIya5N4dGjroRa9A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760312133; c=relaxed/simple;
-	bh=RjwSkuSroUgpMQ3Z3ISFdpypDXbCwD3Kcl8yzwyMI+o=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=SfTYFKoGgjz09HDbUgvJKjNqq3yHEVm/zydcv5dm2FP+b3VnuoalQhtvFut9bqm1nI8HjdSV8AfoSNrkEYixjt9KTZ6+qWoyGGT/Chtw+ZdVOx1tt6v9ITh74cuQ3FzpigAyYMAxxM8DPgYl/CgsezRpv1hU7hdtZ9qrx0WTOvA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=packett.cool; spf=pass smtp.mailfrom=packett.cool; dkim=pass (2048-bit key) header.d=packett.cool header.i=@packett.cool header.b=nUABm1eO; arc=none smtp.client-ip=95.215.58.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=packett.cool
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=packett.cool
+	s=arc-20240116; t=1760321933; c=relaxed/simple;
+	bh=9PDrTUGmEtHhlWROJVzFemxew+01a7v8V9YahKSqAgw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Aw9SlHImqkq9gISlkO7TYy4g9DMNOgbDIhxnobTyuvRRLULSd8KvG6ykWh4j8i8i1D/VD+hHEEbVpKkzOPyyir2bfqfVfsdJZ3mp6cQzDMiaZ4bSx6qcWnVPRsIgeAK809EblvYcJELyrJbzFZ6EVR5VR2cc0unRypcBC8qWBLA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=kIPkiHkQ; arc=none smtp.client-ip=209.85.167.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=packett.cool header.i=@packett.cool header.b="nUABm1eO"
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=packett.cool;
-	s=key1; t=1760312118;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=jkhzacjcds6W3I5BIs0Lk/YOFhJFn1fRWKod7Pdp9mY=;
-	b=nUABm1eObyDhr1Xns2e9scHvW+Qmu4UQMkC238cRQq4yFyXqwIy076cmUhG99WWIfRGlky
-	Fc9RSSehKm+J0avAEc59gBgZbMtvWFqxAAiI1/yaCnAGnz2ztzutvepSYgIBwtUtpLRkwf
-	Zve8blObIBY3PjiG/l1ilHZVE1h6Q89ReOXKXz1dPcIdg5acD+naVQLWmw2kw2hC17siIc
-	sCU7ktCeB6BZm6weB0itSM6ng0anFa+MVaTCw38nb0mMNJyrpGA0QptlMxA3fpkfltqFzz
-	wZo9PfYQ54XoioIoxsarArLa2TUwcjVskKNaNdU5hK+R8liiYH+qsa3Po733Iw==
-From: Val Packett <val@packett.cool>
-To: Sebastian Reichel <sre@kernel.org>,
-	Fenglin Wu <fenglin.wu@oss.qualcomm.com>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	linux-arm-msm@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Val Packett <val@packett.cool>
-Subject: [PATCH 0/2] power: supply: qcom_battmgr: improve charge control threshold handling
-Date: Sun, 12 Oct 2025 20:32:17 -0300
-Message-ID: <20251012233333.19144-2-val@packett.cool>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kIPkiHkQ"
+Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-57a604fecb4so4841100e87.1
+        for <linux-pm@vger.kernel.org>; Sun, 12 Oct 2025 19:18:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1760321930; x=1760926730; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=9PDrTUGmEtHhlWROJVzFemxew+01a7v8V9YahKSqAgw=;
+        b=kIPkiHkQTsEnp+Hl3dnoCd6vUP3X6XN5l4n9+ixvmJTjJ10hhqgA68j0wmm/5u3iZy
+         DPmlmdWEgMAg/VqRQp/p/ConAqk5fkdUET2819ZYBHry+5pXknRSAW27uAeeicslb+py
+         uSFPqa0iQelmQbHtwE1yXrgMFoNNDQVey4Oop+cW6puqav33Wji0VVQdqak9JQYuj1xu
+         yj2os50x8xGvr62JRi2ylg5fMwBVREj06d6MkOPjzO+PCozaeJbd5Ap3TCzJaAs03pfL
+         vndKRRLTb1a1E8/gRyfqwH44AHqf2kx1gcYSCPmwkGiKg3wB/sgs+uLWL/tpQPbsvUbB
+         GJlQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1760321930; x=1760926730;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=9PDrTUGmEtHhlWROJVzFemxew+01a7v8V9YahKSqAgw=;
+        b=PUkB6j7dziuR0kFp78nQUrN66rbrIqrOe3xDUdBRHdsNHe7UTJxIUBYZt0iQS7GNZ/
+         G6+444yHxCxmN97OtU3bT/A31BAKj1jLpD79rIaHg9iTqD7O9zCtFxXCvrsxGNEIqig3
+         /EJIybQHyPRrCdz8k0OyNrFY++Br9y19hy62bUogM1+/C4ETgzrerpZXgtped3P1wEZJ
+         3aauLlEYBUOHA4x4yfk/p/VSBbpAb4KXdefBJSweh52ygLZMby9X1FIc+QuepUETHG5/
+         xARnwXHDVgAbLf6buk7cjgFUQ6J1jZhcZs4i9QHy2m9D3tXC+nSEA6qrN+WTvGDn0Jcp
+         5ImQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVeSTd34Rz3ucmt8tkIqGtmGIFlzvjwikP4bFtOh2lnHcZwIUbV3Mj54IRWcp284qr2oBRap4GsuA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwTCmTFQ+8b92SOXDEXRCT6FjOrP1hTG3Fb4KRNKKBFCpLWQlWt
+	1mrDWcysa2kf4hdKXrjZEdG7JOg22nfer4pHd3nozqPMUzYLuMyRHDzllzKWNLCZic00iINUSpm
+	1ppexzXHqBPrzP/ApAePqQHY1/jetBfo=
+X-Gm-Gg: ASbGncvH/LirlAVMDMxWgsAB0tJLGczJPKSd7I/AD4gSvunf/uw/kbcGxOmkuN1zywH
+	nUTAbHGJO6cJ8IH6X71zEQRxpEqAgnel8vgbDxUITfItdwQUjK4bJ5R2EWfOGSzUcx/BZdkVaSd
+	eEad+jM5I2KSE9bsGow1ulx4gAyW5bQBAl8ImCtjignoQrys6dDFV4LAFYkMvr5eNqPs9kBp6px
+	QzuiDgcD5brDh6AGLdCKKM64Q==
+X-Google-Smtp-Source: AGHT+IFiw45hdvimFqGDURQaGtDLi9ENkklrzwLA8phy4Ic6ETpmgrs7KC/3t2Arw0r0YQyBDrm+0eG6CRv5jVYMkRw=
+X-Received: by 2002:a05:6512:3082:b0:561:9635:5af5 with SMTP id
+ 2adb3069b0e04-5906dae7bb0mr5720922e87.48.1760321930016; Sun, 12 Oct 2025
+ 19:18:50 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+References: <20250909-tegra186-icc-v2-0-09413724e781@gmail.com> <5d7491b1-8f9a-4040-b854-ff0b94bfd24e@kernel.org>
+In-Reply-To: <5d7491b1-8f9a-4040-b854-ff0b94bfd24e@kernel.org>
+From: Aaron Kling <webgeek1234@gmail.com>
+Date: Sun, 12 Oct 2025 21:18:38 -0500
+X-Gm-Features: AS18NWAIF1xrgNjZf5B4apzT_7FVhvYHWdeOCO6h_dIwtjEyeBNHBiTCRjDDt_8
+Message-ID: <CALHNRZ-okVZ8tzKYa=jqudDu3dZ_Yq1CkeErdcvxi5xJEgJFbg@mail.gmail.com>
+Subject: Re: [PATCH v2 0/8] Support dynamic EMC frequency scaling on Tegra186/Tegra194
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, linux-kernel@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, 
+	linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Currently, upowerd is unable to turn off the battery preservation mode[1]
-on Qualcomm laptops, because it does that by setting the start threshold to
-zero and the driver returns an error:
+On Wed, Oct 8, 2025 at 7:05=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.org=
+> wrote:
+>
+> On 09/09/2025 15:21, Aaron Kling via B4 Relay wrote:
+> > This series borrows the concept used on Tegra234 to scale EMC based on
+> > CPU frequency and applies it to Tegra186 and Tegra194. Except that the
+> > bpmp on those archs does not support bandwidth manager, so the scaling
+> > iteself is handled similar to how Tegra124 currently works.
+> >
+>
+> Nothing improved:
+> https://lore.kernel.org/all/20250902-glittering-toucan-of-feminism-95fd9f=
+@kuoka/
 
-pmic_glink.power-supply.0: charge control start threshold exceed range: [50 - 95]
+The dt changes should go last. The cpufreq and memory pieces can go in
+either order because the new code won't be used unless the dt pieces
+activate them.
 
-Kernel documentation says the end threshold must be clamped[2] but does
-not say anything about the start threshold.
-
-In this proposal I've special-cased start==0 to actually disable the
-functionality via the enable bit, and otherwise made both start and
-end thresholds be clamped to the acceptable range. Hopefully that's
-fine? Or should the [1 - 49] range for start actually be rejected?
-
-[1]: https://gitlab.freedesktop.org/upower/upower/-/issues/327
-[2]: https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-power
-
-Thanks,
-~val
-
-Val Packett (2):
-  power: supply: qcom_battmgr: clamp charge control thresholds
-  power: supply: qcom_battmgr: support disabling charge control
-
- drivers/power/supply/qcom_battmgr.c | 26 ++++++++++----------------
- 1 file changed, 10 insertions(+), 16 deletions(-)
-
--- 
-2.51.0
-
+Aaron
