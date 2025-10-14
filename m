@@ -1,50 +1,50 @@
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7D2D2E9731;
-	Tue, 14 Oct 2025 14:36:01 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 32F8D2F1FDA;
+	Tue, 14 Oct 2025 14:36:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760452564; cv=none; b=XFTCWAINCEw3ieAEaJVHjrclD1eVQU8/8n8oAS9oCrsarTwCSUzTUjrxKCg6N+2PsdsQzaG7VV5s7Dq32ZE0LWb8Ozx5D8UkLaommztw9uXw9eobbUJAqN3w1338yJbmUPwkN8+O5ecZJwXw9m4B4aBiThdnDdbzf4GvQ2l+vGA=
+	t=1760452568; cv=none; b=o9Jr7C3mpt5+aluXsUqxK20TFOi6HAhdVVAXvq/WSz4j2CQJE1bSQFcs0rw2ZVfiC5M39rXeaa/XoDmTrzcQDM5/aZYRUdulxqx8fdb2BY9WSzWs5HbzYCs+ha5w715J/7fYxpyTXzSbjK5976EGTE1xdN9d6bdL+Eyj2pFx7n8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760452564; c=relaxed/simple;
-	bh=XHI8VfssT8TXCoN4er/kyiGN6nl4rHF+YYu+JVq/pus=;
+	s=arc-20240116; t=1760452568; c=relaxed/simple;
+	bh=5ta/LWaJssx4yk7oF1/lZyMoh3TyiMbwDeKhxJNX6dc=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=gtFzA2FgzlrzWNCPoTaDlhgeLpn4j+RLful5uoh/tcR4U6INK3W6Fd32j1xXIdCB2WGL+RQb09ubTBHgoRqUm1h7Xl3E+Y74SxiD0epEcHUdB1dM0hbomULO7B+g2Y0H2eA0IaY42+bdHCEw06OtnjpfUrNiIHP+uhtilPieKeA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=NQZwVQ/L; arc=none smtp.client-ip=205.220.180.131
+	 In-Reply-To:To:CC; b=JdO7vZq1nCswy4PlVAhNNwBMrxyv/K2Lz5LmoZBc8TpSbFlDMPC8WuRpanaWSBMuTO3RVH3GjxP/vVG6LDh1Dz0ZCQ5wKKe6IbDfr2HJEIF6jnOjQwXrA5hdVIhBt2wM1cVVnysDwKPiGZa6+ZV9T7HVqblcicgPc45JccPKSkE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com; spf=pass smtp.mailfrom=quicinc.com; dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b=cZlLC+U7; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=quicinc.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="NQZwVQ/L"
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 59E87O84001741;
-	Tue, 14 Oct 2025 14:35:49 GMT
+	dkim=pass (2048-bit key) header.d=quicinc.com header.i=@quicinc.com header.b="cZlLC+U7"
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 59E87UkB006284;
+	Tue, 14 Oct 2025 14:36:00 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	l8/RDSr3wxyj04sQTxGcHVZE/ZHAVLo1f9za9ix8zR4=; b=NQZwVQ/L9Lor2Muy
-	FoeJOWVGetpJ4J0K2z0vaVeRSqcqYYf+x0iwoPbf5rhXPWip54YVKEOoAMWjvFAG
-	Vyq4rIRKG/szvFZ7xjzThOXnRH34DdxbTMs7/O7fUD6OnZG9S9Il3cPCuuF4Gzqx
-	gJA1oQad97Ea8p2m4NhktPzlGz1sNizepl7lrqrT/0+SO834sFN9VozlGvuGAYsu
-	us6F8lKPuWpNzlzFs6nkiquTJYnskMWC4KnP+e3oxltGbIcJHJa9h4DYvhB0+nT+
-	4M3vdlf1HiHLETuTfhCkN96mbuDu+T4mW2Z5PU+iRe1IHXv8bSsRoaopEbOVU6Q7
-	HGgp/g==
+	Ff2X8gB94uot2LVF62+g+L2VpJDyKN5xMhgFIuxqP4A=; b=cZlLC+U72wH4Dp/Y
+	Zlzaf2UNqTW0+bgLRNbvASi75ATAZ/9g7My1FOsQHuKENuJNrgnxOzrg+1LL/JgH
+	kMFvRXNdmd0if7EJROqM9GwaODLLxmyfbacuqsyX5+h+SmUzz8ZeH32+wx237Mir
+	0+hw3g55ptxVCooRnp0ciWYvVWHjzvBWaWGrJcr2S0CrmD5NH5so0rdy1hJ5eI9Y
+	ki90m6Z0RW2sPF5P+Fd767QrFpt4U2NK0zu5dgnjCr4M9YJOPHOhUHN3SLlZEWjF
+	lmOSVO5/vy8+nGMpn9eF2MqY35ovX2IFVKSJE27oDJo67n1s/aqwcqZV0rDz0KMr
+	Akh55g==
 Received: from nasanppmta02.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 49qfdk8sv0-1
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 49qfbj0uks-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 14 Oct 2025 14:35:49 +0000 (GMT)
+	Tue, 14 Oct 2025 14:36:00 +0000 (GMT)
 Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
-	by NASANPPMTA02.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 59EEZmaw005567
+	by NASANPPMTA02.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 59EEZxZP005687
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 14 Oct 2025 14:35:48 GMT
+	Tue, 14 Oct 2025 14:35:59 GMT
 Received: from nsssdc-sh01-lnx.ap.qualcomm.com (10.80.80.8) by
  nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1748.24; Tue, 14 Oct 2025 07:35:42 -0700
+ 15.2.1748.24; Tue, 14 Oct 2025 07:35:53 -0700
 From: Luo Jie <quic_luoj@quicinc.com>
-Date: Tue, 14 Oct 2025 22:35:26 +0800
-Subject: [PATCH v7 01/10] clk: qcom: gcc-ipq5424: Correct the
- icc_first_node_id
+Date: Tue, 14 Oct 2025 22:35:28 +0800
+Subject: [PATCH v7 03/10] dt-bindings: interconnect: Add Qualcomm IPQ5424
+ NSSNOC IDs
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -53,7 +53,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <20251014-qcom_ipq5424_nsscc-v7-1-081f4956be02@quicinc.com>
+Message-ID: <20251014-qcom_ipq5424_nsscc-v7-3-081f4956be02@quicinc.com>
 References: <20251014-qcom_ipq5424_nsscc-v7-0-081f4956be02@quicinc.com>
 In-Reply-To: <20251014-qcom_ipq5424_nsscc-v7-0-081f4956be02@quicinc.com>
 To: Bjorn Andersson <andersson@kernel.org>,
@@ -85,77 +85,84 @@ CC: <linux-arm-msm@vger.kernel.org>, <linux-clk@vger.kernel.org>,
         <netdev@vger.kernel.org>, <quic_kkumarcs@quicinc.com>,
         <quic_linchen@quicinc.com>, <quic_leiwei@quicinc.com>,
         <quic_pavir@quicinc.com>, <quic_suruchia@quicinc.com>,
-        Luo Jie <quic_luoj@quicinc.com>,
-        Konrad Dybcio
-	<konrad.dybcio@oss.qualcomm.com>
+        Luo Jie <quic_luoj@quicinc.com>
 X-Mailer: b4 0.14.1
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1760452536; l=1283;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1760452536; l=1565;
  i=quic_luoj@quicinc.com; s=20250209; h=from:subject:message-id;
- bh=XHI8VfssT8TXCoN4er/kyiGN6nl4rHF+YYu+JVq/pus=;
- b=ScCyOyjrwu2Ic9fbazp8Js1+E6AB/mLB0YmEXUUnLyy9ELvJXVpS4lApOxGc0NBsmx8lECOhq
- 6op6HufXy6CCmvZ05klVTnGvHyiFmrD6a7l9FhmfeG3GL+w4LBJ99Tk
+ bh=5ta/LWaJssx4yk7oF1/lZyMoh3TyiMbwDeKhxJNX6dc=;
+ b=sKXwbgsGVLEc50UvJM1yw3x3FEjRqnXqzMoO8H9FKQXr24+zf956wTA0YYMN4t4jJ9hO5KCrJ
+ hppvDdLkLUHAtPfQzMiqDucxr3WizcBRjVSM8GhD8+VsTw5VmQgv0mN
 X-Developer-Key: i=quic_luoj@quicinc.com; a=ed25519;
  pk=pzwy8bU5tJZ5UKGTv28n+QOuktaWuriznGmriA9Qkfc=
 X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
  nasanex01b.na.qualcomm.com (10.46.141.250)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: Dws_Bui1SxM79oyGELe2qCGNuQS2pqyX
-X-Authority-Analysis: v=2.4 cv=MrNfKmae c=1 sm=1 tr=0 ts=68ee5fc5 cx=c_pps
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMDExMDAxOCBTYWx0ZWRfX5dyhCv3vK+1y
+ uTEslEDWILxeeM7AeXzGoWJG+WmSQKqbW8RQUdAqPw+Xx9W36pwBESrrLNNLeMLepFyCeI5/y1D
+ Va7JoHUU3CBsa84zPeyyjm4C4H2sj7NBj0GGDBMH+udZKpYAiJPB9JuP9fADN2ovp7LOdqSD2Ah
+ jeSjbmFXhVYjrNcsDLz3LHZUDQ5Eb7GB7q3Yr8yJ31UMY7nRJfLR6KwncNpROUMGd/LaodDxNIj
+ sQV7ufp0PuLc1uK6kIAA945cSfKMP6+uGEHWMJy3+q692xsRfZ053/YExP/VzESWOvRuAC7K7+s
+ wOllV0ehyEVHaQ6/CJ1Gsfld84t9WXQ/z+YIjVOX0b7u9IqpKTjt0bgOzY20+TMTB5HZnfbGcIH
+ 1vbTRB9SSHw7PEvOAy2EFcenHMPxVg==
+X-Proofpoint-ORIG-GUID: gZ95rBgNzNuInFetGUM9ONPZOzbqGt1j
+X-Authority-Analysis: v=2.4 cv=bodBxUai c=1 sm=1 tr=0 ts=68ee5fd0 cx=c_pps
  a=JYp8KDb2vCoCEuGobkYCKw==:117 a=JYp8KDb2vCoCEuGobkYCKw==:17
  a=GEpy-HfZoHoA:10 a=IkcTkHD0fZMA:10 a=x6icFKpwvdMA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=EUspDBNiAAAA:8 a=COk6AnOGAAAA:8
- a=yUHhXAd9wW1YfvQ6HRQA:9 a=QEXdDO2ut3YA:10 a=TjNXssC_j7lpFel5tvFf:22
+ a=VkNPw1HP01LnGYTKEx00:22 a=VwQbUJbxAAAA:8 a=COk6AnOGAAAA:8
+ a=Qcuqu0ky38DJWFOqejsA:9 a=QEXdDO2ut3YA:10 a=TjNXssC_j7lpFel5tvFf:22
  a=cPQSjfK2_nFv0Q5t_7PE:22
-X-Proofpoint-GUID: Dws_Bui1SxM79oyGELe2qCGNuQS2pqyX
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMDExMDAxOCBTYWx0ZWRfX9pPCUvuuv2Gz
- fPzVfQMp7moKr49FdJKLU1OVUT5HuxO9Dl6zP/CJY5ppUVOOUtBIM4wR9Rb+s9yAujPRLm1d3vL
- MJ9UhF+iR6QkIwXIsWV4j+ytgH3JnQFyvCJsImkPiZ0tFkTDKav0sWuUYIpQyzeuKdlmkGKoAra
- rp7phM6oTUJo/0UO/R/wRSA/QmB7V2tc7pNTEsdbYminZMgfc9wLRAFKlpV3ZNmi2V57laTRhph
- W8CO041GCj+8ylWltVXQ+9SyxQG4gW9w0/sKYMJaD69gBo7My15/luklqjE353jp5gOA2zo1OpK
- qA4rzFSdDcbfpHxvqFXMTkELBPcEm2P4NZ+geKX7RuOiUAESu1EXK5MUlE9Crgf4DtuKMIbJ9iQ
- vy7y77LZXACCpxS9EQ8RjiPRtKc+wA==
+X-Proofpoint-GUID: gZ95rBgNzNuInFetGUM9ONPZOzbqGt1j
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.80.40
  definitions=2025-10-14_03,2025-10-13_01,2025-03-28_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 bulkscore=0 clxscore=1015 adultscore=0 phishscore=0
- impostorscore=0 priorityscore=1501 malwarescore=0 lowpriorityscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2510020000
- definitions=main-2510110018
+ phishscore=0 lowpriorityscore=0 adultscore=0 impostorscore=0 suspectscore=0
+ bulkscore=0 priorityscore=1501 clxscore=1015 malwarescore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2510020000 definitions=main-2510110018
 
-Update to use the expected icc_first_node_id for registering the icc
-clocks, ensuring correct association of clocks with interconnect nodes.
+Add the NSSNOC master/slave ids for Qualcomm IPQ5424 network subsystem
+(NSS) hardware blocks. These will be used by the gcc-ipq5424 driver
+that provides the interconnect services by using the icc-clk framework.
 
-Fixes: 170f3d2c065e ("clk: qcom: ipq5424: Use icc-clk for enabling NoC related clocks")
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
 Signed-off-by: Luo Jie <quic_luoj@quicinc.com>
 ---
- drivers/clk/qcom/gcc-ipq5424.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ include/dt-bindings/interconnect/qcom,ipq5424.h | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-diff --git a/drivers/clk/qcom/gcc-ipq5424.c b/drivers/clk/qcom/gcc-ipq5424.c
-index 3d42f3d85c7a..71afa1b86b72 100644
---- a/drivers/clk/qcom/gcc-ipq5424.c
-+++ b/drivers/clk/qcom/gcc-ipq5424.c
-@@ -1,7 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- /*
-  * Copyright (c) 2018,2020 The Linux Foundation. All rights reserved.
-- * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
-+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
-  */
+diff --git a/include/dt-bindings/interconnect/qcom,ipq5424.h b/include/dt-bindings/interconnect/qcom,ipq5424.h
+index afd7e0683a24..c5e0dec0b300 100644
+--- a/include/dt-bindings/interconnect/qcom,ipq5424.h
++++ b/include/dt-bindings/interconnect/qcom,ipq5424.h
+@@ -20,6 +20,26 @@
+ #define SLAVE_CNOC_PCIE3		15
+ #define MASTER_CNOC_USB			16
+ #define SLAVE_CNOC_USB			17
++#define MASTER_NSSNOC_NSSCC		18
++#define SLAVE_NSSNOC_NSSCC		19
++#define MASTER_NSSNOC_SNOC_0		20
++#define SLAVE_NSSNOC_SNOC_0		21
++#define MASTER_NSSNOC_SNOC_1		22
++#define SLAVE_NSSNOC_SNOC_1		23
++#define MASTER_NSSNOC_PCNOC_1		24
++#define SLAVE_NSSNOC_PCNOC_1		25
++#define MASTER_NSSNOC_QOSGEN_REF	26
++#define SLAVE_NSSNOC_QOSGEN_REF		27
++#define MASTER_NSSNOC_TIMEOUT_REF	28
++#define SLAVE_NSSNOC_TIMEOUT_REF	29
++#define MASTER_NSSNOC_XO_DCD		30
++#define SLAVE_NSSNOC_XO_DCD		31
++#define MASTER_NSSNOC_ATB		32
++#define SLAVE_NSSNOC_ATB		33
++#define MASTER_CNOC_LPASS_CFG		34
++#define SLAVE_CNOC_LPASS_CFG		35
++#define MASTER_SNOC_LPASS		36
++#define SLAVE_SNOC_LPASS		37
  
- #include <linux/clk-provider.h>
-@@ -3284,6 +3284,7 @@ static const struct qcom_cc_desc gcc_ipq5424_desc = {
- 	.num_clk_hws = ARRAY_SIZE(gcc_ipq5424_hws),
- 	.icc_hws = icc_ipq5424_hws,
- 	.num_icc_hws = ARRAY_SIZE(icc_ipq5424_hws),
-+	.icc_first_node_id = IPQ_APPS_ID,
- };
- 
- static int gcc_ipq5424_probe(struct platform_device *pdev)
+ #define MASTER_CPU			0
+ #define SLAVE_L3			1
 
 -- 
 2.34.1
