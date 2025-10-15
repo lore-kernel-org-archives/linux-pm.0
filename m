@@ -1,64 +1,104 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mout-p-103.mailbox.org (mout-p-103.mailbox.org [80.241.56.161])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBF7B25487B;
-	Wed, 15 Oct 2025 14:05:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 469782566F7;
+	Wed, 15 Oct 2025 14:10:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.161
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760537129; cv=none; b=NKe/xhm0KF4NQDLw6WX9V5TKejwbn2YQGXymH960t9EN7PkZGAAfTahVRWSPsegi6DdqK9B2z48ItiPR71CuQCbp4/jp1RYX+I9+F20J+2qA68g2zbskXEHDg0/yLof1o7q+/OUPwAcPKWgDLDWX/MwcKZfC+kiCsl/kXRtbxfI=
+	t=1760537448; cv=none; b=YE86MMSHBlrRX6/SJAUi1ozlVZRk3+EjDSgyYj3EQJrs2v6yhrgx9jw7IG60oQSWuXwdoAI6wP3e9v2PTObTXXWTEpaGWIXYODgCcSxZABAwO8lnHxA4wHzVtqkjRz7ACWzqsNwpISVL1zsD5Lj252i1efoZGVH+Z7jQWL4MgI4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760537129; c=relaxed/simple;
-	bh=vmlYb0g+8Bco2x8DuZ7wv9Yxt/D7mnkuiu2npAVRBXI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=QrCp78GK1Td7+RWcuU1qUN0rth4EmV8nBZ11Q1+LlZZdejok7EglH6ryLuszkts5ZqU9pewdjgOyo55+QuxZer/CuYhXEbYhk0OYyRnEjl6SKcDhuuk4n8eovRdyh+BixiTm7XIK4cMv0YvvYPGE+t59kTwrfQYeUS6H0wWPTLo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ADkYFgIV; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1760537448; c=relaxed/simple;
+	bh=hVRuz+dYhhjqt7qTfCIuDOea7yuVm9ZeY94c8xKoBl4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=bp4+Gu8qb5yr0p6kBdFXfG5ZaFeqEonXQj7yfAE7Aublf6fLsExIoiYU5ib0KC6SKQDwq7wxqWqCEtlIqzdfQk2pf0lY8v0LaN1q1lTZAZUU5/ZzisF4OY9af82DfSVqq7IUm6w24T0mmVaUN9o0V6LeXL8KSL+u9OTZPMWV/Pc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=yeqZ4FuS; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=U2Yb/25Z; arc=none smtp.client-ip=80.241.56.161
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ADkYFgIV"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8642BC4CEFB;
-	Wed, 15 Oct 2025 14:05:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1760537129;
-	bh=vmlYb0g+8Bco2x8DuZ7wv9Yxt/D7mnkuiu2npAVRBXI=;
-	h=From:To:Cc:Subject:Date:From;
-	b=ADkYFgIVWWX1zfKViU2vKx02y/WaRMhIz4kdl937KEp/Nv8dKiU4re62ORCqcJ3lu
-	 YxRDRmIffUaPlBnCjc2KkusZAthJF4pNY3IHyXcovlLqjELAztczGD0byHcPFtG1Ap
-	 MjSeNrBcZ+ufgK1+6I/zEcIaDLxP5qmcLxc5tJa8fbbdybSNoxMvjyOCgIH7R9HegU
-	 AQ9VijTzCJLVW1QEjV2p0QN9ammE/QIjkaMWVy6gv1g2k1fqRc6TKjOeJe5tKsI7n8
-	 69bwNQ+v2NauFdCls+QwA9bnYkL5LnGYVwCMvOJno8bTMVB5HTaLcsf/VlhAxFyJVr
-	 fParbeerFKZDA==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Jonathan Cameron <jonathan.cameron@huawei.com>,
- Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>,
- Linux PCI <linux-pci@vger.kernel.org>,
- Alex Williamson <alex.williamson@redhat.com>,
- Bjorn Helgaas <helgaas@kernel.org>, Zhang Qilong <zhangqilong3@huawei.com>,
- Ulf Hansson <ulf.hansson@linaro.org>, Frank Li <Frank.Li@nxp.com>,
- Dhruva Gole <d-gole@ti.com>,
- Mika Westerberg <mika.westerberg@linux.intel.com>,
- Linux ACPI <linux-acpi@vger.kernel.org>
-Subject:
- [PATCH v1 0/3] PM: runtimePCI/ACPI: TAD: Auto-cleanup macros for runtime PM
-Date: Wed, 15 Oct 2025 15:59:48 +0200
-Message-ID: <3925484.kQq0lBPeGt@rafael.j.wysocki>
-Organization: Linux Kernel Development
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="yeqZ4FuS";
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="U2Yb/25Z"
+Received: from smtp102.mailbox.org (smtp102.mailbox.org [10.196.197.102])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mout-p-103.mailbox.org (Postfix) with ESMTPS id 4cmtKB1z9jz9thf;
+	Wed, 15 Oct 2025 16:10:38 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1760537438;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=6yHkGFUgeQQv/Xu03jMdrrfgeEJ+J6H1xw7g/yGp/24=;
+	b=yeqZ4FuSun6CGxVP9E9OPvrrzAgIC25p/Nsh2z37FQdVkwlC7dA8CqW01s6Dq6t80NyJj3
+	tSUpAOuCDAJOhdU3l7ihc63bYzEN2E8kGzbi+1gg29rtYKU6KYEB3QDGN9JY1Hdd9HudFK
+	hvy67mF+qS59PDhFCjWYhn5v5tsy+4lJrrGsTbupfXD9V0k1RSBvIFbRpwlziGHgumfgLN
+	ij0wZqz3PQ0LtuyihXRxQ/n6ZqjBbRwwJkxX3lPkMaAUKb+tjS7TsqpdeBxqjLwU12CePA
+	UCmoBUC6Qr0cTsxScQv3sybnjXoay5BMJp9VEMvqmq5vRraNCYmLRwehqXUedQ==
+From: Marek Vasut <marek.vasut+renesas@mailbox.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1760537436;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=6yHkGFUgeQQv/Xu03jMdrrfgeEJ+J6H1xw7g/yGp/24=;
+	b=U2Yb/25ZKAr0SAiIeUFEWscRQrk4ScPA7MlVJdhngD4YPv0N7Xp9AkFOMFvmrDMnXxg7Hd
+	FjgH+Ns8qorUbb6ETVQTr6Q+yMEvWOX4UQuEZ6NDKiIUoe9jjiC94gudlYRxQw5nrgE/+5
+	l0jhbxPOdyEjRhMYEDW9BzWI2zy0V5M1J+MVaAfH1X0NZt6Ll8QNrQEhVnAXE705oE1KkH
+	Z0Ky7tyNxasIdu1vHw24FFmmUzcGUQ9JiyeUM5igrVlvu8d0P4KdV9a/cxrnqbVzRUboxM
+	Y2rG2tqr1KzbVrlgQTYpJO17p/g1azqjSlVV/KpOgYTnUxxQpPVGfYi/gJm8Zw==
+To: linux-pm@vger.kernel.org
+Cc: Marek Vasut <marek.vasut+renesas@mailbox.org>,
+	=?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Zhang Rui <rui.zhang@intel.com>,
+	linux-renesas-soc@vger.kernel.org
+Subject: [PATCH] thermal/drivers/rcar_gen3: Document Gen4 support in driver comment
+Date: Wed, 15 Oct 2025 16:09:51 +0200
+Message-ID: <20251015141014.156437-1-marek.vasut+renesas@mailbox.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-MBO-RS-META: p8w49a5f6hrrnnnecitdicwun7f7z6g6
+X-MBO-RS-ID: e0609ddc3c648950fdb
 
-Hi All,
+The R-Car Gen3 thermal driver supports both R-Car Gen3 and Gen4 SoCs.
+Update the driver comment. No functional change.
 
-This series introduces a helper macro on top of the recently added runtime PM
-usage counter guard definitions, uses it in the PCI sysfs code (patch [1/3])
-and modifies the runtime PM usage counter handling in the ACPI TAD driver
-with the help of it (patch [3/3]).  Patch [3/2] is a preparation for the
-latter.
+Signed-off-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
+---
+Cc: "Niklas Söderlund" <niklas.soderlund@ragnatech.se>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Lukasz Luba <lukasz.luba@arm.com>
+Cc: Magnus Damm <magnus.damm@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-renesas-soc@vger.kernel.org
+---
+ drivers/thermal/renesas/rcar_gen3_thermal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks!
-
-
+diff --git a/drivers/thermal/renesas/rcar_gen3_thermal.c b/drivers/thermal/renesas/rcar_gen3_thermal.c
+index 3223de238d014..a143b087a8ea7 100644
+--- a/drivers/thermal/renesas/rcar_gen3_thermal.c
++++ b/drivers/thermal/renesas/rcar_gen3_thermal.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- *  R-Car Gen3 THS thermal sensor driver
++ *  R-Car Gen3/Gen4 and RZ/G2 THS thermal sensor driver
+  *  Based on rcar_thermal.c and work from Hien Dang and Khiem Nguyen.
+  *
+  * Copyright (C) 2016 Renesas Electronics Corporation.
+-- 
+2.51.0
 
