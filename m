@@ -1,138 +1,112 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+Received: from lelvem-ot01.ext.ti.com (lelvem-ot01.ext.ti.com [198.47.23.234])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2BE6B2FDC54;
-	Wed, 15 Oct 2025 04:50:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.16
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9202CE555
+	for <linux-pm@vger.kernel.org>; Wed, 15 Oct 2025 05:46:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.47.23.234
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760503824; cv=none; b=FhG5n/E+7AJ8aZAbkdBe2wwRL+sGh5xCdZ7LM9Ya+PsV3w639BX0EbYhaOsyY6TzaaO/efF1A2BEsspKLamG5XrsAKMqUh/KgPVIxMILkVCZuPpBKPWOWPGmf0OG7JqaE+OulDPBK2e7xRXS/2AAOu8vuQPlh2mfM3Ojsz3wR/8=
+	t=1760507209; cv=none; b=dqTOjwIvM7mT1Hs6CGlZNszr9hnk9CCcsswmCuGjuV8PROo4HTBtr1oDSTPKDG8LWgZ5uWIVFybVkmxM2Y4fI/yXUgqe2Y72lDL0rouZ2VgZgGRISYnmmB2F5JyDX6YrJipGPObvphuPlCLTKb91dLWRxLwu7m7DiwIhVdTlgIU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760503824; c=relaxed/simple;
-	bh=LqQqWnML8DclCbVCtkFguG/McePDuiseyX71RGUghcQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZpxR7lQZrrbJ00ef92qG9ieW+FYMo7rAfXTU1/m7xlvq8GZmmnBBffiWLGM1UbsfGMhcmif8S1sJ83vhEEd68j55YO5CReldsrgu1b/tf8sWxGvZN3fnfjGNaedC+y7I63pZGsEeDTvoCHJoSRJmr5WGMBmwL0Cl1lDV5Q+8W18=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=VIWWG9xi; arc=none smtp.client-ip=192.198.163.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1760507209; c=relaxed/simple;
+	bh=4o/AIluxL5bylaEM2NTY4++CTKRGyt5DbbyMBpi5FW0=;
+	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=cHm8A35++5UlhOdm2SgfR4ZkshdQJ3wjFSuWo8fFp37L1WXRqRga6ewtHlwyh8EYqm2ObgJ/RrttdDpj0lqpdvotOsKmKGxbhQx68bLmiwt+B3uYFpjYqfO7wkMAo6pLV7W+7nr1llEi2yiXvfTAUv8xFVvuAy4BFgvIJ5sLsuQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=HJEvdX9a; arc=none smtp.client-ip=198.47.23.234
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="VIWWG9xi"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1760503823; x=1792039823;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=LqQqWnML8DclCbVCtkFguG/McePDuiseyX71RGUghcQ=;
-  b=VIWWG9xij1i9qcnh0U2jFiBK0F52rWkC2ZMy5hTWwQAXyyKIEeZajJ0F
-   xPVsCE+CzruE7TXRW8JNKAPMIBZBIXWRF78AnJ3dFLEdKmt+Mia+gb0/c
-   QvvpccBJAL4FLhYc41js7T8GPLwxuTELNFj6LZ2X0RJzCLk4/VA7Deb3T
-   FvUgHjt73Bx9UxagPBfnXo3Ki0miehjYYFCLhGptUHLb8bhnpsMuWZnlv
-   T+Kv8LtpdeBMlKq5i15O9s4g8+VSK7Gf3lVFrpUNc4QUNI5x/HvJN0B+0
-   rUhB+kqIQ3qj6zRU95I+Y3nmXCwlUx2yrCpnHRL5OmA1doqUMfzK6dDLN
-   A==;
-X-CSE-ConnectionGUID: Ucj01nRnROegk5tbZJmgUg==
-X-CSE-MsgGUID: akf04SSKQriLJBW85FazlA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11582"; a="50234694"
-X-IronPort-AV: E=Sophos;i="6.19,230,1754982000"; 
-   d="scan'208";a="50234694"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Oct 2025 21:50:23 -0700
-X-CSE-ConnectionGUID: SMWUyt40S7OMWDVvD/jLuQ==
-X-CSE-MsgGUID: J3aQ1pfEQXWAR4GohqDU3A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,230,1754982000"; 
-   d="scan'208";a="182847741"
-Received: from lkp-server02.sh.intel.com (HELO 66d7546c76b2) ([10.239.97.151])
-  by fmviesa010.fm.intel.com with ESMTP; 14 Oct 2025 21:50:20 -0700
-Received: from kbuild by 66d7546c76b2 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1v8tSr-0003SD-1b;
-	Wed, 15 Oct 2025 04:50:17 +0000
-Date: Wed, 15 Oct 2025 12:49:54 +0800
-From: kernel test robot <lkp@intel.com>
-To: Changwoo Min <changwoo@igalia.com>, lukasz.luba@arm.com,
-	rafael@kernel.org, len.brown@intel.com, pavel@kernel.org
-Cc: oe-kbuild-all@lists.linux.dev, christian.loehle@arm.com, tj@kernel.org,
-	kernel-dev@igalia.com, linux-pm@vger.kernel.org,
-	sched-ext@lists.linux.dev, linux-kernel@vger.kernel.org,
-	Changwoo Min <changwoo@igalia.com>
-Subject: Re: [PATCH v5 05/10] PM: EM: Add an iterator and accessor for the
- performance domain
-Message-ID: <202510151232.UNZ2J7TZ-lkp@intel.com>
-References: <20251014001055.772422-6-changwoo@igalia.com>
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="HJEvdX9a"
+Received: from lelvem-sh02.itg.ti.com ([10.180.78.226])
+	by lelvem-ot01.ext.ti.com (8.15.2/8.15.2) with ESMTP id 59F5kgaW1327149;
+	Wed, 15 Oct 2025 00:46:42 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+	s=ti-com-17Q1; t=1760507202;
+	bh=cd4fot0vc2ArBNVBL+srbZEPrL+OVTa8Pinp08MojuI=;
+	h=Date:From:To:CC:Subject:References:In-Reply-To;
+	b=HJEvdX9aXfFPkCrVfNRHUPRcX8B4QVqmetghS6jfFbD0zvqTxBZ44zd0eHO+upN6N
+	 R19g2BGhAUBAi+AX/2V24O7CegPkwZ0Pr5x549br1VeADnyuFw9gbeQoTZuyHXxC8X
+	 4INuqzIav9YFTUt/eVZsP71ck6Efy3QweojVrpJo=
+Received: from DLEE213.ent.ti.com (dlee213.ent.ti.com [157.170.170.116])
+	by lelvem-sh02.itg.ti.com (8.18.1/8.18.1) with ESMTPS id 59F5kgSG997651
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+	Wed, 15 Oct 2025 00:46:42 -0500
+Received: from DLEE203.ent.ti.com (157.170.170.78) by DLEE213.ent.ti.com
+ (157.170.170.116) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Wed, 15 Oct
+ 2025 00:46:42 -0500
+Received: from lelvem-mr05.itg.ti.com (10.180.75.9) by DLEE203.ent.ti.com
+ (157.170.170.78) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20 via Frontend
+ Transport; Wed, 15 Oct 2025 00:46:42 -0500
+Received: from localhost (lcpd911.dhcp.ti.com [172.24.233.130])
+	by lelvem-mr05.itg.ti.com (8.18.1/8.18.1) with ESMTP id 59F5kevD1410268;
+	Wed, 15 Oct 2025 00:46:41 -0500
+Date: Wed, 15 Oct 2025 11:16:40 +0530
+From: Dhruva Gole <d-gole@ti.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+CC: Kaushlendra Kumar <kaushlendra.kumar@intel.com>, <pavel@kernel.org>,
+        <gregkh@linuxfoundation.org>, <dakr@kernel.org>,
+        <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH] PM: Introduce CALL_PM_OP macro to reduce code duplication
+Message-ID: <20251015054640.g2mjf4dccbn2tcma@lcpd911>
+References: <20250919124437.3075016-1-kaushlendra.kumar@intel.com>
+ <CAJZ5v0iXAO6Z1t-LeGgutsJRbfL7+Xtszq0h_pG+QFfPbfET7Q@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-In-Reply-To: <20251014001055.772422-6-changwoo@igalia.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAJZ5v0iXAO6Z1t-LeGgutsJRbfL7+Xtszq0h_pG+QFfPbfET7Q@mail.gmail.com>
+X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
 
-Hi Changwoo,
+On Oct 13, 2025 at 20:56:40 +0200, Rafael J. Wysocki wrote:
+> On Fri, Sep 19, 2025 at 2:46 PM Kaushlendra Kumar
+> <kaushlendra.kumar@intel.com> wrote:
+> >
+> > Add CALL_PM_OP macro to eliminate repetitive code patterns in power
+> > management generic operations. Replace identical driver PM callback
+> > invocation logic across all pm_generic_* functions with a single
+> > macro that handles the NULL pointer checks and function calls.
+> >
+> > This reduces code duplication significantly while maintaining the
+> > same functionality and improving code maintainability.
+> >
+> > Signed-off-by: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
+> > ---
+> >  drivers/base/power/generic_ops.c | 85 ++++++++++----------------------
+> >  1 file changed, 25 insertions(+), 60 deletions(-)
+> >
+> > diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
+> > index 6502720bb564..c4fc802b8c65 100644
+> > --- a/drivers/base/power/generic_ops.c
+> > +++ b/drivers/base/power/generic_ops.c
+> > @@ -8,6 +8,13 @@
+> >  #include <linux/pm_runtime.h>
+> >  #include <linux/export.h>
+> >
+> > +#define CALL_PM_OP(dev, op) \
+> > +({ \
+> > +struct device *_dev = (dev); \
+> > +const struct dev_pm_ops *pm = _dev->driver ? _dev->driver->pm : NULL; \
+> > +pm && pm->op ? pm->op(_dev) : 0; \
+> > +})
+> 
+> Why don't you include the function signature and symbol export into the macro?
+> 
 
-kernel test robot noticed the following build errors:
+As discussed in the [v2] I am more inclined toward this v1
+implementation.
 
-[auto build test ERROR on amd-pstate/linux-next]
-[also build test ERROR on amd-pstate/bleeding-edge linus/master v6.18-rc1 next-20251014]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+So for v1:
+Reviewed-by: Dhruva Gole <d-gole@ti.com>
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Changwoo-Min/PM-EM-Assign-a-unique-ID-when-creating-a-performance-domain/20251014-082420
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git linux-next
-patch link:    https://lore.kernel.org/r/20251014001055.772422-6-changwoo%40igalia.com
-patch subject: [PATCH v5 05/10] PM: EM: Add an iterator and accessor for the performance domain
-config: i386-buildonly-randconfig-001-20251015 (https://download.01.org/0day-ci/archive/20251015/202510151232.UNZ2J7TZ-lkp@intel.com/config)
-compiler: gcc-13 (Debian 13.3.0-16) 13.3.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251015/202510151232.UNZ2J7TZ-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202510151232.UNZ2J7TZ-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
->> kernel/power/energy_model.c:1003:5: error: redefinition of 'for_each_em_perf_domain'
-    1003 | int for_each_em_perf_domain(int (*cb)(struct em_perf_domain*, void *),
-         |     ^~~~~~~~~~~~~~~~~~~~~~~
-   In file included from kernel/power/energy_model.c:20:
-   kernel/power/em_netlink.h:18:5: note: previous definition of 'for_each_em_perf_domain' with type 'int(int (*)(struct em_perf_domain *, void *), void *)'
-      18 | int for_each_em_perf_domain(int (*cb)(struct em_perf_domain*, void *),
-         |     ^~~~~~~~~~~~~~~~~~~~~~~
->> kernel/power/energy_model.c:1022:24: error: redefinition of 'em_perf_domain_get_by_id'
-    1022 | struct em_perf_domain *em_perf_domain_get_by_id(int id)
-         |                        ^~~~~~~~~~~~~~~~~~~~~~~~
-   kernel/power/em_netlink.h:24:24: note: previous definition of 'em_perf_domain_get_by_id' with type 'struct em_perf_domain *(int)'
-      24 | struct em_perf_domain *em_perf_domain_get_by_id(int id)
-         |                        ^~~~~~~~~~~~~~~~~~~~~~~~
-
-
-vim +/for_each_em_perf_domain +1003 kernel/power/energy_model.c
-
-  1002	
-> 1003	int for_each_em_perf_domain(int (*cb)(struct em_perf_domain*, void *),
-  1004				    void *data)
-  1005	{
-  1006		struct em_perf_domain *pd;
-  1007	
-  1008		lockdep_assert_not_held(&em_pd_mutex);
-  1009		guard(mutex)(&em_pd_list_mutex);
-  1010	
-  1011		list_for_each_entry(pd, &em_pd_list, node) {
-  1012			int ret;
-  1013	
-  1014			ret = cb(pd, data);
-  1015			if (ret)
-  1016				return ret;
-  1017		}
-  1018	
-  1019		return 0;
-  1020	}
-  1021	
-> 1022	struct em_perf_domain *em_perf_domain_get_by_id(int id)
+[v2] https://lore.kernel.org/linux-pm/CAJZ5v0iHcvXHdMfdakd5TUgcAiOGFW8hbvb2k-xb92dz81cGhA@mail.gmail.com
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Best regards,
+Dhruva Gole
+Texas Instruments Incorporated
