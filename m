@@ -1,45 +1,44 @@
 Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B31DB318157;
-	Wed, 15 Oct 2025 08:51:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6B7C319851;
+	Wed, 15 Oct 2025 08:51:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760518273; cv=pass; b=D3Qz+Q86r78V9u7mg9+xSnjOAxbr2sNwAJ0Jk6xF38H5UMU4Yv6PSl3pHUFGtR+2dCHlIiXvwb2u1wQBHQ/+/8LEOMuhGPsb4uUbMUpahj7IOKlVwxMuZLWsLefrfMlGvwoLr9SXDe9excRBFrT+PiV3s8lw+RsA/AFWwLYxp0E=
+	t=1760518280; cv=pass; b=EGWnxavXQyPlUhi4Kk2RWPCgTun1OVW5Lm91s8cXn+TQJwOcmYz0vKr1E8zPJrY+obZPliHzResbKIx8Yqo9bAV7SFzonV0CaqHz06+GGSCwyrVDOLH2QeqAk4XNV7EtbwDKzeebG5kD1ZBpLNZ/qVEBea0ye1N0qN9TbGR7rrE=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760518273; c=relaxed/simple;
-	bh=unvPGOFriIHpUd82ExLn3Mme5GmCeuM02RDXIWOXQD4=;
+	s=arc-20240116; t=1760518280; c=relaxed/simple;
+	bh=B1MDJX/yAyYyM+U6KsKcH9l32H3rRs+viFiTNeB2njo=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=qRtppFCFU/6Sj0ycmvRIaVXicku+n6VfABDCF8c3rkrMz88k4EqX9WiY2p7mhbpc9Vzmx3faSyjr6EV92Ayvz2Dt59O12tmp562QzJlTdifSJlEhXwSoGXZflRZPRJy1TYv7pxCe5Hk0v9pPX1iYFaNxC2uDltDvb/SZKP3vh/I=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=ciqQhiSO; arc=pass smtp.client-ip=136.143.188.112
+	 In-Reply-To:To:Cc; b=EZuuKhoFjyU9cQ+aIeb2mVauMSg6/ulgVFdvnkbWK8YHwRlyOpdshLBX2zrGHh6ppbBCI+MMoDN+WhbHmhDegzzdgMmQd8mAU1z2U3Tq2jPCsR0W1RwU9+ReOT4wb5bSzFbBGmGii6681zHIVgoqb4aTHJ+XbEqwlcv9htkrWiQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=Hf0TuZt/; arc=pass smtp.client-ip=136.143.188.112
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="ciqQhiSO"
-ARC-Seal: i=1; a=rsa-sha256; t=1760518235; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="Hf0TuZt/"
+ARC-Seal: i=1; a=rsa-sha256; t=1760518247; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=KU8nsY1uLYKqlLextu1or7O4qacnlTQntvNei8N1+k6B36fmsuv0IuS4fTJRCJ7/wSMsNwvj/BmWwUZNsLkMtt8lvh092oIaPZTMnFv9oT2+08fyhyChJmB+3OPi9H7xPCaouMa01SRCDvAyt1Bu1teKcBjXPD1Qy/wkFoWDot4=
+	b=T+lfMCA+ZAbr3JKtHaGsAaYGIqcytuWZo7M/AVvVo6zfVYshA0GLJPyWFKxJDuMGkd5TLLF6TROnwYmT7CZe3CVWibfXX73fM5f1AuWpR5azvnIbdc0/Hapw2iOtZLNRWDTp0PJkF30LM26dd5pSL0tI5Fy67lehyl37Az7y08E=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1760518235; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=5kCSOGJcwbOC+7+5BLR+gRNJdgGMuPaf20hsggRiPEw=; 
-	b=l18bYoWFWRlTkoARZ2Rhz0hhU9XkV1Jn5QINewgsVU0sKZfN6x/MJbdyfgbA/fRVQZO57olHYWQK9AyDGYg5u74ckz8gYsU03Tsil+HRuY+hcG9X+VWOZEjBYShvpA/JFPkT7boTVG9Fz01Q1nQfseLriyK19qE8bTleOX9sN+o=
+	t=1760518247; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=B1797pEnkkGQxskAo8aW0y+7RuxjF+4YWBWOHsk0nsQ=; 
+	b=E88kM/20fT/3ia/uV7mDWiBei8njIyQX+r6PP5us5oqTPAmnxL99aRbvx0xKI/uFlvMHWMgety7Nz8DeA7ZPruAyg/fd+vDuakYGw8tkKgZq+fkIw+UdE46zmgFY4uB6z+KS4ielZMR1sB6AlzaX54x7BRd466QWRVKv7QoZU+Q=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1760518235;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1760518247;
 	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
 	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
-	bh=5kCSOGJcwbOC+7+5BLR+gRNJdgGMuPaf20hsggRiPEw=;
-	b=ciqQhiSOoHqcRCrAKnG6Hky0cvRZ8VYuO+6TtT+Hy7mCD5fuqjYLxv9KClVpxm/5
-	Zur2WSISTw7sqJzpha4SydW+rO7FBikFLhq/tLAsOzHJrhY2gQkcsM28YdgF6Gc2kvc
-	EmnkgYEu6eU/BxIWszrDhA4Aw4hsk2CDLgmCxzRk=
-Received: by mx.zohomail.com with SMTPS id 1760518223888154.97368582539445;
-	Wed, 15 Oct 2025 01:50:23 -0700 (PDT)
+	bh=B1797pEnkkGQxskAo8aW0y+7RuxjF+4YWBWOHsk0nsQ=;
+	b=Hf0TuZt/4jbFe7xHMjSZEfLt9MJOUuCnkvFM5sdXgYWkFTpxP8NIdmqq5Aj41YPe
+	46QLbWpTsZV8L4YPVVFSUApglI8st6BM5loKFgJasei6raUxMWRY6yB3Z4WFINxJyjA
+	3D+QGNv0n3aw/oHX4W/UCJLF8RxEvScTTcvVLBfw=
+Received: by mx.zohomail.com with SMTPS id 1760518244903638.4032979992957;
+	Wed, 15 Oct 2025 01:50:44 -0700 (PDT)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Wed, 15 Oct 2025 10:50:00 +0200
-Subject: [PATCH v7 1/5] dt-bindings: gpu: mali-valhall-csf: add
- mediatek,mt8196-mali variant
+Date: Wed, 15 Oct 2025 10:50:03 +0200
+Subject: [PATCH v7 4/5] drm/panthor: Use existing OPP table if present
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,7 +47,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251015-mt8196-gpufreq-v7-1-0a6435da2080@collabora.com>
+Message-Id: <20251015-mt8196-gpufreq-v7-4-0a6435da2080@collabora.com>
 References: <20251015-mt8196-gpufreq-v7-0-0a6435da2080@collabora.com>
 In-Reply-To: <20251015-mt8196-gpufreq-v7-0-0a6435da2080@collabora.com>
 To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
@@ -71,84 +70,71 @@ Cc: kernel@collabora.com, dri-devel@lists.freedesktop.org,
  Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 X-Mailer: b4 0.14.3
 
-The Mali-based GPU on the MediaTek MT8196 SoC uses a separate MCU to
-control the power and frequency of the GPU. This is modelled as a power
-domain and clock provider.
+On SoCs where the GPU's power-domain is in charge of setting performance
+levels, the OPP table of the GPU node will have already been populated
+during said power-domain's attach_dev operation.
 
-It lets us omit the OPP tables from the device tree, as those can now be
-enumerated at runtime from the MCU.
+To avoid initialising an OPP table twice, only set the OPP regulator and
+the OPPs from DT if there's no OPP table present.
 
-Add the necessary schema logic to handle what this SoC expects in terms
-of clocks and power-domains.
-
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Reviewed-by: Chia-I Wu <olvaffe@gmail.com>
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
- .../bindings/gpu/arm,mali-valhall-csf.yaml         | 37 +++++++++++++++++++++-
- 1 file changed, 36 insertions(+), 1 deletion(-)
+ drivers/gpu/drm/panthor/panthor_devfreq.c | 32 ++++++++++++++++++++++---------
+ 1 file changed, 23 insertions(+), 9 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml b/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
-index 613040fdb444..860691ce985e 100644
---- a/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
-+++ b/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
-@@ -45,7 +45,9 @@ properties:
-     minItems: 1
-     items:
-       - const: core
--      - const: coregroup
-+      - enum:
-+          - coregroup
-+          - stacks
-       - const: stacks
+diff --git a/drivers/gpu/drm/panthor/panthor_devfreq.c b/drivers/gpu/drm/panthor/panthor_devfreq.c
+index a6dca599f0a5..ec63e27f4883 100644
+--- a/drivers/gpu/drm/panthor/panthor_devfreq.c
++++ b/drivers/gpu/drm/panthor/panthor_devfreq.c
+@@ -141,6 +141,7 @@ int panthor_devfreq_init(struct panthor_device *ptdev)
+ 	struct thermal_cooling_device *cooling;
+ 	struct device *dev = ptdev->base.dev;
+ 	struct panthor_devfreq *pdevfreq;
++	struct opp_table *table;
+ 	struct dev_pm_opp *opp;
+ 	unsigned long cur_freq;
+ 	unsigned long freq = ULONG_MAX;
+@@ -152,17 +153,30 @@ int panthor_devfreq_init(struct panthor_device *ptdev)
  
-   mali-supply: true
-@@ -110,6 +112,27 @@ allOf:
-         power-domain-names: false
-       required:
-         - mali-supply
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: mediatek,mt8196-mali
-+    then:
-+      properties:
-+        mali-supply: false
-+        sram-supply: false
-+        operating-points-v2: false
-+        power-domains:
-+          maxItems: 1
-+        power-domain-names: false
-+        clocks:
-+          maxItems: 2
-+        clock-names:
-+          items:
-+            - const: core
-+            - const: stacks
-+      required:
-+        - power-domains
+ 	ptdev->devfreq = pdevfreq;
  
- examples:
-   - |
-@@ -145,5 +168,17 @@ examples:
-             };
-         };
-     };
-+  - |
-+    gpu@48000000 {
-+        compatible = "mediatek,mt8196-mali", "arm,mali-valhall-csf";
-+        reg = <0x48000000 0x480000>;
-+        clocks = <&gpufreq 0>, <&gpufreq 1>;
-+        clock-names = "core", "stacks";
-+        interrupts = <GIC_SPI 606 IRQ_TYPE_LEVEL_HIGH 0>,
-+                     <GIC_SPI 605 IRQ_TYPE_LEVEL_HIGH 0>,
-+                     <GIC_SPI 604 IRQ_TYPE_LEVEL_HIGH 0>;
-+        interrupt-names = "job", "mmu", "gpu";
-+        power-domains = <&gpufreq>;
-+    };
+-	ret = devm_pm_opp_set_regulators(dev, reg_names);
+-	if (ret && ret != -ENODEV) {
+-		if (ret != -EPROBE_DEFER)
+-			DRM_DEV_ERROR(dev, "Couldn't set OPP regulators\n");
+-		return ret;
++	/*
++	 * The power domain associated with the GPU may have already added an
++	 * OPP table, complete with OPPs, as part of the platform bus
++	 * initialization. If this is the case, the power domain is in charge of
++	 * also controlling the performance, with a set_performance callback.
++	 * Only add a new OPP table from DT if there isn't such a table present
++	 * already.
++	 */
++	table = dev_pm_opp_get_opp_table(dev);
++	if (IS_ERR_OR_NULL(table)) {
++		ret = devm_pm_opp_set_regulators(dev, reg_names);
++		if (ret && ret != -ENODEV) {
++			if (ret != -EPROBE_DEFER)
++				DRM_DEV_ERROR(dev, "Couldn't set OPP regulators\n");
++			return ret;
++		}
++
++		ret = devm_pm_opp_of_add_table(dev);
++		if (ret)
++			return ret;
++	} else {
++		dev_pm_opp_put_opp_table(table);
+ 	}
  
- ...
+-	ret = devm_pm_opp_of_add_table(dev);
+-	if (ret)
+-		return ret;
+-
+ 	spin_lock_init(&pdevfreq->lock);
+ 
+ 	panthor_devfreq_reset(pdevfreq);
 
 -- 
 2.51.0
