@@ -1,39 +1,48 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 503BD1A26B;
-	Wed, 15 Oct 2025 13:50:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0FA2F21ABC9;
+	Wed, 15 Oct 2025 14:05:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760536259; cv=none; b=EdZhhRft4+RCSKBNms1jVnvvl6kPSU0zRFmeDnH9L6ZHjoS//O5+94L6t35/q8mItcIJjdEsUsEhdj62YmBDNg651NNktI8tBWUgAhKyaNP1xFX6+adFE7xJO5I48WGLUNul1FA6rfDP5Ryf2A/KgKf1emGNtPl20aztM20FCes=
+	t=1760537118; cv=none; b=XBVcPtLrnCDI6OjWp9PeA1/9wJ7x7QFLC51BWq71FYM/+nOqSGYxy/0cro/20UIiputUPfOgtwJpfgbUYTH4hPBXRnK4+ckFxOGQxPlfNIl06aBUSGioDdoo5017i6pyepPGSIX4h21wsqlYnLdTLzafijD5cp9VtFTTlUO4dro=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760536259; c=relaxed/simple;
-	bh=as7iEayxt+kAwUNIYVoz5KT/GcFxr4dpxoRVI7uNMHg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=LXp6Z+26OVTAhRQUTVbsFebTwqqiErVZOGcY5BjN4gcAKwMCQLM9nPzTO220hk3el5dV4tHUEoDa31d6Snr3TgSmMECjbIWBQNq9DRDf64KGcmgTRmGbs8CCSWnZfDbNtoWjNd4XSD/lf+YIaNU5kaaf5fv/xqrxAjf3DEhxYJg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GfVBeOK1; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1760537118; c=relaxed/simple;
+	bh=Imiy/d2gYAYXCcTyQuEFVMYa5XWR048yJFog3UE4+H0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=a0oIit4QOU/H04p7a6nOZtXUisWIUoxMM8MWmeYjLgOyPFRtFHlol7GlMifRB2kt7uOsrbr6MtLKRSWfvc3XQNCeyO42PInOLblqwcyeOo8yBHtrM/eTHJXDl9a4LjrWPAyT7u61GchGropR5q+gXr9SJbfOulyRg4GDfCHKyqk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=psScjpBb; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GfVBeOK1"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 710F6C4CEF8;
-	Wed, 15 Oct 2025 13:50:58 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="psScjpBb"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 78819C4CEF8;
+	Wed, 15 Oct 2025 14:05:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1760536259;
-	bh=as7iEayxt+kAwUNIYVoz5KT/GcFxr4dpxoRVI7uNMHg=;
-	h=From:To:Cc:Subject:Date:From;
-	b=GfVBeOK15wWRF9rhCWFXbDFRlA9PjXO4b7dPIUxqn6JIsvVbYY5lO98LaWpu1CkYf
-	 3CRprkZAg1ORrND9clrGkf6dQmC0MS8wcuQmoF81udQRQZxUMQRdAHgvq1C2UpTQFH
-	 b/FXxEvZdtFBKCm3fb9e8BHISfypXYcx6V2dxPjUjUusS9Mmhoe8p6fAooaO0liQ7H
-	 P0ehOjDK1adxqeLFqmhFrjFtSnBjyxfoqGAWco1aYCPPcQeWnsrfr3iT//38WKHn3h
-	 EqseA4mC7UHgSZZyqSukCaNcCJ4NQXLQOiCR9DB9tW0co7HATjSaTN3KWLN69q9pVC
-	 kl1EYXhxNALWA==
+	s=k20201202; t=1760537117;
+	bh=Imiy/d2gYAYXCcTyQuEFVMYa5XWR048yJFog3UE4+H0=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=psScjpBb3e1kcLI5VrkuiWJV17PKdqUVkH2BY7yFGOlYPK2AgZoyISa+/TzVfYYO3
+	 5+PHeN/sB02bv62v11abXuGEqviummglF8j9iGdgD/sq7EPkXC6/QdkRZunsohCIjS
+	 +AL3DNF1W+ayaDX4RLSqj50ToOSXdH8eIZCPax0+c1pVe5Pms0PB8E3vqvHBAIMgzO
+	 y83rOx6KOlya9DtMyXVRcq7s2DySZMQHBBHF/y4xyqDYSxAzrNVW3wQeIXw7ThtAaL
+	 D/ykNx9CJCb2EwFJJnpURIzkACECJNCFP2u4aELprI6L3llqb7s/1qqfoN6RqaheQp
+	 A0zHxkLTAJ4dA==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
-Subject: [PATCH v1] cpufreq: intel_pstate: Improve printing of debug messages
-Date: Wed, 15 Oct 2025 15:50:56 +0200
-Message-ID: <8609836.T7Z3S40VBb@rafael.j.wysocki>
+Cc: Jonathan Cameron <jonathan.cameron@huawei.com>,
+ Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+ Linux PCI <linux-pci@vger.kernel.org>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Bjorn Helgaas <helgaas@kernel.org>, Zhang Qilong <zhangqilong3@huawei.com>,
+ Ulf Hansson <ulf.hansson@linaro.org>, Frank Li <Frank.Li@nxp.com>,
+ Dhruva Gole <d-gole@ti.com>,
+ Mika Westerberg <mika.westerberg@linux.intel.com>,
+ Linux ACPI <linux-acpi@vger.kernel.org>
+Subject: [PATCH v1 3/3] ACPI: TAD: Improve runtime PM using guard macros
+Date: Wed, 15 Oct 2025 16:04:39 +0200
+Message-ID: <2057157.usQuhbGJ8B@rafael.j.wysocki>
 Organization: Linux Kernel Development
+In-Reply-To: <3925484.kQq0lBPeGt@rafael.j.wysocki>
+References: <3925484.kQq0lBPeGt@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -45,82 +54,126 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Some debug messages generated by intel_pstate on a given hybrid system
-are only printed for some CPUs which is confusing, so modify the driver
-to print them for all CPUs.  Also change those messages to avoid
-printing local variable names in them.
+Use guard pm_runtime_active_try to simplify runtime PM cleanup and
+implement runtime resume error handling in multiple places.
 
-Moreover, some debug messages printed by intel_pstate are quite hard
-to understand without looking at the code printing them, so make them
-somewhat clearer while at it.
+Also use guard pm_runtime_noresume to simplify acpi_tad_remove().
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c |   25 +++++++++++++------------
- 1 file changed, 13 insertions(+), 12 deletions(-)
+ drivers/acpi/acpi_tad.c |   45 +++++++++++++--------------------------------
+ 1 file changed, 13 insertions(+), 32 deletions(-)
 
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -575,13 +575,18 @@ static void intel_pstate_hybrid_hwp_adju
- 	int scaling = cpu->pstate.scaling;
- 	int freq;
+--- a/drivers/acpi/acpi_tad.c
++++ b/drivers/acpi/acpi_tad.c
+@@ -90,12 +90,9 @@ static int acpi_tad_set_real_time(struct
+ 	args[0].buffer.pointer = (u8 *)rt;
+ 	args[0].buffer.length = sizeof(*rt);
  
--	pr_debug("CPU%d: perf_ctl_max_phys = %d\n", cpu->cpu, perf_ctl_max_phys);
--	pr_debug("CPU%d: perf_ctl_turbo = %d\n", cpu->cpu, perf_ctl_turbo);
--	pr_debug("CPU%d: perf_ctl_scaling = %d\n", cpu->cpu, perf_ctl_scaling);
-+	pr_debug("CPU%d: PERF_CTL max_phys = %d\n", cpu->cpu, perf_ctl_max_phys);
-+	pr_debug("CPU%d: PERF_CTL turbo = %d\n", cpu->cpu, perf_ctl_turbo);
-+	pr_debug("CPU%d: PERF_CTL scaling = %d\n", cpu->cpu, perf_ctl_scaling);
- 	pr_debug("CPU%d: HWP_CAP guaranteed = %d\n", cpu->cpu, cpu->pstate.max_pstate);
- 	pr_debug("CPU%d: HWP_CAP highest = %d\n", cpu->cpu, cpu->pstate.turbo_pstate);
- 	pr_debug("CPU%d: HWP-to-frequency scaling factor: %d\n", cpu->cpu, scaling);
+-	pm_runtime_get_sync(dev);
++	PM_RUNTIME_ACQUIRE_OR_FAIL(dev, -ENXIO);
  
-+	if (scaling == perf_ctl_scaling)
-+		return;
-+
-+	hwp_is_hybrid = true;
-+
- 	cpu->pstate.turbo_freq = rounddown(cpu->pstate.turbo_pstate * scaling,
- 					   perf_ctl_scaling);
- 	cpu->pstate.max_freq = rounddown(cpu->pstate.max_pstate * scaling,
-@@ -1044,9 +1049,9 @@ static void hybrid_set_cpu_capacity(stru
+ 	status = acpi_evaluate_integer(handle, "_SRT", &arg_list, &retval);
+-
+-	pm_runtime_put_sync(dev);
+-
+ 	if (ACPI_FAILURE(status) || retval)
+ 		return -EIO;
  
- 	topology_set_cpu_scale(cpu->cpu, arch_scale_cpu_capacity(cpu->cpu));
+@@ -111,12 +108,9 @@ static int acpi_tad_get_real_time(struct
+ 	acpi_status status;
+ 	int ret = -EIO;
  
--	pr_debug("CPU%d: perf = %u, max. perf = %u, base perf = %d\n", cpu->cpu,
--		 cpu->capacity_perf, hybrid_max_perf_cpu->capacity_perf,
--		 cpu->pstate.max_pstate_physical);
-+	pr_debug("CPU%d: capacity perf = %u, base perf = %u, sys max perf = %u\n",
-+		 cpu->cpu, cpu->capacity_perf, cpu->pstate.max_pstate_physical,
-+		 hybrid_max_perf_cpu->capacity_perf);
- }
+-	pm_runtime_get_sync(dev);
++	PM_RUNTIME_ACQUIRE_OR_FAIL(dev, -ENXIO);
  
- static void hybrid_clear_cpu_capacity(unsigned int cpunum)
-@@ -2344,11 +2349,10 @@ static void intel_pstate_set_min_pstate(
+ 	status = acpi_evaluate_object(handle, "_GRT", NULL, &output);
+-
+-	pm_runtime_put_sync(dev);
+-
+ 	if (ACPI_FAILURE(status))
+ 		goto out_free;
  
- static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
- {
--	int perf_ctl_max_phys = pstate_funcs.get_max_physical(cpu->cpu);
- 	int perf_ctl_scaling = pstate_funcs.get_scaling();
+@@ -266,12 +260,9 @@ static int acpi_tad_wake_set(struct devi
+ 	args[0].integer.value = timer_id;
+ 	args[1].integer.value = value;
  
-+	cpu->pstate.max_pstate_physical = pstate_funcs.get_max_physical(cpu->cpu);
- 	cpu->pstate.min_pstate = pstate_funcs.get_min(cpu->cpu);
--	cpu->pstate.max_pstate_physical = perf_ctl_max_phys;
- 	cpu->pstate.perf_ctl_scaling = perf_ctl_scaling;
+-	pm_runtime_get_sync(dev);
++	PM_RUNTIME_ACQUIRE_OR_FAIL(dev, -ENXIO);
  
- 	if (hwp_active && !hwp_mode_bdw) {
-@@ -2356,10 +2360,7 @@ static void intel_pstate_get_cpu_pstates
+ 	status = acpi_evaluate_integer(handle, method, &arg_list, &retval);
+-
+-	pm_runtime_put_sync(dev);
+-
+ 	if (ACPI_FAILURE(status) || retval)
+ 		return -EIO;
  
- 		if (pstate_funcs.get_cpu_scaling) {
- 			cpu->pstate.scaling = pstate_funcs.get_cpu_scaling(cpu->cpu);
--			if (cpu->pstate.scaling != perf_ctl_scaling) {
--				intel_pstate_hybrid_hwp_adjust(cpu);
--				hwp_is_hybrid = true;
--			}
-+			intel_pstate_hybrid_hwp_adjust(cpu);
- 		} else {
- 			cpu->pstate.scaling = perf_ctl_scaling;
- 		}
+@@ -314,12 +305,9 @@ static ssize_t acpi_tad_wake_read(struct
+ 
+ 	args[0].integer.value = timer_id;
+ 
+-	pm_runtime_get_sync(dev);
++	PM_RUNTIME_ACQUIRE_OR_FAIL(dev, -ENXIO);
+ 
+ 	status = acpi_evaluate_integer(handle, method, &arg_list, &retval);
+-
+-	pm_runtime_put_sync(dev);
+-
+ 	if (ACPI_FAILURE(status))
+ 		return -EIO;
+ 
+@@ -370,12 +358,9 @@ static int acpi_tad_clear_status(struct
+ 
+ 	args[0].integer.value = timer_id;
+ 
+-	pm_runtime_get_sync(dev);
++	PM_RUNTIME_ACQUIRE_OR_FAIL(dev, -ENXIO);
+ 
+ 	status = acpi_evaluate_integer(handle, "_CWS", &arg_list, &retval);
+-
+-	pm_runtime_put_sync(dev);
+-
+ 	if (ACPI_FAILURE(status) || retval)
+ 		return -EIO;
+ 
+@@ -411,12 +396,9 @@ static ssize_t acpi_tad_status_read(stru
+ 
+ 	args[0].integer.value = timer_id;
+ 
+-	pm_runtime_get_sync(dev);
++	PM_RUNTIME_ACQUIRE_OR_FAIL(dev, -ENXIO);
+ 
+ 	status = acpi_evaluate_integer(handle, "_GWS", &arg_list, &retval);
+-
+-	pm_runtime_put_sync(dev);
+-
+ 	if (ACPI_FAILURE(status))
+ 		return -EIO;
+ 
+@@ -571,16 +553,15 @@ static void acpi_tad_remove(struct platf
+ 
+ 	sysfs_remove_group(&dev->kobj, &acpi_tad_attr_group);
+ 
+-	pm_runtime_get_noresume(dev);
+-
+-	acpi_tad_disable_timer(dev, ACPI_TAD_AC_TIMER);
+-	acpi_tad_clear_status(dev, ACPI_TAD_AC_TIMER);
+-	if (dd->capabilities & ACPI_TAD_DC_WAKE) {
+-		acpi_tad_disable_timer(dev, ACPI_TAD_DC_TIMER);
+-		acpi_tad_clear_status(dev, ACPI_TAD_DC_TIMER);
++	scoped_guard(pm_runtime_noresume, dev) {
++		acpi_tad_disable_timer(dev, ACPI_TAD_AC_TIMER);
++		acpi_tad_clear_status(dev, ACPI_TAD_AC_TIMER);
++		if (dd->capabilities & ACPI_TAD_DC_WAKE) {
++			acpi_tad_disable_timer(dev, ACPI_TAD_DC_TIMER);
++			acpi_tad_clear_status(dev, ACPI_TAD_DC_TIMER);
++		}
+ 	}
+ 
+-	pm_runtime_put_noidle(dev);
+ 	pm_runtime_suspend(dev);
+ 	pm_runtime_disable(dev);
+ 	acpi_remove_cmos_rtc_space_handler(handle);
 
 
 
