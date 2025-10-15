@@ -1,172 +1,217 @@
-Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazon11011020.outbound.protection.outlook.com [52.101.62.20])
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 950DF3164D0;
-	Wed, 15 Oct 2025 08:47:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.62.20
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 629863168FD;
+	Wed, 15 Oct 2025 08:51:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760518071; cv=fail; b=Sw09gPcR0g8+ofCDu/gR2SQ2qLcovIxMZROqZjZrJbhLfGpxprf7Q9UriEgEYA363JUGIowYX1grJhvzIm0w7EXCw+cljtjHB+JDRyW15Mul+MkhXqgNAmd80Frt6nUKSK2iQSaSBEW/5xIWpG8LnEHzq2Rv3UFKi4nSIBRS1jM=
+	t=1760518272; cv=pass; b=khzQdPYwYE4U/H0J/cpA2+0GgeyUUO3J9Sv5jFxt3v1l67zDjLR2cxNmZG4+DC92fMVtl8HS72gjhbfchtjUZsA9Le0GXQKSH3QbTYoZxpmcUU1kYjscVXcjfklbTtongfwo3lyJ1oESDe77Xw5bt2NfVAu2mhgzP21MbIO0HEw=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760518071; c=relaxed/simple;
-	bh=C1wC228XLwss3AfVc/tHHNoCAPJgb6ETqPlkmfQMwb8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=iAhkmWkaR5Q3dN95mfMigUQUlTGGTGQ3hPF6Gsmqwrpr26wSBxtEurhM/HEXux69lQrv1eX3+pYB2BCvoR2fvMqxjxR22OlSNMBMwodWeURFM/WaSGNaFymcURXY1m244JQLzRyV3kUanYdMgb2BXyfjw93ElIJlhY68Omo1iks=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=lQqmr32m; arc=fail smtp.client-ip=52.101.62.20
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	s=arc-20240116; t=1760518272; c=relaxed/simple;
+	bh=H2R3HfhsejISe0TnCg4fYOv7VDMiJ3viJMo3HtiI2VY=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=eQnTxdl0EKPyEy+ksueniJy7PylSqdsosENacaT8rlUnPhIjVRZuXOpVAwcDnxoUtb8PP3qt2h34y+UF0515Rd//AUT8XJUMDajqacuUqP+3TwTcCYGQm/1DwoaZKPjMAfC3PgnnRDMRX34WgfFQlNsr9ywEQ7BxFX/P1UfYiN8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=E9fyDYFy; arc=pass smtp.client-ip=136.143.188.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="lQqmr32m"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=LNgZnR8LfAV4DAflDZSuCL1AT72SsFQwhOmTax69ppdqTGwBuTmyjcDeig/pzlwMBWTdjhngVLyrIjrSFnBY7iaa+5u+fxeDxON87jwQxCi6ujnQ8f6GiQPRCJSfBUarTN6zjYbvuQYY9HRqiYVQL8fmUbyFWMQtfWHe1g9knR84isydqfI3IEf15ttX2ojk+VL4b2s2p+L4D+m5Vk/MzoQJzywzhhBfZVIgB++i7gTI0dXA6q3Czd3X+4M1l2LVa1HFMGxhYI5FKAEkKy3r0E6dPmQEK7Jn8TnFXLu7Ft9H9yE4U8ejdmhFgcasz/hxRnlS5BKksMMumjcYuNCf6w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=tfJO97HiqqhkYpVt1yuB8xmHfGo7auzemom7K3ZWVWM=;
- b=fpI6NDfPE7k3xtZiUd4aPYid8i8/MBGB0CmXHG4hY0Bm2TE7XyON5P+CgLJj3/n8MMO4kfHWJk4vd67zkRS4o7Cvi39nKwTYDGgh6NDM8nDPQRQTBjS5op+PR9XMo+YbDzjnEEiTl5cILQ9CkVMyDGKwI/kMnXt1QZYeltODCyplRTS1Sql5xmt8tb7QlIoJa99K9i02au6+R+Qal45EywMQaOmTbCjVO9ovDwibFKr0HgNLmdDVJJApP9qjRkl+IDcrYCt18XqkH8kyge+0TN6skWiSIn24QDLjOq6umPAefURbLsmhfk5CMwQEqi+pvYrWkksv0/tdYFRCa6Yqvg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=tfJO97HiqqhkYpVt1yuB8xmHfGo7auzemom7K3ZWVWM=;
- b=lQqmr32mM1qL6SZ9eDF+1YUWwlfXr/k3HtVU7Aowslp4UtR6X+rOGlB+B92Q8Bk4YDnzsO0h0yxVHmIrZ2Dvp7b5//XfgpmGjhPCp5u+Dq9SnyEpUcHZuS4tdxOHzeN3FlLtYS5FbPwpZSeAUMYOXW5NB+7pHUxw7F79LVSZt5A=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from DS7PR12MB8252.namprd12.prod.outlook.com (2603:10b6:8:ee::7) by
- PH7PR12MB7114.namprd12.prod.outlook.com (2603:10b6:510:1ed::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9228.10; Wed, 15 Oct
- 2025 08:47:46 +0000
-Received: from DS7PR12MB8252.namprd12.prod.outlook.com
- ([fe80::2d0c:4206:cb3c:96b7]) by DS7PR12MB8252.namprd12.prod.outlook.com
- ([fe80::2d0c:4206:cb3c:96b7%6]) with mapi id 15.20.9228.009; Wed, 15 Oct 2025
- 08:47:46 +0000
-Date: Wed, 15 Oct 2025 14:17:38 +0530
-From: "Gautham R. Shenoy" <gautham.shenoy@amd.com>
-To: "Mario Limonciello (AMD)" <superm1@kernel.org>
-Cc: Perry Yuan <perry.yuan@amd.com>,
-	"open list:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <linux-kernel@vger.kernel.org>,
-	"open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v2 2/6] cpufreq/amd-pstate: Drop NULL value from
- amd_pstate_mode_string
-Message-ID: <aO9fqrHpfWN/mdGK@BLRRASHENOY1.amd.com>
-References: <20251009161756.2728199-1-superm1@kernel.org>
- <20251009161756.2728199-3-superm1@kernel.org>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20251009161756.2728199-3-superm1@kernel.org>
-X-ClientProxiedBy: PN4P287CA0011.INDP287.PROD.OUTLOOK.COM
- (2603:1096:c01:26a::16) To DS7PR12MB8252.namprd12.prod.outlook.com
- (2603:10b6:8:ee::7)
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="E9fyDYFy"
+ARC-Seal: i=1; a=rsa-sha256; t=1760518235; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=ZPXzDBKZ4Cfd5oO/57hdOSFrdHoED4T26EQmhoxmxrJ54uA2BPDRYcxjRy2jJMH/RSnEMJKt6JP9IfIESW30E1zyg6tAlJ4cIttRZaSf47bSCTWS0n31lpTyz3gnA9Fz2jdpUW2mpG6jbyKgRyQRHoLpr0ESTi96+ysv2XRIyao=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1760518235; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=7bM73lypABp16DNaPQ/AZd3Rd/UhyQMrclXHvC1Kw7I=; 
+	b=T8nFQi76YL1dFUn224XCWoNeX6sJ2eLizyZHbUDtdnetzvmCrsE0pKXAlXbyXSfPuu5L8VdvEEXqWAB37qPEwE/VbQt4oF/cryN0C4imULn+i5hfiS5X2xcnzWAGVxol9igFp/M0IzSRzmNkZPxSPaiBaxu4uyId0A3msi2OPxU=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
+	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1760518235;
+	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
+	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
+	bh=7bM73lypABp16DNaPQ/AZd3Rd/UhyQMrclXHvC1Kw7I=;
+	b=E9fyDYFyfbOYpPIXeosoZa6YfFNYl9MK0eKWPWJGUciPuYXEidYm3J3ZGEPO8I3/
+	O0FP7LS4ZdV3UhIk5W/04yg5ALxKGEwl6VT2zGqNqds9doV1+9Xs2jQZQavY6SR3nEi
+	AAaklWvI5NmIRPOeC6NIk2rxxO+OjPeyuSnroSqM=
+Received: by mx.zohomail.com with SMTPS id 1760518231241936.3238999689235;
+	Wed, 15 Oct 2025 01:50:31 -0700 (PDT)
+From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+Date: Wed, 15 Oct 2025 10:50:01 +0200
+Subject: [PATCH v7 2/5] dt-bindings: power: Add MT8196 GPU frequency
+ control binding
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS7PR12MB8252:EE_|PH7PR12MB7114:EE_
-X-MS-Office365-Filtering-Correlation-Id: d1acdf80-42cc-4443-0c7e-08de0bc782f6
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|376014|1800799024|7053199007;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?7dodP8KtAY8B09yzIV4C4R8xwL0ubk+fzVHVMXzPz8reZvajq4qquEUEfUU4?=
- =?us-ascii?Q?YWKcaHRloJCtAopyRsmQRnbgjycE+f5KSFJLZPB5OrA0bu0bh4FtuB1l/mYa?=
- =?us-ascii?Q?LyS2XjH5ot4CDVx0ulOe6XxtxgcTSZkShsGJzc4YtOCbNNpckjySSEzd98Zo?=
- =?us-ascii?Q?kvG2i+QC+Rirc4rD2dFdsWWEVmIlmT5UkcSVkU9cgqKoQltoJ2j+4DJwRg6O?=
- =?us-ascii?Q?wXuwdWCAnlYI4ZFFEqhFPA3zS3hSeefrzy0VIelJLlPBZWtOpDwMxcETKPHv?=
- =?us-ascii?Q?20YOM33Arl540WHj1MtPyXuLUALBTE1LP29b5L2oCm8uQW4dcnOTPjgUZ8Hq?=
- =?us-ascii?Q?rPeQxPC9m/2niKkRNmjlC86brHUkQ5WWQFbwAMO0t46XrL5ozsKWuPWTmUE8?=
- =?us-ascii?Q?oyvOAY5yz55iDC5HP04zEuZd7frBz4MeUVsR2Q1ifnBEYdLP4pamxPyT245R?=
- =?us-ascii?Q?y2cT+i89U3jWNlmJ0kliifHgqYrcIAVnRJdAoGajxjIx04Ya+SFrHlnVs5ZN?=
- =?us-ascii?Q?PlGBWGUO0hHfqA2Bzys7H+r4nqkOmtDTDVf+7RyvREFNvxCyFEJM5g04InhO?=
- =?us-ascii?Q?bzqT5Tmx9avqIu7QCRYegLyzTq4v4Y3FwwqNdO5Sx+VMW/x6eJf2+cN29n86?=
- =?us-ascii?Q?baIziG72D46OA4+XE/OqC59rTk9V+47NIi64DWGHWkm9nXeTXkwofmxdJ08b?=
- =?us-ascii?Q?5m049EhR29lmZyw8ZA1a+w2Nf8Ojc/K4QfoThA5zKww4IIHki1EfMJAQKA4e?=
- =?us-ascii?Q?C1+d25Ozu5WDVstITYqTZvJmOv0wnisRUgLokx/TKNKMyJ9HKufIvBrB073V?=
- =?us-ascii?Q?2kkdkKczflR3K8fG2K82q71IjNRiMsyRH9259z9VWg3Pj8aHCPyVuBORFcdc?=
- =?us-ascii?Q?zXiakPumfYP1IIJuwpZ7veZzvG0Sc6OKBoelrMyaruxwbfsiNEdG4m6mFIyw?=
- =?us-ascii?Q?JXmsrKZxp1LtADEbjVdWRk2B4aJa9ZTMVEutzDK1FNbmP+Iw6MVXk/bqLPHZ?=
- =?us-ascii?Q?c4C9mC2sKcP/JtfksKGF1ROwtZTHepaZ8Aghtb+FZD5Z4df1gM/IS4CtT2Xb?=
- =?us-ascii?Q?ajed2vXbj9dA3Uuj0F50wz8NiEbTPqUOAnORSCZD/Ye8ajGuPx6SPpY/5tkz?=
- =?us-ascii?Q?YL4RvZFXmDTj3z8DolvsWLPIBmg2x4GF1LM8nwyHa9a5QshnbXHcnbd0zHAs?=
- =?us-ascii?Q?vqhuTxWjtFcPowRWhQ66roopHyvOJm1H21rHwavOoQfzz37+dRHYmCFuGFOF?=
- =?us-ascii?Q?cwkRrzY8TaNE15ZvumkIc2LV7elFRw3MrDJNUTjpQ/cSodErNcYdxZhBNY30?=
- =?us-ascii?Q?TUhYgs25rB5XndfHfMEgM8vBEUeXKQ8BhcnTC15yYgzQTe+FSlk8QqaXXUE2?=
- =?us-ascii?Q?BDT+n7U+Jts6btc3POkDnTiSVrKoA7DYFSsH4lM0cvvHYxRc8OAaVWZZBXIl?=
- =?us-ascii?Q?5OM2oryEbqivSJNtYn36SveQtvWLg0u6?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR12MB8252.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(1800799024)(7053199007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?ZG4W0++z7jJoiCwHHPNnjexRBYX57kAucyfptyuYghccfM8wJY6Z+L7YhYOd?=
- =?us-ascii?Q?JX16Od4JSp/W1f2fXSIn4ndv9gIPYMMO6U2y4oU6we0/Yt9Eraj9FWFgDkgs?=
- =?us-ascii?Q?u25aynkOSr904Y77J9tTZBb56HKmeT1Rf6w/KFUgVyaeayx7vCQxgKQhGMoa?=
- =?us-ascii?Q?ozZ14f7WHm1RcJRVhjqUeEe9fHUC6+bJ98tQOiHesTvP0o8BIzQw6MhcVFrW?=
- =?us-ascii?Q?mwpDT/2ww8MBah4DQ9uYg6+YzL63Npu1pY/dl1bEqHY+daZWfkGmDoX1sq0T?=
- =?us-ascii?Q?3nKm6JKuCw0d9A3Y/j+AYsGMVrd0vDkeS+QeRRwDH7zxme+i8jK4rqHMCRTI?=
- =?us-ascii?Q?MPVNlR11m+8EfRsN+T4Sn18TV/p4MtT0TeulqMxd92ahdv73FiRw0jbw7Rs3?=
- =?us-ascii?Q?IeXyqy2J8nJmBT+yqp9Nkwqu3be0vJU2p5oLSEbHiGQg9fzrTarEJvGF8hwZ?=
- =?us-ascii?Q?GeTAD0Opfkw+hzWSEvGEckLB2hzEJOyC4WMLp0Gx2Dtmw7VC5YyrZulyz5Ef?=
- =?us-ascii?Q?CSzYL4QYpU2sHXf+A+7wbF11Z4jPMGhAQtAruICVfp3hRnJQLQlp0cYY7y6L?=
- =?us-ascii?Q?TyoPgFZkfVrLyY0IHYPOFcgnibqf/M1gUV1bwx+8qG3vdYw5YdqIu2NTAM/m?=
- =?us-ascii?Q?veBizHxQjmBYfNhYlPcWB5p/uo+s+HUHhy4ui7Wope0J/xftK3NuNvbfhs40?=
- =?us-ascii?Q?Gwemb0flCjn93MgVAULSGVvuaAreLgufj1xQZyTCKFw5RtBwAeAxYKOL8CLp?=
- =?us-ascii?Q?VUHzgnDs+Hl9VG4ikfBXOHBw6RA4Qymdxc4kGX6Ftnrxr0DA1ntMkZleiXO7?=
- =?us-ascii?Q?rj+GW1uYKMctO6A6af4aaFzoBv6ZF3emQzag9ubB4FPCTtMMJD9MikU5lssB?=
- =?us-ascii?Q?ZNvNtM/Pu/Itnwq877MJGMPNZLbrL0axfsvkP9zVPHGx8OVNJhdXchpidV1a?=
- =?us-ascii?Q?nziiTj17NSLuqmOh2PoOhzdR0VDizpexE4WTWo6Vf0VvGZbZYSv1N2HX1urx?=
- =?us-ascii?Q?huPYXDK8gOb/YLc+EjtJ4okEGAjySjHcni5+1RaXUOPdzbNW17rcYVNrlwCJ?=
- =?us-ascii?Q?tg8OkuVk8ptKcjgs2R2AlCX7kv8Mse4Dp8K38zVCfdi1oQhHzS9xxRKoYWJz?=
- =?us-ascii?Q?b31WqM27AVk6GQiStI6Uzl/lnFA5AYluVPkzhaTXOAqpSZsAOcsMybhdhvBE?=
- =?us-ascii?Q?1UFr5HYsHKk60d8EF5IAdRgH9Od++oo/w4x+nvNsd9k6AFwexP4Govo9voDM?=
- =?us-ascii?Q?BFT/SE3e+zp3TVcmZ8ElSePwZ5WVft2P6y8L9AxVchGY6HrmTaYnvM2R1OSO?=
- =?us-ascii?Q?s4JDGtLeRJJUGDTjsiBEtXCUoaJyVri+c2PmimPSpKKgH94qHKMn8oWMj/jo?=
- =?us-ascii?Q?nTa71luNY1cLWH7h7w7g5PgNu6XXNrP9RD0RuqhssTcXLARIGPFti2wHeSHN?=
- =?us-ascii?Q?BieluSiDH5mq6fOzpQt0NM/a/bhb55bjNjsFuxe8/9JHrAwtto+rCtEKxFia?=
- =?us-ascii?Q?/ua6csvHq7cQfacw8vyzNOE6GO9ZsOfDdKX42NXv2nB6GzyW/en4a75xBWeb?=
- =?us-ascii?Q?7wFBbAJhTADte8+p0JF9iLagn9EN8zF1VAgOYOwF?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d1acdf80-42cc-4443-0c7e-08de0bc782f6
-X-MS-Exchange-CrossTenant-AuthSource: DS7PR12MB8252.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Oct 2025 08:47:46.1627
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 9f8zhuCVm5fhQsegTFMSlbvjc7x1/fY+zYrkHR3ZSUIWVIWDOAISY21hXCQPTlCylCvJ2Cl+dkzGxr7A1RS3JQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB7114
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20251015-mt8196-gpufreq-v7-2-0a6435da2080@collabora.com>
+References: <20251015-mt8196-gpufreq-v7-0-0a6435da2080@collabora.com>
+In-Reply-To: <20251015-mt8196-gpufreq-v7-0-0a6435da2080@collabora.com>
+To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ Boris Brezillon <boris.brezillon@collabora.com>, 
+ Jassi Brar <jassisinghbrar@gmail.com>, Chia-I Wu <olvaffe@gmail.com>, 
+ Chen-Yu Tsai <wenst@chromium.org>, Steven Price <steven.price@arm.com>, 
+ Liviu Dudau <liviu.dudau@arm.com>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Matthias Brugger <matthias.bgg@gmail.com>, Kees Cook <kees@kernel.org>, 
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>, 
+ Ulf Hansson <ulf.hansson@linaro.org>
+Cc: kernel@collabora.com, dri-devel@lists.freedesktop.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, 
+ linux-hardening@vger.kernel.org, linux-pm@vger.kernel.org, 
+ Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+X-Mailer: b4 0.14.3
 
-On Thu, Oct 09, 2025 at 11:17:52AM -0500, Mario Limonciello (AMD) wrote:
-> None of the users actually look for the NULL value.  To avoid risk
-> of regression introducing a new value but forgetting to add a string
-> add a static assert to test AMD_PSTATE_MAX matches the array size.
-> 
-> Signed-off-by: Mario Limonciello (AMD) <superm1@kernel.org>
+On the MT8196 and MT6991 SoCs, the GPU power and frequency is controlled
+by some integration logic, referred to as "MFlexGraphics" by MediaTek,
+which comes in the form of an embedded controller running
+special-purpose firmware.
 
-Thanks for getting rid of the NULL entry.
+This controller takes care of the regulators and PLL clock frequencies
+to squeeze the maximum amount of power out of the silicon.
 
-Reviewed-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
-> ---
->  drivers/cpufreq/amd-pstate.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-> index 0bc5013448873..a5b9e5baf4234 100644
-> --- a/drivers/cpufreq/amd-pstate.c
-> +++ b/drivers/cpufreq/amd-pstate.c
-> @@ -65,8 +65,8 @@ static const char * const amd_pstate_mode_string[] = {
->  	[AMD_PSTATE_PASSIVE]     = "passive",
->  	[AMD_PSTATE_ACTIVE]      = "active",
->  	[AMD_PSTATE_GUIDED]      = "guided",
-> -	NULL,
->  };
-> +static_assert(ARRAY_SIZE(amd_pstate_mode_string) == AMD_PSTATE_MAX);
->  
->  const char *amd_pstate_get_mode_string(enum amd_pstate_mode mode)
->  {
-> -- 
-> 2.43.0
-> 
+Add a binding which models it as a power domain.
+
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+---
+ .../bindings/power/mediatek,mt8196-gpufreq.yaml    | 117 +++++++++++++++++++++
+ 1 file changed, 117 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/power/mediatek,mt8196-gpufreq.yaml b/Documentation/devicetree/bindings/power/mediatek,mt8196-gpufreq.yaml
+new file mode 100644
+index 000000000000..b9e43abaf8a4
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/mediatek,mt8196-gpufreq.yaml
+@@ -0,0 +1,117 @@
++# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/mediatek,mt8196-gpufreq.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: MediaTek MFlexGraphics Power and Frequency Controller
++
++maintainers:
++  - Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
++
++description:
++  A special-purpose embedded MCU to control power and frequency of GPU devices
++  using MediaTek Flexible Graphics integration hardware.
++
++properties:
++  $nodename:
++    pattern: '^power-controller@[a-f0-9]+$'
++
++  compatible:
++    enum:
++      - mediatek,mt8196-gpufreq
++
++  reg:
++    items:
++      - description: GPR memory area
++      - description: RPC memory area
++      - description: SoC variant ID register
++
++  reg-names:
++    items:
++      - const: gpr
++      - const: rpc
++      - const: hw-revision
++
++  clocks:
++    items:
++      - description: main clock of the embedded controller (EB)
++      - description: core PLL
++      - description: stack 0 PLL
++      - description: stack 1 PLL
++
++  clock-names:
++    items:
++      - const: eb
++      - const: core
++      - const: stack0
++      - const: stack1
++
++  mboxes:
++    items:
++      - description: FastDVFS events
++      - description: frequency control
++      - description: sleep control
++      - description: timer control
++      - description: frequency hopping control
++      - description: hardware voter control
++      - description: FastDVFS control
++
++  mbox-names:
++    items:
++      - const: fast-dvfs-event
++      - const: gpufreq
++      - const: sleep
++      - const: timer
++      - const: fhctl
++      - const: ccf
++      - const: fast-dvfs
++
++  memory-region:
++    items:
++      - description: phandle to the GPUEB shared memory
++
++  "#clock-cells":
++    const: 1
++
++  "#power-domain-cells":
++    const: 0
++
++required:
++  - compatible
++  - reg
++  - reg-names
++  - clocks
++  - clock-names
++  - mboxes
++  - mbox-names
++  - memory-region
++  - "#clock-cells"
++  - "#power-domain-cells"
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/mediatek,mt8196-clock.h>
++
++    power-controller@4b09fd00 {
++        compatible = "mediatek,mt8196-gpufreq";
++        reg = <0x4b09fd00 0x80>,
++              <0x4b800000 0x1000>,
++              <0x4b860128 0x4>;
++        reg-names = "gpr", "rpc", "hw-revision";
++        clocks = <&topckgen CLK_TOP_MFG_EB>,
++                 <&mfgpll CLK_MFG_AO_MFGPLL>,
++                 <&mfgpll_sc0 CLK_MFGSC0_AO_MFGPLL_SC0>,
++                 <&mfgpll_sc1 CLK_MFGSC1_AO_MFGPLL_SC1>;
++        clock-names = "eb", "core", "stack0", "stack1";
++        mboxes = <&gpueb_mbox 0>, <&gpueb_mbox 1>, <&gpueb_mbox 2>,
++                 <&gpueb_mbox 3>, <&gpueb_mbox 4>, <&gpueb_mbox 5>,
++                 <&gpueb_mbox 7>;
++        mbox-names = "fast-dvfs-event", "gpufreq", "sleep", "timer", "fhctl",
++                     "ccf", "fast-dvfs";
++        memory-region = <&gpueb_shared_memory>;
++        #clock-cells = <1>;
++        #power-domain-cells = <0>;
++    };
+
+-- 
+2.51.0
+
