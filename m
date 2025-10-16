@@ -1,69 +1,68 @@
-Received: from mail-ej1-f52.google.com (mail-ej1-f52.google.com [209.85.218.52])
+Received: from mail-ed1-f54.google.com (mail-ed1-f54.google.com [209.85.208.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A38E0350D69
-	for <linux-pm@vger.kernel.org>; Thu, 16 Oct 2025 15:58:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F2AC3570C2
+	for <linux-pm@vger.kernel.org>; Thu, 16 Oct 2025 15:58:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760630334; cv=none; b=khF50KMaPW6jTRCKaqxBkziwI0sTjCPM9zGmzSgxtm7jHGW1KpF+TWuhgQKHzFxRWn0ClPOLnxbLaA2MvlKl2Ux10W+mqBJl5UdgOU7DiYMu5qSvemak9OzEkHceC8i++/4yQjmcmN9XZWOqpYsRRb1cWECiBYGFfZbrse91Jro=
+	t=1760630334; cv=none; b=l0CML638OYbz65QMEMntxSBmeYvjzmY1J0O+4+mvlu8X9sNHvO2O6JzxrQG8swlOL1pUfVDDYrmycC06UWEZcY5IjUdDTRESXIf+BAm/xptbIYhSLmUybSRpMoBJ7/bzybu0qDrtnWch7IiFjC+MR5xsCIZlrCI3lz2NJ1yq+bo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1760630334; c=relaxed/simple;
-	bh=1qxgK+yguVHCcnwDi73qQ+fgj7/mfA7XkqtibLKJhdY=;
+	bh=yje7DjsIFhOq220Z+6NhYIgkw1TYq5z3ouqumPOvySU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=AJS2Vo+uhHZnxs8fG8zx0jmB4xU8X7EmGIUTCrq9SYCoLV5D8gBHdOM6BLuryEnb5au3dYuvGOrq82j+FjqpjkAe85o9ihn5BX04LJQIoNVslG0oP6990cMfiMnQeDt+/bZk5jFCGZprZQ3XKbba1eZRbB1w3wnLRb9OjfdV0zs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=MCnEECuQ; arc=none smtp.client-ip=209.85.218.52
+	 In-Reply-To:To:Cc; b=EpLcNM/LMXBKl8zn99+0cxhaTSx+i2gKEuGcfc2ssm22BKUpla3gLaP6S6H4fXCrp+2VwmNs0Nzy02JwYTEJn2kXDFAKjtyS31HHADsgy3DweI5fPKflkbFaMPSYOVV3MTHFBT+MrARJFCwXCbp10KnKLCVSjld28E9hsepVMRU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=j3Bvuzdn; arc=none smtp.client-ip=209.85.208.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="MCnEECuQ"
-Received: by mail-ej1-f52.google.com with SMTP id a640c23a62f3a-b3b27b50090so162354266b.0
-        for <linux-pm@vger.kernel.org>; Thu, 16 Oct 2025 08:58:51 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="j3Bvuzdn"
+Received: by mail-ed1-f54.google.com with SMTP id 4fb4d7f45d1cf-63bdfd73e6eso4043013a12.0
+        for <linux-pm@vger.kernel.org>; Thu, 16 Oct 2025 08:58:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1760630330; x=1761235130; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1760630329; x=1761235129; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=dOMGO9xFi2Mtx7k0vCEAwcztQ4BN53A74nGNrcyF4+o=;
-        b=MCnEECuQZ63xg91QP3qRlhQIprh2xr5VltFR8TlKpDgQWqc2VD/LEzIRK2yP8aj5et
-         gbUYXbNQ13iBSv/NIPITtcwoyOtO8rRiznH82NhSqa6eccO+KtupDrWAUz/h7Kbw4VZ9
-         LlAlK5yiPbqyVxb73cwHmHIOUYT7C0AxQBPdHscUDSML/kkYLNHXdJxwGbtjs28MjL2H
-         aYRUHa/wdvRhwCHd6SWdvOylYk+7FwucbMQT07gd7k5xLZfyPgWcQ8hHW48PQ79wn1Sm
-         Fel+gFCuBr2wNtiyltsutGysXd4XlxcuFnc9XeBEHJETx+7lKTN6goOfQSKumMB9MQPc
-         K4JQ==
+        bh=aAQW91aNDUliYu6xIPIKkGd7wbQwulcJzXF5XdkzCOM=;
+        b=j3BvuzdnvqWPDd8yiA4m+Xl8pwsEGv7TBxTlF8kTdCz4eJ2JKAVlTP64L6Zpn5GVG3
+         H1fCqEkntxCHhxifXISG3cOgr2g0MMARG7XB71EhAlyvWoy+vcJL8Y8qXYGs3tPciBt0
+         YX4xu1aPailT2yBtOWvsedv+WtNkXuS0yDGUgk2EMVCUOMVG1qgf0zdvIsaVVGO2qJoH
+         7lNOYNNkU4ArugsujC95C6R8fxUMWJKu/WXXQIYgs2ephTgYu6jpUGsUsiJyNG8TdoWs
+         5jLW3L+zig18HP827ZUirg1aCtr8VEuGJ++oFKzuKQDK0/XQRXaa60eNkoZyCu0OLJ0A
+         4GGA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1760630330; x=1761235130;
+        d=1e100.net; s=20230601; t=1760630329; x=1761235129;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=dOMGO9xFi2Mtx7k0vCEAwcztQ4BN53A74nGNrcyF4+o=;
-        b=iisj9TE/DUjQ+949I9UPFYmxqsYD/cUyI7Dlaq0ioPL3HUqlEKSmc574If0OOtiwLN
-         wUq4yzNnkXJwZXCigm0qrTJaejI2iVTdNuAdjVk8QkdDtAX6rA1nGTAMzka8+Bx6V5Un
-         YdG6n65pfhvJCfXogsg//I+WYLDNq5AaMK5Q1dZKBSIaU4ElbNf9UEOcgYxztJru4SED
-         p1LFoS4A1I2pqc5PC1RzmRmswaPSasSNWsZUtCadoOhpR3/3G/HeDwYqKRncNfj3mHYu
-         JiPkUOGwGNr/n1+LsY2rMnEf9qX/NrzozgU6qEA0s/8QGMSupWstsNW8vN60k/mRmZv0
-         jjdQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWuEZzdQLkaEZK4c43TY4VQOfyJs8DoJ2PdYFLIjSDf5WSstDoQVwS2j3Ln2qUCwEDAjfMvwvVgNA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyiPw9L0ptm1cIvFr4PF/7c2ZVXmwRdYvbqPkua2AWV6Hygihlo
-	iEQMK1CuEdcJOias3AWT+ngFY+UwWE689lQDn4sOSUPyyXltbIXtJS0z8cw465eWgGg=
-X-Gm-Gg: ASbGnctqwDzzKoKnJAytgQWr2BQSCSWEnFgeHbnP1iZIdzBhz4SumxbVQXbeookOWdJ
-	rzsFgah9f8EG7CXqslSAXnYAAWTPXcRKU0l6eFTdrNEQyi27lRCkTEDdpmQeH5zCf2CT1qRUfSH
-	gbqsjCBSgu6umXWf/rIYvPbLC8kmbSgSy1NsRs2fc8jQJMRu4xV4uBfWOU9DQu5hmSjpRyMS3Kd
-	XvIxWvmRtsI5E0ab+NifGORC+GzNxLmyyPpbHGE94benlAJf5+sh4VtFa82aCgnJGnw5CRnF2Td
-	QpnQ7QCrwamH07pRuzNx4zfKFzvtm6P649FKwZgYR32rE/Edyvqqndq0B6qGa18g6VEFEQIgQTF
-	8rty6U5Rw3jH9BIDoUv1biMx9X+e4foXkCkH479trQ3bJEA26aIdt2Zh5WQqjEqjSfHfOZpYUo0
-	p2LSg8ESFmIqIH1j3l9QDx4iQcrtQdLdX5GfNFqO8WwuNyXcWnhN62a2jKzrcQ7a4HjguVnub/v
-	Eur3iGFZw==
-X-Google-Smtp-Source: AGHT+IFYdstIK88h2DzNqSnXkoNZZTxC+NFmDH+MQK4MClgJpcEBcvp9PSTTwQIBKBRNe89kOYx4bg==
-X-Received: by 2002:a17:907:d0d:b0:b41:873d:e226 with SMTP id a640c23a62f3a-b6472d5bbcfmr52909966b.1.1760630326396;
-        Thu, 16 Oct 2025 08:58:46 -0700 (PDT)
+        bh=aAQW91aNDUliYu6xIPIKkGd7wbQwulcJzXF5XdkzCOM=;
+        b=fYYrTFcCsWs+pzXuDa6sBZ5btJT/nwUD6HFxC8izzJGmfA6m+HK5TQ4ZBrdhcKVpiG
+         3wDZJb7qUgVA7by4INpMQ370kgRCvLXxk8sgfkZ5LmfBJqE2QhlwZUpoQ4eISJgkHbiV
+         dQrvi4bWShuBZRqe04b748e/+RDNMyWswLuGYFEXEWtzIIk4Jqq8OB/vWyQM6Q/5Tu/K
+         W7u2/WAKQKqffePB2HS8R3Fwjvrf6GDARkvphdr6aXDF6HB7U/6rdmly08PPFKu9vxTh
+         nVnD1SpSUqXubsfFtaSYuA+HIQC5upCl9pP70kM48vpHMPv5+mrlWNAPiaYf9FrIZj9S
+         OaCg==
+X-Forwarded-Encrypted: i=1; AJvYcCXbmc1I7G9iV+8pDOAbvIAmVSpD8NlGLp82uTLAEfTmYh3JMlWBc4t/ELr1mS8lviatVC5N9ALn3g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxFkiMPMMX9ig7kIC5V0nc9I1ZGwxBtN8ev8IvlI8+JWtFPENfx
+	Bm01UWRLTsNxhcM3taZKz68fTxc6B7XjWzFvncmpD5DI3V2uMPjl2o+y09jpoUVnAbY=
+X-Gm-Gg: ASbGncujnKA/Md1KZNBPy92lXX3B+gWUcweq018y+GRj+Ub5NULhXLBPIGwxxsjG+MC
+	SI3pCVv628L3NwAanKs7MVUaThHVLb9NYxk6Iy6eOs56FXTU5R2L/7wPZnZ0jpwf1UzV+V7bsxA
+	RNm4bB6vzA990d5mSgOrhjRTUfCSZnvNHL85jwWDONGWA77sRUrJYJzM5O+/M+yifXU+tKSrCNI
+	z1bNQJf7IS/BOxiH0m+c9ZTNywesbZy+o+sdWUpE21dJvCjjYKfaA+zVH9kxn8WWSjX1KhtZxE3
+	GF9P41hE+83P/pw6+LbHE+X+93yZzkRPy8QSogSQiTQrx88n7ABV+IxIiu3jm4eF47RGvO6JdyS
+	4S5+6hWV6wksYoc46vDgcWyku1p6UmwptEu+CgnNpsP+/V5in4HeVqQ7ILDyvzx915MUPDEXGI1
+	U8fSZE6bTnsLaYXb5fgc6ziWqd1XtirYYJ/1orPMQmin22XETqlTgLLESJ2oxnvpEcj3rBDMs=
+X-Google-Smtp-Source: AGHT+IFwFoVlzrd3EzfRgwjFNULDxybArmFxvRw3PQFLU4BEOlEa5CBeY9fanhhp1MvTHV/cP8fhDg==
+X-Received: by 2002:a17:907:3992:b0:b40:c49b:709 with SMTP id a640c23a62f3a-b605249d84dmr571454166b.8.1760630324759;
+        Thu, 16 Oct 2025 08:58:44 -0700 (PDT)
 Received: from puffmais2.c.googlers.com (254.48.34.34.bc.googleusercontent.com. [34.34.48.254])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b5ccccb4811sm549021666b.56.2025.10.16.08.58.45
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b5ccccb4811sm549021666b.56.2025.10.16.08.58.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Oct 2025 08:58:45 -0700 (PDT)
+        Thu, 16 Oct 2025 08:58:44 -0700 (PDT)
 From: =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
-Date: Thu, 16 Oct 2025 16:58:39 +0100
-Subject: [PATCH v3 06/10] pmdomain: samsung: convert to
- regmap_read_poll_timeout()
+Date: Thu, 16 Oct 2025 16:58:36 +0100
+Subject: [PATCH v3 03/10] dt-bindings: soc: samsung: gs101-pmu: allow power
+ domains as children
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -72,7 +71,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20251016-gs101-pd-v3-6-7b30797396e7@linaro.org>
+Message-Id: <20251016-gs101-pd-v3-3-7b30797396e7@linaro.org>
 References: <20251016-gs101-pd-v3-0-7b30797396e7@linaro.org>
 In-Reply-To: <20251016-gs101-pd-v3-0-7b30797396e7@linaro.org>
 To: Krzysztof Kozlowski <krzk@kernel.org>, 
@@ -90,69 +89,107 @@ Cc: Peter Griffin <peter.griffin@linaro.org>,
  =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
 X-Mailer: b4 0.14.2
 
-Replace the open-coded PD status polling with
-regmap_read_poll_timeout(). This change simplifies the code without
-altering functionality.
+The power domains are a property of / implemented in the PMU. As such,
+they should be modelled as child nodes of the PMU.
 
 Signed-off-by: André Draszik <andre.draszik@linaro.org>
----
- drivers/pmdomain/samsung/exynos-pm-domains.c | 29 ++++++++--------------------
- 1 file changed, 8 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/pmdomain/samsung/exynos-pm-domains.c b/drivers/pmdomain/samsung/exynos-pm-domains.c
-index 383126245811cb8e4dbae3b99ced3f06d3093f35..431548ad9a7e40c0a77ac6672081b600c90ddd4e 100644
---- a/drivers/pmdomain/samsung/exynos-pm-domains.c
-+++ b/drivers/pmdomain/samsung/exynos-pm-domains.c
-@@ -13,7 +13,6 @@
- #include <linux/platform_device.h>
- #include <linux/slab.h>
- #include <linux/pm_domain.h>
--#include <linux/delay.h>
- #include <linux/of.h>
- #include <linux/pm_runtime.h>
- #include <linux/regmap.h>
-@@ -35,7 +34,8 @@ struct exynos_pm_domain {
- static int exynos_pd_power(struct generic_pm_domain *domain, bool power_on)
- {
- 	struct exynos_pm_domain *pd;
--	u32 timeout, pwr;
-+	unsigned int val;
-+	u32 pwr;
- 	int err;
+---
+Note: Ideally, the newly added properties (ranges, etc.) should only be
+'required' if "^power-domain@[0-9a-f]+$" exists as a patternProperty,
+as they're needed only in that case. As-is, this patch now causes
+warnings for existing DTs as they don't specify the new properties (and
+they shouldn't need to). Only if DTs are updated to include
+power-domains, such an update should also add the new properties.
+
+I've not been able to come up with the correct schema syntax to achieve
+that. dependencies, dependentRequired, and dependentSchemas don't seem
+to support patterns. Similarly,
+  - if:
+      required:
+        - ...
+    then:
+      required:
+        - ...
+
+doesn't allow patterns in the 'if' block (or I didn't get the syntax
+right).
+
+Rob said in
+https://lore.kernel.org/all/20251010141357.GA219719-robh@kernel.org/
+that this is a known limitation in json-schema.
+---
+ .../bindings/soc/google/google,gs101-pmu.yaml      | 40 ++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/soc/google/google,gs101-pmu.yaml b/Documentation/devicetree/bindings/soc/google/google,gs101-pmu.yaml
+index f7119e7a39a3fe0a0a23d1faa251d356f83ba501..a24390f6d2a54afe1aa84935e03f719a62f4fc8e 100644
+--- a/Documentation/devicetree/bindings/soc/google/google,gs101-pmu.yaml
++++ b/Documentation/devicetree/bindings/soc/google/google,gs101-pmu.yaml
+@@ -26,6 +26,14 @@ properties:
+   reg:
+     maxItems: 1
  
- 	pd = container_of(domain, struct exynos_pm_domain, pd);
-@@ -45,25 +45,12 @@ static int exynos_pd_power(struct generic_pm_domain *domain, bool power_on)
- 	if (err)
- 		return err;
++  '#address-cells':
++    const: 1
++
++  '#size-cells':
++    const: 1
++
++  ranges: true
++
+   reboot-mode:
+     $ref: /schemas/power/reset/syscon-reboot-mode.yaml
+     type: object
+@@ -49,9 +57,23 @@ properties:
+     description:
+       Phandle to PMU interrupt generation interface.
  
--	/* Wait max 1ms */
--	timeout = 10;
--	while (timeout-- > 0) {
--		unsigned int val;
--
--		err = regmap_read(pd->regmap, 0x4, &val);
--		if (err || ((val & pd->local_pwr_cfg) != pwr)) {
--			cpu_relax();
--			usleep_range(80, 100);
--			continue;
--		}
--
--		return 0;
--	}
--
--	if (!err)
--		err = -ETIMEDOUT;
--	pr_err("Power domain %s %sable failed: %d\n", domain->name,
--	       power_on ? "en" : "dis", err);
-+	err = regmap_read_poll_timeout(pd->regmap, 0x4, val,
-+				       (val & pd->local_pwr_cfg) == pwr,
-+				       100, 1 * USEC_PER_MSEC);
-+	if (err)
-+		pr_err("Power domain %s %sable failed: %d (%#.2x)\n",
-+		       domain->name, power_on ? "en" : "dis", err, val);
++patternProperties:
++  "^power-domain@[0-9a-f]+$":
++    type: object
++    description: Child node describing one power domain within the PMU
++
++    additionalProperties: true
++
++    properties:
++      compatible:
++        const: google,gs101-pd
++
+ required:
+   - compatible
+   - reg
++  - '#address-cells'
++  - '#size-cells'
++  - ranges
+   - google,pmu-intr-gen-syscon
  
- 	return err;
- }
+ additionalProperties: false
+@@ -61,6 +83,24 @@ examples:
+     system-controller@17460000 {
+         compatible = "google,gs101-pmu", "syscon";
+         reg = <0x17460000 0x10000>;
++        #address-cells = <1>;
++        #size-cells = <1>;
++        ranges;
+ 
+         google,pmu-intr-gen-syscon = <&pmu_intr_gen>;
++
++        pd_g3d: power-domain@1e00 {
++            compatible = "google,gs101-pd";
++            reg = <0x1e00 0x80>;
++            #power-domain-cells = <0>;
++            label = "g3d";
++        };
++
++        power-domain@2000 {
++            compatible = "google,gs101-pd";
++            reg = <0x2000 0x80>;
++            #power-domain-cells = <0>;
++            power-domains = <&pd_g3d>;
++            label = "embedded_g3d";
++        };
+     };
 
 -- 
 2.51.0.788.g6d19910ace-goog
