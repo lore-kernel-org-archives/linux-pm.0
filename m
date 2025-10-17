@@ -1,155 +1,118 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f74.google.com (mail-wr1-f74.google.com [209.85.221.74])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E85D9255E34;
-	Fri, 17 Oct 2025 11:49:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3FB592DE713
+	for <linux-pm@vger.kernel.org>; Fri, 17 Oct 2025 13:04:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.74
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760701785; cv=none; b=LFXHIAzdMhomenOLrYLJedVbF/8NaOo1CqGd6OwUXKGJLcLMzigolnjlgTuVAYN504J9OYVA1ktLJ5a9KSv9p8+VXbUkvU1JFO54P1uM5CHFyWUXbC839mF7DA0pVo2NFAyVqIdsAt5M7UzLgO8kf1gkq6oMHnK0VfPWemCKwfk=
+	t=1760706297; cv=none; b=E4liODHsQ9Ue9Yvxm/yLYJrg4d315HVzapZNf/q0wZIVz50AwnJYCxo4ln7B4KFZNhuNK5LOCQvLUceTmbZj5wLOl/JZzm/oPJPGnMsWl+KCNEV7E3nkPqqD5SsOJ3xuAlapE/4PnV1ja0ZdK20TLyGWZuaDg+t8lBx1U4BLYI0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760701785; c=relaxed/simple;
-	bh=7X+TwXU2ynW1Z24EycOtDV2oDOgsg5UZIpUiNMNGeus=;
-	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=RWS02axUQox4HmPII/3fIHUfYgXIqVUXMhlNKF/lzd+s9BjUS7+odcqyCTTKBMYv3Tl8OwzP+FL6mK/ogVclBl8M9R9PgH7dQrpJKjhSZDyGaoCm/Q6FdhxrjXvXggpN05ylYaz8psnX86Wng/xhbuD5RBOp16KtEBV5neKTeCg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=L1l6ixhd; arc=none smtp.client-ip=192.198.163.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1760706297; c=relaxed/simple;
+	bh=45mXk3vW1QoAnyjK4Nd0ASLRTO5e22FNrn8YEgJAgCM=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=hyvkoPHWllfAMBPblvFF6/01n2VAMyGqVA/5o3iSeTX5XNfOQwMkMzv5d63+U5irvphZoeo8KE2YEVX//meKn+5KlF+RzDcxBzpjbecTs8baM6z/afQC+6r/7tgvlKIS0GBhQ8UYcGHbrKU0cujeV27lGU0n4yuAo9jjyVYATvc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=M9heAzin; arc=none smtp.client-ip=209.85.221.74
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="L1l6ixhd"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1760701783; x=1792237783;
-  h=from:date:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=7X+TwXU2ynW1Z24EycOtDV2oDOgsg5UZIpUiNMNGeus=;
-  b=L1l6ixhdGpkTx8Alrc6suugDrgXWUfzKXBkLwpA3/5vIPmbvVtGPa5dN
-   I5auL7kZwWazMIfkaa50H2+1+Bhj8Ls5tpFV3rg0hH2L1KSZAaykIz+Of
-   mgwraG3zIn8q2IlxWgBMwXC7/XyeRLDba4XfHY5YmWltDSoKeg2KqIysD
-   Qs+JpgK0L9IgWVo8C8P8cWnBmiwBdjpnWLvtUWy89McVX3gjih65xUMix
-   Qgci5IKesdzvPPaW7LaGayHbRuMT5PZnjEZsWN/71MKWiyvDzpEwUOpX7
-   3I+nOxK4l+25znyv6tkOIWcgmdRtgvEfuM49P6kq9GCSsb4ytQAHYzcZW
-   g==;
-X-CSE-ConnectionGUID: tqVsXhboTEy2TxSVnbcEuw==
-X-CSE-MsgGUID: qJSwP3X9RZeMATcMJhfjCg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11584"; a="62949401"
-X-IronPort-AV: E=Sophos;i="6.19,236,1754982000"; 
-   d="scan'208";a="62949401"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Oct 2025 04:49:42 -0700
-X-CSE-ConnectionGUID: ORisMe/SQre3CJp+jUcM/Q==
-X-CSE-MsgGUID: Xe8nPa+eRraf/cY8Jvslyw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,236,1754982000"; 
-   d="scan'208";a="182719104"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.123])
-  by orviesa008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Oct 2025 04:49:39 -0700
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Fri, 17 Oct 2025 14:49:35 +0300 (EEST)
-To: Lukas Wunner <lukas@wunner.de>
-cc: Brian Norris <briannorris@chromium.org>, 
-    Bjorn Helgaas <bhelgaas@google.com>, LKML <linux-kernel@vger.kernel.org>, 
-    linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rafael@kernel.org>, 
-    linux-pci@vger.kernel.org
-Subject: Re: [PATCH] PCI/PM: Prevent runtime suspend before devices are fully
- initialized
-In-Reply-To: <aPH_B7SiJ8KnIAwJ@wunner.de>
-Message-ID: <67381f3b-4aee-a314-b5dd-2b7d987a7794@linux.intel.com>
-References: <20251016155335.1.I60a53c170a8596661883bd2b4ef475155c7aa72b@changeid> <aPH_B7SiJ8KnIAwJ@wunner.de>
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="M9heAzin"
+Received: by mail-wr1-f74.google.com with SMTP id ffacd0b85a97d-427013eb71dso2319200f8f.2
+        for <linux-pm@vger.kernel.org>; Fri, 17 Oct 2025 06:04:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1760706294; x=1761311094; darn=vger.kernel.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=QsGulBtXOolWogbv37P9kOPn3EPzZ7HWeVFTvLjVVtA=;
+        b=M9heAzinbWs6Rws/XraRiYASpesShCyWMFYu3Ulftwtmb8EKhO1Cg3XmpkqIluR/1E
+         0A2rNY/+AhKaiXftu0BmP2ymAuKimHzsi/H4teFi91493IWupZSZZ62fc92UgtPWDccI
+         UzzPUz8dEjWv4I+sbnuF+vpbs76iOXmq8SXWo/dpVbu3IE14neNkx+/D6O60EEdRf6hc
+         srW5cprOSSsWHget1JX8jbm+8SMNnfQjoOR3J0jCFFKK4D61zovbTG8nTtEHYgPjUXfX
+         HqYtShRJsQo4MfxYrjxFYmTw0uweC7OrwWC5+dNs+Kis/eI1tFQfDEPtnnsc86E2oHyj
+         expA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1760706294; x=1761311094;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=QsGulBtXOolWogbv37P9kOPn3EPzZ7HWeVFTvLjVVtA=;
+        b=hjPakaYpXP746v5xL3xDE1A+CKdK5CGTOdDZXL0jsgizbha0egKDs5WGjqH0dPUyvY
+         d0i3tqX1GR0OGBWQNG8ssomXLcgdlOFsxAWpzEW0PtDwUFlAEAS1SBcKT0VENtRSusEw
+         ZMJR1joMJEAHW5irx+6Gww4QexhxD0iUQEZOtA/x5EsQ3gMHU0FN8cCE082r9gD5m93B
+         IVYmOpAMTv1P4/mlXYtu4mGXS7DTJ+9/g6SVhySLRFkbh3n8O9ov5eseQbkdJ2nWcsuG
+         gaEzmmHEcRIMgN7oQE9GHcfGYWt4YyzdmXxHDrNA9CvBqahBufUlLRlwhS+S1fr/8P2Q
+         DTQA==
+X-Forwarded-Encrypted: i=1; AJvYcCVLBEDKZ/vzvsTjyxnj7mJbysH1O453ds6aAua/slm6IdTTifpHHv3YSCiVLwnqdlkLYQX4qLbqOg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzlqTXETbMzX7QbDlmQ/xsKOEO6JeJ9XDDNf48Qyk2uECrTYJnt
+	+mEPUTfeAOwFT6mbFmCiWEnWfqS+XK8Ui6c2pyL0XCqB3rUAjiA7Hp9dru37CC73nzmwUycEaFR
+	IaFCJ5o+G9r5O/9lOgA==
+X-Google-Smtp-Source: AGHT+IHmxuUy/higL8bMvF0u1RF+TfLvGKbJRuFXq91cThOSrZ5KPNHsS9I5kFewP7afvF/ZcVPnLKvl0oA6dKw=
+X-Received: from wmbgx4.prod.google.com ([2002:a05:600c:8584:b0:46e:1fc1:6636])
+ (user=aliceryhl job=prod-delivery.src-stubby-dispatcher) by
+ 2002:a05:6000:40ce:b0:427:6a8:532a with SMTP id ffacd0b85a97d-42706a8535dmr1784522f8f.31.1760706293678;
+ Fri, 17 Oct 2025 06:04:53 -0700 (PDT)
+Date: Fri, 17 Oct 2025 13:04:52 +0000
+In-Reply-To: <20251016125544.15559-1-dakr@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Mime-Version: 1.0
+References: <20251016125544.15559-1-dakr@kernel.org>
+Message-ID: <aPI-9GoI7ZsNCpQr@google.com>
+Subject: Re: [PATCH] rust: driver: let probe() return impl PinInit<Self, Error>
+From: Alice Ryhl <aliceryhl@google.com>
+To: Danilo Krummrich <dakr@kernel.org>
+Cc: gregkh@linuxfoundation.org, rafael@kernel.org, viresh.kumar@linaro.org, 
+	acourbot@nvidia.com, ira.weiny@intel.com, leon@kernel.org, 
+	daniel.almeida@collabora.com, bhelgaas@google.com, kwilczynski@kernel.org, 
+	abdiel.janulgue@gmail.com, robin.murphy@arm.com, ojeda@kernel.org, 
+	alex.gaynor@gmail.com, boqun.feng@gmail.com, gary@garyguo.net, 
+	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org, 
+	tmgross@umich.edu, rust-for-linux@vger.kernel.org, linux-pci@vger.kernel.org, 
+	linux-pm@vger.kernel.org, nouveau@lists.freedesktop.org, 
+	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
 
-On Fri, 17 Oct 2025, Lukas Wunner wrote:
-
-> [cc += Ilpo]
+On Thu, Oct 16, 2025 at 02:55:28PM +0200, Danilo Krummrich wrote:
+> The driver model defines the lifetime of the private data stored in (and
+> owned by) a bus device to be valid from when the driver is bound to a
+> device (i.e. from successful probe()) until the driver is unbound from
+> the device.
 > 
-> On Thu, Oct 16, 2025 at 03:53:35PM -0700, Brian Norris wrote:
-> > PCI devices are created via pci_scan_slot() and similar, and are
-> > promptly configured for runtime PM (pci_pm_init()). They are initially
-> > prevented from suspending by way of pm_runtime_forbid(); however, it's
-> > expected that user space may override this via sysfs [1].
-
-Is this true as pm_runtime_forbid() also increases PM usage count?
-
-"void pm_runtime_forbid(struct device *dev);
-
-unset the power.runtime_auto flag for the device and increase its 
-usage counter (used by the /sys/devices/.../power/control interface to 
-effectively prevent the device from being power managed at run time)"
-
-> > Now, sometime after initial scan, a PCI device receives its BAR
-> > configuration (pci_assign_unassigned_bus_resources(), etc.).
-> > 
-> > If a PCI device is allowed to suspend between pci_scan_slot() and
-> > pci_assign_unassigned_bus_resources(), then pci-driver.c will
-> > save/restore incorrect BAR configuration for the device, and the device
-> > may cease to function.
-> > 
-> > This behavior races with user space, since user space may enable runtime
-> > PM [1] as soon as it sees the device, which may be before BAR
-> > configuration.
-> > 
-> > Prevent suspending in this intermediate state by holding a runtime PM
-> > reference until the device is fully initialized and ready for probe().
->
-> Not sure if that is comprehensible by everybody.  The point is that
-> unbound devices are left in D0 but are nevertheless allowed to
-> (logically) runtime suspend.  And pci_pm_runtime_suspend() may call
-> pci_save_state() while config space isn't fully initialized yet,
-> or pci_pm_runtime_resume() may call pci_restore_state() (via
-> pci_pm_default_resume_early()) and overwrite initialized config space
-> with uninitialized data.
+> This is already taken care of by the Rust implementation of the driver
+> model. However, we still ask drivers to return a Result<Pin<KBox<Self>>>
+> from probe().
 > 
-> Have you actually seen this happen in practice?  Normally enumeration
-> happens during subsys_initcall time, when user space isn't running yet.
-> Hotplug may be an exception though.
+> Unlike in C, where we do not have the concept of initializers, but
+> rather deal with uninitialized memory, drivers can just return an
+> impl PinInit<Self, Error> instead.
+> 
+> This contributed to more clarity to the fact that a driver returns it's
+> device private data in probe() and the Rust driver model owns the data,
+> manages the lifetime and - considering the lifetime - provides (safe)
+> accessors for the driver.
+> 
+> Hence, let probe() functions return an impl PinInit<Self, Error> instead
+> of Result<Pin<KBox<Self>>>.
+> 
+> Signed-off-by: Danilo Krummrich <dakr@kernel.org>
+> ---
+> Depends on a minor pin-init patch [1] (Benno will send it to the list
+> soon). A branch with this patch and the pin-init dependency is available
+> in [2].
+> 
+> [1] https://github.com/Rust-for-Linux/pin-init/pull/86/commits
+> [2] https://git.kernel.org/pub/scm/linux/kernel/git/dakr/linux.git/log/?h=probe_return
 
-Adding that pm_runtime_get_noresume() doesn't look useful given 
-pm_runtime_forbid() already increases PM usage count. If this problem is 
-actually seen in practice, there could a bug elsewhere where something 
-decrements usage count too early so this change "helps" by double 
-incrementing the usage count.
+Overall LGTM.
+Reviewed-by: Alice Ryhl <aliceryhl@google.com>
 
-To find more information what's going on, one could try to trace events 
-for the PM usage count (though last time I looked not all paths that 
-change PM usage count were covered by the event and adding the 
-trace_event() calls into the header turned out too much magic for me to 
-figure out so I couldn't solve the problem).
+>  impl Device<CoreInternal> {
+>      /// Store a pointer to the bound driver's private data.
+> -    pub fn set_drvdata(&self, data: impl ForeignOwnable) {
+> +    pub fn set_drvdata<T: 'static>(&self, data: impl PinInit<T, Error>) -> Result {
+> +        let data = KBox::pin_init(data, GFP_KERNEL)?;
 
-> Patch LGTM in principle, but adding Ilpo to cc who is refactoring PCI
-> resource allocation and may judge whether this can actually happen.
+Perhaps the gfp flags should be an argument set_drvdata?
 
-I can see there could be other failure modes besides just saving wrong 
-config if devices get suspended underneath the resource assignment 
-algorithm.
-
-Besides hotplug, also BAR resize does changes the resources and BARs.
-This case is not helped by this patch.
-
-I also recently learned some DT platforms do the "actual" scan for the bus 
-later on Link Up event through irq which could perhaps occur late enough, 
-I dunno for sure.
-
-> I think the code comments you're adding are a little verbose and a simple
-> /* acquired in pci_pm_init() */ in pci_bus_add_device() may be sufficient.
-
-I'm also not entirely convinced these always pair or if the pci_dev may 
-get removed before pci_bus_add_device(), see e.g., enable_slot() in 
-hotplug/acpiphp_glue.c that does acpiphp_sanitize_bus() before 
-pci_bus_add_devices() (which could have other bugs too as is).
-
-> Also, I think it is neither necessary nor useful to actually cc the e-mail
-> to stable@vger.kernel.org if you include a stable designation in the
-> patch.  I believe stable maintainers only pick up backports from that list,
-> not patches intended for upstream.
-
-Probably some tool will auto-insert the Cc: tags as receipients so it 
-might be non-trivial to get rid of it.
-
--- 
- i.
-
+Alice
