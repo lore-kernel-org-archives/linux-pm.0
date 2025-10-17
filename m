@@ -1,45 +1,45 @@
 Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A1F13370FB;
-	Fri, 17 Oct 2025 15:32:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0DEED332912;
+	Fri, 17 Oct 2025 15:32:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760715131; cv=pass; b=tHZaRMTPCIQd+CGbTNhL60Bk21KXMz3TerJ8P5on6DA2U1ukXX8Z3TH1STKHUNryElhh0IkdjRfM5lyIbJo0IahzUHbrq8sT/naiP/NTVz0cz8ZY78+hcMwdfTR1k9v7um7V5cJozgrhrddlkTF22UZxeNNSlTPjKhEIqfydp9k=
+	t=1760715134; cv=pass; b=rbbmSCs77j12Hq+uXDGJQc+KrcH79+KOrzrY9vIz+lN+u1ISphcD732AUFORbVz35FM0kfmu/G0jWCmAHCIFvWrO9mCYDiuSpts3jvOvYEiA2OlWhj96nOmY/siq13E14Xv2AcebO3JLPoSESS7/rjL/NJ93AQSnZszeYuzppyU=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760715131; c=relaxed/simple;
-	bh=unvPGOFriIHpUd82ExLn3Mme5GmCeuM02RDXIWOXQD4=;
+	s=arc-20240116; t=1760715134; c=relaxed/simple;
+	bh=H2R3HfhsejISe0TnCg4fYOv7VDMiJ3viJMo3HtiI2VY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=n32r7/64xriwcUsg7gGhYW9b1Vpqro3CGbgdRMpJTDgINe7ahkP6V3pYmi1ygtrRFmCAOGh3hoRDbGmsYWD26wR0tQsDo7sbYHXsE8F/wGzE/7Yx+/iZpenocmvwo0NGEg/6MwL3ztYxK9dizwPGlc1qLc2+kxtM2vKscJ/sjQc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=dcRJGFVr; arc=pass smtp.client-ip=136.143.188.112
+	 In-Reply-To:To:Cc; b=l/dIPRpe0RCRkXSO94FrIfZp2y9mcla52P3+Rdue0vNMqfMgspmHF9fHARx8rgasHdgaAMqLEu1JaxkiyJiHXjMJ3r9e1O0o2Or0fPbF2Hl/6JXgWE8HYF7b9iNPJRUZEGyeg6iaWOd4rKhct4im4Q113owo3bpMyyPW2sr/vIc=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=R5P2wG+k; arc=pass smtp.client-ip=136.143.188.112
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="dcRJGFVr"
-ARC-Seal: i=1; a=rsa-sha256; t=1760715099; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="R5P2wG+k"
+ARC-Seal: i=1; a=rsa-sha256; t=1760715107; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=c4cU1iyQ+Ldu7go/75NsLMcc895EysOzW9pPYMezdD/MCDBTPomGNy/uWJ+bgeTjT1obaPdxQ4sNYdYmVKnVNBci9PQIE++MXOD60PApvrwczh22YRj0vzlv7yCNiV3YN1fBo6NKy0okE4Alh5lxk4ioCVYJ8BzOEYBcoI8AvSg=
+	b=SZP21hJUyjRqWo3i+KFM+Ot6ZFYXX0ganbW4ApF0/Af1RFY6vtchJggaPKCwVhOyfcElELCJ+NYEKBbeclZpjOlpxEBLhvLgruTDOcqTufJ6lhg6jTJfp4TbqLYD8cqOourA9x8NCt1cAf2jkuNbCqRtg16e7DVPSFSurf0t4Cw=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1760715099; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=5kCSOGJcwbOC+7+5BLR+gRNJdgGMuPaf20hsggRiPEw=; 
-	b=FgeIcvHv9U6SUV9dE+nY+V2+u7r4znOqrJK5wIizK8lz4uykVEkdZrVJPLNmA6D2V0wDB+NTPyCg0xsuqdg24HnvTfMcdIypuLrbBA8+pwkuQsG2ivNuWwLIoK6TnwBi2TMA0eqs+5ZpRHBNPZDX4MXtfBd5wDAUmH4Ac1Xn53c=
+	t=1760715107; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=7bM73lypABp16DNaPQ/AZd3Rd/UhyQMrclXHvC1Kw7I=; 
+	b=UMSAHMrCRyt+9jDM2RUF/qFZgHqyyHytNtRN9mv2HypGc1yH36ChOkqy0AF9tMwwsLfvbOFrqqIcsPG+OIjTOmBs3oC/+bH7Pr/DzR/8D8sPQFDaqip2wP6z2bTuN/SsQ8J7jvbrxPbbIY5xJ9006lqDdRjmBvpumaHLJ3mDVAo=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1760715099;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1760715107;
 	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
 	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
-	bh=5kCSOGJcwbOC+7+5BLR+gRNJdgGMuPaf20hsggRiPEw=;
-	b=dcRJGFVr87gKIRNY9cqyB1Pde29JDLQJFEqztQwXYYASI1ZGZaIrFxNmV89JpIsr
-	/W90DLOR2KhXfrKfQlX25SMmfViqCAOjs8zHh8DYLKcLAnNGm2y0IA5wignMKKiXPHn
-	Ejg6ZbvEQI+gf1I9Br+M9i7TaqIYMx3r3mVZrTfQ=
-Received: by mx.zohomail.com with SMTPS id 1760715097932797.8703392963683;
-	Fri, 17 Oct 2025 08:31:37 -0700 (PDT)
+	bh=7bM73lypABp16DNaPQ/AZd3Rd/UhyQMrclXHvC1Kw7I=;
+	b=R5P2wG+kqBxhtk1IsU93+kT+Q6jVvz2C78zjyjhfti/5KvwcC0Vm4cdysqz5eIKR
+	U3P5/AEERfbd0QqPQCcRd/m2mYLzKafSGqa69c8WuigSMNSiQX6+hNDSKNcsdZx12Kn
+	0Xys4tb2aGO/QiRgmOpl5euk02DvlP6g8wKnbCtw=
+Received: by mx.zohomail.com with SMTPS id 1760715104463474.2685315868116;
+	Fri, 17 Oct 2025 08:31:44 -0700 (PDT)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Fri, 17 Oct 2025 17:31:08 +0200
-Subject: [PATCH v8 1/5] dt-bindings: gpu: mali-valhall-csf: add
- mediatek,mt8196-mali variant
+Date: Fri, 17 Oct 2025 17:31:09 +0200
+Subject: [PATCH v8 2/5] dt-bindings: power: Add MT8196 GPU frequency
+ control binding
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,7 +48,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251017-mt8196-gpufreq-v8-1-98fc1cc566a1@collabora.com>
+Message-Id: <20251017-mt8196-gpufreq-v8-2-98fc1cc566a1@collabora.com>
 References: <20251017-mt8196-gpufreq-v8-0-98fc1cc566a1@collabora.com>
 In-Reply-To: <20251017-mt8196-gpufreq-v8-0-98fc1cc566a1@collabora.com>
 To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
@@ -71,84 +71,146 @@ Cc: kernel@collabora.com, dri-devel@lists.freedesktop.org,
  Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 X-Mailer: b4 0.14.3
 
-The Mali-based GPU on the MediaTek MT8196 SoC uses a separate MCU to
-control the power and frequency of the GPU. This is modelled as a power
-domain and clock provider.
+On the MT8196 and MT6991 SoCs, the GPU power and frequency is controlled
+by some integration logic, referred to as "MFlexGraphics" by MediaTek,
+which comes in the form of an embedded controller running
+special-purpose firmware.
 
-It lets us omit the OPP tables from the device tree, as those can now be
-enumerated at runtime from the MCU.
+This controller takes care of the regulators and PLL clock frequencies
+to squeeze the maximum amount of power out of the silicon.
 
-Add the necessary schema logic to handle what this SoC expects in terms
-of clocks and power-domains.
+Add a binding which models it as a power domain.
 
 Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
- .../bindings/gpu/arm,mali-valhall-csf.yaml         | 37 +++++++++++++++++++++-
- 1 file changed, 36 insertions(+), 1 deletion(-)
+ .../bindings/power/mediatek,mt8196-gpufreq.yaml    | 117 +++++++++++++++++++++
+ 1 file changed, 117 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml b/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
-index 613040fdb444..860691ce985e 100644
---- a/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
-+++ b/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
-@@ -45,7 +45,9 @@ properties:
-     minItems: 1
-     items:
-       - const: core
--      - const: coregroup
-+      - enum:
-+          - coregroup
-+          - stacks
-       - const: stacks
- 
-   mali-supply: true
-@@ -110,6 +112,27 @@ allOf:
-         power-domain-names: false
-       required:
-         - mali-supply
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: mediatek,mt8196-mali
-+    then:
-+      properties:
-+        mali-supply: false
-+        sram-supply: false
-+        operating-points-v2: false
-+        power-domains:
-+          maxItems: 1
-+        power-domain-names: false
-+        clocks:
-+          maxItems: 2
-+        clock-names:
-+          items:
-+            - const: core
-+            - const: stacks
-+      required:
-+        - power-domains
- 
- examples:
-   - |
-@@ -145,5 +168,17 @@ examples:
-             };
-         };
-     };
+diff --git a/Documentation/devicetree/bindings/power/mediatek,mt8196-gpufreq.yaml b/Documentation/devicetree/bindings/power/mediatek,mt8196-gpufreq.yaml
+new file mode 100644
+index 000000000000..b9e43abaf8a4
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/mediatek,mt8196-gpufreq.yaml
+@@ -0,0 +1,117 @@
++# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/mediatek,mt8196-gpufreq.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: MediaTek MFlexGraphics Power and Frequency Controller
++
++maintainers:
++  - Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
++
++description:
++  A special-purpose embedded MCU to control power and frequency of GPU devices
++  using MediaTek Flexible Graphics integration hardware.
++
++properties:
++  $nodename:
++    pattern: '^power-controller@[a-f0-9]+$'
++
++  compatible:
++    enum:
++      - mediatek,mt8196-gpufreq
++
++  reg:
++    items:
++      - description: GPR memory area
++      - description: RPC memory area
++      - description: SoC variant ID register
++
++  reg-names:
++    items:
++      - const: gpr
++      - const: rpc
++      - const: hw-revision
++
++  clocks:
++    items:
++      - description: main clock of the embedded controller (EB)
++      - description: core PLL
++      - description: stack 0 PLL
++      - description: stack 1 PLL
++
++  clock-names:
++    items:
++      - const: eb
++      - const: core
++      - const: stack0
++      - const: stack1
++
++  mboxes:
++    items:
++      - description: FastDVFS events
++      - description: frequency control
++      - description: sleep control
++      - description: timer control
++      - description: frequency hopping control
++      - description: hardware voter control
++      - description: FastDVFS control
++
++  mbox-names:
++    items:
++      - const: fast-dvfs-event
++      - const: gpufreq
++      - const: sleep
++      - const: timer
++      - const: fhctl
++      - const: ccf
++      - const: fast-dvfs
++
++  memory-region:
++    items:
++      - description: phandle to the GPUEB shared memory
++
++  "#clock-cells":
++    const: 1
++
++  "#power-domain-cells":
++    const: 0
++
++required:
++  - compatible
++  - reg
++  - reg-names
++  - clocks
++  - clock-names
++  - mboxes
++  - mbox-names
++  - memory-region
++  - "#clock-cells"
++  - "#power-domain-cells"
++
++additionalProperties: false
++
++examples:
 +  - |
-+    gpu@48000000 {
-+        compatible = "mediatek,mt8196-mali", "arm,mali-valhall-csf";
-+        reg = <0x48000000 0x480000>;
-+        clocks = <&gpufreq 0>, <&gpufreq 1>;
-+        clock-names = "core", "stacks";
-+        interrupts = <GIC_SPI 606 IRQ_TYPE_LEVEL_HIGH 0>,
-+                     <GIC_SPI 605 IRQ_TYPE_LEVEL_HIGH 0>,
-+                     <GIC_SPI 604 IRQ_TYPE_LEVEL_HIGH 0>;
-+        interrupt-names = "job", "mmu", "gpu";
-+        power-domains = <&gpufreq>;
++    #include <dt-bindings/clock/mediatek,mt8196-clock.h>
++
++    power-controller@4b09fd00 {
++        compatible = "mediatek,mt8196-gpufreq";
++        reg = <0x4b09fd00 0x80>,
++              <0x4b800000 0x1000>,
++              <0x4b860128 0x4>;
++        reg-names = "gpr", "rpc", "hw-revision";
++        clocks = <&topckgen CLK_TOP_MFG_EB>,
++                 <&mfgpll CLK_MFG_AO_MFGPLL>,
++                 <&mfgpll_sc0 CLK_MFGSC0_AO_MFGPLL_SC0>,
++                 <&mfgpll_sc1 CLK_MFGSC1_AO_MFGPLL_SC1>;
++        clock-names = "eb", "core", "stack0", "stack1";
++        mboxes = <&gpueb_mbox 0>, <&gpueb_mbox 1>, <&gpueb_mbox 2>,
++                 <&gpueb_mbox 3>, <&gpueb_mbox 4>, <&gpueb_mbox 5>,
++                 <&gpueb_mbox 7>;
++        mbox-names = "fast-dvfs-event", "gpufreq", "sleep", "timer", "fhctl",
++                     "ccf", "fast-dvfs";
++        memory-region = <&gpueb_shared_memory>;
++        #clock-cells = <1>;
++        #power-domain-cells = <0>;
 +    };
- 
- ...
 
 -- 
 2.51.0
