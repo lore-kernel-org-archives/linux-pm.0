@@ -1,23 +1,24 @@
-Received: from mail-m32101.qiye.163.com (mail-m32101.qiye.163.com [220.197.32.101])
+Received: from mail-m155115.qiye.163.com (mail-m155115.qiye.163.com [101.71.155.115])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65B442D7388;
-	Fri, 17 Oct 2025 09:38:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.32.101
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15CAF2D948D;
+	Fri, 17 Oct 2025 09:38:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=101.71.155.115
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760693934; cv=none; b=TFkaTxGCZuuqhl95bQE70MuGJcfvjsf0iA+foM3bjcO1EpUNhjzaw65UijE4INspzWtusLn/H7embIdfL2IuknftY9JTMgdLgk/0GYDKYQkW89z2/1ZoN59oiRWKfXjxZl0GVTsnUUY+ZNu6Z84HuTGSyDke+S8+7uxe4tr1j+o=
+	t=1760693941; cv=none; b=a21J8NCdzZj3/byvybcR3DNr7sczJBn77ZscJBuAEi896GQITjOCttk/JaOibHGkQwbwEpe3cggBENhls2TJ0pDoo7/uOayvOBqDyomF8b75b9Tx/K/C8wvX3LvwuW0hJLgoy0KpTljCSpF7x15/S2ThxBlIu1Z5onJjq/X41Fs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760693934; c=relaxed/simple;
-	bh=GQ6R570uQrtw7VpX38UcuaUMLbdw1hKLzXQSSJtmD4o=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=suY7kXhcuPGJPyMdn+OcuMsPKfFFg0Kkj5+PiStO2ICv7J4JNawfX+0agEgkZI/oILEUlf7+Gw2t6W0Et/AVVOZCAK5afkyo+kOrMD1Qdo+jhif6gqqDzgCQtNwAXdyX96Bur5hDD9edTCZKq5ZN9MZshuQnbcKeUHpH/oCjTq8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=hMuhADEP; arc=none smtp.client-ip=220.197.32.101
+	s=arc-20240116; t=1760693941; c=relaxed/simple;
+	bh=/uMjemFdG4cvjRSuNs5pGHfvA0jJBGs/FFWEj/RfkMo=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=mzcwO8cx8QnurPZXR5XJGLncE3hS4xA+qyv8Xwe9Bnf4tIoODYdX+c0tReFNJdBVY+6XipTTqFepzUkBywQUDFCBkjPvny0jvmOrSigNAcS1+FD4p2T+DhKSvIA6R3yzONQFrItuz0dG+KFrQ/w+kH1XLpmF94pMNbGTVVHa3Lg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=W5jp6S/w; arc=none smtp.client-ip=101.71.155.115
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="hMuhADEP"
+	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="W5jp6S/w"
 Received: from xf.. (unknown [58.22.7.114])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 264523269;
-	Fri, 17 Oct 2025 17:38:40 +0800 (GMT+08:00)
+	by smtp.qiye.163.com (Hmail) with ESMTP id 264523299;
+	Fri, 17 Oct 2025 17:38:48 +0800 (GMT+08:00)
 From: Finley Xiao <finley.xiao@rock-chips.com>
 To: heiko@sntech.de
 Cc: robh@kernel.org,
@@ -33,10 +34,12 @@ Cc: robh@kernel.org,
 	sugar.zhang@rock-chips.com,
 	huangtao@rock-chips.com,
 	Finley Xiao <finley.xiao@rock-chips.com>
-Subject: [PATCH v4 0/2] Add power-controller support for RV1126B
-Date: Fri, 17 Oct 2025 17:38:32 +0800
-Message-ID: <20251017093834.331998-1-finley.xiao@rock-chips.com>
+Subject: [PATCH v4 2/2] pmdomain: rockchip: Add support for RV1126B
+Date: Fri, 17 Oct 2025 17:38:34 +0800
+Message-ID: <20251017093834.331998-3-finley.xiao@rock-chips.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20251017093834.331998-1-finley.xiao@rock-chips.com>
+References: <20251017093834.331998-1-finley.xiao@rock-chips.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -44,29 +47,122 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0a99f189210a03a9kunmbe68a2b91698e9
+X-HM-Tid: 0a99f189440803a9kunmbe68a2b91699fc
 X-HM-MType: 1
 X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZQkNCHlZCS0pDQk1MQ01JQkpWFRQJFh
+	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZGR4dHVYZGEIdSE8dGklPGh9WFRQJFh
 	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
 	hVSktLVUpCS0tZBg++
 DKIM-Signature: a=rsa-sha256;
-	b=hMuhADEPSmwP6nPasnEsJ31HuhbuNxT3etn3+hJJkFF62U7zWJC8lq+LcH/zBZZl7vGpFiijdsoOn54FZy4hlmlP7K0O+I9MNURftFqGk8K+ZAfI9ik/F1H0BPPUBQHk8FcYzX4o4naL5CW7pSQ64Kwd4wlHa9s63crTXOuFojs=; c=relaxed/relaxed; s=default; d=rock-chips.com; v=1;
-	bh=LjF9ZqEFw1pOCkzkvk35rLOTjYm8/YyQQGfvrv/Wf0E=;
+	b=W5jp6S/w9W+mUfWqB06NKlgUMJCpSRRuHfUWlNqXTcHWT4XJAzCN5Q0cIoRdnrfHoEKofNCELI7ej65U0xnP5xOc6B3Sz37UA/DWs7wTDJKLPWRNNrFxLTtMe9dL/wCsuHLli3ul58bBUt16rbr9Ey5Dgu1IILb1z2jMJExyRdM=; c=relaxed/relaxed; s=default; d=rock-chips.com; v=1;
+	bh=NztC9OMCatTTQwpoZke82j/IOHOT8VkpQXM+0K2ojno=;
 	h=date:mime-version:subject:message-id:from;
 
-Add support for the power domain controller on the RV1126B SoC.
+Add configuration and power domains for RV1126 SoC.
 
-Finley Xiao (2):
-  dt-bindings: power: rockchip: Add support for RV1126B
-  pmdomain: rockchip: Add support for RV1126B
+Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+---
 
- .../power/rockchip,power-controller.yaml      |  2 +
- drivers/pmdomain/rockchip/pm-domains.c        | 41 +++++++++++++++++++
- .../power/rockchip,rv1126b-power-controller.h | 17 ++++++++
- 3 files changed, 60 insertions(+)
- create mode 100644 include/dt-bindings/power/rockchip,rv1126b-power-controller.h
+Changes in v4:
+- update the header after rename
 
+Changes in v3: None
+
+Changes in v2:
+- rename AISP to AIISP
+- collect review tag
+
+ drivers/pmdomain/rockchip/pm-domains.c | 41 ++++++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+
+diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
+index 1955c6d453e4..4f1336a0f49a 100644
+--- a/drivers/pmdomain/rockchip/pm-domains.c
++++ b/drivers/pmdomain/rockchip/pm-domains.c
+@@ -25,6 +25,7 @@
+ #include <soc/rockchip/rockchip_sip.h>
+ #include <dt-bindings/power/px30-power.h>
+ #include <dt-bindings/power/rockchip,rv1126-power.h>
++#include <dt-bindings/power/rockchip,rv1126b-power-controller.h>
+ #include <dt-bindings/power/rk3036-power.h>
+ #include <dt-bindings/power/rk3066-power.h>
+ #include <dt-bindings/power/rk3128-power.h>
+@@ -137,6 +138,20 @@ struct rockchip_pmu {
+ 	.active_wakeup = wakeup,			\
+ }
+ 
++#define DOMAIN_M_G(_name, pwr, status, req, idle, ack, g_mask, wakeup, keepon)	\
++{							\
++	.name = _name,					\
++	.pwr_w_mask = (pwr) << 16,			\
++	.pwr_mask = (pwr),				\
++	.status_mask = (status),			\
++	.req_w_mask = (req) << 16,			\
++	.req_mask = (req),				\
++	.idle_mask = (idle),				\
++	.ack_mask = (ack),				\
++	.clk_ungate_mask = (g_mask),			\
++	.active_wakeup = wakeup,			\
++}
++
+ #define DOMAIN_M_G_SD(_name, pwr, status, req, idle, ack, g_mask, mem, wakeup, keepon)	\
+ {							\
+ 	.name = _name,					\
+@@ -205,6 +220,9 @@ struct rockchip_pmu {
+ #define DOMAIN_RV1126(name, pwr, req, idle, wakeup)		\
+ 	DOMAIN_M(name, pwr, pwr, req, idle, idle, wakeup)
+ 
++#define DOMAIN_RV1126B(name, pwr, req, wakeup)			\
++	DOMAIN_M_G(name, pwr, pwr, req, req, req, req, wakeup, true)
++
+ #define DOMAIN_RK3288(name, pwr, status, req, wakeup)		\
+ 	DOMAIN(name, pwr, status, req, req, (req) << 16, wakeup)
+ 
+@@ -1104,6 +1122,13 @@ static const struct rockchip_domain_info rv1126_pm_domains[] = {
+ 	[RV1126_PD_USB]		= DOMAIN_RV1126("usb", BIT(9), BIT(15), BIT(15),  false),
+ };
+ 
++static const struct rockchip_domain_info rv1126b_pm_domains[] = {
++					      /* name     pwr     req      wakeup */
++	[RV1126B_PD_NPU]	= DOMAIN_RV1126B("npu",   BIT(0), BIT(8),  false),
++	[RV1126B_PD_VDO]	= DOMAIN_RV1126B("vdo",   BIT(1), BIT(9),  false),
++	[RV1126B_PD_AIISP]	= DOMAIN_RV1126B("aiisp", BIT(2), BIT(10), false),
++};
++
+ static const struct rockchip_domain_info rk3036_pm_domains[] = {
+ 	[RK3036_PD_MSCH]	= DOMAIN_RK3036("msch", BIT(14), BIT(23), BIT(30), true),
+ 	[RK3036_PD_CORE]	= DOMAIN_RK3036("core", BIT(13), BIT(17), BIT(24), false),
+@@ -1516,6 +1541,18 @@ static const struct rockchip_pmu_info rv1126_pmu = {
+ 	.domain_info = rv1126_pm_domains,
+ };
+ 
++static const struct rockchip_pmu_info rv1126b_pmu = {
++	.pwr_offset = 0x210,
++	.status_offset = 0x230,
++	.req_offset = 0x110,
++	.idle_offset = 0x128,
++	.ack_offset = 0x120,
++	.clk_ungate_offset = 0x140,
++
++	.num_domains = ARRAY_SIZE(rv1126b_pm_domains),
++	.domain_info = rv1126b_pm_domains,
++};
++
+ static const struct of_device_id rockchip_pm_domain_dt_match[] = {
+ 	{
+ 		.compatible = "rockchip,px30-power-controller",
+@@ -1585,6 +1622,10 @@ static const struct of_device_id rockchip_pm_domain_dt_match[] = {
+ 		.compatible = "rockchip,rv1126-power-controller",
+ 		.data = (void *)&rv1126_pmu,
+ 	},
++	{
++		.compatible = "rockchip,rv1126b-power-controller",
++		.data = (void *)&rv1126b_pmu,
++	},
+ 	{ /* sentinel */ },
+ };
+ 
 -- 
 2.43.0
 
