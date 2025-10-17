@@ -1,128 +1,140 @@
-Received: from mail-m1973198.qiye.163.com (mail-m1973198.qiye.163.com [220.197.31.98])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 550E42D5412;
-	Fri, 17 Oct 2025 09:43:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.98
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF0892D97AB
+	for <linux-pm@vger.kernel.org>; Fri, 17 Oct 2025 09:45:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760694241; cv=none; b=UICJULN70P80boSaXW+NaRkZpe1yZmlpKkPzJmH0Jz5NfDziiMzNm7ZWZPXNt53R7Vr3jG6TZNdRove2rZZPzUZYjYn9LPA4D5qtkQVv6veK25UtoCzj2lPvoZGeofCdpGz+IpwhLpLs47+TiziLQz4flWwqfH0wgHCJFTT+XEA=
+	t=1760694328; cv=none; b=DT1G1OwjOm7eKUGOM3QcMKNBYENg68QYqX3U0gTcbaZetTPqctn6jU1ixXlisWSU6fTG0Q2CBlJsqds7UDd73hIrgZdXbieKHGnGBja5jdHPYaFz2Nv3kMzcH2fiBofjaYoOO9kg1Z3AgumELrhJCYyrCr9LixNT/X5gb0YlsVs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760694241; c=relaxed/simple;
-	bh=dFGA4DHWgQLENizJk+LxFqdjUnXVAweKR66WB2g1Xnk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=bnLU8T9HuBHOcAlNU1Bt/+lBMlGOQxv+yQK53aCGYMQp/Iq0JKgL6W0XZlZjWqcqhPDsc0+5Y8DGYsLCqrW6Ii8CFuToGqU9VRV9dqs9AHeHUxBOofbrfg7QLB1r9aOxT4FKphVqiVl1GSAQpyywrNnoPUi4H8niFSahnU5Ebxw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=KjDu7KZY; arc=none smtp.client-ip=220.197.31.98
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
+	s=arc-20240116; t=1760694328; c=relaxed/simple;
+	bh=XtO9sRQeiqTEF3Mgx59O+0CfGSoNUdMMWG3uX2sJANc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=pv/Xjecr28/STvIJSbsyPaFIrK/aKue9hg7i9FIZrBa7oZ5HBiX8J7zH2pfqVnqGkZiysRHICcftJCkuZWIDcqEC2R3+7eDZGoORPm0CTjvHfgsgXPGfk7Cae1NGYEueYGFpAKh1TbxmsVT4RG34ernPsj0r4MB1cg1wVcl3ueE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=S6jaivmL; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="KjDu7KZY"
-Received: from xf.. (unknown [58.22.7.114])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 264523289;
-	Fri, 17 Oct 2025 17:38:45 +0800 (GMT+08:00)
-From: Finley Xiao <finley.xiao@rock-chips.com>
-To: heiko@sntech.de
-Cc: robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	ulf.hansson@linaro.org,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-rockchip@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	zhangqing@rock-chips.com,
-	sugar.zhang@rock-chips.com,
-	huangtao@rock-chips.com,
-	Finley Xiao <finley.xiao@rock-chips.com>
-Subject: [PATCH v4 1/2] dt-bindings: power: rockchip: Add support for RV1126B
-Date: Fri, 17 Oct 2025 17:38:33 +0800
-Message-ID: <20251017093834.331998-2-finley.xiao@rock-chips.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20251017093834.331998-1-finley.xiao@rock-chips.com>
-References: <20251017093834.331998-1-finley.xiao@rock-chips.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="S6jaivmL"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8BC9CC116D0
+	for <linux-pm@vger.kernel.org>; Fri, 17 Oct 2025 09:45:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1760694327;
+	bh=XtO9sRQeiqTEF3Mgx59O+0CfGSoNUdMMWG3uX2sJANc=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=S6jaivmL21W3j9X94Ug/vZPu9YmbLoyjEWgbaxTo4XE3WKXOrTeDKG9vdkTCgYWYg
+	 shWpjWn0BvJn0wMWGjEyrwPTD6mgziEtD6Vu0fQ7BSQUyHRBCn4z64q4iaGDdl5JjV
+	 qX6v0jC5yfFkeobv8NlBtsBLIY/cF2YO+yAtgiZLj4j3IJgMjkNuAIX5ONUZdHTm+M
+	 k368bR6By5fuuf1IVbEXp3ZbfMak4TdHOpL9YTKzWt1eyPsCcH4Yet+7u6fk8WhWCo
+	 /9aKX7oKI9Shy7eB72Zh0w03pAVA9CVlmurErvgqjX9yNvyWcMZQRD4dYRwD8MmubZ
+	 vRPt4q+c6lBNg==
+Received: by mail-oi1-f178.google.com with SMTP id 5614622812f47-443afb2334bso69282b6e.3
+        for <linux-pm@vger.kernel.org>; Fri, 17 Oct 2025 02:45:27 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCU1btkGV/kivPTSRrEwRwc9Dv9q0OEQP1UnEkjgSx0C3Tqrc0625UQtQlq1BOqpXou127EtN3Q21g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxZTdiQp50BkUOYPk6PiFPyeIMvryDE+UFqfkfjsMEJQSp1nIJb
+	uj1o7Sr9qh3G5VlndBD4vc9E8kiejRCJyIpFeOQpgYfHAg2YYkyL8AHgmOqdUlztB938AQYWspp
+	iF9Vw0YyKPEO10cBW45KJkuTOmkNaZ5Y=
+X-Google-Smtp-Source: AGHT+IH4eFtUZLBxcwh2xQ/mf6nJ2K1x5Ot8Mr4XTPJHIaP3cRmxN8m7Qjq/x+6o55VptzdO3OZu5M8S/8tYsiUSlRE=
+X-Received: by 2002:a05:6808:6d82:b0:441:c8af:291d with SMTP id
+ 5614622812f47-443a30953d3mr1270420b6e.42.1760694326867; Fri, 17 Oct 2025
+ 02:45:26 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0a99f189367303a9kunmbe68a2b91699a1
-X-HM-MType: 1
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZGR5MQlYZTRpISk9OTEIfH0hWFRQJFh
-	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
-	hVSktLVUpCS0tZBg++
-DKIM-Signature: a=rsa-sha256;
-	b=KjDu7KZYwvMMvehYa6i+/DrL2bAKCzaRo22MYugb1yMAheEVkvGXYZAFGdd4rltmi0dsMAODKtp1XwsedAp0s5M+NWPW2RaCXZddt0a8C4BOxaa8EQIrwunDGZRPPG2h3LLifAF35f+6TlkLX59OWx8SgnOvhGa3+HEcZU81sXg=; c=relaxed/relaxed; s=default; d=rock-chips.com; v=1;
-	bh=lFTsqZOJG3tTxh/WHpsWEhcE4BuXs5luqR1m915IRaI=;
-	h=date:mime-version:subject:message-id:from;
+References: <20251016155335.1.I60a53c170a8596661883bd2b4ef475155c7aa72b@changeid>
+In-Reply-To: <20251016155335.1.I60a53c170a8596661883bd2b4ef475155c7aa72b@changeid>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 17 Oct 2025 11:45:14 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0iFa3_UFkA920Ogn0YAYLq4CjnAD_VjLsmxQxrfm5HEBw@mail.gmail.com>
+X-Gm-Features: AS18NWAfxBP4Jux50tLr0QwuvERSlU0IAnFqGNafXGnfCBKno1UvlTv43pvyLKQ
+Message-ID: <CAJZ5v0iFa3_UFkA920Ogn0YAYLq4CjnAD_VjLsmxQxrfm5HEBw@mail.gmail.com>
+Subject: Re: [PATCH] PCI/PM: Prevent runtime suspend before devices are fully initialized
+To: Brian Norris <briannorris@chromium.org>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rafael@kernel.org>, 
+	Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Add power domain IDs for RV1126B SoC.
-Add a new compatible because register fields have changed.
+On Fri, Oct 17, 2025 at 1:28=E2=80=AFAM Brian Norris <briannorris@chromium.=
+org> wrote:
+>
+> PCI devices are created via pci_scan_slot() and similar, and are
+> promptly configured for runtime PM (pci_pm_init()). They are initially
+> prevented from suspending by way of pm_runtime_forbid(); however, it's
+> expected that user space may override this via sysfs [1].
+>
+> Now, sometime after initial scan, a PCI device receives its BAR
+> configuration (pci_assign_unassigned_bus_resources(), etc.).
+>
+> If a PCI device is allowed to suspend between pci_scan_slot() and
+> pci_assign_unassigned_bus_resources(), then pci-driver.c will
+> save/restore incorrect BAR configuration for the device, and the device
+> may cease to function.
+>
+> This behavior races with user space, since user space may enable runtime
+> PM [1] as soon as it sees the device, which may be before BAR
+> configuration.
+>
+> Prevent suspending in this intermediate state by holding a runtime PM
+> reference until the device is fully initialized and ready for probe().
+>
+> [1] echo auto > /sys/bus/pci/devices/.../power/control
+>
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Brian Norris <briannorris@chromium.org>
+> ---
+>
+>  drivers/pci/bus.c | 7 +++++++
+>  drivers/pci/pci.c | 6 ++++++
+>  2 files changed, 13 insertions(+)
+>
+> diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+> index f26aec6ff588..227a8898acac 100644
+> --- a/drivers/pci/bus.c
+> +++ b/drivers/pci/bus.c
+> @@ -14,6 +14,7 @@
+>  #include <linux/of.h>
+>  #include <linux/of_platform.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/pm_runtime.h>
+>  #include <linux/proc_fs.h>
+>  #include <linux/slab.h>
+>
+> @@ -375,6 +376,12 @@ void pci_bus_add_device(struct pci_dev *dev)
+>                 put_device(&pdev->dev);
+>         }
+>
+> +       /*
+> +        * Now that resources are assigned, drop the reference we grabbed=
+ in
+> +        * pci_pm_init().
+> +        */
+> +       pm_runtime_put_noidle(&dev->dev);
+> +
+>         if (!dn || of_device_is_available(dn))
+>                 pci_dev_allow_binding(dev);
+>
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index b14dd064006c..06a901214f2c 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -3226,6 +3226,12 @@ void pci_pm_init(struct pci_dev *dev)
+>         pci_pm_power_up_and_verify_state(dev);
+>         pm_runtime_forbid(&dev->dev);
+>         pm_runtime_set_active(&dev->dev);
+> +       /*
+> +        * We cannot allow a device to suspend before its resources are
+> +        * configured. Otherwise, we may allow saving/restoring unexpecte=
+d BAR
+> +        * configuration.
+> +        */
+> +       pm_runtime_get_noresume(&dev->dev);
+>         pm_runtime_enable(&dev->dev);
 
-Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
----
+So runtime PM should not be enabled here, should it?
 
-Changes in v4:
-- rename to rockchip,rv1126b-power-controller.h
-
-Changes in v3:
-- modify the patch format
-
-Changes in v2:
-- update the commit message
-- update the license
-- rename AISP to AIISP
-
- .../power/rockchip,power-controller.yaml        |  2 ++
- .../power/rockchip,rv1126b-power-controller.h   | 17 +++++++++++++++++
- 2 files changed, 19 insertions(+)
- create mode 100644 include/dt-bindings/power/rockchip,rv1126b-power-controller.h
-
-diff --git a/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml b/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml
-index a884e49c995f..b41db576f95d 100644
---- a/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml
-+++ b/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml
-@@ -46,6 +46,7 @@ properties:
-       - rockchip,rk3576-power-controller
-       - rockchip,rk3588-power-controller
-       - rockchip,rv1126-power-controller
-+      - rockchip,rv1126b-power-controller
- 
-   "#power-domain-cells":
-     const: 1
-@@ -126,6 +127,7 @@ $defs:
-           "include/dt-bindings/power/rk3568-power.h"
-           "include/dt-bindings/power/rk3588-power.h"
-           "include/dt-bindings/power/rockchip,rv1126-power.h"
-+          "include/dt-bindings/power/rockchip,rv1126b-power-controller.h"
- 
-       clocks:
-         minItems: 1
-diff --git a/include/dt-bindings/power/rockchip,rv1126b-power-controller.h b/include/dt-bindings/power/rockchip,rv1126b-power-controller.h
-new file mode 100644
-index 000000000000..48ea87a4423c
---- /dev/null
-+++ b/include/dt-bindings/power/rockchip,rv1126b-power-controller.h
-@@ -0,0 +1,17 @@
-+/* SPDX-License-Identifier: (GPL-2.0-only OR MIT) */
-+/*
-+ * Copyright (c) 2024 Rockchip Electronics Co., Ltd.
-+ * Author: Finley Xiao <finley.xiao@rock-chips.com>
-+ */
-+
-+#ifndef __DT_BINDINGS_POWER_RV1126B_POWER_CONTROLLER_H__
-+#define __DT_BINDINGS_POWER_RV1126B_POWER_CONTROLLER_H__
-+
-+/* VD_NPU */
-+#define RV1126B_PD_NPU		0
-+
-+/* VD_LOGIC */
-+#define RV1126B_PD_VDO		1
-+#define RV1126B_PD_AIISP	2
-+
-+#endif
--- 
-2.43.0
-
+>  }
+>
+> --
