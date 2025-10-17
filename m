@@ -1,41 +1,58 @@
-Received: from mail-m1973180.qiye.163.com (mail-m1973180.qiye.163.com [220.197.31.80])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5528B334689;
-	Fri, 17 Oct 2025 07:03:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.80
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 709C730F928
+	for <linux-pm@vger.kernel.org>; Fri, 17 Oct 2025 07:29:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760684592; cv=none; b=C+ewh1IBAyFqRiyX2D1a0jRqJ9RASGf4JKQJzk99xD9wJOJ5u+DoHYtCSEk+r8wEKtc2taGFNYQcKVdhingLVQ1hAwa0EOphxzVxE5MLymRou5gayCg4EIM6xnES6zRw7RSsPagXPiMhqlV60vBFw/RhI3fkmcM2wI866C/roBc=
+	t=1760686143; cv=none; b=NZSMUZ2NPfzL8E5CkTg/ZOIsHY0DiT3nYJUf/0MDJUgcV3ta+8kkLreBBHA3N4Z/AyAmc89/oucqh28DkmShyAoexaoanObcbE/7hoTmIBLabkze+R6xaQmB43TeypuAo+UwVEbC4ywJxHY3ox79QOlW4gNgIe6hTmvssGGX07I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760684592; c=relaxed/simple;
-	bh=0UIObik+Gsd/YcNm0oXm++o2U2Xe+Cv/rEgPjBuHEBA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=TO+gnCQd5tYbFLCtZYRhFGBshlBnCW9p5Y0z7J/Ym284FDu7oMh37EmShLuNmFZLK7XBhruXy61d7yHOeC/fvmx99MXGsWCvuU1TXf9oH1jVMc3RqaoG3HhhY+YYmDMccJOt6M/9hFO5ZCOmHOGAaHgf4IMxNLlsaEbaHY2PzPE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=MstmStnG; arc=none smtp.client-ip=220.197.31.80
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
+	s=arc-20240116; t=1760686143; c=relaxed/simple;
+	bh=NdQAhmUL+bnghvo6Emd2tLKBR+AZEvi1tzNbJA2nAEw=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=rSfEWRdX2ogSeyoD6pGJxxnPn67eoOTmVuNtvfLHWE8H0AbTSFj6kcq0IgX0b1U8iSUPiTuEeIdyhxHpSLjZiLLmP05ANqYj4GAWvaxOTbuBuMZgpjCxaiozJDP46Lgp/AG7kTvHHBdk8XDIzOSErpIBxV0hrCWmmyjrOVXhyU0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=fjCFQP3Q; arc=none smtp.client-ip=192.198.163.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="MstmStnG"
-Received: from xf.. (unknown [58.22.7.114])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 263eafc9e;
-	Fri, 17 Oct 2025 14:57:49 +0800 (GMT+08:00)
-From: Finley Xiao <finley.xiao@rock-chips.com>
-To: heiko@sntech.de
-Cc: robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	ulf.hansson@linaro.org,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-rockchip@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	zhangqing@rock-chips.com,
-	sugar.zhang@rock-chips.com,
-	Finley Xiao <finley.xiao@rock-chips.com>
-Subject: [PATCH v3 0/2] Add power-controller support for RV1126B
-Date: Fri, 17 Oct 2025 14:56:44 +0800
-Message-ID: <20251017065646.320643-1-finley.xiao@rock-chips.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="fjCFQP3Q"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1760686141; x=1792222141;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=NdQAhmUL+bnghvo6Emd2tLKBR+AZEvi1tzNbJA2nAEw=;
+  b=fjCFQP3QH4BuKLQHH7ak5cIxyVAk/MKWK/1JmT0F+uzL1gYmfptJXtNg
+   /f+wSvsSmoqOv62YrVIl3/qgDb/7w5MtVi77jsi5siaBFKCdqcop+DW09
+   PIkEY0a9/pMG0NdyUOesd5ghfns7fFNzj1c1UuWSUeYXJ+e1YSC1y3afD
+   xwTwuD/Ofx3hMJ56I2sDKaKXYPHnEL1mlE6obnCHB7pHqmFQGxHQ6KUSP
+   lxrE1bfWElJVzJsM5hYkYpI59/ujI4UoaO/LI3odk23oER10cqaOATxeO
+   8NNGxHjcit3ZN6+T3PO8fG+chxGluEKHMOxPyINAsegK4HiS5nGD8w1fi
+   Q==;
+X-CSE-ConnectionGUID: U9IPtXi8Q/SdNbsbrOI+iw==
+X-CSE-MsgGUID: 3Z7QTHy2QJeQj0q9bOm6LQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11584"; a="88362217"
+X-IronPort-AV: E=Sophos;i="6.19,234,1754982000"; 
+   d="scan'208";a="88362217"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Oct 2025 00:29:01 -0700
+X-CSE-ConnectionGUID: zYS0Il1dQsabxJ2T6pxc+Q==
+X-CSE-MsgGUID: 7NAa00gkS86YxYUKLV6x5A==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.19,234,1754982000"; 
+   d="scan'208";a="183148461"
+Received: from baandr0id001.iind.intel.com ([10.66.253.151])
+  by fmviesa009.fm.intel.com with ESMTP; 17 Oct 2025 00:28:59 -0700
+From: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
+To: rafael@kernel.org,
+	daniel.lezcano@linaro.org,
+	rui.zhang@intel.com,
+	srinivas.pandruvada@linux.intel.com
+Cc: linux-pm@vger.kernel.org,
+	Kaushlendra Kumar <kaushlendra.kumar@intel.com>
+Subject: [PATCH] thermal: Fix UUID string comparison in current_uuid_store()
+Date: Fri, 17 Oct 2025 12:57:03 +0530
+Message-Id: <20251017072703.2064390-1-kaushlendra.kumar@intel.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -43,29 +60,30 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0a99f0f5e0c403a9kunmca707a4712410e
-X-HM-MType: 1
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZGkxLGVYfGh4fGEseGk1MGBhWFRQJFh
-	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
-	hVSktLVUpCS0tZBg++
-DKIM-Signature: a=rsa-sha256;
-	b=MstmStnG9l7xyfdHX/QBRsxJefvwW5nA+1Z0eT+8ea+Y1QJueXtEPuC+92bavGGjQh5GQMQymOQ0kQkPCb7mKKwBZaF68XGrqWFoXwoXMQ9F0HsUymcBHiTos5JGrlorPbEB2VCkgGEromfG940G3oVAH3F20sbXD/PkD22McvI=; c=relaxed/relaxed; s=default; d=rock-chips.com; v=1;
-	bh=Rq+uvw5+i90RRBLsQFz7WN6PFQUjhoT0ECz9wYD+Q3I=;
-	h=date:mime-version:subject:message-id:from;
 
-Add support for the power domain controller on the RV1126B SoC.
+Use strlen() for UUID matching instead of sizeof() to ensure
+correct comparison of supported UUIDs. sizeof() returns pointer
+size instead of actual string length, causing incomplete UUID
+matching.
 
-Finley Xiao (2):
-  dt-bindings: power: rockchip: Add support for RV1126B
-  pmdomain: rockchip: Add support for RV1126B
+Signed-off-by: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
+---
+ drivers/thermal/intel/int340x_thermal/int3400_thermal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- .../power/rockchip,power-controller.yaml      |  2 +
- drivers/pmdomain/rockchip/pm-domains.c        | 41 +++++++++++++++++++
- .../power/rockchip,rv1126b-power.h            | 17 ++++++++
- 3 files changed, 60 insertions(+)
- create mode 100644 include/dt-bindings/power/rockchip,rv1126b-power.h
-
+diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+index 908cc1bf57f1..236003d12dc7 100644
+--- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+@@ -199,7 +199,7 @@ static ssize_t current_uuid_store(struct device *dev,
+ 
+ 	for (i = 0; i < INT3400_THERMAL_MAXIMUM_UUID; ++i) {
+ 		if (!strncmp(buf, int3400_thermal_uuids[i],
+-			     sizeof(int3400_thermal_uuids[i]) - 1)) {
++			     strlen(int3400_thermal_uuids[i]))) {
+ 			/*
+ 			 * If we have a list of supported UUIDs, make sure
+ 			 * this one is supported.
 -- 
-2.43.0
+2.34.1
 
