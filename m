@@ -1,41 +1,41 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76ED42882A9;
-	Sat, 18 Oct 2025 12:25:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8D29288D0;
+	Sat, 18 Oct 2025 12:27:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760790311; cv=none; b=ZqCBF0ia8+O7UMhP5G6NR2GN6o3+BLfTNx8uK+vvDClsOytsTvn8aHIStngAz1HfnVti1MqHXa+xjpZ99PY3a+QUfm1VYo4FApp2E3J5kEaIVtc1F+sNYenDSfs5SeK8xXFTbMt0xXf1A7G65XljjSY64mswZcaReccFVWp+Kyk=
+	t=1760790440; cv=none; b=WSNBhq8uuCiEymNg99dctCFl0ZrztHz4kmlf5zwC6immTx/1VwttrghqDBY+F1hPbsCr+djHZ1bHSaQCnt9jZKwgnD2opbRTqdWYxzvqlaRlimhH+328SpolpQuJP8icfr9woaVIkINxbqa9pIBjAVxNmftkf8JPMBqoUD+D6a8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760790311; c=relaxed/simple;
-	bh=Yjt/mwGqTYgaSp3IkVe2eq2mxkadGDI7jkjoPokj5uI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=KM0BdfHYhkPXwfdJc9WxSQau0DhmIFmnm9L3U0IH8MvDLn0Vc2cJq2daloV3SPif5xlRJQvU9VJbHvFv1qqDoBVBT0O2SPXPQ2f5yjkP3ySqwC3jNR2pAJJYZ8OpPC2BcnLH7HFSrNEC0+GR9G4NrR9jK4zDoIj8554sQFHEdX0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lsGbIMQE; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1760790440; c=relaxed/simple;
+	bh=SCFTaGoirpvT04lMBP/4zr76JrsMh88Ob3cOymf2Urw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=TscWb91f3wSfjRqfmhHFi4aQbjohBbb3x4kkpOiFN8/Ypbl2UFlOzr9hgB1RklLyq+tJ7tdDVDD/S09qF9F/G3F/DxSspw0hi8lpp8lagUaNKiDAhF3iBwJ7kWt182LQe/hcuF5IdTf37KdnORHHIHJcudc/l5dzF6sVnCCnXgs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BNMBAWaC; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lsGbIMQE"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 73B1CC4CEFE;
-	Sat, 18 Oct 2025 12:25:07 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BNMBAWaC"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8199AC4CEF8;
+	Sat, 18 Oct 2025 12:27:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1760790310;
-	bh=Yjt/mwGqTYgaSp3IkVe2eq2mxkadGDI7jkjoPokj5uI=;
+	s=k20201202; t=1760790439;
+	bh=SCFTaGoirpvT04lMBP/4zr76JrsMh88Ob3cOymf2Urw=;
 	h=From:To:Cc:Subject:Date:From;
-	b=lsGbIMQEoCtuZrArvWM0lnBi49nL6rgT7KhrRXyyFnk8v8BcdtE/opQ/jKr08u0Sz
-	 rm6hkW5KYdqT4l8rsqwg0qa9rprwO4IQXqkJHAoODghp++a81z2e5Dig8tTq0mgsqB
-	 dMMv+hJHTJorB+QNpHfG5OOeDZ2eOVjsXszbea9Jqq7YFte0VhnCGKz9e0xTcY2TOd
-	 PkGaR19x619R66fYRdi0kXOVNXPIS0DAJAsTCPlINoZdpN/PKk8mWq/Z0w34llg6aU
-	 c9BpALMBcfYxu02UZHq/g3nnuqHzH6Q/bW+beroO4pNiDjIRkG9cNuqPxfFxgxbc4C
-	 9s0ChOjtt+fKA==
+	b=BNMBAWaCXB+hJ4peztQItmWaHxlnJgbzWzLot0VrxFLxqHVTmo+jz7bMyHadABNdi
+	 JwNDQauzoq216DP002oAMQb2F9jz3Y0QW5L0nwfabggJk7grHb10ZPE1BvhIrUuhZG
+	 F5rR7t1JhMdV3XkED4NwztZ4ftJwMkaWLiRh9Sszfo+t4ZKJ9eBUbry+V/AbBYuYId
+	 obmwoF0JMejE0Fpkf1CCBAbe9V7XnB4HFEycWqpi1KGHdYUHQYoacgdAESgEeGB1JZ
+	 nLLhJGM/zj/Rjbi9vA2+RDaRWJUXbvKNKpUCQx9PwOqeMzDAV+mbnziwaJV2RF2I7c
+	 sUMrApIj3JHMw==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>,
- Jonathan Cameron <jonathan.cameron@huawei.com>, Takashi Iwai <tiwai@suse.de>,
- LKML <linux-kernel@vger.kernel.org>, Zhang Qilong <zhangqilong3@huawei.com>,
- Frank Li <Frank.Li@nxp.com>, Dhruva Gole <d-gole@ti.com>,
- Mika Westerberg <mika.westerberg@linux.intel.com>,
- Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH v2 0/2] ACPI: TAD: Use auto-cleanup macros for runtime PM
-Date: Sat, 18 Oct 2025 14:22:06 +0200
-Message-ID: <8599731.T7Z3S40VBb@rafael.j.wysocki>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Sergey Senozhatsky <senozhatsky@chromium.org>,
+ LKML <linux-kernel@vger.kernel.org>,
+ Christian Loehle <christian.loehle@arm.com>,
+ Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
+ Tomasz Figa <tfiga@chromium.org>, Doug Smythies <dsmythies@telus.net>
+Subject:
+ [PATCH v1] Revert "cpuidle: menu: Avoid discarding useful information"
+Date: Sat, 18 Oct 2025 14:27:15 +0200
+Message-ID: <3663603.iIbC2pHGDl@rafael.j.wysocki>
 Organization: Linux Kernel Development
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -46,20 +46,75 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
 
-Hi All,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-This supersedes
+It is reported that commit 85975daeaa4d ("cpuidle: menu: Avoid discarding
+useful information") led to a performance regression on Intel Jasper Lake
+systems because it reduced the time spent by CPUs in idle state C7 which
+is correlated to the maximum frequency the CPUs can get to because of an
+average running power limit [1].
 
-https://lore.kernel.org/linux-pm/3925484.kQq0lBPeGt@rafael.j.wysocki/
+Before that commit, get_typical_interval() would have returned UINT_MAX
+whenever it had been unable to make a high-confidence prediction which
+had led to selecting the deepest available idle state too often and
+both power and performance had been inadequate as a result of that on
+some systems.  However, this had not been a problem on systems with
+relatively aggressive average running power limits, like the Jasper Lake
+systems in question, because on those systems it was compensated by the
+ability to run CPUs faster.
 
-the first patch of which proved to be controversial (quite as expected), so it
-has been dropped and the patch that was the second one previously is [1/2] now,
-and it has not been changed.
+It was addressed by causing get_typical_interval() to return a number
+based on the recent idle duration information available to it even if it
+could not make a high-confidence prediction, but that clearly did not
+take the possible correlation between idle power and available CPU
+capacity into account.
 
-Patch [2/2] (previously [3/3]) has been updated to use the full ACQUIRE()/
-ACQUIRE_ERR() syntax.
+For this reason, revert most of the changes made by commit 85975daeaa4d,
+except for one cosmetic cleanup, and add a comment explaining the
+rationale for returning UINT_MAX from get_typical_interval() when it
+is unable to make a high-confidence prediction.
 
-Thanks!
+Fixes: 85975daeaa4d ("cpuidle: menu: Avoid discarding useful information")
+Closes: https://lore.kernel.org/linux-pm/36iykr223vmcfsoysexug6s274nq2oimcu55ybn6ww4il3g3cv@cohflgdbpnq7/ [1]
+Reported-by: Sergey Senozhatsky <senozhatsky@chromium.org>
+Cc: All applicable <stable@vger.kernel.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpuidle/governors/menu.c |   21 +++++++++------------
+ 1 file changed, 9 insertions(+), 12 deletions(-)
+
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -188,20 +188,17 @@ again:
+ 	 *
+ 	 * This can deal with workloads that have long pauses interspersed
+ 	 * with sporadic activity with a bunch of short pauses.
++	 *
++	 * However, if the number of remaining samples is too small to exclude
++	 * any more outliers, allow the deepest available idle state to be
++	 * selected because there are systems where the time spent by CPUs in
++	 * deep idle states is correlated to the maximum frequency the CPUs
++	 * can get to.  On those systems, shallow idle states should be avoided
++	 * unless there is a clear indication that the given CPU is most likley
++	 * going to be woken up shortly.
+ 	 */
+-	if (divisor * 4 <= INTERVALS * 3) {
+-		/*
+-		 * If there are sufficiently many data points still under
+-		 * consideration after the outliers have been eliminated,
+-		 * returning without a prediction would be a mistake because it
+-		 * is likely that the next interval will not exceed the current
+-		 * maximum, so return the latter in that case.
+-		 */
+-		if (divisor >= INTERVALS / 2)
+-			return max;
+-
++	if (divisor * 4 <= INTERVALS * 3)
+ 		return UINT_MAX;
+-	}
+ 
+ 	/* Update the thresholds for the next round. */
+ 	if (avg - min > max - avg)
 
 
 
