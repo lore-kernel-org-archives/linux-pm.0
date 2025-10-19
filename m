@@ -1,36 +1,35 @@
 Received: from hall.aurel32.net (hall.aurel32.net [195.154.113.88])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 306DA18C031;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 307401B425C;
 	Sun, 19 Oct 2025 19:15:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.154.113.88
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760901360; cv=none; b=U8heva3T533/UT2K3cmymDB1pnhUOdWq4rwT23Pe1WI2H4mgQOyc3mTvfMEj8n9qPK1CAmDqDerA1OyThvp2WWj1ZbmaHdyDvBRP1cid89JkOouIvW/+MWTqPG7WPz9JcsE0EWiEcgQWx5pZLB5cNcDkQtTO/bD1GymvmcXWHUE=
+	t=1760901361; cv=none; b=cB12UseRl/ik4MC9w538s8ybWKbAqe0w+mMn6xK/4XlhMozVQddEVkSRqEu/8qY4AsegRK/OZ2KiONSr10QPhNw7ooDJXQjBomsLFM3CbiAuC6eHmaYzUboMp4rDaJYEc388Qg+c0TVx+FnTz16CZ0chIz87ymMAxYD8qsi/t2o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760901360; c=relaxed/simple;
-	bh=Y9GgmEyc5Wg0fWh/eWHm5KItK+TqZsc+ZvBB/IwReG8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=SxRlgKeXb3QMOqmw6rj3KCYwWazNQaat7p/IAdCEbkuqb107L6WUtcsOXvSrbNX/7e1+DJphp+jgrrx7cWqs3ocpVXyIiGhVRj1nIb5KgZwdx5ubchzHQwLqc7CQdwds+8TsGEgzhlLxVNJfbqcIMxlOuKifiO+KNg0wgT+BWRs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net; spf=pass smtp.mailfrom=aurel32.net; dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b=o/nclKGb; arc=none smtp.client-ip=195.154.113.88
+	s=arc-20240116; t=1760901361; c=relaxed/simple;
+	bh=TqDxpYUV3qWZXi+1mZpJv6NxjhlvhAHz5cY7zHP7bZQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=jVNEcSwX5qY8WpLCzNF/6TbCfUP+SU1hCEWWm6EJCoYKlhWdroM4pNB6DtYzdrHVAEmOk7gFslNlBKx4BHniyFghXiRbufUELPbQskGsBg3GVaY+adEAVB+SqLTbREaLXzzWpLTfNwEwti/qxxpZl0uJhd7eZLql3XEs8tv4ZuY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net; spf=pass smtp.mailfrom=aurel32.net; dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b=RhsehRKl; arc=none smtp.client-ip=195.154.113.88
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aurel32.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b="o/nclKGb"
+	dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b="RhsehRKl"
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=aurel32.net
-	; s=202004.hall; h=Content-Transfer-Encoding:MIME-Version:References:
-	In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Content-Type:From:Reply-To:
-	Subject:Content-ID:Content-Description:X-Debbugs-Cc;
-	bh=jsbgxAIW3+VtBZE8+kihXqhKNM21Kl+yhCyplWWqqu0=; b=o/nclKGbU1y5rwLZQnsDfSG8Nt
-	4gQlIFRCYq5Te3kku9DRYHVuUe+ElaWDSGtMt14RPxOqybLixZYz9KRYCUhG9wByvKNYxmWAzvJZj
-	0MRbPhseHnSxofYEkwdiS13n3b1pugY7jceHjpNPyLx94K6bByUiqC8Z0fD1K9qdGVBerwtzm/U5S
-	PlxQXoVnURcKiGSoPTx778e26Jk/wvdKsdlCMkRDGLBrsxVZ5gMysmfSFOuhvDlCuaQh4gc+NHH/h
-	JZYJ+iMxqhsV3QHPOykU7OAYX4QqA+s5JszKvMbsMKWyDjobeSnT0mWqZx9RFGq7cgJezLJKmiauZ
-	49P5772w==;
+	; s=202004.hall; h=Content-Transfer-Encoding:MIME-Version:Message-ID:Date:
+	Subject:Cc:To:From:Content-Type:From:Reply-To:Subject:Content-ID:
+	Content-Description:In-Reply-To:References:X-Debbugs-Cc;
+	bh=Rxhmdd8gp8A7Gb+pYCJhHhx5Sl0gdKNrP/+9/ZJldls=; b=RhsehRKliNXkvmY+pzSXAAZhNr
+	Uhgu9UnxFr7auNNbebHxtH62y8F7pT5BN18VWJRxN1lZF/GceWfQKE1AjzpabNtYN4plYlgEXjDj/
+	O1h1MUkf6ehL68nKoEK5ZpF+10Zqxee6lE32EUE+IzTGK5U01O8gPNQ2XyYCtVoZHDOO2/TpiZ1AU
+	bwAW66gFrQJM441Fulwv7m3DBKMUqOpTopEMgRNjF7HWODu5/XLCLnhJ6z+s1IW2Bf3cBW5wgohhP
+	Eqp+ZF5D1ql3mS7YIUwmd9D2XdOT30zMiW2JYyd8DAB4xN04s07xNwxTj16KMBGsd0IkXIwcTafNE
+	kwXpKPWg==;
 Received: from [2a01:e34:ec5d:a741:1ee1:92ff:feb4:5ec0] (helo=ohm.rr44.fr)
 	by hall.aurel32.net with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.96)
 	(envelope-from <aurelien@aurel32.net>)
-	id 1vAYsK-00DYBh-31;
+	id 1vAYsK-00DYBe-1U;
 	Sun, 19 Oct 2025 21:15:28 +0200
 From: Aurelien Jarno <aurelien@aurel32.net>
 To: linux-kernel@vger.kernel.org,
@@ -48,12 +47,10 @@ Cc: Aurelien Jarno <aurelien@aurel32.net>,
 	linux-pm@vger.kernel.org (open list:SYSTEM RESET/SHUTDOWN DRIVERS),
 	linux-riscv@lists.infradead.org (open list:RISC-V SPACEMIT SoC Support),
 	spacemit@lists.linux.dev (open list:RISC-V SPACEMIT SoC Support)
-Subject: [PATCH v2 2/2] mfd: simple-mfd-i2c: add a reboot cell for the SpacemiT P1 chip
-Date: Sun, 19 Oct 2025 21:14:13 +0200
-Message-ID: <20251019191519.3898095-3-aurelien@aurel32.net>
+Subject: [PATCH v2 0/2] driver: reset: spacemit-p1: add driver for poweroff/reboot
+Date: Sun, 19 Oct 2025 21:14:11 +0200
+Message-ID: <20251019191519.3898095-1-aurelien@aurel32.net>
 X-Mailer: git-send-email 2.47.2
-In-Reply-To: <20251019191519.3898095-1-aurelien@aurel32.net>
-References: <20251019191519.3898095-1-aurelien@aurel32.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -62,28 +59,34 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add a "spacemit-p1-reboot" cell for the SpacemiT P1 chip.
+This adds poweroff/reboot support for the SpacemiT P1 PMIC chip, which is
+commonly paired with the SpacemiT K1 SoC.
 
-Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
----
-v2:
- - Rebase onto v6.18-rc1    
+Note: For reliable operation, this driver depends on a this patch that adds
+atomic transfer support to the SpacemiT I2C controller driver:
+https://lore.kernel.org/spacemit/20251009-k1-i2c-atomic-v4-1-a89367870286@linux.spacemit.com/
 
- drivers/mfd/simple-mfd-i2c.c | 1 +
- 1 file changed, 1 insertion(+)
+Changes between version 1 and version 2:
+- Rebase onto v6.18-rc1    
+- Use dev_err_probe() to simplify the code 
+- Fix indentation of patch 1
+- Collect Acked-by and Tested-by
 
-diff --git a/drivers/mfd/simple-mfd-i2c.c b/drivers/mfd/simple-mfd-i2c.c
-index 0a607a1e3ca1d..542d378cdcd1f 100644
---- a/drivers/mfd/simple-mfd-i2c.c
-+++ b/drivers/mfd/simple-mfd-i2c.c
-@@ -99,6 +99,7 @@ static const struct regmap_config spacemit_p1_regmap_config = {
- };
- 
- static const struct mfd_cell spacemit_p1_cells[] = {
-+	{ .name = "spacemit-p1-reboot", },
- 	{ .name = "spacemit-p1-regulator", },
- 	{ .name = "spacemit-p1-rtc", },
- };
+Here is version 1 of this series:
+  https://lore.kernel.org/spacemit/20250927220824.1267318-1-aurelien@aurel32.net/
+
+
+Aurelien Jarno (2):
+  driver: reset: spacemit-p1: add driver for poweroff/reboot
+  mfd: simple-mfd-i2c: add a reboot cell for the SpacemiT P1 chip
+
+ drivers/mfd/simple-mfd-i2c.c             |  1 +
+ drivers/power/reset/Kconfig              |  9 +++
+ drivers/power/reset/Makefile             |  1 +
+ drivers/power/reset/spacemit-p1-reboot.c | 88 ++++++++++++++++++++++++
+ 4 files changed, 99 insertions(+)
+ create mode 100644 drivers/power/reset/spacemit-p1-reboot.c
+
 -- 
 2.47.2
 
