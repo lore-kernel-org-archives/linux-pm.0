@@ -1,23 +1,24 @@
 Received: from relmlie5.idc.renesas.com (relmlor1.renesas.com [210.160.252.171])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 678C51A239A;
-	Mon, 20 Oct 2025 14:31:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id E671421FF4D;
+	Mon, 20 Oct 2025 14:31:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.160.252.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760970684; cv=none; b=ZJZ8+rx5vK+kEy9ofroqbgF8I5Q/qAWFiD3vhflR/Cqul0TTKGgRbo62uPE//Osn/HJTh8LqMBdwznmEAQWxpAhGDRAq6IjabcX8qmbs1Unpj5n+Mwqk0dCX1F2eAq5Vx/PjK+hgCl89YJf181ToxE7igCwvpwFXqy2yc7Mj+uo=
+	t=1760970688; cv=none; b=iMpKMTS7KFr9NH5eqoOoRp4CYJijcxwf/kQJqRDREjLfQ1B1w241dvNHy5g6B6B1rEjt6rLg+A++hQyh6LOg34K9sXRcvtu5MFcRW4Ml6DP5/yhavitstl+9GM3RLp8XyNNV8LI5fRyKbuBrOi+h6G7F7bGkmZ3y0hhlbuwTpSY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760970684; c=relaxed/simple;
-	bh=BRhmsRc0I/U90tySmc1W3dDFOEcpSBuOh2riT89cVfs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=MJcLqd06KLC7vGttCeK6JgI7Bm8BS937vH68mGfBLs2+ihIyjzO22bbN2IR6rIS2REhpFtTke35vy8ok8RMMVHDs7ZiBYxZOHjUMeFa/oZWGH6XBrnnwoURy5Axgd9qq8a+Ha027WzoNXMLkW+vUgn4NNuRNkg7ajfvsjVRCp4c=
+	s=arc-20240116; t=1760970688; c=relaxed/simple;
+	bh=RmDctZXm85kTLVYOSDkgdDNVCzPmUFMnuvpzQZziQro=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Do4MmNsbRPEVz0BPaym//+1cJQioSHKo+cXwKjuUeoE0c+47AGYL4s6hLeSVSMMJg7fJC4c57GI7DfXW2KnlTPbEB0HBFUBoYHpTw1X7KLaGOu+LzxswdjldxcXQ3FaasyKRZ8ZhE6ii5cjNAAKi/YwIhpT/vuQi9RWAOj3967U=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com; spf=pass smtp.mailfrom=renesas.com; arc=none smtp.client-ip=210.160.252.171
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=renesas.com
-X-CSE-ConnectionGUID: EgD152R9Q7KUIvjCt7wLmw==
-X-CSE-MsgGUID: pecVp6alSMGua6RKoTeLyg==
+X-CSE-ConnectionGUID: safs7Iz4ROaWEswTR1lfVw==
+X-CSE-MsgGUID: JiGLIIcsTXWmbAUrnk3ZTQ==
 Received: from unknown (HELO relmlir6.idc.renesas.com) ([10.200.68.152])
-  by relmlie5.idc.renesas.com with ESMTP; 20 Oct 2025 23:31:14 +0900
+  by relmlie5.idc.renesas.com with ESMTP; 20 Oct 2025 23:31:25 +0900
 Received: from vm01.adwin.renesas.com (unknown [10.226.92.23])
-	by relmlir6.idc.renesas.com (Postfix) with ESMTP id D919141CCD99;
-	Mon, 20 Oct 2025 23:31:08 +0900 (JST)
+	by relmlir6.idc.renesas.com (Postfix) with ESMTP id 77D6541CCD99;
+	Mon, 20 Oct 2025 23:31:20 +0900 (JST)
 From: Ovidiu Panait <ovidiu.panait.rb@renesas.com>
 To: john.madieu.xa@bp.renesas.com,
 	rafael@kernel.org,
@@ -36,10 +37,12 @@ Cc: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	linux-renesas-soc@vger.kernel.org,
 	linux-clk@vger.kernel.org
-Subject: [PATCH v2 0/3] Add TSU support for the Renesas RZ/V2H SoC
-Date: Mon, 20 Oct 2025 14:31:04 +0000
-Message-ID: <20251020143107.13974-1-ovidiu.panait.rb@renesas.com>
+Subject: [PATCH v2 2/3] dt-bindings: thermal: r9a09g047-tsu: Document RZ/V2H TSU
+Date: Mon, 20 Oct 2025 14:31:06 +0000
+Message-ID: <20251020143107.13974-3-ovidiu.panait.rb@renesas.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20251020143107.13974-1-ovidiu.panait.rb@renesas.com>
+References: <20251020143107.13974-1-ovidiu.panait.rb@renesas.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -47,10 +50,6 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-
-Hi,
-
-This series adds TSU support for the Renesas RZ/V2H SoC.
 
 The Renesas RZ/V2H SoC includes a Thermal Sensor Unit (TSU) block designed
 to measure the junction temperature. The device provides real-time
@@ -60,24 +59,37 @@ channels for temperature sensing.
 The Renesas RZ/V2H SoC is using the same TSU IP found on the RZ/G3E SoC,
 the only difference being that it has two channels instead of one.
 
-Best regards,
-Ovidiu
+Add new compatible string "renesas,r9a09g057-tsu" for RZ/V2H and use
+"renesas,r9a09g047-tsu" as a fallback compatible to indicate hardware
+compatibility with the RZ/G3E implementation.
 
-v2:
-- Dropped unneeded "items" from bindings compatible list.
-- Added "Reviewed-by:" tag from Krzysztof for the bindings patch.
+Signed-off-by: Ovidiu Panait <ovidiu.panait.rb@renesas.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+v2 changes:
+- dropped unneeded "items" from compatible list
+- added "Reviewed-by:" tag from Krzysztof
 
+ .../devicetree/bindings/thermal/renesas,r9a09g047-tsu.yaml  | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-Ovidiu Panait (3):
-  clk: renesas: r9a09g057: Add clock and reset entries for TSU
-  dt-bindings: thermal: r9a09g047-tsu: Document RZ/V2H TSU
-  arm64: dts: renesas: r9a09g057: Add TSU nodes
-
- .../thermal/renesas,r9a09g047-tsu.yaml        |  6 +-
- arch/arm64/boot/dts/renesas/r9a09g057.dtsi    | 75 +++++++++++++++++++
- drivers/clk/renesas/r9a09g057-cpg.c           |  6 ++
- 3 files changed, 86 insertions(+), 1 deletion(-)
-
+diff --git a/Documentation/devicetree/bindings/thermal/renesas,r9a09g047-tsu.yaml b/Documentation/devicetree/bindings/thermal/renesas,r9a09g047-tsu.yaml
+index 8d3f3c24f0f2..befdc8b7a082 100644
+--- a/Documentation/devicetree/bindings/thermal/renesas,r9a09g047-tsu.yaml
++++ b/Documentation/devicetree/bindings/thermal/renesas,r9a09g047-tsu.yaml
+@@ -16,7 +16,11 @@ description:
+ 
+ properties:
+   compatible:
+-    const: renesas,r9a09g047-tsu
++    oneOf:
++      - const: renesas,r9a09g047-tsu # RZ/G3E
++      - items:
++          - const: renesas,r9a09g057-tsu # RZ/V2H
++          - const: renesas,r9a09g047-tsu # RZ/G3E
+ 
+   reg:
+     maxItems: 1
 -- 
 2.51.0
 
