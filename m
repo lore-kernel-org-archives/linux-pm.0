@@ -1,85 +1,93 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C43B265296
-	for <linux-pm@vger.kernel.org>; Mon, 20 Oct 2025 16:53:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70B7C32F75C
+	for <linux-pm@vger.kernel.org>; Mon, 20 Oct 2025 16:59:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1760979214; cv=none; b=MTxwy8MfR50iaKRCmEOiQekGWjYzaut22PkTar3BLELUdAGPYHVHSItIcRhciNDuTphRefF1WzNraOz9F7f1nARU6poqVGMKn1viW+UVnsZJ2p+WLaECK3OuwcRRaFcRcWLE7g0P2CwDkhdp1YPbk/pEvb7da/ecFDHqJzNn2SM=
+	t=1760979545; cv=none; b=idPCchh+KDDGYeaqsanEcrs2wMxu2eCoTwRHR9pA0p9e5rjW+3ynu1n8eOtvYPimnRKv+e92fT04T++gF8oTqQTA264lSsxOdKvTGfNZpJSJgjdIZ2wie56PukzeKsSSYwuFV5HCS3lwd9P5KwMXn9DvR6TUSMwwN/5ZJwplh/I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1760979214; c=relaxed/simple;
-	bh=1rkkZ5AZJ1f6tx+F7MiJYeMTvVjq0iVEGK4upPvLgz4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=VkHY+r2sMtlePtBfpEMW22XHsPYJ72OvnEz8Y/9ulC6ybofFwBgfaSc/qPtCGoiXB8RNPSLJyyacpcWoGCNPsP6jxkmbNZarSqftWPAQFj5XdfXmOJX2Bz9a75cc75UJ3Qcj/PSLf25E9Gbl0hYBi/jTns7Qm7dhlU7cuFLRh7M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ly7YWfNU; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1760979545; c=relaxed/simple;
+	bh=W5/9cUzx8mFHXlSOOHPt6EnGaX6UaZbSSHaXNYekbmY=;
+	h=Message-ID:Date:MIME-Version:Cc:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=i78aNNu1VjsPtBSX8XBkH264WJl1SDEKr+tQYRcyu079+bP2Sl3XQf5sXGInuOFPzqufyhXAqmBQy9iaq/GY30eZgcgjAjYMPSvAx6p7O0k2qqsOhYb0tUBUgljjLMhmMU1SVTJnFtHOWwpha/r7GfAXIXP7947f5ezPxs61tAk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=UPpU2Koj; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ly7YWfNU"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CA132C113D0;
-	Mon, 20 Oct 2025 16:53:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1760979214;
-	bh=1rkkZ5AZJ1f6tx+F7MiJYeMTvVjq0iVEGK4upPvLgz4=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=ly7YWfNUgbVv3Pn+Pbo5Pc8AMCOcOM6wlyp67ru21Ff5AKntHmv4GVUMprIhExqJN
-	 3AFV89l4OniDqENxwIrZ5QLfdH0+X0jVJTqEvtNzNuiwNs/WtsZrCbWdsUS3ojOSnD
-	 zX881mOUzZEG6wEXmkHpBVX3BOdaJxUNrUDbyBQ9P2AArtYK0+bQ5+Xdjd7XzM3TO8
-	 259wwJEOkKW8oxZmdgsI+UhiqDJfONNfIlRKVbUuVtKvQhTWmzlrGf0XGUhW5gNk0H
-	 w5MmAZIvQ1Nzw75hoyOe+IzPEQlG8frbq9WJq91ldvDI0/7kAI8JHY5sZs1c4sLMDM
-	 yxWMPbwhReyrA==
-From: "Mario Limonciello (AMD)" <superm1@kernel.org>
-To: mario.limonciello@amd.com,
-	airlied@gmail.com,
-	alexander.deucher@amd.com,
-	christian.koenig@amd.com,
-	dakr@kernel.org,
-	gregkh@linuxfoundation.org,
-	lenb@kernel.org,
-	pavel@kernel.org,
-	rafael@kernel.org,
-	simona@ffwll.ch
-Cc: Muhammad Usama Anjum <usama.anjum@collabora.com>,
-	amd-gfx@lists.freedesktop.org,
-	dri-devel@lists.freedesktop.org,
-	linux-pm@vger.kernel.org
-Subject: [RFC 3/3] drm/amd: Return -EBUSY for amdgpu_pmops_thaw() on success
-Date: Mon, 20 Oct 2025 11:50:49 -0500
-Message-ID: <20251020165317.3992933-4-superm1@kernel.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20251020165317.3992933-1-superm1@kernel.org>
-References: <20251020165317.3992933-1-superm1@kernel.org>
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="UPpU2Koj"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1760979541;
+	bh=W5/9cUzx8mFHXlSOOHPt6EnGaX6UaZbSSHaXNYekbmY=;
+	h=Date:Cc:Subject:To:References:From:In-Reply-To:From;
+	b=UPpU2KojtgdPswvKeqbXUJWEA8dZPbeKenypejVEvLXGY1j71w2XRF7PyflnAiqMG
+	 PwssshWeSmAHUUhSLhC4wTOfmWpUfALFnsRNne3N90gQrPf0YVkq5n2H+/MJNj0yhL
+	 dLzN9Mq37uAnW20xhCQvmJeH8MVUHPQQmZbOlOFi+cRksBvL73JqC+KNPQSO6oNvsC
+	 8tStCFgnXvpvCCMZnMLBiP1KNrEyq7LhjsNjr1rP8Me8qlP3SLASx1YD6IvDVchF7C
+	 NslDB18KiMXZPmnR6IwtcZhTZhR23o3NANvg2dcCZw5DlLqOc5nQ8nkNX19uFO++N3
+	 /xTPmDIRRkOAg==
+Received: from [192.168.200.105] (unknown [182.181.201.194])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: usama.anjum)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id CD9A917E1278;
+	Mon, 20 Oct 2025 18:58:55 +0200 (CEST)
+Message-ID: <c93821d6-2e59-481a-8119-1c00a3fdcd5e@collabora.com>
+Date: Mon, 20 Oct 2025 21:58:51 +0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Cc: usama.anjum@collabora.com, amd-gfx@lists.freedesktop.org,
+ dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org
+Subject: Re: [RFC 1/3] PM: Mark device as suspended if it failed to resume
+To: "Mario Limonciello (AMD)" <superm1@kernel.org>,
+ mario.limonciello@amd.com, airlied@gmail.com, alexander.deucher@amd.com,
+ christian.koenig@amd.com, dakr@kernel.org, gregkh@linuxfoundation.org,
+ lenb@kernel.org, pavel@kernel.org, rafael@kernel.org, simona@ffwll.ch
+References: <20251020165317.3992933-1-superm1@kernel.org>
+ <20251020165317.3992933-2-superm1@kernel.org>
+Content-Language: en-US
+From: Muhammad Usama Anjum <usama.anjum@collabora.com>
+In-Reply-To: <20251020165317.3992933-2-superm1@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-From: Mario Limonciello <mario.limonciello@amd.com>
+On 10/20/25 9:50 PM, Mario Limonciello (AMD) wrote:
+> From: Mario Limonciello <mario.limonciello@amd.com>
+> 
+> If a device failed to resume the PM core treats it as though it
+> succeeded.  This could cause state machine problems.
+> 
+> Cc: Muhammad Usama Anjum <usama.anjum@collabora.com>
+> Signed-off-by: Mario Limonciello (AMD) <superm1@kernel.org>
+Tested-by: Muhammad Usama Anjum <usama.anjum@collabora.com>
 
-The PM core should be notified that thaw was skipped for the device
-so that if it's tried to be resumed (such as an aborted hibernate)
-that it gets another chance to resume.
+> ---
+>  drivers/base/power/main.c | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index e83503bdc1fdb..bf9c3d79c455f 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -1104,6 +1104,9 @@ static void device_resume(struct device *dev, pm_message_t state, bool async)
+>  	device_unlock(dev);
+>  	dpm_watchdog_clear(&wd);
+>  
+> +	if (error)
+> +		dev->power.is_suspended = true;
+> +
+>   Complete:
+>  	complete_all(&dev->power.completion);
+>  
 
-Cc: Muhammad Usama Anjum <usama.anjum@collabora.com>
-Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
----
- drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
-index 61268aa82df4d..d40af069f24dd 100644
---- a/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
-+++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
-@@ -2681,7 +2681,7 @@ static int amdgpu_pmops_thaw(struct device *dev)
- 
- 	/* do not resume device if it's normal hibernation */
- 	if (!pm_hibernate_is_recovering() && !pm_hibernation_mode_is_suspend())
--		return 0;
-+		return -EBUSY;
- 
- 	return amdgpu_device_resume(drm_dev, true);
- }
 -- 
-2.43.0
-
+---
+Thanks,
+Usama
