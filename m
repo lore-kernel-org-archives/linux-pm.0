@@ -1,153 +1,148 @@
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f44.google.com (mail-lf1-f44.google.com [209.85.167.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15970279798;
-	Tue, 21 Oct 2025 20:04:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.158.5
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3A9D279DDB
+	for <linux-pm@vger.kernel.org>; Tue, 21 Oct 2025 20:13:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761077042; cv=none; b=h61bJEL4N/ud3HtN3thbmABN7MaTUdhHL9Km+ehtRXno4ASrfXZIYZTSaPBqmIznJXUagHbBBNMKPexA7hDllBLKHTfka/xwtSeNVoMzP3G3we1yZ7hmhs9SRbFDMmTLaLb1Quxa0TiPn34FXOXEEsnxobKeTeVBlV0aY7CnbI8=
+	t=1761077625; cv=none; b=QMtL7F+hWwfE36bIJXQkVgQjur810He1NEFRAeMS4xx8msTLg4FDHPAWkfLxIMRl1RCXO/W451oAsTSON6+IwrKVKEAymRPTqaBOJc494OQmdKGZn/VhZ4oxtBEQWmAql5xaPgD35H2SGNqZagsmR1V8ZK2+VgtTAUN9aaMTzkQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761077042; c=relaxed/simple;
-	bh=uhSuasC7qgF2zmotCjudEp9V1eE0GEMNvRxw2MHVLKM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=uBA1/qstMEKcrcFGhikxCbaDcE7m3v1dsuBXwhSNjmW+LQ5/jyHL1K8C/gksPzITJjIzP6L7kPqIFMuGpNM286C56OYC8Je60cb0AQclkJRuHWpt6pYBNsqzVn1sIzczv1OOnn86Qd9BLm3HRcydLb+PBiPi7TcGe6zgJLucO5Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; spf=pass smtp.mailfrom=linux.ibm.com; dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b=eWugX/bA; arc=none smtp.client-ip=148.163.158.5
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.ibm.com
+	s=arc-20240116; t=1761077625; c=relaxed/simple;
+	bh=m8dulZsmOF4wEvLc1RlTO2XmXrclzS6tJ1KKfQwhMpw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=YE36RDQ9+xZeoeUUaNgux7supAbjRLwgq+rDOhf+lBoLfrjn6IcNaw6LO4DT+DnNDEwsrHwFepeHPXseVr6rzeSpH7SAli5t8xO5aon+pBjhYrWGdl/6Qs/fkzi80WIhZCEOpwyZqAKLFgEh9FNhDRK/NWJ6KsAMow2hWGXbpzI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=gH1y7Dp7; arc=none smtp.client-ip=209.85.167.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="eWugX/bA"
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 59LDL3ii007202;
-	Tue, 21 Oct 2025 20:03:38 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=NRP0tC
-	eYnVDlm62E339Oy5tdWhMiGMfV0Piwa5uDGM8=; b=eWugX/bAPc5iMFy91G2qLR
-	KWVRHXmxtoc/fGA3VLEaL5V9hhtsZ0HByE8h+gOqUG5IFftGGWooFrK8DHoiw1aw
-	YzfphMwPq5KSqeoXV8S8eIPqhxlGyu3ygM6M5yVqR9TvJRXdbj2Ku0Uea+UHDGtY
-	gK0z34hlL1ZtvNqs5HwStp2I9ldhfpBob9Th+bjUOzkyov30p6xj1q8/d0d7U0Xl
-	2GejBwnX70G0ELcUY8/Umvapr5H9xOXFg+Gfu5tKaHfe073NwhBIAaapnbgaThn7
-	DaN6RrTMA/00IwDSXgVdTjhYBREk/YVI5k2Qd3Z5wuy6kvc2ZmQLh54kfbz3e8jA
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 49v30vqpj4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 21 Oct 2025 20:03:38 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 59LIeCPI032142;
-	Tue, 21 Oct 2025 20:03:37 GMT
-Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 49vp7mvknt-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 21 Oct 2025 20:03:37 +0000
-Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 59LK3aQl22414030
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 21 Oct 2025 20:03:36 GMT
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 96BAE5805E;
-	Tue, 21 Oct 2025 20:03:36 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B69D658043;
-	Tue, 21 Oct 2025 20:03:35 +0000 (GMT)
-Received: from [9.61.241.19] (unknown [9.61.241.19])
-	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 21 Oct 2025 20:03:35 +0000 (GMT)
-Message-ID: <a4e7c14c-112d-4ac4-9ff7-74efebc26321@linux.ibm.com>
-Date: Tue, 21 Oct 2025 13:03:30 -0700
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="gH1y7Dp7"
+Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-57edfeaa05aso6869912e87.0
+        for <linux-pm@vger.kernel.org>; Tue, 21 Oct 2025 13:13:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1761077622; x=1761682422; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=gFunx2MZpZr8MGsSovVvmXHzBeV4exhykIDoDRfAdgo=;
+        b=gH1y7Dp7s9BNzvUdJ99URmhRHISMHJY4Lyw7lTD/crUxSFP7kvfrDq2vQUBzGyrX0C
+         KEh4cHoHfdkxqw+Z33WSiWmwlVGaii0dQ0hGz00eEk0xg4O3CkQOYHfbBl/cL2NBpSFM
+         a2x09x4dX8Q1B7dJ4kgw0AYbcBQ7Z85tTQuJnDGBesiJUmoHkdppbPTa0A+DlV7YRiYn
+         GFp+G30X6KTuSM5lKLJJ//LxJ3dUHdOv0lq9w+1L0R0z+stHlX3+SZMGimpxtHqV5uoD
+         7/cbNRsClTYEa9Z4L0+3N8L0z7mmqf7/TKoidQpGXa6g+AQiCXjDgiVKNJEING8khnd2
+         BjAw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1761077622; x=1761682422;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=gFunx2MZpZr8MGsSovVvmXHzBeV4exhykIDoDRfAdgo=;
+        b=J1l7MKJb1CMZ3mMtHnbFKfztnFcO6edGPOEBd4mk7e7+f3/ULBP64zQIoq50z7k1WV
+         QWZEQ70YgwUAUkZa1xATaoYC6mr54PsHRj3r2V5KAklgsEXlCw8XXsx9slZMDTtMUUyh
+         p38ffXZrQhSEJbKkkBmof9adI/jq6scQRO5sbNJ4QUBys8XolIVSKEqFSvqnMbCgEUzH
+         2x1ootZCUeRY8TR0qR6EY+D9G7YWtFfWQUCCP8qvZQFwIkdlD5jxJVY9j19V93quG1lS
+         mxsvxWUFABT88Ixwoo+f7WOJxfRZMvVmukhbk6eQ9uFQQ67lmC5Q0EEWNnUogoMp14wD
+         6Q4w==
+X-Forwarded-Encrypted: i=1; AJvYcCV/xX4PxUPEldw3AX2hP3mdAIpYR1WIrddTj93wAZfowyiT8gzxL17b4UCnhCycu/uZqJNB17zMKw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyjUbW7Sri6oTxpVQW4W2OfHLBnK5abmPO6rlhwYjF5fvfnvApE
+	NGMorvZQ07LAm9KoLUnrwTxPAnQ8IB7mdDqOtk6S3qg+tiwU7+59hS2IMvOj8fWwXowP7R++KuO
+	qEd+4NKTW9wmiGfBRicCqVRXid7CFjYT0S7vovJfu
+X-Gm-Gg: ASbGncs2kW/9EcgKvWwptG7hPrhUmmjmLOv76y7VGm4eFtfX8c6zXd1KB4IpXQrKWyS
+	TOJdFxX97yilBDyw/AyIUdjUDIIWhGMd1FDHFF1ieJiD0BdvISnzmc1vcJhjngGRorarQepvmiZ
+	ygVp1AfhBRqeD0LwUE/6CnQYLzQhItoyy0hc43uXD2MfG4VgCf3pTny3/mStmBNDAPCwIBDvqv6
+	EeHt+zVaS5CTiImx5TaHK5eOkWgjxglnGzIp5ey7oC6Nr1ETGhVXUooBzFp18cVE60v2+cvLCw/
+	YzqJKli1FphvNqjSLadg0D0HDg==
+X-Google-Smtp-Source: AGHT+IGAvGEVgit/SDBbJXfglgzrCcYtyoqLzzRV1N2+0Gnz2+ROcolK3EI6Rrn4aLeI5pJYAVKljQP6z6syteJTyHg=
+X-Received: by 2002:a2e:bd17:0:b0:376:3a83:428d with SMTP id
+ 38308e7fff4ca-37797ada3e4mr54852761fa.48.1761077621527; Tue, 21 Oct 2025
+ 13:13:41 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1] PM: runtime: Fix conditional guard definitions
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Cc: Jonathan Cameron <jonathan.cameron@huawei.com>,
-        Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-        Linux PCI <linux-pci@vger.kernel.org>,
-        Alex Williamson <alex.williamson@redhat.com>,
-        Bjorn Helgaas <helgaas@kernel.org>,
-        Zhang Qilong <zhangqilong3@huawei.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>, Frank Li <Frank.Li@nxp.com>,
-        Dhruva Gole <d-gole@ti.com>, Dan Williams <dan.j.williams@intel.com>
-References: <5943878.DvuYhMxLoT@rafael.j.wysocki>
-Content-Language: en-US
-From: Farhan Ali <alifm@linux.ibm.com>
-In-Reply-To: <5943878.DvuYhMxLoT@rafael.j.wysocki>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 49au64DJ3FCr4lpbS1J-iqZbDEv48HrO
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMDE4MDAyMiBTYWx0ZWRfXyDaAPYrbJYNY
- MOYAheoFEBoTNzl4UsJ0NHtQ4haFSFCWwpEAMAEocD3/U9ATpwCFCa7GAi6lQfLev81MWqrUHka
- WEUWO+Yh/XwLC4zogxrxaUUxSvSANGWe/0BybNM9eDhJC4XYMak+4hKdWnvQTJ39hEVZH+6uWbW
- KlAxcsjXzPrkSETpIr5elguVBiqoS/uozg4S0uMibHMATc3VLj3ztykhDjnpimPvVp5lXIaBvn0
- AEs6ZZNoL30ymwW8Wt3xxxH3K0ovw55l7FwyXT1DRj8AKWYmejV6dOy0KcRXcd2aERjG3Wwa2t0
- b9oqD9IbXfoUL7fN1FVp2c0/BOCqbokLNRss6ddVjwZftuz1CJMSIT/YeGPiJjwjul2SumiuoHP
- BgpiLtqu2t245z65+AVF68ASlHdL6w==
-X-Authority-Analysis: v=2.4 cv=MIJtWcZl c=1 sm=1 tr=0 ts=68f7e71a cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=x6icFKpwvdMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=VwQbUJbxAAAA:8 a=QyXUC8HyAAAA:8 a=VnNF1IyMAAAA:8 a=O-QSBXc3A0Oyl9V8qwYA:9
- a=QEXdDO2ut3YA:10 a=cPQSjfK2_nFv0Q5t_7PE:22
-X-Proofpoint-ORIG-GUID: 49au64DJ3FCr4lpbS1J-iqZbDEv48HrO
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-10-21_03,2025-10-13_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 spamscore=0 phishscore=0 lowpriorityscore=0 adultscore=0
- clxscore=1011 impostorscore=0 bulkscore=0 priorityscore=1501 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2510020000 definitions=main-2510180022
+References: <20251017233907.2305303-1-wusamuel@google.com> <202510190215.ppx4apvg-lkp@intel.com>
+In-Reply-To: <202510190215.ppx4apvg-lkp@intel.com>
+From: Samuel Wu <wusamuel@google.com>
+Date: Tue, 21 Oct 2025 13:13:29 -0700
+X-Gm-Features: AS18NWAbUHSxxc75oxQg0pd4M1nulX2qNGsXjQaXglcPLJv9sfuKAT6aV7qCa3A
+Message-ID: <CAG2Kcto1=kQ-6eR50aA_Uj4jUSQEVLaZs1Ucp0R8y6hMxNfLvQ@mail.gmail.com>
+Subject: Re: [PATCH v5] PM: Support aborting sleep during filesystem sync
+To: kernel test robot <lkp@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, llvm@lists.linux.dev, 
+	oe-kbuild-all@lists.linux.dev, tuhaowen@uniontech.com, 
+	Saravana Kannan <saravanak@google.com>, kernel-team@android.com, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-
-On 10/20/2025 8:03 AM, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Sat, Oct 18, 2025 at 11:32=E2=80=AFAM kernel test robot <lkp@intel.com> =
+wrote:
 >
-> Since pm_runtime_get_active() returns 0 on success, all of the
-> DEFINE_GUARD_COND() macros in pm_runtime.h need the "_RET == 0"
-> condition at the end of the argument list or they would not work
-> correctly.
+> Hi Samuel,
 >
-> Fixes: 9a0abc39450a ("PM: runtime: Add auto-cleanup macros for "resume and get" operations")
-> Reported-by: kernel test robot <lkp@intel.com>
-> Link: https://lore.kernel.org/linux-pm/202510191529.BCyjKlLQ-lkp@intel.com/
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->   include/linux/pm_runtime.h |    8 ++++----
->   1 file changed, 4 insertions(+), 4 deletions(-)
+> kernel test robot noticed the following build errors:
 >
-> --- a/include/linux/pm_runtime.h
-> +++ b/include/linux/pm_runtime.h
-> @@ -629,13 +629,13 @@ DEFINE_GUARD(pm_runtime_active_auto, str
->    * device.
->    */
->   DEFINE_GUARD_COND(pm_runtime_active, _try,
-> -		  pm_runtime_get_active(_T, RPM_TRANSPARENT))
-> +		  pm_runtime_get_active(_T, RPM_TRANSPARENT), _RET == 0)
->   DEFINE_GUARD_COND(pm_runtime_active, _try_enabled,
-> -		  pm_runtime_resume_and_get(_T))
-> +		  pm_runtime_resume_and_get(_T), _RET == 0)
->   DEFINE_GUARD_COND(pm_runtime_active_auto, _try,
-> -		  pm_runtime_get_active(_T, RPM_TRANSPARENT))
-> +		  pm_runtime_get_active(_T, RPM_TRANSPARENT), _RET == 0)
->   DEFINE_GUARD_COND(pm_runtime_active_auto, _try_enabled,
-> -		  pm_runtime_resume_and_get(_T))
-> +		  pm_runtime_resume_and_get(_T), _RET == 0)
->   
->   /**
->    * pm_runtime_put_sync - Drop device usage counter and run "idle check" if 0.
+> [auto build test ERROR on rafael-pm/linux-next]
+> [also build test ERROR on rafael-pm/bleeding-edge amd-pstate/linux-next a=
+md-pstate/bleeding-edge linus/master v6.18-rc1 next-20251017]
+> [If your patch is applied to the wrong git tree, kindly drop us a note.
+> And when submitting patch, we suggest to use '--base' as documented in
+> https://git-scm.com/docs/git-format-patch#_base_tree_information]
+>
+> url:    https://github.com/intel-lab-lkp/linux/commits/Samuel-Wu/PM-Suppo=
+rt-aborting-sleep-during-filesystem-sync/20251018-091422
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.g=
+it linux-next
+> patch link:    https://lore.kernel.org/r/20251017233907.2305303-1-wusamue=
+l%40google.com
+> patch subject: [PATCH v5] PM: Support aborting sleep during filesystem sy=
+nc
+> config: i386-randconfig-012-20251018 (https://download.01.org/0day-ci/arc=
+hive/20251019/202510190215.ppx4apvg-lkp@intel.com/config)
+> compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0=
+227cb60147a26a1eeb4fb06e3b505e9c7261)
+> reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archi=
+ve/20251019/202510190215.ppx4apvg-lkp@intel.com/reproduce)
+>
+> If you fix the issue in a separate patch/commit (i.e. not just a new vers=
+ion of
+> the same patch/commit), kindly add following tags
+> | Reported-by: kernel test robot <lkp@intel.com>
+> | Closes: https://lore.kernel.org/oe-kbuild-all/202510190215.ppx4apvg-lkp=
+@intel.com/
+>
+> All errors (new ones prefixed by >>):
+>
+>    In file included from arch/x86/kernel/asm-offsets.c:14:
+> >> include/linux/suspend.h:510:15: error: type specifier missing, default=
+s to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+>      510 | static inline pm_stop_waiting_for_fs_sync(void) {}
+>          | ~~~~~~~~~~~~~ ^
+>          | int
+>    1 error generated.
+>    make[3]: *** [scripts/Makefile.build:182: arch/x86/kernel/asm-offsets.=
+s] Error 1 shuffle=3D1011955029
+>    make[3]: Target 'prepare' not remade because of errors.
+>    make[2]: *** [Makefile:1280: prepare0] Error 2 shuffle=3D1011955029
+>    make[2]: Target 'prepare' not remade because of errors.
+>    make[1]: *** [Makefile:248: __sub-make] Error 2 shuffle=3D1011955029
+>    make[1]: Target 'prepare' not remade because of errors.
+>    make: *** [Makefile:248: __sub-make] Error 2 shuffle=3D1011955029
+>    make: Target 'prepare' not remade because of errors.
 >
 >
-This does fix the issue for me mentioned here 
-https://lore.kernel.org/all/25435d82-575d-495f-ae61-bd38570ff9ad@linux.ibm.com/
+> vim +/int +510 include/linux/suspend.h
+>
+>    508
+>    509  static inline void ksys_sync_helper(void) {}
+>  > 510  static inline pm_stop_waiting_for_fs_sync(void) {}
+>    511  static inline int pm_sleep_fs_sync(void) {}
+>    512
+>
+> --
+> 0-DAY CI Kernel Test Service
+> https://github.com/intel/lkp-tests/wiki
 
-Feel free to add
-
-Tested-by: Farhan Ali <alifm@linux.ibm.com>
-
-
-
+Oversight on my part- I'll fix this in v6 along with other feedback
