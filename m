@@ -1,216 +1,151 @@
-Received: from hall.aurel32.net (hall.aurel32.net [195.154.113.88])
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com [210.118.77.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FC741DF72C;
-	Tue, 21 Oct 2025 20:15:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.154.113.88
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5EED18528E
+	for <linux-pm@vger.kernel.org>; Tue, 21 Oct 2025 20:38:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.118.77.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761077733; cv=none; b=uWvk2gCPv9E4IC0O1WqbkPtAzYkNLUqdy+5fBnnSdvb8wedujtwFU7DCoewrGjujHOtH+ooYJT3FhCbbGrvvffxl5Z/+8oiv5UBP3fyKLLPkRwWm5vHm3ghUCyYrxb+jp+R9JheF2gNocXG8lGa3Op9OaDfXiGwY5zPfoKIyk2g=
+	t=1761079089; cv=none; b=ZfgF0bdNhjzfkbGsupTuXqeRS3nG7lSdQWLGCzhYDSoynEQYmy17ZTYM0Z77qU5D/e4dkw6d1FFxzC6POGgGKRroejaDqjbjGv2WRMsVCOBpMebrN8a0lXgU+nwCQR/yVZ/5rOaCCavTcsbbOPlXivdNvxYXYGIQwhuqxAc317s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761077733; c=relaxed/simple;
-	bh=7c9bS2ivA7GkRCsDHGyEvFDeQR3n+4LH5pRWWxE6cVw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ACgTZh3Zoa++pVWFE4H9UMb/yrIoGpOlWnqR17MvAwG1HNj2KLF+jbm+Eqw6CXc9OzmaeLhJvWB47eqhbfGfKApQRB75ntf4TdU6ZHDjK3LlqPG9okPDs6rLeGsd7YYSjElPdRB1yzel0BTV5mTdG3X3FWCo/8481e0CmSIO4po=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net; spf=pass smtp.mailfrom=aurel32.net; dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b=T/yaLo+0; arc=none smtp.client-ip=195.154.113.88
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aurel32.net
+	s=arc-20240116; t=1761079089; c=relaxed/simple;
+	bh=2UzUPa0O7wVHv85721B5teO1x+rf4QPSmTIVyKZAjHQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:From:In-Reply-To:
+	 Content-Type:References; b=gYDHgvt0nn26FudGH1ltHrK/glcxZK834oILYgpgMMrqrMHrZFE+2gvvFOWRTSMm7kyDXDYlJku4lrNg5nlqTdFZspjA/QjmXWzzv6STJqPHBxT/FH8DcrMOed++Zlk8PevOaW5ASuAW89eChsVTGLLguvMftRQ9kmdcr9UZIaM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com; spf=pass smtp.mailfrom=samsung.com; dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b=rSyoE7eE; arc=none smtp.client-ip=210.118.77.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=samsung.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b="T/yaLo+0"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=aurel32.net
-	; s=202004.hall; h=Content-Transfer-Encoding:MIME-Version:References:
-	In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Content-Type:From:Reply-To:
-	Subject:Content-ID:Content-Description:X-Debbugs-Cc;
-	bh=bHj8D8a7dxXfalQUrw31acaFxGOvab3Ef1Wiao9zazU=; b=T/yaLo+0CGEpCglDEusHG9Z4jH
-	RDLnPMTthWthoQaKYNOQ5pvQYJLJeJyezfIXrEgY1u0fxzapTBeuRGulYQ9dMfErCMCXprYBNoxOJ
-	oxLzNCdywsAq5Aw4gkUpodvkAm4uGoLWdfzyemlg/xG2SUNUp8Dz5DgxTQgZkHEtZDrjl6ISP/cco
-	3/0F2e9jGcVtJqdahYQVagft6r/vAQmZ1Zpq90iZ9zVEwXE+gFE2rXYtYF/Bmub/fK6g3cg+Q20As
-	FL+orW1qCGH+1jYaWRpQUB5hmrX27N54GLI4kVEwyrJKlEUapcfT6MDLepIceaL6lSlAbSBwXozIO
-	FdWnGGMQ==;
-Received: from [2a01:e34:ec5d:a741:1ee1:92ff:feb4:5ec0] (helo=ohm.rr44.fr)
-	by hall.aurel32.net with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <aurelien@aurel32.net>)
-	id 1vBIl7-00GWoB-2v;
-	Tue, 21 Oct 2025 22:15:05 +0200
-From: Aurelien Jarno <aurelien@aurel32.net>
-To: linux-kernel@vger.kernel.org,
-	Lee Jones <lee@kernel.org>,
-	Sebastian Reichel <sre@kernel.org>,
-	Troy Mitchell <troy.mitchell@linux.spacemit.com>,
-	Yixun Lan <dlan@gentoo.org>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	linux-riscv@lists.infradead.org (open list:RISC-V ARCHITECTURE:Keyword:riscv),
-	spacemit@lists.linux.dev (open list:RISC-V SPACEMIT SoC Support:Keyword:spacemit),
-	linux-pm@vger.kernel.org (open list:SYSTEM RESET/SHUTDOWN DRIVERS)
-Cc: Aurelien Jarno <aurelien@aurel32.net>,
-	linux-pm@vger.kernel.org (open list:SYSTEM RESET/SHUTDOWN DRIVERS),
-	linux-riscv@lists.infradead.org (open list:RISC-V SPACEMIT SoC Support),
-	spacemit@lists.linux.dev (open list:RISC-V SPACEMIT SoC Support)
-Subject: [PATCH v3 1/2] driver: reset: spacemit-p1: add driver for poweroff/reboot
-Date: Tue, 21 Oct 2025 22:11:59 +0200
-Message-ID: <20251021201451.1013640-2-aurelien@aurel32.net>
-X-Mailer: git-send-email 2.47.2
-In-Reply-To: <20251021201451.1013640-1-aurelien@aurel32.net>
-References: <20251021201451.1013640-1-aurelien@aurel32.net>
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="rSyoE7eE"
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+	by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20251021203805euoutp02f3927bfa8bc40308fa60dd1a0fc613f1~wnBkEZHnc0098700987euoutp02B
+	for <linux-pm@vger.kernel.org>; Tue, 21 Oct 2025 20:38:05 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20251021203805euoutp02f3927bfa8bc40308fa60dd1a0fc613f1~wnBkEZHnc0098700987euoutp02B
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+	s=mail20170921; t=1761079085;
+	bh=WkfTpNuqej1UoTarvASJEkiFQ49zLY0qzCQi5FcT4uM=;
+	h=Date:Subject:To:Cc:From:In-Reply-To:References:From;
+	b=rSyoE7eEsLXh9M8Vms1QePG23J8dvTd+XqkgCf2aNnIF06Guc00f+AK4hNUbm+XLw
+	 pJfmkcyYy9OpTo5HtJVNtSFgUe7ZKlhsHWf2/tt/kDnr4zYtaVbCXvNif9xY70br9D
+	 /h2cMy3Hj9X/n0N535wxwcgZt96u+dAS1Heq4SpQ=
+Received: from eusmtip2.samsung.com (unknown [203.254.199.222]) by
+	eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+	20251021203804eucas1p2c091f1cce52c4d08eeacf8c36604f1fb~wnBisd64H0197501975eucas1p21;
+	Tue, 21 Oct 2025 20:38:04 +0000 (GMT)
+Received: from [106.210.134.192] (unknown [106.210.134.192]) by
+	eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+	20251021203802eusmtip23e28f0f310780cc696c497752fb587eb~wnBhWTpKN1353213532eusmtip2A;
+	Tue, 21 Oct 2025 20:38:02 +0000 (GMT)
+Message-ID: <2e38e6c2-0548-432f-ae34-daf3972877ac@samsung.com>
+Date: Tue, 21 Oct 2025 22:38:01 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Betterbird (Windows)
+Subject: Re: [PATCH v3 06/10] pmdomain: samsung: convert to
+ regmap_read_poll_timeout()
+To: =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, Krzysztof
+	Kozlowski <krzk@kernel.org>, Alim Akhtar <alim.akhtar@samsung.com>, Rob
+	Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Krzysztof
+	Kozlowski <krzk+dt@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Peter Griffin <peter.griffin@linaro.org>, Tudor Ambarus
+	<tudor.ambarus@linaro.org>, Will McVicker <willmcvicker@google.com>,
+	kernel-team@android.com, linux-arm-kernel@lists.infradead.org,
+	linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Language: en-US
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+In-Reply-To: <20251016-gs101-pd-v3-6-7b30797396e7@linaro.org>
 Content-Transfer-Encoding: 8bit
+X-CMS-MailID: 20251021203804eucas1p2c091f1cce52c4d08eeacf8c36604f1fb
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20251016155855eucas1p2ccc516861548e963761133fc52fc560e
+X-EPHeader: CA
+X-CMS-RootMailID: 20251016155855eucas1p2ccc516861548e963761133fc52fc560e
+References: <20251016-gs101-pd-v3-0-7b30797396e7@linaro.org>
+	<CGME20251016155855eucas1p2ccc516861548e963761133fc52fc560e@eucas1p2.samsung.com>
+	<20251016-gs101-pd-v3-6-7b30797396e7@linaro.org>
 
-This driver implements poweroff/reboot support for the SpacemiT P1 PMIC
-chip, which is commonly paired with the SpacemiT K1 SoC.
+On 16.10.2025 17:58, André Draszik wrote:
+> Replace the open-coded PD status polling with
+> regmap_read_poll_timeout(). This change simplifies the code without
+> altering functionality.
+>
+> Signed-off-by: André Draszik <andre.draszik@linaro.org>
+> ---
+>   drivers/pmdomain/samsung/exynos-pm-domains.c | 29 ++++++++--------------------
+>   1 file changed, 8 insertions(+), 21 deletions(-)
+>
+> diff --git a/drivers/pmdomain/samsung/exynos-pm-domains.c b/drivers/pmdomain/samsung/exynos-pm-domains.c
+> index 383126245811cb8e4dbae3b99ced3f06d3093f35..431548ad9a7e40c0a77ac6672081b600c90ddd4e 100644
+> --- a/drivers/pmdomain/samsung/exynos-pm-domains.c
+> +++ b/drivers/pmdomain/samsung/exynos-pm-domains.c
+> @@ -13,7 +13,6 @@
+>   #include <linux/platform_device.h>
+>   #include <linux/slab.h>
+>   #include <linux/pm_domain.h>
+> -#include <linux/delay.h>
+>   #include <linux/of.h>
+>   #include <linux/pm_runtime.h>
+>   #include <linux/regmap.h>
+> @@ -35,7 +34,8 @@ struct exynos_pm_domain {
+>   static int exynos_pd_power(struct generic_pm_domain *domain, bool power_on)
+>   {
+>   	struct exynos_pm_domain *pd;
+> -	u32 timeout, pwr;
+> +	unsigned int val;
+> +	u32 pwr;
+>   	int err;
+>   
+>   	pd = container_of(domain, struct exynos_pm_domain, pd);
+> @@ -45,25 +45,12 @@ static int exynos_pd_power(struct generic_pm_domain *domain, bool power_on)
+>   	if (err)
+>   		return err;
+>   
+> -	/* Wait max 1ms */
+> -	timeout = 10;
+> -	while (timeout-- > 0) {
+> -		unsigned int val;
+> -
+> -		err = regmap_read(pd->regmap, 0x4, &val);
+> -		if (err || ((val & pd->local_pwr_cfg) != pwr)) {
+> -			cpu_relax();
+> -			usleep_range(80, 100);
+> -			continue;
+> -		}
+> -
+> -		return 0;
+> -	}
+> -
+> -	if (!err)
+> -		err = -ETIMEDOUT;
+> -	pr_err("Power domain %s %sable failed: %d\n", domain->name,
+> -	       power_on ? "en" : "dis", err);
+> +	err = regmap_read_poll_timeout(pd->regmap, 0x4, val,
+> +				       (val & pd->local_pwr_cfg) == pwr,
+> +				       100, 1 * USEC_PER_MSEC);
+> +	if (err)
+> +		pr_err("Power domain %s %sable failed: %d (%#.2x)\n",
+> +		       domain->name, power_on ? "en" : "dis", err, val);
 
-The SpacemiT P1 support is implemented as a MFD driver, so the access is
-done directly through the regmap interface. Reboot or poweroff is
-triggered by setting a specific bit in a control register, which is
-automatically cleared by the hardware afterwards.
+I've posted my 'tested-by' tag for this patchset, but in meantime I 
+found that this patch causes regression from time to time on old Exynos 
+SoCs (especially when all debugs are disabled). It looks that there are 
+some subtle differences between reading the status register up to 10 
+times with cpu_relax()+usleep_range() and the 
+regmap_read_poll_timeout(). I will try to analyze this a bit more and 
+provide details, but I suspect that the old loop might take a bit longer 
+than the 1ms from the comment above this code.
 
-Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
-Reviewed-by: Yixun Lan <dlan@gentoo.org>
----
-v3:
- - Allow building as a module
- - Remove outdated Acked-by and Tested-by
- - Collect Reviewed-by
 
- drivers/power/reset/Kconfig              |  9 +++
- drivers/power/reset/Makefile             |  1 +
- drivers/power/reset/spacemit-p1-reboot.c | 88 ++++++++++++++++++++++++
- 3 files changed, 98 insertions(+)
- create mode 100644 drivers/power/reset/spacemit-p1-reboot.c
-
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index 8248895ca9038..6577d73edbda4 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -283,6 +283,15 @@ config POWER_RESET_KEYSTONE
- 	help
- 	  Reboot support for the KEYSTONE SoCs.
- 
-+config POWER_RESET_SPACEMIT_P1
-+	tristate "SpacemiT P1 poweroff and reset driver"
-+	depends on ARCH_SPACEMIT || COMPILE_TEST
-+	select MFD_SPACEMIT_P1
-+	default m
-+	help
-+	  This driver supports power-off and reset operations for the SpacemiT
-+	  P1 PMIC.
-+
- config POWER_RESET_SYSCON
- 	bool "Generic SYSCON regmap reset driver"
- 	depends on OF
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index 51da87e05ce76..0e4ae6f6b5c55 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -24,6 +24,7 @@ obj-$(CONFIG_POWER_RESET_LTC2952) += ltc2952-poweroff.o
- obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
- obj-$(CONFIG_POWER_RESET_REGULATOR) += regulator-poweroff.o
- obj-$(CONFIG_POWER_RESET_RESTART) += restart-poweroff.o
-+obj-$(CONFIG_POWER_RESET_SPACEMIT_P1) += spacemit-p1-reboot.o
- obj-$(CONFIG_POWER_RESET_ST) += st-poweroff.o
- obj-$(CONFIG_POWER_RESET_TH1520_AON) += th1520-aon-reboot.o
- obj-$(CONFIG_POWER_RESET_TORADEX_EC) += tdx-ec-poweroff.o
-diff --git a/drivers/power/reset/spacemit-p1-reboot.c b/drivers/power/reset/spacemit-p1-reboot.c
-new file mode 100644
-index 0000000000000..9ec3d1fff8f3d
---- /dev/null
-+++ b/drivers/power/reset/spacemit-p1-reboot.c
-@@ -0,0 +1,88 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) 2025 by Aurelien Jarno
-+ */
-+
-+#include <linux/bits.h>
-+#include <linux/mod_devicetable.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/reboot.h>
-+
-+/* Power Control Register 2 */
-+#define PWR_CTRL2		0x7e
-+#define PWR_CTRL2_SHUTDOWN	BIT(2)	/* Shutdown request */
-+#define PWR_CTRL2_RST		BIT(1)	/* Reset request */
-+
-+static int spacemit_p1_pwroff_handler(struct sys_off_data *data)
-+{
-+	struct regmap *regmap = data->cb_data;
-+	int ret;
-+
-+	/* Put the PMIC into shutdown state */
-+	ret = regmap_set_bits(regmap, PWR_CTRL2, PWR_CTRL2_SHUTDOWN);
-+	if (ret) {
-+		dev_err(data->dev, "shutdown failed: %d\n", ret);
-+		return notifier_from_errno(ret);
-+	}
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static int spacemit_p1_restart_handler(struct sys_off_data *data)
-+{
-+	struct regmap *regmap = data->cb_data;
-+	int ret;
-+
-+	/* Put the PMIC into reset state */
-+	ret = regmap_set_bits(regmap, PWR_CTRL2, PWR_CTRL2_RST);
-+	if (ret) {
-+		dev_err(data->dev, "restart failed: %d\n", ret);
-+		return notifier_from_errno(ret);
-+	}
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static int spacemit_p1_reboot_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct regmap *regmap;
-+	int ret;
-+
-+	regmap = dev_get_regmap(dev->parent, NULL);
-+	if (!regmap)
-+		return -ENODEV;
-+
-+	ret = devm_register_power_off_handler(dev, &spacemit_p1_pwroff_handler,
-+					      regmap);
-+	if (ret)
-+		return dev_err_probe(dev, ret,
-+				     "Failed to register power off handler\n");
-+
-+	ret = devm_register_restart_handler(dev, spacemit_p1_restart_handler,
-+					    regmap);
-+	if (ret)
-+		return dev_err_probe(dev, ret,
-+				     "Failed to register restart handler\n");
-+
-+	return 0;
-+}
-+
-+static const struct platform_device_id spacemit_p1_reboot_id_table[] = {
-+	{ "spacemit-p1-reboot", },
-+	{ /* sentinel */ },
-+};
-+MODULE_DEVICE_TABLE(platform, spacemit_p1_reboot_id_table);
-+
-+static struct platform_driver spacemit_p1_reboot_driver = {
-+	.driver = {
-+		.name = "spacemit-p1-reboot",
-+	},
-+	.probe = spacemit_p1_reboot_probe,
-+	.id_table = spacemit_p1_reboot_id_table,
-+};
-+module_platform_driver(spacemit_p1_reboot_driver);
-+
-+MODULE_DESCRIPTION("SpacemiT P1 reboot/poweroff driver");
-+MODULE_LICENSE("GPL");
+>   	return err;
+>   }
+>
+Best regards
 -- 
-2.47.2
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
 
