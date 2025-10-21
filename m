@@ -1,38 +1,38 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C1A4302766;
-	Tue, 21 Oct 2025 08:32:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA7DF3074A7;
+	Tue, 21 Oct 2025 08:32:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761035552; cv=none; b=AtZqdkRVVE11BJxycvCDG3wmRlr3RXcYuCFhvrHKjHkCpTBCZMwEQUp4Fsrsqfyc6BCW0NHi03egwXNobPNCQaSIgDET3xTD3duIr0de0nV2Dz4YnSjv7tC+1T+9Lp60ruBRMkGO+9Uo/Pzm6KQEus33lsDGjqmC3oRAb+QI3zw=
+	t=1761035556; cv=none; b=BVSaXxQFaaa66CAlbD8rfI2iFw2ZOpWzSFs5litHp5SZdoPVfGZ56sQZeLfyBdoU1W+emLUQOOsj/8SN3cHFhYF+J/AdF+oJ/8aYqNjCB4M2yq2Tslbb22GWskeu/BhSIor0pd7iiWd6a6lNHcSIeoJAYcbXBhkv9H65OR+OkVU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761035552; c=relaxed/simple;
-	bh=CseAS8WuO07kDc2UBlBpGUtI3Jez99XxHBhRTTJsLPs=;
+	s=arc-20240116; t=1761035556; c=relaxed/simple;
+	bh=pWVE1aetWCjbxUtekG5N3/7XA6kbi9V+NuMr8xUFisI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Qyaj8mBGFBupw6dA09KwN+QqIKSVBSLLOpW+oWtBvYCjeq6b+uvxIdUU9gxLEtM89V2Ocf9STRYJppSe/p/U6IyUA2mSgnNtEmTL4thWSNIzqhLSfaBu6o7Bn2DYYfZWGIrUvxnzcwdwqkI2X+Og3n5VQFrgKMfcneSuNh4QfC8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=B4AADX8r; arc=none smtp.client-ip=148.251.105.195
+	 MIME-Version; b=TosQqdYgyaB4pRk9lxkN9NlMFIVsLBU7iTRqQiJ6vuVF+CS9gv6YJQrTUpiI568P5mhGa5VOowrH4kq9cq33kavfEUUv1mwjqtTIKAlpY8OMo171Yrhg1pUomT1u47qj9z2k8SvqNyhdPajC8VyP4afESExlXXKs30NdsnGlp00=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=cK/2QFkQ; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="B4AADX8r"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="cK/2QFkQ"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1761035545;
-	bh=CseAS8WuO07kDc2UBlBpGUtI3Jez99XxHBhRTTJsLPs=;
+	s=mail; t=1761035549;
+	bh=pWVE1aetWCjbxUtekG5N3/7XA6kbi9V+NuMr8xUFisI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=B4AADX8rLFyo3TzCUBKsHaGlGLG+RHSHcG/4VOnxhbzvG3F2RFYU3Mcj/mlGcrheD
-	 ET5UDhA1eP6yO0gQHt0ysqSYuLVnGjMCz7HLimVRaFL2uLZGroiXyzyWNTBZGMuXxn
-	 9DkTp9Jzlxd2BQ0ToVx1RYj2EiPWLMp82SlcYpIUSXcuh0zh4f/206HvU30dBhNPG0
-	 W5/vFSRBX3g3zv21DH5AsI3hHmAuvP88zznH6ceHpNrV61FkYctDOHVol1S2lKXwoA
-	 /qRpjQrE8t5zO+oL/LfHusv7Wx+OJ71OZHGOOZ4wlrrnHD725AdF7GF8QWqdUQ+E1s
-	 QzLMnE/1CJDBg==
+	b=cK/2QFkQiE6XExDEcIcLEjvtsQ4bmNO8JR58UEZCHjZTSv00xhm+i0w21QqOuT9IL
+	 GpjfWpgVIqi5FAjSg4NIX0T0eoZWic5kvzS1AqtrJO8a78p/jpvl+UhIEhZ/Ac/SlS
+	 HeVV1fzHOA1mqVWLJ4GuRMw1izuFSbgqIVTK0Mn4hq5gVqyShrjJIXUKCPZI+tKibF
+	 w/nxdaP6G8buSUkOFRJ4IQdsF13WQ6x0KYhlg66d8Y+d3cUKW6AD/rmMN7sL5HY5+S
+	 jJkLuC7oYRhqh8uAMD1F+vTbgpqpzkaxzkKa0KOTOwlerp8sut5kpevwDBpqzqoY3/
+	 4Ilxf89Bu2wag==
 Received: from IcarusMOD.eternityproject.eu (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id A07C717E1407;
-	Tue, 21 Oct 2025 10:32:24 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 344A517E013C;
+	Tue, 21 Oct 2025 10:32:29 +0200 (CEST)
 From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 To: sboyd@kernel.org
 Cc: jic23@kernel.org,
@@ -55,10 +55,11 @@ Cc: jic23@kernel.org,
 	linux-pm@vger.kernel.org,
 	kernel@collabora.com,
 	wenst@chromium.org,
-	casey.connolly@linaro.org
-Subject: [PATCH v7 03/10] spmi: Remove unneeded goto in spmi_device_add() error path
-Date: Tue, 21 Oct 2025 10:32:12 +0200
-Message-ID: <20251021083219.17382-4-angelogioacchino.delregno@collabora.com>
+	casey.connolly@linaro.org,
+	Neil Armstrong <neil.armstrong@linaro.org>
+Subject: [PATCH v7 08/10] misc: qcom-coincell: Migrate to devm_spmi_subdevice_alloc_and_add()
+Date: Tue, 21 Oct 2025 10:32:17 +0200
+Message-ID: <20251021083219.17382-9-angelogioacchino.delregno@collabora.com>
 X-Mailer: git-send-email 2.51.1
 In-Reply-To: <20251021083219.17382-1-angelogioacchino.delregno@collabora.com>
 References: <20251021083219.17382-1-angelogioacchino.delregno@collabora.com>
@@ -70,38 +71,139 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-If any error happens during device_add() just return inside of the
-conditional, as the goto path doesn't do anything else if not just
-returning.
+Some Qualcomm PMICs integrate a charger for coincells, usually
+powering an RTC when external (or main battery) power is missing.
 
-While at it, to improve readability, also change this function to
-explicitly return 0 (for success) at the end.
+Instead of using the parent SPMI device (the main PMIC) as a kind
+of syscon in this driver, register a new SPMI sub-device and
+initialize its own regmap with this sub-device's specific base
+address, retrieved from the devicetree.
 
+This allows to stop manually adding the register base address to
+every R/W call in this driver, as this can be, and is now, handled
+by the regmap API instead.
+
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Tested-by: Neil Armstrong <neil.armstrong@linaro.org> # on SM8650-QRD
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- drivers/spmi/spmi.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/misc/Kconfig         |  2 ++
+ drivers/misc/qcom-coincell.c | 38 +++++++++++++++++++++++++-----------
+ 2 files changed, 29 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/spmi/spmi.c b/drivers/spmi/spmi.c
-index c21789c6b59f..29567c0620ae 100644
---- a/drivers/spmi/spmi.c
-+++ b/drivers/spmi/spmi.c
-@@ -69,13 +69,11 @@ int spmi_device_add(struct spmi_device *sdev)
- 	err = device_add(&sdev->dev);
- 	if (err < 0) {
- 		dev_err(&sdev->dev, "Can't add device, status %pe\n", ERR_PTR(err));
--		goto err_device_add;
-+		return err;
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index b9c11f67315f..f4c5e67192fb 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -291,6 +291,8 @@ config HP_ILO
+ config QCOM_COINCELL
+ 	tristate "Qualcomm coincell charger support"
+ 	depends on MFD_SPMI_PMIC || COMPILE_TEST
++	depends on SPMI
++	select REGMAP_SPMI
+ 	help
+ 	  This driver supports the coincell block found inside of
+ 	  Qualcomm PMICs.  The coincell charger provides a means to
+diff --git a/drivers/misc/qcom-coincell.c b/drivers/misc/qcom-coincell.c
+index 3c57f7429147..49e38442b289 100644
+--- a/drivers/misc/qcom-coincell.c
++++ b/drivers/misc/qcom-coincell.c
+@@ -9,11 +9,11 @@
+ #include <linux/of.h>
+ #include <linux/regmap.h>
+ #include <linux/platform_device.h>
++#include <linux/spmi.h>
+ 
+ struct qcom_coincell {
+ 	struct device	*dev;
+ 	struct regmap	*regmap;
+-	u32		base_addr;
+ };
+ 
+ #define QCOM_COINCELL_REG_RSET		0x44
+@@ -35,7 +35,7 @@ static int qcom_coincell_chgr_config(struct qcom_coincell *chgr, int rset,
+ 	/* if disabling, just do that and skip other operations */
+ 	if (!enable)
+ 		return regmap_write(chgr->regmap,
+-			  chgr->base_addr + QCOM_COINCELL_REG_ENABLE, 0);
++			  QCOM_COINCELL_REG_ENABLE, 0);
+ 
+ 	/* find index for current-limiting resistor */
+ 	for (i = 0; i < ARRAY_SIZE(qcom_rset_map); i++)
+@@ -58,7 +58,7 @@ static int qcom_coincell_chgr_config(struct qcom_coincell *chgr, int rset,
  	}
  
- 	dev_dbg(&sdev->dev, "device registered\n");
--
--err_device_add:
--	return err;
-+	return 0;
- }
- EXPORT_SYMBOL_GPL(spmi_device_add);
+ 	rc = regmap_write(chgr->regmap,
+-			  chgr->base_addr + QCOM_COINCELL_REG_RSET, i);
++			  QCOM_COINCELL_REG_RSET, i);
+ 	if (rc) {
+ 		/*
+ 		 * This is mainly to flag a bad base_addr (reg) from dts.
+@@ -71,19 +71,28 @@ static int qcom_coincell_chgr_config(struct qcom_coincell *chgr, int rset,
+ 	}
  
+ 	rc = regmap_write(chgr->regmap,
+-		chgr->base_addr + QCOM_COINCELL_REG_VSET, j);
++		QCOM_COINCELL_REG_VSET, j);
+ 	if (rc)
+ 		return rc;
+ 
+ 	/* set 'enable' register */
+ 	return regmap_write(chgr->regmap,
+-			    chgr->base_addr + QCOM_COINCELL_REG_ENABLE,
++			    QCOM_COINCELL_REG_ENABLE,
+ 			    QCOM_COINCELL_ENABLE);
+ }
+ 
+ static int qcom_coincell_probe(struct platform_device *pdev)
+ {
+-	struct device_node *node = pdev->dev.of_node;
++	struct regmap_config qcom_coincell_regmap_config = {
++		.reg_bits = 16,
++		.val_bits = 8,
++		.max_register = 0x100,
++		.fast_io = true,
++	};
++	struct device *dev = &pdev->dev;
++	struct device_node *node = dev->of_node;
++	struct spmi_subdevice *sub_sdev;
++	struct spmi_device *sparent;
+ 	struct qcom_coincell chgr;
+ 	u32 rset = 0;
+ 	u32 vset = 0;
+@@ -92,16 +101,22 @@ static int qcom_coincell_probe(struct platform_device *pdev)
+ 
+ 	chgr.dev = &pdev->dev;
+ 
+-	chgr.regmap = dev_get_regmap(pdev->dev.parent, NULL);
++	rc = of_property_read_u32(node, "reg", &qcom_coincell_regmap_config.reg_base);
++	if (rc)
++		return rc;
++
++	sparent = to_spmi_device(dev->parent);
++	sub_sdev = devm_spmi_subdevice_alloc_and_add(dev, sparent);
++	if (IS_ERR(sub_sdev))
++		return PTR_ERR(sub_sdev);
++
++	chgr.regmap = devm_regmap_init_spmi_ext(&sub_sdev->sdev,
++						&qcom_coincell_regmap_config);
+ 	if (!chgr.regmap) {
+ 		dev_err(chgr.dev, "Unable to get regmap\n");
+ 		return -EINVAL;
+ 	}
+ 
+-	rc = of_property_read_u32(node, "reg", &chgr.base_addr);
+-	if (rc)
+-		return rc;
+-
+ 	enable = !of_property_read_bool(node, "qcom,charger-disable");
+ 
+ 	if (enable) {
+@@ -142,3 +157,4 @@ module_platform_driver(qcom_coincell_driver);
+ 
+ MODULE_DESCRIPTION("Qualcomm PMIC coincell charger driver");
+ MODULE_LICENSE("GPL v2");
++MODULE_IMPORT_NS("SPMI");
 -- 
 2.51.1
 
