@@ -1,38 +1,38 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58CDF3064A1;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 581D130649D;
 	Tue, 21 Oct 2025 08:32:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761035557; cv=none; b=ry56YmMQFl9FJZOvVos6ScGzlC23VWGJIi8CXcDytjZSOwGRDa2URPbZfj2csqT6bwdVLoYvjgx6a4U3TSmqMN4EC+JSrlQW7qB041nyrJWKoHXEvI5gfCMo8CwVVVpVaXlFP6ricLBcN/Totuy3zTQynjdjmhPR4ROKr/I5khg=
+	t=1761035557; cv=none; b=BRpWR17hFtBqegZfrfa2l30tL5O7Y3bGNm5SlTk8WxtqyQKiyqCAZaJnRl+MFunQoSiQXDpjw96ftCYtRlkWWHA5lt33P8A8v2feiKYhuPvaipcx3+mTMlbOHxM4YeE5m3nGVgoX+sptfLl6un5AgIGr96nc1XfhqJTX+ju6zS8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1761035557; c=relaxed/simple;
-	bh=c0zeTRvyk+jmUZkRxW0AY0eGrQMXGZL61hy8yXvvOu8=;
+	bh=m8RoLjqzRkZUxZW8/4CsGe1Ypbb2aRgovJOAQtLHpkI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=UrLfcaQweumaRsDpuTMjlPIaG19vNjemjoq7pME/kPqzLTmQgUFlY0mkIxtGc/5z2XKFgzyBQpTlvxl8tZxZzr6VqPJZpK9J0sqxpSd/rjRRp8s4wHpU/lNFmC85V2fZzcYSE3A5Kdly7awPnT2Dfev0SenGPJ1/yCl/9wZK/h0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=VXHrIohh; arc=none smtp.client-ip=148.251.105.195
+	 MIME-Version; b=C8mpoNS1pwlewB0jQwv+wBWVy935d6JerI26XoX+A9yS6iiXoncEujeWDtYBhDYt1uzriDZ1UiTsfBtcCp5VfJJZ7MThtaQkX9C2wltzpas80bu4Bw4qWSWMr5TIcEuTA2StEx+qDH3Z4cjtOxsUp0Oqc//5Ke3xfvOYeS9074Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=qK7J1Q5J; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="VXHrIohh"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="qK7J1Q5J"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1761035547;
-	bh=c0zeTRvyk+jmUZkRxW0AY0eGrQMXGZL61hy8yXvvOu8=;
+	s=mail; t=1761035549;
+	bh=m8RoLjqzRkZUxZW8/4CsGe1Ypbb2aRgovJOAQtLHpkI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=VXHrIohhXuGTPdqe3YM8bXVfQezGBW/il5BpVRxgx7qYJJ0XbcmYl+OKUSl2OmTXF
-	 qZNQySemN4dD172bo72T03enKRGHVhU4wQv8mcsdyDs4H8Ca1cnUwXwQ45Hg4T068x
-	 tQVxIlclit1NBwkGNHN79JeOnPVf2EO/L2CfG3+uR7zNxEz6VE2iMe4KxsCDwd/sKQ
-	 khJ9zOcLrLliHXvaClMMK/7+b2iE5SCjwEcttVZrPLmn2+Gc8aXyixojROHHzKBgOW
-	 dPl5daljqvRdXBuZiIhL61+rAU7EbwZXNuQbChRyeJAYQcyxHTq0vxYfaqtf0tGDOM
-	 Ufr1XEl2iCGHQ==
+	b=qK7J1Q5JOQogOYZy1M/pZG52gR3WBeW5pexVjbFa42VQDcnC2ePSfNYTNthY05pAS
+	 p+gFE5/my8I6WhkC3+2A9Y1aUkXHT8kvEYBt+HSkMYZ1EYpAFjEq0buqhdu6Csd5UL
+	 wdlqJix2C6507COp+KpEq5T22bX/0B+d3g6Ygv0zOzUs4vwuL52nPm3+ZtvjGHmKmW
+	 kYHHnBaM/224mxvUpbbUusnMEYEhU+9/Whx94GKKZi/dktmrx9mjP8LpJdTsQo8gH3
+	 AMzZy2wIPAqwvzBQYLkp2dnIO5OVeO9q1zOMXAgO+Gp5bqyoAvNVSpKKxLsIkWqmFx
+	 JIdzhe1FIKlGQ==
 Received: from IcarusMOD.eternityproject.eu (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 70CDA17E1414;
-	Tue, 21 Oct 2025 10:32:26 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 4BA9617E141E;
+	Tue, 21 Oct 2025 10:32:28 +0200 (CEST)
 From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 To: sboyd@kernel.org
 Cc: jic23@kernel.org,
@@ -56,11 +56,10 @@ Cc: jic23@kernel.org,
 	kernel@collabora.com,
 	wenst@chromium.org,
 	casey.connolly@linaro.org,
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
 	Neil Armstrong <neil.armstrong@linaro.org>
-Subject: [PATCH v7 05/10] nvmem: qcom-spmi-sdam: Migrate to devm_spmi_subdevice_alloc_and_add()
-Date: Tue, 21 Oct 2025 10:32:14 +0200
-Message-ID: <20251021083219.17382-6-angelogioacchino.delregno@collabora.com>
+Subject: [PATCH v7 07/10] phy: qualcomm: eusb2-repeater: Migrate to devm_spmi_subdevice_alloc_and_add()
+Date: Tue, 21 Oct 2025 10:32:16 +0200
+Message-ID: <20251021083219.17382-8-angelogioacchino.delregno@collabora.com>
 X-Mailer: git-send-email 2.51.1
 In-Reply-To: <20251021083219.17382-1-angelogioacchino.delregno@collabora.com>
 References: <20251021083219.17382-1-angelogioacchino.delregno@collabora.com>
@@ -72,11 +71,12 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Some Qualcomm PMICs integrate a SDAM device, internally located in
-a specific address range reachable through SPMI communication.
+Some Qualcomm PMICs integrate an USB Repeater device, used to
+convert between eUSB2 and USB 2.0 signaling levels, reachable
+in a specific address range over SPMI.
 
 Instead of using the parent SPMI device (the main PMIC) as a kind
-of syscon in this driver, register a new SPMI sub-device for SDAM
+of syscon in this driver, register a new SPMI sub-device for EUSB2
 and initialize its own regmap with this sub-device's specific base
 address, retrieved from the devicetree.
 
@@ -84,126 +84,176 @@ This allows to stop manually adding the register base address to
 every R/W call in this driver, as this can be, and is now, handled
 by the regmap API instead.
 
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 Tested-by: Neil Armstrong <neil.armstrong@linaro.org> # on SM8650-QRD
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- drivers/nvmem/Kconfig          |  1 +
- drivers/nvmem/qcom-spmi-sdam.c | 36 +++++++++++++++++++++++-----------
- 2 files changed, 26 insertions(+), 11 deletions(-)
+ drivers/phy/qualcomm/Kconfig                  |  2 +
+ .../phy/qualcomm/phy-qcom-eusb2-repeater.c    | 53 ++++++++++++-------
+ 2 files changed, 36 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/nvmem/Kconfig b/drivers/nvmem/Kconfig
-index e0d88d3199c1..23858269b61f 100644
---- a/drivers/nvmem/Kconfig
-+++ b/drivers/nvmem/Kconfig
-@@ -359,6 +359,7 @@ config NVMEM_SNVS_LPGPR
- config NVMEM_SPMI_SDAM
- 	tristate "SPMI SDAM Support"
- 	depends on SPMI
+diff --git a/drivers/phy/qualcomm/Kconfig b/drivers/phy/qualcomm/Kconfig
+index 60a0ead127fa..902a788f35f1 100644
+--- a/drivers/phy/qualcomm/Kconfig
++++ b/drivers/phy/qualcomm/Kconfig
+@@ -128,7 +128,9 @@ config PHY_QCOM_QUSB2
+ config PHY_QCOM_EUSB2_REPEATER
+ 	tristate "Qualcomm PMIC eUSB2 Repeater Driver"
+ 	depends on OF && (ARCH_QCOM || COMPILE_TEST)
++	depends on SPMI
+ 	select GENERIC_PHY
 +	select REGMAP_SPMI
  	help
- 	  This driver supports the Shared Direct Access Memory Module on
- 	  Qualcomm Technologies, Inc. PMICs. It provides the clients
-diff --git a/drivers/nvmem/qcom-spmi-sdam.c b/drivers/nvmem/qcom-spmi-sdam.c
-index 4f1cca6eab71..2bb7b3bc497e 100644
---- a/drivers/nvmem/qcom-spmi-sdam.c
-+++ b/drivers/nvmem/qcom-spmi-sdam.c
+ 	  Enable support for the USB high-speed eUSB2 repeater on Qualcomm
+ 	  PMICs. The repeater is paired with a Synopsys or M31 eUSB2 Phy
+diff --git a/drivers/phy/qualcomm/phy-qcom-eusb2-repeater.c b/drivers/phy/qualcomm/phy-qcom-eusb2-repeater.c
+index 651a12b59bc8..bdeb3c72d26a 100644
+--- a/drivers/phy/qualcomm/phy-qcom-eusb2-repeater.c
++++ b/drivers/phy/qualcomm/phy-qcom-eusb2-repeater.c
 @@ -9,6 +9,7 @@
- #include <linux/nvmem-provider.h>
- #include <linux/platform_device.h>
  #include <linux/regmap.h>
+ #include <linux/of.h>
+ #include <linux/phy/phy.h>
 +#include <linux/spmi.h>
  
- #define SDAM_MEM_START			0x40
- #define REGISTER_MAP_ID			0x40
-@@ -20,7 +21,6 @@
- struct sdam_chip {
- 	struct regmap			*regmap;
- 	struct nvmem_config		sdam_config;
--	unsigned int			base;
- 	unsigned int			size;
+ /* eUSB2 status registers */
+ #define EUSB2_RPTR_STATUS		0x08
+@@ -55,7 +56,6 @@ struct eusb2_repeater {
+ 	struct phy *phy;
+ 	struct regulator_bulk_data *vregs;
+ 	const struct eusb2_repeater_cfg *cfg;
+-	u32 base;
+ 	enum phy_mode mode;
  };
  
-@@ -73,7 +73,7 @@ static int sdam_read(void *priv, unsigned int offset, void *val,
- 		return -EINVAL;
- 	}
+@@ -118,7 +118,6 @@ static int eusb2_repeater_init(struct phy *phy)
+ 	struct eusb2_repeater *rptr = phy_get_drvdata(phy);
+ 	struct device_node *np = rptr->dev->of_node;
+ 	struct regmap *regmap = rptr->regmap;
+-	u32 base = rptr->base;
+ 	u32 poll_val;
+ 	int ret;
+ 	u8 val;
+@@ -127,28 +126,28 @@ static int eusb2_repeater_init(struct phy *phy)
+ 	if (ret)
+ 		return ret;
  
--	rc = regmap_bulk_read(sdam->regmap, sdam->base + offset, val, bytes);
-+	rc = regmap_bulk_read(sdam->regmap, offset, val, bytes);
- 	if (rc < 0)
- 		dev_err(dev, "Failed to read SDAM offset %#x len=%zd, rc=%d\n",
- 						offset, bytes, rc);
-@@ -100,7 +100,7 @@ static int sdam_write(void *priv, unsigned int offset, void *val,
- 		return -EINVAL;
- 	}
+-	regmap_write(regmap, base + EUSB2_EN_CTL1, EUSB2_RPTR_EN);
++	regmap_write(regmap, EUSB2_EN_CTL1, EUSB2_RPTR_EN);
  
--	rc = regmap_bulk_write(sdam->regmap, sdam->base + offset, val, bytes);
-+	rc = regmap_bulk_write(sdam->regmap, offset, val, bytes);
- 	if (rc < 0)
- 		dev_err(dev, "Failed to write SDAM offset %#x len=%zd, rc=%d\n",
- 						offset, bytes, rc);
-@@ -110,8 +110,17 @@ static int sdam_write(void *priv, unsigned int offset, void *val,
+ 	/* Write registers from init table */
+ 	for (int i = 0; i < rptr->cfg->init_tbl_num; i++)
+-		regmap_write(regmap, base + rptr->cfg->init_tbl[i].reg,
++		regmap_write(regmap, rptr->cfg->init_tbl[i].reg,
+ 			     rptr->cfg->init_tbl[i].value);
  
- static int sdam_probe(struct platform_device *pdev)
+ 	/* Override registers from devicetree values */
+ 	if (!of_property_read_u8(np, "qcom,tune-usb2-preem", &val))
+-		regmap_write(regmap, base + EUSB2_TUNE_USB2_PREEM, val);
++		regmap_write(regmap, EUSB2_TUNE_USB2_PREEM, val);
+ 
+ 	if (!of_property_read_u8(np, "qcom,tune-usb2-disc-thres", &val))
+-		regmap_write(regmap, base + EUSB2_TUNE_HSDISC, val);
++		regmap_write(regmap, EUSB2_TUNE_HSDISC, val);
+ 
+ 	if (!of_property_read_u8(np, "qcom,tune-usb2-amplitude", &val))
+-		regmap_write(regmap, base + EUSB2_TUNE_IUSB2, val);
++		regmap_write(regmap, EUSB2_TUNE_IUSB2, val);
+ 
+ 	if (!of_property_read_u8(np, "qcom,tune-res-fsdif", &val))
+-		regmap_write(regmap, base + EUSB2_TUNE_RES_FSDIF, val);
++		regmap_write(regmap, EUSB2_TUNE_RES_FSDIF, val);
+ 
+ 	/* Wait for status OK */
+-	ret = regmap_read_poll_timeout(regmap, base + EUSB2_RPTR_STATUS, poll_val,
++	ret = regmap_read_poll_timeout(regmap, EUSB2_RPTR_STATUS, poll_val,
+ 				       poll_val & RPTR_OK, 10, 5);
+ 	if (ret)
+ 		dev_err(rptr->dev, "initialization timed-out\n");
+@@ -161,7 +160,6 @@ static int eusb2_repeater_set_mode(struct phy *phy,
  {
-+	struct regmap_config sdam_regmap_config = {
+ 	struct eusb2_repeater *rptr = phy_get_drvdata(phy);
+ 	struct regmap *regmap = rptr->regmap;
+-	u32 base = rptr->base;
+ 
+ 	switch (mode) {
+ 	case PHY_MODE_USB_HOST:
+@@ -170,8 +168,8 @@ static int eusb2_repeater_set_mode(struct phy *phy,
+ 		 * per eUSB 1.2 Spec. Below implement software workaround until
+ 		 * PHY and controller is fixing seen observation.
+ 		 */
+-		regmap_write(regmap, base + EUSB2_FORCE_EN_5, F_CLK_19P2M_EN);
+-		regmap_write(regmap, base + EUSB2_FORCE_VAL_5, V_CLK_19P2M_EN);
++		regmap_write(regmap, EUSB2_FORCE_EN_5, F_CLK_19P2M_EN);
++		regmap_write(regmap, EUSB2_FORCE_VAL_5, V_CLK_19P2M_EN);
+ 		break;
+ 	case PHY_MODE_USB_DEVICE:
+ 		/*
+@@ -180,8 +178,8 @@ static int eusb2_repeater_set_mode(struct phy *phy,
+ 		 * repeater doesn't clear previous value due to shared
+ 		 * regulators (say host <-> device mode switch).
+ 		 */
+-		regmap_write(regmap, base + EUSB2_FORCE_EN_5, 0);
+-		regmap_write(regmap, base + EUSB2_FORCE_VAL_5, 0);
++		regmap_write(regmap, EUSB2_FORCE_EN_5, 0);
++		regmap_write(regmap, EUSB2_FORCE_VAL_5, 0);
+ 		break;
+ 	default:
+ 		return -EINVAL;
+@@ -206,13 +204,23 @@ static const struct phy_ops eusb2_repeater_ops = {
+ 
+ static int eusb2_repeater_probe(struct platform_device *pdev)
+ {
++	struct regmap_config eusb2_regmap_config = {
 +		.reg_bits = 16,
 +		.val_bits = 8,
 +		.max_register = 0x100,
 +		.fast_io = true,
 +	};
- 	struct sdam_chip *sdam;
- 	struct nvmem_device *nvmem;
 +	struct spmi_device *sparent;
+ 	struct eusb2_repeater *rptr;
 +	struct spmi_subdevice *sub_sdev;
-+	struct device *dev = &pdev->dev;
- 	unsigned int val;
- 	int rc;
+ 	struct device *dev = &pdev->dev;
+ 	struct phy_provider *phy_provider;
+ 	struct device_node *np = dev->of_node;
+-	u32 res;
+ 	int ret;
  
-@@ -119,19 +128,23 @@ static int sdam_probe(struct platform_device *pdev)
- 	if (!sdam)
++	if (!dev->parent)
++		return -ENODEV;
++
+ 	rptr = devm_kzalloc(dev, sizeof(*rptr), GFP_KERNEL);
+ 	if (!rptr)
  		return -ENOMEM;
+@@ -224,15 +232,21 @@ static int eusb2_repeater_probe(struct platform_device *pdev)
+ 	if (!rptr->cfg)
+ 		return -EINVAL;
  
--	sdam->regmap = dev_get_regmap(pdev->dev.parent, NULL);
--	if (!sdam->regmap) {
--		dev_err(&pdev->dev, "Failed to get regmap handle\n");
--		return -ENXIO;
--	}
+-	rptr->regmap = dev_get_regmap(dev->parent, NULL);
+-	if (!rptr->regmap)
 +	sparent = to_spmi_device(dev->parent);
++	if (!sparent)
+ 		return -ENODEV;
+ 
+-	ret = of_property_read_u32(np, "reg", &res);
 +	sub_sdev = devm_spmi_subdevice_alloc_and_add(dev, sparent);
 +	if (IS_ERR(sub_sdev))
 +		return PTR_ERR(sub_sdev);
- 
--	rc = of_property_read_u32(pdev->dev.of_node, "reg", &sdam->base);
-+	rc = of_property_read_u32(dev->of_node, "reg", &sdam_regmap_config.reg_base);
- 	if (rc < 0) {
- 		dev_err(&pdev->dev, "Failed to get SDAM base, rc=%d\n", rc);
- 		return -EINVAL;
- 	}
- 
--	rc = regmap_read(sdam->regmap, sdam->base + SDAM_SIZE, &val);
-+	sdam->regmap = devm_regmap_init_spmi_ext(&sub_sdev->sdev, &sdam_regmap_config);
-+	if (IS_ERR(sdam->regmap))
-+		return dev_err_probe(&pdev->dev, PTR_ERR(sdam->regmap),
-+				     "Failed to get regmap handle\n");
 +
-+	rc = regmap_read(sdam->regmap, SDAM_SIZE, &val);
- 	if (rc < 0) {
- 		dev_err(&pdev->dev, "Failed to read SDAM_SIZE rc=%d\n", rc);
- 		return -EINVAL;
-@@ -159,7 +172,7 @@ static int sdam_probe(struct platform_device *pdev)
- 	}
- 	dev_dbg(&pdev->dev,
- 		"SDAM base=%#x size=%u registered successfully\n",
--		sdam->base, sdam->size);
-+		sdam_regmap_config.reg_base, sdam->size);
++	ret = of_property_read_u32(np, "reg", &eusb2_regmap_config.reg_base);
+ 	if (ret < 0)
+ 		return ret;
  
- 	return 0;
- }
-@@ -181,3 +194,4 @@ module_platform_driver(sdam_driver);
+-	rptr->base = res;
++	rptr->regmap = devm_regmap_init_spmi_ext(&sub_sdev->sdev, &eusb2_regmap_config);
++	if (IS_ERR(rptr->regmap))
++		return -ENODEV;
  
- MODULE_DESCRIPTION("QCOM SPMI SDAM driver");
- MODULE_LICENSE("GPL v2");
+ 	ret = eusb2_repeater_init_vregs(rptr);
+ 	if (ret < 0) {
+@@ -295,3 +309,4 @@ module_platform_driver(eusb2_repeater_driver);
+ 
+ MODULE_DESCRIPTION("Qualcomm PMIC eUSB2 Repeater driver");
+ MODULE_LICENSE("GPL");
 +MODULE_IMPORT_NS("SPMI");
 -- 
 2.51.1
