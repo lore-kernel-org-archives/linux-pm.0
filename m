@@ -1,66 +1,80 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73B4834C12A;
-	Tue, 21 Oct 2025 17:36:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E59234C806;
+	Tue, 21 Oct 2025 17:44:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761068177; cv=none; b=AbPuQcODBext4a9YSraJg4xtUNde0z4Gglz0jTPgTH0jJvA1rgzPwBGD+yduvVdCzJHQKNWdCX1ivpLilTu9CA6Pznmozn87YSaCt9YCMoLQOB65TCCS24fTymZJuJdtqlQqxu8Zxr0tV0wymdTlnZEZbckDgQgHEXH1pRCMzpo=
+	t=1761068646; cv=none; b=JAc9XlNfRun2cVYTxsTBdvJy5Ph0QB9gkjHlnyM4fWC1I0gtTNL9l/8VevYuRDl3LVZeS6dzXT1viu4mZjPQ21rgwkEOIiJbDegTThByPkVGR1qS0ep+rxpKmQ9Q0cDiF6gcNtEs9yE75PKQN72yX8P8pSkCIW82iqPsiAeGs/o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761068177; c=relaxed/simple;
-	bh=9SPMl5EKgnJfqBS44jhiE37W9GKsbwghIS2B6aSlfLw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=lGOwBkMWczcPrTW7//CzIN5/hx/LrOqQ5RFVraI476Vyacog8zLg/1rJHCWR4xGykAbt+lKBmlEi9U5KnyWcHbFg30JiLq95Gi6yWNLitMxpIfI9ipgYHKUPj1quSwM/mG64R7+6+Q7YIOJ91MG4mDEiFbE/G2QqCduyd+RO/uA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=rJjZprwW; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1761068646; c=relaxed/simple;
+	bh=bHNcj1wjfOdU2U4vdwQgraEX91IYvZD0sUGfn4zYsro=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
+	 References:In-Reply-To; b=jU4dy80W2oFn+V0jE7uZuizi4F+TitwBHMEzEVdxvYCsV7YVVMFgxQ+qn04dhs1w8896ZaFxfOEDWiQCdzGGmOqef1+snB61h8ngE6+DcKCCH8ks1GE/6LLkrSy4JHnvUt2yTIpXPa4sC2IXqOoAHXKLGRhJg9hSs0JAsGQlmVY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YnHRPa43; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="rJjZprwW"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 20ACAC4CEF1;
-	Tue, 21 Oct 2025 17:36:13 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YnHRPa43"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3E238C4CEF1;
+	Tue, 21 Oct 2025 17:44:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1761068177;
-	bh=9SPMl5EKgnJfqBS44jhiE37W9GKsbwghIS2B6aSlfLw=;
-	h=From:To:Cc:Subject:Date:From;
-	b=rJjZprwWj8piJiCiUsga3oqkspWPmTLhttiA/Kf+yOSnKGPtFGrIwsWEU5D48yEk1
-	 zrbjAInN/bV7am+RPn+pP2UfoEIrMHJkuxUfGTURc74OHo4snoH05EXfcELzjnssMK
-	 CaCBTQ0XKfH3mmiQhbBJgxhXZeRvfT4+d6W35OyLIvqZbFZXEKhZ7PiFAVtivTj/f2
-	 bRFHXV4uKiMCLB0KeBTCqe9VRsFrC+v1Jv0/UNKdGAZdCGReaxyMQaoFnhVVsAGAP1
-	 dvE+1PnUebjXKyCNQew/55+P3dANFzvWesYyZ9zjoWMZhQy60M6nELmL9tnRnMgt2Q
-	 CX/O3uBSD1MiQ==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>,
- Jonathan Cameron <jonathan.cameron@huawei.com>, Takashi Iwai <tiwai@suse.de>,
- LKML <linux-kernel@vger.kernel.org>, Zhang Qilong <zhangqilong3@huawei.com>,
- Frank Li <Frank.Li@nxp.com>, Dhruva Gole <d-gole@ti.com>,
- Mika Westerberg <mika.westerberg@linux.intel.com>,
- Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH v3 0/2] ACPI: TAD: Use auto-cleanup macros for runtime PM
-Date: Tue, 21 Oct 2025 19:32:29 +0200
-Message-ID: <4698369.LvFx2qVVIh@rafael.j.wysocki>
-Organization: Linux Kernel Development
+	s=k20201202; t=1761068645;
+	bh=bHNcj1wjfOdU2U4vdwQgraEX91IYvZD0sUGfn4zYsro=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
+	b=YnHRPa438hTYGZhg9fL0jrPt31M9vKs49W/DgdnAdE7iFZ+j5VZsieEpvyXqZ+z0F
+	 EZ5b4QWH2XJdtdTh/5fEyB0KAPwNEfgYZ7FBGGmllt0pq7FkmUCO+qW/hh/ywNNvEW
+	 YsBmZTKCQ8ner/3MPqz+TvFo2LK47Ei17tAZtrPNmD88ujHxAwDWd7IJ4eOjnAcdj7
+	 ufRY3JWW9DDZkHUaT2CsMWCCaXOtWv34OQ0FwcIw7LDg/9dDIoILU3JUyGzEFo+iIY
+	 5T4qk+Ztqz5sTs7RpqQBi5P0qj0R8J6YwzPChhiQWi00pg5pcvg3FeABlZcYZq5aVu
+	 JWOwPsaFDIUiQ==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 21 Oct 2025 19:43:58 +0200
+Message-Id: <DDO6QBSWU8MN.3UA0DT8WDUPZT@kernel.org>
+Subject: Re: [PATCH] rust: driver: let probe() return impl PinInit<Self,
+ Error>
+Cc: <viresh.kumar@linaro.org>, <acourbot@nvidia.com>, <ira.weiny@intel.com>,
+ <leon@kernel.org>, <daniel.almeida@collabora.com>, <bhelgaas@google.com>,
+ <kwilczynski@kernel.org>, <abdiel.janulgue@gmail.com>,
+ <robin.murphy@arm.com>, <ojeda@kernel.org>, <alex.gaynor@gmail.com>,
+ <boqun.feng@gmail.com>, <gary@garyguo.net>, <bjorn3_gh@protonmail.com>,
+ <lossin@kernel.org>, <a.hindborg@kernel.org>, <aliceryhl@google.com>,
+ <tmgross@umich.edu>, <rust-for-linux@vger.kernel.org>,
+ <linux-pci@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+ <nouveau@lists.freedesktop.org>, <dri-devel@lists.freedesktop.org>,
+ <linux-kernel@vger.kernel.org>
+To: <gregkh@linuxfoundation.org>, <rafael@kernel.org>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <20251016125544.15559-1-dakr@kernel.org>
+In-Reply-To: <20251016125544.15559-1-dakr@kernel.org>
 
-Hi All,
+On Thu Oct 16, 2025 at 2:55 PM CEST, Danilo Krummrich wrote:
+> The driver model defines the lifetime of the private data stored in (and
+> owned by) a bus device to be valid from when the driver is bound to a
+> device (i.e. from successful probe()) until the driver is unbound from
+> the device.
+>
+> This is already taken care of by the Rust implementation of the driver
+> model. However, we still ask drivers to return a Result<Pin<KBox<Self>>>
+> from probe().
+>
+> Unlike in C, where we do not have the concept of initializers, but
+> rather deal with uninitialized memory, drivers can just return an
+> impl PinInit<Self, Error> instead.
+>
+> This contributed to more clarity to the fact that a driver returns it's
+> device private data in probe() and the Rust driver model owns the data,
+> manages the lifetime and - considering the lifetime - provides (safe)
+> accessors for the driver.
+>
+> Hence, let probe() functions return an impl PinInit<Self, Error> instead
+> of Result<Pin<KBox<Self>>>.
+>
+> Signed-off-by: Danilo Krummrich <dakr@kernel.org>
 
-This supersedes
-
-https://lore.kernel.org/linux-acpi/8599731.T7Z3S40VBb@rafael.j.wysocki/
-
-that had a kind of an issue in the second patch.  Namely, ACQUIRE()/ACQUIRE_ERR()
-were used along with gotos in one function.
-
-This addresses the problem by introducing an auxiliary function to separate
-the two mechanisms.
-
-The first patch has not been changed.
-
-Thanks!
-
-
-
+Applied to driver-core-testing, thanks!
