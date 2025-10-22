@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17FDE229B38;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1808429B776;
 	Wed, 22 Oct 2025 19:47:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761162474; cv=none; b=EqRtR4eIDNe0c5PGabhB4xtQTWxa/KZQCEhHfoWdistKLP1576c+19epJ3HEi4GUnsOVkJhC8q+ds8VPQ2cl1slVy1oh0lU+h9HP77DnFOQEIvKo/QFuwdYClh6Y2ji4BBecCVgu9fBu/sv427RSBHU4ZL/0VU0kNWo9Mbl0EXc=
+	t=1761162474; cv=none; b=Bu4HjY8LcPG8EmWUt7H7wWCS596bB+G+lfRQk2MGLtPXgcwigjc8mkZHdi+E5PxnENaHo9KIcoCfeXlCU85IaX4gscR4VQBeJ/AFrKhMAsFaLkUv4V3ULi0pkxMXuN/8bNKWbQj88EEZnoZSSDlzO99xgo+1e1gsia3S4+xjkxM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1761162474; c=relaxed/simple;
-	bh=TMB/vzDd+LTd/lCIfQUrdA02dtsXU52MRguMhkvQVb8=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=fsQMTMyyc5B/d7Ho52KC6LKbDGMik33QJKy8MT7jH7TxtPjRhz/xTkro8LphHUDYS3QnA+tNvn1fsDAH90K6XAxOIjzgsw2ppI33ETceXXYPP8mDvvoVvq2ptWLki+0jO/iwdzTqO1nohhNFjuTPXUcn+DUnqM4Uh6fQv5vKnvc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UB9v311P; arc=none smtp.client-ip=10.30.226.201
+	bh=OOWdg8OLvSFMbIcc+BI5b8nhes+ym73swFUSBnZalNE=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=VKQqYFZi9Or8f2nOCp3/OtRCVMEMYRGMxMzPfH02ZAda8WaGI4Q0OnWr1DWw0WH7sxp/G3WMfrzlUVGZICUx5cKRRliW1KFqmb9uWCiSu51v5SKTgcWBzyeQ88jbKAa1I/xbqTFQIAEsEz8OUlSgvkglzEKuvSm3XEw7XFmm9Zk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ghI2F/sX; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UB9v311P"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id B069AC4CEFD;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ghI2F/sX"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 91BAFC4CEF7;
 	Wed, 22 Oct 2025 19:47:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1761162473;
-	bh=TMB/vzDd+LTd/lCIfQUrdA02dtsXU52MRguMhkvQVb8=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=UB9v311PtmZ8PnnRfw/io6cgniNpJxDv/YprnnB2BwtlwPXX3TlMCSrxDSamfR6cw
-	 YCTqkEdYHuBOLVqQtB+YO0DSIm3uOrLH2iJSx4nz+1rNgfrjWtr81Opa0HD/c/ZMXk
-	 rH2GJm+MctyBJfVvyhoveOUH1/GPI3EoKn9k28XvejSAtOt6UEV8olKyTH4vh1Vmlf
-	 QQqF7codQelr3AK17hZSXNCnqFHGfRZhKZ9vXHX6fLYweFr7hHVnfGxRi6gQ+cokgK
-	 4lDdznv1b76jNvwuJvyFtqo8Oli6bVO6/hKTvi3xJZUNM6COT7IE/smAirZWsOhNyh
-	 vRLmKhVbc1pYA==
+	bh=OOWdg8OLvSFMbIcc+BI5b8nhes+ym73swFUSBnZalNE=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=ghI2F/sXv6kWWdckYQ3A5tsNguykdUBo9Iw2maDPIXP7S2NkwvZLVrLxdTIGSPby4
+	 uYMYAc61B/PLgCPl1e2kcw0WUiQr2u/Kh6NI3i+UePQaN5tLe890ZYPKVMiSYHP8q6
+	 9iPN47MkBSRiHVE01witG8QTGjdqf3YhL0KdT2B5wvzu2QHNkemGiTd5JXYZ3orN3J
+	 jMPlYzaPJn9pnwdPIVM0mROu/6Fr3b7YDwbc1dvzW/oRySyXUrMNePiKqt004ys6br
+	 vlndUSN3p+KBdlaUQkLtlCP0Il2tNflKpBvd3p5yC+v7ks3GrXaxnLoHA4HnAEr8Jw
+	 WA/25hCcgH6pg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EB25CCF9E2;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D351CCD1BF;
 	Wed, 22 Oct 2025 19:47:53 +0000 (UTC)
 From: Dimitri Fedrau via B4 Relay <devnull+dimitri.fedrau.liebherr.com@kernel.org>
-Date: Wed, 22 Oct 2025 21:47:48 +0200
-Subject: [PATCH 2/2] power: supply: gpio-charger: add support for
+Subject: [PATCH 0/2] power: supply: gpio-charger: add support for
  fast-charge timer
+Date: Wed, 22 Oct 2025 21:47:46 +0200
+Message-Id: <20251022-gpio-charger-timer-v1-0-b557409400f2@liebherr.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,9 +41,10 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251022-gpio-charger-timer-v1-2-b557409400f2@liebherr.com>
-References: <20251022-gpio-charger-timer-v1-0-b557409400f2@liebherr.com>
-In-Reply-To: <20251022-gpio-charger-timer-v1-0-b557409400f2@liebherr.com>
+X-B4-Tracking: v=1; b=H4sIAOI0+WgC/x2MSwqAMAwFryJZW2iKH/Qq4qLYWLOwSioiFO9uc
+ DMwDO8VyCRMGcaqgNDNmY+kgnUFy+ZTJMNBHZx1LVrnTDz5MJokkpiLd+USgifscOixAR2eQis
+ //+k0v+8HfnBUnWQAAAA=
+X-Change-ID: 20251022-gpio-charger-timer-cddae1619714
 To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>
@@ -51,19 +52,17 @@ Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, Dimitri Fedrau <dimitri.fedrau@liebherr.com>, 
  Dimitri Fedrau <dima.fedrau@gmail.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1761162472; l=3484;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1761162472; l=955;
  i=dimitri.fedrau@liebherr.com; s=20241202; h=from:subject:message-id;
- bh=p7cAOt/Kei0dwrov23S0iQygvZlwNI2XjIcLZTRyKRk=;
- b=VtUneGRFdgJjNlcSNgZ3ZTbrQI719MPCVYdI2APLJ8I8sP9jzrOg30kIpZiu5jYAmtRfXtPLt
- 1F5WZKPNtyvDaVCKeZ3PDOUlT7XZqb98OCgrPpXizmH/QaQUuC1hfC1
+ bh=OOWdg8OLvSFMbIcc+BI5b8nhes+ym73swFUSBnZalNE=;
+ b=PpF7pZWzkkC9XfQLaGcpxqv3v7GM9YR01a9GQv+9HJL/ePXifr+Ey3xAY4D63kEjuBRAihdxS
+ vMZkvV1K0xgBDQjEVhfeUSBLDzkmzEDf1AeUtx1xQea+cVr6Gf0WWTw
 X-Developer-Key: i=dimitri.fedrau@liebherr.com; a=ed25519;
  pk=rT653x09JSQvotxIqQl4/XiI4AOiBZrdOGvxDUbb5m8=
 X-Endpoint-Received: by B4 Relay for dimitri.fedrau@liebherr.com/20241202
  with auth_id=290
 X-Original-From: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
 Reply-To: dimitri.fedrau@liebherr.com
-
-From: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
 
 On some devices like TIs BQ24081 battery charger it is possible to activate
 or deactivate a fast-charge timer that provides a backup safety for charge
@@ -72,99 +71,20 @@ for enabling/disabling the fast-charge timer via GPIO.
 
 Signed-off-by: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
 ---
+Dimitri Fedrau (2):
+      dt-bindings: power: supply: gpio-charger: add support for fast-charge timer
+      power: supply: gpio-charger: add support for fast-charge timer
+
  .../ABI/testing/sysfs-class-power-gpio-charger     | 10 ++++++
+ .../bindings/power/supply/gpio-charger.yaml        |  5 +++
  drivers/power/supply/gpio-charger.c                | 39 ++++++++++++++++++++++
- 2 files changed, 49 insertions(+)
+ 3 files changed, 54 insertions(+)
+---
+base-commit: 3a8660878839faadb4f1a6dd72c3179c1df56787
+change-id: 20251022-gpio-charger-timer-cddae1619714
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power-gpio-charger b/Documentation/ABI/testing/sysfs-class-power-gpio-charger
-new file mode 100644
-index 0000000000000000000000000000000000000000..95fb31ac4af3d5354bdc642c98baa7df267d150d
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-class-power-gpio-charger
-@@ -0,0 +1,10 @@
-+What:		/sys/class/power_supply/<supply_name>/fast_charge_timer
-+Date:		October 2025
-+KernelVersion:	6.19.0
-+Contact:	Dimitri Fedrau <dimitri.fedrau@liebherr.com>
-+Description:
-+		This entry enables or disables the timer in fast-charge mode.
-+
-+		Access: Write
-+
-+		Valid values: 0 (disabled) or 1 (enabled)
-diff --git a/drivers/power/supply/gpio-charger.c b/drivers/power/supply/gpio-charger.c
-index 2504190eba82e69b79382320e67de6b8f3dedc77..52997205879406fae600171b070a0328657fa79b 100644
---- a/drivers/power/supply/gpio-charger.c
-+++ b/drivers/power/supply/gpio-charger.c
-@@ -32,6 +32,7 @@ struct gpio_charger {
- 	struct power_supply_desc charger_desc;
- 	struct gpio_desc *gpiod;
- 	struct gpio_desc *charge_status;
-+	struct gpio_desc *timer;
- 
- 	struct gpio_descs *current_limit_gpios;
- 	struct gpio_mapping *current_limit_map;
-@@ -259,6 +260,36 @@ static int init_charge_current_limit(struct device *dev,
- 	return 0;
- }
- 
-+static ssize_t fast_charge_timer_store(struct device *dev,
-+				       struct device_attribute *attr,
-+				       const char *buf, size_t count)
-+{
-+	struct power_supply *psy = dev_get_drvdata(dev);
-+	struct gpio_charger *gpio_charger = power_supply_get_drvdata(psy);
-+	int ret;
-+	bool en;
-+
-+	if (kstrtobool(buf, &en))
-+		return -EINVAL;
-+
-+	if (!gpio_charger->timer)
-+		return -ENODEV;
-+
-+	ret = gpiod_set_value_cansleep(gpio_charger->timer, en);
-+	if (ret)
-+		return ret;
-+
-+	return count;
-+}
-+
-+static DEVICE_ATTR_WO(fast_charge_timer);
-+
-+static struct attribute *gpio_charger_attrs[] = {
-+	&dev_attr_fast_charge_timer.attr,
-+	NULL
-+};
-+ATTRIBUTE_GROUPS(gpio_charger);
-+
- /*
-  * The entries will be overwritten by driver's probe routine depending
-  * on the available features. This list ensures, that the array is big
-@@ -308,6 +339,13 @@ static int gpio_charger_probe(struct platform_device *pdev)
- 		num_props++;
- 	}
- 
-+	gpio_charger->timer = devm_gpiod_get_optional(dev, "fast-charge-timer",
-+						      GPIOD_OUT_HIGH);
-+	if (IS_ERR(gpio_charger->timer)) {
-+		return dev_err_probe(dev, PTR_ERR(gpio_charger->timer),
-+				     "error getting fast-charge timer GPIO descriptor\n");
-+	}
-+
- 	charge_status = devm_gpiod_get_optional(dev, "charge-status", GPIOD_IN);
- 	if (IS_ERR(charge_status))
- 		return PTR_ERR(charge_status);
-@@ -336,6 +374,7 @@ static int gpio_charger_probe(struct platform_device *pdev)
- 
- 	psy_cfg.fwnode = dev_fwnode(dev);
- 	psy_cfg.drv_data = gpio_charger;
-+	psy_cfg.attr_grp = gpio_charger_groups;
- 
- 	if (pdata) {
- 		charger_desc->name = pdata->name;
-
+Best regards,
 -- 
-2.39.5
+Dimitri Fedrau <dimitri.fedrau@liebherr.com>
 
 
