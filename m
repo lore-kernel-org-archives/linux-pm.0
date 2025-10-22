@@ -1,272 +1,102 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48C4434DCEC
-	for <linux-pm@vger.kernel.org>; Wed, 22 Oct 2025 18:59:01 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17F7627462;
+	Wed, 22 Oct 2025 19:47:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761159541; cv=none; b=qKiBmnqgKnP2x3Z11ZXnovebA33Om0tfxQ63zSEaCekd+ziLqFheymC6cCMG2l5UuWgyrTeVqVz4spFZJYOfHZh/KCmvrSSvbpKB8m/WT2BqB+AIQo2FbI+qWUYXJphUkaYtgIKZ64XhczgK5xE5P0H+9yLyBcyUzCtFq1yxZzM=
+	t=1761162474; cv=none; b=YXiQCsEcKT1AtG1uslFXzdx1kpQJZSo3hUKU3oE4Ez3+4rcAyFPBy5dV6I/o21fPH5tiCGJawANu6lSCjfQF5EbF1U/Qrd7JpRqDCHZ1W4MBFQ+MhtJs8xvj91mvfztVn5js8UZoCDclmy8SNw5geA1H1L21DeG//e76xzVFg/Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761159541; c=relaxed/simple;
-	bh=mlwslglfW4AmbMaPmUaoJHzXtLDw/OW10z4gunbfZxk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=gW3acjc9mXZ2eMhBYEPP0vq05sH0a2bll7rUAGJFSq5JTK4UFDVBHKiaOAanHC/ntQoPQxWN05GtoWifeiacVt9uYGKHjJPIW4spu3c4XFKZlENh5RHo4WdddtjRzV84fJeuVJo10dfrX6koRVwpJt3mhOej51aGnMCLmOLKOZY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=m+KlbbKb; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1761162474; c=relaxed/simple;
+	bh=xQ+BUaYA9+sDnux4cMTAPJKVbRgpy1rp0kViDSJoH8s=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=nb5dyLNWebvABFzEOyYKeNGaxfg9vcwWGsil8t98qFKUE4+dAmAI/sdJQDTlij5/4FW2IxnabhyXXNmT+YVSkXR7JgaJxCshEkaFzqUMq+WiJOQKKiporEiW2rHM0OvSJFLezPfMJEqwIMNIoHJKWtH/eaou8VbKx+iBGBdO1/4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=K7c1txuq; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="m+KlbbKb"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7656C19423
-	for <linux-pm@vger.kernel.org>; Wed, 22 Oct 2025 18:59:00 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="K7c1txuq"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 9F5B6C4CEE7;
+	Wed, 22 Oct 2025 19:47:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1761159540;
-	bh=mlwslglfW4AmbMaPmUaoJHzXtLDw/OW10z4gunbfZxk=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=m+KlbbKbg+TVRUrI8Rg4IVBS8BBDieHkrgK4IYVotugzRLIalVionN9nECSOzOKh/
-	 SuCdc4S8dxNGMyI5vnU7COp01KIbgH/HDTl5XpE1UGP6Q8uorE/9PV0RxhCuYvRgIR
-	 uAy0PmKDphEFrK2B7i4OxeGgF18fK7pisZ/Av0AeBEZqWqOKvsn1xhi5OIP9Q3MKd2
-	 hgdgbaksqNcQDkAi7lfPZTnnRlPQ9vqvve9SsDgpgx9h9oRAwcdtr0iMw9UA/1ZNbt
-	 V2r4iie3W/TaPCJgkKfUBcKr+4owpzG0usCGZUiVjO+GxE744huWm+nDy25sLYEno8
-	 Fh+9asyIXQBbQ==
-Received: by mail-ot1-f44.google.com with SMTP id 46e09a7af769-7c28bf230feso1177054a34.0
-        for <linux-pm@vger.kernel.org>; Wed, 22 Oct 2025 11:59:00 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCXxg814nB8ASaEqLV0XSjUczLHzOtUOIZx2tR/vZhzDokmU/gYZTJK62RsN6TEjxQZjBSpa+U9Bjg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwkVuqqfcs8t9nz4uBfbCx06U5dZCPUmyL1aA4GCt+/u5PL6nE2
-	TNF8Vebi+DjIPvorwI9Ua+llNdR9h2j/12i96S98d3KKz4GhhQJJNPFLxKxa6gs7k43Gj2CGKJo
-	2V9MdERdtgOWvnBWnEFgUXST0TKUNq4Q=
-X-Google-Smtp-Source: AGHT+IH6Jjo+IK81R/sTD0z/wJnoekcNqRBMKeJWqjdcL97733FKRJK/+yvWMd2u3QK97i8+mkKlE/vupbbju7xyqD4=
-X-Received: by 2002:a05:6808:4f29:b0:43f:28bb:2f85 with SMTP id
- 5614622812f47-44963d8028dmr2095232b6e.8.1761159540078; Wed, 22 Oct 2025
- 11:59:00 -0700 (PDT)
+	s=k20201202; t=1761162473;
+	bh=xQ+BUaYA9+sDnux4cMTAPJKVbRgpy1rp0kViDSJoH8s=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=K7c1txuqtbkR1DnEtuYETX6ACY9vTrTWm2YK8IpicehjnG9TSkhWwZoyP194FCRL2
+	 YraqTo3X5fOFqIkpVSJeIP2xY+8gqn81YFBJ2pYWufMEmsIVzFrf91340J6GuXR8Nx
+	 y0rY+n/oQInJCCkTzV5CQjmSypmkBia7DLl+679k5UA4fiD2aXwgmS1m2l77pd36T2
+	 vRwirkzLJJwPKbmaL2H1F+KhGKj/Y/+XwoQCSvzbsfz9G+pVykvU7LGfgC7zIEF7mP
+	 RXtjrkIpUISDW2D6cqTtsyUk2RnGDPpA4QaIuNIWHPCoualj3nSwmaVzy0jsjY/DF9
+	 Rs6hls4GQ1n1Q==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E1B3CCD1AB;
+	Wed, 22 Oct 2025 19:47:53 +0000 (UTC)
+From: Dimitri Fedrau via B4 Relay <devnull+dimitri.fedrau.liebherr.com@kernel.org>
+Date: Wed, 22 Oct 2025 21:47:47 +0200
+Subject: [PATCH 1/2] dt-bindings: power: supply: gpio-charger: add support
+ for fast-charge timer
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251002113404.3117429-1-srosek@google.com> <20251002113404.3117429-6-srosek@google.com>
-In-Reply-To: <20251002113404.3117429-6-srosek@google.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 22 Oct 2025 20:58:49 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hGKHJKMXPLKKGUntDok8SSm0=TGYqHFkCxXBxkygfK7w@mail.gmail.com>
-X-Gm-Features: AS18NWD-inSgNr9w6XPyQUnP_62cM9xRIQR6r2OvWy2WykLMUtE5HsKh3HsYhsc
-Message-ID: <CAJZ5v0hGKHJKMXPLKKGUntDok8SSm0=TGYqHFkCxXBxkygfK7w@mail.gmail.com>
-Subject: Re: [PATCH v3 5/6] ACPI: platform: Add macro for acpi platform driver
-To: Slawomir Rosek <srosek@google.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Alex Hung <alexhung@gmail.com>, 
-	Hans de Goede <hansg@kernel.org>, Ilpo Jarvinen <ilpo.jarvinen@linux.intel.com>, 
-	AceLan Kao <acelan.kao@canonical.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Tomasz Nowicki <tnowicki@google.com>, 
-	Stanislaw Kardach <skardach@google.com>, Michal Krawczyk <mikrawczyk@google.com>, 
-	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, 
-	platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20251022-gpio-charger-timer-v1-1-b557409400f2@liebherr.com>
+References: <20251022-gpio-charger-timer-v1-0-b557409400f2@liebherr.com>
+In-Reply-To: <20251022-gpio-charger-timer-v1-0-b557409400f2@liebherr.com>
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, Dimitri Fedrau <dimitri.fedrau@liebherr.com>, 
+ Dimitri Fedrau <dima.fedrau@gmail.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1761162472; l=1423;
+ i=dimitri.fedrau@liebherr.com; s=20241202; h=from:subject:message-id;
+ bh=ajr1Bhnew2d+8SEwahiJrcr8lGScQzBku79JG1XD9nE=;
+ b=EbKil6gHNtCPvQq7QlU/s/o4Q/ljGbZTtEI51tMdUowtCJReRu89E9V2OiOkZWmaR+01fU767
+ fTQj21i8v7gCBIhSQBI0kC/yzJE8aQ3bGQRSfr2vMEWCTeEZU5i2FKn
+X-Developer-Key: i=dimitri.fedrau@liebherr.com; a=ed25519;
+ pk=rT653x09JSQvotxIqQl4/XiI4AOiBZrdOGvxDUbb5m8=
+X-Endpoint-Received: by B4 Relay for dimitri.fedrau@liebherr.com/20241202
+ with auth_id=290
+X-Original-From: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
+Reply-To: dimitri.fedrau@liebherr.com
 
-On Thu, Oct 2, 2025 at 1:34=E2=80=AFPM Slawomir Rosek <srosek@google.com> w=
-rote:
->
-> Introduce module_acpi_platform_driver() macro to simplify dynamic
-> enumeration of ACPI device objects on the platform bus by loadable
-> modules. Move common code from the intel-hid and intel-vbtn drivers
-> to the ACPI platform core.
+From: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
 
-I think that this goes the other way around: common code is moved from
-intel-hid and intel-vbtn to acpi_platform and the new macro is
-introduced as a way for the drivers to invoke that code.
+On some devices like TIs BQ24081 battery charger it is possible to activate
+or deactivate a fast-charge timer that provides a backup safety for charge
+termination via GPIO. In case of the BQ24081 it is a fixed 7-hour timer.
 
-> Signed-off-by: Slawomir Rosek <srosek@google.com>
+Signed-off-by: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
+---
+ Documentation/devicetree/bindings/power/supply/gpio-charger.yaml | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-Overall, it looks like this patch does not depend on the [1-4/6] in this se=
-ries.
+diff --git a/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml b/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
+index 25826bfc289c1c00c338fd0cee2ae6932529cfc3..0edacc104186497118d4ba41f80947009a9aacf6 100644
+--- a/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
++++ b/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
+@@ -62,6 +62,10 @@ properties:
+     description: Default charge current limit. Must be listed in
+       charge-current-limit-mapping.
+ 
++  fast-charge-timer-gpios:
++    maxItems: 1
++    description: GPIO used for enabling/disabling the fast-charge timer
++
+ required:
+   - compatible
+ 
+@@ -97,4 +101,5 @@ examples:
+                                      <700000 0x01>, // 700 mA => GPIO A.12 high
+                                      <0 0x02>; // 0 mA => GPIO A.11 high
+       charge-current-limit-default-microamp = <700000>;
++      fast-charge-timer-gpios = <&gpioA 13 GPIO_ACTIVE_LOW>;
+     };
 
-> ---
->  drivers/acpi/acpi_platform.c      | 27 +++++++++++++++++++++++++
->  drivers/platform/x86/intel/hid.c  | 33 +++----------------------------
->  drivers/platform/x86/intel/vbtn.c | 30 +---------------------------
->  include/linux/platform_device.h   | 17 ++++++++++++++++
->  4 files changed, 48 insertions(+), 59 deletions(-)
->
-> diff --git a/drivers/acpi/acpi_platform.c b/drivers/acpi/acpi_platform.c
-> index 48d15dd785f6..adf32ffa6be6 100644
-> --- a/drivers/acpi/acpi_platform.c
-> +++ b/drivers/acpi/acpi_platform.c
-> @@ -190,6 +190,33 @@ struct platform_device *acpi_create_platform_device(=
-struct acpi_device *adev,
->  }
->  EXPORT_SYMBOL_GPL(acpi_create_platform_device);
->
-> +static acpi_status
-> +__acpi_platform_driver_register_cb(acpi_handle handle, u32 lvl,
-> +                               void *context, void **rv)
-> +{
-> +       const struct acpi_device_id *ids =3D context;
-> +       struct acpi_device *dev =3D acpi_fetch_acpi_dev(handle);
-> +
-> +       if (dev && acpi_match_device_ids(dev, ids) =3D=3D 0)
-> +               if (!IS_ERR_OR_NULL(acpi_create_platform_device(dev, NULL=
-))) {
-> +                       dev_info(&dev->dev,
-> +                                "created platform device\n");
-> +               }
-> +
-> +       return AE_OK;
-> +}
-> +
-> +int __acpi_platform_driver_register(struct platform_driver *drv,
-> +                               struct module *owner)
-> +{
-> +       acpi_walk_namespace(ACPI_TYPE_DEVICE, ACPI_ROOT_OBJECT, ACPI_UINT=
-32_MAX,
-> +                           __acpi_platform_driver_register_cb, NULL,
-> +                           (void *)drv->driver.acpi_match_table, NULL);
+-- 
+2.39.5
 
-Why is this needed here?
 
-> +
-> +       return __platform_driver_register(drv, owner);
-> +}
-> +EXPORT_SYMBOL_GPL(__acpi_platform_driver_register);
-> +
->  void __init acpi_platform_init(void)
->  {
->         acpi_reconfig_notifier_register(&acpi_platform_notifier);
-> diff --git a/drivers/platform/x86/intel/hid.c b/drivers/platform/x86/inte=
-l/hid.c
-> index f25a427cccda..37f990686446 100644
-> --- a/drivers/platform/x86/intel/hid.c
-> +++ b/drivers/platform/x86/intel/hid.c
-> @@ -775,34 +775,7 @@ static struct platform_driver intel_hid_pl_driver =
-=3D {
->   *
->   * As a workaround until the ACPI core figures out how to handle
->   * this corner case, manually ask the ACPI platform device code to
-> - * claim the ACPI node.
-> + * claim the ACPI node by using module_acpi_platform_driver()
-> + * instead of the regular module_platform_driver().
->   */
-> -static acpi_status __init
-> -check_acpi_dev(acpi_handle handle, u32 lvl, void *context, void **rv)
-> -{
-> -       const struct acpi_device_id *ids =3D context;
-> -       struct acpi_device *dev =3D acpi_fetch_acpi_dev(handle);
-> -
-> -       if (dev && acpi_match_device_ids(dev, ids) =3D=3D 0)
-> -               if (!IS_ERR_OR_NULL(acpi_create_platform_device(dev, NULL=
-)))
-> -                       dev_info(&dev->dev,
-> -                                "intel-hid: created platform device\n");
-> -
-> -       return AE_OK;
-> -}
-> -
-> -static int __init intel_hid_init(void)
-> -{
-> -       acpi_walk_namespace(ACPI_TYPE_DEVICE, ACPI_ROOT_OBJECT,
-> -                           ACPI_UINT32_MAX, check_acpi_dev, NULL,
-> -                           (void *)intel_hid_ids, NULL);
-
-This actually isn't right and should not be perpetuated.
-
-Platform devices are created for ACPI device objects with ACPI device
-IDs by acpi_default_enumeration(), so it should not be necessary to do
-that from a driver.
-
-> -
-> -       return platform_driver_register(&intel_hid_pl_driver);
-> -}
-> -module_init(intel_hid_init);
-> -
-> -static void __exit intel_hid_exit(void)
-> -{
-> -       platform_driver_unregister(&intel_hid_pl_driver);
-> -}
-> -module_exit(intel_hid_exit);
-> +module_acpi_platform_driver(intel_hid_pl_driver);
-> diff --git a/drivers/platform/x86/intel/vbtn.c b/drivers/platform/x86/int=
-el/vbtn.c
-> index 232cd12e3c9f..42932479de35 100644
-> --- a/drivers/platform/x86/intel/vbtn.c
-> +++ b/drivers/platform/x86/intel/vbtn.c
-> @@ -390,32 +390,4 @@ static struct platform_driver intel_vbtn_pl_driver =
-=3D {
->         .remove =3D intel_vbtn_remove,
->  };
->
-> -static acpi_status __init
-> -check_acpi_dev(acpi_handle handle, u32 lvl, void *context, void **rv)
-> -{
-> -       const struct acpi_device_id *ids =3D context;
-> -       struct acpi_device *dev =3D acpi_fetch_acpi_dev(handle);
-> -
-> -       if (dev && acpi_match_device_ids(dev, ids) =3D=3D 0)
-> -               if (!IS_ERR_OR_NULL(acpi_create_platform_device(dev, NULL=
-)))
-> -                       dev_info(&dev->dev,
-> -                                "intel-vbtn: created platform device\n")=
-;
-> -
-> -       return AE_OK;
-> -}
-> -
-> -static int __init intel_vbtn_init(void)
-> -{
-> -       acpi_walk_namespace(ACPI_TYPE_DEVICE, ACPI_ROOT_OBJECT,
-> -                           ACPI_UINT32_MAX, check_acpi_dev, NULL,
-> -                           (void *)intel_vbtn_ids, NULL);
-
-Same thing here.
-
-> -
-> -       return platform_driver_register(&intel_vbtn_pl_driver);
-> -}
-> -module_init(intel_vbtn_init);
-> -
-> -static void __exit intel_vbtn_exit(void)
-> -{
-> -       platform_driver_unregister(&intel_vbtn_pl_driver);
-> -}
-> -module_exit(intel_vbtn_exit);
-> +module_acpi_platform_driver(intel_vbtn_pl_driver);
-> diff --git a/include/linux/platform_device.h b/include/linux/platform_dev=
-ice.h
-> index 074754c23d33..3b70b054d8a5 100644
-> --- a/include/linux/platform_device.h
-> +++ b/include/linux/platform_device.h
-> @@ -264,6 +264,14 @@ extern int __platform_driver_register(struct platfor=
-m_driver *,
->                                         struct module *);
->  extern void platform_driver_unregister(struct platform_driver *);
->
-> +/*
-> + * use a macro to avoid include chaining to get THIS_MODULE
-> + */
-> +#define acpi_platform_driver_register(drv) \
-> +       __acpi_platform_driver_register(drv, THIS_MODULE)
-> +extern int __acpi_platform_driver_register(struct platform_driver *,
-> +                                       struct module *);
-
-If "extern" is not necessary above, please remove it.
-
-> +
->  /* non-hotpluggable platform devices may use this so that probe() and
->   * its support may live in __init sections, conserving runtime memory.
->   */
-> @@ -292,6 +300,15 @@ static inline void platform_set_drvdata(struct platf=
-orm_device *pdev,
->         module_driver(__platform_driver, platform_driver_register, \
->                         platform_driver_unregister)
->
-> +/* module_acpi_platform_driver() - Helper macro for drivers that don't d=
-o
-> + * anything special in module init/exit.  This eliminates a lot of
-> + * boilerplate.  Each module may only use this macro once, and
-> + * calling it replaces module_init() and module_exit()
-> + */
-> +#define module_acpi_platform_driver(__platform_driver) \
-> +       module_driver(__platform_driver, acpi_platform_driver_register, \
-> +                       platform_driver_unregister)
-> +
->  /* builtin_platform_driver() - Helper macro for builtin drivers that
->   * don't do anything special in driver init.  This eliminates some
->   * boilerplate.  Each driver may only use this macro once, and
-> --
