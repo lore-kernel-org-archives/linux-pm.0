@@ -1,24 +1,24 @@
-Received: from relmlie6.idc.renesas.com (relmlor2.renesas.com [210.160.252.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 8100F2F998D;
-	Thu, 23 Oct 2025 08:20:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.160.252.172
+Received: from relmlie5.idc.renesas.com (relmlor1.renesas.com [210.160.252.171])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 23BD52FB0AA;
+	Thu, 23 Oct 2025 08:20:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.160.252.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761207653; cv=none; b=uLlDmjuIogk1s18vxG8Ebhv9oOsDf3YGkGllfG77MRTU2TkM0hSFirt5zbjl0qTzlooPeHvyyYOmWpcGwaWWh+oeAjUSNU3WsUTG4355P66DINnlvgj37v6c3tjbQ27c7VvkNk88cJa19+skAy0GAnl+zJZThn6fJlatN+NcOZc=
+	t=1761207660; cv=none; b=SePYkTooOQshnOJRnUE5swZOmgq1+Vjjla7anuHMEq18eInMzpW+99S5kZFIduXO9sZ8rNpXvmOPkknyGYBwfoWGJ1yrXKdDzt+9HsDMPTpZk2hJOjZy6Yixovr5j9Bfln6BD21bWVtLCa4YF8qh/mITsVphnKy+ipNTU0d8whE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761207653; c=relaxed/simple;
-	bh=xB8DFzc5f4HVxaz4ibAx2bYfo7c+ayjhDoWFoXboEUY=;
+	s=arc-20240116; t=1761207660; c=relaxed/simple;
+	bh=81ALuVN/SLvYBy50VZCJcFcx0NqsaCfGlmBKJDatKfw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=uwkqvmqS1YS0Qu+EA0qNsv9R9YC9/rHJQ7GqetbdrsmpXsR7YobVeQI3kDfy1+bSIWPs1RKjv+uUlEFHfjjFDEKPnbpf4Y7UV8nCubwLkEHPWt68iK+6fd6rb93QQfonJbE/sMMPGlsMTpcHVuUImAvBqqoLhy5sPdACf3BOQTI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com; spf=pass smtp.mailfrom=renesas.com; arc=none smtp.client-ip=210.160.252.172
+	 MIME-Version; b=aNKnKOyJzMfgQADFu11Orfb0fEhbd1QsH4WykObob8eu34G4O4V/WGYFNpZC/rH9RUj8sGjwhsYG4joGiFuB05gp93lBA9BxeSmqjuU6Gt6DktTNx9DevDJ+uXeR5gm5k13d0RirJ/2sMjMR0DZ1zSYxRhDpnfRG5mxo5+aV+hY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com; spf=pass smtp.mailfrom=renesas.com; arc=none smtp.client-ip=210.160.252.171
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=renesas.com
-X-CSE-ConnectionGUID: ZLsoNXSlQSSPA+F492KIGw==
-X-CSE-MsgGUID: bob2syBVSnWNVIorAGlUfQ==
+X-CSE-ConnectionGUID: ipixnCrrSyyjAu6i81B5vw==
+X-CSE-MsgGUID: 42LCZbd1SImBGOZYX3ykFg==
 Received: from unknown (HELO relmlir6.idc.renesas.com) ([10.200.68.152])
-  by relmlie6.idc.renesas.com with ESMTP; 23 Oct 2025 17:20:48 +0900
+  by relmlie5.idc.renesas.com with ESMTP; 23 Oct 2025 17:20:56 +0900
 Received: from demon-pc.localdomain (unknown [10.226.93.77])
-	by relmlir6.idc.renesas.com (Postfix) with ESMTP id 48651417CA94;
-	Thu, 23 Oct 2025 17:20:43 +0900 (JST)
+	by relmlir6.idc.renesas.com (Postfix) with ESMTP id 70F56417CA94;
+	Thu, 23 Oct 2025 17:20:50 +0900 (JST)
 From: Cosmin Tanislav <cosmin-gabriel.tanislav.xa@renesas.com>
 To: 
 Cc: John Madieu <john.madieu.xa@bp.renesas.com>,
@@ -40,9 +40,9 @@ Cc: John Madieu <john.madieu.xa@bp.renesas.com>,
 	linux-renesas-soc@vger.kernel.org,
 	linux-clk@vger.kernel.org,
 	Cosmin Tanislav <cosmin-gabriel.tanislav.xa@renesas.com>
-Subject: [PATCH 07/10] arm64: dts: renesas: r9a09g077: add OPP table
-Date: Thu, 23 Oct 2025 11:19:21 +0300
-Message-ID: <20251023081925.2412325-8-cosmin-gabriel.tanislav.xa@renesas.com>
+Subject: [PATCH 08/10] arm64: dts: renesas: r9a09g087: add OPP table
+Date: Thu, 23 Oct 2025 11:19:22 +0300
+Message-ID: <20251023081925.2412325-9-cosmin-gabriel.tanislav.xa@renesas.com>
 X-Mailer: git-send-email 2.51.1.dirty
 In-Reply-To: <20251023081925.2412325-1-cosmin-gabriel.tanislav.xa@renesas.com>
 References: <20251023081925.2412325-1-cosmin-gabriel.tanislav.xa@renesas.com>
@@ -54,17 +54,17 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add OPP table for RZ/T2H SoC.
+Add OPP table for RZ/N2H SoC.
 
 Signed-off-by: Cosmin Tanislav <cosmin-gabriel.tanislav.xa@renesas.com>
 ---
- arch/arm64/boot/dts/renesas/r9a09g077.dtsi | 19 +++++++++++++++++++
+ arch/arm64/boot/dts/renesas/r9a09g087.dtsi | 19 +++++++++++++++++++
  1 file changed, 19 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/renesas/r9a09g077.dtsi b/arch/arm64/boot/dts/renesas/r9a09g077.dtsi
-index 33925f13ee86..bb030bfed090 100644
---- a/arch/arm64/boot/dts/renesas/r9a09g077.dtsi
-+++ b/arch/arm64/boot/dts/renesas/r9a09g077.dtsi
+diff --git a/arch/arm64/boot/dts/renesas/r9a09g087.dtsi b/arch/arm64/boot/dts/renesas/r9a09g087.dtsi
+index b7685449a7d7..5eef8c18037e 100644
+--- a/arch/arm64/boot/dts/renesas/r9a09g087.dtsi
++++ b/arch/arm64/boot/dts/renesas/r9a09g087.dtsi
 @@ -14,6 +14,17 @@ / {
  	#size-cells = <2>;
  	interrupt-parent = <&gic>;
@@ -87,7 +87,7 @@ index 33925f13ee86..bb030bfed090 100644
  			device_type = "cpu";
  			next-level-cache = <&L3_CA55>;
  			enable-method = "psci";
-+			clocks = <&cpg CPG_CORE R9A09G077_CLK_CA55C0>;
++			clocks = <&cpg CPG_CORE R9A09G087_CLK_CA55C0>;
 +			operating-points-v2 = <&cluster0_opp>;
  		};
  
@@ -96,7 +96,7 @@ index 33925f13ee86..bb030bfed090 100644
  			device_type = "cpu";
  			next-level-cache = <&L3_CA55>;
  			enable-method = "psci";
-+			clocks = <&cpg CPG_CORE R9A09G077_CLK_CA55C1>;
++			clocks = <&cpg CPG_CORE R9A09G087_CLK_CA55C1>;
 +			operating-points-v2 = <&cluster0_opp>;
  		};
  
@@ -105,7 +105,7 @@ index 33925f13ee86..bb030bfed090 100644
  			device_type = "cpu";
  			next-level-cache = <&L3_CA55>;
  			enable-method = "psci";
-+			clocks = <&cpg CPG_CORE R9A09G077_CLK_CA55C2>;
++			clocks = <&cpg CPG_CORE R9A09G087_CLK_CA55C2>;
 +			operating-points-v2 = <&cluster0_opp>;
  		};
  
@@ -114,7 +114,7 @@ index 33925f13ee86..bb030bfed090 100644
  			device_type = "cpu";
  			next-level-cache = <&L3_CA55>;
  			enable-method = "psci";
-+			clocks = <&cpg CPG_CORE R9A09G077_CLK_CA55C3>;
++			clocks = <&cpg CPG_CORE R9A09G087_CLK_CA55C3>;
 +			operating-points-v2 = <&cluster0_opp>;
  		};
  
