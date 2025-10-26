@@ -1,253 +1,99 @@
-Received: from mxout2.routing.net (mxout2.routing.net [134.0.28.12])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0C7428BA83;
-	Sun, 26 Oct 2025 12:31:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8999A1E487
+	for <linux-pm@vger.kernel.org>; Sun, 26 Oct 2025 13:05:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761481912; cv=none; b=HRpKYrQ579lsreNM6dmT++4GvQ131UMp2YuYGkgzPY8JLdRdEd5vAf4aWHE7GduR3PeYBybFTf1pdFljWx/ZbjL4w6vZ+QWbZ8sGjM3591itkDGu1NFQTF4dy+GARlcFgK47MD3UhnJw1J30Wsc32VN3mM9n7RDh9Bb9r2vzneA=
+	t=1761483943; cv=none; b=KA9giDJLZmEzICbQ1q0tWT07jO3k0tSRL5PdqXyk9lESMvFRhjWWWn5273PzLdA870DAObjeccSXp4vFz9xAnfRYcfbOHwjYoqw4Rk/uyafjubnm30RrkKXCp4zbZVgR+LqLNmWYoHeeMhsGQy4CXvwgDpi3/E8eupcmVpZXOBU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761481912; c=relaxed/simple;
-	bh=zwniZlxloGKkihQAQmGZNdKCwt+F5x7WAUh5EQNZHjE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=hx2cTMkTnuob35HrnN941DcAEJHKgqqEUVarxFS9iZsEe0iHeRj0kwMsTlAC8PobxtqFX3a5+FImDHH6XZKj0O4I6TQdbrNBzm4sMFKM6nJL8atkSjjWmNr5It8nnyauf6D+XG575ev047n8NQHEbykgAlt4gW8YxExG5xQT3fc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=H5fyZmsx; arc=none smtp.client-ip=134.0.28.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
+	s=arc-20240116; t=1761483943; c=relaxed/simple;
+	bh=0HLmai/3AND1bebak7evHRyrS3T5IrE5p46YRKrpJXo=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=JmqUA16xXhApTsfSk7GuXOVrG7mGSq4rg4SjUiMR6MI2WItdaCPeHXn7s5puJ8m1M31mcKqCuQnL7TRV/2pgNJ0pCm5TxQ0KSF4wjm85hzN9XWEPl4OUpEj/METnegZGuf0drlwh2JEenDdTKqZwu1Z0ra7sEZBqUS4wXeJ3ZvQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=c9vccQCZ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="H5fyZmsx"
-Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout2.routing.net (Postfix) with ESMTP id 6A3535FE85;
-	Sun, 26 Oct 2025 12:22:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=routing; t=1761481325;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=BBBB63EbQu+3f69j7eVhdhDTMGpiISE40F1PbWVxzkk=;
-	b=H5fyZmsxeTaTkwjUhvyWEMIY+V43xldUQTi4lENvCw/BoYIq5r0akakLk6SFNtUyyHDcHX
-	+4qHOsMVIT2u5ZSYMAHvF4Y/Iey116ekP0R/bSknUR7Y6ZVBALu/L8oE4nTfuQs4NnLyNz
-	2Ep6/ysaC3vmoA01tUeTb6FsPiNGwy8=
-Received: from frank-u24.. (fttx-pool-217.61.154.70.bambit.de [217.61.154.70])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 310831226BC;
-	Sun, 26 Oct 2025 12:22:05 +0000 (UTC)
-From: Frank Wunderlich <linux@fw-web.de>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Cc: Frank Wunderlich <frank-w@public-files.de>,
-	=?UTF-8?q?N=C3=ADcolas=20F=2E=20R=2E=20A=2E=20Prado?= <nfraprado@collabora.com>,
-	Mason Chang <mason-cw.chang@mediatek.com>,
-	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
-	Balsam CHIHI <bchihi@baylibre.com>,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-mediatek@lists.infradead.org
-Subject: [PATCH v1 3/5] thermal/drivers/mediatek/lvts_thermal: Add no-irq-mode for mt7987
-Date: Sun, 26 Oct 2025 13:21:32 +0100
-Message-ID: <20251026122143.71100-4-linux@fw-web.de>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20251026122143.71100-1-linux@fw-web.de>
-References: <20251026122143.71100-1-linux@fw-web.de>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="c9vccQCZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 014DDC4CEF1
+	for <linux-pm@vger.kernel.org>; Sun, 26 Oct 2025 13:05:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1761483943;
+	bh=0HLmai/3AND1bebak7evHRyrS3T5IrE5p46YRKrpJXo=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=c9vccQCZiwAa8l7okYXBlu72WbMQBc6Fp1XM/U/Zv6VYVYpgMgjJfpkYlQTEN0j/g
+	 fT9er0WvkFLqaAb4+LravzNaD2M/G3yXtVXqVF88MOcaLes7XzAG2wAOEjyqvAfugz
+	 4KbOBGcOYKzvYBYJQShDts4roupQ3gfCVVbhk/v/KN+vZDOZiEiQ74dLFiDvWAgwCC
+	 YXc5rcVfkhGXwBcsVzI0jm0DxSpypZ6iLTvnFgM2pJQPc8MM9P84zkW2F5sZQxkPdC
+	 t2DWL7X1o3JaHSO31nUz9xKYcfA7EPzdeGR5PiLbtApb9X/IKfbVY3URvWb9MReio7
+	 uHaCZP20/SXlA==
+Received: by mail-oo1-f53.google.com with SMTP id 006d021491bc7-651c743b2d9so1935392eaf.3
+        for <linux-pm@vger.kernel.org>; Sun, 26 Oct 2025 06:05:42 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUVdm2pr5UX1rwx0Gvntq+OsXulFmExcAyiQ8n6SpnBK9dKFtPXdej/NpKLGkh7LIabAdRST/v2Bg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyyTLYyItfk45lV8DB9KtviTEy+aG9bn7RU34ALrGb2iVMFQ2CC
+	DmLU9y1EwI/pcMfxvnm2C4cqNzwbi6RmbyK33+FfJiA3n+YxF/w2wcvVAyi8lrtYnKwlB1aETb+
+	K4rBmT8pTC5Tlh3pOxe184x0xvq3tMTs=
+X-Google-Smtp-Source: AGHT+IHC5JJMdx2g+m4NDtTzZlycNzrptZxdNGhkllPEAJ93ySk2afTcZPUTZWEiu6XEDVsPMhRqJe6s52KeGRy7rDw=
+X-Received: by 2002:a05:6820:4b8f:b0:651:c8cc:8650 with SMTP id
+ 006d021491bc7-654d7f5c6fbmr4804130eaf.2.1761483942328; Sun, 26 Oct 2025
+ 06:05:42 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20251026033115.436448-1-superm1@kernel.org>
+In-Reply-To: <20251026033115.436448-1-superm1@kernel.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Sun, 26 Oct 2025 14:05:25 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0j-cNA4AiMSM8GCQPwVWYk5eb4cLV+snGbuGtuLWjB-vw@mail.gmail.com>
+X-Gm-Features: AWmQ_bkMPcxNCgmr_plJytZfac542PYqdddy6zy7Eh_5PaEsjY4SeDPURHDEL-8
+Message-ID: <CAJZ5v0j-cNA4AiMSM8GCQPwVWYk5eb4cLV+snGbuGtuLWjB-vw@mail.gmail.com>
+Subject: Re: [PATCH] PM: hibernate: Restore GFP mask in power_down() for HIBERNATION_PLATFORM
+To: "Mario Limonciello (AMD)" <superm1@kernel.org>
+Cc: mario.limonciello@amd.com, rafael@kernel.org, lenb@kernel.org, 
+	pavel@kernel.org, Askar Safin <safinaskar@gmail.com>, rafael.j.wysocki@intel.com, 
+	linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Frank Wunderlich <frank-w@public-files.de>
+On Sun, Oct 26, 2025 at 4:31=E2=80=AFAM Mario Limonciello (AMD)
+<superm1@kernel.org> wrote:
+>
+> commit 449c9c02537a1 ("PM: hibernate: Restrict GFP mask in
+> hibernation_snapshot()") added a restrict GFP mask call that leads to
+> mismatch when using the platform for hibernation.  As part of calling
+> hibernation_platform_enter() the mask will be restricted when calling
+> dpm_suspend_start().
+>
+> This is a similar problem as occurred with hybrid sleep that was fixed
+> by commit 469d80a3712c6 ("PM: hibernate: Fix hybrid-sleep").
+>
+> Restore GFP maks as part of power_down() in HIBERNATION_PLATFORM case
+> to fix the mismatch.
+>
+> Reported-by: Askar Safin <safinaskar@gmail.com>
+> Closes: https://lore.kernel.org/linux-pm/20251025050812.421905-1-safinask=
+ar@gmail.com/
+> Fixes: 449c9c02537a1 ("PM: hibernate: Restrict GFP mask in hibernation_sn=
+apshot()")
+> Signed-off-by: Mario Limonciello (AMD) <superm1@kernel.org>
+> ---
+>  kernel/power/hibernate.c | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index 14e85ff235512..e15907f28c4cd 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -721,6 +721,7 @@ static void power_down(void)
+>                 kernel_restart(NULL);
+>                 break;
+>         case HIBERNATION_PLATFORM:
+> +               pm_restore_gfp_mask();
+>                 error =3D hibernation_platform_enter();
+>                 if (error =3D=3D -EAGAIN || error =3D=3D -EBUSY) {
+>                         events_check_enabled =3D false;
+> --
 
-Upcoming MT7987 does not have IRQ for thermal. Add a field in lvts_data
-to configure this based on SoC.
-
-Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
----
- drivers/thermal/mediatek/lvts_thermal.c | 51 ++++++++++++++++++++-----
- 1 file changed, 41 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
-index ab55b20cda47..9413b30f7b69 100644
---- a/drivers/thermal/mediatek/lvts_thermal.c
-+++ b/drivers/thermal/mediatek/lvts_thermal.c
-@@ -94,6 +94,8 @@
- #define LVTS_MSR_READ_TIMEOUT_US	400
- #define LVTS_MSR_READ_WAIT_US		(LVTS_MSR_READ_TIMEOUT_US / 2)
- 
-+#define LVTS_HW_RESET_TEMP		125000
-+
- #define LVTS_MINIMUM_THRESHOLD		20000
- 
- static int golden_temp = LVTS_GOLDEN_TEMP_DEFAULT;
-@@ -134,6 +136,7 @@ struct lvts_data {
- 	int temp_offset;
- 	int gt_calib_bit_offset;
- 	unsigned int def_calibration;
-+	bool irq_enable;
- };
- 
- struct lvts_sensor {
-@@ -151,6 +154,7 @@ struct lvts_ctrl {
- 	const struct lvts_data *lvts_data;
- 	u32 calibration[LVTS_SENSOR_MAX];
- 	u8 valid_sensor_mask;
-+	u32 hw_reset_raw_temp;
- 	int mode;
- 	void __iomem *base;
- 	int low_thresh;
-@@ -410,6 +414,9 @@ static int lvts_set_trips(struct thermal_zone_device *tz, int low, int high)
- 	}
- 	lvts_update_irq_mask(lvts_ctrl);
- 
-+	if (!lvts_data->irq_enable)
-+		return 0;
-+
- 	if (!should_update_thresh)
- 		return 0;
- 
-@@ -859,6 +866,14 @@ static int lvts_ctrl_init(struct device *dev, struct lvts_domain *lvts_td,
- 		 */
- 		lvts_ctrl[i].mode = lvts_data->lvts_ctrl[i].mode;
- 
-+		/*
-+		 * The temperature to raw temperature must be done
-+		 * after initializing the calibration.
-+		 */
-+		lvts_ctrl[i].hw_reset_raw_temp =
-+			lvts_temp_to_raw(LVTS_HW_RESET_TEMP,
-+					 lvts_data->temp_factor);
-+
- 		lvts_ctrl[i].low_thresh = INT_MIN;
- 		lvts_ctrl[i].high_thresh = INT_MIN;
- 	}
-@@ -915,12 +930,13 @@ static void lvts_write_config(struct lvts_ctrl *lvts_ctrl, const u32 *cmds, int
- 	 */
- 	for (i = 0; i < nr_cmds; i++) {
- 		writel(cmds[i], LVTS_CONFIG(lvts_ctrl->base));
--		usleep_range(2, 4);
-+		usleep_range(5, 15);
- 	}
- }
- 
- static int lvts_irq_init(struct lvts_ctrl *lvts_ctrl)
- {
-+	const struct lvts_data *lvts_data = lvts_ctrl->lvts_data;
- 	/*
- 	 * LVTS_PROTCTL : Thermal Protection Sensor Selection
- 	 *
-@@ -954,8 +970,12 @@ static int lvts_irq_init(struct lvts_ctrl *lvts_ctrl)
- 	 * The LVTS_MONINT register layout is the same as the LVTS_MONINTSTS
- 	 * register, except we set the bits to enable the interrupt.
- 	 */
--	writel(0, LVTS_MONINT(lvts_ctrl->base));
--
-+	if (lvts_data->irq_enable) {
-+		writel(0, LVTS_MONINT(lvts_ctrl->base));
-+	} else {
-+		writel(BIT(16), LVTS_PROTCTL(lvts_ctrl->base));
-+		writel(lvts_ctrl->hw_reset_raw_temp, LVTS_PROTTC(lvts_ctrl->base));
-+	}
- 	return 0;
- }
- 
-@@ -1338,9 +1358,11 @@ static int lvts_probe(struct platform_device *pdev)
- 	if (IS_ERR(lvts_td->reset))
- 		return dev_err_probe(dev, PTR_ERR(lvts_td->reset), "Failed to get reset control\n");
- 
--	irq = platform_get_irq(pdev, 0);
--	if (irq < 0)
--		return irq;
-+	if (lvts_data->irq_enable) {
-+		irq = platform_get_irq(pdev, 0);
-+		if (irq < 0)
-+			return irq;
-+	}
- 
- 	golden_temp_offset = lvts_data->temp_offset;
- 
-@@ -1352,10 +1374,12 @@ static int lvts_probe(struct platform_device *pdev)
- 	 * At this point the LVTS is initialized and enabled. We can
- 	 * safely enable the interrupt.
- 	 */
--	ret = devm_request_threaded_irq(dev, irq, NULL, lvts_irq_handler,
--					IRQF_ONESHOT, dev_name(dev), lvts_td);
--	if (ret)
--		return dev_err_probe(dev, ret, "Failed to request interrupt\n");
-+	if (lvts_data->irq_enable) {
-+		ret = devm_request_threaded_irq(dev, irq, NULL, lvts_irq_handler,
-+						IRQF_ONESHOT, dev_name(dev), lvts_td);
-+		if (ret)
-+			return dev_err_probe(dev, ret, "Failed to request interrupt\n");
-+	}
- 
- 	platform_set_drvdata(pdev, lvts_td);
- 
-@@ -1763,6 +1787,7 @@ static const struct lvts_data mt7988_lvts_ap_data = {
- 	.temp_factor	= LVTS_COEFF_A_MT7988,
- 	.temp_offset	= LVTS_COEFF_B_MT7988,
- 	.gt_calib_bit_offset = 24,
-+	.irq_enable = true, //SDK false
- };
- 
- static const struct lvts_data mt8186_lvts_data = {
-@@ -1776,6 +1801,7 @@ static const struct lvts_data mt8186_lvts_data = {
- 	.temp_offset	= LVTS_COEFF_B_MT7988,
- 	.gt_calib_bit_offset = 24,
- 	.def_calibration = 19000,
-+	.irq_enable = true,
- };
- 
- static const struct lvts_data mt8188_lvts_mcu_data = {
-@@ -1789,6 +1815,7 @@ static const struct lvts_data mt8188_lvts_mcu_data = {
- 	.temp_offset	= LVTS_COEFF_B_MT8195,
- 	.gt_calib_bit_offset = 20,
- 	.def_calibration = 35000,
-+	.irq_enable = true,
- };
- 
- static const struct lvts_data mt8188_lvts_ap_data = {
-@@ -1802,6 +1829,7 @@ static const struct lvts_data mt8188_lvts_ap_data = {
- 	.temp_offset	= LVTS_COEFF_B_MT8195,
- 	.gt_calib_bit_offset = 20,
- 	.def_calibration = 35000,
-+	.irq_enable = true,
- };
- 
- static const struct lvts_data mt8192_lvts_mcu_data = {
-@@ -1815,6 +1843,7 @@ static const struct lvts_data mt8192_lvts_mcu_data = {
- 	.temp_offset	= LVTS_COEFF_B_MT8195,
- 	.gt_calib_bit_offset = 24,
- 	.def_calibration = 35000,
-+	.irq_enable = true,
- };
- 
- static const struct lvts_data mt8192_lvts_ap_data = {
-@@ -1828,6 +1857,7 @@ static const struct lvts_data mt8192_lvts_ap_data = {
- 	.temp_offset	= LVTS_COEFF_B_MT8195,
- 	.gt_calib_bit_offset = 24,
- 	.def_calibration = 35000,
-+	.irq_enable = true,
- };
- 
- static const struct lvts_data mt8195_lvts_mcu_data = {
-@@ -1841,6 +1871,7 @@ static const struct lvts_data mt8195_lvts_mcu_data = {
- 	.temp_offset	= LVTS_COEFF_B_MT8195,
- 	.gt_calib_bit_offset = 24,
- 	.def_calibration = 35000,
-+	.irq_enable = true,
- };
- 
- static const struct lvts_data mt8195_lvts_ap_data = {
--- 
-2.43.0
-
+Applied as 6.18-rc material, thanks!
