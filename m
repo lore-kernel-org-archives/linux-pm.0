@@ -1,37 +1,37 @@
-Received: from mxout3.routing.net (mxout3.routing.net [134.0.28.8])
+Received: from mxout1.routing.net (mxout1.routing.net [134.0.28.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CBF310E3;
-	Sun, 26 Oct 2025 12:30:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.8
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5AA41DA23;
+	Sun, 26 Oct 2025 12:31:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761481846; cv=none; b=uvWBXBqDoG7L+bDqonmIRCF1hHoD5D18bG+MACzUMaRNYVKLz0xmg61LhhcdJqq9TV4czYo+VU4AilOWIcAFlAlwgPqA4qJCWBnrBtkl58jVgtSLrxc4pSIhiWXmaTeVi6ojTNAcH0N6ISM21d/EZgtdxjbzumtnMgod0NLSNxk=
+	t=1761481877; cv=none; b=Msgw5xRjHvij0B+F6w08zXOp4HvhxHfmQCvsgmGAIDDu4qUlM+o8cmpss3rXlYWLdRUvupMJaZEYZj/vAmwob04xt8nlG8bdxTS8/0KFb5rlhAxY6dCBj7kqNtGWtp61MUHjIsKR9hHNkRmwSlyFZ2qo4FvWHU/uojyD/D/uQIg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761481846; c=relaxed/simple;
-	bh=FYbtBW4yebr7GZlwdi/roTYzRuQuBFijpmv4L+YCcvM=;
+	s=arc-20240116; t=1761481877; c=relaxed/simple;
+	bh=WKw7dDEx74rUPEVO41nKsVffxoxsW+xqBWzteYJXNFQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=C1VRr3p77TtPi7zYRHLJdCYd7UtVnPBmoSN2fUJyTsiKUQE5BZekH34jpZT1AW7+E4sBfFw9/kPtGzrs3Zv0b5SzgBjU+qxRJMhNgS0Cf4zeg2E9pqJU2FDMNSgTinstzIXUIEKFPk5u+xk028jbkqmXtWrT5PaDIaForycUyTk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=jzFkCQ0r; arc=none smtp.client-ip=134.0.28.8
+	 MIME-Version; b=iCiiSsQzs4Mhjrxg5Ke+aDJsO0XvAHcmf8YU5aMpjsRTAanRyArAsvns/8rtEQZ9apEJTDrRS0b4TBc41/6sGIEErMP6KM1e358TE5j4El/56EqCEFs5aDsq9AhrJPSkTlIG0++prvV7AHsgyESGtwutRomcm808seBiBJ3xbHw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=slZAivgU; arc=none smtp.client-ip=134.0.28.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="jzFkCQ0r"
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="slZAivgU"
 Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout3.routing.net (Postfix) with ESMTP id EAA3160666;
-	Sun, 26 Oct 2025 12:22:04 +0000 (UTC)
+	by mxout1.routing.net (Postfix) with ESMTP id AE13F40027;
+	Sun, 26 Oct 2025 12:22:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
 	s=routing; t=1761481325;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=utgZIgZouZ2rivSw9fdUqvFMGknqClgIGWmWeoQd928=;
-	b=jzFkCQ0rm5xX/AZDOCLrqTZSn5am4MENCC0H+Ho2xlaXNHXFgJ+AKsYvXjQeqZpOg6wnjb
-	sPKmZvIwR5nnDZUB+kEYwVgNSXKErXUBoXuXLCUBbExorNtKZaNfeUL24rDCftc4ry0Poo
-	b96b3Ur9mhDC6x3sKXiF1rhmN9LZh1Q=
+	bh=2xhSctYjH9Rr38j6lYic7dZqTUlNx7v9z2EjOasSd8c=;
+	b=slZAivgUGmXS6MXAwMunhdNmLh1re0Cepb/YihkUrtunpWcf2mfGvV+82+C2zd+Ww2gCTB
+	IPe+N1tyT8sEskbkt4ADY/8PktYZNDOPKJe/XmNOUkHMyY9Eda9b0tFDME457o084HlT8C
+	YVMNgfrcE3XNgvR2sgyWCG9qhGuOfbc=
 Received: from frank-u24.. (fttx-pool-217.61.154.70.bambit.de [217.61.154.70])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id AA9F51226F7;
-	Sun, 26 Oct 2025 12:22:04 +0000 (UTC)
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 70EA71226F7;
+	Sun, 26 Oct 2025 12:22:05 +0000 (UTC)
 From: Frank Wunderlich <linux@fw-web.de>
 To: "Rafael J. Wysocki" <rafael@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@linaro.org>,
@@ -52,9 +52,9 @@ Cc: Frank Wunderlich <frank-w@public-files.de>,
 	linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v1 1/5] dt-bindings: thermal: mediatek: make interrupt only required for current SoCs
-Date: Sun, 26 Oct 2025 13:21:30 +0100
-Message-ID: <20251026122143.71100-2-linux@fw-web.de>
+Subject: [PATCH v1 4/5] thermal/drivers/mediatek/lvts_thermal: Add SoC based golden Temp
+Date: Sun, 26 Oct 2025 13:21:33 +0100
+Message-ID: <20251026122143.71100-5-linux@fw-web.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20251026122143.71100-1-linux@fw-web.de>
 References: <20251026122143.71100-1-linux@fw-web.de>
@@ -68,59 +68,104 @@ Content-Transfer-Encoding: 8bit
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-Upcoming MT7987 does not have a IRQ we have to make interrupt-property only
-required for current supported SoCs.
+Add SoC based golden temp for invalid efuse data.
+
+This is a preliminary patch for mt7987 support where goldentemp is
+slightly higher than other SOCs.
 
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
 ---
- .../bindings/thermal/mediatek,lvts-thermal.yaml | 17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
+ drivers/thermal/mediatek/lvts_thermal.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml b/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml
-index 0259cd3ce9c5..7ec9c46eef22 100644
---- a/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml
-+++ b/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml
-@@ -58,6 +58,16 @@ properties:
- allOf:
-   - $ref: thermal-sensor.yaml#
+diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
+index 9413b30f7b69..544941e8219a 100644
+--- a/drivers/thermal/mediatek/lvts_thermal.c
++++ b/drivers/thermal/mediatek/lvts_thermal.c
+@@ -134,6 +134,7 @@ struct lvts_data {
+ 	int num_init_cmd;
+ 	int temp_factor;
+ 	int temp_offset;
++	int golden_temp;
+ 	int gt_calib_bit_offset;
+ 	unsigned int def_calibration;
+ 	bool irq_enable;
+@@ -811,8 +812,10 @@ static int lvts_golden_temp_init(struct device *dev, u8 *calib,
+ 	gt = (((u32 *)calib)[0] >> lvts_data->gt_calib_bit_offset) & 0xff;
  
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - mediatek,mt7988-lvts-ap
-+    then:
-+      required:
-+        - interrupts
-+
-   - if:
-       properties:
-         compatible:
-@@ -75,6 +85,9 @@ allOf:
-         nvmem-cell-names:
-           maxItems: 1
+ 	/* A zero value for gt means that device has invalid efuse data */
+-	if (gt && gt < LVTS_GOLDEN_TEMP_MAX)
++	if (gt && gt <= LVTS_GOLDEN_TEMP_MAX)
+ 		golden_temp = gt;
++	else
++		golden_temp = lvts_data->golden_temp;
  
-+      required:
-+        - interrupts
-+
-   - if:
-       properties:
-         compatible:
-@@ -91,10 +104,12 @@ allOf:
-         nvmem-cell-names:
-           minItems: 2
+ 	golden_temp_offset = golden_temp * 500 + lvts_data->temp_offset;
  
-+      required:
-+        - interrupts
-+
- required:
-   - compatible
-   - reg
--  - interrupts
-   - clocks
-   - resets
-   - nvmem-cells
+@@ -1786,6 +1789,7 @@ static const struct lvts_data mt7988_lvts_ap_data = {
+ 	.num_init_cmd	= ARRAY_SIZE(mt7988_init_cmds),
+ 	.temp_factor	= LVTS_COEFF_A_MT7988,
+ 	.temp_offset	= LVTS_COEFF_B_MT7988,
++	.golden_temp	= LVTS_GOLDEN_TEMP_DEFAULT,
+ 	.gt_calib_bit_offset = 24,
+ 	.irq_enable = true, //SDK false
+ };
+@@ -1799,6 +1803,7 @@ static const struct lvts_data mt8186_lvts_data = {
+ 	.num_init_cmd	= ARRAY_SIZE(default_init_cmds),
+ 	.temp_factor	= LVTS_COEFF_A_MT7988,
+ 	.temp_offset	= LVTS_COEFF_B_MT7988,
++	.golden_temp	= LVTS_GOLDEN_TEMP_DEFAULT,
+ 	.gt_calib_bit_offset = 24,
+ 	.def_calibration = 19000,
+ 	.irq_enable = true,
+@@ -1813,6 +1818,7 @@ static const struct lvts_data mt8188_lvts_mcu_data = {
+ 	.num_init_cmd	= ARRAY_SIZE(default_init_cmds),
+ 	.temp_factor	= LVTS_COEFF_A_MT8195,
+ 	.temp_offset	= LVTS_COEFF_B_MT8195,
++	.golden_temp	= LVTS_GOLDEN_TEMP_DEFAULT,
+ 	.gt_calib_bit_offset = 20,
+ 	.def_calibration = 35000,
+ 	.irq_enable = true,
+@@ -1827,6 +1833,7 @@ static const struct lvts_data mt8188_lvts_ap_data = {
+ 	.num_init_cmd	= ARRAY_SIZE(default_init_cmds),
+ 	.temp_factor	= LVTS_COEFF_A_MT8195,
+ 	.temp_offset	= LVTS_COEFF_B_MT8195,
++	.golden_temp	= LVTS_GOLDEN_TEMP_DEFAULT,
+ 	.gt_calib_bit_offset = 20,
+ 	.def_calibration = 35000,
+ 	.irq_enable = true,
+@@ -1841,6 +1848,7 @@ static const struct lvts_data mt8192_lvts_mcu_data = {
+ 	.num_init_cmd	= ARRAY_SIZE(default_init_cmds),
+ 	.temp_factor	= LVTS_COEFF_A_MT8195,
+ 	.temp_offset	= LVTS_COEFF_B_MT8195,
++	.golden_temp	= LVTS_GOLDEN_TEMP_DEFAULT,
+ 	.gt_calib_bit_offset = 24,
+ 	.def_calibration = 35000,
+ 	.irq_enable = true,
+@@ -1855,6 +1863,7 @@ static const struct lvts_data mt8192_lvts_ap_data = {
+ 	.num_init_cmd	= ARRAY_SIZE(default_init_cmds),
+ 	.temp_factor	= LVTS_COEFF_A_MT8195,
+ 	.temp_offset	= LVTS_COEFF_B_MT8195,
++	.golden_temp	= LVTS_GOLDEN_TEMP_DEFAULT,
+ 	.gt_calib_bit_offset = 24,
+ 	.def_calibration = 35000,
+ 	.irq_enable = true,
+@@ -1869,6 +1878,7 @@ static const struct lvts_data mt8195_lvts_mcu_data = {
+ 	.num_init_cmd	= ARRAY_SIZE(default_init_cmds),
+ 	.temp_factor	= LVTS_COEFF_A_MT8195,
+ 	.temp_offset	= LVTS_COEFF_B_MT8195,
++	.golden_temp	= LVTS_GOLDEN_TEMP_DEFAULT,
+ 	.gt_calib_bit_offset = 24,
+ 	.def_calibration = 35000,
+ 	.irq_enable = true,
+@@ -1883,6 +1893,7 @@ static const struct lvts_data mt8195_lvts_ap_data = {
+ 	.num_init_cmd	= ARRAY_SIZE(default_init_cmds),
+ 	.temp_factor	= LVTS_COEFF_A_MT8195,
+ 	.temp_offset	= LVTS_COEFF_B_MT8195,
++	.golden_temp	= LVTS_GOLDEN_TEMP_DEFAULT,
+ 	.gt_calib_bit_offset = 24,
+ 	.def_calibration = 35000,
+ };
 -- 
 2.43.0
 
