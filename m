@@ -1,87 +1,157 @@
-Received: from mail-yw1-f170.google.com (mail-yw1-f170.google.com [209.85.128.170])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mxout2.routing.net (mxout2.routing.net [134.0.28.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6442E1A9FB8
-	for <linux-pm@vger.kernel.org>; Sun, 26 Oct 2025 08:37:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 749BA18EB0;
+	Sun, 26 Oct 2025 12:22:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761467863; cv=none; b=ss7HZpBytbUEEf9FU9EpezVaD8IHgB7bd4NfI3xK/RcoL9ujaddEsNbosjN1Pu5d1FQC8us5jPsZfRBFuv54+ZOjvtrhckLkKVu5z6h77Jy/b4Z3DmjetjpO6xmdNnXSSyWcfTIl6dfIY6wTJREw4GaiAt+Z082xgQFAV2ZXllo=
+	t=1761481336; cv=none; b=HJEAgrQSplmQLy/2wxploOdpCKPdIZc2Mf51QELd1xT+9Ft5QBDyg1W78exHBZjIJqtwSmqSkx20gHhZPJLy17isAbklnvC57M3xdnYVIHOsD4QXULhZ8tdRM3UimvjLMp0JR76mj7jOdmOJsW5vC+AjMCd+eaAfHNY4B+bKdrE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761467863; c=relaxed/simple;
-	bh=w467O+L55fOeLsepwJkIOKiqvTnDbF1E2q9UHqLXp9A=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=hi6zLVerCALZNX+nvvjmrPc4Bpadt/8byLhXKpW+OosbNfvLbzSAuD2mJiSp3tgHVGbVk8RAJncjsltzJ1JjGyNAskJjMkN38eBXLH9KGooT4ru9luaikwmaq8X/Ia4hioJBijR9GO3TCvnGYldWHkg/NwB75mpGlo2abYypqhE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ZhivO7wz; arc=none smtp.client-ip=209.85.128.170
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1761481336; c=relaxed/simple;
+	bh=QPZqpmMM53oDlw5RkClpzSB/9haDur+byq04ET34B+4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=C9GfjVdaaqJ3o+0qSUwo6zEaSXa6g1/+sxX9BGUIe3ZKzxKTvdZwdyAh9kvmNRrtngMqPVVpTlUlwbd5z7AYhB96xv4HZhur2h9t0jZMkju23hXjsdzO5ruYelE2r25peVRxdlPF77il8lbmIgUj0rukR0UJFyPGWfflytTqh6M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=S9ZPujlB; arc=none smtp.client-ip=134.0.28.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZhivO7wz"
-Received: by mail-yw1-f170.google.com with SMTP id 00721157ae682-7832691f86cso48568357b3.1
-        for <linux-pm@vger.kernel.org>; Sun, 26 Oct 2025 01:37:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1761467861; x=1762072661; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=3B2YCjT0fh+UhVXmU6Tftcslg67rIdAnaclE2h1Mnf0=;
-        b=ZhivO7wz5jd0UbuoCSuOPIO+9UD2VRT3q9Rv+oDvo+ewnXZ40lvcUgcM2NOpvSFKhb
-         gSj0i2gX6snLg3ha4EaySkjbweDiTUbMn134EE6DDl0yNymIDWEYJj8pMxjz29fW/u4m
-         MF1Qyzrq/oQbUhnMuFlRbqkhnyFXBS9mYJGlqtg6fbo7Qp9BxSczngrti5k7d/sMsYXk
-         B5Fje32Eu3NrVzSUn22ThNu21yu0PD3GN9NlQcNGHGnld3U0DoFhf9G+YbWuywD7yAaV
-         tG706opddz2/inxp9s2N4PnsabWcdInKx/By0YpkNFAG4XtTOEsXY7/ZOScDl8DycfLO
-         /25w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761467861; x=1762072661;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=3B2YCjT0fh+UhVXmU6Tftcslg67rIdAnaclE2h1Mnf0=;
-        b=rZFrW9UFAamRxJrU2a9XuDA+6nS1jykgrt3ZNbQkHZAV3eTf3Uz7N1aP6NiVGzUJbd
-         atejrT+qsJR5ruEWkdGatv32Q1gQPS0yk104hMUjUa7NRUM+Kf9KN08z1PNCbYO0tX/8
-         O7spn4y4+RiN5qhqhoBGz1nOW9TZwW4t+nXc4QK4W358o9JOygMKUETD19VehQAh/E8c
-         M1lLRewyOFkVW1SipbME7HmTwcF2FX+EIM5ynn/9iOvEM9ztwZl3aR/4bTVleFrcZf1v
-         +/jbypj6UmQtFlarR3LNKt+4lZEWOaC4rtINoVUeaIz6Tzyn5cZUIWBrOx61WdZRK97B
-         vSLA==
-X-Forwarded-Encrypted: i=1; AJvYcCU65vbw7qR8SgnuUSi88fsv3qL40HtpicOYAm2U3YJpKgrl0TRqA3vNpmmMuBrxeiydKLXqDvmvaQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwzIJplC11rXJPNOlzInLKO+z8R3kXfU3DBpXuvUYp2pTP9NHx2
-	4Zf446sZ3v+BOyPJ/2PShk2Rd7Aw9YoFqS6cNjnwQGjXV4ayZjCKF87BXTKfRiyQXyGtVsqQBZJ
-	xBrXvPKz3IQ285SdhiWR/ICW0ik6Rp03qs1Jx
-X-Gm-Gg: ASbGnctPfvkXjkYeNNjJfEajvakERMb/cc4Uy/FDaAe8j0TmruPfjHkp1zZip9GQ1Pt
-	QOyiaPXj9RvHlLldcclYhH5ISIkke/1bSgdd3y+MzjxA/CVmKhoTtLdLD6sropEYRCSNG0ZnaNM
-	0LVaBor+1JcWV42nlawKIAZzRSgjWdMcJaje3GNQbbL0A5ZUuUqGkpK5Nxq4mbZXnyv/okErPos
-	uEiSqMXykkin723eGNp9TYoQBC2T4VhbfhoucHJ3egtEFe9h6BHrT5As4LzeDRk
-X-Google-Smtp-Source: AGHT+IGse1ucBcCKBH2vCyjLvDKjtuRFs/t0gyJbHD5rpGMiQkverFP0dVowyAhvUv2k5cWZkzzoX/BieobHpyEIuqk=
-X-Received: by 2002:a05:690e:120b:b0:63f:556b:5b7 with SMTP id
- 956f58d0204a3-63f556b0680mr1856626d50.15.1761467861249; Sun, 26 Oct 2025
- 01:37:41 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="S9ZPujlB"
+Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
+	by mxout2.routing.net (Postfix) with ESMTP id EB48A5FF3F;
+	Sun, 26 Oct 2025 12:22:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
+	s=routing; t=1761481326;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=0dY9esegxlxvfveosoEyFChzlWucqwdO0YH5Tj3yiok=;
+	b=S9ZPujlBTnCdbMJvrxVvkukT6o+Scd2mNqnGuwjJLvLfi9wnHM9rp6GrqgsyjCpPJh45Nc
+	p+OPvrCITAZjf0eqLrD2wAfH2ivXL0E/gBXRRJN1W1lLQ+/csTp3TsaSg9DHF67cLTQCSq
+	fjNADBDeAX6F7RcwObO6DONXNNKTmWU=
+Received: from frank-u24.. (fttx-pool-217.61.154.70.bambit.de [217.61.154.70])
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id AFA1A1226BC;
+	Sun, 26 Oct 2025 12:22:05 +0000 (UTC)
+From: Frank Wunderlich <linux@fw-web.de>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Cc: Frank Wunderlich <frank-w@public-files.de>,
+	=?UTF-8?q?N=C3=ADcolas=20F=2E=20R=2E=20A=2E=20Prado?= <nfraprado@collabora.com>,
+	Mason Chang <mason-cw.chang@mediatek.com>,
+	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
+	Balsam CHIHI <bchihi@baylibre.com>,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-mediatek@lists.infradead.org
+Subject: [PATCH v1 5/5] thermal/drivers/mediatek/lvts_thermal: Add mt7987 support
+Date: Sun, 26 Oct 2025 13:21:34 +0100
+Message-ID: <20251026122143.71100-6-linux@fw-web.de>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20251026122143.71100-1-linux@fw-web.de>
+References: <20251026122143.71100-1-linux@fw-web.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251026033115.436448-1-superm1@kernel.org>
-In-Reply-To: <20251026033115.436448-1-superm1@kernel.org>
-From: Askar Safin <safinaskar@gmail.com>
-Date: Sun, 26 Oct 2025 11:37:05 +0300
-X-Gm-Features: AWmQ_bnkqK7PyhDkz3ndIsN__qmiXNOVPD3UEEu7WXnC43CrktI12PyMWlQc3RU
-Message-ID: <CAPnZJGCZKLvyzTMbrfYRvAvKUtGzen5AK61ZnURYyskQ6QiEhQ@mail.gmail.com>
-Subject: Re: [PATCH] PM: hibernate: Restore GFP mask in power_down() for HIBERNATION_PLATFORM
-To: "Mario Limonciello (AMD)" <superm1@kernel.org>
-Cc: mario.limonciello@amd.com, rafael@kernel.org, lenb@kernel.org, 
-	pavel@kernel.org, rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Sun, Oct 26, 2025 at 6:31=E2=80=AFAM Mario Limonciello (AMD)
-<superm1@kernel.org> wrote:
-> commit 449c9c02537a1 ("PM: hibernate: Restrict GFP mask in
-> hibernation_snapshot()") added a restrict GFP mask call that leads to
-> mismatch when using the platform for hibernation.  As part of calling
-> hibernation_platform_enter() the mask will be restricted when calling
-> dpm_suspend_start().
+From: Frank Wunderlich <frank-w@public-files.de>
 
-I tested the fix in Qemu. It indeed works.
+Add support for MT7987.
 
---=20
-Askar Safin
+Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+---
+ drivers/thermal/mediatek/lvts_thermal.c | 38 +++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
+
+diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
+index 544941e8219a..1d800bdf4a24 100644
+--- a/drivers/thermal/mediatek/lvts_thermal.c
++++ b/drivers/thermal/mediatek/lvts_thermal.c
+@@ -87,6 +87,8 @@
+ #define LVTS_COEFF_B_MT8195			250460
+ #define LVTS_COEFF_A_MT7988			-204650
+ #define LVTS_COEFF_B_MT7988			204650
++#define LVTS_COEFF_A_MT7987			-204650
++#define LVTS_COEFF_B_MT7987			204650
+ 
+ #define LVTS_MSR_IMMEDIATE_MODE		0
+ #define LVTS_MSR_FILTERED_MODE		1
+@@ -1400,6 +1402,20 @@ static void lvts_remove(struct platform_device *pdev)
+ 		lvts_ctrl_set_enable(&lvts_td->lvts_ctrl[i], false);
+ }
+ 
++static const struct lvts_ctrl_data mt7987_lvts_ap_data_ctrl[] = {
++	{
++		.lvts_sensor = {
++			{ .dt_id = MT7987_CPU,
++			  .cal_offsets = { 0x04, 0x05, 0x06 } },
++			{ .dt_id = MT7987_ETH2P5G,
++			  .cal_offsets = { 0x08, 0x09, 0x0a } },
++		},
++		VALID_SENSOR_MAP(1, 1, 0, 0),
++		.offset = 0x0,
++		.mode = LVTS_MSR_FILTERED_MODE,
++	},
++};
++
+ static const struct lvts_ctrl_data mt7988_lvts_ap_data_ctrl[] = {
+ 	{
+ 		.lvts_sensor = {
+@@ -1482,6 +1498,12 @@ static const u32 default_init_cmds[] = {
+ 	0xC10300FC, 0xC103009D, 0xC10300F1, 0xC10300E1
+ };
+ 
++static const u32 mt7987_init_cmds[] = {
++	0xC1030300, 0xC1030420, 0xC1030500, 0xC10307A6, 0xC10308C7,
++	0xC103098D, 0xC1030C7C, 0xC1030AA8, 0xC10308CE, 0xC10308C7,
++	0xC1030B04, 0xC1030E01, 0xC10306B8
++};
++
+ static const u32 mt7988_init_cmds[] = {
+ 	0xC1030300, 0xC1030420, 0xC1030500, 0xC10307A6, 0xC1030CFC,
+ 	0xC1030A8C, 0xC103098D, 0xC10308F1, 0xC1030B04, 0xC1030E01,
+@@ -1780,6 +1802,21 @@ static const struct lvts_ctrl_data mt8195_lvts_ap_data_ctrl[] = {
+ 	}
+ };
+ 
++static const struct lvts_data mt7987_lvts_ap_data = {
++	.lvts_ctrl	= mt7987_lvts_ap_data_ctrl,
++	.num_lvts_ctrl	= ARRAY_SIZE(mt7987_lvts_ap_data_ctrl),
++	.conn_cmd	= mt7988_conn_cmds,
++	.init_cmd	= mt7987_init_cmds,
++	.num_conn_cmd	= ARRAY_SIZE(mt7988_conn_cmds),
++	.num_init_cmd	= ARRAY_SIZE(mt7987_init_cmds),
++	.temp_factor	= LVTS_COEFF_A_MT7987,
++	.temp_offset	= LVTS_COEFF_B_MT7987,
++	.golden_temp	= 60,
++	.gt_calib_bit_offset = 32,
++	.def_calibration = 19380,
++	.irq_enable	= false,
++};
++
+ static const struct lvts_data mt7988_lvts_ap_data = {
+ 	.lvts_ctrl	= mt7988_lvts_ap_data_ctrl,
+ 	.conn_cmd	= mt7988_conn_cmds,
+@@ -1899,6 +1936,7 @@ static const struct lvts_data mt8195_lvts_ap_data = {
+ };
+ 
+ static const struct of_device_id lvts_of_match[] = {
++	{ .compatible = "mediatek,mt7987-lvts-ap", .data = &mt7987_lvts_ap_data },
+ 	{ .compatible = "mediatek,mt7988-lvts-ap", .data = &mt7988_lvts_ap_data },
+ 	{ .compatible = "mediatek,mt8186-lvts", .data = &mt8186_lvts_data },
+ 	{ .compatible = "mediatek,mt8188-lvts-mcu", .data = &mt8188_lvts_mcu_data },
+-- 
+2.43.0
+
