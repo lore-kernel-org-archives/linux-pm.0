@@ -1,23 +1,23 @@
-Received: from mxout1.routing.net (mxout1.routing.net [134.0.28.11])
+Received: from mxout2.routing.net (mxout2.routing.net [134.0.28.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5AA41DA23;
-	Sun, 26 Oct 2025 12:31:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F17328724D;
+	Sun, 26 Oct 2025 12:31:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761481877; cv=none; b=Msgw5xRjHvij0B+F6w08zXOp4HvhxHfmQCvsgmGAIDDu4qUlM+o8cmpss3rXlYWLdRUvupMJaZEYZj/vAmwob04xt8nlG8bdxTS8/0KFb5rlhAxY6dCBj7kqNtGWtp61MUHjIsKR9hHNkRmwSlyFZ2qo4FvWHU/uojyD/D/uQIg=
+	t=1761481911; cv=none; b=GLjKAfrTIl2LmxHSJbZs9NdWldkGzOYWpBH/t7I4bfpqQyDJchDf0KY8DsNemvUgr0VcANrBFsubz+QTxkuTcv20XSMoVaALogB6URqvOCouTMFDoeJs0HhKTBPmF9C6QIBNRx34w9BVDz2L/ybQjSI+FQAcSoRRwpI4mdZ4YWY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761481877; c=relaxed/simple;
-	bh=WKw7dDEx74rUPEVO41nKsVffxoxsW+xqBWzteYJXNFQ=;
+	s=arc-20240116; t=1761481911; c=relaxed/simple;
+	bh=3A6NWFIsP5XoXA/AEOYp2kgioSTLb9Q2LPR3Gx5m+3Q=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=iCiiSsQzs4Mhjrxg5Ke+aDJsO0XvAHcmf8YU5aMpjsRTAanRyArAsvns/8rtEQZ9apEJTDrRS0b4TBc41/6sGIEErMP6KM1e358TE5j4El/56EqCEFs5aDsq9AhrJPSkTlIG0++prvV7AHsgyESGtwutRomcm808seBiBJ3xbHw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=slZAivgU; arc=none smtp.client-ip=134.0.28.11
+	 MIME-Version; b=RrhBPn+Vig0iIAK3IryDcvHVDEDUb/dJ0NPs9gZxXnM5CTkdKqGCTwPeOiPK5C1ftu3tH0E2n3A/uSQRwdP0OHqEs1WY7bTZ0mv+hJsJhvdyDd14d+K/0Rz6UhXBsZ/ytUf2NTlMMnuS4W98Z/08RAJRW37IiyRNuo6IVpzDW7U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=nVr8C+Vn; arc=none smtp.client-ip=134.0.28.12
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="slZAivgU"
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="nVr8C+Vn"
 Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout1.routing.net (Postfix) with ESMTP id AE13F40027;
+	by mxout2.routing.net (Postfix) with ESMTP id 34C575FE3B;
 	Sun, 26 Oct 2025 12:22:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
 	s=routing; t=1761481325;
@@ -25,13 +25,13 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=2xhSctYjH9Rr38j6lYic7dZqTUlNx7v9z2EjOasSd8c=;
-	b=slZAivgUGmXS6MXAwMunhdNmLh1re0Cepb/YihkUrtunpWcf2mfGvV+82+C2zd+Ww2gCTB
-	IPe+N1tyT8sEskbkt4ADY/8PktYZNDOPKJe/XmNOUkHMyY9Eda9b0tFDME457o084HlT8C
-	YVMNgfrcE3XNgvR2sgyWCG9qhGuOfbc=
+	bh=Ho+w8/wSlfCk13S0AyROefe1juINq8GVHtpVrKG2OZs=;
+	b=nVr8C+Vn+KAo+Bd+a4p465nQp0MfJnNckoX0+J3zBPfUZ6730yJqjkPXPOg0gVrNqSd9BL
+	lUDlXaRy/xNHuOhNc/qQni2AWjgh+izzFJKxFSbygcy92F83hU7sXkgqz29unsA5hvsHp8
+	offO6xk3GadQLvRKQsoHWPjvUBrLfVc=
 Received: from frank-u24.. (fttx-pool-217.61.154.70.bambit.de [217.61.154.70])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 70EA71226F7;
-	Sun, 26 Oct 2025 12:22:05 +0000 (UTC)
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id E847A122700;
+	Sun, 26 Oct 2025 12:22:04 +0000 (UTC)
 From: Frank Wunderlich <linux@fw-web.de>
 To: "Rafael J. Wysocki" <rafael@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@linaro.org>,
@@ -52,9 +52,9 @@ Cc: Frank Wunderlich <frank-w@public-files.de>,
 	linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v1 4/5] thermal/drivers/mediatek/lvts_thermal: Add SoC based golden Temp
-Date: Sun, 26 Oct 2025 13:21:33 +0100
-Message-ID: <20251026122143.71100-5-linux@fw-web.de>
+Subject: [PATCH v1 2/5] dt-bindings: thermal: mediatek: Add LVTS thermal controller definition for MT7987
+Date: Sun, 26 Oct 2025 13:21:31 +0100
+Message-ID: <20251026122143.71100-3-linux@fw-web.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20251026122143.71100-1-linux@fw-web.de>
 References: <20251026122143.71100-1-linux@fw-web.de>
@@ -68,104 +68,40 @@ Content-Transfer-Encoding: 8bit
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-Add SoC based golden temp for invalid efuse data.
-
-This is a preliminary patch for mt7987 support where goldentemp is
-slightly higher than other SOCs.
+Add thermal controller definition for MT7987.
 
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
 ---
- drivers/thermal/mediatek/lvts_thermal.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ .../devicetree/bindings/thermal/mediatek,lvts-thermal.yaml     | 1 +
+ include/dt-bindings/thermal/mediatek,lvts-thermal.h            | 3 +++
+ 2 files changed, 4 insertions(+)
 
-diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
-index 9413b30f7b69..544941e8219a 100644
---- a/drivers/thermal/mediatek/lvts_thermal.c
-+++ b/drivers/thermal/mediatek/lvts_thermal.c
-@@ -134,6 +134,7 @@ struct lvts_data {
- 	int num_init_cmd;
- 	int temp_factor;
- 	int temp_offset;
-+	int golden_temp;
- 	int gt_calib_bit_offset;
- 	unsigned int def_calibration;
- 	bool irq_enable;
-@@ -811,8 +812,10 @@ static int lvts_golden_temp_init(struct device *dev, u8 *calib,
- 	gt = (((u32 *)calib)[0] >> lvts_data->gt_calib_bit_offset) & 0xff;
+diff --git a/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml b/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml
+index 7ec9c46eef22..13e948a2a909 100644
+--- a/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml
+@@ -18,6 +18,7 @@ description: |
+ properties:
+   compatible:
+     enum:
++      - mediatek,mt7987-lvts-ap
+       - mediatek,mt7988-lvts-ap
+       - mediatek,mt8186-lvts
+       - mediatek,mt8188-lvts-ap
+diff --git a/include/dt-bindings/thermal/mediatek,lvts-thermal.h b/include/dt-bindings/thermal/mediatek,lvts-thermal.h
+index ddc7302a510a..e9780edcd26c 100644
+--- a/include/dt-bindings/thermal/mediatek,lvts-thermal.h
++++ b/include/dt-bindings/thermal/mediatek,lvts-thermal.h
+@@ -7,6 +7,9 @@
+ #ifndef __MEDIATEK_LVTS_DT_H
+ #define __MEDIATEK_LVTS_DT_H
  
- 	/* A zero value for gt means that device has invalid efuse data */
--	if (gt && gt < LVTS_GOLDEN_TEMP_MAX)
-+	if (gt && gt <= LVTS_GOLDEN_TEMP_MAX)
- 		golden_temp = gt;
-+	else
-+		golden_temp = lvts_data->golden_temp;
- 
- 	golden_temp_offset = golden_temp * 500 + lvts_data->temp_offset;
- 
-@@ -1786,6 +1789,7 @@ static const struct lvts_data mt7988_lvts_ap_data = {
- 	.num_init_cmd	= ARRAY_SIZE(mt7988_init_cmds),
- 	.temp_factor	= LVTS_COEFF_A_MT7988,
- 	.temp_offset	= LVTS_COEFF_B_MT7988,
-+	.golden_temp	= LVTS_GOLDEN_TEMP_DEFAULT,
- 	.gt_calib_bit_offset = 24,
- 	.irq_enable = true, //SDK false
- };
-@@ -1799,6 +1803,7 @@ static const struct lvts_data mt8186_lvts_data = {
- 	.num_init_cmd	= ARRAY_SIZE(default_init_cmds),
- 	.temp_factor	= LVTS_COEFF_A_MT7988,
- 	.temp_offset	= LVTS_COEFF_B_MT7988,
-+	.golden_temp	= LVTS_GOLDEN_TEMP_DEFAULT,
- 	.gt_calib_bit_offset = 24,
- 	.def_calibration = 19000,
- 	.irq_enable = true,
-@@ -1813,6 +1818,7 @@ static const struct lvts_data mt8188_lvts_mcu_data = {
- 	.num_init_cmd	= ARRAY_SIZE(default_init_cmds),
- 	.temp_factor	= LVTS_COEFF_A_MT8195,
- 	.temp_offset	= LVTS_COEFF_B_MT8195,
-+	.golden_temp	= LVTS_GOLDEN_TEMP_DEFAULT,
- 	.gt_calib_bit_offset = 20,
- 	.def_calibration = 35000,
- 	.irq_enable = true,
-@@ -1827,6 +1833,7 @@ static const struct lvts_data mt8188_lvts_ap_data = {
- 	.num_init_cmd	= ARRAY_SIZE(default_init_cmds),
- 	.temp_factor	= LVTS_COEFF_A_MT8195,
- 	.temp_offset	= LVTS_COEFF_B_MT8195,
-+	.golden_temp	= LVTS_GOLDEN_TEMP_DEFAULT,
- 	.gt_calib_bit_offset = 20,
- 	.def_calibration = 35000,
- 	.irq_enable = true,
-@@ -1841,6 +1848,7 @@ static const struct lvts_data mt8192_lvts_mcu_data = {
- 	.num_init_cmd	= ARRAY_SIZE(default_init_cmds),
- 	.temp_factor	= LVTS_COEFF_A_MT8195,
- 	.temp_offset	= LVTS_COEFF_B_MT8195,
-+	.golden_temp	= LVTS_GOLDEN_TEMP_DEFAULT,
- 	.gt_calib_bit_offset = 24,
- 	.def_calibration = 35000,
- 	.irq_enable = true,
-@@ -1855,6 +1863,7 @@ static const struct lvts_data mt8192_lvts_ap_data = {
- 	.num_init_cmd	= ARRAY_SIZE(default_init_cmds),
- 	.temp_factor	= LVTS_COEFF_A_MT8195,
- 	.temp_offset	= LVTS_COEFF_B_MT8195,
-+	.golden_temp	= LVTS_GOLDEN_TEMP_DEFAULT,
- 	.gt_calib_bit_offset = 24,
- 	.def_calibration = 35000,
- 	.irq_enable = true,
-@@ -1869,6 +1878,7 @@ static const struct lvts_data mt8195_lvts_mcu_data = {
- 	.num_init_cmd	= ARRAY_SIZE(default_init_cmds),
- 	.temp_factor	= LVTS_COEFF_A_MT8195,
- 	.temp_offset	= LVTS_COEFF_B_MT8195,
-+	.golden_temp	= LVTS_GOLDEN_TEMP_DEFAULT,
- 	.gt_calib_bit_offset = 24,
- 	.def_calibration = 35000,
- 	.irq_enable = true,
-@@ -1883,6 +1893,7 @@ static const struct lvts_data mt8195_lvts_ap_data = {
- 	.num_init_cmd	= ARRAY_SIZE(default_init_cmds),
- 	.temp_factor	= LVTS_COEFF_A_MT8195,
- 	.temp_offset	= LVTS_COEFF_B_MT8195,
-+	.golden_temp	= LVTS_GOLDEN_TEMP_DEFAULT,
- 	.gt_calib_bit_offset = 24,
- 	.def_calibration = 35000,
- };
++#define MT7987_CPU		0
++#define MT7987_ETH2P5G		1
++
+ #define MT7988_CPU_0		0
+ #define MT7988_CPU_1		1
+ #define MT7988_ETH2P5G_0	2
 -- 
 2.43.0
 
