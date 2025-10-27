@@ -1,214 +1,126 @@
-Received: from hall.aurel32.net (hall.aurel32.net [195.154.113.88])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 598D32E413;
-	Sun, 26 Oct 2025 22:44:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.154.113.88
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0BC9418C02E;
+	Mon, 27 Oct 2025 01:50:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761518700; cv=none; b=gThMX0PF+LHjlBbUu6agrvZQaqZGXjFVkUhbkEj2cfS9WuZaAwhDI3nA25oy4k9N75QxV5xkyud/KP+sxVK20Tz2k9V8irKRuIt00D93UOxIiR/e7ZlztqosEBbn+5NH8twmhzsAelq61Ycf6cXzAcpVHTp9kL6ZNekLdGlD4rQ=
+	t=1761529826; cv=none; b=kuP22l7rSYTek7b3rcovEYjQNtlD53apUojadl4r4UyC01Gg5dCUMB47Pn6GHwNq3xirgID/EJw+iXuYPFzhit8VzdF5tvgfO4LhsNwfhnSoXd80IIzEwbSH6Fl5Lg5YsrK1PpUV68NkHBTc6WRukPH+wqDEeoAwffuhK3X1BzA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761518700; c=relaxed/simple;
-	bh=rnKM3Mf4zNvlmpFAY+C6o35rhzmhrxjGH/xsMqAZTV0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TLbIsWD0McTxQZokTTSO607MmvXJ/NHwZ9uZSymbHJORuXWq06bCdjXc9uXTAcpDarIf++nkHML1OggutBtaWn4sLo+dfa2GO/mLTiD/HZjrE8ajygL+7xc5BT/hKrM/zGNUMfSHaWCOtABbQHh/k9NB+E+o3GQqjp5z+2kkjoc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net; spf=pass smtp.mailfrom=aurel32.net; dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b=KpciAmJ2; arc=none smtp.client-ip=195.154.113.88
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aurel32.net
+	s=arc-20240116; t=1761529826; c=relaxed/simple;
+	bh=T3pkaI/GJuOsGFoVg5/R4SNriMbvV6bNB454qQaWZQ8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=LQAtezO5/4R5PaFcURhdb+93yXLU+udan6DUbahneHDgX/tNmJex+Mke+1RBYEhRPCdTQtpFYVYGW3k9xfSjG6MMT3IG2qPcZH8u8Y5hYyWMc4lpOmj2P73Rc39u6BD9t3mIJRCkwzeaPMTfrHZTzOfKeXirCwGEodO4oyF1bIU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=SFY3HsTq; arc=none smtp.client-ip=198.175.65.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b="KpciAmJ2"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=aurel32.net
-	; s=202004.hall; h=Content-Transfer-Encoding:MIME-Version:References:
-	In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Content-Type:From:Reply-To:
-	Subject:Content-ID:Content-Description:X-Debbugs-Cc;
-	bh=upuvDJ4uHcxGhtGccy6wLQYNYBh7CDWGSkmRMwmBkeQ=; b=KpciAmJ2X1ae/s3WQG+HnrqApw
-	obxX0S9zBigyEP8PYi/N5g/E3TwI6A8gpAs/pxmzD8ZdjJBs4n8Thuv9CAlKQpHo1vUYvNehhrV9D
-	el2HQXIWvp6vKZacsDc1W7rHVLDYnMkNhI6Yu3XFSXQgZKqHQxuuOzOAHufynpAbA5bUm+Yv1a7to
-	LMPxX4bGzqaCFK71f54eZ6yryniLLKY29hc3s3Gt9zy2Zv0Cc83Xl1V0N1UCLmOgQk1j8KwqEJk9H
-	PXrUONlzS669Q6IzRrFXq2ilzte7OvGXon9rlrQbYHiC4eOX8viDlSfrD4iCOUbrZtyclblKyOKsU
-	uZ5b5oWg==;
-Received: from [2a01:e34:ec5d:a741:1ee1:92ff:feb4:5ec0] (helo=ohm.rr44.fr)
-	by hall.aurel32.net with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <aurelien@aurel32.net>)
-	id 1vD9TV-0065U5-1b;
-	Sun, 26 Oct 2025 23:44:33 +0100
-From: Aurelien Jarno <aurelien@aurel32.net>
-To: linux-kernel@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="SFY3HsTq"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1761529825; x=1793065825;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=T3pkaI/GJuOsGFoVg5/R4SNriMbvV6bNB454qQaWZQ8=;
+  b=SFY3HsTqY2Ry2NQd3zO0yKdoJsln+nTLaiUb4zzF60W8D3fRq3fTXODw
+   vIBdycM9zJwvlhYvqOcGxcNv44Wqhmf9fou4m9uCosnAOkm6KckOTJUSi
+   nkN927iyFhYV3TRCynZEFAVQPkqrYSO/6TtlB7mDEjtvQ1U9lSgvnIdzd
+   XwnRRWL2OjwRSPQ87xHjhLVEbaRdYK45rUr66pRQNTdKsHayxukAQ/5wc
+   dIM67bUNf8kclm4K6Kwww5CDKvMH3gHlYXHgnPehlNFFU8HvWh+phtlbm
+   QuCapYO8U12dwTIYM86QRSxqOuwZLqOC3cCInr5Mx/LWbufk48meZkVPf
+   w==;
+X-CSE-ConnectionGUID: 6YWLrCLOQ/Gu/IAQzfBJ+Q==
+X-CSE-MsgGUID: UMt8ChPkQUa81pml1bmMLQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="75050337"
+X-IronPort-AV: E=Sophos;i="6.19,257,1754982000"; 
+   d="scan'208";a="75050337"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Oct 2025 18:50:24 -0700
+X-CSE-ConnectionGUID: RqD3PVgcSpO3hdFc8HdBsw==
+X-CSE-MsgGUID: bAZX7S5kQLGkCNKy4yStdQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.19,257,1754982000"; 
+   d="scan'208";a="188967609"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
+  by orviesa003.jf.intel.com with ESMTP; 26 Oct 2025 18:50:09 -0700
+Date: Mon, 27 Oct 2025 09:36:28 +0800
+From: Xu Yilun <yilun.xu@linux.intel.com>
+To: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Andrzej Hajda <andrzej.hajda@intel.com>,
+	Robert Foss <rfoss@kernel.org>, Vinod Koul <vkoul@kernel.org>,
+	Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Georgi Djakov <djakov@kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Joerg Roedel <joro@8bytes.org>,
+	Jassi Brar <jassisinghbrar@gmail.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
 	Lee Jones <lee@kernel.org>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	Richard Weinberger <richard@nod.at>,
+	Vignesh Raghavendra <vigneshr@ti.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Kishon Vijay Abraham I <kishon@kernel.org>,
 	Sebastian Reichel <sre@kernel.org>,
-	Troy Mitchell <troy.mitchell@linux.spacemit.com>,
-	Yixun Lan <dlan@gentoo.org>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	linux-riscv@lists.infradead.org (open list:RISC-V ARCHITECTURE:Keyword:riscv),
-	spacemit@lists.linux.dev (open list:RISC-V SPACEMIT SoC Support:Keyword:spacemit),
-	linux-pm@vger.kernel.org (open list:SYSTEM RESET/SHUTDOWN DRIVERS)
-Cc: Aurelien Jarno <aurelien@aurel32.net>,
-	linux-pm@vger.kernel.org (open list:SYSTEM RESET/SHUTDOWN DRIVERS),
-	linux-riscv@lists.infradead.org (open list:RISC-V SPACEMIT SoC Support),
-	spacemit@lists.linux.dev (open list:RISC-V SPACEMIT SoC Support)
-Subject: [PATCH v4 1/2] driver: reset: spacemit-p1: add driver for poweroff/reboot
-Date: Sun, 26 Oct 2025 23:41:14 +0100
-Message-ID: <20251026224424.1891541-2-aurelien@aurel32.net>
-X-Mailer: git-send-email 2.47.2
-In-Reply-To: <20251026224424.1891541-1-aurelien@aurel32.net>
-References: <20251026224424.1891541-1-aurelien@aurel32.net>
+	Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
+	Mark Brown <broonie@kernel.org>,
+	Mathieu Poirier <mathieu.poirier@linaro.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Olivia Mackall <olivia@selenic.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, dmaengine@vger.kernel.org,
+	linux-fpga@vger.kernel.org, linux-gpio@vger.kernel.org,
+	linux-hwmon@vger.kernel.org, linux-i2c@vger.kernel.org,
+	linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
+	linux-pm@vger.kernel.org, iommu@lists.linux.dev,
+	linux-media@vger.kernel.org, linux-mtd@lists.infradead.org,
+	netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+	linux-pci@vger.kernel.org, linux-phy@lists.infradead.org,
+	linux-pwm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
+	linux-crypto@vger.kernel.org, linux-sound@vger.kernel.org,
+	linux-usb@vger.kernel.org
+Subject: Re: [PATCH] dt-bindings: Remove extra blank lines
+Message-ID: <aP7MnJ8mIlZhT//S@yilunxu-OptiPlex-7050>
+References: <20251023143957.2899600-1-robh@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251023143957.2899600-1-robh@kernel.org>
 
-This driver implements poweroff/reboot support for the SpacemiT P1 PMIC
-chip, which is commonly paired with the SpacemiT K1 SoC.
+On Thu, Oct 23, 2025 at 09:37:56AM -0500, Rob Herring (Arm) wrote:
+> Generally at most 1 blank line is the standard style for DT schema
+> files. Remove the few cases with more than 1 so that the yamllint check
+> for this can be enabled.
+> 
+> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
 
-The SpacemiT P1 support is implemented as a MFD driver, so the access is
-done directly through the regmap interface. Reboot or poweroff is
-triggered by setting a specific bit in a control register, which is
-automatically cleared by the hardware afterwards.
+[...]
 
-Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
----
-v2:
- - Replace the "select" by a "depends on"
- - Remove outdated Reviewed-by
+>  Documentation/devicetree/bindings/fpga/fpga-region.yaml      | 5 -----
 
- drivers/power/reset/Kconfig              |  9 +++
- drivers/power/reset/Makefile             |  1 +
- drivers/power/reset/spacemit-p1-reboot.c | 88 ++++++++++++++++++++++++
- 3 files changed, 98 insertions(+)
- create mode 100644 drivers/power/reset/spacemit-p1-reboot.c
-
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index 8248895ca9038..61c16f3d5abc7 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -283,6 +283,15 @@ config POWER_RESET_KEYSTONE
- 	help
- 	  Reboot support for the KEYSTONE SoCs.
- 
-+config POWER_RESET_SPACEMIT_P1
-+	tristate "SpacemiT P1 poweroff and reset driver"
-+	depends on ARCH_SPACEMIT || COMPILE_TEST
-+	depends on MFD_SPACEMIT_P1
-+	default m
-+	help
-+	  This driver supports power-off and reset operations for the SpacemiT
-+	  P1 PMIC.
-+
- config POWER_RESET_SYSCON
- 	bool "Generic SYSCON regmap reset driver"
- 	depends on OF
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index 51da87e05ce76..0e4ae6f6b5c55 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -24,6 +24,7 @@ obj-$(CONFIG_POWER_RESET_LTC2952) += ltc2952-poweroff.o
- obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
- obj-$(CONFIG_POWER_RESET_REGULATOR) += regulator-poweroff.o
- obj-$(CONFIG_POWER_RESET_RESTART) += restart-poweroff.o
-+obj-$(CONFIG_POWER_RESET_SPACEMIT_P1) += spacemit-p1-reboot.o
- obj-$(CONFIG_POWER_RESET_ST) += st-poweroff.o
- obj-$(CONFIG_POWER_RESET_TH1520_AON) += th1520-aon-reboot.o
- obj-$(CONFIG_POWER_RESET_TORADEX_EC) += tdx-ec-poweroff.o
-diff --git a/drivers/power/reset/spacemit-p1-reboot.c b/drivers/power/reset/spacemit-p1-reboot.c
-new file mode 100644
-index 0000000000000..9ec3d1fff8f3d
---- /dev/null
-+++ b/drivers/power/reset/spacemit-p1-reboot.c
-@@ -0,0 +1,88 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) 2025 by Aurelien Jarno
-+ */
-+
-+#include <linux/bits.h>
-+#include <linux/mod_devicetable.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/reboot.h>
-+
-+/* Power Control Register 2 */
-+#define PWR_CTRL2		0x7e
-+#define PWR_CTRL2_SHUTDOWN	BIT(2)	/* Shutdown request */
-+#define PWR_CTRL2_RST		BIT(1)	/* Reset request */
-+
-+static int spacemit_p1_pwroff_handler(struct sys_off_data *data)
-+{
-+	struct regmap *regmap = data->cb_data;
-+	int ret;
-+
-+	/* Put the PMIC into shutdown state */
-+	ret = regmap_set_bits(regmap, PWR_CTRL2, PWR_CTRL2_SHUTDOWN);
-+	if (ret) {
-+		dev_err(data->dev, "shutdown failed: %d\n", ret);
-+		return notifier_from_errno(ret);
-+	}
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static int spacemit_p1_restart_handler(struct sys_off_data *data)
-+{
-+	struct regmap *regmap = data->cb_data;
-+	int ret;
-+
-+	/* Put the PMIC into reset state */
-+	ret = regmap_set_bits(regmap, PWR_CTRL2, PWR_CTRL2_RST);
-+	if (ret) {
-+		dev_err(data->dev, "restart failed: %d\n", ret);
-+		return notifier_from_errno(ret);
-+	}
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static int spacemit_p1_reboot_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct regmap *regmap;
-+	int ret;
-+
-+	regmap = dev_get_regmap(dev->parent, NULL);
-+	if (!regmap)
-+		return -ENODEV;
-+
-+	ret = devm_register_power_off_handler(dev, &spacemit_p1_pwroff_handler,
-+					      regmap);
-+	if (ret)
-+		return dev_err_probe(dev, ret,
-+				     "Failed to register power off handler\n");
-+
-+	ret = devm_register_restart_handler(dev, spacemit_p1_restart_handler,
-+					    regmap);
-+	if (ret)
-+		return dev_err_probe(dev, ret,
-+				     "Failed to register restart handler\n");
-+
-+	return 0;
-+}
-+
-+static const struct platform_device_id spacemit_p1_reboot_id_table[] = {
-+	{ "spacemit-p1-reboot", },
-+	{ /* sentinel */ },
-+};
-+MODULE_DEVICE_TABLE(platform, spacemit_p1_reboot_id_table);
-+
-+static struct platform_driver spacemit_p1_reboot_driver = {
-+	.driver = {
-+		.name = "spacemit-p1-reboot",
-+	},
-+	.probe = spacemit_p1_reboot_probe,
-+	.id_table = spacemit_p1_reboot_id_table,
-+};
-+module_platform_driver(spacemit_p1_reboot_driver);
-+
-+MODULE_DESCRIPTION("SpacemiT P1 reboot/poweroff driver");
-+MODULE_LICENSE("GPL");
--- 
-2.47.2
-
+Acked-by: Xu Yilun <yilun.xu@intel.com>
