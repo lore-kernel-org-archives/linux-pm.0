@@ -1,271 +1,150 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD4E521D5B0;
-	Tue, 28 Oct 2025 20:44:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F05D9194A65;
+	Tue, 28 Oct 2025 20:52:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761684250; cv=none; b=fCb5oh2Agzq3ltA+8d+Zj7xC32JMdUq9mJSQiMnTUBFC4MAWyV53hCgQwzTmwnZrpOtjvU4z/C3LBump0AbCtmGQT5U2Lc2YqtV2qHYU8z6VybS9Le7kxM2Z4+cxvCCgUI/mPVt59WqyUIeyNp0XfjL6PwXnLNl5bWHRuyiu2A8=
+	t=1761684756; cv=none; b=G5jqbqtHvUF9OVax9P3mseB9xZrPAKZu7wRf8JST+DJb2hleRnaZRlzxy9fl3MUnM32k6YU8BPhSHQucnMFrpYoHZOY15/VWNpk2cLjYB+yqmWq5jGIKkhlvr38hFAVPZ7kRSr2L3/Se+N+mm7esbPAtJ86xiGyfMGJ95/OkMDs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761684250; c=relaxed/simple;
-	bh=dk+J0esx7pFKcsDn2MQgotNehXmTk+OTtb/zxECTqnw=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=lRWQtNxlIfvUU2Y+Bi5P3QvIxijZLzezq1ulutIQMuYKpABn72CaYZNb5uMRUr9Fs+cHHB3l7vfI/G5/g35C46oYiIbb387R3T8vzxTqqXSmLtmgnZ2LrsYY/v4M81vLEqrQeM1VTIZpB0Y4ZXhydb7QN/3vLXdPkxBDu64owtg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=LZzg/IGu; arc=none smtp.client-ip=192.198.163.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1761684756; c=relaxed/simple;
+	bh=Mu2bPbXVELL3QwMDUxBoYvXS8gR7TtieK5wTo2e4Cxw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Uusl58/4p77KsKeLCtUBEo1DP3ZSf+3ZSL64vrj5RQeN7FfyOLNM+XccFdsc7O6gUf2hh+EXSrO0xqPBfmjKin+bJZaHJr2NxXvTCkcrAzlfVeu6sOriT1D18qU+a5BU2q1xhxPYyOAbljx2exotZ/04vhoFrB+jHeE5gO1R7W0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BIb9eyuI; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="LZzg/IGu"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1761684249; x=1793220249;
-  h=date:from:to:cc:subject:message-id;
-  bh=dk+J0esx7pFKcsDn2MQgotNehXmTk+OTtb/zxECTqnw=;
-  b=LZzg/IGu6FBlRexS1Daeg5JiC8sldWOs26uMDooU7sAwYzjTUT4ZxuFx
-   ZzUuFHb67PhweVX8SyjqiTzuq10R461Hw+wnbK1Cr14xH62lb17GfQjYX
-   rXSG8vc8tyKomPj5u/ljGEIgWWfe9iagYsyiUV8hZSCpHA/aIMyMTW7bi
-   h4waPRBdhbRXYvBhnZAht5MHyKqRd975oqNDySbigk4RSRGXGDpPGiZPA
-   JINqtK3xMSxWZtDeTPQviXr8WWtYix5+uM3EOCRsLLnapz8E/hVHhYYC3
-   jxxu0kbkjERBq4JxpClZPHUDHUdzqaDfDiUfaG0pCUCKZ8bG3gfIfscTu
-   g==;
-X-CSE-ConnectionGUID: rnC+aRdIRVm1LBVFzf2RMw==
-X-CSE-MsgGUID: +8bnpySGRL2mGhz3PiX1ww==
-X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="63002833"
-X-IronPort-AV: E=Sophos;i="6.19,262,1754982000"; 
-   d="scan'208";a="63002833"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Oct 2025 13:44:08 -0700
-X-CSE-ConnectionGUID: f9/T7ckJTsOyukLMvn369g==
-X-CSE-MsgGUID: ldMCCUPuRHS5IkNTBsAepA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,262,1754982000"; 
-   d="scan'208";a="185539751"
-Received: from lkp-server02.sh.intel.com (HELO 66d7546c76b2) ([10.239.97.151])
-  by orviesa008.jf.intel.com with ESMTP; 28 Oct 2025 13:44:05 -0700
-Received: from kbuild by 66d7546c76b2 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1vDqXz-000JjZ-01;
-	Tue, 28 Oct 2025 20:44:03 +0000
-Date: Wed, 29 Oct 2025 04:43:05 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:fixes] BUILD SUCCESS
- 4690ba72814c7fb94efe8212f51014982fc8599a
-Message-ID: <202510290400.hdUvwx0V-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BIb9eyuI"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4BE58C4CEE7;
+	Tue, 28 Oct 2025 20:52:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1761684755;
+	bh=Mu2bPbXVELL3QwMDUxBoYvXS8gR7TtieK5wTo2e4Cxw=;
+	h=From:To:Cc:Subject:Date:From;
+	b=BIb9eyuIlOtGE1/3/lMQR6+nPSyHtcCM+glWUElrjnEjmIYV/lNaEV30Yok7G6FXW
+	 rSGLKCmCv7TRaA48Ch9Ejs5oekZNs8voV4vlfMdyY89TKrYewna/IJo0XN41PVN3qY
+	 lWCNavUUrC+m5SMEA+jVfZ3yylimymA+/kdFO4wwRE9q4RYPLbMK1F48NlgWFQ2Cq3
+	 6yvvkbvOvo84CCwUcbeDzfolFJtrRuP2k6QspFlhHf8Y+FbRCKOvTUP1c9Bos1kXmn
+	 vwNTbEawCHAXGDn213jQm2yTVp45Zbh62E9TlWDdh0Y7XHxQD4RXF57vLXHGqheHn2
+	 IaRhs0ETgbH4w==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Askar Safin <safinaskar@gmail.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH v1] PM: sleep: Allow pm_restrict_gfp_mask() stacking
+Date: Tue, 28 Oct 2025 21:52:31 +0100
+Message-ID: <5935682.DvuYhMxLoT@rafael.j.wysocki>
+Organization: Linux Kernel Development
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git fixes
-branch HEAD: 4690ba72814c7fb94efe8212f51014982fc8599a  Merge branch 'acpi-tables' into fixes
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-elapsed time: 1455m
+Allow pm_restrict_gfp_mask() to be called many times in a row to avoid
+issues with calling dpm_suspend_start() when the GFP mask has been
+already restricted.
 
-configs tested: 194
-configs skipped: 3
+Only the first invocation of pm_restrict_gfp_mask() will actually
+restrict the GFP mask and the subsequent calls will warn if there is
+a mismatch between the expected allowed GFP mask and the actual one.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Moreover, if pm_restrict_gfp_mask() is called many times in a row,
+pm_restore_gfp_mask() needs to be called matching number of times in
+a row to actually restore the GFP mask.  Calling it when the GFP mask
+has not been restricted will cause it to warn.
 
-tested configs:
-alpha                             allnoconfig    gcc-15.1.0
-alpha                            allyesconfig    clang-19
-alpha                            allyesconfig    gcc-15.1.0
-alpha                               defconfig    gcc-15.1.0
-arc                              allmodconfig    gcc-15.1.0
-arc                               allnoconfig    gcc-15.1.0
-arc                              allyesconfig    gcc-15.1.0
-arc                                 defconfig    gcc-15.1.0
-arc                        nsimosci_defconfig    clang-22
-arc                   randconfig-001-20251028    gcc-8.5.0
-arc                   randconfig-002-20251028    gcc-13.4.0
-arc                   randconfig-002-20251028    gcc-8.5.0
-arm                               allnoconfig    clang-22
-arm                               allnoconfig    gcc-15.1.0
-arm                                 defconfig    gcc-15.1.0
-arm                   randconfig-001-20251028    clang-22
-arm                   randconfig-001-20251028    gcc-8.5.0
-arm                   randconfig-002-20251028    clang-22
-arm                   randconfig-002-20251028    gcc-8.5.0
-arm                   randconfig-003-20251028    clang-22
-arm                   randconfig-003-20251028    gcc-8.5.0
-arm                   randconfig-004-20251028    gcc-8.5.0
-arm64                             allnoconfig    gcc-15.1.0
-arm64                            allyesconfig    gcc-15.1.0
-arm64                               defconfig    gcc-15.1.0
-arm64                 randconfig-001-20251028    clang-22
-arm64                 randconfig-002-20251028    clang-22
-arm64                 randconfig-003-20251028    gcc-11.5.0
-arm64                 randconfig-004-20251028    gcc-8.5.0
-csky                             allmodconfig    gcc-15.1.0
-csky                              allnoconfig    gcc-15.1.0
-csky                             allyesconfig    gcc-15.1.0
-csky                                defconfig    gcc-15.1.0
-csky                  randconfig-001-20251028    gcc-15.1.0
-csky                  randconfig-002-20251028    gcc-15.1.0
-hexagon                          allmodconfig    clang-17
-hexagon                          allmodconfig    clang-19
-hexagon                           allnoconfig    clang-22
-hexagon                           allnoconfig    gcc-15.1.0
-hexagon                          allyesconfig    clang-19
-hexagon                          allyesconfig    clang-22
-hexagon                             defconfig    gcc-15.1.0
-hexagon               randconfig-001-20251028    clang-22
-hexagon               randconfig-002-20251028    clang-17
-i386                             allmodconfig    clang-20
-i386                              allnoconfig    gcc-14
-i386                              allnoconfig    gcc-15.1.0
-i386                             allyesconfig    clang-20
-i386        buildonly-randconfig-001-20251028    gcc-14
-i386        buildonly-randconfig-002-20251028    gcc-14
-i386        buildonly-randconfig-003-20251028    gcc-14
-i386        buildonly-randconfig-004-20251028    gcc-14
-i386        buildonly-randconfig-005-20251028    gcc-14
-i386        buildonly-randconfig-006-20251028    gcc-14
-i386                                defconfig    gcc-15.1.0
-i386                  randconfig-011-20251028    gcc-14
-i386                  randconfig-012-20251028    gcc-14
-i386                  randconfig-013-20251028    gcc-14
-i386                  randconfig-014-20251028    gcc-14
-i386                  randconfig-015-20251028    gcc-14
-i386                  randconfig-016-20251028    gcc-14
-i386                  randconfig-017-20251028    gcc-14
-loongarch                        allmodconfig    clang-19
-loongarch                         allnoconfig    clang-22
-loongarch                        allyesconfig    gcc-15.1.0
-loongarch             randconfig-001-20251028    gcc-12.5.0
-loongarch             randconfig-002-20251028    clang-22
-m68k                             allmodconfig    gcc-15.1.0
-m68k                              allnoconfig    gcc-15.1.0
-m68k                             allyesconfig    gcc-15.1.0
-m68k                           sun3_defconfig    clang-22
-microblaze                       allmodconfig    gcc-15.1.0
-microblaze                        allnoconfig    gcc-15.1.0
-microblaze                       allyesconfig    gcc-15.1.0
-mips                             allmodconfig    gcc-15.1.0
-mips                              allnoconfig    gcc-15.1.0
-mips                             allyesconfig    gcc-15.1.0
-mips                      maltaaprp_defconfig    clang-22
-nios2                            allmodconfig    clang-22
-nios2                            allmodconfig    gcc-11.5.0
-nios2                             allnoconfig    gcc-11.5.0
-nios2                            allyesconfig    clang-22
-nios2                            allyesconfig    gcc-11.5.0
-nios2                 randconfig-001-20251028    gcc-8.5.0
-nios2                 randconfig-002-20251028    gcc-9.5.0
-openrisc                         allmodconfig    clang-22
-openrisc                         allmodconfig    gcc-15.1.0
-openrisc                          allnoconfig    clang-22
-openrisc                          allnoconfig    gcc-15.1.0
-openrisc                         allyesconfig    gcc-15.1.0
-openrisc                            defconfig    gcc-15.1.0
-parisc                           allmodconfig    gcc-15.1.0
-parisc                            allnoconfig    clang-22
-parisc                            allnoconfig    gcc-15.1.0
-parisc                           allyesconfig    gcc-15.1.0
-parisc                              defconfig    gcc-15.1.0
-parisc                randconfig-001-20251028    gcc-9.5.0
-parisc                randconfig-002-20251028    gcc-8.5.0
-powerpc                           allnoconfig    clang-22
-powerpc                           allnoconfig    gcc-15.1.0
-powerpc                 mpc8313_rdb_defconfig    clang-22
-powerpc               randconfig-001-20251028    gcc-15.1.0
-powerpc               randconfig-002-20251028    gcc-11.5.0
-powerpc               randconfig-003-20251028    gcc-8.5.0
-powerpc                    socrates_defconfig    clang-22
-powerpc                     tqm8541_defconfig    clang-22
-powerpc64             randconfig-001-20251028    clang-22
-powerpc64             randconfig-002-20251028    clang-22
-powerpc64             randconfig-003-20251028    gcc-13.4.0
-riscv                             allnoconfig    clang-22
-riscv                             allnoconfig    gcc-15.1.0
-riscv                               defconfig    clang-22
-riscv                               defconfig    gcc-15.1.0
-s390                             allmodconfig    clang-18
-s390                             allmodconfig    gcc-15.1.0
-s390                              allnoconfig    clang-22
-s390                             allyesconfig    gcc-15.1.0
-s390                                defconfig    clang-22
-s390                                defconfig    gcc-15.1.0
-sh                               allmodconfig    gcc-15.1.0
-sh                                allnoconfig    gcc-15.1.0
-sh                               allyesconfig    gcc-15.1.0
-sh                                  defconfig    gcc-14
-sh                                  defconfig    gcc-15.1.0
-sh                          r7785rp_defconfig    clang-22
-sparc                            alldefconfig    clang-22
-sparc                            allmodconfig    gcc-15.1.0
-sparc                             allnoconfig    gcc-15.1.0
-sparc                            allyesconfig    clang-22
-sparc                            allyesconfig    gcc-15.1.0
-sparc                               defconfig    gcc-15.1.0
-sparc                 randconfig-001-20251028    gcc-9.5.0
-sparc                 randconfig-002-20251028    gcc-9.5.0
-sparc64                          allmodconfig    clang-22
-sparc64                          allyesconfig    clang-22
-sparc64                             defconfig    clang-20
-sparc64                             defconfig    gcc-14
-sparc64               randconfig-001-20251028    gcc-9.5.0
-sparc64               randconfig-002-20251028    gcc-9.5.0
-um                               allmodconfig    clang-19
-um                                allnoconfig    clang-22
-um                               allyesconfig    clang-19
-um                               allyesconfig    gcc-14
-um                                  defconfig    clang-22
-um                                  defconfig    gcc-14
-um                             i386_defconfig    gcc-14
-um                    randconfig-001-20251028    gcc-9.5.0
-um                    randconfig-002-20251028    gcc-9.5.0
-um                           x86_64_defconfig    clang-22
-um                           x86_64_defconfig    gcc-14
-x86_64                           allmodconfig    clang-20
-x86_64                            allnoconfig    clang-20
-x86_64                            allnoconfig    clang-22
-x86_64                           allyesconfig    clang-20
-x86_64      buildonly-randconfig-001-20251028    clang-20
-x86_64      buildonly-randconfig-001-20251028    gcc-14
-x86_64      buildonly-randconfig-002-20251028    clang-20
-x86_64      buildonly-randconfig-002-20251028    gcc-14
-x86_64      buildonly-randconfig-003-20251028    clang-20
-x86_64      buildonly-randconfig-004-20251028    clang-20
-x86_64      buildonly-randconfig-005-20251028    clang-20
-x86_64      buildonly-randconfig-006-20251028    clang-20
-x86_64                              defconfig    gcc-14
-x86_64                                  kexec    clang-20
-x86_64                randconfig-001-20251028    clang-20
-x86_64                randconfig-002-20251028    clang-20
-x86_64                randconfig-003-20251028    clang-20
-x86_64                randconfig-004-20251028    clang-20
-x86_64                randconfig-005-20251028    clang-20
-x86_64                randconfig-006-20251028    clang-20
-x86_64                randconfig-011-20251028    clang-20
-x86_64                randconfig-012-20251028    clang-20
-x86_64                randconfig-013-20251028    clang-20
-x86_64                randconfig-014-20251028    clang-20
-x86_64                randconfig-015-20251028    clang-20
-x86_64                randconfig-016-20251028    clang-20
-x86_64                randconfig-071-20251028    clang-20
-x86_64                randconfig-072-20251028    clang-20
-x86_64                randconfig-073-20251028    clang-20
-x86_64                randconfig-074-20251028    clang-20
-x86_64                randconfig-075-20251028    clang-20
-x86_64                randconfig-076-20251028    clang-20
-x86_64                               rhel-9.4    clang-20
-x86_64                           rhel-9.4-bpf    gcc-14
-x86_64                          rhel-9.4-func    clang-20
-x86_64                    rhel-9.4-kselftests    clang-20
-x86_64                         rhel-9.4-kunit    gcc-14
-x86_64                           rhel-9.4-ltp    gcc-14
-x86_64                          rhel-9.4-rust    clang-20
-xtensa                            allnoconfig    clang-22
-xtensa                            allnoconfig    gcc-15.1.0
-xtensa                           allyesconfig    clang-22
-xtensa                randconfig-001-20251028    gcc-9.5.0
-xtensa                randconfig-002-20251028    gcc-9.5.0
+This is necessary for the GFP mask restriction starting in
+hibernation_snapshot() to continue throughout the entire hibernation
+flow until it completes or it is aborted (either by a wakeup event or
+by an error).
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Fixes: 449c9c02537a1 ("PM: hibernate: Restrict GFP mask in hibernation_snapshot()")
+Fixes: 469d80a3712c ("PM: hibernate: Fix hybrid-sleep")
+Reported-by: Askar Safin <safinaskar@gmail.com>
+Closes: https://lore.kernel.org/linux-pm/20251025050812.421905-1-safinaskar@gmail.com/
+Link: https://lore.kernel.org/linux-pm/20251028111730.2261404-1-safinaskar@gmail.com/
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+This supersedes
+
+https://lore.kernel.org/linux-pm/20251026033115.436448-1-superm1@kernel.org/
+
+as it allows the GFP mask to be restricted across the entire hibernation path.
+
+---
+ kernel/power/hibernate.c |    4 ----
+ kernel/power/main.c      |   22 +++++++++++++++++-----
+ 2 files changed, 17 insertions(+), 9 deletions(-)
+
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -706,7 +706,6 @@ static void power_down(void)
+ 
+ #ifdef CONFIG_SUSPEND
+ 	if (hibernation_mode == HIBERNATION_SUSPEND) {
+-		pm_restore_gfp_mask();
+ 		error = suspend_devices_and_enter(mem_sleep_current);
+ 		if (!error)
+ 			goto exit;
+@@ -746,9 +745,6 @@ static void power_down(void)
+ 		cpu_relax();
+ 
+ exit:
+-	/* Match the pm_restore_gfp_mask() call in hibernate(). */
+-	pm_restrict_gfp_mask();
+-
+ 	/* Restore swap signature. */
+ 	error = swsusp_unmark();
+ 	if (error)
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -31,23 +31,35 @@
+  * held, unless the suspend/hibernate code is guaranteed not to run in parallel
+  * with that modification).
+  */
++static unsigned int saved_gfp_count;
+ static gfp_t saved_gfp_mask;
+ 
+ void pm_restore_gfp_mask(void)
+ {
+ 	WARN_ON(!mutex_is_locked(&system_transition_mutex));
+-	if (saved_gfp_mask) {
+-		gfp_allowed_mask = saved_gfp_mask;
+-		saved_gfp_mask = 0;
+-	}
++
++	if (WARN_ON(!saved_gfp_count) || --saved_gfp_count)
++		return;
++
++	gfp_allowed_mask = saved_gfp_mask;
++	saved_gfp_mask = 0;
++
++	pm_pr_dbg("GFP mask restored\n");
+ }
+ 
+ void pm_restrict_gfp_mask(void)
+ {
+ 	WARN_ON(!mutex_is_locked(&system_transition_mutex));
+-	WARN_ON(saved_gfp_mask);
++
++	if (saved_gfp_count++) {
++		WARN_ON((saved_gfp_mask & ~(__GFP_IO | __GFP_FS)) != gfp_allowed_mask);
++		return;
++	}
++
+ 	saved_gfp_mask = gfp_allowed_mask;
+ 	gfp_allowed_mask &= ~(__GFP_IO | __GFP_FS);
++
++	pm_pr_dbg("GFP mask restricted\n");
+ }
+ 
+ unsigned int lock_system_sleep(void)
+
+
+
