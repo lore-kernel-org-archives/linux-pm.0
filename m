@@ -1,114 +1,180 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f43.google.com (mail-ej1-f43.google.com [209.85.218.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 700DD3590C1
-	for <linux-pm@vger.kernel.org>; Wed, 29 Oct 2025 19:00:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BC1D358D07
+	for <linux-pm@vger.kernel.org>; Wed, 29 Oct 2025 19:03:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761764433; cv=none; b=kyYMgE18/lxAl0eyYfsuyQLvTbwXkUc5FMV+uiFWsVfvLCLvNkNr4CC1QEEuhTZSmFBWmkt1ZWZT/dTzR99GQTzCaXZcKSaQ1d0578lxG3UQzuuc+rKFqIAwRjRVfo1sKQs8p6gez4klBKBDNRU3R+5cxRPv2VhUw6VYL0ksvXo=
+	t=1761764619; cv=none; b=eeMTyZ/nvVjq1W76jF7oRyTSSjMQu/u3JcDi7uroHmX3pE1YEwaGlyfOVVPnJF3e8bKS9P+NpaQcP57bWfJhKctMOICiR6tXLClRSMlCf7ynGFGSu2ZK37y6eEIm6dIocfw3dgYi4//JiMLBJ8nVll+ucu+wfWSJGfbbGkhs+cU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761764433; c=relaxed/simple;
-	bh=7lyiAV1rqHRrNNC2mebu+0d6w0qgxZqfz9LsUM51/IY=;
+	s=arc-20240116; t=1761764619; c=relaxed/simple;
+	bh=ayz5uJhUWek64cO1TfANoi2EbNkkgYCklsEjCvThEwQ=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=A7R5FPpO4pB55ZkozbQJ37WQIkIYOqkkUBGlpVuhJARiZwMqPhD99cKJ19gyLywJc4xrhjmimIB1D6oQPKFdd5uWEeV1nr4PAwPaEhj9PmQVLsYWQiGXfZ2TmHbNwv14VexKl8DG93DR38+dEZ6bb3VzweGK817f91Bpcwyf5KM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kaMYCV0B; arc=none smtp.client-ip=10.30.226.201
+	 To:Cc:Content-Type; b=IFIXfKAGUyycfVzwsYZUUwvxZfQptB8mW5nEcgFVZFQhioFXSyL5DFTHUQfcGRGic2rSguErx7BLz99P76ZpVnoxIDw9+lktYFgwTDcRBPqCo5pq+N5mTKfFyuLJPBVgyifZtVsKYJkGAG7eS5VSNsKgGVK2P16YlF2s2qxBphE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=pR7s+4cs; arc=none smtp.client-ip=209.85.218.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kaMYCV0B"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 069D1C4AF09
-	for <linux-pm@vger.kernel.org>; Wed, 29 Oct 2025 19:00:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1761764432;
-	bh=7lyiAV1rqHRrNNC2mebu+0d6w0qgxZqfz9LsUM51/IY=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=kaMYCV0BjBakVZ+zrLfrrR3dVzNMx6/KLmy3R7stVpHx/DXX57k5gw0fYgKrgQDTE
-	 2mrcvm8YNi2uT/o3OjtZFjLCeXfauOfpiHJxeUfmi8JlfJZg0HLukuNHRdNAnVaMC9
-	 9gtkDiJ5zk0K1FQJHkgsdaaAMlsDh5Imm6Aabn7Q7UqpS0PtA81OCtfBiDnfbzpzja
-	 0c0Y33hD7y6iZ2nTd/hcIW/dxBz8W1MnoDLmGmLgnFTeqGFYNpkwFXRZaWHqg6GXUD
-	 09puiTffHYBoTYPiqgwQNUeP+dZAMCL4DNv8M2t+DDdZ+xPTxGOTF6XSWwnvAFwi9e
-	 F3zqmHPzU9Czw==
-Received: by mail-oi1-f169.google.com with SMTP id 5614622812f47-443ac891210so133780b6e.1
-        for <linux-pm@vger.kernel.org>; Wed, 29 Oct 2025 12:00:31 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCVACcU26QmB4KfL0CHVdlwWekSc8k4yEB5T9KeWcah6dp/o6Skow7Uz6uNQ6XE4YXigoghNK3igMw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx12ZxHKszpyGglRjTVYp416NSyyISpAurNOQxXcjIPFrhZWvaj
-	ZTCqZTkgUrU6qBw4SRqrAn8n/inP3KyP8Brom9V+w3FvFq9VJD3onDhPZCLgtEVQ8/Yy0VJLZ4C
-	XTuKcX9JIPt9GMYbmBRIP6GjJCzG0pCw=
-X-Google-Smtp-Source: AGHT+IEM2thqrNFpWgW4GaxlYBwePV2dgOkn3wDq3C3a3TbN7GDItXTyZfYFUpWtpwDSnFCac7W45ElxoOHQJDadjYY=
-X-Received: by 2002:a05:6808:3990:b0:44d:bf83:d7f8 with SMTP id
- 5614622812f47-44f7a3d0652mr1972133b6e.4.1761764431301; Wed, 29 Oct 2025
- 12:00:31 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="pR7s+4cs"
+Received: by mail-ej1-f43.google.com with SMTP id a640c23a62f3a-b6d6c11f39aso35619366b.2
+        for <linux-pm@vger.kernel.org>; Wed, 29 Oct 2025 12:03:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1761764616; x=1762369416; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=mMbXoANbxtJaPshR9Dxm5UKMGamPxpzGctgh5KcznPU=;
+        b=pR7s+4csT0Krx+MIucU++jucYQhwF8BR4TSNmDlgFr1L2ZtyUccjyQtRgYfcfAFUjN
+         ows+TpWZBP2ILHXvq8ut6whNFbElcAgphk7dl7ZowluMF7aqwYr0SCw1ZzjBaGG4B2dQ
+         5IQkFxs46EuMMkgius0iebc/PH2bygKVPHwp0PaVhWfe7Wm+woxNI5woOu3dZogf1s0m
+         Jxfwm/KEykGx4IlZe9oLkBVlTnrHJCdpuy3DlsCwPINT4aMF34umLQYQQnLSsSz5jY9K
+         PB+gR2PTbLulFNgtDFd4nqlC4xvdVg+97bVZCyjm8EKTWiCYooS890yKhWL6pnifq0ok
+         wATg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1761764616; x=1762369416;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=mMbXoANbxtJaPshR9Dxm5UKMGamPxpzGctgh5KcznPU=;
+        b=OTd22Yr9gldnaxbkczdmriCT9afvsYpTnwRSl73B8/xp989UIZtVv/l72QXI1Lot9G
+         7A5lKVa3+UYbOZFd7gv2ie7W3sDl2NOVWVDaR66c8MWRSrh//oLe3nE4II6tnSj5mzMd
+         ci9K68QxwSRcxsxcPYZc7GstxeJz5FyPMP20KGgFatfAQnxhp/WCPrOEoOWTrWomtFTt
+         ngqGYuz7uIdkyn6/ZqUFy8dWrkIxZGlULEjUH36viRJ0cCrm2t9XpnZ48olfge8XTCvT
+         5S6DXeiIgT8m2Di5QjrD9LK1eFdRoEo1E9r48qWJiBt3rUNAC9OdcULFDx4A4KEalrlE
+         nLPQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUbjQWTEkv76oWJSxin7T9Xn9yb6cYVIrWkm3h4TE5bmPH22okgGeRcq9CPJkRyakmLrMRTv63Lig==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxBYJMue1/sudDstSURrh1LxHib4+/I/HZcMXeT9JU5YAfz+KCv
+	lW7Co0cqv3Eser1oRxErVNtmucqekX1PXSGA6AlLNqUjBW0hxqHJPe7Pvg0tWWY1+v81gp6hwNC
+	lwV9I0MGKhZJK0wgFELiyRULlOIpIG0dJ/RX1wJCZ
+X-Gm-Gg: ASbGnctQ17kLSW0GKHfHQUFv4dSOH9HJ0kOOqf/nZhO4ejJZirEh3V8l+BmbihsU8si
+	YrCP6P/txFd/D955ZSOXSupATkw/IwWM72dxc3oTfgcw/mL6Q6h1fIdYw37hOEatRrlDwX3wfC7
+	JftNQu9zkRp17xL3OwHT9i0Ll2sTz/h0NcNQ53U66RTSp3NUQgbDhd+FyuBVenrHqkIX/9YVZwb
+	nBSK06jPjZlmU+6ZgftgDdo46fZl6GOJz01PZE6W/K+vcLKTwjFT/bdUXyMKQ0mYNCmiGd73Emi
+	Z2p6bjsu64PeOqaUG4xBD351
+X-Google-Smtp-Source: AGHT+IHfciFTAoDkjpZYU12r/OGQA3CcjFHDRIHS9vPorWUYQf+f9y/eBGvAocvloUc+tpJPBBnlYyO8NS5eEoCs9PI=
+X-Received: by 2002:a17:907:26c3:b0:b6d:c7e0:9da6 with SMTP id
+ a640c23a62f3a-b703d31ffd6mr454751366b.16.1761764615731; Wed, 29 Oct 2025
+ 12:03:35 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251026170527.262003-1-mrout@redhat.com>
-In-Reply-To: <20251026170527.262003-1-mrout@redhat.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 29 Oct 2025 20:00:20 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0gtKTUAthA4OaCU-hV4j1OhRDuA10o-ZhXepFyq7J5L2g@mail.gmail.com>
-X-Gm-Features: AWmQ_bk6EPvPp1ZojFQfUZnAvpOOabuA0STIcW3pcPHz9eAU0AO-Pz444iRTH1g
-Message-ID: <CAJZ5v0gtKTUAthA4OaCU-hV4j1OhRDuA10o-ZhXepFyq7J5L2g@mail.gmail.com>
-Subject: Re: [PATCH] PM: runtime: fix typos in runtime.c comments
-To: Malaya Kumar Rout <mrout@redhat.com>
-Cc: linux-kernel@vger.kernel.org, lyude@redhat.com, malayarout91@gmail.com, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, linux-pm@vger.kernel.org
+References: <CAG2KctoJ+1x61KNmDj_52J1_Y3vyox7UNceFw6_WtbRMA_1vYA@mail.gmail.com>
+ <20251022223218.8664-1-hdanton@sina.com>
+In-Reply-To: <20251022223218.8664-1-hdanton@sina.com>
+From: Samuel Wu <wusamuel@google.com>
+Date: Wed, 29 Oct 2025 12:03:22 -0700
+X-Gm-Features: AWmQ_bnM1ll6As3Oe3-EnkwU_1r2qyB_MB-idXfls2oX12W7nVYN07mZwD0v-6g
+Message-ID: <CAG2Kcto4XPWMqf_ALZht9wivKki7bNKgCwijLruTsj8CDHaCgA@mail.gmail.com>
+Subject: Re: [PATCH v5] PM: Support aborting sleep during filesystem sync
+To: Hillf Danton <hdanton@sina.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Saravana Kannan <saravanak@google.com>, kernel-team@android.com, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Oct 26, 2025 at 6:05=E2=80=AFPM Malaya Kumar Rout <mrout@redhat.com=
-> wrote:
+On Wed, Oct 22, 2025 at 3:32=E2=80=AFPM Hillf Danton <hdanton@sina.com> wro=
+te:
 >
-> Fix several typos in comments:
-> - "timesptamp" -> "timestamp"
-> - "involed" -> "involved"
-> - "nonero" -> "nonzero"
+> On Wed, 22 Oct 2025 11:41:37 -0700 Samuel Wu wrote:
+> > On Tue, Oct 21, 2025 at 6:16=E2=80=AFPM Hillf Danton <hdanton@sina.com>=
+ wrote:
+> > > On Tue, 21 Oct 2025 13:13:39 -0700 Samuel Wu wrote:
+> > > > On Fri, Oct 17, 2025 at 5:17=E2=80=AFPM Hillf Danton <hdanton@sina.=
+com> wrote:
+> > > > > On Fri, 17 Oct 2025 23:39:06 +0000 Samuel Wu wrote:
+> > > > > > +/**
+> > > > > > + * pm_sleep_fs_sync - Trigger fs_sync with ability to abort
+> > > > > > + *
+> > > > > > + * Return 0 on successful file system sync, otherwise returns =
+-EBUSY if file
+> > > > > > + * system sync was aborted.
+> > > > > > + */
+> > > > > > +int pm_sleep_fs_sync(void)
+> > > > > > +{
+> > > > > > +     bool need_pm_sleep_fs_sync_requeue;
+> > > > > > +     unsigned long flags;
+> > > > > > +
+> > > > > > +     do {
+> > > > > > +             spin_lock_irqsave(&pm_sleep_fs_sync_lock, flags);
+> > > > > > +             reinit_completion(&pm_sleep_fs_sync_complete);
+> > > > >
+> > > > > Given difficulty following up here, can you specify why reinit is=
+ needed?
+> > > >
+> > > > There are two possibilities that make reinit_completion() necessary=
+:
+> > > > 1. Suspend abort triggers completion, but is canceled before
+> > > > pm_wakeup_pending(), so need reinit to restart the
+> > > > wait_for_completion() process.
+> > > > 2. Handling back-to-back suspend attempts: after a subsequent suspe=
+nd
+> > > > attempt finishes waiting for a previous suspend's fs_sync to finish=
+,
+> > > > we need the reinit to start the wait_for_completion() process of th=
+e
+> > > > subsequent suspend's fs_sync.
+> > > >
+> > > If 1. and 2. matches the comment for wait_for_completion() below,
+> > >
+> > >         static DECLARE_COMPLETION(foo);
+> > >
+> > >         waiter          waker1          waker2
+> > >         ---             ---             ---
+> > >         for (;;) {
+> > >           reinit_completion(&foo)
+> > >           do anything
+> > >           wait_for_completion(&foo)
+> > >                         do bar1         do bar2
+> > >                         complete(&foo)  complete(&foo)
+> > >           if (end)
+> > >                 break;
+> > >         }
+> > >
+> > > the chance for reinit to drop one wakeup is not zero.
+> > > If drop makes sense, for what do you wait after receiving two wakeups=
+?
+> > >
+> >
+> > If I understand correctly, you are referring to the case where
+> > multiple wakers trigger wait_for_complete() simultaneously, hence
+> > having at least one waker's complete() being ignored?
+> >
+> > If so, I see two possibilities with multiple wakers:
+> > 1. fs_sync finishing + suspend abort1 + ... + suspend abortN
+> > 2. suspend abort1 + ... + suspend abortN
+> >
+> > Simplifying, if two wakers come in simultaneously, while one of the
+> > wakers may have its complete() ignored, the state of that waker is
+> > still checked after wait_for_completion(), with
+> > if(pm_wakeup_pending()) and while(need_pm_sleep_fs_sync_requeue) for
+> > suspend aborts and fs_sync finishing respectively.
+> >
+> Note one of the two wakeups may come after the two checks.
 >
-> Fix typos in comments to improve code documentation clarity.
+>        reinit_completion(&foo)
+>        do anything
+>        wait_for_completion(&foo)
+>                 complete(&foo) from waker1
+>        check1
+>        check2
+>                 complete(&foo) from waker2 // dropped by reinit
 >
-> Signed-off-by: Malaya Kumar Rout <mrout@redhat.com>
-> ---
->  drivers/base/power/runtime.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 1b11a3cd4acc..7fe63cab2708 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -90,7 +90,7 @@ static void update_pm_runtime_accounting(struct device =
-*dev)
->         /*
->          * Because ktime_get_mono_fast_ns() is not monotonic during
->          * timekeeping updates, ensure that 'now' is after the last saved
-> -        * timesptamp.
-> +        * timestamp.
->          */
->         if (now < last)
->                 return;
-> @@ -217,7 +217,7 @@ static int dev_memalloc_noio(struct device *dev, void=
- *data)
->   *     resume/suspend callback of any one of its ancestors(or the
->   *     block device itself), the deadlock may be triggered inside the
->   *     memory allocation since it might not complete until the block
-> - *     device becomes active and the involed page I/O finishes. The
-> + *     device becomes active and the involved page I/O finishes. The
->   *     situation is pointed out first by Alan Stern. Network device
->   *     are involved in iSCSI kind of situation.
->   *
-> @@ -1210,7 +1210,7 @@ EXPORT_SYMBOL_GPL(__pm_runtime_resume);
->   *
->   * Otherwise, if its runtime PM status is %RPM_ACTIVE and (1) @ign_usage=
-_count
->   * is set, or (2) @dev is not ignoring children and its active child cou=
-nt is
-> - * nonero, or (3) the runtime PM usage counter of @dev is not zero, incr=
-ement
-> + * nonzero, or (3) the runtime PM usage counter of @dev is not zero, inc=
-rement
->   * the usage counter of @dev and return 1.
->   *
->   * Otherwise, return 0 without changing the usage counter.
-> --
 
-Applied as 6.19 material, thanks!
+Thank you Hillf for the foresight and feedback! I'm thinking v6 needs
+this structure to address that scenario:
+
+lock
+do
+        reinit_completion
+        // bookkeeping, queue fs_sync
+        unlock
+        wait_for_completion
+        lock
+        checks
+while
+unlock
