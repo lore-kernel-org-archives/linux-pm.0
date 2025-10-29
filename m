@@ -1,98 +1,119 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BDA592C237F
-	for <linux-pm@vger.kernel.org>; Wed, 29 Oct 2025 16:07:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A855E34B41E;
+	Wed, 29 Oct 2025 16:08:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761754063; cv=none; b=hkybRnqjb5TtNV+fbKTFmoFvZV8E816N2MbWXMoBdFoXOu3VGmw3pAECItOslHIVGoaPw7j6atWEctoIP4jYoKvQscqu8Prh6BokbAAqFFTopwXHPjiXFIhl5EUxHIF7VDVetDV1xXoJQrBD1ibnHagNSN5hazqVaCDRhG/1BQE=
+	t=1761754107; cv=none; b=KrNK09Srfu8EwWlj59xjLIzXjvSz5SkeXy2hmOtzICjRr35b0PnRfJki6N7Q6LjaTxfCaZ2m6r5SSRLNa5+xRxH1jSUSyx2kEbFxMG4eXXj9EZOnWnF33293feRhQt42x2Kz4DZXvXr+NQbfk5H4wkC9y1JeLYGN00pSVwKKFIM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761754063; c=relaxed/simple;
-	bh=F5+Hw1BLHdd/jOpifshQgHGM/MjPHsTkf301Hl25/QM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=NbPtRIysF2gkYNi5t+8aSZGBUXEs285Z8KFq6hgKi2QK6GYd+0nmw0AqZECyYs3XcviN9m97jbbvJKakSIg2/k6ES9IPOf/0qZtO1efwKIk6x/WpklKnKhaqCi+vNyDmenp5mCh8qw18y90hfgLOgOBTVOtx38x3eU51Ww48DQ4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=afGpRvZ+; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1761754107; c=relaxed/simple;
+	bh=M9VUXQ0sGm4MCTwj4cZe2NEqjEY3c4DzycPRMT5gMPQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=auL2zX6Nc7eeZriWqWCW09BsgZ6Pfp+ryrqOqAnBQwQfrISZyymFggJVzSnEp/GjQMVNlWUCb9f19cUECTNQCoIKUPXlloLQq+JZjHa8BUbvjDvyyz8K1eL38SYND6pOOg8tH8N+jIge1iYQJMZChXXTsgjSd7oku9/xyCU4PRs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=T0Prl2kN; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="afGpRvZ+"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 50003C4CEF7
-	for <linux-pm@vger.kernel.org>; Wed, 29 Oct 2025 16:07:43 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="T0Prl2kN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 517DDC4CEF7;
+	Wed, 29 Oct 2025 16:08:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1761754063;
-	bh=F5+Hw1BLHdd/jOpifshQgHGM/MjPHsTkf301Hl25/QM=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=afGpRvZ+BUQkZZN4tAn6Zcb6yp4ha+EWuH1pLCq21d0CIqP0WvSHqBKMgs3gSN90C
-	 iy8GSuq1op3iwgoOo+mj3yoOsYkTZwNZeGW21ZH2Omw+hrppimrxKooIzMsgdUk1gi
-	 mE6BLNmdKG8y+Z7Gjxln6y6qWZfZvYyWlS4QKImEYKc6yj882iWelIUSG/QjHSdJQv
-	 8XAZtujQL7kCqLbBYe+YmESIwmhppcBWltjmj8fgLKzvaC4sL/RQ4hlYZe6rEmIyzu
-	 0xPu2m0xBa2whsslaK1p7JpGbN8pDSPJ2qfti5SjKyq/d7e5xS9aZ8gMdeotoOaIQ8
-	 GNMS22URwARsA==
-Received: by mail-oa1-f42.google.com with SMTP id 586e51a60fabf-3d5bb138b2cso45551fac.1
-        for <linux-pm@vger.kernel.org>; Wed, 29 Oct 2025 09:07:43 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCWlXBba3jd2ZbwfWFIOrVVwurAGd81KqnXSarS6+dn7OWemC68O2R/s62LOGbukid9O5PjoUrx/IQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxNf0Ysy9rnNZYFm8/Q8ZOUhM9vT0NhHVNAY1IVvqEA+N4J6tjW
-	QmiuRFiAb5Vr4GyT8VmP38aZ+v6RiSsxuEMt9whwiiFGv83jTipkhS6DcwKKlqjK0nKBIqbW4R3
-	3MxjvVq+Ad0Spy+OIqNyGUu7glG9MkHk=
-X-Google-Smtp-Source: AGHT+IEbzw7Oo24iBx/i5pLAvUOqV49daxyoxh0Zst0nRDhzzuj4dZSkbx+qzIQEpV908Ef4LcFLiMCpaQk0k3UlWJo=
-X-Received: by 2002:a05:6808:2225:b0:43b:426b:fbeb with SMTP id
- 5614622812f47-44f7a7a9e93mr1512151b6e.27.1761754062653; Wed, 29 Oct 2025
- 09:07:42 -0700 (PDT)
+	s=k20201202; t=1761754107;
+	bh=M9VUXQ0sGm4MCTwj4cZe2NEqjEY3c4DzycPRMT5gMPQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=T0Prl2kN0ilDjqzLDqH9l8QDBctE4hNV7ar7kS5HzEOGYHeGU2+O45IJHnDaUtmtY
+	 AqQqebI1WpSj4wOqSrSawSR9osPq3eXWa/ducp9RppYpS0UFr/WuyM9/znrxwqWa4/
+	 sA0DowkBFR/+U4KhGGu6urT5Zd8aHVNCHtDipzUMzIE9gtaaD4E+lkAFkoM+ecv7e4
+	 F4vylNdD4NzYHD3+yaTO8bq4LXDLzgcXyeiWBBp4O9OXh1ZPapjLw3WC1uD+hgmH1m
+	 ggj20qtOmE9eYC1ePD7w63cp6HN0bcKCfdpM9bvrSFBfz+0jvq9Pv684GPpILPQim7
+	 1qGrvRiG/vZrA==
+Date: Wed, 29 Oct 2025 11:11:30 -0500
+From: Bjorn Andersson <andersson@kernel.org>
+To: Christian Marangi <ansuelsmth@gmail.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+	Ilia Lin <ilia.lin@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Viresh Kumar <viresh.kumar@linaro.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Raag Jadav <raag.jadav@intel.com>, Arnd Bergmann <arnd@arndb.de>, linux-arm-msm@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] soc: qcom: smem: better track SMEM uninitialized
+ state
+Message-ID: <qy3d2wqqi7y2l6lyjrlsjf4dlzoigvawwze7ulapjujozi7lhq@7tluyf4j6nbu>
+References: <20251029133323.24565-1-ansuelsmth@gmail.com>
+ <20251029133323.24565-2-ansuelsmth@gmail.com>
+ <aQIyZfQ-Tvxmh6vL@smile.fi.intel.com>
+ <69023398.df0a0220.25fede.8d9c@mx.google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <5935682.DvuYhMxLoT@rafael.j.wysocki> <4dd9d86f-7c20-40fa-838c-b7634bbebf9a@kernel.org>
-In-Reply-To: <4dd9d86f-7c20-40fa-838c-b7634bbebf9a@kernel.org>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 29 Oct 2025 17:07:31 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0hXFtCcon6uBfjXVtst=zDQ6_o-O3aBt4-SH_auw0YBEg@mail.gmail.com>
-X-Gm-Features: AWmQ_blvJ_9P1rUGl3893iYEqZa5Dq74kJVWCTqPKMtbs9EWSV31Imp3LVTF2qc
-Message-ID: <CAJZ5v0hXFtCcon6uBfjXVtst=zDQ6_o-O3aBt4-SH_auw0YBEg@mail.gmail.com>
-Subject: Re: [PATCH v1] PM: sleep: Allow pm_restrict_gfp_mask() stacking
-To: Mario Limonciello <superm1@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
-	Askar Safin <safinaskar@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <69023398.df0a0220.25fede.8d9c@mx.google.com>
 
-On Wed, Oct 29, 2025 at 4:22=E2=80=AFPM Mario Limonciello <superm1@kernel.o=
-rg> wrote:
->
-> On 10/28/25 3:52 PM, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wed, Oct 29, 2025 at 04:32:35PM +0100, Christian Marangi wrote:
+> On Wed, Oct 29, 2025 at 05:27:33PM +0200, Andy Shevchenko wrote:
+> > On Wed, Oct 29, 2025 at 02:33:20PM +0100, Christian Marangi wrote:
+> > > There is currently a problem where, in the specific case of SMEM not
+> > > initialized by SBL, any SMEM API wrongly returns PROBE_DEFER
+> > > communicating wrong info to any user of this API.
+> > > 
+> > > A better way to handle this would be to track the SMEM state and return
+> > > a different kind of error than PROBE_DEFER.
+> > > 
+> > > Rework the __smem handle to always init it to the error pointer
+> > > -EPROBE_DEFER following what is already done by the SMEM API.
+> > > If we detect that the SBL didn't initialized SMEM, set the __smem handle
+> > > to the error pointer -ENODEV.
+> > > Also rework the SMEM API to handle the __smem handle to be an error
+> > > pointer and return it appropriately.
+> > 
+> > ...
+> > 
+> > >  	if (le32_to_cpu(header->initialized) != 1 ||
+> > >  	    le32_to_cpu(header->reserved)) {
+> > >  		dev_err(&pdev->dev, "SMEM is not initialized by SBL\n");
+> > > +		__smem = ERR_PTR(-ENODEV);
+> > >  		return -EINVAL;
+> > >  	}
+> > 
+> > I find this a bit confusing. Why the error code returned to the upper layer is
+> > different to the stored one?
 > >
-> > Allow pm_restrict_gfp_mask() to be called many times in a row to avoid
-> > issues with calling dpm_suspend_start() when the GFP mask has been
-> > already restricted.
-> >
-> > Only the first invocation of pm_restrict_gfp_mask() will actually
-> > restrict the GFP mask and the subsequent calls will warn if there is
-> > a mismatch between the expected allowed GFP mask and the actual one.
-> >
-> > Moreover, if pm_restrict_gfp_mask() is called many times in a row,
-> > pm_restore_gfp_mask() needs to be called matching number of times in
-> > a row to actually restore the GFP mask.  Calling it when the GFP mask
-> > has not been restricted will cause it to warn.
-> >
-> > This is necessary for the GFP mask restriction starting in
-> > hibernation_snapshot() to continue throughout the entire hibernation
-> > flow until it completes or it is aborted (either by a wakeup event or
-> > by an error).
-> >
-> > Fixes: 449c9c02537a1 ("PM: hibernate: Restrict GFP mask in hibernation_=
-snapshot()")
-> > Fixes: 469d80a3712c ("PM: hibernate: Fix hybrid-sleep")
-> > Reported-by: Askar Safin <safinaskar@gmail.com>
-> > Closes: https://lore.kernel.org/linux-pm/20251025050812.421905-1-safina=
-skar@gmail.com/
-> > Link: https://lore.kernel.org/linux-pm/20251028111730.2261404-1-safinas=
-kar@gmail.com/
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Great idea.  Looks good to me, and it passes the S4 tests on my side.
->
-> Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
-> Tested-by: Mario Limonciello (AMD) <superm1@kernel.org>
+> 
+> It's INVAL for probe. But for any user of SMEM it's NODEV as there isn't
+> an actual SMEM usable.
+> 
+> Totally ok to change the error condition in probe if maybe NODEV is
+> better suited. I assume there isn't a specific pattern of the correct
+> error condition in probe.
+> 
 
-Great, thanks!
+I'd say ENODEV represents the error better than EINVAL, so I don't have
+any concerns with you changing the return value.
+
+> > ...
+> > 
+> > Also, the series of patches should include the cover letter to explain not only
+> > series background but additionally
+> > - how it should be applied
+> > - if it has dependencies
+> > - etc
+> > 
+> 
+> Didn't add one they are trivial patch but I can add it if needed... it's
+> pretty stable code so no dependency or branch target
+> 
+
+Specifically, I should merge patch 1 and 2 through the qcom/soc tree,
+and patch 3 can be merged completely independently through the cpufreq
+tree.
+
+Regards,
+Bjorn
+
+> > 
+> > 
+> 
+> -- 
+> 	Ansuel
