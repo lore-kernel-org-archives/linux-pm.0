@@ -1,114 +1,145 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id EFEA02D46A1;
-	Wed, 29 Oct 2025 09:00:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C61D2311C31
+	for <linux-pm@vger.kernel.org>; Wed, 29 Oct 2025 09:12:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761728434; cv=none; b=JKIoyBjnMHJ7QC78rLMWnBL/ITGj03SDpXFz0D/PgGEOkH4XohS5DBz9SxWNgey+OQf8swX+8Q+/obzJQU9mjulb5cLulJSpzVIPKqmCRrqPadIcvyVhNbIKqnO9r0NkfUIIH2yMUR/FAOMVXt5IV9X80zlPVk0iRIS6P0k3Njk=
+	t=1761729140; cv=none; b=DBCIHuHv3G9JwWo9aumGyYdWAe7xKXPMMe7/aT3IKTewFdzUPbmSQB37LL6s+fA6Vulbftyt72Ec58xE/5AQUGSTZyjaTdyOeln+uJkAKA1ED7uIsZsOGROKnauMpRL2KKIFdBzG7vyI68J4znhiImVLwdJEyEC8+/gQvaZFJ/Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761728434; c=relaxed/simple;
-	bh=6CFkJz4ydlkqTa25ChD49yEx481uFMJXakRCvwZ0Jl0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=aHR9vJmlyPnY7aqKS3TX6q0uRYt9Q2GpsvGXbdFpDz+6aFlioJLcFzj/NtQGP/Hm9dMqPtwko2K/7EXmlZ3B1a6jRcZh/5ID6t5B5S+aT6GsNtmAH4rjprqpHMQp44oaXUbXglHMyjnTgn+fyL4IpUCXhqDjnLqNuiRwVy4g7M0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 468A61AC1;
-	Wed, 29 Oct 2025 02:00:17 -0700 (PDT)
-Received: from [10.57.38.252] (unknown [10.57.38.252])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id DE3563F63F;
-	Wed, 29 Oct 2025 02:00:22 -0700 (PDT)
-Message-ID: <40c2f7d9-23cf-4536-a1b1-0a55a0707830@arm.com>
-Date: Wed, 29 Oct 2025 09:00:55 +0000
+	s=arc-20240116; t=1761729140; c=relaxed/simple;
+	bh=bZM1T2863m95Uq1lGMLn+WQPp0J9g+mpfvrBhtYAkyI=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Nh4dQt69PF2YetwncDPP0AtT6GXlQ+U7GVJ+1SxE20hZ4uUUFpBsLTZD0nAq4dO7S82hFDbtULq0oiNWyAiP0N2+k02r0xyh+7ZjC1DFoVSSloatRVOrE85Y6OutRv3rsMxcidHMBJhPG6SUcHn2oGQg5KrsyMCu+5cPoVUwlaI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=XxfJYcIX; arc=none smtp.client-ip=192.198.163.19
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="XxfJYcIX"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1761729138; x=1793265138;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=bZM1T2863m95Uq1lGMLn+WQPp0J9g+mpfvrBhtYAkyI=;
+  b=XxfJYcIXE1zbUmf6dWBDxSSKKOBswp9THdHkrsFTpame27OanSI7MoEv
+   h/1spOHuHMeAgz+kcPAmLCanC7c7aRX26fBBaOlsomVj496SCnHSsSaIM
+   51fsJ+p2tdR4O5feRFweK1T8CwgaW/e4wJBL5NsVz4+GNO62uENBANMaj
+   SJ/g0cgLgC+/yU9t33j3VI0RqsXPeig65WHZD1t/oDwW0BtDjT1vv3HiE
+   uxoGZS5URqDHxg9Gh6zcSGV07BwZ4VLI68/fg1pP2YGbojzmPsBW0JZ4t
+   K1y7b14SPbhFjBsHLLN3S/wa6vWfBcB3dwvD6ANZKxrVkpiF1D5un83y+
+   Q==;
+X-CSE-ConnectionGUID: des91t3MRDmpReluhmc5Gg==
+X-CSE-MsgGUID: WcRFqcDPSliZ6JKwDO2FrA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="62872605"
+X-IronPort-AV: E=Sophos;i="6.19,263,1754982000"; 
+   d="scan'208";a="62872605"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Oct 2025 02:12:17 -0700
+X-CSE-ConnectionGUID: 6CtQoMkwS6Sy4DFXYAd1qQ==
+X-CSE-MsgGUID: aftcZYyeTIOSj5SFNdx3VQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.19,263,1754982000"; 
+   d="scan'208";a="185487680"
+Received: from baandr0id001.iind.intel.com ([10.66.253.151])
+  by fmviesa006.fm.intel.com with ESMTP; 29 Oct 2025 02:12:16 -0700
+From: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
+To: rafael@kernel.org,
+	tony.luck@intel.com
+Cc: linux-pm@vger.kernel.org,
+	Kaushlendra Kumar <kaushlendra.kumar@intel.com>
+Subject: [PATCH v2] ACPI: mrrm: Fix memory leaks and improve error handling
+Date: Wed, 29 Oct 2025 14:40:13 +0530
+Message-Id: <20251029091013.3682552-1-kaushlendra.kumar@intel.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RFC] PM: EM: Add to em_pd_list only when no failure
-To: Peng Fan <peng.fan@nxp.com>
-Cc: arm-scmi@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>,
- Pavel Machek <pavel@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>,
- Cristian Marussi <cristian.marussi@arm.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
- Changwoo Min <changwoo@igalia.com>
-References: <20251028-fix-energy-v1-1-ab854fd6a97c@nxp.com>
-Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20251028-fix-energy-v1-1-ab854fd6a97c@nxp.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
+Add proper error handling and resource cleanup to prevent memory leaks
+in add_boot_memory_ranges(). The function now checks for NULL return
+from kobject_create_and_add(), uses local buffer for range names to
+avoid dynamic allocation, and implements a cleanup path that removes
+previously created sysfs groups and kobjects on failure.
 
+This prevents resource leaks when kobject creation or sysfs group
+creation fails during boot memory range initialization.
 
-On 10/28/25 14:23, Peng Fan wrote:
-> When em_create_perf_table() returns failure, pd is freed, there dev->em_pd
-> is not valid. Then accessing dev->em_pd->node will trigger kernel panic
-> in em_dev_register_pd_no_update(). So return early if 'ret' is non-zero.
-> 
-> Kernel dump:
-> cpu cpu0: EM: invalid power: 0
-> Unable to handle kernel NULL pointer dereference at virtual address
-> 0000000000000008
-> Mem abort info:
-> pc : em_dev_register_pd_no_update+0xb4/0x79c
-> lr : em_dev_register_pd_no_update+0x9c/0x79c
-> Call trace:
->   em_dev_register_pd_no_update+0xb4/0x79c (P)
->   em_dev_register_perf_domain+0x18/0x58
->   scmi_cpufreq_register_em+0x84/0xb8
->   cpufreq_online+0x48c/0xb74
->   cpufreq_add_dev+0x80/0x98
->   subsys_interface_register+0x100/0x11c
->   cpufreq_register_driver+0x158/0x278
->   scmi_cpufreq_probe+0x1f8/0x2e0
->   scmi_dev_probe+0x28/0x3c
->   really_probe+0xbc/0x29c
->   __driver_probe_device+0x78/0x12c
->   driver_probe_device+0x3c/0x15c
->   __device_attach_driver+0xb8/0x134
->   bus_for_each_drv+0x84/0xe4
-> 
-> Fixes: cbe5aeedecc7 ("PM: EM: Assign a unique ID when creating a performance domain")
-> Signed-off-by: Peng Fan <peng.fan@nxp.com>
-> ---
->   kernel/power/energy_model.c | 5 ++++-
->   1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-> index e669d5057fca6da9612575a1c626474e60e7f7c4..11af9f64aa8276e47e0a5b2d615b227368af5480 100644
-> --- a/kernel/power/energy_model.c
-> +++ b/kernel/power/energy_model.c
-> @@ -693,13 +693,16 @@ int em_dev_register_pd_no_update(struct device *dev, unsigned int nr_states,
->   
->   unlock:
->   	mutex_unlock(&em_pd_mutex);
-> +	if (ret)
-> +		return ret;
->   
->   	mutex_lock(&em_pd_list_mutex);
->   	list_add_tail(&dev->em_pd->node, &em_pd_list);
->   	mutex_unlock(&em_pd_list_mutex);
->   
->   	em_notify_pd_created(dev->em_pd);
-> -	return ret;
-> +
-> +	return 0;
->   }
->   EXPORT_SYMBOL_GPL(em_dev_register_pd_no_update);
->   
-> 
-> ---
-> base-commit: f7d2388eeec24966fc4d5cf32d706f0514f29ac5
-> change-id: 20251028-fix-energy-6b63b72ae9c6
-> 
-> Best regards,
+Signed-off-by: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
+---
+Changes in v2:
+- Use local buffer for range names instead of kasprintf/kfree as
+  suggested in review.
 
+ drivers/acpi/acpi_mrrm.c | 42 ++++++++++++++++++++++++++++++----------
+ 1 file changed, 32 insertions(+), 10 deletions(-)
 
-Thank you for the patch!
+diff --git a/drivers/acpi/acpi_mrrm.c b/drivers/acpi/acpi_mrrm.c
+index 47ea3ccc2142..1718a35a5f56 100644
+--- a/drivers/acpi/acpi_mrrm.c
++++ b/drivers/acpi/acpi_mrrm.c
+@@ -149,26 +149,48 @@ ATTRIBUTE_GROUPS(memory_range);
+ 
+ static __init int add_boot_memory_ranges(void)
+ {
+-	struct kobject *pkobj, *kobj;
++	struct kobject *pkobj, *kobj, **kobjs;
+ 	int ret = -EINVAL;
+-	char *name;
++	char name[16];
++	int i;
+ 
+ 	pkobj = kobject_create_and_add("memory_ranges", acpi_kobj);
++	if (!pkobj)
++		return -ENOMEM;
+ 
+-	for (int i = 0; i < mrrm_mem_entry_num; i++) {
+-		name = kasprintf(GFP_KERNEL, "range%d", i);
+-		if (!name) {
+-			ret = -ENOMEM;
+-			break;
+-		}
++	kobjs = kcalloc(mrrm_mem_entry_num, sizeof(*kobjs), GFP_KERNEL);
++	if (!kobjs) {
++		kobject_put(pkobj);
++		return -ENOMEM;
++	}
+ 
++	for (i = 0; i < mrrm_mem_entry_num; i++) {
++		snprintf(name, sizeof(name), "range%d", i);
+ 		kobj = kobject_create_and_add(name, pkobj);
++		if (!kobj) {
++			ret = -ENOMEM;
++			goto cleanup;
++		}
+ 
+ 		ret = sysfs_create_groups(kobj, memory_range_groups);
+-		if (ret)
+-			return ret;
++		if (ret) {
++			kobject_put(kobj);
++			goto cleanup;
++		}
++		kobjs[i] = kobj;
+ 	}
+ 
++	return 0;
++
++cleanup:
++	for (int j = 0; j < i; j++) {
++		if (kobjs[j]) {
++			sysfs_remove_groups(kobjs[j], memory_range_groups);
++			kobject_put(kobjs[j]);
++		}
++	}
++	kfree(kobjs);
++	kobject_put(pkobj);
+ 	return ret;
+ }
+ 
+-- 
+2.34.1
 
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
