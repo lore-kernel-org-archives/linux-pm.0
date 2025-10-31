@@ -1,69 +1,37 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0A3D33B96C
-	for <linux-pm@vger.kernel.org>; Fri, 31 Oct 2025 10:24:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EEDF0334372
+	for <linux-pm@vger.kernel.org>; Fri, 31 Oct 2025 10:24:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761906274; cv=none; b=tymKFa57JY8uRnYcn7hKNua1M1ETATwlrN/1I3KLHXyXqi8zZ7qJfVi8jKue5EH+m9qgPh8PSClqT2ClXO454iKk5GIrkZEaL80mWytfyKA6pWTIpNqDHHORGQL5vQNK+a746fIWhkJA51+wWbfHpbLn1kdUlUwscqYExYI5iQw=
+	t=1761906276; cv=none; b=BcyLla+qPINE/9X+BIXY8wzoLjSL74FlfG02Us2rjKA+LiVpZri8O+VOmUuhWyET763nm6+ZrUa8USi5CweUKit0q+b+5DRUw+GArdnRBWW9FDO939X92Uy4J2HCz1oKBG9MP4LkTUW47mp0k2g9mGqSoBy1YBvCUEj4D7Wuubs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761906274; c=relaxed/simple;
-	bh=fJfeP8iJvfjrSjfGVdFX0HSWrueuPbA418jHovxYc8s=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Tm1DbZNAxbbFlBu+ygmUZINFqM7qnVkW27xLvj/gt00P9sPKaDoYSYij+NuBn+nWyVaLFzwjQMlvsm6E3yD1nZujxkXBkJZ2DjmtBlB1HceCldg92MmNDD506OxY50zBGNakqO+Sd1i/r/xDaPQ5zR6ak7wU/qQg4xul2kyzdg8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=K1ATfEJY; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=FCliQ5k9; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=K1ATfEJY; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=FCliQ5k9; arc=none smtp.client-ip=195.135.223.131
+	s=arc-20240116; t=1761906276; c=relaxed/simple;
+	bh=bB4dBgq8JceBVE4ay8NezjomTCpN/4Np2k+Y1PYEtu0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=ADvx6aMMO2uyIzJbwE6tvRv8nBPpfZeJwzV+ggQS7m2zE8W+WjbY8ixthGTy4QpjCdrPK1PyJsNjvWdT3KQ/XIK+QZsIu7P/OmWDJGeNz22rw0Xj52KiGJmzwy39+OlAaMsMG0CbA/EX+qniNR1kKP7gMQ6AUd97E1S/beuJvBA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.130
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="K1ATfEJY";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="FCliQ5k9";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="K1ATfEJY";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="FCliQ5k9"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id C84911F7F6;
-	Fri, 31 Oct 2025 10:24:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1761906270; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=zY0i1hFTvnmr5huB9hek+Pwb38AvUIlNlPpVHaoc8LQ=;
-	b=K1ATfEJY2wgCmakj9Mn7eXUwOQTo7p8hriAyF8Pp0zIGTbgC0aUW/5WywNukmy3k2wsR6X
-	FM8gSuUkWvt8AzfAIl/jL6BIo5w1r4LiXhHJvs5ltWPF39QoLiBFR8HbF3GoDdKlxum7N3
-	+kWyWp2yq3IXwo/uOooyi/ty4eD0xik=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1761906270;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=zY0i1hFTvnmr5huB9hek+Pwb38AvUIlNlPpVHaoc8LQ=;
-	b=FCliQ5k9446MKozyZLYL8ujtLdKji86DJeUhRsZUPnF07kvy9Wq9c5q4gcF72BNyPdxxOI
-	bJyumw4j3awSAnBw==
-Authentication-Results: smtp-out2.suse.de;
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 3DB40226DF;
+	Fri, 31 Oct 2025 10:24:32 +0000 (UTC)
+Authentication-Results: smtp-out1.suse.de;
 	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1761906270; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=zY0i1hFTvnmr5huB9hek+Pwb38AvUIlNlPpVHaoc8LQ=;
-	b=K1ATfEJY2wgCmakj9Mn7eXUwOQTo7p8hriAyF8Pp0zIGTbgC0aUW/5WywNukmy3k2wsR6X
-	FM8gSuUkWvt8AzfAIl/jL6BIo5w1r4LiXhHJvs5ltWPF39QoLiBFR8HbF3GoDdKlxum7N3
-	+kWyWp2yq3IXwo/uOooyi/ty4eD0xik=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1761906270;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=zY0i1hFTvnmr5huB9hek+Pwb38AvUIlNlPpVHaoc8LQ=;
-	b=FCliQ5k9446MKozyZLYL8ujtLdKji86DJeUhRsZUPnF07kvy9Wq9c5q4gcF72BNyPdxxOI
-	bJyumw4j3awSAnBw==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 1600213991;
-	Fri, 31 Oct 2025 10:24:30 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 8AD3713991;
+	Fri, 31 Oct 2025 10:24:31 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id UwO7A16OBGlqEgAAD6G6ig
-	(envelope-from <svarbanov@suse.de>); Fri, 31 Oct 2025 10:24:30 +0000
+	id cPk+IF+OBGlqEgAAD6G6ig
+	(envelope-from <svarbanov@suse.de>); Fri, 31 Oct 2025 10:24:31 +0000
 From: Stanimir Varbanov <svarbanov@suse.de>
 To: linux-kernel@vger.kernel.org,
 	devicetree@vger.kernel.org,
@@ -87,10 +55,12 @@ Cc: Rob Herring <robh@kernel.org>,
 	Jonathan Bell <jonathan@raspberrypi.com>,
 	Dave Stevenson <dave.stevenson@raspberrypi.com>,
 	Stanimir Varbanov <svarbanov@suse.de>
-Subject: [PATCH v2 0/4] Add watchdog support for bcm2712
-Date: Fri, 31 Oct 2025 12:24:19 +0200
-Message-ID: <20251031102423.1150093-1-svarbanov@suse.de>
+Subject: [PATCH v2 2/4] dt-bindings: soc: bcm: Add bcm2712 compatible
+Date: Fri, 31 Oct 2025 12:24:21 +0200
+Message-ID: <20251031102423.1150093-3-svarbanov@suse.de>
 X-Mailer: git-send-email 2.47.0
+In-Reply-To: <20251031102423.1150093-1-svarbanov@suse.de>
+References: <20251031102423.1150093-1-svarbanov@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -98,57 +68,101 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-1.30 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	MID_CONTAINS_FROM(1.00)[];
-	R_MISSING_CHARSET(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,imap1.dmz-prg2.suse.org:helo];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[22];
-	MIME_TRACE(0.00)[0:+];
-	TAGGED_RCPT(0.00)[dt];
-	FREEMAIL_CC(0.00)[kernel.org,broadcom.com,linaro.org,gmail.com,gmx.net,suse.com,raspberrypi.com,suse.de];
-	RCVD_TLS_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.net]
-X-Spam-Flag: NO
-X-Spam-Score: -1.30
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
 X-Spam-Level: 
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spamd-Result: default: False [-4.00 / 50.00];
+	REPLY(-4.00)[];
+	TAGGED_RCPT(0.00)[dt]
+X-Rspamd-Queue-Id: 3DB40226DF
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Rspamd-Action: no action
+X-Spam-Flag: NO
+X-Spam-Score: -4.00
 
-Hello,
+Add bcm2712-pm compatible and update the bindings to satisfy it's
+requirements. The PM hardware block inside bcm2712 lacks the "asb"
+and "rpivid_asb" register ranges and also does not have clocks, update
+the bindings accordingly.
 
-Changes since v1:
- * 2/4 - add else clause and move $ref inside allOf (Conor).
- * 4/4 - span reg space size to 0x604 (Florian).
-
-Comments are welcome!
-
-regards,
-~Stan
-
-Stanimir Varbanov (4):
-  pmdomain: bcm: bcm2835-power: Prepare to support BCM2712
-  dt-bindings: soc: bcm: Add bcm2712 compatible
-  mfd: bcm2835-pm: Add support for BCM2712
-  arm64: dts: broadcom: bcm2712: Add watchdog DT node
-
+Signed-off-by: Stanimir Varbanov <svarbanov@suse.de>
+Reviewed-by: Florian Fainelli <florian.fainelli@broadcom.com>
+---
  .../bindings/soc/bcm/brcm,bcm2835-pm.yaml     | 38 ++++++++++++++++---
- arch/arm64/boot/dts/broadcom/bcm2712.dtsi     |  9 +++++
- drivers/mfd/bcm2835-pm.c                      |  1 +
- drivers/pmdomain/bcm/bcm2835-power.c          | 17 +++++++--
- 4 files changed, 55 insertions(+), 10 deletions(-)
+ 1 file changed, 32 insertions(+), 6 deletions(-)
 
+diff --git a/Documentation/devicetree/bindings/soc/bcm/brcm,bcm2835-pm.yaml b/Documentation/devicetree/bindings/soc/bcm/brcm,bcm2835-pm.yaml
+index e28ef198a801..ce910802ee9d 100644
+--- a/Documentation/devicetree/bindings/soc/bcm/brcm,bcm2835-pm.yaml
++++ b/Documentation/devicetree/bindings/soc/bcm/brcm,bcm2835-pm.yaml
+@@ -13,23 +13,21 @@ description: |
+ maintainers:
+   - Nicolas Saenz Julienne <nsaenz@kernel.org>
+ 
+-allOf:
+-  - $ref: /schemas/watchdog/watchdog.yaml#
+-
+ properties:
+   compatible:
+     items:
+       - enum:
+           - brcm,bcm2835-pm
+           - brcm,bcm2711-pm
++          - brcm,bcm2712-pm
+       - const: brcm,bcm2835-pm-wdt
+ 
+   reg:
+-    minItems: 2
++    minItems: 1
+     maxItems: 3
+ 
+   reg-names:
+-    minItems: 2
++    minItems: 1
+     items:
+       - const: pm
+       - const: asb
+@@ -62,7 +60,35 @@ required:
+   - reg
+   - "#power-domain-cells"
+   - "#reset-cells"
+-  - clocks
++
++allOf:
++  - $ref: /schemas/watchdog/watchdog.yaml#
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - brcm,bcm2835-pm
++              - brcm,bcm2711-pm
++    then:
++      required:
++        - clocks
++
++      properties:
++        reg:
++          minItems: 2
++
++        reg-names:
++          minItems: 2
++
++    else:
++      properties:
++        reg:
++          minItems: 1
++
++        reg-names:
++          minItems: 1
+ 
+ additionalProperties: false
+ 
 -- 
 2.47.0
 
