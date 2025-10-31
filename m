@@ -1,235 +1,117 @@
-Received: from canpmsgout05.his.huawei.com (canpmsgout05.his.huawei.com [113.46.200.220])
+Received: from mg.richtek.com (mg.richtek.com [220.130.44.152])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30292126F0A;
-	Fri, 31 Oct 2025 07:11:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.220
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ADB8A45038;
+	Fri, 31 Oct 2025 07:18:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.130.44.152
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761894679; cv=none; b=EdQln1IxIDZaft25E7TgvAhG3PpUbDXll/5am7hqeHuXyujYjFZhwj6CdPE7sO7GkC1ngMLHE9gDiItg868waWLjtTLxf9ullRTROU/SkN9Pf6SHm+Lu44yrXu8CTC+Xi7JI9rlz7jYXCh7S1apTA1OFUhjL3+8JMw+ePh0aUU8=
+	t=1761895114; cv=none; b=CzXIfpaGZGkEFiCaBdXbiNeUbFgipzQ95c7S5f6z99revzAUuDq4o83FqcU60mgGPOKdAh8/nDRG+CNCegl+0JrKKJ55tMhKUW6p/Pjhcf1NfOsp6qxNg3vNjqDK0wOB7mdw13RkUISZfaJEMCCa65JEIYPnwnQ4dVu4tmLEudI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761894679; c=relaxed/simple;
-	bh=tnwbG5gjntBIwi0oGGVpAYxCyD3L5YMaw6KX+6pHdPo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=Q62LM8xvkKdgrzH9Z42lWXKwyhT4+ootiMNHMROep5jN7fS+zMXw7FFR/XayQtmLJdsLLbMVoSsf+PkzsaYPzIPkOD32XcfzuVBMOIK7Ig+bMG7F3AXmBWMNJ83vouWGxDUg4FeNvomiRGWXgNr5OkVwz1ep8yEjHyBb/nz0KVo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.220
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.163.252])
-	by canpmsgout05.his.huawei.com (SkyGuard) with ESMTPS id 4cyXF35PtDz12LFQ;
-	Fri, 31 Oct 2025 15:10:31 +0800 (CST)
-Received: from kwepemr500004.china.huawei.com (unknown [7.202.195.141])
-	by mail.maildlp.com (Postfix) with ESMTPS id DDF21180B71;
-	Fri, 31 Oct 2025 15:11:07 +0800 (CST)
-Received: from [10.67.121.58] (10.67.121.58) by kwepemr500004.china.huawei.com
- (7.202.195.141) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Fri, 31 Oct
- 2025 15:11:07 +0800
-Message-ID: <5b8602a6-73ea-4c34-8154-0a48e218d4f4@hisilicon.com>
-Date: Fri, 31 Oct 2025 15:11:06 +0800
+	s=arc-20240116; t=1761895114; c=relaxed/simple;
+	bh=vZmH4j1iRBHdyP/11gWs1D7OulzeT5LPIZQzEfM5xtY=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Lwhhfq/WpBA7k6Ay98xi1/692VOIydosv4P0eq499+1+KxaLTWCgo04k6oYUvGIxkFgig1MjT0wIzvSptrvwgLHxJzW8YP+inMDpVJqrz0roIbfN4JWMxBG3+Y/Rke6wahCaVx8yo7EGJpwjYuJyX5ZrcGRrZVo3gd+fr8vn47A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=richtek.com; spf=pass smtp.mailfrom=richtek.com; dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b=2iLh78A1; arc=none smtp.client-ip=220.130.44.152
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=richtek.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=richtek.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=richtek.com header.i=@richtek.com header.b="2iLh78A1"
+X-MailGates: (SIP:2,PASS,NONE)(compute_score:DELIVER,40,3)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=richtek.com;
+	s=richtek; t=1761895103;
+	bh=SBAaGqZMQDv2mThH8h5PuvqVwOb0ebtKCEAGSC2lmyQ=; l=1765;
+	h=From:To:Subject:Date:Message-ID:MIME-Version;
+	b=2iLh78A1ZwXrpsX6RCU4pII2g/PSTKFfqRYiNeozJ8AeP8WeGOffgj+UovDDfX18N
+	 W0rPvHfdso1K2+7WW1WtTs6CqAQuuDMKr4kBz+8pTYon24hHcVAK5pD7cwuERmFSZt
+	 rrI+23A+oo88hSoa8VZObWszWetPoJKu/Udji1SBxdsY8gyWSY/nx2uFGfrJpEr/DQ
+	 Q3pFkcPYPiapQRPxjPzOAVsnyVL11T1+poiWfbek91l3gv3q0cOVWu8nvV/lIuY4PG
+	 NkqfY481tE2mlLbhCY92/nd4gthTd96Im0d+AWfe/KJfgTu3V/ynL/ySDxn+K89tya
+	 g+bU+MBBYJ+7w==
+Received: from 192.168.10.46
+	by mg.richtek.com with MailGates ESMTPS Server V6.0(3436931:0:AUTH_RELAY)
+	(envelope-from <cy_huang@richtek.com>)
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256/256); Fri, 31 Oct 2025 15:18:09 +0800 (CST)
+Received: from ex4.rt.l (192.168.10.47) by ex3.rt.l (192.168.10.46) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.26; Fri, 31 Oct
+ 2025 15:18:08 +0800
+Received: from git-send.richtek.com (192.168.10.154) by ex4.rt.l
+ (192.168.10.45) with Microsoft SMTP Server id 15.2.1748.26 via Frontend
+ Transport; Fri, 31 Oct 2025 15:18:08 +0800
+From: <cy_huang@richtek.com>
+To: Sebastian Reichel <sre@kernel.org>, Krzysztof Kozlowski
+	<krzk+dt@kernel.org>
+CC: ob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, "ChiYuan
+ Huang" <cy_huang@richtek.com>, <devicetree@vger.kernel.org>,
+	<linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH v4 3/3] Documentation: power: rt9756: Document exported sysfs entries
+Date: Fri, 31 Oct 2025 15:19:35 +0800
+Message-ID: <5138d4aa760d6ff81a5296cdf010a447056abce4.1761894605.git.cy_huang@richtek.com>
+X-Mailer: git-send-email 2.43.5
+In-Reply-To: <cover.1761894605.git.cy_huang@richtek.com>
+References: <cover.1761894605.git.cy_huang@richtek.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/2] cpufreq: CPPC: Update FIE arch_freq_scale in ticks
- for non-PCC regs
-To: Beata Michalska <beata.michalska@arm.com>
-CC: <viresh.kumar@linaro.org>, <rafael@kernel.org>, <ionela.voinescu@arm.com>,
-	<zhenglifeng1@huawei.com>, <linux-pm@vger.kernel.org>,
-	<linux-acpi@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linuxarm@huawei.com>, <jonathan.cameron@huawei.com>
-References: <20250828110212.2108653-1-zhanjie9@hisilicon.com>
- <20250828110212.2108653-3-zhanjie9@hisilicon.com> <aQNq7uwVCtFfBDMJ@arm.com>
-Content-Language: en-US
-From: Jie Zhan <zhanjie9@hisilicon.com>
-In-Reply-To: <aQNq7uwVCtFfBDMJ@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
- kwepemr500004.china.huawei.com (7.202.195.141)
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
+From: ChiYuan Huang <cy_huang@richtek.com>
 
+Document the settings exported by rt9756 charger driver through sysfs
+entries:
 
-On 10/30/2025 9:41 PM, Beata Michalska wrote:
-> Hi Jie,
-> On Thu, Aug 28, 2025 at 07:02:12PM +0800, Jie Zhan wrote:
->> Currently, the CPPC Frequency Invariance Engine (FIE) is invoked from the
->> scheduler tick but defers the update of arch_freq_scale to a separate
->> thread because cppc_get_perf_ctrs() would sleep if the CPC regs are in PCC.
->>
->> However, this deferred update mechanism is unnecessary and introduces extra
->> overhead for non-PCC register spaces (e.g. System Memory or FFH), where
->> accessing the regs won't sleep and can be safely performed from the tick
->> context.  Also, reading perf counters of a remote CPU may return 0 if it's
->> in a low-power idle state, e.g. power down or reset.
-> I'm not sure how this is relevant to the changes (?)
-Hi Beata,
+- watchdog_timer
+- operation_mode
 
-The CPPC FIE is eventually handled in a thread, where it accesses perf
-counters of remote CPUs.
+Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+---
+V3
+- Remove customized description for battery voltage and current
+---
+ .../ABI/testing/sysfs-class-power-rt9756      | 30 +++++++++++++++++++
+ 1 file changed, 30 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-power-rt9756
 
-Reading perf counters of a remote CPU may throw us warnings of
-"cppc_scale_freq_workfn: failed to read perf counters"
-because the CPC regs are in System Memory and the target CPU is in a
-power-down idle state.
+diff --git a/Documentation/ABI/testing/sysfs-class-power-rt9756 b/Documentation/ABI/testing/sysfs-class-power-rt9756
+new file mode 100644
+index 000000000000..c4d6c2b4715d
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-class-power-rt9756
+@@ -0,0 +1,30 @@
++What:		/sys/class/power_supply/rt9756-*/watchdog_timer
++Date:		Dec 2025
++KernelVersion:	6.19
++Contact:	ChiYuan Huang <cy_huang@richtek.com>
++Description:
++		This entry shows and sets the watchdog timer when rt9756 charger
++		operates in charging mode. When the timer expires, the device
++		will disable the charging. To prevent the timer expires, any
++		host communication can make the timer restarted.
++
++		Access: Read, Write
++
++		Valid values:
++		- 500, 1000, 5000, 30000, 40000, 80000, 128000 or 255000 (milliseconds),
++		- 0: disabled
++
++What:		/sys/class/power_supply/rt9756-*/operation_mode
++Date:		Dec 2025
++KernelVersion:	6.19
++Contact:	ChiYuan Huang <cy_huang@richtek.com>
++Description:
++		This entry shows and set the operation mode when rt9756 charger
++		operates in charging phase. If 'bypass' mode is used, internal
++		path will connect vbus directly to vbat. Else, default 'div2'
++		mode for the switch-cap charging.
++
++		Access: Read, Write
++
++		Valid values:
++		- 'bypass' or 'div2'
+-- 
+2.34.1
 
-Moving the FIE handling back to the scheduler tick process makes the CPU
-handle its own perf counters so it won't fail.  Then the issue is
-inherently solved.
-
-I can update the commit log so this would be clear.
->>
->> Update arch_freq_scale directly in ticks for non-PCC regs and keep the
->> deferred update mechanism for PCC regs.
->>
->> Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
->> ---
->>  drivers/cpufreq/cppc_cpufreq.c | 52 +++++++++++++++++++++++-----------
->>  1 file changed, 36 insertions(+), 16 deletions(-)
->>
->> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
->> index 7724318b3415..66d74b062ceb 100644
->> --- a/drivers/cpufreq/cppc_cpufreq.c
->> +++ b/drivers/cpufreq/cppc_cpufreq.c
->> @@ -55,31 +55,24 @@ static int cppc_perf_from_fbctrs(struct cppc_cpudata *cpu_data,
->>  				 struct cppc_perf_fb_ctrs *fb_ctrs_t1);
->>  
->>  /**
->> - * cppc_scale_freq_workfn - CPPC arch_freq_scale updater for frequency invariance
->> - * @work: The work item.
->> + * __cppc_scale_freq_tick - CPPC arch_freq_scale updater for frequency invariance
->> + * @cppc_fi: per-cpu CPPC FIE data.
->>   *
->> - * The CPPC driver register itself with the topology core to provide its own
->> + * The CPPC driver registers itself with the topology core to provide its own
->>   * implementation (cppc_scale_freq_tick()) of topology_scale_freq_tick() which
->>   * gets called by the scheduler on every tick.
->>   *
->>   * Note that the arch specific counters have higher priority than CPPC counters,
->>   * if available, though the CPPC driver doesn't need to have any special
->>   * handling for that.
->> - *
->> - * On an invocation of cppc_scale_freq_tick(), we schedule an irq work (since we
->> - * reach here from hard-irq context), which then schedules a normal work item
->> - * and cppc_scale_freq_workfn() updates the per_cpu arch_freq_scale variable
->> - * based on the counter updates since the last tick.
->>   */
->> -static void cppc_scale_freq_workfn(struct kthread_work *work)
->> +static void __cppc_scale_freq_tick(struct cppc_freq_invariance *cppc_fi)
->>  {
->> -	struct cppc_freq_invariance *cppc_fi;
->>  	struct cppc_perf_fb_ctrs fb_ctrs = {0};
->>  	struct cppc_cpudata *cpu_data;
->>  	unsigned long local_freq_scale;
->>  	u64 perf;
->>  
->> -	cppc_fi = container_of(work, struct cppc_freq_invariance, work);
->>  	cpu_data = cppc_fi->cpu_data;
->>  
->>  	if (cppc_get_perf_ctrs(cppc_fi->cpu, &fb_ctrs)) {
->> @@ -104,6 +97,14 @@ static void cppc_scale_freq_workfn(struct kthread_work *work)
->>  	per_cpu(arch_freq_scale, cppc_fi->cpu) = local_freq_scale;
->>  }
->>  
->> +static void cppc_scale_freq_workfn(struct kthread_work *work)
->> +{
->> +	struct cppc_freq_invariance *cppc_fi;
->> +
->> +	cppc_fi = container_of(work, struct cppc_freq_invariance, work);
->> +	__cppc_scale_freq_tick(cppc_fi);
->> +}
->> +
->>  static void cppc_irq_work(struct irq_work *irq_work)
->>  {
->>  	struct cppc_freq_invariance *cppc_fi;
->> @@ -112,7 +113,14 @@ static void cppc_irq_work(struct irq_work *irq_work)
->>  	kthread_queue_work(kworker_fie, &cppc_fi->work);
->>  }
->>  
->> -static void cppc_scale_freq_tick(void)
->> +/*
->> + * Reading perf counters may sleep if the CPC regs are in PCC.  Thus, we
->> + * schedule an irq work in scale_freq_tick (since we reach here from hard-irq
->> + * context), which then schedules a normal work item cppc_scale_freq_workfn()
->> + * that updates the per_cpu arch_freq_scale variable based on the counter
->> + * updates since the last tick.
->> + */
->> +static void cppc_scale_freq_tick_pcc(void)
->>  {
->>  	struct cppc_freq_invariance *cppc_fi = &per_cpu(cppc_freq_inv, smp_processor_id());
->>  
->> @@ -123,6 +131,11 @@ static void cppc_scale_freq_tick(void)
->>  	irq_work_queue(&cppc_fi->irq_work);
->>  }
->>  
->> +static void cppc_scale_freq_tick(void)
->> +{
->> +	__cppc_scale_freq_tick(&per_cpu(cppc_freq_inv, smp_processor_id()));
->> +}
->> +
->>  static struct scale_freq_data cppc_sftd = {
->>  	.source = SCALE_FREQ_SOURCE_CPPC,
->>  	.set_freq_scale = cppc_scale_freq_tick,
->> @@ -140,8 +153,10 @@ static void cppc_cpufreq_cpu_fie_init(struct cpufreq_policy *policy)
->>  		cppc_fi = &per_cpu(cppc_freq_inv, cpu);
->>  		cppc_fi->cpu = cpu;
->>  		cppc_fi->cpu_data = policy->driver_data;
->> -		kthread_init_work(&cppc_fi->work, cppc_scale_freq_workfn);
->> -		init_irq_work(&cppc_fi->irq_work, cppc_irq_work);
->> +		if (cppc_perf_ctrs_in_pcc()) {
-> I'm wondering if we really need to go through all present cpus every time this
-> check is needed. Maybe the result of it could be stashed somehow, especially now
-> that more invocations are added.
-Make sense.  I'll have a look whether it's safe to stash that in
-cppc_freq_invariance_init() and use the stashed value later.
-
-Thanks!
-Jie
-> 
-> ---
-> BR
-> Beata
->> +			kthread_init_work(&cppc_fi->work, cppc_scale_freq_workfn);
->> +			init_irq_work(&cppc_fi->irq_work, cppc_irq_work);
->> +		}
->>  
->>  		ret = cppc_get_perf_ctrs(cpu, &cppc_fi->prev_perf_fb_ctrs);
->>  		if (ret && cpu_online(cpu)) {
->> @@ -174,6 +189,9 @@ static void cppc_cpufreq_cpu_fie_exit(struct cpufreq_policy *policy)
->>  	/* policy->cpus will be empty here, use related_cpus instead */
->>  	topology_clear_scale_freq_source(SCALE_FREQ_SOURCE_CPPC, policy->related_cpus);
->>  
->> +	if (!cppc_perf_ctrs_in_pcc())
->> +		return;
->> +
->>  	for_each_cpu(cpu, policy->related_cpus) {
->>  		cppc_fi = &per_cpu(cppc_freq_inv, cpu);
->>  		irq_work_sync(&cppc_fi->irq_work);
->> @@ -206,9 +224,11 @@ static void __init cppc_freq_invariance_init(void)
->>  		}
->>  	}
->>  
->> -	if (fie_disabled)
->> +	if (fie_disabled || !cppc_perf_ctrs_in_pcc())
->>  		return;
->>  
->> +	cppc_sftd.set_freq_scale = cppc_scale_freq_tick_pcc;
->> +
->>  	kworker_fie = kthread_run_worker(0, "cppc_fie");
->>  	if (IS_ERR(kworker_fie)) {
->>  		pr_warn("%s: failed to create kworker_fie: %ld\n", __func__,
->> @@ -228,7 +248,7 @@ static void __init cppc_freq_invariance_init(void)
->>  
->>  static void cppc_freq_invariance_exit(void)
->>  {
->> -	if (fie_disabled)
->> +	if (fie_disabled || !cppc_perf_ctrs_in_pcc())
->>  		return;
->>  
->>  	kthread_destroy_worker(kworker_fie);
->> -- 
->> 2.33.0
->>
-> 
