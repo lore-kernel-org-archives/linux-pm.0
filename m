@@ -1,133 +1,126 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D23C3342CA5;
-	Fri, 31 Oct 2025 12:43:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1AF412E6CA8
+	for <linux-pm@vger.kernel.org>; Fri, 31 Oct 2025 13:08:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1761914622; cv=none; b=uyhVdn3IuUn6RLET10eNb0JvGo6JDxxJFgjyCj7SPF9KQzGKHcHzRvcl5sHfp8cMaILOW9Ua78N5pPdf+/D8dlpyYHCRh+lDLbmLiX8HuHBP1SqN+qnCXGg/895d2s4Y1dKkZC7R4IeHX5ujk4PRaXMq/dPbzoe6iqOWPD0iOKk=
+	t=1761916128; cv=none; b=HxjRJTPTUvDaNlAmYVHqJsB183IZGB2vcPkL8S+IAifV40pIxQbonLTyzLisff51nkPFGDIMO34fdaWGL+RrnW1bfJ41S/f3qS8S1CPc9t/YlbKoLa4zeg1lNELCgdCHFtdn+sh8QH5eAbHmzDJIWuDh4TRBwIvJ8eELO9cmIVo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1761914622; c=relaxed/simple;
-	bh=sF35hppqD3HWncobGIVIUzqVORCZRJuB6R7SU1cG6+U=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NEy35fTzxvkSOZmyKwf8JXGkBABuYPQYICPe9Ubw/442LQ3Ch1rFOxMKdCChaa0yk7eqtXdRK3XSmIg1w8PDpDrfEhjGXwDBppLW5zmJxLH7qYEE/3cadT6FyLf3ZAHJ6/ZrcVcs+ciBZOe8fByAKhKNtRQUlGX8vYY8PTCthuk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ezrt3+t3; arc=none smtp.client-ip=192.198.163.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1761916128; c=relaxed/simple;
+	bh=EosaKghg3U4iEB4VNfXlrr7R7XRj9cKNCldq2SnVuGE=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=JFNFiPIFkHWZ0147/bglUGllyv9veGsii2CAnnkulRebo0MZXkR3cpcdF2b4gNb75wwDJWd5AYpleoc+9//uKAZGHE4Vp3ZVA3GJL4ronaLqdWfOHUu0Qjr02Eb/oAC1urGMJE94LR/6M2B7rxWuKYl9uEUjKdatRjuR6nXxhWM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=QUUtjtw5; arc=none smtp.client-ip=209.85.128.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ezrt3+t3"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1761914607; x=1793450607;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=sF35hppqD3HWncobGIVIUzqVORCZRJuB6R7SU1cG6+U=;
-  b=ezrt3+t31QLLFGHgQo6NIgHwvxsx7rJuP39gYI2YnKWIaepA69umuWhQ
-   9QugiwP1BKFMs0V5qetbN7BxqaqGp+LacZgP5sdFfrkhXicn/EIgRjOia
-   61KTk7iopk9SenzAb9SwrJX+qgPLGfvcE9k2JClXK7qIJLQgyIKdhrCUE
-   MYNCVv9dPDn5yumFfi6fMSM3Lh7RjoXM4JDLXBjlrKJgyV91SJxV8nRP8
-   70uK/0iT7cSjKuhT6JGFSGm4nkiU7A1HgszwG4PgtwItiR4VpGpkgE0NA
-   R4By3qO9/OENnqOjpWUetmbPRZrUqLHBh/eNcj8GKvVlptCv7O6hGlVO9
-   A==;
-X-CSE-ConnectionGUID: GU3bK0a7S0SWLpy3A/PTVQ==
-X-CSE-MsgGUID: 8EdR+VC7T+WJngi1x3yjmQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11598"; a="67935027"
-X-IronPort-AV: E=Sophos;i="6.19,269,1754982000"; 
-   d="scan'208";a="67935027"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2025 05:43:22 -0700
-X-CSE-ConnectionGUID: AwmRUQfkS8mQ6Q97oh0umQ==
-X-CSE-MsgGUID: Ko1mJjW+QF6FrzORNVX+vA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,269,1754982000"; 
-   d="scan'208";a="185500706"
-Received: from lkp-server02.sh.intel.com (HELO 66d7546c76b2) ([10.239.97.151])
-  by orviesa010.jf.intel.com with ESMTP; 31 Oct 2025 05:43:19 -0700
-Received: from kbuild by 66d7546c76b2 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1vEoSz-000N6m-10;
-	Fri, 31 Oct 2025 12:42:55 +0000
-Date: Fri, 31 Oct 2025 20:40:29 +0800
-From: kernel test robot <lkp@intel.com>
-To: Samuel Wu <wusamuel@google.com>,
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QUUtjtw5"
+Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-475db4ad7e4so8737895e9.3
+        for <linux-pm@vger.kernel.org>; Fri, 31 Oct 2025 06:08:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1761916125; x=1762520925; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=hqRNM8UJyFRHPSXkcGPHCYH6LJDeMorOhD5X06t/AfM=;
+        b=QUUtjtw5Bec6TU6z6eMOw6xB/T/fzPCeGN83/L2GqjzbyYPbbc81gytTCP0UeHUCFc
+         q1YTUM4MlAQSnRDq5HRH3GO/suyhruk7cAuGS7ZnbrhSlGBUk780+PrBO4H59GW/GnH3
+         P9FtsLuOBeWm6BFagci/EaunN6LkzbXdZSXtVkUbTuxG3xUfjX1K/ORlMZTm7Bqlb9ue
+         lvtJeP5LACp8/pHJELgey4lkd9LtR2wFDQ/JC1G9GCCsr0e6iiy3hgtIZi4orPKuYHtW
+         JPSKj0zOV4NkE4ANQU36pP1aPlESoHuHKGzErU/nSv1YhWpDVJGFEzZwSocCzuNsHi0p
+         bQlQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1761916125; x=1762520925;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=hqRNM8UJyFRHPSXkcGPHCYH6LJDeMorOhD5X06t/AfM=;
+        b=XieTbXt9RxqgNLXKXRu5jWOmkLkB7G5+204yKg1/AinS+q9E5OBU7bJO5S1yAcAaO4
+         0xJ5EUMtIy0uN2CIOyx0iZ50PbvIGZ0GXA+i5IvEU8VU6BFnwRR43dihQ4aFhBLryzXg
+         XvsbpMB1VJ4AmxOiVYrYdzdVnl3/zxyGBSbLojqvTMo9d8IFu3+SDSk2DW1veI8o/E0m
+         St/+BLKXmsM5laPxAg4kjtdHw3yKNAUF6aTzJiHZP0Ruk5Coojr95gArf2NfJxowfhI1
+         Oujs7LjbxccgdP7XfPWE+4eFOZ0I2p1nf8dLu0MghaRnWLJXwlWda41MYshnXyaUWL/h
+         I2Kw==
+X-Forwarded-Encrypted: i=1; AJvYcCXVj1BlXSdCnv7c/u7qYUxsjT3yVdbWnnhLFDFzCO4e26/5hzam7x+6eNt3rmzJk6rheRDxHAjXMQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz/KJXTLxfzEG0nKF/8QqGx+wdMP9xO8QTlU/IpPbHYFwvAfwap
+	L/gwgx3kKMhq+GVvop/uMQjMeUt1abviC58/2ppTHs2ANxl5ghrOlfb/
+X-Gm-Gg: ASbGncstiVOIMvOHh6QA8Oq/qlKqTXByNM1H642fRxeaq6kILl26rp/RyK+4mkaAk7v
+	iGuDZLgb21GbFLFcDNQEwWqHz9wL0c03uUsqAQBPxqDVB63V3m4fL/di44Mrzmz9pHfbIXImfkn
+	CkoEouMBcQCQoFYB+nSt1KZg+2wI4KaZJxT9Pzl01HHaQADYEgVy7+r3xdRx2XxLiududeu5vkN
+	hsLZ0mkSwI/vtp9utsh7n/4zhucANDu7mJ0s50zjYdx9DBNPPNECJIIK4RGTQW2GKS2FBt2CRAu
+	rVGCypFB/bIZB8TImT+I65rToTjZMxR3JO8vpEYLNKEfSiUwANsUlHVZxnRRml5yWeXcy4jHH4p
+	j89REBJryOEkLWm+qKSFnuWDum/n5Xqlw4Eh0fOBd2nkdoQWsjiyNI6FGcNdyTwlELdrtwwV8a7
+	KawmgWYcXSthe0KWsWger7dXQlMUjRvBQLQmivk8Wd
+X-Google-Smtp-Source: AGHT+IEoNfiwO1WHuUv2jGPlp9HRKqmIwSQeCnw3J3BsUZNvSFpBuq37GRGL35QSzOpJZZmZcOGadg==
+X-Received: by 2002:a05:600c:6304:b0:477:be4:7a52 with SMTP id 5b1f17b1804b1-477308e11bfmr29796555e9.39.1761916125271;
+        Fri, 31 Oct 2025 06:08:45 -0700 (PDT)
+Received: from Ansuel-XPS24 (93-34-90-37.ip49.fastwebnet.it. [93.34.90.37])
+        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-477289adc18sm98339815e9.6.2025.10.31.06.08.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 31 Oct 2025 06:08:44 -0700 (PDT)
+From: Christian Marangi <ansuelsmth@gmail.com>
+To: Ilia Lin <ilia.lin@kernel.org>,
 	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Danilo Krummrich <dakr@kernel.org>
-Cc: oe-kbuild-all@lists.linux.dev, tuhaowen@uniontech.com,
-	Samuel Wu <wusamuel@google.com>,
-	Saravana Kannan <saravanak@google.com>, kernel-team@android.com,
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6] PM: Support aborting sleep during filesystem sync
-Message-ID: <202510312048.Ylb5GU76-lkp@intel.com>
-References: <20251030210110.298612-1-wusamuel@google.com>
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Christian Marangi <ansuelsmth@gmail.com>,
+	Raag Jadav <raag.jadav@intel.com>,
+	linux-arm-msm@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2 1/3] err.h: add INIT_ERR_PTR macro
+Date: Fri, 31 Oct 2025 14:08:32 +0100
+Message-ID: <20251031130835.7953-2-ansuelsmth@gmail.com>
+X-Mailer: git-send-email 2.51.0
+In-Reply-To: <20251031130835.7953-1-ansuelsmth@gmail.com>
+References: <20251031130835.7953-1-ansuelsmth@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20251030210110.298612-1-wusamuel@google.com>
+Content-Transfer-Encoding: 8bit
 
-Hi Samuel,
+Add INIT_ERR_PTR macro to initialize static variables with error
+pointers. This might be useful for specific case where there is a static
+variable initialized to an error condition and then later set to the
+real handle once probe finish/completes.
 
-kernel test robot noticed the following build errors:
+This is to handle compilation problems like:
 
-[auto build test ERROR on rafael-pm/linux-next]
-[also build test ERROR on rafael-pm/bleeding-edge linus/master v6.18-rc3 next-20251031]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+error: initializer element is not constant
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Samuel-Wu/PM-Support-aborting-sleep-during-filesystem-sync/20251031-050330
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
-patch link:    https://lore.kernel.org/r/20251030210110.298612-1-wusamuel%40google.com
-patch subject: [PATCH v6] PM: Support aborting sleep during filesystem sync
-config: arm64-randconfig-r061-20251031 (https://download.01.org/0day-ci/archive/20251031/202510312048.Ylb5GU76-lkp@intel.com/config)
-compiler: aarch64-linux-gcc (GCC) 15.1.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251031/202510312048.Ylb5GU76-lkp@intel.com/reproduce)
+where ERR_PTR can't be used.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202510312048.Ylb5GU76-lkp@intel.com/
+Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+---
+ include/linux/err.h | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-All errors (new ones prefixed by >>):
-
-   kernel/power/main.c: In function 'pm_init':
->> kernel/power/main.c:1159:17: error: implicit declaration of function 'pm_start_fs_sync_workqueue'; did you mean 'pm_start_workqueue'? [-Wimplicit-function-declaration]
-    1159 |         error = pm_start_fs_sync_workqueue();
-         |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~
-         |                 pm_start_workqueue
-
-
-vim +1159 kernel/power/main.c
-
-  1153	
-  1154	static int __init pm_init(void)
-  1155	{
-  1156		int error = pm_start_workqueue();
-  1157		if (error)
-  1158			return error;
-> 1159		error = pm_start_fs_sync_workqueue();
-  1160		if (error)
-  1161			return error;
-  1162		hibernate_image_size_init();
-  1163		hibernate_reserved_size_init();
-  1164		pm_states_init();
-  1165		power_kobj = kobject_create_and_add("power", NULL);
-  1166		if (!power_kobj)
-  1167			return -ENOMEM;
-  1168		error = sysfs_create_groups(power_kobj, attr_groups);
-  1169		if (error)
-  1170			return error;
-  1171		pm_print_times_init();
-  1172		return pm_autosleep_init();
-  1173	}
-  1174	
-
+diff --git a/include/linux/err.h b/include/linux/err.h
+index 1d60aa86db53..8c37be0620ab 100644
+--- a/include/linux/err.h
++++ b/include/linux/err.h
+@@ -41,6 +41,14 @@ static inline void * __must_check ERR_PTR(long error)
+ 	return (void *) error;
+ }
+ 
++/**
++ * INIT_ERR_PTR - Init a const error pointer.
++ * @error: A negative error code.
++ *
++ * Like ERR_PTR(), but usable to initialize static variables.
++ */
++#define INIT_ERR_PTR(error) ((void *)(error))
++
+ /* Return the pointer in the percpu address space. */
+ #define ERR_PTR_PCPU(error) ((void __percpu *)(unsigned long)ERR_PTR(error))
+ 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.51.0
+
