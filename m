@@ -1,30 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E630B22156A;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9413221DB4;
 	Mon,  3 Nov 2025 00:48:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762130920; cv=none; b=Z40LiGht5TVgVnxNrn958O1nKlGAqE+YaNvKZH427gi6hd/g7R+0GNUgq7sOmMmL1MJR9ExmdZaEvRChMw6zo8C0/bEElm3qiwvrL6bzDNZnQCl/RRAQ6s8sP0c4ktycJSRU57WoWiNzir484gNr8x9KArbuhyaudeH0Wp0Fmmg=
+	t=1762130920; cv=none; b=YNA7lUj47Oj5kSnwvQpdHFb5bpsXK5fKVq8U30HYrotUcMukdZTH38o7FGUinIv4mSnENwvgfMyY3Ybmr2AKPcUQbuusqxIoI+kfisdkSqgj96j0nXXmUUYvFK3N5expesJW7IwuLvyaCkmglppSkIuAsIayFEP5zSWYQFtk550=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1762130920; c=relaxed/simple;
-	bh=s/uZrYG0J1VoRSPDy5vlbSvXSTmXTUOXn0IoyZq29ZA=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=FPWpQ9CgLzYSCLVm3J3POjbZ7c5EiTFcGUN8kLi3lZ2sNxi3JZx174TwR6DKnofffhFDUxsUnKZIBHwyLYNGf3CmDifyrFh/vTspKxSmg1irG58lVAjUW+vWY1N4mcgCyF8Fh8oGTrm+KvTUp5+/rqhumlLpWFyLpFa8Qwt3Dz4=
+	bh=nOFN6vfcMqilST2zNVsxQcVLExMZvz9mpz5z12p8XFE=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=ftWl5X6UtfmLYxBqfamArcgGifK3hR/iGGG60anm7dTJ0eNzQxShNrqKOcs0tXu/bkaQtVYTsZToE1AtaEgzl4L/jYnmr2S+N1M4DzOZzCzKqgPLVxiS8zZFmx5y8MEOkYFIelmKNIDmV4RpVB05Zn40uZwy0amFtlM5J4RwswU=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9B498C2BC87;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 83EE3C19421;
 	Mon,  3 Nov 2025 00:48:40 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 6B97C1822D9; Mon, 03 Nov 2025 01:48:33 +0100 (CET)
+	id 4E67318157B; Mon, 03 Nov 2025 01:48:33 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, Anton Vorontsov <cbou@mail.ru>, 
+To: Sebastian Reichel <sre@kernel.org>, 
+ Murad Masimov <m.masimov@mt-integration.ru>
+Cc: ChiYuan Huang <cy_huang@richtek.com>, ChiaEn Wu <chiaen_wu@richtek.com>, 
  linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- =?utf-8?q?Ahelenia_Ziemia=C5=84ska?= <nabijaczleweli@nabijaczleweli.xyz>
-In-Reply-To: <xczpgox57hxbunkcbdl5fxhc4gnsajsipldfidi7355afezk64@tarta.nabijaczleweli.xyz>
-References: <xczpgox57hxbunkcbdl5fxhc4gnsajsipldfidi7355afezk64@tarta.nabijaczleweli.xyz>
-Subject: Re: [PATCH] power: supply: apm_power: only unset own
- apm_get_power_status
-Message-Id: <176213091342.301408.14482368410534019640.b4-ty@collabora.com>
+ lvc-project@linuxtesting.org
+In-Reply-To: <20251009145308.1830893-1-m.masimov@mt-integration.ru>
+References: <20251009145308.1830893-1-m.masimov@mt-integration.ru>
+Subject: Re: [PATCH] power: supply: rt9467: Prevent using uninitialized
+ local variable in rt9467_set_value_from_ranges()
+Message-Id: <176213091331.301408.12846671531653101740.b4-ty@collabora.com>
 Date: Mon, 03 Nov 2025 01:48:33 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -33,21 +35,22 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.3
 
 
-On Fri, 17 Oct 2025 00:05:18 +0200, Ahelenia Ziemiańska wrote:
-> Mirroring drivers/macintosh/apm_emu.c, this means that
->   modprobe apm_power && modprobe $anotherdriver && modprobe -r apm_power
-> leaves $anotherdriver's apm_get_power_status instead of deleting it.
+On Thu, 09 Oct 2025 17:53:08 +0300, Murad Masimov wrote:
+> There is a typo in rt9467_set_value_from_ranges() that can cause leaving local
+> variable sel with an undefined value which is then used in regmap_field_write().
+> 
+> Found by Linux Verification Center (linuxtesting.org) with SVACE.
 > 
 > 
 
 Applied, thanks!
 
-[1/1] power: supply: apm_power: only unset own apm_get_power_status
-      commit: bd44ea12919ac4e83c9f3997240fe58266aa8799
+[1/1] power: supply: rt9467: Prevent using uninitialized local variable in rt9467_set_value_from_ranges()
+      commit: 15aca30cc6c69806054b896a2ccf7577239cb878
 
 Best regards,
 -- 
