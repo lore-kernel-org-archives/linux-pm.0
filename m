@@ -1,31 +1,34 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CF9486329;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CF0D2C187;
 	Mon,  3 Nov 2025 00:48:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762130918; cv=none; b=SD3CxX5e+aSFl+7N/YdqXNebe/i2sKULLzI2ut0rZfQW0ogo/EXipiJxOgvaMUzqYsHoGnqxbKr55fuiVczESdCkjkedrpdVM+9LlRc87AUDj0Aq+2ErF9zwMLzaK8jvQw5WKllPI5pls1OCfoIgnDVbNWMgI6dxrEs+1cc8UAY=
+	t=1762130918; cv=none; b=JHHxW1fDnN4cw75i1XlgZJ8unKA0hLHn0Wv/PGecszLZh/BQxtOrNsKyDutQCeyK8GUUw+5d3ETYNZFNuKe1TeLcNOsVLUsHDwkGBXP3BA2x1kaSJ4edPa72nij/dT8wg6g/LYHOlQ7+1nEUVtl9BFWIh8ic3J6yofamB1DDrS4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1762130918; c=relaxed/simple;
-	bh=lRmNRXW79BJacRZiBSLo6rgqKBbUGx6eh1YWYDJmvUw=;
+	bh=dWSrW8rsyoXYyyqIHBm9yF+aYpTV0w+WPAqHop8hPI4=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=d26yK2y8w4j0pGRLC6RFn7EmBq4R8fUZYf1YqfB+BCnY6BnzLhoidCGMiMfBj1swFPZL8TR0epZrh7U5whBUx2EjCUDhRHog3NYmtzHgN/V2ZW/grujTM9vVkkGgrwlimiGDoMRO+j3ESEImNnmxqrRaHsyF0r4Pu5tlL7h3uBU=
+	 MIME-Version:Content-Type; b=eQjIu9mp4/Nt/ccaopvQMKogjo7BUD8qDbuHl+smZPtQk/r6I0pgj4RcXnF5OKltX6hI6RBNQvFn2cnQ0ZmHhwdCdIIUI0BLZONsB9IZoWm1yuLB8B8dcXKupHB47vV/dQKuP7JBW+C4CwYaay8S+1MMPXBGgfSrhjdfh9cK+34=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D415BC4AF0B;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CF5AEC4CEF7;
 	Mon,  3 Nov 2025 00:48:37 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 3F434180CC5; Mon, 03 Nov 2025 01:48:33 +0100 (CET)
+	id 3A8BC180CB7; Mon, 03 Nov 2025 01:48:33 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, 
- Haotian Zhang <vulab@iscas.ac.cn>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20250929113234.1726-1-vulab@iscas.ac.cn>
-References: <20250929031536.2274-1-vulab@iscas.ac.cn>
- <20250929113234.1726-1-vulab@iscas.ac.cn>
-Subject: Re: [PATCH v2] power: supply: rt5033_charger: Fix device node
- reference leaks
-Message-Id: <176213091325.301408.8119254276502287887.b4-ty@collabora.com>
+To: Chanwoo Choi <cw00.choi@samsung.com>, 
+ Krzysztof Kozlowski <krzk@kernel.org>, Lee Jones <lee@kernel.org>, 
+ Sebastian Reichel <sre@kernel.org>, 
+ Luca Ceresoli <luca.ceresoli@bootlin.com>, 
+ Dzmitry Sankouski <dsankouski@gmail.com>
+Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <20250925-max77705_77976_charger_improvement-v6-1-972c716c17d1@gmail.com>
+References: <20250925-max77705_77976_charger_improvement-v6-1-972c716c17d1@gmail.com>
+Subject: Re: [PATCH v6] power: supply: max77705_charger: implement aicl
+ feature
+Message-Id: <176213091323.301408.11212778239075884714.b4-ty@collabora.com>
 Date: Mon, 03 Nov 2025 01:48:33 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -38,20 +41,16 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.3
 
 
-On Mon, 29 Sep 2025 19:32:34 +0800, Haotian Zhang wrote:
-> The device node pointers `np_conn` and `np_edev`, obtained from
-> of_parse_phandle() and of_get_parent() respectively, are not released.
-> This results in a reference count leak.
+On Thu, 25 Sep 2025 22:09:56 +0300, Dzmitry Sankouski wrote:
+> Adaptive input current allows charger to reduce it's current
+> consumption, when source is not able to provide enough power.
 > 
-> Add of_node_put() calls after the last use of these device nodes to
-> properly release their references and fix the leaks.
 > 
-> [...]
 
 Applied, thanks!
 
-[1/1] power: supply: rt5033_charger: Fix device node reference leaks
-      commit: 6cdc4d488c2f3a61174bfba4e8cc4ac92c219258
+[1/1] power: supply: max77705_charger: implement aicl feature
+      commit: 8ed6b8842c44a4a716dfd536e7f13aff77039a02
 
 Best regards,
 -- 
