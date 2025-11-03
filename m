@@ -1,31 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F24F0221FCC;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E94A0221FA0;
 	Mon,  3 Nov 2025 00:48:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762130921; cv=none; b=enmqFFdymTC8MVlmZ0UrhN41pz09e2QHfLdfdG6leSjR0C2wDWiZdOIIhb8fnolhJl8bHitWZhxIm5fZGh9Q/mRpvPtbTeGp4dpvcbq4wal/kr0z9eCbbmPTAYLbJEsw2vhMtoF+9BghCawqF7wGnFaPA826AeEDfoHBSBnIlhY=
+	t=1762130921; cv=none; b=l88t7ZEKOUx9fJ42vXnrjfdcaUCOHNt6IsgSKCBYUpffyiE2DU/Hrl0SGcoCwQJGNBvofWAnZ87jFLThxOzgJ/PG/5XR9ihnfqBrIkQz6V+qJTgO46W9HUVj9Trde/8/DypfLPqP84xQLzH24Wj/yqt4UAyebBeKwjj8kWjU4no=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1762130921; c=relaxed/simple;
-	bh=T5SKyj/KBZJLYia9w+Z+IRgphx8Opd9vj4VsWxl2ZKk=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=RkNplQFXEAIpTOmTL4BklreK3hBG+bs1q+ZJncTyGGI/uPGnR4ARaGhk0BdrT5LtNdEy0p6HWE2itIqIv8kfdjC2jOT9Tdv28bgYOL0Vla3l3gTN4XgCb+cHzcLjej/N3VTFLzNtuREZhrFYErcimkUsIKG3lfYxepmUIm+iKrs=
+	bh=frGOQD20OIB0FLKp2HLEg73Jo/9xWaklNYdCEqESRDw=;
+	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=rX0pBYQpqT56ZKdgwjQev0MuEteeu+aBPMdTToPCiTYNF2KYyB02KvWEkBUS5HSBQ64O1llUWjeR0HvXUZIo32eI9dttaRhNFyIo+ZKkFjdwRhWZLRkJHIPaID4b0+MEEJqQJ3y3QFYbChsmqHqhbYb6H9b8Uf+sgFIxOLpNrB4=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8F7EBC19422;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7DE54C116B1;
 	Mon,  3 Nov 2025 00:48:40 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 66C111822D8; Mon, 03 Nov 2025 01:48:33 +0100 (CET)
+	id 59CEF1822D6; Mon, 03 Nov 2025 01:48:33 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, 
- Michal Kubecek <mkubecek@suse.cz>
-Cc: Hans de Goede <hansg@kernel.org>, 
- Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20251015075957.8F40620057@lion.mk-sys.cz>
-References: <20251015075957.8F40620057@lion.mk-sys.cz>
-Subject: Re: [PATCH] power: supply: use ktime_divns() to avoid 64-bit
- division
-Message-Id: <176213091341.301408.15461245832294334915.b4-ty@collabora.com>
+To: Sebastian Reichel <sre@kernel.org>, 
+ Fenglin Wu <fenglin.wu@oss.qualcomm.com>, 
+ Neil Armstrong <neil.armstrong@linaro.org>, linux-arm-msm@vger.kernel.org, 
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Val Packett <val@packett.cool>
+In-Reply-To: <20251012233333.19144-2-val@packett.cool>
+References: <20251012233333.19144-2-val@packett.cool>
+Subject: Re: [PATCH 0/2] power: supply: qcom_battmgr: improve charge
+ control threshold handling
+Message-Id: <176213091335.301408.9120443011267055817.b4-ty@collabora.com>
 Date: Mon, 03 Nov 2025 01:48:33 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -38,21 +39,24 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.3
 
 
-On Wed, 15 Oct 2025 09:56:31 +0200, Michal Kubecek wrote:
-> The build of intel_dc_ti_battery module on i386 (32-bit) fails with
+On Sun, 12 Oct 2025 20:32:17 -0300, Val Packett wrote:
+> Currently, upowerd is unable to turn off the battery preservation mode[1]
+> on Qualcomm laptops, because it does that by setting the start threshold to
+> zero and the driver returns an error:
 > 
-> ERROR: modpost: "__udivdi3" [drivers/power/supply/intel_dc_ti_battery.ko]
+> pmic_glink.power-supply.0: charge control start threshold exceed range: [50 - 95]
 > 
-> This is caused by 64-bit division of ktime values by NSEC_PER_USEC. Use
-> ktime_divns() helper which handles the division correctly on 32-bit
-> architectures.
+> Kernel documentation says the end threshold must be clamped[2] but does
+> not say anything about the start threshold.
 > 
 > [...]
 
 Applied, thanks!
 
-[1/1] power: supply: use ktime_divns() to avoid 64-bit division
-      commit: 3fd1695f5da0538ef72e1268baa00528b589347a
+[1/2] power: supply: qcom_battmgr: clamp charge control thresholds
+      commit: 8809980fdc8a86070667032fa4005ee83f1c62f3
+[2/2] power: supply: qcom_battmgr: support disabling charge control
+      commit: 446fcf494691da4e685923e5fad02b163955fc0e
 
 Best regards,
 -- 
