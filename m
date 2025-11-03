@@ -1,35 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E94FE221FAC;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F24F0221FCC;
 	Mon,  3 Nov 2025 00:48:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762130920; cv=none; b=SZI5HUVGr9W0ooUDfr16iYyjLSFo91D3lHQYyyYJcEqLpSqbDh6OFjRH9h9lNIZgXEvJkOQWQ1zx3KQDj1Qr0Joyf0GJHcK1Xdo0T3bCIefX7Fvm07RDlPWX+vXh6WdjWh4QeiP53EEX6WLq601gSJWANFcWvItsO/w9h1CLPmQ=
+	t=1762130921; cv=none; b=enmqFFdymTC8MVlmZ0UrhN41pz09e2QHfLdfdG6leSjR0C2wDWiZdOIIhb8fnolhJl8bHitWZhxIm5fZGh9Q/mRpvPtbTeGp4dpvcbq4wal/kr0z9eCbbmPTAYLbJEsw2vhMtoF+9BghCawqF7wGnFaPA826AeEDfoHBSBnIlhY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762130920; c=relaxed/simple;
-	bh=DABp0fKEMg+lSEv60zNnxUCwpuY3JzvS9U8KBv6eSVU=;
+	s=arc-20240116; t=1762130921; c=relaxed/simple;
+	bh=T5SKyj/KBZJLYia9w+Z+IRgphx8Opd9vj4VsWxl2ZKk=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=A3CppbhlZ6n3x/j2Mq0Ib2b/VzxL4X74gcz2sCX71MzKV+nYZFDakRdhQSoeuuZ0fLhIU02TudjBM/Kl+OSpH4kjtgLbTCeMXo9RaJzrF2ttOvscl/K9WSQcNMaLkVr1NaZBs0MBIIo1kmxYKZpGCYDbhC9d7cTC+yUil23B4e8=
+	 MIME-Version:Content-Type; b=RkNplQFXEAIpTOmTL4BklreK3hBG+bs1q+ZJncTyGGI/uPGnR4ARaGhk0BdrT5LtNdEy0p6HWE2itIqIv8kfdjC2jOT9Tdv28bgYOL0Vla3l3gTN4XgCb+cHzcLjej/N3VTFLzNtuREZhrFYErcimkUsIKG3lfYxepmUIm+iKrs=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F30EC4CEFB;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8F7EBC19422;
 	Mon,  3 Nov 2025 00:48:40 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 477301811F7; Mon, 03 Nov 2025 01:48:33 +0100 (CET)
+	id 66C111822D8; Mon, 03 Nov 2025 01:48:33 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Iskren Chernev <me@iskren.info>, 
- Ivan Abramov <i.abramov@mt-integration.ru>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, 
- Marek Szyprowski <m.szyprowski@samsung.com>, 
- Matheus Castello <matheus@castello.eng.br>, 
- Sebastian Reichel <sre@kernel.org>, Svyatoslav Ryhel <clamor95@gmail.com>, 
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- lvc-project@linuxtesting.org
-In-Reply-To: <20251008133648.559286-1-i.abramov@mt-integration.ru>
-References: <20251008133648.559286-1-i.abramov@mt-integration.ru>
-Subject: Re: [PATCH 1/1] power: supply: max17040: Check
- iio_read_channel_processed() return code
-Message-Id: <176213091328.301408.17011168216759468685.b4-ty@collabora.com>
+To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, 
+ Michal Kubecek <mkubecek@suse.cz>
+Cc: Hans de Goede <hansg@kernel.org>, 
+ Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20251015075957.8F40620057@lion.mk-sys.cz>
+References: <20251015075957.8F40620057@lion.mk-sys.cz>
+Subject: Re: [PATCH] power: supply: use ktime_divns() to avoid 64-bit
+ division
+Message-Id: <176213091341.301408.15461245832294334915.b4-ty@collabora.com>
 Date: Mon, 03 Nov 2025 01:48:33 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -42,17 +38,21 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.3
 
 
-On Wed, 08 Oct 2025 16:36:47 +0300, Ivan Abramov wrote:
-> Since iio_read_channel_processed() may fail, return its exit code on error.
+On Wed, 15 Oct 2025 09:56:31 +0200, Michal Kubecek wrote:
+> The build of intel_dc_ti_battery module on i386 (32-bit) fails with
 > 
-> Found by Linux Verification Center (linuxtesting.org) with SVACE.
+> ERROR: modpost: "__udivdi3" [drivers/power/supply/intel_dc_ti_battery.ko]
 > 
+> This is caused by 64-bit division of ktime values by NSEC_PER_USEC. Use
+> ktime_divns() helper which handles the division correctly on 32-bit
+> architectures.
 > 
+> [...]
 
 Applied, thanks!
 
-[1/1] power: supply: max17040: Check iio_read_channel_processed() return code
-      commit: 2c68ac48c52ad146523f32b01d70009622bf81aa
+[1/1] power: supply: use ktime_divns() to avoid 64-bit division
+      commit: 3fd1695f5da0538ef72e1268baa00528b589347a
 
 Best regards,
 -- 
