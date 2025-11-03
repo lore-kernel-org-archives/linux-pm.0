@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CFD813C3F2;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A112C148FE6;
 	Mon,  3 Nov 2025 00:48:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762130918; cv=none; b=Xxl6Jff036E7WqaNGdcXbSJ9nsdTTIPymX+8/2pKYmKzGKV+7i7VtCcWEvVKAtSGG2qL5KyxZv3PrXVHg7cAArxj9uFewXM0IvFIkcEKPS8kuHQOtJHZupsQSSyJK8bubeEOpOk+kDXn3xRecyTYmxCm/Fikv5XXfO/EW543MHM=
+	t=1762130918; cv=none; b=Q3drmW6SjehUric6FTCZZZtxKxYgdgRHiyc2Oay4+D/ERwbsn/A+hsEsA7L7c1DP2tIFdjaHCdm2awPoxWVj2ynQ2BitaISgLLIBTDHV0p3OU+QY1UgcQDPBrohRQ78Soie0CX2XM26vwd56cnLDJ4VzU7JWw2bJs1ASkkS6wPI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1762130918; c=relaxed/simple;
-	bh=LWTd1yc63iz5dTRYv0VkKU6FmoBTGXAInd6quG3CZj4=;
+	bh=4aJJSEQbKMYwCrCB76sU7Ppk1UbESUbsL3BTPXhxGzw=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=CrtyjG9iuo8jMwyPLxtjeEawSCySKC6oGlkaDf3j2Q+ksYhC+FJZctCeHyS95dcVxjCQlgMUky+BX8wkaDuloKex/Y90klZaLRYTI0+JFytLg3LelbsHZNwVPIag2zc+p7gm7xTXCJ41vn2LvKTGGGhPUAmw6KVZU/WCXirMdWs=
+	 MIME-Version:Content-Type; b=kXeMxTdezErdBlHJEl2Uv1UpLM4olfnX9Z94VcikdM7GA76U97tgpp2tIxwVSOg/KWZ9Xrbk7t2MKWSJK24Qq50Ibv1Te+pOvCC6zgX8e2cW98yeePcqCcMlDF6WCB+yPplj6g8FMmA2krAP4D30vES5n6y2kO7ozkFcZi65eGc=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D5D2CC4AF0C;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D7961C4AF0D;
 	Mon,  3 Nov 2025 00:48:37 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 3CED2180CB9; Mon, 03 Nov 2025 01:48:33 +0100 (CET)
+	id 433EE180FAC; Mon, 03 Nov 2025 01:48:33 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, 
- Dzmitry Sankouski <dsankouski@gmail.com>, Lee Jones <lee@kernel.org>, 
+To: Tobias Schrammm <t.schramm@manjaro.org>, 
+ Ivan Abramov <i.abramov@mt-integration.ru>
+Cc: Sebastian Reichel <sre@kernel.org>, Zheyu Ma <zheyuma97@gmail.com>, 
  linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc: stable@vger.kernel.org
-In-Reply-To: <20251023102905.71535-2-krzysztof.kozlowski@linaro.org>
-References: <20251023102905.71535-2-krzysztof.kozlowski@linaro.org>
-Subject: Re: [PATCH] power: supply: max77705: Fix potential IRQ chip
- conflict when probing two devices
-Message-Id: <176213091324.301408.11975062916698702054.b4-ty@collabora.com>
+ lvc-project@linuxtesting.org
+In-Reply-To: <20251008120711.556021-1-i.abramov@mt-integration.ru>
+References: <20251008120711.556021-1-i.abramov@mt-integration.ru>
+Subject: Re: [PATCH 1/1] power: supply: cw2015: Check
+ devm_delayed_work_autocancel() return code
+Message-Id: <176213091326.301408.1968897537081136339.b4-ty@collabora.com>
 Date: Mon, 03 Nov 2025 01:48:33 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -39,24 +39,18 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.3
 
 
-On Thu, 23 Oct 2025 12:29:06 +0200, Krzysztof Kozlowski wrote:
-> MAX77705 charger is most likely always a single device on the board,
-> however nothing stops board designers to have two of them, thus same
-> device driver could probe twice. Or user could manually try to probing
-> second time.
+On Wed, 08 Oct 2025 15:07:11 +0300, Ivan Abramov wrote:
+> Since devm_delayed_work_autocancel() may fail, add return code check and
+> exit cw_bat_probe() on error.
 > 
-> Device driver is not ready for that case, because it allocates
-> statically 'struct regmap_irq_chip' as non-const and stores during
-> probe in 'irq_drv_data' member a pointer to per-probe state
-> container ('struct max77705_charger_data').  devm_regmap_add_irq_chip()
-> does not make a copy of 'struct regmap_irq_chip' but stores the pointer.
+> Found by Linux Verification Center (linuxtesting.org) with SVACE.
 > 
-> [...]
+> 
 
 Applied, thanks!
 
-[1/1] power: supply: max77705: Fix potential IRQ chip conflict when probing two devices
-      commit: 1cb053ea2e1dedd8f2d9653b7c3ca5b93c8c9275
+[1/1] power: supply: cw2015: Check devm_delayed_work_autocancel() return code
+      commit: 92ec7e7b86ec0aff9cd7db64d9dce50a0ea7c542
 
 Best regards,
 -- 
