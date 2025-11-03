@@ -1,31 +1,30 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C098F1465B4;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E630B22156A;
 	Mon,  3 Nov 2025 00:48:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762130920; cv=none; b=eGzjXYNHvMSzNEWmJJYmZ0274ebULNpCPQpyH5i+bWfg91ZbYMmvqbRE/Akrv9cWT13W5NrwJKECdp2ewMLqWWxqQvsFu2IPkxKfMSlWPuIVH21tgAlkwPWhEzFObWQ3QWm6DEPoL4zEromVniBkLSJs1A55OPMe88ZF4jABYuw=
+	t=1762130920; cv=none; b=Z40LiGht5TVgVnxNrn958O1nKlGAqE+YaNvKZH427gi6hd/g7R+0GNUgq7sOmMmL1MJR9ExmdZaEvRChMw6zo8C0/bEElm3qiwvrL6bzDNZnQCl/RRAQ6s8sP0c4ktycJSRU57WoWiNzir484gNr8x9KArbuhyaudeH0Wp0Fmmg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1762130920; c=relaxed/simple;
-	bh=isE0bKuO2Ii2vUvPtrr2FUJLwfn0vdNCcKeYkFJGRpI=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=XXSGYEf7JjZfzdbX+bKS+/HG7/uU9l91ruWHS87fKTDYSbP4G/3zrOCTFmmSznTuI0wvNdWk30+YbVrOFkjOrr8XawI1rs4DYFWgBUOOGAicvKsR3dfh1kZYZnISeuo0jKENTZDCGYaat9a/K58rg8jNPFurTPqWM4iIu/furY0=
+	bh=s/uZrYG0J1VoRSPDy5vlbSvXSTmXTUOXn0IoyZq29ZA=;
+	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=FPWpQ9CgLzYSCLVm3J3POjbZ7c5EiTFcGUN8kLi3lZ2sNxi3JZx174TwR6DKnofffhFDUxsUnKZIBHwyLYNGf3CmDifyrFh/vTspKxSmg1irG58lVAjUW+vWY1N4mcgCyF8Fh8oGTrm+KvTUp5+/rqhumlLpWFyLpFa8Qwt3Dz4=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 82214C4CEF7;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9B498C2BC87;
 	Mon,  3 Nov 2025 00:48:40 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 61ACE1822D7; Mon, 03 Nov 2025 01:48:33 +0100 (CET)
+	id 6B97C1822D9; Mon, 03 Nov 2025 01:48:33 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>
-Cc: Dhruva Gole <d-gole@ti.com>, Sebastian Reichel <sre@kernel.org>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, 
- Pavel Machek <pavel@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
- linux-doc@vger.kernel.org, linux-pm@vger.kernel.org
-In-Reply-To: <20251014182008.823980-1-rdunlap@infradead.org>
-References: <20251014182008.823980-1-rdunlap@infradead.org>
-Subject: Re: [PATCH v2] docs: power: clean up power_supply_class.rst
-Message-Id: <176213091339.301408.16694127979004667154.b4-ty@collabora.com>
+To: Sebastian Reichel <sre@kernel.org>, Anton Vorontsov <cbou@mail.ru>, 
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ =?utf-8?q?Ahelenia_Ziemia=C5=84ska?= <nabijaczleweli@nabijaczleweli.xyz>
+In-Reply-To: <xczpgox57hxbunkcbdl5fxhc4gnsajsipldfidi7355afezk64@tarta.nabijaczleweli.xyz>
+References: <xczpgox57hxbunkcbdl5fxhc4gnsajsipldfidi7355afezk64@tarta.nabijaczleweli.xyz>
+Subject: Re: [PATCH] power: supply: apm_power: only unset own
+ apm_get_power_status
+Message-Id: <176213091342.301408.14482368410534019640.b4-ty@collabora.com>
 Date: Mon, 03 Nov 2025 01:48:33 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -34,28 +33,21 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-Mailer: b4 0.14.3
 
 
-On Tue, 14 Oct 2025 11:20:07 -0700, Randy Dunlap wrote:
-> Clean up grammar, punctuation, etc., in the power supply class
-> documentation.
+On Fri, 17 Oct 2025 00:05:18 +0200, Ahelenia Ziemiańska wrote:
+> Mirroring drivers/macintosh/apm_emu.c, this means that
+>   modprobe apm_power && modprobe $anotherdriver && modprobe -r apm_power
+> leaves $anotherdriver's apm_get_power_status instead of deleting it.
 > 
-> Add article adjectives where needed.
-> Hyphenate some adjectives.
-> Fix punctuation.
-> Fix some verb usage (singular/plural).
-> Fix run-on sentences.
-> Add "is" in a few places.
-> Change "QA" to "Q&A".
 > 
-> [...]
 
 Applied, thanks!
 
-[1/1] docs: power: clean up power_supply_class.rst
-      commit: 06b54f2d741b63e215bc941af4dcfafde3b1b327
+[1/1] power: supply: apm_power: only unset own apm_get_power_status
+      commit: bd44ea12919ac4e83c9f3997240fe58266aa8799
 
 Best regards,
 -- 
