@@ -1,34 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C094A86329;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C098F1465B4;
 	Mon,  3 Nov 2025 00:48:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762130920; cv=none; b=VpqI1WSjJhaHGgnOyNbG8KEObA9zB3ou5QLwTjDJmE4KMgaCHhi/Cn907q73zUOQEYzvAvJISell/dZWRQv6EJe7PbAxbAfdRedjkCQFamtvobNMLKWAqXnuxaY5u22IHGZyXcv6+dIbCdZmMFXPF67C2R7GsJOoONfyDLggXFc=
+	t=1762130920; cv=none; b=eGzjXYNHvMSzNEWmJJYmZ0274ebULNpCPQpyH5i+bWfg91ZbYMmvqbRE/Akrv9cWT13W5NrwJKECdp2ewMLqWWxqQvsFu2IPkxKfMSlWPuIVH21tgAlkwPWhEzFObWQ3QWm6DEPoL4zEromVniBkLSJs1A55OPMe88ZF4jABYuw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1762130920; c=relaxed/simple;
-	bh=BZsrRdPraUWXnOVX6LT0rZV7p4D0gXlmeCc65dsR0Ps=;
+	bh=isE0bKuO2Ii2vUvPtrr2FUJLwfn0vdNCcKeYkFJGRpI=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=lSqSaEhhL1snfHiLTpRHm1JHEwYXy5sPv3iBjYvdpAe2eXgo4Y5ed29KVKZitPEIV+UB/M0GxuhkdTKHgys4DhCJ7TnK9zGEsvJn6h5XgLUA87vFvMgp7EwBOFL/G3YdSk1yV/tiKmzB8pqX9TT76z4ta6AKkLycQ39f+hAtX5s=
+	 MIME-Version:Content-Type; b=XXSGYEf7JjZfzdbX+bKS+/HG7/uU9l91ruWHS87fKTDYSbP4G/3zrOCTFmmSznTuI0wvNdWk30+YbVrOFkjOrr8XawI1rs4DYFWgBUOOGAicvKsR3dfh1kZYZnISeuo0jKENTZDCGYaat9a/K58rg8jNPFurTPqWM4iIu/furY0=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 85D02C116D0;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 82214C4CEF7;
 	Mon,  3 Nov 2025 00:48:40 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 53AE818157C; Mon, 03 Nov 2025 01:48:33 +0100 (CET)
+	id 61ACE1822D7; Mon, 03 Nov 2025 01:48:33 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, 
- Ivan Abramov <i.abramov@mt-integration.ru>
-Cc: Lee Jones <lee@kernel.org>, Felipe Balbi <felipe.balbi@linux.intel.com>, 
- Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, patches@opensource.cirrus.com, 
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- lvc-project@linuxtesting.org
-In-Reply-To: <20251009170553.566561-1-i.abramov@mt-integration.ru>
-References: <20251009170553.566561-1-i.abramov@mt-integration.ru>
-Subject: Re: [PATCH 1/1] power: supply: wm831x: Check wm831x_set_bits()
- return value
-Message-Id: <176213091333.301408.13978622275399193894.b4-ty@collabora.com>
+To: linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>
+Cc: Dhruva Gole <d-gole@ti.com>, Sebastian Reichel <sre@kernel.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, 
+ Pavel Machek <pavel@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
+ linux-doc@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <20251014182008.823980-1-rdunlap@infradead.org>
+References: <20251014182008.823980-1-rdunlap@infradead.org>
+Subject: Re: [PATCH v2] docs: power: clean up power_supply_class.rst
+Message-Id: <176213091339.301408.16694127979004667154.b4-ty@collabora.com>
 Date: Mon, 03 Nov 2025 01:48:33 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -41,18 +38,24 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.3
 
 
-On Thu, 09 Oct 2025 20:05:52 +0300, Ivan Abramov wrote:
-> Since wm831x_set_bits() may return error, log failure and exit from
-> wm831x_usb_limit_change() in such case.
+On Tue, 14 Oct 2025 11:20:07 -0700, Randy Dunlap wrote:
+> Clean up grammar, punctuation, etc., in the power supply class
+> documentation.
 > 
-> Found by Linux Verification Center (linuxtesting.org) with SVACE.
+> Add article adjectives where needed.
+> Hyphenate some adjectives.
+> Fix punctuation.
+> Fix some verb usage (singular/plural).
+> Fix run-on sentences.
+> Add "is" in a few places.
+> Change "QA" to "Q&A".
 > 
-> 
+> [...]
 
 Applied, thanks!
 
-[1/1] power: supply: wm831x: Check wm831x_set_bits() return value
-      commit: ea14bae6df18942bccb467fcf5ff33ca677b8253
+[1/1] docs: power: clean up power_supply_class.rst
+      commit: 06b54f2d741b63e215bc941af4dcfafde3b1b327
 
 Best regards,
 -- 
