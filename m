@@ -1,266 +1,138 @@
-Received: from PH7PR06CU001.outbound.protection.outlook.com (mail-westus3azon11010064.outbound.protection.outlook.com [52.101.201.64])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f52.google.com (mail-lf1-f52.google.com [209.85.167.52])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7BBE23101DC;
-	Wed,  5 Nov 2025 11:39:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.201.64
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762342789; cv=fail; b=LM/BSw5XzcW2nOdPioLoqMzIo1C/X6doqAKJdcxs8hOJsvMkWs2ZDSOnDqROo81fbmUBzChpp4f+qFKkxHI/Nb6NwATOpufobzvrCv4e5mCbMVd4/6GneMAlWEzhWROn9a9hIl554oQB3fSu406x431PK+EnM3BrskVWEWu6aAM=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762342789; c=relaxed/simple;
-	bh=EOxpe2xiG/b60y30FFaOH+dp+7ldInpu5fnLSOSwnVI=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=o5179wlDgCUzaPBJBDMGXUlI6oD4tZh4KzLlFtZPDcB8YiK8ODQWLKWF6dhtkolyzDjI0jokBHq/BREU0vstajS5hWebnW+xtX6i1vmOtbD24BpRSnynXV4jITLQikMbSdn01rbyb+MDViprTeeYQiDV7Rdfu0eKvMJT5aGQafI=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=c422Xdhe; arc=fail smtp.client-ip=52.101.201.64
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 834E2311977
+	for <linux-pm@vger.kernel.org>; Wed,  5 Nov 2025 11:39:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.52
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1762342791; cv=none; b=Yo+D2stiJSErXMotxn3c+EMvWcq9sLN/TIhRY6FmcYZQLf+LwjspZbXzBaQAnHTDk5upGJBSu49hGPJVUm+OlkD9aPiZ/XrGaMXhnwBuYukC1NC2nRq9VskyG41Bp/p9YZPdSAfaowIEA5PG/oGHRhUED+vyndu/RB/+a7bKV6w=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1762342791; c=relaxed/simple;
+	bh=XJnQ8QAutR/Qjzuilm6RbMyIh+omr6OWVKRLZO5Bnf0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=nF6FRBjAkh2XJJ8nh7aNjp40ueprsy65i7v62F5P/BFSTPo7bsw02S6XtPj+lcaXC0LmuJ0svtNdtTNJLc7sdqOdOIRlVGoSycY+2EZh4LPiOHKt98YBIbMcV/1xQ/Y5RjAJ6f79+pOsqfafAEkIqGvYI0LVwjXKHsixl1NCWdI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=c+8aIDFv; arc=none smtp.client-ip=209.85.167.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="c422Xdhe"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=YAfIu0cnz7B43Mdhb2chcFLJYANGDMKu8AhEMeOfFkSivmOISMKbxhaikYhxWrRL6WhqXwsNJM0NiocCZznFqu79L/8btljJwu9NhvBtjgnbxpegwoqIyAKCMTsbxNkrfValmOaoBd2JASHUOZohcUbPy+YB8zZPu2fYY+TTekIfFbpNQIKld7Rr45T03uQl+NbooRyV9kg7ZVuv7ooF6mB93lNXqMPGcwKHznh6Mp91kuUOIyI0kN9VjvxSnToIFf3tpW1BVgYPr1G9/5W5Xx/HHVuUigqdgIoPy/wgExxy0EvPsuMYOxZVO6qxze3WtrrRNf1gUAXTXQzyMkYfJw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=8cyDigDngr9ATGvhRUddVCSgqlh7AeX/G22+2WPU4Go=;
- b=w87JKZVQLF0zsA0a7deg4cAgtYpAPo9AkQExtffMdXpLabQgVDRQT6/AZDSSwq+FIIfjkHDFaq3QUnpv+W3MwlRCBr4MZ56nsTf2pPjac1mhVGpDAqHE4l57iLQs/yV1BQe8t2wFNQaZikRlK8W//WCpSp1YY0BPQIC7WPzXn8B2NlIeoeyYOzjGFySbGtGipmUaxNa51tu1BzQBnDbipHMi+79c3ZRJedkQK0YKKf6ln+qmgFy2mBEDnfnMv9mudpx1cP0z9pOpxiQDJFU2JWeX//QVnK0IqoH1q5yZ6YBWMKJN4SMXQ4+/q82ea9qRRkhAmqjJb9YIbPXvpauEMg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 216.228.117.161) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
- dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=8cyDigDngr9ATGvhRUddVCSgqlh7AeX/G22+2WPU4Go=;
- b=c422Xdhes/FxaE2nKAowS/MQgsz4I8ghj69leaZrzGLe+ejQnFSknac14teeXlEb1DYcjwvJRtR2n1US6IWMwnyqvxlg4cpr/7Jo3moJiAnzba+jf2+IWVKZBc2Mbo6wW5UqkAitL7WX+7LyITetk1RlX90UNegRxQNHiGt+HbCcbxZRkonmZ+2ptnCFZr3N+alOD3E3yLh/gEkrGxJcA+dwpUa1KRaat0ReL07QOfOMqJ3OjwppgUZTm/rxX/eXubWEwN72AdQYBWUC8Bsf3RkUxfIHYyJ7rXQMRwo1KYivgM0Sz9AEuA+8VNOj+yr/1cMvb07zY8j5raENnv/e9Q==
-Received: from BLAPR03CA0119.namprd03.prod.outlook.com (2603:10b6:208:32a::34)
- by DS7PR12MB8346.namprd12.prod.outlook.com (2603:10b6:8:e5::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9275.16; Wed, 5 Nov
- 2025 11:39:43 +0000
-Received: from BL6PEPF00020E64.namprd04.prod.outlook.com
- (2603:10b6:208:32a:cafe::b0) by BLAPR03CA0119.outlook.office365.com
- (2603:10b6:208:32a::34) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9298.8 via Frontend Transport; Wed, 5
- Nov 2025 11:39:43 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.161)
- smtp.mailfrom=nvidia.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=nvidia.com;
-Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 216.228.117.161 as permitted sender) receiver=protection.outlook.com;
- client-ip=216.228.117.161; helo=mail.nvidia.com; pr=C
-Received: from mail.nvidia.com (216.228.117.161) by
- BL6PEPF00020E64.mail.protection.outlook.com (10.167.249.25) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9298.6 via Frontend Transport; Wed, 5 Nov 2025 11:39:43 +0000
-Received: from rnnvmail205.nvidia.com (10.129.68.10) by mail.nvidia.com
- (10.129.200.67) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Wed, 5 Nov
- 2025 03:39:29 -0800
-Received: from rnnvmail202.nvidia.com (10.129.68.7) by rnnvmail205.nvidia.com
- (10.129.68.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Wed, 5 Nov
- 2025 03:39:29 -0800
-Received: from sumitg-l4t.nvidia.com (10.127.8.14) by mail.nvidia.com
- (10.129.68.7) with Microsoft SMTP Server id 15.2.2562.20 via Frontend
- Transport; Wed, 5 Nov 2025 03:39:22 -0800
-From: Sumit Gupta <sumitg@nvidia.com>
-To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <lenb@kernel.org>,
-	<robert.moore@intel.com>, <corbet@lwn.net>, <pierre.gondois@arm.com>,
-	<zhenglifeng1@huawei.com>, <rdunlap@infradead.org>, <ray.huang@amd.com>,
-	<gautham.shenoy@amd.com>, <mario.limonciello@amd.com>, <perry.yuan@amd.com>,
-	<ionela.voinescu@arm.com>, <zhanjie9@hisilicon.com>,
-	<linux-pm@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
-	<linux-doc@vger.kernel.org>, <acpica-devel@lists.linux.dev>,
-	<linux-kernel@vger.kernel.org>
-CC: <linux-tegra@vger.kernel.org>, <treding@nvidia.com>,
-	<jonathanh@nvidia.com>, <vsethi@nvidia.com>, <ksitaraman@nvidia.com>,
-	<sanjayc@nvidia.com>, <nhartman@nvidia.com>, <bbasu@nvidia.com>,
-	<sumitg@nvidia.com>
-Subject: [PATCH v4 2/8] ACPI: CPPC: Add cppc_get_perf() API to read performance controls
-Date: Wed, 5 Nov 2025 17:08:38 +0530
-Message-ID: <20251105113844.4086250-3-sumitg@nvidia.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20251105113844.4086250-1-sumitg@nvidia.com>
-References: <20251105113844.4086250-1-sumitg@nvidia.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="c+8aIDFv"
+Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-59428d2d975so3558264e87.3
+        for <linux-pm@vger.kernel.org>; Wed, 05 Nov 2025 03:39:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1762342787; x=1762947587; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=XFKcDBz895P+pKkilzGMv1j9zQS86el4sifmVfoozzk=;
+        b=c+8aIDFvmDBT2m9qrApKXIPP5ZWbMlGjuGw7Ydi1dQbEBjvjkBMarrqMs873nBfg8r
+         XrhS9wNgWvynhPI2oe7svQsP/VzKTvzPhgCI4sAJDUOvokYyh1/T+P2OSxApp12e14E8
+         HSUR32nwsRw0Vzy5GXuwYGK4NoNkLgKUi0I8Otk7YlbKNYzXXc9rBAnjJffY58im5I9P
+         U7zW6mlVCI1rcpqcvpg/y68ibb0rvnXdyFJZxCt/FsBwf8+TpVNE/telUBvYja2Tq930
+         bEKcEHQWHXHCESOmRkIYGx1F7KjoHHl/m4Gv/amVBwnB8gZemmD4fMZh3rCeoxkz8I5q
+         l50A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1762342788; x=1762947588;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=XFKcDBz895P+pKkilzGMv1j9zQS86el4sifmVfoozzk=;
+        b=XgzPOFqsMcY7emMbsbJa9o8dsCfWybyKzvyynhJU0GIg48W1FJJyJe1NjD6OB5B2Ds
+         zMTvGUfpV8qCjbNnpo9/HchzqbkdF+Bqv0q3f9MbsmwnSxi9RktMtTnnBBeIostJmSNq
+         0Hw5MQRRAmVzKucsI4WU3875lBbMZD/EHG0sydEOzbsiOMAVhbxQsEd569wnFX2g2n83
+         BwvvQcwZqzqv73Dtp+qLg4nkVT1GUG3dldJrHZRRnIoLXEK7JWqUD5mK2Ruk2w2ur8t6
+         AMaIN4iFg57FvNdyas2DZ09p/MWLxeQG143PzFM6TrAyURCaq9uUagJUzBrY+oMDCc/t
+         2ZYA==
+X-Forwarded-Encrypted: i=1; AJvYcCUk0X1zX611H5bh0t0Gna8JKV763uGWRJKnIsrsNmtwvJhMHeF4CKl6WgddawYorxAmQLGYObllgw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz9mdpGKKpLMJasBYsvP7m/KfxkbgdOAvViukBeXHCRPOYqpZ9D
+	IF92q/PyPs3wBNcM44l8RQrj9vMLznvlt90tyCAU2InWlCeco+IY7bGBbTiniHkjGk0=
+X-Gm-Gg: ASbGncttvKIZqMuGmaHM6f052SkbGmNbGDWXAK/kW4RSkKywwd58Elb8dA+glKodZhm
+	JNuxHrz78qrg3KXg0wsS/QcudAqlboFa8WRsdWS5pI7vCxepl+QZdjf9dm32b9vfOP7+BpkCqTL
+	4bBB6GqA/Cf6AnoncQBmKnnHHObP55v6VlzBbDKaXZeoDNBVsE9fTogFimBQBe7iTb7DyuCG46x
+	u8LVhYG+sssPGaMocw/2KqiM1vTZvjWPIEQqxgX+SL7vC3dc4llUnMifZ6an8/lHaEqQ9Iy8BvB
+	nrn5Ns7Z1cKOEsYFXGgzE573MAxsfa3++cDI1ROWIpMWJreoXUDVMFcNo3fWJiws+Yo2HO9sci/
+	4RnxBgfdgkctratusZR+bPHzp/gTG+ugbj9ugIyvejOC1Z252ZS3ZdH7wxOlGk+mjSQpRVULB2s
+	7EJZPBaI3xYcjQfdFGxi8R7tkDSUZI1u8cdze01y3z1ZvF2nOz4j07gSC9eQ==
+X-Google-Smtp-Source: AGHT+IGG31UsLd4o1FDm3BbiPL0QtqwK8nPiQHx1dRUKJ4gb8AV+HvnhJfY8a3mxdgTF9YlyblMwPQ==
+X-Received: by 2002:a05:6512:1395:b0:592:f8aa:c06 with SMTP id 2adb3069b0e04-5943d7f3f74mr1019404e87.57.1762342787278;
+        Wed, 05 Nov 2025 03:39:47 -0800 (PST)
+Received: from ?IPV6:2a10:a5c0:800d:dd00:8fdf:935a:2c85:d703? ([2a10:a5c0:800d:dd00:8fdf:935a:2c85:d703])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5943443992fsm1652172e87.60.2025.11.05.03.39.46
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 05 Nov 2025 03:39:46 -0800 (PST)
+Message-ID: <aa55cba7-1f7a-4c44-a101-cb991387fa55@gmail.com>
+Date: Wed, 5 Nov 2025 13:39:45 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-NVConfidentiality: public
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-NV-OnPremToCloud: ExternallySecured
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BL6PEPF00020E64:EE_|DS7PR12MB8346:EE_
-X-MS-Office365-Filtering-Correlation-Id: c96fdb0a-0604-41e7-64e3-08de1c600374
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|7416014|376014|36860700013|1800799024|921020;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?uVhsJ3KgyyS/oTKwCyncKn3c3YlMZ3bf0QAH6S7FwRCWafuX5GYAT2QgMevm?=
- =?us-ascii?Q?nywOrcA1cY4+cyfe/TnUvONWjyYMt4CiP1WElFBCutB30LH+IAmJ1R1RYE3X?=
- =?us-ascii?Q?nRPlpN3E+EjdOze6Zfw2qTPGhlBtty5zj3QkCUOZY3WHGNa3t+YmL+GQlarU?=
- =?us-ascii?Q?/PZ8+4d3UTzFy+ONVumqxDDJbjmE8/rJ7p+/zWkVVPhuRdxlsmb4KpP7WCQh?=
- =?us-ascii?Q?YKQuZisoGDvYLtk30AN5tbf4UlNzyk2y8ZDJE2QAFohA/lK1QNROQRFG/Lz8?=
- =?us-ascii?Q?N7vex4BGKQOs6R683e/e1sXaE2sLOjw57uuZUW1yw+0+wr3HvrnHKMqBKoQu?=
- =?us-ascii?Q?Jzp+Pp/WuzKPsOw2+qPVlVL/eEFafLeQWKb8NditX8qJuEP56U59sO6n1C/P?=
- =?us-ascii?Q?xPdygfjYD6EeHtV24BR6Ce+5JEdH7lTKkmVnlglgeXAecHcBryiZMKLo16p8?=
- =?us-ascii?Q?Q24Te/s2gCLYQejpnYQtZVFy6vOqTkRmfBNPoDRPq7vHiapnGuebss8c7Cuk?=
- =?us-ascii?Q?jbR2a7aXzysBAW7y8i+At0YqnJ2/KUQsGSJZADdAFQRnfuF5djWIWU44KDWg?=
- =?us-ascii?Q?tJRYlu8xD7XMJpzWwBO2imI+VM/j5hqxzNEvi6pBwPrE8XwJF7tY3lh8I3TS?=
- =?us-ascii?Q?OnXxjSIPQBep0ce02qwy8mvfrC6DBQRfeNXjBJm4TiwYzwpDhhP0aLdUjXZh?=
- =?us-ascii?Q?R01c2GVjblm/aMc3q3K8Jw1o8jKtyyrQVyD0hfBVsFSlhmPD7AUYbPj7jTmE?=
- =?us-ascii?Q?PonM/1DGcWpsAzr3jX5eiPRlXPRgcr4nkH2b8MZ2KppUe7ih9kLDitkEihQG?=
- =?us-ascii?Q?L4psESuMFt50pdNOgY5AVFkAGpuxEqryRIf5xvZLM7pf3SCrHltIGWfWiQLG?=
- =?us-ascii?Q?F8zUjG4gJeHFRTLhwtCCwNFlW7KLDi0o5Dq7ZGyjtUv+C9M3WODoeDcQ/N3h?=
- =?us-ascii?Q?62sQUr21UEKtjRWCxELxg61QAzuiGiFocGeP/8paaB4Ijz6TVl4OI/WxFfJ6?=
- =?us-ascii?Q?FL2I6qnOQF0fcC75NDg1DFpkpQi94SPscsuOEgx8PImEL3q25dMftiKcWI77?=
- =?us-ascii?Q?7+MRgmbAzIfJufBSNwEBl7H1lGjKTcxOytSgXnaYXQDjAnf0ODdwOh5es2l1?=
- =?us-ascii?Q?lPtZ+3iDENuTLhT3SR61TYedVcQBlFkRDHi9t5PIllMmh1pA7FxO4HZICYfe?=
- =?us-ascii?Q?L2ch2wYMd6P6XxMX6u5YT0C1I6ukA/DHVBPtGO+EIa4JX6ux49/kQTMw+rh+?=
- =?us-ascii?Q?TxoO8kp9RiNDRSIiR4yGIPYGg7vRL96nZHYrusoEKyOqhCecuvOzLLLTHBuV?=
- =?us-ascii?Q?OvmfPbY24hoZ9q3U3YX9vPgYkZx5ZYUaQ2sVumiZRbA4n2sIQSo9wX/QIGYC?=
- =?us-ascii?Q?eqEo7sAHf9p885BNEVni3EPsIXMhxyT8bcmneFePjZHz31tN23b33aAY0Xtb?=
- =?us-ascii?Q?h1xLscJJT476yD1qculi9pM1Y/1Rf5qIv0lB/fgeGv465NMK9LBIBk3yDeIH?=
- =?us-ascii?Q?pomLnAM1fhZK1LYc46uule9islERkFBdITSE9jPhWfpT34/GxSA09lK30Q8L?=
- =?us-ascii?Q?UJweA2f0koMppLkID3YPfTSXpVb5L6pB37GnfRQo?=
-X-Forefront-Antispam-Report:
-	CIP:216.228.117.161;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge2.nvidia.com;CAT:NONE;SFS:(13230040)(82310400026)(7416014)(376014)(36860700013)(1800799024)(921020);DIR:OUT;SFP:1101;
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Nov 2025 11:39:43.1640
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: c96fdb0a-0604-41e7-64e3-08de1c600374
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.161];Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	BL6PEPF00020E64.namprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS7PR12MB8346
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 05/16] dt-bindings: mfd: ROHM BD72720
+To: "Rob Herring (Arm)" <robh@kernel.org>,
+ Matti Vaittinen <matti.vaittinen@linux.dev>
+Cc: Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>,
+ linux-clk@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>,
+ Sebastian Reichel <sre@kernel.org>, Lee Jones <lee@kernel.org>,
+ Linus Walleij <linus.walleij@linaro.org>, linux-rtc@vger.kernel.org,
+ linux-gpio@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>,
+ devicetree@vger.kernel.org,
+ Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Pavel Machek <pavel@kernel.org>,
+ Bartosz Golaszewski <brgl@bgdev.pl>, Mark Brown <broonie@kernel.org>,
+ Andreas Kemnade <andreas@kemnade.info>, linux-kernel@vger.kernel.org,
+ linux-leds@vger.kernel.org, Krzysztof Kozlowski <krzk+dt@kernel.org>
+References: <cover.1762327887.git.mazziesaccount@gmail.com>
+ <4c7ea0c83f4bb4af65439a9b8951d50ee705d22c.1762327887.git.mazziesaccount@gmail.com>
+ <176233321210.143104.455177775703669783.robh@kernel.org>
+Content-Language: en-US, en-AU, en-GB, en-BW
+From: Matti Vaittinen <mazziesaccount@gmail.com>
+In-Reply-To: <176233321210.143104.455177775703669783.robh@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Add cppc_get_perf() function to read values of performance control
-registers including desired_perf, min_perf, max_perf, and energy_perf.
+On 05/11/2025 11:00, Rob Herring (Arm) wrote:
+> 
+> On Wed, 05 Nov 2025 09:37:05 +0200, Matti Vaittinen wrote:
+>> From: Matti Vaittinen <mazziesaccount@gmail.com>
+>>
+>> The ROHM BD72720 is a power management IC integrating regulators, GPIOs,
+>> charger, LEDs, RTC and a clock gate.
+>>
+>> Add dt-binding doc for ROHM BD72720.
+>>
+>> Signed-off-by: Matti Vaittinen <mazziesaccount@gmail.com>
+>>
+>> ---
+>> Revision history:
+>>   v2 => v3:
+>>   - Styling
+>>   - Document all pin functions
+>>   - use pattern-properties
+>>   - re-use existing Rsense binding
+>>   - correct the example
+>>
+>>   RFCv1 => v2:
+>>   - Typofixes
+>> ---
+>>   .../bindings/mfd/rohm,bd72720-pmic.yaml       | 273 ++++++++++++++++++
+>>   1 file changed, 273 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/mfd/rohm,bd72720-pmic.yaml
+>>
+> 
+> My bot found errors running 'make dt_binding_check' on your patch:
+> 
+> yamllint warnings/errors:
+> 
+> dtschema/dtc warnings/errors:
+> /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/rohm,bd72720-pmic.yaml: Unresolvable reference: /schemas/regulator/rohm,bd77270-regulator.yaml
 
-This provides a read interface to complement the existing cppc_set_perf()
-write interface for performance control registers.
+Not sure how this slipped through. I'll fix this in next version. Thanks.
 
-Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
----
- drivers/acpi/cppc_acpi.c | 73 ++++++++++++++++++++++++++++++++++++++++
- include/acpi/cppc_acpi.h |  5 +++
- 2 files changed, 78 insertions(+)
-
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index ab4651205e8a..05672c30187c 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -1731,6 +1731,79 @@ int cppc_set_enable(int cpu, bool enable)
- 	return cppc_set_reg_val(cpu, ENABLE, enable);
- }
- EXPORT_SYMBOL_GPL(cppc_set_enable);
-+/**
-+ * cppc_get_perf - Get a CPU's performance controls.
-+ * @cpu: CPU for which to get performance controls.
-+ * @perf_ctrls: ptr to cppc_perf_ctrls. See cppc_acpi.h
-+ *
-+ * Return: 0 for success with perf_ctrls, -ERRNO otherwise.
-+ */
-+int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
-+{
-+	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
-+	struct cpc_register_resource *desired_perf_reg, *min_perf_reg, *max_perf_reg,
-+				     *energy_perf_reg;
-+	u64 desired_perf = 0, min = 0, max = 0, energy_perf = 0;
-+	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
-+	struct cppc_pcc_data *pcc_ss_data = NULL;
-+	int ret = 0, regs_in_pcc = 0;
-+
-+	if (!cpc_desc) {
-+		pr_debug("No CPC descriptor for CPU:%d\n", cpu);
-+		return -ENODEV;
-+	}
-+
-+	if (!perf_ctrls) {
-+		pr_debug("Invalid perf_ctrls pointer\n");
-+		return -EINVAL;
-+	}
-+
-+	desired_perf_reg = &cpc_desc->cpc_regs[DESIRED_PERF];
-+	min_perf_reg = &cpc_desc->cpc_regs[MIN_PERF];
-+	max_perf_reg = &cpc_desc->cpc_regs[MAX_PERF];
-+	energy_perf_reg = &cpc_desc->cpc_regs[ENERGY_PERF];
-+
-+	/* Are any of the regs PCC ?*/
-+	if (CPC_IN_PCC(desired_perf_reg) || CPC_IN_PCC(min_perf_reg) ||
-+	    CPC_IN_PCC(max_perf_reg) || CPC_IN_PCC(energy_perf_reg)) {
-+		if (pcc_ss_id < 0) {
-+			pr_debug("Invalid pcc_ss_id for CPU:%d\n", cpu);
-+			return -ENODEV;
-+		}
-+		pcc_ss_data = pcc_data[pcc_ss_id];
-+		regs_in_pcc = 1;
-+		down_write(&pcc_ss_data->pcc_lock);
-+		/* Ring doorbell once to update PCC subspace */
-+		if (send_pcc_cmd(pcc_ss_id, CMD_READ) < 0) {
-+			pr_debug("Failed to send PCC command for CPU:%d, ret:%d\n", cpu, ret);
-+			ret = -EIO;
-+			goto out_err;
-+		}
-+	}
-+
-+	/* Read optional elements if present */
-+	if (CPC_SUPPORTED(max_perf_reg))
-+		cpc_read(cpu, max_perf_reg, &max);
-+	perf_ctrls->max_perf = max;
-+
-+	if (CPC_SUPPORTED(min_perf_reg))
-+		cpc_read(cpu, min_perf_reg, &min);
-+	perf_ctrls->min_perf = min;
-+
-+	if (CPC_SUPPORTED(desired_perf_reg))
-+		cpc_read(cpu, desired_perf_reg, &desired_perf);
-+	perf_ctrls->desired_perf = desired_perf;
-+
-+	if (CPC_SUPPORTED(energy_perf_reg))
-+		cpc_read(cpu, energy_perf_reg, &energy_perf);
-+	perf_ctrls->energy_perf = energy_perf;
-+
-+out_err:
-+	if (regs_in_pcc)
-+		up_write(&pcc_ss_data->pcc_lock);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(cppc_get_perf);
- 
- /**
-  * cppc_set_perf - Set a CPU's performance controls.
-diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-index 13fa81504844..7190afeead8b 100644
---- a/include/acpi/cppc_acpi.h
-+++ b/include/acpi/cppc_acpi.h
-@@ -151,6 +151,7 @@ extern int cppc_get_desired_perf(int cpunum, u64 *desired_perf);
- extern int cppc_get_nominal_perf(int cpunum, u64 *nominal_perf);
- extern int cppc_get_highest_perf(int cpunum, u64 *highest_perf);
- extern int cppc_get_perf_ctrs(int cpu, struct cppc_perf_fb_ctrs *perf_fb_ctrs);
-+extern int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls);
- extern int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls);
- extern int cppc_set_enable(int cpu, bool enable);
- extern int cppc_get_perf_caps(int cpu, struct cppc_perf_caps *caps);
-@@ -192,6 +193,10 @@ static inline int cppc_get_perf_ctrs(int cpu, struct cppc_perf_fb_ctrs *perf_fb_
- {
- 	return -EOPNOTSUPP;
- }
-+static inline int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
-+{
-+	return -EOPNOTSUPP;
-+}
- static inline int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
- {
- 	return -EOPNOTSUPP;
 -- 
-2.34.1
+Matti Vaittinen
+Linux kernel developer at ROHM Semiconductors
+Oulu Finland
 
+~~ When things go utterly wrong vim users can always type :help! ~~
