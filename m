@@ -1,66 +1,69 @@
 Received: from mail-ed1-f41.google.com (mail-ed1-f41.google.com [209.85.208.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E37E27BF6C
-	for <linux-pm@vger.kernel.org>; Fri,  7 Nov 2025 16:08:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42F5A2F362F
+	for <linux-pm@vger.kernel.org>; Fri,  7 Nov 2025 16:08:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762531734; cv=none; b=YxaIGVBUVnw09GIDGH79XBsE4TaNv0SCSfMztGr7EaqZbyQeJklJVMJM2fvuGsOgy/eH6ijdDQnXCujaoKoS1UthWJPdzVWCOXv0FwC7RltEpI6AwMdo1lr3hPEbxk5p1vQj7v8SbSFiDm1SpP6Wkq/8uG61HN6s7hsrqQN2c3I=
+	t=1762531735; cv=none; b=aQa5xCL5Jro9hA8UEw1+ePG6k7j+mCUhSxg87mlBHwpIRzdTo4BLbtZu9PpSCrDRJeDbnH9XNmMrJklk5aRvWmMkwVeKkrxaqPVitbudXwj6rtzxhuZupxrYpNvpjtU8w7Bhr19lS6FEhERI6wN0FPFZQOP9pxWwB6Qux8Plrlw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762531734; c=relaxed/simple;
-	bh=1UB7MjUKjWV6747T2U48We331jDJpIjDCkO4sdbS0zo=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=Z9W2N+SqRGZIrirN+9hj/0U6iys3xtkSogYRFFhNeBC5WI7CxlXSuPZWOxP/vQEQ6RtdcEnIRcTcOhcEFnK8HIpCU5tLD8Wz6FBIPbo75Ppea2bKxS7dWJNy6i8qR7OQH/2XfPSxCaQY14O45j54y+8l7FZd46DInp5s87+DCTI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fairphone.com; spf=pass smtp.mailfrom=fairphone.com; dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b=kiH0DTPg; arc=none smtp.client-ip=209.85.208.41
+	s=arc-20240116; t=1762531735; c=relaxed/simple;
+	bh=FrKylvjtIbykfg6BNRKjScYknFwVxGFQEfuD+JLYCCg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=WVGAupjkKpG7LLIpjbinT1OcSgqjIsaikDKng17H9sf4Zvnt0tfBU6xEtBxXPX8IzhPz6AWznbyetJNnkSrQ95ZwW2QQSVqmtUa1LQgSldJmBQorVzOeqxHSuYRw/MMucPl+davwHD8bfUCkagt5LpNgfdQJSE2iYlO01ApOkYE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fairphone.com; spf=pass smtp.mailfrom=fairphone.com; dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b=mLw/fGot; arc=none smtp.client-ip=209.85.208.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fairphone.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fairphone.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b="kiH0DTPg"
-Received: by mail-ed1-f41.google.com with SMTP id 4fb4d7f45d1cf-640f8a7aba2so1540821a12.0
-        for <linux-pm@vger.kernel.org>; Fri, 07 Nov 2025 08:08:51 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b="mLw/fGot"
+Received: by mail-ed1-f41.google.com with SMTP id 4fb4d7f45d1cf-640d0ec9651so1633491a12.3
+        for <linux-pm@vger.kernel.org>; Fri, 07 Nov 2025 08:08:52 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1762531730; x=1763136530; darn=vger.kernel.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=vi4OlyDfrFyMuA//87+yq4v93Npa9bmKSRfzlMv2g0g=;
-        b=kiH0DTPgOyugBgO2kpcmOOvWRpvp6FJwy3XPbkaPqjdEyjZGJNaqviyfUNYcHJ5m5n
-         vayYwe+yuCYPjb+0yyqQkRi98h0bPAiLrn/AdVJ07s5nUNM7rfb+8470OCya/dBtpREm
-         /scTBslkqV2sqIiAEX7iMgVz+wxIZBTzS5kb1AJS0XDrUis0O/628kSHdhXmtZ9lmHT/
-         BoO5NDeheK0sey2W6XL/OKRQcCp17BC8YIN2+eDvK4rRBDQnxLENi+AynKag+oxjRl3p
-         fWJSSdJseCTofkryqXOjnkuQwgumbwuHTvxtNlP9t0HthBZPY0SVa3r6GPNIe3MZVG5D
-         bx7Q==
+        d=fairphone.com; s=fair; t=1762531731; x=1763136531; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=M6OFyEM0mwtoBUd6fjbO6FrIz0k/kDLhqnCZDGR6L50=;
+        b=mLw/fGotcCQwPOCJGVL+xuq/OAELVkU5YcmAVQmghR2VUtWG9qU9Yesn2UaapGPOUA
+         ZstY427FF26r8ErT5jQkcVUAcug9cXJZXM339I6ruD3as7frY7Mv/i/bH9Plmvr50xul
+         SQgDvIaaVS0s6LGS/uLY5r/mQBis2Qn0EmCgoNa7tW3enNqyS8opyuIPgfqkEQ739lpO
+         tN1YbKYDu0Bx8yPcybmN7ufzJPkz0GpWrSV4B7aLaJTE+QLC3GUkKSenLtxVlgz4IIax
+         IUfjKNz905l525j50YXexlLsIe7TSMunug6FVkBUuAxjWjXQSGt1iZl79gWudU6hws+6
+         FY3Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762531730; x=1763136530;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=vi4OlyDfrFyMuA//87+yq4v93Npa9bmKSRfzlMv2g0g=;
-        b=E6RtjngF9b9OJDGY30DOITpz6/WO5pV37HzpxX2Wr5El3pxTPA0m1c9DOpkxKXKcte
-         3w/kRtxzKqbYiVA4rSwHyyO35l++3VRTI4tQsEYVbQBiCbExNPVyyQ/vku//SJbfFxEJ
-         6k0beQ9DYqDq0rSR6/7KY7mrZwx+h/DDcyj7IxJGrZA6xLeT/6hUPtt0vLqLnNSV70r3
-         ewiUEDoIVEkSD4kt1KIehpcqcyMH1S4S5dst8jo1N6pyKg8o6y4x48egT3hOkuZBB7IR
-         9ff6B4rfe76Dovg+Nf5ffVfPJzXc7y2f/oshd3CtGHkkdMCBx6Z57SuAJxr2GjSnxR7U
-         Jehg==
-X-Forwarded-Encrypted: i=1; AJvYcCVO17j5MI1HT43sglcowdkSfS6fLyB/k2VmwIRuEo08O+4FgVS91o2Xre48x8KAT+vbI9HfRpf9MA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyIaYmqOqz9kYUFkPeOU7ImIkkTArdyTQjHNicxKVZ1B2tV3Iqu
-	EU2HGXS/bfDweyPlJWw3smhkRd/f+gC+BeuotTBBcJADhhB8YeVXJfRZq7NlcZB/9Eo=
-X-Gm-Gg: ASbGncsNujUoofUXrSkcaVLbs4wnkYSDjSywerwIF1HHgM2SVPJ5KUYMKCbot40waTZ
-	Fkt1kQVJ5xgc4nrLYSc9SvypnJmuqjHj7PDzGLnBrucha7B3c9FKIGZyDeaTf+lQj8xC5+r3vS0
-	FVC8tKB/GAx08nzdjzeKinU2ESJGt69pDS0Eoy7yW9CLp0ivuKYkXqHE6ACzN8uUkS3Tt1JGEzA
-	1GpBEHvQjVAIL3Kv1hETXOOPvSXN0n6+UpNYCF3d9fqDaAdlRDoREj1cQskUfS+3/em8eg8mfyl
-	JDHRqOdwzIu5DsFxZ/PwwgLOg+q2cAgwIRDM9xZkOcqKJx2IMKasf5aB5XjsMyhiFAehFov1T5m
-	KTUEErRMUV2o852lRzU2oEl1lZ9rlhcdtpcgrcovPc89mZ+oJ+vXtjSwJO1cf5Xqc0eSNC5LzhY
-	lHsqhkC6J6xpep98OkiC1vlZeEQSsDiIob6/uqm+N9+uX7tVsP32TCVaM=
-X-Google-Smtp-Source: AGHT+IGT7CaeEz6g3FtTP8c/NtDzRQa7iR2B6l8J10WYQFcAMOVl4hOnUuV2ukorx8UFB+TFYGU87g==
-X-Received: by 2002:a05:6402:35c3:b0:640:bb20:41c7 with SMTP id 4fb4d7f45d1cf-6413f059b62mr3497605a12.7.1762531730417;
-        Fri, 07 Nov 2025 08:08:50 -0800 (PST)
+        d=1e100.net; s=20230601; t=1762531731; x=1763136531;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=M6OFyEM0mwtoBUd6fjbO6FrIz0k/kDLhqnCZDGR6L50=;
+        b=GJHI1HEnEAYMkXngphSW1QkAlUVsrZlhtGDT38rSB5isZBR0JNYAd34nSq7XDdos9V
+         pxSkTZeXU4gSs0mn43KMh9l6x3aAP4cxi0AJEiKdPvUgLbn8CFXoQGSDb0ZOf0WQx9xR
+         SJQ9IWTPfdnmwev6ir0YqUa4A3WNgFpokG3RRA+UDLQggHDF3z5YY3teq1xxDk6iG4S4
+         EVPBiuidK4BfY0JOyAyFd7dUkcVlOsydwWMxH9xhmMHEKp1hAwz+l02M0jswZy1xGDN0
+         1wh//Yt/mZ9wh9r54H1kNhtxzeV/YHoFR45ozeiLQo3u7Srtxy1zRQSxh4oN+ETSec99
+         otgA==
+X-Forwarded-Encrypted: i=1; AJvYcCXeu8VwGfIP2Et257SuC89rIXvZZDOxD+w4Jwpyc0b3MMsW2NnTN57EfnFjAm/K3EFBrfQZPMsSRQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwhyTemqbjFcDyx6KglqFEuA3D2Wl4JJpTxEF3+nU11po9SJgOS
+	Jot6orLxTXaYuWkyPadVv++FNywUvAPW5HIkZQ3MQtNGp5syuckOI0GysKA5/KVvOIO/+3Btc3C
+	VDIv2u5M=
+X-Gm-Gg: ASbGncvXefle76oUaBPXUQ3O2iqhFbzo71w24PZ/lTJBT8o3vIev5N/M74zeWi0NVRW
+	XynuL9qJf+PHatKlGhHKGpmzHooCOIyBPQHCH8XPDPDzGsRcppuRYLjc7Fhq9jT5S5GFBo5xWRh
+	Q0K1cMnNcvmAcUY0Q87SfzcngG55w2s9/dfK8fQFwJ6pXfQaHW5bnIzwl1ZdoxMUepXMqEbus1t
+	4X+xl67UKoCM3J3GueUj2NWL+MF0vUMJ8W1Kpb9MxxlTxuCoUzpo3peIZrc3ltqb7xC+nGT5QGR
+	rWH3K8BUz2P5IApkK36y+esVsotJGNm/ok2MRfn1Ukfptx6NLnqBpPGES54d05EV7pfgx2MaZlb
+	mmjuDEpY0AP5FLOh2va+L1e4XXBy+OfdrZu/yd8PMTzsJf+sJiZuko+0VpQYWvOPqu7V2A5l2ZS
+	jDSdJxzN6XF5pEa975+ba4LCSJMhDiZuL4s5v25evgOve2GQ5QOKWbZP0=
+X-Google-Smtp-Source: AGHT+IFc5yHu64pZOVzhmSiW9o358Hhl91qRFBo7frY9TOt1voWJpvXX8q8w1oYhoIzDVymNV/t2pA==
+X-Received: by 2002:a05:6402:3513:b0:640:e791:df67 with SMTP id 4fb4d7f45d1cf-6413ef03618mr3463236a12.10.1762531731544;
+        Fri, 07 Nov 2025 08:08:51 -0800 (PST)
 Received: from [172.16.220.100] (144-178-202-139.static.ef-service.nl. [144.178.202.139])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6411f713959sm4444376a12.5.2025.11.07.08.08.49
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6411f713959sm4444376a12.5.2025.11.07.08.08.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 Nov 2025 08:08:50 -0800 (PST)
+        Fri, 07 Nov 2025 08:08:51 -0800 (PST)
 From: Luca Weiss <luca.weiss@fairphone.com>
-Subject: [PATCH 0/5] Enable QoS configuration for SM6350
-Date: Fri, 07 Nov 2025 17:08:46 +0100
-Message-Id: <20251107-sm6350-icc-qos-v1-0-8275e5fc3f61@fairphone.com>
+Date: Fri, 07 Nov 2025 17:08:48 +0100
+Subject: [PATCH 2/5] interconnect: qcom: icc-rpmh: Get parent's regmap for
+ nested NoCs
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -69,11 +72,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAI8ZDmkC/02Nyw6CMBBFf4XM2kn6CC30VwwLWqbaGKi2iCSEf
- 7fCxuU5yT13g0wpUAZTbZBoCTnEqQC/VODu/XQjDENhEEzUnDONeVSyZhicw1fMOEjeem8lKeu
- hjJ6JfFiP4LU7OdHrXbrzKcH2mdDFcQyzqSZaZzzaTDTwf2qqn2aKS0z0ielxXLJBWi206nXbm
- EVCt+9fyLdVBcMAAAA=
-X-Change-ID: 20251107-sm6350-icc-qos-d319ffb3e6bf
+Message-Id: <20251107-sm6350-icc-qos-v1-2-8275e5fc3f61@fairphone.com>
+References: <20251107-sm6350-icc-qos-v1-0-8275e5fc3f61@fairphone.com>
+In-Reply-To: <20251107-sm6350-icc-qos-v1-0-8275e5fc3f61@fairphone.com>
 To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
@@ -83,62 +84,57 @@ Cc: ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
  Luca Weiss <luca.weiss@fairphone.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1762531729; l=2705;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1762531729; l=1554;
  i=luca.weiss@fairphone.com; s=20250611; h=from:subject:message-id;
- bh=1UB7MjUKjWV6747T2U48We331jDJpIjDCkO4sdbS0zo=;
- b=7mpYa6QY9OFMGZX59eWyR/bGGqlpm0cTZ2rZeg4gqwW2L/pDo3zmdposoVlJ/5J4/B0Y6VqqF
- 8M6lLN3Ar3xA+DqZB5IsIbN52MtSNhpgNhytT26zJHBmDsSzdOqs7Kb
+ bh=FrKylvjtIbykfg6BNRKjScYknFwVxGFQEfuD+JLYCCg=;
+ b=nTRGQyYmySEkpmasdBUmEaPB51ISRGLTYkLSIUcHDR8tbweZYP3kljRlJhHKqSeem9gQeqLRC
+ DHVQ5/NTu3BDPGZMEfeU2PpcIDxP74CA8UJEXfBUhruv7IqiClWTtIv
 X-Developer-Key: i=luca.weiss@fairphone.com; a=ed25519;
  pk=O1aw+AAust5lEmgrNJ1Bs7PTY0fEsJm+mdkjExA69q8=
 
-Update dt-bindings, driver and dts in order to configure the QoS
-registers for the various SM6350 interconnects.
+Since commit 57eb14779dfd ("interconnect: qcom: icc-rpmh: Support child
+NoC device probe") the icc-rpmh driver supports initializing child NoCs,
+but those child NoCs also need to be able to get the parent's regmap in
+order to enable QoS.
+
+Change the driver to support that and support programming QoS register.
 
 Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
 ---
-Luca Weiss (5):
-      dt-bindings: interconnect: qcom,sm6350-rpmh: Add clocks for QoS
-      interconnect: qcom: icc-rpmh: Get parent's regmap for nested NoCs
-      interconnect: qcom: sm6350: Remove empty BCM arrays
-      interconnect: qcom: sm6350: enable QoS configuration
-      arm64: dts: qcom: sm6350: Add clocks for aggre1 & aggre2 NoC
+ drivers/interconnect/qcom/icc-rpmh.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
- .../bindings/interconnect/qcom,sm6350-rpmh.yaml    |  65 ++++-
- arch/arm64/boot/dts/qcom/sm6350.dtsi               |   3 +
- drivers/interconnect/qcom/icc-rpmh.c               |  12 +-
- drivers/interconnect/qcom/sm6350.c                 | 298 ++++++++++++++++++++-
- 4 files changed, 356 insertions(+), 22 deletions(-)
----
-base-commit: 33b5a67d76ce575ea38bc3de55719a6cdf42287d
-change-id: 20251107-sm6350-icc-qos-d319ffb3e6bf
-prerequisite-change-id: 20250613-rework-icc-0d3b7276a798:v3
-prerequisite-patch-id: dc49cf2810a33db590997c9e9969f09fcbba207e
-prerequisite-patch-id: bd229a10bfd7485726f341f1bbc179fa032e4beb
-prerequisite-patch-id: ea3e9a509dc2d590f647560df3fa773165d5df48
-prerequisite-patch-id: 95b82df224ac0515c56d41cad8547099248697c1
-prerequisite-patch-id: c793efccb33da5b78d634fc0f7259c01854c7da2
-prerequisite-patch-id: b25a3cc84427ed3d321575d32dee239aa6dcfa65
-prerequisite-patch-id: 8262f845f906a575f9ee06c002d8626c7b25a87e
-prerequisite-patch-id: f3b9493e64d90665d7093c7f7af335452010cf13
-prerequisite-patch-id: 4e05eb6178064d4b4541fccbff31e18d4e5ae258
-prerequisite-patch-id: 4c169d0f54fb39999cf62eaba98208fd94e0d250
-prerequisite-patch-id: 91f18aff5b2cc765964c8991647dd53e75e97648
-prerequisite-patch-id: 7749a4cc2e2e8e2ac191844f8c42f338d0a80392
-prerequisite-patch-id: 75a9009c7cdbeb94b2c7528f6ecc54d7a4b7a6be
-prerequisite-patch-id: 9566648a76666548a85084664ba6fd4a240fe602
-prerequisite-patch-id: c2ba63308bedf78640d64d9662ebfe2ceb7e6d26
-prerequisite-patch-id: a08ad34a60042b2693b91f24712ccc10e0d5666b
-prerequisite-patch-id: 8227a4926c64a28215b6c03d43df5518d72094e8
-prerequisite-patch-id: 15ece9c03dbae75dbfb1b16a2e2c1d2ed1766c82
-prerequisite-patch-id: e69ae611580f951450269b4a7df8789f6b2e2c89
-prerequisite-patch-id: 5e54f850197bc33dc581ff8907fcad1dccef20a8
-prerequisite-patch-id: 73caecb9e342117c2a83832f0d2346119466a899
-prerequisite-patch-id: 79abd6d335f0bdd8725c27797d4fbc7ffc017007
-prerequisite-patch-id: faa043f224857fad9bd8368d83d5154e3f7013c1
-prerequisite-patch-id: 5d7fdb3ea01a6066079dd89a4e494165b75159db
-prerequisite-patch-id: 0234857c8f0119652dcf3fd6e7e1fe051f40a6ea
+diff --git a/drivers/interconnect/qcom/icc-rpmh.c b/drivers/interconnect/qcom/icc-rpmh.c
+index f90c29111f48..2103185a44a5 100644
+--- a/drivers/interconnect/qcom/icc-rpmh.c
++++ b/drivers/interconnect/qcom/icc-rpmh.c
+@@ -308,7 +308,16 @@ int qcom_icc_rpmh_probe(struct platform_device *pdev)
+ 		struct resource *res;
+ 		void __iomem *base;
+ 
+-		base = devm_platform_get_and_ioremap_resource(pdev, 0, &res);
++		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++		if (!res) {
++			/* Try parent's regmap */
++			qp->regmap = dev_get_regmap(dev->parent, NULL);
++			if (qp->regmap)
++				goto regmap_done;
++			goto skip_qos_config;
++		}
++
++		base = devm_ioremap_resource(dev, res);
+ 		if (IS_ERR(base))
+ 			goto skip_qos_config;
+ 
+@@ -318,6 +327,7 @@ int qcom_icc_rpmh_probe(struct platform_device *pdev)
+ 			goto skip_qos_config;
+ 		}
+ 
++regmap_done:
+ 		qp->num_clks = devm_clk_bulk_get_all(qp->dev, &qp->clks);
+ 		if (qp->num_clks == -EPROBE_DEFER)
+ 			return dev_err_probe(dev, qp->num_clks, "Failed to get QoS clocks\n");
 
-Best regards,
 -- 
-Luca Weiss <luca.weiss@fairphone.com>
+2.51.2
 
