@@ -1,71 +1,114 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8285033858E;
-	Fri,  7 Nov 2025 18:42:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4254416F0FE;
+	Fri,  7 Nov 2025 18:45:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762540953; cv=none; b=HcWN/4HubQlhATw5vyGu6TWH8CgapHw70z0btYN27MQBjWR3oWIssOvUydN9S71cqIsuaq5PRcAIb5xfbdG+i8lk6v+LBZcKKgDFBz6V1c2yXEJX+byzrT0ebb87ud6B1nwsDv/QycJ4YzMXpD/x1HtexgfStopXU0C/N65ROxM=
+	t=1762541122; cv=none; b=TFiZ7rueLfZN9/6l6+fW9dFInjIPbFrfivT+WfUjLCtjJuLY3ir4ZL0z7LcC+Bg82+EeSAE4h8Z6/8kboAieeyYrJkUQ+O23bKv8f9I1ZG9De0iaDigbJNyEXSdcB7Jy7zPmjIqEgllo9yPoqyBGtVrOcGeTKvoqJkf+jX9aLYg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762540953; c=relaxed/simple;
-	bh=8e9r71ILje2MFL5Wix8wnYUE8Y/g4bcrvhisRr1k58Y=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=WKONj54p1ywqSpYef7weVq7uj0xWidtZeoH2QNXlh+4yi76tWBas6DWK8ptkE/dMRkqZcWtUlyZ6m1fOop2f/om7j6yEtvGZizVff2UNM4/cxc0QH2//CFvEmMGLe9JKSatldEHtU+UfZwF9MAjU/LfBtfXGVPr3QMEHLiooh5g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YjPnec1E; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1762541122; c=relaxed/simple;
+	bh=Q8FxDt7eqtqgy06pFP3/HPIuhZ8Iv+3Mro4qoktzN3w=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Q9r1Db7IUjUTxooEo0rqj3+GL0QKOLMFzQ4IeNgE5ioBt5V0+9e/1EI9LxbLPB6g5IgtRP0KUYpHDG1MoXN7Le/Dh+eZbKtIfd6yHifwlyXvbWlN7CeJXf63rpFmsi+N1PaT6GoM5hlr2fqas+2Cuc06ecS0fnQEkLie2wtxAuw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=TiRtsq9p; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YjPnec1E"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 291CFC4CEF7;
-	Fri,  7 Nov 2025 18:42:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762540953;
-	bh=8e9r71ILje2MFL5Wix8wnYUE8Y/g4bcrvhisRr1k58Y=;
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="TiRtsq9p"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1762541118;
+	bh=Q8FxDt7eqtqgy06pFP3/HPIuhZ8Iv+3Mro4qoktzN3w=;
 	h=From:To:Cc:Subject:Date:From;
-	b=YjPnec1EEFQx5cL7vkV+lOAv8ziaJZKIfwp8zjmRmeC2NGgX8PDarSvDT+rnKTQsN
-	 hta+v1910ti3fxwuV8xSvABh/Y2Jhixjhp99TgWyW7cQ1FNC07MjFrlZstpFoIImG5
-	 YxfrtJ/RXXf2t85qgeVq6vcMQwHgDTUSPYGqOY5KEhv9mmO87sG5Vr3HT3GCz3+wtf
-	 +bLqdkjvJjQyc7x45tbUoLxlSKY/6zDvoYQQKK3hAMbOlDWJjtZCcDpxbPz0noINCh
-	 A79Cno0JWseiLA7KiYxzY2CWyBS6JkvdeHOXnHOJ65bRYoSb/HKIq46p8IeYjMaby2
-	 GT96+SJmLPaKw==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
- Jonathan Cameron <jonathan.cameron@huawei.com>, Takashi Iwai <tiwai@suse.de>,
- LKML <linux-kernel@vger.kernel.org>, Zhang Qilong <zhangqilong3@huawei.com>,
- Frank Li <Frank.Li@nxp.com>, Dhruva Gole <d-gole@ti.com>,
- Dan Williams <dan.j.williams@intel.com>,
- Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <helgaas@kernel.org>,
- Alex Williamson <alex.williamson@redhat.com>
-Subject: [PATCH v1 0/3] PM: runtime: Wrapper macros for usage counter guards
-Date: Fri, 07 Nov 2025 19:35:09 +0100
-Message-ID: <13883374.uLZWGnKmhe@rafael.j.wysocki>
-Organization: Linux Kernel Development
+	b=TiRtsq9pJ9kLRQvjImXlQJgHfqr764uE+hd5JomnbPu1ggma/VmwO/56Rjb9/ipxs
+	 vm5dlLweg8uJi45h1sICfLYKKkB3win1IPPw+HcvcnKYMIi+CR1tQ+DUfZ7aVj7Rdr
+	 UOpH1AgHw58QDgGpOFfYZfXLX3Ohk5J7/E7KKScLxSmcwo366tU2rgVwLdFHC4dSko
+	 h/nFfrv8ZQTHK/L7RpdMD/ueJwNYW260Bb/uJWrThBkAkVu4tCKXysj5uqZssCgZgH
+	 9ehJIYvEHv8hLOSvFNvXBdli0IlyknqpoJ6vZDHPdNm1nT3SpeimDNWSPBM61Y65r3
+	 sEOgb1zHJGdLA==
+Received: from mt.tail9873f4.ts.net (unknown [144.48.130.189])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: usama.anjum)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 3E54317E0927;
+	Fri,  7 Nov 2025 19:45:14 +0100 (CET)
+From: Muhammad Usama Anjum <usama.anjum@collabora.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Peter Zijlstra <peterz@infradead.org>,
+	linux-acpi@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-input@vger.kernel.org
+Cc: Muhammad Usama Anjum <usama.anjum@collabora.com>,
+	kernel@collabora.com,
+	superm1@kernel.org
+Subject: [PATCH 0/4] PM: Hibernate: Add hibernation cancellation support
+Date: Fri,  7 Nov 2025 23:44:27 +0500
+Message-ID: <20251107184438.1328717-1-usama.anjum@collabora.com>
+X-Mailer: git-send-email 2.47.3
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Hi All,
+On a normal laptop/PC, the hibernation takes 15-20 seconds which is
+considerable time. Once hibernation is triggered from command line or by
+some GUI option, the hibernation cannot be cancelled until completed.
+Its not a blocker, but poor user experience.
 
-The runtime PM usage counter guards introduced recently:
+When power button is pressed during hibernation, it generates interrupt
+and then the event is routed to userspace. If systemd is being used, the
+logind handles these events and performs the specific action.
 
-https://lore.kernel.org/linux-pm/6196611.lOV4Wx5bFT@rafael.j.wysocki/
+During hibernation, the first stage is to freeze the userspace. Hence
+even if the power button is pressed, it doesn't aborts the hibernation
+as user space daemon is frozen.
 
-and then fixed:
+My device takes ~19 seconds to hibernate. When I was testing hibernation
+using rtcwake with timeout of 10 seconds, I found out that hibernation
+gets canceled around 10 seconds mark when the interrupt fires.
 
-https://lore.kernel.org/linux-pm/5943878.DvuYhMxLoT@rafael.j.wysocki/
+In this series, the idea is to find a way to cancel the hibernation.
+With this series applied, the hibernation gets cancelled gracefully.
 
-should generally work, but using them feels sort of arcane and cryptic
-even though the underlying concept is relatively straightforward.
+The hibernation cancellation support isn't present in very last stage
+just before power_down(). I've not been able to handle the error paths
+correctly there yet as logs aren't available from that stage. I'll send
+that patch separately when it works.
 
-For this reason, runtime PM wrapper macros around ACQUIRE() and
-ACQUIRE_ERR() involving the new guards are introduced in this series
-(patch [1/3]) and then used in the code already using the guards (patches
-[2/3] and [3/3]) to make it look more straightforward.
+Cc: rafael@kernel.org
+Cc: superm1@kernel.org
+---
+Changes since RFC:
+- Update description of patches
+- Use pm_sleep_transition_in_progress() instead of
+  hibernation_in_progress()
 
-Thanks!
+Muhammad Usama Anjum (4):
+  PM: hibernate: export pm_sleep_transition_in_progress()
+  ACPI: button: Cancel hibernation if button is pressed during
+    hibernation
+  Input: Ignore the KEY_POWER events if hibernation is in progress
+  PM: sleep: clear pm_abort_suspend at suspend
 
+ drivers/acpi/button.c     | 12 +++++++++---
+ drivers/base/power/main.c |  2 ++
+ drivers/input/input.c     |  6 ++++++
+ kernel/cpu.c              |  1 +
+ kernel/power/hibernate.c  |  5 ++++-
+ kernel/power/main.c       |  1 +
+ kernel/power/process.c    |  1 +
+ 7 files changed, 24 insertions(+), 4 deletions(-)
 
+-- 
+2.47.3
 
