@@ -1,110 +1,186 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2AF53375CF
-	for <linux-pm@vger.kernel.org>; Fri,  7 Nov 2025 19:48:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43EA1302CAC
+	for <linux-pm@vger.kernel.org>; Fri,  7 Nov 2025 20:08:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762544913; cv=none; b=Gnn+95e34eVJGjFDUrjKA47S6F4o0iXJDl0o6eP81yVK9OXt4S1oTC4bKziA5Bqei8tycs1RTaLxnoqD6w5ast2KTn1Xn+DsbbOXRg39AmbmMfpKTJmFf2nCeFy9prkySimSEwbTEICz3Oguy4wrEbL8EZ3TXN5n3o/sjl1Btqg=
+	t=1762546133; cv=none; b=KkIULfYZUjnNQQQjHCubOxJK8pXXPJZrKzsz3tl7NQovpLT0x5Z7TGYaDYcqjzLEsqAkYaT+oxoiYiTZ+XIZeg0CaU+AmrH+1iP0OuUWVzX7vwOoeTnUqkJlLjzdol7qycXgb+qUTqM0/eqG/vTRUpH2oRu4cyIVAk6gtb/GY5U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762544913; c=relaxed/simple;
-	bh=jVmrd4OImxyn7gwQSEP1GTQ4NDcZIuueF+51qwhy7Bs=;
+	s=arc-20240116; t=1762546133; c=relaxed/simple;
+	bh=szesQpSM5oo7OsiDU5UKtOwtIL9eGv7CnUXjP7KFeos=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=FSM0tHj0CeGjfUH8xXxErWLcM0BhwDDmSBM5+NUSESjhYnAtWwMbVTebN8Eb07VHaiZbCOyZrvoKR5yG0TQJ2Hs0GygqRIJoVHNAwpAUQuYI8+yL98rySFt1Ms8wDusiBpsk4V24tROOnrEZA7b4Co4ziwgHeg0oFJOkqJyuV9g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ef58Lus/; arc=none smtp.client-ip=10.30.226.201
+	 To:Cc:Content-Type; b=tUaoVVpMiDKi4Sj+Hu8y8NNFVYqOdoC4ysudb5rsO7NsqanGRvoL+9igdtgvoSXrZtK15OK1qtiRQ0N40ySpX2fklzAM2k1dD6wObKesiG/eUKXrIiuf1lBDCOFslU/1H4wI8bldVQIFTXOQyQDzJm03Ryy3EyeAB5DV4iFIxaI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SgWH+hkh; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ef58Lus/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5A362C19423
-	for <linux-pm@vger.kernel.org>; Fri,  7 Nov 2025 19:48:33 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SgWH+hkh"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E3F83C2BCB0
+	for <linux-pm@vger.kernel.org>; Fri,  7 Nov 2025 20:08:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762544913;
-	bh=jVmrd4OImxyn7gwQSEP1GTQ4NDcZIuueF+51qwhy7Bs=;
+	s=k20201202; t=1762546132;
+	bh=szesQpSM5oo7OsiDU5UKtOwtIL9eGv7CnUXjP7KFeos=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=Ef58Lus/T4l61OLQyp3LuWhB4ykyNSOTnZve3WeJtIWNIjIu7DtTPYdUo65b51np3
-	 5nP2Aix/uRNEDOV5f2XfNiAuSy392lJ8pE+H/4WHede8R/gBk1mnBQhAHtOFDag0Y3
-	 AYjc54nhVDMP7en0zClM8jMTStFGzRjtybyDdJCXQPQ3IC1lHuTYZpDPyGT6RmL/1d
-	 IQV0lIs6BG6DGx5XrKEihBaOL2et+TZvewZR40aTB3SELTNaNyG7+icgZvTIveuZg+
-	 ND1S3YOz0Oelwtg3vTBIjVwoRM/oorpAtqakl/9fyJTUcEgn3M0IjTZioDTwD3K2I6
-	 tfvcbpQ9uNr/Q==
-Received: by mail-oi1-f169.google.com with SMTP id 5614622812f47-44fffff5f73so562491b6e.0
-        for <linux-pm@vger.kernel.org>; Fri, 07 Nov 2025 11:48:33 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCXUFvvGe1QetzEpJYWeYXW0fxkJ1eB09Nmtzn6v1U+AP2/6YaVl7USi2/wnDic+WRetMKZnlunzJg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzxhhw0xxhnQH+ZHKp+REIPlRnBSy9997svA2WfrmP6mi91JSpr
-	JERU+IC1YnXaNo764VBCeiEPZT3QVpNiutLmrGQr/aHPCEPLAw8QZRtjfcdKubbuYG8QaOGH1Gx
-	a7SJWGsF/eCh7urr77Ncfs1uZ4Y8tuMA=
-X-Google-Smtp-Source: AGHT+IFfjcZQMaSMf/O0E7bHDvyenSz2TU7wnFXyLVZ2U6iGaSEGM0Li0KrPZeYcaNcWs96gi7YlfQIKTtL1lzqsBTE=
-X-Received: by 2002:a05:6808:4f13:b0:43d:2e06:4e84 with SMTP id
- 5614622812f47-4501c747f7fmr1415267b6e.13.1762544912008; Fri, 07 Nov 2025
- 11:48:32 -0800 (PST)
+	b=SgWH+hkhgSTsQ8dSxR7qNCQ35d4hulsb8mbX0ntPBArxOwl6HSgKfEtq8xuzzp6rL
+	 5JgQye24wVB59NbdxzvGUtOR3lterwp+FFULp8wYzgprBEASDKgwxIAIyqcrCiSYFg
+	 D/D2HQz/MQGCL5WZRbneF/bQy0MMZqRDa2HT5Gsr/7e2ILt6OEhuywaUy/yLGmALYB
+	 9uLFj+MW/aQAz73QLJNBfnT4YpeBplbhVBeTIWCLYh10gL0O7iB8B92Dks/+82hEhL
+	 AIakL9jriZdml/GdLrsmzgd5VclXyQAv0Rub9SWzwvF2s98MJXjJSYVlySJdszC37U
+	 B7VpMVeIo+dyw==
+Received: by mail-oo1-f44.google.com with SMTP id 006d021491bc7-656cd6c1c5eso487098eaf.0
+        for <linux-pm@vger.kernel.org>; Fri, 07 Nov 2025 12:08:52 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCVhhPhHf+TxlktCFlrwq3npOgwhUQeXEmCx/QMnAdr8DGY4s+VHNVkdGBK9YRbgiX/L1DdUYU3ZlQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxvRiRzJCjXwQFsp/sbA9s+qReCAQB/G0JyWsDGarJmArMwL2YU
+	BSYMIXIsSHkdpGQyxkLpdubcArCGnRr3FGNM+kEovLFyEGG7edvORHNSYsn5xPcU4KNJJAY2rD6
+	xhjn4eji6Llwq9nFkkg0+i+WZR6/1efE=
+X-Google-Smtp-Source: AGHT+IGA04jm71Ij9xeQJEzJY7AxE62iCGgrrBQyNvtjVXE70OmsxBr7+clNSkaS9F9EzCSb46Qp9YHiGNZGj0RJ2fQ=
+X-Received: by 2002:a05:6820:16a6:b0:656:8360:3906 with SMTP id
+ 006d021491bc7-656d8ea527dmr426344eaf.8.1762546131960; Fri, 07 Nov 2025
+ 12:08:51 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251103162516.2606158-1-srosek@google.com>
-In-Reply-To: <20251103162516.2606158-1-srosek@google.com>
+References: <20251105113844.4086250-5-sumitg@nvidia.com> <202511061802.lIq09jwh-lkp@intel.com>
+ <be696cb5-7d0d-44f6-970b-e417c2f89a8e@nvidia.com>
+In-Reply-To: <be696cb5-7d0d-44f6-970b-e417c2f89a8e@nvidia.com>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 7 Nov 2025 20:48:21 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0jPdfut_QHz9f0x+SSexD_i8xEb5bhkzMv_m=a598Hqxw@mail.gmail.com>
-X-Gm-Features: AWmQ_bk_tz9nQGJAp7GZKrIe43u7pcO4azGS2YQ7FnFcvmD2-6KLrj0eNLfHFuw
-Message-ID: <CAJZ5v0jPdfut_QHz9f0x+SSexD_i8xEb5bhkzMv_m=a598Hqxw@mail.gmail.com>
-Subject: Re: [PATCH v4 0/2] ACPI: DPTF: Move INT340X enumeration from DPTF
- scan handler to ACPI core
-To: Slawomir Rosek <srosek@google.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Alex Hung <alexhung@gmail.com>, 
-	Hans de Goede <hansg@kernel.org>, Ilpo Jarvinen <ilpo.jarvinen@linux.intel.com>, 
-	AceLan Kao <acelan.kao@canonical.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Tomasz Nowicki <tnowicki@google.com>, 
-	Stanislaw Kardach <skardach@google.com>, Michal Krawczyk <mikrawczyk@google.com>, 
-	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, 
-	platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+Date: Fri, 7 Nov 2025 21:08:40 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0j8bQm+00+m75rmpKpm8yVumvYsWzCdYyCPwksnebY__A@mail.gmail.com>
+X-Gm-Features: AWmQ_bnyTo8wfwCEW9lyu_1xYl179djStUEiTR_5ulbMLWD8CjXHhBWwog1DvlU
+Message-ID: <CAJZ5v0j8bQm+00+m75rmpKpm8yVumvYsWzCdYyCPwksnebY__A@mail.gmail.com>
+Subject: Re: [PATCH v4 4/8] ACPI: CPPC: add APIs and sysfs interface for min/max_perf
+To: Sumit Gupta <sumitg@nvidia.com>
+Cc: kernel test robot <lkp@intel.com>, rafael@kernel.org, viresh.kumar@linaro.org, 
+	lenb@kernel.org, robert.moore@intel.com, corbet@lwn.net, 
+	pierre.gondois@arm.com, zhenglifeng1@huawei.com, rdunlap@infradead.org, 
+	ray.huang@amd.com, gautham.shenoy@amd.com, mario.limonciello@amd.com, 
+	perry.yuan@amd.com, ionela.voinescu@arm.com, zhanjie9@hisilicon.com, 
+	linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, 
+	linux-doc@vger.kernel.org, acpica-devel@lists.linux.dev, 
+	linux-kernel@vger.kernel.org, llvm@lists.linux.dev, 
+	oe-kbuild-all@lists.linux.dev, linux-tegra@vger.kernel.org, 
+	treding@nvidia.com, jonathanh@nvidia.com, vsethi@nvidia.com, 
+	ksitaraman@nvidia.com, sanjayc@nvidia.com, nhartman@nvidia.com, 
+	bbasu@nvidia.com
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Nov 3, 2025 at 5:25=E2=80=AFPM Slawomir Rosek <srosek@google.com> w=
-rote:
+On Fri, Nov 7, 2025 at 11:00=E2=80=AFAM Sumit Gupta <sumitg@nvidia.com> wro=
+te:
 >
-> The Intel Dynamic Platform and Thermal Framework (DPTF) relies on
-> the INT340X ACPI device objects. The temperature information and
-> cooling ability are exposed to the userspace via those objects.
 >
-> Since kernel v3.17 the ACPI bus scan handler is introduced to prevent
-> enumeration of INT340X ACPI device objects on the platform bus unless
-> related thermal drivers are enabled. However, using the IS_ENABLED()
-> macro in the ACPI scan handler forces the kernel to be recompiled
-> when thermal drivers are enabled or disabled, which is a significant
-> limitation of its modularity. The IS_ENABLED() macro is particularly
-> problematic for the Android Generic Kernel Image (GKI) project which
-> uses unified core kernel while SoC/board support is moved to loadable
-> vendor modules.
+> On 06/11/25 16:00, kernel test robot wrote:
+> > External email: Use caution opening links or attachments
+> >
+> >
+> > Hi Sumit,
+> >
+> > kernel test robot noticed the following build warnings:
+> >
+> > [auto build test WARNING on rafael-pm/linux-next]
+> > [also build test WARNING on rafael-pm/bleeding-edge linus/master v6.18-=
+rc4 next-20251106]
+> > [If your patch is applied to the wrong git tree, kindly drop us a note.
+> > And when submitting patch, we suggest to use '--base' as documented in
+> > https://git-scm.com/docs/git-format-patch#_base_tree_information]
+> >
+> > url:    https://github.com/intel-lab-lkp/linux/commits/Sumit-Gupta/cpuf=
+req-CPPC-Add-generic-helpers-for-sysfs-show-store/20251105-194715
+> > base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git linux-next
+> > patch link:    https://lore.kernel.org/r/20251105113844.4086250-5-sumit=
+g%40nvidia.com
+> > patch subject: [PATCH v4 4/8] ACPI: CPPC: add APIs and sysfs interface =
+for min/max_perf
+> > config: riscv-defconfig (https://download.01.org/0day-ci/archive/202511=
+06/202511061802.lIq09jwh-lkp@intel.com/config)
+> > compiler: clang version 22.0.0git (https://github.com/llvm/llvm-project=
+ d2625a438020ad35330cda29c3def102c1687b1b)
+> > reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/arc=
+hive/20251106/202511061802.lIq09jwh-lkp@intel.com/reproduce)
+> >
+> > If you fix the issue in a separate patch/commit (i.e. not just a new ve=
+rsion of
+> > the same patch/commit), kindly add following tags
+> > | Reported-by: kernel test robot <lkp@intel.com>
+> > | Closes: https://lore.kernel.org/oe-kbuild-all/202511061802.lIq09jwh-l=
+kp@intel.com/
+> >
+> > All warnings (new ones prefixed by >>):
+> >
+> >>> Warning: drivers/cpufreq/cppc_cpufreq.c:954 function parameter 'polic=
+y' not described in 'show_min_perf'
+> >>> Warning: drivers/cpufreq/cppc_cpufreq.c:954 function parameter 'buf' =
+not described in 'show_min_perf'
+> >>> Warning: drivers/cpufreq/cppc_cpufreq.c:976 function parameter 'polic=
+y' not described in 'store_min_perf'
+> >>> Warning: drivers/cpufreq/cppc_cpufreq.c:976 function parameter 'buf' =
+not described in 'store_min_perf'
+> >>> Warning: drivers/cpufreq/cppc_cpufreq.c:976 function parameter 'count=
+' not described in 'store_min_perf'
+> >>> Warning: drivers/cpufreq/cppc_cpufreq.c:1003 function parameter 'poli=
+cy' not described in 'show_max_perf'
+> >>> Warning: drivers/cpufreq/cppc_cpufreq.c:1003 function parameter 'buf'=
+ not described in 'show_max_perf'
+> >>> Warning: drivers/cpufreq/cppc_cpufreq.c:1025 function parameter 'poli=
+cy' not described in 'store_max_perf'
+> >>> Warning: drivers/cpufreq/cppc_cpufreq.c:1025 function parameter 'buf'=
+ not described in 'store_max_perf'
+> >>> Warning: drivers/cpufreq/cppc_cpufreq.c:1025 function parameter 'coun=
+t' not described in 'store_max_perf'
+> > --
+> > 0-DAY CI Kernel Test Service
+> > https://github.com/intel/lkp-tests/wiki
 >
-> The DPTF requires thermal drivers to be loaded at runtime, thus
-> ACPI bus scan handler is not needed and acpi_default_enumeration()
-> may create all platform devices, regardless of the actual setting
-> of CONFIG_INT340X_THERMAL.
 >
-> Link to v1: https://lore.kernel.org/all/20250830053404.763995-1-srosek@go=
-ogle.com/
-> Link to v2: https://lore.kernel.org/all/20250917120719.2390847-1-srosek@g=
-oogle.com/
-> Link to v3: https://lore.kernel.org/all/20251002113404.3117429-1-srosek@g=
-oogle.com/
->
-> In v4 the SoC DTS thermal explicitly depends on the X86_64 and NET,
-> so the INT340X driver may safely be selected by the SoC DTS thermal
-> driver. In addition most of previously submitted patches are dropped
-> as they are not necessary, instead the ACPI bus scan handler is simply
-> removed from the kernel, thus all platform devices are enumerated by
-> the acpi_default_enumeration().
->
-> Slawomir Rosek (2):
->   ACPI: DPTF: Ignore SoC DTS thermal while scanning
->   ACPI: DPTF: Remove int340x thermal scan handler
+> Thank you for the report.
+> Below change to comments seem to be fixing this warning.
 
-Both patches applied as 6.19 material, but the subject of the first
-patch has been changed to "thermal: intel: Select INT340X_THERMAL from
-INTEL_SOC_DTS_THERMAL".
+So can you please send a new version of this patch with the changes
+below folded in?
+
+> -------------------------------------------------------
+>    /**
+>    * show_min_perf - Show minimum performance as frequency (kHz)
+> + * @policy: cpufreq policy
+> + * @buf: buffer to write the frequency value to
+>    *
+>    * Reads the MIN_PERF register and converts the performance value to
+>    * frequency (kHz) for user-space consumption.
+> @@ -1117,6 +1119,9 @@ static ssize_t show_min_perf(struct cpufreq_policy
+> *policy, char *buf)
+>
+>   /**
+>    * store_min_perf - Set minimum performance from frequency (kHz)
+> + * @policy: cpufreq policy
+> + * @buf: buffer to write the frequency value to
+> + * @count: size of @buf
+>    *
+>    * Converts the user-provided frequency (kHz) to a performance value
+>    * and writes it to the MIN_PERF register.
+> @@ -1144,6 +1149,8 @@ static ssize_t store_min_perf(struct
+> cpufreq_policy *policy, const char *buf, si
+>
+>   /**
+>    * show_max_perf - Show maximum performance as frequency (kHz)
+> + * @policy: cpufreq policy
+> + * @buf: buffer to write the frequency value to
+>    *
+>    * Reads the MAX_PERF register and converts the performance value to
+>    * frequency (kHz) for user-space consumption.
+> @@ -1166,6 +1173,9 @@ static ssize_t show_max_perf(struct cpufreq_policy
+> *policy, char *buf)
+>
+>   /**
+>    * store_max_perf - Set maximum performance from frequency (kHz)
+> + * @policy: cpufreq policy
+> + * @buf: buffer to write the frequency value to
+> + * @count: size of @buf
+> -------------------------------------------------------
+
+As for the whole series, I generally need ARM folks to review it and
+tell me that it is fine.
 
 Thanks!
