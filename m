@@ -1,355 +1,143 @@
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92B342FF16C;
-	Mon, 10 Nov 2025 09:56:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=60.244.123.138
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98FDC2FB978
+	for <linux-pm@vger.kernel.org>; Mon, 10 Nov 2025 10:22:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762768603; cv=none; b=CYp04byjxIHORtuLxRapMO5JJM/pfhrrO6xVI+bf6IVIXxXbSM0Yjp7iyVbm7+lWT2Xw1NQkKJkDz+rwDA1b0EEqaaVImjMfJ8dHImOH7TYjSQkDN9DTTGkOpX/g2dnm99EMN0PMkV4BdClnzHB5rxor62S5gSD/hC8RXYXYiOE=
+	t=1762770124; cv=none; b=pQUiP3ZFohUMxP4t7tZ364jAyozlengdVr4hZSJhOKHZU52x+9nZBANt84iqKAJ3A0i/QRqXmaMQKqFetwafF/c2UnbGUg5bnfIfnox/ZMY1TRR9aiV+Y48QECqpfKm+0G2Ml1+1VaYJwrjMrcK65UHiYmn7Mv87UcafkaHJLn0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762768603; c=relaxed/simple;
-	bh=NetGNVTtSXdCtVDqG2li3RD91v4UAdx5sqJ7R+nB05Y=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=iVn55y7gN1x0gjzzlfFlDZl3k7c63+go/suSds0nk/+lnbTzfhv2BSRRIuQqGFxtkNlRMpUEtIRI0yOEiNQfpl6yULRIMswW7bJ+fKbGaH/UsE+zjZv/2PT9BIzwN9BcwQT5xwEwjmBA0lZ1m0tPS+zXk96I2J+hVzgOybih1z4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com; spf=pass smtp.mailfrom=mediatek.com; dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b=jWPmc88r; arc=none smtp.client-ip=60.244.123.138
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mediatek.com
+	s=arc-20240116; t=1762770124; c=relaxed/simple;
+	bh=BYFGMXA/UXxp1mCIzOizUs/qzKuKUPoAJ3Q6wLSw51I=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=YriAKaZQKtYFLiN8HrlNyAA3e7hRSuS9qwHNm3uUMXb51+0YiZs+otKXlaLnE1zA8q1OcMUJ+ELajPPLSLI0h/EXmDnamnj7zN9XiG8SQghi60dVuWGd+hql7+f1FituOkXyXlLGi5zfNaaR1lxcwxr9lXzqR7vnI7VRsJUvdyA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Ekezcl0q; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=NPHspo++; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="jWPmc88r"
-X-UUID: 6daafed8be1911f08ac0a938fc7cd336-20251110
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-	h=Content-Type:Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=QTZzDelfQTA4uZrVZJdbpfidqUQQQNkgj+JIycA97gE=;
-	b=jWPmc88rj4fMeO9OKP+kKNGKIO+Q1xHznS+YZGZMTI/FpQ71eqtaBT8ke4Al+vghz2Q0q9O3hDX2KTbm7As/T4wT4WjVGJOFXvp588qLGhL+RY6zcR+Vc6ebeT1g9w1FNCAgfplHSksemILEoYLtsKvH6AZdlO92nZRe0CtKw0g=;
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.6,REQID:7e918598-7a88-4f6f-8081-d5008d7d441b,IP:0,UR
-	L:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION
-	:release,TS:-25
-X-CID-META: VersionHash:a9d874c,CLOUDID:6d96ba57-17e4-43d2-bf73-55337eed999a,B
-	ulkID:nil,BulkQuantity:0,Recheck:0,SF:81|82|102|836|888|898,TC:-5,Content:
-	0|15|50,EDM:-3,IP:nil,URL:0,File:130,RT:0,Bulk:nil,QS:nil,BEC:nil,COL:0,OS
-	I:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 6daafed8be1911f08ac0a938fc7cd336-20251110
-Received: from mtkmbs11n1.mediatek.inc [(172.21.101.185)] by mailgw01.mediatek.com
-	(envelope-from <hanchien.lin@mediatek.com>)
-	(Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-	with ESMTP id 408716870; Mon, 10 Nov 2025 17:41:27 +0800
-Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
- mtkmbs13n1.mediatek.inc (172.21.101.193) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1748.26; Mon, 10 Nov 2025 17:41:24 +0800
-Received: from mtksitap99.mediatek.inc (10.233.130.16) by
- mtkmbs11n2.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.1748.26 via Frontend Transport; Mon, 10 Nov 2025 17:41:24 +0800
-From: Hanchien Lin <hanchien.lin@mediatek.com>
-To: "Rafael J . Wysocki" <rafael@kernel.org>, Daniel Lezcano
-	<daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Lukasz Luba
-	<lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
-	<krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Philipp Zabel
-	<p.zabel@pengutronix.de>, Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Balsam
- CHIHI <bchihi@baylibre.com>
-CC: <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-mediatek@lists.infradead.org>, <hanchien.lin@mediatek.com>,
-	<Project_Global_Chrome_Upstream_Group@mediatek.com>,
-	<raymond.sun@mediatek.com>, <Irving-CH.lin@mediatek.com>
-Subject: [PATCH 2/2] thermal/drivers/mediatek/lvts_thermal: Add MT8189 support
-Date: Mon, 10 Nov 2025 17:40:39 +0800
-Message-ID: <20251110094113.3965182-3-hanchien.lin@mediatek.com>
-X-Mailer: git-send-email 2.45.2
-In-Reply-To: <20251110094113.3965182-1-hanchien.lin@mediatek.com>
-References: <20251110094113.3965182-1-hanchien.lin@mediatek.com>
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Ekezcl0q";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="NPHspo++"
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 5AA9EjRQ2992484
+	for <linux-pm@vger.kernel.org>; Mon, 10 Nov 2025 10:22:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	4vgVa6+vfpuHHyT/6RavB+XSFElugjvayi2iI6sahjk=; b=Ekezcl0q9Lbj91vq
+	kjEzJYMIIXuYpcKx88PQMDaK/dx5fmdm5SictKhofLHzdU33P3G/HB7E9hrn+wR3
+	c5OcZXvuMG7C1U7gWs5fSMSfQfs02OqVoWaJZ4HJAz+nazUoCODEI2coYTaF5rvH
+	EQXfS89a+4MoNpaVDTrWs79/0BCxbvdK8uX4prncAES82CayO+sjNIuJm4tm8jJw
+	FQmhr/CTykqh2JdY0ubyaSI8oKov8DiPyPLpVoJodBQE+iW1vud9f76Ojbu5z9PJ
+	lAOOEFiqlUCO9HNn6lKmo3rmPb8P6cM8d6qx82i5AoCAcn6az8sHBR69TRJaPqzE
+	m0M46g==
+Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com [209.85.160.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4abd88r6x6-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 10 Nov 2025 10:22:01 +0000 (GMT)
+Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-4edaa289e0dso7803551cf.3
+        for <linux-pm@vger.kernel.org>; Mon, 10 Nov 2025 02:22:01 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1762770121; x=1763374921; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=4vgVa6+vfpuHHyT/6RavB+XSFElugjvayi2iI6sahjk=;
+        b=NPHspo++FFQX9XYCPVjZCGTMDBKQh+JbLr4dy1LpGqaPY05zB6/on/lCnj4LudMGS7
+         y2JbP+pKX0vl1mS0H983c6XbVPBCod1XUuAaIeYLACCEAVbvnhET1wKz4TIwDQo27FqE
+         Cet4k56+Y+ibO68njmemV7bro04wYJyY7fnNVOBuLHrzcDvVZFGPPcXbQO1iIsUcX9Xc
+         AlRZRhO5fbD3jmVOhoJyMxtdvKpNnMtZEs4EQ3fzqLv5cxf1rIpKfkxQjr7Bb3kAlABB
+         2Mr80OcPsSeh1sArhjsJMHRHQ5O9lOht/OAnUsEBCzxRYVMl7Z54DBV6SVa4dMp9Y5Q4
+         NkrQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1762770121; x=1763374921;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=4vgVa6+vfpuHHyT/6RavB+XSFElugjvayi2iI6sahjk=;
+        b=gcu5RwAZw4yLjoSaJhZtCV71ROvRSJaXYY1OkC95g17Pqbx1J6QmU8lZdZLSi22/88
+         abKhdp+7mDrFO0Ll2tgLwLpWGiIa3LacOQqmYzpqYNq97xJFlL5UVPC631bFTu5Of5WL
+         VbOus8BrhWh70qOcXJBGzGegafGudLp9/v6Dad1lgUVYzbGki8nPYDOZjlVKb2hasmJu
+         XkT5ZrMOQ9VK1aUZplRfX7tjsy3djUyinla5xHFOdO1op1/JZ7VK30IeE7ogISKxnwr/
+         k11SFvIvQdzvIteJs37qxVV4BC11TnR1NbwYzoP4TIWRboy4XbX2+N/uvBK2y5CIuLrS
+         S1vQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVP4LHxSIEF8OI/ZWKiK5QrAhPqt2wSc0/vvjoo1IMwZI4d5/8yN6LEimffewT8iMw3/gfuBMNaRA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzrXKntO33xCVqcCJT9Wuy2defwADneMXXPjm0sSrL2hLMHN+0q
+	QM/cFMqainS+dnC5pMS1nk4EicV/U8f/i/ISiaLd5S3HhJqIED1BN00rt/bBXthfxY9Mk3dZorX
+	CXSoSoYpz+RHj33NFdf13uHCq4yHJMFP2eYiUYK+lIUN0g1xr9LTQV5Tpcz0rYw==
+X-Gm-Gg: ASbGncsSjlHIb5KAHSgdUS1KGcMyiliWykkKZ/90dTgGZzCFvi1RZSO6ZdpU7R6lyQO
+	xegWLmX22s4zDVrTEBfjpylC2SSwpMbwH7C8eFILmInbCEj9rN2vaYGVTpX7Va5O41XSlGMlieg
+	nZ6jfWF+TnOt/86xm/ocj4S3PRt0h8H4RzsMLJbyxPxEh7EsX+oe5euCi/pt/o/jcR2GeXkYNB2
+	TKvPMfy5E7AIdSgzWi/mwcXb7RbmWhvqsQ38wbh05sC5TZjSi0dR3Sg3Hb7yo8yn80cZpqi6DPK
+	9jQ+cKM11aW//uV391pGmouBqjCyO9AXxJ7yhXdoIPeByDMvqzKYT4HV8nPoW4zdEP6bAedzi+f
+	otrNKt5tEPQwmMAP0l29OdXusQr45wRzqWMh2S0+9euI1fDs0xpjx49QA
+X-Received: by 2002:a05:622a:24a:b0:4ed:7f85:225c with SMTP id d75a77b69052e-4eda4f9ab05mr68489171cf.10.1762770121016;
+        Mon, 10 Nov 2025 02:22:01 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IHMZeSyWG1kpIQ0TUH1bX2pG4Eapv1I51CVFEMZ6ksXeC/t9idk6nZNtkUGmJLq10rhDDTVBA==
+X-Received: by 2002:a05:622a:24a:b0:4ed:7f85:225c with SMTP id d75a77b69052e-4eda4f9ab05mr68489031cf.10.1762770120650;
+        Mon, 10 Nov 2025 02:22:00 -0800 (PST)
+Received: from [192.168.119.202] (078088045245.garwolin.vectranet.pl. [78.88.45.245])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b72bf97d461sm1104993766b.47.2025.11.10.02.21.58
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 10 Nov 2025 02:22:00 -0800 (PST)
+Message-ID: <55870352-eb6d-4cc2-840f-9de1a59ead93@oss.qualcomm.com>
+Date: Mon, 10 Nov 2025 11:21:57 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 5/5] arm64: dts: qcom: sm6350: Add clocks for aggre1 &
+ aggre2 NoC
+To: Luca Weiss <luca.weiss@fairphone.com>, Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>
+Cc: ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20251107-sm6350-icc-qos-v1-0-8275e5fc3f61@fairphone.com>
+ <20251107-sm6350-icc-qos-v1-5-8275e5fc3f61@fairphone.com>
+Content-Language: en-US
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <20251107-sm6350-icc-qos-v1-5-8275e5fc3f61@fairphone.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-GUID: Vip04Dt4a4dNux2t08pfCTjZgbVWLhzS
+X-Authority-Analysis: v=2.4 cv=PL4COPqC c=1 sm=1 tr=0 ts=6911bcc9 cx=c_pps
+ a=JbAStetqSzwMeJznSMzCyw==:117 a=FpWmc02/iXfjRdCD7H54yg==:17
+ a=IkcTkHD0fZMA:10 a=6UeiqGixMTsA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=6H0WHjuAAAAA:8 a=EUspDBNiAAAA:8
+ a=WWQFUNGd85j635JlVwcA:9 a=QEXdDO2ut3YA:10 a=AYr37p2UDEkA:10
+ a=uxP6HrT_eTzRwkO_Te1X:22 a=Soq9LBFxuPC4vsCAQt-j:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTEwMDA5MCBTYWx0ZWRfX/vtpEAUrD0AM
+ XOQ6OGGbdiRHxF8eKGGvgxyeRj87m5567j2/sNgFUOR/uQYCwv3f4vISEQgAXvzwutjFbNNl2Ic
+ 8WDu+ZtVTjbu0Hfxu8BPA2NuwOwBx/wvRjPMDi5Z7C6I8JO1AM/tffp8DrS2ln05wSQvSyPBBcE
+ sAKrGomDhjpYZ0WtWzktNqUMHfxG7cXUw3/DepwB+/cSQRDe+ZsfUtaofWfX1ko9fTWGsNqmKO1
+ ouOm57SjiXnNQTFAtnnYmfjLJMGoQxSS+oJzHJGJmAQqPrUOd94WO1SZ89/AxYX5LDQLKGNrpoi
+ mqBsSaq+ckba3oxckjAquVAw/N095YczZAGNeCHtUJBQrLrx9nfNHsPzikc1qjQUm2R/Q8n9QQw
+ +iwtqBj2gDV3wgWvnUHNmG7v7Ifa1Q==
+X-Proofpoint-ORIG-GUID: Vip04Dt4a4dNux2t08pfCTjZgbVWLhzS
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-11-10_04,2025-11-06_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 suspectscore=0 malwarescore=0 phishscore=0 priorityscore=1501
+ lowpriorityscore=0 clxscore=1015 adultscore=0 bulkscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2510240001 definitions=main-2511100090
 
-Add support for the MediaTek MT8189 SoC to the LVTS thermal driver.
+On 11/7/25 5:08 PM, Luca Weiss wrote:
+> As per updated bindings, add the clocks for those two interconnects,
+> which are required to set up QoS correctly.
+> 
+> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+> ---
 
-Signed-off-by: Hanchien Lin <hanchien.lin@mediatek.com>
----
- drivers/thermal/mediatek/lvts_thermal.c | 155 ++++++++++++++++++++++--
- 1 file changed, 144 insertions(+), 11 deletions(-)
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 
-diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
-index ab55b20cda47..8c15fdaac48c 100644
---- a/drivers/thermal/mediatek/lvts_thermal.c
-+++ b/drivers/thermal/mediatek/lvts_thermal.c
-@@ -65,6 +65,7 @@
- #define LVTS_HW_FILTER				0x0
- #define LVTS_TSSEL_CONF				0x13121110
- #define LVTS_CALSCALE_CONF			0x300
-+#define LVTS_MONINT_CONF_STAGE3		BIT(31)
- 
- #define LVTS_MONINT_OFFSET_HIGH_INTEN_SENSOR0		BIT(3)
- #define LVTS_MONINT_OFFSET_HIGH_INTEN_SENSOR1		BIT(8)
-@@ -107,6 +108,7 @@ struct lvts_sensor_data {
- struct lvts_ctrl_data {
- 	struct lvts_sensor_data lvts_sensor[LVTS_SENSOR_MAX];
- 	u8 valid_sensor_mask;
-+	int hw_tshut_temp;
- 	int offset;
- 	int mode;
- };
-@@ -134,6 +136,9 @@ struct lvts_data {
- 	int temp_offset;
- 	int gt_calib_bit_offset;
- 	unsigned int def_calibration;
-+	bool clock_gate_no_need;
-+	bool reset_no_need;
-+	bool conf_stage3_need;
- };
- 
- struct lvts_sensor {
-@@ -150,6 +155,7 @@ struct lvts_ctrl {
- 	struct lvts_sensor sensors[LVTS_SENSOR_MAX];
- 	const struct lvts_data *lvts_data;
- 	u32 calibration[LVTS_SENSOR_MAX];
-+	u32 hw_tshut_raw_temp;
- 	u8 valid_sensor_mask;
- 	int mode;
- 	void __iomem *base;
-@@ -859,6 +865,14 @@ static int lvts_ctrl_init(struct device *dev, struct lvts_domain *lvts_td,
- 		 */
- 		lvts_ctrl[i].mode = lvts_data->lvts_ctrl[i].mode;
- 
-+		/*
-+		 * The temperature to raw temperature must be done
-+		 * after initializing the calibration.
-+		 */
-+		lvts_ctrl[i].hw_tshut_raw_temp =
-+			lvts_temp_to_raw(lvts_data->lvts_ctrl[i].hw_tshut_temp,
-+					 lvts_data->temp_factor);
-+
- 		lvts_ctrl[i].low_thresh = INT_MIN;
- 		lvts_ctrl[i].high_thresh = INT_MIN;
- 	}
-@@ -919,7 +933,7 @@ static void lvts_write_config(struct lvts_ctrl *lvts_ctrl, const u32 *cmds, int
- 	}
- }
- 
--static int lvts_irq_init(struct lvts_ctrl *lvts_ctrl)
-+static int lvts_irq_init(struct lvts_ctrl *lvts_ctrl, const struct lvts_data *lvts_data)
- {
- 	/*
- 	 * LVTS_PROTCTL : Thermal Protection Sensor Selection
-@@ -947,6 +961,7 @@ static int lvts_irq_init(struct lvts_ctrl *lvts_ctrl)
- 	 * writel(0x0, LVTS_PROTTB(lvts_ctrl->base));
- 	 * writel(0x0, LVTS_PROTTC(lvts_ctrl->base));
- 	 */
-+	writel(lvts_ctrl->hw_tshut_raw_temp, LVTS_PROTTC(lvts_ctrl->base));
- 
- 	/*
- 	 * LVTS_MONINT : Interrupt configuration register
-@@ -954,7 +969,10 @@ static int lvts_irq_init(struct lvts_ctrl *lvts_ctrl)
- 	 * The LVTS_MONINT register layout is the same as the LVTS_MONINTSTS
- 	 * register, except we set the bits to enable the interrupt.
- 	 */
--	writel(0, LVTS_MONINT(lvts_ctrl->base));
-+	if (lvts_data->conf_stage3_need)
-+		writel(LVTS_MONINT_CONF_STAGE3, LVTS_MONINT(lvts_ctrl->base));
-+	else
-+		writel(0, LVTS_MONINT(lvts_ctrl->base));
- 
- 	return 0;
- }
-@@ -1041,7 +1059,8 @@ static int lvts_ctrl_calibrate(struct device *dev, struct lvts_ctrl *lvts_ctrl)
- 	return 0;
- }
- 
--static int lvts_ctrl_configure(struct device *dev, struct lvts_ctrl *lvts_ctrl)
-+static int lvts_ctrl_configure(struct device *dev, struct lvts_ctrl *lvts_ctrl,
-+								const struct lvts_data *lvts_data)
- {
- 	u32 value;
- 
-@@ -1143,7 +1162,7 @@ static int lvts_ctrl_configure(struct device *dev, struct lvts_ctrl *lvts_ctrl)
- 	value = LVTS_FILTER_INTERVAL << 16 | LVTS_SENSOR_INTERVAL;
- 	writel(value, LVTS_MONCTL2(lvts_ctrl->base));
- 
--	return lvts_irq_init(lvts_ctrl);
-+	return lvts_irq_init(lvts_ctrl, lvts_data);
- }
- 
- static int lvts_ctrl_start(struct device *dev, struct lvts_ctrl *lvts_ctrl)
-@@ -1290,7 +1309,7 @@ static int lvts_domain_init(struct device *dev, struct lvts_domain *lvts_td,
- 			return ret;
- 		}
- 
--		ret = lvts_ctrl_configure(dev, lvts_ctrl);
-+		ret = lvts_ctrl_configure(dev, lvts_ctrl, lvts_data);
- 		if (ret) {
- 			dev_dbg(dev, "Failed to configure controller");
- 			return ret;
-@@ -1322,9 +1341,15 @@ static int lvts_probe(struct platform_device *pdev)
- 	if (!lvts_data)
- 		return -ENODEV;
- 
--	lvts_td->clk = devm_clk_get_enabled(dev, NULL);
--	if (IS_ERR(lvts_td->clk))
--		return dev_err_probe(dev, PTR_ERR(lvts_td->clk), "Failed to retrieve clock\n");
-+	if (!lvts_data->clock_gate_no_need) {
-+		lvts_td->clk = devm_clk_get_enabled(dev, NULL);
-+		if (IS_ERR(lvts_td->clk))
-+			return dev_err_probe(
-+				dev,
-+				PTR_ERR(lvts_td->clk),
-+				"Failed to retrieve clock\n"
-+			);
-+	}
- 
- 	res = platform_get_mem_or_io(pdev, 0);
- 	if (!res)
-@@ -1334,9 +1359,15 @@ static int lvts_probe(struct platform_device *pdev)
- 	if (IS_ERR(lvts_td->base))
- 		return dev_err_probe(dev, PTR_ERR(lvts_td->base), "Failed to map io resource\n");
- 
--	lvts_td->reset = devm_reset_control_get_by_index(dev, 0);
--	if (IS_ERR(lvts_td->reset))
--		return dev_err_probe(dev, PTR_ERR(lvts_td->reset), "Failed to get reset control\n");
-+	if (!lvts_data->reset_no_need) {
-+		lvts_td->reset = devm_reset_control_get_by_index(dev, 0);
-+		if (IS_ERR(lvts_td->reset))
-+			return dev_err_probe(
-+				dev,
-+				PTR_ERR(lvts_td->reset),
-+				"Failed to get reset control\n"
-+			);
-+	}
- 
- 	irq = platform_get_irq(pdev, 0);
- 	if (irq < 0)
-@@ -1586,6 +1617,78 @@ static const struct lvts_ctrl_data mt8188_lvts_ap_data_ctrl[] = {
- 	}
- };
- 
-+static const struct lvts_ctrl_data mt8189_lvts_mcu_data_ctrl[] = {
-+	{
-+		.lvts_sensor = {
-+			{ .dt_id = MT8189_MCU_LITTLE_CPU1,
-+			  .cal_offsets = { 4, 5, 6 } },
-+			{ .dt_id = MT8189_MCU_LITTLE_CPU2,
-+			  .cal_offsets = { 8, 9, 10 } },
-+			{ .dt_id = MT8189_MCU_LITTLE_CPU3,
-+			  .cal_offsets = { 12, 13, 14 } },
-+			{ .dt_id = MT8189_MCU_LITTLE_CPU4,
-+			  .cal_offsets = { 16, 17, 18 } }
-+		},
-+		VALID_SENSOR_MAP(1, 1, 1, 1),
-+		.offset = 0x0,
-+	},
-+	{
-+		.lvts_sensor = {
-+			{ .dt_id = MT8189_MCU_LITTLE_CPU5,
-+			  .cal_offsets = { 24, 25, 26 } },
-+			{ .dt_id = MT8189_MCU_LITTLE_CPU6,
-+			  .cal_offsets = { 28, 29, 30 } },
-+			{ .dt_id = MT8189_MCU_LITTLE_CPU7,
-+			  .cal_offsets = { 32, 33, 34 } },
-+			{ .dt_id = MT8189_MCU_LITTLE_CPU8,
-+			  .cal_offsets = { 36, 37, 38 } }
-+		},
-+		VALID_SENSOR_MAP(1, 1, 1, 1),
-+		.offset = 0x100,
-+	},
-+	{
-+		.lvts_sensor = {
-+			{ .dt_id = MT8189_MCU_BIG_CPU1,
-+			  .cal_offsets = { 44, 45, 46 } },
-+			{ .dt_id = MT8189_MCU_BIG_CPU2,
-+			  .cal_offsets = { 48, 49, 50 } },
-+			{ .dt_id = MT8189_MCU_BIG_CPU3,
-+			  .cal_offsets = { 52, 53, 54 } },
-+			{ .dt_id = MT8189_MCU_BIG_CPU4,
-+			  .cal_offsets = { 56, 57, 58 } }
-+		},
-+		VALID_SENSOR_MAP(1, 1, 1, 1),
-+		.offset = 0x200,
-+	}
-+};
-+
-+static const struct lvts_ctrl_data mt8189_lvts_ap_data_ctrl[] = {
-+	{
-+		.lvts_sensor = {
-+			{ .dt_id = MT8189_AP_SOC1,
-+			  .cal_offsets = { 64, 65, 66 } },
-+			{ .dt_id = MT8189_AP_SOC2,
-+			  .cal_offsets = { 68, 69, 70 } },
-+			{ .dt_id = MT8189_AP_SOC3,
-+			  .cal_offsets = { 72, 73, 74 } },
-+			{ .dt_id = MT8189_AP_APU,
-+			  .cal_offsets = { 76, 77, 78 } }
-+		},
-+		VALID_SENSOR_MAP(1, 1, 1, 1),
-+		.offset = 0x0,
-+	},
-+	{
-+		.lvts_sensor = {
-+			{ .dt_id = MT8189_AP_GPU1,
-+			  .cal_offsets = { 84, 85, 86 } },
-+			{ .dt_id = MT8189_AP_GPU2,
-+			  .cal_offsets = { 88, 89, 90 } }
-+		},
-+		VALID_SENSOR_MAP(1, 1, 0, 0),
-+		.offset = 0x100,
-+	}
-+};
-+
- static const struct lvts_ctrl_data mt8192_lvts_mcu_data_ctrl[] = {
- 	{
- 		.lvts_sensor = {
-@@ -1804,6 +1907,34 @@ static const struct lvts_data mt8188_lvts_ap_data = {
- 	.def_calibration = 35000,
- };
- 
-+static const struct lvts_data mt8189_lvts_ap_data = {
-+	.lvts_ctrl		= mt8189_lvts_ap_data_ctrl,
-+	.conn_cmd	= default_conn_cmds,
-+	.init_cmd	= default_init_cmds,
-+	.num_lvts_ctrl		= ARRAY_SIZE(mt8189_lvts_ap_data_ctrl),
-+	.num_conn_cmd	= ARRAY_SIZE(default_conn_cmds),
-+	.num_init_cmd	= ARRAY_SIZE(default_init_cmds),
-+	.temp_factor		= LVTS_COEFF_A_MT8195,
-+	.temp_offset		= LVTS_COEFF_B_MT8195,
-+	.gt_calib_bit_offset	= 0,
-+	.def_calibration	= 35000,
-+	.clock_gate_no_need	= true,
-+	.reset_no_need		= true,
-+	.conf_stage3_need	= true,
-+};
-+
-+static const struct lvts_data mt8189_lvts_mcu_data = {
-+	.lvts_ctrl		= mt8189_lvts_mcu_data_ctrl,
-+	.num_lvts_ctrl		= ARRAY_SIZE(mt8189_lvts_mcu_data_ctrl),
-+	.temp_factor		= LVTS_COEFF_A_MT8195,
-+	.temp_offset		= LVTS_COEFF_B_MT8195,
-+	.gt_calib_bit_offset	= 0,
-+	.def_calibration	= 35000,
-+	.clock_gate_no_need	= true,
-+	.reset_no_need		= true,
-+	.conf_stage3_need	= true,
-+};
-+
- static const struct lvts_data mt8192_lvts_mcu_data = {
- 	.lvts_ctrl	= mt8192_lvts_mcu_data_ctrl,
- 	.conn_cmd	= default_conn_cmds,
-@@ -1861,6 +1992,8 @@ static const struct of_device_id lvts_of_match[] = {
- 	{ .compatible = "mediatek,mt8186-lvts", .data = &mt8186_lvts_data },
- 	{ .compatible = "mediatek,mt8188-lvts-mcu", .data = &mt8188_lvts_mcu_data },
- 	{ .compatible = "mediatek,mt8188-lvts-ap", .data = &mt8188_lvts_ap_data },
-+	{ .compatible = "mediatek,mt8189-lvts-mcu", .data = &mt8189_lvts_mcu_data },
-+	{ .compatible = "mediatek,mt8189-lvts-ap", .data = &mt8189_lvts_ap_data },
- 	{ .compatible = "mediatek,mt8192-lvts-mcu", .data = &mt8192_lvts_mcu_data },
- 	{ .compatible = "mediatek,mt8192-lvts-ap", .data = &mt8192_lvts_ap_data },
- 	{ .compatible = "mediatek,mt8195-lvts-mcu", .data = &mt8195_lvts_mcu_data },
--- 
-2.45.2
-
+Konrad
