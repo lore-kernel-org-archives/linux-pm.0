@@ -1,224 +1,559 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mslow3.mail.gandi.net (mslow3.mail.gandi.net [217.70.178.249])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80AEE29BD8C;
-	Wed, 12 Nov 2025 14:33:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FDB8330B33;
+	Wed, 12 Nov 2025 14:42:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.70.178.249
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762957995; cv=none; b=nn+35eYLJ/3VJGxKBDQ15PjmWIhDFdkE3H354CUBljgmsj4lfjXQYhtZDkve7LSiREdNV8xZKeDe30boND2GC4gcfKS/OU19ZvZ7J93p9zzougUz7rHBZ013xWLdwZ2/vNK7vFpC+RodpATrnOQPsvJ1TwEBA23OaMjPwU/LGm0=
+	t=1762958569; cv=none; b=RIofjAFWK8BWQud/OYIOW9sXz064BLSWbStKUXTMIZVibl8XcO5/y8ICbHD1W4Q9dAJGqkgUG8OOJ3egnotInRdxPakZ0XvzoMPNb1MgNtqVGj0sGkOrUaORtOk6nU7ALbzfrVJ3gF4hyKNM1nJiJXBk5srliUbt60M0kUP6Ruw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762957995; c=relaxed/simple;
-	bh=xNPujgryql6NE1nmuYqPQclc1RsNGksmNqPxvx+Dxc4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=eq4H/0cY8Ea5PHHBQOUNCGABFqfdngvhar+GX5oZPAwIhTchtGXdZNdkJzdBK1y5gk4Ff/buUvkegSCKVOWc0EhCWyAjWzBb/5uleNjroDmn5u641IjSi+1CfKHXgYwuBNc/3ls1rbvhf+RJYyqzIouIGF2DQJazOp7E9k9eXqA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Dw0VKRkz; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Dw0VKRkz"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 42BE2C4CEF5;
-	Wed, 12 Nov 2025 14:33:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762957995;
-	bh=xNPujgryql6NE1nmuYqPQclc1RsNGksmNqPxvx+Dxc4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Dw0VKRkzEeyOVmyCldKX8cSronjdlWxII80P9zpYOTsoFn8LHlx1DO4/NYJ6cch3J
-	 W+cuBeIXQSAmUFFZTm2c2D/noiKkuJrp48Z9U8tQB4B378K17ZNgbTBN5rvuPVGoQh
-	 oIJYsqrnpPvtRwd/e8uYoqsy0uNlZoNX2PAQXiNb1FGgnErJ9qrBBcxVgKsgKyrfDq
-	 01oLCCwk9EYIJ/h4Wzj0yA3D1u7RJQXoLz16h5E9asw80Q+6p0RWpqW7KP1wAFuAXf
-	 8KJaKSFOG38bgg0yLTDepBuwf+Xa1SODwPL1os4c3hNjmRIEZf1QeqOO20Dc7pHATv
-	 IOigkjYvZtDAQ==
-Date: Wed, 12 Nov 2025 20:03:01 +0530
-From: Manivannan Sadhasivam <mani@kernel.org>
-To: Chen-Yu Tsai <wenst@chromium.org>
-Cc: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Bartosz Golaszewski <brgl@bgdev.pl>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
-	Stephan Gerhold <stephan.gerhold@linaro.org>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 1/4] dt-bindings: connector: Add PCIe M.2 Mechanical
- Key M connector
-Message-ID: <aj4u7j5pvm4aebyn66lq5yt3e7myvybbp7cyr22jukr4eh4lzf@d356d4b26mjm>
-References: <20251108-pci-m2-v2-0-e8bc4d7bf42d@oss.qualcomm.com>
- <20251108-pci-m2-v2-1-e8bc4d7bf42d@oss.qualcomm.com>
- <20251112035717.GA3363355@google.com>
+	s=arc-20240116; t=1762958569; c=relaxed/simple;
+	bh=7kgk05jR1DYbLx7fmcPVyzDPEa4zB1Mzv7bqh2gTxSg=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=bMGxgbG7iSCx8PF7IFksGH/GCQGsX985QtrS7RupLEoVv4h5Bwb5/1l/HHJ09syyJVaNv7Gp7iO6Ai4zx01KMszvsmq0HBdhVI8SvmCFk3BbUQBiuqbPB00mq0uzgn1g+cEL4Mb5ttQrFYUeaHLmEfcos3m/SqmCFRbrBEgEZdE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=hadess.net; spf=pass smtp.mailfrom=hadess.net; arc=none smtp.client-ip=217.70.178.249
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=hadess.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hadess.net
+Received: from relay7-d.mail.gandi.net (relay7-d.mail.gandi.net [217.70.183.200])
+	by mslow3.mail.gandi.net (Postfix) with ESMTP id A8738580E5A;
+	Wed, 12 Nov 2025 14:15:08 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id CC41843E3B;
+	Wed, 12 Nov 2025 14:15:00 +0000 (UTC)
+Message-ID: <82ec5223f83eaa89278997fe95ee9ea83236a4a1.camel@hadess.net>
+Subject: Re: [RFC PATCH 1/1] HID: input: Add support for multiple batteries
+ per device
+From: Bastien Nocera <hadess@hadess.net>
+To: Lucas Zampieri <lzampier@redhat.com>, linux-input@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Jiri Kosina <jikos@kernel.org>, Benjamin
+ Tissoires <bentiss@kernel.org>, Sebastian Reichel <sre@kernel.org>,
+ linux-pm@vger.kernel.org
+Date: Wed, 12 Nov 2025 15:15:00 +0100
+In-Reply-To: <20251111105634.1684751-2-lzampier@redhat.com>
+References: <20251111105634.1684751-1-lzampier@redhat.com>
+	 <20251111105634.1684751-2-lzampier@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2 (3.56.2-2.fc42) 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20251112035717.GA3363355@google.com>
+X-GND-State: clean
+X-GND-Score: -100
+X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtdeggddvtdegvdekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuifetpfffkfdpucggtfgfnhhsuhgsshgtrhhisggvnecuuegrihhlohhuthemuceftddunecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefkuffhvfevffgjfhgtgfgfggesthhqredttderjeenucfhrhhomhepuegrshhtihgvnhcupfhotggvrhgruceohhgruggvshhssehhrgguvghsshdrnhgvtheqnecuggftrfgrthhtvghrnhepieffgfehtedtgefgjeeggfffgeeuvdegveekveejfeekkedujeehteffueefffeunecukfhppedvrgdtudemvgefgeemvggtjeefmegtfhdvtdemsggrgeefmegrieejieemtgdvugefmeejrgehfeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvrgdtudemvgefgeemvggtjeefmegtfhdvtdemsggrgeefmegrieejieemtgdvugefmeejrgehfedphhgvlhhopeglkffrvheimedvrgdtudemvgefgeemvggtjeefmegtfhdvtdemsggrgeefmegrieejieemtgdvugefmeejrgehfegnpdhmrghilhhfrhhomhephhgruggvshhssehhrgguvghsshdrnhgvthdpnhgspghrtghpthhtohepjedprhgtphhtthhopehliigrmhhpihgvrhesrhgvughhrghtrdgtohhmpdhrtghpthhtoheplhhinhhugidqihhnphhuthesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrn
+ hgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehjihhkohhssehkvghrnhgvlhdrohhrghdprhgtphhtthhopegsvghnthhishhssehkvghrnhgvlhdrohhrghdprhgtphhtthhopehsrhgvsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrgh
+X-GND-Sasl: hadess@hadess.net
 
-On Wed, Nov 12, 2025 at 11:57:17AM +0800, Chen-Yu Tsai wrote:
-> On Sat, Nov 08, 2025 at 08:53:19AM +0530, Manivannan Sadhasivam wrote:
-> > Add the devicetree binding for PCIe M.2 Mechanical Key M connector defined
-> > in the PCI Express M.2 Specification, r4.0, sec 5.3. This connector
-> > provides interfaces like PCIe and SATA to attach the Solid State Drives
-> > (SSDs) to the host machine along with additional interfaces like USB, and
-> > SMB for debugging and supplementary features. At any point of time, the
-> > connector can only support either PCIe or SATA as the primary host
-> > interface.
-> > 
-> > The connector provides a primary power supply of 3.3v, along with an
-> > optional 1.8v VIO supply for the Adapter I/O buffer circuitry operating at
-> > 1.8v sideband signaling.
-> > 
-> > The connector also supplies optional signals in the form of GPIOs for fine
-> > grained power management.
-> > 
-> > Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-> > ---
-> >  .../bindings/connector/pcie-m2-m-connector.yaml    | 122 +++++++++++++++++++++
-> >  1 file changed, 122 insertions(+)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/connector/pcie-m2-m-connector.yaml b/Documentation/devicetree/bindings/connector/pcie-m2-m-connector.yaml
-> > new file mode 100644
-> > index 0000000000000000000000000000000000000000..be0a3b43e8fd2a2a3b76cad4808ddde79dceaa21
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/connector/pcie-m2-m-connector.yaml
-> > @@ -0,0 +1,122 @@
-> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > +%YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/connector/pcie-m2-m-connector.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: PCIe M.2 Mechanical Key M Connector
-> > +
-> > +maintainers:
-> > +  - Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-> > +
-> > +description:
-> > +  A PCIe M.2 M connector node represents a physical PCIe M.2 Mechanical Key M
-> > +  connector. The Mechanical Key M connectors are used to connect SSDs to the
-> > +  host system over PCIe/SATA interfaces. These connectors also offer optional
-> > +  interfaces like USB, SMB.
-> > +
-> > +properties:
-> > +  compatible:
-> > +    const: pcie-m2-m-connector
-> > +
-> > +  vpcie3v3-supply:
-> > +    description: A phandle to the regulator for 3.3v supply.
-> > +
-> > +  vio1v8-supply:
-> > +    description: A phandle to the regulator for VIO 1.8v supply.
-> 
-> FYI I just added vpcie1v8-supply to the core DT schema [1]. vpcie1v8
-> instead of vio1v8 was requested by Rob.
-> 
+Hey Lucas,
 
-Ok, thanks for doing it. I will change the property name in v3 and in the
-follow-up series.
+(Follow-up to a chat we had about this patch privately)
 
-- Mani
+On Tue, 2025-11-11 at 10:56 +0000, Lucas Zampieri wrote:
+> Add support for multiple batteries per HID device by introducing
+> struct hid_battery to encapsulate individual battery state and using
+> a list to track multiple batteries identified by report ID. The
+> legacy
+> dev->battery field is maintained for backwards compatibility.
 
-> [1] https://github.com/devicetree-org/dt-schema/pull/176
-> 
-> > +
-> > +  ports:
-> > +    $ref: /schemas/graph.yaml#/properties/ports
-> > +    description: OF graph bindings modeling the interfaces exposed on the
-> > +      connector. Since a single connector can have multiple interfaces, every
-> > +      interface has an assigned OF graph port number as described below.
-> > +
-> > +    properties:
-> > +      port@0:
-> > +        $ref: /schemas/graph.yaml#/properties/port
-> > +        description: PCIe/SATA interface
-> > +
-> > +      port@1:
-> > +        $ref: /schemas/graph.yaml#/properties/port
-> > +        description: USB interface
-> > +
-> > +      port@2:
-> > +        $ref: /schemas/graph.yaml#/properties/port
-> > +        description: SMB interface
-> > +
-> > +    required:
-> > +      - port@0
-> > +
-> > +  clocks:
-> > +    description: 32.768 KHz Suspend Clock (SUSCLK) input from the host system to
-> > +      the M.2 card. Refer, PCI Express M.2 Specification r4.0, sec 3.1.12.1 for
-> > +      more details.
-> > +    maxItems: 1
-> > +
-> > +  pedet-gpios:
-> > +    description: GPIO controlled connection to PEDET signal. This signal is used
-> > +      by the host systems to determine the communication protocol that the M.2
-> > +      card uses; SATA signaling (low) or PCIe signaling (high). Refer, PCI
-> > +      Express M.2 Specification r4.0, sec 3.3.4.2 for more details.
-> > +    maxItems: 1
-> > +
-> > +  led1-gpios:
-> > +    description: GPIO controlled connection to LED_1# signal. This signal is
-> > +      used by the M.2 card to indicate the card status via the system mounted
-> > +      LED. Refer, PCI Express M.2 Specification r4.0, sec 3.1.12.2 for more
-> > +      details.
-> > +    maxItems: 1
-> > +
-> > +  viocfg-gpios:
-> > +    description: GPIO controlled connection to IO voltage configuration
-> > +      (VIO_CFG) signal. This signal is used by the M.2 card to indicate to the
-> > +      host system that the card supports an independent IO voltage domain for
-> > +      the sideband signals. Refer, PCI Express M.2 Specification r4.0, sec
-> > +      3.1.15.1 for more details.
-> > +    maxItems: 1
-> > +
-> > +  pwrdis-gpios:
-> > +    description: GPIO controlled connection to Power Disable (PWRDIS) signal.
-> > +      This signal is used by the host system to disable power on the M.2 card.
-> > +      Refer, PCI Express M.2 Specification r4.0, sec 3.3.5.2 for more details.
-> > +    maxItems: 1
-> > +
-> > +  pln-gpios:
-> > +    description: GPIO controlled connection to Power Loss Notification (PLN#)
-> > +      signal. This signal is use to notify the M.2 card by the host system that
-> > +      the power loss event is expected to occur. Refer, PCI Express M.2
-> > +      Specification r4.0, sec 3.2.17.1 for more details.
-> > +    maxItems: 1
-> > +
-> > +  plas3-gpios:
-> > +    description: GPIO controlled connection to Power Loss Acknowledge (PLA_S3#)
-> > +      signal. This signal is used by the M.2 card to notify the host system, the
-> > +      status of the M.2 card's preparation for power loss.
-> > +    maxItems: 1
-> > +
-> > +required:
-> > +  - compatible
-> > +  - vpcie3v3-supply
-> > +
-> > +additionalProperties: false
-> > +
-> > +examples:
-> > +  # PCI M.2 Key M connector for SSDs with PCIe interface
-> > +  - |
-> > +    connector {
-> > +        compatible = "pcie-m2-m-connector";
-> > +        vpcie3v3-supply = <&vreg_nvme>;
-> > +
-> > +        ports {
-> > +            #address-cells = <1>;
-> > +            #size-cells = <0>;
-> > +
-> > +            port@0 {
-> > +                reg = <0>;
-> > +
-> > +                endpoint {
-> > +                    remote-endpoint = <&pcie6_port0_ep>;
-> > +                };
-> > +            };
-> > +        };
-> > +    };
-> > 
-> > -- 
-> > 2.48.1
-> > 
+The cover letter mentions specific hardware, you probably want to
+mention this in the commit message itself, as the cover letter will be
+disconnected from this commit once this gets merged. Don't hesitate to
+link to product pages directly if you want to show specific products as
+potential users of that capability.
 
--- 
-மணிவண்ணன் சதாசிவம்
+You mentioned that you tested this patchset with a custom firmware for
+a split keyboard. It would be great if the firmware could be made
+available to show how this was tested and mention that in the commit
+message.
+
+bentiss will also likely want a hid-recorder output for the device that
+shows the batteries being instantiated. This would also likely be used
+to test whether upower continues working as expected.
+
+Talking of upower, I think we'll need an systemd/hwdb + upower changes
+to differentiate batteries within a single device, as I don't think we
+can have enough metadata in the HID report to differentiate them.
+
+Last comment about the patch itself, do you think it would be feasible
+to split this in 2 or 3? One to introduce the hid_battery struct,
+another to use it to replace direct power_supply access, and finally
+one to allow a list of hid_batteries?
+
+Don't hesitate to CC: on future versions.
+
+Cheers
+
+>=20
+> Signed-off-by: Lucas Zampieri <lzampier@redhat.com>
+> ---
+> =C2=A0drivers/hid/hid-core.c=C2=A0 |=C2=A0=C2=A0 4 +
+> =C2=A0drivers/hid/hid-input.c | 193 +++++++++++++++++++++++++++----------=
+-
+> --
+> =C2=A0include/linux/hid.h=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 42 ++++++++-
+> =C2=A03 files changed, 176 insertions(+), 63 deletions(-)
+>=20
+> diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+> index a5b3a8ca2fcb..76d628547e9a 100644
+> --- a/drivers/hid/hid-core.c
+> +++ b/drivers/hid/hid-core.c
+> @@ -2990,6 +2990,10 @@ struct hid_device *hid_allocate_device(void)
+> =C2=A0	mutex_init(&hdev->ll_open_lock);
+> =C2=A0	kref_init(&hdev->ref);
+> =C2=A0
+> +#ifdef CONFIG_HID_BATTERY_STRENGTH
+> +	INIT_LIST_HEAD(&hdev->batteries);
+> +#endif
+> +
+> =C2=A0	ret =3D hid_bpf_device_init(hdev);
+> =C2=A0	if (ret)
+> =C2=A0		goto out_err;
+> diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
+> index e56e7de53279..071df319775b 100644
+> --- a/drivers/hid/hid-input.c
+> +++ b/drivers/hid/hid-input.c
+> @@ -454,7 +454,8 @@ static int hidinput_get_battery_property(struct
+> power_supply *psy,
+> =C2=A0					 enum power_supply_property
+> prop,
+> =C2=A0					 union power_supply_propval
+> *val)
+> =C2=A0{
+> -	struct hid_device *dev =3D power_supply_get_drvdata(psy);
+> +	struct hid_battery *bat =3D power_supply_get_drvdata(psy);
+> +	struct hid_device *dev =3D bat->dev;
+> =C2=A0	int value;
+> =C2=A0	int ret =3D 0;
+> =C2=A0
+> @@ -465,13 +466,13 @@ static int hidinput_get_battery_property(struct
+> power_supply *psy,
+> =C2=A0		break;
+> =C2=A0
+> =C2=A0	case POWER_SUPPLY_PROP_CAPACITY:
+> -		if (dev->battery_status !=3D HID_BATTERY_REPORTED &&
+> -		=C2=A0=C2=A0=C2=A0 !dev->battery_avoid_query) {
+> +		if (bat->status !=3D HID_BATTERY_REPORTED &&
+> +		=C2=A0=C2=A0=C2=A0 !bat->avoid_query) {
+> =C2=A0			value =3D
+> hidinput_query_battery_capacity(dev);
+> =C2=A0			if (value < 0)
+> =C2=A0				return value;
+> =C2=A0		} else=C2=A0 {
+> -			value =3D dev->battery_capacity;
+> +			value =3D bat->capacity;
+> =C2=A0		}
+> =C2=A0
+> =C2=A0		val->intval =3D value;
+> @@ -482,20 +483,20 @@ static int hidinput_get_battery_property(struct
+> power_supply *psy,
+> =C2=A0		break;
+> =C2=A0
+> =C2=A0	case POWER_SUPPLY_PROP_STATUS:
+> -		if (dev->battery_status !=3D HID_BATTERY_REPORTED &&
+> -		=C2=A0=C2=A0=C2=A0 !dev->battery_avoid_query) {
+> +		if (bat->status !=3D HID_BATTERY_REPORTED &&
+> +		=C2=A0=C2=A0=C2=A0 !bat->avoid_query) {
+> =C2=A0			value =3D
+> hidinput_query_battery_capacity(dev);
+> =C2=A0			if (value < 0)
+> =C2=A0				return value;
+> =C2=A0
+> -			dev->battery_capacity =3D value;
+> -			dev->battery_status =3D HID_BATTERY_QUERIED;
+> +			bat->capacity =3D value;
+> +			bat->status =3D HID_BATTERY_QUERIED;
+> =C2=A0		}
+> =C2=A0
+> -		if (dev->battery_status =3D=3D HID_BATTERY_UNKNOWN)
+> +		if (bat->status =3D=3D HID_BATTERY_UNKNOWN)
+> =C2=A0			val->intval =3D POWER_SUPPLY_STATUS_UNKNOWN;
+> =C2=A0		else
+> -			val->intval =3D dev->battery_charge_status;
+> +			val->intval =3D bat->charge_status;
+> =C2=A0		break;
+> =C2=A0
+> =C2=A0	case POWER_SUPPLY_PROP_SCOPE:
+> @@ -513,33 +514,53 @@ static int hidinput_get_battery_property(struct
+> power_supply *psy,
+> =C2=A0static int hidinput_setup_battery(struct hid_device *dev, unsigned
+> report_type,
+> =C2=A0				=C2=A0 struct hid_field *field, bool
+> is_percentage)
+> =C2=A0{
+> +	struct hid_battery *bat;
+> =C2=A0	struct power_supply_desc *psy_desc;
+> -	struct power_supply_config psy_cfg =3D { .drv_data =3D dev, };
+> +	struct power_supply_config psy_cfg;
+> =C2=A0	unsigned quirks;
+> =C2=A0	s32 min, max;
+> =C2=A0	int error;
+> +	int battery_num =3D 0;
+> =C2=A0
+> -	if (dev->battery)
+> -		return 0;	/* already initialized? */
+> +	list_for_each_entry(bat, &dev->batteries, list) {
+> +		if (bat->report_id =3D=3D field->report->id)
+> +			return 0;	/* already initialized */
+> +		battery_num++;
+> +	}
+> =C2=A0
+> =C2=A0	quirks =3D find_battery_quirk(dev);
+> =C2=A0
+> -	hid_dbg(dev, "device %x:%x:%x %d quirks %d\n",
+> -		dev->bus, dev->vendor, dev->product, dev->version,
+> quirks);
+> +	hid_dbg(dev, "device %x:%x:%x %d quirks %d report_id %d\n",
+> +		dev->bus, dev->vendor, dev->product, dev->version,
+> quirks,
+> +		field->report->id);
+> =C2=A0
+> =C2=A0	if (quirks & HID_BATTERY_QUIRK_IGNORE)
+> =C2=A0		return 0;
+> =C2=A0
+> -	psy_desc =3D kzalloc(sizeof(*psy_desc), GFP_KERNEL);
+> -	if (!psy_desc)
+> +	bat =3D kzalloc(sizeof(*bat), GFP_KERNEL);
+> +	if (!bat)
+> =C2=A0		return -ENOMEM;
+> =C2=A0
+> -	psy_desc->name =3D kasprintf(GFP_KERNEL, "hid-%s-battery",
+> -				=C2=A0=C2=A0 strlen(dev->uniq) ?
+> -					dev->uniq : dev_name(&dev-
+> >dev));
+> +	psy_desc =3D kzalloc(sizeof(*psy_desc), GFP_KERNEL);
+> +	if (!psy_desc) {
+> +		error =3D -ENOMEM;
+> +		goto err_free_bat;
+> +	}
+> +
+> +	/* Create unique name for each battery based on report ID */
+> +	if (battery_num =3D=3D 0) {
+> +		psy_desc->name =3D kasprintf(GFP_KERNEL, "hid-%s-
+> battery",
+> +					=C2=A0=C2=A0 strlen(dev->uniq) ?
+> +						dev->uniq :
+> dev_name(&dev->dev));
+> +	} else {
+> +		psy_desc->name =3D kasprintf(GFP_KERNEL, "hid-%s-
+> battery-%d",
+> +					=C2=A0=C2=A0 strlen(dev->uniq) ?
+> +						dev->uniq :
+> dev_name(&dev->dev),
+> +					=C2=A0=C2=A0 battery_num);
+> +	}
+> =C2=A0	if (!psy_desc->name) {
+> =C2=A0		error =3D -ENOMEM;
+> -		goto err_free_mem;
+> +		goto err_free_desc;
+> =C2=A0	}
+> =C2=A0
+> =C2=A0	psy_desc->type =3D POWER_SUPPLY_TYPE_BATTERY;
+> @@ -559,98 +580,148 @@ static int hidinput_setup_battery(struct
+> hid_device *dev, unsigned report_type,
+> =C2=A0	if (quirks & HID_BATTERY_QUIRK_FEATURE)
+> =C2=A0		report_type =3D HID_FEATURE_REPORT;
+> =C2=A0
+> -	dev->battery_min =3D min;
+> -	dev->battery_max =3D max;
+> -	dev->battery_report_type =3D report_type;
+> -	dev->battery_report_id =3D field->report->id;
+> -	dev->battery_charge_status =3D
+> POWER_SUPPLY_STATUS_DISCHARGING;
+> +	/* Initialize battery structure */
+> +	bat->dev =3D dev;
+> +	bat->min =3D min;
+> +	bat->max =3D max;
+> +	bat->report_type =3D report_type;
+> +	bat->report_id =3D field->report->id;
+> +	bat->charge_status =3D POWER_SUPPLY_STATUS_DISCHARGING;
+> +	bat->status =3D HID_BATTERY_UNKNOWN;
+> =C2=A0
+> =C2=A0	/*
+> =C2=A0	 * Stylus is normally not connected to the device and thus
+> we
+> =C2=A0	 * can't query the device and get meaningful battery
+> strength.
+> =C2=A0	 * We have to wait for the device to report it on its own.
+> =C2=A0	 */
+> -	dev->battery_avoid_query =3D report_type =3D=3D HID_INPUT_REPORT
+> &&
+> -				=C2=A0=C2=A0 field->physical =3D=3D HID_DG_STYLUS;
+> +	bat->avoid_query =3D report_type =3D=3D HID_INPUT_REPORT &&
+> +			=C2=A0=C2=A0 field->physical =3D=3D HID_DG_STYLUS;
+> =C2=A0
+> =C2=A0	if (quirks & HID_BATTERY_QUIRK_AVOID_QUERY)
+> -		dev->battery_avoid_query =3D true;
+> +		bat->avoid_query =3D true;
+> =C2=A0
+> -	dev->battery =3D power_supply_register(&dev->dev, psy_desc,
+> &psy_cfg);
+> -	if (IS_ERR(dev->battery)) {
+> -		error =3D PTR_ERR(dev->battery);
+> +	psy_cfg.drv_data =3D bat;
+> +	bat->ps =3D power_supply_register(&dev->dev, psy_desc,
+> &psy_cfg);
+> +	if (IS_ERR(bat->ps)) {
+> +		error =3D PTR_ERR(bat->ps);
+> =C2=A0		hid_warn(dev, "can't register power supply: %d\n",
+> error);
+> =C2=A0		goto err_free_name;
+> =C2=A0	}
+> =C2=A0
+> -	power_supply_powers(dev->battery, &dev->dev);
+> +	power_supply_powers(bat->ps, &dev->dev);
+> +
+> +	list_add_tail(&bat->list, &dev->batteries);
+> +
+> +	/*
+> +	 * The legacy single battery API is preserved by exposing
+> the first
+> +	 * discovered battery. Systems relying on a single battery
+> view maintain
+> +	 * unchanged behavior.
+> +	 */
+> +	if (battery_num =3D=3D 0) {
+> +		dev->battery =3D bat->ps;
+> +		dev->battery_min =3D bat->min;
+> +		dev->battery_max =3D bat->max;
+> +		dev->battery_report_type =3D bat->report_type;
+> +		dev->battery_report_id =3D bat->report_id;
+> +		dev->battery_charge_status =3D bat->charge_status;
+> +		dev->battery_status =3D bat->status;
+> +		dev->battery_avoid_query =3D bat->avoid_query;
+> +	}
+> +
+> =C2=A0	return 0;
+> =C2=A0
+> =C2=A0err_free_name:
+> =C2=A0	kfree(psy_desc->name);
+> -err_free_mem:
+> +err_free_desc:
+> =C2=A0	kfree(psy_desc);
+> -	dev->battery =3D NULL;
+> +err_free_bat:
+> +	kfree(bat);
+> =C2=A0	return error;
+> =C2=A0}
+> =C2=A0
+> =C2=A0static void hidinput_cleanup_battery(struct hid_device *dev)
+> =C2=A0{
+> +	struct hid_battery *bat, *next;
+> =C2=A0	const struct power_supply_desc *psy_desc;
+> =C2=A0
+> -	if (!dev->battery)
+> -		return;
+> +	list_for_each_entry_safe(bat, next, &dev->batteries, list) {
+> +		psy_desc =3D bat->ps->desc;
+> +		power_supply_unregister(bat->ps);
+> +		kfree(psy_desc->name);
+> +		kfree(psy_desc);
+> +		list_del(&bat->list);
+> +		kfree(bat);
+> +	}
+> =C2=A0
+> -	psy_desc =3D dev->battery->desc;
+> -	power_supply_unregister(dev->battery);
+> -	kfree(psy_desc->name);
+> -	kfree(psy_desc);
+> =C2=A0	dev->battery =3D NULL;
+> =C2=A0}
+> =C2=A0
+> -static bool hidinput_update_battery_charge_status(struct hid_device
+> *dev,
+> +static struct hid_battery *hidinput_find_battery(struct hid_device
+> *dev,
+> +						 int report_id)
+> +{
+> +	struct hid_battery *bat;
+> +
+> +	list_for_each_entry(bat, &dev->batteries, list) {
+> +		if (bat->report_id =3D=3D report_id)
+> +			return bat;
+> +	}
+> +	return NULL;
+> +}
+> +
+> +static bool hidinput_update_battery_charge_status(struct hid_battery
+> *bat,
+> =C2=A0						=C2=A0 unsigned int
+> usage, int value)
+> =C2=A0{
+> =C2=A0	switch (usage) {
+> =C2=A0	case HID_BAT_CHARGING:
+> -		dev->battery_charge_status =3D value ?
+> -					=C2=A0=C2=A0=C2=A0=C2=A0
+> POWER_SUPPLY_STATUS_CHARGING :
+> -					=C2=A0=C2=A0=C2=A0=C2=A0
+> POWER_SUPPLY_STATUS_DISCHARGING;
+> +		bat->charge_status =3D value ?
+> +				=C2=A0=C2=A0=C2=A0=C2=A0 POWER_SUPPLY_STATUS_CHARGING :
+> +				=C2=A0=C2=A0=C2=A0=C2=A0
+> POWER_SUPPLY_STATUS_DISCHARGING;
+> +		if (bat->dev->battery =3D=3D bat->ps)
+> +			bat->dev->battery_charge_status =3D bat-
+> >charge_status;
+> =C2=A0		return true;
+> =C2=A0	}
+> =C2=A0
+> =C2=A0	return false;
+> =C2=A0}
+> =C2=A0
+> -static void hidinput_update_battery(struct hid_device *dev, unsigned
+> int usage,
+> -				=C2=A0=C2=A0=C2=A0 int value)
+> +static void hidinput_update_battery(struct hid_device *dev, int
+> report_id,
+> +				=C2=A0=C2=A0=C2=A0 unsigned int usage, int value)
+> =C2=A0{
+> +	struct hid_battery *bat;
+> =C2=A0	int capacity;
+> =C2=A0
+> -	if (!dev->battery)
+> +	bat =3D hidinput_find_battery(dev, report_id);
+> +	if (!bat)
+> =C2=A0		return;
+> =C2=A0
+> -	if (hidinput_update_battery_charge_status(dev, usage,
+> value)) {
+> -		power_supply_changed(dev->battery);
+> +	if (hidinput_update_battery_charge_status(bat, usage,
+> value)) {
+> +		power_supply_changed(bat->ps);
+> =C2=A0		return;
+> =C2=A0	}
+> =C2=A0
+> =C2=A0	if ((usage & HID_USAGE_PAGE) =3D=3D HID_UP_DIGITIZER && value =3D=
+=3D
+> 0)
+> =C2=A0		return;
+> =C2=A0
+> -	if (value < dev->battery_min || value > dev->battery_max)
+> +	if (value < bat->min || value > bat->max)
+> =C2=A0		return;
+> =C2=A0
+> =C2=A0	capacity =3D hidinput_scale_battery_capacity(dev, value);
+> =C2=A0
+> -	if (dev->battery_status !=3D HID_BATTERY_REPORTED ||
+> -	=C2=A0=C2=A0=C2=A0 capacity !=3D dev->battery_capacity ||
+> -	=C2=A0=C2=A0=C2=A0 ktime_after(ktime_get_coarse(), dev-
+> >battery_ratelimit_time)) {
+> -		dev->battery_capacity =3D capacity;
+> -		dev->battery_status =3D HID_BATTERY_REPORTED;
+> -		dev->battery_ratelimit_time =3D
+> +	if (bat->status !=3D HID_BATTERY_REPORTED ||
+> +	=C2=A0=C2=A0=C2=A0 capacity !=3D bat->capacity ||
+> +	=C2=A0=C2=A0=C2=A0 ktime_after(ktime_get_coarse(), bat->ratelimit_time)=
+) {
+> +		bat->capacity =3D capacity;
+> +		bat->status =3D HID_BATTERY_REPORTED;
+> +		bat->ratelimit_time =3D
+> =C2=A0			ktime_add_ms(ktime_get_coarse(), 30 * 1000);
+> -		power_supply_changed(dev->battery);
+> +
+> +		if (dev->battery =3D=3D bat->ps) {
+> +			dev->battery_capacity =3D bat->capacity;
+> +			dev->battery_status =3D bat->status;
+> +			dev->battery_ratelimit_time =3D bat-
+> >ratelimit_time;
+> +		}
+> +
+> +		power_supply_changed(bat->ps);
+> =C2=A0	}
+> =C2=A0}
+> =C2=A0#else=C2=A0 /* !CONFIG_HID_BATTERY_STRENGTH */
+> @@ -664,8 +735,8 @@ static void hidinput_cleanup_battery(struct
+> hid_device *dev)
+> =C2=A0{
+> =C2=A0}
+> =C2=A0
+> -static void hidinput_update_battery(struct hid_device *dev, unsigned
+> int usage,
+> -				=C2=A0=C2=A0=C2=A0 int value)
+> +static void hidinput_update_battery(struct hid_device *dev, int
+> report_id,
+> +				=C2=A0=C2=A0=C2=A0 unsigned int usage, int value)
+> =C2=A0{
+> =C2=A0}
+> =C2=A0#endif	/* CONFIG_HID_BATTERY_STRENGTH */
+> @@ -1533,7 +1604,7 @@ void hidinput_hid_event(struct hid_device *hid,
+> struct hid_field *field, struct
+> =C2=A0		return;
+> =C2=A0
+> =C2=A0	if (usage->type =3D=3D EV_PWR) {
+> -		hidinput_update_battery(hid, usage->hid, value);
+> +		hidinput_update_battery(hid, report->id, usage->hid,
+> value);
+> =C2=A0		return;
+> =C2=A0	}
+> =C2=A0
+> diff --git a/include/linux/hid.h b/include/linux/hid.h
+> index a4ddb94e3ee5..a6e36835fb3c 100644
+> --- a/include/linux/hid.h
+> +++ b/include/linux/hid.h
+> @@ -634,6 +634,36 @@ enum hid_battery_status {
+> =C2=A0	HID_BATTERY_REPORTED,		/* Device sent unsolicited
+> battery strength report */
+> =C2=A0};
+> =C2=A0
+> +/**
+> + * struct hid_battery - represents a single battery power supply
+> + * @list: list node for linking into hid_device's battery list
+> + * @dev: pointer to the parent hid_device
+> + * @ps: the power supply device
+> + * @capacity: current battery capacity
+> + * @min: minimum battery value
+> + * @max: maximum battery value
+> + * @report_type: type of report (HID_INPUT_REPORT,
+> HID_FEATURE_REPORT)
+> + * @report_id: report ID for this battery
+> + * @charge_status: current charge status
+> + * @status: battery status (unknown, queried, reported)
+> + * @avoid_query: if true, don't query battery (wait for device
+> reports)
+> + * @ratelimit_time: time for rate limiting battery updates
+> + */
+> +struct hid_battery {
+> +	struct list_head list;
+> +	struct hid_device *dev;
+> +	struct power_supply *ps;
+> +	__s32 capacity;
+> +	__s32 min;
+> +	__s32 max;
+> +	__s32 report_type;
+> +	__s32 report_id;
+> +	__s32 charge_status;
+> +	enum hid_battery_status status;
+> +	bool avoid_query;
+> +	ktime_t ratelimit_time;
+> +};
+> +
+> =C2=A0struct hid_driver;
+> =C2=A0struct hid_ll_driver;
+> =C2=A0
+> @@ -670,8 +700,16 @@ struct hid_device {
+> =C2=A0#ifdef CONFIG_HID_BATTERY_STRENGTH
+> =C2=A0	/*
+> =C2=A0	 * Power supply information for HID devices which report
+> -	 * battery strength. power_supply was successfully
+> registered if
+> -	 * battery is non-NULL.
+> +	 * battery strength. Each battery is tracked separately in
+> the
+> +	 * batteries list.
+> +	 */
+> +	struct list_head batteries;		/* List of
+> hid_battery structures */
+> +
+> +	/*
+> +	 * Legacy single battery support - kept for backwards
+> compatibility.
+> +	 * Points to the first battery in the list if any exists.
+> +	 * power_supply was successfully registered if battery is
+> non-NULL.
+> +	 * DEPRECATED: New code should iterate through batteries
+> list instead.
+> =C2=A0	 */
+> =C2=A0	struct power_supply *battery;
+> =C2=A0	__s32 battery_capacity;
