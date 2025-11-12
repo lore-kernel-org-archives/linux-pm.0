@@ -1,39 +1,39 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB4EC33F36D;
-	Wed, 12 Nov 2025 16:26:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30E6A311C3F;
+	Wed, 12 Nov 2025 16:26:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762964773; cv=none; b=a8fL4zMZQUZMYk+IP/y6+cMGrurLEYo+oFjNKj+pL8wQgIcgs64TXy/vhXDfCFKyXsijQcOMDtKo/4wGm6rSMtgKgk7tOp/mRJKBZgW3jsUgXx34QLan9lw0IBO8eGaxwOgyMknmCrISqObWZ8zvATyVZRmBzWL2E3r1AuMYjJ4=
+	t=1762964778; cv=none; b=nvuHvNZ/hk/ceZx+mkDkjeF/E2GpI92v7iISe6Anf6EElREbh4zs8da7ROd8gchErpiODRG/GDBtrRwEGdiJWF/R5OgGDmKZ0VeVwhwaDCLpUmFXN9yw4GLezKmCHhjTTUgYTRdn0qtyBT+ljFmm4lw/wPU1wezKjTHxLJ+jI8U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762964773; c=relaxed/simple;
-	bh=FvQTca1f1kUbxhOefqJtNOjPp0/EO7kKIOVQ3Sbp5R8=;
+	s=arc-20240116; t=1762964778; c=relaxed/simple;
+	bh=+KJcaKn+U/rc32JmaM7bPoC8OfLHNM6eSE1qVL1tFpk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=IT2MiN/dNTioPtKofLFVZzUxUf303ALIDvCBSbCC0E04dCkH0qmCWb9CVh0tM0kXneYs5sgpHxXXnS4yGjyloCPOfg+6itB4SWPt+Pu/3Rh6nNfki0UBw0CPWhpeSei/BCsOSPekP2426AkPDxB6msiYV9ILLzdc9wuZvxMxMa0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iLt97/X3; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=ee1S3en4ZSaJMl5hqq8DaYp9lB3TZ+dh/jWX5ODpAQWKTVvcp9Ff4mkK8170kKY2V7WkVOhizF/jUIccogOAreZqdES7BIKj+lnMxOHYi6dUihTXpgorxJsytukxFe7vbKKgWNfmQHvPE2p2zSYxvEeutT5rYR7fWcQU6sfoYZQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qv45QM+K; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iLt97/X3"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ED684C19422;
-	Wed, 12 Nov 2025 16:26:11 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qv45QM+K"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75323C113D0;
+	Wed, 12 Nov 2025 16:26:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762964773;
-	bh=FvQTca1f1kUbxhOefqJtNOjPp0/EO7kKIOVQ3Sbp5R8=;
+	s=k20201202; t=1762964777;
+	bh=+KJcaKn+U/rc32JmaM7bPoC8OfLHNM6eSE1qVL1tFpk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=iLt97/X3KHt3ivYex1Cd2R88LSeKbUd8Qm9dnqqQgYzTY4QJ+NS727tr72kTcuWs8
-	 3nBxq3OnsdNVD8FD1M3dbb93RbfIk3gVr2aNwu8GEx/4ALZsWm8UWBGs6SWrr+QBq2
-	 110SKrdr9lr4l5I7pA5NtPBLWMhgbMTlbdpx02HNpZFrgpH/l6TDORb3llNk2K/AUs
-	 whKFh4OH77Mh9wrRPR+ufiNQ4hXPyCIT6QxFfolcXaf1ge09baRCxSf1tq8Xasnz3h
-	 T4cXuqBN6CeCg1/uG5Sy1nUkaAx0wNETUWDZ5NLGe5HJNFZBgcmz0iwm2bdxEx9ntB
-	 UbuPjOIleny/A==
+	b=qv45QM+KTf5sq3AKpE8a+TSBz8pIiHwCy1apOJm0n0fx5w7wBpvg66grwmEHF3Gwi
+	 PiBca9RnMb3fX/T8OMFWrUrzcg26o/Kbz4SaZtAw031puwrru8TvhI2BD8LA8z+88L
+	 EJuLjikldiHIQRIgAJ+xWJ/P3w7GICUEtCP8gyIa2UMCyeQumJDAqiDiM0PAcnhlMF
+	 ExM9rsnUYTBDnIFJKdNi310E8d7xXZn8/oPmfwzH6Xq932tv4aB6XDWMw1b9xCRaq/
+	 IXSym+gekIz8qYHpGby5rNMvCoGVx0/RIUv2KzXkMvghnicV/mglSmlYM5ZAlm/NNj
+	 ah/TbjBsJXh3A==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>,
  Christian Loehle <christian.loehle@arm.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, Reka Norman <rekanorman@chromium.org>
 Subject:
- [PATCH v1 3/4] cpuidle: governors: teo: Use s64 consistently in teo_update()
-Date: Wed, 12 Nov 2025 17:24:40 +0100
-Message-ID: <3026616.e9J7NaK4W3@rafael.j.wysocki>
+ [PATCH v1 2/4] cpuidle: governors: teo: Drop redundant function parameter
+Date: Wed, 12 Nov 2025 17:23:24 +0100
+Message-ID: <2253109.irdbgypaU6@rafael.j.wysocki>
 Organization: Linux Kernel Development
 In-Reply-To: <4701737.LvFx2qVVIh@rafael.j.wysocki>
 References: <4701737.LvFx2qVVIh@rafael.j.wysocki>
@@ -48,41 +48,56 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Two local variables in teo_update() are defined as u64, but their
-values are then compared with s64 values, so it is more consistent
-to use s64 as their data type.
+The last no_poll parameter of teo_find_shallower_state() is always
+false, so drop it.
 
 No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpuidle/governors/teo.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ drivers/cpuidle/governors/teo.c |   10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
 --- a/drivers/cpuidle/governors/teo.c
 +++ b/drivers/cpuidle/governors/teo.c
-@@ -157,8 +157,7 @@ static void teo_update(struct cpuidle_dr
+@@ -239,17 +239,15 @@ static bool teo_state_ok(int i, struct c
+  * @dev: Target CPU.
+  * @state_idx: Index of the capping idle state.
+  * @duration_ns: Idle duration value to match.
+- * @no_poll: Don't consider polling states.
+  */
+ static int teo_find_shallower_state(struct cpuidle_driver *drv,
+ 				    struct cpuidle_device *dev, int state_idx,
+-				    s64 duration_ns, bool no_poll)
++				    s64 duration_ns)
  {
- 	struct teo_cpu *cpu_data = per_cpu_ptr(&teo_cpus, dev->cpu);
- 	int i, idx_timer = 0, idx_duration = 0;
--	s64 target_residency_ns;
--	u64 measured_ns;
-+	s64 target_residency_ns, measured_ns;
+ 	int i;
  
- 	cpu_data->short_idles -= cpu_data->short_idles >> DECAY_SHIFT;
+ 	for (i = state_idx - 1; i >= 0; i--) {
+-		if (dev->states_usage[i].disable ||
+-				(no_poll && drv->states[i].flags & CPUIDLE_FLAG_POLLING))
++		if (dev->states_usage[i].disable)
+ 			continue;
  
-@@ -167,9 +166,9 @@ static void teo_update(struct cpuidle_dr
- 		 * If one of the safety nets has triggered, assume that this
- 		 * might have been a long sleep.
- 		 */
--		measured_ns = U64_MAX;
-+		measured_ns = S64_MAX;
- 	} else {
--		u64 lat_ns = drv->states[dev->last_state_idx].exit_latency_ns;
-+		s64 lat_ns = drv->states[dev->last_state_idx].exit_latency_ns;
+ 		state_idx = i;
+@@ -459,7 +457,7 @@ static int teo_select(struct cpuidle_dri
+ 	 * candidate state, a shallower one needs to be found.
+ 	 */
+ 	if (drv->states[idx].target_residency_ns > duration_ns)
+-		idx = teo_find_shallower_state(drv, dev, idx, duration_ns, false);
++		idx = teo_find_shallower_state(drv, dev, idx, duration_ns);
  
- 		measured_ns = dev->last_residency_ns;
- 		/*
+ 	/*
+ 	 * If the selected state's target residency is below the tick length
+@@ -487,7 +485,7 @@ end:
+ 	 */
+ 	if (idx > idx0 &&
+ 	    drv->states[idx].target_residency_ns > delta_tick)
+-		idx = teo_find_shallower_state(drv, dev, idx, delta_tick, false);
++		idx = teo_find_shallower_state(drv, dev, idx, delta_tick);
+ 
+ out_tick:
+ 	*stop_tick = false;
 
 
 
