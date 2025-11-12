@@ -1,40 +1,43 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0DC8F342C93;
-	Wed, 12 Nov 2025 16:14:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1663332D7DD;
+	Wed, 12 Nov 2025 16:26:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762964070; cv=none; b=d7gmmfJvWAtnrJljkA0bIGv+dYJtcHDmgFwG59sH1A9vA5HhNfaaa2H2wG4qO+M+rPL1BnPntUUFNpIpnMakZSKH+O4HyUV4U7jY/y5H1weu27r+umuiNP+qnu+pF+TA76aUa5/E/+jPHkcLFdcBtS7yg5/0ZW6aL2tz8SXZRwg=
+	t=1762964769; cv=none; b=sszNH0zVlaJlaspq8jbXDGhKiUxckdhtmlvSHb1p26hKsyANGcn9J7jMPKBED2iRy49/sLAVoftElL6UJCOdRxUZhM+uZF7CxHmWqHwl6Da4bsV6LwfFhAkR3q8b30Mdly31AUKLPvVPix76BQL4Bip+cgXiCWIHbxdJELTDoWA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762964070; c=relaxed/simple;
-	bh=vruLes5H4nqAQml8t7uAga1vRR7ZSnnTSptLtlPqo5o=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ni7e6ozUdn3L64fGVi0SqHT0LheQDEGOo5ZZ7NdPTKfO36/X3kADyEC04VWzGhzOKaMgq9nKsA7XRv5FXtQIbzW+NCHK4b66PMOSqhy4aWU4DW4I3911osacCmK9dUVzL7hlqdG+222bVAmhVQwuTURhi2tVDqooC2f5stprdLc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OXdq32sU; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1762964769; c=relaxed/simple;
+	bh=PhOpg8daI+pn+v5iRCHrewm5SXnZkOlAgbebDrQtMXM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=a+Uj2HJxAeydZPngaQMOfJfZevuJNeU73E6AkQeTSxWU5udMPyCQ5nZyyXhMoHCexbFLHUAalHevMW3BYj/SJv2jKNVWlPWG+njV/zbrJ0yC+WJ+5TLhNDnmcuh8Tt+gCNeqjEuZSQaIzZBPpd8X/yv454fsoE/q1OHOGmscaao=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dw946iKs; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OXdq32sU"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 750EFC4CEF1;
-	Wed, 12 Nov 2025 16:14:28 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dw946iKs"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0DCB1C4CEF5;
+	Wed, 12 Nov 2025 16:26:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762964069;
-	bh=vruLes5H4nqAQml8t7uAga1vRR7ZSnnTSptLtlPqo5o=;
-	h=From:To:Cc:Subject:Date:From;
-	b=OXdq32sU0ihfBmbEie4spdvKLGG/Ny5uaETp0tSNMY5Vom9Og4OcJnK/27FbzvlcR
-	 ycc8WZFBgXUeoiesVYZ0icXKgQmnmcanjsk7pgTVga4+YR8LreqMn/m8QoonLAmRVL
-	 TzmNvlkwjAebPqSWmbUnWxUF34O1zMd37gay0Ftspo27onlNARQ+XpPn9eYZi4Eye1
-	 YoRCLC4rJVJiiEyidXZGg82AzBTXnul9k1NwfvtGQJEpnr98jz1D+j+p4MxH/hMlVt
-	 khzC6r7KT2wujHOVZnyv0cNVc+exByC+96O6bq1mDHt00hzsgfr+rSpRZ8i5Z+RRXR
-	 ZkCA0QG2M59rA==
+	s=k20201202; t=1762964768;
+	bh=PhOpg8daI+pn+v5iRCHrewm5SXnZkOlAgbebDrQtMXM=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=dw946iKshpxcD8rShBTNe8wyJhDV8yw4yt1sVVMehScyAvRjv/fUMkCYLJfitv3J1
+	 Pg3qWfEcLbsw9Q22tCqTA8U9Xe9wD2o65bZLnJeDTZJ1YuQTVbGNksd3GMsTI2rPRa
+	 C4VQfczxkIyzSuPQSYCvvZqSm1a9Mdam9KJ2SOzVEEguOYQnUGnTsznDaDa1yBzwYh
+	 FrRd1xOLKgioA3bdt2LOwBHElqKWbNYBK6QR0Ke60mo/wDIPAN0XmfU1HLNlBZTeC2
+	 D+IAL+v2sr8fHD9yc59gO29salcLmiE0adAGy0xC9V9kaUy77zSNEj8UltYWJzU3H2
+	 /LvubpEglCuMg==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Kaushlendra Kumar <kaushlendra.kumar@intel.com>
+To: Linux PM <linux-pm@vger.kernel.org>,
+ Christian Loehle <christian.loehle@arm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Reka Norman <rekanorman@chromium.org>
 Subject:
- [PATCH v1] PM: wakeup: Update after recent wakeup source removal ordering
- change
-Date: Wed, 12 Nov 2025 17:14:26 +0100
-Message-ID: <12788103.O9o76ZdvQC@rafael.j.wysocki>
+ [PATCH v1 4/4] cpuidle: governors: teo: Decay metrics below DECAY_SHIFT
+ threshold
+Date: Wed, 12 Nov 2025 17:25:48 +0100
+Message-ID: <3396811.44csPzL39Z@rafael.j.wysocki>
 Organization: Linux Kernel Development
+In-Reply-To: <4701737.LvFx2qVVIh@rafael.j.wysocki>
+References: <4701737.LvFx2qVVIh@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -46,72 +49,76 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-After a recent change, wakeup_source_activate() will warn that the given
-wakeup source is "unregistered" after its timer has been shut down
-in wakeup_source_remove() which may be somewhat confusing, so change
-the warning message to say that the wakeup source is "unusable".
+If a given governor metric falls below a certain value (8 for
+DECAY_SHIFT equal to 3), it will not decay any more due to the
+simplistic decay implementation.  This may in some cases lead to
+subtle inconsistencies in the governor behavior, so change the
+decay implementation to take it into account and set the metric
+at hand to 0 in that case.
 
-Accordingly, rename wakeup_source_not_registered() to
-wakeup_source_not_usable() and update the comment in it
-to also mention the removal of the wakeup source.
-
-Also restore the comment in wakeup_source_remove() regarding the warning
-in wakeup_source_activate() that may trigger after shutting down the
-wakeup source timer.
-
+Suggested-by: Christian Loehle <christian.loehle@arm.com>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
+ drivers/cpuidle/governors/teo.c |   20 +++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
 
-This is based on https://lore.kernel.org/linux-pm/20251027044127.2456365-1-kaushlendra.kumar@intel.com/
-
----
- drivers/base/power/wakeup.c |   16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
-
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -189,7 +189,12 @@ static void wakeup_source_remove(struct
- 	if (WARN_ON(!ws))
- 		return;
+--- a/drivers/cpuidle/governors/teo.c
++++ b/drivers/cpuidle/governors/teo.c
+@@ -148,6 +148,16 @@ struct teo_cpu {
  
-+	/*
-+	 * After shutting down the timer, wakeup_source_activate() will warn if
-+	 * the given wakeup source is passed to it.
-+	 */
- 	timer_shutdown_sync(&ws->timer);
+ static DEFINE_PER_CPU(struct teo_cpu, teo_cpus);
+ 
++static void teo_decay(unsigned int *metric)
++{
++	unsigned int delta = *metric >> DECAY_SHIFT;
 +
- 	raw_spin_lock_irqsave(&events_lock, flags);
- 	list_del_rcu(&ws->entry);
- 	raw_spin_unlock_irqrestore(&events_lock, flags);
-@@ -500,14 +505,14 @@ int device_set_wakeup_enable(struct devi
- EXPORT_SYMBOL_GPL(device_set_wakeup_enable);
- 
++	if (delta)
++		*metric -= delta;
++	else
++		*metric = 0;
++}
++
  /**
-- * wakeup_source_not_registered - validate the given wakeup source.
-+ * wakeup_source_not_usable - validate the given wakeup source.
-  * @ws: Wakeup source to be validated.
-  */
--static bool wakeup_source_not_registered(struct wakeup_source *ws)
-+static bool wakeup_source_not_usable(struct wakeup_source *ws)
- {
+  * teo_update - Update CPU metrics after wakeup.
+  * @drv: cpuidle driver containing state data.
+@@ -159,7 +169,7 @@ static void teo_update(struct cpuidle_dr
+ 	int i, idx_timer = 0, idx_duration = 0;
+ 	s64 target_residency_ns, measured_ns;
+ 
+-	cpu_data->short_idles -= cpu_data->short_idles >> DECAY_SHIFT;
++	teo_decay(&cpu_data->short_idles);
+ 
+ 	if (cpu_data->artificial_wakeup) {
+ 		/*
+@@ -195,8 +205,8 @@ static void teo_update(struct cpuidle_dr
+ 	for (i = 0; i < drv->state_count; i++) {
+ 		struct teo_bin *bin = &cpu_data->state_bins[i];
+ 
+-		bin->hits -= bin->hits >> DECAY_SHIFT;
+-		bin->intercepts -= bin->intercepts >> DECAY_SHIFT;
++		teo_decay(&bin->hits);
++		teo_decay(&bin->intercepts);
+ 
+ 		target_residency_ns = drv->states[i].target_residency_ns;
+ 
+@@ -207,7 +217,7 @@ static void teo_update(struct cpuidle_dr
+ 		}
+ 	}
+ 
+-	cpu_data->tick_intercepts -= cpu_data->tick_intercepts >> DECAY_SHIFT;
++	teo_decay(&cpu_data->tick_intercepts);
  	/*
--	 * Use timer struct to check if the given source is initialized
--	 * by wakeup_source_add.
-+	 * Use the timer struct to check if the given wakeup source has been
-+	 * initialized by wakeup_source_add() and it is not going away.
- 	 */
- 	return ws->timer.function != pm_wakeup_timer_fn;
+ 	 * If the measured idle duration falls into the same bin as the sleep
+ 	 * length, this is a "hit", so update the "hits" metric for that bin.
+@@ -222,7 +232,7 @@ static void teo_update(struct cpuidle_dr
+ 			cpu_data->tick_intercepts += PULSE;
+ 	}
+ 
+-	cpu_data->total -= cpu_data->total >> DECAY_SHIFT;
++	teo_decay(&cpu_data->total);
+ 	cpu_data->total += PULSE;
  }
-@@ -552,8 +557,7 @@ static void wakeup_source_activate(struc
- {
- 	unsigned int cec;
  
--	if (WARN_ONCE(wakeup_source_not_registered(ws),
--			"unregistered wakeup source\n"))
-+	if (WARN_ONCE(wakeup_source_not_usable(ws), "unusable wakeup source\n"))
- 		return;
- 
- 	ws->active = true;
 
 
 
