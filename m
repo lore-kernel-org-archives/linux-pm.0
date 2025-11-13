@@ -1,67 +1,92 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6D7A31BCBD;
-	Thu, 13 Nov 2025 19:36:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F92F315D29;
+	Thu, 13 Nov 2025 19:52:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763062582; cv=none; b=IsuIc49NoxvMDcjF6NCnTW2yIUNZZcJ3f3qdRJ9XQghB8tUQ8Z55nmdHU5vCb1/2RrvIJJB0kZvlhwdmm1R5qysHCLKMrt02meYVvgdUnb4cRgSJFTQzE8dlWIwuVoVQrpnq/LbSB4/K9WBfnUx1yPRYNEIm+PoKamDetgQSfAM=
+	t=1763063564; cv=none; b=T6eUtV4aahIkDZGh1n7N7whW3jGJGa73e+9V+VWcLoQf1x6Wfj/ihtA3dfoU/m1hTWrKcBlase2TJYGtuN0ZVUwcWx0P8ZaXBO59Bosu69i7JGxyz5jD+AyjyLEfbZEBmLdO2r3DzL6e07Hzjb+bLa/03LtN3/i252smWrsCeow=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763062582; c=relaxed/simple;
-	bh=d6/wr9z7PiikiTt2BwH3154EzjBBkK66uPk6kTQ10ys=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=osuhkHkabLqJBLQ3CgDHLj//sDpIznv6fb8TkOXCwmst6kDOshvBqe0AFOneWWWg2VEp3t1F68hlB4sFKn7F+A0SPOQRwkbFwsmO9y0NjCv3inynVgrr808fk16hURgMkPpZWv8xvhsPeV9cUkbFQ2vvN8Ipn8SkTlk7WZw5GjY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DXw1Mzmg; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1763063564; c=relaxed/simple;
+	bh=D6xByP9v7HA0BT4JxxGeDeAoBgYUhj6KpJENBxSZV5k=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=TROK0BlgDGPWDTpXU9c1Co7faDLVEFX8YVqr5lx3dtTDYcvDVKTzTdnZk0Mw1X6La3tMwqpw+OSizZRnOqDaUYCpq/IhmCs2Jzi7wKy9N/ciuAZbYJqzmqwcjFqqyWillLE3rukpgB36AxbiopNV9WtenjFONPtT99j2SiveKNA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GLGnHjbW; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DXw1Mzmg"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E7D4C113D0;
-	Thu, 13 Nov 2025 19:36:19 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GLGnHjbW"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 61B79C4CEF8;
+	Thu, 13 Nov 2025 19:52:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1763062582;
-	bh=d6/wr9z7PiikiTt2BwH3154EzjBBkK66uPk6kTQ10ys=;
-	h=From:To:Cc:Subject:Date:From;
-	b=DXw1MzmgfXdUe2VLx/g3bAIunmcbRCWyautyCBuIrVIiY2I/AiUK86DMpffYME8OP
-	 MrYQ2Hk7VkFxpnd4uqZFe3AQO4SE4OtjiLMOJATqDbYd8W3Wz2PjK527PrKfS9BIYv
-	 gYAz0haPVjw4vG0nVFXMwhNfGfB5jgLcP9bjDjxgfTiMTBRm0aTTnEv0oMPaCm0wrc
-	 eq1dliaISIPU3TRuokU6UmGSI5W4xxcjSjZromXvoT6e1LWJdti9Dbv8lZ/LBeSBVI
-	 fAWwNNCqSM6PiiMQ9it2vipP4ZF6sbjjD0OP7s8tubZda7E82K/7V6+0JnlMSm/iqH
-	 2yDk+LgTHlCrw==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
- Jonathan Cameron <jonathan.cameron@huawei.com>, Takashi Iwai <tiwai@suse.de>,
- LKML <linux-kernel@vger.kernel.org>, Zhang Qilong <zhangqilong3@huawei.com>,
- Frank Li <Frank.Li@nxp.com>, Dhruva Gole <d-gole@ti.com>,
- Dan Williams <dan.j.williams@intel.com>,
- Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <helgaas@kernel.org>
-Subject: [PATCH v2 0/3] PM: runtime: Wrapper macros for usage counter guards
-Date: Thu, 13 Nov 2025 20:24:57 +0100
-Message-ID: <5959587.DvuYhMxLoT@rafael.j.wysocki>
-Organization: Linux Kernel Development
+	s=k20201202; t=1763063564;
+	bh=D6xByP9v7HA0BT4JxxGeDeAoBgYUhj6KpJENBxSZV5k=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=GLGnHjbW8w5AQLT4TCnqeRul6f5gt7WgxeT+9V7DkAV3tkBaqwEJ65N1LJnhcD8tQ
+	 CmKv33y0fDkZdzyeFPVWBpEM2EA8fOLBleoBFcnRA/N+VGbS3AMwThmoKC7EniD74n
+	 ureP3k9067MsWLTnxkEtvjKsCmVpzO0yDOi6p/6tDeD78nx+Q0qtgmjgoJ7m7PIVvb
+	 OZ6sS6CbotGH8HAgOo1p06gSwaSeX6RvpwEJd9t1L7IPWCCwXUdJhDlmy8k5SiI89q
+	 sJ08U0J4hRSIIRS8VchBU+vLCIHtId1WyzNWkem6wN9Hb1rdsuM9NcMMrM+Si2Ft3k
+	 6llenEIRl0LSg==
+Date: Thu, 13 Nov 2025 19:52:38 +0000
+From: Conor Dooley <conor@kernel.org>
+To: Kaustabh Chakraborty <kauschluss@disroot.org>
+Cc: Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	Sebastian Reichel <sre@kernel.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	=?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Jonathan Corbet <corbet@lwn.net>, linux-leds@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+	linux-rtc@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: Re: [PATCH 01/13] dt-bindings: leds: document Samsung S2M series
+ PMIC flash LED device
+Message-ID: <20251113-silica-unashamed-6d78cdf55b35@spud>
+References: <20251114-s2mu005-pmic-v1-0-9e3184d3a0c9@disroot.org>
+ <20251114-s2mu005-pmic-v1-1-9e3184d3a0c9@disroot.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-
-Hi All,
-
-This supersedes
-
-https://lore.kernel.org/linux-pm/13883374.uLZWGnKmhe@rafael.j.wysocki/
-
-as discussed here:
-
-https://lore.kernel.org/linux-pm/5068916.31r3eYUQgx@rafael.j.wysocki/
-
-It adds runtime PM wrapper macros around ACQUIRE() and ACQUIRE_ERR() involving
-the guards added recently (patch [1/3]) and then updates the code already
-using those guards (patches [2/3] and [3/3]) to make it look more
-straightforward.
-
-Thanks!
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="Pm2uUZI5hpWGqHdz"
+Content-Disposition: inline
+In-Reply-To: <20251114-s2mu005-pmic-v1-1-9e3184d3a0c9@disroot.org>
 
 
+--Pm2uUZI5hpWGqHdz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Fri, Nov 14, 2025 at 12:35:02AM +0530, Kaustabh Chakraborty wrote:
+> Certain Samsung S2M series PMICs have a flash LED controller with
+> two LED channels, and with torch and flash control modes. Document the
+> devicetree schema for the device.
+>=20
+> The initial driver introduced has support for S2MU005, add its
+> compatible as well.
+
+Drop this sentence please.
+pw-bot: changes-requested
+With it gone
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+
+--Pm2uUZI5hpWGqHdz
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaRY3BgAKCRB4tDGHoIJi
+0hquAQCFvzpL/uf0VxfXg2G5vEFz2sazW81JFWrhtOtwcp2YfwD/QevXW5MldAvy
+LgEwcl+DCU8iEfnMtBUEC5/q6eI2OQw=
+=dXM/
+-----END PGP SIGNATURE-----
+
+--Pm2uUZI5hpWGqHdz--
