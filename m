@@ -1,137 +1,162 @@
-Received: from mail-pl1-f202.google.com (mail-pl1-f202.google.com [209.85.214.202])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CD6C2D2390
-	for <linux-pm@vger.kernel.org>; Wed, 12 Nov 2025 23:53:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.202
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A681135CBC1
+	for <linux-pm@vger.kernel.org>; Thu, 13 Nov 2025 00:15:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762991621; cv=none; b=CxishFyGYXJBXbKFdw7zcx7uZFThsXwOmqmtL1CpyLzty3oFP5R+peyvyK+4zZfyCOg4KRdgmEkYev/dgxdN2wMJXmZBDg+fADpjy5/DnhXObbjK3iq4JGi9hYK4+RrOjVPidFlK/eLoxx5CbWiRmqoWySjOjCCMyptgKcyLRDQ=
+	t=1762992920; cv=none; b=VGdJC3zEb7u5FVtlybIizhkDdqC7e+ADPFkZb2KhSvR9YcQODBRv1IPHHrGy561+/9+iZGUJTdsSPaCJz3XjiqeXnPTYEU4xMRhiNb8jNIxY0MmgyMn3YLlu/U/4mtbIJ3QRxnziOsTGy6m1bkOsn48ooLN7Fgtt3XmArqfTHck=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762991621; c=relaxed/simple;
-	bh=ENGPD0aIdY+2YhPwx5lnx6WYkkApmZ92GCEve7RFK/U=;
-	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=hGlR7cNc4B9Qo4KNAnRnbXc0YUKBp8TL5LnB6oDj9DFuN6UCg8Ke/eFtfBMOyet4CXs7sY1sFyx6v8FqDqx91a+UEqobhhxQhAZH79SXAO4t/2y4A45nod+aCPy3eVpDwKIH4SQY2ozqI4TTvKf03eNpgmdvjVOmHBj7vJyVsUY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--wusamuel.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=pY/vjHJ4; arc=none smtp.client-ip=209.85.214.202
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--wusamuel.bounces.google.com
+	s=arc-20240116; t=1762992920; c=relaxed/simple;
+	bh=ydcwlK/oAd5xKfTx+JL5DKXX5NzldMKD7eXI7AFie1U=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=K5iI9ODXgFPoJD2K3OdjzADSoqNmzBOZkfkV6Pqk5gLIASSMC1THC9siSZnSdcKXlczg3XG8TyZpBFcuJjq8aUs4O9I/8UFaxWp3ezLvaC7/wdLjySt+HMZK+09eL0MvB69zdU6xjAebaV6JdLnP4b1h7r3WSahfWDKZvt2IdAY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=K+34FNMk; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=HaKbi++R; arc=none smtp.client-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="pY/vjHJ4"
-Received: by mail-pl1-f202.google.com with SMTP id d9443c01a7336-29846a9efa5so4985975ad.0
-        for <linux-pm@vger.kernel.org>; Wed, 12 Nov 2025 15:53:40 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="K+34FNMk";
+	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="HaKbi++R"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1762992917;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=TDL7LoYP5gq9XMI4WP3Ykdi7uKdtvjM1bMJQ7leEYXw=;
+	b=K+34FNMktdluipXabuCgWUJDAUoyHncbv/r+RD8nKNfEhXAmpdRBSd0dnOZ+Mu4rGBH5vK
+	TZ3bcC87yaFcHQr9jcQRvQKywNemk0ujqw9Jk/nHo/ZPCWiAc8DvhsiPh782xUZeH2bS9U
+	O3SGtKwEsFThjhFeXitWiE4qD+K2W5k=
+Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
+ [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-662-g11W9jPzOamyyf2ZcGVWGw-1; Wed, 12 Nov 2025 19:15:16 -0500
+X-MC-Unique: g11W9jPzOamyyf2ZcGVWGw-1
+X-Mimecast-MFC-AGG-ID: g11W9jPzOamyyf2ZcGVWGw_1762992915
+Received: by mail-wm1-f70.google.com with SMTP id 5b1f17b1804b1-4777a022d1fso2147875e9.0
+        for <linux-pm@vger.kernel.org>; Wed, 12 Nov 2025 16:15:16 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1762991620; x=1763596420; darn=vger.kernel.org;
-        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=G2fCelaOXaY0hKXLaw4yZFPLF+MlvdQQ3DNLXys3oQE=;
-        b=pY/vjHJ4muuy7ZFlb6oiGwKk8ICttYUPvsz7POoLuJpNFI4/Fd4kJY+JuPbdz4+oGW
-         e9jcl4jvBnctL6ab1Uw6ABTDhd/R0L5kx6nvzzrFxvtMymt1CjBOzwuc4TbcUtVkrXce
-         wfqjPm+Xo8dBZD09GCwvfMZ8ah9NkOS9z8JL6w8Oz5RYKDQForv4sL78EMwJYwHsZ7O6
-         6vM/OFw4wj+hetN66DLNy3jw1nXKlEtZIDQmfo3h/l9nQyA5DkY0gGDMUOjyObYruaqi
-         mArdCH8XcXHP42eu2WQDRPYRJY9/eYihFlq9IHAO76Z0mhPdHDSf1millzriK6vvu+3K
-         9dpw==
+        d=redhat.com; s=google; t=1762992915; x=1763597715; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=TDL7LoYP5gq9XMI4WP3Ykdi7uKdtvjM1bMJQ7leEYXw=;
+        b=HaKbi++R60K0/KueJmIxlS7t/IVYai39FyTNO31Wdao9i8mHLOSIOZJgB9s20IfBr0
+         Trasm41BzoJooztcYlb8PJQbwkAi1tAjk51oFzZYmjxCbw1ymLaqYE1iUYsp9kp8Qx6l
+         KxD5NkPRjrWTbY6XSY/3XExgtb+TDvv7TS/++1uxrZLwiiNm6JHXgoLd/rMI+oZTZn+K
+         sdi27i3LYccA+XFdb4/UPzH8Ixpkqgu0Ty2sSJR1bdHyczMlajPDyiCB0WkpVZTa4uEv
+         2cWNbbkQDx9gnn3/P7fjBajFeQjQVwBQvxRFosazcuLM2hsSMhjDNRm5d7+m+pgsmbvv
+         oKuA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762991620; x=1763596420;
-        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=G2fCelaOXaY0hKXLaw4yZFPLF+MlvdQQ3DNLXys3oQE=;
-        b=bxLW2m3AktD6E3ozv/E3ZR55OORh+qJkYDY9OED9PrpC5sPAe87Ywc4Kft/wHtwF29
-         CH8RITRZpm/x4oiM//xvescIs6FjiUL7inxlmF+ZS1DaUJRVXLZQxXyCK4MuNoNk2Xa0
-         Ctj74XPtnBFFzC13XcPcuYHflK/5KaubH7uMT81wz75fiX+GtzaPa+iHw4UBW+VcZ93A
-         33BgzP4qB1bD4MUzMmCoqgi29TSwy7AzR/SA6RR01FCP+x9iWKsEgJgweD4ng7aBSDoN
-         mOuUA4Nrp1jXFRHfdRi/TohFARPi5SUalgT+KLEfWkc6ougx6VP9xxCIK0iTEG6yZsOD
-         brrQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXcuhKOUkj5WLphvlygioZzjNX9rqZtqKAe013rXcQWF7qr5wo1C/DtqNDPPsIVQbc3fWTP4w9hRw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyh9BHW8mpYLYA6EtiBhBkoN1W2lyk723fsLcAMhmvcWwksROEZ
-	1qzyp8iXCgQFEJs8LYGPodcZ2cPElhepZa37UfCxLiIvDymh+4brR+CXrGNR74o8gQi3vk1qXkV
-	B1/uFpbdqSR2W5g==
-X-Google-Smtp-Source: AGHT+IF7hTHhrm0qYbt1kdGgwC2gzoDhVXbYo4QhlWXJhezRX7mAL/XfnnuESy82/pQJzT4cXDYe7+WHmgieIA==
-X-Received: from dlbur14.prod.google.com ([2002:a05:7022:ea4e:b0:119:49ca:6b9c])
- (user=wusamuel job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:902:d4c3:b0:28e:756c:707e with SMTP id d9443c01a7336-2984eda94d4mr59926575ad.33.1762991619647;
- Wed, 12 Nov 2025 15:53:39 -0800 (PST)
-Date: Wed, 12 Nov 2025 15:51:53 -0800
+        d=1e100.net; s=20230601; t=1762992915; x=1763597715;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=TDL7LoYP5gq9XMI4WP3Ykdi7uKdtvjM1bMJQ7leEYXw=;
+        b=wEI7H+rpI6Dxq8Ie5mYzqaeeRSeIWC5/3R0G5UZlv7mJWWRBdXmcZCDKRzSFo31Rge
+         En2ODGcSX00karE2wdn0/9AsWNdyvwogUh0iNdhiS1TC3XdufFLQhXxyJ7347ItIWXzx
+         u1mAN5QgWaGsUoYXKd75w+6Ue43F/GzpWr3ERMUUK1SYNKaEdZQS5dVxQeWxFDFxKt3p
+         Nn+6+cSSchOnjIVN6dOIqDpmyrhh2ZQIRVhBqURIdl1DGZ9Q98t0N0pzTxEXcaceeLC0
+         0BmkjGAvNq8+P53cp/1Q1A2a+Ljw53LvOfPsieAVq/gPCY10eqOXoWF/00OVXzqB5XgP
+         voOg==
+X-Forwarded-Encrypted: i=1; AJvYcCX8gQjbFogA03nB3raJd/40om97XThRJrEHaqpgkWGn0zDPja0Pvx8IP+GbaGCi/od3cseQjWYVqA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx4j7Wm5YMEEt90Yefy69svC1ywyxak0DPFltZRi+W6SBZe+Gxe
+	0Rb9WnY3PXtJL+mtjyris8JIopjxLp69g5hDfXYeULuVlJ+m4R0d8u0PPjbTtKgC6jdiSlCvbRi
+	JiB3KB60PeBX+Pwphy/pHmMiDaiORmwLAo7+pMXn6OpbFRFYSwh6LYc8vzr68
+X-Gm-Gg: ASbGncs5vQcke//lx3XurQt1a7/QiW4ojQ3eKg55TpvY/ADqR9D4PxsGzu7AWslfdgE
+	CigKNYtrmPaOugXoq90lxJzRTFIlCpgayMLGwdh1vB0wKoTnx0iJqr+tRDH5x0h9HzyeOuN5BlZ
+	NNNSa1YnnSdiZ2mj0Jt1WJ+5QguuedFRfewEjS08ndCTCgAlyjidmO05IpmvulqoAKGmwCwsyZw
+	WcLcGv4BUR+YVVNnGHr8uaaLZNYwzsn+wOIvYQPfkU6f/Uw/i5bx/UqR34lCaoP99o6dccZ7v7v
+	qc6gQk3KlDyFqjdYVGL6XKIHYmVVvYBaHYqUehkYSIjZ5XmDG5E3BPetidNbpGDmDL+ZrZ5as/H
+	FqlbI1B7TEZop5w==
+X-Received: by 2002:a05:600c:1ca5:b0:477:c37:2ea7 with SMTP id 5b1f17b1804b1-47787093944mr51874545e9.21.1762992915197;
+        Wed, 12 Nov 2025 16:15:15 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IH44t5VADhoiFQdYlbkmvZ6vHu5ra7JAo9+e2PeUxapHpCteCkYYf67077+vK51LHvqgAh/8w==
+X-Received: by 2002:a05:600c:1ca5:b0:477:c37:2ea7 with SMTP id 5b1f17b1804b1-47787093944mr51874445e9.21.1762992914844;
+        Wed, 12 Nov 2025 16:15:14 -0800 (PST)
+Received: from sissix.lzampier.com ([2a06:5900:814a:ab00:3725:2991:6cf3:b3aa])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-42b53f0b589sm432983f8f.23.2025.11.12.16.15.14
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 12 Nov 2025 16:15:14 -0800 (PST)
+From: Lucas Zampieri <lzampier@redhat.com>
+To: linux-input@vger.kernel.org
+Cc: Lucas Zampieri <lzampier@redhat.com>,
+	linux-kernel@vger.kernel.org,
+	Jiri Kosina <jikos@kernel.org>,
+	Benjamin Tissoires <bentiss@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>,
+	Bastien Nocera <hadess@hadess.net>,
+	linux-pm@vger.kernel.org
+Subject: [RFC PATCH v2 1/3] HID: input: Introduce struct hid_battery
+Date: Thu, 13 Nov 2025 00:15:03 +0000
+Message-ID: <20251113001508.713574-2-lzampier@redhat.com>
+X-Mailer: git-send-email 2.51.1
+In-Reply-To: <20251113001508.713574-1-lzampier@redhat.com>
+References: <20251113001508.713574-1-lzampier@redhat.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-X-Mailer: git-send-email 2.51.2.1041.gc1ab5b90ca-goog
-Message-ID: <20251112235154.2974902-1-wusamuel@google.com>
-Subject: [PATCH v1] cpufreq: Add policy_frequency trace event
-From: Samuel Wu <wusamuel@google.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>, 
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Cc: Samuel Wu <wusamuel@google.com>, kernel-team@android.com, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-trace-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-The existing cpu_frequency trace_event can be verbose, emitting an event
-for every CPU in the policy even when their frequencies are identical.
+Add struct hid_battery to encapsulate battery state per HID device.
+This structure will allow tracking individual battery properties
+including capacity, min/max values, report information, and status.
 
-This patch adds a new policy_frequency trace event, which provides a
-more efficient alternative to cpu_frequency trace event. This option
-allows users who only need frequency at a policy level more concise logs
-with simpler analysis.
+The structure includes a list node to enable support for multiple
+batteries per device in subsequent patches.
 
-Signed-off-by: Samuel Wu <wusamuel@google.com>
+This is a preparation step for transitioning from direct power_supply
+access to a more flexible battery management system.
+
+Signed-off-by: Lucas Zampieri <lzampier@redhat.com>
 ---
- drivers/cpufreq/cpufreq.c    |  2 ++
- include/trace/events/power.h | 21 +++++++++++++++++++++
- 2 files changed, 23 insertions(+)
+ include/linux/hid.h | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 4472bb1ec83c..b65534a4fd9a 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -345,6 +345,7 @@ static void cpufreq_notify_transition(struct cpufreq_policy *policy,
- 		pr_debug("FREQ: %u - CPUs: %*pbl\n", freqs->new,
- 			 cpumask_pr_args(policy->cpus));
+diff --git a/include/linux/hid.h b/include/linux/hid.h
+index a4ddb94e3ee5..63422130de20 100644
+--- a/include/linux/hid.h
++++ b/include/linux/hid.h
+@@ -634,6 +634,36 @@ enum hid_battery_status {
+ 	HID_BATTERY_REPORTED,		/* Device sent unsolicited battery strength report */
+ };
  
-+		trace_policy_frequency(freqs->new, policy->cpu);
- 		for_each_cpu(cpu, policy->cpus)
- 			trace_cpu_frequency(freqs->new, cpu);
++/**
++ * struct hid_battery - represents a single battery power supply
++ * @list: list node for linking into hid_device's battery list
++ * @dev: pointer to the parent hid_device
++ * @ps: the power supply device
++ * @capacity: current battery capacity
++ * @min: minimum battery value
++ * @max: maximum battery value
++ * @report_type: type of report (HID_INPUT_REPORT, HID_FEATURE_REPORT)
++ * @report_id: report ID for this battery
++ * @charge_status: current charge status
++ * @status: battery status (unknown, queried, reported)
++ * @avoid_query: if true, don't query battery (wait for device reports)
++ * @ratelimit_time: time for rate limiting battery updates
++ */
++struct hid_battery {
++	struct list_head list;
++	struct hid_device *dev;
++	struct power_supply *ps;
++	__s32 capacity;
++	__s32 min;
++	__s32 max;
++	__s32 report_type;
++	__s32 report_id;
++	__s32 charge_status;
++	enum hid_battery_status status;
++	bool avoid_query;
++	ktime_t ratelimit_time;
++};
++
+ struct hid_driver;
+ struct hid_ll_driver;
  
-@@ -2214,6 +2215,7 @@ unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
- 			    arch_scale_freq_ref(policy->cpu));
- 	cpufreq_stats_record_transition(policy, freq);
- 
-+	trace_policy_frequency(freq, policy->cpu);
- 	if (trace_cpu_frequency_enabled()) {
- 		for_each_cpu(cpu, policy->cpus)
- 			trace_cpu_frequency(freq, cpu);
-diff --git a/include/trace/events/power.h b/include/trace/events/power.h
-index 82904291c2b8..87dbd53c8ea1 100644
---- a/include/trace/events/power.h
-+++ b/include/trace/events/power.h
-@@ -188,6 +188,27 @@ DEFINE_EVENT(cpu, cpu_frequency,
- 	TP_ARGS(frequency, cpu_id)
- );
- 
-+TRACE_EVENT(policy_frequency,
-+
-+	TP_PROTO(unsigned int frequency, unsigned int policy_cpu),
-+
-+	TP_ARGS(frequency, policy_cpu),
-+
-+	TP_STRUCT__entry(
-+		__field(u32, frequency)
-+		__field(u32, policy_cpu)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->frequency = frequency;
-+		__entry->policy_cpu = policy_cpu;
-+	),
-+
-+	TP_printk("frequency=%lu policy_cpu=%lu",
-+		  (unsigned long)__entry->frequency,
-+		  (unsigned long)__entry->policy_cpu)
-+);
-+
- TRACE_EVENT(cpu_frequency_limits,
- 
- 	TP_PROTO(struct cpufreq_policy *policy),
 -- 
-2.51.2.1041.gc1ab5b90ca-goog
+2.51.1
 
