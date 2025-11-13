@@ -1,105 +1,110 @@
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 02C4E76026;
-	Thu, 13 Nov 2025 19:58:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6653031B13C;
+	Thu, 13 Nov 2025 19:59:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763063885; cv=none; b=EQbintq5nkfk/CugOqCfCV6plDws3ROye/Ebp7F/UXRlSLjRknPuYJj9wIG1d8puDD4ogWaMcOBiLA0SUfK/m8GrOe8b162abGLzWkr3GN6GYgH0FOEVjM24774tzc5TAKQwFbBsYmH/wgiG68z0V2uwOKMc2YahjEtfn0ZboE0=
+	t=1763063986; cv=none; b=KQPNx7n53TO1wCk8wNzw1THHZW4JxBgmOkNK5PMQxm+zPVOxxNALWJn8U1wge/ADs74PvxLu5vm3U7H7VbPoGX3BoFUn0+BtACZ9kv2H5FJuxCGbWV/7ez5F4P2kS0xQcqFwQi+bbLXfI6gUWyiQJBCVJv8P3+5AV9rO4LhJie8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763063885; c=relaxed/simple;
-	bh=iBTFanEIxOT4IMFjt8xI4rzsbKY4Dm6/ucMLBZ2V4gc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=V6uD83LAFoeD+1+MQ6C0YAZIyfCH1tlLiSs+0iyFqWGpxXiUjHifCCLSwfwpEbXm8fx8X/TFP2p8D0WgGUaIAshFV3SjGmtXqJ9MYh3s6Jcp7LIl5aPpBnjDS83s+8pyWiSR9lcAs1mbY3ku5RE6yjGAs2swlXAwxAreKIU85eU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=s8nBX6me; arc=none smtp.client-ip=198.137.202.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+	s=arc-20240116; t=1763063986; c=relaxed/simple;
+	bh=albEH2IwQeApwJMRsxBQcInlleO96o5R96BSCYwWvmk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Dg1e06230Bhq6aAP9vBulx6cs8PAHvvahrQZS8Oj1o7ig+02bmJbDU5K3HWq9TmG97xH+djtU9XUmAH92kA/Enj1UPDTxQseoCT5AhyhvnA1xSFWXRNjTFBUreptdqB3EbhVSJByBf6euiDRwIXB3fI7oVqz+Oam/+pdvjWhkPA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B2zBNUi+; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="s8nBX6me"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=UAioK4DG5C9zm1t6hyaDe3YJWZ5Zta/Pw1nq2GgNNgY=; b=s8nBX6meJGhwpK5oym8SCA1bBN
-	z878G0qTQ9+6fUcBwxozuPeScqbLnkG7YsmhzqixQWUn5FI1u32s6nqnXYqlaBYeAqZxyPcIt69MB
-	nlSjbE8HNu0b6W3d8PHadWuCK4lBcqX8C2/Z0kOWLUNFa6otjf2JnKpa67Stcf4MQu6L4ahKkPlOA
-	T+ICIPJcO9SOPElSasN6sqmBjgPw8y/Nnwm22MZvaQMQKMKB2HaTMCYnDk4Q9z18T1+ttd43SBl3o
-	5Qu/YqIlbSC77sUbZB+l0oB+WhFEzJ16i6qVoh0EsSFEWhfxQfBqYF7YuEzMmDyRg0IQ/jqfjCe++
-	1w4Wf6rA==;
-Received: from [50.53.43.113] (helo=[192.168.254.34])
-	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vJdSB-0000000B37a-2kPs;
-	Thu, 13 Nov 2025 19:57:59 +0000
-Message-ID: <2b5e182f-1933-41b1-803d-7084fbc4bbdc@infradead.org>
-Date: Thu, 13 Nov 2025 11:57:58 -0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B2zBNUi+"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF0E7C113D0;
+	Thu, 13 Nov 2025 19:59:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1763063986;
+	bh=albEH2IwQeApwJMRsxBQcInlleO96o5R96BSCYwWvmk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=B2zBNUi+8bbGLwAJ/33NOAz2+djFfC5eQbi/Cth7/8eALanAeHfR8UqigSOeS1eK6
+	 0J2KS1AqXEUZ3b3W5eX+BU/cZNax5FH2whih2ho//jwVgL+rG5Ae4w+aQNPoqaO8KB
+	 U1ZaqS9NW064N38cdtaqw75gk/+uAIQrCLnBFJncbiLJ7Sf5d12aH30GhO7SEhF9Aj
+	 FbDuHSeUbiAN6hudq2B3qtbZKH7BelJciRHB2cGpLmaxZHF/rSe8Geog0xcWL0Ho4C
+	 px/YF+CLRhJJsZY+qd2+KlfWCgdW3m4W61lk2kDZk61HrVM8vvvceuW63Xk0mTH+0R
+	 m4ea7uK/dEGYg==
+Received: by venus (Postfix, from userid 1000)
+	id DE84B180785; Thu, 13 Nov 2025 12:16:21 +0100 (CET)
+Date: Thu, 13 Nov 2025 12:16:21 +0100
+From: Sebastian Reichel <sre@kernel.org>
+To: Lucas Zampieri <lzampier@redhat.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Jiri Kosina <jikos@kernel.org>, Benjamin Tissoires <bentiss@kernel.org>, 
+	Bastien Nocera <hadess@hadess.net>, linux-pm@vger.kernel.org
+Subject: Re: [RFC PATCH v2 0/3] HID: Add support for multiple batteries per
+ device
+Message-ID: <z7rlg27pref5o3y5c3lrxab7pilzuxqgofuogh5547kw5jpj56@basmdf4uwh56>
+References: <20251113001508.713574-1-lzampier@redhat.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 11/13] Documentation: leds: document pattern behavior of
- Samsung S2M series PMIC RGB LEDs
-To: Kaustabh Chakraborty <kauschluss@disroot.org>, Lee Jones
- <lee@kernel.org>, Pavel Machek <pavel@kernel.org>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>,
- Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>,
- Krzysztof Kozlowski <krzk@kernel.org>,
- =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>,
- Alexandre Belloni <alexandre.belloni@bootlin.com>,
- Jonathan Corbet <corbet@lwn.net>
-Cc: linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-samsung-soc@vger.kernel.org, linux-rtc@vger.kernel.org,
- linux-doc@vger.kernel.org
-References: <20251114-s2mu005-pmic-v1-0-9e3184d3a0c9@disroot.org>
- <20251114-s2mu005-pmic-v1-11-9e3184d3a0c9@disroot.org>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20251114-s2mu005-pmic-v1-11-9e3184d3a0c9@disroot.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="u3i5adcbhywjdycu"
+Content-Disposition: inline
+In-Reply-To: <20251113001508.713574-1-lzampier@redhat.com>
 
 
+--u3i5adcbhywjdycu
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [RFC PATCH v2 0/3] HID: Add support for multiple batteries per
+ device
+MIME-Version: 1.0
 
-On 11/13/25 11:05 AM, Kaustabh Chakraborty wrote:
-> Add documentation to describe how hardware patterns (as defined by the
-> documentation of led-class-multicolor) are parsed and implemented by the
-> Samsung S2M series PMIC RGB LED driver.
-> 
-> Signed-off-by: Kaustabh Chakraborty <kauschluss@disroot.org>
-> ---
->  Documentation/leds/index.rst        |  1 +
->  Documentation/leds/leds-s2m-rgb.rst | 60 +++++++++++++++++++++++++++++++++++++
->  2 files changed, 61 insertions(+)
-> 
+Hi,
 
-> diff --git a/Documentation/leds/leds-s2m-rgb.rst b/Documentation/leds/leds-s2m-rgb.rst
-> new file mode 100644
-> index 000000000000..cf91f0238093
-> --- /dev/null
-> +++ b/Documentation/leds/leds-s2m-rgb.rst
-> @@ -0,0 +1,60 @@
-> +.. SPDX-License-Identifier: GPL-2.0
-> +
-> +======================================
-> +Samsung S2M Series PMIC RGB LED Driver
-> +======================================
-> +
-> +Description
-> +-----------
-> +
-> +The RGB LED on the S2M series PMIC hardware features a three-channel LED that is
-> +grouped together as a single device. Furthermore, the it supports 8-bit
+On Thu, Nov 13, 2025 at 12:15:02AM +0000, Lucas Zampieri wrote:
+> ## Request for Comments
+>=20
+> Is list-based storage appropriate or would another structure work better?
+> Should we support usage-based identification in addition to report ID for
+> devices using the same report ID? Is sequential naming (battery-N) suffic=
+ient
+> or should batteries have semantic role identifiers like "main", "stylus",=
+ "dock"?
 
-                                           drop the  ^^^
+If unique semantic identifiers are available they are obviously a better
+choice.
 
-> +brightness control for each channel. This LED is typically used as a status
-> +indicator in mobile devices. It also supports various parameters for hardware
-> +patterns.
+> To HID maintainers (Jiri Kosina, Benjamin Tissoires): Does this belong in
+> hid-input.c or should it be separate? Any concerns about the backwards
+> compatibility approach? Meaning, should I have removed the whole
+> dev->bat legacy mapping and use the new struct?
+>=20
+> To power supply maintainers (Sebastian Reichel): Any issues with multiple
+> power_supply devices from a single HID device?
 
--- 
-~Randy
+I don't see any issues with that.
 
+Greetings,
+
+-- Sebastian
+
+--u3i5adcbhywjdycu
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmkVvf4ACgkQ2O7X88g7
++ppbvg//XLJry0vRnhIFIutwoLrryUxt16rSUfo0i/YAB03VQOQ/2o9XzmSUkFlO
+2WGvBbm1dRjkfw44CXCQLNvdz5nfKjSRvAnVRV2JW4kqjG67hdtN18iR0v0Hz13q
+VWWYtnDBcGS1+ICCZJfVRW1K03+3SaUSU5luyytIx22qAI5+LMfaW8FxqgbPNNcX
+uEQtMIIDaX4+cy/yGmdOXq2lPAj35tHcLR8hOmWo6bY84Byt+SuTItIQhCKzPGHO
+aGTN1oyXCwqVbsrWlSpjqgeLstWNBqjMzMHkmeU2rA4SJkgMnLDkGICLfhgbnnfz
+rwmVK/xHcJGvR8BB6YGRAs8yt8dUIbYSuBYjcuVHCN/ntgcQUbGybiSMmXArlFBV
+aYgLyzOduvdRfq+FYM8xQgX6P+q54mZ2cnQdIoiw0jx8WC3oFid/E+wn+IVjlK7w
+H3mbeOoJtIIjJLw7wkHRkjBISgxVxeJYavYTGD1dkZH3DjeQDlTzwZxprtUNcl3Q
+P8EzRKoQkYXZBOL8R/46CiOpFkBnYXDfavzrQZQ/3G+xjEi3uhr8Z+gVqqmF5VzC
+JtB8Aoh26KHrKC5MSh8Z0G2GWFJdsEAwav0DpgWvk7tP5jfyCWy06VU2gXiaME+r
+YO31U1dvvtM9jB7wCpQWyP1PoZXWQ9gPBvEkulzIYl6Dh02tDfs=
+=uYh1
+-----END PGP SIGNATURE-----
+
+--u3i5adcbhywjdycu--
