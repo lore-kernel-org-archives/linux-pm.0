@@ -1,110 +1,101 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6653031B13C;
-	Thu, 13 Nov 2025 19:59:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B96C926B2D3
+	for <linux-pm@vger.kernel.org>; Thu, 13 Nov 2025 20:14:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763063986; cv=none; b=KQPNx7n53TO1wCk8wNzw1THHZW4JxBgmOkNK5PMQxm+zPVOxxNALWJn8U1wge/ADs74PvxLu5vm3U7H7VbPoGX3BoFUn0+BtACZ9kv2H5FJuxCGbWV/7ez5F4P2kS0xQcqFwQi+bbLXfI6gUWyiQJBCVJv8P3+5AV9rO4LhJie8=
+	t=1763064860; cv=none; b=qgfyTTA1B4hTCDezs9WHpjPdCSNd2kIcVFmbcc3UT8RLeNDXTOrA5Qzkk18KaRg7Mwkq34G7eQcDQZAzZf/3CXXjnWST7VX6Td8PP1SQ2PUFCfumnP4YWViqAF5IWr9kz+5eOj1rVa3DWUNgkYHgbE7hwLIhmwrBmvLumXGkx/0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763063986; c=relaxed/simple;
-	bh=albEH2IwQeApwJMRsxBQcInlleO96o5R96BSCYwWvmk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Dg1e06230Bhq6aAP9vBulx6cs8PAHvvahrQZS8Oj1o7ig+02bmJbDU5K3HWq9TmG97xH+djtU9XUmAH92kA/Enj1UPDTxQseoCT5AhyhvnA1xSFWXRNjTFBUreptdqB3EbhVSJByBf6euiDRwIXB3fI7oVqz+Oam/+pdvjWhkPA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B2zBNUi+; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1763064860; c=relaxed/simple;
+	bh=76EvaeQI5XEPFQQiNAA3g7E01+m/sCelT9LslmIdgDM=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=EfEuIUz8ERopqYd10y7EV/GUq5es/GnykfbyMxkC96nzuHWbdeEJ6muYIz1nePoszqeJyRGgQRztDD8pr0PNYOW0+2lAxMJLrtbTlffTJaTXrZwG8hSJ+LUEQNDP4hKTct4tBdndnKwX1CuUXJT3vljZmqM8hKZ2mzMtE01Fsy8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=pHrQS+sz; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B2zBNUi+"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF0E7C113D0;
-	Thu, 13 Nov 2025 19:59:45 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="pHrQS+sz"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 637C6C2BC86
+	for <linux-pm@vger.kernel.org>; Thu, 13 Nov 2025 20:14:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1763063986;
-	bh=albEH2IwQeApwJMRsxBQcInlleO96o5R96BSCYwWvmk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=B2zBNUi+8bbGLwAJ/33NOAz2+djFfC5eQbi/Cth7/8eALanAeHfR8UqigSOeS1eK6
-	 0J2KS1AqXEUZ3b3W5eX+BU/cZNax5FH2whih2ho//jwVgL+rG5Ae4w+aQNPoqaO8KB
-	 U1ZaqS9NW064N38cdtaqw75gk/+uAIQrCLnBFJncbiLJ7Sf5d12aH30GhO7SEhF9Aj
-	 FbDuHSeUbiAN6hudq2B3qtbZKH7BelJciRHB2cGpLmaxZHF/rSe8Geog0xcWL0Ho4C
-	 px/YF+CLRhJJsZY+qd2+KlfWCgdW3m4W61lk2kDZk61HrVM8vvvceuW63Xk0mTH+0R
-	 m4ea7uK/dEGYg==
-Received: by venus (Postfix, from userid 1000)
-	id DE84B180785; Thu, 13 Nov 2025 12:16:21 +0100 (CET)
-Date: Thu, 13 Nov 2025 12:16:21 +0100
-From: Sebastian Reichel <sre@kernel.org>
-To: Lucas Zampieri <lzampier@redhat.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Jiri Kosina <jikos@kernel.org>, Benjamin Tissoires <bentiss@kernel.org>, 
-	Bastien Nocera <hadess@hadess.net>, linux-pm@vger.kernel.org
-Subject: Re: [RFC PATCH v2 0/3] HID: Add support for multiple batteries per
- device
-Message-ID: <z7rlg27pref5o3y5c3lrxab7pilzuxqgofuogh5547kw5jpj56@basmdf4uwh56>
-References: <20251113001508.713574-1-lzampier@redhat.com>
+	s=k20201202; t=1763064860;
+	bh=76EvaeQI5XEPFQQiNAA3g7E01+m/sCelT9LslmIdgDM=;
+	h=From:Date:Subject:To:Cc:From;
+	b=pHrQS+szacBGnfLizjPD2mmqMXSTenGwugENXteV/+vAKPGnOZ/e5g7hs8zuiK5sy
+	 rK9bFF4DNRypFFyYIgnhITPEdDZBUU1Zby1Uor2EPjwHfgAOXenMKC2PNLmsIEVHWT
+	 sMN+0ndKBmvCBmCdABsz7mh+9ZFka+Lek6ZdjL3gbcxhf9ypgBzslgSUBf5mijkvUq
+	 WCZ6QFnr8nzpiInwWp1iSTYbbG23odklR9w4DgoHj4+2fSRd6Q8tp6Ax7vYz2d091r
+	 o2PZWpvSGfx7IqVM5VzoLozm00YOWRY9RjymHLXOd1ASmzzK31Pfz8nAkMIy4Q8CNx
+	 ooTBVAyqmxjwg==
+Received: by mail-ot1-f50.google.com with SMTP id 46e09a7af769-7c71cca8fc2so808613a34.1
+        for <linux-pm@vger.kernel.org>; Thu, 13 Nov 2025 12:14:20 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCVD4ZAiWr2FHitIB0Is1kuJhQuMpFtWfTa3CEfjwgVBBMZfG1aw00yfEU5oXEP18M15yfq6Wru7YQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx8rLlbXyAvz1vmeB85cdDaNkqE1EP+6RbvoHGFzyF4cXvDweS/
+	YrrHZrp9Sv7EWjkjHcSXlAunBJx6hAqSl9h7YdGxjQ4iDw1ZUocC7fksfca5FS5r8Dw3JEht9OZ
+	FTk5lCn4vQuqATu1RWYHknHL1F8DvFpk=
+X-Google-Smtp-Source: AGHT+IEvaZ/Fzxot95Xje9kKzOAn5s6+MtCfOUZZiY70GMKlnN8bqrGa9rIlMPbfLcOldZIt6K5U+eAyUyHMBRBwajM=
+X-Received: by 2002:a05:6830:7185:b0:7c7:526:b1fd with SMTP id
+ 46e09a7af769-7c7443682b3mr696808a34.11.1763064859588; Thu, 13 Nov 2025
+ 12:14:19 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="u3i5adcbhywjdycu"
-Content-Disposition: inline
-In-Reply-To: <20251113001508.713574-1-lzampier@redhat.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 13 Nov 2025 21:14:08 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0gTrsccUOjqAM4tRoYiFdpemWzsZ6kY=P+r+yDJ38Hw1g@mail.gmail.com>
+X-Gm-Features: AWmQ_bn8RSmNGuJCe_vafx9jt8ekKS39bneJpicsQp8WdOOdXGBHNrG6hGK4H54
+Message-ID: <CAJZ5v0gTrsccUOjqAM4tRoYiFdpemWzsZ6kY=P+r+yDJ38Hw1g@mail.gmail.com>
+Subject: [GIT PULL] ACPI support fixes for v6.18-rc6
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "the arch/x86 maintainers" <x86@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+
+Hi Linus,
+
+Please pull from the tag
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ acpi-6.18-rc6
+
+with top-most commit 7564f3543cf19b1232553ab10399c9fbf514b5f3
+
+ Merge branches 'acpi-cppc' and 'acpi-tables'
+
+on top of commit e9a6fb0bcdd7609be6969112f3fbfcce3b1d4a7c
+
+ Linux 6.18-rc5
+
+to receive ACPI support fixes for 6.18-rc6.
+
+These fix issues in the ACPI CPPC library and in the recently added
+parser for the ACPI MRRM table:
+
+ - Limit some checks in the ACPI CPPC library to online CPUs to avoid
+   accessing uninitialized per-CPU variables when some CPUs are offline
+   to start with, like during boot with "nosmt=force" (Gautham Shenoy)
+
+ - Rework add_boot_memory_ranges() in the ACPI MRRM table parser to fix
+   memory leaks and improve error handling (Kaushlendra Kumar)
+
+Thanks!
 
 
---u3i5adcbhywjdycu
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [RFC PATCH v2 0/3] HID: Add support for multiple batteries per
- device
-MIME-Version: 1.0
+---------------
 
-Hi,
+Gautham R. Shenoy (4):
+      ACPI: CPPC: Detect preferred core availability on online CPUs
+      ACPI: CPPC: Check _CPC validity for only the online CPUs
+      ACPI: CPPC: Perform fast check switch only for online CPUs
+      ACPI: CPPC: Limit perf ctrs in PCC check only to online CPUs
 
-On Thu, Nov 13, 2025 at 12:15:02AM +0000, Lucas Zampieri wrote:
-> ## Request for Comments
->=20
-> Is list-based storage appropriate or would another structure work better?
-> Should we support usage-based identification in addition to report ID for
-> devices using the same report ID? Is sequential naming (battery-N) suffic=
-ient
-> or should batteries have semantic role identifiers like "main", "stylus",=
- "dock"?
+Kaushlendra Kumar (1):
+      ACPI: MRRM: Fix memory leaks and improve error handling
 
-If unique semantic identifiers are available they are obviously a better
-choice.
+---------------
 
-> To HID maintainers (Jiri Kosina, Benjamin Tissoires): Does this belong in
-> hid-input.c or should it be separate? Any concerns about the backwards
-> compatibility approach? Meaning, should I have removed the whole
-> dev->bat legacy mapping and use the new struct?
->=20
-> To power supply maintainers (Sebastian Reichel): Any issues with multiple
-> power_supply devices from a single HID device?
-
-I don't see any issues with that.
-
-Greetings,
-
--- Sebastian
-
---u3i5adcbhywjdycu
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmkVvf4ACgkQ2O7X88g7
-+ppbvg//XLJry0vRnhIFIutwoLrryUxt16rSUfo0i/YAB03VQOQ/2o9XzmSUkFlO
-2WGvBbm1dRjkfw44CXCQLNvdz5nfKjSRvAnVRV2JW4kqjG67hdtN18iR0v0Hz13q
-VWWYtnDBcGS1+ICCZJfVRW1K03+3SaUSU5luyytIx22qAI5+LMfaW8FxqgbPNNcX
-uEQtMIIDaX4+cy/yGmdOXq2lPAj35tHcLR8hOmWo6bY84Byt+SuTItIQhCKzPGHO
-aGTN1oyXCwqVbsrWlSpjqgeLstWNBqjMzMHkmeU2rA4SJkgMnLDkGICLfhgbnnfz
-rwmVK/xHcJGvR8BB6YGRAs8yt8dUIbYSuBYjcuVHCN/ntgcQUbGybiSMmXArlFBV
-aYgLyzOduvdRfq+FYM8xQgX6P+q54mZ2cnQdIoiw0jx8WC3oFid/E+wn+IVjlK7w
-H3mbeOoJtIIjJLw7wkHRkjBISgxVxeJYavYTGD1dkZH3DjeQDlTzwZxprtUNcl3Q
-P8EzRKoQkYXZBOL8R/46CiOpFkBnYXDfavzrQZQ/3G+xjEi3uhr8Z+gVqqmF5VzC
-JtB8Aoh26KHrKC5MSh8Z0G2GWFJdsEAwav0DpgWvk7tP5jfyCWy06VU2gXiaME+r
-YO31U1dvvtM9jB7wCpQWyP1PoZXWQ9gPBvEkulzIYl6Dh02tDfs=
-=uYh1
------END PGP SIGNATURE-----
-
---u3i5adcbhywjdycu--
+ arch/x86/kernel/acpi/cppc.c |  2 +-
+ drivers/acpi/acpi_mrrm.c    | 43 +++++++++++++++++++++++++++++++++----------
+ drivers/acpi/cppc_acpi.c    |  6 +++---
+ 3 files changed, 37 insertions(+), 14 deletions(-)
