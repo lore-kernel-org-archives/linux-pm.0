@@ -1,108 +1,145 @@
-Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+Received: from mxout4.routing.net (mxout4.routing.net [134.0.28.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89936285CB2;
-	Fri, 14 Nov 2025 17:02:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763139746; cv=pass; b=CWLvTnKUD/uhql8VaXlZYQzgOCR+k5j59P354dwypdmGvGAiP0JXXeXjHi5HXUZRwplG0OXRo2F+LqYvlm0n4MCfqTl+z9l8oglnAUbqEsEtbx1TAWAyHca7KMcMSg73JYJYSqJGTJZJFmz3WPthvbTrIS5xUW5+gDxhcVWnrqw=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763139746; c=relaxed/simple;
-	bh=khMN5Ms1UyKeWOn8LdRhkIibQEsiI7EMdFu82kxmGFM=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=tzBY9F2I7qp1+sjrRD9bcDAXpmpyirMwCX9tSMMtWihrw0ete9TPGqL3W/1GUqbj6w0mBOAEu84eQNbh8yy8VN7WVWQhmn2OwWsMB+NcRAI7mU0d0hxQTLQsip3rt21cyti8Kk+sMydDoO4FjxGutFv29/172ymaO05hcGFLNMo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=YWhFOohS; arc=pass smtp.client-ip=136.143.188.112
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80F67328B60;
+	Fri, 14 Nov 2025 17:12:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.9
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1763140381; cv=none; b=pMgm6C3zlWW4URTevGgGvkLF0tUt1S/nhe4Kntf9hH7aK6XqUkTFZZs2PFnin4wOPH687blZR+O+XGeMoTGIKqt0Xe0nn/+3PZW08K/rleDyFwy+HsXND0rFBfguia63ToKTkdRkEEcMdLiGWg0vzEjj7JdF8MLfW8jLO3vnz7c=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1763140381; c=relaxed/simple;
+	bh=6+t5damWptQvd4mAFUsqidFxcjEtQFVQMl5/CasN7Iw=;
+	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
+	 Message-ID:Content-Type; b=Wb+FISOlugGeyQ6E0Zib2tmUJ4nkSl63qhpAQukCgSip1XAohNEYdtHMUr/ynnvgxJR49D5gz8TzznMGnXfsHcI02MJn01bbpkkEARkZmyP+tyylFFnudkN/pPPwCYslLcaXr6tgq2gEfIAFV32QiVjhwXAEdCT3Nhj7Z6ZkW4o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=oHHmuatK; arc=none smtp.client-ip=134.0.28.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="YWhFOohS"
-ARC-Seal: i=1; a=rsa-sha256; t=1763139246; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=P1zbySLBMoTuYWFzBJXE0e3U9S9ADb62KIYeWDu/hnFXM/rhr8nqeSPeVlb4n6oD0iydHND9ZBg6Qvcy7mBNwpNIppqyBXmiRpKxcyMq2mpHIkUFhZ/mob1UwQZBhE9VTYTkEzT7EO76CMqAS59cAjG1EEj7Z+xHZ8KqsC5yUDU=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1763139246; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=/H7GHzQdEVJHWL6IxnBg2c0IP7Sxxl00BJqFqnDMZQs=; 
-	b=n83DtCqhT9N/20fxJEKKf6WmBPorVU2gHXJBVnRLL1307/U0xu6Q6Kcpw7hzvbMXNGol2ZdtK8msFdmli9QPYTCqTDwBCbDMRlh7TOuhA25yREcmDeP98fl42xF+qJJwKNXHK8MkcVqUVtQlG1+Dhv3Wp0XZsv2ggh9aPV8UUpg=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
-	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1763139246;
-	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
-	h=From:From:Subject:Subject:Date:Date:Message-Id:Message-Id:MIME-Version:Content-Type:Content-Transfer-Encoding:To:To:Cc:Cc:Reply-To;
-	bh=/H7GHzQdEVJHWL6IxnBg2c0IP7Sxxl00BJqFqnDMZQs=;
-	b=YWhFOohSBAKRoxsUW21p5utSu/GZuw1B/PQeLZweWzonb8DZSyqcol1yKIoqASw8
-	rq66EqlN00hohSvpAVQYg68kpoTsUYsh0CO95Xuz6o+Fg/cZ3hJsh49o0iOBlq5GzWu
-	xqS+Ip85MTQdnd+iOfq2PjkcA9yERrHw9WL7XuI4=
-Received: by mx.zohomail.com with SMTPS id 1763139243754487.4274112916788;
-	Fri, 14 Nov 2025 08:54:03 -0800 (PST)
-From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Subject: [PATCH 00/13] MediaTek Interconnect Cleanup and MT8196 Enablement
-Date: Fri, 14 Nov 2025 17:53:54 +0100
-Message-Id: <20251114-mt8196-dvfsrc-v1-0-b956d4631468@collabora.com>
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="oHHmuatK"
+Received: from mxbox1.masterlogin.de (unknown [192.168.10.88])
+	by mxout4.routing.net (Postfix) with ESMTP id 250D1100387;
+	Fri, 14 Nov 2025 17:12:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
+	s=routing; t=1763140370;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=zCRjBZyNz8BCs2Fp1Icrt4MQbgBntpN/nGDy1hv7Aqs=;
+	b=oHHmuatKdvbjzw6oIV6h4eEaFhABMPYVxxahaWcYo3BF/Ez64tF/Xi0iQoiHQzdGNJ6ySh
+	Kiab7PBvcmXymQSq3ROG9FP4nVUd9feOFDzsUIFQvEe6X7aahLcpGPOtJnd2feD4l+t8xc
+	mG48oPbRNKzhVITJDdHToxk0B66Pr+0=
+Received: from webmail.hosting.de (unknown [134.0.26.148])
+	by mxbox1.masterlogin.de (Postfix) with ESMTPSA id 2601A40131;
+	Fri, 14 Nov 2025 17:12:49 +0000 (UTC)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Date: Fri, 14 Nov 2025 18:12:49 +0100
+From: "Frank Wunderlich (linux)" <linux@fw-web.de>
+To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+ Daniel Golle <daniel@makrotopia.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano
+ <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Lukasz Luba
+ <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
+ <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Matthias Brugger
+ <matthias.bgg@gmail.com>, Mason Chang <mason-cw.chang@mediatek.com>, Frank
+ Wunderlich <frank-w@public-files.de>, =?UTF-8?Q?N=C3=ADcolas_F=2E_R=2E?=
+ =?UTF-8?Q?_A=2E_Prado?= <nfraprado@collabora.com>, =?UTF-8?Q?Uwe_Klein?=
+ =?UTF-8?Q?e-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>, Balsam CHIHI
+ <bchihi@baylibre.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-mediatek@lists.infradead.org
+Subject: Re: [PATCH v1 1/5] dt-bindings: thermal: mediatek: make interrupt
+ only required for current SoCs
+In-Reply-To: <7a8bf2e9-5033-4588-923c-53ad23c12924@collabora.com>
+References: <20251026122143.71100-1-linux@fw-web.de>
+ <20251026122143.71100-2-linux@fw-web.de>
+ <7a8bf2e9-5033-4588-923c-53ad23c12924@collabora.com>
+Message-ID: <e31fcd9e9e5bb6e615eab98f73532dce@fw-web.de>
+X-Sender: linux@fw-web.de
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAKJeF2kC/zXMQQqDMBCF4auEWXfAEa3GqxQXNk7aWSS2k1QE8
- e4NlS7/B+/bIbEKJxjMDsqrJFliCboYcM8pPhhlLg11VbdE1GDIPdkrzqtP6rC13vW2oq5rHJT
- PS9nL9vNu49nK709h8znCfUqMbglB8mAibxn/NIzH8QURFBY6kAAAAA==
-X-Change-ID: 20251114-mt8196-dvfsrc-59fc8901774c
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Matthias Brugger <matthias.bgg@gmail.com>, 
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
- Henry Chen <henryc.chen@mediatek.com>, Georgi Djakov <djakov@kernel.org>
-Cc: kernel@collabora.com, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, 
- Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-X-Mailer: b4 0.14.3
+X-Mail-ID: 55044b9e-28b6-4f7d-8091-aa83c7055f8b
 
-This series is a combination of binding changes, driver cleanups and new
-driver code to enable the interconnect on the MediaTek MT8196 SoC.
+Hi,
 
-This series currently does not add any users of it (i.e., no bandwidth
-requests being made in affected device drivers), as the only one I
-quickly whippd up is in the UFS driver, which is undergoing some major
-refactoring upstream in a different series of mine.
+i got respoonse from MTK...
 
-Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
----
-AngeloGioacchino Del Regno (8):
-      dt-bindings: soc: mediatek: dvfsrc: Add support for MT8196
-      dt-bindings: interconnect: mt8183-emi: Add support for MT8196 EMI
-      soc: mediatek: mtk-dvfsrc: Change error check for DVFSRCv4 START cmd
-      soc: mediatek: mtk-dvfsrc: Add and propagate DVFSRC bandwidth type
-      soc: mediatek: mtk-dvfsrc: Add a new callback for calc_dram_bw
-      soc: mediatek: mtk-dvfsrc: Write bandwidth to EMI DDR if present
-      soc: mediatek: mtk-dvfsrc: Add support for DVFSRCv4 and MT8196
-      interconnect: mediatek: Add support for MediaTek MT8196 EMI ICC
+Am 2025-10-27 11:43, schrieb AngeloGioacchino Del Regno:
+> Il 26/10/25 13:21, Frank Wunderlich ha scritto:
+>> From: Frank Wunderlich <frank-w@public-files.de>
+>> 
+>> Upcoming MT7987 does not have a IRQ we have to make interrupt-property 
+>> only
+>> required for current supported SoCs.
+> 
+> Hmm. Thermal sensor IP with no interrupt? Looks really strange.
+> 
+> This is odd, because LVTS always has multiple interrupts, and if this 
+> doesn't
+> actually feature any, it really feels like the hardware is broken 
+> somehow.
+> 
+> MediaTek, can you please confirm whether the LVTS IP in MT7987 is 
+> really
+> like that, or can you please give the right interrupt number to Frank?
+> 
 
-Nicolas Frattaroli (5):
-      dt-bindings: soc: mediatek: dvfsrc: Document clock
-      soc: mediatek: mtk-dvfsrc: Get and Enable DVFSRC clock
-      soc: mediatek: mtk-dvfsrc: Rework bandwidth calculations
-      interconnect: mediatek: Don't hijack parent device
-      interconnect: mediatek: Aggregate bandwidth with saturating add
+the reason why the interrupt is disabled on MT7988/87 is because the 
+original designer only
+intended for customers to use HW reset, and did not plan for customers 
+to use high/low offset
+interrupts. However, in theory, this function can work.
 
- .../bindings/interconnect/mediatek,mt8183-emi.yaml |   1 +
- .../soc/mediatek/mediatek,mt8183-dvfsrc.yaml       |   7 +
- drivers/interconnect/mediatek/Kconfig              |   7 +
- drivers/interconnect/mediatek/Makefile             |   1 +
- drivers/interconnect/mediatek/icc-emi.c            |   9 +-
- drivers/interconnect/mediatek/mt8196.c             | 383 +++++++++++++++++++++
- drivers/soc/mediatek/mtk-dvfsrc.c                  | 364 ++++++++++++++++++--
- include/dt-bindings/interconnect/mediatek,mt8196.h |  48 +++
- 8 files changed, 785 insertions(+), 35 deletions(-)
----
-base-commit: d8a3d478ec9200b852095cb96d166ca7909f57e0
-change-id: 20251114-mt8196-dvfsrc-59fc8901774c
+see this part of driver-patch (3/5 "Add no-irq-mode for mt7987")
 
-Best regards,
--- 
-Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+handling is divided into two cases: one is high/low offset, and the 
+other is HW reset.
 
+-	writel(0, LVTS_MONINT(lvts_ctrl->base));
+-
++	if (lvts_data->irq_enable) {
++		writel(0, LVTS_MONINT(lvts_ctrl->base));
++	} else {
++		writel(BIT(16), LVTS_PROTCTL(lvts_ctrl->base));
++		writel(lvts_ctrl->hw_reset_raw_temp, LVTS_PROTTC(lvts_ctrl->base));
++	}
+
+
+HW Reset:
+In BL2, we set the thermal_ctl_en (bit 16) of WDT_REQ_MODE (0x1001C030) 
+to 1 so that the WDT
+can receive the HW reset signal from LVTS.
+We also set thermal_ctl_irq (bit 16) of WDT_REQ_IRQ_EN (0x1001C034) to 1 
+so that when the WDT
+receives the LVTS HW reset signal, it will directly reset the IC.
+LVTSMONCTRL, LVTSPROTCTL, and LVTSPROTTC are used to control the HW 
+reset strategy and temperature.
+
+High/Low Offset:
+Since multiple sensors share the high/low offset settings, the high/low 
+offset temperature will be
+set when we echo the temperature to thermal_zoneX/trip_point_X (call 
+lvts_set_trips function).
+Whenever any sensor's temperature is higher or lower than the high/low 
+offset, it will trigger an
+IRQ (call lvts_irq_handle).
+
+Currently we are discussing a way to verify this function works in 
+hardware and then we can add
+IRQ for mt7987 (which is same as on mt7988 where i did not know till now 
+that IRQ is not known as
+working - just ported driver + dts and checked temperature output and 
+thermal-trip handling
+regarding to fan). And if it works we could drop patches for 
+no-irq-mode.
+
+> Thanks,
+> Angelo
+
+regards Frank
