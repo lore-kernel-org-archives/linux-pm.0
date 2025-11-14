@@ -1,68 +1,69 @@
-Received: from mail-ed1-f47.google.com (mail-ed1-f47.google.com [209.85.208.47])
+Received: from mail-ej1-f45.google.com (mail-ej1-f45.google.com [209.85.218.45])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 288553081D2
-	for <linux-pm@vger.kernel.org>; Fri, 14 Nov 2025 09:31:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3760309EE1
+	for <linux-pm@vger.kernel.org>; Fri, 14 Nov 2025 09:31:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763112680; cv=none; b=YrjMthI0gAELtVLV5LR7v+L05VGl4KVPBNf6xY2xm0hJKXpiez4ea2c6Nw93PlMljwFP4ypT+0nP/5hg5hHCzSilTOHl6h8GlwcGYpggSIMRVSn2Ns2ltoOfFT9BoDTCJQVM9m46vvAw2RpLmJ8gMtnh1fQFkj3cCCStLI354mw=
+	t=1763112682; cv=none; b=NQpC2Uy+URr938Vg5Kb1gWyunKB37GOu/WN3hWiiDgsQSsHxQzqD//5IJbY2B2jguAAP0e97ss66NRRLTOeMvh9apJTFwxWV3u4Xa8iQ0aUseAxjpPYN5xscQUU2Ra4F4C3CScMdmDpC+jSqI1eLBWZ/MDNZL/EUXx5qF4Xrj3E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763112680; c=relaxed/simple;
-	bh=Fokp6DI3ZgvMfeV4tDWIu8AT5pAwNorUHQtwcVcIzSE=;
+	s=arc-20240116; t=1763112682; c=relaxed/simple;
+	bh=yqSzDl1RCaX1HaatAeY54OvImk7Uy4nbr08LYmEejV4=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=TCRZ/ojxXh/homZzlwuEa/vlgiVaWVR/kc35kncdqIqlf6b2ivPbJdk18nNFFGCeyxvFqiAPMa4EHwfhaJqNCdiCtsEs+W8pFocehz7mSfbdC3fPFweXuY5ZOHfJYoyK9HduvOGgriKCXabfiUYF1rIxfFFvBOsW6YxIevCckuI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fairphone.com; spf=pass smtp.mailfrom=fairphone.com; dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b=1hM7L/cT; arc=none smtp.client-ip=209.85.208.47
+	 In-Reply-To:To:Cc; b=i06HKYENz3k4T4/82E/cMywP1BZlGicOwUYsQJXhf/f/2uCd/0P6Cfd5l1B3SSCbFz3uT4QBNOXMCLRM8/DwA3NS27DOYrZ0uFEJOrUVR8YT82HFJd5o2C/MkaT+9vNZXke1COTksvGj6I/aIvXTpcf1ITbzrGcKlzDudBVf2Io=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fairphone.com; spf=pass smtp.mailfrom=fairphone.com; dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b=Z9LjKBF8; arc=none smtp.client-ip=209.85.218.45
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fairphone.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fairphone.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b="1hM7L/cT"
-Received: by mail-ed1-f47.google.com with SMTP id 4fb4d7f45d1cf-6419aaced59so2724832a12.0
-        for <linux-pm@vger.kernel.org>; Fri, 14 Nov 2025 01:31:17 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b="Z9LjKBF8"
+Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-b736fca06ceso38840866b.1
+        for <linux-pm@vger.kernel.org>; Fri, 14 Nov 2025 01:31:19 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1763112676; x=1763717476; darn=vger.kernel.org;
+        d=fairphone.com; s=fair; t=1763112678; x=1763717478; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=2lie/xa7qc7Ek8fm8wHatiECh3EUIgF2lTTajZ10Sa0=;
-        b=1hM7L/cTDFahu47ciwkvt0/0DiBw7z+u4kFQeo/IjznMF0SKT5OodGjl+6IP0sthnv
-         RidrO9i6rip7ReUFH+O0wz93v2PreHlgKlBUPqIkFuFvGbMHCSSQXYM5TAMk63wm7GK2
-         2CQOlJtR62K0E2zlhDfk2S8RTWPa92bt1z0MSF9KiP2/8aYS/acRKqXk+a/06NZCM7jZ
-         9pjIJltlu7Q0nNIF+ViNNlG4JW6o9q03Z2w9GcSpVqyMC4jI0+BLmgXkM+Yb2ef8crRI
-         3//xepRH8g8qpriND/MEpPG+0Zsrf3l9B5kS5A/l7RP5uMErAf7toNXAj/BBYvWWY82H
-         bGyA==
+        bh=NGrlm2KDEYQBkPU0sl6vfScVs7XruSklBsX2xoEpkVM=;
+        b=Z9LjKBF8QIAttioZ4H5QqVr3Zg0mSkNjrgW7DFzeSyUmdiJQNhwmxCA26l3hwJFCPy
+         0weMZ7GoLBMoYFI/tDPSQ3nhVyp07IWhtwYlemQSnxaJ0bsBIcKITUXsxRW4kNxQzqtR
+         A1ulJyFxd3Vc7xPVBoemqK3VAgnoxvLR50EvQOWgwHOKBAs7kHZ64VlS2kZE97HqA0NB
+         SGdQXXPbEKHkKlTM0zS7xTTKumdZlHELH2rXiUyVqW5c6bqZ9fsCXX3WepYGxbIXXaPk
+         DXGdKwi7zjI4AGxULNEVg7/4NsIFLYOsOS5sMZBt1vaQk/lkYy2aXmCCDu49lZ3kcFQZ
+         BJGg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1763112676; x=1763717476;
+        d=1e100.net; s=20230601; t=1763112678; x=1763717478;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=2lie/xa7qc7Ek8fm8wHatiECh3EUIgF2lTTajZ10Sa0=;
-        b=AaCy4SGee5imzcctnmlbtPutzC2mOXfRa181e2t47EUdu7BzlAmtnXuX5JdWLe8XfU
-         3Ds8UspMa976RYQ2UKCfcOPNrcjWywFjDPgrbXJVO2eizC3HQay2agn+knYbD0E7u/zg
-         OxvJQPWCsW3Y/lGroqWH613IoFfvByLofX5cKswMg04OGCyDnBrckqNdJBOK8MRmjSZe
-         w3h7JpZIuwJB1WbHRUvp13/bFI89WBtdcVIIakEMfAf+UANsllOQernEHESWU6Ibqj7g
-         F18XU9Wmpc3e0qvQsHtbL6lf/wbj6t5Ci7pyCvFv2AySDW/WUcEvit3M8TwnGhzVHG0T
-         USsg==
-X-Forwarded-Encrypted: i=1; AJvYcCUXd9T+owfBkzBcPxhtINo1Xu9z8Okfl1dumzv5j8SxXlu6VjB3TeswuBy35/RpcRbGch+hBFn0RA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxaJs14H9BuQBazDr1exCdwfyuJ3Z3w1NPeDcaC7ainbH03K3dm
-	j9+JY4SC+LZHpLIudhYaTAanUdUbhHh0vobiP59M+uZCFl6hsl2Mhbu27wiTSxPLN7I=
-X-Gm-Gg: ASbGnctnxWNR9tMOtXSjteMGK8eUHlQncIA4miDAhYpBQ9WZ+IRJpK5wzNCv6cReKC9
-	VIFfKglIho7D9ZQgadtV+5SXoOX4j5L+F+c2biIXOhplmcGNqYg8DTg+KofcVgDcMdtz/baMaPG
-	3NIO/X9yDEr3AD0xvDNiWAaoQ89CPPPCWyeEhdwg0gGpqkeNOQ8lpOYqk0qd49mcqKONkE1vDQg
-	DlLiq61Hr3iZPoWAbL04DuTWr1VzwWUNhp2bEdi0gfqkugZTMnhQZGElmYFz+C2qq609Ib9zPQW
-	eEM7KwgZRgOGFCsZuJwseivnQwz+frTWGo0ks8y4+Ii01Ybh7vAqmH+dehubHKMuwWGw3pLjrpP
-	JPmuucQT0U4g+wg0uOcMH0pd1jdsXaQtmPFdnBjjYc0+M4JJW52bTcz+yt0ApPcCyV7BczIVBma
-	QwaEXXc4sGhzNSqts05UF8Jch6oL5d8m2byVlR+eY5M47+i0TRqFMRLQuRa0TKTvWsqRPCzqXRF
-	+TojLzpWRix1sbnryTtpiyRlPo3eB4K8qhZYw9rI5RQ
-X-Google-Smtp-Source: AGHT+IGv7NzlJ8vcISP1RXt6QWGiueuxhZk8jTm6UtlmVL0nCoXWqv7iPPstalaD6MWfX/FUBpuUMA==
-X-Received: by 2002:a17:907:98a:b0:b6d:67b0:ca0b with SMTP id a640c23a62f3a-b736796b4c9mr211603066b.61.1763112676330;
-        Fri, 14 Nov 2025 01:31:16 -0800 (PST)
+        bh=NGrlm2KDEYQBkPU0sl6vfScVs7XruSklBsX2xoEpkVM=;
+        b=GAb5Q1opN4mJq8fBfh8wuCavKbECuidUdlzQJkHmRoiyRjouXDpCCAagIe3yPDqFW3
+         E3ZensrXvwuWW6DHKQYDd5XldeVn6UQwMgi3TXUW998fFTQvPZ+TU2dKwGypeaFjLOVk
+         jKYGuaNeX8aGqySMcTqFdNYo6cQnojN25THIY1ikOZBhpDEPfcfkgQdQL227C3HpM/U/
+         +7oy3y3QAs1jnSpCvzrZg593qWCyMnKYZRCQOpJimCsYzh/TvOCtsjMlPlVaI1hBFdgw
+         Uw3z11zCJsO1E1fUfKgT7EscCTAjakbJZ8+/9sfrPGghqLboeqi0GC2uPtG5+eKYq7Pv
+         MZAA==
+X-Forwarded-Encrypted: i=1; AJvYcCXrtafdLpUgbN0zyKQrWDWwm1UHJv4qvJyRaULeSzRT1RhUSlv2IHllRbiwuiajGfly3wqJyt+kAg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxhjfKhyqSZg5hKvdpwaPFQwgW493ZkRm5z7wp8ZE/q28QIWGrk
+	Beu7ujpyxmjt19vq7fyc2/6leJ3Z/H0QEqbzshYvpaiZocCPXwBtRg/yeyEsE3UYtK8=
+X-Gm-Gg: ASbGncsR6wqFUIRjAKADJE39zMj6EaUjMWFQukd9J21ExlyuyeiAAbeHZyAZrvr88uX
+	Lj5jpdFc5Dm/XFMX9nJZEnSRH1yfAPLWIVAfIsqV0yLsp+G6nAztgRDuVVGLXKGKMQC11i06+TK
+	A4IRwDKllRK/ZKtsaLFXu/Q8kO/WVUloo0pYmZ/bxsTVrBOxYsBsbotk503TuVaKOQJ9Jzz+oZi
+	+IuroWeY3OBjTxkMNU7ImJ8GZqUXG+1JIs+BViCk7JqIdctiTS1pO2wPo7QAR6y9oitN9xHupCU
+	TAE6Cj58Ubl+s23wyLtUbpBk7VV3ztaURS5vnsGx15ojoW37gsEYpfJWIOqsyyk9vc1hc1ChDhj
+	A902ClI3O5nQLm8n62Jx7+ALEtTgb8knDKACZo8I8QjsGbdxDXK1s4VGGRwuS5bCXsLfqSxOnMK
+	cpPxFEgYfuw7sDPTvRhuMJiBFryV9mq3dMpD9toYTw9OZrdvY3B+keZo/QNpbWSeGQupkkBVNMH
+	vdIYen3NERaOIbZMGPdAtTcQ7on6vX01w==
+X-Google-Smtp-Source: AGHT+IHbspNfvp0BB+3bdchp4IaaSftVO6pWYPFt2UrlG+9T2k7g+b2H48RGzhLvNurmLynv9vS/gQ==
+X-Received: by 2002:a17:907:94d5:b0:b3f:f207:b748 with SMTP id a640c23a62f3a-b7367828a3amr228193566b.10.1763112678188;
+        Fri, 14 Nov 2025 01:31:18 -0800 (PST)
 Received: from [192.168.101.179] (2001-1c04-0509-ec01-156d-fa6e-7f19-0b67.cable.dynamic.v6.ziggo.nl. [2001:1c04:509:ec01:156d:fa6e:7f19:b67])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b734fd80841sm352104366b.41.2025.11.14.01.31.15
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b734fd80841sm352104366b.41.2025.11.14.01.31.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 14 Nov 2025 01:31:15 -0800 (PST)
+        Fri, 14 Nov 2025 01:31:17 -0800 (PST)
 From: Luca Weiss <luca.weiss@fairphone.com>
-Date: Fri, 14 Nov 2025 10:31:11 +0100
-Subject: [PATCH v2 3/5] interconnect: qcom: sm6350: Remove empty BCM arrays
+Date: Fri, 14 Nov 2025 10:31:13 +0100
+Subject: [PATCH v2 5/5] arm64: dts: qcom: sm6350: Add clocks for aggre1 &
+ aggre2 NoC
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -71,7 +72,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251114-sm6350-icc-qos-v2-3-6af348cb9c69@fairphone.com>
+Message-Id: <20251114-sm6350-icc-qos-v2-5-6af348cb9c69@fairphone.com>
 References: <20251114-sm6350-icc-qos-v2-0-6af348cb9c69@fairphone.com>
 In-Reply-To: <20251114-sm6350-icc-qos-v2-0-6af348cb9c69@fairphone.com>
 To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -82,66 +83,48 @@ Cc: ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
  linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
  Luca Weiss <luca.weiss@fairphone.com>, 
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, 
  Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1763112672; l=1834;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1763112672; l=1239;
  i=luca.weiss@fairphone.com; s=20250611; h=from:subject:message-id;
- bh=Fokp6DI3ZgvMfeV4tDWIu8AT5pAwNorUHQtwcVcIzSE=;
- b=Zi/RaiK5Rfu1T6AZfcvzDgwPKqVZcrP/SBZ0CWT/bpweCDnz9ti/5N7ygoCFGj0V7Q52oSIhD
- btR+yiyAVF4A23j2WQl7J5dsfrpEoucXUuG5xGZyWAh1oKCvcmxpg3E
+ bh=yqSzDl1RCaX1HaatAeY54OvImk7Uy4nbr08LYmEejV4=;
+ b=W7BMtEgp86OWP9elRKZT2HdAsIQfo9CAk8g01x3SXHE/0H2boM9pmBZ725nJeP6VAilJKtApj
+ ykB0iHKUnk5AYjrbO6ASakwvkyOqRfqLjk3NHLAxRm6WS3dDleMd7ch
 X-Developer-Key: i=luca.weiss@fairphone.com; a=ed25519;
  pk=O1aw+AAust5lEmgrNJ1Bs7PTY0fEsJm+mdkjExA69q8=
 
-Clean up the code by removing empty BCM arrays to save some lines.
+As per updated bindings, add the clocks for those two interconnects,
+which are required to set up QoS correctly.
 
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
 ---
- drivers/interconnect/qcom/sm6350.c | 10 ----------
- 1 file changed, 10 deletions(-)
+ arch/arm64/boot/dts/qcom/sm6350.dtsi | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/interconnect/qcom/sm6350.c b/drivers/interconnect/qcom/sm6350.c
-index 99c435a5968f..246549cb761e 100644
---- a/drivers/interconnect/qcom/sm6350.c
-+++ b/drivers/interconnect/qcom/sm6350.c
-@@ -1526,9 +1526,6 @@ static const struct qcom_icc_desc sm6350_config_noc = {
- 	.num_bcms = ARRAY_SIZE(config_noc_bcms),
- };
+diff --git a/arch/arm64/boot/dts/qcom/sm6350.dtsi b/arch/arm64/boot/dts/qcom/sm6350.dtsi
+index 0c9dc596aa2b..c9a812bc256b 100644
+--- a/arch/arm64/boot/dts/qcom/sm6350.dtsi
++++ b/arch/arm64/boot/dts/qcom/sm6350.dtsi
+@@ -1117,6 +1117,7 @@ aggre1_noc: interconnect@16e0000 {
+ 			reg = <0x0 0x016e0000 0x0 0x15080>;
+ 			#interconnect-cells = <2>;
+ 			qcom,bcm-voters = <&apps_bcm_voter>;
++			clocks = <&gcc GCC_AGGRE_UFS_PHY_AXI_CLK>;
+ 		};
  
--static struct qcom_icc_bcm * const dc_noc_bcms[] = {
--};
--
- static struct qcom_icc_node * const dc_noc_nodes[] = {
- 	[MASTER_CNOC_DC_NOC] = &qhm_cnoc_dc_noc,
- 	[SLAVE_GEM_NOC_CFG] = &qhs_gemnoc,
-@@ -1538,8 +1535,6 @@ static struct qcom_icc_node * const dc_noc_nodes[] = {
- static const struct qcom_icc_desc sm6350_dc_noc = {
- 	.nodes = dc_noc_nodes,
- 	.num_nodes = ARRAY_SIZE(dc_noc_nodes),
--	.bcms = dc_noc_bcms,
--	.num_bcms = ARRAY_SIZE(dc_noc_bcms),
- };
+ 		aggre2_noc: interconnect@1700000 {
+@@ -1124,6 +1125,8 @@ aggre2_noc: interconnect@1700000 {
+ 			reg = <0x0 0x01700000 0x0 0x1f880>;
+ 			#interconnect-cells = <2>;
+ 			qcom,bcm-voters = <&apps_bcm_voter>;
++			clocks = <&gcc GCC_AGGRE_USB3_PRIM_AXI_CLK>,
++				 <&rpmhcc RPMH_IPA_CLK>;
  
- static struct qcom_icc_bcm * const gem_noc_bcms[] = {
-@@ -1600,9 +1595,6 @@ static const struct qcom_icc_desc sm6350_mmss_noc = {
- 	.num_bcms = ARRAY_SIZE(mmss_noc_bcms),
- };
- 
--static struct qcom_icc_bcm * const npu_noc_bcms[] = {
--};
--
- static struct qcom_icc_node * const npu_noc_nodes[] = {
- 	[MASTER_NPU_SYS] = &amm_npu_sys,
- 	[MASTER_NPU_NOC_CFG] = &qhm_npu_cfg,
-@@ -1620,8 +1612,6 @@ static struct qcom_icc_node * const npu_noc_nodes[] = {
- static const struct qcom_icc_desc sm6350_npu_noc = {
- 	.nodes = npu_noc_nodes,
- 	.num_nodes = ARRAY_SIZE(npu_noc_nodes),
--	.bcms = npu_noc_bcms,
--	.num_bcms = ARRAY_SIZE(npu_noc_bcms),
- };
- 
- static struct qcom_icc_bcm * const system_noc_bcms[] = {
+ 			compute_noc: interconnect-compute-noc {
+ 				compatible = "qcom,sm6350-compute-noc";
 
 -- 
 2.51.2
