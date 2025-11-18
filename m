@@ -1,55 +1,55 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81A9E366561
-	for <linux-pm@vger.kernel.org>; Tue, 18 Nov 2025 15:58:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A47736996F
+	for <linux-pm@vger.kernel.org>; Tue, 18 Nov 2025 15:58:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763481523; cv=none; b=RQ3ExIfseit+cVVP3elXZk4XlTeOP+C8h3ZzGTVJ6O1nsYAl/Wl9nvLeiey0Ov6ck1S14C4C0/cPZO7w67PLwyMbPc9RRyPYiG4A4qTEopVc2kqmLkb1mhZqXlf8zps+9Z9mWdfNoCGvtyuetps8TzFaorOHOYZkw9wenCIaux8=
+	t=1763481527; cv=none; b=dLjnhOmeoJf6+cCr5jSccdt49gPMBkXtUq7AmhLw1HcW6aM2fuC0/haXRcjbTEN+Gakdf0d0LefdQnoH7y8a6rjFT1cTjwV3i1D/RqcAFl4BJWGoWLi411SBy7VWJ5lYcsiJAO5E4C2xZPn+6zzKs64frC8bHhprtt7FWxjHkK0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763481523; c=relaxed/simple;
-	bh=wIUoNUCEuvQTrUQzeUDqqXYnIdaQhe00Yf7UiH84tro=;
+	s=arc-20240116; t=1763481527; c=relaxed/simple;
+	bh=w/IZMKw3JZlQsVeZkGgKBw6RsNQiyGUgrwYveTjVUIo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=CTKhb0iMKI/jGcWoJXwgB2IMPRT0HI2eeKO9y8jd5nswGKsvJ3ITaCzncRPQvCmtJ+oCjwpHJ4mHcfA1scP+e14D1mqWEYbqG4mhZmg2v4jbBUCtbrGB95qyC+J0IZCzAlp5OflIQxu+CTS5uIj5BWkI/WoYd6s/2qLapPg8xE8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=JzfCOeR7; arc=none smtp.client-ip=170.10.133.124
+	 MIME-Version; b=fF4wvA1ikjJt11VEkT4taUqe2EFTqX5BgrP10mZYFxTWpaGKu4ym4H1pOfZzIrKG3lzVmcf2Aw1tVlq2Z88ugao9V0wIOmTK4pbQY/qY1EJaN4MbzQ44GaMOgRzB7+bMaO+NNz78Hr39zEqiz/JsuGf+v0j50MU8HbtY6U01mNA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=JpWnU95n; arc=none smtp.client-ip=170.10.129.124
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="JzfCOeR7"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="JpWnU95n"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1763481520;
+	s=mimecast20190719; t=1763481524;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=GjDlL6LfBuoQ9QHJ2vIOgbDqD00HSi6hGNS6MkE8ovE=;
-	b=JzfCOeR7xNfm1ZYD0Yn8SDhP16fnAnc08HFdIbie5/7Htabwx27x6RezCah0Jy+YTXRpXX
-	W8NveG4BtDRUzS+U9nEWMB+/Rrczn820KhDJ0gFwolLyzgSC898Rf9KT5pglaWHqQ6QoSJ
-	1pB9yP/tcgiuYKrMrMh0BB0/c5wXNNE=
-Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+	bh=VR6q9nN6tLl0OjvkimuaeaYQsj1H42Iqp2Su1pl+Lbk=;
+	b=JpWnU95nSu0VHyPVC0qccdkSJVT14R4QozB2t4djZib8RlKktc/juYg/phbmWkxJReEGYV
+	Sc5d8DuOIo77sTpZ39Ck5+mFGkRhgOGasE94uvYUlMps9qZVbq4TjnbQBl5V8K0KE8ZNQJ
+	p6KDsGm7+t5b5dW7JlpbrWOFYhkjWLg=
+Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-644-oi6_SwwPMdeaklMth0AJnQ-1; Tue,
- 18 Nov 2025 10:58:34 -0500
-X-MC-Unique: oi6_SwwPMdeaklMth0AJnQ-1
-X-Mimecast-MFC-AGG-ID: oi6_SwwPMdeaklMth0AJnQ_1763481512
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-157-dplfiAZ1MWy2ktaNS09uKQ-1; Tue,
+ 18 Nov 2025 10:58:39 -0500
+X-MC-Unique: dplfiAZ1MWy2ktaNS09uKQ-1
+X-Mimecast-MFC-AGG-ID: dplfiAZ1MWy2ktaNS09uKQ_1763481518
 Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 3F6EA18002F4;
-	Tue, 18 Nov 2025 15:58:32 +0000 (UTC)
+	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 18A581955F68;
+	Tue, 18 Nov 2025 15:58:38 +0000 (UTC)
 Received: from darcari-thinkpadt14sgen1.bos.com (unknown [10.22.64.106])
-	by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 17C5C19560B0;
-	Tue, 18 Nov 2025 15:58:30 +0000 (UTC)
+	by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id DA7C819560B0;
+	Tue, 18 Nov 2025 15:58:36 +0000 (UTC)
 From: David Arcari <darcari@redhat.com>
 To: lenb@kernel.org
 Cc: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	David Arcari <darcari@redhat.com>
-Subject: [PATCH 1/3] tools/power turbostat: avoid segfault referencing fd_instr_count_percpu
-Date: Tue, 18 Nov 2025 10:58:11 -0500
-Message-ID: <20251118155813.533424-2-darcari@redhat.com>
+Subject: [PATCH 3/3] tools/power turbostat: allow turbostat to work when aperf is not available
+Date: Tue, 18 Nov 2025 10:58:13 -0500
+Message-ID: <20251118155813.533424-4-darcari@redhat.com>
 In-Reply-To: <20251118155813.533424-1-darcari@redhat.com>
 References: <20251118155813.533424-1-darcari@redhat.com>
 Precedence: bulk
@@ -61,46 +61,34 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
 
-The problem is that fd_instr_count_percpu is allocated based on
-the value of has_aperf. If has_aperf=0 then fd_instr_count_percpu
-remains NULL. However, get_instr_count_fd() is called from
-turbostat_init() based on the value of has_aperf_access.
-
-On some VM systems has_aperf can be 0, while has_aperf_access can be
-1.  In order to resolve the issue simply check for to see if
-fd_instr_count_percpu is NULL and return -1 if it is.  Accordingly,
-the has_aperf_access check can be removed from turbostat_init.
+Currently when aperf is not available the function has_amperf() still
+returns true.  The end result is that the program gets an error in
+delta_thread() which causes turbostat to restart.  We can avoid this
+by not setting msr_counter_arch_infos[MSR_ARCH_INFO_APERF_INDEX].present
+when aperf is not available allowing turbostat to execute normally.
 
 Signed-off-by: David Arcari <darcari@redhat.com>
 Cc: Len Brown <lenb@kernel.org>
 Cc: linux-kernel@vger.kernel.org
 ---
- tools/power/x86/turbostat/turbostat.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ tools/power/x86/turbostat/turbostat.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index f2512d78bcbd..584b0f7f9067 100644
+index 5567b9ecd516..b3f1e4ae5813 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -2463,6 +2463,9 @@ static long open_perf_counter(int cpu, unsigned int type, unsigned int config, i
+@@ -8592,6 +8592,10 @@ void msr_perf_init_(void)
+ 				continue;
  
- int get_instr_count_fd(int cpu)
- {
-+	if (!fd_instr_count_percpu)
-+		return -1;
+ 			if (cai->needed) {
++				/* check to see if APERF is available */
++				if (cidx == MSR_ARCH_INFO_APERF_INDEX && !has_aperf)
++					continue;
 +
- 	if (fd_instr_count_percpu[cpu])
- 		return fd_instr_count_percpu[cpu];
- 
-@@ -10027,7 +10030,7 @@ void turbostat_init()
- 	for_all_cpus(get_cpu_type, ODD_COUNTERS);
- 	for_all_cpus(get_cpu_type, EVEN_COUNTERS);
- 
--	if (BIC_IS_ENABLED(BIC_IPC) && has_aperf_access && get_instr_count_fd(base_cpu) != -1)
-+	if (BIC_IS_ENABLED(BIC_IPC) && get_instr_count_fd(base_cpu) != -1)
- 		BIC_PRESENT(BIC_IPC);
- 
- 	/*
+ 				/* Use perf API for this counter */
+ 				if (add_msr_perf_counter(cpu, cci, cai) != -1) {
+ 					cci->source[cai->rci_index] = COUNTER_SOURCE_PERF;
 -- 
 2.51.0
 
