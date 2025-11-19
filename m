@@ -1,91 +1,141 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 456222E54DA
-	for <linux-pm@vger.kernel.org>; Wed, 19 Nov 2025 03:13:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.16
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3DD13260588;
+	Wed, 19 Nov 2025 03:17:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763522008; cv=none; b=qk7ZsWh+Lh3i97grgZW1ReambckhrGamiNsWDnMG+7ZTh1e+uO5t6UyVdVkQUXYrydaKGk2iEnfaKahOI6+bSQZGvdatNYpeGq40GiT9Ui+Io6lR8V3k4DStRJ+g6tqcDCdNNsRxCDsswcdifaHqP7UozkOcmFn5Qj3BDFIsWaM=
+	t=1763522277; cv=none; b=THsFycL3hxYMVTHKEGk5T1D7fRi5skpXfEpBZ5uOzxgRyGSxhcSDIb2lJE2IT+S/5nF/HT/H2tCvez5tW11TS/Scx05C03KuVQ7qutzg9u3pKwWvjmMgIVXJNN0P4nk2EUv+lNzLoH5GFq3VAJdgfMZevkF67ZQsc8Xwg6/Bm48=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763522008; c=relaxed/simple;
-	bh=PdACyOJMlwVgsGcgxkxZcByg4iZsIQN8FWbn7/lFnrY=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=AP6cKWFuvmzk4LS1YuC0J6Slua5XpnIY8DLGgBTE8Fv1GirXfxNrwNX9JW+P9kunAJxElPIcI1HWMazyf46psbZE6MSZeu4uS2WJQNdx89pc3TvIaifAWsUXjtmcydtghaObBgy59kaw5F7V+rtNx0nAKTC033wjNEDTLlFK9t8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=H6eGQzAG; arc=none smtp.client-ip=198.175.65.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1763522277; c=relaxed/simple;
+	bh=MIjgvuB0KiPtZ+6xNAoLd+3B/qJ5CymJwizx6U/famA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=SoflqlQAfBnzyD0QnxceLMpd/AnGjUHkJsbvA/3DSuqXUehEpUqM46lhC6B3veVUwGfVBf7C90GPlrXYzePtkRIuW8cUAWbLclGPlE3/58jBRvPzfEUyljkOEE+XVfldA9DeSZSlpEy2e88hTG81Iu6xJqych8uf1xaqSw1caGA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Elehsyoe; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="H6eGQzAG"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1763522007; x=1795058007;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=PdACyOJMlwVgsGcgxkxZcByg4iZsIQN8FWbn7/lFnrY=;
-  b=H6eGQzAGFqSSrSpou9sF+5ahz5XwBW6OhaYOoMew/+8YM4vwms6aV6GR
-   VPJ/XziV72UXPx6sNWBVX117PM36lGYe33d+YxJ7NHCwImiEb4D2giDFI
-   xhQq4bLZE60suM400kDVqEMzJLLGfYglErqgFE33fhJ11Hl8wK+YNIQU5
-   SUZgi4NubUApijkVeN36vG5VYts3Bx2o8wfyiITh9ZjK7RsDvuvtv4H69
-   79bxiCQSz4KPkWrs4wlxKiDId7cpGjeFSijcpngPCF7QEqcozo/pl1gpM
-   e2z3+4fjDcWu7nxD7YiuIrMVzyWZBkrG15mR7K2H7v18vJkWd4xEqK0dY
-   g==;
-X-CSE-ConnectionGUID: GlsmIicaQhK95my+xwMesw==
-X-CSE-MsgGUID: oo7TZEQzR4eVDy16Dt1mdg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11617"; a="65715315"
-X-IronPort-AV: E=Sophos;i="6.19,315,1754982000"; 
-   d="scan'208";a="65715315"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2025 19:13:27 -0800
-X-CSE-ConnectionGUID: r91fKIYfTGKSqDUnokVZLA==
-X-CSE-MsgGUID: T+Ud+W/lTfa1YAioBgK+mw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,315,1754982000"; 
-   d="scan'208";a="195236379"
-Received: from baandr0id001.iind.intel.com ([10.66.253.151])
-  by fmviesa005.fm.intel.com with ESMTP; 18 Nov 2025 19:13:24 -0800
-From: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
-To: rafael@kernel.org,
-	viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org,
-	Kaushlendra Kumar <kaushlendra.kumar@intel.com>
-Subject: [PATCH v2] cpufreq: ACPI: Replace udelay() with usleep_range()
-Date: Wed, 19 Nov 2025 08:41:09 +0530
-Message-Id: <20251119031109.134583-1-kaushlendra.kumar@intel.com>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Elehsyoe"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8FC73C16AAE;
+	Wed, 19 Nov 2025 03:17:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1763522276;
+	bh=MIjgvuB0KiPtZ+6xNAoLd+3B/qJ5CymJwizx6U/famA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ElehsyoeaGF+JHCONkNRqSVn1gQIGVBnFS9qAFy6URSKQJmngam1W2OcbVTebjrdd
+	 2wFTCGurf47Aae50x8fCw0Glg2zLptoK36bcYjy91BmjgzWAizru4RDuZLpgUZa+Va
+	 aKMEjwctuhpctR05cXw5zAjI2b3yh7b2cdGzqz6G+jgolxjNa839itURDoob6+aY/D
+	 I05q2hVqdBdbtx8qRTWoPyCV+fKYzQwVsAArokPSIRK+Pz87/HjqwcVaNjk/jJ3wUX
+	 vREy5KykxaOf5iOkdFvTa5zoVdbjS2t8vhDFktH7HegBPOAmbpKxcYnvq6IBREGIyq
+	 y+wS/vnlVooMw==
+Date: Tue, 18 Nov 2025 21:22:46 -0600
+From: Bjorn Andersson <andersson@kernel.org>
+To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+Cc: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+	Sebastian Reichel <sre@kernel.org>, Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, 
+	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: Re: [PATCH 1/2] Documentation: ABI: Add
+ sysfs-class-reboot-mode-reboot_modes
+Message-ID: <yxy7b4pdv4o7dvfjndi5awg5tcobkzwuewn6sal2v2eydv4aes@wkaknlotycrk>
+References: <20251116-next-15nov_expose_sysfs-v1-0-3b7880e5b40e@oss.qualcomm.com>
+ <20251116-next-15nov_expose_sysfs-v1-1-3b7880e5b40e@oss.qualcomm.com>
+ <t3hfhlp27numfxurtmtcwrovvlgwdvnujain46kwmi37zehdak@xt3vngtkxpsm>
+ <virjbkkpdmufx2midadzwiml4boyuxtokikcvupswapwehnv65@d2ppyiaeti22>
+ <1ddb483e-3c09-ff45-9d36-cf29a40ba55d@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1ddb483e-3c09-ff45-9d36-cf29a40ba55d@oss.qualcomm.com>
 
-Replace udelay() with usleep_range() in check_freqs() to allow
-CPU scheduling during frequency polling. This change improves
-system responsiveness and avoides busy-waiting.
+On Tue, Nov 18, 2025 at 10:07:51PM +0530, Shivendra Pratap wrote:
+> 
+> 
+> On 11/18/2025 2:18 AM, Bjorn Andersson wrote:
+> > On Sun, Nov 16, 2025 at 07:44:24PM +0200, Dmitry Baryshkov wrote:
+> >> On Sun, Nov 16, 2025 at 08:49:47PM +0530, Shivendra Pratap wrote:
+> >>> Add ABI documentation for /sys/class/reboot-mode/*/reboot_modes, a
+> >>> read-only sysfs attribute exposing the list of supported reboot-mode
+> >>> arguments. This file is created by reboot-mode framework and provides a
+> >>> user-readable interface to query available reboot-mode arguments.
+> >>>
+> >>> Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+> >>> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+> >>> ---
+> >>>  .../testing/sysfs-class-reboot-mode-reboot_modes   | 39 ++++++++++++++++++++++
+> >>>  1 file changed, 39 insertions(+)
+> >>>
+> >>> diff --git a/Documentation/ABI/testing/sysfs-class-reboot-mode-reboot_modes b/Documentation/ABI/testing/sysfs-class-reboot-mode-reboot_modes
+> >>> new file mode 100644
+> >>> index 0000000000000000000000000000000000000000..28280ffe9bf962ef9d2136ea5d7c6aef77c4bd34
+> >>> --- /dev/null
+> >>> +++ b/Documentation/ABI/testing/sysfs-class-reboot-mode-reboot_modes
+> >>> @@ -0,0 +1,39 @@
+> >>> +What:		/sys/class/reboot-mode/<driver>/reboot_modes
+> >>> +Date:		November 2025
+> >>> +KernelVersion:	6.18.0-rc5
+> >>> +Contact:	linux-pm@vger.kernel.org
+> >>> +		Description:
+> >>> +		This interface exposes the reboot-mode arguments
+> >>> +		registered with the reboot-mode framework. It is
+> >>> +		a read-only interface and provides a space
+> >>> +		separated list of reboot-mode arguments supported
+> >>> +		on the current platform.
+> >>> +		Example:
+> >>> +		 recovery fastboot bootloader
+> >>> +
+> >>> +		The exact sysfs path may vary depending on the
+> >>> +		name of the driver that registers the arguments.
+> >>> +		Example:
+> >>> +		 /sys/class/reboot-mode/nvmem-reboot-mode/reboot_modes
+> >>> +		 /sys/class/reboot-mode/syscon-reboot-mode/reboot_modes
+> >>> +		 /sys/class/reboot-mode/qcom-pon/reboot_modes
+> >>
+> >> This part is obvious, isn't it?
+> >>
+> >>> +
+> >>> +		The supported arguments can be used by userspace
+> >>> +		to invoke device reset using the reboot() system
+> >>> +		call, with the "argument" as string to "*arg"
+> >>> +		parameter along with LINUX_REBOOT_CMD_RESTART2.
+> >>> +		Example:
+> >>> +		 reboot(LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2,
+> >>> +		        LINUX_REBOOT_CMD_RESTART2, "bootloader");
+> >>
+> >> So, does one need to write a tool for invoking reboot with the corerct
+> >> set of args?
+> > 
+> > Here's an implementation of such tool
+> > https://github.com/systemd/systemd/blob/main/src/shared/reboot-util.c#L80
+> 
+> Should i include this link for an example of existing tools or i just add
+> add a line saying that such tools are already available?
+> 
+> > 
+> > Many other implementations of reboot provides the same.
+> > 
+> >> If we are adding a sysfs interface, wouldn't it be logical
+> >> to also add another sysfs file, setting the argument?
+> >>
+> > 
+> > The inclusion of the example indicates that we need to expose it in an
+> > accessible form, but I don't think we should, as it's already a
+> > widespread standard interface.
+> > 
+> > As such, I don't think the example adds any value, but it would be
+> > valuable to clarify that this is a standard interface.
+> 
+> ok. Will remove this example of reboot syscall and add a line to
+> indicate that this is standard interface.
+> 
 
-Signed-off-by: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
----
-v2:
-- Tighten sleep range to usleep_range(10, 15) to limit worst-case loop
-  duration to 1.5ms, addressing reviewer concern about increased latency.
-- Cleanup commit message
+This sounds good to me.
 
- drivers/cpufreq/acpi-cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thanks,
+Bjorn
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 083d8369a591..e73a66785d69 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -395,7 +395,7 @@ static unsigned int check_freqs(struct cpufreq_policy *policy,
- 		cur_freq = extract_freq(policy, get_cur_val(mask, data));
- 		if (cur_freq == freq)
- 			return 1;
--		udelay(10);
-+		usleep_range(10, 15);
- 	}
- 	return 0;
- }
--- 
-2.34.1
-
+> thanks,
+> Shivendra
