@@ -1,327 +1,292 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+Received: from out-177.mta0.migadu.com (out-177.mta0.migadu.com [91.218.175.177])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C587A309EE0;
-	Thu, 20 Nov 2025 08:19:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AFCC02DA76B
+	for <linux-pm@vger.kernel.org>; Thu, 20 Nov 2025 08:20:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763626791; cv=none; b=adp3CZMpNKyyQV006xeAO3MUuTKfSXyVsvs4LvudQdg/RQZGopOeCEfI7EUHSFVhaxc03MybpdsA2al2EN9xWUHSqdCsy7lGyJeRVeLn/8+TxluwCUhXe8JR9B+Nx4uGW1p3YJJjGu8NF3rLYoJZ5svjMb+mkawRxyNR0ShM91o=
+	t=1763626802; cv=none; b=BdgME3M+01X2k6JIG0rksozO/zV2/ZEvi04WpH7LKh/av9e97ufZcwQsihLgLByhSCDHqBj7FVFy4G1IQ+wLQ/wkFGiSjudXw8kUraEVo1/Vb3hBXJ8rT7BehBtcga9PY2G5bVTApyeaKoQcysqtztpv/gdZvAq2VkAFsXSCpjE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763626791; c=relaxed/simple;
-	bh=drjy7Om9+hTEtLqm8bf7E/TIxkEuaOGk9m3jpyHjmXw=;
+	s=arc-20240116; t=1763626802; c=relaxed/simple;
+	bh=kdw9mfvtr41cXcSDbSxwoLTGNCkuW3UbSH9ioHg/+Xk=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DZm/7Ki9C9CwDAEU17LNdxfWRNjIaVkHvRF5MxZK4Laa9DmYdzK2mzYkCb480azzNbvR9SUYF6CV5gjzzSwcsrjVW96Aq6VE/QPwUkJOs3u9pMq7OH9sHOnwVR3PhLY/oM6Ox5IOoxNcKTxtM9YvfvgTT5tizdr2bzJbxTSDQuc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=QIscJULl; arc=none smtp.client-ip=192.198.163.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=ASmIcG7husmMKGXYXViSKpgd4Mfwu85s/ez0cpz/jvBDco0vQ1dWmuAEdqLGPx6HxPST9YEGhCYaI+2PtdWrrQeBA4orwHy+s2X53St9fBPfzmwzYHMOBQxZ6iYF9GdZ4BsaQRElLZEYYmIG6/K72eGoUl/8HZfP28x5yopgwYM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=mAZSxl6K; arc=none smtp.client-ip=91.218.175.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="QIscJULl"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1763626790; x=1795162790;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=drjy7Om9+hTEtLqm8bf7E/TIxkEuaOGk9m3jpyHjmXw=;
-  b=QIscJULlCLdxfiQykswZBON0l8+OS+VujBOd9p0uLqI7WAuJI6cQJtpS
-   sQXElEdkpPM4SsUtwkSBJpDBZXtD0WHaOL1oDp8wyAIpw5/VjRGF8CxZT
-   cCpMJHXBLHTnBc0h77NqJEw7iunBKKAihoCBIiRzvsx7MJYqlSgug7fqy
-   JoQpaR6g+DQvvV6cqEj7CWptL+KB1EVDLZjnsiCsZEW1RZe9MMK3EoPmg
-   AA0i+b9ix9CDWACBoKn6a6AZLHEmLipKpoax+/hMbClVloakg5znUUcqV
-   AgAHmoYWLZjRu7DIOK4TAFZUb16IM7Ded5Pb1qz1YR+LeruUIwVdsVMMf
-   w==;
-X-CSE-ConnectionGUID: lV/Xk0OTQJGTkk/8bQilfg==
-X-CSE-MsgGUID: tRsxvW1PQ4W57BVNLMTF9w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11618"; a="91167589"
-X-IronPort-AV: E=Sophos;i="6.19,317,1754982000"; 
-   d="scan'208";a="91167589"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Nov 2025 00:18:46 -0800
-X-CSE-ConnectionGUID: Iuq2OIqcSFmO/p06c1h+KA==
-X-CSE-MsgGUID: PYj2H+DuRYuxPZpffe72fw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,317,1754982000"; 
-   d="scan'208";a="190549759"
-Received: from lkp-server01.sh.intel.com (HELO adf6d29aa8d9) ([10.239.97.150])
-  by orviesa006.jf.intel.com with ESMTP; 20 Nov 2025 00:18:43 -0800
-Received: from kbuild by adf6d29aa8d9 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1vLzsG-0003lX-0J;
-	Thu, 20 Nov 2025 08:18:40 +0000
-Date: Thu, 20 Nov 2025 16:17:56 +0800
-From: kernel test robot <lkp@intel.com>
-To: Lucas Zampieri <lzampier@redhat.com>, linux-input@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev, Lucas Zampieri <lzampier@redhat.com>,
-	linux-kernel@vger.kernel.org, Jiri Kosina <jikos@kernel.org>,
-	Benjamin Tissoires <bentiss@kernel.org>,
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="mAZSxl6K"
+Date: Thu, 20 Nov 2025 10:19:40 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1763626788; h=from:from:reply-to:reply-to:subject:subject:date:date:
+	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+	 content-type:content-type:in-reply-to:in-reply-to:  references:references;
+	bh=q2KKLPUM9g4AjREw6K2sIlL41xnnwqoRMS02PcHt+Pw=;
+	b=mAZSxl6KZjvUgbwuvvxFXbJYaHfIG/5AYDHDdCMms+/fGerjUijWlqQuwyicCivilpNCqj
+	eX7NLQfa8WWgN2xQU6sGLA6vN0PEZXvzLK/leiA5XO6NkhakAYEReRmzI7Qe8WyMABJYvQ
+	IZvbzwRIDhF2CgFrTIvIGNDoJI4e4kQ=
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Matti Vaittinen <matti.vaittinen@linux.dev>
+To: Matti Vaittinen <mazziesaccount@gmail.com>,
+	Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Cc: Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
 	Sebastian Reichel <sre@kernel.org>,
-	Bastien Nocera <hadess@hadess.net>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3 1/1] HID: input: Add support for multiple batteries
- per device
-Message-ID: <202511201624.yUv4VtBv-lkp@intel.com>
-References: <20251119143005.1513531-2-lzampier@redhat.com>
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Matti Vaittinen <mazziesaccount@gmail.com>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org,
+	linux-rtc@vger.kernel.org, Andreas Kemnade <andreas@kemnade.info>
+Subject: [PATCH v5 01/16] dt-bindings: regulator: ROHM BD72720
+Message-ID: <28726d1e0573a6efb6e70716a23ba27c4fc93c6d.1763625920.git.mazziesaccount@gmail.com>
+Reply-To: Matti Vaittinen <mazziesaccount@gmail.com>
+References: <cover.1763625920.git.mazziesaccount@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="XRsrIHwvOaV9KhKg"
+Content-Disposition: inline
+In-Reply-To: <cover.1763625920.git.mazziesaccount@gmail.com>
+X-Migadu-Flow: FLOW_OUT
+
+
+--XRsrIHwvOaV9KhKg
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20251119143005.1513531-2-lzampier@redhat.com>
+Content-Transfer-Encoding: quoted-printable
 
-Hi Lucas,
+=46rom: Matti Vaittinen <mazziesaccount@gmail.com>
 
-kernel test robot noticed the following build errors:
+The ROHM BD72720 is a new PMIC with 10 BUCk and 11 LDO regulators.
 
-[auto build test ERROR on hid/for-next]
-[also build test ERROR on dtor-input/for-linus linus/master v6.18-rc6 next-20251119]
-[cannot apply to dtor-input/next]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+The BD72720 is designed to support using the BUCK10 as a supply for
+the LDOs 1 to 4. When the BUCK10 is used for this, it can be set to a
+LDON_HEAD mode. In this mode, the BUCK10 voltage can't be controlled by
+software, but the voltage is adjusted by PMIC to match the LDO1 .. LDO4
+voltages with a given offset. Offset can be 50mV .. 300mV and is
+changeable at 50mV steps.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Lucas-Zampieri/HID-input-Add-support-for-multiple-batteries-per-device/20251119-223834
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/hid/hid.git for-next
-patch link:    https://lore.kernel.org/r/20251119143005.1513531-2-lzampier%40redhat.com
-patch subject: [PATCH v3 1/1] HID: input: Add support for multiple batteries per device
-config: sh-defconfig (https://download.01.org/0day-ci/archive/20251120/202511201624.yUv4VtBv-lkp@intel.com/config)
-compiler: sh4-linux-gcc (GCC) 15.1.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251120/202511201624.yUv4VtBv-lkp@intel.com/reproduce)
+Add 'ldon-head-microvolt' property to denote a board which is designed
+to utilize the LDON_HEAD mode.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202511201624.yUv4VtBv-lkp@intel.com/
+All other properties are already existing.
 
-All errors (new ones prefixed by >>):
+Add dt-binding doc for ROHM BD72720 regulators to make it usable.
 
-   drivers/hid/hid-input.c: In function 'hidinput_hid_event':
->> drivers/hid/hid-input.c:1550:25: error: implicit declaration of function 'hidinput_update_battery'; did you mean 'hidinput_find_battery'? [-Wimplicit-function-declaration]
-    1550 |                         hidinput_update_battery(bat, usage->hid, value);
-         |                         ^~~~~~~~~~~~~~~~~~~~~~~
-         |                         hidinput_find_battery
+Signed-off-by: Matti Vaittinen <mazziesaccount@gmail.com>
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+
+---
+Revision history:
+ v4 =3D>
+ - No changes
+
+ v3 =3D> v4:
+ - Drop type from ldon-head
+ - Fix the name patterns for regulator nodes and names
+
+ v2 =3D> v3:
+ - drop unnecessary descriptions
+ - use microvolts for the 'ldon-head' dt-property
+
+ RFCv1 =3D> v2:
+ - No changes
+---
+ .../regulator/rohm,bd72720-regulator.yaml     | 148 ++++++++++++++++++
+ 1 file changed, 148 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/regulator/rohm,bd7272=
+0-regulator.yaml
+
+diff --git a/Documentation/devicetree/bindings/regulator/rohm,bd72720-regul=
+ator.yaml b/Documentation/devicetree/bindings/regulator/rohm,bd72720-regula=
+tor.yaml
+new file mode 100644
+index 000000000000..5518082129bd
+--- /dev/null
++++ b/Documentation/devicetree/bindings/regulator/rohm,bd72720-regulator.ya=
+ml
+@@ -0,0 +1,148 @@
++# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/regulator/rohm,bd72720-regulator.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ROHM BD72720 Power Management Integrated Circuit regulators
++
++maintainers:
++  - Matti Vaittinen <mazziesaccount@gmail.com>
++
++description: |
++  This module is part of the ROHM BD72720 MFD device. For more details
++  see Documentation/devicetree/bindings/mfd/rohm,bd72720-pmic.yaml.
++
++  The regulator controller is represented as a sub-node of the PMIC node
++  on the device tree.
++
++  Regulator nodes should be named to BUCK_<number> and LDO_<number>.
++  The valid names for BD72720 regulator nodes are
++  buck1, buck2, buck3, buck4, buck5, buck6, buck7, buck8, buck9, buck10
++  ldo1, ldo2, ldo3, ldo4, ldo5, ldo6, ldo7, ldo8, ldo9, ldo10, ldo11
++
++patternProperties:
++  "^ldo([1-9]|1[0-1])$":
++    type: object
++    description:
++      Properties for single LDO regulator.
++    $ref: regulator.yaml#
++
++    properties:
++      regulator-name:
++        pattern: "^ldo([1-9]|1[0-1])$"
++
++      rohm,dvs-run-voltage:
++        description:
++          PMIC default "RUN" state voltage in uV. See below table for
++          LDOs which support this. 0 means disabled.
++        $ref: /schemas/types.yaml#/definitions/uint32
++        minimum: 0
++        maximum: 3300000
++
++      rohm,dvs-idle-voltage:
++        description:
++          PMIC default "IDLE" state voltage in uV. See below table for
++          LDOs which support this. 0 means disabled.
++        $ref: /schemas/types.yaml#/definitions/uint32
++        minimum: 0
++        maximum: 3300000
++
++      rohm,dvs-suspend-voltage:
++        description:
++          PMIC default "SUSPEND" state voltage in uV. See below table for
++          LDOs which support this. 0 means disabled.
++        $ref: /schemas/types.yaml#/definitions/uint32
++        minimum: 0
++        maximum: 3300000
++
++      rohm,dvs-lpsr-voltage:
++        description:
++          PMIC default "deep-idle" state voltage in uV. See below table for
++          LDOs which support this. 0 means disabled.
++        $ref: /schemas/types.yaml#/definitions/uint32
++        minimum: 0
++        maximum: 3300000
++
++        # Supported default DVS states:
++        #     ldo        |    run     |   idle    | suspend   | lpsr
++        # --------------------------------------------------------------
++        # 1, 2, 3, and 4 | supported  | supported | supported | supported
++        # --------------------------------------------------------------
++        # 5 - 11         |                    supported (*)
++        # --------------------------------------------------------------
++        #
++        # (*) All states use same voltage but have own enable / disable
++        #      settings. Voltage 0 can be specified for a state to make
++        #      regulator disabled on that state.
++
++    unevaluatedProperties: false
++
++  "^buck([1-9]|10)$":
++    type: object
++    description:
++      Properties for single BUCK regulator.
++    $ref: regulator.yaml#
++
++    properties:
++      regulator-name:
++        pattern: "^buck([1-9]|10)$"
++
++      rohm,ldon-head-microvolt:
++        description:
++          Set this on boards where BUCK10 is used to supply LDOs 1-4. The =
+bucki
++          voltage will be changed by the PMIC to follow the LDO output vol=
+tages
++          with the offset voltage given here. This will improve the LDO ef=
+ficiency.
++        minimum: 50000
++        maximum: 300000
++
++      rohm,dvs-run-voltage:
++        description:
++          PMIC default "RUN" state voltage in uV. See below table for
++          bucks which support this. 0 means disabled.
++        $ref: /schemas/types.yaml#/definitions/uint32
++        minimum: 0
++        maximum: 3300000
++
++      rohm,dvs-idle-voltage:
++        description:
++          PMIC default "IDLE" state voltage in uV. See below table for
++          bucks which support this. 0 means disabled.
++        $ref: /schemas/types.yaml#/definitions/uint32
++        minimum: 0
++        maximum: 3300000
++
++      rohm,dvs-suspend-voltage:
++        description:
++          PMIC default "SUSPEND" state voltage in uV. See below table for
++          bucks which support this. 0 means disabled.
++        $ref: /schemas/types.yaml#/definitions/uint32
++        minimum: 0
++        maximum: 3300000
++
++      rohm,dvs-lpsr-voltage:
++        description:
++          PMIC default "deep-idle" state voltage in uV. See below table for
++          bucks which support this. 0 means disabled.
++        $ref: /schemas/types.yaml#/definitions/uint32
++        minimum: 0
++        maximum: 3300000
++
++        # Supported default DVS states:
++        #     buck       |    run     |   idle    | suspend   | lpsr
++        # --------------------------------------------------------------
++        # 1, 2, 3, and 4 | supported  | supported | supported | supported
++        # --------------------------------------------------------------
++        # 5 - 10    |                    supported (*)
++        # --------------------------------------------------------------
++        #
++        # (*) All states use same voltage but have own enable / disable
++        #      settings. Voltage 0 can be specified for a state to make
++        #      regulator disabled on that state.
++
++    required:
++      - regulator-name
++
++    unevaluatedProperties: false
++
++additionalProperties: false
+--=20
+2.51.1
 
 
-vim +1550 drivers/hid/hid-input.c
+--XRsrIHwvOaV9KhKg
+Content-Type: application/pgp-signature; name=signature.asc
 
-  1536	
-  1537	void hidinput_hid_event(struct hid_device *hid, struct hid_field *field, struct hid_usage *usage, __s32 value)
-  1538	{
-  1539		struct input_dev *input;
-  1540		struct hid_report *report = field->report;
-  1541		unsigned *quirks = &hid->quirks;
-  1542	
-  1543		if (!usage->type)
-  1544			return;
-  1545	
-  1546		if (usage->type == EV_PWR) {
-  1547			struct hid_battery *bat = hidinput_find_battery(hid, report->id);
-  1548	
-  1549			if (bat)
-> 1550				hidinput_update_battery(bat, usage->hid, value);
-  1551			return;
-  1552		}
-  1553	
-  1554		if (!field->hidinput)
-  1555			return;
-  1556	
-  1557		input = field->hidinput->input;
-  1558	
-  1559		if (usage->hat_min < usage->hat_max || usage->hat_dir) {
-  1560			int hat_dir = usage->hat_dir;
-  1561			if (!hat_dir)
-  1562				hat_dir = (value - usage->hat_min) * 8 / (usage->hat_max - usage->hat_min + 1) + 1;
-  1563			if (hat_dir < 0 || hat_dir > 8) hat_dir = 0;
-  1564			input_event(input, usage->type, usage->code    , hid_hat_to_axis[hat_dir].x);
-  1565			input_event(input, usage->type, usage->code + 1, hid_hat_to_axis[hat_dir].y);
-  1566			return;
-  1567		}
-  1568	
-  1569		/*
-  1570		 * Ignore out-of-range values as per HID specification,
-  1571		 * section 5.10 and 6.2.25, when NULL state bit is present.
-  1572		 * When it's not, clamp the value to match Microsoft's input
-  1573		 * driver as mentioned in "Required HID usages for digitizers":
-  1574		 * https://msdn.microsoft.com/en-us/library/windows/hardware/dn672278(v=vs.85).asp
-  1575		 *
-  1576		 * The logical_minimum < logical_maximum check is done so that we
-  1577		 * don't unintentionally discard values sent by devices which
-  1578		 * don't specify logical min and max.
-  1579		 */
-  1580		if ((field->flags & HID_MAIN_ITEM_VARIABLE) &&
-  1581		    field->logical_minimum < field->logical_maximum) {
-  1582			if (field->flags & HID_MAIN_ITEM_NULL_STATE &&
-  1583			    (value < field->logical_minimum ||
-  1584			     value > field->logical_maximum)) {
-  1585				dbg_hid("Ignoring out-of-range value %x\n", value);
-  1586				return;
-  1587			}
-  1588			value = clamp(value,
-  1589				      field->logical_minimum,
-  1590				      field->logical_maximum);
-  1591		}
-  1592	
-  1593		switch (usage->hid) {
-  1594		case HID_DG_ERASER:
-  1595			report->tool_active |= !!value;
-  1596	
-  1597			/*
-  1598			 * if eraser is set, we must enforce BTN_TOOL_RUBBER
-  1599			 * to accommodate for devices not following the spec.
-  1600			 */
-  1601			if (value)
-  1602				hid_report_set_tool(report, input, BTN_TOOL_RUBBER);
-  1603			else if (report->tool != BTN_TOOL_RUBBER)
-  1604				/* value is off, tool is not rubber, ignore */
-  1605				return;
-  1606			else if (*quirks & HID_QUIRK_NOINVERT &&
-  1607				 !test_bit(BTN_TOUCH, input->key)) {
-  1608				/*
-  1609				 * There is no invert to release the tool, let hid_input
-  1610				 * send BTN_TOUCH with scancode and release the tool after.
-  1611				 */
-  1612				hid_report_release_tool(report, input, BTN_TOOL_RUBBER);
-  1613				return;
-  1614			}
-  1615	
-  1616			/* let hid-input set BTN_TOUCH */
-  1617			break;
-  1618	
-  1619		case HID_DG_INVERT:
-  1620			report->tool_active |= !!value;
-  1621	
-  1622			/*
-  1623			 * If invert is set, we store BTN_TOOL_RUBBER.
-  1624			 */
-  1625			if (value)
-  1626				hid_report_set_tool(report, input, BTN_TOOL_RUBBER);
-  1627			else if (!report->tool_active)
-  1628				/* tool_active not set means Invert and Eraser are not set */
-  1629				hid_report_release_tool(report, input, BTN_TOOL_RUBBER);
-  1630	
-  1631			/* no further processing */
-  1632			return;
-  1633	
-  1634		case HID_DG_INRANGE:
-  1635			report->tool_active |= !!value;
-  1636	
-  1637			if (report->tool_active) {
-  1638				/*
-  1639				 * if tool is not set but is marked as active,
-  1640				 * assume ours
-  1641				 */
-  1642				if (!report->tool)
-  1643					report->tool = usage->code;
-  1644	
-  1645				/* drivers may have changed the value behind our back, resend it */
-  1646				hid_report_set_tool(report, input, report->tool);
-  1647			} else {
-  1648				hid_report_release_tool(report, input, usage->code);
-  1649			}
-  1650	
-  1651			/* reset tool_active for the next event */
-  1652			report->tool_active = false;
-  1653	
-  1654			/* no further processing */
-  1655			return;
-  1656	
-  1657		case HID_DG_TIPSWITCH:
-  1658			report->tool_active |= !!value;
-  1659	
-  1660			/* if tool is set to RUBBER we should ignore the current value */
-  1661			if (report->tool == BTN_TOOL_RUBBER)
-  1662				return;
-  1663	
-  1664			break;
-  1665	
-  1666		case HID_DG_TIPPRESSURE:
-  1667			if (*quirks & HID_QUIRK_NOTOUCH) {
-  1668				int a = field->logical_minimum;
-  1669				int b = field->logical_maximum;
-  1670	
-  1671				if (value > a + ((b - a) >> 3)) {
-  1672					input_event(input, EV_KEY, BTN_TOUCH, 1);
-  1673					report->tool_active = true;
-  1674				}
-  1675			}
-  1676			break;
-  1677	
-  1678		case HID_UP_PID | 0x83UL: /* Simultaneous Effects Max */
-  1679			dbg_hid("Maximum Effects - %d\n",value);
-  1680			return;
-  1681	
-  1682		case HID_UP_PID | 0x7fUL:
-  1683			dbg_hid("PID Pool Report\n");
-  1684			return;
-  1685		}
-  1686	
-  1687		switch (usage->type) {
-  1688		case EV_KEY:
-  1689			if (usage->code == 0) /* Key 0 is "unassigned", not KEY_UNKNOWN */
-  1690				return;
-  1691			break;
-  1692	
-  1693		case EV_REL:
-  1694			if (usage->code == REL_WHEEL_HI_RES ||
-  1695			    usage->code == REL_HWHEEL_HI_RES) {
-  1696				hidinput_handle_scroll(usage, input, value);
-  1697				return;
-  1698			}
-  1699			break;
-  1700	
-  1701		case EV_ABS:
-  1702			if ((field->flags & HID_MAIN_ITEM_RELATIVE) &&
-  1703			    usage->code == ABS_VOLUME) {
-  1704				int count = abs(value);
-  1705				int direction = value > 0 ? KEY_VOLUMEUP : KEY_VOLUMEDOWN;
-  1706				int i;
-  1707	
-  1708				for (i = 0; i < count; i++) {
-  1709					input_event(input, EV_KEY, direction, 1);
-  1710					input_sync(input);
-  1711					input_event(input, EV_KEY, direction, 0);
-  1712					input_sync(input);
-  1713				}
-  1714				return;
-  1715	
-  1716			} else if (((*quirks & HID_QUIRK_X_INVERT) && usage->code == ABS_X) ||
-  1717				   ((*quirks & HID_QUIRK_Y_INVERT) && usage->code == ABS_Y))
-  1718				value = field->logical_maximum - value;
-  1719			break;
-  1720		}
-  1721	
-  1722		/*
-  1723		 * Ignore reports for absolute data if the data didn't change. This is
-  1724		 * not only an optimization but also fixes 'dead' key reports. Some
-  1725		 * RollOver implementations for localized keys (like BACKSLASH/PIPE; HID
-  1726		 * 0x31 and 0x32) report multiple keys, even though a localized keyboard
-  1727		 * can only have one of them physically available. The 'dead' keys
-  1728		 * report constant 0. As all map to the same keycode, they'd confuse
-  1729		 * the input layer. If we filter the 'dead' keys on the HID level, we
-  1730		 * skip the keycode translation and only forward real events.
-  1731		 */
-  1732		if (!(field->flags & (HID_MAIN_ITEM_RELATIVE |
-  1733		                      HID_MAIN_ITEM_BUFFERED_BYTE)) &&
-  1734				      (field->flags & HID_MAIN_ITEM_VARIABLE) &&
-  1735		    usage->usage_index < field->maxusage &&
-  1736		    value == field->value[usage->usage_index])
-  1737			return;
-  1738	
-  1739		/* report the usage code as scancode if the key status has changed */
-  1740		if (usage->type == EV_KEY &&
-  1741		    (!test_bit(usage->code, input->key)) == value)
-  1742			input_event(input, EV_MSC, MSC_SCAN, usage->hid);
-  1743	
-  1744		input_event(input, usage->type, usage->code, value);
-  1745	
-  1746		if ((field->flags & HID_MAIN_ITEM_RELATIVE) &&
-  1747		    usage->type == EV_KEY && value) {
-  1748			input_sync(input);
-  1749			input_event(input, usage->type, usage->code, 0);
-  1750		}
-  1751	}
-  1752	
+-----BEGIN PGP SIGNATURE-----
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+iQEzBAEBCgAdFiEEIx+f8wZb28fLKEhTeFA3/03aocUFAmkezxwACgkQeFA3/03a
+ocXZGggAg/WZna4IPjD6zlvpOklVwHjpJ9P7TuoxQh/KDc3tLq4mt12AG4ZcE2yR
+HKO8rW3a3410IHIHyZeIw8siNdEgK+a43vrj8dqgMnc5VcIYm3ghPqo9NY3WBupR
+TCkVcgvBd+tGyyouXmh8PaGtPcq3EGqGGLYMU1t07vh8RjUbs1hTNSqK9ZGPuimy
+Xbsqu2emI/6x1hmEZlLZMDyrc2SnbvZTisCPIt4XQQPNkJaLEnZyyqtX3NbC5mWH
+CszbJZ3wZ+BNhGxWPZnrGY0ec1nEaGHkJ1gxSGNNSmv/e9rVsy1JF61QYzIBSexx
+3S83WRoLa5lk40CKU2oqMei8rIuMpA==
+=Gfg/
+-----END PGP SIGNATURE-----
+
+--XRsrIHwvOaV9KhKg--
