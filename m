@@ -1,117 +1,184 @@
-Received: from mail-ed1-f50.google.com (mail-ed1-f50.google.com [209.85.208.50])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from out-173.mta1.migadu.com (out-173.mta1.migadu.com [95.215.58.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1AC012DA767
-	for <linux-pm@vger.kernel.org>; Thu, 20 Nov 2025 06:53:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16C752BEFE4
+	for <linux-pm@vger.kernel.org>; Thu, 20 Nov 2025 08:19:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763621625; cv=none; b=P836kuiii17YCOo/dhg/ZygBVxmKpFm/t/PEVqP6RIGwjjUbbUsesFh7KWp413oDz7MCckG6FDMGMb1DlnTckkhxuB891hwylKhdoXK/K5c3SFDH2B9NhAzEilGZR4r4tb1bvBDcjlIEjVEin69mn9OBiGMlHojrdbd/e2uFMew=
+	t=1763626785; cv=none; b=d1NTxhgJikrVlolHWVxRGaxnE474PkBu5RUslo2o1R9y7eLwrjJ1kEArQbfMBbAGHYMcGc5effpgslI7Qaut2MG/fhfYNomcW8h4Bn/3K+40mxtDRf+JkYWebxsAF5RPDilnC0PKxvbLKg8is3XET2F2Qv71wuVIak0GhvW0mwQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763621625; c=relaxed/simple;
-	bh=zr0CBJGyuyaXtn/TDsv2TcK75UaPiBC/TUNcJrIzhaA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=p9qZI1sW+Hg2GssKs9ngCqOn0NBB7SI42cZEXbnzwbYeSPxPUUFVOYxeh/N2q+LTtD3FNjlkyGXnSd0RbFlbhg15HUpNyLd4OIPGSlO0BhIxIxbTWXMApqnQrITM2tMlt4NpImnixTWbLM03qMFaCrSq3oaNRlDRleVOSiM+K20=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=it-loops.com; spf=pass smtp.mailfrom=it-loops.com; dkim=fail (0-bit key) header.d=it-loops.com header.i=@it-loops.com header.b=e7zx6hOD reason="key not found in DNS"; arc=none smtp.client-ip=209.85.208.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=it-loops.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=it-loops.com
+	s=arc-20240116; t=1763626785; c=relaxed/simple;
+	bh=gPS6lCGIRGcxxQSZNthifmSBFCXs3B3kMXmWi4bEZ7w=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=s6I5tySHwwiZRFmii+dHeXeN5PD7llcbQY+ZGW812bPbISdIJKcRoCuQ/h9NKrAgZ3tudwlRAMXsQewI2X5BGO5z+EBJfbBFnglr09+OeSR/9mTNKF8vdPeLWVoE6FTC/T53YSqDGB4eEl9oVVXsDrkROTXje4mUMo/3ZzUjI4M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=OcEUBQBB; arc=none smtp.client-ip=95.215.58.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=it-loops.com header.i=@it-loops.com header.b="e7zx6hOD"
-Received: by mail-ed1-f50.google.com with SMTP id 4fb4d7f45d1cf-640b0639dabso822275a12.3
-        for <linux-pm@vger.kernel.org>; Wed, 19 Nov 2025 22:53:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=it-loops.com; s=google; t=1763621621; x=1764226421; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=zr0CBJGyuyaXtn/TDsv2TcK75UaPiBC/TUNcJrIzhaA=;
-        b=e7zx6hODWljWhx/NDBltup3ltE4DNr1r/s4M5Fge58+invrWrJkIEaULzPAHDFtNiC
-         FCicKPLb/qJzL4l7fcKbb7+cfbtSLJdLOOZOTe2/hNccfXdtU749Pi0nWfb67QT/4WiR
-         DreKx56YERb/k/23RJwTCWko7i9RZ55ZPxSjA=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1763621621; x=1764226421;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=zr0CBJGyuyaXtn/TDsv2TcK75UaPiBC/TUNcJrIzhaA=;
-        b=URy6ppcfksQOOWO6Jt6XfZVIWUxVAHHNMHOUQNiMRVH8TPDYc3ktBBVviYxYUwILIX
-         ss7pZzstzw1IOLOR5LnCE8oFs2k9NLXMJiZfEoA63mTmVoy4vCLKe8TRWTeeWfFtLMQU
-         mgyn5+DXwiOOScbd1SnSIn7qHjg17M37py5IthIXqsOJp5vuVA9+JJdkyOB0WbLhXZBA
-         WCPiZ3NqCLgilno2ok6tTGlEIxRLsIkLQJSc4Q3Gj3oh00KhlmOrDanYzzA9KJcg1tcG
-         RdL7bq/JQcmXU/QTr7EhQAL4IaAJ+MCapehmBhWAYGvFA9S0ojVoZZzHRTwb9vRJL+ot
-         Kl5g==
-X-Forwarded-Encrypted: i=1; AJvYcCWKy97m1HdPqD8Bu+yn9OW8O3GVbo/fFgqv/k2dOSO6tuHnVX3WN08XI+Ax1ZCXtpI0vPWlUsqo/g==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxo2g9sBSVJKf5FFvFzsiMojiIqh7O6546DBJEhVtkJp8FAIupS
-	gCOmsgcMdZfwFEGL5q2PLuLkCofYI0GdxLO7t+kelzUu1n0e90w2vlpXCBlgBdugjRt8hhey1Ft
-	wCRcEJXKHIl+bGdeuUshcxnoHJsELB1DaujeVLuYQab+0O9KXLoLsvuM=
-X-Gm-Gg: ASbGnctgPdtn+9iYs86nGheZlmGD2IAuwJXUoRsQqxJK9RJFjYUDBgiYqGRv+KNb8QS
-	ulRLiWNPQV3j7mgtqaNBdHlpsTO1sW9t/rLL2GV4S1oMHFGmZsm0cy23e2cAZj7WZgoT9Kc8W2x
-	YvZSKaw2WqXNiWIH4+1RmpS4jnBD97oQiQ5ouiHs+CD1UosCXR3Jyf2TzJctqlwHMdtNhyAmfxq
-	HCvEwRdrl7WW3SevdzNo8g/OIqrJKhLcTuelOFv+SPt6TyizRJkiflCevP7xAdQai2atRvbKTEk
-	kbfvh+yg
-X-Google-Smtp-Source: AGHT+IFDju7a6nSoanq8XycIM948k+1jT0tC4aFj2fiQdYIiPZGI+Boci8DqkHzsZeXu1mypd7pa22Z8g2CdRD7G7c4=
-X-Received: by 2002:a05:6402:2345:b0:643:d1b:41d9 with SMTP id
- 4fb4d7f45d1cf-6453821354cmr1475503a12.17.1763621621322; Wed, 19 Nov 2025
- 22:53:41 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="OcEUBQBB"
+Date: Thu, 20 Nov 2025 10:19:18 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1763626771; h=from:from:reply-to:reply-to:subject:subject:date:date:
+	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+	 content-type:content-type; bh=lqP09SI4iTaIvX15z16i9CR8/quVrC8ublsHH/F3wTE=;
+	b=OcEUBQBBrl8TzgVKxhqvy/WbAbsSuYduJgSrQuemdiF1E4B/kfTNZ2PFPZy50Ro9DPE1Yr
+	JfwDNLZAn2+X3wDWuOqk0P13dxdBSwc9pxjhFHtSuGDfF1/pXSJ6ZfZ2bPpXj0hkPuuhZ7
+	8v4p8kbm8WyRaLtpYqTeycSiXI89Tts=
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Matti Vaittinen <matti.vaittinen@linux.dev>
+To: Matti Vaittinen <mazziesaccount@gmail.com>,
+	Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Cc: Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Matti Vaittinen <mazziesaccount@gmail.com>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org,
+	linux-rtc@vger.kernel.org, Andreas Kemnade <andreas@kemnade.info>
+Subject: [PATCH v5 00/16] Support ROHM BD72720 PMIC
+Message-ID: <cover.1763625920.git.mazziesaccount@gmail.com>
+Reply-To: Matti Vaittinen <mazziesaccount@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <CALG0vJuaU_5REU55Hg170LipPLj7Tt0V3icn7XzxLY-8+jsx-A@mail.gmail.com>
- <20251120055748.GM2912318@black.igk.intel.com>
-In-Reply-To: <20251120055748.GM2912318@black.igk.intel.com>
-From: Michael Guntsche <michael.guntsche@it-loops.com>
-Date: Thu, 20 Nov 2025 07:53:30 +0100
-X-Gm-Features: AWmQ_bk3JB7Og3Frs0hJzyS1Q8xlvPf9E9GnCyeC0LqfMilOvaT7FhHYRLzDcME
-Message-ID: <CALG0vJtYLE3mz5EfyRVjW8-kgXvB+j3dYcXVbpYUb+4QNemzmg@mail.gmail.com>
-Subject: Re: Oops when returning from hibernation with changed thunderbolt status
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="txQLuSbT+MkGzS45"
+Content-Disposition: inline
+X-Migadu-Flow: FLOW_OUT
+
+
+--txQLuSbT+MkGzS45
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Nov 20, 2025 at 6:57=E2=80=AFAM Mika Westerberg
-<mika.westerberg@linux.intel.com> wrote:
->
-> Hi,
->
-> On Wed, Nov 19, 2025 at 06:43:16PM +0100, Michael Guntsche wrote:
-> > Hello,
-> >
-> > I started seeing this issue with kernel v6.15, it worked fine up to 6.1=
-4.
-> > If my notebook went into hibernation with the docking station plugged
-> > in and I then started it up again with the docking station unplugged
-> > it would panic. Some times but not always it would also panic if the
-> > dock was still connected.
-> > With a lot of support from Mika (thanks again) I tried to debug this
-> > issue for weeks but was not able to get any meaningful debug output.
-> > Now finally with 6.18rc6 and freeze_filesystems set to 1 I managed to
-> > get at least "something" showing up on my screen with a backtrace.
-> >
-> > Hibernating and waking up again works fine with no thunderbolt device c=
-onnected.
-> >
-> > The device in question is a
-> > Lenovo ThinkPad X1 Carbon Gen 11 with a 13th Gen Intel=C2=AE Core=E2=84=
-=A2 i7-1355U
-> >
-> > Please tell me if you require more information or want me to try
-> > something different.
->
-> Did you try to disable RTC_DRV_EFI? At least from the backtrace that's
-> where it crashes.
->
-I tried this with all drivers removed also this one.
+The ROHM BD72720 is a new power management IC for portable, battery
+powered devices. It integrates 10 BUCKs and 11 LDOs, RTC, charger, LEDs,
+GPIOs and a clock gate. To me the BD72720 seems like a successor to the
+BD71828 and BD71815 PMICs.
 
-> Also I think I asked you to check with the distro kernel because I rememb=
-er
-> that you did some changes to get the crashdump working (please correct me
-> if I'm wrong) so this could be related to that. For instance it is jumpin=
-g
-> to the crash kernel (through kexec) and tries to run EFI services related
-> to RTC but they are not there anymore due to kexec.
-The issue is reproducible with the current ubuntu and debian distro
-kernels as well. After I tried it with the vendor version I switched
-to the rc version to make sure it was not fixed in the meantime.
+This series depends on
+5bff79dad20a ("power: supply: Add bd718(15/28/78) charger driver")
+which is in power-supply tree, for-next. Thus, the series is based on
+it.
+
+The testing of v4 suffered some hardware-issues after I accidentally
+enabled charging while the PMIC's battery pin was connected to the I/O
+domain. Some heat was generated, not terribly lot smoke though...
+
+After the incident I've had occasional I2C failures. I, however, suspect
+the root cause is HW damage in I/O lines since changes in this revision
+have been made to dt-bindings. It's still fair to note that though, as
+my testing was impacted.
+
+Revision history:
+  v4 =3D> v5:
+  - dt-binding fixes as discussed in v4 reviews.
+    - Drop rohm,vdr-battery.yaml and add vdr properties to battery.yaml
+    - Drop 'rohm,' -vendor-prefix from vdr properties
+  - Link to v4:
+    https://lore.kernel.org/all/cover.1763022807.git.mazziesaccount@gmail.c=
+om/
+  More accurate changelog in individual patches
+
+  v3 =3D> v4:
+  - dt-binding fixes to the BD72720 MFD example and regulator bindings
+  More accurate changelog in individual patches
+
+  v2 =3D> v3:
+  - rebased to power-supply/for-next as dependencies are merged to there
+  - plenty of dt-binding changes as suggested by reviewers
+  - add new patch to better document existing 'trickle-charging' property
+  More accurate changelog in individual patches
+
+  RFCv1 =3D> v2:
+  - Drop RFC status
+  - Use stacked regmaps to hide secondary map from the sub-drivers
+  - Quite a few styling fixes and improvements as suggested by
+    reviewers. More accurate changelog in individual patches.
+  - Link to v1:
+    https://lore.kernel.org/all/cover.1759824376.git.mazziesaccount@gmail.c=
+om/
+
+---
+
+Matti Vaittinen (16):
+  dt-bindings: regulator: ROHM BD72720
+  dt-bindings: battery: Clarify trickle-charge
+  dt-bindings: battery: Add trickle-charge upper limit
+  dt-bindings: battery: Voltage drop properties
+  dt-bindings: mfd: ROHM BD72720
+  dt-bindings: leds: bd72720: Add BD72720
+  mfd: rohm-bd71828: Use regmap_reg_range()
+  mfd: bd71828: Support ROHM BD72720
+  regulator: bd71828: rename IC specific entities
+  regulator: bd71828: Support ROHM BD72720
+  gpio: Support ROHM BD72720 gpios
+  clk: clk-bd718x7: Support BD72720 clk gate
+  rtc: bd70528: Support BD72720 rtc
+  power: supply: bd71828: Support wider register addresses
+  power: supply: bd71828-power: Support ROHM BD72720
+  MAINTAINERS: Add ROHM BD72720 PMIC
+
+ .../bindings/leds/rohm,bd71828-leds.yaml      |    7 +-
+ .../bindings/mfd/rohm,bd72720-pmic.yaml       |  339 ++++++
+ .../bindings/power/supply/battery.yaml        |   33 +-
+ .../regulator/rohm,bd72720-regulator.yaml     |  148 +++
+ MAINTAINERS                                   |    2 +
+ drivers/clk/Kconfig                           |    4 +-
+ drivers/clk/clk-bd718x7.c                     |   10 +-
+ drivers/gpio/Kconfig                          |    9 +
+ drivers/gpio/Makefile                         |    1 +
+ drivers/gpio/gpio-bd72720.c                   |  281 +++++
+ drivers/mfd/Kconfig                           |   18 +-
+ drivers/mfd/rohm-bd71828.c                    |  546 ++++++++-
+ drivers/power/supply/bd71828-power.c          |  160 ++-
+ drivers/regulator/Kconfig                     |    8 +-
+ drivers/regulator/bd71828-regulator.c         | 1025 ++++++++++++++++-
+ drivers/rtc/Kconfig                           |    3 +-
+ drivers/rtc/rtc-bd70528.c                     |   21 +-
+ include/linux/mfd/rohm-bd72720.h              |  634 ++++++++++
+ include/linux/mfd/rohm-generic.h              |    1 +
+ 19 files changed, 3120 insertions(+), 130 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/mfd/rohm,bd72720-pmic=
+=2Eyaml
+ create mode 100644 Documentation/devicetree/bindings/regulator/rohm,bd7272=
+0-regulator.yaml
+ create mode 100644 drivers/gpio/gpio-bd72720.c
+ create mode 100644 include/linux/mfd/rohm-bd72720.h
+
+
+base-commit: 8e8856396b54bea5c00a7ae88d87c6254aef2d94
+--=20
+2.51.1
+
+
+--txQLuSbT+MkGzS45
+Content-Type: application/pgp-signature; name=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCgAdFiEEIx+f8wZb28fLKEhTeFA3/03aocUFAmkezwYACgkQeFA3/03a
+ocV+vgf/a1KAYMhU5YxlbMf2zyzVkzG9a0t6DZvk8PFqDx5TcU0QKkeEjONsuhre
+i98P+Ou5A0MdX3vFWPDyPpsUFcniGkAvoDqKwEgiZS0tdQLrN6fTVxq1YpArcXtZ
+fCNrYVoaNn7/DU/RGjx9vL36e+nSawnCZMKOhWxJboFU40XnSnX3+GpHYcxBtrxI
+igcXO97YI0efNWcfLpGUy2DWW4FIZ5YCTe4l3TztcAsYMpg1oW7QOkBS0AH3T3Zf
+jDZ9rH4LBhQ9zuyGOUCMySA6n5pLyE+alzIlesAq7t/GLXJwMFoMeELXZkkDVSdj
+nYZCl4mpUPRHG+ApdEPUfQSNp5nVvQ==
+=MOad
+-----END PGP SIGNATURE-----
+
+--txQLuSbT+MkGzS45--
