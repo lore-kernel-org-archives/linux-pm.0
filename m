@@ -1,112 +1,87 @@
-Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com [209.85.214.182])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail-m3288.qiye.163.com (mail-m3288.qiye.163.com [220.197.32.88])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B98052556E
-	for <linux-pm@vger.kernel.org>; Thu, 20 Nov 2025 01:01:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B322C23AB90
+	for <linux-pm@vger.kernel.org>; Thu, 20 Nov 2025 01:09:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.32.88
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763600503; cv=none; b=rjsUZ54cyIvqdIS8Kwv/J/jLcIjTzMNCOr7nVTRqaLpE8gknx4UYQ2Fn2Z1Rb/ydJcwU7csC8AK0elHFsS37NOzUk14TWb+dTlqiGsFGnwjZO71yFmfq5Lf0ClSAkjez8E+xyGFuF0M/XgFiV9Dce7fS8pMaatNyWIEcyUYbIp0=
+	t=1763600985; cv=none; b=sTtLkmBM7uDMyRH8nCzjP+K+Og+/g2nFGb9GWycTZSOQMfqPD2ezD+tyiiKTfoaPYdt4tOSrmEzv0AQB9Zu36lllYrfr4+QvTwpEJRaVi/rJTETvVggtykfPYpkdCvqEEwFIpq6qk5KRWyrmbXrhY3yC6PNlzpqiOnoPk3eKank=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763600503; c=relaxed/simple;
-	bh=S1kXvrn93cUEzs6slAKgNy4bH/LtAkdBKIXZyolnmdQ=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=tqAX3lduO5RGfiAZJUsyx5OaLeZVMdhvqAr0BdG42i1nDFbrXWE7BvlAweFH94l9Oa8ASgaxtF2RGBu60z3SUiAtRJyDTGFwv1n/p0yqHwnu2wbIqmsRktCmiYQ+N8Crq1Qv2M1BuCnZfUfIBpmaEhVUx1auoWs5n+hVG9qSy1k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=lhzTm0Qc; arc=none smtp.client-ip=209.85.214.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1763600985; c=relaxed/simple;
+	bh=aROx0TaxL3IqiRhSz6mCGl6EXZALVd+yNEPPajxjxAw=;
+	h=Message-ID:Date:MIME-Version:Cc:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=Vk6Vbt0TQbXAwB+AupMdV9hVPXY8qAIrO8fe5kSTp2MzPA8PFmJNDFrmoWjQFn34hbH97RTli/xhQrIuwtsrWXQYLvle/NDj2S2s9p2rH5RZu0SSGo7vTOsABR/ckv109VrklqsMVb8Kiehhc8+Kg2zs5rrAMQbG0t7hiOQpI+U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=TWnhObUu; arc=none smtp.client-ip=220.197.32.88
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="lhzTm0Qc"
-Received: by mail-pl1-f182.google.com with SMTP id d9443c01a7336-297dc3e299bso3767295ad.1
-        for <linux-pm@vger.kernel.org>; Wed, 19 Nov 2025 17:01:41 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1763600501; x=1764205301; darn=vger.kernel.org;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=eIEhL4VxM7ghK2mG+iC47nZUgip1BfB1tOdqThTNDgY=;
-        b=lhzTm0QcxdqtPS1J4JbnNJt5ajkk/hdh8WuxmYfXVUw6pTKP4b7vU9lTFeGD+su3/z
-         NRToEiG/D2qjElPhlJJfpMSPKwTHb9Rrn+At8Cpx/rb+8eVihs0OtC/Un+VRDfvWQHrS
-         Hb7NxJq3md3oYXu3Ur6IcahIUxJy7ZYlVCOSPZ4p15/xsSQy9Q34fs4s6eY1DMsW1kQC
-         H7k1++cuV+0ollpGjg9sABJNGiaPK8bM2G2x5dofh/X7G1sLslw5ObHR0FCfv4RAul0h
-         T6dCEZEAsAvDz2i6ICXTCZVxZ9HPuebPbdIlQjpXN3lDeKTvjTJ70SQlPtx1ILYLOBd3
-         G7hQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1763600501; x=1764205301;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=eIEhL4VxM7ghK2mG+iC47nZUgip1BfB1tOdqThTNDgY=;
-        b=ZCaTautjMRodkp2QSpOoXAu9BnneWfIADY+GWoRdgZeOELAUYVCZ4OBczS4d7iye/J
-         KzYMsQmJkGHsGUHqA1F63c+Vmk4Uytmh9hM40qzFj5jTJFjVxxbAZa0iInMi7MYzXej9
-         ixbHSDrzRbHCIpff9AzpPn6B85YUgwTaq0H3k0jlJctjfkETBPMNK1CdHhsArkxibR4g
-         /Kd6IBLFbU+0SHX23G7qal1V+v9IKtqxDlCHhc/4tYAh4JfJaaNvFJt3h25lki1rYeVk
-         AgTT3w3USKbvDRkttMp80D63L9lYaeeazU25XEWmyPusIWREgLegteVX2ZIuiswhyYGU
-         pV+A==
-X-Forwarded-Encrypted: i=1; AJvYcCVylVOo07/FI5NmBK4GVCsQ0bHeGZPJCXhj/T6tmOn0QOE94d2rp5mmfBLOF8W5ajlYGiZ2zLqhjA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxXYtBfnaZ44WuyWcj4FT77LX84yB0kkNRv0R0CUZL0jafSOiR+
-	aLCf0nRy/O915mU110+QLEvcbYBVd5Zukvv42uMqEEGhRojdA2LMH5cVPu7+U29kiYE=
-X-Gm-Gg: ASbGnculiSZJpo128ANRsZjx3PqImm2d23fIiqW9gtUWveUgQ25OE8s+hp3TXBMxYSB
-	mdj/GW++/FH2N7cZpmGVD4m366QP9FdlJzOyk+RPpaTDqh428YhSk3qtOs4EuoZko1JYhKu2092
-	n/OpCG6gVqbMPm+ijjaEA0r9R2bwLoTJ1wvaf3xBZXjjhztssPmwjs1/ViL22RkJ7E4gN5gRhFi
-	7j9WycJ+MApwemNdsmyINfxRA2r93NdlYlTFX/7yQGAeaHSi0grkY8/gtiMC+XBJVRuYNMXkqHV
-	y+x3qvKPYeuJ6dXUTfvgJS16kVJ3iuFRvAneqYpV5k6xVdm1knEddZ/0Xp20JndwKBofiWJF3cl
-	es3l/NwBMKNV2GRhJK+wJ0Y0iKA3d3wbI0NM+XYB+/W9l+FzgbUatjQdUg0R1Xz9L1fUMXHRr63
-	StIxDYB/2EOP+IGs0QTDE=
-X-Google-Smtp-Source: AGHT+IEqw78cftsDU7YZyIRB0CXtzePRU0iLnoit3ob3znYZ+DZXTr4p0cuA9rJuU7Vz7Z+gxqqtDg==
-X-Received: by 2002:a17:903:1a43:b0:296:2aed:4fab with SMTP id d9443c01a7336-29b5b05b6damr14930755ad.23.1763600500485;
-        Wed, 19 Nov 2025 17:01:40 -0800 (PST)
-Received: from localhost ([71.212.208.158])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-29b5b2ac81bsm6687805ad.93.2025.11.19.17.01.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Nov 2025 17:01:39 -0800 (PST)
-From: Kevin Hilman <khilman@baylibre.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
- arm-scmi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC] of: Add of_parse_map_iter() helper for nexus node
- map iteration
-In-Reply-To: <20251119-topic-lpm-of-map-iterator-v6-18-v1-1-1f0075d771a3@baylibre.com>
-References: <20251119-topic-lpm-of-map-iterator-v6-18-v1-1-1f0075d771a3@baylibre.com>
-Date: Wed, 19 Nov 2025 17:01:39 -0800
-Message-ID: <7h8qg1frf0.fsf@baylibre.com>
+	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="TWnhObUu"
+Received: from [172.16.12.14] (unknown [58.22.7.114])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 2a32d8a7d;
+	Thu, 20 Nov 2025 08:34:15 +0800 (GMT+08:00)
+Message-ID: <1451d8b9-0751-4785-9644-9ce68230ed27@rock-chips.com>
+Date: Thu, 20 Nov 2025 08:34:11 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla Thunderbird
+Cc: shawn.lin@rock-chips.com, linux-pm@vger.kernel.org, jonas@kwiboo.se,
+ pgwipeout@gmail.com, finley.xiao@rock-chips.com, kever.yang@rock-chips.com,
+ sebastian.reichel@collabora.com, heiko@sntech.de, ulf.hansson@linaro.org,
+ Chris Morgan <macromorgan@hotmail.com>, linux-rockchip@lists.infradead.org
+Subject: Re: [PATCH] pmdomain: rockchip: quiet regulator error on
+ -EPROBE_DEFER
+To: Chris Morgan <macroalpha82@gmail.com>
+References: <20251119161250.60885-1-macroalpha82@gmail.com>
+From: Shawn Lin <shawn.lin@rock-chips.com>
+In-Reply-To: <20251119161250.60885-1-macroalpha82@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-HM-Tid: 0a9a9eaeebd709cckunm0ca1951dff30a
+X-HM-MType: 1
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZQ0xCGFZOH0NOSE4aS09CQx1WFRQJFh
+	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
+	hVSktLVUpCS0tZBg++
+DKIM-Signature: a=rsa-sha256;
+	b=TWnhObUuq5hTPEv0Hm+mCMi1NdmVaVmWnXCgINZThojczXFU+8BcgsJoqbwAP0finLYc5zbG1o3XFzk93aLkVrcq6bx38Q+tKqZmuO+jcpXo8li/c6Ns/WO6v0puOyye9TEjtbDjpfsPPORRDOcjYteMYu70/fGOlRZFF54Vlg0=; c=relaxed/relaxed; s=default; d=rock-chips.com; v=1;
+	bh=xfUyjh56QuH0slCMrQSdQkVJf8Ne/u1gnZkXmUM8mbQ=;
+	h=date:mime-version:subject:message-id:from;
 
-"Kevin Hilman (TI.com)" <khilman@baylibre.com> writes:
+在 2025/11/20 星期四 0:12, Chris Morgan 写道:
+> From: Chris Morgan <macromorgan@hotmail.com>
+> 
+> Change the dev_err() to dev_err_probe() under rockchip_pd_power_on()
+> to prevent errors early in the boot process when the requested
+> regulator is not yet available. This converts errors like the following
+> to debug messages:
+> 
+> rockchip-pm-domain fd8d8000.power-management:power-controller: Failed to enable supply: -517
+> 
+> Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
+> ---
+>   drivers/pmdomain/rockchip/pm-domains.c | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
+> index 1955c6d453e4..3c84a65de1a5 100644
+> --- a/drivers/pmdomain/rockchip/pm-domains.c
+> +++ b/drivers/pmdomain/rockchip/pm-domains.c
+> @@ -688,7 +688,8 @@ static int rockchip_pd_power_on(struct generic_pm_domain *domain)
+>   
+>   	ret = rockchip_pd_regulator_enable(pd);
+>   	if (ret) {
+> -		dev_err(pd->pmu->dev, "Failed to enable supply: %d\n", ret);
+> +		dev_err_probe(pd->pmu->dev, ret,
+> +			      "Failed to enable supply: %d\n", ret);
+>   		return ret;
 
-> Add a new helper function of_parse_map_iter() to iterate over nexus
-> node maps (c.f. DT spec, section 2.5.1.)
->
-> This function provides an iterator interface for traversing map
-> entries, handling the complexity of variable-sized entries based on
-> <stem>-cells properties, as well as handling the <stem>-skip and
-> <stem>-pass-thru properties.
->
-> RFC: There's a lot of overlap between this function and
-> of_parse_phandle_with_args_map().  However the key differences are:
->
->   - of_parse_phandle_with_args_map() does matching
->     it searches for an entry that matches specific child args
->   - of_parse_map_iter() does iteration
->     it simply walks through all entries sequentially
->
-> There are likely ways to extract some shared code between these two
-> functions into some shared helpers, but I'm hoping someone more
-> familiar with this OF code can help here.
->
-> However, before refactoring the shared code, it would be good to have
-> some feedback on this approach.
+return dev_err_probe(pd->pmu->dev, ret, "Failed to enable supply: %d\n", 
+ret); ?
 
-For a bit more context, the need for this comes from the work in
-drivers/pmdomain to be able to create pmdomain hierarchies using a
-power-domain-map property.
+>   	}
+>   
 
-I just posted an example user of this functionality here:
-https://lore.kernel.org/r/20251119-pmdomain-hierarchy-onecell-v4-0-f25a1d5022f8@baylibre.com
-
-Kevin
