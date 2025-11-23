@@ -1,38 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1FB1273D66;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C207827FD74;
 	Sun, 23 Nov 2025 08:36:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763886984; cv=none; b=V9MITAQM/aPLArrcj7BRasPvvXUiDdZ2tQRZIdCafGabXIY+hEFQ5A9QvulX3rWhMKQS2ZV3ZYihVm6+ub69Cw5OkZrAFjJRqvFmiN6I5wVkScJrquzdHYL23Utquop9JyMh5zWgLQCka3biafBu5OQgP2pQpngz8s54M39mMzA=
+	t=1763886984; cv=none; b=dK75xy4ctKjAAaWoxr3/uM68VyqGQX2u731Yjd/TishXAvAqbLXvdu+5sFkswTigoQ+mhzvR+SvpOsgDPa9wh+oaoGDhL6aWRiVTFNL7qOX0VDOKMdwM4zlTwfOb/1px1Qh9pH3tgf5FZy+M9SuVX26jbNfRmysD2jLYZ1OwUe4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1763886984; c=relaxed/simple;
-	bh=r5AXU9CyKQzJCp1wGf8E69DJrr7/2kmGZppRmQDXWQc=;
+	bh=xwynRUzExlilQidqzDcuAEaxh+WE2LV+Vnfe/saj5Lc=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=KdTdKA7RvhhTKpHlEHohQBliZjHR4XxpViwuAjz59puyaYxfBOR/8zxXf4LcnJ4X/EWXCBpIo9OaoEByn5EGhLtIGktV3EmFqpOjXk/8ulfjf7syC2sx6JN1Vfj2boVehMpc8Ny1G0UjpyMXQp4isQ2dmODBs5U1J/eHHJG8vxw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hK8wbjiu; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=O7O26OEq+o6iyCiglaRdbwoM0QtyN/QWruyfG7Bv4NRTTYw4itFbBTVnIdr9nrZiLZsQGPrSYXJISB5cTHyoOpeQCIO84eWXZbsDPEJI0YD2y5gxCoGwHvkAa2du6O0fq1KEOCmUGU8l1WeH6uOVtBz61V78TVQz/R6r/yQcWCc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=k4iKB3oN; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hK8wbjiu"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 708B0C19423;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="k4iKB3oN"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 60A5CC16AAE;
 	Sun, 23 Nov 2025 08:36:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1763886984;
-	bh=r5AXU9CyKQzJCp1wGf8E69DJrr7/2kmGZppRmQDXWQc=;
+	bh=xwynRUzExlilQidqzDcuAEaxh+WE2LV+Vnfe/saj5Lc=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=hK8wbjiucVE5Lyw7Nw47ddXi0ltGzV2NlA1rr54UKhwSlVHvjQsd2FIOGFxAGOY3Y
-	 Yjw2xOLyoo6lJUcXdbsD3++A6PRUJuxAzXHAtFktr3FN+UiCsGiG6o2VVgEuP4imX9
-	 WAod9g3mNKML9t5ZgYvIQ0b8rjB4dBzYcSDtO003RzV0VaupNChph0fDJZjdZt7+nj
-	 G/wLc1RUC9QfPdv2yqLMHHVNhf+m+LlDxZV1LYddwPdheZYRWnn4Q9mYtzQMyCu7WH
-	 OEcgzVm9YVRKjWgN/rzFvreeHSzCADtn7WCZldc7Z3m38u15u+GF46pJCYo5vLlgdg
-	 XfCxiYviKRyug==
+	b=k4iKB3oN5fOEL369rVx86C3CoZmNft0LMRQRM7SrCy8TKUl9y13i/I/BZZXaXPDk5
+	 ijAYq3x4admrQ5+oJCs+7BDo3hsE0Yomq3e2TiByycVOJWtGISTMobWgypI2+EFQzA
+	 R3ZfXMrCkMhMVjP0Tv0hJP/8BkFiE8CT+UJsH6HKPPmAiExKGe49dRe8Y4pJu9Y5iW
+	 lr3+j3RYo7iT7H0jjSfmMs6UnvDeUKAqs3/C559CDOqcPIMaMFEOktqo1X37Cz+iqV
+	 GhRaCmBv9tbZwRfayjk3gwntC8y7hZq5X0tZ6qjBv/VrjAwZt/o81NzAwKCFv8/53t
+	 GVB77+X7+8feA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F91BCFC518;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D82CCFD313;
 	Sun, 23 Nov 2025 08:36:24 +0000 (UTC)
 From: Amit Sunil Dhamne via B4 Relay <devnull+amitsd.google.com@kernel.org>
-Date: Sun, 23 Nov 2025 08:35:49 +0000
-Subject: [PATCH 2/6] dt-bindings: mfd: maxim,max77759: add charger child
- node
+Date: Sun, 23 Nov 2025 08:35:48 +0000
+Subject: [PATCH 1/6] dt-bindings: power: supply: Add Maxim MAX77759 charger
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,7 +40,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251123-max77759-charger-v1-2-6b2e4b8f7f54@google.com>
+Message-Id: <20251123-max77759-charger-v1-1-6b2e4b8f7f54@google.com>
 References: <20251123-max77759-charger-v1-0-6b2e4b8f7f54@google.com>
 In-Reply-To: <20251123-max77759-charger-v1-0-6b2e4b8f7f54@google.com>
 To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -60,11 +59,11 @@ Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
  RD Babiera <rdbabiera@google.com>, Kyle Tso <kyletso@google.com>, 
  Amit Sunil Dhamne <amitsd@google.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1763886983; l=1264;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1763886983; l=1642;
  i=amitsd@google.com; s=20241031; h=from:subject:message-id;
- bh=qOK5jNVcnx5bjegC1dKWr0w0HMDBjskPRuyCz3Ci8qg=;
- b=qM5W227Kwrbrd0isfNpZBNhXmIQ8NbswaD5IYEMdymoheJrpiELbZYNT2HWxJ2SRpSo+eXcXG
- MwinsnfaCqxCyl++OgYXy2PKQWkgwjfJjmK1q419ZJ3qDZP8wc8PQ0m
+ bh=7bFNW9hXhJq5LkheOx7QT7tuIMKAsDDQ1dSnkeZc7ig=;
+ b=1aO4U9DUYtJHenszVku1+O2T8S0nKCzm7caOTnUbbR7qLLHyk8/pXvsmaDh9xS/wwoHBFtI1i
+ 5FyzzbHT56JAG1hlMR9W/gfQN/Zrra9GnRBfHBL0jK6C45CtkvlFvmg
 X-Developer-Key: i=amitsd@google.com; a=ed25519;
  pk=wD+XZSST4dmnNZf62/lqJpLm7fiyT8iv462zmQ3H6bI=
 X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
@@ -74,43 +73,55 @@ Reply-To: amitsd@google.com
 
 From: Amit Sunil Dhamne <amitsd@google.com>
 
-The Maxim MAX77759 MFD includes a charger function, hence add its
-binding as a property. Also, update the example to include charger.
+Add bindings for Maxim max77759 charger device.
 
 Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
 ---
- Documentation/devicetree/bindings/mfd/maxim,max77759.yaml | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ .../power/supply/maxim,max77759-charger.yaml       | 36 ++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/mfd/maxim,max77759.yaml b/Documentation/devicetree/bindings/mfd/maxim,max77759.yaml
-index 525de9ab3c2b..29132f73f2c8 100644
---- a/Documentation/devicetree/bindings/mfd/maxim,max77759.yaml
-+++ b/Documentation/devicetree/bindings/mfd/maxim,max77759.yaml
-@@ -37,6 +37,9 @@ properties:
-   nvmem-0:
-     $ref: /schemas/nvmem/maxim,max77759-nvmem.yaml
- 
-+  charger:
-+    $ref: /schemas/power/supply/maxim,max77759-charger.yaml
+diff --git a/Documentation/devicetree/bindings/power/supply/maxim,max77759-charger.yaml b/Documentation/devicetree/bindings/power/supply/maxim,max77759-charger.yaml
+new file mode 100644
+index 000000000000..71f866419774
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/maxim,max77759-charger.yaml
+@@ -0,0 +1,36 @@
++# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/supply/maxim,max77759-charger.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
- required:
-   - compatible
-   - interrupts
-@@ -95,5 +98,14 @@ examples:
-                     };
-                 };
-             };
++title: Maxim Integrated MAX77759 Battery charger
 +
-+            charger {
-+                compatible = "maxim,max77759-charger";
-+                power-supplies = <&maxtcpc>;
++maintainers:
++  - Amit Sunil Dhamne <amitsd@google.com>
 +
-+                usb-otg-vbus-regulator {
-+                    regulator-name = "usb-otg-vbus";
-+                };
-+            };
-         };
-     };
++description: |
++  This module is part of the MAX77759 PMIC. For additional information, see
++  Documentation/devicetree/bindings/mfd/maxim,max77759.yaml.
++
++  The Maxim MAX77759 is a dual input switch mode battery charger for portable
++  applications. It supports wired and wireless charging and can operate in buck
++  and boost mode.
++
++allOf:
++  - $ref: power-supply.yaml#
++
++properties:
++  compatible:
++    const: maxim,max77759-charger
++
++  usb-otg-vbus-regulator:
++    type: object
++    description: Provides Boost for sourcing VBUS.
++    $ref: /schemas/regulator/regulator.yaml#
++    unevaluatedProperties: false
++
++required:
++  - compatible
++
++unevaluatedProperties: false
 
 -- 
 2.52.0.rc2.455.g230fcf2819-goog
