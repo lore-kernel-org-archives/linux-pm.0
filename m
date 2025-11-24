@@ -1,238 +1,79 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2661A31814A
-	for <linux-pm@vger.kernel.org>; Mon, 24 Nov 2025 17:01:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0966821CC60;
+	Mon, 24 Nov 2025 17:03:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764003719; cv=none; b=OqdKqYyi7aAyPpHKCyxVz9Q77hK49ty8EXjAL7dXrsUd0eh8gtdJVDfYDFh5Ybq1ClIC3mvOkGXF2lIAcLGQ/H8CUnmJX0SqliLXLKm0ascC244X//k4SQHtA78yALjM6bjILW8j1D7D48eUiU61VGObr96HJsU8MFU/BprcvP8=
+	t=1764003807; cv=none; b=mCaCInsTYlJIY+2kiVNihwvSZpMmyNtvmpct2Tt56KOUXrygOnKW9pOampGQdwBkcLa8Gpu/6EvLrcuokQAV+4k5hgHCnz4EeeJHoXYzIuRm1PPnm1MkRqOM9uCnDn+fbRVjMtt8FgV/e3D+lIae/kqSjPdj44/rPGt0Drhi5m8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764003719; c=relaxed/simple;
-	bh=94qwcdvISJhCCZRqsIa3gf9UsdjE7+PgQuqqXXX1d/I=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=AVeGM/kOZT01XDRXaSSDDoaiqS5TVPZSgl/6i29xeQz4E5Ohid+5Enm9yEKWEnVyOk0Pv4did7lroK8dcS/cNAuhheDJcnQkokQzoPC1nciZRQL//3WUUjjsXfIQ1WqtANwcmwvOvWEKnnTR/8+gndDxRlUT5C44E73STMAcSLQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZX/x+hJS; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1764003807; c=relaxed/simple;
+	bh=XxxmkS+0psK2Efzy4eRoZ9aPH6XqSpviIZ4MrWxBXRY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=QKjtC0AjLB4jcOaXEYzAYvfF4TRsrFVmIXUWwWlPu10W9ea5PCytCBTXcqLGi9Tjo+ibFWa17aSlHX+UojHJ4zqMUVNVrL+K7W03keosWD1w5BHa52PI/3FhhxnBg8dNQlWoXWAEkrMrcHF3WFahue3SYjn46Ee/PVd4ig41nSU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=KY46qDxs; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZX/x+hJS"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 053AAC19421
-	for <linux-pm@vger.kernel.org>; Mon, 24 Nov 2025 17:01:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1764003719;
-	bh=94qwcdvISJhCCZRqsIa3gf9UsdjE7+PgQuqqXXX1d/I=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=ZX/x+hJSP1P0qZ14NE/Hpp1YeMGnHI6Dx+de22oXXzeIPeuZi0tl3P1Qd24pJ0XE0
-	 DRNM1Dd3316lM7xNS7AWRIbFzclkw4gDqqL81VhAQaFzCrk5BozfWNdzxmbc6fYQp8
-	 kn+0NKGkHFOhHeoMv5L1ngwbgDUnIbUbp6tlKYGmdxP0m4yYg2MKsoyZorJ2kn4WTZ
-	 F3bqZjMbyD92+f9gsI095j+0fWID4ZYBYGTJ/rjgAnorVZQK8kiUv1QveAEvgnUYOf
-	 huarqKe2o9quMSVImjx1vZr1QC0jRU0EDKbJpUcFokzIjnKe/JftNOKKvSdJKtX3Z6
-	 h8Bt3/5SbF7cw==
-Received: by mail-ed1-f43.google.com with SMTP id 4fb4d7f45d1cf-640b06fa959so7665091a12.3
-        for <linux-pm@vger.kernel.org>; Mon, 24 Nov 2025 09:01:58 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCUb5tvrUEScU75L1AQUcrgvj+DQINlkrmlTV7+vpGa3K46Y+5wabkSeTn9ysZtxi9YnYHv7f1Vf3Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzOCIUNWF4PaJXCUkVvIoRNg5Cu8fyml4wkvuAj6OE1bcKruHS+
-	3qupWNptaD/DV2dBbCuwdIvWX/Z29DF1XNnBNsBU9J9WbNbsYK1M/YMHKjKZWUqPvp4WmIU09iV
-	+GYxVEbS6LHRVVHf2KRhjwA5Go+RLjg==
-X-Google-Smtp-Source: AGHT+IFXf67K5MLIAp6akzlHdfYGJk0vOgsjBiRm9AVrjqIUmIUGdpSyKqEED/1RG1dv63/7cyPADsAtAzCIEsIc398=
-X-Received: by 2002:a17:907:724c:b0:b71:cec2:d54 with SMTP id
- a640c23a62f3a-b767183f903mr1306003666b.57.1764003716998; Mon, 24 Nov 2025
- 09:01:56 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="KY46qDxs"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3639AC4CEF1;
+	Mon, 24 Nov 2025 17:03:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1764003806;
+	bh=XxxmkS+0psK2Efzy4eRoZ9aPH6XqSpviIZ4MrWxBXRY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=KY46qDxsQMwBwr3kh2pe9tKN7G0RE73/bZLC6vNsGKGUjyzWDxT/VlUnr3H9LojvY
+	 u8qn7DM/B0upwMBoXP4JsIaeDPnSMl9XAHaXeH4NGmTO14Nw+UEm1rOPcnMcsfq/LA
+	 0EpFgf8tVwRtj9H01VmQpxM8Kmkmyh2UOAHVTTDI=
+Date: Mon, 24 Nov 2025 18:03:24 +0100
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Muhammad Usama Anjum <usama.anjum@collabora.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@kernel.org>, Danilo Krummrich <dakr@kernel.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Peter Zijlstra <peterz@infradead.org>, linux-acpi@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-input@vger.kernel.org, kernel@collabora.com,
+	superm1@kernel.org
+Subject: Re: [PATCH 2/4] ACPI: button: Cancel hibernation if button is
+ pressed during hibernation
+Message-ID: <2025112433-emphasize-helpful-b748@gregkh>
+References: <20251107184438.1328717-1-usama.anjum@collabora.com>
+ <20251107184438.1328717-3-usama.anjum@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251015071420.1173068-1-herve.codina@bootlin.com>
- <20251015071420.1173068-2-herve.codina@bootlin.com> <f74ab0a2-b74b-4b96-8469-a716c850e230@gmail.com>
- <CAL_JsqJDOYuzutMHMeFAogd5a_OX6Hwi8Gwz1Vy7HpXgNeYKsg@mail.gmail.com> <5cf2a12a-7c66-4622-b4a9-14896c6df005@gmail.com>
-In-Reply-To: <5cf2a12a-7c66-4622-b4a9-14896c6df005@gmail.com>
-From: Rob Herring <robh@kernel.org>
-Date: Mon, 24 Nov 2025 11:01:45 -0600
-X-Gmail-Original-Message-ID: <CAL_JsqJjm12LxpDg6LmpY=Ro_keHwnrWiYMLVnG=s_pSP4X2WQ@mail.gmail.com>
-X-Gm-Features: AWmQ_bmkdBVVKkq4S-uwQ2SqCH_pnOkbmYTHFkvDFxh_4sc4_x1p8K7UCt8Q0zg
-Message-ID: <CAL_JsqJjm12LxpDg6LmpY=Ro_keHwnrWiYMLVnG=s_pSP4X2WQ@mail.gmail.com>
-Subject: Re: [PATCH v4 01/29] Revert "treewide: Fix probing of devices in DT overlays"
-To: Kalle Niemi <kaleposti@gmail.com>
-Cc: Herve Codina <herve.codina@bootlin.com>, Andrew Lunn <andrew@lunn.ch>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Shawn Guo <shawnguo@kernel.org>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, Michael Turquette <mturquette@baylibre.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
-	Wolfram Sang <wsa+renesas@sang-engineering.com>, Peter Rosin <peda@axentia.se>, 
-	Arnd Bergmann <arnd@arndb.de>, Saravana Kannan <saravanak@google.com>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Charles Keepax <ckeepax@opensource.cirrus.com>, 
-	Richard Fitzgerald <rf@opensource.cirrus.com>, David Rhodes <david.rhodes@cirrus.com>, 
-	Linus Walleij <linus.walleij@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, 
-	Mark Brown <broonie@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-	Daniel Scally <djrscally@gmail.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
-	Sakari Ailus <sakari.ailus@linux.intel.com>, Len Brown <lenb@kernel.org>, 
-	Davidlohr Bueso <dave@stgolabs.net>, Jonathan Cameron <jonathan.cameron@huawei.com>, 
-	Dave Jiang <dave.jiang@intel.com>, Alison Schofield <alison.schofield@intel.com>, 
-	Vishal Verma <vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>, 
-	Dan Williams <dan.j.williams@intel.com>, Geert Uytterhoeven <geert+renesas@glider.be>, 
-	Wolfram Sang <wsa@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
-	linux-clk@vger.kernel.org, linux-i2c@vger.kernel.org, 
-	linux-pci@vger.kernel.org, linux-sound@vger.kernel.org, 
-	patches@opensource.cirrus.com, linux-gpio@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-spi@vger.kernel.org, 
-	linux-acpi@vger.kernel.org, linux-cxl@vger.kernel.org, 
-	Allan Nielsen <allan.nielsen@microchip.com>, Horatiu Vultur <horatiu.vultur@microchip.com>, 
-	Steen Hegelund <steen.hegelund@microchip.com>, Luca Ceresoli <luca.ceresoli@bootlin.com>, 
-	Thomas Petazzoni <thomas.petazzoni@bootlin.com>, mazziesaccount@gmail.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251107184438.1328717-3-usama.anjum@collabora.com>
 
-On Mon, Nov 24, 2025 at 10:44=E2=80=AFAM Kalle Niemi <kaleposti@gmail.com> =
-wrote:
->
->
-> On 11/24/25 16:53, Rob Herring wrote:
-> > On Mon, Nov 24, 2025 at 8:48=E2=80=AFAM Kalle Niemi <kaleposti@gmail.co=
-m> wrote:
-> >> On 10/15/25 10:13, Herve Codina wrote:
-> >>> From: Saravana Kannan <saravanak@google.com>
-> >>>
-> >>> This reverts commit 1a50d9403fb90cbe4dea0ec9fd0351d2ecbd8924.
-> >>>
-> >>> While the commit fixed fw_devlink overlay handling for one case, it
-> >>> broke it for another case. So revert it and redo the fix in a separat=
-e
-> >>> patch.
-> >>>
-> >>> Fixes: 1a50d9403fb9 ("treewide: Fix probing of devices in DT overlays=
-")
-> >>> Reported-by: Herve Codina <herve.codina@bootlin.com>
-> >>> Closes: https://lore.kernel.org/lkml/CAMuHMdXEnSD4rRJ-o90x4OprUacN_rJ=
-gyo8x6=3D9F9rZ+-KzjOg@mail.gmail.com/
-> >>> Closes: https://lore.kernel.org/all/20240221095137.616d2aaa@bootlin.c=
-om/
-> >>> Closes: https://lore.kernel.org/lkml/20240312151835.29ef62a0@bootlin.=
-com/
-> >>> Signed-off-by: Saravana Kannan <saravanak@google.com>
-> >>> Link: https://lore.kernel.org/lkml/20240411235623.1260061-2-saravanak=
-@google.com/
-> >>> Signed-off-by: Herve Codina <herve.codina@bootlin.com>
-> >>> Acked-by: Mark Brown <broonie@kernel.org>
-> >>> ---
-> >>>    drivers/bus/imx-weim.c    | 6 ------
-> >>>    drivers/i2c/i2c-core-of.c | 5 -----
-> >>>    drivers/of/dynamic.c      | 1 -
-> >>>    drivers/of/platform.c     | 5 -----
-> >>>    drivers/spi/spi.c         | 5 -----
-> >>>    5 files changed, 22 deletions(-)
-> >>>
-> >>> diff --git a/drivers/bus/imx-weim.c b/drivers/bus/imx-weim.c
-> >>> index 83d623d97f5f..87070155b057 100644
-> >>> --- a/drivers/bus/imx-weim.c
-> >>> +++ b/drivers/bus/imx-weim.c
-> >>> @@ -327,12 +327,6 @@ static int of_weim_notify(struct notifier_block =
-*nb, unsigned long action,
-> >>>                                 "Failed to setup timing for '%pOF'\n"=
-, rd->dn);
-> >>>
-> >>>                if (!of_node_check_flag(rd->dn, OF_POPULATED)) {
-> >>> -                     /*
-> >>> -                      * Clear the flag before adding the device so t=
-hat
-> >>> -                      * fw_devlink doesn't skip adding consumers to =
-this
-> >>> -                      * device.
-> >>> -                      */
-> >>> -                     rd->dn->fwnode.flags &=3D ~FWNODE_FLAG_NOT_DEVI=
-CE;
-> >>>                        if (!of_platform_device_create(rd->dn, NULL, &=
-pdev->dev)) {
-> >>>                                dev_err(&pdev->dev,
-> >>>                                        "Failed to create child device=
- '%pOF'\n",
-> >>> diff --git a/drivers/i2c/i2c-core-of.c b/drivers/i2c/i2c-core-of.c
-> >>> index eb7fb202355f..30b48a428c0b 100644
-> >>> --- a/drivers/i2c/i2c-core-of.c
-> >>> +++ b/drivers/i2c/i2c-core-of.c
-> >>> @@ -176,11 +176,6 @@ static int of_i2c_notify(struct notifier_block *=
-nb, unsigned long action,
-> >>>                        return NOTIFY_OK;
-> >>>                }
-> >>>
-> >>> -             /*
-> >>> -              * Clear the flag before adding the device so that fw_d=
-evlink
-> >>> -              * doesn't skip adding consumers to this device.
-> >>> -              */
-> >>> -             rd->dn->fwnode.flags &=3D ~FWNODE_FLAG_NOT_DEVICE;
-> >>>                client =3D of_i2c_register_device(adap, rd->dn);
-> >>>                if (IS_ERR(client)) {
-> >>>                        dev_err(&adap->dev, "failed to create client f=
-or '%pOF'\n",
-> >>> diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-> >>> index 2eaaddcb0ec4..b5be7484fb36 100644
-> >>> --- a/drivers/of/dynamic.c
-> >>> +++ b/drivers/of/dynamic.c
-> >>> @@ -225,7 +225,6 @@ static void __of_attach_node(struct device_node *=
-np)
-> >>>        np->sibling =3D np->parent->child;
-> >>>        np->parent->child =3D np;
-> >>>        of_node_clear_flag(np, OF_DETACHED);
-> >>> -     np->fwnode.flags |=3D FWNODE_FLAG_NOT_DEVICE;
-> >>>
-> >>>        raw_spin_unlock_irqrestore(&devtree_lock, flags);
-> >>>
-> >>> diff --git a/drivers/of/platform.c b/drivers/of/platform.c
-> >>> index f77cb19973a5..ef9445ba168b 100644
-> >>> --- a/drivers/of/platform.c
-> >>> +++ b/drivers/of/platform.c
-> >>> @@ -739,11 +739,6 @@ static int of_platform_notify(struct notifier_bl=
-ock *nb,
-> >>>                if (of_node_check_flag(rd->dn, OF_POPULATED))
-> >>>                        return NOTIFY_OK;
-> >>>
-> >>> -             /*
-> >>> -              * Clear the flag before adding the device so that fw_d=
-evlink
-> >>> -              * doesn't skip adding consumers to this device.
-> >>> -              */
-> >>> -             rd->dn->fwnode.flags &=3D ~FWNODE_FLAG_NOT_DEVICE;
-> >>>                /* pdev_parent may be NULL when no bus platform device=
- */
-> >>>                pdev_parent =3D of_find_device_by_node(parent);
-> >>>                pdev =3D of_platform_device_create(rd->dn, NULL,
-> >>> diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
-> >>> index 2e0647a06890..b22944a207c9 100644
-> >>> --- a/drivers/spi/spi.c
-> >>> +++ b/drivers/spi/spi.c
-> >>> @@ -4791,11 +4791,6 @@ static int of_spi_notify(struct notifier_block=
- *nb, unsigned long action,
-> >>>                        return NOTIFY_OK;
-> >>>                }
-> >>>
-> >>> -             /*
-> >>> -              * Clear the flag before adding the device so that fw_d=
-evlink
-> >>> -              * doesn't skip adding consumers to this device.
-> >>> -              */
-> >>> -             rd->dn->fwnode.flags &=3D ~FWNODE_FLAG_NOT_DEVICE;
-> >>>                spi =3D of_register_spi_device(ctlr, rd->dn);
-> >>>                put_device(&ctlr->dev);
-> >>>
-> >> Sorry, some of you will receive this message now for second time. Firs=
-t
-> >> message was sent to older series of patches.
-> >> -
-> >>
-> >> Hello,
-> >>
-> >> Test system testing drivers for ROHM ICs bisected this commit to cause
-> >> BD71847 drivers probe to not be called.
-> > This driver (and overlay support) is in linux-next or something out of
-> > tree on top of linux-next?
-> >
-> > Rob
->
-> Yes the driver is in mainline linux: /drivers/mfd/rohm-bd718x7.c
+On Fri, Nov 07, 2025 at 11:44:29PM +0500, Muhammad Usama Anjum wrote:
+> acpi_pm_wakeup_event() is called from acpi_button_notify() which is
+> called when power button is pressed. The system is worken up from s2idle
+> in this case by setting hard parameter to pm_wakeup_dev_event().
+> 
+> Call acpi_pm_wakeup_event() if power button is pressed and hibernation
+> is in progress. Set the hard parameter such that pm_system_wakeup()
+> gets called which increments pm_abort_suspend counter. The explicit call
+> to acpi_pm_wakeup_event() is necessary as ACPI button device has the
+> wakeup source. Hence call to input_report_key() with input device
+> doesn't call pm_system_wakeup() as it doesn't have wakeup source
+> registered.
+> 
+> Hence hibernation would be cancelled as in hibernation path, this counter
+> is checked if it should be aborted.
+> 
+> Signed-off-by: Muhammad Usama Anjum <usama.anjum@collabora.com>
 
-I don't see any support to apply overlays in that driver.
+This could be dangerous, as this is not what happens today, are you sure
+that people aren't just used to pressing the button multiple times until
+the system is hibernated?  If so, that would now break with this change
+as it's hard to determine what is going on.
 
-Rob
+And why does hibernate take so long?  Why not fix that up instead?
+
+thanks,
+
+greg k-h
