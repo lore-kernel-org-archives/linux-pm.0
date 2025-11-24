@@ -1,100 +1,116 @@
-Received: from mailout4.samsung.com (mailout4.samsung.com [203.254.224.34])
+Received: from sender3-pp-f112.zoho.com (sender3-pp-f112.zoho.com [136.143.184.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F1BC2FC00E
-	for <linux-pm@vger.kernel.org>; Mon, 24 Nov 2025 11:05:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=203.254.224.34
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763982303; cv=none; b=f1M0SjF74mjOXDRScWq+xFJhWexcTo/wUrRTG0F4ghU7oyHl7+Zo4Lzt245S+PDxW+I/rvlR+aqEXs0pDeFUzg+dqmGvsBl+HWxFgXJvCggy00BuYCCYyrBPwVy/RcQbl97wvSdy9qgDYDEtzyF5/EGzkrISZn+/tSeiyee6pIs=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763982303; c=relaxed/simple;
-	bh=J32kqd07hFmR6eCMuZ/OyisnVfntR08V/NULDB+Qtzw=;
-	h=From:To:Cc:In-Reply-To:Subject:Date:Message-ID:MIME-Version:
-	 Content-Type:References; b=f0a8yrMhYRbxskc4ViglTRbkcXhb2cha2xm1JmIpZAkWJxd1CcG6Sq5Z8lPylmYfYD3QV/tLwJV4Wzd2kSx8xdDHEO+cfhWzSjDzLUvNCLzur86CuGaAwJqkC/E11zU5vSbv9P/g/0LMxey05DiI3SwLEeU1vkTjh8ADJTzjORc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com; spf=pass smtp.mailfrom=samsung.com; dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b=mS0Pz9Hk; arc=none smtp.client-ip=203.254.224.34
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=samsung.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82D872566E9;
+	Mon, 24 Nov 2025 11:07:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.184.112
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1763982444; cv=pass; b=PSLoXSPASHt4n4EJjMWcjZ30fU0fIHGCCHkhHd7Y2frnHsXOIOXceNdmEpuAQuzPtgoLEuTQSxl4qFiaknF11uX6a0REzbHu6tE8QsFY3UglWB7mUK8XuIcNfeMyKum2AfkWK1tdTlz6RlQ2KN2R19BEaoJXBQk/Oky1qb/J2QM=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1763982444; c=relaxed/simple;
+	bh=ce9o5irmwpfyD6PvU9+tPvHBWgCNiUXyQdvKFSFXd9U=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=CL3Gyl/6e6nDtBvma1snWM8xLtpgJcbJpnBbhS0Ao3AzgLT2fbCzjohKlLDxO3mEWS5FapyKJ+mrhpTjzIwqzcLiNRuxD9KifJtH5gb93RONfYT1aFTdszgjmVr2KMXIOLK9QBL3Ujz9u9S3vMA6/1MRAhbHqd11305iD5wCr98=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=CHSDHiOX; arc=pass smtp.client-ip=136.143.184.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="mS0Pz9Hk"
-Received: from epcas2p4.samsung.com (unknown [182.195.41.56])
-	by mailout4.samsung.com (KnoxPortal) with ESMTP id 20251124110459epoutp04958751535df796441e274c1e2b23748c~67I4o64Fs1666016660epoutp04o
-	for <linux-pm@vger.kernel.org>; Mon, 24 Nov 2025 11:04:59 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout4.samsung.com 20251124110459epoutp04958751535df796441e274c1e2b23748c~67I4o64Fs1666016660epoutp04o
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-	s=mail20170921; t=1763982299;
-	bh=J32kqd07hFmR6eCMuZ/OyisnVfntR08V/NULDB+Qtzw=;
-	h=From:To:Cc:In-Reply-To:Subject:Date:References:From;
-	b=mS0Pz9Hk7zb44LWjov+0QWnVyDqaOuhmHK1+gWG7CBPxuLrMvQRL3dm6+jDRXxHHa
-	 h/I44T3iGIliduswPtf0GhgQl82i8Y3Cs+3QIeH/Dnb/up/pnbxh2BPSry31pZ9bQO
-	 mfxYRrTI8dE3WmDcLJpgPJE4j5/PV0Ur+l7yVt7M=
-Received: from epsnrtp02.localdomain (unknown [182.195.42.154]) by
-	epcas2p3.samsung.com (KnoxPortal) with ESMTPS id
-	20251124110458epcas2p31e56f8e02f3934038a9fbfac7de56fa5~67I37P8K50477404774epcas2p3F;
-	Mon, 24 Nov 2025 11:04:58 +0000 (GMT)
-Received: from epcas2p2.samsung.com (unknown [182.195.38.203]) by
-	epsnrtp02.localdomain (Postfix) with ESMTP id 4dFNJV1X4Tz2SSKX; Mon, 24 Nov
-	2025 11:04:58 +0000 (GMT)
-Received: from epsmtip2.samsung.com (unknown [182.195.34.31]) by
-	epcas2p4.samsung.com (KnoxPortal) with ESMTPA id
-	20251124110457epcas2p442cbe07b335d90a8b5e4c66cd02e928c~67I2noxqe0858708587epcas2p4u;
-	Mon, 24 Nov 2025 11:04:57 +0000 (GMT)
-Received: from KORCO115296 (unknown [12.80.207.128]) by epsmtip2.samsung.com
-	(KnoxPortal) with ESMTPA id
-	20251124110457epsmtip29fb37f805b54cc32a362e2c7f1e2908d~67I2g3jBS1950019500epsmtip2R;
-	Mon, 24 Nov 2025 11:04:57 +0000 (GMT)
-From: =?utf-8?B?7IaQ7Iug?= <shin.son@samsung.com>
-To: "'Daniel Lezcano'" <daniel.lezcano@linaro.org>, "'Bartlomiej
- Zolnierkiewicz'" <bzolnier@gmail.com>, "'Krzysztof Kozlowski'"
-	<krzk@kernel.org>, "'Rafael J . Wysocki'" <rafael@kernel.org>, "'Zhang Rui'"
-	<rui.zhang@intel.com>, "'Lukasz	Luba'" <lukasz.luba@arm.com>, "'Rob
-	Herring'" <robh@kernel.org>, "'Conor Dooley'" <conor+dt@kernel.org>, "'Alim
-	Akhtar'" <alim.akhtar@samsung.com>
-Cc: "'Henrik Grimler'" <henrik@grimler.se>, <linux-pm@vger.kernel.org>,
-	<linux-samsung-soc@vger.kernel.org>, <devicetree@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
-	<shin.son@samsung.com>
-In-Reply-To: <ab35c20e-390c-4479-9bb1-9f5e49cba2a0@linaro.org>
-Subject: RE: [PATCH v7 RESEND 2/3] thermal: exynos_tmu: Support new hardware
- and update TMU interface
-Date: Mon, 24 Nov 2025 20:04:53 +0900
-Message-ID: <000001dc5d32$2b4bfb20$81e3f160$@samsung.com>
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="CHSDHiOX"
+ARC-Seal: i=1; a=rsa-sha256; t=1763982425; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=GIDjin3ux68yiT6EZRYQQur4rqwNVp6nrqgpkzK+fkBKr+OUxBHyE8vwCxoNL5M4VPgn+xe9PJYpWhb0rZryyIA2SE/3K3d/xbZn82OlQzk/s6EfSbDgqnKSGGA4NvG0S3yLf1WW3Yt0NpNDvuINH46Z8roO0/vHb5iDA1sskbY=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1763982425; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=sDH7HsjdBxRxUiiInPpbiefmMzWljb8Ji5v3kIQhv8U=; 
+	b=Lp7Ky71BPDjvNXkeaDUSsxH1y5OfKIFjAUdxYuiRtRcovvfHJuQh4orsexa1Qul/Jp96lljD44uQz8PWoLS2l2Z+f90X2tVpPhKWx2bVLik3K7Zf+h/HAYUDCYkXIFxkqaey2zrjrS5+vGk5c2T8v/UTGF+71HOq/RaH1nhHhiI=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
+	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1763982424;
+	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
+	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
+	bh=sDH7HsjdBxRxUiiInPpbiefmMzWljb8Ji5v3kIQhv8U=;
+	b=CHSDHiOXDNaqdYcV5n1kT87LkxJ54yOXkEc1brL6ngioDl7xEUX2A+jGr0FWeLBi
+	FvLhxBg+SqTTsvP9FA0YMrUwJah84b00ZtvV5KiDAHtsuyEtonPEq3GPpiqOrOKNrYh
+	Ar937mq5VNlhh1mqE7HRuzjzEpmfsqIrpDuzvf8U=
+Received: by mx.zohomail.com with SMTPS id 1763982424035518.2881808242608;
+	Mon, 24 Nov 2025 03:07:04 -0800 (PST)
+From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+Date: Mon, 24 Nov 2025 12:06:51 +0100
+Subject: [PATCH v2 02/13] dt-bindings: soc: mediatek: dvfsrc: Document
+ clock
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Mailer: Microsoft Outlook 15.0
-Thread-Index: AQJR08pAfg/+KuTfxFjIW+Bmb4uKqAKoesbtAuyt0KIBiaSaQQHdj7cKAduSh9uzv/aP0A==
-Content-Language: ko
-X-CMS-MailID: 20251124110457epcas2p442cbe07b335d90a8b5e4c66cd02e928c
-X-Msg-Generator: CA
 Content-Type: text/plain; charset="utf-8"
-X-Sendblock-Type: AUTO_CONFIDENTIAL
-CMS-TYPE: 102P
-cpgsPolicy: CPGSC10-234,Y
-X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20251113064044epcas2p1b87addb21473eca7cc52052e4e2e9237
-References: <20251113064022.2701578-1-shin.son@samsung.com>
-	<CGME20251113064044epcas2p1b87addb21473eca7cc52052e4e2e9237@epcas2p1.samsung.com>
-	<20251113064022.2701578-3-shin.son@samsung.com>
-	<2180a854-8ba6-4424-add2-eb34637530c1@linaro.org>
-	<000001dc5d2a$0697bf10$13c73d30$@samsung.com>
-	<ab35c20e-390c-4479-9bb1-9f5e49cba2a0@linaro.org>
+Content-Transfer-Encoding: 7bit
+Message-Id: <20251124-mt8196-dvfsrc-v2-2-d9c1334db9f3@collabora.com>
+References: <20251124-mt8196-dvfsrc-v2-0-d9c1334db9f3@collabora.com>
+In-Reply-To: <20251124-mt8196-dvfsrc-v2-0-d9c1334db9f3@collabora.com>
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Matthias Brugger <matthias.bgg@gmail.com>, 
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ Henry Chen <henryc.chen@mediatek.com>, Georgi Djakov <djakov@kernel.org>
+Cc: kernel@collabora.com, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, 
+ Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+X-Mailer: b4 0.14.3
 
-Hello, Daniel Lezcano.
+The DVFSRC hardware has a clock on all platforms.
 
-> On 11/24/25 11:06, =EC=86=90=EC=8B=A0=20wrote:=0D=0A>=20=5B=20...=20=5D=
-=0D=0A>=20=0D=0A>=20>=20However,=20since=20ExynosAutov920=20diverges=20sign=
-ificantly=20from=20the=20existing=0D=0A>=20>=20driver,=20Would=20introducin=
-g=20a=20separate=20driver=20instead=20of=20unifying=0D=0A>=20everything=20b=
-e=20acceptable?=0D=0A>=20=0D=0A>=20So=20this=20driver=20is=20one=20controll=
-er=20for=20multiple=20sensors=20while=20the=20others=0D=0A>=20drivers=20are=
-=20one=20controller=20for=20one=20sensor,=20right=20?=0D=0A>=20=0D=0A=0D=0A=
-Yes.=20As=20far=20as=20I=20understand,=20the=20previous=20Exynos=20variants=
-=20used=20one=20TMU=20controller=20per=20sensor,=0D=0Awhile=20on=20ExynosAu=
-toV920=20the=20hardware=20has=20multiple=20TMU=20instances=20and=20each=20i=
-nstance=20contains=20multiple=20sensors.=0D=0ATherefore,=20this=20new=20aut=
-omotive=20SoC=20requires=20supporting=20multiple=20sensors=20behind=20a=20s=
-ingle=20TMU=20controller.=0D=0A=0D=0ABest=20regards,=0D=0AShin=0D=0A=0D=0A
+Instead or proliferating the culture of omitting clock descriptions in
+the clock controller drivers or marking them critical instead of
+declaring these types of relationships, add this one to the binding.
+
+Any device that wishes to use this binding should figure out their
+incomplete or incorrect clock situation first before piling more
+features on top.
+
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+---
+ .../devicetree/bindings/soc/mediatek/mediatek,mt8183-dvfsrc.yaml    | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/soc/mediatek/mediatek,mt8183-dvfsrc.yaml b/Documentation/devicetree/bindings/soc/mediatek/mediatek,mt8183-dvfsrc.yaml
+index 5673d242afcb..d5c42f992a21 100644
+--- a/Documentation/devicetree/bindings/soc/mediatek/mediatek,mt8183-dvfsrc.yaml
++++ b/Documentation/devicetree/bindings/soc/mediatek/mediatek,mt8183-dvfsrc.yaml
+@@ -35,6 +35,10 @@ properties:
+     maxItems: 1
+     description: DVFSRC common register address and length.
+ 
++  clocks:
++    items:
++      - description: Clock that drives the DVFSRC MCU
++
+   regulators:
+     type: object
+     $ref: /schemas/regulator/mediatek,mt6873-dvfsrc-regulator.yaml#
+@@ -51,6 +55,7 @@ additionalProperties: false
+ 
+ examples:
+   - |
++    #include <dt-bindings/clock/mt8195-clk.h>
+     soc {
+         #address-cells = <2>;
+         #size-cells = <2>;
+@@ -58,6 +63,7 @@ examples:
+         system-controller@10012000 {
+             compatible = "mediatek,mt8195-dvfsrc";
+             reg = <0 0x10012000 0 0x1000>;
++            clocks = <&topckgen CLK_TOP_DVFSRC>;
+ 
+             regulators {
+                 compatible = "mediatek,mt8195-dvfsrc-regulator";
+
+-- 
+2.52.0
+
