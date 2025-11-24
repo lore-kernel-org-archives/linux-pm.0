@@ -1,239 +1,243 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f53.google.com (mail-pj1-f53.google.com [209.85.216.53])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B5E629A322;
-	Mon, 24 Nov 2025 15:34:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B738313292
+	for <linux-pm@vger.kernel.org>; Mon, 24 Nov 2025 15:40:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763998445; cv=none; b=OeNAxNDn4e5rDbbApZ2JYsDjOV+VwHY+eF2KF6jy18Ebd1yS55X/xIYV30lnhJe5mRDudNP/QYON7USvKe4hteBJ2iVKjSDceLsHjsrEnv7KFy9jwfiT4f7I+/Rv/PU0DFLWwOgxNvbut8BpNmD0b37wy8i42YDMDq/kzSyWTH8=
+	t=1763998845; cv=none; b=Oy4fVa/GgzgPpx4rdFhlGMXsv2sOU5IkDm+S+3/wv8VQKGqwNmMc4HN6Xm+VckRz88uTmmtuTfswGLKtPJ6V0JIfk0WOErwCXRESWxy3vZRK2Q6bXdz5apFQ5OI94g88BkIRXhwOfKQPyRxAr+fGXw06qL98Lyf5pnoKYstG9I0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763998445; c=relaxed/simple;
-	bh=d9PUmR/PITKV7fFNiNd0FCOE6MjF4kQ835w5ojEFs8A=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=fpKAALj/vBIs+NRgS8XSZUHWHTZ9HYwSe/FFj7r3I29f4QgLYjKK2HZT1uOEFLeGFldlJ8v+4GPFLZ4Ayiik8scKnNN4KrYEMBAjeDhrBISgebbCZAnhrcomv3GOlbBPImXILH458+ve4RB3H6sGvorSco5kYqH1AK0VlAcTzrs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EpKLaPQa; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1763998845; c=relaxed/simple;
+	bh=Ur80bf67IWJP9P3NyHLEyhZMGM2yEXjoM26RAeQoVDY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Q+Q3aLvKHmccVAD7zH6ddVn6sAIlMON1eyHkFvksbYpNGkLogPhOjRhjJGodNI7WDdXLfib3DUg8nuFYgBeUx3jN1PPnR4XwsQQLJxAcb28AXcDn8RIFzmC+3WyQGlqRrCiFO7OQ85W9b3hxY81gVCf/ameLi1/A6LoVa2towHo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=B71CXKXG; arc=none smtp.client-ip=209.85.216.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EpKLaPQa"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C8A8BC4CEF1;
-	Mon, 24 Nov 2025 15:34:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1763998444;
-	bh=d9PUmR/PITKV7fFNiNd0FCOE6MjF4kQ835w5ojEFs8A=;
-	h=From:To:Cc:Subject:Date:From;
-	b=EpKLaPQaHxLx/9GT+e6ixxv4r9gSq8qWvP1rVZFBt8wBMJ+wNab3gAxpj+GwdPMfg
-	 oGu9FCeLvf00obmyENfeFxK1RZzxtQWKoeuJP5x8d0zwn6/9r2r6b+Iwt86wC2ysXK
-	 C4k6KelmoacXQuFHWdVoVUlJKm+ocOM+XzTWU5GTpZC4cIYFELqtEcYu8hCoURmluE
-	 ThQAyktFzj7JXSF3aXfKPY5eYgbdvs4y/fe1HAp1Qze0yCJbMWyGQAq1qlon/o0zwT
-	 eaKOZRhmM7zysMen/SMzEeOTuFoNdPNv9KkZGc0kxj5ayzyIb1htRwFA46EzSKlTU9
-	 PI5VjHbdoQhoA==
-From: Georgi Djakov <djakov@kernel.org>
-To: gregkh@linuxfoundation.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	djakov@kernel.org
-Subject: [GIT PULL] interconnect changes for 6.19
-Date: Mon, 24 Nov 2025 17:33:32 +0200
-Message-Id: <20251124153332.2754651-1-djakov@kernel.org>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="B71CXKXG"
+Received: by mail-pj1-f53.google.com with SMTP id 98e67ed59e1d1-3414de5b27eso3496170a91.0
+        for <linux-pm@vger.kernel.org>; Mon, 24 Nov 2025 07:40:43 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1763998842; x=1764603642; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to;
+        bh=Llp8FG6WVJOxC42YZnLNsTS0zXwdgkxLlwBk+kzHwR8=;
+        b=B71CXKXGRfl4sO0Qd4Bp3nwb2CR0DYeEU05+DJf3VB2iALLwOVrDANowFVPuyt8jG4
+         P4f3SEx9KrnIV6opSeFm2y6TfC2DlzsPscmZ0T8EPXWIhBVazs8GtRmLgVFVOtQy9bgM
+         bBJmEF3TYWU8z8ykZIhO8383OYuNk/paUf+6e5g18cg8M+jBwy7Ip15szx1CoTS2UPDP
+         F0XtWn9XSpSeUt59CEndLHW9k97WQQ+snM/q7pu7aH/asJGE46znCRvh8b8STAUgvm+A
+         hcKZbIMlwdPPMBHXy3Yc9kFdiqfGq1TiWRHf8nq/9tN8VW7Ag7aRkDmPdYRAsjXfc1He
+         8urA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1763998842; x=1764603642;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Llp8FG6WVJOxC42YZnLNsTS0zXwdgkxLlwBk+kzHwR8=;
+        b=lW+0VpAF9bVjPQeY+4RN0+oNoFLZ8qoB2U7FL8FvM2RxkrYEweLRsyXZpgTpjiF7Z9
+         1d4NmGRg/ZMknpy5ql5IoWgMEnAxOSYjXoQqI28kABi1IbY1OyzNAt+7nvlwLC1sbfpB
+         LDVqV+MHyTbI0JM3A6l/4gP9XYL3c5TcSlBznTQH63DOuZBk0fKVpL8qmMAy0sGWo8GK
+         Zr1sMrOuL2NNCmzR0rCcRgxC7RLUG276428DPstZogBl3e1BbyDRZ5ac/okh4gMhD6Oa
+         OcL+DFqAk/X9uNt4iExhoikDZSLsn3CEit2fRd8AbxOnT1vqy+NIwwLF8tUTTLw7Wv+u
+         JhFg==
+X-Forwarded-Encrypted: i=1; AJvYcCV0NFZItvwAfQW0ejGytuo6AcS8x+YzqDD/z3H4p8Oni8Sl3i2ESZz8wp9XRaHH9cvGoquYE65WwA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwVP0tnhoVio50Mri1iGxvPicN2i1psL9ZkJo5hWY1DZD9qxs23
+	gvrehYkrD1ggeOh76DY9APyzA3vUEUjnuYWg0aVkNpIRPvwntJnHoaYv
+X-Gm-Gg: ASbGncv518390JjHJtg6lS5zhKoVxeBw8ntAV+fOwODgDUvrUG284Kj66I9Kaq4aIU7
+	vsF7dFvBGVoYi4tjhyHYYMTrMKaTvpTgwAZuFRfHrJrEEchmusMXfB6bZxNM7z/nncR9YqsKBZ0
+	WfYf7MdljlztFf5j0BBi+bbEf+TNJ07etLO6UIuxpv8CqZGa5qIyouAsv1j8BmWmeTdV/IaR2by
+	chbjO9VqicYGaZoEiVQEN7AMHLOFWmMI/fFfRwqdRMjPGlXzVp8XB7sLYfNuKdTcUf5tHVi8LyH
+	nmiIbEUIV0C+5zb9+TiTmog6+F+bNHgpIVfMNfKPdYMUYzRQ6tIoixVyKc2r1njrdNtnhLpBpdu
+	Iy6TOPqEus8KmUzAZS8kmyg11FuVuxWQARUpu1qf7rtTezi15qRmRmGtRuN8n5NFnQ8zg7ou7dP
+	iW5/LECeSuX7F5MdB976/e+XShBqE2uruzr6Gx7dwa/FjtWIVwjGZzlzfFOoM=
+X-Google-Smtp-Source: AGHT+IEFPQhBfCYRI3nTm1u+iQCIbAQZlcFtON++Fnq7DdJGduD9vDQYDBrSvMWcgiV0KUw17gd6Yw==
+X-Received: by 2002:a17:90b:5112:b0:340:bde5:c9e3 with SMTP id 98e67ed59e1d1-34733f2d207mr11198788a91.23.1763998842365;
+        Mon, 24 Nov 2025 07:40:42 -0800 (PST)
+Received: from ?IPV6:2600:1700:e321:62f0:da43:aeff:fecc:bfd5? ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3472692e5c8sm14034703a91.11.2025.11.24.07.40.37
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 24 Nov 2025 07:40:41 -0800 (PST)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Message-ID: <da5457ea-c1ed-4c90-8743-fc982a02ed88@roeck-us.net>
+Date: Mon, 24 Nov 2025 07:40:37 -0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 0/6] Add support for the LTM8054 voltage regulator
+To: Romain Gantois <romain.gantois@bootlin.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Jonathan Cameron <jic23@kernel.org>,
+ David Lechner <dlechner@baylibre.com>, =?UTF-8?Q?Nuno_S=C3=A1?=
+ <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-iio@vger.kernel.org, Conor Dooley <conor.dooley@microchip.com>,
+ MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi
+ <cw00.choi@samsung.com>, Peter Rosin <peda@axentia.se>,
+ Mariel Tinaco <Mariel.Tinaco@analog.com>,
+ Lars-Peter Clausen <lars@metafoo.de>,
+ Michael Hennerich <Michael.Hennerich@analog.com>,
+ Kevin Tsai <ktsai@capellamicro.com>, Linus Walleij
+ <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Eugen Hristev <eugen.hristev@linaro.org>, Vinod Koul <vkoul@kernel.org>,
+ Kishon Vijay Abraham I <kishon@kernel.org>,
+ Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>,
+ Support Opensource <support.opensource@diasemi.com>,
+ Paul Cercueil <paul@crapouillou.net>, Iskren Chernev <me@iskren.info>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Matheus Castello <matheus@castello.eng.br>,
+ Saravanan Sekar <sravanhome@gmail.com>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+ Casey Connolly <casey.connolly@linaro.org>, =?UTF-8?Q?Pali_Roh=C3=A1r?=
+ <pali@kernel.org>, Orson Zhai <orsonzhai@gmail.com>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>,
+ Chunyan Zhang <zhang.lyra@gmail.com>, Amit Kucheria <amitk@kernel.org>,
+ Thara Gopinath <thara.gopinath@gmail.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>,
+ Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ Sylwester Nawrocki <s.nawrocki@samsung.com>,
+ Olivier Moysan <olivier.moysan@foss.st.com>,
+ Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>,
+ Dixit Parmar <dixitparmar19@gmail.com>, linux-hwmon@vger.kernel.org,
+ linux-input@vger.kernel.org, linux-phy@lists.infradead.org,
+ linux-pm@vger.kernel.org, linux-mips@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
+ linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org,
+ linux-stm32@st-md-mailman.stormreply.com,
+ Andy Shevchenko <andriy.shevchenko@intel.com>
+References: <20251124-ltm8054-driver-v4-0-107a8a814abe@bootlin.com>
+ <24527d76-4f6a-4008-a369-23510d492a94@roeck-us.net>
+ <23111366.EfDdHjke4D@fw-rgant>
+Content-Language: en-US
+From: Guenter Roeck <linux@roeck-us.net>
+Autocrypt: addr=linux@roeck-us.net; keydata=
+ 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
+ np3900V20aS7eD9K8GTU0TGC1pyz6IVJwIE=
+In-Reply-To: <23111366.EfDdHjke4D@fw-rgant>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hello Greg,
+On 11/24/25 07:13, Romain Gantois wrote:
+> Hello Guenter,
+> 
+> 
+> On Monday, 24 November 2025 15:57:41 CET Guenter Roeck wrote:
+> 
+>  > On 11/24/25 06:48, Romain Gantois wrote:
+> 
+>  > > Hello everyone,
+> 
+>  > >
+> 
+>  > > This is version four of my series which adds initial support of the Linear
+> 
+>  > > Technology LTM8054 voltage regulator. The driver supports a fixed voltage
+> 
+>  > > and a tunable output current limit using a DAC-controlled pin.
+> 
+>  > >
+> 
+>  > > I'd say that the most unusual part of this series is the usage of the IIO
+> 
+>  > > consumer API in a regulator driver. I think this makes sense here, since
+> 
+>  > > the regulator driver has to access a DAC to read/set the output current
+> 
+>  > > limit.
+> 
+>  >
+> 
+>  > I don't think that is a valid reason. Literally every driver measuring
+> 
+>  > voltages or current uses a DAC to do it. How else would one convert an
+> 
+>  > analog value into a digital value ?
+> 
+> 
+> Sorry, I don't quite understand your remark. To integrate this voltage
+> 
+> regulator component into the Linux regulator abstraction, I'm providing a
+> 
+> current limit control function. To provide such a function, the voltage level
+> 
+> on a pin has to be controlled. AFAIK, the kernel abstraction used to set
+> 
+> precise voltages on lines is an IO channel.
+> 
+> 
+> Do you think that using the IIO consumer API is not correct here? What other
+> 
+> method do you think I should use?
+> 
 
-This is the pull request with interconnect changes for the v6.19-rc1 merge
-window. As always, the summary is in the signed tag.
+Ok, I had a look into the datasheet. Unless I am missing something, the chip doesn't
+have a digital control or monitoring interface such as I2C or SPI.
 
-All patches have been in linux-next for a while. There are currently
-no reported issues. Please pull into char-misc-next when possible.
+At the same time, you copied the hardware monitoring mailing list on this summary and
+on (at least) one of the patches, but apparently not on all of them. This lead to my
+apparently wrong assumption that iio is used to monitor (not [just] control) something
+on the chip. I wrongly assumed that IIO is used to report chip status (voltage, current,
+temperature) using an internal DAC. Obviously that was a wrong assumption.
+Sorry for that.
 
-Thanks,
-Georgi
+Apparently you copied the hwmon mailing list for the introduction of an IIO namespace
+and its use in a couple of hwmon drivers in one of the patches. My personal opinion
+is that this should not be part of this series but a series of its own. That is just
+my personal opinion, though.
 
+Guenter
 
-The following changes since commit 3a8660878839faadb4f1a6dd72c3179c1df56787:
-
-  Linux 6.18-rc1 (2025-10-12 13:42:36 -0700)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/djakov/icc.git tags/icc-6.19-rc1
-
-for you to fetch changes up to 60b52af082b1462e878d10a0298fad40a26a8b35:
-
-  Merge branch 'icc-sm6350' into icc-next (2025-11-19 16:07:00 +0200)
-
-----------------------------------------------------------------
-interconnect changes for 6.19
-
-This pull request contains the interconnect changes for the 6.19-rc1
-merge window. The core and driver changes are listed below.
-
-Core changes:
-- kbps_to_icc() macro optimization
-
-Driver changes:
-- Switch all Qualcomm RPMh interconnect drivers to use the dynamic
-  node IDs and drop support for non-dynamic ID allocation
-- Add new driver and BWMON support for the Kaanapali SoC
-- Add QoS support for the SM6350 SoC
-- Add QoS support for the SA8775p SoC
-- Fix missing link from SNOC_PNOC to the USB 2 on MSM8996 SoC that
-  includes also a dts change that has been acked by the maintainer
-- Drop the QPIC interconnect and BCM nodes for the SDX75 SoC, as these
-  should be handled by the rpmh-clk driver
-- Other misc fixes
-
-Signed-off-by: Georgi Djakov <djakov@kernel.org>
-
-----------------------------------------------------------------
-Amir Vajid (1):
-      dt-bindings: interconnect: qcom-bwmon: Document Kaanapali BWMONs
-
-Dmitry Baryshkov (27):
-      interconnect: qcom: msm8996: add missing link to SLAVE_USB_HS
-      arm64: dts: qcom: msm8996: add interconnect paths to USB2 controller
-      interconnect: qcom: icc-rpmh: convert link_nodes to dynamic array
-      interconnect: qcom: sc7280: convert to dynamic IDs
-      interconnect: qcom: sc8180x: convert to dynamic IDs
-      interconnect: qcom: sc8280xp: convert to dynamic IDs
-      interconnect: qcom: sdm845: convert to dynamic IDs
-      interconnect: qcom: sm8250: convert to dynamic IDs
-      interconnect: qcom: x1e80100: convert to dynamic IDs
-      interconnect: qcom: qcs615: convert to dynamic IDs
-      interconnect: qcom: qcs8300: convert to dynamic IDs
-      interconnect: qcom: qdu1000: convert to dynamic IDs
-      interconnect: qcom: sar2130p: convert to dynamic IDs
-      interconnect: qcom: sc7180: convert to dynamic IDs
-      interconnect: qcom: sdm670: convert to dynamic IDs
-      interconnect: qcom: sdx55: convert to dynamic IDs
-      interconnect: qcom: sdx65: convert to dynamic IDs
-      interconnect: qcom: sdx75: convert to dynamic IDs
-      interconnect: qcom: sm6350: convert to dynamic IDs
-      interconnect: qcom: sm7150: convert to dynamic IDs
-      interconnect: qcom: sm8150: convert to dynamic IDs
-      interconnect: qcom: sm8350: convert to dynamic IDs
-      interconnect: qcom: sm8450: convert to dynamic IDs
-      interconnect: qcom: sm8550: convert to dynamic IDs
-      interconnect: qcom: sm8650: convert to dynamic IDs
-      interconnect: qcom: sm8750: convert to dynamic IDs
-      interconnect: qcom: icc-rpmh: drop support for non-dynamic IDS
-
-Georgi Djakov (6):
-      Merge branch 'icc-msm8996' into icc-next
-      Merge branch 'icc-sdx75' into icc-next
-      Merge branch 'icc-sa8775p' into icc-next
-      Merge branch 'icc-kaanapali' into icc-next
-      Merge branch 'icc-dynamic-ids' into icc-next
-      Merge branch 'icc-sm6350' into icc-next
-
-Kuan-Wei Chiu (2):
-      interconnect: Optimize kbps_to_icc() macro
-      interconnect: debugfs: Fix incorrect error handling for NULL path
-
-Luca Weiss (4):
-      dt-bindings: interconnect: qcom,sm6350-rpmh: Add clocks for QoS
-      interconnect: qcom: icc-rpmh: Get parent's regmap for nested NoCs
-      interconnect: qcom: sm6350: Remove empty BCM arrays
-      interconnect: qcom: sm6350: enable QoS configuration
-
-Odelu Kukatla (2):
-      dt-bindings: interconnect: add reg and clocks properties to enable QoS on sa8775p
-      interconnect: qcom: sa8775p: enable QoS configuration
-
-Raviteja Laggyshetty (4):
-      interconnect: qcom: sdx75: Drop QPIC interconnect and BCM nodes
-      dt-bindings: interconnect: qcom: Drop QPIC_CORE IDs
-      dt-bindings: interconnect: document the RPMh Network-On-Chip interconnect in Kaanapali SoC
-      interconnect: qcom: add Kaanapali interconnect provider driver
-
- .../devicetree/bindings/interconnect/qcom,kaanapali-rpmh.yaml  |  124 +
- .../devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml   |    1 +
- .../devicetree/bindings/interconnect/qcom,sa8775p-rpmh.yaml    |   50 +-
- .../devicetree/bindings/interconnect/qcom,sm6350-rpmh.yaml     |   65 +-
- arch/arm64/boot/dts/qcom/msm8996.dtsi                          |    3 +
- drivers/interconnect/debugfs-client.c                          |    7 +-
- drivers/interconnect/qcom/Kconfig                              |    9 +
- drivers/interconnect/qcom/Makefile                             |    2 +
- drivers/interconnect/qcom/glymur.c                             |  225 +-
- drivers/interconnect/qcom/icc-rpmh.c                           |   39 +-
- drivers/interconnect/qcom/icc-rpmh.h                           |    7 +-
- drivers/interconnect/qcom/kaanapali.c                          | 1855 ++++++++
- drivers/interconnect/qcom/milos.c                              |  142 +-
- drivers/interconnect/qcom/msm8996.c                            |    1 +
- drivers/interconnect/qcom/qcs615.c                             |  511 +-
- drivers/interconnect/qcom/qcs615.h                             |  128 -
- drivers/interconnect/qcom/qcs8300.c                            |  671 ++-
- drivers/interconnect/qcom/qcs8300.h                            |  177 -
- drivers/interconnect/qcom/qdu1000.c                            |  348 +-
- drivers/interconnect/qcom/qdu1000.h                            |   95 -
- drivers/interconnect/qcom/sa8775p.c                            |  639 ++-
- drivers/interconnect/qcom/sar2130p.c                           |  630 +--
- drivers/interconnect/qcom/sc7180.c                             |  678 ++-
- drivers/interconnect/qcom/sc7180.h                             |  149 -
- drivers/interconnect/qcom/sc7280.c                             |  617 ++-
- drivers/interconnect/qcom/sc7280.h                             |  154 -
- drivers/interconnect/qcom/sc8180x.c                            |  648 +--
- drivers/interconnect/qcom/sc8180x.h                            |  179 -
- drivers/interconnect/qcom/sc8280xp.c                           |  825 ++--
- drivers/interconnect/qcom/sc8280xp.h                           |  209 -
- drivers/interconnect/qcom/sdm670.c                             |  522 +-
- drivers/interconnect/qcom/sdm670.h                             |  128 -
- drivers/interconnect/qcom/sdm845.c                             |  766 ++-
- drivers/interconnect/qcom/sdm845.h                             |  140 -
- drivers/interconnect/qcom/sdx55.c                              |  489 +-
- drivers/interconnect/qcom/sdx55.h                              |   70 -
- drivers/interconnect/qcom/sdx65.c                              |  457 +-
- drivers/interconnect/qcom/sdx65.h                              |   65 -
- drivers/interconnect/qcom/sdx75.c                              |  395 +-
- drivers/interconnect/qcom/sdx75.h                              |   97 -
- drivers/interconnect/qcom/sm6350.c                             |  927 ++--
- drivers/interconnect/qcom/sm6350.h                             |  139 -
- drivers/interconnect/qcom/sm7150.c                             |  653 ++-
- drivers/interconnect/qcom/sm7150.h                             |  140 -
- drivers/interconnect/qcom/sm8150.c                             |  706 ++-
- drivers/interconnect/qcom/sm8150.h                             |  152 -
- drivers/interconnect/qcom/sm8250.c                             |  736 ++-
- drivers/interconnect/qcom/sm8250.h                             |  168 -
- drivers/interconnect/qcom/sm8350.c                             |  684 ++-
- drivers/interconnect/qcom/sm8350.h                             |  158 -
- drivers/interconnect/qcom/sm8450.c                             |  601 ++-
- drivers/interconnect/qcom/sm8450.h                             |  169 -
- drivers/interconnect/qcom/sm8550.c                             |  501 +-
- drivers/interconnect/qcom/sm8550.h                             |  138 -
- drivers/interconnect/qcom/sm8650.c                             |  527 +-
- drivers/interconnect/qcom/sm8650.h                             |  144 -
- drivers/interconnect/qcom/sm8750.c                             |  602 +--
- drivers/interconnect/qcom/x1e80100.c                           |  610 ++-
- drivers/interconnect/qcom/x1e80100.h                           |  192 -
- include/dt-bindings/interconnect/qcom,kaanapali-rpmh.h         |  149 +
- include/dt-bindings/interconnect/qcom,sdx75.h                  |    2 -
- include/linux/interconnect.h                                   |    2 +-
- 62 files changed, 9632 insertions(+), 10785 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,kaanapali-rpmh.yaml
- create mode 100644 drivers/interconnect/qcom/kaanapali.c
- delete mode 100644 drivers/interconnect/qcom/qcs615.h
- delete mode 100644 drivers/interconnect/qcom/qcs8300.h
- delete mode 100644 drivers/interconnect/qcom/qdu1000.h
- delete mode 100644 drivers/interconnect/qcom/sc7180.h
- delete mode 100644 drivers/interconnect/qcom/sc7280.h
- delete mode 100644 drivers/interconnect/qcom/sc8180x.h
- delete mode 100644 drivers/interconnect/qcom/sc8280xp.h
- delete mode 100644 drivers/interconnect/qcom/sdm670.h
- delete mode 100644 drivers/interconnect/qcom/sdm845.h
- delete mode 100644 drivers/interconnect/qcom/sdx55.h
- delete mode 100644 drivers/interconnect/qcom/sdx65.h
- delete mode 100644 drivers/interconnect/qcom/sdx75.h
- delete mode 100644 drivers/interconnect/qcom/sm6350.h
- delete mode 100644 drivers/interconnect/qcom/sm7150.h
- delete mode 100644 drivers/interconnect/qcom/sm8150.h
- delete mode 100644 drivers/interconnect/qcom/sm8250.h
- delete mode 100644 drivers/interconnect/qcom/sm8350.h
- delete mode 100644 drivers/interconnect/qcom/sm8450.h
- delete mode 100644 drivers/interconnect/qcom/sm8550.h
- delete mode 100644 drivers/interconnect/qcom/sm8650.h
- delete mode 100644 drivers/interconnect/qcom/x1e80100.h
- create mode 100644 include/dt-bindings/interconnect/qcom,kaanapali-rpmh.h
