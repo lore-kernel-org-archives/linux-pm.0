@@ -1,135 +1,189 @@
-Received: from mail-ej1-f46.google.com (mail-ej1-f46.google.com [209.85.218.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DAAF42D7813
-	for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2025 09:38:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.46
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id CA037256D;
+	Tue, 25 Nov 2025 09:45:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764063496; cv=none; b=uuT2qB5w6xD0XUUzaRsRDJWEXfHWZbmz/3d3dvqotPzrJbBXpwi0zH9FrfSIvaejTFjSWjVFpSXj2xjhewfYCTg7voJz6+Nv8zv2y4oofKG1lHk06uwhxVOTYyU6WOETi0qypMWJg/99sREQUdZg/CrsyIMtnd/zrqhbrh2GimY=
+	t=1764063939; cv=none; b=ESJeLBQr2RzYpAsOU14ekiGPuHQSkcwi7SLZTjealRh+xhnE3+mV5b79c9m7SKg9uVSWC8Y0rXUa7/OPrxHa5OS6GVtntPb0PvBHvEljHXQ2EEQpShH8ZwaNviKGhfA9y1kpHy15h5Rw73tsN6dqkgpxnXVI2FS1ZiyBlBCMJPo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764063496; c=relaxed/simple;
-	bh=mo9t3eTcMtPRtnzld/pfkRdf2OGTB/teUHj1p2RlGbk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=QIkg+q7XJ/zH+WW6xeKlI90IU7ber+X6EmZ+U/3642OOq9+zJTdWJty/iMyZhkA1pWyK7/EWbomCX4jR8sYlrUMCcuXQWxH4NimOF1CO3CPbWZChTsSLvKv/KZPrqdwS4zlqcG1p01Po1NSnDr9MI6vhtpStnNkz5F3mO/AfxNU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=GtHwaNJK; arc=none smtp.client-ip=209.85.218.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="GtHwaNJK"
-Received: by mail-ej1-f46.google.com with SMTP id a640c23a62f3a-b739ef3f739so395211766b.1
-        for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2025 01:38:14 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1764063493; x=1764668293; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=mo9t3eTcMtPRtnzld/pfkRdf2OGTB/teUHj1p2RlGbk=;
-        b=GtHwaNJKVNFGcDAKBk9hOQ2W9RyBd8sFJTfsZCuOdDINo9JOU7btHBFsNecuJuluk4
-         4G007QFzVyz/8OH47HMYkASS/T8byvHvudxefPCo0hupkO7TpXSJHeqc/Zh0FZvNF6Q8
-         4pgqSibGa6LVx7YWWN02lvcbqyfP/RvbqmSQN9/BWX+RsRraxL+fmSEiDT8zui4p4TW7
-         1bM8SBlvwG3tCmWS6mXBfdtdzgClShtzWGxU8xQCHdOkFZLPAVB1d+Vziie5xUbUw0ci
-         sYnU1Mnji++eZWWhICx+Z0O16zjpXj7KhacN16YbV1jl9tGGOoYZqeK5Ji6Y9F031s9j
-         EOmg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1764063493; x=1764668293;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=mo9t3eTcMtPRtnzld/pfkRdf2OGTB/teUHj1p2RlGbk=;
-        b=LlBRyWschTbhKQqZqmLPHF2RKBCUJ8OEC+d+shK2ze+aKhmbudnw5FX5GKAZeUArXx
-         1ZdSLGkGd2vWeiTrqYHY+LRrFoT00DqpgM44V68s3Qala9Klvt+D9ok9FvS5c51fVlNr
-         /qY3aiCc8x6p9lQQ3JHj7JlbiLqC822aVnxGZWDA7mLixWgnC+OEfLVywVlgadlzrVyI
-         X7+v8CZr0+9nFljdrhmexfIMcLL57cR93c+HDAnzwobhSfMbA/F1T6cEt0eGFy5B8at+
-         EPdJba6pRMzd72g+2WUasnTwwZ/Wt5ewo0/ywIc36zB2XcFomTcLeRK5/eD1xmBWw2iq
-         /W4Q==
-X-Forwarded-Encrypted: i=1; AJvYcCXFXogY7Ow3bkXm1+gTuVmvMP2606fcSGRLITL9KsV5koOQIkd5IDzYpHbs/YfGkpn4vdTvTxo0HQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyB9TP8TRa62hyUKNRSp3N9Ix6YKtRvqaK0ZBTyW8UuZnFeNfPh
-	bEBvc0uBRW3nu/0GiLSRcV+7WixqWCPDHYaaog1HmgkWhYzO0OCMDOnmlZt9FbJ4j5ZEo1GEk35
-	dbUt4txp1hdEboGbgOBcdw1VUUZofPHo7M2LIXLLizZOnJU3w5Jur
-X-Gm-Gg: ASbGncsP8wIh4YqpaSrRrIKnkw2Ajjg2v3hd9JYxjStSomBQB5YYrxM2aravgR8+UEW
-	AKOGgvkpkq46O6bKqP93yYs75O+nRjOpvwcb+9Vs0aNglrqDzMxf1lg93mMlRaOrxOZu0WCOfN7
-	U7NhSS8nNOPB7tVtDCB6A5SKXWnMBbppcc9VQZV7gj0ecxJnMuKFBE9K7tejahv7AEltmAbIqx/
-	f6SolYrt4CQj4MzlHWZV8q2vLMIlPkNHyo5A8/pz4CNkhjSJ1KoYSAM0FSKOri4Ge0MAAnR/NU9
-	iGkOd4BLUbifnLwPXYv1YDfF
-X-Google-Smtp-Source: AGHT+IEiD2ghBDLGbpnWfAviqFfQgamd4YC2mxYJR6MhqguJJYUPykAEg38zFd2GjKtsTno5OW+gqQFfmuXHZTefq9I=
-X-Received: by 2002:a17:906:c14d:b0:b72:599:5385 with SMTP id
- a640c23a62f3a-b76c566c5f7mr214992266b.61.1764063493243; Tue, 25 Nov 2025
- 01:38:13 -0800 (PST)
+	s=arc-20240116; t=1764063939; c=relaxed/simple;
+	bh=a48C5T6ENsbSBoimwDvD/ho55hLflc0rsQZk/dIQaYE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=s1Ge+uPSpwpCKilDolg4lwOt7QRYAe59PQvqE0wGwbTD6h1pWE7hIdQSMBfnyZapujcOxuTS9rlLuwevEoG3BYL/r8evzcOBMXsuvA+/ekZZpomWXewoSRooLZYVpSxoFi7RE3OP5c87b1yPhxtDa9waQQSi9zv3GYM8pWIjvqk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7DFA11477;
+	Tue, 25 Nov 2025 01:45:28 -0800 (PST)
+Received: from [10.57.40.104] (unknown [10.57.40.104])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D727D3F66E;
+	Tue, 25 Nov 2025 01:45:33 -0800 (PST)
+Message-ID: <2be3bf24-a707-48df-b224-22b5ab290006@arm.com>
+Date: Tue, 25 Nov 2025 09:46:21 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251125032437.2056626-1-kaushlendra.kumar@intel.com>
- <71ea7728-6808-4bdf-9437-3746ff8664fc@arm.com> <LV3PR11MB8768D5F17B1F9575DE2804B6F5D1A@LV3PR11MB8768.namprd11.prod.outlook.com>
-In-Reply-To: <LV3PR11MB8768D5F17B1F9575DE2804B6F5D1A@LV3PR11MB8768.namprd11.prod.outlook.com>
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Tue, 25 Nov 2025 10:38:01 +0100
-X-Gm-Features: AWmQ_bn-Imgz6UC61gL_x3_rUqbs6p0QhqYULfG1cPO5WebWsoS586J04tfAdMk
-Message-ID: <CAKfTPtChUavg0TYK_BiA9NnR-9_A1nz49kMASf6g8vCwhpJzcg@mail.gmail.com>
-Subject: Re: [PATCH] sched/cpufreq: Fix capacity calc in shared policy update
-To: "Kumar, Kaushlendra" <kaushlendra.kumar@intel.com>
-Cc: Lukasz Luba <lukasz.luba@arm.com>, 
-	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rafael@kernel.org" <rafael@kernel.org>, 
-	"vschneid@redhat.com" <vschneid@redhat.com>, "mgorman@suse.de" <mgorman@suse.de>, 
-	"dietmar.eggemann@arm.com" <dietmar.eggemann@arm.com>, "juri.lelli@redhat.com" <juri.lelli@redhat.com>, 
-	"peterz@infradead.org" <peterz@infradead.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, 
-	"mingo@redhat.com" <mingo@redhat.com>, "bsegall@google.com" <bsegall@google.com>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: stable 6.6: commit "sched/cpufreq: Rework schedutil governor
+ performance estimation' causes a regression
+To: Sergey Senozhatsky <senozhatsky@chromium.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>,
+ Christian Loehle <christian.loehle@arm.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Yu-Che Cheng <giver@google.com>, Tomasz Figa <tfiga@chromium.org>,
+ stable@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Dietmar Eggemann <dietmar.eggemann@arm.com>
+References: <q2dp7jlblofwkmkufjdysgu2ggv6g4cvhkah3trr5wamxymngm@p2mn4r7vyo77>
+ <86d759a5-9a96-49ff-9f75-8b56e2626d65@arm.com>
+ <2ktr5znjidilpxm2ycixunqlmhu253xwov4tpnb2qablrsqmbv@ysacm5nbcjw7>
+Content-Language: en-US
+From: Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <2ktr5znjidilpxm2ycixunqlmhu253xwov4tpnb2qablrsqmbv@ysacm5nbcjw7>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Tue, 25 Nov 2025 at 10:23, Kumar, Kaushlendra
-<kaushlendra.kumar@intel.com> wrote:
->
-> Hi Lukasz,
->
-> On 11/25/25 XX:XX, Lukasz Luba wrote:
-> > Hi Kaushlendra,
-> >
-> > On 11/25/25 03:24, Kaushlendra Kumar wrote:
-> >> In sugov_next_freq_shared(), the CPU capacity is retrieved only for
-> >> the CPU that triggered the update (sg_cpu->cpu) and then incorrectly
-> >> applied to all CPUs in the shared frequency domain during the loop.On
-> >> heterogeneous systems with CPUs of different capacities sharing a
-> >> frequency domain, this causes incorrect frequency selection.
-> >
-> > How is this possible?
-> > Is it old or new Intel SoC (a chip name would be also welcome)?
->
-> This is with respect to intel platforms which has E-cores and P-cores.
+Hi Sergey,
 
-Do you mean that they share the same frequency domains ?
+On 11/21/25 03:55, Sergey Senozhatsky wrote:
+> Hi Christian,
+> 
+> On (25/11/20 10:15), Christian Loehle wrote:
+>> On 11/20/25 04:45, Sergey Senozhatsky wrote:
+>>> Hi,
+>>>
+>>> We are observing a performance regression on one of our arm64 boards.
+>>> We tracked it down to the linux-6.6.y commit ada8d7fa0ad4 ("sched/cpufreq:
+>>> Rework schedutil governor performance estimation").
+>>>
+>>> UI speedometer benchmark:
+>>> w/commit:	395  +/-38
+>>> w/o commit:	439  +/-14
+>>>
+>>
+>> Hi Sergey,
+>> Would be nice to get some details. What board?
+> 
+> It's an MT8196 chromebook.
+> 
+>> What do the OPPs look like?
+> 
+> How do I find that out?
+> 
+>> Does this system use uclamp during the benchmark? How?
+> 
+> How do I find that out?
+> 
+>> Given how large the stddev given by speedometer (version 3?) itself is, can we get the
+>> stats of a few runs?
+> 
+> v2.1
+> 
+> w/o patch     w/ patch
+> 440 +/-30     406 +/-11
+> 440 +/-14     413 +/-16
+> 444 +/-12     403 +/-14
+> 442 +/-12     412 +/-15
+> 
+>> Maybe traces of cpu_frequency for both w/ and w/o?
+> 
+> trace-cmd record -e power:cpu_frequency attached.
+> 
+> "base" is with ada8d7fa0ad4
+> "revert" is ada8d7fa0ad4 reverted.
 
->
-> >
-> > I would like to hear Rafael's view on such platform configuration.
-> >
-> > It looks like a hack and the next needed step would be a similar hack
-> > to calm down EAS and EM in the energy estimation code...
-> >
-> > Do we really want to support such configuration in the generic code?
->
-> I understand the concern about maintaining the optimization in the hot path.
-> Lets hear Rafael.
-> >
-> >> Calculate per-CPU capacity in the loop and track maximum across all
-> >> CPUs for proper frequency calculation.
-> >
-> > I've changed that loop to speed-up the hot code path triggered from the
-> > scheduler. For most platforms (till now) it's fine to get the cpu
-> > capacity once for all cpus in the policy.
-> > A lot of code is based on this assumption.
->
-> Agreed, the hot path performance is critical.
->
->
-> >
-> > My gut feeling tells me that it won't be the last needed code change
-> > if we go that path...
->
-> You're right to be cautious. Let's investigate the EAS/EM implications and
-> have more complete assessment of this change.
->
-> Thanks for the feedback.
->
-> Regards,
-> Kaushlendra
+
+I did some analysis based on your trace files.
+I have been playing some time ago with speedometer performance
+issues so that's why I'm curious about your report here.
+
+I've filtered your trace purely based on cpu7 (the single biggest cpu).
+Then I have cut the data from the 'warm-up' phase in both traces, to
+have similar start point (I think).
+
+It looks like the 2 traces can show similar 'pattern' of that benchmark
+which is good for analysis. If you align the timestamp:
+176.051s and 972.465s then both plots (frequency changes in time) look
+similar.
+
+There are some differences, though:
+1. there are more deeps in the freq in time, so more often you would
+    pay extra penalty for the ramp-up again
+2. some of the ramp-up phases are a bit longer ~100ms instead of ~80ms
+    going from 2GHz to 3.6GHz
+3.
+
+
+There are idle phases missing in the trace, so we have to be careful
+when e.g. comparing avg frequency, because that might not be the real
+indication of the delivered computation and not indicate the gap in the 
+score.
+
+Here are the stats:
+1. revert:
+frequency
+count  1.318000e+03
+mean   2.932240e+06
+std    5.434045e+05
+min    2.000000e+06
+50%    3.000000e+06
+85%    3.600000e+06
+90%    3.626000e+06
+95%    3.626000e+06
+99%    3.626000e+06
+max    3.626000e+06
+
+2. base:
+           frequency
+count  1.551000e+03
+mean   2.809391e+06
+std    5.369750e+05
+min    2.000000e+06
+50%    2.800000e+06
+85%    3.500000e+06
+90%    3.600000e+06
+95%    3.626000e+06
+99%    3.626000e+06
+max    3.626000e+06
+
+
+A better indication in this case would be comparison of the frequency
+residency in time, especially for the max freq:
+1. revert: 11.92s
+2. base: 9.11s
+
+So there is 2.8s longer residency for that fmax (while we even have
+longer period for finishing that Speedometer 2 test on 'base').
+
+Here is some detail about that run*:
++---------------+---------------------+---------------+----------------+
+| Trace         | Total Trace         | Time at Max   | % of Total     |
+|               | Duration (s)        | Freq (s)      | Time           |
++---------------+---------------------+---------------+----------------+
+| Base Trace    | 24.72               | 9.11          | 36.9%          |
+| Revert Trace  | 22.88               | 11.92         | 52.1%          |
++---------------+---------------------+---------------+----------------+
+
+*We don't know the idle periods which might happen for those frequencies
+
+
+I wonder if you had a fix patch for the util_est in your kernel...
+That fix has been recently backported to 6.6 stable [1].
+
+You might want to try that patch as well, w/ or w/o this revert.
+IMHO it might be worth to have it on top. It might help
+the main Chrome task ('CrRendererMain') to stay longer on the biggest
+cpu, since the util_est would be higher. You can read the discussion
+that I had back then with PeterZ and VincentG [2].
+
+Regards,
+Lukasz
+
+[1] 
+https://lore.kernel.org/stable/20251121130232.828187990@linuxfoundation.org/
+[2] 
+https://lore.kernel.org/lkml/20230912142821.GA22166@noisy.programming.kicks-ass.net/
