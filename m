@@ -1,116 +1,119 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42ADE314D16;
-	Tue, 25 Nov 2025 11:12:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9AFD1314B9F;
+	Tue, 25 Nov 2025 11:13:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764069153; cv=none; b=IR/jddrDo8nsFLCvRqOKqx5bHIZoMAxMi4RtJ+V5D9apDjajif1yGmh3mdFN22wxBDqp2SfpcLee6m0jdYVhmL2lzmpqqkcsSd6GqEChHPdbrEi0szd4+gBlUv0bEv/iKbwEIZYnv27tt4q2YAuCE0fiNgfE7SId1Bnhtj89ydw=
+	t=1764069211; cv=none; b=RKkE0hPJbHc4lo03aez25mcP9+9haO1drazk4KqFkaiNtMsSytvB4G93+pM11bR2JK2grdaw+t1rVwOtSjJ7vrzKaRGrx3TSoVlP5w2dz1O7GGTW5Jn7nmIflJUEs+IeZ4kBmAGylsqNEEnDU59ehSO2B7c54+nPjUMJpYHxyaE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764069153; c=relaxed/simple;
-	bh=YgTp47gBWwTxTZqUXWkk7rXcnJqKSr28f/BoeQqfZ2Q=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ZvI9Rkvtnyf6iMy9xJ3PXBia7zJGJYZMw92TFpAW8b+TP3TkcWm+NL2hfFL7I4XFTM7EL5JLWxJe/6qXag2coNlAtQCMUiOe1AeAFOaKRCjkx14Tocgd1CRwYmzpa+aU77mGPRVAS2wMfamaSw2IyAES1ESn/Yw5MFzvugGguaw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YZ6Ap7dj; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1764069211; c=relaxed/simple;
+	bh=OJOYAzww7u5+PTngMYuK5Kr9ktZ50LD7ZGC26gWbY94=;
+	h=Message-ID:Date:MIME-Version:Cc:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=TC4yLZSldaTvO3kJ9QqtbL4OyRxYWLasVJFLx7uwWVJAQMAWEcIBvjoAz49rhc1tCW0xFHdmqAM1BDw+yKLCya83P5YLWv1Cqm6Z2j+LZOYk2vQAv+6ddisbj6a23QOqQLyddJV2acYkOWH/GDwuWNR9Xn8CirmF9A5b8WewpGQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=b/hRfxuJ; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YZ6Ap7dj"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id B288CC19423;
-	Tue, 25 Nov 2025 11:12:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1764069152;
-	bh=YgTp47gBWwTxTZqUXWkk7rXcnJqKSr28f/BoeQqfZ2Q=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=YZ6Ap7djRf4vX9QfBYDYkVtsQ92W4KfxcH/BfSib6TRaJ/uWS0iPgH6UpXsZ8lPvc
-	 qasv8ejxSMPI1rNXtR+Ju3/BnDkzysAqkUyNVTvSnP4wZl5SdIqse8+hebTSZhKGbC
-	 o7h5V8J8bLAusJIvnwESnOkUQimQg6071lYpRWC9IRWuIGKQKn8sra7kHny3u4vixy
-	 6b2etMAw+LeJEU8+J9+kisDF7qqY46k50UH+XAargZUx6pqQ8qDf4wQaatXQ28As5v
-	 Zr0ka9U56aPPXb1fkYDO8CG7Zj2e+G5agGeZ3ndoVdzhI3KlaQCP+uVosU38R4/EGi
-	 WY5O8VD+Ugdgw==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6F6DCFD368;
-	Tue, 25 Nov 2025 11:12:32 +0000 (UTC)
-From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Date: Tue, 25 Nov 2025 16:42:28 +0530
-Subject: [PATCH v3 3/4] PCI/pwrctrl: Create pwrctrl device if the graph
- port is found
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="b/hRfxuJ"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1764069208;
+	bh=OJOYAzww7u5+PTngMYuK5Kr9ktZ50LD7ZGC26gWbY94=;
+	h=Date:Cc:Subject:To:References:From:In-Reply-To:From;
+	b=b/hRfxuJcsjap9QQ3nO3ycLRQfEhfc05/DyE7kPBFeSlMEKN2RIL5vd7EVpiZV0PD
+	 qZ0ONKcIm9ZmwS9+XFq6gPWYBLSVKE5KTuwcAWPJyX+uF0wgSfJ8cs3XsqTY/8ZKhB
+	 h8bkvgAc0j1/kUB2IrdISbVsGTR7VdEgwxstVOlHYODlYbciVcA3y7YUZ5Rk8lPkea
+	 T0lUdRSwhLAuFa5J6tUYmWmrLVF1HzgN5eDP8odiMCkBXUMJL43yea296dfCC3Wn6v
+	 1VLI00PBfiAxcTY5rgiEsgUvY+ZH8of0ML5i97e7SROwgQkjMNah8spEyQNSZaolY/
+	 a0wlpVBbR3NqA==
+Received: from [192.168.100.50] (unknown [144.48.130.189])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: usama.anjum)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 9919717E12D5;
+	Tue, 25 Nov 2025 12:13:24 +0100 (CET)
+Message-ID: <e1e97842-0ad3-4270-b0d1-3cc7150988cd@collabora.com>
+Date: Tue, 25 Nov 2025 16:12:54 +0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Cc: usama.anjum@collabora.com, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>,
+ Danilo Krummrich <dakr@kernel.org>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>,
+ linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-input@vger.kernel.org, kernel@collabora.com,
+ superm1@kernel.org
+Subject: Re: [PATCH 2/4] ACPI: button: Cancel hibernation if button is pressed
+ during hibernation
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+References: <20251107184438.1328717-1-usama.anjum@collabora.com>
+ <20251107184438.1328717-3-usama.anjum@collabora.com>
+ <2025112433-emphasize-helpful-b748@gregkh>
+Content-Language: en-US
+From: Muhammad Usama Anjum <usama.anjum@collabora.com>
+In-Reply-To: <2025112433-emphasize-helpful-b748@gregkh>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251125-pci-m2-v3-3-c528042aea47@oss.qualcomm.com>
-References: <20251125-pci-m2-v3-0-c528042aea47@oss.qualcomm.com>
-In-Reply-To: <20251125-pci-m2-v3-0-c528042aea47@oss.qualcomm.com>
-To: Bjorn Helgaas <bhelgaas@google.com>, 
- Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
- Stephan Gerhold <stephan.gerhold@linaro.org>, 
- Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
- linux-pm@vger.kernel.org, 
- Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
- Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1400;
- i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=85qx2Om/7njPst0xF59AZpGkw5zpMb/2p4I8tf0rGZI=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBpJY8d8dHupd6VCH/oWWZ7QPaB9MbZJaUhUHcND
- zboN2Jf2ECJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaSWPHQAKCRBVnxHm/pHO
- 9TkcB/9SuTMoRU5JJS6C646WFkzzsHd2Ulg4rKImNms7pLcqqyrc6/P7U0Bco+g0Cax4FvkIJzy
- iF/h8h/aXc+tjDqcq//6cF6mYbyfUxH22QfN0ePqMWbFkQ8TbV/mVKwLOqjexHCzX3AtMvuUuhi
- xKOUsCwhpKncFXKZ4lFt76UehmJiKM8bfEW0G6ILwrcuSmrIFs3osDINLRceMHuN2/54MEb1iYf
- y07jsNw+NtFtNEBcQ4MaXNK1Dg3p2xrjlG9jT3Dsfw8Fo1hFo5q9pedfto3QmEcuQyFsq8VBkUm
- AEqmE7RCcFuAw/UEp4ZiWk5C7HcNKIV0lzQdlrQc61jzdTEv
-X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
- fpr=C668AEC3C3188E4C611465E7488550E901166008
-X-Endpoint-Received: by B4 Relay for
- manivannan.sadhasivam@oss.qualcomm.com/default with auth_id=461
-X-Original-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-Reply-To: manivannan.sadhasivam@oss.qualcomm.com
 
-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+Hi Greg,
 
-The devicetree node of the PCIe Root Port/Slot could have the graph port
-to link the PCIe M.2 connector node. Since the M.2 connectors are modelled
-as Power Sequencing devices, they need to be controlled by the pwrctrl
-driver as like the Root Port/Slot supplies.
+Thank you for the review.
 
-Hence, create the pwrctrl device if the graph port is found in the node.
+On 11/24/25 10:03 PM, Greg Kroah-Hartman wrote:
+> On Fri, Nov 07, 2025 at 11:44:29PM +0500, Muhammad Usama Anjum wrote:
+>> acpi_pm_wakeup_event() is called from acpi_button_notify() which is
+>> called when power button is pressed. The system is worken up from s2idle
+>> in this case by setting hard parameter to pm_wakeup_dev_event().
+>>
+>> Call acpi_pm_wakeup_event() if power button is pressed and hibernation
+>> is in progress. Set the hard parameter such that pm_system_wakeup()
+>> gets called which increments pm_abort_suspend counter. The explicit call
+>> to acpi_pm_wakeup_event() is necessary as ACPI button device has the
+>> wakeup source. Hence call to input_report_key() with input device
+>> doesn't call pm_system_wakeup() as it doesn't have wakeup source
+>> registered.
+>>
+>> Hence hibernation would be cancelled as in hibernation path, this counter
+>> is checked if it should be aborted.
+>>
+>> Signed-off-by: Muhammad Usama Anjum <usama.anjum@collabora.com>
+>
+My thinking is that people don't press power button after triggering
+hibernation. They will only press power button if they want to cancel the
+hibernation or resume from hibernation a bit later when hibernation completes. 
+> This could be dangerous, as this is not what happens today, are you sure
+> that people aren't just used to pressing the button multiple times until
+> the system is hibernated? If so, that would now break with this change
+> as it's hard to determine what is going on.
+Yes, its possible. Previously the device wouldn't cancel hibernation on power
+button press; while now it'll cancel.
 
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
----
- drivers/pci/probe.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+So should we put this cancellation under some config option to avoid breaking
+the default behavior?
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index c83e75a0ec12..9c8669e2fe72 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -9,6 +9,7 @@
- #include <linux/init.h>
- #include <linux/pci.h>
- #include <linux/msi.h>
-+#include <linux/of_graph.h>
- #include <linux/of_pci.h>
- #include <linux/of_platform.h>
- #include <linux/platform_device.h>
-@@ -2555,7 +2556,7 @@ static struct platform_device *pci_pwrctrl_create_device(struct pci_bus *bus, in
- 	 * not. This is decided based on at least one of the power supplies
- 	 * being defined in the devicetree node of the device.
- 	 */
--	if (!of_pci_supply_present(np)) {
-+	if (!of_pci_supply_present(np) && !of_graph_is_present(np)) {
- 		pr_debug("PCI/pwrctrl: Skipping OF node: %s\n", np->name);
- 		goto err_put_of_node;
- 	}
+> 
+> And why does hibernate take so long?  Why not fix that up instead?
+Hibernation is inherently slow: it must freeze devices, copy and
+compress/encrypt memory, then resume storage devices to write the image to
+disk.
+
+While I've thought about increasing the speed, I've no concrete ideas yet.
+The main problem is that its sequential in nature.
+
+> 
+> thanks,
+> 
+> greg k-h
+
 
 -- 
-2.48.1
-
-
+---
+Thanks,
+Usama
