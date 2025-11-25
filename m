@@ -1,62 +1,72 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC4F530F81C
-	for <linux-pm@vger.kernel.org>; Tue, 25 Nov 2025 10:57:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.16
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3B5526C3B0;
+	Tue, 25 Nov 2025 11:06:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764068239; cv=none; b=acnkK9ZpNxjK8r0YC/TIyxnLG/5DcUZLehQ1KwTdYSX+UkMhJFZT5VOwJaDEclnPH4FUNGBLPwMfnfkREOkrRh8jPo+Tfk8IA45J2GmSHHFPwHY+AVQ4QwfNfAenr2T4fyUKa9X1tcJp+TbvgJtgqOZL7sFIXq1pLrV/AdsWdlM=
+	t=1764068816; cv=none; b=dN8QJ4AIKG7TPZNtagoDw9OkmYcDex8QLmAEernqj23vP8OqGfuGCa4QNOATMGO79U39WltbMasmb/vdDJRWq7w334zMFmuuM4+N3hEtzOIl+SmVvb0jZAmPhnhGpMfJ3vGAjoNmwommIyOE2ho2okVBIkBSNv8BUb8xTQtrWE8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764068239; c=relaxed/simple;
-	bh=yc0hIpOJu+V5RbwYUwDCHm+DvpZeSkUMYousGsylyLM=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=HVVkSSN5D03ucTbQNj455dh/h4RMTZoMf0K5gr7t/BADzNE7ClVMT2595qdxoJ9igwUFSm1QcrleH3ONtY8WmSkEotAaQacBZtqUwbIdwuzIWdqv2Y3rU20OqYP6vQyMG8CTMvXcCVD25rafnBkvd61dt4tPnqgj/IyhSBsW6Rw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Ss1qZQ2i; arc=none smtp.client-ip=192.198.163.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1764068816; c=relaxed/simple;
+	bh=zitmyeJM/e+uubNBjBrLCDFGnrlsT/zseaM6ZX7jwWc=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=ktSiqPNWTRgMkrnb6otgwxy7fdezLrrdAh8GEqHk3nlPB3JqGQdidefYxqTe/MwIy2XWfALnhrBP0ZO4rkZ5H9ioz5dg/S1S2euEH4ZlBbA6gQdRiADlA0eNi+9PrB3ULrKhG7SBxTH55IsqiDG+fiHyhjlf8qjwy4lnfAKqTk8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=dHYp2lEF; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Ss1qZQ2i"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1764068238; x=1795604238;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=yc0hIpOJu+V5RbwYUwDCHm+DvpZeSkUMYousGsylyLM=;
-  b=Ss1qZQ2iH1cfIuYNVwXagyki4wNvZJUX+aekGrWh9SYPqxckpXmOrhCY
-   uAUVzdwBfsyQghtG0YoPzuZAnjZGyrvH/Xg4wmvfnsAwiqlaBLdAIa+nz
-   LGyzP/O93RAcy2SSanjR/ewf2TiTKE0CzyTM5UPWSB/meTO0AbOQ7/DBs
-   ctYcROYQVG2cWTUgwsntKkuK0KH85L46mKdpFUEMCfMwuqnQPgwZMtp8x
-   gKhxAf1DRhb0gwQ67E7INuuFZndroZBqsx/eNu9xnxYBjLPdQJvnVL70A
-   pr1Hn++anNHVFItdvRSGPaSXOuS9k4hzBR7D4+r6jxNaiKCDrCWWwG7rT
-   g==;
-X-CSE-ConnectionGUID: AzZsY4qqQ1GvnQnIkLDrGg==
-X-CSE-MsgGUID: DKWzQiNHRlSGeKU6x/1ZRA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11623"; a="53649415"
-X-IronPort-AV: E=Sophos;i="6.20,225,1758610800"; 
-   d="scan'208";a="53649415"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Nov 2025 02:57:17 -0800
-X-CSE-ConnectionGUID: yU2m0c92TJmSfU6Dr9Ghpg==
-X-CSE-MsgGUID: 9uvG7PSZQRyVum5DMJaPjQ==
-X-ExtLoop1: 1
-Received: from baandr0id001.iind.intel.com ([10.66.253.151])
-  by fmviesa003.fm.intel.com with ESMTP; 25 Nov 2025 02:57:13 -0800
-From: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
-To: rafael@kernel.org,
-	viresh.kumar@linaro.org,
-	mingo@redhat.com,
-	peterz@infradead.org,
-	juri.lelli@redhat.com,
-	vincent.guittot@linaro.org,
-	dietmar.eggemann@arm.com,
-	bsegall@google.com,
-	mgorman@suse.de,
-	vschneid@redhat.com
-Cc: linux-pm@vger.kernel.org,
-	Kaushlendra Kumar <kaushlendra.kumar@intel.com>
-Subject: [PATCH] cpufreq: schedutil: Fix tunables_hook cleanup on init failure
-Date: Tue, 25 Nov 2025 16:24:53 +0530
-Message-Id: <20251125105453.471445-1-kaushlendra.kumar@intel.com>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="dHYp2lEF"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1764068812;
+	bh=zitmyeJM/e+uubNBjBrLCDFGnrlsT/zseaM6ZX7jwWc=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=dHYp2lEFQ5qHF5N/dLWxalTJzB09Ety5wgNNxpS9maSF9lQvM+c2xkcVaTyIu4ia3
+	 4HPsAcnG8U8Fin/Pjy3ZMkwV+vAqthuFUSVgBkbP3kzETPcjMeB4IT1MnZTd7qkJ/j
+	 OvUduGcYE8+wxIH1qj8Of/A9K4dY0z3WtCu7FhvUh5UA74vz5wNtVhfu+Jo4jNwMoc
+	 yj/Ru2pWaMijAMO2IrGcPj3po2kes4MsZqSAcUvP2ewWRkRrVOPvHm/QbrPIiqo6g2
+	 GsunTuZgxaujnYTcRS4COnW/YT1dTvxHqxD/lErpiv148z9HMPm1wBx4aXHgdzPR5A
+	 /nrr+ClQbOcVA==
+Received: from laura.lan (unknown [IPv6:2001:b07:646b:e2:657b:ae76:a0f8:4811])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: laura.nao)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 9136517E12E2;
+	Tue, 25 Nov 2025 12:06:50 +0100 (CET)
+From: Laura Nao <laura.nao@collabora.com>
+To: daniel.lezcano@linaro.org
+Cc: andrew-ct.chen@mediatek.com,
+	angelogioacchino.delregno@collabora.com,
+	arnd@arndb.de,
+	bchihi@baylibre.com,
+	colin.i.king@gmail.com,
+	conor+dt@kernel.org,
+	devicetree@vger.kernel.org,
+	frank-w@public-files.de,
+	fshao@chromium.org,
+	kernel@collabora.com,
+	krzk+dt@kernel.org,
+	lala.lin@mediatek.com,
+	laura.nao@collabora.com,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-mediatek@lists.infradead.org,
+	linux-pm@vger.kernel.org,
+	lukasz.luba@arm.com,
+	matthias.bgg@gmail.com,
+	nfraprado@collabora.com,
+	rafael@kernel.org,
+	robh@kernel.org,
+	rui.zhang@intel.com,
+	srini@kernel.org,
+	u.kleine-koenig@baylibre.com,
+	wenst@chromium.org
+Subject: Re: [PATCH v4 2/9] thermal/drivers/mediatek/lvts: Make number of calibration offsets configurable
+Date: Tue, 25 Nov 2025 12:06:39 +0100
+Message-Id: <20251125110639.23257-1-laura.nao@collabora.com>
+X-Mailer: git-send-email 2.39.5
+In-Reply-To: <24a5bd31-a79f-4f18-a190-6a4d886a29b2@linaro.org>
+References: <24a5bd31-a79f-4f18-a190-6a4d886a29b2@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -65,30 +75,106 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-If sugov_init() fails after registering the tunables_hook to the
-global list, the hook is not removed before freeing the tunables
-structure via kobject_put(). This leaves a dangling list entry
-pointing to freed memory.
+On 11/24/25 19:25, Daniel Lezcano wrote:
+> On 11/21/25 12:16, Laura Nao wrote:
+>> MT8196/MT6991 use 2-byte eFuse calibration data, whereas other SoCs
+>> supported by the driver rely on 3 bytes. Make the number of calibration
+>> bytes per sensor configurable, enabling support for SoCs with varying
+>> calibration formats.
+>>
+>> Reviewed-by: Fei Shao <fshao@chromium.org>
+>> Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+>> Tested-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+>> Tested-by: Frank Wunderlich <frank-w@public-files.de>
+>> Signed-off-by: Laura Nao <laura.nao@collabora.com>
+>> ---
+>>   drivers/thermal/mediatek/lvts_thermal.c | 32 ++++++++++++++++++++++----------
+>>   1 file changed, 22 insertions(+), 10 deletions(-)
+>>
+>> diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
+>> index ab55b20cda47..1c54d0b75b1a 100644
+>> --- a/drivers/thermal/mediatek/lvts_thermal.c
+>> +++ b/drivers/thermal/mediatek/lvts_thermal.c
+>> @@ -96,12 +96,14 @@
+>>     #define LVTS_MINIMUM_THRESHOLD        20000
+>>   +#define LVTS_MAX_CAL_OFFSETS        3 
+>
+> I suggest LVTS_NUM_CAL_OFFSETS then below,
+>
 
-Remove the hook from the list in the error path to prevent this.
+Right - as this is SoC-specific, I can define:
 
-Signed-off-by: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
----
- kernel/sched/cpufreq_schedutil.c | 1 +
- 1 file changed, 1 insertion(+)
+#define LVTS_NUM_CAL_OFFSETS_MT7988	3
+#define LVTS_NUM_CAL_OFFSETS_MT8196	2
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 9fdbc7a6063d..165c58a51a83 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -800,6 +800,7 @@ static int sugov_init(struct cpufreq_policy *policy)
- 	return 0;
- 
- fail:
-+	list_del(&sg_policy->tunables_hook);
- 	kobject_put(&tunables->attr_set.kobj);
- 	policy->governor_data = NULL;
- 	sugov_clear_global_tunables();
--- 
-2.34.1
+>> +
+>>   static int golden_temp = LVTS_GOLDEN_TEMP_DEFAULT;
+>>   static int golden_temp_offset;
+>>     struct lvts_sensor_data {
+>>       int dt_id;
+>> -    u8 cal_offsets[3];
+>> +    u8 cal_offsets[LVTS_MAX_CAL_OFFSETS];
+>>   };
+>>     struct lvts_ctrl_data {
+>> @@ -127,6 +129,7 @@ struct lvts_data {
+>>       const struct lvts_ctrl_data *lvts_ctrl;
+>>       const u32 *conn_cmd;
+>>       const u32 *init_cmd;
+>> +    int num_cal_offsets;
+>>       int num_lvts_ctrl;
+>>       int num_conn_cmd;
+>>       int num_init_cmd;
+>> @@ -711,7 +714,7 @@ static int lvts_calibration_init(struct device *dev, struct lvts_ctrl *lvts_ctrl
+>>                       u8 *efuse_calibration,
+>>                       size_t calib_len)
+>>   {
+>> -    int i;
+>> +    int i, j;
+>>       u32 gt;
+>>         /* A zero value for gt means that device has invalid efuse data */
+>> @@ -720,17 +723,18 @@ static int lvts_calibration_init(struct device *dev, struct lvts_ctrl *lvts_ctrl
+>>       lvts_for_each_valid_sensor(i, lvts_ctrl_data) {
+>>           const struct lvts_sensor_data *sensor =
+>>                       &lvts_ctrl_data->lvts_sensor[i];
+>> +        u32 calib = 0;
+>>   -        if (sensor->cal_offsets[0] >= calib_len ||
+>> -            sensor->cal_offsets[1] >= calib_len ||
+>> -            sensor->cal_offsets[2] >= calib_len)
+>> -            return -EINVAL;
+>> +        for (j = 0; j < lvts_ctrl->lvts_data->num_cal_offsets; j++) {
+>> +            u8 offset = sensor->cal_offsets[j];
+>> +
+>> +            if (offset >= calib_len)
+>> +                return -EINVAL;
+>> +            calib |= efuse_calibration[offset] << (8 * j); 
+>
+> May be worth for a comment here, ideally a separate function to clarify the code
+>
 
+Ack - will do.
+
+>> +        }
+>>             if (gt) {
+>> -            lvts_ctrl->calibration[i] =
+>> -                (efuse_calibration[sensor->cal_offsets[0]] << 0) +
+>> -                (efuse_calibration[sensor->cal_offsets[1]] << 8) +
+>> -                (efuse_calibration[sensor->cal_offsets[2]] << 16);
+>> +            lvts_ctrl->calibration[i] = calib;
+>>           } else if (lvts_ctrl->lvts_data->def_calibration) {
+>>               lvts_ctrl->calibration[i] = lvts_ctrl->lvts_data->def_calibration;
+>>           } else {
+>> @@ -1763,6 +1767,7 @@ static const struct lvts_data mt7988_lvts_ap_data = {
+>>       .temp_factor    = LVTS_COEFF_A_MT7988,
+>>       .temp_offset    = LVTS_COEFF_B_MT7988,
+>>       .gt_calib_bit_offset = 24,
+>> +    .num_cal_offsets = 3, 
+>
+> LVTS_NUM_CAL_OFFSETS
+>
+>
+
+I'll submit a v5 with the required changes.
+
+Thanks!
+
+Laura
