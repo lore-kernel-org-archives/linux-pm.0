@@ -1,86 +1,92 @@
-Received: from 003.mia.mailroute.net (003.mia.mailroute.net [199.89.3.6])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40B64286400;
-	Wed, 26 Nov 2025 18:40:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=199.89.3.6
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8152433D6C3;
+	Wed, 26 Nov 2025 18:58:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764182457; cv=none; b=dT36aaLWqiXy8VDyekQDtPdzVY0V5wdTCt1O40YSsxEMXlowBdd2TBwMBNVh0SRPZn+6yLYiLiQcfIYUF+qjCsb6xVFPu08MslHA3m/f2Hw3hZKpIc+EDGLJDLbAzK0Zc8gvuCP/FlSsyV4U7uhuwwuwFyvqnNK3T7fjU7j5w74=
+	t=1764183512; cv=none; b=Sxo5PP5Z7GBvCudB4SI1urKNX/pyAITped11/GH/Xpz+S3oXhzZx/rS07bloxISokypgTeYp7mqPls5DJkgRfr+W4C3S9zG3nbfyGpjrm4armDHYvkNKx9vUHIn0FcUVmWqV5JqMfmhpFPd51NV2RwH202t3lFIqNglrDjZ0wKs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764182457; c=relaxed/simple;
-	bh=5jLS1N/2ywUk86CuNRXBOI15IpbaXR6QtQfFQQBoXog=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=lxEk23ccf3SMLQ3bqFpGgqD0C5jbQ0NU2jwllFcNrVNbqXylY0J7CfQD6F9iHFxzzNjAsLb16/InYoFwkrt8MFug+dVSnGkCOHUSDgYa/C1uB4rIe43gdUTdaYlDiYY3FV4fKBFTf0AezTulanyruty3Z4mDHkll16rSLBKq7lg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org; spf=pass smtp.mailfrom=acm.org; dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b=WtE9dbTf; arc=none smtp.client-ip=199.89.3.6
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=acm.org
+	s=arc-20240116; t=1764183512; c=relaxed/simple;
+	bh=fNHZoi3mx99Wn7G7/rAvgQsYmGktpdWgfjY59sxmr8Y=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=XzhjJoH+l36FUzIuv5qXegvfLXV4WN9K6AhhDgpfGWdu+fI700I7qagvUnjPp220EzT7sJFu6cHKFtRBFCfilVQqVBv4d2PN5SOXqKQpHv1HsjAW7LeWUS8yj45AtG5lsgM0/GubMvhR0fHIRmIFrRdS0prw9wMZSO1E/qX7WvU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UsP3kyz8; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b="WtE9dbTf"
-Received: from localhost (localhost [127.0.0.1])
-	by 003.mia.mailroute.net (Postfix) with ESMTP id 4dGpKf1xmzzlgqjY;
-	Wed, 26 Nov 2025 18:40:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
-	content-transfer-encoding:content-type:content-type:in-reply-to
-	:from:from:content-language:references:subject:subject
-	:user-agent:mime-version:date:date:message-id:received:received;
-	 s=mr01; t=1764182452; x=1766774453; bh=LBr/H9thucmkz+XG3TYqhVuu
-	Nh3PUalzinUiqZMAjPU=; b=WtE9dbTfZj+tkEHajz+1hPmAZfFx2vNNJ72XGaSN
-	NjVFi8BTCAgQ5yl0xzTob95FArYB9uOaqxJ17EDYX+28tlJbtoNr2FvyB0LHISzo
-	G7Pb+561nDvAWKUuKViFIuPxtVFm+r/C8c17f056d1UbPSgdvMuwYXM3JFDsBiF9
-	jFux+xO/eXtEq/J3jbVA/6huZ3suPtzTnOM8VDd8XDt1O/6AalW6Cw3uRzIAu7oZ
-	FyhMLhur+7ej4E3Gleb/ez13wIbwiOrh2NNX13c6+8BIZSuIsEpDvTL7RXtVcGtk
-	7s3jDArioqd75tu9PIY/wBrhR0F4tpFoSSv3NgyK4IPc+g==
-X-Virus-Scanned: by MailRoute
-Received: from 003.mia.mailroute.net ([127.0.0.1])
- by localhost (003.mia [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
- id IIEdmQhFngAr; Wed, 26 Nov 2025 18:40:52 +0000 (UTC)
-Received: from [192.168.51.14] (c-73-231-117-72.hsd1.ca.comcast.net [73.231.117.72])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: bvanassche@acm.org)
-	by 003.mia.mailroute.net (Postfix) with ESMTPSA id 4dGpKJ3xFzzlgqjQ;
-	Wed, 26 Nov 2025 18:40:35 +0000 (UTC)
-Message-ID: <6df79ec0-f5b3-4d75-95b1-03e488d45e7f@acm.org>
-Date: Wed, 26 Nov 2025 10:40:34 -0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UsP3kyz8"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1D6E8C4CEF7;
+	Wed, 26 Nov 2025 18:58:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1764183512;
+	bh=fNHZoi3mx99Wn7G7/rAvgQsYmGktpdWgfjY59sxmr8Y=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=UsP3kyz87mvZsG4sYztZM8Tz3wq4UGTQoz4pVkH4s+7810XALSScJ16GAIHXc0mNj
+	 16DJbmwRdE0sqgYiO5+cHtBwx5HGi73F01QfgOrmURsMySmM9oppxjzhTDtKxf/MZ8
+	 9gB26BjYmzsvk4x/umgXoHlte/yt9BRG89AHpEA4Ki9g0yUnYCCZa43B9z9AndS5tE
+	 /JyKPSAMA9EPkZep/1x2WoQGRELdkUONvc/yUq3ov5BC6Ve9ys/tnPcrAXpjZKLX6k
+	 qkyqPOG1Bj8AUVY6E9c+Ujkt4rjpwOOi+ra2MRYFkrjYP96LO3VZWXWSxmUHFGD0nN
+	 1wz54ZS9muJwg==
+Date: Wed, 26 Nov 2025 18:58:25 +0000
+From: Conor Dooley <conor@kernel.org>
+To: Cosmin Tanislav <cosmin-gabriel.tanislav.xa@renesas.com>
+Cc: John Madieu <john.madieu.xa@bp.renesas.com>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Philipp Zabel <p.zabel@pengutronix.de>, linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org
+Subject: Re: [PATCH v3 4/9] dt-bindings: thermal: r9a09g047-tsu: document
+ RZ/T2H and RZ/N2H
+Message-ID: <20251126-acutely-unluckily-41b716fc91d1@spud>
+References: <20251126130356.2768625-1-cosmin-gabriel.tanislav.xa@renesas.com>
+ <20251126130356.2768625-5-cosmin-gabriel.tanislav.xa@renesas.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] PM: runtime: Fix I/O hang due to race between resume
- and runtime disable
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: YangYang <yang.yang@vivo.com>, Jens Axboe <axboe@kernel.dk>,
- Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Danilo Krummrich <dakr@kernel.org>, linux-block@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-References: <20251126101636.205505-1-yang.yang@vivo.com>
- <20251126101636.205505-2-yang.yang@vivo.com>
- <CAJZ5v0i1YLiri9oiiq2W6_KSbqGuWOqdrMPrOf=do-DdW=_rfA@mail.gmail.com>
- <1a2d2059-0548-4c5f-a986-5081447c3325@vivo.com>
- <CAJZ5v0iSgrLzsjh+bvF2=rxxhYcBetJ6V-joWaQud4ahkm1GkQ@mail.gmail.com>
- <9b6e7d55-6a1f-490e-98c7-3c04f85f7444@acm.org>
- <CAJZ5v0hJw0WdHpqgUc5bz5qCSUNNKHg7i5-sNYeZcDYwRj21qw@mail.gmail.com>
-Content-Language: en-US
-From: Bart Van Assche <bvanassche@acm.org>
-In-Reply-To: <CAJZ5v0hJw0WdHpqgUc5bz5qCSUNNKHg7i5-sNYeZcDYwRj21qw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="iG1c6wjSk6CPN4Bw"
+Content-Disposition: inline
+In-Reply-To: <20251126130356.2768625-5-cosmin-gabriel.tanislav.xa@renesas.com>
 
-On 11/26/25 7:41 AM, Rafael J. Wysocki wrote:
-> As it stands, you have a basic problem with respect to system
-> suspend/hibernation.  As I said before, the PM workqueue is frozen
-> during system suspend/hibernation transitions, so waiting for an async
-> resume request to complete then is pointless.
 
-Agreed. I noticed that any attempt to call request_firmware() from
-driver system resume callback functions causes a deadlock if these
-calls happen before the block device has been resumed.
+--iG1c6wjSk6CPN4Bw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
+On Wed, Nov 26, 2025 at 03:03:51PM +0200, Cosmin Tanislav wrote:
+> The Renesas RZ/T2H (R9A09G077) and RZ/N2H (R9A09G087) SoCs include a
+> Temperature Sensor Unit (TSU). The device provides real-time temperature
+> measurements for thermal management, utilizing a single dedicated
+> channel for temperature sensing.
+>=20
+> Compared to the previously supported RZ/G3E, the RZ/T2H and RZ/N2H SoCs
+> do not have a reset for the TSU peripheral, and the OTP data is exposed
+> via ARM SMC, as opposed to a system register.
+>=20
+> Signed-off-by: Cosmin Tanislav <cosmin-gabriel.tanislav.xa@renesas.com>
 
-Bart.
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+pw-bot: not-applicable
+
+--iG1c6wjSk6CPN4Bw
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaSdN0QAKCRB4tDGHoIJi
+0n4cAQDJ90TY5p/PjkuhtUGt8KJWFDyblhezANv6slZ5ktZePgEAuEprRr31E0eW
+gHcKdaUz/JSHEe2kMpE5njMf5zgBfQk=
+=9Kbd
+-----END PGP SIGNATURE-----
+
+--iG1c6wjSk6CPN4Bw--
