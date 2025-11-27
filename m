@@ -1,218 +1,148 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from smtp1.ms.mff.cuni.cz (smtp-in1.ms.mff.cuni.cz [195.113.20.234])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1F002FFDE2
-	for <linux-pm@vger.kernel.org>; Thu, 27 Nov 2025 18:22:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5AD2279C8;
+	Thu, 27 Nov 2025 19:03:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.113.20.234
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764267769; cv=none; b=IYB8G2qa5yKlBj1a8zeV+U4InytSdtzSX9zY3Nk13jxuh6HP4s3x7HB2ZsFiYGguTcQ4niheID6Ced6wpW2jBnWWpbL6hE1eB5aX15EJFPjHo72r2uxudDcSczIKBDmcG++CIlMzPcckptJaG15C8wDxqxDqXZpk6K4mNaVfcu4=
+	t=1764270202; cv=none; b=EawYjJvxXaARc7vyQllj8BYpcaSWbhX4gxLiRfERdbH3lnH69cYyWQb087WcM5fALzuaWMF9CAGO2mUabHBRTopiJHcla8j8xTJvXRXvEOcrGPB8O3nIZZ5CTWQMGqIAEKG/2ywOMcHBtSF8uMeXw/Dh5aFUDbSzZnjGBefOGQU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764267769; c=relaxed/simple;
-	bh=2zh5IckA93jcXpcP2jg/bB2AVaYgRYS+ot7BWC5MT2A=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=S8FxMWcflrWADy/KxoCPfhi/IyQxYhW4E24CgAybU0iZMz2lfSwJ68ter1wBpUgbwXBInkeUkVsuC5VSsRzKDp3rYZuybDOLcbYWggyctxdh76ppmcmPEHCSDBGMsOyQzIypX9sSEo7TXp8N67sA3a/zI7L6js1mHCxAfqSDZ0w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=t5If9gO+; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1764270202; c=relaxed/simple;
+	bh=wfgiRGOQLwiLM+4FUs/uJ61GxSLx10RXTN/JQQ7sn5c=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=W3S0rugkPSRXRpajkQqXAGUYr0KLLJQjVN3aJROKuDC1yExKitQbNnpTu/X1Xyx7lvyAR+gKhIaItrc9DtHxEdef4+/A+jLVo4Mmlgt1Dqdttdeu5IaV0+jjc5K0+RVvUKYoC/GDhAc/7R3NMMROnjT8l9dlxI82cvLiALfd8xs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=matfyz.cz; spf=pass smtp.mailfrom=matfyz.cz; dkim=pass (2048-bit key) header.d=mff.cuni.cz header.i=@mff.cuni.cz header.b=Vv4DYNI2; arc=none smtp.client-ip=195.113.20.234
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=matfyz.cz
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=matfyz.cz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="t5If9gO+"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4E1D0C19421
-	for <linux-pm@vger.kernel.org>; Thu, 27 Nov 2025 18:22:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1764267769;
-	bh=2zh5IckA93jcXpcP2jg/bB2AVaYgRYS+ot7BWC5MT2A=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=t5If9gO++OOilnxFrwBrkBC309GX2ZWoD+KuNyiD5dUztBFiu96epD55nIlqdm2bE
-	 I629s/i5ebpTIV1f8i9y5LxYTw1ElYOyDOS7zh8yoLRb12SJMkNSTl/k5UVdiV9Wcx
-	 4pI9IStlpgObJIRTRBZMtk1aAK13fAJZM4p9nuCNWNYZMgi9MXm7gEip+9kip1t60N
-	 fsKjao8brX5y0iEjBEnKN0hZgNGxRVvpYBmlN4f60tM41YnF3OOyz3ScwQfNNPuO1O
-	 tD5BH4EMod/AgIyuDOrhBKsWuQJMKPloN85ij5AbiVt3+3bxe8+vH/r2iPJ0jTChzF
-	 Psdd0ZmiQoKyA==
-Received: by mail-oi1-f174.google.com with SMTP id 5614622812f47-451183d1081so227127b6e.3
-        for <linux-pm@vger.kernel.org>; Thu, 27 Nov 2025 10:22:49 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCU6c6bsAj1bdSIHQOxRur/xuUrKvW91qZPf5oCbxJ8bYvgVTgl+u6m7qQ/mweySTaXcQL38y//KsQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yze/kpH9rpN4AjLrbIQc+zCb/EM/ozt7FWAwrq0moKP4oT2UVrk
-	Rj0yiuNrPuvAhS74E9re+qDXv6aYIjcDKr/u8ABBh8zOtxDySv77TXWF1DxFgJKFkSmChTuJVXX
-	POcX3M8NFOg1DPlqhKySIA6bhiosi6ZE=
-X-Google-Smtp-Source: AGHT+IH1bZuq2107Z9vV3tIssGfEt3HKcvXwJtichyRCHN4NG+9zrGINSBUFfZp8A6sCqAX7wGBoKCjmIoVGx2W+fiQ=
-X-Received: by 2002:a05:6808:1803:b0:44d:a972:f48d with SMTP id
- 5614622812f47-45115ade7bcmr8045952b6e.51.1764267768535; Thu, 27 Nov 2025
- 10:22:48 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=mff.cuni.cz header.i=@mff.cuni.cz header.b="Vv4DYNI2"
+X-SubmittedBy: id balejk@matfyz.cz subject /postalCode=110+2000/O=Univerzita+20Karlova/street=Ovocn+5CxC3+5CxBD+20trh+20560+5C/5/ST=Praha,+20Hlavn+5CxC3+5CxAD+20m+5CxC4+5Cx9Bsto/C=CZ/CN=Karel+20Balej/emailAddress=balejk@matfyz.cz
+	serial F5FD910E8FE2121B897F7E55B84E351D
+	issued by /C=NL/O=GEANT+20Vereniging/CN=GEANT+20Personal+20CA+204
+	auth type TLS.CUNI
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mff.cuni.cz;
+	s=submission; t=1764270177; x=1765570177;
+	bh=12NHg5mpkkfFuDbyCvK5djSM2M++P/Z48X9ciVtOpl4=; h=From;
+	b=Vv4DYNI2rWg9QpBcBsDdAWrqJa5Wu67LMVgifVZOx5r4yu6PrSmW8afuQu5z7TMSJ
+	 xnyrJvrsGi1/oOI7eVkD1IvZgzzkjgtpYdoJSctWaM+YodaneOmndrblSKjP5IysgI
+	 zgjs5d/+jl8nZRwBIv5OYvk4xyz3RY+RlZcezbGwuZ7g6U3LbwV5qCNoJWOVQAZJOV
+	 /nzojzoFyRQHF4Dwugu/1Z+dmRyWs75j4yobsFKv8HO9Ci7veMLN4tlKDoKin45PtP
+	 KUc39RlSwV6RYes+Af14y/bk7fCpn5mgum03Mt2ZMZktr/smAXGKhOEgc6XdPyTGb6
+	 ojQ0UMV4XEcbA==
+Received: from localhost (nat2.prg.suse.com [195.250.132.146])
+	(authenticated)
+	by smtp1.ms.mff.cuni.cz (8.18.1/8.18.1) with ESMTPS id 5ARJ2tWM008160
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=OK);
+	Thu, 27 Nov 2025 20:02:57 +0100 (CET)
+	(envelope-from balejk@matfyz.cz)
+From: Karel Balej <balejk@matfyz.cz>
+To: =?UTF-8?q?Duje=20Mihanovi=C4=87?= <duje@dujemihanovic.xyz>,
+        Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+Cc: ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        Karel Balej <balejk@matfyz.cz>
+Subject: [PATCH 2/2] pmdomain: add audio power island for Marvell PXA1908 SoC
+Date: Thu, 27 Nov 2025 20:02:03 +0100
+Message-ID: <20251127190237.745-2-balejk@matfyz.cz>
+X-Mailer: git-send-email 2.51.2
+In-Reply-To: <20251127190237.745-1-balejk@matfyz.cz>
+References: <20251127190237.745-1-balejk@matfyz.cz>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251120-thermal-device-v1-0-bbdad594d57a@gmx.de>
- <CAJZ5v0jOPrBcozzJMsB1eE12MuZRWDAV-+=jfrhJbi=S0p5J9Q@mail.gmail.com> <5f3ef610-4024-4ca0-a934-2649f5d25f40@gmx.de>
-In-Reply-To: <5f3ef610-4024-4ca0-a934-2649f5d25f40@gmx.de>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 27 Nov 2025 19:22:37 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0hdqY-=O5Ai6c5qjMr_pRFc+SDyV1QruM=ZeHH9Z=guSg@mail.gmail.com>
-X-Gm-Features: AWmQ_bmQtAcoPswZk2AImBNuJ-60z5nmzzYc3vdfnDFN0Jddf0LEskGxktPDRCM
-Message-ID: <CAJZ5v0hdqY-=O5Ai6c5qjMr_pRFc+SDyV1QruM=ZeHH9Z=guSg@mail.gmail.com>
-Subject: Re: [PATCH RFC RESEND 0/8] thermal: core: Allow setting the parent
- device of thermal zone/cooling devices
-To: Armin Wolf <W_Armin@gmx.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, Len Brown <lenb@kernel.org>, 
-	Jonathan Corbet <corbet@lwn.net>, Ido Schimmel <idosch@nvidia.com>, Petr Machata <petrm@nvidia.com>, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	etnaviv@lists.freedesktop.org, dri-devel@lists.freedesktop.org, 
-	linux-tegra@vger.kernel.org, linux-acpi@vger.kernel.org, 
-	linux-doc@vger.kernel.org, netdev@vger.kernel.org, 
-	linux-wireless@vger.kernel.org, ath10k@lists.infradead.org, 
-	ath11k@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-mediatek@lists.infradead.org, platform-driver-x86@vger.kernel.org, 
-	linux-pci@vger.kernel.org, imx@lists.linux.dev, 
-	linux-renesas-soc@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-Spam-Level: ****
 
-On Sat, Nov 22, 2025 at 3:18=E2=80=AFPM Armin Wolf <W_Armin@gmx.de> wrote:
->
-> Am 21.11.25 um 21:35 schrieb Rafael J. Wysocki:
->
-> > On Thu, Nov 20, 2025 at 4:41=E2=80=AFAM Armin Wolf <W_Armin@gmx.de> wro=
-te:
+Define power domain which needs to be enabled in order for audio to work
+on the PXA1908-based samsung,coreprimevelte smartphone. In the
+downstream code, this power-on method is marked as specific to the ulcx
+series which is likely some variant of the board or some part of it. No
+other audio components needed for sound to work on this phone are
+currently available mainline but some successful testing was performed
+with the vendor variants of the respective drivers and with the domain
+forced always-on.
 
-[...]
+Signed-off-by: Karel Balej <balejk@matfyz.cz>
+---
+ .../marvell/pxa1908-power-controller.c        | 38 +++++++++++++++++--
+ 1 file changed, 34 insertions(+), 4 deletions(-)
 
-> >> ---
-> >> Armin Wolf (8):
-> >>        thermal: core: Allow setting the parent device of cooling devic=
-es
-> >>        thermal: core: Set parent device in thermal_of_cooling_device_r=
-egister()
-> >>        ACPI: processor: Stop creating "device" sysfs link
-> >
-> > That link is not to the cooling devices' parent, but to the ACPI
-> > device object (a struct acpi_device) that corresponds to the parent.
-> > The parent of the cooling device should be the processor device, not
-> > its ACPI companion, so I'm not sure why there would be a conflict.
->
->  From the perspective of the Linux device core, a parent device does not =
-have to be
-> a "physical" device. In the case of the ACPI processor driver, the ACPI d=
-evice is used,
-> so the cooling device registered by said driver belongs to the ACPI devic=
-e.
+diff --git a/drivers/pmdomain/marvell/pxa1908-power-controller.c b/drivers/pmdomain/marvell/pxa1908-power-controller.c
+index ff5e6e82d3f8..e32eb227f235 100644
+--- a/drivers/pmdomain/marvell/pxa1908-power-controller.c
++++ b/drivers/pmdomain/marvell/pxa1908-power-controller.c
+@@ -29,7 +29,10 @@
+ #define POWER_POLL_TIMEOUT_US	(25 * USEC_PER_MSEC)
+ #define POWER_POLL_SLEEP_US	6
+ 
+-#define NR_DOMAINS	5
++#define APMU_AUD_CLK		0x80
++#define AUDIO_ULCX_ENABLE	0x0d
++
++#define NR_DOMAINS	6
+ 
+ #define to_pxa1908_pd(_genpd) container_of(_genpd, struct pxa1908_pd, genpd)
+ 
+@@ -59,9 +62,13 @@ static inline bool pxa1908_pd_is_on(struct pxa1908_pd *pd)
+ {
+ 	struct pxa1908_pd_ctrl *ctrl = pd->ctrl;
+ 
+-	return pd->data.id != PXA1908_POWER_DOMAIN_DSI
+-		? regmap_test_bits(ctrl->base, APMU_PWR_STATUS_REG, pd->data.pwr_state)
+-		: regmap_test_bits(ctrl->base, APMU_DEBUG, DSI_PHY_DVM_MASK);
++	switch (pd->data.id) {
++	case PXA1908_POWER_DOMAIN_AUDIO:
++		return regmap_test_bits(ctrl->base, APMU_AUD_CLK, AUDIO_ULCX_ENABLE);
++	case PXA1908_POWER_DOMAIN_DSI:
++		return regmap_test_bits(ctrl->base, APMU_DEBUG, DSI_PHY_DVM_MASK);
++	}
++	return regmap_test_bits(ctrl->base, APMU_PWR_STATUS_REG, pd->data.pwr_state);
+ }
+ 
+ static int pxa1908_pd_power_on(struct generic_pm_domain *genpd)
+@@ -123,6 +130,22 @@ static inline int pxa1908_dsi_power_off(struct generic_pm_domain *genpd)
+ 	return regmap_clear_bits(ctrl->base, APMU_DEBUG, DSI_PHY_DVM_MASK);
+ }
+ 
++static inline int pxa1908_audio_power_on(struct generic_pm_domain *genpd)
++{
++	struct pxa1908_pd *pd = to_pxa1908_pd(genpd);
++	struct pxa1908_pd_ctrl *ctrl = pd->ctrl;
++
++	return regmap_set_bits(ctrl->base, APMU_AUD_CLK, AUDIO_ULCX_ENABLE);
++}
++
++static inline int pxa1908_audio_power_off(struct generic_pm_domain *genpd)
++{
++	struct pxa1908_pd *pd = to_pxa1908_pd(genpd);
++	struct pxa1908_pd_ctrl *ctrl = pd->ctrl;
++
++	return regmap_clear_bits(ctrl->base, APMU_AUD_CLK, AUDIO_ULCX_ENABLE);
++}
++
+ #define DOMAIN(_id, _name, ctrl, mode, state) \
+ 	[_id] = { \
+ 		.data = { \
+@@ -159,6 +182,13 @@ static struct pxa1908_pd domains[NR_DOMAINS] = {
+ 			.keep_on = true,
+ 		},
+ 	},
++	[PXA1908_POWER_DOMAIN_AUDIO] = {
++		.genpd = {
++			.name = "audio",
++			.power_on = pxa1908_audio_power_on,
++			.power_off = pxa1908_audio_power_off,
++		},
++	},
+ };
+ 
+ static void pxa1908_pd_remove(struct auxiliary_device *auxdev)
+-- 
+2.51.2
 
-Well, that's a problem.  A struct acpi_device should not be a parent
-of anything other than a struct acpi_device.
-
-> I agree that using the Linux processor device would make more sense, but =
-this will require
-> changes inside the ACPI processor driver.
-
-So be it.
-
-> As for the "device" symlink: The conflict would be a naming conflict, as =
-both "device" symlinks
-> (the one created by the ACPI processor driver and the one created by the =
-device core) will
-> be created in the same directory (which is the directory of the cooling d=
-evice).
-
-I see.
-
-But why is the new symlink needed in the first place?  If the device
-has a parent, it will appear under that parent in /sys/devices/, won't
-it?
-
-Currently, all of the thermal class devices appear under
-/sys/devices/virtual/thermal/ because they have no parents and they
-all get a class parent kobject under /sys/devices/virtual/, as that's
-what get_device_parent() does.
-
-If they have real parents, they will appear under those parents, so
-why will the parents need to be pointed to additionally?
-
-BTW, this means that the layout of /sys/devices/ will change when
-thermal devices get real parents.  I'm not sure if this is a problem,
-but certainly something to note.
-
-> >>        ACPI: fan: Stop creating "device" sysfs link
-> >>        ACPI: video: Stop creating "device" sysfs link
-> > Analogously in the above two cases AFAICS.
-> >
-> > The parent of a cooling device should be a "physical" device object,
-> > like a platform device or a PCI device or similar, not a struct
-> > acpi_device (which in fact is not a device even).
->
->  From the perspective of the Linux device core, a ACPI device is a perfec=
-tly valid device.
-
-The driver core is irrelevant here.
-
-As I said before, a struct acpi_device object should not be a parent
-of anything other than a struct acpi_device object.  Those things are
-not devices and they cannot be used for representing PM dependencies,
-for example.
-
-> I agree that using a platform device or PCI device is better, but this al=
-ready happens
-> inside the ACPI fan driver (platform device).
-
-So it should not happen there.
-
-> Only the ACPI video driver created a "device" sysfs link that points to t=
-he ACPI device
-> instead of the PCI device. I just noticed that i accidentally changed thi=
-s by using the
-> PCI device as the parent device for the cooling device.
->
-> If you want then we can keep this change.
-
-The PCI device should be its parent.
-
-> >>        thermal: core: Set parent device in thermal_cooling_device_regi=
-ster()
-> >>        ACPI: thermal: Stop creating "device" sysfs link
-> > And this link is to the struct acpi_device representing the thermal zon=
-e itself.
->
-> Correct, the ACPI thermal zone driver is a ACPI driver, meaning that he b=
-inds to
-> ACPI devices. Because of this all (thermal zone) devices created by an in=
-stance of
-> said driver are descendants of the ACPI device said instance is bound to.
->
-> We can of course convert the ACPI thermal zone driver into a platform dri=
-ver, but
-> this would be a separate patch series.
-
-If you want parents, this needs to be done first, but I'm still not
-sure what the parent of a thermal zone would represent.
-
-In the ACPI case it is kind of easy - it would be the (platform)
-device corresponding to a given ThermalZone object in the ACPI
-namespace - but it only has a practical meaning if that device has a
-specific parent.  For example, if the corresponding ThermalZone object
-is present in the \_SB scope, the presence of the thermal zone parent
-won't provide any additional information.
-
-Unfortunately, the language in the specification isn't particularly
-helpful here: "Thermal zone objects should appear in the namespace
-under the portion of the system that comprises the thermal zone. For
-example, a thermal zone that is isolated to a docking station should
-be defined within the scope of the docking station device."  To me
-"the portion of the system" is not too meaningful unless it is just
-one device without children.  That's why _TZD has been added AFAICS.
-
-> >>        thermal: core: Allow setting the parent device of thermal zone =
-devices
-> >
-> > I'm not sure if this is a good idea, at least until it is clear what
-> > the role of a thermal zone parent device should be.
->
-> Take a look at my explanation with the Intel Wifi driver.
-
-I did and I think that you want the parent to be a device somehow
-associated with the thermal zone, but how exactly?  What should that
-be in the Wifi driver case, the PCI device or something else?
-
-And what if the thermal zone affects multiple devices?  Which of them
-(if any) would be its parent?  And would it be consistent with the
-ACPI case described above?
-
-All of that needs consideration IMV.
