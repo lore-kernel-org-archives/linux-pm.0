@@ -1,87 +1,182 @@
-Received: from canpmsgout01.his.huawei.com (canpmsgout01.his.huawei.com [113.46.200.216])
+Received: from smtpout-02.galae.net (smtpout-02.galae.net [185.246.84.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53C88221DB1;
-	Tue,  2 Dec 2025 07:27:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.216
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C9261C7012;
+	Tue,  2 Dec 2025 07:31:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.84.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764660467; cv=none; b=hMbveYqy7og8MhswezvytCrfX5gkawZhiJKqlkhNW3Y4u6BrCtOi5B0aBxwe0yZ9ECMt3e6IfZonEHuJ5OseUUxecZr47un/e+aaIsWyeY024JOiEe4O0RaYETXvPT2FRqhuv6RRHyfVvHeKxJRtZJOloYmKY6RjyeFHutssJgs=
+	t=1764660685; cv=none; b=RaYVFLfOuxVB5r1WC3+/DWlv75AM5iKSTjorZxSrwRA1hu4j9z3CtIY1T7wc+KodNfQjYOcPVi3noRqKwaARY1AIIQ1nGBHAA/7B6xHbXGWJhPPH23+skecptbqgJ9Ssp6qUFoVHUYlLrtgmJ4uk0dbb0ObxwJ1ibpwF20ScAaw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764660467; c=relaxed/simple;
-	bh=uS99S80io6a6U/5hLltsmuS8JC9aERTzvqQXzRXc0Qk=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=F0t1J2263VmCqlwYOE9IT47vajKK12I9jxNcv12w+9xIe+qiuWrWhuA4KzUTmTe9fYrsSXK6CkLaKjMU2+hY+PshEOVByivSWJ6xC8cv/oYE+sbM9DLQgAGIvO3WQiaTXP6k56en3GXhVRUdcqOQdeSUAVCUGx3/ENQfUFm9jdQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=W35i8PoQ; arc=none smtp.client-ip=113.46.200.216
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+	s=arc-20240116; t=1764660685; c=relaxed/simple;
+	bh=rWht80TdDMbsCZaWcUFcjjhYySkfTb93xasOXU5Ylxc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=a3HLIaOZwrfYtozKIAvsRlYQuKmbwvbu3/ugjfxFd+JbYrkV1Tyie0uddKjBQoCh3IJ8WHloEvBYkoZfrb9wiAvmF37+zJqwTBmrms84+PInSdhFjG+fiS7iSux/HTMnR0dUovu8MwQp5D4aBiMXxzonx5FbvNXN7GTD65za+x0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=bY3TTYiS; arc=none smtp.client-ip=185.246.84.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="W35i8PoQ"
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=yLrEbT7Eff5TN5L01evaNY76SuW8M4SeJ+qEMgIgP4I=;
-	b=W35i8PoQGEbRH3p/kui/2mgOw4xBq9gcM2SaRnlJuQANol5neVUO+qs292x4PdaxIzgs+Zmuq
-	0ePtMqFAMDBOdACbB99xkBW/yEQLnAYBh+d1EwY0So/fn5ZxEMrqkaAdGmnxWoJF8B0/1cq/fZ9
-	jMZs9UvUw51TeGeN5/MfjXM=
-Received: from mail.maildlp.com (unknown [172.19.88.105])
-	by canpmsgout01.his.huawei.com (SkyGuard) with ESMTPS id 4dLC3x3xK9z1T4GL;
-	Tue,  2 Dec 2025 15:25:49 +0800 (CST)
-Received: from kwepemf200001.china.huawei.com (unknown [7.202.181.227])
-	by mail.maildlp.com (Postfix) with ESMTPS id 8C22F1402CF;
-	Tue,  2 Dec 2025 15:27:40 +0800 (CST)
-Received: from localhost.localdomain (10.50.163.32) by
- kwepemf200001.china.huawei.com (7.202.181.227) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Tue, 2 Dec 2025 15:27:39 +0800
-From: Lifeng Zheng <zhenglifeng1@huawei.com>
-To: <rafael@kernel.org>, <viresh.kumar@linaro.org>
-CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linuxarm@huawei.com>, <jonathan.cameron@huawei.com>,
-	<zhanjie9@hisilicon.com>, <lihuisong@huawei.com>, <yubowen8@huawei.com>,
-	<zhangpengjie2@huawei.com>, <wangzhi12@huawei.com>,
-	<linhongye@h-partners.com>, <zhenglifeng1@huawei.com>
-Subject: [PATCH v3 0/2] cpufreq: Return -EOPNOTSUPP if no policy is boost supported
-Date: Tue, 2 Dec 2025 15:27:25 +0800
-Message-ID: <20251202072727.1368285-1-zhenglifeng1@huawei.com>
-X-Mailer: git-send-email 2.33.0
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="bY3TTYiS"
+Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
+	by smtpout-02.galae.net (Postfix) with ESMTPS id 07D5A1A1EB5;
+	Tue,  2 Dec 2025 07:31:20 +0000 (UTC)
+Received: from mail.galae.net (mail.galae.net [212.83.136.155])
+	by smtpout-01.galae.net (Postfix) with ESMTPS id C3C60606E3;
+	Tue,  2 Dec 2025 07:31:19 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 403D9103C8F04;
+	Tue,  2 Dec 2025 08:30:59 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
+	t=1764660676; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 in-reply-to:references; bh=gutkuk21iRBLBzb9hvOl6cUp6HFUU/VZ7OrEhTRZmwQ=;
+	b=bY3TTYiSLFXa5B94KQgeAayt80JXK78ig76Aq2SyfufNuWcT41c/auFS4kPqbVeYIZlJKX
+	QrXrN/qRIP4zNsj2m/7od8XOWVPza9ZQvvaa8nia4r3ByMuNdtTuF/t2v7gxBFCMMsW9RB
+	i0p/8OBYWY3+n3FRUeyswfCRhz6Fv2at184ftP1FUUlpPAnLeFkqXVNSm5O6zbN24Wre4+
+	N8LDjO5ty4mD4BpDEbuBV6eat2hrRdfThqf+Hnymm7a9OslgagnMsXhZ11fV4HVQz7RWeL
+	AMcHDMFpAB93S2dU0dURDWQPs1MVtcc1ZnrYa/w6k4129RIITI9OMaZRIN58Wg==
+From: Romain Gantois <romain.gantois@bootlin.com>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>,
+ Chanwoo Choi <cw00.choi@samsung.com>, Guenter Roeck <linux@roeck-us.net>,
+ Peter Rosin <peda@axentia.se>, Jonathan Cameron <jic23@kernel.org>,
+ Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>,
+ Andy Shevchenko <andy@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>,
+ Michael Hennerich <Michael.Hennerich@analog.com>,
+ Mariel Tinaco <Mariel.Tinaco@analog.com>,
+ Kevin Tsai <ktsai@capellamicro.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Eugen Hristev <eugen.hristev@linaro.org>, Vinod Koul <vkoul@kernel.org>,
+ Kishon Vijay Abraham I <kishon@kernel.org>,
+ Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>,
+ Hans de Goede <hansg@kernel.org>,
+ Support Opensource <support.opensource@diasemi.com>,
+ Paul Cercueil <paul@crapouillou.net>, Iskren Chernev <me@iskren.info>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Matheus Castello <matheus@castello.eng.br>,
+ Saravanan Sekar <sravanhome@gmail.com>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+ Casey Connolly <casey.connolly@linaro.org>,
+ Pali =?UTF-8?B?Um9ow6Fy?= <pali@kernel.org>,
+ Orson Zhai <orsonzhai@gmail.com>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>,
+ Chunyan Zhang <zhang.lyra@gmail.com>, Amit Kucheria <amitk@kernel.org>,
+ Thara Gopinath <thara.gopinath@gmail.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>,
+ Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ Sylwester Nawrocki <s.nawrocki@samsung.com>,
+ Olivier Moysan <olivier.moysan@foss.st.com>,
+ Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>,
+ David Lechner <dlechner@baylibre.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+ linux-kernel@vger.kernel.org, linux-hwmon@vger.kernel.org,
+ linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
+ linux-phy@lists.infradead.org, linux-pm@vger.kernel.org,
+ linux-mips@vger.kernel.org, linux-mediatek@lists.infradead.org,
+ linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org,
+ linux-stm32@st-md-mailman.stormreply.com
+Subject: Re: [PATCH] iio: inkern: Use namespaced exports
+Date: Tue, 02 Dec 2025 08:30:58 +0100
+Message-ID: <5948030.DvuYhMxLoT@fw-rgant>
+In-Reply-To: <78240755-44dc-4835-aca5-99540cca0304@baylibre.com>
+References:
+ <20251201-iio-inkern-use-namespaced-exports-v1-1-da1935f70243@bootlin.com>
+ <78240755-44dc-4835-aca5-99540cca0304@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
- kwepemf200001.china.huawei.com (7.202.181.227)
+Content-Type: multipart/signed; boundary="nextPart6220005.lOV4Wx5bFT";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+X-Last-TLS-Session-Version: TLSv1.3
 
-Make cpufreq_boost_trigger_state() return error when boost isn't supported
-by any policy.
+--nextPart6220005.lOV4Wx5bFT
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
+From: Romain Gantois <romain.gantois@bootlin.com>
+Subject: Re: [PATCH] iio: inkern: Use namespaced exports
+Date: Tue, 02 Dec 2025 08:30:58 +0100
+Message-ID: <5948030.DvuYhMxLoT@fw-rgant>
+In-Reply-To: <78240755-44dc-4835-aca5-99540cca0304@baylibre.com>
+MIME-Version: 1.0
 
-Changelog:
+On Monday, 1 December 2025 18:15:54 CET David Lechner wrote:
+> On 12/1/25 4:59 AM, Romain Gantois wrote:
+> > Use namespaced exports for IIO consumer API functions.
+> > 
+> > Signed-off-by: Romain Gantois <romain.gantois@bootlin.com>
+> > ---
+> 
+> ...
+> 
+> > diff --git a/drivers/iio/dac/ds4424.c b/drivers/iio/dac/ds4424.c
+> > index a8198ba4f98a..33d6692f46fe 100644
+> > --- a/drivers/iio/dac/ds4424.c
+> > +++ b/drivers/iio/dac/ds4424.c
+> > @@ -14,7 +14,6 @@
+> > 
+> >  #include <linux/iio/iio.h>
+> >  #include <linux/iio/driver.h>
+> >  #include <linux/iio/machine.h>
+> > 
+> > -#include <linux/iio/consumer.h>
+> 
+> Unrelated change?
 
-v3:
+Indeed, I'll leave that out in v2.
 
- - add `likely` and `unlikely` to if conditions in
-   cpufreq_boost_trigger_state()
+> >  #define DS4422_MAX_DAC_CHANNELS		2
+> >  #define DS4424_MAX_DAC_CHANNELS		4
+> > 
+> > @@ -321,3 +320,4 @@ MODULE_AUTHOR("Ismail H. Kose
+> > <ismail.kose@maximintegrated.com>");> 
+> >  MODULE_AUTHOR("Vishal Sood <vishal.sood@maximintegrated.com>");
+> >  MODULE_AUTHOR("David Jung <david.jung@maximintegrated.com>");
+> >  MODULE_LICENSE("GPL v2");
+> > 
+> > +MODULE_IMPORT_NS("IIO_CONSUMER");
+> 
+> Is this actually needed if we don't use anything from consumer.h?
 
-v2:
+No, it's not.
 
- - change the error to -EOPNOTSUPP
- - remove the comment and blank line
- - split the optimization into another patch
-
----
-Discussions of previous version:
-v1: https://lore.kernel.org/all/20251126031916.3641176-1-zhenglifeng1@huawei.com/
-v2: https://lore.kernel.org/all/20251128091352.1969333-1-zhenglifeng1@huawei.com/
-
-Lifeng Zheng (2):
-  cpufreq: Return -EOPNOTSUPP if no policy is boost supported
-  cpufreq: cpufreq_boost_trigger_state() optimization
-
- drivers/cpufreq/cpufreq.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+Thanks,
 
 -- 
-2.33.0
+Romain Gantois, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
+
+--nextPart6220005.lOV4Wx5bFT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEIcCsAScRrtr7W0x0KCYAIARzeA4FAmkulbIACgkQKCYAIARz
+eA6r+A//aMF01GyQ28Vt1qVRnR+uQNAhVi/B2aUu4XYyy1hc2lVzhHwvSjyYiXET
+h1jorSaLD9m5MsoTo9Scxhpu1d5KWIy5DaNATac1wmHh9t0IdE8gw1kNaUcNmefr
+NFOanFttvVt7e9cko6PsxmX9GOioawS3CVrJuObkGGftqR3KVD3WMOg+n551pkK4
+63Xbfe6PPADF06Lyu2kyyxUXLwIsuXQ8Z4dQ+kX4Bky34L0v4w0Yxos4Uhkwv5ur
+SOUtezyExAQTgAJi9KW5MPADpCdXfB3moTv29CdWRs1K8XLkxxLeprZnutXRFxOu
+CrmiA30lNs2pp7wut+8PfmeYX6btqOCMQ8KENXNV9StrRc9UqD6K6TbbJGE/Vbzg
+gxDVp9t0i0nxcQAwhtvnlmAjf3pxeJWXf1iII5ooXoxv2yW1G+FsL9RBztyEnTA1
+0iLFg1Yyx/28b7iZsf6oD5luqSRnQ7Qi0js5sAA3rVHfMtOlO/rGcUH1BprrpLPa
+m5jycApgp26OuCSxacOhlAZ6iXy1pyepTaDlS9wz1kbdwVJOf3IaWuRhDHrRugCd
+zya/579XFCsbobzejkSRHzgwylhuGsDMAniIn0MaeQw3E5wyBTCVJTXx9qebFj3v
+sUVcLNhFQBy/G8YWighvreSaPr43mWS4ueBmAMClqYmOzq2nF2k=
+=n+bE
+-----END PGP SIGNATURE-----
+
+--nextPart6220005.lOV4Wx5bFT--
+
+
 
