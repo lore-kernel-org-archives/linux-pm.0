@@ -1,176 +1,87 @@
-Received: from canpmsgout07.his.huawei.com (canpmsgout07.his.huawei.com [113.46.200.222])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E38D82DA76A
-	for <linux-pm@vger.kernel.org>; Wed,  3 Dec 2025 09:44:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.222
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC3B82853F1;
+	Wed,  3 Dec 2025 10:11:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764755056; cv=none; b=lqW7fJBxbODiius6UhFsuzOyq4fAx0DuFitvug26YEi6HD3kHLZo1oWrs7zfsjgGAx1TOVzMAwl6l7ZQa6AsosXYCmTHkfsiDA3FI1mJajzmfLmp5vGxQVKih7CiX2up5A9fhgT2SaW4z5LLprq4cIAe+wrm01slwpVqMrJVKaM=
+	t=1764756680; cv=none; b=FwejBCQ8jo9p0xc3lvwkssB2qAdRp+KvFF9zRCqdYM78SlP7PutaEebVTpti1uQpv/xmvHOk9CjT9aFOQjaso7y/GGkSOxx5M6yhVn4WERykEqW5KcDKh1ltW4CDcnpClB40wj0tczaOaqRXSrPjdiOYmZGChsWpT3t//WSUm4E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764755056; c=relaxed/simple;
-	bh=Gy9k2YvjNzQUobdJtNO+ADAraat2ipN79heNSkm+mhw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=beJejXIb4BQTSyo69zSs1POjubrp8IkN7e0jAytQ4nAogkivBedzi/EILAJryRFgs6xqAxGY/IUY9J6HkcLwFpnV0EdMT0VEGZ4RAiVDJuXjaT0SI0w+IyscRLpt5pa2ZhZWuCMOrne0gPvmbesHnnZUoVr70K9/oY/Mu7bRlzg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=H98lE/1v; arc=none smtp.client-ip=113.46.200.222
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+	s=arc-20240116; t=1764756680; c=relaxed/simple;
+	bh=dw4TiZn8xxcrO2mUbONBSyQ7Uq01fFPlIO8nwtYEWGk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=oPBsOjD1wMy/KbjQn1Zr3CvfQae1zpiZ7dCBHKqvsv2Gb3LzPv6CuIgeg5/ZJZ3S9HCknn32uVNJvlzZ0V7cwFOhDhLA4TmQ3wWNqtvUxt+9XWHe+a+cyOVmEydlSFWCsGHP9ifR9wBHF9ApLcrkvbkhN1DXSl8Yqdyzk7znZzM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YJoNkUiV; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="H98lE/1v"
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=F6wQSIrVYG8DUFW3hw4YI2m2i/45ZHAJi5HEHo3c3JA=;
-	b=H98lE/1veYxpI618FVYecifwjYeL5I8vpqQFVqsqKvTFioTzIBrUsex7/4KylLRTn+DSObrAi
-	LspXewjrtVvBx4DC6MReLUMrrD6FYsj+Xx5fnKny3SUMQGi1bhjn8RRzdxpFK5A4Gm9rHJ20BlA
-	uNofcWbBgSvu211poMcavys=
-Received: from mail.maildlp.com (unknown [172.19.163.17])
-	by canpmsgout07.his.huawei.com (SkyGuard) with ESMTPS id 4dLt2y2pfJzLlXs;
-	Wed,  3 Dec 2025 17:42:18 +0800 (CST)
-Received: from kwepemf200001.china.huawei.com (unknown [7.202.181.227])
-	by mail.maildlp.com (Postfix) with ESMTPS id 39A9A1A0188;
-	Wed,  3 Dec 2025 17:44:10 +0800 (CST)
-Received: from [10.67.121.90] (10.67.121.90) by kwepemf200001.china.huawei.com
- (7.202.181.227) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Wed, 3 Dec
- 2025 17:44:09 +0800
-Message-ID: <71d202d7-4584-4328-94cd-b2fc0b3d7b04@huawei.com>
-Date: Wed, 3 Dec 2025 17:44:08 +0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YJoNkUiV"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3C6E8C4CEFB;
+	Wed,  3 Dec 2025 10:11:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1764756679;
+	bh=dw4TiZn8xxcrO2mUbONBSyQ7Uq01fFPlIO8nwtYEWGk=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=YJoNkUiV7BJdPVfWDjdXEyTo290QuUwRS1gps4omZ9teErV8nllpfPyWLd7CwhMxM
+	 tqV0vjM5QA7iRY8XZ2NnYc3nppdwzSo8yTjSZm/R4lrJP0IqPgDg4wtU/fP60spJ6V
+	 qsnWL9CwzxYgObRwZcJfHF2MBTswjLfPGdbkzZ+FiCpreSLp78sr3TIX6Zj01U/74R
+	 3F6gzVFdpW8QNOhf9OW8A1+E2iweDkbdv9UDFezbBPCXAAa6FCSA8Sq8AHV+aPzY8f
+	 l0ekK/ZYZ7G3TubuLdavtHegDjQFYKr7JJSQmrKgceYLeu/yEKxsuGWESVw2i386Qu
+	 G+tT5bMqAahSg==
+From: Christian Brauner <brauner@kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Christian Brauner <brauner@kernel.org>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Jan Kara <jack@suse.cz>,
+	linux-fsdevel@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>,
+	Linux PM <linux-pm@vger.kernel.org>,
+	Ard Biesheuvel <ardb@kernel.org>
+Subject: Re: [PATCH v1] fs: PM: Fix reverse check in filesystems_freeze_callback()
+Date: Wed,  3 Dec 2025 11:10:32 +0100
+Message-ID: <20251203-harmonie-wirft-7c23dab0f888@brauner>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <12788397.O9o76ZdvQC@rafael.j.wysocki>
+References: <12788397.O9o76ZdvQC@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 0/3] arm64: topology: Handle AMU FIE setup on CPU
- hotplug
-To: Beata Michalska <beata.michalska@arm.com>
-CC: <catalin.marinas@arm.com>, <will@kernel.org>, <rafael@kernel.org>,
-	<viresh.kumar@linaro.org>, <sudeep.holla@arm.com>,
-	<gregkh@linuxfoundation.org>, <dakr@kernel.org>, <ionela.voinescu@arm.com>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-	<linuxarm@huawei.com>, <jonathan.cameron@huawei.com>,
-	<vincent.guittot@linaro.org>, <zhanjie9@hisilicon.com>,
-	<lihuisong@huawei.com>, <yubowen8@huawei.com>, <zhangpengjie2@huawei.com>,
-	<wangzhi12@huawei.com>, <linhongye@h-partners.com>
-References: <20251119081356.2495290-1-zhenglifeng1@huawei.com>
- <aS2z0EURwHbbGZab@arm.com> <9b6882dc-a91a-42d6-bf76-347338930d71@huawei.com>
- <aS8GZOuaS1-j14MD@arm.com>
-From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
-In-Reply-To: <aS8GZOuaS1-j14MD@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
- kwepemf200001.china.huawei.com (7.202.181.227)
+Content-Type: text/plain; charset="utf-8"
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1317; i=brauner@kernel.org; h=from:subject:message-id; bh=I9rQxRBS7UdWhIBo6tS1PDm3YufWgZ4UlioSglS5ZpM=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWQa8Kyp0GuW8IjVfLnKq/pIguSP7deC7+ypnp/q6WKh9 ZqX7WNRRykLgxgXg6yYIotDu0m43HKeis1GmRowc1iZQIYwcHEKwESm7GD4H+j6UmHe35aOT4kf K7h2HRMX9nvXknm5NMWVt3vrpTim4wz/3TJmCs9awBJ3ZW/p23wRxcCzk2yPh858aPTv+9re90c 3cQMA
+X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
+Content-Transfer-Encoding: 8bit
 
-On 2025/12/2 23:31, Beata Michalska wrote:
-> On Tue, Dec 02, 2025 at 11:05:25AM +0800, zhenglifeng (A) wrote:
->> On 2025/12/1 23:27, Beata Michalska wrote:
->>> Hi,
->>>
->>> Apologies for the delay in reviewing this - currently in progress....
->>> Out of curiosity: what's the cpufreq driver used for testing this series ?
->>
->> I used cppc_cpufreq for testing this. But with some modifications in
->> processor_driver.c, or you'll find that the driver will fail to load with
->> maxcpus set. The modification below is only a temporary solution. I'm still
->> working on that.
->>
-> Right, so overall the implementation looks good - thanks for that.
-> There are two issues though with the cppc cpufreq driver.
+On Tue, 02 Dec 2025 19:27:29 +0100, Rafael J. Wysocki wrote:
+> The freeze_all_ptr check in filesystems_freeze_callback() introduced by
+> commit a3f8f8662771 ("power: always freeze efivarfs") is reverse which
+> quite confusingly causes all file systems to be frozen when
+> filesystem_freeze_enabled is false.
 > 
-> One: as you have already noticed - it fails to register when
-> cpumask_present != cpumask_online.
+> On my systems it causes the WARN_ON_ONCE() in __set_task_frozen() to
+> trigger, most likely due to an attempt to freeze a file system that is
+> not ready for that.
 > 
-> Second: it will mix the sources of the freq scale if not all CPUs within the
-> policy have AMUs enabled/valid. This is due to the fact that at the time of
-> registering the driver and initializing the FIE support policy->cpus ==
-> policy->related_cpus. Assuming scenario when there are two CPUs within the
-> policy, one being offline and missing valid AMU counters,
-> the topology_set_scale_freq_source from cppc cpufreq driver will register
-> the tick handler for both CPUs, whereas AMU support will (rightly so) register
-> only for the firs one. When the second CPU comes online, the mismatch will be
-> detected and the arch callback will get cleared for the first CPU, but the
-> second one will remain unchanged.
+> [...]
 
-Thanks for pointing them out. I'll try to fix these issues after this series.
+Ah, thanks for catching that.
 
-> 
-> That said, I do not think any of those issues is a blocker for this series.
-> But both would need fixing.
-> 
-> ---
-> BR
-> Beata
-> 
-> 
->> ---
->> diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
->> index 5d824435b26b..2f286a1b0b02 100644
->> --- a/drivers/acpi/processor_driver.c
->> +++ b/drivers/acpi/processor_driver.c
->> @@ -33,6 +33,7 @@ MODULE_AUTHOR("Paul Diefenbaugh");
->>  MODULE_DESCRIPTION("ACPI Processor Driver");
->>  MODULE_LICENSE("GPL");
->>  
->> +static int acpi_processor_start(struct device *dev);
->>  static int acpi_processor_stop(struct device *dev);
->>  
->>  static const struct acpi_device_id processor_device_ids[] = {
->> @@ -46,6 +47,7 @@ static struct device_driver acpi_processor_driver = {
->>  	.name = "processor",
->>  	.bus = &cpu_subsys,
->>  	.acpi_match_table = processor_device_ids,
->> +	.probe = acpi_processor_start,
->>  	.remove = acpi_processor_stop,
->>  };
->>  
->> @@ -191,6 +193,21 @@ static int __acpi_processor_start(struct acpi_device *device)
->>  	return result;
->>  }
->>  
->> +static int acpi_processor_start(struct device *dev)
->> +{
->> +	struct acpi_device *device = ACPI_COMPANION(dev);
->> +	int ret;
->> +
->> +	if (!device)
->> +		return -ENODEV;
->> +
->> +	/* Protect against concurrent CPU hotplug operations */
->> +	cpu_hotplug_disable();
->> +	ret = __acpi_processor_start(device);
->> +	cpu_hotplug_enable();
->> +	return ret;
->> +}
->> +
->>  static int acpi_processor_stop(struct device *dev)
->>  {
->>  	struct acpi_device *device = ACPI_COMPANION(dev);
->> @@ -264,9 +281,9 @@ static int __init acpi_processor_driver_init(void)
->>  
->>  	acpi_processor_register_idle_driver();
->>  
->> -	result = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN,
->> -				   "acpi/cpu-drv:online",
->> -				   acpi_soft_cpu_online, NULL);
->> +	result = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN,
->> +					   "acpi/cpu-drv:online",
->> +					   acpi_soft_cpu_online, NULL);
->>  	if (result < 0)
->>  		goto err;
->>  	hp_online = result;
->>
->>>
->>> ---
->>> BR
->>> Beata
->>> On Wed, Nov 19, 2025 at 04:13:53PM +0800, Lifeng Zheng wrote:
->>>> Solve a problem that causes CPUs Setup AMU FIE failed in a corner case,
->>>> even though they're eligible.
->>>>
->>>>
->>>
->>
-> 
+---
 
+Applied to the vfs.fixes branch of the vfs/vfs.git tree.
+Patches in the vfs.fixes branch should appear in linux-next soon.
+
+Please report any outstanding bugs that were missed during review in a
+new review to the original patch series allowing us to drop it.
+
+It's encouraged to provide Acked-bys and Reviewed-bys even though the
+patch has now been applied. If possible patch trailers will be updated.
+
+Note that commit hashes shown below are subject to change due to rebase,
+trailer updates or similar. If in doubt, please check the listed branch.
+
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/vfs/vfs.git
+branch: vfs.fixes
+
+[1/1] fs: PM: Fix reverse check in filesystems_freeze_callback()
+      https://git.kernel.org/vfs/vfs/c/222047f68e85
