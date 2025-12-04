@@ -1,198 +1,302 @@
-Received: from mail-pf1-f178.google.com (mail-pf1-f178.google.com [209.85.210.178])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C54322D46A9
-	for <linux-pm@vger.kernel.org>; Thu,  4 Dec 2025 12:46:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.178
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 4033E2DEA87;
+	Thu,  4 Dec 2025 12:49:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764852397; cv=none; b=W+a+sRTCW0df6ReC+hwSA7xUmNq/u5IkXgCGRXmA576vDogy42lo0ZLwjjyqXmhgMHhuX195jeIcSGoUP0a0zk+7yZtOF7qRAVUtNEPvBvB/8lbzsViNZ6JimMQwZ8FEaOHZIysJAeClT2aX4KR7E6T7HQJKfxxFtHDcdybfn20=
+	t=1764852549; cv=none; b=Xsw/VgN5JpIrRLCKu3SXIOnTPu47eSWm9xMMR8nYL6BCd4XllVyqI8/f0dwqfxyJJE0tHzSQf8PZA95mxixIjAQgfKA3ufFkoO5wzzett9m3rS9gg8PcbAhmUmuYkLpSkcy9eX4AFn3tQXcD4vSwqvVLPjY0HJ80/hMuA6Uwi5M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764852397; c=relaxed/simple;
-	bh=6slcK3EQrAXupPVJr9jM3Pcmh+QTUwh+iVFWsaKxXWo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=BsIIcFiOVpfgiHR/b10SsoYn3AOohHeAt67oNNDt+RSRJiVT/TL3FF74A+d+QxoN9+l5KNZRHCGnMRhgHpi9m1hxSef+eRVHj+Lo8U2Dh8yTTUJlPYoG4iz/joNIySkBgdoxfphp62EPyYIiqdikZuiP9AS0iu/cAxkZOhaAVp0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.210.178
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-pf1-f178.google.com with SMTP id d2e1a72fcca58-7aae5f2633dso953735b3a.3
-        for <linux-pm@vger.kernel.org>; Thu, 04 Dec 2025 04:46:34 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1764852394; x=1765457194;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=gfnzYJnOAkS7SHNqKKzIeFzoFbDZmoEYIAPmuyxm7j4=;
-        b=udMKO3i3Nj0WB4VuYM8RFEfqmrXUdsGxrZxOx/xC7i+iNXKrDvsQOgLNKekaadMkc7
-         beJw4mIcqrBI0jq719BTMhJfk926bof9KpQv4QYXhje9EzeKqzl2d2I+X9lGhMu4FFKj
-         rS0CXDDcXuJXlNUf/3AHwXpTa0C3QM9f23ZVe+eKHLdgkAvoGluPgOB8n73ZP3btfJd8
-         zBMDpvWH+RES4aWRoB6y0nivVw7AFsWtXHcKODoezwuFZTPXDFk/hnh8TrNG937rwgn9
-         XvBgdHiXE2Yr5y8D4XUZBBCVJNo1/tLM+xUlmkt8F+I/O2q+CtjB+HXtEELkbih7cTL+
-         oUCQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVQqhbqh6cv1K2+Fg/NiPPUjyMc6mW8ukoSqzzv242OrXmnQISJrH9j+B+F/FXI4QeNWGyHWwLZnA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzY8A/mp7tU8mLeLjO3Wd++tKWSx17nQKyeLGjsbCAWgTltUL8f
-	sznYH3wWoAOQkBdgIBuwKRO2DP9G0SsT0DUMn+2n0ULqdUxxyelzCPbEP25Qiqu5
-X-Gm-Gg: ASbGncs+r3VvikGPo3Ri0B4hUw+sUGhMEy1wAj5EObMh1Ep+X+vS6rGqbmEvuuZKJvL
-	w2W6o4onhKRd5V3qScUJkeA/ZReqgpIW5yeFxLp5xVhwnA54dDjhTH7McPhwqwH9mCdiyDfN6qT
-	CKS+3x+Y1VFVOWP0hzsyweRli6VYtFWrAcauYWwxr4epu6Val5ybaJ801cihVBQNiCmxq3ntkIS
-	Yom6Bas917IZc3wUb5GN4KqBl/TCZEykp5NQCR8I5A3zgRqSXGPMhv3tXeDtvHdtKjsEi4TgQw4
-	2KGHTjNP8B+U5kVdi/sDriBHCWqY/GIDho+KhKmKExV3R0r+rcMui970WFo6nZ62rS4i2HbDf/R
-	3mC6SZqrwf4NxpZeNcyPSRvP/GZkxQnr5RjHWv7mFDrKATpKx/bnDHgEKTFEI6pM9Xrbbte2gUu
-	eelfJyb3AXD42H84g/IZ2YYeK58Ze/Pt9UCVerC6n79mP7CPxM
-X-Google-Smtp-Source: AGHT+IGPg7Pj3kLFvRSpXvCYqKYQFdsOhYROMfv1LQvSCdLYomRVewO8+8w+GTau8iNnbEixvNsF1Q==
-X-Received: by 2002:a05:6102:5547:b0:5dd:83de:badc with SMTP id ada2fe7eead31-5e48e5338a8mr1703873137.38.1764845364962;
-        Thu, 04 Dec 2025 02:49:24 -0800 (PST)
-Received: from mail-ua1-f41.google.com (mail-ua1-f41.google.com. [209.85.222.41])
-        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-5e510cbb4f0sm499819137.10.2025.12.04.02.49.24
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 04 Dec 2025 02:49:24 -0800 (PST)
-Received: by mail-ua1-f41.google.com with SMTP id a1e0cc1a2514c-93719360f9cso232031241.1
-        for <linux-pm@vger.kernel.org>; Thu, 04 Dec 2025 02:49:24 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCXC8UMbBPiVCUlL1KOI+OEOcjVsQJz3iBtX+hMGTZSHWr8k+Eic9p2ABg/spQ4lGPReIKzmz0i9eg==@vger.kernel.org
-X-Received: by 2002:a05:6102:6889:b0:5dd:b69a:cdce with SMTP id
- ada2fe7eead31-5e48e28ea62mr1665640137.1.1764845364523; Thu, 04 Dec 2025
- 02:49:24 -0800 (PST)
+	s=arc-20240116; t=1764852549; c=relaxed/simple;
+	bh=APo95nx7IFq72vEknBnu0c3y83bDG/XBwk+UdMc+cVY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=lPnVQfEiaV5anIH76QGFQ3J2p5lNFgDjpY0ASsJZ41tMLquxpMM77p4QXcytJwnm8VcvbdWMUp+uw9HQqwz1YSVSaaqYuTasutvG0uc7QfcHiLoA1br0i67wHX4yQGLPftfKrKxhIqly8Fp6OfFqQauBcLOEtesTYf1FQ47XDEM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 393DE339;
+	Thu,  4 Dec 2025 04:48:56 -0800 (PST)
+Received: from [10.1.35.81] (e127648.arm.com [10.1.35.81])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9420D3F73B;
+	Thu,  4 Dec 2025 04:48:55 -0800 (PST)
+Message-ID: <f28577c1-ca95-43ca-b179-32e2cd46d054@arm.com>
+Date: Thu, 4 Dec 2025 12:48:53 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251015071420.1173068-1-herve.codina@bootlin.com>
- <20251015071420.1173068-2-herve.codina@bootlin.com> <f74ab0a2-b74b-4b96-8469-a716c850e230@gmail.com>
- <CAL_JsqJDOYuzutMHMeFAogd5a_OX6Hwi8Gwz1Vy7HpXgNeYKsg@mail.gmail.com>
- <5cf2a12a-7c66-4622-b4a9-14896c6df005@gmail.com> <CAL_JsqJjm12LxpDg6LmpY=Ro_keHwnrWiYMLVnG=s_pSP4X2WQ@mail.gmail.com>
- <072dde7c-a53c-4525-83ac-57ea38edc0b5@gmail.com> <CAL_JsqKyG98pXGKpL=gxSc92izpzN7YCdq62ZJByhE6aFYs1fw@mail.gmail.com>
- <55076f4b-d523-4f8c-8bd4-0645b790737e@gmail.com> <20251202102619.5cd971cc@bootlin.com>
- <088af3ff-bd04-4bc9-b304-85f6ed555f2a@gmail.com> <20251202175836.747593c0@bootlin.com>
- <dc813fc2-28d2-4f2c-a2a3-08e33eec8ec7@gmail.com> <20251204083839.4fb8a4b1@bootlin.com>
-In-Reply-To: <20251204083839.4fb8a4b1@bootlin.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 4 Dec 2025 11:49:13 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdXdwf7La1EYBWTJadsTAJG3nKQVW6wtBn-bUqshA=XHRw@mail.gmail.com>
-X-Gm-Features: AWmQ_blMXTXWTKLb__jRgM2vj510G0Mh23mSqsI1Cojt34ffki3w4wmdXTg_pQg
-Message-ID: <CAMuHMdXdwf7La1EYBWTJadsTAJG3nKQVW6wtBn-bUqshA=XHRw@mail.gmail.com>
-Subject: Re: [PATCH v4 01/29] Revert "treewide: Fix probing of devices in DT overlays"
-To: Herve Codina <herve.codina@bootlin.com>
-Cc: Kalle Niemi <kaleposti@gmail.com>, Rob Herring <robh@kernel.org>, 
-	Matti Vaittinen <mazziesaccount@gmail.com>, linux-arm-kernel@lists.infradead.org, 
-	Andrew Lunn <andrew@lunn.ch>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Shawn Guo <shawnguo@kernel.org>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, Michael Turquette <mturquette@baylibre.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
-	Wolfram Sang <wsa+renesas@sang-engineering.com>, Peter Rosin <peda@axentia.se>, 
-	Arnd Bergmann <arnd@arndb.de>, Bjorn Helgaas <bhelgaas@google.com>, 
-	Charles Keepax <ckeepax@opensource.cirrus.com>, 
-	Richard Fitzgerald <rf@opensource.cirrus.com>, David Rhodes <david.rhodes@cirrus.com>, 
-	Linus Walleij <linus.walleij@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, 
-	Mark Brown <broonie@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-	Daniel Scally <djrscally@gmail.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
-	Sakari Ailus <sakari.ailus@linux.intel.com>, Len Brown <lenb@kernel.org>, 
-	Davidlohr Bueso <dave@stgolabs.net>, Jonathan Cameron <jonathan.cameron@huawei.com>, 
-	Dave Jiang <dave.jiang@intel.com>, Alison Schofield <alison.schofield@intel.com>, 
-	Vishal Verma <vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>, 
-	Dan Williams <dan.j.williams@intel.com>, Wolfram Sang <wsa@kernel.org>, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, imx@lists.linux.dev, linux-clk@vger.kernel.org, 
-	linux-i2c@vger.kernel.org, linux-pci@vger.kernel.org, 
-	linux-sound@vger.kernel.org, patches@opensource.cirrus.com, 
-	linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-spi@vger.kernel.org, linux-acpi@vger.kernel.org, 
-	linux-cxl@vger.kernel.org, Allan Nielsen <allan.nielsen@microchip.com>, 
-	Horatiu Vultur <horatiu.vultur@microchip.com>, 
-	Steen Hegelund <steen.hegelund@microchip.com>, Luca Ceresoli <luca.ceresoli@bootlin.com>, 
-	Thomas Petazzoni <thomas.petazzoni@bootlin.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 1/2] cpufreq: Replace trace_cpu_frequency with
+ trace_policy_frequency
+To: Samuel Wu <wusamuel@google.com>, Huang Rui <ray.huang@amd.com>,
+ "Gautham R. Shenoy" <gautham.shenoy@amd.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ Perry Yuan <perry.yuan@amd.com>, Jonathan Corbet <corbet@lwn.net>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Steven Rostedt
+ <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Len Brown <lenb@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>,
+ Martin KaFai Lau <martin.lau@linux.dev>, Eduard Zingerman
+ <eddyz87@gmail.com>, Song Liu <song@kernel.org>,
+ Yonghong Song <yonghong.song@linux.dev>,
+ John Fastabend <john.fastabend@gmail.com>, KP Singh <kpsingh@kernel.org>,
+ Stanislav Fomichev <sdf@fomichev.me>, Hao Luo <haoluo@google.com>,
+ Jiri Olsa <jolsa@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Ian Rogers <irogers@google.com>, Adrian Hunter <adrian.hunter@intel.com>,
+ James Clark <james.clark@linaro.org>
+Cc: kernel-team@android.com, linux-pm@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-trace-kernel@vger.kernel.org, bpf@vger.kernel.org,
+ linux-perf-users@vger.kernel.org
+References: <20251201202437.3750901-1-wusamuel@google.com>
+ <20251201202437.3750901-2-wusamuel@google.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <20251201202437.3750901-2-wusamuel@google.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Hi Herv=C3=A9,
+On 12/1/25 20:24, Samuel Wu wrote:
+> The existing cpu_frequency trace_event can be verbose, emitting a nearly
+> identical trace event for every CPU in the policy even when their
+> frequencies are identical.
+> 
+> This patch replaces the cpu_frequency trace event with policy_frequency
+> trace event, a more efficient alternative. From the kernel's
+> perspective, emitting a trace event once per policy instead of once per
+> cpu saves some memory and is less overhead. From the post-processing
+> perspective, analysis of the trace log is simplified without any loss of
+> information.
+> 
+> Signed-off-by: Samuel Wu <wusamuel@google.com>
+> ---
+>  drivers/cpufreq/cpufreq.c      | 14 ++------------
+>  drivers/cpufreq/intel_pstate.c |  6 ++++--
+>  include/trace/events/power.h   | 24 +++++++++++++++++++++---
+>  kernel/trace/power-traces.c    |  2 +-
+>  samples/bpf/cpustat_kern.c     |  8 ++++----
+>  samples/bpf/cpustat_user.c     |  6 +++---
+>  tools/perf/builtin-timechart.c | 12 ++++++------
+>  7 files changed, 41 insertions(+), 31 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 4472bb1ec83c..dd3f08f3b958 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -309,8 +309,6 @@ static void cpufreq_notify_transition(struct cpufreq_policy *policy,
+>  				      struct cpufreq_freqs *freqs,
+>  				      unsigned int state)
+>  {
+> -	int cpu;
+> -
+>  	BUG_ON(irqs_disabled());
+>  
+>  	if (cpufreq_disabled())
+> @@ -344,10 +342,7 @@ static void cpufreq_notify_transition(struct cpufreq_policy *policy,
+>  		adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
+>  		pr_debug("FREQ: %u - CPUs: %*pbl\n", freqs->new,
+>  			 cpumask_pr_args(policy->cpus));
+> -
+> -		for_each_cpu(cpu, policy->cpus)
+> -			trace_cpu_frequency(freqs->new, cpu);
+> -
+> +		trace_policy_frequency(freqs->new, policy->cpu, policy->cpus);
+>  		srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
+>  					 CPUFREQ_POSTCHANGE, freqs);
+>  
+> @@ -2201,7 +2196,6 @@ unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
+>  					unsigned int target_freq)
+>  {
+>  	unsigned int freq;
+> -	int cpu;
+>  
+>  	target_freq = clamp_val(target_freq, policy->min, policy->max);
+>  	freq = cpufreq_driver->fast_switch(policy, target_freq);
+> @@ -2213,11 +2207,7 @@ unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
+>  	arch_set_freq_scale(policy->related_cpus, freq,
+>  			    arch_scale_freq_ref(policy->cpu));
+>  	cpufreq_stats_record_transition(policy, freq);
+> -
+> -	if (trace_cpu_frequency_enabled()) {
+> -		for_each_cpu(cpu, policy->cpus)
+> -			trace_cpu_frequency(freq, cpu);
+> -	}
+> +	trace_policy_frequency(freq, policy->cpu, policy->cpus);
+>  
+>  	return freq;
+>  }
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index ec4abe374573..9724b5d19d83 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -2297,7 +2297,8 @@ static int hwp_get_cpu_scaling(int cpu)
+>  
+>  static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
+>  {
+> -	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
+> +	trace_policy_frequency(pstate * cpu->pstate.scaling, cpu->cpu,
+> +			       cpumask_of(cpu->cpu));
+>  	cpu->pstate.current_pstate = pstate;
+>  	/*
+>  	 * Generally, there is no guarantee that this code will always run on
+> @@ -2587,7 +2588,8 @@ static void intel_pstate_adjust_pstate(struct cpudata *cpu)
+>  
+>  	target_pstate = get_target_pstate(cpu);
+>  	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
+> -	trace_cpu_frequency(target_pstate * cpu->pstate.scaling, cpu->cpu);
+> +	trace_policy_frequency(target_pstate * cpu->pstate.scaling, cpu->cpu,
+> +			       cpumask_of(cpu->cpu));
+>  	intel_pstate_update_pstate(cpu, target_pstate);
+>  
+>  	sample = &cpu->sample;
+> diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+> index 370f8df2fdb4..317098ffdd5f 100644
+> --- a/include/trace/events/power.h
+> +++ b/include/trace/events/power.h
+> @@ -182,11 +182,29 @@ TRACE_EVENT(pstate_sample,
+>  		{ PM_EVENT_RECOVER, "recover" }, \
+>  		{ PM_EVENT_POWEROFF, "poweroff" })
+>  
+> -DEFINE_EVENT(cpu, cpu_frequency,
+> +TRACE_EVENT(policy_frequency,
+>  
+> -	TP_PROTO(unsigned int frequency, unsigned int cpu_id),
+> +	TP_PROTO(unsigned int frequency, unsigned int cpu_id,
+> +		 const struct cpumask *policy_cpus),
+>  
+> -	TP_ARGS(frequency, cpu_id)
+> +	TP_ARGS(frequency, cpu_id, policy_cpus),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(u32, state)
+> +		__field(u32, cpu_id)
+> +		__cpumask(cpumask)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->state = frequency;
+> +		__entry->cpu_id = cpu_id;
+> +		__assign_cpumask(cpumask, policy_cpus);
+> +	),
+> +
+> +	TP_printk("state=%lu cpu_id=%lu policy_cpus=%*pb",
+> +		  (unsigned long)__entry->state,
+> +		  (unsigned long)__entry->cpu_id,
+> +		  cpumask_pr_args((struct cpumask *)__get_dynamic_array(cpumask)))
+>  );
+>  
+>  TRACE_EVENT(cpu_frequency_limits,
+> diff --git a/kernel/trace/power-traces.c b/kernel/trace/power-traces.c
+> index f2fe33573e54..a537e68a6878 100644
+> --- a/kernel/trace/power-traces.c
+> +++ b/kernel/trace/power-traces.c
+> @@ -16,5 +16,5 @@
+>  
+>  EXPORT_TRACEPOINT_SYMBOL_GPL(suspend_resume);
+>  EXPORT_TRACEPOINT_SYMBOL_GPL(cpu_idle);
+> -EXPORT_TRACEPOINT_SYMBOL_GPL(cpu_frequency);
+> +EXPORT_TRACEPOINT_SYMBOL_GPL(policy_frequency);
+>  
+> diff --git a/samples/bpf/cpustat_kern.c b/samples/bpf/cpustat_kern.c
+> index 7ec7143e2757..f485de0f89b2 100644
+> --- a/samples/bpf/cpustat_kern.c
+> +++ b/samples/bpf/cpustat_kern.c
+> @@ -75,9 +75,9 @@ struct {
+>  } pstate_duration SEC(".maps");
+>  
+>  /*
+> - * The trace events for cpu_idle and cpu_frequency are taken from:
+> + * The trace events for cpu_idle and policy_frequency are taken from:
+>   * /sys/kernel/tracing/events/power/cpu_idle/format
+> - * /sys/kernel/tracing/events/power/cpu_frequency/format
+> + * /sys/kernel/tracing/events/power/policy_frequency/format
+>   *
+>   * These two events have same format, so define one common structure.
+>   */
+> @@ -162,7 +162,7 @@ int bpf_prog1(struct cpu_args *ctx)
+>  	 */
+>  	if (ctx->state != (u32)-1) {
+>  
+> -		/* record pstate after have first cpu_frequency event */
+> +		/* record pstate after have first policy_frequency event */
+>  		if (!*pts)
+>  			return 0;
+>  
+> @@ -208,7 +208,7 @@ int bpf_prog1(struct cpu_args *ctx)
+>  	return 0;
+>  }
+>  
+> -SEC("tracepoint/power/cpu_frequency")
+> +SEC("tracepoint/power/policy_frequency")
+>  int bpf_prog2(struct cpu_args *ctx)
+>  {
+>  	u64 *pts, *cstate, *pstate, cur_ts, delta;
+> diff --git a/samples/bpf/cpustat_user.c b/samples/bpf/cpustat_user.c
+> index 356f756cba0d..f7e81f702358 100644
+> --- a/samples/bpf/cpustat_user.c
+> +++ b/samples/bpf/cpustat_user.c
+> @@ -143,12 +143,12 @@ static int cpu_stat_inject_cpu_idle_event(void)
+>  
+>  /*
+>   * It's possible to have no any frequency change for long time and cannot
+> - * get ftrace event 'trace_cpu_frequency' for long period, this introduces
+> + * get ftrace event 'trace_policy_frequency' for long period, this introduces
+>   * big deviation for pstate statistics.
+>   *
+>   * To solve this issue, below code forces to set 'scaling_max_freq' to 208MHz
+> - * for triggering ftrace event 'trace_cpu_frequency' and then recovery back to
+> - * the maximum frequency value 1.2GHz.
+> + * for triggering ftrace event 'trace_policy_frequency' and then recovery back
+> + * to the maximum frequency value 1.2GHz.
+>   */
+>  static int cpu_stat_inject_cpu_frequency_event(void)
+>  {
+> diff --git a/tools/perf/builtin-timechart.c b/tools/perf/builtin-timechart.c
+> index 22050c640dfa..3ef1a2fd0493 100644
+> --- a/tools/perf/builtin-timechart.c
+> +++ b/tools/perf/builtin-timechart.c
+> @@ -612,10 +612,10 @@ process_sample_cpu_idle(struct timechart *tchart __maybe_unused,
+>  }
+>  
+>  static int
+> -process_sample_cpu_frequency(struct timechart *tchart,
+> -			     struct evsel *evsel,
+> -			     struct perf_sample *sample,
+> -			     const char *backtrace __maybe_unused)
+> +process_sample_policy_frequency(struct timechart *tchart,
+> +				struct evsel *evsel,
+> +				struct perf_sample *sample,
+> +				const char *backtrace __maybe_unused)
+>  {
+>  	u32 state  = evsel__intval(evsel, sample, "state");
+>  	u32 cpu_id = evsel__intval(evsel, sample, "cpu_id");
+> @@ -1541,7 +1541,7 @@ static int __cmd_timechart(struct timechart *tchart, const char *output_name)
+>  {
+>  	const struct evsel_str_handler power_tracepoints[] = {
+>  		{ "power:cpu_idle",		process_sample_cpu_idle },
+> -		{ "power:cpu_frequency",	process_sample_cpu_frequency },
+> +		{ "power:policy_frequency",	process_sample_policy_frequency },
+>  		{ "sched:sched_wakeup",		process_sample_sched_wakeup },
+>  		{ "sched:sched_switch",		process_sample_sched_switch },
+>  #ifdef SUPPORT_OLD_POWER_EVENTS
+> @@ -1804,7 +1804,7 @@ static int timechart__record(struct timechart *tchart, int argc, const char **ar
+>  	unsigned int backtrace_args_no = ARRAY_SIZE(backtrace_args);
+>  
+>  	const char * const power_args[] = {
+> -		"-e", "power:cpu_frequency",
+> +		"-e", "power:policy_frequency",
+>  		"-e", "power:cpu_idle",
+>  	};
+>  	unsigned int power_args_nr = ARRAY_SIZE(power_args);
 
-On Thu, 4 Dec 2025 at 08:39, Herve Codina <herve.codina@bootlin.com> wrote:
-> Indeed, Kalle, Geert, I don't have your hardware, your related overlay or
-> a similar one that could be used for test and also I don't have your out =
-of
-> tree code used to handle this overlay.
->
-> I know overlays and fw_devlink have issues. Links created by fw_devlink
-> when an overlay is applied were not correct on my side.
->
-> Can you check your <supplier>--<consumer> links with 'ls /sys/class/devli=
-nks'
->
-> On my side, without my patches some links were not correct.
-> They linked to the parent of the supplier instead of the supplier itself.
-> The consequence is a kernel crash, use after free, refcounting failure, .=
-..
-> when the supplier device is removed.
->
-> Indeed, with wrong links consumers were not removed before suppliers they
-> used.
->
-> Looking at Geert traces:
-> --- 8< ---
-> rcar_sound ec500000.sound: Failed to create device link (0x180) with
-> supplier soc for /soc/sound@ec500000/rcar_sound,src/src-0
-> rcar_sound ec500000.sound: Failed to create device link (0x180) with
-> supplier soc for /soc/sound@ec500000/rcar_sound,src/src-1
-> [...]
-> --- 8< ---
->
-> Even if it is not correct, why the soc device cannot be a provider?
-> I don't have the answer to this question yet.
-
-I have no idea. These failures (sound) are also not related to the
-device I am adding through the overlay (SPI EEPROM).
-Note that these failures appear only with your suggested fix, and are
-not seen with just the patch in the subject of this email thread.
-
-> Without having the exact tree structure of the base device-tree, the over=
-lay
-> and the way it is applied, and so without been able to reproduce the issu=
-e
-> on my side, investigating the issue is going to be difficult.
->
-> I hope to find some help to move forward and fix the issue.
-
-Base DTS is [1], overlay DTS is [2].
-Applying and removing the overlay is done using OF_CONFIGFS[3],
-and "overlay [add|rm] 25lc040"[4].
-
-I assume you can reproduce the issue on any board that has an SPI
-EEPROM, after moving the SPI bus enablement and SPI EEPROM node to an
-overlay. Probably even with an I2C EEPROM instead.  Or even without
-an actual EEPROM connected, as even the SPI bus fails to appear.
-
-> Saravana's email (Saravana Kannan <saravanak@google.com>) seems incorrect=
-.
-> Got emails delivery failure with this email address.
-
-Yeah, he moved company.
-He is still alive, I met him in the LPC Training Session yesterday ;-)
-
-Thanks!
-
-[1] https://web.git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drive=
-rs.git/tree/arch/arm64/boot/dts/renesas/r8a77990-ebisu.dts
-[2] https://web.git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drive=
-rs.git/tree/arch/arm64/boot/dts/renesas/r8a77990-ebisu-cn41-msiof0-25lc040.=
-dtso?h=3Dtopic/renesas-overlays-v6.17-rc1
-[3] https://web.git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drive=
-rs.git/log/?h=3Dtopic/overlays-v6.17-rc1
-[4] https://elinux.org/R-Car/DT-Overlays#Helper_Script
-[5] https://lore.kernel.org/CAMuHMdXEnSD4rRJ-o90x4OprUacN_rJgyo8x6=3D9F9rZ+=
--KzjOg@mail.gmail.com/
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+perf timechart seem to do per-CPU reporting though?
+So this is broken by not emitting an event per-CPU? At least with a simple s/cpu_frequency/policy_frequency/
+like here.
+Similar for the bpf samples technically...
