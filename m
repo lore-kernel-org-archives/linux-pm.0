@@ -1,145 +1,121 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 20AFE3358C6;
-	Thu,  4 Dec 2025 10:14:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-4320.protonmail.ch (mail-4320.protonmail.ch [185.70.43.20])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B57FC334695;
+	Thu,  4 Dec 2025 11:04:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.70.43.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764843254; cv=none; b=bGg92IL8hgQAtT66s8ftIlQVN4o47f5pB29npkxTKR1VPXUMCc0GywYb3ZcRUyo/VSuUyItlDQShqFV9NsS0lTS3rg9iL292NPzpIeAXDrxlYw/0yKR9BppPmwU6ScMyC/J+IAV3s/njAQumPt9o+/4GrdlY9mmHcbFI5j82Oaw=
+	t=1764846246; cv=none; b=HhlcJVJ6cOxXnpNp4P4/0V78pCRg14Ku8R0l0OUM0/q1vb4N404Dj//GkfHMqc6IifW/JHZijV470PSqfi//sfTubC7z0AfrHKNyp3P1qxjbw5LpYyEf+ZEtb8MDYo/jtLWd3voF/CbFEtU2SCes+x9Z1wKE71DsXChb/p7cA5o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764843254; c=relaxed/simple;
-	bh=7p3Q3R/TN0IjnjA1YQqyM+/v+u0kbdHf83OddMbsRo8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=is9CFXkeHF7SURHD48UfmtpGyNxDz7af9WgdTqOd+BpItEmWWHdvtUNyHfqFb3fsA97DyxpwPBBzU9SZGlShIsXkDmmTCottKBYNlffkBJ6YRO+1VtnxtuyUb9YM/6jnoSKBL1qYftnfABBjOF9bn9ABmWyIkY554yCdnnpTxmM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2D91E339;
-	Thu,  4 Dec 2025 02:14:04 -0800 (PST)
-Received: from e135073.nice.arm.com (e135073.arm.com [10.34.125.22])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id DB88B3F73B;
-	Thu,  4 Dec 2025 02:14:08 -0800 (PST)
-From: Pierre Gondois <pierre.gondois@arm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Christian Loehle <christian.loehle@arm.com>,
-	Ionela Voinescu <ionela.voinescu@arm.com>,
-	zhenglifeng1@huawei.com,
-	Jie Zhan <zhanjie9@hisilicon.com>,
-	Pierre Gondois <pierre.gondois@arm.com>,
-	Huang Rui <ray.huang@amd.com>,
-	"Gautham R. Shenoy" <gautham.shenoy@amd.com>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Perry Yuan <perry.yuan@amd.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v1 4/4] cpufreq: Update set_boost callbacks to rely on boost_freq_req
-Date: Thu,  4 Dec 2025 11:13:40 +0100
-Message-ID: <20251204101344.192678-5-pierre.gondois@arm.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20251204101344.192678-1-pierre.gondois@arm.com>
-References: <20251204101344.192678-1-pierre.gondois@arm.com>
+	s=arc-20240116; t=1764846246; c=relaxed/simple;
+	bh=5FzTcSVMzM6nyPMirYnQRY06ESV1QxJo7pfqxG3/Odg=;
+	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=bfYBxQcewfTsnurk3cwe312av899Ah49BA4V7nAUV1r/axHCK0GQymWPcQM6ar2HprujHfguJlUnXkKwYvFoMykUyd9h87cauiRq3nPF+VrRXpDCaYoAxhPkl8iE1LWpW00USjXBD4m3RPcSVkQfCL1igwL7j3XjkGgIJXH0EPQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ranostay.sg; spf=pass smtp.mailfrom=ranostay.sg; dkim=pass (2048-bit key) header.d=ranostay.sg header.i=@ranostay.sg header.b=g9oLqBjL; arc=none smtp.client-ip=185.70.43.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ranostay.sg
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ranostay.sg
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=ranostay.sg header.i=@ranostay.sg header.b="g9oLqBjL"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ranostay.sg;
+	s=protonmail2; t=1764846230; x=1765105430;
+	bh=5FzTcSVMzM6nyPMirYnQRY06ESV1QxJo7pfqxG3/Odg=;
+	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
+	 Message-ID:BIMI-Selector;
+	b=g9oLqBjLhOJ3tiASQ+HEgs+OfypXwjCaDzVoiGI+2ZxHsa+Erx88RXs67GcToR9uv
+	 tE153hW1Cvq5Be8DEGyjlw4m52YR3AY63mxfoOYFoh0GVhS5WLdJ65GUGe1xg7kI4N
+	 DCjO/cqqI/ki0HcbVBhm5v871MK8zgx6OGEQH6K1OWa5VwLfNZjoor7Z663UQp/QM5
+	 xF+iHg+osgrlCHB4TBXk/3cIHkwaqYncbKoBQO4elDFTCLyi2KEb+wAqsnnkkko2jK
+	 2rlS/ayjG0tTNnPwAQo6RQZ0jDeZ6zDFb6eKHGmrK1c9unPzTgRHpX6Aj1T2e5aNlD
+	 PSDAKICsk9vVw==
+Date: Thu, 04 Dec 2025 11:03:44 +0000
+To: Haotian Zhang <vulab@iscas.ac.cn>
+From: Matt Ranostay <matt@ranostay.sg>
+Cc: sre@kernel.org, pali@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] power: supply: bq27xxx: fix wrong errno when bus ops are unsupported
+Message-ID: <NRoZvEd3G9hUveVmurvooyzuQ0LfrghfASmcQHggvJhrPCiqvunmHFg3iyhi49ufJ0zKOpzwkUc4btlf1bkR_-CTcCM2hJcifqPdqbxinXQ=@ranostay.sg>
+In-Reply-To: <20251204083436.1367-1-vulab@iscas.ac.cn>
+References: <20251204083436.1367-1-vulab@iscas.ac.cn>
+Feedback-ID: 87502384:user:proton
+X-Pm-Message-ID: 8a2a6e405d4cc30700f45ad06061e4a119845f0d
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-In the existing set_boost() callbacks:
-- Don't update policy->max as this is done through the qos notifier
-  cpufreq_notifier_max() which calls cpufreq_set_policy().
-- Remove freq_qos_update_request() calls as the qos request is now
-  done in policy_set_boost() and updates the new boost_freq_req
+Seems reasonable enough..
+Only possible concern is breaking ABI if some application is wrongly expect=
+ing -EPERM for an error condition, but seems unlikely enough to not correct=
+ this.
 
-Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
----
- drivers/cpufreq/amd-pstate.c   |  2 --
- drivers/cpufreq/cppc_cpufreq.c | 20 ++++----------------
- drivers/cpufreq/cpufreq.c      | 10 ++--------
- 3 files changed, 6 insertions(+), 26 deletions(-)
+Reviewed-by: Matt Ranostay <matt@ranostay.sg>
 
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index b44f0f7a5ba1c..50416358a96ac 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -754,8 +754,6 @@ static int amd_pstate_cpu_boost_update(struct cpufreq_policy *policy, bool on)
- 	else if (policy->cpuinfo.max_freq > nominal_freq)
- 		policy->cpuinfo.max_freq = nominal_freq;
- 
--	policy->max = policy->cpuinfo.max_freq;
--
- 	if (cppc_state == AMD_PSTATE_PASSIVE) {
- 		ret = freq_qos_update_request(&cpudata->req[1], policy->cpuinfo.max_freq);
- 		if (ret < 0)
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index e23d9abea1359..a2f64099d39a4 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -597,21 +597,14 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	caps = &cpu_data->perf_caps;
- 	policy->driver_data = cpu_data;
- 
--	/*
--	 * Set min to lowest nonlinear perf to avoid any efficiency penalty (see
--	 * Section 8.4.7.1.1.5 of ACPI 6.1 spec)
--	 */
--	policy->min = cppc_perf_to_khz(caps, caps->lowest_nonlinear_perf);
--	policy->max = cppc_perf_to_khz(caps, policy->boost_enabled ?
--						caps->highest_perf : caps->nominal_perf);
--
- 	/*
- 	 * Set cpuinfo.min_freq to Lowest to make the full range of performance
- 	 * available if userspace wants to use any perf between lowest & lowest
- 	 * nonlinear perf
- 	 */
- 	policy->cpuinfo.min_freq = cppc_perf_to_khz(caps, caps->lowest_perf);
--	policy->cpuinfo.max_freq = policy->max;
-+	policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, policy->boost_enabled ?
-+						caps->highest_perf : caps->nominal_perf);
- 
- 	policy->transition_delay_us = cppc_cpufreq_get_transition_delay_us(cpu);
- 	policy->shared_type = cpu_data->shared_type;
-@@ -779,14 +772,9 @@ static int cppc_cpufreq_set_boost(struct cpufreq_policy *policy, int state)
- 	int ret;
- 
- 	if (state)
--		policy->max = cppc_perf_to_khz(caps, caps->highest_perf);
-+		policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, caps->highest_perf);
- 	else
--		policy->max = cppc_perf_to_khz(caps, caps->nominal_perf);
--	policy->cpuinfo.max_freq = policy->max;
--
--	ret = freq_qos_update_request(policy->max_freq_req, policy->max);
--	if (ret < 0)
--		return ret;
-+		policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, caps->nominal_perf);
- 
- 	return 0;
- }
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 9d98b98e7981c..c360af436f1ea 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2820,16 +2820,10 @@ int cpufreq_boost_set_sw(struct cpufreq_policy *policy, int state)
- 		return -ENXIO;
- 
- 	ret = cpufreq_frequency_table_cpuinfo(policy);
--	if (ret) {
-+	if (ret)
- 		pr_err("%s: Policy frequency update failed\n", __func__);
--		return ret;
--	}
- 
--	ret = freq_qos_update_request(policy->max_freq_req, policy->max);
--	if (ret < 0)
--		return ret;
--
--	return 0;
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(cpufreq_boost_set_sw);
- 
--- 
-2.43.0
+Sent with Proton Mail secure email.
 
+On Thursday, December 4th, 2025 at 16:35, Haotian Zhang <vulab@iscas.ac.cn>=
+ wrote:
+
+> bq27xxx_write(), bq27xxx_read_block(), and bq27xxx_write_block()
+> return -EPERM when the bus callback pointer is NULL. A NULL callback
+> indicates the operation is not supported by the bus/driver,
+> not that permission is denied.
+>=20
+> Return -EOPNOTSUPP instead of -EPERM when di->bus.write/
+>=20
+> read_bulk/write_bulk is NULL.
+>=20
+> Fixes: 14073f6614f6 ("power: supply: bq27xxx: Add bulk transfer bus metho=
+ds")
+> Signed-off-by: Haotian Zhang vulab@iscas.ac.cn
+>=20
+> ---
+> drivers/power/supply/bq27xxx_battery.c | 6 +++---
+> 1 file changed, 3 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/suppl=
+y/bq27xxx_battery.c
+> index ad2d9ecf32a5..1d7aa240126a 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -1172,7 +1172,7 @@ static inline int bq27xxx_write(struct bq27xxx_devi=
+ce_info *di, int reg_index,
+> return -EINVAL;
+>=20
+> if (!di->bus.write)
+>=20
+> - return -EPERM;
+> + return -EOPNOTSUPP;
+>=20
+> ret =3D di->bus.write(di, di->regs[reg_index], value, single);
+>=20
+> if (ret < 0)
+> @@ -1191,7 +1191,7 @@ static inline int bq27xxx_read_block(struct bq27xxx=
+_device_info *di, int reg_ind
+> return -EINVAL;
+>=20
+> if (!di->bus.read_bulk)
+>=20
+> - return -EPERM;
+> + return -EOPNOTSUPP;
+>=20
+> ret =3D di->bus.read_bulk(di, di->regs[reg_index], data, len);
+>=20
+> if (ret < 0)
+> @@ -1210,7 +1210,7 @@ static inline int bq27xxx_write_block(struct bq27xx=
+x_device_info *di, int reg_in
+> return -EINVAL;
+>=20
+> if (!di->bus.write_bulk)
+>=20
+> - return -EPERM;
+> + return -EOPNOTSUPP;
+>=20
+> ret =3D di->bus.write_bulk(di, di->regs[reg_index], data, len);
+>=20
+> if (ret < 0)
+> --
+> 2.50.1.windows.1
