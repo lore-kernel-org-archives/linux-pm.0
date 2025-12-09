@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 255E627FD54;
-	Tue,  9 Dec 2025 14:00:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98CB6288C34;
+	Tue,  9 Dec 2025 14:00:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1765288853; cv=none; b=vAnGWQpJ9anpf2BNih89BCq+asmTORh259HLG5LgCMqPoI9fDp2K+Hm8NQiPJgfeSC/32n6iwg0ZNncv59v3C4uHEfHUU8pX7eSSNKuDSvPvoim0JvQN31SfOddV4cRN0oz7mDqQa0XndhN8kD6AO94GTJbgeQ/M8YZe7xP7v2M=
+	t=1765288858; cv=none; b=cPwRToixwkpWVsF0iLauBLqLaN1XMOsIYOYtrh8CwZ1wN7H39st807nwI9tcn1bAFH6qxL+E0IVx5+IgltHQW3kgxOc3yHSCDNTbB0lmfIjoR787DOdDkbvfxukaWwFMzlbkXfYU004Q0zDOmu7GCXXhHhLlsm44DiV1tW+9c34=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1765288853; c=relaxed/simple;
-	bh=3703QhYtIpCzHyGxmzxkvuMzPg+4PJNUfbVV56/WJDo=;
+	s=arc-20240116; t=1765288858; c=relaxed/simple;
+	bh=9MYPvycO72qiUjiHEBTYvwZbNGMr66KlQdcFJE8oal0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=H7IOFNk+94tK5xtjJMmIozXlwrvgnQ8srOAIAUm2/Pn908RE2LesfJllYUBUFP19IZutZ4N9zJPggxMeHD4Wu9dV2d3fOjNb9mrmVVUotPEah8Gs0ywwTIX4Q9VkXlylVfJUDnRVDhxEeYuEpofRnR8blFKI842eSuAYuT7g8nc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BABQ3aFG; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=NzfOjeiWOuWvj17YUDHAyJ15ghtP6IDmkAReBlCKBsfVDuCkBSeL5Il62wONQAz2PHnI5mulctiebUMCSbBZsEBYf5nPjCpMU5Bjn6J9QzmY+fRDW1bSs6Me1iWYAFvmihVh/6reTnKIwGHVJlT8SSrvtKpNDqye7snqUWMPjaY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PYqmPoBQ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BABQ3aFG"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 14D4FC19422;
-	Tue,  9 Dec 2025 14:00:50 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PYqmPoBQ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8F8B6C113D0;
+	Tue,  9 Dec 2025 14:00:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1765288852;
-	bh=3703QhYtIpCzHyGxmzxkvuMzPg+4PJNUfbVV56/WJDo=;
+	s=k20201202; t=1765288858;
+	bh=9MYPvycO72qiUjiHEBTYvwZbNGMr66KlQdcFJE8oal0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=BABQ3aFGR8qiBGsSoCqe+Y3A9/amtaNUAxWbxz0M+K7EH8EeE6/WFehmNq4vahDn1
-	 td8lWK9cH0vmxD/Os79Mh3kVCn+9y/oYirSYFgAo6n+KT4NchshiarNWduaq5MLIDV
-	 VSGcWPC4r8eEzD98KMzsuzwQZjtfm3a2peYVsicnqmR+Q8z+AhMnDOwB8RKHFITALZ
-	 Sdk9vcsqsVFKdGpR0URcWkl/ABj47f0wDQv1k0XhPR5TlHOvFq3NuwFvbS+5f0q558
-	 mQ2IukmQZvbOcthn/2ONqMILvV1PfoxrQDb99xQfCfmHgccaaR9gXjnaTkwgRu9/91
-	 ODUcZDMvl/3iw==
+	b=PYqmPoBQiO5tpaEGzyC5In3Xa4ZA5uCvDli7CHqtTT1oaagqVTBjZaIdBdmnl1Bn7
+	 EiJA1TJTzZxi/go1MvLb7dSyOK7Egkp03IrwcqR7Zxra6al/rG0vYbWOpyC45ZbPPd
+	 y5uSRkbVZ3NUW7zf1vuboEaSbkd3cWuSMhfumhoEZTKKrmwUlDTReTnXMJiUlvkxUb
+	 ul+jBs7BhD8BFtQb0PrSUiAUJAKBqceG4p+x0khWhH1yW+uAJuZKE8xTZDxsGSQFRH
+	 aAFxD0qvYX4UohJFOL1x5Ty3vWMl/PNMwp+WPGfcniWYRRs7Eoi58TIq/YQzvdTp0u
+	 D/ZQ/otBMGLgQ==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux ACPI <linux-acpi@vger.kernel.org>
 Cc: Hans de Goede <hdegoede@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
@@ -33,10 +33,9 @@ Cc: Hans de Goede <hdegoede@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
  Thomas =?ISO-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>,
  Armin Wolf <w_armin@gmx.de>
 Subject:
- [PATCH v1 07/10] ACPI: scan: Do not mark button ACPI devices as
- wakeup-capable
-Date: Tue, 09 Dec 2025 14:56:48 +0100
-Message-ID: <3735183.R56niFO833@rafael.j.wysocki>
+ [PATCH v1 06/10] ACPI: scan: Do not bind ACPI drivers to fixed event buttons
+Date: Tue, 09 Dec 2025 14:56:06 +0100
+Message-ID: <4480030.ejJDZkT8p0@rafael.j.wysocki>
 Organization: Linux Kernel Development
 In-Reply-To: <2339822.iZASKD2KPV@rafael.j.wysocki>
 References: <2339822.iZASKD2KPV@rafael.j.wysocki>
@@ -51,33 +50,38 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-It is generally questionable to mark struct acpi_device "devices" as
-wakeup-capable because they represent firmware entities that by
-themselves have no wakeup capabilities.
+Both ACPI button drivers have been converted to platform ones, so there
+is no reason to attempt to bind an ACPI driver to a struct acpi_device
+representing a fixed event device button.
 
-It was done for struct acpi_device "devices" corresponding to buttons
-because the ACPI button driver was binding to them directly, but now
-that corresponding platform devices are created for the buttons and
-they are marked as wakeup-capable by the ACPI button driver, there is
-no reason to continue doing it.
+Update the relevant code accordingly.
 
-Update acpi_wakeup_gpe_init() accordingly.
+No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/scan.c |    1 -
- 1 file changed, 1 deletion(-)
+ drivers/acpi/scan.c |    9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
 --- a/drivers/acpi/scan.c
 +++ b/drivers/acpi/scan.c
-@@ -1022,7 +1022,6 @@ static bool acpi_wakeup_gpe_init(struct
- 		    wakeup->sleep_state == ACPI_STATE_S5)
- 			wakeup->sleep_state = ACPI_STATE_S4;
- 		acpi_mark_gpe_for_wake(wakeup->gpe_device, wakeup->gpe_number);
--		device_set_wakeup_capable(&device->dev, true);
- 		return true;
- 	}
+@@ -2652,15 +2652,8 @@ static void acpi_bus_add_fixed_device_ob
+ 	struct acpi_device *adev = NULL;
  
+ 	acpi_add_single_object(&adev, NULL, type, false);
+-	if (adev) {
+-		adev->flags.match_driver = true;
+-		if (device_attach(&adev->dev) >= 0)
+-			device_init_wakeup(&adev->dev, true);
+-		else
+-			dev_dbg(&adev->dev, "No driver\n");
+-
++	if (adev)
+ 		acpi_default_enumeration(adev);
+-	}
+ }
+ 
+ static void acpi_bus_scan_fixed(void)
 
 
 
