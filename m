@@ -1,171 +1,177 @@
-Received: from mail-lf1-f46.google.com (mail-lf1-f46.google.com [209.85.167.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1E4A238C03
-	for <linux-pm@vger.kernel.org>; Thu, 11 Dec 2025 13:52:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4B7924A05D;
+	Thu, 11 Dec 2025 14:22:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1765461156; cv=none; b=AmIczWYfQV9FKXl8+OfpNZ0Yk+fbkIsOZtrSa8aDaN5STplJOTk3rsM1oXGl4Ouu09CTn+dFmgLPyuTkMQRPhQJVXomEs+TtfJQQiEszX5r9riOJYbI/EX9mpDCqA5ZM4uU6eygtd7hW477rSHmKCqhHtvU9Snf3rgms6Ka9+rc=
+	t=1765462930; cv=none; b=jg6Ar9XPsD55VbRaeYKpfQAl9BeIJF3IMlEN5xsQ/Nuan9WEg0gdoxV8yscDS/fhkrSmSj5OqgU4V8TSCvifTWJ/Dt6Whpp6BoXIzihTh+ebMnEFZ/Y0hKs0wTyl0Og29cxlmX/U9vwOSt9YptomvHNLepw4Tejw10HSBxgw0tA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1765461156; c=relaxed/simple;
-	bh=G75QtHwaXyoGaF97/dwbuAjoqGb0m37v7wfeVaP4ZQU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bTW1DgIRGTNN2lKbBPDGdADcVm4Gcqut3sXAivRVtqNkrvjfI6qJ3s8vNpqohFJdyHKqfinmgVV+LYL2UuUy27kYzUnixzkjlq0h3xNKbGkix+PAwd902pj3YjwxqxO8Kbt7odejSZL0A79s4MeaJmWwOva4wf3cFVn1Q82d9+0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=O5qVzYVn; arc=none smtp.client-ip=209.85.167.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1765462930; c=relaxed/simple;
+	bh=wo7OI8uOaxRflEssZX4egi7ehSYDFXojYA+F+vTiuas=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=fNpnhB6AnDh84u+FkhWYTJsXjWqLL4JpuN5P2WSHS894F1xqgHjXfv12ldYyoIV2NJ39N8OvheXvTeP+jZbPa15a2k6nQdXpXAtWMXW8sRrN7MUzVri9muSB3LJFXMmi1f117VRqGiHCsERsvCOdsLdwZzVacrSqwDXdWaUhnEw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fssdghVQ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="O5qVzYVn"
-Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-598f59996aaso128773e87.1
-        for <linux-pm@vger.kernel.org>; Thu, 11 Dec 2025 05:52:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1765461152; x=1766065952; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=OyF8Llfg/KLa+0XknFO643JOUJVOQHSA+WqT/UvRncg=;
-        b=O5qVzYVnkNAcBM0yU6/ECghA5DRIx/1vVPyJlHnBpRP0GapnWkpi6WRp2s3WP3FJdS
-         kQTdbNBmDRPs5RP2zVC05U2ryvX5+DMju0KLFgWs8XDo4xpjFH5p6dlS/iF283SUjROq
-         /jlL+BzBFrzCYPsre33fFUM3wq+N1G3gnplPBg7ZjgE5ESofxOJzGqZnmbXkjF8nmRAv
-         lmHtzHR4/t+AHezqADCg2QD8t2s+e8FCRCTMVhbXWuXzPpyevNM+lyuYTEtvGrBptNpN
-         vQGQtBx4c5yYcARkXeK/lMvMRShdukWmJi9T4IiYhSkFOK5joxJvnxZQUy+qfKxTewrN
-         sptw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1765461152; x=1766065952;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=OyF8Llfg/KLa+0XknFO643JOUJVOQHSA+WqT/UvRncg=;
-        b=dX7YHIlwGkQvJeoTgNLRRw2tE7Vn7TTTVcpmRzmv6dPRuDe4Pi9RXrw1ailYfMy7/o
-         jwErvC/Pmt4J3/mH286N4TEF8CALIJaCbOMvc9lzWDl3/WxgqS8XbC570oe7oD3pvphv
-         SuA47TU7kLJ20MM+I6ARjKskhJXwJrx2Jlkvl4pPrhSLM1CL3XdNhFBYbB8d/cWyzVyj
-         uzkQrCEC9A523venYHJZZc253t1KAOmfg2Avzv2cjrMc2nq/Erm5QqCl+kvTy8sjMxH+
-         s01JltEcHUfrI2IENZuxiQRM+LctmBbCMBlM+oTQ4Bz8jhClZcSx0Kq292JXG7xGoSau
-         6bSg==
-X-Forwarded-Encrypted: i=1; AJvYcCW6G3rNyQmOT/4KDQRdOjUIdTgV/n1bvZP31k+UFt3b6ZY8KG8Ok4DFYqZozII+vViEmsIEUlbyVA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzEN0TqqyX9U3Yj/9G2brWm1a9dWX93pirYWUL/Ly8lhz56Eupa
-	AHzJKmF2CqUwEQ1YCUibNfs0ClYrg8txmHkKKXtNEYkJS3GDd0hYzi/p
-X-Gm-Gg: AY/fxX5CbludJ3myTUEqHjvrxdTZdR9T6oxZ5RK7qyfigvqsSpdB0FjIsPZ+KjnL5nX
-	DFTzhv58z11cfFIhnsyLsmNSJbMMtr83O9bIffhiUemN674h7y00SsSFjXruBHH9zJ2uZU5a/nd
-	Wcc4tQlhxKMENz/b9wc1sw84FaCgN+BN/dgXvkDgADtn0gjluLdn+SyGL+wH+Xh4I8SCltDtOIs
-	9hYXHCUd7O98COKSZYF29xokecNHd0nSjfJlbqxpZ0+kQ8zuNOdV0S1PZmG8VWFZYHqbGqNOtOR
-	S1iMGBYqwGrWIQYZPakFZbHxAdyQAex/AfjRlaY4mMCw4AXgvJ6CItKh5Hs3C62GDyYKQSDZk7/
-	PYQl41Mdtm/NQk9rNk8K8k4SkTTVmaXCD1h4FSPb6FcF+O5YsaqIvcKPeK7/7JuvDWPZty1EMCm
-	41q53SqhwT0wnYAXR89AI7pE5E3s1KIAfvSU2UU5PgIhyYg6zmQj8NN7y1jFBAKu6iNCZU
-X-Google-Smtp-Source: AGHT+IFWJFGGAGC5oB/hILZqbH9Fl+tM9Ekock+BvVcvC2+WO2RAGZK2t4qHgeuRfvNMm8ED4+amVw==
-X-Received: by 2002:a05:6512:1390:b0:594:28f6:b065 with SMTP id 2adb3069b0e04-598ee47cf27mr2467104e87.17.1765461151758;
-        Thu, 11 Dec 2025 05:52:31 -0800 (PST)
-Received: from ?IPV6:2a10:a5c0:800d:dd00:8fdf:935a:2c85:d703? ([2a10:a5c0:800d:dd00:8fdf:935a:2c85:d703])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-598f2f37951sm877935e87.4.2025.12.11.05.52.29
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 11 Dec 2025 05:52:30 -0800 (PST)
-Message-ID: <1b9fa77b-d74a-4fa7-b2e7-8b389d59a5a0@gmail.com>
-Date: Thu, 11 Dec 2025 15:52:28 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fssdghVQ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7B962C4CEF7;
+	Thu, 11 Dec 2025 14:22:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1765462930;
+	bh=wo7OI8uOaxRflEssZX4egi7ehSYDFXojYA+F+vTiuas=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=fssdghVQOIbfuasOMt556uIlYgAOZ2oDlgm21RhBbl9B3xO2FBNR5/AOuXqSWVV6J
+	 IlqxLXUEpgp3LQGhTlCj14ugf6QaXZx9SIsOkPq8SgLrDSFq29/zkQFevwvKdesGev
+	 9rlCilC0D1O5HfNcmsTDDjMg4i0sctGCoFGo/AzvUPKkkSfD79xiqj/GJabGbutpTK
+	 +4QkGCI2h22WmhcphOhtfd0GU7+0hM+VxZWJu/yHkriQtzatQ081vMzjAobNIAu7pD
+	 ccVlhochPXP4JnXneK5Ukz8xuj9xzlXxbZ0C7chYEYw4ig1Jz+olZ6PgCitFWqW1hd
+	 oEZxkxNwut65A==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
+ Armin Wolf <w_armin@gmx.de>, Hans de Goede <hansg@kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Vishal Verma <vishal.l.verma@intel.com>, Dave Jiang <dave.jiang@intel.com>,
+ Ira Weiny <ira.weiny@intel.com>, nvdimm@lists.linux.dev
+Subject:
+ [RFT][PATCH v1 6/6] ACPI: NFIT: core: Convert the driver to a platform one
+Date: Thu, 11 Dec 2025 15:22:00 +0100
+Message-ID: <2028345.PYKUYFuaPT@rafael.j.wysocki>
+Organization: Linux Kernel Development
+In-Reply-To: <5066996.31r3eYUQgx@rafael.j.wysocki>
+References: <5066996.31r3eYUQgx@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 01/29] Revert "treewide: Fix probing of devices in DT
- overlays"
-To: Herve Codina <herve.codina@bootlin.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
- Kalle Niemi <kaleposti@gmail.com>, Rob Herring <robh@kernel.org>,
- linux-arm-kernel@lists.infradead.org, Andrew Lunn <andrew@lunn.ch>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>,
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>,
- Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
- <sboyd@kernel.org>, Andi Shyti <andi.shyti@kernel.org>,
- Wolfram Sang <wsa+renesas@sang-engineering.com>,
- Peter Rosin <peda@axentia.se>, Arnd Bergmann <arnd@arndb.de>,
- Bjorn Helgaas <bhelgaas@google.com>,
- Charles Keepax <ckeepax@opensource.cirrus.com>,
- Richard Fitzgerald <rf@opensource.cirrus.com>,
- David Rhodes <david.rhodes@cirrus.com>,
- Linus Walleij <linus.walleij@linaro.org>,
- Ulf Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Daniel Scally <djrscally@gmail.com>,
- Heikki Krogerus <heikki.krogerus@linux.intel.com>,
- Sakari Ailus <sakari.ailus@linux.intel.com>, Len Brown <lenb@kernel.org>,
- Davidlohr Bueso <dave@stgolabs.net>,
- Jonathan Cameron <jonathan.cameron@huawei.com>,
- Dave Jiang <dave.jiang@intel.com>,
- Alison Schofield <alison.schofield@intel.com>,
- Vishal Verma <vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>,
- Dan Williams <dan.j.williams@intel.com>, Wolfram Sang <wsa@kernel.org>,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- imx@lists.linux.dev, linux-clk@vger.kernel.org, linux-i2c@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-sound@vger.kernel.org,
- patches@opensource.cirrus.com, linux-gpio@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-spi@vger.kernel.org,
- linux-acpi@vger.kernel.org, linux-cxl@vger.kernel.org,
- Allan Nielsen <allan.nielsen@microchip.com>,
- Horatiu Vultur <horatiu.vultur@microchip.com>,
- Steen Hegelund <steen.hegelund@microchip.com>,
- Luca Ceresoli <luca.ceresoli@bootlin.com>,
- Thomas Petazzoni <thomas.petazzoni@bootlin.com>
-References: <20251015071420.1173068-1-herve.codina@bootlin.com>
- <20251015071420.1173068-2-herve.codina@bootlin.com>
- <f74ab0a2-b74b-4b96-8469-a716c850e230@gmail.com>
- <CAL_JsqJDOYuzutMHMeFAogd5a_OX6Hwi8Gwz1Vy7HpXgNeYKsg@mail.gmail.com>
- <5cf2a12a-7c66-4622-b4a9-14896c6df005@gmail.com>
- <CAL_JsqJjm12LxpDg6LmpY=Ro_keHwnrWiYMLVnG=s_pSP4X2WQ@mail.gmail.com>
- <072dde7c-a53c-4525-83ac-57ea38edc0b5@gmail.com>
- <CAL_JsqKyG98pXGKpL=gxSc92izpzN7YCdq62ZJByhE6aFYs1fw@mail.gmail.com>
- <55076f4b-d523-4f8c-8bd4-0645b790737e@gmail.com>
- <20251202102619.5cd971cc@bootlin.com>
- <088af3ff-bd04-4bc9-b304-85f6ed555f2a@gmail.com>
- <20251202175836.747593c0@bootlin.com>
- <dc813fc2-28d2-4f2c-a2a3-08e33eec8ec7@gmail.com>
- <20251204083839.4fb8a4b1@bootlin.com>
- <CAMuHMdXdwf7La1EYBWTJadsTAJG3nKQVW6wtBn-bUqshA=XHRw@mail.gmail.com>
- <20251210132140.32dbc3d7@bootlin.com>
- <c50c40cc-69f6-436c-a94e-94a3a10f6727@gmail.com>
- <20251211132044.10f5b1ea@bootlin.com>
-Content-Language: en-US, en-AU, en-GB, en-BW
-From: Matti Vaittinen <mazziesaccount@gmail.com>
-In-Reply-To: <20251211132044.10f5b1ea@bootlin.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-On 11/12/2025 14:20, Herve Codina wrote:
-> Hi Matti,
-> 
-> On Thu, 11 Dec 2025 10:34:46 +0200
-> Matti Vaittinen <mazziesaccount@gmail.com> wrote:
-> 
-/snip
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> 
-> Do you see the same trace with:
-> - "pinctrl-0 = <&i2c1_pins>;" in your overlay
-> - fragment0 removed from the overlay (i2c1_pins definition removed from
->    the overlay.
-> - i2c1_pins node defined in your base DT.
+While binding drivers directly to struct acpi_device objects allows
+basic functionality to be provided, at least in the majority of cases,
+there are some problems with it, related to general consistency, sysfs
+layout, power management operation ordering, and code cleanliness.
 
-Just tested. The i2c1 appears and the test-overlay probe gets called, 
-when the i2c1_pins is in the base-dt and not in the overlay.
+Overall, it is better to bind drivers to platform devices than to their
+ACPI companions, so convert the ACPI NFIT core driver to a platform one.
 
-> In other word, is the issues related to adding a pinctrl sub-node (pinctrl
-> pins definition) in the overlay or is it something else?
+While this is not expected to alter functionality, it changes sysfs
+layout and so it will be visible to user space.
 
-Seems to be related to the pinctrl.
+This change was mostly developed by Michal Wilczynski [1].
 
-
-Yours,
-	-- Matti
-
+Linu: https://lore.kernel.org/linux-acpi/20231011083334.3987477-6-michal.wilczynski@intel.com/ [1]
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
-Matti Vaittinen
-Linux kernel developer at ROHM Semiconductors
-Oulu Finland
+ drivers/acpi/nfit/core.c |   34 ++++++++++++++++++----------------
+ 1 file changed, 18 insertions(+), 16 deletions(-)
 
-~~ When things go utterly wrong vim users can always type :help! ~~
+--- a/drivers/acpi/nfit/core.c
++++ b/drivers/acpi/nfit/core.c
+@@ -2,6 +2,7 @@
+ /*
+  * Copyright(c) 2013-2015 Intel Corporation. All rights reserved.
+  */
++#include <linux/platform_device.h>
+ #include <linux/list_sort.h>
+ #include <linux/libnvdimm.h>
+ #include <linux/module.h>
+@@ -98,7 +99,7 @@ static struct acpi_device *to_acpi_dev(s
+ 			|| strcmp(nd_desc->provider_name, "ACPI.NFIT") != 0)
+ 		return NULL;
+ 
+-	return to_acpi_device(acpi_desc->dev);
++	return ACPI_COMPANION(acpi_desc->dev);
+ }
+ 
+ static int xlat_bus_status(void *buf, unsigned int cmd, u32 status)
+@@ -3283,11 +3284,11 @@ static void acpi_nfit_put_table(void *ta
+ 
+ static void acpi_nfit_notify(acpi_handle handle, u32 event, void *data)
+ {
+-	struct acpi_device *adev = data;
++	struct device *dev = data;
+ 
+-	device_lock(&adev->dev);
+-	__acpi_nfit_notify(&adev->dev, handle, event);
+-	device_unlock(&adev->dev);
++	device_lock(dev);
++	__acpi_nfit_notify(dev, handle, event);
++	device_unlock(dev);
+ }
+ 
+ static void acpi_nfit_remove_notify_handler(void *data)
+@@ -3328,18 +3329,19 @@ void acpi_nfit_shutdown(void *data)
+ }
+ EXPORT_SYMBOL_GPL(acpi_nfit_shutdown);
+ 
+-static int acpi_nfit_add(struct acpi_device *adev)
++static int acpi_nfit_probe(struct platform_device *pdev)
+ {
+ 	struct acpi_buffer buf = { ACPI_ALLOCATE_BUFFER, NULL };
+ 	struct acpi_nfit_desc *acpi_desc;
+-	struct device *dev = &adev->dev;
++	struct device *dev = &pdev->dev;
++	struct acpi_device *adev = ACPI_COMPANION(dev);
+ 	struct acpi_table_header *tbl;
+ 	acpi_status status = AE_OK;
+ 	acpi_size sz;
+ 	int rc = 0;
+ 
+ 	rc = acpi_dev_install_notify_handler(adev, ACPI_DEVICE_NOTIFY,
+-					     acpi_nfit_notify, adev);
++					     acpi_nfit_notify, dev);
+ 	if (rc)
+ 		return rc;
+ 
+@@ -3369,7 +3371,7 @@ static int acpi_nfit_add(struct acpi_dev
+ 	acpi_desc = devm_kzalloc(dev, sizeof(*acpi_desc), GFP_KERNEL);
+ 	if (!acpi_desc)
+ 		return -ENOMEM;
+-	acpi_nfit_desc_init(acpi_desc, &adev->dev);
++	acpi_nfit_desc_init(acpi_desc, dev);
+ 
+ 	/* Save the acpi header for exporting the revision via sysfs */
+ 	acpi_desc->acpi_header = *tbl;
+@@ -3474,11 +3476,11 @@ static const struct acpi_device_id acpi_
+ };
+ MODULE_DEVICE_TABLE(acpi, acpi_nfit_ids);
+ 
+-static struct acpi_driver acpi_nfit_driver = {
+-	.name = KBUILD_MODNAME,
+-	.ids = acpi_nfit_ids,
+-	.ops = {
+-		.add = acpi_nfit_add,
++static struct platform_driver acpi_nfit_driver = {
++	.probe = acpi_nfit_probe,
++	.driver = {
++		.name = "acpi-nfit",
++		.acpi_match_table = acpi_nfit_ids,
+ 	},
+ };
+ 
+@@ -3516,7 +3518,7 @@ static __init int nfit_init(void)
+ 		return -ENOMEM;
+ 
+ 	nfit_mce_register();
+-	ret = acpi_bus_register_driver(&acpi_nfit_driver);
++	ret = platform_driver_register(&acpi_nfit_driver);
+ 	if (ret) {
+ 		nfit_mce_unregister();
+ 		destroy_workqueue(nfit_wq);
+@@ -3529,7 +3531,7 @@ static __init int nfit_init(void)
+ static __exit void nfit_exit(void)
+ {
+ 	nfit_mce_unregister();
+-	acpi_bus_unregister_driver(&acpi_nfit_driver);
++	platform_driver_unregister(&acpi_nfit_driver);
+ 	destroy_workqueue(nfit_wq);
+ 	WARN_ON(!list_empty(&acpi_descs));
+ }
+
+
+
