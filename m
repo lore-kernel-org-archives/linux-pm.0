@@ -1,90 +1,112 @@
-Received: from smtp1.ms.mff.cuni.cz (smtp-in1.ms.mff.cuni.cz [195.113.20.234])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5BD1D2C11C7;
-	Sat, 13 Dec 2025 08:49:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.113.20.234
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 659F8221726;
+	Sat, 13 Dec 2025 15:20:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1765615796; cv=none; b=iKs4BKvPiyysBPlDtwWK0W9OU1BnUWK4ux2RrkkHbzsrEWWvVtV9KxX18nMN4pumpyU42Nex+t8vbowW8FdEhBDTk7fZZFLzqfc79eFWWeO+phdLCG206mx0gmCRh0nguNI4ujpE7F5UESLYuInQXhe10XIURaxPmmzsrgTzPDY=
+	t=1765639202; cv=none; b=Jx4n97C8JG6tia9cBwkzD2AWzauK13yBs1UeLvyo6cCKtX5ZjfWsqwiXcvNVXE9Dte7b1o7JoCeyPyh2zWc/qnK+/OHbVO012DJt2U102KvOn/F9phFawiwEj3JsO7XCaXfFNOGBgXYpVPl8vD4fUn1wJwMyRNLHkh1iE1rGaQo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1765615796; c=relaxed/simple;
-	bh=Lmg1bqIhkrWTJCAPgB5H4cWELl/ZFtQzVJyDAiq3pR4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=BfQM7uMhzHBZHVXsNlhn1RMbP4PPKlLgnniy2TrX8myuxhNwQ0WNoOGOmtdttwVLVWyCa0UM0h/olJIwvdiRvawxhJeo5+ZPgKYCl4ykvPwJzilPZ+DwkdnV2WTZ3woPsif9qytoqeO/ML63QNoPfadZ0LvKw74O0cAfSCwqrR0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=matfyz.cz; spf=pass smtp.mailfrom=matfyz.cz; dkim=pass (2048-bit key) header.d=mff.cuni.cz header.i=@mff.cuni.cz header.b=W4plroK2; arc=none smtp.client-ip=195.113.20.234
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=matfyz.cz
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=matfyz.cz
+	s=arc-20240116; t=1765639202; c=relaxed/simple;
+	bh=SfRsyNZlXG5eeLM8ItwniBCiImW1HWheHg8vcn/Omxo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=NaTxkBHxiScdS3wkKzNzqDs77Rz+JyrPwjsZBjBgiHe/uQV8i5zyWGaSoNLBBMgiOjndWkFExQs6vVCGHCgJVlhTyEXxVjp6VwMKdUdgE99mgCCWVjIF0bQMRi+SYX15YPOCMFjhkCwX9SLd3Lr41zpxvoTkJ4xW+H1aVwJYRXc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=EJFXRYZJ; arc=none smtp.client-ip=198.175.65.19
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mff.cuni.cz header.i=@mff.cuni.cz header.b="W4plroK2"
-X-SubmittedBy: id balejk@matfyz.cz subject /postalCode=110+2000/O=Univerzita+20Karlova/street=Ovocn+5CxC3+5CxBD+20trh+20560+5C/5/ST=Praha,+20Hlavn+5CxC3+5CxAD+20m+5CxC4+5Cx9Bsto/C=CZ/CN=Karel+20Balej/emailAddress=balejk@matfyz.cz
-	serial F5FD910E8FE2121B897F7E55B84E351D
-	issued by /C=NL/O=GEANT+20Vereniging/CN=GEANT+20Personal+20CA+204
-	auth type TLS.CUNI
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mff.cuni.cz;
-	s=submission; t=1765615742; x=1766915742;
-	bh=MsJ/bbje7wscSwZPWlgEMlKtiOAlEmU0N4goIajw7B8=; h=From;
-	b=W4plroK2aGc8coBxZGC4nza2c3SitcVOSLEzgydCidHCuBrNBvMdJusVb6S0JkMZW
-	 f9znjwQmGI8xG32cViAoN53pCDhdLse5wWjjBOz2jwFsp1vZEHAKXakXCTJt/e4Lqe
-	 mUMZ7cA4KPmmvsQkNfPlJmkuZSNFZIHKwde8GM9veZEgkn/vlmfqEFxHvYrwroKiGL
-	 RWtKVRG5KUtgapKmHrAnrJ9OjST1PhDT9t6Z7cXujlO++l7h/wu9gs/d06qmG1VUPO
-	 WxBn+pfWI2RmGIOMfa9IZ8OB1KejQtQ3l+wgolCuZvggNAIVtj4Bz40J/d7wJ2uaQ+
-	 S9sR/aobENiJA==
-Received: from localhost (internet5.mraknet.com [185.200.108.250])
-	(authenticated)
-	by smtp1.ms.mff.cuni.cz (8.18.1/8.18.1) with ESMTPS id 5BD8n1tx051949
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=OK);
-	Sat, 13 Dec 2025 09:49:02 +0100 (CET)
-	(envelope-from balejk@matfyz.cz)
-From: Karel Balej <balejk@matfyz.cz>
-To: =?UTF-8?q?Duje=20Mihanovi=C4=87?= <duje@dujemihanovic.xyz>,
-        Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
-Cc: ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        Karel Balej <balejk@matfyz.cz>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Subject: [PATCH v2 1/2] dt-bindings: power: define ID for Marvell PXA1908 audio domain
-Date: Sat, 13 Dec 2025 09:48:12 +0100
-Message-ID: <20251213084843.7491-1-balejk@matfyz.cz>
-X-Mailer: git-send-email 2.51.2
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="EJFXRYZJ"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1765639200; x=1797175200;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=SfRsyNZlXG5eeLM8ItwniBCiImW1HWheHg8vcn/Omxo=;
+  b=EJFXRYZJmEpSyB9vXIZ5ouKMJXCbo4zgOywVXuHXkf8elqdfLzPdPXyx
+   zy5QTOo7Ap+jqEkupX2+OPd4mJlefRwMGY4WLqVxuubBaLhd9RB0h3gGO
+   TntDcMbgb95si37POsSbOr8hs+3U0/SLYKTSaGkPEzrP8t4/VAXem/g8O
+   fujJjjmiIl9NV+q1eDdLrZzIFLujRNzxPo57t4gpqgtuv5UkBST6dT6k2
+   MHrAHvHiR1rwfll6RMQ02FKWijylMDwEGiyheTJF4ySkdCWgi33Y8Vtds
+   xFyEY4BevpKJLIfCoJbh0kFOEXbkzcuGn7MxBhJY5IwnJ1sYsqVPbsdRn
+   g==;
+X-CSE-ConnectionGUID: UbyUTfSIR22KsafAM62eNA==
+X-CSE-MsgGUID: f86AqWXySEyhH6qMZ/AlDw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11641"; a="67490529"
+X-IronPort-AV: E=Sophos;i="6.21,146,1763452800"; 
+   d="scan'208";a="67490529"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Dec 2025 07:20:00 -0800
+X-CSE-ConnectionGUID: z0Y2RG6kQ2uPXLwf/ZjKXw==
+X-CSE-MsgGUID: Yp1UjaFaR1KDmEwIYcyCqw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.21,146,1763452800"; 
+   d="scan'208";a="197325290"
+Received: from lkp-server01.sh.intel.com (HELO d335e3c6db51) ([10.239.97.150])
+  by orviesa007.jf.intel.com with ESMTP; 13 Dec 2025 07:19:54 -0800
+Received: from kbuild by d335e3c6db51 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1vURPS-000000007nN-3CMB;
+	Sat, 13 Dec 2025 15:19:50 +0000
+Date: Sat, 13 Dec 2025 23:19:31 +0800
+From: kernel test robot <lkp@intel.com>
+To: Ramiro Oliveira <ramiro.oliveira@advantech.com>,
+	Lee Jones <lee@kernel.org>, Linus Walleij <linusw@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+	Wim Van Sebroeck <wim@linux-watchdog.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>
+Cc: oe-kbuild-all@lists.linux.dev, linux-kernel@vger.kernel.org,
+	linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org,
+	linux-i2c@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-watchdog@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Wenkai Chung <wenkai.chung@advantech.com.tw>,
+	Francisco Aragon-Trivino <francisco.aragon-trivino@advantech.com>,
+	Hongzhi Wang <hongzhi.wang@advantech.com>,
+	Mikhail Tsukerman <mikhail.tsukerman@advantech.com>,
+	Thomas Kastner <thomas.kastner@advantech.com>,
+	Ramiro Oliveira <ramiro.oliveira@advantech.com>
+Subject: Re: [PATCH 1/8] Add Advantech EIO MFD driver
+Message-ID: <202512132239.HrAPSw6z-lkp@intel.com>
+References: <20251212-upstream-v1-v1-1-d50d40ec8d8a@advantech.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Spam-Level: ****
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251212-upstream-v1-v1-1-d50d40ec8d8a@advantech.com>
 
-Define an identifier for the SoC's audio power island so that it can be
-referenced through device tree.
+Hi Ramiro,
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Reviewed-by: Duje Mihanović <duje@dujemihanovic.xyz>
-Signed-off-by: Karel Balej <balejk@matfyz.cz>
----
+kernel test robot noticed the following build warnings:
 
-Notes:
-    v2:
-    - Add received trailers (thanks!).
-    - v1: https://lore.kernel.org/r/20251127190237.745-1-balejk@matfyz.cz/
+[auto build test WARNING on d9771d0dbe18dd643760431870a6abf9b0866bb0]
 
- include/dt-bindings/power/marvell,pxa1908-power.h | 1 +
- 1 file changed, 1 insertion(+)
+url:    https://github.com/intel-lab-lkp/linux/commits/Ramiro-Oliveira/Add-Advantech-EIO-MFD-driver/20251213-004905
+base:   d9771d0dbe18dd643760431870a6abf9b0866bb0
+patch link:    https://lore.kernel.org/r/20251212-upstream-v1-v1-1-d50d40ec8d8a%40advantech.com
+patch subject: [PATCH 1/8] Add Advantech EIO MFD driver
+config: nios2-allmodconfig (https://download.01.org/0day-ci/archive/20251213/202512132239.HrAPSw6z-lkp@intel.com/config)
+compiler: nios2-linux-gcc (GCC) 11.5.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251213/202512132239.HrAPSw6z-lkp@intel.com/reproduce)
 
-diff --git a/include/dt-bindings/power/marvell,pxa1908-power.h b/include/dt-bindings/power/marvell,pxa1908-power.h
-index 19b088351af1..173f47e0e69d 100644
---- a/include/dt-bindings/power/marvell,pxa1908-power.h
-+++ b/include/dt-bindings/power/marvell,pxa1908-power.h
-@@ -13,5 +13,6 @@
- #define PXA1908_POWER_DOMAIN_GPU2D	2
- #define PXA1908_POWER_DOMAIN_DSI	3
- #define PXA1908_POWER_DOMAIN_ISP	4
-+#define PXA1908_POWER_DOMAIN_AUDIO	5
- 
- #endif
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202512132239.HrAPSw6z-lkp@intel.com/
+
+All warnings (new ones prefixed by >>):
+
+>> Warning: drivers/mfd/eio_core.c:37 cannot understand function prototype: 'uint timeout = DEFAULT_TIMEOUT;'
+
 -- 
-2.51.2
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
