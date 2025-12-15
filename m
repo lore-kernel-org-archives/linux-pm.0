@@ -1,30 +1,30 @@
 Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29F3731A803;
-	Mon, 15 Dec 2025 03:50:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CFB0317706;
+	Mon, 15 Dec 2025 03:50:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=60.244.123.138
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1765770612; cv=none; b=qXjB8gf107W13ZDf8hjG1EoI7qpvKyAVtG1UrJZND+mPr4HlDAlN956ATMj5q6dVJdxuni4goRRMO+AsH4SLWplg0doJOWzVq4/LMo1gIPhi8JRC6qcyitQvPPp6G+eP2vvfDss89HQnv8OGX81C46q0Ju5iKlLwHwjXXDLA/zM=
+	t=1765770612; cv=none; b=UH6OEbsfKlsQGl9zB+0kNB7e7KNh58BpCIWQN0KQ3p4cQ1hOOAaABizyAGdUtkG1IofAye35E1AkKfhcbMnLNzTR8Zft2rDTkblooyCjFc4j74QrXk4s9okYRhLWMdWwEwxvqz5dZJq+0u1sGVMselfwwQw07db68/GmbexrgqA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1765770612; c=relaxed/simple;
-	bh=uu01Gd5YwEyCBZJxoSnP3Zi7C4ZmmAeywEbYe/P1MiI=;
+	bh=j4PeH3VvdDceENg13Ql0e5mBtrLJ1NdiEmH6js9boas=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ER2t12zKswksQfcHv/5oGofMaKlC/mExx3Gtq40CYurJymK/8Nig4ekKjEExHuK/Gf7G8apc8t9l8yosMFszD+EoV2aOtT35D3po8f4RDrb4fdQ+vTNoYSJEwtQIAiN9eqZ2LKlxElKPa1HXMG68XWzdYwv0fXZClc/U/trHCZ0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com; spf=pass smtp.mailfrom=mediatek.com; dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b=Uals1+qQ; arc=none smtp.client-ip=60.244.123.138
+	 MIME-Version:Content-Type; b=llIiqj5dFbxAUhz7v+YEXHBfOxzBiM1+tiBbgn6jibwIbMGLT/1lFX/Wm/N3m7+cJqWDDo0qWWtJ8ppG4VaBwmksogVta06wsvS67JldEdCXEsWy5ZVu1NWM2eCVMXaEpU2qvMnNAsKeS5id7fYJk0JVedZIblaAu2bzuq/jqD8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com; spf=pass smtp.mailfrom=mediatek.com; dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b=SHVNSIgH; arc=none smtp.client-ip=60.244.123.138
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mediatek.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="Uals1+qQ"
-X-UUID: 1e9edf7ed96911f0b2bf0b349165d6e0-20251215
+	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="SHVNSIgH"
+X-UUID: 1d68151cd96911f0b2bf0b349165d6e0-20251215
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-	h=Content-Type:Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=RY3OeQEU4titlHaJYHmEcQZ2EsZgSXYNc9HPKtB4Pm4=;
-	b=Uals1+qQivjw1ZsebQxuBgwuvCgztH4Yi4cyMgTe23RpvKNVHeTs+p6h+oBf5mBbkNxX5tRWr0cduFeYRzqmHgxuWlPZv86ax0JjW8cq0dGXxnqw5XNFDYO2xcU6U1xdYWle4J3gpWsiKnFXrHr9l16HcLubQmFn5A06ek3Oc9I=;
+	h=Content-Type:Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=LaV8DwZmBEHEtEB75FWL49lVDqkVLABEDZwia7MXrhw=;
+	b=SHVNSIgHk4l+zrKpD6Q9+CmWXR/jvrhiZ4CqaMJttO9tzOYOnD9uugly9T5Std2mqbxKE86t56N7WvewnSl/CKve6nF5CHvQx4+BG9OJBACalv0YK4WZaZkkHoNAyQGeEREH7Quo0fbw2RFPRlItgtJNWrmvbjVni5/wZCm0UOY=;
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.6,REQID:54673211-396a-435d-ac42-85ca0c43ae15,IP:0,UR
-	L:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:r
-	elease,TS:0
-X-CID-META: VersionHash:a9d874c,CLOUDID:d46970c6-8a73-4871-aac2-7b886d064f36,B
+X-CID-O-INFO: VERSION:1.3.6,REQID:8e165a07-236a-424e-957c-66aee5054d25,IP:0,UR
+	L:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION
+	:release,TS:-25
+X-CID-META: VersionHash:a9d874c,CLOUDID:e8f430aa-6421-45b1-b8b8-e73e3dc9a90f,B
 	ulkID:nil,BulkQuantity:0,Recheck:0,SF:81|82|102|836|888|898,TC:-5,Content:
 	0|15|50,EDM:-3,IP:nil,URL:0,File:130,RT:0,Bulk:nil,QS:nil,BEC:nil,COL:0,OS
 	I:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
@@ -32,18 +32,18 @@ X-CID-BVR: 2,SSN|SDN
 X-CID-BAS: 2,SSN|SDN,0,_
 X-CID-FACTOR: TF_CID_SPAM_SNR
 X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 1e9edf7ed96911f0b2bf0b349165d6e0-20251215
-Received: from mtkmbs11n1.mediatek.inc [(172.21.101.185)] by mailgw01.mediatek.com
+X-UUID: 1d68151cd96911f0b2bf0b349165d6e0-20251215
+Received: from mtkmbs09n2.mediatek.inc [(172.21.101.94)] by mailgw01.mediatek.com
 	(envelope-from <irving-ch.lin@mediatek.com>)
 	(Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-	with ESMTP id 636676143; Mon, 15 Dec 2025 11:49:55 +0800
+	with ESMTP id 1514044215; Mon, 15 Dec 2025 11:49:53 +0800
 Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.29; Mon, 15 Dec 2025 11:49:54 +0800
+ 15.2.2562.29; Mon, 15 Dec 2025 11:49:53 +0800
 Received: from mtksitap99.mediatek.inc (10.233.130.16) by
  mtkmbs11n2.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.2562.29 via Frontend Transport; Mon, 15 Dec 2025 11:49:54 +0800
+ 15.2.2562.29 via Frontend Transport; Mon, 15 Dec 2025 11:49:53 +0800
 From: irving.ch.lin <irving-ch.lin@mediatek.com>
 To: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
 	<sboyd@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
@@ -58,9 +58,9 @@ CC: Qiqi Wang <qiqi.wang@mediatek.com>, <linux-clk@vger.kernel.org>,
 	<Project_Global_Chrome_Upstream_Group@mediatek.com>,
 	<sirius.wang@mediatek.com>, <vince-wl.liu@mediatek.com>,
 	<jh.hsu@mediatek.com>, <irving-ch.lin@mediatek.com>
-Subject: [PATCH v4 20/21] pmdomain: mediatek: Add bus protect control flow for MT8189
-Date: Mon, 15 Dec 2025 11:49:29 +0800
-Message-ID: <20251215034944.2973003-21-irving-ch.lin@mediatek.com>
+Subject: [PATCH v4 13/21] clk: mediatek: Add MT8189 img clock support
+Date: Mon, 15 Dec 2025 11:49:22 +0800
+Message-ID: <20251215034944.2973003-14-irving-ch.lin@mediatek.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <20251215034944.2973003-1-irving-ch.lin@mediatek.com>
 References: <20251215034944.2973003-1-irving-ch.lin@mediatek.com>
@@ -75,137 +75,164 @@ Content-Type: text/plain
 
 From: Irving-CH Lin <irving-ch.lin@mediatek.com>
 
-In MT8189 mminfra power domain, the bus protect policy separates
-into two parts, one is set before subsys clocks enabled, and another
-need to enable after subsys clocks enable.
+Add support for the MT8189 img clock controller,
+which provides clock gate control for image processing module.
 
 Signed-off-by: Irving-CH Lin <irving-ch.lin@mediatek.com>
 ---
- drivers/pmdomain/mediatek/mtk-pm-domains.c | 31 ++++++++++++++++++----
- drivers/pmdomain/mediatek/mtk-pm-domains.h |  5 ++++
- 2 files changed, 31 insertions(+), 5 deletions(-)
+ drivers/clk/mediatek/Kconfig          |  11 +++
+ drivers/clk/mediatek/Makefile         |   1 +
+ drivers/clk/mediatek/clk-mt8189-img.c | 107 ++++++++++++++++++++++++++
+ 3 files changed, 119 insertions(+)
+ create mode 100644 drivers/clk/mediatek/clk-mt8189-img.c
 
-diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomain/mediatek/mtk-pm-domains.c
-index 80561d27f2b2..bfa3ae55e8fd 100644
---- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
-+++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
-@@ -250,7 +250,7 @@ static int scpsys_bus_protect_set(struct scpsys_domain *pd,
- 					MTK_POLL_DELAY_US, MTK_POLL_TIMEOUT);
- }
+diff --git a/drivers/clk/mediatek/Kconfig b/drivers/clk/mediatek/Kconfig
+index 71603fba2ea8..c0fe1aa49993 100644
+--- a/drivers/clk/mediatek/Kconfig
++++ b/drivers/clk/mediatek/Kconfig
+@@ -883,6 +883,17 @@ config COMMON_CLK_MT8189_IIC
+ 	  the MT8189 chipset, improving the overall performance and power
+ 	  efficiency of the device.
  
--static int scpsys_bus_protect_enable(struct scpsys_domain *pd)
-+static int scpsys_bus_protect_enable(struct scpsys_domain *pd, u8 flags)
- {
- 	for (int i = 0; i < SPM_MAX_BUS_PROT_DATA; i++) {
- 		const struct scpsys_bus_prot_data *bpd = &pd->data->bp_cfg[i];
-@@ -259,6 +259,10 @@ static int scpsys_bus_protect_enable(struct scpsys_domain *pd)
- 		if (!bpd->bus_prot_set_clr_mask)
- 			break;
- 
-+		if ((bpd->flags & BUS_PROT_IGNORE_SUBCLK) !=
-+		    (flags & BUS_PROT_IGNORE_SUBCLK))
-+			continue;
++config COMMON_CLK_MT8189_IMG
++	tristate "Clock driver for MediaTek MT8189 img"
++	depends on COMMON_CLK_MT8189
++	default COMMON_CLK_MT8189
++	help
++	  Enable this to support the clock framework for MediaTek MT8189 SoC's
++	  image processing units. This includes clocks necessary for the operation
++	  of image-related hardware blocks such as ISP, VENC, and VDEC. If you
++	  are building a kernel for a device that uses the MT8189 SoC and requires
++	  image processing capabilities, say Y or M to include this driver.
 +
- 		if (bpd->flags & BUS_PROT_INVERTED)
- 			ret = scpsys_bus_protect_clear(pd, bpd);
- 		else
-@@ -270,7 +274,7 @@ static int scpsys_bus_protect_enable(struct scpsys_domain *pd)
- 	return 0;
- }
- 
--static int scpsys_bus_protect_disable(struct scpsys_domain *pd)
-+static int scpsys_bus_protect_disable(struct scpsys_domain *pd, u8 flags)
- {
- 	for (int i = SPM_MAX_BUS_PROT_DATA - 1; i >= 0; i--) {
- 		const struct scpsys_bus_prot_data *bpd = &pd->data->bp_cfg[i];
-@@ -279,6 +283,10 @@ static int scpsys_bus_protect_disable(struct scpsys_domain *pd)
- 		if (!bpd->bus_prot_set_clr_mask)
- 			continue;
- 
-+		if ((bpd->flags & BUS_PROT_IGNORE_SUBCLK) !=
-+		    (flags & BUS_PROT_IGNORE_SUBCLK))
-+			continue;
+ config COMMON_CLK_MT8192
+ 	tristate "Clock driver for MediaTek MT8192"
+ 	depends on ARM64 || COMPILE_TEST
+diff --git a/drivers/clk/mediatek/Makefile b/drivers/clk/mediatek/Makefile
+index 0eed1edf7c63..a1eaf123f2f0 100644
+--- a/drivers/clk/mediatek/Makefile
++++ b/drivers/clk/mediatek/Makefile
+@@ -130,6 +130,7 @@ obj-$(CONFIG_COMMON_CLK_MT8189_CAM) += clk-mt8189-cam.o
+ obj-$(CONFIG_COMMON_CLK_MT8189_DBGAO) += clk-mt8189-dbgao.o
+ obj-$(CONFIG_COMMON_CLK_MT8189_DVFSRC) += clk-mt8189-dvfsrc.o
+ obj-$(CONFIG_COMMON_CLK_MT8189_IIC) += clk-mt8189-iic.o
++obj-$(CONFIG_COMMON_CLK_MT8189_IMG) += clk-mt8189-img.o
+ obj-$(CONFIG_COMMON_CLK_MT8192) += clk-mt8192-apmixedsys.o clk-mt8192.o
+ obj-$(CONFIG_COMMON_CLK_MT8192_AUDSYS) += clk-mt8192-aud.o
+ obj-$(CONFIG_COMMON_CLK_MT8192_CAMSYS) += clk-mt8192-cam.o
+diff --git a/drivers/clk/mediatek/clk-mt8189-img.c b/drivers/clk/mediatek/clk-mt8189-img.c
+new file mode 100644
+index 000000000000..d79f48dbe3e1
+--- /dev/null
++++ b/drivers/clk/mediatek/clk-mt8189-img.c
+@@ -0,0 +1,107 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (c) 2025 MediaTek Inc.
++ * Author: Qiqi Wang <qiqi.wang@mediatek.com>
++ */
 +
- 		if (bpd->flags & BUS_PROT_INVERTED)
- 			ret = scpsys_bus_protect_set(pd, bpd);
- 		else
-@@ -632,6 +640,15 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
- 	if (ret)
- 		goto err_pwr_ack;
- 
-+	/*
-+	 * In MT8189 mminfra power domain, the bus protect policy separates
-+	 * into two parts, one is set before subsys clocks enabled, and another
-+	 * need to enable after subsys clocks enable.
-+	 */
-+	ret = scpsys_bus_protect_disable(pd, BUS_PROT_IGNORE_SUBCLK);
-+	if (ret < 0)
-+		goto err_pwr_ack;
++#include <linux/clk-provider.h>
++#include <linux/module.h>
++#include <linux/of_device.h>
++#include <linux/platform_device.h>
 +
- 	/*
- 	 * In few Mediatek platforms(e.g. MT6779), the bus protect policy is
- 	 * stricter, which leads to bus protect release must be prior to bus
-@@ -648,7 +665,7 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
- 	if (ret < 0)
- 		goto err_disable_subsys_clks;
- 
--	ret = scpsys_bus_protect_disable(pd);
-+	ret = scpsys_bus_protect_disable(pd, 0);
- 	if (ret < 0)
- 		goto err_disable_sram;
- 
-@@ -662,7 +679,7 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
- 	return 0;
- 
- err_enable_bus_protect:
--	scpsys_bus_protect_enable(pd);
-+	scpsys_bus_protect_enable(pd, 0);
- err_disable_sram:
- 	scpsys_sram_disable(pd);
- err_disable_subsys_clks:
-@@ -683,7 +700,7 @@ static int scpsys_power_off(struct generic_pm_domain *genpd)
- 	bool tmp;
- 	int ret;
- 
--	ret = scpsys_bus_protect_enable(pd);
-+	ret = scpsys_bus_protect_enable(pd, 0);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -697,6 +714,10 @@ static int scpsys_power_off(struct generic_pm_domain *genpd)
- 
- 	clk_bulk_disable_unprepare(pd->num_subsys_clks, pd->subsys_clks);
- 
-+	ret = scpsys_bus_protect_enable(pd, BUS_PROT_IGNORE_SUBCLK);
-+	if (ret < 0)
-+		return ret;
++#include "clk-mtk.h"
++#include "clk-gate.h"
 +
- 	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_PWRSEQ))
- 		scpsys_modem_pwrseq_off(pd);
- 	else
-diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.h b/drivers/pmdomain/mediatek/mtk-pm-domains.h
-index f608e6ec4744..a5dca24cbc2f 100644
---- a/drivers/pmdomain/mediatek/mtk-pm-domains.h
-+++ b/drivers/pmdomain/mediatek/mtk-pm-domains.h
-@@ -56,6 +56,7 @@ enum scpsys_bus_prot_flags {
- 	BUS_PROT_REG_UPDATE = BIT(1),
- 	BUS_PROT_IGNORE_CLR_ACK = BIT(2),
- 	BUS_PROT_INVERTED = BIT(3),
-+	BUS_PROT_IGNORE_SUBCLK = BIT(4),
- };
- 
- enum scpsys_bus_prot_block {
-@@ -95,6 +96,10 @@ enum scpsys_bus_prot_block {
- 		_BUS_PROT(_hwip, _mask, _set, _clr, _mask, _sta,	\
- 			  BUS_PROT_REG_UPDATE)
- 
-+#define BUS_PROT_WR_IGN_SUBCLK(_hwip, _mask, _set, _clr, _sta)		\
-+		_BUS_PROT(_hwip, _mask, _set, _clr, _mask, _sta,	\
-+			  BUS_PROT_IGNORE_CLR_ACK | BUS_PROT_IGNORE_SUBCLK)
++#include <dt-bindings/clock/mediatek,mt8189-clk.h>
 +
- #define BUS_PROT_INFRA_UPDATE_TOPAXI(_mask)			\
- 		BUS_PROT_UPDATE(INFRA, _mask,			\
- 				INFRA_TOPAXI_PROTECTEN,		\
++static const struct mtk_gate_regs imgsys1_cg_regs = {
++	.set_ofs = 0x4,
++	.clr_ofs = 0x8,
++	.sta_ofs = 0x0,
++};
++
++#define GATE_IMGSYS1(_id, _name, _parent, _shift)			\
++	GATE_MTK_FLAGS(_id, _name, _parent, &imgsys1_cg_regs, _shift,	\
++		       &mtk_clk_gate_ops_setclr, CLK_IGNORE_UNUSED)
++
++static const struct mtk_gate imgsys1_clks[] = {
++	GATE_IMGSYS1(CLK_IMGSYS1_LARB9, "imgsys1_larb9", "img1_sel", 0),
++	GATE_IMGSYS1(CLK_IMGSYS1_LARB11, "imgsys1_larb11", "img1_sel", 1),
++	GATE_IMGSYS1(CLK_IMGSYS1_DIP, "imgsys1_dip", "img1_sel", 2),
++	GATE_IMGSYS1(CLK_IMGSYS1_GALS, "imgsys1_gals", "img1_sel", 12),
++};
++
++static const struct mtk_clk_desc imgsys1_mcd = {
++	.clks = imgsys1_clks,
++	.num_clks = ARRAY_SIZE(imgsys1_clks),
++};
++
++static const struct mtk_gate_regs imgsys2_cg_regs = {
++	.set_ofs = 0x4,
++	.clr_ofs = 0x8,
++	.sta_ofs = 0x0,
++};
++
++#define GATE_IMGSYS2(_id, _name, _parent, _shift)			\
++	GATE_MTK_FLAGS(_id, _name, _parent, &imgsys2_cg_regs, _shift,	\
++		       &mtk_clk_gate_ops_setclr, CLK_IGNORE_UNUSED)
++
++static const struct mtk_gate imgsys2_clks[] = {
++	GATE_IMGSYS2(CLK_IMGSYS2_LARB9, "imgsys2_larb9", "img1_sel", 0),
++	GATE_IMGSYS2(CLK_IMGSYS2_LARB11, "imgsys2_larb11", "img1_sel", 1),
++	GATE_IMGSYS2(CLK_IMGSYS2_MFB, "imgsys2_mfb", "img1_sel", 6),
++	GATE_IMGSYS2(CLK_IMGSYS2_WPE, "imgsys2_wpe", "img1_sel", 7),
++	GATE_IMGSYS2(CLK_IMGSYS2_MSS, "imgsys2_mss", "img1_sel", 8),
++	GATE_IMGSYS2(CLK_IMGSYS2_GALS, "imgsys2_gals", "img1_sel", 12),
++};
++
++static const struct mtk_clk_desc imgsys2_mcd = {
++	.clks = imgsys2_clks,
++	.num_clks = ARRAY_SIZE(imgsys2_clks),
++};
++
++static const struct mtk_gate_regs ipe_cg_regs = {
++	.set_ofs = 0x4,
++	.clr_ofs = 0x8,
++	.sta_ofs = 0x0,
++};
++
++#define GATE_IPE(_id, _name, _parent, _shift)				\
++	GATE_MTK_FLAGS(_id, _name, _parent, &ipe_cg_regs, _shift,	\
++		       &mtk_clk_gate_ops_setclr, CLK_IGNORE_UNUSED)
++
++static const struct mtk_gate ipe_clks[] = {
++	GATE_IPE(CLK_IPE_LARB19, "ipe_larb19", "ipe_sel", 0),
++	GATE_IPE(CLK_IPE_LARB20, "ipe_larb20", "ipe_sel", 1),
++	GATE_IPE(CLK_IPE_SMI_SUBCOM, "ipe_smi_subcom", "ipe_sel", 2),
++	GATE_IPE(CLK_IPE_FD, "ipe_fd", "ipe_sel", 3),
++	GATE_IPE(CLK_IPE_FE, "ipe_fe", "ipe_sel", 4),
++	GATE_IPE(CLK_IPE_RSC, "ipe_rsc", "ipe_sel", 5),
++	GATE_IPE(CLK_IPESYS_GALS, "ipesys_gals", "ipe_sel", 8),
++};
++
++static const struct mtk_clk_desc ipe_mcd = {
++	.clks = ipe_clks,
++	.num_clks = ARRAY_SIZE(ipe_clks),
++};
++
++static const struct of_device_id of_match_clk_mt8189_img[] = {
++	{ .compatible = "mediatek,mt8189-imgsys1", .data = &imgsys1_mcd },
++	{ .compatible = "mediatek,mt8189-imgsys2", .data = &imgsys2_mcd },
++	{ .compatible = "mediatek,mt8189-ipesys", .data = &ipe_mcd },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, of_match_clk_mt8189_img);
++
++static struct platform_driver clk_mt8189_img_drv = {
++	.probe = mtk_clk_simple_probe,
++	.remove = mtk_clk_simple_remove,
++	.driver = {
++		.name = "clk-mt8189-img",
++		.of_match_table = of_match_clk_mt8189_img,
++	},
++};
++
++module_platform_driver(clk_mt8189_img_drv);
++MODULE_DESCRIPTION("MediaTek MT8189 img clocks driver");
++MODULE_LICENSE("GPL");
 -- 
 2.45.2
 
