@@ -1,134 +1,219 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF51C2DFA5B;
-	Mon, 15 Dec 2025 13:59:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 681701A9FAB;
+	Mon, 15 Dec 2025 14:04:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1765807154; cv=none; b=FmSeeKOoG031+F3RbQ55OVWHTBfdYY1tNbi/oQSoCwn71+rptDdZfqMBjFOrK5jsBk3/3q/xKBSvKqto77B/FLcAx2pg3dhO/lp+FGwByc+evEwR0XBHj9NX7EE64woz8ASB/b1B3kmG3lU2Ab4PNN4OewuF3QC9EXzULHTOjW8=
+	t=1765807446; cv=none; b=kP57hw7yoTI9+a+AkUu8zYJRqWsw/W1pYxv1KNrYTOFUPk9s4KuTFleQ93INrR4lX39/zWeyOyQxh5dvA9z7rDFJqjHYzvApWKM8aDTIEMoz7mCAs9I6KrorZFYXKpJc3BYcG8+OlQ5E3A4955MT7qY+k5ImEN+uj9ifFinNvx0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1765807154; c=relaxed/simple;
-	bh=YQ0YmiEKTBiByyCk2XIiAXJahBqdOSyVHDmgyhFstuo=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=XzPmMP3YiU3w/pPj9bVYZNR37Ocfcegxmehd7SN8cNL4BDQb4jYt7QkT869spT7vDT6GvDOeML/Yzc7UevPoWIcAYHvWEyQqsVCzyc/mzihy8SaXhMAZoOdTjupu7zfNtXXM30piaX1Js/QMCOjB6e5EEKIo4C+ue3oA1QLym1o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=K0ZSvqo9; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1765807446; c=relaxed/simple;
+	bh=T24WwK6VBM/bOIyojAvtkzGKrlnjSMqz6zUAApvu3Ak=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=mJ1nyHXfcMBzYtttIMuDt2flIGTzeHuRWc0MI8/vk7hr4dD8NhEW1Sw252RjbiLvvXPCgH3OpJ7k0GwdbzLjeqyA/p9rl/0912SHh6xw69PeImkOfl3JF4GSFyXrzlCHV1fd4HxrpW7JiTHntlew2hHubmfbp6ZlCHJsZBLW+Hg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kZ8/L1hx; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="K0ZSvqo9"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 84039C4CEF5;
-	Mon, 15 Dec 2025 13:59:02 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kZ8/L1hx"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C8E8AC4CEF5;
+	Mon, 15 Dec 2025 14:04:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1765807153;
-	bh=YQ0YmiEKTBiByyCk2XIiAXJahBqdOSyVHDmgyhFstuo=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=K0ZSvqo9FNH+vPZrOVLOU5ZraIN5/Hx4lzXEVk8deQoFTzZrfVB3Sn8wUVb8UaBDT
-	 IPKJL1FeYjBc4++kymDagnMFo+aO6gmHV+UWQO7cqHTOD6VMMtizrJjRFLGRY7Ee7L
-	 w4mP9rPOGGMbKthLu+r5v9Ru7rhk3vDAc1XCmmrB5wHkqvV8acOQhuC1BVzlP5ME/H
-	 H7EzKs7+bvfSkQA41DZXMI2/LRypKRi0eSe24U8EkDVDNspUAYXac7itmfYbMOTmxv
-	 x+MHyD8AednEYtbIisGEt5V/tIfQDU8l0ImBMScwR5yt2mJk+grnKjhIaLlaCyGSER
-	 QNwLC455/HDNw==
-From: Mark Brown <broonie@kernel.org>
-To: rust-for-linux@vger.kernel.org, Alice Ryhl <aliceryhl@google.com>
-Cc: linux-kernel@vger.kernel.org, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Dave Ertman <david.m.ertman@intel.com>, Ira Weiny <ira.weiny@intel.com>, 
- Leon Romanovsky <leon@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
- Boqun Feng <boqun.feng@gmail.com>, Elle Rhumsaa <elle@weathered-steel.dev>, 
- Carlos Llamas <cmllamas@google.com>, Yury Norov <yury.norov@gmail.com>, 
- Andreas Hindborg <a.hindborg@kernel.org>, linux-block@vger.kernel.org, 
- FUJITA Tomonori <fujita.tomonori@gmail.com>, 
- Miguel Ojeda <ojeda@kernel.org>, 
- Michael Turquette <mturquette@baylibre.com>, 
- Stephen Boyd <sboyd@kernel.org>, linux-clk@vger.kernel.org, 
- Benno Lossin <lossin@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
- Thomas Gleixner <tglx@linutronix.de>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
- Paul Moore <paul@paul-moore.com>, Serge Hallyn <sergeh@kernel.org>, 
- linux-security-module@vger.kernel.org, 
- Daniel Almeida <daniel.almeida@collabora.com>, 
- Abdiel Janulgue <abdiel.janulgue@gmail.com>, 
- Robin Murphy <robin.murphy@arm.com>, Lyude Paul <lyude@redhat.com>, 
- Alexander Viro <viro@zeniv.linux.org.uk>, 
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
- linux-fsdevel@vger.kernel.org, Josh Poimboeuf <jpoimboe@kernel.org>, 
- Jason Baron <jbaron@akamai.com>, Steven Rostedt <rostedt@goodmis.org>, 
- Ard Biesheuvel <ardb@kernel.org>, 
- Brendan Higgins <brendan.higgins@linux.dev>, 
- David Gow <davidgow@google.com>, linux-kselftest@vger.kernel.org, 
- Andrew Morton <akpm@linux-foundation.org>, 
- "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
- Andrew Ballance <andrewjballance@gmail.com>, maple-tree@lists.infradead.org, 
- linux-mm@kvack.org, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, 
- Uladzislau Rezki <urezki@gmail.com>, Vitaly Wool <vitaly.wool@konsulko.se>, 
- Rob Herring <robh@kernel.org>, Saravana Kannan <saravanak@google.com>, 
- devicetree@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, 
- =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
- linux-pci@vger.kernel.org, Remo Senekowitsch <remo@buenzli.dev>, 
- "Paul E. McKenney" <paulmck@kernel.org>, rcu@vger.kernel.org, 
- Will Deacon <will@kernel.org>, Fiona Behrens <me@kloenk.dev>, 
- Gary Guo <gary@garyguo.net>, Liam Girdwood <lgirdwood@gmail.com>, 
- Alexandre Courbot <acourbot@nvidia.com>, Vlastimil Babka <vbabka@suse.cz>, 
- Christoph Lameter <cl@gentwo.org>, David Rientjes <rientjes@google.com>, 
- Ingo Molnar <mingo@redhat.com>, Waiman Long <longman@redhat.com>, 
- Mitchell Levy <levymitchell0@gmail.com>, 
- Frederic Weisbecker <frederic@kernel.org>, 
- Anna-Maria Behnsen <anna-maria@linutronix.de>, 
- John Stultz <jstultz@google.com>, linux-usb@vger.kernel.org, 
- Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, 
- Matthew Wilcox <willy@infradead.org>, Tamir Duberstein <tamird@gmail.com>, 
- Rae Moar <raemoar63@gmail.com>
-In-Reply-To: <20251202-define-rust-helper-v1-0-a2e13cbc17a6@google.com>
-References: <20251202-define-rust-helper-v1-0-a2e13cbc17a6@google.com>
-Subject: Re: (subset) [PATCH 00/46] Allow inlining C helpers into Rust when
- using LTO
-Message-Id: <176580714194.161338.1959594276727103368.b4-ty@kernel.org>
-Date: Mon, 15 Dec 2025 22:59:01 +0900
+	s=k20201202; t=1765807445;
+	bh=T24WwK6VBM/bOIyojAvtkzGKrlnjSMqz6zUAApvu3Ak=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=kZ8/L1hxQVoBcJ1zm3a0gYt2yF8ERyjdErhrekeDwmz+pNL7b3uaXH+H5ciX7PzTO
+	 RD2kMT/qPR4jILlCIcM7vtldUjv7A/02/MGPLeWKy0hOv5X+dC4n+Xqx+O0HFBvx8z
+	 Uc4ICLgSrhEVeZTIqPJPMYwvBPC5BB6HJLiepDNI976EBkmPtSBIlecYp78YsBIkVB
+	 XRri4904hllwpmnRZQQMC94sf2Y+cHflGVhZI72NcL3kPDiHR8uy0aToK9Nn8d9tOj
+	 R2u7nfRewQxOJHK87R+0ffZ0waeruPELgSpJd6a2YkrSkwcK7VH70kKdFQVCzXFkDD
+	 VcPtAH+kStq8w==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: Hans de Goede <hdegoede@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+ Linux PM <linux-pm@vger.kernel.org>,
+ Thomas =?ISO-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>,
+ Armin Wolf <w_armin@gmx.de>
+Subject: [PATCH v2 10/10] ACPI: battery: Convert the driver to a platform one
+Date: Mon, 15 Dec 2025 15:03:28 +0100
+Message-ID: <3187448.CbtlEUcBR6@rafael.j.wysocki>
+Organization: Linux Kernel Development
+In-Reply-To: <2685338.Lt9SDvczpP@rafael.j.wysocki>
+References: <2685338.Lt9SDvczpP@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.15-dev-47773
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-On Tue, 02 Dec 2025 19:37:24 +0000, Alice Ryhl wrote:
-> This patch series adds __rust_helper to every single rust helper. The
-> patches do not depend on each other, so maintainers please go ahead and
-> pick up any patches relevant to your subsystem! Or provide your Acked-by
-> so that Miguel can pick them up.
-> 
-> These changes were generated by adding __rust_helper and running
-> ClangFormat. Unrelated formatting changes were removed manually.
-> 
-> [...]
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Applied to
+While binding drivers directly to struct acpi_device objects allows
+basic functionality to be provided, at least in the majority of cases,
+there are some problems with it, related to general consistency, sysfs
+layout, power management operation ordering, and code cleanliness.
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git for-next
+Overall, it is better to bind drivers to platform devices than to their
+ACPI companions, so convert the ACPI battery driver to a platform one.
 
-Thanks!
+While this is not expected to alter functionality, it changes sysfs
+layout and so it will be visible to user space.
 
-[35/46] rust: regulator: add __rust_helper to helpers
-        commit: 03d281f384768610bf90697bce9e35d3d596de77
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
+v1 -> v2:
+   * Drop redundant driver_data removal operations.
+   * Use dev_get_drvdata() where applicable to get the driver data pointer.
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
+---
+ drivers/acpi/battery.c |   61 ++++++++++++++++++++++---------------------------
+ 1 file changed, 28 insertions(+), 33 deletions(-)
 
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
+--- a/drivers/acpi/battery.c
++++ b/drivers/acpi/battery.c
+@@ -17,6 +17,7 @@
+ #include <linux/list.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
++#include <linux/platform_device.h>
+ #include <linux/slab.h>
+ #include <linux/suspend.h>
+ #include <linux/types.h>
+@@ -1208,26 +1209,26 @@ static void sysfs_battery_cleanup(struct
+ 	sysfs_remove_battery(battery);
+ }
+ 
+-static int acpi_battery_add(struct acpi_device *device)
++static int acpi_battery_probe(struct platform_device *pdev)
+ {
+-	int result = 0;
++	struct acpi_device *device = ACPI_COMPANION(&pdev->dev);
+ 	struct acpi_battery *battery;
+-
+-	if (!device)
+-		return -EINVAL;
++	int result;
+ 
+ 	if (device->dep_unmet)
+ 		return -EPROBE_DEFER;
+ 
+-	battery = devm_kzalloc(&device->dev, sizeof(*battery), GFP_KERNEL);
++	battery = devm_kzalloc(&pdev->dev, sizeof(*battery), GFP_KERNEL);
+ 	if (!battery)
+ 		return -ENOMEM;
++
++	platform_set_drvdata(pdev, battery);
++
+ 	battery->device = device;
+ 	strscpy(acpi_device_name(device), ACPI_BATTERY_DEVICE_NAME);
+ 	strscpy(acpi_device_class(device), ACPI_BATTERY_CLASS);
+-	device->driver_data = battery;
+ 
+-	result = devm_mutex_init(&device->dev, &battery->update_lock);
++	result = devm_mutex_init(&pdev->dev, &battery->update_lock);
+ 	if (result)
+ 		return result;
+ 
+@@ -1246,7 +1247,7 @@ static int acpi_battery_add(struct acpi_
+ 	if (result)
+ 		goto fail;
+ 
+-	device_init_wakeup(&device->dev, 1);
++	device_init_wakeup(&pdev->dev, true);
+ 
+ 	result = acpi_dev_install_notify_handler(device, ACPI_ALL_NOTIFY,
+ 						 acpi_battery_notify, battery);
+@@ -1256,7 +1257,7 @@ static int acpi_battery_add(struct acpi_
+ 	return 0;
+ 
+ fail_pm:
+-	device_init_wakeup(&device->dev, 0);
++	device_init_wakeup(&pdev->dev, false);
+ 	unregister_pm_notifier(&battery->pm_nb);
+ fail:
+ 	sysfs_battery_cleanup(battery);
+@@ -1264,19 +1265,18 @@ fail:
+ 	return result;
+ }
+ 
+-static void acpi_battery_remove(struct acpi_device *device)
++static void acpi_battery_remove(struct platform_device *pdev)
+ {
+-	struct acpi_battery *battery;
++	struct acpi_device *device = ACPI_COMPANION(&pdev->dev);
++	struct acpi_battery *battery = platform_get_drvdata(pdev);
+ 
+-	if (!device || !acpi_driver_data(device))
++	if (!device || !battery)
+ 		return;
+ 
+-	battery = acpi_driver_data(device);
+-
+ 	acpi_dev_remove_notify_handler(device, ACPI_ALL_NOTIFY,
+ 				       acpi_battery_notify);
+ 
+-	device_init_wakeup(&device->dev, 0);
++	device_init_wakeup(&pdev->dev, false);
+ 	unregister_pm_notifier(&battery->pm_nb);
+ 
+ 	sysfs_battery_cleanup(battery);
+@@ -1285,12 +1285,8 @@ static void acpi_battery_remove(struct a
+ /* this is needed to learn about changes made in suspended state */
+ static int acpi_battery_resume(struct device *dev)
+ {
+-	struct acpi_battery *battery;
+-
+-	if (!dev)
+-		return -EINVAL;
++	struct acpi_battery *battery = dev_get_drvdata(dev);
+ 
+-	battery = acpi_driver_data(to_acpi_device(dev));
+ 	if (!battery)
+ 		return -EINVAL;
+ 
+@@ -1304,16 +1300,15 @@ static int acpi_battery_resume(struct de
+ 
+ static DEFINE_SIMPLE_DEV_PM_OPS(acpi_battery_pm, NULL, acpi_battery_resume);
+ 
+-static struct acpi_driver acpi_battery_driver = {
+-	.name = "battery",
+-	.class = ACPI_BATTERY_CLASS,
+-	.ids = battery_device_ids,
+-	.ops = {
+-		.add = acpi_battery_add,
+-		.remove = acpi_battery_remove,
+-		},
+-	.drv.pm = pm_sleep_ptr(&acpi_battery_pm),
+-	.drv.probe_type = PROBE_PREFER_ASYNCHRONOUS,
++static struct platform_driver acpi_battery_driver = {
++	.probe = acpi_battery_probe,
++	.remove = acpi_battery_remove,
++	.driver = {
++		.name = "acpi-battery",
++		.acpi_match_table = battery_device_ids,
++		.pm = pm_sleep_ptr(&acpi_battery_pm),
++		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
++	},
+ };
+ 
+ static int __init acpi_battery_init(void)
+@@ -1323,12 +1318,12 @@ static int __init acpi_battery_init(void
+ 
+ 	dmi_check_system(bat_dmi_table);
+ 
+-	return acpi_bus_register_driver(&acpi_battery_driver);
++	return platform_driver_register(&acpi_battery_driver);
+ }
+ 
+ static void __exit acpi_battery_exit(void)
+ {
+-	acpi_bus_unregister_driver(&acpi_battery_driver);
++	platform_driver_unregister(&acpi_battery_driver);
+ 	battery_hook_exit();
+ }
+ 
 
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
 
-Thanks,
-Mark
 
