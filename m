@@ -1,33 +1,69 @@
-Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
-	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF04D3FFD;
-	Mon, 15 Dec 2025 03:07:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.81
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5EE4F2D1303;
+	Mon, 15 Dec 2025 03:50:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=60.244.123.138
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1765768027; cv=none; b=QeWGO0K4a5eKrhPsqwomn//UinAvW9U6xiR4sdZfID6lioZ33CbUketSDLhBksAQMYPQLT07TUh6Knmj/lkxSMI7HSPL3Yv8RcoR7v+QNZfwokth03lxnGec1kUWewSF3F7t5qmLSQaBl0lITqoTxImEdpzRgh0xzEL+XSB7txI=
+	t=1765770608; cv=none; b=UnfUyxfDSRSksNxMw2k7vrhxW8DBbOoy+LMH23fMgfnl0acc1FmNZ3xPBia68fKTRXwLJ9xLrYrRZjcxyIhTRFdLgWhJO7FvcKanuQBT5zeI7lSNGdFREMbA81pQz7NpENidAYoZJyJhJUkwlGBI0r8nWkFeh3ZTgxgPCPLss8s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1765768027; c=relaxed/simple;
-	bh=LErrcRNnpssQ0GpNWM4WP5MO2P1nIf8hlgEKdjFQgr8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=R2Eupgy/JwvdaH2olP9VksnnHb0x9q4UM7bXcyaUedFn50bl6NbH2dlKNtEFGkqxKJtvC5rHz2LaVOnhOspooua9rKC1YRmmHN/HQzYXOA0hZ2lossmt+faauqjQt7Ekib5YMNi2PmIT4x3DQZ5SvXXU1hYthWXOngV23jTSbYQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.81
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
-Received: from DESKTOP-L0HPE2S (unknown [124.16.141.245])
-	by APP-03 (Coremail) with SMTP id rQCowACnyN9Rez9pY3TCAA--.57841S2;
-	Mon, 15 Dec 2025 11:06:58 +0800 (CST)
-From: Haotian Zhang <vulab@iscas.ac.cn>
-To: Kevin Hilman <khilman@kernel.org>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-omap@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Haotian Zhang <vulab@iscas.ac.cn>
-Subject: [PATCH] omap-cpufreq: Fix regulator resource leak in probe()
-Date: Mon, 15 Dec 2025 11:03:27 +0800
-Message-ID: <20251215030327.1771-1-vulab@iscas.ac.cn>
-X-Mailer: git-send-email 2.50.1.windows.1
+	s=arc-20240116; t=1765770608; c=relaxed/simple;
+	bh=qpCHQwk5EAwlgwVvvAIKWkbsUDUiVBaoGuPGzjzVT/4=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=EIX3fgMU0Nz6gGZKuBJ9Fxq4Q73sYs0B+jw7jgfP9j/g8aC53eA8OANEqjUUc6NDgG92UgFJM6Gg+QDv1ZJU38ZlA1FI5pWCdyHNKeYbE3xd6LjqmLDmJrRSZtuvZsRgafsmpWLho6HyOH0C/X4zwsh/SAHTcOsfn6fgnKVlBeA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com; spf=pass smtp.mailfrom=mediatek.com; dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b=qwoQzAkc; arc=none smtp.client-ip=60.244.123.138
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mediatek.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="qwoQzAkc"
+X-UUID: 1ccda784d96911f0b2bf0b349165d6e0-20251215
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+	h=Content-Type:Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=ky1zZSMuLCXdFrRW4pfETufvBbUtfeJ1wcUYAYF3cTY=;
+	b=qwoQzAkcABgQCvCuC1SARkY5n+LJDldmlX2f/GvC5bIc4Q8rFNjSy0AjG06XMXfBAcWeqrVtbGMtKArQcigOcDREX0ij5Oeq0peRCcxMdxWGPd31ZCc5uu078pKP/bLQ07V5SVr1VWxNAnCTfFzwn6c8Nb3a75cn/G5nZJvdmLI=;
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.6,REQID:a80e4931-6da7-4ae7-890f-e8fedf162106,IP:0,UR
+	L:0,TC:0,Content:-5,EDM:-20,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+	N:release,TS:-25
+X-CID-META: VersionHash:a9d874c,CLOUDID:bc078528-e3a2-4f78-a442-8c73c4eb9e9d,B
+	ulkID:nil,BulkQuantity:0,Recheck:0,SF:81|82|102|836|888|898,TC:-5,Content:
+	0|15|50,EDM:1,IP:nil,URL:0,File:130,RT:0,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI
+	:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: 1ccda784d96911f0b2bf0b349165d6e0-20251215
+Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw01.mediatek.com
+	(envelope-from <irving-ch.lin@mediatek.com>)
+	(Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+	with ESMTP id 1460289980; Mon, 15 Dec 2025 11:49:52 +0800
+Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
+ MTKMBS09N1.mediatek.inc (172.21.101.35) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.29; Mon, 15 Dec 2025 11:49:51 +0800
+Received: from mtksitap99.mediatek.inc (10.233.130.16) by
+ mtkmbs11n2.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
+ 15.2.2562.29 via Frontend Transport; Mon, 15 Dec 2025 11:49:51 +0800
+From: irving.ch.lin <irving-ch.lin@mediatek.com>
+To: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
+	<sboyd@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
+	<krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Matthias Brugger
+	<matthias.bgg@gmail.com>, AngeloGioacchino Del Regno
+	<angelogioacchino.delregno@collabora.com>, Ulf Hansson
+	<ulf.hansson@linaro.org>, Richard Cochran <richardcochran@gmail.com>
+CC: Qiqi Wang <qiqi.wang@mediatek.com>, <linux-clk@vger.kernel.org>,
+	<devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-mediatek@lists.infradead.org>,
+	<linux-pm@vger.kernel.org>, <netdev@vger.kernel.org>,
+	<Project_Global_Chrome_Upstream_Group@mediatek.com>,
+	<sirius.wang@mediatek.com>, <vince-wl.liu@mediatek.com>,
+	<jh.hsu@mediatek.com>, <irving-ch.lin@mediatek.com>
+Subject: [PATCH v4 02/21] dt-bindings: power: mediatek: Add MT8189 power domain definitions
+Date: Mon, 15 Dec 2025 11:49:11 +0800
+Message-ID: <20251215034944.2973003-3-irving-ch.lin@mediatek.com>
+X-Mailer: git-send-email 2.45.2
+In-Reply-To: <20251215034944.2973003-1-irving-ch.lin@mediatek.com>
+References: <20251215034944.2973003-1-irving-ch.lin@mediatek.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,59 +71,75 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:rQCowACnyN9Rez9pY3TCAA--.57841S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7Kr45XF1xAr18tF4rury7GFg_yoW8Gry8pF
-	Z8Xr42kry8JFyvyw4DuF4I93WFvw1vyws29348Gwsavw1DJa4fX3Z8C345ZFWrG3ykJr4j
-	vry7Za4xAFWDZFJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUkC14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26F1j6w1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4j
-	6r4UJwA2z4x0Y4vEx4A2jsIE14v26F4UJVW0owA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gc
-	CE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
-	2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r4j6F4UMcvjeVCFs4IE7xkEbVWUJV
-	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AFwI0_
-	JF0_Jw1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67
-	AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r126r1DMIIY
-	rxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14
-	v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8
-	JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjfUejjgDU
-	UUU
-X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiBgsRA2k-bwQynQAAsN
+Content-Type: text/plain
 
-The current omap_cpufreq_probe() uses regulator_get() to obtain the MPU
-regulator but does not release it in omap_cpufreq_remove() or when
-cpufreq_register_driver() fails, leading to a potential resource leak.
+From: Irving-CH Lin <irving-ch.lin@mediatek.com>
 
-Use devm_regulator_get() instead of regulator_get() so that the regulator
-resource is automatically released.
+Add device tree bindings for the power domains of MediaTek MT8189 SoC.
 
-Fixes: 53dfe8a884e6 ("cpufreq: OMAP: scale voltage along with frequency")
-Signed-off-by: Haotian Zhang <vulab@iscas.ac.cn>
+Signed-off-by: Irving-CH Lin <irving-ch.lin@mediatek.com>
 ---
- drivers/cpufreq/omap-cpufreq.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ .../power/mediatek,power-controller.yaml      |  1 +
+ .../dt-bindings/power/mediatek,mt8189-power.h | 38 +++++++++++++++++++
+ 2 files changed, 39 insertions(+)
+ create mode 100644 include/dt-bindings/power/mediatek,mt8189-power.h
 
-diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
-index bbb01d93b54b..f83f85996b36 100644
---- a/drivers/cpufreq/omap-cpufreq.c
-+++ b/drivers/cpufreq/omap-cpufreq.c
-@@ -157,7 +157,7 @@ static int omap_cpufreq_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 
--	mpu_reg = regulator_get(mpu_dev, "vcc");
-+	mpu_reg = devm_regulator_get(mpu_dev, "vcc");
- 	if (IS_ERR(mpu_reg)) {
- 		pr_warn("%s: unable to get MPU regulator\n", __func__);
- 		mpu_reg = NULL;
-@@ -169,7 +169,6 @@ static int omap_cpufreq_probe(struct platform_device *pdev)
- 		if (regulator_get_voltage(mpu_reg) < 0) {
- 			pr_warn("%s: physical regulator not present for MPU\n",
- 				__func__);
--			regulator_put(mpu_reg);
- 			mpu_reg = NULL;
- 		}
- 	}
+diff --git a/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml b/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
+index f8a13928f615..443c227c0e51 100644
+--- a/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
++++ b/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
+@@ -31,6 +31,7 @@ properties:
+       - mediatek,mt8183-power-controller
+       - mediatek,mt8186-power-controller
+       - mediatek,mt8188-power-controller
++      - mediatek,mt8189-power-controller
+       - mediatek,mt8192-power-controller
+       - mediatek,mt8195-power-controller
+       - mediatek,mt8196-hwv-hfrp-power-controller
+diff --git a/include/dt-bindings/power/mediatek,mt8189-power.h b/include/dt-bindings/power/mediatek,mt8189-power.h
+new file mode 100644
+index 000000000000..70a8c2113457
+--- /dev/null
++++ b/include/dt-bindings/power/mediatek,mt8189-power.h
+@@ -0,0 +1,38 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++/*
++ * Copyright (c) 2025 MediaTek Inc.
++ * Author: Qiqi Wang <qiqi.wang@mediatek.com>
++ */
++
++#ifndef _DT_BINDINGS_POWER_MT8189_POWER_H
++#define _DT_BINDINGS_POWER_MT8189_POWER_H
++
++/* SPM */
++#define MT8189_POWER_DOMAIN_CONN			0
++#define MT8189_POWER_DOMAIN_AUDIO			1
++#define MT8189_POWER_DOMAIN_ADSP_TOP_DORMANT		2
++#define MT8189_POWER_DOMAIN_ADSP_INFRA			3
++#define MT8189_POWER_DOMAIN_ADSP_AO			4
++#define MT8189_POWER_DOMAIN_MM_INFRA			5
++#define MT8189_POWER_DOMAIN_ISP_IMG1			6
++#define MT8189_POWER_DOMAIN_ISP_IMG2			7
++#define MT8189_POWER_DOMAIN_ISP_IPE			8
++#define MT8189_POWER_DOMAIN_VDE0			9
++#define MT8189_POWER_DOMAIN_VEN0			10
++#define MT8189_POWER_DOMAIN_CAM_MAIN			11
++#define MT8189_POWER_DOMAIN_CAM_SUBA			12
++#define MT8189_POWER_DOMAIN_CAM_SUBB			13
++#define MT8189_POWER_DOMAIN_MDP0			14
++#define MT8189_POWER_DOMAIN_DISP			15
++#define MT8189_POWER_DOMAIN_DP_TX			16
++#define MT8189_POWER_DOMAIN_CSI_RX			17
++#define MT8189_POWER_DOMAIN_SSUSB			18
++#define MT8189_POWER_DOMAIN_MFG0			19
++#define MT8189_POWER_DOMAIN_MFG1			20
++#define MT8189_POWER_DOMAIN_MFG2			21
++#define MT8189_POWER_DOMAIN_MFG3			22
++#define MT8189_POWER_DOMAIN_EDP_TX_DORMANT		23
++#define MT8189_POWER_DOMAIN_PCIE			24
++#define MT8189_POWER_DOMAIN_PCIE_PHY			25
++
++#endif /* _DT_BINDINGS_POWER_MT8189_POWER_H */
 -- 
-2.50.1.windows.1
+2.45.2
 
