@@ -1,248 +1,354 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazon11010007.outbound.protection.outlook.com [52.101.84.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6981B34DB75
-	for <linux-pm@vger.kernel.org>; Wed, 17 Dec 2025 16:27:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1765988839; cv=none; b=ONt2hBtkBX/r5W6NxgO604WpBm/pNm+jwFllxODpNl3thsdVtLml4GVBEpQNErC1Gb20ZhW8xUNO1k4iSeZTnaMo93BiOo64k8u6Iqg5jgtB9qbGQjJt4So5ev/aLpLuRC9T7LCDUEPuB2VIFeGgZw37atO7YR1DAYY30pZoyz8=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1765988839; c=relaxed/simple;
-	bh=+6RkEBeM1QCS7AAwb7E8VMPZXz427bHunEHjO2qR/5A=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=oGI74Z9ysY+TLJDuAWs0AAQrDwoyqtqOuvBSgIvY96zWvc59/NLokgw57GWPDvZru8zFwzVCPDhM3TP8BdzHGoAFaOxiCpys+Xp5w9FQTnFljzEGy/xGmwpUFFKzUlZ/IXUHXb0imGx6/7AUq37mFJgCO2jUV6TJsrm75FT5uHw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=c3ClToel; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF21929BDBF;
+	Wed, 17 Dec 2025 16:56:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.84.7
+ARC-Seal:i=3; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1765990579; cv=fail; b=oOO2ANpk+Ki/Ive9nC3DvWuyHA+Hj+8Coc4lQ5IO2fvjkT1pMt3uUPBk7OhQq/wZtlfeuSf47JZ6KzEp4Zkpv6i5zMNPyLQ8XIi2OFiYii8M8fjpLmYjJDudQwwb1ELIFiOmxLpFSWoElH1f8JuNz3tgiTJWSygxzyx4rNUZIUg=
+ARC-Message-Signature:i=3; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1765990579; c=relaxed/simple;
+	bh=apRiXgWOJJXfZjLK+XqEFE99s0HlEODl4nnMcgavgEY=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=gzg5b/CTm+SmtAKPFZB0gkGeV6O7jU3BRcZDhLpjpMN4GJ08mzR+lL+7vIKi/9nJPJYwQkkhsD2yCb8tj2/YnNxng4r3w4ANfxFDQDPzzbLPRdMqayvNbxBL2FYdb3sBTL3ncdxS9JD9G6fE+cHdLe+q3MgWUH+ncBwh3gazwXw=
+ARC-Authentication-Results:i=3; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=q0FBF8ub; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=q0FBF8ub; arc=fail smtp.client-ip=52.101.84.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="c3ClToel"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1C363C4CEF5
-	for <linux-pm@vger.kernel.org>; Wed, 17 Dec 2025 16:27:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1765988839;
-	bh=+6RkEBeM1QCS7AAwb7E8VMPZXz427bHunEHjO2qR/5A=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=c3ClToelW7+3dH19iO97et2er8kIG8EXb220Olt/TvLCG0CtzkIvFs6Ns0J2y9pUx
-	 rKul34jXU7OCA2b+Qc0R5h4uMnlNA4sLMTSAtJZZxVJhDTFTtf28tuFIhfl6BIRxLN
-	 /ilcu4uNPAKqX7ndkLD9/7+Imbp+HXaKTgoQOgjZjGeMlGRWXwDSHKLQHBPENnadCY
-	 EqpPMQygAFAQJuGWWf7UuypZdm9YZBNm8sEjALaRPw890PySyXBx+2VEpwgx1HT6bw
-	 rarog5Lb/ogO7ztg84cgry/NMms6yRiaJaxMBTlVEfAXzT/t6midw/nvwUhqjQUYOX
-	 IFPQu14qzciZQ==
-Received: by mail-oa1-f51.google.com with SMTP id 586e51a60fabf-3f9e592af58so1003097fac.2
-        for <linux-pm@vger.kernel.org>; Wed, 17 Dec 2025 08:27:19 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCWplXytIvNquowAjankOknj2Olrn7EXiFg/okxaco8upfqI+2z1hL80HiYc2wwN7zS72vKR+Coelw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxMkLPOPnBmIOArlD4THZGoUSg7cTk6jPE6FgmP99GtnvCS/Z0B
-	PSUcRWVEb7X3NSywmmIHBO1jWulwwucA4ceTEj/9M4SdQ7O+vJTNu1HzwzJ9VEbL2+KZTAUSLUG
-	k7VImm6nLgsbF6+DbsgwY3oKNeJ5VTFM=
-X-Google-Smtp-Source: AGHT+IH5qVQcjuZSqC+zkKGJAVahJae8INKGe/qdE9fTyKPYpz/pbcYXqBou8r51keuQL0zzs17VACrG+h6oGwfQO2E=
-X-Received: by 2002:a05:6820:1897:b0:659:9a49:9049 with SMTP id
- 006d021491bc7-65b45186236mr7465582eaf.20.1765988838166; Wed, 17 Dec 2025
- 08:27:18 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="q0FBF8ub";
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="q0FBF8ub"
+ARC-Seal: i=2; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=pass;
+ b=f93NLXu4SCNebxeaAFvL/uPrXC2f7+0b3jABEMjm2TRcoiqBRla1GeBs9l9OdIUmSWze4p+jl1D9BWirM92jo3p02JIJ/1+TNlmuxikY4H1E43SY8DpDEQK6k/2gVIoagwbvlrkqTedpslaQWjojY9M1ZuTw9nSQfXu2CVdUuGHrUincRg8p2EHcbMTSF82EGAdkP0P29bK+bxYog4z338FWEZ94oTtOR1xfrAI+s2Ni1H5D5xBo0hV9BL+16PydQA3ciV3BfsAruiHpwPqFO7xIiqqUC4o0/UgM+rj50Juudr1ohMuE0U8mnCGqgeRjHNRRx7WtTNPZ6hxnVt/ITA==
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=AqMfwfSlPtoC9zIrQTFAYTbJiTs9u+l2NLSlVm7spy0=;
+ b=epSinlMQfh4kLvTeNTpOQcGI8rIQZFI7uyEvuOkEPsm0iUAwmKzH4Azp1FLeUn/jG/bSCv4xRDA7BGvVmhtQKn0VKZeaqP4D/K6sZuqB0c6xHlbzCutOS17xSJ/5RnCG3f+dmcjLNWdC/rdXb871pwTmMtkj5NFOrPxlUOpWGguVjzheDPrdWPvBySjZdG8gh0guLMg0VexML7yO7kFsncUqor3UUOOyMkLgHInCDrRLPvQREshJnR/0RJ/ZAqVCW0dsH6+oQH+/nekI1jKaKIMEjxQ2uOEARqEuDmBaYX9DwHsWQrYahp8uZQFCAtC2Nh7OwfiNF9V/Pj689f9dHQ==
+ARC-Authentication-Results: i=2; mx.microsoft.com 1; spf=pass (sender ip is
+ 4.158.2.129) smtp.rcpttodomain=huawei.com smtp.mailfrom=arm.com; dmarc=pass
+ (p=none sp=none pct=100) action=none header.from=arm.com; dkim=pass
+ (signature was verified) header.d=arm.com; arc=pass (0 oda=1 ltdi=1
+ spf=[1,1,smtp.mailfrom=arm.com] dkim=[1,1,header.d=arm.com]
+ dmarc=[1,1,header.from=arm.com])
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=AqMfwfSlPtoC9zIrQTFAYTbJiTs9u+l2NLSlVm7spy0=;
+ b=q0FBF8ub+4UCT9VCj+yFF26+6JWny7rsTe9zedG5uOs0f3FdDfdCTNyTWdc/GGJzaGHqAzZenprPIeaSjLZfS/AqqhORo7Gm2P2rHdnLoI9JbgHlNJDIlxIAGkuZiosaYXFMFjqE0NVGXY1qK+bMVfRo75Ma6oacknLRgQaNs5E=
+Received: from AM8P190CA0018.EURP190.PROD.OUTLOOK.COM (2603:10a6:20b:219::23)
+ by MRWPR08MB11826.eurprd08.prod.outlook.com (2603:10a6:501:9a::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9412.13; Wed, 17 Dec
+ 2025 16:23:01 +0000
+Received: from AM1PEPF000252DC.eurprd07.prod.outlook.com
+ (2603:10a6:20b:219:cafe::c6) by AM8P190CA0018.outlook.office365.com
+ (2603:10a6:20b:219::23) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9434.6 via Frontend Transport; Wed,
+ 17 Dec 2025 16:22:56 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 4.158.2.129)
+ smtp.mailfrom=arm.com; dkim=pass (signature was verified)
+ header.d=arm.com;dmarc=pass action=none header.from=arm.com;
+Received-SPF: Pass (protection.outlook.com: domain of arm.com designates
+ 4.158.2.129 as permitted sender) receiver=protection.outlook.com;
+ client-ip=4.158.2.129; helo=outbound-uk1.az.dlp.m.darktrace.com; pr=C
+Received: from outbound-uk1.az.dlp.m.darktrace.com (4.158.2.129) by
+ AM1PEPF000252DC.mail.protection.outlook.com (10.167.16.54) with Microsoft
+ SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.9434.6
+ via Frontend Transport; Wed, 17 Dec 2025 16:22:59 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=KVA0d3ERwN4ieJcjqSCZaZcKJc20yQgYnOlhgWmZ485ErX2FWX0qKwKkDGRFx4LPgsy2VTq6AJzXNfs7te/xEmupb6Tu2VRQH9r13iKe4KUPPS/uZ3Ori6uR/EGYQMe53lOXRy+g7L45at9wm8DQvyNwDXAa4sWBpzEQTRKJmz8Q0d7+64fUx7T2xpVirz7rmbRWA6aJyuagU+5kXLTqHXkw4LUFtMYDU+ta91QdaPQlQQIBgL2gPQHD2cszx+xPM8FcpDyW8yNXulLt27rsjG6IrwInGnbeUin5zJhfPywq6VncZKxc3x+ZzUXzFpVYprbCoM3clMf/70NhwJYYFQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=AqMfwfSlPtoC9zIrQTFAYTbJiTs9u+l2NLSlVm7spy0=;
+ b=QrQeDuiwMiWvdanYvDHV/OAUItVvMLPcqrjsH/sMy7OQJqEqt9c1eGpb0FaDYC2aGXUIukuzOgI6mUfhQONM23tS32qdBkkL0+4Dlb00EbvrL7PZDB0D5erwDZF7AImeGdGYQJQpHgYWEBSCu7tJFRRhWiP4zM1Q+v71oD65kDKssE+MMInDT/lNtDeFOsQCXSSr6rI/ESVJ6QSUWEutNiWiOlx/i/y6WcdEXDxqBmxRlV3qFeQuXqsvO6HxD5Qv23XGElpbS9jjMu3eodUkFEVVcUUshhwqKPZxVVnc2cDNG6oQFX2Xp0SS1wPekCdZvs6UGAGyipKOSdsTlHCDow==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=arm.com; dmarc=pass action=none header.from=arm.com; dkim=pass
+ header.d=arm.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=AqMfwfSlPtoC9zIrQTFAYTbJiTs9u+l2NLSlVm7spy0=;
+ b=q0FBF8ub+4UCT9VCj+yFF26+6JWny7rsTe9zedG5uOs0f3FdDfdCTNyTWdc/GGJzaGHqAzZenprPIeaSjLZfS/AqqhORo7Gm2P2rHdnLoI9JbgHlNJDIlxIAGkuZiosaYXFMFjqE0NVGXY1qK+bMVfRo75Ma6oacknLRgQaNs5E=
+Authentication-Results-Original: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=arm.com;
+Received: from VI0PR08MB10391.eurprd08.prod.outlook.com (2603:10a6:800:20c::6)
+ by DB9PR08MB11545.eurprd08.prod.outlook.com (2603:10a6:10:606::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9434.6; Wed, 17 Dec
+ 2025 16:21:57 +0000
+Received: from VI0PR08MB10391.eurprd08.prod.outlook.com
+ ([fe80::fa6b:9ba8:5c2f:ac91]) by VI0PR08MB10391.eurprd08.prod.outlook.com
+ ([fe80::fa6b:9ba8:5c2f:ac91%4]) with mapi id 15.20.9434.001; Wed, 17 Dec 2025
+ 16:21:56 +0000
+Message-ID: <a615ab13-bd54-4051-ae61-2bfe8b59427e@arm.com>
+Date: Wed, 17 Dec 2025 17:21:54 +0100
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/3] cpufreq: Add boost_freq_req QoS request
+To: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
+Cc: linux-kernel@vger.kernel.org, Christian Loehle
+ <christian.loehle@arm.com>, Ionela Voinescu <ionela.voinescu@arm.com>,
+ Jie Zhan <zhanjie9@hisilicon.com>, Huang Rui <ray.huang@amd.com>,
+ "Gautham R. Shenoy" <gautham.shenoy@amd.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ Perry Yuan <perry.yuan@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+References: <20251208105933.1369125-1-pierre.gondois@arm.com>
+ <20251208105933.1369125-2-pierre.gondois@arm.com>
+ <416196db-ad73-42d3-8e52-bc120a822f31@huawei.com>
+Content-Language: en-US
+From: Pierre Gondois <pierre.gondois@arm.com>
+In-Reply-To: <416196db-ad73-42d3-8e52-bc120a822f31@huawei.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: LO2P123CA0097.GBRP123.PROD.OUTLOOK.COM
+ (2603:10a6:600:139::12) To VI0PR08MB10391.eurprd08.prod.outlook.com
+ (2603:10a6:800:20c::6)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251217153455.3560176-1-srinivas.pandruvada@linux.intel.com>
-In-Reply-To: <20251217153455.3560176-1-srinivas.pandruvada@linux.intel.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 17 Dec 2025 17:27:06 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0h4SPvp97iU9ibXrnjqKOQ7GZOtUPb9ZGj80=O5pfukYQ@mail.gmail.com>
-X-Gm-Features: AQt7F2qXANFkY7ra7OKts1ws58AAQdAHbxb8UkBB-qRDS532HlGOB9s-rAlAVy4
-Message-ID: <CAJZ5v0h4SPvp97iU9ibXrnjqKOQ7GZOtUPb9ZGj80=O5pfukYQ@mail.gmail.com>
-Subject: Re: [PATCH] powercap: intel_rapl: Fix possible recursive lock warning
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	"Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>, 
-	Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>, 
-	RavitejaX Veesam <ravitejax.veesam@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-MS-TrafficTypeDiagnostic:
+	VI0PR08MB10391:EE_|DB9PR08MB11545:EE_|AM1PEPF000252DC:EE_|MRWPR08MB11826:EE_
+X-MS-Office365-Filtering-Correlation-Id: 2860a0de-b17a-4c95-40c6-08de3d888b9d
+x-checkrecipientrouted: true
+NoDisclaimer: true
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam-Untrusted:
+ BCL:0;ARA:13230040|376014|7416014|366016|1800799024;
+X-Microsoft-Antispam-Message-Info-Original:
+ =?utf-8?B?MlY2bXRwQTJ5R1poQU5yWmJIVno5R2pjajdaZ1pBUW5RMUVXMFlseDFGUlNs?=
+ =?utf-8?B?SlNOeUY0RFF3aktFRlMrbGxpR3RzRnhqU3YybEtEMlFRMjNLMDE5bmxuV0xi?=
+ =?utf-8?B?cTRleTRna3B5QmI4Ky9Cbk0zMzJEamY3a2NEdXN1Ty95OG9hYUlQR1JPZ0Jx?=
+ =?utf-8?B?SUN2MGtaL1RQNmJqWWE0T05OamxnVlZLZFlOSGE2MWlpcEpDZVhsNE1RSjc1?=
+ =?utf-8?B?SjhYWUZyU0s3R0trRDNweVI5MTNvdmd4ZEtjU1piTUtCRFpoZWJDeDJSbXlj?=
+ =?utf-8?B?VWdaTm5MVGlJZHFvTVdEVEpYM2U3Z0FReEdYZkp5Ti9VWlBFVzlQczRZMmhH?=
+ =?utf-8?B?MFNVY3VCWUFpVDExdERUa2p0V05yVlpuU0FLc1E1UDREMk9ZWVU4a3k2dEZ2?=
+ =?utf-8?B?eHRRZUF3UzdpSzRpS3l6VnNTRVhhdmVyMFU3dHdZZUdmMUlBWXdPbVJhaUxw?=
+ =?utf-8?B?V3BtUitYZFZlVFRxOVhaMlJUOHVNRWsyK0x2ak44T280Z1h2MjNPUldhenFY?=
+ =?utf-8?B?T2VaaU94NlFXK1VFQllLL1o0TS9JZzBoSkdJQkJmQ1UzWUxXN3FYYXEvRmpR?=
+ =?utf-8?B?SUdiWFljOEsycFFsc3JYc3JIb3RHdFZMYU5yOUcwZ1JoaGpnUmFxZGc4Y1pk?=
+ =?utf-8?B?WEE0S3FaSU1WR0dSU2Y2MEFiM3I5MWs0eFZkbHEvb2QvZ0hpdW9icFRWRXBN?=
+ =?utf-8?B?NWRwZlZ5UlJ4ZXYxcnBRTlZnZ0F0YURyWnRCS09tb1kzNWVER3lscy9MajV1?=
+ =?utf-8?B?TmZIdGFlS1ZsbmpySVJLaytLVEo1V3VjbE1kWDVURlhJZ1dzTlluYWdnQTJS?=
+ =?utf-8?B?UzZncDZrNWlYNDVjK3RqVFYyZUw4cERkMzZiTlVlMUwwMWlRMlYrdkNzTDFP?=
+ =?utf-8?B?amFrSHNoZEV6L3N5NzFvODJBZEFkTVNZNGhLeExvNlltVURJN216ejAwZEhT?=
+ =?utf-8?B?dFdtVUpaMHRTM0djM3lGbmtBOGcxWUo2QlRkNGwvY3o2R0tKSHc3MFh4Wko0?=
+ =?utf-8?B?VjdYV01RaEVzV2Rzb3NVc29yVHpEVFhGR0tmU3VOS1ZhY2tBY3d2NW0rY0VK?=
+ =?utf-8?B?UWUrYXdLdW5mMjQ2VVpRejRNM3EvK1c3ajRHM3A2MDk0SXpSTHhxcGNGaUd6?=
+ =?utf-8?B?Nk5KNUpyV3ZoZ2pCMG45eUVNcm90UlY2ZVJKbURKcTRERkZGRnkzN2NwYVJI?=
+ =?utf-8?B?b3V3M0krODA3aGxpMStKbVpKMkZjQ1V6d0ZuSmh6aFg0VW1TSGFWT3ZxN1h3?=
+ =?utf-8?B?RG9iUU1jTkpPdW80R1M2cWhkY2w0czZLS0xwa09lNk1VWkdUWTRJSVhZbVZk?=
+ =?utf-8?B?WFdodEtBczJjTUxhNGJCKzQrZzZuNTVRcUxWbER1RnBjZE5NZnVoU0dGZW0v?=
+ =?utf-8?B?SGlmSGFGYVpvVjk0Q2tCNzFwcEJOSDhSalZLWUxCNUc5Y0c0MG5XdEpLaXRX?=
+ =?utf-8?B?WmNsZUwrUGdPeDc0NDJmQklrZjRVeTROTkNnYk5HbUNkOGRkaHpQU1RzSThu?=
+ =?utf-8?B?UXpGa2VGVXJiVkV4aVhMRkZkUyt4K0FHSTFvNEFJYnltNHJwT3VRV3pQdVQx?=
+ =?utf-8?B?UG15dkcveUgwK21yTTJEcHpzYXpHNWVoTXpGVjdRRzA2MVc4Z002Q0MxeDVN?=
+ =?utf-8?B?MmI0WUI0dWowSmNqZ21RcUFmdjdHZ2x3NzhDQStUNEdhTHZlYUF6R0JITXdr?=
+ =?utf-8?B?Q1BJVDlRdDM3dUc5SDNDcFRzeTRRcENPdHNsNXFkSjh5dWp0UG14V3R3a1FY?=
+ =?utf-8?B?VmFrT2NnUDlEd1k4Q1Npa0RtSko5NCsyYTE4VHBpdU1vdWlVdS9SS2txWHBl?=
+ =?utf-8?B?UHcxNG5aeU1ZN1BKS3BhcmZpRlVGT053cnp5bU5iWGRiMWJMYjlPMTBTQ3NB?=
+ =?utf-8?B?MTBXT0ZsR21FeDlYSUd5SGxmdHpTb1diS3lHeTZYNlVDTGI1V3UraEVCK3dH?=
+ =?utf-8?Q?x8e3WzxKnxmFMwazkAMyKrQ1q5V6El7g?=
+X-Forefront-Antispam-Report-Untrusted:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR08MB10391.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024);DIR:OUT;SFP:1101;
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR08MB11545
+X-EOPAttributedMessage: 0
+X-MS-Exchange-Transport-CrossTenantHeadersStripped:
+ AM1PEPF000252DC.eurprd07.prod.outlook.com
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id-Prvs:
+	5d08be6f-ef0f-4bb6-08f2-08de3d88654f
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|35042699022|36860700013|14060799003|82310400026|376014|7416014|1800799024;
+X-Microsoft-Antispam-Message-Info:
+	=?utf-8?B?NDRhcklVQ1IrOFc0dnd2cXhvU3NDc09BeGJtb0Z5dk94NXE4cTBEcEdVZ2lK?=
+ =?utf-8?B?bzZRMDhTOHNxbzdlRU05QXo2L1ZxUHBzS0FMVmJaZVJldFhpTmljUFZ6TS9z?=
+ =?utf-8?B?UHkvcWowUWNHQmVKVVRPOGM2T3JYRVovN2QwSUFEZ0NOek1XMTJ1ZTBiVHRa?=
+ =?utf-8?B?aXIyUi9PVnE4OHcrV3VweDFJSkhnVjZFUlVEc3BoY0xmc3BFVmVQRmh4Y0dC?=
+ =?utf-8?B?U3NKUGpNNTlpM3lFU0E0NlF1Zm1Gdis4RXA0d3dLT3Rwc3QvYjVxVHl0WXNt?=
+ =?utf-8?B?N0tuRnJZWHJXVXA4S0V1dXRLNjBqS2lkeTZXV1F6dTBvZUJKakYyekhOcGoy?=
+ =?utf-8?B?ZnZSWktkZkFhV0I5YTgrcWdkdmdBcHFjdUNQcEd1bFlVdlpkZnhYY3BjZ3Vm?=
+ =?utf-8?B?Q0xUSE1hejRiWHEvQjBLNFM2b1haVEd6TTUwTTlWOC9LckNjT0RrcjYwT1Fw?=
+ =?utf-8?B?U3FvbnNKYmlkMlJZODdhM2JQL3ZYZVA4alBOazFCeFExWjkweGVCYjB0aHo0?=
+ =?utf-8?B?TlIxZTVJU2VLazBQOWI5bHVPNkt5MmdYRUJobm44MjFvckRwaFYyUUNrMWFG?=
+ =?utf-8?B?SDJqNCtCS1pVcmtzL0ttanlxcjlWZlRyV0lSdDZQUkd0Vm9QaDE4MGpJRjRm?=
+ =?utf-8?B?Tm1xOTV3RE9hTlBSajdvV3haNjBpUGZPUGR5bWZXSU94c3BhNFNuRVlSUG1E?=
+ =?utf-8?B?TzYvQkdja0xxd1lMcFhjZFlPbHgycENaK1BMbVFad3REblBRYmc3RlB0bDBN?=
+ =?utf-8?B?U3ZVdEhqelR5ODlKY1hoak00bWlDTW5VeXFEUkllS0FFMUhxZGdhMkNySDZm?=
+ =?utf-8?B?ZFZwZVd4T25lWDFnVjVaRFdJYXhDeEpaQWRNeFVqa3pqSFd1WStPMmpoSWNS?=
+ =?utf-8?B?bmEvekxrbGI4MXBJa29JYWVUNStLWUQ1eWRXR2Y3SzVWOEhQUVF5N0haSVZO?=
+ =?utf-8?B?TGt4RlpLTy9tenVCdy83UWY4bXpvNWFlR29wRStuNk1qOHVEc2xndytKUS9W?=
+ =?utf-8?B?OEFnT0lvOWlPTFJjaHhWS3RxNFdTSjQwSndvYVdBdU5xYllmUWFJSzl3THQr?=
+ =?utf-8?B?RldpaDl3eTVBRy93QkVUVVlpMmlZV051dHNGYnBlM2w3VlB1ZGUwTTFEb2Yy?=
+ =?utf-8?B?c1ZlRis2b1FwaThXM05sSGM2a3Q3ZVlmQWI1aTd1MGs5SmRFKzByVjhrQmdY?=
+ =?utf-8?B?bGxKOEhoRDJ4a3V1ZWFTZmdOTG9sMUc2VHZVOEtsTWRicXkzczF4OWErejNm?=
+ =?utf-8?B?K3RheGlQNUpkbHZJTU1aWmNtVmVxMFIwWWhOUHVDa0xsSmVMR01pL2wwSk5s?=
+ =?utf-8?B?aVlXSXM5NzhnbHhVdGppVXhGZVVVdmR4bVVNUHRDeU1naUZyS2xnc0dwWTgv?=
+ =?utf-8?B?L0g5K3F5VVpPSWllMFpTemZ1Rm9JdmRveWUzNmI2NU0vbEJMZW1RWmREMEVw?=
+ =?utf-8?B?VG9oeFd0M2c3MUliTWdRVGc3ZUM5dFczYWluVmY4L1dMMFI1b29nNGJlWG1B?=
+ =?utf-8?B?YVhrUnI1SFp0UUgzQnJWRnRYOFlJbk1XbjQ1ZlJtSVRaaFR3WlZCbDBjRmNT?=
+ =?utf-8?B?U0lMYkQySmxncmJGeEJoUGMzSXZXZ1U4M01TY1MyZ0pGU0c5TUQ1dVlFd1Ir?=
+ =?utf-8?B?K1NXUHBNcXZDcDNkdkFBMVAvZitpY251ZUNtL3VuQkpUWU1TcmltM3IwR1VZ?=
+ =?utf-8?B?V3ViVTFzdzhJUmRkOUM5anowQTZGQWxRTjNpNHBMT0NqdGFBUGhrN0t0WUFu?=
+ =?utf-8?B?cVdHVmltaUxyUnNyQ0ZOTkpNYk40ckIyenhMY3Z1aEcwQk56ZzMxUG0zZDZJ?=
+ =?utf-8?B?VnhnMUswUW04Z0Zpb2Y3NDAwMXNLcFYrdFJ6WUlxNVg4S2NFVlB3RU9kQ200?=
+ =?utf-8?B?M0NkUzBxT3RUMTRHSXNoSjBlQzZzNHFuenNZTEhEcVhvRi93T1ZVVERYSEF5?=
+ =?utf-8?B?WGhYd2NucmdUek5JdkdNSVhXcEdBMGJZaDA5UUh4YUhBUHhUTDBld3FWdW05?=
+ =?utf-8?B?eE5uTitoKzlYRzdTUEZ2STNnOVBYUGRNcTcvemlyZWpiMjZhaUFLUjdxVEVL?=
+ =?utf-8?B?VjRKbzNpdmdmVHNoRXJLS1kzVzNpbEtEQUloVDJ1c2UwNkVwZmdBSVdhMVNN?=
+ =?utf-8?Q?AF+s=3D?=
+X-Forefront-Antispam-Report:
+	CIP:4.158.2.129;CTRY:GB;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:outbound-uk1.az.dlp.m.darktrace.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(35042699022)(36860700013)(14060799003)(82310400026)(376014)(7416014)(1800799024);DIR:OUT;SFP:1101;
+X-OriginatorOrg: arm.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Dec 2025 16:22:59.9357
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2860a0de-b17a-4c95-40c6-08de3d888b9d
+X-MS-Exchange-CrossTenant-Id: f34e5979-57d9-4aaa-ad4d-b122a662184d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=f34e5979-57d9-4aaa-ad4d-b122a662184d;Ip=[4.158.2.129];Helo=[outbound-uk1.az.dlp.m.darktrace.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	AM1PEPF000252DC.eurprd07.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MRWPR08MB11826
 
-On Wed, Dec 17, 2025 at 4:35=E2=80=AFPM Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
+
+On 12/10/25 04:01, zhenglifeng (A) wrote:
+> On 2025/12/8 18:59, Pierre Gondois wrote:
+>> The Power Management Quality of Service (PM QoS) allows to
+>> aggregate constraints from multiple entities. It is currently
+>> used to manage the min/max frequency of a given policy.
+>>
+>> Frequency constraints can come for instance from:
+>> - Thermal framework: acpi_thermal_cpufreq_init()
+>> - Firmware: _PPC objects: acpi_processor_ppc_init()
+>> - User: by setting policyX/scaling_[min|max]_freq
+>> The minimum of the max frequency constraints is used to compute
+>> the resulting maximum allowed frequency.
+>>
+>> When enabling boost frequencies, the same frequency request object
+>> (policy->max_freq_req) as to handle requests from users is used.
+>> As a result, when setting:
+>> - scaling_max_freq
+>> - boost
+>> The last sysfs file used overwrites the request from the other
+>> sysfs file.
+>>
+>> To avoid this, create a per-policy boost_freq_req to save the boost
+>> constraints instead of overwriting the last scaling_max_freq
+>> constraint.
+>>
+>> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
+>> ---
+>>   drivers/cpufreq/cpufreq.c | 28 ++++++++++++++++++++++++++++
+>>   include/linux/cpufreq.h   |  1 +
+>>   2 files changed, 29 insertions(+)
+>>
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> index 852e024facc3c..942416f2741b0 100644
+>> --- a/drivers/cpufreq/cpufreq.c
+>> +++ b/drivers/cpufreq/cpufreq.c
+>> @@ -1359,6 +1359,11 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
+>>   	/* Cancel any pending policy->update work before freeing the policy. */
+>>   	cancel_work_sync(&policy->update);
+>>   
+>> +	if (policy->boost_freq_req) {
+>> +		freq_qos_remove_request(policy->boost_freq_req);
+>> +		kfree(policy->boost_freq_req);
+>> +	}
+>> +
+>>   	if (policy->max_freq_req) {
+>>   		/*
+>>   		 * Remove max_freq_req after sending CPUFREQ_REMOVE_POLICY
+> If adding boost_freq_req fails, CPUFREQ_CREATE_POLICY notification will
+> never be sent but CPUFREQ_REMOVE_POLICY notification will be sent here. So
+> maybe something like this is better:
+
+Yes right indeed.
+However cf. what you suggested in patch 3/3 I believe, it might be necessary
+to always set boost_freq_req, even for drivers that don't actually 
+support boost
+frequencies.
+
+This might simplify this patch.
+
 >
-> With the RAPL PMU addition, there is a recursive locking when CPU online
-> callback function calls rapl_package_add_pmu(). Here cpu_hotplug_lock
-> is already acquired by cpuhp_thread_fun() and rapl_package_add_pmu()
-> tries to acquire again.
+> @@ -1365,17 +1365,28 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
+>          /* Cancel any pending policy->update work before freeing the policy. */
+>          cancel_work_sync(&policy->update);
+>   
+> -       if (policy->max_freq_req) {
+> +       if (policy->boost_freq_req) {
+>                  /*
+> -                * Remove max_freq_req after sending CPUFREQ_REMOVE_POLICY
+> +                * Remove boost_freq_req after sending CPUFREQ_REMOVE_POLICY
+>                   * notification, since CPUFREQ_CREATE_POLICY notification was
+> -                * sent after adding max_freq_req earlier.
+> +                * sent after adding boost_freq_req earlier.
+>                   */
+>                  blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+>                                               CPUFREQ_REMOVE_POLICY, policy);
+> -               freq_qos_remove_request(policy->max_freq_req);
+> +               freq_qos_remove_request(policy->boost_freq_req);
+> +               kfree(policy->boost_freq_req);
+>          }
+>   
+> +       if (policy->max_freq_req && !policy->boost_supported) {
+> +               /*
+> +                * Send CPUFREQ_REMOVE_POLICY notification here if
+> +                * boost_freq_req is not present.
+> +                */
+> +               blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+> +                                            CPUFREQ_REMOVE_POLICY, policy);
+> +       }
+> +
+> +       freq_qos_remove_request(policy->max_freq_req);
+>          freq_qos_remove_request(policy->min_freq_req);
+>          kfree(policy->min_freq_req);
 >
-> <4>[ 8.197433] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> <4>[ 8.197437] WARNING: possible recursive locking detected
-> <4>[ 8.197440] 6.19.0-rc1-lgci-xe-xe-4242-05b7c58b3367dca84+ #1 Not taint=
-ed
-> <4>[ 8.197444] --------------------------------------------
-> <4>[ 8.197447] cpuhp/0/20 is trying to acquire lock:
-> <4>[ 8.197450] ffffffff83487870 (cpu_hotplug_lock){++++}-{0:0}, at:
-> rapl_package_add_pmu+0x37/0x370 [intel_rapl_common]
-> <4>[ 8.197463]
-> but task is already holding lock:
-> <4>[ 8.197466] ffffffff83487870 (cpu_hotplug_lock){++++}-{0:0}, at:
-> cpuhp_thread_fun+0x6d/0x290
-> <4>[ 8.197477]
-> other info that might help us debug this:
-> <4>[ 8.197480] Possible unsafe locking scenario:
->
-> <4>[ 8.197483] CPU0
-> <4>[ 8.197485] ----
-> <4>[ 8.197487] lock(cpu_hotplug_lock);
-> <4>[ 8.197490] lock(cpu_hotplug_lock);
-> <4>[ 8.197493]
-> *** DEADLOCK ***
-> ..
-> ..
-> <4>[ 8.197542] __lock_acquire+0x146e/0x2790
-> <4>[ 8.197548] lock_acquire+0xc4/0x2c0
-> <4>[ 8.197550] ? rapl_package_add_pmu+0x37/0x370 [intel_rapl_common]
-> <4>[ 8.197556] cpus_read_lock+0x41/0x110
-> <4>[ 8.197558] ? rapl_package_add_pmu+0x37/0x370 [intel_rapl_common]
-> <4>[ 8.197561] rapl_package_add_pmu+0x37/0x370 [intel_rapl_common]
-> <4>[ 8.197565] rapl_cpu_online+0x85/0x87 [intel_rapl_msr]
-> <4>[ 8.197568] ? __pfx_rapl_cpu_online+0x10/0x10 [intel_rapl_msr]
-> <4>[ 8.197570] cpuhp_invoke_callback+0x41f/0x6c0
-> <4>[ 8.197573] ? cpuhp_thread_fun+0x6d/0x290
-> <4>[ 8.197575] cpuhp_thread_fun+0x1e2/0x290
-> <4>[ 8.197578] ? smpboot_thread_fn+0x26/0x290
-> <4>[ 8.197581] smpboot_thread_fn+0x12f/0x290
-> <4>[ 8.197584] ? __pfx_smpboot_thread_fn+0x10/0x10
-> <4>[ 8.197586] kthread+0x11f/0x250
-> <4>[ 8.197589] ? __pfx_kthread+0x10/0x10
-> <4>[ 8.197592] ret_from_fork+0x344/0x3a0
-> <4>[ 8.197595] ? __pfx_kthread+0x10/0x10
-> <4>[ 8.197597] ret_from_fork_asm+0x1a/0x30
-> <4>[ 8.197604] </TASK>
->
-> Fix this issue in the same way as rapl powercap package domain is added
-> from the same CPU online callback by introducing another interface which
-> doesn't call cpus_read_lock(). Add rapl_package_add_pmu_locked() and
-> rapl_package_remove_pmu_locked() which don't call cpus_read_lock().
->
-> Fixes: 748d6ba43afd ("powercap: intel_rapl: Enable MSR-based RAPL PMU sup=
-port")
-> Reported-by: Borah, Chaitanya Kumar <chaitanya.kumar.borah@intel.com>
-> Closes: https://lore.kernel.org/linux-pm/5427ede1-57a0-43d1-99f3-8ca4b064=
-3e82@intel.com/T/#u
-> Tested-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.i=
-ntel.com>
-> Tested-by: RavitejaX Veesam <ravitejax.veesam@intel.com>
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 > ---
->  drivers/powercap/intel_rapl_common.c | 24 ++++++++++++++++++------
->  drivers/powercap/intel_rapl_msr.c    |  4 ++--
->  include/linux/intel_rapl.h           |  4 ++++
->  3 files changed, 24 insertions(+), 8 deletions(-)
+> It's a bit verbose, but I can't think of a better way.
 >
-> diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/inte=
-l_rapl_common.c
-> index b9d87e56cbbc..3ff6da3bf4e6 100644
-> --- a/drivers/powercap/intel_rapl_common.c
-> +++ b/drivers/powercap/intel_rapl_common.c
-> @@ -2032,7 +2032,7 @@ static int rapl_pmu_update(struct rapl_package *rp)
->         return ret;
->  }
->
-> -int rapl_package_add_pmu(struct rapl_package *rp)
-> +int rapl_package_add_pmu_locked(struct rapl_package *rp)
->  {
->         struct rapl_package_pmu_data *data =3D &rp->pmu_data;
->         int idx;
-> @@ -2040,8 +2040,6 @@ int rapl_package_add_pmu(struct rapl_package *rp)
->         if (rp->has_pmu)
->                 return -EEXIST;
->
-> -       guard(cpus_read_lock)();
-> -
->         for (idx =3D 0; idx < rp->nr_domains; idx++) {
->                 struct rapl_domain *rd =3D &rp->domains[idx];
->                 int domain =3D rd->id;
-> @@ -2091,17 +2089,23 @@ int rapl_package_add_pmu(struct rapl_package *rp)
->
->         return rapl_pmu_update(rp);
->  }
-> +EXPORT_SYMBOL_GPL(rapl_package_add_pmu_locked);
-> +
-> +int rapl_package_add_pmu(struct rapl_package *rp)
-> +{
-> +       guard(cpus_read_lock)();
-> +
-> +       return rapl_package_add_pmu_locked(rp);
-> +}
->  EXPORT_SYMBOL_GPL(rapl_package_add_pmu);
->
-> -void rapl_package_remove_pmu(struct rapl_package *rp)
-> +void rapl_package_remove_pmu_locked(struct rapl_package *rp)
->  {
->         struct rapl_package *pos;
->
->         if (!rp->has_pmu)
->                 return;
->
-> -       guard(cpus_read_lock)();
-> -
->         list_for_each_entry(pos, &rapl_packages, plist) {
->                 /* PMU is still needed */
->                 if (pos->has_pmu && pos !=3D rp)
-> @@ -2111,6 +2115,14 @@ void rapl_package_remove_pmu(struct rapl_package *=
-rp)
->         perf_pmu_unregister(&rapl_pmu.pmu);
->         memset(&rapl_pmu, 0, sizeof(struct rapl_pmu));
->  }
-> +EXPORT_SYMBOL_GPL(rapl_package_remove_pmu_locked);
-> +
-> +void rapl_package_remove_pmu(struct rapl_package *rp)
-> +{
-> +       guard(cpus_read_lock)();
-> +
-> +       rapl_package_remove_pmu_locked(rp);
-> +}
->  EXPORT_SYMBOL_GPL(rapl_package_remove_pmu);
->  #endif
->
-> diff --git a/drivers/powercap/intel_rapl_msr.c b/drivers/powercap/intel_r=
-apl_msr.c
-> index 0ce1096b6314..9a7e150b3536 100644
-> --- a/drivers/powercap/intel_rapl_msr.c
-> +++ b/drivers/powercap/intel_rapl_msr.c
-> @@ -82,7 +82,7 @@ static int rapl_cpu_online(unsigned int cpu)
->                 if (IS_ERR(rp))
->                         return PTR_ERR(rp);
->                 if (rapl_msr_pmu)
-> -                       rapl_package_add_pmu(rp);
-> +                       rapl_package_add_pmu_locked(rp);
->         }
->         cpumask_set_cpu(cpu, &rp->cpumask);
->         return 0;
-> @@ -101,7 +101,7 @@ static int rapl_cpu_down_prep(unsigned int cpu)
->         lead_cpu =3D cpumask_first(&rp->cpumask);
->         if (lead_cpu >=3D nr_cpu_ids) {
->                 if (rapl_msr_pmu)
-> -                       rapl_package_remove_pmu(rp);
-> +                       rapl_package_remove_pmu_locked(rp);
->                 rapl_remove_package_cpuslocked(rp);
->         } else if (rp->lead_cpu =3D=3D cpu) {
->                 rp->lead_cpu =3D lead_cpu;
-> diff --git a/include/linux/intel_rapl.h b/include/linux/intel_rapl.h
-> index e9ade2ff4af6..f479ef5b3341 100644
-> --- a/include/linux/intel_rapl.h
-> +++ b/include/linux/intel_rapl.h
-> @@ -214,10 +214,14 @@ void rapl_remove_package(struct rapl_package *rp);
->
->  #ifdef CONFIG_PERF_EVENTS
->  int rapl_package_add_pmu(struct rapl_package *rp);
-> +int rapl_package_add_pmu_locked(struct rapl_package *rp);
->  void rapl_package_remove_pmu(struct rapl_package *rp);
-> +void rapl_package_remove_pmu_locked(struct rapl_package *rp);
->  #else
->  static inline int rapl_package_add_pmu(struct rapl_package *rp) { return=
- 0; }
-> +static inline int rapl_package_add_pmu_locked(struct rapl_package *rp) {=
- return 0; }
->  static inline void rapl_package_remove_pmu(struct rapl_package *rp) { }
-> +static inline void rapl_package_remove_pmu_locked(struct rapl_package *r=
-p) { }
->  #endif
->
->  #endif /* __INTEL_RAPL_H__ */
-> --
-
-Applied as 6.19-rc material, thanks!
+>> @@ -1476,6 +1481,29 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
+>>   			goto out_destroy_policy;
+>>   		}
+>>   
+>> +		if (policy->boost_supported) {
+>> +			policy->boost_freq_req = kzalloc(sizeof(*policy->boost_freq_req),
+>> +				GFP_KERNEL);
+>> +			if (!policy->boost_freq_req) {
+>> +				ret = -ENOMEM;
+>> +				goto out_destroy_policy;
+>> +			}
+>> +
+>> +			ret = freq_qos_add_request(&policy->constraints,
+>> +						   policy->boost_freq_req,
+>> +						   FREQ_QOS_MAX,
+>> +						   FREQ_QOS_MAX_DEFAULT_VALUE);
+>> +			if (ret < 0) {
+>> +				/*
+>> +				 * So we don't call freq_qos_remove_request() for an
+>> +				 * uninitialized request.
+>> +				 */
+>> +				kfree(policy->boost_freq_req);
+>> +				policy->boost_freq_req = NULL;
+>> +				goto out_destroy_policy;
+>> +			}
+>> +		}
+>> +
+>>   		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+>>   				CPUFREQ_CREATE_POLICY, policy);
+>>   	} else {
+>> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+>> index 0465d1e6f72ac..c292a6a19e4f5 100644
+>> --- a/include/linux/cpufreq.h
+>> +++ b/include/linux/cpufreq.h
+>> @@ -81,6 +81,7 @@ struct cpufreq_policy {
+>>   	struct freq_constraints	constraints;
+>>   	struct freq_qos_request	*min_freq_req;
+>>   	struct freq_qos_request	*max_freq_req;
+>> +	struct freq_qos_request *boost_freq_req;
+>>   
+>>   	struct cpufreq_frequency_table	*freq_table;
+>>   	enum cpufreq_table_sorting freq_table_sorted;
