@@ -1,45 +1,45 @@
 Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61A833101AE;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EE373101B4;
 	Sat, 20 Dec 2025 18:51:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766256693; cv=pass; b=C+b6D8IAcIFCI4Qjao+DV9ZTWMRvQQh0xQi5+Np+2tZhGggc+4jfN3PiNvM3T/TkTCJlCM6eVfvfMEPYzUh2vIKKXDeJWwQv4Ib5b1SlDf1p/h+xxC+OQmrPebgNyzdz9V98/W8B60u9B5cLexB5cblCvGiLWOzEiCJhfSfPTDk=
+	t=1766256693; cv=pass; b=ky/GxONuylnP9D5xoknKYJQgI4MfF9Dx4+6KK83RagFSdCOvQIq4D2incCE8GaQRO710g632olzSvCpkm6A6nzQKwez5+9p/9xG6ZeuI72pDUepazr69KGl8epe/IRhV5eq93rYm3/AeeiquQPLDcFswXnFEgUY83uPG0vmoVPc=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1766256693; c=relaxed/simple;
-	bh=ZatUZYCF/cHOR33QjkB+YNbdZjxbeNr+Lg6rp1tov5M=;
+	bh=l8GFAMteQwDOPcHMRwlYGJAGz14nVP7EwRua/mTh5A4=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=nrDdFm01LJ1rALfeAnsVXWsSR9UG6IWvz8vqFyr3GT0u+02/H3Vu5TSXnArIZ/TlNZ4liAOhgfy8JnFUw7hWets8Z6qxe1hDWR83+F+J95yIMZGgnKF2XgBB7Ueu57CJV5X1+FBMt42HKslO84fBFNT9UVt4kXW+yCOobhRGO1I=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=YxRCapuL; arc=pass smtp.client-ip=136.143.188.112
+	 In-Reply-To:To:Cc; b=K9JTpxp8JkNtYate9LCuuVRDh9QCm0qHAwejfoJIcnsNYSlzs4YEsMSwtvmfmWhFwTBcDeL3MH1RwykemFzk5BC2TU0FKyFtpWxY0zZmEKloOOs54iLbSspSx7fqis5/H/uixhDOLxJbxCgpc8dKtNay5F5sSSzLkWQPWjCpYfk=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=jEa18x1N; arc=pass smtp.client-ip=136.143.188.112
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="YxRCapuL"
-ARC-Seal: i=1; a=rsa-sha256; t=1766256646; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="jEa18x1N"
+ARC-Seal: i=1; a=rsa-sha256; t=1766256629; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=k+ps33RBoTWzNAlrymFBqhrJ55XvdVPAT3xq+aTba7zUdV7Z+/k3sFXbqkjStnwU3fKC4DLCfbfstyss83JbuvavywOY0EcDg3VIAPGHH3hBOKeMPjfB6xGPa73x19e+tvR3/xrJ+igMvn99fS524VdlG+VU1mvIh/aMxVQmBqA=
+	b=G8xgTZWTJjB4ImOOXFRogkyAppca3TcwYZiVjfFeoWw4cnf3J6yz1l0TmFFFM69NVBZKqPXvn9qVxy8axHJzrAjdanOreLGymgDlXr19Y7ud5gjoh2mrcYVQCCz+DN4sKfQKMUF7CBihUxC0XwKABVYfHrqRvrjJR46bDyrf8vw=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1766256646; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=5j17v1GY5ZUui5Rtx97+9pI639Hi6bT0WnwCtzvrtAQ=; 
-	b=DXXW5zq0m7GofuoNuxOsUEqA1LuHa4dN/fLdZPkE1PXL79G/77pNl7LEZ5RoXzPQJ6ptLSf8TVX25ws6N8kMHKFepV2GWyZw0sMPwxApZhcmIXUVM2QWGhKoHoqgbAMoxlBJw+mQ0RebKzWb9RnkajGbAmGyL4unhOdY/vuyfHU=
+	t=1766256629; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=8IbRY714eO2zGl6q64FE7lg6CXtlWXzXvxXQfYH5rwI=; 
+	b=kyZmEgzFo3uCZqEt92Fqf1irIMioiyGvG4VCWM0XG6OY1+lX1o6vtUu9yFuocGMKQrBoM8gmxJc4Qk57fsYGruRAVHkLTy5x7LTZ9A1WgvOc+3Jovg7Bsf/zfk5g43lC+OivDYF4gltniOLqdMvn6Sn8r+TyP5acGEdedyGK7Cc=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1766256646;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1766256629;
 	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
 	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
-	bh=5j17v1GY5ZUui5Rtx97+9pI639Hi6bT0WnwCtzvrtAQ=;
-	b=YxRCapuLlpcgveZ8ge+9Vt9yL4zoF7BeXltj21O4pBcGxMmo4PKr67dZOWJgacT9
-	4LGATQCtFbN3QrbIoPAc5Wyk8dy9fLAHt1gHOZDn198/kWRImzStGT7ic1eIp2BDdU8
-	EIaJSJZXXNJaG07RIi1ArCYZ4JYC0mCUo1E3Vuf4=
-Received: by mx.zohomail.com with SMTPS id 1766256644626461.8229840632764;
-	Sat, 20 Dec 2025 10:50:44 -0800 (PST)
+	bh=8IbRY714eO2zGl6q64FE7lg6CXtlWXzXvxXQfYH5rwI=;
+	b=jEa18x1NgxTIWetBz2e1aTELkeupFac1ViPHoq7QhKZkaVQrtk55dqLMOL0RR9hZ
+	b8KoIp+hlNHz9aVpsO0h+1GKcn9zR0Ai4Px2QJm5PBEz3xdUYuBTqMexCkgRUYF/pEU
+	8FII1oDeCA1XiYsC9keOrmMm7hYhBu7JiR2iX/jE=
+Received: by mx.zohomail.com with SMTPS id 1766256628125717.7120182725639;
+	Sat, 20 Dec 2025 10:50:28 -0800 (PST)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Sat, 20 Dec 2025 19:49:55 +0100
-Subject: [PATCH v2 4/4] pmdomain: mediatek: mtk-mfg: Expose shader_present
- as nvmem cell
+Date: Sat, 20 Dec 2025 19:49:52 +0100
+Subject: [PATCH v2 1/4] dt-bindings: gpu: mali-valhall-csf: Add
+ shader-present nvmem cell
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,7 +48,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251220-mt8196-shader-present-v2-4-45b1ff1dfab0@collabora.com>
+Message-Id: <20251220-mt8196-shader-present-v2-1-45b1ff1dfab0@collabora.com>
 References: <20251220-mt8196-shader-present-v2-0-45b1ff1dfab0@collabora.com>
 In-Reply-To: <20251220-mt8196-shader-present-v2-0-45b1ff1dfab0@collabora.com>
 To: Boris Brezillon <boris.brezillon@collabora.com>, 
@@ -69,99 +69,65 @@ Cc: Chen-Yu Tsai <wenst@chromium.org>, Chia-I Wu <olvaffe@gmail.com>,
  Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 X-Mailer: b4 0.14.3
 
-Implement nvmem-provider functionality in mtk-mfg-pmdomain, such that it
-can expose its GF_REG_SHADER_PRESENT value in the shared memory as an
-nvmem cell for panthor.
+On the MediaTek MT8196 SoC, the bitmask for which shader cores are
+present and functional is not the one in the Mali GPU's registers, but
+in an external efuse.
 
+Add the nvmem cell properties to describe such a setup, and make them
+required on MT8196.
+
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
- drivers/pmdomain/mediatek/mtk-mfg-pmdomain.c | 59 ++++++++++++++++++++++++++++
- 1 file changed, 59 insertions(+)
+ .../devicetree/bindings/gpu/arm,mali-valhall-csf.yaml      | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-diff --git a/drivers/pmdomain/mediatek/mtk-mfg-pmdomain.c b/drivers/pmdomain/mediatek/mtk-mfg-pmdomain.c
-index 9bad577b3ae4..3ce6fb74dd53 100644
---- a/drivers/pmdomain/mediatek/mtk-mfg-pmdomain.c
-+++ b/drivers/pmdomain/mediatek/mtk-mfg-pmdomain.c
-@@ -10,6 +10,7 @@
- #include <linux/clk-provider.h>
- #include <linux/container_of.h>
- #include <linux/iopoll.h>
-+#include <linux/nvmem-provider.h>
- #include <linux/mailbox_client.h>
- #include <linux/module.h>
- #include <linux/of.h>
-@@ -872,6 +873,60 @@ static int mtk_mfg_init_clk_provider(struct mtk_mfg *mfg)
- 	return 0;
- }
+diff --git a/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml b/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
+index bee9faf1d3f8..8eccd4338a2b 100644
+--- a/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
++++ b/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
+@@ -51,6 +51,14 @@ properties:
+           - stacks
+       - const: stacks
  
-+static int mtk_mfg_read_nvmem(void *priv, unsigned int offset, void *val, size_t bytes)
-+{
-+	struct mtk_mfg *mfg = priv;
-+	u32 *buf = val;
++  nvmem-cells:
++    items:
++      - description: bitmask of functional shader cores
 +
-+	if (bytes != 4)
-+		return -EINVAL;
++  nvmem-cell-names:
++    items:
++      - const: shader-present
 +
-+	if (!mfg->shared_mem)
-+		return -ENODEV;
-+
-+	if (offset + bytes >= mfg->shared_mem_size)
-+		return -EINVAL;
-+
-+	*buf = readl(mfg->shared_mem + offset);
-+
-+	return 0;
-+}
-+
-+static int mtk_mfg_init_nvmem_provider(struct mtk_mfg *mfg)
-+{
-+	struct device *dev = &mfg->pdev->dev;
-+	struct nvmem_cell_info cell = {};
-+	struct nvmem_config config = {};
-+	struct nvmem_device *nvdev;
-+	int ret;
-+
-+	config.reg_read = mtk_mfg_read_nvmem;
-+	config.dev = dev;
-+	config.read_only = true;
-+	config.priv = mfg;
-+	config.size = 4;
-+	config.word_size = 4;
-+
-+	nvdev = devm_nvmem_register(dev, &config);
-+	if (IS_ERR(nvdev))
-+		return dev_err_probe(dev, PTR_ERR(nvdev), "Couldn't register nvmem provider\n");
-+
-+	cell.name = "shader-present";
-+	cell.offset = GF_REG_SHADER_PRESENT;
-+	cell.bytes = 4;
-+	cell.np = of_get_child_by_name(dev->of_node, cell.name);
-+
-+	ret = nvmem_add_one_cell(nvdev, &cell);
-+	if (ret) {
-+		of_node_put(cell.np);
-+		return dev_err_probe(dev, ret, "Couldn't add cell %s\n", cell.name);
-+	}
-+
-+	/* cell.np purposefully not put as nvmem_add_one_cell does not increase refcount */
-+
-+	return 0;
-+}
-+
- static int mtk_mfg_probe(struct platform_device *pdev)
- {
- 	struct mtk_mfg *mfg;
-@@ -984,6 +1039,10 @@ static int mtk_mfg_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto err_power_off;
+   mali-supply: true
  
-+	ret = mtk_mfg_init_nvmem_provider(mfg);
-+	if (ret)
-+		goto err_power_off;
-+
- 	ret = of_genpd_add_provider_simple(dev->of_node, &mfg->pd);
- 	if (ret) {
- 		dev_err_probe(dev, ret, "Failed to add pmdomain provider\n");
+   operating-points-v2: true
+@@ -108,6 +116,8 @@ allOf:
+       properties:
+         clocks:
+           minItems: 3
++        nvmem-cells: false
++        nvmem-cell-names: false
+         power-domains:
+           maxItems: 1
+         power-domain-names: false
+@@ -133,6 +143,8 @@ allOf:
+             - const: core
+             - const: stacks
+       required:
++        - nvmem-cells
++        - nvmem-cell-names
+         - power-domains
+ 
+ examples:
+@@ -179,6 +191,8 @@ examples:
+                      <GIC_SPI 605 IRQ_TYPE_LEVEL_HIGH 0>,
+                      <GIC_SPI 604 IRQ_TYPE_LEVEL_HIGH 0>;
+         interrupt-names = "job", "mmu", "gpu";
++        nvmem-cells = <&shader_present>;
++        nvmem-cell-names = "shader-present";
+         power-domains = <&gpufreq>;
+     };
+ 
 
 -- 
 2.52.0
