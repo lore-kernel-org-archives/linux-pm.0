@@ -1,45 +1,45 @@
 Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67C8C30FC22;
-	Sat, 20 Dec 2025 18:51:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61A833101AE;
+	Sat, 20 Dec 2025 18:51:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766256692; cv=pass; b=Zo3wH7Is+JZEbuoNKBWKsJ3mdYU3ofFZU7RM8Ig3GFG7zpwa0vcDIJdjcyhBTHc66s+C8op19PQmbXrsOf755Kphos7BFrt58K3WMy3MuOQ8HGXkq41Oa9wTlvLWeb7XgXkWAmkmTuEbH4Zw6LefWNDu7Zf4BRiu5jsixCm7j4g=
+	t=1766256693; cv=pass; b=C+b6D8IAcIFCI4Qjao+DV9ZTWMRvQQh0xQi5+Np+2tZhGggc+4jfN3PiNvM3T/TkTCJlCM6eVfvfMEPYzUh2vIKKXDeJWwQv4Ib5b1SlDf1p/h+xxC+OQmrPebgNyzdz9V98/W8B60u9B5cLexB5cblCvGiLWOzEiCJhfSfPTDk=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766256692; c=relaxed/simple;
-	bh=ttC9oOJ4k8J1XToYpWDv/nbXkNlNjaFMSyqfvuK/aiM=;
+	s=arc-20240116; t=1766256693; c=relaxed/simple;
+	bh=ZatUZYCF/cHOR33QjkB+YNbdZjxbeNr+Lg6rp1tov5M=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=EGgdK8CB+9oZtRW01egZwZVw1HvyJ+Dl1MeFAU6DizL2a8nJuYdD5fPgD5k/3XL3W9UvWy1DMzkW5flU9wpiFmNuSjvJLcRsBGrkWkFuDfE3FmzE0SHG7wybol6eLJGtmxLq+/ync9oVX62ViOuXZ0Tx2PBNcyGptgOlKnn9DLU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=ItW7jbSZ; arc=pass smtp.client-ip=136.143.188.112
+	 In-Reply-To:To:Cc; b=nrDdFm01LJ1rALfeAnsVXWsSR9UG6IWvz8vqFyr3GT0u+02/H3Vu5TSXnArIZ/TlNZ4liAOhgfy8JnFUw7hWets8Z6qxe1hDWR83+F+J95yIMZGgnKF2XgBB7Ueu57CJV5X1+FBMt42HKslO84fBFNT9UVt4kXW+yCOobhRGO1I=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=YxRCapuL; arc=pass smtp.client-ip=136.143.188.112
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="ItW7jbSZ"
-ARC-Seal: i=1; a=rsa-sha256; t=1766256635; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="YxRCapuL"
+ARC-Seal: i=1; a=rsa-sha256; t=1766256646; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=RcSApAUIVHOQQ/PxKnGD95WnMzfQvGyERWSxzZMbadXIeaP0GjeVMJE1dpYqFjvkS3Z8RvxlJ+apXRiuNwoTwkS53Wzi1neqpgLaAurOwhhB2mOIPcQBiSamSZSbcytmHzi6A5P9XPkLOlDG6T07cGKdz9M3cIH2qUXimMYS9Kk=
+	b=k+ps33RBoTWzNAlrymFBqhrJ55XvdVPAT3xq+aTba7zUdV7Z+/k3sFXbqkjStnwU3fKC4DLCfbfstyss83JbuvavywOY0EcDg3VIAPGHH3hBOKeMPjfB6xGPa73x19e+tvR3/xrJ+igMvn99fS524VdlG+VU1mvIh/aMxVQmBqA=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1766256635; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=cKOC4sPnmtkQ7L+JdsUlBb5Bsh8vjqzfoYmPcpjnenM=; 
-	b=gXoPv05aAM4S9McpI7E5eUhlRoG5iRR+B6VmdOdKkSqrxNTHuxR9HuO83Tq1Wcw5ICftOPCSS22TxcMzT1VGoWSk8fUwm9F1kzyQvX6He/R9uJ67I1Z061GCevUC3vvQ1T1OPxRNmdR6WIir+XWzYGVNnkm36WA1rlGRo+9TSMQ=
+	t=1766256646; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=5j17v1GY5ZUui5Rtx97+9pI639Hi6bT0WnwCtzvrtAQ=; 
+	b=DXXW5zq0m7GofuoNuxOsUEqA1LuHa4dN/fLdZPkE1PXL79G/77pNl7LEZ5RoXzPQJ6ptLSf8TVX25ws6N8kMHKFepV2GWyZw0sMPwxApZhcmIXUVM2QWGhKoHoqgbAMoxlBJw+mQ0RebKzWb9RnkajGbAmGyL4unhOdY/vuyfHU=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1766256635;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1766256646;
 	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
 	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
-	bh=cKOC4sPnmtkQ7L+JdsUlBb5Bsh8vjqzfoYmPcpjnenM=;
-	b=ItW7jbSZjDFdna655b7OCzhvdzkW0QxENSTZ6BK+Jp7zm4AIrDNFQHft3sklcy7T
-	2Wx+pRZtz90Eg7AZ8rLe3Q9N8YHUUf8Ie3FcC6PFyvq4aRMkz+1bXRgBo/ASAFDpj6P
-	uZa6RFtTQ/4w4N+GpTwBMIYIZFAgVjr3K2j5NX90=
-Received: by mx.zohomail.com with SMTPS id 1766256633664149.3015413763843;
-	Sat, 20 Dec 2025 10:50:33 -0800 (PST)
+	bh=5j17v1GY5ZUui5Rtx97+9pI639Hi6bT0WnwCtzvrtAQ=;
+	b=YxRCapuLlpcgveZ8ge+9Vt9yL4zoF7BeXltj21O4pBcGxMmo4PKr67dZOWJgacT9
+	4LGATQCtFbN3QrbIoPAc5Wyk8dy9fLAHt1gHOZDn198/kWRImzStGT7ic1eIp2BDdU8
+	EIaJSJZXXNJaG07RIi1ArCYZ4JYC0mCUo1E3Vuf4=
+Received: by mx.zohomail.com with SMTPS id 1766256644626461.8229840632764;
+	Sat, 20 Dec 2025 10:50:44 -0800 (PST)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Sat, 20 Dec 2025 19:49:53 +0100
-Subject: [PATCH v2 2/4] dt-bindings: power: mt8196-gpufreq: Describe nvmem
- provider ability
+Date: Sat, 20 Dec 2025 19:49:55 +0100
+Subject: [PATCH v2 4/4] pmdomain: mediatek: mtk-mfg: Expose shader_present
+ as nvmem cell
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,7 +48,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251220-mt8196-shader-present-v2-2-45b1ff1dfab0@collabora.com>
+Message-Id: <20251220-mt8196-shader-present-v2-4-45b1ff1dfab0@collabora.com>
 References: <20251220-mt8196-shader-present-v2-0-45b1ff1dfab0@collabora.com>
 In-Reply-To: <20251220-mt8196-shader-present-v2-0-45b1ff1dfab0@collabora.com>
 To: Boris Brezillon <boris.brezillon@collabora.com>, 
@@ -69,64 +69,99 @@ Cc: Chen-Yu Tsai <wenst@chromium.org>, Chia-I Wu <olvaffe@gmail.com>,
  Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 X-Mailer: b4 0.14.3
 
-On the MediaTek MT8196 SoC, the Mali GPU's "shader_present" hardware
-register may also include a non-functional shader core, along with the
-present shader cores. An efuse elsewhere in the SoC provides the
-shader_present mask with the fused off core omitted.
+Implement nvmem-provider functionality in mtk-mfg-pmdomain, such that it
+can expose its GF_REG_SHADER_PRESENT value in the shared memory as an
+nvmem cell for panthor.
 
-However, the efuse address is not publicly disclosed. What is known
-though is that the GPUEB MCU reads this efuse, and exposes its contents
-in the memory it shares with the application processor.
-
-We can therefore describe the mediatek,mt8196-gpufreq device as being an
-nvmem provider for this purpose, as it does provide nvmem access in an
-indirect way.
-
-The shader-present child node is left out of the list of required
-properties as we may one day be able to describe the actual efuse region
-this value comes from, so the gpufreq device isn't necessarily the only
-device that can provide this cell, and implementations shouldn't need to
-implement this functionality once this is the case.
-
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
- .../devicetree/bindings/power/mediatek,mt8196-gpufreq.yaml  | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ drivers/pmdomain/mediatek/mtk-mfg-pmdomain.c | 59 ++++++++++++++++++++++++++++
+ 1 file changed, 59 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/mediatek,mt8196-gpufreq.yaml b/Documentation/devicetree/bindings/power/mediatek,mt8196-gpufreq.yaml
-index b9e43abaf8a4..66fc59b3c8b4 100644
---- a/Documentation/devicetree/bindings/power/mediatek,mt8196-gpufreq.yaml
-+++ b/Documentation/devicetree/bindings/power/mediatek,mt8196-gpufreq.yaml
-@@ -74,9 +74,18 @@ properties:
-   "#clock-cells":
-     const: 1
+diff --git a/drivers/pmdomain/mediatek/mtk-mfg-pmdomain.c b/drivers/pmdomain/mediatek/mtk-mfg-pmdomain.c
+index 9bad577b3ae4..3ce6fb74dd53 100644
+--- a/drivers/pmdomain/mediatek/mtk-mfg-pmdomain.c
++++ b/drivers/pmdomain/mediatek/mtk-mfg-pmdomain.c
+@@ -10,6 +10,7 @@
+ #include <linux/clk-provider.h>
+ #include <linux/container_of.h>
+ #include <linux/iopoll.h>
++#include <linux/nvmem-provider.h>
+ #include <linux/mailbox_client.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+@@ -872,6 +873,60 @@ static int mtk_mfg_init_clk_provider(struct mtk_mfg *mfg)
+ 	return 0;
+ }
  
-+  "#nvmem-cell-cells":
-+    const: 0
++static int mtk_mfg_read_nvmem(void *priv, unsigned int offset, void *val, size_t bytes)
++{
++	struct mtk_mfg *mfg = priv;
++	u32 *buf = val;
 +
-   "#power-domain-cells":
-     const: 0
++	if (bytes != 4)
++		return -EINVAL;
++
++	if (!mfg->shared_mem)
++		return -ENODEV;
++
++	if (offset + bytes >= mfg->shared_mem_size)
++		return -EINVAL;
++
++	*buf = readl(mfg->shared_mem + offset);
++
++	return 0;
++}
++
++static int mtk_mfg_init_nvmem_provider(struct mtk_mfg *mfg)
++{
++	struct device *dev = &mfg->pdev->dev;
++	struct nvmem_cell_info cell = {};
++	struct nvmem_config config = {};
++	struct nvmem_device *nvdev;
++	int ret;
++
++	config.reg_read = mtk_mfg_read_nvmem;
++	config.dev = dev;
++	config.read_only = true;
++	config.priv = mfg;
++	config.size = 4;
++	config.word_size = 4;
++
++	nvdev = devm_nvmem_register(dev, &config);
++	if (IS_ERR(nvdev))
++		return dev_err_probe(dev, PTR_ERR(nvdev), "Couldn't register nvmem provider\n");
++
++	cell.name = "shader-present";
++	cell.offset = GF_REG_SHADER_PRESENT;
++	cell.bytes = 4;
++	cell.np = of_get_child_by_name(dev->of_node, cell.name);
++
++	ret = nvmem_add_one_cell(nvdev, &cell);
++	if (ret) {
++		of_node_put(cell.np);
++		return dev_err_probe(dev, ret, "Couldn't add cell %s\n", cell.name);
++	}
++
++	/* cell.np purposefully not put as nvmem_add_one_cell does not increase refcount */
++
++	return 0;
++}
++
+ static int mtk_mfg_probe(struct platform_device *pdev)
+ {
+ 	struct mtk_mfg *mfg;
+@@ -984,6 +1039,10 @@ static int mtk_mfg_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto err_power_off;
  
-+  shader-present:
-+    type: object
++	ret = mtk_mfg_init_nvmem_provider(mfg);
++	if (ret)
++		goto err_power_off;
 +
-+dependencies:
-+  shader-present: [ "#nvmem-cell-cells" ]
-+
- required:
-   - compatible
-   - reg
-@@ -113,5 +122,9 @@ examples:
-                      "ccf", "fast-dvfs";
-         memory-region = <&gpueb_shared_memory>;
-         #clock-cells = <1>;
-+        #nvmem-cell-cells = <0>;
-         #power-domain-cells = <0>;
-+
-+        shader-present {
-+        };
-     };
+ 	ret = of_genpd_add_provider_simple(dev->of_node, &mfg->pd);
+ 	if (ret) {
+ 		dev_err_probe(dev, ret, "Failed to add pmdomain provider\n");
 
 -- 
 2.52.0
