@@ -1,46 +1,46 @@
-Received: from AM0PR83CU005.outbound.protection.outlook.com (mail-westeuropeazon11010025.outbound.protection.outlook.com [52.101.69.25])
+Received: from PA4PR04CU001.outbound.protection.outlook.com (mail-francecentralazon11013062.outbound.protection.outlook.com [40.107.162.62])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0589F2F1FFE;
-	Sat, 20 Dec 2025 21:54:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.69.25
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C0812F49EB;
+	Sat, 20 Dec 2025 21:54:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.162.62
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766267655; cv=fail; b=KiGNcY0QdDpJPEwOYSji5CiKXRxTeInIiAPZ20KMaTKQ1Q/9RWPyTMigCdGK/WIa7BdOrR9aTR0hbSwsqMu+rTd9eWAg3v+8WNZG2DX3m5dd4JOFtuqHqug2WIr+/3yRTxcXGlDBgeq2xIty7Eo3RO080wiT+6SSSFk8igg3cDE=
+	t=1766267656; cv=fail; b=nzerYvOQOZZu3bTysBB+WdbkWVxIuBVTIDCOTcGmdZwvIGs6lTVvYDlKOt9rWY9PYm5H2VtSz/XTVXn/rXtkMP1zQJiggL+q48+gOgRh7jva6BAig+hFgoPKAmb43OP/ifimbnsPmihmx1bjU2o2NkXHqwHaL6dxXu/RO3WyGDo=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766267655; c=relaxed/simple;
-	bh=HaZ+btVsSSkOycn46ZgPFoo0OiMCKsZCWcp8JRrf1IM=;
+	s=arc-20240116; t=1766267656; c=relaxed/simple;
+	bh=qsbpEJ+OVQNpodLJAAaVdGcLxOdOC6SPwZpnoKdP6Fg=;
 	h=From:To:CC:Subject:In-Reply-To:References:Message-ID:Date:
-	 MIME-Version:Content-Type; b=jI6OB2GoJQ34CouFwWD5V8AXct5SgZD+HslAzUg81HRF8DuP9Ob8F98h5iqOfEDSqrJcRvGSosOyFYRtEL5G1fOtZbqLvFHlGj8XN4klwXULv+EdHe0xBYYu/tqF8sqzbSCGiMaYQDouOrz5ZfQntjiBW65C0iDSqgQIn1mauaw=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=Lmr6/SbT; arc=fail smtp.client-ip=52.101.69.25
+	 MIME-Version:Content-Type; b=NQcBtBm0wmFmZ2jzcml1JtO82/vJbdtOACgUstS66/mlq7pUZGuofTKQJ2LxbzFr9Ep5lnANIZi5VRIzBTvRJbiUBaToKWI9DhdeuNbRQJuGwjCAkk50eSIjVN8JGYHfwRSJWuM/7yA8HDeAKL8scnro7mPEHhjo8pBL7f/2EH4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=hwcsSlE9; arc=fail smtp.client-ip=40.107.162.62
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=axis.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="Lmr6/SbT"
+	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="hwcsSlE9"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=aOLGOMJH9U2S26kfyOwoK84usFGbW9ykNebtXAYsyLyPoiq0FavW7yk5qXe9M0WgDVQ5CQSA38DejkqzxejQlJcTlf7yzFs3lXGpgju7c4iQQ8w5r1xTyQswWmwXPrZkR9AbCcf1GstTmWxwvgBCl5jhiupD22EyqToW1HQXgafl1vpFV3lRpVxbeLYXYgHUUZyiqrtpNjd+VKb38+ANdo6WUr+FhrE2OP62qe2kqd3pc0ufSwdUqlBNMZz+tg64/oQpeUA9Uh9bouZdsPEIDMbo1LSAcmsFO5sss+II8KQhja6V5t2bxFFQJLuqVJbQeuNJpE3fL25sQ3obxRcdCg==
+ b=ASB+gbsIxNUfAoybP9jtSnz1hSC51C+v03mQdo+KhvA6h/UpdG2Ey5zcHsuAYyTf2IFVjjA/rjdcjJZV5c9MADWHHNYD5JOG15STquuqtfo5Vxi41wT09z5Psz5L5DBOg4GVABvljX2SPB1xFRDE5X1y8a8tLfIgmpPVD6kbOa3+hXgIYFlGTetRtv+Io2CKV4+hai94PMUuqN/JZDB6Jpf8gfx4CYUCBPahW6ogaRc+XvBoY0KJsC+if6ROG6sPMRMmBAL2Kuz5ZwhpG04MkNDNRX0sOcnpIA8hN45A8iMItoUC34Xedl3LhXDAbhJ+ffwkaBYTvIkdW6wJzYSLXA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=wff7TPCndBNfAhqgFG3r+4GuCKBzKD4rchHhvvMDhRA=;
- b=c9GXt1207HiDaTe3zY/zffL3nvBNLL7jGakGo/jXvXftHtQc1qF/P8tnIkcIFfSppGEwdCJhtZwHPvYJgYtk8gB6AoMmiWM4vTwdpgjR2wR/IEucStDJiE8BjAl3QKusR/Oc6NT8HiHvC2y1apuXM6ZWXFxydc3xNpE5E2bTzJbY3D0lRQ7lLA4X8y/3Fc5lBvFqbYFsW4SZPBKsZ6hdjos+cHmwJeDZf2vkGUFzRhGKq9obW688naoSkRdhtqwQ0+3ixxtdAXyKcEzVJ9UG75Oo7Q6eq6Z1kc7MAh+dzV0/ycsn3517ucvaLHlWdi2qVqCh5DdQtl329ESu1YiWvQ==
+ bh=ene6XvMxdBzXTycoydI5aNLkJ42q5A50785Eolf+CZI=;
+ b=ErGGRT87BHtNWeZqZEAem8QjsNY5PAKJOXS+tFtfjuUVOaKiLiqK7hps6eTSdXCoSnUo+YbkJfbGIfSh8k+grYDJUHpkYnRBY8VY/s3n5ru3Ikg6sMDOAyNLrUuGe6durqZG0ndf5ahGe9ngDG38wWOO6YhK+4jy4Aay9whEKEOMCwns26k0q+EpXk47A3DV/yp6WCeHQXoy9knEemeWA0UMYnX0La7vZdWWdjsWngRjtIqgl32HLMuU0KDtSVFnsLU6XbEEnoxU5QME0hDxVEdU9ORSexZvVtg/KdfH6Bc+/mgnCyb0lrO2hqjnUvCFbZ8lMDKPkuPPvgWclNOQTQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  195.60.68.100) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=axis.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=axis.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axis.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=wff7TPCndBNfAhqgFG3r+4GuCKBzKD4rchHhvvMDhRA=;
- b=Lmr6/SbTbOMygXzoKTMkmAjkDdlVz6H/tn1f6L4WtaaAbxzB2hX+lMgDBhc0EuNd0mkf1s1YbxvyQmg0B7mOqJCq3xpfIc7vd0jczC3EJpVD6LRH6jP6qLdvh/iUSs5izUQEo7cMcCPY+qro0lO6VtjRVvdZWIDVefnZWHlkCfw=
-Received: from AS4P189CA0013.EURP189.PROD.OUTLOOK.COM (2603:10a6:20b:5d7::16)
- by AM9PR02MB6627.eurprd02.prod.outlook.com (2603:10a6:20b:2c8::24) with
+ bh=ene6XvMxdBzXTycoydI5aNLkJ42q5A50785Eolf+CZI=;
+ b=hwcsSlE9OFD6QM4RzQhRep4u3/cue6GcoB9TnlLzvXHKZv3gmAsClp0gM7cliQVD9jiu96S30YpEfB5B1dCamdvfzh9O32rLVje6HzjFmobdRA3qdUJ4GtjEPPc8oGMh/AaGW2/f3TXxfqe8ZQGk+81/DvG8asd2devxKgsweY0=
+Received: from AS4P189CA0004.EURP189.PROD.OUTLOOK.COM (2603:10a6:20b:5d7::7)
+ by DB9PR02MB7259.eurprd02.prod.outlook.com (2603:10a6:10:24a::9) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9434.10; Sat, 20 Dec
  2025 21:54:10 +0000
 Received: from AMS0EPF00000198.eurprd05.prod.outlook.com
- (2603:10a6:20b:5d7:cafe::4d) by AS4P189CA0013.outlook.office365.com
- (2603:10a6:20b:5d7::16) with Microsoft SMTP Server (version=TLS1_3,
+ (2603:10a6:20b:5d7:cafe::c) by AS4P189CA0004.outlook.office365.com
+ (2603:10a6:20b:5d7::7) with Microsoft SMTP Server (version=TLS1_3,
  cipher=TLS_AES_256_GCM_SHA384) id 15.20.9434.10 via Frontend Transport; Sat,
- 20 Dec 2025 21:54:00 +0000
+ 20 Dec 2025 21:54:06 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 195.60.68.100)
  smtp.mailfrom=axis.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=axis.com;
@@ -54,16 +54,16 @@ Received: from mail.axis.com (195.60.68.100) by
 Received: from pc52311-2249 (10.4.0.13) by se-mail10w.axis.com (10.20.40.10)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.2.1748.39; Sat, 20 Dec
- 2025 22:54:08 +0100
+ 2025 22:54:09 +0100
 From: Waqar Hameed <waqar.hameed@axis.com>
 To: Sebastian Reichel <sre@kernel.org>
 CC: <kernel@axis.com>, <linux-pm@vger.kernel.org>,
 	<linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/5] power: supply: bq256xx: Remove unused gpio include header
+Subject: [PATCH 3/5] power: supply: bq25980: Remove unused gpio include header
 In-Reply-To: <cover.1766266985.git.waqar.hameed@axis.com>
 References: <cover.1766266985.git.waqar.hameed@axis.com>
 User-Agent: a.out
-Message-ID: <730eb504f7ae9d3fcdfeebb544bfe115c32e1064.1766266985.git.waqar.hameed@axis.com>
+Message-ID: <94cf6d7dc464e20abea543983b24828e51c64f93.1766266985.git.waqar.hameed@axis.com>
 Date: Sat, 20 Dec 2025 22:54:08 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -72,69 +72,69 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain
-X-ClientProxiedBy: se-mail02w.axis.com (10.20.40.8) To se-mail10w.axis.com
+X-ClientProxiedBy: se-mail01w.axis.com (10.20.40.7) To se-mail10w.axis.com
  (10.20.40.10)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AMS0EPF00000198:EE_|AM9PR02MB6627:EE_
-X-MS-Office365-Filtering-Correlation-Id: f260b839-d649-477f-1381-08de40124e62
+X-MS-TrafficTypeDiagnostic: AMS0EPF00000198:EE_|DB9PR02MB7259:EE_
+X-MS-Office365-Filtering-Correlation-Id: e0563e19-f11c-4c77-e700-08de40124ed2
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|82310400026|36860700013|376014;
+	BCL:0;ARA:13230040|376014|36860700013|1800799024|82310400026;
 X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?xsgXuis8cxJ2SPtDJmLaWitDLqAu4cwJNXtu451mRAjVLTaY3WxZkUdE9n4l?=
- =?us-ascii?Q?tPZApGisiaa2tJelW9RQjwBYmpqzVbSp1XyvzwOwApWEWtjbOF96pDqx0kud?=
- =?us-ascii?Q?3RIX//cbbXYfwvPZaeWRd6ZA1exy9qQvlpHq2Kj/Cq+DTsaRsqkxJ6aPE5z9?=
- =?us-ascii?Q?G5wJ59Hbq4Ydl2HZaThtSJfFxnNeVFDPoahqj33aM75Tms2f30/VDahG0qrH?=
- =?us-ascii?Q?TFNNO37lrKU7BVp9AQ4r1kUtKMy/kIYqr5rBP4X1+/q57ZV16TTXMXf3vBNq?=
- =?us-ascii?Q?YWmke6r2D/cG6Wz5seY9y3RqUM/gABRnJja/5iqRNfDXEkNv00g3jBOZ68C3?=
- =?us-ascii?Q?VFOC9670J8leHHvx/pEQQIY9aIneRcEZNcwGDH03GMYnH+OUn4cyk4W5sDp5?=
- =?us-ascii?Q?lTRMhYQ+HzD2R3Z4rAevUA5e7uTiy75dVlopRgNCgTgZCZaCjutgRDeZdLVr?=
- =?us-ascii?Q?EUlzpTfJTPTQc0l6faVFPpCQq28kXhy2vvsd3CubkCNVGVe4VZmYMFmDPUB6?=
- =?us-ascii?Q?R03jQ5jEXuQB+Eh6qhShduumUZQFOdLyRB5mEEBHB7MQggodiAxE1/j5CQHE?=
- =?us-ascii?Q?EV/hHdAg1gbvCQ9KJOl4YYBURrU/LM66SxkrH7u0dpKAlJEBq4QCIcEC8eIY?=
- =?us-ascii?Q?mcJriEJg6RQF0oxEvwaasNTHi2EBP64DmVJstrefiZFqNUKOGOyXNfkO6O7g?=
- =?us-ascii?Q?aiI6mBu7aA6Hj07gRkxon43PPy6f0JSC1evyB3D/qai2qgicYdvgofSS4P27?=
- =?us-ascii?Q?RHb+HmzTZukbySA80KWgRo+eQNrVidifBrI1v2s2S+pfUjXA1GRxh3MiQA+C?=
- =?us-ascii?Q?F7tijOzOpvRznicFXfqueqXbbIvPOzPGUD4uzTfjwNoWphap7miFm/a0Cl7s?=
- =?us-ascii?Q?ObgqYwgWV5obL4qLg8R/E7XlasLj/ylgZ5D6w8rFsRD4cGxJlBCgzWi+D59T?=
- =?us-ascii?Q?N1B/v34FFK+5jIlYcaTEHL5om2hvG4tgHTfCt5frVOZJQXX6XDi2Wu8ohx6A?=
- =?us-ascii?Q?PaNBVJ3N6bMYOvdHoX7AhgukYJFr9A/BcAPFb2COB0q8NTHNOxpiFKFbFA3O?=
- =?us-ascii?Q?8U4FZwEOAzupObDvi+E942N9xDQciDSUCbJeu7LsUAsIHP/4F0RVHX3OWw68?=
- =?us-ascii?Q?aJ6q+JY6smChO6P+t97Tp0xTH65/hwMWNA8/mHEkYEL8N1HYP3MCfGUfU8IY?=
- =?us-ascii?Q?mRyRW8z/HkEle9b3QRccbQKh50GAR7z1xPFof6/9eBeKb6ihuogtgPe/kY4y?=
- =?us-ascii?Q?baFuLAnYqKq2295KLFDroEoZKE3BdBzUOX2/BeVJeMPDV/yipaPdYwk32xXk?=
- =?us-ascii?Q?oBCWqb2syeMdiJulrU0VJ/CPQ7eMLmgUUrS3Qxa0Fh3zPN7KqxJZ3jpP9YVz?=
- =?us-ascii?Q?DVHSSAjhhWJzPNzR1zGfB3ZPO6RHGjJHJaKm3A/uleID5N9dAQlkHGocwOTv?=
- =?us-ascii?Q?inh3AptHl3M6M3hKUac/H7YjJ8MwcVzqZ4/BnGpY9fON5KUCVsU9gKpqBekh?=
- =?us-ascii?Q?urX3K5asC6B28vju50JNSXGYRo5nUAJ97wTViX1ReBszkeLXsLDzRmmvWWSH?=
- =?us-ascii?Q?+mUie7Me0uprOloM3q8=3D?=
+	=?us-ascii?Q?1WYYVOYlC07/d4sQTcOj7WB7yIXVR6cBkxHBqJIVSTUR7L/hopERXcFppHFX?=
+ =?us-ascii?Q?DR7h3lb1e54ewe7PJQ9Dg4heT4BfxOzumTSY7CDr05zJXwXjkjZMKUnItAyG?=
+ =?us-ascii?Q?qUfjoqMxoQ2+wXZZoElC5i1HMBrIfTBL8/zzRMmtKXsBoYepKsdMuizYLExJ?=
+ =?us-ascii?Q?el3O1paVGJ8vI8/2AVYWvbuuaRcod78LV/RqN9oFwZOzOKUReh8T/AiyhqRK?=
+ =?us-ascii?Q?YK6wu34+tKH2aXrLboucdwZY4PTffXvM6XADFMlEMqkEou1/jy/B9SgA9rGU?=
+ =?us-ascii?Q?sHp5f94BbUOSj5OAYWG2nX6avQ5l8M0vr+k9sbnbNmOvZdyVt15m2zZVT5xv?=
+ =?us-ascii?Q?+kskmu3j1srB7y2JmkZ2vNjak9pTCQ4ZaE8Sgs0v1tlH+gbZ74oRhIBChn7n?=
+ =?us-ascii?Q?OCteIPOXOWUrAgDl1frc3CSQZ7LbpFKK+gU38vldVqauocGujMjf5xhL1uHV?=
+ =?us-ascii?Q?Yb0MwHy3EC5/SQb0kP4il9cDt5eD4UMksi36Q7rkpNxEVp9IyRDzJBHbPW4k?=
+ =?us-ascii?Q?P2i5jW2n8TJlfXouN9u6cdbX6DFcPGXr4sm0Xv9DJTgeouKmjVu0YTXZjNzT?=
+ =?us-ascii?Q?GWSb2SIj1e/MGi1Rm8LJ+433J1HlMMoxREI8CY+xPWMP1ZO9hA7C6O26naRw?=
+ =?us-ascii?Q?ULIIIpyPegO/YdAlTnaR/4rTVpzb9ocH8BpuaJTssUUx6CT3BEurFO6L8S5e?=
+ =?us-ascii?Q?PIE25cqgw/1obpvaoEyobYfPdO1GzerFkG92QVw0VthcurJs1AzBE6g9YoXL?=
+ =?us-ascii?Q?kLosu3DjU7rBdlLmiJoQbDWA3EoieL/BlWr5oSkHzQmPe5+66AYK5WUtfG4A?=
+ =?us-ascii?Q?VqOhzKvCyU/nKu+sr/E12mKzzu9EYYyaYBZ+H4M3ho91EkF559D67upCk0bx?=
+ =?us-ascii?Q?eKlkjJ9kHGsoPZWacgaTbUZ9aYUwASGOdo1Wj2RW1j8AV4duaXZmlKLwnR/C?=
+ =?us-ascii?Q?E9NASf4VtPWvAAika3o2g+3UptY6L2rs0sCIMmdu1g2jnfRlQP1WPdNCbX+0?=
+ =?us-ascii?Q?wWW6TRjLYPgLvwPg7Xu9HordlPxgw/dHHFWkDViIObIPdSXog1OaUhWkyOk/?=
+ =?us-ascii?Q?Es9amyRWG3/KpNNUk6HPMJ/Ii28qbz86Qu9Dxm4DhsLG6UlF5fPnErTtdeUo?=
+ =?us-ascii?Q?s03rSrn9qeS91qJspHOD/VqkBn5VBXibYeSNIlhB8p0vO9koa0F6QBQHUchv?=
+ =?us-ascii?Q?zcUx/OCdkrqeFGfbXktol/D/aTLAf/6vn38cA8hwsrcdHBuojbNMMKlNSmMS?=
+ =?us-ascii?Q?KOC7LxfwunHGMlSAKj8kmpmkzLF+9c2yu6SFQFEKx8VQQKUftQD5U7BQWziA?=
+ =?us-ascii?Q?iuZTCbBzMraZ0U1RLf5YNZVOP2ULnIxDv3rT9bL0k+QakqgPodq7IBdm1Vnj?=
+ =?us-ascii?Q?ZtYwgTyKpqjf0YvLBshpBpp1v3TJ1Jg5FqQsMj7iYARqjAfSUGamxCdZF9+o?=
+ =?us-ascii?Q?3WAABHneWNTUWUxIRWL82H1Bk8MwnqRS20Fsf91uwBJ5vhTigUGfcQ7S1wGb?=
+ =?us-ascii?Q?Dg5kjTqiKsaiwPOzCzH4sZ4Z62Nu4jDYUwpi/tUwI3oOWyW3IqAY6Fddlydr?=
+ =?us-ascii?Q?gCRmlaZClSPolXddYws=3D?=
 X-Forefront-Antispam-Report:
-	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(82310400026)(36860700013)(376014);DIR:OUT;SFP:1101;
+	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(36860700013)(1800799024)(82310400026);DIR:OUT;SFP:1101;
 X-OriginatorOrg: axis.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Dec 2025 21:54:10.1388
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Dec 2025 21:54:10.8783
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: f260b839-d649-477f-1381-08de40124e62
+X-MS-Exchange-CrossTenant-Network-Message-Id: e0563e19-f11c-4c77-e700-08de40124ed2
 X-MS-Exchange-CrossTenant-Id: 78703d3c-b907-432f-b066-88f7af9ca3af
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=78703d3c-b907-432f-b066-88f7af9ca3af;Ip=[195.60.68.100];Helo=[mail.axis.com]
 X-MS-Exchange-CrossTenant-AuthSource:
 	AMS0EPF00000198.eurprd05.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR02MB6627
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR02MB7259
 
 This header file is not used anywhere in the driver. Remove it.
 
 Signed-off-by: Waqar Hameed <waqar.hameed@axis.com>
 ---
- drivers/power/supply/bq256xx_charger.c | 1 -
+ drivers/power/supply/bq25980_charger.c | 1 -
  1 file changed, 1 deletion(-)
 
-diff --git a/drivers/power/supply/bq256xx_charger.c b/drivers/power/supply/bq256xx_charger.c
-index ae14162f017a9..3eb1733940054 100644
---- a/drivers/power/supply/bq256xx_charger.c
-+++ b/drivers/power/supply/bq256xx_charger.c
+diff --git a/drivers/power/supply/bq25980_charger.c b/drivers/power/supply/bq25980_charger.c
+index 723858d62d141..4f91fd1a3dec9 100644
+--- a/drivers/power/supply/bq25980_charger.c
++++ b/drivers/power/supply/bq25980_charger.c
 @@ -8,7 +8,6 @@
  #include <linux/interrupt.h>
  #include <linux/kernel.h>
