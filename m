@@ -1,134 +1,146 @@
-Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazon11013029.outbound.protection.outlook.com [52.101.72.29])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EE373101B4;
-	Sat, 20 Dec 2025 18:51:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2430274FD3;
+	Sat, 20 Dec 2025 21:40:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.72.29
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766256693; cv=pass; b=ky/GxONuylnP9D5xoknKYJQgI4MfF9Dx4+6KK83RagFSdCOvQIq4D2incCE8GaQRO710g632olzSvCpkm6A6nzQKwez5+9p/9xG6ZeuI72pDUepazr69KGl8epe/IRhV5eq93rYm3/AeeiquQPLDcFswXnFEgUY83uPG0vmoVPc=
+	t=1766266802; cv=fail; b=jyV9QnbRojLj+IcYxWgHv8x1QWpwEPeG4KwqIUIUnjPCh35KERuqbfNHXoKaCeEztFF4lMpOpJxt6iaadBSw92ZVOzwbBsvXyKcDNAFd7smNySyV3uUcjOPQXLqnJWFeAjSADFKu0TxSjrscKauucz1voja2H3c2bopDcLtVxac=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766256693; c=relaxed/simple;
-	bh=l8GFAMteQwDOPcHMRwlYGJAGz14nVP7EwRua/mTh5A4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=K9JTpxp8JkNtYate9LCuuVRDh9QCm0qHAwejfoJIcnsNYSlzs4YEsMSwtvmfmWhFwTBcDeL3MH1RwykemFzk5BC2TU0FKyFtpWxY0zZmEKloOOs54iLbSspSx7fqis5/H/uixhDOLxJbxCgpc8dKtNay5F5sSSzLkWQPWjCpYfk=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=jEa18x1N; arc=pass smtp.client-ip=136.143.188.112
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1766266802; c=relaxed/simple;
+	bh=r6OPlZiPLoSgtFORyyH1556suQEtBpAndHQ50QiHylI=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=abc4wVZSgHy4R4QIi9OieMrjTMEj3ZCb9SkkvGDq/5WPdKooHg4ei2To2JgVzsDX1Lfo6zXFX42M0qepn4G3xcwrwvaVQrQnuRJOFqEZayxoBpKBdoLi+H28rQ6dP+8uE8coNLlQ8DbukzjX76l2fGcNB2MpOlFWFlRS8C+eyFg=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=pA8ynxiI; arc=fail smtp.client-ip=52.101.72.29
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=axis.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="jEa18x1N"
-ARC-Seal: i=1; a=rsa-sha256; t=1766256629; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=G8xgTZWTJjB4ImOOXFRogkyAppca3TcwYZiVjfFeoWw4cnf3J6yz1l0TmFFFM69NVBZKqPXvn9qVxy8axHJzrAjdanOreLGymgDlXr19Y7ud5gjoh2mrcYVQCCz+DN4sKfQKMUF7CBihUxC0XwKABVYfHrqRvrjJR46bDyrf8vw=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1766256629; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=8IbRY714eO2zGl6q64FE7lg6CXtlWXzXvxXQfYH5rwI=; 
-	b=kyZmEgzFo3uCZqEt92Fqf1irIMioiyGvG4VCWM0XG6OY1+lX1o6vtUu9yFuocGMKQrBoM8gmxJc4Qk57fsYGruRAVHkLTy5x7LTZ9A1WgvOc+3Jovg7Bsf/zfk5g43lC+OivDYF4gltniOLqdMvn6Sn8r+TyP5acGEdedyGK7Cc=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
-	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1766256629;
-	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
-	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
-	bh=8IbRY714eO2zGl6q64FE7lg6CXtlWXzXvxXQfYH5rwI=;
-	b=jEa18x1NgxTIWetBz2e1aTELkeupFac1ViPHoq7QhKZkaVQrtk55dqLMOL0RR9hZ
-	b8KoIp+hlNHz9aVpsO0h+1GKcn9zR0Ai4Px2QJm5PBEz3xdUYuBTqMexCkgRUYF/pEU
-	8FII1oDeCA1XiYsC9keOrmMm7hYhBu7JiR2iX/jE=
-Received: by mx.zohomail.com with SMTPS id 1766256628125717.7120182725639;
-	Sat, 20 Dec 2025 10:50:28 -0800 (PST)
-From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Sat, 20 Dec 2025 19:49:52 +0100
-Subject: [PATCH v2 1/4] dt-bindings: gpu: mali-valhall-csf: Add
- shader-present nvmem cell
+	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="pA8ynxiI"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=ZWWVLe7gC7pXRszfjqTk0gTqFdc2qFxT49CsUIWUcAp8716rmfvG8v8Cvik0sD5UfUK6zG3auDUMyYMknI6tL9T7DOBuvlVGok3LHrsf6YPU+Aii4xQHA4V0z/CjBEFG1n7OYfJxm3fwJWK4fw/AYj30thuoFshZxBnTmxYwx6qVIOAT4YDNUZD8s1lYSDVTQG4tP1LTZag42ZqYiIP1pVX2uniosuXZMNBoVVnrhqB9mIJPGgHh9J3j0I4F2ueZYDs9SnvaQ+uEmkfidcJPLrc4b8AGKq5yRfa1Y0P1bhN6iaEDMUBiLeI5t3wAtmml05q+gCk1Qh4FQT9U/UFnGQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ohph213EUeoR3z09xL9xg9OLMfTCUHebtCyOomQiGWo=;
+ b=iQmMRIjdILKMQOPMJKzzRM25dCB+sVDHgQBhGBcJdB3Cgt2iCLFzag2N/XKX3rFfQCBusyCjiPN5YDGZN1htsjkjU2S7Z4mur8oU8vfzL0lDVlAYeFk9/pombfQWlt8Y+Atan9q+IjeeFbEdJCtM46GNS+Dqh3cmzDLvHhu0/FPubzFbHhM8yeh/Y66+7WD9ACe3+6s2J9caQK8ZSuUiCKelQ4Z73E29a/7ek1qSh4xn7DRvyZNuJhbUyjxhM/UHo/BvlfxoovhJcZzsrhqLVED2Qvvu1adQFjryYbHh5rE6YU9wn0keqBzruM7GX/tt0A68vcUHwGx6ZgFxfAXPoA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 195.60.68.100) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=axis.com;
+ dmarc=pass (p=none sp=none pct=100) action=none header.from=axis.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axis.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ohph213EUeoR3z09xL9xg9OLMfTCUHebtCyOomQiGWo=;
+ b=pA8ynxiIQESfIH+2GJVip/qUB2+kf0RJ0QoXyfHnlTAqMF/H6uYUC1EJzxjDhDdHwa/RGVuWOMezcDbSxksJ3RDzGAACLEyz3bTQm7E28YqZumHBWOYGfMtz1QF0Bv0isr7372oYQUnMoB7rSHakkiC1ubCb2E65gbqTV8de7/k=
+Received: from AM8P191CA0003.EURP191.PROD.OUTLOOK.COM (2603:10a6:20b:21a::8)
+ by DB4PR02MB8462.eurprd02.prod.outlook.com (2603:10a6:10:379::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9434.10; Sat, 20 Dec
+ 2025 21:39:57 +0000
+Received: from AM4PEPF00027A64.eurprd04.prod.outlook.com
+ (2603:10a6:20b:21a:cafe::7f) by AM8P191CA0003.outlook.office365.com
+ (2603:10a6:20b:21a::8) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9434.10 via Frontend Transport; Sat,
+ 20 Dec 2025 21:39:47 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 195.60.68.100)
+ smtp.mailfrom=axis.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=axis.com;
+Received-SPF: Pass (protection.outlook.com: domain of axis.com designates
+ 195.60.68.100 as permitted sender) receiver=protection.outlook.com;
+ client-ip=195.60.68.100; helo=mail.axis.com; pr=C
+Received: from mail.axis.com (195.60.68.100) by
+ AM4PEPF00027A64.mail.protection.outlook.com (10.167.16.75) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9456.9 via Frontend Transport; Sat, 20 Dec 2025 21:39:57 +0000
+Received: from pc52311-2249 (10.4.0.13) by se-mail10w.axis.com (10.20.40.10)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.2.1748.39; Sat, 20 Dec
+ 2025 22:39:56 +0100
+From: Waqar Hameed <waqar.hameed@axis.com>
+To: Matti Vaittinen <mazziesaccount@gmail.com>, Sebastian Reichel
+	<sre@kernel.org>
+CC: <kernel@axis.com>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/5] power: supply: bd99954: Remove unused gpio include header
+User-Agent: a.out
+Date: Sat, 20 Dec 2025 22:39:55 +0100
+Message-ID: <pndecoozvbo.a.out@axis.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20251220-mt8196-shader-present-v2-1-45b1ff1dfab0@collabora.com>
-References: <20251220-mt8196-shader-present-v2-0-45b1ff1dfab0@collabora.com>
-In-Reply-To: <20251220-mt8196-shader-present-v2-0-45b1ff1dfab0@collabora.com>
-To: Boris Brezillon <boris.brezillon@collabora.com>, 
- Steven Price <steven.price@arm.com>, Liviu Dudau <liviu.dudau@arm.com>, 
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Matthias Brugger <matthias.bgg@gmail.com>, 
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
- Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Chen-Yu Tsai <wenst@chromium.org>, Chia-I Wu <olvaffe@gmail.com>, 
- kernel@collabora.com, dri-devel@lists.freedesktop.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, 
- linux-pm@vger.kernel.org, 
- Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-X-Mailer: b4 0.14.3
+Content-Type: text/plain
+X-ClientProxiedBy: se-mail02w.axis.com (10.20.40.8) To se-mail10w.axis.com
+ (10.20.40.10)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM4PEPF00027A64:EE_|DB4PR02MB8462:EE_
+X-MS-Office365-Filtering-Correlation-Id: cb4f432c-4c14-4263-b683-08de401051f5
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|36860700013|82310400026|1800799024;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?2FOSH3kn4UUmQIIcknkqD/JlxjZoXK0DXLPq6iTNQbAAhgIi0a1VYdNRebuU?=
+ =?us-ascii?Q?XyD5CuFPlvO2KW88Q8rpvQyofmGCY9Zpqavj4IYWDpouGJPFhi/+VjrYWWEQ?=
+ =?us-ascii?Q?u6WMEC7t47etnWbLvVH35KGBabVnURaNsX1KuL9dlc2n2zTWxikR21ctC1mF?=
+ =?us-ascii?Q?n0XofGt4TCn9ploVpV8bNZ9T3UHBLPr0BSqCiYYSGgyzuSae8ByDxszFlOM0?=
+ =?us-ascii?Q?IBlNQLPwRcPDCzfX5beJH8mwsmJNARbAcunCidFx22Pfot9RkefUeFpgQFxr?=
+ =?us-ascii?Q?xxtFDapNQSlKRng0Imz6QOMWYFcPGE+WNu3+ZtpbyH2MXwO4N/orq+gKjEhh?=
+ =?us-ascii?Q?kD2Wa7kj7A4Ch5HYNweVmeXLT9JTmdcxR0MtjrpM583A6eIOKOJcDvn/iEB9?=
+ =?us-ascii?Q?dC+6DuUcECheGmDdKV8nmNpsQjtwo4Xn8qDj6crHrBCijvZyl50M7KXNenM8?=
+ =?us-ascii?Q?93cUeaWNRfSoGH5l9+AfS3RJJ//lihSUMn2qSLlH2kyVSsWHH+uRVSZ9I3MP?=
+ =?us-ascii?Q?qX3LWpRr8hrtAwNomjOJmcmRXoW7D+KJD9jJcjcNhLz0c2DVPMIb/76ptkp+?=
+ =?us-ascii?Q?WeqqK2dLMao+WXIApJ3KxIb0yRDfcLwweNMfV4i90Z/WRcIWi+f97tBfM72u?=
+ =?us-ascii?Q?sjkEaZpXGL5jKJa7oI1vy5hJLHOm2+mlMkGNrdFZ7ebnRQLl7DH7sk08/ph6?=
+ =?us-ascii?Q?4gn8H6jLuAHLqsIQV0BlI/mTgiZoEV6cidG24PtuTDfsjEOlA8pkyZN1vclq?=
+ =?us-ascii?Q?/zOPYF1Ob0Zdv8Wqo20hTkB+JeLyX4Z5MYnO7yTkIbjheD7QkW+cGSLD91m6?=
+ =?us-ascii?Q?eX5F/T/3A0oleOui1g789W8BIpj1EUbWKDGUvz0wwngBd9oAzgiJnYq7647X?=
+ =?us-ascii?Q?uTPcsaanmACSGIjEEyLLZBRCOj8tYeUqg4R6C4oOkxF17sgVmMZj0NziswbF?=
+ =?us-ascii?Q?DwVPSdVfmQSr4BgUCfw6alAnF9ScVfYDlzqdKD/PfvGJ9cFsmnRPbHrfA6cG?=
+ =?us-ascii?Q?/Gyod/Uu3EF7K8BKtmvhr1E8ZyAcsI3d9DDX/ZvClpDvQhRv9e0nJuwvy9Rl?=
+ =?us-ascii?Q?VVFAIUQ2dm/N45p1XWZXcg9nNqHr+Z/yq0MYHLfFEjaYV7sUYC9k0p0zDhIJ?=
+ =?us-ascii?Q?xty1x8C+cFhizZ7902TrjMLtnk8MoXSPNIffmHgpA/Gzq5aWyw2fcpNn4sRY?=
+ =?us-ascii?Q?f7oCjRWjrqtJ+slLN4d/Vwa1bj6VZmcPIHAxwWDVZIMneAGvfk6zDHqCFI6F?=
+ =?us-ascii?Q?dv6OIxzRZzYz6iAH3Cl11qZGAf8iFmlOixSI+n70Z/ghyeKPBE6AzA4IO6fg?=
+ =?us-ascii?Q?ZYI87bySloXbI2/t8+ewRTLOkWi/9LMjI9PrlQF+OTq4TJOO1Hiv/JkT7IVz?=
+ =?us-ascii?Q?gCL2rgGRVZPx6FMZtwCuhd6DmibJzuWElZa9myoAvyIzaXnsqVaETOcE/BKl?=
+ =?us-ascii?Q?a7J9Huy01xnHfVCtpziEvLPPSeUWeSHeocleMpRy2JXE8a/nkjg4rDfelbMt?=
+ =?us-ascii?Q?KtKerjxl6esRIkp17WvuNErMi2MlbF1T5OCmv+DV21d9SObuAP0uYc1t0070?=
+ =?us-ascii?Q?zQGSkzXMiOuRAMpN2Og=3D?=
+X-Forefront-Antispam-Report:
+	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(36860700013)(82310400026)(1800799024);DIR:OUT;SFP:1101;
+X-OriginatorOrg: axis.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Dec 2025 21:39:57.1484
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: cb4f432c-4c14-4263-b683-08de401051f5
+X-MS-Exchange-CrossTenant-Id: 78703d3c-b907-432f-b066-88f7af9ca3af
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=78703d3c-b907-432f-b066-88f7af9ca3af;Ip=[195.60.68.100];Helo=[mail.axis.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	AM4PEPF00027A64.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB4PR02MB8462
 
-On the MediaTek MT8196 SoC, the bitmask for which shader cores are
-present and functional is not the one in the Mali GPU's registers, but
-in an external efuse.
+This header file is not used anywhere in the driver. Remove it.
 
-Add the nvmem cell properties to describe such a setup, and make them
-required on MT8196.
-
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
-Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+Signed-off-by: Waqar Hameed <waqar.hameed@axis.com>
 ---
- .../devicetree/bindings/gpu/arm,mali-valhall-csf.yaml      | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ drivers/power/supply/bd99954-charger.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml b/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
-index bee9faf1d3f8..8eccd4338a2b 100644
---- a/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
-+++ b/Documentation/devicetree/bindings/gpu/arm,mali-valhall-csf.yaml
-@@ -51,6 +51,14 @@ properties:
-           - stacks
-       - const: stacks
+diff --git a/drivers/power/supply/bd99954-charger.c b/drivers/power/supply/bd99954-charger.c
+index d03a70cf84067..5c447b0882233 100644
+--- a/drivers/power/supply/bd99954-charger.c
++++ b/drivers/power/supply/bd99954-charger.c
+@@ -56,7 +56,6 @@
+  */
  
-+  nvmem-cells:
-+    items:
-+      - description: bitmask of functional shader cores
-+
-+  nvmem-cell-names:
-+    items:
-+      - const: shader-present
-+
-   mali-supply: true
- 
-   operating-points-v2: true
-@@ -108,6 +116,8 @@ allOf:
-       properties:
-         clocks:
-           minItems: 3
-+        nvmem-cells: false
-+        nvmem-cell-names: false
-         power-domains:
-           maxItems: 1
-         power-domain-names: false
-@@ -133,6 +143,8 @@ allOf:
-             - const: core
-             - const: stacks
-       required:
-+        - nvmem-cells
-+        - nvmem-cell-names
-         - power-domains
- 
- examples:
-@@ -179,6 +191,8 @@ examples:
-                      <GIC_SPI 605 IRQ_TYPE_LEVEL_HIGH 0>,
-                      <GIC_SPI 604 IRQ_TYPE_LEVEL_HIGH 0>;
-         interrupt-names = "job", "mmu", "gpu";
-+        nvmem-cells = <&shader_present>;
-+        nvmem-cell-names = "shader-present";
-         power-domains = <&gpufreq>;
-     };
- 
-
+ #include <linux/delay.h>
+-#include <linux/gpio/consumer.h>
+ #include <linux/interrupt.h>
+ #include <linux/i2c.h>
+ #include <linux/kernel.h>
 -- 
-2.52.0
+2.39.5
 
