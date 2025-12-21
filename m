@@ -1,118 +1,148 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B7F4219FC;
-	Sun, 21 Dec 2025 07:33:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C9421531C8;
+	Sun, 21 Dec 2025 19:00:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766302382; cv=none; b=X10QZipiG1roYsB9sXe98UlAG/NXIc+5Cu9I+HZ3mN2ek77k6m2WvMMDDwvM6WFtpm1OeCCtG0sr9RMSXBNMs4OKUYKcQ9a4Kv169tmlmGp7UP48vRZtoYaW0toJJ9G0NMH1VwVhtfLy0ohjSIfpTTedtmGKKxJfV9Vtf84yQUU=
+	t=1766343627; cv=none; b=n2Zid2vx6rQrKqvSCJOuK7DymYVWKMZhX5DjhGANTjssXY4xL1VLGtXroUsLGE25GXrDDX1IXJUXxni3DnSC8K6J4a0VH6mViOf/kH5MRMmTV1BQNoN8tlSDla/0dWYR7E6NPDxxGYr/ICdFGiXlvfwOlP9TJaAEaBef6lWzYnU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766302382; c=relaxed/simple;
-	bh=acLNH9XZUwJ+/RUGFg15css9I9hbu1oRWu7mAn9c4XA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=j/O1m9GZTOAgylmIYJYrNr0XcG+XmA1bwazlIj7TDQbXaoHpBsDGDLK9p6z+PWAJI6xQWfcIqblO7ULwT6jvnLbFS18k4ZfujWDZcitXdyV0Ca7gFO8p+/gWuuJBDXfk3+YYGvzdmawEdjk+f+LBzFWcOJc9PCAiPpyQQiYInsA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=RPk2S39r; arc=none smtp.client-ip=198.175.65.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1766343627; c=relaxed/simple;
+	bh=gISvZ7uiRw2DVeZyAbf8mU5/eO1t0LE5VqvXtGRHxNY=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=u+zvfETmKtuCIvI+JZhde6xgZxJxygvWNp0D9O5vFXH3jVtq6leBG2d/1B4R5ToQEk4U3xRhBo8mjUgo63mjfLnX6YpXzQnjMszZdpG7gWv5PAoer5Q8hp7c/10ma5PKjqTtNw817RKRLS++S8O3UR5J1AnhI6SX+CrekLn53TM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HAjiaKal; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="RPk2S39r"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1766302382; x=1797838382;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=acLNH9XZUwJ+/RUGFg15css9I9hbu1oRWu7mAn9c4XA=;
-  b=RPk2S39raFefSgmMNL0y5LirZF3+SeuONNQCzGK4byi/x1LEx9q474cj
-   iW56eXHfAY9AN2Bpk3B8Jw+dT2jY0FxpX9yRi8naVqlpP7FNberdU6jTi
-   FiThVkaBTMVrtAbVi7MuR/IVn4OStNVjPHUm4d6jmx/Yad0/9FFK4+ICE
-   BdaSrVKSy0OLdogdqjxiZMKjuddRQWt3d4L2zlvTSG0WZ+Yam4A2wOe+c
-   +Pmbsh/xUgYzfA3+lLMMmlUJ5OKj4XClExenhPxPyI9Fwl2a+GR61QBxk
-   UV78boy3OrzOrkyeVF0hYFeYz3YWumxzfxT1Y7h5KBN6WtyEmFuW87zpE
-   g==;
-X-CSE-ConnectionGUID: CX1f3As1SsaW36+vJQgT2g==
-X-CSE-MsgGUID: PDiZ2seDSSqobsyt3i42yg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11648"; a="72044553"
-X-IronPort-AV: E=Sophos;i="6.21,164,1763452800"; 
-   d="scan'208";a="72044553"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Dec 2025 23:33:01 -0800
-X-CSE-ConnectionGUID: WhT26M+xQ7i3MqpLrDYIvA==
-X-CSE-MsgGUID: /f0OMu86QL+ajuC4w0edDw==
-X-ExtLoop1: 1
-Received: from igk-lkp-server01.igk.intel.com (HELO 8a0c053bdd2a) ([10.211.93.152])
-  by fmviesa003.fm.intel.com with ESMTP; 20 Dec 2025 23:32:56 -0800
-Received: from kbuild by 8a0c053bdd2a with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1vXDvx-000000004y0-3IUv;
-	Sun, 21 Dec 2025 07:32:53 +0000
-Date: Sun, 21 Dec 2025 08:31:59 +0100
-From: kernel test robot <lkp@intel.com>
-To: Amit Sunil Dhamne via B4 Relay <devnull+amitsd.google.com@kernel.org>,
-	Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	=?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>,
-	Lee Jones <lee@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Badhri Jagan Sridharan <badhri@google.com>,
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-	Peter Griffin <peter.griffin@linaro.org>,
-	Tudor Ambarus <tudor.ambarus@linaro.org>,
-	Alim Akhtar <alim.akhtar@samsung.com>
-Cc: oe-kbuild-all@lists.linux.dev, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-usb@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-samsung-soc@vger.kernel.org,
-	RD Babiera <rdbabiera@google.com>, Kyle Tso <kyletso@google.com>,
-	Amit Sunil Dhamne <amitsd@google.com>
-Subject: Re: [PATCH v2 4/5] power: supply: max77759: add charger driver
-Message-ID: <202512210844.O8gAG2p9-lkp@intel.com>
-References: <20251218-max77759-charger-v2-4-2b259980a686@google.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HAjiaKal"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0F811C4CEFB;
+	Sun, 21 Dec 2025 19:00:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1766343626;
+	bh=gISvZ7uiRw2DVeZyAbf8mU5/eO1t0LE5VqvXtGRHxNY=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=HAjiaKalwmMZ81LniL2x0dAGc2dJJzFJ0TwDrYI+C8vQUmcZIMhH9jexZuXX5c0vh
+	 zwCNzIgHBV5ls9zC6qvNIWRAKXYWPXUC+IJ0cVuMopxwWL6DGyVjUkcgRAyzwsisFn
+	 SRA2fLrD3Opd6rmEge0GmvWLAoroh6KDES6hknHTiLXPJY8LGPp4xkCeQxM57LWEvF
+	 nh0QfbqjNUxxmilMu+mphOeWpELcszEZHP1/4UgUY+RxzUK266Th9vntALhxoSe7dw
+	 qTtz4OjEesXBdMKpwxAxBvu9rRDv+TWCo7G8y6eec84sn/piCtv5QzeVPn/ByX2EUv
+	 VfHqTuEArmeRQ==
+Date: Sun, 21 Dec 2025 19:00:10 +0000
+From: Jonathan Cameron <jic23@kernel.org>
+To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+ agross@kernel.org, andersson@kernel.org, lumag@kernel.org,
+ dmitry.baryshkov@oss.qualcomm.com, konradybcio@kernel.org,
+ daniel.lezcano@linaro.org, sboyd@kernel.org, amitk@kernel.org,
+ thara.gopinath@gmail.com, lee@kernel.org, rafael@kernel.org,
+ subbaraman.narayanamurthy@oss.qualcomm.com, david.collins@oss.qualcomm.com,
+ anjelique.melendez@oss.qualcomm.com, kamal.wadhwa@oss.qualcomm.com,
+ rui.zhang@intel.com, lukasz.luba@arm.com, devicetree@vger.kernel.org,
+ linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ cros-qcom-dts-watchers@chromium.org, quic_kotarake@quicinc.com,
+ neil.armstrong@linaro.org, stephan.gerhold@linaro.org
+Subject: Re: [PATCH V8 3/4] iio: adc: Add support for QCOM PMIC5 Gen3 ADC
+Message-ID: <20251221190010.2d111e0e@jic23-huawei>
+In-Reply-To: <6afcb26f-6f6a-41ef-ac45-976e5e2f17ae@oss.qualcomm.com>
+References: <20251127134036.209905-1-jishnu.prakash@oss.qualcomm.com>
+	<20251127134036.209905-4-jishnu.prakash@oss.qualcomm.com>
+	<20251207165349.72f80659@jic23-huawei>
+	<6afcb26f-6f6a-41ef-ac45-976e5e2f17ae@oss.qualcomm.com>
+X-Mailer: Claws Mail 4.3.1 (GTK 3.24.51; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20251218-max77759-charger-v2-4-2b259980a686@google.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Hi Amit,
+On Fri, 19 Dec 2025 18:45:32 +0530
+Jishnu Prakash <jishnu.prakash@oss.qualcomm.com> wrote:
 
-kernel test robot noticed the following build warnings:
+> Hi Jonathan,
+> 
+> On 12/7/2025 10:23 PM, Jonathan Cameron wrote:
+> > On Thu, 27 Nov 2025 19:10:35 +0530
+> > Jishnu Prakash <jishnu.prakash@oss.qualcomm.com> wrote:
+> >   
+> >> The ADC architecture on PMIC5 Gen3 is similar to that on PMIC5 Gen2,
+> >> with all SW communication to ADC going through PMK8550 which
+> >> communicates with other PMICs through PBS.
+> >>
+> >> One major difference is that the register interface used here is that
+> >> of an SDAM (Shared Direct Access Memory) peripheral present on PMK8550.
+> >> There may be more than one SDAM used for ADC5 Gen3 and each has eight
+> >> channels, which may be used for either immediate reads (same functionality
+> >> as previous PMIC5 and PMIC5 Gen2 ADC peripherals) or recurring measurements
+> >> (same as ADC_TM functionality).
+> >>
+> >> By convention, we reserve the first channel of the first SDAM for all
+> >> immediate reads and use the remaining channels across all SDAMs for
+> >> ADC_TM monitoring functionality.
+> >>
+> >> Add support for PMIC5 Gen3 ADC driver for immediate read functionality.
+> >> ADC_TM is implemented as an auxiliary thermal driver under this ADC
+> >> driver.
+> >>
+> >> Signed-off-by: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>  
+> > Hi Jishnu
+> > 
+> > Biggest thing I noticed on a fresh review is that you include
+> > very few headers.  This only compiles (I think) because of lots
+> > of deeply nested includes.  General principle in kernel code is
+> > to follow IWYU approach with a few exceptions.  That makes code
+> > much less prone to changes deep in the header hierarchy.
+> > 
+> > You can even use the tooling that exists for clang to give you suggestions
+> > though search around for config files (I posted one a long time back)
+> > that reduce the noise somewhat.
+> > 
+> > Jonathan
+> > 
+> >   
+> >> diff --git a/drivers/iio/adc/qcom-adc5-gen3-common.c b/drivers/iio/adc/qcom-adc5-gen3-common.c
+> >> new file mode 100644
+> >> index 000000000000..46bb09424f22
+> >> --- /dev/null
+> >> +++ b/drivers/iio/adc/qcom-adc5-gen3-common.c
+> >> @@ -0,0 +1,107 @@
+> >> +// SPDX-License-Identifier: GPL-2.0-only
+> >> +/*
+> >> + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+> >> + *
+> >> + * Code shared between the main and auxiliary Qualcomm PMIC voltage ADCs
+> >> + * of type ADC5 Gen3.
+> >> + */
+> >> +
+> >> +#include <linux/bitfield.h>
+> >> +#include <linux/delay.h>
+> >> +#include <linux/iio/adc/qcom-adc5-gen3-common.h>
+> >> +#include <linux/regmap.h>  
+> > This seems like very light set of includes.
+> > If nothing else should be seeing linux/types.h I think
+> > 
+> > In general try to follow include what you use principles (loosely as some
+> > conventions exit for not including particular headers). 
+> >   
+> 
+> I have a question about this - I'm including some header files in my
+> newly added common header file too (include/linux/iio/adc/qcom-adc5-gen3-common.h).
+> Do I need to repeat those in the driver files where this header is already
+> included?
 
-[auto build test WARNING on lee-mfd/for-mfd-fixes]
-[also build test WARNING on sre-power-supply/for-next usb/usb-testing usb/usb-next usb/usb-linus v6.16-rc1 next-20251219]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Yes. If things defined in those headers are used directly in this
+c code. 
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Amit-Sunil-Dhamne-via-B4-Relay/dt-bindings-mfd-maxim-max77759-add-charger-child-node/20251219-065531
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git for-mfd-fixes
-patch link:    https://lore.kernel.org/r/20251218-max77759-charger-v2-4-2b259980a686%40google.com
-patch subject: [PATCH v2 4/5] power: supply: max77759: add charger driver
-reproduce: (https://download.01.org/0day-ci/archive/20251221/202512210844.O8gAG2p9-lkp@intel.com/reproduce)
+Just because they are in the header today, doesn't mean they will be 
+after some future change and we shouldn't make that sort of future
+change harder by requiring people look at all the files that include your
+header with those includes.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202512210844.O8gAG2p9-lkp@intel.com/
+It's also fairly common for stuff to be needed in the header that isn't needed
+directly in the c file (maybe cause it's only needed for a macro). In those
+cases no need to include in the c file.
 
-All warnings (new ones prefixed by >>):
+Jonathan
 
-   Warning: Documentation/translations/zh_CN/admin-guide/README.rst references a file that doesn't exist: Documentation/dev-tools/kgdb.rst
-   Warning: Documentation/translations/zh_CN/dev-tools/gdb-kernel-debugging.rst references a file that doesn't exist: Documentation/dev-tools/gdb-kernel-debugging.rst
-   Warning: Documentation/translations/zh_CN/how-to.rst references a file that doesn't exist: Documentation/xxx/xxx.rst
-   Warning: Documentation/translations/zh_TW/admin-guide/README.rst references a file that doesn't exist: Documentation/dev-tools/kgdb.rst
-   Warning: Documentation/translations/zh_TW/dev-tools/gdb-kernel-debugging.rst references a file that doesn't exist: Documentation/dev-tools/gdb-kernel-debugging.rst
->> Warning: MAINTAINERS references a file that doesn't exist: Documentation/devicetree/bindings/power/supply/maxim,max77759-charger.yaml
-   Warning: arch/riscv/kernel/kexec_image.c references a file that doesn't exist: Documentation/riscv/boot-image-header.rst
-   Warning: drivers/clocksource/timer-armada-370-xp.c references a file that doesn't exist: Documentation/devicetree/bindings/timer/marvell,armada-370-xp-timer.txt
-   Warning: include/rv/da_monitor.h references a file that doesn't exist: Documentation/trace/rv/da_monitor_synthesis.rst
-   Using alabaster theme
-   ERROR: Cannot find file ./include/linux/pci.h
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
