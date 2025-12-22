@@ -1,163 +1,119 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6B8925F98B
-	for <linux-pm@vger.kernel.org>; Mon, 22 Dec 2025 18:00:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7FC941DEFF5;
+	Mon, 22 Dec 2025 20:04:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766426446; cv=none; b=aM3h0X0AZBUQ1je8cRuciaRUAIxQj43AoQmsQghMGGAsns1lPgMPAR9JjzlRV8VFuTM6Hhf8H8ZK/iIsVmgFLvUXqL7HW/3l4zZzoynK+Ad4bIb0ujFyojDuXn+wIAJ9inFJdGDY8BQtjKOgTvEqZpr3+8go3wm0xfOIkQso4As=
+	t=1766433861; cv=none; b=VlBhSziaKRTLWj6xSAO8+kqiMSrpD8oS4cyrFOpuqserMwj6fgnyl+2L5e3KacdnSxacNV1hD3wXW6+z8NLoSUjylptAFHV/3SABiuRTTLpNqhL6Pnpw6vhENiv/PnoMUXstSCiD0cDK+zyBtVE9J+z+fqs6Zyk/IE6+OVi9jQc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766426446; c=relaxed/simple;
-	bh=cbyuGkfXpqUbhzcI1BkQa3K8cyZUe/N+4bGTpsNbH5I=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Gfy6I9ZaBe98+VDX8ZlXQ5TeNc1jZGS9+kZjV9NGBc6/Cy2Ol6wpvnBDWU6sU5km9pZjKHTgAeYe6QW6QG9gyfdhYneDCtduBPHj871PhkOb4187RvK20c5ovXSh8SVve7T/AGMvVtP0YWOLUmUKx0IVs0h7JzLZEkabAZWtnHs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=Ry6vyLnW; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=c3FHLG6d; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1766433861; c=relaxed/simple;
+	bh=zwpPZI3aCzU701r+bt49CUPkrH2uvexax+yCoGFo4dk=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=a1SDRZJsVLetj3lRd+Z3FcidGLtkZh/rWrbU1Km3ExQX0ooL96QrIqksEkD2l1L4k3TP0bydRq7mk+gaUDILcd0i4LW73HRolFdS4foqhtvURH7GFoS6oLaZ3eCQzji7O3/xREPkIuu/XIcL6ZcTh/l0hFm6qyRrgvRPdAtVggE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ks4sEbD4; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Ry6vyLnW";
-	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="c3FHLG6d"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1766426443;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=dXo0XmPhzaeXOxCnEx9hH+u3QjRF1RyUWpvNBcumJRc=;
-	b=Ry6vyLnWOpv6vdCtcaxjD6ub2uDlsXaj2G/lFujiZUG/YLehECkr8BAT5TM/MSGW/Jo9Wo
-	T5z6dK8KIELK0NDltbV2MLsSjJ4ei+6LcNShzLA8d2uWfh6n/oi510EAgmgdjg4vUszIvM
-	kuSaGpoK51c5pvPCPBEUl4xfGXNGH0U=
-Received: from mail-qv1-f72.google.com (mail-qv1-f72.google.com
- [209.85.219.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-541-kL4JEjnWMUaf5NavTgcQAg-1; Mon, 22 Dec 2025 13:00:41 -0500
-X-MC-Unique: kL4JEjnWMUaf5NavTgcQAg-1
-X-Mimecast-MFC-AGG-ID: kL4JEjnWMUaf5NavTgcQAg_1766426441
-Received: by mail-qv1-f72.google.com with SMTP id 6a1803df08f44-88a3929171bso89675146d6.3
-        for <linux-pm@vger.kernel.org>; Mon, 22 Dec 2025 10:00:41 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1766426441; x=1767031241; darn=vger.kernel.org;
-        h=user-agent:in-reply-to:content-disposition:mime-version:references
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=dXo0XmPhzaeXOxCnEx9hH+u3QjRF1RyUWpvNBcumJRc=;
-        b=c3FHLG6dt1utePC4BAhCOu9bsRZBsYxoAjdwgugSfG2kwnsR9xoQY2c8lm8j0YrcDy
-         M+lX19ls1AlHMCcFSvHxmN/kcFgWd7SwRSVd1zydUqsiVTZaMKn0/FpQpUBXX1vWQw4S
-         M6EfyBys6JvnnpynZbpenEdTazny5H+3wqe78ZD7tS9lpqpsWKv8JPlEXO+78QhPd+H5
-         dfoSALSttX1C+oo+nbRg258lBYwWPT/zRcNhuuCCf8HNOZqgnCN/+s/RX7088DKiIipn
-         kLPso4ZirxBnefCbTOV3GFWgojQWRrfEQ92GtDGfz7M1Ni2zO6xZGNq6mQpGtaSuVHbM
-         tFqg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1766426441; x=1767031241;
-        h=user-agent:in-reply-to:content-disposition:mime-version:references
-         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=dXo0XmPhzaeXOxCnEx9hH+u3QjRF1RyUWpvNBcumJRc=;
-        b=H8qpCFWFB+xPVFcaaWHrEbHa4kYoUaNH2XGTj+urA+z/FXdYdF2QoSDIXkHMnqLyJk
-         3R0oTTRAj1kW8tlM7M8vkifYOhH+TCrqWbrAgFCMIgiPh2aUxeYgk2z3liN4gxhRTEOn
-         r6EeNTIKlBC/E3+q3PvjAY6LsOZc38dNHuGOghdARQi8b4UVEOQsJ/ntEvzNY0Ge5RwX
-         hH/C4rXGFkBW3lGBvj2MV89z47RmNPw0287hb95vWIXQDpGo2W7XIeLN/+QsYayOz4yi
-         47f0vTIfNNC782DkpMMFkX3/4dNt2EShqV+P/V5WUhc74bYQLBCqwLKNxEprNFZNAFiX
-         eaOw==
-X-Forwarded-Encrypted: i=1; AJvYcCXZL/4nSeYvXu7L/PYNcLHKvtQdvpJsWZMm8ZYehbQiACrz5vz6kT804WGge+rbLsqw2Eyd78sExg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwXUQEuyxSm5KiEJ2rOb7RKHJs3Nudll0uVrsRobHz6CPmqJgDD
-	w+50dg4xubBH7uxKR/fwa/soxTs7+53n8sPS/KB/gcLr5b0TSYfUfohtX4nC9H7a73FGFTy+89J
-	Uyz7mVGrvMiVQvAdQxDJbSdiWqU6FMh3fzCrYaeuZ4vxs8A+hRrCUvKq57ZDv
-X-Gm-Gg: AY/fxX53XdEf2mumyApQXUE2Rz7Z1FIZLyBohW21Cr28xvra0duVsjEquS9ru5mZrzm
-	g8AKi2rsS96wdyJ+a6y84EgGp6mkSaxwRv5NjgQIgvpRNjs8GjvSb0TIRS4+MTPJTNObg7NaZ8f
-	TWvzIOcYIC81UzjKhEwrVrFptKu4Cht8jbWmKrLXoEOMZBUBaEKPU9jBPU9xAwUX+w6o8VhXh81
-	8rEObWUKXSJUNky2ZMqDcKaQF6XefalGgpN7VPGeeyVoM+mbwjXdZhaC3JY6D6pYBO4Kch19Ue0
-	KTkWJd/PsRf7m84rwedneQ2ActZHptfoN6K63R82s5aZa2A8UQglNz9Qp5SYF2zkgXFojC0/Dh6
-	RDCg80/rXXUF1cDbRVYoLZoPS8UmJI5hDzU/xdFoYzdMM
-X-Received: by 2002:a05:6214:27c6:b0:88a:306b:820b with SMTP id 6a1803df08f44-88d83d670e7mr209995226d6.57.1766426440621;
-        Mon, 22 Dec 2025 10:00:40 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IFShBd6/ILCtyh9OhdnIzWfY3dp9JmiO74dGqZBOXDUCJ4lowAybkSiEsS44d+2GsPo84wwMA==
-X-Received: by 2002:a05:6214:27c6:b0:88a:306b:820b with SMTP id 6a1803df08f44-88d83d670e7mr209994116d6.57.1766426440046;
-        Mon, 22 Dec 2025 10:00:40 -0800 (PST)
-Received: from redhat.com (c-73-183-52-120.hsd1.pa.comcast.net. [73.183.52.120])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-88d9a63e296sm86625536d6.52.2025.12.22.10.00.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Dec 2025 10:00:39 -0800 (PST)
-Date: Mon, 22 Dec 2025 13:00:36 -0500
-From: Brian Masney <bmasney@redhat.com>
-To: "irving.ch.lin" <irving-ch.lin@mediatek.com>
-Cc: Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	Richard Cochran <richardcochran@gmail.com>,
-	Qiqi Wang <qiqi.wang@mediatek.com>, linux-clk@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
-	netdev@vger.kernel.org,
-	Project_Global_Chrome_Upstream_Group@mediatek.com,
-	sirius.wang@mediatek.com, vince-wl.liu@mediatek.com,
-	jh.hsu@mediatek.com
-Subject: Re: [PATCH v4 04/21] clk: mediatek: Add MT8189 apmixedsys clock
- support
-Message-ID: <aUmHRCXNy45PrVLG@redhat.com>
-References: <20251215034944.2973003-1-irving-ch.lin@mediatek.com>
- <20251215034944.2973003-5-irving-ch.lin@mediatek.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ks4sEbD4"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5FB36C4CEF1;
+	Mon, 22 Dec 2025 20:04:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1766433861;
+	bh=zwpPZI3aCzU701r+bt49CUPkrH2uvexax+yCoGFo4dk=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=Ks4sEbD4BmEIL+iZbfylQlhQIi6pN3LrZ83VQb9hSJU3r7XUizrxcsW6e/FeWfUvd
+	 gUHvKlGB9e7kpSWLMwSsxLIajsEJesvz+egvwY9KfQKhXq5lWNSDo7ad5p76ERuwYn
+	 nx733ghtCo2Vv0USO877gmZtEIAvFFkMMf4O5yXdUVX8g1KzsKgmEYf13snZfFswn2
+	 UzB43OXM0N2SIksoQEeMUYVUD9pc+B9Qd24TzWGVxk7U11h1w87whOpqfCRkCfjgCG
+	 trJawH2puCyAErsYIAFuNf7WoKp1zQJIft2VjIy4xRgaq9BOtNkaBPi2FfphiVKZ71
+	 5RKGWht8ECTkQ==
+From: Mark Brown <broonie@kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>, Miguel Ojeda <ojeda@kernel.org>, 
+ Alex Gaynor <alex.gaynor@gmail.com>, Boqun Feng <boqun.feng@gmail.com>, 
+ Gary Guo <gary@garyguo.net>, 
+ =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+ Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+ Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
+ Danilo Krummrich <dakr@kernel.org>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ FUJITA Tomonori <fujita.tomonori@gmail.com>, Andrew Lunn <andrew@lunn.ch>, 
+ Heiner Kallweit <hkallweit1@gmail.com>, 
+ Russell King <linux@armlinux.org.uk>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ Michael Turquette <mturquette@baylibre.com>, 
+ Stephen Boyd <sboyd@kernel.org>, Breno Leitao <leitao@debian.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Luis Chamberlain <mcgrof@kernel.org>, Russ Weight <russ.weight@linux.dev>, 
+ Dave Ertman <david.m.ertman@intel.com>, Ira Weiny <ira.weiny@intel.com>, 
+ Leon Romanovsky <leon@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
+ =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
+ Arnd Bergmann <arnd@arndb.de>, Brendan Higgins <brendan.higgins@linux.dev>, 
+ David Gow <davidgow@google.com>, Jens Axboe <axboe@kernel.dk>, 
+ Alexandre Courbot <acourbot@nvidia.com>, 
+ Alexander Viro <viro@zeniv.linux.org.uk>, 
+ Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
+ Liam Girdwood <lgirdwood@gmail.com>, Rae Moar <raemoar63@gmail.com>, 
+ Tamir Duberstein <tamird@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ rust-for-linux@vger.kernel.org, nouveau@lists.freedesktop.org, 
+ dri-devel@lists.freedesktop.org, netdev@vger.kernel.org, 
+ linux-clk@vger.kernel.org, linux-pci@vger.kernel.org, 
+ linux-kselftest@vger.kernel.org, kunit-dev@googlegroups.com, 
+ linux-block@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <20250925-core-cstr-cstrings-v2-0-78e0aaace1cd@gmail.com>
+References: <20250925-core-cstr-cstrings-v2-0-78e0aaace1cd@gmail.com>
+Subject: Re: (subset) [PATCH v2 00/19] rust: replace `kernel::c_str!` with
+ C-Strings
+Message-Id: <176643385114.959021.16173066477128119135.b4-ty@kernel.org>
+Date: Mon, 22 Dec 2025 20:04:11 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20251215034944.2973003-5-irving-ch.lin@mediatek.com>
-User-Agent: Mutt/2.2.14 (2025-02-20)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.15-dev-47773
 
-On Mon, Dec 15, 2025 at 11:49:13AM +0800, irving.ch.lin wrote:
-> From: Irving-CH Lin <irving-ch.lin@mediatek.com>
+On Thu, 25 Sep 2025 09:53:48 -0400, Tamir Duberstein wrote:
+> This series depends on step 3[0].
 > 
-> Add support for the MT8189 apmixedsys clock controller, which provides
-> PLLs generated from SoC 26m.
+> Subsystem maintainers: I would appreciate your `Acked-by`s so that this
+> can be taken through Miguel's tree (where the previous series must go).
 > 
-> Signed-off-by: Irving-CH Lin <irving-ch.lin@mediatek.com>
-> ---
->  drivers/clk/mediatek/Kconfig                 |  13 ++
->  drivers/clk/mediatek/Makefile                |   1 +
->  drivers/clk/mediatek/clk-mt8189-apmixedsys.c | 192 +++++++++++++++++++
-                        ^^^^^^^^^^^^^^^^^^^^^^^
+> Link: https://lore.kernel.org/all/20250925-cstr-core-v16-0-5cdcb3470ec2@gmail.com/ [0]
+> 
+> [...]
 
-This file, along with others in this series, is not listed in
-MAINTAINERS. This is the current entry:
+Applied to
 
-MEDIATEK MT6735 CLOCK & RESET DRIVERS
-M:      Yassine Oudjana <y.oudjana@protonmail.com>
-L:      linux-clk@vger.kernel.org
-L:      linux-mediatek@lists.infradead.org (moderated for non-subscribers)
-S:      Maintained
-F:      drivers/clk/mediatek/clk-mt6735-apmixedsys.c
-F:      drivers/clk/mediatek/clk-mt6735-imgsys.c
-F:      drivers/clk/mediatek/clk-mt6735-infracfg.c
-F:      drivers/clk/mediatek/clk-mt6735-mfgcfg.c
-F:      drivers/clk/mediatek/clk-mt6735-pericfg.c
-F:      drivers/clk/mediatek/clk-mt6735-topckgen.c
-F:      drivers/clk/mediatek/clk-mt6735-vdecsys.c
-F:      drivers/clk/mediatek/clk-mt6735-vencsys.c
-F:      include/dt-bindings/clock/mediatek,mt6735-apmixedsys.h
-F:      include/dt-bindings/clock/mediatek,mt6735-imgsys.h
-F:      include/dt-bindings/clock/mediatek,mt6735-infracfg.h
-F:      include/dt-bindings/clock/mediatek,mt6735-mfgcfg.h
-F:      include/dt-bindings/clock/mediatek,mt6735-pericfg.h
-F:      include/dt-bindings/clock/mediatek,mt6735-topckgen.h
-F:      include/dt-bindings/clock/mediatek,mt6735-vdecsys.h
-F:      include/dt-bindings/clock/mediatek,mt6735-vencsys.h
-F:      include/dt-bindings/reset/mediatek,mt6735-infracfg.h
-F:      include/dt-bindings/reset/mediatek,mt6735-mfgcfg.h
-F:      include/dt-bindings/reset/mediatek,mt6735-pericfg.h
-F:      include/dt-bindings/reset/mediatek,mt6735-vdecsys.h
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git for-next
 
-Should the entries to MAINTAINERS be simplified to the following?
+Thanks!
 
-F:      drivers/clk/mediatek/
-F:      include/dt-bindings/clock/mediatek,*
+[19/19] rust: regulator: replace `kernel::c_str!` with C-Strings
+        commit: b0655377aa5a410df02d89170c20141a1a5bbc28
 
-Brian
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
 
