@@ -1,119 +1,107 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7FC941DEFF5;
-	Mon, 22 Dec 2025 20:04:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81F0230AD00;
+	Mon, 22 Dec 2025 20:37:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766433861; cv=none; b=VlBhSziaKRTLWj6xSAO8+kqiMSrpD8oS4cyrFOpuqserMwj6fgnyl+2L5e3KacdnSxacNV1hD3wXW6+z8NLoSUjylptAFHV/3SABiuRTTLpNqhL6Pnpw6vhENiv/PnoMUXstSCiD0cDK+zyBtVE9J+z+fqs6Zyk/IE6+OVi9jQc=
+	t=1766435822; cv=none; b=ZpOtFpnym3dL5aYfKQCABkWUNNgQPKf4GE3i4Y1Htd4LXhy7D2TuHcPZPzOATEIVjiZv/Rao5zecTId8ghOBqkHVKc5cjDIwb5Yz9cI0o7e0xWIbgcFIg8/y1SZ4LpHj+BZSypx8PztoSW/F0AW/ROGIlX6t2Alc/ws7fvX1a1c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766433861; c=relaxed/simple;
-	bh=zwpPZI3aCzU701r+bt49CUPkrH2uvexax+yCoGFo4dk=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=a1SDRZJsVLetj3lRd+Z3FcidGLtkZh/rWrbU1Km3ExQX0ooL96QrIqksEkD2l1L4k3TP0bydRq7mk+gaUDILcd0i4LW73HRolFdS4foqhtvURH7GFoS6oLaZ3eCQzji7O3/xREPkIuu/XIcL6ZcTh/l0hFm6qyRrgvRPdAtVggE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ks4sEbD4; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1766435822; c=relaxed/simple;
+	bh=5lTSXfHCh0kt1mgn/MN7svtqP53TiA+t0/Nndt/lKy8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=pnh9OK86gAo0r4yEizlFYHRPyA9obracXEy02NDxLo9eYN9X4F4J1AVMwhxS7xqBbxrHUGy32PiWMVgjirZq384LJQyClAXezWkycJlhfoFUvcXSOSifd1OzxA+uv/9a9pP9qQbu0fYB54T1VRj6bVNYAWOKtltTj4hFtqKc61U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nBJawlNz; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ks4sEbD4"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5FB36C4CEF1;
-	Mon, 22 Dec 2025 20:04:11 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nBJawlNz"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4ADD2C4CEF1;
+	Mon, 22 Dec 2025 20:37:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1766433861;
-	bh=zwpPZI3aCzU701r+bt49CUPkrH2uvexax+yCoGFo4dk=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=Ks4sEbD4BmEIL+iZbfylQlhQIi6pN3LrZ83VQb9hSJU3r7XUizrxcsW6e/FeWfUvd
-	 gUHvKlGB9e7kpSWLMwSsxLIajsEJesvz+egvwY9KfQKhXq5lWNSDo7ad5p76ERuwYn
-	 nx733ghtCo2Vv0USO877gmZtEIAvFFkMMf4O5yXdUVX8g1KzsKgmEYf13snZfFswn2
-	 UzB43OXM0N2SIksoQEeMUYVUD9pc+B9Qd24TzWGVxk7U11h1w87whOpqfCRkCfjgCG
-	 trJawH2puCyAErsYIAFuNf7WoKp1zQJIft2VjIy4xRgaq9BOtNkaBPi2FfphiVKZ71
-	 5RKGWht8ECTkQ==
-From: Mark Brown <broonie@kernel.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Viresh Kumar <viresh.kumar@linaro.org>, Miguel Ojeda <ojeda@kernel.org>, 
- Alex Gaynor <alex.gaynor@gmail.com>, Boqun Feng <boqun.feng@gmail.com>, 
- Gary Guo <gary@garyguo.net>, 
- =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
- Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
- Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
- Danilo Krummrich <dakr@kernel.org>, 
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- FUJITA Tomonori <fujita.tomonori@gmail.com>, Andrew Lunn <andrew@lunn.ch>, 
- Heiner Kallweit <hkallweit1@gmail.com>, 
- Russell King <linux@armlinux.org.uk>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- Michael Turquette <mturquette@baylibre.com>, 
- Stephen Boyd <sboyd@kernel.org>, Breno Leitao <leitao@debian.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Luis Chamberlain <mcgrof@kernel.org>, Russ Weight <russ.weight@linux.dev>, 
- Dave Ertman <david.m.ertman@intel.com>, Ira Weiny <ira.weiny@intel.com>, 
- Leon Romanovsky <leon@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
- =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
- Arnd Bergmann <arnd@arndb.de>, Brendan Higgins <brendan.higgins@linux.dev>, 
- David Gow <davidgow@google.com>, Jens Axboe <axboe@kernel.dk>, 
- Alexandre Courbot <acourbot@nvidia.com>, 
- Alexander Viro <viro@zeniv.linux.org.uk>, 
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
- Liam Girdwood <lgirdwood@gmail.com>, Rae Moar <raemoar63@gmail.com>, 
- Tamir Duberstein <tamird@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- rust-for-linux@vger.kernel.org, nouveau@lists.freedesktop.org, 
- dri-devel@lists.freedesktop.org, netdev@vger.kernel.org, 
- linux-clk@vger.kernel.org, linux-pci@vger.kernel.org, 
- linux-kselftest@vger.kernel.org, kunit-dev@googlegroups.com, 
- linux-block@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <20250925-core-cstr-cstrings-v2-0-78e0aaace1cd@gmail.com>
-References: <20250925-core-cstr-cstrings-v2-0-78e0aaace1cd@gmail.com>
-Subject: Re: (subset) [PATCH v2 00/19] rust: replace `kernel::c_str!` with
- C-Strings
-Message-Id: <176643385114.959021.16173066477128119135.b4-ty@kernel.org>
-Date: Mon, 22 Dec 2025 20:04:11 +0000
+	s=k20201202; t=1766435822;
+	bh=5lTSXfHCh0kt1mgn/MN7svtqP53TiA+t0/Nndt/lKy8=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=nBJawlNz7fMV/zbvpoYPVU9lgAjirjWl+4D29j/ucKxJcPkk28SmHCbHGUDOHJhO0
+	 dAXovi2sYZFwgA8oXbBk7TtHxX8v0yfTSRbCdCiAn78Id64reiRr8GaEYbtDZt+iix
+	 11n03SexnWuz4Bo8IFYyfD/A4v25q186abVzUUWg4EhAhxjeSfci4YOwLYq/gtiDdm
+	 ajPuXnRK0QKsPYqB2g+KCIF0axByJ5oIhqIFeAe4aanFKTdxNItfp/iMB4R2TqwDCx
+	 LEwqcDIFJnaZW2PovwyuvYBQG9KWOG9uh1TjPC3Gws/o2GQl5Dhxct/TgUrQjO9+jl
+	 xNQtJoY4SjacA==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>,
+ Brian Norris <briannorris@chromium.org>
+Subject:
+ [PATCH v1 23/23] PM: runtime: Change pm_runtime_put() return type to void
+Date: Mon, 22 Dec 2025 21:36:25 +0100
+Message-ID: <14387202.RDIVbhacDa@rafael.j.wysocki>
+Organization: Linux Kernel Development
+In-Reply-To: <6245770.lOV4Wx5bFT@rafael.j.wysocki>
+References: <6245770.lOV4Wx5bFT@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.15-dev-47773
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-On Thu, 25 Sep 2025 09:53:48 -0400, Tamir Duberstein wrote:
-> This series depends on step 3[0].
-> 
-> Subsystem maintainers: I would appreciate your `Acked-by`s so that this
-> can be taken through Miguel's tree (where the previous series must go).
-> 
-> Link: https://lore.kernel.org/all/20250925-cstr-core-v16-0-5cdcb3470ec2@gmail.com/ [0]
-> 
-> [...]
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Applied to
+The primary role of pm_runtime_put() is to decrement the runtime PM
+usage counter of the given device.  It always does that regardless of
+the value returned by it later.
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git for-next
+In addition, if the runtime PM usage counter after decrementation turns
+out to be zero, a work item is queued up to check whether or not the
+device can be suspended.  This is not guaranteed to succeed though and
+even if it is successful, the device may still not be suspended going
+forward.
 
-Thanks!
+There are multiple valid reasons why pm_runtime_put() may not decide to
+queue up the work item mentioned above, including, but not limited to,
+the case when user space has written "on" to the device's runtime PM
+"control" file in sysfs.  In all of those cases, pm_runtime_put()
+returns a negative error code (even though the device's runtime PM
+usage counter has been successfully decremented by it) which is very
+confusing.  In fact, its return value should only be used for debug
+purposes and care should be taken when doing it even in that case.
 
-[19/19] rust: regulator: replace `kernel::c_str!` with C-Strings
-        commit: b0655377aa5a410df02d89170c20141a1a5bbc28
+Accordingly, to avoid the confusion mentioned above, change the return
+type of pm_runtime_put() to void.
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ include/linux/pm_runtime.h |   16 ++--------------
+ 1 file changed, 2 insertions(+), 14 deletions(-)
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -545,22 +545,10 @@ static inline int pm_runtime_resume_and_
+  *
+  * Decrement the runtime PM usage counter of @dev and if it turns out to be
+  * equal to 0, queue up a work item for @dev like in pm_request_idle().
+- *
+- * Return:
+- * * 1: Success. Usage counter dropped to zero, but device was already suspended.
+- * * 0: Success.
+- * * -EINVAL: Runtime PM error.
+- * * -EACCES: Runtime PM disabled.
+- * * -EAGAIN: Runtime PM usage counter became non-zero or Runtime PM status
+- *            change ongoing.
+- * * -EBUSY: Runtime PM child_count non-zero.
+- * * -EPERM: Device PM QoS resume latency 0.
+- * * -EINPROGRESS: Suspend already in progress.
+- * * -ENOSYS: CONFIG_PM not enabled.
+  */
+-static inline int pm_runtime_put(struct device *dev)
++static inline void pm_runtime_put(struct device *dev)
+ {
+-	return __pm_runtime_idle(dev, RPM_GET_PUT | RPM_ASYNC);
++	__pm_runtime_idle(dev, RPM_GET_PUT | RPM_ASYNC);
+ }
+ 
+ /**
 
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
 
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
 
