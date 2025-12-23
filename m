@@ -1,86 +1,44 @@
-Received: from mail-lj1-f178.google.com (mail-lj1-f178.google.com [209.85.208.178])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1202D2FFF8C
-	for <linux-pm@vger.kernel.org>; Tue, 23 Dec 2025 06:34:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE2C822068F;
+	Tue, 23 Dec 2025 07:23:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.221
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766471647; cv=none; b=WLJdI2MO4nSgc5TPuI7EhqnZCODvdvbpbQkc2KAc9qaGsV4FQcwU6DOksJMBiA5Yc/nh55ihGECyp+9iXKZdHTgmHICY0iYPC0YfyBcr4qPCA1uTEhqEi7SMBx3kYXp4RMwMASxvOUun5J8xEdPqNvrnqjmKPwFj4gaVr5hpqqI=
+	t=1766474624; cv=none; b=Krnekokc7VEYFPMxSf22bsfZ7Ys7p0oTB7qNNy39Z202cQz2dyavAXraIu9mEXkhY7VJy/GLsStCIeRB6De3MD83PALctpcAI4BM1k15DWUN4U2Fjarr0496vYomt8l/d6j9yaicGd7oI9Me54VO/NbqP0/ZZpr3p9vxSlDThKs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766471647; c=relaxed/simple;
-	bh=zQMCxWwv+vy2hbOmutXkA1vn5ZNuVRvD6yhOueNtNZU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=nflj1T4hzDon7qgr7ulnuLU+G+GgxXMJJuQA2mZQamkjQB/kN5Z2lLEugpbo2HZpxli+Bowhw2YJDvc/O2lWsXILkjQae4w7Xmmy/luSyjQ4B1BSSfbMpz0Fq5Z85kjdWdjDH0bn0Bstr5mNSjjN5dyO7TCwIZDXwpPuYpEV4jI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=WwAmUTBH; arc=none smtp.client-ip=209.85.208.178
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WwAmUTBH"
-Received: by mail-lj1-f178.google.com with SMTP id 38308e7fff4ca-37b9728a353so58744971fa.0
-        for <linux-pm@vger.kernel.org>; Mon, 22 Dec 2025 22:34:05 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1766471644; x=1767076444; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=048jzD37H8lsx/zZlGI/PEx4g5lnBiNM8RokzD3mdsY=;
-        b=WwAmUTBH+Z8XRKtBCqY+p4vhvOZdSmb+n+f1cbt8viJVJQHBr5U0jo/4s6d7qWWbBf
-         m0+yEyt1/jvRcNLPLCeivO4iEJDrI+k3zJ4jS2PQa2ZNeiL1Tlbub2tME3cf4CpV5t5x
-         y2v7G9wdrigZhwrK4c7Yef+E/fzqp/cS5XJetFqG4hBREaOaTvMWzFG+nlcM12NpLnyV
-         bWftFqc5KSBKZ0BFk6cyJPxHYk5+KPRoe6KeznkQ0/TJBWIgfaUW2op7B7NEb1bQFuep
-         6NgElzoJ6xi+uJ6OfcZAZFe+8coZdOUBZ5vF3OSWtmJtAEFFTI3kGZUoLI04b5pvc8/0
-         nauA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1766471644; x=1767076444;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=048jzD37H8lsx/zZlGI/PEx4g5lnBiNM8RokzD3mdsY=;
-        b=OtWvphtER1y5JhVQV20k0BoIeK/UXYQtXgjj8pp8Oazom8sXcAG7CFNkCfCJcquCoP
-         QdSk/3ADkVt7JMkeJA+5wann77twuzmoFk7CRoGi2EI6uuN94jhSqkCwi6V0Kiyi3rpy
-         cUxnfnmqYFIA8RTpmHhd63vIvf0xEJzYNBm89UJUyrntWUD8HLqU1Zb3wrVzkukOa5eA
-         RFJ9DGt7QLTGFU/doe3j1cogcpboQHSBjWiGOCllHFT3RzzZ40CAoBWPkUsm50kmH78I
-         bwwpw132KDANLhrew2QxNIbzWh6/mPVS18wyqpGgJZw36rB7GWGd27bIfpV9ikVKLufF
-         orBg==
-X-Forwarded-Encrypted: i=1; AJvYcCWJlwEblUTmXQ9U1o6svTvibSqbLvY0p1q4D+IBEq+zpO9hfwhWE64nJwuJAU2DSVRWjdGBXplB3g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyULXr5xUtYsIqe+CiyiSvIZsLuAgsUWkeIdAaPjMSCXEm2eTNx
-	imrQ9pCq8hw0Ydl4RoIDz7+VZwDY6O6G6qEe6HxAlp1pU4CtKTSNtlor
-X-Gm-Gg: AY/fxX73nX4kdje2nZX5CjnJlXsOljUaxdvWUU1WURGhmDB0rCHJegg1QyGAYGaehq4
-	bRL56moTmL42wUaUS4xScbNNGlXiKeYxhkUr2xX6n9AOq0uXczEj4nuIZlLkQ5NQ0LDtrXngYfx
-	p+lFgM14VmenqpR4V3gd06YMa6x6o74hO2Jv/irQAlNhT4HNG2CDGj1YQMdNVu37I0L0nVqO8zv
-	V8pn1VE5AINJy4tssaBb5NL0RLD0I5x0WmScCGbjJnUfrA32RpnWG+4LBuU+OciVRl8v2opJLWI
-	IIJwQN2BEe1Iz+E+mF8ghGlr39Ta6nWDQjjBoYY8Fa6Lt3GGZ0l6N5UzP2COtjYvcg6U8LABl1G
-	3TyZTfbJdU/QUCaSB/OZBpLsdtUPuA+ay0WvihjAvMWyVsPTGZE1YCfoxq78EAhFdezEUaE/84k
-	RAyoXUzcQ/Buym+34C9j0=
-X-Google-Smtp-Source: AGHT+IFaFE0nlDnowk+Ou3U+M9eX56ZCvZ4aEX/mIAF0sQ5oS0z9Fh1vnyWDY8DQIpJC2t19J66zfQ==
-X-Received: by 2002:a05:651c:1506:b0:378:e055:3150 with SMTP id 38308e7fff4ca-38121566b66mr43783861fa.5.1766471643890;
-        Mon, 22 Dec 2025 22:34:03 -0800 (PST)
-Received: from localhost ([194.190.17.114])
-        by smtp.gmail.com with UTF8SMTPSA id 38308e7fff4ca-381224de6eesm33742031fa.6.2025.12.22.22.34.02
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 22 Dec 2025 22:34:03 -0800 (PST)
-From: Askar Safin <safinaskar@gmail.com>
-To: gmazyland@gmail.com
-Cc: Dell.Client.Kernel@dell.com,
-	dm-devel@lists.linux.dev,
-	linux-block@vger.kernel.org,
-	linux-btrfs@vger.kernel.org,
-	linux-crypto@vger.kernel.org,
-	linux-lvm@lists.linux.dev,
-	linux-mm@kvack.org,
-	linux-pm@vger.kernel.org,
-	linux-raid@vger.kernel.org,
-	lvm-devel@lists.linux.dev,
-	mpatocka@redhat.com,
-	pavel@ucw.cz,
-	rafael@kernel.org,
-	safinaskar@gmail.com
-Subject: Re: [RFC PATCH 2/2] swsusp: make it possible to hibernate to device mapper devices
-Date: Tue, 23 Dec 2025 09:33:55 +0300
-Message-ID: <20251223063355.2740782-1-safinaskar@gmail.com>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <86300955-72e4-42d5-892d-f49bdf14441e@gmail.com>
-References: <86300955-72e4-42d5-892d-f49bdf14441e@gmail.com>
+	s=arc-20240116; t=1766474624; c=relaxed/simple;
+	bh=beX0JadXz2cxS1VmJlIMvL+HFk8vzK2c2tXE1RonJf0=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=b3YWWY/aqwBEw6ALziF8gk59eZHFQ659UvkxnTMnu6vq2wjoZ3/Iz5vExxqkOLMkvaSVZsoqZvftlYzDIf5dm+RX/ytKO2cAR2kSt/9qqscqPDIEzxl47WdVlsCAHgjwcv6db0Fq/GDI3bBV750ulL8c+JzyAMys7wZiyLZRdSQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.221
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
+Received: from mail.maildlp.com (unknown [172.19.162.140])
+	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4db5y92wgTzRhSY;
+	Tue, 23 Dec 2025 15:20:33 +0800 (CST)
+Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
+	by mail.maildlp.com (Postfix) with ESMTPS id 0A1A4201EB;
+	Tue, 23 Dec 2025 15:23:40 +0800 (CST)
+Received: from localhost.localdomain (10.90.31.46) by
+ kwepemf200017.china.huawei.com (7.202.181.10) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Tue, 23 Dec 2025 15:23:39 +0800
+From: Jie Zhan <zhanjie9@hisilicon.com>
+To: <viresh.kumar@linaro.org>, <rafael@kernel.org>, <ionela.voinescu@arm.com>,
+	<beata.michalska@arm.com>, <pierre.gondois@arm.com>,
+	<zhenglifeng1@huawei.com>
+CC: <linux-pm@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linuxarm@huawei.com>,
+	<zhanjie9@hisilicon.com>, <jonathan.cameron@huawei.com>,
+	<prime.zeng@hisilicon.com>, <yubowen8@huawei.com>, <lihuisong@huawei.com>,
+	<zhangpengjie2@huawei.com>, <wangzhi12@huawei.com>
+Subject: [PATCH v5 2/3] cpufreq: CPPC: Factor out cppc_fie_kworker_init()
+Date: Tue, 23 Dec 2025 15:21:18 +0800
+Message-ID: <20251223072119.3372582-3-zhanjie9@hisilicon.com>
+X-Mailer: git-send-email 2.30.0
+In-Reply-To: <20251223072119.3372582-1-zhanjie9@hisilicon.com>
+References: <20251223072119.3372582-1-zhanjie9@hisilicon.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -88,22 +46,74 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
+ kwepemf200017.china.huawei.com (7.202.181.10)
 
-Milan Broz <gmazyland@gmail.com>:
-> Anyway, my understanding is that all device-mapper targets use mempools,
-> which should ensure that they can process even under memory pressure.
+Factor out the CPPC FIE kworker init in cppc_freq_invariance_init() because
+it's a standalone procedure for use when the CPC regs are in PCC channels.
 
-Okay, I just read some more code and docs.
+Reviewed-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+Reviewed-by: Pierre Gondois <pierre.gondois@arm.com>
+Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
+---
+ drivers/cpufreq/cppc_cpufreq.c | 29 +++++++++++++++++------------
+ 1 file changed, 17 insertions(+), 12 deletions(-)
 
-dm-integrity fortunately uses bufio for checksums only.
-
-And bufio allocates memory without __GFP_IO (thus allocation should not
-lead to recursion). And bufio claims that "dm-bufio is resistant to allocation failures":
-https://elixir.bootlin.com/linux/v6.19-rc2/source/drivers/md/dm-bufio.c#L1603 .
-
-This still seems to be fragile.
-
-So I will change mode to 'D' and hope for the best. :)
-
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index 9eac77c4f294..947b4e2e1d4e 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -184,7 +184,7 @@ static void cppc_cpufreq_cpu_fie_exit(struct cpufreq_policy *policy)
+ 	}
+ }
+ 
+-static void __init cppc_freq_invariance_init(void)
++static void cppc_fie_kworker_init(void)
+ {
+ 	struct sched_attr attr = {
+ 		.size		= sizeof(struct sched_attr),
+@@ -201,17 +201,6 @@ static void __init cppc_freq_invariance_init(void)
+ 	};
+ 	int ret;
+ 
+-	if (fie_disabled != FIE_ENABLED && fie_disabled != FIE_DISABLED) {
+-		fie_disabled = FIE_ENABLED;
+-		if (cppc_perf_ctrs_in_pcc()) {
+-			pr_info("FIE not enabled on systems with registers in PCC\n");
+-			fie_disabled = FIE_DISABLED;
+-		}
+-	}
+-
+-	if (fie_disabled)
+-		return;
+-
+ 	kworker_fie = kthread_run_worker(0, "cppc_fie");
+ 	if (IS_ERR(kworker_fie)) {
+ 		pr_warn("%s: failed to create kworker_fie: %ld\n", __func__,
+@@ -229,6 +218,22 @@ static void __init cppc_freq_invariance_init(void)
+ 	}
+ }
+ 
++static void __init cppc_freq_invariance_init(void)
++{
++	if (fie_disabled != FIE_ENABLED && fie_disabled != FIE_DISABLED) {
++		fie_disabled = FIE_ENABLED;
++		if (cppc_perf_ctrs_in_pcc()) {
++			pr_info("FIE not enabled on systems with registers in PCC\n");
++			fie_disabled = FIE_DISABLED;
++		}
++	}
++
++	if (fie_disabled)
++		return;
++
++	cppc_fie_kworker_init();
++}
++
+ static void cppc_freq_invariance_exit(void)
+ {
+ 	if (fie_disabled)
 -- 
-Askar Safin
+2.33.0
+
