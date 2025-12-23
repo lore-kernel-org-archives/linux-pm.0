@@ -1,36 +1,34 @@
-Received: from mxout2.routing.net (mxout2.routing.net [134.0.28.12])
+Received: from mxout4.routing.net (mxout4.routing.net [134.0.28.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 023E32D5C91;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 126C81586C2;
 	Tue, 23 Dec 2025 17:57:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.12
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766512652; cv=none; b=bGHEqMAvWUokSDl6QCPuc+nV2AEdEOrSwd82TIwpByMz6mxTctZSqcjRso86+hXINFDhSJoeX0i0xcfjzgFmdSMlP6zZe78/WwHX7ix4VpSWvAEpvKQYC3AWUHFqdw4C5Rm+clIItfyhmv21KH/dF9AH6V1hzQ40Qn8fjbOdnqU=
+	t=1766512652; cv=none; b=FZW6+GHrvJe51nuwyUML8EAwBNkVap+Q633I0W4oaFF9HllLzH4u/zeWpAlDGKL5Jbyn+KrofD3bIHXC42uWzjkdUbB7p9wCQikCBr3dQbYxzCz0CjgaTW/jmS1HDRpF6/3cqmCGGQaXdiyUSrmgImjRWOmgOFxc7jPuezTJSAs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1766512652; c=relaxed/simple;
-	bh=3wtaN3bESoIswu9lxFtk8tveEUPHd2geRPuBkyewXFQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=uIPpBxKtUxbERXXVGis5RGf+eChhlbQ0KC6Zh7I/MSU8kf3KTQcxxwaddnzLq5oHeW7ITltHgdmSbOKoG+6UENH88xqe0P5kIZ/fjFRS+fmhSs0Tq7yo56CW98eMe76vpw0gLqhXyJ+x/AYqmXVkOWZNnaYxsfTUWFxvppaKWUE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=hAzGLMHN; arc=none smtp.client-ip=134.0.28.12
+	bh=ACG7D4SCq7Z8sPAkjNFQ0S/9Q0hbgPbJbIGa4D5BQyU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=u3M1TYN7G7s0+cajSdzhO2+trJbU0XKKRXiNsrVaZNQi2Nrk/GRfwpsaHuwWzGXAtSYJBsyUP6jHqsJY48p08D+ocPJDBhqezdaTbZaFabzu6/Vq/2dUpDWWhCXBY+tVlwCP7MJBXq785jHo7WIA7eUlMDBwLzTuivUWfKqPJpQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=Bq02R1vb; arc=none smtp.client-ip=134.0.28.9
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="hAzGLMHN"
+	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="Bq02R1vb"
 Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout2.routing.net (Postfix) with ESMTP id B541B600EF;
+	by mxout4.routing.net (Postfix) with ESMTP id 752C9100374;
 	Tue, 23 Dec 2025 17:57:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
 	s=routing; t=1766512641;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=NUF+eCTLG+mmzttQnUwvPW7szQcj8nRq0nrcTr5Z0BU=;
-	b=hAzGLMHNGuy2VarmXTmSSkr8FUSAN5XyZswHTyFVyWaD47AZV3TK5/U4nMU4luxIzpVzbK
-	0GTaNf09WCk8dbMGfsaw8YabjvGol6RK6Zy4hPwlQTaXv/4Tt9s3xZR6mNZC3Ry/BcFk2M
-	b60XgVtVi7Nh9XvTuuKzMFLMLe+MCbo=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=nck6W2kcIiP++rumyNfPIr2NPQS0LMMghoE45KMIusU=;
+	b=Bq02R1vb4kWrr1miBXc4PF1ul2xhuQPLLZFkF/dpoEXwAnoF3IfbNauyQtg8X/HFiXMi5H
+	K+hVXD3ajaDWCUyV5TTAmUWvw6JqTySF3vFoNvM1LWHvlL/6MJaRm86hET22nadesxpXID
+	yc2PAhL+a3WgbyorUC5bedBiN4VsIqQ=
 Received: from frank-u24.. (fttx-pool-217.61.156.193.bambit.de [217.61.156.193])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 73622122705;
+	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 2151D122700;
 	Tue, 23 Dec 2025 17:57:21 +0000 (UTC)
 From: Frank Wunderlich <linux@fw-web.de>
 To: "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -51,12 +49,10 @@ Cc: Frank Wunderlich <frank-w@public-files.de>,
 	linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org
-Subject: [PATCH v2 1/2] dt-bindings: thermal: mediatek: Add LVTS thermal controller definition for MT7987
-Date: Tue, 23 Dec 2025 18:56:26 +0100
-Message-ID: <20251223175710.25850-2-linux@fw-web.de>
+Subject: [PATCH v2 0/2] Add MT7987 Thermal support
+Date: Tue, 23 Dec 2025 18:56:25 +0100
+Message-ID: <20251223175710.25850-1-linux@fw-web.de>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20251223175710.25850-1-linux@fw-web.de>
-References: <20251223175710.25850-1-linux@fw-web.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -67,41 +63,23 @@ Content-Transfer-Encoding: 8bit
 
 From: Frank Wunderlich <frank-w@public-files.de>
 
-Add thermal controller definition for MT7987.
+This series adds Thermal support for MT7987.
 
-Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
-Acked-by: Rob Herring (Arm) <robh@kernel.org>
----
- .../devicetree/bindings/thermal/mediatek,lvts-thermal.yaml     | 1 +
- include/dt-bindings/thermal/mediatek,lvts-thermal.h            | 3 +++
- 2 files changed, 4 insertions(+)
+v2:
+- dropped non-irq patches
+- dropped patch for golden_temp
+- moved mt7987 COEFF above mt7988
 
-diff --git a/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml b/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml
-index 0259cd3ce9c5..a9befb523fd4 100644
---- a/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml
-+++ b/Documentation/devicetree/bindings/thermal/mediatek,lvts-thermal.yaml
-@@ -18,6 +18,7 @@ description: |
- properties:
-   compatible:
-     enum:
-+      - mediatek,mt7987-lvts-ap
-       - mediatek,mt7988-lvts-ap
-       - mediatek,mt8186-lvts
-       - mediatek,mt8188-lvts-ap
-diff --git a/include/dt-bindings/thermal/mediatek,lvts-thermal.h b/include/dt-bindings/thermal/mediatek,lvts-thermal.h
-index ddc7302a510a..e9780edcd26c 100644
---- a/include/dt-bindings/thermal/mediatek,lvts-thermal.h
-+++ b/include/dt-bindings/thermal/mediatek,lvts-thermal.h
-@@ -7,6 +7,9 @@
- #ifndef __MEDIATEK_LVTS_DT_H
- #define __MEDIATEK_LVTS_DT_H
- 
-+#define MT7987_CPU		0
-+#define MT7987_ETH2P5G		1
-+
- #define MT7988_CPU_0		0
- #define MT7988_CPU_1		1
- #define MT7988_ETH2P5G_0	2
+Frank Wunderlich (2):
+  dt-bindings: thermal: mediatek: Add LVTS thermal controller definition
+    for MT7987
+  thermal/drivers/mediatek/lvts_thermal: Add mt7987 support
+
+ .../thermal/mediatek,lvts-thermal.yaml        |  1 +
+ drivers/thermal/mediatek/lvts_thermal.c       | 36 +++++++++++++++++++
+ .../thermal/mediatek,lvts-thermal.h           |  3 ++
+ 3 files changed, 40 insertions(+)
+
 -- 
 2.43.0
 
