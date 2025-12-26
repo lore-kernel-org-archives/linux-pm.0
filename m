@@ -1,138 +1,203 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 14968289824;
-	Fri, 26 Dec 2025 11:07:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CFB2D319600
+	for <linux-pm@vger.kernel.org>; Fri, 26 Dec 2025 11:10:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766747252; cv=none; b=ohZxfpdHaaxy8R8tUvbnoQ2lwVdkm8HZ/ihVEWobsHZ1H606wO4Yg3/oDgxmk/y41K431vAoFz1NVH6f9aKYyuOkrOrdm/2VSgg11j1yzMI/SWgXO8br4D6iDMMuiXkfg/78g5IPv1+14zDZ9a1s1Q5+IO49lzGBOOxrwynSTS0=
+	t=1766747431; cv=none; b=KnbzJp5slFytG0KhmgecuZeh+njiY8ZiRu/ce7rYBUZW3NiaEqdY3ECvIc5PhKpA9ph1KGRmFOt5vad65uzlR+lPPGV292RUmdZeedvKNlwLbP/wrz1BdSHNLG2VsWsWgRisah/PdSkIlxKHF0bB5a60Dt2s1ix3YfgyMdVoj2I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766747252; c=relaxed/simple;
-	bh=uz0S3GHajVhQ7hfq/SwP9yGLsixL/C2ycMZjmELkzAI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kdgC4edyGqvJ53eqRRpeMYNv13HkIBon0Lzd86k+lqDwvPENva2B7/SbYhT3e8OdEWq3op1gqhMvoa136v6JydbREqyrbVhyOa6Ih+rTsV63LnsGSetXxKRAEYc7I6m92cbMflHXOPaQsHJn2qelXiUydnquV+TWm/2bBJfJpOA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kSuPTZIY; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1766747431; c=relaxed/simple;
+	bh=TZBm7xraSyzbd3zPTXLuxxnIVTOSK7rzIf/fTMWuvKM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=dErUrEBjKQDe84NuQ+NvV9o9WBmCbkFPkUUavBz4MNFPmFOyTKpAmvfVqtgo0V03+neH2Kyd0Xvc3Is6BFLIDn2UHFcOBqH5qlQddlC1M/w7ZMxdAScOae4SaYt/jF2Hm3THmiBFIqjiCyyTLHcwLvCOsUHEqB0IM9y6TZtDk/Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=SzTt57Xo; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=PN/lkGsa; arc=none smtp.client-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kSuPTZIY"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 25922C4CEF7;
-	Fri, 26 Dec 2025 11:07:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1766747251;
-	bh=uz0S3GHajVhQ7hfq/SwP9yGLsixL/C2ycMZjmELkzAI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=kSuPTZIYxGKyLlN9gpKgIBZy0/JbgRXlsb1It3PKrltCTKrQlqQB7a/BgUDKznBO+
-	 J7hwgXyWroIBggnrSe8pXGoZZca/vr1kd9j6ZTCBL60ZxzsSvA6mhE7WVlQnjYj8KX
-	 P0feSSgyDu6fZQMRjcENEhG7NgO2FsrowRY5ANuClOEgDTtx565Vpvndr+aJIU466K
-	 JZMTKRCHm+Et9I68K63TDtaCnrjMgbqzS7gezZ/KOa+xVNnevhlPJLc4domBiUIqXU
-	 rVWHalwKQDoFlrOG5suTPrUWkbsPhX+ngcPiO86AoooIu7KIKXAdJY1J0exmcN8Bk/
-	 HrFJYYuyW6nXw==
-Message-ID: <9483a6f6-9834-4ea6-8f94-e7e158bf68cc@kernel.org>
-Date: Fri, 26 Dec 2025 12:07:22 +0100
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="SzTt57Xo";
+	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="PN/lkGsa"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1766747428;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=hxxe+0EjF9NUofDY+U4LnGwysYHjaMOQnhMUAVNbt4s=;
+	b=SzTt57XoTAQ41oKuNcrMgedNqpXjaoDtdSg2uXb/3eK/5Miqe+tc5ex11mm+633O2hwEp8
+	9EG45a8XeeGhE6UrRuwf/nf7F+kH893Sw5LS79Uz6TuIMoR26XlFgNRxsy0ti1KzuL0nom
+	Qg8+OAjkA1LGbCjVPFWhdvPB43DCQXU=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-478-LUWSLXEHMyiOZHcDDe9zEA-1; Fri, 26 Dec 2025 06:10:27 -0500
+X-MC-Unique: LUWSLXEHMyiOZHcDDe9zEA-1
+X-Mimecast-MFC-AGG-ID: LUWSLXEHMyiOZHcDDe9zEA_1766747426
+Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-4779b3749a8so50831485e9.1
+        for <linux-pm@vger.kernel.org>; Fri, 26 Dec 2025 03:10:27 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=redhat.com; s=google; t=1766747426; x=1767352226; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=hxxe+0EjF9NUofDY+U4LnGwysYHjaMOQnhMUAVNbt4s=;
+        b=PN/lkGsaiwnoL0MOc6s29768g3GoOmcAhxBDj2HzgYB2tBBE0+he70PypnnJX3oJ/c
+         PKZfmaEppk0Jzeo+3Yns5yDNxen3WRWnzcK5OZ4qZaog2D03WjuAUn0wg51YrrR1uDzL
+         brlSBB6wyKVz1hwDFe0pm1yKo4qh8ZbFfH6RgqdbvWy5wQ4JJnoBrlxwtnfogSnPJUoV
+         GRGDDoMijCAzU2V1yWhCM2zG6tO3NTLeQaSv5Oj+neBAk8Md6/KtN+Q01fn3MpILwNU1
+         I+QugsB2H8TEtVp5gAjpp/+oGdCIEE7LOQLbYFSI+5YOM6uRFm8gBfu7efjezhXJvtZo
+         8nAg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1766747426; x=1767352226;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=hxxe+0EjF9NUofDY+U4LnGwysYHjaMOQnhMUAVNbt4s=;
+        b=RmNf1/oPEmN+38sWy/Pd2Ag6SyWJ/dPf2FEJkEabFOnrkK4NRHRr1uNPNBLo6AiBlB
+         OPNW+IIFZRfW4o6Insjce0fD7WJeLITSqltwOQLFlcIhZl2OrOwX4vTYHgPsdUjLFuKX
+         cFtC+IJagQlAcQSLwvhaz8O0gq1AGh5mB3C0dg3besYXCQZaxl3OlqZ5fAO0C7x0Y9aL
+         XsNkbZS4vAsiRZxNVMVOyoNTto/LGqe6aRZLA8X6JKMeYgC44EKUZ0WMVwzGMCtMuTds
+         MFwy4/Ch7uvo6XG2Pw8CUfKBJwCH+8OYwpQC+nQsQxaWHLfCR6j4iQS8K2nrmUoZ+NnZ
+         Ww/A==
+X-Forwarded-Encrypted: i=1; AJvYcCXknMB4mlA2hpe7PkjjQgPBUZ+nn/HbuK1fRLQ+W7MbSHAYy8PN/XFq0GciFCjQaznw2icfZPvosQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwpnsHP6Pg7QuREmjlKj63l3EJPWbVsf9gKnwCndDnySN6z/bPh
+	DTN+CMKJSJU5BKJlkw5Y84gLD5Ag260/Y+V7EJ3JfWlemQaoPSlHMrpyLCTygbPjLem8KpkPWcr
+	vVrvByqCTYufYpuL3IwbIYUQc/QqfIKuvHlr4+6790/YwqDBt013T0L0hb+1G
+X-Gm-Gg: AY/fxX6O3F74Ipw5jRgnI2GegJA1mQd98bP4LRurj7bffvKxFSPeANloZpiE5u0CY3V
+	Ifphc45PsHPB40mpqmAziFSIF2tS2DVS/bGKGiNOjjHD+RgDRX9fMKRUo6xPThmuceFQNzRRsKe
+	yTIyAnlvubRQ1nyl4/ixhVOTQVwUaBqUhq2hYX9y2pLeyytwxNEjwgV1NUBY3I/vmuHq6klgmLE
+	fbetRTZ4hOBYaJsjOxxIbDv7lcPadp/t0caJrA0Z3PJtkFtbL2dsSgC2n0Pren98PKZpasdBt8h
+	GtoipiDL+idcqwUZk2UqeHcdBqNJwyXUoXAQIlaF21eHe319RbUw4MnKYJYgyfp050bGzClH2Qn
+	gNghrAvDW4WgOuDIZaH040xoEgKCn4Dcst7dZIOQ7ruNknaxf38eFj+kMqtIajDtzUwv2GjhUAR
+	kAbXihcHnmzw==
+X-Received: by 2002:a05:600c:310c:b0:46e:32dd:1b1a with SMTP id 5b1f17b1804b1-47d1953b941mr192007355e9.7.1766747426184;
+        Fri, 26 Dec 2025 03:10:26 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IHrAJY07FPV6QeiBb5VL/M5EhPut9Jv/p09K9isCNRbjpx9PlU/IWIEkXo0YNR2MTtFi2aaLQ==
+X-Received: by 2002:a05:600c:310c:b0:46e:32dd:1b1a with SMTP id 5b1f17b1804b1-47d1953b941mr192007135e9.7.1766747425712;
+        Fri, 26 Dec 2025 03:10:25 -0800 (PST)
+Received: from sissix.lzampier.com ([2a06:5900:814a:ab00:3725:2991:6cf3:b3aa])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-47d193d4e91sm375653855e9.13.2025.12.26.03.10.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 26 Dec 2025 03:10:25 -0800 (PST)
+From: Lucas Zampieri <lzampier@redhat.com>
+To: linux-input@vger.kernel.org
+Cc: Lucas Zampieri <lzampier@redhat.com>,
+	linux-kernel@vger.kernel.org,
+	Jiri Kosina <jikos@kernel.org>,
+	Benjamin Tissoires <bentiss@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>,
+	Bastien Nocera <hadess@hadess.net>,
+	linux-pm@vger.kernel.org,
+	lcasmz54@gmail.com
+Subject: [PATCH v6 1/3] HID: input: Convert battery code to devm_*
+Date: Fri, 26 Dec 2025 11:10:14 +0000
+Message-ID: <20251226111019.31243-2-lzampier@redhat.com>
+X-Mailer: git-send-email 2.52.0
+In-Reply-To: <20251226111019.31243-1-lzampier@redhat.com>
+References: <20251226111019.31243-1-lzampier@redhat.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v18 05/10] dt-bindings: arm: Document reboot mode magic
-To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>,
- Lorenzo Pieralisi <lpieralisi@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Bjorn Andersson <andersson@kernel.org>, Sebastian Reichel <sre@kernel.org>,
- Rob Herring <robh@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>,
- Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Andy Yan
- <andy.yan@rock-chips.com>, Bartosz Golaszewski <brgl@kernel.org>
-Cc: Florian Fainelli <florian.fainelli@broadcom.com>,
- Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
- Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
- Andre Draszik <andre.draszik@linaro.org>,
- Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
- Srinivas Kandagatla <srini@kernel.org>
-References: <20251223-arm-psci-system_reset2-vendor-reboots-v18-0-32fa9e76efc3@oss.qualcomm.com>
- <20251223-arm-psci-system_reset2-vendor-reboots-v18-5-32fa9e76efc3@oss.qualcomm.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <20251223-arm-psci-system_reset2-vendor-reboots-v18-5-32fa9e76efc3@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 23/12/2025 18:07, Shivendra Pratap wrote:
-> Add bindings to describe vendor-specific reboot modes. Values here
-> correspond to valid parameters to vendor-specific reset types in PSCI
-> SYSTEM_RESET2 call.
-> 
-> Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
-> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-> ---
->  Documentation/devicetree/bindings/arm/psci.yaml | 42 +++++++++++++++++++++++++
->  1 file changed, 42 insertions(+)
-> 
+Convert the HID battery code to use devm_* managed resource APIs for
+the power_supply_desc allocation, battery name string, and power supply
+registration.
 
+The error path uses devm_kfree() to clean up allocated memory if
+devm_power_supply_register() fails, preventing memory waste on repeated
+setup attempts. The hidinput_cleanup_battery() function is removed as
+devm handles cleanup automatically.
 
-Please use scripts/get_maintainers.pl to get a list of necessary people
-and lists to CC. It might happen, that command when run on an older
-kernel, gives you outdated entries. Therefore please be sure you base
-your patches on recent Linux kernel.
+Signed-off-by: Lucas Zampieri <lzampier@redhat.com>
+---
+ drivers/hid/hid-input.c | 34 +++++++---------------------------
+ 1 file changed, 7 insertions(+), 27 deletions(-)
 
-Tools like b4 or scripts/get_maintainer.pl provide you proper list of
-people, so fix your workflow. Tools might also fail if you work on some
-ancient tree (don't, instead use mainline) or work on fork of kernel
-(don't, instead use mainline). Just use b4 and everything should be
-fine, although remember about `b4 prep --auto-to-cc` if you added new
-patches to the patchset.
+diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
+index e56e7de53279..71862beede9e 100644
+--- a/drivers/hid/hid-input.c
++++ b/drivers/hid/hid-input.c
+@@ -530,13 +530,13 @@ static int hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
+ 	if (quirks & HID_BATTERY_QUIRK_IGNORE)
+ 		return 0;
+ 
+-	psy_desc = kzalloc(sizeof(*psy_desc), GFP_KERNEL);
++	psy_desc = devm_kzalloc(&dev->dev, sizeof(*psy_desc), GFP_KERNEL);
+ 	if (!psy_desc)
+ 		return -ENOMEM;
+ 
+-	psy_desc->name = kasprintf(GFP_KERNEL, "hid-%s-battery",
+-				   strlen(dev->uniq) ?
+-					dev->uniq : dev_name(&dev->dev));
++	psy_desc->name = devm_kasprintf(&dev->dev, GFP_KERNEL, "hid-%s-battery",
++					strlen(dev->uniq) ?
++						dev->uniq : dev_name(&dev->dev));
+ 	if (!psy_desc->name) {
+ 		error = -ENOMEM;
+ 		goto err_free_mem;
+@@ -576,7 +576,7 @@ static int hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
+ 	if (quirks & HID_BATTERY_QUIRK_AVOID_QUERY)
+ 		dev->battery_avoid_query = true;
+ 
+-	dev->battery = power_supply_register(&dev->dev, psy_desc, &psy_cfg);
++	dev->battery = devm_power_supply_register(&dev->dev, psy_desc, &psy_cfg);
+ 	if (IS_ERR(dev->battery)) {
+ 		error = PTR_ERR(dev->battery);
+ 		hid_warn(dev, "can't register power supply: %d\n", error);
+@@ -587,27 +587,13 @@ static int hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
+ 	return 0;
+ 
+ err_free_name:
+-	kfree(psy_desc->name);
++	devm_kfree(&dev->dev, psy_desc->name);
+ err_free_mem:
+-	kfree(psy_desc);
++	devm_kfree(&dev->dev, psy_desc);
+ 	dev->battery = NULL;
+ 	return error;
+ }
+ 
+-static void hidinput_cleanup_battery(struct hid_device *dev)
+-{
+-	const struct power_supply_desc *psy_desc;
+-
+-	if (!dev->battery)
+-		return;
+-
+-	psy_desc = dev->battery->desc;
+-	power_supply_unregister(dev->battery);
+-	kfree(psy_desc->name);
+-	kfree(psy_desc);
+-	dev->battery = NULL;
+-}
+-
+ static bool hidinput_update_battery_charge_status(struct hid_device *dev,
+ 						  unsigned int usage, int value)
+ {
+@@ -660,10 +646,6 @@ static int hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
+ 	return 0;
+ }
+ 
+-static void hidinput_cleanup_battery(struct hid_device *dev)
+-{
+-}
+-
+ static void hidinput_update_battery(struct hid_device *dev, unsigned int usage,
+ 				    int value)
+ {
+@@ -2379,8 +2361,6 @@ void hidinput_disconnect(struct hid_device *hid)
+ {
+ 	struct hid_input *hidinput, *next;
+ 
+-	hidinput_cleanup_battery(hid);
+-
+ 	list_for_each_entry_safe(hidinput, next, &hid->inputs, list) {
+ 		list_del(&hidinput->list);
+ 		if (hidinput->registered)
+-- 
+2.52.0
 
-You missed at least devicetree list (maybe more), so this won't be
-tested by automated tooling. Performing review on untested code might be
-a waste of time.
-
-Please kindly resend and include all necessary To/Cc entries.
-
-
-Best regards,
-Krzysztof
