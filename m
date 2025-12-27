@@ -1,161 +1,82 @@
-Received: from mo4-p02-ob.smtp.rzone.de (mo4-p02-ob.smtp.rzone.de [81.169.146.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yx1-f45.google.com (mail-yx1-f45.google.com [74.125.224.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2308D1DA55;
-	Sat, 27 Dec 2025 16:52:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=81.169.146.171
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766854355; cv=pass; b=R5tvHPuMoo6QFRCrnsX4BplkY6NJPNqcmdZ0pAKlj7qXsMvps3ScXsWzg4MUb+FUiDdLQcXKKCRB//E3ejsfox43rtCbDlia+HNDwU6RhDl2unPfh3NQM0pCr6Wvg3RdWw4kcDN0WOEzffpW313+AOysPDGNDoXKqkef8OovX4o=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766854355; c=relaxed/simple;
-	bh=l4f+b8rxW1OoheD1H4u/RGOHJuhhcel4qeyOFe/gIOQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=io3kc+sScr/AFEUWmlv61/WCQ8+VMNcCG0hPATdPIJKDQyI5I/KuimNUNlJjIsl7wd4L4CbBXzwTqiQIf6WIvmQFkjwPqoTUw8IKkS4SHf1X3cjh+j4u5WvRK1524c06t4Dx7AavtQRFgL2i2FCAZMPeQDpboQDIa9xgh8hCPoI=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=jm0.eu; spf=none smtp.mailfrom=jm0.eu; dkim=pass (2048-bit key) header.d=jm0.eu header.i=@jm0.eu header.b=RxzYg0RY; dkim=permerror (0-bit key) header.d=jm0.eu header.i=@jm0.eu header.b=PsvsXm9u; arc=pass smtp.client-ip=81.169.146.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=jm0.eu
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=jm0.eu
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23F9431A7E2
+	for <linux-pm@vger.kernel.org>; Sat, 27 Dec 2025 16:53:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.224.45
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1766854411; cv=none; b=Y/ExO0YqafYfqV4zYRMx2s5gi5LuCjl9fNXFLYLo7mQYjRD8SBaJjVCS8Z56GgMVkjC4kZZOVvOhpkWBcV+PuxFw7vJBxbfBsB552BMvjbCRbYP+PYUrkkpGv6w13scfiTikZbQpsU86vCV7G5adXouc8au/BJJv/U5gD3LYo4Q=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1766854411; c=relaxed/simple;
+	bh=gu4P8yCtGv38ojTrodppXUMSDmAq3ug24zzKR6LldJ4=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=Y3ryQumhuqjxTJ5s8MwssrXejOj6i1JveMoKp2d4PTsxfPR7bnD5WnMhqj8XF3K6VZ/uAaVoSVj5DtSOsLNSl6rSqlhyXVa2bkOvICPzHUC0Lf5hAKfhGUj5tCyTQACDeYZmkiI9TBUQDxL5zvcR2tWC44A8NE+6dPgGwU9+wmM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=QDhJKqxm; arc=none smtp.client-ip=74.125.224.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=jm0.eu header.i=@jm0.eu header.b="RxzYg0RY";
-	dkim=permerror (0-bit key) header.d=jm0.eu header.i=@jm0.eu header.b="PsvsXm9u"
-ARC-Seal: i=1; a=rsa-sha256; t=1766852905; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=AmaG8lufEcHfcRdXndOvpSwo7MhKysgjdAStJveVoxKeZHG0W7HwuHvf8KgmiFyILs
-    f4MFOOWItUTF1aBg3v8hAkOZ7W7viPEySAM9FzR5vU3PBWs+UWc38HcwQi6Jn+EjT1dK
-    dssFYXPDGPEkSulcfMbOziQ/VqKr0c2rU/XIUeFrqGTAskDVeuN0YNx1xnfsmrpsX7Yg
-    2//xicsmjjSC5bELzMvvvhZE4TvpKwDEckjpVWDhGXtbG3dxCrYYXm+B5JGNGF7J2LRV
-    b5bJcBB45Rqn2jc4n+u36tXTm/rFihGHoG42GYMvKCMkkqsbA2sotSAdMKdirmLjEhG1
-    g9lg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1766852905;
-    s=strato-dkim-0002; d=strato.com;
-    h=Cc:To:In-Reply-To:References:Message-Id:Subject:Date:From:Cc:Date:
-    From:Subject:Sender;
-    bh=8LxlG+pLsH21v5FwAitBDXQijxuqWknyeGn1K+XbPv0=;
-    b=hHrDyJ5nsX9sSX+EtcxgRUSOvBhe91RTHOiJ5fXNnG32Nnv6DGAyiuw8LYMPpsq9qH
-    M3g98vTojfNlZ/s8pRItFXk3Tj69ErX07XmyVgx3TZCqS8bqGBx7OpjfB8kkQ/wPwpfl
-    KRs/PM/TWFHtAEJqIh5I57NEDx4ywI1lcDrrOWNwYQeclZfhwylxBVtoqvMviBS47CDR
-    3uNhokTSddYMDnVWz3wbif94yD2G9AZ64NDUy9ZqWBjeWUNZhrj3bxUS+iouZZJdB4zk
-    JYOns2yOJHIRGaECtStz+SO3DR54l//jTnqJmEQHZl1OXBBo483K24HM5ISkXdafnQku
-    yFnQ==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo02
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1766852905;
-    s=strato-dkim-0002; d=jm0.eu;
-    h=Cc:To:In-Reply-To:References:Message-Id:Subject:Date:From:Cc:Date:
-    From:Subject:Sender;
-    bh=8LxlG+pLsH21v5FwAitBDXQijxuqWknyeGn1K+XbPv0=;
-    b=RxzYg0RYJmuu63TovFOOieC4G1i5NRskuUlFyiDzy6mZ3QDhyAj07MTtOQEWYRc2JY
-    vPygyJeYuHeRSpdq8tOzHuX0eZH+zmA33V8ABFljYVrrUUE6uau1qf6Z0wcXUtKXyBQt
-    4qkKHZ1YiatCnuQ1LpYX5btPgKWGa5ZdMcMFp680xm1PC87vAPN8nH9cCedZoCWDMIH7
-    j67f4zIBQwOopwLTtMczaaDfvsUhYwDPDJyoWe8VbCvNvM7MEN4A+2Rp213qLFsWmYjH
-    2r2hqLvp1mkuMdzW/se+RrhmtyO/1YjFc3hGG5uVSYCLVWisR8gzOWwQLQmC3NnOT25B
-    xu6g==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1766852905;
-    s=strato-dkim-0003; d=jm0.eu;
-    h=Cc:To:In-Reply-To:References:Message-Id:Subject:Date:From:Cc:Date:
-    From:Subject:Sender;
-    bh=8LxlG+pLsH21v5FwAitBDXQijxuqWknyeGn1K+XbPv0=;
-    b=PsvsXm9uKtmHbLziW9jJfgJDDricGlFLTO6P40ztCnPQLZzIRH0Hmtpm0TOdKm0+av
-    KUBMUq+R2GoEfwRGcWCA==
-X-RZG-AUTH: ":JmMXYEHmdv4HaV2cbPh7iS0wbr/uKIfGM0EPTeoCaRth8YQvpoIkZXd2bnfIrOV7Mbk="
-Received: from localhost.localdomain
-    by smtp.strato.de (RZmta 54.1.0 DYNA|AUTH)
-    with ESMTPSA id z0d4ec1BRGSOtuJ
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Sat, 27 Dec 2025 17:28:24 +0100 (CET)
-From: Josua Mayer <josua.mayer@jm0.eu>
-Date: Sat, 27 Dec 2025 17:28:14 +0100
-Subject: [PATCH 2/3] dt-bindings: mfd: netronix,ntxec: add reference to
- power-supply
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QDhJKqxm"
+Received: by mail-yx1-f45.google.com with SMTP id 956f58d0204a3-640d4f2f13dso6915780d50.1
+        for <linux-pm@vger.kernel.org>; Sat, 27 Dec 2025 08:53:29 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1766854409; x=1767459209; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=gu4P8yCtGv38ojTrodppXUMSDmAq3ug24zzKR6LldJ4=;
+        b=QDhJKqxm7FEZ4RFnti2R6tTqK7hH71vHV/VblwD6XBiZr35ArhxkMjygs3OtTmFvtm
+         GQ1AmgwfSWQWL+gElq7vwkuZxf7q15KuUdqRblWZHBa5u5182q8C7A4C2XA4t6uzpKVX
+         +pNd4dtyEqS+H4yN0jP/nFje92W/Rymy9ExrCqlaR3XpzR80zooQy6x8VpCA23ZD4qYf
+         s31Z59m4lqS140QE9rpScOvahBnTZ1C/ToyacjYxwYseGZDw31pF6UDbPh3V7QuYIDxN
+         Qujj3bknKQuzHI2l7qf60TMVrYFbmcw4wq7t6uSL0Ohv3827R1oksyZgH0fG/ILY6khr
+         UNNA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1766854409; x=1767459209;
+        h=cc:to:subject:message-id:date:from:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=gu4P8yCtGv38ojTrodppXUMSDmAq3ug24zzKR6LldJ4=;
+        b=IhIeGbrkh84MCQL9nU11uwYlRONOHE0n7w0IZHVQNTGMmdYe9GCJ1g540PNFBCieVY
+         XrKK/xBW+WqAGdPnx7d+RxBSCiBbI5yqrEo9LXorqOeUrizNXHPPSHqe5/Hez8jCeqo8
+         tQFn+CxIqlcAyeP9VnyFjP8Jit1MPuXoVjHs72j//3hTV5Mt2HNHDMPdk0zUiudx/818
+         ahBRqhSbdgSZzLr0IAFvefvgLDKbrxRnm/2scpKlxTGaoFhz2kXQhDigDwnPnD9zq902
+         2FwYz9mS+wjcwDkU+RCUglamoL4em4l+SvL8Q8HAkfAzz8+066NTkIDjDsPmGQ1jhk+F
+         V+gw==
+X-Forwarded-Encrypted: i=1; AJvYcCXRTRBlAXQO5Uyodll7UWHwG6YyYTof4cJwzIOwedSCLJ1cJKMvIB1/C2PHtGbuiuWnEGdCXZye0w==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx7y4IQKBpf6rL/ejCyo1D7TwqvbXnEfgTO6vtyE5z9gYr20VjO
+	D/Fz8Xfo6gc8d/WjWlOGUVBBjX5wr4CfguXhmQpNO0OJ4toLSO+dRR1n+YETFWtR4foZ112IVG+
+	bZsHwURZ8IntJgooTZN0XGPnRADnYSfc=
+X-Gm-Gg: AY/fxX7ABmaiY7l5iGNJ8UI9OOqz7RNMNsgnJlIipVYrUfp16I/9s2mWO+pV6EujzRb
+	K4ASLUB5CPoRtBWNb/Ju01O//8pV5W0d1lR2/ckJ/uG1tvKcD1ttfNjWMwZbC/P82DFEh3ppndm
+	eza7UhXxGzb9r2A4l+IZHsplla1f1KvpB2Y25WYrm60jlPyK3S95yVcbNeWr3jwkGswDOb6itz5
+	mPvB3gOte6ZmtGeLIsfGPsxBuO8nTNUidspzjJTKfWOHTOZA/79sYMHjzQq+1qpuzM2
+X-Google-Smtp-Source: AGHT+IF3Ar92THam/YBoDFLspVYsbTbaPEn4UDgIjGwlo+OzDwvfQfbc5kNYDFIO2HEklpYYD2voIBzsATqCIeii49c=
+X-Received: by 2002:a05:690e:ec3:b0:644:5d3f:844b with SMTP id
+ 956f58d0204a3-6466a8a89d6mr15524495d50.54.1766854408938; Sat, 27 Dec 2025
+ 08:53:28 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20251227-kobo-aura-battery-v1-2-328a90ef5122@jm0.eu>
-References: <20251227-kobo-aura-battery-v1-0-328a90ef5122@jm0.eu>
-In-Reply-To: <20251227-kobo-aura-battery-v1-0-328a90ef5122@jm0.eu>
-To: =?utf-8?q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>, 
- Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, 
- Pengutronix Kernel Team <kernel@pengutronix.de>, 
- Fabio Estevam <festevam@gmail.com>
-Cc: Andreas Kemnade <andreas@kemnade.info>, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, imx@lists.linux.dev, 
- linux-arm-kernel@lists.infradead.org, Josua Mayer <josua.mayer@jm0.eu>, 
- Josua Mayer <josua@solid-run.com>
-X-Mailer: b4 0.14.3
+From: =?UTF-8?B?QmFybmFiw6FzIEN6w6ltw6Fu?= <trabarni@gmail.com>
+Date: Sat, 27 Dec 2025 17:53:18 +0100
+X-Gm-Features: AQt7F2qYKWCD4_nduV_EbKeCZVZL2BRsDeJglVK1M4bYvsM7D9xgKCVpKAP_4SI
+Message-ID: <CAGsSOWWMO8+8vB2EM8s1=hyN1raO6TDpqGBTdrmNrZpfDfn5wQ@mail.gmail.com>
+Subject: Re: [PATCH v2 1/3] arm64: dts: qcom: dts: switch to RPMPD_* indices
+To: dmitry.baryshkov@oss.qualcomm.com
+Cc: Bjorn Andersson <andersson@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	devicetree@vger.kernel.org, konradybcio@kernel.org, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, linux-arm-msm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Rob Herring <robh@kernel.org>, ulf.hansson@linaro.org
+Content-Type: text/plain; charset="UTF-8"
 
-The Netronix Embedded Controller supports monitoring of battery voltage.
+Hi,
 
-Voltage monitoring functionality is self-contained and requires no
-supply- or battery-specific runtime configuration.
+MSM8937 and MSM8917 MSS would need more power domains like MSM8939 and MSM8953.
+I am planning to send modem related changes soon what are interfering
+with this change.
 
-Battery design characteristics (e.g. voltage-min-design-microvolt) are
-useful for users to understand the charge level and are commonly
-provided by a separate battery node linked with monitored-battery
-property.
+https://github.com/barni2000/linux/commit/21151cb3d07124897e4d3dad51c833c4af27f6e0
 
-Add reference to power-supply.yaml so that power-supplies and
-monitored-battery properties become available.
-
-Further drop reg property description and replace it with maxItems 1 as
-is common for i2c devices with single bus address.
-
-Finally replace additionalProperties with unevaluatedProperties to
-allow properties from referenced schemas.
-
-Signed-off-by: Josua Mayer <josua@solid-run.com>
----
- Documentation/devicetree/bindings/mfd/netronix,ntxec.yaml | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/mfd/netronix,ntxec.yaml b/Documentation/devicetree/bindings/mfd/netronix,ntxec.yaml
-index 37fbb953ea12e..6599dcf0eceb0 100644
---- a/Documentation/devicetree/bindings/mfd/netronix,ntxec.yaml
-+++ b/Documentation/devicetree/bindings/mfd/netronix,ntxec.yaml
-@@ -13,13 +13,15 @@ description: |
-   This EC is found in e-book readers of multiple brands (e.g. Kobo, Tolino), and
-   is typically implemented as a TI MSP430 microcontroller.
- 
-+allOf:
-+  - $ref: /schemas/power/supply/power-supply.yaml
-+
- properties:
-   compatible:
-     const: netronix,ntxec
- 
-   reg:
--    items:
--      - description: The I2C address of the EC
-+    maxItems: 1
- 
-   system-power-controller:
-     type: boolean
-@@ -42,7 +44,7 @@ required:
-   - compatible
-   - reg
- 
--additionalProperties: false
-+unevaluatedProperties: false
- 
- examples:
-   - |
-@@ -61,5 +63,6 @@ examples:
-                 interrupt-parent = <&gpio4>;
-                 interrupts = <11 IRQ_TYPE_EDGE_FALLING>;
-                 #pwm-cells = <2>;
-+                monitored-battery = <&battery>;
-         };
-     };
-
--- 
-2.51.0
-
+Br,
+Barnabas
