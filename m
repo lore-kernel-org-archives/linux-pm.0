@@ -1,145 +1,254 @@
-Received: from sender4-op-o12.zoho.com (sender4-op-o12.zoho.com [136.143.188.12])
+Received: from mo4-p02-ob.smtp.rzone.de (mo4-p02-ob.smtp.rzone.de [85.215.255.82])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9371829408;
-	Sat, 27 Dec 2025 14:18:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A45617B425;
+	Sat, 27 Dec 2025 16:31:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=85.215.255.82
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766845131; cv=pass; b=FEAjMon3j9XajQK8u/fZQE7yIAc9AJtc16yf7bNk6rR85XM+PIL+tvXHzTw9kMgXee+uQ2XEZmBcj1ooi/bvwD+pw5cmP+y4qF0q6NL9nUA1BYp/h8dvNceo5brgUHPq/ii3iSdVUefneTX1GS1/6MHIIq0rFsoyX/wg/zXssGc=
+	t=1766853089; cv=pass; b=V1MIOaHJyjX6qwCiWmQ7cCoeMKEW7N0bnJDJMKS+5yQB+J9uEneBhjrtk57sz9juKtGlfx58bPc8JwL7s3T9yABNAG+eDFYSTlHGDw8b3SSPg5UKDewLa+DdqzvTAjKxrWSJfyb6zlq+ylt8vBZnM9iU8UD6AsFfOFPe0ZrytS4=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766845131; c=relaxed/simple;
-	bh=0jbs1OT1KC+lQ0+DdOw/DBioVGjV567f3u4FKySc7jg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dcquqJppgYXm8vGcIfYWEkxuOGI+WPcVYN0mHA8qU7YypkeKKVRiqKOefYCVsY4vaxGor2+d4xqwu25rp2MAd7nXyNDVE8EzcDXuDO6K7sAB/862cQb71g/uKCVVPavsGf+4Lly5sG7Q807sAnEeKzQbpg6OIAp5XFiRNT3H4n0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=T/uH8xCw; arc=pass smtp.client-ip=136.143.188.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1766853089; c=relaxed/simple;
+	bh=EYTouuIKOAbasllfMMkwGify64wGdcuvMBTq9IQ0nag=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=RMkNZmkBOwMvi4V+wardOOZMDMEUIsJGrkJDioVSh+CIxQurf/QJ4dz7JtAjRb+9HIi0wceBro7cPmMnFRk7GN9S7S7Tn8LBCHzeIo4iIhp3UEp/Vh1tqJ5sgTJ+2Bt7jKtTgewrBlfaUttTd2v8RSdBP56vkfnBTp99TZknvOQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=jm0.eu; spf=none smtp.mailfrom=jm0.eu; dkim=pass (2048-bit key) header.d=jm0.eu header.i=@jm0.eu header.b=CYk4T6ac; dkim=permerror (0-bit key) header.d=jm0.eu header.i=@jm0.eu header.b=H9o1l0TG; arc=pass smtp.client-ip=85.215.255.82
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=jm0.eu
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=jm0.eu
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="T/uH8xCw"
-ARC-Seal: i=1; a=rsa-sha256; t=1766845103; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=eDg/NV5QmLF6drR5YDRbHhvQ9FDyRHpz4d5c6HlLfgYikZA+HZFPlSlBdG5XQHQ7X01SSe1TG+wNtRrs9NSXT7xDhqhHnPlJu94kMZcMcLqgL2GEIU9+gdUycskBjaC3elRUnzsa3zDqxsUVJ1Tg/BUH8L7iNq76W8XIrkZGyLA=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1766845103; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=jzRjZmKvJw7I6a7ENB3s/cl9OVpEExAn8hbMD8cMxPw=; 
-	b=HJC6DGMO2cMLbEc0o3fitCP7hrJrlkXCdJE9/d7NhOEodY6qTiuiCGSeXliNl+Px2WLKQFFPequLUsLttqQpRAbwQ/oYxaTCaEersqsda5CkyAUnJNj+6CyYq5fjDSV9uN3Gf44elgwNhF3Y4hraGcY0QQ+XuZel8mND2SZiCmo=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
-	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1766845103;
-	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
-	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:References:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=jzRjZmKvJw7I6a7ENB3s/cl9OVpEExAn8hbMD8cMxPw=;
-	b=T/uH8xCw2RLYlj3KxDCLxdKw2jdwYAZcK5WXp1DaILV+E0cW9TGV0XS1P9FPll2T
-	5ElwNN6noixwH4Pq8CbPeb5GSTzmYid+ce0u8++f1GyzlpZ/Xb7qi/yuMC+8bfflx8c
-	rX8LLwMT1ePljlzIVLJn0khDFuRKzx2UVTXGsshY=
-Received: by mx.zohomail.com with SMTPS id 1766845100660199.61711369774093;
-	Sat, 27 Dec 2025 06:18:20 -0800 (PST)
-Received: by venus (Postfix, from userid 1000)
-	id 814AE1803AB; Sat, 27 Dec 2025 15:18:16 +0100 (CET)
-Date: Sat, 27 Dec 2025 15:18:16 +0100
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, 
-	LKML <linux-kernel@vger.kernel.org>, Riwen Lu <luriwen@kylinos.cn>
-Subject: Re: [PATCH v1] PM: sleep: Fix suspend_test() at the TEST_CORE level
-Message-ID: <aU_p-0fVKR7z-vtH@venus>
-References: <6251576.lOV4Wx5bFT@rafael.j.wysocki>
+	dkim=pass (2048-bit key) header.d=jm0.eu header.i=@jm0.eu header.b="CYk4T6ac";
+	dkim=permerror (0-bit key) header.d=jm0.eu header.i=@jm0.eu header.b="H9o1l0TG"
+ARC-Seal: i=1; a=rsa-sha256; t=1766852904; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=pqy6mqROcxf1G/JG9se5DF+UkWnYtkSm+EqkpsxBPWFuiXVg+rVykipdg+itBR310h
+    LXsNRF9Be3yDCaO1bcjawQwn3ZjhxfKTu2S5cOSEFeOziKUISaofNJ7gBIMwPXxvtlgO
+    dpLOE4R1bSXDkYNLu5UZjHW86NntKEm1rj+MSXTSttmRKZfIor/H6LMmFLBmhXtXoOwF
+    WfHK/TODMFNDtHuVqUJoZEiCj3SdNIm9tDjNsqBfaAd8pG3/GjmWF6Bph72Qzqa3Uf9O
+    5f4dpoQRRQH94JzlN7Stb37NxyD5REjqq3Oni31UdeVR+DywzFUhuVG22k8tV+aPdGN4
+    +xHQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1766852904;
+    s=strato-dkim-0002; d=strato.com;
+    h=Cc:To:In-Reply-To:References:Message-Id:Subject:Date:From:Cc:Date:
+    From:Subject:Sender;
+    bh=oBoh6hY3yJ4owxWQx6sgt/gcf5XerqfPpIM1LTdUQis=;
+    b=o/hSiqjmceS4YHXvms+r++w0H1UnlaUo10zdxkSrIMRiniOvgYj0ePrbj64GiWAXIm
+    yFqUuquM8XYuX5fs0qIpSkd7B9SfZq9SC5c8YBKhZ6felz4PCUYQJcqbB2EXfxPoZE+w
+    Na54AOd3mhIofaFeLERn6xvtq10DpOF0+ly3eCrBZkrCeNniE2F+y2gdBsMaMm+GQVJ2
+    K7injbmOm0IaFY1MUHUMVtqMIj9oWYcthd1DzqaQwLueDXYpCYKLOrt4OpthkkdxQCDF
+    W3LEYscGslh0uAgXPxTQ+eFWmERnpeD5hBelPBVTJez3OIVcUsukJMXRBeH2pHM3hN/S
+    4lxA==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo02
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1766852904;
+    s=strato-dkim-0002; d=jm0.eu;
+    h=Cc:To:In-Reply-To:References:Message-Id:Subject:Date:From:Cc:Date:
+    From:Subject:Sender;
+    bh=oBoh6hY3yJ4owxWQx6sgt/gcf5XerqfPpIM1LTdUQis=;
+    b=CYk4T6acNEEB6i53/NeTkcrkzFlKUgiCUkTso4ASy49j1yRpP40RrtC6O7sJWLAnlp
+    pUpxuCAHROZXRKaGLWrKZ7Kp3MLGNHqYmTEcCuZSQomz66+BV3GAi4H4cZOaajdqWTIw
+    UxAFKB+NsJ/aIxj/VF5jJhBJB8mcdLAgVsjS/Avpi+6Vi149p3fmIKobbnTNzlZ9eI3g
+    Pb9fUEZpMrRUl8I7Xp/OAF7UTVLw/dBC2TC8KwvDhAcXrFBYVCR1ONx+laOED2dau2SS
+    /TpAtDXay5UETEiKgU/lWaA00EGQNNP59ayKNAcw5FPVRvHGY3pPGW7+dR/JUFW1rjBn
+    0VgQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1766852904;
+    s=strato-dkim-0003; d=jm0.eu;
+    h=Cc:To:In-Reply-To:References:Message-Id:Subject:Date:From:Cc:Date:
+    From:Subject:Sender;
+    bh=oBoh6hY3yJ4owxWQx6sgt/gcf5XerqfPpIM1LTdUQis=;
+    b=H9o1l0TGDq7W0PnemiPm+6e5jWMG32qaTil1P94FhVUlOfbyIJuBCR/BY020epbW+2
+    D6Y4qI8JM70bNl3YxBAg==
+X-RZG-AUTH: ":JmMXYEHmdv4HaV2cbPh7iS0wbr/uKIfGM0EPTeoCaRth8YQvpoIkZXd2bnfIrOV7Mbk="
+Received: from localhost.localdomain
+    by smtp.strato.de (RZmta 54.1.0 DYNA|AUTH)
+    with ESMTPSA id z0d4ec1BRGSOtuI
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Sat, 27 Dec 2025 17:28:24 +0100 (CET)
+From: Josua Mayer <josua.mayer@jm0.eu>
+Date: Sat, 27 Dec 2025 17:28:13 +0100
+Subject: [PATCH 1/3] power: supply: add battery driver for netronix ec
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="dvxkgxpxo3vjgzfp"
-Content-Disposition: inline
-In-Reply-To: <6251576.lOV4Wx5bFT@rafael.j.wysocki>
-X-Zoho-Virus-Status: 1
-X-Zoho-Virus-Status: 1
-X-Zoho-AV-Stamp: zmail-av-1.5.1/266.841.63
-X-ZohoMailClient: External
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20251227-kobo-aura-battery-v1-1-328a90ef5122@jm0.eu>
+References: <20251227-kobo-aura-battery-v1-0-328a90ef5122@jm0.eu>
+In-Reply-To: <20251227-kobo-aura-battery-v1-0-328a90ef5122@jm0.eu>
+To: =?utf-8?q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>, 
+ Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
+ Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, 
+ Pengutronix Kernel Team <kernel@pengutronix.de>, 
+ Fabio Estevam <festevam@gmail.com>
+Cc: Andreas Kemnade <andreas@kemnade.info>, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, imx@lists.linux.dev, 
+ linux-arm-kernel@lists.infradead.org, Josua Mayer <josua.mayer@jm0.eu>
+X-Mailer: b4 0.14.3
 
+Implement a simple battery driver for monitoring voltage with the
+netronix embedded controller found in certain ebook readers.
 
---dvxkgxpxo3vjgzfp
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v1] PM: sleep: Fix suspend_test() at the TEST_CORE level
-MIME-Version: 1.0
+Signed-off-by: Josua Mayer <josua.mayer@jm0.eu>
+---
+ drivers/mfd/ntxec.c                  |   1 +
+ drivers/power/supply/Kconfig         |   9 ++++
+ drivers/power/supply/Makefile        |   1 +
+ drivers/power/supply/ntxec-battery.c | 101 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 112 insertions(+)
 
-Hi,
+diff --git a/drivers/mfd/ntxec.c b/drivers/mfd/ntxec.c
+index 08c68de0f01bc..d5059b8862aa8 100644
+--- a/drivers/mfd/ntxec.c
++++ b/drivers/mfd/ntxec.c
+@@ -139,6 +139,7 @@ static const struct regmap_config regmap_config = {
+ static const struct mfd_cell ntxec_subdev[] = {
+ 	{ .name = "ntxec-rtc" },
+ 	{ .name = "ntxec-pwm" },
++	{ .name = "ntxec-battery" },
+ };
+ 
+ static const struct mfd_cell ntxec_subdev_pwm[] = {
+diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+index 92f9f7aae92f2..5674a23ba7bd6 100644
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -1132,4 +1132,13 @@ config FUEL_GAUGE_MM8013
+ 	  the state of charge, temperature, cycle count, actual and design
+ 	  capacity, etc.
+ 
++config BATTERY_NTXEC
++	tristate "Battery driver for Netronix embedded controller"
++	depends on MFD_NTXEC
++	help
++	  Say yes here to enable netronix ec battery monitoring driver.
++	  It enables the monitoring battery voltage on certain e-book readers
++	  using an embedded controller by ODM Netronix. Battery design
++	  characteristics are read from Firmware Tables if available.
++
+ endif # POWER_SUPPLY
+diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+index 4b79d5abc49a7..db6fc815f9da2 100644
+--- a/drivers/power/supply/Makefile
++++ b/drivers/power/supply/Makefile
+@@ -128,3 +128,4 @@ obj-$(CONFIG_CHARGER_SURFACE)	+= surface_charger.o
+ obj-$(CONFIG_BATTERY_UG3105)	+= ug3105_battery.o
+ obj-$(CONFIG_CHARGER_QCOM_SMB2)	+= qcom_smbx.o
+ obj-$(CONFIG_FUEL_GAUGE_MM8013)	+= mm8013.o
++obj-$(CONFIG_BATTERY_NTXEC)	+= ntxec-battery.o
+diff --git a/drivers/power/supply/ntxec-battery.c b/drivers/power/supply/ntxec-battery.c
+new file mode 100644
+index 0000000000000..f49f0966d18dd
+--- /dev/null
++++ b/drivers/power/supply/ntxec-battery.c
+@@ -0,0 +1,101 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * The Netronix embedded controller is a microcontroller found in some
++ * e-book readers designed by the original design manufacturer Netronix, Inc.
++ * It contains RTC, battery monitoring, system power management, and PWM
++ * functionality.
++ *
++ * This driver implements battery monitoring.
++ *
++ * Copyright 2021 Josua Mayer <josua.mayer@jm0.eu>
++ */
++
++#include <linux/mfd/ntxec.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/power_supply.h>
++#include <linux/property.h>
++#include <linux/regmap.h>
++
++static const enum power_supply_property ntxec_battery_properties[] = {
++	POWER_SUPPLY_PROP_VOLTAGE_NOW,
++};
++
++struct ntxec_battery {
++	struct ntxec *ec;
++};
++
++#define NTXEC_REG_READ_BATTERY	0x41
++
++static int ntxec_battery_get_property(struct power_supply *psy,
++				     enum power_supply_property psp,
++				     union power_supply_propval *val)
++{
++	struct ntxec_battery *priv = power_supply_get_drvdata(psy);
++	int ret;
++	unsigned int value;
++
++	switch (psp) {
++		case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++			ret = regmap_read(priv->ec->regmap, NTXEC_REG_READ_BATTERY, &value);
++			if (ret < 0)
++				return ret;
++
++			/* ec value to microvolt conversion:
++			 * vendor kernel source suggests linear behaviour from 3V to 4.2V
++			 * with readings 767 to 1023; each increment represents 4687,5uV.
++			 * adjust 3V boundary slightly to report exactly 4.2V when full.
++			 */
++			val->intval = 2999872 + (value - 767) * 4688;
++			break;
++		default:
++			dev_err(&psy->dev, "%s: invalid property %u\n", __func__, psp);
++			return -EINVAL;
++	}
++
++	return 0;
++}
++
++static const struct power_supply_desc ntxec_battery_desc = {
++	.name = "ec-battery",
++	.type = POWER_SUPPLY_TYPE_BATTERY,
++	.properties = ntxec_battery_properties,
++	.get_property = ntxec_battery_get_property,
++	.num_properties = ARRAY_SIZE(ntxec_battery_properties),
++};
++
++static int ntxec_battery_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct ntxec *ec = dev_get_drvdata(dev->parent);
++	struct power_supply_config psy_cfg = {};
++	struct ntxec_battery *priv;
++	struct power_supply *psy;
++
++	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	priv->ec = ec;
++	psy_cfg.drv_data = priv;
++	psy_cfg.fwnode = dev_fwnode(dev->parent);
++	psy_cfg.no_wakeup_source = true;
++	psy = devm_power_supply_register(dev, &ntxec_battery_desc, &psy_cfg);
++	if (IS_ERR(psy))
++		return PTR_ERR(psy);
++
++	return 0;
++}
++
++static struct platform_driver ntxec_battery_driver = {
++	.driver = {
++		.name = "ntxec-battery",
++	},
++	.probe = ntxec_battery_probe,
++};
++module_platform_driver(ntxec_battery_driver);
++
++MODULE_AUTHOR("Josua Mayer <josua.mayer@jm0.eu>");
++MODULE_DESCRIPTION("Battery driver for Netronix EC");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:ntxec-battery");
 
-On Fri, Dec 26, 2025 at 02:50:57PM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->=20
-> Commit a10ad1b10402 ("PM: suspend: Make pm_test delay interruptible by
-> wakeup events") replaced mdelay() in suspend_test() with msleep() which
-> does not work at the TEST_CORE test level that calls suspend_test()
-> while running on one CPU with interrupts off.
->=20
-> Address this by making suspend_test() check if the test level is
-> suitable for using msleep() and use mdelay() otherwise.
->=20
-> Fixes: a10ad1b10402 ("PM: suspend: Make pm_test delay interruptible by wa=
-keup events")
-> Reported-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-> Closes: https://lore.kernel.org/linux-pm/aUsAk0k1N9hw8IkY@venus/
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
+-- 
+2.51.0
 
-I can confirm it fixes the issue I reported, so:
-
-Tested-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-
-Greetings,
-
--- Sebastian
-
->  kernel/power/suspend.c |    9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
->=20
-> --- a/kernel/power/suspend.c
-> +++ b/kernel/power/suspend.c
-> @@ -349,9 +349,12 @@ static int suspend_test(int level)
->  	if (pm_test_level =3D=3D level) {
->  		pr_info("suspend debug: Waiting for %d second(s).\n",
->  				pm_test_delay);
-> -		for (i =3D 0; i < pm_test_delay && !pm_wakeup_pending(); i++)
-> -			msleep(1000);
-> -
-> +		for (i =3D 0; i < pm_test_delay && !pm_wakeup_pending(); i++) {
-> +			if (level > TEST_CORE)
-> +				msleep(1000);
-> +			else
-> +				mdelay(1000);
-> +		}
->  		return 1;
->  	}
->  #endif /* !CONFIG_PM_DEBUG */
->=20
->=20
->=20
-
---dvxkgxpxo3vjgzfp
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmlP6qQACgkQ2O7X88g7
-+ponhg/8DFhgtSQ9njudkn1alyQjlWQqEOFYqevvSV3QmMHRfP3el+TfwteArYOE
-SFkG3q9W2nqkP2yOQ6Zk6e7FXHZwVTZD738DY+aUPIMrnw/sx8cGol4iEInGdLRR
-XJLVk0d8sIn5D3ZlMkvw+Q1Em6XBb4jkXQJMD0MHuowrUCFB18WFNilviI/EgPWJ
-q/2XLfhLcc3lQdTEHIAEcimZjfWKEoSZ/jHEDHtuSoNn29rSBmcrecdmYI2kOklI
-Dsg/Ib4vjms7l0X+DbLHNu9BkFCoVtVLadOXPePZL9tEp+nljzuhBVEvVYW05ov7
-vtBIY27HdmxiWSXaVQfjGovRbnoXghJZmtQFRhFQO4pgUXIHdA01A2auynaGsimp
-E6I5ar35GZnOIQ8D/biMZE0eXNWZaP+7ZmFNvWTO6OoylK6UhMHZOeFV7rvF5tVB
-MoIeL/gx8XQy5jmB3BPiHxhGr0G3r1EBajWreYzTNnlgrDTAXeFY7GxPtdU9zwNS
-iod+3bPI0qVWe26EFM/uY6X8Jdb4tKosxDyY3RkYzuwpynrRHxmvZW16/OqTdEXY
-4SmFYssYmHhTXnt2se8qwO4LTIBdmBzBQb1d+iOpaRSx1QELpvPSVIvNcHlGjd2Q
-7TKVHTXk0im4i8Rd7I+actOVkOU8K7l6m/+LNLJhJatMpEFgCtI=
-=7Rj5
------END PGP SIGNATURE-----
-
---dvxkgxpxo3vjgzfp--
