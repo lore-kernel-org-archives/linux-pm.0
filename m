@@ -1,63 +1,64 @@
-Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
+Received: from mail-wr1-f45.google.com (mail-wr1-f45.google.com [209.85.221.45])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18B7D330B09
-	for <linux-pm@vger.kernel.org>; Mon,  5 Jan 2026 11:27:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB92433064F
+	for <linux-pm@vger.kernel.org>; Mon,  5 Jan 2026 11:27:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767612448; cv=none; b=Q6+7BB131DiZhyXyjrxLY+aUUyS5HcFyhxs60f5QB9rPbDL5SrXTIuCFnAL6CRqdp0egg9dMF1KyzS8+PrQkeVSd7bLw3IWq2cSShor3zyMrsvr8P45K/f6ltSDT0FblVmnUVgiMYUXhFvfscBoI4ewx2ZLMnVXmeCELf3VwBOI=
+	t=1767612454; cv=none; b=Gl0YgtAAmdZKMcYrsycWs3qW2oUjqeKIRvwnp1WADmFipq1HZrOfO8M43BJYXLLQtdxNXnfA/MK6zvCMHCTSD0lh7ADEqQwqFxi1oq/VKZIHoFzsmhr7Wg1BpmeaZtWGA7ruzkfiGyP+55wE7JporRXgCZ8XeNdlSiBp5Lw78FE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767612448; c=relaxed/simple;
-	bh=VUXdc9hwk0T2er9DTckmrZex4qeCTOgDcVRoChu5qdY=;
+	s=arc-20240116; t=1767612454; c=relaxed/simple;
+	bh=Go+GAYzO0jgTKcc48Myrg2Pj0BaCXr+2m/+CGE76n6c=;
 	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-Version:Content-Type; b=KqA50IO8hOXA8SqC8XSdzVODd3OOaLKmixqQTJrKB6iFfPRBz6JQOHIN8sSP+K1cfIeJiuQGhGE8bSqwOoMe5SCukFJXBmjdlh8KhMKDEfiL380gFdts6Qx6WfF6S179uu0Lexji2X95EmACGFbKaDrLsGbJNjnONs4cKlBoBq4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=GT8WVbMX; arc=none smtp.client-ip=209.85.221.47
+	 MIME-Version:Content-Type; b=fNbD+GqIeDYbVBS8Mp/ClUCeAw50SOzm+7uw3KZHNR32QnBzNz+P+m1jW4sXdfhlJaieGFcd9H7QQJMZszxQFajY2QdbS0hlal/OWzahsxCd/C9s8BKG8QUlxaIvhCFF+FWs8nXG/cOASHYpF8bVi5EciQ5wvQfbr9eZQKIQ9dY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=VL8qm6eH; arc=none smtp.client-ip=209.85.221.45
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GT8WVbMX"
-Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-42fbad1fa90so11606893f8f.0
-        for <linux-pm@vger.kernel.org>; Mon, 05 Jan 2026 03:27:24 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VL8qm6eH"
+Received: by mail-wr1-f45.google.com with SMTP id ffacd0b85a97d-43260a5a096so7799835f8f.0
+        for <linux-pm@vger.kernel.org>; Mon, 05 Jan 2026 03:27:30 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1767612443; x=1768217243; darn=vger.kernel.org;
-        h=mime-version:user-agent:references:message-id:date:in-reply-to
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=2qHDzkZJACXcp+eQuf4jUc4YyVkIXXCNoOh0gjbwoPI=;
-        b=GT8WVbMXD21yXh5A1tsJXqAr0ScK130QqyKqO+2dPqIgMxTD/Frhr1f+s+nnimJ6Kv
-         bLsObw+XWNwICqT8lFmdv0l/yMEG6uAInIEd+rt1+IZ3qeQaIcUuTzBpdvGKKCYJMGDg
-         MXhA5GoI7c0KwTP3qZl4nB8nAWXj+1xsJa1EgYNfRhk8VXZQTF1Y7pi/9t8Jtaq5u9K5
-         uG6KIt/xdc3/t9IjzgOzlfMKB9DleqOCcAPJxE5kKRhDe8K9m7ic46iwr2u3ocaOVjqc
-         KJMRfl7W/FjlSyL+e/AkVd8fD6WnQu1d3egnQt8Ccyiad0RoWF6KZRmtJYioBakDHJDf
-         cG8w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767612443; x=1768217243;
-        h=mime-version:user-agent:references:message-id:date:in-reply-to
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
+        d=gmail.com; s=20230601; t=1767612447; x=1768217247; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:user-agent:references
+         :message-id:date:in-reply-to:subject:cc:to:from:from:to:cc:subject
          :date:message-id:reply-to;
-        bh=2qHDzkZJACXcp+eQuf4jUc4YyVkIXXCNoOh0gjbwoPI=;
-        b=QwBYn5Y9jjqgZU+h11RVV6rg0TIW2ZkwWRxngJdMkcGBKcfc8mK3z0EheJfj1PPN2d
-         qiQ3F8Q82j1UqCoEtT9r/oaUegQcUpCUfE7D+H2POLuo3lzd+9W6DmCQ1jo+XHSs5jIp
-         OX1urrCYZPiSfq6RpYZ2VIW9DjGcq9ji9R3KLH8519h0qhvDZK2XrGjNEzpyirmz633D
-         jgDQtejiSLtn1vyr1i1Mep2V6cVVG9dh75jjMTryobje1WqBaY2jOdm3JqkqyIplz5mv
-         PJCAqAQr7FxjqbZvmv8L4WteF6KtWrvnVvXAH3Nh2CrWybEEJljkJhPGRppbuJpngez1
-         QNYg==
-X-Forwarded-Encrypted: i=1; AJvYcCWcrfelT2eqwVyvxNSDjCHe3U6nqMcuVyNRfY+k0/xUQCUN+cVhM/KqXPxPhDGuyikKGXCYzapzcA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwbEzTWc3dlXy28N1UgGIZIhlqHGM8BekPDiDD8WN8STGTUmYgR
-	PuwQowRwh1wLVE/VBGIJVh+ajku9lTQopCKTKgRpQ5uOSkj/StPmwYGm
-X-Gm-Gg: AY/fxX6hszCnH0P/iwZbECBZqpRF3wxorAlQEiI56JNbaZmIDV/X4KWdbtFbJa74FNN
-	qnTg9x2Y6rJrf9ZCtUzLwccPeG1VWq+0NYz8jiV/FnFFZhMwaZi+5Mm4KROHkafcckSf42rkuRq
-	NDDOcUUjkoNwy4dr7LKkQUYwE02lYOCKWPHQRpD0J/naE1bO0xbEvCmv0nrC8ix7baYjdugIcy4
-	REQki9WsUDh9ua05SPZtmulJtQ7ZGcgyJEpaQYcNLlZVBpmtmAoNvIvnUGkSo107VNI5e4+3kcR
-	GwZR47o1LTYhCvwv6ft9grtFygMJ4DxZatr/r4312uPzwu+DCrXUxn5T7tFz0WQhXz1qKKlwHQC
-	gfsVJlynLmjgh7XH/fKQuR10I1zh/sHgKnlz1ADuUq9vnr8kPySjqJYLo+hKAtWN6eF9zgN8uT4
-	BIOv2gEOe+Nr++XZ6Oyd18uM4=
-X-Google-Smtp-Source: AGHT+IEe3zf1IkKFKkWJiFRWFG2kWewA423+4tt5YeHwRg6lgVblS3TIR8XO7sEvsL2qPIhcXvtY5g==
-X-Received: by 2002:a05:6000:25ca:b0:431:5d2:4526 with SMTP id ffacd0b85a97d-4324e4c9df3mr65957051f8f.19.1767612442851;
-        Mon, 05 Jan 2026 03:27:22 -0800 (PST)
+        bh=j95TD1ZmtU4Apnwzg09U0kNwpICIT3BxQAw/HHzh+18=;
+        b=VL8qm6eHO80/CL3xLajJ/0K73Rm5sil51ejACLf1u1FBCS7IHgblbisukbmtPKMxZe
+         4nZVJ+2wVvCtGMuChE81krgIJw0xAJ1/cOXGtQxBEHCthzFAMCdH67GdYpEmVWgxSnL4
+         8U3TLBeLQStbNUIiT48gC8XyyeJr4bF9znvtmyf2D1XHdrlWnP6L7p4vaN9o3X1d+/Yh
+         vNS4pr/X8eB2XGNtJhVj556T7dU+r0gLZATqK67SciJx1ee//z/qgUfGXOH8Nxvx6yYK
+         jYm7y3GMxCqzZ6YgzzlOWawF5I5h0L5FIEp34tV/XximpcSBGP7Q63yi8Y++Focv6gMP
+         IFZA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1767612447; x=1768217247;
+        h=content-transfer-encoding:mime-version:user-agent:references
+         :message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=j95TD1ZmtU4Apnwzg09U0kNwpICIT3BxQAw/HHzh+18=;
+        b=Z3E4G1DGfH23i1oNbgZzuj7g9mzUbMVr/gBT87QtoBxvuobfnl9Axn8fXVuvrUk+FX
+         a5scZ00iyQpNurMbvT0AARH3yzOgG+K+a9HoI+fuYOg8a1xTA/tDieuciidjDDCqLA1x
+         u9wBFF6zCWAnqIiI75lmo4Jxw7WmSWCpjtAzHPHvRahFIhhHp30GCsZIz960fWtaI3CX
+         QGPmijFC27nABko9Kujjk/CiHfqHp7fu4oiFnGzlloNd+MPQ4MmUKBemPo4CnCp30yrB
+         G5/C2C/OagkxGj1nDXDYA5p5p8+PO5+ivrQIkqO/CvS2D8HHRiC1GzqGnTKd2q2yA2CW
+         Sr6A==
+X-Forwarded-Encrypted: i=1; AJvYcCUD6c4nNSkzzXQ456rIrlXtne4U+iLIAo/TS1NPkQY4yX6PiLm5jp6URmr0ywic55pPYoJITuKi/g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzIJTmh4XSU0BXcwYacxFU7Qclp5Ovc9tDiQagBJC93OohKiKUS
+	q2CPpb5G4WE6vrOtXNiAmzhI7L93ssO+/QlMqVg3NUsqYabvtvGyr+0H
+X-Gm-Gg: AY/fxX5dxMpv6F/0sLcF+WxVDBflBNiSFK6pJWcP/j/vBU6ANHXTMPmgtG27r9C0JBu
+	hJgGyogKjnL7thQgdQ2bwpkwDYg+49by/8pTL1+zT/VBviLibS9JSyCe0laEoyXdJN5NTk8a/sS
+	YxtDlzNW3vq+wpqXWWz/0f+6OXXaSFwrNeQ24+zUlZ4sHwJeWwciKeWRYBzqBxBwdKay8oVbzmS
+	AOXA3Imds2gc7ZcuL4iVh9oJivGzDHHZXCd+L1AXipdLAWsuIiTyis/dZXaFMAEkWVzNdytSL0L
+	ZozF79hvqUSuDZo4xx+HU+PIIIxmQHsRZd6JfaKFFfnGxo8+mezYWBfv8P5+AGE1gBCG0ZSZjVF
+	hHqlEs9VuuWBBL3cgafZDiIMPk3gg5Ti8FNjZZoWj9Pd0Xq2Y07Tt9QAaoHr0QbKXYdUf6KVBr1
+	pfGovg4fbU1Z+4w/HkR6o28Bi5EATsrVHDDQ==
+X-Google-Smtp-Source: AGHT+IHKBRGJ6Q+jIIfyxjpoPEvNxTxw0yHBFy5IfbUyV2HSAIYXiI1jCB0lNf27X4mjsLq2EPc8PA==
+X-Received: by 2002:a05:6000:178e:b0:430:f7dc:7e96 with SMTP id ffacd0b85a97d-4324e50d6ccmr65245024f8f.48.1767612446482;
+        Mon, 05 Jan 2026 03:27:26 -0800 (PST)
 Received: from imac ([2a02:8010:60a0:0:fc71:3122:e892:1c45])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4327791d2f3sm69505535f8f.11.2026.01.05.03.27.21
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4324ea830f3sm99180248f8f.22.2026.01.05.03.27.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 05 Jan 2026 03:27:21 -0800 (PST)
+        Mon, 05 Jan 2026 03:27:25 -0800 (PST)
 From: Donald Hunter <donald.hunter@gmail.com>
 To: Changwoo Min <changwoo@igalia.com>
 Cc: lukasz.luba@arm.com,  rafael@kernel.org,  kuba@kernel.org,
@@ -66,13 +67,13 @@ Cc: lukasz.luba@arm.com,  rafael@kernel.org,  kuba@kernel.org,
   kernel-dev@igalia.com,  linux-pm@vger.kernel.org,
   netdev@vger.kernel.org,  sched-ext@lists.linux.dev,
   linux-kernel@vger.kernel.org
-Subject: Re: [PATCH for 6.19 4/4] PM: EM: Add dump to get-perf-domains in
- the EM YNL spec
-In-Reply-To: <20251225040104.982704-5-changwoo@igalia.com>
-Date: Mon, 05 Jan 2026 11:19:16 +0000
-Message-ID: <m2bjj8i9xn.fsf@gmail.com>
+Subject: Re: [PATCH for 6.19 2/4] PM: EM: Rename em.yaml to
+ dev-energymodel.yaml
+In-Reply-To: <20251225040104.982704-3-changwoo@igalia.com>
+Date: Mon, 05 Jan 2026 11:25:09 +0000
+Message-ID: <m2344ki9nu.fsf@gmail.com>
 References: <20251225040104.982704-1-changwoo@igalia.com>
-	<20251225040104.982704-5-changwoo@igalia.com>
+	<20251225040104.982704-3-changwoo@igalia.com>
 User-Agent: Gnus/5.13 (Gnus v5.13)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -80,82 +81,57 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
 Changwoo Min <changwoo@igalia.com> writes:
 
-> Add dump to get-perf-domains, so that a user can fetch either information
-> about a specific performance domain with do or information about all
-> performance domains with dump. The YNL spec, autogenerated files, and
-> the do implementation are updated, and the dump implementation is added.
+> The EM YNL specification used many acronyms, including =E2=80=98em=E2=80=
+=99, =E2=80=98pd=E2=80=99,
+> =E2=80=98ps=E2=80=99, etc. While the acronyms are short and convenient, t=
+hey could be
+> confusing. So, let=E2=80=99s spell them out to be more specific. The foll=
+owing
+> changes were made in the spec. Note that the protocol name cannot exceed
+> GENL_NAMSIZ (16).
+>
+>   em           -> dev-energymodel
+>   pds          -> perf-domains
+>   pd           -> perf-domain
+>   pd-id        -> perf-domain-id
+>   pd-table     -> perf-table
+>   ps           -> perf-state
+>   get-pds      -> get-perf-domains
+>   get-pd-table -> get-perf-table
+>   pd-created   -> perf-domain-created
+>   pd-updated   -> perf-domain-updated
+>   pd-deleted   -> perf-domain-deleted
+>
+> In addition. doc strings were added to the spec. based on the comments in
+> energy_model.h. Two flag attributes (perf-state-flags and
+> perf-domain-flags) were added for easily interpreting the bit flags.
+>
+> Finally, the autogenerated files and em_netlink.c were updated accordingly
+> to reflect the name changes.
 >
 > Suggested-by: Donald Hunter <donald.hunter@gmail.com>
 > Signed-off-by: Changwoo Min <changwoo@igalia.com>
 > ---
->  .../netlink/specs/dev-energymodel.yaml        | 12 ++++
->  include/uapi/linux/dev_energymodel.h          |  3 +-
->  kernel/power/em_netlink.c                     | 58 +++++++++++++++++--
->  kernel/power/em_netlink_autogen.c             | 16 ++++-
->  kernel/power/em_netlink_autogen.h             |  2 +
->  5 files changed, 82 insertions(+), 9 deletions(-)
->
-> diff --git a/Documentation/netlink/specs/dev-energymodel.yaml b/Documentation/netlink/specs/dev-energymodel.yaml
-> index af8b8f72f722..1843e68faacf 100644
-> --- a/Documentation/netlink/specs/dev-energymodel.yaml
-> +++ b/Documentation/netlink/specs/dev-energymodel.yaml
-> @@ -47,6 +47,11 @@ attribute-sets:
->      doc: >-
->        Information on all the performance domains.
->      attributes:
-> +      -
-> +        name: perf-domain-id
-> +        type: u32
-> +        doc: >-
-> +          A unique ID number for each performance domain.
->        -
->          name: perf-domain
->          type: nest
-> @@ -136,6 +141,13 @@ operations:
->        attribute-set: perf-domains
+>  .../netlink/specs/dev-energymodel.yaml        | 175 ++++++++++++++++++
+>  Documentation/netlink/specs/em.yaml           | 116 ------------
+>  MAINTAINERS                                   |   8 +-
 
-I think this can be changed to 'perf-domain' and you could remove
-the 'perf-domains' attribute-set.
+YNL spec and MAINTAINERS
 
->        doc: Get the list of information for all performance domains.
->        do:
-> +        request:
-> +          attributes:
-> +            - perf-domain-id
-> +        reply:
-> +          attributes:
-> +            - perf-domain
+Reviewed-by: Donald Hunter <donald.hunter@gmail.com>
 
-If you use 'perf-domain' then the reply attributes would be:
-
-  reply:
-    attributes: &perf-domain-attrs
-      - pad
-      - perf-domain-id
-      - flags
-      - cpus
-
-> +      dump:
->          reply:
->            attributes:
->              - perf-domain
-
-You can then change the dump reply to be:
-
-  dump:
-    reply:
-      attributes: *perf-domain-attrs
-
-The dump reply for multiple perf domains would then look like this, no
-need for the 'perf-domains' wrapper:
-
-[{'perf-domain-id': ...,
-  'flags': ...,
-  'cpus': [1, 2, 3]},
- {'perf-domain-id': ...,
-  'flags': ...,
-  'cpus': [1, 2, 3]}]
+>  include/uapi/linux/dev_energymodel.h          |  89 +++++++++
+>  include/uapi/linux/energy_model.h             |  63 -------
+>  kernel/power/em_netlink.c                     | 135 ++++++++------
+>  kernel/power/em_netlink_autogen.c             |  44 ++---
+>  kernel/power/em_netlink_autogen.h             |  20 +-
+>  8 files changed, 384 insertions(+), 266 deletions(-)
+>  create mode 100644 Documentation/netlink/specs/dev-energymodel.yaml
+>  delete mode 100644 Documentation/netlink/specs/em.yaml
+>  create mode 100644 include/uapi/linux/dev_energymodel.h
+>  delete mode 100644 include/uapi/linux/energy_model.h
