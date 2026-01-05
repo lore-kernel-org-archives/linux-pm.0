@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD8DA3431FD;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D92293375A7;
 	Mon,  5 Jan 2026 12:56:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767617807; cv=none; b=T9FVS7FG62CvvJpJlnqtnOTa6WpTSOZqwt3A+Okx/OY2MiBttvtDhJGNJDzywNmr/WnbANHDTZ/m98JnFMFXsQJPkjxPxQuPm5FC2A7vJMa+8eOlYiOl8e7WPILqYVmjLfM82sX6z0BcDCWsV09tiUmUAc+s9jkeCplf+Keqi3c=
+	t=1767617809; cv=none; b=gB6dv9zaKhsVvfrfMxmTy8O9gpRLHjR13cxJBRF2u++iLLG1OoxNTEdN7VRBPBWJ8Qgf07CdE2HQvemSVewleHGUgcGrWK+g8osdsG5LnxbYxqKecF8oR9khjQ8QNdOF9t+H2pTlkrswd4Gvnr5WFoBsIcTPtK0tkpJL0HA7cno=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767617807; c=relaxed/simple;
-	bh=0/FNTDcgirnA9vyGn4Nykw0//mGf5LocBXFpq2GMF5Q=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=GIiEFt3vFWdvIlxqFy+yUPyfwcmORK2VPcXKHYNlC/n0JlU8FtM0DtXt/MHKBtsrZipCrZKcw2p7cKfO3yT3lgsAiRR6U4lT43J6IiR8xgY3tR88L6pR5UTu3/usulNbP5SzY/PQiXzjCC1FzBXflpoCrni+HdpoFNMr8ynnpYk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=eloDyBS1; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1767617809; c=relaxed/simple;
+	bh=qmt/PcU1Yu1EV0KhbS4i0pP6/2A6eNrCy2u0NVbxqrU=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=kujp228Lqac09wrG+nmX+8JusVpDonuROTHz+nMuCtYS9aX5NRcFrfc9FSRt7s9EBDd5at5T56pWhI48oKvUyyyQSJSY698nQCJIQWuo8ZayAEHRJk6PpIQ5clfO+MUqgPEEAzm/fY+z2mLKgKERgZ0MgNFozGtnoKm+SuCxrAA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AvBt0Yot; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="eloDyBS1"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 4A0C1C19424;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AvBt0Yot"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 693D9C19425;
 	Mon,  5 Jan 2026 12:56:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1767617807;
-	bh=0/FNTDcgirnA9vyGn4Nykw0//mGf5LocBXFpq2GMF5Q=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=eloDyBS1gwcGjMZvlCWgZ546QCJR1rcU1ZQ3lMUxIqmYlpITBNncl9n7nKv7jMTaV
-	 ntWJStZ7ttNrc6x9XKpC/0vWXWN75sA/mRt8cS1deBUt+oy1E48gbieiS2LTS1Pvam
-	 /CUiJ3b+DeB76/P/7xs0f+OfunCfp95n1iRd9sKNasaHWiWzJTJkvn9ec+VeQBC2dm
-	 Z0nnfmOTNNnk+3FRZKskGmd+4bDRraOvLb5t3NIv0qGC1uC6J1Lj+9iL4XxBCl4BHb
-	 QgRwYWtuGBYqIrNTox+uIXwXWBZmBZuPD72xgh08qF6IrS+169tUDQDXpBbQzPM8b7
-	 yAXvjBsJbk/cA==
+	bh=qmt/PcU1Yu1EV0KhbS4i0pP6/2A6eNrCy2u0NVbxqrU=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=AvBt0Yots1PaxpFEKEg+PvmaPucv7i/OgnHLSBT4FW9QjA/BvNrvZmoC63BqXF9xa
+	 B92rlzLz9Yl+qsi4upuDW4q/orKSMz2oxqF1oY1S8jP6MXmWSVhwY7xmbJzYxwi1Rg
+	 GPsU3ZG2kVOy/bV5hc/KTpE8LpucyW9MoLzcCvaY243mQSLnJkwbWcPjMRYWhSPO6X
+	 W5oZN617UAwbZpN8DAdC1iqInFQkD1XUbX4OaBh1uk4gPNRFMJoO/Rc4cA3sufIt3n
+	 YDMOXnz0DajoJHQb5zGgVe8VhLpIS2PVnmS1YEnSbMBzsgVfM3LbphKCYRGpgm/EhL
+	 I2ubXsgUJ/oyA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 397C2C79F8C;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B325C79F87;
 	Mon,  5 Jan 2026 12:56:47 +0000 (UTC)
 From: Michael Reeves via B4 Relay <devnull+michael.reeves077.gmail.com@kernel.org>
-Subject: [PATCH 0/2] Add Apple Silicon SMC power driver
-Date: Mon, 05 Jan 2026 23:56:35 +1100
-Message-Id: <20260105-b4-macsmc-power-v1-0-62954c42a555@gmail.com>
+Date: Mon, 05 Jan 2026 23:56:37 +1100
+Subject: [PATCH 2/2] mfd: macsmc: Wire up Apple SMC power driver
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,10 +40,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAO1W2kC/x3MTQqAIBBA4avErBtQ+4OuEi1snGoWlShUIN49a
- fkt3ksQOQhHGKsEgW+Jcp0Fuq6AdntujOKKwSjTK606XFo8LMWD0F8PB3RKD0TD2jWWoFQ+8Cr
- vf5zmnD+qQi/uYQAAAA==
-X-Change-ID: 20260105-b4-macsmc-power-d017cc7f53ac
+Message-Id: <20260105-b4-macsmc-power-v1-2-62954c42a555@gmail.com>
+References: <20260105-b4-macsmc-power-v1-0-62954c42a555@gmail.com>
+In-Reply-To: <20260105-b4-macsmc-power-v1-0-62954c42a555@gmail.com>
 To: Sebastian Reichel <sre@kernel.org>, Sven Peter <sven@kernel.org>, 
  Janne Grunau <j@jannau.net>, Neal Gompa <neal@gompa.dev>, 
  Lee Jones <lee@kernel.org>
@@ -52,11 +51,11 @@ Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
  Michael Reeves <michael.reeves077@gmail.com>, 
  Hector Martin <marcan@marcan.st>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1767617806; l=1301;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1767617806; l=759;
  i=michael.reeves077@gmail.com; s=20260105; h=from:subject:message-id;
- bh=0/FNTDcgirnA9vyGn4Nykw0//mGf5LocBXFpq2GMF5Q=;
- b=pXgNPMu6iKqaJdxxdZ+XZiUEBGctL1+0EGQ1Mf6C7pdzK0+VGMoho8NKfA9cbjoe6FHCZEAZp
- 0HXLd6hn9DQAC/1GvyrUcNGyoHIxOwWglVsTCos2RKyS34VGyIPRBWm
+ bh=vIxVriW7LVSbZfkV9TYc6jdqEm/Rah71gDngXrG5xT8=;
+ b=gEO+8YJiCNJnMoPAkVVFkeBS2Bp+zqvI2YBPM8YBi4e8rNuaYViJT9wmJNVsFpR/BWU0KnzkM
+ BEHGIxPEbgJAzaHpT36JJsDTt6mzSGCiZNC/Vd81ZOM8uz/gefQvheP
 X-Developer-Key: i=michael.reeves077@gmail.com; a=ed25519;
  pk=QIrgWBGCm3LG0YYc6MLCDkwuVXLTGGooVBdWX/KhSiU=
 X-Endpoint-Received: by B4 Relay for michael.reeves077@gmail.com/20260105
@@ -64,39 +63,32 @@ X-Endpoint-Received: by B4 Relay for michael.reeves077@gmail.com/20260105
 X-Original-From: Michael Reeves <michael.reeves077@gmail.com>
 Reply-To: michael.reeves077@gmail.com
 
-This series adds a power supply driver for the Apple SMC found on
-Apple Silicon devices. This allows the kernel to report AC status,
-battery charging status, and power metrics, and modify the charging
-behaviour.
+From: Michael Reeves <michael.reeves077@gmail.com>
 
-The first patch adds the driver itself, and the second patch wires it
-up to the MFD core.
+Add the cell for the macsmc-power driver so it is probed by the
+MFD core.
 
-The driver is based on an original out-of-tree implementation by
-Hector Martin. It has been refactored for upstream inclusion, 
-including support for newer SMC firmwares, devices without batteries,
-dynamic property detection and improved state management.
-
-Tested on: Apple M3 (MacBook Air, J613)
-
+Co-developed-by: Hector Martin <marcan@marcan.st>
+Signed-off-by: Hector Martin <marcan@marcan.st>
 Signed-off-by: Michael Reeves <michael.reeves077@gmail.com>
 ---
-Michael Reeves (2):
-      power: supply: Add macsmc-power driver for Apple Silicon
-      mfd: macsmc: Wire up Apple SMC power driver
+ drivers/mfd/macsmc.c | 1 +
+ 1 file changed, 1 insertion(+)
 
- MAINTAINERS                         |   1 +
- drivers/mfd/macsmc.c                |   1 +
- drivers/power/supply/Kconfig        |  11 +
- drivers/power/supply/Makefile       |   1 +
- drivers/power/supply/macsmc-power.c | 872 ++++++++++++++++++++++++++++++++++++
- 5 files changed, 886 insertions(+)
----
-base-commit: cc3aa43b44bdb43dfbac0fcb51c56594a11338a8
-change-id: 20260105-b4-macsmc-power-d017cc7f53ac
+diff --git a/drivers/mfd/macsmc.c b/drivers/mfd/macsmc.c
+index e3893e255ce5..061b43fc842d 100644
+--- a/drivers/mfd/macsmc.c
++++ b/drivers/mfd/macsmc.c
+@@ -45,6 +45,7 @@
+ #define SMC_TIMEOUT_MS		500
+ 
+ static const struct mfd_cell apple_smc_devs[] = {
++	MFD_CELL_NAME("macsmc-power"),
+ 	MFD_CELL_OF("macsmc-gpio", NULL, NULL, 0, 0, "apple,smc-gpio"),
+ 	MFD_CELL_OF("macsmc-reboot", NULL, NULL, 0, 0, "apple,smc-reboot"),
+ };
 
-Best regards,
 -- 
-Michael Reeves <michael.reeves077@gmail.com>
+2.51.2
 
 
