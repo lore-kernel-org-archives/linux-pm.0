@@ -1,111 +1,93 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29F981A2C04
-	for <linux-pm@vger.kernel.org>; Tue,  6 Jan 2026 12:38:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66B3D3314B7;
+	Tue,  6 Jan 2026 13:27:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767703119; cv=none; b=j7GnYReGA7zS3yTtKFrWs1UKsw5KiQAqx5mIJ+eaQ2+2kqAh0aIptkOBl5BrwlFw+zoSQXBw6616+HTEgYATHJ6693vrmdemJa3q0rxImDTQVyv72tcWyrTPRzauHf3eJflIJp7GKgetP9MgJxn2sr+BIqK+Ftw3BIqUFEsBSSg=
+	t=1767706041; cv=none; b=n1U0LNG4AeoPZAtk1MAUrgNlBQMUuUByS66m7wsCzGc82foVrB3ggxwuem/PhGxGrxD9eEbWy4SQE3IfROu4j5K5yazVcl6oFQvQWeg3nmxOKBrXBiE/X4rKl0GtGkUbqFt8HOoyojOk7Lb6FII14gjTm3+VL5YeEKnbdHK8hW0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767703119; c=relaxed/simple;
-	bh=/WJ3FXylxb75JjfkAYrSDskdl0Pr5JcXSOfrWa9vX2M=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=spvmHpEGqtjUTvf3jB0YLURKw3qQopJRNqODVDYhFySfjnCW8ZBU1ddihuF7cuk9lSYguqrYZbye0Ow9zIbyiahFTCBp2/ZYW4gP0qA65SRMZpb7WoUJIK/31GkEoTs1WJqYgzmggBlNbGk1Cpojw7eGkIc4IgJo3JFa1PPkdN4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=eBijw961; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1767706041; c=relaxed/simple;
+	bh=P5GBjzPKN0+BwzaSKcOsnRgIWAdGRqYK34S053ES/sM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Vnr/4YkQ1s27xkm5dFv2MSWJxhwXxImQkyv2MdUABNwS7VDH8n0yTRM7aT0ORtpAuZZ3FlUs0+oQKQg9PVUiDpJrgjlpMBmrNlgyEF7KC1F9gi7FddQLZhdRRLq+mU8h7FmrUYN1PMUF7n5VZTF8Z5dieJ2OUSkEGIkMluvAXOk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ckf4SgKa; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="eBijw961"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1032C4AF0D
-	for <linux-pm@vger.kernel.org>; Tue,  6 Jan 2026 12:38:38 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ckf4SgKa"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 78A45C116C6;
+	Tue,  6 Jan 2026 13:27:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767703118;
-	bh=/WJ3FXylxb75JjfkAYrSDskdl0Pr5JcXSOfrWa9vX2M=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=eBijw961FdVqdQ5lzqU/ESM00AOiadOqx+ua0ZRGi8NdxZOi0LmsS4uMs8po6Cb0O
-	 5TMhTC1pqRmu5yMhNHRR+d9WYEpa5PYeh2yArJhCA70XzCJpBcWfx41mNkMu0g87H7
-	 xo89EoRPkf34wKF1WWhYht/GJw/1OcOhYW0wZp+ouQonriPSRbIJVqOczclQENQpIe
-	 N8Gjs/7c0iTXE66WYqZPBMwfi2/XNAtnLCMO3RPd6DP97ZzSdEoYSqQ4ZTSfsUnQ12
-	 xGnHMMTQLsb/EQJU/s/eAr+K2BKAJOufY6CAyLHUMxqYPkOXol0F+D/fjg/dimDcik
-	 qXCIufIZGv6/A==
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5945510fd7aso739307e87.0
-        for <linux-pm@vger.kernel.org>; Tue, 06 Jan 2026 04:38:38 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCVCxseKwhoRB1nCAy3O7fh2gQVf6E7bljLkg/8V1IPGFH63x9UpxG/3Tz1NiirS7X08dOtdsbowhg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YymwtdzZ7cs+y5g5E0hpovCEqgjKtiX88l/TIQDa4TwstP43PYA
-	XP84rCPzyKEG7efAiTwCXiZPSk8E9nCuupxSf2XjxJHXJwdRx6s/8BvxnUdvZgy0O2VioM52dwq
-	B/RuHCanKVPTB3XQo2eXOsGv2SWZyd+4K6SF/jDWb9w==
-X-Google-Smtp-Source: AGHT+IH/5oi/Mm4ylt/aH4A15j/ljVlSgxeG2MAOav7Sf6QITgCC+i0rM7ktFn11IEgwttpux/NAggqCjE5gcEsv344=
-X-Received: by 2002:a05:6512:4010:b0:598:f2e1:f616 with SMTP id
- 2adb3069b0e04-59b652b8202mr751335e87.29.1767703117392; Tue, 06 Jan 2026
- 04:38:37 -0800 (PST)
+	s=k20201202; t=1767706040;
+	bh=P5GBjzPKN0+BwzaSKcOsnRgIWAdGRqYK34S053ES/sM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ckf4SgKa1ru14R7kxRE1uOsG3FPfR3xJCFWZ9f+InvnJ+wh57pS0GcldaMwskVhY2
+	 +Qxow6CDs4fsww/jMHuQMjC48qJlxvUMXrCA0o/FHGJ4CiPEMZv4n7Qwwxb2VjRBGU
+	 VVHDhe2bHwkhHfvLIMdS9+HGqkxel5jB45DjAdaKd8HUUqKy2r1RC/GWo5sZAoFe+P
+	 wOewdJphgODxZm4DwSEpAOM5ij573EevnOSL5UR+21r8mNl+9Tq8tnNeSVbbM9qIWR
+	 BSct1JqmRlDuUuzixOuR9CpC5KiANiDi4W21s4P6HdKQgHRug0Vq6HKe76zm1f+xqg
+	 WcvGAklpkNO6A==
+Date: Tue, 6 Jan 2026 13:27:13 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Liam Girdwood <lgirdwood@gmail.com>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Marcel Holtmann <marcel@holtmann.org>,
+	Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+	Jeff Johnson <jjohnson@kernel.org>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Vinod Koul <vkoul@kernel.org>,
+	Balakrishna Godavarthi <quic_bgodavar@quicinc.com>,
+	Matthias Kaehlcke <mka@chromium.org>, linux-arm-msm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-bluetooth@vger.kernel.org, linux-wireless@vger.kernel.org,
+	ath10k@lists.infradead.org, linux-pm@vger.kernel.org,
+	Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v2 01/14] regulator: dt-bindings: qcom,wcn3990-pmu:
+ describe PMUs on WCN39xx
+Message-ID: <e5c70879-dcea-40ea-98ab-454a774e3543@sirena.org.uk>
+References: <20260106-wcn3990-pwrctl-v2-0-0386204328be@oss.qualcomm.com>
+ <20260106-wcn3990-pwrctl-v2-1-0386204328be@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260106-wcn3990-pwrctl-v2-0-0386204328be@oss.qualcomm.com> <20260106-wcn3990-pwrctl-v2-3-0386204328be@oss.qualcomm.com>
-In-Reply-To: <20260106-wcn3990-pwrctl-v2-3-0386204328be@oss.qualcomm.com>
-From: Bartosz Golaszewski <brgl@kernel.org>
-Date: Tue, 6 Jan 2026 13:38:25 +0100
-X-Gmail-Original-Message-ID: <CAMRc=McxGOejmegC9KaNLpCbxSL_CWmPC2PwfQGxQ+vaHg+rOw@mail.gmail.com>
-X-Gm-Features: AQt7F2rrsJVu7GLT96AFg8gb0rDx8lEL223Ap08R9PVwfe0DiaVCdXK84QTL9yQ
-Message-ID: <CAMRc=McxGOejmegC9KaNLpCbxSL_CWmPC2PwfQGxQ+vaHg+rOw@mail.gmail.com>
-Subject: Re: [PATCH v2 03/14] Bluetooth: qca: fix ROM version reading on
- WCN3998 chips
-To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Cc: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Marcel Holtmann <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
-	Jeff Johnson <jjohnson@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Manivannan Sadhasivam <mani@kernel.org>, Vinod Koul <vkoul@kernel.org>, 
-	Balakrishna Godavarthi <quic_bgodavar@quicinc.com>, Matthias Kaehlcke <mka@chromium.org>, 
-	linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
-	linux-wireless@vger.kernel.org, ath10k@lists.infradead.org, 
-	linux-pm@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="SNU7rx7CNqi3LNfR"
+Content-Disposition: inline
+In-Reply-To: <20260106-wcn3990-pwrctl-v2-1-0386204328be@oss.qualcomm.com>
+X-Cookie: People respond to people who respond.
 
-On Tue, Jan 6, 2026 at 2:01=E2=80=AFAM Dmitry Baryshkov
-<dmitry.baryshkov@oss.qualcomm.com> wrote:
->
-> WCN3998 uses a bit different format for rom version:
->
-> [    5.479978] Bluetooth: hci0: setting up wcn399x
-> [    5.633763] Bluetooth: hci0: QCA Product ID   :0x0000000a
-> [    5.645350] Bluetooth: hci0: QCA SOC Version  :0x40010224
-> [    5.650906] Bluetooth: hci0: QCA ROM Version  :0x00001001
-> [    5.665173] Bluetooth: hci0: QCA Patch Version:0x00006699
-> [    5.679356] Bluetooth: hci0: QCA controller version 0x02241001
-> [    5.691109] Bluetooth: hci0: QCA Downloading qca/crbtfw21.tlv
-> [    6.680102] Bluetooth: hci0: QCA Downloading qca/crnv21.bin
-> [    6.842948] Bluetooth: hci0: QCA setup on UART is completed
->
-> Fixes: 523760b7ff88 ("Bluetooth: hci_qca: Added support for WCN3998")
-> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-> ---
->  drivers/bluetooth/btqca.c | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/drivers/bluetooth/btqca.c b/drivers/bluetooth/btqca.c
-> index 7c958d6065be..86a48d009d1b 100644
-> --- a/drivers/bluetooth/btqca.c
-> +++ b/drivers/bluetooth/btqca.c
-> @@ -804,6 +804,8 @@ int qca_uart_setup(struct hci_dev *hdev, uint8_t baud=
-rate,
->          */
->         if (soc_type =3D=3D QCA_WCN3988)
->                 rom_ver =3D ((soc_ver & 0x00000f00) >> 0x05) | (soc_ver &=
- 0x0000000f);
-> +       else if (soc_type =3D=3D QCA_WCN3998)
-> +               rom_ver =3D ((soc_ver & 0x0000f000) >> 0x07) | (soc_ver &=
- 0x0000000f);
->         else
->                 rom_ver =3D ((soc_ver & 0x00000f00) >> 0x04) | (soc_ver &=
- 0x0000000f);
->
->
-> --
-> 2.47.3
->
 
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+--SNU7rx7CNqi3LNfR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Tue, Jan 06, 2026 at 03:01:11AM +0200, Dmitry Baryshkov wrote:
+> WCN3990 and other similar WiFi/BT chips incorporate a simple on-chip PMU
+> (clearly described as such in the documentation). Provide DT schema
+> covering other Qualcomm WiFi/BT chips to cover these devices too.
+
+Acked-by: Mark Brown <broonie@kernel.org>
+
+--SNU7rx7CNqi3LNfR
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmldDbAACgkQJNaLcl1U
+h9AZAgf/XiipI3+F+QTxwrwQRzlh0LdMCBZcR45yuHFhsU41dnP8c8jxSyBi4jha
+zisYjRUaX/If0siDIbV8OcUmr3IZGW8heg5lQ9+pKZSqDLSqHik9RbaR04VV3r6N
+urE8Y6dC0cfFvwQdxZxkRegQvagVL553Xq+kGNpRUGJEB6iX/8C9ulJwb4BiswHp
+v8U8MxtFyxfDSNWWJ93VpoasUNKyUex+Pztdflr5sPM0yLqK0bDXWqHtOc5ymacL
+zQ0tLxLeKBZaTAeSXQkvvzyYEFux+y6HaGOoz7MbJOkuxZjz10a6kRBcRwPHAci2
+czf2UsuEVlaLh3bDn6IYpJ9kaukVtw==
+=KbP6
+-----END PGP SIGNATURE-----
+
+--SNU7rx7CNqi3LNfR--
