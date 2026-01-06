@@ -1,166 +1,121 @@
-Received: from CHN02-BJS-obe.outbound.protection.partner.outlook.cn (mail-bjschn02on2110.outbound.protection.partner.outlook.cn [139.219.17.110])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D74FE335555;
-	Tue,  6 Jan 2026 14:55:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=139.219.17.110
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767711350; cv=fail; b=Q2OJzwenJvY6e+Y9WxOHsuyrDioKDKGECodMU7bUckB7eDS8S/knSWUj5cXHIsBN0cXUhZpiWfgFFc0bu4ABaoLT2stgtH4iAysh1datwRINLkl5hTUGpVcVJQDSjAI2BJtZcCYsd4SORxzMNpQn1HfY9RiWQfsoTbjHu8On7xM=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767711350; c=relaxed/simple;
-	bh=SkkR+r7LIQY55TuDN6eNAAhPAgUWgoDL5SvY24aww+s=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=gbbgRLot78P3vZjOMrT2SHMpLTlkELrSpEPrV7P1mH3xAzva2D7HWFhXSK0s+RlZ6VncU2k6iiM46/JIiA17ub4Ni1JK12uVGqYScnRa5zFL76uBi7hCDPKqOC8j7gHPUj1XX+aWDbqWmMkGdHrt2CibqhfCU6tvNPfuLpIWZ7s=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=starfivetech.com; spf=pass smtp.mailfrom=starfivetech.com; arc=fail smtp.client-ip=139.219.17.110
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=starfivetech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=starfivetech.com
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=D8bYIrqGe/9tj+I/02JeFwgbIht/VTONxgveTrUDPF2HjEtM+9TuVvGn5NyDmsb62bZxRbyzegdFIfC6tHQ/23UNlV6kSvRu8B1TiPgl2WYgmnIf8YjID+fCeRB1d+aQK/Z/I7apR5lES8s2KvL06IjZBcw9EgGhM86XENiW2qgQNCbAtniu1FpuHXp8j3ghmakcDz3Wxhy3bNdek0vCzjkqTRYMDCTWF0F1BH+tSRMOONykY1+W5pZCsP6ApqCvcVuXSuHihkow22WAt9aDivWMG0RaMIZfdgJTxdqljuVET/BwSmo5K9PbN404Y7tRm9AKg4vYk6Jr/Zh3D3IMZA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=1ur0Zu1ZfgULTGPHXoJkZKxzKzahgPq68u4jKhcp7Jk=;
- b=ZCYLa8FZHF6HV7a3dc/jc9NYAFF/Y2VvFD0VKA8MV6RQL4o1cf03aE4Wh1AfXbF9LAvTzAm9ShhQ5dgPVHjkSvVZg6OAQFrXxARld+NxJzq/LmxqIUCvGlqhx6TLzoQw6a6bgRg48Mx4jqrH1FK2VnkBQGFwzWvXDVe9/X41JWOdHJoMGHHTSidV9KDFq1fEw47jdfRrigpquLAmTfJNFmpmWhz5bpqdUsLCglO9j8jcXYw09tajpq65JLeC45ZaA8i9A33zi6ycEFTmml6VPS0ebDZllv8/sTNUz4Dco0mdIKtCwue7Shl9D/g6cFUMN6UqAVFZa2kM0thRJS5lLQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=starfivetech.com; dmarc=pass action=none
- header.from=starfivetech.com; dkim=pass header.d=starfivetech.com; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=starfivetech.com;
-Received: from SH0PR01MB0841.CHNPR01.prod.partner.outlook.cn
- (2406:e500:c311:20::14) by SH0PR01MB0730.CHNPR01.prod.partner.outlook.cn
- (2406:e500:c311:22::19) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9412.13; Tue, 6 Jan
- 2026 09:22:36 +0000
-Received: from SH0PR01MB0841.CHNPR01.prod.partner.outlook.cn
- ([fe80::81c4:2724:6a48:a18]) by SH0PR01MB0841.CHNPR01.prod.partner.outlook.cn
- ([fe80::81c4:2724:6a48:a18%4]) with mapi id 15.20.9388.011; Tue, 6 Jan 2026
- 09:22:35 +0000
-From: Joshua Yeong <joshua.yeong@starfivetech.com>
-To: rahul@summations.net,
-	anup@brainfault.org,
-	joshua.yeong@starfivetech.com,
-	leyfoon.tan@starfivetech.com,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	pjw@kernel.org,
-	palmer@dabbelt.com,
-	aou@eecs.berkeley.edu,
-	alex@ghiti.fr,
-	rafael@kernel.org,
-	viresh.kumar@linaro.org,
-	sboyd@kernel.org,
-	jms@oss.tenstorrent.com,
-	darshan.prajapati@einfochips.com,
-	charlie@rivosinc.com,
-	dfustini@oss.tenstorrent.com,
-	michal.simek@amd.com,
-	cyy@cyyself.name,
-	jassisinghbrar@gmail.com,
-	andriy.shevchenko@linux.intel.com
-Cc: linux-riscv@lists.infradead.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH 5/5] MAINTAINERS: Add RISC-V RPMI performance service group
-Date: Tue,  6 Jan 2026 17:21:16 +0800
-Message-ID: <20260106092117.3727152-6-joshua.yeong@starfivetech.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260106092117.3727152-1-joshua.yeong@starfivetech.com>
-References: <20260106092117.3727152-1-joshua.yeong@starfivetech.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: ZQ0PR01CA0035.CHNPR01.prod.partner.outlook.cn
- (2406:e500:c550:2::21) To SH0PR01MB0841.CHNPR01.prod.partner.outlook.cn
- (2406:e500:c311:20::14)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 398A633DEF7
+	for <linux-pm@vger.kernel.org>; Tue,  6 Jan 2026 15:07:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1767712033; cv=none; b=l07HDpkWmN+AzAKaemV5zliN2lehbjIm7mYwGNP/uUiutF4rfBO9cF8ZjZT29am7Po57+0ZOThtsOy5wFtQQorWUsj7rluzCJJL5UB2dYoU4zpmzuOMYiEg78xp/lmmlFs0Bauwu3ljWjr4IMjL1yB9chMpPw27wrEXfVQQllsQ=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1767712033; c=relaxed/simple;
+	bh=IQu1Edy/HWKz08uAYzo3PsbrFyGQXi8NI559zIHsYyQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Uyz66vPb+nTCOj/9PMDEgaS0roU35Id9HANShPIQOwQ048ztMbqWBDYV55zbUcnPsgFPmP4TXPh0JtVE5rUBSpICdrdcmVOzfHIGcg7aSVT1XPUG+Bot6yuVtDDerp6oShPkj9Y3SSK6fmOeCp4x2conbgP+RudspPkF4pGfGGE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LwpLZ4Gv; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LwpLZ4Gv"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8DBD5C2BCB1
+	for <linux-pm@vger.kernel.org>; Tue,  6 Jan 2026 15:07:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1767712032;
+	bh=IQu1Edy/HWKz08uAYzo3PsbrFyGQXi8NI559zIHsYyQ=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=LwpLZ4Gv/rLh9TOdLjDFrTwucroei2WbfyfQ748EF/Mixcf1SBZ7zGqZnvN3Cl67f
+	 G3QK9601kjEphYjnk4vmdZbVf3k/2hTZdTTy+LNeVt5x3G++qme34VifB+NJICW3vJ
+	 09c9JKB3N8bg1N+oyoE39OERHvzumzFiSIObvrQx+DaaND/DEPHGRZvAnPS/seHHSo
+	 1+Pxa3g00WVBkt02qKeOUAugvQXcehMej7dfbRiaqJbD+thxrzi1yFRdv5sPnQpBjO
+	 oI0Uiz8GA0cZx2M4JzwK1SkdfPms+hGSpML/mW9cUOjE9JxmPv5KeuXRQN9dP7cxp/
+	 8acHsRKVIWusg==
+Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-594270ec7f9so1246348e87.3
+        for <linux-pm@vger.kernel.org>; Tue, 06 Jan 2026 07:07:12 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCXwgXYPBXuGGScrJjjPF35pPAYzt4O5n462Aez+PSClnS/fsjbnW0fBvWUv5UvE+YU/xnOVZ7zllg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzpwLZxoQl4khLsDFPzpkn9k0XKEf6PygrvrMfRrZLv4AQ+iQB1
+	WUL9IrEglwNa5EGMjz8ev2sU31gQgz7/O1v/OCiO5EEir7AcBexjbrpVEb9WgZxx6PO9cHJooWG
+	9nN6RW9atvl+YHXvnzRWXETyCORC57i44X6cPmIFgVA==
+X-Google-Smtp-Source: AGHT+IHAOfkiONe5tfkuIatWxpK+1+BQ2Mtd3EKyiolyupo7EAbMOL0eppnic2LZGQzoSV374+2boUr3vUjOlxckYmM=
+X-Received: by 2002:a05:6512:3f0b:b0:598:eb13:c14e with SMTP id
+ 2adb3069b0e04-59b652cb22fmr1135214e87.35.1767712031036; Tue, 06 Jan 2026
+ 07:07:11 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SH0PR01MB0841:EE_|SH0PR01MB0730:EE_
-X-MS-Office365-Filtering-Correlation-Id: 130d56d1-3fff-48f8-9faa-08de4d0520bc
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam:
- BCL:0;ARA:13230040|7416014|1800799024|366016|52116014|41320700013|38350700014|7053199007|921020;
-X-Microsoft-Antispam-Message-Info:
- kbrSbf8ooNIykpWGeNs+rku2zPZQ1ha1c+yRHZ2/h3y5iEdAMz2ZOlEPDbuaNKtNyOuqgnZUWq6dvefOdRKJPpqz0+NJT699j43ag5vp4eFoFc3Kr20cAOTNwRu8aCZbSTdWuZn+9snddUhXLRvf1EHTE8z6ofsAQpCyU5b4VChGXT9zzrDbTQJ4nP/v6A5U0er6h93FdwJQnIMEjygBvoNGh+7viSlGZBZOgTtSftnPLOnRcZpOnt2R5SmIGe220mFHesla5vlfdPnRBIXC+vaXLpP1pOq+nXM/maeY4OUhmyoHxPuyf7ClMiMC8TyBL7SK4VQCtW9Mv3ue0thahO5G2kgCYmenNZraHQsgu0mTJzpglMgJvxwcLdvHAC5LWz0k+MoEzkLoRGZMRkervj74iaCI7/rCF9El/X4kqvG8FidVPM6axR9nTYjYDQTgNWyKy72SCMi9H98SMhvOfwn45JyUq/e+OaL16SaMZWlTkiGORGxEK5y0FuJdCAm4LGqKjxWzBCavi2VzFAb0yKAPbYY/M4Fm2hDeu95z8gKkbcXhmwLUgrgj7eRkx81+peylhg47p+y4Qv1if1ZOBThZ+KyQ6mkFOZx4fMG4gVM=
-X-Forefront-Antispam-Report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SH0PR01MB0841.CHNPR01.prod.partner.outlook.cn;PTR:;CAT:NONE;SFS:(13230040)(7416014)(1800799024)(366016)(52116014)(41320700013)(38350700014)(7053199007)(921020);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
- =?us-ascii?Q?ogz8QKKL7Rl5XP1dfaoFpYlk0nsCdIer+YNGT5jtZ4G0nzJfg93I/7H47snt?=
- =?us-ascii?Q?VhAkQmT73006F8tbgUoC9FUqaeFRjE3Y/wt/pwnQXn+YcGEvqLH20Nv7ajci?=
- =?us-ascii?Q?0Gl+1M47h9yZ8/cmMnd6Jo+2SGDrhRWhN7TMjnFhwy9sOHRw9fG7heUjjOzc?=
- =?us-ascii?Q?rQqiROMCCKiosEI4zM6WerROfw7zv9Pg1X4mmL98af5AbzpK3UEpdhKLiyDX?=
- =?us-ascii?Q?F71AhmZbEkUKCKjLGJojadI9ZQ4RZLiWXm/0c5fZbZix6327O+6Xnjyk/w3W?=
- =?us-ascii?Q?xTxjJ/GJUF0+OjUmybFw/FUpUIvD8uYEwo4nLG6HZ1U5AgHau3it1PeXKU5d?=
- =?us-ascii?Q?cOPKcUoCmND0zhzYY4U+KQZCExErPUoG8jodvgUWGpUK26gmko/eXZX2dEj7?=
- =?us-ascii?Q?MUXWR+rs+9iBwbLB9ePslQ+F1+KPEYA/fTb0wG3onNXggZKi/ewbBZIG9yfF?=
- =?us-ascii?Q?BZM0B+UmiMlUR+qYjpMOCJDjZkHNLIWM/jhuCv2wiqdhUuiGUmuq9sJF3BoG?=
- =?us-ascii?Q?bb5kTNtiKk0RQ3L480nkU5daCi8h31obGMghytZfJci1zw+TQYYZuPeRkI/F?=
- =?us-ascii?Q?d5bo/cXAcSNBxfGaxOuK9OkBGjraDdvmHrmLCyObxCKK8zTRcr+emtRqN0Gr?=
- =?us-ascii?Q?XHANfzPwWKy/DpC3U9+2Zwt9NQRtcnSrZ5OiE9ynx9zSdYI8h+Z02/nVE9JT?=
- =?us-ascii?Q?4h6Ndvykp3QK5qUL9NpTfbjim1erkNvagkZn+P+cIZt40+CPddROUuPSABD9?=
- =?us-ascii?Q?GtBTkElsgDG4p6hjPmdRPK+Ym7Ps/ncgxq+BC7lKS139S6411IFdw6WMB+RS?=
- =?us-ascii?Q?/nHXdbLTg+7v6OjaFh2K/glqOmmtXTnkrFtDddiFMNf4EqlclLQFb227kLsX?=
- =?us-ascii?Q?yDGaXF6PHKNju7AONdlec0s4obqIghRnfL24Zg2pbeiPc56ZP/1JB/xowr4g?=
- =?us-ascii?Q?/KtqY8E40A3Dsg1vVT1O1gO3zcJE30CMlAlROcEb83+Dkc24dPfytyNkWZen?=
- =?us-ascii?Q?kd6csIBEToUg29WdryL66hdvODIULheOun0MoYd75D7UAngZeswUoExXEruT?=
- =?us-ascii?Q?rWlRlb51tJdVb+o4BHevACTSzfoUtWpCJFQAEvvMriYF7Dm+cFLIqVOGKXlH?=
- =?us-ascii?Q?7KT3fhzqrigmM7yy/9CRacJkJ2Wiu07gejvUYfMnk7Sw9dvYZhsX1TqIUuWs?=
- =?us-ascii?Q?6tcHm2pr+J9Qjrgsl6TA1gJiYxAyrAjmNb/yL9YRDxyL4L/TNdNmIx9U15np?=
- =?us-ascii?Q?RPlVfXhe8A6LBrETl8l/cw8GcTcwq+sK32XquemaQn9QW7bypICEFUJ8yeYv?=
- =?us-ascii?Q?DD0CYsOl6Z6vpWtPz5U21/VtkWg+KNFl/u2jO3NdF2RZWATHUddj7S44Rajk?=
- =?us-ascii?Q?DM+7Ibs84AOCZL2ZfwnS0BwtOasyb3LZx/ucA8awE75HI5ppavCdJxhIEAZJ?=
- =?us-ascii?Q?yiY8zF+ZWx07Vim6JQMRXEmVp3+nu76UZpKez0+60o/qFP5Q1Ks52eJvCx+0?=
- =?us-ascii?Q?05xWYhgGQS3c+hLUfCasvj4jDAOlZxq082NdsUC0Trx9VocJVOZYe8j51ZW3?=
- =?us-ascii?Q?zBLY155yPS4kNH0zclA9FsCBYGC5GizBNWqdBc6RIwXP7WLN26qsbKv88deY?=
- =?us-ascii?Q?IlM/toiQ1XXL0I93yyt+jpQ=3D?=
-X-OriginatorOrg: starfivetech.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 130d56d1-3fff-48f8-9faa-08de4d0520bc
-X-MS-Exchange-CrossTenant-AuthSource: SH0PR01MB0841.CHNPR01.prod.partner.outlook.cn
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Jan 2026 09:22:35.8492
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 06fe3fa3-1221-43d3-861b-5a4ee687a85c
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: f5OtLeW+gXqIZyt2s6RAzl5c7/6Yhf222wQq/b/gOwwv8Z8FEsZ7dFoW8DjlW/Fqkv/16YKnE5wQ87HFF9ueNCOz4tA765AuUqzjnil76+M=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SH0PR01MB0730
+References: <20251228-arm-psci-system_reset2-vendor-reboots-v19-0-ebb956053098@oss.qualcomm.com>
+ <20251228-arm-psci-system_reset2-vendor-reboots-v19-6-ebb956053098@oss.qualcomm.com>
+ <CAMRc=Me8WQ=aMd-NJ1yzzHzqU8fT1u4eb7as=EjSpZ+Rpv9+rg@mail.gmail.com>
+ <87f25d02-2805-9da7-0d7f-05ce8a022d25@oss.qualcomm.com> <CAMRc=McH6jsaKROyMGAhH_gGSiQtqvuVmrUODgtSp0hX8g06=A@mail.gmail.com>
+ <466fac7a-e16d-9c49-80bc-c07ba5a5f334@oss.qualcomm.com>
+In-Reply-To: <466fac7a-e16d-9c49-80bc-c07ba5a5f334@oss.qualcomm.com>
+From: Bartosz Golaszewski <brgl@kernel.org>
+Date: Tue, 6 Jan 2026 16:06:58 +0100
+X-Gmail-Original-Message-ID: <CAMRc=MdNfW9pafvWy8L5iv5StR1b4_jghL7j-08cyPZVeO1Mag@mail.gmail.com>
+X-Gm-Features: AQt7F2phEQiXdqhKlEbA_1Ii19T6QcgYifTgwXE_RDm9f9TtDMKssHYYLEX6HPY
+Message-ID: <CAMRc=MdNfW9pafvWy8L5iv5StR1b4_jghL7j-08cyPZVeO1Mag@mail.gmail.com>
+Subject: Re: [PATCH v19 06/10] power: reset: Add psci-reboot-mode driver
+To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+Cc: Lorenzo Pieralisi <lpieralisi@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
+	Bjorn Andersson <andersson@kernel.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Sudeep Holla <sudeep.holla@arm.com>, Souvik Chakravarty <Souvik.Chakravarty@arm.com>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Andy Yan <andy.yan@rock-chips.com>, 
+	John Stultz <john.stultz@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	Moritz Fischer <moritz.fischer@ettus.com>, Mark Rutland <mark.rutland@arm.com>, 
+	Conor Dooley <conor+dt@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Florian Fainelli <florian.fainelli@broadcom.com>, Krzysztof Kozlowski <krzk@kernel.org>, 
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Andre Draszik <andre.draszik@linaro.org>, 
+	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+	Srinivas Kandagatla <srini@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Add myself into mail to list for RISC-V RPMI.
+On Tue, Jan 6, 2026 at 3:45=E2=80=AFPM Shivendra Pratap
+<shivendra.pratap@oss.qualcomm.com> wrote:
+>
+> On 1/6/2026 6:04 PM, Bartosz Golaszewski wrote:
+> > On Mon, Jan 5, 2026 at 7:06=E2=80=AFPM Shivendra Pratap
+> > <shivendra.pratap@oss.qualcomm.com> wrote:
+> >>
+> >>>> +static int __init psci_reboot_mode_init(void)
+> >>>> +{
+> >>>> +       struct faux_device *fdev;
+> >>>> +
+> >>>> +       fdev =3D faux_device_create("psci-reboot-mode", NULL, &psci_=
+reboot_mode_ops);
+> >>>> +       if (!fdev)
+> >>>> +               return -ENODEV;
+> >>>
+> >>> This will always create this device for everyone who includes this
+> >>> module. Move the of_find_compatible_node(NULL, NULL, "arm,psci-1.0")
+> >>> call from probe() here instead and don't create the device if it
+> >>> fails.
+> >>
+> >> Ack.
+> >> Will move both calls to init before creating the faux device.
+> >>
+> >> psci_np =3D of_find_compatible_node(NULL, NULL, "arm,psci-1.0");
+> >> and
+> >> np =3D of_find_node_by_name(psci_np, "reboot-mode");
+> >> --
+> >>
+> >
+> > On a second glance - and I may be totally wrong - would it be possible
+> > to switch to using the auxiliary bus and create this device from
+> > drivers/firmware/psci/psci.c? That would be even cleaner.
+>
+> Till v17, device was being created in psci.c. Lorenzo wanted to move it
+> outside psci similar to design of cpuidle-psci.
+>
+> https://lore.kernel.org/all/aRIfc9iuC2b9DqI+@lpieralisi/
+>
 
-Signed-off-by: Joshua Yeong <joshua.yeong@starfivetech.com>
----
- MAINTAINERS | 4 ++++
- 1 file changed, 4 insertions(+)
+Thanks for the link. Right, there's no actual psci driver binding to a
+struct device, rather we only have a set of functions called very
+early into the boot process.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 765ad2daa218..fa47e94446cb 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -22508,14 +22508,18 @@ F:	drivers/perf/riscv_pmu_sbi.c
- RISC-V RPMI AND MPXY DRIVERS
- M:	Rahul Pathak <rahul@summations.net>
- M:	Anup Patel <anup@brainfault.org>
-+M:	Joshua Yeong <joshua.yeong@starfivetech.com>
- L:	linux-riscv@lists.infradead.org
- F:	Documentation/devicetree/bindings/clock/riscv,rpmi-clock.yaml
- F:	Documentation/devicetree/bindings/clock/riscv,rpmi-mpxy-clock.yaml
-+F:	Documentation/devicetree/bindings/firmware/riscv,rpmi-performance.yaml
-+F:	Documentation/devicetree/bindings/firmware/riscv,rpmi-mpxy-performance.yaml
- F:	Documentation/devicetree/bindings/interrupt-controller/riscv,rpmi-mpxy-system-msi.yaml
- F:	Documentation/devicetree/bindings/interrupt-controller/riscv,rpmi-system-msi.yaml
- F:	Documentation/devicetree/bindings/mailbox/riscv,rpmi-shmem-mbox.yaml
- F:	Documentation/devicetree/bindings/mailbox/riscv,sbi-mpxy-mbox.yaml
- F:	drivers/clk/clk-rpmi.c
-+F:	drivers/cpufreq/riscv-rpmi-cpufreq.c
- F:	drivers/irqchip/irq-riscv-rpmi-sysmsi.c
- F:	drivers/mailbox/riscv-sbi-mpxy-mbox.c
- F:	include/linux/mailbox/riscv-rpmi-message.h
--- 
-2.43.0
+Nevermind this comment
 
+Bart
