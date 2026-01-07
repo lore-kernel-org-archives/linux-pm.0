@@ -1,94 +1,104 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 049928F49
-	for <linux-pm@vger.kernel.org>; Wed,  7 Jan 2026 12:42:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F1A732AAC5;
+	Wed,  7 Jan 2026 14:11:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767789722; cv=none; b=NKM9sY6u+fH6curDXa2UTamgdydRYUxr6DkDJKKit+Fz7eQZTjzIl/3xPdRRciH0GQFcLY5DbxwjNA7tSVvqYGPuqzgOiQyesrWiCL44UjVTrV2iF4wzA57FykrT4v9puvwtktU/WnRyHxHEnPnujHGOwO4f20aabEjyXfrr2jI=
+	t=1767795086; cv=none; b=lPiGTCeygRbZ0P4mq5e+WvYjzdXyVL3AyXBCLiJF5R8kmICjDMSB8Emai3hqDOJscLyf2qG2XhxCA6mYGQe2J30MdjiXE0eAMmI26rOqjn4+/jcxrxA3FwzDaB4UesCFOC5K7S0kjs3Sl+dBz1kKzUf96dKgNH/luDEksFwKkiA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767789722; c=relaxed/simple;
-	bh=J/ai7KFn3Cfpu1PW1raz4q+T7q1x8y/x/f2wv9CjuQE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=g1wJHQaKQDMJoG3h9x3Xsp6Vez6zXZLeV4Arq31aZw+mHkgVG0SZkQ0NVvJ/Y5WjDCD5FKKdhgxV+haxho/CtHCxLOKhVl1XVad7r+8LT0zqxlVZXnIZ0ULRsAUVdZqN7F6uUftYM/81Vtdp+TQmI+6Y8jRKGfevG5npALzbrJ8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MIB5Incq; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1767795086; c=relaxed/simple;
+	bh=586xK+Tt3k7/bbGWV0rchSixVB7IEZBKxgz1tfKFOmg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=QNg+4whlsYT9BiwCO1yVLoKe+sH9dr33mCe39Wcr+bsjKdEEyk3l35SRQk9bKWlCMctO6GLWsPADvZRApiTtQ/WV1guLlaafvMxFU0UKdI6N1+omaRJQpPOCsKuzxPB+Jh3PpO07dY3eIB9iNYWprmD2G4qoD1j38iewaBp/Y9Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=M+U++E+z; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MIB5Incq"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D3292C2BCB3
-	for <linux-pm@vger.kernel.org>; Wed,  7 Jan 2026 12:42:01 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="M+U++E+z"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id DE8FEC19421;
+	Wed,  7 Jan 2026 14:11:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767789721;
-	bh=J/ai7KFn3Cfpu1PW1raz4q+T7q1x8y/x/f2wv9CjuQE=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=MIB5IncqfGRfraXbXrmpffxoJsVOEiSMGJIgrDGuW6/2apZe//icEBUJRbplsB6op
-	 Kpv+mi5TfGCok3TymLzQmbneF3Dgpo+CNJGa54o6GpyMBZhRT66nzpRpQ1R0HIsISb
-	 D0sdULHxxWRCQcOoN1LVa9bQ+ESCEWnsgyo/6WuMp7pN3RDKXCw2F7JrnsH7vhTVPj
-	 3Hoq9PKp+888I77inBrP3cbk0aEtdFk8yrVb1c37iD8y5xvVL0Bh04ieYAGAX5Slfw
-	 3yTE5MoUYNJfXJAWEtV7Ipya9U9LzPOVPR82pKsncRGimhI/gl34RSve24LKr0Cyky
-	 IIelaneajPuLw==
-Received: by mail-ot1-f42.google.com with SMTP id 46e09a7af769-7c6d3676455so1041457a34.2
-        for <linux-pm@vger.kernel.org>; Wed, 07 Jan 2026 04:42:01 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCXAcvCOf7VfZREdZ0NSAYWPfH6vLynCYGUhE0U8WlYcgdvluYzRyVG5U0JCYO6L6eXHIeIBkrBqYA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxTwjiZWUaNo6843j+1ZzUHf8yWrtIcuFs9Vq6DKbSSBjZri8tO
-	dLsMqlyMXwLFt2XVE2+Hd9lpRli5tBbrpABSWQe339zSVMEfclT2EyxpJZL/Hz4NRbcnHKLU1N6
-	L6i+2cjr8pqP3x0q0DvvkuJiceiAIbIY=
-X-Google-Smtp-Source: AGHT+IHttT1Vk9rgD0sQJMCdtIyBGD9/zZtm4P/TXXzDuDiMnspXnxrq2j/u2sDX/hSmZJXyzknm1Az9AP+wgZaf8WA=
-X-Received: by 2002:a05:6820:4ecf:b0:65b:3907:b360 with SMTP id
- 006d021491bc7-65f54f71ae0mr681890eaf.62.1767789720832; Wed, 07 Jan 2026
- 04:42:00 -0800 (PST)
+	s=k20201202; t=1767795086;
+	bh=586xK+Tt3k7/bbGWV0rchSixVB7IEZBKxgz1tfKFOmg=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=M+U++E+zmJXnCjwt2Q+renEf+ocL+yNHhLVYF/Jex/lOY3JCKY/s2Cc+FB5wHTBNy
+	 5t1yeei0PO9kxbddOAT2oKfAwazmwWJDDSyEANM5pQA+GiylSLMaGYLXaDxh1XTBZU
+	 PHRxF8Dc2Ra2ccYUobBjfDggh7CEVcW4gTve9+DUNAald8XIwzyzHbYFHEb61il/Pk
+	 9A9sqvR1X9JzK31ljcqlpYAI0axSip535+u0VB9ct1ec4jDqkfIOVEDp4CTvQoPctZ
+	 Gfad7i7PtOBftiqchxjKNUfGJsAfjKITN5iBYmD6KW7tUhDbDf2ncadxWBl9GQjuDw
+	 aKktx/oGqoFHg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CEC1DCFD641;
+	Wed,  7 Jan 2026 14:11:25 +0000 (UTC)
+From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
+Date: Wed, 07 Jan 2026 19:41:23 +0530
+Subject: [PATCH v5 1/5] dt-bindings: ata: sata: Document the graph port
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <6245770.lOV4Wx5bFT@rafael.j.wysocki> <5973090.DvuYhMxLoT@rafael.j.wysocki>
- <20260106162905.14df3458@kernel.org>
-In-Reply-To: <20260106162905.14df3458@kernel.org>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 7 Jan 2026 13:41:49 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0gE-Nwxe-d-_P_z26fZckGq_nhzZ-qV_PEr85VkrYRCEA@mail.gmail.com>
-X-Gm-Features: AQt7F2rB_HX4dMfuGwDb8coml-RQF8Ua6wzXFjSg-QJhRjst_bGvQ5amEWvnNnQ
-Message-ID: <CAJZ5v0gE-Nwxe-d-_P_z26fZckGq_nhzZ-qV_PEr85VkrYRCEA@mail.gmail.com>
-Subject: Re: [PATCH v2 1/3] net: Discard pm_runtime_put() return value
-To: Jakub Kicinski <kuba@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
-	LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, 
-	Brian Norris <briannorris@chromium.org>, Andrew Lunn <andrew+netdev@lunn.ch>, 
-	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
-	Paolo Abeni <pabeni@redhat.com>, Siddharth Vadapalli <s-vadapalli@ti.com>, 
-	Roger Quadros <rogerq@kernel.org>, netdev@vger.kernel.org, 
-	Nicolas Ferre <nicolas.ferre@microchip.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
-	Simon Horman <horms@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260107-pci-m2-v5-1-8173d8a72641@oss.qualcomm.com>
+References: <20260107-pci-m2-v5-0-8173d8a72641@oss.qualcomm.com>
+In-Reply-To: <20260107-pci-m2-v5-0-8173d8a72641@oss.qualcomm.com>
+To: Bjorn Helgaas <bhelgaas@google.com>, 
+ Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Bartosz Golaszewski <brgl@bgdev.pl>, 
+ Damien Le Moal <dlemoal@kernel.org>, Niklas Cassel <cassel@kernel.org>, 
+ Linus Walleij <linus.walleij@linaro.org>, 
+ Bartosz Golaszewski <brgl@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+ Stephan Gerhold <stephan.gerhold@linaro.org>, 
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+ linux-pm@vger.kernel.org, linux-ide@vger.kernel.org, 
+ Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=917;
+ i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
+ bh=9i4SXdeQUf4xFNTVF27hrzTgaGj3TYdVJNxV8w9WdaE=;
+ b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBpXmmLGXHl/IauCFQ+UOyeR70ghPTr+GzfjvDCN
+ oQNv7m4UYGJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaV5piwAKCRBVnxHm/pHO
+ 9SvMB/9+LmMbrio/668Iyce2ZVSAg803BhvaWzOavaKxc70H5dpTsdDJo1cHf217cJ4CTMkFNXH
+ 0ZTHra88qnDl2Ot3juCRc8LbCId8gwZR4lsVwVNnm+SxbSZ9Q9ZIRKYJF1Z3XlpRjKGfkryRGBg
+ O/LhI26yewj/bn9ZxSrAyLLETfnVu5YmqMp3E9g9jql6S7WkI8QVbaRnwkJYPzZzqvCxshk/RRt
+ 7R7M49DiqWC3pazK+f/CPo55sfZHgY3iqU3R/G9OsG73s29yfLCV0Q9DALXBTirWfbLNUY1XFfC
+ 3QlfjWUHeGWmqMFqaCBJBGMsvzvcOJqb3szqdbhYHsRc3V8D
+X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
+ fpr=C668AEC3C3188E4C611465E7488550E901166008
+X-Endpoint-Received: by B4 Relay for
+ manivannan.sadhasivam@oss.qualcomm.com/default with auth_id=461
+X-Original-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+Reply-To: manivannan.sadhasivam@oss.qualcomm.com
 
-On Wed, Jan 7, 2026 at 1:29=E2=80=AFAM Jakub Kicinski <kuba@kernel.org> wro=
-te:
->
-> On Sat, 03 Jan 2026 22:23:52 +0100 Rafael J. Wysocki wrote:
-> > Subject: [PATCH v2 1/3] net: Discard pm_runtime_put() return value
->
-> Sorry for noticing late -- looks like the subject prefix being 1/3
-> instead of 0/3 is throwing patchwork off.
+From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 
-No worries.
+An external connector like M.2 could expose the SATA interface to the
+plugin cards. So add the graph port to establish link between the SATA Port
+and the connector node.
 
-> Patchwork seems to have
-> mis-guessed that these are the first 3 patches of the missing ones
-> in your full 23 patch series, instead of treating this as a fresh
-> posting:
->
-> https://patchwork.kernel.org/project/netdevbpf/list/?series=3D1035812&sta=
-te=3D*
->
-> Could you resend one more time with the cover letter subject corrected?
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+---
+ Documentation/devicetree/bindings/ata/sata-common.yaml | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Done:
+diff --git a/Documentation/devicetree/bindings/ata/sata-common.yaml b/Documentation/devicetree/bindings/ata/sata-common.yaml
+index 58c9342b9925..97cd69ebf331 100644
+--- a/Documentation/devicetree/bindings/ata/sata-common.yaml
++++ b/Documentation/devicetree/bindings/ata/sata-common.yaml
+@@ -54,4 +54,7 @@ $defs:
+           each port can have a Port Multiplier attached thus allowing to
+           access more than one drive by means of a single SATA port.
+ 
++      port:
++        $ref: /schemas/graph.yaml#/properties/port
++
+ ...
 
-https://lore.kernel.org/linux-pm/2816529.mvXUDI8C0e@rafael.j.wysocki/
+-- 
+2.48.1
 
-Interestingly enough, the kernel.org Patchwork seems to have got that right=
-:
 
-https://patchwork.kernel.org/project/linux-pm/list/?series=3D1038125
