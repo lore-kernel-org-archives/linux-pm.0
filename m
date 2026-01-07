@@ -1,110 +1,185 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89D5B33AD9E;
-	Wed,  7 Jan 2026 18:51:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.20
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC96E3A0B3A
+	for <linux-pm@vger.kernel.org>; Wed,  7 Jan 2026 19:57:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767811897; cv=none; b=n6ReFb0lMLliBjXAe+ugzJo7dDFfM4eIknSpFFwuZc6m4Q6X06dw2VNTlG2GzeGNUj2jXNsWlSuiFMjwCKh8K69UdusD5UnxQRqCpVHu3W27yH20BlxlxBHhIEj4OL2YoRYT3UERvZkidZbb/AlBwjYY1XUdMH01Lh2Y2cs0FRg=
+	t=1767815824; cv=none; b=ab0nw5/1CfQevOFxqhe4nQRFQZ8kEPy5x1yk8kS0TROUFqwAHT3xEbqeTlyJ5e35kzicn/7H6qigGb2vrnHVG2JiTCzpIH/67J8LzAePBQ6+ymZpo3elOClUlC3j2prxQSul8TqDxmg8PqleGXjOkGWuUbJhnIe/iCqeCOUAaZg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767811897; c=relaxed/simple;
-	bh=oK2ddbEmcbKdHY/HjJVsgNc6NncfoXvn+c0af6X7qXc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kUqjkhKvsImeNL4NoXgKlm1bzHrbmtCTRAID1CWdpl3oNoCjPMV5/W/aFhBWaOtycvVj7+PRXoku3HbzIdUpKehmfELxWkBaLdtOBFnDNsPsBBqOMK1keniYX+42RrhPFjsaiE55l0673l6wUZjVfiggTxhLGEZR5Yrc/EBA2uM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Xo4PLeKe; arc=none smtp.client-ip=198.175.65.20
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1767815824; c=relaxed/simple;
+	bh=+VBjyrmdJBHXv8hFipAjm6s+ntR7S0VRhaAQ6AcLC0g=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=vEkYr6ISda0D3Dryl57Mit2qcE7RsfMMZPJ4fKhgT7DGEx7fUqNeW6p1Lv7SwvuEKthyX09XVDgzc7/i/0ZYkiurayyc4QkPOqre3P3PH9PIcPllVrnzE9YXomJ1U7lyG0CUG5b9DAzSLFeahkc6oDbjiwAXRjwtpIaJOhECtj0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=o/6eo/5z; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Xo4PLeKe"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1767811893; x=1799347893;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=oK2ddbEmcbKdHY/HjJVsgNc6NncfoXvn+c0af6X7qXc=;
-  b=Xo4PLeKehSJMEwHvM/aIOejb1RewLN9EraLPj+9MkdLVU1dqgGTTGOM3
-   lCgikSdjkFlG13WylUoXibApPUv7FZwO5iWh9T2spFTCBHbLR1TN+s/sr
-   TdBx9xLMvYDIdbyY2lB8PPt340jeP3t2dWhtn4jOOY65mhs1sFot248Fy
-   GRU5i+/r+tTo8M14cAFlqKuXa62zG8EfkXpvvPoVtDijcNTJyw5g0XIBf
-   +3pTvW5oevxqy7pGAh5OGDXpn1vC+Y/ecYcwYuZvRWB0WyUboRAyQVCmG
-   NcSQfor1u2J9y+/vUBkSNAwgVIp855trZtstLgf6WzaUYven7ga+nyqHm
-   A==;
-X-CSE-ConnectionGUID: eYJlCNMbRuimH0x3OTsSTg==
-X-CSE-MsgGUID: JkjMajC3TKmUEvb64qkAZg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11664"; a="68925246"
-X-IronPort-AV: E=Sophos;i="6.21,208,1763452800"; 
-   d="scan'208";a="68925246"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jan 2026 10:51:24 -0800
-X-CSE-ConnectionGUID: eyAxprYEQj+98pau/1wVYQ==
-X-CSE-MsgGUID: D/pXi+6pSw60dw/1uUsqXw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,208,1763452800"; 
-   d="scan'208";a="207143715"
-Received: from vpanait-mobl.ger.corp.intel.com (HELO kekkonen.fi.intel.com) ([10.245.245.174])
-  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jan 2026 10:51:21 -0800
-Received: from kekkonen.localdomain (localhost [IPv6:::1])
-	by kekkonen.fi.intel.com (Postfix) with SMTP id 5F4EE12020E;
-	Wed, 07 Jan 2026 20:51:34 +0200 (EET)
-Date: Wed, 7 Jan 2026 20:51:34 +0200
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6 krs, Bertel Jungin Aukio 5, 02600 Espoo
-From: Sakari Ailus <sakari.ailus@linux.intel.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	Brian Norris <briannorris@chromium.org>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	linux-media@vger.kernel.org
-Subject: Re: [PATCH v1 06/23] media: ccs: Discard pm_runtime_put() return
- value
-Message-ID: <aV6rNrdHDmnG9LwB@kekkonen.localdomain>
-References: <6245770.lOV4Wx5bFT@rafael.j.wysocki>
- <22966634.EfDdHjke4D@rafael.j.wysocki>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="o/6eo/5z"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 92AF7C2BC87
+	for <linux-pm@vger.kernel.org>; Wed,  7 Jan 2026 19:57:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1767815823;
+	bh=+VBjyrmdJBHXv8hFipAjm6s+ntR7S0VRhaAQ6AcLC0g=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=o/6eo/5zs0RzXoNw5Ej9A45/1N5wStTrAkCwQJWGqcoSZmcUnd0Z+L8dzDyqux/GG
+	 ger8d/1SVEIuBfiPbwUxUkYxfVj0akHUvCUlocVWEA8dJaJC5vdVoWraq4QHCwzVZi
+	 c6OnRnVP8IR4n3fzJ8l/g30EYVO2t76gGhU9k8apkzF3INh5cvFLIt4EPOYZYEygP6
+	 c1Hw+qRhRR6Ojb0vcyb12O2+HtxkUvGGQAKCcLcYSYMG88umzmcSGlWd+3DLCdiYp6
+	 qebF5+mJkvX8Xyu98keGoBpNtnJgsfXLvLQGeJaYIMd+0ehCz09TPbUe7YoOkSWy2l
+	 hWDVOXgWQQT1g==
+Received: by mail-oa1-f44.google.com with SMTP id 586e51a60fabf-3e8819eda8bso915662fac.3
+        for <linux-pm@vger.kernel.org>; Wed, 07 Jan 2026 11:57:03 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCX50sl7fWcuz/xgEnRVnlhgmtcG441YdKwiORwvnHjnRtPokYH3K+jdTNjAW3vTuAs/fNLjIN+QQA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxshY0uXIe22fG87AW36w0b6CiBJYs3JNciqnEPed7P/mEHP24b
+	oxCPsevdfUSBbmjkrfc1SYQ1yu6cQILnBxMUuWEExxnzDgsBVzeF1wA6taSZNi24mtG/NwysJnP
+	UdDtLukKdPaqILtEGD3LSRC0/FqSLkcs=
+X-Google-Smtp-Source: AGHT+IGD121X1TOzfCHSPDnImhpxYxlydTwNjoEEqXnErTuAQNSSQWGE9TltWwcuH40GRao6lXf2ebmHYSFBy+rTjm0=
+X-Received: by 2002:a4a:da4c:0:b0:65b:387a:835f with SMTP id
+ 006d021491bc7-65f54ef230dmr1210110eaf.31.1767815822629; Wed, 07 Jan 2026
+ 11:57:02 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <22966634.EfDdHjke4D@rafael.j.wysocki>
+References: <20251223072119.3372582-1-zhanjie9@hisilicon.com> <20251223072119.3372582-2-zhanjie9@hisilicon.com>
+In-Reply-To: <20251223072119.3372582-2-zhanjie9@hisilicon.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 7 Jan 2026 20:56:50 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0h_1nM3S93prH60VPkicQSdH_gzh7VkXHNCzfLq-aLP-Q@mail.gmail.com>
+X-Gm-Features: AQt7F2qmAPuD1J1j6UNwANWUUqw4-V9DUtSrJcD5sPI_qu_DLnXIVN8OvdSsCC8
+Message-ID: <CAJZ5v0h_1nM3S93prH60VPkicQSdH_gzh7VkXHNCzfLq-aLP-Q@mail.gmail.com>
+Subject: Re: [PATCH v5 1/3] ACPI: CPPC: Factor out and export per-cpu cppc_perf_ctrs_in_pcc_cpu()
+To: Jie Zhan <zhanjie9@hisilicon.com>
+Cc: viresh.kumar@linaro.org, rafael@kernel.org, ionela.voinescu@arm.com, 
+	beata.michalska@arm.com, pierre.gondois@arm.com, zhenglifeng1@huawei.com, 
+	linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linuxarm@huawei.com, 
+	jonathan.cameron@huawei.com, prime.zeng@hisilicon.com, yubowen8@huawei.com, 
+	lihuisong@huawei.com, zhangpengjie2@huawei.com, wangzhi12@huawei.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Rafael,
+On Tue, Dec 23, 2025 at 8:23=E2=80=AFAM Jie Zhan <zhanjie9@hisilicon.com> w=
+rote:
+>
+> Factor out cppc_perf_ctrs_in_pcc_cpu() for checking whether per-cpu CPC
+> regs are defined in PCC channels, and export it out for further use.
+>
+> Reviewed-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+> Reviewed-by: Pierre Gondois <pierre.gondois@arm.com>
+> Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
 
-On Mon, Dec 22, 2025 at 09:03:25PM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Passing the pm_runtime_put() return value to callers is not particularly
-> useful.
-> 
-> Returning an error code from pm_runtime_put() merely means that it has
-> not queued up a work item to check whether or not the device can be
-> suspended and there are many perfectly valid situations in which that
-> can happen, like after writing "on" to the devices' runtime PM "control"
-> attribute in sysfs for one example.  It also happens when the kernel is
-> configured with CONFIG_PM unset.
-> 
-> Accordingly, update ccs_post_streamoff() to simply discard the return
-> value of pm_runtime_put() and always return success to the caller.
-> 
-> This will facilitate a planned change of the pm_runtime_put() return
-> type to void in the future.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
+
+and I'd prefer Viresh to take care of this along with the other two
+patches in the series.
+
 > ---
-> 
-> This patch is part of a series, but it doesn't depend on anything else
-> in that series.  The last patch in the series depends on it.
-> 
-> It can be applied by itself and if you decide to do so, please let me
-> know.
-> 
-> Otherwise, an ACK or equivalent will be appreciated, but also the lack
-> of specific criticism will be eventually regarded as consent.
-
-Acked-by: Sakari Ailus <sakari.ailus@linux.intel.com>
-
--- 
-Sakari Ailus
+>  drivers/acpi/cppc_acpi.c | 48 ++++++++++++++++++++++------------------
+>  include/acpi/cppc_acpi.h |  5 +++++
+>  2 files changed, 32 insertions(+), 21 deletions(-)
+>
+> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+> index e66e20d1f31b..22d7fd669a6c 100644
+> --- a/drivers/acpi/cppc_acpi.c
+> +++ b/drivers/acpi/cppc_acpi.c
+> @@ -1423,6 +1423,32 @@ int cppc_get_perf_caps(int cpunum, struct cppc_per=
+f_caps *perf_caps)
+>  }
+>  EXPORT_SYMBOL_GPL(cppc_get_perf_caps);
+>
+> +/**
+> + * cppc_perf_ctrs_in_pcc_cpu - Check if any perf counters of a CPU are i=
+n PCC.
+> + * @cpu: CPU on which to check perf counters.
+> + *
+> + * Return: true if any of the counters are in PCC regions, false otherwi=
+se
+> + */
+> +bool cppc_perf_ctrs_in_pcc_cpu(unsigned int cpu)
+> +{
+> +       struct cpc_desc *cpc_desc =3D per_cpu(cpc_desc_ptr, cpu);
+> +       struct cpc_register_resource *ref_perf_reg;
+> +
+> +       /*
+> +        * If reference perf register is not supported then we should use=
+ the
+> +        * nominal perf value
+> +        */
+> +       ref_perf_reg =3D &cpc_desc->cpc_regs[REFERENCE_PERF];
+> +       if (!CPC_SUPPORTED(ref_perf_reg))
+> +               ref_perf_reg =3D &cpc_desc->cpc_regs[NOMINAL_PERF];
+> +
+> +       return CPC_IN_PCC(&cpc_desc->cpc_regs[DELIVERED_CTR]) ||
+> +               CPC_IN_PCC(&cpc_desc->cpc_regs[REFERENCE_CTR]) ||
+> +               CPC_IN_PCC(&cpc_desc->cpc_regs[CTR_WRAP_TIME]) ||
+> +               CPC_IN_PCC(ref_perf_reg);
+> +}
+> +EXPORT_SYMBOL_GPL(cppc_perf_ctrs_in_pcc_cpu);
+> +
+>  /**
+>   * cppc_perf_ctrs_in_pcc - Check if any perf counters are in a PCC regio=
+n.
+>   *
+> @@ -1437,27 +1463,7 @@ bool cppc_perf_ctrs_in_pcc(void)
+>         int cpu;
+>
+>         for_each_online_cpu(cpu) {
+> -               struct cpc_register_resource *ref_perf_reg;
+> -               struct cpc_desc *cpc_desc;
+> -
+> -               cpc_desc =3D per_cpu(cpc_desc_ptr, cpu);
+> -
+> -               if (CPC_IN_PCC(&cpc_desc->cpc_regs[DELIVERED_CTR]) ||
+> -                   CPC_IN_PCC(&cpc_desc->cpc_regs[REFERENCE_CTR]) ||
+> -                   CPC_IN_PCC(&cpc_desc->cpc_regs[CTR_WRAP_TIME]))
+> -                       return true;
+> -
+> -
+> -               ref_perf_reg =3D &cpc_desc->cpc_regs[REFERENCE_PERF];
+> -
+> -               /*
+> -                * If reference perf register is not supported then we sh=
+ould
+> -                * use the nominal perf value
+> -                */
+> -               if (!CPC_SUPPORTED(ref_perf_reg))
+> -                       ref_perf_reg =3D &cpc_desc->cpc_regs[NOMINAL_PERF=
+];
+> -
+> -               if (CPC_IN_PCC(ref_perf_reg))
+> +               if (cppc_perf_ctrs_in_pcc_cpu(cpu))
+>                         return true;
+>         }
+>
+> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+> index 13fa81504844..4bcdcaf8bf2c 100644
+> --- a/include/acpi/cppc_acpi.h
+> +++ b/include/acpi/cppc_acpi.h
+> @@ -154,6 +154,7 @@ extern int cppc_get_perf_ctrs(int cpu, struct cppc_pe=
+rf_fb_ctrs *perf_fb_ctrs);
+>  extern int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls);
+>  extern int cppc_set_enable(int cpu, bool enable);
+>  extern int cppc_get_perf_caps(int cpu, struct cppc_perf_caps *caps);
+> +extern bool cppc_perf_ctrs_in_pcc_cpu(unsigned int cpu);
+>  extern bool cppc_perf_ctrs_in_pcc(void);
+>  extern unsigned int cppc_perf_to_khz(struct cppc_perf_caps *caps, unsign=
+ed int perf);
+>  extern unsigned int cppc_khz_to_perf(struct cppc_perf_caps *caps, unsign=
+ed int freq);
+> @@ -204,6 +205,10 @@ static inline int cppc_get_perf_caps(int cpu, struct=
+ cppc_perf_caps *caps)
+>  {
+>         return -EOPNOTSUPP;
+>  }
+> +static inline bool cppc_perf_ctrs_in_pcc_cpu(unsigned int cpu)
+> +{
+> +       return false;
+> +}
+>  static inline bool cppc_perf_ctrs_in_pcc(void)
+>  {
+>         return false;
+> --
+> 2.33.0
+>
