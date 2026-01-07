@@ -1,81 +1,110 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5501834E772;
-	Wed,  7 Jan 2026 18:38:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89D5B33AD9E;
+	Wed,  7 Jan 2026 18:51:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767811111; cv=none; b=U0IfCmxgtsV/E89ZR3krGrRkM6YDvLery329sEon3A89EK0YGyhy0C/ItMuXIth9H1xrqrH3Fg76Ki6B9J5LhzaTZUxh942NG3mW4Nkqxmx+h699lB8VR+6KZ3IlZVSRfUpZ8EDOcmjzNbEAocfFgnbpx0+BHEidg7Qi54Y8DfQ=
+	t=1767811897; cv=none; b=n6ReFb0lMLliBjXAe+ugzJo7dDFfM4eIknSpFFwuZc6m4Q6X06dw2VNTlG2GzeGNUj2jXNsWlSuiFMjwCKh8K69UdusD5UnxQRqCpVHu3W27yH20BlxlxBHhIEj4OL2YoRYT3UERvZkidZbb/AlBwjYY1XUdMH01Lh2Y2cs0FRg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767811111; c=relaxed/simple;
-	bh=giwVjXZaInPGem3clXozi1NVnQJ6c/GXXvkKUWc/mdg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=kNgdlhgK7lHfmMFeRzLqG1tcSVSMb/4zrifYB7sfr7SBt1bhC6vF4vt35sfK5DWzp1GWadV4T9tlIr6rm29lBgJ5azYudAmws4BpEkS7VIBuCHnRok0OUHgINbg7k3Fna1qCSBlJbBZX1x+4/RHrJ6My4d+6rpyZ8ACM1xvjPjs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FyYIkfaF; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1767811897; c=relaxed/simple;
+	bh=oK2ddbEmcbKdHY/HjJVsgNc6NncfoXvn+c0af6X7qXc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=kUqjkhKvsImeNL4NoXgKlm1bzHrbmtCTRAID1CWdpl3oNoCjPMV5/W/aFhBWaOtycvVj7+PRXoku3HbzIdUpKehmfELxWkBaLdtOBFnDNsPsBBqOMK1keniYX+42RrhPFjsaiE55l0673l6wUZjVfiggTxhLGEZR5Yrc/EBA2uM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Xo4PLeKe; arc=none smtp.client-ip=198.175.65.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FyYIkfaF"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D27B8C19423;
-	Wed,  7 Jan 2026 18:38:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767811111;
-	bh=giwVjXZaInPGem3clXozi1NVnQJ6c/GXXvkKUWc/mdg=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=FyYIkfaFNbrooZvS1bn+upWyNOkmpmanoQJKjmWVyJGSPv7YnzQheRu4wn8uQz8AW
-	 T6+mnsZ3Mhl1bFTJoO6+7N9LCrGW0CJVK2s16lwq4Irg9NlTUjXkiBepUnmw2r8018
-	 nvXBEvvET+svEA76HYqZgg8wS28wTxjfbV444ObhSh+5zy1PNLGb2X9ZzjaY/QUErp
-	 PNZC+SlFWClZAWOPLwFmrrDwFmfVKXIXjVRvHRxqN4NEWHkJogs86UlqeRQ10+ttS3
-	 Hq/CcqtPOvsU0WOfo2UHnMd+DqAk9K2D3acqINZC3uBnjvzEEpxpWbKBSSie0nWtwW
-	 uj2qrOe+WvoPA==
-From: Bjorn Andersson <andersson@kernel.org>
-To: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Georgi Djakov <djakov@kernel.org>,
-	Raviteja Laggyshetty <quic_rlaggysh@quicinc.com>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Dmitry Baryshkov <lumag@kernel.org>,
-	Taniya Das <quic_tdas@quicinc.com>,
-	Konrad Dybcio <konradybcio@kernel.org>
-Cc: Marijn Suijten <marijn.suijten@somainline.org>,
-	linux-arm-msm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	linux-clk@vger.kernel.org,
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Subject: Re: (subset) [PATCH 0/4] Bring the IP0 resource from ICC to clk-rpmh on QCS615
-Date: Wed,  7 Jan 2026 12:38:19 -0600
-Message-ID: <176781109957.3262943.14829046212346314366.b4-ty@kernel.org>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20250627-topic-qcs615_icc_ipa-v1-0-dc47596cde69@oss.qualcomm.com>
-References: <20250627-topic-qcs615_icc_ipa-v1-0-dc47596cde69@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Xo4PLeKe"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1767811893; x=1799347893;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=oK2ddbEmcbKdHY/HjJVsgNc6NncfoXvn+c0af6X7qXc=;
+  b=Xo4PLeKehSJMEwHvM/aIOejb1RewLN9EraLPj+9MkdLVU1dqgGTTGOM3
+   lCgikSdjkFlG13WylUoXibApPUv7FZwO5iWh9T2spFTCBHbLR1TN+s/sr
+   TdBx9xLMvYDIdbyY2lB8PPt340jeP3t2dWhtn4jOOY65mhs1sFot248Fy
+   GRU5i+/r+tTo8M14cAFlqKuXa62zG8EfkXpvvPoVtDijcNTJyw5g0XIBf
+   +3pTvW5oevxqy7pGAh5OGDXpn1vC+Y/ecYcwYuZvRWB0WyUboRAyQVCmG
+   NcSQfor1u2J9y+/vUBkSNAwgVIp855trZtstLgf6WzaUYven7ga+nyqHm
+   A==;
+X-CSE-ConnectionGUID: eYJlCNMbRuimH0x3OTsSTg==
+X-CSE-MsgGUID: JkjMajC3TKmUEvb64qkAZg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11664"; a="68925246"
+X-IronPort-AV: E=Sophos;i="6.21,208,1763452800"; 
+   d="scan'208";a="68925246"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jan 2026 10:51:24 -0800
+X-CSE-ConnectionGUID: eyAxprYEQj+98pau/1wVYQ==
+X-CSE-MsgGUID: D/pXi+6pSw60dw/1uUsqXw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.21,208,1763452800"; 
+   d="scan'208";a="207143715"
+Received: from vpanait-mobl.ger.corp.intel.com (HELO kekkonen.fi.intel.com) ([10.245.245.174])
+  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jan 2026 10:51:21 -0800
+Received: from kekkonen.localdomain (localhost [IPv6:::1])
+	by kekkonen.fi.intel.com (Postfix) with SMTP id 5F4EE12020E;
+	Wed, 07 Jan 2026 20:51:34 +0200 (EET)
+Date: Wed, 7 Jan 2026 20:51:34 +0200
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6 krs, Bertel Jungin Aukio 5, 02600 Espoo
+From: Sakari Ailus <sakari.ailus@linux.intel.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Ulf Hansson <ulf.hansson@linaro.org>,
+	Brian Norris <briannorris@chromium.org>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	linux-media@vger.kernel.org
+Subject: Re: [PATCH v1 06/23] media: ccs: Discard pm_runtime_put() return
+ value
+Message-ID: <aV6rNrdHDmnG9LwB@kekkonen.localdomain>
+References: <6245770.lOV4Wx5bFT@rafael.j.wysocki>
+ <22966634.EfDdHjke4D@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <22966634.EfDdHjke4D@rafael.j.wysocki>
 
+Hi Rafael,
 
-On Fri, 27 Jun 2025 21:37:54 +0200, Konrad Dybcio wrote:
-> This is how it should have been right from the beginning, but it seems
-> like nobody took a good look at the initial submission.
+On Mon, Dec 22, 2025 at 09:03:25PM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> This series is essentially the same as the previous [1] again.
+> Passing the pm_runtime_put() return value to callers is not particularly
+> useful.
 > 
-> Compile-tested only.
+> Returning an error code from pm_runtime_put() merely means that it has
+> not queued up a work item to check whether or not the device can be
+> suspended and there are many perfectly valid situations in which that
+> can happen, like after writing "on" to the devices' runtime PM "control"
+> attribute in sysfs for one example.  It also happens when the kernel is
+> configured with CONFIG_PM unset.
 > 
-> [...]
+> Accordingly, update ccs_post_streamoff() to simply discard the return
+> value of pm_runtime_put() and always return success to the caller.
+> 
+> This will facilitate a planned change of the pm_runtime_put() return
+> type to void in the future.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> This patch is part of a series, but it doesn't depend on anything else
+> in that series.  The last patch in the series depends on it.
+> 
+> It can be applied by itself and if you decide to do so, please let me
+> know.
+> 
+> Otherwise, an ACK or equivalent will be appreciated, but also the lack
+> of specific criticism will be eventually regarded as consent.
 
-Applied, thanks!
+Acked-by: Sakari Ailus <sakari.ailus@linux.intel.com>
 
-[1/4] arm64: dts: qcom: qcs615: Drop IPA interconnects
-      commit: 8b7f2aa05c02c13aa017a70401b5f8a3ce0c0f57
-
-Best regards,
 -- 
-Bjorn Andersson <andersson@kernel.org>
+Sakari Ailus
