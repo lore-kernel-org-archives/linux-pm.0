@@ -1,103 +1,106 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 211052F7444;
-	Wed,  7 Jan 2026 11:52:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A41058F49;
+	Wed,  7 Jan 2026 12:32:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767786732; cv=none; b=dwds5F2aAYdHFuPXSIDmB0whQfoR2RGTJM1OEQxxmc4lupsSmgSkTwmpe4iI/fSQHAMRzmW2aKFuLvH4gYog6sZ5cikI5S08RvIpKgkuEKmrUjxne8sZaEQOOW0UG3HODWacFwwpxp2ICWCRzohsfl+iq9Fq0M22R5dHtRY/tSc=
+	t=1767789125; cv=none; b=J0b2PjCfjJopP9osph3ACd89XGjhmB+DWvaUCbS3UcEg1QVuYek8gvuhcwhwXzY46d9z5mBgM1fxMT588FGB5E+rifXwRm5pm4AwCqwdb+/iBgUhVYP+uyCAz2pPSdr48STISOerGpCrvaDqoqMdRBlj3u3Rot+qDuSvHtzBC08=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767786732; c=relaxed/simple;
-	bh=1Fchlxf4hNZLgwVE8WYe2dz3lUN9r/xoRIw5B7bqDRE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=dO/2Tqu5GdcpqAsnjaEUXC2/YaIQwmYfqJSI9bAcw/dtLRNLXnGZgs+DlqV75oPaXMENhIfj4XOwOh1YKL4v2nrEd9WDZMQYswoUcV2fIQ/oAwzCL89OgI5usLkb6SkfJf9xpe08mb6xZUNW6dfm6niaXIITbDGDfk7FIlA3icE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A1DF6497;
-	Wed,  7 Jan 2026 03:52:02 -0800 (PST)
-Received: from [10.57.12.220] (unknown [10.57.12.220])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2FDD63F6A8;
-	Wed,  7 Jan 2026 03:52:07 -0800 (PST)
-Message-ID: <08b09d21-0c59-4c0d-8b21-3883e76964d2@arm.com>
-Date: Wed, 7 Jan 2026 11:52:06 +0000
+	s=arc-20240116; t=1767789125; c=relaxed/simple;
+	bh=sfYlyiZoeUZcVn7NwfS5gMgyWT0pMwsrWiexLPWG+Lo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=uG7zBLOL8Sa38Kd9Lw5AXBHKt8+6deQ8Gh9OAyDuagPMdPV4bjGCW9u/qtV0XDtXI/Qg6yJkbtcVZsCqnU74BqxPAvtq8V2d7OJ9jollj3jiNltsMcERz29Ki72gEtkcrnNLCtzZgWR3Jyg7Y5cue+pW/6BJH/7hn0q2hiJBuEY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GkGk6XqK; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GkGk6XqK"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A34EC4CEF7;
+	Wed,  7 Jan 2026 12:31:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1767789125;
+	bh=sfYlyiZoeUZcVn7NwfS5gMgyWT0pMwsrWiexLPWG+Lo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=GkGk6XqKLaGl/8j/tUCkvHRUPu5FGXepJy0ojmFTNwzNgDtZLbY42vyoyRm8ZEM4B
+	 91dywEkuqYf+i7YOFLywI8jwoJeO0ARjqIOZQ/R8OcBK1EY0JcXRGUMp7KelNJQTdx
+	 BepyMOchxH7/DqNmQGJiphOUtpskRIjSh7wjC/YphZ11lVghKdhVVdrFPPq5npC2qP
+	 bTXpfYMTuEcWvSW409C5JF1kRiFXeNuCFp+GMefGV8i2fkI6GtxbgKruLxJ/1NOtGJ
+	 cHOqiYvJa26ydKn34QsC8rh0WpC0Y+cg+fwTROdmKdLrNCjuLKa8FvuhD9d4hBr7gw
+	 7Wsqff3rWNJCQ==
+Date: Wed, 7 Jan 2026 18:01:56 +0530
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: Bartosz Golaszewski <brgl@kernel.org>
+Cc: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
+	Bjorn Helgaas <bhelgaas@google.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Damien Le Moal <dlemoal@kernel.org>, Niklas Cassel <cassel@kernel.org>, 
+	Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+	Stephan Gerhold <stephan.gerhold@linaro.org>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+	linux-pm@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH v4 5/5] power: sequencing: Add the Power Sequencing
+ driver for the PCIe M.2 connectors
+Message-ID: <pqix44ld4icxhmvaranezas7j77wcrmkfpj4xyxgxir3tmfwx7@fswnr25k2f43>
+References: <20251228-pci-m2-v4-0-5684868b0d5f@oss.qualcomm.com>
+ <20251228-pci-m2-v4-5-5684868b0d5f@oss.qualcomm.com>
+ <CAMRc=MfPq7+ZbWTp7+H388hqHoX27qbbHsLHO+xeLaceTwZLVA@mail.gmail.com>
+ <z33axfsiox73f2lklhiaulekjnqxnqtkycfylybwqnqxtx2fck@3qtas4u6mfnz>
+ <CAMRc=McS8a-1cH_y+kpze=zj2-PksHDO3SE=p3XnbEueUQt9xA@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH for 6.19 0/4] Revise the EM YNL spec to be clearer
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Changwoo Min <changwoo@igalia.com>, kernel-dev@igalia.com,
- linux-pm@vger.kernel.org, horms@kernel.org, pabeni@redhat.com,
- netdev@vger.kernel.org, edumazet@google.com, davem@davemloft.net,
- sched-ext@lists.linux.dev, linux-kernel@vger.kernel.org, lenb@kernel.org,
- pavel@kernel.org, donald.hunter@gmail.com, kuba@kernel.org
-References: <20251225040104.982704-1-changwoo@igalia.com>
- <849b576e-9563-42ae-bd5c-756fb6dfd8de@arm.com>
- <CAJZ5v0imU_DkW5-Pip3ze-MaHj+CAvc0LNkaLsTZuFbj33R0aA@mail.gmail.com>
-Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <CAJZ5v0imU_DkW5-Pip3ze-MaHj+CAvc0LNkaLsTZuFbj33R0aA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAMRc=McS8a-1cH_y+kpze=zj2-PksHDO3SE=p3XnbEueUQt9xA@mail.gmail.com>
 
-Hi Rafael,
-
-On 1/5/26 18:22, Rafael J. Wysocki wrote:
-> On Tue, Dec 30, 2025 at 10:44 AM Lukasz Luba <lukasz.luba@arm.com> wrote:
->>
->> Hi Changwoo,
->>
->> On 12/25/25 04:01, Changwoo Min wrote:
->>> This patch set addresses all the concerns raised at [1] to make the EM YNL spec
->>> clearer. It includes the following changes:
->>>
->>> - Fix the lint errors (1/4).
->>> - Rename em.yaml to dev-energymodel.yaml (2/4).  “dev-energymodel” was used
->>>     instead of “device-energy-model”, which was originally proposed [2], because
->>>     the netlink protocol name cannot exceed GENL_NAMSIZ(16). In addition, docs
->>>     strings and flags attributes were added.
->>> - Change cpus' type from string to u64 array of CPU ids (3/4).
->>> - Add dump to get-perf-domains in the EM YNL spec (4/4). A user can fetch
->>>     either information about a specific performance domain with do or information
->>>     about all performance domains with dump.
->>>
->>> This can be tested using the tool, tools/net/ynl/pyynl/cli.py, for example,
->>> with the following commands:
->>>
->>>     $> tools/net/ynl/pyynl/cli.py \
->>>        --spec Documentation/netlink/specs/dev-energymodel.yaml \
->>>        --dump get-perf-domains
->>>     $> tools/net/ynl/pyynl/cli.py \
->>>        --spec Documentation/netlink/specs/dev-energymodel.yaml \
->>>        --do get-perf-domains --json '{"perf-domain-id": 0}'
->>>     $> tools/net/ynl/pyynl/cli.py \
->>>        --spec Documentation/netlink/specs/dev-energymodel.yaml \
->>>        --do get-perf-table --json '{"perf-domain-id": 0}'
->>>     $> tools/net/ynl/pyynl/cli.py \
->>>        --spec Documentation/netlink/specs/dev-energymodel.yaml \
->>>        --subscribe event  --sleep 10
->>>
->>> [1] https://lore.kernel.org/lkml/CAD4GDZy-aeWsiY=-ATr+Y4PzhMX71DFd_mmdMk4rxn3YG8U5GA@mail.gmail.com/
->>> [2] https://lore.kernel.org/lkml/CAJZ5v0gpYQwC=1piaX-PNoyeoYJ7uw=DtAGdTVEXAsi4bnSdbA@mail.gmail.com/
->>
->> My apologies, I've missed those conversations (not the best season).
->>
->> So what would be the procedure here for the review?
->> Could Folks from netlink help here?
->>
->> I will do my bit for the EM related stuff (to double-check them).
+On Wed, Jan 07, 2026 at 10:51:11AM +0100, Bartosz Golaszewski wrote:
+> On Wed, Jan 7, 2026 at 10:39 AM Manivannan Sadhasivam <mani@kernel.org> wrote:
+> >
+> > > > +
+> > > > +static int pwrseq_pcie_m2_probe(struct platform_device *pdev)
+> > > > +{
+> > > > +       struct device *dev = &pdev->dev;
+> > > > +       struct pwrseq_pcie_m2_ctx *ctx;
+> > > > +       struct pwrseq_config config = {};
+> > > > +       int ret;
+> > > > +
+> > > > +       ctx = devm_kzalloc(dev, sizeof(*ctx), GFP_KERNEL);
+> > > > +       if (!ctx)
+> > > > +               return -ENOMEM;
+> > > > +
+> > > > +       ctx->of_node = dev_of_node(dev);
+> > >
+> > > Since you're storing the node address for later, I'd suggest using
+> > > of_node_get() to get a real reference.
+> > >
+> >
+> > If CONFIG_OF_DYNAMIC is not enabled, then of_node_get() will just return the
+> > passed pointer. I always prefer using dev_of_node() since it has the CONFIG_OF
+> > and NULL check. Though, the checks won't apply here, I used it for consistency.
+> >
 > 
-> I think that it'll be good to have this in 6.19 to avoid making a
-> major release with an outdated EM YNL spec and I see that the review
-> on the net side is complete, so are there any concerns about this?
+> I think it's just more of a good practice to take a reference to any
+> resource whenever you store keep it for longer than the duration of
+> the function even if the actual reference counting is disabled in some
+> instances.
 
-I'm sorry for delay.
-I don't see concerns. It LGTM so far, I can see that there will be v2
-with minor change.
+Good practice you inherited from writing Rust code :)
 
-Regards,
-Lukasz
+> If ever we switch to fwnodes, the circumstances may be
+> different than static devicetree.
+> 
+> You can also do "ctx->of_node = of_node_get(dev_of_node(dev));", all
+> the NULL-checks are there.
+> 
 
+This may not be needed. I can use of_node_get() here, but the APIs are just
+fragile such that neither dev_of_node() nor of_node_get() increments the
+refcount always.
+
+- Mani
+
+-- 
+மணிவண்ணன் சதாசிவம்
