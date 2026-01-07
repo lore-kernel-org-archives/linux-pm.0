@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F12332AAC4;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7604B32E130;
 	Wed,  7 Jan 2026 14:11:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767795086; cv=none; b=V6V4b9D7eiBo2wQRJAnW2INiwiKGgbXar2cSa8DuXgfAAVCjRRleJZk3sUJid4nQ4S1UeZbcfXCw1k7O4uchuu08scGEBd2r2Gb7hu3X/EoxjcABFzJBs3D273isjIfOnEithi+z+dG7S3T/lYXx5cVo06m9XQW+1ByCtwc7Emw=
+	t=1767795086; cv=none; b=a3lcLsxOfPnEUcMQAF0enIJvAEKKMDPzfEVy/LbPgcJV1WAVloftmtxJaSNx258miFJ8cT2inu2DWHH7BveRP6sVUsz9mEgSuhUmLghp430ZlG6tH95hpxQH0RHnbZg8SYZDWrtfiLVXbuK/0fu6XbGDzlprpAsGn8PN/cuDDgg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1767795086; c=relaxed/simple;
-	bh=69kWmgb5kyt3827slfE0BXPQKtSt8cYB1ahtlFiFOGA=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=pVXy6H0rZ9y4Q+DAh6dJQ00woaXaX0ZKzD9NR5W+5oQJii8dvqEDfLeu/XVSMsUTFAyRcJsBS5icDYtQG4mRXckrRJZJ8/RUub/2SePR7pI5oeQ7MtBIE0nUSnq2SeUoKIBgnHqCRBQWwl1XwkzUEG58TTIV75BqR58rOGJUllk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=s3lucvlo; arc=none smtp.client-ip=10.30.226.201
+	bh=wU1h6uWCj3ZpYYo8ykAc1GiA8TKQVwwg7g5jDBoPMn4=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=r7YAI8N2d4CyWDqqj5QQIpPLsT2foeo6nfPkCIVVUSIUROi2NXsVQgu37lz05JoD4lSm43hXv4TjQfXuydjKdNf9OsSYjzFM3l4tw6REwyP6NsiUu4lK3+QNsVhKvLQPLRBv6vc7LdFgXnOsN5FdsefWvdI+pwGBrkquRcaJcRA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DkFLxahz; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="s3lucvlo"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id CE31FC4CEF1;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DkFLxahz"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id F3243C19424;
 	Wed,  7 Jan 2026 14:11:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767795085;
-	bh=69kWmgb5kyt3827slfE0BXPQKtSt8cYB1ahtlFiFOGA=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=s3lucvloK8RErUSRJhgi/LQuE/cmAbC1ZacJUcjeIcVc6AKVMtqVsL6bk1VxzRsIG
-	 wxGrwNktqStx5s4x5B2YtsuFeJ1/5BugrF3UcAx/oL/YvDbuwr+dSD+vYHuGofTJxy
-	 ZmGUXtscYcsBBwDpmgshNhx2RMWtqkHbkytwZWxCdzN2NDJDOFOzyc3Co75V+wLngx
-	 +HIkCanqC1pNrA4tFnzG6verexyAOBC8IHTg1s3xT3TU2yg0QIVBQxeU37CZ6lZdUI
-	 z/uUUsKEqe36RY7wcu6zDG0cCugxH56oZ2MQXYQurj8vy4ZfQeunR+2xwF7o+u4iCz
-	 v5JHSYMECZ2/w==
+	s=k20201202; t=1767795086;
+	bh=wU1h6uWCj3ZpYYo8ykAc1GiA8TKQVwwg7g5jDBoPMn4=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=DkFLxahzvDG3plnrvYkMfJVuQxWd1Oyphl2LRTZYKkRiCF0f1viMxVvC0jv7PpCl/
+	 sJrGEJigB7tGnUeWyhy+TL9/NwBhm4c5u4HdwRAv4hfrDpWMwiK6vc6GtHolWW9Gx4
+	 EClwmq1gvt/UIo0moRVBHwEu5PnFEbWljQBGqKX5bDe7xw58z9WIn6opIvnXV1rTT5
+	 0COkPrkdvymoiOy6AhaA70TwVyY9QP+dQ95zARI7neIZxmrpG9RxTL/Zbe2milfl5g
+	 hWaed1g7Ts5uzSU37JzOYKBWRZ+N1DJxVmXjPb/Sqj52F5ZNi8q3Yb/ZcuIwx/c1tJ
+	 /KB5KJYpN9ueg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BDE88CFD642;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB27CCFD646;
 	Wed,  7 Jan 2026 14:11:25 +0000 (UTC)
 From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Subject: [PATCH v5 0/5] PCI: Add initial support for handling PCIe M.2
- connectors in devicetree
-Date: Wed, 07 Jan 2026 19:41:22 +0530
-Message-Id: <20260107-pci-m2-v5-0-8173d8a72641@oss.qualcomm.com>
+Date: Wed, 07 Jan 2026 19:41:25 +0530
+Subject: [PATCH v5 3/5] PCI/pwrctrl: Add support for handling PCIe M.2
+ connectors
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,12 +41,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAIppXmkC/3XNTQ6CMBAF4KuYri1ppz80rryHcdGWqTYRUapEY
- 7i7hQRhIZtJ3mS+Nx+SsI2YyG7zIS12McXmmoPabog/2+sJaaxyJsBAcc4EvflIa6ClFkIL7nS
- wluTjW4shvsaiwzHnc0yPpn2PvR0ftlOFmio6Thk10qnAA0eFZt+kVNyf9uKbui7yIENTB0ttf
- hqyRuO8rEoXJFQrWiw0zL9F1l6BYRIsWlmuaDlrgPm3zFppI402jlUq/NF9338BCnfp7V0BAAA
- =
-X-Change-ID: 20251103-pci-m2-7633631b6faa
+Message-Id: <20260107-pci-m2-v5-3-8173d8a72641@oss.qualcomm.com>
+References: <20260107-pci-m2-v5-0-8173d8a72641@oss.qualcomm.com>
+In-Reply-To: <20260107-pci-m2-v5-0-8173d8a72641@oss.qualcomm.com>
 To: Bjorn Helgaas <bhelgaas@google.com>, 
  Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -60,19 +57,18 @@ Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
  Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
  linux-pm@vger.kernel.org, linux-ide@vger.kernel.org, 
  Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
- Frank Li <Frank.Li@nxp.com>, 
  Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4312;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3872;
  i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=69kWmgb5kyt3827slfE0BXPQKtSt8cYB1ahtlFiFOGA=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBpXmmL70dXctGXdSVrhDngLGraiqgTiIH+5K7Nk
- HosqhOtKTWJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaV5piwAKCRBVnxHm/pHO
- 9dAbB/4xBAwExMOzXRuRO7kkN1KIOU2V3du5JeI6lr8ThQF6kB0kDWOKFhqCzIet+echU4TE32N
- SPVLslEsbr0lcM1evYc8oXwIl7pFhMP1gly8ynfyv/4jVu2HOirEUMJTW4z2FTaOBvGsP1UgPWO
- 1/AxfCJKgddDv2BX9v0UOGTEUb+TGUZMNbF1+C4xt9gmnjzTm7m45kwGlHDx4iHsdVJRh0THP3W
- 4mjdwzdDPPf6cAIo+Ks/e47ttqil2dEqcy1sUclf8CuWz/msjJuQDbkxAHHJAD5uBofqNoGhTEi
- C2UJa2vITI5mE7p8YXP+TyISiDKHy9YISzr2SDthUJPufdz5
+ bh=AO6DA+THdUbk+4mox05j2FvqW5j/957nknRRq0lgeZo=;
+ b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBpXmmLbuanTaixUENX17ESNDeHEkjjUvEDpSHQq
+ OIa/nKMk+OJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaV5piwAKCRBVnxHm/pHO
+ 9Yi1B/0SOYOlEeLDDD9jX9NWp3N+YIh9dJRecwZiEMGM9fNtU2UZGhUw0UksS+n+ZGt38guam1W
+ p0f/qe5dKiVO/AvyJ12bHt/eePY77qkMqMptJt+Q1TGy4ym3x7jl8QwDXcyZLfHtpNUZ3J/wfxC
+ 8YPRzY67gCxUmH7ffcGsiXKtDsmuMM4ltoKJZKB+1jTPfpt1Ll3eaFE0Th6ARW68OwyubaTmVjJ
+ AJsKahYs/3BOZtT+fQkk3aTfmRGi3NB9WwZARsJo1B/a/UkiU3AroFrG9enqF2mA81g+sR1YdMY
+ Yzng0kQP+4EMzqKCiauWJ2qcCsf3fYVwBXvUDhGBcdFGhI/6
 X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
  fpr=C668AEC3C3188E4C611465E7488550E901166008
 X-Endpoint-Received: by B4 Relay for
@@ -80,92 +76,124 @@ X-Endpoint-Received: by B4 Relay for
 X-Original-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 Reply-To: manivannan.sadhasivam@oss.qualcomm.com
 
-Hi,
+From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 
-This series is an initial attempt to support the PCIe M.2 connectors in the
-kernel and devicetree binding. The PCIe M.2 connectors as defined in the PCI
-Express M.2 Specification are widely used in Notebooks/Tablet form factors (even
-in PCs). On the ACPI platforms, power to these connectors are mostly handled by
-the firmware/BIOS and the kernel never bothered to directly power manage them as
-like other PCIe connectors. But on the devicetree platforms, the kernel needs to
-power manage these connectors with the help of the devicetree description. But
-so far, there is no proper representation of the M.2 connectors in devicetree
-binding. This forced the developers to fake the M.2 connectors as PMU nodes [1]
-and fixed regulators in devicetree.
+Add support for handling the PCIe M.2 connectors as Power Sequencing
+devices. These connectors are exposed as the Power Sequencing devices
+as they often support multiple interfaces like PCIe/SATA, USB/UART to the
+host machine and each interfaces could be driven by different client
+drivers at the same time.
 
-So to properly support the M.2 connectors in devicetree platforms, this series
-introduces the devicetree binding for Mechanical Key M connector as an example
-and also the corresponding pwrseq driver and PCI changes in kernel to driver the
-connector.
+This driver handles the PCIe interface of these connectors. It first checks
+for the presence of the graph port in the Root Port node with the help of
+of_graph_is_present() API, if present, it acquires/poweres ON the
+corresponding pwrseq device.
 
-The Mechanical Key M connector is used to connect SSDs to the host machine over
-PCIe/SATA interfaces. Due to the hardware constraints, this series only adds
-support for driving the PCIe interface of the connector in the kernel.
+Once the pwrseq device is powered ON, the driver will skip parsing the Root
+Port/Slot resources and registers with the pwrctrl framework.
 
-Also, the optional interfaces supported by the Key M connectors are not
-supported in the driver and left for the future enhancements.
-
-Testing
-=======
-
-This series, together with the devicetree changes [2] [3] were tested on the
-Qualcomm X1e based Lenovo Thinkpad T14s Laptop which has the NVMe SSD connected
-over PCIe.
-
-[1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/arch/arm64/boot/dts/qcom/x1e80100-qcp.dts?h=v6.18-rc4&id=d09ab685a8f51ba412d37305ea62628a01cbea57
-[2] https://github.com/Mani-Sadhasivam/linux/commit/40120d02219f34d2040ffa6328f0d406b1e4c04d
-[3] https://github.com/Mani-Sadhasivam/linux/commit/ff6c3075836cc794a3700b0ec6a4a9eb21d14c6f
-
+Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 ---
-Changes in v5:
-- used of_node_get() and devm_action to free regulators
-- Link to v4: https://lore.kernel.org/r/20251228-pci-m2-v4-0-5684868b0d5f@oss.qualcomm.com
+ drivers/pci/pwrctrl/Kconfig |  1 +
+ drivers/pci/pwrctrl/slot.c  | 35 ++++++++++++++++++++++++++++++-----
+ 2 files changed, 31 insertions(+), 5 deletions(-)
 
-Changes in v4:
-- Added graph property to SATA in this series and PCI to dtschema:
-  https://github.com/devicetree-org/dt-schema/pull/180
-- Used 'i2c-parent' instead of SMBus port
-- Reworded the -gpios property description
-- Rebased on top of v6.19-rc1
-- Link to v3: https://lore.kernel.org/r/20251125-pci-m2-v3-0-c528042aea47@oss.qualcomm.com
+diff --git a/drivers/pci/pwrctrl/Kconfig b/drivers/pci/pwrctrl/Kconfig
+index e0f999f299bb..cd3aa15bad00 100644
+--- a/drivers/pci/pwrctrl/Kconfig
++++ b/drivers/pci/pwrctrl/Kconfig
+@@ -13,6 +13,7 @@ config PCI_PWRCTRL_PWRSEQ
+ 
+ config PCI_PWRCTRL_SLOT
+ 	tristate "PCI Power Control driver for PCI slots"
++	select POWER_SEQUENCING
+ 	select PCI_PWRCTRL
+ 	help
+ 	  Say Y here to enable the PCI Power Control driver to control the power
+diff --git a/drivers/pci/pwrctrl/slot.c b/drivers/pci/pwrctrl/slot.c
+index 3320494b62d8..d46c2365208a 100644
+--- a/drivers/pci/pwrctrl/slot.c
++++ b/drivers/pci/pwrctrl/slot.c
+@@ -8,8 +8,10 @@
+ #include <linux/device.h>
+ #include <linux/mod_devicetable.h>
+ #include <linux/module.h>
++#include <linux/of_graph.h>
+ #include <linux/pci-pwrctrl.h>
+ #include <linux/platform_device.h>
++#include <linux/pwrseq/consumer.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/slab.h>
+ 
+@@ -17,12 +19,18 @@ struct pci_pwrctrl_slot_data {
+ 	struct pci_pwrctrl ctx;
+ 	struct regulator_bulk_data *supplies;
+ 	int num_supplies;
++	struct pwrseq_desc *pwrseq;
+ };
+ 
+ static void devm_pci_pwrctrl_slot_power_off(void *data)
+ {
+ 	struct pci_pwrctrl_slot_data *slot = data;
+ 
++	if (slot->pwrseq) {
++		pwrseq_power_off(slot->pwrseq);
++		return;
++	}
++
+ 	regulator_bulk_disable(slot->num_supplies, slot->supplies);
+ 	regulator_bulk_free(slot->num_supplies, slot->supplies);
+ }
+@@ -38,6 +46,20 @@ static int pci_pwrctrl_slot_probe(struct platform_device *pdev)
+ 	if (!slot)
+ 		return -ENOMEM;
+ 
++	if (of_graph_is_present(dev_of_node(dev))) {
++		slot->pwrseq = devm_pwrseq_get(dev, "pcie");
++		if (IS_ERR(slot->pwrseq))
++			return dev_err_probe(dev, PTR_ERR(slot->pwrseq),
++				     "Failed to get the power sequencer\n");
++
++		ret = pwrseq_power_on(slot->pwrseq);
++		if (ret)
++			return dev_err_probe(dev, ret,
++				     "Failed to power-on the device\n");
++
++		goto skip_resources;
++	}
++
+ 	ret = of_regulator_bulk_get_all(dev, dev_of_node(dev),
+ 					&slot->supplies);
+ 	if (ret < 0) {
+@@ -53,17 +75,20 @@ static int pci_pwrctrl_slot_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
+-	ret = devm_add_action_or_reset(dev, devm_pci_pwrctrl_slot_power_off,
+-				       slot);
+-	if (ret)
+-		return ret;
+-
+ 	clk = devm_clk_get_optional_enabled(dev, NULL);
+ 	if (IS_ERR(clk)) {
++		regulator_bulk_disable(slot->num_supplies, slot->supplies);
++		regulator_bulk_free(slot->num_supplies, slot->supplies);
+ 		return dev_err_probe(dev, PTR_ERR(clk),
+ 				     "Failed to enable slot clock\n");
+ 	}
+ 
++skip_resources:
++	ret = devm_add_action_or_reset(dev, devm_pci_pwrctrl_slot_power_off,
++				       slot);
++	if (ret)
++		return ret;
++
+ 	pci_pwrctrl_init(&slot->ctx, dev);
+ 
+ 	ret = devm_pci_pwrctrl_device_set_ready(dev, &slot->ctx);
 
-Changes in v3:
-- Changed the VIO supply name as per dtschema
-- Added explicit endpoint properties to port 0 node for host I/F
-- Used scope based cleanup for OF node in pwrseq driver
-- Collected review tags
-- Link to v2: https://lore.kernel.org/r/20251108-pci-m2-v2-0-e8bc4d7bf42d@oss.qualcomm.com
-
-Changes in v2:
-- Incorporated comments from Bartosz and Frank for pwrseq and dt-binding
-  patches, especially adding the pwrseq match() code.
-- Link to v1: https://lore.kernel.org/r/20251105-pci-m2-v1-0-84b5f1f1e5e8@oss.qualcomm.com
-
----
-Manivannan Sadhasivam (5):
-      dt-bindings: ata: sata: Document the graph port
-      dt-bindings: connector: Add PCIe M.2 Mechanical Key M connector
-      PCI/pwrctrl: Add support for handling PCIe M.2 connectors
-      PCI/pwrctrl: Create pwrctrl device if the graph port is found
-      power: sequencing: Add the Power Sequencing driver for the PCIe M.2 connectors
-
- .../devicetree/bindings/ata/sata-common.yaml       |   3 +
- .../bindings/connector/pcie-m2-m-connector.yaml    | 133 ++++++++++++++++
- MAINTAINERS                                        |   7 +
- drivers/pci/probe.c                                |   3 +-
- drivers/pci/pwrctrl/Kconfig                        |   1 +
- drivers/pci/pwrctrl/slot.c                         |  35 ++++-
- drivers/power/sequencing/Kconfig                   |   8 +
- drivers/power/sequencing/Makefile                  |   1 +
- drivers/power/sequencing/pwrseq-pcie-m2.c          | 169 +++++++++++++++++++++
- 9 files changed, 354 insertions(+), 6 deletions(-)
----
-base-commit: 8f0b4cce4481fb22653697cced8d0d04027cb1e8
-change-id: 20251103-pci-m2-7633631b6faa
-
-Best regards,
 -- 
-Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+2.48.1
 
 
