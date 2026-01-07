@@ -1,97 +1,147 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1845233D6E1;
-	Wed,  7 Jan 2026 14:36:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23BF23624AF;
+	Wed,  7 Jan 2026 15:10:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767796599; cv=none; b=q2r4KccmGj9SxpzQ9biDIHe23gxthBRMejwxtMPMlKA0pa/pUrn+dCPWijobSI9HMejDZY5y0JIIbWohpSfWs2Ac+sUD58yszLPu6Tj3Qyu2HwEE9bi8fABfhuHcNviDAWlA9LqU53SWka/tEW8E10sDYeb/MX2rJex6fPoN4P0=
+	t=1767798603; cv=none; b=sH+nUUvUodydvu+aQfp/9/2P+EXDJWnVYsR3RmknntFqY4PbX9CCFl9TG1GqYnf4E4L0aKCcdKnyEb9pRieqBFMv7rqrOkqLg91m/uqCjJ2o02blLwJ5x38rhk+554reo7QuhmNNiurERDSRwOcBBNnzCDh6LzdnwUClk0Zm8uU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767796599; c=relaxed/simple;
-	bh=XwWSLB55x1rNencsXn/TLrmA6eEpbslMnGuzUkhuAZY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FAwHG5a3nVXvD5GuiPubA+3U32GsGXflxURdM2vdixcJEDDN5hv7eSQ4LTtcmytO67ohPDpvZMXLNhlW5oxvcuupMADB2n/2Tmjx3TqFXS+Ds9eMp05lPyJwhzN7Y1OIy+HK65zHJrc+NcwSRd5uf6yrum4N3rJRZuLgL3CKnAM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=eJGp+/42; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1767798603; c=relaxed/simple;
+	bh=rJaqvOB8/875SKmK7dTBqU4qyFZchqY4Kmbj5roEflw=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=XuREAnuHoYKymaa1Fok/kKmfEztYVfV+yDzNf+TLtwjFHo4RkErdRwhYl1j2dcfR4/I1PAVEhVbhqV5Rr/vHph9B7E+IYN+CgCMv2rOsRvEY9VURR+Sdg92PlNuUppPTZRwga2lg8/YDXkHbed6wP2UCGgFBjSKBlBMYktmeqr8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=LnmnRkXn; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="eJGp+/42"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A703C4CEF7;
-	Wed,  7 Jan 2026 14:36:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767796598;
-	bh=XwWSLB55x1rNencsXn/TLrmA6eEpbslMnGuzUkhuAZY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=eJGp+/42xRifMjAf5rrJuTTUE42Vv6ojPGiVs3rklIv2y8HD+hCl1URycRStDpbiY
-	 Y5mhpDNIk9SCsBSZTSCxeBdqmHSy6CwFDiwhfTXYqbG5z8+42tSEcB0xQJgj/cAJx1
-	 7gLokOWP7SpUejdKujEOKG8LLOcc6FBd7mcc0QkD02TadGtPWF8s9nxU5wvrgGyNJo
-	 k9D1+7EjoU39UtwWs1JL/VbFq8ysrmYqsMMVnRqy2aZ1vzyy2uYE8JHyTrNDvA70Na
-	 jf6BAzdP3w0dwvzGzoVi7COcmoN7A/NW4+Le/t+VbOqbJYZyFhtL23E8/SJSwh3a+X
-	 7QRER6Vk8KsOg==
-Date: Wed, 7 Jan 2026 15:36:31 +0100
-From: Niklas Cassel <cassel@kernel.org>
-To: manivannan.sadhasivam@oss.qualcomm.com
-Cc: Bjorn Helgaas <bhelgaas@google.com>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Damien Le Moal <dlemoal@kernel.org>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Bartosz Golaszewski <brgl@kernel.org>, linux-kernel@vger.kernel.org,
-	linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org,
-	Stephan Gerhold <stephan.gerhold@linaro.org>,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-	linux-pm@vger.kernel.org, linux-ide@vger.kernel.org,
-	Frank Li <Frank.Li@nxp.com>,
-	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-Subject: Re: [PATCH v5 0/5] PCI: Add initial support for handling PCIe M.2
- connectors in devicetree
-Message-ID: <aV5vb1VlQYeWNcv1@ryzen>
-References: <20260107-pci-m2-v5-0-8173d8a72641@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="LnmnRkXn"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1767798599;
+	bh=rJaqvOB8/875SKmK7dTBqU4qyFZchqY4Kmbj5roEflw=;
+	h=From:Subject:Date:To:Cc:From;
+	b=LnmnRkXnQNe1UnB0hMqYpQRqFTI6QfwNN3MV5sH8fGUIQPJFt5Goe1ISJWNT5I48c
+	 0CUrGVe0NSoMAwjGGkwkvgUylrysHJq+bzq5gb+iMhRFHaMwRLdVZx1VDU7z1VSImH
+	 mHSCZISTSmr24CLvcNa0I5sdP4vFS+holZI3tcgDA7sCwtb4Ybg4c4H2tkiSRkTCX2
+	 ae8xmUWzSdOPoSg34EThmEzyjWOn1AhreRUsZHchab3/AfvulkkZ9YHHIG7LMdJfcS
+	 HJbWdCSybK/SQ5tCFnD8lLo4hiZ2yV8gxk4WklOp2UTmAGYVpop6yz5ciPnyPa8M+5
+	 B6hFEa1P6pe8g==
+Received: from [192.168.0.79] (unknown [IPv6:2804:14d:72b4:81ae:67c:16ff:fe57:b5a3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: dwlsalmeida)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id F2FB117E13D8;
+	Wed,  7 Jan 2026 16:09:54 +0100 (CET)
+From: Daniel Almeida <daniel.almeida@collabora.com>
+Subject: [PATCH v3 0/3] Clk improvements
+Date: Wed, 07 Jan 2026 12:09:51 -0300
+Message-Id: <20260107-clk-type-state-v3-0-77d3e3ee59c2@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260107-pci-m2-v5-0-8173d8a72641@oss.qualcomm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAD93XmkC/6WQzW7DIBCEX8XiXCoWjAk+9T2qHPhZGtTYJECtW
+ lHevSSu1Ko59jgrzbczcyEFc8RCxu5CMi6xxDQ3IZ464g5mfkMafdOEMy6ZZpq64zut6wlpqaY
+ idQyMUd5LCZ400yljiJ934Ou+6ZDTROsho/nBKP6AWYAC3enBSrGDISj74tLxaGzK5tml6UY+x
+ FJTXu9JF37j/4e29QH2YOWUUbBaOQBrBwF/rPvrVjLj+aONVbemxJrStkjTFOvYaeOwV1IY2b5
+ YxkGDlz3q4IMKGoVv151ES36PPHbfE/f3SAVnT8s6OypcMCr0CA75uIiW4PoFV/nla7YBAAA=
+X-Change-ID: 20250909-clk-type-state-c01aa7dd551d
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>, Danilo Krummrich <dakr@kernel.org>, 
+ Alice Ryhl <aliceryhl@google.com>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Drew Fustini <fustini@kernel.org>, Guo Ren <guoren@kernel.org>, 
+ Fu Wei <wefu@redhat.com>, 
+ =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, 
+ Michael Turquette <mturquette@baylibre.com>, 
+ Stephen Boyd <sboyd@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
+ Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>, 
+ =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+ Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+ Trevor Gross <tmgross@umich.edu>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ dri-devel@lists.freedesktop.org, linux-riscv@lists.infradead.org, 
+ linux-pwm@vger.kernel.org, linux-clk@vger.kernel.org, 
+ rust-for-linux@vger.kernel.org, 
+ Daniel Almeida <daniel.almeida@collabora.com>
+X-Mailer: b4 0.14.3
 
-On Wed, Jan 07, 2026 at 07:41:22PM +0530, Manivannan Sadhasivam via B4 Relay wrote:
-> Hi,
-> 
-> This series is an initial attempt to support the PCIe M.2 connectors in the
-> kernel and devicetree binding. The PCIe M.2 connectors as defined in the PCI
-> Express M.2 Specification are widely used in Notebooks/Tablet form factors (even
-> in PCs). On the ACPI platforms, power to these connectors are mostly handled by
-> the firmware/BIOS and the kernel never bothered to directly power manage them as
-> like other PCIe connectors. But on the devicetree platforms, the kernel needs to
-> power manage these connectors with the help of the devicetree description. But
-> so far, there is no proper representation of the M.2 connectors in devicetree
-> binding. This forced the developers to fake the M.2 connectors as PMU nodes [1]
-> and fixed regulators in devicetree.
-> 
-> So to properly support the M.2 connectors in devicetree platforms, this series
-> introduces the devicetree binding for Mechanical Key M connector as an example
-> and also the corresponding pwrseq driver and PCI changes in kernel to driver the
-> connector.
-> 
-> The Mechanical Key M connector is used to connect SSDs to the host machine over
-> PCIe/SATA interfaces. Due to the hardware constraints, this series only adds
-> support for driving the PCIe interface of the connector in the kernel.
-> 
-> Also, the optional interfaces supported by the Key M connectors are not
-> supported in the driver and left for the future enhancements.
+This series contains a few improvements that simplifies clock handling for
+drivers.
 
-For me, it is not clear if there is a dependency or conflict with your
-"major pwrctrl rework series":
-[PATCH v4 0/8] PCI/pwrctrl: Major rework to integrate pwrctrl devices with controller drivers
+Patch 1 implements the same typestate pattern that has been used
+successfully for Regulators. This is needed because otherwise drivers
+will be responsible for unpreparing and disabling clocks themselves and
+ultimately handling the reference counts on their own. This is
+undesirable. The patch automatically encodes this information using the
+type system so that no misuse can occur.
 
-Does one need to go before the other, or are they completely unrelated
-and can be merged in any order without conflicts?
+Patch 2 makes things more convenient by offering devres-managed APIs. This
+lets drivers set clock parameters once and forget about lifetime
+management.
 
+Patch 3 converts clk.rs to the newer kernel-vertical style in order to make
+future changes easier.
 
-Kind regards,
-Niklas
+This depends on Alice Ryhl's series [0].
+
+[0]: https://lore.kernel.org/rust-for-linux/20251218-clk-send-sync-v3-0-e48b2e2f1eac@google.com/
+
+---
+Changes in v3:
+- Rebased on top of 6.19-rc4
+- Dropped patch 1 (from Alice), added her series as a dependency instead
+- Fixed Tyr, PWM_TH1520 drivers
+- Changed clk.rs imports to kernel-vertical style
+- Added support get_optional shortcut for Prepared and Enabled (i.e.:
+  Clk::<Enabled>::get_optional())
+- Fixed misplaced #[inline] tag
+
+Thanks, Danilo {
+  - Moved the devres changes into its own patch
+  - Require &Device<Bound> for all functions where a &Device is used
+  - Account for con_in in SAFETY comments where applicable
+  - Added backticks
+}
+
+- Link to v2: https://lore.kernel.org/r/20250910-clk-type-state-v2-0-1b97c11bb631@collabora.com
+
+Changes in v2:
+- Added Alice's patch as patch 1, since it is a dependency.
+- Added devm helpers (like we did for Regulator<T>)
+- Fixed missing clk_put() call in Drop (Danilo)
+- Fixed missing parenthesis and wrong docs (Viresh)
+- Removed extra "dev" parameter from "shutdown" example (Danilo)
+- Removed useless type annotation from example (Danilo)
+- Link to v1: https://lore.kernel.org/rust-for-linux/20250729-clk-type-state-v1-1-896b53816f7b@collabora.com/#r
+
+---
+Daniel Almeida (3):
+      rust: clk: use the type-state pattern
+      rust: clk: add devres-managed clks
+      rust: clk: use 'kernel vertical style' for imports
+
+ drivers/cpufreq/rcpufreq_dt.rs |   2 +-
+ drivers/gpu/drm/tyr/driver.rs  |  31 +--
+ drivers/pwm/pwm_th1520.rs      |  17 +-
+ rust/kernel/clk.rs             | 466 +++++++++++++++++++++++++++++------------
+ rust/kernel/cpufreq.rs         |   8 +-
+ 5 files changed, 346 insertions(+), 178 deletions(-)
+---
+base-commit: 9ace4753a5202b02191d54e9fdf7f9e3d02b85eb
+change-id: 20250909-clk-type-state-c01aa7dd551d
+prerequisite-change-id: 20250904-clk-send-sync-3cfa7f4e1ce2:v3
+prerequisite-patch-id: 13476f9e7e7c3bdbcab42912948953743381b1e0
+prerequisite-patch-id: 8f91583384bb4516afcac66d21ac08b3982747b2
+prerequisite-patch-id: b2ad5ecbd9a395b622bc04f891b5bb276f6f6b16
+
+Best regards,
+-- 
+Daniel Almeida <daniel.almeida@collabora.com>
+
