@@ -1,67 +1,53 @@
-Received: from mail-dy1-f181.google.com (mail-dy1-f181.google.com [74.125.82.181])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2C1937F10A
-	for <linux-pm@vger.kernel.org>; Thu,  8 Jan 2026 08:58:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76F484418F7;
+	Thu,  8 Jan 2026 09:28:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767862731; cv=none; b=nVjA9r0acXfMqp5WnGEn5gsqFyc/EkxudvNGwdq5gUYn8zvHD+uAfm2PaLUIGE0YjFuropqYt3TVIljRtYu7BSCPiv8xFMwQT/Fa9+M5M0kEeJFuXNR3ChKXQqgOTTnUKUH2X4au04JG5ABObtQI9F8bUv92/lqlJ3iuvYtvqS4=
+	t=1767864541; cv=none; b=nK6OROcB4oONe/L7Srn0HJ9g9Tq20aHXtN/jNSEsf1fEcmiGPtVkCJYEf6N4yadlcoQ0jNJ17bjYemuEQfU8H7M1U9gb0br1rmd+fGSCCnqlLMYL3DN6xhitcAvGh45mETBiDiG4xknSysu7sh6GznfsRlvSmdJ3DDGo4K15xdY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767862731; c=relaxed/simple;
-	bh=sIkymDyCEmbvxV9ZGQHY++Ov+nqP2mtyu2/hVCGij0w=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=LWjLtu9NF1RFoUkSdmOFLPYNoY1a9EsAiN3L+66ppoJys3NVxSWmgKVgeNvGGDk/7Rj3625vmk849CqZzVU8ab6Y+FlourbfQz10peE+udBZq6SAjhofSmOzxoguoncD6X3k11lOVLTqolZatPFFEhr5AtzgR66t87sv6XQGanI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=sifive.com; spf=pass smtp.mailfrom=sifive.com; dkim=pass (2048-bit key) header.d=sifive.com header.i=@sifive.com header.b=mQGHSmEn; arc=none smtp.client-ip=74.125.82.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=sifive.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sifive.com
+	s=arc-20240116; t=1767864541; c=relaxed/simple;
+	bh=MYQM/u3EY2aksYdZVVDQjWmMTOdhULDevRcaPw5g3Sk=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=fLA/SuZSUuoYXMiLMx0rRuJmdpMM9OaVpNjHxFkS8hM/2vvwuTARAiLwkwaxFTz7z6MqihjoGOQTYs05XeDc4WxDHZKyLZuxJCGY2mDGN0VAp+8FviynHL8IzWjZ+lHZyqcRoh6+orGaxGKlIGCuBX4O1VwirQXoWQH4rkGVBjE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=iPc+jDog; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=sifive.com header.i=@sifive.com header.b="mQGHSmEn"
-Received: by mail-dy1-f181.google.com with SMTP id 5a478bee46e88-2ac3d5ab81bso1865848eec.1
-        for <linux-pm@vger.kernel.org>; Thu, 08 Jan 2026 00:58:43 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=sifive.com; s=google; t=1767862721; x=1768467521; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=+qYO/gxPTzZ1gsudLMySBCma6iHYfPz33KQqAWsXtts=;
-        b=mQGHSmEnic+S0mS7xgLg+o+6wdYRXY+vt1KLwNdWi3ebWIs4RzQU8a7QTxZiGHLuyD
-         ZjG0ZbcHq/2TyuIcxp09X8FymPW8d0sznQogZikC0C1/ugNg4aS1X256mgLR9imOr+Ht
-         NVvx5LFLoDuLgxMCC5RwXsRJjH1ksxbXPIQegQxFL5/z7esv1jZGTOewvIcUMOaj2Dsr
-         x7DNyg6gs1Fm6COvrfCisZWVcCKEFG/x8muLeWOOHOwMfqr7fFbcll98jgjP/36MZn62
-         EUyIeVhev/vI6uWH1Zz3i13dn3YOCUWf6vCyhUACXp+VqfP24lvi8LaF/RilD5pDYyXr
-         eJpA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767862721; x=1768467521;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=+qYO/gxPTzZ1gsudLMySBCma6iHYfPz33KQqAWsXtts=;
-        b=jw2pKynCZH8Ushcu3dR2ZBTvFQGl6cwwQQlpdJ9cY93ORvKCS1J436UwBB1b8AO/YO
-         oCZJch/IRlcljyPtSX3dhVqGW0KX4mCmOVkngPHx+zLFnzuUuVsTcjVOZTyTiCTlU6ok
-         tMI0kKbQ0pcr/ZtT5fxFvjDnoGyIDyH0QS8a/YyAWJdnZOu92xkTdiL9Ttcg8aZCKuvK
-         MviehqHtfyfGBWABXCr38Adc9UOIexMARAWSdhv26sgCTE36fZn1p3y3vWtbGXUDrSst
-         lUHYUN0WTR4yKr+zrUc408LBbJzo+O/M/iLd91N4R49tq6Yn2R659e3+KAunuduClrQn
-         fFTw==
-X-Forwarded-Encrypted: i=1; AJvYcCUDDBfaBMqxVk8TmYp177zpLBjqFbPvgu/zVo8Prc3agfqpeeEi26JbUkNwUawiLTEQSzQ6HUWDBg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzu8nxaNFRh2IF+dg1LKnI56P+maaqbVG8U5pfZc2ijSI6jjbYN
-	58TWGhzaOL6PAxqZmu/0WXv09CZhSMeAdDrH/GznSt10P6qR+eIjUUFD+DqTY/aW57s=
-X-Gm-Gg: AY/fxX7wt4uyKmnRvIatdpArIymu7trjFQWlZ36H6Ro5DyiBZOI4CUpzG1TIzvlwgBE
-	WcZ7ZjROe8HWALQao6Zi1cOs8LhiOKTGCfuHT5C/1dAufR/ccP4QBZ860PDMrv3QbNubsAuidhG
-	YDbbGbwQpzJGqPYNJDdJreRRpBmGGTVoGkxAepzIJJZOKZVCgbszU3m/ASOnoB8DybwiwgHmpru
-	AHLONz4Brjww3KOJop5Y6YsHqsQ3xcPjz/rEDez8dltRhs3GMIOwrfiJ/NRyueHr8+EUHXldZBb
-	dBAhg476uCZhicMJV9AW1DGYPI+xfBlknRLMCjpwdjgHcfD3BhWnXHle3Egp8IjtSLBeEsL/LtZ
-	20JCNJMtg/8pHWoPcKBiYwJ08KUAehzYyr5/ZIeWQMLLvgmQtFs6+h5ejbMsVtkSrL7hQGGfzPc
-	oq3ztrtfYEs9m6VluHbuwvL/s=
-X-Google-Smtp-Source: AGHT+IE1ZYycZa8LfJgM/0T5ClhaC/Ln6YDrHSVxn+Bb2E0ZQUAhY5IK4YTUt16wFaSjFCweu0L/Dw==
-X-Received: by 2002:a05:693c:40db:b0:2ae:55f1:8201 with SMTP id 5a478bee46e88-2b17d23964bmr4070425eec.1.1767862721007;
-        Thu, 08 Jan 2026 00:58:41 -0800 (PST)
-Received: from sw07.internal.sifive.com ([4.53.31.132])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2b170675076sm8833634eec.2.2026.01.08.00.58.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 08 Jan 2026 00:58:40 -0800 (PST)
-From: Nick Hu <nick.hu@sifive.com>
-Date: Thu, 08 Jan 2026 00:58:26 -0800
-Subject: [PATCH v4 3/3] cpuidle: Add SiFive power provider driver
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="iPc+jDog"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1767864530;
+	bh=MYQM/u3EY2aksYdZVVDQjWmMTOdhULDevRcaPw5g3Sk=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=iPc+jDogBmFyzzhHYT7Ep9dE/ld5l0S8ReDISfgBgFcGREHHORiJCcpIJFjRtOgkt
+	 IHE5jIQNC7lrcRE7Ct9V4xUY+wc5M6udotNherABvuZlME+FMu9bwij8zpPFIXXYOV
+	 YR/Q2GuyLyMC6oZAZHI4fLCNqcx3jTFP6Ptbz/jLN2hEHJhXmsNNCoQBBS65pfvNds
+	 Nqp5QPtexTi7+t5h35a9CUYTiZiMlaT1jk97oHZTKH0uOoSYrlfLTzwpq5s51OGvKX
+	 z+bBr89wM3t/bxYCOmT/hkp/2YEgGETyDyz+Jaa9Yk4Z3G16RpztdKNCIARA1HhUH9
+	 7gco2hkuz9pcA==
+Received: from IcarusMOD.eternityproject.eu (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: kholk11)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 073B917E0ED3;
+	Thu,  8 Jan 2026 10:28:49 +0100 (CET)
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Matthias Brugger <matthias.bgg@gmail.com>, 
+ Henry Chen <henryc.chen@mediatek.com>, Georgi Djakov <djakov@kernel.org>, 
+ Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+Cc: kernel@collabora.com, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org
+In-Reply-To: <20251124-mt8196-dvfsrc-v2-0-d9c1334db9f3@collabora.com>
+References: <20251124-mt8196-dvfsrc-v2-0-d9c1334db9f3@collabora.com>
+Subject: Re: (subset) [PATCH v2 00/13] MediaTek Interconnect Cleanup and
+ MT8196 Enablement
+Message-Id: <176786452995.11151.4722650468329780903.b4-ty@collabora.com>
+Date: Thu, 08 Jan 2026 10:28:49 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -70,195 +56,39 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260108-sifive-pd-drivers-v4-3-2a523d7d51a0@sifive.com>
-References: <20260108-sifive-pd-drivers-v4-0-2a523d7d51a0@sifive.com>
-In-Reply-To: <20260108-sifive-pd-drivers-v4-0-2a523d7d51a0@sifive.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, Paul Walmsley <pjw@kernel.org>, 
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
- Alexandre Ghiti <alex@ghiti.fr>, Anup Patel <anup@brainfault.org>, 
- Samuel Holland <samuel.holland@sifive.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Cyan Yang <cyan.yang@sifive.com>, 
- Nick Hu <nick.hu@sifive.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-riscv@lists.infradead.org, devicetree@vger.kernel.org
 X-Mailer: b4 0.14.3
 
-The SiFive DMC is the power provider of the devices that inside the
-SiFive CPU power domains, which include Tile, Cluster and Core Complex
-power domains. Before the cpu entering the firmware-based idle state,
-each devices that inside the corresponding domain should be suspended
-properly. this driver will create the power provider and set the correct
-domain idle state.
+On Mon, 24 Nov 2025 12:06:49 +0100, Nicolas Frattaroli wrote:
+> This series is a combination of binding changes, driver cleanups and new
+> driver code to enable the interconnect on the MediaTek MT8196 SoC.
+> 
+> This series currently does not add any users of it (i.e., no bandwidth
+> requests being made in affected device drivers), as the only one I
+> quickly whippd up is in the UFS driver, which is undergoing some major
+> refactoring upstream in a different series of mine.
+> 
+> [...]
 
-Signed-off-by: Nick Hu <nick.hu@sifive.com>
----
- drivers/cpuidle/Kconfig.riscv               |  12 +++
- drivers/cpuidle/Makefile                    |   1 +
- drivers/cpuidle/cpuidle-sifive-dmc-domain.c | 124 ++++++++++++++++++++++++++++
- 3 files changed, 137 insertions(+)
+Applied to v6.19-next/soc, thanks!
 
-diff --git a/drivers/cpuidle/Kconfig.riscv b/drivers/cpuidle/Kconfig.riscv
-index b813018ce401..2fe0912f8027 100644
---- a/drivers/cpuidle/Kconfig.riscv
-+++ b/drivers/cpuidle/Kconfig.riscv
-@@ -22,3 +22,15 @@ config RISCV_SBI_CPUIDLE_DOMAIN
- 	  Select this option to enable RISC-V SBI firmware based CPU idle
- 	  driver to use PM domains, which is needed to support the hierarchical
- 	  DT based layout of the idle state.
-+
-+config SIFIVE_DMC_CPUIDLE_DOMAIN
-+	bool "SiFive DMC CPU idle Domain"
-+	depends on ARCH_SIFIVE
-+	depends on RISCV_SBI_CPUIDLE
-+	depends on PM_GENERIC_DOMAINS_OF
-+	select DT_IDLE_GENPD
-+	default y
-+	help
-+	  Select this option to enable RISC-V SBI firmware based CPU idle
-+	  driver to use PM domains on SiFive Platforms, which is needed to
-+	  support the hierarchical DT based layout of the idle state.
-diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-index 82595849b75d..eead4c049414 100644
---- a/drivers/cpuidle/Makefile
-+++ b/drivers/cpuidle/Makefile
-@@ -43,3 +43,4 @@ obj-$(CONFIG_POWERNV_CPUIDLE)		+= cpuidle-powernv.o
- # RISC-V drivers
- obj-$(CONFIG_RISCV_SBI_CPUIDLE)		+= cpuidle-riscv-sbi.o
- obj-$(CONFIG_RISCV_SBI_CPUIDLE_DOMAIN)	+= cpuidle-riscv-sbi-domain.o
-+obj-$(CONFIG_SIFIVE_DMC_CPUIDLE_DOMAIN)	+= cpuidle-sifive-dmc-domain.o
-diff --git a/drivers/cpuidle/cpuidle-sifive-dmc-domain.c b/drivers/cpuidle/cpuidle-sifive-dmc-domain.c
-new file mode 100644
-index 000000000000..5174bc525a13
---- /dev/null
-+++ b/drivers/cpuidle/cpuidle-sifive-dmc-domain.c
-@@ -0,0 +1,124 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * SiFive CPUIDLE DMC driver
-+ */
-+
-+#define pr_fmt(fmt) "sifive_dmc_cpuidle_domain: " fmt
-+
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_domain.h>
-+#include <linux/pm_runtime.h>
-+
-+#include "cpuidle-riscv-sbi.h"
-+#include "dt_idle_genpd.h"
-+
-+static bool use_osi = true;
-+
-+static int sifive_cpuidle_dmc_power_off(struct generic_pm_domain *pd)
-+{
-+	struct genpd_power_state *state = &pd->states[pd->state_idx];
-+	u32 *pd_state;
-+
-+	if (!state->data)
-+		return 0;
-+
-+	/* OSI mode is enabled, set the corresponding domain state. */
-+	pd_state = state->data;
-+	sbi_set_domain_state(*pd_state);
-+
-+	return 0;
-+}
-+
-+static int sifive_dmc_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	struct of_phandle_args child, parent;
-+	struct device *dev = &pdev->dev;
-+	struct generic_pm_domain *pd;
-+	int ret = -ENOMEM;
-+
-+	pd = dt_idle_pd_alloc(np, sbi_dt_parse_state_node);
-+	if (!pd)
-+		goto out;
-+
-+	pd->flags |= GENPD_FLAG_IRQ_SAFE | GENPD_FLAG_CPU_DOMAIN;
-+	if (use_osi)
-+		pd->power_off = sifive_cpuidle_dmc_power_off;
-+	else
-+		pd->flags |= GENPD_FLAG_ALWAYS_ON;
-+
-+	ret = pm_genpd_init(pd, &pm_domain_cpu_gov, false);
-+	if (ret)
-+		goto free_pd;
-+
-+	ret = of_genpd_add_provider_simple(np, pd);
-+	if (ret)
-+		goto remove_pd;
-+
-+	if (!of_parse_phandle_with_args(np, "power-domains", "#power-domain-cells", 0, &parent)) {
-+		child.np = np;
-+		child.args_count = 0;
-+
-+		ret = of_genpd_add_subdomain(&parent, &child);
-+		of_node_put(parent.np);
-+		if (ret) {
-+			pr_err("%pOF failed to add subdomain: %pOF\n", parent.np, child.np);
-+			goto remove_pd;
-+		}
-+	}
-+
-+	pm_runtime_enable(dev);
-+	pr_info("init PM domain %s\n", dev_name(dev));
-+	return 0;
-+
-+remove_pd:
-+	pm_genpd_remove(pd);
-+free_pd:
-+	dt_idle_pd_free(pd);
-+out:
-+	pr_err("failed to init PM domain ret=%d %pOF\n", ret, np);
-+	return ret;
-+}
-+
-+static const struct of_device_id sifive_dmc_of_match[] = {
-+	{ .compatible = "sifive,tmc1", },
-+	{ .compatible = "sifive,tmc0", },
-+	{ .compatible = "sifive,smc1", },
-+	{ .compatible = "sifive,smc0", },
-+	{ .compatible = "sifive,cmc2", },
-+	{}
-+};
-+
-+static struct platform_driver sifive_dmc_driver = {
-+	.probe = sifive_dmc_probe,
-+	.driver = {
-+		.name = "sifive_dmc",
-+		.of_match_table = sifive_dmc_of_match,
-+		.suppress_bind_attrs = true,
-+	},
-+};
-+
-+static int __init sifive_dmc_domain_init(void)
-+{
-+	int cpu;
-+
-+	/* Detect OSI support based on CPU DT nodes */
-+	for_each_possible_cpu(cpu) {
-+		struct device_node *np __free(device_node) = of_cpu_device_node_get(cpu);
-+		if (np &&
-+		    of_property_present(np, "power-domains") &&
-+		    of_property_present(np, "power-domain-names")) {
-+			continue;
-+		} else {
-+			use_osi = false;
-+			break;
-+		}
-+	}
-+
-+	sbi_set_osi_mode(use_osi);
-+
-+	/* Only probe the DMCs when OSI supported */
-+	return platform_driver_register(&sifive_dmc_driver);
-+}
-+core_initcall(sifive_dmc_domain_init);
+[02/13] dt-bindings: soc: mediatek: dvfsrc: Document clock
+        commit: 831ee17036e259da23a6313e28a3cbdda221a88c
+[04/13] soc: mediatek: mtk-dvfsrc: Change error check for DVFSRCv4 START cmd
+        commit: 23f1b4922a9135515e37d3bbad766e311845071f
+[05/13] soc: mediatek: mtk-dvfsrc: Add and propagate DVFSRC bandwidth type
+        commit: c2488fecba681d632a3dbb6b2f33c39df2cb7be9
+[06/13] soc: mediatek: mtk-dvfsrc: Add a new callback for calc_dram_bw
+        commit: ddb5862a43b1f40ca0a5cc16882277d8d07b966a
+[07/13] soc: mediatek: mtk-dvfsrc: Write bandwidth to EMI DDR if present
+        commit: 7cf9db2aca552f5f537d46f1e52e0ab08ddc2d64
+[08/13] soc: mediatek: mtk-dvfsrc: Add support for DVFSRCv4 and MT8196
+        commit: 75cf308fee7e4b3038741f96fd90afc3bd871e64
+[09/13] soc: mediatek: mtk-dvfsrc: Get and Enable DVFSRC clock
+        commit: 39aa8c4e762ea9b00d66cc55957527167ed89435
+[10/13] soc: mediatek: mtk-dvfsrc: Rework bandwidth calculations
+        commit: 3da293d70005496317d1ff3a49b89c29dd7c21e8
 
--- 
-2.43.7
+Cheers,
+Angelo
+
 
