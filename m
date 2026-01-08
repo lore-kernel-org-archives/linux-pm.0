@@ -1,142 +1,179 @@
-Received: from relmlie5.idc.renesas.com (relmlor1.renesas.com [210.160.252.171])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id C7D2325392A;
-	Thu,  8 Jan 2026 16:55:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.160.252.171
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2BBF02D8393;
+	Thu,  8 Jan 2026 17:27:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767891317; cv=none; b=G9eB1vpbedZxmnEsIf6jL1c6UmSRLkqKMOGnPhokBOMJ7ssaG2S5golE6q50j07+t4GS5oYOwwj71namsgkZTVO6dhSScUHqwjb8qP+CUPS4vteS6jbaQTV2B37aZIdKnOpY+FHMZN56kS9g4DpQ8HIrU4ID0CE+zU3aIJBfOOA=
+	t=1767893264; cv=none; b=UAtbBT2HSc0BVxX6GNaFcGVvuOPGX7wrryVShUD0ualSY4M0qzZaD7uf1jK77OTKcBKZXwhWJMwez8ixov3kZD514CmeKqD5HmGsfFtDTg3ewA7WIuFOqA+LYn5paxi/POczZqE+aqi97+4BaVN+l2uYuITLnUnURglnawQ0MdY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767891317; c=relaxed/simple;
-	bh=9GaYbDl06I3YClJ+EoXI5k8smm2kY0F6rU6kYhqu3VQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=HOAGKlm+g/t2EGTZHHvrgzCJpD/Ayh8eHqtGD4wuRQgFKj1J9LO7c0fAE0H4iWTKIKn6UVzYXv09VqJKNtKbHjebePpoXTEpXhr/KtOzlEtZu1TueO11Yt2y8FYwhR+gc1dppn0O5AKGvkItdMhypA29Zsaw39IARTSmm6SiiLg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com; spf=pass smtp.mailfrom=renesas.com; arc=none smtp.client-ip=210.160.252.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=renesas.com
-X-CSE-ConnectionGUID: yiuLw3wxRL+xmaxlX4ENSw==
-X-CSE-MsgGUID: 2Fv8Ua9iTo2d+niJwQtFFw==
-Received: from unknown (HELO relmlir6.idc.renesas.com) ([10.200.68.152])
-  by relmlie5.idc.renesas.com with ESMTP; 09 Jan 2026 01:55:11 +0900
-Received: from demon-pc.localdomain (unknown [10.226.92.68])
-	by relmlir6.idc.renesas.com (Postfix) with ESMTP id 17FA240313E8;
-	Fri,  9 Jan 2026 01:55:06 +0900 (JST)
-From: Cosmin Tanislav <cosmin-gabriel.tanislav.xa@renesas.com>
-To: John Madieu <john.madieu.xa@bp.renesas.com>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Rob Herring <robh@kernel.org>,
+	s=arc-20240116; t=1767893264; c=relaxed/simple;
+	bh=APV5ntxxphrtGu3GlOx83NQKoLOGqOjtVFfujzMMhq4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=fXRxKQTobV1mdIfFd7PZcuetylHr1s2CLB9SfAftksOfPX0ZQ89L21g/9MA6fRDoY7zgO7pDFW6P5nteXT8r3/JT67l1wIMIx4jq825k5WNzVEZe/joexItvMdMN/jRH/8Vw/hdoxW3grcB4wUYzkT/3rzdKhW5Xzz4iLxaceNQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=N0FBovyG; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="N0FBovyG"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 815F9C19423;
+	Thu,  8 Jan 2026 17:27:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1767893263;
+	bh=APV5ntxxphrtGu3GlOx83NQKoLOGqOjtVFfujzMMhq4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=N0FBovyGKwCwkTIJuCh1zGkP/oWG4lKPf6IiQfeuU2LN4kc976awuf3/X2D2xAAB7
+	 LSKRUoCxbPJZIwaqYn+C4npMd37Ve+nIRHg2x+BDFN0At0t2CktFKPwzBLBBeLQs14
+	 n3zbghAwkPFw2OXWcSJbp91R2QPQSe87Rf0aJgVlP1/MyTdeF5Xv2r7qne0jGycf6B
+	 CZV2OqJ9uIgwqtWpFnstWl06+WZsSpMniCdMKfk/f6YfWFYJaUU09mlbR0KtTEjXr0
+	 MmDGdC8QT3RwC+ep6naAsPhVG3dMR/xxB2oHYfq13lE77IqkkhY+QrIL1ZVFf1Zxix
+	 Ebid9/i+qEKrA==
+Date: Thu, 8 Jan 2026 17:27:35 +0000
+From: Lee Jones <lee@kernel.org>
+To: Matti Vaittinen <mazziesaccount@gmail.com>
+Cc: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>,
+	Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-renesas-soc@vger.kernel.org,
-	Cosmin Tanislav <cosmin-gabriel.tanislav.xa@renesas.com>
-Subject: [PATCH v4 5/5] thermal: renesas: rzg3e: add support for RZ/T2H and RZ/N2H
-Date: Thu,  8 Jan 2026 18:53:24 +0200
-Message-ID: <20260108165324.11376-6-cosmin-gabriel.tanislav.xa@renesas.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260108165324.11376-1-cosmin-gabriel.tanislav.xa@renesas.com>
-References: <20260108165324.11376-1-cosmin-gabriel.tanislav.xa@renesas.com>
+	Sebastian Reichel <sre@kernel.org>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>, Linus Walleij <linusw@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org,
+	linux-rtc@vger.kernel.org, Andreas Kemnade <andreas@kemnade.info>
+Subject: Re: [PATCH RESEND v6 00/17] Support ROHM BD72720 PMIC
+Message-ID: <20260108172735.GK302752@google.com>
+References: <cover.1765804226.git.mazziesaccount@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <cover.1765804226.git.mazziesaccount@gmail.com>
 
-The Renesas RZ/T2H (R9A09G077) and RZ/N2H (R9A09G087) SoCs expose the
-temperature calibration via SMC SIP and do not have a reset for the
-TSU peripheral, and use different minimum and maximum temperature values
-compared to the already supported RZ/G3E.
+On Mon, 15 Dec 2025, Matti Vaittinen wrote:
 
-Although the calibration data is stored in an OTP memory, the OTP itself
-is not memory-mapped, access to it is done through an OTP controller.
+> Resending the v6
+> 
+> Series is same as v6 _except_ being rebased on v6.19-rc1 - and adding rb
+> tags which were replied to v6.
+> 
+> The ROHM BD72720 is a new power management IC for portable, battery
+> powered devices. It integrates 10 BUCKs and 11 LDOs, RTC, charger, LEDs,
+> GPIOs and a clock gate. To me the BD72720 seems like a successor to the
+> BD71828 and BD71815 PMICs.
+> 
+> This series depends on
+> 5bff79dad20a ("power: supply: Add bd718(15/28/78) charger driver")
+> which is in power-supply tree, for-next. Thus, the series is based on
+> it.
+> 
+> The testing since v4 has suffered some hardware-issues after I
+> accidentally enabled charging while the PMIC's battery pin was connected
+> to the I/O domain. Some heat was generated, not terribly lot smoke
+> though...
+> 
+> After the incident I've had occasional I2C failures. I, however, suspect
+> the root cause is HW damage in I/O lines.
+> 
+> Revision history:
+>   v6 resend:
+>   - Rebased on v6.19-rc1 and collected rb-tags from v6.
+> 
+>   v5 => v6:
+>   - MFD fixes as suggested by Lee
+>     - Styling mostly
+>     - New patch to Fix comment style for MFD driver
+>   More accurate changelog in individual patches
+> 
+>   v4 => v5:
+>   - dt-binding fixes as discussed in v4 reviews.
+>     - Drop rohm,vdr-battery.yaml and add vdr properties to battery.yaml
+>     - Drop 'rohm,' -vendor-prefix from vdr properties
+>   - Link to v4:
+>     https://lore.kernel.org/all/cover.1763022807.git.mazziesaccount@gmail.com/
+>   More accurate changelog in individual patches
+> 
+>   v3 => v4:
+>   - dt-binding fixes to the BD72720 MFD example and regulator bindings
+>   More accurate changelog in individual patches
+> 
+>   v2 => v3:
+>   - rebased to power-supply/for-next as dependencies are merged to there
+>   - plenty of dt-binding changes as suggested by reviewers
+>   - add new patch to better document existing 'trickle-charging' property
+>   More accurate changelog in individual patches
+> 
+>   RFCv1 => v2:
+>   - Drop RFC status
+>   - Use stacked regmaps to hide secondary map from the sub-drivers
+>   - Quite a few styling fixes and improvements as suggested by
+>     reviewers. More accurate changelog in individual patches.
+>   - Link to v1:
+>     https://lore.kernel.org/all/cover.1759824376.git.mazziesaccount@gmail.com/
+> 
+> ---
+> 
+> Matti Vaittinen (17):
+>   dt-bindings: regulator: ROHM BD72720
+>   dt-bindings: battery: Clarify trickle-charge
+>   dt-bindings: battery: Add trickle-charge upper limit
+>   dt-bindings: battery: Voltage drop properties
+>   dt-bindings: mfd: ROHM BD72720
+>   dt-bindings: leds: bd72720: Add BD72720
+>   mfd: rohm-bd71828: Use regmap_reg_range()
+>   mfd: rohm-bd71828: Use standard file header format
+>   mfd: rohm-bd71828: Support ROHM BD72720
+>   regulator: bd71828: rename IC specific entities
+>   regulator: bd71828: Support ROHM BD72720
+>   gpio: Support ROHM BD72720 gpios
+>   clk: clk-bd718x7: Support BD72720 clk gate
+>   rtc: bd70528: Support BD72720 rtc
+>   power: supply: bd71828: Support wider register addresses
+>   power: supply: bd71828-power: Support ROHM BD72720
+>   MAINTAINERS: Add ROHM BD72720 PMIC
+> 
+>  .../bindings/leds/rohm,bd71828-leds.yaml      |    7 +-
+>  .../bindings/mfd/rohm,bd72720-pmic.yaml       |  339 ++++++
+>  .../bindings/power/supply/battery.yaml        |   33 +-
+>  .../regulator/rohm,bd72720-regulator.yaml     |  148 +++
+>  MAINTAINERS                                   |    2 +
+>  drivers/clk/Kconfig                           |    4 +-
+>  drivers/clk/clk-bd718x7.c                     |   10 +-
+>  drivers/gpio/Kconfig                          |    9 +
+>  drivers/gpio/Makefile                         |    1 +
+>  drivers/gpio/gpio-bd72720.c                   |  281 +++++
+>  drivers/mfd/Kconfig                           |   18 +-
+>  drivers/mfd/rohm-bd71828.c                    |  555 ++++++++-
+>  drivers/power/supply/bd71828-power.c          |  160 ++-
+>  drivers/regulator/Kconfig                     |    8 +-
+>  drivers/regulator/bd71828-regulator.c         | 1025 ++++++++++++++++-
+>  drivers/rtc/Kconfig                           |    3 +-
+>  drivers/rtc/rtc-bd70528.c                     |   21 +-
+>  include/linux/mfd/rohm-bd72720.h              |  634 ++++++++++
+>  include/linux/mfd/rohm-generic.h              |    1 +
+>  19 files changed, 3127 insertions(+), 132 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/mfd/rohm,bd72720-pmic.yaml
+>  create mode 100644 Documentation/devicetree/bindings/regulator/rohm,bd72720-regulator.yaml
+>  create mode 100644 drivers/gpio/gpio-bd72720.c
+>  create mode 100644 include/linux/mfd/rohm-bd72720.h
 
-The OTP controller is only accessible from the secure world,
-but the temperature calibration data stored in the OTP is exposed via
-SMC.
+The MFD parts LGTM.
 
-Add support for retrieving the calibration data using arm_smcc_smc().
+What Acks are you waiting on?  What's the merge strategy?
 
-Add a compatible for RZ/T2H, RZ/N2H can use it as a fallback.
+> -- 
+> 2.52.0
+> 
 
-Reviewed-by: John Madieu <john.madieu.xa@bp.renesas.com>
-Tested-by: John Madieu <john.madieu.xa@bp.renesas.com>
-Signed-off-by: Cosmin Tanislav <cosmin-gabriel.tanislav.xa@renesas.com>
----
 
-V4:
- * pick up John's Reviewed-by and Tested-by
- * replace new macro TSU_TEMP_MASK usage with existing macro
-   TSU_CODE_MAX
 
-V3:
- * no changes
-
-V2:
- * no changes
-
- drivers/thermal/renesas/rzg3e_thermal.c | 26 +++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
-
-diff --git a/drivers/thermal/renesas/rzg3e_thermal.c b/drivers/thermal/renesas/rzg3e_thermal.c
-index c1b586128fa6..ba13ca8cbb8c 100644
---- a/drivers/thermal/renesas/rzg3e_thermal.c
-+++ b/drivers/thermal/renesas/rzg3e_thermal.c
-@@ -70,6 +70,10 @@
- #define TSU_POLL_DELAY_US	10	/* Polling interval */
- #define TSU_MIN_CLOCK_RATE	24000000  /* TSU_PCLK minimum 24MHz */
- 
-+#define RZ_SIP_SVC_GET_SYSTSU	0x82000022
-+#define OTP_TSU_REG_ADR_TEMPHI	0x01DC
-+#define OTP_TSU_REG_ADR_TEMPLO	0x01DD
-+
- struct rzg3e_thermal_priv;
- 
- struct rzg3e_thermal_info {
-@@ -362,6 +366,21 @@ static int rzg3e_thermal_get_syscon_trim(struct rzg3e_thermal_priv *priv)
- 	return 0;
- }
- 
-+static int rzg3e_thermal_get_smc_trim(struct rzg3e_thermal_priv *priv)
-+{
-+	struct arm_smccc_res local_res;
-+
-+	arm_smccc_smc(RZ_SIP_SVC_GET_SYSTSU, OTP_TSU_REG_ADR_TEMPLO,
-+		      0, 0, 0, 0, 0, 0, &local_res);
-+	priv->trmval0 = local_res.a0 & TSU_CODE_MAX;
-+
-+	arm_smccc_smc(RZ_SIP_SVC_GET_SYSTSU, OTP_TSU_REG_ADR_TEMPHI,
-+		      0, 0, 0, 0, 0, 0, &local_res);
-+	priv->trmval1 = local_res.a0 & TSU_CODE_MAX;
-+
-+	return 0;
-+}
-+
- static int rzg3e_thermal_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
-@@ -524,8 +543,15 @@ static const struct rzg3e_thermal_info rzg3e_thermal_info = {
- 	.temp_e_mc = 126000,
- };
- 
-+static const struct rzg3e_thermal_info rzt2h_thermal_info = {
-+	.get_trim = rzg3e_thermal_get_smc_trim,
-+	.temp_d_mc = -40000,
-+	.temp_e_mc = 125000,
-+};
-+
- static const struct of_device_id rzg3e_thermal_dt_ids[] = {
- 	{ .compatible = "renesas,r9a09g047-tsu", .data = &rzg3e_thermal_info },
-+	{ .compatible = "renesas,r9a09g077-tsu", .data = &rzt2h_thermal_info },
- 	{ /* sentinel */ }
- };
- MODULE_DEVICE_TABLE(of, rzg3e_thermal_dt_ids);
 -- 
-2.52.0
+Lee Jones [李琼斯]
