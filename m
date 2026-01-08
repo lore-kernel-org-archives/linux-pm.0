@@ -1,387 +1,1123 @@
-Received: from PH0PR06CU001.outbound.protection.outlook.com (mail-westus3azon11011039.outbound.protection.outlook.com [40.107.208.39])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69A68474BF6;
-	Thu,  8 Jan 2026 14:38:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.208.39
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767883127; cv=fail; b=Lo60ZktueS2MxETUHoCLc+mvb674HozS3FiiDbQjwz0llGrBFdt6gtsNtoZBD2BJGFUUcMZAKjI4qq3jzFxdCNyNJR31yGOcUuydlFV4rKif25xLI3/zrrkgTewV461Xsv+Dfm01tb6I+J0ynt6I+sEesVpOOEnQKWLbnkOEN4A=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767883127; c=relaxed/simple;
-	bh=sB382uQFQ4C9iuzerHEQPiIhQh9IyOh9IpX3hVHoxUU=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=OFXd7Wth55IiGMKsl6HLbEBHlxi8voU7rgJSLZ/SP0iebGJWRouivyzWDOEG6aDoZ6L5e1oFZGzoc9Stqxg7JEgOoXKqc9axGxVX19iadzoVwYNZIgId4MsxwgyQE+N3WWb1d5vyG/zJyXfbn2L2b+4qkBg5Dq/ezPNxCcbOnAY=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=fail (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=fail (0-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=mnxbBQ3c reason="key not found in DNS"; arc=fail smtp.client-ip=40.107.208.39
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53D9023EA8A;
+	Thu,  8 Jan 2026 14:45:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1767883535; cv=none; b=ur5JwLtFZ4ZS4ZkOwslMRrmjIXsXgcKhIttuNVMq637XrnvI7IeGXMlVQC6+gmDvuAjgJtHx7b1GX0xRXNnWlgQnyNwDk97cKAV+3Z3OQdbUie2+IG8WybzmvU0He8C8yt6/nN0t6NyBbtk4fTKzTBbCCwDngGsD7xOeKBl5q6I=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1767883535; c=relaxed/simple;
+	bh=B15BiTZuT7xRHPayx6Keyth2Q/mcLm4IIvuw+oRmdTs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=irJW5YzRod5V35WEnInZk2MLjP1uHxbLsXO9ZDrRFdwyl4Sz45qzYaZ7roqmqL0hYrxJoLOIkHYvxFYdrSQfgDh7faqxzYJrsO/snOFkG3q14GzLVQy2+rQ85aijpEZh9DXM9fWhNueAILRv84xpnQarPZSzZ8eQVz5s6oZjhoA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=sQOAJmmv; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="mnxbBQ3c"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=RrPY6S6vsHCZtSb5t6xYw0Za2j/IXr/rQPD20SEMFL8ffge4h0wuN5l1qpGL8YMtwz77v5kWnzig1BsmEyI+S9JnBp5QrP7iYxoJIujVaG68KbLekQZk0hI+Um69Z42/bCu+oHA/DlLgQYPJf2VBw342Br/FYYh+3b5iyCkODwMTGfAwxSlagulIuNJmCCP8Z6zB/sXaGfqrVHyFnsjZH1MshKtAkMcDf8EbgtPaj+qQvnr1rJuUANg7P/watm7oZnDpomScvd0R0vEl4v5W1pbUAXMYf2ejsZMfzf/cUttNbtYr8jClBKGnjdCdcLfuWFzmSfJPj0WWYUTJigTdIQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=0dHZ1WgT4ikYOHFH8NUwRepj+JduOV6sPoRsJpwtR1I=;
- b=lyJpAJcdGEcqGB/3eFTVRvhauFGMGIK0s9oSjMgCtXFcp71z3JJ5zV17fR6/eRsIlOhru+lHcCL8Y0SuRZSgHSflCCYQ4iIYrfhYpTZ6t1qDBEj6hdVYwiIwoJ7eiQ8JNzppK1fBT8B2O9Ui+tBqPymmjrycoktjclUzmeymyJCMsGz8EQ4Qgjj849ExSlu6tG/XtGKg1/WeJ067NEiR0L34mJWLDV1S9DaAexWfIJJxoPtoR+ky9uUpopaWpTqqNjY2ccZ33l40hUIOX1w4oGCwb6DeHDWSyO8SLPDRWM0qevuiM2xJq6mOufXH1usumUFGXTHxKpFuq83t2UQA8A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=0dHZ1WgT4ikYOHFH8NUwRepj+JduOV6sPoRsJpwtR1I=;
- b=mnxbBQ3cmHd5RyhB/awCW05EajsaJb8qNmsYpYoGjcavdKAPz/eSKqBZ32oEg6KwlXTgDLl1wEZKF89D41aEKuApPV5IJfV6YsR7R5jchON21U5c+M55tBbXB77mENapo03q89B2El3KOYDslclhZzfeJ+2pM/knKPfb0X9EyCYYSpo4U/wx5Q8pQIClnYjVjkmE0t0SEVmSqXZBJ8vE5aBSEuoPsvaSDvk1GfMHUeAhGViXQLLRF7RZoGnYvWO4JGMSJtNj5K8oHseu/1148aTPYbZzIEQ7YkmNQWXXQEx+KOxi7LfrjNL9RYSOecNecAn1Ke6YY09hN+MkF59fyg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com (2603:10b6:408:11c::18)
- by DS0PR12MB7704.namprd12.prod.outlook.com (2603:10b6:8:138::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9499.3; Thu, 8 Jan
- 2026 14:38:41 +0000
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::44e5:415d:e1a8:6e42]) by BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::44e5:415d:e1a8:6e42%7]) with mapi id 15.20.9499.003; Thu, 8 Jan 2026
- 14:38:41 +0000
-Message-ID: <0a2b7d49-bd1f-442e-9247-705cd2eb0d1c@nvidia.com>
-Date: Thu, 8 Jan 2026 20:08:30 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 06/11] ACPI: CPPC: add APIs and sysfs interface for
- perf_limited
-To: "zhenglifeng (A)" <zhenglifeng1@huawei.com>, rafael@kernel.org,
- viresh.kumar@linaro.org, lenb@kernel.org, robert.moore@intel.com,
- corbet@lwn.net, pierre.gondois@arm.com, rdunlap@infradead.org,
- ray.huang@amd.com, gautham.shenoy@amd.com, mario.limonciello@amd.com,
- perry.yuan@amd.com, ionela.voinescu@arm.com, zhanjie9@hisilicon.com,
- linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
- linux-doc@vger.kernel.org, acpica-devel@lists.linux.dev,
- linux-kernel@vger.kernel.org
-Cc: linux-tegra@vger.kernel.org, treding@nvidia.com, jonathanh@nvidia.com,
- vsethi@nvidia.com, ksitaraman@nvidia.com, sanjayc@nvidia.com,
- nhartman@nvidia.com, bbasu@nvidia.com, sumitg@nvidia.com
-References: <20251223121307.711773-1-sumitg@nvidia.com>
- <20251223121307.711773-7-sumitg@nvidia.com>
- <14851f8e-b6ac-42ff-9623-b7ac8d8893e2@huawei.com>
-Content-Language: en-US
-From: Sumit Gupta <sumitg@nvidia.com>
-In-Reply-To: <14851f8e-b6ac-42ff-9623-b7ac8d8893e2@huawei.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: MA0PR01CA0087.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:a01:ae::17) To BN9PR12MB5179.namprd12.prod.outlook.com
- (2603:10b6:408:11c::18)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="sQOAJmmv"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5B16BC116C6;
+	Thu,  8 Jan 2026 14:45:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1767883534;
+	bh=B15BiTZuT7xRHPayx6Keyth2Q/mcLm4IIvuw+oRmdTs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=sQOAJmmvH1nl0b7D2pWgGKQOEEjVTQ6misARTm7e26cg7dzxbZKgHlbU2DyUxhado
+	 uxBWQMmaYJMFFqkeBOEAWTUzcwp6WIQbaNLjaExjOBon7tYpoUjTKVVqWQVBXLHFiT
+	 lXBHpqS/uKrkDG+eq2RXdvn7/yVMKQCRTRPx5xSJxalBezXz7lvnHKKpBtpqinjjlF
+	 TriVgzvBAZK7bE88fUv0ucUviK6mHNSHTI2NNk3fvSCwUbJqk49w/qSeUJHwSO8sUD
+	 94zCzZFyrRzwSvXRa7vzEo2HyNGpoTn9+ya39QIEYbzDpPQ3EPBs5pJHah9e81Sd1t
+	 zrsiofLakN3vg==
+Date: Thu, 8 Jan 2026 14:45:26 +0000
+From: Lee Jones <lee@kernel.org>
+To: Ramiro Oliveira <ramiro.oliveira@advantech.com>
+Cc: Linus Walleij <linusw@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+	Wim Van Sebroeck <wim@linux-watchdog.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
+	linux-hwmon@vger.kernel.org, linux-i2c@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org,
+	Wenkai Chung <wenkai.chung@advantech.com.tw>,
+	Francisco Aragon-Trivino <francisco.aragon-trivino@advantech.com>,
+	Hongzhi Wang <hongzhi.wang@advantech.com>,
+	Mikhail Tsukerman <mikhail.tsukerman@advantech.com>,
+	Thomas Kastner <thomas.kastner@advantech.com>
+Subject: Re: [PATCH 1/8] Add Advantech EIO MFD driver
+Message-ID: <20260108144526.GJ302752@google.com>
+References: <20251212-upstream-v1-v1-0-d50d40ec8d8a@advantech.com>
+ <20251212-upstream-v1-v1-1-d50d40ec8d8a@advantech.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN9PR12MB5179:EE_|DS0PR12MB7704:EE_
-X-MS-Office365-Filtering-Correlation-Id: 069f0078-3869-43b1-5b78-08de4ec39e2e
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|366016|1800799024|921020;
-X-Microsoft-Antispam-Message-Info:
-	=?utf-8?B?MjV3VDVRbG5oWUFrMyt1SkJoZnZVMk5qNnl1UWh5ZFRFZHlyQVAvaUdQRWRq?=
- =?utf-8?B?MGQ2QlVWQm9URjBRYmgvNStkcC82d3B3R3lzZG95RWdUSEI1QkYwUDRpZTlF?=
- =?utf-8?B?VU55TEZUSmNkbXpoR0VMdWZjWE9MVWtnWWJEQWI2Qnc2REpPUXJHTGhXYkNk?=
- =?utf-8?B?RXZsZnVnb3E5d2VRTE43UjloaE9CeHl4TGhBNm81UnFPOEhMdTRhckFZeXVZ?=
- =?utf-8?B?RFo1OEw4Z2hzZW5GUlQ0SzkrMm9kNC9WZHAxTC95emRLc0EvTVJEVTlxaUVw?=
- =?utf-8?B?Mlk1RzUrZDlDb1V5cGZnWVBnUnlCZ1Z3RUlyZzRLUnhFRmhSdkw2RjVvWG9u?=
- =?utf-8?B?SXhUUHpFbkcvK1lUUm5aSytKUk5YN1JWRGlsWDB4Y0Q1aXhvRVlZcC9WQmVL?=
- =?utf-8?B?OW4vTStCVkJ5TXlWVXJCZ3JTZ1MrT2UyR2VTMloraEsxMHNzY3Z4dmNjdU1P?=
- =?utf-8?B?MWJEb2UrRWNlNTZLOFRQVDE0RUw1bnQzdVAvM0FMRkZ3dU9tZjBzSjk1K2d5?=
- =?utf-8?B?ZjZCTW9JSjVhQmw0WmxqTTdCVTQ1eTJtL0lOL3M4UXlGTVVtdDlMT0crRlZz?=
- =?utf-8?B?YnMwOWlsaUdyVzVsTWNhMGdiSHJVbW5sT2ltNnNLeTArSk1SdFFXK0k3Y1JY?=
- =?utf-8?B?ZHBqRld0cnJ4eng0M1BmbnRhWkdDRlRBTDdTbzQ1OXZ2M1RDckFFaFdBbnJW?=
- =?utf-8?B?ZGFHVjlpemViQVcvMTlpMU83R1pPamRQNy9mOWxOTlhYK0hxVG9rQkZ4WUky?=
- =?utf-8?B?RTNLQWdVdjdVYmpHR05MY2F6VVEyZ2svVkRKVkh1MEkyMEo4K2dvaWI3Vm4w?=
- =?utf-8?B?RDBzODQ5YlZndjNkWlZIclYxMjNHNVhCM2U0bmQzaTlPV3dFdG84YjhqOHJR?=
- =?utf-8?B?cFViaVJjdVdCeXRnaTVnY29oNXBhb0lJS1NLbkQzRmZ4RGRRMmNvMFMzeVd4?=
- =?utf-8?B?djMwanE3QUNkSU5CUjMwcmtvRXdKOFRLaXZpNGJVeFdXZGtaMGtNa0YxZXgz?=
- =?utf-8?B?RnBGSE1wRTFEUFBMMzM5Yi9oWitSRlQzUXF3VEtSa2RmWlBvTUMrNTZDbWJH?=
- =?utf-8?B?anpqa3RWRUxOdFhucWVKOFdPbEhlNVg5aWNObUJRdHlDSXgzTzBNOXM0UzF2?=
- =?utf-8?B?OVYxYTFXS1B5aExrZ2VtUm1tclQ4VUtPNDNtdXlBMGNNRlY3TnEybUZLYzhP?=
- =?utf-8?B?RGdNcWlsaExYMHZwb2ZCcGE4eXJjOU9pc3ZWY1ljanN1alo5NnNmRGVEZ1J3?=
- =?utf-8?B?QTlFS28xUTZPTlBUQXBOeC9iNmF3Sk56QUx2RWh3RmNoRGs1OGM1TjRGbmxF?=
- =?utf-8?B?MkNPQzVNWVBMdTludWVPWVVPY2Q2a2JFUXVxSzZXWjhiNnpuTHpmYUNWcmg2?=
- =?utf-8?B?WHpTdTk1aE9zTU5Qdm04QzhuQXRnNjVPZE5pdCtySEZTK0pISGlNVzJkSzJz?=
- =?utf-8?B?cXBKenU4Qk9hdnlmamJRMXVuLzJrK3F1eTVvMHZxMkhjU1RHc3ZZdUFzN1Fp?=
- =?utf-8?B?YUFTaDRzcmRNallaTFF0OUdFRDM3Zzl6WVBRR2lnMGNWSHMwOWhCL2diMW9v?=
- =?utf-8?B?NG1VUmJaWEhHUTd2M2dDMklJcTB4cDdvVFZqQldWZ2Yxa2NMcExLek1mVERv?=
- =?utf-8?B?WVd4eTA5Z1JkM2swOUdXejZSdURYY0RBWjNEdVBqRS9RRmN3MGdMUGxEUmZ3?=
- =?utf-8?B?MjlMUWNseTNRTDNkK2I2TUZBS2ovb3pNSkJvWXd6cG9YNWIxL0lFS29IOHBs?=
- =?utf-8?B?ZllPRzM2ekFvUkZyVmg0amJuOVd5akd1Ui9jRkRXOE5hNXFUU2dJR3JHZWRZ?=
- =?utf-8?B?VVFOdTVZZmN1MitvVFNWeVQ1UURrSzc1TVh0YjhHL2h5K3ZrZ0tKSThiYUZX?=
- =?utf-8?B?dTdnSUMrTWRJb1Y1TGFIYnRRWjRFY1RGeWxlZHcxdjd5WENYaUxMQ2lWNWtS?=
- =?utf-8?B?eVM5a3hLSUg5azVCQUs4dSt4aXJmQzkrNzRVTnpYMU1WTzlTWmNmRjBJSUtp?=
- =?utf-8?Q?De4eJW+MXwj+EXPMGQV/MGxRuVEqRA=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN9PR12MB5179.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(366016)(1800799024)(921020);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?UWRFTDBIRW9JaHNuL3l1MytJa2xEUysyeUd6NndNb3pqS2ZWUjVJVStwTnpS?=
- =?utf-8?B?RHJ4NW0xMG5DUVBhL1BzNzNuekppREF1Undtekk3R3ZOMkFCUWNVV1NKSzh2?=
- =?utf-8?B?c3pFM2ZWdUZzV3A3RnRSUkhjVm1kN3NaRXMrMmJIemkzRHJ0RWRzdUplMm9J?=
- =?utf-8?B?SndSVGNwU0lQODZUT3ZpajVTMjVJL0Z6NjZlb2RsZDBBV2ZzUzlrbmhhUkxT?=
- =?utf-8?B?eWFZZUVuL1U3UUlvQW5udnE2Q25OQVB1bmtLSlIwUVBYTHdmbW5WVHNWaGk5?=
- =?utf-8?B?UXQ2bVJjZTJIQ2l1Q00xKy9vczVMbWFtaFVsMkVGcDdPdW4wbzVETDBCQTVv?=
- =?utf-8?B?bC9CMG83WHRPSHNJWGVFaE52dEQ3VktFZURRSDIreDFVbU9FdElWYjFMdWlP?=
- =?utf-8?B?TUZBWW9WSFAzUU1OZ3ZaK25yZHdLNDJpWDFjQ2J0L2hmMWhoSmlCY1BLeGdh?=
- =?utf-8?B?dFZYbFhrcFZvc2dBcFYyaklGMmk3SjgxWW5KT3E1WnRjSVhPTFRkTXVVc1NP?=
- =?utf-8?B?RTEwclp2YTN6cVRzZjVGcS84QmF2ckpyM3ErR2ZtUG1KWDlKM2dyUFJXa3d4?=
- =?utf-8?B?N3k0Z3ZTb3cvMzNjZWJhS09KS0lOT3JTVWtIdHhxY3ZQeDJhdjUrbnlGeSts?=
- =?utf-8?B?WUpZS1Q1amlqSXc2T0EwTmpUdFNuUHBKRXBtZFo3WDgyVUxDM1VqMkdnOGgw?=
- =?utf-8?B?ajkrQnFrS0VJbTR1eXgvK2lSYkNBU1dxeng3bmp6Q1F3a00vc1ZROFM4TVVv?=
- =?utf-8?B?WllCRlJVZ2ZTTGQ0eEI4c09nNnEwbkpqWG41Q2tIZHNTSVlnRTF4RHJrZ0VO?=
- =?utf-8?B?NnZRUDdRMko5S0xNcXpSTXlkSTVnOE5CVWUwNEVaZkV1cFRDaUo2NkE4b05n?=
- =?utf-8?B?SUFDSHRTTWE2bjF5c3hyRWV0c1Z4cE80YkNNRWNDZjBkMExBdmxqNVN2L2V5?=
- =?utf-8?B?cnNmNmd3TTFTWnpTK3kwMWFHL2Rla291U3V3TmxLLzFaQ29Qdk9aSHhIYUQx?=
- =?utf-8?B?RkptcEh0NHVSZlgwNzhCK1RNUk9RR3JERkhxNi9ib3h4Ym5MK3RXTDRQMEFB?=
- =?utf-8?B?bGN4dU5XSm8yVU5QMDVvbGxmeVdSZ0poUklNbEYxbTVjdUxhSzFOQ1Ixd2Rs?=
- =?utf-8?B?eEFGRU9oNFhQMU9hdUJjZXJKWitBWDVNN3BIMVdFSzJJeXJVc1N5K1hwRVpP?=
- =?utf-8?B?SldURDZaM2llNXQ5bCtRQ2c1dHNJTXBTcCt6Wk8yN3NsNjNSdHBLUkhNU0dX?=
- =?utf-8?B?VTdRQ1RYSm1hRE1VUExRUGt1TTRqTURWUWhncWxSZk1SSDVxZnB0eW9XeW4r?=
- =?utf-8?B?bVY4Z1dnMkRXRFRtUnZyVXZvdjlDQzY4TUFHZVNSL1ZrczRFK3lSUjdBdThP?=
- =?utf-8?B?Qmp1Kzc0dnJxdGZMSTVnYkdhRkZLN251V2c2Y1ZpZHYxUXlLalBaMHA2eXNt?=
- =?utf-8?B?bFdYVkFlTnlzcVZqcWtxeFFDWkJpOGEzSm5NSEU1N1hPQXBzMklMcGZVWTZH?=
- =?utf-8?B?eDdBYWh2OEpQaksvdEFKTC9sTCtrbTJ3blo4OENmR20zcm56QXJKa1ZBZS81?=
- =?utf-8?B?TGJhSTdkUkxFa2VvVzZRVVpER3ZMdy9leWhhS3RLdEN1dEdxUTFKSzFnald4?=
- =?utf-8?B?OFpBaXFqWEtIUThIN1M3dFZ4cHN1Vm56My85U3cyV2lTMDNKSlk4ZVZzb2x0?=
- =?utf-8?B?OEZJNUpyYnRaSUZqcXh1dFhsQUlFOTlWR1h0MnV0YytmUUdoKzY1NkNtalBi?=
- =?utf-8?B?Z3JxRG9mZVhQVHlJYlA0QnFZd0NpbDU3a3o2aXl0QnErbGJwWVorNkRXM3A3?=
- =?utf-8?B?VGJWMzBSNXp3WGYvalhETnBaVXF0QXkrVkloRjBMamVrYXNnUnZaaGVDVDdL?=
- =?utf-8?B?YjFPTFlvTTg0em9kUXJxYnRZbFJKOFpoNnRqSG1rQ3BDeWlQazZSYSt4bmZX?=
- =?utf-8?B?TWVMNFJ3VDBlcjZqKzhhZndIOWYrQmovY3h5bTU2S1VPbTV1WWIxb3FKT0hS?=
- =?utf-8?B?R1pQSllvMlljek5SMkNXOGlTdmtpU21DK05kMHUwZVBCVG55SFdkZzVsaEdo?=
- =?utf-8?B?dVpIUSt4d21rdEZnV0YvbkptcTJkbDlncDB0UWhCT3c5OW1rWWp1ZjgyUHlE?=
- =?utf-8?B?cUw3V0VheFdXQXZRZkxCcEZSOWZBdXhzQS9ZdXV4Umxadm9Za08rUGJnNTQv?=
- =?utf-8?B?RDM3SWFtNFJHTEFjQUVsTThyTXI4ak1ia2JvL1pvRlgvQlo2cGdtT0JxdmY1?=
- =?utf-8?B?c3pIcmpVL1Jvbk9FU3ZCNVEwQ0JLSkdkbWU0LzdJMVN1QjFyRjZwdlBPVFNK?=
- =?utf-8?B?emZCNy8yNzhGSFY4MlRnSXN1UGF2Y1dWQUpFUWRya25mYkt2VnlRQT09?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 069f0078-3869-43b1-5b78-08de4ec39e2e
-X-MS-Exchange-CrossTenant-AuthSource: BN9PR12MB5179.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Jan 2026 14:38:41.5724
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: L2g1yfZo9FbEQDQb3WXumMuGFfngKyfQKAXfppn1DkToFzhL+1o5MTzB4qIRVWD21dbKZ8graEg9qscgEoZ1yQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB7704
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20251212-upstream-v1-v1-1-d50d40ec8d8a@advantech.com>
+
+On Fri, 12 Dec 2025, Ramiro Oliveira wrote:
+
+> Creating the MFD core driver for Advantech EIO, all other drivers (GPIO,
+> I2C, etc) depend on this core driver.
+
+You're going to have to come up with a MUCH better commit message than
+that for 800 line driver!
+
+> Signed-off-by: Ramiro Oliveira <ramiro.oliveira@advantech.com>
+> ---
+>  MAINTAINERS             |   6 +
+>  drivers/mfd/Kconfig     |  10 +
+>  drivers/mfd/Makefile    |   1 +
+>  drivers/mfd/eio_core.c  | 621 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/mfd/eio.h | 127 ++++++++++
+>  5 files changed, 765 insertions(+)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 663e86eb9ff1..bd9279796c2f 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -616,6 +616,12 @@ L:	platform-driver-x86@vger.kernel.org
+>  S:	Maintained
+>  F:	drivers/platform/x86/adv_swbutton.c
+>  
+> +ADVANTECH EIO DRIVER
+> +M:	Ramiro Oliveira <ramiro.oliveira@advantech.com>
+> +S:	Maintained
+> +F:	drivers/mfd/eio_core.c
+> +F:	include/linux/mfd/eio.h
+> +
+>  ADXL313 THREE-AXIS DIGITAL ACCELEROMETER DRIVER
+>  M:	Lucas Stankus <lucas.p.stankus@gmail.com>
+>  S:	Supported
+> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> index aace5766b38a..02a0b324eb6a 100644
+> --- a/drivers/mfd/Kconfig
+> +++ b/drivers/mfd/Kconfig
+> @@ -506,6 +506,16 @@ config MFD_DLN2
+>  	  etc. must be enabled in order to use the functionality of
+>  	  the device.
+>  
+> +config MFD_EIO
+> +	tristate "Advantech EIO MFD core"
+
+Drop the term MFD, it doesn't mean anything.  We made it up.
+
+What is this device?
+
+> +	select MFD_CORE
+> +	help
+> +	  This enables support for the Advantech EIO multi-function device.
+
+Remove all mentions of MFD.
+
+> +	  This core driver provides register access and coordination for the
+> +	  EIO's subdevices (GPIO, watchdog, hwmon, thermal, backlight, I2C).
+> +	  This driver supports EIO-IS200, EIO-201, EIO-210 and EIO-211.
+
+Which are?
+
+> +
+> +
+>  config MFD_ENE_KB3930
+>  	tristate "ENE KB3930 Embedded Controller support"
+>  	depends on I2C
+> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+> index e75e8045c28a..f8c53b55b679 100644
+> --- a/drivers/mfd/Makefile
+> +++ b/drivers/mfd/Makefile
+> @@ -19,6 +19,7 @@ obj-$(CONFIG_MFD_CROS_EC_DEV)	+= cros_ec_dev.o
+>  obj-$(CONFIG_MFD_CS42L43)	+= cs42l43.o
+>  obj-$(CONFIG_MFD_CS42L43_I2C)	+= cs42l43-i2c.o
+>  obj-$(CONFIG_MFD_CS42L43_SDW)	+= cs42l43-sdw.o
+> +obj-$(CONFIG_MFD_EIO)		+= eio_core.o
+>  obj-$(CONFIG_MFD_ENE_KB3930)	+= ene-kb3930.o
+>  obj-$(CONFIG_MFD_EXYNOS_LPASS)	+= exynos-lpass.o
+>  obj-$(CONFIG_MFD_GATEWORKS_GSC)	+= gateworks-gsc.o
+> diff --git a/drivers/mfd/eio_core.c b/drivers/mfd/eio_core.c
+> new file mode 100644
+> index 000000000000..7a58c62595a5
+> --- /dev/null
+> +++ b/drivers/mfd/eio_core.c
+> @@ -0,0 +1,621 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * Advantech Embedded Controller base Driver
+> + *
+> + * This driver provides an interface to access the EIO Series EC
+> + * firmware via its own Power Management Channel (PMC) for subdrivers:
+
+':' without follow-up looks odd.
+
+> + * A system may have one or two independent EIO devices.
+> + *
+> + * Copyright (C) 2025 Advantech Co., Ltd.
+
+This needs updating on the next iteration.
+
+> + */
+> +
+> +#include <linux/delay.h>
+> +#include <linux/isa.h>
+> +#include <linux/mfd/core.h>
+> +#include <linux/module.h>
+> +#include <linux/mutex.h>
+> +#include <linux/regmap.h>
+> +#include <linux/sysfs.h>
+> +#include <linux/time.h>
+> +#include <linux/uaccess.h>
+> +#include <linux/version.h>
+> +#include <linux/mfd/eio.h>
+
+Alphabetical.
+
+Can you make sure that _all_ of these are in use.
+
+> +#define TIMEOUT_MAX (10 * USEC_PER_SEC)
+> +#define TIMEOUT_MIN 200
+> +#define SLEEP_MAX 200
+> +#define DEFAULT_TIMEOUT 5000
+
+Tab these out.
+
+Are these values arbitrary or do they come from some spec?
+
+> +
+> +/**
+
+Why are you using kernel-doc comments here?
+
+Did you compile with W=1?
+
+> + * Timeout: Default timeout in microseconds when a PMC command's
+> + * timeout is unspecified. PMC command responses typically range
+> + * from 200us to 2ms. 5ms is quite a safe value for timeout. In
+
+Superfluous "In".
+
+> + * In some cases, responses are longer. In such situations, please
+
+In what cases?
+
+> + * adding the timeout parameter loading related sub-drivers or
+> + * this core driver (not recommended).
+
+I can't read this.
+
+> + */
+> +static uint timeout = DEFAULT_TIMEOUT;
+> +module_param(timeout, uint, 0444);
+> +MODULE_PARM_DESC(timeout, "Default PMC command timeout in usec.\n");
+
+You want the user to override the timeout?  Are you sure?
+
+> +struct eio_dev_port {
+> +	u16 idx_port;
+> +	u16 data_port;
+> +};
+> +
+> +static struct eio_dev_port pnp_port[] = {
+> +	{ .idx_port = EIO_PNP_INDEX, .data_port = EIO_PNP_DATA },
+> +	{ .idx_port = EIO_SUB_PNP_INDEX,
+> +	  .data_port = EIO_SUB_PNP_DATA },
+
+Either place this on the line above or use proper multi-line format.
+
+> +};
+> +
+> +static struct mfd_cell mfd_devs[] = {
+
+eio_devs
+
+> +	{ .name = "eio_wdt" },
+> +	{ .name = "gpio_eio" },
+> +	{ .name = "eio_hwmon" },
+> +	{ .name = "i2c_eio" },
+> +	{ .name = "eio_thermal" },
+> +	{ .name = "eio_fan" },
+> +	{ .name = "eio_bl" },
+
+MFD_CELL_NAME()
+
+> +};
+> +
+> +static const struct regmap_range eio_range[] = {
+> +	regmap_reg_range(EIO_PNP_INDEX, EIO_PNP_DATA),
+> +	regmap_reg_range(EIO_SUB_PNP_INDEX, EIO_SUB_PNP_DATA),
+> +	regmap_reg_range(0x200, 0x3FF),
+> +};
+> +
+> +static const struct regmap_access_table volatile_regs = {
+> +	.yes_ranges = eio_range,
+> +	.n_yes_ranges = ARRAY_SIZE(eio_range),
+> +};
+> +
+> +static const struct regmap_config pnp_regmap_config = {
+> +	.name = "eio_core",
+> +	.reg_bits = 16,
+> +	.val_bits = 8,
+> +	.volatile_table = &volatile_regs,
+> +	.io_port = true,
+> +	.cache_type = REGCACHE_NONE,
+> +};
+> +
+> +static struct {
+> +	char name[32];
+> +	int cmd;
+> +	int ctrl;
+> +	int dev;
+> +	int size;
+> +	enum {
+> +		HEX,
+> +		NUMBER,
+> +		PNP_ID,
+> +	} type;
+> +
+
+Remove this line.
+
+> +} attrs[] = {
+> +	{ "board_name", 0x53, 0x10, 0, 16 },
+> +	{ "board_serial", 0x53, 0x1F, 0, 16 },
+> +	{ "board_manufacturer", 0x53, 0x11, 0, 16 },
+> +	{ "board_id", 0x53, 0x1E, 0, 4 },
+> +	{ "firmware_version", 0x53, 0x21, 0, 4 },
+> +	{ "firmware_name", 0x53, 0x22, 0, 16 },
+> +	{ "firmware_build", 0x53, 0x23, 0, 26 },
+> +	{ "firmware_date", 0x53, 0x24, 0, 16 },
+> +	{ "chip_id", 0x53, 0x12, 0, 12 },
+> +	{ "chip_detect", 0x53, 0x15, 0, 12 },
+> +	{ "platform_type", 0x53, 0x13, 0, 16 },
+> +	{ "platform_revision", 0x53, 0x04, 0x44, 4 },
+> +	{ "eapi_version", 0x53, 0x04, 0x64, 4 },
+> +	{ "eapi_id", 0x53, 0x31, 0, 4 },
+> +	{ "boot_count", 0x55, 0x10, 0, 4, NUMBER },
+> +	{ "powerup_hour", 0x55, 0x11, 0, 4, NUMBER },
+> +	{ "pnp_id", 0x53, 0x04, 0x68, 4, PNP_ID },
+> +};
+
+As "fun" as all of these sysfs entries are, how useful are they to you?
+
+Can you say in good conscience that they are all in active use?
+
+> +static ssize_t info_show(struct device *dev, struct device_attribute *attr,
+> +			 char *buf)
+
+Use 100-chars to avoid these line-wraps.
+
+> +{
+> +	uint i;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(attrs); i++) {
+> +		int ret;
+> +		char str[32] = "";
+> +		int val;
+> +
+> +		struct pmc_op op = {
+> +			.cmd = attrs[i].cmd,
+> +			.control = attrs[i].ctrl,
+> +			.device_id = attrs[i].dev,
+> +			.payload = (u8 *)str,
+> +			.size = attrs[i].size,
+> +		};
+> +
+> +		if (strcmp(attr->attr.name, attrs[i].name))
+> +			continue;
+> +
+> +		ret = eio_core_pmc_operation(dev, &op);
+> +		if (ret)
+> +			return ret;
+> +
+> +		if (attrs[i].size != 4)
+
+Is this dictated by the user?
+
+> +			return sprintf(buf, "%s\n", str);
+
+sprintf() is unsafe.  Use sysfs_emit() instead.  Throughout.
+
+> +		val = *(u32 *)str;
+> +
+> +		if (attrs[i].type == HEX)
+> +			return sprintf(buf, "0x%08X\n", val);
+> +
+> +		if (attrs[i].type == NUMBER)
+> +			return sprintf(buf, "%d\n", val);
+> +
+> +		/* Should be pnp_id */
+
+"Should"?
+
+Not good enough.  Why not check for PNP_ID instead?
+
+> +		return sprintf(buf, "%c%c%c, %X\n", (val >> 14 & 0x3F) + 0x40,
+> +			       ((val >> 9 & 0x18) | (val >> 25 & 0x07)) + 0x40,
+> +			       (val >> 20 & 0x1F) + 0x40, val & 0xFFF);
+> +	}
+> +
+> +	return -EINVAL;
+> +}
+> +
+> +#define PMC_DEVICE_ATTR_RO(_name)                                             \
+> +	static ssize_t _name##_show(struct device *dev,                       \
+> +				    struct device_attribute *attr, char *buf) \
+> +	{                                                                     \
+> +		return info_show(dev, attr, buf);                             \
+> +	}                                                                     \
+> +	static DEVICE_ATTR_RO(_name)
+
+Place this out the way, in a header file.
+
+> +PMC_DEVICE_ATTR_RO(board_name);
+> +PMC_DEVICE_ATTR_RO(board_serial);
+> +PMC_DEVICE_ATTR_RO(board_manufacturer);
+> +PMC_DEVICE_ATTR_RO(firmware_name);
+> +PMC_DEVICE_ATTR_RO(firmware_version);
+> +PMC_DEVICE_ATTR_RO(firmware_build);
+> +PMC_DEVICE_ATTR_RO(firmware_date);
+> +PMC_DEVICE_ATTR_RO(chip_id);
+> +PMC_DEVICE_ATTR_RO(chip_detect);
+> +PMC_DEVICE_ATTR_RO(platform_type);
+> +PMC_DEVICE_ATTR_RO(platform_revision);
+> +PMC_DEVICE_ATTR_RO(board_id);
+> +PMC_DEVICE_ATTR_RO(eapi_version);
+> +PMC_DEVICE_ATTR_RO(eapi_id);
+> +PMC_DEVICE_ATTR_RO(boot_count);
+> +PMC_DEVICE_ATTR_RO(powerup_hour);
+> +PMC_DEVICE_ATTR_RO(pnp_id);
+> +
+> +static struct attribute *pmc_attrs[] = { &dev_attr_board_name.attr,
+
+The attribute goes on a new line, then you can reign in all of the
+crazy tabbing that follows.
+
+> +					 &dev_attr_board_serial.attr,
+> +					 &dev_attr_board_manufacturer.attr,
+> +					 &dev_attr_firmware_name.attr,
+> +					 &dev_attr_firmware_version.attr,
+> +					 &dev_attr_firmware_build.attr,
+> +					 &dev_attr_firmware_date.attr,
+> +					 &dev_attr_chip_id.attr,
+> +					 &dev_attr_chip_detect.attr,
+> +					 &dev_attr_platform_type.attr,
+> +					 &dev_attr_platform_revision.attr,
+> +					 &dev_attr_board_id.attr,
+> +					 &dev_attr_eapi_version.attr,
+> +					 &dev_attr_eapi_id.attr,
+> +					 &dev_attr_boot_count.attr,
+> +					 &dev_attr_powerup_hour.attr,
+> +					 &dev_attr_pnp_id.attr,
+> +					 NULL };
+> +
+> +ATTRIBUTE_GROUPS(pmc);
+> +
+> +static unsigned int eio_pnp_read(struct device *dev,
+> +				 struct eio_dev_port *port, u8 idx)
+
+100-chars throughout.
+
+> +{
+> +	struct eio_dev *eio = dev_get_drvdata(dev);
+> +	unsigned int val;
+> +
+> +	if (regmap_write(eio->map, port->idx_port, idx))
+> +		dev_err(dev, "Error port write 0x%X\n", port->idx_port);
+> +
+> +	if (regmap_read(eio->map, port->data_port, &val))
+> +		dev_err(dev, "Error port read 0x%X\n", port->data_port);
+> +
+> +	return val;
+> +}
+> +
+> +static void eio_pnp_write(struct device *dev, struct eio_dev_port *port,
+
+Why are these functions not propagating errors?
+
+> +			  u8 idx, u8 data)
+> +{
+> +	struct eio_dev *eio = dev_get_drvdata(dev);
+> +
+> +	if (regmap_write(eio->map, port->idx_port, idx) ||
+> +	    regmap_write(eio->map, port->data_port, data))
+> +		dev_err(dev, "Error port write 0x%X %X\n", port->idx_port,
+> +			port->data_port);
+
+You cannot print and error, then return like everything is okay.
+
+> +}
+> +
+> +static void eio_pnp_enter(struct device *dev, struct eio_dev_port *port)
+
+_unlock_port()
+
+> +{
+> +	struct eio_dev *eio = dev_get_drvdata(dev);
+
+'\n'
+
+> +	/* Write 0x87 to index port twice to unlock IO port */
+> +	if (regmap_write(eio->map, port->idx_port,
+> +			 EIO_EXT_MODE_ENTER) ||
+
+This does on the line above.
+
+> +	    regmap_write(eio->map, port->idx_port, EIO_EXT_MODE_ENTER))
+> +		dev_err(dev, "Error port write 0x%X\n", port->idx_port);
+> +}
+> +
+> +static void eio_pnp_leave(struct device *dev, struct eio_dev_port *port)
+
+_lock_port()
+
+> +{
+> +	struct eio_dev *eio = dev_get_drvdata(dev);
+
+'\n'
+
+> +	/* Write 0xAA to index port once to lock IO port */
+> +	if (regmap_write(eio->map, port->idx_port, EIO_EXT_MODE_EXIT))
+> +		dev_err(dev, "Error port write 0x%X\n", port->idx_port);
+> +}
+
+What's the difference between these eio_ calls and the pmc_ ones below?
+
+Please find a way to make that clear - a header comment?
+
+> +static int pmc_write_data(struct device *dev, int id, u8 value, u16 timeout)
+> +{
+> +	struct eio_dev *eio = dev_get_drvdata(dev);
+> +	int ret;
+> +
+> +	if (WAIT_IBF(dev, id, timeout))
+
+This is not a macro.
+
+Just use eio_core_pmc_wait() and have done.
+
+> +		return -ETIME;
+
+I think you mean -ETIMEDOUT, throughout.
+
+Also, eio_core_pmc_wait() returns its own error value which you are now
+overwriting.  Why not simply propagate the original error?
+
+> +
+> +	ret = regmap_write(eio->map, eio->pmc[id].data, value);
+> +	if (ret)
+> +		dev_err(dev, "Error PMC write %X:%X\n",
+> +			eio->pmc[id].data, value);
+> +
+> +	return ret;
+> +}
+> +
+> +static int pmc_write_cmd(struct device *dev, int id, u8 value, u16 timeout)
+> +{
+> +	struct eio_dev *eio = dev_get_drvdata(dev);
+> +	int ret;
+> +
+> +	if (WAIT_IBF(dev, id, timeout))
+> +		return -ETIME;
+> +
+> +	ret = regmap_write(eio->map, eio->pmc[id].cmd, value);
+> +	if (ret)
+> +		dev_err(dev, "Error PMC write %X:%X\n",
+> +			eio->pmc[id].cmd, value);
+> +
+> +	return ret;
+> +}
+> +
+> +static int pmc_read_data(struct device *dev, int id, u8 *value, u16 timeout)
+> +{
+> +	struct eio_dev *eio = dev_get_drvdata(dev);
+> +	unsigned int val;
+> +	int ret;
+> +
+> +	if (WAIT_OBF(dev, id, timeout))
+> +		return -ETIME;
+> +
+> +	ret = regmap_read(eio->map, eio->pmc[id].data, &val);
+> +	if (ret)
+> +		dev_err(dev, "Error PMC read %X\n", eio->pmc[id].data);
+> +	else
+> +		*value = (u8)(val & 0xFF);
+> +
+> +	return ret;
+> +}
+> +
+> +static int pmc_read_status(struct device *dev, int id)
+> +{
+> +	struct eio_dev *eio = dev_get_drvdata(dev);
+> +	unsigned int val;
+> +
+> +	if (regmap_read(eio->map, eio->pmc[id].status, &val)) {
+> +		dev_err(dev, "Error PMC read %X\n",
+> +			eio->pmc[id].status);
+> +		return 0;
+> +	}
+> +
+> +	return val;
+> +}
+> +
+> +static void pmc_clear(struct device *dev, int id)
+> +{
+> +	struct eio_dev *eio = dev_get_drvdata(dev);
+> +	unsigned int val;
+> +
+> +	/* Check if input buffer blocked */
+> +	if ((pmc_read_status(dev, id) & EIO_PMC_STATUS_IBF) == 0)
+> +		return;
+> +
+> +	/* Read out previous garbage */
+> +	if (regmap_read(eio->map, eio->pmc[id].data, &val))
+> +		dev_err(dev, "Error pmc clear\n");
+
+What do you expect the user to do about this?
+
+Why is it an issue that there is nothing to read?
+
+> +
+> +	usleep_range(10, 100);
+> +}
+> +
+> +int eio_core_pmc_wait(struct device *dev, int id,
+> +		      enum eio_pmc_wait wait, uint max_duration)
+> +{
+> +	struct eio_dev *eio = dev_get_drvdata(dev);
+> +	uint val;
+> +	int new_timeout = max_duration ? max_duration : timeout;
+
+max_duration?: timeout;
+
+> +
+> +	if (new_timeout < TIMEOUT_MIN || new_timeout > TIMEOUT_MAX) {
+> +		dev_err(dev,
+> +			"Error timeout value: %dus. Timeout value should between %d and %ld\n",
+
+Suggest that the user should not specify a timeout, then all of this can go.
+
+> +			new_timeout, TIMEOUT_MIN, TIMEOUT_MAX);
+> +		return -ETIME;
+> +	}
+> +
+> +	if (wait == PMC_WAIT_INPUT)
+> +		return regmap_read_poll_timeout(eio->map, eio->pmc[id].status,
+> +						val, (val & EIO_PMC_STATUS_IBF) == 0,
+> +						SLEEP_MAX, new_timeout);
+> +	return regmap_read_poll_timeout(eio->map,
+> +					eio->pmc[id].status, val,
+> +					(val & EIO_PMC_STATUS_OBF) != 0,
+> +					SLEEP_MAX, new_timeout);
+
+These stacked timeouts are going to need some explanation.
+
+> +}
+> +EXPORT_SYMBOL_GPL(eio_core_pmc_wait);
+> +
+> +int eio_core_pmc_operation(struct device *dev, struct pmc_op *op)
+> +{
+> +	struct eio_dev *eio = dev_get_drvdata(dev);
+> +	u8 i;
+> +	int ret;
+> +	bool read_cmd = op->cmd & EIO_FLAG_PMC_READ;
+
+Suggest a rename.
+
+read_cmd sounds more like a function call or command value rather than a
+bool to match on.
+
+What about "reading".
+
+> +	ktime_t t = ktime_get();
+
+Nit: Reverse Christmas tree is kinder on the reader.
+
+> +	mutex_lock(&eio->mutex);
+> +
+> +	pmc_clear(dev, op->chip);
+> +
+> +	ret = pmc_write_cmd(dev, op->chip, op->cmd, op->timeout);
+
+Why not just provide "op" and let the callee extract what it needs?
+
+> +	if (ret)
+> +		goto err;
+> +
+> +	ret = pmc_write_data(dev, op->chip, op->control, op->timeout);
+> +	if (ret)
+> +		goto err;
+> +
+> +	ret = pmc_write_data(dev, op->chip, op->device_id, op->timeout);
+> +	if (ret)
+> +		goto err;
+> +
+> +	ret = pmc_write_data(dev, op->chip, op->size, op->timeout);
+> +	if (ret)
+> +		goto err;
+> +
+> +	for (i = 0; i < op->size; i++) {
+> +		if (read_cmd)
+> +			ret = pmc_read_data(dev, op->chip, &op->payload[i],
+> +					    op->timeout);
+> +		else
+> +			ret = pmc_write_data(dev, op->chip, op->payload[i],
+> +					     op->timeout);
+> +
+> +		if (ret)
+> +			goto err;
+
+Why not break, unlock, then return 0 if (!ret).
+
+> +	}
+> +
+> +	mutex_unlock(&eio->mutex);
+> +
+> +	return 0;
+> +
+> +err:
+> +	mutex_unlock(&eio->mutex);
+> +
+> +	dev_err(dev, "PMC error duration:%lldus",
+> +		ktime_to_us(ktime_sub(ktime_get(), t)));
+
+Who is this helpful to?
+
+> +	dev_err(dev,
+> +		".cmd=0x%02X, .ctrl=0x%02X .id=0x%02X, .size=0x%02X .data=0x%02X%02X",
+> +		op->cmd, op->control, op->device_id, op->size, op->payload[0],
+> +		op->payload[1]);
+
+This looks like debug crud that can be removed when the driver is published.
+
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(eio_core_pmc_operation);
+> +
+> +static int get_pmc_port(struct device *dev, int id,
+
+This does not tell me what the function does.
+
+Please improve the nomenclature.
+
+> +			struct eio_dev_port *port)
+> +{
+> +	struct eio_dev *eio = dev_get_drvdata(dev);
+> +	struct _pmc_port *pmc = &eio->pmc[id];
+> +
+> +	eio_pnp_enter(dev, port);
+> +
+> +	/* Switch to PMC device page */
+> +	eio_pnp_write(dev, port, EIO_LDN, EIO_LDN_PMC1);
+> +
+> +	/* Active this device */
+> +	eio_pnp_write(dev, port, EIO_LDAR, EIO_LDAR_LDACT);
+> +
+> +	/* Get PMC cmd and data port */
+> +	pmc->data = eio_pnp_read(dev, port, EIO_IOBA0H) << 8;
+> +	pmc->data |= eio_pnp_read(dev, port, EIO_IOBA0L);
+> +	pmc->cmd = eio_pnp_read(dev, port, EIO_IOBA1H) << 8;
+> +	pmc->cmd |= eio_pnp_read(dev, port, EIO_IOBA1L);
+> +
+> +	/* Disable IRQ */
+> +	eio_pnp_write(dev, port, EIO_IRQCTRL, 0);
+> +
+> +	eio_pnp_leave(dev, port);
+> +
+> +	/* Make sure IO ports are not occupied */
+> +	if (!devm_request_region(dev, pmc->data, 2, KBUILD_MODNAME)) {
+
+Break the call out of the if please.
+
+> +		dev_err(dev, "Request region %X error\n", pmc->data);
+> +		return -EBUSY;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int eio_init(struct device *dev)
+> +{
+> +	struct eio_dev *eio = dev_get_drvdata(dev);
+> +	u16 chip_id = 0;
+> +	u8 tmp = 0;
+
+control
+
+> +	int chip = 0;
+
+Why are all of these being pre-initialised?
+
+> +	int ret = -ENOMEM;
+> +
+> +	for (chip = 0; chip < ARRAY_SIZE(pnp_port); chip++) {
+
+for (int chip_id ...)
+
+Hold on, you have chip_id below.
+
+What's the difference between chip and chip_id?
+
+> +		struct eio_dev_port *port = pnp_port + chip;
+> +
+> +		if (!devm_request_region(dev, pnp_port[chip].idx_port,
+
+Break this out.
+
+> +					 pnp_port[chip].data_port -
+> +						 pnp_port[chip].idx_port,
+> +					 KBUILD_MODNAME))
+> +			continue;
+> +
+> +		eio_pnp_enter(dev, port);
+> +
+> +		chip_id = eio_pnp_read(dev, port, EIO_CHIPID1) << 8;
+> +		chip_id |= eio_pnp_read(dev, port, EIO_CHIPID2);
+> +
+> +		if (chip_id != EIO200_CHIPID && chip_id != EIO201_211_CHIPID)
+> +			continue;
+> +
+> +		/* Turn on the enable flag */
+> +		tmp = eio_pnp_read(dev, port, EIO_SIOCTRL);
+> +		tmp |= EIO_SIOCTRL_SIOEN;
+> +
+> +		eio_pnp_write(dev, port, EIO_SIOCTRL, tmp);
+> +
+> +		eio_pnp_leave(dev, port);
+> +
+> +		ret = get_pmc_port(dev, chip, port);
+> +		if (ret)
+> +			return ret;
+> +
+> +		if (chip == 0)
+> +			eio->flag |= EIO_F_CHIP_EXIST;
+> +		else
+> +			eio->flag |= EIO_F_SUB_CHIP_EXIST;
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static uint8_t acpiram_access(struct device *dev, uint8_t offset)
+
+What's actually happening here?
+
+Should that be "acpi_ram"
+
+> +{
+> +	u8 val;
+> +	int ret;
+> +	int timeout = 0;
+> +	struct eio_dev *eio = dev_get_drvdata(dev);
+> +
+> +	/* We only store information on primary EC */
+> +	int chip = 0;
+> +
+> +	mutex_lock(&eio->mutex);
+> +
+> +	pmc_clear(dev, chip);
+> +
+> +	ret = pmc_write_cmd(dev, chip, EIO_PMC_CMD_ACPIRAM_READ, timeout);
+
+Isn't timeout always 0?
+
+> +	if (ret)
+> +		goto err;
+> +
+> +	ret = pmc_write_data(dev, chip, offset, timeout);
+> +	if (ret)
+> +		goto err;
+> +
+> +	ret = pmc_write_data(dev, chip, sizeof(val), timeout);
+> +	if (ret)
+> +		goto err;
+> +
+> +	ret = pmc_read_data(dev, chip, &val, timeout);
+> +	if (ret)
+> +		goto err;
+> +
+> +err:
+> +	mutex_unlock(&eio->mutex);
+> +	return ret ? 0 : val;
+
+What?  No.  Return the error.
+
+> +}
+> +
+> +static int firmware_code_base(struct device *dev)
+> +{
+> +	struct eio_dev *eio = dev_get_drvdata(dev);
+> +	u8 ic_vendor, ic_code, code_base;
+> +
+> +	ic_vendor = acpiram_access(dev, EIO_ACPIRAM_ICVENDOR);
+> +	ic_code = acpiram_access(dev, EIO_ACPIRAM_ICCODE);
+> +	code_base = acpiram_access(dev, EIO_ACPIRAM_CODEBASE);
+> +
+> +	if (ic_vendor != 'R')
+> +		return -ENODEV;
+> +
+> +	if (ic_code != EIO200_ICCODE && ic_code != EIO201_ICCODE &&
+> +	    ic_code != EIO211_ICCODE)
+> +		goto err;
+> +
+> +	if (code_base == EIO_ACPIRAM_CODEBASE_NEW) {
+> +		eio->flag |= EIO_F_NEW_CODE_BASE;
+> +		return 0;
+> +	}
+> +
+> +	if (code_base == 0 &&
+> +	    (ic_code != EIO201_ICCODE && ic_code != EIO211_ICCODE)) {
+> +		dev_info(dev, "Old code base not supported, yet.");
+
+Drop the yet.  If it becomes supported later, so be it.
+
+> +		return -ENODEV;
+> +	}
+> +
+> +err:
+> +	/* Codebase error. This should only happen on firmware error. */
+> +	dev_err(dev,
+> +		"Codebase check fail: vendor: 0x%X, code: 0x%X, base: 0x%X\n",
+> +		ic_vendor, ic_code, code_base);
+> +	return -ENODEV;
+> +}
+> +
+> +static int eio_probe(struct device *dev, unsigned int id)
+> +{
+> +	int ret = 0;
+> +	struct eio_dev *eio;
+> +
+> +	eio = devm_kzalloc(dev, sizeof(*eio), GFP_KERNEL);
+> +	if (!eio)
+> +		return -ENOMEM;
+> +
+> +	eio->dev = dev;
+> +	mutex_init(&eio->mutex);
+> +
+> +	eio->iomem = devm_ioport_map(dev, 0, EIO_SUB_PNP_DATA + 1);
+> +	if (IS_ERR(eio->iomem))
+> +		return PTR_ERR(eio->iomem);
+> +
+> +	eio->map = devm_regmap_init_mmio(dev, eio->iomem, &pnp_regmap_config);
+> +	if (IS_ERR(eio->map))
+> +		return PTR_ERR(eio->map);
+> +
+> +	/* publish instance for subdrivers (dev_get_drvdata(dev->parent)) */
+
+"Publish"
+
+Actually drop this - it's not required.
+
+> +	dev_set_drvdata(dev, eio);
+> +
+> +	if (eio_init(dev)) {
+> +		dev_dbg(dev, "No device found\n");
+
+Drop all debug cruft.
+
+> +		return -ENODEV;
+> +	}
+> +
+> +	ret = firmware_code_base(dev);
+> +	if (ret) {
+> +		dev_err(dev, "Chip code base check fail\n");
+> +		return ret; /* keep helper's return (e.g., -EIO) */
+
+Always do this.
+
+> +	}
+> +
+> +	ret = devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
+> +				   mfd_devs, ARRAY_SIZE(mfd_devs),
 
 
-On 25/12/25 17:36, zhenglifeng (A) wrote:
-> External email: Use caution opening links or attachments
->
->
-> On 2025/12/23 20:13, Sumit Gupta wrote:
->> Add sysfs interface to read/write the Performance Limited register.
->>
->> The Performance Limited register indicates to the OS that an
->> unpredictable event (like thermal throttling) has limited processor
->> performance. It contains two sticky bits set by the platform:
->>    - Bit 0 (Desired_Excursion): Set when delivered performance is
->>      constrained below desired performance. Not used when Autonomous
->>      Selection is enabled.
->>    - Bit 1 (Minimum_Excursion): Set when delivered performance is
->>      constrained below minimum performance.
->>
->> These bits remain set until OSPM explicitly clears them. The write
->> operation accepts a bitmask of bits to clear:
->>    - Write 1 to clear bit 0
->>    - Write 2 to clear bit 1
->>    - Write 3 to clear both bits
-> It's a bit odd that users write a 1 to and then read a 0 from the sysfs
-> file. I think it is better to seperate these two bits, as two sysfs files.
-> Then users can write '0' or 'clear' or others into them to clear each bit.
+> +				   NULL, 0, NULL);
+> +	if (ret)
+> +		dev_err(dev, "Cannot register child devices (error = %d)\n", ret);
+> +
+> +	dev_dbg(dev, "Module insert completed\n");
 
-I think its better to keep one sysfs interface per HW register.
-Can change the perf_limited write interface to accept bit index
-instead of bitmask.
-  - Write 0 to clear bit 0 (desired performance excursion)
-  - Write 1 to clear bit 1 (minimum performance excursion)
+Drop.
 
-Thank you,
-Sumit Gupta
+> +	return 0;
+> +}
+> +
+> +static struct isa_driver eio_driver = {
+> +	.probe    = eio_probe,
+> +
 
+Remove this line.
 
->
->> This enables users to detect if platform throttling impacted a workload.
->> Users clear the register before execution, run the workload, then check
->> afterward - if set, hardware throttling occurred during that time window.
->>
->> The interface is exposed as:
->>    /sys/devices/system/cpu/cpuX/cpufreq/perf_limited
->>
->> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
->> ---
->>   drivers/acpi/cppc_acpi.c       | 56 ++++++++++++++++++++++++++++++++++
->>   drivers/cpufreq/cppc_cpufreq.c | 31 +++++++++++++++++++
->>   include/acpi/cppc_acpi.h       | 15 +++++++++
->>   3 files changed, 102 insertions(+)
->>
->> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
->> index 9f28c20d902d..ffd866c1c00d 100644
->> --- a/drivers/acpi/cppc_acpi.c
->> +++ b/drivers/acpi/cppc_acpi.c
->> @@ -1786,6 +1786,62 @@ int cppc_set_max_perf(int cpu, u32 max_perf)
->>   }
->>   EXPORT_SYMBOL_GPL(cppc_set_max_perf);
->>
->> +/**
->> + * cppc_get_perf_limited - Get the Performance Limited register value.
->> + * @cpu: CPU from which to get Performance Limited register.
->> + * @perf_limited: Pointer to store the Performance Limited value.
->> + *
->> + * The returned value contains sticky status bits indicating platform-imposed
->> + * performance limitations.
->> + *
->> + * Return: 0 for success, -EIO on failure, -EOPNOTSUPP if not supported.
->> + */
->> +int cppc_get_perf_limited(int cpu, u64 *perf_limited)
->> +{
->> +     return cppc_get_reg_val(cpu, PERF_LIMITED, perf_limited);
->> +}
->> +EXPORT_SYMBOL_GPL(cppc_get_perf_limited);
->> +
->> +/**
->> + * cppc_set_perf_limited() - Clear bits in the Performance Limited register.
->> + * @cpu: CPU on which to write register.
->> + * @bits_to_clear: Bitmask of bits to clear in the perf_limited register.
->> + *
->> + * The Performance Limited register contains two sticky bits set by platform:
->> + *   - Bit 0 (Desired_Excursion): Set when delivered performance is constrained
->> + *     below desired performance. Not used when Autonomous Selection is enabled.
->> + *   - Bit 1 (Minimum_Excursion): Set when delivered performance is constrained
->> + *     below minimum performance.
->> + *
->> + * These bits are sticky and remain set until OSPM explicitly clears them.
->> + * This function only allows clearing bits (the platform sets them).
->> + *
->> + * Return: 0 for success, -EINVAL for invalid bits, -EIO on register
->> + *         access failure, -EOPNOTSUPP if not supported.
->> + */
->> +int cppc_set_perf_limited(int cpu, u64 bits_to_clear)
->> +{
->> +     u64 current_val, new_val;
->> +     int ret;
->> +
->> +     /* Only bits 0 and 1 are valid */
->> +     if (bits_to_clear & ~CPPC_PERF_LIMITED_MASK)
->> +             return -EINVAL;
->> +
->> +     if (!bits_to_clear)
->> +             return 0;
->> +
->> +     ret = cppc_get_perf_limited(cpu, &current_val);
->> +     if (ret)
->> +             return ret;
->> +
->> +     /* Clear the specified bits */
->> +     new_val = current_val & ~bits_to_clear;
->> +
->> +     return cppc_set_reg_val(cpu, PERF_LIMITED, new_val);
->> +}
->> +EXPORT_SYMBOL_GPL(cppc_set_perf_limited);
->> +
->>   /**
->>    * cppc_set_enable - Set to enable CPPC on the processor by writing the
->>    * Continuous Performance Control package EnableRegister field.
->> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
->> index 1e282dfabc76..1f8825006940 100644
->> --- a/drivers/cpufreq/cppc_cpufreq.c
->> +++ b/drivers/cpufreq/cppc_cpufreq.c
->> @@ -1052,12 +1052,42 @@ static ssize_t store_max_perf(struct cpufreq_policy *policy, const char *buf,
->>        return count;
->>   }
->>
->> +/**
->> + * show_perf_limited - Show Performance Limited register status
->> + * @policy: cpufreq policy
->> + * @buf: buffer to write the value to
->> + *
->> + * Read the Performance Limited register to check if platform throttling
->> + * (thermal/power/current limits) occurred.
->> + */
->> +static ssize_t show_perf_limited(struct cpufreq_policy *policy, char *buf)
->> +{
->> +     return cppc_cpufreq_sysfs_show_u64(policy->cpu,
->> +                                        cppc_get_perf_limited, buf);
->> +}
->> +
->> +/**
->> + * store_perf_limited - Clear Performance Limited register bits
->> + * @policy: cpufreq policy
->> + * @buf: buffer containing the bitmask of bits to clear
->> + * @count: number of bytes in buf
->> + *
->> + * Write 1 to clear bit 0, 2 to clear bit 1, or 3 to clear both.
->> + */
->> +static ssize_t store_perf_limited(struct cpufreq_policy *policy,
->> +                               const char *buf, size_t count)
->> +{
->> +     return cppc_cpufreq_sysfs_store_u64(policy->cpu,
->> +                                         cppc_set_perf_limited, buf, count);
->> +}
->> +
->>   cpufreq_freq_attr_ro(freqdomain_cpus);
->>   cpufreq_freq_attr_rw(auto_select);
->>   cpufreq_freq_attr_rw(auto_act_window);
->>   cpufreq_freq_attr_rw(energy_performance_preference_val);
->>   cpufreq_freq_attr_rw(min_perf);
->>   cpufreq_freq_attr_rw(max_perf);
->> +cpufreq_freq_attr_rw(perf_limited);
->>
->>   static struct freq_attr *cppc_cpufreq_attr[] = {
->>        &freqdomain_cpus,
->> @@ -1066,6 +1096,7 @@ static struct freq_attr *cppc_cpufreq_attr[] = {
->>        &energy_performance_preference_val,
->>        &min_perf,
->>        &max_perf,
->> +     &perf_limited,
->>        NULL,
->>   };
->>
->> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
->> index a49b50bddaf9..57e04326a4b6 100644
->> --- a/include/acpi/cppc_acpi.h
->> +++ b/include/acpi/cppc_acpi.h
->> @@ -42,6 +42,11 @@
->>   #define CPPC_EPP_PERFORMANCE_PREF            0x00
->>   #define CPPC_EPP_ENERGY_EFFICIENCY_PREF              0xFF
->>
->> +#define CPPC_PERF_LIMITED_DESIRED_EXCURSION  BIT(0)
->> +#define CPPC_PERF_LIMITED_MINIMUM_EXCURSION  BIT(1)
->> +#define CPPC_PERF_LIMITED_MASK               (CPPC_PERF_LIMITED_DESIRED_EXCURSION | \
->> +                                      CPPC_PERF_LIMITED_MINIMUM_EXCURSION)
->> +
->>   /* Each register has the folowing format. */
->>   struct cpc_reg {
->>        u8 descriptor;
->> @@ -177,6 +182,8 @@ extern int cppc_get_min_perf(int cpu, u64 *min_perf);
->>   extern int cppc_set_min_perf(int cpu, u32 min_perf);
->>   extern int cppc_get_max_perf(int cpu, u64 *max_perf);
->>   extern int cppc_set_max_perf(int cpu, u32 max_perf);
->> +extern int cppc_get_perf_limited(int cpu, u64 *perf_limited);
->> +extern int cppc_set_perf_limited(int cpu, u64 perf_limited);
->>   extern int amd_get_highest_perf(unsigned int cpu, u32 *highest_perf);
->>   extern int amd_get_boost_ratio_numerator(unsigned int cpu, u64 *numerator);
->>   extern int amd_detect_prefcore(bool *detected);
->> @@ -285,6 +292,14 @@ static inline int cppc_set_max_perf(int cpu, u32 max_perf)
->>   {
->>        return -EOPNOTSUPP;
->>   }
->> +static inline int cppc_get_perf_limited(int cpu, u64 *perf_limited)
->> +{
->> +     return -EOPNOTSUPP;
->> +}
->> +static inline int cppc_set_perf_limited(int cpu, u64 perf_limited)
->> +{
->> +     return -EOPNOTSUPP;
->> +}
->>   static inline int amd_get_highest_perf(unsigned int cpu, u32 *highest_perf)
->>   {
->>        return -ENODEV;
+Nothing to remove?
+
+> +	.driver = {
+> +		.name = "eio_core",
+> +		.dev_groups = pmc_groups,
+> +	},
+> +};
+> +module_isa_driver(eio_driver, 1);
+
+What's 1?  Please define.
+
+> +MODULE_AUTHOR("Wenkai Chung <wenkai.chung@advantech.com.tw>");
+> +MODULE_AUTHOR("Ramiro Oliveira <ramiro.oliveira@advantech.com>");
+> +MODULE_DESCRIPTION("Advantech EIO series EC core driver");
+> +MODULE_LICENSE("GPL");
+> diff --git a/include/linux/mfd/eio.h b/include/linux/mfd/eio.h
+> new file mode 100644
+> index 000000000000..b87614274201
+> --- /dev/null
+> +++ b/include/linux/mfd/eio.h
+> @@ -0,0 +1,127 @@
+> +/* SPDX-License-Identifier: GPL-2.0-only */
+> +/*
+> + * Header for the Advantech EIO core driver and its sub-drivers
+
+No need for the header part.  We can see that this is a header file.
+
+> + *
+> + * Copyright (C) 2025 Advantech Co., Ltd.
+> + */
+> +
+> +#ifndef _MFD_EIO_H_
+> +#define _MFD_EIO_H_
+
+'\n'
+
+> +#include <linux/io.h>
+> +#include <linux/regmap.h>
+> +
+> +/* Definition */
+
+???
+
+> +#define EIO_CHIPID1		0x20
+> +#define EIO_CHIPID2		0x21
+> +#define EIO_CHIPVER		0x22
+> +#define EIO_SIOCTRL		0x23
+> +#define EIO_SIOCTRL_SIOEN	BIT(0)
+> +#define EIO_SIOCTRL_SWRST	BIT(1)
+> +#define EIO_IRQCTRL		0x70
+> +#define EIO200_CHIPID		0x9610
+> +#define EIO201_211_CHIPID	0x9620
+> +#define EIO200_ICCODE		0x10
+> +#define EIO201_ICCODE		0x20
+> +#define EIO211_ICCODE		0x21
+> +
+> +/* LPC PNP */
+> +#define EIO_PNP_INDEX		0x299
+> +#define EIO_PNP_DATA		0x29A
+> +#define EIO_SUB_PNP_INDEX	0x499
+> +#define EIO_SUB_PNP_DATA	0x49A
+> +#define EIO_EXT_MODE_ENTER	0x87
+> +#define EIO_EXT_MODE_EXIT	0xAA
+> +
+> +/* LPC LDN */
+> +#define EIO_LDN			0x07
+> +#define EIO_LDN_PMC0		0x0C
+> +#define EIO_LDN_PMC1		0x0D
+> +
+> +/* PMC registers */
+> +#define EIO_PMC_STATUS_IBF	BIT(1)
+> +#define EIO_PMC_STATUS_OBF	BIT(0)
+> +#define EIO_LDAR		0x30
+> +#define EIO_LDAR_LDACT		BIT(0)
+> +#define EIO_IOBA0H		0x60
+> +#define EIO_IOBA0L		0x61
+> +#define EIO_IOBA1H		0x62
+> +#define EIO_IOBA1L		0x63
+> +#define EIO_FLAG_PMC_READ	BIT(0)
+> +
+> +/* PMC command list */
+> +#define EIO_PMC_CMD_ACPIRAM_READ	0x31
+> +#define EIO_PMC_CMD_CFG_SAVE		0x56
+> +
+> +/* OLD PMC */
+> +#define EIO_PMC_NO_INDEX	0xFF
+> +
+> +/* ACPI RAM Address Table */
+> +#define EIO_ACPIRAM_VERSIONSECTION	(0xFA)
+> +#define EIO_ACPIRAM_ICVENDOR		(EIO_ACPIRAM_VERSIONSECTION + 0x00)
+> +#define EIO_ACPIRAM_ICCODE		(EIO_ACPIRAM_VERSIONSECTION + 0x01)
+> +#define EIO_ACPIRAM_CODEBASE		(EIO_ACPIRAM_VERSIONSECTION + 0x02)
+> +
+> +#define EIO_ACPIRAM_CODEBASE_NEW	BIT(7)
+> +
+> +/* Firmware */
+> +#define EIO_F_SUB_NEW_CODE_BASE	BIT(6)
+> +#define EIO_F_SUB_CHANGED	BIT(7)
+> +#define EIO_F_NEW_CODE_BASE	BIT(8)
+> +#define EIO_F_CHANGED		BIT(9)
+> +#define EIO_F_SUB_CHIP_EXIST	BIT(30)
+> +#define EIO_F_CHIP_EXIST	BIT(31)
+> +
+> +/* Others */
+> +#define EIO_EC_NUM	2
+> +
+> +struct _pmc_port {
+> +	union {
+> +		u16 cmd;
+> +		u16 status;
+> +	};
+> +	u16 data;
+> +};
+> +
+> +struct pmc_op {
+> +	u8  cmd;
+> +	u8  control;
+> +	u8  device_id;
+> +	u8  size;
+> +	u8  *payload;
+> +	u8  chip;
+> +	u16 timeout;
+> +};
+> +
+> +enum eio_rw_operation {
+> +	OPERATION_READ,
+> +	OPERATION_WRITE,
+> +};
+> +
+> +struct eio_dev {
+> +	struct device *dev;
+> +	struct regmap *map;
+> +	void __iomem  *iomem;
+> +	struct mutex mutex; /* Protects PMC command access */
+> +	struct _pmc_port pmc[EIO_EC_NUM];
+> +	u32 flag;
+> +};
+> +
+> +int eio_core_pmc_operation(struct device *dev, struct pmc_op *operation);
+> +
+> +enum eio_pmc_wait {
+> +	PMC_WAIT_INPUT,
+> +	PMC_WAIT_OUTPUT,
+> +};
+> +
+> +int eio_core_pmc_wait(struct device *dev, int id, enum eio_pmc_wait wait,
+> +		      uint timeout);
+> +
+> +#define WAIT_IBF(dev, id, timeout)	eio_core_pmc_wait(dev, id, PMC_WAIT_INPUT, timeout)
+> +#define WAIT_OBF(dev, id, timeout)	eio_core_pmc_wait(dev, id, PMC_WAIT_OUTPUT, timeout)
+> +
+> +#ifdef pr_fmt
+> +#undef pr_fmt
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +#endif
+
+Does this really do anything valuable?
+
+> +
+> +#endif
+> 
+> -- 
+> 2.43.0
+> 
+
+-- 
+Lee Jones [李琼斯]
