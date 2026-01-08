@@ -1,116 +1,95 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7A904BDE8E
-	for <linux-pm@vger.kernel.org>; Thu,  8 Jan 2026 12:15:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 172034F1546;
+	Thu,  8 Jan 2026 13:18:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767874527; cv=none; b=txACAzLFKtNA+4uyqQL931ew9EgQle9FQ1PhrMaegrWEIU4SUrxwaWmlWKuCeW6ShdIYgOzf2seWwTMPZqy/j4KihJ0zttQUTcs+EkPXMf3NZ2fqTFOLyMlhJz1poNlqfPVhTkkZw87nW+1fcgVkIg06fupdTSosKZufP3nSByg=
+	t=1767878331; cv=none; b=Kd9Sg2kbIwicFJuMWHXNSnmg9zsICFyyulEbqv0MoiVtSzqjWpq7I0s9GqHrQjBICXT9gCEWxxWX7SBtavMasRSPQukCiaDFtKHj82PRitHpn5+Z4OdZK/TsvfUyJLuKNxRlOnm2ce2Z+ve8B6Rnsa4m6cw0+i7WKcV5orzWfJw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767874527; c=relaxed/simple;
-	bh=oN3VJ81TR92t72IorUOGx+yYKZ6zgxZk9xFRV4q/Jvs=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=rPD8L17Ccf7qUycGM9mIQv8krT5wY+E4008AExuwIQKWUzhsXm7xT3APxpcZdnFeXwHCAwBwHcyGzCUKWH0SIijRuiBlJhbouIiRTNqHbYI40vQrA2fcac+OXCHSqYID/Ul5w/H/qsnBU+5mmXfDh9PXPCABqvJOV6kuGTyuvAQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iy5+++A8; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1767878331; c=relaxed/simple;
+	bh=/YUbOZyHu9lNHH6tzNkLGVe+2dLu2CFhEPiXi7I2fUg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=JqkoJRGuXgM+kPQWwT5mlhI6a5TMC+BSZ7TOe7guc6MxCWgx63/W5TAg3H2/5SUlkFcL8h1jVAa+QrWRTh/NnNsTVahUDcYkmwwmbcFy2v5sa2hFZ23F2uSxSpNnSEeH2c2LftiuU1Y3V/JjmGwo6YcuFOH6s+gwxVBdrPhYJjY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RKlmo2OD; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iy5+++A8"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 49810C2BC9E
-	for <linux-pm@vger.kernel.org>; Thu,  8 Jan 2026 12:15:27 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RKlmo2OD"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id BE829C19424;
+	Thu,  8 Jan 2026 13:18:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767874527;
-	bh=oN3VJ81TR92t72IorUOGx+yYKZ6zgxZk9xFRV4q/Jvs=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=iy5+++A86Sd4Opbng5Cpq18bXVkT5o3GMVfzsGGk+tSkDWzJntj1FB6j6rsTmvDV7
-	 htk5tpeZs7QIUTy1l81V0iwHwd+ld3bzRnlSLulPMLJgS5+BHEXo2cQsyv09Gs87c1
-	 6U6WuD9E4fHh9FTyCDiwOvTsfJCfMABaKvIEh/hxlznf66fal6a5ELJKAz+QYDHowm
-	 RSYmfVWwSOTYlMrwmhNGfnhOg87uRQ2rCIdg4Z746axEcP2smmEWDVmqa/Kjm2JKzd
-	 cTRPrW2m084iD5VJcJnB63d5nGR5SkqGE+jzjgNUCjYJgR3S/74C1Exn+71ksFN4o/
-	 YNS2z15g0sydA==
-Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-59b6d5bd575so2287338e87.1
-        for <linux-pm@vger.kernel.org>; Thu, 08 Jan 2026 04:15:27 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCUONdDXjverSLPUHLYEzAHs2/4b3crWSITSzBTveTGHDQ1Q43nG2g2OjaHPCBUTvWJYKUhM36P37A==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywks+fOvWtEJjjqHIB0sGIhW0oManfvXfkWBKoI+lDzTG/qyj1X
-	B9GxkzvUZvN7H8GrI+sz8MF3mbBIuWJAgbVdZoaRryH4jzH73llzzVxEk6caRYYDIJfZr+fvjit
-	Z4yIjMiaCG1Spx1G1UkRen24Hcjtd2MdBvikA4cHrCg==
-X-Google-Smtp-Source: AGHT+IF/4koG/MN6sfNsURUrtRSXZrXyRHd0bqi6p5mzExxZBo2GY4yvcJpb3YE7lL2MK6UqIWbaGQBDGlnCB4B6bas=
-X-Received: by 2002:a05:6512:68f:b0:594:35c4:fed1 with SMTP id
- 2adb3069b0e04-59b6ef03a2dmr1813240e87.13.1767874525775; Thu, 08 Jan 2026
- 04:15:25 -0800 (PST)
+	s=k20201202; t=1767878330;
+	bh=/YUbOZyHu9lNHH6tzNkLGVe+2dLu2CFhEPiXi7I2fUg=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=RKlmo2ODLjgXoCcE6FybeXC/koDaEP9EHirJU0nY3h/7EElyn4C/Lm+qJTLTBm2b/
+	 MUZLfYOntzknA5e3xQIruZNQinupFeSoHeJqfPZx2tJMu5x5JmA/1ZbOqettgO6Gk7
+	 uA9Ooy5yY8XB3JHt1NSJaa/YHA3dia+3+x+jPOVshYoVH+xXcLrsLXUDaaCRdY5NhY
+	 VuObWrOr0ArQYfQGvPF3g3ia202v4YFS3+n4yDeostQkX+08nik3hfcxxK/kAfm3Dk
+	 pvpCWTlTZg3z6HsdlTpB2vYetA09vgytWfBbfNy+jj1tvk/IZ49d0GqFw9sgZCCu/B
+	 C/IRBDVmUnbkA==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AFA55D185F3;
+	Thu,  8 Jan 2026 13:18:50 +0000 (UTC)
+From: Michael Reeves via B4 Relay <devnull+michael.reeves077.gmail.com@kernel.org>
+Date: Fri, 09 Jan 2026 00:18:49 +1100
+Subject: [PATCH v2 2/2] mfd: macsmc: Wire up Apple SMC power driver
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260107-pci-m2-v5-0-8173d8a72641@oss.qualcomm.com> <20260107-pci-m2-v5-5-8173d8a72641@oss.qualcomm.com>
-In-Reply-To: <20260107-pci-m2-v5-5-8173d8a72641@oss.qualcomm.com>
-From: Bartosz Golaszewski <brgl@kernel.org>
-Date: Thu, 8 Jan 2026 13:15:12 +0100
-X-Gmail-Original-Message-ID: <CAMRc=Md9TQiSX-gFa5q--JgaGyQ2ky4mOwjSpdxHhvHAj-X5Qw@mail.gmail.com>
-X-Gm-Features: AQt7F2puNlVWjbhiRoX8QQnOlbAAs4UdjLNY6ZTbm-vEXEFSeur6kT9w8kO5QSk
-Message-ID: <CAMRc=Md9TQiSX-gFa5q--JgaGyQ2ky4mOwjSpdxHhvHAj-X5Qw@mail.gmail.com>
-Subject: Re: [PATCH v5 5/5] power: sequencing: Add the Power Sequencing driver
- for the PCIe M.2 connectors
-To: manivannan.sadhasivam@oss.qualcomm.com
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Damien Le Moal <dlemoal@kernel.org>, Niklas Cassel <cassel@kernel.org>, 
-	Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, 
-	linux-pci@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, Stephan Gerhold <stephan.gerhold@linaro.org>, 
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, linux-pm@vger.kernel.org, 
-	linux-ide@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260109-b4-macsmc-power-v2-2-93818f1e7d62@gmail.com>
+References: <20260109-b4-macsmc-power-v2-0-93818f1e7d62@gmail.com>
+In-Reply-To: <20260109-b4-macsmc-power-v2-0-93818f1e7d62@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>, Sven Peter <sven@kernel.org>, 
+ Janne Grunau <j@jannau.net>, Neal Gompa <neal@gompa.dev>, 
+ Lee Jones <lee@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+ Michael Reeves <michael.reeves077@gmail.com>, 
+ Hector Martin <marcan@marcan.st>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1767878329; l=801;
+ i=michael.reeves077@gmail.com; s=20260105; h=from:subject:message-id;
+ bh=uag1kKlvUx4ATUulWYAHXmnzGW1u1x2TnZFa9uDBZWc=;
+ b=Ch7BexD/JjZdjCCxIiuzHuZ3sJiu2c6EBZQdJyMMp5WRt3j06YLMQdTcs6bP6XAPhaouFYVb4
+ cM0SaigWaziBm/ZJC2LIb3S646Q06qiL9FBAFufCvQesuXtCjzdp3j+
+X-Developer-Key: i=michael.reeves077@gmail.com; a=ed25519;
+ pk=QIrgWBGCm3LG0YYc6MLCDkwuVXLTGGooVBdWX/KhSiU=
+X-Endpoint-Received: by B4 Relay for michael.reeves077@gmail.com/20260105
+ with auth_id=591
+X-Original-From: Michael Reeves <michael.reeves077@gmail.com>
+Reply-To: michael.reeves077@gmail.com
 
-On Wed, Jan 7, 2026 at 3:11=E2=80=AFPM Manivannan Sadhasivam via B4 Relay
-<devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org> wrote:
->
-> From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
->
-> This driver is used to control the PCIe M.2 connectors of different
-> Mechanical Keys attached to the host machines and supporting different
-> interfaces like PCIe/SATA, USB/UART etc...
->
-> Currently, this driver supports only the Mechanical Key M connectors with
-> PCIe interface. The driver also only supports driving the mandatory 3.3v
-> and optional 1.8v power supplies. The optional signals of the Key M
-> connectors are not currently supported.
->
-> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.=
-com>
+From: Michael Reeves <michael.reeves077@gmail.com>
 
-This looks good to me, though there are some nits I may fix when applying.
+Add the cell for the macsmc-power driver so it is probed by the
+MFD core.
 
-I'll pick it up for v7.0 once the bindings are reviewed.
+Co-developed-by: Hector Martin <marcan@marcan.st>
+Signed-off-by: Hector Martin <marcan@marcan.st>
+Reviewed-by: Neal Gompa <neal@gompa.dev>
+Signed-off-by: Michael Reeves <michael.reeves077@gmail.com>
+---
+ drivers/mfd/macsmc.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-> +++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
-> @@ -0,0 +1,169 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
-> + * Author: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com=
->
-> + */
-> +
-> +#include <linux/device.h>
-> +#include <linux/mod_devicetable.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/of_graph.h>
-> +#include <linux/of_platform.h>
+diff --git a/drivers/mfd/macsmc.c b/drivers/mfd/macsmc.c
+index e3893e255ce5..061b43fc842d 100644
+--- a/drivers/mfd/macsmc.c
++++ b/drivers/mfd/macsmc.c
+@@ -45,6 +45,7 @@
+ #define SMC_TIMEOUT_MS		500
+ 
+ static const struct mfd_cell apple_smc_devs[] = {
++	MFD_CELL_NAME("macsmc-power"),
+ 	MFD_CELL_OF("macsmc-gpio", NULL, NULL, 0, 0, "apple,smc-gpio"),
+ 	MFD_CELL_OF("macsmc-reboot", NULL, NULL, 0, 0, "apple,smc-reboot"),
+ };
 
-It looks like this is a leftover from previous versions and you no
-longer need it?
+-- 
+2.51.2
 
-> +
-> +static void pwrseq_pcie_free_resources(void *data)
-> +{
-> +       struct pwrseq_pcie_m2_ctx *ctx =3D data;
-> +
-> +       regulator_bulk_free(ctx->num_vregs, ctx->regs);
-> +}
 
-I would call it pwrseq_pcie_m2_free_regulators() if you don't mind.
-
-Bart
