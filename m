@@ -1,453 +1,116 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1492F47C65C
-	for <linux-pm@vger.kernel.org>; Thu,  8 Jan 2026 11:59:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7A904BDE8E
+	for <linux-pm@vger.kernel.org>; Thu,  8 Jan 2026 12:15:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767873582; cv=none; b=RxAC82s9P9zoEgkQV5yd2619Rb4Tjt3vvbrdiPS7B5EEVdhj8aviC1nDPjL3hkTIOArl36jg6tRwYlELFSNYIWvP0BvcoxJdEJ0Dg3QGJWSFacUX91P4jWtpexJOUemocWUNSUpkCIs55B4DM2+mmcdHq5/rqwlp82Aa3TFmVKc=
+	t=1767874527; cv=none; b=txACAzLFKtNA+4uyqQL931ew9EgQle9FQ1PhrMaegrWEIU4SUrxwaWmlWKuCeW6ShdIYgOzf2seWwTMPZqy/j4KihJ0zttQUTcs+EkPXMf3NZ2fqTFOLyMlhJz1poNlqfPVhTkkZw87nW+1fcgVkIg06fupdTSosKZufP3nSByg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767873582; c=relaxed/simple;
-	bh=8kJB94hZyPR8MuRaqMzRm0KGhxZfwYyezB1O9loh66g=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gjfuog8oKnZgS1b2uCO8RD5CKMqwfXpFNG/nS1wlLBkilFewofXGCklSC8DPTg6EzUltLcxl+0fF6eAWp8R9HXNwZoEex7Cp062Xkplwzkgjpj12x2RWJuJIQ5q7UGNDd7ewjJCGqKy009lkFefToCFHaqPxA9YTfmsT6horD10=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=JeAww7VO; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=NeIFMOPE; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1767874527; c=relaxed/simple;
+	bh=oN3VJ81TR92t72IorUOGx+yYKZ6zgxZk9xFRV4q/Jvs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=rPD8L17Ccf7qUycGM9mIQv8krT5wY+E4008AExuwIQKWUzhsXm7xT3APxpcZdnFeXwHCAwBwHcyGzCUKWH0SIijRuiBlJhbouIiRTNqHbYI40vQrA2fcac+OXCHSqYID/Ul5w/H/qsnBU+5mmXfDh9PXPCABqvJOV6kuGTyuvAQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iy5+++A8; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="JeAww7VO";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="NeIFMOPE"
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6089wsbw125834
-	for <linux-pm@vger.kernel.org>; Thu, 8 Jan 2026 11:59:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	aPV5JMJb545VwKcqd+eushmVdNeqBStXtF+OY6h49wg=; b=JeAww7VOpgvxb0Rf
-	9ndf5Izl+tzgOYjCm1NLCJs2kUQ3RYAJSMT14HZUY3BMtqzeX/qx9xp9EpeSw9f1
-	UOjCdHTH7sdPZ3KjN8tmrJCSQZ/wgdg1PaZrFADd+H42QH1rEMIDp/RucBnUIlUY
-	ZfiSImg2hdnpGPpSV/Zdqo7evnwYl8wgf9N+Vx7Y6tPcg3NyfY9Cc56UFFcjMayu
-	Yew2+EHGVkoZrTEYTdra32DmTIbY65lRn1rUcuY8gTMtL0S8Hhr3mX5NEgx2NRnb
-	AdeCyXdqBCtRWQtFloVdvgIqyU0uBb37Oo5gtk1PkJxtRWhIdrgbl2IsHS8tw1JN
-	RhPa1g==
-Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com [209.85.210.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4bj3d69pyy-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 08 Jan 2026 11:59:37 +0000 (GMT)
-Received: by mail-pf1-f197.google.com with SMTP id d2e1a72fcca58-8088be744afso1399297b3a.0
-        for <linux-pm@vger.kernel.org>; Thu, 08 Jan 2026 03:59:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1767873576; x=1768478376; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=aPV5JMJb545VwKcqd+eushmVdNeqBStXtF+OY6h49wg=;
-        b=NeIFMOPERPXWi8ZuDPJ3qUmQsP7A0nXT6jVfQcqzNJSS+DM9fxeSS/blOeRndf9Td2
-         oux4clN0EgyFoIZ2Rcd/CdjTEitQ/3BZ3kA3umCyMk5JyfY/nISgyCmbsr3jrCqT8PfY
-         cAjukosimPvnhA7IOJOWoPc+Y6Fhw0lP6ONYQ6DZOlw1Xl5pB53OgFdWIblGH7aggC4j
-         e+kerky+zuR7YvnMbJN2DQopKpyjgRN53wo2MaHQf1ZDmpgSEyXr+nTrsa3l3GTX15yu
-         GwUlH7EGSmc9lRGWDPsbpMPC8gDMuDPgdixGQW6siHJsyuBUmpNWHa3eXvVXRSr35TkO
-         jvfw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767873576; x=1768478376;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=aPV5JMJb545VwKcqd+eushmVdNeqBStXtF+OY6h49wg=;
-        b=ICPurrdrHlQ3/YfegtZoYdSuJ+xINwEzMTW7AtzDGPVfGsaU0TbvMAXNm+Kpfzbk9E
-         s6ggH/WgOPUNwqsK99NBrdeusaELqFLKSmaEV7KVtFAOe5qphNtyyXGsYL2awohN/w2N
-         BGI0Ze+Ng1EZuuuHoK27Wly4b5dPhWMCoPuHFJQxJpcNRM28lK3yt1z3GMvJ66is9d6o
-         /0Bsitgf75Jf8lbOlJBdzc3cQEycsJQiOP8gEdTl7KpNQC0ZpLmVHx2gmAcKp/EDq7mZ
-         gudq0fO/GMdTBhGWuzu7l0NmZbt0p322Ogbq5qF1pzUaZbM8GyubUDvkyjzW75rAwg1F
-         wcCQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUZmkCqRsyjXDaaVdMBsoQdfFlEvRl5cXSqbWfWCUWWffgpqT+6VO3RXoo5/PZH2H7SQwKpwAc7JQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx5+u95IgoCZYDc2vJifl4FWMlTVAu7erYwvZNPldIYKPZ8WE+D
-	UlvnQ32s3R4LQu8azUYCGYx5XdR9A0WYFE2aKSpCnoFZT6MQPcG5VZsFAeVRRZGWLEgDltPG582
-	KtOrAHTbfMZlRLy2YTt8XExk9gthdgmVahDlcId730zOIuq1htcmClABaLHhakQ==
-X-Gm-Gg: AY/fxX7pzb49e6qhfCxLATFKGqKEzKrBDK9I9iJD0Lcb2HQZOU/uwl1JAlYERD4Jr47
-	g84C5g4YpSG2NyX8CZ3CR0BFaaGCciSQwPNXqRVH+gFCs3SV5xydQstPh23P8PtMoZUuYL9hMH3
-	Nc5R0eBwC+fikOdHizcXxm2lFhASyS7FNSDsBW7JsZx95Ydeu2hEzKaeRbQvZUVGzEshQEDGa6E
-	+nCm824QX8NkE+3beAjEh9XoijawKeTvNBGEAucXgRVQRnIK5F1j8FwLnfgawe9CMrQ4HkBXLLA
-	7t8aDrEhfYM5D7UyoLzF56TTwLSQPAPxoUdWOGUB0gSzZXSUjzxOlVRYiqcVfH6VigagNauPGS3
-	IlhAu16SWR2Id5K/wdoEj9Yq1UL73eqNbKGtKG0oCySW78UIQFQMb48QO3ALaB6EUDDhi5PKG64
-	+LA98Mjw==
-X-Received: by 2002:a05:6a00:1bcc:b0:7f6:f92d:77e7 with SMTP id d2e1a72fcca58-81b76759596mr5630007b3a.9.1767873576186;
-        Thu, 08 Jan 2026 03:59:36 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IFVzchwh0BPJzi7b7LWftn70OPApLbSa49yem6AlpPbDabi1x3Emw84GP63aynnRl956Z/IAA==
-X-Received: by 2002:a05:6a00:1bcc:b0:7f6:f92d:77e7 with SMTP id d2e1a72fcca58-81b76759596mr5629977b3a.9.1767873575664;
-        Thu, 08 Jan 2026 03:59:35 -0800 (PST)
-Received: from [10.133.33.147] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-819baa1894csm7620651b3a.10.2026.01.08.03.59.31
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 08 Jan 2026 03:59:35 -0800 (PST)
-Message-ID: <ca326a27-a6b0-4935-ae3f-417e0d769045@oss.qualcomm.com>
-Date: Thu, 8 Jan 2026 19:59:28 +0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iy5+++A8"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 49810C2BC9E
+	for <linux-pm@vger.kernel.org>; Thu,  8 Jan 2026 12:15:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1767874527;
+	bh=oN3VJ81TR92t72IorUOGx+yYKZ6zgxZk9xFRV4q/Jvs=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=iy5+++A86Sd4Opbng5Cpq18bXVkT5o3GMVfzsGGk+tSkDWzJntj1FB6j6rsTmvDV7
+	 htk5tpeZs7QIUTy1l81V0iwHwd+ld3bzRnlSLulPMLJgS5+BHEXo2cQsyv09Gs87c1
+	 6U6WuD9E4fHh9FTyCDiwOvTsfJCfMABaKvIEh/hxlznf66fal6a5ELJKAz+QYDHowm
+	 RSYmfVWwSOTYlMrwmhNGfnhOg87uRQ2rCIdg4Z746axEcP2smmEWDVmqa/Kjm2JKzd
+	 cTRPrW2m084iD5VJcJnB63d5nGR5SkqGE+jzjgNUCjYJgR3S/74C1Exn+71ksFN4o/
+	 YNS2z15g0sydA==
+Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-59b6d5bd575so2287338e87.1
+        for <linux-pm@vger.kernel.org>; Thu, 08 Jan 2026 04:15:27 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCUONdDXjverSLPUHLYEzAHs2/4b3crWSITSzBTveTGHDQ1Q43nG2g2OjaHPCBUTvWJYKUhM36P37A==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywks+fOvWtEJjjqHIB0sGIhW0oManfvXfkWBKoI+lDzTG/qyj1X
+	B9GxkzvUZvN7H8GrI+sz8MF3mbBIuWJAgbVdZoaRryH4jzH73llzzVxEk6caRYYDIJfZr+fvjit
+	Z4yIjMiaCG1Spx1G1UkRen24Hcjtd2MdBvikA4cHrCg==
+X-Google-Smtp-Source: AGHT+IF/4koG/MN6sfNsURUrtRSXZrXyRHd0bqi6p5mzExxZBo2GY4yvcJpb3YE7lL2MK6UqIWbaGQBDGlnCB4B6bas=
+X-Received: by 2002:a05:6512:68f:b0:594:35c4:fed1 with SMTP id
+ 2adb3069b0e04-59b6ef03a2dmr1813240e87.13.1767874525775; Thu, 08 Jan 2026
+ 04:15:25 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 1/8] thermal: Add Remote Proc cooling driver
-To: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>, andersson@kernel.org,
-        mathieu.poirier@linaro.org, robh@kernel.org, krzk+dt@kernel.org,
-        conor+dt@kernel.org, rafael@kernel.org, daniel.lezcano@linaro.org,
-        rui.zhang@intel.com, lukasz.luba@arm.com, konradybcio@kernel.org,
-        amitk@kernel.org, mani@kernel.org, casey.connolly@linaro.org
-Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Amit Kucheria <amit.kucheria@oss.qualcomm.com>,
-        zhongqiu.han@oss.qualcomm.com
-References: <20251223123227.1317244-1-gaurav.kohli@oss.qualcomm.com>
- <20251223123227.1317244-2-gaurav.kohli@oss.qualcomm.com>
-Content-Language: en-US
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <20251223123227.1317244-2-gaurav.kohli@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-GUID: DVu2-f16hpbfUoUJqt_Uc8N14kGmD3K_
-X-Authority-Analysis: v=2.4 cv=APfYzRIR c=1 sm=1 tr=0 ts=695f9c29 cx=c_pps
- a=rEQLjTOiSrHUhVqRoksmgQ==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
- a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8 a=7CQSdrXTAAAA:8
- a=D6nbwq-aYW_yfCsrQPgA:9 a=QEXdDO2ut3YA:10 a=2VI0MkxyNR6bbpdq8BZq:22
- a=a-qgeE7W1pNrGK8U0ZQC:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTA4MDA4MyBTYWx0ZWRfX+m8vgriKTNzD
- 2Oy3wduQaA0X4nu+UI72RtRFojObf/nbb8uDVvWPZFfKsAQG+wP+JBfSmPSxYCJTaKnk0a51ow4
- OeH6+Xl8yt6GGJNnoCdEG4OOd4162CCBuhrgJQg50HX1sSOckUQJIavWOePW/5SZ5T3izEnTvv2
- jXEcAAWVhPcL3jptG9vfjhcC1BWb67ja95Ujd9mDMGA9cxDxHKdcT3ZceN9XG3qJKhGuEZYpO5t
- 7By8wgENQCSCs47LfFCeQ8rDqFNGq5/586/zV6woac0Hg2DMJ/qMzLAtU8ayLrvip74Ncp1I1Dy
- Hmb/tn9Mc3AMvEXQEqpkCHsENzLeKQWap9kYlTsotCZDS2u4dngxbZ1a23LRRl6pDx/k8/A9qUH
- /mrIPB05OqOp3emRT3hXx8m4m/rgNLu0BzS8L6OA4hGH8/T8E4qhvKsnmrVxKtfS4ZIr/8yjix3
- NtIG2sXwET1KxxJ7ThQ==
-X-Proofpoint-ORIG-GUID: DVu2-f16hpbfUoUJqt_Uc8N14kGmD3K_
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
- definitions=2026-01-08_02,2026-01-07_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 priorityscore=1501 spamscore=0 lowpriorityscore=0
- suspectscore=0 bulkscore=0 clxscore=1011 adultscore=0 phishscore=0
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2512120000
- definitions=main-2601080083
+References: <20260107-pci-m2-v5-0-8173d8a72641@oss.qualcomm.com> <20260107-pci-m2-v5-5-8173d8a72641@oss.qualcomm.com>
+In-Reply-To: <20260107-pci-m2-v5-5-8173d8a72641@oss.qualcomm.com>
+From: Bartosz Golaszewski <brgl@kernel.org>
+Date: Thu, 8 Jan 2026 13:15:12 +0100
+X-Gmail-Original-Message-ID: <CAMRc=Md9TQiSX-gFa5q--JgaGyQ2ky4mOwjSpdxHhvHAj-X5Qw@mail.gmail.com>
+X-Gm-Features: AQt7F2puNlVWjbhiRoX8QQnOlbAAs4UdjLNY6ZTbm-vEXEFSeur6kT9w8kO5QSk
+Message-ID: <CAMRc=Md9TQiSX-gFa5q--JgaGyQ2ky4mOwjSpdxHhvHAj-X5Qw@mail.gmail.com>
+Subject: Re: [PATCH v5 5/5] power: sequencing: Add the Power Sequencing driver
+ for the PCIe M.2 connectors
+To: manivannan.sadhasivam@oss.qualcomm.com
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Damien Le Moal <dlemoal@kernel.org>, Niklas Cassel <cassel@kernel.org>, 
+	Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, 
+	linux-pci@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, Stephan Gerhold <stephan.gerhold@linaro.org>, 
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, linux-pm@vger.kernel.org, 
+	linux-ide@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 12/23/2025 8:32 PM, Gaurav Kohli wrote:
-> Add a new generic driver for thermal cooling devices that control
-> remote processors (modem, DSP, etc.) through various communication
-> channels.
-> 
-> This driver provides an abstraction layer between the thermal
-> subsystem and vendor-specific remote processor communication
-> mechanisms.
-> 
-> Suggested-by: Amit Kucheria <amit.kucheria@oss.qualcomm.com>
-> Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-> ---
->   MAINTAINERS                          |   8 ++
->   drivers/thermal/Kconfig              |  11 ++
->   drivers/thermal/Makefile             |   2 +
->   drivers/thermal/remoteproc_cooling.c | 154 +++++++++++++++++++++++++++
->   include/linux/remoteproc_cooling.h   |  52 +++++++++
->   5 files changed, 227 insertions(+)
->   create mode 100644 drivers/thermal/remoteproc_cooling.c
->   create mode 100644 include/linux/remoteproc_cooling.h
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 679e5f11e672..c1ba87315cdf 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -25935,6 +25935,14 @@ F:	drivers/thermal/cpufreq_cooling.c
->   F:	drivers/thermal/cpuidle_cooling.c
->   F:	include/linux/cpu_cooling.h
->   
-> +THERMAL/REMOTEPROC_COOLING
-> +M:	Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-> +L:	linux-pm@vger.kernel.org
-> +S:	Supported
-> +F:	drivers/thermal/remoteproc_cooling.c
-> +F:	include/linux/remoteproc_cooling.h
-> +
-> +
->   THERMAL/POWER_ALLOCATOR
->   M:	Lukasz Luba <lukasz.luba@arm.com>
->   L:	linux-pm@vger.kernel.org
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index b10080d61860..31e92be34387 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -229,6 +229,17 @@ config PCIE_THERMAL
->   
->   	  If you want this support, you should say Y here.
->   
-> +
-> +config REMOTEPROC_THERMAL
-> +	bool "Remote processor cooling support"
+On Wed, Jan 7, 2026 at 3:11=E2=80=AFPM Manivannan Sadhasivam via B4 Relay
+<devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org> wrote:
+>
+> From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+>
+> This driver is used to control the PCIe M.2 connectors of different
+> Mechanical Keys attached to the host machines and supporting different
+> interfaces like PCIe/SATA, USB/UART etc...
+>
+> Currently, this driver supports only the Mechanical Key M connectors with
+> PCIe interface. The driver also only supports driving the mandatory 3.3v
+> and optional 1.8v power supplies. The optional signals of the Key M
+> connectors are not currently supported.
+>
+> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.=
+com>
 
-Hi Gaurav,
+This looks good to me, though there are some nits I may fix when applying.
 
-May I know any depends here?
+I'll pick it up for v7.0 once the bindings are reviewed.
 
-> +	help
-> +	  This implements a generic cooling mechanism for remote processors
-> +	  (modem, DSP, etc.) that allows vendor-specific implementations to
-> +	  register thermal cooling devices and provide callbacks for thermal
-> +	  mitigation.
-> +
-> +	  If you want this support, you should say Y here.
-> +
->   config THERMAL_EMULATION
->   	bool "Thermal emulation mode support"
->   	help
-> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> index bb21e7ea7fc6..ae747dde54fe 100644
-> --- a/drivers/thermal/Makefile
-> +++ b/drivers/thermal/Makefile
-> @@ -34,6 +34,8 @@ thermal_sys-$(CONFIG_DEVFREQ_THERMAL) += devfreq_cooling.o
->   
->   thermal_sys-$(CONFIG_PCIE_THERMAL) += pcie_cooling.o
->   
-> +thermal_sys-$(CONFIG_REMOTEPROC_THERMAL) += remoteproc_cooling.o
-> +
->   obj-$(CONFIG_K3_THERMAL)	+= k3_bandgap.o k3_j72xx_bandgap.o
->   # platform thermal drivers
->   obj-y				+= broadcom/
-> diff --git a/drivers/thermal/remoteproc_cooling.c b/drivers/thermal/remoteproc_cooling.c
-> new file mode 100644
-> index 000000000000..a1f948cbde0f
-> --- /dev/null
-> +++ b/drivers/thermal/remoteproc_cooling.c
-> @@ -0,0 +1,154 @@
-> +// SPDX-License-Identifier: GPL-2.0
+> +++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
+> @@ -0,0 +1,169 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
 > +/*
-> + * Remote Processor Cooling Device
-> + *
-> + * Copyright (c) 2025, Qualcomm Innovation Center, Inc. All rights reserved.
+> + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+> + * Author: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com=
+>
 > + */
 > +
-> +#include <linux/err.h>
-> +#include <linux/export.h>
+> +#include <linux/device.h>
+> +#include <linux/mod_devicetable.h>
 > +#include <linux/module.h>
-> +#include <linux/mutex.h>
 > +#include <linux/of.h>
-> +#include <linux/slab.h>
-> +#include <linux/thermal.h>
-> +
-> +#define REMOTEPROC_PREFIX		"rproc_"
-> +
-> +struct remoteproc_cooling_ops {
-> +	int (*get_max_level)(void *devdata, unsigned long *level);
-> +	int (*get_cur_level)(void *devdata, unsigned long *level);
-> +	int (*set_cur_level)(void *devdata, unsigned long level);
-> +};
-It's better to have a document to explain member?
+> +#include <linux/of_graph.h>
+> +#include <linux/of_platform.h>
 
-And may I know why double define here(another is in .h file)? should it
-include .h file remoteproc_cooling.h ?
-
+It looks like this is a leftover from previous versions and you no
+longer need it?
 
 > +
-> +/**
-> + * struct remoteproc_cdev - Remote processor cooling device
-> + * @cdev: Thermal cooling device handle
-> + * @ops: Vendor-specific operation callbacks
-> + * @devdata: Private data for vendor implementation
-> + * @np: Device tree node associated with this cooling device
-> + * @lock: Mutex to protect cooling device operations
-> + */
-> +struct remoteproc_cdev {
-> +	struct thermal_cooling_device *cdev;
-> +	const struct remoteproc_cooling_ops *ops;
-> +	void *devdata;
-> +	struct device_node *np;
-> +	struct mutex lock;
-> +};
-> +
-> +
-> +/* Thermal cooling device callbacks */
-> +
-> +static int remoteproc_get_max_state(struct thermal_cooling_device *cdev,
-> +				    unsigned long *state)
+> +static void pwrseq_pcie_free_resources(void *data)
 > +{
-> +	struct remoteproc_cdev *rproc_cdev = cdev->devdata;
-> +	int ret;
+> +       struct pwrseq_pcie_m2_ctx *ctx =3D data;
 > +
-> +	if (!rproc_cdev || !rproc_cdev->ops)
-> +		return -EINVAL;
-> +
-> +	mutex_lock(&rproc_cdev->lock);
-> +	ret = rproc_cdev->ops->get_max_level(rproc_cdev->devdata, state);
-> +	mutex_unlock(&rproc_cdev->lock);
-> +
-> +	return ret;
+> +       regulator_bulk_free(ctx->num_vregs, ctx->regs);
 > +}
-> +
-> +static int remoteproc_get_cur_state(struct thermal_cooling_device *cdev,
-> +				    unsigned long *state)
-> +{
-> +	struct remoteproc_cdev *rproc_cdev = cdev->devdata;
-> +	int ret;
-> +
-> +	if (!rproc_cdev || !rproc_cdev->ops)
-> +		return -EINVAL;
-> +
-> +	mutex_lock(&rproc_cdev->lock);
-> +	ret = rproc_cdev->ops->get_cur_level(rproc_cdev->devdata, state);
-> +	mutex_unlock(&rproc_cdev->lock);
-> +
-> +	return ret;
-> +}
-> +
-> +static int remoteproc_set_cur_state(struct thermal_cooling_device *cdev,
-> +				    unsigned long state)
-> +{
-> +	struct remoteproc_cdev *rproc_cdev = cdev->devdata;
-> +	int ret;
-> +
-> +	if (!rproc_cdev || !rproc_cdev->ops)
-> +		return -EINVAL;
-> +
-> +	mutex_lock(&rproc_cdev->lock);
-> +	ret = rproc_cdev->ops->set_cur_level(rproc_cdev->devdata, state);
-> +	mutex_unlock(&rproc_cdev->lock);
-> +
-> +	return ret;
-> +}
-> +
-> +static const struct thermal_cooling_device_ops remoteproc_cooling_ops = {
-> +	.get_max_state = remoteproc_get_max_state,
-> +	.get_cur_state = remoteproc_get_cur_state,
-> +	.set_cur_state = remoteproc_set_cur_state,
-> +};
-> +
-> +struct remoteproc_cdev *
-> +remoteproc_cooling_register(struct device_node *np,
-> +			     const char *name, const struct remoteproc_cooling_ops *ops,
-> +			     void *devdata)
-> +{
-> +	struct remoteproc_cdev *rproc_cdev;
-> +	struct thermal_cooling_device *cdev;
-> +	int ret;
-> +
-> +	if (!name || !ops) {
-> +		return ERR_PTR(-EINVAL);
-> +	}
-> +
 
-May I know which ops callbacks are required and which are optional?
-If the callback is optional, should we check for null before calling it?
+I would call it pwrseq_pcie_m2_free_regulators() if you don't mind.
 
-
-> +	rproc_cdev = kzalloc(sizeof(*rproc_cdev), GFP_KERNEL);
-> +	if (!rproc_cdev)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	rproc_cdev->ops = ops;
-> +	rproc_cdev->devdata = devdata;
-> +	rproc_cdev->np = np;
-> +	mutex_init(&rproc_cdev->lock);
-> +
-> +	char *rproc_name __free(kfree) =
-> +		kasprintf(GFP_KERNEL, REMOTEPROC_PREFIX "%s", name);
-
-It should have a NULL check when alloc memory.
-
-
-> +	/* Register with thermal framework */
-> +	if (np) {
-> +		cdev = thermal_of_cooling_device_register(np, rproc_name, rproc_cdev,
-> +							  &remoteproc_cooling_ops);
-> +	}
-> +
-> +	if (IS_ERR(cdev)) {
-> +		ret = PTR_ERR(cdev);
-> +		goto free_rproc_cdev;
-> +	}
-> +
-> +	rproc_cdev->cdev = cdev;
-> +
-> +	return rproc_cdev;
-> +
-> +free_rproc_cdev:
-> +	kfree(rproc_cdev);
-> +	return ERR_PTR(ret);
-> +}
-> +EXPORT_SYMBOL_GPL(remoteproc_cooling_register);
-> +
-> +void remoteproc_cooling_unregister(struct remoteproc_cdev *rproc_cdev)
-> +{
-> +	if (!rproc_cdev)
-> +		return;
-> +
-> +	thermal_cooling_device_unregister(rproc_cdev->cdev);
-> +	mutex_destroy(&rproc_cdev->lock);
-> +	kfree(rproc_cdev);
-> +}
-> +EXPORT_SYMBOL_GPL(remoteproc_cooling_unregister);
-> +
-> +MODULE_LICENSE("GPL");
-> +MODULE_DESCRIPTION("Remote Processor Cooling Device");
-> diff --git a/include/linux/remoteproc_cooling.h b/include/linux/remoteproc_cooling.h
-> new file mode 100644
-> index 000000000000..ef94019d220d
-> --- /dev/null
-> +++ b/include/linux/remoteproc_cooling.h
-> @@ -0,0 +1,52 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +/*
-> + * Remote Processor Cooling Device
-> + *
-> + * Copyright (c) 2025, Qualcomm Innovation Center
-> + */
-> +
-> +#ifndef __REMOTEPROC_COOLING_H__
-> +#define __REMOTEPROC_COOLING_H__
-> +
-> +#include <linux/thermal.h>
-> +
-> +struct device;
-> +struct device_node;
-> +
-> +struct remoteproc_cooling_ops {
-> +	int (*get_max_level)(void *devdata, unsigned long *level);
-> +	int (*get_cur_level)(void *devdata, unsigned long *level);
-> +	int (*set_cur_level)(void *devdata, unsigned long level);
-> +};
-> +
-> +struct remoteproc_cdev;
-> +
-> +#ifdef CONFIG_REMOTEPROC_THERMAL
-> +
-> +struct remoteproc_cdev *
-> +remoteproc_cooling_register(struct device_node *np,
-> +			     const char *name,
-> +			     const struct remoteproc_cooling_ops *ops,
-> +			     void *devdata);
-> +
-> +void remoteproc_cooling_unregister(struct remoteproc_cdev *rproc_cdev);
-> +
-> +#else /* !CONFIG_REMOTEPROC_THERMAL */
-> +
-> +static inline struct remoteproc_cdev *
-> +remoteproc_cooling_register(struct device_node *np,
-> +			     const char *name,
-> +			     const struct remoteproc_cooling_ops *ops,
-> +			     void *devdata)
-> +{
-> +	return ERR_PTR(-EINVAL);
-> +}
-> +
-> +static inline void
-> +remoteproc_cooling_unregister(struct remoteproc_cdev *rproc_cdev)
-> +{
-> +}
-> +
-> +#endif /* CONFIG_REMOTEPROC_THERMAL */
-> +
-> +#endif /* __REMOTEPROC_COOLING_H__ */
-
-
--- 
-Thx and BRs,
-Zhongqiu Han
+Bart
