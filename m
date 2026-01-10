@@ -1,73 +1,72 @@
-Received: from mail-oa1-f54.google.com (mail-oa1-f54.google.com [209.85.160.54])
+Received: from mail-pf1-f169.google.com (mail-pf1-f169.google.com [209.85.210.169])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC756288C0A
-	for <linux-pm@vger.kernel.org>; Sat, 10 Jan 2026 19:12:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1AB241DF25F
+	for <linux-pm@vger.kernel.org>; Sat, 10 Jan 2026 20:43:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.169
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768072358; cv=none; b=tzbSawdzKVqt3FKzlUTQrBVfymqaZ0njQ9WtfEEaqrx90olDcOp/qu4WFZURSnfC7998vAQqcLh+M8OYXwXPZGJZSSEjfUqCHD9TM2sSki820fXuJaeWINWBk+6G0wL5bBVM4qTxpxiTzLUWNaYxOPzM85yVMasNBcNELTUusD0=
+	t=1768077827; cv=none; b=c0uq3VY0vv56GpWBoERsn+gccJkKPQ4RsTeHFmqrcjiIPf60OTxWlW8s+EB3ssY6u/Rn4igLiK9/2Um2gzT1OhF/Q208L38b5LlLq9CkhfUfuv3FRVlV0u5M1YcY03aKy/mT5qT/4MWw5WRMDcUD5BxUcA53xfdpe0wRyBHHdmQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768072358; c=relaxed/simple;
-	bh=6hsgPQMDhASeJ+fOgWGYiTzJn6pw7Tq/wZDyJJgthV0=;
+	s=arc-20240116; t=1768077827; c=relaxed/simple;
+	bh=A+W0xbk0+zRrB7Jp4YvTs8Zwe0xccefwhCGmrjWwocU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=G2ilE2CLE+2y9ppb3cfsb+iZUnuPIwDk06Fvt9k6WpXXXUEiH8RdMVzOAXMo7ibtzSHSi0ketJYqdYUfjCEORFwbMqzeRSjl9KzmKAJPwEuk3Lc6fKeGYUBpQ/+uGlNNKCp9XS+Q4UQ/nB8M0y1kkR64BUDHqhL2txzPbW2MTzs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=jJfd+7S2; arc=none smtp.client-ip=209.85.160.54
+	 Content-Type:Content-Disposition:In-Reply-To; b=S+kAjzOBUwMY4h9gvV98QpdwgvWd4K2ImvnKcsn6j+RHaYf21f5jvS7I1FfZZ3ZqW2IcU2OJvDbIenE4D4FmetkvyTlEuxRucgWj0BgYYaABiYqvBDy9QwXqbgyKOUdX+Mqif1MHpOBE8fugD2SqLKxP6TFUEH7s/9rrAl0R5VQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=acvyhck0; arc=none smtp.client-ip=209.85.210.169
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jJfd+7S2"
-Received: by mail-oa1-f54.google.com with SMTP id 586e51a60fabf-3f0cbfae787so3895840fac.3
-        for <linux-pm@vger.kernel.org>; Sat, 10 Jan 2026 11:12:36 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="acvyhck0"
+Received: by mail-pf1-f169.google.com with SMTP id d2e1a72fcca58-81f4ba336b4so187642b3a.1
+        for <linux-pm@vger.kernel.org>; Sat, 10 Jan 2026 12:43:45 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1768072356; x=1768677156; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1768077825; x=1768682625; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=WdkXa9/L4wvq4IHLS3coifR72fpkOP/zf+UrPdheL+o=;
-        b=jJfd+7S2E1heManhm7vSO1UyefIvAV+evJSJBDVnILdbQVQD7oPC8+wew9JcZgJgwx
-         K8Ixdag5yfeZ9ejLmZH44wnsXU95UtGENXH8WOnXvHZH2x7/WX16+YbmqUyJiuB9d4CY
-         ffmBwdpbP2nvrMaTUPlVvFJLfIg2rlDgWnZSaaqBbMeue9srYv2H/b6s1J4obOD/3NFM
-         2OskEw6jshHnURJDqYgN/uTIA6egyL3t4ML99QSQFBH1SSczc4ap4x2sWA6WEhviXPZF
-         wb4kQqe2grXCBlnWTV/LbtI7noAMkzqsxfOVEnkNakn0CCtqPFsN4xUCdEMsXO1oPHZ7
-         dJKA==
+        bh=gab+lJvv/mboOC7S9VV+ri8/78oU/QOSV7JcElBVbJs=;
+        b=acvyhck0xxjwfFIhEdSPKiDXXB6/lIG9NGAS/FsXIRAqgG5iLYDmJa76wSB7QmoQws
+         JUDSvJAY5JrEWqF8c/kJF4OheY6UlSKhnzqY5hjUqHcxETBCQpXSdWRaX1rqvt9SVEAX
+         EsydFxLwxRt7PPqVn3/nP/qdBV7XCSxDF0Sr7NwNFIJFqZWsdSRUdXSxpULGcuKCaP1/
+         lIzRwIZP8YCc+lyjX+PfoUHLi63dGEr6f0VdLDgPF8xS6kz8gUvHZYNV4EzzIEIB9Cxm
+         gthCasqRXPCr8FaUmT1Px0uB84UhdnJQKlBgZUw+H7NGzdJoWEzzxbWekvagJXUqDoll
+         jFIg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768072356; x=1768677156;
+        d=1e100.net; s=20230601; t=1768077825; x=1768682625;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=WdkXa9/L4wvq4IHLS3coifR72fpkOP/zf+UrPdheL+o=;
-        b=biO9oBAZm7MBQHSBjw2lXuqLVekUkf8ddaWiQ/6090L7h0EAfFzsLoF0mpSrTtV/Xr
-         qgZLzBpFFIrCZkwbU/JeGIzgdL1tL37rkdsavnMrCYts18MA3pr7smsRE5T8IlXhZWxL
-         EfZD86E0rnML7Yg1xOrl4ljJ9CTqSNbCvlyO25fAluRL47MEMcIXg+DPcsYzKHr87S36
-         Ievw4AaNw3MQMuoK3PwW14ahv1vhfYWyO7oEzo1Np8ZHDty2Ri+dmvTZ4CbfIexLPU9E
-         UwlqjsmuMK4Ednl3l2LwFtYTeuL5AY+4475jjltSORsnilaQy+MG7RuFilfljt/waG5M
-         PEPw==
-X-Forwarded-Encrypted: i=1; AJvYcCVSoxG4j+yNPNalSaaeWCiBZiKTNDxL5eaYfr8iYH2O7m+TMPTb/OYUZxJs1Ovb1DEjR7CmvAmWVQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyun7SnmvHYs28Ka+9RnEJGI6XNq47poKjC5WOX6WIlIUWtaZg8
-	0CYvkCw1+PwdVb2PWH6N+asGpAX/RCzfx/BG/V2bpC9jKVfU9dESiyYAxyv8KQ==
-X-Gm-Gg: AY/fxX4++QdeFT/zvkNzUEFOp4JqUT7Bjs8Yut2TxXiPecxRyl+E8nFfnXRcP27Gr6n
-	JgJJsdRQrfsy3QICnJke1kMDyRdViEX+m1wo9wIZgoBgCiN1eezvEZvUSTSSx0QcmNYxvYcIE4A
-	0F6FwHm/YWSQSOcYzyRnJAEp1c9EBOXCkdhgZCeYjXkhrhDmGgXzn8F75HMYvU4yMZ1HdWATGv+
-	IWVi5jW4HM688OfYuNsqfn3/C3vtm+7twH5QERRi+sqvVOyRorOPsoUYRTXMKL5u9MsW4pJzpxw
-	MfkDQsPXCLbczv1+cQJFpZUXXht6J989IOZQXO6ampjc/XWUEUzMqyq8S6ioQXMipx8k20cR7D9
-	QR7p++1MrwIlQTJUoXmdl+3qeTUZL8iOW9I89QBIllGd2eRz62IPka6/70+Pg3e5Ey+h/Pujsrl
-	ojLrNWg0d2oSh+HkYYaG6kEk8vRitKvqLsYaNwyMx46jzJdU5VbV5jHpsVWOIrfPWcxsIn
-X-Google-Smtp-Source: AGHT+IHvh3vBxNr6ei7GlykxFLjWFURTvhvRl6IQsovogNCI455jmZsQDHLqMmWUa4ZR3buYcpiN7Q==
-X-Received: by 2002:a17:903:2341:b0:2a1:10f6:3c1 with SMTP id d9443c01a7336-2a3ee46f97cmr116800655ad.26.1768066346072;
-        Sat, 10 Jan 2026 09:32:26 -0800 (PST)
+        bh=gab+lJvv/mboOC7S9VV+ri8/78oU/QOSV7JcElBVbJs=;
+        b=YZZN1mGeeJIW6W+aRWe2ssPmvZGHGPnJ29vitauYmTZxd4YNZAHLSaWHh54n2o3voF
+         HPiLYG2NcfmXm2jIViS4eB4H+K5V2hy3zKLJPLpfzoPU6A8oHLp51OaVbWpIMpBG+aLr
+         EKkpf1FCui44N2KMIO4+jvyclDHs6KVV4rfUzhxkMkAmqLeCSDphcHjBCdN/5YnU4Vj2
+         n0Y4rQgXzD/cKbnsdhNGCFK7bwNu1TY4KO9zoCJ5pvIAUYfvXeOklnWx0IkdaoZAV93v
+         lTS0QOOlRXUHK6cdvtVCTWatZrVPIn2T1XVxVYvYzbNYqdjUczl+0w0Amz/qYxhlbBRn
+         Mo5w==
+X-Forwarded-Encrypted: i=1; AJvYcCXdJ1mBhycSWdvYRjBSOnEPNZqet1Yb2OZFE2R9x6Huj5J6cOSONFTNt3LRXAG9FBnSzgYKXtJRNA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwkOo8+g2RbKoNhqPhnDzqbZVdVAzVWa6/+P5J3jk5MaEjgjHGm
+	W9qjXgI2A/6FpKYUz3DeY4oyS9No5RANvLhWq+vZ7npQe1Rmt1h5RLNG3S26kA==
+X-Gm-Gg: AY/fxX5WRkFmrKCOJ6+uw3vJ0FX4rhVg/HTeeFXAtah3jWWcVxZjQhhZ1xSUbfxZVLE
+	cONhg0vsuDn+F5n/7DM/B+FSMGw08zGmKmYss5g5/aWJIPQIP2HxmWcaF2PRUwUSfzqCRkCPwT9
+	0C6PF3jbvJNFwQ/Rsvt7AoC9I8q2Wh1SPfnXcpVD1L0MU8Kav/eKjJJUaUfaWxv61baD8Xal6b+
+	JSgaIK/yo18FvohexxClHiwIzjajuUCtn/EInMOidyUO//uizcozG2KCLU0uXKHCWz2XU21HbXy
+	MltdAN3RAMUN74HpVLiKFwMSGZlNNRwJzQGZ85ymngfn0fpsP8TNJv9xA6FPV2knTtBfgeToWl/
+	Cnmscilr0S3ibivfTs46LZgj7cCyUUkB/sNnCjucA7S+XN363cswynUcJiGz4Ixs4WBl0C5JmiI
+	4LWmH6yqAIZoL4CSMjGsY1y+R4Yrnl7C6pt5WfCy/kyXYkinUnD6ETS7pmvQ==
+X-Google-Smtp-Source: AGHT+IEFhIWWLTszvWaJvJLjviKPKe2GeMsrNAUILW/iBYbvjE1a/2u9gukrm/pz2LXkvZfPeHSLbQ==
+X-Received: by 2002:a17:902:ea04:b0:2a0:9040:6377 with SMTP id d9443c01a7336-2a3ee42a945mr123670065ad.18.1768072230671;
+        Sat, 10 Jan 2026 11:10:30 -0800 (PST)
 Received: from google.com (61-230-24-179.dynamic-ip.hinet.net. [61.230.24.179])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a3e3c491e7sm134544265ad.38.2026.01.10.09.32.24
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a3e3cc7856sm136174865ad.68.2026.01.10.11.10.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 10 Jan 2026 09:32:25 -0800 (PST)
-Date: Sun, 11 Jan 2026 01:32:22 +0800
+        Sat, 10 Jan 2026 11:10:30 -0800 (PST)
+Date: Sun, 11 Jan 2026 03:10:27 +0800
 From: Kuan-Wei Chiu <visitorckw@gmail.com>
-To: Georgi Djakov <djakov@kernel.org>
-Cc: jserv@ccns.ncku.edu.tw, marscheng@google.com, wllee@google.com,
-	aarontian@google.com, hsuanting@google.com,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH] interconnect: Add kunit tests for core functionality
-Message-ID: <aWKNJprcgJkMv5qk@google.com>
-References: <20251210180058.2115010-1-visitorckw@gmail.com>
- <ab1375ae-ee33-4eb4-a54a-f52a67289155@kernel.org>
+To: djakov@kernel.org
+Cc: quic_mdtipton@quicinc.com, mike.tipton@oss.qualcomm.com,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] interconnect: debugfs: initialize src_node and dst_node
+ to empty strings
+Message-ID: <aWKkI02I-zgf3h0W@google.com>
+References: <20260109122523.125843-1-djakov@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -76,244 +75,92 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ab1375ae-ee33-4eb4-a54a-f52a67289155@kernel.org>
+In-Reply-To: <20260109122523.125843-1-djakov@kernel.org>
 
 Hi Georgi,
 
-Thanks for the review!
+On Fri, Jan 09, 2026 at 02:25:23PM +0200, djakov@kernel.org wrote:
+> From: Georgi Djakov <djakov@kernel.org>
+> 
+> The debugfs_create_str() API assumes that the string pointer is either NULL
+> or points to valid kmalloc() memory. Leaving the pointer uninitialized can
+> cause problems.
+> 
+> Initialize src_node and dst_node to empty strings before creating the
+> debugfs entries to guarantee that reads and writes are safe.
+> 
+> Fixes: 770c69f037c1 ("interconnect: Add debugfs test client")
+> Signed-off-by: Georgi Djakov <djakov@kernel.org>
 
-On Sat, Jan 10, 2026 at 01:09:03AM +0200, Georgi Djakov wrote:
-> On 12/10/25 8:00 PM, Kuan-Wei Chiu wrote:
-> > The interconnect framework currently lacks in-tree unit tests to verify
-> > the core logic in isolation. This makes it difficult to validate
-> > regression stability when modifying the provider/consumer APIs or
-> > aggregation logic.
-> > 
-> > Introduce a kunit test suite that verifies the fundamental behavior of
-> > the subsystem. The tests cover:
-> > - Provider API (node creation, linking, topology construction).
-> > - Consumer API (path enabling/disabling, bandwidth requests).
-> > - Standard aggregation logic (accumulating bandwidth across links).
-> > - Bulk operations for setting bandwidth on multiple paths.
-> > 
-> > The suite simulates a simple SoC topology with multiple masters and a
-> > shared bus to validate traffic aggregation behavior in a controlled
-> > software environment, without requiring specific hardware or Device
-> > Tree support.
-> > 
-> > Signed-off-by: Kuan-Wei Chiu <visitorckw@gmail.com>
-> > ---
-> > Build and kunit tests passed
-> > 
-> >   drivers/interconnect/Kconfig     |  14 ++
-> >   drivers/interconnect/Makefile    |   2 +
-> >   drivers/interconnect/icc-kunit.c | 315 +++++++++++++++++++++++++++++++
-> >   3 files changed, 331 insertions(+)
-> >   create mode 100644 drivers/interconnect/icc-kunit.c
-> > 
-> > diff --git a/drivers/interconnect/Kconfig b/drivers/interconnect/Kconfig
-> > index f2e49bd97d31..882dcb0b4a5b 100644
-> > --- a/drivers/interconnect/Kconfig
-> > +++ b/drivers/interconnect/Kconfig
-> > @@ -22,4 +22,18 @@ config INTERCONNECT_CLK
-> >   	help
-> >   	  Support for wrapping clocks into the interconnect nodes.
-> > +config INTERCONNECT_KUNIT_TEST
-> > +	tristate "KUnit tests for Interconnect framework"
-> > +	depends on KUNIT
-> > +	default KUNIT_ALL_TESTS
-> > +	help
-> > +	  This builds the KUnit test suite for the generic system interconnect
-> > +	  framework.
-> > +
-> > +	  The tests cover the core functionality of the interconnect subsystem,
-> > +	  including provider/consumer APIs, topology management, and bandwidth
-> > +	  aggregation logic.
-> > +
-> > +	  If unsure, say N.
-> > +
-> >   endif
-> > diff --git a/drivers/interconnect/Makefile b/drivers/interconnect/Makefile
-> > index b0a9a6753b9d..dc4c7b657c9d 100644
-> > --- a/drivers/interconnect/Makefile
-> > +++ b/drivers/interconnect/Makefile
-> > @@ -10,3 +10,5 @@ obj-$(CONFIG_INTERCONNECT_QCOM)		+= qcom/
-> >   obj-$(CONFIG_INTERCONNECT_SAMSUNG)	+= samsung/
-> >   obj-$(CONFIG_INTERCONNECT_CLK)		+= icc-clk.o
-> > +
-> > +obj-$(CONFIG_INTERCONNECT_KUNIT_TEST) += icc-kunit.o
-> > diff --git a/drivers/interconnect/icc-kunit.c b/drivers/interconnect/icc-kunit.c
-> > new file mode 100644
-> > index 000000000000..2178487f9527
-> > --- /dev/null
-> > +++ b/drivers/interconnect/icc-kunit.c
-> > @@ -0,0 +1,315 @@
-> > +// SPDX-License-Identifier: GPL-2.0
-> > +/*
-> > + * KUnit tests for the Interconnect framework.
-> > + *
-> > + * Copyright (c) 2025 Kuan-Wei Chiu <visitorckw@gmail.com>
-> > + *
-> > + * This suite verifies the behavior of the interconnect core, including
-> > + * topology construction, bandwidth aggregation, and path lifecycle.
-> > + */
-> > +
-> > +#include <kunit/platform_device.h>
-> > +#include <kunit/test.h>
-> > +#include <linux/interconnect-provider.h>
-> > +#include <linux/interconnect.h>
-> > +#include <linux/list.h>
-> > +#include <linux/module.h>
-> > +#include <linux/overflow.h>
-> > +#include <linux/platform_device.h>
-> > +#include <linux/slab.h>
-> > +
-> > +#include "internal.h"
-> > +
-> > +enum {
-> > +	NODE_CPU = 100,
-> > +	NODE_GPU,
-> > +	NODE_BUS,
-> > +	NODE_DDR,
-> > +	NODE_MAX
-> > +};
-> > +
-> > +struct test_node_data {
-> > +	int id;
-> > +	const char *name;
-> > +	int num_links;
-> > +	int links[2];
-> > +};
-> > +
-> > +/*
-> > + * Static Topology:
-> > + * CPU -\
-> > + * -> BUS -> DDR
-> > + * GPU -/
-> > + */
-> > +static const struct test_node_data test_topology[] = {
-> > +	{ NODE_CPU, "cpu", 1, { NODE_BUS } },
-> > +	{ NODE_GPU, "gpu", 1, { NODE_BUS } },
-> > +	{ NODE_BUS, "bus", 1, { NODE_DDR } },
-> > +	{ NODE_DDR, "ddr", 0, { } },
-> > +};
-> > +
-> > +struct icc_test_priv {
-> > +	struct icc_provider provider;
-> > +	struct platform_device *pdev;
-> > +	struct icc_node *nodes[NODE_MAX];
-> 
-> So nodes[] is a 104-element array? Is this intentional?
+I verified this patch on qemu.
+Without this patch, reading the debugfs node triggers a NULL pointer
+dereference [1].
 
-That was indeed an oversight.
-In v2, I will simplify the test by making the node id 0 based.
+# cat /sys/kernel/debug/interconnect/test_client/src_node
 
-> 
-> [..]
-> > +static void icc_test_set_bw(struct kunit *test)
-> > +{
-> > +	struct icc_test_priv *priv = test->priv;
-> > +	struct icc_path *path;
-> > +	struct icc_node *path_nodes[3];
-> > +	int ret;
-> > +
-> > +	/* Path: CPU -> BUS -> DDR */
-> > +	path_nodes[0] = get_node(priv, NODE_CPU);
-> > +	path_nodes[1] = get_node(priv, NODE_BUS);
-> > +	path_nodes[2] = get_node(priv, NODE_DDR);
-> > +
-> > +	path = icc_test_create_path(test, path_nodes, 3);
-> > +
-> > +	ret = icc_enable(path);
-> > +	KUNIT_ASSERT_EQ(test, ret, 0);
-> > +
-> > +	ret = icc_set_bw(path, 1000, 2000);
-> > +	KUNIT_EXPECT_EQ(test, ret, 0);
-> > +
-> > +	KUNIT_EXPECT_EQ(test, path_nodes[0]->avg_bw, 1000);
-> > +	KUNIT_EXPECT_EQ(test, path_nodes[0]->peak_bw, 2000);
-> > +	KUNIT_EXPECT_EQ(test, path_nodes[1]->avg_bw, 1000);
-> > +	KUNIT_EXPECT_EQ(test, path_nodes[1]->peak_bw, 2000);
-> > +
-> > +	icc_set_tag(path, 0xABC);
-> > +	KUNIT_EXPECT_EQ(test, path->reqs[0].tag, 0xABC);
-> > +
-> > +	icc_disable(path);
-> > +	KUNIT_EXPECT_EQ(test, path_nodes[0]->avg_bw, 0);
-> > +
-> > +	icc_test_destroy_path(test, path);
-> > +}
-> > +
-> 
-> I also tried to run it and noticed that one of the tests is failing on my board...
-> 
-> KTAP version 1
-> 1..1
->     KTAP version 1
->     # Subtest: interconnect
->     1..4
->     ok 1 icc_test_topology_integrity
->     # icc_test_set_bw: EXPECTATION FAILED at drivers/interconnect/icc-kunit.c:207
->     Expected path_nodes[0]->avg_bw == 1000, but
->         path_nodes[0]->avg_bw == 2147483647 (0x7fffffff)
->     # icc_test_set_bw: EXPECTATION FAILED at drivers/interconnect/icc-kunit.c:208
->     Expected path_nodes[0]->peak_bw == 2000, but
->         path_nodes[0]->peak_bw == 2147483647 (0x7fffffff)
->     # icc_test_set_bw: EXPECTATION FAILED at drivers/interconnect/icc-kunit.c:209
->     Expected path_nodes[1]->avg_bw == 1000, but
->         path_nodes[1]->avg_bw == 2147483647 (0x7fffffff)
->     # icc_test_set_bw: EXPECTATION FAILED at drivers/interconnect/icc-kunit.c:210
->     Expected path_nodes[1]->peak_bw == 2000, but
->         path_nodes[1]->peak_bw == 2147483647 (0x7fffffff)
->     # icc_test_set_bw: EXPECTATION FAILED at drivers/interconnect/icc-kunit.c:216
->     Expected path_nodes[0]->avg_bw == 0, but
->         path_nodes[0]->avg_bw == 2147483647 (0x7fffffff)
->     not ok 2 icc_test_set_bw
->     ok 3 icc_test_aggregation
->     ok 4 icc_test_bulk_ops
->     # module: icc_kunit
-> # interconnect: pass:3 fail:1 skip:0 total:4
-> # Totals: pass:3 fail:1 skip:0 total:4
-> not ok 1 interconnect
-> 
-> ...and the following diff seem to fix it:
-> 
-> diff --git a/drivers/interconnect/icc-kunit.c b/drivers/interconnect/icc-kunit.c
-> index 2178487f9527..060f640818a5 100644
-> --- a/drivers/interconnect/icc-kunit.c
-> +++ b/drivers/interconnect/icc-kunit.c
-> @@ -79,6 +79,14 @@ static struct icc_node *icc_test_xlate(const struct of_phandle_args *spec, void
->  	return NULL;
->  }
-> 
-> +static int icc_test_get_bw(struct icc_node *node, u32 *avg, u32 *peak)
-> +{
-> +	*avg = 0;
-> +	*peak = 0;
-> +
-> +	return 0;
-> +}
-> +
->  static int icc_test_init(struct kunit *test)
->  {
->  	struct icc_test_priv *priv;
-> @@ -95,6 +103,7 @@ static int icc_test_init(struct kunit *test)
-> 
->  	priv->provider.set = icc_test_set;
->  	priv->provider.aggregate = icc_test_aggregate;
-> +	priv->provider.get_bw = icc_test_get_bw;
->  	priv->provider.xlate = icc_test_xlate;
->  	priv->provider.dev = &priv->pdev->dev;
->  	priv->provider.data = priv;
-> 
-> 
-> Could you please update and re-send?
+The patch resolves this issue. Thanks!
 
-Thanks for pointing this out.
-I will include this callback in v2.
-
-Will send the v2 patch shortly.
+Reviewed-by: Kuan-Wei Chiu <visitorckw@gmail.com>
+Tested-by: Kuan-Wei Chiu <visitorckw@gmail.com>
 
 Regards,
 Kuan-Wei
+
+[1]:
+[   53.134642] traps: skippy[737] trap invalid opcode ip:7f125b62e967 sp:7fff26f593c0 error:0 in ld-2.27.so[25967,7f125b609000+2b000]
+[   53.171664] BUG: kernel NULL pointer dereference, address: 0000000000000000
+[   53.172274] #PF: supervisor read access in kernel mode
+[   53.172556] #PF: error_code(0x0000) - not-present page
+[   53.173103] PGD 0 P4D 0 
+[   53.173433] Oops: Oops: 0000 [#1] SMP NOPTI
+[   53.176057] CPU: 51 UID: 0 PID: 738 Comm: cat Tainted: G                 N  6.19.0-rc4-virtme #2 PREEMPT(voluntary) 
+[   53.176747] Tainted: [N]=TEST
+[   53.176964] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+[   53.177493] RIP: 0010:strlen+0x4/0x30
+[   53.178437] Code: f7 75 ec 31 c0 c3 cc cc cc cc 48 89 f8 c3 cc cc cc cc 0f 1f 40 00 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 f3 0f 1e fa <80> 3f 00 74 18 48 89 f8 0f 1f 40 00 48 83 c0 01 80 38 00 75 f7 48
+[   53.179507] RSP: 0018:ffffb279018ffe10 EFLAGS: 00010246
+[   53.179831] RAX: ffffffffba33cde0 RBX: 0000000000000000 RCX: 0000000000000002
+[   53.180215] RDX: 0000000000000003 RSI: 0000000000000000 RDI: 0000000000000000
+[   53.180563] RBP: 0000000000000001 R08: ffffffffb9061ec0 R09: 0000000000000000
+[   53.181030] R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000040000
+[   53.181366] R13: ffffb279018ffee8 R14: ffff8dcec5c30540 R15: 0000000000000000
+[   53.181803] FS:  00007f54fc097740(0000) GS:ffff8dcf4145f000(0000) knlGS:0000000000000000
+[   53.182251] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[   53.182541] CR2: 0000000000000000 CR3: 000000000838d000 CR4: 00000000000006f0
+[   53.183078] Call Trace:
+[   53.184925]  <TASK>
+[   53.185202]  debugfs_read_file_str+0x49/0xf0
+[   53.185961]  vfs_read+0xc2/0x3a0
+[   53.186195]  ? __hrtimer_run_queues+0x160/0x2a0
+[   53.186442]  ? __pfx_read_tsc+0x10/0x10
+[   53.186634]  ? ktime_get+0x3b/0xd0
+[   53.186974]  ? lapic_next_event+0x15/0x20
+[   53.187147]  ? clockevents_program_event+0x99/0xf0
+[   53.187374]  ksys_read+0x6b/0xe0
+[   53.187563]  do_syscall_64+0xa4/0xf80
+[   53.187867]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[   53.188365] RIP: 0033:0x7f54fc129687
+[   53.189177] Code: 48 89 fa 4c 89 df e8 58 b3 00 00 8b 93 08 03 00 00 59 5e 48 83 f8 fc 74 1a 5b c3 0f 1f 84 00 00 00 00 00 48 8b 44 24 10 0f 05 <5b> c3 0f 1f 80 00 00 00 00 83 e2 39 83 fa 08 75 de e8 23 ff ff ff
+[   53.190393] RSP: 002b:00007ffde7e25960 EFLAGS: 00000202 ORIG_RAX: 0000000000000000
+[   53.190900] RAX: ffffffffffffffda RBX: 00007f54fc097740 RCX: 00007f54fc129687
+[   53.191488] RDX: 0000000000040000 RSI: 00007f54fc056000 RDI: 0000000000000003
+[   53.191963] RBP: 0000000000040000 R08: 0000000000000000 R09: 0000000000000000
+[   53.192351] R10: 0000000000000000 R11: 0000000000000202 R12: 00007f54fc056000
+[   53.192776] R13: 0000000000000003 R14: 0000000000000000 R15: 0000000000040000
+[   53.193345]  </TASK>
+[   53.193572] Modules linked in:
+[   53.194157] CR2: 0000000000000000
+[   53.195723] ---[ end trace 0000000000000000 ]---
+[   53.196335] RIP: 0010:strlen+0x4/0x30
+[   53.196556] Code: f7 75 ec 31 c0 c3 cc cc cc cc 48 89 f8 c3 cc cc cc cc 0f 1f 40 00 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 f3 0f 1e fa <80> 3f 00 74 18 48 89 f8 0f 1f 40 00 48 83 c0 01 80 38 00 75 f7 48
+[   53.197634] RSP: 0018:ffffb279018ffe10 EFLAGS: 00010246
+[   53.198037] RAX: ffffffffba33cde0 RBX: 0000000000000000 RCX: 0000000000000002
+[   53.198388] RDX: 0000000000000003 RSI: 0000000000000000 RDI: 0000000000000000
+[   53.198793] RBP: 0000000000000001 R08: ffffffffb9061ec0 R09: 0000000000000000
+[   53.199193] R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000040000
+[   53.199544] R13: ffffb279018ffee8 R14: ffff8dcec5c30540 R15: 0000000000000000
+[   53.199959] FS:  00007f54fc097740(0000) GS:ffff8dcf4145f000(0000) knlGS:0000000000000000
+[   53.200322] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[   53.200615] CR2: 0000000000000000 CR3: 000000000838d000 CR4: 00000000000006f0
+Killed                     cat src_node
 
