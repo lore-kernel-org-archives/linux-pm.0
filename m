@@ -1,59 +1,119 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12347310762;
-	Sat, 10 Jan 2026 11:58:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2515021CC64
+	for <linux-pm@vger.kernel.org>; Sat, 10 Jan 2026 14:49:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768046338; cv=none; b=mbzpXGzrvJuo+qED4Iotji8x8/l8YzEUDQd8awxTKJCJuVuh4UA79WNAh5/o8c697DIU0cztI9Scb1+U4RYSKnZ46pZ/V+VaoBbSr/M+h8YxX8q9bU7voBctr78iwNIusuTgFsEp2uSOJkvKzCJI5dVo8sJA0R/RSSagpaOMz+o=
+	t=1768056544; cv=none; b=thMFtaU4oKPp+SuB7hB47fN2JBVRHSGPNgEKTBHKDC+YAZb92XtcWL6quWaWhygpiBhh0U0faUYh3LYALE9TicGJiBnTJSdflqGDG9qul6ABAtjiTDEJmAdoTIE41Vj2sHUIeiJgA83P9mILsLY9g/3iwKKszaxv8OxztlRV7NE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768046338; c=relaxed/simple;
-	bh=z1w783pNPPoJLWQpEOnJl2rdpBeHzskVS43NSpi1Ogo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Oc2bhKrN4vuCBNiA4PJ9VYZ3rEXcTicPbMGX3ty/IpQLRuA/cJEr4pwU1Yq7VKEOOZObpcqdjI56eA9w39FC7+H5fqDaVdnciUBFH3Y1b5iLPEf5evSpmUn/FLS/CrjUb1ZypfO2rxTZZCSLnFfx3up66HRPaXKttu7R5xnioX0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mqyZBevG; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1768056544; c=relaxed/simple;
+	bh=8cZF88ZHHeswEWIoZ1XSpuokeFUHz2t/rDtmfT1Fb54=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=b0vIoduMBxi2HHSaNClPC6XJwrp7DtPSHmQBXX6rj6hSmW79Iz/j3EmEuOWM7ozJsYlRl2Enqjgs2QYOKFsVwPUHOhHLJM6AHKUJj0XS1gUppCVGWUTmQPMWnzhUgbqh/wtqjvAsYNQjE7oFlSLo5YjOws00cjoq3VxpJhdTmPE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=tuxon.dev; spf=pass smtp.mailfrom=tuxon.dev; dkim=pass (2048-bit key) header.d=tuxon.dev header.i=@tuxon.dev header.b=EecNqfHS; arc=none smtp.client-ip=209.85.221.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=tuxon.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=tuxon.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mqyZBevG"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 77980C4CEF7;
-	Sat, 10 Jan 2026 11:58:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768046337;
-	bh=z1w783pNPPoJLWQpEOnJl2rdpBeHzskVS43NSpi1Ogo=;
-	h=From:To:Cc:Subject:Date:From;
-	b=mqyZBevGXj2/I9MSQ5W0H4xgGoVCXBoyMe6GB5vxBs7nXfMiPPZkPA7rzJHgTufMJ
-	 8ftjUeMzWmSuMnKVYUA5Z4RzDxOlXoxl/OW7x/73PA+doE9svzIin501XyRkOlC6aW
-	 Clwoc5mElfdlePQ0mvaJz5q5Hk1wP4lzDLW5E23Q/yqoUoFfntGXFi6gf3C1cAwrMq
-	 5sns1mKkYqHhT9w0Eg7ZKI61lwSbDy9LUKaC4rCIfdNOq0kX3B1FgsRwakBvEMr9ex
-	 pmfvvL0CLqNDHiDw5ISnXaAIVFmZV9BbokKMH+m5uL3yooY3N6UOYYTbCH4MRA2GF4
-	 egJ465NnldicQ==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
- Todd Brandt <todd.e.brandt@linux.intel.com>,
- Xi Pardee <xi.pardee@linux.intel.com>
-Subject:
- [PATCH v1 0/2] ACPI: PM: Refine acpi_dev_pm_attach() and stop special-casing
- buttons
-Date: Sat, 10 Jan 2026 12:55:53 +0100
-Message-ID: <4715380.LvFx2qVVIh@rafael.j.wysocki>
-Organization: Linux Kernel Development
+	dkim=pass (2048-bit key) header.d=tuxon.dev header.i=@tuxon.dev header.b="EecNqfHS"
+Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-42fb2314f52so2657562f8f.0
+        for <linux-pm@vger.kernel.org>; Sat, 10 Jan 2026 06:49:01 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=tuxon.dev; s=google; t=1768056540; x=1768661340; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=IHk6EgoNk8lP2vqJMYUzvRzyl3K2JzNhjFEm/rJg//s=;
+        b=EecNqfHSZs06v18jqARlP9k1rRdjxC5rUdz/jxGgFVrZljBbTmYS9L0TQobkdqccxN
+         TTe2xjZtAdjKQ57catv9RuhOA2LeI5qXpQYtyGFLy1B8mUnqC+1Wfrc4bF+zjsQjK4en
+         V9sGY/5D9wzFWxSLIrSHmL6MnugPw62J02oboA4OVLBToaF0g1oEbYvWvK9PBC0QAqxm
+         X7DfQ1R3AeNHbmI6nAlJTc569VGTwaIOA4MTx25J+sVjBzQW9DAOpbZyVU3yMYPSVaOR
+         vn/4Gg+tvob/2yq4G0xQEIgD6SjeC4Fn4rnONlaSH7sfgZxhEnI/kLpOQMR0nl82B0Wt
+         AJHQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1768056540; x=1768661340;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=IHk6EgoNk8lP2vqJMYUzvRzyl3K2JzNhjFEm/rJg//s=;
+        b=OZIs6iN+jWiTJ2G3UmVxckRg3dfO9x2c42E5gSpr/9FiWYusSv6kdfnbC03kqkbEYf
+         9TITmnLiU/BDjiGP75hz6DPwrYP7PDkywn0jsHpvRwQF6m3R2ktnGANkieXorLgETYqq
+         rQOyTd0mBGIZNAdRBiBrAMXUJIeNjSm5jE0ELxPqWKXjT0bZqhnDpyhc+eUGUi8feyCQ
+         sVfhShsE8AImY/1O9bnVZi73V1/5wTnJEe7R5WZXkS55LSotro8aTvLOg4r8mVFvtj7r
+         70RRagevMekG+2fpYUisuXR0qun4sQ3M9XVugS7qXCYioLZdgHiiMvmXhzDB68EVN5HW
+         dvdA==
+X-Forwarded-Encrypted: i=1; AJvYcCW6JvCeY+vlUKO/+eOBd3bvumlVoNaor0AYeKz2EIm+VLGXczlNBFa7xG4paymmmXQYt0j6ecxcRw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxhV9pQKrosL6eieG3lmMfKn3BCVhSBoA/TvRlTdYkP77euucVk
+	zK9K2UW4dAG9hfzPtSdM1ntwNKFHcylcj3COGxuh3IUuAlvX5ET39R3Q8VMbpsqVm9A=
+X-Gm-Gg: AY/fxX5pMUu1xtUi6Z8hgeLk9CtLsouiqTMmM+VwoGOfXyJk4gddprcnVsX6pr1bTc0
+	rnrgnrvkiYKpw0sDzRf5UuDukdDY+KpaP6vDH2rgeznFBUHFKPa933lur+dYsQR8MErr9XZNqOQ
+	jw1zqSgnsJcAli+45H3oK+w2htoTSTvev3gzfcSdUammIPEvElflYzFtIEhCs/HX4sKd/f88LaG
+	c42gXR5b2t3S0+1QRytcaRANR3SB9S8La/UL/IeqyJ4n/aKlcA/B9JLCFONER4eHoicxBR4yMJ4
+	axBB2JGuJyNrbyx0/8CZXYlzSbCx2ppFUDDqodzLrFSFFlpmWFEc89E2XnymSlVAg5znRikmkZk
+	8Y9hW+pSm1r+DgJ/mGOYwwNr3rKSdVkBDrK5J2WiALzY52wRuOP2f9kn6vJikT8fdnJhukjOZcS
+	tHdPWFiz/w5RPEMvzttfTXoLNfqQZ/
+X-Google-Smtp-Source: AGHT+IExDiyl6+cMqnLU0OScR46v/DhXxaFlI7KfbIz5c0gjBYd8wiO/Eo5iH1Cn00OMlkpwekH3Hg==
+X-Received: by 2002:adf:f54f:0:b0:432:e00b:866f with SMTP id ffacd0b85a97d-432e00b8b14mr2891143f8f.60.1768056540373;
+        Sat, 10 Jan 2026 06:49:00 -0800 (PST)
+Received: from [192.168.50.4] ([82.78.167.31])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-432bd0dacd1sm27764794f8f.4.2026.01.10.06.48.56
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 10 Jan 2026 06:48:59 -0800 (PST)
+Message-ID: <b0dec3fb-51df-4bcd-ba13-c2049695266e@tuxon.dev>
+Date: Sat, 10 Jan 2026 16:48:55 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 02/11] ARM: at91: Simplify with scoped for each OF child
+ loop
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
+ Miguel Ojeda <ojeda@kernel.org>, Rob Herring <robh@kernel.org>,
+ Saravana Kannan <saravanak@google.com>, Nathan Chancellor
+ <nathan@kernel.org>, Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
+ Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Nicolas Ferre <nicolas.ferre@microchip.com>,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>,
+ Krzysztof Kozlowski <krzk@kernel.org>, Alim Akhtar
+ <alim.akhtar@samsung.com>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Nipun Gupta <nipun.gupta@amd.com>, Nikhil Agarwal <nikhil.agarwal@amd.com>,
+ Abel Vesa <abelvesa@kernel.org>, Peng Fan <peng.fan@nxp.com>,
+ Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
+ <sboyd@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Fabio Estevam <festevam@gmail.com>, Vinod Koul <vkoul@kernel.org>,
+ Sylwester Nawrocki <s.nawrocki@samsung.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+ llvm@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+ linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-clk@vger.kernel.org, imx@lists.linux.dev, dmaengine@vger.kernel.org,
+ linux-media@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20260105-of-for-each-compatible-scoped-v1-0-24e99c177164@oss.qualcomm.com>
+ <20260105-of-for-each-compatible-scoped-v1-2-24e99c177164@oss.qualcomm.com>
+Content-Language: en-US
+From: Claudiu Beznea <claudiu.beznea@tuxon.dev>
+In-Reply-To: <20260105-of-for-each-compatible-scoped-v1-2-24e99c177164@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hi All,
-
-The first patch causes acpi_dev_pm_attach() to skip devices whose ACPI
-companions cannot do ACPI PM or wakeup and the second one (which is
-a fix) causes device ACPI PM enumeration to stop treating buttons in
-a special way (which is not necessary and becomes harmful after the
-conversion of the button driver to a platform one).
-
-Thanks!
 
 
+On 1/5/26 15:33, Krzysztof Kozlowski wrote:
+> Use scoped for-each loop when iterating over device nodes to make code a
+> bit simpler.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> 
 
+Reviewed-by: Claudiu Beznea <claudiu.beznea@tuxon.dev>
