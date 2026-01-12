@@ -1,31 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 102D31A724C;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1034523AB81;
 	Mon, 12 Jan 2026 01:56:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768182977; cv=none; b=DjrdplQ2WyDMsv8HlK2Tll8XqOXJ/ztjgt4oJTqqHWfH/jWzLYXntYH82ryBk0cMr5cJlhEQ+uA0icmPDnaucsMIuwffVCK6D++pkZwl74l6t4o00LFtciAL3bDG4TMVUMN+eIbhDuUAk81iJEmUGc7a4z5ScZ5DSuc44vOGefE=
+	t=1768182979; cv=none; b=qtefLlLzYNBDeUUvYq7prTJwQ4Q1TYC/Uc1VjtnlypwfhSzEcpdjFidpHN5COfjdoSfmuY0qvUmX0JnR2IAG2lpHtVGJ/UTipTZ5D47VIPSWtX1UkNXpda+X0u5VB9evPRFHZtfKjJOonP+PlPTw5hffaMMzG5sZa1kGYi0kC2s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768182977; c=relaxed/simple;
-	bh=9clN++4Z4iquPbDAcNzpXt4fUsMtmuB7a52J4o4Rzic=;
+	s=arc-20240116; t=1768182979; c=relaxed/simple;
+	bh=DyZDhq6OpGf+3A6QGeEtyg/y1/o34+5hDXKEkLVnoVU=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=GRF9TdNJAe07ZJj7tt226CJM0KDYzr1wD64uWeaEDdLFvjyRl0TtOV0S1sbVE0tCQ+8Kd2nPJQ+j1GBTDERt0jhKMAiYxwXHNTI/ZQX8fitfzyGZHuJiWAF9/9q7fd0f5wxiPRrhOJL4aeUFmiiKrkzjG4hyMdjvtJ75YUcmMlk=
+	 MIME-Version:Content-Type; b=QfGJqceMg4C5B11qaS/l/2yvxj1iYtkLPhxEass9gjvsuBILwofNRwOplDabOaRGkyFqkHUBHVvGdEpWJ4/st7fOe82OGKSrglfaaYIvcUIgMG9/ENlS1GSBEbLfRU7ay7RQV1x4lYKfERg8+AJHNFrAQOyMrKdZSywQHMQ2Ays=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 92E4BC2BCB2;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8C112C2BCAF;
 	Mon, 12 Jan 2026 01:56:08 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 2C11B180749; Mon, 12 Jan 2026 02:56:04 +0100 (CET)
+	id 27B96180730; Mon, 12 Jan 2026 02:56:04 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, 
- Anton Vorontsov <avorontsov@ru.mvista.com>, 
- Marek Vasut <marek.vasut@gmail.com>, Waqar Hameed <waqar.hameed@axis.com>
-Cc: kernel@axis.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <cover.1766270196.git.waqar.hameed@axis.com>
-References: <cover.1766270196.git.waqar.hameed@axis.com>
-Subject: Re: (subset) [PATCH 0/3] power: supply: wm97xx: Fix NULL pointer
- dereference in power_supply_changed()
-Message-Id: <176818296417.643060.10579242574378526613.b4-ty@collabora.com>
+To: Andreas Kemnade <andreas@kemnade.info>, 
+ Matti Vaittinen <mazziesaccount@gmail.com>, 
+ Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, 
+ Lukas Bulwahn <lbulwahn@redhat.com>
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Lukas Bulwahn <lukas.bulwahn@redhat.com>
+In-Reply-To: <20251107123621.425633-1-lukas.bulwahn@redhat.com>
+References: <20251107123621.425633-1-lukas.bulwahn@redhat.com>
+Subject: Re: [PATCH] MAINTAINERS: adjust file entry in ROHM BD71828 CHARGER
+Message-Id: <176818296415.643060.6329583569295254029.b4-ty@collabora.com>
 Date: Mon, 12 Jan 2026 02:56:04 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -38,21 +39,21 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.3
 
 
-On Sat, 20 Dec 2025 23:46:24 +0100, Waqar Hameed wrote:
-> The majority of the drivers in `drivers/power/supply/` do the right
-> thing when registering an interrupt handler and the `power_supply`
-> handle; namely making sure that the interrupt handler only runs while
-> the `power_supply` handle is valid. This driver requests the IRQ a
-> little too soon, and this can lead to a nasty NULL pointer dereference
-> as thoroughly explained in the commit message. This patch series also
-> contains some other related clean-ups that makes life a little easier.
+On Fri, 07 Nov 2025 13:36:21 +0100, Lukas Bulwahn wrote:
+> Commit 5bff79dad20a ("power: supply: Add bd718(15/28/78) charger driver")
+> adds the file bd71828-power.c in drivers/power/supply/, whereas commit
+> b838cecc2291 ("MAINTAINERS: Add entry for BD71828 charger") from the same
+> patch series, adds a section referring to the non-existing file
+> bd71828-charger.c in the directory above.
+> 
+> Adjust the file entry to refer to the intended existing file.
 > 
 > [...]
 
 Applied, thanks!
 
-[1/3] power: supply: wm97xx: Fix NULL pointer dereference in power_supply_changed()
-      commit: 39fe0eac6d755ef215026518985fcf8de9360e9e
+[1/1] MAINTAINERS: adjust file entry in ROHM BD71828 CHARGER
+      commit: 04aa3d6dddaf39ecc9735d0b62f46899db71d35e
 
 Best regards,
 -- 
