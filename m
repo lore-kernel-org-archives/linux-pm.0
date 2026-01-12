@@ -1,213 +1,186 @@
-Received: from mail-dl1-f49.google.com (mail-dl1-f49.google.com [74.125.82.49])
+Received: from mail-qk1-f175.google.com (mail-qk1-f175.google.com [209.85.222.175])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64B1832471B
-	for <linux-pm@vger.kernel.org>; Mon, 12 Jan 2026 19:37:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 09E7631326C
+	for <linux-pm@vger.kernel.org>; Mon, 12 Jan 2026 20:29:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.175
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768246666; cv=none; b=Zt0b4OMQEucrCQInFcvRMUkY9zCy+rGNOWDkcbb7CqGBxG4dJIzQteiVxDI6MUsFhv2Chw+sSwhz6VnMxbNanTHiUMBzi8FRLZZIcotoMx7QschoyQCIRxwyUzWJMHvMq2blrgs85rtRXNH8Xv6q5r+dlJpgsSKW0Dq3wSRrQ4w=
+	t=1768249788; cv=none; b=SPlT91hMXudNm/9fQY3Be7UZpKG4Hoc9cABj1gpJtjssYsQAbBWLQcR4NHx65vEtUfhNDtK7o/KKy6zpYavjp/idXNsbspWH/VH2efe0aKbDG2nvq8wJn29fB4artd2IB4IaLqjKjzj/KFVtcngHc+up0EBHH4ayEcMLHC+zuCM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768246666; c=relaxed/simple;
-	bh=kCNuLKa3OcBY6DWrPNqUq+zuzLUQGDhG7wkIuXt18dM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=U1DOqUnf7rXKiy4vO2kBrHY1JVZyc6oG7L+p627Q6Tg1cFtUFKJaXa/vQGfHlznxe2rHLegJdgneyzjlpv4LEjIyV4V1vis+OwZshaGU4CKEgCOawgxCMqSVj8RQYM2Izd46Be1RkkFLzg18zZgB/8tm7NBm5UtuylxijmqEzfU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=30Hqqb/Q; arc=none smtp.client-ip=74.125.82.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+	s=arc-20240116; t=1768249788; c=relaxed/simple;
+	bh=x1koErt0KZrKg7lQQJMxHMUYCfWzQV0KokubZfs0FJs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Jr0DGmgGmjNQZH06cjINChiRiCHIGB9oiGIE9LuZ+MRly2P7oHdd3y6cMQG048oIP+mtafuctmx2YDMgLmgoWVMgUL6fOy5ZTdehLoJDMkVitQmTJKrgP3HhmkzZ/4LZYEJCvAzSao0skjvS2VbjechMkbjsVOkMjW2lXfY26OU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ipDp7YMX; arc=none smtp.client-ip=209.85.222.175
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="30Hqqb/Q"
-Received: by mail-dl1-f49.google.com with SMTP id a92af1059eb24-11f42e971d6so1769091c88.0
-        for <linux-pm@vger.kernel.org>; Mon, 12 Jan 2026 11:37:44 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ipDp7YMX"
+Received: by mail-qk1-f175.google.com with SMTP id af79cd13be357-8b1bfd4b3deso607912685a.2
+        for <linux-pm@vger.kernel.org>; Mon, 12 Jan 2026 12:29:46 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1768246663; x=1768851463; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=MMKzD4neKMQA/a71hLZaF9K+onAvp6LuTb7/ocIRVF8=;
-        b=30Hqqb/Qg2M/DClti7RHUsO+bjKz5um6j/PP38je7T6hzY+F81eKQdpUUe90FNkYZ9
-         K6NxlxJuym74IBjIuqdT6q5bBk55d042HV7DOfmdi5BxtX8UhsYUagRCVGpdbF+4e/xo
-         wsRwEjty5yIG/FyYbaqul+TVca/ukDii1i7ExgICs9o7I6RribQekPjhJyNx5eZcUSbo
-         cRdBcXSZfQQ+KTyiFN9ACq6VmBunxro3WsuH6vasiw1tC3pBfIhGyPk+qOFaME5eMMvw
-         6Bnwfy8uIqF9++ZkPerBWdrBrLXYBfy0Vc8SPfS8TWv7FYXmbhqFD2bMx4cECL2icqg+
-         XlQA==
+        d=gmail.com; s=20230601; t=1768249786; x=1768854586; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=MnJl4mjA928H7c6+CxPcUynMWnjGzO8z//ft5AvFLSQ=;
+        b=ipDp7YMX/3ui+xeDZF4+aMZPSOoCZR+PBY97xeKC9a9fEbKI5TL5XncaTzz+x7mbPp
+         jnmXrz2eRCuIXPB4+j6cRTAKe+S9i6cyrOGeip77vvXyqUubkJZddRn/gGpDvTKUpu/j
+         qV8PR6j1gztvZn1TlTADKWWxMHiefqv0kPjywJiJRFVdQ6IORbLWiX8SepfB26Ffg9s1
+         5yYQobbIVFBQXaJ1oE2KJL1Xz1LY5XuSotq4Wf/I3OAOe0M6wfFiUEm29k+ztKo24Q5X
+         Mhq/OCQiE7HWuxPcIoWzghmCC7MpLgZZExJmmkOMcWWqe0MkxpsF8Cg2+UiZQCERmiIa
+         Undg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768246663; x=1768851463;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=MMKzD4neKMQA/a71hLZaF9K+onAvp6LuTb7/ocIRVF8=;
-        b=qd3f6eE7J5JCqTcBzkHkJLgloy89WAqEILeAGUr5SDGKJz1vEJCXeiAp7GvxnKrxCJ
-         8AXhvX0FMejEYZTw0GRamxfbWeA5acO9wTQABrFBm6olWsWml7CnKZphBTulI1w5Wacn
-         9UB6d4nVVYQ1DV48Z1vZP6ZsBKVOPgHnRDoiNslRatSPEW+FOJIlzWoMdICGSUjeFCVw
-         YrbUZ0kLgI6HhqnhyEEPH25WkhiO/5NcDcWJSasaBw37gZ4h/rIsyZ+MRwqANFQRehcd
-         uxS2DT0d4uOOIkrZwTnBF0u/XroxrRNHfbh9TcP8Ov7qBUVWG1zJtP08Kfq/G0HAKIRW
-         hszw==
-X-Forwarded-Encrypted: i=1; AJvYcCUlB45s6kzSJ1uXgEEDXfMNPwWunpjASkx/6podl0ZAQtlK/aFGzovNdhmUOp4GvW8tL/aeBU2pAQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxT2+qTp+OXwYFyknqpZTpq3xkpruRZ2/JjYfEqlGGIObciqMDQ
-	TzgGJD0ixGv2GHBwmeNL0TjfBXbhCNUZhjLnJSjtdtAcwlileJI/8+TYE7BT/yakSQ==
-X-Gm-Gg: AY/fxX6bmmwTQhAdHWobRnlUxgDqKdicnnIjEAT1OzItlXK9flMOgjg0CxMksWd4eKt
-	aB1YhnT4P/SxeK4OqJo0rwdZj96pqX5Ry9CZyqTHFY74/qi/N8pqkPS7exMNYZPjobNrI1k02+9
-	P6YXYW/Koi5Ik1ib5A18KcMJDIcBTGpSSyoq47lADCMUwWtGYsITLBeoI4fRHDRSvPcUFhdAPaT
-	rc5OlFyeaxhUrF5lzfcrwCzJLvJKN3KhIQk5jpK1eNi6qe3sBxIC2RIJkT1XXBWDBn/1IAt/n+Q
-	wAvdUjCUMXxvnBCmF0pfAs3SJ1n7EPYg4pW9Dv7Dt905PQxgC0pQKaabrP5cZyYO2FGbxJOVrAc
-	Yh1Bal8CzPhi1Nj/Jppj0lDUdRCibHIK2UC/xzxCxcg/S3sL0FOoa6AA2veqKKHPqt1pPO4sRmr
-	yLZP1uX0Js9ZBngsopYbPuPXB+r+kDLJv+X08UJJY6tWi4GcLYmVs9rYuzzIMhJwWNBADT1yk9U
-	5DDZg5XYePakg==
-X-Google-Smtp-Source: AGHT+IEmezECFIaAtAhii/tXhYAvteHOsxJwusDFq7+Qy4kltOc3o9BThd5irNt42thvcdsfukrSaA==
-X-Received: by 2002:a05:7301:29a5:b0:2b0:3d03:37db with SMTP id 5a478bee46e88-2b17d2e2b29mr11583342eec.35.1768246663076;
-        Mon, 12 Jan 2026 11:37:43 -0800 (PST)
-Received: from ?IPV6:2a00:79e0:2e7c:8:8e84:2c31:d2b4:9c1f? ([2a00:79e0:2e7c:8:8e84:2c31:d2b4:9c1f])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2b17078d818sm15886663eec.21.2026.01.12.11.37.41
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 12 Jan 2026 11:37:42 -0800 (PST)
-Message-ID: <bb9b9afa-0bfa-428e-9372-549d9ba8603c@google.com>
-Date: Mon, 12 Jan 2026 11:37:40 -0800
+        d=1e100.net; s=20230601; t=1768249786; x=1768854586;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=MnJl4mjA928H7c6+CxPcUynMWnjGzO8z//ft5AvFLSQ=;
+        b=J1B8uhD00p3oIr+7lUj9g5BlPd8jv76VQnxcMpAK8uDS8TAIKIaO5EmNE/R7pnZyUu
+         sB0UBm1HCjWDj8mhtRdPbCh+wj8+/FlpbFLl/q+iLWQ5h258JEVHh1gLh4se2w5k8Bmv
+         RZb+4uHQoSuSx8LMGJGCA5WuDV6zM1nnEp7LtBP/nh4QsV1/2q0JJEpSn/q8sezfX/3G
+         0sUdG1HWiyJr+o+pxGP4pgtZHRGcVRGWdnXoZO0pgBLZjfoOlks484l89IErj91o8L1N
+         XPGEugcSZIBxpvUs+teKXZaaKYl9AmHrDjiUcxSDNwJpKr3vJ3b1YhhY4lgcs/Lxz76F
+         vIug==
+X-Forwarded-Encrypted: i=1; AJvYcCUOKOFvx40sUlrHByfM5uZdrqXEIhukbP8O7jQgXhR/l7PAGtsAiDrnaajr/D7TbV0nsQy15LQ9yg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwdgCtRE/X7Cy4T1HnpTCuOIEflkUMoLelttL1qA/3KDjElq/rP
+	sV/OjcWIMYhisj4LlQD8OTwaqFJkugBRSycom5bq83KmJhdt3JLeDJMdDs+2WA==
+X-Gm-Gg: AY/fxX7sMK47NT5OMjtIODWedui2nHYFuL2b4W5D+HE2H71NP9Lbn1PFZ2HNxCeHJVT
+	yK00MaSer4BcumMDqFxk1F1sgXMRmkMGkHkW+WR7cFR3Dmb4nQbEgyOtMlRQec0CDzo19JzwrpD
+	hB+PXjfKcdp+eP3mXjOp5MLNpzteJz4EH4Ci+mf/TH8mOEaYjaSXIc+YGjsQkyoVeikLKBQk2t4
+	HMaWFJl8YfokZ7Rthi1edYRFbVlTXRTSsKXSQKxX7T3/HG4bfa/LSZl/LhCVOwfd3B2gSF3qlSO
+	glBLKqLe4nCQBgNmQuxiXOGA5rYhbmUvA2MD0KNK7Okgf8P19cOjCc1jvcgysJ7tTtOEsHl/p74
+	DL1kBfa48UVU9jnYqDaZYdx3U25/N0Msj820MFjrNFR7oi0KRg/9k4HHOhb+ihbEvdgsb5TTIRU
+	EcCCs9XuZniqax6GBL+DaUvWjPZrN608CzJYOCre5G701pBy4bkG2LNvtipYtVmTwLUtL1WDFQ+
+	sbm0X4e/GaoTjXICSAyMA==
+X-Google-Smtp-Source: AGHT+IFEOJtKiZOekw3QKky7cg+SUdsdDlCfIy6gQ1Y92OIF6fv5PXYBPdHBg9wlGXMZd4H/lsyNmg==
+X-Received: by 2002:a05:6a20:3952:b0:366:584c:62fa with SMTP id adf61e73a8af0-3898f9053f9mr18835078637.21.1768243935601;
+        Mon, 12 Jan 2026 10:52:15 -0800 (PST)
+Received: from visitorckw-work01.c.googlers.com.com (25.118.81.34.bc.googleusercontent.com. [34.81.118.25])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c4cca06b16fsm18874197a12.31.2026.01.12.10.52.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 12 Jan 2026 10:52:15 -0800 (PST)
+From: Kuan-Wei Chiu <visitorckw@gmail.com>
+To: airlied@gmail.com,
+	simona@ffwll.ch,
+	maarten.lankhorst@linux.intel.com,
+	mripard@kernel.org,
+	tzimmermann@suse.de,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	dmitry.torokhov@gmail.com,
+	sre@kernel.org,
+	gregkh@linuxfoundation.org,
+	jirislaby@kernel.org,
+	lgirdwood@gmail.com,
+	broonie@kernel.org
+Cc: jserv@ccns.ncku.edu.tw,
+	eleanor15x@gmail.com,
+	dri-devel@lists.freedesktop.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-input@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-serial@vger.kernel.org,
+	linux-sound@vger.kernel.org,
+	Kuan-Wei Chiu <visitorckw@gmail.com>
+Subject: [PATCH v3 6/6] dt-bindings: display: google,goldfish-fb: Convert to DT schema
+Date: Mon, 12 Jan 2026 18:50:44 +0000
+Message-ID: <20260112185044.1865605-7-visitorckw@gmail.com>
+X-Mailer: git-send-email 2.52.0.457.g6b5491de43-goog
+In-Reply-To: <20260112185044.1865605-1-visitorckw@gmail.com>
+References: <20260112185044.1865605-1-visitorckw@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 4/5] power: supply: max77759: add charger driver
-To: =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>,
- Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Badhri Jagan Sridharan <badhri@google.com>,
- Heikki Krogerus <heikki.krogerus@linux.intel.com>,
- Peter Griffin <peter.griffin@linaro.org>,
- Tudor Ambarus <tudor.ambarus@linaro.org>,
- Alim Akhtar <alim.akhtar@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org,
- RD Babiera <rdbabiera@google.com>, Kyle Tso <kyletso@google.com>
-References: <20251227-max77759-charger-v3-0-54e664f5ca92@google.com>
- <20251227-max77759-charger-v3-4-54e664f5ca92@google.com>
- <298ca35590d2180fdcf334f94964b6110e17c606.camel@linaro.org>
- <50c29a62-1fdb-4de2-8887-0d551eee5ec0@google.com>
- <255d7726-6758-43ed-b35f-db14726bcc9b@google.com>
- <2869d309358f27652289c40810ca36b2ec155d1d.camel@linaro.org>
-Content-Language: en-US
-From: Amit Sunil Dhamne <amitsd@google.com>
-In-Reply-To: <2869d309358f27652289c40810ca36b2ec155d1d.camel@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-Hi Andre',
+Convert the Android Goldfish Framebuffer binding to DT schema format.
+Update the example node name to 'display' to comply with generic node
+naming standards.
 
-On 1/12/26 5:47 AM, André Draszik wrote:
-> Hi Amit,
->
-> On Tue, 2026-01-06 at 17:14 -0800, Amit Sunil Dhamne wrote:
->> On 1/6/26 3:41 PM, Amit Sunil Dhamne wrote:
->>> Hi Andre',
->>>
->>> On 1/5/26 9:32 AM, André Draszik wrote:
->>>> Hi Amit,
->>>>
->>>> I haven't done a full review, but a few things caught my eye.
->>>>
->>>> On Sat, 2025-12-27 at 00:04 +0000, Amit Sunil Dhamne via B4 Relay wrote:
->>>>> diff --git a/drivers/power/supply/Makefile
->>>>> b/drivers/power/supply/Makefile
->>>>> index 4b79d5abc49a..6af905875ad5 100644
->>>>> --- a/drivers/power/supply/Makefile
->>>>> +++ b/drivers/power/supply/Makefile
->>>>> [...]
->>>>> +
->>>>> +static irqreturn_t irq_handler(int irq, void *data)
->>>>> +{
->>>>> +    struct max77759_charger *chg = data;
->>>>> +    struct device *dev = chg->dev;
->>>>> +    u32 chgint_ok;
->>>>> +    int i;
->>>>> +
->>>>> +    regmap_read(chg->regmap, MAX77759_CHGR_REG_CHG_INT_OK,
->>>>> &chgint_ok);
->>>> You might want to check the return value and return IRQ_NONE if it
->>>> didn't
->>>> work?
->>>>
->>>>> +
->>>>> +    for (i = 0; i < ARRAY_SIZE(irqs); i++) {
->>>>> +        if (irqs[i] == irq)
->>>>> +            break;
->>>>> +    }
->>>>> +
->>>>> +    switch (i) {
->>>>> +    case AICL:
->>>>> +        dev_dbg(dev, "AICL mode: %s",
->>>>> +            str_no_yes(chgint_ok & MAX77759_CHGR_REG_CHG_INT_AICL));
->>>>> +        break;
->>>>> +    case CHGIN:
->>>>> +        dev_dbg(dev, "CHGIN input valid: %s",
->>>>> +            str_yes_no(chgint_ok & MAX77759_CHGR_REG_CHG_INT_CHGIN));
->>>>> +        break;
->>>>> +    case CHG:
->>>>> +        dev_dbg(dev, "CHG status okay/off: %s",
->>>>> +            str_yes_no(chgint_ok & MAX77759_CHGR_REG_CHG_INT_CHG));
->>>>> +        break;
->>>>> +    case INLIM:
->>>>> +        dev_dbg(dev, "Current Limit reached: %s",
->>>>> +            str_no_yes(chgint_ok & MAX77759_CHGR_REG_CHG_INT_INLIM));
->>>>> +        break;
->>>>> +    case BAT_OILO:
->>>>> +        dev_dbg(dev, "Battery over-current threshold crossed");
->>>>> +        break;
->>>>> +    case CHG_STA_CC:
->>>>> +        dev_dbg(dev, "Charger reached CC stage");
->>>>> +        break;
->>>>> +    case CHG_STA_CV:
->>>>> +        dev_dbg(dev, "Charger reached CV stage");
->>>>> +        break;
->>>>> +    case CHG_STA_TO:
->>>>> +        dev_dbg(dev, "Charger reached TO stage");
->>>>> +        break;
->>>>> +    case CHG_STA_DONE:
->>>>> +        dev_dbg(dev, "Charger reached TO stage");
->>>>> +        break;
->>>> Are the above debug messages really all needed?
->> I forgot to respond to this comment in my previous email.
->>
->> I think we can keep AICL, BAT_OILO, INLIM. They're either special
->> conditions (AICL) or faulty conditions (like BAT_OILO) and we can in
->> fact keep them at dev_info level. Rest can be removed and a
->> power_supply_changed() is sufficient.
->>
->> Let me know what you think?
-> I don't think dev_info() in an interrupt handler is appropriate. At
-> least it should be ratelimited.
->
-> If it's something special / unexpected that needs attention, having
-> a dev_dbg() message only will usually not be visible to anybody.
+Signed-off-by: Kuan-Wei Chiu <visitorckw@gmail.com>
+---
+Changes in v3:
+- Use decimal format for interrupts in the example.
 
-I agree. I can change the prints to dev_info_ratelimited for the stuff 
-we care about.
+ .../bindings/display/google,goldfish-fb.txt   | 17 ---------
+ .../bindings/display/google,goldfish-fb.yaml  | 38 +++++++++++++++++++
+ 2 files changed, 38 insertions(+), 17 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/display/google,goldfish-fb.txt
+ create mode 100644 Documentation/devicetree/bindings/display/google,goldfish-fb.yaml
 
+diff --git a/Documentation/devicetree/bindings/display/google,goldfish-fb.txt b/Documentation/devicetree/bindings/display/google,goldfish-fb.txt
+deleted file mode 100644
+index 751fa9f51e5d..000000000000
+--- a/Documentation/devicetree/bindings/display/google,goldfish-fb.txt
++++ /dev/null
+@@ -1,17 +0,0 @@
+-Android Goldfish framebuffer
+-
+-Android Goldfish framebuffer device used by Android emulator.
+-
+-Required properties:
+-
+-- compatible : should contain "google,goldfish-fb"
+-- reg        : <registers mapping>
+-- interrupts : <interrupt mapping>
+-
+-Example:
+-
+-	display-controller@1f008000 {
+-		compatible = "google,goldfish-fb";
+-		interrupts = <0x10>;
+-		reg = <0x1f008000 0x100>;
+-	};
+diff --git a/Documentation/devicetree/bindings/display/google,goldfish-fb.yaml b/Documentation/devicetree/bindings/display/google,goldfish-fb.yaml
+new file mode 100644
+index 000000000000..36ed77cbbcd7
+--- /dev/null
++++ b/Documentation/devicetree/bindings/display/google,goldfish-fb.yaml
+@@ -0,0 +1,38 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/display/google,goldfish-fb.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Android Goldfish Framebuffer
++
++maintainers:
++  - Kuan-Wei Chiu <visitorckw@gmail.com>
++
++description:
++  Android Goldfish framebuffer device used by Android emulator.
++
++properties:
++  compatible:
++    const: google,goldfish-fb
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - interrupts
++
++additionalProperties: false
++
++examples:
++  - |
++    display@1f008000 {
++        compatible = "google,goldfish-fb";
++        reg = <0x1f008000 0x100>;
++        interrupts = <16>;
++    };
+-- 
+2.52.0.457.g6b5491de43-goog
 
->
-> Also will the call to power_supply_changed() down below handle the
-> special conditions (e.g. convey to upper levels)? If not, can it be
-> made to do so?
-
-Yes it does, as I can see a call to kobject_uevent() inside 
-power_supply_changed_work(). Also, power_supply_changed() also notifies 
-other subsystems that have registered their notifiers downstream of this 
-power_supply object. So I believe we're good there.
-
-If all the above sounds good, I will proceed with sending the next 
-revision including the fixes  :).
-
-
-BR,
-
-Amit
-
->
-> Cheers,
-> Andre
->
