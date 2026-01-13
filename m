@@ -1,37 +1,38 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 699E82BE7D6;
-	Tue, 13 Jan 2026 11:00:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E50E238BF6B;
+	Tue, 13 Jan 2026 11:00:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768302018; cv=none; b=peooEVlsYPw149boJb6LT5BMbquF5X3JLHP/W4bO3ys+r1cXGcRUgUbwGNXx9kE60Jubl+MI6j178/5ikgVRgAHILDLYPfuRLUwLikj5ep9gA2nfZWaZpY2tzmVY0jK4GqKeiM9oYRhWkYJcCOmHxmzel9T9v6jg9tr8ANDid00=
+	t=1768302019; cv=none; b=DFkt4wQXdB2tA9l4A3a88sLz6ezM7hE53jiFT0pYZ7Le50UjMtLilyP6OfxTB5s1uyiJtJDn+l58LRBikwItWNtKFTPDGhvCv6IuQqx+2jyjomoVEJRv04E1DbDl+102V1rOgZBYOSSIcAP1ddKtvjYmMffAxKDFTtClUW5MjFE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768302018; c=relaxed/simple;
-	bh=zucZeLDjTuMkSGcuXiR7OU6C7Qz5H4JCwJizqZNqjEA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=rgfdEXFrrLWOpvcsi2J+zllgGWrA4oS9tPX6amUiVEQhm/zOPptaHe1ytmgTAeQQLO7LYKBOIckB5E6zG8EfhBxboUCz14/ofzsU6qU2S+Idy7lWUiIlxqbUxyA8JtLA/u1cB6Py4Cy4CCHINjJsfNyT4quHxA8yYQW6iy9vv9o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=O+sTOvcX; arc=none smtp.client-ip=148.251.105.195
+	s=arc-20240116; t=1768302019; c=relaxed/simple;
+	bh=LVyshAcuwWCeKMfeOL8j7IyTjIznQXuutAHRDxB/Ou4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=qoQhPgl77/vtIhe0Y4ZV9laFy1b8xV9vgarySJpWvyspQP62IGdP95DYLjoErvpvN5jJVWgq4qQneGV52oWHrSCPcwh4R3nEs8WW3rkaJ+VxQ4GT/9OrfgynGOXcLo9iPch3dxoegsWRayDlVnwtLFz3sqSQQ7552AueM3tqNHY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=YUQdwNOx; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="O+sTOvcX"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="YUQdwNOx"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1768302014;
-	bh=zucZeLDjTuMkSGcuXiR7OU6C7Qz5H4JCwJizqZNqjEA=;
-	h=From:To:Cc:Subject:Date:From;
-	b=O+sTOvcXNxPfmpbEaUCfSIkpcIboG/hK/pHBnTLDnMjrCRYwhOzXk9JFBLAKTS/2n
-	 od4OD8fnSwgWsSGuY8McAzh8OAVFMAdwSV/rx87RfWa+z776Jcf2ma+6+QvAKbvXrq
-	 8vqhSL42zsr7LyzrjvT2WzkNOIhH1YUzplvZyLZMC8f29r7KALtwSkryrIkg310d7C
-	 wEe/wc8sBlCwPkgh4KDjcoGBETY96EivwrVUuO1C3d9G672pU1FRbi9s5Z7pw4h/B0
-	 lSc7BNLFEiqeUQ0GcYIT1JoT1Ui7CcLhuItFJVlLJyt3fLHRB93vH8xJi2wkZoPVoN
-	 P5tbTz7gTHN5Q==
+	s=mail; t=1768302016;
+	bh=LVyshAcuwWCeKMfeOL8j7IyTjIznQXuutAHRDxB/Ou4=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=YUQdwNOxDrB7fGSZAFPqSz7/3kKjmmubd/H2u6MSRxhdjleYrF2tBhTpO5LBCWrTI
+	 PIDKMXOjk4FXZEeZXzw0HveonBCS7AFVDPJ4KFg2YgV7HDGYyZ8CGYJA1+opt5gzyB
+	 0IC7aM64p1GfH9lH3M2Q2/RgVIq/kvfEfiSkxYvIITLwC+4/ox9Qfzxn6dp0KsN+A3
+	 fAMNsTLaUF2dfiGYyUsRwx7/l1u/wMBBLD2Kjaj+XfpQ1fb3qhj9mR+wBL8KGUViDN
+	 7B0aVCMGGZmrTJ9nNPKj0YkfQqRrxKSJrLaC0PtFTCvY5hqG/MDdJGA24VGaUGVdiZ
+	 +i8PkTOLTPDvw==
 Received: from IcarusMOD.eternityproject.eu (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 0786317E1523;
-	Tue, 13 Jan 2026 12:00:13 +0100 (CET)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 8627717E10F4;
+	Tue, 13 Jan 2026 12:00:15 +0100 (CET)
 From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 To: linux-mediatek@lists.infradead.org
 Cc: robh@kernel.org,
@@ -48,10 +49,12 @@ Cc: robh@kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-pm@vger.kernel.org,
 	kernel@collabora.com
-Subject: [PATCH 0/5] Fix dtbs_check warnings for MediaTek MT7622 platform
-Date: Tue, 13 Jan 2026 12:00:07 +0100
-Message-ID: <20260113110012.36984-1-angelogioacchino.delregno@collabora.com>
+Subject: [PATCH 2/5] dt-bindings: power: mt7622-power: Add MT7622_POWER_DOMAIN_AUDIO
+Date: Tue, 13 Jan 2026 12:00:09 +0100
+Message-ID: <20260113110012.36984-3-angelogioacchino.delregno@collabora.com>
 X-Mailer: git-send-email 2.52.0
+In-Reply-To: <20260113110012.36984-1-angelogioacchino.delregno@collabora.com>
+References: <20260113110012.36984-1-angelogioacchino.delregno@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -60,26 +63,24 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This series fixes various dtbs_check warnings happening on the MediaTek
-MT7622 Home Router platforms devicetrees.
+Add the missing power domain for the Audio IPs in this SoC.
 
-Depending on correctness, either the bindings or the devicetree was
-changed as a dtbs_check warning fix.
+Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+---
+ include/dt-bindings/power/mt7622-power.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-AngeloGioacchino Del Regno (5):
-  dt-bindings: clock: mediatek,mt7622-pciesys: Remove syscon compatible
-  dt-bindings: power: mt7622-power: Add MT7622_POWER_DOMAIN_AUDIO
-  pmdomain: mediatek: scpsys: Add MT7622 Audio power domain to legacy
-    driver
-  arm64: dts: mediatek: mt7622: Add missing clock to audio-controller
-  arm64: dts: mediatek: mt7622: Add missing power domain to afe
-
- .../bindings/clock/mediatek,mt7622-pciesys.yaml        | 10 ++++------
- arch/arm64/boot/dts/mediatek/mt7622.dtsi               |  7 +++++--
- drivers/pmdomain/mediatek/mtk-scpsys.c                 | 10 ++++++++++
- include/dt-bindings/power/mt7622-power.h               |  1 +
- 4 files changed, 20 insertions(+), 8 deletions(-)
-
+diff --git a/include/dt-bindings/power/mt7622-power.h b/include/dt-bindings/power/mt7622-power.h
+index ffad81ad3d46..ec244989eeba 100644
+--- a/include/dt-bindings/power/mt7622-power.h
++++ b/include/dt-bindings/power/mt7622-power.h
+@@ -10,5 +10,6 @@
+ #define MT7622_POWER_DOMAIN_HIF0	1
+ #define MT7622_POWER_DOMAIN_HIF1	2
+ #define MT7622_POWER_DOMAIN_WB		3
++#define MT7622_POWER_DOMAIN_AUDIO	4
+ 
+ #endif /* _DT_BINDINGS_POWER_MT7622_POWER_H */
 -- 
 2.52.0
 
