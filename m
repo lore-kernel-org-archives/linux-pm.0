@@ -1,37 +1,37 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FC4438E112;
-	Tue, 13 Jan 2026 11:00:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34C6738E136;
+	Tue, 13 Jan 2026 11:00:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768302021; cv=none; b=ruoiqcV239nN9mdCmllDnBVxBhEyG8nMrfdwr3o3MYuctfwAPW7JrW5yvT0ZQTois0ybSPrtIUGceu7eDEYiaEfAHrnpRhJoFTDGHQ85kKFxkJEYdoXjk4pKODHBkt5NKA/vPyqJ6QZxiCBcW7nindzGmJ0id9GbEFajy9v8Ty0=
+	t=1768302022; cv=none; b=XtV6xU9elX3DTxAEtxFMVSlqs55GhMt+GMeXoQbnMS/RYQ/puKiOQa4JCncSpkXKgflsvh9vl6YrC6Cf/8LqEsp4Jh/8L2r5Ox0xq9pimGe953pBCizdCC0fiYepjPMKfJ/Bkgm63DmDmV7JgiW/XSQhg5AeEIcMNHk/5Sksmwk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768302021; c=relaxed/simple;
-	bh=Qtzz12boIO/VIHRD3C752NQeLrf04iw9L8Q1Ovq/IUY=;
+	s=arc-20240116; t=1768302022; c=relaxed/simple;
+	bh=P8yUfp90P4V0tRkcOJdc6UzTaZTjo0W3uSd4T2juM4I=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=OraRrM00FGLVDiJeAxqA/rWWniSrDOgcHWUSojupxrokNqamRjSNylo4Lho3gTXlnHoq1gwFh37YP3M/t3CQGERiOwQeO+199H9UOg04XGtlePqWi6BDOM/XQ71Ottbt9fqBbSZ/1tKdu++HVdSp0ac84ATVnzeIr4u+zCtmaa0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=kfynO2Fw; arc=none smtp.client-ip=148.251.105.195
+	 MIME-Version; b=JYcQ0HvDrPx4vSEiZl9/PyApVIZkLB/T1eDBuKpYsOo5dhMfF78WXZ+irCaIaURn6u6zJ7LfCjb1ph8umbxh+xzUiENEJFBdpXkBN/bR+nx2pT7b+EzsSvgF93S256XFInrggBADWwRPD20vkqM0rkVCN1JI5GTqHCIbO2nrg8k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=eB/F/bvf; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="kfynO2Fw"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="eB/F/bvf"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1768302017;
-	bh=Qtzz12boIO/VIHRD3C752NQeLrf04iw9L8Q1Ovq/IUY=;
+	s=mail; t=1768302018;
+	bh=P8yUfp90P4V0tRkcOJdc6UzTaZTjo0W3uSd4T2juM4I=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=kfynO2Fw+GmTUUJqbGGo7tn19FvNwLBWV3hhk8lcL6XU3zlCKt/ZexsO3EVcMl8Ru
-	 b/G7wP2iQLL0Mn2/24j3bpuwI0EbVDStOa5UlZD/Bgm2qrJTPciB8w5huhrfXFONbN
-	 ulrMeSadQKUM0g5UQkV5TvDKUWDd4yg3n6xFG31tc+JcRvH0UGOdE/tEXTphxQGZta
-	 lAyCAnUU12GuXKEXrvI/dOR1qe7S/tMHZC1p699GDrkcCqDzFe2aX+gsJhpThU+rTC
-	 SZk+3iQKYmteH8ClyWE+GUpfICjZaMh9vCDD6Uv1D4IE6yYGG+PH/ot8f732mPTlT8
-	 /D+Sxp1qdSMqQ==
+	b=eB/F/bvfbe1aMzl7d7zwOd4lyiJAJlsoUvtgQ5gnhy51W+hNBjgIVbpwJxWRf29S/
+	 L5N5U54/Kec3NjwuqJmifhEe9fKSWLR1mw+s1KSfJbrLMR+eDqnpT1lg/1XLiY7Xib
+	 An0NrxP4yOTtYiuvtJpRjaEexNwOdzE5t/dHOM9oK+UaKYAeotBiOUh6cceNCPG77H
+	 wGSF9J15ZnmuMgiPfHgiMC80IeQIu0yzjjhzJkxypbwev4vToFRzPEN/Nl28nfsOQF
+	 eN7YCwgr897MSdaUgNAdXXjfIci5+3z7P7f6tyzM7e0OQsfhWHFDuU8l3yHr6KLFU9
+	 id6Sfw5thccoA==
 Received: from IcarusMOD.eternityproject.eu (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 1C57C17E1406;
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id D504817E150D;
 	Tue, 13 Jan 2026 12:00:17 +0100 (CET)
 From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 To: linux-mediatek@lists.infradead.org
@@ -49,9 +49,9 @@ Cc: robh@kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-pm@vger.kernel.org,
 	kernel@collabora.com
-Subject: [PATCH 4/5] arm64: dts: mediatek: mt7622: Add missing clock to audio-controller
-Date: Tue, 13 Jan 2026 12:00:11 +0100
-Message-ID: <20260113110012.36984-5-angelogioacchino.delregno@collabora.com>
+Subject: [PATCH 5/5] arm64: dts: mediatek: mt7622: Add missing power domain to afe
+Date: Tue, 13 Jan 2026 12:00:12 +0100
+Message-ID: <20260113110012.36984-6-angelogioacchino.delregno@collabora.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260113110012.36984-1-angelogioacchino.delregno@collabora.com>
 References: <20260113110012.36984-1-angelogioacchino.delregno@collabora.com>
@@ -63,39 +63,27 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add the missing audio_mrgif_pd clock to the audio-controller node
-to both resolve a dtbs_check warning and ensure that the AFE merge
-interface is clocked while using audio.
+Add the missing MT7622_POWER_DOMAIN_AUDIO to the audio controller
+node to fix a dtbs_check warning and to make sure that the AFE is
+indeed powered on when needed.
 
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- arch/arm64/boot/dts/mediatek/mt7622.dtsi | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ arch/arm64/boot/dts/mediatek/mt7622.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/arch/arm64/boot/dts/mediatek/mt7622.dtsi b/arch/arm64/boot/dts/mediatek/mt7622.dtsi
-index 158bd9a305d7..133a6dcc8ef7 100644
+index 133a6dcc8ef7..bfd96a0ec3dd 100644
 --- a/arch/arm64/boot/dts/mediatek/mt7622.dtsi
 +++ b/arch/arm64/boot/dts/mediatek/mt7622.dtsi
-@@ -654,7 +654,8 @@ afe: audio-controller {
- 				 <&audsys CLK_AUDIO_AFE>,
- 				 <&audsys CLK_AUDIO_AFE_CONN>,
- 				 <&audsys CLK_AUDIO_A1SYS>,
--				 <&audsys CLK_AUDIO_A2SYS>;
-+				 <&audsys CLK_AUDIO_A2SYS>,
-+				 <&audsys CLK_AUDIO_AFE_MRGIF>;
+@@ -621,6 +621,7 @@ afe: audio-controller {
+ 			interrupts = <GIC_SPI 144 IRQ_TYPE_LEVEL_LOW>,
+ 				     <GIC_SPI 145 IRQ_TYPE_LEVEL_LOW>;
+ 			interrupt-names = "afe", "asys";
++			power-domains = <&scpsys MT7622_POWER_DOMAIN_AUDIO>;
  
- 			clock-names = "infra_sys_audio_clk",
- 				      "top_audio_mux1_sel",
-@@ -688,7 +689,8 @@ afe: audio-controller {
- 				      "audio_afe_pd",
- 				      "audio_afe_conn_pd",
- 				      "audio_a1sys_pd",
--				      "audio_a2sys_pd";
-+				      "audio_a2sys_pd",
-+				      "audio_mrgif_pd";
- 
- 			assigned-clocks = <&topckgen CLK_TOP_A1SYS_HP_SEL>,
- 					  <&topckgen CLK_TOP_A2SYS_HP_SEL>,
+ 			clocks = <&infracfg CLK_INFRA_AUDIO_PD>,
+ 				 <&topckgen CLK_TOP_AUD1_SEL>,
 -- 
 2.52.0
 
