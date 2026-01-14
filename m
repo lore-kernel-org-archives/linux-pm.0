@@ -1,131 +1,152 @@
-Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C523A399A54
-	for <linux-pm@vger.kernel.org>; Wed, 14 Jan 2026 14:17:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.41
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768400246; cv=none; b=Yuk66hm/m4Ormu/cYHPcfk0uCBmwoNjR4fZCntsNZKmbqCECzAAroJpb0i0aOkM1E/WXDzoo6DWFKmNVe0qlpwFDxaEjSKeQHi6cZvDsoISeSxreZGvSvhoL2JgYSKS/xRpYBlUXsKU8mBuywgoSqJQ+eYdroCwnh8tuFZ4fjVs=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768400246; c=relaxed/simple;
-	bh=7HVJFrG3U/QwDFKx95QyYbsMuRfAm1hbMd+GcbM229I=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=pTMcGB3BwWWkBHb9zDGZUEJjpel/ihA47X969ApPRWHYeg/guCeZ+7NQj0BNLCZTKr3ORg2tIILNrMLMMSUYqksNSG5jel//TNIcBooNvCvj84uKXBHoCGy24as6gpCNYo2gQ0GdwtEBXsG4SvYY8b38MJvvhlm9ou2xtraBTsk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=nuL92y/R; arc=none smtp.client-ip=209.85.128.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B25EF30CD94;
+	Wed, 14 Jan 2026 14:53:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1768402391; cv=pass; b=iQ6ZRETMN/SWunFBiwQZoAgHqEajn9S0Favr0QOcF1Uvy1iTxfO763QdM4gb38tZMEJR0QINTAWo6dh3w5D6WwyWXPDzzTv+NKi40gt2L36/PIZDCODIy0pT6qB/3kg4vlzZUaaUM+l+rAzA0h+0ua7meoc1xYa89jwMtHP5Mgg=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1768402391; c=relaxed/simple;
+	bh=b/NvqoTRSBBXd5TxyUJdW1xOdTtjpMRQCvl0VZgazRw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=StD/1HH5F1UDFGqpRLlRIgAZjVVAXAnHuPsVAGxxDVXGKZk0xpLl9i+4W1QTKaLx3dw+pkm/ze+g0WTUsZTfwS+89ZdIxD/mbJlHYaH3gcD9f1nNFnCJF0x843HxX2LUdjRwQjcDoYcxzhNKDDQTajzzedAC8alf/+t6eWWzG1g=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=Mrw29Mkm; arc=pass smtp.client-ip=136.143.188.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="nuL92y/R"
-Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-47796a837c7so59830735e9.0
-        for <linux-pm@vger.kernel.org>; Wed, 14 Jan 2026 06:17:22 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1768400237; x=1769005037; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=uDx8GJwGFtxKfvZU7MLXX1ujE0p+LvEQKHj4ysnyPoQ=;
-        b=nuL92y/RyO0fqNxiOicmIEW1aX2Ns+jU4To/iVBRCBti4aD5l56mJZP8oDf4GYNr68
-         PYeB3ZK/O6vNLTZ6YVFOMp3S8PzM0B/PCriopBKjDTo9xt2A7re13AS7hCsAH/w2ThcT
-         BhK2EBNhEPe3IAwphi4IIbPPKDenXe7F0FvRP+jJxJAn8jxm8ZFChexF3lymH+eId8/e
-         t2MbR1pHa/RpmX/wY2l1P8H19Lhwcfb//cyMKrV7WulCvE7+BZmE8oltIVU34q/tGz5h
-         aNoz+bujWlIcABYuIDjf1qI3mDXcrb5wtYjNQTqCR9btD3oaRPNqnCVwczw2R54boV+n
-         LYkQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768400237; x=1769005037;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=uDx8GJwGFtxKfvZU7MLXX1ujE0p+LvEQKHj4ysnyPoQ=;
-        b=fL++IfBBALyKG4lNSeOWNqxmZV6E6kosNPUUyRbsMXPTXl0AgMHt0k7MhH4VS3Yb3/
-         RJIKxcdlyS9doZFFkF8e0CSi6tWcF77370Q7yu6lCjZTOTnpWce/+LxWgEFMPy6+jVzE
-         8jX+SHerVA9hv5jLO3flNspPT4c1e3iR0hRvi86JVGy/ns5Glg1QWwI6e/x23uQ9idAm
-         Jr4zYZ9T4Xdy9hgK0kroVEXgctdd354IYrOPJTP6FHf87/op63GmHn68u1ipQIrderGW
-         +l7Qvrf+eP6MgQfTQpkyN4jnKRRSDXUncfbWAZ7V8PbB2BSQDoIJSpysvCMius2JCoM3
-         anuA==
-X-Forwarded-Encrypted: i=1; AJvYcCVzwKIG3odpvTfwMogOCV56kfQBvcQVFqjUEPVYRvBwtFtLpnLecOkJ8K/3NzAX76eQdoBtLd4MMw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YylC3Mj9kIPPwAhO/zPhcIFUw2/C7vu4zWdO00CbIr1kQZTYElo
-	S/Ajvza+Id+WoqzmCjzURFDH308rg2JMAdHiEBIbMzDMfjpdhewxe4P/I0aZ2qoHNA8=
-X-Gm-Gg: AY/fxX5tNEi+H6fuh9xAO5NldeaiqRRZU6l3Mm+aH0/M2IhhJGdHXa9a/T4y3CtOt/z
-	dtY1BKfDwNB0spXos+NSL9cmzXSX2JHoUbmYasORZnQj8MgoYqMBsg4xYV0jAr9ZlYu/QaV7QTG
-	r22Al0662jWx2ECgxHIw/CPFiu2F61G7tz0eE2o7YhxCbcAYVsOAnZ8ZNkCk3qRXDx8SS0kOSsa
-	uRfES6XOEn1Jxr7eGgQ07RfvOtJ2iK3gfmBiYJ5h0MvoEkEVpiuAAcHGVKYkuH+e1unTIY8zx72
-	CtUjPVywlQMmJtlWsZNJIzo4huq9RK/ibXh2Cw2rBcIcUZIjlRMAhudpnEfL6aOer1KCcCGhcPY
-	IIhElVzEM+38eStTbZJ4VaRhHgMSGx3UWY4Wiw10NcXF67zb8VOsjxA+3Z3WQp/SbsRxpEVCOWH
-	CrEu8ePnxQe5kC40NzxzfqBl9jClb4cpgBIE62rc+KN5M8zEbTiV1jSzWgMWxE0R0cmcJAKF+wK
-	n67tym8
-X-Received: by 2002:a05:600c:4e4d:b0:46e:32dd:1b1a with SMTP id 5b1f17b1804b1-47ee331937emr30654025e9.7.1768400237015;
-        Wed, 14 Jan 2026 06:17:17 -0800 (PST)
-Received: from ta2.c.googlers.com (164.102.240.35.bc.googleusercontent.com. [35.240.102.164])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-47ee57a2613sm29595445e9.6.2026.01.14.06.17.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 14 Jan 2026 06:17:16 -0800 (PST)
-From: Tudor Ambarus <tudor.ambarus@linaro.org>
-Date: Wed, 14 Jan 2026 14:16:34 +0000
-Subject: [PATCH 6/8] MAINTAINERS: Add entry for Samsung Exynos ACPM thermal
- driver
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="Mrw29Mkm"
+ARC-Seal: i=1; a=rsa-sha256; t=1768402379; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=gECXeetuZWukOLqMp6t50NzUIVh0EjSBLLwymBbeeJnxDS8pjWzvSRh4/XhlumH/BmB5SmqgRP/a11GyVYnK1ugoZLXjEDibNh7D7gV6AZnbpa+w/BDAL7baj6PSanfz/h7j8syIc6EyNhMcOnAypv6wImx3VrV5OOTXDdErvxE=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1768402379; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=D01Owa/velr5mOOG55lZuQ9GAjD38Uv7bb1N9qySDm0=; 
+	b=nZU3z9vLGFNb3IrDljyR8OuxO1myETs6gv/42hxpoKuLE3L40NPpuZy9NTrmfvwM4CChS7fKTm3+kPIsfU9B+2uMgmxPzm4F31lZDA1Yw4P34T/JBZ6Pmsl7d/1ZFrrnL1nmmN5I1Oijg3VqxbAYY2vBIUg9gpiYyXx9EWADyG0=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
+	dmarc=pass header.from=<sebastian.reichel@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1768402379;
+	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
+	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:References:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
+	bh=D01Owa/velr5mOOG55lZuQ9GAjD38Uv7bb1N9qySDm0=;
+	b=Mrw29MkmkaO35fVteuVubTHiztBGNXuwZZqrOZRx1FDevnQVjKtSUZkYPL8Kif8E
+	nqHaXRxFFmNnOSRZqFuG52QyyrUEfUybpTSTqVYoyD+7TfRrP47xrTxGRUTlKLWf8t+
+	FlyIfNYAI2K03PTFHT+k1K8hNyeLauv+fUFuRW08=
+Received: by mx.zohomail.com with SMTPS id 1768402377766769.7780210039161;
+	Wed, 14 Jan 2026 06:52:57 -0800 (PST)
+Received: by venus (Postfix, from userid 1000)
+	id 2467A180881; Wed, 14 Jan 2026 15:52:54 +0100 (CET)
+Date: Wed, 14 Jan 2026 15:52:54 +0100
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+To: Waqar Hameed <waqar.hameed@axis.com>
+Cc: Nikita Travkin <nikita@trvn.ru>, kernel@axis.com, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 09/11] power: supply: pm8916_lbc: Fix use-after-free in
+ power_supply_changed()
+Message-ID: <aWetAuBgUsPfiGCZ@venus>
+References: <cover.1766268280.git.waqar.hameed@axis.com>
+ <64d8dd3675a4e59fa32c3e0ef451f12d1f7ed18f.1766268280.git.waqar.hameed@axis.com>
+ <5f3152f01420823ef8ae2932ed781cf4@trvn.ru>
+ <pndtswxebnc.a.out@axis.com>
+ <pndo6mwtqqh.a.out@axis.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260114-acpm-tmu-v1-6-cfe56d93e90f@linaro.org>
-References: <20260114-acpm-tmu-v1-0-cfe56d93e90f@linaro.org>
-In-Reply-To: <20260114-acpm-tmu-v1-0-cfe56d93e90f@linaro.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>, 
- Krzysztof Kozlowski <krzk@kernel.org>, 
- Alim Akhtar <alim.akhtar@samsung.com>, 
- Peter Griffin <peter.griffin@linaro.org>, 
- =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
- Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Kees Cook <kees@kernel.org>, 
- "Gustavo A. R. Silva" <gustavoars@kernel.org>
-Cc: willmcvicker@google.com, jyescas@google.com, shin.son@samsung.com, 
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-samsung-soc@vger.kernel.org, linux-hardening@vger.kernel.org, 
- Tudor Ambarus <tudor.ambarus@linaro.org>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1768400224; l=971;
- i=tudor.ambarus@linaro.org; s=20241212; h=from:subject:message-id;
- bh=7HVJFrG3U/QwDFKx95QyYbsMuRfAm1hbMd+GcbM229I=;
- b=pUkUka+ewej0krIsviJjojhdqN6KPY64IUp5KIuBVVECn9qSsLgLN4eTbUtjxiRCJF+4NmjV0
- aVbDoNVDAOlDzQjkDBwgjyH42sK2PdrvjnCTG1nPFaq9xixN3Ygv0sh
-X-Developer-Key: i=tudor.ambarus@linaro.org; a=ed25519;
- pk=uQzE0NXo3dIjeowMTOPCpIiPHEz12IA/MbyzrZVh9WI=
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="7pliuq26ks6ex23y"
+Content-Disposition: inline
+In-Reply-To: <pndo6mwtqqh.a.out@axis.com>
+X-Zoho-Virus-Status: 1
+X-Zoho-Virus-Status: 1
+X-Zoho-AV-Stamp: zmail-av-1.5.1/268.349.40
+X-ZohoMailClient: External
 
-Add a MAINTAINERS entry for the Samsung Exynos ACPM thermal driver.
 
-Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
----
- MAINTAINERS | 8 ++++++++
- 1 file changed, 8 insertions(+)
+--7pliuq26ks6ex23y
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH 09/11] power: supply: pm8916_lbc: Fix use-after-free in
+ power_supply_changed()
+MIME-Version: 1.0
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 5b11839cba9de1e9e43f63787578edd8c429ca39..ab44f2de8e8e03ad9bb022ebdf1b6c0058fb0425 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -23171,6 +23171,14 @@ F:	drivers/clk/samsung/clk-acpm.c
- F:	drivers/firmware/samsung/exynos-acpm*
- F:	include/linux/firmware/samsung/exynos-acpm-protocol.h
- 
-+SAMSUNG EXYNOS ACPM THERMAL DRIVER
-+M:	Tudor Ambarus <tudor.ambarus@linaro.org>
-+L:	linux-kernel@vger.kernel.org
-+L:	linux-samsung-soc@vger.kernel.org
-+S:	Supported
-+F:	Documentation/devicetree/bindings/thermal/google,gs101-tmu-top.yaml
-+F:	drivers/thermal/samsung/acpm-tmu.c
-+
- SAMSUNG EXYNOS MAILBOX DRIVER
- M:	Tudor Ambarus <tudor.ambarus@linaro.org>
- L:	linux-kernel@vger.kernel.org
+Hi,
 
--- 
-2.52.0.457.g6b5491de43-goog
+On Wed, Jan 14, 2026 at 11:48:06AM +0100, Waqar Hameed wrote:
+> On Wed, Jan 07, 2026 at 15:32 +0100 Waqar Hameed <waqar.hameed@axis.com> =
+wrote:
+>=20
+> > On Sun, Dec 21, 2025 at 10:45 +0500 Nikita Travkin <nikita@trvn.ru> wro=
+te:
+>=20
+> [...]
+>=20
+> >> As a small note, the interrupt handler also has a call to
+> >> extcon_set_state_sync(chg->edev,...) which is allocated right below.
+> >> I don't think this is actually a problem since it has a null check for
+> >> edev (unlike psy core) so I think this patch is fine as-is. However if
+> >> for some reason you'd have to respin this series, perhaps it would be
+> >> nice to move irq registration slightly lower, after extcon registratio=
+n.
+> >
+> > Hm, it _is_ actually a problem. During `probe()`, it's fine, due to the
+> > NULL check in `extcon_set_state()` (and the interrupt handler doesn't
+> > check the return value anyway), as you mention. However, during removal,
+> > we have the exact same situation as for `power_supply_changed()` as
+> > explained in the commit message; `devm_extcon_dev_release()` runs and
+> > frees `struct extcon_dev *edev`, the interrupt handler would now call
+> >
+> >   `extcon_set_state_sync(chg->edev, ...)` ->
+> >   `extcon_set_state(edev, ...)` ->
+> >   `find_cable_index_by_id(edev, ...)`
+> >  =20
+> > with an invalid `edev` triggering a crash/corruption in
+> > `find_cable_index_by_id()` (before we get the chance to release the IRQ
+> > handler)!
+> >
+> > Good catch! Let's move the registration a further bit down to fix this.
+> > I will send v2 as soon as the other patches in the series also get
+> > feedback.
+>=20
+> Since Sebastian says that he applied the whole series as is, I'll just
+> send a new separate patch for that now instead. I couldn't find anything
+> in his tree [1] yet so let's chill a bit until things get pushed.
 
+Ah yes, I planed to reply to this and ask for doing exactly that and
+then forgot about it :)
+
+FWIW you can find this patch here:
+
+https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/=
+commit/?h=3Dfor-next&id=3Db7508129978ae1e2ed9b0410396abc05def9c4eb
+
+Greetings,
+
+-- Sebastian
+
+--7pliuq26ks6ex23y
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmlnrcIACgkQ2O7X88g7
++prYMg/+JkmJWiHEVqqYGD884z5AuuyrBVHmyW22urZPKYLesaQf2PUXlL2kzPtE
+pLamrw4o9YNkwuKPmCn1XWMZaMBKCdn36qpLFbivGTeMLKf1jhVVbKFOrCDSnaQH
+7DtFy+MDdt24xpyDhGuy7aMLKi+KvTCFUfqMu8+qLJEhZfvA33Q3kuodisLiwOh/
+dm1RmFRkAQUPL0nYFBDhCy/EItYf0NE0AkMa+9qbHZMyrFxz8VZkniXD9dKyh6VJ
+yuq5dnRaqW0D9QWyWReRnYPd1bW3ZQrqTvdym93+j1LMr/Zz41mhWozgg8r3TeO0
+AqPDDh55tiwgrBK+jztQ0qvZaENIL3owTMl2mgLdX0L2gHJ1PuZPxSUup+evoF63
+qtzG/3CjY1DUqnDUhnyBtFxOz6/77fwYyWweB+mp8BxXPoBdKyy1aB35R5+F+Pfp
+46wCaRTYTzbMsWBbSxJCs03/3QsqFfrEk6uAmv0xXGb/85OqTZCACvkSIjSySKCe
+AP5Y+FvjBJ2unXucPMjLd2bOmH+uYJZQqUsnN/DN+4tVkYquWzyDqMBQjJ+2f12L
+TBbP4O/nt2LbQgagkRX49QV3ONRSgZOIKABliyW9XfNaiJZIzEfJjxpaAC6Xk7UV
+NtWEHo/K1LQcoPdYgVkOKMky7xltPHzEA7WteECJRk7sOyKJ3QA=
+=8tpf
+-----END PGP SIGNATURE-----
+
+--7pliuq26ks6ex23y--
