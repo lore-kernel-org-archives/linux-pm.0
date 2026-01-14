@@ -1,44 +1,41 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B131280A5A;
-	Wed, 14 Jan 2026 19:48:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4485A34D911;
+	Wed, 14 Jan 2026 19:48:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768420136; cv=none; b=emex8Tp6OB+x3hW+hwJ87hY9C37aw1EZhFYXXTtPu1ITmdMLqpTp+DqlzDRs+nre0D+/v+7E7nOiGZeWbsISHC5/RGk3Js3HztMXoIrVIvhQWQtJgnpD5Zvv7qo1z7vQuOjfmYlqNusvTlnLkan18g8k1GguQeHuCAbZxn0HDQY=
+	t=1768420140; cv=none; b=Ct+BGCeKuwIn/m+ybRw38rbXBDLv2vTefcE4Y27SQSQNinwZCSMNweTQCkPdcei2gQIHuprD2X10GodLicNS66fX61gRvDNQU8g5TZO90faMWLtsH1Tt/wlISnY32AHwBM+X1IspWiaImimC5VPGSP8TrXFM22gD6xXevU1Ks48=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768420136; c=relaxed/simple;
-	bh=67dRnXhT5swd+9o6UzzoBwZCRbkwliPMj3x4H4DbXto=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=a5zlBJ2L6azUZ/yt9b5q+ScEiXdo+kmPWkSquA2JjhF/H6x5LeF9xqm7Vwicggbh/4eTMpu5TRL7gbvqunLJB4ehG7TdugpS1mSkJVf79zFjrJWGheQyQ6v7/5N4LDl1jjjrbhoayECzgOgU0Qi6fgpeJwxBYS7/e1cYetHdy9k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=b/oGBCZI; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1768420140; c=relaxed/simple;
+	bh=tp23sPobZL67a+lYGtr7uSviXFwlADBrQjQ9Yo2xg6k=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=CY0loAS6InrsDvzytzsIgpUGQmTYO8XxalJO3CVL4If8X5fdf2Mwau//Y+YfcA0bZHSuhoDOrtn3y9agGS36qWJapfbQAcN2wtjZ/CRE031gn5H/93nPlGiX0unKkeEJ1JCezu/QVBCcjb94kmPZXt1tenNAxO0HZl1Jy+X3UYA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jibrqmVA; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="b/oGBCZI"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 01DBDC19421;
-	Wed, 14 Jan 2026 19:48:54 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jibrqmVA"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 90589C19422;
+	Wed, 14 Jan 2026 19:48:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768420136;
-	bh=67dRnXhT5swd+9o6UzzoBwZCRbkwliPMj3x4H4DbXto=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=b/oGBCZIic+EOB9sVSPAm7f48wBVEBkroNxu2CM8knPhTOIWP6VKU+2frM6lzgdka
-	 9dn9Uj3PPATpm0l/tU8Ku2XSUA04lAh1OrXuSnJ7PGvKQqbk9lPKvefBeZbFTU+V2Q
-	 o4FM7fXgOYNN2lUH23HW3tRJRGNt2pDlsx2GVSHcRZjCI1W3BIBVt5XumqmYWbY1Ka
-	 whPuWA7aUDv0qE6pTPYRGGzuG8Brv+4y5VNy9/VRgPVH0gdWvfv9Sw9owiWeqKhaLW
-	 qnPvvseDijbByPrISxa0cJHr5wtXPfimj5aAgQ7ZQZLBb9snpBS2IXuo4KeKDHyn1y
-	 /nUVX5zbQaQPg==
+	s=k20201202; t=1768420139;
+	bh=tp23sPobZL67a+lYGtr7uSviXFwlADBrQjQ9Yo2xg6k=;
+	h=From:To:Cc:Subject:Date:From;
+	b=jibrqmVAfR7d8anhjuzbMe5jLG3c78gZsySsL6/d/kzZ80NFfRzcK4bVWRJC9dXIJ
+	 Iay0aeLV/sOOzjE5uXl68d7jvYnSmmBtStx/t5ajPufO7dtirAOfpKaCrPSMTf70G3
+	 h8IGz2MAr4sY4bezs7ZDqYQ0bqHqcKJwUMspuUJjDfki8R4qXTTbgH13w+QIMDDdP5
+	 YaIIA/7U8NJ4vvBe6abIkgDWw9VbOlQITrXRfyW95ACAWndqjxYpg8utOcJ37i3JJA
+	 Oh3FFORz6JnqNyjrngvQIC06kbqSJApbhINNwwbrpKXt6qkknf86MOQRY++DBXrb4U
+	 b99EA1c1bpkRg==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
  Christian Loehle <christian.loehle@arm.com>,
  Doug Smythies <dsmythies@telus.net>
 Subject:
- [PATCH v1 1/5] cpuidle: governors: teo: Avoid selecting states with zero-size
- bins
-Date: Wed, 14 Jan 2026 20:44:04 +0100
-Message-ID: <3033265.e9J7NaK4W3@rafael.j.wysocki>
+ [PATCH v1 0/5] cpuidle: governors: teo: Wakeup events classification change
+ and some refinements
+Date: Wed, 14 Jan 2026 20:42:55 +0100
+Message-ID: <2257365.irdbgypaU6@rafael.j.wysocki>
 Organization: Linux Kernel Development
-In-Reply-To: <2257365.irdbgypaU6@rafael.j.wysocki>
-References: <2257365.irdbgypaU6@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,46 +45,36 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi All,
 
-If the last two enabled idle states have the same target residency which
-is at least equal to TICK_NSET, teo may select the next-to-last one even
-though the size of that state's bin is 0, which is confusing.
+This material has been in my local queue for almost a full development cycle,
+so time to post it.
 
-Prevent that from happening by adding a target residency check to the
-relevant code path.
+The motivation for the changes in this series is mostly theoretical, but I do
+see some idle power improvements from patch [4/5], for example, but nothing
+specifically worth reporting.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpuidle/governors/teo.c |   10 ++++++++++
- 1 file changed, 10 insertions(+)
+The first patch simply prevents idle states with zero-size bins from being
+selected sometimes when teo_select() runs with stopped tick.
 
---- a/drivers/cpuidle/governors/teo.c
-+++ b/drivers/cpuidle/governors/teo.c
-@@ -388,6 +388,15 @@ static int teo_select(struct cpuidle_dri
- 			while (min_idx < idx &&
- 			       drv->states[min_idx].target_residency_ns < TICK_NSEC)
- 				min_idx++;
-+
-+			/*
-+			 * Avoid selecting a state with a lower index, but with
-+			 * the same target residency as the current candidate
-+			 * one.
-+			 */
-+			if (drv->states[min_idx].target_residency_ns ==
-+					drv->states[idx].target_residency_ns)
-+				goto constraint;
- 		}
- 
- 		/*
-@@ -410,6 +419,7 @@ static int teo_select(struct cpuidle_dri
- 		}
- 	}
- 
-+constraint:
- 	/*
- 	 * If there is a latency constraint, it may be necessary to select an
- 	 * idle state shallower than the current candidate one.
+Patch [2/5] avoids counting tick wakeups as intercepts unless there are
+sufficiently many intercepts within the tick period range to assume that
+the tick wakeup may have clobbered a genuine intercept.
+
+Patch [3/5] simply updates a coefficient in one of the inequalities to be
+somewhat easier to interpret (this should be a cosmetic change).
+
+Patch [4/5] changes the criteria used for classifying wakeup events as hits
+or intercepts to (hopefully) make the classification work better for large
+state bins.
+
+Patch [5/5] refines the idle state lookup based on intercepts to first
+consider the state with the maximum intercepts metric, so that state is
+always taken into consideration.
+
+Please see the individual patch changelogs for details.
+
+Thanks!
 
 
 
