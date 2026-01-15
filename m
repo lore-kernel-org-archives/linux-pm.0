@@ -1,299 +1,277 @@
-Received: from mail-pf1-f174.google.com (mail-pf1-f174.google.com [209.85.210.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from canpmsgout10.his.huawei.com (canpmsgout10.his.huawei.com [113.46.200.225])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DB3233E357
-	for <linux-pm@vger.kernel.org>; Thu, 15 Jan 2026 08:45:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 578FC32B9B4;
+	Thu, 15 Jan 2026 08:58:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.225
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768466756; cv=none; b=Z4JwnsUG5xGATq+dORF+aWsoYFW4bGjpUF/RVj3T7NsDxHfjp6oXsIBN8mR+iHNclFS1BYf4tvvaZwnc2jepNcxWmqvalo3gTbuh/IUGPTguoip3wUys9AoR6N6rqwq8HgO++ks9S/j7ERubWNSwB1LhK8B6LJ1lGQvs1piO5DE=
+	t=1768467492; cv=none; b=a6VDKRT36K256LPkiGtK0Sz9RRKKIbv0+lqwv1Dxxi28dMQ7DdA8KeF44pjh49NlPg6u9G1VC/5bThRnmBbEvy0jAeaxC2aTkO4bUSFrX4n5/DHPXc45qOQhGL+thhFiTKVeAONsiHrHJOAkcoUc04fSvo95Nkyx7msVLfWLl9M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768466756; c=relaxed/simple;
-	bh=paTnkoL9xUak4CUxnRb/yoa9tXE3w3bGYQXVfiVJENY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=FdIumQF/sPeOePlXq21pRPWSr7f2P2aIh/lZqNnBjjhvqVT12A9Bsnl0EoLYGoMhGnj2ZeyJbFvJOI7dGP3Khg8BydBm+4EhDKKkbyqRj8b4tF5OCsgOcN3pfzgw+D4tjXQ9LCjy11troXgyf7Q1ifxMcUDETq0ykj+7cwZTRCk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.210.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-pf1-f174.google.com with SMTP id d2e1a72fcca58-81dbc0a99d2so335975b3a.1
-        for <linux-pm@vger.kernel.org>; Thu, 15 Jan 2026 00:45:54 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768466754; x=1769071554;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=yEhW79U6doUL/JqAk9Ut/HyEczQFD5R9B9xZcFtsnOI=;
-        b=n/C12+Zj6sQVP8rHsbRTrPtKSdkmXBYxMoqNMjiAZohqGz7Scv6HgeRC9IdbA+jMHc
-         EXsc1TKIGKTYdytGfDNvrSyWW+HFqT2X4b0blx1k+6RMHaWgE4EOyCqbBhfAE/bSwapo
-         bMlTqdIMLhlVw5M8Xxg/CFVQiCzzm2yRSfT/FaD7tYzaCPC4dUHXUkrG4AuYSakgMIT9
-         Wnsgi60s+3YKqUd7q8RyHN9levpeA72NlA23E2UJKJyc3UT5eRhKJEVVVwyXIsQTLaVN
-         OeA+7/6u0/OVoNCGtUIaxr3XJVIxulj5hpqTkgB5qaE8e0aS8+9gq0tq/muFmabxHbFc
-         z+gg==
-X-Forwarded-Encrypted: i=1; AJvYcCXBkhzsvcnooG6qBGX0PXN/BPfG9pdUQ0Vr1Noqr9Tj37OCNe7Ql5wg9DUJ4a1oxz+Z+mEvo8yrGw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzt+xZuszd3cEK2vSEq7gcNbeBX8qoMyfYFv/g1Ejp+qY0uw54y
-	IdIe8DrfbQS0Z8lw39mwC/2T3usnX3EGrkzEEomSHoqOt/jf1T8BrAQTcdvYDMsS
-X-Gm-Gg: AY/fxX6k17I+Z0TgE+KgIgI1JHBE+LVlD84IKSr5lRA5XXznMi85QnGb913vp9+hrxV
-	ZY6ZEVSvb6NxoHLuDlvSiSdn51/ExMl3lcXG6TEYcZTnvlBdzQOGpipXYk/a3MbCZdSzUDEPNgw
-	ngAknAyenD+q1Lz9XxLAXuvN/58JJwJwY+avwX8ClEs+0Jk6mSdFxxtDOkBtfZi6nJz6YUUsXpu
-	rLoodBDt4lQMfBfY69oTt4j5av2cdBf40BLrLiw9qUqZUhHoJ+vpyKtzoMBhXDsys0lWOl7xSnE
-	JJrjeBgN2jVNjDApb6E/U3lJ1WyB4BEzdKvX4eBR0eNoZh+cZuSyJtzkt4KvvHxttX5XOnTDvnq
-	B7zVmKlMnEdbAuZod8Bl40XVkP5gMjKFss7PXMNUpWtSf8ucyfUeboVmIVuD8BM3hYO35wFR1Qv
-	GYg/k1hFg3I+GhObWtDBi+AswEzstV5E9mqdPwDITPyBE7khU=
-X-Received: by 2002:a05:6a00:3311:b0:81e:5a6e:339 with SMTP id d2e1a72fcca58-81f83c881aemr4592595b3a.22.1768466753583;
-        Thu, 15 Jan 2026 00:45:53 -0800 (PST)
-Received: from mail-dl1-f50.google.com (mail-dl1-f50.google.com. [74.125.82.50])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-81f8e4f61fdsm1818105b3a.26.2026.01.15.00.45.53
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 15 Jan 2026 00:45:53 -0800 (PST)
-Received: by mail-dl1-f50.google.com with SMTP id a92af1059eb24-12331482b8fso2165181c88.1
-        for <linux-pm@vger.kernel.org>; Thu, 15 Jan 2026 00:45:53 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCXwXumaBuepuC/0F4keSgifhjy9ijSE7GHPagawhZ4hB0si7tIWfNvmf4MJ8Gxwhf+n3DneacTsBw==@vger.kernel.org
-X-Received: by 2002:a05:6122:3b81:b0:563:4a88:6ea5 with SMTP id
- 71dfb90a1353d-563a2093a5dmr1838362e0c.5.1768466262231; Thu, 15 Jan 2026
- 00:37:42 -0800 (PST)
+	s=arc-20240116; t=1768467492; c=relaxed/simple;
+	bh=B2ircWOnxIY1pU54fNDLsd4VKwrmRZJntAlog/mRaQs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=W/5G9MntMO4O2v57Y7JBKnGFHYdBXcQ5FOPuWtM47H61WXSA18wnKhjktVR7OMsgUrWWZcVWoJBOfy+fOBTYTmZ9cauL6RavWrmmfesIcYv9NvNWvE6okfYdwZqMzTiPXAFe/zIvGAKpns1LO4Bep6DCOMvNbZ7IJ0q5QfZXd6Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=RD71lJTS; arc=none smtp.client-ip=113.46.200.225
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="RD71lJTS"
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=aeiL2R6ODZn3JTHgngaW3ACQLXMC+A3IlTyFLau/KNQ=;
+	b=RD71lJTS45cgKDWBa+lYXVvBGHkXoPIHbvfnJuMjjWRhxNfHjD2pU6MQM+IxZ/YMS2s64pTll
+	0+iaiNMozD3NaSy7scq9tjyz97s6unuRKbrZ6IEQtNa52MJQZvmWYfTw1ERvB7moSdS6zlX+C4r
+	+8lDmj4dhbRAMDw1yvLfcsc=
+Received: from mail.maildlp.com (unknown [172.19.163.163])
+	by canpmsgout10.his.huawei.com (SkyGuard) with ESMTPS id 4dsGyB0JWTz1K983;
+	Thu, 15 Jan 2026 16:54:42 +0800 (CST)
+Received: from kwepemf200001.china.huawei.com (unknown [7.202.181.227])
+	by mail.maildlp.com (Postfix) with ESMTPS id 26D5140565;
+	Thu, 15 Jan 2026 16:58:00 +0800 (CST)
+Received: from [10.67.121.90] (10.67.121.90) by kwepemf200001.china.huawei.com
+ (7.202.181.227) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Thu, 15 Jan
+ 2026 16:57:59 +0800
+Message-ID: <7e5bfa69-96e2-4f54-9446-cc64845b52cd@huawei.com>
+Date: Thu, 15 Jan 2026 16:57:58 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251230080115.2120612-1-zhenglifeng1@huawei.com>
- <20251230080115.2120612-4-zhenglifeng1@huawei.com> <CAMuHMdVeHk-Enc-M9ztwSdeAtE8YPKtJwq+273bGPEFOEsu=Rw@mail.gmail.com>
- <aWZriVlQZ5jRx2o4@arm.com> <CAMuHMdVgbQnaCQ8U8FK6J1vJLsqc0_MC7zSTX2B=rsuF2kpEKg@mail.gmail.com>
- <41b7398c-b1a4-4b87-b6f9-07eacf4f4752@huawei.com>
-In-Reply-To: <41b7398c-b1a4-4b87-b6f9-07eacf4f4752@huawei.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 15 Jan 2026 09:37:31 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdUuTrF=eN5tMsjmOfWuuT9r7aCOTS7=YP6+KrSdNrhEpw@mail.gmail.com>
-X-Gm-Features: AZwV_QgJfgfwWgiDZ0xWQqvqqWOvLCpdrYhSVw3ZJkes_w8m6CntQRIYTUo-KYk
-Message-ID: <CAMuHMdUuTrF=eN5tMsjmOfWuuT9r7aCOTS7=YP6+KrSdNrhEpw@mail.gmail.com>
-Subject: Re: [REPOST PATCH v6 3/3] arm64: topology: Handle AMU FIE setup on
- CPU hotplug
-To: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
-Cc: Beata Michalska <beata.michalska@arm.com>, catalin.marinas@arm.com, will@kernel.org, 
-	rafael@kernel.org, viresh.kumar@linaro.org, sudeep.holla@arm.com, 
-	gregkh@linuxfoundation.org, dakr@kernel.org, ionela.voinescu@arm.com, 
-	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
-	linuxarm@huawei.com, jonathan.cameron@huawei.com, vincent.guittot@linaro.org, 
-	zhanjie9@hisilicon.com, lihuisong@huawei.com, yubowen8@huawei.com, 
-	zhangpengjie2@huawei.com, wangzhi12@huawei.com, linhongye@h-partners.com, 
-	Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 09/11] cpufreq: CPPC: sync policy limits when toggling
+ auto_select
+To: Sumit Gupta <sumitg@nvidia.com>
+CC: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <lenb@kernel.org>,
+	<robert.moore@intel.com>, <corbet@lwn.net>, <pierre.gondois@arm.com>,
+	<rdunlap@infradead.org>, <ray.huang@amd.com>, <gautham.shenoy@amd.com>,
+	<mario.limonciello@amd.com>, <perry.yuan@amd.com>, <ionela.voinescu@arm.com>,
+	<zhanjie9@hisilicon.com>, <linux-pm@vger.kernel.org>,
+	<linux-acpi@vger.kernel.org>, <linux-doc@vger.kernel.org>,
+	<acpica-devel@lists.linux.dev>, <linux-kernel@vger.kernel.org>,
+	<linux-tegra@vger.kernel.org>, <treding@nvidia.com>, <jonathanh@nvidia.com>,
+	<vsethi@nvidia.com>, <ksitaraman@nvidia.com>, <sanjayc@nvidia.com>,
+	<nhartman@nvidia.com>, <bbasu@nvidia.com>
+References: <20251223121307.711773-1-sumitg@nvidia.com>
+ <20251223121307.711773-10-sumitg@nvidia.com>
+ <ae4ff90a-d2c4-4c13-9d65-a0f266bb4b4b@huawei.com>
+ <fb876f94-f92e-4c8a-9b64-fe9118a15595@nvidia.com>
+From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
+In-Reply-To: <fb876f94-f92e-4c8a-9b64-fe9118a15595@nvidia.com>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
+ kwepemf200001.china.huawei.com (7.202.181.227)
 
-Hi Lifeng,
+On 2026/1/8 22:21, Sumit Gupta wrote:
+> 
+> On 26/12/25 08:25, zhenglifeng (A) wrote:
+>> External email: Use caution opening links or attachments
+>>
+>>
+>> On 2025/12/23 20:13, Sumit Gupta wrote:
+>>> When CPPC autonomous selection (auto_select) is enabled or disabled,
+>>> the policy min/max frequency limits should be updated appropriately to
+>>> reflect the new operating mode.
+>>>
+>>> Currently, toggling auto_select only changes the hardware register but
+>>> doesn't update the cpufreq policy constraints, which can lead to
+>>> inconsistent behavior between the hardware state and the policy limits
+>>> visible to userspace.
+>>>
+>>> Add cppc_cpufreq_update_autosel_config() function to handle the
+>>> auto_select toggle by syncing min/max_perf values with policy
+>>> constraints. When enabling auto_sel, restore preserved min/max_perf
+>>> values to policy limits. When disabling, reset policy to defaults
+>>> while preserving hardware register values for later use.
+>>>
+>>> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+>>> ---
+>>>   drivers/cpufreq/cppc_cpufreq.c | 112 +++++++++++++++++++++++++++------
+>>>   1 file changed, 92 insertions(+), 20 deletions(-)
+>>>
+>>> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+>>> index 0202c7b823e6..b1f570d6de34 100644
+>>> --- a/drivers/cpufreq/cppc_cpufreq.c
+>>> +++ b/drivers/cpufreq/cppc_cpufreq.c
+>>> @@ -544,14 +544,20 @@ static void populate_efficiency_class(void)
+>>>    * cppc_cpufreq_set_mperf_limit - Set min/max performance limit
+>>>    * @policy: cpufreq policy
+>>>    * @val: performance value to set
+>>> + * @update_reg: whether to update hardware register
+>>>    * @update_policy: whether to update policy constraints
+>>>    * @is_min: true for min_perf, false for max_perf
+>>>    *
+>>> + * When @update_reg is true, writes to HW registers and preserves values.
+>>>    * When @update_policy is true, updates cpufreq policy frequency limits.
+>>> + *
+>>> + * @update_reg is false when disabling auto_sel to preserve HW values.
+>>> + * The preserved value is used on next enabling of the autonomous mode.
+>>>    * @update_policy is false during cpu_init when policy isn't fully set up.
+>>>    */
+>>>   static int cppc_cpufreq_set_mperf_limit(struct cpufreq_policy *policy, u64 val,
+>>> -                                     bool update_policy, bool is_min)
+>>> +                                     bool update_reg, bool update_policy,
+>>> +                                     bool is_min)
+>>>   {
+>>>        struct cppc_cpudata *cpu_data = policy->driver_data;
+>>>        struct cppc_perf_caps *caps = &cpu_data->perf_caps;
+>>> @@ -563,19 +569,22 @@ static int cppc_cpufreq_set_mperf_limit(struct cpufreq_policy *policy, u64 val,
+>>>
+>>>        perf = clamp(val, caps->lowest_perf, caps->highest_perf);
+>>>
+>>> -     ret = is_min ? cppc_set_min_perf(cpu, perf) :
+>>> -                    cppc_set_max_perf(cpu, perf);
+>>> -     if (ret) {
+>>> -             if (ret != -EOPNOTSUPP)
+>>> -                     pr_warn("Failed to set %s_perf (%llu) on CPU%d (%d)\n",
+>>> -                             is_min ? "min" : "max", (u64)perf, cpu, ret);
+>>> -             return ret;
+>>> -     }
+>>> +     if (update_reg) {
+>>> +             ret = is_min ? cppc_set_min_perf(cpu, perf) :
+>>> +                            cppc_set_max_perf(cpu, perf);
+>>> +             if (ret) {
+>>> +                     if (ret != -EOPNOTSUPP)
+>>> +                             pr_warn("CPU%d: set %s_perf=%llu failed (%d)\n",
+>>> +                                     cpu, is_min ? "min" : "max",
+>>> +                                     (u64)perf, ret);
+>>> +                     return ret;
+>>> +             }
+>>>
+>>> -     if (is_min)
+>>> -             cpu_data->perf_ctrls.min_perf = perf;
+>>> -     else
+>>> -             cpu_data->perf_ctrls.max_perf = perf;
+>>> +             if (is_min)
+>>> +                     cpu_data->perf_ctrls.min_perf = perf;
+>>> +             else
+>>> +                     cpu_data->perf_ctrls.max_perf = perf;
+>>> +     }
+>>>
+>>>        if (update_policy) {
+>>>                freq = cppc_perf_to_khz(caps, perf);
+>>> @@ -592,11 +601,74 @@ static int cppc_cpufreq_set_mperf_limit(struct cpufreq_policy *policy, u64 val,
+>>>        return 0;
+>>>   }
+>>>
+>>> -#define cppc_cpufreq_set_min_perf(policy, val, update_policy) \
+>>> -     cppc_cpufreq_set_mperf_limit(policy, val, update_policy, true)
+>>> +#define cppc_cpufreq_set_min_perf(policy, val, update_reg, update_policy)     \
+>>> +     cppc_cpufreq_set_mperf_limit(policy, val, update_reg, update_policy,  \
+>>> +                                  true)
+>>> +
+>>> +#define cppc_cpufreq_set_max_perf(policy, val, update_reg, update_policy)     \
+>>> +     cppc_cpufreq_set_mperf_limit(policy, val, update_reg, update_policy,  \
+>>> +                                  false)
+>>> +
+>>> +/**
+>>> + * cppc_cpufreq_update_autosel_config - Update autonomous selection config
+>>> + * @policy: cpufreq policy
+>>> + * @is_auto_sel: enable/disable autonomous selection
+>>> + *
+>>> + * Return: 0 on success, negative error code on failure
+>>> + */
+>>> +static int cppc_cpufreq_update_autosel_config(struct cpufreq_policy *policy,
+>>> +                                           bool is_auto_sel)
+>>> +{
+>>> +     struct cppc_cpudata *cpu_data = policy->driver_data;
+>>> +     struct cppc_perf_caps *caps = &cpu_data->perf_caps;
+>>> +     u64 min_perf = caps->lowest_nonlinear_perf;
+>>> +     u64 max_perf = caps->nominal_perf;
+>>> +     unsigned int cpu = policy->cpu;
+>>> +     bool update_reg = is_auto_sel;
+>>> +     bool update_policy = true;
+>>> +     int ret;
+>>> +
+>>> +     guard(mutex)(&cppc_cpufreq_update_autosel_config_lock);
+>>> +
+>>> +     if (is_auto_sel) {
+>>> +             /* Use preserved values if available, else use defaults */
+>>> +             if (cpu_data->perf_ctrls.min_perf)
+>>> +                     min_perf = cpu_data->perf_ctrls.min_perf;
+>>> +             if (cpu_data->perf_ctrls.max_perf)
+>>> +                     max_perf = cpu_data->perf_ctrls.max_perf;
+>>> +     }
+>> So if !is_auto_sel, min_perf and max_perf reg will be set to
+>> lowest_nonlinear_perf and nominal_perf, but perf_ctrls.min_perf and
+>> perf_ctrls.max_perf remain the old value. A little bit strange I think. And
+>> when this happen, min_freq_req and max_freq_req will retain the value last
+>> set by the users through min_perf and max_perf. It's that alright?
+> 
+> When disabling: Reset policy to defaults for normal governor control,
+> but preserve HW min/max_perf values and cached values for when
+> auto_sel is re-enabled.
+> When enabling: Restore policy to preserved min/max_perf values.
 
-On Thu, 15 Jan 2026 at 03:25, zhenglifeng (A) <zhenglifeng1@huawei.com> wrote:
-> On 2026/1/14 21:54, Geert Uytterhoeven wrote:
-> > On Tue, 13 Jan 2026 at 16:58, Beata Michalska <beata.michalska@arm.com> wrote:
-> >> On Tue, Jan 13, 2026 at 11:51:45AM +0100, Geert Uytterhoeven wrote:
-> >>> On Tue, 30 Dec 2025 at 09:02, Lifeng Zheng <zhenglifeng1@huawei.com> wrote:
-> >>>> Currently, when a cpufreq policy is created, the AMU FIE setup process
-> >>>> checks all CPUs in the policy -- including those that are offline. If any
-> >>>> of these CPUs are offline at that time, their AMU capability flag hasn't
-> >>>> been verified yet, leading the check fail. As a result, AMU FIE is not
-> >>>> enabled, even if the CPUs that are online do support it.
-> >>>>
-> >>>> Later, when the previously offline CPUs come online and report AMU support,
-> >>>> there's no mechanism in place to re-enable AMU FIE for the policy. This
-> >>>> leaves the entire frequency domain without AMU FIE, despite being eligible.
-> >>>>
-> >>>> Restrict the initial AMU FIE check to only those CPUs that are online at
-> >>>> the time the policy is created, and allow CPUs that come online later to
-> >>>> join the policy with AMU FIE enabled.
-> >>>>
-> >>>> Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
-> >>>> Acked-by: Beata Michalska <beata.michalska@arm.com>
-> >>>
-> >>> Thanks for your patch, which is now commit 6fd9be0b7b2e957d
-> >>> ("arm64: topology: Handle AMU FIE setup on CPU hotplug") in
-> >>> arm64/for-next/core (next-20260107 and later).
-> >>>
-> >>>> --- a/arch/arm64/kernel/topology.c
-> >>>> +++ b/arch/arm64/kernel/topology.c
-> >>>> @@ -284,7 +284,7 @@ static int init_amu_fie_callback(struct notifier_block *nb, unsigned long val,
-> >>>>         struct cpufreq_policy *policy = data;
-> >>>>
-> >>>>         if (val == CPUFREQ_CREATE_POLICY)
-> >>>> -               amu_fie_setup(policy->related_cpus);
-> >>>> +               amu_fie_setup(policy->cpus);
-> >>>>
-> >>>>         /*
-> >>>>          * We don't need to handle CPUFREQ_REMOVE_POLICY event as the AMU
-> >>>> @@ -303,10 +303,71 @@ static struct notifier_block init_amu_fie_notifier = {
-> >>>>         .notifier_call = init_amu_fie_callback,
-> >>>>  };
-> >>>>
-> >>>> +static int cpuhp_topology_online(unsigned int cpu)
-> >>>> +{
-> >>>> +       struct cpufreq_policy *policy = cpufreq_cpu_policy(cpu);
-> >>>> +
-> >>>> +       /* Those are cheap checks */
-> >>>> +
-> >>>> +       /*
-> >>>> +        * Skip this CPU if:
-> >>>> +        *  - it has no cpufreq policy assigned yet,
-> >>>> +        *  - no policy exists that spans CPUs with AMU counters, or
-> >>>> +        *  - it was already handled.
-> >>>> +        */
-> >>>> +       if (unlikely(!policy) || !cpumask_available(amu_fie_cpus) ||
-> >>>> +           cpumask_test_cpu(cpu, amu_fie_cpus))
-> >>>> +               return 0;
-> >>>> +
-> >>>> +       /*
-> >>>> +        * Only proceed if all already-online CPUs in this policy
-> >>>> +        * support AMU counters.
-> >>>> +        */
-> >>>> +       if (unlikely(!cpumask_subset(policy->cpus, amu_fie_cpus)))
-> >>>> +               return 0;
-> >>>> +
-> >>>> +       /*
-> >>>> +        * If the new online CPU cannot pass this check, all the CPUs related to
-> >>>> +        * the same policy should be clear from amu_fie_cpus mask, otherwise they
-> >>>> +        * may use different source of the freq scale.
-> >>>> +        */
-> >>>> +       if (!freq_counters_valid(cpu)) {
-> >>>> +               pr_warn("CPU[%u] doesn't support AMU counters\n", cpu);
-> >>>
-> >>> This is triggered during resume from s2ram on Renesas R-Car H3
-> >>> (big.LITTLE 4x Cortex-A57 + 4x Cortex-A53), when enabling the first
-> >>> little core:
-> >>>
-> >>>     AMU: CPU[4] doesn't support AMU counters
-> >>>
-> >>> Adding debug code:
-> >>>
-> >>>     pr_info("Calling
-> >>> topology_clear_scale_freq_source(SCALE_FREQ_SOURCE_ARCH, %*pbl)\n",
-> >>> cpumask_pr_args(policy->related_cpus));
-> >>>     pr_info("Calling cpumask_andnot(..., %*pbl, %*pbl)\n",
-> >>> cpumask_pr_args(amu_fie_cpus), cpumask_pr_args(policy->related_cpus));
-> >>>
-> >>> gives:
-> >>>
-> >>>     AMU: Calling topology_clear_scale_freq_source(SCALE_FREQ_SOURCE_ARCH, 4-7)
-> >>>     AMU: Calling cpumask_andnot(..., , 4-7)
-> >>>
-> >>> so AMU is disabled for all little cores.
-> >>>
-> >>> Since this only happens during s2ram, and not during initial CPU
-> >>> bring-up on boot, this looks wrong to me?
-> >> This does look rather surprising. If that CPU was marked as supporting AMUs at
-> >> the initial bring-up it should be part of amu_fie_cpus mask, so the hp callback
-> >> should bail out straight away. Would you be able to add some logs to see what
-> >> that mask actually contains ?
-> >> Furthermore, freq_counters_valid is logging issues when validating the counters.
-> >> Would you be able to re-run it with the debug level to see what might be
-> >> happening under the hood, although I am still unsure why it is even reaching
-> >> that point ...
-> >
-> > Adding extra debugging info, and "#define DEBUG" at the top.
-> >
-> > During boot:
-> >
-> >     AMU: amu_fie_setup:260: cpus 0-3 amu_fie_cpus
-> >     ^^^ empty amu_fie_cpus
-> >     AMU: CPU0: counters are not supported.
-> >     ^^^ pr_debug
-> >     AMU: amu_fie_setup:260: cpus 4-7 amu_fie_cpus
-> >     ^^^ empty amu_fie_cpus
-> >     AMU: CPU4: counters are not supported.
-> >     ^^^ pr_debug
-> >
-> > During resume from s2ram:
-> >
-> >     AMU: cpuhp_topology_online:314: cpu 1 amu_fie_cpus
-> >     AMU: cpuhp_topology_online:343: skipped
-> > (!cpumask_subset(policy->cpus, amu_fie_cpus))
-> >     AMU: cpuhp_topology_online:314: cpu 2 amu_fie_cpus
-> >     AMU: cpuhp_topology_online:343: skipped
-> > (!cpumask_subset(policy->cpus, amu_fie_cpus))
-> >     AMU: cpuhp_topology_online:314: cpu 3 amu_fie_cpus
-> >     AMU: cpuhp_topology_online:343: skipped
-> > (!cpumask_subset(policy->cpus, amu_fie_cpus))
-> >     AMU: cpuhp_topology_online:314: cpu 4 amu_fie_cpus
-> >     AMU: CPU4: counters are not supported.
-> >     ^^^ pr_debug
-> >     AMU: CPU[4] doesn't support AMU counters
-> >     ^^^ pr_warn
-> >     AMU: Calling topology_clear_scale_freq_source(SCALE_FREQ_SOURCE_ARCH, 4-7)
-> >     AMU: Calling cpumask_andnot(..., , 4-7)
->
-> Something strange here. If AMU is not supported at all, amu_fie_cpus should
-> never be available and cpuhp_topology_online() should return in the first
-> 'if'. Why it runs this far?
+It's easy to assume that the values store in reg and in
+cpu_data->perf_ctrls should be consistent. Perhaps adding some comments
+would be better.
 
-You mean the "!cpumask_available(amu_fie_cpus)" test?
+> 
+>>> +
+>>> +     /*
+>>> +      * Set min/max performance and update policy constraints.
+>>> +      *   When enabling: update both HW registers and policy.
+>>> +      *   When disabling: update policy only, preserve HW registers.
+>>> +      * Continue even if min/max are not supported, as EPP and autosel
+>>> +      * might still be supported.
+>>> +      */
+>>> +     ret = cppc_cpufreq_set_min_perf(policy, min_perf, update_reg,
+>>> +                                     update_policy);
+>>> +     if (ret && ret != -EOPNOTSUPP)
+>>> +             return ret;
+>>> +
+>>> +     ret = cppc_cpufreq_set_max_perf(policy, max_perf, update_reg,
+>>> +                                     update_policy);
+>>> +     if (ret && ret != -EOPNOTSUPP)
+>>> +             return ret;
+>>> +
+>>> +     /* Update auto_sel register */
+>>> +     ret = cppc_set_auto_sel(cpu, is_auto_sel);
+>>> +     if (ret && ret != -EOPNOTSUPP) {
+>>> +             pr_warn("Failed to set auto_sel=%d for CPU%d (%d)\n",
+>>> +                     is_auto_sel, cpu, ret);
+>>> +             return ret;
+>>> +     }
+>>> +     if (!ret)
+>>> +             cpu_data->perf_ctrls.auto_sel = is_auto_sel;
+>>> +
+>>> +     return 0;
+>> Better to return ret.
+> 
+> Here, return 0 is intentional.
+> If cppc_set_auto_sel() returns -EOPNOTSUPP, we still consider the
+> function successful since auto_sel is an optional register.
 
-include/linux/cpumask.h:
+Why consider it successful?
 
-    #ifdef CONFIG_CPUMASK_OFFSTACK
-    static __always_inline bool cpumask_available(cpumask_var_t mask)
-    {
-            return mask != NULL;
-    }
-    #else
-    static __always_inline bool cpumask_available(cpumask_var_t mask)
-    {
-            return true;
-    }
-    #endif /* CONFIG_CPUMASK_OFFSTACK */
+> 
+>>> +}
+>>> +
+>>>
+>>> -#define cppc_cpufreq_set_max_perf(policy, val, update_policy) \
+>>> -     cppc_cpufreq_set_mperf_limit(policy, val, update_policy, false)
+>>>   static struct cppc_cpudata *cppc_cpufreq_get_cpu_data(unsigned int cpu)
+>>>   {
+>>>        struct cppc_cpudata *cpu_data;
+>>> @@ -889,7 +961,7 @@ static ssize_t store_auto_select(struct cpufreq_policy *policy,
+>>>        if (ret)
+>>>                return ret;
+>> Since you already store auto_sel value in perf_ctrls, We can compare the
+>> new value with perf_ctrls.auto_sel here, and just return if they are the
+>> same.
+> 
+> Will add in v6.
+> 
+> Thank you,
+> Sumit Gupta
+> 
+> ....
+> 
+> 
+> 
 
-include/linux/cpumask_types.h:
-
-    #ifdef CONFIG_CPUMASK_OFFSTACK
-    typedef struct cpumask *cpumask_var_t;
-    #else
-    typedef struct cpumask cpumask_var_t[1];
-    #endif /* CONFIG_CPUMASK_OFFSTACK */
-
-So if CONFIG_CPUMASK_OFFSTACK is not enabled, it always returns true.
-
-arch/arm64/Kconfig:
-
-    config ARM64
-        [...]
-        select CPUMASK_OFFSTACK if NR_CPUS > 256
-
-> >     AMU: cpuhp_topology_online:314: cpu 5 amu_fie_cpus
-> >     AMU: cpuhp_topology_online:343: skipped
-> > (!cpumask_subset(policy->cpus, amu_fie_cpus))
-> >     AMU: cpuhp_topology_online:314: cpu 6 amu_fie_cpus
-> >     AMU: cpuhp_topology_online:343: skipped
-> > (!cpumask_subset(policy->cpus, amu_fie_cpus))
-> >     AMU: cpuhp_topology_online:314: cpu 7 amu_fie_cpus
-> >     AMU: cpuhp_topology_online:343: skipped
-> > (!cpumask_subset(policy->cpus, amu_fie_cpus))
-> >
-> > Hence there is no issue, as AMU is not supported at all!
-> >
-> > The confusing part is in the (absence of) logging.
-> > If AMU is not supported, freq_counters_valid() uses:
-> >
-> >      pr_debug("CPU%d: counters are not supported.\n", cpu);
-> >
-> > which is typically not printed, unless DEBUG is enabled.
-> >
-> > If freq_counters_valid() failed, the new cpuhp_topology_online() uses:
-> >
-> >     pr_warn("CPU[%u] doesn't support AMU counters\n", cpu);
-> >
-> > which is always printed.
-> >
-> > Given freq_counters_valid() already prints a (debug) message, I think
-> > the pr_warn() should just be removed.  Do you agree, or is there still
-> > another incorrect check that should prevent getting this far?
->
-> I'm OK with removing it.
-
-OK, I will send a patch.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
