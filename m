@@ -1,118 +1,199 @@
-Received: from mail-qk1-f174.google.com (mail-qk1-f174.google.com [209.85.222.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C46BE36BCD8
-	for <linux-pm@vger.kernel.org>; Thu, 15 Jan 2026 10:41:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 14EF536C0AA;
+	Thu, 15 Jan 2026 10:42:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768473714; cv=none; b=djqWvrXyy9d1kovf/+HqJ+wkuV8L4O3mrblN/1HUtPlAKXhVN5nVZ3JfvqwgXIyot5JlSO4L23j/5WmC97phqqNF45JYVcqVGMmBZBNXNpmvVE2dpjLlYiTAON1thOWc9Uol/58GY5Z2zv4V93gPjltZFTnsIQl9PTxG+ReOLcc=
+	t=1768473763; cv=none; b=r8+5ZpswkebblZA6vtujb7T6jKaUgK41EkWdK3lB0avWeOwvc8k5U6MUjKzS17NYovkBooQkIbwNvBg6I1yTM5d7UDUh034cRs+P1h/pkJmoWTenquyURzQIbhZANAMV7griPVaUGkjJjWJ70nlSUSZ5SQNyO906jdCewxsOTa4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768473714; c=relaxed/simple;
-	bh=Ic+BG6PwFENklasmULObFPSGqA588zsHCZepmm6A/P4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=R/5lL0HhSM6ELdIsvJiUqs7Kz+CZjLbBPxEkOcsh5rjlUqaNj8UvR1JePQY9WFjjK6gMpzPQ9jZq0UVZHPBccKqI42xDvVyTVKllR5jpdV6WReYi/jttwYfO3lX3Mmxsre6Hoh6QALzHrz5bJ7LCyrjnZXuRV9phIAfgi3iVNIk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.222.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-qk1-f174.google.com with SMTP id af79cd13be357-8b31a665ba5so98241585a.2
-        for <linux-pm@vger.kernel.org>; Thu, 15 Jan 2026 02:41:52 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768473712; x=1769078512;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=1p2XoRu+N3MN1gMwzSh5wyB5gfaCBHLjeZ1kZTlyHmo=;
-        b=X+IBVxvf+N3EU3dmY9xNyC5/bi3oWXPWE03ITLn6gb+dDylbmLOaf+Al8k1Pccr5mk
-         PFuw7Xa+kJmBimv9hZymjEgNSySn0vBMHdCndfor/P9ythh8ytmTI3+CEZZI4fyUEjNx
-         s7XQcrLUj+QNjLY25iBivwtwPDE1MWWFCSYORLTw9kqNBJ6AGy0aIdQsWidkvCGqMb4U
-         8vPPiEoMbYbTSoS54K4quarFhgnasaCNnuLmhxLgppfPi0POzyvs1kN6IP4bsEBDFIaw
-         +M5COglrbHsKk6vloK2BMm0xRYdsQjqJEDPV/KfpiK0Cn4HNVaYaRn97Dfc/LiqoAz7j
-         Iacg==
-X-Forwarded-Encrypted: i=1; AJvYcCUHgaAGsV0bZ3QCJIqyFyW9HfdvU2JWnBxLqtX+wCTOtQW35WQmWdu0TJ8AtUIt8pWOZSxVlt3ktA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwcgRgpP/OVMV+8rDNbt8vrZTttNPTiuJbMys/lUhqqP3p/HODR
-	iF2RvMGfFhcTDbcFO0OxVCF50u3PLE7wUr1xE9+q/pAR+3kLt3Imnf6Ys6H7N6R9Q/U=
-X-Gm-Gg: AY/fxX4JvpaF7ML6YChtPpjXRtA7kG3M1+lsiuIfjXMzboycLKYaOYP51xS2UVxyn/G
-	H6ubbWTkVDjy/EDJo+qKf1NYiJY4SVXKf/CEQDIidYINd0LEKRqmGbTzKbupQddtj+09T96zdCz
-	+icNP24m+89eFosvsBjwkJmmi0KK6UeAvKxieQLmGPOITIxZkBKfkUeHjAQOCs5w+PTDMcdG29V
-	2z4PHvucFnr8aE1py56+sAn9+XmrPS/CW1eEM7D7EP83n52yo3lsyKL6xa+T5AcRnrKewz0nTUg
-	FeBeryDyDky9pVgVITcRnFl2Xsaf6FFd2Sr1VPAwTWfI6eQmDQ/KTVWwiOd7+5bTYU4hVvh7viK
-	7bVhoOelu9DhPSvQJjjvvRg0hOR63Gctf3U79WhOxH+g8JZohAr58PPxMX0ZIRKn/vLjetDeCdR
-	4iHGQlOIhgSeB5VnBJH+Oj0/IrGjN1wI09kdnCQtTXRmfkFRTceq3VsSQRspU=
-X-Received: by 2002:a05:6122:2887:b0:559:7acd:1d3a with SMTP id 71dfb90a1353d-563a0924a58mr2005488e0c.2.1768467643857;
-        Thu, 15 Jan 2026 01:00:43 -0800 (PST)
-Received: from mail-ua1-f42.google.com (mail-ua1-f42.google.com. [209.85.222.42])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5636dc36a20sm16846242e0c.13.2026.01.15.01.00.43
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 15 Jan 2026 01:00:43 -0800 (PST)
-Received: by mail-ua1-f42.google.com with SMTP id a1e0cc1a2514c-94130b88642so454922241.3
-        for <linux-pm@vger.kernel.org>; Thu, 15 Jan 2026 01:00:43 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCUsbXLamIfocgXn0LTyKSWPn6RRfUwzE1z+FsEZ71zIMqtAeeU0ghv/6PJDoGR0MbydiUeVboXhCQ==@vger.kernel.org
-X-Received: by 2002:a05:6102:4b83:b0:5f1:4fb8:6b92 with SMTP id
- ada2fe7eead31-5f17f58c046mr2296699137.22.1768467196661; Thu, 15 Jan 2026
- 00:53:16 -0800 (PST)
+	s=arc-20240116; t=1768473763; c=relaxed/simple;
+	bh=llEBPxw2+pMZWxuWT4kSJKy3MloVCCidvTx0iLzR37A=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=EEyuwExKzof00JWHDCc/1Pw0h2xEU6I6leZjk0yFfeySMN8qvEgYg8wowz+RPDmP73j0B5DKeW6qHf4qkTJLsvRdmZQ6xITLJlbkzQbXBAs/Rp56PVRnrKDc/DF60llJtAFzEPrBelz54mf9LWALsNsbMwgLFDOQrOqMmBCGaDc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Una2UUlr; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Una2UUlr"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C5C0C116D0;
+	Thu, 15 Jan 2026 10:42:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1768473762;
+	bh=llEBPxw2+pMZWxuWT4kSJKy3MloVCCidvTx0iLzR37A=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Una2UUlrcBz4SHlUiUp5PrFBWLmf9udmXhChU4WIFgX3C1hxfO3dWAPXKXeJoc8uo
+	 yHxSqV2EMldhU+3sgUIm8T2iLCsfknAe3vM4rSDivCL/tgWwkduL17CqMGYIa5/Om4
+	 IiDaTGERYO4sPRyY8ovwO5VsV5ncx/ksiGLw31LieoMJ9SZHTflpato7llsHLHSA20
+	 mQRpJNMIvamS8EiJ7VwekA5ZSKpjnlQ6EhNGGhwyTJ9NZ0//b03mbLAVU5aNPxoxV7
+	 hYUxUy3kSBmt8/eucatEA3Lgq1zSefgjZ3Jue8GuuIAu3dhJU/ptnO6Nolzxo/7E8I
+	 UiS5UAgEd4p9Q==
+Date: Thu, 15 Jan 2026 16:12:23 +0530
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: Rob Herring <robh@kernel.org>
+Cc: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
+	Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nicolas.schier@linux.dev>, 
+	Hans de Goede <hansg@kernel.org>, Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>, 
+	Mark Pearson <mpearson-lenovo@squebb.ca>, "Derek J. Clark" <derekjohn.clark@gmail.com>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Marcel Holtmann <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
+	Bartosz Golaszewski <brgl@bgdev.pl>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+	Bartosz Golaszewski <brgl@kernel.org>, linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-kbuild@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pci@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
+	linux-pm@vger.kernel.org, Stephan Gerhold <stephan.gerhold@linaro.org>, 
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH v4 5/9] dt-bindings: connector: Add PCIe M.2 Mechanical
+ Key E connector
+Message-ID: <gcmm23ji4fkcqeshcyiehuyega7kdbtvmofp4usmol2icwn6gy@i46icelwwqh5>
+References: <20260112-pci-m2-e-v4-0-eff84d2c6d26@oss.qualcomm.com>
+ <20260112-pci-m2-e-v4-5-eff84d2c6d26@oss.qualcomm.com>
+ <20260113171424.GA3925312-robh@kernel.org>
+ <xyttom64ht5hrrp5hecjqehnyfgsv4mfl2t36e2sveu44ccpjl@lkzquse2kqsx>
+ <CAL_JsqJxBNm0y6T7vji6MXgsO65iDJ-tdUEo0cOxkw7EuMKpkg@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251230080115.2120612-1-zhenglifeng1@huawei.com>
- <20251230080115.2120612-4-zhenglifeng1@huawei.com> <CAMuHMdVeHk-Enc-M9ztwSdeAtE8YPKtJwq+273bGPEFOEsu=Rw@mail.gmail.com>
- <aWZriVlQZ5jRx2o4@arm.com> <CAMuHMdVgbQnaCQ8U8FK6J1vJLsqc0_MC7zSTX2B=rsuF2kpEKg@mail.gmail.com>
- <41b7398c-b1a4-4b87-b6f9-07eacf4f4752@huawei.com> <CAMuHMdUuTrF=eN5tMsjmOfWuuT9r7aCOTS7=YP6+KrSdNrhEpw@mail.gmail.com>
-In-Reply-To: <CAMuHMdUuTrF=eN5tMsjmOfWuuT9r7aCOTS7=YP6+KrSdNrhEpw@mail.gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 15 Jan 2026 09:53:05 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdVxZ5bbkDqib7jyG50YEnKX=KuHs-svMX7-o2SPz8WF6g@mail.gmail.com>
-X-Gm-Features: AZwV_QiQCjp_xx6Rd7qqH4UVq_yR09vqEc-Jt_NOVYext6gLSj5FqsRdjfyRE28
-Message-ID: <CAMuHMdVxZ5bbkDqib7jyG50YEnKX=KuHs-svMX7-o2SPz8WF6g@mail.gmail.com>
-Subject: Re: [REPOST PATCH v6 3/3] arm64: topology: Handle AMU FIE setup on
- CPU hotplug
-To: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
-Cc: Beata Michalska <beata.michalska@arm.com>, catalin.marinas@arm.com, will@kernel.org, 
-	rafael@kernel.org, viresh.kumar@linaro.org, sudeep.holla@arm.com, 
-	gregkh@linuxfoundation.org, dakr@kernel.org, ionela.voinescu@arm.com, 
-	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
-	linuxarm@huawei.com, jonathan.cameron@huawei.com, vincent.guittot@linaro.org, 
-	zhanjie9@hisilicon.com, lihuisong@huawei.com, yubowen8@huawei.com, 
-	zhangpengjie2@huawei.com, wangzhi12@huawei.com, linhongye@h-partners.com, 
-	Linux-Renesas <linux-renesas-soc@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAL_JsqJxBNm0y6T7vji6MXgsO65iDJ-tdUEo0cOxkw7EuMKpkg@mail.gmail.com>
 
-On Thu, 15 Jan 2026 at 09:37, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Thu, 15 Jan 2026 at 03:25, zhenglifeng (A) <zhenglifeng1@huawei.com> wrote:
-> > On 2026/1/14 21:54, Geert Uytterhoeven wrote:
-> > > The confusing part is in the (absence of) logging.
-> > > If AMU is not supported, freq_counters_valid() uses:
-> > >
-> > >      pr_debug("CPU%d: counters are not supported.\n", cpu);
-> > >
-> > > which is typically not printed, unless DEBUG is enabled.
-> > >
-> > > If freq_counters_valid() failed, the new cpuhp_topology_online() uses:
-> > >
-> > >     pr_warn("CPU[%u] doesn't support AMU counters\n", cpu);
-> > >
-> > > which is always printed.
-> > >
-> > > Given freq_counters_valid() already prints a (debug) message, I think
-> > > the pr_warn() should just be removed.  Do you agree, or is there still
-> > > another incorrect check that should prevent getting this far?
+On Wed, Jan 14, 2026 at 11:45:42AM -0600, Rob Herring wrote:
+> On Wed, Jan 14, 2026 at 10:14 AM Manivannan Sadhasivam <mani@kernel.org> wrote:
 > >
-> > I'm OK with removing it.
->
-> OK, I will send a patch.
+> > On Tue, Jan 13, 2026 at 11:14:24AM -0600, Rob Herring wrote:
+> > > On Mon, Jan 12, 2026 at 09:56:04PM +0530, Manivannan Sadhasivam wrote:
+> > > > Add the devicetree binding for PCIe M.2 Mechanical Key E connector defined
+> > > > in the PCI Express M.2 Specification, r4.0, sec 5.1.2. This connector
+> > > > provides interfaces like PCIe or SDIO to attach the WiFi devices to the
+> > > > host machine, USB or UART+PCM interfaces to attach the Bluetooth (BT)
+> > > > devices. Spec also provides an optional interface to connect the UIM card,
+> > > > but that is not covered in this binding.
+> > > >
+> > > > The connector provides a primary power supply of 3.3v, along with an
+> > > > optional 1.8v VIO supply for the Adapter I/O buffer circuitry operating at
+> > > > 1.8v sideband signaling.
+> > > >
+> > > > The connector also supplies optional signals in the form of GPIOs for fine
+> > > > grained power management.
+> > > >
+> > > > Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+> > > > ---
+> > > >  .../bindings/connector/pcie-m2-e-connector.yaml    | 154 +++++++++++++++++++++
+> > > >  MAINTAINERS                                        |   1 +
+> > > >  2 files changed, 155 insertions(+)
+> > > >
+> > > > diff --git a/Documentation/devicetree/bindings/connector/pcie-m2-e-connector.yaml b/Documentation/devicetree/bindings/connector/pcie-m2-e-connector.yaml
+> > > > new file mode 100644
+> > > > index 000000000000..b65b39ddfd19
+> > > > --- /dev/null
+> > > > +++ b/Documentation/devicetree/bindings/connector/pcie-m2-e-connector.yaml
+> > > > @@ -0,0 +1,154 @@
+> > > > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> > > > +%YAML 1.2
+> > > > +---
+> > > > +$id: http://devicetree.org/schemas/connector/pcie-m2-e-connector.yaml#
+> > > > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > > > +
+> > > > +title: PCIe M.2 Mechanical Key E Connector
+> > > > +
+> > > > +maintainers:
+> > > > +  - Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+> > > > +
+> > > > +description:
+> > > > +  A PCIe M.2 E connector node represents a physical PCIe M.2 Mechanical Key E
+> > > > +  connector. Mechanical Key E connectors are used to connect Wireless
+> > > > +  Connectivity devices including combinations of Wi-Fi, BT, NFC to the host
+> > > > +  machine over interfaces like PCIe/SDIO, USB/UART+PCM, and I2C.
+> > > > +
+> > > > +properties:
+> > > > +  compatible:
+> > > > +    const: pcie-m2-e-connector
+> > > > +
+> > > > +  vpcie3v3-supply:
+> > > > +    description: A phandle to the regulator for 3.3v supply.
+> > > > +
+> > > > +  vpcie1v8-supply:
+> > > > +    description: A phandle to the regulator for VIO 1.8v supply.
+> > >
+> > > I don't see any 1.8V supply on the connector. There are 1.8V IOs and you
+> > > may need something in DT to ensure those are powered. However, there's
+> > > no guarantee that it's a single supply.
+> > >
+> >
+> > 1.8v VIO supply is an optional supply and is only required if the platform
+> > supports 1.8v for sideband signals such as PERST#, WAKE#... I can include it in
+> > the example for completeness.
+> 
+> My point is that PERST# and WAKE# supplies could be 2 different 1.8V
+> supplies and those supply the I/O pads of the GPIO pins (and possibly
+> external pull-ups) that drive them. The 1.8V supply doesn't supply
+> 1.8V to the slot, so making it a slot/connector property is wrong.
+> 
 
-https://lore.kernel.org/a8dbf49bfa44a6809fa4f34b918516847dc14460.1768466986.git.geert+renesas@glider.be/
+Ok, I get your point that VIO 1.8v supply is just limited to the I/O logic and
+not the whole card/adapter. But I don't get your multiple supplies concern. Spec
+says, "A 1.8 V supply pin called VIO 1.8 V is used to supply the on-Adapter I/O
+buffer circuitry operating at 1.8 V." So it implies that either the single
+supply available to the card through VIO might be used to power the whole I/O
+circuit logic or the card can derive its own 1.8v supply from 3.3v supply.
 
-Gr{oetje,eeting}s,
+So how come the card can have 2 different 1.8v supplies powering the I/O
+circuitry?
 
-                        Geert
+> This isn't exactly a new issue. It could be an issue on any binding
+> with GPIOs. Perhaps this needs to be handled within GPIO or pinctrl.
+> 
+> > > > +
+> > > > +    oneOf:
+> > > > +      - required:
+> > > > +          - port@0
+> > > > +
+> > > > +  clocks:
+> > > > +    description: 32.768 KHz Suspend Clock (SUSCLK) input from the host system to
+> > > > +      the M.2 card. Refer, PCI Express M.2 Specification r4.0, sec 3.1.12.1 for
+> > > > +      more details.
+> > > > +    maxItems: 1
+> > > > +
+> > > > +  w-disable1-gpios:
+> > > > +    description: GPIO input to W_DISABLE1# signal. This signal is used by the
+> > > > +      system to disable WiFi radio in the M.2 card. Refer, PCI Express M.2
+> > > > +      Specification r4.0, sec 3.1.12.3 for more details.
+> > > > +    maxItems: 1
+> > > > +
+> > > > +  w-disable2-gpios:
+> > > > +    description: GPIO input to W_DISABLE2# signal. This signal is used by the
+> > > > +      system to disable WiFi radio in the M.2 card. Refer, PCI Express M.2
+> > > > +      Specification r4.0, sec 3.1.12.3 for more details.
+> > > > +    maxItems: 1
+> > > > +
+> > > > +  viocfg-gpios:
+> > > > +    description: GPIO output to IO voltage configuration (VIO_CFG) signal. This
+> > > > +      signal is used by the M.2 card to indicate to the host system that the
+> > > > +      card supports an independent IO voltage domain for the sideband signals.
+> > > > +      Refer, PCI Express M.2 Specification r4.0, sec 3.1.15.1 for more details.
+> > > > +    maxItems: 1
+> > >
+> > > What about SDIO and UART WAKE, SDIO RESET, and vendor defined signals?
+> > >
+> >
+> > Not sure about vendor defined signals as they can be either GPIO or interface
+> > signals. How should them be defined?
+> 
+> That kind of breaks any notion of this being a generic slot/connector.
+> How's the host supposed to know how to connect them? What if a card
+> required them to be driven a certain way before you can discover the
+> card? If they can be GPIOs and can be hooked up to the host system
+> GPIOs, then you should define GPIOs for them. If they aren't GPIOs on
+> a host, then you omit them.
+> 
+
+Ok, then defining them as 'vendorN-gpios' is fine?
+
+- Mani
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+மணிவண்ணன் சதாசிவம்
