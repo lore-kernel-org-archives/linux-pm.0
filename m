@@ -1,99 +1,118 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qk1-f174.google.com (mail-qk1-f174.google.com [209.85.222.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2832036BCF4
-	for <linux-pm@vger.kernel.org>; Thu, 15 Jan 2026 10:37:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C46BE36BCD8
+	for <linux-pm@vger.kernel.org>; Thu, 15 Jan 2026 10:41:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768473439; cv=none; b=j8KmeJR7IUBQTVnre5LL1erDuh2gW8NpJQ/1k7pHqEW4X4MAI3PgKwg4GabzAK7jjq7G3b9eqFPSSnTUb4yguPKhQVfHiC07Kwvp7stqfyVxtqctMuf4U3vu1xdIUWWEJiwINrr5uUQ7N4SKYze7+7moIsVWGDgws1hTFvSAlAY=
+	t=1768473714; cv=none; b=djqWvrXyy9d1kovf/+HqJ+wkuV8L4O3mrblN/1HUtPlAKXhVN5nVZ3JfvqwgXIyot5JlSO4L23j/5WmC97phqqNF45JYVcqVGMmBZBNXNpmvVE2dpjLlYiTAON1thOWc9Uol/58GY5Z2zv4V93gPjltZFTnsIQl9PTxG+ReOLcc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768473439; c=relaxed/simple;
-	bh=mroer21tyn+VD73El7nXuBQ45D8aT09v1u5rNLXbTnY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=c6Hy9I+XNze/zPBMKwL4Ui4iSgQUPzaWM7RJu8zNMWj8eK0TQnDE8CCPrxoWEebP7boxBCIKsTI57gY2gBaBpRqQ/WLCAJfUWijYDELLGF5tomBro31rDnQ5BYJ73Vmhs31dURQqtLHBrtRCBI2QxVaxLWymC9q87WaEzjgHIoc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=aQZ8s3Xu; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="aQZ8s3Xu"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1768473437;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=nxAyT8OzTNULMr7XLos5FaceRIYaialub9HWZHZwsXw=;
-	b=aQZ8s3Xusr96HiWTmP+WuMLnYMeWLEg9U5k+7DlcE4YuyJvjwWQRJTIDCEXcvL8n5hv/kx
-	EAYVUeCwMjFth3bNPkCLUgSPWkc5JNIGXQgpYphcU1KezEZyKCQ3AjAEzoq9wzis1fTM3t
-	aWNoVIOtGkwkSI3O45IBh6X8NG4ctx0=
-Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-491-Rm2HCpxvM2ywjPe_ZzUfAA-1; Thu,
- 15 Jan 2026 05:37:12 -0500
-X-MC-Unique: Rm2HCpxvM2ywjPe_ZzUfAA-1
-X-Mimecast-MFC-AGG-ID: Rm2HCpxvM2ywjPe_ZzUfAA_1768473431
-Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 06F4218005B4;
-	Thu, 15 Jan 2026 10:37:11 +0000 (UTC)
-Received: from mrout-thinkpadp16vgen1.punetw6.csb (unknown [10.74.64.47])
-	by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 50AF71955F22;
-	Thu, 15 Jan 2026 10:37:06 +0000 (UTC)
-From: Malaya Kumar Rout <mrout@redhat.com>
-To: lukasz.luba@arm.com
-Cc: mrout@redhat.com,
-	malayarout91@gmail.com,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] PM: EM: Fix NULL pointer dereference in em_create_pd()
-Date: Thu, 15 Jan 2026 16:07:00 +0530
-Message-ID: <20260115103700.177997-1-mrout@redhat.com>
+	s=arc-20240116; t=1768473714; c=relaxed/simple;
+	bh=Ic+BG6PwFENklasmULObFPSGqA588zsHCZepmm6A/P4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=R/5lL0HhSM6ELdIsvJiUqs7Kz+CZjLbBPxEkOcsh5rjlUqaNj8UvR1JePQY9WFjjK6gMpzPQ9jZq0UVZHPBccKqI42xDvVyTVKllR5jpdV6WReYi/jttwYfO3lX3Mmxsre6Hoh6QALzHrz5bJ7LCyrjnZXuRV9phIAfgi3iVNIk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.222.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-qk1-f174.google.com with SMTP id af79cd13be357-8b31a665ba5so98241585a.2
+        for <linux-pm@vger.kernel.org>; Thu, 15 Jan 2026 02:41:52 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1768473712; x=1769078512;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=1p2XoRu+N3MN1gMwzSh5wyB5gfaCBHLjeZ1kZTlyHmo=;
+        b=X+IBVxvf+N3EU3dmY9xNyC5/bi3oWXPWE03ITLn6gb+dDylbmLOaf+Al8k1Pccr5mk
+         PFuw7Xa+kJmBimv9hZymjEgNSySn0vBMHdCndfor/P9ythh8ytmTI3+CEZZI4fyUEjNx
+         s7XQcrLUj+QNjLY25iBivwtwPDE1MWWFCSYORLTw9kqNBJ6AGy0aIdQsWidkvCGqMb4U
+         8vPPiEoMbYbTSoS54K4quarFhgnasaCNnuLmhxLgppfPi0POzyvs1kN6IP4bsEBDFIaw
+         +M5COglrbHsKk6vloK2BMm0xRYdsQjqJEDPV/KfpiK0Cn4HNVaYaRn97Dfc/LiqoAz7j
+         Iacg==
+X-Forwarded-Encrypted: i=1; AJvYcCUHgaAGsV0bZ3QCJIqyFyW9HfdvU2JWnBxLqtX+wCTOtQW35WQmWdu0TJ8AtUIt8pWOZSxVlt3ktA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwcgRgpP/OVMV+8rDNbt8vrZTttNPTiuJbMys/lUhqqP3p/HODR
+	iF2RvMGfFhcTDbcFO0OxVCF50u3PLE7wUr1xE9+q/pAR+3kLt3Imnf6Ys6H7N6R9Q/U=
+X-Gm-Gg: AY/fxX4JvpaF7ML6YChtPpjXRtA7kG3M1+lsiuIfjXMzboycLKYaOYP51xS2UVxyn/G
+	H6ubbWTkVDjy/EDJo+qKf1NYiJY4SVXKf/CEQDIidYINd0LEKRqmGbTzKbupQddtj+09T96zdCz
+	+icNP24m+89eFosvsBjwkJmmi0KK6UeAvKxieQLmGPOITIxZkBKfkUeHjAQOCs5w+PTDMcdG29V
+	2z4PHvucFnr8aE1py56+sAn9+XmrPS/CW1eEM7D7EP83n52yo3lsyKL6xa+T5AcRnrKewz0nTUg
+	FeBeryDyDky9pVgVITcRnFl2Xsaf6FFd2Sr1VPAwTWfI6eQmDQ/KTVWwiOd7+5bTYU4hVvh7viK
+	7bVhoOelu9DhPSvQJjjvvRg0hOR63Gctf3U79WhOxH+g8JZohAr58PPxMX0ZIRKn/vLjetDeCdR
+	4iHGQlOIhgSeB5VnBJH+Oj0/IrGjN1wI09kdnCQtTXRmfkFRTceq3VsSQRspU=
+X-Received: by 2002:a05:6122:2887:b0:559:7acd:1d3a with SMTP id 71dfb90a1353d-563a0924a58mr2005488e0c.2.1768467643857;
+        Thu, 15 Jan 2026 01:00:43 -0800 (PST)
+Received: from mail-ua1-f42.google.com (mail-ua1-f42.google.com. [209.85.222.42])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5636dc36a20sm16846242e0c.13.2026.01.15.01.00.43
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 15 Jan 2026 01:00:43 -0800 (PST)
+Received: by mail-ua1-f42.google.com with SMTP id a1e0cc1a2514c-94130b88642so454922241.3
+        for <linux-pm@vger.kernel.org>; Thu, 15 Jan 2026 01:00:43 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCUsbXLamIfocgXn0LTyKSWPn6RRfUwzE1z+FsEZ71zIMqtAeeU0ghv/6PJDoGR0MbydiUeVboXhCQ==@vger.kernel.org
+X-Received: by 2002:a05:6102:4b83:b0:5f1:4fb8:6b92 with SMTP id
+ ada2fe7eead31-5f17f58c046mr2296699137.22.1768467196661; Thu, 15 Jan 2026
+ 00:53:16 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
+References: <20251230080115.2120612-1-zhenglifeng1@huawei.com>
+ <20251230080115.2120612-4-zhenglifeng1@huawei.com> <CAMuHMdVeHk-Enc-M9ztwSdeAtE8YPKtJwq+273bGPEFOEsu=Rw@mail.gmail.com>
+ <aWZriVlQZ5jRx2o4@arm.com> <CAMuHMdVgbQnaCQ8U8FK6J1vJLsqc0_MC7zSTX2B=rsuF2kpEKg@mail.gmail.com>
+ <41b7398c-b1a4-4b87-b6f9-07eacf4f4752@huawei.com> <CAMuHMdUuTrF=eN5tMsjmOfWuuT9r7aCOTS7=YP6+KrSdNrhEpw@mail.gmail.com>
+In-Reply-To: <CAMuHMdUuTrF=eN5tMsjmOfWuuT9r7aCOTS7=YP6+KrSdNrhEpw@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 15 Jan 2026 09:53:05 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVxZ5bbkDqib7jyG50YEnKX=KuHs-svMX7-o2SPz8WF6g@mail.gmail.com>
+X-Gm-Features: AZwV_QiQCjp_xx6Rd7qqH4UVq_yR09vqEc-Jt_NOVYext6gLSj5FqsRdjfyRE28
+Message-ID: <CAMuHMdVxZ5bbkDqib7jyG50YEnKX=KuHs-svMX7-o2SPz8WF6g@mail.gmail.com>
+Subject: Re: [REPOST PATCH v6 3/3] arm64: topology: Handle AMU FIE setup on
+ CPU hotplug
+To: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
+Cc: Beata Michalska <beata.michalska@arm.com>, catalin.marinas@arm.com, will@kernel.org, 
+	rafael@kernel.org, viresh.kumar@linaro.org, sudeep.holla@arm.com, 
+	gregkh@linuxfoundation.org, dakr@kernel.org, ionela.voinescu@arm.com, 
+	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
+	linuxarm@huawei.com, jonathan.cameron@huawei.com, vincent.guittot@linaro.org, 
+	zhanjie9@hisilicon.com, lihuisong@huawei.com, yubowen8@huawei.com, 
+	zhangpengjie2@huawei.com, wangzhi12@huawei.com, linhongye@h-partners.com, 
+	Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-The get_cpu_device() function can return NULL if the CPU device is
-not registered. However, the code in em_create_pd() dereferences the
-returned pointer without checking for NULL, which can lead to a kernel
-panic during energy model initialization.
+On Thu, 15 Jan 2026 at 09:37, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Thu, 15 Jan 2026 at 03:25, zhenglifeng (A) <zhenglifeng1@huawei.com> wrote:
+> > On 2026/1/14 21:54, Geert Uytterhoeven wrote:
+> > > The confusing part is in the (absence of) logging.
+> > > If AMU is not supported, freq_counters_valid() uses:
+> > >
+> > >      pr_debug("CPU%d: counters are not supported.\n", cpu);
+> > >
+> > > which is typically not printed, unless DEBUG is enabled.
+> > >
+> > > If freq_counters_valid() failed, the new cpuhp_topology_online() uses:
+> > >
+> > >     pr_warn("CPU[%u] doesn't support AMU counters\n", cpu);
+> > >
+> > > which is always printed.
+> > >
+> > > Given freq_counters_valid() already prints a (debug) message, I think
+> > > the pr_warn() should just be removed.  Do you agree, or is there still
+> > > another incorrect check that should prevent getting this far?
+> >
+> > I'm OK with removing it.
+>
+> OK, I will send a patch.
 
-Add a NULL check before dereferencing cpu_dev. If get_cpu_device()
-returns NULL, return -ENODEV and properly clean up allocated resources
-through the existing error path.
+https://lore.kernel.org/a8dbf49bfa44a6809fa4f34b918516847dc14460.1768466986.git.geert+renesas@glider.be/
 
-This issue was found by code inspection. The same function is correctly
-handled with NULL checking in em_cpu_get() at line 555-557.
+Gr{oetje,eeting}s,
 
-Fixes: 1bc138c62295 ("PM / EM: add support for other devices than CPUs in Energy Model")
-Signed-off-by: Malaya Kumar Rout <mrout@redhat.com>
----
- kernel/power/energy_model.c | 4 ++++
- 1 file changed, 4 insertions(+)
+                        Geert
 
-diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-index 11af9f64aa82..3971743d7e67 100644
---- a/kernel/power/energy_model.c
-+++ b/kernel/power/energy_model.c
-@@ -466,6 +466,10 @@ static int em_create_pd(struct device *dev, int nr_states,
- 	if (_is_cpu_device(dev))
- 		for_each_cpu(cpu, cpus) {
- 			cpu_dev = get_cpu_device(cpu);
-+			if (!cpu_dev) {
-+				ret = -ENODEV;
-+				goto free_pd_table;
-+			}
- 			cpu_dev->em_pd = pd;
- 		}
- 
 -- 
-2.52.0
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
