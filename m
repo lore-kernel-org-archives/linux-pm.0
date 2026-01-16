@@ -1,255 +1,189 @@
-Received: from BL0PR03CU003.outbound.protection.outlook.com (mail-eastusazon11012008.outbound.protection.outlook.com [52.101.53.8])
+Received: from PH0PR06CU001.outbound.protection.outlook.com (mail-westus3azon11011059.outbound.protection.outlook.com [40.107.208.59])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0997C36164C;
-	Fri, 16 Jan 2026 10:09:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.53.8
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D35A2DA77F;
+	Fri, 16 Jan 2026 10:22:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.208.59
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768558150; cv=fail; b=QsnDIBU1R18MV81zyXCHxUxb/kjXJj/RlfQkPXHXEC7lDnzCnCqH8r83qHmm0Xhq/IND4hZtTb/+bt/29RnB1WxfGvrEcSwT9qJO7YbXp9V+RaGs4rsbVHwh1nmL1DnyKN0aDteK2fS3prjPbpKdABDuBNX5QOzzZLAj+5NznVU=
+	t=1768558927; cv=fail; b=MYUzMfSjohVdNDUjTu65QazzM6oDTMfSW/oHTq3VQ+Spg3SBlWqSQ+FznBXOqsLDjwwEnNC01HBa234J3ApQRtLoCiY7Jxp55z61pku4ieC3U1hVPOVcs1/S+uR9Jpc7XZioo43Y/RMgit5JwF8/gWza5iy2afF68bqWxKLg6to=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768558150; c=relaxed/simple;
-	bh=V+mNyMZTN45qMNZVhZtJF9Og7OiYzqfnWWQXGyx9YN0=;
-	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=qZYtCHyA56pX1gDk5hIeGDs+VZTxehTs2xTi9X7zmiFYZ/TTo/MDOo5S6n4EE0PZ1fB6Mh7GMx5MtRC8ntwfck3Z2uV6/3tyu2x8vhZfAGg9Hn7DftFW0lhE0eQmACpYSU7lz7KsBg6wXK73NbUF23l5DMVA8fW0MLU+I77b2ww=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=xI4DGR/1; arc=fail smtp.client-ip=52.101.53.8
+	s=arc-20240116; t=1768558927; c=relaxed/simple;
+	bh=yhHqojCOQx7eR3QjnNdz0qJYfrydUugbpiKtyxqoc1M=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
+	 In-Reply-To:To:CC; b=p4OI55VjNSBaeZxM9TFd0MSuioHlCn5MJNjjYfKmKukHSbYzzhk+guSjRkXwx0Xx8ZluJZFe1LrIk9XAQk8MpIyClzQNpArPEWOUG6SsORWMY8NyQVuXCjypfwi1C9IjAfPzdNv6GLbnXLyfUkzlZi3JtX5NNCKgEq9rpSCpW3k=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=jdYIJXt0; arc=fail smtp.client-ip=40.107.208.59
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="xI4DGR/1"
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="jdYIJXt0"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=aH5OTWWt6HTQevAWpIaXwLusRDoK/5ZY4VrHj+AR/4S8PnCnbdpoi/jhDalU15/pR5qt/ZS0tR1IR/AQVWiFN8CUZUt1WZiHotxvLOWMehi6wvDzFS5RRCNfGUPfiKbEu8ZxNMIc2zWmu1E/e3U9Rf9Sbi/YVFoz9oRgC/MZqtwrqyBLY1nU9MhOJEfXNgnIjq4SisOgu4fwuZBexUrvoy/UwZMDzA9uRxe8yXNPwbT9aYHQ92ATmHro+mFWhlOVYOEg8ax4EWPrgygrsbQuh2K7z6lHm+wCO6ZlFtnnnX/EdmCgV/iALAOEE2yTFD49V4mburnsxMmEbr0UemV9aA==
+ b=weHQHKJjspguI+3IpUfZbHTjOP5nHY+5sxvQPnOCZC4SsEbev4ldbDLqa6c+4/t8/YbSCqZMIGwqKhcMo6swTAQ4JmEysIDWNc5Kucq323Vwl8DYF7eUgrkmv3vztrVwh72qwlB19jtS12ELwdd+UE42Qao0sMRPdyDRWQAeE7EbXhQXybJ0Afo6NnicGZUQyl3ELhMDNUgrEEZbqvTECkVGgpWeBB4oEr3yQjNDbq9ZERWzBPMrXntoa+5m9Z1Q51hCc3Y6q1XLCDaNB+pPaQZOPpliNNC0R3/TOOvc1ckTwiwKYtkxEVCQ+j1c8FZoMlztyEFG/fRgWOdJLYrH1w==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=viXglhfpmz7X5LLQpmSAVJySdnwrZ4jVSRUCMc1pzjE=;
- b=GPK+jAziWAYBaSfawlxW23sFNZYLYk7CpWtvxFvI9g3rh2xwVbvHY6oy5fXzawdRlUVftybz5z1FVZqboM2I60fhZaJEkwUudeDFxozmuoAvc6e3YUwMu9NjBZ9HlstxR7Av4a77dIVxyVXaDafGUviKsaKQZrPh1CAgltyfzKOkpLQVT+8pGuEP/n0qkaIXWXOrmxjz9zyoFxKh1b3WSoF5h5YuRaogcE1xxnh58n+nOPufQ2FrloIgJ1isjK91Bgfcg7sZyvuTpmU2IWuNIR+PFS1PhTZORWz0RaXht1MU8Qr+/2v4wypgQWxN7WC/szXYNpi4Y6HZvSLEqZVLAw==
+ bh=rqr2iRehvC2b97ZosXCyMrS8LnbBJHwHPknGL8VH82g=;
+ b=OJNififLYLrO5YFGrQL7fSX51jk1ByKwsxrXM/wY8y+Omy7mW3EYHeULM8msfth4Yowy69+sxukKmGNr/HR1KPfutzGKbo5NTAHOjC04KjyWfT5+wv2w0svyAt6zrK3sMqjRErUJe4Gs76KeAJZ6YYMwfdsS1dMNgR77MIPRXixuQzzS41cJnDHWLm0zAJeLsp0kzZM+bQQXIxnamkvxGn2zV1YH7tgkl1OgOew77bFAwdyPsUD7jrfwMyYuDDK1Lo239r7AbVNyZhJEFsKu2+jlaTuzLOZkn9wh7zsYFYfyLE5ykCFo8w5Xqzb8zlGIcrNKx6gk/KsqoWlihzpwGA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 198.47.23.194) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=ti.com;
- dmarc=pass (p=quarantine sp=none pct=100) action=none header.from=ti.com;
- dkim=none (message not signed); arc=none (0)
+ 198.47.23.195) smtp.rcpttodomain=kernel.org smtp.mailfrom=ti.com; dmarc=pass
+ (p=quarantine sp=none pct=100) action=none header.from=ti.com; dkim=none
+ (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=viXglhfpmz7X5LLQpmSAVJySdnwrZ4jVSRUCMc1pzjE=;
- b=xI4DGR/1CbAKwj7SJrx7u8n6vjgpbR4Z4FTyqPL+GWDEs5BHUEQnQ7cwgs2jmssH11EhcSCvXU8VIKq9xn4hYitcLcomCXChQ4+F9chz6EfdcqXl0EzIB+i6fgtHL0U46ifv+6pFFZUo0ARlOaqiioAyOdl3CDtqyjLuRRX/j6w=
-Received: from BL1PR13CA0262.namprd13.prod.outlook.com (2603:10b6:208:2ba::27)
- by BY5PR10MB4369.namprd10.prod.outlook.com (2603:10b6:a03:204::11) with
+ bh=rqr2iRehvC2b97ZosXCyMrS8LnbBJHwHPknGL8VH82g=;
+ b=jdYIJXt0J/veqQMJ57RYY5BmxfHK0SLJCI6dZ4JFO/mzFv2eQHeBEsDrJOVcxxqr9u5f7BEEpQBTnNewCq8px+kr5S0VrHdxLgmTwZICmyI7rTX4Dek+Bvg2rcv7H5BoHrU3PdHJcRPePk1dd4mhNPVB2RhRLnVPNlH1Z6O4doQ=
+Received: from SN7P220CA0003.NAMP220.PROD.OUTLOOK.COM (2603:10b6:806:123::8)
+ by MN6PR10MB7543.namprd10.prod.outlook.com (2603:10b6:208:473::21) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9520.5; Fri, 16 Jan
- 2026 10:08:59 +0000
-Received: from BL02EPF00029927.namprd02.prod.outlook.com
- (2603:10b6:208:2ba:cafe::14) by BL1PR13CA0262.outlook.office365.com
- (2603:10b6:208:2ba::27) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9542.2 via Frontend Transport; Fri,
- 16 Jan 2026 10:08:55 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 198.47.23.194)
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9520.8; Fri, 16 Jan
+ 2026 10:22:03 +0000
+Received: from SN1PEPF0002BA4C.namprd03.prod.outlook.com
+ (2603:10b6:806:123:cafe::1a) by SN7P220CA0003.outlook.office365.com
+ (2603:10b6:806:123::8) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9520.7 via Frontend Transport; Fri,
+ 16 Jan 2026 10:21:53 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 198.47.23.195)
  smtp.mailfrom=ti.com; dkim=none (message not signed) header.d=none;dmarc=pass
  action=none header.from=ti.com;
 Received-SPF: Pass (protection.outlook.com: domain of ti.com designates
- 198.47.23.194 as permitted sender) receiver=protection.outlook.com;
- client-ip=198.47.23.194; helo=lewvzet200.ext.ti.com; pr=C
-Received: from lewvzet200.ext.ti.com (198.47.23.194) by
- BL02EPF00029927.mail.protection.outlook.com (10.167.249.52) with Microsoft
+ 198.47.23.195 as permitted sender) receiver=protection.outlook.com;
+ client-ip=198.47.23.195; helo=lewvzet201.ext.ti.com; pr=C
+Received: from lewvzet201.ext.ti.com (198.47.23.195) by
+ SN1PEPF0002BA4C.mail.protection.outlook.com (10.167.242.69) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9542.4 via Frontend Transport; Fri, 16 Jan 2026 10:08:58 +0000
-Received: from DLEE206.ent.ti.com (157.170.170.90) by lewvzet200.ext.ti.com
- (10.4.14.103) with Microsoft SMTP Server (version=TLS1_2,
+ 15.20.9542.4 via Frontend Transport; Fri, 16 Jan 2026 10:22:03 +0000
+Received: from DLEE207.ent.ti.com (157.170.170.95) by lewvzet201.ext.ti.com
+ (10.4.14.104) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Fri, 16 Jan
- 2026 04:08:57 -0600
-Received: from DLEE211.ent.ti.com (157.170.170.113) by DLEE206.ent.ti.com
- (157.170.170.90) with Microsoft SMTP Server (version=TLS1_2,
+ 2026 04:22:02 -0600
+Received: from DLEE203.ent.ti.com (157.170.170.78) by DLEE207.ent.ti.com
+ (157.170.170.95) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Fri, 16 Jan
- 2026 04:08:57 -0600
-Received: from lelvem-mr05.itg.ti.com (10.180.75.9) by DLEE211.ent.ti.com
- (157.170.170.113) with Microsoft SMTP Server (version=TLS1_2,
+ 2026 04:22:02 -0600
+Received: from lelvem-mr05.itg.ti.com (10.180.75.9) by DLEE203.ent.ti.com
+ (157.170.170.78) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20 via Frontend
- Transport; Fri, 16 Jan 2026 04:08:57 -0600
-Received: from localhost (lcpd911.dhcp.ti.com [172.24.233.130])
-	by lelvem-mr05.itg.ti.com (8.18.1/8.18.1) with ESMTP id 60GA8tgX3112725;
-	Fri, 16 Jan 2026 04:08:56 -0600
-Date: Fri, 16 Jan 2026 15:38:55 +0530
+ Transport; Fri, 16 Jan 2026 04:22:02 -0600
+Received: from [127.0.1.1] (lcpd911.dhcp.ti.com [172.24.233.130])
+	by lelvem-mr05.itg.ti.com (8.18.1/8.18.1) with ESMTP id 60GALnXW3128184;
+	Fri, 16 Jan 2026 04:21:56 -0600
 From: Dhruva Gole <d-gole@ti.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-CC: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar
-	<viresh.kumar@linaro.org>, Nishanth Menon <nm@ti.com>, Vignesh Raghavendra
-	<vigneshr@ti.com>, Tero Kristo <kristo@kernel.org>, Rob Herring
-	<robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
-	<conor+dt@kernel.org>, Kendall Willis <k-willis@ti.com>, Sebin Francis
-	<sebin.francis@ti.com>, Bryan Brattlof <bb@ti.com>,
-	<linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>
-Subject: Re: [PATCH 2/3] cpufreq: ti-cpufreq: add support for AM62L3 SoC
-Message-ID: <20260116100855.4w22hu22kzhcdaat@lcpd911>
-References: <20260116-am62l-cpufreq-v1-0-63d062317ae9@ti.com>
- <20260116-am62l-cpufreq-v1-2-63d062317ae9@ti.com>
- <79d0f072-80f9-4757-b25d-84260551e217@kernel.org>
+Date: Fri, 16 Jan 2026 15:51:29 +0530
+Subject: [PATCH v2 1/3] cpufreq: dt-platdev: Add ti,am62l3 to blocklist
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <79d0f072-80f9-4757-b25d-84260551e217@kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-ID: <20260116-am62l-cpufreq-v2-1-eac7e2e78d29@ti.com>
+References: <20260116-am62l-cpufreq-v2-0-eac7e2e78d29@ti.com>
+In-Reply-To: <20260116-am62l-cpufreq-v2-0-eac7e2e78d29@ti.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar
+	<viresh.kumar@linaro.org>, Nishanth Menon <nm@ti.com>, Vignesh Raghavendra
+	<vigneshr@ti.com>, Tero Kristo <kristo@kernel.org>, Rob Herring
+	<robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+	<conor+dt@kernel.org>
+CC: Kendall Willis <k-willis@ti.com>, Sebin Francis <sebin.francis@ti.com>,
+	Bryan Brattlof <bb@ti.com>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<devicetree@vger.kernel.org>, Dhruva Gole <d-gole@ti.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1768558909; l=1057;
+ i=d-gole@ti.com; h=from:subject:message-id;
+ bh=yhHqojCOQx7eR3QjnNdz0qJYfrydUugbpiKtyxqoc1M=;
+ b=AEn6AF2M3fWjg47uatIx9u4F9ibnS4z3BMfsxX8uJN37Dpg247Od4psxtPmmZ/P70NphUTwkX
+ EXeIfec55PZCgaK6wpF8WC23lAacvO9nT+QZo90BDtsODUL+bstFUz0
+X-Developer-Key: i=d-gole@ti.com; a=ed25519;
+ pk=k8NnY4RbxVqeqGsYfTHeVn4hPOHkjg7Mii0Ixs4rghM=
 X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BL02EPF00029927:EE_|BY5PR10MB4369:EE_
-X-MS-Office365-Filtering-Correlation-Id: c077793e-7ee3-4cd1-36d7-08de54e7439a
+X-MS-TrafficTypeDiagnostic: SN1PEPF0002BA4C:EE_|MN6PR10MB7543:EE_
+X-MS-Office365-Filtering-Correlation-Id: bc5a5b04-ddbd-451a-f341-08de54e91788
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|82310400026|1800799024|36860700013|34020700016;
+	BCL:0;ARA:13230040|1800799024|82310400026|36860700013|34020700016|7416014|376014;
 X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?28QhXOTSbf1ZWANC8wLIwn+Au5j7Qt0ytXjbvUWNKqtdra6FkxPTDDzX+taq?=
- =?us-ascii?Q?LAI+8KBvISR+8iZlIHQuZRMBwTDK9MVc5jVP2M5w5hy0zeD89vx4EXGtumSV?=
- =?us-ascii?Q?dlKnMCMVrlhc+RkTYifdhzrYg+2/aKWr8qErpLvHlt/z4nFoKV3VwAzyBymA?=
- =?us-ascii?Q?atNL71oOXgciMAcl99IBqH9YgSJPAuSnC527mEUW1uzl3O+V3RVnmqI8063j?=
- =?us-ascii?Q?OimVKnYv9i0UFKiJjaXN8XQ81CyQJgJyE+U2av1gxLd2OC0P61jdO2rReMd0?=
- =?us-ascii?Q?INanf7Irw3h9McRnuS6cnoukSM1GZMkzjJ4HeAnzSjjZ4+0B2EaqocOVgSjY?=
- =?us-ascii?Q?moMxA0z8r4sbp92OzFWllUMHQU9GEzsX9huBM0eopCcB4GfVe2c4cVFCRAio?=
- =?us-ascii?Q?tsVSmS34GlAWpULjPjhb8mSgQQcr+qipWgdguapYC3octxK2gCOs7SY4jcOp?=
- =?us-ascii?Q?5FLtyT+C9qa7x/1i901/aI69bvRhXF+u+4MAQJphNiWU1uBXCj9abgowN3Sg?=
- =?us-ascii?Q?GZ1dDpl41NxZmo5Lrja/F+W9NRXG8x+irJ/oVDK7HJfIOBOJdMFHwSByfi/I?=
- =?us-ascii?Q?UPoy+tf+5tm0V3JDd19Ydmnh0cEkglXJOLEaiU9xZoqQS4/BksNUsWPFaYwE?=
- =?us-ascii?Q?F6jf5WADAubawodAL9q418FLmi1SjNyvo79lKkuXEmDjxG03P+tunTMzy/ki?=
- =?us-ascii?Q?819s14ciLUNVaQgSEvKHYk+MeXcdtnfVViC2RceDz967GIvwPNrGrtLa6A50?=
- =?us-ascii?Q?bVsx37tx52ADY7iXh6qFFi4+UKGY7qGey/U/0zF1tBljCVBxb6+4Al9Qvn8r?=
- =?us-ascii?Q?3tkIhwhhNwEZF5v08VS/0oHBx4cF6cYZJbUv9/FoYOD+BtHmc+aTQ9s8O7go?=
- =?us-ascii?Q?KxeqrbjCBWFDgaFajOt0q3HSmAUt4/6W0nQ5UORJ33sc4IyFAwjZMHTONb4U?=
- =?us-ascii?Q?FD2zrRp+E5MtqfCsto9oMB9Oi9NSeSCXIhjTYLcjsYlV7eoPgVRN2K9b0SNF?=
- =?us-ascii?Q?WGc3gCVQ2pbrS5z1GyVdYTlsdeB+vO17gvH7nnYl71AQSXSCBATw5/AenENr?=
- =?us-ascii?Q?EVTQACp9/SGEfyrNUlz4us+bEoBYS9U1J0q/xhfpr1V6ZRSsPMP8jVQshwRG?=
- =?us-ascii?Q?vHGYXmc+M9wWZQPNMW50rzDeXPyHB0gjlTDY43FyOm3Q+v/k1kVCgVfaSj7S?=
- =?us-ascii?Q?qt676pZMb/kuHaCSjJwgMsap/Uy3c+7A8+CIFNknQVUkhu39BiAJgg5Yie1W?=
- =?us-ascii?Q?F0R2L8orc+3yeY+wW8pszc9aHPbKKTbm0tRPKFxJaG74/YlkItgjDaadpNNr?=
- =?us-ascii?Q?vD7RFGKrXOZDfba8QXVnOPT0mzbSEkPxel7BbSMmUoGQjzEqU/FE4/HAmd6s?=
- =?us-ascii?Q?jQTuyVVIt8XHlVTZaANlHiNr2CYtMCg5e9XeWHbrczNbzF5VofDwubDpeQWD?=
- =?us-ascii?Q?aQb5Ou9g86G8Bchl6Hg+Hr7BBqGDXWGFvViPPqc0zxT3BN4TFBNFJfIGznxA?=
- =?us-ascii?Q?LBZrGRcyZCC5Nk2AnzkU05N+uJa7FIMeLCk/6oKhHctS2VfmjoPZckAW7gMI?=
- =?us-ascii?Q?g6DAaULhw6YOUPJMcHIhitFWAPPMeTy9STff+7gn0x9H0qhAA5h4ANKOFmU8?=
- =?us-ascii?Q?qLo0Mej43xFaKn2+Q26WYVbSpYq5Z76H3D4wnYC5Z7EbnGgyenFSZSHqaGhN?=
- =?us-ascii?Q?ohf4Gw=3D=3D?=
+	=?utf-8?B?VDZuOHl4eUVoM3JMNXFoZWh5UFF1RmUrQ2gzVzc5OU9DdEtYN2grazZHRzRw?=
+ =?utf-8?B?Wngyak5Ea0tsRElSa0tlTEpoek5xTGFSNGxOQUhlbzVON1BOcTNoVmxPTCtL?=
+ =?utf-8?B?UDFiWE5iQ0pFOUtaR0xra2tRWW1LbDdiOHBVQTFvc0cyZDcycFNpckoybENV?=
+ =?utf-8?B?M3R4by9qeW9uOG4rcFR4ZWp1VXYwdWhKOERrU2piNDNFaVhud21pUEEzWURQ?=
+ =?utf-8?B?dk9VNWZWSllaY0JpQXhkZ2dlQm5NRlA3WEhJWUtrMEVLWHBQVWg5bko3WE9y?=
+ =?utf-8?B?aFRZcWIwai9mSWZqdFpiLzlhV3NJN3NtV2Z6RlNvYmZZVk13c1ZCMGNXMmxi?=
+ =?utf-8?B?eUwvWFFoQ29CMnpjMnJwam05UTlpc3oxQkV6WWNVQVVTd2x3NE1HRkFVWEta?=
+ =?utf-8?B?MHVnbWl6Z1BYb1V5Kzc4ZVFIWk5vMDNWTmZrU2YxdlRlbmZyeEJFblBzbEZO?=
+ =?utf-8?B?Rk5IdEl1TXR4UjNvWlBZYnFzNm9hd0gzT3pHSThReWJoSVF6ZFM4R3FvT2pB?=
+ =?utf-8?B?WDFXZmlNOEdmZ3VPOFpwa08rVGpoWEJicUtCSCtOVmJmTFhsbE9lOC92YWZC?=
+ =?utf-8?B?ZDlmd004RU5zQWpuaDd2VkJGdlpCWnRteDkwRHV4SE1IeldZTlNpNWNOVkdy?=
+ =?utf-8?B?VlNRWWYyMFlKK01WMzE2VEluUTdWOXR4aUNFbHhPcDZRMlJITlozNFJHQjNI?=
+ =?utf-8?B?Wmorcm9Qdm5JcENpZEVKN3VaaXhxTU5pczhkcnZYYTVhSlhmVmhKMU1SLzU2?=
+ =?utf-8?B?bVp0dFFyRitoMHUrVS9qVTg2YmlRSHY0T2VHOWc5U1VzbDBsZDBRTlNhbzlF?=
+ =?utf-8?B?ak5sWlFCaHlwK1pCd2NENGxXNUFiS2p4c0ZDdktGTTJWa0tLRis5cHgyYWpa?=
+ =?utf-8?B?Vmt0OEVpSWxYK3JickliU1dqL2xyK2kwdCsyQ29KMU9oRUJ6Y3ZLR2xrWlFz?=
+ =?utf-8?B?Z1dBRzdCSVBYcXhkYnpXUVpZL0w0Y05rWGRrcEt3VXdIQWUwSXRyenBRQ01M?=
+ =?utf-8?B?VzdIT2tYNkM0Z1dHUUwvZWtqd285RFNrcEZGVkxicVFZMVRiUUdJRUhHNHlD?=
+ =?utf-8?B?MnE2cTdVVUpCazIwTzdVZ1BjeElFMUc4QXQ1K0IxM3F6MVJJWlF2M2NZYUIy?=
+ =?utf-8?B?NnF0NXdlUkhmcDJ5cGQ4aENidzlVTnMveEVvWWtBSTJiV1ZzdW9uUW1LbWQ0?=
+ =?utf-8?B?RWNuRDNwaTZvd3phQU1Kb1dwSkRzb0trSExlNnFyNVFtdlMzSDVKcnlwNDND?=
+ =?utf-8?B?KzgxNlVSZi96SytTTThpcWFGVTMrQnBibXpKMWU3eTZFVzBPRU5kRExXK1lh?=
+ =?utf-8?B?SG5QNVRiU0RTaWRRcjNFS2diQjlYdjc5NncxTDh0eENsaEUzWDNKclgvd3da?=
+ =?utf-8?B?T2I3TnBvQ2xoUWsvWVJ0dWRlOXFyZU96TkYyQTl1L0UvU2JTRlpDMithazQx?=
+ =?utf-8?B?QkZEcVpFSGlHUzZPTk1NRk9vb3BwNk5jaGI0ZFVJMUR0NGpHSzBKYVY4UGVU?=
+ =?utf-8?B?bEZydG1HclRKRmxZUkVlSEdpRzZCMHUydUs2UHlmRTE2TEZJOURmQUE5YmI1?=
+ =?utf-8?B?em5wcXZRUEtZTWMrcXoySmhCVHVNbURVVGRzaVgrdVNkb2NZcGwwZHBzVzZB?=
+ =?utf-8?B?MEp5eEY3MWpoQlBTbXVFeVlEZ1Ivd3o3M1M3SXlvU2c4T2hvTHp6S1R6eEJz?=
+ =?utf-8?B?ZDNpelFycE5qZTM5YjFaQkErWEl5Z2E4dURmaTFzOTdnWGJDeVJhSjg3N2tj?=
+ =?utf-8?B?Nlh1dm15bEt5N25mQmxrUUhIWlp4VHRuM2x2VmtNTjFGNjZCM2JSNXJXZWw2?=
+ =?utf-8?B?K2w2OU54dit1ZUdsUjlraTErUFNvTnNmRVRia21nMmlWMDdocCtCbUpCREFP?=
+ =?utf-8?B?UmJubkI0RmNDTTFNa2NpbWc0RkNkQ0szRlk1STh5aE9qWUcwVmsrcXlzenYz?=
+ =?utf-8?B?T2FjMng2WG9jaXkxbU50SklIcm5KM3RhT1E1bjhkYkpMbDBUQ0xsODIwY1U4?=
+ =?utf-8?B?QzhRd0NPMWsrZUp0SzRNb1BCK2NUazV1RTczcDlZdEZDcUJ5MHpDUzgrb3pI?=
+ =?utf-8?B?RDBIazB6T1E2L3NGcGsrTlRId0kwSVNkSjM5U1NZcWRLKzdEdGJyZnllcGxZ?=
+ =?utf-8?B?anN0ZXdGbVlhaFZPOE5UL28xSVlqd09FL3RPeHdOL3RiaTg4Yk5BbFNDclFw?=
+ =?utf-8?B?KzJDVEY5Z1JQNVhZcnF2VllnRVRreWUxRjEyWGdoYzlZdStaT2o4OHVHUkti?=
+ =?utf-8?B?a0JnT3R1Nm9yOHJzOWdrY2VZMUxRPT0=?=
 X-Forefront-Antispam-Report:
-	CIP:198.47.23.194;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:lewvzet200.ext.ti.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(7416014)(376014)(82310400026)(1800799024)(36860700013)(34020700016);DIR:OUT;SFP:1101;
+	CIP:198.47.23.195;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:lewvzet201.ext.ti.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(82310400026)(36860700013)(34020700016)(7416014)(376014);DIR:OUT;SFP:1101;
 X-OriginatorOrg: ti.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Jan 2026 10:08:58.0378
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Jan 2026 10:22:03.1834
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: c077793e-7ee3-4cd1-36d7-08de54e7439a
+X-MS-Exchange-CrossTenant-Network-Message-Id: bc5a5b04-ddbd-451a-f341-08de54e91788
 X-MS-Exchange-CrossTenant-Id: e5b49634-450b-4709-8abb-1e2b19b982b7
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=e5b49634-450b-4709-8abb-1e2b19b982b7;Ip=[198.47.23.194];Helo=[lewvzet200.ext.ti.com]
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=e5b49634-450b-4709-8abb-1e2b19b982b7;Ip=[198.47.23.195];Helo=[lewvzet201.ext.ti.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	BL02EPF00029927.namprd02.prod.outlook.com
+	SN1PEPF0002BA4C.namprd03.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR10MB4369
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN6PR10MB7543
 
-On Jan 16, 2026 at 10:16:55 +0100, Krzysztof Kozlowski wrote:
-> On 16/01/2026 10:01, Dhruva Gole wrote:
-> > Add CPUFreq support for the AM62L3 SoC with the appropriate
-> > AM62L3 speed grade constants according to the datasheet [1].
-> > 
-> > This follows the same architecture-specific implementation pattern
-> > as other TI SoCs in the AM6x family.
-> > 
-> > [1] https://www.ti.com/lit/pdf/SPRSPA1
-> > 
-> > Signed-off-by: Dhruva Gole <d-gole@ti.com>
-> > ---
-> >  drivers/cpufreq/ti-cpufreq.c | 32 ++++++++++++++++++++++++++++++++
-> >  1 file changed, 32 insertions(+)
-> > 
-> > diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
-> > index 6ee76f5fe9c567b0b88797ddb51764a2a5606b16..8d8fdb068dcdc2caa0b656405f38a072c0700f71 100644
-> > --- a/drivers/cpufreq/ti-cpufreq.c
-> > +++ b/drivers/cpufreq/ti-cpufreq.c
-> > @@ -48,6 +48,12 @@
-> >  #define AM625_SUPPORT_S_MPU_OPP			BIT(1)
-> >  #define AM625_SUPPORT_T_MPU_OPP			BIT(2)
-> >  
-> > +#define AM62L3_EFUSE_E_MPU_OPP			5
-> > +#define AM62L3_EFUSE_O_MPU_OPP			15
-> > +
-> > +#define AM62L3_SUPPORT_E_MPU_OPP		BIT(0)
-> > +#define AM62L3_SUPPORT_O_MPU_OPP		BIT(1)
-> > +
-> >  enum {
-> >  	AM62A7_EFUSE_M_MPU_OPP =		13,
-> >  	AM62A7_EFUSE_N_MPU_OPP,
-> > @@ -213,6 +219,22 @@ static unsigned long am625_efuse_xlate(struct ti_cpufreq_data *opp_data,
-> >  	return calculated_efuse;
-> >  }
-> >  
-> > +static unsigned long am62l3_efuse_xlate(struct ti_cpufreq_data *opp_data,
-> > +				       unsigned long efuse)
-> > +{
-> > +	unsigned long calculated_efuse = AM62L3_SUPPORT_E_MPU_OPP;
-> > +
-> > +	switch (efuse) {
-> > +	case AM62L3_EFUSE_O_MPU_OPP:
-> > +		calculated_efuse |= AM62L3_SUPPORT_O_MPU_OPP;
-> > +		fallthrough;
-> > +	case AM62L3_EFUSE_E_MPU_OPP:
-> > +		calculated_efuse |= AM62L3_SUPPORT_E_MPU_OPP;
-> > +	}
-> > +
-> > +	return calculated_efuse;
-> > +}
-> > +
-> >  static struct ti_cpufreq_soc_data am3x_soc_data = {
-> >  	.efuse_xlate = amx3_efuse_xlate,
-> >  	.efuse_fallback = AM33XX_800M_ARM_MPU_MAX_FREQ,
-> > @@ -315,6 +337,7 @@ static const struct soc_device_attribute k3_cpufreq_soc[] = {
-> >  	{ .family = "AM62AX", },
-> >  	{ .family = "AM62PX", },
-> >  	{ .family = "AM62DX", },
-> > +	{ .family = "AM62LX", },
-> 
-> So you just stuff at the end in every commit leading to unnecessary risk
-> of conflicts.
-> 
-> >  	{ /* sentinel */ }
-> >  };
-> >  
-> > @@ -327,6 +350,14 @@ static struct ti_cpufreq_soc_data am625_soc_data = {
-> >  	.quirks = TI_QUIRK_SYSCON_IS_SINGLE_REG,
-> >  };
-> >  
-> > +static struct ti_cpufreq_soc_data am62l3_soc_data = {
-> > +	.efuse_xlate = am62l3_efuse_xlate,
-> > +	.efuse_offset = 0x0,
-> > +	.efuse_mask = 0x07c0,
-> > +	.efuse_shift = 0x6,
-> > +	.multi_regulator = false,
-> > +};
-> > +
-> >  static struct ti_cpufreq_soc_data am62a7_soc_data = {
-> >  	.efuse_xlate = am62a7_efuse_xlate,
-> >  	.efuse_offset = 0x0,
-> > @@ -463,6 +494,7 @@ static const struct of_device_id ti_cpufreq_of_match[]  __maybe_unused = {
-> >  	{ .compatible = "ti,am625", .data = &am625_soc_data, },
-> >  	{ .compatible = "ti,am62a7", .data = &am62a7_soc_data, },
-> >  	{ .compatible = "ti,am62d2", .data = &am62a7_soc_data, },
-> > +	{ .compatible = "ti,am62l3", .data = &am62l3_soc_data, },
-> 
-> Oh no, here it is correct. Random choices?
+Add AM62L3 SoC to the dt-platdev blocklist to ensure proper handling
+of CPUFreq functionality. The AM62L3 will use its native TI CPUFreq
+driver implementation instead of the generic dt-platdev driver.
 
-Seems like I remembered last moment, "Oh yeah I should probably sort this
-alphabetically" and then forgot to follow it for the other instances :D
+This follows the same pattern as other TI SoCs like AM62A7, AM62D2,
+and AM62P5 which have been previously added to this blocklist.
 
-I'll sort it all out alphabetically and resend. Thanks for reviewing.
+Signed-off-by: Dhruva Gole <d-gole@ti.com>
+---
+ drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-> 
-> >  	{ .compatible = "ti,am62p5", .data = &am62p5_soc_data, },
-> >  	/* legacy */
-> >  	{ .compatible = "ti,omap3430", .data = &omap34xx_soc_data, },
-> > 
-> 
-> 
-> Best regards,
-> Krzysztof
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 1708179b2610bca6035d10f0f4766eee6f73912e..16310e190d9ff96af3d20cc5d98dc0e4af4d1bf1 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -193,6 +193,7 @@ static const struct of_device_id blocklist[] __initconst = {
+ 	{ .compatible = "ti,am625", },
+ 	{ .compatible = "ti,am62a7", },
+ 	{ .compatible = "ti,am62d2", },
++	{ .compatible = "ti,am62l3", },
+ 	{ .compatible = "ti,am62p5", },
+ 
+ 	{ .compatible = "qcom,ipq5332", },
 
 -- 
-Best regards,
-Dhruva Gole
-Texas Instruments Incorporated
+2.34.1
+
