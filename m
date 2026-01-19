@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 564A9270ED2;
-	Mon, 19 Jan 2026 21:35:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 627881917ED;
+	Mon, 19 Jan 2026 22:00:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768858533; cv=none; b=jtZuPsuFpWv3Cm5bsZCs+bXf6A66/3FAdX6YfXFqO4IaEJpOUkIm/lL85A6+4XQ7Gn2Jw8lGjqpVP+BeB+WvHpbMk0R3c+GXLqOAuph/s4diLOTGBSAaMfsue1kY5EFn8wsYhboEzrZQcaXud0fM+4lRgw9AAXKnYUm7EXKNVeM=
+	t=1768860038; cv=none; b=n09AkiYjmoQmI0I2vD28hNxVsXzYVxPyu32s8Xm8eF7/uemw04EB7eOorVw5rPE4FZfPxcVPGwHpASUPWV6HIhTq8P5GeIG2GgquUjymbMBcUnBThGggQGJZ/kOzbY07ktBNWfKwgI/Fs8MfIlkIIyN5Pf2m683Fteh6v7jss3A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768858533; c=relaxed/simple;
-	bh=0p+D1qtaD6EK8C9QKDFoPkOIUPj6Z1i1of+RsQtd/cY=;
+	s=arc-20240116; t=1768860038; c=relaxed/simple;
+	bh=i93O1wnS4zj4pX0251MiaGhsQUiCSCNVJWX9Zn2+X7k=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=J1HKtsn5D5E3hTYAWWFCpep9i0deVW0lH/rtMA+NdkqX0m4yo0yGLctopwU7G7FQEaGLk/9SM1fNygjp6xoQPGvU+b+q5usNswLkR4uAMgxM2Sj5gE9xn1ZE9wCyqcQ+SadvQ90yVaHLmwRkFLK5LDD3Ts+0drCtMR8J11RsTAA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MSAIwNdQ; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=SLKS1eDy1aqLQ0Wli6ItUbAzcdtS4A6ADKZQsIBuyZnGwgqLAPMgWJ6Dm0WCPvhzgV8zQipiEuT0JgS8YshoD3Yg5Li/OmGY4pAFNG/FdNdWxevpUFLL5PJ1GeF6WSm5W/R78WIkeHzOc1jCcj045uN4Rf2wd10gbcitVMN+0x4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=gBzzATy6; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MSAIwNdQ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5D0C1C116C6;
-	Mon, 19 Jan 2026 21:35:32 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="gBzzATy6"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 633DEC116C6;
+	Mon, 19 Jan 2026 22:00:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768858532;
-	bh=0p+D1qtaD6EK8C9QKDFoPkOIUPj6Z1i1of+RsQtd/cY=;
+	s=k20201202; t=1768860037;
+	bh=i93O1wnS4zj4pX0251MiaGhsQUiCSCNVJWX9Zn2+X7k=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=MSAIwNdQQpkp6oMgDpbCk+aNpAf6NI2V725snnSdP/1pmAdfS3Z0rJzX4h5DcxvFk
-	 he5wkSyrVbdLVDRqeW60oboR/CVs8iv/ehVA9r3xvdBmgy+VucsNGLxHs3bUGOjD28
-	 FmUsaMyToLjzkt3XEayVquD8ffomEAH717Qbbd/fRv1lL5ONzILiAlLSDK5Ns3beKx
-	 Nox0RTElcLc12JWarif0zviVNfKUm5+4QlZHWp2xyULlMmJPnuQ8wl5WMeZVRinLNj
-	 lJ2+BAmYoLVbh37cwBxVyrBaNv3562IluyDYvsPwtjLURINRBu+qCzcQJolzJWV2sW
-	 SWlm3jQOOI5hA==
-Date: Mon, 19 Jan 2026 22:35:30 +0100
+	b=gBzzATy65nCqBqK20u1xQ84huXMH+axu3TXK2L6DC5nd8yziq+TvpuslsmRRobeQT
+	 VH7SNLOdLeNcBRj6UUrfbhXFwGgiKoYEVpjMnlb01pfhCGyz7OXEafYW++2K6D93/o
+	 FYjzCNlDytNmD4UlzSxcoJdOsxCYn+Z/kz4RlVnQcK5VoZRLga2nmSopJTVQ/YQZ4k
+	 dXpEOBgNjZJRJGZ8eFREAdqzrfDqVXrgs/zrjSZSTezsgrTa1GMy5eBjt31vzYB0GM
+	 /hOWyVZ3Xz97w+bSw11NPtmhbdCmx3cxXFkj36kBjpJGxbQzNx0ugkqbn5P/9S2WfF
+	 SWgWuYyaLSlRw==
+Date: Mon, 19 Jan 2026 23:00:35 +0100
 From: Frederic Weisbecker <frederic@kernel.org>
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -57,12 +57,11 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
 	Viresh Kumar <viresh.kumar@linaro.org>,
 	Xin Zhao <jackzxcui1989@163.com>, linux-pm@vger.kernel.org,
 	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 03/15] sched/cputime: Correctly support generic vtime
- idle time
-Message-ID: <aW6johe2ZUR9l39Z@pavilion.home>
+Subject: Re: [PATCH 06/15] tick/sched: Unify idle cputime accounting
+Message-ID: <aW6pgzarQ-tnPjl6@pavilion.home>
 References: <20260116145208.87445-1-frederic@kernel.org>
- <20260116145208.87445-4-frederic@kernel.org>
- <20260119130222.GU830755@noisy.programming.kicks-ass.net>
+ <20260116145208.87445-7-frederic@kernel.org>
+ <20260119142607.GG830229@noisy.programming.kicks-ass.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -72,43 +71,30 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260119130222.GU830755@noisy.programming.kicks-ass.net>
+In-Reply-To: <20260119142607.GG830229@noisy.programming.kicks-ass.net>
 
-Le Mon, Jan 19, 2026 at 02:02:22PM +0100, Peter Zijlstra a écrit :
-> On Fri, Jan 16, 2026 at 03:51:56PM +0100, Frederic Weisbecker wrote:
+Le Mon, Jan 19, 2026 at 03:26:07PM +0100, Peter Zijlstra a écrit :
+> On Fri, Jan 16, 2026 at 03:51:59PM +0100, Frederic Weisbecker wrote:
 > 
-> > diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-> > index 8ddf74e705d3..f1d07a0276a5 100644
-> > --- a/kernel/time/tick-sched.c
-> > +++ b/kernel/time/tick-sched.c
-> > @@ -780,7 +780,7 @@ static u64 get_cpu_sleep_time_us(struct tick_sched *ts, ktime_t *sleeptime,
-> >  	ktime_t now, idle;
-> >  	unsigned int seq;
-> >  
-> > -	if (!tick_nohz_active)
-> > +	if (!tick_nohz_active || vtime_generic_enabled_cpu(cpu))
-> >  		return -1;
-> >  
-> >  	now = ktime_get();
+> > +#ifdef CONFIG_NO_HZ_COMMON
+> > +void kcpustat_dyntick_start(void)
+> > +{
+> > +	if (!vtime_generic_enabled_this_cpu()) {
+> > +		vtime_dyntick_start();
+> > +		__this_cpu_write(kernel_cpustat.idle_dyntick, 1);
+> > +	}
+> > +}
 > 
-> Is this not broken? IIUC this means that you can no longer use
-> get_cpu_{idle,iowait}_time_us() the moment you have context tracking
-> enabled.
+> Why don't we need to make sure steal time is up-to-date at this point?
 
-It is supported again in patch 13/15. And it's not exactly breaking
-bisection in the meantime because the sole user is cpufreq and cpufreq
-shouldn't be relevant with nohz_full.
+Yes, there could be steal time since the last tick. It will be included
+and accounted in kcpustat_dyntick_stop() and not substracted from system
+or idle cputime (but it should!). This wrong behaviour is the same as the
+current upstream behaviour. So no known regression.
 
-Ok a few subsystem rely on the resulting cpufreq API get_cpu_idle_time():
+But check the last patch of the series that tries to fix that:
 
-- the legacy drivers/macintosh/rack-meter.c
-- drivers/scsi/lpfc/lpfc_init.c
-
-But cpufreq provides a low-resolution version in the worst case for nohz_full
-(again until 13/15).
-
-Hmm, but you're right this is confusing. I think I should be able to fix that
-in this patch.
+    sched/cputime: Handle dyntick-idle steal time correctly
 
 Thanks.
 
