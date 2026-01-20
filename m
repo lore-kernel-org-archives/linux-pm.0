@@ -1,81 +1,97 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from out-172.mta1.migadu.com (out-172.mta1.migadu.com [95.215.58.172])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0834F318132;
-	Tue, 20 Jan 2026 15:56:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A22843382F9
+	for <linux-pm@vger.kernel.org>; Tue, 20 Jan 2026 16:51:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768924584; cv=none; b=XRXrmVVYOdqwEBtcCGsf7M9dLVYtYflummgwLXoZrqvRnMhSUUTs0uiNVgVR9OSx4zrLQn3cB+cVdu0GJ/4/7gMOEoCbeQJi1HE3fzv1uQ3XE/o4+DqGdG4iMhqVn1y7HulNxq9dD9PXkWPUv4TIoF9qopPjPdYxTwFuK8vl+KE=
+	t=1768927877; cv=none; b=LBYdmkxPvog2xkvMjt2UEJobhKhpd7ksa///fMoeNdsW316YDe4M2KpAdRmCGsp226vc4QF30RVu2WZKCSmy8RyQuWE4Xh2iQUDG4M0rwvhh0CLFiZRD6OzEb1bIKn0kDNizSaT3FESVkbWRU/rWWTT40+UvCbUywyaxzCq8/FQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768924584; c=relaxed/simple;
-	bh=rSnO2feB5EiBNnb+J7F2y47pDPabNMsyZVGuP2G3Me4=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=hgyM77ueFknrDf5ghP9GMlrsVkRmRJgOHaOpXl3lS/vsgfbW81CfJ/9bifGSkvAxRH8h1XTs9Ee6EfhCkB5U3HL36z7pt1xETbBZtOzMmR8SPAsj6nJHI3PJokiC9b53+KG4S44Z9L9w4zndneTrtjPPpOxS6I8qSWTcab+1BW0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=r6w/78DN; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1768927877; c=relaxed/simple;
+	bh=H5jUaq6TO9WHZm4XEIgKRpBBhzYpVtxFin3BW6cKEzs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=toiHTDar+wiOMZt+DlYw+u1MOusxVb3Hj4Qsrb1gHUEjQCqteXaV0aaWeax92XuxwyWaFCszayZKyLgyh2xZpLgSHvE+1m4p1SkEZPoUxZXxqm/6b5yPozXL+dO68IbTcTQ6ymjPZ7tMM9JRy3TAW5loVgst38P7It+Kg9UtcQg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=TLidT+oS; arc=none smtp.client-ip=95.215.58.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="r6w/78DN"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8C92DC19422;
-	Tue, 20 Jan 2026 15:56:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768924583;
-	bh=rSnO2feB5EiBNnb+J7F2y47pDPabNMsyZVGuP2G3Me4=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=r6w/78DNUnD4q+ZazBqHFykSpmDASwle1jvKAY2RW9wyLAp/h8G9L5/tjcaI9R/jM
-	 9pRu6XIQK58sNBOix3DUSxJAq7MGN3x7E8NTjrtIOI/uILhVnbs0VkuqcaXhSSbzSx
-	 swptr9+aCpYx581VWAng2j1zVu/RRPFuuWnCouU8btpDxdR6WRbaoJr10df8ytCsFY
-	 UkrqYgEkKKCWWIF25sQTEzeJKUEZJ3Dqe1gPvToi/kSr2kbxMprL3cXbeRU3Qhfmbo
-	 qFnEWJIFDqk8tL7fjcl7l7VdEtHtZGx0jqyXBGygOjnA8UewhShmk7XC0A7k+OUeXr
-	 NZ9th1dp5NoLw==
-From: Lee Jones <lee@kernel.org>
-To: linux-mediatek@lists.infradead.org, 
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
- sen.chu@mediatek.com, sean.wang@mediatek.com, macpaul.lin@mediatek.com, 
- lee@kernel.org, matthias.bgg@gmail.com, lgirdwood@gmail.com, 
- broonie@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- kernel@collabora.com
-In-Reply-To: <20260113110000.36953-1-angelogioacchino.delregno@collabora.com>
-References: <20260113110000.36953-1-angelogioacchino.delregno@collabora.com>
-Subject: Re: (subset) [PATCH 0/6] Fix dtbs_check warnings for MediaTek
- Helio X10 platform
-Message-Id: <176892458032.2302579.3859197830409835881.b4-ty@kernel.org>
-Date: Tue, 20 Jan 2026 15:56:20 +0000
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="TLidT+oS"
+Message-ID: <43cb31d5-1423-4354-8eb1-68afbac622da@linux.dev>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1768927861;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=1vDNXH6hz9GY1gVM64SCoYcMQRc3wsyeCa6a+Ouc5vs=;
+	b=TLidT+oSdyLY34sS6yohVQvMtssO+Z+UHxqVjWSboTRv2vusLvKHWuKtwaN0db/XF2MAhv
+	n2iHkucZVyfVB0147UeN3QeBa/gnJdjsvOLAOqrde2/7K+tbKI7waC8dgvLRmdBTEsr03r
+	nsRJxHnCNX0hcyt4U9XWPDmYl/3Hgcw=
+Date: Tue, 20 Jan 2026 17:50:29 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.15-dev-52d38
+Subject: Re: [PATCH] ASoC: SDCA: Add NO_DIRECT_COMPLETE flag to class driver
+To: Charles Keepax <ckeepax@opensource.cirrus.com>, broonie@kernel.org,
+ Bard Liao <yung-chuan.liao@linux.intel.com>
+Cc: lgirdwood@gmail.com, yung-chuan.liao@linux.intel.com, rafael@kernel.org,
+ linux-pm@vger.kernel.org, linux-sound@vger.kernel.org,
+ patches@opensource.cirrus.com
+References: <20260115131727.373738-1-ckeepax@opensource.cirrus.com>
+Content-Language: en-US
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>
+In-Reply-To: <20260115131727.373738-1-ckeepax@opensource.cirrus.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Migadu-Flow: FLOW_OUT
 
-On Tue, 13 Jan 2026 11:59:54 +0100, AngeloGioacchino Del Regno wrote:
-> This series fixes various dtbs_check warnings happening on the MediaTek
-> Helio X10 platform devicetrees.
+On 1/15/26 14:17, Charles Keepax wrote:
+> The SDCA class driver currently expects the device will be fully powered
+> down on system suspend but not on runtime suspend. This is typically
+> required as when audio is not active (ie. runtime suspend) jack detect
+> is expected to still function, but when the whole system is hibernated
+> there is no need to recognise audio jack events. This means the class
+> driver needs to always be informed of a system suspend, so the direct
+> complete optimisation (where PM will skip calling system suspend if the
+> device is runtime suspended) is not appropriate for the SDCA class
+> driver.
 > 
-> Depending on correctness, either the bindings or the devicetree was
-> changed as a dtbs_check warning fix.
+> Add the NO_DIRECT_COMPLETE flag to prevent this optimisation from
+> running against this driver.
+
+Humm, this flag makes sure the class driver .suspend method is called, but does the core also force a pm_runtime resume before?
+
+In other words, what is the state of the device when the system suspend routine is invoked by the PM core when this flag is set?
+
+FWIW, we had a similar problem on the Intel side, and we used the .prepare method to force a pm_runtime resume. If the host was pm_runtime suspended, then we'd bring it back to full power before the system suspend. It may seem overkill but it's required at the hardware level, a system suspend with the clock already stopped isn't supported.
+If the PM core guaranteed the device state was resumed by adding this flag, then the Intel folks could remove quite a few lines of code.
+
+link: https://github.com/thesofproject/linux/blob/ec0e6c69113f4b342ee8eabec286dea33d98a7cc/drivers/soundwire/intel_auxdevice.c#L568
+
+Going back to this SDCA driver, if the PM core does NOT change the pm_runtime state, then should the class driver perform a full pm_runtime resume and then do the expected system suspend sequence?
+
+Sorry if I am splitting hair, in the past we played with these PM flags and always understood them in the wrong way...
+ 
+> Signed-off-by: Charles Keepax <ckeepax@opensource.cirrus.com>
+> ---
+>  sound/soc/sdca/sdca_class_function.c | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
-> AngeloGioacchino Del Regno (6):
->   dt-bindings: mfd: mediatek,mt8195-scpsys: Add mediatek,mt6795-scpsys
->   dt-bindings: mfd: mediatek: mt6397: Add missing MT6331 regulator
->     compat
->   dt-bindings: regulator: mediatek,mt6331: Add missing ldo-vio28 vreg
->   arm64: dts: mediatek: mt6331: Fix VCAM IO regulator name
->   arm64: dts: mediatek: mt6795: Fix issues in SCPSYS node
->   arm64: dts: mediatek: mt6795-xperia-m5: Rename PMIC leds node
-> 
-> [...]
-
-Applied, thanks!
-
-[1/6] dt-bindings: mfd: mediatek,mt8195-scpsys: Add mediatek,mt6795-scpsys
-      commit: bbdf8911f92c84c7ebd4a214200391748a1d2ff1
-[2/6] dt-bindings: mfd: mediatek: mt6397: Add missing MT6331 regulator compat
-      commit: cbc07585c95e08c7223bea753afba85fbe86e54a
-
---
-Lee Jones [李琼斯]
+> diff --git a/sound/soc/sdca/sdca_class_function.c b/sound/soc/sdca/sdca_class_function.c
+> index 0afa41c1ee93c..98fd3fd1052b4 100644
+> --- a/sound/soc/sdca/sdca_class_function.c
+> +++ b/sound/soc/sdca/sdca_class_function.c
+> @@ -377,6 +377,8 @@ static int class_function_probe(struct auxiliary_device *auxdev,
+>  	if (ret)
+>  		return ret;
+>  
+> +	dev_pm_set_driver_flags(dev, DPM_FLAG_NO_DIRECT_COMPLETE);
+> +
+>  	pm_runtime_set_autosuspend_delay(dev, 200);
+>  	pm_runtime_use_autosuspend(dev);
+>  	pm_runtime_set_active(dev);
 
