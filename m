@@ -1,116 +1,113 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9601A41B340;
-	Tue, 20 Jan 2026 13:59:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B858340F8EB;
+	Tue, 20 Jan 2026 14:28:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768917545; cv=none; b=IIPWsF3B4V/QZuQTTR7LRh+x0thtlGcToHEhu0utvtaQawA4FhF9wj9fulAN3B5j9tc2p6xohF9L3ZpxqR/pCmQ2djXhJ4wIIB1EZFqpoiGYSolucmEqmh8XWjMwUusUWj/oMhVLmqaHpohICAbGnkyw/iu/CuQf9hEldC7pq0U=
+	t=1768919316; cv=none; b=ZtmkEAJW4NtVOcI1h+epmFa2h2YWuBBOlhBaYyRMwm+7DR6cLWuyD6lChrv+qFX8D4cyWThlrJfBmmTt3z/Dkpj0JwC8zac/ypMRvX5g87DnjAeTRZlyqg5OT9rAZH5LlMmXQpRNcHv73QIWHFfZ+K6kauCfmelhBsVIPexLk2I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768917545; c=relaxed/simple;
-	bh=9051yFq57Xie5pjtJjoBq/HvBu5GE3EcHvOKur+xijo=;
+	s=arc-20240116; t=1768919316; c=relaxed/simple;
+	bh=OtwTnDpvDtbMBHvqPMZewcBZYEUS5NfRqaxfbB7joZY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DbGntuKQErpvrUFU+TpOPZguGi3fdG3pqKWRPNWsJWb7DpSSASvu8pcQrK69kf/jAlu+4r8Q1SfHkZkaMR9IGX9txsAKpf6mV76UHS1OuAsfwxBLEZLKMY3rVH9Tz3FxvXd0VKxt5gkb83M1+dOq+zQYr3L/e1LfsRu2XYow1ng=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZoV+ZHYi; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=mFXPBJLakzOgP1HbIGXK/w7Lgt/ATMl7FU6awjkCW4wHhl2OTasYh8kWt/0kaQE1CFYrcSUYXBy16fIqDQ6EeaBsYXcGBp2ezmYsGQA7qFOGzkAn9RcqY1hlPy8/A+JFWXFRk+Q7xxru3iEAXPeQf1YMAxRLGxfAjx67E4+HGz4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Fn4JA8d1; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZoV+ZHYi"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 30B34C16AAE;
-	Tue, 20 Jan 2026 13:59:01 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Fn4JA8d1"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D304CC19423;
+	Tue, 20 Jan 2026 14:28:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768917545;
-	bh=9051yFq57Xie5pjtJjoBq/HvBu5GE3EcHvOKur+xijo=;
+	s=k20201202; t=1768919316;
+	bh=OtwTnDpvDtbMBHvqPMZewcBZYEUS5NfRqaxfbB7joZY=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ZoV+ZHYiLGqOe4NWfwMjBJu+d8Nl30ZgHgckXnZ5+4Dix/UB0LdlIn6fjHwSKWM1K
-	 dwvGdy3JXj2FQ6/DunG343ZTszE2CKh5rBIljRUWiLjM0GYEGr5lXnTc5tk+tt2llS
-	 T5uH1cP9oJulukrS8qlW8HNvtGYoJQ0w00MNZ/HhcfRL5Nlru7mbGOkQj7T7JBOa+J
-	 j+FVJiWMl4bHHjEP4BCb9zpI4p5eovVAH+n3nga0pcPEdMpaypnwHbU0TD31BOvLTf
-	 cDZgR62kgZFwdz4V2ZjMgRdc8TNRWFMUylQwBV2z69vLTCgBS5H/xBtUVPX6aNePpp
-	 x2YFoC1FeMHkg==
-Date: Tue, 20 Jan 2026 13:58:57 +0000
-From: Will Deacon <will@kernel.org>
-To: Ankur Arora <ankur.a.arora@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-	bpf@vger.kernel.org, arnd@arndb.de, catalin.marinas@arm.com,
-	peterz@infradead.org, akpm@linux-foundation.org,
-	mark.rutland@arm.com, harisokn@amazon.com, cl@gentwo.org,
-	ast@kernel.org, rafael@kernel.org, daniel.lezcano@linaro.org,
-	memxor@gmail.com, zhenglifeng1@huawei.com,
-	xueshuai@linux.alibaba.com, joao.m.martins@oracle.com,
-	boris.ostrovsky@oracle.com, konrad.wilk@oracle.com
-Subject: Re: [PATCH v8 04/12] arm64: support WFET in
- smp_cond_relaxed_timeout()
-Message-ID: <aW-KIVQ_H1mVpGHx@willie-the-truck>
-References: <20251215044919.460086-1-ankur.a.arora@oracle.com>
- <20251215044919.460086-5-ankur.a.arora@oracle.com>
- <aWEOALG07jHC_oHC@willie-the-truck>
- <87wm1qmx90.fsf@oracle.com>
+	b=Fn4JA8d1pUoK5IYDAD/REmgz3XFxvQ+4EMUiivOVIwX0mBUNuj1YudA6H2j/KP2js
+	 1u7RZ3bveDlNfpGQfj5OGzCZJjpb35llivcWTSd1DS9XVszq78JeigVaaDJt30fVNe
+	 m8EiHvICvqta/R6tBqkwUokrutW8CSVjFsCTw82ts94PN7Wb23kyOBNOizq+Fel7E3
+	 RpxysRXLhJfosaVgI0e4cwNxSR+D+4cuGZXBmV9O3xQa+5Ik08YXEiNzb0UdVRDW//
+	 xY4ofNxvVqahQAvNh0AywkWtlNbS4RWT6M+8pUp5n0ah3jDMHxD4+LYjUSU0SYsqyP
+	 4vxzGPayTPZrQ==
+Date: Tue, 20 Jan 2026 15:28:30 +0100
+From: Frederic Weisbecker <frederic@kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Anna-Maria Behnsen <anna-maria@linutronix.de>,
+	Ben Segall <bsegall@google.com>, Boqun Feng <boqun.feng@gmail.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Heiko Carstens <hca@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+	Jan Kiszka <jan.kiszka@siemens.com>,
+	Joel Fernandes <joelagnelf@nvidia.com>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Kieran Bingham <kbingham@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Mel Gorman <mgorman@suse.de>, Michael Ellerman <mpe@ellerman.id.au>,
+	Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Paul E . McKenney" <paulmck@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Uladzislau Rezki <urezki@gmail.com>,
+	Valentin Schneider <vschneid@redhat.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Xin Zhao <jackzxcui1989@163.com>, linux-pm@vger.kernel.org,
+	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 07/15] cpufreq: ondemand: Simplify idle cputime
+ granularity test
+Message-ID: <aW-RDkr-KQ5pkFAX@localhost.localdomain>
+References: <20260116145208.87445-1-frederic@kernel.org>
+ <20260116145208.87445-8-frederic@kernel.org>
+ <CAJZ5v0hn81J_0N0Hy6QYtc3655w-9hDqVgWWY1BVhW=DT56Deg@mail.gmail.com>
+ <aW6rAjJ5hz5BYuAR@pavilion.home>
+ <CAJZ5v0gfT1A9OtEzeyp0MJ7JmrPJXF0PWL-8dSdtJXp4pAE8fA@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <87wm1qmx90.fsf@oracle.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAJZ5v0gfT1A9OtEzeyp0MJ7JmrPJXF0PWL-8dSdtJXp4pAE8fA@mail.gmail.com>
 
-On Fri, Jan 09, 2026 at 11:05:06AM -0800, Ankur Arora wrote:
-> 
-> Will Deacon <will@kernel.org> writes:
-> 
-> > On Sun, Dec 14, 2025 at 08:49:11PM -0800, Ankur Arora wrote:
-> >> Extend __cmpwait_relaxed() to __cmpwait_relaxed_timeout() which takes
-> >> an additional timeout value in ns.
-> >>
-> >> Lacking WFET, or with zero or negative value of timeout we fallback
-> >> to WFE.
-> >>
-> >> Cc: Arnd Bergmann <arnd@arndb.de>
-> >> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> >> Cc: Will Deacon <will@kernel.org>
-> >> Cc: linux-arm-kernel@lists.infradead.org
-> >> Signed-off-by: Ankur Arora <ankur.a.arora@oracle.com>
-> >> ---
-> >>  arch/arm64/include/asm/barrier.h |  8 ++--
-> >>  arch/arm64/include/asm/cmpxchg.h | 72 ++++++++++++++++++++++----------
-> >>  2 files changed, 55 insertions(+), 25 deletions(-)
+Le Tue, Jan 20, 2026 at 01:32:50PM +0100, Rafael J. Wysocki a écrit :
+> On Mon, Jan 19, 2026 at 11:07 PM Frederic Weisbecker
+> <frederic@kernel.org> wrote:
 > >
-> > Sorry, just spotted something else on this...
+> > Le Mon, Jan 19, 2026 at 01:30:07PM +0100, Rafael J. Wysocki a écrit :
+> > > On Fri, Jan 16, 2026 at 3:53 PM Frederic Weisbecker <frederic@kernel.org> wrote:
+> > > >
+> > > > cpufreq calls get_cpu_idle_time_us() just to know if idle cputime
+> > > > accounting has a nanoseconds granularity.
+> > > >
+> > > > Use the appropriate indicator instead to make that deduction.
+> > > >
+> > > > Signed-off-by: Frederic Weisbecker <frederic@kernel.org>
+> > >
+> > > Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
+> > >
+> > > or please let me know if you want me to take this patch.
 > >
-> >> diff --git a/arch/arm64/include/asm/barrier.h b/arch/arm64/include/asm/barrier.h
-> >> index 6190e178db51..fbd71cd4ef4e 100644
-> >> --- a/arch/arm64/include/asm/barrier.h
-> >> +++ b/arch/arm64/include/asm/barrier.h
-> >> @@ -224,8 +224,8 @@ do {									\
-> >>  extern bool arch_timer_evtstrm_available(void);
-> >>
-> >>  /*
-> >> - * In the common case, cpu_poll_relax() sits waiting in __cmpwait_relaxed()
-> >> - * for the ptr value to change.
-> >> + * In the common case, cpu_poll_relax() sits waiting in __cmpwait_relaxed()/
-> >> + * __cmpwait_relaxed_timeout() for the ptr value to change.
-> >>   *
-> >>   * Since this period is reasonably long, choose SMP_TIMEOUT_POLL_COUNT
-> >>   * to be 1, so smp_cond_load_{relaxed,acquire}_timeout() does a
-> >> @@ -234,7 +234,9 @@ extern bool arch_timer_evtstrm_available(void);
-> >>  #define SMP_TIMEOUT_POLL_COUNT	1
-> >>
-> >>  #define cpu_poll_relax(ptr, val, timeout_ns) do {			\
-> >> -	if (arch_timer_evtstrm_available())				\
-> >> +	if (alternative_has_cap_unlikely(ARM64_HAS_WFXT))		\
-> >> +		__cmpwait_relaxed_timeout(ptr, val, timeout_ns);	\
-> >> +	else if (arch_timer_evtstrm_available())			\
-> >>  		__cmpwait_relaxed(ptr, val);				\
+> > The patch is standalone but the rest of the patchset depends on it.
+> > Now I don't target this patchset for v6.20-rc1.
 > >
-> > Don't you want to make sure that we have the event stream available for
-> > __cmpwait_relaxed_timeout() too? Otherwise, a large timeout is going to
-> > cause problems.
+> > So if you manage to sneak this patch in for v6.20-rc1, it works because
+> > I'll rebase on -rc1. Otherwise I'll need to keep it to avoid breaking
+> > some code assumptions.
+> >
+> > What do you think?
 > 
-> Would that help though? If called from smp_cond_load_relaxed_timeout()
-> then we would wake up and just call __cmpwait_relaxed_timeout() again.
+> It can go into -rc1.
 
-Fair enough, I can see that. Is it worth capping the maximum timeout
-like we do for udelay()?
+Very nice, thanks for taking it!
 
-Will
+
+-- 
+Frederic Weisbecker
+SUSE Labs
