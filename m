@@ -1,226 +1,163 @@
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D59C42B743;
-	Tue, 20 Jan 2026 12:43:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.156.1
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B02E121ABBB
+	for <linux-pm@vger.kernel.org>; Tue, 20 Jan 2026 13:38:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768913002; cv=none; b=hsMBBDSrw7zu0v5UWHdl47Y9OtIQ1/ah3Am5GTrMNj8tVoROj1frZOZeVvt265k2weWWFzTpjFpZIxywtFeY/gWtIliZgehkZG1604whaXJnkuYFyBpNEFU+bSFo5rsqbUilloExj53wHm9Rmv0YWXMedRbHDPJP8GRWKMbuj0g=
+	t=1768916299; cv=none; b=FJVtRGWjLD5UrpZKLVu9hn8hE8mM5aiPLIRjJ46KoyqFcxxd2o9iKvhe0VMwE1AmJxStjBPNmRrB/N6mj3wG1MGJiXea08DExva2NseLo+QvZfygnGlkr8x5Ss0WotwupuXCpLJzJC7qEF1dUQPcAb2bLgsO75lzhprdFmzOswY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768913002; c=relaxed/simple;
-	bh=uTnWnuT5nZjP1ACUB+50KtGVMlu4ygPFV0GCg/cr8EY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=RjSMlapXtWTj1Q3c9Tx1d2qkRBnyMAfn3jUhccNu/0tMjPvAShCbXApumdcEsDi5/Shsi5oWZlQocon0ow6QZHswv1Dp7LQQ81USrgtbawBr36NpzxJZ9WbWhVkKAAe4VBK+Gbbm+UZoTOFKJVUmgFkp0xP/UQT5WXFcAeemY3E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; spf=pass smtp.mailfrom=linux.ibm.com; dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b=ee1OxE3i; arc=none smtp.client-ip=148.163.156.1
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.ibm.com
+	s=arc-20240116; t=1768916299; c=relaxed/simple;
+	bh=qsHYpCRnHkR9B4hsaDF2UxeZUZc9qiyn2qq13er/Eo0=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=uBv2ouAZf2GA+ONn5IlepEB2fOv71G9x/yPG45udevel6ZrLLZ8CXRa29Bq4/cIcCnU6Pf7lnftTf05EKGRdZ/X7QTQAu0pGwyF6/kzdl0S+38a9AXBvxOdpu8bnlmitNYOcVwSHpV0ICxF3cmGRxTIdDXDTVoMjYMSW+nmj+XE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Keb6RnWV; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Q+49glnK; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="ee1OxE3i"
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 60JMDxiW010632;
-	Tue, 20 Jan 2026 12:42:22 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=ffMlGW
-	HI+RqCf98HD/bTdif0iJK1j78ItcOcHVWDDZI=; b=ee1OxE3iltX1dUT+dWt8uq
-	CDS2R+Un6yKYG/mL81PmzXxcbpJZtwwwDkbkhNbUpe98SG4I5d/zZZg+/5Zmcr3N
-	nXOGW4BErwekCDdfe7fmO/ozIP+O6JZ2yEi+0U5qTpAOw37maRS8aec4N82EDj9b
-	br2H2+vT3AAUCatiuUJF540gf8LSd6+PvA64DYDswasxe7kwyXhfjZvpBKgH4Dwv
-	mtVdXnjtJSGZJUMHrmUL8NL6d+jOMtQfOqxvAvFgIDh4p60Q6VrB5X8J8aoLQ2NL
-	jgYgD4u8VJmVrdaf59KCMWfg3FqvHrwAXd9fv6HLPCKVZSXruPMAaySEgcybaqjg
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4br23rwuu6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 20 Jan 2026 12:42:21 +0000 (GMT)
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 60KCgLRH006897;
-	Tue, 20 Jan 2026 12:42:21 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4br23rwuu2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 20 Jan 2026 12:42:21 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60KBU9I3006424;
-	Tue, 20 Jan 2026 12:42:20 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4brqf1cj4f-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 20 Jan 2026 12:42:20 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 60KCgGGd56426764
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 20 Jan 2026 12:42:16 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 68B3120043;
-	Tue, 20 Jan 2026 12:42:16 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 32F752004B;
-	Tue, 20 Jan 2026 12:42:09 +0000 (GMT)
-Received: from [9.124.220.45] (unknown [9.124.220.45])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 20 Jan 2026 12:42:08 +0000 (GMT)
-Message-ID: <a4037857-b161-4536-9a2e-2cf4c168736d@linux.ibm.com>
-Date: Tue, 20 Jan 2026 18:12:08 +0530
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Keb6RnWV";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Q+49glnK"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 60KA7lxP3837153
+	for <linux-pm@vger.kernel.org>; Tue, 20 Jan 2026 13:38:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=267stE2GFuXel8U/+66Flp
+	SLqJa+/S4BZouInklqODc=; b=Keb6RnWVf5omLaHbSodX96ZoHrYUs0Trpls0yB
+	Gyz0EkmLp/bipEmk/cFMFGXkfarp5s/foRVA7UTXiGPmD0x23Sur0s6DIiEjIiKD
+	slfCoZkKrvRB1orj144bjwz16MXziKUnMtEz2FP+hMhFXAOSd3PnghldXrAymoC1
+	sK51s2ctpze2jiY83ywHkWHVOp6EbwUDtpHdNgSCDlrzzOWmWN5A1/1MmJ7bL6Xt
+	lO8fHne+giMUxjwmM61/NY/SdKG5yb/ZmofIpQA54Qica3BHOxM3f/CzZ3LANtDM
+	n08g1sZzwzPvMYY3IPZg1akWJBr0E1C+j3rWjsQQl8REEiQg==
+Received: from mail-pg1-f199.google.com (mail-pg1-f199.google.com [209.85.215.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4bt7pb8jm1-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 20 Jan 2026 13:38:16 +0000 (GMT)
+Received: by mail-pg1-f199.google.com with SMTP id 41be03b00d2f7-c52ab75d57cso3028028a12.1
+        for <linux-pm@vger.kernel.org>; Tue, 20 Jan 2026 05:38:16 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1768916296; x=1769521096; darn=vger.kernel.org;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=267stE2GFuXel8U/+66FlpSLqJa+/S4BZouInklqODc=;
+        b=Q+49glnKRNDhAODOeogIsq1UInd3/rFjHfzUud7+HwdFDl7OT8Efnw8akDhEN3iuts
+         CfffQQAvobHOHSmrOkPzU+1eriKxofrmWP4VekwhqIFZ3oEY/BoJVEDFrPDw0DasGVe1
+         pk3XaaAbg1t2T2Hg7X0iOPlLL/hmpcxUeEjlLAwiGzv1gzQ6xs1f17XPa1XKI6lvVE/M
+         BO1RG8qQ7fX4iG+GG1maRrVuYNmNHiu8Z5wUgE6NWa7n5UPVrQBYkMuZ9vOGTMx6L/ZE
+         DiLh2IfIUTuW0PlgD5Xff9e6jNM0GntoFmCEP26QJDqLMZSg/aqYuVG2Wevn51XgY9qi
+         MNtQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1768916296; x=1769521096;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=267stE2GFuXel8U/+66FlpSLqJa+/S4BZouInklqODc=;
+        b=PiMgEBcAAHvln9FO953mzKsqdZVoMrltpxVeRahJ5hnJEVD6hiEfW6pGU4EmPog+It
+         /rGinQYV48wz76YmxEcezBTCd9/joiD9RoeyUSWYDIeAObR4j4qT8abmZC2N3p9Rprx/
+         nC+lneLl5t3lo1KKWmIWiZz/8rIvGl7zmlBk6Piv9l3iB9JwEYIhDlJsj9psF+XBTyzD
+         SWCbocMczpmCP0ihBrXDgfLqOtamL13vvykAt14XwyKwcgKVM2KgrxU2cMqZNbiH5Xe2
+         Jn1VZBN5Sb/FXpXbJ3dGc9kUWQxASJ3PYEBGRXPlXcCUz7stXob3+8GQtsPCidtETli/
+         YVAQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUWdwopMwm8wUYdQc4uq12b/NLRYDDPi7GgkkxzKrm9Fo0DdatQdyja0MBlaOKrSgTqVRARuxxwNQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzvHYiva4+Q1evEc8N/xwmIDhs1D4fKE8iwmNuRv5NasJpvBMiu
+	M3zh433Oi+CQnJqrv7/566HK7zk4lZYAnn0+VxYYTdj6tZindvZwrGPjaTNO9hSrPZ0Vw/wlN3i
+	YnGjOXhIUW0Cwn8QXgIYh2Oct/WkIRAfhLfH6MJh1PywQwv+TkjXH6KhAGvTnqg==
+X-Gm-Gg: AZuq6aK32P8RPJTWG9JjxQZzqZ04eD1o5QNYlg6cpnvrsFXAgoQqf00cOsA2waS1LEo
+	YL+hO3RjJu3Xf/T6i78fP1GAHNkoViT0ikG+qJl9YxCl85PgGfg10EBvfxPH8pHWmbCVNjmOyGM
+	j/dNfciHvQkwgY0EH9dLD4bpf0hZ2eAdxbfeo/76sipkaoe98FWIWEg74JG+cmAcxV4YvgcsQc3
+	Ikam0pFMYanrWtvZPwC5vMrFgbOSBSmFbsHMDbHLyfrYz8AZPS/su7m3YTr6/82lx77q6GAbCaM
+	Ap1k6461MGNmvt3YaP1P6VYi9il+bPkeliU2/S00pJIt7DHQBims27vWTPkE6Zp/yeR9EFZhjHo
+	r032wkuygZdvrUhBqdrTbdLAwnm5zSeLo2EzfiKqkVgvUP7vVSoUkmf9GXwZ9ssvEu6ytG9nOcy
+	l2OCrC9Ub5ooHzMwblIc8r9ZdSkTpB988zHAYi
+X-Received: by 2002:a17:903:19c8:b0:2a0:8f6f:1a12 with SMTP id d9443c01a7336-2a7698fb4a5mr17389555ad.17.1768916296177;
+        Tue, 20 Jan 2026 05:38:16 -0800 (PST)
+X-Received: by 2002:a17:903:19c8:b0:2a0:8f6f:1a12 with SMTP id d9443c01a7336-2a7698fb4a5mr17389275ad.17.1768916295592;
+        Tue, 20 Jan 2026 05:38:15 -0800 (PST)
+Received: from hu-ppapaniy-blr.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c5edf37b380sm12036532a12.34.2026.01.20.05.38.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 20 Jan 2026 05:38:15 -0800 (PST)
+From: Pragnesh Papaniya <pragnesh.papaniya@oss.qualcomm.com>
+Date: Tue, 20 Jan 2026 19:07:35 +0530
+Subject: [PATCH] dt-bindings: interconnect: qcom-bwmon: Document Glymur
+ BWMONs
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 00/15] tick/sched: Refactor idle cputime accounting
-To: Frederic Weisbecker <frederic@kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
-        Boqun Feng <boqun.feng@gmail.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Kieran Bingham <kbingham@kernel.org>, Ben Segall <bsegall@google.com>,
-        Michael Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
-        Xin Zhao <jackzxcui1989@163.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Jan Kiszka <jan.kiszka@siemens.com>, linuxppc-dev@lists.ozlabs.org,
-        "Paul E . McKenney" <paulmck@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Anna-Maria Behnsen <anna-maria@linutronix.de>,
-        Uladzislau Rezki <urezki@gmail.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Heiko Carstens <hca@linux.ibm.com>, linux-pm@vger.kernel.org,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        Sven Schnelle <svens@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
-        Joel Fernandes <joelagnelf@nvidia.com>,
-        Nicholas Piggin <npiggin@gmail.com>, linux-s390@vger.kernel.org,
-        Peter Zijlstra <peterz@infradead.org>
-References: <20260116145208.87445-1-frederic@kernel.org>
- <aWpRxyt8HuXkSuxs@localhost.localdomain>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <aWpRxyt8HuXkSuxs@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 9VV4fpwLWP4PF7lZThEunm4rJxceXtvg
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTIwMDEwMiBTYWx0ZWRfXx9yKJqyysrW6
- O/oFmXr8RITUzlMs5DnwBfn5ZTKL+8h6NXFtpi2UTke7YxOrw8thQeRvFH1Rqw/buSAqehlaesH
- nHkvyGOjnOPcbxQ0RedRbvPpZErqOlolFyjPwFZuw0OWJkuKqgvLPcqtC4kSS4X+cJxhYzBRkp/
- XnJk0Lypiae2n00EVXJV42JlQ1FJyASmG26LSchKXjRntd6qlJr1c6gSSw5RP+e9WK8va47/EC8
- JiRCrB9ruCncX7lC5AmMr8ff/5fj+3JgzCarsyq+Yj3AtVOG8kHn8SE26/AoSixmgtANzoseJ6E
- vwtwRXROIg8svyoC+arO4xzyzRousjDjafz2VyQ/6ztbnbQBV5mVIHW70HHcgLh0W5FW3oIyVX9
- qPURUSaTIo+rO5pT60kuxPZF0baSr0nQnBThZy6pw6ip5owcY+UTLBqKwIskNeyMtSH6C40GGKu
- Jqvps5z2AAIMS4bCkPg==
-X-Authority-Analysis: v=2.4 cv=J9SnLQnS c=1 sm=1 tr=0 ts=696f782e cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=if_OGZEsJgfgBzv6FlkA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: xGI-wI0OTynA7CpsDBMAgvCg4UMlutJg
+Message-Id: <20260120-glymur_bwmon_binding-v1-1-57848445eccf@oss.qualcomm.com>
+X-B4-Tracking: v=1; b=H4sIAB6Fb2kC/x3MSwqAMAwA0atI1hbaLlS8iogYG2tAo7T4Q7y7x
+ eVbzDwQKTBFqLMHAh0ceZUEk2cwTL14UuySwWpbaGO18vO97KHDc1mlQxbH4pUrqqpEi+hGAyn
+ dAo18/dumfd8PUOZDz2YAAAA=
+X-Change-ID: 20260120-glymur_bwmon_binding-d6887b2bbdf1
+To: Krzysztof Kozlowski <krzk@kernel.org>, Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        rajendra.nayak@oss.qualcomm.com, sibi.sankar@oss.qualcomm.com,
+        pankaj.patil@oss.qualcomm.com,
+        Pragnesh Papaniya <pragnesh.papaniya@oss.qualcomm.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1768916292; l=1131;
+ i=pragnesh.papaniya@oss.qualcomm.com; s=20260120; h=from:subject:message-id;
+ bh=qsHYpCRnHkR9B4hsaDF2UxeZUZc9qiyn2qq13er/Eo0=;
+ b=GOehMMGTepIPP9nBawCSmRE58R095vP8GAXG3TBLjmkUoJwOyw8qOrQ7tgJ6+Orm+KOnER05Z
+ ihk4GY7dMtNDpduzS2iLZ+HiXyRvd5cX1YRXMc1ZUxJjIkETyT2UdQM
+X-Developer-Key: i=pragnesh.papaniya@oss.qualcomm.com; a=ed25519;
+ pk=09P9nFmZLXJ9+4Jx10ZK5rIW0Fmk79A/DLErm6aVA0c=
+X-Authority-Analysis: v=2.4 cv=OMwqHCaB c=1 sm=1 tr=0 ts=696f8548 cx=c_pps
+ a=Oh5Dbbf/trHjhBongsHeRQ==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+ a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=EUspDBNiAAAA:8 a=yciQ9CAyKdn08I1YtksA:9
+ a=QEXdDO2ut3YA:10 a=_Vgx9l1VpLgwpw_dHYaR:22
+X-Proofpoint-GUID: yI0fLANNccBx0tToE4Klt5nSMh1jJub1
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTIwMDExMiBTYWx0ZWRfX2B4Y27dK8PE/
+ xRj96AI/XAa1EB/Dh5ezxyer+V0j+mCiJfwxgiwkHSn2kWiATTF2mHVskH6DDidXXAzaDTgY6W/
+ wXFXvI4pmv+otUxoqvd1OhiMMGUR7A/Gd+tfAKGXGQ0iMlQN8Wk7rYQZgtxP70il7wzzVs5ssUu
+ MWHV5HRgjwR2GvH+svjSWmRmTT/aBqjMWBAldWtTIBa+55Wcch8mR24ht4cx0wWtImMVBea48Ya
+ KwEkDcOdhRJZB+e775tfCB6ADUvdlUUM40ibaLmLNXtC3CXtCMabWwfVKy04p1ske5tPCuOrg0l
+ 6Qh3hUq9K/B0Ci4ROO3i9oe8gT1LAlI/t6euslxR7G/lbs+WAQt6RIRNQSlI/DvJWTMUYq069Zd
+ LVbHdSG6gg1Xf2SNv0eMiIdQrmHdSKM/rbLXijDsmRbS9IKVibWaYxF3YgV5fmbIWvI/6XQkAbf
+ WMq1DIfg+Bww+Vpn6Bw==
+X-Proofpoint-ORIG-GUID: yI0fLANNccBx0tToE4Klt5nSMh1jJub1
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.20,FMLib:17.12.100.49
  definitions=2026-01-20_03,2026-01-20_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 impostorscore=0 adultscore=0 suspectscore=0 spamscore=0
- lowpriorityscore=0 malwarescore=0 clxscore=1011 bulkscore=0 phishscore=0
+ clxscore=1011 suspectscore=0 lowpriorityscore=0 malwarescore=0 spamscore=0
+ adultscore=0 impostorscore=0 bulkscore=0 priorityscore=1501 phishscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2601150000 definitions=main-2601200102
+ reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2601200112
 
+Document Glymur BWMONs, which has multiple (one per cluster) BWMONv4
+instances for the CPU->DDR path.
 
-Hi Frederic.
+Signed-off-by: Pragnesh Papaniya <pragnesh.papaniya@oss.qualcomm.com>
+---
+ Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-On 1/16/26 8:27 PM, Frederic Weisbecker wrote:
-> I forgot to mention I haven't yet tested CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
-> (s390 and powerpc).
-> 
-> Thanks.
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml b/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
+index 17b09292000e..ce79521bb1ef 100644
+--- a/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
++++ b/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
+@@ -25,6 +25,7 @@ properties:
+       - const: qcom,msm8998-bwmon       # BWMON v4
+       - items:
+           - enum:
++              - qcom,glymur-cpu-bwmon
+               - qcom,kaanapali-cpu-bwmon
+               - qcom,qcm2290-cpu-bwmon
+               - qcom,qcs615-cpu-bwmon
 
+---
+base-commit: d08c85ac8894995d4b0d8fb48d2f6a3e53cd79ab
+change-id: 20260120-glymur_bwmon_binding-d6887b2bbdf1
 
-tl;dr
+Best regards,
+-- 
+Pragnesh Papaniya <pragnesh.papaniya@oss.qualcomm.com>
 
-I ran this on powerNV(Non virtualized) with 144 CPUs with below config. (default ones)
-Patch *breaks* the cpu idle stats most of the time. idle values are wrong.
-
-
-Detailed info:
-
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-In config i have this:
-CONFIG_TICK_CPU_ACCOUNTING=y
-# CONFIG_VIRT_CPU_ACCOUNTING_NATIVE is not set
-# CONFIG_VIRT_CPU_ACCOUNTING_GEN is not set
-# CONFIG_IRQ_TIME_ACCOUNTING is not set
-# CONFIG_BSD_PROCESS_ACCT is not set
-
-+++++++++
-
-When system is fully idle, i see this.
-
-06:44:26 AM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
-06:44:27 AM  all    0.01    0.00    0.01    0.00   57.20    0.00    0.00    0.00    0.00   42.79
-06:44:28 AM  all    0.02    0.00    0.03    0.00   55.73    0.00    0.00    0.00    0.00   44.22
-06:44:29 AM  all    0.01    0.00    0.00    0.00   56.23    0.00    0.00    0.00    0.00   43.77
-
-- Seeing 50%+ in irq time, which is clearly wrong.
-
-+++++++++
-When running stress-ng --cpu=72 (expectation is 50% idle time)
-06:48:12 AM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
-06:48:13 AM  all   49.98    0.00    0.01    0.00   15.81    0.00    0.00    0.00    0.00   34.20
-06:48:14 AM  all   49.93    0.00    0.00    0.00   15.15    0.00    0.00    0.00    0.00   34.91
-06:48:15 AM  all   49.99    0.00    0.01    0.00   15.29    0.00    0.00    0.00    0.00   34.72
-
-- Wrong values again. 50% is expected idle time.
-
-+++++++++
-system is idle again.
-06:48:46 AM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
-06:48:47 AM  all    0.00    0.00    0.00    0.00   63.93    0.00    0.00    0.00    0.00   36.07
-06:48:48 AM  all    0.02    0.00    0.00    0.00   63.78    0.01    0.00    0.00    0.00   36.18
-06:48:49 AM  all    0.00    0.00    0.00    0.00   63.77    0.00    0.00    0.00    0.00   36.23
-
-- Wrong values again. irq increased further.
-
-+++++++++
-
-I have seen the below warnings too.
-WARNING: kernel/time/tick-sched.c:1353 at tick_nohz_idle_exit
-[    T0] WARNING: kernel/time/tick-sched.c:1353 at tick_nohz_idle_exit+0x148/0x150, CPU#4: swapper/4/0
-[    T0] Modules linked in: vmx_crypto gf128mul
-[    T0] CPU: 4 UID: 0 PID: 0 Comm: swapper/4 Tainted: G        W           6.19.0-rc5-00683-gbe7e8f3d5116 #61 PREEMPT(full)
-[    T0] Tainted: [W]=WARN
-[    T0] Hardware name: 0000000000000000 POWER9 0x4e1202 opal:v7.1 PowerNV
-[    T0] NIP [c0000000002c8210] tick_nohz_idle_exit+0x148/0x150
-[    T0] LR [c00000000022f10c] do_idle+0x1dc/0x328
-
-
-WARNING: kernel/time/tick-sched.c:1274 at tick_nohz_get_sleep_length
-     T0] NIP [c0000000002c7fc0] tick_nohz_get_sleep_length+0x108/0x110
-[    T0] LR [c000000000ca1548] menu_select+0x3c0/0x7b4
-[    T0] Call Trace:
-[    T0] [c000000003197e10] [c000000003197e50] 0xc000000003197e50 (unreliable)
-[    T0] [c000000003197e50] [c000000000ca1548] menu_select+0x3c0/0x7b4
-[    T0] [c000000003197ed0] [c000000000c9f120] cpuidle_select+0x34/0x48
-[    T0] [c000000003197ef0] [c00000000022f184] do_idle+0x254/0x328
-
-
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-I went back to baseline to confirm the original behaviour.
-(d613f96096e4) Merge timers/vdso into tip/master
-
-07:02:17 AM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
-07:02:18 AM  all    0.01    0.00    0.01    0.01    1.19    0.00    0.00    0.00    0.00   98.77
-07:02:19 AM  all    0.01    0.00    0.01    0.00    0.84    0.00    0.00    0.00    0.00   99.14
-07:02:20 AM  all    0.00    0.00    0.01    0.00    0.99    0.00    0.00    0.00    0.00   99.00
-07:02:21 AM  all    0.01    0.00    0.00    0.00    0.83    0.00    0.00    0.00    0.00   99.16
-
-Which is the working as expected.
-
-
-
-PS: Initial data. I haven't gone through the series yet.
