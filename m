@@ -1,121 +1,228 @@
-Received: from mail-pg1-f170.google.com (mail-pg1-f170.google.com [209.85.215.170])
+Received: from mail-qk1-f178.google.com (mail-qk1-f178.google.com [209.85.222.178])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CEF663793C2
-	for <linux-pm@vger.kernel.org>; Wed, 21 Jan 2026 14:17:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3E5133372A
+	for <linux-pm@vger.kernel.org>; Wed, 21 Jan 2026 14:51:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.178
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769005049; cv=none; b=PvG6wK6Q0FJ4BcFXe81E7887WLiP5+AVCbffcHldl2oVKd7o4tln4OPpvIFqLjcx2Ns9Bx/weDMxtzXgXozSCn0MoBqjluxch4JxRtgjbETQLGcg4kklDktxCUnPt1KVnIUi+2ua+blU7lFjU0UtSfPJUh8BEZhi1qdlj+9Ljso=
+	t=1769007064; cv=none; b=k4PF2rohdP5TGbLnws8PM1WidFPSFrpkzkjUbgN01ATyVZpVvbdXnVLeMDKwVV6OlJiu0wtCYOE2iFZR4PM51tFjJGYx1pzJCUqbMvUOCG9iCDzfEE/ejIk3LD9w7Jimu0hrc8OAVcgvrlTnUs3plO145rslnc0T9xCRlskrn1I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769005049; c=relaxed/simple;
-	bh=psXMmI1AnrTNmbUPhfuPxpMrDFwww3OT+Tpf52rUs4k=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=B4qVzU5PwmFhVmWNC4bbtixOYmeWljwTDzfwllZk019EUvFLHyJARHKL5BCOagiTVFffqPGydOF0girelegfg1yU5+4Fjne82N5ENdNcx9htj3YL/umNYQub5HD+zDdc9fdKaQVHCEXpJ8YNyeSc/sIea6UUt/Tdy5ULOsVsj+Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=dhMSEd7B; arc=none smtp.client-ip=209.85.215.170
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	s=arc-20240116; t=1769007064; c=relaxed/simple;
+	bh=VpzSOPPipZ7Wk3DVhXqnmZFKnblqi6knYh6FEjxvsEg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=TG8XSVToPnSuKzWZE8BkG+5ivIUqNfsFYxJ7KssMYMdBjiZiw/krV1HxDjFWkd3RSX1ZXflyVd/+zYae+ymClNDqjqCrwas/VMIT/BciI9KpvZPb3c4iPzszOVKS8UVwDS2UQso7Jl9515RADgCfhHdlH1ehHxNuAGAB4ekKdvs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.222.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dhMSEd7B"
-Received: by mail-pg1-f170.google.com with SMTP id 41be03b00d2f7-c4464dfeae8so4100722a12.3
-        for <linux-pm@vger.kernel.org>; Wed, 21 Jan 2026 06:17:27 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1769005047; x=1769609847; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=iKrrqjcg46QuFiM8rQG6H6noqywu73UQ7w/zxl2mM20=;
-        b=dhMSEd7BL3WsHYxwbkQQ6e6uBBMjTOALKtoY64KD2c2n4Y6Vqyf/vvPjarH7NW+UrF
-         E6oVRPWKbvJQnvXJM6wBUKqg5KpLSkPgr6i10YOjWowqduvFYJ+U9n3KA8lDC+V6XTZ6
-         bet3TwUcC4jyfUdvUGmcPAQJxab0UxOQpqhtwrBVc49m1k/26vlPOZQBaMcbuAt3kx/x
-         iSs84eb9UdxSg2O4cSbaxbXCyAfLGfPH4H6NLOvVBDHMPoDvZC5OEpSbNCUurGZEgLog
-         KNRaP9ahkw/zyVYlG4GY4qvJjWZaPsgRt89vGbKhVhDwk5uhS2hT6oZOvsPVC8U4m+dq
-         he8g==
+Received: by mail-qk1-f178.google.com with SMTP id af79cd13be357-8c69ffb226eso798237085a.1
+        for <linux-pm@vger.kernel.org>; Wed, 21 Jan 2026 06:51:02 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769005047; x=1769609847;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=iKrrqjcg46QuFiM8rQG6H6noqywu73UQ7w/zxl2mM20=;
-        b=mgKfFyfyh+yRJWcVd40kWaCJvG0IsXEUmYP/KPjHAVEFPmxQ0NuhXG6lv4t4h6ISEH
-         eAslEMsWIcRRR70DUZnhj/9aYVhSLjsZX+pUOy/Ck+Bzlx2ssfS3TZbaY0hy3XhuuodT
-         SQuEWK7kALa1eFW9d2ydgxfoEkNfJNXvziwZr3NdOF/Lto+jrwEe7oX58yu7tD1QmI2H
-         P8p+GF/aBQJpBef05ifygBESuj9fc0iX3xBZhrOq1n7lwKhBDeUUEa8nBfH4U6BcOCrz
-         GGf4spH2QxhOnSzWrcZSJHT92H+nQ3tP+48wQo2OWfU7e6iRcH+OftfV3S8hoU6VNxA0
-         kA7g==
-X-Gm-Message-State: AOJu0Yy/zJIDxkOFB5Vxd+dcDpeK8p0T4y1KxI+tDQozp5YjJSVMWDLc
-	Y6tB6VcsEvS7j91WEL+fucGLu4B73FBaZmLcjrVRJGAspDsY6ZiM2Ghr
-X-Gm-Gg: AZuq6aI7kTmFXwjxaFJWH9CfPVlWycy94leBcZUmtsUT0HGNdFUb41G7Hw5Ij5aujQ7
-	qkgoUGe37l6VsHT4v7UnvDMXXNHIOZslxSb5tXsKF2d/yDo8q32XzHtrOdyF16gKIwnLfvkPl7q
-	Z430SgFxw9aMTfu+PibMo23SfwKf00zwuF1sWD9xCjZM6DEoXU4pEejc42FYw724W9s/qjHIC0Z
-	Oo+v427bjCOeLPZndTPXF/fsKf4Ptb3T9TZTFg4ZO1HdZHmcZ36doywOFoPOaDZi4nzb3tva4Dt
-	3+STXsSfY9wsHmB8UG9J80Tea66U1Kkz+1xTR+saPe0g2y+ZinNV6ARmgt+LK26zIKfXvlZg6Ra
-	FJCsQBkIE5cR/iwkUni9j0EmpDDCPNoWJFxmoshc/lYof2WX8y5Q/RmOg2I4Kz1Pz5Z+X9GbQSE
-	6fv1p4M2ksSC0mr5IdyE0863A4
-X-Received: by 2002:a17:903:2f91:b0:2a7:5751:5b30 with SMTP id d9443c01a7336-2a757515da0mr55304155ad.12.1769005047012;
-        Wed, 21 Jan 2026 06:17:27 -0800 (PST)
-Received: from junjungu-PC.localdomain ([188.253.124.89])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a7190d14cfsm158144605ad.38.2026.01.21.06.17.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 21 Jan 2026 06:17:26 -0800 (PST)
-From: Felix Gu <ustc.gu@gmail.com>
-Date: Wed, 21 Jan 2026 22:17:17 +0800
-Subject: [PATCH] firmware: imx: scu-pd: Fix device_node reference leak in
- imx_sc_pd_get_console_rsrc()
+        d=1e100.net; s=20230601; t=1769007061; x=1769611861;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=AF6Iy9dgsc5sPND1gabv+P1umCdITLLVFz5zc76lNNw=;
+        b=Y02s/d1PIKoLDpc4pqXzIJZSohKoy0+ycQuHSswn/FnWQ6sobdUKedebRwJVSf2gMc
+         83gzXLR/fLTZCXBOL2Sor7wXYfVl2UV2fFfc0+wqxvbF79MJjtLsW6oGkudKpEjNbXaS
+         yhqUU/3qQgIZz8XOw15JHZmU5T3OWjyT8Ty0gH7TxzwC+KQPn5wy6iwxLTBthbyWCHlF
+         GO91XdEKNDNbIYCaowSYImg6/VTRiKNy3TZdWpXbPtcaEdA3enQx3g6GE3fuh6VNceXm
+         mGkGsKf4MQwU5RjU8HHeKnvq5bbPVkzHrpe8JHce3vDcclK8sa3yzPmzdYDq6m7x9+g5
+         6NCQ==
+X-Forwarded-Encrypted: i=1; AJvYcCU3WpCsg80WqlOTcRmO3azQrVKKl+Cz4MQ71rGXnF5DaSvvILCqGh5GEGXOxabCkXKExs+8tybTrA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyeNTY5zVUhTznOIdfqNMB3IQb41pjh2UKORn/JohbphfKrC5Sg
+	4m/ntC+6bydfjj4k8hPG8WKZlE2WGcy5xQQt+QvgeGvfUz7+b79BkrldU6LjHQ==
+X-Gm-Gg: AZuq6aKFElFnycR26c61sxhpjFjvG9P5Kb9CjU6cMxQNFn6mlA6AetQCrA2fcragC8y
+	UT7IYcs/TVNgGPAbCT4NDW8nePVTy/PGJf2pMg2FQ90uMrOAfRzHJe8UerOJRcrZ90/fVum3/Pw
+	UCb6kaJLm6HOe8JXmPt6gKA3fFSROopCbYvM/QtZUuxG1rVsfzOLrP8UHtULKctDhDWpsSTIEeD
+	typBAQf+soarkhPpzglyMFXnQfHFv4u1yd9vc7VzPKCfGiFYxtHcHrSna7G9DQQAngDv39AvIe7
+	94/F0DKOaZkWfZlrfJJP1jB/Wb5rCl1jLov/5cyVb8VtlUAGUWReMRcjNhKtqe5LHFCY1EXMN4e
+	YX9xrNrnWrzNbhUFn2dOhGe2TCphmBxz8sx3CYHC2h7z2ay6elib5D+ADLMFZZv/W5E/u2OVj3o
+	ldZ1YjSWKJ++Ma+lGynXiU4KMW3EUx6GFLjtgelDN97GzySxP+
+X-Received: by 2002:ac8:5dd1:0:b0:501:4a4a:c24a with SMTP id d75a77b69052e-502a1e1b0damr261525821cf.13.1769000719499;
+        Wed, 21 Jan 2026 05:05:19 -0800 (PST)
+Received: from mail-qv1-f43.google.com (mail-qv1-f43.google.com. [209.85.219.43])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8942e5e49bfsm126342656d6.10.2026.01.21.05.05.19
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 21 Jan 2026 05:05:19 -0800 (PST)
+Received: by mail-qv1-f43.google.com with SMTP id 6a1803df08f44-894703956b8so11883006d6.1
+        for <linux-pm@vger.kernel.org>; Wed, 21 Jan 2026 05:05:19 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCVYgUTT3LP4kdbU7Sy4d8V0Nkm4UfBg303z+xvQ1Z2CA+qysonBuxKAcMRcuQH/349eWd3zdo+99Q==@vger.kernel.org
+X-Received: by 2002:a05:6102:3053:b0:5e5:66c6:d23e with SMTP id
+ ada2fe7eead31-5f1a6fd7b8amr5292858137.1.1769000378213; Wed, 21 Jan 2026
+ 04:59:38 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260121-b4-scu-pd-v1-1-f993e4082089@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAOzfcGkC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIzMDQyND3SQT3eLkUt2CFF0jU/NEy0QTg1QLk1QloPqCotS0zAqwWdGxtbU
- Aj9diLFsAAAA=
-X-Change-ID: 20260121-b4-scu-pd-257a9a40e84e
-To: Ulf Hansson <ulf.hansson@linaro.org>, Shawn Guo <shawnguo@kernel.org>, 
- Sascha Hauer <s.hauer@pengutronix.de>, 
- Pengutronix Kernel Team <kernel@pengutronix.de>, 
- Fabio Estevam <festevam@gmail.com>, Dong Aisheng <aisheng.dong@nxp.com>
-Cc: linux-pm@vger.kernel.org, imx@lists.linux.dev, 
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
- Felix Gu <ustc.gu@gmail.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1769005040; l=967;
- i=ustc.gu@gmail.com; h=from:subject:message-id;
- bh=psXMmI1AnrTNmbUPhfuPxpMrDFwww3OT+Tpf52rUs4k=;
- b=UewNA73STZQdwpe60NY3QQLvtNzecqxLwUk0xLMEiSVclZNQAxE+IH3eKK335EAGp/MKGyHZG
- wY4gCGmtTJ0DRQcZJY1wETuCJmC9PKgZPFG3SozHPeDF6CexTqIJ/lk
-X-Developer-Key: i=ustc.gu@gmail.com; a=ed25519;
- pk=fjUXwmjchVN7Ja6KGP55IXOzFeCl9edaHoQIEUA+/hw=
+References: <20251015071420.1173068-1-herve.codina@bootlin.com>
+ <f74ab0a2-b74b-4b96-8469-a716c850e230@gmail.com> <CAL_JsqJDOYuzutMHMeFAogd5a_OX6Hwi8Gwz1Vy7HpXgNeYKsg@mail.gmail.com>
+ <5cf2a12a-7c66-4622-b4a9-14896c6df005@gmail.com> <CAL_JsqJjm12LxpDg6LmpY=Ro_keHwnrWiYMLVnG=s_pSP4X2WQ@mail.gmail.com>
+ <072dde7c-a53c-4525-83ac-57ea38edc0b5@gmail.com> <CAL_JsqKyG98pXGKpL=gxSc92izpzN7YCdq62ZJByhE6aFYs1fw@mail.gmail.com>
+ <55076f4b-d523-4f8c-8bd4-0645b790737e@gmail.com> <20251202102619.5cd971cc@bootlin.com>
+ <088af3ff-bd04-4bc9-b304-85f6ed555f2a@gmail.com> <20251202175836.747593c0@bootlin.com>
+ <dc813fc2-28d2-4f2c-a2a3-08e33eec8ec7@gmail.com> <20251204083839.4fb8a4b1@bootlin.com>
+ <CAMuHMdXdwf7La1EYBWTJadsTAJG3nKQVW6wtBn-bUqshA=XHRw@mail.gmail.com>
+ <20251210132140.32dbc3d7@bootlin.com> <c50c40cc-69f6-436c-a94e-94a3a10f6727@gmail.com>
+ <20251211132044.10f5b1ea@bootlin.com> <1b9fa77b-d74a-4fa7-b2e7-8b389d59a5a0@gmail.com>
+ <20251211161902.11ef4248@bootlin.com>
+In-Reply-To: <20251211161902.11ef4248@bootlin.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 21 Jan 2026 13:59:26 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdWGk5ig3v9tGy1cMOg1LmKu3KrxQq2HO1vcQeZPuRxWBQ@mail.gmail.com>
+X-Gm-Features: AZwV_QgoZry7Ux_LWaq66D8-Sle9_xFUD1BP9eHkYs41xWjINnCZsHwmSX1GiNQ
+Message-ID: <CAMuHMdWGk5ig3v9tGy1cMOg1LmKu3KrxQq2HO1vcQeZPuRxWBQ@mail.gmail.com>
+Subject: Re: [PATCH v4 01/29] Revert "treewide: Fix probing of devices in DT overlays"
+To: Herve Codina <herve.codina@bootlin.com>
+Cc: Matti Vaittinen <mazziesaccount@gmail.com>, Rob Herring <robh@kernel.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, 
+	Kalle Niemi <kaleposti@gmail.com>, linux-arm-kernel@lists.infradead.org, 
+	Andrew Lunn <andrew@lunn.ch>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, 
+	Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, 
+	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Andi Shyti <andi.shyti@kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, 
+	Peter Rosin <peda@axentia.se>, Arnd Bergmann <arnd@arndb.de>, Bjorn Helgaas <bhelgaas@google.com>, 
+	Charles Keepax <ckeepax@opensource.cirrus.com>, 
+	Richard Fitzgerald <rf@opensource.cirrus.com>, David Rhodes <david.rhodes@cirrus.com>, 
+	Linus Walleij <linus.walleij@linaro.org>, Mark Brown <broonie@kernel.org>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Daniel Scally <djrscally@gmail.com>, 
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, Len Brown <lenb@kernel.org>, 
+	Davidlohr Bueso <dave@stgolabs.net>, Jonathan Cameron <jonathan.cameron@huawei.com>, 
+	Dave Jiang <dave.jiang@intel.com>, Alison Schofield <alison.schofield@intel.com>, 
+	Vishal Verma <vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>, 
+	Dan Williams <dan.j.williams@intel.com>, Wolfram Sang <wsa@kernel.org>, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, imx@lists.linux.dev, linux-clk@vger.kernel.org, 
+	linux-i2c@vger.kernel.org, linux-pci@vger.kernel.org, 
+	linux-sound@vger.kernel.org, patches@opensource.cirrus.com, 
+	linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-spi@vger.kernel.org, linux-acpi@vger.kernel.org, 
+	linux-cxl@vger.kernel.org, Allan Nielsen <allan.nielsen@microchip.com>, 
+	Horatiu Vultur <horatiu.vultur@microchip.com>, 
+	Steen Hegelund <steen.hegelund@microchip.com>, Luca Ceresoli <luca.ceresoli@bootlin.com>, 
+	Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Saravana Kannan <saravanak@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-When calling of_parse_phandle_with_args(), the caller is responsible
-to call of_node_put() to release the reference of device node.
-In imx_sc_pd_get_console_rsrc(), it does not release the reference.
+Hi Herv=C3=A9,
 
-Fixes: 893cfb99734f ("firmware: imx: scu-pd: do not power off console domain")
-Signed-off-by: Felix Gu <ustc.gu@gmail.com>
----
- drivers/pmdomain/imx/scu-pd.c | 1 +
- 1 file changed, 1 insertion(+)
+Revisiting his old thread (sorry for the delay)...
 
-diff --git a/drivers/pmdomain/imx/scu-pd.c b/drivers/pmdomain/imx/scu-pd.c
-index 01d465d88f60..3ec33667a308 100644
---- a/drivers/pmdomain/imx/scu-pd.c
-+++ b/drivers/pmdomain/imx/scu-pd.c
-@@ -326,6 +326,7 @@ static void imx_sc_pd_get_console_rsrc(void)
- 		return;
- 
- 	imx_con_rsrc = specs.args[0];
-+	of_node_put(specs.np);
- }
- 
- static int imx_sc_get_pd_power(struct device *dev, u32 rsrc)
+On Thu, 11 Dec 2025 at 16:19, Herve Codina <herve.codina@bootlin.com> wrote=
+:
+> On Thu, 11 Dec 2025 15:52:28 +0200
+> Matti Vaittinen <mazziesaccount@gmail.com> wrote:
+> > On 11/12/2025 14:20, Herve Codina wrote:
+> > > On Thu, 11 Dec 2025 10:34:46 +0200
+> > > Matti Vaittinen <mazziesaccount@gmail.com> wrote:
+> > > Do you see the same trace with:
+> > > - "pinctrl-0 =3D <&i2c1_pins>;" in your overlay
+> > > - fragment0 removed from the overlay (i2c1_pins definition removed fr=
+om
+> > >    the overlay.
+> > > - i2c1_pins node defined in your base DT.
+> >
+> > Just tested. The i2c1 appears and the test-overlay probe gets called,
+> > when the i2c1_pins is in the base-dt and not in the overlay.
+>
+> Geert, do you expirement same results?
 
----
-base-commit: 053966c344dbd346e71305f530e91ea77916189f
-change-id: 20260121-b4-scu-pd-257a9a40e84e
+Yes, after moving the pin control subnode from the overlay[1] to the
+base DTS, the SPI bus and FLASH work after loading the overlay for
+the first time.
 
-Best regards,
--- 
-Felix Gu <ustc.gu@gmail.com>
+> > > In other word, is the issues related to adding a pinctrl sub-node (pi=
+nctrl
+> > > pins definition) in the overlay or is it something else?
+> >
+> > Seems to be related to the pinctrl.
+>
+> I don't think that the issue is related to pinctrl itself.
+>
+> IMHO, I think the issue is related to overlays and fw_devlink.
+> The distinction between "a new node is going to lead to a device" vs "a n=
+ew
+> node is just data and will never been attached to a new device" when an
+> overlay is applied is broken.
+>
+> This is broken with the upstream "treewide: Fix probing of devices in DT
+> overlays" commit I've tried to revert. Indeed, on the LAN966x PCI device
+> use case devlinks created are not correct with this commit applied.
+>
+> I am not sure also that devlinks created with a more complex overlay will=
+ be
+> correct. For instance, Matti, with your overlay not sure that a phandle f=
+rom
+> the oscillator node referencing the pmic node will lead to a correct
+> provider/consumer devlink between the pmic device and the oscillator devi=
+ce.
+>
+> On the other hand, this is broken with "of: dynamic: Fix overlayed device=
+s
+> not probing because of fw_devlink" works for the LAN966x PCI device use c=
+ase
+> an lead to correct devlinks but breaks your use cases.
 
+Loading my overlay[1] causes the following changes under
+/sys/class/devlink/:
+
+    + genpd_provider:ca53-cpu0--platform:e6e90000.spi ->
+../../devices/virtual/devlink/genpd_provider:ca53-cpu0--platform:e6e90000.s=
+pi
+    + platform:e6055000.gpio--platform:e6e90000.spi ->
+../../devices/virtual/devlink/platform:e6055000.gpio--platform:e6e90000.spi
+    + platform:e6060000.pinctrl--platform:e6e90000.spi ->
+../../devices/virtual/devlink/platform:e6060000.pinctrl--platform:e6e90000.=
+spi
+    - platform:e6060000.pinctrl--platform:keys ->
+../../devices/virtual/devlink/platform:e6060000.pinctrl--platform:keys
+    + platform:e6150000.clock-controller--platform:e6e90000.spi ->
+../../devices/virtual/devlink/platform:e6150000.clock-controller--platform:=
+e6e90000.spi
+    + platform:soc--platform:e6e90000.spi ->
+../../devices/virtual/devlink/platform:soc--platform:e6e90000.spi
+
+Note that these changes are exactly the same in the working and the
+non-working case.
+
+Removing the overlay again removes all added links, but does not
+restore the keys link:
+
+    - genpd_provider:ca53-cpu0--platform:e6e90000.spi ->
+../../devices/virtual/devlink/genpd_provider:ca53-cpu0--platform:e6e90000.s=
+pi
+    - platform:e6055000.gpio--platform:e6e90000.spi ->
+../../devices/virtual/devlink/platform:e6055000.gpio--platform:e6e90000.spi
+    - platform:e6060000.pinctrl--platform:e6e90000.spi ->
+../../devices/virtual/devlink/platform:e6060000.pinctrl--platform:e6e90000.=
+spi
+    - platform:e6150000.clock-controller--platform:e6e90000.spi ->
+../../devices/virtual/devlink/platform:e6150000.clock-controller--platform:=
+e6e90000.spi
+    - platform:soc--platform:e6e90000.spi ->
+../../devices/virtual/devlink/platform:soc--platform:e6e90000.spi
+
+Loading the overlay again causes no changes in the links, but the SPI
+bus and FLASH always work.
+
+[1] https://web.git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drive=
+rs.git/commit/?h=3Dtopic/renesas-overlays&id=3D383285b905a20d6734bfcbf7bcf7=
+15c1c2b45395
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
