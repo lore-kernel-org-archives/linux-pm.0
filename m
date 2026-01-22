@@ -1,38 +1,65 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f46.google.com (mail-wr1-f46.google.com [209.85.221.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BDFC30EF67;
-	Thu, 22 Jan 2026 17:16:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D7E6136923F
+	for <linux-pm@vger.kernel.org>; Thu, 22 Jan 2026 17:20:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769102219; cv=none; b=DaBUs0OBuuGjduksLuBXbGwjXZCUxzk6iPgTNOI0AZJY++BkADqvzt3aSkGXewZl6JhwDUshVFfCNUmHYkIFa+Pu7R6WaYtJrqjOl9E3yxWaoa3WCPTEvXuEMWlFlcJKHa67+SDimwtF9HjBxq1+Uh3hhVAou9RQfkX6YieY2jg=
+	t=1769102443; cv=none; b=WQK3H/LRW3T4fTZum4ib6uVMTfX417u2HTc7U57rgqmOVkFinl1VbhFDQ1+I2DTIOH4bK+9osfg591ZjtJ1sVVjSQGuFxLrkPOSe8Cc5Z1tDKd83UHl1B0h9Pl5FTMpsNvCwiAEGQqlahnf9DPXQh/Gc6zHQoVHpBLC+OXzcirQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769102219; c=relaxed/simple;
-	bh=RebAKdOcdLux7Bzs3USnBVZCC294iJ88uiAmw8sBU+c=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=CarL06w/4BfoMmz6PyVUvb+ft9u7c9hk1kUv7GL9cYTNvqL3K4nDjm+cpypTQOuScrM72SXFwB/+nHSu7KQ2ahlBmKZGrPC6Z7jMs0B7wVBE8iUXPGmO00flP0QCPmF1fJJhVY32Jak6DA3mGE7d5rD9M48QFCnDEQx04Q77CnQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ilre768F; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1769102443; c=relaxed/simple;
+	bh=n9RZtPFllLNwOyCjbUMdTCvnrM02g20QTY6jzHJIkQk=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=OgxfhIWw6fmc3iKZTX4xm4CK/58ycTdtP3iHZQMl6iq69jFjNxbP79gVyGjsnp2PkQxl9EsjWkklUirKpEFhE6uhc1Bc4UgnvHButbaPARzhFdjRp16MAvOETGLxbH6azqBINZZcVVsbLp8s8oPN+eoYYeLdvdOuUsIQf4quHKc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BvmUpGT8; arc=none smtp.client-ip=209.85.221.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ilre768F"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 784A4C116D0;
-	Thu, 22 Jan 2026 17:16:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1769102217;
-	bh=RebAKdOcdLux7Bzs3USnBVZCC294iJ88uiAmw8sBU+c=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=ilre768FSl+v+eNpRPqlnMZv+QuGcAuyqq2V5gOnsgCs5SeaRt6dB9XsqxTQNTPEO
-	 wpVI5Eic23g9SL2Dnp8LxSdue1lYtX6lOsEDM6K+XkNfK0AoONvEAFXFIwmNBBzSqe
-	 Ixlfr86ayMwnTo3lXrYuQaxohkx5myvRETcsNAVSPQQqBD6Mw8bIXM6SxiPpIVicZs
-	 D8ml4UcA52igw8JwgtZqBk8YEsuPeaHl85zj5tgSqRoar0vLeubQn8Imkula2eWoqp
-	 ySkWaFNcQB0qJy8sMdmKT7WSFepKYsiIZhJwyjEV8SU24fM6i5kXYCsJN3B4LpIj70
-	 uII917TJ2YRsg==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6785FD3EE99;
-	Thu, 22 Jan 2026 17:16:57 +0000 (UTC)
-From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Date: Thu, 22 Jan 2026 22:46:52 +0530
-Subject: [PATCH v6 2/4] PCI/pwrctrl: Add support for handling PCIe M.2
- connectors
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BvmUpGT8"
+Received: by mail-wr1-f46.google.com with SMTP id ffacd0b85a97d-42fb4eeb482so912751f8f.0
+        for <linux-pm@vger.kernel.org>; Thu, 22 Jan 2026 09:20:31 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1769102428; x=1769707228; darn=vger.kernel.org;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Vp66PoEMaro4oICpmfiKYxfo9XQqIbFmXqoLz93VEMo=;
+        b=BvmUpGT82iiIhC3Xk+d071xVm7e+IRxoewBvylH+AeIcLMLqpCYXu9E9WU6iWUvdcW
+         QoP9DWr6MAZQNO8wr/BBC2AV2LnYm/EHIuBtRmLYqvt9rWMuDD8koYNMNE75+v2pTtuy
+         3LgvRDirQKYmuvFmITKEioZlvQ7uZ6t5QhKclecL/U1zKP9W1Sjb2Dhh61CvvzmzMXMq
+         0+EXWZ1uMJeqCLAcOEnlDAUjYXXeClfNYXj3T9i5lQb3lT6TVh8ypWUK2+Ww2LjEMdBB
+         OmmUolQrBCFTscJINHcKwoBU3zjXcDbgSF/Flm8NgUA4PWBIS56W3CUOBWRGUQVCmKry
+         q2Vw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1769102428; x=1769707228;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Vp66PoEMaro4oICpmfiKYxfo9XQqIbFmXqoLz93VEMo=;
+        b=F6oXkZhw6sCXg3T6F+xHSPBmshOHR46GIMZBT3B1G0JLqsz2VuJ2W9rJ21ki+8DblP
+         PJY/qKAH2lwehY6N6Ioufh52MzwmM5aiDZ/SBeeji34TkO25hYDmkUzgF4me8i+tRFt2
+         AQa05JweZznvRm6pklppCqZKz4N9dGBi24a6DVP9TvCUfuQDSLrhOznZ5yvRj4ieCRpG
+         iOw9opy1I6VPQEsprzJKxfRRACygMfxojyaXprTy4Ti8iHNlKEtVbpWDNhGfQ5nJrF+9
+         93ia7fCrfJkMCfmIIWUk1sdHo3g7e+wJxJnraspd4rRDCZUjX/Uld6EfiGkWmUD9SwYv
+         009w==
+X-Forwarded-Encrypted: i=1; AJvYcCWgcUV1MHJYeAwr4kdPd/RtuNv3xz6QI3QaI2BJuxZLXbMZascjxX0RACt32xAStB46LAU6NxeLkQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw5NPWtP33PT9VZU1ruYc/bBbx160JSIFwSV5bdh+zlxRuh+2DU
+	dWEWS2lu/Lf4TCb3GEXwjQdQdqAx6kYx4E0ikR2OXKKlT2q7LknGf5xV
+X-Gm-Gg: AZuq6aLTDbSrkfwKJtrHILObrjlgdcuiME8BlP3kd2OTmQsnNE4L51sRooVbzVstg11
+	9tVctJL7HBWYLYhEMj/MLD7j4ZoJk+8huf7lGwz/3D7ojUmPxMtlOzM594gtDs0x4l+g2BdLS12
+	4uyUEimSCIa3WH3Lh1ulfKQSb0geM1Q0U+3TEyqja+BdVDOMpfakdBBOBJ0xBxQyX6aDD/xTdjH
+	n8Sd5mb5Sn9vW3CB59qAdvAALBbCn0xqb2vCvY4r/n+kvp8TCKUE4ebaqfzszU4aURaUsXsFbDV
+	ug9jmbYv8DDKOlzaPZ4XMim9tUVq3LKpZD11gpOFQmg1qMI+N0RkZzlJz3QaOWQ8stLY5Pd8TMQ
+	DdLfn14l3lGUIoomESf74a05E6LAOZaXS7y0co5mu9NqPtBnFm+ZHR6R49yLvrCzOyA8U0ORpr4
+	QTP5uwYa7WkxZLTnsvQgxdopgdfaTJTR9qftPZaHnM
+X-Received: by 2002:a05:6000:2dc3:b0:435:ae97:b37 with SMTP id ffacd0b85a97d-435b161343bmr424678f8f.52.1769102427581;
+        Thu, 22 Jan 2026 09:20:27 -0800 (PST)
+Received: from [192.168.0.253] (5D59A51C.catv.pool.telekom.hu. [93.89.165.28])
+        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-435b1f7ba0bsm51378f8f.40.2026.01.22.09.20.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 22 Jan 2026 09:20:27 -0800 (PST)
+From: Gabor Juhos <j4g8y7@gmail.com>
+Date: Thu, 22 Jan 2026 18:20:12 +0100
+Subject: [PATCH] pmdomain: qcom: rpmpd: fix off-by-one error in clamping to
+ the highest state
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,159 +68,53 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260122-pci-m2-v6-2-575da9f97239@oss.qualcomm.com>
-References: <20260122-pci-m2-v6-0-575da9f97239@oss.qualcomm.com>
-In-Reply-To: <20260122-pci-m2-v6-0-575da9f97239@oss.qualcomm.com>
-To: Bjorn Helgaas <bhelgaas@google.com>, 
- Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Bartosz Golaszewski <brgl@bgdev.pl>, 
- Damien Le Moal <dlemoal@kernel.org>, Niklas Cassel <cassel@kernel.org>, 
- Linus Walleij <linus.walleij@linaro.org>, 
- Bartosz Golaszewski <brgl@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
- Stephan Gerhold <stephan.gerhold@linaro.org>, 
- Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
- linux-pm@vger.kernel.org, linux-ide@vger.kernel.org, 
- Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
- Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3872;
- i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=ZDVloXuAnO5BeZ3Skc5JZ2mUrMigYYbAnv9HygHmgvQ=;
- b=owGbwMvMwMUYOl/w2b+J574ynlZLYsgsim7PCz6YI33g9rXvN9hzzsdcXsjbIKPvGipr/OnRa
- mGH2QyqnYzGLAyMXAyyYoos6UudtRo9Tt9YEqE+HWYQKxPIFAYuTgGYSEcS+19Zi/uH/zz3WvIv
- 0uavk1t5WcYmp5P6983ca1RWm+sf/KdYYOmoG+q6+dP2InHVmOup9ha2Pe9nzon26mjZMLfJQOW
- mK/9+xor3TzaEGFp7b5h38vKJ4MYJzUZZHp6OqZHVSyqkl7hs1LVKu1fEo6nAtPNxd1dc5/GzB2
- 5+m/Rmes3nfcffPTtcNctIk9Wi6qp/sV3KhAA/K9/wLL8VOyPu82V37jRfbeE/xcEzr+pp+a3Az
- xKt4nHT5OwtS/z/1alsOnfse/eBD9XLVjnMLGyRnil0/f21qct9NntG6xoYt5a5SNh5vTk4/+7D
- FVwOG5RKPv/qUjcT/yUg8VYhKnpR4W1fXpHgCzqCUpNUAQ==
-X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
- fpr=C668AEC3C3188E4C611465E7488550E901166008
-X-Endpoint-Received: by B4 Relay for
- manivannan.sadhasivam@oss.qualcomm.com/default with auth_id=461
-X-Original-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-Reply-To: manivannan.sadhasivam@oss.qualcomm.com
+Message-Id: <20260122-qcom-rpmpd-clamp-fix-v1-1-7b6a67975a69@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAEtccmkC/x2MQQqAIBAAvxJ7bsEkjPpKdJB1q4U0U4hA+nvSc
+ QZmCmROwhmmpkDiW7KcoULXNkC7DRujuMqglTaq0xovOj2m6KNDOqyPuMqDyqiVnB3JDT3UNCa
+ u+t/Oy/t+432zk2YAAAA=
+X-Change-ID: 20260122-qcom-rpmpd-clamp-fix-060fcda9cd74
+To: Ulf Hansson <ulf.hansson@linaro.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>, 
+ Bjorn Andersson <andersson@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, Gabor Juhos <j4g8y7@gmail.com>
+X-Mailer: b4 0.14.2
 
-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+As it is indicated by the comment, the rpmpd_aggregate_corner() function
+tries to clamp the state to the highest corner/level supported by the
+given power domain, however the calculation of the highest state contains
+an off-by-one error.
 
-Add support for handling the PCIe M.2 connectors as Power Sequencing
-devices. These connectors are exposed as the Power Sequencing devices
-as they often support multiple interfaces like PCIe/SATA, USB/UART to the
-host machine and each interfaces could be driven by different client
-drivers at the same time.
+The 'max_state' member of the 'rpmpd' structure indicates the highest
+corner/level, and as such it does not needs to be decremented.
 
-This driver handles the PCIe interface of these connectors. It first checks
-for the presence of the graph port in the Root Port node with the help of
-of_graph_is_present() API, if present, it acquires/poweres ON the
-corresponding pwrseq device.
+Change the code to use the 'max_state' value directly to avoid the error.
 
-Once the pwrseq device is powered ON, the driver will skip parsing the Root
-Port/Slot resources and registers with the pwrctrl framework.
-
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+Fixes: 98c8b3efacae ("soc: qcom: rpmpd: Add sync_state")
+Signed-off-by: Gabor Juhos <j4g8y7@gmail.com>
 ---
- drivers/pci/pwrctrl/Kconfig |  1 +
- drivers/pci/pwrctrl/slot.c  | 35 ++++++++++++++++++++++++++++++-----
- 2 files changed, 31 insertions(+), 5 deletions(-)
+ drivers/pmdomain/qcom/rpmpd.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/pci/pwrctrl/Kconfig b/drivers/pci/pwrctrl/Kconfig
-index e0f999f299bb..cd3aa15bad00 100644
---- a/drivers/pci/pwrctrl/Kconfig
-+++ b/drivers/pci/pwrctrl/Kconfig
-@@ -13,6 +13,7 @@ config PCI_PWRCTRL_PWRSEQ
+diff --git a/drivers/pmdomain/qcom/rpmpd.c b/drivers/pmdomain/qcom/rpmpd.c
+index f8580ec0f73785544aeb6f686438f39b477d134d..98ab4f9ea9bff431614739f37cd32b7b3bb407e4 100644
+--- a/drivers/pmdomain/qcom/rpmpd.c
++++ b/drivers/pmdomain/qcom/rpmpd.c
+@@ -1001,7 +1001,7 @@ static int rpmpd_aggregate_corner(struct rpmpd *pd)
  
- config PCI_PWRCTRL_SLOT
- 	tristate "PCI Power Control driver for PCI slots"
-+	select POWER_SEQUENCING
- 	select PCI_PWRCTRL
- 	help
- 	  Say Y here to enable the PCI Power Control driver to control the power
-diff --git a/drivers/pci/pwrctrl/slot.c b/drivers/pci/pwrctrl/slot.c
-index 3320494b62d8..d46c2365208a 100644
---- a/drivers/pci/pwrctrl/slot.c
-+++ b/drivers/pci/pwrctrl/slot.c
-@@ -8,8 +8,10 @@
- #include <linux/device.h>
- #include <linux/mod_devicetable.h>
- #include <linux/module.h>
-+#include <linux/of_graph.h>
- #include <linux/pci-pwrctrl.h>
- #include <linux/platform_device.h>
-+#include <linux/pwrseq/consumer.h>
- #include <linux/regulator/consumer.h>
- #include <linux/slab.h>
+ 	/* Clamp to the highest corner/level if sync_state isn't done yet */
+ 	if (!pd->state_synced)
+-		this_active_corner = this_sleep_corner = pd->max_state - 1;
++		this_active_corner = this_sleep_corner = pd->max_state;
+ 	else
+ 		to_active_sleep(pd, pd->corner, &this_active_corner, &this_sleep_corner);
  
-@@ -17,12 +19,18 @@ struct pci_pwrctrl_slot_data {
- 	struct pci_pwrctrl ctx;
- 	struct regulator_bulk_data *supplies;
- 	int num_supplies;
-+	struct pwrseq_desc *pwrseq;
- };
- 
- static void devm_pci_pwrctrl_slot_power_off(void *data)
- {
- 	struct pci_pwrctrl_slot_data *slot = data;
- 
-+	if (slot->pwrseq) {
-+		pwrseq_power_off(slot->pwrseq);
-+		return;
-+	}
-+
- 	regulator_bulk_disable(slot->num_supplies, slot->supplies);
- 	regulator_bulk_free(slot->num_supplies, slot->supplies);
- }
-@@ -38,6 +46,20 @@ static int pci_pwrctrl_slot_probe(struct platform_device *pdev)
- 	if (!slot)
- 		return -ENOMEM;
- 
-+	if (of_graph_is_present(dev_of_node(dev))) {
-+		slot->pwrseq = devm_pwrseq_get(dev, "pcie");
-+		if (IS_ERR(slot->pwrseq))
-+			return dev_err_probe(dev, PTR_ERR(slot->pwrseq),
-+				     "Failed to get the power sequencer\n");
-+
-+		ret = pwrseq_power_on(slot->pwrseq);
-+		if (ret)
-+			return dev_err_probe(dev, ret,
-+				     "Failed to power-on the device\n");
-+
-+		goto skip_resources;
-+	}
-+
- 	ret = of_regulator_bulk_get_all(dev, dev_of_node(dev),
- 					&slot->supplies);
- 	if (ret < 0) {
-@@ -53,17 +75,20 @@ static int pci_pwrctrl_slot_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
--	ret = devm_add_action_or_reset(dev, devm_pci_pwrctrl_slot_power_off,
--				       slot);
--	if (ret)
--		return ret;
--
- 	clk = devm_clk_get_optional_enabled(dev, NULL);
- 	if (IS_ERR(clk)) {
-+		regulator_bulk_disable(slot->num_supplies, slot->supplies);
-+		regulator_bulk_free(slot->num_supplies, slot->supplies);
- 		return dev_err_probe(dev, PTR_ERR(clk),
- 				     "Failed to enable slot clock\n");
- 	}
- 
-+skip_resources:
-+	ret = devm_add_action_or_reset(dev, devm_pci_pwrctrl_slot_power_off,
-+				       slot);
-+	if (ret)
-+		return ret;
-+
- 	pci_pwrctrl_init(&slot->ctx, dev);
- 
- 	ret = devm_pci_pwrctrl_device_set_ready(dev, &slot->ctx);
 
+---
+base-commit: 95fad101a21d31b4facd1b9e0713bba1c517db6e
+change-id: 20260122-qcom-rpmpd-clamp-fix-060fcda9cd74
+
+Best regards,
 -- 
-2.51.0
-
+Gabor Juhos <j4g8y7@gmail.com>
 
