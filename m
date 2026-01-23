@@ -1,216 +1,188 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
+Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazon11013034.outbound.protection.outlook.com [52.101.72.34])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B0942C11D9;
-	Fri, 23 Jan 2026 08:32:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769157167; cv=none; b=mXmySp+AaJDZ+siAAoE74lPGLp4KA2DOgGw+tIcySQP9DZwlNGF4B/piarukxtz1AlhaLZhZ41xgwnK3PtIhtORF/nUXVKu0CZG1eQ5WYsM16JinY49XSckfKBa4ggxYyrPNPd9mTsg4HD6o+DQTnudcx43uTPnoy0CgVAZ6Qfw=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769157167; c=relaxed/simple;
-	bh=HdNnpo9nq/0E5XPtCDogUHy6OiuDbDh3XodkdpDtKOg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=gQtvMieC+5vzLfBUM/TOJjJZ4rZpsgVruM1AyF3/GFXU9EAT+KJme7rrRUfA7XHCKxQdUS2pB+A8ovq6n2OAngLcp7aoOIKMyCEQd1im0sDH71tZwji14UwNtev57MgSJHQpYFfZLGGNi1az3aP2vOA4/hmyc2tJNDsxY/xtbQ4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=HpRHYyyg; arc=none smtp.client-ip=192.198.163.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CFBA6318BBF;
+	Fri, 23 Jan 2026 08:55:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.72.34
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1769158550; cv=fail; b=mkw4Fq7hwHseWvyIRM9VkkJBAt50VCai2lI190/snN9DaQgW6SfU6F8MWWLy+CRrqzG6JuX/iLP0I3A+ZALUQFzFgc6k8dDTxjRCe+vIc5GzaH5FpBvIOahxRHmVmnCJ2mzFL3HDkpxQagMaPhAEfuekJL+ut30M8tQwJo6zhWU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1769158550; c=relaxed/simple;
+	bh=uFmMUsCDe0lD+DK0TfE+JoYw6JwYqsnwSqZgDvzaaGw=;
+	h=From:To:CC:Subject:In-Reply-To:References:Message-ID:Date:
+	 MIME-Version:Content-Type; b=AarZkp7/IEpSqI0rn7QrLNr6D78p3HnL+b13+AwaOWznDW5CFTMSJoKpd0z0haxEbJ6G/PlJ3mzBnmTjf9zweo9+du+OzIhWE2ELIlrR/n3W7O2NiWFeB0sMUIcCA4ARFU4fGoE12RpBiM76R/QKviKwwjSrT33wvvjDLii5WLA=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=S6d7KjuI; arc=fail smtp.client-ip=52.101.72.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=axis.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="HpRHYyyg"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1769157165; x=1800693165;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=HdNnpo9nq/0E5XPtCDogUHy6OiuDbDh3XodkdpDtKOg=;
-  b=HpRHYyygH7BhbgYURi0lN5W6ODQOVWdr3/W3FemtzuYveyaInZrI9QPA
-   /1twrntfJA9FOQR7bL8J3Ip2NgjZAk2PQ/SaEI7A4A+ljxafwZdFqUshj
-   LNW9P6gwl3vc6cMXYCMkadu/ESgWaHEMwugj17zdjZczRStgNt/jGDj2R
-   S7Ac5PWphQBAW+Dg+2A+fol4MitpQGpW4JC1HY9o1gl5tERpnUc0HKWk4
-   4+Y2AHwfeMk08kq5AbcvFOpGAxD+RGDqcnpYSK5m1W7tlBw0EXhcIHBsi
-   ivPBaG6nK8+GhzLQxhp3EZe8hiSGsKBGE6rwg+WqSwpJnMNkRYYrEgcI4
-   w==;
-X-CSE-ConnectionGUID: w0Y1UOCoTJKVMU5VzgTO6g==
-X-CSE-MsgGUID: msJZdGy2Qmmdqsa5s9yKAA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11679"; a="70309834"
-X-IronPort-AV: E=Sophos;i="6.21,248,1763452800"; 
-   d="scan'208";a="70309834"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jan 2026 00:32:45 -0800
-X-CSE-ConnectionGUID: ls8GZ4dRSdCYnMlL52aHnw==
-X-CSE-MsgGUID: obQ1P4AeQw2pRvIJvia3pQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,248,1763452800"; 
-   d="scan'208";a="237619083"
-Received: from lkp-server01.sh.intel.com (HELO 765f4a05e27f) ([10.239.97.150])
-  by orviesa002.jf.intel.com with ESMTP; 23 Jan 2026 00:32:42 -0800
-Received: from kbuild by 765f4a05e27f with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1vjCat-00000000Thq-05dr;
-	Fri, 23 Jan 2026 08:32:39 +0000
-Date: Fri, 23 Jan 2026 16:31:39 +0800
-From: kernel test robot <lkp@intel.com>
-To: Aaron Tomlin <atomlin@atomlin.com>, rafael@kernel.org, dakr@kernel.org
-Cc: oe-kbuild-all@lists.linux.dev, pavel@kernel.org, lenb@kernel.org,
-	neelx@suse.com, atomlin@atomlin.com, sean@ashe.io,
-	mproche@gmail.com, chjohnst@gmail.com, nick.lange@gmail.com,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH] PM: QoS: Introduce boot parameter
- pm_qos_resume_latency_us
-Message-ID: <202601231616.nbo2ijJf-lkp@intel.com>
-References: <20260123010024.3301276-1-atomlin@atomlin.com>
+	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="S6d7KjuI"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=lcKsc5FCLAjUytOwEtzxKF8FOUE6m8vx1SQRZI3XUxNSn8B4iHV7m60kGTWVXFfIEw9f665Oy/WTS5zjXc+Du1mKdavoABtasxG4aHt2cNphLZg6AiM1CEJ6rdvvmtlcglnJXbUMDVSyWqgf+MfJoGAMP56TdOLTscasH/IRdqqXd+7g4/P6EcxFh+YuCWuHsmQqHzI8fugNJPTzuxCtHfDcmeEWUIzAcXvzTAl0sEzZbgLa4TVSuDuH0mzG5r90Xgu44Y+r99xov693GG+U3kzT7/4uhJSgw+/T8zJXxhuNH1BFmSo1EZDxdmKIAFYsx7jejK/5NSsjDhsuEd1MjQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=khRa5WMZOr5twJvYoO4a+WRzoxzReeg+eaapXqLXQpw=;
+ b=JO3KiP5wphohFOzpjGqftC4axnlYz1t3abET9O4sm6M1w0ss7fGgaR+8+LRMinMhhKyTEI22VqiXcscbr/k2aCR9l7x1coesbMjHly8M2NfNCHuTGXSpbCfy+BPLuspNjNe5zdFth24yk2TaoQe3qYDnDA80njtKyCA+wsZEjpfFjaH/e8vMm57VKQwLWTA2lsr+gYx9MUYSaOR0hjR9/bCg3Mo1edE6tmy4VRkXRZxq/reMmX9K8uI3JmwoUg2xRMHdbHM+TnzCA0qUq7lVsILoMex/2kN1zJbxu2yLwCTe1g9JGqh4Q4HwkhxGtHkN6ht2D/MPvVhaiy3Q/FVrwg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 195.60.68.100) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=axis.com;
+ dmarc=pass (p=none sp=none pct=100) action=none header.from=axis.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axis.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=khRa5WMZOr5twJvYoO4a+WRzoxzReeg+eaapXqLXQpw=;
+ b=S6d7KjuIaFNl0vkK7NjtTyOCHRJCxQVvW5RlsLsWQ+8gj6HTReuiNZJfzIIvCOJvN14mKJ7hwh5Ejcd3C8e88sFd8Nj5cSgA0XYnCIW3Y2KLQUhe4HYoBUn3n0D7JoKABAA2POETowNYB7hDMEPTS0eVfkAxHmgNcBtQazTp+oA=
+Received: from DU7PR01CA0016.eurprd01.prod.exchangelabs.com
+ (2603:10a6:10:50f::11) by AS2PR02MB9261.eurprd02.prod.outlook.com
+ (2603:10a6:20b:5fd::8) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9542.11; Fri, 23 Jan
+ 2026 08:55:44 +0000
+Received: from DB1PEPF000509F7.eurprd02.prod.outlook.com
+ (2603:10a6:10:50f:cafe::e3) by DU7PR01CA0016.outlook.office365.com
+ (2603:10a6:10:50f::11) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9542.12 via Frontend Transport; Fri,
+ 23 Jan 2026 08:55:46 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 195.60.68.100)
+ smtp.mailfrom=axis.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=axis.com;
+Received-SPF: Pass (protection.outlook.com: domain of axis.com designates
+ 195.60.68.100 as permitted sender) receiver=protection.outlook.com;
+ client-ip=195.60.68.100; helo=mail.axis.com; pr=C
+Received: from mail.axis.com (195.60.68.100) by
+ DB1PEPF000509F7.mail.protection.outlook.com (10.167.242.153) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9564.3 via Frontend Transport; Fri, 23 Jan 2026 08:55:44 +0000
+Received: from pc52311-2249 (10.4.0.13) by se-mail10w.axis.com (10.20.40.10)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.2.1748.39; Fri, 23 Jan
+ 2026 09:55:43 +0100
+From: Waqar Hameed <waqar.hameed@axis.com>
+To: Sebastian Reichel <sre@kernel.org>
+CC: <kernel@axis.com>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>
+Subject: [PATCH v2 1/2] power: supply: wm97xx: Use devm_kcalloc()
+In-Reply-To: <cover.1769158280.git.waqar.hameed@axis.com>
+References: <cover.1769158280.git.waqar.hameed@axis.com>
+User-Agent: a.out
+Message-ID: <5ac93f5b0fa417bb5d9e93b9302a18f2c04d4077.1769158280.git.waqar.hameed@axis.com>
+Date: Fri, 23 Jan 2026 09:55:43 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260123010024.3301276-1-atomlin@atomlin.com>
+Content-Type: text/plain
+X-ClientProxiedBy: se-mail02w.axis.com (10.20.40.8) To se-mail10w.axis.com
+ (10.20.40.10)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DB1PEPF000509F7:EE_|AS2PR02MB9261:EE_
+X-MS-Office365-Filtering-Correlation-Id: 3b63a30f-ec01-4bd3-dbbf-08de5a5d31be
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|36860700013|1800799024|82310400026;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?m5T1sg10c9pqQ7N/VyeRDl0z4NvFvJF8Av+oCEmYs/JZApKKaKiv2VJx99St?=
+ =?us-ascii?Q?/Y21OphPDdzjR9LhOS3BHjZFjcSUUkrb8DlUfuNSIcmMrOKFM8fa7M0oLWgw?=
+ =?us-ascii?Q?RtkVczWmCTD8KeovPLpUfsZP1fqqoPNajmeTWu2Ps06S2emNO6FFbUA4BBdP?=
+ =?us-ascii?Q?XJFON0nZrcmvHjm2e+QtmnJowfdTsb5WYFdMAwjBlAmDKotP5jcQTQQsRsAS?=
+ =?us-ascii?Q?B8ppewcqwcfX02PQeyl5zDbDWHIewLgFLw4PfMzWqzysQ8CDAtOZqwC3JnGf?=
+ =?us-ascii?Q?c8W7lxQsNLadj7gIyFkzNIDz5B5IvNweOW1RtSDDz8s62AEBn78zHRT1njeo?=
+ =?us-ascii?Q?MJpONiOog4JiaQT2AN8uDoDJe7fCv/yB0VL05C1Oz0C1AvIAvxC6lzvdIODu?=
+ =?us-ascii?Q?Jb5Cr2+QZ1rcNDM3qUSzxfI0eHAIBUBE+vJg93DKmWU3l4tGp07PTekL2+GF?=
+ =?us-ascii?Q?vNTAXlfCb1D83WyfEjNnuh8QdGrtRcj0iVgMhDo362/YlHYBZg/ZnlxubNTM?=
+ =?us-ascii?Q?vV4PKU/KzuavdhNL3Jt2ASzcWOcDhzrEGjR04sERplDVYAkCWsji9bMEcIpp?=
+ =?us-ascii?Q?4VNrTZ6qQzMZ2+y7AwfQU1zKt6/Un9mQgn+UqOvQMOjyrjFBOcr7i6Sb+OlB?=
+ =?us-ascii?Q?XGjY+QHcV5wrpLcNOp/HsCFmTL6Rg/Qw02e/Z/cPxn1ZIkbvwHWfvTOXlH4B?=
+ =?us-ascii?Q?u3orFgneXVYiLrPi+aDYxBC5Aet1li89oeBhUaLCo9tEpQiyZE03MIdrhWiC?=
+ =?us-ascii?Q?4r/IUPEWSAZIwKosNDOijyNnIjL2dRo42BsJdZLqgyYqzjExsQbYctKydsG5?=
+ =?us-ascii?Q?MCwgr/BeR3yV80ktpJlIdIMMgAGPTjYXkP7YRgGvQuguLQ6MNBg8Ry1vYQd+?=
+ =?us-ascii?Q?8/qeeHSRb9MqccaLYoY0wZ/+WUoWt9mdaN19CM+obMlKWoxmar5KPDwNuG0h?=
+ =?us-ascii?Q?VDME9c+tTtDxqQ6dpvRiC1K3kt+l7yA/5u7/djcoASZpjX62QAbX99IyXz+m?=
+ =?us-ascii?Q?TkTkw72tf2tWOsOp4ccADpBVArTUQIXceRYizVHuU9x2Vrj0V5vD3zkbqnod?=
+ =?us-ascii?Q?6k29hDWzOHQP0QDVF9KGt+8EO6sq8jyQAvylf8N2T89dDnCKhBMEmkmuWhOw?=
+ =?us-ascii?Q?lwyx8PXh6kSQf/p9whBo/mDCwb6SZlbIigkwP501c3gDH6UAD04iArLXHZQs?=
+ =?us-ascii?Q?ISbpAua7EFFvUCAdbRQFBV2gKNIynXM1OUMXAaimynDTcGaJkhl5H3OOqG6o?=
+ =?us-ascii?Q?ab9YukFrq+WXME0sADWuOYtyZVVS8Gu9chMGvH1YZyCc5D2UTb9hI3wlCGfo?=
+ =?us-ascii?Q?H+4RU0f/0Gb+obyLhUSzWunCI4NuXxhFwhWGkulqYWhUodi8MKYM41Nl5a+V?=
+ =?us-ascii?Q?bFQnvGpd5sK7fvvmKiVNxnTR6KKq4yIEc9X2jrf+3nlclpabqkJ2WWpm5L+7?=
+ =?us-ascii?Q?tLoQQmna/Afpj2Itj1a2J1As4qSDZgvC+du0uBHCHp78bb/vVgf4y8QsQPmL?=
+ =?us-ascii?Q?McP+CAjrA1LKh2l8cdRxoW2cB3CiGo2hOjA/aoeGcPS7WWZHTKO421QiGrYa?=
+ =?us-ascii?Q?VV6XF6Apx1rixPhU/PYLpvjpsTRjw6sWc3RlgDK7rtYVjTdqNgflfmVrAIf3?=
+ =?us-ascii?Q?eMsEBypIUFiHzPRonZSR3cUa8hN7rsDk/tiHCkIAOJTlGvm2vPvpjJci90Kk?=
+ =?us-ascii?Q?EFjgKw=3D=3D?=
+X-Forefront-Antispam-Report:
+	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(36860700013)(1800799024)(82310400026);DIR:OUT;SFP:1101;
+X-OriginatorOrg: axis.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Jan 2026 08:55:44.5752
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3b63a30f-ec01-4bd3-dbbf-08de5a5d31be
+X-MS-Exchange-CrossTenant-Id: 78703d3c-b907-432f-b066-88f7af9ca3af
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=78703d3c-b907-432f-b066-88f7af9ca3af;Ip=[195.60.68.100];Helo=[mail.axis.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	DB1PEPF000509F7.eurprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS2PR02MB9261
 
-Hi Aaron,
+Instead of handling the memory allocation manually, use the automatic
+`devres` variant `devm_kcalloc()`. This is less error prone and
+eliminates the `goto`-path.
 
-kernel test robot noticed the following build warnings:
+Signed-off-by: Waqar Hameed <waqar.hameed@axis.com>
+---
+ drivers/power/supply/wm97xx_battery.c | 16 +++++-----------
+ 1 file changed, 5 insertions(+), 11 deletions(-)
 
-[auto build test WARNING on driver-core/driver-core-testing]
-[also build test WARNING on driver-core/driver-core-next driver-core/driver-core-linus rafael-pm/linux-next rafael-pm/bleeding-edge linus/master amd-pstate/linux-next amd-pstate/bleeding-edge v6.19-rc6 next-20260122]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Aaron-Tomlin/PM-QoS-Introduce-boot-parameter-pm_qos_resume_latency_us/20260123-090409
-base:   driver-core/driver-core-testing
-patch link:    https://lore.kernel.org/r/20260123010024.3301276-1-atomlin%40atomlin.com
-patch subject: [PATCH] PM: QoS: Introduce boot parameter pm_qos_resume_latency_us
-config: x86_64-randconfig-161-20260123 (https://download.01.org/0day-ci/archive/20260123/202601231616.nbo2ijJf-lkp@intel.com/config)
-compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
-smatch version: v0.5.0-8994-gd50c5a4c
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260123/202601231616.nbo2ijJf-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202601231616.nbo2ijJf-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
->> kernel/power/qos.c:339:9: warning: variable 'ret' is uninitialized when used here [-Wuninitialized]
-     339 |         return ret;
-         |                ^~~
-   kernel/power/qos.c:266:9: note: initialize the variable 'ret' to silence this warning
-     266 |         int ret;
-         |                ^
-         |                 = 0
-   kernel/power/qos.c:354:5: error: redefinition of 'pm_qos_get_boot_cpu_latency_limit'
-     354 | s32 pm_qos_get_boot_cpu_latency_limit(unsigned int cpu)
-         |     ^
-   include/linux/pm_qos.h:222:19: note: previous definition is here
-     222 | static inline s32 pm_qos_get_boot_cpu_latency_limit(unsigned int cpu)
-         |                   ^
-   1 warning and 1 error generated.
-
-
-vim +/ret +339 kernel/power/qos.c
-
-   245	
-   246	/* init_pm_qos_latency_us_setup - Parse the pm_qos_latency_us boot parameter.
-   247	 *
-   248	 * Parses the kernel command line option "pm_qos_resume_latency_us=" to establish
-   249	 * per-CPU resume latency constraints. These constraints are applied
-   250	 * immediately when a CPU is registered.
-   251	 *
-   252	 * Syntax: pm_qos_resume_latency_us=<cpu-list>:<value>[,<cpu-list>:<value>...]
-   253	 * Example: pm_qos_resume_latency_us=0-3:0,4-7:20
-   254	 *
-   255	 * The parsing logic enforces a "First Match Wins" policy. If a CPU is
-   256	 * covered by multiple entries in the list, only the first valid entry
-   257	 * applies. Any subsequent overlapping ranges for that CPU are ignored.
-   258	 *
-   259	 * Return: 0 on success, or a negative error code on failure.
-   260	 */
-   261	static int __init init_pm_qos_latency_us_setup(void)
-   262	{
-   263		char *token, *cmd = pm_qos_resume_latency_cmdline;
-   264		struct pm_qos_boot_entry *entry, *tentry;
-   265		cpumask_var_t covered;
-   266		int ret;
-   267	
-   268		if (boot_option_idle_override == IDLE_POLL) {
-   269			pr_warn("pm_qos: Cannot be used with idle=poll\n");
-   270			return -EINVAL;
-   271		}
-   272	
-   273		if (!zalloc_cpumask_var(&covered, GFP_KERNEL)) {
-   274			pr_warn("pm_qos: Failed to allocate memory for parsing boot parameter\n");
-   275			return -ENOMEM;
-   276		}
-   277	
-   278		while ((token = strsep(&cmd, ",")) != NULL) {
-   279			char *str_range, *str_val;
-   280	
-   281			str_range = strsep(&token, ":");
-   282			str_val = token;
-   283	
-   284			if (!str_val) {
-   285				pr_warn("pm_qos: Missing value range %s\n",
-   286					str_range);
-   287				continue;
-   288			}
-   289	
-   290			entry = kzalloc(sizeof(*entry), GFP_KERNEL);
-   291			if (!entry) {
-   292				pr_warn("pm_qos: Failed to allocate memory for boot entry\n");
-   293				goto cleanup;
-   294			}
-   295	
-   296			if (cpulist_parse(str_range, &entry->mask)) {
-   297				pr_warn("pm_qos: Failed to parse cpulist range %s\n",
-   298					str_range);
-   299				kfree(entry);
-   300				continue;
-   301			}
-   302	
-   303			cpumask_andnot(&entry->mask, &entry->mask, covered);
-   304			if (cpumask_empty(&entry->mask)) {
-   305				pr_warn("pm_qos: Entry %s already covered, ignoring\n",
-   306					str_range);
-   307				kfree(entry);
-   308				continue;
-   309			}
-   310			cpumask_or(covered, covered, &entry->mask);
-   311	
-   312			if (kstrtos32(str_val, 0, &entry->latency)) {
-   313				pr_warn("pm_qos: Invalid latency requirement value %s\n",
-   314					str_val);
-   315				kfree(entry);
-   316				continue;
-   317			}
-   318	
-   319			if (entry->latency < 0) {
-   320				pr_warn("pm_qos: Latency requirement cannot be negative: %d\n",
-   321					entry->latency);
-   322				kfree(entry);
-   323				continue;
-   324			}
-   325	
-   326			list_add_tail(&entry->node, &pm_qos_boot_list);
-   327		}
-   328	
-   329		free_cpumask_var(covered);
-   330		return 0;
-   331	
-   332	cleanup:
-   333		list_for_each_entry_safe(entry, tentry, &pm_qos_boot_list, node) {
-   334			list_del(&entry->node);
-   335			kfree(entry);
-   336		}
-   337	
-   338		free_cpumask_var(covered);
- > 339		return ret;
-   340	}
-   341	early_initcall(init_pm_qos_latency_us_setup);
-   342	
-
+diff --git a/drivers/power/supply/wm97xx_battery.c b/drivers/power/supply/wm97xx_battery.c
+index f00722c88c6fe..c30c347b48f99 100644
+--- a/drivers/power/supply/wm97xx_battery.c
++++ b/drivers/power/supply/wm97xx_battery.c
+@@ -192,7 +192,7 @@ static int wm97xx_bat_probe(struct platform_device *dev)
+ 	if (pdata->min_voltage >= 0)
+ 		props++;	/* POWER_SUPPLY_PROP_VOLTAGE_MIN */
+ 
+-	prop = kcalloc(props, sizeof(*prop), GFP_KERNEL);
++	prop = devm_kcalloc(&dev->dev, props, sizeof(*prop), GFP_KERNEL);
+ 	if (!prop)
+ 		return -ENOMEM;
+ 
+@@ -224,12 +224,10 @@ static int wm97xx_bat_probe(struct platform_device *dev)
+ 	bat_psy_desc.num_properties = props;
+ 
+ 	bat_psy = power_supply_register(&dev->dev, &bat_psy_desc, &cfg);
+-	if (!IS_ERR(bat_psy)) {
+-		schedule_work(&bat_work);
+-	} else {
+-		ret = PTR_ERR(bat_psy);
+-		goto free;
+-	}
++	if (IS_ERR(bat_psy))
++		return PTR_ERR(bat_psy);
++
++	schedule_work(&bat_work);
+ 
+ 	if (charge_gpiod) {
+ 		ret = request_irq(gpiod_to_irq(charge_gpiod), wm97xx_chrg_irq,
+@@ -246,9 +244,6 @@ static int wm97xx_bat_probe(struct platform_device *dev)
+ unregister:
+ 	power_supply_unregister(bat_psy);
+ 
+-free:
+-	kfree(prop);
+-
+ 	return ret;
+ }
+ 
+@@ -258,7 +253,6 @@ static void wm97xx_bat_remove(struct platform_device *dev)
+ 		free_irq(gpiod_to_irq(charge_gpiod), dev);
+ 	cancel_work_sync(&bat_work);
+ 	power_supply_unregister(bat_psy);
+-	kfree(prop);
+ }
+ 
+ static struct platform_driver wm97xx_bat_driver = {
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.39.5
+
