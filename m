@@ -1,429 +1,139 @@
-Received: from CWXP265CU010.outbound.protection.outlook.com (mail-ukwestazon11022110.outbound.protection.outlook.com [52.101.101.110])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f52.google.com (mail-pj1-f52.google.com [209.85.216.52])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B414833E363;
-	Fri, 23 Jan 2026 01:00:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.101.110
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769130044; cv=fail; b=spXf/YwCT0T/J1cx7FqEEqUDW2PE2Towi+snxxwrCznukhd+ZAd+AfPg0HxkmjT+6bk7SfeR+3vxDtYOWefwMUZTYQ0P6/omXCqKH1F36EASWKaDU80lCutFaCIQdo6GfpXd2pf57Ad3bVL9ji1/tchSIDiElfVP0f/txFD4hu0=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769130044; c=relaxed/simple;
-	bh=uQSZI7uoRVtYx9h6TqSLzpkyAdSeOTV58/6eSbUi2o8=;
-	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=jIDn7oOVKcIJrz4xq0YUhe/Eo7j2V0zxTrPaCLbyPfw5wACBWGevxoXHz7j9VFsJXObJXoKdfSw0A2W4vMcM6TGdKaOfWj5FOtKKA12M0QDGVXtSs6d+zAfaSKAX7mzIU247o73Ht/BBvgDstMJbMTarojVwl6NWOO82UDwcnW0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=atomlin.com; spf=pass smtp.mailfrom=atomlin.com; arc=fail smtp.client-ip=52.101.101.110
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=atomlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=atomlin.com
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=NLpeO2aGIhYtDYQV78pSIET70ehWgANrUdHcSomaxKz7ttGlvxXpapz/fJ+Dr7JpzFCEeao++WUvl1EncOBJNAZwL0K3j2b1XcogptDWdIJpj4LRzuxAHWB7QlKDbsbbTbKb0srWJLIwGyRebzxJMhqhY88KCwyLujU5SCa7nvCNbJmWOmuqrce56AssH7E8sEP+2ppo1CtJxv8lpxAb52Tw8M2uR7nlJ8aEu3tLJcuyHSAlBIRtRIPcY5yhVcFEPJGwKUtU5E16A8yMdu4LRnx4RTMhdp0h9oXxvuXAtyUHNg9V8j7ZkvbM1f/Qqxsunwhqq66sezshrs9QYBFQvw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ofEVdeAGI+3APA3MKderfFrS4povFf6KPKBkCfXA8po=;
- b=JK7iQdKj3yX3kyDC9Gw8rCUJLO29pTaGwYdyaYgWlcahgiBGInS3xc6lhuatBDLxb95eULN9ECIKJEQb4xJ5MMEB0hpvGaPXkd3OF27MzTr8YhePYecJEJSOZwwa+PpOm/wkbLnwUHa8WtvkyLZRp3cv8+sE9OsHWzaYlN/sEIXcno08sVDjT6pLwqGGVnhiZKnfChs5UD760S2burvKLyMPU7UNHX+qFW/YMql73ICbHYd8Gdsi5RqBFxIKOTLpMqRhjlUHEIO1+7lc7X4WXBpgTwwgkICzBfhFf85XgTE2LlshGUYqZcJdgkOq0OzawNbEtTtbqCrHU12QLIzhYA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=atomlin.com; dmarc=pass action=none header.from=atomlin.com;
- dkim=pass header.d=atomlin.com; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=atomlin.com;
-Received: from CWLP123MB3523.GBRP123.PROD.OUTLOOK.COM (2603:10a6:400:70::10)
- by LO0P123MB7924.GBRP123.PROD.OUTLOOK.COM (2603:10a6:600:405::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9542.11; Fri, 23 Jan
- 2026 01:00:30 +0000
-Received: from CWLP123MB3523.GBRP123.PROD.OUTLOOK.COM
- ([fe80::de8e:2e4f:6c6:f3bf]) by CWLP123MB3523.GBRP123.PROD.OUTLOOK.COM
- ([fe80::de8e:2e4f:6c6:f3bf%5]) with mapi id 15.20.9542.010; Fri, 23 Jan 2026
- 01:00:29 +0000
-From: Aaron Tomlin <atomlin@atomlin.com>
-To: rafael@kernel.org,
-	dakr@kernel.org
-Cc: pavel@kernel.org,
-	lenb@kernel.org,
-	neelx@suse.com,
-	atomlin@atomlin.com,
-	sean@ashe.io,
-	mproche@gmail.com,
-	chjohnst@gmail.com,
-	nick.lange@gmail.com,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH] PM: QoS: Introduce boot parameter pm_qos_resume_latency_us
-Date: Thu, 22 Jan 2026 20:00:24 -0500
-Message-ID: <20260123010024.3301276-1-atomlin@atomlin.com>
-X-Mailer: git-send-email 2.51.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: BN9PR03CA0093.namprd03.prod.outlook.com
- (2603:10b6:408:fd::8) To CWLP123MB3523.GBRP123.PROD.OUTLOOK.COM
- (2603:10a6:400:70::10)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 75B90363C64
+	for <linux-pm@vger.kernel.org>; Fri, 23 Jan 2026 01:14:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.52
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1769130856; cv=none; b=KcWEawwzazjRM3mxcpu/4gmGfhZAgg+LEPPhFHHitqbYgH2c2jzijIE/fHzuFcdgKiZlbZn7bRS9ypLzqKkS77yWgqkAfX9wTAuqyCVhfwQyEyA7UOEKtFx6Vmv9YRfBSZeAmHMM3e62CwO+R7D9Us4pFq3cmvaLuOF/JQcurUw=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1769130856; c=relaxed/simple;
+	bh=He+aEhwIQiKMM6RZOhPxZk8LJB9l4Qy9dfY/jCduGYY=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=I6dLxR2UBmIpjUE+sC7wr443oC0RszUMi6SGuXH1h6k6nohen1bJZ8NIB97GrxodFL1r8mIzJED2CMtbwSgzEWZ+GFvEdPqB56rfXA50uKCq+V3hcOK//+BsGjLKsZu/Xy+n1HwbA10Xm02Q51ipC4H0MYjZf15TmpaQoHiBNGM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=DoEGKZFv; arc=none smtp.client-ip=209.85.216.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="DoEGKZFv"
+Received: by mail-pj1-f52.google.com with SMTP id 98e67ed59e1d1-34f634dbfd6so1478695a91.2
+        for <linux-pm@vger.kernel.org>; Thu, 22 Jan 2026 17:14:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1769130849; x=1769735649; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=8jIXagkMxzEowZbGtgfSPfOl3cdbEam+H5UuhcUy8Cw=;
+        b=DoEGKZFvU1sCuSVeI1f1e651/D0ocFTgNTL2Dilm3MHgUzCUfORahQVeKnfWxgjdFQ
+         n9Wb4F67rIbUSZkyvJj2NkNMdlvaN25uPe5aVqxqNAqr1hgQHWxERpx+LLiXs0+E+E33
+         Rl9N2S1srNOokfQhCL+Dufy/7WxokvumGa8BZaJjT/bEfjxee2XpJzEw1hM19RcM2b0+
+         JAO35qQG0Z1cpH9nmuTlBLv6+j91GUMRq1xv5sn24wHxJLu+uf7Dz37SiYnhGmEDNDYV
+         kYrAU8GxXfVlB6fZlOonMKFX+zyU14SbnRgqXrq8tuyaRKugAPO6eaQCtZPAgsTS7ehS
+         HStA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1769130849; x=1769735649;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=8jIXagkMxzEowZbGtgfSPfOl3cdbEam+H5UuhcUy8Cw=;
+        b=qhDJoFllMYiYkCw1s90AXjYNQpy6IvqCznOFRY8OHMSII9OcqqesbvXL098uY6UQQs
+         kSjTVVx9+UZv0KziFeocphoNVydH+1/Qt/Lqz6q7mt0URzYZfOcwKs+E0aPXp0jwy0V+
+         pEYlfVUIqCKy1ZPjY8/6zPZoLpqNBOZvvvcsiFdrY/gGBVsm1Z+6qKIJhduzPEYmbUiS
+         eDBTY97TSyQW7HVORWJgGpDZP6cer8I/P81iGBjLIVZnOHZDGzDCt7ajdbpXPgCHVxnZ
+         hfBRVkKQUKhYP2vuB4TT18Wi8DH7e96IJSOmJVN7uWeGzflrJetjSAfN4dPKeRBrKVOP
+         plEA==
+X-Forwarded-Encrypted: i=1; AJvYcCX8CHaZrJxM4B32zLZ4Tuu4p7ne9rEyKgoU37Tb7FPy9lyuYjCpxom2DyQ9AFbkEEmyxArOkRDYRA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyicQ+mEDydOBV+NJ7H/A4qAdZ2PA7rXGbpglONWlhnCLDHqqmP
+	58Su7M62Vp5kQNoNfutxmC7pu9dcXKyT9tnBoMG7+BMbnHdCGPfn5NojvprYSOIvDs8=
+X-Gm-Gg: AZuq6aLzqY6+XsTusDfhVd834f4EdmkH+2XvIR7eOmUs8Un+MI8UPKPTXUiLwx3Tnk0
+	Mz1lXuXhTEG2pp/0h4N+NFK/IWDGggCgILjvJ2gYyNZd3FfijSsCOVcAFI0jBgze7NqrxWnNIF4
+	4izuf95qzzJHx68BqSj6etn9HZcmKdAoV5lWe32bOEiBMnkbEpx2CNyF8L40ZdekyGlh1BJK943
+	OygzJSEVPh71y7EeT/F9423m4LjmRBx3mlMcprkhQa30/KdzFGtY4p+6D1NXnr1c9xd7NDoIs0L
+	xhMd62CWqOv6YyXllGCtHomEefbFTc+JuPXXT6SXfwRct7z5WuwknREW0enhepM/uALZzQN5Icp
+	vzzN401vt3t6qbOssStVZteozPAHuzQV0jAPpsopOt4JDbXjwNQtZWGNGkYGCw7Fu6S/V/zkedx
+	9RUBgHSPc8
+X-Received: by 2002:a17:90b:3a90:b0:32d:a0f7:fa19 with SMTP id 98e67ed59e1d1-3536894c5e5mr1159857a91.17.1769130849520;
+        Thu, 22 Jan 2026 17:14:09 -0800 (PST)
+Received: from localhost ([71.212.200.220])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35335205a2fsm3478280a91.2.2026.01.22.17.14.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 22 Jan 2026 17:14:08 -0800 (PST)
+From: "Kevin Hilman (TI)" <khilman@baylibre.com>
+Date: Thu, 22 Jan 2026 17:14:01 -0800
+Subject: [PATCH RFC v5 2/2] pmdomain: arm_scmi: add support for domain
+ hierarchies
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CWLP123MB3523:EE_|LO0P123MB7924:EE_
-X-MS-Office365-Filtering-Correlation-Id: 7e39cf8b-179e-4246-29af-08de5a1acd35
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|366016|7416014|376014|7142099003;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?okb8WBvYMtM8jCGvNmVUqQbOM1ve8fQ95flPvno1o6KK/gfOmRXqGq6X2jLS?=
- =?us-ascii?Q?oarYX1Mw2L5su4iRkm99cUcDBsjqBf+tqeXkhvSVKsIB40is1IC3st70hn3Y?=
- =?us-ascii?Q?Btj/EKBTMC5fB1mzyG0Xrj1PjQBDSW6a6az8x5S90RDwoNRsFCJ8DRVS9weT?=
- =?us-ascii?Q?gmcowNuLHRgMRZ0ODaYFJ7paltBMHZmF4wBavpb1v8VwpRIXwc7wW4uR9giV?=
- =?us-ascii?Q?fAxNxKwqVBgv2HiY+UHACSr8DGBGsAIaCLpFGqn8rGQR4rOmyYtZSGVp0O7A?=
- =?us-ascii?Q?OddbQ9deeaIZJaP3tiUNp6ZjpD+vmpk1/q1YE44N8c1hC76417TG5gQkjdj7?=
- =?us-ascii?Q?OUCVG6zkRN4X4/ugqGwXqQIXalnnfA/6L4VPSqPd5e44GZbhEWHfcwJl/Vf3?=
- =?us-ascii?Q?U5hVwgKvYMbApn+Hx4/0CdB8AxoxarRJ3pnJzmjRUIP5SwqwY8nBTZgkdXqH?=
- =?us-ascii?Q?notBImm+0eNLmlDGR8AhyFIyau3TEXEg70m9GTc4CYtQ8VXSnCbvW1VYkPHk?=
- =?us-ascii?Q?YYaEhV3ESfrl42rboz0rDXuQxfWRdaYyr65PKll5lXrLexfrslGWvPiyK4ws?=
- =?us-ascii?Q?1U8hjkr3M3fDK9SnFs+RTAYJijXihpEDMl/KcT8CyOpZqmhPWARf6+dmtCsL?=
- =?us-ascii?Q?rlXC8wC8UmgsVPXQWuS98D0U5szXUCbrZFco5BLeboTz1xKZ9pDMjU6BX2OZ?=
- =?us-ascii?Q?qG0s4kOj9txWZxQ/0ZuGlbvLKWaAJxwuRPHQAOO3k/by8m4jRMvGFjHZfwPP?=
- =?us-ascii?Q?HQipsU+NZry+gr5NfRzuV1LVazxaLYU0JJSj9Df9FkWSxTWg4zohh65EihzE?=
- =?us-ascii?Q?xDqsjb626WcgG5sY8mwyZ8FfMTYvOwPdIdgf/xwlGmkZrbIH8D13ShGluQht?=
- =?us-ascii?Q?yotvuiPgr5g78hIHj6B3ikezkH5/2/YGyxZ6hs5IVYl5w2HFBJPc030MnJ2E?=
- =?us-ascii?Q?BylhA18Yw79cIYTO1XoF1qPn6+VLdL1//u/8ERjunB76cRx/bZsK/JoCK4Mm?=
- =?us-ascii?Q?n+IATWEs697lKT4fO3yFu9a5Rs1nXv92ezU62yjSOQnByMpkPAvNXogjlUSj?=
- =?us-ascii?Q?a3Ruu6Bcc4wvuxrMrB7GO1WSmuJs5P3NA7ghBUcrUd3xOZwwHHrCL3lkQsG2?=
- =?us-ascii?Q?pKuKn2O4uoFbHjeQw2ncNZ10BlxE1hSJP3m1a9okpw0B8j8vLCHZaXakcquH?=
- =?us-ascii?Q?6G2F9c07KuYJeF1byICe/eSpDGntoOPxGbNf0Sl1xgB5a8imM0naXBkOcllg?=
- =?us-ascii?Q?5hoeGzb1VqKYIRDDz4MP6vCRwcb3jqOPUCXMMClxTO6ZCl7d8Rvpp2Cd0Y4p?=
- =?us-ascii?Q?qkY6uZJ3Bo5kZt1pxdOWI4CscMslcJAEu0KBEf+zv92XpzvJ43BfLv/w8f4k?=
- =?us-ascii?Q?PajGp5GVYIoZm5HDCqWyLBszlmGY8VOe04kItG6RjZ2bVFdiN6IljMrufVQe?=
- =?us-ascii?Q?LUTCZL/ibhRZtjub4thaJHUqOCDKDiRucC4/enNITm3ph2JOB3YRte8BuCUA?=
- =?us-ascii?Q?re85krXbycBqPWqP6CSY6u9MjRar6hJ1psGODtTThbSAD8rjX9TTtMz627iF?=
- =?us-ascii?Q?Mqp+fGivkkdRmsYx8tU=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CWLP123MB3523.GBRP123.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(376014)(7142099003);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?TyFPm27PDUWZVyMsfqGyL1G38gs/yAo9NB0pi2rhvLjctPzgTiJcUmmMVyq+?=
- =?us-ascii?Q?2ZxWApckuNsjs5VsGgKSrt5RRnhgXgYZRh7A0jxAZO3twJAENuTpqE/Cx8YU?=
- =?us-ascii?Q?jSjTK/0w1jP6eMF/goBfn0ZEP58j9C2Bn69o7P7uq/9wOr1ZRsnr3HjUDC6J?=
- =?us-ascii?Q?vGkFqGC36DrzZkmGRT3vlLXOsE3YXKoxRye+yNM4+xu/XBqE55i/1wS6qT7g?=
- =?us-ascii?Q?WNQ18gjm8f5Ufg52hHqQK3K0qkbK8El6GrjglLrePzmhtckKhUxffucydJnR?=
- =?us-ascii?Q?sdaFln4+G1trdhN8UNLQd+vagPaDrGL0/xFab5bMCxH3mca9K3UdYSvRvNwx?=
- =?us-ascii?Q?3clMOx/rHQFwvA2eIvCFoZ2sTFFkrTxLXeILo7RPCsKiAlMS7iQU0y2U+Ttn?=
- =?us-ascii?Q?jS524KB06JGPGlSRYO7uWcKzRot+pcYZeMhBy3j7J3admtjvZRIkzGh3wRod?=
- =?us-ascii?Q?zj/lbyQn/JGRP52s1OaM9Bp+V9OrfLWSS7R0kl8Kw7z+k2D8RODKECDsna6J?=
- =?us-ascii?Q?fBlUC+o10FKF59l0KKpLn4AnNIeV65cVfovplNoRybNu6pbp2a7DosEdVJyg?=
- =?us-ascii?Q?mpezoO/USLE99Q+xyPJ+K15q7AESg9Ip07yHucU8q8H6P8MEWVeQhYTrhdlG?=
- =?us-ascii?Q?w4G2w+iwWrjo8xscaaGXN+SzH2MfB7UD/khRpaH0xwLsrNIp5wbwpOGvYCAF?=
- =?us-ascii?Q?dxACkFZdK0XFS86FN6Hipum+O9MUlzs9Axj/7khA251KoI2xG/unv1TQgc1O?=
- =?us-ascii?Q?6byIIxdZpgPOs9bajsAn6e3L5WDBacyvJKiwbnwPHpoUrOgpGU7wI8Hf1dt/?=
- =?us-ascii?Q?ZtTT1y+p+O/p+/0Be//NKB1Xp4OXwMAqgCHn7j4rJYqTjHNpqqACQh1TogIL?=
- =?us-ascii?Q?G/WMHvAocCar95FWsowHA4PiTmXcwkKzTubb+miujEkLs7tU4Ed+wUcSYVom?=
- =?us-ascii?Q?Ssqof1t/xlGy1Itih2EaGb7Eibwg5OdEWHmF+CaofIwIV6jARNXoV1oJxQJq?=
- =?us-ascii?Q?s+m2Bcks+unjeLBTBVhz84t7m1GIAwHLjHvakW63tjxTtQbPlKLSk1om25MA?=
- =?us-ascii?Q?a7WpaK3dseL1QAsmVhkvWId+AADQ27Fyh8dIYQI3Q2Fkcch6S1z5qJKo2JNm?=
- =?us-ascii?Q?62hN7aI5ibxUh3B5rOaOTZDd2QMh8uVR4GO8XBsFs/vlNWMmXeqG8rMHLHr5?=
- =?us-ascii?Q?3vAoLVkUBomLEWVMna1Rm+PVsC2wf0NMb8bTaF3L10Y0miXLNfxNS8yp0Uqr?=
- =?us-ascii?Q?oCCe2wUmNZEAk/+mHL8ePuA+fMMJc6YQYau1j0WDyJpSqMbhyurHnCLUxTdV?=
- =?us-ascii?Q?MrSBpR1A7VxgSN9nk8iZ6RcA4SKmq5AuSOj7wGjWw2l4lq84siBLyx2dFIWm?=
- =?us-ascii?Q?ZhsN7dOw66iDJDD5mKndqQ8aNI9JFz8oWOcsPWe7Ypi2bFzcN9iQc+PpSWv5?=
- =?us-ascii?Q?hDXXatu96QOYwqQJ70Qo/aIH+/+0LIMHlt+zO5/yrEDoZUcuGQQ7lyZnCKb2?=
- =?us-ascii?Q?f9ybXNGNuwxUawfYsxfXpci1RauyqZ9Xir4NgDyhm2I1eNBiA1c7bssI8PyS?=
- =?us-ascii?Q?X00aoL7+SF8J4uAfIbBC3unipN8KsZWHE/d87FiHM2bbUetyCOYQtx6bMZLx?=
- =?us-ascii?Q?tUzQIuMc4eig7vGYW3bncEfVQzIiuMKOc5u0CNH9cMyNHK2/ZYUQqevNQ42a?=
- =?us-ascii?Q?2Xc62P9aEOZLnQKbznbK6YSH6MDGStxhTEJM52vpb+TIMfYz7zoDaiooKU6T?=
- =?us-ascii?Q?HqnFklEwcA=3D=3D?=
-X-OriginatorOrg: atomlin.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7e39cf8b-179e-4246-29af-08de5a1acd35
-X-MS-Exchange-CrossTenant-AuthSource: CWLP123MB3523.GBRP123.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Jan 2026 01:00:29.9042
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: e6a32402-7d7b-4830-9a2b-76945bbbcb57
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 0OPZ8WtCfz1rJvWmKuWdhib0P5SQY5nhstzKHeF5/QKhSOGYwGhIjdt464Lv4A1W2uE3noOjAhnj/FoiDLVLKg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LO0P123MB7924
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260122-pmdomain-hierarchy-onecell-v5-2-76855ec856bd@baylibre.com>
+References: <20260122-pmdomain-hierarchy-onecell-v5-0-76855ec856bd@baylibre.com>
+In-Reply-To: <20260122-pmdomain-hierarchy-onecell-v5-0-76855ec856bd@baylibre.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Sudeep Holla <sudeep.holla@arm.com>, 
+ Cristian Marussi <cristian.marussi@arm.com>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
+ arm-scmi@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org
+X-Mailer: b4 0.15-dev-47773
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1346; i=khilman@baylibre.com;
+ h=from:subject:message-id; bh=He+aEhwIQiKMM6RZOhPxZk8LJB9l4Qy9dfY/jCduGYY=;
+ b=owEBbQKS/ZANAwAIAVk3GJrT+8ZlAcsmYgBpcstetXh6fJOBD4eHHjr+saQFKxgmd6v0zRhkf
+ ug0omaqIIqJAjMEAAEIAB0WIQR7h0YOFpJ/qfW/8QxZNxia0/vGZQUCaXLLXgAKCRBZNxia0/vG
+ ZQIgD/4i6Uc4w60OsIRYYqeP8oLa2eb6CzQU8aLVsNoiDPuv5uZnYUTHquh3eLM04pOyjyL938g
+ jEvUGJVhqeiMw8clJVY3pP85aE6pIqEHRh4MtNLdHFbzeMVmk7jLxOO37wW3lO6HjPj/fOKkVlj
+ 0hZ+eWyeo0DaLjAv20+LezZ47MUqkgRenx1FTRbkul4dY7+EvEunrgq0CW4xeSz1erh3GKCMjp3
+ xhUoU0zK7IaVczg3aPfyJcNVWM2CYMxpogkEQrN9GY8tVpRRQ8k4GdjZ3y1FDHnIUCQ/XH1c4Hn
+ Ep2a0POgfv0x+p444bxRdhFrasXjYcab98iS7YT90j4ONuBxfpBeQwoJRKmmpCAZodwhQMjTfsb
+ NKLq/J6fZDebRb0SJvJFqq80Sa7lb6XMZpOa/jgC3vL49YUrfcv9HEUyyxyb1s+d+usdDq/F6oy
+ 4TeuublXmf/HOY/u/Rc9CgQoBGjNuE4vNZJrf7i+JN0snIoHtb3es1oe4QsQF0MwYQra7G4dbAA
+ 0pyJeB/CjLJ41MmMcQ/FlF7CYfFxLOCKv+4AUnzrBBdQj3A+xjQbMEkxeAMsOmFGA/S1AMLN1hQ
+ w3BjZGZkqJ/HIcunTq8hG0EZiT2dbl6rSz9o0Hn6GIpNKMvsRCHHaNDewPA7Lwu3+Q0MDXbzeMq
+ yGl7x/R9Wppf8Pg==
+X-Developer-Key: i=khilman@baylibre.com; a=openpgp;
+ fpr=7B87460E16927FA9F5BFF10C5937189AD3FBC665
 
-Users currently lack a mechanism to define granular, per-CPU PM QoS
-resume latency constraints during the early boot phase.
+After primary SCMI pmdomain is created, use new of_genpd helper to
+check if there are any child domain mappings defined by
+power-domain-map, and create domain hierarchy.  Also remove any child
+domain mappings when SCMI domain is removed.
 
-While the idle=poll boot parameter exists, it enforces a global
-override, forcing all CPUs in the system to "poll". This global approach
-is not suitable for asymmetric workloads where strict latency guarantees
-are required only on specific critical CPUs, while housekeeping or
-non-critical CPUs should be allowed to enter deeper power states to save
-energy.
-
-Additionally, the existing sysfs interface
-(/sys/devices/system/cpu/cpuN/power/pm_qos_resume_latency_us) becomes
-available only after userspace initialisation. This is too late to
-prevent deep C-state entry during the early kernel boot phase, which may
-be required for debugging early boot hangs related to C-state
-transitions or for workloads requiring strict latency guarantees
-immediately upon system start.
-
-This patch introduces the pm_qos_resume_latency_us kernel boot
-parameter, which allows users to specify distinct resume latency
-constraints for specific CPU ranges.
-
-	Syntax: pm_qos_resume_latency_us=range:value,range:value...
-
-Unlike the sysfs interface which accepts the special string "n/a" to
-remove a constraint, this boot parameter strictly requires integer
-values. The special value "n/a" is not supported; the integer 0 must be
-used to represent a 0 us latency constraint (polling).
-
-For example:
-
-	"pm_qos_resume_latency_us=0:0,1-15:20"
-
-Forces CPU 0 to poll on idle; constrains CPUs 1-15 to not enter a sleep
-state that takes longer than 20 us to wake up. All other CPUs will have
-the default (no resume latency) applied.
-
-Implementation Details:
-
-	- The parameter string is captured via __setup() and parsed in
-	  an early_initcall() to ensure suitable memory allocators are
-	  available.
-
-	- Constraints are stored in a read-only linked list.
-
-	- The constraints are queried and applied in register_cpu().
-	  This ensures the latency requirement is active immediately
-	  upon CPU registration, effectively acting as a "birth"
-	  constraint before the cpuidle governor takes over.
-
-	- The parsing logic enforces a "First Match Wins" policy: if a
-	  CPU falls into multiple specified ranges, the latency value
-	  from the first matching entry is used.
-
-	- The constraints persist across CPU hotplug events.
-
-Signed-off-by: Aaron Tomlin <atomlin@atomlin.com>
+Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
 ---
- drivers/base/cpu.c     |   5 +-
- include/linux/pm_qos.h |   5 ++
- kernel/power/qos.c     | 147 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 155 insertions(+), 2 deletions(-)
+ drivers/pmdomain/arm/scmi_pm_domain.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index c6c57b6f61c6..1dea5bcd76a0 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -416,6 +416,7 @@ EXPORT_SYMBOL_GPL(cpu_subsys);
- int register_cpu(struct cpu *cpu, int num)
- {
- 	int error;
-+	s32 resume_latency;
+diff --git a/drivers/pmdomain/arm/scmi_pm_domain.c b/drivers/pmdomain/arm/scmi_pm_domain.c
+index b5e2ffd5ea64..a52387c45d88 100644
+--- a/drivers/pmdomain/arm/scmi_pm_domain.c
++++ b/drivers/pmdomain/arm/scmi_pm_domain.c
+@@ -114,8 +114,12 @@ static int scmi_pm_domain_probe(struct scmi_device *sdev)
  
- 	cpu->node_id = cpu_to_node(num);
- 	memset(&cpu->dev, 0x00, sizeof(struct device));
-@@ -436,8 +437,8 @@ int register_cpu(struct cpu *cpu, int num)
+ 	dev_set_drvdata(dev, scmi_pd_data);
  
- 	per_cpu(cpu_sys_devices, num) = &cpu->dev;
- 	register_cpu_under_node(num, cpu_to_node(num));
--	dev_pm_qos_expose_latency_limit(&cpu->dev,
--					PM_QOS_RESUME_LATENCY_NO_CONSTRAINT);
-+	resume_latency = pm_qos_get_boot_cpu_latency_limit(num);
-+	dev_pm_qos_expose_latency_limit(&cpu->dev, resume_latency);
- 	set_cpu_enabled(num, true);
- 
++	/* check for (optional) subdomain mapping with power-domain-map */
++	of_genpd_add_subdomain_map(np, scmi_pd_data);
++
  	return 0;
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 6cea4455f867..556a7dff1419 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -174,6 +174,7 @@ static inline s32 cpu_wakeup_latency_qos_limit(void)
- #ifdef CONFIG_PM
- enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev, s32 mask);
- enum pm_qos_flags_status dev_pm_qos_flags(struct device *dev, s32 mask);
-+s32 pm_qos_get_boot_cpu_latency_limit(unsigned int cpu);
- s32 __dev_pm_qos_resume_latency(struct device *dev);
- s32 dev_pm_qos_read_value(struct device *dev, enum dev_pm_qos_req_type type);
- int dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
-@@ -218,6 +219,10 @@ static inline s32 dev_pm_qos_raw_resume_latency(struct device *dev)
- 		pm_qos_read_value(&dev->power.qos->resume_latency);
- }
- #else
-+static inline s32 pm_qos_get_boot_cpu_latency_limit(unsigned int cpu)
-+{
-+	return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
-+}
- static inline enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev,
- 							  s32 mask)
- 			{ return PM_QOS_FLAGS_UNDEFINED; }
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index f7d8064e9adc..6a12f1143358 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -34,6 +34,11 @@
- #include <linux/kernel.h>
- #include <linux/debugfs.h>
- #include <linux/seq_file.h>
-+#include <linux/cpumask.h>
-+#include <linux/cpu.h>
-+#include <linux/list.h>
-+
-+#include <asm/setup.h>
+ err_rm_genpds:
++	of_genpd_remove_subdomain_map(np, scmi_pd_data);
+ 	for (i = num_domains - 1; i >= 0; i--)
+ 		pm_genpd_remove(domains[i]);
  
- #include <linux/uaccess.h>
- #include <linux/export.h>
-@@ -46,6 +51,10 @@
-  */
- static DEFINE_SPINLOCK(pm_qos_lock);
+@@ -132,6 +136,7 @@ static void scmi_pm_domain_remove(struct scmi_device *sdev)
+ 	of_genpd_del_provider(np);
  
-+static LIST_HEAD(pm_qos_boot_list);
-+
-+static char pm_qos_resume_latency_cmdline[COMMAND_LINE_SIZE] __initdata;
-+
- /**
-  * pm_qos_read_value - Return the current effective constraint value.
-  * @c: List of PM QoS constraint requests.
-@@ -220,6 +229,144 @@ static struct pm_qos_constraints cpu_latency_constraints = {
- 	.type = PM_QOS_MIN,
- };
- 
-+struct pm_qos_boot_entry {
-+	struct list_head node;
-+	struct cpumask mask;
-+	s32 latency;
-+};
-+
-+static int __init pm_qos_latency_us_setup(char *str)
-+{
-+	strscpy(pm_qos_resume_latency_cmdline, str,
-+		sizeof(pm_qos_resume_latency_cmdline));
-+	return 1;
-+}
-+__setup("pm_qos_resume_latency_us=", pm_qos_latency_us_setup);
-+
-+/* init_pm_qos_latency_us_setup - Parse the pm_qos_latency_us boot parameter.
-+ *
-+ * Parses the kernel command line option "pm_qos_resume_latency_us=" to establish
-+ * per-CPU resume latency constraints. These constraints are applied
-+ * immediately when a CPU is registered.
-+ *
-+ * Syntax: pm_qos_resume_latency_us=<cpu-list>:<value>[,<cpu-list>:<value>...]
-+ * Example: pm_qos_resume_latency_us=0-3:0,4-7:20
-+ *
-+ * The parsing logic enforces a "First Match Wins" policy. If a CPU is
-+ * covered by multiple entries in the list, only the first valid entry
-+ * applies. Any subsequent overlapping ranges for that CPU are ignored.
-+ *
-+ * Return: 0 on success, or a negative error code on failure.
-+ */
-+static int __init init_pm_qos_latency_us_setup(void)
-+{
-+	char *token, *cmd = pm_qos_resume_latency_cmdline;
-+	struct pm_qos_boot_entry *entry, *tentry;
-+	cpumask_var_t covered;
-+	int ret;
-+
-+	if (boot_option_idle_override == IDLE_POLL) {
-+		pr_warn("pm_qos: Cannot be used with idle=poll\n");
-+		return -EINVAL;
-+	}
-+
-+	if (!zalloc_cpumask_var(&covered, GFP_KERNEL)) {
-+		pr_warn("pm_qos: Failed to allocate memory for parsing boot parameter\n");
-+		return -ENOMEM;
-+	}
-+
-+	while ((token = strsep(&cmd, ",")) != NULL) {
-+		char *str_range, *str_val;
-+
-+		str_range = strsep(&token, ":");
-+		str_val = token;
-+
-+		if (!str_val) {
-+			pr_warn("pm_qos: Missing value range %s\n",
-+				str_range);
-+			continue;
-+		}
-+
-+		entry = kzalloc(sizeof(*entry), GFP_KERNEL);
-+		if (!entry) {
-+			pr_warn("pm_qos: Failed to allocate memory for boot entry\n");
-+			goto cleanup;
-+		}
-+
-+		if (cpulist_parse(str_range, &entry->mask)) {
-+			pr_warn("pm_qos: Failed to parse cpulist range %s\n",
-+				str_range);
-+			kfree(entry);
-+			continue;
-+		}
-+
-+		cpumask_andnot(&entry->mask, &entry->mask, covered);
-+		if (cpumask_empty(&entry->mask)) {
-+			pr_warn("pm_qos: Entry %s already covered, ignoring\n",
-+				str_range);
-+			kfree(entry);
-+			continue;
-+		}
-+		cpumask_or(covered, covered, &entry->mask);
-+
-+		if (kstrtos32(str_val, 0, &entry->latency)) {
-+			pr_warn("pm_qos: Invalid latency requirement value %s\n",
-+				str_val);
-+			kfree(entry);
-+			continue;
-+		}
-+
-+		if (entry->latency < 0) {
-+			pr_warn("pm_qos: Latency requirement cannot be negative: %d\n",
-+				entry->latency);
-+			kfree(entry);
-+			continue;
-+		}
-+
-+		list_add_tail(&entry->node, &pm_qos_boot_list);
-+	}
-+
-+	free_cpumask_var(covered);
-+	return 0;
-+
-+cleanup:
-+	list_for_each_entry_safe(entry, tentry, &pm_qos_boot_list, node) {
-+		list_del(&entry->node);
-+		kfree(entry);
-+	}
-+
-+	free_cpumask_var(covered);
-+	return ret;
-+}
-+early_initcall(init_pm_qos_latency_us_setup);
-+
-+/**
-+ * pm_qos_get_boot_cpu_latency_limit - Get boot-time latency limit for a CPU.
-+ * @cpu: Logical CPU number to check.
-+ *
-+ * Checks the read-only boot-time constraints list to see if a specific
-+ * PM QoS latency override was requested for this CPU via the kernel
-+ * command line.
-+ *
-+ * Return: The latency limit in microseconds if a constraint exists,
-+ * or PM_QOS_RESUME_LATENCY_NO_CONSTRAINT if no boot override applies.
-+ */
-+s32 pm_qos_get_boot_cpu_latency_limit(unsigned int cpu)
-+{
-+	struct pm_qos_boot_entry *entry;
-+
-+	if (list_empty(&pm_qos_boot_list))
-+		return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
-+
-+	list_for_each_entry(entry, &pm_qos_boot_list, node) {
-+		if (cpumask_test_cpu(cpu, &entry->mask))
-+			return entry->latency;
-+	}
-+
-+	return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
-+}
-+EXPORT_SYMBOL_GPL(pm_qos_get_boot_cpu_latency_limit);
-+
- static inline bool cpu_latency_qos_value_invalid(s32 value)
- {
- 	return value < 0 && value != PM_QOS_DEFAULT_VALUE;
+ 	scmi_pd_data = dev_get_drvdata(dev);
++	of_genpd_remove_subdomain_map(np, scmi_pd_data);
+ 	for (i = 0; i < scmi_pd_data->num_domains; i++) {
+ 		if (!scmi_pd_data->domains[i])
+ 			continue;
+
 -- 
 2.51.0
 
