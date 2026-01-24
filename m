@@ -1,179 +1,144 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16001199D8
-	for <linux-pm@vger.kernel.org>; Sat, 24 Jan 2026 00:13:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51A7F1FC8;
+	Sat, 24 Jan 2026 01:00:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769213605; cv=none; b=jfr1arv5YbbxRmiu50PBCKaJZFWG1iM97ZbwvI4cjpxob4Hcelf17oV15Omm0FqHU8Dbp9oGq6+OQ/fGqLXjUz6ww4drh17tJUuun8HLCeFr/dkaAGN+IyuAUg/002f2tZJlkDhtQCDMDP7hhA+32X8U8g077DilbJcFXPB+G48=
+	t=1769216439; cv=none; b=PvL9Y/C/QdW5uMqqXjUtXqQnuuMs9oefsY0XWOMIoRyn7QAMq88UWOa3tsZJG2gmEo2nJMPpDkbncGMXnYvhKcqXwHQzKoyJndxZNvBXqKY9IhWlt9QvNX+FwuBADoDNaTpcEHW/8tXlIFKV+TLT3vIZTVT61YBtBQbKJ71JzdI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769213605; c=relaxed/simple;
-	bh=e67QfSnPJxuyvNAoMWfCXwuEw3Jft44F8kZCtdnCJbs=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=j+LqAJTc8Vfw8G0LNPhmhsBytWg0FrnExPLVgZbSCi5SsoGbXNzXYPAwjdECgzS6v0aME2Ltae6OxXlaAJ0VmwvfsnTCXgB7dDtAMz5M6JPQ4JKSoqYgrDxERUjh36HsjjktRoyq44abXqyraxxu0Qure5fdegKHQS2ZpoVrJwE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iYmKdSXR; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1769216439; c=relaxed/simple;
+	bh=ePfizrVQ213T5iJJd+JPuQ1ZTHCYKYVtrij+7knwsro=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=hSzN3fCFMJJyQvMqPXGgY1VVKYVhVUmJrbrW8NBWD4cwI3xqOcXDlXW+V3Vb+H6LmaHk/mrL/LAI4ww9qxN4hgC0hDAKhsRxfDIkMCanP6BhsqmbFZf5rX2V0KUUswuy2GeAWNzY1LxmWPr/S2iqiA1isvRlo2/KmECWxzovfJg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=jORReJF3; arc=none smtp.client-ip=192.198.163.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iYmKdSXR"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D4BC4C19423
-	for <linux-pm@vger.kernel.org>; Sat, 24 Jan 2026 00:13:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1769213604;
-	bh=e67QfSnPJxuyvNAoMWfCXwuEw3Jft44F8kZCtdnCJbs=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=iYmKdSXRic7jBvv55zlC3DkYX7z9q2WyBvMwHLFnphh6CVkK6thHLAkBCiyIx6RFP
-	 HQMHC0AYBRXRF7Nw8LL7879dTZLF7NxTfz4gZBfhf59l5DwyfFfr/RkpgoIknMjiwe
-	 8Yeq6LXHUHNpPS66AqYEgGPfA0qnrMN6OcJxtsqNrRZLU1tsMEs+uv3Hu2iVD9aZM8
-	 Q6Cud+FKlIyxZedxdKwmUfOCcpcNlBwCgUM9Khg868jS3TjHRlZdWEc0DWE++QCvu4
-	 VIgFbovScFn0E7rmWJjyFqVBKS8pLgnP/Ea1i8Se9lgTPLwDyMCeEnpbXqYhMxJ3jo
-	 dPcyc/l6ne8Qg==
-Received: by mail-ed1-f54.google.com with SMTP id 4fb4d7f45d1cf-6505d141d02so4036940a12.3
-        for <linux-pm@vger.kernel.org>; Fri, 23 Jan 2026 16:13:24 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCU1hhsXPcXbQlWRmKtGK/e9WKftq71YPq3GiNt0V/5avGcUcho0DC/EysUoPa4DIL9k7SECnUWGlw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwVYNrC7ky3jdkGpN1MwidJ/ThJ631XEsaPeYVEJR041b5ii8OG
-	FYbyNFpGkb3W3jXzH7WFoLUdKPBPBXd/GbaTSzPPjhqaG8q6Mc9azQSVj7QfzbTctW78YoR9om8
-	DpHTlyDk6RRIEjSwQO5IfaaL5NKngag==
-X-Received: by 2002:a05:6402:2745:b0:658:3c7b:5c3f with SMTP id
- 4fb4d7f45d1cf-6584876232bmr3082719a12.11.1769213603370; Fri, 23 Jan 2026
- 16:13:23 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="jORReJF3"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1769216437; x=1800752437;
+  h=date:from:to:cc:subject:message-id;
+  bh=ePfizrVQ213T5iJJd+JPuQ1ZTHCYKYVtrij+7knwsro=;
+  b=jORReJF3vU9GwJH7midGTNCZeTDS8TgkUktHC/5n0v+RJGsb7/UwSFo5
+   pSEtRdRPKWJE8is6Kd75x51/U4+s93uRDoyiUMd1wV5iw4lNdK0ACTisQ
+   ML8MSNkxR60Vrpp4vgKvmUmxe+VSZiNe3FqlLSWw1Q9kUt7Fz30SiFJJt
+   MMMSMND7qyKkEQpDGa9D38iCidjXQnEeQbMQJPjvIVYZ7/k5qd6JZGagi
+   9HKana7TjCA7rST+dIoWk0KujdIF/Xs58YPoF/WSAlwyMNcnqPJ08WlFS
+   pCnh1f9OAuJ21YCs5zSDgSqtcxTUA1KcyJxCAbE8+r5Z2pWW2t6xcBe2s
+   Q==;
+X-CSE-ConnectionGUID: XTga3E1xQzemY6yE+1xILg==
+X-CSE-MsgGUID: Q3ugYCzkQJutGAxejTJ74g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11680"; a="70369227"
+X-IronPort-AV: E=Sophos;i="6.21,249,1763452800"; 
+   d="scan'208";a="70369227"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jan 2026 17:00:37 -0800
+X-CSE-ConnectionGUID: 7Xc8IZZzQgqeL/IuBl3nFQ==
+X-CSE-MsgGUID: PY4yoz7cSmyjY6rMxT4jEA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.21,249,1763452800"; 
+   d="scan'208";a="206277537"
+Received: from lkp-server01.sh.intel.com (HELO 765f4a05e27f) ([10.239.97.150])
+  by orviesa006.jf.intel.com with ESMTP; 23 Jan 2026 17:00:33 -0800
+Received: from kbuild by 765f4a05e27f with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1vjS0t-00000000UdU-1cl5;
+	Sat, 24 Jan 2026 01:00:31 +0000
+Date: Sat, 24 Jan 2026 08:59:57 +0800
+From: kernel test robot <lkp@intel.com>
+To: Frederic Weisbecker <frederic@kernel.org>
+Cc: oe-kbuild-all@lists.linux.dev, linux-acpi@vger.kernel.org,
+ linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [rafael-pm:bleeding-edge 172/186]
+ kernel/time/hrtimer.c:946:48: error: implicit declaration of function
+ 'tick_nohz_is_active'; did you mean 'tick_nohz_init'?
+Message-ID: <202601240853.XfwHlHep-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-References: <20260121-topic-lpm-of-map-iterator-v6-18-v2-1-a40bf8e91045@baylibre.com>
-In-Reply-To: <20260121-topic-lpm-of-map-iterator-v6-18-v2-1-a40bf8e91045@baylibre.com>
-From: Rob Herring <robh@kernel.org>
-Date: Fri, 23 Jan 2026 18:13:12 -0600
-X-Gmail-Original-Message-ID: <CAL_JsqLq1V_is4wHedFoiGHcYt293vDJ4SsHaZKxYARupbUXEw@mail.gmail.com>
-X-Gm-Features: AZwV_QjdDdxzMlnOEgkqZLmGXg8HvvZj9xdNCT8MixABbzKkUrbjr2dO678aMFo
-Message-ID: <CAL_JsqLq1V_is4wHedFoiGHcYt293vDJ4SsHaZKxYARupbUXEw@mail.gmail.com>
-Subject: Re: [PATCH RFC v2] of: Add of_parse_map_iter() helper for nexus node
- map iteration
-To: "Kevin Hilman (TI)" <khilman@baylibre.com>, Herve Codina <herve.codina@bootlin.com>
-Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>, devicetree@vger.kernel.org, 
-	Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jan 21, 2026 at 5:55=E2=80=AFPM Kevin Hilman (TI) <khilman@baylibre=
-.com> wrote:
->
-> Add a new helper function of_parse_map_iter() to simplify parsing of
-> nexus node maps as defined in the DT spec, section 2.5.1.
->
-> This function provides an iterator interface for traversing map entries,
-> handling the complexity of variable-sized entries based on #<stem>-cells
-> properties. Each map entry follows the format:
->   <child_specifier phandle parent_specifier>
->
-> The iterator extracts both the child specifier and parent phandle+args
-> for each entry, managing all the details of:
-> - Reading #<stem>-cells from both child and parent nodes
-> - Calculating variable entry sizes
-> - Resolving phandles
-> - Proper node reference management
->
-> This eliminates the need for subsystems to manually parse map properties,
-> reducing code duplication and potential bugs.
->
-> This code was developed in collaboration with Claude Code (model:
-> Sonnet 4.5), which needed some guidance to use existing OF helpers,
-> iterators etc.
->
-> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
-> ---
-> Changes in v2:
-> - Use helpers of_phandle_iterator_init() and of_phandle_iterator_next()
-> - add missing of_node_put() pointed out in v1
-> - Link to v1: https://patch.msgid.link/20251119-topic-lpm-of-map-iterator=
--v6-18-v1-1-1f0075d771a3@baylibre.com
-> ---
->  drivers/of/base.c  | 163 +++++++++++++++++++++++++++++++++++++++++++++++=
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
-+++++++++++++++++++++++++++++++++++++++++
->  include/linux/of.h |  13 +++++++++++++
->  2 files changed, 176 insertions(+)
->
-> diff --git a/drivers/of/base.c b/drivers/of/base.c
-> index 0b65039ece53..8392fe54cf60 100644
-> --- a/drivers/of/base.c
-> +++ b/drivers/of/base.c
-> @@ -1641,6 +1641,169 @@ int of_parse_phandle_with_args_map(const struct d=
-evice_node *np,
->  }
->  EXPORT_SYMBOL(of_parse_phandle_with_args_map);
->
-> +/**
-> + * of_parse_map_iter() - Iterate through entries in a nexus node map
-> + * @np:                        pointer to a device tree node containing =
-the map
-> + * @stem_name:         stem of property names (e.g., "power-domain" for =
-"power-domain-map")
-> + * @index:             pointer to iteration index (set to 0 for first ca=
-ll)
-> + * @child_args:                pointer to structure to fill with child s=
-pecifier (can be NULL)
-> + * @parent_args:       pointer to structure to fill with parent phandle =
-and specifier
-> + *
-> + * This function iterates through a nexus node map property as defined i=
-n DT spec 2.5.1.
-> + * Each map entry has the format: <child_specifier phandle parent_specif=
-ier>
-> + *
-> + * On each call, it extracts one map entry and fills child_args (if prov=
-ided) with the
-> + * child specifier and parent_args with the parent phandle and specifier=
-.
-> + * The index pointer is updated to point to the next entry for the follo=
-wing call.
-> + *
-> + * Example usage::
-> + *
-> + *  int index =3D 0;
-> + *  struct of_phandle_args child_args, parent_args;
-> + *
-> + *  while (!of_parse_map_iter(np, "power-domain", &index, &child_args, &=
-parent_args)) {
-> + *      // Process child_args and parent_args
-> + *      of_node_put(parent_args.np);
-> + *  }
-> + *
-> + * Caller is responsible for calling of_node_put() on parent_args.np.
-> + *
-> + * Return: 0 on success, -ENOENT when iteration is complete, or negative=
- error code on failure.
-> + */
-> +int of_parse_map_iter(const struct device_node *np,
-> +                      const char *stem_name,
-> +                      int *index,
-> +                      struct of_phandle_args *child_args,
-> +                      struct of_phandle_args *parent_args)
-> +{
-> +       char *cells_name __free(kfree) =3D kasprintf(GFP_KERNEL, "#%s-cel=
-ls", stem_name);
-> +       char *map_name __free(kfree) =3D kasprintf(GFP_KERNEL, "%s-map", =
-stem_name);
-> +       char *mask_name __free(kfree) =3D kasprintf(GFP_KERNEL, "%s-map-m=
-ask", stem_name);
-> +       char *pass_name __free(kfree) =3D kasprintf(GFP_KERNEL, "%s-map-p=
-ass-thru", stem_name);
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+head:   7e9b0371ed5b9bf9a80c59487f47fca0ba638f61
+commit: b0d640cf14148cbce9f1651fe6028c7586291cf5 [172/186] cpufreq: ondemand: Simplify idle cputime granularity test
+config: nios2-allnoconfig (https://download.01.org/0day-ci/archive/20260124/202601240853.XfwHlHep-lkp@intel.com/config)
+compiler: nios2-linux-gcc (GCC) 11.5.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260124/202601240853.XfwHlHep-lkp@intel.com/reproduce)
 
-It's not great that we're doing allocs and frees on each iteration.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202601240853.XfwHlHep-lkp@intel.com/
 
-Can't we follow the same design Herve did for interrupt-map? You have
-an init function you call once up front and then an iterator define
-(e.g. for_each_of_imap_item()). The complication in this case would be
-if we do the allocs in the init function, then we need a way to free
-them. If they are part of the for loop init, then we could use the
-scoped cleanup.
+All errors (new ones prefixed by >>):
 
-On thing I noticed is I think of_phandle_iterator and of_imap_parser
-should probably be merged to one struct. They basically hold the same
-information (pointers to property data).
+   kernel/time/hrtimer.c: In function 'clock_was_set':
+>> kernel/time/hrtimer.c:946:48: error: implicit declaration of function 'tick_nohz_is_active'; did you mean 'tick_nohz_init'? [-Werror=implicit-function-declaration]
+     946 |         if (!hrtimer_hres_active(cpu_base) && !tick_nohz_is_active())
+         |                                                ^~~~~~~~~~~~~~~~~~~
+         |                                                tick_nohz_init
+   cc1: some warnings being treated as errors
 
-Let me see if I can come up with something next week.
 
-Rob
+vim +946 kernel/time/hrtimer.c
+
+   925	
+   926	/*
+   927	 * Clock was set. This might affect CLOCK_REALTIME, CLOCK_TAI and
+   928	 * CLOCK_BOOTTIME (for late sleep time injection).
+   929	 *
+   930	 * This requires to update the offsets for these clocks
+   931	 * vs. CLOCK_MONOTONIC. When high resolution timers are enabled, then this
+   932	 * also requires to eventually reprogram the per CPU clock event devices
+   933	 * when the change moves an affected timer ahead of the first expiring
+   934	 * timer on that CPU. Obviously remote per CPU clock event devices cannot
+   935	 * be reprogrammed. The other reason why an IPI has to be sent is when the
+   936	 * system is in !HIGH_RES and NOHZ mode. The NOHZ mode updates the offsets
+   937	 * in the tick, which obviously might be stopped, so this has to bring out
+   938	 * the remote CPU which might sleep in idle to get this sorted.
+   939	 */
+   940	void clock_was_set(unsigned int bases)
+   941	{
+   942		struct hrtimer_cpu_base *cpu_base = raw_cpu_ptr(&hrtimer_bases);
+   943		cpumask_var_t mask;
+   944		int cpu;
+   945	
+ > 946		if (!hrtimer_hres_active(cpu_base) && !tick_nohz_is_active())
+   947			goto out_timerfd;
+   948	
+   949		if (!zalloc_cpumask_var(&mask, GFP_KERNEL)) {
+   950			on_each_cpu(retrigger_next_event, NULL, 1);
+   951			goto out_timerfd;
+   952		}
+   953	
+   954		/* Avoid interrupting CPUs if possible */
+   955		cpus_read_lock();
+   956		for_each_online_cpu(cpu) {
+   957			unsigned long flags;
+   958	
+   959			cpu_base = &per_cpu(hrtimer_bases, cpu);
+   960			raw_spin_lock_irqsave(&cpu_base->lock, flags);
+   961	
+   962			if (update_needs_ipi(cpu_base, bases))
+   963				cpumask_set_cpu(cpu, mask);
+   964	
+   965			raw_spin_unlock_irqrestore(&cpu_base->lock, flags);
+   966		}
+   967	
+   968		preempt_disable();
+   969		smp_call_function_many(mask, retrigger_next_event, NULL, 1);
+   970		preempt_enable();
+   971		cpus_read_unlock();
+   972		free_cpumask_var(mask);
+   973	
+   974	out_timerfd:
+   975		timerfd_clock_was_set();
+   976	}
+   977	
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
