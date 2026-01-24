@@ -1,144 +1,117 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dy1-f201.google.com (mail-dy1-f201.google.com [74.125.82.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 474F613DDA4;
-	Sat, 24 Jan 2026 01:00:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE3861DEFE8
+	for <linux-pm@vger.kernel.org>; Sat, 24 Jan 2026 01:21:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769216441; cv=none; b=asjy/h1PeHCErnaVdynvsd/iwsTXySz/GvAYxjytjnAIKFGqkt1TCxLBH2wVKP+eqrdHSJKVvmCXQa707bo/0+P1f8ToYZVguLPbdgQh2XgJoBF9gvceBi8DiPJLLGgZe+0ZCaBxeX07XGuyP/lD5Pgsxqt/JOtZizJOClyhItQ=
+	t=1769217719; cv=none; b=sukUNoXH4dAQw8hcLrbsbthlP3PG73AVAHca4uS7y57QgKpzVzlltdn1LEIcQ5mQr2FGGUpWXA4bLl8MH6NsVO179BLcy0S4HIOO5yHr7eX0SAlbYmwujzXSFnDm97HMFXusHCgDLdNNTDKmnBPVeRQ2L4XbsSwBbYRcebc5Ops=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769216441; c=relaxed/simple;
-	bh=iM7MBs56o6F3YvsbPeuU9AgkOpJspq9VfVQmvM6iRW8=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=YxGrRzcoZWMOnim81CeLPCyvEFdHVxERMO77EJzAF0NEwgv9rXqwYS2sWYHx6vkNrUclOogmo8CAgym2A5bWdCKms0gUFlMsa4ogNQxIjCVMfG+cLtR7s4bG14BBvw4skpv63IwGlD80l9Q+wMABK4640gasDvFtW39a4MKduho=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=doR4rWMy; arc=none smtp.client-ip=192.198.163.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1769217719; c=relaxed/simple;
+	bh=EIi/GnTlznjPON4PS8pc54m9LlDIbD5aj6rLgRF+Sso=;
+	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=TqbSWFISNSoy3doosRINNOAVTwlm9c8Q7mmdX08m7VOBZQHjQ8FRHEoBb2DnYhpkAD+THjmUO7HzAeGq5vcfxQYKTqtnGTjP1Z7+5tyoxRDit8Sne8SPGezkA29BHArOgPfvh2KIeQ35VF0vVDUi3xsCrwYfB20xA+f2NLPTXKM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--wusamuel.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=Lc5Qt/Lw; arc=none smtp.client-ip=74.125.82.201
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--wusamuel.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="doR4rWMy"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1769216439; x=1800752439;
-  h=date:from:to:cc:subject:message-id;
-  bh=iM7MBs56o6F3YvsbPeuU9AgkOpJspq9VfVQmvM6iRW8=;
-  b=doR4rWMyaIOd9KYqzE2ygc1tYHI15z+nsjQ6BVIB36WJZhExgRxvXQvZ
-   WeuTIthZ160XYJFInWbNJWpnfzPxAq6ZKzQ2sREDTRcQb6L4pdESQ+5vn
-   4u4fTbDT4QhX+X9mhrxamdivS3vklPblInasFukb11ugY3HKbOznORy4o
-   f4IbKGqml/9Q4Ce0conYAwiwGWONsYBKJKNKGT4yFVaI4ZiyFPpKXISd/
-   pF3KeLdYKJ+lPh6JAdYR14IfRaB4XOywHYtNQTISHkmqfx9wIF/sWwEu+
-   jfndL6uuGTJW7B1OQVOIzLFJoQmGyAcKzsn7SupfsjPkxPlqlkzVsJs+r
-   Q==;
-X-CSE-ConnectionGUID: 91oftpUmTnWxEwCdxi0jAg==
-X-CSE-MsgGUID: My6U+16oTeelMJT/DWAlGQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11680"; a="70369233"
-X-IronPort-AV: E=Sophos;i="6.21,249,1763452800"; 
-   d="scan'208";a="70369233"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jan 2026 17:00:37 -0800
-X-CSE-ConnectionGUID: 3/dmkxGlSO+fLnJMFpBHbg==
-X-CSE-MsgGUID: ixZSgdvoS1a46Qm+M0PQBQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,249,1763452800"; 
-   d="scan'208";a="206277544"
-Received: from lkp-server01.sh.intel.com (HELO 765f4a05e27f) ([10.239.97.150])
-  by orviesa006.jf.intel.com with ESMTP; 23 Jan 2026 17:00:33 -0800
-Received: from kbuild by 765f4a05e27f with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1vjS0t-00000000UdS-1WLK;
-	Sat, 24 Jan 2026 01:00:31 +0000
-Date: Sat, 24 Jan 2026 08:59:56 +0800
-From: kernel test robot <lkp@intel.com>
-To: Frederic Weisbecker <frederic@kernel.org>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
- linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [rafael-pm:bleeding-edge 172/186]
- kernel/time/hrtimer.c:946:41: error: call to undeclared function
- 'tick_nohz_is_active'; ISO C99 and later do not support implicit function
- declarations
-Message-ID: <202601240833.jYdOreP4-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="Lc5Qt/Lw"
+Received: by mail-dy1-f201.google.com with SMTP id 5a478bee46e88-2b708fa4093so10128012eec.0
+        for <linux-pm@vger.kernel.org>; Fri, 23 Jan 2026 17:21:56 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1769217716; x=1769822516; darn=vger.kernel.org;
+        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=eViLy/8042sT43+AqNLTZ9LY4N5fDHN38VganIaxaTI=;
+        b=Lc5Qt/LwU9+12PlMQF0AMHqfguCK6yCsKwAwM1TVdqiVVNbBm5N5uk515eqlTuQJ53
+         w2Hy7QdprHKoroVYbjl2d64TjX4HxKqzc5rsKyTk3+Je9ak9LD1gCczes+Kw2K4ZLr4O
+         We+h0AJXZykX/AqV6fxknq8cd8s0YNeqLWEV8ItwkTuasGT7KXIfmDW5Sr5jQGq5qCi8
+         6aOUASucFFGBd4JXpuOW/ZiiXemNnZuNb2YRuVm+OtxFOqXT7sZofBZpaVC9NVb6w9BC
+         GZ2giBBKMf38gzoazhQGe08KBAy7Nw9lMQP6NtaWArx0qq0C4OjhVq15USZUGBLD3rJ1
+         zjHA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1769217716; x=1769822516;
+        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=eViLy/8042sT43+AqNLTZ9LY4N5fDHN38VganIaxaTI=;
+        b=n/sbZ1AQH/Txc2JXe4pncEymBCdigv0t+THM2Rmmrf3pwcEP3v9Hc1u6VicNAXIPHc
+         M2y7054uX18Adg3GhDrHdUsi3fMEk4UHsqgtMF5lHzNZdd+VeDzjw5RF7EbxDvJPUHP6
+         F7kIrEbjXYF002VDoJ0ejQq6q94zzWz/2yE0+8tkmaNCC1lg9AF13bHqXJjxpkxBFYiN
+         ilku7jegUerse2hnlmKOWxkyuWtIo8VUVYeMiDK8KcXpwivCIsnsYYzFFymhCphpkOWp
+         aoQS4VeCrQgqxlCRWTAiftq8emDrOwR9SgKD4ix2ws4WzjFvQf6c/DfVJ91TRXknJKZ2
+         F22Q==
+X-Forwarded-Encrypted: i=1; AJvYcCXNIwBKhJffo5xCnBCgQJpXN/uTW2J5Wasob8CJ/dVgTfrUSskb1hkw//LZ0Kvr3adWKuZjfWQZHQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwHlIE09CLFQf/1W9YiB14PBols1PfL/b/0BF6PptXNLtTQ8P8N
+	bUSB04XAw+SdcolmPn/YPtIDiC1aR+ktFdoubxsTXs8AID61ERRoUpVdi0mjzYbYTMshE/QedcH
+	9bvcVwIdUTI/0Rg==
+X-Received: from dycna11.prod.google.com ([2002:a05:7300:ea8b:b0:2b0:5418:353f])
+ (user=wusamuel job=prod-delivery.src-stubby-dispatcher) by
+ 2002:a05:7300:a984:b0:2b7:3955:f50a with SMTP id 5a478bee46e88-2b739beab86mr2393375eec.41.1769217715760;
+ Fri, 23 Jan 2026 17:21:55 -0800 (PST)
+Date: Fri, 23 Jan 2026 17:21:28 -0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.52.0.457.g6b5491de43-goog
+Message-ID: <20260124012133.2451708-1-wusamuel@google.com>
+Subject: [PATCH bpf-next v3 0/3] Add wakeup_source iterators
+From: Samuel Wu <wusamuel@google.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
+	Andrii Nakryiko <andrii@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, 
+	Eduard Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>, 
+	Yonghong Song <yonghong.song@linux.dev>, John Fastabend <john.fastabend@gmail.com>, 
+	KP Singh <kpsingh@kernel.org>, Stanislav Fomichev <sdf@fomichev.me>, Hao Luo <haoluo@google.com>, 
+	Jiri Olsa <jolsa@kernel.org>, Shuah Khan <shuah@kernel.org>
+Cc: Samuel Wu <wusamuel@google.com>, kernel-team@android.com, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, bpf@vger.kernel.org, 
+	linux-kselftest@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-head:   7e9b0371ed5b9bf9a80c59487f47fca0ba638f61
-commit: b0d640cf14148cbce9f1651fe6028c7586291cf5 [172/186] cpufreq: ondemand: Simplify idle cputime granularity test
-config: x86_64-allnoconfig (https://download.01.org/0day-ci/archive/20260124/202601240833.jYdOreP4-lkp@intel.com/config)
-compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260124/202601240833.jYdOreP4-lkp@intel.com/reproduce)
+This patch series introduces BPF iterators for wakeup_source, enabling
+BPF programs to efficiently traverse a device's wakeup sources.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202601240833.jYdOreP4-lkp@intel.com/
+Currently, inspecting wakeup sources typically involves reading interfaces
+like /sys/class/wakeup/* or debugfs. The repeated syscalls to query the
+sysfs nodes is inefficient, as there can be hundreds of wakeup_sources, and
+each wakeup source have multiple stats, with one sysfs node per stat.
+debugfs is unstable and insecure.
 
-All errors (new ones prefixed by >>):
+The iterators utilize pre-existing wakeup_sources_walk_* functions to
+traverse over the SRCU that backs the list of wakeup_sources.
 
->> kernel/time/hrtimer.c:946:41: error: call to undeclared function 'tick_nohz_is_active'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-     946 |         if (!hrtimer_hres_active(cpu_base) && !tick_nohz_is_active())
-         |                                                ^
-   1 error generated.
+Changes in v3:
+ - Update wakeup_sources_walk_start() to handle an empty list per bpf-ci
+ - Simplify read of a struct's field in BPF program selftest per Andrii
+ - Drop open coded iterators for wakeup_sources
+ - Fix condition from !get_ws_iter_stream to get_ws_iter_stream in selftest
+ - Read event_count instead of wakeup_count in selftest
+ - v2 link: https://lore.kernel.org/all/20260108225523.3268383-1-wusamuel@google.com/
 
+Changes in v2:
+ - Guard BPF Makefile with CONFIG_PM_SLEEP to fix build errors
+ - Update copyright from 2025 to 2026
+ - v1 link: https://lore.kernel.org/all/20251204025003.3162056-1-wusamuel@google.com/
 
-vim +/tick_nohz_is_active +946 kernel/time/hrtimer.c
+Samuel Wu (3):
+  PM: wakeup: Handle empty list in wakeup_sources_walk
+  bpf: Add wakeup_source iterator
+  selftests/bpf: Add tests for wakeup_sources
 
-   925	
-   926	/*
-   927	 * Clock was set. This might affect CLOCK_REALTIME, CLOCK_TAI and
-   928	 * CLOCK_BOOTTIME (for late sleep time injection).
-   929	 *
-   930	 * This requires to update the offsets for these clocks
-   931	 * vs. CLOCK_MONOTONIC. When high resolution timers are enabled, then this
-   932	 * also requires to eventually reprogram the per CPU clock event devices
-   933	 * when the change moves an affected timer ahead of the first expiring
-   934	 * timer on that CPU. Obviously remote per CPU clock event devices cannot
-   935	 * be reprogrammed. The other reason why an IPI has to be sent is when the
-   936	 * system is in !HIGH_RES and NOHZ mode. The NOHZ mode updates the offsets
-   937	 * in the tick, which obviously might be stopped, so this has to bring out
-   938	 * the remote CPU which might sleep in idle to get this sorted.
-   939	 */
-   940	void clock_was_set(unsigned int bases)
-   941	{
-   942		struct hrtimer_cpu_base *cpu_base = raw_cpu_ptr(&hrtimer_bases);
-   943		cpumask_var_t mask;
-   944		int cpu;
-   945	
- > 946		if (!hrtimer_hres_active(cpu_base) && !tick_nohz_is_active())
-   947			goto out_timerfd;
-   948	
-   949		if (!zalloc_cpumask_var(&mask, GFP_KERNEL)) {
-   950			on_each_cpu(retrigger_next_event, NULL, 1);
-   951			goto out_timerfd;
-   952		}
-   953	
-   954		/* Avoid interrupting CPUs if possible */
-   955		cpus_read_lock();
-   956		for_each_online_cpu(cpu) {
-   957			unsigned long flags;
-   958	
-   959			cpu_base = &per_cpu(hrtimer_bases, cpu);
-   960			raw_spin_lock_irqsave(&cpu_base->lock, flags);
-   961	
-   962			if (update_needs_ipi(cpu_base, bases))
-   963				cpumask_set_cpu(cpu, mask);
-   964	
-   965			raw_spin_unlock_irqrestore(&cpu_base->lock, flags);
-   966		}
-   967	
-   968		preempt_disable();
-   969		smp_call_function_many(mask, retrigger_next_event, NULL, 1);
-   970		preempt_enable();
-   971		cpus_read_unlock();
-   972		free_cpumask_var(mask);
-   973	
-   974	out_timerfd:
-   975		timerfd_clock_was_set();
-   976	}
-   977	
+ drivers/base/power/wakeup.c                   |   4 +-
+ kernel/bpf/Makefile                           |   3 +
+ kernel/bpf/wakeup_source_iter.c               | 103 +++++++
+ tools/testing/selftests/bpf/config            |   1 +
+ .../bpf/prog_tests/wakeup_source_iter.c       | 281 ++++++++++++++++++
+ .../selftests/bpf/progs/wakeup_source_iter.c  |  60 ++++
+ 6 files changed, 449 insertions(+), 3 deletions(-)
+ create mode 100644 kernel/bpf/wakeup_source_iter.c
+ create mode 100644 tools/testing/selftests/bpf/prog_tests/wakeup_source_iter.c
+ create mode 100644 tools/testing/selftests/bpf/progs/wakeup_source_iter.c
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.52.0.457.g6b5491de43-goog
+
