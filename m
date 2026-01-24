@@ -1,59 +1,61 @@
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51A7F1FC8;
-	Sat, 24 Jan 2026 01:00:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 474F613DDA4;
+	Sat, 24 Jan 2026 01:00:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769216439; cv=none; b=PvL9Y/C/QdW5uMqqXjUtXqQnuuMs9oefsY0XWOMIoRyn7QAMq88UWOa3tsZJG2gmEo2nJMPpDkbncGMXnYvhKcqXwHQzKoyJndxZNvBXqKY9IhWlt9QvNX+FwuBADoDNaTpcEHW/8tXlIFKV+TLT3vIZTVT61YBtBQbKJ71JzdI=
+	t=1769216441; cv=none; b=asjy/h1PeHCErnaVdynvsd/iwsTXySz/GvAYxjytjnAIKFGqkt1TCxLBH2wVKP+eqrdHSJKVvmCXQa707bo/0+P1f8ToYZVguLPbdgQh2XgJoBF9gvceBi8DiPJLLGgZe+0ZCaBxeX07XGuyP/lD5Pgsxqt/JOtZizJOClyhItQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769216439; c=relaxed/simple;
-	bh=ePfizrVQ213T5iJJd+JPuQ1ZTHCYKYVtrij+7knwsro=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=hSzN3fCFMJJyQvMqPXGgY1VVKYVhVUmJrbrW8NBWD4cwI3xqOcXDlXW+V3Vb+H6LmaHk/mrL/LAI4ww9qxN4hgC0hDAKhsRxfDIkMCanP6BhsqmbFZf5rX2V0KUUswuy2GeAWNzY1LxmWPr/S2iqiA1isvRlo2/KmECWxzovfJg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=jORReJF3; arc=none smtp.client-ip=192.198.163.17
+	s=arc-20240116; t=1769216441; c=relaxed/simple;
+	bh=iM7MBs56o6F3YvsbPeuU9AgkOpJspq9VfVQmvM6iRW8=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=YxGrRzcoZWMOnim81CeLPCyvEFdHVxERMO77EJzAF0NEwgv9rXqwYS2sWYHx6vkNrUclOogmo8CAgym2A5bWdCKms0gUFlMsa4ogNQxIjCVMfG+cLtR7s4bG14BBvw4skpv63IwGlD80l9Q+wMABK4640gasDvFtW39a4MKduho=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=doR4rWMy; arc=none smtp.client-ip=192.198.163.17
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="jORReJF3"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="doR4rWMy"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1769216437; x=1800752437;
+  t=1769216439; x=1800752439;
   h=date:from:to:cc:subject:message-id;
-  bh=ePfizrVQ213T5iJJd+JPuQ1ZTHCYKYVtrij+7knwsro=;
-  b=jORReJF3vU9GwJH7midGTNCZeTDS8TgkUktHC/5n0v+RJGsb7/UwSFo5
-   pSEtRdRPKWJE8is6Kd75x51/U4+s93uRDoyiUMd1wV5iw4lNdK0ACTisQ
-   ML8MSNkxR60Vrpp4vgKvmUmxe+VSZiNe3FqlLSWw1Q9kUt7Fz30SiFJJt
-   MMMSMND7qyKkEQpDGa9D38iCidjXQnEeQbMQJPjvIVYZ7/k5qd6JZGagi
-   9HKana7TjCA7rST+dIoWk0KujdIF/Xs58YPoF/WSAlwyMNcnqPJ08WlFS
-   pCnh1f9OAuJ21YCs5zSDgSqtcxTUA1KcyJxCAbE8+r5Z2pWW2t6xcBe2s
+  bh=iM7MBs56o6F3YvsbPeuU9AgkOpJspq9VfVQmvM6iRW8=;
+  b=doR4rWMyaIOd9KYqzE2ygc1tYHI15z+nsjQ6BVIB36WJZhExgRxvXQvZ
+   WeuTIthZ160XYJFInWbNJWpnfzPxAq6ZKzQ2sREDTRcQb6L4pdESQ+5vn
+   4u4fTbDT4QhX+X9mhrxamdivS3vklPblInasFukb11ugY3HKbOznORy4o
+   f4IbKGqml/9Q4Ce0conYAwiwGWONsYBKJKNKGT4yFVaI4ZiyFPpKXISd/
+   pF3KeLdYKJ+lPh6JAdYR14IfRaB4XOywHYtNQTISHkmqfx9wIF/sWwEu+
+   jfndL6uuGTJW7B1OQVOIzLFJoQmGyAcKzsn7SupfsjPkxPlqlkzVsJs+r
    Q==;
-X-CSE-ConnectionGUID: XTga3E1xQzemY6yE+1xILg==
-X-CSE-MsgGUID: Q3ugYCzkQJutGAxejTJ74g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11680"; a="70369227"
+X-CSE-ConnectionGUID: 91oftpUmTnWxEwCdxi0jAg==
+X-CSE-MsgGUID: My6U+16oTeelMJT/DWAlGQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11680"; a="70369233"
 X-IronPort-AV: E=Sophos;i="6.21,249,1763452800"; 
-   d="scan'208";a="70369227"
+   d="scan'208";a="70369233"
 Received: from orviesa006.jf.intel.com ([10.64.159.146])
   by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jan 2026 17:00:37 -0800
-X-CSE-ConnectionGUID: 7Xc8IZZzQgqeL/IuBl3nFQ==
-X-CSE-MsgGUID: PY4yoz7cSmyjY6rMxT4jEA==
+X-CSE-ConnectionGUID: 3/dmkxGlSO+fLnJMFpBHbg==
+X-CSE-MsgGUID: ixZSgdvoS1a46Qm+M0PQBQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.21,249,1763452800"; 
-   d="scan'208";a="206277537"
+   d="scan'208";a="206277544"
 Received: from lkp-server01.sh.intel.com (HELO 765f4a05e27f) ([10.239.97.150])
   by orviesa006.jf.intel.com with ESMTP; 23 Jan 2026 17:00:33 -0800
 Received: from kbuild by 765f4a05e27f with local (Exim 4.98.2)
 	(envelope-from <lkp@intel.com>)
-	id 1vjS0t-00000000UdU-1cl5;
+	id 1vjS0t-00000000UdS-1WLK;
 	Sat, 24 Jan 2026 01:00:31 +0000
-Date: Sat, 24 Jan 2026 08:59:57 +0800
+Date: Sat, 24 Jan 2026 08:59:56 +0800
 From: kernel test robot <lkp@intel.com>
 To: Frederic Weisbecker <frederic@kernel.org>
-Cc: oe-kbuild-all@lists.linux.dev, linux-acpi@vger.kernel.org,
- linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+ linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: [rafael-pm:bleeding-edge 172/186]
- kernel/time/hrtimer.c:946:48: error: implicit declaration of function
- 'tick_nohz_is_active'; did you mean 'tick_nohz_init'?
-Message-ID: <202601240853.XfwHlHep-lkp@intel.com>
+ kernel/time/hrtimer.c:946:41: error: call to undeclared function
+ 'tick_nohz_is_active'; ISO C99 and later do not support implicit function
+ declarations
+Message-ID: <202601240833.jYdOreP4-lkp@intel.com>
 User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -64,26 +66,24 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
 head:   7e9b0371ed5b9bf9a80c59487f47fca0ba638f61
 commit: b0d640cf14148cbce9f1651fe6028c7586291cf5 [172/186] cpufreq: ondemand: Simplify idle cputime granularity test
-config: nios2-allnoconfig (https://download.01.org/0day-ci/archive/20260124/202601240853.XfwHlHep-lkp@intel.com/config)
-compiler: nios2-linux-gcc (GCC) 11.5.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260124/202601240853.XfwHlHep-lkp@intel.com/reproduce)
+config: x86_64-allnoconfig (https://download.01.org/0day-ci/archive/20260124/202601240833.jYdOreP4-lkp@intel.com/config)
+compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260124/202601240833.jYdOreP4-lkp@intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202601240853.XfwHlHep-lkp@intel.com/
+| Closes: https://lore.kernel.org/oe-kbuild-all/202601240833.jYdOreP4-lkp@intel.com/
 
 All errors (new ones prefixed by >>):
 
-   kernel/time/hrtimer.c: In function 'clock_was_set':
->> kernel/time/hrtimer.c:946:48: error: implicit declaration of function 'tick_nohz_is_active'; did you mean 'tick_nohz_init'? [-Werror=implicit-function-declaration]
+>> kernel/time/hrtimer.c:946:41: error: call to undeclared function 'tick_nohz_is_active'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
      946 |         if (!hrtimer_hres_active(cpu_base) && !tick_nohz_is_active())
-         |                                                ^~~~~~~~~~~~~~~~~~~
-         |                                                tick_nohz_init
-   cc1: some warnings being treated as errors
+         |                                                ^
+   1 error generated.
 
 
-vim +946 kernel/time/hrtimer.c
+vim +/tick_nohz_is_active +946 kernel/time/hrtimer.c
 
    925	
    926	/*
