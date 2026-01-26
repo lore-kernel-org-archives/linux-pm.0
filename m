@@ -1,30 +1,30 @@
-Received: from out-172.mta1.migadu.com (out-172.mta1.migadu.com [95.215.58.172])
+Received: from out-186.mta0.migadu.com (out-186.mta0.migadu.com [91.218.175.186])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8941F31077A
-	for <linux-pm@vger.kernel.org>; Mon, 26 Jan 2026 07:48:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B2D3311C07
+	for <linux-pm@vger.kernel.org>; Mon, 26 Jan 2026 07:49:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.186
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769413685; cv=none; b=YJfyIooeFxG6x3IJEDY+2WaNLyUHkG9RxMd2mbv9OQdreldL574jJf4dAAI5SqHxKINH5Mp1p/u9jJFfudsR2/oCeRcMdgHmqqQX1IbxPHAEynP5Bx6xk9i6/gmlq1jmvnqKBih8Ege1xTjUhbHMKQnkkqu0E0m5wTXppQT+eUM=
+	t=1769413769; cv=none; b=u93FGl9+maQZQucOv5mRCAxp87/gwXTq1wsfuTOFfbppp53/PdC5Gb0c4PxU1RcVFN3WGMkp/HtSkXAN+xB6GNpi5BdJ3H9NMKp9WNnhpbYCEhbeG757OAbzF3agOCIfC9ynczjZnZ8EjrcXGi9ZUh58W8Qh1GHJUsgqXCzXYmI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769413685; c=relaxed/simple;
-	bh=kZgSjaR7mhP38wsRmF8leF3SOT7rcWV2z0nmuGGAdzI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=hS1RcmzPIEPXWJaZEeTeINr9rRvRGkSZ9C7qFwndzpQ1FVkN02ijNBx7S27al+GCfuNs80G+uWblua5TKxdrw+dkspaKxfm5LIO+0t3ufn5ZG9yRScSFs1YLfTBotlqQ3gq31HBmKzcr5f4L5tWnQ1Dpxb8326pcUix4IM2COGk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=GsrxcAw5; arc=none smtp.client-ip=95.215.58.172
+	s=arc-20240116; t=1769413769; c=relaxed/simple;
+	bh=VwwxTuEj9t2MOnqP7l7m1sQWQzpN0frPC3PeL6V2gwM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=iJd+yD4DpZj8NeHROYghgXfh0cREBPKyNUN0hMZ1jwULsA4/6A640FO2FwYZ8djkYT954yovDA58Y7GJvgq57wk0zvjgCWYD/+61yi9IH8cLT46c5viCadr83mV8wAtjOYceupM56zbrrRrBw11cLgjL2r892+WmZGyvRJbJ2N0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=txynr9lh; arc=none smtp.client-ip=91.218.175.186
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="GsrxcAw5"
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="txynr9lh"
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1769413671;
+	t=1769413765;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding;
-	bh=KcAsZ3CHaQytxOA1JEl/SWaOKrjOymd2YsqbqcBYKOo=;
-	b=GsrxcAw5RcmHslkBiefmtaKAC2d7XXKm+qwAX7vWVXz7wXbWMtq/dpu10mvBnWxTbJv7gl
-	aj9YFPBGXmkXhTN8KZ1iRFNYg86Ji7r8w3riff4HYYm2nFPIDpX8Mh4I3CSRDlt1MkBE6b
-	Xqwhy4sSSJEc2K/GokSU/jiyen85X+c=
+	bh=MRkxZO36erkKt6gbCkCRGjOx5oi43CSO3IF1FPmkOHk=;
+	b=txynr9lhKB5rsOJetpWyA/6H6zggNNUnbbHLsNOkRQhb1VhxthgF9ATlnvPhpMmnAApwxK
+	Dz7NlODbr8WMA/tK/05EpNk+AbeneYlxDJRzkHjQhcc6auajosz1dsWCGAWsWSGwim5Nui
+	u4b1mMTn5vz/AlKGR9ihegLrcUJUVu0=
 From: Thorsten Blum <thorsten.blum@linux.dev>
 To: "Rafael J. Wysocki" <rafael@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@linaro.org>,
@@ -38,9 +38,9 @@ Cc: Thorsten Blum <thorsten.blum@linux.dev>,
 	stable@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH RESEND] thermal: sprd: Fix raw temperature clamping in sprd_thm_rawdata_to_temp
-Date: Mon, 26 Jan 2026 08:47:19 +0100
-Message-ID: <20260126074719.211959-2-thorsten.blum@linux.dev>
+Subject: [PATCH RESEND] thermal: sprd: Fix temperature clamping in sprd_thm_temp_to_rawdata
+Date: Mon, 26 Jan 2026 08:49:14 +0100
+Message-ID: <20260126074913.212275-2-thorsten.blum@linux.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -50,11 +50,11 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
 
-The raw temperature data was never clamped to SPRD_THM_RAW_DATA_LOW or
-SPRD_THM_RAW_DATA_HIGH because the return value of clamp() was not used.
-Fix this by assigning the clamped value to 'rawdata'.
+The temperature was never clamped to SPRD_THM_TEMP_LOW or
+SPRD_THM_TEMP_HIGH because the return value of clamp() was not used. Fix
+this by assigning the clamped value to 'temp'.
 
-Casting SPRD_THM_RAW_DATA_LOW and SPRD_THM_RAW_DATA_HIGH to u32 is also
+Casting SPRD_THM_TEMP_LOW and SPRD_THM_TEMP_HIGH to int is also
 redundant and can be removed.
 
 Cc: stable@vger.kernel.org
@@ -66,15 +66,15 @@ Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/sprd_thermal.c b/drivers/thermal/sprd_thermal.c
-index e546067c9621..f7fa83b2428e 100644
+index e546067c9621..70c879e75d85 100644
 --- a/drivers/thermal/sprd_thermal.c
 +++ b/drivers/thermal/sprd_thermal.c
-@@ -178,7 +178,7 @@ static int sprd_thm_sensor_calibration(struct device_node *np,
- static int sprd_thm_rawdata_to_temp(struct sprd_thermal_sensor *sen,
- 				    u32 rawdata)
+@@ -192,7 +192,7 @@ static int sprd_thm_temp_to_rawdata(int temp, struct sprd_thermal_sensor *sen)
  {
--	clamp(rawdata, (u32)SPRD_THM_RAW_DATA_LOW, (u32)SPRD_THM_RAW_DATA_HIGH);
-+	rawdata = clamp(rawdata, SPRD_THM_RAW_DATA_LOW, SPRD_THM_RAW_DATA_HIGH);
+ 	u32 val;
+ 
+-	clamp(temp, (int)SPRD_THM_TEMP_LOW, (int)SPRD_THM_TEMP_HIGH);
++	temp = clamp(temp, SPRD_THM_TEMP_LOW, SPRD_THM_TEMP_HIGH);
  
  	/*
  	 * According to the thermal datasheet, the formula of converting
