@@ -1,30 +1,30 @@
-Received: from out-186.mta0.migadu.com (out-186.mta0.migadu.com [91.218.175.186])
+Received: from out-173.mta1.migadu.com (out-173.mta1.migadu.com [95.215.58.173])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B2D3311C07
-	for <linux-pm@vger.kernel.org>; Mon, 26 Jan 2026 07:49:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.186
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EFEB029E109
+	for <linux-pm@vger.kernel.org>; Mon, 26 Jan 2026 07:51:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769413769; cv=none; b=u93FGl9+maQZQucOv5mRCAxp87/gwXTq1wsfuTOFfbppp53/PdC5Gb0c4PxU1RcVFN3WGMkp/HtSkXAN+xB6GNpi5BdJ3H9NMKp9WNnhpbYCEhbeG757OAbzF3agOCIfC9ynczjZnZ8EjrcXGi9ZUh58W8Qh1GHJUsgqXCzXYmI=
+	t=1769413908; cv=none; b=uwzLANCgN9vZX5C3ElB0dVbt12RNZQhihcXE7vtaYW0JZHyUDnzpHcDWi/E/Q8VmNuzCflyMsJev1S0xPMZj9GWauqCsUuf1I21SFm+Nq+UsSssGQL+i7b8n53EGGuEfvX3GPj/ciD1W+NMIfCFchD5wFmY4KxzMPo0vkbxgm40=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769413769; c=relaxed/simple;
-	bh=VwwxTuEj9t2MOnqP7l7m1sQWQzpN0frPC3PeL6V2gwM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=iJd+yD4DpZj8NeHROYghgXfh0cREBPKyNUN0hMZ1jwULsA4/6A640FO2FwYZ8djkYT954yovDA58Y7GJvgq57wk0zvjgCWYD/+61yi9IH8cLT46c5viCadr83mV8wAtjOYceupM56zbrrRrBw11cLgjL2r892+WmZGyvRJbJ2N0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=txynr9lh; arc=none smtp.client-ip=91.218.175.186
+	s=arc-20240116; t=1769413908; c=relaxed/simple;
+	bh=zeRYwHDFga5XDAtn2Mh6+61unaagIljzBvZ+FU4zhT8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=qOU0dUWy8HArPrHYymd91eL+nibHjQ17Sm3C3fhlR0d/GnoTieArnuafuGyOmf0WIPfuc4T6Y7+/27DFJndRVgmSfR2dwLL2CEm7DoZ8mjxMGGgyyliXYATquu8TGGGJwV0HLr3SvrP5l73L0zmyGuFXYS36vwqx5bB1QYn+Sgo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=AEjxKHYF; arc=none smtp.client-ip=95.215.58.173
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="txynr9lh"
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="AEjxKHYF"
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1769413765;
+	t=1769413895;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding;
-	bh=MRkxZO36erkKt6gbCkCRGjOx5oi43CSO3IF1FPmkOHk=;
-	b=txynr9lhKB5rsOJetpWyA/6H6zggNNUnbbHLsNOkRQhb1VhxthgF9ATlnvPhpMmnAApwxK
-	Dz7NlODbr8WMA/tK/05EpNk+AbeneYlxDJRzkHjQhcc6auajosz1dsWCGAWsWSGwim5Nui
-	u4b1mMTn5vz/AlKGR9ihegLrcUJUVu0=
+	bh=/+VZMh4GEF8Zz3re4kwGvvFRb4CIYeGeUY9ZbG3g6Cw=;
+	b=AEjxKHYFcMTUSsfvYK+te5W6I+t6cwz1YZ+VBrFfmRUC11GAgq/45U6JDimD4lqIqiXYmW
+	TA/JLbySmpjY30/VBuT2k456wpDFi5+9s9XWYr7tOtw9eKn2lHPLlilsEZsojkiyfYXfNQ
+	sJwDer+ffI55kFJB8g1hlNITV2SPiwE=
 From: Thorsten Blum <thorsten.blum@linux.dev>
 To: "Rafael J. Wysocki" <rafael@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@linaro.org>,
@@ -32,15 +32,13 @@ To: "Rafael J. Wysocki" <rafael@kernel.org>,
 	Lukasz Luba <lukasz.luba@arm.com>,
 	Orson Zhai <orsonzhai@gmail.com>,
 	Baolin Wang <baolin.wang@linux.alibaba.com>,
-	Chunyan Zhang <zhang.lyra@gmail.com>,
-	Freeman Liu <freeman.liu@unisoc.com>
+	Chunyan Zhang <zhang.lyra@gmail.com>
 Cc: Thorsten Blum <thorsten.blum@linux.dev>,
-	stable@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH RESEND] thermal: sprd: Fix temperature clamping in sprd_thm_temp_to_rawdata
-Date: Mon, 26 Jan 2026 08:49:14 +0100
-Message-ID: <20260126074913.212275-2-thorsten.blum@linux.dev>
+Subject: [PATCH RESEND] thermal: sprd: Use min instead of clamp in sprd_thm_temp_to_rawdata
+Date: Mon, 26 Jan 2026 08:51:23 +0100
+Message-ID: <20260126075124.212593-1-thorsten.blum@linux.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -50,15 +48,10 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
 
-The temperature was never clamped to SPRD_THM_TEMP_LOW or
-SPRD_THM_TEMP_HIGH because the return value of clamp() was not used. Fix
-this by assigning the clamped value to 'temp'.
+Clamping 'val' to itself is unnecessary and the expression can be
+simplified by using min() instead. Casting SPRD_THM_RAW_DATA_HIGH to u32
+is also redundant and can be removed.
 
-Casting SPRD_THM_TEMP_LOW and SPRD_THM_TEMP_HIGH to int is also
-redundant and can be removed.
-
-Cc: stable@vger.kernel.org
-Fixes: 554fdbaf19b1 ("thermal: sprd: Add Spreadtrum thermal driver support")
 Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
 Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
 ---
@@ -66,18 +59,18 @@ Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/sprd_thermal.c b/drivers/thermal/sprd_thermal.c
-index e546067c9621..70c879e75d85 100644
+index e546067c9621..511f1e7959b6 100644
 --- a/drivers/thermal/sprd_thermal.c
 +++ b/drivers/thermal/sprd_thermal.c
-@@ -192,7 +192,7 @@ static int sprd_thm_temp_to_rawdata(int temp, struct sprd_thermal_sensor *sen)
- {
- 	u32 val;
+@@ -201,7 +201,7 @@ static int sprd_thm_temp_to_rawdata(int temp, struct sprd_thermal_sensor *sen)
+ 	 */
+ 	val = (temp + sen->cal_offset) / sen->cal_slope;
  
--	clamp(temp, (int)SPRD_THM_TEMP_LOW, (int)SPRD_THM_TEMP_HIGH);
-+	temp = clamp(temp, SPRD_THM_TEMP_LOW, SPRD_THM_TEMP_HIGH);
+-	return clamp(val, val, (u32)(SPRD_THM_RAW_DATA_HIGH - 1));
++	return min(val, SPRD_THM_RAW_DATA_HIGH - 1);
+ }
  
- 	/*
- 	 * According to the thermal datasheet, the formula of converting
+ static int sprd_thm_read_temp(struct thermal_zone_device *tz, int *temp)
 -- 
 Thorsten Blum <thorsten.blum@linux.dev>
 GPG: 1D60 735E 8AEF 3BE4 73B6  9D84 7336 78FD 8DFE EAD4
