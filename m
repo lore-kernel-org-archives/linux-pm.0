@@ -1,209 +1,95 @@
-Received: from mail-pl1-f178.google.com (mail-pl1-f178.google.com [209.85.214.178])
+Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com [209.85.167.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 312C02D46BD
-	for <linux-pm@vger.kernel.org>; Mon, 26 Jan 2026 20:27:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FDDD2D877B
+	for <linux-pm@vger.kernel.org>; Mon, 26 Jan 2026 20:49:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769459274; cv=none; b=CDii76pc07ewbLHmKC3VS8RjFo95yzaTXeIi9gK6bwpcrXtcwRjq4xzDURMuAdzyF3lEt7s6lr6TxlOhUcorJWMZ/bSfctEkAh9nCDZ2Vg6beZYXZWgl0rSah7tH1myDH9cSh51NorKteXHSx25MTwDB3NqG5FSLM7J6xhnTSNo=
+	t=1769460583; cv=none; b=Vrly+/YJyPvB701+la97erY5Iu3Mij2wEz5Tej7pq6e2wplDchQiShxVNkuBpCZamVWiIrxEGRsPI8X9XT3Kvp7Zap5vqp41iANhnGy9ZUD2gb+3suAB2n9QsCN0QXqpZ5EVipvFO6lJG8VyONRXm7u/rDJRPCMwBr6dR2oPxwY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769459274; c=relaxed/simple;
-	bh=hvO+XbRf3Yc0UjJqdckcSDxvcdiGziyQmypcq1TFw74=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=NXmHn3X2XTg1LFyGJLXR5ApRP72mot2qYJzqUQ0KLo0IhGeEgh12CWLCIENNS63rA1wmXF9cLiFbcrnvCiRlKmPDA+D3R9yeLAJRTJV9gSgjIux7rEN4QIt2Su4rUj8wD6TpAusS4QZgfGMOl6RGxWwMAeQRQbA0azA13FaTrMo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=sVOFTFwR; arc=none smtp.client-ip=209.85.214.178
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1769460583; c=relaxed/simple;
+	bh=A6jn/yMvWVBB5veD5BMs8jFFmGnBj7lxblIDGmq5K94=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=roF03g3WH9AtgqmoKGdd4lmzFbNB6kEGHOQ/o2eAByCT6J7mcaIsyWYSGwApNOZ7nme0O0Qr4nFWys569D8glmNKwdAGsvnEklN3SRbU1rRhEk6e0gtDmthCH8KaT6sZs7OCuv/MQ29Zvn8dDxONRe6rg7+s2WC8KpGs4jZ/d4s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=cb2GuO1V; arc=none smtp.client-ip=209.85.167.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="sVOFTFwR"
-Received: by mail-pl1-f178.google.com with SMTP id d9443c01a7336-2a7a94c6d4fso22840055ad.0
-        for <linux-pm@vger.kernel.org>; Mon, 26 Jan 2026 12:27:51 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cb2GuO1V"
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-59dd9aef51eso5532648e87.2
+        for <linux-pm@vger.kernel.org>; Mon, 26 Jan 2026 12:49:42 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1769459271; x=1770064071; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:references
-         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=pJxcoLWTIcLGT5eswWQAojarEYthG4I3ofXDOywAffE=;
-        b=sVOFTFwRHIuf1iCgf/KG+kvIc0/k1mlaePdioxvkCmiDrqi6B2zzbBW6C7n1hY58So
-         wPt0fFVAXQX9QuDetjRrJ1kMl6ydAyZ+f8wtr4mfJ88GxhC+hsTjw+uJWPPW9vJ5fakw
-         kBq0mQjigIXV92igBjtBy56PyXs/PJ2KxMx9NOMLuenU/Jw6zg2YMrWkP2qcBhOBjQQu
-         rkAJYhwh541/dcjWVeTYmqakqBSzdNi3pYPuiK5TG8rqxcAZZ3/rVRigy9L3CZ/JjJaG
-         bqTIQvZCOQsYX2uMfJsk+1sg2qIZH71A/QBDRhKS1+++my8HLhZqHVWd0gLZ2OKNbX6I
-         I3fA==
+        d=gmail.com; s=20230601; t=1769460580; x=1770065380; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=jxc9IQWx5I6gbjdfSuWld71CQkfV0DDDCIijMstKBuE=;
+        b=cb2GuO1VeZGWxHJkteEKTDCs4ny/NClGRdaL2RJhipnvT8iDv8k6yiuKiNwvALyL51
+         gJalw8dPVL/tkg59Jl69WOWB49CUJrNMVJ4ZWBf32ba/GgMnUS1Bkpn541pqV6ou7V8g
+         eP8NwHkNA/zL/jieXislaXAGxIGXsNjHdIefNh5SyKsx8qXjcbZ7f8i6I4sJgYHd0dpe
+         yYdHjajgwHSGMMVA+UTv60+FVVAjEZJ6cX4s7qyjtcUnliL4T9rYMCsJm1UTh4uucNQj
+         LnVE5GQmudiCqmF1os/6swZULieoPXl7+eJvkdjKf6zqS2rpGvu92s5YdMG41ll/KBEm
+         bWyA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769459271; x=1770064071;
-        h=content-transfer-encoding:mime-version:message-id:date:references
-         :in-reply-to:subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=pJxcoLWTIcLGT5eswWQAojarEYthG4I3ofXDOywAffE=;
-        b=Fj2A7HBDwuwUACixKsuLYeVd3986w9+duPmciq9UViMBd4Cjuq79gCuhDOa9/9iogf
-         AqW7++rNt+2QNLCWbVtGgnAFB4zr8bci82ynj5HdTm6TSGPLjO5h3SdloCmLXGqvobtf
-         KukNz1Yr8YFvLhIkmAyN2NrTPM6ATZj8ACFQgaSVcHMsPDaba7Mcw2uQhgJYhGjKpQWd
-         SeqJWNvAcLkap73rFst7eSd/jgXnTAHmRVuJXkHarVncTb/h3N4J9HfeELBerwr+MG6q
-         uRIXP0VzpCLEJnrLGAwfait14Z8XpmmgCebPMvHcvM7P/7qTwfeXvO1b/lmJFR05HV4n
-         BXWA==
-X-Forwarded-Encrypted: i=1; AJvYcCWl392XLgf6wW3lk6ouofSLBXoz4ESAplL5GlktefZaCKciFfSuWLW269bK3Bp9XHTQgGudHqwYBg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzEEbsfteLSkeFzX0acHaRKyiQBkIzwo8y0vK/VGF4BmQXNTKDY
-	iBEuvUyb7nh9239T2WAkavUtMdGsC2NdyFAwFwjh8OMi54xuCvCXzk0qRT5HXLmr5G0=
-X-Gm-Gg: AZuq6aKJijHdxkNWUrVqOWno+JyJcuNRKULvGIzpMI5wDEiQRzFakawO9ifxNMlQyh/
-	K6MFXuRQfrRK/QDIG6cfgZdaMocHVlgOD1jp5rzlRlhIApdxBNpOaLViEQDknv8pXDqZ+McP8fh
-	gZbpq/AjA+OfMvTmrUvPPyMK5/A+4FSKpHZLE0RLXxIjxkIHV2vs3rYPtnZjZgB5USXTlGUZ3/R
-	vw2O2fOokMg897Jx7vV90/SOR8NvXc+O2bMvcG85ImlO4ElllXBZjuo+oLsXMkLaBIvZGWKa3Ys
-	s7DYk6DqYVmNg+vPZ3FqPchEMnSzWpKaIUe6tooUyxs9Y33lJk1xhrxpefgVm//nsKv8SK+mhg0
-	DX4Bz4VLkezcjO37mr2UxXbR0VVAecWx8bliviUWCoCMhLpmr1VJLLuCRVc0G2cFBJL2nqv281M
-	ik+8KqO0l+
-X-Received: by 2002:a17:902:f541:b0:29f:301a:f6cf with SMTP id d9443c01a7336-2a8452f0c27mr58766155ad.35.1769459270603;
-        Mon, 26 Jan 2026 12:27:50 -0800 (PST)
-Received: from localhost ([71.212.200.220])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a802dcd776sm95257565ad.26.2026.01.26.12.27.49
+        d=1e100.net; s=20230601; t=1769460580; x=1770065380;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=jxc9IQWx5I6gbjdfSuWld71CQkfV0DDDCIijMstKBuE=;
+        b=m10pvNXECFddl1ov+POc3ETp1wHSEHeJ6jbkVUZD0hg88g2fk/D7fDACdNDvLw5iME
+         Y+Q86FD4jdpWnBV29ljC7fsda7no9mkzELxBwLAnZJlTIJQHFqiSfg9Ro7JZgkIzkosQ
+         /QBW0m9776ncPCTidrcfnZA4OppPZ7WAw3tfV2JZZjIvwMdB9khVcDPWgNXxaKK+tmId
+         EKwx1YCtKn8jPD8gkRm+N6PZSbKxvDrtVNctldkOZTiPSkv2M+f3Fw/4+xJLpSA96Xxm
+         W7Uo6mE4elIF9vlW6+WrWNIq02tqband2Di7uZeBg6M6JFPVat6D+OiC0S5joYaLyXBV
+         RLvA==
+X-Gm-Message-State: AOJu0Yz5dWG4T5/BI9nkGL/+XI0CbjC7fKpfD/WUTqt56GRvfRtZen9D
+	gDMkkpaRaVs91FAt6pX1jLgCbcfTSCSvYuR9hF+dOE+3TvNd5KSaZgOA
+X-Gm-Gg: AZuq6aLBuYtbPILcBJebApqn0PdE+eGekkkQU2w+Q0MrBlG0wEFdcTwthKIuB0Wtxq/
+	LVc4Ewk5mz0/nnSo3a0aIKesdt+647sVWdUfL3rdwW1acA1xjGSpWDdBWMIkZW7aPtMkoAag/KA
+	fwP6MycIj+wGUh9rxS4jlnc5qEuEfyXH6d48G1WVKjIBEi85D8ceg4TnrYUjg5sTRKyk98U8i0n
+	fF68c3+Kcbq4qPkQTG7WxMJRBLMJiG15jH6/yUzvaNnpO9jQaIDdCNDA5M67YS8sE0FLxo7L0wB
+	a8OW6zJrWp1iaaiHCeLTqZuRpSyymC6UN5BU0oKHpVx/kJB0pmG6D+4/yKxE6YsU7XdUEgKp3mY
+	L4ns7giDrq42qo77MkRCfm2IUOSi6NR8SU6ZbAhVPwsh033oUAGU4aVyL9YAFjO6yCKMfY5m72A
+	wo
+X-Received: by 2002:a05:6000:4010:b0:435:b67d:c304 with SMTP id ffacd0b85a97d-435ca1ada2amr8949251f8f.38.1769453687028;
+        Mon, 26 Jan 2026 10:54:47 -0800 (PST)
+Received: from xeon ([188.163.112.49])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-435b1f742d6sm31793947f8f.30.2026.01.26.10.54.46
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 26 Jan 2026 12:27:50 -0800 (PST)
-From: Kevin Hilman <khilman@baylibre.com>
-To: Rob Herring <robh@kernel.org>, Herve Codina <herve.codina@bootlin.com>
-Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>, devicetree@vger.kernel.org,
- Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC v2] of: Add of_parse_map_iter() helper for nexus
- node map iteration
-In-Reply-To: <CAL_JsqLq1V_is4wHedFoiGHcYt293vDJ4SsHaZKxYARupbUXEw@mail.gmail.com>
-References: <20260121-topic-lpm-of-map-iterator-v6-18-v2-1-a40bf8e91045@baylibre.com>
- <CAL_JsqLq1V_is4wHedFoiGHcYt293vDJ4SsHaZKxYARupbUXEw@mail.gmail.com>
-Date: Mon, 26 Jan 2026 12:27:49 -0800
-Message-ID: <7hh5s85dbu.fsf@baylibre.com>
+        Mon, 26 Jan 2026 10:54:46 -0800 (PST)
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+To: Dmitry Osipenko <digetx@gmail.com>,
+	MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	Thierry Reding <thierry.reding@gmail.com>,
+	Jonathan Hunter <jonathanh@nvidia.com>,
+	Mikko Perttunen <mperttunen@nvidia.com>,
+	Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: linux-pm@vger.kernel.org,
+	linux-tegra@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v1 0/1] devfreq: tegra30-devfreq: add support for Tegra114
+Date: Mon, 26 Jan 2026 20:54:22 +0200
+Message-ID: <20260126185423.77786-1-clamor95@gmail.com>
+X-Mailer: git-send-email 2.51.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Rob Herring <robh@kernel.org> writes:
+Lets add Tegra114 support to activity monitor device as a preparation to
+upcoming EMC controller support.
 
-> On Wed, Jan 21, 2026 at 5:55=E2=80=AFPM Kevin Hilman (TI) <khilman@baylib=
-re.com> wrote:
->>
->> Add a new helper function of_parse_map_iter() to simplify parsing of
->> nexus node maps as defined in the DT spec, section 2.5.1.
->>
->> This function provides an iterator interface for traversing map entries,
->> handling the complexity of variable-sized entries based on #<stem>-cells
->> properties. Each map entry follows the format:
->>   <child_specifier phandle parent_specifier>
->>
->> The iterator extracts both the child specifier and parent phandle+args
->> for each entry, managing all the details of:
->> - Reading #<stem>-cells from both child and parent nodes
->> - Calculating variable entry sizes
->> - Resolving phandles
->> - Proper node reference management
->>
->> This eliminates the need for subsystems to manually parse map properties,
->> reducing code duplication and potential bugs.
->>
->> This code was developed in collaboration with Claude Code (model:
->> Sonnet 4.5), which needed some guidance to use existing OF helpers,
->> iterators etc.
->>
->> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
->> ---
->> Changes in v2:
->> - Use helpers of_phandle_iterator_init() and of_phandle_iterator_next()
->> - add missing of_node_put() pointed out in v1
->> - Link to v1: https://patch.msgid.link/20251119-topic-lpm-of-map-iterato=
-r-v6-18-v1-1-1f0075d771a3@baylibre.com
->> ---
->>  drivers/of/base.c  | 163 ++++++++++++++++++++++++++++++++++++++++++++++=
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
-++++++++++++++++++++++++++++++++++++++++++
->>  include/linux/of.h |  13 +++++++++++++
->>  2 files changed, 176 insertions(+)
->>
->> diff --git a/drivers/of/base.c b/drivers/of/base.c
->> index 0b65039ece53..8392fe54cf60 100644
->> --- a/drivers/of/base.c
->> +++ b/drivers/of/base.c
->> @@ -1641,6 +1641,169 @@ int of_parse_phandle_with_args_map(const struct =
-device_node *np,
->>  }
->>  EXPORT_SYMBOL(of_parse_phandle_with_args_map);
->>
->> +/**
->> + * of_parse_map_iter() - Iterate through entries in a nexus node map
->> + * @np:                        pointer to a device tree node containing=
- the map
->> + * @stem_name:         stem of property names (e.g., "power-domain" for=
- "power-domain-map")
->> + * @index:             pointer to iteration index (set to 0 for first c=
-all)
->> + * @child_args:                pointer to structure to fill with child =
-specifier (can be NULL)
->> + * @parent_args:       pointer to structure to fill with parent phandle=
- and specifier
->> + *
->> + * This function iterates through a nexus node map property as defined =
-in DT spec 2.5.1.
->> + * Each map entry has the format: <child_specifier phandle parent_speci=
-fier>
->> + *
->> + * On each call, it extracts one map entry and fills child_args (if pro=
-vided) with the
->> + * child specifier and parent_args with the parent phandle and specifie=
-r.
->> + * The index pointer is updated to point to the next entry for the foll=
-owing call.
->> + *
->> + * Example usage::
->> + *
->> + *  int index =3D 0;
->> + *  struct of_phandle_args child_args, parent_args;
->> + *
->> + *  while (!of_parse_map_iter(np, "power-domain", &index, &child_args, =
-&parent_args)) {
->> + *      // Process child_args and parent_args
->> + *      of_node_put(parent_args.np);
->> + *  }
->> + *
->> + * Caller is responsible for calling of_node_put() on parent_args.np.
->> + *
->> + * Return: 0 on success, -ENOENT when iteration is complete, or negativ=
-e error code on failure.
->> + */
->> +int of_parse_map_iter(const struct device_node *np,
->> +                      const char *stem_name,
->> +                      int *index,
->> +                      struct of_phandle_args *child_args,
->> +                      struct of_phandle_args *parent_args)
->> +{
->> +       char *cells_name __free(kfree) =3D kasprintf(GFP_KERNEL, "#%s-ce=
-lls", stem_name);
->> +       char *map_name __free(kfree) =3D kasprintf(GFP_KERNEL, "%s-map",=
- stem_name);
->> +       char *mask_name __free(kfree) =3D kasprintf(GFP_KERNEL, "%s-map-=
-mask", stem_name);
->> +       char *pass_name __free(kfree) =3D kasprintf(GFP_KERNEL, "%s-map-=
-pass-thru", stem_name);
->
-> It's not great that we're doing allocs and frees on each iteration.
->
-> Can't we follow the same design Herve did for interrupt-map? You have
-> an init function you call once up front and then an iterator define
-> (e.g. for_each_of_imap_item()). The complication in this case would be
-> if we do the allocs in the init function, then we need a way to free
-> them. If they are part of the for loop init, then we could use the
-> scoped cleanup.
->
-> On thing I noticed is I think of_phandle_iterator and of_imap_parser
-> should probably be merged to one struct. They basically hold the same
-> information (pointers to property data).
->
-> Let me see if I can come up with something next week.
+Part of previous patchset: https://lore.kernel.org/lkml/20251125120559.158860-1-clamor95@gmail.com/
 
-Thank you!
+Svyatoslav Ryhel (1):
+  devfreq: tegra30-devfreq: add support for Tegra114
 
-I would greatly appreciate some help getting this going in the right
-direction as I'm definitely out of my comfort zone in this drivers/of
-code.
+ drivers/devfreq/tegra30-devfreq.c | 17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
 
-Kevin
+-- 
+2.51.0
+
