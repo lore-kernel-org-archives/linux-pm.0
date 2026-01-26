@@ -1,157 +1,137 @@
-Received: from mail-wr1-f46.google.com (mail-wr1-f46.google.com [209.85.221.46])
+Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F05702DB7A4
-	for <linux-pm@vger.kernel.org>; Mon, 26 Jan 2026 16:14:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.221.46
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769444098; cv=pass; b=MaWQwkO20sfzNcAtL+bGcTsPb6o2nkGFO5+4098ON5S99ZA2d9w43YibU8EPU3wxAZUGvAhdtMmszLr3PAL3ODG1/1XTnj2bFz5UJWdgJKctG6cB6gHg9WbaiNSa0QLhuNBF6wGzngq0lsfqSz8XDyoh3hbqBvIzTmW5v76nmso=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769444098; c=relaxed/simple;
-	bh=b3m3/VVdwm1L5JwvxjexOIEy5wN31isjno52EUeePNw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=eu4jkSbkPBRf0bZIDYCeWCWKHXl0l/p76XZosAX+r6lifB+X3faA6qc80ERgAt4+ghj9B/FI3/UjJ1txBuvGyMg3o2/LEvenHhWRlh8QqniEaGYbw8ssEuAg8tnJDCMdrJPogF+ernG8ydC7mS+0eT1w2PYmw9kRQcCVJiSejQw=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=280F4xTc; arc=pass smtp.client-ip=209.85.221.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0AC725487B
+	for <linux-pm@vger.kernel.org>; Mon, 26 Jan 2026 18:54:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.46
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1769453691; cv=none; b=r6Rf521CwPdF2XO9ll5kw5HYaY1H5j2cJiUAs33bpSzT2qtUOFT93tinzX2Azei++nL31fqQF1LCCcxV2zMLPqkBKH4LaMx81yzFfahaAAJ1SHCyF6tpnSwMviuHPEqwQcpexpBFjbnGgU3e+ShdCdLmgZwoh4YvsIuB+bsYBhU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1769453691; c=relaxed/simple;
+	bh=1+5DCp6OHuKcpHx/26jzXFcnmrgHGTiIgTauDkixbRU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=gMI0qSAFCRBJOxNvsmVjbxJPgK48MkoQ84sTuLPuQQEpmohzcx7LkBUoi2UX7tpsR8zG9zeFC+h0rBti192n3Rc1/rhmBx4Ca+WayWc7qrL+5qOIzyLDZjcEEDvYIJOvypCN55Ogh1VLHqifx4tbcKlU7SIRpTe1DZ8+nAo6Mmo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=O08VUooE; arc=none smtp.client-ip=209.85.128.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="280F4xTc"
-Received: by mail-wr1-f46.google.com with SMTP id ffacd0b85a97d-432d2670932so4336209f8f.2
-        for <linux-pm@vger.kernel.org>; Mon, 26 Jan 2026 08:14:56 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1769444095; cv=none;
-        d=google.com; s=arc-20240605;
-        b=BcPNGCU8QNw0ecdVAegKFgpRoLk8WXuKQ6bcZ0wgVtrv5ESeJ+V99cclChD1kgLfXV
-         Id1+5AgKt/kfwEvm49dFQDtracCVLp+bppC1lWcmr5sstGi4t6o4MnZa1HwadlwXuL6Z
-         Ypa7X/YmjDSkx77dfqU5TpFz26/LtvG+AOe9t3+6vvKjnm0Sp3mnyLL/aDOLvvT0woRP
-         CdVRH2WdUS96ja+VbP4n3Db50WhCGGTb6GP7iIQE98nZVU5832Wt92iQ5sUGU1V+nVno
-         kaIDyjoPahUhcCkAa6Fba5PVkEHzGew1+4mr4OGMlTdUHacauJRoyYXDheDkCLelQyzN
-         7y7A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=b3m3/VVdwm1L5JwvxjexOIEy5wN31isjno52EUeePNw=;
-        fh=ujNJ2yYG2CgWAmTXIhcKQMZE6TN3QXG/Xz/Fz9nNBWc=;
-        b=OvMfYzMTntTCX6UFjoCgUn5VhwwSksHijux0qo+XfeLsyYeiinGe53f9nZBvaei5Wm
-         qP3kgRMjt+YDRxOXdNjYlh/L6v/DrejgNjOrepy4KeTRMzELVhQyZJeHeY9Txk7oIMMn
-         sT3M4mqSL0m9Hgoc+HxIsLTnBJ9Vk36or104WUXBF3LgT2CyyshS/x7jC9lwlfnRW623
-         lQu6ZQCBhH4hoRda9YR7eL5+JRsRVZWcAS121FH+KJhnUnVlnZ4JLFArgOOd9wFZ+C29
-         cHzicGTQCuEoOWmmBFxuFuW1+sv2+X1jzrV91g2pCojILrD46GHty7h4hofNBG60zJv5
-         aTjA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="O08VUooE"
+Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-4801d24d91bso50773275e9.2
+        for <linux-pm@vger.kernel.org>; Mon, 26 Jan 2026 10:54:49 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1769444095; x=1770048895; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
+        d=gmail.com; s=20230601; t=1769453688; x=1770058488; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=b3m3/VVdwm1L5JwvxjexOIEy5wN31isjno52EUeePNw=;
-        b=280F4xTcTA5p7vg5B5/a3tkfZPvH27OboATow6174PXCIko+LqdKpnRfDP8XHBnAUe
-         ArRkDkQB1pGbSc8tIMGhDbZWZyUw2bads/RiqeCEpgkQELOYoDdDEYVVlF97swjgQcYM
-         iyDfImGYsVwTEsDdDplBx78x2U7PyZ6fmHemHUDjligMpvVATecJRJW0H5G4tuPF/O7r
-         4H7mqfbxziXX56rlp1VkMWMGv/cbhiC5GQRZdwdacQFE0GXHx+psu0RRWLwWv3TVbjsJ
-         b0GMKSE+mOs9F+xV48ThsTRbQNlZUxif5RrYPdXAjFCEFQ77ovtfJiY8VDZSBqslU2JZ
-         D4PA==
+        bh=DkYHBbf51iPoTKTb/DYQ1Urxy3yreGvpCuibSsYjEfk=;
+        b=O08VUooEHqZP99OBKgphpyM1x2G+l5I83pvvSWY9ZwHkn1mCOD35UmFETDnntnW4wY
+         O82qDe1A4AWpVU6hIU0ONs97tn/Jt3/5HDXq767wXz/AqcB7ZEj7GMFAHS1IEClI2uYM
+         eJk2kkeXJAMgiB4AG3Nfjb8H6nIYDce4WgIwFVDJ/sNzY2BrWOep5IArk/lXcIt+yji5
+         lYbkKmkpTj7ilGFYe4K7nsot9Quyl+G9HX5GyrrzZSfcsFMYAIXjn/hRwXuGZqshHrls
+         H6ORjnI/4w9WQpou0iDtR6H4NCm/8lsuVk9ySQZ5vPdExrJWywdlG3xEFLaOcVI6qL2D
+         dWiA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769444095; x=1770048895;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+        d=1e100.net; s=20230601; t=1769453688; x=1770058488;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=b3m3/VVdwm1L5JwvxjexOIEy5wN31isjno52EUeePNw=;
-        b=qaRQ92Q+/bqDiHX5dfTJlH7aBQ/vEcZy4P+pHAfEpvVi5Jer183tK+k1w1vmHWSjDX
-         +K9Q/MorwL5t1g9Ug6YtA6PLrEEhSgKL2IJ/QjtbIECJzdfHqsAodwWfV1JG7iSfOlO1
-         +qlujUZqmwHP1MDNaBFQXJyBAF5NX83bEzQ2i0c5wPs/rRSLkgb6/ixJ9Z1/qUggB0ni
-         /6CdYyqK2KnsUbKFDrq2N4LMj8PZFBT7ZhxMvTGBNCF+mR6n8/2djNpR7sV/qoFk3at2
-         5WlySc8vzkFmNeyIVPGqH6Cz86MRqYuXPPj1hKMEgLALzRyjtjvFZXJORT5kGUD4XodS
-         6K9w==
-X-Forwarded-Encrypted: i=1; AJvYcCW6GjYcQDOhJ26yzVL049rtJQ/VdTh046ldYB8u0aGQFhXzxEylB5k1kOOOpFWHYmxDUOzAdDD4GA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwYCAt3sPaDV3kMD628Y49N2TlUbsif37CEs2WgqTAiWW8mzRUy
-	93IfhN6Sg4iUvuSFzhcgGNaMWuVBLOGCxbVSgyEYKypIBkvX0xtuBe8hZHoSco9iww3WzNnnHGH
-	/K7evsmLvkFHFVj9cMcvs50guNeZI+mnX5lCkrFPy
-X-Gm-Gg: AZuq6aJDovISmVPmHLe9WpLpNgnU8MvL0WvqLswoXJI3H99LhBgUVQZJdWXhNXB06x+
-	4FeqXHBiRCDjIuXtZ4JPvoACgCIkxEh+Gk6ZJwcaX+JBOt6OkONPheQRFnIZ1Mt//M0vac/JbyC
-	Mh8jBz1KYAmCSkx6mdgf44J+r8gvElARljjKmdvgHpBgjl9PvFvy+V+AWUYqMTTjtAmowdc/GOz
-	6/nHstgR3XuBqjXrAshXFw7vVNnVsIyQyW6F+SaAHZhfMBC98yruDVaT+beCmeHL4vnJ5yFk9vz
-	KaRpjKUX6EFQ8NwGh6Y+JD2hXg==
-X-Received: by 2002:a5d:5d0a:0:b0:42f:b690:6788 with SMTP id
- ffacd0b85a97d-435ca0e2909mr7711789f8f.10.1769444095193; Mon, 26 Jan 2026
- 08:14:55 -0800 (PST)
+        bh=DkYHBbf51iPoTKTb/DYQ1Urxy3yreGvpCuibSsYjEfk=;
+        b=WBgya4GRi+7sbro8umqvakeKiOh5jq9FX5ks9CCUDFrR2/EkKQoGkkN3paZkctCtY3
+         3Wj+gWLjVVL6cmW/4LqZTl5TmKI+u1VJXSKfmVZ/j3bDPXfyLEBdPql8lyyAmFGFmn5p
+         EbxswzEliQSrS05IcI0/fk8sUKi9JlNpwj6a2LO0W/zzK0UT8L94za1viV3RvRSU5hiv
+         PAs/VoFzcwY9CqXLMM6wslYAKX2cpMODWb8Vrnw6GF7j1i4CoWUgXKionxjgf+HjI65M
+         DbmigebgibqgkNL2qGsxW63CaZM4erkKgdO+YUeoLKWcKVrBc5I6P9UhGvEFxyJA3bqk
+         swCQ==
+X-Gm-Message-State: AOJu0YxtTPh7SaAmS0xgJy+uIZPKlPUo3He+PDEulzVzxcpeISpATd3R
+	S30LyWzijyerFaVXFrUCaJRFH9pgsPQNikttAQh2O3PDmgKsf5UjFLA6
+X-Gm-Gg: AZuq6aIgJV32vDEpn3bA1BDqNllFZRrw20C2FHb93WAKVM724z4GV9VtwhookftimW5
+	T7/Io+/0kodqpFiWvbn/lrEGRmuYeB4EFlOS8+kHxM900gEq2WqB8CL+0B3fYw5sHEPsUnkPbF8
+	c/DmHmFTOhkWX5b5kL/IspEF3zC0+H+JrUIVw/2UrYpalR5giQ4zisHkQBp+hsQEiXExkANFsdD
+	lQx3maZh9inZ/Vr1oXSM1jg3qzmQ0cjN0WMGkTmorFEEaiGvc0cNJpRJGDHmQyz/4u88SW6Y0n1
+	xy/ygWobvD7KW0Fs/UWsacZ/yCFucJRprvATGGlPJYKLd1X9RomLpBX/WQyo1RfjZqrhvMZShB3
+	ilhNS45i2g14zyUpv5xtyyEl8yuRMJFACQL2OcYfM6q7Cs3sJin9x00JU55CvquXFIS0rh5PP/r
+	75
+X-Received: by 2002:a05:6000:2313:b0:430:fa58:a03d with SMTP id ffacd0b85a97d-435ca3ac2aamr9067059f8f.63.1769453687994;
+        Mon, 26 Jan 2026 10:54:47 -0800 (PST)
+Received: from xeon ([188.163.112.49])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-435b1f742d6sm31793947f8f.30.2026.01.26.10.54.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 26 Jan 2026 10:54:47 -0800 (PST)
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+To: Dmitry Osipenko <digetx@gmail.com>,
+	MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	Thierry Reding <thierry.reding@gmail.com>,
+	Jonathan Hunter <jonathanh@nvidia.com>,
+	Mikko Perttunen <mperttunen@nvidia.com>,
+	Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: linux-pm@vger.kernel.org,
+	linux-tegra@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v1 1/1] devfreq: tegra30-devfreq: add support for Tegra114
+Date: Mon, 26 Jan 2026 20:54:23 +0200
+Message-ID: <20260126185423.77786-2-clamor95@gmail.com>
+X-Mailer: git-send-email 2.51.0
+In-Reply-To: <20260126185423.77786-1-clamor95@gmail.com>
+References: <20260126185423.77786-1-clamor95@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260126-zeroable-ffi-v1-0-0ef101d1ed85@google.com>
- <DFYJRWUHCOMQ.3L6ZVLOJTNDNO@garyguo.net> <aXdrUsrKVmzpBVd8@google.com>
- <DFYNFSOP2UVY.27KHATUQMCXHQ@kernel.org> <DFYNILJPAYJE.3CFM49W80ED4O@garyguo.net>
-In-Reply-To: <DFYNILJPAYJE.3CFM49W80ED4O@garyguo.net>
-From: Alice Ryhl <aliceryhl@google.com>
-Date: Mon, 26 Jan 2026 17:14:43 +0100
-X-Gm-Features: AZwV_Qhm51ZvNtcAl24ity6Z1oGdEZsigYZ9qHzy-oChasQeMJ3ey0HJ1RLeuNE
-Message-ID: <CAH5fLggAfRkjSmYuYAZioXn3OP31Fwr=VGd2znnaHQvPL3tKHg@mail.gmail.com>
-Subject: Re: [PATCH 0/4] Re-export Zeroable and zeroed() from ffi module
-To: Gary Guo <gary@garyguo.net>
-Cc: Benno Lossin <lossin@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
-	Boqun Feng <boqun.feng@gmail.com>, =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
-	Andreas Hindborg <a.hindborg@kernel.org>, Trevor Gross <tmgross@umich.edu>, 
-	Danilo Krummrich <dakr@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Viresh Kumar <viresh.kumar@linaro.org>, Igor Korotin <igor.korotin.linux@gmail.com>, 
-	Daniel Almeida <daniel.almeida@collabora.com>, Len Brown <lenb@kernel.org>, 
-	rust-for-linux@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Mon, Jan 26, 2026 at 5:11=E2=80=AFPM Gary Guo <gary@garyguo.net> wrote:
->
-> On Mon Jan 26, 2026 at 4:08 PM GMT, Benno Lossin wrote:
-> > On Mon Jan 26, 2026 at 2:25 PM CET, Alice Ryhl wrote:
-> >> On Mon, Jan 26, 2026 at 01:15:53PM +0000, Gary Guo wrote:
-> >>> On Mon Jan 26, 2026 at 1:05 PM GMT, Alice Ryhl wrote:
-> >>> > Currently, the Zeroable trait is defined by pin-init because pin-in=
-it
-> >>> > happens to use the trait. However, zeroed types are useful for many
-> >>> > purposes other than pin-init. Also, we wish to implement Zeroable f=
-or
-> >>> > types generated by bindgen. For both of these reasons, re-export
-> >>> > Zeroable from the ffi crate, which is a already dependency of the c=
-rates
-> >>> > with bindgen output.
-> >>>
-> >>> I don't see a benefit of re-exporting these from the `ffi` crate? Esp=
-ecially
-> >>> that we re-export `ffi` crate from kernel crate anyway, and `Zeroable=
-` is
-> >>> already in the kernel prelude.
-> >>>
-> >>> We already derive `Zeroable` for bindgen via `MaybeZeroable` derive i=
-n
-> >>> rust/bindgen_parameters.
-> >>
-> >> I can't find the convo now, but this change is on my list from when we
-> >> discussed also implementing FromBytes / IntoBytes for the bindings
-> >> types. To do that, we need to move our FromBytes / IntoBytes traits
-> >> somewhere that bindings/uapi can access, and we agreed that the ffi
-> >> crate was a good place for it.
-> >>
-> >> And then for consistency, also reexport Zeroable from the same locatio=
-n.
-> >
-> > I think you also mentioned at some point that using `pin_init` from
-> > `bindings` seemed strange and also using the `pin_init::zeroed()`
-> > function also doesn't fit, since it doesn't have to do with pinned
-> > initialization.
->
-> Shouldn't it be that a crate that implements Zeroable / FromBytes / IntoB=
-ytes
-> and then pin_init becoming an user of that crate, then?
+Lets add Tegra114 support to activity monitor device as a preparation to
+upcoming EMC controller support.
 
-The Zeroable trait has to be in pin-init because it's also outside the
-kernel. You *could* add yet another crate just for this and let
-pin-init depend on it, but just putting it in the existing ffi seems
-reasonable to me, and ffi is not a bad name for the owner of those
-traits anyway.
+Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+Reviewed-by: Mikko Perttunen <mperttunen@nvidia.com>
+---
+ drivers/devfreq/tegra30-devfreq.c | 17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
 
-Though I guess if we add zerocopy, that concern goes away.
+diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+index 8ea5b482bfb3..fa83480a923f 100644
+--- a/drivers/devfreq/tegra30-devfreq.c
++++ b/drivers/devfreq/tegra30-devfreq.c
+@@ -963,16 +963,22 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++/*
++ * The activity counter is incremented every 256 memory transactions. However,
++ * the number of clock cycles required for each transaction varies across
++ * different SoC generations. For instance, a single transaction takes 2 EMC
++ * clocks on Tegra30, 1 EMC clock on Tegra114, and 4 EMC clocks on Tegra124.
++ */
+ static const struct tegra_devfreq_soc_data tegra124_soc = {
+ 	.configs = tegra124_device_configs,
+-
+-	/*
+-	 * Activity counter is incremented every 256 memory transactions,
+-	 * and each transaction takes 4 EMC clocks.
+-	 */
+ 	.count_weight = 4 * 256,
+ };
+ 
++static const struct tegra_devfreq_soc_data tegra114_soc = {
++	.configs = tegra124_device_configs,
++	.count_weight = 256,
++};
++
+ static const struct tegra_devfreq_soc_data tegra30_soc = {
+ 	.configs = tegra30_device_configs,
+ 	.count_weight = 2 * 256,
+@@ -980,6 +986,7 @@ static const struct tegra_devfreq_soc_data tegra30_soc = {
+ 
+ static const struct of_device_id tegra_devfreq_of_match[] = {
+ 	{ .compatible = "nvidia,tegra30-actmon",  .data = &tegra30_soc, },
++	{ .compatible = "nvidia,tegra114-actmon", .data = &tegra114_soc, },
+ 	{ .compatible = "nvidia,tegra124-actmon", .data = &tegra124_soc, },
+ 	{ },
+ };
+-- 
+2.51.0
 
-Alice
