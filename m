@@ -1,153 +1,190 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05AA01F4CBC;
-	Mon, 26 Jan 2026 19:41:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 02F97288535;
+	Mon, 26 Jan 2026 19:51:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769456496; cv=none; b=tszCGxiEoTzYg61xJlPEzeb6XugsR7Vegh9nw9wQWDnq3YCTQ9DN3Ohl9j9RbNoDTgwyBX/p73KYojGsvA/g9WDUC2MxapSdiXfGho6O4uew3d+OTZvjzVPPyc1m4tk2Q86bom3z62IXsMG0j44HLALPKGc57Cm/syfDPFdm7Hw=
+	t=1769457087; cv=none; b=fkdAgA0jLRaCgE8eOpBwypE1U+MJuZ3UjXuqHXs3tyqEwhSagG8QCoyTWev8RMbI6x/NQC1YurOwO51+saz+ruqdr0NjURwtuBS9tuBSlZ+MPqbe4lJRxsqizSLGQDNTHV+yNXNWYLmrSv/ENGzfHEoE2Su1tKUTc3d/2DLr8pw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769456496; c=relaxed/simple;
-	bh=uQFMWGnGGz/UkepHe6qNZM7ssltN76ODEap8qFaeK2s=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MaxGYJjD8+uW8iVU+S8U47p4FCiAG158GQF6LzqqlT0RdjfdzTU4ffibIZ/LJNc8n/AtfYuw8821aoPy/uBcBlLnhWILXJlaYOr+xgvnGWb5IzGLKJ5CNq65qZ9X0zs++m32J7MPAbYLypJ5eJ9ArWZkN5k/sKVDVb2wL9i7gcE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=derieL3L; arc=none smtp.client-ip=192.198.163.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1769457087; c=relaxed/simple;
+	bh=VoCja/MvO8N+rhcTFw8TrzVDwtr9vWoT6Cr0x0ftySI=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=txVSSEd/Q20zq4LXB4Wb6FSa+i8/Y0SxQHs7S5E+2uvvcWW+URlMVbUirzqknZf6wdO0gQ+AU5Bv7BLUhGu2TrqW3N8blZjfePmUgUaJ1wk53Q8YTHAkUOmhlf4KyALVRAh1izb/f4hizlo81n25nIL4B5Ryf2M7Vho8Cw9QCHg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NrQ+Mfo0; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="derieL3L"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1769456494; x=1800992494;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=uQFMWGnGGz/UkepHe6qNZM7ssltN76ODEap8qFaeK2s=;
-  b=derieL3LLtDdLkKo62F/2aghx7RorjhNNvIFNM3y62aJ5uFizAoBe8iu
-   1At6KcH7MVaWC7f/J+n5FVM/nDFpxINAXVofD5cCafOk34W7ylQgBcjRW
-   YQVSKVx/lor3hPrirIzN3FEn8vcMQ70p81nBdw9hpC4gLSzKew0HVXj/o
-   bcjRpAOnEghYpq3zBCpNZzkICk/a9HgkVNRoeCrocxC/Zd/+Bf4u6aApH
-   3PxnOh6h1iQXCcj3EVp8F7SU9ZyXuzS6x3t3jmXz4+t3gUsNXPhJhhRns
-   ElT6aYmdgP1MDzLOoppsA72Bx99NFD6xO8ARm30znAx8xzKbk6Ht1QXTj
-   Q==;
-X-CSE-ConnectionGUID: iROUj1cSSs2gn1LuTof2hQ==
-X-CSE-MsgGUID: cdogRa0CQ4Gqx2hPytNR1g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11683"; a="70545872"
-X-IronPort-AV: E=Sophos;i="6.21,255,1763452800"; 
-   d="scan'208";a="70545872"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2026 11:41:33 -0800
-X-CSE-ConnectionGUID: n0esMp9ySU+Mz1YRzxo6RQ==
-X-CSE-MsgGUID: jseCndPdQO2p/ZZbLSbXCg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,255,1763452800"; 
-   d="scan'208";a="206992580"
-Received: from lkp-server01.sh.intel.com (HELO 765f4a05e27f) ([10.239.97.150])
-  by orviesa010.jf.intel.com with ESMTP; 26 Jan 2026 11:41:28 -0800
-Received: from kbuild by 765f4a05e27f with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1vkSSj-00000000XdK-0FbY;
-	Mon, 26 Jan 2026 19:41:25 +0000
-Date: Tue, 27 Jan 2026 03:41:05 +0800
-From: kernel test robot <lkp@intel.com>
-To: Kaustabh Chakraborty <kauschluss@disroot.org>,
-	Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	MyungJoo Ham <myungjoo.ham@samsung.com>,
-	Chanwoo Choi <cw00.choi@samsung.com>,
-	Sebastian Reichel <sre@kernel.org>,
-	=?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-samsung-soc@vger.kernel.org, linux-rtc@vger.kernel.org,
-	linux-doc@vger.kernel.org,
-	Kaustabh Chakraborty <kauschluss@disroot.org>
-Subject: Re: [PATCH v2 06/12] mfd: sec: add support for S2MU005 PMIC
-Message-ID: <202601270307.Ds4yus7I-lkp@intel.com>
-References: <20260126-s2mu005-pmic-v2-6-78f1a75f547a@disroot.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NrQ+Mfo0"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D2B98C116C6;
+	Mon, 26 Jan 2026 19:51:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1769457086;
+	bh=VoCja/MvO8N+rhcTFw8TrzVDwtr9vWoT6Cr0x0ftySI=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=NrQ+Mfo0AcrQ1iqGsNURkYfM1l0er2ty/aygtCHUnmz6gTzEk4uxHhMw8SctKRdYV
+	 8jlSnZ1D7MrXTnbcmXU7CFr7cGAlJlX75HyunmAgNuAjqfNwxQe/QeKZ+d3rd3Axcx
+	 Ib5onATsZW0YnA0PDMRoZNP2z2D7nd4tRF5lOPMs+HFe6T4qf6pacee24m/Kqq83rO
+	 8bbgHrkrNqbLJdFc9z8cWdgcBYbjTJ+r4RzYjkcEaUG6VSwkQePUYTrVrTv0a2TxKE
+	 EnOR+4JzM5fBgHTrXPNWL4IOQUEMgH+rNEr3TRXdfo3DvV5Bsqf2swi4AhW19Fi0k5
+	 iwuEyDqEejbKA==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Christian Loehle <christian.loehle@arm.com>,
+ Doug Smythies <dsmythies@telus.net>
+Subject:
+ [PATCH v2 2/2] cpuidle: governors: teo: Refine intercepts-based idle state
+ lookup
+Date: Mon, 26 Jan 2026 20:51:13 +0100
+Message-ID: <1951534.tdWV9SEqCh@rafael.j.wysocki>
+Organization: Linux Kernel Development
+In-Reply-To: <12831359.O9o76ZdvQC@rafael.j.wysocki>
+References: <12831359.O9o76ZdvQC@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260126-s2mu005-pmic-v2-6-78f1a75f547a@disroot.org>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-Hi Kaustabh,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-kernel test robot noticed the following build errors:
+There are cases in which decisions made by the teo governor are
+arguably overly conservative.
 
-[auto build test ERROR on ca3a02fda4da8e2c1cb6baee5d72352e9e2cfaea]
+For instance, suppose that there are 4 idle states and the values of
+the intercepts metric for the first 3 of them are 400, 250, and 251,
+respectively.  If the total sum computed in teo_update() is 1000, the
+governor will select idle state 1 (provided that all idle states are
+enabled and the scheduler tick has not been stopped) although arguably
+idle state 0 would be a better choice because the likelihood of getting
+an idle duration below the target residency of idle state 1 is greater
+than the likelihood of getting an idle duration between the target
+residency of idle state 1 and the target residency of idle state 2.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Kaustabh-Chakraborty/dt-bindings-leds-document-Samsung-S2M-series-PMIC-flash-LED-device/20260126-031457
-base:   ca3a02fda4da8e2c1cb6baee5d72352e9e2cfaea
-patch link:    https://lore.kernel.org/r/20260126-s2mu005-pmic-v2-6-78f1a75f547a%40disroot.org
-patch subject: [PATCH v2 06/12] mfd: sec: add support for S2MU005 PMIC
-config: riscv-allyesconfig (https://download.01.org/0day-ci/archive/20260127/202601270307.Ds4yus7I-lkp@intel.com/config)
-compiler: clang version 16.0.6 (https://github.com/llvm/llvm-project 7cbf1a2591520c2491aa35339f227775f4d3adf6)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260127/202601270307.Ds4yus7I-lkp@intel.com/reproduce)
+To address this, refine the candidate idle state lookup based on
+intercepts to start at the state with the maximum intercepts metric,
+below the deepest enabled one, to avoid the cases in which the search
+may stop before reaching that state.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202601270307.Ds4yus7I-lkp@intel.com/
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-All errors (new ones prefixed by >>):
+v1 -> v2:
+   * Multiple fixes related to the handling of cases in which some states
+     are disabled.
+   * Fixes in new comments (there was some confusion in those comments
+     regarding the direction of idle states table traversal).
+   * Fixed typos in new comments.
 
->> drivers/mfd/sec-irq.c:218:7: error: expression is not an integer constant expression
-           case irqf_regs[0]:
-                ^~~~~~~~~~~~
-   drivers/mfd/sec-irq.c:218:7: note: initializer of 'irqf_regs' is not a constant expression
-   drivers/mfd/sec-irq.c:204:21: note: declared here
-           const unsigned int irqf_regs[] = {
-                              ^
-   drivers/mfd/sec-irq.c:220:7: error: expression is not an integer constant expression
-           case mask_regs[0]:
-                ^~~~~~~~~~~~
-   drivers/mfd/sec-irq.c:220:7: note: initializer of 'mask_regs' is not a constant expression
-   drivers/mfd/sec-irq.c:210:21: note: declared here
-           const unsigned int mask_regs[] = {
-                              ^
-   2 errors generated.
+---
+ drivers/cpuidle/governors/teo.c |   50 ++++++++++++++++++++++++++++++++++------
+ 1 file changed, 43 insertions(+), 7 deletions(-)
+
+--- a/drivers/cpuidle/governors/teo.c
++++ b/drivers/cpuidle/governors/teo.c
+@@ -73,12 +73,17 @@
+  *      than the candidate one (it represents the cases in which the CPU was
+  *      likely woken up by a non-timer wakeup source).
+  *
++ *    Also find the idle state with the maximum intercepts metric (if there are
++ *    multiple states with the maximum intercepts metric, choose the one with
++ *    the highest index).
++ *
+  * 2. If the second sum computed in step 1 is greater than a half of the sum of
+  *    both metrics for the candidate state bin and all subsequent bins (if any),
+  *    a shallower idle state is likely to be more suitable, so look for it.
+  *
+  *    - Traverse the enabled idle states shallower than the candidate one in the
+- *      descending order.
++ *      descending order, starting at the state with the maximum intercepts
++ *      metric found in step 1.
+  *
+  *    - For each of them compute the sum of the "intercepts" metrics over all
+  *      of the idle states between it and the candidate one (including the
+@@ -307,8 +312,10 @@ static int teo_select(struct cpuidle_dri
+ 	ktime_t delta_tick = TICK_NSEC / 2;
+ 	unsigned int idx_intercept_sum = 0;
+ 	unsigned int intercept_sum = 0;
++	unsigned int intercept_max = 0;
+ 	unsigned int idx_hit_sum = 0;
+ 	unsigned int hit_sum = 0;
++	int intercept_max_idx = -1;
+ 	int constraint_idx = 0;
+ 	int idx0 = 0, idx = -1;
+ 	s64 duration_ns;
+@@ -339,17 +346,32 @@ static int teo_select(struct cpuidle_dri
+ 	if (!dev->states_usage[0].disable)
+ 		idx = 0;
+ 
+-	/* Compute the sums of metrics for early wakeup pattern detection. */
++	/*
++	 * Compute the sums of metrics for early wakeup pattern detection and
++	 * look for the state bin with the maximum intercepts metric below the
++	 * deepest enabled one (if there are multiple states with the maximum
++	 * intercepts metric, choose the one with the highest index).
++	 */
+ 	for (i = 1; i < drv->state_count; i++) {
+ 		struct teo_bin *prev_bin = &cpu_data->state_bins[i-1];
++		unsigned int prev_intercepts = prev_bin->intercepts;
+ 		struct cpuidle_state *s = &drv->states[i];
+ 
+ 		/*
+ 		 * Update the sums of idle state metrics for all of the states
+ 		 * shallower than the current one.
+ 		 */
+-		intercept_sum += prev_bin->intercepts;
+ 		hit_sum += prev_bin->hits;
++		intercept_sum += prev_intercepts;
++		/*
++		 * Check if this is the bin with the maximum number of
++		 * intercepts so far and in that case update the index of
++		 * the state with the maximum intercepts metric.
++		 */
++		if (prev_intercepts >= intercept_max) {
++			intercept_max = prev_intercepts;
++			intercept_max_idx = i - 1;
++		}
+ 
+ 		if (dev->states_usage[i].disable)
+ 			continue;
+@@ -413,9 +435,22 @@ static int teo_select(struct cpuidle_dri
+ 		}
+ 
+ 		/*
+-		 * Look for the deepest idle state whose target residency had
+-		 * not exceeded the idle duration in over a half of the relevant
+-		 * cases in the past.
++		 * If the minimum state index is greater than or equal to the
++		 * index of the state with the maximum intercepts metric and
++		 * the corresponding state is enabled, there is no need to look
++		 * at the deeper states.
++		 */
++		if (min_idx >= intercept_max_idx &&
++		    !dev->states_usage[min_idx].disable) {
++			idx = min_idx;
++			goto constraint;
++		}
++
++		/*
++		 * Look for the deepest enabled idle state, at most as deep as
++		 * the one with the maximum intercepts metric, whose target
++		 * residency had not been greater than the idle duration in over
++		 * a half of the relevant cases in the past.
+ 		 *
+ 		 * Take the possible duration limitation present if the tick
+ 		 * has been stopped already into account.
+@@ -427,7 +462,8 @@ static int teo_select(struct cpuidle_dri
+ 				continue;
+ 
+ 			idx = i;
+-			if (2 * intercept_sum > idx_intercept_sum)
++			if (2 * intercept_sum > idx_intercept_sum &&
++			    i <= intercept_max_idx)
+ 				break;
+ 		}
+ 	}
 
 
-vim +218 drivers/mfd/sec-irq.c
 
-   200	
-   201	static unsigned int s2mu005_irq_get_reg(struct regmap_irq_chip_data *data,
-   202						unsigned int base, int index)
-   203	{
-   204		const unsigned int irqf_regs[] = {
-   205			S2MU005_REG_CHGR_INT1,
-   206			S2MU005_REG_FLED_INT1,
-   207			S2MU005_REG_MUIC_INT1,
-   208			S2MU005_REG_MUIC_INT2,
-   209		};
-   210		const unsigned int mask_regs[] = {
-   211			S2MU005_REG_CHGR_INT1M,
-   212			S2MU005_REG_FLED_INT1M,
-   213			S2MU005_REG_MUIC_INT1M,
-   214			S2MU005_REG_MUIC_INT2M,
-   215		};
-   216	
-   217		switch (base) {
- > 218		case irqf_regs[0]:
-   219			return irqf_regs[index];
-   220		case mask_regs[0]:
-   221			return mask_regs[index];
-   222		}
-   223	
-   224		return base;
-   225	}
-   226	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
