@@ -1,122 +1,124 @@
-Received: from mout-p-201.mailbox.org (mout-p-201.mailbox.org [80.241.56.171])
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CB7935975;
-	Sun, 25 Jan 2026 23:18:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF1591EB5CE;
+	Mon, 26 Jan 2026 02:15:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769383111; cv=none; b=Bl9MkGaDhScwU9EORm9Rth7m8RAd4mfrDZDDkYGqUxaVr/Rk9WM0MkF+F9Jpc/4C4c+TUeYFE1fCSX4Ks7gXhommLwN35sUFJ3jhuMvFbprTEWrN39kzuzlISLoVRM7o4ltvflomNq1W5+ty66Ktdef11qBODKVLYLk6mZotFw0=
+	t=1769393719; cv=none; b=gXW0ZFHLp5uiSdvJx2b/44roq02Plp29NXuq9CTC1WVStZJoCyU/jhzGMWxNvaV8v0jAQE7Sik7VCsIjCFd1Ao2a+OwkgzlJl6/n6JRdpEygWETadOMDidq29qusr4aHeXJxJ9T0JUMpM8HeWFKyT+0FlMDO59AREGTbC5GBwrs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769383111; c=relaxed/simple;
-	bh=bnHPIDRUoIrORd8liCaWNaG8d6KldAF6D70CR+vyJOU=;
+	s=arc-20240116; t=1769393719; c=relaxed/simple;
+	bh=2xonHilkglJLDpJtl+zt0s9P4O9/Ufhle9VG7FlFWPM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=U0AdmGhJOfynOVp9GOxbnWSqt4/r+BTMu7Y7klo6Oxik4wG/5shLWglITVTXUbiDk9U7VZpI94uMndZQYAv5GHKGAxU3Dj21bW08y3n2h5EqhQOVjfx4KyQ/CYSLWVYTx8UNBSPLQ5QYiHbnZCwopzoPNxW/RRbY67chMOmcYLc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=srvNykPF; arc=none smtp.client-ip=80.241.56.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="srvNykPF"
-Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mout-p-201.mailbox.org (Postfix) with ESMTPS id 4dznf26l1pz9tgl;
-	Mon, 26 Jan 2026 00:18:18 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1769383099;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=m/asOs9DyQ5THRpDLADk+Y2I0OVr6O6ljdNzMDKMqo4=;
-	b=srvNykPFoMbdNkm95JsqCubOCcArIDiK11P92dDAugrfofyLVpxqcubR11bb9blGgbeMFs
-	i/9DQg4I3K2zQ55MfVpw/t+tA4zykrLpgreokrW3Umrnj1IEvMhvHDS8z8gnHP2xiDL2ZN
-	DPvyYhusuj1yj2mfBxSwG+NksqdkK448uH0bgTW0jBR4SEynmDP9amI/96OC/GEb4PKJC2
-	xfS95RmIEfcsiUq4fG9p4ukv/v7ajRSu29SxgelLDYUcoHIR95URZhQ0jSi8pUUGXr/Rr0
-	NoiMVRSmTckRoGCjjhfdXwtD1s8k7Z1nqpD9A/c8z0y6RXkKS0dsfsatFr5s6g==
-Message-ID: <9efa9daa-6584-44b3-8055-bc160e46d8a5@mailbox.org>
-Date: Sun, 25 Jan 2026 21:24:42 +0100
+	 In-Reply-To:Content-Type; b=QxwO9lhjLWAxVuQgyAUTZYng+1GWJY27+RCubQF2eV5bb46bLRJAUmCtR7Dn/17+ADhyDRrXzJ8rIOKReWbLD7Q6qOb96x4D3AZkcMpEcG8PiVWfsW1l5JgNKqsHzvOxW0UWio1Wr9AcaSgPGiilx05mxDpKc6g0r5cqXe/W5Xg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: d8050ef2fa5c11f0b0f03b4cfa9209d1-20260126
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.6,REQID:c0f6efe4-0e63-43ae-ac9e-67f3ae7f1642,IP:0,UR
+	L:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:r
+	elease,TS:0
+X-CID-META: VersionHash:a9d874c,CLOUDID:7e547d82792cc2dc309ead04742bf7ae,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:80|81|82|83|102|898,TC:nil,Content:0|15|
+	52,EDM:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0
+	,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: d8050ef2fa5c11f0b0f03b4cfa9209d1-20260126
+X-User: tianyaxiong@kylinos.cn
+Received: from [10.42.13.21] [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <tianyaxiong@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_128_GCM_SHA256 128/128)
+	with ESMTP id 1287277219; Mon, 26 Jan 2026 10:15:11 +0800
+Message-ID: <b9c9eb84-04a9-4a16-9a31-df8216f3460b@kylinos.cn>
+Date: Mon, 26 Jan 2026 10:15:09 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Subject: Re: drm/imagination: genpd_runtime_suspend() crash
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Frank Binns <frank.binns@imgtec.com>, Matt Coster
- <matt.coster@imgtec.com>, Ulf Hansson <ulf.hansson@linaro.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- DRI Development <dri-devel@lists.freedesktop.org>,
- Linux PM list <linux-pm@vger.kernel.org>,
- Linux-Renesas <linux-renesas-soc@vger.kernel.org>
-References: <CAMuHMdWapT40hV3c+CSBqFOW05aWcV1a6v_NiJYgoYi0i9_PDQ@mail.gmail.com>
- <0e9f963b-00e0-43d1-b567-cb10b8f66df1@mailbox.org>
- <CAMuHMdVOUzanEufhWqOL0nv81xCYh4YNAX_waG6y9PyUZ030tg@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpufreq: intel_pstate: Disable SMT when hybrid systems
+ are enabled
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
+ srinivas.pandruvada@linux.intel.com, lenb@kernel.org,
+ viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20260119074118.835922-1-tianyaxiong@kylinos.cn>
+ <20260122155549.GA18021@ranerica-svr.sc.intel.com>
+ <7cc76b59-964d-4ce2-b3c4-e1337dbe0c67@kylinos.cn>
+ <CAJZ5v0ipPwmBe0bxKBJc203ug6ENzT6OEaOruyL=vUw6NWMZfQ@mail.gmail.com>
 Content-Language: en-US
-From: Marek Vasut <marek.vasut@mailbox.org>
-In-Reply-To: <CAMuHMdVOUzanEufhWqOL0nv81xCYh4YNAX_waG6y9PyUZ030tg@mail.gmail.com>
+From: Yaxiong Tian <tianyaxiong@kylinos.cn>
+In-Reply-To: <CAJZ5v0ipPwmBe0bxKBJc203ug6ENzT6OEaOruyL=vUw6NWMZfQ@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-MBO-RS-META: m7z9jqcet3zwhy5m8ud1ex4tencrz7fd
-X-MBO-RS-ID: 280231b825f43649aaa
+Content-Transfer-Encoding: 8bit
 
-On 1/22/26 4:35 PM, Geert Uytterhoeven wrote:
 
-Hello Geert,
-
->> Can you please test this change and see if it fixes the problem ?
+在 2026/1/24 04:12, Rafael J. Wysocki 写道:
+> On Fri, Jan 23, 2026 at 2:20 AM Yaxiong Tian <tianyaxiong@kylinos.cn> wrote:
 >>
->> The barrier should guarantee that the domain is settled and no more
->> callbacks are still running.
-> 
-> Thank you, that indeed fixes the issue!
-> 
-> However, I am not so sure this barrier belongs in the .detach_dev()
-> callback.  The documentation for almost all dev_pm_domain_{at,de}tach*()
-> functions states:
-> 
->       * Callers must ensure proper synchronization of this function with power
->       * management callbacks.
+>> 在 2026/1/22 23:55, Ricardo Neri 写道:
+>>> On Mon, Jan 19, 2026 at 03:41:18PM +0800, Yaxiong Tian wrote:
+>>>> When hwp_is_hybrid && !sched_smt_active(), the driver enables
+>>>> hybrid_capacity_scale and disables ITMT. According to the original code
+>>>> logic, these related actions are one-time operations; therefore, I
+>>>> believe the original design intent did not support dynamic runtime
+>>>> switching.
+>>>>
+>>>> However, SMT can be toggled via related interfaces in /sys. When SMT is
+>>>> enabled, the system is no longer hybrid, and the original settings become
+>>>> incorrect.
+>>> Indeed I was able to enable SMT siblings:
+>>>
+>>>        $ echo on > /sys/devices/system/cpu/smt
+>>>        $ echo 1 > /sys/devices/system/cpu/cpu1/online
+>>>
+>>>> To resolve this confusion, permanently disable SMT by calling
+>>>> cpuhp_smt_disable().
+>>> IMHO, the user should be able to enable SMT back if she or he chooses to. Instead,
+>>> the sched domains should be rebuilt with asym packing and without asymmetric
+>>> capacity.
+>> Yes, I also agree with this viewpoint.
+> I don't agree though.
+>
+>> I think a better solution is to
+>> place it within cpufreq online for heterogeneous judgment and to clearly
+>> address sched domain rebuilt and asymmetry issues.
+> Maybe in theory, but in practice the EAS-related code in intel_pstate
+> really only targets systems with no SMT.
+>
+> While it is possible to use it on SMT systems with SMT disabled, I
+> really wouldn't recommend doing that beyond debug/diagnostics and no,
+> it is not sufficient to disable stuff when SMT is re-enabled, you'd
+> basically need to unregister the driver and register it from scratch
+> in that case.
+Thank you for your explanation. It seems I didn’t read the document 
+carefully enough before.
 
-Isn't cpg_mssr_detach_dev() the caller in this case ?
+>
+>> I ran some tests the
+>> day before yesterday and encountered a few locking problems. I will
+>> publish the patch a bit later.
+> Given the complexity involved, I don't think it is worth the effort.
+>
+> I can apply this patch though.
 
-> However, I couldn't find any user that calls pm_runtime_barrier() first.
-> 
-> In case of multiple PM domains, it is even more complicated, as
-> dev_pm_domain_attach_list() (and pvr_power_domains_init(), which is
-> basically an open-coded variant of the former) creates a list of virtual
-> devices, which all need synchronization.  For the devres-enabled version
-> (devm_pm_domain_attach_list()), the caller cannot take care of calling
-> pm_runtime_barrier() anyway, so it has to be handled by the PM core?
+Um, although I've already done it, I agree with your point.
 
-I am also a bit surprised the PM core does not handle it.
+Besides, I don't think this patch is very suitable either, because I 
+supposethat on a n system without SMT, the SMT-related|/sys|interface 
+should indicate unsupported (though I don't have such a machine).
 
->> --- a/drivers/clk/renesas/renesas-cpg-mssr.c
->> +++ b/drivers/clk/renesas/renesas-cpg-mssr.c
->> @@ -24,6 +24,7 @@
->>    #include <linux/platform_device.h>
->>    #include <linux/pm_clock.h>
->>    #include <linux/pm_domain.h>
->> +#include <linux/pm_runtime.h>
->>    #include <linux/psci.h>
->>    #include <linux/reset-controller.h>
->>    #include <linux/slab.h>
->> @@ -656,8 +657,10 @@ int cpg_mssr_attach_dev(struct generic_pm_domain
->> *unused, struct device *dev)
->>
->>    void cpg_mssr_detach_dev(struct generic_pm_domain *unused, struct
->> device *dev)
->>    {
->> -       if (!pm_clk_no_clocks(dev))
->> +       if (!pm_clk_no_clocks(dev)) {
->> +               pm_runtime_barrier(dev);
->>                  pm_clk_destroy(dev);
->> +       }
->>    }
->>
->>    static void cpg_mssr_genpd_remove(void *data)
+Moreover, based on the previous discussion, would it be more appropriate 
+to use !cpu_smt_possible() instead of !sched_smt_active()? After all, 
+the original design was intended for systems without SMT. If you also 
+agree with this perspective, I can test it on a machine with SMT.
 
--- 
-Best regards,
-Marek Vasut
+
+
