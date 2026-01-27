@@ -1,221 +1,236 @@
-Received: from CH4PR04CU002.outbound.protection.outlook.com (mail-northcentralusazon11013028.outbound.protection.outlook.com [40.107.201.28])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C18A225775;
-	Tue, 27 Jan 2026 08:07:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.201.28
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769501253; cv=fail; b=CoLsoWaI6AgzS80x0y4Z4yR6k9qmHLXuqzL6YaiTjKlcrfls+2XZosNZUCLf2Vs3eH7qSHAt0dkw1FnphMrLYIACI0qBFwqFgNcQOgzlHSSWKynAyTJZhI27jCpDLtqKVmGt/YKZYleLdUNhyVbpYNZVQhq/Xih0hp/lxSB5hcw=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769501253; c=relaxed/simple;
-	bh=qgeyC7g3n0Blh4eYXkoay3vJNz60xO0BOxFuZsZUceI=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=NCn6fETQukGAt9gwLI/tLme5MWNgsCGCFmzadfEeeePlHIxznQZewt57AxFgOLo74PBby/MYkAq3fKatG9Z9JLD9iyfdK3qXGjF+GxbitK1RhopimHvREP5X43ugaQuzrfWcN8Yq7Utd1ZR0X+q7hHNFaiDNpDEEMiFy7JMCPpE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=DGsfWoft; arc=fail smtp.client-ip=40.107.201.28
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 322DA2C0270
+	for <linux-pm@vger.kernel.org>; Tue, 27 Jan 2026 09:01:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1769504512; cv=none; b=tfw56uA3otsRD+gRdCglmpGwe+dlAHhngTe31yHjzAbfOWLtn/45wF5nmTDUF8nFVLfo64IzT4WV/2WwoUEpwlbYPSRAE1AIighSAkgb1PLcY7aa9f47xTpH8r+l34Zc9O8g8n6k7ZLmWJ5B0EruJJegIevHOBvWZYUxT4FhMjg=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1769504512; c=relaxed/simple;
+	bh=Oik/qwTKsOA6npTm0TkNDx86wTm/52/PPO9Xasj6gTY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=a2MffiH8RgE/RFVfKbocq9CgACkl2xgJA++Z7zBnOvqMTYDOZ6M5gr52N2dsYxz+poTtv0mpXKl4N2eM3XcjzrNz2u3XG5muO9beLL6ODFK8VUw1H8rOLgo39iAX8AMhqKl//PgkodoupB0v01at7Lg9kUPUDAqBEVmlYUhpvw4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ltZ9Es4A; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=h/adpnTU; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="DGsfWoft"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=lSnAZN6Iau8+Kp6uAUlmubmH9klxrZAYDpOOBHgAOx4VvWLvnsZJ4vRVZfbqQJWUmBWffFm9pah2hEKT/cuwrNLAmZBFyzCHVgOvdTcVjp/OFb0stnbXK1SRfOazwchzTuDgpUTCRjtkI36GdXCP52gIjnbpxakmLuCr+vhyQJjPjJIVgNONuyqAD99AwHHLScKc6ClqslfuGppHxrXKqk4a4WtdKOiPifXsEQ98jy4S36WzRsMeyq0y5wNtasdwXpOODyleXfmEFoz5KUB40C664oI0os6gY9NStgrEROF0OIJvnA3hIYhhiMf8XSxJYsNDX7+DhjeYZJQbBebyYw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=dBd9iAsdM0uDnGnSqriuSE9SRmgRVRur+Y8Lpy/FyVo=;
- b=Q96q6hMRHPadSupg3ezTxPHhwjPkB4ezWNsoeqzIDOHSpSev3qBa5EoEo8APQ2CSWviJwezS1qzopzIdtMNNxJ+nwzL/KjYMXwJQiP/g5+oIr6tUSJhj5hWAAdxVKZvqPNz1snql/JyemRY/GN11r/TTb9ByPaKxUlJvi0uu8nkzPHF49DywyGF0js+iLe1LLus7W8BfsWWD6LokOp5KJDoCMwNeNaVbt/ILzjZhhisdNMU2Y0OHuR7pVXBdbagxF8sX6/R/7E8hgAyp7S5ojyYj752KKrlMUXvXSfXeQYqLGdCxGLoZmHhmnRsjbgGXzF3HdzC4EgaTtXj9EAD7QA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 216.228.117.161) smtp.rcpttodomain=arm.com smtp.mailfrom=nvidia.com;
- dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=dBd9iAsdM0uDnGnSqriuSE9SRmgRVRur+Y8Lpy/FyVo=;
- b=DGsfWoftAog9bJq3oYUfDT4/6UQ3iwlU6NSRj+h5uaHvlrpPRebWV+MAUPypJ/j9j1yEZMt1dGYYbRxWVpNcdGOP+5zJkDp1gVbkUbG6gVJ5YQUP96FnMW7H/rl/zJP2rJe8nJzCRYzn2miKJ7n54dGcYS3+831EG+THiQo3vINahXV2bZtqnI2O2FIa0ghIhYSyvwNiw2tUUkihpOwgW+Oe1vNRJkDpDP0SKIByqNBHI0esbctm8iTxL+RG9FY1SZpdySsFDNNDjUWbQj5UkviiXVTmWH/1Odmb+HEm+hjw5oO6qHM09mHflgHhs3lW3IZy2uQKgtHJDNICCX7YTg==
-Received: from BN9PR03CA0634.namprd03.prod.outlook.com (2603:10b6:408:13b::9)
- by DS7PR12MB6309.namprd12.prod.outlook.com (2603:10b6:8:96::19) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9542.15; Tue, 27 Jan
- 2026 08:07:25 +0000
-Received: from BN3PEPF0000B06E.namprd21.prod.outlook.com
- (2603:10b6:408:13b:cafe::1d) by BN9PR03CA0634.outlook.office365.com
- (2603:10b6:408:13b::9) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9542.16 via Frontend Transport; Tue,
- 27 Jan 2026 08:07:25 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.161)
- smtp.mailfrom=nvidia.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=nvidia.com;
-Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 216.228.117.161 as permitted sender) receiver=protection.outlook.com;
- client-ip=216.228.117.161; helo=mail.nvidia.com; pr=C
-Received: from mail.nvidia.com (216.228.117.161) by
- BN3PEPF0000B06E.mail.protection.outlook.com (10.167.243.73) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9587.0 via Frontend Transport; Tue, 27 Jan 2026 08:07:24 +0000
-Received: from rnnvmail201.nvidia.com (10.129.68.8) by mail.nvidia.com
- (10.129.200.67) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Tue, 27 Jan
- 2026 00:07:10 -0800
-Received: from rnnvmail202.nvidia.com (10.129.68.7) by rnnvmail201.nvidia.com
- (10.129.68.8) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Tue, 27 Jan
- 2026 00:07:07 -0800
-Received: from sumitg-l4t.nvidia.com (10.127.8.14) by mail.nvidia.com
- (10.129.68.7) with Microsoft SMTP Server id 15.2.2562.20 via Frontend
- Transport; Tue, 27 Jan 2026 00:07:03 -0800
-From: Sumit Gupta <sumitg@nvidia.com>
-To: <catalin.marinas@arm.com>, <will@kernel.org>, <zhanjie9@hisilicon.com>,
-	<zhenglifeng1@huawei.com>, <viresh.kumar@linaro.org>, <rafael@kernel.org>,
-	<beata.michalska@arm.com>, <pierre.gondois@arm.com>,
-	<ionela.voinescu@arm.com>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linux-tegra@vger.kernel.org>
-CC: <treding@nvidia.com>, <jonathanh@nvidia.com>, <bbasu@nvidia.com>,
-	<sumitg@nvidia.com>
-Subject: [PATCH] arm64: topology: Fix false warning in counters_read_on_cpu() for same-CPU reads
-Date: Tue, 27 Jan 2026 13:37:00 +0530
-Message-ID: <20260127080700.3565546-1-sumitg@nvidia.com>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ltZ9Es4A";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="h/adpnTU"
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 60R4UBEY495963
+	for <linux-pm@vger.kernel.org>; Tue, 27 Jan 2026 09:01:50 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	ITz6w/Q2w67Ducysc+bZG/olR38WeARfEZrkn5j4QzM=; b=ltZ9Es4AGHOwn0Dx
+	BKzhQMERsyzO8iV+NG6a1o3O8h7UyMG+PsMJGaDo8Vkg2PenXk03Z6WsI05owVX1
+	Fasvclv3l6qyd30iwLWubjv8hC9jZxU4zY0lqrx19VXEJ1lqWUiQ/pOHiCPY5WOO
+	4WCuedSVtNiIVMjEEBakhbTQwr/D9Afmxb+Ort4ZLlbgaV5cydHjol2ksww3oZTx
+	mvcXe/J3tbW6A4dCcZsj6z7MFq6OMT108WpKlH1062WOP4/kNMGawgCT4plK+TKI
+	X+n+JMx//adIDq7tuX0o9p9oNa4J4DgZ1TXWAvymu859m1FjmR2UkP34mDY1NZcW
+	oBlMyQ==
+Received: from mail-pf1-f198.google.com (mail-pf1-f198.google.com [209.85.210.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4bxf3bj263-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 27 Jan 2026 09:01:50 +0000 (GMT)
+Received: by mail-pf1-f198.google.com with SMTP id d2e1a72fcca58-81f42368322so4144612b3a.3
+        for <linux-pm@vger.kernel.org>; Tue, 27 Jan 2026 01:01:50 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1769504510; x=1770109310; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ITz6w/Q2w67Ducysc+bZG/olR38WeARfEZrkn5j4QzM=;
+        b=h/adpnTUUKY5cXD6CtlUbLu+3fDh9AfSvT4EsflaSTBsnrAsM7cdvfgfmELfzpxblD
+         grl9NIpdzWIG2XZ85Eno0G/nyUIN2i0wQqcmn5I1WDwm1jBLX77eWwjIcb0pwklgJk0t
+         6NnnLZPAUUR+bmU1VbK8WgX92vS/wKKv8sba2aFXLt+ly7aXHii0n9WLwpHt5Lp76BR5
+         JXu4fADR2xXTseoaVLR3jh5+zI/eOO5XbzqrLFNGuaU1uNK8P6zERbwB+XFIiCasvN7m
+         y1z3YZi9B56MRnlAGSoAm6yRFaGP/ABw/74Ls1qY/PKXiYk+gxRTiaKXpEZi0RZYLujk
+         TWwQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1769504510; x=1770109310;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=ITz6w/Q2w67Ducysc+bZG/olR38WeARfEZrkn5j4QzM=;
+        b=F58XoQBJkh0ruhXfvkIo4JpUi7PwFzNxiIteb4Pg4P+AX6SeGjJW0d8PFYtJ3sTp09
+         fRPMegVdbZOdrUrWGZvOle0did4yEJE9DyCeVPACwxsEiGdMRakyuBj37S10QkDD0uUc
+         3ZeEMMmPgzt05hEPBOMI32g82zSTywiaNrl1ys3VwQyBoNMGVLfrBv+NPR9WRy/JfLCX
+         p9nEuiQA6TWprBwAGhLxGJ7z7G6AypzXgpNytwVXH6JEFIa096L/NQymsJ8zDxomEhHH
+         fpaYxE+BY+HpeJMyp+YwOdccpgyN5AJtJYTvw7bS2pXzgl96tEW6Oh0AXkuSDrCrtRRx
+         x+0A==
+X-Forwarded-Encrypted: i=1; AJvYcCXvj6l7A4xDYd+CYF3LE/Tg2S7Cmw9q++FNQ4pCnol82HoGOrF3lsPM9tEhDKJMhWd+pr1pxFziyw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywvo6pt1JN2m791Kb1rP2AIxm1pSkbmnPq39t+YcL4u0qxmQtMT
+	Qq+ufhUucq+cgN6dmzvPmgK3Fdq7HY2pzcvIqxM+Fm5IXANxJAXr79MyrHmdg7D/F8xwFQoNxvJ
+	K+9OCqhHmuj6xnASfZxCjRieRNIhNPZZUU4Zwn3pIaZB1zjoxrUntLkDJDo3BNg==
+X-Gm-Gg: AZuq6aIyNGnciugScKwe73+QJWggNHxLLJ2lqPwlluEKuB63YciNSXrhMVC/wSzbgYX
+	ovgc6ezbC6FUGZXw7LxSLxIKodUaufZpl5mvB+I+NCPN6C3B2jgHJVRDtpFq0HcMkPadWVg9HFX
+	IX0WgzG5OutfUHZIHciconJI1TLoLkU9mtcSuxfWsWS4vAqlnWdKsFskeNPZQdCdW9iV8qEp/f3
+	sWvKXX1uP586+Ez6bNBmDw6zVZUAJSem/aSpSe8LG5mRAVSTrZfjMfUkxbH/a+36312hvF99Eo1
+	FplgxGMJLHQbTrr5IWiDdsh5KXX1BNPMEFLKpRqtu6Lv9VP3j19YqyxoM+zLM2ABNV/grmv5ZrU
+	Kr/jrjfOQAPFQEXwn8ubQIodRsB+BqbfzKgCjCzspruo=
+X-Received: by 2002:a05:6a00:1a17:b0:81b:c2b5:31a with SMTP id d2e1a72fcca58-823692bf878mr1087410b3a.53.1769504509698;
+        Tue, 27 Jan 2026 01:01:49 -0800 (PST)
+X-Received: by 2002:a05:6a00:1a17:b0:81b:c2b5:31a with SMTP id d2e1a72fcca58-823692bf878mr1087369b3a.53.1769504509180;
+        Tue, 27 Jan 2026 01:01:49 -0800 (PST)
+Received: from hu-okukatla-hyd.qualcomm.com ([202.46.22.19])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8231873bf53sm11579228b3a.45.2026.01.27.01.01.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 27 Jan 2026 01:01:48 -0800 (PST)
+From: Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>
+To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>
+Cc: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>,
+        Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Mike Tipton <mike.tipton@oss.qualcomm.com>
+Subject: [PATCH v2 1/3] dt-bindings: interconnect: qcom,qcs8300-rpmh: add clocks property to enable QoS
+Date: Tue, 27 Jan 2026 14:31:14 +0530
+Message-ID: <20260127090116.1438780-2-odelu.kukatla@oss.qualcomm.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260127090116.1438780-1-odelu.kukatla@oss.qualcomm.com>
+References: <20260127090116.1438780-1-odelu.kukatla@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-NVConfidentiality: public
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-NV-OnPremToCloud: ExternallySecured
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN3PEPF0000B06E:EE_|DS7PR12MB6309:EE_
-X-MS-Office365-Filtering-Correlation-Id: 427c725f-c8d6-4d1a-bbb8-08de5d7b1b2f
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|7416014|376014|1800799024|36860700013|921020;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?f096rxUs+XVtb9etbe9dtpB6dUteQ949mbRFTpaOZKSf+8FENQ5F9NW9K6GJ?=
- =?us-ascii?Q?LCnGxSSwZlG4ldfck6urm6947oAzeGwB+49qTLpSk+C7HqPURMpJOzFpFp8h?=
- =?us-ascii?Q?3PYeiq4f1fuFT6bTIzmgNHr/ZCQB0Jm210xOW4RMxs+cNHViRMdbhxd9dlPk?=
- =?us-ascii?Q?9yWOKB2RacsSWfecNsya/0IBM+wtIqDLMVIsbc+UvtL0R0U/jy3c1VSG/em/?=
- =?us-ascii?Q?Zx/ZUaKfY9RI1HiCBNFaEI9Eq7YCjMm//+0knDpq8JmeQEKJguaEYiC/TEIp?=
- =?us-ascii?Q?TC9I7ZTHNarLLC+gn9lAKoLX20xYPP1ZVh/7COupt+XElROqvzZQKWe5mkG1?=
- =?us-ascii?Q?17/JoFn4KGNVYQtEux8fAkrRbL5yd2ZG+7J8MR+zS/wLHEkxbiMhMNKtV6eX?=
- =?us-ascii?Q?N93Q5EVU8MhysyW1fF/V73+n9jbK+Ice/p4qIVoEwnZtb+VZXoGtHi8ItzFB?=
- =?us-ascii?Q?lCjAaXbf7qqpxoUZl3IXgP9lUs8svO9VuP4IO6LmhdylECS0Awri9VSOO8Zj?=
- =?us-ascii?Q?o5lTRJTG3cKQRL7TRz9f2wifs04i6t2wfM5beOmmX3pKsAJKh6Cwm8au1Tuv?=
- =?us-ascii?Q?xRyHpyInsG2Y/CPgPFn+2CeF1VIMP+Yq7rWhskWhKJ2Rn1/HieVIwBilOnQ2?=
- =?us-ascii?Q?Sm/SWKfYEVHQL2lqlOzMMueGwPglgxWgy9o/ao/m2SYXQMOFJISp/cV9h9Hb?=
- =?us-ascii?Q?TF0+QDvhL1k/j7QmoorLoSfehe8eg1pFl22ce/IxebI6tfckd/jnR10mT+m7?=
- =?us-ascii?Q?4IgQH+pMFTMUo7lHnmqtgwKKGBq3UG67eCs3uvh4B0bwLcnALi3WBTr55DZx?=
- =?us-ascii?Q?Yl5bBkTOuLfcaslghPAyj46OHuu49XdvzI9X+TIfy4qzIhd8gtTMxKepgd6C?=
- =?us-ascii?Q?bYUernUQ+zEio2860zIHoNFN8/fNkcstBsXqFgfLaJFf5AWrhQlg/QOBmqoK?=
- =?us-ascii?Q?TEhrKZlp4nJnizovhHcw2dXwCf1Us8/jJz2XvMkGjD0lhfMob3L6nwgvypqw?=
- =?us-ascii?Q?FUvsYOHlcBEjpg3OlhUQlbhGFm8yWb+oQPfb6PKde6ckAESal0hoRk6rgc1o?=
- =?us-ascii?Q?rKBDWlr1E5zVtUGEXNwJz9dqXVAK6nzCE058SISCvQRvVxX7ADGI7T8LbC2W?=
- =?us-ascii?Q?Kg5YsADq77KJGr+B+1JjhclHq8J4f5+Gz3+OoSAJfsE0xd5KvWmTP9y4RDCm?=
- =?us-ascii?Q?QyFVDo84MJ3f7e63oNd06Gwwp8srY/p7PShY7VY2m02obO+hWxbGSFmHgDIq?=
- =?us-ascii?Q?Q5Oq3JqhlsANNbfRlZIteAdUdSDosLD+6Kt8moa4V+Lwc55gvUlXfvO1EnWv?=
- =?us-ascii?Q?tS0pnSbxeKRiwimNRZ42sOvpDtqwAM8qGI1FLXzPE8uq9RbWnjUYSb3gVzin?=
- =?us-ascii?Q?fqfmctqeKLNEMcDtvbqZwrHUX2lbb/P4+gKNyPHBz9pvxnFnZXQo19Di700z?=
- =?us-ascii?Q?mBRMsmmmklVb8HQ/ucOoq/AqSn+2Z1aJyI52taynRmJ4taKvP39iw6UixIBf?=
- =?us-ascii?Q?811ZK0zlKex23POYYESnsbcSg9DSLy4d74l5GlrlGUOoeJ8CXebMR4FJ4pe7?=
- =?us-ascii?Q?sodNDp6r+yzmV4SWYu8wdM3CmB7wZp7U/EqzzJ5H8T2wfsB3ViwM2ii5fa+D?=
- =?us-ascii?Q?/FGWk9Ja/Pk5RDnga4l59EIJE/LRB8m2t5qFhH6Zuea7N4PxvKyAIxv2Sbxx?=
- =?us-ascii?Q?AbvSWiVDKIiBI074SdbuDYv5Dv4=3D?=
-X-Forefront-Antispam-Report:
-	CIP:216.228.117.161;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge2.nvidia.com;CAT:NONE;SFS:(13230040)(82310400026)(7416014)(376014)(1800799024)(36860700013)(921020);DIR:OUT;SFP:1101;
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Jan 2026 08:07:24.9772
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 427c725f-c8d6-4d1a-bbb8-08de5d7b1b2f
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.161];Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	BN3PEPF0000B06E.namprd21.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS7PR12MB6309
+X-Proofpoint-ORIG-GUID: Xho3TsbRPTe4Ez6VBXk5fT3l7EwPGRhm
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTI3MDA3MyBTYWx0ZWRfX2YH0eRj7lutD
+ LOw96doaFcRw9BgWTUmpWjBtRQR9YPADGyDS696aY99dbG106pXp4SK9ty2pVJYBQL42votjKj2
+ fkLFRiRKG6MDoqWvoRSYp0v/TC98Veu+MKYEYXvaoeSp+kekqGmCvuAspjMM6KmstvIQjXfE92c
+ ETVpITgoa96hGXF6op3fGaCsJ2DQxOu/V35Kj9adZYH7w/LbzYE/Sk2Q2o3gbcGnpAR/vMxQ0dR
+ nlH5w7hcE7Cw9uciloBS0rKZEpURvVyHTguUR0DPdI7xzD800vw1wmngMItOCz04akecLwHryka
+ zG+HapJVu251XyBuAG/NSS/U37rXeYvUvUaBBTdeLvZQdQlO2Hn1TuXT75YRtyo2T3pwrH4jxe+
+ hb+T1zITaXj8zeSuRCUxZQJWOAlqtSZD2mgj3gMMqGcICVdNZ3wS97xGNqKDAdau5fPP+i+r14C
+ 3Kal4Jjp4C26ipW5h1Q==
+X-Proofpoint-GUID: Xho3TsbRPTe4Ez6VBXk5fT3l7EwPGRhm
+X-Authority-Analysis: v=2.4 cv=AOFXvqQI c=1 sm=1 tr=0 ts=69787efe cx=c_pps
+ a=m5Vt/hrsBiPMCU0y4gIsQw==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+ a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=EUspDBNiAAAA:8 a=OrdcpLHLpR68xOABugYA:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10 a=IoOABgeZipijB_acs4fv:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.20,FMLib:17.12.100.49
+ definitions=2026-01-27_01,2026-01-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 suspectscore=0 phishscore=0 adultscore=0 priorityscore=1501
+ lowpriorityscore=0 bulkscore=0 spamscore=0 impostorscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2601270073
 
-The counters_read_on_cpu() function warns when called with IRQs disabled
-to prevent deadlock in smp_call_function_single(). However, this warning
-is spurious when reading counters on the current CPU since no IPI is
-needed for same-CPU reads.
+Some QCS8300 interconnect nodes have QoS registers located inside
+a block whose interface is clock-gated. For those nodes, driver
+must enable the corresponding clock(s) before accessing the
+registers. Add the 'clocks' property so the driver can obtain
+and enable the required clock(s).
 
-Commit 12eb8f4fff24 ("cpufreq: CPPC: Update FIE arch_freq_scale in ticks
-for non-PCC regs") changed the CPPC Frequency Invariance Engine to read
-AMU counters directly from the scheduler tick for non-PCC register
-spaces (like FFH), instead of deferring to a kthread. This means
-counters_read_on_cpu() is now called with IRQs disabled from the tick
-handler, triggering the warning:
+Only interconnects that have clock‑gated QoS register interface
+use this property; it is not applicable to all interconnect nodes.
 
-| WARNING: arch/arm64/kernel/topology.c:410 at counters_read_on_cpu
-| ...
-| Call trace:
-|  counters_read_on_cpu+0x88/0xa8 (P)
-|  cpc_read_ffh+0xdc/0x148
-|  cpc_read+0x260/0x518
-|  cppc_get_perf_ctrs+0xf0/0x398
-|  __cppc_scale_freq_tick+0x4c/0x148 [cppc_cpufreq]
-|  cppc_scale_freq_tick+0x44/0x88 [cppc_cpufreq]
-|  topology_scale_freq_tick+0x34/0x58
-|  sched_tick+0x58/0x300
-|  update_process_times+0xcc/0x120
-|  tick_nohz_handler+0xa8/0x260
-|  __hrtimer_run_queues+0x154/0x360
-|  hrtimer_interrupt+0xf4/0x2b0
-|  arch_timer_handler_phys+0x4c/0x78
-|  ....
-|  CPPC Cpufreq:__cppc_scale_freq_tick: failed to read perf counters
-|  ....
-
-Fix this by calling the counter read function directly for same-CPU
-case, bypassing smp_call_function_single() entirely. Use get_cpu() to
-disable preemption as the counter read functions call this_cpu_has_cap()
-which requires a non-preemptible context.
-
-Fixes: 12eb8f4fff24 ("cpufreq: CPPC: Update FIE arch_freq_scale in ticks for non-PCC regs")
-Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+Signed-off-by: Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>
 ---
- arch/arm64/kernel/topology.c | 21 +++++++++++++++++++--
- 1 file changed, 19 insertions(+), 2 deletions(-)
+ .../interconnect/qcom,qcs8300-rpmh.yaml       | 63 +++++++++++++++++++
+ 1 file changed, 63 insertions(+)
 
-diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
-index 539b38935182..57b71f403007 100644
---- a/arch/arm64/kernel/topology.c
-+++ b/arch/arm64/kernel/topology.c
-@@ -401,12 +401,29 @@ static inline
- int counters_read_on_cpu(int cpu, smp_call_func_t func, u64 *val)
- {
- 	/*
--	 * Abort call on counterless CPU or when interrupts are
--	 * disabled - can lead to deadlock in smp sync call.
-+	 * Abort call on counterless CPU.
- 	 */
- 	if (!cpu_has_amu_feat(cpu))
- 		return -EOPNOTSUPP;
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,qcs8300-rpmh.yaml b/Documentation/devicetree/bindings/interconnect/qcom,qcs8300-rpmh.yaml
+index e9f528d6d9a8..88fe17277110 100644
+--- a/Documentation/devicetree/bindings/interconnect/qcom,qcs8300-rpmh.yaml
++++ b/Documentation/devicetree/bindings/interconnect/qcom,qcs8300-rpmh.yaml
+@@ -35,6 +35,10 @@ properties:
+   reg:
+     maxItems: 1
  
-+	/*
-+	 * For same-CPU reads, call the function directly since no IPI
-+	 * is needed and this is safe even with IRQs disabled.
-+	 * Use get_cpu() to disable preemption as the counter read
-+	 * functions call this_cpu_has_cap() which requires a
-+	 * non-preemptible context.
-+	 */
-+	if (cpu == get_cpu()) {
-+		func(val);
-+		put_cpu();
-+		return 0;
-+	}
-+	put_cpu();
++  clocks:
++    minItems: 1
++    maxItems: 4
 +
-+	/*
-+	 * Reading from a remote CPU requires IRQs enabled to avoid
-+	 * deadlock in smp_call_function_single().
-+	 */
- 	if (WARN_ON_ONCE(irqs_disabled()))
- 		return -EPERM;
+ required:
+   - compatible
  
+@@ -54,6 +58,64 @@ allOf:
+       required:
+         - reg
+ 
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,qcs8300-aggre1-noc
++    then:
++      properties:
++        clocks:
++          items:
++            - description: aggre UFS PHY AXI clock
++            - description: aggre QUP PRIM AXI clock
++            - description: aggre USB2 PRIM AXI clock
++            - description: aggre USB3 PRIM AXI clock
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,qcs8300-aggre2-noc
++    then:
++      properties:
++        clocks:
++          items:
++            - description: RPMH CC IPA clock
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,qcs8300-gem-noc
++    then:
++      properties:
++        clocks:
++          items:
++            - description: GCC DDRSS GPU AXI clock
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,qcs8300-clk-virt
++              - qcom,qcs8300-config-noc
++              - qcom,qcs8300-dc-noc
++              - qcom,qcs8300-gpdsp-anoc
++              - qcom,qcs8300-lpass-ag-noc
++              - qcom,qcs8300-mc-virt
++              - qcom,qcs8300-mmss-noc
++              - qcom,qcs8300-nspa-noc
++              - qcom,qcs8300-pcie-anoc
++              - qcom,qcs8300-system-noc
++    then:
++      properties:
++        clocks: false
++
+ unevaluatedProperties: false
+ 
+ examples:
+@@ -63,6 +125,7 @@ examples:
+         reg = <0x9100000 0xf7080>;
+         #interconnect-cells = <2>;
+         qcom,bcm-voters = <&apps_bcm_voter>;
++        clocks = <&gcc_ddrss_gpu_axi_clk>;
+     };
+ 
+     clk_virt: interconnect-0 {
 -- 
-2.34.1
+2.43.0
 
