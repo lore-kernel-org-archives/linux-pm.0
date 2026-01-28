@@ -1,154 +1,79 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2382536BCE6;
-	Wed, 28 Jan 2026 16:54:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 4EF332F1FC4;
+	Wed, 28 Jan 2026 16:56:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769619247; cv=none; b=Q4jIO0/aNYlisLJ/zLApbaTou7Xb0Yq77HbpGHWRWUnkCZS1xcaF9tkCKFUA9cMUC4Kxd/t/i3z8YarWFRzFk0AYj8ZqD2KqovAsshRkpxerkHGUGG4sj0rn1CcpcRjRvLJVeE4GytoKphLPoVfNR5GoCWpFiL8AEa/sgaDZ/yA=
+	t=1769619414; cv=none; b=b94RhC58dQ5OurzRmSgPpoJBHoRitITiodttAM1wZUPOQeHPZc99rZF2xWkuFWWoprjbLJ/JjJcq1rAs0RjXOHkkikKATbC/Ki7922A6WCrCQNo5mbviNcVdidyPpsHTgTJPlkJ0yCVJzLE23gfFZW6dvTjdtR+AtTtp5S4Lqns=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769619247; c=relaxed/simple;
-	bh=wjD1JjU+ufMC6qAGdcVwazuGSHIwkRbdDsek0eB02g0=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=GY7qNexGX08N67LHDODYbgJxMbhm1qGzWDMHK5w9AJCmnXvuXS5IaQCmnE0ljKyOB2KxN+amg/Xopb6gB2mZZkC6yWa8A7poKs2S/VxaYtGs/ternqAgI5Wq8ROOjAMtwrucYGznpgX6P3AVFocRxltuwcEJfXAfsKGnQATQiRc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=f71woEqR; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="f71woEqR"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 70ABCC4CEF1;
-	Wed, 28 Jan 2026 16:54:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1769619246;
-	bh=wjD1JjU+ufMC6qAGdcVwazuGSHIwkRbdDsek0eB02g0=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=f71woEqR3TUr+lS24Y4wNcYEiO6+oCU4HWInsmAWCYA1950UIl6+PYOG6Meoz/M5b
-	 i78IMS/LFpX7BMHpXqZ0iX3CmegKGCyiytk0l0J1zrEgR+b2OV/Me9v+EqlszCDPP/
-	 DsoN2t9EUwlT7yCuZ5hEbFAI2m22a8rswfn6/YKXMJmsXR3pfP6U7YUtqToVSCSZkK
-	 fJFzwRbs0FNej8C30P0BzPokpFD9HcQ/i5okTPETjUJfEdQmi71nzMDrIAfxZLJihU
-	 4vXsEtQVK8KwVyIyWWTlIyoB8WfgNkgt80yBX1Elq1e7fuMzIKO+9wwSU6DQ5lMcXP
-	 DWESbn/ZURc7g==
-Date: Wed, 28 Jan 2026 10:54:04 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Damien Le Moal <dlemoal@kernel.org>,
-	Niklas Cassel <cassel@kernel.org>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Bartosz Golaszewski <brgl@kernel.org>, linux-kernel@vger.kernel.org,
-	linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org,
-	Stephan Gerhold <stephan.gerhold@linaro.org>,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-	linux-pm@vger.kernel.org, linux-ide@vger.kernel.org,
-	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-Subject: Re: [PATCH v7 0/2] PCI: Add initial support for handling PCIe M.2
- connectors in devicetree
-Message-ID: <20260128165404.GA421308@bhelgaas>
+	s=arc-20240116; t=1769619414; c=relaxed/simple;
+	bh=VgLFHYa8d8/t8THMJTYEsedJ/V/NSWe49J4zxdjlRo4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Z4f+subYtgVs6JOT1ophtSPUqFxtN0UOcBZ4t9obmg9wEIx2YnuLOaAmjl92kf7HbXAhYmOAIW5h2SU1xVuTi4bYr5WxuMsK7jdwtGjIFj7Ln5JJUPpcSfZKaSZUn7aRb28t8ko37rW7rdM3AE4ZA5Ox3lEk248q3hLJDykWBZE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2C6B91516;
+	Wed, 28 Jan 2026 08:56:46 -0800 (PST)
+Received: from [10.57.17.95] (unknown [10.57.17.95])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 25DB43F73F;
+	Wed, 28 Jan 2026 08:56:50 -0800 (PST)
+Message-ID: <900eefbb-1297-4d73-9a60-cee6bf43bd5c@arm.com>
+Date: Wed, 28 Jan 2026 16:56:53 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260128-pci-m2-v7-0-9b3a5fe3d244@oss.qualcomm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] thermal/drivers/airoha: Fix a device node reference leak
+ in airoha_thermal_probe()
+To: Felix Gu <ustc.gu@gmail.com>
+Cc: linux-pm@vger.kernel.org, Christian Marangi <ansuelsmth@gmail.com>,
+ linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>
+References: <20260123-airoha-v1-1-ab167bb12fb7@gmail.com>
+Content-Language: en-US
+From: Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <20260123-airoha-v1-1-ab167bb12fb7@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Wed, Jan 28, 2026 at 09:07:14PM +0530, Manivannan Sadhasivam wrote:
-> Hi,
-> 
-> This series is an initial attempt to support the PCIe M.2 connectors in the
-> kernel and devicetree binding. The PCIe M.2 connectors as defined in the PCI
-> Express M.2 Specification are widely used in Notebooks/Tablet form factors (even
-> in PCs). On the ACPI platforms, power to these connectors are mostly handled by
-> the firmware/BIOS and the kernel never bothered to directly power manage them as
-> like other PCIe connectors. But on the devicetree platforms, the kernel needs to
-> power manage these connectors with the help of the devicetree description. But
-> so far, there is no proper representation of the M.2 connectors in devicetree
-> binding. This forced the developers to fake the M.2 connectors as PMU nodes [1]
-> and fixed regulators in devicetree.
-> 
-> So to properly support the M.2 connectors in devicetree platforms, this series
-> introduces the devicetree binding for Mechanical Key M connector as an example
-> and also the corresponding pwrseq driver and PCI changes in kernel to driver the
-> connector.
-> 
-> The Mechanical Key M connector is used to connect SSDs to the host machine over
-> PCIe/SATA interfaces. Due to the hardware constraints, this series only adds
-> support for driving the PCIe interface of the connector in the kernel.
-> 
-> Also, the optional interfaces supported by the Key M connectors are not
-> supported in the driver and left for the future enhancements.
-> 
-> Testing
-> =======
-> 
-> This series, together with the devicetree changes [2] [3] were tested on the
-> Qualcomm X1e based Lenovo Thinkpad T14s Laptop which has the NVMe SSD connected
-> over PCIe.
-> 
-> [1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/arch/arm64/boot/dts/qcom/x1e80100-qcp.dts?h=v6.18-rc4&id=d09ab685a8f51ba412d37305ea62628a01cbea57
-> [2] https://github.com/Mani-Sadhasivam/linux/commit/40120d02219f34d2040ffa6328f0d406b1e4c04d
-> [3] https://github.com/Mani-Sadhasivam/linux/commit/ff6c3075836cc794a3700b0ec6a4a9eb21d14c6f
-> 
-> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-> ---
-> Changes in v7:
-> - Dropped the pwrseq and binding patches as they got applied
-> - Rebased on top of pci/pwrctrl branch
-> - Link to v6: https://lore.kernel.org/r/20260122-pci-m2-v6-0-575da9f97239@oss.qualcomm.com
-> 
-> Changes in v6:
-> - Used 'ports' to describe interfaces instead of endpoints in the binding
-> - Added GPIOs and USB to the example in binding
-> - Incorporated minor comments in the pwrseq driver
-> - Dropped the ata binding patch as it got applied
-> - Link to v5: https://lore.kernel.org/r/20260107-pci-m2-v5-0-8173d8a72641@oss.qualcomm.com
-> 
-> Changes in v5:
-> - used of_node_get() and devm_action to free regulators
-> - Link to v4: https://lore.kernel.org/r/20251228-pci-m2-v4-0-5684868b0d5f@oss.qualcomm.com
-> 
-> Changes in v4:
-> - Added graph property to SATA in this series and PCI to dtschema:
->   https://github.com/devicetree-org/dt-schema/pull/180
-> - Used 'i2c-parent' instead of SMBus port
-> - Reworded the -gpios property description
-> - Rebased on top of v6.19-rc1
-> - Link to v3: https://lore.kernel.org/r/20251125-pci-m2-v3-0-c528042aea47@oss.qualcomm.com
-> 
-> Changes in v3:
-> - Changed the VIO supply name as per dtschema
-> - Added explicit endpoint properties to port 0 node for host I/F
-> - Used scope based cleanup for OF node in pwrseq driver
-> - Collected review tags
-> - Link to v2: https://lore.kernel.org/r/20251108-pci-m2-v2-0-e8bc4d7bf42d@oss.qualcomm.com
-> 
-> Changes in v2:
-> - Incorporated comments from Bartosz and Frank for pwrseq and dt-binding
->   patches, especially adding the pwrseq match() code.
-> - Link to v1: https://lore.kernel.org/r/20251105-pci-m2-v1-0-84b5f1f1e5e8@oss.qualcomm.com
-> 
-> ---
-> Manivannan Sadhasivam (2):
->       PCI/pwrctrl: Add support for handling PCIe M.2 connectors
->       PCI/pwrctrl: Create pwrctrl device if the graph port is found
-> 
->  drivers/pci/pwrctrl/Kconfig |  1 +
->  drivers/pci/pwrctrl/core.c  |  7 ++++---
->  drivers/pci/pwrctrl/slot.c  | 31 +++++++++++++++++++++++++++----
->  3 files changed, 32 insertions(+), 7 deletions(-)
-> ---
-> base-commit: 3e7f562e20ee87a25e104ef4fce557d39d62fa85
-> change-id: 20251103-pci-m2-7633631b6faa
-> 
-> Best regards,
-> -- 
-> Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-> 
+Hi Felix,
 
-Applied to pci/pwrctrl for v6.20, thanks!
+On 1/23/26 11:55, Felix Gu wrote:
+> In airoha_thermal_probe() function, chip-scu node is acquired through
+> of_parse_phandle(), but it fails to release this reference if
+> syscon_node_to_regmap() returns an error.
+> Add the missing of_node_put() call to the error path to ensure the
+> reference count is properly decremented.
+> 
+> Fixes: 42de37f40e1b ("thermal/drivers: Add support for Airoha EN7581 thermal sensor")
+> Signed-off-by: Felix Gu <ustc.gu@gmail.com>
+> ---
+>   drivers/thermal/airoha_thermal.c | 4 +++-
+>   1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/airoha_thermal.c b/drivers/thermal/airoha_thermal.c
+> index b9fd6bfc88e5..308ea846ba26 100644
+> --- a/drivers/thermal/airoha_thermal.c
+> +++ b/drivers/thermal/airoha_thermal.c
+> @@ -431,8 +431,10 @@ static int airoha_thermal_probe(struct platform_device *pdev)
+>   		return -EINVAL;
+>   
+>   	priv->chip_scu = syscon_node_to_regmap(chip_scu_np);
+> -	if (IS_ERR(priv->chip_scu))
+> +	if (IS_ERR(priv->chip_scu)) {
+> +		of_node_put(chip_scu_np);
+>   		return PTR_ERR(priv->chip_scu);
+> +	}
+>   
+>   	of_address_to_resource(chip_scu_np, 0, &priv->scu_adc_res);
+>   	of_node_put(chip_scu_np);
+
+Thank you for the patch, LGTM.
+
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+
+
