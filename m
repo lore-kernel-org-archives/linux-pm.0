@@ -1,48 +1,48 @@
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D77E12F7ABB;
-	Thu, 29 Jan 2026 18:37:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C39ED2F9984;
+	Thu, 29 Jan 2026 18:37:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769711827; cv=none; b=pvVtoxksW+4rM/lG5CuBQh4/+hPxfOV6XVTIUkkNCs9ArWIF3PzIbfbpYcGl3l4E4Farfcwl8aeUF2VjJ3f91t6x95NAD1hkXSGn0GWtJ/QYMWG8TxprRskmYi5QCJ+kQw59F0DB0kgrLNfYnjTDYGA6CA2mSBLDm0m4VskrHYE=
+	t=1769711828; cv=none; b=sNOH+jOOVQkdoCY36ucyp8iWWi62I6GaYfvOf2+GsO5d/BFbxL9Td/YVwGzFb0i57V/CuExqDzicZyYR9lJG1lQRoBKxZens0h9IzulljYfjR5YyuKmILkjgj6lENHLYEP4KI0Qt1J4RRl0IKfzsFdyGmnhMqFGVIwF7fzZPGHY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769711827; c=relaxed/simple;
-	bh=P7qDJl9poxdlAgRPdvy39YWN+7mXrtTmMuaKyU1I1f8=;
+	s=arc-20240116; t=1769711828; c=relaxed/simple;
+	bh=RQXf3rqsQ3wvdkn5lJc58ZpRzqeHt4q+lDv4SoGb6Es=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=V2URo94Y9puHg8zBjPHxknNx4u2gOL9Mih/XeTfr7c4SeXlROTGqleyy9qNsQjDrPuZGjIumFMDjji3wOnz+DJcdEbmlBYly3e8bA98JG0rg8+kmDegxnM5qhewwED+bSBZW04TnQGc5UuuWAIz5Sq3I8gvh7bZbGGzQqhpR17A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=nMCXSuMi; arc=none smtp.client-ip=198.175.65.12
+	 MIME-Version; b=uchWsZk0pH8YaMWaNfVIYSeoPCUCLEGuGH8fCMpguviWRrP7AuCsIGzLrNkw7ycT6Ka7rs3B7VhjuMnwzK164TzeAEVtlDs6AO+ZAXiEfPj0lScK4vmZMSKlrnvFZFrTipoT3SQEslJFAw92QXWztXsdhFoW9aP+5G2X/WPbjS4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=bglzhkLj; arc=none smtp.client-ip=198.175.65.12
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="nMCXSuMi"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="bglzhkLj"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1769711826; x=1801247826;
+  t=1769711827; x=1801247827;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=P7qDJl9poxdlAgRPdvy39YWN+7mXrtTmMuaKyU1I1f8=;
-  b=nMCXSuMiB1nqWsXD9560HMeDfVGB2UZO3HULNzE8LatNSW2Ue02RH4sO
-   Jcdu/OWAmth6NxWMKO2th06ArDFWhEy0DdPEITBmQaS/87c5sKbTYgKQh
-   08Wfb3zZB9im9Y+8d2TUFPDkYl3ygOd9Qb8Qd7GypnCLV1QCfiDshQMBe
-   MbuzZll4VLRhO4CZlxVvqPe0frvDQVZl9V9iRNOdlaBhYo+YB48qMmG+Q
-   vZHA6Nxa2cz9NeVVQMx1emN6NfGg8HxN1BeJDUfODbiG+UvY5fR3cKDZA
-   qyQbC5F6wqdJ3e9Ig4ZUee+d+T4/Nv2AekdxAXVKJVgCrEQ1chNnG18j4
-   Q==;
-X-CSE-ConnectionGUID: +3yYnf5ARNiC2gEO+AciRQ==
-X-CSE-MsgGUID: JFNKUDskQFCzCVYVy27yig==
-X-IronPort-AV: E=McAfee;i="6800,10657,11686"; a="82388344"
+  bh=RQXf3rqsQ3wvdkn5lJc58ZpRzqeHt4q+lDv4SoGb6Es=;
+  b=bglzhkLjv4ScIfZJ2JjBlfO2spYSXTO18b/HcxQcR71Jg6JMHLY/U+wM
+   tAQFEihiJi34X0Tmsp0StkkxMBcXmp6DMha9eYha1ETRrxBz+Ahe7DvOp
+   Xg4wUJoyf9oJTpbGRrH+Nv85BHPggdUB9qilXvbQSBp5WZtfdhWQqOOmX
+   2a+5rqfAw0oz+zpfh/JJN8WJvofw1S2zeDmyhvr1te6yuoiyJyVhGwk93
+   trdkufdqxxdmWfTNXT9SfE6/1wZFACRrH57DNYzdduLXPMPKTb2P11wMY
+   Vxhj5dzeWzMLI80tKixToNVXg+QmkIm1m6k4LNeX/GQtY7MV+VflNMOL+
+   A==;
+X-CSE-ConnectionGUID: hhxXC/ooSgCT9vr89Gim+g==
+X-CSE-MsgGUID: DVea+I2STuiM1S+YNpBvqw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11686"; a="82388360"
 X-IronPort-AV: E=Sophos;i="6.21,261,1763452800"; 
-   d="scan'208";a="82388344"
+   d="scan'208";a="82388360"
 Received: from fmviesa009.fm.intel.com ([10.60.135.149])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jan 2026 10:37:04 -0800
-X-CSE-ConnectionGUID: QaZmCnzgRLyAieugw09aww==
-X-CSE-MsgGUID: RJbHqI4MQrG1f79SmpA/5Q==
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jan 2026 10:37:06 -0800
+X-CSE-ConnectionGUID: N0qi9STRRCmnZewdmkFusg==
+X-CSE-MsgGUID: ST4YKXsSR2K9pSkqrGJsBQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.21,261,1763452800"; 
-   d="scan'208";a="209070953"
+   d="scan'208";a="209070961"
 Received: from skuppusw-desk2.jf.intel.com ([10.165.154.101])
-  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jan 2026 10:37:04 -0800
+  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jan 2026 10:37:05 -0800
 From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 To: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@linaro.org>
@@ -51,9 +51,9 @@ Cc: Zhang Rui <rui.zhang@intel.com>,
 	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v1 1/9] powercap: intel_rapl: Add a symbol namespace for intel_rapl exports
-Date: Thu, 29 Jan 2026 10:36:38 -0800
-Message-ID: <20260129183646.558866-2-sathyanarayanan.kuppuswamy@linux.intel.com>
+Subject: [PATCH v1 3/9] powercap: intel_rapl: Use GENMASK() and BIT() macros
+Date: Thu, 29 Jan 2026 10:36:40 -0800
+Message-ID: <20260129183646.558866-4-sathyanarayanan.kuppuswamy@linux.intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260129183646.558866-1-sathyanarayanan.kuppuswamy@linux.intel.com>
 References: <20260129183646.558866-1-sathyanarayanan.kuppuswamy@linux.intel.com>
@@ -65,147 +65,192 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Cleanup of the intel_rapl common driver requires introducing additional
-exported helper and lifecycle functions. Before adding new exports,
-create a dedicated symbol namespace for intel_rapl and update the
-relevant interface drivers to explicitly import it.
+Replace hardcoded bitmasks and bit shift operations with standard
+GENMASK(), GENMASK_ULL(), BIT(), and BIT_ULL() macros for better
+readability and to follow kernel coding conventions.
 
-This makes the intended usage of these symbols explicit, avoids
-polluting the global namespace, and prepares the codebase for the
-ongoing RAPL refactoring.
-
-No functional changes are intended.
+No functional changes.
 
 Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 ---
- drivers/powercap/intel_rapl_common.c          | 20 +++++++++----------
- drivers/powercap/intel_rapl_msr.c             |  1 +
- drivers/powercap/intel_rapl_tpmi.c            |  1 +
- .../int340x_thermal/processor_thermal_rapl.c  |  1 +
- 4 files changed, 13 insertions(+), 10 deletions(-)
+ drivers/powercap/intel_rapl_common.c | 78 ++++++++++++++--------------
+ 1 file changed, 39 insertions(+), 39 deletions(-)
 
 diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
-index 3ff6da3bf4e6..3471cee7ac04 100644
+index 74a74af8f0ec..0faafba8cc7c 100644
 --- a/drivers/powercap/intel_rapl_common.c
 +++ b/drivers/powercap/intel_rapl_common.c
-@@ -2089,7 +2089,7 @@ int rapl_package_add_pmu_locked(struct rapl_package *rp)
+@@ -31,62 +31,62 @@
+ #include <asm/msr.h>
  
- 	return rapl_pmu_update(rp);
- }
--EXPORT_SYMBOL_GPL(rapl_package_add_pmu_locked);
-+EXPORT_SYMBOL_NS_GPL(rapl_package_add_pmu_locked, "INTEL_RAPL");
+ /* bitmasks for RAPL MSRs, used by primitive access functions */
+-#define ENERGY_STATUS_MASK		0xffffffff
++#define ENERGY_STATUS_MASK		GENMASK(31, 0)
  
- int rapl_package_add_pmu(struct rapl_package *rp)
- {
-@@ -2097,7 +2097,7 @@ int rapl_package_add_pmu(struct rapl_package *rp)
+-#define POWER_LIMIT1_MASK		0x7FFF
++#define POWER_LIMIT1_MASK		GENMASK(14, 0)
+ #define POWER_LIMIT1_ENABLE		BIT(15)
+ #define POWER_LIMIT1_CLAMP		BIT(16)
  
- 	return rapl_package_add_pmu_locked(rp);
- }
--EXPORT_SYMBOL_GPL(rapl_package_add_pmu);
-+EXPORT_SYMBOL_NS_GPL(rapl_package_add_pmu, "INTEL_RAPL");
+-#define POWER_LIMIT2_MASK		(0x7FFFULL<<32)
++#define POWER_LIMIT2_MASK		GENMASK_ULL(46, 32)
+ #define POWER_LIMIT2_ENABLE		BIT_ULL(47)
+ #define POWER_LIMIT2_CLAMP		BIT_ULL(48)
+ #define POWER_HIGH_LOCK			BIT_ULL(63)
+ #define POWER_LOW_LOCK			BIT(31)
  
- void rapl_package_remove_pmu_locked(struct rapl_package *rp)
- {
-@@ -2115,7 +2115,7 @@ void rapl_package_remove_pmu_locked(struct rapl_package *rp)
- 	perf_pmu_unregister(&rapl_pmu.pmu);
- 	memset(&rapl_pmu, 0, sizeof(struct rapl_pmu));
- }
--EXPORT_SYMBOL_GPL(rapl_package_remove_pmu_locked);
-+EXPORT_SYMBOL_NS_GPL(rapl_package_remove_pmu_locked, "INTEL_RAPL");
+-#define POWER_LIMIT4_MASK		0x1FFF
++#define POWER_LIMIT4_MASK		GENMASK(12, 0)
  
- void rapl_package_remove_pmu(struct rapl_package *rp)
- {
-@@ -2123,7 +2123,7 @@ void rapl_package_remove_pmu(struct rapl_package *rp)
+-#define TIME_WINDOW1_MASK		(0x7FULL<<17)
+-#define TIME_WINDOW2_MASK		(0x7FULL<<49)
++#define TIME_WINDOW1_MASK		GENMASK_ULL(23, 17)
++#define TIME_WINDOW2_MASK		GENMASK_ULL(55, 49)
  
- 	rapl_package_remove_pmu_locked(rp);
- }
--EXPORT_SYMBOL_GPL(rapl_package_remove_pmu);
-+EXPORT_SYMBOL_NS_GPL(rapl_package_remove_pmu, "INTEL_RAPL");
- #endif
+ #define POWER_UNIT_OFFSET		0x00
+-#define POWER_UNIT_MASK			0x0F
++#define POWER_UNIT_MASK			GENMASK(3, 0)
  
- /* called from CPU hotplug notifier, hotplug lock held */
-@@ -2156,14 +2156,14 @@ void rapl_remove_package_cpuslocked(struct rapl_package *rp)
- 	list_del(&rp->plist);
- 	kfree(rp);
- }
--EXPORT_SYMBOL_GPL(rapl_remove_package_cpuslocked);
-+EXPORT_SYMBOL_NS_GPL(rapl_remove_package_cpuslocked, "INTEL_RAPL");
+ #define ENERGY_UNIT_OFFSET		0x08
+-#define ENERGY_UNIT_MASK		0x1F00
++#define ENERGY_UNIT_MASK		GENMASK(12, 8)
  
- void rapl_remove_package(struct rapl_package *rp)
- {
- 	guard(cpus_read_lock)();
- 	rapl_remove_package_cpuslocked(rp);
- }
--EXPORT_SYMBOL_GPL(rapl_remove_package);
-+EXPORT_SYMBOL_NS_GPL(rapl_remove_package, "INTEL_RAPL");
+ #define TIME_UNIT_OFFSET		0x10
+-#define TIME_UNIT_MASK			0xF0000
++#define TIME_UNIT_MASK			GENMASK(19, 16)
+ 
+-#define POWER_INFO_MAX_MASK		(0x7fffULL<<32)
+-#define POWER_INFO_MIN_MASK		(0x7fffULL<<16)
+-#define POWER_INFO_MAX_TIME_WIN_MASK	(0x3fULL<<48)
+-#define POWER_INFO_THERMAL_SPEC_MASK	0x7fff
++#define POWER_INFO_MAX_MASK		GENMASK_ULL(46, 32)
++#define POWER_INFO_MIN_MASK		GENMASK_ULL(30, 16)
++#define POWER_INFO_MAX_TIME_WIN_MASK	GENMASK_ULL(53, 48)
++#define POWER_INFO_THERMAL_SPEC_MASK	GENMASK(14, 0)
+ 
+-#define PERF_STATUS_THROTTLE_TIME_MASK	0xffffffff
+-#define PP_POLICY_MASK			0x1F
++#define PERF_STATUS_THROTTLE_TIME_MASK	GENMASK(31, 0)
++#define PP_POLICY_MASK			GENMASK(4, 0)
  
  /*
-  * RAPL Package energy counter scope:
-@@ -2206,14 +2206,14 @@ struct rapl_package *rapl_find_package_domain_cpuslocked(int id, struct rapl_if_
+  * SPR has different layout for Psys Domain PowerLimit registers.
+  * There are 17 bits of PL1 and PL2 instead of 15 bits.
+  * The Enable bits and TimeWindow bits are also shifted as a result.
+  */
+-#define PSYS_POWER_LIMIT1_MASK		0x1FFFF
++#define PSYS_POWER_LIMIT1_MASK		GENMASK_ULL(16, 0)
+ #define PSYS_POWER_LIMIT1_ENABLE	BIT(17)
  
- 	return NULL;
- }
--EXPORT_SYMBOL_GPL(rapl_find_package_domain_cpuslocked);
-+EXPORT_SYMBOL_NS_GPL(rapl_find_package_domain_cpuslocked, "INTEL_RAPL");
+-#define PSYS_POWER_LIMIT2_MASK		(0x1FFFFULL<<32)
++#define PSYS_POWER_LIMIT2_MASK		GENMASK_ULL(48, 32)
+ #define PSYS_POWER_LIMIT2_ENABLE	BIT_ULL(49)
  
- struct rapl_package *rapl_find_package_domain(int id, struct rapl_if_priv *priv, bool id_is_cpu)
- {
- 	guard(cpus_read_lock)();
- 	return rapl_find_package_domain_cpuslocked(id, priv, id_is_cpu);
- }
--EXPORT_SYMBOL_GPL(rapl_find_package_domain);
-+EXPORT_SYMBOL_NS_GPL(rapl_find_package_domain, "INTEL_RAPL");
+-#define PSYS_TIME_WINDOW1_MASK		(0x7FULL<<19)
+-#define PSYS_TIME_WINDOW2_MASK		(0x7FULL<<51)
++#define PSYS_TIME_WINDOW1_MASK		GENMASK_ULL(25, 19)
++#define PSYS_TIME_WINDOW2_MASK		GENMASK_ULL(57, 51)
  
- /* called from CPU hotplug notifier, hotplug lock held */
- struct rapl_package *rapl_add_package_cpuslocked(int id, struct rapl_if_priv *priv, bool id_is_cpu)
-@@ -2267,14 +2267,14 @@ struct rapl_package *rapl_add_package_cpuslocked(int id, struct rapl_if_priv *pr
- 	kfree(rp);
- 	return ERR_PTR(ret);
- }
--EXPORT_SYMBOL_GPL(rapl_add_package_cpuslocked);
-+EXPORT_SYMBOL_NS_GPL(rapl_add_package_cpuslocked, "INTEL_RAPL");
+ /* bitmasks for RAPL TPMI, used by primitive access functions */
+-#define TPMI_POWER_LIMIT_MASK		0x3FFFF
++#define TPMI_POWER_LIMIT_MASK		GENMASK_ULL(17, 0)
+ #define TPMI_POWER_LIMIT_ENABLE		BIT_ULL(62)
+-#define TPMI_TIME_WINDOW_MASK		(0x7FULL<<18)
+-#define TPMI_INFO_SPEC_MASK		0x3FFFF
+-#define TPMI_INFO_MIN_MASK		(0x3FFFFULL << 18)
+-#define TPMI_INFO_MAX_MASK		(0x3FFFFULL << 36)
+-#define TPMI_INFO_MAX_TIME_WIN_MASK	(0x7FULL << 54)
++#define TPMI_TIME_WINDOW_MASK		GENMASK_ULL(24, 18)
++#define TPMI_INFO_SPEC_MASK		GENMASK_ULL(17, 0)
++#define TPMI_INFO_MIN_MASK		GENMASK_ULL(35, 18)
++#define TPMI_INFO_MAX_MASK		GENMASK_ULL(53, 36)
++#define TPMI_INFO_MAX_TIME_WIN_MASK	GENMASK_ULL(60, 54)
  
- struct rapl_package *rapl_add_package(int id, struct rapl_if_priv *priv, bool id_is_cpu)
- {
- 	guard(cpus_read_lock)();
- 	return rapl_add_package_cpuslocked(id, priv, id_is_cpu);
- }
--EXPORT_SYMBOL_GPL(rapl_add_package);
-+EXPORT_SYMBOL_NS_GPL(rapl_add_package, "INTEL_RAPL");
+ /* Non HW constants */
+ #define RAPL_PRIMITIVE_DERIVED		BIT(1)	/* not from raw data */
+@@ -111,9 +111,9 @@
+ #define TPMI_POWER_UNIT_OFFSET		POWER_UNIT_OFFSET
+ #define TPMI_POWER_UNIT_MASK		POWER_UNIT_MASK
+ #define TPMI_ENERGY_UNIT_OFFSET		0x06
+-#define TPMI_ENERGY_UNIT_MASK		0x7C0
++#define TPMI_ENERGY_UNIT_MASK		GENMASK_ULL(10, 6)
+ #define TPMI_TIME_UNIT_OFFSET		0x0C
+-#define TPMI_TIME_UNIT_MASK		0xF000
++#define TPMI_TIME_UNIT_MASK		GENMASK_ULL(15, 12)
  
- static void power_limit_state_save(void)
- {
-diff --git a/drivers/powercap/intel_rapl_msr.c b/drivers/powercap/intel_rapl_msr.c
-index 9a7e150b3536..6f23e601832d 100644
---- a/drivers/powercap/intel_rapl_msr.c
-+++ b/drivers/powercap/intel_rapl_msr.c
-@@ -264,3 +264,4 @@ module_platform_driver(intel_rapl_msr_driver);
- MODULE_DESCRIPTION("Driver for Intel RAPL (Running Average Power Limit) control via MSR interface");
- MODULE_AUTHOR("Zhang Rui <rui.zhang@intel.com>");
- MODULE_LICENSE("GPL v2");
-+MODULE_IMPORT_NS("INTEL_RAPL");
-diff --git a/drivers/powercap/intel_rapl_tpmi.c b/drivers/powercap/intel_rapl_tpmi.c
-index 0a0b85f4528b..3b52403c14f8 100644
---- a/drivers/powercap/intel_rapl_tpmi.c
-+++ b/drivers/powercap/intel_rapl_tpmi.c
-@@ -348,6 +348,7 @@ static struct auxiliary_driver intel_rapl_tpmi_driver = {
+ #define RAPL_EVENT_MASK			GENMASK(7, 0)
  
- module_auxiliary_driver(intel_rapl_tpmi_driver)
+@@ -964,13 +964,13 @@ static int rapl_check_unit_core(struct rapl_domain *rd)
+ 	}
  
-+MODULE_IMPORT_NS("INTEL_RAPL");
- MODULE_IMPORT_NS("INTEL_TPMI");
+ 	value = (ra.value & ENERGY_UNIT_MASK) >> ENERGY_UNIT_OFFSET;
+-	rd->energy_unit = ENERGY_UNIT_SCALE * 1000000 / (1 << value);
++	rd->energy_unit = ENERGY_UNIT_SCALE * 1000000 / BIT(value);
  
- MODULE_DESCRIPTION("Intel RAPL TPMI Driver");
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_rapl.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_rapl.c
-index bf51a17c5be6..e56b18aeda71 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_rapl.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_rapl.c
-@@ -111,4 +111,5 @@ void proc_thermal_rapl_remove(void)
- EXPORT_SYMBOL_GPL(proc_thermal_rapl_remove);
+ 	value = (ra.value & POWER_UNIT_MASK) >> POWER_UNIT_OFFSET;
+-	rd->power_unit = 1000000 / (1 << value);
++	rd->power_unit = 1000000 / BIT(value);
  
- MODULE_LICENSE("GPL v2");
-+MODULE_IMPORT_NS("INTEL_RAPL");
- MODULE_DESCRIPTION("RAPL interface using MMIO");
+ 	value = (ra.value & TIME_UNIT_MASK) >> TIME_UNIT_OFFSET;
+-	rd->time_unit = 1000000 / (1 << value);
++	rd->time_unit = 1000000 / BIT(value);
+ 
+ 	pr_debug("Core CPU %s:%s energy=%dpJ, time=%dus, power=%duW\n",
+ 		 rd->rp->name, rd->name, rd->energy_unit, rd->time_unit, rd->power_unit);
+@@ -992,13 +992,13 @@ static int rapl_check_unit_atom(struct rapl_domain *rd)
+ 	}
+ 
+ 	value = (ra.value & ENERGY_UNIT_MASK) >> ENERGY_UNIT_OFFSET;
+-	rd->energy_unit = ENERGY_UNIT_SCALE * 1 << value;
++	rd->energy_unit = ENERGY_UNIT_SCALE * BIT(value);
+ 
+ 	value = (ra.value & POWER_UNIT_MASK) >> POWER_UNIT_OFFSET;
+-	rd->power_unit = (1 << value) * 1000;
++	rd->power_unit = BIT(value) * 1000;
+ 
+ 	value = (ra.value & TIME_UNIT_MASK) >> TIME_UNIT_OFFSET;
+-	rd->time_unit = 1000000 / (1 << value);
++	rd->time_unit = 1000000 / BIT(value);
+ 
+ 	pr_debug("Atom %s:%s energy=%dpJ, time=%dus, power=%duW\n",
+ 		 rd->rp->name, rd->name, rd->energy_unit, rd->time_unit, rd->power_unit);
+@@ -1102,8 +1102,8 @@ static void set_floor_freq_atom(struct rapl_domain *rd, bool enable)
+ 			      &power_ctrl_orig_val);
+ 	mdata = power_ctrl_orig_val;
+ 	if (enable) {
+-		mdata &= ~(0x7f << 8);
+-		mdata |= 1 << 8;
++		mdata &= ~GENMASK(14, 8);
++		mdata |= BIT(8);
+ 	}
+ 	iosf_mbi_write(BT_MBI_UNIT_PMC, MBI_CR_WRITE,
+ 		       defaults->floor_freq_reg_addr, mdata);
+@@ -1136,7 +1136,7 @@ static u64 rapl_compute_time_window_core(struct rapl_domain *rd, u64 value,
+ 		if (y > 0x1f)
+ 			return 0x7f;
+ 
+-		f = div64_u64(4 * (value - (1ULL << y)), 1ULL << y);
++		f = div64_u64(4 * (value - BIT_ULL(y)), BIT_ULL(y));
+ 		value = (y & 0x1f) | ((f & 0x3) << 5);
+ 	}
+ 	return value;
+@@ -1169,13 +1169,13 @@ static int rapl_check_unit_tpmi(struct rapl_domain *rd)
+ 	}
+ 
+ 	value = (ra.value & TPMI_ENERGY_UNIT_MASK) >> TPMI_ENERGY_UNIT_OFFSET;
+-	rd->energy_unit = ENERGY_UNIT_SCALE * 1000000 / (1 << value);
++	rd->energy_unit = ENERGY_UNIT_SCALE * 1000000 / BIT(value);
+ 
+ 	value = (ra.value & TPMI_POWER_UNIT_MASK) >> TPMI_POWER_UNIT_OFFSET;
+-	rd->power_unit = 1000000 / (1 << value);
++	rd->power_unit = 1000000 / BIT(value);
+ 
+ 	value = (ra.value & TPMI_TIME_UNIT_MASK) >> TPMI_TIME_UNIT_OFFSET;
+-	rd->time_unit = 1000000 / (1 << value);
++	rd->time_unit = 1000000 / BIT(value);
+ 
+ 	pr_debug("Core CPU %s:%s energy=%dpJ, time=%dus, power=%duW\n",
+ 		 rd->rp->name, rd->name, rd->energy_unit, rd->time_unit, rd->power_unit);
 -- 
 2.43.0
 
