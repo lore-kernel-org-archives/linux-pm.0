@@ -1,48 +1,48 @@
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C6532F8BCA;
-	Thu, 29 Jan 2026 18:37:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61F5A2FF66A;
+	Thu, 29 Jan 2026 18:37:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769711831; cv=none; b=L7ep1hPwdT7YhqTRTsODvphV0wbmtXhHCEOu35jDAVCV4sdKUZSEg0c9EAxunuBeBqL0Z9IDO3Fk757mPQjo85lNx+5Id+BviaaBGM3AkgN4oBoOgpc/Ys2xll1hXqhz0Rb9GRDvHUvKTo7eKcVqjQ4IXkcbK6NCS7OWBBlE/NM=
+	t=1769711831; cv=none; b=LXvfb/JQ1RlvTEmicr5qfrlRf1V8Fu+x+yZujriYL6V7UwXurSJL8srffp8lhHf5qfhzklGEv99ybMmJBKAjk44FnGiEN1Gt6jurIEgLKfnYyTWnQmmPITp9U58Jw8ORD7PCYEEBhG5zN01mwpoRWkEqb2zppLjkKKZM34Qmp9k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1769711831; c=relaxed/simple;
-	bh=v+qvSGfci+wGZXW9OuZvmmRICA5NSQ7vZ23y7Jkk7O8=;
+	bh=25tXUFVoLOKuOO+G8EUsCAt0s9JS+grpc7Qbd++kaHE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=I3yi1bdOcasaWon8r+isJC1FZe6NlDeb7FGsh7rYe5rz2XDpj8iveXZoz8uRJJBmSGKzdL4E501TH920n50frv2Tn1nRSO+JLTyFtCWqxx3ZTUp2M7etTyx6Z7IoGCeeApgFdkIrbhBefDvgdCoAA7B730qw/hcVinh9wpTl5NY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=lssgukRy; arc=none smtp.client-ip=198.175.65.12
+	 MIME-Version; b=b2CGuqPCp3BQCiPr6T5kNx0iMPGrUIYOd193gBx+kKNT3sO640h7UctKKmKXQPjqjz1ivOmp1jQayTElMxwDdrVG8i2SrVGZktHhfYheSD7fK86Rqnh7BcO0ZsY3UzHeT2n9BFfheENblDyPNSwfsgvDqt9ZTfZvn/qWLXWcaiA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=NgyQxicY; arc=none smtp.client-ip=198.175.65.12
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="lssgukRy"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="NgyQxicY"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1769711828; x=1801247828;
+  t=1769711830; x=1801247830;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=v+qvSGfci+wGZXW9OuZvmmRICA5NSQ7vZ23y7Jkk7O8=;
-  b=lssgukRyAH+VjruHmLLiMzMa4OaHYMAX6JuZZy+ZpFGjavoGYU6pwxd2
-   FBWyWrnWznc7lqcUpJSdpggCexdz6q9dmKWb4O2K0T8aZX/DQ1sVXeP6L
-   ss2AzBun8NotbX1Zpzk/mTdOf3uNgZoYpDKPExorRk5dqsIFI2twhucRr
-   WKnsmVoX7nORrsUDeatnc8a3vTR38ND6WtxnL8wd0hdsEcdZg+FylFaiP
-   lGpJ53CmkxCPpWoaJZ12KAyVr13UwCLQkNIPoAGgHJvcMJuQf2h7v4iTf
-   yWRw6WVZEyMQfZHGyGwJGQg2EcgWV6cncJbDRSgR2FPjvB3LjDwxYxn2m
-   A==;
-X-CSE-ConnectionGUID: V4PiyPruQkqlpTvoLzrHcQ==
-X-CSE-MsgGUID: S6Qol71SSOGnz/q7er+P+A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11686"; a="82388369"
+  bh=25tXUFVoLOKuOO+G8EUsCAt0s9JS+grpc7Qbd++kaHE=;
+  b=NgyQxicY894CfASNliSsRRfbdLUxfFoKA1/mxGz7PMbKxFJJRyfCPOga
+   ZlnIVCyw3iMGI9fEwJ4vxrBwqYfsK9+wtPRSk7BL2qA/Hs889Ad9ivSyR
+   un9p77V9pFoCuhxy25lmTHbYSMHPta7DaRmlBqub2d4PhpegcOlVe8PRf
+   9+IvYNSUsLfbftcwca+vsf/eOusriI6waDsuYLVqyqAdG2ht/T9CVveLJ
+   1XJPZ930E+EjouptJt2wbFcOfn+KOSDaoXBA7IRxXBIJYW6CXnTI5iEMt
+   HWwu28nAI7hcZSDPAc6lZtl3GtqSdndhsleZE3Jrdg5IHdkefJgknEeqe
+   w==;
+X-CSE-ConnectionGUID: /A9NGWNrQQq0Y3jaS6lkIQ==
+X-CSE-MsgGUID: Ce0tpkkgQ4Gz3WGOT1VHKg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11686"; a="82388383"
 X-IronPort-AV: E=Sophos;i="6.21,261,1763452800"; 
-   d="scan'208";a="82388369"
+   d="scan'208";a="82388383"
 Received: from fmviesa009.fm.intel.com ([10.60.135.149])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jan 2026 10:37:07 -0800
-X-CSE-ConnectionGUID: qREovTRyR5yRTYwGJM/YXQ==
-X-CSE-MsgGUID: 8lL5hpWwQASQ+PGyFQoHyg==
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jan 2026 10:37:08 -0800
+X-CSE-ConnectionGUID: icbgyR63SJubtLLmlOk4PA==
+X-CSE-MsgGUID: La9bY5QFQrGNyRx4qEB1XQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.21,261,1763452800"; 
-   d="scan'208";a="209070970"
+   d="scan'208";a="209070981"
 Received: from skuppusw-desk2.jf.intel.com ([10.165.154.101])
-  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jan 2026 10:37:06 -0800
+  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jan 2026 10:37:08 -0800
 From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 To: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@linaro.org>
@@ -51,9 +51,9 @@ Cc: Zhang Rui <rui.zhang@intel.com>,
 	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v1 5/9] powercap: intel_rapl: Allow interface drivers to configure rapl_defaults
-Date: Thu, 29 Jan 2026 10:36:42 -0800
-Message-ID: <20260129183646.558866-6-sathyanarayanan.kuppuswamy@linux.intel.com>
+Subject: [PATCH v1 8/9] powercap: intel_rapl: Register PM notifier only when RAPL package exists
+Date: Thu, 29 Jan 2026 10:36:45 -0800
+Message-ID: <20260129183646.558866-9-sathyanarayanan.kuppuswamy@linux.intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260129183646.558866-1-sathyanarayanan.kuppuswamy@linux.intel.com>
 References: <20260129183646.558866-1-sathyanarayanan.kuppuswamy@linux.intel.com>
@@ -65,280 +65,194 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-RAPL default settings vary across different RAPL interfaces (MSR, TPMI,
-MMIO). Currently, these defaults are stored in the common RAPL driver,
-which requires interface-specific handling logic and makes the common
-layer unnecessarily complex. There is no strong reason for the common
-code to own these defaults, since they are inherently
-interface-specific.
+The PM notifier callbacks are needed only when a valid RAPL package
+device is registered. Register and unregister the PM notifier callbacks
+when a RAPL package device is added or removed.
 
-To prepare for moving default configuration into the individual
-interface drivers,
-
-1. Move struct rapl_defaults into a shared header so that interface
-   drivers can directly populate their own default settings.
-2. Change the @defaults field in struct rapl_if_priv from void * to
-   const struct rapl_defaults * to improve type safety and readability
-   and update the common driver to use the typed defaults structure.
-3. Update all internal getter functions and local pointers to use
-   const struct rapl_defaults * to maintain const-correctness.
-4. Rename and export the common helper functions (check_unit,
-   set_floor_freq, compute_time_window) so interface drivers may
-   reuse or override them as appropriate.
-
-No functional changes. This is a preparatory refactoring to allow
-interface drivers to supply their own RAPL default settings.
+This is a preparatory patch before moving MSR rapl_defaults into the
+MSR RAPL interface driver.
 
 Co-developed-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 ---
- drivers/powercap/intel_rapl_common.c | 64 ++++++++++++----------------
- include/linux/intel_rapl.h           | 17 +++++++-
- 2 files changed, 43 insertions(+), 38 deletions(-)
+ drivers/powercap/intel_rapl_common.c | 130 +++++++++++++--------------
+ 1 file changed, 64 insertions(+), 66 deletions(-)
 
 diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
-index 8f9d504fb64c..b60d8fd6cc82 100644
+index 54d88f1311ed..648bef1d5de1 100644
 --- a/drivers/powercap/intel_rapl_common.c
 +++ b/drivers/powercap/intel_rapl_common.c
-@@ -221,20 +221,10 @@ static int get_pl_prim(struct rapl_domain *rd, int pl, enum pl_prims prim)
- #define power_zone_to_rapl_domain(_zone) \
- 	container_of(_zone, struct rapl_domain, power_zone)
+@@ -2077,6 +2077,64 @@ void rapl_package_remove_pmu(struct rapl_package *rp)
+ EXPORT_SYMBOL_NS_GPL(rapl_package_remove_pmu, "INTEL_RAPL");
+ #endif
  
--struct rapl_defaults {
--	u8 floor_freq_reg_addr;
--	int (*check_unit)(struct rapl_domain *rd);
--	void (*set_floor_freq)(struct rapl_domain *rd, bool mode);
--	u64 (*compute_time_window)(struct rapl_domain *rd, u64 val,
--				    bool to_raw);
--	unsigned int dram_domain_energy_unit;
--	unsigned int psys_domain_energy_unit;
--	bool spr_psys_bits;
--};
--static struct rapl_defaults *defaults_msr;
-+static const struct rapl_defaults *defaults_msr;
- static const struct rapl_defaults defaults_tpmi;
- 
--static struct rapl_defaults *get_defaults(struct rapl_package *rp)
-+static const struct rapl_defaults *get_defaults(struct rapl_package *rp)
- {
- 	return rp->priv->defaults;
- }
-@@ -351,7 +341,7 @@ static int find_nr_power_limit(struct rapl_domain *rd)
- static int set_domain_enable(struct powercap_zone *power_zone, bool mode)
- {
- 	struct rapl_domain *rd = power_zone_to_rapl_domain(power_zone);
--	struct rapl_defaults *defaults = get_defaults(rd->rp);
-+	const struct rapl_defaults *defaults = get_defaults(rd->rp);
- 	u64 val;
- 	int ret;
- 
-@@ -640,7 +630,7 @@ static u64 rapl_unit_xlate(struct rapl_domain *rd, enum unit_type type,
- 			   u64 value, int to_raw)
- {
- 	u64 units = 1;
--	struct rapl_defaults *defaults = get_defaults(rd->rp);
-+	const struct rapl_defaults *defaults = get_defaults(rd->rp);
- 	u64 scale = 1;
- 
- 	switch (type) {
-@@ -785,11 +775,11 @@ static int rapl_config(struct rapl_package *rp)
- 	/* MMIO I/F shares the same register layout as MSR registers */
- 	case RAPL_IF_MMIO:
- 	case RAPL_IF_MSR:
--		rp->priv->defaults = (void *)defaults_msr;
-+		rp->priv->defaults = defaults_msr;
- 		rp->priv->rpi = (void *)rpi_msr;
- 		break;
- 	case RAPL_IF_TPMI:
--		rp->priv->defaults = (void *)&defaults_tpmi;
-+		rp->priv->defaults = &defaults_tpmi;
- 		rp->priv->rpi = (void *)rpi_tpmi;
- 		break;
- 	default:
-@@ -806,7 +796,7 @@ static int rapl_config(struct rapl_package *rp)
- static enum rapl_primitives
- prim_fixups(struct rapl_domain *rd, enum rapl_primitives prim)
- {
--	struct rapl_defaults *defaults = get_defaults(rd->rp);
-+	const struct rapl_defaults *defaults = get_defaults(rd->rp);
- 
- 	if (!defaults->spr_psys_bits)
- 		return prim;
-@@ -951,7 +941,7 @@ static int rapl_write_pl_data(struct rapl_domain *rd, int pl,
-  * power unit : microWatts  : Represented in milliWatts by default
-  * time unit  : microseconds: Represented in seconds by default
-  */
--static int rapl_check_unit_core(struct rapl_domain *rd)
-+int rapl_default_check_unit(struct rapl_domain *rd)
- {
- 	struct reg_action ra;
- 	u32 value;
-@@ -978,6 +968,7 @@ static int rapl_check_unit_core(struct rapl_domain *rd)
- 
- 	return 0;
- }
-+EXPORT_SYMBOL_NS_GPL(rapl_default_check_unit, "INTEL_RAPL");
- 
- static int rapl_check_unit_atom(struct rapl_domain *rd)
- {
-@@ -1071,7 +1062,7 @@ static void package_power_limit_irq_restore(struct rapl_package *rp)
- 	wrmsr_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
- }
- 
--static void set_floor_freq_default(struct rapl_domain *rd, bool mode)
-+void rapl_default_set_floor_freq(struct rapl_domain *rd, bool mode)
- {
- 	int i;
- 
-@@ -1085,11 +1076,12 @@ static void set_floor_freq_default(struct rapl_domain *rd, bool mode)
- 		rapl_write_pl_data(rd, i, PL_CLAMP, mode);
- 	}
- }
-+EXPORT_SYMBOL_NS_GPL(rapl_default_set_floor_freq, "INTEL_RAPL");
- 
- static void set_floor_freq_atom(struct rapl_domain *rd, bool enable)
- {
- 	static u32 power_ctrl_orig_val;
--	struct rapl_defaults *defaults = get_defaults(rd->rp);
-+	const struct rapl_defaults *defaults = get_defaults(rd->rp);
- 	u32 mdata;
- 
- 	if (!defaults->floor_freq_reg_addr) {
-@@ -1110,8 +1102,7 @@ static void set_floor_freq_atom(struct rapl_domain *rd, bool enable)
- 		       defaults->floor_freq_reg_addr, mdata);
- }
- 
--static u64 rapl_compute_time_window_core(struct rapl_domain *rd, u64 value,
--					 bool to_raw)
-+u64 rapl_default_compute_time_window(struct rapl_domain *rd, u64 value, bool to_raw)
- {
- 	u64 f, y;		/* fraction and exp. used for time unit */
- 
-@@ -1142,6 +1133,7 @@ static u64 rapl_compute_time_window_core(struct rapl_domain *rd, u64 value,
- 	}
- 	return value;
- }
-+EXPORT_SYMBOL_NS_GPL(rapl_default_compute_time_window, "INTEL_RAPL");
- 
- static u64 rapl_compute_time_window_atom(struct rapl_domain *rd, u64 value,
- 					 bool to_raw)
-@@ -1187,28 +1179,28 @@ static int rapl_check_unit_tpmi(struct rapl_domain *rd)
- static const struct rapl_defaults defaults_tpmi = {
- 	.check_unit = rapl_check_unit_tpmi,
- 	/* Reuse existing logic, ignore the PL_CLAMP failures and enable all Power Limits */
--	.set_floor_freq = set_floor_freq_default,
--	.compute_time_window = rapl_compute_time_window_core,
-+	.set_floor_freq = rapl_default_set_floor_freq,
-+	.compute_time_window = rapl_default_compute_time_window,
- };
- 
- static const struct rapl_defaults rapl_defaults_core = {
- 	.floor_freq_reg_addr = 0,
--	.check_unit = rapl_check_unit_core,
--	.set_floor_freq = set_floor_freq_default,
--	.compute_time_window = rapl_compute_time_window_core,
-+	.check_unit = rapl_default_check_unit,
-+	.set_floor_freq = rapl_default_set_floor_freq,
-+	.compute_time_window = rapl_default_compute_time_window,
- };
- 
- static const struct rapl_defaults rapl_defaults_hsw_server = {
--	.check_unit = rapl_check_unit_core,
--	.set_floor_freq = set_floor_freq_default,
--	.compute_time_window = rapl_compute_time_window_core,
-+	.check_unit = rapl_default_check_unit,
-+	.set_floor_freq = rapl_default_set_floor_freq,
-+	.compute_time_window = rapl_default_compute_time_window,
- 	.dram_domain_energy_unit = 15300,
- };
- 
- static const struct rapl_defaults rapl_defaults_spr_server = {
--	.check_unit = rapl_check_unit_core,
--	.set_floor_freq = set_floor_freq_default,
--	.compute_time_window = rapl_compute_time_window_core,
-+	.check_unit = rapl_default_check_unit,
-+	.set_floor_freq = rapl_default_set_floor_freq,
-+	.compute_time_window = rapl_default_compute_time_window,
- 	.psys_domain_energy_unit = NANOJOULE_PER_JOULE,
- 	.spr_psys_bits = true,
- };
-@@ -1242,7 +1234,7 @@ static const struct rapl_defaults rapl_defaults_cht = {
- };
- 
- static const struct rapl_defaults rapl_defaults_amd = {
--	.check_unit = rapl_check_unit_core,
-+	.check_unit = rapl_default_check_unit,
- };
- 
- static const struct x86_cpu_id rapl_ids[] __initconst = {
-@@ -1448,7 +1440,7 @@ static int rapl_check_domain(int domain, struct rapl_package *rp)
-  */
- static int rapl_get_domain_unit(struct rapl_domain *rd)
- {
--	struct rapl_defaults *defaults = get_defaults(rd->rp);
-+	const struct rapl_defaults *defaults = get_defaults(rd->rp);
- 	int ret;
- 
- 	if (!rd->regs[RAPL_DOMAIN_REG_UNIT].val) {
-@@ -2347,7 +2339,7 @@ static int __init rapl_init(void)
- 
- 	id = x86_match_cpu(rapl_ids);
- 	if (id) {
--		defaults_msr = (struct rapl_defaults *)id->driver_data;
-+		defaults_msr = (const struct rapl_defaults *)id->driver_data;
- 
- 		rapl_msr_platdev = platform_device_alloc("intel_rapl_msr", 0);
- 		if (!rapl_msr_platdev)
-diff --git a/include/linux/intel_rapl.h b/include/linux/intel_rapl.h
-index f479ef5b3341..19f619fb37ff 100644
---- a/include/linux/intel_rapl.h
-+++ b/include/linux/intel_rapl.h
-@@ -128,6 +128,16 @@ struct reg_action {
- 	int err;
- };
- 
-+struct rapl_defaults {
-+	u8 floor_freq_reg_addr;
-+	int (*check_unit)(struct rapl_domain *rd);
-+	void (*set_floor_freq)(struct rapl_domain *rd, bool mode);
-+	u64 (*compute_time_window)(struct rapl_domain *rd, u64 val, bool to_raw);
-+	unsigned int dram_domain_energy_unit;
-+	unsigned int psys_domain_energy_unit;
-+	bool spr_psys_bits;
++/* pm notifier for saving/restoring Power Limit settings */
++static void power_limit_state_save(void)
++{
++	struct rapl_package *rp;
++	struct rapl_domain *rd;
++	int ret;
++
++	cpus_read_lock();
++	list_for_each_entry(rp, &rapl_packages, plist) {
++		if (!rp->power_zone)
++			continue;
++		rd = power_zone_to_rapl_domain(rp->power_zone);
++		for (int i = POWER_LIMIT1; i < NR_POWER_LIMITS; i++) {
++			ret = rapl_read_pl_data(rd, i, PL_LIMIT, true,
++						&rd->rpl[i].last_power_limit);
++			if (ret)
++				rd->rpl[i].last_power_limit = 0;
++		}
++	}
++	cpus_read_unlock();
++}
++
++static void power_limit_state_restore(void)
++{
++	struct rapl_package *rp;
++	struct rapl_domain *rd;
++
++	cpus_read_lock();
++	list_for_each_entry(rp, &rapl_packages, plist) {
++		if (!rp->power_zone)
++			continue;
++		rd = power_zone_to_rapl_domain(rp->power_zone);
++		for (int i = POWER_LIMIT1; i < NR_POWER_LIMITS; i++)
++			if (rd->rpl[i].last_power_limit)
++				rapl_write_pl_data(rd, i, PL_LIMIT,
++						   rd->rpl[i].last_power_limit);
++	}
++	cpus_read_unlock();
++}
++
++static int rapl_pm_callback(struct notifier_block *nb,
++			    unsigned long mode, void *_unused)
++{
++	switch (mode) {
++	case PM_SUSPEND_PREPARE:
++		power_limit_state_save();
++		break;
++	case PM_POST_SUSPEND:
++		power_limit_state_restore();
++		break;
++	}
++	return NOTIFY_OK;
++}
++
++static struct notifier_block rapl_pm_notifier = {
++	.notifier_call = rapl_pm_callback,
 +};
 +
- /**
-  * struct rapl_if_priv: private data for different RAPL interfaces
-  * @control_type:		Each RAPL interface must have its own powercap
-@@ -142,7 +152,7 @@ struct reg_action {
-  *				registers.
-  * @write_raw:			Callback for writing RAPL interface specific
-  *				registers.
-- * @defaults:			internal pointer to interface default settings
-+ * @defaults:			pointer to default settings
-  * @rpi:			internal pointer to interface primitive info
-  */
- struct rapl_if_priv {
-@@ -154,7 +164,7 @@ struct rapl_if_priv {
- 	int limits[RAPL_DOMAIN_MAX];
- 	int (*read_raw)(int id, struct reg_action *ra, bool atomic);
- 	int (*write_raw)(int id, struct reg_action *ra);
--	void *defaults;
-+	const struct rapl_defaults *defaults;
- 	void *rpi;
- };
+ /* called from CPU hotplug notifier, hotplug lock held */
+ void rapl_remove_package_cpuslocked(struct rapl_package *rp)
+ {
+@@ -2106,6 +2164,9 @@ void rapl_remove_package_cpuslocked(struct rapl_package *rp)
+ 				 &rd_package->power_zone);
+ 	list_del(&rp->plist);
+ 	kfree(rp);
++
++	if (list_empty(&rapl_packages))
++		unregister_pm_notifier(&rapl_pm_notifier);
+ }
+ EXPORT_SYMBOL_NS_GPL(rapl_remove_package_cpuslocked, "INTEL_RAPL");
  
-@@ -211,6 +221,9 @@ void rapl_remove_package_cpuslocked(struct rapl_package *rp);
- struct rapl_package *rapl_find_package_domain(int id, struct rapl_if_priv *priv, bool id_is_cpu);
- struct rapl_package *rapl_add_package(int id, struct rapl_if_priv *priv, bool id_is_cpu);
- void rapl_remove_package(struct rapl_package *rp);
-+int rapl_default_check_unit(struct rapl_domain *rd);
-+void rapl_default_set_floor_freq(struct rapl_domain *rd, bool mode);
-+u64 rapl_default_compute_time_window(struct rapl_domain *rd, u64 value, bool to_raw);
+@@ -2208,6 +2269,8 @@ struct rapl_package *rapl_add_package_cpuslocked(int id, struct rapl_if_priv *pr
+ 	}
+ 	ret = rapl_package_register_powercap(rp);
+ 	if (!ret) {
++		if (list_empty(&rapl_packages))
++			register_pm_notifier(&rapl_pm_notifier);
+ 		INIT_LIST_HEAD(&rp->plist);
+ 		list_add(&rp->plist, &rapl_packages);
+ 		return rp;
+@@ -2227,64 +2290,6 @@ struct rapl_package *rapl_add_package(int id, struct rapl_if_priv *priv, bool id
+ }
+ EXPORT_SYMBOL_NS_GPL(rapl_add_package, "INTEL_RAPL");
  
- #ifdef CONFIG_PERF_EVENTS
- int rapl_package_add_pmu(struct rapl_package *rp);
+-static void power_limit_state_save(void)
+-{
+-	struct rapl_package *rp;
+-	struct rapl_domain *rd;
+-	int ret, i;
+-
+-	cpus_read_lock();
+-	list_for_each_entry(rp, &rapl_packages, plist) {
+-		if (!rp->power_zone)
+-			continue;
+-		rd = power_zone_to_rapl_domain(rp->power_zone);
+-		for (i = POWER_LIMIT1; i < NR_POWER_LIMITS; i++) {
+-			ret = rapl_read_pl_data(rd, i, PL_LIMIT, true,
+-						 &rd->rpl[i].last_power_limit);
+-			if (ret)
+-				rd->rpl[i].last_power_limit = 0;
+-		}
+-	}
+-	cpus_read_unlock();
+-}
+-
+-static void power_limit_state_restore(void)
+-{
+-	struct rapl_package *rp;
+-	struct rapl_domain *rd;
+-	int i;
+-
+-	cpus_read_lock();
+-	list_for_each_entry(rp, &rapl_packages, plist) {
+-		if (!rp->power_zone)
+-			continue;
+-		rd = power_zone_to_rapl_domain(rp->power_zone);
+-		for (i = POWER_LIMIT1; i < NR_POWER_LIMITS; i++)
+-			if (rd->rpl[i].last_power_limit)
+-				rapl_write_pl_data(rd, i, PL_LIMIT,
+-					       rd->rpl[i].last_power_limit);
+-	}
+-	cpus_read_unlock();
+-}
+-
+-static int rapl_pm_callback(struct notifier_block *nb,
+-			    unsigned long mode, void *_unused)
+-{
+-	switch (mode) {
+-	case PM_SUSPEND_PREPARE:
+-		power_limit_state_save();
+-		break;
+-	case PM_POST_SUSPEND:
+-		power_limit_state_restore();
+-		break;
+-	}
+-	return NOTIFY_OK;
+-}
+-
+-static struct notifier_block rapl_pm_notifier = {
+-	.notifier_call = rapl_pm_callback,
+-};
+-
+ static struct platform_device *rapl_msr_platdev;
+ 
+ static int __init rapl_init(void)
+@@ -2307,19 +2312,12 @@ static int __init rapl_init(void)
+ 		}
+ 	}
+ 
+-	ret = register_pm_notifier(&rapl_pm_notifier);
+-	if (ret && rapl_msr_platdev) {
+-		platform_device_del(rapl_msr_platdev);
+-		platform_device_put(rapl_msr_platdev);
+-	}
+-
+-	return ret;
++	return 0;
+ }
+ 
+ static void __exit rapl_exit(void)
+ {
+ 	platform_device_unregister(rapl_msr_platdev);
+-	unregister_pm_notifier(&rapl_pm_notifier);
+ }
+ 
+ fs_initcall(rapl_init);
 -- 
 2.43.0
 
