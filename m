@@ -1,160 +1,139 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D73502FE593
-	for <linux-pm@vger.kernel.org>; Thu, 29 Jan 2026 14:35:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF49133F8DA;
+	Thu, 29 Jan 2026 16:55:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769697307; cv=none; b=j6EyIyeLfeAr35itXlBMnr5wKNrOO7RKtEp+C9MyANiZJoU7s5Z3FeG6eMI8VMznqgELApa8dRLmXcx4DPAMteyRKjETdYAp/mv10awGst5A0g/KUraHOUu2ibHFWIKgpSsELND+UCag3HOHgJWb/W4GNRnqRaT7x/0vUd72Uzw=
+	t=1769705732; cv=none; b=HDFiZsci65vc1mtKoue+dX07YXm5gnLje6EvJuvNDXgfl+jxfcmF06YOPO+7KtZL3Sb0qxeKFvSbV6arEntLE6p7gzgp1wsqg2qcYlRXuF3UKskNBVh7qubatVJKZ6TffcrFFZ+nVEuO/V5nvY0nPHTzWY5FhyuNQqHxP93zPx8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769697307; c=relaxed/simple;
-	bh=PxQZS0lpogFjI95G9cD5LHetBfkJyp8goCiiruUkGew=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Q/Oec5PW8eVntwIiLdHWBFSOu31+lhAe7G4T7iyQLRDbs92P7rw56NWW9hN2Vf3tgcQMLJDthHl6zm/Jb61vAk29icbBdAqoHH44apILocbgTbpM3wbrZ8+UMTcPpAO5hOc1beV9qPNLlCtxAW9n4ixRG7Y4vVdY0+RiaB1d1rI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NaLnHngU; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1769705732; c=relaxed/simple;
+	bh=mZs03WYD4uRFTip8el8/SaAOaPr/KLn2tNNfr3ADzqM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=CDn28Y0Q8gHfRdCQXq9ZdCcEDjc48OsExuYGt+bgAleGOIHm8rk8lmGSjIUj3BrWJjpTweeaMEbwrtBQc5XsEWc8Tw0md+rS3Ab6bTQ2sW4KiWHtMP5ptIf82nP8K47TLtId+f0qL+AqwmeU6zNAaaHEeWAQDc1jcpFYR9OkDzQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nZ9zKXPr; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NaLnHngU"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7BA82C4AF0C
-	for <linux-pm@vger.kernel.org>; Thu, 29 Jan 2026 14:35:07 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nZ9zKXPr"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2388DC4CEF7;
+	Thu, 29 Jan 2026 16:55:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1769697307;
-	bh=PxQZS0lpogFjI95G9cD5LHetBfkJyp8goCiiruUkGew=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=NaLnHngUnk6jKOJLPwqqLL1aT4RNRrH3d9HQmKwoRze5+OG2KuVd8nrzSWRJtHc/M
-	 /Ic5pXXU97ToGdZLtEJ40H/RGyaljbsUiwqFhuhc5e8N8Ook1ia5jZeRm+57mbHJFY
-	 LcntRrUcqYwp9Ymlu8rzKam5bcoRlxT7mRMJhsUvhe1ZM0J/J4UiTTvAAXmBYlxJCW
-	 JAWO0ciSaW2UY1BDqCGmAbtRLxDjBfkse0cGapZLcDe6lIPYjdGn9PaVO+/G7QA2Mp
-	 fom0K1C0EEOSL9Unw1hqiO/y0SloBv8zk2eauPpWPtpZc/V4tIxBdnGu2Lfvhx+QQh
-	 v8Zo3ZqIEwiFw==
-Received: by mail-oo1-f51.google.com with SMTP id 006d021491bc7-66307e10d1dso446114eaf.0
-        for <linux-pm@vger.kernel.org>; Thu, 29 Jan 2026 06:35:07 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCWe3enuWVgVOrBuJ7IAjRGEA8BhRfx3v/zRpD5HM0gf4S4iC2z7fvUyOwhp05Dw/xyqVJNzS6smYA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxl9qEH7Ah7HY5geJasLDYnkKOPpPWc3CVMlCi7gqI+JI1I/7V6
-	iCaN/uUEwrnh4YVLc5q3qh3teEMgUjeQhYl/A8XFyNOwsFd8T7W5rHzS1iU+i4ZtNUTXJ8RZSyb
-	f+lViI+rMr9AHixPODlfTyirimkKNd/Y=
-X-Received: by 2002:a05:6820:4b85:b0:657:5f31:31b1 with SMTP id
- 006d021491bc7-662f1f3fc63mr4586589eaf.0.1769697306372; Thu, 29 Jan 2026
- 06:35:06 -0800 (PST)
+	s=k20201202; t=1769705732;
+	bh=mZs03WYD4uRFTip8el8/SaAOaPr/KLn2tNNfr3ADzqM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=nZ9zKXPrUoLdPcQT07k41nF6WLFtAZZe85ruwQmm2Z6RUd7uI19PFYB+1ygycb4+M
+	 sNCytqXi9y3Yl5Rb0q7B1wy1J+Zf+bZbyrUT78u17Tt5sefiGwO5vzgAQOZsFmDWt4
+	 XopdtXorOrT50Q/a0g3gO2NgU3+P/zLd4y0BZr3B1SiNTxEw2h6ptRyVgpvGLwllX3
+	 BhgOzt+uetn51K+48rjGu/HaNDaolUvnMJfo5ufAUzH3x/dkCNxmTSxeg4rMso2fAr
+	 /3haGHrGsIPWwslXr3sdWoGcmN2aIIgvJ1QpRE0smIEE4lBIGhJTMYVYznTNnyTr2N
+	 aBTvmwwndhT5w==
+Date: Thu, 29 Jan 2026 10:55:31 -0600
+From: Rob Herring <robh@kernel.org>
+To: =?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Ulf Hansson <ulf.hansson@linaro.org>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Peter Griffin <peter.griffin@linaro.org>,
+	Tudor Ambarus <tudor.ambarus@linaro.org>,
+	Juan Yescas <jyescas@google.com>,
+	Will McVicker <willmcvicker@google.com>, kernel-team@android.com,
+	linux-arm-kernel@lists.infradead.org,
+	linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v4 01/10] dt-bindings: soc: google: add google,gs101-dtzpc
+Message-ID: <20260129165531.GA1269692-robh@kernel.org>
+References: <20260128-gs101-pd-v4-0-cbe7bd5a4060@linaro.org>
+ <20260128-gs101-pd-v4-1-cbe7bd5a4060@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <2ebd51a4-4b69-4179-9e23-ec1c38fdc803@linaro.org>
-In-Reply-To: <2ebd51a4-4b69-4179-9e23-ec1c38fdc803@linaro.org>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 29 Jan 2026 15:34:55 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0jgAnBRk1Q_wKEZrS0tkBitjNLbQNneO2M=5sr=GPCHBw@mail.gmail.com>
-X-Gm-Features: AZwV_QhwIhEBRhLEDdHbrT-eVf6WFpPx9D6Ax9hY-NeSPuCMN9C52liTbLhV7Sk
-Message-ID: <CAJZ5v0jgAnBRk1Q_wKEZrS0tkBitjNLbQNneO2M=5sr=GPCHBw@mail.gmail.com>
-Subject: Re: [GIT PULL] thermal drivers update for v7.0/v6.20
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukasz Luba <Lukasz.Luba@arm.com>, 
-	Linux PM mailing list <linux-pm@vger.kernel.org>, Romain Gantois <romain.gantois@bootlin.com>, 
-	Laura Nao <laura.nao@collabora.com>, Frank Wunderlich <frank-w@public-files.de>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Thorsten Blum <thorsten.blum@linux.dev>, 
-	Cosmin-Gabriel Tanislav <cosmin-gabriel.tanislav.xa@renesas.com>, 
-	Ovidiu Panait <ovidiu.panait.rb@renesas.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260128-gs101-pd-v4-1-cbe7bd5a4060@linaro.org>
 
-Hi Daniel,
+On Wed, Jan 28, 2026 at 04:10:50PM +0000, André Draszik wrote:
+> The Exynos Distributed TruztZone Protection Control (D_TZPC) provides
+> an interface to the protection bits that are included in the TrustZone
+> design in a secure system. It configures each area of the memory as
+> secure or non-secure.
 
-On Thu, Jan 29, 2026 at 1:05=E2=80=AFAM Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
->
-> Hi Rafael,
->
-> please consider the following changes since commit
-> 9ace4753a5202b02191d54e9fdf7f9e3d02b85eb:
->
->    Linux 6.19-rc4 (2026-01-04 14:41:55 -0800)
->
-> are available in the Git repository at:
->
->
-> ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git
-> tags/thermal-v7.0
->
-> for you to fetch changes up to 0061030929e2d09398ade9fae320528bdcba2bed:
->
->    thermal: renesas: rzg3e: add support for RZ/T2H and RZ/N2H
-> (2026-01-21 19:06:57 +0100)
->
-> ----------------------------------------------------------------
-> - Fix CFLAGS and LDFLAGS in the pkg-config template fir the libthermal
->    (Romain Gantois)
->
-> - Support multiple temp to raw conversion functions for the Mediatek
->    LVTS thermal driver and add the MT8196 and MT6991 support (Laura
->    Nao)
->
-> - Add support for the Mediatek LVTS driver for MT7987 (Frank
->    Wunderlich)
->
-> - Use the existing HZ_PER_MHZ macro on STM32 (Andy Shevchenko)
->
-> - Use the existing clamp() macro in BCM2835 (Thorsten Blum)
->
-> - Make the reset line optional in order to support new Renesas Soc
->    where it is not available. Add the RZ/T2H and RZ/N2H suppport
->    (Cosmin Tanislav)
->
-> ----------------------------------------------------------------
-> Andy Shevchenko (1):
->        thermal/drivers/stm32: Use predefined HZ_PER_MHZ instead of a
-> custom one
->
-> Cosmin Tanislav (5):
->        thermal: renesas: rzg3e: make reset optional
->        thermal: renesas: rzg3e: make min and max temperature per-chip
->        thermal: renesas: rzg3e: make calibration value retrieval per-chip
->        dt-bindings: thermal: r9a09g047-tsu: document RZ/T2H and RZ/N2H
->        thermal: renesas: rzg3e: add support for RZ/T2H and RZ/N2H
->
-> Frank Wunderlich (2):
->        dt-bindings: thermal: mediatek: Add LVTS thermal controller
-> definition for MT7987
->        thermal/drivers/mediatek/lvts_thermal: Add mt7987 support
->
-> Laura Nao (8):
->        dt-bindings: thermal: mediatek: Add LVTS thermal controller
-> support for MT8196
->        thermal/drivers/mediatek/lvts: Make number of calibration offsets
-> configurable
->        thermal/drivers/mediatek/lvts: Add platform ops to support
-> alternative conversion logic
->        thermal/drivers/mediatek/lvts: Add lvts_temp_to_raw variant
->        thermal/drivers/mediatek/lvts: Add support for ATP mode
->        thermal/drivers/mediatek/lvts: Support MSR offset for 16-bit
-> calibration data
->        thermal/drivers/mediatek/lvts_thermal: Add MT8196 support
->        dt-bindings: nvmem: mediatek: efuse: Add support for MT8196
->
-> Ovidiu Panait (1):
->        dt-bindings: thermal: r9a09g047-tsu: Document RZ/V2N TSU
->
-> Romain Gantois (1):
->        tools: lib: thermal: Correct CFLAGS and LDFLAGS in pkg-config
-> template
->
-> Thorsten Blum (1):
->        thermal/drivers/broadcom: Use clamp to simplify
-> bcm2835_thermal_temp2adc
->
->   .../devicetree/bindings/nvmem/mediatek,efuse.yaml  |   1 +
->   .../bindings/thermal/mediatek,lvts-thermal.yaml    |   3 +
->   .../bindings/thermal/renesas,r9a09g047-tsu.yaml    |  34 +-
->   drivers/thermal/broadcom/bcm2835_thermal.c         |   8 +-
->   drivers/thermal/mediatek/lvts_thermal.c            | 362
-> +++++++++++++++++++--
->   drivers/thermal/renesas/rzg3e_thermal.c            | 123 ++++---
->   drivers/thermal/st/stm_thermal.c                   |   4 +-
->   .../dt-bindings/thermal/mediatek,lvts-thermal.h    |  29 ++
->   tools/lib/thermal/libthermal.pc.template           |   4 +-
->   9 files changed, 483 insertions(+), 85 deletions(-)
->
-> --
+This sounds like what access-controllers binding is for. Does that work 
+here?
 
-Pulled and added to linux-pm.git/thermal, thanks!
+> Signed-off-by: André Draszik <andre.draszik@linaro.org>
+> ---
+>  .../bindings/soc/google/google,gs101-dtzpc.yaml    | 42 ++++++++++++++++++++++
+>  MAINTAINERS                                        |  1 +
+>  2 files changed, 43 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/soc/google/google,gs101-dtzpc.yaml b/Documentation/devicetree/bindings/soc/google/google,gs101-dtzpc.yaml
+> new file mode 100644
+> index 0000000000000000000000000000000000000000..a8c61ce069d6910c47753bf14a792eb58e6ae182
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/google/google,gs101-dtzpc.yaml
+> @@ -0,0 +1,42 @@
+> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/soc/google/google,gs101-dtzpc.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Samsung Exynos Distributed TruztZone Protection Control.
+> +
+> +description:
+> +  Distributed TrustZone Protection Control (D_TZPC) provides an interface to the
+> +  protection bits that are included in the TrustZone design in a secure system.
+> +  It configures each area of the memory as secure or non-secure.
+> +
+> +maintainers:
+> +  - André Draszik <andre.draszik@linaro.org>
+> +
+> +properties:
+> +  compatible:
+> +    const: google,gs101-dtzpc
+> +
+> +  clocks:
+> +    maxItems: 1
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +required:
+> +  - compatible
+> +  - clocks
+> +  - reg
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/clock/google,gs101.h>
+> +
+> +    dtzpc_hsi0: dtzpc@11010000 {
+> +      compatible = "google,gs101-dtzpc";
+> +      reg = <0x11010000 0x10000>;
+> +      clocks = <&cmu_hsi0 CLK_GOUT_HSI0_D_TZPC_HSI0_PCLK>;
+> +    };
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index a56f8f00aebb938aa765a8a6d66dfeb7f062dac8..98b2ef47c809ac0232e6941c9483b19d7c798bb4 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -10833,6 +10833,7 @@ P:	Documentation/process/maintainer-soc-clean-dts.rst
+>  C:	irc://irc.oftc.net/pixel6-kernel-dev
+>  F:	Documentation/devicetree/bindings/clock/google,gs101-clock.yaml
+>  F:	Documentation/devicetree/bindings/phy/google,lga-usb-phy.yaml
+> +F:	Documentation/devicetree/bindings/soc/google/google,gs101-dtzpc.yaml
+>  F:	Documentation/devicetree/bindings/soc/google/google,gs101-pmu-intr-gen.yaml
+>  F:	Documentation/devicetree/bindings/usb/google,lga-dwc3.yaml
+>  F:	arch/arm64/boot/dts/exynos/google/
+> 
+> -- 
+> 2.52.0.457.g6b5491de43-goog
+> 
