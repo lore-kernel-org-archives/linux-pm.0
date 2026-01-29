@@ -1,48 +1,48 @@
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C7462FB0B9;
-	Thu, 29 Jan 2026 18:37:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DEC052FD69B;
+	Thu, 29 Jan 2026 18:37:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769711828; cv=none; b=h6qe0mlwNpIBdSHC+tr0G9FJnbR0Y0UhX8h8JHkYJ6JS6WqydaTfeuOuhaVkbv4tp2C3Nc3gryBt/spxX1FnfwUuQkOJXlVjgEaHFFVH4SrvdTIAlcHG/G32YEZx1ICVzZqLpWwB/v0YtHiqOk5NDBf6kZNT7Pn8eFH2QO3E7Ts=
+	t=1769711830; cv=none; b=gyAKLAlwdMPlcDcy02hhQps5L+Gpvzu/29oqucFfg+JSVS3t60u41zfjrUx9Y2U4DCWbCHGEl7txqhwf9RtD8uKYpaWv5r6QnOxB55UTaxBRzCkIIPhPR0FwdYOAZSx50g+PMHH58qTEiDnC/WbW2Eshw1I6rbs4KwcDRVDucGU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769711828; c=relaxed/simple;
-	bh=m91yGa01BJGvQIQd8V8kwIaiUDcEEaPiwT9/wKPpdq0=;
+	s=arc-20240116; t=1769711830; c=relaxed/simple;
+	bh=RVFZpXwE4vtzMd4GfMWmFSn4TMciv5u0tMiSsfa7AkU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=jBmxgZe/mN9ohdbklO+oe8UZjPO59lDyWz1Lhi/cpGsa4uYdfXSPw7wHM1iuoqUDd2dtTaJ17gwBB1WvbaVv6N/FI/GIwNUHjxkMaJLAGz4pHNMfdMAFeJ5W+C0FgFGV/+KovH+1bJ/513Pqk64m0xHySqEv9WMmHDKuGv2NThg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=jGq1LRXt; arc=none smtp.client-ip=198.175.65.12
+	 MIME-Version; b=tYVCPHwp5X4Rvh5tduqcrPFUtrqEmJYjvOklLVXj/2jYypszSfEFpjeNsSvX5CMQKbPd/Cw7ea41AaPTdWNS93iWxNiHgKnGy/1FeMCa00RVuPdmP3Lmyqx41doFcfcWxRTfGZTrh1ZAWo/z+ryAa+t8Zm61eOSftKaycGWF+Mw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=GGfpP5aE; arc=none smtp.client-ip=198.175.65.12
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="jGq1LRXt"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="GGfpP5aE"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1769711827; x=1801247827;
+  t=1769711829; x=1801247829;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=m91yGa01BJGvQIQd8V8kwIaiUDcEEaPiwT9/wKPpdq0=;
-  b=jGq1LRXtvSe+zDFid7wEETk0UhzNPZEgeyCfi50m4nlVg0d5F2V179ap
-   Cbshi68xdwVCeEbsDjAN1zVHFEBY89bMFsmG0/oL78W8RCMS5rknts3H1
-   oyZ43cCroP9RkkMhU0lVhjlJazkx33bML8zIgNBjCCs+friCBt+1HxsE1
-   XzX4WlFvFgFMOBMiAawk7a5VVStJ5+HVjGhicv0NvpCB4BWTMk/z2BpNb
-   S/aNgm+HNXCpseA9f8TbcqtRc2VqPZBSVXXQX1ZpglxmiKdqDp3ad69N0
-   y5oAZ+wNjW98IaR2Pn5wDj0ZK/o7UvX0K0NogSirzyJyr85WUgvb8qtnx
-   w==;
-X-CSE-ConnectionGUID: XCgjzVwlS3u9umhTW9XtmQ==
-X-CSE-MsgGUID: QbKGJZZ/RZ67p/LY3s0haw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11686"; a="82388364"
+  bh=RVFZpXwE4vtzMd4GfMWmFSn4TMciv5u0tMiSsfa7AkU=;
+  b=GGfpP5aEQYYIfA1zS6Zca9Q2VG/aZrgMBziQCaXTrWv7GYtdA3maVTQ4
+   /GLX0gQz4m7/ucI9il+lkpt5lYL+Fg/+0IaNdsLJp7oLrQ4kLDmeSP15U
+   +1f6Yv5ZDFa2/pcUBOKcMOIdfbp/BkWQS6qJNDlrSqrqeucoBjTZXif+E
+   8xXnTH06UxOIzA90ns3gm03S4EubYmRo/sV4/IJ7FqEW+19tAP9nc2vjv
+   5COcl2yEqK4YJWxz90oK/08YQD8rnY0sRMKJcuSG9D/r3TgRaQ2t3eDLE
+   sgxc+SIHesQ9zvdB2i9QCsRti99Kob6H38YbSmECHti9mP57M43Exhqlz
+   g==;
+X-CSE-ConnectionGUID: wujjtVuLQY+mcT5JT/SCjg==
+X-CSE-MsgGUID: WZAUnwdmS96jCZlX+hMt8g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11686"; a="82388377"
 X-IronPort-AV: E=Sophos;i="6.21,261,1763452800"; 
-   d="scan'208";a="82388364"
+   d="scan'208";a="82388377"
 Received: from fmviesa009.fm.intel.com ([10.60.135.149])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jan 2026 10:37:06 -0800
-X-CSE-ConnectionGUID: 3hTz1OcETVe0RaI5ugX+5Q==
-X-CSE-MsgGUID: 3ToLsi50Q16YbldgF20Iyw==
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jan 2026 10:37:08 -0800
+X-CSE-ConnectionGUID: UdOX2cy+TnqpgCjnlT6HsQ==
+X-CSE-MsgGUID: 0YDo8c4MTEi1D0VkkaDwpA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.21,261,1763452800"; 
-   d="scan'208";a="209070966"
+   d="scan'208";a="209070977"
 Received: from skuppusw-desk2.jf.intel.com ([10.165.154.101])
-  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jan 2026 10:37:06 -0800
+  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jan 2026 10:37:07 -0800
 From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 To: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@linaro.org>
@@ -51,9 +51,9 @@ Cc: Zhang Rui <rui.zhang@intel.com>,
 	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v1 4/9] powercap: intel_rapl: Use unit conversion macros from units.h
-Date: Thu, 29 Jan 2026 10:36:41 -0800
-Message-ID: <20260129183646.558866-5-sathyanarayanan.kuppuswamy@linux.intel.com>
+Subject: [PATCH v1 7/9] thermal: intel: int340x: processor: Move RAPL defaults to MMIO driver
+Date: Thu, 29 Jan 2026 10:36:44 -0800
+Message-ID: <20260129183646.558866-8-sathyanarayanan.kuppuswamy@linux.intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260129183646.558866-1-sathyanarayanan.kuppuswamy@linux.intel.com>
 References: <20260129183646.558866-1-sathyanarayanan.kuppuswamy@linux.intel.com>
@@ -65,104 +65,55 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Replace hardcoded numeric constants with standard unit conversion
-macros from linux/units.h for better code clarity and
-self-documentation.
+Previously, the MMIO and MSR RAPL interfaces shared the same set of
+RAPL defaults provided by common code. However, unlike the MSR
+interface, the MMIO RAPL interface does not require CPU-specific
+variations in its default handling. Keeping the RAPL defaults in
+the RAPL common driver therefore provides no additional benefit.
 
-Add MICROJOULE_PER_JOULE and NANOJOULE_PER_JOULE to units.h to
-support energy unit conversions, following the existing pattern
-for power units.
+Move the MMIO defaults into the MMIO interface driver. This change
+includes the following updates:
 
-No functional changes.
+  * Introduce a MMIO-local rapl_defaults instance with the appropriate
+    default callbacks.
+  * Assign the MMIO-specific rapl_defaults to priv->defaults during
+    MMIO driver initialization.
 
+No functional changes are expected.
+
+Co-developed-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 ---
- drivers/powercap/intel_rapl_common.c | 19 ++++++++++---------
- include/linux/units.h                |  3 +++
- 2 files changed, 13 insertions(+), 9 deletions(-)
+ .../intel/int340x_thermal/processor_thermal_rapl.c        | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
-index 0faafba8cc7c..8f9d504fb64c 100644
---- a/drivers/powercap/intel_rapl_common.c
-+++ b/drivers/powercap/intel_rapl_common.c
-@@ -24,6 +24,7 @@
- #include <linux/suspend.h>
- #include <linux/sysfs.h>
- #include <linux/types.h>
-+#include <linux/units.h>
- 
- #include <asm/cpu_device_id.h>
- #include <asm/intel-family.h>
-@@ -964,13 +965,13 @@ static int rapl_check_unit_core(struct rapl_domain *rd)
- 	}
- 
- 	value = (ra.value & ENERGY_UNIT_MASK) >> ENERGY_UNIT_OFFSET;
--	rd->energy_unit = ENERGY_UNIT_SCALE * 1000000 / BIT(value);
-+	rd->energy_unit = ENERGY_UNIT_SCALE * MICROJOULE_PER_JOULE / BIT(value);
- 
- 	value = (ra.value & POWER_UNIT_MASK) >> POWER_UNIT_OFFSET;
--	rd->power_unit = 1000000 / BIT(value);
-+	rd->power_unit = MICROWATT_PER_WATT / BIT(value);
- 
- 	value = (ra.value & TIME_UNIT_MASK) >> TIME_UNIT_OFFSET;
--	rd->time_unit = 1000000 / BIT(value);
-+	rd->time_unit = USEC_PER_SEC / BIT(value);
- 
- 	pr_debug("Core CPU %s:%s energy=%dpJ, time=%dus, power=%duW\n",
- 		 rd->rp->name, rd->name, rd->energy_unit, rd->time_unit, rd->power_unit);
-@@ -995,10 +996,10 @@ static int rapl_check_unit_atom(struct rapl_domain *rd)
- 	rd->energy_unit = ENERGY_UNIT_SCALE * BIT(value);
- 
- 	value = (ra.value & POWER_UNIT_MASK) >> POWER_UNIT_OFFSET;
--	rd->power_unit = BIT(value) * 1000;
-+	rd->power_unit = BIT(value) * MILLIWATT_PER_WATT;
- 
- 	value = (ra.value & TIME_UNIT_MASK) >> TIME_UNIT_OFFSET;
--	rd->time_unit = 1000000 / BIT(value);
-+	rd->time_unit = USEC_PER_SEC / BIT(value);
- 
- 	pr_debug("Atom %s:%s energy=%dpJ, time=%dus, power=%duW\n",
- 		 rd->rp->name, rd->name, rd->energy_unit, rd->time_unit, rd->power_unit);
-@@ -1169,13 +1170,13 @@ static int rapl_check_unit_tpmi(struct rapl_domain *rd)
- 	}
- 
- 	value = (ra.value & TPMI_ENERGY_UNIT_MASK) >> TPMI_ENERGY_UNIT_OFFSET;
--	rd->energy_unit = ENERGY_UNIT_SCALE * 1000000 / BIT(value);
-+	rd->energy_unit = ENERGY_UNIT_SCALE * MICROJOULE_PER_JOULE / BIT(value);
- 
- 	value = (ra.value & TPMI_POWER_UNIT_MASK) >> TPMI_POWER_UNIT_OFFSET;
--	rd->power_unit = 1000000 / BIT(value);
-+	rd->power_unit = MICROWATT_PER_WATT / BIT(value);
- 
- 	value = (ra.value & TPMI_TIME_UNIT_MASK) >> TPMI_TIME_UNIT_OFFSET;
--	rd->time_unit = 1000000 / BIT(value);
-+	rd->time_unit = USEC_PER_SEC / BIT(value);
- 
- 	pr_debug("Core CPU %s:%s energy=%dpJ, time=%dus, power=%duW\n",
- 		 rd->rp->name, rd->name, rd->energy_unit, rd->time_unit, rd->power_unit);
-@@ -1208,7 +1209,7 @@ static const struct rapl_defaults rapl_defaults_spr_server = {
- 	.check_unit = rapl_check_unit_core,
- 	.set_floor_freq = set_floor_freq_default,
- 	.compute_time_window = rapl_compute_time_window_core,
--	.psys_domain_energy_unit = 1000000000,
-+	.psys_domain_energy_unit = NANOJOULE_PER_JOULE,
- 	.spr_psys_bits = true,
+diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_rapl.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_rapl.c
+index e56b18aeda71..5dbeb0a43c8c 100644
+--- a/drivers/thermal/intel/int340x_thermal/processor_thermal_rapl.c
++++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_rapl.c
+@@ -19,6 +19,13 @@ static const struct rapl_mmio_regs rapl_mmio_default = {
+ 	.limits[RAPL_DOMAIN_DRAM] = BIT(POWER_LIMIT2),
  };
  
-diff --git a/include/linux/units.h b/include/linux/units.h
-index 00e15de33eca..8c17d98cd67e 100644
---- a/include/linux/units.h
-+++ b/include/linux/units.h
-@@ -35,6 +35,9 @@
- #define MICROWATT_PER_MILLIWATT	1000UL
- #define MICROWATT_PER_WATT	1000000UL
- 
-+#define MICROJOULE_PER_JOULE	1000000UL
-+#define NANOJOULE_PER_JOULE	1000000000UL
++static const struct rapl_defaults rapl_defaults_mmio = {
++	.floor_freq_reg_addr = 0,
++	.check_unit = rapl_default_check_unit,
++	.set_floor_freq = rapl_default_set_floor_freq,
++	.compute_time_window = rapl_default_compute_time_window,
++};
 +
- #define BYTES_PER_KBIT		(KILO / BITS_PER_BYTE)
- #define BYTES_PER_MBIT		(MEGA / BITS_PER_BYTE)
- #define BYTES_PER_GBIT		(GIGA / BITS_PER_BYTE)
+ static int rapl_mmio_read_raw(int cpu, struct reg_action *ra, bool atomic)
+ {
+ 	if (!ra->reg.mmio)
+@@ -67,6 +74,7 @@ int proc_thermal_rapl_add(struct pci_dev *pdev, struct proc_thermal_device *proc
+ 
+ 	rapl_mmio_priv.read_raw = rapl_mmio_read_raw;
+ 	rapl_mmio_priv.write_raw = rapl_mmio_write_raw;
++	rapl_mmio_priv.defaults = &rapl_defaults_mmio;
+ 
+ 	rapl_mmio_priv.control_type = powercap_register_control_type(NULL, "intel-rapl-mmio", NULL);
+ 	if (IS_ERR(rapl_mmio_priv.control_type)) {
 -- 
 2.43.0
 
