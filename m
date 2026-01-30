@@ -1,90 +1,80 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBF66353EEE;
-	Fri, 30 Jan 2026 18:09:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E70731A051
+	for <linux-pm@vger.kernel.org>; Fri, 30 Jan 2026 18:13:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769796597; cv=none; b=Z8ZgEfyV2ami9IbxXC0VHiCT3uDQnT63GvI4iXhqA4P6cmXABTe56Z0ATHyj67rXjD8FcZsM0ADGdk0g8k7H/f8uNc006WwvylvDGNbJxIS/eIqkwhYjVF0U521+CmQ29cE+LKxcRRjxs5bhIbGiI6+EML62glPUbqR4aobTVck=
+	t=1769796813; cv=none; b=tl5SAXj+0erid5b2bJlC6buc1Inqv/R7DlauA17R4I5K9PXDfoeuEidsf2cRWRJ3Hm0dhgk+A/cB8CNgfPxx7kF2wGX6Za1TvXMGEOY1dCiFRtWA8/BOn+TRDFcmeAlovpgCh2JZPsur6Awow8iZuuV04EkoLMAazl+2IY/pWcw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769796597; c=relaxed/simple;
-	bh=MSbKY6pZES0SMLEWWw4wzn+AjZxxHvsbyDNLwZhZHak=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Pu/IMKk/U6aViYq3x+zfpWFMqT5qRpPMWY8lJV0YUR74nXF+Qf7/DHeacJfAe4iAVvXydMTJO/bEL2dH8AWnlpCOV55fRLvUE9r4mJh/kGUePu1jwM6urppKlkncJGm9zY6SCRuTtPtuulamSlWZxxCPC3g3BJcOBtd7UF/Urfc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JS30ZewC; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1769796813; c=relaxed/simple;
+	bh=LISfKR93PEiaIWL+rTvqe4PKK99gaFt2J2IfiA8N2Y0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ehY6KrjR3QHO2Lh4baHiIedymrKxhgt70lhEtXgS0zB9fZYPFpAvWRUW1DvKN8suuikC/NXS9+almIRunKDsg8linzYIzFtVI092bB93z7GPsj8Sauhg58V1sGvLo3DZJhAeN1CW+Uqkk7d7XI7HGSwE5TfBexkEiXeT3wGu8gA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dtp0+AbH; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JS30ZewC"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E746C4CEF7;
-	Fri, 30 Jan 2026 18:09:54 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dtp0+AbH"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D721C4CEF7
+	for <linux-pm@vger.kernel.org>; Fri, 30 Jan 2026 18:13:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1769796596;
-	bh=MSbKY6pZES0SMLEWWw4wzn+AjZxxHvsbyDNLwZhZHak=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=JS30ZewCuDhTyBpzKmyXALuelN4PRb8VTvr3iCpfRqC6+ksKET0D1vys7/OD20QPp
-	 IJydvxr8opdz1St7TkvYQL+EHD0XX7zaIXLJhDPOGYHvLNT4fpYuU2eBMWarBEyB8R
-	 gDCOr0lSmzLnBQhfNKiay+KjvrGorgniKWGvW3LI2obDAWBNBzWGGxFYlmHEqQnGX5
-	 wyCZ8V6bfuZjAxGrHmVAjdVRInOIksO/dV2cIVOT1wal1E8Gh5iyUYV60BkSDqak/v
-	 F88O1Ci3/WYAcb1ZSpY3YPOCYsHcUmkcqX+3u+zSLCwnIdP30YfP2YQ9lpyj94avWm
-	 yAgV/OYyeVZbA==
-Date: Fri, 30 Jan 2026 18:09:51 +0000
-From: Mark Brown <broonie@kernel.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Amit Kucheria <amitk@kernel.org>,
-	Thara Gopinath <thara.gopinath@gmail.com>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Aishwarya TCV <Aishwarya.TCV@arm.com>
-Subject: Re: [PATCH] thermal/drivers/qcom/lmh: Remove spurious IRQF_ONESHOT
-Message-ID: <7b231d33-9c40-4f25-a693-8f2e08280ce4@sirena.org.uk>
-References: <20260130-thermal-lmh-oneshot-v1-1-9b132204ef1b@kernel.org>
- <CAJZ5v0h5CKydWU-o-Zu2z6mCtEcCszkfpL4Vuz_VmSqhxKbozg@mail.gmail.com>
+	s=k20201202; t=1769796813;
+	bh=LISfKR93PEiaIWL+rTvqe4PKK99gaFt2J2IfiA8N2Y0=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=dtp0+AbHj3S2cKad+54r9HkZQzf/38FqvFjehglY/dqBtZuSy2Q6y6/BsePTA0LCl
+	 kwOMR7XCI33GLWqXSRaJDlT38TDPsEHsPPDdU7kFevAPxe+Cgkf8Y1gHz/wz9GNSRK
+	 7CNMKZvtbjB8ibMTKBCAY6yYTOFh/JaY/k5+qo5hbGXrWOoRoVrsJBRorrgYirvhPb
+	 yL7ierlf1pNca2uRmaylt3as0272JNVKNx4ZMZ4CZSu0T6w6mXS9FhrOkxTKUmaLod
+	 Ms71cEpmTG4rVxoEhbymikCbYx27/mIVP7F+s6OBCFrEDawTMhjqQ2G4ewdD3TMUVb
+	 CyFBRk9jwM7QQ==
+Received: by mail-oo1-f54.google.com with SMTP id 006d021491bc7-6611cab8ca3so1401706eaf.3
+        for <linux-pm@vger.kernel.org>; Fri, 30 Jan 2026 10:13:33 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCWNuR0/S1ZhqTXVDCIfHGV7LGYxDfr2p7xCyuJb2zQJlSVuDOgTtzaWdFQsfqDlojYcMMXVEcSQjg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yygn64Nx5xj1EsdQV8TUkglE628FgdGUwV0Ax6aVDHz5qqlYIxP
+	0+E8VtgykjLYO0AqCZFxcfL5RmCq/ObCvONwwFxiXPPCM7VOkCVY6iRYsotiyHwg1x8jFS7DClS
+	oP9uh50BmdGH4OVG49fRO5gBsno19w4g=
+X-Received: by 2002:a05:6820:f0b:b0:663:b6f:c25c with SMTP id
+ 006d021491bc7-6630f36f8ccmr1745766eaf.41.1769796807350; Fri, 30 Jan 2026
+ 10:13:27 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="sd/cRMV/VdkPJ11W"
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0h5CKydWU-o-Zu2z6mCtEcCszkfpL4Vuz_VmSqhxKbozg@mail.gmail.com>
-X-Cookie: War is an equal opportunity destroyer.
-
-
---sd/cRMV/VdkPJ11W
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+References: <20260130-thermal-lmh-oneshot-v1-1-9b132204ef1b@kernel.org>
+ <CAJZ5v0h5CKydWU-o-Zu2z6mCtEcCszkfpL4Vuz_VmSqhxKbozg@mail.gmail.com> <7b231d33-9c40-4f25-a693-8f2e08280ce4@sirena.org.uk>
+In-Reply-To: <7b231d33-9c40-4f25-a693-8f2e08280ce4@sirena.org.uk>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 30 Jan 2026 19:13:15 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0gG0=AJk9wUqwMps2p-ypDre4fU-1L7EVCAZY+a75tTSg@mail.gmail.com>
+X-Gm-Features: AZwV_QhtaIMBGridiBfqnH3P9NGAN0931kY95YDlXuEAROW9jN9WqHKBOgrS4RE
+Message-ID: <CAJZ5v0gG0=AJk9wUqwMps2p-ypDre4fU-1L7EVCAZY+a75tTSg@mail.gmail.com>
+Subject: Re: [PATCH] thermal/drivers/qcom/lmh: Remove spurious IRQF_ONESHOT
+To: Mark Brown <broonie@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Amit Kucheria <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, linux-arm-msm@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Aishwarya TCV <Aishwarya.TCV@arm.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Jan 30, 2026 at 07:06:06PM +0100, Rafael J. Wysocki wrote:
-> On Fri, Jan 30, 2026 at 5:55=E2=80=AFPM Mark Brown <broonie@kernel.org> w=
-rote:
+On Fri, Jan 30, 2026 at 7:09=E2=80=AFPM Mark Brown <broonie@kernel.org> wro=
+te:
+>
+> On Fri, Jan 30, 2026 at 07:06:06PM +0100, Rafael J. Wysocki wrote:
+> > On Fri, Jan 30, 2026 at 5:55=E2=80=AFPM Mark Brown <broonie@kernel.org>=
+ wrote:
+>
+> > > This warning is there because IRQF_ONESHOT is only meaningful when th=
+ere is
+> > > a threaded interrupt handler and this driver does not register one. J=
+ust
+> > > remove IRQF_ONESHOT, it wasn't doing anything.
+>
+> > Daniel, do you want me to pick up this one?  I can still push it for
+> > 6.19 as a fix.
+>
+> FWIW the WARN_ON() is introduced in -next so won't be seen in v6.19
+> (though the issue has been there since forever).
 
-> > This warning is there because IRQF_ONESHOT is only meaningful when ther=
-e is
-> > a threaded interrupt handler and this driver does not register one. Just
-> > remove IRQF_ONESHOT, it wasn't doing anything.
-
-> Daniel, do you want me to pick up this one?  I can still push it for
-> 6.19 as a fix.
-
-FWIW the WARN_ON() is introduced in -next so won't be seen in v6.19
-(though the issue has been there since forever).
-
---sd/cRMV/VdkPJ11W
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAml88+4ACgkQJNaLcl1U
-h9DdIAf+KMWayBwlaGyH3nnLGQHBjrJhJLqlxBKX2enxvnaKonms1Hn3JDv6Xphx
-BGhp0dTxj0hRwWDPSfLemvoQ9hKW1elkWoDPL94LYtUdbIDcHt7Ycs1WS/ALyuPw
-XdIQF//WtGhK6T0aLz41zaOwDSJ94cOOASiLWJ7uY47QzQk+65/q8YrIHn+0u823
-OB2XXH6BcJ+m7mPoiOZLk9Fs8mDW9UnKrBsU8y2MnFdJ3xpdbLDd1ZeoZ3mkqi51
-E7kGhPKsnx9sG9dY/gJJgp83GBokzn3ctzdau8DPJgDFJ9FW5ZQnBhokaBohBPnW
-FZiBuGbVD+9FiUA1oxEvrFk6frTetw==
-=HmMy
------END PGP SIGNATURE-----
-
---sd/cRMV/VdkPJ11W--
+OK, so it need not go into 6.19, but it would be good to have in 6.20/7.0.
