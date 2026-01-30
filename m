@@ -1,30 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE3CB389DE9;
-	Fri, 30 Jan 2026 22:24:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C40038A28C;
+	Fri, 30 Jan 2026 22:24:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769811873; cv=none; b=WY31p3L/nlrwebHs/g8WFPUQeHjVzvTGKl5XVtpnldEZ6Jv7JcsNQ1mnB0JfnzZ+jPtpArNRgu68dsIefzD/DEjaA1H93SNSHRDriVlkLzwnXz99oOI3hDX78D5oNvhNK0P9bwVgOAwYkTOS2tKDqxZa8btHGClDg2mknhS/VhM=
+	t=1769811875; cv=none; b=TwJqCLfct7+7DdK8nPdgIJUMl8LNOzHgHKAqabWbVDDfQuck6fpvxZmNW4uRF86U6y5TgS/kvGi7NsMIkbo3wV1PqbfuFmRAz1Y5uaQYKwIMhSIUqgY+dwOLT/J8cm8JCn0MvmUfWUN0nWx0UpGklyNlsiNCngr1+4Zsh3nK38Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769811873; c=relaxed/simple;
-	bh=KXLPZDFw8ClfGR6yvhfI7UCYDHsgAOLDlb+0biunI7M=;
+	s=arc-20240116; t=1769811875; c=relaxed/simple;
+	bh=C8l+bxn/3dt/Na/JetrtGx+8ReAzUbl3NznilTqVcYs=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=Xkw5TFy9tA61ctId4rGSKEZHKIhfz1eMsVKfmbsIBEwzS0plS7ovSW5schYIOT0ISx13S2wieUvfInhjR9EBV5EntDIjq82EDNYItjUqXB6Gcl2+FmiN6ylAKNAFWAyxId+lxgGNrvLNYLOWY/ES9/vCYI6ess9tZOOUdU5RGx4=
+	 MIME-Version:Content-Type; b=k6BbDPraHEs9mGMYAlscR0Fl+OShK4sABqqaC2J9cZ9oloG6jJ0MUE9oS411funIhx7bFwaLQOHBCljLg7cmXKIY0JOE2/VE9KVO1cgAXmDJFKuMzN25LUVcVQcbCh4EuF7zBPtUyV65cDQZhib6LBGerA4tyT3rSNBHFJDL4nU=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 80F6CC16AAE;
-	Fri, 30 Jan 2026 22:24:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 82E23C2BC87;
+	Fri, 30 Jan 2026 22:24:34 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id BB302180596; Fri, 30 Jan 2026 23:24:27 +0100 (CET)
+	id D20751805FE; Fri, 30 Jan 2026 23:24:27 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, 
- Waqar Hameed <waqar.hameed@axis.com>
-Cc: kernel@axis.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <cover.1769158280.git.waqar.hameed@axis.com>
-References: <cover.1769158280.git.waqar.hameed@axis.com>
-Subject: Re: [PATCH v2 0/2] power: supply: wm97xx: Use devm-variants in
- probe
-Message-Id: <176981186775.331784.16421404001791768718.b4-ty@collabora.com>
+To: Matti Vaittinen <mazziesaccount@gmail.com>, 
+ Matti Vaittinen <mazziesaccount@gmail.com>, 
+ Matti Vaittinen <matti.vaittinen@linux.dev>
+Cc: Lee Jones <lee@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Andreas Kemnade <andreas@kemnade.info>
+In-Reply-To: <aWi_GG74sZRfajA_@mva-rohm>
+References: <aWi_GG74sZRfajA_@mva-rohm>
+Subject: Re: [PATCH] power: supply: bd71828: Use dev_err_probe()
+Message-Id: <176981186784.331784.4686693358681648734.b4-ty@collabora.com>
 Date: Fri, 30 Jan 2026 23:24:27 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -37,24 +39,22 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.3
 
 
-On Fri, 23 Jan 2026 09:55:42 +0100, Waqar Hameed wrote:
-> This patch series contains some clean-ups that makes life a little
-> easier. It was originally triggered by a NULL pointer fix in this driver
-> that has already been applied from the previous version [1]. Therefore
-> note that this series is based on `for-next` branch in Sebastian
-> Reichel's tree [2].
+On Thu, 15 Jan 2026 12:19:04 +0200, Matti Vaittinen wrote:
+> The driver uses separate error printing and error returning at probe()
+> for locations where the error value is hard-coded and can't be
+> EPROBE_DEFER. This helps to omit the extra return value check which is
+> done in dev_err_probe().
 > 
-> [1] https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/commit/?h=for-next&id=39fe0eac6d755ef215026518985fcf8de9360e9e
-> [2] https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/?h=for-next
+> Using the dev_err_probe() has some other benefits besides handling the
+> -EPROBE_DEFER though, like standardizing the print for error numbers.
+> Some believe thes outweigh the benefit of skipping the extra check.
 > 
 > [...]
 
 Applied, thanks!
 
-[1/2] power: supply: wm97xx: Use devm_kcalloc()
-      commit: 72db889394d89ffde61e7438f0cdfc0135c9da48
-[2/2] power: supply: wm97xx: Use devm_power_supply_register()
-      commit: 3db37475d78ed0c2857f289a535dd44b045a904a
+[1/1] power: supply: bd71828: Use dev_err_probe()
+      commit: 12bdf471e374b34cb0e48b29bb9eb9127ed26fc5
 
 Best regards,
 -- 
