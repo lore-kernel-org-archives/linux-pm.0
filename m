@@ -1,66 +1,73 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f181.google.com (mail-pg1-f181.google.com [209.85.215.181])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 298AC36D4F1;
-	Fri, 30 Jan 2026 05:40:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE0E31B4138
+	for <linux-pm@vger.kernel.org>; Fri, 30 Jan 2026 06:27:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769751638; cv=none; b=IbHYSQxWTSaDSIOnNH98LI3nAxmmCZ1KZrcXIu6nfmHCMGUtAKed8pjcNChy4Gl/1daFs4AEvVvJZIacDuo88ggNhZ+bmPMfBwjhx6KQzI1u0uW2rpUvivoehVlUB0fgoio588psmum8I72xKkOQbax/zG+cFSkoy26QQMClFV4=
+	t=1769754473; cv=none; b=QESCC8y+YBazRu5pu7PlCdcTXXWKWLt03YPrBTYloacZtPJ7NRNnnsKeVfS5yVAVPokLi3Z5gsCvrDgYTECxwf5CKe07PC2PP4P36KEZ/EgvQVXMkoZ8HOuRl2Ogn7WoTWEP6o5Fi30wq/dGbMMpj8gAqkhvCEdUpf3EZrCXlwk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769751638; c=relaxed/simple;
-	bh=O0yrTfM/db7ruCmnkUxHUcsXFLt25Gn8UsW4TJhHR4w=;
+	s=arc-20240116; t=1769754473; c=relaxed/simple;
+	bh=S5ytEVKJJuP65177qQrqTryrs1V6OObtns4hH94v9YY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=rSQGNFnM3ovYWYfQmQ8sknIZOq1Eda5bwYjFtnzGpaYCT96Desv0ooBxwNRMEQg8FPVEl1PYPfmGvMLkx5/C+9ol10E5+kluYt5yxmQmgGXPldo5QpSBheiJ1AhmITjACeJKNb0N6Xsdl4UzVmgHG6bCN3u1pd57sXpgGicQk5E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=TSn+NuRt; arc=none smtp.client-ip=198.175.65.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=tcyNAYnanfLUrT/qrmRljw8Om9a8v+hvgW2TzvGM/o7llmVVQ8GFni3qm/5svsxsfYv8JY4eZ44KjFJRqIam2VTh/5/wUk4O3pqnaHUwWENTlvzGGiHsX3MlP/kTPPMyhEbc9OB/AxVfa4owlZ9km+a6Q73nffB6cCHbcf2gL60=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=dfNkyT++; arc=none smtp.client-ip=209.85.215.181
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="TSn+NuRt"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1769751637; x=1801287637;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=O0yrTfM/db7ruCmnkUxHUcsXFLt25Gn8UsW4TJhHR4w=;
-  b=TSn+NuRtw7KmX1SceMaZJyVUlKhfvSv8Ji5D1L6U+oRiUcGB8k34T4Jw
-   Mljv/nQOPnsoavZ1s8l0Si9BoO7LahZGaNsQ5LlfBPMQwHxf66r1zo+7Y
-   NE/Q1BjuRbEfRLywfhQqjOLmk67lv5RJek143Fn+L0oKKL+EC5mTG4NjP
-   eMZCUAqFZWlxx+dGRrBpLjQSCf8yIEBCP/B1kB5cwWxP4qpUG+sRQ5jMr
-   oAzuqmLeO0VyyLXqpRHm6IkjO8cHv3UDS35CIVeCF26K0OwhA5HDrRrLh
-   X/0Ka0BIm5AFLUSWNiS8vboh9v9DiUgXQYE8xM/RVUaaGkVrdc8nNxN+Y
-   w==;
-X-CSE-ConnectionGUID: aX4KMcCwToa4Sk+4Pzc39Q==
-X-CSE-MsgGUID: PVJbhADMSdCDEoSQ+McgKQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11686"; a="71037445"
-X-IronPort-AV: E=Sophos;i="6.21,262,1763452800"; 
-   d="scan'208";a="71037445"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jan 2026 21:40:36 -0800
-X-CSE-ConnectionGUID: zoU1rLYHTa6f8aixvlR8nw==
-X-CSE-MsgGUID: a2vdqcYNQAOq6a4llo9v+w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,262,1763452800"; 
-   d="scan'208";a="213299494"
-Received: from lkp-server01.sh.intel.com (HELO 765f4a05e27f) ([10.239.97.150])
-  by orviesa004.jf.intel.com with ESMTP; 29 Jan 2026 21:40:31 -0800
-Received: from kbuild by 765f4a05e27f with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1vlhF7-00000000cDg-0npS;
-	Fri, 30 Jan 2026 05:40:29 +0000
-Date: Fri, 30 Jan 2026 13:39:31 +0800
-From: kernel test robot <lkp@intel.com>
-To: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>, andersson@kernel.org,
-	mathieu.poirier@linaro.org, robh@kernel.org, krzk+dt@kernel.org,
-	conor+dt@kernel.org, rui.zhang@intel.com, lukasz.luba@arm.com,
-	konradybcio@kernel.org, mani@kernel.org, casey.connolly@linaro.org,
-	amit.kucheria@oss.qualcomm.com
-Cc: oe-kbuild-all@lists.linux.dev, linux-arm-msm@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, gaurav.kohli@oss.qualcomm.com,
-	manaf.pallikunhi@oss.qualcomm.com
-Subject: Re: [PATCH v2 1/8] thermal: Add Remote Proc cooling driver
-Message-ID: <202601301354.3ERTn2SC-lkp@intel.com>
-References: <20260127155722.2797783-2-gaurav.kohli@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="dfNkyT++"
+Received: by mail-pg1-f181.google.com with SMTP id 41be03b00d2f7-c0c24d0f4ceso671563a12.1
+        for <linux-pm@vger.kernel.org>; Thu, 29 Jan 2026 22:27:51 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1769754471; x=1770359271; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=OcCddLBTX1u2AT65eTJArqUf8OubYhQCURjlAC2zifw=;
+        b=dfNkyT++fXMpusnsY6a3YMBBBQg0sk3eFGpzP0k+KKlNyH/qwBlX9wV9ed7+jtZyhI
+         PeXtnecqa7Qw2c9u/fvPxk2pcoF8cwVuR8gFclwxlB1YT6linM9oeBX4jBFcvqHuu4Gg
+         +aLJYvGXwKFk8mOni2z5cqMxg6oKTLt8IgVuFh71jZ66/R93/g8qXy2zpgk6b91+VG+Z
+         r54HBCPSOaUEF7MwaD8zi72Trgrj3r8XL41sZiowpRr9qmlCKw/u2FXvgVq/G1GDrJuY
+         b5x/ff/7YyvatHnKyjAcyse09ztuZ9kQ3wIfIyjgV3lptk5II6anXSyYdzNqBgcdC9ZL
+         iU+g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1769754471; x=1770359271;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=OcCddLBTX1u2AT65eTJArqUf8OubYhQCURjlAC2zifw=;
+        b=m6cuc/fHFpEUVZxfjeVWKgDJqxGg3Eral5XyHVJ/5Xh+R52Hk3c3oXwwImMIkBflfC
+         VB+TTRimQF+8MkmXPuadZ0eWdmTecUo723nYG4M/EQkXaQrZkyetKczRZt1ZElxl5QNf
+         o+PftHk1qNg0LS/idxRJimpI9nkJC6oSmkEzWo2i9Anu0fekT7+rivCmrfuS7AUwoJD/
+         oQm0LsVf9u25pIREjnhtjPaj11hEQAd37JwidkXw93E9JRXVnZMb3XB1NPq+HHyu9XO4
+         PLolrkoqQod0No2nY4kINU1x27+hfggsv62tsvp0bqGxQUwJkjdwFdRYbMgyIbwilyCp
+         XLNQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXnEBqq6uRtDNocKqm9Fc3ITFmOzeJKED2pK4zVCLh4+LSv0+roBCfTKYv8uu52rAmbYT+umI4dWQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyuxRGZJsMwilPcODMboQc6V5FMumxTVmlR5DB5XQVjAwDHSSX7
+	2usNtAWxvXCnKpBeWBj5Bb4xOVEEpTmih0rKgv8ye6v2jNCIUV+Z6cYcBn3krqh7WAA=
+X-Gm-Gg: AZuq6aKmlLBL5N7/ti4GfnDClvfaukXiRPUIOxN2upLGFK4DggL3uhd8q/LkTpszNRm
+	PulcSvt7vPNdGk8Tyzs5v28yRdKjAVCIvDDY3B127YHsdGZ0hqH9p4oEmfKrDBfmd8vjrCYF+Ic
+	2bd/F6AD6zCz5DNKMCaVkiZher1yf3U8m6khm/1LGgd66Yypl45J9kgfPF5Mbcm7dIFhnLYPPAk
+	NvbPGnuMGd8BPfTPIxH2Dqpo2NQUIGpBhCJezyTZQU4hEEubyvVIHveeagqrQaNiqSuBqmCmFum
+	zaYuWjUOQhFxhqsaPv1PqgNHm8p5cN9Zlp8cqXN9slCLOe5BTwiusVRe6CsdmF1wSvPrX6Tmh64
+	j+ENYIFqZyU4pNpjrY+/GuNjGzywjIM6YEP90Il62HhcUFsCU73traObrglb2cV37XJh+ImZ7Z7
+	NNN9mSI2Fdg/k=
+X-Received: by 2002:a17:903:1b67:b0:2a8:dc02:8939 with SMTP id d9443c01a7336-2a8dc028b56mr14913635ad.0.1769754470910;
+        Thu, 29 Jan 2026 22:27:50 -0800 (PST)
+Received: from localhost ([122.172.80.63])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a88b4c3ddfsm67357275ad.66.2026.01.29.22.27.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 29 Jan 2026 22:27:50 -0800 (PST)
+Date: Fri, 30 Jan 2026 11:57:47 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Pengjie Zhang <zhangpengjie2@huawei.com>
+Cc: rafael@kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, zhanjie9@hisilicon.com, zhenglifeng1@huawei.com, 
+	lihuisong@huawei.com, yubowen8@huawei.com, linhongye@h-partners.com, 
+	linuxarm@huawei.com, jonathan.cameron@huawei.com, wangzhi12@huawei.com
+Subject: Re: [PATCH] cpufreq: Add debug print for current frequency in
+ __cpufreq_driver_target()
+Message-ID: <ezppyby2fs2k2njwcty4dpaf4637g24kzmemjm5sedeerl6ihw@brxxfglbitxc>
+References: <20260129121813.3874516-1-zhangpengjie2@huawei.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -69,102 +76,34 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260127155722.2797783-2-gaurav.kohli@oss.qualcomm.com>
+In-Reply-To: <20260129121813.3874516-1-zhangpengjie2@huawei.com>
 
-Hi Gaurav,
+On 29-01-26, 20:18, Pengjie Zhang wrote:
+> Include policy->cur in the debug message to explicitly show the frequency
+> transition (from current to target).
+> 
+> Signed-off-by: Pengjie Zhang <zhangpengjie2@huawei.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 4472bb1ec83c..b3d2d2e0c864 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2361,8 +2361,8 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
+>  	target_freq = __resolve_freq(policy, target_freq, policy->min,
+>  				     policy->max, relation);
+>  
+> -	pr_debug("target for CPU %u: %u kHz, relation %u, requested %u kHz\n",
+> -		 policy->cpu, target_freq, relation, old_target_freq);
+> +	pr_debug("CPU %u: cur %u kHz -> target %u kHz (req %u kHz, rel %u)\n",
+> +		policy->cpu, policy->cur, target_freq, old_target_freq, relation);
+>  
+>  	/*
+>  	 * This might look like a redundant call as we are checking it again
 
-kernel test robot noticed the following build warnings:
-
-[auto build test WARNING on next-20260126]
-[also build test WARNING on v6.19-rc7]
-[cannot apply to robh/for-next rafael-pm/thermal remoteproc/rproc-next linus/master v6.19-rc7 v6.19-rc6 v6.19-rc5]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Gaurav-Kohli/thermal-Add-Remote-Proc-cooling-driver/20260128-000753
-base:   next-20260126
-patch link:    https://lore.kernel.org/r/20260127155722.2797783-2-gaurav.kohli%40oss.qualcomm.com
-patch subject: [PATCH v2 1/8] thermal: Add Remote Proc cooling driver
-config: m68k-allyesconfig (https://download.01.org/0day-ci/archive/20260130/202601301354.3ERTn2SC-lkp@intel.com/config)
-compiler: m68k-linux-gcc (GCC) 15.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260130/202601301354.3ERTn2SC-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202601301354.3ERTn2SC-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
->> drivers/thermal/remoteproc_cooling.c:87:1: warning: no previous prototype for 'remoteproc_cooling_register' [-Wmissing-prototypes]
-      87 | remoteproc_cooling_register(struct device_node *np,
-         | ^~~~~~~~~~~~~~~~~~~~~~~~~~~
->> drivers/thermal/remoteproc_cooling.c:131:6: warning: no previous prototype for 'remoteproc_cooling_unregister' [-Wmissing-prototypes]
-     131 | void remoteproc_cooling_unregister(struct remoteproc_cdev *rproc_cdev)
-         |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-vim +/remoteproc_cooling_register +87 drivers/thermal/remoteproc_cooling.c
-
-    85	
-    86	struct remoteproc_cdev *
-  > 87	remoteproc_cooling_register(struct device_node *np,
-    88				    const char *name, const struct remoteproc_cooling_ops *ops,
-    89				     void *devdata)
-    90	{
-    91		struct remoteproc_cdev *rproc_cdev;
-    92		struct thermal_cooling_device *cdev;
-    93		int ret;
-    94	
-    95		if (!name || !ops)
-    96			return ERR_PTR(-EINVAL);
-    97	
-    98		rproc_cdev = kzalloc(sizeof(*rproc_cdev), GFP_KERNEL);
-    99		if (!rproc_cdev)
-   100			return ERR_PTR(-ENOMEM);
-   101	
-   102		rproc_cdev->ops = ops;
-   103		rproc_cdev->devdata = devdata;
-   104		mutex_init(&rproc_cdev->lock);
-   105	
-   106		char *rproc_name __free(kfree) =
-   107			kasprintf(GFP_KERNEL, REMOTEPROC_PREFIX "%s", name);
-   108		/* Register with thermal framework */
-   109		if (np)
-   110			cdev = thermal_of_cooling_device_register(np, rproc_name, rproc_cdev,
-   111								  &remoteproc_cooling_ops);
-   112		else
-   113			cdev = thermal_cooling_device_register(rproc_name, rproc_cdev,
-   114							       &remoteproc_cooling_ops);
-   115	
-   116		if (IS_ERR(cdev)) {
-   117			ret = PTR_ERR(cdev);
-   118			goto free_rproc_cdev;
-   119		}
-   120	
-   121		rproc_cdev->cdev = cdev;
-   122	
-   123		return rproc_cdev;
-   124	
-   125	free_rproc_cdev:
-   126		kfree(rproc_cdev);
-   127		return ERR_PTR(ret);
-   128	}
-   129	EXPORT_SYMBOL_GPL(remoteproc_cooling_register);
-   130	
- > 131	void remoteproc_cooling_unregister(struct remoteproc_cdev *rproc_cdev)
-   132	{
-   133		if (!rproc_cdev)
-   134			return;
-   135	
-   136		thermal_cooling_device_unregister(rproc_cdev->cdev);
-   137		mutex_destroy(&rproc_cdev->lock);
-   138		kfree(rproc_cdev);
-   139	}
-   140	EXPORT_SYMBOL_GPL(remoteproc_cooling_unregister);
-   141	
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+viresh
