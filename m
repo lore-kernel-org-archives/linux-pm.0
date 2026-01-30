@@ -1,30 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 534EE3074BA;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5587837AA64;
 	Fri, 30 Jan 2026 22:24:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769811872; cv=none; b=timY6ezIb3AJ8IhwzCA+DTTAes0yhbsQZJbx1hyK2XLNUeV0ba5iLQHBuRsVJ8iTacy+uob/8KveQoetW9AHybw6dzft5y3rHYpl2YModAeFkHqDLV8xvqY3yYRuKAN1/r14nFS5Vll7a8bZbf89S+GrtU0Vf7Wr+v/1WFcFMJQ=
+	t=1769811872; cv=none; b=K7e+nVIaCsZlPbNoXtBl4SHzIH2rvS6ZODHkrTXTgow9ADAqc8zbXeA3K9qLVjtUzrimIYn1SlLWeHI9q6i9l3JIUchN/ncrzionUKBrqL43LOfFgG6P/ebDHtglMdy0M5bR26xBlv8wfCNMfNx8wXUN0MW+b7je7IVcmIf4/Z0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1769811872; c=relaxed/simple;
-	bh=NavC2bb9AEBm27HWFCCpX0NYxKn+Bm1XTB0FfrsTJ+k=;
+	bh=gcswa17x7vAac8H8ISWVP/qXvu8V+YccoFtXeiHYCMg=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=TyctlbVXZanxlETZPH6hXl6ZxutRMOYVJaf2Z9hRZw/BMgjSKx6XmdKmR4Xnl+GTKaZ4MgZ+gyuQoCaYnvJSMDRXhYEhJDFo+uQn1Gy8McZG0DbiIH+/MraZOQyaMATIaVTfF5LOb7anZN3S5euEs3WrYfjBDCmMZNyI176e3H4=
+	 MIME-Version:Content-Type; b=cm4ni9w0WBycRAc9+Y3A3ty4bI6TCrWrgrUnNe39WAVGQnaMFqDJNqKKi+1GWrnOVoRNmNJdnT8mkpACxW1dpoNIdax/O8VRCncv+sZagLmMhE1kh90z9d7mehpeCLOUgnNF7syOKrwBrtOSarJDo8Ak1/Y92Mm63wW5BO0hgZ4=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C5924C16AAE;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C294EC4CEF7;
 	Fri, 30 Jan 2026 22:24:31 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id B89A9180595; Fri, 30 Jan 2026 23:24:27 +0100 (CET)
+	id CC3181805A0; Fri, 30 Jan 2026 23:24:27 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, Nikita Travkin <nikita@trvn.ru>, 
- Waqar Hameed <waqar.hameed@axis.com>
-Cc: kernel@axis.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <e2a4cd2fcd42b6cd97d856c17c097289a2aed393.1769163273.git.waqar.hameed@axis.com>
-References: <e2a4cd2fcd42b6cd97d856c17c097289a2aed393.1769163273.git.waqar.hameed@axis.com>
-Subject: Re: [PATCH] power: supply: pm8916_lbc: Fix use-after-free for
- extcon in IRQ handler
-Message-Id: <176981186774.331784.1512073948945933608.b4-ty@collabora.com>
+To: airlied@gmail.com, simona@ffwll.ch, maarten.lankhorst@linux.intel.com, 
+ mripard@kernel.org, tzimmermann@suse.de, robh@kernel.org, 
+ krzk+dt@kernel.org, conor+dt@kernel.org, dmitry.torokhov@gmail.com, 
+ sre@kernel.org, gregkh@linuxfoundation.org, jirislaby@kernel.org, 
+ lgirdwood@gmail.com, broonie@kernel.org, 
+ Kuan-Wei Chiu <visitorckw@gmail.com>
+Cc: jserv@ccns.ncku.edu.tw, dri-devel@lists.freedesktop.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-input@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-serial@vger.kernel.org, linux-sound@vger.kernel.org, 
+ Yu-Chun Lin <eleanor.lin@realtek.com>
+In-Reply-To: <20260113092602.3197681-1-visitorckw@gmail.com>
+References: <20260113092602.3197681-1-visitorckw@gmail.com>
+Subject: Re: (subset) [PATCH v4 0/6] dt-bindings: goldfish: Convert to DT
+ schema
+Message-Id: <176981186782.331784.16669920696929509019.b4-ty@collabora.com>
 Date: Fri, 30 Jan 2026 23:24:27 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -37,22 +45,21 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.3
 
 
-On Fri, 23 Jan 2026 11:24:20 +0100, Waqar Hameed wrote:
-> Using the `devm_` variant for requesting IRQ _before_ the `devm_`
-> variant for allocating/registering the `extcon` handle, means that the
-> `extcon` handle will be deallocated/unregistered _before_ the interrupt
-> handler (since `devm_` naturally deallocates in reverse allocation
-> order). This means that during removal, there is a race condition where
-> an interrupt can fire just _after_ the `extcon` handle has been
-> freed, *but* just _before_ the corresponding unregistration of the IRQ
-> handler has run.
+On Tue, 13 Jan 2026 09:25:56 +0000, Kuan-Wei Chiu wrote:
+> Convert the Android Goldfish emulator platform bindings from text
+> format to DT schema.
+> 
+> Most of these bindings are currently located in
+> Documentation/devicetree/bindings/goldfish/. Move them to the
+> appropriate subsystem directories (serial, input, power, sound, misc)
+> to align with the kernel directory structure.
 > 
 > [...]
 
 Applied, thanks!
 
-[1/1] power: supply: pm8916_lbc: Fix use-after-free for extcon in IRQ handler
-      commit: 23067259919663580c6f81801847cfc7bd54fd1f
+[4/6] dt-bindings: power: supply: google,goldfish-battery: Convert to DT schema
+      commit: 4c3f02f843999a590f4481791f59a2f9a7f34fe4
 
 Best regards,
 -- 
