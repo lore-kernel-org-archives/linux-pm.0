@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4924B12B94;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4985E7FBA2;
 	Sat, 31 Jan 2026 03:49:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769831342; cv=none; b=mNEWcdiuDlFkN3BRYq54avlM7pqPOuAuUNKqemHwQJXpjAsuqyDOHHpLzcUESfLHaz7WC4TwCHVq6+uh/0VsOWRLHQ/RIHUhovUvS1a0r//VAuXuju99yv3SmB1D3PP3AOnJx2QchGAy6+Nz3vRjcO2L8mQ7klDD0e3thqxCQww=
+	t=1769831342; cv=none; b=RHktpVgkDKfsicUdJ5Fx5TeNoHM0tDC0nW3z6hrqVKPA4V87uAg6sEaFfi3S3eTAGcdAfjBg81oM/8gZpDFge7krQHzlkmChrMYM6fsH/jXp4XdqIZJY94wYzYYqKTbbMI51BJ3J09VBF1diNJLJqWm8o9rFO09gI0qlkmg7aM4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1769831342; c=relaxed/simple;
-	bh=4qeRI0/8CXPNVIq8qwuTcyMxP3YlJM0KAF+LDIonx7s=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=TvtNuufv/ilGQxJHcbAEsS9IUsGtdvqpnEahZOOIRHibxvn9niyPHKHtwpoAbTJptKZ2yfpSmGm3+9ZDoO6CcLdPcp0sl7q5l72/92yM+g+zZOVVJ4e5VmUwBt7fuSiWuO4oWB0xZ18r9aFMwTQrfOUUj1m6W/wGEjnpzndyXms=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HLX6M264; arc=none smtp.client-ip=10.30.226.201
+	bh=ZnVtjaB+DXtgm+WtfVOKX4mVzGawj6NsVWf0IaeHm+Y=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=PSgLZQGyDzUv549EyAfAmeI9EcHKSYq1Rb94y58zsi7hcJ4as6atLQ4uOvFMdtCkZ88Wgs1V1X3LRRDNefo6TZNFCEm+mOcatOHDJrZ7xncyXnUwMflSdWdjQAfyVewmJE4Y59DAY2uzEt45Zlk4Q0p0mbYq89QHg7mahDp5cQI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=tawcTe5C; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HLX6M264"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id ED7F1C116D0;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="tawcTe5C"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id D1B4AC4CEF1;
 	Sat, 31 Jan 2026 03:49:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1769831342;
-	bh=4qeRI0/8CXPNVIq8qwuTcyMxP3YlJM0KAF+LDIonx7s=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=HLX6M264pvYoqSDxaaPAVUCcR4nK0lh9bodjNLg2N46Lg5AC9yTjQey/R9eF31gQm
-	 phCCRhmYokSNrsp/dtzaNaTBZDnSeV3KjPCR+lc/0NMjQNs7RfyCY35GRl+oVQBSkV
-	 OfSm/iPcfXMlUTONLxca1Z+49EqY9r25//dNI2q2E6EKkLk9EzSumyi8a3NPSZLCN2
-	 jzKfb3OVMGaVXlHMnz1LfbOwWo1oRbHFP29qsvXwRqjoS5iYWh/bFq41empAJyBFtD
-	 q/D1I+oljgTAcSGEmm2Et/i+R+hBFgsSm8sSxtjI4jMX8Kiz4N0O0Zz5R5UJUJYtBZ
-	 Bhs29LcA/c6HA==
+	s=k20201202; t=1769831341;
+	bh=ZnVtjaB+DXtgm+WtfVOKX4mVzGawj6NsVWf0IaeHm+Y=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=tawcTe5CkmmWKMMG/5NHyMli2y7uKRmSSwt8LSwaT5KE4DcZfD4TAYlbcgvdqZrFX
+	 eL02l9mUKM0CvJmEmkFRiOLLgDkjZsP8VMqcgKFuWNmx9L0Vprd10uigHJ42rWR0OR
+	 8NuvIOkYqwQt/odg7Hm6fZB0gFALllIKrhQHtNjcil1PtJUBqqGxy2W2sIFriMH681
+	 UtoL98hJDV0aIvxXw0qK8x7FE8ZdzCVWBI9FlTYScFpzuGKr+5PdrHq/gNuJUoicsa
+	 y3+I+IczdDTz6whgWHlgcRhFBVqU/Ab7s+0oqn7U3JFrwSkuYicgZ42/fyzQXwF+LC
+	 mpY4NHqJDJuOw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE13ED73EB9;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF8C4E6BF22;
 	Sat, 31 Jan 2026 03:49:01 +0000 (UTC)
 From: Michael Reeves via B4 Relay <devnull+michael.reeves077.gmail.com@kernel.org>
-Date: Sat, 31 Jan 2026 14:48:57 +1100
-Subject: [PATCH v7 2/2] mfd: macsmc: Wire up Apple SMC power driver
+Subject: [PATCH v7 0/2] Add Apple Silicon SMC power driver
+Date: Sat, 31 Jan 2026 14:48:55 +1100
+Message-Id: <20260131-b4-macsmc-power-v7-0-0e3a2da69948@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,22 +40,24 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260131-b4-macsmc-power-v7-2-0e3a2da69948@gmail.com>
-References: <20260131-b4-macsmc-power-v7-0-0e3a2da69948@gmail.com>
-In-Reply-To: <20260131-b4-macsmc-power-v7-0-0e3a2da69948@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAKh7fWkC/4XN0QqCMBTG8VeRXbc4zu04u+o9oottTh2kky2sE
+ N+9KQRRF15+B37/M5Nog7ORnLKZBDu56PyQRnnIiOnU0Frq6rQJA4aQM0E1p70ysTd09A8bqNY
+ FFLKyIJqcJDUG27jnVrxc0+5cvPvw2h5MfL1+WvjXmjgFqhRTKJlRKODc9srdjsb3ZG1NYseL5
+ AtgHBmWhc7lr8cdj8lXEvOaQwlNxb79sixvIMRzZC4BAAA=
+X-Change-ID: 20260125-b4-macsmc-power-bb30389e05f1
 To: Sebastian Reichel <sre@kernel.org>, Sven Peter <sven@kernel.org>, 
  Janne Grunau <j@jannau.net>, Neal Gompa <neal@gompa.dev>, 
  Lee Jones <lee@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
  asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
  Michael Reeves <michael.reeves077@gmail.com>, 
- Hector Martin <marcan@marcan.st>
+ Hector Martin <marcan@marcan.st>, Joey Gouly <joey.gouly@arm.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1769831340; l=861;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1769831340; l=3765;
  i=michael.reeves077@gmail.com; s=20260105; h=from:subject:message-id;
- bh=l66XKVNJtI8aTWFc0QpUQyQBnqT+6mvF4xxxt3DtiJc=;
- b=VRbZEsFuHG6PoAQ0NYRkJXNz+nGfw6IC9Kb/MSR+DI1O9I0BaJAfS1VJBD0hI4F6PjffTRTEQ
- ZuwAYuvPmoXCYjBOh6SkvKm0w14kjp44wS7bGvue/TLtMU6o5LlgbEb
+ bh=ZnVtjaB+DXtgm+WtfVOKX4mVzGawj6NsVWf0IaeHm+Y=;
+ b=y3e/Gh23VNbZ5wtCBNwx9OB/ZNdpir9z25o8Qdz5G2V+AcDIYCVWC9+a2WQLe+YmwZvtcjsUh
+ Q2OFRUTcDyVAf9aZ0evT/iqz2DbxPg7oY0oSu9XzouHEfCOlv5cQAgT
 X-Developer-Key: i=michael.reeves077@gmail.com; a=ed25519;
  pk=QIrgWBGCm3LG0YYc6MLCDkwuVXLTGGooVBdWX/KhSiU=
 X-Endpoint-Received: by B4 Relay for michael.reeves077@gmail.com/20260105
@@ -63,33 +65,89 @@ X-Endpoint-Received: by B4 Relay for michael.reeves077@gmail.com/20260105
 X-Original-From: Michael Reeves <michael.reeves077@gmail.com>
 Reply-To: michael.reeves077@gmail.com
 
-From: Hector Martin <marcan@marcan.st>
+This series adds a power supply driver for the Apple SMC found on
+Apple Silicon devices. This allows the kernel to report AC status,
+battery charging status, and power metrics, and modify the charging
+behaviour.
 
-Add the cell for the macsmc-power driver so it is probed by the
-MFD core.
+The first patch adds the driver itself, and the second patch wires it
+up to the MFD core.
 
-Signed-off-by: Hector Martin <marcan@marcan.st>
-Reviewed-by: Neal Gompa <neal@gompa.dev>
-Reviewed-by: Sven Peter <sven@kernel.org>
+The driver is based on an original out-of-tree implementation by
+Hector Martin. It has been refactored by myself for upstream inclusion, 
+including support for newer SMC firmwares, devices without batteries,
+dynamic property detection and improved state management, among other
+things.
+
+This series is based ontop of the current linux-next at time of writing,
+the exact commit hash is listed below.
+
+Tested on: Apple M3 (MacBook Air, J613)
+
 Signed-off-by: Michael Reeves <michael.reeves077@gmail.com>
 ---
- drivers/mfd/macsmc.c | 1 +
- 1 file changed, 1 insertion(+)
+Changes in v7:
+- Replace emergency_sync() with hw_protection_trigger() to enable use as a module
+- Link to v6: https://lore.kernel.org/r/20260126-b4-macsmc-power-v6-0-9861d4070f92@gmail.com
 
-diff --git a/drivers/mfd/macsmc.c b/drivers/mfd/macsmc.c
-index 1b7e7b3e785f..358feec2d088 100644
---- a/drivers/mfd/macsmc.c
-+++ b/drivers/mfd/macsmc.c
-@@ -46,6 +46,7 @@
- 
- static const struct mfd_cell apple_smc_devs[] = {
- 	MFD_CELL_NAME("macsmc-input"),
-+	MFD_CELL_NAME("macsmc-power"),
- 	MFD_CELL_OF("macsmc-gpio", NULL, NULL, 0, 0, "apple,smc-gpio"),
- 	MFD_CELL_OF("macsmc-hwmon", NULL, NULL, 0, 0, "apple,smc-hwmon"),
- 	MFD_CELL_OF("macsmc-reboot", NULL, NULL, 0, 0, "apple,smc-reboot"),
+Changes in v6:
+- Add FS header include for emergency_sync()
+- Link to v5: https://lore.kernel.org/r/20260126-b4-macsmc-power-v5-0-302462673b18@gmail.com
 
+Changes in v5:
+- Readd cover subject that mistakenly got dropped, apologies.
+- Link to v4: https://lore.kernel.org/r/20260126-b4-macsmc-power-v4-0-aa2a682ca650@gmail.com
+
+Changes in v4:
+- Restore Hector Martin as primary author for the series.
+- Restore downstream Co-developed-by and Signed-off-by tags.
+- Add Reviewed-by: Sven Peter <sven@kernel.org>.
+- Simplify MFD patch authorship and remove redundant tags.
+- Fix probe return value being overwritten by devm_work_autocancel.
+- Return -ENODEV in probe if neither battery nor AC adapter are found.
+- Add bounds check for nprops against MACSMC_MAX_BATT_PROPS.
+- Refactor macsmc_battery_set_charge_behaviour to remove unnecessary resets.
+- Improve critical_work shutdown flags and remove return.
+- Add comments explaining SMC key firmware history and flag meanings.
+- Clarify event ID descriptions and restore BSFC flag comments.
+- Remove redundant dev_dbg logs for missing battery or AC.
+- Link to v3: https://lore.kernel.org/r/20260115-b4-macsmc-power-v3-0-c236e09874be@gmail.com
+
+Changes in v3:
+- Rebase on top of latest linux-next
+- Drop charge control threshold properties.
+- Switch to devm_work_autocancel() for critical work.
+- Add platform ID table and remove MODULE_ALIAS.
+- Simplify property array management in struct macsmc_power.
+- Improve probe error handling and device pointer usage.
+- Minor style and indentation fixes.
+- Link to v2: https://lore.kernel.org/r/20260109-b4-macsmc-power-v2-0-93818f1e7d62@gmail.com
+
+Changes in v2:
+- Added Reviewed-by: Neal Gompa <neal@gompa.dev> to all patches.
+- Fixed Makefile alignment by using tabs for the macsmc-power entry.
+- Upgraded physical battery exhaustion log level to EMERG.
+- Downgraded software-triggered orderly poweroff log level to CRIT.
+- Added check for CHIS key to skip AC registration on desktop models.
+- Link to v1: https://lore.kernel.org/r/20260105-b4-macsmc-power-v1-0-62954c42a555@gmail.com
+
+---
+Hector Martin (2):
+      power: supply: Add macsmc-power driver for Apple Silicon
+      mfd: macsmc: Wire up Apple SMC power driver
+
+ MAINTAINERS                         |   1 +
+ drivers/mfd/macsmc.c                |   1 +
+ drivers/power/supply/Kconfig        |  11 +
+ drivers/power/supply/Makefile       |   1 +
+ drivers/power/supply/macsmc-power.c | 855 ++++++++++++++++++++++++++++++++++++
+ 5 files changed, 869 insertions(+)
+---
+base-commit: ca3a02fda4da8e2c1cb6baee5d72352e9e2cfaea
+change-id: 20260125-b4-macsmc-power-bb30389e05f1
+
+Best regards,
 -- 
-2.51.2
+Michael Reeves <michael.reeves077@gmail.com>
 
 
