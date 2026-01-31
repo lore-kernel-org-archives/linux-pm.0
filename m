@@ -1,103 +1,95 @@
-Received: from canpmsgout01.his.huawei.com (canpmsgout01.his.huawei.com [113.46.200.216])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA4FC30AACA;
-	Sat, 31 Jan 2026 03:28:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.216
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4924B12B94;
+	Sat, 31 Jan 2026 03:49:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769830111; cv=none; b=QNSSGSCZ1Yg2/LUeIiuPHD1tS6MS5VVRVSNttxHe52mi7qSB0X9jsCbos0UWR0+vcYJ2y/NiGTHw3AuUHf/p5t2DDVmjjjDgkOQ3lbXWvCEIaZlPQH7Kj2plpXpmuta3euSJkDy8RPL9HKkcDvfTDVhM+HK4fYxHCIhI31kWWww=
+	t=1769831342; cv=none; b=mNEWcdiuDlFkN3BRYq54avlM7pqPOuAuUNKqemHwQJXpjAsuqyDOHHpLzcUESfLHaz7WC4TwCHVq6+uh/0VsOWRLHQ/RIHUhovUvS1a0r//VAuXuju99yv3SmB1D3PP3AOnJx2QchGAy6+Nz3vRjcO2L8mQ7klDD0e3thqxCQww=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769830111; c=relaxed/simple;
-	bh=0mtnfQtxg7QdsxYHUX/XNIc4HGqog3OtlXupiGcdgVg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=XpjJDZD94dspzIixo+22CdOX9cOVgbzztjKvs9864YcV4rv7EBz+6HYqhXXqd2Jm4Gv1RsG4OLjrZSOEBJJOaJluIca3Ky3gWq7K8VbCX0xFrshZ2eFB74pdI+Gw/dTAw26eubmXjESdwVijNY4gdDm73DMUa2+DSvGG3hN0p+4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=GNvoOeRv; arc=none smtp.client-ip=113.46.200.216
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+	s=arc-20240116; t=1769831342; c=relaxed/simple;
+	bh=4qeRI0/8CXPNVIq8qwuTcyMxP3YlJM0KAF+LDIonx7s=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=TvtNuufv/ilGQxJHcbAEsS9IUsGtdvqpnEahZOOIRHibxvn9niyPHKHtwpoAbTJptKZ2yfpSmGm3+9ZDoO6CcLdPcp0sl7q5l72/92yM+g+zZOVVJ4e5VmUwBt7fuSiWuO4oWB0xZ18r9aFMwTQrfOUUj1m6W/wGEjnpzndyXms=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HLX6M264; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="GNvoOeRv"
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=T298TrAtGUnTDTh/OMLw0RpeL50vtnNqbPKtbF9TXyM=;
-	b=GNvoOeRvkLIZTrWpogRtx3mPzhHb0ngeigan7jIUksEMQxgw63jkeBVo4oETrXTiOltzEUmkg
-	r3rlEBVrRM2NZJjfkQd9DUfiuo2m5r95NwyF+AhjteOx+YM33heD2o+vK/qBAQKCEVWqx2j59fL
-	Hd1byc3m254pHXzi9MeJClo=
-Received: from mail.maildlp.com (unknown [172.19.162.197])
-	by canpmsgout01.his.huawei.com (SkyGuard) with ESMTPS id 4f2ysH11jjz1T4Fg;
-	Sat, 31 Jan 2026 11:24:03 +0800 (CST)
-Received: from kwepemf200001.china.huawei.com (unknown [7.202.181.227])
-	by mail.maildlp.com (Postfix) with ESMTPS id 82A4440569;
-	Sat, 31 Jan 2026 11:28:19 +0800 (CST)
-Received: from [10.67.121.90] (10.67.121.90) by kwepemf200001.china.huawei.com
- (7.202.181.227) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Sat, 31 Jan
- 2026 11:28:18 +0800
-Message-ID: <f1ffeb2e-d235-454e-8425-490ea2d076e9@huawei.com>
-Date: Sat, 31 Jan 2026 11:28:18 +0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HLX6M264"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id ED7F1C116D0;
+	Sat, 31 Jan 2026 03:49:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1769831342;
+	bh=4qeRI0/8CXPNVIq8qwuTcyMxP3YlJM0KAF+LDIonx7s=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=HLX6M264pvYoqSDxaaPAVUCcR4nK0lh9bodjNLg2N46Lg5AC9yTjQey/R9eF31gQm
+	 phCCRhmYokSNrsp/dtzaNaTBZDnSeV3KjPCR+lc/0NMjQNs7RfyCY35GRl+oVQBSkV
+	 OfSm/iPcfXMlUTONLxca1Z+49EqY9r25//dNI2q2E6EKkLk9EzSumyi8a3NPSZLCN2
+	 jzKfb3OVMGaVXlHMnz1LfbOwWo1oRbHFP29qsvXwRqjoS5iYWh/bFq41empAJyBFtD
+	 q/D1I+oljgTAcSGEmm2Et/i+R+hBFgsSm8sSxtjI4jMX8Kiz4N0O0Zz5R5UJUJYtBZ
+	 Bhs29LcA/c6HA==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE13ED73EB9;
+	Sat, 31 Jan 2026 03:49:01 +0000 (UTC)
+From: Michael Reeves via B4 Relay <devnull+michael.reeves077.gmail.com@kernel.org>
+Date: Sat, 31 Jan 2026 14:48:57 +1100
+Subject: [PATCH v7 2/2] mfd: macsmc: Wire up Apple SMC power driver
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/6] cpufreq: Remove per-CPU QoS constraint
-To: Pierre Gondois <pierre.gondois@arm.com>
-CC: Jie Zhan <zhanjie9@hisilicon.com>, Ionela Voinescu
-	<ionela.voinescu@arm.com>, Christian Loehle <christian.loehle@arm.com>,
-	<sumitg@nvidia.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar
-	<viresh.kumar@linaro.org>, Huang Rui <ray.huang@amd.com>, "Gautham R. Shenoy"
-	<gautham.shenoy@amd.com>, Mario Limonciello <mario.limonciello@amd.com>,
-	Perry Yuan <perry.yuan@amd.com>, Srinivas Pandruvada
-	<srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Saravana
- Kannan <saravanak@kernel.org>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>
-References: <20260126101826.94030-1-pierre.gondois@arm.com>
- <20260126101826.94030-2-pierre.gondois@arm.com>
-From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
-In-Reply-To: <20260126101826.94030-2-pierre.gondois@arm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
- kwepemf200001.china.huawei.com (7.202.181.227)
+Message-Id: <20260131-b4-macsmc-power-v7-2-0e3a2da69948@gmail.com>
+References: <20260131-b4-macsmc-power-v7-0-0e3a2da69948@gmail.com>
+In-Reply-To: <20260131-b4-macsmc-power-v7-0-0e3a2da69948@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>, Sven Peter <sven@kernel.org>, 
+ Janne Grunau <j@jannau.net>, Neal Gompa <neal@gompa.dev>, 
+ Lee Jones <lee@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+ Michael Reeves <michael.reeves077@gmail.com>, 
+ Hector Martin <marcan@marcan.st>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1769831340; l=861;
+ i=michael.reeves077@gmail.com; s=20260105; h=from:subject:message-id;
+ bh=l66XKVNJtI8aTWFc0QpUQyQBnqT+6mvF4xxxt3DtiJc=;
+ b=VRbZEsFuHG6PoAQ0NYRkJXNz+nGfw6IC9Kb/MSR+DI1O9I0BaJAfS1VJBD0hI4F6PjffTRTEQ
+ ZuwAYuvPmoXCYjBOh6SkvKm0w14kjp44wS7bGvue/TLtMU6o5LlgbEb
+X-Developer-Key: i=michael.reeves077@gmail.com; a=ed25519;
+ pk=QIrgWBGCm3LG0YYc6MLCDkwuVXLTGGooVBdWX/KhSiU=
+X-Endpoint-Received: by B4 Relay for michael.reeves077@gmail.com/20260105
+ with auth_id=591
+X-Original-From: Michael Reeves <michael.reeves077@gmail.com>
+Reply-To: michael.reeves077@gmail.com
 
-On 2026/1/26 18:18, Pierre Gondois wrote:
-> policy->max_freq_req represents the maximum allowed frequency as
-> requested by the policyX/scaling_max_freq sysfs file. This request
-> applies to all CPUs of the policy. It is not possible to request
-> a per-CPU maximum frequency.
-> 
-> Thus, the interaction between the policy boost and scaling_max_freq
-> settings should be handled by adding a boost specific QoS constraint.
-> This will be handled in the following patches.
-> 
-> This patch reverts of:
-> commit 1608f0230510 ("cpufreq: Fix re-boost issue after hotplugging
-> a CPU")
-> 
-> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 4 ----
->  1 file changed, 4 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 4472bb1ec83c7..db414c052658b 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1481,10 +1481,6 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
->  
->  		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
->  				CPUFREQ_CREATE_POLICY, policy);
-> -	} else {
-> -		ret = freq_qos_update_request(policy->max_freq_req, policy->max);
-> -		if (ret < 0)
-> -			goto out_destroy_policy;
+From: Hector Martin <marcan@marcan.st>
 
-I think this shouldn't be the first patch. This can be removed only after
-adding boost_freq_req, otherwise it's letting the problem out again.
+Add the cell for the macsmc-power driver so it is probed by the
+MFD core.
 
->  	}
->  
->  	if (cpufreq_driver->get && has_target()) {
+Signed-off-by: Hector Martin <marcan@marcan.st>
+Reviewed-by: Neal Gompa <neal@gompa.dev>
+Reviewed-by: Sven Peter <sven@kernel.org>
+Signed-off-by: Michael Reeves <michael.reeves077@gmail.com>
+---
+ drivers/mfd/macsmc.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/mfd/macsmc.c b/drivers/mfd/macsmc.c
+index 1b7e7b3e785f..358feec2d088 100644
+--- a/drivers/mfd/macsmc.c
++++ b/drivers/mfd/macsmc.c
+@@ -46,6 +46,7 @@
+ 
+ static const struct mfd_cell apple_smc_devs[] = {
+ 	MFD_CELL_NAME("macsmc-input"),
++	MFD_CELL_NAME("macsmc-power"),
+ 	MFD_CELL_OF("macsmc-gpio", NULL, NULL, 0, 0, "apple,smc-gpio"),
+ 	MFD_CELL_OF("macsmc-hwmon", NULL, NULL, 0, 0, "apple,smc-hwmon"),
+ 	MFD_CELL_OF("macsmc-reboot", NULL, NULL, 0, 0, "apple,smc-reboot"),
+
+-- 
+2.51.2
+
 
