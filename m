@@ -1,129 +1,116 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3B3832FA34;
-	Tue,  3 Feb 2026 11:26:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE347274B3A;
+	Tue,  3 Feb 2026 11:41:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770118000; cv=none; b=StdgQkQPnYtgkGsaFh8NepmXaLLbPJ1PvK266dKg7pmh4xm94dZ//N+1FcU5NPq0cUGcaJSZdzwOkNw2c0LJD+ZeJAhHaGTyf5Vbt4HbdkrBCnyqpVZ2LJgHt2u1SN0msF2bCD80SjurQ83ZZN2+PpP/UNyeX5mxFijBbCrVKR0=
+	t=1770118908; cv=none; b=YZ2PEc3UqVTtZr+/w0Vp2a7rTq/ZCHDy1AFdFnyvwJwQUn1JdVlu2vxkOXnx8NPuUj0crRWi+RS+F75xxaszJzkCaYzDs8AkcV8cZESjqN7qxtYut2DGRn+BbpTV7CSOyfvMVQNrWqYbQDTedjMaKVq8y77xt94Tmx1dSge4hQ8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770118000; c=relaxed/simple;
-	bh=c2+gYkdchGPjD2P9JpmsB+DRIFYZMK0TCeVAo3W5bi4=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=FAYuiZ/K0CILgEdYyN5ZMxpTq+wwV3B+I1D59ULKeD0zXd85Mn+vvvkUUuqkMzJ49HV5MHVsnBuqOhFOyzdtSbiIHxvmJGJAcDrOkKl64cyGPPMLvG8/dXAGwArsbueuJO9eudyVRDEPCLLwqJtBycFA4KqkpIxDOq0xeBc7j4Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=JQ3ZxiPl; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1770118908; c=relaxed/simple;
+	bh=fYkxphING3HIWpahK7YJFEmJeYTWB272iYkC8ckgea0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=P++8MBeS5K4GlqSkVjqAcKkYtUSGJGiPq18CMmtV5UiYnAzLpoKnLdjJ3AxEvdvRxw17h66xYmFpGtEm5OOZYajgFM5uo6tA8dZpbp3IhyXwSqnPSytsgrkqn+TtD0csoSi5Swf0rhyBWCDG2/TuF7AQsgIASGrukRIuzaMBSZc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=pkuNahVC; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="JQ3ZxiPl"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1770117996;
-	bh=c2+gYkdchGPjD2P9JpmsB+DRIFYZMK0TCeVAo3W5bi4=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=JQ3ZxiPl2rBLEEWmvBwGo0TC1cNmU1PXUFSCCzFL6cKhdiA0NFr/jSbUwCuvctW3K
-	 L4Nqe2T/JU9zS/E1gWZ47AZFwpsEUEd8RP6v7HzvMLWGjHGUd+LJYQ2/4a6b/23jl3
-	 xPPb6QW6Mi8pvARe+TpG/jRIaBWAogTkwWImZlkzg+eFo/6xcHXdsfuhLkzWd4kU5y
-	 4G2yq9p/UZcy4WVN9vXCCrRN0s3PwrcMNwtj+pImqggAIXJH0FLEXamE+qBf99ZHle
-	 kJCRSem8WvUEo8u9YWTqFkenSh94C/uFqhv3mTka99dcR1iOz2rMDCg24rHv1J6V/r
-	 r6DeezIyDquMA==
-Received: from fedora (unknown [IPv6:2a01:e0a:2c:6930:d919:a6e:5ea1:8a9f])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: bbrezillon)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id C1FA917E12E5;
-	Tue,  3 Feb 2026 12:26:35 +0100 (CET)
-Date: Tue, 3 Feb 2026 12:26:31 +0100
-From: Boris Brezillon <boris.brezillon@collabora.com>
-To: Alice Ryhl <aliceryhl@google.com>
-Cc: Maxime Ripard <mripard@kernel.org>, Daniel Almeida
- <daniel.almeida@collabora.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Danilo Krummrich <dakr@kernel.org>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Thomas Zimmermann
- <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Simona Vetter
- <simona@ffwll.ch>, Drew Fustini <fustini@kernel.org>, Guo Ren
- <guoren@kernel.org>, Fu Wei <wefu@redhat.com>, "Uwe =?UTF-8?B?S2xlaW5l?=
- =?UTF-8?B?LUvDtm5pZw==?=" <ukleinek@kernel.org>, Michael Turquette
- <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Miguel Ojeda
- <ojeda@kernel.org>, Boqun Feng <boqun.feng@gmail.com>, Gary Guo
- <gary@garyguo.net>, "=?UTF-8?B?QmrDtnJu?= Roy Baron"
- <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, Andreas
- Hindborg <a.hindborg@kernel.org>, Trevor Gross <tmgross@umich.edu>,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-riscv@lists.infradead.org,
- linux-pwm@vger.kernel.org, linux-clk@vger.kernel.org,
- rust-for-linux@vger.kernel.org
-Subject: Re: [PATCH v3 1/3] rust: clk: use the type-state pattern
-Message-ID: <20260203122631.3a94a935@fedora>
-In-Reply-To: <20260203113902.501e5803@fedora>
-References: <20260107-clk-type-state-v3-0-77d3e3ee59c2@collabora.com>
-	<20260107-clk-type-state-v3-1-77d3e3ee59c2@collabora.com>
-	<20260108-delectable-fennec-of-sunshine-ffca19@houat>
-	<98CD0BF6-3350-40B9-B8A9-F569AE3E3220@collabora.com>
-	<20260119-thundering-tested-robin-4be817@houat>
-	<aW4lCfUyumOKRRJm@google.com>
-	<20260203113902.501e5803@fedora>
-Organization: Collabora
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.51; x86_64-redhat-linux-gnu)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="pkuNahVC"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98607C116D0;
+	Tue,  3 Feb 2026 11:41:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1770118907;
+	bh=fYkxphING3HIWpahK7YJFEmJeYTWB272iYkC8ckgea0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=pkuNahVCVhXg8U7s5K+OS6Rfz1S+aJIbGe0kwTYFbUuxeuvnLL3eNwaPwuWOJRcAV
+	 O0r1AX2Z6io52JATFp/rhLKCVOVmziBoGnMMfCTSL9S98QOHeb9pQhgQ+cL/yXdH7k
+	 OZfapOlE5prWQMqftIHk3CbWswyvUFzIGwW+jYkE=
+Date: Tue, 3 Feb 2026 12:41:44 +0100
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Pavel Machek <pavel@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+	Sebastian Reichel <sre@kernel.org>,
+	=?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>,
+	Ion Agorria <ion@agorria.com>, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+	linux-leds@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v1 2/9] misc: Support Asus Transformer's EC access device
+Message-ID: <2026020350-unrevised-humming-7a42@gregkh>
+References: <20260201104343.79231-1-clamor95@gmail.com>
+ <20260201104343.79231-3-clamor95@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260201104343.79231-3-clamor95@gmail.com>
 
-On Tue, 3 Feb 2026 11:39:02 +0100
-Boris Brezillon <boris.brezillon@collabora.com> wrote:
+On Sun, Feb 01, 2026 at 12:43:36PM +0200, Svyatoslav Ryhel wrote:
+> --- /dev/null
+> +++ b/drivers/misc/asus-dockram.c
+> @@ -0,0 +1,327 @@
+> +// SPDX-License-Identifier: GPL-2.0-or-later
+> +/*
+> + * ASUS EC: DockRAM
+> + */
+> +
+> +#include <linux/device.h>
+> +#include <linux/err.h>
+> +#include <linux/i2c.h>
+> +#include <linux/mfd/asus-ec.h>
+> +#include <linux/mod_devicetable.h>
+> +#include <linux/module.h>
+> +#include <linux/mutex.h>
+> +#include <linux/slab.h>
+> +#include <linux/string.h>
+> +#include <linux/sysfs.h>
+> +#include <linux/types.h>
+> +#include <linux/unaligned.h>
+> +
+> +struct dockram_ec_data {
+> +	struct mutex ctl_lock; /* prevent simultaneous access */
+> +	char ctl_data[DOCKRAM_ENTRY_BUFSIZE];
+> +};
+> +
+> +int asus_dockram_read(struct i2c_client *client, int reg, char *buf)
+> +{
+> +	int rc;
+> +
+> +	memset(buf, 0, DOCKRAM_ENTRY_BUFSIZE);
+> +	rc = i2c_smbus_read_i2c_block_data(client, reg, DOCKRAM_ENTRY_BUFSIZE, buf);
+> +	if (rc < 0)
+> +		return rc;
+> +
+> +	if (buf[0] > DOCKRAM_ENTRY_SIZE) {
+> +		dev_err(&client->dev, "bad data len; buffer: %*ph; rc: %d\n",
+> +			DOCKRAM_ENTRY_BUFSIZE, buf, rc);
+> +		return -EPROTO;
+> +	}
+> +
+> +	dev_dbg(&client->dev, "got data; buffer: %*ph; rc: %d\n",
+> +		DOCKRAM_ENTRY_BUFSIZE, buf, rc);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(asus_dockram_read);
 
-> On Mon, 19 Jan 2026 12:35:21 +0000
-> Alice Ryhl <aliceryhl@google.com> wrote:
-> 
-> > On Mon, Jan 19, 2026 at 11:45:57AM +0100, Maxime Ripard wrote:  
-> > > On Thu, Jan 08, 2026 at 11:14:37AM -0300, Daniel Almeida wrote:    
-> > > > > For example, it's quite typical to have (at least) one clock for the bus
-> > > > > interface that drives the register, and one that drives the main
-> > > > > component logic. The former needs to be enabled only when you're
-> > > > > accessing the registers (and can be abstracted with
-> > > > > regmap_mmio_attach_clk for example), and the latter needs to be enabled
-> > > > > only when the device actually starts operating.
-> > > > > 
-> > > > > You have a similar thing for the prepare vs enable thing. The difference
-> > > > > between the two is that enable can be called into atomic context but
-> > > > > prepare can't.
-> > > > > 
-> > > > > So for drivers that would care about this, you would create your device
-> > > > > with an unprepared clock, and then at various times during the driver
-> > > > > lifetime, you would mutate that state.    
-> > 
-> > The case where you're doing it only while accessing registers is
-> > interesting, because that means the Enable bit may be owned by a local
-> > variable. We may imagine an:
-> > 
-> >     let enabled = self.prepared_clk.enable_scoped();
-> >     ... use registers
-> >     drop(enabled);
-> > 
-> > Now ... this doesn't quite work with the current API - the current
-> > Enabled stated owns both a prepare and enable count, but the above keeps
-> > the prepare count in `self` and the enabled count in a local variable.
-> > But it could be done with a fourth state, or by a closure method:
-> > 
-> >     self.prepared_clk.with_enabled(|| {
-> >         ... use registers
-> >     });
-> > 
-> > All of this would work with an immutable variable of type Clk<Prepared>.  
-> 
-> Hm, maybe it'd make sense to implement Clone so we can have a temporary
-> clk variable that has its own prepare/enable refs and releases them
-> as it goes out of scope. This implies wrapping *mut bindings::clk in an
-> Arc<> because bindings::clk is not ARef, but should be relatively easy
-> to do. Posting the quick experiment I did with this approach, in case
-> you're interested [1]
+No documentation for these new public symbols?
 
-This time with a proper RawClk(*mut bindings::clk) wrapper, so we can
-clk_put() called in RawClk::drop() instead of in Clk::drop().
 
-[1]https://gitlab.freedesktop.org/bbrezillon/linux/-/commit/6fa6cb72f14373b276c61d038bc2b16f49c78f74
+> +static BIN_ATTR_RW(dockram, DOCKRAM_ENTRIES * DOCKRAM_ENTRY_SIZE);
+> +static DEVICE_ATTR_RW(control_reg);
+
+You did not document your new sysfs files in Documentation/ABI/ which is
+required.
+
+Also, why do you need a brand new user/kernel api at all?  Who is going
+to use this and for what?
+
+thanks,
+
+greg k-h
