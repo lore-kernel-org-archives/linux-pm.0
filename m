@@ -1,142 +1,104 @@
-Received: from mail-lf1-f42.google.com (mail-lf1-f42.google.com [209.85.167.42])
+Received: from mail-dy1-f175.google.com (mail-dy1-f175.google.com [74.125.82.175])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B405318B8F
-	for <linux-pm@vger.kernel.org>; Tue,  3 Feb 2026 10:41:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.42
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770115284; cv=pass; b=KtfBbrT+sGNqh0WWejMUOjnKqYLIBy46umV5jDJKESCJJ9c79LAXMkTiqQwWnWcW3FnmmSgD57U8SWjfSYNjpm2Oz1Zri8eezHYm4zxykDeESr75PK0PPmbDt3+C5p4YpMYF/0tb29gRnyhGySw2nBtViAuSVm9RU0OHvplVbQY=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770115284; c=relaxed/simple;
-	bh=EZhZoolcVsnf21eiX4kAKedgHHgjheaIc5imb+clfpA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=TdvaOiRN+8TshXPzmLC+XzM2CnI2SLDd0OU4Khtp3a62urqW4tIkjyu+pTHAwW6xe1YsuM81iMzkBt6XxooLdqUG1KKqaXV1zsdwstPzi2Xi9Y5AQyHShsatwrSfJl2ap6AOQ4JF5Vq6b6r/J2Wct+801nwaKcgMj4Z+VAgGZ5k=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=u9df9jAd; arc=pass smtp.client-ip=209.85.167.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8229223184A
+	for <linux-pm@vger.kernel.org>; Tue,  3 Feb 2026 11:00:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.175
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1770116431; cv=none; b=qu1XzslAmC3oUcnfNYtx/Aqw/X4CdOT7bFp1xMUZyqbNDW9mMrYW6K/BKgtmQao6ezbeboziyn2g4pjskpqQ00aJ93SPiXvxLywuIug5h2ASpZIy7olWACfAHXqSWU+k9AI7T1op3cZhXxwYyfhiUtTS1XNOANlNYJKvI18mgzw=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1770116431; c=relaxed/simple;
+	bh=hudPfaB5Y8u+39+QhqcnbqU4DSfvZiJpkZwi23yNzcM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=tfHRW5JvFLMu1aWnv9DdExZZL+SlYY+1GfZyNU35MKfCq5x6rd7AsVqCdSVQ8l/KYUyXqix6WtAxujNPzCzSX71ZyhYaFuSTVDj+E+pA3kSW1zeUyvRxYvvSzuOFv/zWWCoqqdRYrtK0zt4wGYysRAwG0TWQZeThk1G1nLfTQ1c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bBRpzMFW; arc=none smtp.client-ip=74.125.82.175
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="u9df9jAd"
-Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-59e17afd2d5so5007360e87.3
-        for <linux-pm@vger.kernel.org>; Tue, 03 Feb 2026 02:41:22 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1770115281; cv=none;
-        d=google.com; s=arc-20240605;
-        b=duFi0EJgG2rZTP0/CFAZ25bbR8qLvMeBhrIPg6lNaNvKKQpfcqa59xvnG+VjWyj5zn
-         uh9EvouMXBGhdTBCPkML+tAxYj8pe0QP/BWqL6uIGh/UCCsNYTAc3nqWVa23SZyRP9/k
-         O/aQ/34iMr9221iHEYvtig2ZzYvecRZjqlZf/ob0B+WkcCH7RLjWs5/HxUKu2QBIfx+g
-         tsH3UPV1zasBFiYH5EYmE4ks2vfxasA5Tej5gauMa/5lkthtZyZPau1aa/RF9gMW9VCe
-         tEdergSNgwzqTsJ3AtQ0iuB5E7nlznpqcN/2i/oZtR4jLxUGcQUg+LeSM3CPsbver5VC
-         KYyA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=EZhZoolcVsnf21eiX4kAKedgHHgjheaIc5imb+clfpA=;
-        fh=0zS0cFacW6sGoRgo1zo4u1O325HxEKFKebay5lKUtPU=;
-        b=lN2uqfuu/ATqaCz24DPIXvzAKOqwK/qiooxJtJvgCpBlREahMpO3YI4MLq2zG40R+a
-         PEqtwAIF4a5t+JvDAHIjaBvMRuQOtshmi4jo1h28zlmVDMgn6hCHY9acT2RLe7lzX1OR
-         qrk3t3fXnemtO6zDb/9P9UdrXH7728LQHmckYaczOC5fx8vgE8Uv8EMxkG42Ja+dE/9b
-         vg1qzDk+IUsfrR44LgJPUOj+oydqeAA+zwNSScNNm9+7FmeJ+Qj6T6pADVBQzr81DEgj
-         wjHoNvDNnBFArzP4PRuvafoJx5v4m5JcC3YdfvyoqErDmUmz1Su8ThwPTwVtG8Au7EfF
-         fW7A==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bBRpzMFW"
+Received: by mail-dy1-f175.google.com with SMTP id 5a478bee46e88-2b6b0500e06so8095288eec.1
+        for <linux-pm@vger.kernel.org>; Tue, 03 Feb 2026 03:00:29 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1770115281; x=1770720081; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=EZhZoolcVsnf21eiX4kAKedgHHgjheaIc5imb+clfpA=;
-        b=u9df9jAd3ocwpNvTkerjq/5EwbpvelscXEhWSwC3ym80s8IjbgyHdQcqBp45X9nu4F
-         NYiYPgWEx4f31cBTrYoFs0mdyAasZdSRvrSGXQx6fAsr6ikCHnpvjoQgP/nNWsE2SJwo
-         yTfIIy7K2s35FAt3R959t8mjWSPYNXL1u2sMNnKKypKrwfPGRHk9vzGlihZ/vPEqpu8a
-         kJzg9L3Xvo49f0c4ypDqDWW4hPmIy6mkoI/NefVKGICLNXwOEmhaapKDgO1AvB2v8d5E
-         pRWPz16LCsYRVVFuNtLdietKnxRklo/lTYqOiCEWmeVFsTJ3Z+BFSR87ren4mP988TBd
-         7eeg==
+        d=gmail.com; s=20230601; t=1770116428; x=1770721228; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=0JgnMsXOh9YRopf/e3+gz8PgFtk2UitVTNFeIUt3zTk=;
+        b=bBRpzMFWc8IrJor0xe+IV8RxvGmwWg2IpM+53bbVASZd4OkxSngWIl2MFsLiOonJoJ
+         xcJZQcwaXuyOVM4fqJxUwBvA18HTc/8qpo8MKA3ce1MrHwEBbmkQoyrVPTW16jNpRso6
+         ntlLX8WJ3qOMSVmTJKjPs91RM0TI6BRM7U/fR84Mj4wF7q6LHua4cLe3cNcBSOj692a8
+         oZjPP5rPdXcjhmS+qCQchB4Yp60mtm4DX6JoAeaiaMUGA4x3dxt3nxItVVc7orX6nLju
+         8FIWXxyczFTl+olaraL90nsYdL3tT4xxoCsNtlgv3m7FkABGH/qxnK9B86rwKq1lsEh5
+         07dQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770115281; x=1770720081;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=EZhZoolcVsnf21eiX4kAKedgHHgjheaIc5imb+clfpA=;
-        b=g69M8k7zKZcYBsiWuj+u8SxK/R7HKLfBQdp8Lsui1z/jQxu+3v6/YAE/QvXCGwnZzR
-         1HitJy2bLvOC57qz5xWMiqxSPBbdfm5mExqN1cwukpW1LH5cQ7S2FwSGXg7FO0xzM2jb
-         X3Zj9X5PSfNwtW6Ul/6MnDA91F+HsKpcMPEwQatWfkqbT+PTHWono15NghIPy1TXEBu3
-         IpUkYN6brAnrBqD9awwXXBNN/ghT+SY/jGidaJRWEDQ618EpSwCRpMZJvk+ImCPxS/0f
-         /qZY6j9MdOFPfKly6cl1EGTI4UB+T6lZBit7nZwSSwLUvtabDL77TCY441CIxci9E6+t
-         HTOg==
-X-Forwarded-Encrypted: i=1; AJvYcCX8KwKBqLvhdq56BSHpLAdC3knMFct5vnPwkqX+LbeVmR4aV7B1UZyeo04l5s4mIkky5l/OGXPHyw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy1jmiVLCJT4FYqq2+edjW7QGpiYZoidRbcsYOoWzQRn6XNdncq
-	57FA7T075vSAi3PIogFsO5UbpL/dUz2qWFmAmBLPPSr252G8AtjjAuNeHWjCwM3cde8f5Y6KI3s
-	RpMqvqTFQ8I1XsHobveQMFIgvsyZjp+kaenBxPMbM9A==
-X-Gm-Gg: AZuq6aIV1+nEKydTkk3wStudTL4AwVbHtkIH6kOV7QhiREjV/TTzEMdAjOf2q4lfzuy
-	jNSTafga1lQISk740FCrhGXt6i+OrWt9mljJPtMD87mNuIo706LpJ9XHfPBDC74V80cV/HaS+w1
-	j6/KKPmfS+E+ZC9ZSNcQzf2CJxt9MPA1S4fNV+byH7RriCLLchpPue0QCgRBxVew6D6pjflUCsv
-	gAbtD6iaVnTQv/FZI4329BdUFitDFbB5EtRK4h7dk2feiCnn+JJlsWHd8p5ISOlSMKK/niD
-X-Received: by 2002:a05:6512:615:10b0:59e:1704:e0d3 with SMTP id
- 2adb3069b0e04-59e1704e0edmr3493618e87.14.1770115281299; Tue, 03 Feb 2026
- 02:41:21 -0800 (PST)
+        d=1e100.net; s=20230601; t=1770116428; x=1770721228;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=0JgnMsXOh9YRopf/e3+gz8PgFtk2UitVTNFeIUt3zTk=;
+        b=r+h3JNgsMTIBx8Cu4SLoKsyU1QF+jJET48+aJiPUHhgHOEYhXWVeQ191eAg7p5bA26
+         LK4c2oQPgQfOqFTnKQ6KyW8kMCLX7jHHHX7mJe2Lh9lXFxjjxGXtQkB4C0MC3EpRKmXn
+         k/6ekfKWBnXLX5RmaSD+p11UROoc0AtKiJZO/MAQKjfFlrVd8XEHiBSlPZEobG38dVYq
+         bcRiWwP0+Is3Tewq5SL+8n+RHLfSiZqXVugi01ivHAo0dOppVLRYvBVOffgf2JZfhfLg
+         PLhcx0VG/FbeYbmpnPqftfCstpQt05aPH/f70s+ts6lyqcY8gU6eUwLZnrRDCpjc3Cwi
+         H0Og==
+X-Forwarded-Encrypted: i=1; AJvYcCXODHCbHu0hvLj7C5lAA0gMfnP8EsS81g0ipq6f9CmOC1UDFyhaMl5f9vu1gBsuc3Glq+GsA7NnuQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwLP4jJ/oU2Y6RScsGRJEbITPrkV3UYJ+hZhd5EQdHbObMkHCbm
+	Ple8ubr5gYyRAwAnEcbMeqj/DvsMPtOmvHuqLYF2r7Ejf8HilvoF6I5+
+X-Gm-Gg: AZuq6aI4j1H+fQD9cQwFb8ySjRiVJx5VJIvRJed/T7Lx7BTs3jblsPStrCWf/espFz9
+	2rfM867xclaklFmnzxHIAkAPahAetPre2LQ0pxKFLUbAiy1bhWCZFiYel3LbmOcJA7TQhHZD4/k
+	lqDZzGW/EiYW6dlG2uU9tPES8oya4rH6kgItzAPv0uIfSwo9fCX8Bx+ixHPYS8Mv6+1z1OJv3zX
+	2TX9y5w6Ia6YlatpDuoyzdSlLv60h4dPZptQ8niJOfuriLuxt13NwDiMeYZp9++UI6DnkPTziIZ
+	Wa5CrUoAWhqIQTu0FAr6OXMcPHD/+YuVfGwByb+/A1622aJDtGhCtcu+STIvT5TlSHWFYWa/Zu3
+	wJN119XmIjLYuqsCTvbgtGLFfxuJ0m57yl8lBOQ7zf7HFIEd2MchxUgd6gi+KLJrEqi7jHxR9OJ
+	mTcYlIz3bwI2NTeHg6JbCr0MG1RR5MlzVZmIVkCFY4m6ZGyX+u
+X-Received: by 2002:a05:7300:4306:b0:2a4:7f22:cc0d with SMTP id 5a478bee46e88-2b7c8909ad3mr6722053eec.32.1770116428294;
+        Tue, 03 Feb 2026 03:00:28 -0800 (PST)
+Received: from google.com ([2a00:79e0:2ebe:8:ea13:571:b19b:36])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2b7a1add664sm22262633eec.26.2026.02.03.03.00.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 03 Feb 2026 03:00:27 -0800 (PST)
+Date: Tue, 3 Feb 2026 03:00:24 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Pavel Machek <pavel@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, 
+	=?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, Ion Agorria <ion@agorria.com>, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, 
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH v1 6/9] input: keyboard: Add driver for Asus Transformer
+ dock multimedia keys
+Message-ID: <aYHU5g5iOVjrHrE_@google.com>
+References: <20260201104343.79231-1-clamor95@gmail.com>
+ <20260201104343.79231-7-clamor95@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260201-iris-venus-fix-sm8250-v2-0-6f40d2605c89@oss.qualcomm.com>
- <CAPDyKFoNX087ZhLkQ_n8-42WNQcL06noSuPJPDG87y0andVdNg@mail.gmail.com>
- <CAO9ioeXkhxjghtGVGsOH=1hwC5FvS_4LEXt3hmAEuAbwVjct3g@mail.gmail.com> <l6o4lv2sy7x4g33mjigeh6sb6cmrfyz3xshhmbc3el6qvw3oep@okwpfykypawa>
-In-Reply-To: <l6o4lv2sy7x4g33mjigeh6sb6cmrfyz3xshhmbc3el6qvw3oep@okwpfykypawa>
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Tue, 3 Feb 2026 11:40:45 +0100
-X-Gm-Features: AZwV_Qi-wgYVrdRqK589mxNzs1gxGV1Oudp9yxPTCOEtASkncTUH7LC0VHPXYJs
-Message-ID: <CAPDyKFrX7NieYszgEZXFyQJr+PA266MJZTvJcGFmrQ2oy7Mj3A@mail.gmail.com>
-Subject: Re: [PATCH v2 0/8] media: qcom: iris/venus: fix power domain handling
- on SM8250
-To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>, Michael Turquette <mturquette@baylibre.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Taniya Das <quic_tdas@quicinc.com>, Jonathan Marek <jonathan@marek.ca>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, "Bryan O'Donoghue" <bod@kernel.org>, 
-	Vikash Garodia <vikash.garodia@oss.qualcomm.com>, 
-	Dikshita Agarwal <dikshita.agarwal@oss.qualcomm.com>, 
-	Mauro Carvalho Chehab <mchehab@kernel.org>, Stanimir Varbanov <stanimir.varbanov@linaro.org>, 
-	Abhinav Kumar <abhinav.kumar@linux.dev>, Hans Verkuil <hverkuil@kernel.org>, 
-	Stefan Schmidt <stefan.schmidt@linaro.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	"Bryan O'Donoghue" <bryan.odonoghue@linaro.org>, Dikshita Agarwal <dikshita@qti.qualcomm.com>, 
-	linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-media@vger.kernel.org, 
-	Mauro Carvalho Chehab <mchehab+huawei@kernel.org>, Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260201104343.79231-7-clamor95@gmail.com>
 
-On Mon, 2 Feb 2026 at 20:22, Dmitry Baryshkov
-<dmitry.baryshkov@oss.qualcomm.com> wrote:
->
-> On Mon, Feb 02, 2026 at 05:51:16PM +0200, Dmitry Baryshkov wrote:
-> > On Mon, 2 Feb 2026 at 16:46, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > >
-> > > On Sun, 1 Feb 2026 at 11:49, Dmitry Baryshkov
-> > > <dmitry.baryshkov@oss.qualcomm.com> wrote:
-> > > >
-> > > > As pointed out by Konrad during the review of SM8350 / SC8280XP
-> > > > patchset, Iris aka Venus description has several flows. It doesn't scale
-> > > > MMCX, the frequencies in the OPP table are wrong, etc.
-> > > >
-> > > > Let's correct the Iris/Venus enablement for SM8250 (unfortunately also
-> > > > stopping it from being overclocked).
-> > > >
-> > > > Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-> > >
-> > > Do you want me to pick up patch2 for v7.0 - or what do you suggest at
-> > > this point?
-> >
-> > I'd prefer it if it is picked through the immutable tag/branch.
->
-> Another option would be to ack merging it through the media tree.
+Hi Svyatoslav,
 
-I didn't think the series was considered as material for v7.0 as it's
-getting late for that.
+On Sun, Feb 01, 2026 at 12:43:40PM +0200, Svyatoslav Ryhel wrote:
+> +static void asus_ec_input_event(struct input_handle *handle,
+> +				unsigned int event_type,
+> +				unsigned int event_code, int value)
+> +{
+> +	struct asus_ec_keys_data *priv = handle->handler->private;
+> +
+> +	/* Store special key state */
+> +	if (event_type == EV_KEY && event_code == KEY_RIGHTALT)
+> +		priv->special_key_pressed = !!value;
 
-Anyway, I have queued patch2 to v7.0 and the patch is also available
-to pull in via an immutable "core" branch in my pmdomain tree.
+Is this functionality supposed to be triggered by any keyboard or only
+the dock one?
 
-Kind regards
-Uffe
+Thanks.
+
+-- 
+Dmitry
