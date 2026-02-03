@@ -1,40 +1,40 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA31B345CA3
-	for <linux-pm@vger.kernel.org>; Tue,  3 Feb 2026 12:50:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3A07346A0C
+	for <linux-pm@vger.kernel.org>; Tue,  3 Feb 2026 12:54:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770123058; cv=none; b=mJY+ygC7NPD7SVhifMVNdk/CMv/ZxnmRNKa3yfdCCH2niN7x50qLTKgmisYPE3VgZ99Y5eW8g4XpuJYZbSEebPezO1iRxK3hTKAz4+36hBUsHjstYMUAUDIuvxB+QUOz7OdgN9OzU38C2eqvb1S8parw/2W6XgJcqB/29bprqYA=
+	t=1770123274; cv=none; b=fouG29iK5+y+w7CvVeeaAN0O1pBnFGGARqr5jgiVRp5UydkRnxM+K0WH31xxXS+1iQap3EC1Abbs/KKtKW6CCnWBqwEgTMrPrLm5nnCxLdiGGazEwQYQqCoZgoa0cYzK/FU5CXdjYSzgi9jBrfeOp7a4fieet+C2qS1RkQQAzuw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770123058; c=relaxed/simple;
-	bh=V5oUKRaNj8zfaVSK89Uwq3C3MIcd+hKDDyHLLXvhamU=;
+	s=arc-20240116; t=1770123274; c=relaxed/simple;
+	bh=Co1W0er3qP2bsTr8wPseHkrGqCiTC9H5dT9ACv1yd+s=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=CQ95hAGJAHzujNnTMulkdty5Ygoj3pmOXJwP0edWsWem4bv0P5b+oeRxwsRKMY8hbbWFIVx+m2NQ+aquX/Y5X/mhtYOd8XGT/lL+geoj6rfeaJtpa1MEAK2d6n/3EiHCLL2W6AJHqVXkTUl3c36MBK+fdQuIO6vIdXE0zy5vOs0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fibgC65F; arc=none smtp.client-ip=10.30.226.201
+	 To:Cc:Content-Type; b=ORJfnUDoBN2IV22ekAti4vcOM9gluMlMW2a+DFUJC2oi4c8XRxZLrFqxSPROzf3OJK8oN/6JJ1WvETzBPPGD8+P7gN67FsmJgtz/sRJ3idxktDV8YDzI86YVoRUSX9FbO72o8vQ5IfClud5K6zuwuohnh+yHPKTiMojRdAiA8y4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ku549Ong; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fibgC65F"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 86096C2BCB2
-	for <linux-pm@vger.kernel.org>; Tue,  3 Feb 2026 12:50:58 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ku549Ong"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C6719C2BCB8
+	for <linux-pm@vger.kernel.org>; Tue,  3 Feb 2026 12:54:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770123058;
-	bh=V5oUKRaNj8zfaVSK89Uwq3C3MIcd+hKDDyHLLXvhamU=;
+	s=k20201202; t=1770123273;
+	bh=Co1W0er3qP2bsTr8wPseHkrGqCiTC9H5dT9ACv1yd+s=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=fibgC65FCFkGvprqqOdQAumC7I3p0dI1Z+GXy+Rs2Zu/wq7s8hY5trxio7WJBL+sm
-	 KZZ+Mh8eXQTzJyIjLREi+DCab9727FwILizEK6a1XZfkgXf8iVotOmN/hVPilXHn+X
-	 TTG/JMLuDeOVUoK4BmS8l+XEGocJCEi0e9pGyBlZUXqN75VL5i02CUJ6vztF2//lCV
-	 eDs/F1NE/2V49yAYg+o9bMwzOqxSAjHyOwSurPjOjCut0V1hClDKWklKKTPjSYlaPb
-	 MEIVuzhjSEt7O9tac0J2VEfDIxYcmm11GCWvgLKsYwNWtd726yw61ZmKOhyk3YoxCI
-	 AMb9BQUZVryNg==
-Received: by mail-oa1-f45.google.com with SMTP id 586e51a60fabf-408199852c5so4678581fac.0
-        for <linux-pm@vger.kernel.org>; Tue, 03 Feb 2026 04:50:58 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCUtEviL7A2CzyRr22DGsI45CopCU7wtmBHAShR8LQzJKn1IY75WBmUmJpAVRiveCUTAwsCwraPapA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx8ZyZ9gTgyg4hyglVNVu10hzO2nI94qAThEtwUFnKJNiTJhZqu
-	20U2lV4lRXRYMheIa1Njd/S+2BkH6LDG9cYzbpOghcgTOgHCKen6ImVC07B7HlRxjfxyAjWp4AX
-	xcMPhp0AvNWozSVkTdwrgFQKKPRCwGq0=
-X-Received: by 2002:a05:6870:670f:b0:3e8:44ec:3416 with SMTP id
- 586e51a60fabf-409a6fa44f9mr8489886fac.46.1770123057599; Tue, 03 Feb 2026
- 04:50:57 -0800 (PST)
+	b=Ku549OngG5aewt0GX7ihKyFwEpeePOrvb7ZmXxr1V0w1j7tC3sHxyuclFX0Jox4i+
+	 KQiXEuoebiuqitH3YQdeUCWob4Xz+i1bIgbD0IKzwE+0sjE72BmBpFDy6xwdLO/WIa
+	 dZVWtp65+6i/xQ46FGeb9K3d8b9hof0WB3wQB9d9y7Z+iCym5QJbHd206GSPW5Qm3t
+	 AHjOj8AtoltlePNKefpZB51SAptkJ5lGwZFpKbOnruSDD5osi9nIN9Iu0W3bleJv/W
+	 Ig5TNepoptYzVIgyvG9AzeIA0neWWnUmnthOy7GbtAdSC4D9uG7DGL2mst0JY2HC/b
+	 lifVQTCWntaZg==
+Received: by mail-oi1-f180.google.com with SMTP id 5614622812f47-45f18e8f2f5so3729689b6e.3
+        for <linux-pm@vger.kernel.org>; Tue, 03 Feb 2026 04:54:33 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCWJzhot5zmtGFTX+sPyZyLuyicfdvFS2DeMJpxwB0DtYGxwPTG78NXuVl/ZzsEIsHj8CjM0aMmWXw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzp6lFpSzfp/vRA5NXf6vgmS1J3oz8YyLiJy4b2nQrxrZ49bT0Y
+	QzqvDsvM+N9wgAQBU6TyJKpMXSdJWMRy6kn5dXhn7y6uyWjygVdxVE+KTLPvvusNO8xYxnI/kDg
+	/1fk7Hab5+UXeXMU24wObiIbAiqMCiPk=
+X-Received: by 2002:a05:6808:1a19:b0:45e:e52c:8a9b with SMTP id
+ 5614622812f47-45f34d98b5amr6423692b6e.59.1770123272793; Tue, 03 Feb 2026
+ 04:54:32 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -42,17 +42,19 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 References: <20260129104817.3752340-1-sumitg@nvidia.com> <20260129104817.3752340-5-sumitg@nvidia.com>
- <CAJZ5v0gBHrGf4TpjqV+W5YynM+9_xWpepgrOiRegSYS9CvPV1g@mail.gmail.com>
-In-Reply-To: <CAJZ5v0gBHrGf4TpjqV+W5YynM+9_xWpepgrOiRegSYS9CvPV1g@mail.gmail.com>
+ <4432fa04-e67c-422a-aae4-2938be431985@huawei.com> <c96312c7-b13f-4f5c-9512-cc0382c1c77b@nvidia.com>
+ <74f3e6cf-7c13-43e6-a8f6-2b46184b8ad6@gmail.com> <944fc140-e5c5-425f-a6ad-883e87eed8a3@nvidia.com>
+ <CAJZ5v0hUdLsh8UK5G6rHHD49RQGYLAiU1J-11DK-fLTKnuqhUQ@mail.gmail.com>
+In-Reply-To: <CAJZ5v0hUdLsh8UK5G6rHHD49RQGYLAiU1J-11DK-fLTKnuqhUQ@mail.gmail.com>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 3 Feb 2026 13:50:46 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0jUHUf_h=GA+71NyynT+Fym2ihzety4EMaTiGOkJskJHg@mail.gmail.com>
-X-Gm-Features: AZwV_Qgu227UTDtr8TTkbpsEWgdQTwyBTnvvGzE1lKTt4jjfaBPdfqbnp67vyAA
-Message-ID: <CAJZ5v0jUHUf_h=GA+71NyynT+Fym2ihzety4EMaTiGOkJskJHg@mail.gmail.com>
+Date: Tue, 3 Feb 2026 13:54:21 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0ggzD0PEti-r20Sm-8n0gPigPh=NgE2Oa=UKzMmwB0jpw@mail.gmail.com>
+X-Gm-Features: AZwV_Qh2_C6NzL0YjzuEvp_eyYEIiFinRoaSQUx14OPXT8iJZ6DvXYU6oH3FyWA
+Message-ID: <CAJZ5v0ggzD0PEti-r20Sm-8n0gPigPh=NgE2Oa=UKzMmwB0jpw@mail.gmail.com>
 Subject: Re: [PATCH v7 4/7] ACPI: CPPC: add APIs and sysfs interface for min/max_perf
 To: Sumit Gupta <sumitg@nvidia.com>
-Cc: viresh.kumar@linaro.org, pierre.gondois@arm.com, zhenglifeng1@huawei.com, 
-	ionela.voinescu@arm.com, lenb@kernel.org, robert.moore@intel.com, 
+Cc: Russell Haley <yumpusamongus@gmail.com>, "zhenglifeng (A)" <zhenglifeng1@huawei.com>, 
+	pierre.gondois@arm.com, viresh.kumar@linaro.org, ionela.voinescu@arm.com, 
 	corbet@lwn.net, rdunlap@infradead.org, ray.huang@amd.com, 
 	gautham.shenoy@amd.com, mario.limonciello@amd.com, perry.yuan@amd.com, 
 	zhanjie9@hisilicon.com, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, 
@@ -63,21 +65,64 @@ Cc: viresh.kumar@linaro.org, pierre.gondois@arm.com, zhenglifeng1@huawei.com,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Feb 3, 2026 at 1:43=E2=80=AFPM Rafael J. Wysocki <rafael@kernel.org=
+On Tue, Feb 3, 2026 at 1:45=E2=80=AFPM Rafael J. Wysocki <rafael@kernel.org=
 > wrote:
 >
-> On Thu, Jan 29, 2026 at 11:49=E2=80=AFAM Sumit Gupta <sumitg@nvidia.com> =
-wrote:
+> On Tue, Feb 3, 2026 at 10:41=E2=80=AFAM Sumit Gupta <sumitg@nvidia.com> w=
+rote:
 > >
-> > Add cppc_get/set_min_perf() and cppc_get/set_max_perf() APIs to read an=
-d
-> > write the MIN_PERF and MAX_PERF registers.
+> > >>> Hi Sumit,
+> > >>>
+> > >>> I am thinking that maybe it is better to call these two sysfs inter=
+face
+> > >>> 'min_freq' and 'max_freq' as users read and write khz instead of ra=
+w
+> > >>> value.
+> > >> Thanks for the suggestion.
+> > >> Kept min_perf/max_perf to match the CPPC register names
+> > >> (MIN_PERF/MAX_PERF), making it clear to users familiar with
+> > >> CPPC what's being controlled.
+> > >> The kHz unit is documented in the ABI.
+> > >>
+> > >> Thank you,
+> > >> Sumit Gupta
+> > > On my x86 machine with kernel 6.18.5, the kernel is exposing raw valu=
+es:
+> > >
+> > >> grep . /sys/devices/system/cpu/cpu0/acpi_cppc/*
+> > > /sys/devices/system/cpu/cpu0/acpi_cppc/feedback_ctrs:ref:342904018856=
+568
+> > > del:437439724183386
+> > > /sys/devices/system/cpu/cpu0/acpi_cppc/guaranteed_perf:63
+> > > /sys/devices/system/cpu/cpu0/acpi_cppc/highest_perf:88
+> > > /sys/devices/system/cpu/cpu0/acpi_cppc/lowest_freq:0
+> > > /sys/devices/system/cpu/cpu0/acpi_cppc/lowest_nonlinear_perf:36
+> > > /sys/devices/system/cpu/cpu0/acpi_cppc/lowest_perf:1
+> > > /sys/devices/system/cpu/cpu0/acpi_cppc/nominal_freq:3900
+> > > /sys/devices/system/cpu/cpu0/acpi_cppc/nominal_perf:62
+> > > /sys/devices/system/cpu/cpu0/acpi_cppc/reference_perf:62
+> > > /sys/devices/system/cpu/cpu0/acpi_cppc/wraparound_time:18446744073709=
+551615
+> > >
+> > > It would be surprising for a nearby sysfs interface with very similar
+> > > names to use kHz instead.
+> > >
+> > > Thanks,
+> > >
+> > > Russell Haley
 > >
-> > Also add sysfs interfaces (min_perf, max_perf) in cppc_cpufreq driver
-> > to expose these controls to userspace. The sysfs values are in frequenc=
-y
-> > (kHz) for consistency with other cpufreq sysfs files.
+> > I can rename to either of the below:
+> > - min/max_freq: might be confused with scaling_min/max_freq.
+> > - min/max_perf_freq: keeps the CPPC register association clear.
+> >
+> > Rafael, Any preferences here?
 >
-> But this is not cpufreq and it is not consistent.
+> On x86 the units in CPPC are not kHz and there is no easy reliable way
+> to convert them to kHz.
+>
+> Everything under /sys/devices/system/cpu/cpu0/acpi_cppc/ needs to be
+> in CPPC units, not kHz (unless, of course, kHz are CPPC units).
 
-Scratch this, sorry for the noise.
+That said, the new attributes will show up elsewhere.
+
+So why do you need to add these things in the first place?
