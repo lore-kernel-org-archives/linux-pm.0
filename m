@@ -1,170 +1,135 @@
-Received: from mail-lf1-f43.google.com (mail-lf1-f43.google.com [209.85.167.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A9023D7D88
-	for <linux-pm@vger.kernel.org>; Wed,  4 Feb 2026 11:40:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.43
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770205239; cv=pass; b=lPms0s41fpgTtbrrS1gZe0jnsD3BLgLqmdr7okHlxXsI8lcOBi04v24TagQ+FpmkiY5fez2EZ+peCXaMuGypc01hHoGDPT9oOeIN8ffl4822nth7teIxN0P2vaKLfiYr+Heh8Lb8Fdf/FWOF34AIJiJPveY63/aw1XCq8sUuTbg=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770205239; c=relaxed/simple;
-	bh=BLLQuyw5B/L37gprXVSCeQEGNy84sZq5SF6Ql4eeHUY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Uc1F7QfDr0y3NkPz8Y2f+AS1NsWPnkK9ovX+RlhtRqAlDcg86hwOa2r4itM6KVQRclYWthHCIumsHS/HDhNcOQCbAk5EHA9Cp/SSwAuJDg33JRrmYtJhBCY0rtTUBAZsL/9ce8VoqHR3HNBJACaQKOwC5RgCPYvLoG99qvFJsWs=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=IEtZJ0di; arc=pass smtp.client-ip=209.85.167.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D78638E5FC;
+	Wed,  4 Feb 2026 11:57:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1770206240; cv=none; b=N0c9spC4elXDVwW4HTisesX3sCAI91BoGd1a350+qwxePMnAZt8yN73vTtAWngwyk6b4lDA+iX+duKBje8TP3efneQVt87y6eStYsue5cjCMP9uw9dTJMtF5S1+qb/oF3KmvKXBdrQH/iP7QfFB6pWqme1dZgl+oT34H6vgJ18Y=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1770206240; c=relaxed/simple;
+	bh=3669cUuITKf9u7tNBrqzpeq3tWTkH+jHDiuw+zCYrkE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=ayeJLiolpDt/89BxtmuMJWePbM+I4hAZ289d9jguthndI6NzPor75mCkn7XPrEs6CiW66tx/i3ZMao3v45gjbpHyvoj0ptKx9ifOpDpPA0BV5TTa3vFKEh7ubwQJCLnbvP9NfwucWmohkajJ0szcU66tkaOfbuuVfgl2/UhQhnI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=pac4HwXD; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="IEtZJ0di"
-Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-59b9fee282dso6444485e87.3
-        for <linux-pm@vger.kernel.org>; Wed, 04 Feb 2026 03:40:39 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1770205237; cv=none;
-        d=google.com; s=arc-20240605;
-        b=lm6GHBUAqOczaOhylHdF2HJIMthm5fAXdPdyAxnZ1KwcVuLtZFmq4m9DBggRSla+Ag
-         kIrLqs0QzCrHVZkz/9AatesOmy3I2+xPXABDHng9/0K1Mn7/Hai0NkuvggxdPQS/F6qH
-         Exxeex65+316WnWRAwQEAQ7tvjsdDaF1O5JAW/fyT5T1mFfJCbjbDhIQUE5pgXT+LKHD
-         6FM3qrTMNnYZzkLwBFAjCyJMhaF7O0hlRlzCSe+AhJPPn2I4lPDQc/T+R/UU2uISF6rE
-         EJ0bMr2LFjlHLZEOBicXRib2rkTHksPagxp8am7Qi9BYlhELb3t0pYK6NRqhlU0FB+2I
-         0M7g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=Pzk9ekf+w5m7EprZs0DpKyLz/hJhYQ3DquAy3S2RPkE=;
-        fh=epESfbj427a3OUv0yrvhjor0UXD2EwoN7mwvapCdo7I=;
-        b=Jopl0BemvVDDhNecqm1kqKBuVlVhc1MB76bw5Uy8m4gmA5Y72wAJ17QFdzmuw4MXRe
-         rgoH68AzU4G+tOznZuUXiJdTxojVlTk7njhG57Ep+PPx1cwyhjLwghW5l4abXKn5GsLK
-         rNDnL7GuVjXGrt+22/f5wD/5M6/tROQlpZeziqoIN+CfINH5Whr2OPM9O4FzMFz0cmqB
-         awGxqGs3vYy2UOvTsN1+ZEDJwa7VvGIlS7HWPd1qK6wv4vYgcYCpBnn4W6jG8Ewlr7j/
-         u37PKLqYth0znXdABVsltMyyhWw720GWzHgakcoMy3s87Rc5Zso4Wq0iIX8pdkT7sQEF
-         FoyA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1770205237; x=1770810037; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=Pzk9ekf+w5m7EprZs0DpKyLz/hJhYQ3DquAy3S2RPkE=;
-        b=IEtZJ0dibOQG0DB24tVOWnKDF0lCWavGF6ell2KZRq8YSLfrPGZnBoZyYJole2GMN3
-         MjI3IIoJsr5EbSJeBHZ31QO53fVdKEc1NT6bz8zZ6HoALlWYMAx4ky0PZIuyb2lc8yuS
-         IghJmFuVxx92xVYNEyatgqYG+UY4JhE1obA28YCb00CZCuGrUAZt/HHv/BkLOsn7WuiF
-         9WAFs+41Nt14fQUxpo1RrBAwYWujibPw/fB0FQfh33vWbfKN066zp+fdYa9AI0RopQ0t
-         HW2i15o8DjDFRgOn7F3TiMGYw+G2hHOK0PWoDyzreOUKg5ihrKewgzc/4mQfYT1nnBsO
-         qMrw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770205237; x=1770810037;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Pzk9ekf+w5m7EprZs0DpKyLz/hJhYQ3DquAy3S2RPkE=;
-        b=QaPRgKE+9YhBdqPqJYZDGScQm4JK5KNcYvqKnooflV/KExYeSAj89J6AVwWKPSKKfz
-         okmKZzT/5zRfJzE3PKqhJu/7ti5aUUqT5ucxACsO1xQexjRGzOnqHaZnXBUk9uPXCcGV
-         x5XBzB+3FJtsDU4vcvsyLfg5g6LQA/svRshX230YzgDJnPgAIfVZBnzRQcJ118zD0jQi
-         VG79yN3hOKAHskFgMbuOoveOQx+WsdXGsgUrFXVGi1pGqH4yGuLpgtbYbI1/UWd5A8R9
-         lTAodCEiBn+uymr3NmEahxw6bmkUuerVy+D4p5jyxx3oR54hOuo+tg1FDO9CrX2A0OnK
-         bzIQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXAluvEtMBC/VDIhITBpBLxtvW3zoXtYkWH5gN4MjEWPcf2w51QUipRf5wPu5/0/tMEicBuHlypdw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwYa3LlXGKkbpW4eaHr9RZfJXh2ILdllfq6cGxd2Ss6pxYQjjv/
-	8rB5q6ACASV0wYoGifZgGGE+/9uJir7pDg8x+B9x5Ky0ZNCReUl6+FHuzLSaGzfCm94IwDF1lkm
-	/ibOCA/ggMLN7Sg4QQ7nwebmgZoOa0rKR7TjLBsZxtQ==
-X-Gm-Gg: AZuq6aKyL4LcAsSxi3Wud8lsSVxtDWvFKg4dFWdvBQiwHGNYktKABGqKgtoErEhIL3i
-	pxN39yLmMs7lGG7K/z/YEtBpmfctWKzoYDsDiv0j7B5IUYNSVL9cFuaHaT7m/0q0sO119tjquVR
-	8JLkh0DuEhbJk2XZHVAosTCpOB+TDT0ZbE+tls0nx9/PghzzuZg8yFDacd3rEfiYTYFSGrDYbaY
-	3bnDyhiHyAxi9OmhuH4YphLNzLLFT62N25Rs1Z1WkePR8Qh4K2ggQzIbLNbBKHSZ2a82VoBVfgX
-	zNpJhtQ=
-X-Received: by 2002:a05:6512:1085:b0:59e:14f:a4d7 with SMTP id
- 2adb3069b0e04-59e38c2d748mr1017297e87.27.1770205237316; Wed, 04 Feb 2026
- 03:40:37 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="pac4HwXD"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 92374C4CEF7;
+	Wed,  4 Feb 2026 11:57:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1770206239;
+	bh=3669cUuITKf9u7tNBrqzpeq3tWTkH+jHDiuw+zCYrkE=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=pac4HwXDEvkjtpqH3duQWkwwKzmPV6AGkrzzuHZe0O5AELAb9TK6GCTXHIbhsOZ8Z
+	 q8tneEGcvwedeY277RW6MH/iRB75j9wIsomGma3B/1dNp6pdbowEdwUf/XLaePwge6
+	 1a/kNPutWgagecr03ZdMjHBr1mwWyGLAS1dP+0OrrtdDLzMoBbYiy5JJrFfLi5bYkY
+	 Qk/78O6ReZYYANDU2/O7DOup7Nd6dBU8JzT2UF/PL7x2m/RL8kHvJGJ/aHtW9IO8i6
+	 C6boOy8YxHr7RQvGBbsTVJrgM1MK3OP3WbAQRBzeYhbp6fSkazlcrPQSn6jn4fG2XM
+	 taOND3Q8Nn4yA==
+From: Andreas Hindborg <a.hindborg@kernel.org>
+Date: Wed, 04 Feb 2026 12:56:47 +0100
+Subject: [PATCH v14 3/9] rust: Add missing SAFETY documentation for `ARef`
+ example
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260202074730.738760-1-xu.yang_2@nxp.com> <CAPDyKFpqfo1R8Qkq284L9DTURjZnvm_n8W3a6KQTomg7A-M_Ug@mail.gmail.com>
- <lh3cb2r3qvv2ar76ai33fjiuseqyiwoks2zjrmowknvut4qfcg@2db76miyk4wn>
-In-Reply-To: <lh3cb2r3qvv2ar76ai33fjiuseqyiwoks2zjrmowknvut4qfcg@2db76miyk4wn>
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Wed, 4 Feb 2026 12:40:01 +0100
-X-Gm-Features: AZwV_QiX5AkXx_w9Zse93HKg4-tfhffXTYB6o8jqYrd0yS7lV2JQJGMo75ani6o
-Message-ID: <CAPDyKFpFfhMTtAp63cjB2eVR78mbhBEzzSBr1Zxk-14YT448Lw@mail.gmail.com>
-Subject: Re: [PATCH 1/2] pmdomain: imx8mp-blk-ctrl: set awake path for
- power_dev if attached device needs wakeup
-To: Xu Yang <xu.yang_2@nxp.com>
-Cc: Frank.Li@nxp.com, s.hauer@pengutronix.de, kernel@pengutronix.de, 
-	festevam@gmail.com, peng.fan@nxp.com, jun.li@nxp.com, 
-	rafael.j.wysocki@intel.com, a.fatoum@pengutronix.de, ping.bai@nxp.com, 
-	shawnguo@kernel.org, l.stach@pengutronix.de, linux-pm@vger.kernel.org, 
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260204-unique-ref-v14-3-17cb29ebacbb@kernel.org>
+References: <20260204-unique-ref-v14-0-17cb29ebacbb@kernel.org>
+In-Reply-To: <20260204-unique-ref-v14-0-17cb29ebacbb@kernel.org>
+To: Miguel Ojeda <ojeda@kernel.org>, Boqun Feng <boqun.feng@gmail.com>, 
+ Gary Guo <gary@garyguo.net>, 
+ =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+ Benno Lossin <lossin@kernel.org>, Alice Ryhl <aliceryhl@google.com>, 
+ Trevor Gross <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Dave Ertman <david.m.ertman@intel.com>, Ira Weiny <ira.weiny@intel.com>, 
+ Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, 
+ Serge Hallyn <sergeh@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Alexander Viro <viro@zeniv.linux.org.uk>, 
+ Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
+ Igor Korotin <igor.korotin.linux@gmail.com>, 
+ Daniel Almeida <daniel.almeida@collabora.com>, 
+ Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, 
+ "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
+ Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, 
+ Stephen Boyd <sboyd@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
+ =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>
+Cc: linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org, 
+ linux-block@vger.kernel.org, linux-security-module@vger.kernel.org, 
+ dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org, 
+ linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, 
+ Andreas Hindborg <a.hindborg@kernel.org>, 
+ Oliver Mangold <oliver.mangold@pm.me>
+X-Mailer: b4 0.15-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1810; i=a.hindborg@kernel.org;
+ h=from:subject:message-id; bh=OkPeSjQsIxKohCmbfrAmRiZJb8MRdSOGkBDNdfIpHoA=;
+ b=owEBbQKS/ZANAwAKAeG4Gj55KGN3AcsmYgBpgzQBBW2YqZGe4r2rWgHunfjy7egLqvEkgf7uz
+ 37O8ZRA0baJAjMEAAEKAB0WIQQSwflHVr98KhXWwBLhuBo+eShjdwUCaYM0AQAKCRDhuBo+eShj
+ d8ySD/4oYFBz5VsAwkAc/58oE1gXZfwyx+fXfX6bgRFe4iQKQGVEtyYJSzETywutuMaGAmARdAi
+ 4UDKl4ygsICYVqLTt539ppsrWo2lF/YHT01wrCKlG2Dj7yIB/TagCsgMMn8n65juI9wGfW1dGrV
+ 1ClAkZ2fSD3EuBAP/SB9koV3O3TQB50NTF3q1rm0twBv/iWQuKmpJgdVzfIMGu99ZiHTN0EHd+I
+ aTSOdg0c2U6QRfvXa4qxLoF2nSseFVbXsFRlFt/hma2dzLbj4+uZSVeyh64pc/1DMu4FjigBTeZ
+ TYpF39r5j72xpLegzF1hOSbCSFWb93osfqan6YO38C++oWm81Jne2RQO8vlCSDipEYwwLKn+/RI
+ WqFAwZDSecHK2y6sTxytNBFK2HKp36t2br3edIiMZ93JtPAOeeYJxw+EvmlbeVYSMYmSI0MBAiy
+ aCF9eSlo4E/n6UGTZ7BX/R5+Gz0nhkjUnTv0/WM78JvEdHFXzg8eJEPmbl20x74aGx4AsZteFq2
+ FIIDipB4dmtWFMEVPHavrNIAzTGz0e846BMYnBe70K35ixMEigNxsF3QYjrLcXtSXQXoXeQKsM3
+ hlOlLb+hoGE5ZACH8lEcrepeFUuRy4HGujzE4WIH+nr1EMmTQtYMc63npItj/L5iX55R1rv1Tq6
+ FXC4PDR6u4FX/Mw==
+X-Developer-Key: i=a.hindborg@kernel.org; a=openpgp;
+ fpr=3108C10F46872E248D1FB221376EB100563EF7A7
 
-On Wed, 4 Feb 2026 at 09:48, Xu Yang <xu.yang_2@nxp.com> wrote:
->
-> On Tue, Feb 03, 2026 at 12:06:28PM +0100, Ulf Hansson wrote:
-> > On Mon, 2 Feb 2026 at 08:46, Xu Yang <xu.yang_2@nxp.com> wrote:
-> > > +
-> > > +               list_for_each_entry(pdd, &domain->genpd.dev_list, list_node) {
-> > > +                       if (device_awake_path(pdd->dev)) {
-> > > +                               device_set_awake_path(domain->power_dev);
-> > > +                               break;
-> > > +                       }
-> > > +               }
-> >
-> > This is really messy in my opinion. Ideally the above should not be
-> > used by a genpd provider as it's internal data structures are managed
-> > by genpd itself.
-> >
-> > If I understand correctly, this problem boils down to the fact that we
-> > should have tried harder to model child/parent domains, rather than
-> > using runtime PM to manage the parent domains. I understand there are
-> > problems with that, due to specific power on/off sequences we have for
-> > imx power-domains, but I wonder if those could be managed better by
-> > using genpd on/off notifiers?
->
-> Indeed. I have tried using subdomain will resolve the wakeup issue because
-> the parent domain will manage the child domain. But I shouldn't use
-> subdomain and runtime PM way together to avoid any unexpected behaviors
-> according to my understanding.
+From: Oliver Mangold <oliver.mangold@pm.me>
 
-Well, there is nothing wrong with using child/parent domain in
-combination with runtime PM.
+SAFETY comment in rustdoc example was just 'TODO'. Fixed.
 
-Although in general using runtime PM to manage parents domains from
-child domains, should be better managed by genpd itself.
+Original patch by Oliver Mangold <oliver.mangold@pm.me> [1].
 
->
-> >
-> > Anyway, that said. Rather than walking through the list of devices as
-> > above, I suggest that you use the ->power_off() callback for the
-> > corresponding genpd(s) to dev in combination with a genpd power on/off
-> > notifier for the corresponding genpd that the power_dev is attached
-> > to.
-> >
-> > More precisely, if the "child domain(s)" that corresponds to "dev" has
-> > not been powered-off (because device_awake_path() is set for some
-> > device) during system suspend, the power-off notifier should return
-> > NOTIFY_BAD to prevent the "parent domain" that corresponds to
-> > power_dev from being powered-off.
-> >
-> > Would that work, you think?
->
-> Thank you for the suggestion. It works for me.
+Link: https://lore.kernel.org/r/20251117-unique-ref-v13-3-b5b243df1250@pm.me [1]
+Reviewed-by: Daniel Almeida <daniel.almeida@collabora.com>
+Signed-off-by: Andreas Hindborg <a.hindborg@kernel.org>
+---
+ rust/kernel/sync/aref.rs | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-Great!
+diff --git a/rust/kernel/sync/aref.rs b/rust/kernel/sync/aref.rs
+index 61caddfd89619..efe16a7fdfa5d 100644
+--- a/rust/kernel/sync/aref.rs
++++ b/rust/kernel/sync/aref.rs
+@@ -129,12 +129,14 @@ pub unsafe fn from_raw(ptr: NonNull<T>) -> Self {
+     /// # Examples
+     ///
+     /// ```
+-    /// use core::ptr::NonNull;
+-    /// use kernel::sync::aref::{ARef, RefCounted};
++    /// # use core::ptr::NonNull;
++    /// # use kernel::sync::aref::{ARef, RefCounted};
+     ///
+     /// struct Empty {}
+     ///
+-    /// # // SAFETY: TODO.
++    /// // SAFETY: The `RefCounted` implementation for `Empty` does not count references and never
++    /// // frees the underlying object. Thus we can act as owning an increment on the refcount for
++    /// // the object that we pass to the newly created `ARef`.
+     /// unsafe impl RefCounted for Empty {
+     ///     fn inc_ref(&self) {}
+     ///     unsafe fn dec_ref(_obj: NonNull<Self>) {}
+@@ -142,7 +144,7 @@ pub unsafe fn from_raw(ptr: NonNull<T>) -> Self {
+     ///
+     /// let mut data = Empty {};
+     /// let ptr = NonNull::<Empty>::new(&mut data).unwrap();
+-    /// # // SAFETY: TODO.
++    /// // SAFETY: We keep `data` around longer than the `ARef`.
+     /// let data_ref: ARef<Empty> = unsafe { ARef::from_raw(ptr) };
+     /// let raw_ptr: NonNull<Empty> = ARef::into_raw(data_ref);
+     ///
 
->
-> With this way the rejected count is increasing. Does this have any impact?
-> The count is just used for statistics, right?
+-- 
+2.51.2
 
-Yes, it's used for statistics.
 
->
-> # cat /sys/kernel/debug/pm_genpd/usb-otg2/idle_states
-> State          Time Spent(ms) Usage      Rejected   Above      Below
-> S0             1203           0          1          0          0
->
-> Thanks,
-> Xu Yang
-
-Kind regards
-Uffe
