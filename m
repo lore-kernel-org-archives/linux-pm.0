@@ -1,137 +1,118 @@
-Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
+Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 93B4637A4B5
-	for <linux-pm@vger.kernel.org>; Wed,  4 Feb 2026 12:40:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.221.41
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770208856; cv=pass; b=r7X7CgYJ4ubKmoZ6U36IfsrFDxKcOKsrJAifQ6kR8L54bDA+WWQ31qRcVp0o0Fakf3mMlMZlQTGy/SNL7ek2B5RWtLiYB6gKWps5+Y+b0JIl4SXnfkgEm3IaY6Oc6Dyxae8BZu2ey4S09egF1qnb5x6KPc72PFJ85y/D/xYHKs0=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770208856; c=relaxed/simple;
-	bh=VVoqN1cbo7saKNRizaznTRjcFiDowh+PjgHqkK04EXg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=pMjgyLBvYhvICc8QtOpRWrZGHo1GmsyBxaPALhImlHdKNRwpHS0JqpABqGY+kMpbD6ItpPXxRn8RF3dTAOn0DY+kBUF+aTQN2oPbO+5tOMOuRJxZ+Dt+fKMbgi5AdoG1YdpY4cjFX+6N+mdABNFG9oJHDzJJ8TGFemoUQfOZOIE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=XgxOCnFp; arc=pass smtp.client-ip=209.85.221.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 142F33F23A0
+	for <linux-pm@vger.kernel.org>; Wed,  4 Feb 2026 12:44:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.48
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1770209061; cv=none; b=Vry/5XjFU8+IMsgX50NqbKd9XlULfL/ycdSP89xCkDwfbFDQ+AkX504fNEVlV024Xd/emU5R5VYslDFMdp9IHaAi7aX3TpPm7lqRRHhb72vInQ7UN3PI2cuvDWl478tQ/lU368WHFbNbSa1V6OzDOziJ/YKe8T+tUuGwEM0ckus=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1770209061; c=relaxed/simple;
+	bh=2ccQeih6irYO5XzSFtymX8LSiL0DW7BGri+FxKdFDR8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=hV2Nls9t9wW7mAhzTJwvWT6w2uRHJb60mbBuvkQxv5MH3I8XJdvJKj8u9C5BLnY2+YL7mmFV+D6vffn0KmzPTrkBf7Vwt8I9pljPJUtyGWHmKYY9xDmdxdD+GpSBsHmvH8LG8W88ctHu2w6NXThdEj9GMfQsFNcsGjtTvuBLSfQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NYVLeejA; arc=none smtp.client-ip=209.85.221.48
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XgxOCnFp"
-Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-432d256c2e6so5416881f8f.3
-        for <linux-pm@vger.kernel.org>; Wed, 04 Feb 2026 04:40:56 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1770208855; cv=none;
-        d=google.com; s=arc-20240605;
-        b=ZYEDghzYqX4+Tf0zD5JccjL05y+eI1s3lKMS4qZjW+2H0j8hnYbO0eT2AlQsTYRWst
-         x2UN2MBgpIiwh4sVXuNkoWs0uvEOrr4dshIoIjDklNvWpy5BuQtTF+3fcC6DUegDz4qE
-         Pl9yTpilnlgZWXpNN18kSq6r0ewgaLUdC0q26JVceC5vKteB2G4AD9LuRWg9RR4BdXSt
-         tCIrtFgfFGR9gqWeko9IFbROiHMJmTlj6bP9tRFS9vdivcet7kvrxN1mFzhmmHNfuged
-         KMgnpO9Cl4RVUjKYXrNomzNYexEl/6z7XJlE3kKVTpB0s/zYchzhQ5jABOd20ZKbi4DX
-         DAfA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=m/zIsfoECBdgIZPuFNRz333Sc6yOkWK7EWk2qzyAS08=;
-        fh=mF/PC73Kj7OakwYtdPOq5HIUWBvtJKJ2/2P2DNs0RG4=;
-        b=BeCHZ9EIumIB3gmzkLbkDkh/gLOXaWIH0CtI9xlTZkz7Bg/XbcY1zbBGZbatVAxJpP
-         46bRyqPBvsQj0ZjuffwUmEnCRpm6VbeBBHJ6w0oefllYwPIxdNcqtlyp/0/R9YiAi+Yz
-         mXavH90YMORxdTw+o/C2GkMKG3Rjm42cxBZqCkOklVsC4ejnz3+GfYGz4oabB0kTp6vO
-         qNxTV2sg67Hu+4TNA2DxBzQlfwKyj0pwTDcrMu/bWTBA1CP02mSOAPN9ytUVkkzGuOCb
-         9zrosqUT8gjVJ2ZRxRsbiRA/AtQwF2Bqm6Ec1iVxv5hth+Uf/D6NAZY2zQE48wDSdqQW
-         dgFQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NYVLeejA"
+Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-435a517be33so4103966f8f.0
+        for <linux-pm@vger.kernel.org>; Wed, 04 Feb 2026 04:44:20 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1770208855; x=1770813655; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=m/zIsfoECBdgIZPuFNRz333Sc6yOkWK7EWk2qzyAS08=;
-        b=XgxOCnFpLIcB14A1aqEtxqTxGYRcjFq2R+iF1g/G5VUZLLl4achDnCyhdFu/2VotNv
-         LY9MiT9k8Wicu+tPAzFZyowDFRtmAbjsOAcqM66SIJZhT4kJEd29ilyOsreQ/H5f6XQs
-         /cc3ApU/IfhiZYMgbwF7uCnjd9/t5aA43XjucmuSNE6UkG+Gy8ClfhS4JX0CADP/YNP2
-         uXEd6w/MNVVlDGqklHl/H5uCrmyGfGJHw4ETON6HTPIbv2OjvZVm1xaiXmsYs31a5XTU
-         IPDe0+IG98N/866vOVNahnRtXxTavtQxwwO+xalzKfes4S37JBAiS6WdbUj++rcS9CaS
-         pRuw==
+        d=gmail.com; s=20230601; t=1770209059; x=1770813859; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=HdeWbr93zk7sz3NtKAzxThy4aGeFCJLtK1+LR0Bzdck=;
+        b=NYVLeejASjOK53lwlOzxLANcaoH9vubIJNtZxO6/TjzGJc+qkfYIEFtucOYzu2T7Iy
+         tGpVQy0XFNf0r438iOZRWdAw6rnAiXI9z9f39jkdRXeLyckWdKSJHzyGIVgQe0Z5t4Fg
+         TGPCNkrse4xVMHYfL/qRKkq1WvvHcj1MahqBbC+IPZ4Va+WNUHM/cITzyGdLRQl3DHsW
+         WD56APQofcq/5FyR2D9TmavUgROtySZjjmyEUJgJ9nwAn69AzRWwsWzQufJOWJkWmy+T
+         tssNBIi8F+/dtZv8LM/T6lGrFEM3un0+NGf5EuiT8oNabtuSENSzG6F+6cCH+3txonGy
+         RQLw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770208855; x=1770813655;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=m/zIsfoECBdgIZPuFNRz333Sc6yOkWK7EWk2qzyAS08=;
-        b=DB4HDiqInVPdJXmO68WHj4tbyRj0l9nLxcWz/k0g4llYIeD8nVScJXwtpvTMobg8UG
-         sfXOSPgD52h6mFEBtpF9kH1P3esb2ghAORUO1ThWsaXrF5IG+7oai3XDt5m7ag/4zNLO
-         YtFKCgd3hDHn0WdDbyr3a4QJoF54IyL6blUb8YSbVV5LPylTikGAAw2vAhm6tMp4ZXWo
-         x9fhoLAMDPU76Ogf1a/kvpcd0X1gjYXubIaEzDPDupJhZ86ruLCa0XqYprHYEqQc3JNK
-         np6scQu8HbPFvXnlHMaVTxNrBzCkmuXKlVkoUQX0YMt4CnNxHl4Y0zqWHe3+WIhseGbB
-         lKlA==
-X-Forwarded-Encrypted: i=1; AJvYcCWucpZ1emV1OHc9BBS4kIyIzASZhjOY4ewQbvv/OAvvhX2EH2ErxgyejLsCG2jec/elpcg1PysExA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyRr1Rt0RfS5lFr0qHM3KKPFweO4ffnvkjimUBxosTYqsMhixIj
-	6PN+TBMA5+e5/oG0UoxfrJJMs4Mv+IQ6I8uIXY6GgITboPFD5TiQkpn3cDR974NiRkyt1u5gRKZ
-	MilJztLY5cytYckZ/KyG1vnqIKg6/p0I=
-X-Gm-Gg: AZuq6aJ74rmgJHhYbXropGf8LpNjEXNWk7ZE3GMF4UY8wmpqzPLrl94eVBqdzYwvgWg
-	tiTdUDHJMkrlSYstPhIbfZ8OO1We/JVa8XHX0fYvUjiGvnclCZeIFx9y8TQ2qYpvT6oAxGbbEse
-	fzkIY0wZVMLMb726xNsm80WaFo10rulRtIgbNX51GURILzR7qSaPa+Pu44ppI28JGIhrYeo7R9q
-	JWZENYkyDsY5L63b5G41sR90hqFWQI3fg+QPWJ+JMJzYf25RtXZfbUXEZ653r2L92uPOukV
-X-Received: by 2002:a05:6000:238a:b0:431:38f:8bc4 with SMTP id
- ffacd0b85a97d-4361805fbf4mr4039864f8f.61.1770208854743; Wed, 04 Feb 2026
- 04:40:54 -0800 (PST)
+        d=1e100.net; s=20230601; t=1770209059; x=1770813859;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=HdeWbr93zk7sz3NtKAzxThy4aGeFCJLtK1+LR0Bzdck=;
+        b=J8TTDTO4gdcl+ImvhGJ3xUh2OhZ7C5XJEEVg0gWe9FeMGtRa0JsuUCBJNZx3dYlxca
+         SbMcE9sVzU+Ndnqhc+OQuPgKnkQkl2nYL2ixzv2srt8srA0kLkc+dXbbWWJ62OOs2XjO
+         VfESkaEYLZmpytsN2fRnCGX3Ful3s4r/uERSGgdwkazaU5XlTzjOKOJ0YxfVA86kYR2l
+         mBGOGEcRUIV8loXU2oyodIb9BjPy/4ajnWwXtZrRz69yqPZv3sSg9WuG9jAWhQ9NLytE
+         4ypsinuEDzdCZV/hDAR38dhtZ6j30lSKMSTQPBvOMt7ajLpI0mYE20hThPm3CytZ8hko
+         IOhg==
+X-Forwarded-Encrypted: i=1; AJvYcCVgynLas54UIFZtIMXrptdebzZoiYUO5FgVp971GLp1ePfhFdRMbmPY4Z6JX9WTBy05o4FXkXzNqw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy9wMRFrOiEnXEdh4oN7KwQp+2LUyUzlFZtg4y4xe56VyeRBmNo
+	ZEKN3Jy2f+qRiwfGA3vM2t1DevvsvPaq5WqnmffuWow0UH82/YfLlZxj
+X-Gm-Gg: AZuq6aJvprw1tedczLPtNCkSpMcirYUaGscBVIDe8FOpnynjN6r/3Y0uEIwgt7aQ9fR
+	vILCcCOd8FTORWfNuYnmGdMnyN/lKwlIpERRl+qQultdKsWdJMVukdIEt8VV/CYN/tIs2SG6FBU
+	HAtn6DcXaNyJDSCfIX5ITPkRArPYlWtQ0M5un9s5lmDc+1QRogXZtxZlM22TR4v6T9fg9G3lfiu
+	G/i6i3tND/VKsgfN1jsdOQ75oI+hsbblCidI4uEz1mwTSNcyrV5w7t16dvzRWg0iRRBaGQt6XQe
+	1k8OqlFlHp1h92CT9W0GoIJB10DoQpvc6wuVpSUAqVeiKo4zZscY7WkmaiMPKlht/DqyTwkeoEy
+	7FkmXw+ata5I3caV1FVVTX/Aq3IqFdlnJkIY4ok8n2gamPPtl0ilNPvsTzPIXlavJG3JTUdXZiv
+	ca3+9ta3w=
+X-Received: by 2002:a05:6000:2086:b0:435:ad52:31d9 with SMTP id ffacd0b85a97d-436180321b0mr4035154f8f.28.1770209059152;
+        Wed, 04 Feb 2026 04:44:19 -0800 (PST)
+Received: from legfed1 ([2a00:79c0:684:8900:e22:b7ee:dcfc:b04a])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43618058473sm6521891f8f.22.2026.02.04.04.44.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 04 Feb 2026 04:44:18 -0800 (PST)
+Date: Wed, 4 Feb 2026 13:44:16 +0100
+From: Dimitri Fedrau <dima.fedrau@gmail.com>
+To: Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc: dimitri.fedrau@liebherr.com, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] power: supply: gpio-charger: add support for
+ fast-charge timer
+Message-ID: <20260204124416.GA3066@legfed1>
+References: <20260109-gpio-charger-timer-v2-0-63fd1ba75830@liebherr.com>
+ <20260109-gpio-charger-timer-v2-2-63fd1ba75830@liebherr.com>
+ <aX0tJLqfY7b9oNAi@venus>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260201104343.79231-1-clamor95@gmail.com> <20260201104343.79231-3-clamor95@gmail.com>
- <2026020350-unrevised-humming-7a42@gregkh> <CAPVz0n35NkEXjur-oJhW6Yxwme_KMLdYCnRAtjHEWSPEVrSUXQ@mail.gmail.com>
- <2026020346-ashamed-campfire-b483@gregkh> <CAPVz0n2HmLwdif5ry+y56LB8Gpwh2o9_gJ7K2jhcZVR=rPgfPA@mail.gmail.com>
- <2026020314-humbling-mobility-c24a@gregkh> <CAPVz0n0TMOCYnMiVUZ7xx-1SqrXuaVCOY-o4-x9L=f-xSMDj8g@mail.gmail.com>
- <2026020347-mushy-lunar-d12d@gregkh>
-In-Reply-To: <2026020347-mushy-lunar-d12d@gregkh>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Wed, 4 Feb 2026 14:40:43 +0200
-X-Gm-Features: AZwV_Qgnx8Hqpc3gLtz5e76GzgExX_xLHyQNYXgz5FpI0RojQ_lqa8cEDXcBX9o
-Message-ID: <CAPVz0n0jrRxPQD-g7Pq-koDTW1Wr_FxNZc-SmY2-eE71dfei+Q@mail.gmail.com>
-Subject: Re: [PATCH v1 2/9] misc: Support Asus Transformer's EC access device
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@kernel.org>, 
-	Arnd Bergmann <arnd@arndb.de>, Sebastian Reichel <sre@kernel.org>, 
-	=?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, 
-	Ion Agorria <ion@agorria.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-input@vger.kernel.org, linux-leds@vger.kernel.org, 
-	linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <aX0tJLqfY7b9oNAi@venus>
 
-=D0=B2=D1=82, 3 =D0=BB=D1=8E=D1=82. 2026=E2=80=AF=D1=80. =D0=BE 18:58 Greg =
-Kroah-Hartman <gregkh@linuxfoundation.org> =D0=BF=D0=B8=D1=88=D0=B5:
->
-> On Tue, Feb 03, 2026 at 06:50:01PM +0200, Svyatoslav Ryhel wrote:
-> > > debugfs allows you to do much much more than simple stuff like
-> > > BIN_ATTR_RW().  Go wild there, but don't put debugging stuff in sysfs=
-,
-> > > that is NOT what it is there for at all, but rather, that is exactly
-> > > what debugfs is for.
-> > >
-> >
-> > I am removing said stuff from sysfs, that is not what I am asking.
-> > Debugs does not allow to upload register values in a form of binary
-> > block. It allows only dumping via debugfs_create_blob or
-> > debugfs_create_regset32 but not writing. If you know examples of
-> > reading and writing register sets as binary data, please point me to
-> > it.
->
-> You can easily write your own given that debugfs allows you to use what
-> ever file operations you want to use for a file.  Why not just use that?
->
-> > I am asking if it is possible only to preserve dockram_read/write
-> > functions in the code, without exposing it to sysfs.
->
-> Why would you want to do that?
+Am Fri, Jan 30, 2026 at 11:19:44PM +0100 schrieb Sebastian Reichel:
+> Hi,
+> 
+> On Fri, Jan 09, 2026 at 07:41:20PM +0100, Dimitri Fedrau via B4 Relay wrote:
+> > From: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
+> > 
+> > On some devices like TIs BQ24081 battery charger it is possible to activate
+> > or deactivate a fast-charge timer that provides a backup safety for charge
+> > termination. In case of the BQ24081 it is a fixed 7-hour timer. Add support
+> > for enabling/disabling the fast-charge timer via GPIO.
+> > 
+> > Signed-off-by: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
+> > ---
+> 
+> The documentation is missing _a lot of information_. What happens
+> when the fast-charge timer is disabled? What happens when it is
+> enabled and times out? What do you expect users to do with this
+> control knob?
 >
 
-Nevermind, everything is good. I have figured it out hopefully.
+Yes, you are right. Will add the missing information for the BQ24081.
+When the timer is enabled and 7-hours are passed the device will enter
+state "Timer fault" where charging is disabled and cannot be enabled
+without powering the device down and up again.
 
-> confused,
->
-> greg k-h
+Disabling the timer will just deactive the mechanism above but charging
+is not affected by it.
+
+It's just a safety feature that can be turned on/off.
+
+Will add this information, am I missing anything else ?
+
+Best regards,
+Dimitri Fedrau
+
+[...]
