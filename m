@@ -1,164 +1,102 @@
-Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f174.google.com (mail-pg1-f174.google.com [209.85.215.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B6AB3F23A0;
-	Wed,  4 Feb 2026 12:44:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 138FB3EF0C1
+	for <linux-pm@vger.kernel.org>; Wed,  4 Feb 2026 12:47:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.215.174
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770209079; cv=pass; b=Yx4AiIPnhuY0OqeuUhrd1cQAO/M79zc926VtcrXKCVfkDwgQjFSrJuCcAIcnnv+5eMIHy6dl+OF5vMVaEN2Gw87LSlgN4iGO89qjvxPa94c1cCBbFq+r16y5SZl+4qjcRvFgQ770NmHXL5N3vIboU92wDjPv6P2ftJ5tBs4FuzE=
+	t=1770209272; cv=pass; b=Xz7a99kllHyR/XQR59JrNpsMFHD3FJuajMZGIPyBkrZsv6E7eOHAWX8FczwfB+I49z+OXDa3XSSpa8KI8clkL3cYiEEfjJVAXXmMyo4uUXlToPl40ToQ55/DVrY5DachsFgJyqQ8agJiY195/fYy2cMf/UYA06A9kwScc1EhrRY=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770209079; c=relaxed/simple;
-	bh=7rJyrkWcUJTJPVf3Jfxd0+6rylK9Rvt56+nJ5FndSaM=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=N6I03RvTDNyZE2nL2m7CzGyLeVyfZ4IKw3sRx4WMX1iRw3JzDk4dtlAd4y8CyEjpVPFqYpFd9J7rgjlpoqrMG+4ZLWBhacsyRK2q1FF/C5RkMBbAmlmdD3EDiAYSDtqj8U4OgUzvDZLtzpKgzLOMMLI1hAaecfeOZEFnZI/vxY4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b=D9fY5vsY; arc=pass smtp.client-ip=136.143.188.112
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1770209272; c=relaxed/simple;
+	bh=gzPdifQNN1kwwnTAjndJp4o3VuNeG1AwtKZeUr0gEqE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=uJcZM96Bwy6ZRPOk7ajCCQ4hAB3fPiHGfvygqlSxB5iykoMLaInTw5snc0GYrTqtueITFn4s3ka+AdPji0wCJPWyXFlbtd72iB70Ija6YgNboKzbDK3LhrUQXj63myeBxdcOMksUdNiTZvC0aFSYgB+l/CkAFFjAIUrcxbVv5Cc=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=0x0f.com; spf=pass smtp.mailfrom=0x0f.com; dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b=N1pnl685; arc=pass smtp.client-ip=209.85.215.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=0x0f.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=0x0f.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b="D9fY5vsY"
-ARC-Seal: i=1; a=rsa-sha256; t=1770209056; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=VlpkdDeeeuo06wVd3QoFjeQF4Ze/WvqBlenT7Jxm0kIXdrUYyqy7ANv1tLtDRRzzqfLYNdrPNkWVquUaNRftFbw42AH49LYk/zkoDXAH0Ntfo1HhhYgXERyL497cdRdqm1Ex72I7fUcm5KVNgfWVA5+svJoKXiMwu0aq6H6hApQ=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1770209056; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=ZHEfRwCP34SKP/etqf2R3yvPOUYfeiMlExy0k9a0BNk=; 
-	b=EY8CFOFttnCRasix3rIcqXqI3UN2g9W04GFEFPR1ZNNP7jOpoKfAPlwvbOXuBrv3ukECbHXQdEntU4zuZB9MoDDQYHSsmIMITHZTSaQnIUbIz/xw2HPCQXTbcSNzzFhJfuJWkqdUlbiIeqlXhHvA8G8g9SXqaQK0wBphiTsMpOs=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=daniel.almeida@collabora.com;
-	dmarc=pass header.from=<daniel.almeida@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1770209056;
-	s=zohomail; d=collabora.com; i=daniel.almeida@collabora.com;
-	h=Content-Type:Mime-Version:Subject:Subject:From:From:In-Reply-To:Date:Date:Cc:Cc:Content-Transfer-Encoding:Message-Id:Message-Id:References:To:To:Reply-To;
-	bh=ZHEfRwCP34SKP/etqf2R3yvPOUYfeiMlExy0k9a0BNk=;
-	b=D9fY5vsYmDzxbb3wnJ6GeN2NPcWUM3P96dDZwTdg8wRu0RO5UFiU0nieyb+hVJ0q
-	yI8/bK2piXW4wuCwLcUWSkwryxH+w1MDZSTV5OJjf4H1/lV+m+0ge2r2zOoB7bn9DUC
-	xBaM6iGniq4R2heDGhtciZgJAlf8pNM31KS9AmSI=
-Received: by mx.zohomail.com with SMTPS id 1770209055218580.5695590716871;
-	Wed, 4 Feb 2026 04:44:15 -0800 (PST)
-Content-Type: text/plain;
-	charset=utf-8
+	dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b="N1pnl685"
+Received: by mail-pg1-f174.google.com with SMTP id 41be03b00d2f7-c6c444e89bcso489681a12.2
+        for <linux-pm@vger.kernel.org>; Wed, 04 Feb 2026 04:47:51 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1770209271; cv=none;
+        d=google.com; s=arc-20240605;
+        b=YvGe2zfyFqv0Cv9Yc3BuD/Z9kWeUobJrpG231lSi2KtNGH4mnNN1UJcAU0KDGOEo07
+         glDM6MuU1xsQ29VPAkQ45iG3hbLkaPQCSjUi320peROTqRDh6/JPiTBCuXUpjPEZNzx+
+         Z8cRPpE2JFyoGiEofrnJ+EXLpCXrFDaHnvEEhml2+IIR6HQ16O2Dk9m4VR5jpbdjQ9JW
+         X96GhjI3WbMpiNoEAT+ukBHu0bicRXtIj1EbeFuF800PlPAfBaHcIaCHPp1pnoM19CXE
+         9O4NXgEOXNyBgNpXNrxhGv76SxBaCsEcapHBl/I3MUTedRETeAIC0hyFRSyf4pnjlhca
+         Tf0A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=gzPdifQNN1kwwnTAjndJp4o3VuNeG1AwtKZeUr0gEqE=;
+        fh=DlO9S9Pf1kn6PyivCsjARd50oPk1nllTlcat/c46jFE=;
+        b=PEUkH9YJ9Y8mrglTILfyvWw6010rZ6+FoVKQtnzHMj6CCs7O+VozHCUd9Jty0Tqf1K
+         rxjQg7LY9wGH3V3dmqNEjZlHs1t8XUEtxQ7za47puuqnOTTcoDYpiVuP+IPcMFoHIOox
+         vmoSkTt0+uPpHkfoWxAP4natakyQ2fWfGZwdbGted8aL4vmsReQJTvAb2i4zgjaRMxGK
+         RMO40eSJG+VgOI1BJ8W7pOffEf1B5e1DIiUfVtKre+cIlQVDFHPi2o2Kj5tjtOfstImr
+         1Zrc8fp6YaQciJ8fwt7xO+63nlG81/BQ0CefmKZnRlt9C6dcM7zc8oXKYATZ2wXoiDPv
+         oWZg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=0x0f.com; s=google; t=1770209271; x=1770814071; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=gzPdifQNN1kwwnTAjndJp4o3VuNeG1AwtKZeUr0gEqE=;
+        b=N1pnl685Ny421NXuU6eOT3o2kGAhRMSaiMZO7+F1vxJIyDbtvGdNTWdPMlsADArN7/
+         AhTaVXivC3YHQbLjW02cyGKhg8He36mYGW8J9NCKzTPM4WdFBWuXG8rgqOjYpyZzDHvM
+         W5jvlkQs4hQnjb0gP1Ad041QUh/aNokGV2E00=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1770209271; x=1770814071;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=gzPdifQNN1kwwnTAjndJp4o3VuNeG1AwtKZeUr0gEqE=;
+        b=jHNkH5bN+nwifWfisZULp77GStu4KXcOHBicOaR2qze5R8aJdmXRDkrORzP3Eu1KL+
+         VSlTyk6sxY6iff/HLSLsDpnAOFD1yj1+Hf1LLfaT9xqyU2iJFQFJowQjSqIGSySGmF/0
+         eVPoLR67wW7XRaGE9Ru+69hVuw8Jj4jQwdMKJ/m0e0zNTXcOiHH7aqegP2JL4Ym0T1Ld
+         yDIcQ97GcBxWtbbBb4rccdjgrWt1cjG+Ugdq18tWvTaUlG/bluBRq105AtnRJBF9D6VF
+         ySRS2Cgpax7tM+4GTKZxZEjYardY7v1ZDYyTD7z6b52NS8NuSFQe3vdJIJLGz3ZVxMbR
+         j7cQ==
+X-Forwarded-Encrypted: i=1; AJvYcCX5UXypxtn9zN/Q7cMcLr50505Jjqx4QB9NmjbtsfeIykIGQJUIcRKlgjZoD13GedQ5CYeLUBj7hg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwcXFI7zqYgRU6MEmxz/0FIrCCfWi/CPTH06QwdZ09+mn2HH4i9
+	oqzYmW+oI/dblHVEuqiugbcOqncAUGsStXVq7zX3AaSSJ9IUd7Az1/PBxMQUeD4OyTxJCLMguH3
+	npd3/3alRITzNkKAd8QpmYZo+KJBesdEF5CsThCeGug==
+X-Gm-Gg: AZuq6aKAcq8oCbwYP+WxeHyAojSPBZyxDRF2n8eIwAxtlYdN8ohkqe+ZwaMAgQGOG18
+	MyGxbZyr9YNZbWzHRS4Jghh06cfxK8t1ZX0yvNjoxPn70PvM8M62+h7LCWrC/m8Ni5iAg4nzRm6
+	+idFOTJ8+u5JIA3hyKlfeMrC9A4WyI+us4DbRqLjD2jKD/WR9flmBBjUqWLsXvELLf6Wxu2SwG2
+	KMOXv8/l0BJWy+bzc5t2ptX7M+LqEnAJdlAYj4NTqmP3k4u6jEiAcM/RbIaJxI8/h/xhZUPjDzj
+	Gx0QMMhH
+X-Received: by 2002:a17:90b:2dcd:b0:349:7f0a:381b with SMTP id
+ 98e67ed59e1d1-354870cb817mr2271653a91.8.1770209271374; Wed, 04 Feb 2026
+ 04:47:51 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3826.700.81\))
-Subject: Re: [PATCH v3 1/3] rust: clk: use the type-state pattern
-From: Daniel Almeida <daniel.almeida@collabora.com>
-In-Reply-To: <20260204-nickel-seal-of-poetry-8fdefb@houat>
-Date: Wed, 4 Feb 2026 09:43:55 -0300
-Cc: Danilo Krummrich <dakr@kernel.org>,
- Alice Ryhl <aliceryhl@google.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>,
- Drew Fustini <fustini@kernel.org>,
- Guo Ren <guoren@kernel.org>,
- Fu Wei <wefu@redhat.com>,
- =?utf-8?Q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
- Michael Turquette <mturquette@baylibre.com>,
- Stephen Boyd <sboyd@kernel.org>,
- Miguel Ojeda <ojeda@kernel.org>,
- Boqun Feng <boqun.feng@gmail.com>,
- Gary Guo <gary@garyguo.net>,
- =?utf-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>,
- Benno Lossin <lossin@kernel.org>,
- Andreas Hindborg <a.hindborg@kernel.org>,
- Trevor Gross <tmgross@umich.edu>,
- linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org,
- linux-riscv@lists.infradead.org,
- linux-pwm@vger.kernel.org,
- linux-clk@vger.kernel.org,
- rust-for-linux@vger.kernel.org
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <91A92D84-1F2E-45F3-82EC-6A97D32E2A78@collabora.com>
-References: <20260108-delectable-fennec-of-sunshine-ffca19@houat>
- <98CD0BF6-3350-40B9-B8A9-F569AE3E3220@collabora.com>
- <20260119-thundering-tested-robin-4be817@houat> <aW4lCfUyumOKRRJm@google.com>
- <518D8B09-B9A1-4DB4-85CD-37A2DD3D5FB1@collabora.com>
- <DFSLCI9U4NCW.2HI2UPUI7G134@kernel.org>
- <20260119-weightless-pelican-of-anger-190db0@houat>
- <DFSN4FDCYHMW.3J3237PEBV2ZP@kernel.org>
- <20260122-majestic-masterful-jaguarundi-d0abde@houat>
- <2F3D3A40-6EF9-46FC-A769-E5A3AAF67E65@collabora.com>
- <20260204-nickel-seal-of-poetry-8fdefb@houat>
-To: Maxime Ripard <mripard@kernel.org>
-X-Mailer: Apple Mail (2.3826.700.81)
-X-ZohoMailClient: External
+MIME-Version: 1.0
+References: <20260203170824.2968045-1-visitorckw@gmail.com>
+ <CAMuHMdUMBoLd8cKXMK64qjGfTqQfK21mDAXMh8DdJHkL7QbDVQ@mail.gmail.com> <e7ddd671-6e25-4114-9d4c-21ecebe82ef5@vivier.eu>
+In-Reply-To: <e7ddd671-6e25-4114-9d4c-21ecebe82ef5@vivier.eu>
+From: Daniel Palmer <daniel@0x0f.com>
+Date: Wed, 4 Feb 2026 21:47:40 +0900
+X-Gm-Features: AZwV_Qh5NVjLh6HCd9GiRsalccZbQsoSI1MyoYO3Q0La5tE6o0sRk3zeCgTPlm8
+Message-ID: <CAFr9PX=heS=ywLCidd8o_BzS4TS5U=GA8yv7itzNFp5nuwf2XA@mail.gmail.com>
+Subject: Re: [PATCH v2 0/2] Add QEMU virt-ctrl driver and update m68k virt
+To: Laurent Vivier <laurent@vivier.eu>
+Cc: Kuan-Wei Chiu <visitorckw@gmail.com>, sre@kernel.org, jserv@ccns.ncku.edu.tw, 
+	eleanor15x@gmail.com, linux-kernel@vger.kernel.org, 
+	linux-m68k@lists.linux-m68k.org, linux-pm@vger.kernel.org, 
+	Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset="UTF-8"
 
->=20
-> I'm probably missing something then, but let's assume you have a =
-driver
-> that wants its clock prepared and enabled in an hypothetical enable()
-> callback, and disabled / unprepared in a disable() callback.
->=20
-> =46rom a PM management perspective, this usecase makes total sense, is =
-a
-> valid usecase, is widely used in the kernel, and is currently =
-supported
-> by both the C and Rust clk APIs.
->=20
-> The only solution to this you suggested so far (I think?) to implement
-> this on top of the new clk API you propose is to have a driver =
-specific
-> enum that would store each of the possible state transition.
+Hi Laurent,
 
-Yes, you need an enum _if_ you want to model transitions at runtime. =
-IIUC you
-only need two variants to implement the pattern you described. I do not
-consider this  =E2=80=9Cboilerplate=E2=80=9D, but rather a small cost to =
-pay.
+On Wed, 4 Feb 2026 at 18:09, Laurent Vivier <laurent@vivier.eu> wrote:
 
-I would understand if this was some elaborate pattern that had to be
-implemented by all drivers, but a two-variant enum is as straightforward =
-as it
-gets.
+> Please cc: me on the next version
 
-
->=20
-> That's the boilerplate I'm talking about. If every driver wanting to
-> implement that pattern has to make such an enum, with all the relevant
-> traits implementation that might come with it, we go from an API where
-> everything works at no-cost from a code-size perspective to a =
-situation
-> where every driver has to develop and maintain that enum.
->=20
-> Maxime
-
-There are no "traits that come with it". It's just an enum, with two =
-variants.
-
-> API where everything works at no-cost
-
-The previous API was far from =E2=80=9Ceverything works=E2=80=9D. It was =
-fundamentally
-broken by design in multiple ways, i.e.:
-
-> a) It only keeps track of a count to clk_get(), which means that users =
-have
-> to manually call disable() and unprepare(), or a variation of those, =
-like
-> disable_unprepare().
->=20
-> b) It allows repeated calls to prepare() or enable(), but it keeps no =
-track
-> of how often these were called, i.e., it's currently legal to write =
-the
-> following:
->=20
-> clk.prepare();
-> clk.prepare();
-> clk.enable();
-> clk.enable();
->=20
-> And nothing gets undone on drop().
-
-IMHO, what we have here is an improvement that has been long overdue.
-
-=E2=80=94 Daniel=
+FWIW support for the m68k virt machine also just got merged to u-boot:
+https://lore.kernel.org/u-boot/177007672356.4123720.10843284111217950440.b4-ty@konsulko.com/
