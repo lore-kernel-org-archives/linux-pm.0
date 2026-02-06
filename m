@@ -1,123 +1,124 @@
-Received: from mail-lf1-f49.google.com (mail-lf1-f49.google.com [209.85.167.49])
+Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 337E02D5C76
-	for <linux-pm@vger.kernel.org>; Fri,  6 Feb 2026 11:05:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A19FD313E10;
+	Fri,  6 Feb 2026 13:04:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770375958; cv=none; b=V4T1zhfHXxw4S7XFZvzAaTc4F9FUVhExjVDfDfwE2psBAi7EtJSNkST/Adi/tRn7SWLAK+TcTxeUJM73KnzaasUjpr60T0YRB3HU89CJG/84KFTbpzS6WTKfOJZirFM1Lng80I4xVi7tKYD4YA4ICct5ArShz0ODAG6APyLothk=
+	t=1770383094; cv=none; b=Ebnd5T+1H3eGJ0ENRlGCJ2bMYyJZ90/EnArNh2+JqNeiloU7MB7XaD7++7p6XpwSDVIdNmfmwGUHrq2W8XIt2inJQYCneIwqJFB/3VQXBGNpx7oiAUtu5Fxur+l7rmNMEw6Pkt0sHM9c/4/4H1qegMei8ZN+o8+LNjZ91KpUw/w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770375958; c=relaxed/simple;
-	bh=OXCOzIC0pQMpUay04vLBX3PqRjjT2+sjKKzGBOUKbIM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BMlD3HXwP9xQpMPmfgR/Gi/MxTiIlMdHPU9ms8gYQnR3EERKQ7Yx8rkP3UM3GV6P52OGAmtfBFj/4fnlHNhrm5Jbt8kD6oFB3dvqq3ErpPoMNb/Jcw0CzgnppvNZObTQL16b8D1kT3xH5tJ3fqyVJoUyMlyqxYjCC+o9/Jr6Flg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=QyZR0t/N; arc=none smtp.client-ip=209.85.167.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1770383094; c=relaxed/simple;
+	bh=ApWPhL6JQBKOjYvyWVNeD4gaRhQWHkve1pRyR2n+Sdo=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=FQYoJzPThKsVksvmbihBOT3KMtDJKU8MejN1O9KZmqArgPjjxQEK9NqAP4iVT7T51VLMTfyFp9iMS2qmzv+TfL/Xr+HTI2K7OYuBMOJGGViVBtUn7/adf1tDDvgXlPDkQcp9WnTGzPUdsHtCtOvVc1Z/sD60zQe+plrX5ppcBJg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=X49wI0kX; arc=none smtp.client-ip=178.21.23.139
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="QyZR0t/N"
-Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-59dd3e979ceso714403e87.1
-        for <linux-pm@vger.kernel.org>; Fri, 06 Feb 2026 03:05:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1770375956; x=1770980756; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=a8YgULvPUysHanJexoM4PJO6EAhVNc01J/9HL0jGN3c=;
-        b=QyZR0t/NVOS5M7zjf/+WHjF3xUtl2aT5uwM1jTenIr1bksm+FG6fsmX2EGreZ/ibZJ
-         tO71dFTCxaxZH+QYcGmLlj1hIAd6n27Lr6AcA+eFmoFmY5PE4jSlKQ7HXnr/AmNW2LHm
-         ByYn1pOBETVP3MbZDqevtBhZ+YzoaW9D84Zfh5Np/wmNkd6mzfBE9sIOuu2ebAlK76/2
-         AwMmLBb8SGgWZa3pDUUIN/dfssTO0d/CDJjY01Cu8kbRagqpBFIA5xmSY+KF7o7JiLjl
-         kSNW7h+7INSP5axpbf8fCUVQ0SxE71O7gjZuazl3JTh6hCiwwAKVcmC+dW36Ws+vOpXr
-         QQcA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770375956; x=1770980756;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=a8YgULvPUysHanJexoM4PJO6EAhVNc01J/9HL0jGN3c=;
-        b=DaQfl7GDHez+NlDvJJtHz8VM05AA+LkDPQeoz7bz9pVHgC5tnviOgn5y4DKT9iZU6V
-         jULPNFbGGVFI7LLlNYqAT47p1++VF+srzl6TnijLuh48VxDpDRtMSLdWSEqbvB9DB7zW
-         rJO9CZ1wGz+rIuYvgytBO0xL8vTPBe3fLtlAJuadgIIr0epEWOi1CBQOtEOLbzlxCk+G
-         UwUfQqvHJ+lt1mcizIWsjuE+9122o3CsxUpdBXowWu45BhCG0XwspCbRn7J9yqiqW9Cl
-         wQm/GMFfKl/+8U0NuOHo1AaA/g+N+b6I5w9OCtHNjifL3f5Kr5NB4ZMGVdBEOu/CrOSk
-         UYLQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUMmPiTtA8IOwUGCPDcGdS18RKHuI/QJdHOyrMHXHXhusg2rGYrXt2sQGT+g6V6Ee1V7sAnm2tNyg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzAeze3tS+C9+0a+Tq03w4O7OBtL1y0BnO/EZvd4wLatObnCvvq
-	O0Ttbk+vlaUysv9MkExTCvN7mm6+yFMs5LmUh2MdCv8Ao97OuL4huuQ6BKvO8ewBAMU=
-X-Gm-Gg: AZuq6aKhzI9waZrmTmlqHF+X95eyUUP8aIHbJL1giRk3PtLgHOo46XYP87300XupgGJ
-	nO9rh9UTGLQXIpets+AqLAYIlmdzpON591pph166Lazj6Crye/o4KXVH96CdL1JylJ2zTGapIvO
-	J4Y3nB0EXmTA5rp/AteZlu8PrEZV14OxcgswNTR46GHHw9GeNv47tyw7D9FsVmbVuXlSHfn8xei
-	L19EaTGRp6MPH4I1Li4DX2Zr/Ky1NQiw88XL5kkqHc6kuUyfJkLcgirpHJIzyDQskUKpwbKdBmW
-	Kvg2aBj+L2GUbk2TsCOqNWTYnbcvBnRcPrc8pEQ3NbkgDIS3jkdG10Vmz7cD6Cs9TK77/tkO2h4
-	y4Hib0MWii9RRuttO8Pkf9N6J38+DyPnJ/gwTj+VqMIs1W47QjpSd3xEjyj2hXopUEC7g+5cBvm
-	yvWpfqvlu8Xpfax401wuy0jh8CvCKN0kVRvAG325uQ66S/Ku3HNYIbsOAyY4u3
-X-Received: by 2002:a05:6512:ba7:b0:59d:fac0:3a14 with SMTP id 2adb3069b0e04-59e45169082mr649867e87.28.1770375956334;
-        Fri, 06 Feb 2026 03:05:56 -0800 (PST)
-Received: from uffe-tuxpro14.. (h-178-174-189-39.A498.priv.bahnhof.se. [178.174.189.39])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-59e44cff6a5sm510395e87.34.2026.02.06.03.05.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 06 Feb 2026 03:05:55 -0800 (PST)
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Linus <torvalds@linux-foundation.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>,
-	linux-arm-kernel@lists.infradead.org
-Subject: [GIT PULL] pmdomain fixes for v6.19-rc9
-Date: Fri,  6 Feb 2026 12:05:55 +0100
-Message-ID: <20260206110555.539300-1-ulf.hansson@linaro.org>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="X49wI0kX"
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+	by disroot.org (Postfix) with ESMTP id A90A525F3F;
+	Fri,  6 Feb 2026 14:04:51 +0100 (CET)
+X-Virus-Scanned: SPAM Filter at disroot.org
+Received: from layka.disroot.org ([127.0.0.1])
+ by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id cfgujahYoJKc; Fri,  6 Feb 2026 14:04:51 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
+	t=1770383091; bh=ApWPhL6JQBKOjYvyWVNeD4gaRhQWHkve1pRyR2n+Sdo=;
+	h=Date:Cc:Subject:From:To:References:In-Reply-To;
+	b=X49wI0kX9/xFhK147Q1nKOBVuMw59bC30WOKQwfWva0RLzTbdUe1L8LgIuGApjbcF
+	 1I548ua2067P1/kaDqtD55RV7/x+5fA67RxtAajfdHvSJkhIbgSv9FjUI05fTWyl0G
+	 kmkgbIGEQlrExgUASdflLJP1nVubJwDf1thQ3X6rBQi190pgb1R6vX3wgQy68qQQec
+	 n5ffj9hetUofNH8G3tF6r9SRtVdMEUVvD0EVloIGSB9dJ2YDfP4BqqBTmWknzqdTh4
+	 yUaL1esaswwpSMijGLGqIWUf5INPVnO8jSoO6SKTp+uCmI7Ts7blad3TG4k3VQJ4KU
+	 4RUN5TEGfGH7g==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 06 Feb 2026 18:34:45 +0530
+Message-Id: <DG7WFDLZ3J68.2PGGTXYAB777A@disroot.org>
+Cc: "Yassine Oudjana" <y.oudjana@protonmail.com>, "Rob Herring"
+ <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>, "Conor
+ Dooley" <conor+dt@kernel.org>, <linux-pm@vger.kernel.org>,
+ <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] power: supply: add support for S2MU005 battery fuel
+ gauge device
+From: "Kaustabh Chakraborty" <kauschluss@disroot.org>
+To: "Sebastian Reichel" <sebastian.reichel@collabora.com>, "Kaustabh
+ Chakraborty" <kauschluss@disroot.org>
+References: <20260126-s2mu005-fuelgauge-v1-0-68a146ed0819@disroot.org>
+ <20260126-s2mu005-fuelgauge-v1-2-68a146ed0819@disroot.org>
+ <aXq7NohfIy3c5AWL@venus> <DG2QBROWWMLI.2EE3CBLLPAJHR@disroot.org>
+ <aX8yPp2JVubxHNFJ@venus>
+In-Reply-To: <aX8yPp2JVubxHNFJ@venus>
 
-Hi Linus,
+On 2026-02-01 12:14 +01:00, Sebastian Reichel wrote:
+> Hi,
+>
+> On Sat, Jan 31, 2026 at 04:44:36PM +0530, Kaustabh Chakraborty wrote:
+>> On 2026-01-29 02:59 +01:00, Sebastian Reichel wrote:
+>> >> +static int s2mu005_fg_get_status(struct s2mu005_fg *priv, int *value=
+)
+>> >> +{
+>> >> +	int current_now;
+>> >> +	int capacity;
+>> >> +	int ret;
+>> >> +
+>> >> +	ret =3D s2mu005_fg_get_current_now(priv, &current_now);
+>> >> +	if (ret)
+>> >> +		return ret;
+>> >> +
+>> >> +	if (current_now <=3D 0) {
+>> >> +		*value =3D POWER_SUPPLY_STATUS_DISCHARGING;
+>> >> +		return 0;
+>> >> +	}
+>> >> +
+>> >> +	ret =3D s2mu005_fg_get_capacity(priv, &capacity);
+>> >> +	if (ret)
+>> >> +		return ret;
+>> >> +
+>> >> +	if (capacity < 90)
+>> >> +		*value =3D POWER_SUPPLY_STATUS_CHARGING;
+>> >> +	else
+>> >> +		*value =3D POWER_SUPPLY_STATUS_FULL;
 
-Here's a pull-request with a couple of pmdomain fixes intended for v6.19-rc9.
-Details about the highlights are as usual found in the signed tag.
+[...]
 
-Please pull this in!
+>> An older revision of this driver (I don't have it anymore) used to add
+>> up the consecutive values of current in order to reduce the effect of
+>> this inconsistency, but it was still unreliable.
+>>=20
+>> Moreover, I do not possess any documentation for this device, so it's
+>> not possible for me to know what or how.
+>
+> For the setup I described above, you consider everything above the
+> treshold as POWER_SUPPLY_STATUS_FULL independent of the current
+> direction. So you need to reorder:
+>
+> if (capacity >=3D 90)
+>     return POWER_SUPPLY_STATUS_FULL;
 
-Kind regards
-Ulf Hansson
+So I have tested this. Should it not be discharging when power is not
+connected (current_now > 0). Doing this shows 'fully-charged' in upower,
+with the charging symbol in GNOME even if the charger is not connected.
 
+In such case, the logic in the current revision of the driver is
+correct, where it assumes the battery to be full ONLY if it is charging.
 
-The following changes since commit 861d21c43c98478eef70e68e31d4ff86400c6ef7:
+>
+> if (current_now < 0)
+>     return POWER_SUPPLY_STATUS_DISCHARGING;
+> else if (current_now =3D=3D 0)
+>     return POWER_SUPPLY_STATUS_NOT_CHARGING;
+> else
+>     return POWER_SUPPLY_STATUS_CHARGING;
+>
+> Greetings,
+>
+> -- Sebastian
 
-  pmdomain:rockchip: Fix init genpd as GENPD_STATE_ON before regulator ready (2026-01-15 13:39:16 +0100)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v6.19-rc3-3
-
-for you to fetch changes up to e2c4c5b2bbd4f688a0f9f6da26cdf6d723c53478:
-
-  pmdomain: imx8mp-blk-ctrl: Keep usb phy power domain on for system wakeup (2026-02-05 11:33:30 +0100)
-
-----------------------------------------------------------------
-pmdomain providers:
- - imx: Fix system wakeup support for imx8mp power domains
- - imx: Fix potential out-of-range access for imx8m power domains
- - imx: Fix the imx8mm gpu hang
- - qcom: Fix off-by-one error for highest state in rpmpd
-
-----------------------------------------------------------------
-Gabor Juhos (1):
-      pmdomain: qcom: rpmpd: fix off-by-one error in clamping to the highest state
-
-Jacky Bai (1):
-      pmdomain: imx: gpcv2: Fix the imx8mm gpu hang due to wrong adb400 reset
-
-Xu Yang (3):
-      pmdomain: imx8m-blk-ctrl: fix out-of-range access of bc->domains
-      pmdomain: imx8mp-blk-ctrl: Keep gpc power domain on for system wakeup
-      pmdomain: imx8mp-blk-ctrl: Keep usb phy power domain on for system wakeup
-
- drivers/pmdomain/imx/gpcv2.c           |  8 ++------
- drivers/pmdomain/imx/imx8m-blk-ctrl.c  |  2 +-
- drivers/pmdomain/imx/imx8mp-blk-ctrl.c | 30 ++++++++++++++++++++++++++++++
- drivers/pmdomain/qcom/rpmpd.c          |  2 +-
- 4 files changed, 34 insertions(+), 8 deletions(-)
