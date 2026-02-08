@@ -1,104 +1,156 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66F34346780;
-	Sun,  8 Feb 2026 14:13:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1EDE5346E7E;
+	Sun,  8 Feb 2026 16:16:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770560010; cv=none; b=OusP84FEUusQPJ/SIj+aIxbEt4CFVRO7piwIKpBgwYHUjb86jdhF+Ze3jI4Nor7xv++Sf7HmTmUNvqpV927L2tKKtMLg+EsN1X7I/XhBdRGZNZSgn3pn/5ThkiMKVqXq2at1NDZKgItZmMTR1WJ89hRD1Fqr3a2rDC+hPlgFVio=
+	t=1770567402; cv=none; b=TVYNGpR6fcwKH4+RNca/pC+cO1ta9PdCKvrRnhDnXOeMKdx3eqSMXQg6ixPqbZf14cdGdI+ZbvbMkyvritwR195wcLssXeYeKxcU7hLrDMQfqYwYhpABoeEfflDYsJiRXOPm+WrthkQguCL/mI78A4MoLgeN7niqmaxlIcbxB+Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770560010; c=relaxed/simple;
-	bh=m2gKDCHwQTBkgBjdnY4ayviTXv5mD4SQ4ouRKoiJ6H0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=PxE6aQeatPCtfpzmoaMgJoAmhRJhBoHxft94DUWqNyxoX/aZzpv+AR+J9i7HOjOiKjPmID+vm56Cddn0/l3LtJMWAybB9SJktqsM2B+ZTTE3HpnBbY1ggpYXe13s3filbMT5qx3POfBxQSuoRpMmiX6UzHctHNUwwROjrILV+xE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B4RC9Ahp; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1770567402; c=relaxed/simple;
+	bh=1wyV+7Uu3S44OdrazAbRaKlSif4P05oTIsJAGvrLOWI=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=q4oa4v7FTxg70rhQGoflFhqGoUiXF50kRxhWpm2hnOTIsPnkjNajGCUa7xvvMcbRMwp4pXNlkRaUGIVQlk0uChXs4X3b3HPYaFqMBHaEWbAQ8SWfReH3k11/0HI2i8QBQtYFC/wTx0b3OmE3msTYKctGN1SvR8iwgrJpQfMesGE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QXAh5YmR; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B4RC9Ahp"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F6C9C19424;
-	Sun,  8 Feb 2026 14:13:29 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QXAh5YmR"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id B6CA0C4CEF7;
+	Sun,  8 Feb 2026 16:16:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770560010;
-	bh=m2gKDCHwQTBkgBjdnY4ayviTXv5mD4SQ4ouRKoiJ6H0=;
-	h=From:To:Cc:Subject:Date:From;
-	b=B4RC9AhpjT8yHanv7suHyl5nkZa8spZTjFh0wftEOAh+4zi8+KnPhuEmHEHmy+/Ky
-	 WgzShjVxYYUF6m3PKLOMUz73BubsCLpuiKfsAyF23KuW3DDkxKxfmcqJv1dMARYHEh
-	 bngUsC7BxLyPr2T1a7R/fZLAKYuAbh6A2BEf2oigXzJc2apBejQLWcXptIo0gy0oSP
-	 xaBVQxF+KiabYX3HUYSf6Yo/RystYLfRIPAw7DcaA69XtQiS1FKdQ3dsKYYq92a7Z0
-	 oPSVNQFiYsn9nOOK0ywwsmudKKIf3Fkwgj8uNfHASi6TyRk753JgtEgDJe3yyGZSMh
-	 lS7tbqMcWTRFg==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
-Subject:
- [PATCH v2] ACPI: button: Call device_init_wakeup() earlier during probe
-Date: Sun, 08 Feb 2026 15:13:26 +0100
-Message-ID: <12854922.O9o76ZdvQC@rafael.j.wysocki>
-Organization: Linux Kernel Development
+	s=k20201202; t=1770567401;
+	bh=1wyV+7Uu3S44OdrazAbRaKlSif4P05oTIsJAGvrLOWI=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=QXAh5YmRB/k4kEKCr4GAtRcEsb+TmSAVvtlij9crnSzcyu+XBLEXX/4HeKVofoTcU
+	 XBbgKH9yCxrHJ0qclRhYMThYzt4uoEEenqrnvvenqRBFBNHv5WUbwxgE0qI6bNmzDX
+	 IQPXIFQXnut6e6+dNrr/5x+JVj+e74uuu3ZfWTqTmnae3QvEVr8YNZC9TVYqlt3hjN
+	 1q3nxB9/EYtrVmwli/kX/zRkknq5Sb1wBFEK/HlY0kjoILLgsBgDvDHIBPEndvBKvW
+	 BO2rBia0XwLUwoqM9wjk4CGw5JJ8ahWBiLsD+joXasPeRHKqjhpRGhaac7TBx1R12G
+	 6D2rhU1lm9ovQ==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2BA0EF06E1;
+	Sun,  8 Feb 2026 16:16:41 +0000 (UTC)
+From: Baoyuan Geng via B4 Relay <devnull+geng.baoyuan.gmail.com@kernel.org>
+Date: Mon, 09 Feb 2026 00:16:05 +0800
+Subject: [PATCH] thermal: qcom-spmi-temp-alarm: fix out-of-bounds when
+ copying temp map
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260209-fix-qcom-spmi-temp-alarm-oob-v1-1-3f1c67090e77@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MQQqDMBBA0avIrB2YziJWryIu0nRSB4xJE5FC8
+ O6GLh98foUiWaXA1FXIcmrRuDc8+g7cavePoL6bgYkNMT3R6w+/LgYsKSgeEhLazeaAMb7QjDQ
+ Y8o4tG2iLlKX1//28XNcNKYx98W4AAAA=
+X-Change-ID: 20260208-fix-qcom-spmi-temp-alarm-oob-690760fc2a26
+To: Amit Kucheria <amitk@kernel.org>, 
+ Thara Gopinath <thara.gopinath@gmail.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, Baoyuan Geng <geng.baoyuan@gmail.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1770567397; l=3171;
+ i=geng.baoyuan@gmail.com; s=20260208; h=from:subject:message-id;
+ bh=IPx2aYZrJ7XVu7bN4arD9CKDHc8AbrpqAhkC0NxaMcs=;
+ b=GL7ylGAiRQkvObp1NvpwrrYJTbgoT0im3QK/Sp1/y4+MwOxQeMz9RRBRxXcRNZZDulWPXdY15
+ Dtk+3rCS2hyCOUAz70sEj9wfWF+B8cj6DA8mjjwyZzNA4MbSTFHPQcz
+X-Developer-Key: i=geng.baoyuan@gmail.com; a=ed25519;
+ pk=K8rZZQg2HZ88njeBrQUyqUdFffk6Lle8CFZzfh55wfU=
+X-Endpoint-Received: by B4 Relay for geng.baoyuan@gmail.com/20260208 with
+ auth_id=630
+X-Original-From: Baoyuan Geng <geng.baoyuan@gmail.com>
+Reply-To: geng.baoyuan@gmail.com
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+From: Baoyuan Geng <geng.baoyuan@gmail.com>
 
-Calling device_init_wakeup() after installing a notify handler in which
-wakeup events are signaled may cause a wakeup event to be missed if the
-device is probed right before a system suspend.
+The way to index the pointer of array missed a dereference, fix it.
 
-To avoid this, move the device_init_wakeup() call in acpi_button_probe()
-before the notify handler installation and add a corresponding cleanup
-to the error path.
+The bug is reported by KASAN[0].
 
-Also carry out wakeup cleanup for the button in acpi_button_remove()
-because after that point the notify handler will not run for it and
-wakeup events coming from it will not be signaled.
+[0]:
+==================================================================
+BUG: KASAN: global-out-of-bounds in qpnp_tm_sync_thresholds+0x11c/0x1a4 [qcom_spmi_temp_alarm]
+Read of size 24 at addr ffffbb86e7685280 by task (udev-worker)/928
 
-Fixes: 0d51157dfaac ("ACPI: button: Eliminate the driver notify callback")
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+CPU: 6 UID: 0 PID: 928 Comm: (udev-worker) \
+    Not tainted 6.19.0-rc8-00185-g2687c848e578 #4 PREEMPT
+Hardware name: Thundercomm RUBIK Pi 3 (DT)
+Call trace:
+ show_stack+0x18/0x30 (C)
+ dump_stack_lvl+0x60/0x80
+ print_report+0x18c/0x4e0
+ kasan_report+0xac/0xf0
+ kasan_check_range+0xfc/0x1ac
+ __asan_memcpy+0x3c/0xa0
+ qpnp_tm_sync_thresholds+0x11c/0x1a4 [qcom_spmi_temp_alarm]
+ qpnp_tm_probe+0x390/0xb60 [qcom_spmi_temp_alarm]
+ platform_probe+0xc0/0x1f0
+ really_probe+0x190/0x604
+ __driver_probe_device+0x160/0x2c0
+ driver_probe_device+0x5c/0x2b8
+ __driver_attach+0x134/0x534
+ bus_for_each_dev+0xf4/0x180
+ driver_attach+0x3c/0x60
+ bus_add_driver+0x1f0/0x510
+ driver_register+0x154/0x39c
+ __platform_driver_register+0x58/0x84
+ qpnp_tm_driver_init+0x2c/0x1000 [qcom_spmi_temp_alarm]
+ do_one_initcall+0xd4/0x354
+ do_init_module+0x30c/0x8bc
+ load_module+0x3de0/0x5764
+ init_module_from_file+0x144/0x254
+ __arm64_sys_finit_module+0x338/0x710
+ invoke_syscall.constprop.0+0x64/0x220
+ do_el0_svc+0x144/0x200
+ el0_svc+0x38/0xb8
+ el0t_64_sync_handler+0xa0/0xe4
+ el0t_64_sync+0x198/0x19c
+
+The buggy address belongs to the variable:
+ temp_map_gen2_v1+0x60/0xffffffffffff9de0 [qcom_spmi_temp_alarm]
+==================================================================
+
+Fixes: 703f13285a6c ("thermal/drivers/qcom-spmi-temp-alarm: Add temp alarm data struct based on HW subtype")
+Fixes: 1f835c6a4c84 ("thermal/drivers/qcom-spmi-temp-alarm: Prepare to support additional Temp Alarm subtypes")
+
+Signed-off-by: Baoyuan Geng <geng.baoyuan@gmail.com>
 ---
+ drivers/thermal/qcom/qcom-spmi-temp-alarm.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-v1 -> v2: Also clean up wakeup settings during remove.
+diff --git a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
+index f39ca0ddd17b..faaa56b399e8 100644
+--- a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
++++ b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
+@@ -345,7 +345,7 @@ static int qpnp_tm_update_critical_trip_temp(struct qpnp_tm_chip *chip,
+ 	}
+ 
+ skip:
+-	memcpy(chip->temp_thresh_map, chip->data->temp_map[threshold],
++	memcpy(chip->temp_thresh_map, (*chip->data->temp_map)[threshold],
+ 		sizeof(chip->temp_thresh_map));
+ 	reg |= threshold;
+ 	if (disable_stage2_shutdown && !chip->require_stage2_shutdown)
+@@ -535,7 +535,7 @@ static int qpnp_tm_sync_thresholds(struct qpnp_tm_chip *chip)
+ 		return ret;
+ 
+ 	threshold = reg & SHUTDOWN_CTRL1_THRESHOLD_MASK;
+-	memcpy(chip->temp_thresh_map, chip->data->temp_map[threshold],
++	memcpy(chip->temp_thresh_map, (*chip->data->temp_map)[threshold],
+ 		sizeof(chip->temp_thresh_map));
+ 
+ 	return ret;
 
 ---
- drivers/acpi/button.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+base-commit: 2687c848e57820651b9f69d30c4710f4219f7dbf
+change-id: 20260208-fix-qcom-spmi-temp-alarm-oob-690760fc2a26
 
---- a/drivers/acpi/button.c
-+++ b/drivers/acpi/button.c
-@@ -625,6 +625,8 @@ static int acpi_button_probe(struct plat
- 		goto err_remove_fs;
- 	}
- 
-+	device_init_wakeup(&pdev->dev, true);
-+
- 	switch (device->device_type) {
- 	case ACPI_BUS_TYPE_POWER_BUTTON:
- 		status = acpi_install_fixed_event_handler(ACPI_EVENT_POWER_BUTTON,
-@@ -655,11 +657,11 @@ static int acpi_button_probe(struct plat
- 		lid_device = device;
- 	}
- 
--	device_init_wakeup(&pdev->dev, true);
- 	pr_info("%s [%s]\n", name, acpi_device_bid(device));
- 	return 0;
- 
- err_input_unregister:
-+	device_init_wakeup(&pdev->dev, false);
- 	input_unregister_device(input);
- err_remove_fs:
- 	acpi_button_remove_fs(button);
-@@ -691,6 +693,8 @@ static void acpi_button_remove(struct pl
- 	}
- 	acpi_os_wait_events_complete();
- 
-+	device_init_wakeup(&pdev->dev, false);
-+
- 	acpi_button_remove_fs(button);
- 	input_unregister_device(button->input);
- 	kfree(button);
-
+Best regards,
+-- 
+Baoyuan Geng <geng.baoyuan@gmail.com>
 
 
