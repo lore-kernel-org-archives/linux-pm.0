@@ -1,530 +1,216 @@
-Received: from mail-qt1-f175.google.com (mail-qt1-f175.google.com [209.85.160.175])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 815942AF1B
-	for <linux-pm@vger.kernel.org>; Mon,  9 Feb 2026 00:32:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 922DF24BBEB
+	for <linux-pm@vger.kernel.org>; Mon,  9 Feb 2026 01:32:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770597138; cv=none; b=tlc0LzLK07dsz4vHQCu0zgKDVtLGQ6O3Q/hbZlzvRWk8ee1NPCFIP9evEPq3GDGOBPe0M7nSGCYk49YRe8RpzLYXzgrcMCGfWGyE8/oLqItTqimIjjlLy8OEBJMqrA89RcE9hzKrJ/BrzRl2FXF4yNHUMDOwOrj7vwLFgQ3DWaw=
+	t=1770600748; cv=none; b=LIcEnvriiK18IOw6PW72CHtufHhkSt1px90e0RSy7EQxhU7YmsHFAfXSJqMgxQzPGz/V7QihpRWJMMuFy1y4Iu4IvB73WRyc5ZZAmIUF2jZTua6T1hp1JjoUAy52/YntyxvSAS8KDMh94x4Ed2sfhZYxbvUjW5+lWJDZsWoDmSw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770597138; c=relaxed/simple;
-	bh=EW7CTFRz/UZM8rXqNIsdp4idWFU/5Uqeg9uBhvLfLcU=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=lJ2SBLZPPlGnReydSQVAajTXCFl6wxIP6V8St76TsHnV9Sg0NST9GiEvjy47CixPHprrDDiS/gxV3mWUHzGUuJtPAejP7cc2BgJeSUSstA7e0tGvbH1e+Ddfb2QibK4uHSClt4mKC5FMtYlwBTL+WRLzjec+UURDWWN5cbnj1yc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=C2cBanbg; arc=none smtp.client-ip=209.85.160.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1770600748; c=relaxed/simple;
+	bh=67IDexaWLg3vptMF3hQy2WAlwLpBGtXoefLsLMJT6KA=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=Bky0viFh1BtOPjOyddZ8BidATJ2CH5je93uaht413N3zCXczqUpIyiUspsTwJ5pOhZQUBH9zsu5B2z80s2/yGJ7ODHzOsYa21PKeVCoD97V/+I8aObLH+VuZQlQlGZ7003nqxHF9ZMbAIFgPrSbuIz7gYN172FkRpISF+sdZNEE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=nemKrVX5; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=XfWeNlul; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="C2cBanbg"
-Received: by mail-qt1-f175.google.com with SMTP id d75a77b69052e-5032e15525aso32145291cf.3
-        for <linux-pm@vger.kernel.org>; Sun, 08 Feb 2026 16:32:18 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="nemKrVX5";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="XfWeNlul"
+Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 618NeC3j1918109
+	for <linux-pm@vger.kernel.org>; Mon, 9 Feb 2026 01:32:27 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=roifxvws8lDY40roD45/Sk
+	OpLLr/pMVs8PIIWTGwrVg=; b=nemKrVX5idGxZwhu7nxrFpmCi4kbcKWcxxt+0d
+	yUjze8BGTDWRPW+096jbViCXAhkWwbIKv+oFG74GcpWEM4P2ciFThRKy/yR7Jzsx
+	MqILJ27qPNS0ud6AsOMPC7i5J99N8OsHiSi4fwkZgLyyab1hHRwdSqu4ZI6h1H1V
+	IxgcXGK7wXnoUo+mK6Z4pDKwS7LpRIyqLfx6JzuWQ1k9eGyQmZS91hz1HFQz5PmO
+	c5t9m0PhXoVKxEKUmIiRHi/LJZML3QlOVB54qb/rKgG6vYgSNBDE09bh9NCA/zbN
+	u2NyonUBtiqgC6QFYYqN09NZjZZR4SP9Mi43syTGbfaL63CA==
+Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4c5xj1b6v4-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 09 Feb 2026 01:32:27 +0000 (GMT)
+Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-8c70a08daf3so1036759085a.3
+        for <linux-pm@vger.kernel.org>; Sun, 08 Feb 2026 17:32:27 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1770597137; x=1771201937; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=BtTYHyEge4pUKaUw8hrDfhamg3jMtsci/lInRX1QlCc=;
-        b=C2cBanbgHbKZGs4IQ2NQhvj3oOL6tkpj8KdD4vdnCmDqMi/CEAsSml31I3QUO463EY
-         l7kdJ3t7oRGNwxausdpFbYKICY6a1Kl1YHmKuM0ynODoIRdEzcp8xBV/07L1SuYfAGXF
-         9Lep33KPaIVhEWIhwnk5ao4He1Mu4RhERJeaEm3iE1O0c78WIdhlTPOBmMWAw+pHZu8C
-         nieRTgM0UVwgB3Hmi6PS7Y8bFN4BbN0yudxUKiJEnlTuHHyVp8TimYSUmpYIKV+p8uZT
-         EahC8BB5hX1As9WjF1wxS16+/f6xDOBUr6+AHbtEatl70FMmnXu+LIvsuDeZQMl0bs4E
-         mZZA==
+        d=oss.qualcomm.com; s=google; t=1770600746; x=1771205546; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=roifxvws8lDY40roD45/SkOpLLr/pMVs8PIIWTGwrVg=;
+        b=XfWeNlulV+TFzJTcDFKgP/6Yp3VSKwMKmmaP5J4nAovz/CJYxE02s1c38W5vZCHrfx
+         RBWJrmwAevm1LC3IAO3KPeQiC30ptg1AKohbUrOp8YThUMLWj/RTljsU0Ye/7ju/KeOY
+         XxQoa7cak7gB5QPUPX18kE2hoChn61nfF7bXE4CormV5jvJzmILdJPS8vrEfDq5LGMS6
+         vMf8FeL9CIKy6/vWmSFjy95qrHyZVaBrvgPiU0wEPLdCYXZPfyUTlPr2yN88ZmgYn7xx
+         N7hyCU6RBbF5okbud3MsNZ+jVpCIPu3QMyVwnRVoWQgQkrJFFbBCpCI+UAfhAHz8qE1o
+         x1sA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770597137; x=1771201937;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:to:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=BtTYHyEge4pUKaUw8hrDfhamg3jMtsci/lInRX1QlCc=;
-        b=qMVzPH8iZkFG/hALVLKisPcv+QYFV9IG8BUGMlMlNoogN6wew2LugQu0LSCbjDZUut
-         urwkOzvCwOMGwkEY+14Vb+cGDexuomxph4cZM0dkDHFXnKESX6fcvM7bF5DI23RROJ9p
-         3OZ0rEzi/b2OyhfoaihgyY6LXsAXyM+QBWDZBNsuk9Ib3ReLtHWT1SgCa5KQguNbd5+F
-         WaJmngcHITZ65CbAE4lmgOaNgOoG1U9L3C6wTqaA+bW1zwENo0m7dTHZs0wMifVLTBlh
-         ZDATdn+Reke/koUUw1cuSDSqQSIJcmk3d8qed5jnByIDn3ycaJUILza2se70mQ9rdQsT
-         c13w==
-X-Forwarded-Encrypted: i=1; AJvYcCU0qQVYBEbXYSkl4wYETwCJcCpOyGsYPXpvsbY6o09MOW5pzlK/Jhw8Ns9RtZ7p0OSBF1u75pH3Hg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwEGLdkSXMp/PoRrwIPYl5Ve4RAWkphh3Owy+tnyWcqSVIwH45U
-	/jVbeR+opfhpwzJyqujrNSPnUnuLRoQb8yDVG5FobcEYkhwNexetRMmt
-X-Gm-Gg: AZuq6aK1bcmvp+slkYTJhs03G6BsjA9TCJhJFx3l9It7ufhjqqxFcpOQwjd45vmkAxD
-	+VcPcFABqb3LITfXf0yLZAYGmzwF0e7ugpn1Iupr7XL6/9Otv0XTySRiYBltg9PI39yQ5MgdEOu
-	FnzhTRZUnfcuKOueIh5W1tyR3a/q6H+3OWjK3WRYpNyzWePiEabhrVr/vEfGuF3POLfybM1F8Zn
-	OPTmM0IsXI4oI4FWy0t8vJc0lTQqP6ochzuoqseAfuaPB6NjcDjTBGcso8ZWE9PzzgzcbzqaDar
-	PPrV1yCrXtuMFKo2WJqHGRGqYHSpNP7HbIAUmHVkqCNdTJrG8R0fSICGkfONBJf+FLE3n/Wa91p
-	0JkMD3im0MTCb7y6RdF/dgtkPBejYtqMbUPCNEqruOWGFudx/MoemUqFwgSBu+c5L05sfqMQ7UW
-	7xth7ZY9GKec7Lp8j8lWujjcDkhTYm/9sERA==
-X-Received: by 2002:a05:6870:d6a2:b0:3ec:3dbd:d4cc with SMTP id 586e51a60fabf-40a96c59543mr4779381fac.8.1770590343161;
-        Sun, 08 Feb 2026 14:39:03 -0800 (PST)
-Received: from localhost ([2a03:2880:10ff:71::])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-40a9964b304sm6573308fac.11.2026.02.08.14.39.01
+        d=1e100.net; s=20230601; t=1770600746; x=1771205546;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=roifxvws8lDY40roD45/SkOpLLr/pMVs8PIIWTGwrVg=;
+        b=nxUbx3jhnHfsg4jIumc2+HnivqclqYSlrpF/CHa8fu4d6lqhnpFHcrmxcOtWgjKWau
+         3w1fOy5jGukwsXDO75+AW9jJcYOQCxc9uE5uwGzTTs3HxuGsw8ICrULc8WWvQrAb/hvP
+         UlP73ff/PIN6fBaFCQGBPOIvwhChigBTROjtFllLldYmfR5sfkGtI1yi89Oem0+WI/1x
+         FlbtDZKgw+GD6FgiAfqt9r0qtSZhaq3Nh4TiIk7HGZm3yrD1UjqC24/Mi5aIwXZJ6FhT
+         C1ahlvnQdMaYIzlgv8q01DMAM3otfpJcosrTYo3xQIp6LKOq6Sdxxkqli3nkyx38p+eS
+         RyoA==
+X-Forwarded-Encrypted: i=1; AJvYcCX7vU4uywltMKXYgJif6gHdE0/TDThXnk9VaNN10DHh/9ZJn0OpdqzlYqzbdwSOntGdc8JhsNxmww==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxF9/pgGRcIiAnx+JZJtBKJOs2E+jBno0WVd0ckzzxD/JoaOzgk
+	a4BL8umgVN+ypZY5N9QSgH89xxXbgguW2FTW1Q3aaHS+x3RIAFqo+7A3sWUDgyfpF+bXLvpy2GX
+	3M+pydRcSEvId05EyhaTqsbJcrIv/5Ew60VUKpdTA/xoVmiPYqOpRFRGbB2FzpQ==
+X-Gm-Gg: AZuq6aJMIEalHAm205RmgGsGtDB+Fwx+Bo3QZtfhR/74lB2efT9aFa5ntRq0LUipbVH
+	xtA3i/OEJ4sMnEQBC7kCRFM5KocBIs1W4DoLLeG82hqAHdkXHK7PoKhbWo8ODA6IF67cL2Ux0sI
+	4oiRdML1HkntTwClw9UlzpjNWZoW/GoXDBGKPI5YPlthMGxZ6iPBZ9mrWi0zQ4QF4j30up2VX/G
+	eV9Z7c1w59DZIaem16Rai5MAix7ruBeISIqrY5Lh/tIVQa6wqhDzqSj/jPpINrgumKxmp445k2J
+	UcMpkCekblHQEK1MoBuBtHn/ns6XSD+fYtRBAyrRicifvJZjW6GZpWSGkUeYRzanLtR8b7bmSfo
+	8DQSTAM1bbSINJxf2XTnmhzZrPyKMox/vQ8WTHDQvuR/d+jAcRzK+C1eYVdQcAtprX2MUmJWHwD
+	hkfjlAcNFJEWi5dhFu2JNPo68=
+X-Received: by 2002:a05:620a:46a7:b0:8c9:fb65:7f0d with SMTP id af79cd13be357-8caf058543dmr1408591785a.28.1770600746518;
+        Sun, 08 Feb 2026 17:32:26 -0800 (PST)
+X-Received: by 2002:a05:620a:46a7:b0:8c9:fb65:7f0d with SMTP id af79cd13be357-8caf058543dmr1408589285a.28.1770600746057;
+        Sun, 08 Feb 2026 17:32:26 -0800 (PST)
+Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-386b623668asm21688601fa.3.2026.02.08.17.32.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 08 Feb 2026 14:39:02 -0800 (PST)
-From: Nhat Pham <nphamcs@gmail.com>
-To: nphamcs@gmail.com,
-	akpm@linux-foundation.org,
-	hannes@cmpxchg.org,
-	hughd@google.com,
-	yosry.ahmed@linux.dev,
-	mhocko@kernel.org,
-	roman.gushchin@linux.dev,
-	shakeel.butt@linux.dev,
-	muchun.song@linux.dev,
-	len.brown@intel.com,
-	chengming.zhou@linux.dev,
-	kasong@tencent.com,
-	chrisl@kernel.org,
-	huang.ying.caritas@gmail.com,
-	ryan.roberts@arm.com,
-	shikemeng@huaweicloud.com,
-	viro@zeniv.linux.org.uk,
-	baohua@kernel.org,
-	bhe@redhat.com,
-	osalvador@suse.de,
-	christophe.leroy@csgroup.eu,
-	pavel@kernel.org,
-	linux-mm@kvack.org,
-	kernel-team@meta.com,
-	linux-kernel@vger.kernel.org,
-	cgroups@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	peterx@redhat.com,
-	riel@surriel.com,
-	joshua.hahnjy@gmail.com,
-	npache@redhat.com,
-	gourry@gourry.net,
-	axelrasmussen@google.com,
-	yuanchu@google.com,
-	weixugc@google.com,
-	rafael@kernel.org,
-	jannh@google.com,
-	pfalcato@suse.de,
-	zhengqi.arch@bytedance.com
-Subject: [PATCH v3 00/20] Virtual Swap Space
-Date: Sun,  8 Feb 2026 14:39:00 -0800
-Message-ID: <20260208223900.428408-1-nphamcs@gmail.com>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260208215839.87595-2-nphamcs@gmail.com>
-References: <20260208215839.87595-2-nphamcs@gmail.com>
+        Sun, 08 Feb 2026 17:32:24 -0800 (PST)
+From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Subject: [PATCH v5 0/5] media: qcom: iris/venus: fix power domain handling
+ on SM8250
+Date: Mon, 09 Feb 2026 03:32:15 +0200
+Message-Id: <20260209-iris-venus-fix-sm8250-v5-0-0a22365d3585@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-My sincerest apologies - it seems like the cover letter (and just the
-cover letter) fails to be sent out, for some reason. I'm trying to figure
-out what happened - it works when I send the entire patch series to
-myself...
-
-Anyway, resending this (in-reply-to patch 1 of the series):
-
-Changelog:
-* RFC v2 -> v3:
-    * Implement a cluster-based allocation algorithm for virtual swap
-      slots, inspired by Kairui Song and Chris Li's implementation, as
-      well as Johannes Weiner's suggestions. This eliminates the lock
-	  contention issues on the virtual swap layer.
-    * Re-use swap table for the reverse mapping.
-    * Remove CONFIG_VIRTUAL_SWAP.
-    * Reducing the size of the swap descriptor from 48 bytes to 24
-      bytes, i.e another 50% reduction in memory overhead from v2.
-    * Remove swap cache and zswap tree and use the swap descriptor
-      for this.
-    * Remove zeromap, and replace the swap_map bytemap with 2 bitmaps
-      (one for allocated slots, and one for bad slots).
-    * Rebase on top of 6.19 (7d0a66e4bb9081d75c82ec4957c50034cb0ea449)
-	* Update cover letter to include new benchmark results and discussion
-	  on overhead in various cases.
-* RFC v1 -> RFC v2:
-    * Use a single atomic type (swap_refs) for reference counting
-      purpose. This brings the size of the swap descriptor from 64 B
-      down to 48 B (25% reduction). Suggested by Yosry Ahmed.
-    * Zeromap bitmap is removed in the virtual swap implementation.
-      This saves one bit per phyiscal swapfile slot.
-    * Rearrange the patches and the code change to make things more
-      reviewable. Suggested by Johannes Weiner.
-    * Update the cover letter a bit.
-
-This patch series implements the virtual swap space idea, based on Yosry's
-proposals at LSFMMBPF 2023 (see [1], [2], [3]), as well as valuable
-inputs from Johannes Weiner. The same idea (with different
-implementation details) has been floated by Rik van Riel since at least
-2011 (see [8]).
-
-This patch series is based on 6.19. There are a couple more
-swap-related changes in the mm-stable branch that I would need to
-coordinate with, but I would like to send this out as an update, to show
-that the lock contention issues that plagued earlier versions have been
-resolved and performance on the kernel build benchmark is now on-par with
-baseline. Furthermore, memory overhead has been substantially reduced
-compared to the last RFC version.
-
-
-I. Motivation
-
-Currently, when an anon page is swapped out, a slot in a backing swap
-device is allocated and stored in the page table entries that refer to
-the original page. This slot is also used as the "key" to find the
-swapped out content, as well as the index to swap data structures, such
-as the swap cache, or the swap cgroup mapping. Tying a swap entry to its
-backing slot in this way is performant and efficient when swap is purely
-just disk space, and swapoff is rare.
-
-However, the advent of many swap optimizations has exposed major
-drawbacks of this design. The first problem is that we occupy a physical
-slot in the swap space, even for pages that are NEVER expected to hit
-the disk: pages compressed and stored in the zswap pool, zero-filled
-pages, or pages rejected by both of these optimizations when zswap
-writeback is disabled. This is the arguably central shortcoming of
-zswap:
-* In deployments when no disk space can be afforded for swap (such as
-  mobile and embedded devices), users cannot adopt zswap, and are forced
-  to use zram. This is confusing for users, and creates extra burdens
-  for developers, having to develop and maintain similar features for
-  two separate swap backends (writeback, cgroup charging, THP support,
-  etc.). For instance, see the discussion in [4].
-* Resource-wise, it is hugely wasteful in terms of disk usage. At Meta,
-  we have swapfile in the order of tens to hundreds of GBs, which are
-  mostly unused and only exist to enable zswap usage and zero-filled
-  pages swap optimizations.
-* Tying zswap (and more generally, other in-memory swap backends) to
-  the current physical swapfile infrastructure makes zswap implicitly
-  statically sized. This does not make sense, as unlike disk swap, in
-  which we consume a limited resource (disk space or swapfile space) to
-  save another resource (memory), zswap consume the same resource it is
-  saving (memory). The more we zswap, the more memory we have available,
-  not less. We are not rationing a limited resource when we limit
-  the size of he zswap pool, but rather we are capping the resource
-  (memory) saving potential of zswap. Under memory pressure, using
-  more zswap is almost always better than the alternative (disk IOs, or
-  even worse, OOMs), and dynamically sizing the zswap pool on demand
-  allows the system to flexibly respond to these precarious scenarios.
-* Operationally, static provisioning the swapfile for zswap pose
-  significant challenges, because the sysadmin has to prescribe how
-  much swap is needed a priori, for each combination of
-  (memory size x disk space x workload usage). It is even more
-  complicated when we take into account the variance of memory
-  compression, which changes the reclaim dynamics (and as a result,
-  swap space size requirement). The problem is further exarcebated for
-  users who rely on swap utilization (and exhaustion) as an OOM signal.
-
-  All of these factors make it very difficult to configure the swapfile
-  for zswap: too small of a swapfile and we risk preventable OOMs and
-  limit the memory saving potentials of zswap; too big of a swapfile
-  and we waste disk space and memory due to swap metadata overhead.
-  This dilemma becomes more drastic in high memory systems, which can
-  have up to TBs worth of memory.
-
-Past attempts to decouple disk and compressed swap backends, namely the
-ghost swapfile approach (see [13]), as well as the alternative
-compressed swap backend zram, have mainly focused on eliminating the
-disk space usage of compressed backends. We want a solution that not
-only tackles that same problem, but also achieve the dyamicization of
-swap space to maximize the memory saving potentials while reducing
-operational and static memory overhead.
-
-Finally, any swap redesign should support efficient backend transfer,
-i.e without having to perform the expensive page table walk to
-update all the PTEs that refer to the swap entry:
-* The main motivation for this requirement is zswap writeback. To quote
-  Johannes (from [14]): "Combining compression with disk swap is
-  extremely powerful, because it dramatically reduces the worst aspects
-  of both: it reduces the memory footprint of compression by shedding
-  the coldest data to disk; it reduces the IO latencies and flash wear
-  of disk swap through the writeback cache. In practice, this reduces
-  *average event rates of the entire reclaim/paging/IO stack*."
-* Another motivation is to simplify swapoff, which is both complicated
-  and expensive in the current design, precisely because we are storing
-  an encoding of the backend positional information in the page table,
-  and thus requires a full page table walk to remove these references.
-
-
-II. High Level Design Overview
-
-To fix the aforementioned issues, we need an abstraction that separates
-a swap entry from its physical backing storage. IOW, we need to
-“virtualize” the swap space: swap clients will work with a dynamically
-allocated virtual swap slot, storing it in page table entries, and
-using it to index into various swap-related data structures. The
-backing storage is decoupled from the virtual swap slot, and the newly
-introduced layer will “resolve” the virtual swap slot to the actual
-storage. This layer also manages other metadata of the swap entry, such
-as its lifetime information (swap count), via a dynamically allocated,
-per-swap-entry descriptor:
-
-struct swp_desc {
-        union {
-                swp_slot_t         slot;                 /*     0     8 */
-                struct zswap_entry * zswap_entry;        /*     0     8 */
-        };                                               /*     0     8 */
-        union {
-                struct folio *     swap_cache;           /*     8     8 */
-                void *             shadow;               /*     8     8 */
-        };                                               /*     8     8 */
-        unsigned int               swap_count;           /*    16     4 */
-        unsigned short             memcgid:16;           /*    20: 0  2 */
-        bool                       in_swapcache:1;       /*    22: 0  1 */
-
-        /* Bitfield combined with previous fields */
-
-        enum swap_type             type:2;               /*    20:17  4 */
-
-        /* size: 24, cachelines: 1, members: 6 */
-        /* bit_padding: 13 bits */
-        /* last cacheline: 24 bytes */
-};
-
-(output from pahole).
-
-This design allows us to:
-* Decouple zswap (and zeromapped swap entry) from backing swapfile:
-  simply associate the virtual swap slot with one of the supported
-  backends: a zswap entry, a zero-filled swap page, a slot on the
-  swapfile, or an in-memory page.
-* Simplify and optimize swapoff: we only have to fault the page in and
-  have the virtual swap slot points to the page instead of the on-disk
-  physical swap slot. No need to perform any page table walking.
-
-The size of the virtual swap descriptor is 24 bytes. Note that this is
-not all "new" overhead, as the swap descriptor will replace:
-* the swap_cgroup arrays (one per swap type) in the old design, which
-  is a massive source of static memory overhead. With the new design,
-  it is only allocated for used clusters.
-* the swap tables, which holds the swap cache and workingset shadows.
-* the zeromap bitmap, which is a bitmap of physical swap slots to
-  indicate whether the swapped out page is zero-filled or not.
-* huge chunk of the swap_map. The swap_map is now replaced by 2 bitmaps,
-  one for allocated slots, and one for bad slots, representing 3 possible
-  states of a slot on the swapfile: allocated, free, and bad.
-* the zswap tree.
-
-So, in terms of additional memory overhead:
-* For zswap entries, the added memory overhead is rather minimal. The
-  new indirection pointer neatly replaces the existing zswap tree.
-  We really only incur less than one word of overhead for swap count
-  blow up (since we no longer use swap continuation) and the swap type.
-* For physical swap entries, the new design will impose fewer than 3 words
-  memory overhead. However, as noted above this overhead is only for
-  actively used swap entries, whereas in the current design the overhead is
-  static (including the swap cgroup array for example).
-
-  The primary victim of this overhead will be zram users. However, as
-  zswap now no longer takes up disk space, zram users can consider
-  switching to zswap (which, as a bonus, has a lot of useful features
-  out of the box, such as cgroup tracking, dynamic zswap pool sizing,
-  LRU-ordering writeback, etc.).
-
-For a more concrete example, suppose we have a 32 GB swapfile (i.e.
-8,388,608 swap entries), and we use zswap.
-
-0% usage, or 0 entries: 0.00 MB
-* Old design total overhead: 25.00 MB
-* Vswap total overhead: 0.00 MB
-
-25% usage, or 2,097,152 entries:
-* Old design total overhead: 57.00 MB
-* Vswap total overhead: 48.25 MB
-
-50% usage, or 4,194,304 entries:
-* Old design total overhead: 89.00 MB
-* Vswap total overhead: 96.50 MB
-
-75% usage, or 6,291,456 entries:
-* Old design total overhead: 121.00 MB
-* Vswap total overhead: 144.75 MB
-
-100% usage, or 8,388,608 entries:
-* Old design total overhead: 153.00 MB
-* Vswap total overhead: 193.00 MB
-
-So even in the worst case scenario for virtual swap, i.e when we
-somehow have an oracle to correctly size the swapfile for zswap
-pool to 32 GB, the added overhead is only 40 MB, which is a mere
-0.12% of the total swapfile :)
-
-In practice, the overhead will be closer to the 50-75% usage case, as
-systems tend to leave swap headroom for pathological events or sudden
-spikes in memory requirements. The added overhead in these cases are
-practically neglible. And in deployments where swapfiles for zswap
-are previously sparsely used, switching over to virtual swap will
-actually reduce memory overhead.
-
-Doing the same math for the disk swap, which is the worst case for
-virtual swap in terms of swap backends:
-
-0% usage, or 0 entries: 0.00 MB
-* Old design total overhead: 25.00 MB
-* Vswap total overhead: 2.00 MB
-
-25% usage, or 2,097,152 entries:
-* Old design total overhead: 41.00 MB
-* Vswap total overhead: 66.25 MB
-
-50% usage, or 4,194,304 entries:
-* Old design total overhead: 57.00 MB
-* Vswap total overhead: 130.50 MB
-
-75% usage, or 6,291,456 entries:
-* Old design total overhead: 73.00 MB
-* Vswap total overhead: 194.75 MB
-
-100% usage, or 8,388,608 entries:
-* Old design total overhead: 89.00 MB
-* Vswap total overhead: 259.00 MB
-
-The added overhead is 170MB, which is 0.5% of the total swapfile size,
-again in the worst case when we have a sizing oracle.
-
-Please see the attached patches for more implementation details.
-
-
-III. Usage and Benchmarking
-
-This patch series introduce no new syscalls or userspace API. Existing
-userspace setups will work as-is, except we no longer have to create a
-swapfile or set memory.swap.max if we want to use zswap, as zswap is no
-longer tied to physical swap. The zswap pool will be automatically and
-dynamically sized based on memory usage and reclaim dynamics.
-
-To measure the performance of the new implementation, I have run the
-following benchmarks:
-
-1. Kernel building: 52 workers (one per processor), memory.max = 3G.
-
-Using zswap as the backend:
-
-Baseline:
-real: mean: 185.2s, stdev: 0.93s
-sys: mean: 683.7s, stdev: 33.77s
-
-Vswap:
-real: mean: 184.88s, stdev: 0.57s
-sys: mean: 675.14s, stdev: 32.8s
-
-We actually see a slight improvement in systime (by 1.5%) :) This is
-likely because we no longer have to perform swap charging for zswap
-entries, and virtual swap allocator is simpler than that of physical
-swap.
-
-Using SSD swap as the backend:
-
-Baseline:
-real: mean: 200.3s, stdev: 2.33s
-sys: mean: 489.88s, stdev: 9.62s
-
-Vswap:
-real: mean: 201.47s, stdev: 2.98s
-sys: mean: 487.36s, stdev: 5.53s
-
-The performance is neck-to-neck.
-
-
-IV. Future Use Cases
-
-While the patch series focus on two applications (decoupling swap
-backends and swapoff optimization/simplification), this new,
-future-proof design also allows us to implement new swap features more
-easily and efficiently:
-
-* Multi-tier swapping (as mentioned in [5]), with transparent
-  transferring (promotion/demotion) of pages across tiers (see [8] and
-  [9]). Similar to swapoff, with the old design we would need to
-  perform the expensive page table walk.
-* Swapfile compaction to alleviate fragmentation (as proposed by Ying
-  Huang in [6]).
-* Mixed backing THP swapin (see [7]): Once you have pinned down the
-  backing store of THPs, then you can dispatch each range of subpages
-  to appropriate backend swapin handler.
-* Swapping a folio out with discontiguous physical swap slots
-  (see [10]).
-* Zswap writeback optimization: The current architecture pre-reserves
-  physical swap space for pages when they enter the zswap pool, giving
-  the kernel no flexibility at writeback time. With the virtual swap
-  implementation, the backends are decoupled, and physical swap space
-  is allocated on-demand at writeback time, at which point we can make
-  much smarter decisions: we can batch multiple zswap writeback
-  operations into a single IO request, allocating contiguous physical
-  swap slots for that request. We can even perform compressed writeback
-  (i.e writing these pages without decompressing them) (see [12]).
-
-
-V. References
-
-[1]: https://lore.kernel.org/all/CAJD7tkbCnXJ95Qow_aOjNX6NOMU5ovMSHRC+95U4wtW6cM+puw@mail.gmail.com/
-[2]: https://lwn.net/Articles/932077/
-[3]: https://www.youtube.com/watch?v=Hwqw_TBGEhg
-[4]: https://lore.kernel.org/all/Zqe_Nab-Df1CN7iW@infradead.org/
-[5]: https://lore.kernel.org/lkml/CAF8kJuN-4UE0skVHvjUzpGefavkLULMonjgkXUZSBVJrcGFXCA@mail.gmail.com/
-[6]: https://lore.kernel.org/linux-mm/87o78mzp24.fsf@yhuang6-desk2.ccr.corp.intel.com/
-[7]: https://lore.kernel.org/all/CAGsJ_4ysCN6f7qt=6gvee1x3ttbOnifGneqcRm9Hoeun=uFQ2w@mail.gmail.com/
-[8]: https://lore.kernel.org/linux-mm/4DA25039.3020700@redhat.com/
-[9]: https://lore.kernel.org/all/CA+ZsKJ7DCE8PMOSaVmsmYZL9poxK6rn0gvVXbjpqxMwxS2C9TQ@mail.gmail.com/
-[10]: https://lore.kernel.org/all/CACePvbUkMYMencuKfpDqtG1Ej7LiUS87VRAXb8sBn1yANikEmQ@mail.gmail.com/
-[11]: https://lore.kernel.org/all/CAMgjq7BvQ0ZXvyLGp2YP96+i+6COCBBJCYmjXHGBnfisCAb8VA@mail.gmail.com/
-[12]: https://lore.kernel.org/linux-mm/ZeZSDLWwDed0CgT3@casper.infradead.org/
-[13]: https://lore.kernel.org/all/20251121-ghost-v1-1-cfc0efcf3855@kernel.org/
-[14]: https://lore.kernel.org/linux-mm/20251202170222.GD430226@cmpxchg.org/
-
-Nhat Pham (20):
-  mm/swap: decouple swap cache from physical swap infrastructure
-  swap: rearrange the swap header file
-  mm: swap: add an abstract API for locking out swapoff
-  zswap: add new helpers for zswap entry operations
-  mm/swap: add a new function to check if a swap entry is in swap
-    cached.
-  mm: swap: add a separate type for physical swap slots
-  mm: create scaffolds for the new virtual swap implementation
-  zswap: prepare zswap for swap virtualization
-  mm: swap: allocate a virtual swap slot for each swapped out page
-  swap: move swap cache to virtual swap descriptor
-  zswap: move zswap entry management to the virtual swap descriptor
-  swap: implement the swap_cgroup API using virtual swap
-  swap: manage swap entry lifecycle at the virtual swap layer
-  mm: swap: decouple virtual swap slot from backing store
-  zswap: do not start zswap shrinker if there is no physical swap slots
-  swap: do not unnecesarily pin readahead swap entries
-  swapfile: remove zeromap bitmap
-  memcg: swap: only charge physical swap slots
-  swap: simplify swapoff using virtual swap
-  swapfile: replace the swap map with bitmaps
-
- Documentation/mm/swap-table.rst |   69 --
- MAINTAINERS                     |    2 +
- include/linux/cpuhotplug.h      |    1 +
- include/linux/mm_types.h        |   16 +
- include/linux/shmem_fs.h        |    7 +-
- include/linux/swap.h            |  135 ++-
- include/linux/swap_cgroup.h     |   13 -
- include/linux/swapops.h         |   25 +
- include/linux/zswap.h           |   17 +-
- kernel/power/swap.c             |    6 +-
- mm/Makefile                     |    5 +-
- mm/huge_memory.c                |   11 +-
- mm/internal.h                   |   12 +-
- mm/memcontrol-v1.c              |    6 +
- mm/memcontrol.c                 |  142 ++-
- mm/memory.c                     |  101 +-
- mm/migrate.c                    |   13 +-
- mm/mincore.c                    |   15 +-
- mm/page_io.c                    |   83 +-
- mm/shmem.c                      |  215 +---
- mm/swap.h                       |  157 +--
- mm/swap_cgroup.c                |  172 ---
- mm/swap_state.c                 |  306 +----
- mm/swap_table.h                 |   78 +-
- mm/swapfile.c                   | 1518 ++++-------------------
- mm/userfaultfd.c                |   18 +-
- mm/vmscan.c                     |   28 +-
- mm/vswap.c                      | 2025 +++++++++++++++++++++++++++++++
- mm/zswap.c                      |  142 +--
- 29 files changed, 2853 insertions(+), 2485 deletions(-)
- delete mode 100644 Documentation/mm/swap-table.rst
- delete mode 100644 mm/swap_cgroup.c
- create mode 100644 mm/vswap.c
-
-
-base-commit: 05f7e89ab9731565d8a62e3b5d1ec206485eeb0b
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAB85iWkC/4XRS27DIBAG4KtYrEvK25BV71F1Qexxg1TbCYNRq
+ ih37zhZNIta3SD9MHwjhitDyAmQ7Zsry1ATpnmiYF8a1h3j9Ak89ZSZEsoJqSVPOSGvMC3Ih3T
+ hOHplBR+C9qACtCa0jO6eMtDp3X3/oHxMWOb8fW9T5br7n1glF/zgtAVwTnnTvc2Iu/MSv7p5H
+ He0sBWu6hdTYhNThLnBiJ7KbOfDBqafMbOFacJaMUTnwbZDcBuYecbCFmYIC/TCKEwre6/+wG6
+ PgWY4L/Q/5TFVdogIfC1KZd9McCmvY8QCmepvP94qJ+HXAQAA
+X-Change-ID: 20260131-iris-venus-fix-sm8250-f938e29e7497
+To: Bjorn Andersson <andersson@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Taniya Das <quic_tdas@quicinc.com>,
+        Jonathan Marek <jonathan@marek.ca>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Bryan O'Donoghue <bod@kernel.org>,
+        Vikash Garodia <vikash.garodia@oss.qualcomm.com>,
+        Dikshita Agarwal <dikshita.agarwal@oss.qualcomm.com>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Stanimir Varbanov <stanimir.varbanov@linaro.org>,
+        Abhinav Kumar <abhinav.kumar@linux.dev>,
+        Hans Verkuil <hverkuil@kernel.org>,
+        Stefan Schmidt <stefan.schmidt@linaro.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Bryan O'Donoghue <bryan.odonoghue@linaro.org>,
+        Dikshita Agarwal <dikshita@qti.qualcomm.com>
+Cc: linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-media@vger.kernel.org,
+        Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2425;
+ i=dmitry.baryshkov@oss.qualcomm.com; h=from:subject:message-id;
+ bh=67IDexaWLg3vptMF3hQy2WAlwLpBGtXoefLsLMJT6KA=;
+ b=owEBbQGS/pANAwAKAYs8ij4CKSjVAcsmYgBpiTklUbnaPvibNxrgi+8RGWZgRaa1HIpje/c7S
+ mOQzxfHDwCJATMEAAEKAB0WIQRMcISVXLJjVvC4lX+LPIo+Aiko1QUCaYk5JQAKCRCLPIo+Aiko
+ 1RXFB/sFWiDDzpfu8SYQBb6v+UxGfY+7B8kI8+EAFLMkmkX2CGk4h5d52FKtglS2oGrnPOWPj1J
+ Y1v4WEt5ylPYJhHFGePTJvqr0U9K9Hi+Dm/FcfyV7I3CZzfoGd53F7TyN0nv5I9JYgHeIF418+I
+ BfQewWLrAAlRH5OlL9YlbEGUpo0FhBdARjtF95UkP50NtbicxuaGRO28Lk9AxFFcDYEFnjJmpli
+ jGtDWaTYWn2fId+g1PQUTqWjMyQnxKB+DlADNZR/oB57uNxnBxGA+2UszNRiaH1MUKxMpfWOJNr
+ gLM9yDFHpJthiKFEG1pZ9gTHwZT61vg5HBZmd8/TIIBExiao
+X-Developer-Key: i=dmitry.baryshkov@oss.qualcomm.com; a=openpgp;
+ fpr=8F88381DD5C873E4AE487DA5199BF1243632046A
+X-Proofpoint-GUID: -tghen8g3WgjU8ixqZSE8haGG8lUWVtG
+X-Proofpoint-ORIG-GUID: -tghen8g3WgjU8ixqZSE8haGG8lUWVtG
+X-Authority-Analysis: v=2.4 cv=F/tat6hN c=1 sm=1 tr=0 ts=6989392b cx=c_pps
+ a=50t2pK5VMbmlHzFWWp8p/g==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=HzLeVaNsDn8A:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=Mpw57Om8IfrbqaoTuvik:22 a=GgsMoib0sEa3-_RKJdDe:22 a=VwQbUJbxAAAA:8
+ a=EUspDBNiAAAA:8 a=cvYA71F9yvrgsMZaK7wA:9 a=QEXdDO2ut3YA:10
+ a=IoWCM6iH3mJn3m4BftBB:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjA5MDAxMSBTYWx0ZWRfX0sXAGeNH13q+
+ 8HE/igbuLpGYgkltUwzB0jvEC5MwK4SP0HJ3fFhNEYjx6fmnScSX8jtNxw1F990f+i5uUShk6eo
+ lklcTXHE4i2KXcQ/2jsNNVu7JWyMvz1Vs3PDugJcIv5IUqupMfhFpeIiF1DKIz+ytWHqYMLlDE4
+ k19RkTk5u9Nnz40rhGNRNhy2oBYTKAOU51L0LBUmlCo+VmmbnpspI8LpJ3qbLtJmTSgeUV8RkVb
+ +32DZVnT2Zk58b2OqSPAE3lQH9wK0wTBsfnnG1wIQZlseaFEoROx4s1I+AMwEonrXc/79z4CKDm
+ n0QXU3hyOID5/Pp4Zisur5tMPC4E1KKcFZ3e/QySRrA1/uuP2I/WGyxMOWQhoseKsygFVwWg7QZ
+ WgP0dnNJHUm4WFeW+jBh0p1Y+1G3AwubaOkkbObbAfDdTJQYZKVo20UhW1UbTX6t2xcxT/dmWL+
+ Ay8flK4QhW8QnblLnuw==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-02-08_05,2026-02-05_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 adultscore=0 clxscore=1015 malwarescore=0 priorityscore=1501
+ suspectscore=0 spamscore=0 phishscore=0 impostorscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2602090011
+
+As pointed out by Konrad during the review of SM8350 / SC8280XP
+patchset, Iris aka Venus description has several flows. It doesn't scale
+MMCX, the frequencies in the OPP table are wrong, etc.
+
+Let's correct the Iris/Venus enablement for SM8250 (unfortunately also
+stopping it from being overclocked).
+
+The videocc patches (DT, DTS) can be applied during -rc, the rest of the
+patches should go for the next -rc1.
+
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+---
+Changes in v5:
+- Fixed maxItemx -> maxItems typo
+- Link to v4: https://lore.kernel.org/r/20260209-iris-venus-fix-sm8250-v4-0-9662a0471d82@oss.qualcomm.com
+
+Changes in v4:
+- Dropped MX voting by videocc: it's almost-always-on (Krzysztof)
+- Restored minItems for the venus device, preserving the ABI (Krzysztof)
+- Link to v3: https://lore.kernel.org/r/20260204-iris-venus-fix-sm8250-v3-0-70fa68e57f96@oss.qualcomm.com
+
+Changes in v3:
+- Dropped applied patch
+- Fixed typos in the commit messages (Dikshita, Konrad)
+- Corrected MX OPP levels (Dikshita)
+- Switched Konrad from Suggested-by to Reported-by (Konrad)
+- Link to v2: https://lore.kernel.org/r/20260201-iris-venus-fix-sm8250-v2-0-6f40d2605c89@oss.qualcomm.com
+
+Changes in v2:
+- Fixed example in the new sm8250-videocc schema
+- Link to v1: https://lore.kernel.org/r/20260131-iris-venus-fix-sm8250-v1-0-b635ee66284c@oss.qualcomm.com
+
+---
+Dmitry Baryshkov (5):
+      media: dt-bindings: qcom,sm8250-venus: sort out power domains
+      media: iris: scale MMCX power domain on SM8250
+      media: venus: scale MMCX power domain on SM8250
+      arm64: dts: qcom: sm8250: sort out Iris power domains
+      arm64: dts: qcom: sm8250: correct frequencies in the Iris OPP table
+
+ .../bindings/media/qcom,sm8250-venus.yaml          | 11 +++++--
+ arch/arm64/boot/dts/qcom/sm8250.dtsi               | 36 +++++++++++++---------
+ .../media/platform/qcom/iris/iris_platform_gen1.c  |  2 +-
+ drivers/media/platform/qcom/iris/iris_probe.c      |  7 +++++
+ drivers/media/platform/qcom/venus/core.c           |  7 ++++-
+ drivers/media/platform/qcom/venus/core.h           |  1 +
+ drivers/media/platform/qcom/venus/pm_helpers.c     |  8 ++++-
+ 7 files changed, 52 insertions(+), 20 deletions(-)
+---
+base-commit: 9845cf73f7db6094c0d8419d6adb848028f4a921
+change-id: 20260131-iris-venus-fix-sm8250-f938e29e7497
+
+Best regards,
 -- 
-2.47.3
+With best wishes
+Dmitry
+
