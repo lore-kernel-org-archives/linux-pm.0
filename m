@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D1D4340A62;
-	Tue, 10 Feb 2026 09:28:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A25B818C03E;
+	Tue, 10 Feb 2026 09:31:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770715740; cv=none; b=pDGEEYwfwo3a/VgEDFtX+qjsIfWT9rb8BNDPFe2eei8R2BVtgLILW5QPss9kT5qaX1C6Q3lzDumJy1OkeEErracgTnMEXVDnLEG9dcwBs2wcBJfh+pCdkv/2n5lONcwBI6PYMvaIreyng6f3ZF4zog+mZo2igdl2/eqH4t1MdJM=
+	t=1770715860; cv=none; b=oCE6cX6CMqCaA9H2PFR99rGGD0W0l7kjsdkfqgydcPuNO6zmqIhAvM8/QSlTf8XmIvcZxY/6q3DBCYi52A4Msv0aqelTeU4Jz42z968Hz65We/kHNgiEnhLZrJaODXJ2pmEpu4Rya59aJVsOGsb4JdKtAXqlAJ43tj3k6UT9Gx0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770715740; c=relaxed/simple;
+	s=arc-20240116; t=1770715860; c=relaxed/simple;
 	bh=8hC2JU7EQQsw93ovqufBkmsny73TdehiI+uHk7YImNs=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=OrlX/FZFMnSV/yJNZHP1CIRvCb1oxhelzcW0nKGgTyM0OP1TOoNwJupuKF/XX3TzByHKDqDcArr/gJYiOCY/y09fsAeKLp4r0ZQYXFcaV0y6IWA5bU8iiRwkw36k/OzNn8e6oTw2REIWAPBo1nNsXY8oal3mpTF+Qm/Mx5xqxVg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YGBJT/Pa; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=GJrEhaUbl1JSgC704rKcF4JZIhaIjYo1kkseQcG7BYPK0Sqd4bslT+zKvb5xOKRytKQZqFkP8RuAi0EbMYX1fYzPdUDr4SabLyE6exbzis5AWMpRxGSdl6w6mD3snt44oj308obME0QOZAM2O4/ahMIZmTew930JG3vut7UJ//M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JsnTMNrh; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YGBJT/Pa"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0800DC116C6;
-	Tue, 10 Feb 2026 09:28:58 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JsnTMNrh"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9AFFFC116C6;
+	Tue, 10 Feb 2026 09:30:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770715739;
+	s=k20201202; t=1770715860;
 	bh=8hC2JU7EQQsw93ovqufBkmsny73TdehiI+uHk7YImNs=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=YGBJT/PagjwqHkEI9PV/azeXxoXIEs/h6U5UFgCK6sSSOYTC3+tfqeZtXTpX4k6bu
-	 2ky9HhJCRY5pfVRydV7ImVcPZwbAt6LMP9SCSdN9Hwevn3/ihWJqf0I2bjgIpzNpCe
-	 fK+gmCxCCjFZ/9ZY9pj702kmzbJJb93agef564stCW8xlMwfJ8RGZPTJ36vv4F7Pxr
-	 kOsTbiJJGh4LAH1yP6tCCz2L2k0/vXExR3gSNoBtbkb8Zicg22oy83RKG8hTS1zcVK
-	 J5qIMEpP62yk0/Kd6V9fpCGnfcHz6JZIST/YEEGjZCO9qY+666QS2Q6sLy88b4qvuN
-	 5NHNYPC2n0PVg==
-Date: Tue, 10 Feb 2026 10:28:57 +0100
+	b=JsnTMNrhOF1+TnovdDBGKw6c7ERwKvwCKjh17WPPxh+DST3heSLBcqKLfJ8DT5rq6
+	 19M0kh6SCZKjodUbiXfIy+waT/UkwKiY7AYZ7rytnOkayHudCV4sISorv7uO8qfxws
+	 zlhpzMMOiQurytn+fD6xjRJkW+pKVjFGEsePKtMqfCilqlm54R/mYE+IuXTxlBotZZ
+	 mZTfFHyGh/34dP1CaxX0ms8F0XzKBEFM1d5McpC0vLyCJLDLVr1g6mJjFtmqyJ8oZi
+	 NxPF6C45ygXf709oyLU8jgjZP+YGuao4HZ1v6OFl+lz5Zz7WHAvdq/NIu2SlVAh9qC
+	 PH90m7j49KjXw==
+Date: Tue, 10 Feb 2026 10:30:57 +0100
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Richard Acayan <mailingradian@gmail.com>
 Cc: Amit Kucheria <amitk@kernel.org>, 
@@ -37,7 +37,7 @@ Cc: Amit Kucheria <amitk@kernel.org>,
 	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
 	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 Subject: Re: [PATCH 1/2] dt-bindings: thermal: tsens: add SDM670 compatible
-Message-ID: <20260210-outgoing-bald-bullmastiff-a81dfb@quoll>
+Message-ID: <20260210-stylish-burgundy-malkoha-b6f8b5@quoll>
 References: <20260210021607.12576-1-mailingradian@gmail.com>
  <20260210021607.12576-2-mailingradian@gmail.com>
 Precedence: bulk
