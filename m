@@ -1,227 +1,179 @@
-Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010035.outbound.protection.outlook.com [40.93.198.35])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CECE32D0EA
-	for <linux-pm@vger.kernel.org>; Tue, 10 Feb 2026 06:38:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770705530; cv=none; b=uBpQR9XhzTikzLBbhJAM5k38w5s2zIha6lorm32EEqyUegOmohgTVPTB2BMWHWjY4LM3c1+LW512kGlyicHn9wc0Ex//AvVpYW+b+D0ClNGO77r+6J3K3kq/YFukA3SFOFd+5hXcTDtJxVyYUeFCqneK403h/rNun7fB2jbWkvA=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770705530; c=relaxed/simple;
-	bh=Tzvqbf/lzUX+Xryn3wOPmUQNw3pnqvGuG9huSDJZPn4=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=b6ZyuIdcVymsBxjnEqkIEfO5IxpIR0PsWyCwi1ZTIvYGM6M3CJ0+8jJdoD0RiKFutsr3SfUI/Ql7bSMnFf1KbYww6kAYaeRBHSNPRTw4PHj825j+E/pSNG4oPzhg0AhW6pdA4geZar2YqeJrM1mvzkjRnn7Lap6JiSX7iqWU6Qs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=aPaMhkZc; arc=none smtp.client-ip=209.85.128.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6074B3A1DB;
+	Tue, 10 Feb 2026 06:45:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.35
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1770705923; cv=fail; b=uD3lpSxfHnsyFDOAZbiLDapUY3tY3tXV7FfoZGQpKkaS4LXdsYHhaByEEUKjPDxOOznHuF7q+JpFWQKv8aQ4P+gewp76+yFjRK4QfSRxOxLh8wNG2W6suh/Cq8cONGQ+iaECHBfp4Jisp495FiPqUc5I6Q/usYyv6YS0G7V469E=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1770705923; c=relaxed/simple;
+	bh=zGczhesOvr1/AIzez2p1VtnQ6LI3XxAemAUp1T2J+4M=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Ygh1iOjT1dYbTMAVaG917WK2ycDHW/vOB7/N36cGhW8qwxuDOKjJuNAX9N/7NF86QeYq6AfAUm+8URxPOYifj75mCYddN7kT++ULtywfbtEDZfAbSH0X8Z3pydQzLVH+ordLVZ7dIzyFWfZCo333Vls/4wW5HT7OVuX8BMzLUFY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=iaXTZ0/U; arc=fail smtp.client-ip=40.93.198.35
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="aPaMhkZc"
-Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-47ee937ecf2so49449085e9.0
-        for <linux-pm@vger.kernel.org>; Mon, 09 Feb 2026 22:38:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1770705528; x=1771310328; darn=vger.kernel.org;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=lLdYDGt/+DrOZdYJB2wqY0IBiaBFC8iK50DATmXPJZs=;
-        b=aPaMhkZcfXpmP2tm/iJaq/CWcrBT5oUwIPYKVQunfq07wAHYn5QH79di58LjJZCCKZ
-         ElWls/ygW5HHWkNDwOfos/MTuCMj6r8QfeKoK5qeFFRXQZE0Jzb5MgWfuIQtwbB7SgTI
-         t0w/NgrN4Qvdqu4Ro03urdFF/zw5By8GRlEd50bbXeMHCJ6oVqTrqwaUwvztZSeCzJcn
-         3+NfnuTuWPqRVUpRVvW5khABjNpmtMnLrM/nhazeMNrk05OgjuO1/R8+Jr+2tBrXsHtU
-         wndcURxtIj4wsyMcBnt+G1R2Pj/3iRi9vELwS8GP9yQLL/vDhAW/ntof0pq3Aw01JPGf
-         JTnQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770705528; x=1771310328;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=lLdYDGt/+DrOZdYJB2wqY0IBiaBFC8iK50DATmXPJZs=;
-        b=qnqxuljhj/Xlih3QSnMWj/jWSZfKZIgfzAEwj3ET1mxTRFWdm1e8d9+hS6tYb4v8ti
-         LHGckSi4x7WpHS3YUR8iBSq4TG85q2vpgJhjnMEucFgHs9Yl+M59iUPK3HaeacaUcdNd
-         YiDdXWAFGSZQvFJSK9YgXWD7jAMBCgBrBtJ6Njwc8WAYvXnrga2xbjZh8osrc2PXZKsR
-         Pnym8qBhY4l7EAPn2SNvNf5hmMN+q2ypPu/1E/bPgOqnRvIrSP1blx+PNXvAEv/++fn8
-         TuBT9xr2M+p4aa08KbF43xffSFhs+1k64jORzwZm8EdnoKRXZNhhOy0FP22GDSp+m3Uh
-         BAXw==
-X-Forwarded-Encrypted: i=1; AJvYcCXHp+yrirh3MaT9IS8PAptbqp7oIZtrNRES36LOlpmf1XL8kL568K3i2hM7aZ5zJuy+ucYSmGmb2A==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyij8D3Q6OyBlm0B4UxgPt27yq1ChPbKxcAIV1JCN4bsoJ/XWU/
-	vC2ff26mM892e0Nhm7kc/cyDvPxnKwrIYooOwwXEw//p4oHxoxF3TzIaoUsvYusvCfg=
-X-Gm-Gg: AZuq6aIHnlc70jy52t0mZn3EBMkeunQ0eytBYpDJc+FKeJWL/ur76cD2S1U8u0PT3vd
-	XjF9hpy046V/IbwhB1ogZe+lS95asfTPFKMKF4YjkKlmPxATMQT4kYJw+0VJ2gM9YUQTbBlUS+l
-	HaO6XaU7V47kzhT5dktF/yu/UodR8PWc/HPV6REwe8viy6bSlEunRc6umjmug/PB6klu4Lz07r5
-	IN1WxITkuFT7fmCRBDct1khjfBZYq2XsE2psYMs6WkChiNXRFsyBCCI8cT/FXu6ooOeSA4Mkvtk
-	fBo/Kn992/iKA79e9U098P5CucC7v3QBEfMx29nCbtiQGi3gLWvRSQ6BcD1azLjZV9mR+gzWoFL
-	24qUQrUWZAWmtruZJeMoVxtZYSVu+0NfbAjjXsTc9WtUhgdVZWtXdA+A8N0VqtyX7b6y8TUfsrL
-	OW9yXeLt4+MIMQ1KNIy35m2A9gdSB8aA==
-X-Received: by 2002:a05:600c:c086:b0:47e:e7de:7c41 with SMTP id 5b1f17b1804b1-4834ffb08f0mr12556465e9.16.1770705527668;
-        Mon, 09 Feb 2026 22:38:47 -0800 (PST)
-Received: from draszik.lan ([212.129.79.225])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4834d8334a8sm37397915e9.12.2026.02.09.22.38.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Feb 2026 22:38:47 -0800 (PST)
-Message-ID: <9fce298c842533bc6ede7f1a97040337236351d8.camel@linaro.org>
-Subject: Re: [PATCH v5 4/5] power: supply: max77759: add charger driver
-From: =?ISO-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>
-To: Amit Sunil Dhamne <amitsd@google.com>, Sebastian Reichel
- <sre@kernel.org>,  Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
- <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,  Lee Jones
- <lee@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Badhri
- Jagan Sridharan	 <badhri@google.com>, Heikki Krogerus
- <heikki.krogerus@linux.intel.com>,  Peter Griffin
- <peter.griffin@linaro.org>, Tudor Ambarus <tudor.ambarus@linaro.org>, Alim
- Akhtar	 <alim.akhtar@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-usb@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, RD
- Babiera <rdbabiera@google.com>, Kyle Tso <kyletso@google.com>
-Date: Tue, 10 Feb 2026 06:39:14 +0000
-In-Reply-To: <277e1c95-e221-4c07-a00e-d0f0a1a7553f@google.com>
-References: <20260203-max77759-charger-v5-0-b50395376a5f@google.com>
-	 <20260203-max77759-charger-v5-4-b50395376a5f@google.com>
-	 <3ab2d8cd112441dc1d7ab5097f5b1b64c7e415ab.camel@linaro.org>
-	 <277e1c95-e221-4c07-a00e-d0f0a1a7553f@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2-2+build4 
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="iaXTZ0/U"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=ftJK1pYKWZe8ns/uFHkJ2D8YvF7s5uullB2fGU/gnxzaWQ8d1Ij2fK7zzoW6tIzoUudOsObUVvLH9z4fXVxicGQOMulwzqDRSSlGRifN0+Mu1Cg1DpaP7pZEbuvip0AGNhdJ54W2IQ/Tl/mjOQC/gz7ssk37S/rrEU/TUMpMd1wegt7plXvwgoIiwcUUoHNHMzFMUR0CkKg9BFO42NXf9VSp6TZq9yYKMhsw3xYsHtjWqEj62bjd6JJgoUQ5Phtq5YnhWOFebt3uwfPYBpjh6jcGeRZY+YrTgfLrYquZW+yFIAXU0WUlFFsCYBkeW8j1dZA4ui+suC1Lih4rX3NxMQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=9TKyXume6br4WMD2WLcu5o3+ZC/akJoHgsg+ksExBco=;
+ b=tihJpvss4JZbLBB4UAFhmJVoqBUxVGKuR/rLc6TkC2upx+CSdvTGpdLEnpkPMbF2WxqGPHyEWjSRBqu5W4Eqz2V0EHEBbywZ5C17pcAy4V0pse5Wjz+MvdSYvg6bKj4OTV69yNdiBMJtl0fA1OrnWupgdnduWoUmku6XcI5VPZ2Li0cWqguvOsU2fUEREmGXZzr3KXPUbwssuCosoqVoSrW4XcMVbTDKZllP1mKNd9+/WqJCnAzkCv8LGoh5W+J1yPurTkyRj41R4ZDKJRF7wkFVCudWk7ksXywMl+tX6rn3a/UxnD86Sj+VTSNaAKVk1ONwHrKc27TsF2mGACSJVw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=9TKyXume6br4WMD2WLcu5o3+ZC/akJoHgsg+ksExBco=;
+ b=iaXTZ0/UBT239cwENamwf87yTTk41AFVFYSmkpi/W+kc4VIZ3qVE5/CJ+PAFceJicklVIBmVQWDqbA/XBJP89iIHk7J4lDRHKxvodCzXtd+WM8FMAWtrogyVE8YBozIFaOoFsgPuEImnlZpgaVE20/ZcpmFtp/atUyN4fdOWxc0=
+Received: from SJ0PR03CA0007.namprd03.prod.outlook.com (2603:10b6:a03:33a::12)
+ by LV8PR12MB9418.namprd12.prod.outlook.com (2603:10b6:408:202::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9587.19; Tue, 10 Feb
+ 2026 06:45:17 +0000
+Received: from SJ1PEPF000026C5.namprd04.prod.outlook.com
+ (2603:10b6:a03:33a:cafe::e3) by SJ0PR03CA0007.outlook.office365.com
+ (2603:10b6:a03:33a::12) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9587.19 via Frontend Transport; Tue,
+ 10 Feb 2026 06:45:13 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ SJ1PEPF000026C5.mail.protection.outlook.com (10.167.244.102) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9611.8 via Frontend Transport; Tue, 10 Feb 2026 06:45:17 +0000
+Received: from ethanolx50f7host.amd.com (10.180.168.240) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.17; Tue, 10 Feb
+ 2026 00:45:16 -0600
+From: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
+To: <linux-cxl@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<nvdimm@lists.linux.dev>, <linux-fsdevel@vger.kernel.org>,
+	<linux-pm@vger.kernel.org>
+CC: Ard Biesheuvel <ardb@kernel.org>, Alison Schofield
+	<alison.schofield@intel.com>, Vishal Verma <vishal.l.verma@intel.com>, "Ira
+ Weiny" <ira.weiny@intel.com>, Dan Williams <dan.j.williams@intel.com>,
+	Jonathan Cameron <jonathan.cameron@huawei.com>, Yazen Ghannam
+	<yazen.ghannam@amd.com>, Dave Jiang <dave.jiang@intel.com>, Davidlohr Bueso
+	<dave@stgolabs.net>, Matthew Wilcox <willy@infradead.org>, Jan Kara
+	<jack@suse.cz>, "Rafael J . Wysocki" <rafael@kernel.org>, Len Brown
+	<len.brown@intel.com>, Pavel Machek <pavel@kernel.org>, Li Ming
+	<ming.li@zohomail.com>, Jeff Johnson <jeff.johnson@oss.qualcomm.com>, "Ying
+ Huang" <huang.ying.caritas@gmail.com>, Yao Xingtao <yaoxt.fnst@fujitsu.com>,
+	Peter Zijlstra <peterz@infradead.org>, Greg Kroah-Hartman
+	<gregkh@linuxfoundation.org>, Nathan Fontenot <nathan.fontenot@amd.com>,
+	Terry Bowman <terry.bowman@amd.com>, Robert Richter <rrichter@amd.com>,
+	Benjamin Cheatham <benjamin.cheatham@amd.com>, Zhijian Li
+	<lizhijian@fujitsu.com>, Borislav Petkov <bp@alien8.de>, Smita Koralahalli
+	<Smita.KoralahalliChannabasappa@amd.com>, Tomasz Wolski
+	<tomasz.wolski@fujitsu.com>
+Subject: [PATCH v6 2/9] dax/hmem: Gate Soft Reserved deferral on DEV_DAX_CXL
+Date: Tue, 10 Feb 2026 06:44:54 +0000
+Message-ID: <20260210064501.157591-3-Smita.KoralahalliChannabasappa@amd.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20260210064501.157591-1-Smita.KoralahalliChannabasappa@amd.com>
+References: <20260210064501.157591-1-Smita.KoralahalliChannabasappa@amd.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain
+X-ClientProxiedBy: satlexmb07.amd.com (10.181.42.216) To satlexmb07.amd.com
+ (10.181.42.216)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SJ1PEPF000026C5:EE_|LV8PR12MB9418:EE_
+X-MS-Office365-Filtering-Correlation-Id: 3f56c7f3-7275-4467-637a-08de686ff3c3
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|82310400026|1800799024|376014|7416014|36860700013;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?dXHBC84TI4wFL9A4ka8RBKPYcmdWRlCncI+vljAJO1ZMC3hqthFCiY5KPKDl?=
+ =?us-ascii?Q?tdzrdetPPobXlhXq9el2HFSSb7BHICwGV7xOXmyvsg/oJeyGWZ7vVFIGr8j4?=
+ =?us-ascii?Q?FW4w65pk0kFQcYSBn1EppFzdhQppZr2PSRQ3F3YiWBSLkqJQtIKgqDFInwm4?=
+ =?us-ascii?Q?GNCZzukHu+mv4Ng+hQoaqSU2HBSXJoyY5yaOTmgf3GqDaJJgBLVpczkZbp+t?=
+ =?us-ascii?Q?Oj8dNCx9oFsF9jOMowV9CRZ/xb8BOnUsULoU70vWr9YXeXDKWrWbdZWzWcXt?=
+ =?us-ascii?Q?DjMxWrXdk84LJoXd1laGXsS/EEwC8jPHgmMieg4/9IWzVrGER0VBR3H3+2U2?=
+ =?us-ascii?Q?69fjSWTyYxuBmmv4IAJU5LAO9ao9h2jxi4L9sykE+CqakId1kpBW9qEHKz6E?=
+ =?us-ascii?Q?uMgsqRU9JTou9Pmys77KMMB24kMY2fNI4oqLj8yuzQXvdiTmFHQyHvpK7Zfx?=
+ =?us-ascii?Q?1M7C7dqtzRy9e71JqTAeDiuEhIsDp9GKpr4ErfxHe4WHwG+0EUGtkknIEvS+?=
+ =?us-ascii?Q?6nYZ9t6JDD/ijNhZwGkRrfKO1XV0DKi6fVyrypIQUlKhtnJGEkXWf4wDXP0m?=
+ =?us-ascii?Q?hoUiwA9GbFuj1pLVn3ou1KdOFDn2jZg/9HpK2wFgtvDpH1DR+dz15LuUlHSd?=
+ =?us-ascii?Q?p/xixB14wYALAuiacmK1+gmfQuq6NuOoK4io0qZFsd+BUc6bRPxuZOAv8oJl?=
+ =?us-ascii?Q?udXgVtqDOOD9dioEKmfEJwyJFMgaH679F2IkQS7YqssdP8mNF2Ovv7pE/Rch?=
+ =?us-ascii?Q?8VXQWOvpe4sqPUrbEJgiXszyyz+Yz1D2w9YO2Swq2XHGfjacm9U/yvBgw6Al?=
+ =?us-ascii?Q?dY2v8lsfk57xyCma921/4NZpTrXm9rqIbtrMCD7CDG1aLPYbLIbn0wKe08Sk?=
+ =?us-ascii?Q?zPfPd7FFgEjtKpQkiM/wq/IXUINdJr3USJeoKBgXndZqhRb4AS02k7Gwml30?=
+ =?us-ascii?Q?WcaKHTnVUTanyZHvcrzkdVK2nw5IdzkCM9b63AKiE31If0QtkoItOhPN5xz3?=
+ =?us-ascii?Q?6BjxOED+nVAlQjCbd/EwiKkEF1o41tkIo3o9iFBdKh3hg7pC5FqeJ0zlRJoE?=
+ =?us-ascii?Q?qNcXw0nuG4DTvHMmNxVYKb8E8DkJTww2udVi0vQSpgjciRZAdo3BJVfvQgmZ?=
+ =?us-ascii?Q?3pxslHyOhhAARedr0EdO78o8VHtEDTAh37NvAuOHTlbGbINgiPr7KsgTZmab?=
+ =?us-ascii?Q?c5i42JQ7czA0HxWdRS4kdqxFfS2Dqs+5DiOW58FCh8kwwdbXufeeHgUHw5/5?=
+ =?us-ascii?Q?tP0ZGIhwjG6+PDikVp5EHUZib4eujA7EFSrI+wOMZp9XpcK2Erl6w83y5gvn?=
+ =?us-ascii?Q?W5lOMBUURc1t3rBWeShGONukGBNEKAvhmSx/e/2F9jY48QAbOjabe2FBojxZ?=
+ =?us-ascii?Q?8MlCbK93RoGXOSJ0GCYS2x8LgKkrb2JxolnA7BELjFEJSbnT+wwa9wewo1wl?=
+ =?us-ascii?Q?6pWLL9lwu0NyLb/hB8GoWpYf45MrNwvf2cfGRTFNR6Y9J10siCj+Hr/2AO12?=
+ =?us-ascii?Q?sb7H3OReUf7YmpsqqqyHYV4xmFFMg+6WBwHvQfjeB2jh9fVXoFpXo+g2KE/A?=
+ =?us-ascii?Q?X3ab7ebsTxYTYQOxQuRl4V8BEwvmUz9Aw4lecsShpb7NTYnYBZp9zq1YGtdG?=
+ =?us-ascii?Q?4zxcVfOms/oTk3MuZkSBAhVNfQZkGEJ6bRY0e9WiMxQ7/9cSwgiwF0deL06Y?=
+ =?us-ascii?Q?WjORRA=3D=3D?=
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(1800799024)(376014)(7416014)(36860700013);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	UVAxr9NWnhN991R6z6Fn8Rxs7ncAdctltVrmQ1+UIyYnb/ladc20DQNOG6VffKjB91XD7wPm4RAkYkw0D2+O5UBk/mkodDri943VAM4yjriyoHUip7qzWemMR2Dv4bhI7zB/fKCidFvV+s9LcHxNLsZgc5r1AzHPlA41p48caCcAm9IpGRT2dqsQ5pQEwieqfp+WS32UlmTzl97bP1HySA0TD+EF/3qZeKuS+CWbaVl6CEDWpM2VV6B9nqSIqQWtd/cWRo/7GMtgISwQlzwN4CJVtPPGlHPG4A48kUQbe+7sZ0Tl+do/E8F6cS68GIPHppJrQHCXAuUp8iojMxjCvMxK0kfguYc7ASHsFJQ+MP0Gryp4zJDTtc/J4Rr32NTg/cJAiG+9ruDTzfPel6DnCN7sPxpEP2JhRwMTwYjYOxAxiC17EvKizAkpvrYmkbS3
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Feb 2026 06:45:17.2524
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3f56c7f3-7275-4467-637a-08de686ff3c3
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	SJ1PEPF000026C5.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV8PR12MB9418
 
-Hi Amit,
+From: Dan Williams <dan.j.williams@intel.com>
 
-On Mon, 2026-02-09 at 16:42 -0800, Amit Sunil Dhamne wrote:
-> Hi Andre',
->=20
-> On 2/4/26 4:49 AM, Andr=C3=A9 Draszik wrote:
-> > On Tue, 2026-02-03 at 22:50 +0000, Amit Sunil Dhamne via B4 Relay wrote=
-:
-> >=20
-> > > +
-> > > +static void psy_work_item(struct work_struct *work)
-> > > +{
-> > > +	struct max77759_charger *chg =3D
-> > > +		container_of(work, struct max77759_charger, psy_work.work);
-> > > +	union power_supply_propval current_limit, online;
-> > > +	int ret;
-> > > +
-> > > +	ret =3D power_supply_get_property(chg->tcpm_psy,
-> > > +					POWER_SUPPLY_PROP_CURRENT_MAX,
-> > > +					&current_limit);
-> > > +	if (ret) {
-> > > +		dev_err(chg->dev,
-> > > +			"Failed to get CURRENT_MAX psy property, ret=3D%d",
-> > > +			ret);
-> > > +		goto err;
-> > > +	}
-> > > +
-> > > +	ret =3D power_supply_get_property(chg->tcpm_psy, POWER_SUPPLY_PROP_=
-ONLINE,
-> > > +					&online);
-> > > +	if (ret) {
-> > > +		dev_err(chg->dev,
-> > > +			"Failed to get ONLINE psy property, ret=3D%d",
-> > > +			ret);
-> > > +		goto err;
-> > > +	}
-> > > +
-> > > +	if (online.intval && current_limit.intval) {
-> > > +		ret =3D set_input_current_limit(chg, current_limit.intval);
-> > > +		if (ret) {
-> > > +			dev_err(chg->dev,
-> > > +				"Unable to set current limit, ret=3D%d", ret);
-> > > +			goto err;
-> > > +		}
-> > > +
-> > > +		charger_set_mode(chg, MAX77759_CHGR_MODE_CHG_BUCK_ON);
-> > > +	} else {
-> > > +		charger_set_mode(chg, MAX77759_CHGR_MODE_OFF);
-> > > +	}
-> > > +
-> > > +	chg->psy_work_retry_cnt =3D 0;
-> > > +	return;
-> > > +
-> > > +err:
-> > > +	charger_set_mode(chg, MAX77759_CHGR_MODE_OFF);
-> > > +	if (chg->psy_work_retry_cnt >=3D MAX_NUM_RETRIES)
-> > > +		return;
-> > I'd say this final giving up could benefit from a dev_err(), while ...
->=20
-> I want to clarify if you want me to add this final giving up print just=
-=20
-> once or every time I am returning early?
+Replace IS_ENABLED(CONFIG_CXL_REGION) with IS_ENABLED(CONFIG_DEV_DAX_CXL)
+so that HMEM only defers Soft Reserved ranges when CXL DAX support is
+enabled. This makes the coordination between HMEM and the CXL stack more
+precise and prevents deferral in unrelated CXL configurations.
 
-I meant something along the lines of this:
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
+Reviewed-by: Dave Jiang <dave.jiang@intel.com>
+Reviewed-by: Jonathan Cameron <jonathan.cameron@huawei.com>
+---
+ drivers/dax/hmem/hmem.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-+	if (chg->psy_work_retry_cnt)
-+		dev_dbg(chg->dev, "chg psy_work succeeded after %d\n",
-+			chg->psy_work_retry_cnt)
-+	chg->psy_work_retry_cnt =3D 0;
-+	return;
-+
-+err:
-+	charger_set_mode(chg, MAX77759_CHGR_MODE_OFF);
-+	if (chg->psy_work_retry_cnt >=3D MAX_NUM_RETRIES) {
-+		dev_warn(chg->dev, "chg psy_work failed, giving up",
-+			 chg->psy_work_retry_cnt, MAX_NUM_RETRIES);
-+		return;
-+	}
+diff --git a/drivers/dax/hmem/hmem.c b/drivers/dax/hmem/hmem.c
+index 008172fc3607..1e3424358490 100644
+--- a/drivers/dax/hmem/hmem.c
++++ b/drivers/dax/hmem/hmem.c
+@@ -66,7 +66,7 @@ static int hmem_register_device(struct device *host, int target_nid,
+ 	long id;
+ 	int rc;
+ 
+-	if (IS_ENABLED(CONFIG_CXL_REGION) &&
++	if (IS_ENABLED(CONFIG_DEV_DAX_CXL) &&
+ 	    region_intersects(res->start, resource_size(res), IORESOURCE_MEM,
+ 			      IORES_DESC_CXL) != REGION_DISJOINT) {
+ 		dev_dbg(host, "deferring range to CXL: %pr\n", res);
+-- 
+2.17.1
 
-> >=20
-> > > +
-> > > +	++chg->psy_work_retry_cnt;
-> > > +	dev_err(chg->dev, "Retrying %u/%u chg psy_work",
-> > > +		chg->psy_work_retry_cnt, MAX_NUM_RETRIES);
-> > ... this one could be demoted (but doesn't have to).
-> >=20
-> > That'd make it easier to determine if it's still in the process of
-> > trying, or if it has given up fully.
->=20
-> I was assuming the printing of "3/3" would indicate the final giving up=
-=20
-> and sufficient.
-
-
-If you see 3/3 in the log, you'll know that it has scheduled the work (for
-the last attempt), but you won't easily know if 3/3 has ran yet or if it
-has completed successfully this time or if it was still unsuccessful.
-
-> >=20
-> > > +	schedule_delayed_work(&chg->psy_work,
-> > > +			=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 msecs_to_jiffies(PSY_WORK_RETRY_DE=
-LAY_MS));
-> > > +}
-> > > +
-> > > +static int psy_changed(struct notifier_block *nb, unsigned long evt,=
- void *data)
-> > > +{
-> > > +	struct max77759_charger *chg =3D container_of(nb, struct max77759_c=
-harger,
-> > > +						=C2=A0=C2=A0=C2=A0 nb);
-> > > +	static const char *psy_name =3D "tcpm-source";
-> > > +	struct power_supply *psy =3D data;
-> > > +
-> > > +	if (!strnstr(psy->desc->name, psy_name, strlen(psy_name)) ||
-> > > +	=C2=A0=C2=A0=C2=A0 evt !=3D PSY_EVENT_PROP_CHANGED)
-> > > +		return NOTIFY_OK;
-> > > +
-> > > +	chg->tcpm_psy =3D psy;
-> > Do you need locking here? What if this is changed while a previous
-> > psy_work_item() is still executing?
->=20
-> I=C2=A0 don't think that's ever possible in this case though. The power=
-=20
-> supply that this driver registers is downstream of the tcpm's.
-
-
-A previous work could still be executing (e.g. due to retrying), no? It
-should also probably set chg->psy_work_retry_cnt =3D 0; here, to allow it
-to retry up to MAX_NUM_RETRIES when a new work is queued and a previous
-one was unsuccessful?
-
-
-
-
-Cheers,
-Andre
