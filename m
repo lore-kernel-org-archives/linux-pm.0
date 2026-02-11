@@ -1,83 +1,103 @@
-Received: from mail-qv1-f52.google.com (mail-qv1-f52.google.com [209.85.219.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 326FF2F532C
-	for <linux-pm@vger.kernel.org>; Wed, 11 Feb 2026 02:07:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59B0C2F5313
+	for <linux-pm@vger.kernel.org>; Wed, 11 Feb 2026 02:09:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770775664; cv=none; b=INxxQUT5AjNUftxnWkyJLXyO/o3bmgx1jTmrUe7vFAd0UQLq/HQ6RTZfJWTT/lQi42SGYtTZgpUNkBOfVxkRuRMc389QPFC/q4zG+JyKYeWBvaM3AT4LJFrYaMGPScVlVnL2rNL2lc0Ugb4i4hZQFoDNxarwhMTs95Ka5w4A39E=
+	t=1770775789; cv=none; b=bzZ9p3zXuuroG3GRmc3+yYKihn3joQcy7mAw70zOTLdvqESZpe4HdqLBhtTsdmYN3PatG5eO02ToDSPB/GTbmH7UZ0kpVVPJPTQ3EsmT7BR/APoFrdnX/DC0I2oOA3oo4Ze0/TER8EkEMZ8ZzGyl1NkZE1b6mTcmAuBD3Ry416k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770775664; c=relaxed/simple;
-	bh=Gc0gOaoHzXbYc7NYkFtpNl/sc2DX8b0S6Hs8q7uqAEA=;
+	s=arc-20240116; t=1770775789; c=relaxed/simple;
+	bh=CL0jSb/x5mupyFP/xbn/3QT4Whuy6K1BOiO2UvAbZbA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Y4Oi+ZDVhpc8Dw5KtIyM+ZrDVwksVEfbWDjBNIuxgA0RqqwCVzFjOYYzJPnTXqmh7XE8xNgm3fsg4kgTSra/g73DDs7NgjtsY7zoJaZE3LnPvRhihCC+CJBWyEU/fsNNT41WtbCkUZ+XkFTTqekR4eR4q6jjsALuJm9JLudrnw8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BeiSgbc/; arc=none smtp.client-ip=209.85.219.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=NlcwvCOnppvWAg8wyQHDgRD0SxVdGXoNATNgUR7asG8sl+lW7c0gQmV8yO6JoqId3GRQNylrNrAZ0D2zLeWp8Qoj64Q+ezw7MD0BGkkFXAS+EooJYRcm5M64+Cgik4o2BKm2IQzdKaYErTo964UII4o47dAYU2+Nl6RiyAcQCWQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=T/SNLN5A; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=RWVR/hb1; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BeiSgbc/"
-Received: by mail-qv1-f52.google.com with SMTP id 6a1803df08f44-896f5af3d8aso19600726d6.1
-        for <linux-pm@vger.kernel.org>; Tue, 10 Feb 2026 18:07:42 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="T/SNLN5A";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="RWVR/hb1"
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61AIoauo4013766
+	for <linux-pm@vger.kernel.org>; Wed, 11 Feb 2026 02:09:47 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=FvEi9aj8WNc4PE/SSBlGvqhE
+	isBuRuKk7oHbw7T8/2Y=; b=T/SNLN5AujDX8zuy7RoL6MDp+9dxEds6bj9zRi9S
+	BUsRpXrHNVzSqj4glbqYyM1QwZbo35MAwR35pjXVFzXp80IOvVyHDtMHQDF10+py
+	K+qqq0MnldnxrCuaJQdPNWb0xJbO0K4HFRAm/U+EpHEVQwQT/PBThZXHDPxWpig7
+	Uz6P7mBFsO4J0tlkdbwwhHobv+Bth/1anwIJ01pUl72YfIgOQeKnR9uB6+MRfF8n
+	c9O6asvSxymGtxY7GjenuFoYVdSNhD2BTQ+/Fn0kmkLwvPH9KOzU0xKuLmOqE2Ou
+	Qa4t3KIFICK7Il2jsbbPUr5RiFWYEiSWkErAX1a2D/H2eQ==
+Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4c8aad97ts-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 11 Feb 2026 02:09:47 +0000 (GMT)
+Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-8c71500f274so173613485a.1
+        for <linux-pm@vger.kernel.org>; Tue, 10 Feb 2026 18:09:47 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1770775662; x=1771380462; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1770775787; x=1771380587; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=fhFxUnx/Epygu+crt0JPvhltwHI+RIY/8wqwIdbg8HI=;
-        b=BeiSgbc/wePWY9jFk5nqvhLRAlOiA5gVg/ZfdLSAbk87H8iCjc8LzEdqqIKP+jXurD
-         TOQvs8P55H1+k8S2LKSFtGGsk8wR5ZFOsi8yu7ixHqnPf0nMyK/+gyOmLb1CPnvJ4RQ3
-         /2B+W0SOiCsrwwHLFVRhQz3XgAN3j1QOp5J1ldz02MyEAgI/6fChWpxfI8kIaPXLfE0P
-         w71xtq8oRjxC+tWm1yP8/uRzaUXcsjExWD9exPdLSigK4hVmZBJjy0jvVEnnGYJ2wAU3
-         aYKMZHi+iaVsHU8GekUwCiV2NQXXO+aeu6z8z+M5f7D3umHz7ptI5pwDTLtlXXuWH7s3
-         i5aA==
+        bh=FvEi9aj8WNc4PE/SSBlGvqhEisBuRuKk7oHbw7T8/2Y=;
+        b=RWVR/hb1QGqQvT08V5PTA+CT6Kg0n2AzKakx3JwsDWRqvtcIc/712TRDmSlJe/Umr/
+         0DvJB1yPvoxBgwiziSaDZZb/VQQs8AdctM8P7VkWqWlh5wUY3RX42UqnJtoFLa0oKUZw
+         Y7cUJfIpUk3BemMFZ6t77Xv3AhVD9aiU2R0mfxmV8gXcCKbN/eruAshlKf+oyJWaHnnD
+         x3OpkNk677A5jn4BACMWXDngrav+sHEKWe/aGBtqb4yZHjyJF32ML4+o1GcS+xrhB5IO
+         wvsNtp0XyqISydvtAfW2rUEeFcKgxkfjsEUAIjb3xXZMf10F2iYQ1J1DfRg/uEVmLczF
+         jJnw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770775662; x=1771380462;
+        d=1e100.net; s=20230601; t=1770775787; x=1771380587;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=fhFxUnx/Epygu+crt0JPvhltwHI+RIY/8wqwIdbg8HI=;
-        b=O3ETCDDrYUaKg1s5YMKQO9Hd1qmHvMwEk/4GN6lQnDX+O1o/oaBbKCW/g2HbnIeF4H
-         +MwKDo3o4H7sa2sINiicwY55lnVNSwkqzeVLcqWJ5L0uTPHpTgm/DcXGbpavWLIbrPTL
-         gplPoTQi7aczHooqdj1l45dSOVJOWo49OPAgK63m9I8LIRGDe+0qLviOJDshLMDXEEkQ
-         sdEPFhanaR7ilq5b22SvzWah9KiCT+WqvZLPzVPYBMBDMzdZX8GVHoztmTSYkewzQS8x
-         pf0T8uw6P0hBjYbsOXWYT3KLLo03/YKBteWPuh7/xZ09mmnjST8m1grEI54mA2lfafz8
-         buCA==
-X-Forwarded-Encrypted: i=1; AJvYcCUs3npOL1CUW4hB8UcsAhrZrvA7t8XH+scw9Xk6bv/HQ67J5Ywew9kFAY2pXJ4kzxkwOl2OU9VBog==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzalK0YXXT0F2TpmZlwWkrpSLQXM3Y6pkGtZJMGqljlBF3GqkaQ
-	hQV9o5wlkKSrIfiv4KtXczjKMNuI016KlyqMHAu9HenFpGQm3i+hB5qNY7fFYA==
-X-Gm-Gg: AZuq6aJTKDnmm6KvG/diU80m4OG7EuIIG3//Aihr25/medK7lDwlS81kWzUOECeDHUt
-	9eGuFhwyedvPPwmYTfHojH8+6DUSVtX68HTart8tzys3pjssyvqxmgosz1epC4nC0JYTD7zfFmd
-	+QduD3L7k4i+mPCXlpF4cjXh8iwPZuCtCfuOcJlrnjdF1ECHVLR+DrtXTXnGreDl2lw8N0Rpi7O
-	rv2wc1WbBa9vgY9npH75AEEcQy38kzq4BX7AnD9Zl3XEZeCatBflSXZJLmiTeBiMvfYTLbJuxZf
-	Q2uSD6mPJufNR4nFrv3XPIZTr8Ea0k3qDmcUegA6Q9kd3Nw7FERijY0mqGGxmKikJF/z798gvoO
-	uETIzmWGg6q7IXy/FNQjJK773ZxpclCyYdXNlARC/6awoOMl/5GuJHX/YJ2ePy36TqXqiENzbXJ
-	/zRTbgigTRInqIq7gE9W+mFMf5cA==
-X-Received: by 2002:a05:6214:d8f:b0:895:9df:cea5 with SMTP id 6a1803df08f44-8953c80675dmr256086986d6.27.1770769732356;
-        Tue, 10 Feb 2026 16:28:52 -0800 (PST)
-Received: from localhost ([184.144.58.243])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8971cc823a4sm2007496d6.8.2026.02.10.16.28.51
+        bh=FvEi9aj8WNc4PE/SSBlGvqhEisBuRuKk7oHbw7T8/2Y=;
+        b=OHZVvCCgaXWc7nOGQTnyqB8nTDre7bPeynqZ+O7Q4t7abrjOC9IJgVDvHG7xmdWYAT
+         fh09Z9niHuw85MtqEGvjUsGwleNolqd3kGpeRMLU24+EBXxNY5CINa7cihHRdpo8XleP
+         fGEd6GQrB4PjfDW4Omlb6Q9hGFjZZNpmXC77S2JlVAakCTwcCVjzALZF/bmEj5eYecZx
+         /0f1kDMgLWPiJDudlx8gitlHMJ0sWvTRv9J4YiGt+7CYawBFdxQoEz9AWYPd9ueyB17h
+         cipesGxDFw9SXZfpcuoeJfrE663dbYizxMHZu8+WxY0zZBmvhpNnsrNpLhZ8cqAxJaOY
+         R85Q==
+X-Forwarded-Encrypted: i=1; AJvYcCWCQSwDJmYpbyWtXNmDo2/JU9UnetAHLr/oTcJ1EU7q2y0MYlmwxOfmOxsMtMi8UT81cDb0Ea0n6Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwXOr4Qo6j8+Ya1Vow3i9cqV4N4wqidnCL3oVNN7ZftSvOQlaHg
+	s/2I7NjfdGcQFJj3GtcnxPYtnXhtgP93jRzBSBAYoxu4yZPfFbhZa8DnO2DoNVGmT6kMOVe/L6u
+	gpcdQigdOiI0tziVS0/owANZoMk1pKR7zLzVn1bFkI9wipj+AGKJRUlj/YZNjyQ==
+X-Gm-Gg: AZuq6aIU+4Iltdx/eqOLEteMiSWUyW6MMs8BS/KXz6+bofz7njbhmAiCMTcgMzQamVL
+	IyP2xHBuPREDmS5K7itILQ5AJKSu/CmwHKzmyrY5ZV7IYwy1Zbf5dTb2IpLW0+kvK6dXwnHFYc+
+	bgkbDhVCaK1NkmiMG32x4BRI9jRf6JojtzVxQu4OAKVPEuzKIWyoD9+tJxZN9iNTnDjrQAzsPIB
+	zlbStjtYeYYu4O14qha4gA40S612+t+tEGQHPIRtvsfY55fb0sFKmH9eCnijSJhNljnmETT0qHc
+	HGZuync2pwBKN+Y9CxBTmbteTAJDLKLPo9bgmAP2sH4SriSCN+NJknlUFghkHmjgVT65Ghn/edd
+	EW5IdgXb55PQPdhnuAYXAupaIQWlrJxyygATUkh08YcEeciv19aLI3SyRXlRAJti8iba2qHFC+E
+	KoRdJ4j1+A0s7NOgvcPiw5Ub2Mm+0yih1oWuA=
+X-Received: by 2002:a05:620a:46a7:b0:8b2:6606:edaf with SMTP id af79cd13be357-8caef5f3f53mr2380200485a.37.1770775786664;
+        Tue, 10 Feb 2026 18:09:46 -0800 (PST)
+X-Received: by 2002:a05:620a:46a7:b0:8b2:6606:edaf with SMTP id af79cd13be357-8caef5f3f53mr2380196685a.37.1770775786106;
+        Tue, 10 Feb 2026 18:09:46 -0800 (PST)
+Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-387068e5976sm619931fa.27.2026.02.10.18.09.43
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Feb 2026 16:28:51 -0800 (PST)
-Date: Tue, 10 Feb 2026 19:29:19 -0500
-From: Richard Acayan <mailingradian@gmail.com>
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+        Tue, 10 Feb 2026 18:09:45 -0800 (PST)
+Date: Wed, 11 Feb 2026 04:09:42 +0200
+From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+To: Richard Acayan <mailingradian@gmail.com>
 Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Amit Kucheria <amitk@kernel.org>,
-	Thara Gopinath <thara.gopinath@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Dmitry Baryshkov <lumag@kernel.org>, linux-arm-msm@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 3/3] arm64: dts: qcom: pm660: add thermal monitor
-Message-ID: <aYvNX718diaXDsBy@rdacayan>
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Stephen Boyd <sboyd@kernel.org>, Dmitry Baryshkov <lumag@kernel.org>,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH 2/3] thermal: qcom-spmi-adc-tm5: Correct the voltage-code
+ scaling for HC
+Message-ID: <ta5hqi4jqmxinm2ykkdsoc7poq7ko4jv3qjuhibzm3grqk5ael@uawjompenmjk>
 References: <20260210021819.12673-1-mailingradian@gmail.com>
- <20260210021819.12673-4-mailingradian@gmail.com>
- <e72ede03-94cb-45c3-95e7-63dff0ca3888@oss.qualcomm.com>
+ <20260210021819.12673-3-mailingradian@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -86,25 +106,49 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <e72ede03-94cb-45c3-95e7-63dff0ca3888@oss.qualcomm.com>
+In-Reply-To: <20260210021819.12673-3-mailingradian@gmail.com>
+X-Proofpoint-ORIG-GUID: Ol9DIXFUDlWiXoDOqZmldDVGPCKsnY6_
+X-Proofpoint-GUID: Ol9DIXFUDlWiXoDOqZmldDVGPCKsnY6_
+X-Authority-Analysis: v=2.4 cv=OoVCCi/t c=1 sm=1 tr=0 ts=698be4eb cx=c_pps
+ a=50t2pK5VMbmlHzFWWp8p/g==:117 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10
+ a=HzLeVaNsDn8A:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=Mpw57Om8IfrbqaoTuvik:22 a=GgsMoib0sEa3-_RKJdDe:22 a=pGLkceISAAAA:8
+ a=EUspDBNiAAAA:8 a=IiwsIYU8Yi2Zta6pR6oA:9 a=CjuIK1q_8ugA:10
+ a=IoWCM6iH3mJn3m4BftBB:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjExMDAxNiBTYWx0ZWRfX7jrBfL035Ay1
+ fNC2ui348vQk8RRl8H8jjzAmyHWUTfE2O7WYNeybr+KOamxDnqqEMwOSIUPNKX2ctcTIs8fcuwP
+ RLQnM8/wmH4fh4uB+Nvme+95XXT/57JwBAy0kGelGnprWWo0Gc6pmRyIW0zJuf5nUrUvqZkabd8
+ GRjlMiihIuT4Qg81nx1ExImMDj/+mrm1k2y1H3+C98kjfIndZKG/4eERzTPUvP1EyuBmSK+HjiT
+ MXLjnSXTMZ1qUZij1ZJYQn3eh7NBEZadHb8TtKknAXsYNUV9KYgK6t1SM/Hs+iXUtg3N5x67Gmx
+ RLG4fG1NwAjwtEiU3yCl2O0G+Vyu9KxIhoE8JFXNyVgYDebxJrCCeCm2jhILk7BBqsI2pM4VFSH
+ 0BIR3tD2F9nXNvnXnOGCUfTdu3/yCZaZ7+mlrJroyelun+SzC2TdM7zJSTR5og2YFDz5lDGinHQ
+ 8wO+KQIMNePS0t8zJ+Q==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-02-10_03,2026-02-10_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 adultscore=0 phishscore=0 lowpriorityscore=0
+ impostorscore=0 spamscore=0 clxscore=1015 malwarescore=0 bulkscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
+ definitions=main-2602110016
 
-On Tue, Feb 10, 2026 at 10:59:20AM +0100, Konrad Dybcio wrote:
-> On 2/10/26 3:18 AM, Richard Acayan wrote:
-(snip)
-> > +		pm660_adc_tm: adc-tm@3400 {
-> > +			compatible = "qcom,spmi-adc-tm-hc";
-> > +			reg = <0x3400>;
-> > +			interrupts = <0x0 0x34 0x0 IRQ_TYPE_EDGE_RISING>;
-> > +			#thermal-sensor-cells = <1>;
-> > +			#address-cells = <1>;
-> > +			#size-cells = <0>;
-> > +			status = "disabled";
+On Mon, Feb 09, 2026 at 09:18:18PM -0500, Richard Acayan wrote:
+> When support was added for the HC variant, the full_scale_code_volt
+> value was copied from the tm5 variant. From the downstream kernel, the
+> scaling value is 0x70e4 on PMI632 (tm5 variant), but it is 0x4000 on
+> PM660 and PM8998 (HC variant). Correct the ADC code to voltage
+> scaling factor for the HC variant.
 > 
-> Can we enable it by default?
+> Fixes: f6c83676c6097 ("thermal/drivers/qcom/spmi-adc-tm5: Add support for HC variant")
+> Signed-off-by: Richard Acayan <mailingradian@gmail.com>
+> ---
+>  drivers/thermal/qcom/qcom-spmi-adc-tm5.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-No, the thermal monitor fails to probe if it doesn't have any channels:
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 
-	[   17.728926] qcom-spmi-adc-tm5 c440000.spmi:pmic@0:adc-tm@3400: error -EINVAL: get dt data failed
-	[   17.728945] qcom-spmi-adc-tm5 c440000.spmi:pmic@0:adc-tm@3400: probe with driver qcom-spmi-adc-tm5 failed with error -22
-
-Triggered by https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tree/drivers/thermal/qcom/qcom-spmi-adc-tm5.c?h=next-20260209#n945
+> 
+-- 
+With best wishes
+Dmitry
