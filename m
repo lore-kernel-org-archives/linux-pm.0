@@ -1,38 +1,40 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C0AD35B64D;
-	Thu, 12 Feb 2026 13:26:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 129F6748F;
+	Thu, 12 Feb 2026 13:33:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770902818; cv=none; b=CCdE1iwerB4EPrcLW07uIWJTWl6mjW1bWIfKUk430nvQzBG1ixmd7UuaffikwAdLnTBVJD7QMk5vmaoAV/9nyIRv/k0F++6/r9xfPvDWuSm3tBauQyazTNdiKYZC1MI+zyjOh0GhTrTM3lKOqdAoiU6o6y3qq/PDyA/i4vspc/w=
+	t=1770903198; cv=none; b=PFh2EKYE4gEAjqjlDKtoBsxgW3RcUGUd+3EiCfBlUn77JU4d/DEMAj+RiCl59SrQkswNM9n+ZAf4B22YShlsSfjwHxjRoiZ5ElsTPyvRvWDboONHXhZ/A2DPi2onfWtlFULkdB00SW7gRPvCKl8T2rKWcZ88l14PNI/kD9P90Ho=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770902818; c=relaxed/simple;
-	bh=BVbP9tjJ1eaIzs3O82dTv5Bx+kr/3kmkpoFA1alma8c=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=nGmfEkPBfUsuZicYpJ5O4XbtwtQ+GeeHdyv6nDVODATLku18QXvOjFud62NpVbxhpodMtBkKjXZlLDjNd0IOK0oYt0NBaSmnbfYBlk0JbP/62Ub0qk+5z5wjL3avBEEuMxChcnl0ItJymHHdBD3pB36pt3HcP97poLHRH7pZxCg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GZhO8slt; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1770903198; c=relaxed/simple;
+	bh=+KpPuJAQPI6tZ+eexHuBI3ipLgn3veZf1J6uzjG5gqg=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=e9Nhv8h2fmv3qKvoDQszcWiUqaxN270s9AYesL/654HFlb2NVDsPXPg2VwcBrcwWpIRZ5poJt47N+BFZSzP1iuPaEnkXLoANe0l7hbiGPVMt/JYcZbwbMKKAQ0NkZt8vUlogi2wajgkmleO/pul3SKX1x4CL24x3EInHIicGRcw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nJl4LyWY; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GZhO8slt"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DE1DDC19422;
-	Thu, 12 Feb 2026 13:26:56 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nJl4LyWY"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE82EC4CEF7;
+	Thu, 12 Feb 2026 13:33:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770902818;
-	bh=BVbP9tjJ1eaIzs3O82dTv5Bx+kr/3kmkpoFA1alma8c=;
-	h=From:To:Cc:Subject:Date:From;
-	b=GZhO8sltiqLo/OLIFgp3M3F9gqvMtiBUH0wdrbZjEmN2BSadcKTTLptXIm8YHhU6/
-	 vA+2ElMDOTARCeyCYSzo/Flkm7gNYw/cLtoWGM53eFq534+TJJIOXQlqH/Q4PEx8QY
-	 Yp7RSTKRbg9HkVDj/jlsaIUYAVH7gb8muSR3aoKXxzUQgJWhOb8879uN9L7NqKTSsE
-	 WjTVKkjJ6GFDw1rLkFwqlwKJowoX/wFJHP2P9Msu8GuzhDe9EylWLR+XmwpxQpYsJT
-	 EHS18RsKZOOsfAZ0Qe6SbvfuAOFqXMd+YKI9KvTot5AxZW5RSSXsuj7ZOYM7nD/3//
-	 7oxuRPphbGVew==
+	s=k20201202; t=1770903197;
+	bh=+KpPuJAQPI6tZ+eexHuBI3ipLgn3veZf1J6uzjG5gqg=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=nJl4LyWYIqVPtliM4QSPNOAWfwv9D+x84iE7KRfc+wUW2hOvDFerWhBKDaLG1SCqh
+	 nNkvjGBhiS70bXIds2pZHPNcihs2ma3wJtAU9YPSTb+fsK8Xu9NgCK0K1CIDHf9cM7
+	 /YzUAvpZfsx69nSJt+1pxk3OQWxKEwbAqjYohHeNzxkoAnIzEJNILDrTYYU8D/66hd
+	 fdj4GwkfIr+uvSjWjqEwugk5d0Hs2IOf6137Hx5Zb3Tndtez8uLQKg18UBfdRnEF9b
+	 n5085QO5ttMmpEP0xLV6/6t2GAHaPn9Rp8Bk6r4RwS/meU9n0YL4wr6ZrNbjqvmLGE
+	 O/x9w3+dXOuOw==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux ACPI <linux-acpi@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
-Subject:
- [PATCH v1] ACPI: battery: Drop redundant checks from acpi_battery_remove()
-Date: Thu, 12 Feb 2026 14:26:54 +0100
-Message-ID: <12836976.O9o76ZdvQC@rafael.j.wysocki>
+Subject: [PATCH v1 2/2] ACPI: button: Tweak acpi_button_remove()
+Date: Thu, 12 Feb 2026 14:33:00 +0100
+Message-ID: <13948466.uLZWGnKmhe@rafael.j.wysocki>
 Organization: Linux Kernel Development
+In-Reply-To: <2400697.ElGaqSPkdT@rafael.j.wysocki>
+References: <2400697.ElGaqSPkdT@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -44,46 +46,44 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-In acpi_battery_remove(), "battery" cannot be NULL because it is the
-driver data of the platform device passed to that function and it has
-been set by acpi_battery_probe(), so drop the redundant check of it
-against NULL.
+Modify acpi_button_remove() to get the ACPI device object pointer
+from button->adev instead of retrieving it with the help of the
+ACPI_COMPANION() macro to reduce overhead slightly.
 
-Moreover, getting the ACPI device pointer from battery->device is
-slightly less overhead than using the ACPI_COMPANION() macro on the
-platform device to retrieve it, so do that and drop the check of that
-pointer against NULL which is also redundant.
+While at it, rename the struct acpi_device pointer variable in
+acpi_button_remove() to adev.
 
 No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
+ drivers/acpi/button.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Applies on top of
-
-https://web.git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/commit/?h=linux-next&id=abbdf22e0a8f23207cedf9065512620971794ff5
-
----
- drivers/acpi/battery.c |    6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
-
---- a/drivers/acpi/battery.c
-+++ b/drivers/acpi/battery.c
-@@ -1271,13 +1271,9 @@ fail:
+--- a/drivers/acpi/button.c
++++ b/drivers/acpi/button.c
+@@ -672,10 +672,10 @@ err_free_button:
  
- static void acpi_battery_remove(struct platform_device *pdev)
+ static void acpi_button_remove(struct platform_device *pdev)
  {
 -	struct acpi_device *device = ACPI_COMPANION(&pdev->dev);
- 	struct acpi_battery *battery = platform_get_drvdata(pdev);
+ 	struct acpi_button *button = platform_get_drvdata(pdev);
++	struct acpi_device *adev = button->adev;
  
--	if (!device || !battery)
--		return;
--
--	acpi_dev_remove_notify_handler(device, ACPI_ALL_NOTIFY,
-+	acpi_dev_remove_notify_handler(battery->device, ACPI_ALL_NOTIFY,
- 				       acpi_battery_notify);
- 
- 	device_init_wakeup(&pdev->dev, false);
+-	switch (device->device_type) {
++	switch (adev->device_type) {
+ 	case ACPI_BUS_TYPE_POWER_BUTTON:
+ 		acpi_remove_fixed_event_handler(ACPI_EVENT_POWER_BUTTON,
+ 						acpi_button_event);
+@@ -685,7 +685,7 @@ static void acpi_button_remove(struct pl
+ 						acpi_button_event);
+ 		break;
+ 	default:
+-		acpi_remove_notify_handler(device->handle, ACPI_DEVICE_NOTIFY,
++		acpi_remove_notify_handler(adev->handle, ACPI_DEVICE_NOTIFY,
+ 					   button->type == ACPI_BUTTON_TYPE_LID ?
+ 						acpi_lid_notify :
+ 						acpi_button_notify);
 
 
 
