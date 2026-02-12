@@ -1,46 +1,46 @@
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBE1A3EBF1B;
-	Thu, 12 Feb 2026 23:30:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7600E22068F;
+	Thu, 12 Feb 2026 23:30:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770939049; cv=none; b=LCv8PRijgrwRSQycXx4mtCz7DMaZ3bzMGveYGE85U2mNV+zxGH3BJXfTrBtJlGzR/oWu7xjXhEGVTBdZinbKB1QPFRetBVqOOE5S+Z0KAIa2cbieLSq0bZprS9PFax61I6ujWewqN8T2i7Frv3OGjMhQ/+BCfTpjQH8d83MP9Q4=
+	t=1770939050; cv=none; b=WmCGDDBF8pkwLVMS2XU1lT1Y1DOT9saQXOLYOxkcvHEaNi57ixBKMcCOnphrJuzk+bgXkHmNSfvT5D2amWWnriCp2CbuE/GZCGfkjXmlMyGsaLkcgjZf9LP6/6k6nhkp8GbhiMqNnPbZErRJgBzY9MIazAFawza2MBXI6Q07KxU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770939049; c=relaxed/simple;
-	bh=t4k+6a1p9sqJs3w2/EEVw2L+bVuxvHFR+HV6VbEwPWk=;
+	s=arc-20240116; t=1770939050; c=relaxed/simple;
+	bh=ehCMrUpJBBUjXmImpjoZQ1xX5uAU4KH4QUr0E5ZB5tk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mUlvlbfMjBqB/SWFU5KPsRBElA1/S/gxuqZ1JbTD04Fpl7NY7UC/4BtzjFyiT2vA9IM905nq+NxHzZ+asNqlfNkeNliGRzW6VOBFrGvyhPa7JEXc0fBvfGRggNJci9RLNM8gMom+JogXvvtINyYu0zQ5gcJbHtFCLb2RIEHpNO4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=VGh0HrJh; arc=none smtp.client-ip=198.175.65.21
+	 MIME-Version; b=V4sLH/HTYcXABDtatlcuNGg4BUTikzd+0te3I7bvUEn7khLjqBdyd6H0ZyRtWAuB8GDbwdIs4hvV0FKe7EsLc+mhnk+L08ciZguxWkGuBLvaKe9fzjKwg3kohDIwE0JObCIhPTFnKxMy21mBWyHHowQfIazvNwbr+xswACiwnrE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=BPuXaljA; arc=none smtp.client-ip=198.175.65.21
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="VGh0HrJh"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="BPuXaljA"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1770939048; x=1802475048;
+  t=1770939049; x=1802475049;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=t4k+6a1p9sqJs3w2/EEVw2L+bVuxvHFR+HV6VbEwPWk=;
-  b=VGh0HrJhSCTCmA8VAGc0Hdo6EU4yPnE9XIACotoHmZQXgHyIANP4MLWa
-   TSSkXCAxjKX9bjPz7mjnDcHYcz71bGg1y/scIraqG3WZDlicPBYImjv8e
-   oqJwK5unYOJ8l8j4khTQuX0Bhe3BZqusQEiFfas8OTu4FcmAsK5muB3tR
-   YeOhk83wCS0WUisseHg6ecQPNN/T0ZKOWcseMwpU6mv4rX86MQkPntoFB
-   RoA+AiRlOm3QdRvXnFiFo2BAFBkjm16mbQFxr0Zblzi0+L+MSAdtBqZai
-   ct/zCDu5Vt7A4iZyg/i+xyZr9uzn2s/gJFR6ylBwHEzP50FIMZ4LoSpFT
-   Q==;
-X-CSE-ConnectionGUID: ERToxcb8REGHhW6S71gnVA==
-X-CSE-MsgGUID: DDjm9H5vRJWRcJnxstr+xw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11699"; a="72017401"
+  bh=ehCMrUpJBBUjXmImpjoZQ1xX5uAU4KH4QUr0E5ZB5tk=;
+  b=BPuXaljAzJdGpPxHYQwqfl0L4gK/OGGhoXm89u5Ix1Df1t7VtU1SdEMA
+   SJgxdHDo98yrAKm9UaTXzQ9iWgPxMDL03ZWCeXaKvuOjS6EiAo+1wSsi3
+   iJBdIynlOXKHy6UAehqniwamtQlLdbbuxkwzG44gHzkwklQLrlwnKbw73
+   OBkw9MUtL59X/hbNLKW/+ToPcLX3grhNA6kYAeac8k2ILN7NAbxYV/4qB
+   13JlIysL9nmfGc+U+Z6HKnLVmo/JQoEWxExE0tIJZfN3N5lRKBesuohh6
+   cmEhvBt0JgbeCe12o02KIgoXQHfH8QHfD5YaLZYJTjNLNY33eBF3w6v+1
+   g==;
+X-CSE-ConnectionGUID: GbDRql7aS72ztyw+wba11Q==
+X-CSE-MsgGUID: oUVTcrzlR1OxHzA62qUudw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11699"; a="72017412"
 X-IronPort-AV: E=Sophos;i="6.21,287,1763452800"; 
-   d="scan'208";a="72017401"
+   d="scan'208";a="72017412"
 Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Feb 2026 15:30:47 -0800
-X-CSE-ConnectionGUID: vuvmA3x7Q2iCifKdBIPVbw==
-X-CSE-MsgGUID: +3WiGqlhTCKzdBHxxDMjlQ==
+  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Feb 2026 15:30:49 -0800
+X-CSE-ConnectionGUID: qA9oW6zZRi6onYkTKW1leQ==
+X-CSE-MsgGUID: kfsYh3nmR6qwXAo4vn1iRA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.21,287,1763452800"; 
-   d="scan'208";a="211845376"
+   d="scan'208";a="211845383"
 Received: from skuppusw-desk2.jf.intel.com ([10.165.154.101])
   by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Feb 2026 15:30:45 -0800
 From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
@@ -51,9 +51,9 @@ Cc: Zhang Rui <rui.zhang@intel.com>,
 	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 01/12] powercap: intel_rapl: Add a symbol namespace for intel_rapl exports
-Date: Thu, 12 Feb 2026 15:30:33 -0800
-Message-ID: <20260212233044.329790-2-sathyanarayanan.kuppuswamy@linux.intel.com>
+Subject: [PATCH v2 03/12] powercap: intel_rapl: Remove unused TIME_WINDOW macros
+Date: Thu, 12 Feb 2026 15:30:35 -0800
+Message-ID: <20260212233044.329790-4-sathyanarayanan.kuppuswamy@linux.intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260212233044.329790-1-sathyanarayanan.kuppuswamy@linux.intel.com>
 References: <20260212233044.329790-1-sathyanarayanan.kuppuswamy@linux.intel.com>
@@ -65,148 +65,29 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Cleanup of the intel_rapl common driver requires introducing additional
-exported helper and lifecycle functions. Before adding new exports,
-create a dedicated symbol namespace for intel_rapl and update the
-relevant interface drivers to explicitly import it.
-
-This makes the intended usage of these symbols explicit, avoids
-polluting the global namespace, and prepares the codebase for the
-ongoing RAPL refactoring.
-
-No functional changes are intended.
+Remove TIME_WINDOW_MIN_MSEC and TIME_WINDOW_MAX_MSEC as they
+are not used anywhere in the code.
 
 Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/powercap/intel_rapl_common.c          | 20 +++++++++----------
- drivers/powercap/intel_rapl_msr.c             |  1 +
- drivers/powercap/intel_rapl_tpmi.c            |  1 +
- .../int340x_thermal/processor_thermal_rapl.c  |  1 +
- 4 files changed, 13 insertions(+), 10 deletions(-)
+ drivers/powercap/intel_rapl_common.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
 diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
-index 3ff6da3bf4e6..3471cee7ac04 100644
+index 12f2d6de0541..d37150bab1e2 100644
 --- a/drivers/powercap/intel_rapl_common.c
 +++ b/drivers/powercap/intel_rapl_common.c
-@@ -2089,7 +2089,7 @@ int rapl_package_add_pmu_locked(struct rapl_package *rp)
+@@ -117,9 +117,6 @@
  
- 	return rapl_pmu_update(rp);
- }
--EXPORT_SYMBOL_GPL(rapl_package_add_pmu_locked);
-+EXPORT_SYMBOL_NS_GPL(rapl_package_add_pmu_locked, "INTEL_RAPL");
+ #define RAPL_EVENT_MASK			GENMASK(7, 0)
  
- int rapl_package_add_pmu(struct rapl_package *rp)
- {
-@@ -2097,7 +2097,7 @@ int rapl_package_add_pmu(struct rapl_package *rp)
- 
- 	return rapl_package_add_pmu_locked(rp);
- }
--EXPORT_SYMBOL_GPL(rapl_package_add_pmu);
-+EXPORT_SYMBOL_NS_GPL(rapl_package_add_pmu, "INTEL_RAPL");
- 
- void rapl_package_remove_pmu_locked(struct rapl_package *rp)
- {
-@@ -2115,7 +2115,7 @@ void rapl_package_remove_pmu_locked(struct rapl_package *rp)
- 	perf_pmu_unregister(&rapl_pmu.pmu);
- 	memset(&rapl_pmu, 0, sizeof(struct rapl_pmu));
- }
--EXPORT_SYMBOL_GPL(rapl_package_remove_pmu_locked);
-+EXPORT_SYMBOL_NS_GPL(rapl_package_remove_pmu_locked, "INTEL_RAPL");
- 
- void rapl_package_remove_pmu(struct rapl_package *rp)
- {
-@@ -2123,7 +2123,7 @@ void rapl_package_remove_pmu(struct rapl_package *rp)
- 
- 	rapl_package_remove_pmu_locked(rp);
- }
--EXPORT_SYMBOL_GPL(rapl_package_remove_pmu);
-+EXPORT_SYMBOL_NS_GPL(rapl_package_remove_pmu, "INTEL_RAPL");
- #endif
- 
- /* called from CPU hotplug notifier, hotplug lock held */
-@@ -2156,14 +2156,14 @@ void rapl_remove_package_cpuslocked(struct rapl_package *rp)
- 	list_del(&rp->plist);
- 	kfree(rp);
- }
--EXPORT_SYMBOL_GPL(rapl_remove_package_cpuslocked);
-+EXPORT_SYMBOL_NS_GPL(rapl_remove_package_cpuslocked, "INTEL_RAPL");
- 
- void rapl_remove_package(struct rapl_package *rp)
- {
- 	guard(cpus_read_lock)();
- 	rapl_remove_package_cpuslocked(rp);
- }
--EXPORT_SYMBOL_GPL(rapl_remove_package);
-+EXPORT_SYMBOL_NS_GPL(rapl_remove_package, "INTEL_RAPL");
- 
- /*
-  * RAPL Package energy counter scope:
-@@ -2206,14 +2206,14 @@ struct rapl_package *rapl_find_package_domain_cpuslocked(int id, struct rapl_if_
- 
- 	return NULL;
- }
--EXPORT_SYMBOL_GPL(rapl_find_package_domain_cpuslocked);
-+EXPORT_SYMBOL_NS_GPL(rapl_find_package_domain_cpuslocked, "INTEL_RAPL");
- 
- struct rapl_package *rapl_find_package_domain(int id, struct rapl_if_priv *priv, bool id_is_cpu)
- {
- 	guard(cpus_read_lock)();
- 	return rapl_find_package_domain_cpuslocked(id, priv, id_is_cpu);
- }
--EXPORT_SYMBOL_GPL(rapl_find_package_domain);
-+EXPORT_SYMBOL_NS_GPL(rapl_find_package_domain, "INTEL_RAPL");
- 
- /* called from CPU hotplug notifier, hotplug lock held */
- struct rapl_package *rapl_add_package_cpuslocked(int id, struct rapl_if_priv *priv, bool id_is_cpu)
-@@ -2267,14 +2267,14 @@ struct rapl_package *rapl_add_package_cpuslocked(int id, struct rapl_if_priv *pr
- 	kfree(rp);
- 	return ERR_PTR(ret);
- }
--EXPORT_SYMBOL_GPL(rapl_add_package_cpuslocked);
-+EXPORT_SYMBOL_NS_GPL(rapl_add_package_cpuslocked, "INTEL_RAPL");
- 
- struct rapl_package *rapl_add_package(int id, struct rapl_if_priv *priv, bool id_is_cpu)
- {
- 	guard(cpus_read_lock)();
- 	return rapl_add_package_cpuslocked(id, priv, id_is_cpu);
- }
--EXPORT_SYMBOL_GPL(rapl_add_package);
-+EXPORT_SYMBOL_NS_GPL(rapl_add_package, "INTEL_RAPL");
- 
- static void power_limit_state_save(void)
- {
-diff --git a/drivers/powercap/intel_rapl_msr.c b/drivers/powercap/intel_rapl_msr.c
-index 9a7e150b3536..6f23e601832d 100644
---- a/drivers/powercap/intel_rapl_msr.c
-+++ b/drivers/powercap/intel_rapl_msr.c
-@@ -264,3 +264,4 @@ module_platform_driver(intel_rapl_msr_driver);
- MODULE_DESCRIPTION("Driver for Intel RAPL (Running Average Power Limit) control via MSR interface");
- MODULE_AUTHOR("Zhang Rui <rui.zhang@intel.com>");
- MODULE_LICENSE("GPL v2");
-+MODULE_IMPORT_NS("INTEL_RAPL");
-diff --git a/drivers/powercap/intel_rapl_tpmi.c b/drivers/powercap/intel_rapl_tpmi.c
-index 0a0b85f4528b..3b52403c14f8 100644
---- a/drivers/powercap/intel_rapl_tpmi.c
-+++ b/drivers/powercap/intel_rapl_tpmi.c
-@@ -348,6 +348,7 @@ static struct auxiliary_driver intel_rapl_tpmi_driver = {
- 
- module_auxiliary_driver(intel_rapl_tpmi_driver)
- 
-+MODULE_IMPORT_NS("INTEL_RAPL");
- MODULE_IMPORT_NS("INTEL_TPMI");
- 
- MODULE_DESCRIPTION("Intel RAPL TPMI Driver");
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_rapl.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_rapl.c
-index bf51a17c5be6..e56b18aeda71 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_rapl.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_rapl.c
-@@ -111,4 +111,5 @@ void proc_thermal_rapl_remove(void)
- EXPORT_SYMBOL_GPL(proc_thermal_rapl_remove);
- 
- MODULE_LICENSE("GPL v2");
-+MODULE_IMPORT_NS("INTEL_RAPL");
- MODULE_DESCRIPTION("RAPL interface using MMIO");
+-#define TIME_WINDOW_MAX_MSEC		40000
+-#define TIME_WINDOW_MIN_MSEC		250
+-
+ enum unit_type {
+ 	ARBITRARY_UNIT,		/* no translation */
+ 	POWER_UNIT,
 -- 
 2.43.0
 
