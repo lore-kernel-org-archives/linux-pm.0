@@ -1,117 +1,170 @@
-Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
+Received: from relay.yourmailgateway.de (relay.yourmailgateway.de [188.68.63.102])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18A3635CB8B
-	for <linux-pm@vger.kernel.org>; Thu, 12 Feb 2026 15:02:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.97.179.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E680010785;
+	Thu, 12 Feb 2026 16:03:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=188.68.63.102
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770908559; cv=none; b=gmt7N7HItf56RVvxpqDW8ytQSzMFDUBqqy5h40rwpuBLFjJeEb6VgCxrgh/IA0sCJrQu+LkXU6cL0uAduIiDOVRZol5JPnZzl6T78d2pXdWt5wzevX91Bmku2Gn5c1lIEz92gFRvNZ0BTHyk7cBN6/+g1dfYb0QDKgacJOT5q14=
+	t=1770912207; cv=none; b=AaL7pbl8NQ3ogtXYSDGVS2uyMhzZoE+MnLVHB+vYy8VIvGDWlARe/czGQVUWarCyVuSaXOTZi11fayVKpfHCWC1L4tUzpG7Gkqqh39zEIVcoqnzGOYCrtSS1DCqey6KHlkx9VKabTXaNQUjMC+X/75qKDC8IJzq8Sj2n72z8NPs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770908559; c=relaxed/simple;
-	bh=KGoIt/rmuQQGAOXrojB20wdBDHiojDND21u6VlQsnhc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ty6kLZ+NtTOxnB+3soA4RI0i8gnp3FMFb+N1dtf8NADdEnuEV5bhjj13z6+AWI9te34UB8VR2E7CKG4ilMDNjSrsUFaq+HLsGYjfRmsVbnV8Njh+zmITuAw8/5n6dAgXGu2mXuX6EK7JEhVEN7ItEiddjCIxe2nrZRAL8e3yt+o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com; spf=pass smtp.mailfrom=igalia.com; dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b=XeRW6ThW; arc=none smtp.client-ip=213.97.179.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=igalia.com
+	s=arc-20240116; t=1770912207; c=relaxed/simple;
+	bh=fs4w3huEAMgTOhifbnB9LHX97Yl+dRlz32ijMU82YCo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=AZbSCC2ZsAX81puE3xIyMPVFEkxrqGdTqn7oq2YQNC/eemM5uOG8eiyJyn/vJKpsMrLmdRwflWojQz/0QPrRTR+5+XeB0FVtbcZbGz9t7t49LYJvhjSZe6TGwl5i9ULN/bLWC1/TtgwE8ioU1Vxur0k7qscBxoq5q1mFZlFYqJQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=leemhuis.info; spf=pass smtp.mailfrom=leemhuis.info; dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b=KXaABoxW; arc=none smtp.client-ip=188.68.63.102
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=leemhuis.info
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=leemhuis.info
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b="XeRW6ThW"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
-	s=20170329; h=Content-Transfer-Encoding:Content-Type:MIME-Version:Message-ID:
-	Date:Subject:Cc:To:From:Sender:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
-	List-Post:List-Owner:List-Archive;
-	bh=S0almpWJIOmyEv6VSqYTcS2yRIN/gY920tBGs7TdzE4=; b=XeRW6ThWK0s3rjldMHx4Mkm4KT
-	2leO8FJL2XjBjJxgKUcJuw0iFABOSb/uWJkvcBGXMiLP+LHz0U0vkEzdeDL6/0lSALyoZ9RVJST3b
-	k/Q3c+HBFaUZgTi4okIGKc2Pyuv0ECEzk4aQm48Bi12lpg2jB8nNu9vw2RU+TxwHOuTKS51xPVBAC
-	Dmc7hIy9rksi50QQFTN73WqP1xRswPi0iPz3wKvFrvjQjRYEoDz2Jh6xXUfI0RBIZPf1ngppV6hN7
-	AWig7TQXo3Wpy1RBVTrLAhBo5Nm+3lG6GDIG4b1YCIfUMwYoGM/dAco/3aeNeqzKwjLc2YkFVV9Gr
-	+PCxzvQQ==;
-Received: from [187.36.210.68] (helo=localhost.localdomain)
-	by fanzine2.igalia.com with esmtpsa 
-	(Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA512__CHACHA20_POLY1305:256) (Exim)
-	id 1vqYCy-00HZH1-0K; Thu, 12 Feb 2026 16:02:20 +0100
-From: =?UTF-8?q?Ma=C3=ADra=20Canal?= <mcanal@igalia.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Ray Jui <rjui@broadcom.com>,
-	Scott Branden <sbranden@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Stefan Wahren <wahrenst@gmx.net>
-Cc: linux-pm@vger.kernel.org,
-	linux-rpi-kernel@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org,
-	kernel-dev@igalia.com,
-	=?UTF-8?q?Ma=C3=ADra=20Canal?= <mcanal@igalia.com>
-Subject: [PATCH] pmdomain: bcm: bcm2835-power: Fix broken reset status read
-Date: Thu, 12 Feb 2026 11:49:44 -0300
-Message-ID: <20260212150039.67117-2-mcanal@igalia.com>
-X-Mailer: git-send-email 2.52.0
+	dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b="KXaABoxW"
+Received: from mors-relay-2502.netcup.net (localhost [127.0.0.1])
+	by mors-relay-2502.netcup.net (Postfix) with ESMTPS id 4fBfzT2Gd0z6Fd4;
+	Thu, 12 Feb 2026 16:56:05 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=leemhuis.info;
+	s=key2; t=1770911765;
+	bh=fs4w3huEAMgTOhifbnB9LHX97Yl+dRlz32ijMU82YCo=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=KXaABoxWVsYbLH1gh5xbpYr4RkIYvFazojx35JpLiQfH4ESE2DGnzN62Q3Ua94F37
+	 siKuyCVms2KCwFOC433ahcfrLiJ3fER3bl0SM6TK0TeBO0qdMP+UK4s9nvoARTjh1z
+	 dol/CxH7oRK5iugLIQ+Vr1cmsz9/jKLWRPdLnjFE/hC0zTMQ3wZW3IuygXylAW5l+h
+	 zc53JMrZd0ZP7wDIrWoaww/COLQNBdB4aaW/bRYELE4M4AQiDSyPl5blYRVvVmct4P
+	 Pl9DbSHpjFZp3TnN8vmUdLfwycIUswEED7pXhiBHG1CjDfHT/ehNxviJSXRYV5wsP3
+	 fhQ9BqZN/rxeg==
+Received: from policy01-mors.netcup.net (unknown [46.38.225.35])
+	by mors-relay-2502.netcup.net (Postfix) with ESMTPS id 4fBfzT1XlZz4xhk;
+	Thu, 12 Feb 2026 16:56:05 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at policy01-mors.netcup.net
+X-Spam-Flag: NO
+X-Spam-Score: -2.898
+X-Spam-Level: 
+Received: from mxe9fb.netcup.net (unknown [10.243.12.53])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by policy01-mors.netcup.net (Postfix) with ESMTPS id 4fBfzR3jgZz8sbV;
+	Thu, 12 Feb 2026 16:56:03 +0100 (CET)
+Received: from [IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f] (unknown [IPv6:2a02:8108:8984:1d00:a0cf:1912:4be:477f])
+	by mxe9fb.netcup.net (Postfix) with ESMTPSA id 0A9F1671B1;
+	Thu, 12 Feb 2026 16:56:02 +0100 (CET)
+Authentication-Results: mxe9fb;
+        spf=pass (sender IP is 2a02:8108:8984:1d00:a0cf:1912:4be:477f) smtp.mailfrom=regressions@leemhuis.info smtp.helo=[IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f]
+Received-SPF: pass (mxe9fb: connection is authenticated)
+Message-ID: <f82b7734-6ddc-4029-b38d-147e9a1de021@leemhuis.info>
+Date: Thu, 12 Feb 2026 16:56:01 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] drm/imagination: Convert to
+ dev_pm_domain_{at,de}tach_list()
+To: Marek Vasut <marek.vasut@mailbox.org>,
+ Matt Coster <Matt.Coster@imgtec.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+ Frank Binns <Frank.Binns@imgtec.com>,
+ Brajesh Gupta <Brajesh.Gupta@imgtec.com>,
+ Alessio Belle <Alessio.Belle@imgtec.com>,
+ Alexandru Dadu <Alexandru.Dadu@imgtec.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "regressions@lists.linux.dev" <regressions@lists.linux.dev>
+References: 
+ <194465eda54d1f852a9226cf691ddc5aa208e0a3.1769097977.git.geert+renesas@glider.be>
+ <ffdf3982-e22c-4d01-afa6-5449ed381000@imgtec.com>
+ <CAMuHMdWMh_oJFg-KtapcTDGvYWZ-hg_ZEJ2=E5Tp1apOEc8tnQ@mail.gmail.com>
+ <b3b4f10e-1222-44f7-b308-db7199c67147@mailbox.org>
+ <3e0def93-2f6c-4bcf-8ee5-bf607f2ca382@imgtec.com>
+ <f5d3dde6-edec-42f4-93cb-459c8677245a@mailbox.org>
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Content-Language: de-DE, en-US
+In-Reply-To: <f5d3dde6-edec-42f4-93cb-459c8677245a@mailbox.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-PPP-Message-ID: <177091176259.2119832.3617988698706173767@mxe9fb.netcup.net>
+X-Rspamd-Server: rspamd-worker-8404
+X-Rspamd-Queue-Id: 0A9F1671B1
+X-NC-CID: J5czT71szw5Ql5dY1Tz1SLQRGPcYJeYH0q9GxvoioYLNmk5ORlI=
 
-bcm2835_reset_status() has a misplaced parenthesis on every PM_READ()
-call. Since PM_READ(reg) expands to readl(power->base + (reg)), the
-expression:
+On 2/12/26 15:38, Marek Vasut wrote:
+> On 2/12/26 10:00 AM, Matt Coster wrote:
+>> On 11/02/2026 19:17, Marek Vasut wrote:
+>>> On 1/23/26 2:50 PM, Geert Uytterhoeven wrote:
+>>>> On Fri, 23 Jan 2026 at 14:36, Matt Coster <Matt.Coster@imgtec.com>
+>>>> wrote:
+>>>>> On 22/01/2026 16:08, Geert Uytterhoeven wrote:
+>>>>>> Call the dev_pm_domain_attach_list() and dev_pm_domain_detach_list()
+>>>>>> helpers instead of open-coding multi PM Domain handling.
+>>>>>>
+>>>>>> This changes behavior slightly:
+>>>>>>     - The new handling is also applied in case of a single PM Domain,
+>>>>>>     - PM Domains are now referred to by index instead of by name, but
+>>>>>>       "make dtbs_check" enforces the actual naming and ordering
+>>>>>> anyway,
+>>>>>>     - There are no longer device links created between virtual domain
+>>>>>>       devices, only between virtual devices and the parent device.
+>>>>>
+>>>>> We still need this guarantee, both at start and end of day. In the
+>>>>> current implementation dev_pm_domain_attach_list() iterates forwards,
+>>>>> but so does dev_pm_domain_detach_list(). Even if we changed that, I'd
+>>>>> prefer not to rely on the implementation details when we can
+>>>>> declare the
+>>>>> dependencies explicitly.
+>>>>
+>>>> Note that on R-Car, the PM Domains are nested (see e.g.
+>>>> r8a7795_areas[]),
+>>>> so they are always (un)powered in the correct order.  But that may not
+>>>> be the case in the integration on other SoCs.
+>>>>
+>>>>> We had/have a patch (attached) kicking around internally to use the
+>>>>> *_list() functions but keep the inter-domain links in place; it got
+>>>>> held
+>>>>> up by discussions as to whether we actually need those dependencies
+>>>>> for
+>>>>> the hardware to behave correctly. Your patch spurred me to run around
+>>>>> the office and nag people a bit, and it seems we really do need to
+>>>>> care
+>>>>> about the ordering.
+>>>>
+>>>> OK.
+>>>>
+>>>>> Can you add the links back in for a V2 or I can properly send the
+>>>>> attached patch instead, I don't mind either way.
+>>>>
+>>>> Please move forward with your patch, you are the expert.
+>>>> I prefer not to be blamed for any breakage ;-)
+>>>
+>>> Has there been any progress on fixing this kernel crash ?
+>>>
+>>> There are already two proposed solutions, but no fix is upstream.
+>>
+>> Yes and no. Our patch to use dev_pm_domain_attach_list() has landed in
+>> drm-misc-next as commit e19cc5ab347e3 ("drm/imagination: Use>> dev_pm_domain_attach_list()"), but this does not fix the underlying
+>> issue of missing synchronization in the PM core[1] is still unresolved
+>> as far as I'm aware.
+> 
+> OK, but the pvr driver can currently easily crash the kernel on boot if
+> firmware is missing, so that should be fixed soon, right ?
 
-    PM_READ(PM_GRAFX & PM_V3DRSTN)
+Well, drm-misc-next afaik means that the above mentioned fix would only
+be merged in 7.1, which is ~4 months away, which is not really "soon"
+I'd say. Or did I misjudge this?
 
-computes the bitwise AND of the register offset PM_GRAFX with the
-bitmask PM_V3DRSTN before using the result as a register offset, reading
-from the wrong MMIO address instead of the intended PM_GRAFX register.
-The same issue affects the PM_IMAGE cases.
+> I added the regressions list onto CC, because this seems like a problem
+> worth tracking.
 
-Fix by moving the closing parenthesis so PM_READ() receives only the
-register offset, and the bitmask is applied to the value returned by
-the read.
+Noticed that and wondered what change caused the regression. Did not
+find a answer in a quick search on lore[1]. Because if it's a
+regression, we maybe should just revert the culprit for now according to
+Linus:
+https://lore.kernel.org/lkml/CAHk-=wi86AosXs66-yi54+mpQjPu0upxB8ZAfG+LsMyJmcuMSA@mail.gmail.com/
 
-Fixes: 670c672608a1 ("soc: bcm: bcm2835-pm: Add support for power domains under a new binding.")
-Signed-off-by: Maíra Canal <mcanal@igalia.com>
----
+Ciao, Thorsten
 
-Hi,
-
-Most likely this bug went unnoticed as there is no in-tree driver
-currently calling reset_control_status() on the BCM2835 reset
-controller. Although I'm sending a fix to the .status callback, another
-possibility would be removing the implementation of this callback
-considering that (1) it's broken and (2) it's not used.
-
-I'd appreciate your feedback about the most suitable option.
-
-Best regards,
-- Maíra
-
----
-
- drivers/pmdomain/bcm/bcm2835-power.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/pmdomain/bcm/bcm2835-power.c b/drivers/pmdomain/bcm/bcm2835-power.c
-index 1d29addfe036..0450202bbee2 100644
---- a/drivers/pmdomain/bcm/bcm2835-power.c
-+++ b/drivers/pmdomain/bcm/bcm2835-power.c
-@@ -580,11 +580,11 @@ static int bcm2835_reset_status(struct reset_controller_dev *rcdev,
- 
- 	switch (id) {
- 	case BCM2835_RESET_V3D:
--		return !PM_READ(PM_GRAFX & PM_V3DRSTN);
-+		return !(PM_READ(PM_GRAFX) & PM_V3DRSTN);
- 	case BCM2835_RESET_H264:
--		return !PM_READ(PM_IMAGE & PM_H264RSTN);
-+		return !(PM_READ(PM_IMAGE) & PM_H264RSTN);
- 	case BCM2835_RESET_ISP:
--		return !PM_READ(PM_IMAGE & PM_ISPRSTN);
-+		return !(PM_READ(PM_IMAGE) & PM_ISPRSTN);
- 	default:
- 		return -EINVAL;
- 	}
--- 
-2.52.0
-
+[1] I guess this was the initial report from Geert?
+https://lore.kernel.org/all/CAMuHMdWapT40hV3c+CSBqFOW05aWcV1a6v_NiJYgoYi0i9_PDQ@mail.gmail.com/
