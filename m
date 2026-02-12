@@ -1,231 +1,212 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 09BEE2E1C63;
-	Thu, 12 Feb 2026 23:00:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBE1A3EBF1B;
+	Thu, 12 Feb 2026 23:30:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770937210; cv=none; b=luWtCFzzeaojfc6qdJLVMFVC2YUxhQvyq3MJMLZZftJtiU8wGQjWXes5aBeuAi3oVX8Pf9Uwxh4hGLQedHkwrt16FGTrh7Ehgqm3HEc2aOoqSwwSMeTDOA1r6vqOUwhTIlUHLNnprrZUn6Mtc94ny+tS0eV+/r5u4qgD4o9I+0I=
+	t=1770939049; cv=none; b=LCv8PRijgrwRSQycXx4mtCz7DMaZ3bzMGveYGE85U2mNV+zxGH3BJXfTrBtJlGzR/oWu7xjXhEGVTBdZinbKB1QPFRetBVqOOE5S+Z0KAIa2cbieLSq0bZprS9PFax61I6ujWewqN8T2i7Frv3OGjMhQ/+BCfTpjQH8d83MP9Q4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770937210; c=relaxed/simple;
-	bh=H80wI9Iol6hYagPnYUKeVewDMz+uLshrjq8IuafrCME=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=kUlnfgMZnazyBx/XgyES5mfkL6ZX6lwwuC/k6MX82r1Ud3N4OGLoomUoL7WOp11TeUhVlyrI40bWWbrD5fEORPKpgH0QwtzZYYU4NU2TVxPPqZhbYsz9cha9Ehc5EuYQMyHf3CvIltYxSuoUZXeJy0Gf817cm5B1RePZzpA8LEo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=rq3+0f8t; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1770939049; c=relaxed/simple;
+	bh=t4k+6a1p9sqJs3w2/EEVw2L+bVuxvHFR+HV6VbEwPWk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=mUlvlbfMjBqB/SWFU5KPsRBElA1/S/gxuqZ1JbTD04Fpl7NY7UC/4BtzjFyiT2vA9IM905nq+NxHzZ+asNqlfNkeNliGRzW6VOBFrGvyhPa7JEXc0fBvfGRggNJci9RLNM8gMom+JogXvvtINyYu0zQ5gcJbHtFCLb2RIEHpNO4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=VGh0HrJh; arc=none smtp.client-ip=198.175.65.21
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="rq3+0f8t"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A29BC4CEF7;
-	Thu, 12 Feb 2026 23:00:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770937209;
-	bh=H80wI9Iol6hYagPnYUKeVewDMz+uLshrjq8IuafrCME=;
-	h=Date:From:To:Cc:Subject:From;
-	b=rq3+0f8taWrWB5Jb4Y4GU4SoXsf0hAhC1L0sfQZ4ERcG/I1YWhxlRU5xMH6QH8PuF
-	 LGgQMYO8YQi6IeTcOazTGBAcFJiSgLgei0rzsAC2D0nDlpP4W36LUk3HOcRguBnQna
-	 pDvvhd1Erq4z7FE34IxiJ2HbNyotbLIfILzRTVFEJSRuStqzV6YSutuyzVrHe26Rma
-	 s11TOErhFeoO9KfEr+OiFJHCtINgRrkALwEve/v7a7WbDRFuiP921DeZnCHe15+ExY
-	 7IeyikjWZeiDkHc/gvPSlxHRLRUQWhN1PDvcSAOMxOuO3R4WnEAVfNpZ+/peMHfxbW
-	 W3k+sSDmw7uag==
-Received: by venus (Postfix, from userid 1000)
-	id 9017F182491; Fri, 13 Feb 2026 00:00:07 +0100 (CET)
-Date: Fri, 13 Feb 2026 00:00:07 +0100
-From: Sebastian Reichel <sre@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [GIT PULL] power-supply changes for 7.0
-Message-ID: <aY5Y09CgG1iUvWQZ@venus>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="VGh0HrJh"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1770939048; x=1802475048;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=t4k+6a1p9sqJs3w2/EEVw2L+bVuxvHFR+HV6VbEwPWk=;
+  b=VGh0HrJhSCTCmA8VAGc0Hdo6EU4yPnE9XIACotoHmZQXgHyIANP4MLWa
+   TSSkXCAxjKX9bjPz7mjnDcHYcz71bGg1y/scIraqG3WZDlicPBYImjv8e
+   oqJwK5unYOJ8l8j4khTQuX0Bhe3BZqusQEiFfas8OTu4FcmAsK5muB3tR
+   YeOhk83wCS0WUisseHg6ecQPNN/T0ZKOWcseMwpU6mv4rX86MQkPntoFB
+   RoA+AiRlOm3QdRvXnFiFo2BAFBkjm16mbQFxr0Zblzi0+L+MSAdtBqZai
+   ct/zCDu5Vt7A4iZyg/i+xyZr9uzn2s/gJFR6ylBwHEzP50FIMZ4LoSpFT
+   Q==;
+X-CSE-ConnectionGUID: ERToxcb8REGHhW6S71gnVA==
+X-CSE-MsgGUID: DDjm9H5vRJWRcJnxstr+xw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11699"; a="72017401"
+X-IronPort-AV: E=Sophos;i="6.21,287,1763452800"; 
+   d="scan'208";a="72017401"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Feb 2026 15:30:47 -0800
+X-CSE-ConnectionGUID: vuvmA3x7Q2iCifKdBIPVbw==
+X-CSE-MsgGUID: +3WiGqlhTCKzdBHxxDMjlQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.21,287,1763452800"; 
+   d="scan'208";a="211845376"
+Received: from skuppusw-desk2.jf.intel.com ([10.165.154.101])
+  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Feb 2026 15:30:45 -0800
+From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2 01/12] powercap: intel_rapl: Add a symbol namespace for intel_rapl exports
+Date: Thu, 12 Feb 2026 15:30:33 -0800
+Message-ID: <20260212233044.329790-2-sathyanarayanan.kuppuswamy@linux.intel.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260212233044.329790-1-sathyanarayanan.kuppuswamy@linux.intel.com>
+References: <20260212233044.329790-1-sathyanarayanan.kuppuswamy@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="4uasim2y4jvjyngb"
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 
+Cleanup of the intel_rapl common driver requires introducing additional
+exported helper and lifecycle functions. Before adding new exports,
+create a dedicated symbol namespace for intel_rapl and update the
+relevant interface drivers to explicitly import it.
 
---4uasim2y4jvjyngb
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Subject: [GIT PULL] power-supply changes for 7.0
-MIME-Version: 1.0
+This makes the intended usage of these symbols explicit, avoids
+polluting the global namespace, and prepares the codebase for the
+ongoing RAPL refactoring.
 
-Hello Linus,
+No functional changes are intended.
 
-The following changes since commit 8f0b4cce4481fb22653697cced8d0d04027cb1e8:
+Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/powercap/intel_rapl_common.c          | 20 +++++++++----------
+ drivers/powercap/intel_rapl_msr.c             |  1 +
+ drivers/powercap/intel_rapl_tpmi.c            |  1 +
+ .../int340x_thermal/processor_thermal_rapl.c  |  1 +
+ 4 files changed, 13 insertions(+), 10 deletions(-)
 
-  Linux 6.19-rc1 (2025-12-14 16:05:07 +1200)
+diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
+index 3ff6da3bf4e6..3471cee7ac04 100644
+--- a/drivers/powercap/intel_rapl_common.c
++++ b/drivers/powercap/intel_rapl_common.c
+@@ -2089,7 +2089,7 @@ int rapl_package_add_pmu_locked(struct rapl_package *rp)
+ 
+ 	return rapl_pmu_update(rp);
+ }
+-EXPORT_SYMBOL_GPL(rapl_package_add_pmu_locked);
++EXPORT_SYMBOL_NS_GPL(rapl_package_add_pmu_locked, "INTEL_RAPL");
+ 
+ int rapl_package_add_pmu(struct rapl_package *rp)
+ {
+@@ -2097,7 +2097,7 @@ int rapl_package_add_pmu(struct rapl_package *rp)
+ 
+ 	return rapl_package_add_pmu_locked(rp);
+ }
+-EXPORT_SYMBOL_GPL(rapl_package_add_pmu);
++EXPORT_SYMBOL_NS_GPL(rapl_package_add_pmu, "INTEL_RAPL");
+ 
+ void rapl_package_remove_pmu_locked(struct rapl_package *rp)
+ {
+@@ -2115,7 +2115,7 @@ void rapl_package_remove_pmu_locked(struct rapl_package *rp)
+ 	perf_pmu_unregister(&rapl_pmu.pmu);
+ 	memset(&rapl_pmu, 0, sizeof(struct rapl_pmu));
+ }
+-EXPORT_SYMBOL_GPL(rapl_package_remove_pmu_locked);
++EXPORT_SYMBOL_NS_GPL(rapl_package_remove_pmu_locked, "INTEL_RAPL");
+ 
+ void rapl_package_remove_pmu(struct rapl_package *rp)
+ {
+@@ -2123,7 +2123,7 @@ void rapl_package_remove_pmu(struct rapl_package *rp)
+ 
+ 	rapl_package_remove_pmu_locked(rp);
+ }
+-EXPORT_SYMBOL_GPL(rapl_package_remove_pmu);
++EXPORT_SYMBOL_NS_GPL(rapl_package_remove_pmu, "INTEL_RAPL");
+ #endif
+ 
+ /* called from CPU hotplug notifier, hotplug lock held */
+@@ -2156,14 +2156,14 @@ void rapl_remove_package_cpuslocked(struct rapl_package *rp)
+ 	list_del(&rp->plist);
+ 	kfree(rp);
+ }
+-EXPORT_SYMBOL_GPL(rapl_remove_package_cpuslocked);
++EXPORT_SYMBOL_NS_GPL(rapl_remove_package_cpuslocked, "INTEL_RAPL");
+ 
+ void rapl_remove_package(struct rapl_package *rp)
+ {
+ 	guard(cpus_read_lock)();
+ 	rapl_remove_package_cpuslocked(rp);
+ }
+-EXPORT_SYMBOL_GPL(rapl_remove_package);
++EXPORT_SYMBOL_NS_GPL(rapl_remove_package, "INTEL_RAPL");
+ 
+ /*
+  * RAPL Package energy counter scope:
+@@ -2206,14 +2206,14 @@ struct rapl_package *rapl_find_package_domain_cpuslocked(int id, struct rapl_if_
+ 
+ 	return NULL;
+ }
+-EXPORT_SYMBOL_GPL(rapl_find_package_domain_cpuslocked);
++EXPORT_SYMBOL_NS_GPL(rapl_find_package_domain_cpuslocked, "INTEL_RAPL");
+ 
+ struct rapl_package *rapl_find_package_domain(int id, struct rapl_if_priv *priv, bool id_is_cpu)
+ {
+ 	guard(cpus_read_lock)();
+ 	return rapl_find_package_domain_cpuslocked(id, priv, id_is_cpu);
+ }
+-EXPORT_SYMBOL_GPL(rapl_find_package_domain);
++EXPORT_SYMBOL_NS_GPL(rapl_find_package_domain, "INTEL_RAPL");
+ 
+ /* called from CPU hotplug notifier, hotplug lock held */
+ struct rapl_package *rapl_add_package_cpuslocked(int id, struct rapl_if_priv *priv, bool id_is_cpu)
+@@ -2267,14 +2267,14 @@ struct rapl_package *rapl_add_package_cpuslocked(int id, struct rapl_if_priv *pr
+ 	kfree(rp);
+ 	return ERR_PTR(ret);
+ }
+-EXPORT_SYMBOL_GPL(rapl_add_package_cpuslocked);
++EXPORT_SYMBOL_NS_GPL(rapl_add_package_cpuslocked, "INTEL_RAPL");
+ 
+ struct rapl_package *rapl_add_package(int id, struct rapl_if_priv *priv, bool id_is_cpu)
+ {
+ 	guard(cpus_read_lock)();
+ 	return rapl_add_package_cpuslocked(id, priv, id_is_cpu);
+ }
+-EXPORT_SYMBOL_GPL(rapl_add_package);
++EXPORT_SYMBOL_NS_GPL(rapl_add_package, "INTEL_RAPL");
+ 
+ static void power_limit_state_save(void)
+ {
+diff --git a/drivers/powercap/intel_rapl_msr.c b/drivers/powercap/intel_rapl_msr.c
+index 9a7e150b3536..6f23e601832d 100644
+--- a/drivers/powercap/intel_rapl_msr.c
++++ b/drivers/powercap/intel_rapl_msr.c
+@@ -264,3 +264,4 @@ module_platform_driver(intel_rapl_msr_driver);
+ MODULE_DESCRIPTION("Driver for Intel RAPL (Running Average Power Limit) control via MSR interface");
+ MODULE_AUTHOR("Zhang Rui <rui.zhang@intel.com>");
+ MODULE_LICENSE("GPL v2");
++MODULE_IMPORT_NS("INTEL_RAPL");
+diff --git a/drivers/powercap/intel_rapl_tpmi.c b/drivers/powercap/intel_rapl_tpmi.c
+index 0a0b85f4528b..3b52403c14f8 100644
+--- a/drivers/powercap/intel_rapl_tpmi.c
++++ b/drivers/powercap/intel_rapl_tpmi.c
+@@ -348,6 +348,7 @@ static struct auxiliary_driver intel_rapl_tpmi_driver = {
+ 
+ module_auxiliary_driver(intel_rapl_tpmi_driver)
+ 
++MODULE_IMPORT_NS("INTEL_RAPL");
+ MODULE_IMPORT_NS("INTEL_TPMI");
+ 
+ MODULE_DESCRIPTION("Intel RAPL TPMI Driver");
+diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_rapl.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_rapl.c
+index bf51a17c5be6..e56b18aeda71 100644
+--- a/drivers/thermal/intel/int340x_thermal/processor_thermal_rapl.c
++++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_rapl.c
+@@ -111,4 +111,5 @@ void proc_thermal_rapl_remove(void)
+ EXPORT_SYMBOL_GPL(proc_thermal_rapl_remove);
+ 
+ MODULE_LICENSE("GPL v2");
++MODULE_IMPORT_NS("INTEL_RAPL");
+ MODULE_DESCRIPTION("RAPL interface using MMIO");
+-- 
+2.43.0
 
-are available in the Git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v7.0
-
-for you to fetch changes up to 12bdf471e374b34cb0e48b29bb9eb9127ed26fc5:
-
-  power: supply: bd71828: Use dev_err_probe() (2026-01-30 22:41:17 +0100)
-
-----------------------------------------------------------------
-power supply and reset changes for the 7.0 series
-
- * power-supply core
-  - sysfs: Constify pointer passed to dev_attr_psp
-  - extend DT binding documentation for battery cells to allow
-    describing voltage drop behaviour
- * power-supply drivers
-  - multiple: Remove unused gpio include header
-  - multiple: Fix potential IRQ use-after-free on driver unload
-  - bd71828: Add support for ROHM BD72720
-  - misc. small fixes
- * reset drivers
-  - tdx-ec-poweroff: fix restart
-
-----------------------------------------------------------------
-Alexander Koskovich (1):
-      power: reset: nvmem-reboot-mode: respect cell size for nvmem_cell_write
-
-Emanuele Ghidoli (1):
-      power: reset: tdx-ec-poweroff: fix restart
-
-Haotian Zhang (1):
-      power: supply: bq27xxx: fix wrong errno when bus ops are unsupported
-
-Julia Lawall (1):
-      docs: power: update documentation about removed function
-
-Krzysztof Kozlowski (1):
-      power: supply: sysfs: Constify pointer passed to dev_attr_psp()
-
-Kuan-Wei Chiu (1):
-      dt-bindings: power: supply: google,goldfish-battery: Convert to DT schema
-
-Lukas Bulwahn (1):
-      MAINTAINERS: adjust file entry in ROHM BD71828 CHARGER
-
-Matti Vaittinen (18):
-      dt-bindings: regulator: ROHM BD72720
-      dt-bindings: battery: Clarify trickle-charge
-      dt-bindings: battery: Add trickle-charge upper limit
-      dt-bindings: battery: Voltage drop properties
-      dt-bindings: mfd: ROHM BD72720
-      dt-bindings: leds: bd72720: Add BD72720
-      mfd: rohm-bd71828: Use regmap_reg_range()
-      mfd: rohm-bd71828: Use standard file header format
-      mfd: rohm-bd71828: Support ROHM BD72720
-      regulator: bd71828: rename IC specific entities
-      regulator: bd71828: Support ROHM BD72720
-      gpio: Support ROHM BD72720 gpios
-      clk: clk-bd718x7: Support BD72720 clk gate
-      rtc: bd70528: Support BD72720 rtc
-      power: supply: bd71828: Support wider register addresses
-      power: supply: bd71828-power: Support ROHM BD72720
-      MAINTAINERS: Add ROHM BD72720 PMIC
-      power: supply: bd71828: Use dev_err_probe()
-
-Randy Dunlap (1):
-      power: supply: ab8500_chargalg: improve kernel-doc
-
-Sebastian Reichel (1):
-      Merge tag 'ib-mfd-clk-gpio-power-regulator-rtc-v6.20' into psy-next
-
-Val Packett (1):
-      power: supply: qcom_battmgr: Recognize "LiP" as lithium-polymer
-
-Waqar Hameed (20):
-      power: supply: bd99954: Remove unused gpio include header
-      power: supply: bq256xx: Remove unused gpio include header
-      power: supply: bq25980: Remove unused gpio include header
-      power: supply: cw2015: Remove unused gpio include header
-      power: supply: ucs1002: Remove unused gpio include header
-      power: supply: ab8500: Fix use-after-free in power_supply_changed()
-      power: supply: act8945a: Fix use-after-free in power_supply_changed()
-      power: supply: bq256xx: Fix use-after-free in power_supply_changed()
-      power: supply: bq25980: Fix use-after-free in power_supply_changed()
-      power: supply: cpcap-battery: Fix use-after-free in power_supply_changed()
-      power: supply: goldfish: Fix use-after-free in power_supply_changed()
-      power: supply: pf1550: Fix use-after-free in power_supply_changed()
-      power: supply: pm8916_bms_vm: Fix use-after-free in power_supply_changed()
-      power: supply: pm8916_lbc: Fix use-after-free in power_supply_changed()
-      power: supply: rt9455: Fix use-after-free in power_supply_changed()
-      power: supply: sbs-battery: Fix use-after-free in power_supply_changed()
-      power: supply: wm97xx: Fix NULL pointer dereference in power_supply_changed()
-      power: supply: pm8916_lbc: Fix use-after-free for extcon in IRQ handler
-      power: supply: wm97xx: Use devm_kcalloc()
-      power: supply: wm97xx: Use devm_power_supply_register()
-
- .../devicetree/bindings/goldfish/battery.txt       |   17 -
- .../bindings/leds/rohm,bd71828-leds.yaml           |    7 +-
- .../devicetree/bindings/mfd/rohm,bd72720-pmic.yaml |  339 +++++++
- .../devicetree/bindings/power/supply/battery.yaml  |   33 +-
- .../power/supply/google,goldfish-battery.yaml      |   41 +
- .../bindings/regulator/rohm,bd72720-regulator.yaml |  148 +++
- Documentation/power/charger-manager.rst            |   12 +-
- MAINTAINERS                                        |    4 +-
- drivers/clk/Kconfig                                |    4 +-
- drivers/clk/clk-bd718x7.c                          |   10 +-
- drivers/gpio/Kconfig                               |    9 +
- drivers/gpio/Makefile                              |    1 +
- drivers/gpio/gpio-bd72720.c                        |  281 ++++++
- drivers/mfd/Kconfig                                |   18 +-
- drivers/mfd/rohm-bd71828.c                         |  555 ++++++++++-
- drivers/power/reset/nvmem-reboot-mode.c            |   15 +-
- drivers/power/reset/tdx-ec-poweroff.c              |   19 +
- drivers/power/supply/ab8500_chargalg.c             |   15 +-
- drivers/power/supply/ab8500_charger.c              |   40 +-
- drivers/power/supply/act8945a_charger.c            |   16 +-
- drivers/power/supply/bd71828-power.c               |  161 ++-
- drivers/power/supply/bd99954-charger.c             |    1 -
- drivers/power/supply/bq256xx_charger.c             |   13 +-
- drivers/power/supply/bq25980_charger.c             |   13 +-
- drivers/power/supply/bq27xxx_battery.c             |    6 +-
- drivers/power/supply/cpcap-battery.c               |    8 +-
- drivers/power/supply/cw2015_battery.c              |    1 -
- drivers/power/supply/goldfish_battery.c            |   12 +-
- drivers/power/supply/pf1550-charger.c              |   32 +-
- drivers/power/supply/pm8916_bms_vm.c               |   18 +-
- drivers/power/supply/pm8916_lbc.c                  |   18 +-
- drivers/power/supply/power_supply_sysfs.c          |    6 +-
- drivers/power/supply/qcom_battmgr.c                |    3 +-
- drivers/power/supply/rt9455_charger.c              |   17 +-
- drivers/power/supply/sbs-battery.c                 |   36 +-
- drivers/power/supply/ucs1002_power.c               |    1 -
- drivers/power/supply/wm97xx_battery.c              |   40 +-
- drivers/regulator/Kconfig                          |    8 +-
- drivers/regulator/bd71828-regulator.c              | 1027 +++++++++++++++++++-
- drivers/rtc/Kconfig                                |    3 +-
- drivers/rtc/rtc-bd70528.c                          |   21 +-
- include/linux/mfd/rohm-bd72720.h                   |  634 ++++++++++++
- include/linux/mfd/rohm-generic.h                   |    1 +
- 43 files changed, 3345 insertions(+), 319 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/goldfish/battery.txt
- create mode 100644 Documentation/devicetree/bindings/mfd/rohm,bd72720-pmic.yaml
- create mode 100644 Documentation/devicetree/bindings/power/supply/google,goldfish-battery.yaml
- create mode 100644 Documentation/devicetree/bindings/regulator/rohm,bd72720-regulator.yaml
- create mode 100644 drivers/gpio/gpio-bd72720.c
- create mode 100644 include/linux/mfd/rohm-bd72720.h
-
-Greetings,
-
--- Sebastian
-
---4uasim2y4jvjyngb
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmmOW3EACgkQ2O7X88g7
-+pqsCxAAnd4wcvgbvgN6aMESaY7nfFb8XyZvCYbOsaekGAJrlFU1v+Cpy0KGIMfC
-RMoZiuSoQMBvuw6ikwW4JxxCzyI1/qTCRFuUTN21c+nEBmNLUEfFFsuo6s8SE4qq
-KOV1l0/L6Yv6bCjZvSfUlDStkiZc2Xm5hqHVRp6mohGuoBSRoaS1gIYMhuVAYlqG
-L9xO1BoPRsHxiq9j51lDt6uf3wkFhbvbgqDUe2KlehJzcey22Ph3fJrH9/MVIEj5
-HuOnam2+BHmHFS0YmLtVveiVoZbBoYx4Zg9xU1Syx2xJWV/+I5kdJY6kNA4ovGc2
-9syxtk49nLvBlx9Gl2KPjDGeMT/gvC05LFo4KHYtbaod+2OfOZeK4rjnwP1hUO9M
-E6FFkqKTHl5cthYE1SiUrm12WWW1ATIt2/70LvfdqJFXx5ncHQhx9x8I2I7lltq9
-a85kP2rRJdxf87Rc7fQXZufqht6Cq2nP0XhgZYjAroYuJqD5Tj9wD9fbPxaBZMyU
-R+wkvPGDis/k7GiKaJDw925dmLcR+L0nDiTbXPnJtwpq6lBrHvUlFAhgjBI2lGM9
-KJDXgyW8ktD52dhahd0sDRzTP5U5/jKL2dq4IZxYsS8X+fVHm8+4mllnLD+9AfZq
-qkeRs19Thk+n6Kcv356rKbkcJ+YJ4AeemGyKsmKLtK+gSriWX3M=
-=iLwe
------END PGP SIGNATURE-----
-
---4uasim2y4jvjyngb--
