@@ -1,46 +1,45 @@
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7600E22068F;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 922D32C11EF;
 	Thu, 12 Feb 2026 23:30:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770939050; cv=none; b=WmCGDDBF8pkwLVMS2XU1lT1Y1DOT9saQXOLYOxkcvHEaNi57ixBKMcCOnphrJuzk+bgXkHmNSfvT5D2amWWnriCp2CbuE/GZCGfkjXmlMyGsaLkcgjZf9LP6/6k6nhkp8GbhiMqNnPbZErRJgBzY9MIazAFawza2MBXI6Q07KxU=
+	t=1770939050; cv=none; b=hv9dMG+LWyqipscEU9VY+ipj+xxgVgPwEg7pz//ZKPeilfmpcAb00jqwzw/mzf9u6dG5Dl+539oQ/K0yjcU0zO8s2O1Civ7moQM709wexorhFokB/tpFqq43+sU1afephgOMRrVksiaBIqi635+/+KurmSZsSPb+5MToDtoPLUs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1770939050; c=relaxed/simple;
-	bh=ehCMrUpJBBUjXmImpjoZQ1xX5uAU4KH4QUr0E5ZB5tk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=V4sLH/HTYcXABDtatlcuNGg4BUTikzd+0te3I7bvUEn7khLjqBdyd6H0ZyRtWAuB8GDbwdIs4hvV0FKe7EsLc+mhnk+L08ciZguxWkGuBLvaKe9fzjKwg3kohDIwE0JObCIhPTFnKxMy21mBWyHHowQfIazvNwbr+xswACiwnrE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=BPuXaljA; arc=none smtp.client-ip=198.175.65.21
+	bh=Yf29YFnAlYnNy/MoHWcrCx2boAmxrKkF4z9UIlckSzo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=hVv1x442801N+t5+ecr01djg6nxNKaTpYm7GeDfnNJP+ZQV+dmwqtOHfjwfNcq+Q9JrJPxKx/sGeJRzRYahtWENMYca2n6zjEoeftOq4ECb7gWRdXEsU3Fulc9RQcVE6V7a2yZGhdpN9Ls3F50ZsP8mtOXpJ0l7+UFMqo2CNon4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=jqdCDwLH; arc=none smtp.client-ip=198.175.65.21
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="BPuXaljA"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="jqdCDwLH"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1770939049; x=1802475049;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=ehCMrUpJBBUjXmImpjoZQ1xX5uAU4KH4QUr0E5ZB5tk=;
-  b=BPuXaljAzJdGpPxHYQwqfl0L4gK/OGGhoXm89u5Ix1Df1t7VtU1SdEMA
-   SJgxdHDo98yrAKm9UaTXzQ9iWgPxMDL03ZWCeXaKvuOjS6EiAo+1wSsi3
-   iJBdIynlOXKHy6UAehqniwamtQlLdbbuxkwzG44gHzkwklQLrlwnKbw73
-   OBkw9MUtL59X/hbNLKW/+ToPcLX3grhNA6kYAeac8k2ILN7NAbxYV/4qB
-   13JlIysL9nmfGc+U+Z6HKnLVmo/JQoEWxExE0tIJZfN3N5lRKBesuohh6
-   cmEhvBt0JgbeCe12o02KIgoXQHfH8QHfD5YaLZYJTjNLNY33eBF3w6v+1
-   g==;
-X-CSE-ConnectionGUID: GbDRql7aS72ztyw+wba11Q==
-X-CSE-MsgGUID: oUVTcrzlR1OxHzA62qUudw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11699"; a="72017412"
+  t=1770939050; x=1802475050;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=Yf29YFnAlYnNy/MoHWcrCx2boAmxrKkF4z9UIlckSzo=;
+  b=jqdCDwLHH40O7lsy845y5FLI3qDSvqZMJlrIz0V4fQlqnO49gBF6CzXK
+   9jT/LO2NfGtvs1rettyLxbGZtHi684omWcfUJkLI/kbJFHVGl5zf0b3Oo
+   PmCeFe+oaMJFoxo/0OYrUV9rPqWZdWgKkylCc3kIzMKg9bZqgypNqujmQ
+   boh3MA2joKdsxXwiytFAgqmrWWFO6ae0ZprCr85smUtnOZma1R4J9dokR
+   Do2iPpKVz42vG7bZBVZwK+egVe+E1BL9j9oCVSIJPkEvjc5WcPWflcqlO
+   UwM5YHU6mXg7KTm1yoIU07InJ8SH8x1+rtT6ezHRxPaQ+viWQ0dnEyW5c
+   Q==;
+X-CSE-ConnectionGUID: FnkUcJZtReWICPxv752+Bg==
+X-CSE-MsgGUID: XWroyQlQTCGSEaYSq5AgNQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11699"; a="72017406"
 X-IronPort-AV: E=Sophos;i="6.21,287,1763452800"; 
-   d="scan'208";a="72017412"
+   d="scan'208";a="72017406"
 Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Feb 2026 15:30:49 -0800
-X-CSE-ConnectionGUID: qA9oW6zZRi6onYkTKW1leQ==
-X-CSE-MsgGUID: kfsYh3nmR6qwXAo4vn1iRA==
+  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Feb 2026 15:30:47 -0800
+X-CSE-ConnectionGUID: eiY6EGVHSbWsquYiw1Lf3g==
+X-CSE-MsgGUID: SuW9PUyAToucV+XQD9lfog==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.21,287,1763452800"; 
-   d="scan'208";a="211845383"
+   d="scan'208";a="211845373"
 Received: from skuppusw-desk2.jf.intel.com ([10.165.154.101])
   by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Feb 2026 15:30:45 -0800
 From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
@@ -51,12 +50,10 @@ Cc: Zhang Rui <rui.zhang@intel.com>,
 	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 03/12] powercap: intel_rapl: Remove unused TIME_WINDOW macros
-Date: Thu, 12 Feb 2026 15:30:35 -0800
-Message-ID: <20260212233044.329790-4-sathyanarayanan.kuppuswamy@linux.intel.com>
+Subject: [PATCH v2 00/12] Move RAPL defaults to interface drivers
+Date: Thu, 12 Feb 2026 15:30:32 -0800
+Message-ID: <20260212233044.329790-1-sathyanarayanan.kuppuswamy@linux.intel.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260212233044.329790-1-sathyanarayanan.kuppuswamy@linux.intel.com>
-References: <20260212233044.329790-1-sathyanarayanan.kuppuswamy@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -65,29 +62,74 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Remove TIME_WINDOW_MIN_MSEC and TIME_WINDOW_MAX_MSEC as they
-are not used anywhere in the code.
+Hi All,
 
-Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/powercap/intel_rapl_common.c | 3 ---
- 1 file changed, 3 deletions(-)
+The Intel RAPL common driver has accumulated a significant amount of
+interface-specific logic over time. There is very little common code
+shared across the MSR, TPMI, and MMIO interface-specific defaults.
+Keeping these interface-specific defaults in the common layer therefore
+provides no real benefit and instead increases complexity and
+maintenance burden.
 
-diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
-index 12f2d6de0541..d37150bab1e2 100644
---- a/drivers/powercap/intel_rapl_common.c
-+++ b/drivers/powercap/intel_rapl_common.c
-@@ -117,9 +117,6 @@
- 
- #define RAPL_EVENT_MASK			GENMASK(7, 0)
- 
--#define TIME_WINDOW_MAX_MSEC		40000
--#define TIME_WINDOW_MIN_MSEC		250
--
- enum unit_type {
- 	ARBITRARY_UNIT,		/* no translation */
- 	POWER_UNIT,
+As a first step toward cleaning this up, this series moves
+rapl_defaults ownership from the common driver into the individual
+interface drivers and allows each interface to provide its own defaults
+directly. Additional interface-specific cleanups in the RAPL common
+driver will be addressed in follow-up work. This series is a
+continuation of the earlier cleanup and refactoring effort initiated
+by Zhang Rui.
+
+Patch Summary:
+
+Patch 1-7/12: Preparatory patches that do code cleanups in intel_rapl_common
+             driver.
+Patch 8/12: Preparatory patch that renames/declares the common functions.
+Patch 9/12: Move TPMI default settings from the common driver into the
+           TPMI interface driver.
+
+Patch 10/12: Move MMIO default settings from the common driver into the
+           MMIO interface driver.
+
+Patch 11/12: Register the PM notifier only when a RAPL package exists.
+
+Patch 12/12: Move MSR default settings from the common driver into the MSR
+           interface driver.
+
+No functional changes are intended across the series. This is strictly a
+structural refactoring to simplify the common RAPL code and prepare it
+for further cleanups.
+
+Changes since v1:
+ * Removed BIT(val) usage in divisions (David Laight).
+ * Divided the cleanup patch into 4 patches for clarity.
+ * Added Acked-by tag from Srinivas.
+
+Kuppuswamy Sathyanarayanan (12):
+  powercap: intel_rapl: Add a symbol namespace for intel_rapl exports
+  powercap: intel_rapl: Cleanup coding style
+  powercap: intel_rapl: Remove unused TIME_WINDOW macros
+  powercap: intel_rapl: Simplify rapl_compute_time_window_atom()
+  powercap: intel_rapl: Use shifts for power-of-2 operations
+  powercap: intel_rapl: Use GENMASK() and BIT() macros
+  powercap: intel_rapl: Use unit conversion macros from units.h
+  powercap: intel_rapl: Allow interface drivers to configure
+    rapl_defaults
+  powercap: intel_rapl: Move TPMI default settings into TPMI interface
+    driver
+  thermal: intel: int340x: processor: Move RAPL defaults to MMIO driver
+  powercap: intel_rapl: Register PM notifier only when RAPL package
+    exists
+  powercap: intel_rapl: Move MSR default settings into MSR interface
+    driver
+
+ drivers/powercap/intel_rapl_common.c          | 757 ++++++------------
+ drivers/powercap/intel_rapl_msr.c             | 251 +++++-
+ drivers/powercap/intel_rapl_tpmi.c            |  48 ++
+ .../int340x_thermal/processor_thermal_rapl.c  |   9 +
+ include/linux/intel_rapl.h                    |  17 +-
+ include/linux/units.h                         |   3 +
+ 6 files changed, 562 insertions(+), 523 deletions(-)
+
 -- 
 2.43.0
 
