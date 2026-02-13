@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68B9C350D5F;
-	Fri, 13 Feb 2026 10:11:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91E9D1A08BC;
+	Fri, 13 Feb 2026 10:12:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770977498; cv=none; b=T/RXZW/O5DK4Kald+Ze6Li8pRDGtBxT3odI/k4r3NBchoHLH8OA/l8ydmEGd4sfUtDIZjKVJEgBmOQ9E5twPte/CVhA8q/WzD4G6/WkYy+G4GUL+aoxp4J7hHkxTMjTsqzIuwqPYxvS0F5eLZsdgVMS1oBGk6++tgfdt3S6nDnQ=
+	t=1770977535; cv=none; b=HF9CGk0RRqkjRBwAhhyHpGWSrHEdyXNSzFF5wm1u7Soy28G28mJvOFJEtvprUrWq8inD6zGnbWIieuEsGZ8mVexa/rhJm3tvapLxqG8WRBbxy/phNFnyqneryKFDXks5hqHo+kxre6EMfxnqV8yyegzDvCAylbk8T2/5ar3EMKY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770977498; c=relaxed/simple;
-	bh=SHPUymrUpb83eRmEalKKYl0ZBPV1Z4ReKCKK1ADCPs0=;
+	s=arc-20240116; t=1770977535; c=relaxed/simple;
+	bh=J+XvV6jIqmyrhArdkiSuYtiOfUyH7S6EIQyy0nQ3Gkk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ArgjU5ilgl5+KRdO9ZqNa9BZHv3if5aQJylOZ8omptzQUCjwHOVpeQGbnOcnFj2lGZWj4S01CzStwZPshCndAMalr9qec7z+HDvU91N6DyEcZiQeDIhw35RQTH0fkYXGx+ZFQw05+f3uqkoQA/bU+9k8g5ncrppHdb+pONGgiX0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=T00IpjBT; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:Content-Type; b=QknYj+rmv2GoUwMvyoHeSfsFTum993PWFLKlzBfO/d8yGQaQOBZuNFmr6VFZbkZ4EySwaYQirvnfQHFtSoyDDxN47KOAd1isGsh5PWKTReU0oRDfD+23s988Ov4QeNggHC09+/FX675BCZBTmRNZuSWoFHwdUuO74Eav725FLQw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=r4dcKnsu; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="T00IpjBT"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 30685C19424;
-	Fri, 13 Feb 2026 10:11:33 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="r4dcKnsu"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9E392C16AAE;
+	Fri, 13 Feb 2026 10:12:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770977497;
-	bh=SHPUymrUpb83eRmEalKKYl0ZBPV1Z4ReKCKK1ADCPs0=;
+	s=k20201202; t=1770977535;
+	bh=J+XvV6jIqmyrhArdkiSuYtiOfUyH7S6EIQyy0nQ3Gkk=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=T00IpjBTDuqx1kp6RyQUKTwgJOt4gf+wtU1uiV53/PIRFUwG51eIqcY+mK21PF+HH
-	 ZemI6V5JYQ8ynYLIfVO4z6nRU9rkhjB0mYjwEyZE9Pbh0YE5FparGLe09lpUknCskA
-	 LToDvM7Hy/NMcM7iCmHtSIhH6Vut53ep0LYtsJmpGhBJzoaxqtMG/+aapKUMcwMZCy
-	 WfOnB3ViSUjcE6rSdREafiFV+d6iPTR9XbzTSWO02ZaRS4G/DhTRgc+xFqCAtafhQF
-	 LQJ481HPWYe1OkPk06aY/BSHSc5btWl7WUymgA3jBbqOAaWLgBVt0zEqOILBttp6uj
-	 MoV/ydG4t7qag==
-Message-ID: <9cc741e5-e710-4c89-b0e0-dc12ac7d8e3d@kernel.org>
-Date: Fri, 13 Feb 2026 11:11:31 +0100
+	b=r4dcKnsus0PrXm86joHM7a3aMGWZBXA22wUHOE4zx1SXPEHSlgIxO40o9Plt1LsVU
+	 DNENGFp3ADbKm0rtQvrtQDsPzUgF9VuaQGdA8c4FLrzKnF4u55XuxGtXRndhP7h0VS
+	 TCa5ARtJBE2ixQaaY2RO8XLxZDPK2SADCTobm9bjQHxPizpn6YHHZoNvP+vV6qG7Hd
+	 niRErmC6njoMe3CW8IISN8nG+2xSOJGltHvMnC0i4THVaYlpQZSq98/Y1qWNp6ZpX3
+	 P4P26FdinIr7ZHFL9XcTq9TN9nXvxXmhWcF3Tv7JGUNbrkE473Uu0di2gquHatulCI
+	 uCv8aG68nruZA==
+Message-ID: <21472a9c-f996-484d-b1c8-1fefb12cc1dc@kernel.org>
+Date: Fri, 13 Feb 2026 11:12:08 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,7 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 4/7] thermal: samsung: Add support for GS101 TMU
+Subject: Re: [PATCH v2 5/7] MAINTAINERS: Add entry for Samsung Exynos ACPM
+ thermal driver
 To: Tudor Ambarus <tudor.ambarus@linaro.org>,
  "Rafael J. Wysocki" <rafael@kernel.org>,
  Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>,
@@ -51,7 +52,7 @@ Cc: willmcvicker@google.com, jyescas@google.com, shin.son@samsung.com,
  linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-hardening@vger.kernel.org
 References: <20260119-acpm-tmu-v2-0-e02a834f04c6@linaro.org>
- <20260119-acpm-tmu-v2-4-e02a834f04c6@linaro.org>
+ <20260119-acpm-tmu-v2-5-e02a834f04c6@linaro.org>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -97,31 +98,17 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <20260119-acpm-tmu-v2-4-e02a834f04c6@linaro.org>
+In-Reply-To: <20260119-acpm-tmu-v2-5-e02a834f04c6@linaro.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 19/01/2026 13:08, Tudor Ambarus wrote:
-> Add the thermal driver for the Google GS101 SoC.
-> 
-> The GS101 TMU utilizes a hybrid management model shared between the
-> Application Processor (AP) and the ACPM (Alive Clock and Power Manager)
-> firmware. The driver maintains direct memory-mapped access to the TMU
-> interrupt pending registers to identify thermal events, while delegating
-> functional tasks - such as sensor initialization, threshold configuration,
-> and temperature acquisition - to the ACPM firmware via the ACPM IPC
-> protocol.
+> Add a MAINTAINERS entry for the Samsung Exynos ACPM thermal driver.
 > 
 > Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
 > ---
->  drivers/thermal/samsung/Kconfig    |  16 +
->  drivers/thermal/samsung/Makefile   |   2 +
->  drivers/thermal/samsung/acpm-tmu.c | 643 +++++++++++++++++++++++++++++++++++++
->  3 files changed, 661 insertions(+)
 
-I did not perform full review, but after quick glance:
-
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
 Best regards,
 Krzysztof
