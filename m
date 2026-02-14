@@ -1,127 +1,117 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 200421E5B63;
-	Sat, 14 Feb 2026 01:06:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 229CD17D2;
+	Sat, 14 Feb 2026 03:13:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771031218; cv=none; b=UUkMkQzN2VsWsOLbzMZvvFvxOu5K+bljg+Mq6wK8fM82QFzSsxSHBQ6bKMji9SWhhu1DoaAuqX81RWNC3utZnm38p0qsziQFkoj+btluOqAlRWVKxa6F3pzRNCkCNMExELFi2WTHuiRduh4gj3Ci1awWdX4fk8o68vFosigrjT4=
+	t=1771038831; cv=none; b=ADQ93G7n6dXrUuO5tg6jVSKoxDJNIFm0acHFJUxJpUeoenNX0HuI5ZO4V3tg2ocwrk2ZMlcfL/4A9tPSbAryexqAfXEsXtoa0KRJqWLakfVSnsPGZa7ZEqjLjmiJIRt2Obs5tXN5Ztg2rvIx2lEYv6UOhCOObRZ1F2QU7cn5yw4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771031218; c=relaxed/simple;
-	bh=aLnq3Vhro09RFihhmybNksuVx+/a8US1ZR2sadPBDvE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=eeg5jGYEVS3eIFcrqujO8dz9E3iu1JeqcYzBB8ttTuLzAnxOv2ZW8eaUfE2+1GVZz0aEuQtaW+uDT/uq3L63NXV4Np71Otmx5MWjtPN6oK+Ok2KQ2DmYTv/gyLg9dGFBxfgner+cXQC+4OSkBnAbGhtaXfQiVP6arcpK6HfmPVw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MhcAX9LX; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1771038831; c=relaxed/simple;
+	bh=WLZmkmhFYdcNnkh/XlxKeigsMzqlyV8nVr425RZELOY=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=F0HFklkbRerDFdebB1L0QKFCm/2qQ20vvqQ0FAWjNVoBQimK9tNMdIWbVoA3kHwmJcPymR4jo8JveltWR2vKS8MEdNbehkjGbXqj/eTcRjAThMvSqoWolcjr2jAw0+3PP5mlv9lT028Yd80aK4HLdUvOhIHd0wXMEpoSaezg7Tw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZKqilFZW; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MhcAX9LX"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4383AC116C6;
-	Sat, 14 Feb 2026 01:06:57 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZKqilFZW"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id E1979C19425;
+	Sat, 14 Feb 2026 03:13:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771031218;
-	bh=aLnq3Vhro09RFihhmybNksuVx+/a8US1ZR2sadPBDvE=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=MhcAX9LXEKx0cIfuY0DUr9QIep8lApaV7mMBmI0sN0EQPrK1g0XXseDpR7sh94bxP
-	 Lm+xz2rasEW5SGOw0ZVa+3pmLFR8Zx7dlsGHW2m2H04m96MaqrWAGNci6wFVGYEAiR
-	 ZKK2CScfn8EKhMX+jYq9ToWSwCk6DUU08sE1W5STHQ5m3BgJ7pd0On+2kp53csDCNL
-	 O4HocxPzayW5m4Er+zJA2ZGo4AKsYdsRJsN9fCBbVXAfbZIP4/SaZ1DjY6WLEqUngp
-	 kbYGYiuL9SwL1+1ki5aJa0VNm+nMwckGpC8b2GtkU8kxZOdGnyBlQRXNI8rAn10l+o
-	 rGImIs4M0Zalg==
-From: Sasha Levin <sashal@kernel.org>
-To: patches@lists.linux.dev,
-	stable@vger.kernel.org
-Cc: Ziyi Guo <n7l8m4@u.northwestern.edu>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Sasha Levin <sashal@kernel.org>,
-	brgl@kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.19-6.12] power: sequencing: fix missing state_lock in pwrseq_power_on() error path
-Date: Fri, 13 Feb 2026 19:59:48 -0500
-Message-ID: <20260214010245.3671907-108-sashal@kernel.org>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20260214010245.3671907-1-sashal@kernel.org>
-References: <20260214010245.3671907-1-sashal@kernel.org>
+	s=k20201202; t=1771038831;
+	bh=WLZmkmhFYdcNnkh/XlxKeigsMzqlyV8nVr425RZELOY=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=ZKqilFZWmSoSKUwCgKgROLveLP11R8Be9GMSSQhRDDwNx1yYdSDGYscxAbkMt9GzA
+	 1wDx1g++MnUor0vrC6fqp7Wynp2Za6s+sPqFdNMifsLAPowzzvNssZyFhUL4JwwGFz
+	 nvMyHh6xtj4Gw+eq8bnPg3Ba+kz34bCmFiuQhQfMtARVo6LSQJ1IMjzo5z2meN4NYp
+	 4/MikdRGHSq0jU/g7vfe4oRbVKTKnLh7KbbOC6lo5XaNj/doe0EEUvKReVj8cODShU
+	 ez5j4k9QrCon3XT1RacRnGE7LayT/c0w+kjnibZ6USnQVctpMGCUjlG7iLlXwodtQ3
+	 HtCssdj2BoTBw==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6039EF99F3;
+	Sat, 14 Feb 2026 03:13:50 +0000 (UTC)
+From: Amit Sunil Dhamne via B4 Relay <devnull+amitsd.google.com@kernel.org>
+Date: Sat, 14 Feb 2026 03:12:38 +0000
+Subject: [PATCH v6 2/6] dt-bindings: usb: maxim,max33359: Add supply
+ property for vbus
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.19
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260214-max77759-charger-v6-2-28c09bda74b4@google.com>
+References: <20260214-max77759-charger-v6-0-28c09bda74b4@google.com>
+In-Reply-To: <20260214-max77759-charger-v6-0-28c09bda74b4@google.com>
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
+ Lee Jones <lee@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Badhri Jagan Sridharan <badhri@google.com>, 
+ Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+ Peter Griffin <peter.griffin@linaro.org>, 
+ Tudor Ambarus <tudor.ambarus@linaro.org>, 
+ Alim Akhtar <alim.akhtar@samsung.com>, Mark Brown <broonie@kernel.org>, 
+ Matti Vaittinen <mazziesaccount@gmail.com>, 
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-usb@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, 
+ RD Babiera <rdbabiera@google.com>, Kyle Tso <kyletso@google.com>, 
+ Amit Sunil Dhamne <amitsd@google.com>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1771038829; l=1272;
+ i=amitsd@google.com; s=20241031; h=from:subject:message-id;
+ bh=hO3jE5vZwcs3nIUa5JIBhqGJMZgYUXM9f+tqxZAu+xk=;
+ b=hCGK4erO8B1fAgK9uQXf2wXvuvyimeTZbcILZPRCyogMUIqzeEBokOvBHBLxwcVfSb1QqOz57
+ UfMEU9JUEH1BBVk/U3r+uFv9hRyGwCRZTek39pNLWaS3Plow2csEfO4
+X-Developer-Key: i=amitsd@google.com; a=ed25519;
+ pk=wD+XZSST4dmnNZf62/lqJpLm7fiyT8iv462zmQ3H6bI=
+X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
+ auth_id=262
+X-Original-From: Amit Sunil Dhamne <amitsd@google.com>
+Reply-To: amitsd@google.com
 
-From: Ziyi Guo <n7l8m4@u.northwestern.edu>
+From: Amit Sunil Dhamne <amitsd@google.com>
 
-[ Upstream commit e1dccb485c2876ac1318f36ccc0155416c633a48 ]
+Add a regulator supply property for vbus. This notifies the regulator
+provider to source vbus when Type-C operates in Source power mode,
+while turn off sourcing vbus when operating in Sink mode or
+disconnected.
 
-pwrseq_power_on() calls pwrseq_unit_disable() when the
-post_enable callback fails. However, this call is outside the
-scoped_guard(mutex, &pwrseq->state_lock) block that ends.
-
-pwrseq_unit_disable() has lockdep_assert_held(&pwrseq->state_lock),
-which will fail when called from this error path.
-
-Add the scoped_guard block to cover the post_enable callback and its
-error handling to ensure the lock is held when pwrseq_unit_disable() is
-called.
-
-Signed-off-by: Ziyi Guo <n7l8m4@u.northwestern.edu>
-Link: https://patch.msgid.link/20260130182651.1576579-1-n7l8m4@u.northwestern.edu
-Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 ---
+ Documentation/devicetree/bindings/usb/maxim,max33359.yaml | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-LLM Generated explanations, may be completely bogus:
-
-The power sequencing core was introduced in v6.11. So this fix is
-relevant for stable trees v6.11.y and later (6.12.y, 6.13.y, etc.).
-
-### 8. SELF-CONTAINEDNESS
-
-This is a completely self-contained fix. It doesn't depend on any other
-patches. It simply wraps two existing lines of code with the appropriate
-lock scope.
-
-### VERDICT
-
-**Meets stable criteria:**
-- **Obviously correct**: Yes — the lock is required (enforced by
-  `lockdep_assert_held`), and it was missing.
-- **Fixes a real bug**: Yes — lockdep assertion failure and potential
-  race condition.
-- **Small and contained**: Yes — 6 lines changed in 1 file.
-- **No new features**: Correct — purely a locking fix.
-- **Low regression risk**: Adding a lock that was already required by
-  the callee.
-
-The fix is small, surgical, obviously correct, and fixes a real locking
-bug that would trigger lockdep warnings and could lead to race
-conditions. It meets all stable kernel criteria.
-
-**YES**
-
- drivers/power/sequencing/core.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/sequencing/core.c b/drivers/power/sequencing/core.c
-index 190564e559885..1fcf0af7cc0bb 100644
---- a/drivers/power/sequencing/core.c
-+++ b/drivers/power/sequencing/core.c
-@@ -914,8 +914,10 @@ int pwrseq_power_on(struct pwrseq_desc *desc)
- 	if (target->post_enable) {
- 		ret = target->post_enable(pwrseq);
- 		if (ret) {
--			pwrseq_unit_disable(pwrseq, unit);
--			desc->powered_on = false;
-+			scoped_guard(mutex, &pwrseq->state_lock) {
-+				pwrseq_unit_disable(pwrseq, unit);
-+				desc->powered_on = false;
-+			}
- 		}
- 	}
+diff --git a/Documentation/devicetree/bindings/usb/maxim,max33359.yaml b/Documentation/devicetree/bindings/usb/maxim,max33359.yaml
+index 3de4dc40b791..e652a24902ea 100644
+--- a/Documentation/devicetree/bindings/usb/maxim,max33359.yaml
++++ b/Documentation/devicetree/bindings/usb/maxim,max33359.yaml
+@@ -32,6 +32,9 @@ properties:
+     description:
+       Properties for usb c connector.
  
++  vbus-supply:
++    description: Regulator to control sourcing Vbus.
++
+ required:
+   - compatible
+   - reg
+@@ -53,6 +56,7 @@ examples:
+             reg = <0x25>;
+             interrupt-parent = <&gpa8>;
+             interrupts = <2 IRQ_TYPE_LEVEL_LOW>;
++            vbus-supply = <&chgin_otg_reg>;
+ 
+             connector {
+                 compatible = "usb-c-connector";
+
 -- 
-2.51.0
+2.53.0.273.g2a3d683680-goog
+
 
