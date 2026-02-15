@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 54781149E17;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58D5815ECCC;
 	Sun, 15 Feb 2026 19:00:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771182046; cv=none; b=iRn3LeuFawwBpij6xlyUaHVxA5TrUiTA3fAoQyjmagJSDbZOAF/gX/ej70buvEex8pKTPapdE9vsSgMWOI2Mze6XoufSbyAN6yvLDi96Ls+2ZdEPl7y7ZSDelMCVnmEZewJdYusODOW830FTf+o6HeuLM0VUbjVAVVYwmDazjsk=
+	t=1771182046; cv=none; b=LXS3Kg31/+aTQ7RSVrHGMiASasc8GAFAdjqCSS/lYsSI/t1OiMqWk1z6A7b1IPuFhN/LjATLLh0ehpdFnWp9NYxhZDiQsCT3AJzRX/dRpUQAIb4WqTaL59Kaw1pto0195wICfJK6Vclvpk2fhsoEG6BhwcKYEtdJvYB+8uYV+UY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1771182046; c=relaxed/simple;
-	bh=dF6Y79PNFZiEWY4PL7UAYOsByXEL30pvzMVmxPOmG+M=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=O5yEtCC7+PF402DxX/LsUhTzGK3rlCte8fV6vVFkMehxz+FvK7RJpJyabJT/u3gZ+C6Orvy3nV9vAoVrYATnHljcYh0RXfmg9E4AjZR+42/vm8qH0Q1Xog9+6RDcJZh5PG4Wl9oP8zkfDA2NPsHu2Ux2gWwRbhxUC5PQi/Wo9W0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=o1KgH7+L; arc=none smtp.client-ip=10.30.226.201
+	bh=wYTnJaBMBsMKTzzb60ulEhgq9fyH+kQ0QpPvYbf16Uw=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=SoDjGGczbk2iZb0fdYCOdRnTVS/TOtOp9iRO3fFvB7xMfwRT4/k1KoBDrDbjKh14zZG8XEkHr2GTozdpRsi0yU5cN9X4NlkJl3nmKUz4cCiaENZ3MAdYvFRBe/7RiOw6ISem0AGodFJ9QYNaD9p2eBy4kxXuUatS6itq699I/Tc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JRJX/rgq; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="o1KgH7+L"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id E037DC4CEF7;
-	Sun, 15 Feb 2026 19:00:45 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JRJX/rgq"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 335EFC2BCB1;
+	Sun, 15 Feb 2026 19:00:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1771182046;
-	bh=dF6Y79PNFZiEWY4PL7UAYOsByXEL30pvzMVmxPOmG+M=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=o1KgH7+LhD3TEf0tPDKzs1kn7jCsso0QwavbDCyLHecAK4XCm/GNcyjjZqgKTk3ex
-	 RumMat0lb0X1jHE4nvAhMsq3PaZTM6mISazj4P0ETFPYbdrfb5EU/KYCl3PWsXOpoB
-	 DTZT4x3v6t1qjXlHZrvrsC6sUV6cW8vlqug6WueqsAdE0j7CaCTheeCsAuGcxZd9QW
-	 SjCYmkeU9ry8EF6kV91Z4PoewvDDqyG9BeWrixIPrskNEWSC0ORB6463rnk+u9YWLv
-	 PsbXiQfRf6XCPWDkZ+wZrWl2LXXkucTT58UxNyoJbo/9lZRMFfxea1NSRf3A3mDYbK
-	 2eCiYwr1CcosA==
+	bh=wYTnJaBMBsMKTzzb60ulEhgq9fyH+kQ0QpPvYbf16Uw=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=JRJX/rgq6MIlxGPmiGkU7l62fhE+zV4C7kMpZKFL+TpQoL+BSrdCUMmDtrFU2S+gK
+	 m0p1RMCkGkbqZcV+pfmgh8ALLUG7g7AiyxQwp0oBZpa1UCkN624cNarRqoaEklndrB
+	 dAGF7YqjKoi/Ntm66Sx4J7OvxMXZB5anBHCGO4MBBpRU/CxXUDPiShZH1MVcpwbaA8
+	 eLLR9DNK4G1JmXs/Bg2K4KtwCftXB5tPZznMJkhiw7kQ8K8j3mjXSnMAOuN4fn0lgo
+	 wgL3DH/8xZtrLjXa34GgVP11Agtf1BV8Wi3JSi+3Oo46lz2jixOK6hfcViKtUgZod/
+	 pz8dnxaWTlUCw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7130E63F0C;
-	Sun, 15 Feb 2026 19:00:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2103CE63F08;
+	Sun, 15 Feb 2026 19:00:46 +0000 (UTC)
 From: Kairui Song via B4 Relay <devnull+kasong.tencent.com@kernel.org>
-Subject: [PATCH v3 0/3] mm/swap: hibernate: improve hibernate performance
- with new allocator
-Date: Mon, 16 Feb 2026 03:00:24 +0800
-Message-Id: <20260216-hibernate-perf-v3-0-74e025091145@tencent.com>
+Date: Mon, 16 Feb 2026 03:00:27 +0800
+Subject: [PATCH v3 3/3] mm, swap: merge common convention and simplify
+ allocation helper
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,11 +41,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/33MQQ7CIBCF4asY1mLoVEp15T2Miw4d7CykDRCia
- Xp3aRMXunD5v+R9s4gUmKI472YRKHPk0Zeo9zthh87fSXJfWoCCRkEFcmCk4LtEcqLgpENj2ho
- BQYMopymQ4+cGXm+lB45pDK/Nz9W6fij9S+VKKum0JjoRNabHSyJvyaeDHR9ixTL8B6AA1kFrj
- UZ1RPMNLMvyBjRrLPjvAAAA
-X-Change-ID: 20260212-hibernate-perf-fb7783b2b252
+Message-Id: <20260216-hibernate-perf-v3-3-74e025091145@tencent.com>
+References: <20260216-hibernate-perf-v3-0-74e025091145@tencent.com>
+In-Reply-To: <20260216-hibernate-perf-v3-0-74e025091145@tencent.com>
 To: linux-mm@kvack.org
 Cc: Andrew Morton <akpm@linux-foundation.org>, Chris Li <chrisl@kernel.org>, 
  Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, 
@@ -53,14 +51,13 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Chris Li <chrisl@kernel.org>,
  Carsten Grohmann <mail@carstengrohmann.de>, 
  "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, 
  "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>, 
- Carsten Grohmann <carstengrohmann@gmx.de>, Kairui Song <kasong@tencent.com>, 
- stable@vger.kernel.org
+ Carsten Grohmann <carstengrohmann@gmx.de>, Kairui Song <kasong@tencent.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1771182044; l=2672;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1771182044; l=2624;
  i=kasong@tencent.com; s=kasong-sign-tencent; h=from:subject:message-id;
- bh=dF6Y79PNFZiEWY4PL7UAYOsByXEL30pvzMVmxPOmG+M=;
- b=5uoOa6dYgg4V5j9K4LZOCSYQHHvdzzvl/ZfwhWzim0Y8GqweS5RWo5Oj7ZRfTiSEws3cK37UU
- m12I+YzVF1MCrOSc0F7thaGgrMnaF+aPi3RmD6LyKbPtfzcj9ZdLYcB
+ bh=l6JMKyznXv7F/U7uxICNhzFyjw8qBx6KKx0n+2vekQ4=;
+ b=sKhh/YKyxlJMwOjmKcgVwcMjFOKElcHZFjBnSNbb504y4+zD57nffhL0T4FZ7GzMEpV5Yxxsh
+ yzIfZ8b685RDNlsDQpp54AYE4JVMm8yao6S3CSzFm7RT/IqRLvGfxDN
 X-Developer-Key: i=kasong@tencent.com; a=ed25519;
  pk=kCdoBuwrYph+KrkJnrr7Sm1pwwhGDdZKcKrqiK8Y1mI=
 X-Endpoint-Received: by B4 Relay for kasong@tencent.com/kasong-sign-tencent
@@ -68,66 +65,84 @@ X-Endpoint-Received: by B4 Relay for kasong@tencent.com/kasong-sign-tencent
 X-Original-From: Kairui Song <kasong@tencent.com>
 Reply-To: kasong@tencent.com
 
-The new swap allocator didn't provide a high-performance allocation
-method for hibernate, and just left it using the easy slow path. As a
-result, hibernate performance is quite bad on some devices
+From: Kairui Song <kasong@tencent.com>
 
-Fix it by implementing hibernate support for the fast allocation path.
-
-This regression seems only happen with SSD devices with poor 4k
-performance. I've tested on several different NVME and SSD setups, the
-performance diff is tiny on them, but testing on a Samsung SSD 830
-Series (SATA II, 3.0 Gbps) showed a big difference [1]:
-
-Test result with Samsung SSD 830 Series (SATA II, 3.0 Gbps) thanks
-to Carsten Grohmann [1]:
-6.19:               324 seconds
-After this series:  35 seconds
-
-Test result with SAMSUNG MZ7LH480HAHQ-00005 (SATA 3.2, 6.0 Gb/s):
-Before 0ff67f990bd4: Wrote 2230700 kbytes in 4.47 seconds (499.03 MB/s)
-After 0ff67f990bd4: Wrote 2215472 kbytes in 4.44 seconds (498.98 MB/s)
-After this series: Wrote 2038748 kbytes in 4.04 seconds (504.64 MB/s)
-
-Test result with Memblaze P5910DT0384M00:
-Before 0ff67f990bd4: Wrote 2222772 kbytes in 0.84 seconds (2646.15 MB/s)
-After 0ff67f990bd4: Wrote 2224184 kbytes in 0.90 seconds (2471.31 MB/s)
-After this series: Wrote 1559088 kbytes in 0.55 seconds (2834.70 MB/s)
-
-The performance is almost the same for blazing fast SSDs, but for some
-SSDs, the performance is several times better.
-
-Patch 1 improves the hibernate performance by using the fast path, and
-patch 2 cleans up the code a bit since there are now multiple fast path
-users using similar conventions.
+Almost all callers of the cluster scan helper require the: lock -> check
+usefulness/emptiness check -> allocate -> unlock routine. So merge them
+into the same helper to simplify the code.
 
 Signed-off-by: Kairui Song <kasong@tencent.com>
-Tested-by: Carsten Grohmann <mail@carstengrohmann.de>
-Link: https://lore.kernel.org/linux-mm/8b4bdcfa-ce3f-4e23-839f-31367df7c18f@gmx.de/ [1]
 ---
-Changes in v3:
-- Split the indention change to a standalone patch.
-- Update mail address and add Cc stable.
-- Link to v2: https://lore.kernel.org/r/20260215-hibernate-perf-v2-0-cf28c75b04b7@tencent.com
+ mm/swapfile.c | 30 ++++++++----------------------
+ 1 file changed, 8 insertions(+), 22 deletions(-)
 
-Changes in v2:
-- Based on mm-unstable, resend using b4's relay to fix mismathed patch content.
-- Link to v1: https://lore.kernel.org/r/20260215-hibernate-perf-v1-0-f55ee9ee67db@tencent.com
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index 0d1b17c99221..68dbbbd0dd24 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -923,11 +923,14 @@ static unsigned int alloc_swap_scan_cluster(struct swap_info_struct *si,
+ 	bool need_reclaim, ret, usable;
+ 
+ 	lockdep_assert_held(&ci->lock);
+-	VM_WARN_ON(!cluster_is_usable(ci, order));
+ 
+-	if (end < nr_pages || ci->count + nr_pages > SWAPFILE_CLUSTER)
++	if (!cluster_is_usable(ci, order) || end < nr_pages ||
++	    ci->count + nr_pages > SWAPFILE_CLUSTER)
+ 		goto out;
+ 
++	if (cluster_is_empty(ci))
++		offset = cluster_offset(si, ci);
++
+ 	for (end -= nr_pages; offset <= end; offset += nr_pages) {
+ 		need_reclaim = false;
+ 		if (!cluster_scan_range(si, ci, offset, nr_pages, &need_reclaim))
+@@ -1060,14 +1063,7 @@ static unsigned long cluster_alloc_swap_entry(struct swap_info_struct *si,
+ 			goto new_cluster;
+ 
+ 		ci = swap_cluster_lock(si, offset);
+-		/* Cluster could have been used by another order */
+-		if (cluster_is_usable(ci, order)) {
+-			if (cluster_is_empty(ci))
+-				offset = cluster_offset(si, ci);
+-			found = alloc_swap_scan_cluster(si, ci, folio, offset);
+-		} else {
+-			swap_cluster_unlock(ci);
+-		}
++		found = alloc_swap_scan_cluster(si, ci, folio, offset);
+ 		if (found)
+ 			goto done;
+ 	}
+@@ -1332,14 +1328,7 @@ static bool swap_alloc_fast(struct folio *folio)
+ 		return false;
+ 
+ 	ci = swap_cluster_lock(si, offset);
+-	if (cluster_is_usable(ci, order)) {
+-		if (cluster_is_empty(ci))
+-			offset = cluster_offset(si, ci);
+-		alloc_swap_scan_cluster(si, ci, folio, offset);
+-	} else {
+-		swap_cluster_unlock(ci);
+-	}
+-
++	alloc_swap_scan_cluster(si, ci, folio, offset);
+ 	put_swap_device(si);
+ 	return folio_test_swapcache(folio);
+ }
+@@ -1945,10 +1934,7 @@ swp_entry_t swap_alloc_hibernation_slot(int type)
+ 		pcp_offset = this_cpu_read(percpu_swap_cluster.offset[0]);
+ 		if (pcp_si == si && pcp_offset) {
+ 			ci = swap_cluster_lock(si, pcp_offset);
+-			if (cluster_is_usable(ci, 0))
+-				offset = alloc_swap_scan_cluster(si, ci, NULL, pcp_offset);
+-			else
+-				swap_cluster_unlock(ci);
++			offset = alloc_swap_scan_cluster(si, ci, NULL, pcp_offset);
+ 		}
+ 		if (!offset)
+ 			offset = cluster_alloc_swap_entry(si, NULL);
 
----
-Kairui Song (3):
-      mm, swap: speed up hibernation allocation and writeout
-      mm, swap: reduce indention for hibernate allocation helper
-      mm, swap: merge common convention and simplify allocation helper
-
- mm/swapfile.c | 55 +++++++++++++++++++++++++------------------------------
- 1 file changed, 25 insertions(+), 30 deletions(-)
----
-base-commit: 53f061047924205138ad9bc315885255f7cc4944
-change-id: 20260212-hibernate-perf-fb7783b2b252
-
-Best regards,
 -- 
-Kairui Song <kasong@tencent.com>
+2.52.0
 
 
