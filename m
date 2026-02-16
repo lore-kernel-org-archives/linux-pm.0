@@ -1,192 +1,240 @@
-Received: from mail-vk1-f179.google.com (mail-vk1-f179.google.com [209.85.221.179])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from relay.yourmailgateway.de (relay.yourmailgateway.de [194.59.206.189])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF7A72749D5
-	for <linux-pm@vger.kernel.org>; Mon, 16 Feb 2026 08:54:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3AC92F6922;
+	Mon, 16 Feb 2026 10:12:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=194.59.206.189
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771232078; cv=none; b=uZ+hp1P+UhycjyPrfHACmLS3LJqDd9a0N29R4fkyBtvq4pUgnWVyVeivD+DfDse/Olfb+En087qn8Y+J/5ifz+L3K+3jytDoRLTyt3RHhGem5luTweDBJUp5DbI/yi5ZGpyQLxEvQqITgeLlrGYnayKCg1tbbvpyTNaJhaXx+6s=
+	t=1771236725; cv=none; b=URumOIvr/Psb5/A8EX2k/POSCGR4ApAQwJ5UQ3oqmeQRj84Q+waExIvLRKQktmFtfjGAxv+10OkXCbFa4P8W8rNNkQ3CSsY0rqiI8fLrRJaIjusj7IjqyeI3bkedxgYkZKwd4KeGRQF9qLqpXYW6nv2L7IeVX3s4GOb582kmho8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771232078; c=relaxed/simple;
-	bh=xe6iy91Dnkp2s7PGFf6JlSYAsMMbjCE4ZJ2vNs/NJvU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=og8ZdyhMbsRFReL5sOdxQV/IzAZPlELbYe8yclkH0n2kCI9jhJE67WilZsgD/628LUQdzmlbprNo6EBVSdtoxXPNsDZMcKtWKHxJYQ3wZuP3/TkglmkT2Y+R9c8KzQfE1JD1ewc3UTFVohdO80z9KESlwZupt6v9SuLqlBAPZHQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vk1-f179.google.com with SMTP id 71dfb90a1353d-566fe6a4ceeso1291360e0c.3
-        for <linux-pm@vger.kernel.org>; Mon, 16 Feb 2026 00:54:36 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1771232075; x=1771836875;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=amIuxySa6dDUHXa+BAvlMLYYKh0V6dJe17/ltsM6dbs=;
-        b=k5SE7Of/52qt7VOI4PCqD2cqzqrXUd9ydwNX7xKUVzSyNFr2O4UNyHpb7hUnZzIstR
-         7Eb759IqUIsvxe5Xn2meGRHu/ebJb44pBMXkOrmY/7NP0L4TcarDP9DP7XGJgILnJv7K
-         rQ8S3+BF+xi8GoT165RW1Lk5hqmZ8it8iS51mlkcAfyCMAnQ1UNxLOC7icgdLMlWLLdj
-         ScjAQVmu8r546oC7DpvoD+kbdjEGJeuIQlV41iC8m4SABTZoY3llm4/pNjxUlGmjq+v4
-         XRcHBYWIh1oTd8KkuGNYRQEQP7uHDJw+PBL9EYeftbUzoknfoo+bPUBTs03NdVTJgcAu
-         QtGg==
-X-Forwarded-Encrypted: i=1; AJvYcCVA0HvIDvpCz9aGsXr46/BhT2N1kb04SGcylULqhAJLmUs8+C/nVV964iWRsYY6F0m+Aw16svtGqQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxiUESWg6HlD+LCFVueeIP/iXInj5axL7dUmevgy1ldyPgRH5Y4
-	SwYn1TwaGc/UxNfqIxuAIYpzizuytE9yZnBU7v4EOu7TeWEjBS4WRvSs2a4ayb82
-X-Gm-Gg: AZuq6aJuUN5aAf3s+WzssIltDpxOuPyXY/TKdnkJJOyoe+nzPH2mO3lCQ8B8JC443Kh
-	jAwZyjc0R18pALpBcAYz/64vvKfz6CCW2p3s8pkXdIwuVJlkbh1mAJnZDuUhdaAykoCBhMYoy2z
-	nMdJSQ7SMRj+C+bCzI3N7yJw0XznV43BIpYh4K3MtY+boXucvja4XTxGPgYFDme3MPYPJ1HmBP7
-	jxwh58XnJevA7TS52hbONsdLvxOpeUy6SKihvytjLBZSwmxKF5OXBrVoaGWkJj5QzzBIF3lPUr/
-	vK3OUfNKN2ne0G21qADV4SZ5H3HLAdJnC6XhPTBOa6rK9WNZ8XucnFXDRvt5N52tS5jTXFTcbBD
-	Gofz661ZsuE+Dq2rLOTqLUElJH5lQkdniumAWTEfhVWvRc6SkohKe7foPtAUAhtgnKhhja2MAFg
-	bkbXDnvGHyDztt7QxDXspFIk1W6RqhluKR5R/2sSyNmkY8MmH9X3E2mcc+V++E
-X-Received: by 2002:a05:6122:178e:b0:566:21af:5d78 with SMTP id 71dfb90a1353d-5676a923ad6mr2734083e0c.10.1771232075559;
-        Mon, 16 Feb 2026 00:54:35 -0800 (PST)
-Received: from mail-vs1-f44.google.com (mail-vs1-f44.google.com. [209.85.217.44])
-        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-94afd33f622sm7858462241.10.2026.02.16.00.54.35
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 16 Feb 2026 00:54:35 -0800 (PST)
-Received: by mail-vs1-f44.google.com with SMTP id ada2fe7eead31-5fdb47d6131so498217137.3
-        for <linux-pm@vger.kernel.org>; Mon, 16 Feb 2026 00:54:35 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCVAiJvZRrmj6l4N0clw2XDO0z/9eTa8iCjF/pAm5LEneJ9dABYIIgANjSE5lIAp+M7O6xDuwtg1dA==@vger.kernel.org
-X-Received: by 2002:a05:6102:5110:b0:5ef:bd3a:ab1f with SMTP id
- ada2fe7eead31-5fe1afbda79mr3606828137.34.1771232075129; Mon, 16 Feb 2026
- 00:54:35 -0800 (PST)
+	s=arc-20240116; t=1771236725; c=relaxed/simple;
+	bh=a+AO+N0+hMxxllOMS8tpgXXdmhfQk3hL5bqO+vhsQgk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=rKZhppwc7VRnheUgjEd9esX3OWlyB64uDQSDfkHh8RES8unDIMlfEiFVqkJn9qnck39yh5gGBmIsqMipwbKBZv9RilXxIwAAsHrinmsQa2qD+p6YXriP/KZwnOQDuUGoxVTn55eDjquHlOAer3QvljuQZvcl8iFn++jaVENxZdc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=leemhuis.info; spf=pass smtp.mailfrom=leemhuis.info; dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b=kUbAkeBx; arc=none smtp.client-ip=194.59.206.189
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=leemhuis.info
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=leemhuis.info
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b="kUbAkeBx"
+Received: from relay02-mors.netcup.net (localhost [127.0.0.1])
+	by relay02-mors.netcup.net (Postfix) with ESMTPS id 4fDz8d1zVtz49BJ;
+	Mon, 16 Feb 2026 11:12:01 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=leemhuis.info;
+	s=key2; t=1771236721;
+	bh=a+AO+N0+hMxxllOMS8tpgXXdmhfQk3hL5bqO+vhsQgk=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=kUbAkeBxx1i8a8r8alwVKB0kc3gnlrOt5PnOHYvSv7a53+uFcfRhYdi4lJqYWtKIQ
+	 MmqLQ/rXXpOmGigCoyvwuxsWtLC2S9cFTryWeYIUHIRwIimvt/EIXY+1aDuUnpZLfa
+	 N3gFs94+H/Q5uT+ZDfQyffwXYln4QXRaXclla4tHpe1ZHkMPUp/TDsBR5j0jIrx7Ly
+	 FTVXxS4yPdCUZdKUsJOiQroADvkiJOaOGdExfXO1Gx9P0knMXC+oIILiqSVbwBsooB
+	 6vQ9YD735DLkVNffej+wpMwfCFJJZOTY5uFUjEf3fTiZP/ZUUtrZAHRCCcvdFaAb7m
+	 CHSLV86sT1u5w==
+Received: from policy02-mors.netcup.net (unknown [46.38.225.35])
+	by relay02-mors.netcup.net (Postfix) with ESMTPS id 4fDz8d1GY6z7vjk;
+	Mon, 16 Feb 2026 11:12:01 +0100 (CET)
+Received: from mxe9fb.netcup.net (unknown [10.243.12.53])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by policy02-mors.netcup.net (Postfix) with ESMTPS id 4fDz8b6gs8z8sbC;
+	Mon, 16 Feb 2026 11:11:59 +0100 (CET)
+Received: from [IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f] (unknown [IPv6:2a02:8108:8984:1d00:a0cf:1912:4be:477f])
+	by mxe9fb.netcup.net (Postfix) with ESMTPSA id C2154670B2;
+	Mon, 16 Feb 2026 11:11:58 +0100 (CET)
+Authentication-Results: mxe9fb;
+        spf=pass (sender IP is 2a02:8108:8984:1d00:a0cf:1912:4be:477f) smtp.mailfrom=regressions@leemhuis.info smtp.helo=[IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f]
+Received-SPF: pass (mxe9fb: connection is authenticated)
+Message-ID: <1e8e416e-e474-4288-9686-1ba2b88e4946@leemhuis.info>
+Date: Mon, 16 Feb 2026 11:11:58 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <CAMuHMdWapT40hV3c+CSBqFOW05aWcV1a6v_NiJYgoYi0i9_PDQ@mail.gmail.com>
- <0e9f963b-00e0-43d1-b567-cb10b8f66df1@mailbox.org> <CAMuHMdVOUzanEufhWqOL0nv81xCYh4YNAX_waG6y9PyUZ030tg@mail.gmail.com>
-In-Reply-To: <CAMuHMdVOUzanEufhWqOL0nv81xCYh4YNAX_waG6y9PyUZ030tg@mail.gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 16 Feb 2026 09:54:23 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdU-jRhW65cxeApFbCK+XgRazPOTABcbmBC3J38pwXfzJQ@mail.gmail.com>
-X-Gm-Features: AaiRm53fj_d9e6w8NbwYy6InUSZHagi7WeBARKJlpME8J2ANfsii8ZwJtSbH60k
-Message-ID: <CAMuHMdU-jRhW65cxeApFbCK+XgRazPOTABcbmBC3J38pwXfzJQ@mail.gmail.com>
-Subject: Re: drm/imagination: genpd_runtime_suspend() crash
-To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Frank Binns <frank.binns@imgtec.com>, Matt Coster <matt.coster@imgtec.com>, 
-	Marek Vasut <marek.vasut@mailbox.org>, DRI Development <dri-devel@lists.freedesktop.org>, 
-	Linux PM list <linux-pm@vger.kernel.org>, 
-	Linux-Renesas <linux-renesas-soc@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] drm/imagination: Convert to
+ dev_pm_domain_{at,de}tach_list()
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Marek Vasut <marek.vasut@mailbox.org>,
+ Matt Coster <Matt.Coster@imgtec.com>, Frank Binns <Frank.Binns@imgtec.com>,
+ Brajesh Gupta <Brajesh.Gupta@imgtec.com>,
+ Alessio Belle <Alessio.Belle@imgtec.com>,
+ Alexandru Dadu <Alexandru.Dadu@imgtec.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "regressions@lists.linux.dev" <regressions@lists.linux.dev>
+References: 
+ <194465eda54d1f852a9226cf691ddc5aa208e0a3.1769097977.git.geert+renesas@glider.be>
+ <ffdf3982-e22c-4d01-afa6-5449ed381000@imgtec.com>
+ <CAMuHMdWMh_oJFg-KtapcTDGvYWZ-hg_ZEJ2=E5Tp1apOEc8tnQ@mail.gmail.com>
+ <b3b4f10e-1222-44f7-b308-db7199c67147@mailbox.org>
+ <3e0def93-2f6c-4bcf-8ee5-bf607f2ca382@imgtec.com>
+ <f5d3dde6-edec-42f4-93cb-459c8677245a@mailbox.org>
+ <f82b7734-6ddc-4029-b38d-147e9a1de021@leemhuis.info>
+ <fcf5ab75-029e-469e-8b2a-51fa5c2a2374@mailbox.org>
+ <95fd3f52-c3ed-40c5-920f-11e8767f701d@leemhuis.info>
+ <CAMuHMdV-g+3kTaG6Ost4iHo1Tdi_H=qscLBkBRWuR+6DG5c=SA@mail.gmail.com>
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Content-Language: de-DE, en-US
+In-Reply-To: 
+ <CAMuHMdV-g+3kTaG6Ost4iHo1Tdi_H=qscLBkBRWuR+6DG5c=SA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-PPP-Message-ID: 
+ <177123671937.2266701.10423482834657101236@mxe9fb.netcup.net>
+X-Rspamd-Server: rspamd-worker-8404
+X-Rspamd-Queue-Id: C2154670B2
+X-NC-CID: Swv/WlwzdIdf24tNqMkmQ1BuziVKRer+tsBF9YerTC2RIfRt8MM=
 
-Hi Ulf, Rafael,
+[top-posting to make sure everybody is aware that involving Linus for a
+judgement call is on the table]
 
-On Thu, 22 Jan 2026 at 16:35, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Sat, 3 Jan 2026 at 19:25, Marek Vasut <marek.vasut@mailbox.org> wrote:
-> > On 10/29/25 3:08 PM, Geert Uytterhoeven wrote:
-> > >       default_suspend_ok+0xb4/0x20c (P)
-> > >       genpd_runtime_suspend+0x11c/0x4e0
-> > >       __rpm_callback+0x44/0x1cc
-> > >       rpm_callback+0x6c/0x78
-> > >       rpm_suspend+0x108/0x564
-> > >       pm_runtime_work+0xb8/0xbc
-> > >       process_one_work+0x144/0x280
-> > >       worker_thread+0x2c8/0x3d0
-> > >       kthread+0x128/0x1e0
-> > >       ret_from_fork+0x10/0x20
-> > >      Code: aa1303e0 52800863 b0005661 912dc021 (f9402095)
-> > >      ---[ end trace 0000000000000000 ]---
-> > >
-> > > This driver uses manual PM Domain handling for multiple PM Domains.  In
-> > > my case, pvr_power_domains_fini() calls dev_pm_domain_detach() (twice),
-> > > which calls dev_pm_put_subsys_data(), and sets dev->power.subsys_data to
-> > > NULL when psd->refcount reaches zero.
-> > >
-> > > Later/in parallel, default_suspend_ok() calls dev_gpd_data():
-> > >
-> > >      static inline struct generic_pm_domain_data *dev_gpd_data(struct
-> > > device *dev)
-> > >      {
-> > >              return to_gpd_data(dev->power.subsys_data->domain_data);
-> > >      }
-> > >
-> > > triggering the NULL pointer dereference.  Depending on timing, it may
-> > > crash earlier or later in genpd_runtime_suspend(), or not crash at all
-> > > (initially, I saw it only with extra debug prints in the genpd subsystem).
-> >
-> > I came to the same conclusion when revisiting it yesterday and today.
-> >
-> > The power 3dg-{a,b} domains are in RPM_SUSPENDING state, the
-> > __rpm_callback() is running and it unlocks dev->power.lock spinlock for
-> > just long enough, that the pvr_power_domains_fini() can issue
-> > dev_pm_domain_detach() and then dev_pm_put_subsys_data() , which unsets
-> > subsys_data, which are later still used by the __rpm_callback() (really
-> > the genpd_runtime_suspend() -> suspend_ok() it calls for this domain).
-> >
-> > But, I wonder if the problem is actually in the CPG MSSR clock domain
-> > driver. The pvr_power_domains_fini() dev_pm_domain_detach() really calls
-> > cpg_mssr_detach_dev() which calls pm_clk_destroy() and that invokes the
-> > dev_pm_domain_detach() which unsets the subsys_data . The
-> > pm_clk_destroy() documentation is explicit about it unsetting the
-> > subsys_data .
-> >
-> > I wonder if what we need to do instead, is patch the CPG MSSR clock
-> > domain driver such, that it would surely NOT call pm_clk_destroy()
-> > before the domain transitioned from RPM_SUSPENDING -> RPM_SUSPENDED
-> > state and surely is done with all its __rpm_callback() invocations ?
-> >
-> > Can you please test this change and see if it fixes the problem ?
-> >
-> > The barrier should guarantee that the domain is settled and no more
-> > callbacks are still running.
->
-> Thank you, that indeed fixes the issue!
->
-> However, I am not so sure this barrier belongs in the .detach_dev()
-> callback.  The documentation for almost all dev_pm_domain_{at,de}tach*()
-> functions states:
->
->      * Callers must ensure proper synchronization of this function with power
->      * management callbacks.
->
-> However, I couldn't find any user that calls pm_runtime_barrier() first.
->
-> In case of multiple PM domains, it is even more complicated, as
-> dev_pm_domain_attach_list() (and pvr_power_domains_init(), which is
-> basically an open-coded variant of the former) creates a list of virtual
-> devices, which all need synchronization.  For the devres-enabled version
-> (devm_pm_domain_attach_list()), the caller cannot take care of calling
-> pm_runtime_barrier() anyway, so it has to be handled by the PM core?
+Geert: Many thx for the clarification. In that case:
 
-Any guidance from the PM people?
-Thanks!
+Geert or Marek: could one of you two please submit a revert for
+330e76d3169721 ("drm/imagination: Add power domain control") [v6.16-rc1]?
 
-> > --- a/drivers/clk/renesas/renesas-cpg-mssr.c
-> > +++ b/drivers/clk/renesas/renesas-cpg-mssr.c
-> > @@ -24,6 +24,7 @@
-> >   #include <linux/platform_device.h>
-> >   #include <linux/pm_clock.h>
-> >   #include <linux/pm_domain.h>
-> > +#include <linux/pm_runtime.h>
-> >   #include <linux/psci.h>
-> >   #include <linux/reset-controller.h>
-> >   #include <linux/slab.h>
-> > @@ -656,8 +657,10 @@ int cpg_mssr_attach_dev(struct generic_pm_domain
-> > *unused, struct device *dev)
-> >
-> >   void cpg_mssr_detach_dev(struct generic_pm_domain *unused, struct
-> > device *dev)
-> >   {
-> > -       if (!pm_clk_no_clocks(dev))
-> > +       if (!pm_clk_no_clocks(dev)) {
-> > +               pm_runtime_barrier(dev);
-> >                 pm_clk_destroy(dev);
-> > +       }
-> >   }
-> >
-> >   static void cpg_mssr_genpd_remove(void *data)
+With a bit of luck the responsible drm maintainers will pick it up
+quickly -- or it might lead to a different solution for the problem. If
+neither happens within a few days, I'll point Linus to this thread and
+the revert. Then he can make the judgement call if he wants to.
 
-Gr{oetje,eeting}s,
+Ciao, Thorsten
 
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+On 2/16/26 10:00, Geert Uytterhoeven wrote:
+> On Sat, 14 Feb 2026 at 13:38, Thorsten Leemhuis
+> <regressions@leemhuis.info> wrote:
+>> On 2/13/26 23:52, Marek Vasut wrote:
+>>> On 2/12/26 4:56 PM, Thorsten Leemhuis wrote:
+>>>> On 2/12/26 15:38, Marek Vasut wrote:
+>>>>> On 2/12/26 10:00 AM, Matt Coster wrote:
+>>>>>> On 11/02/2026 19:17, Marek Vasut wrote:
+>>>>>>> On 1/23/26 2:50 PM, Geert Uytterhoeven wrote:
+>>>>>>>> On Fri, 23 Jan 2026 at 14:36, Matt Coster <Matt.Coster@imgtec.com>
+>>>>>>>> wrote:
+>>>>>>>>> On 22/01/2026 16:08, Geert Uytterhoeven wrote:
+>>>>>>>>>> Call the dev_pm_domain_attach_list() and
+>>>>>>>>>> dev_pm_domain_detach_list()
+>>>>>>>>>> helpers instead of open-coding multi PM Domain handling.
+>>>>>>>>>>
+>>>>>>>>>> This changes behavior slightly:
+>>>>>>>>>>      - The new handling is also applied in case of a single PM
+>>>>>>>>>> Domain,
+>>>>>>>>>>      - PM Domains are now referred to by index instead of by
+>>>>>>>>>> name, but
+>>>>>>>>>>        "make dtbs_check" enforces the actual naming and ordering
+>>>>>>>>>> anyway,
+>>>>>>>>>>      - There are no longer device links created between virtual
+>>>>>>>>>> domain
+>>>>>>>>>>        devices, only between virtual devices and the parent device.
+>>>>>>>>>
+>>>>>>>>> We still need this guarantee, both at start and end of day. In the
+>>>>>>>>> current implementation dev_pm_domain_attach_list() iterates
+>>>>>>>>> forwards,
+>>>>>>>>> but so does dev_pm_domain_detach_list(). Even if we changed that,
+>>>>>>>>> I'd
+>>>>>>>>> prefer not to rely on the implementation details when we can
+>>>>>>>>> declare the
+>>>>>>>>> dependencies explicitly.
+>>>>>>>>
+>>>>>>>> Note that on R-Car, the PM Domains are nested (see e.g.
+>>>>>>>> r8a7795_areas[]),
+>>>>>>>> so they are always (un)powered in the correct order.  But that may
+>>>>>>>> not
+>>>>>>>> be the case in the integration on other SoCs.
+>>>>>>>>
+>>>>>>>>> We had/have a patch (attached) kicking around internally to use the
+>>>>>>>>> *_list() functions but keep the inter-domain links in place; it got
+>>>>>>>>> held
+>>>>>>>>> up by discussions as to whether we actually need those dependencies
+>>>>>>>>> for
+>>>>>>>>> the hardware to behave correctly. Your patch spurred me to run
+>>>>>>>>> around
+>>>>>>>>> the office and nag people a bit, and it seems we really do need to
+>>>>>>>>> care
+>>>>>>>>> about the ordering.
+>>>>>>>>
+>>>>>>>> OK.
+>>>>>>>>
+>>>>>>>>> Can you add the links back in for a V2 or I can properly send the
+>>>>>>>>> attached patch instead, I don't mind either way.
+>>>>>>>>
+>>>>>>>> Please move forward with your patch, you are the expert.
+>>>>>>>> I prefer not to be blamed for any breakage ;-)
+>>>>>>>
+>>>>>>> Has there been any progress on fixing this kernel crash ?
+>>>>>>>
+>>>>>>> There are already two proposed solutions, but no fix is upstream.
+>>>>>>
+>>>>>> Yes and no. Our patch to use dev_pm_domain_attach_list() has landed in
+>>>>>> drm-misc-next as commit e19cc5ab347e3 ("drm/imagination: Use>>
+>>>>>> dev_pm_domain_attach_list()"), but this does not fix the underlying
+>>>>>> issue of missing synchronization in the PM core[1] is still unresolved
+>>>>>> as far as I'm aware.
+>>>>>
+>>>>> OK, but the pvr driver can currently easily crash the kernel on boot if
+>>>>> firmware is missing, so that should be fixed soon, right ?
+>>>>
+>>>> Well, drm-misc-next afaik means that the above mentioned fix would only
+>>>> be merged in 7.1, which is ~4 months away, which is not really "soon"
+>>>> I'd say. Or did I misjudge this?
+>>>
+>>> The PM domain issue here crashes the kernel, so I think this would be
+>>> material for drm-misc-fixes .
+>>
+>> Yeah, sounds a lot like it.
+>>
+>>>>> I added the regressions list onto CC, because this seems like a problem
+>>>>> worth tracking.
+>>>>
+>>>> Noticed that and wondered what change caused the regression.
+>>>
+>>> I think this one:
+>>>
+>>> 330e76d31697 ("drm/imagination: Add power domain control")
+>>
+>> Thx; FWIW, that was merged for v6.16-rc1.
+>>
+>>>> Did not
+>>>> find a answer in a quick search on lore[1]. Because if it's a
+>>>> regression, we maybe should just revert the culprit for now according to
+>>>> Linus:
+>>>> https://lore.kernel.org/lkml/CAHk-=wi86AosXs66-
+>>>> yi54+mpQjPu0upxB8ZAfG+LsMyJmcuMSA@mail.gmail.com/
+>>>>
+>>>> [1] I guess this was the initial report from Geert?
+>>>> https://lore.kernel.org/all/
+>>>> CAMuHMdWapT40hV3c+CSBqFOW05aWcV1a6v_NiJYgoYi0i9_PDQ@mail.gmail.com/
+>>>
+>>> It is.
+>>>
+>>> I think there are other SoCs which depend on the power domain commit, so
+>>> revert is not so clear cut anymore.
+>>
+>> Well, it's a judgement call. 330e76d31697 was merged less then a year
+>> ago, so I'd not be surprised at all if Linus would revert it in a case
+>> like this. But it seems it doesn't revert clearly anymore, which
+>> complicates things.
+>>
+>>> But SoCs which have hierarchical
+>>> power domains and which manage to probe this driver without having a
+>>> firmware available for the GPU will simply end with crashed kernel,
+>>> which is really not good.
+>>
+>> Does the patch Matt mentioned fix the crash? His "this does not fix the
+>> underlying issue [...]" (see quote earlier) makes it sound like the
+>> crash or some other problem (theoretical or practical? regression or
+>> not?) remains. If that's the case and no quick fix in sight I guess it
+>> would be best if someone affected could post a revert and then we can
+>> ask Linus if he wants to pick it up.
+> 
+> I don't think that patch would fix the crash.  The Adreno and Panfrost
+> GPU drivers do similar things (explicit multi-PM Domain handling),
+> so I am wondering if the issue can be triggered with them too (e.g. on
+> unbind).
