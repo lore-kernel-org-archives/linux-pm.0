@@ -1,119 +1,228 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mout-p-103.mailbox.org (mout-p-103.mailbox.org [80.241.56.161])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 459BF35502F
-	for <linux-pm@vger.kernel.org>; Tue, 17 Feb 2026 14:54:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE7BD224B0E;
+	Tue, 17 Feb 2026 15:05:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.161
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771340042; cv=none; b=AGYAQIym1rDcULd0FxOMk+m6heUN1/eiudQTwcDVQeIrY7E/jms+ApURXq3Ir8nAN+7Geuk1XX/1MpcXq8JZfbcRi0ctqLd8Ag4C1s0YCDqsY6RiJCqtmk4AqBbEL340ZSL6Rg4RNAZuDkp7A+mIRqYGGm+lPnnbqjvH7tWxaO8=
+	t=1771340703; cv=none; b=MDTSk4i2CuDISjkYE/B6EeP+jQko5nDfDubmj+zahaXv1BVGwA1OqpNKJvj32MZb5JNo95QcQBr2zqkVJV1G2hEGkUu+oRER2yAdDWhkzYNzxZPlMkGxoRU8Hyu4Av57sFoFB0lJTd+SKJu0jCZH728Ut6CIkGNgIxxKhwUJSdI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771340042; c=relaxed/simple;
-	bh=rVTcdXtGhlQQuPkN3nuK5cTVcDB6cpF5dip9SaKu9/w=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=a9AGrZf2rdjImiM0FrR9K7XYL8eDbAx/SCcmbR4N6C3K2/SWo1Rrm07dfHOfaFtwOaNBC3yR6VAkyST/dMLSCnX68JrDv5sAz6FfDb5sZKcvvvfLbCtGa/mkNM1BLVLIuJ7E42JkzyiCii/LmdGs+L1YUZcTTjucxJUgKJCbSPA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JYmxjIRi; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1771340703; c=relaxed/simple;
+	bh=/5KxhbtTbf71uyzbr9ORsD/LfXkBS7Hrrl9FU6k0jRU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=fL3vPkfeUzYzsZ14F34A5d10iHOEai0M4I1VaMy2F587/BYys0BQw2tFdoTeoyzJ59jIZYTzV/x5YgZjnqboyQYDv3E2o5HLp4IoUgzowzw+rs8gFkvWizkdtXZPgNdOrs6AUUGt/hvLE4IaPUjeIiZZS2dTtx2c/xrbsWT9xz4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=AxHYE+2D; arc=none smtp.client-ip=80.241.56.161
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JYmxjIRi"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EF135C2BC9E
-	for <linux-pm@vger.kernel.org>; Tue, 17 Feb 2026 14:54:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771340042;
-	bh=rVTcdXtGhlQQuPkN3nuK5cTVcDB6cpF5dip9SaKu9/w=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=JYmxjIRiWQYoaOlSYudb6nz6UwS8rHe/s4UDvmzTbN8fnF1urkOsyNUIHODiHDS2y
-	 pqaqa9zOpBSenftVv5OmFpr2LwHRwWjniHhPzidd8aiOKjI07iBS1kziBhran3qTJW
-	 lnG5hIdxtHq1eDcYw3b0qX3hGHj/XnTGGc61Lunnzzwaypdbt0mR2lIMZy+oWoVZxl
-	 0af3E30NyoWJ6DzKPMbXgzHbo2i8PcpRox+hfDV3unltLWa3iq9QH/yZP2XZQE5Qms
-	 xATjtcvZd6is8kY3dwdSYbUqujuGt50HG/7ICL3xIRzFo5qdLuazsux27F7eq504o1
-	 cT9yrua7WJDkA==
-Received: by mail-oi1-f170.google.com with SMTP id 5614622812f47-45f126d47b8so2737969b6e.2
-        for <linux-pm@vger.kernel.org>; Tue, 17 Feb 2026 06:54:01 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCWmPf5h7VruW+t8jqQKLY/bP1ZbElkGzplPqUIEnid3+ONQRyYNZrrXAXVbKUpk0ePoz83FEcGe9Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyZg/Eiy5KS3AEh5PsXzxzWaRKi7M8UAvrieWkTLSJSO2VQkljH
-	kIBS06j+fPWhimGmD1JdVF06z8fsaYW2Ky8k3rfoBWO33s8Q3edzh+y0/GGCTHrdE2RrojDHuLf
-	BxBufTuLD2hIcVSbm/uxWzkZQOZUhH2E=
-X-Received: by 2002:a05:6808:1a25:b0:450:ca65:ef60 with SMTP id
- 5614622812f47-463b40dac1emr5369347b6e.39.1771340041080; Tue, 17 Feb 2026
- 06:54:01 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="AxHYE+2D"
+Received: from smtp102.mailbox.org (smtp102.mailbox.org [IPv6:2001:67c:2050:b231:465::102])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mout-p-103.mailbox.org (Postfix) with ESMTPS id 4fFjcB1vcMz9thx;
+	Tue, 17 Feb 2026 16:04:58 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1771340698;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=j+HfRGqTenwP1WEUYCI3cx5JseSezcTkyhSN5LAXhFw=;
+	b=AxHYE+2DErvJPJwcroO11MQNOzCk0rAxOz3YG1X3yFQcpF23VwGZgzsZBdN5DbzVgoI+z6
+	3Y6wIrts4hn8FjaiCwuktDP5nTHUx8ebFme0d2TiRKTQXU6XZoExbhDKTI9++F8oElYWkE
+	xAILyAmHpqAWoNuXK/k69XW7NWREF8w40ZO4i+TpNAlnIPy8BlP4iBlW3G1rEi3GmEvo1z
+	WcH/vaVCaRVNI9DEB5vKLC1OF20ntQ0x8sItgfkXyg5B3PhexseW2R3xC2W3Z6WmHjXJDu
+	bf2LcKPeWym6ZMoY2qhJPOHpAwSoz6NRiWB22ah9HpBPLE5CnOwF4gwM1hXOIA==
+Message-ID: <80fb62ee-0598-48c1-a490-6eefcd1d3b66@mailbox.org>
+Date: Tue, 17 Feb 2026 15:33:45 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260216185005.1131593-1-aboorvad@linux.ibm.com>
- <20260216185005.1131593-2-aboorvad@linux.ibm.com> <042f57b8-b027-4dee-ac8c-6c6efc34d427@arm.com>
-In-Reply-To: <042f57b8-b027-4dee-ac8c-6c6efc34d427@arm.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 17 Feb 2026 15:53:50 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0gVVzBx7fGf9rVS=NavvHL4ZCCvFSGnycn3U6jb+owOCw@mail.gmail.com>
-X-Gm-Features: AaiRm52CtmkbPAgR248r1IYiXisrcdmPNCj569TpfiJE_bw0qU3GImE9p86jrtA
-Message-ID: <CAJZ5v0gVVzBx7fGf9rVS=NavvHL4ZCCvFSGnycn3U6jb+owOCw@mail.gmail.com>
-Subject: Re: [PATCH v2 1/4] cpuidle: Skip governor when only one idle state is available
-To: Christian Loehle <christian.loehle@arm.com>, Aboorva Devarajan <aboorvad@linux.ibm.com>
-Cc: daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH] drm/imagination: Convert to
+ dev_pm_domain_{at,de}tach_list()
+To: Matt Coster <Matt.Coster@imgtec.com>,
+ Thorsten Leemhuis <regressions@leemhuis.info>,
+ Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Frank Binns <Frank.Binns@imgtec.com>,
+ Brajesh Gupta <Brajesh.Gupta@imgtec.com>,
+ Alessio Belle <Alessio.Belle@imgtec.com>,
+ Alexandru Dadu <Alexandru.Dadu@imgtec.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "regressions@lists.linux.dev" <regressions@lists.linux.dev>
+References: <194465eda54d1f852a9226cf691ddc5aa208e0a3.1769097977.git.geert+renesas@glider.be>
+ <ffdf3982-e22c-4d01-afa6-5449ed381000@imgtec.com>
+ <CAMuHMdWMh_oJFg-KtapcTDGvYWZ-hg_ZEJ2=E5Tp1apOEc8tnQ@mail.gmail.com>
+ <b3b4f10e-1222-44f7-b308-db7199c67147@mailbox.org>
+ <3e0def93-2f6c-4bcf-8ee5-bf607f2ca382@imgtec.com>
+ <f5d3dde6-edec-42f4-93cb-459c8677245a@mailbox.org>
+ <f82b7734-6ddc-4029-b38d-147e9a1de021@leemhuis.info>
+ <fcf5ab75-029e-469e-8b2a-51fa5c2a2374@mailbox.org>
+ <95fd3f52-c3ed-40c5-920f-11e8767f701d@leemhuis.info>
+ <CAMuHMdV-g+3kTaG6Ost4iHo1Tdi_H=qscLBkBRWuR+6DG5c=SA@mail.gmail.com>
+ <1e8e416e-e474-4288-9686-1ba2b88e4946@leemhuis.info>
+ <21b1fd77-252e-4fb3-aa65-1c26043c5412@imgtec.com>
+Content-Language: en-US
+From: Marek Vasut <marek.vasut@mailbox.org>
+In-Reply-To: <21b1fd77-252e-4fb3-aa65-1c26043c5412@imgtec.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-MBO-RS-ID: 0ddf39fc09e316a2b4e
+X-MBO-RS-META: up57bdnnrzo8fenaqz6kyojobd4b1d9k
 
-On Tue, Feb 17, 2026 at 3:36=E2=80=AFPM Christian Loehle
-<christian.loehle@arm.com> wrote:
->
-> On 2/16/26 18:50, Aboorva Devarajan wrote:
-> > On certain platforms (PowerNV systems without a power-mgt DT node),
-> > cpuidle may register only a single idle state. In cases where that
-> > single state is a polling state (state 0), the ladder governor may
-> > incorrectly treat state 1 as the first usable state and pass an
-> > out-of-bounds index. This can lead to a NULL enter callback being
-> > invoked, ultimately resulting in a system crash.
-> >
-> > [   13.342636] cpuidle-powernv : Only Snooze is available
-> > [   13.351854] Faulting instruction address: 0x00000000
-> > [   13.376489] NIP [0000000000000000] 0x0
-> > [   13.378351] LR  [c000000001e01974] cpuidle_enter_state+0x2c4/0x668
-> >
-> > Fix this by adding a bail-out in cpuidle_select() that returns state 0
-> > directly when state_count <=3D 1, bypassing the governor and keeping th=
-e
-> > tick running.
-> >
-> > Fixes: dc2251bf98c6 ("cpuidle: Eliminate the CPUIDLE_DRIVER_STATE_START=
- symbol")
-> > Signed-off-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
->
-> Reviewed-by: Christian Loehle <christian.loehle@arm.com>
->
-> > ---
-> >  drivers/cpuidle/cpuidle.c | 10 ++++++++++
-> >  1 file changed, 10 insertions(+)
-> >
-> > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> > index c7876e9e024f..65fbb8e807b9 100644
-> > --- a/drivers/cpuidle/cpuidle.c
-> > +++ b/drivers/cpuidle/cpuidle.c
-> > @@ -359,6 +359,16 @@ noinstr int cpuidle_enter_state(struct cpuidle_dev=
-ice *dev,
-> >  int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *=
-dev,
-> >                  bool *stop_tick)
-> >  {
-> > +     /*
-> > +      * If there is only a single idle state (or none), there is nothi=
-ng
-> > +      * meaningful for the governor to choose. Skip the governor and
-> > +      * always use state 0 with the tick running.
-> > +      */
-> > +     if (drv->state_count <=3D 1) {
-> > +             *stop_tick =3D false;
-> > +             return 0;
-> > +     }
-> > +
-> >       return cpuidle_curr_governor->select(drv, dev, stop_tick);
-> >  }
-> >
+On 2/16/26 11:58 AM, Matt Coster wrote:
 
-I've queued up the series for 7.0-rc1 because it is mostly
-straightforward, but I've modified the second patch to drop the
-redundant latency_req variable and I had to rebase the last one.
+[...]
 
-Thanks!
+>>>>>>> I added the regressions list onto CC, because this seems like a problem
+>>>>>>> worth tracking.
+>>>>>>
+>>>>>> Noticed that and wondered what change caused the regression.
+> 
+>  From our side at least, I don't believe this is a regression at all. We
+> haven't been able to reproduce this issue on any of the platforms we
+> have available (although we did stumble on a somewhat related bugfix
+> while trying).
+
+There are already two proposed fixes available, and both Geert and me 
+are available for testing any other fixes too.
+
+And yes, this is a regression, because this causes a kernel crash which 
+did not happen before.
+
+>>>>>
+>>>>> I think this one:
+>>>>>
+>>>>> 330e76d31697 ("drm/imagination: Add power domain control")
+> 
+> This commit added support for multiple power domains on Imagination GPUs
+> in essentially the same manner as other drivers (as mentioned by Geert
+> below). Nothing in there is specific to the Renesas platforms where this
+> bug can be produces and it is required to support other fully-functional
+> platforms such as TI AM68.
+
+That does not imply, that the code is not buggy.
+
+[...]
+
+>>>> Well, it's a judgement call. 330e76d31697 was merged less then a year
+>>>> ago, so I'd not be surprised at all if Linus would revert it in a case
+>>>> like this. But it seems it doesn't revert clearly anymore, which
+>>>> complicates things.
+> 
+> Reverting this change feels backwards, we're saying that Imagination's
+> support for multiple power domains is broken because one platform has
+> issues when we attempt to control its power domains. I fully agree that
+> we should be working towards resolving this issue, but I don't agree
+> that ripping out this handling (that, again, is essentially the same as
+> handling in other GPU drivers) is a reasonable solution (even in the
+> short term).
+> 
+> As it currently stands, we're only declaring two GPUs as "fully
+> supported": AXE-1-16M and BXS-4-64 as made explicit in commit
+> 1c21f240fbc1e ("drm/imagination: Warn or error on unsupported
+> hardware").
+
+Actually, this change landed only very recently and completely broke the 
+GX6250 on R-Car M3W, which used to probe and work before. Now the driver 
+does not even probe with "Unsupported GPU" output, which is clearly bogus.
+
+I would say the aforementioned commit introduced another new regression 
+-- something that used to work before no longer works, functionality was 
+lost because of the change.
+
+> In order to reach the stage where that check occurs, the GPU
+> must be powered on so registers containing the GPU ID can be read.
+> However, the original error report happens long after this and would now
+> require the exp_hw_support module parameter to be set for this point to
+> be reached (as the driver would not attempt to initialise an
+> "unsupported" device without this explicit opt-in).
+
+I don't think it is a good solution to selectively block specific 
+hardware, only to avoid triggering the power domain issue. The power 
+domain issue should be fixed, not hidden.
+
+> It's not currently clear to me whether the crash can be reproduced on
+> the affected Renesas platform without this opt-in; it's feasable that
+> this is the case but we know it occurs during an error unwind after
+> device firmware fails to initialise and the exp_hw_support check happens
+> much earlier than this.
+> 
+> Either way, we should consider adding additional "supported" checks
+> based on compatibile strings earlier during initialization to prevent
+> fundamental issues like this one from even being possible on unsupported
+> and/or unvalidated hardware.
+
+Actually no, the hardware support should be as broad as possible, 
+without imposing any artificial limitations like that. This allows users 
+to test the driver and find errors, which if they are fixed, ultimately 
+improve quality of the driver.
+
+> All that being said, ripping out power domain handling will completely
+> break one of the only two platforms we currently fully support: BXS-4-64
+> which also has two power domains and is present in several TI SoCs (and
+> their DTs).
+
+I am not saying the code should be removed, I am saying the regression 
+should be fixed. There are already two proposed fixes available, so it 
+would be good to move them forward.
+
+1c21f240fbc1e ("drm/imagination: Warn or error on unsupported hardware") 
+should be reverted, this is not helping anything. Warning message would 
+be fine though.
+
+>>>>> But SoCs which have hierarchical
+>>>>> power domains and which manage to probe this driver without having a
+>>>>> firmware available for the GPU will simply end with crashed kernel,
+>>>>> which is really not good.
+>>>>
+>>>> Does the patch Matt mentioned fix the crash? His "this does not fix the
+>>>> underlying issue [...]" (see quote earlier) makes it sound like the
+>>>> crash or some other problem (theoretical or practical? regression or
+>>>> not?) remains. If that's the case and no quick fix in sight I guess it
+>>>> would be best if someone affected could post a revert and then we can
+>>>> ask Linus if he wants to pick it up.
+> 
+> The patch I posted (and applied) is somewhat orthogonal to the issue at
+> hand. Geert originally suggested using the _attach_list() helper as a
+> way to mitigate the issue, and we agree that it's a reasonable cleanup
+> effort to make use of it, but I believe the "fix" in the originally
+> proposed patch came from removing the device links that are required on
+> our platform to ensure the GPU power domains come up (and down) in the
+> correct sequence.
+> 
+>>>
+>>> I don't think that patch would fix the crash.  The Adreno and Panfrost
+>>> GPU drivers do similar things (explicit multi-PM Domain handling),
+>>> so I am wondering if the issue can be triggered with them too (e.g. on
+>>> unbind).
+> 
+> My current understanding of the situation is that the fix proposed by
+> Marek in the Reneasas driver[2] works, but is not suitable since
+> pm_runtime_barrier() should be inserted by the caller, not the power
+> driver. But it seems that's not always possible (particularly when using
+> devm), so I don't really understand where we go from here. I still don't
+> see anything we're doing substantially differently (before or after the
+> commit I mentioned above) from anybody else.
+
+As far as I understand that, Geert was waiting for input from PM people?
+
+At the beginning of this thread, almost a month ago, there was the 
+following exchange, hence I was under the impression that a fix is coming:
+
+"
+ >> Can you add the links back in for a V2 or I can properly send the
+ >> attached patch instead, I don't mind either way.
+ >
+ > Please move forward with your patch, you are the expert.
+ > I prefer not to be blamed for any breakage ;-)
+"
