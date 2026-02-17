@@ -1,171 +1,56 @@
-Received: from mail-ej1-f52.google.com (mail-ej1-f52.google.com [209.85.218.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 924F136E49A
-	for <linux-pm@vger.kernel.org>; Tue, 17 Feb 2026 18:38:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.52
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771353496; cv=pass; b=e1Q5Y7eqKmZucnt8JKhiU0QuQOzWKKe25JfibT0EE65XCpxbly3kZeDkyH6PCeeHp1mXlieUzDrpN1Te37xowx1+eNkbZi994D3m/b+1Fi4FN6rHjxsb2rLZvBEVGeuCH6j82hY6fWI2L5/CAzDfJCIieNniALVbZD45S0Y6BMM=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771353496; c=relaxed/simple;
-	bh=6+aIOqPXhpAr7dPhRhS5XFq9e6htkgUr0mLJ2+X2rNE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=kpkOHPgJIL5XX6iE9lVWu7gw78rVaChN+p7eT5nYvszvO2uCgKxgrgt9XPaejUXEKSsu4R9WZ5JByGGfhbIDpLx+Gj1QyM2KoPlp9/Xj6yMCcZPgikV3KLjJivJka0mM7wydny8dpIT7doFB9y/DtvNURrXJ+A32etcTos5zZFs=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=EDK4YMyJ; arc=pass smtp.client-ip=209.85.218.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E49BA285406
+	for <linux-pm@vger.kernel.org>; Tue, 17 Feb 2026 19:07:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1771355268; cv=none; b=fiblwwQmC+RmfhTnaJ0PnFQstwptW9Y2+AzR0sZGjT+5M9jRkC7BwnXwNDGyXYQeP9ThwLtEZt3PjpnihTiZYPbm4yLsonqlhhx5rhfkOICzjOcNsPTE2ELubNavr6Woz9spgMBWyOOJODP/rD+mykzy7S+T+gjYzxz0aKYbxIg=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1771355268; c=relaxed/simple;
+	bh=uzo2nC2nYl58ycWxJ5IYaR9ImHyR05wBnnFpPzYBzPo=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version; b=GJAa8sehqExZXF+1WBfszXWwWan3g8ZyUNrgcF8jMV+zEApF4Vn8RE96PCbkVYUjfRswE/aa0GfTuGrSmk13ttHU1xKrE0cnAbxWIMF7MDpe+b1JGPPO2Gf510i4LfoBw4bd+hn1yh3EOogXec7YjKmT2cB5IGpgWNKrYby1xDA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Xl1vJ8zu; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EDK4YMyJ"
-Received: by mail-ej1-f52.google.com with SMTP id a640c23a62f3a-b8fa7e3672eso608882166b.2
-        for <linux-pm@vger.kernel.org>; Tue, 17 Feb 2026 10:38:14 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1771353493; cv=none;
-        d=google.com; s=arc-20240605;
-        b=hfuTZYXI/hQoYMfFphD8ztNpxfvJdoooSnoNVNnV+anh6JmngZE4hELeI/VYyQHM9/
-         DjYa/z36kLHpLeUuxwHZaHekbvmPoXwGd0h2XssEY091Bqcjt+XBfcd1/uO+SeHhFCi5
-         L/dJJc6L2ACnvKjAbEBcRvPvQ2bMQjrFmPX3MQCro/uYquUknaspAZa0IfigJSFl3x6r
-         QC9wIWhOu2sXab7DqrXDidhEaiqicYv/E0ww4k+fXqleehl/+SbUBtQzfl16KuM33aBS
-         WpFnPzKbG27ZP5mKMMtPPb2Y8Vzue/mTmZ54n4QQY0JKN4LydyL8QsSVLLAUiLMzxFpm
-         ZsVw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=L0kfgHuKL0CgrURLYBZypVOq8WTafDbOBreYdMsaND8=;
-        fh=NsBHuFPNDu7ll5Bj3lYUwo7mVcUeZE7p/NiRxGO5bN0=;
-        b=OLWsBzhpPkPiV7xoAHcW95ZgI2qYf0MVPWnA6hXMnKZhvwjHgs6RcfA4EozGEfdIrk
-         OyHlx+cT1X/R438dZHa1ghEiVgkDmNHYpTWsSUbcTGBYoM+Chql4ePtBQkwBEEnbgFw/
-         nvOhvlBcQ8tBsWOD7XTbCNyaAWD13MIDs2FTIsPONd2Ok2ty2ZX4xPXBU6lplHSvouMd
-         afCziYbLVNkFMvLR7oe6kAmkGgykKIqUVoB7COcaAJ4wi+zSU7iyi88Uf6LzSAziTv04
-         dn7vMyzs4XNwLrQ33rT6tqA1xFypVI69HTPMOJhajMq/AZi69wHnWXv1H3MSF3SHgwGp
-         Bwkg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1771353493; x=1771958293; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=L0kfgHuKL0CgrURLYBZypVOq8WTafDbOBreYdMsaND8=;
-        b=EDK4YMyJK1lz0f9Y/YK4ggQRJACRHuYi2GrbYflgNNAHQ9k/qMgXVVfWMzVZSF+y72
-         Wn6psEajRmObsSmzcr6eEfOTYhQ11kpbRbR88n4QPResS3hNXVpBMfZXW0zyY12DIJ5L
-         x20MmSWMhuZAsGoA8yDv6jIG2t8v9x+y/n3RKPxQM8FsULlGtz9u5cmy6zwkUw6jXYCg
-         1THEe+7p9qnaEEmrzUbQB4yhIgLXy2GSXN+a3KQY0c9FmYLCKiR3ji0YnpGN8ICC0JE5
-         IIugICSv0eUI6/Hgf8ZzaUE1WL62l8nZjZasa1gIHquz1m5tfT5dJrgbn1vs7QPD7dWn
-         xNpQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1771353493; x=1771958293;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=L0kfgHuKL0CgrURLYBZypVOq8WTafDbOBreYdMsaND8=;
-        b=p8sS5MPpak5rLldj94IChAnHI/g+M8vaio0pj7U7+bLu2jfBOaPbJEPIEAzbCXCFcH
-         lCNhD/rKuKCRvTLhU5nToAHCaOMLowb2JM5y+Ry698kADgE5VSj2xEd/xgmLy/PaEQLB
-         qi9DdKub8keOTUmctKrYWEKivZUU2r7BEz8RC5eVJkAEMkhlu1x43r7TuQrwgrGtLzAE
-         OMEHBcDdtvXiE+XQX6HA5dm+sCE3Ftw9iqyuGHlRW9zpdp5oY0rOmuTABO94qFTi25I5
-         rKKf1i7Taryzp6v1nn/Ie+yrpr2SX0lumIPW5Xo30E17ENMNjsw4dvBsOHkRXBKrrrM2
-         41eQ==
-X-Forwarded-Encrypted: i=1; AJvYcCV1FffOEsrukKzIy/t5VISOJ/eaJe/oMPzF/kVMbXnT6rfb3xjiW7e1ILyKLwvcu5dBj02lH0aiLA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwWABWH8FWenvWHp4HqevID6bUa3hxUarIlk1wkz/+aXvCQ1B8q
-	SuwQy9iwe3o3zIHAGEwi76KxD6Ek2OtMFZObd2h9wMXsXeY/UBHZLAGCVTUYHbHiSUWCihvhBz4
-	d3ldPE1ohnI6ZdOJkp4JGjAh0pvtpJu4=
-X-Gm-Gg: AZuq6aLdYyZX5iZPobAOV2XCNqrdbSFIWz2aRW9VRvfU6QcOsBMOAJdSzkwkd4ujs5n
-	yRs19NFYbb0wBrmz2b4kLAGmo8GVvEQHo0vAvFvACOiD+RpO9MfQRMzmGYu3gV3nH6fZt1YS+ox
-	qT+yxMhLN5ZEypQoosGftOBfUvakBgnTvhbvHBCcW7EaAocNmDODA/phbFEf18Qjp9QiikdazBK
-	PNXUXluMIdfBZfDxJ9U6T5RlF/wKmzsUzA+lgUPtskrw2YpiSl1gojNTlLEBw+jsrzst2ZIHaL9
-	mgkut4UK+vyRhcUn1xwByXBwhJWA0nSXMjjJG2Gq
-X-Received: by 2002:a17:907:3d0b:b0:b7d:1cbb:5deb with SMTP id
- a640c23a62f3a-b8fc3b5abf0mr768614566b.27.1771353492689; Tue, 17 Feb 2026
- 10:38:12 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Xl1vJ8zu"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7727EC4CEF7
+	for <linux-pm@vger.kernel.org>; Tue, 17 Feb 2026 19:07:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1771355267;
+	bh=uzo2nC2nYl58ycWxJ5IYaR9ImHyR05wBnnFpPzYBzPo=;
+	h=From:To:Subject:Date:From;
+	b=Xl1vJ8zuohtyu0pXwl1njuexkwOPBQcXeYK0d9lU9/0+Yq5+APSWGN/lzhXboXMxd
+	 482Ynj8Gcm95m0KHSsjNX6JwlCpHpLMbsGc8iywmBCla27FQ1EUzmcOqBcVp+zoa6V
+	 8Kt4gNn3tYKxPcVk09pnoXaPTGfO90njL1hOwDY7Z5AUjKDdVWEGmolim7koOiKc3D
+	 Zzv1j//0QIO+XY43kM+z00h9QZRFDMOn2F2fgG7vb1YE7stT04HLhMhyF57ic2uFhN
+	 nD7AK4hYDoj0TtIewpPWDB/3MBIL32ZdudaBBmjOOQEfDXjJlxblFz37QXXwqt5Hhw
+	 ksStGL3AHW+GQ==
+From: Len Brown <lenb@kernel.org>
+To: linux-pm@vger.kernel.org
+Subject: [PATCH 0/23] turbostat v2026.02.14
+Date: Tue, 17 Feb 2026 13:03:51 -0600
+Message-ID: <20260217190740.666230-1-lenb@kernel.org>
+X-Mailer: git-send-email 2.45.2
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260216-hibernate-perf-v4-0-1ba9f0bf1ec9@tencent.com>
- <20260216-hibernate-perf-v4-1-1ba9f0bf1ec9@tencent.com> <20260216134222.5ec936d6503e72348227c58d@linux-foundation.org>
-In-Reply-To: <20260216134222.5ec936d6503e72348227c58d@linux-foundation.org>
-From: Kairui Song <ryncsn@gmail.com>
-Date: Wed, 18 Feb 2026 02:37:36 +0800
-X-Gm-Features: AaiRm51x0f9h4WRnSrAyvxbfHlB_6iU_mFxctjVNumteF3OZtK_Fw9fGifvYBbo
-Message-ID: <CAMgjq7BGAk45oYCcZymNUcRWU-T5k4AdzgAhk6mr+xPJyD3-uQ@mail.gmail.com>
-Subject: Re: [PATCH v4 1/3] mm, swap: speed up hibernation allocation and writeout
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kairui Song via B4 Relay <devnull+kasong.tencent.com@kernel.org>, linux-mm@kvack.org, 
-	Chris Li <chrisl@kernel.org>, Kemeng Shi <shikemeng@huaweicloud.com>, 
-	Nhat Pham <nphamcs@gmail.com>, Baoquan He <bhe@redhat.com>, Barry Song <baohua@kernel.org>, 
-	Carsten Grohmann <mail@carstengrohmann.de>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	linux-kernel@vger.kernel.org, 
-	"open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>, Carsten Grohmann <carstengrohmann@gmx.de>, 
-	stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Tue, Feb 17, 2026 at 5:42=E2=80=AFAM Andrew Morton <akpm@linux-foundatio=
-n.org> wrote:
->
-> On Mon, 16 Feb 2026 22:58:02 +0800 Kairui Song via B4 Relay <devnull+kaso=
-ng.tencent.com@kernel.org> wrote:
->
-> > From: Kairui Song <kasong@tencent.com>
-> >
-> > Since commit 0ff67f990bd4 ("mm, swap: remove swap slot cache"),
-> > hibernation has been using the swap slot slow allocation path for
-> > simplification, which turns out might cause regression for some
-> > devices because the allocator now rotates clusters too often, leading t=
-o
-> > slower allocation and more random distribution of data.
-> >
-> > Fast allocation is not complex, so implement hibernation support as
-> > well.
-> >
-> > Test result with Samsung SSD 830 Series (SATA II, 3.0 Gbps) shows the
-> > performance is several times better [1]:
-> > 6.19:               324 seconds
-> > After this series:  35 seconds
->
-> Thanks.
->
-> I'll merge only [1/3] at this time, into mm-unstable at this time (I'll
-> move it to mm-unstable after resyncing mm.git with upstream).
->
-> We don't want the other two patches present during testing of this
-> backportable fix because doing so partially invalidates that testing -
-> [2/3] and[3/3] might accidentally fix issues which [1/3] added.  It happe=
-ns,
-> occasionally.
+Since release 2025.12.02:
 
-Sounds good to me. I'll send the cleanup separately sometime later again.
+        Add L2 statistics columns for recent Intel processors:
+                L2MRPS = L2 Cache M-References Per Second
+                L2%hit = L2 Cache Hit %
 
->
-> > --- a/mm/swapfile.c
-> > +++ b/mm/swapfile.c
-> > @@ -1926,8 +1926,9 @@ void swap_put_entries_direct(swp_entry_t entry, i=
-nt nr)
-> >  /* Allocate a slot for hibernation */
-> >  swp_entry_t swap_alloc_hibernation_slot(int type)
-> >  {
-> > -     struct swap_info_struct *si =3D swap_type_to_info(type);
-> > -     unsigned long offset;
-> > +     struct swap_info_struct *pcp_si, *si =3D swap_type_to_info(type);
-> > +     unsigned long pcp_offset, offset =3D SWAP_ENTRY_INVALID;
-> > +     struct swap_cluster_info *ci;
-> >       swp_entry_t entry =3D {0};
-> >
-> >       if (!si)
-> > @@ -1937,11 +1938,21 @@ swp_entry_t swap_alloc_hibernation_slot(int typ=
-e)
-> >       if (get_swap_device_info(si)) {
-> >               if (si->flags & SWP_WRITEOK) {
-> >                       /*
-> > -                      * Grab the local lock to be compliant
-> > -                      * with swap table allocation.
-> > +                      * Try the local cluster first if it matches the =
-device. If
-> > +                      * not, try grab a new cluster and override local=
- cluster.
-> >                        */
->
-> nanonit, worrying about 80-cols is rather old fashioned but there's no
-> reason to overflow 80 in a block comment!
+        Sort work and output by cpu# rather than core#
 
-I'll be more careful about this, thanks.
+	Minor features and fixes.
+
+Please let me know if you see any troubles with these patches
+or in your use of turbostat.
+
+thanks,
+Len Brown, Intel Open Source Technology Center
