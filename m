@@ -1,172 +1,119 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0AD3D36C585;
-	Tue, 17 Feb 2026 14:44:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 459BF35502F
+	for <linux-pm@vger.kernel.org>; Tue, 17 Feb 2026 14:54:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771339456; cv=none; b=Qw8UWrWIAIe4HFrENPTvn/s8UfvuqDtnmJDOlUt2PcnrJVW3UBu0RPc+vMTXgeyZ1N2AzoyAnIEfgdcp2Yl53yitEoHdWfg/33Yj4a69l2jsCMZkS1+QIXUVXN38Vpn7iZhdLIpSst/13G0J6WbUNjS5VaI4YBfxIQxDHKUCZ00=
+	t=1771340042; cv=none; b=AGYAQIym1rDcULd0FxOMk+m6heUN1/eiudQTwcDVQeIrY7E/jms+ApURXq3Ir8nAN+7Geuk1XX/1MpcXq8JZfbcRi0ctqLd8Ag4C1s0YCDqsY6RiJCqtmk4AqBbEL340ZSL6Rg4RNAZuDkp7A+mIRqYGGm+lPnnbqjvH7tWxaO8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771339456; c=relaxed/simple;
-	bh=7x8PAumHWpR5a9VWothbMAohjfnlp4xMz2P7FHu80Tg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=FvkVmYR/GoqcylLn+Re2OOKd6JVbMkTvHH7BnqfVxhE2MQd8kxFiI6TU5j0uEAVjwRM0XqbujszcyoETSQm3x2HdnHC34BTDoh5rALifvWtUHm2GNFP6pcc8EU3SRJz3kkZQlk4JoHDsun/pfgaGb5AjZtsEpBx3F4y5VvpoT1E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Kto6LC5Y; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1771340042; c=relaxed/simple;
+	bh=rVTcdXtGhlQQuPkN3nuK5cTVcDB6cpF5dip9SaKu9/w=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=a9AGrZf2rdjImiM0FrR9K7XYL8eDbAx/SCcmbR4N6C3K2/SWo1Rrm07dfHOfaFtwOaNBC3yR6VAkyST/dMLSCnX68JrDv5sAz6FfDb5sZKcvvvfLbCtGa/mkNM1BLVLIuJ7E42JkzyiCii/LmdGs+L1YUZcTTjucxJUgKJCbSPA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JYmxjIRi; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Kto6LC5Y"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 61150C19423;
-	Tue, 17 Feb 2026 14:44:12 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JYmxjIRi"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EF135C2BC9E
+	for <linux-pm@vger.kernel.org>; Tue, 17 Feb 2026 14:54:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771339455;
-	bh=7x8PAumHWpR5a9VWothbMAohjfnlp4xMz2P7FHu80Tg=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=Kto6LC5Y1LCw52lMd+BvMIVmHPCGTTLTfUFidvefRdi2E451jW6HQXoX8e1XKLxVA
-	 P9yFrZ4GvkM9dufNcyeLgy3Ym2zuRfDWt00BvXuXsiLQXcdgyLX1gyZET+b8et/QUa
-	 FOa0N9VRreQjmbgGo5t0luzOAqU+rb/1AL3FCZLG4DAJqvYPg7ozE74w6xA/OC342G
-	 atJXzuuxhp9dX4D3ZY86/KxUwfC56/AjEID8Fq+ecvpKlkNhQ2ce6c4C6WhscKaBgU
-	 XHwnfILWboSl6P+5x1uOYiAQJZM9NbUg+RCS2jtteEtJz6JR1b1kqY/eOuFyJ2sSv6
-	 UZPldwBNX3cOw==
-Message-ID: <0cb77c7e-8759-447d-8689-984b7590b43d@kernel.org>
-Date: Tue, 17 Feb 2026 15:44:10 +0100
+	s=k20201202; t=1771340042;
+	bh=rVTcdXtGhlQQuPkN3nuK5cTVcDB6cpF5dip9SaKu9/w=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=JYmxjIRiWQYoaOlSYudb6nz6UwS8rHe/s4UDvmzTbN8fnF1urkOsyNUIHODiHDS2y
+	 pqaqa9zOpBSenftVv5OmFpr2LwHRwWjniHhPzidd8aiOKjI07iBS1kziBhran3qTJW
+	 lnG5hIdxtHq1eDcYw3b0qX3hGHj/XnTGGc61Lunnzzwaypdbt0mR2lIMZy+oWoVZxl
+	 0af3E30NyoWJ6DzKPMbXgzHbo2i8PcpRox+hfDV3unltLWa3iq9QH/yZP2XZQE5Qms
+	 xATjtcvZd6is8kY3dwdSYbUqujuGt50HG/7ICL3xIRzFo5qdLuazsux27F7eq504o1
+	 cT9yrua7WJDkA==
+Received: by mail-oi1-f170.google.com with SMTP id 5614622812f47-45f126d47b8so2737969b6e.2
+        for <linux-pm@vger.kernel.org>; Tue, 17 Feb 2026 06:54:01 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCWmPf5h7VruW+t8jqQKLY/bP1ZbElkGzplPqUIEnid3+ONQRyYNZrrXAXVbKUpk0ePoz83FEcGe9Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyZg/Eiy5KS3AEh5PsXzxzWaRKi7M8UAvrieWkTLSJSO2VQkljH
+	kIBS06j+fPWhimGmD1JdVF06z8fsaYW2Ky8k3rfoBWO33s8Q3edzh+y0/GGCTHrdE2RrojDHuLf
+	BxBufTuLD2hIcVSbm/uxWzkZQOZUhH2E=
+X-Received: by 2002:a05:6808:1a25:b0:450:ca65:ef60 with SMTP id
+ 5614622812f47-463b40dac1emr5369347b6e.39.1771340041080; Tue, 17 Feb 2026
+ 06:54:01 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/7] dt-bindings: embedded-controller: document ASUS
- Transformer EC
-To: Svyatoslav Ryhel <clamor95@gmail.com>, Conor Dooley <conor@kernel.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee@kernel.org>,
- Pavel Machek <pavel@kernel.org>, Sebastian Reichel <sre@kernel.org>,
- Ion Agorria <ion@agorria.com>, =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?=
- <mirq-linux@rere.qmqm.pl>, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
- linux-leds@vger.kernel.org, linux-pm@vger.kernel.org
-References: <20260214180959.30714-1-clamor95@gmail.com>
- <20260214180959.30714-2-clamor95@gmail.com>
- <20260216-sprung-scallop-de7b64bf528c@spud>
- <CAPVz0n06+uLCSfY_bYS9v7KJ-hXotye7ej-rze6-Q8_JAF7XVA@mail.gmail.com>
- <20260216-plunder-defense-de11cf56dd3d@spud>
- <CAPVz0n0-LbTUZBCaO=oN3PpPLpwAqzNo29r687pKY8NbEE9giA@mail.gmail.com>
- <20260217-vowed-botany-b1c47c7e40b8@spud>
- <55C30023-4175-48F2-BCB0-12EC23C48F01@gmail.com>
- <1519143e-4fc3-490d-ab8d-e65edd2c4eec@kernel.org>
- <81844CC9-5355-4B1D-AEBD-6DD67FB8C81B@gmail.com>
- <20260217-dig-husked-8a59b6a19aee@spud>
- <CAPVz0n0u7uhL8_FQFiuB7DrnL++ecbaEKEoV7N2PgTVRBVECkw@mail.gmail.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <CAPVz0n0u7uhL8_FQFiuB7DrnL++ecbaEKEoV7N2PgTVRBVECkw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20260216185005.1131593-1-aboorvad@linux.ibm.com>
+ <20260216185005.1131593-2-aboorvad@linux.ibm.com> <042f57b8-b027-4dee-ac8c-6c6efc34d427@arm.com>
+In-Reply-To: <042f57b8-b027-4dee-ac8c-6c6efc34d427@arm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Tue, 17 Feb 2026 15:53:50 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0gVVzBx7fGf9rVS=NavvHL4ZCCvFSGnycn3U6jb+owOCw@mail.gmail.com>
+X-Gm-Features: AaiRm52CtmkbPAgR248r1IYiXisrcdmPNCj569TpfiJE_bw0qU3GImE9p86jrtA
+Message-ID: <CAJZ5v0gVVzBx7fGf9rVS=NavvHL4ZCCvFSGnycn3U6jb+owOCw@mail.gmail.com>
+Subject: Re: [PATCH v2 1/4] cpuidle: Skip governor when only one idle state is available
+To: Christian Loehle <christian.loehle@arm.com>, Aboorva Devarajan <aboorvad@linux.ibm.com>
+Cc: daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 17/02/2026 15:29, Svyatoslav Ryhel wrote:
->>>>> properties:
->>>>>   compatible:
->>>>>       - items:
->>>>>           - enum:
->>>>>               - asus,p1801-t-ec-pad
->>>>>               - asus,sl101-ec-dock
->>>>>               - asus,tf101-ec-dock
->>>>>               - asus,tf101g-ec-dock
->>>>>               - asus,tf201-ec-dock
->>>>>               - asus,tf201-ec-pad
->>>>>               - asus,tf300t-ec-dock
->>>>>               - asus,tf300t-ec-pad
->>>>>               - asus,tf300tg-ec-dock
->>>>>               - asus,tf300tg-ec-pad
->>>>>               - asus,tf300tl-ec-dock
->>>>>               - asus,tf300tl-ec-pad
->>>>>               - asus,tf700t-ec-dock
->>>>>               - asus,tf700t-ec-pad
->>>>>               - asus,tf600t-ec-pad
->>>>>               - asus,tf701t-ec-pad
->>>>>           - const: asus,transformer-ec
->>>>>
->>>>> And them schema name will match the genetic compatible.
->>>>
->>>> Then what does the generic compatible express?
->>>>
->>>
->>> Then enum it is
->>
->>
->> Why would you do that, instead of what I posted earlier in the thread?
->> If you send a flat enum with all devices listed, I'm gonna just be there
->> telling you to consolidate into one device-specific fallback compatible
->> per programming model.
-> 
-> There is no one device-specific fallback compatible! Schema describes
-> HARDWARE not drivers no? I will not use random device compatible from
+On Tue, Feb 17, 2026 at 3:36=E2=80=AFPM Christian Loehle
+<christian.loehle@arm.com> wrote:
+>
+> On 2/16/26 18:50, Aboorva Devarajan wrote:
+> > On certain platforms (PowerNV systems without a power-mgt DT node),
+> > cpuidle may register only a single idle state. In cases where that
+> > single state is a polling state (state 0), the ladder governor may
+> > incorrectly treat state 1 as the first usable state and pass an
+> > out-of-bounds index. This can lead to a NULL enter callback being
+> > invoked, ultimately resulting in a system crash.
+> >
+> > [   13.342636] cpuidle-powernv : Only Snooze is available
+> > [   13.351854] Faulting instruction address: 0x00000000
+> > [   13.376489] NIP [0000000000000000] 0x0
+> > [   13.378351] LR  [c000000001e01974] cpuidle_enter_state+0x2c4/0x668
+> >
+> > Fix this by adding a bail-out in cpuidle_select() that returns state 0
+> > directly when state_count <=3D 1, bypassing the governor and keeping th=
+e
+> > tick running.
+> >
+> > Fixes: dc2251bf98c6 ("cpuidle: Eliminate the CPUIDLE_DRIVER_STATE_START=
+ symbol")
+> > Signed-off-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
+>
+> Reviewed-by: Christian Loehle <christian.loehle@arm.com>
+>
+> > ---
+> >  drivers/cpuidle/cpuidle.c | 10 ++++++++++
+> >  1 file changed, 10 insertions(+)
+> >
+> > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> > index c7876e9e024f..65fbb8e807b9 100644
+> > --- a/drivers/cpuidle/cpuidle.c
+> > +++ b/drivers/cpuidle/cpuidle.c
+> > @@ -359,6 +359,16 @@ noinstr int cpuidle_enter_state(struct cpuidle_dev=
+ice *dev,
+> >  int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *=
+dev,
+> >                  bool *stop_tick)
+> >  {
+> > +     /*
+> > +      * If there is only a single idle state (or none), there is nothi=
+ng
+> > +      * meaningful for the governor to choose. Skip the governor and
+> > +      * always use state 0 with the tick running.
+> > +      */
+> > +     if (drv->state_count <=3D 1) {
+> > +             *stop_tick =3D false;
+> > +             return 0;
+> > +     }
+> > +
+> >       return cpuidle_curr_governor->select(drv, dev, stop_tick);
+> >  }
+> >
 
-You came with "asus,transformer-ec" as fallback which is same random
-choice, so how one random device is okay, but other not? We asked to use
-some meaningful device as fallback, to the best of current knowledge.
+I've queued up the series for 7.0-rc1 because it is mostly
+straightforward, but I've modified the second patch to drop the
+redundant latency_req variable and I had to rebase the last one.
 
-> the list as a fallback compatible for a different random unrelated
-> device, that is plain wrong. Discuss this with Krzysztof and come up
-> with something meaningful please.
-
-It is not pleasant to review your patches. This happened in the past [1]
-and recently is not getting better. In multiple threads. Receiving
-half-baked responses to actual review questions means you do not value
-our time. I think you somehow annoyed, offended or wasted time of all
-three DT maintainers.
-
-Well, sure, happens.
-
-Just understand there might be a reason when your patches do not receive
-attention or reviews.
-
-[1]
-https://lore.kernel.org/r/CAPVz0n09ZP1i2tasdTvnt8RvjhALvUYjv9u_EGRtnXPOYQtuqQ@mail.gmail.com/
-
-Best regards,
-Krzysztof
+Thanks!
