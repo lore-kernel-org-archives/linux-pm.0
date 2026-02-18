@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8804B309EEC;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 87FBF2FFDDE;
 	Wed, 18 Feb 2026 18:16:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771438581; cv=none; b=iIWbxcEAZX8cigY/M5nimiqWapXY45T8xTt1ypZd8/tPXFGm5y0ArGV4Z9jbqIXboGeZoCt+DZ8K18VADudVCSewfJtX+F8L32YhN24UgUy/lRsZBn624KSl6lb63/jcCA+K7yKsI0YT4g2Z9ctQZYOPursxqBW5/dAFNYUBiSM=
+	t=1771438581; cv=none; b=TNur021NT4ShFdEW85K7jaYxmiNVFVjRsMWXACtMVzdKeo1NmvtCOzC2S5Lr9p4rj24SS0+rd0UXtgNWfPpa0WxYM1ALUbblQnLBgPbwG098LhT4cKYSbJMVSvNnaoqv6+yBsaLtWtXy41arGJe/CT9Jk7jeD30Prs+hXnRv8zw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1771438581; c=relaxed/simple;
-	bh=G4D4eRDmZ3zLHtlTCwr9vTCHs+6N4+BLBkJbK4k9c60=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=HBCGOuiFos+TCgh/VvxLqMhz/Qy3VbceZ7WP/ShGsvIiDABzDXdp5af5hwhx8MPqud4AktnYpDIpAiFzIYn22wq/diR0L2GogTxttnG8UtjOW06DSVppx7w1OhSNSDFf8/rymNJFCbgFk9DcuKx7kXY2aHTa4+JVQcXlF88XLk0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Zl3KfNDD; arc=none smtp.client-ip=10.30.226.201
+	bh=Gcm4qVHExOEVMXPGeceeOhHrV8lE0lvyc/lJzKXr9KE=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=Wgl3W/NbGPqMYNy2SDVZqcAvb/qMT9Xh2/TQTjyKfGDGN6U/fI8/egJRjWJSCw+0QNoIX8C4+quUnipnJtl1nqDCRcTTW2lqBWwfI7Y5HE8VRCjx0DSr6j8ihEHNNsXyaOEeW8rEkmVBsGg14DTR7jwboAbDMzCmvAe62y+0KPM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RpK+O2+Q; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Zl3KfNDD"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 44957C19422;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RpK+O2+Q"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 12AD2C116D0;
 	Wed, 18 Feb 2026 18:16:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1771438581;
-	bh=G4D4eRDmZ3zLHtlTCwr9vTCHs+6N4+BLBkJbK4k9c60=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=Zl3KfNDDB05MFHoPcXpiHwFUE6yAa3bnGJLRaSnJKVd9/ikGw7tWJ3WpvanB8k12K
-	 o3sJ/hvRFymmbE7v1M3ocOGGDHZDoN5WwAL8afVkqTdq163PZ4JHQuRe2h0Fuwenw5
-	 ojnI1hdpswe90xfgwnKqbH5NuwD/i5CQxzu1MC1KxJAKMCjosqtEsoORq59VSvpGhm
-	 Io/yVyXu5BOYLv/IsKQKDY+JHZn0HQfIrLWCXww6MptqNCwlwHg1oy7EQye6B3B09g
-	 oJTDMKEguLqVGcSNz1tlgJp4PJ6T6GPwt9lNp7GCddjFsqFOrhfO6VEt77lJfdgjrA
-	 D/wX3RDb2Jx9g==
+	bh=Gcm4qVHExOEVMXPGeceeOhHrV8lE0lvyc/lJzKXr9KE=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=RpK+O2+Qn2qOKH1w4vmhjOsXCxQCJHceEFZnmwD2f2L9a8OQqG+3SwTMSbTC6bIIO
+	 5LqzOD6LYA+9ZF11X6FQXNiuxYJtNt7v+E3gjdzFv+qDAhgJLtPGmp4sxrXrN3dtRR
+	 VBk+Q2V751++EArb0cesvnsVOAdKHn6FBfgfwc1LT5gkdmsvqi8Tc2E5Qrqje/AIt5
+	 0QHkJndq9+oLTD60ngwa/0D9iexgHXgXy8vM5sp2HODsbZbs/b0mh1KBbZHoCoGKcZ
+	 DyhufY+8aWLbj2Rf0ofGF0d0J3xrcel4l7yDoAMeOH+276c7gyrNlt9jDeegf2QXdc
+	 eWt++79XgL+PQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32B28E9A04A;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06AA3E9A03E;
 	Wed, 18 Feb 2026 18:16:21 +0000 (UTC)
 From: Aaron Kling via B4 Relay <devnull+webgeek1234.gmail.com@kernel.org>
-Date: Wed, 18 Feb 2026 12:16:19 -0600
-Subject: [PATCH v2 2/3] arm64: dts: qcom: sm8550: add OSM L3 node and cpu
- interconnect nodes
+Subject: [PATCH v2 0/3] arm64: qcom: sm8550: add DDR, LLCC & L3 CPU
+ bandwidth scaling
+Date: Wed, 18 Feb 2026 12:16:17 -0600
+Message-Id: <20260218-sm8550-ddr-bw-scaling-v2-0-43a2b6d47e70@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,9 +41,11 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260218-sm8550-ddr-bw-scaling-v2-2-43a2b6d47e70@gmail.com>
-References: <20260218-sm8550-ddr-bw-scaling-v2-0-43a2b6d47e70@gmail.com>
-In-Reply-To: <20260218-sm8550-ddr-bw-scaling-v2-0-43a2b6d47e70@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/4WNSw6CMBRFt0Le2GdK+TtyH4ZBf8BLaEtaUzWEv
+ VvZgMNzcj87RBPIRLgVOwSTKJJ3GfilALUINxsknRk44y3jrMNo+6ZhqHVA+cKoxEpuRlk2vO5
+ 5N+UI5O4WzETvc/cxZl4oPn34nDep/Nl/i6nE7IZWVVM1CFXL+2wFrVflLYzHcXwB0XFx0boAA
+ AA=
+X-Change-ID: 20260207-sm8550-ddr-bw-scaling-b1524827f207
 To: Bjorn Andersson <andersson@kernel.org>, 
  Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -53,11 +55,11 @@ Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
  Aaron Kling <webgeek1234@gmail.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1771438580; l=5920;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1771438580; l=1135;
  i=webgeek1234@gmail.com; s=20250217; h=from:subject:message-id;
- bh=nk9umh4fIRgNVJ6t2hcRpym0E82gtFPD4gJGRGEKYHg=;
- b=NjfB+RLobCH+wF7j8pY/opYwu72NwoTx17WwnloJp7L4GXxbDxuQ3/jsWDJ8hRM7O6du4eJlK
- I7nhOyjxF/AA1pHCN867VGSvUoYwD3YMVgBzGspthBJT+aF157uxFLc
+ bh=Gcm4qVHExOEVMXPGeceeOhHrV8lE0lvyc/lJzKXr9KE=;
+ b=C0HAxvfbORFTufxT5rgl1D1byfeP3nL2nahiROonuwq8HhU+DsdwxGWAjHXR4Kuq4Qy14BCit
+ uP03bwJo/RWA13hOEmn4myjiZaCKehyv0DUCM1m0+CLrIPh4pH5Djsb
 X-Developer-Key: i=webgeek1234@gmail.com; a=ed25519;
  pk=TQwd6q26txw7bkK7B8qtI/kcAohZc7bHHGSD7domdrU=
 X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
@@ -65,155 +67,34 @@ X-Endpoint-Received: by B4 Relay for webgeek1234@gmail.com/20250217 with
 X-Original-From: Aaron Kling <webgeek1234@gmail.com>
 Reply-To: webgeek1234@gmail.com
 
-From: Aaron Kling <webgeek1234@gmail.com>
-
-Add the OSC L3 Cache controller node.
-
-Also add the interconnect entry for each cpu, with 3 different paths:
-- CPU to Last Level Cache Controller (LLCC)
-- Last Level Cache Controller (LLCC) to DDR
-- L3 Cache from CPU to DDR interface
+Add the OSM L3 controller node then add the necessary interconnect
+properties with the appropriate OPP table for each CPU cluster to
+allow the DDR, LLCC & L3 CPU bandwidth to scale along the CPU
+cluster operating point.
 
 Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
 ---
- arch/arm64/boot/dts/qcom/sm8550.dtsi | 59 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 59 insertions(+)
+Changes in v2:
+- Squash first two patches
+- Update opp tables in last patch to match how the downstream driver
+  parses those tables
+- Link to v1: https://lore.kernel.org/r/20260207-sm8550-ddr-bw-scaling-v1-0-d96c3f39ac4b@gmail.com
 
-diff --git a/arch/arm64/boot/dts/qcom/sm8550.dtsi b/arch/arm64/boot/dts/qcom/sm8550.dtsi
-index e3f93f4f412ded9583a6bc9215185a0daf5f1b57..e6cb8bf40f9f8ed6d02db124056c5814af32fa08 100644
---- a/arch/arm64/boot/dts/qcom/sm8550.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm8550.dtsi
-@@ -17,6 +17,7 @@
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/interconnect/qcom,icc.h>
- #include <dt-bindings/interconnect/qcom,sm8550-rpmh.h>
-+#include <dt-bindings/interconnect/qcom,osm-l3.h>
- #include <dt-bindings/mailbox/qcom-ipcc.h>
- #include <dt-bindings/power/qcom-rpmpd.h>
- #include <dt-bindings/power/qcom,rpmhpd.h>
-@@ -78,6 +79,12 @@ cpu0: cpu@0 {
- 			qcom,freq-domain = <&cpufreq_hw 0>;
- 			capacity-dmips-mhz = <1024>;
- 			dynamic-power-coefficient = <100>;
-+			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>,
-+					<&mc_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
-+					<&epss_l3 MASTER_EPSS_L3_APPS
-+					 &epss_l3 SLAVE_EPSS_L3_SHARED>;
- 			#cooling-cells = <2>;
- 			l2_0: l2-cache {
- 				compatible = "cache";
-@@ -104,6 +111,12 @@ cpu1: cpu@100 {
- 			qcom,freq-domain = <&cpufreq_hw 0>;
- 			capacity-dmips-mhz = <1024>;
- 			dynamic-power-coefficient = <100>;
-+			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>,
-+					<&mc_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
-+					<&epss_l3 MASTER_EPSS_L3_APPS
-+					 &epss_l3 SLAVE_EPSS_L3_SHARED>;
- 			#cooling-cells = <2>;
- 			l2_100: l2-cache {
- 				compatible = "cache";
-@@ -125,6 +138,12 @@ cpu2: cpu@200 {
- 			qcom,freq-domain = <&cpufreq_hw 0>;
- 			capacity-dmips-mhz = <1024>;
- 			dynamic-power-coefficient = <100>;
-+			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>,
-+					<&mc_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
-+					<&epss_l3 MASTER_EPSS_L3_APPS
-+					 &epss_l3 SLAVE_EPSS_L3_SHARED>;
- 			#cooling-cells = <2>;
- 			l2_200: l2-cache {
- 				compatible = "cache";
-@@ -146,6 +165,12 @@ cpu3: cpu@300 {
- 			qcom,freq-domain = <&cpufreq_hw 1>;
- 			capacity-dmips-mhz = <1792>;
- 			dynamic-power-coefficient = <270>;
-+			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>,
-+					<&mc_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
-+					<&epss_l3 MASTER_EPSS_L3_APPS
-+					 &epss_l3 SLAVE_EPSS_L3_SHARED>;
- 			#cooling-cells = <2>;
- 			l2_300: l2-cache {
- 				compatible = "cache";
-@@ -167,6 +192,12 @@ cpu4: cpu@400 {
- 			qcom,freq-domain = <&cpufreq_hw 1>;
- 			capacity-dmips-mhz = <1792>;
- 			dynamic-power-coefficient = <270>;
-+			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>,
-+					<&mc_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
-+					<&epss_l3 MASTER_EPSS_L3_APPS
-+					 &epss_l3 SLAVE_EPSS_L3_SHARED>;
- 			#cooling-cells = <2>;
- 			l2_400: l2-cache {
- 				compatible = "cache";
-@@ -188,6 +219,12 @@ cpu5: cpu@500 {
- 			qcom,freq-domain = <&cpufreq_hw 1>;
- 			capacity-dmips-mhz = <1792>;
- 			dynamic-power-coefficient = <270>;
-+			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>,
-+					<&mc_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
-+					<&epss_l3 MASTER_EPSS_L3_APPS
-+					 &epss_l3 SLAVE_EPSS_L3_SHARED>;
- 			#cooling-cells = <2>;
- 			l2_500: l2-cache {
- 				compatible = "cache";
-@@ -209,6 +246,12 @@ cpu6: cpu@600 {
- 			qcom,freq-domain = <&cpufreq_hw 1>;
- 			capacity-dmips-mhz = <1792>;
- 			dynamic-power-coefficient = <270>;
-+			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>,
-+					<&mc_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
-+					<&epss_l3 MASTER_EPSS_L3_APPS
-+					 &epss_l3 SLAVE_EPSS_L3_SHARED>;
- 			#cooling-cells = <2>;
- 			l2_600: l2-cache {
- 				compatible = "cache";
-@@ -230,6 +273,12 @@ cpu7: cpu@700 {
- 			qcom,freq-domain = <&cpufreq_hw 2>;
- 			capacity-dmips-mhz = <1894>;
- 			dynamic-power-coefficient = <588>;
-+			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>,
-+					<&mc_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
-+					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
-+					<&epss_l3 MASTER_EPSS_L3_APPS
-+					 &epss_l3 SLAVE_EPSS_L3_SHARED>;
- 			#cooling-cells = <2>;
- 			l2_700: l2-cache {
- 				compatible = "cache";
-@@ -5437,6 +5486,16 @@ rpmhpd_opp_turbo_l1: opp-416 {
- 			};
- 		};
- 
-+		epss_l3: interconnect@17d90000 {
-+			compatible = "qcom,sm8550-epss-l3", "qcom,epss-l3";
-+			reg = <0 0x17d90000 0 0x1000>;
-+
-+			clocks = <&bi_tcxo_div2>, <&gcc GCC_GPLL0>;
-+			clock-names = "xo", "alternate";
-+
-+			#interconnect-cells = <1>;
-+		};
-+
- 		cpufreq_hw: cpufreq@17d91000 {
- 			compatible = "qcom,sm8550-cpufreq-epss", "qcom,cpufreq-epss";
- 			reg = <0 0x17d91000 0 0x1000>,
+---
+Aaron Kling (3):
+      dt-bindings: interconnect: OSM L3: Document sm8550 OSM L3 compatible
+      arm64: dts: qcom: sm8550: add OSM L3 node and cpu interconnect nodes
+      arm64: dts: qcom: sm8550: add cpu OPP table with DDR, LLCC & L3 bandwidths
 
+ .../bindings/interconnect/qcom,osm-l3.yaml         |   1 +
+ arch/arm64/boot/dts/qcom/sm8550.dtsi               | 367 +++++++++++++++++++++
+ 2 files changed, 368 insertions(+)
+---
+base-commit: 9845cf73f7db6094c0d8419d6adb848028f4a921
+change-id: 20260207-sm8550-ddr-bw-scaling-b1524827f207
+
+Best regards,
 -- 
-2.52.0
+Aaron Kling <webgeek1234@gmail.com>
 
 
