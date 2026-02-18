@@ -1,155 +1,204 @@
-Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F9582EB860
-	for <linux-pm@vger.kernel.org>; Wed, 18 Feb 2026 18:29:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC3EC23ABBE;
+	Wed, 18 Feb 2026 18:37:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771439370; cv=none; b=PkwzlsrS877OHpBMNJGvRE5kRceOE2vIgGmLLAumWTB02r9b1f+wyKsXyqgYdalkpsRqda/jOnyb3hE6YkCf4iku0XYJFyABmPYcSKte9glO2AFUoYXMstM/CWq7ZT9WwRWbdq5KfKBTZ8Rpb7omT0hmcJkKLVcJLqRgFbqc5hk=
+	t=1771439867; cv=none; b=rfnsQuVXtbgUDcRpxfEvUizFF9/iCQm22GsmldicSNV0rlX1G7XVyKySgMvf6K5d+YUeowLW+EgAMHkEufG6RjkXqyJPJ4G+DXFT3JmKpUtNLDY5lYoqRAL4TztY28tGaxJjsfMrhI9mDgLflTLXc6CaQMJv/e4LK88ViRE2flw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771439370; c=relaxed/simple;
-	bh=eZnBqrWtQXg6JjfPWHTRiksi0baJe5tMKs5q38C8B/8=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
-	 References:In-Reply-To; b=gNaR9FAZMrztRYWInJSFPxmlRuMu55BIUOPAev0CIulc958xb2hfkV8Zn3RN3M1ROxluxqO9sZ1yYSY5yyvCBZlE9caAApnrDw5yYOMQCPT6bZhKfJ+jLX98BMuGNs1bKT0VvYkIx48dcIlTycZ1HTaOi0o5X1kw2rqiLv8+JIA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=CTnKods6; arc=none smtp.client-ip=209.85.128.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1771439867; c=relaxed/simple;
+	bh=0ZwroL/EU90eOY5DTA3U3esYB7P57rsTLbI62v15E3o=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=qBUBa9AIAMnU9nHGTYZ/Jd1lIPOSuzchTEOd5RQYdbRtIB0GdfzWwY0yhcHzDSmhUsvDhPtf8yqkTcy07GRMZZTit9UHcKgVWVX0KycdszdanhnLSaN9hpyjnHUYS8VQNtciZ3iZdbWL6Xa0P9eboA5shUoPon/CiZYQtabYjZg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DfOnXoRG; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="CTnKods6"
-Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-48372efa020so1080815e9.2
-        for <linux-pm@vger.kernel.org>; Wed, 18 Feb 2026 10:29:29 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1771439368; x=1772044168; darn=vger.kernel.org;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-transfer-encoding:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=P2HG7dMgFbjsQ2a9OaL1N2Qu53e+VsL6dqqrCn2unbo=;
-        b=CTnKods68RFkYQ+DXwha5Qz1xJXqCTgoi53KBg6U+pJVI+PjOEHWwkDR5nprqpNob2
-         +L8ReFYcSknBNYMswj0DfzKMCmjliOW6gW52EM/5/Ch4C2Q0UTG3mwn0hQPVi/AYeZ96
-         sYTXzswQ2PNRtkYKpqBTG+9DP1o3clh5H8c0stxyBkQ6A3fxe+/h5FuC0CLOrDhxjFqy
-         bxmvL9wUcTbUNkJYTMkgQ7pFnCLEa4OkqucF/kh5c2zpnuAZSfED83P5vQbup27KgV7A
-         2h8dgyAQtMWYc0HtgrzLuO1a3sdEBNxVN0aUSp4mMMJc+WRSL2lv5bIutzybd/Juc7MH
-         FFoQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1771439368; x=1772044168;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-transfer-encoding:mime-version:x-gm-gg:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=P2HG7dMgFbjsQ2a9OaL1N2Qu53e+VsL6dqqrCn2unbo=;
-        b=qlxCD2AwYHki6IrvD/PSDMks+Ijf37UBO+mY8yfnzBtTZgUbQC2xwI3E5bpvGuH5Un
-         Aw8KuvB8Dcn5eA+eFZCyEhIfT9wN2iZ+DSlX/ac7e8SotP7NATHtg4G70KjMLKdFJ1Mg
-         KJV2zFPJC9Y1QzJJtm7UZXegJk71mQ1/Fm0IdHGUquSEMhdhn/Lzu0DYVwnDjgK/wWjN
-         1IeYk9r6NUySKsQrxJVQn9+sVS5dQwwrkQLscL0yqPlAGBDLzLWkvmaLvt/e7/hFom7i
-         TmFGVfcCl6Dgpp3Ij864sqImcZ59kon8FWun4LV97i1G5dIG57khDpQU0lRbXTFJJu9K
-         GaIA==
-X-Gm-Message-State: AOJu0YzUFd1RebuLau83KUxUOaRRvE+DIPfcoXi/b77oExt2f+i0MQ/r
-	sT1v2DkL5zyp1nxg0wrGnJpj5tRBb3/3OV+24ukOB2B9KZ0XoE3USHpg/2N36NWyTK4e6hbfNVb
-	vZv2Qmas=
-X-Gm-Gg: AZuq6aK1f9NcJ/LvxEr4rCcgm7lpZHzmtReS660TrziMjFgHoHLJpZfTF92JPhFb10X
-	hulOlX6Zdvj3zlctzrbjqZZFFxWDmF65yliTkRlUx27n2JpXWPxDkWUSihelbcyQmELzmOmUe+1
-	6pP4ALtygmrOZ5eUYKzutQ2B4M1anH8GKIO4ssbY1B6MslInLJUyma3cZThHQdT2RTO1syl7NOg
-	8nrRoHjMHVFWHvTrWJFHaVNXhZ+4d5mtxio086NU4lQ4+5oPb7eAAZbesvvtbDChh/LDizIwiab
-	goi5idKcBXa4pN/w5VoZpr+id1WoYFM2P2YYGQpS0wZ3XMA+gcCX0E5wl7oGvC+tz31MqoZpZ5d
-	B0SrPMylm1ZZv/HWgoP/NYjRlhpWvpitD0uN37tQEv7SXoz2AwYBD3+GN/6dEOnZBbGi0PBRzOu
-	mCwpCoalCn+v7FmSeAcVV1301VF5kUT9zEhfOZ3JEWId4fWjk9felbu74dLQstf3lQLV+ArWA7I
-	FVl/8qrtr/NatWnog==
-X-Received: by 2002:a05:600c:46c9:b0:46e:4a13:e6c6 with SMTP id 5b1f17b1804b1-48379bfd71cmr230436375e9.19.1771439367849;
-        Wed, 18 Feb 2026 10:29:27 -0800 (PST)
-Received: from localhost ([2a02:c7c:5e34:8000:17bf:52bc:6ef0:a984])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4837e565f5esm439288555e9.10.2026.02.18.10.29.26
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 18 Feb 2026 10:29:27 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DfOnXoRG"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2FD6C116D0;
+	Wed, 18 Feb 2026 18:37:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1771439866;
+	bh=0ZwroL/EU90eOY5DTA3U3esYB7P57rsTLbI62v15E3o=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=DfOnXoRG2ArK8ghlIw5gpzG4H0EGw+M9DST3dXtG305xmZVXeBLtWe7HQjjRk4Flw
+	 ft+V/6n2+Uu3HGVz9tNHf6wfPH+Pmm/NdrZOMYGGkyGwG609mCgAvEq1EaVkjA4pUP
+	 po2OYHUZx19wGx3sf/vddohsh6DvCit8sDIVlSbiTj0lUn/43KN3KbHazLTGce/di3
+	 x2XhsNFxoIZDkL6ulIDbuzuE2hQdTfW8O1BgiNOWBfZlkLRLjNT5WlnKSqbinNlWD3
+	 pqdHndU4MPU4PYCIHU1wDsnNOR15/h9gfo93bGHpjDL7kRtt5iqIXk34TaXAd1V7y0
+	 a/x5mnGrUME/Q==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Christian Loehle <christian.loehle@arm.com>,
+ Doug Smythies <dsmythies@telus.net>,
+ Aboorva Devarajan <aboorvad@linux.ibm.com>,
+ "Ionut Nechita (Sunlight Linux)" <sunlightlinux@gmail.com>
+Subject:
+ [PATCH v1 2/2] cpuidle: governors: teo: Rearrange stopped tick handling
+Date: Wed, 18 Feb 2026 19:37:37 +0100
+Message-ID: <3409058.44csPzL39Z@rafael.j.wysocki>
+Organization: Linux Kernel Development
+In-Reply-To: <1953482.tdWV9SEqCh@rafael.j.wysocki>
+References: <1953482.tdWV9SEqCh@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 18 Feb 2026 18:29:26 +0000
-Message-Id: <DGIAUIFPUHN8.35B5MNEUK1JW5@linaro.org>
-Cc: <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
- <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
- "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>, "Krzysztof Kozlowski"
- <krzk@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Daniel
- Lezcano" <daniel.lezcano@linaro.org>, "Zhang Rui" <rui.zhang@intel.com>,
- "Lukasz Luba" <lukasz.luba@arm.com>, "Rob Herring" <robh@kernel.org>,
- "Conor Dooley" <conor+dt@kernel.org>, "Alim Akhtar"
- <alim.akhtar@samsung.com>, "Sam Protsenko" <semen.protsenko@linaro.org>,
- "Anand Moon" <linux.amoon@gmail.com>, "Marek Szyprowski"
- <m.szyprowski@samsung.com>
-Subject: Re: [PATCH v4 0/7] Add initial Exynos850 support to the thermal
- driver
-From: "Alexey Klimov" <alexey.klimov@linaro.org>
-To: "Mateusz Majewski" <m.majewski2@samsung.com>,
- <linux-samsung-soc@vger.kernel.org>
-X-Mailer: aerc 0.20.0
-References: <CGME20240911121149eucas1p29b9ccf99a545cfaa924b122cd8dd3183@eucas1p2.samsung.com> <20240911121136.1120026-1-m.majewski2@samsung.com>
-In-Reply-To: <20240911121136.1120026-1-m.majewski2@samsung.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-Hi Mateusz,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On Wed Sep 11, 2024 at 1:11 PM BST, Mateusz Majewski wrote:
-> This series adds initial Exynos850 support to the thermal driver
-> together with its requirements (sanitize_temp_error fix, adding the new
-> string to dt-bindings), while also cleaning up a bit (improving power
-> management support and removing some outdated information from
-> dt-bindings).
->
-> Changelog:
->  v4:
->    - Cleaned up sanitize_temp_error a bit more
->    - Modified exynos_tmu_update_temp to match sanitize_temp_error
->  v3:
->    - Reworded the commit message of the dt-binding information removal
->      change
->  v2:
->    - Reimplemented to use the Exynos850 TMU clock: removed the patch to
->      make the clock optional and changed dt-bindings change accordingly
->    - Improved the Exynos850 implementation itself (style and one correct
->      register offset)
->    - Removed conditional compilation in favor of pm_sleep_ptr
->    - Shortened dt-bindings description
->
->
-> Mateusz Majewski (7):
->   drivers/thermal/exynos: use DEFINE_SIMPLE_DEV_PM_OPS
->   drivers/thermal/exynos: use pm_sleep_ptr instead of conditional
->     compilation
->   drivers/thermal/exynos: improve sanitize_temp_error
->   drivers/thermal/exynos: reuse data->temp_mask in
->     exynos_tmu_update_temp
->   dt-bindings: thermal: samsung,exynos: add exynos850-tmu string
->   drivers/thermal/exynos: add initial Exynos850 support
->   dt-bindings: thermal: samsung,exynos: remove driver-specific
->     information
->
->  .../thermal/samsung,exynos-thermal.yaml       |   8 +-
->  drivers/thermal/samsung/exynos_tmu.c          | 237 +++++++++++++++---
+This change is based on the observation that it is not in fact necessary
+to select a deep idle state every time the scheduler tick has been
+stopped before the idle state selection takes place.  Namely, if the
+time till the closest timer (that is not the tick) is short enough,
+a shallow idle state can be selected because the timer will kick the
+CPU out of that state, so the damage from a possible overly optimistic
+selection will be limited.
 
-I applied the whole series locally, it applies fine on 6.19 but I didn't
-check linux-next; and tested it on Exynos850 E850-96 board with the
-following DT node:
+Update the teo governor in accordance with the above in analogy with
+the previous analogous menu governor update.
 
-tmuctrl_0: tmu@10070000 {
-	compatible =3D "samsung,exynos850-tmu";
-	reg =3D <0x10070000 0x800>;
-	interrupts =3D <GIC_SPI 226 IRQ_TYPE_LEVEL_HIGH>;
-	clocks =3D <&cmu_peri CLK_GOUT_BUSIF_TMU_PCLK>;
-	clock-names =3D "tmu_apbif";
-	#thermal-sensor-cells =3D <0>;
-};
+Among other things, this will cause the teo governor to call
+tick_nohz_get_sleep_length() every time when the tick has been
+stopped already and only change the original idle state selection
+if the time till the closest timer is beyond SAFE_TIMER_RANGE_NS
+which is way more straightforward than the current code flow.
 
-and thermal zones as you mentioned way back. It works just fine.
-Temp goes up to 48 C with a loaded CPUs and settles at 36-37C when idle.
+Of course, this effectively throws away some of the recent teo governor
+changes, but the resulting simplification is worth it in my view.
 
-So for the whole series:
-Tested-by: Alexey Klimov <alexey.klimov@linaro.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpuidle/governors/teo.c |   80 ++++++++++++++++------------------------
+ 1 file changed, 33 insertions(+), 47 deletions(-)
 
-However, do you have plans to update it or re-submit?
-Or any other plans working on it?
+--- a/drivers/cpuidle/governors/teo.c
++++ b/drivers/cpuidle/governors/teo.c
+@@ -413,50 +413,13 @@ static int teo_select(struct cpuidle_dri
+ 	 * better choice.
+ 	 */
+ 	if (2 * idx_intercept_sum > cpu_data->total - idx_hit_sum) {
+-		int min_idx = idx0;
+-
+-		if (tick_nohz_tick_stopped()) {
+-			/*
+-			 * Look for the shallowest idle state below the current
+-			 * candidate one whose target residency is at least
+-			 * equal to the tick period length.
+-			 */
+-			while (min_idx < idx &&
+-			       drv->states[min_idx].target_residency_ns < TICK_NSEC)
+-				min_idx++;
+-
+-			/*
+-			 * Avoid selecting a state with a lower index, but with
+-			 * the same target residency as the current candidate
+-			 * one.
+-			 */
+-			if (drv->states[min_idx].target_residency_ns ==
+-					drv->states[idx].target_residency_ns)
+-				goto constraint;
+-		}
+-
+-		/*
+-		 * If the minimum state index is greater than or equal to the
+-		 * index of the state with the maximum intercepts metric and
+-		 * the corresponding state is enabled, there is no need to look
+-		 * at the deeper states.
+-		 */
+-		if (min_idx >= intercept_max_idx &&
+-		    !dev->states_usage[min_idx].disable) {
+-			idx = min_idx;
+-			goto constraint;
+-		}
+-
+ 		/*
+ 		 * Look for the deepest enabled idle state, at most as deep as
+ 		 * the one with the maximum intercepts metric, whose target
+ 		 * residency had not been greater than the idle duration in over
+ 		 * a half of the relevant cases in the past.
+-		 *
+-		 * Take the possible duration limitation present if the tick
+-		 * has been stopped already into account.
+ 		 */
+-		for (i = idx - 1, intercept_sum = 0; i >= min_idx; i--) {
++		for (i = idx - 1, intercept_sum = 0; i >= idx0; i--) {
+ 			intercept_sum += cpu_data->state_bins[i].intercepts;
+ 
+ 			if (dev->states_usage[i].disable)
+@@ -469,7 +432,6 @@ static int teo_select(struct cpuidle_dri
+ 		}
+ 	}
+ 
+-constraint:
+ 	/*
+ 	 * If there is a latency constraint, it may be necessary to select an
+ 	 * idle state shallower than the current candidate one.
+@@ -478,13 +440,13 @@ constraint:
+ 		idx = constraint_idx;
+ 
+ 	/*
+-	 * If either the candidate state is state 0 or its target residency is
+-	 * low enough, there is basically nothing more to do, but if the sleep
+-	 * length is not updated, the subsequent wakeup will be counted as an
+-	 * "intercept" which may be problematic in the cases when timer wakeups
+-	 * are dominant.  Namely, it may effectively prevent deeper idle states
+-	 * from being selected at one point even if no imminent timers are
+-	 * scheduled.
++	 * If the tick has not been stopped and either the candidate state is
++	 * state 0 or its target residency is low enough, there is basically
++	 * nothing more to do, but if the sleep length is not updated, the
++	 * subsequent wakeup will be counted as an "intercept".  That may be
++	 * problematic in the cases when timer wakeups are dominant because it
++	 * may effectively prevent deeper idle states from being selected at one
++	 * point even if no imminent timers are scheduled.
+ 	 *
+ 	 * However, frequent timers in the RESIDENCY_THRESHOLD_NS range on one
+ 	 * CPU are unlikely (user space has a default 50 us slack value for
+@@ -500,7 +462,8 @@ constraint:
+ 	 * shallow idle states regardless of the wakeup type, so the sleep
+ 	 * length need not be known in that case.
+ 	 */
+-	if ((!idx || drv->states[idx].target_residency_ns < RESIDENCY_THRESHOLD_NS) &&
++	if (!tick_nohz_tick_stopped() && (!idx ||
++	     drv->states[idx].target_residency_ns < RESIDENCY_THRESHOLD_NS) &&
+ 	    (2 * cpu_data->short_idles >= cpu_data->total ||
+ 	     latency_req < LATENCY_THRESHOLD_NS))
+ 		goto out_tick;
+@@ -508,6 +471,29 @@ constraint:
+ 	duration_ns = tick_nohz_get_sleep_length(&delta_tick);
+ 	cpu_data->sleep_length_ns = duration_ns;
+ 
++	/*
++	 * If the tick has been stopped and the closest timer is too far away,
++	 * update the selection to prevent the CPU from getting stuck in a
++	 * shallow idle state for too long.
++	 */
++	if (tick_nohz_tick_stopped() && duration_ns > SAFE_TIMER_RANGE_NS &&
++	    drv->states[idx].target_residency_ns < TICK_NSEC) {
++		/*
++		 * Look for the deepest enabled idle state with target
++		 * residency within duration_ns.
++		 */
++		for (i = drv->state_count - 1; i > idx; i--) {
++			if (dev->states_usage[i].disable)
++				continue;
++
++			if (drv->states[i].target_residency_ns <= duration_ns) {
++				idx = i;
++				break;
++			}
++		}
++		return idx;
++	}
++
+ 	if (!idx)
+ 		goto out_tick;
+ 
 
-Thank you!
-Best regards,
-Alexey
+
+
