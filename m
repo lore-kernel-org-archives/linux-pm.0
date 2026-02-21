@@ -1,818 +1,247 @@
-Received: from mail-qk1-f178.google.com (mail-qk1-f178.google.com [209.85.222.178])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DBE3315624B
-	for <linux-pm@vger.kernel.org>; Fri, 20 Feb 2026 22:54:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DCA281AF0AF
+	for <linux-pm@vger.kernel.org>; Sat, 21 Feb 2026 02:49:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771628062; cv=none; b=EoEaU1sFooSaQRlYH1/dpku0o4oLR/JheLwA0UQcvyU6Sp5fKdr0nsNGUyBw0u7fSMycqi518yrE9+Ja0G+8EW0YrqsZAtCuDxTWA1vheQm1aGyO0jhOP17KDS+nh61FTPFyTm1+42ZSGwobmPjan+9FmqD38RTLdpMFofNHCSA=
+	t=1771642179; cv=none; b=h/+qpz2NDyz4OrpVpNvB9iJ7KLVl5Yn8fEFcksISr0VA8BVDuAMjPRDRtX8AAtwtGC5QKkf9DrqkZQtLH4N9lneddWuslYqgnHa27t0Vrr7ImDcNKrf/tw3Ve7b65w4Yph5ZYTWZ0P8yDNZxigM0SZxN6gLzm3blZrVH+UeQSIM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771628062; c=relaxed/simple;
-	bh=CErc1Cc+3h2ZneEzfwDGZEbOO+w6VY+iLEp30+TKX/c=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TEeqYF7qbknazIRKZC87s52UUsxwP1ZmAvpNO+5gEYaYaJgh0Cf+nGssx99Qu7AXqyDOZyWbuNClQ0gpEwjUULJs2RRKWh9PPc2X98gJx3GyFFstzuhPD4UKJZnIqK6XYslwcH4LQIgSALl64m4N1ySFcNSPLiOG3esvoufd2OE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DV5oojA+; arc=none smtp.client-ip=209.85.222.178
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1771642179; c=relaxed/simple;
+	bh=uq92ycsM47Jo3q4lAh30+sbvRyqWHRljr1zKiEWutzc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ppwghmCjc3INdxIO3kp6LJy/fe0HsIU8y8KVKvljs+5XE7k2s9S9JYQncpUmm4joZDykMa4TSJdm6nvmjdqR83SHnuCNQxaIs4U3nUROloyJm1xk3PdoF5vCVUx7hrYh5Dc6If1F39P9zJXSbusGXEwiCq/a8rVzvf3WOuvZqcw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Zbrur7YM; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=jqAyD1gJ; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DV5oojA+"
-Received: by mail-qk1-f178.google.com with SMTP id af79cd13be357-8cb5c9ba82bso396277585a.2
-        for <linux-pm@vger.kernel.org>; Fri, 20 Feb 2026 14:54:20 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Zbrur7YM";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="jqAyD1gJ"
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61KG4Uh13337643
+	for <linux-pm@vger.kernel.org>; Sat, 21 Feb 2026 02:49:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	BmWwSyvtQgL34OEqTM20cBfqvgI2QWHHCJgEeagqLDo=; b=Zbrur7YMuFsAtxgl
+	ZpG+MMTRvPm6XqWhMA1Ukb4OavUa/TsVFx9pZXgp54AeaRplZb/PjaiGgnI/GXNR
+	bwoRxRbu/ole69KAiIu2IhOCh4Arh14MtlwsjVRXpf7Shb3njsZ+ShajScnzhngH
+	ygc2/CNALxCschU2e+xiIxqTNbz/DJ6SPDjJAY7NMe3JHnR9fRMZJlcnEOQ9wN3v
+	YO2jhYMu42cqKkav9Iq37LzcOiDVKfFw912380YcxmT6l3JonCqmtvC2f604t96r
+	h4hFSNiIX2uiifLhBQY6UG0n6b/46WEGKmfkR1qG5UMdtie1ifuOoJqLh+v+Hbjn
+	PC3lWg==
+Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com [209.85.222.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cedp6kg7c-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Sat, 21 Feb 2026 02:49:37 +0000 (GMT)
+Received: by mail-qk1-f200.google.com with SMTP id af79cd13be357-8cb706313beso399218785a.3
+        for <linux-pm@vger.kernel.org>; Fri, 20 Feb 2026 18:49:36 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1771628060; x=1772232860; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=4ysaqx8k04M5ZyWb6NfqEX6Ito7kZyTdQoQ1l4hgF4A=;
-        b=DV5oojA+FwMZo9PFnTBVgWY9O0Ih1V78jQVSkGIATqtyCcuzrD525KL2hNAWuJx9EQ
-         AqGUMdqIMb7VQoMgK42m8oLkjWiydPGvonkTWxVJTZABk2WZptFrvQMsX1S/Z+XuHPK6
-         4WS0ka3K6p8slTpLPqTH8M9Kl7MSoDc7UnSGL2VvrbMej8BxT7aRWU5S+Hhckef1462l
-         aHVoSYpg0FmjVHQ5z5pOhc5qUgjScJ8ERpl2W4VaCyQ2wavnyP72RQhJx51nWml+GgaK
-         L8j3xP+MwEgIkY53TeuogPgG2kjfVcwl/bdTU4RAdI9f06bUn7Jltwkr/v4TMf9a5BSd
-         C5qA==
+        d=oss.qualcomm.com; s=google; t=1771642172; x=1772246972; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=BmWwSyvtQgL34OEqTM20cBfqvgI2QWHHCJgEeagqLDo=;
+        b=jqAyD1gJZs8tCYH4XvCwi7l5+Xp/FALRNML198bziAe0Mo48Yp6xEr/TvlqJSnbapX
+         1H+Tc8gwWSIUQKGD3ukLmtWdADLKgDJiyCxXYraR7InIkBNVgMWkWAK12Pb4TPISX0K/
+         kwH6mYZy8hAslhw9m3GX2xdKNXpHnv6pHaIU9tGYbkfRxi9LjQBR5fJwDa6jvXFUYNa7
+         O8L6nsDXem+u1KP9t4M/YcC+0Y1WvBQ3EKDoo3tF58xZaL2R9J7G6fF8pL0Q04TXd8HT
+         frlOgTqHHJDkhDPvqrWyS0blExWmudlvTKihBY+WExpqq5IBlYfrkuk87Y1OBCw+2IL2
+         5PwQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1771628060; x=1772232860;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=4ysaqx8k04M5ZyWb6NfqEX6Ito7kZyTdQoQ1l4hgF4A=;
-        b=FOA298fhaWRjfnmQ0Yfv+6lMFrqyWU5g1tLe7WqngRDZGgHyVKylW0CJ6r4q20iM9z
-         sqC4D98SFPC4WDl+4ndgSOARBQraWa8CZoV6JodHtkjnCE25W45i7tuTvF+T2g6y2SKo
-         YERcGCDfVrwvVzyT+gBeqqqEiwZzjfEi0sQsF2B50Vm4z7E4CsMajw247u6BkMIot28R
-         GzB3vjqvdk+4QW7ICr9yhPFuo17CurQjElD7uOyN2HR5WptBfp4NIJ682t0H+1DTOf6x
-         8oQLt3h8vtyGiDTklS6lKjUTkV1WzqwlD9XFMINRkeQxfp9yZTykJh5T6Etsm3lqbXwP
-         kB/Q==
-X-Forwarded-Encrypted: i=1; AJvYcCUJP3PH0mOI33UqB81RJx+ORPI2LOU4ANNbTZkqKmrOCh7OwOEKR1TbvZ+m2C4hHRXuguiDkbF6FQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx1WTJRgUi0roCBQtZaqAAYk9KohUJ4up/MnxCwf9IIEsM2IimG
-	q0Ib/TSmnDliX67V8SZJp34YxF8YsMeAQy9FLnNPTjXirkx2OoUT2ooUHC2tyYgCjfM=
-X-Gm-Gg: AZuq6aLLLa+5tYoJh5VP0vy2op5T+HGaUnVPEuxt5K5QKa1iL66jFZ4G9uisHRerrep
-	YlYbfcEhP+vfwdsdqpvoJO5qo/63u+jpA+Y+vYZGtB7HvuNKU361Op6tO+Y5zIrL/0EcOn1HMIy
-	qKFpgcSBf30y2scHW+gf2n/sfzTX+iaVxekKIdwPwkOwpmhhb/Ttj69IVoG1g5z+fYZj4hz/06O
-	JQqENtRYrA3HjLriBQlQZjb+FB1K6JQLFatrubSh1wTl0+4nZzBbfoEqaoQGeANAMTxPlYunGi5
-	1SN8neMQ2Wox/nrP13Xm7v7MlxjNMDqCPQ+n21PvjWggU3W+pe5yhqgyeB3eUX4Q99+ydRfnMlK
-	OBE9l77t4UYbKXFHWUGjLfzDJ7/Sf0uzuaDfbRUixqg1Beh7buCec8LXjofywQnAfmkKhpzvI9m
-	ykr36NC/TvlLtj/T6OhAqCBQZg7V4M0ofMg/3j5CGd9te6
-X-Received: by 2002:a05:6820:188a:b0:66e:10ca:fcd5 with SMTP id 006d021491bc7-679c424cbe9mr582827eaf.12.1771621540600;
-        Fri, 20 Feb 2026 13:05:40 -0800 (PST)
-Received: from localhost ([2a03:2880:10ff:8::])
-        by smtp.gmail.com with ESMTPSA id 006d021491bc7-679c56ec56dsm363029eaf.12.2026.02.20.13.05.39
+        d=1e100.net; s=20230601; t=1771642172; x=1772246972;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=BmWwSyvtQgL34OEqTM20cBfqvgI2QWHHCJgEeagqLDo=;
+        b=m2elUdhVAT+ZOm7FcPfsBrY0HXbUGqSf0RUvtppPqUP7XTnnLp/jy0Zguxah2Hjnws
+         Z7ebO9V/iyZc8S3F0M6iH9ZN1rk1oZWn2S9l//WYllpEx8PIKA0Qn/eik3im0y/559Ny
+         YSr2+I9RDBBYqtrUY8hW/oFydOZX4cyG84hWhQG9jVmSIyM8jxwuMUJuE0xCcM2mY382
+         o7uCmOh4sUWLB/SOlDUsBsbNgeyL3frzjLmEt8DE6joqY6yaU1JgC88OJMN8fR9uCCvA
+         YfjMc1KbO6pkuFIJAadicpaMzl3YOMm0fwG9ajs2GPVCxZi2dpb5r/a0zMiaXjfWW5/m
+         s5hQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUsQ8xhORobTwacCAmbMveQJAgq03G1DuET4Smm5Uh47QHNHlTn0dbxtZ0ahtl5V/q1a+sNRmBOYw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzZEsqSYSAseo1mW6ZkFtzu8ZBkLdKJkdQ0HDp7msYhcA+dzvKM
+	CCNTvZLkjwkPGRrXGJlO6aUNXLf1a0y9+xnE2Iham0L2ryuNAi63a6JRizr46RpTpeMaGaNCPcd
+	TK0DbKpDWBXZk/j/gJMFzWPIBbk17n698sxb9gw1RpBh4mPXYAqKR0rnncbgfkQ==
+X-Gm-Gg: AZuq6aLKVtQpJqHBHNMk8Q9e+cQ2f9BVqTXdhpILH/qD8sTwPZ3bWNFrpSlGBH+1fqs
+	6rYHVy1EE9VI2A1MwK3obe+rKsvWJwZ92XPnqCZjDFERJZqbyJC1rmRDvSoOoU+6ClyrN02poFW
+	f5QRHqHsFRhtvScXgVujUKhEe9mE5SdjLnCcbXonbaG1QX93QqOyDrYiSFibJVZVnG7jLNjwgh2
+	tzJM6GCxNCeuOCaSvm6Km2VC4C4NHvc2ZmTXIqssosoRZt1x1+xSllU3dGXaNxUFE+u7RLG4c6Y
+	JwLHJgeeN5673nrw+N+J9Eg2W+3QBw+vhEzbrELL1zeQHSjqmWFUEXP5XnEQXT3uQIbcC4joEI2
+	IsYv6dVLKCkgpq0kKemrPzMrYUp2MQDwzAcNYUjUh45EwVYRb1xCinLhjWOIl8QWUnsXu68gwME
+	yCowBF/C3HvtUSfOOu09wtUwDB6L9TUH1CWGQ=
+X-Received: by 2002:a05:620a:1a0f:b0:8c6:b45b:9e2d with SMTP id af79cd13be357-8cb8c9fc7a1mr245188085a.26.1771642172459;
+        Fri, 20 Feb 2026 18:49:32 -0800 (PST)
+X-Received: by 2002:a05:620a:1a0f:b0:8c6:b45b:9e2d with SMTP id af79cd13be357-8cb8c9fc7a1mr245185185a.26.1771642171899;
+        Fri, 20 Feb 2026 18:49:31 -0800 (PST)
+Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5a0eeb1be5fsm179895e87.39.2026.02.20.18.49.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 20 Feb 2026 13:05:40 -0800 (PST)
-From: Nhat Pham <nphamcs@gmail.com>
-To: kasong@tencent.com
-Cc: Liam.Howlett@oracle.com,
-	akpm@linux-foundation.org,
-	apopple@nvidia.com,
-	axelrasmussen@google.com,
-	baohua@kernel.org,
-	baolin.wang@linux.alibaba.com,
-	bhe@redhat.com,
-	byungchul@sk.com,
-	cgroups@vger.kernel.org,
-	chengming.zhou@linux.dev,
-	chrisl@kernel.org,
-	corbet@lwn.net,
-	david@kernel.org,
-	dev.jain@arm.com,
-	gourry@gourry.net,
-	hannes@cmpxchg.org,
-	hughd@google.com,
-	jannh@google.com,
-	joshua.hahnjy@gmail.com,
-	lance.yang@linux.dev,
-	lenb@kernel.org,
-	linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-pm@vger.kernel.org,
-	lorenzo.stoakes@oracle.com,
-	matthew.brost@intel.com,
-	mhocko@suse.com,
-	muchun.song@linux.dev,
-	npache@redhat.com,
-	nphamcs@gmail.com,
-	pavel@kernel.org,
-	peterx@redhat.com,
-	peterz@infradead.org,
-	pfalcato@suse.de,
-	rafael@kernel.org,
-	rakie.kim@sk.com,
-	roman.gushchin@linux.dev,
-	rppt@kernel.org,
-	ryan.roberts@arm.com,
-	shakeel.butt@linux.dev,
-	shikemeng@huaweicloud.com,
-	surenb@google.com,
-	tglx@kernel.org,
-	vbabka@suse.cz,
-	weixugc@google.com,
-	ying.huang@linux.alibaba.com,
-	yosry.ahmed@linux.dev,
-	yuanchu@google.com,
-	zhengqi.arch@bytedance.com,
-	ziy@nvidia.com,
-	kernel-team@meta.com,
-	riel@surriel.com
-Subject: [PATCH] vswap: fix poor batching behavior of vswap free path
-Date: Fri, 20 Feb 2026 13:05:39 -0800
-Message-ID: <20260220210539.989603-1-nphamcs@gmail.com>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <CAMgjq7AQNGK-a=AOgvn4-V+zGO21QMbMTVbrYSW_R2oDSLoC+A@mail.gmail.com>
-References: <CAMgjq7AQNGK-a=AOgvn4-V+zGO21QMbMTVbrYSW_R2oDSLoC+A@mail.gmail.com>
+        Fri, 20 Feb 2026 18:49:31 -0800 (PST)
+Date: Sat, 21 Feb 2026 04:49:29 +0200
+From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+To: Luca Weiss <luca.weiss@fairphone.com>
+Cc: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+        Jonathan Cameron <jic23@kernel.org>,
+        David Lechner <dlechner@baylibre.com>,
+        Nuno =?utf-8?B?U8Oh?= <nuno.sa@analog.com>,
+        Andy Shevchenko <andy@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Laxman Dewangan <ldewangan@nvidia.com>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Hans de Goede <hansg@kernel.org>, Jens Reidel <adrian@mainlining.org>,
+        Casey Connolly <casey.connolly@linaro.org>,
+        ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org
+Subject: Re: [PATCH v2 5/5] arm64: dts: qcom: sm7225-fairphone-fp4: Add
+ battery temperature node
+Message-ID: <yikwygc5gasmr3cdyv5emfr2flaoraxcz7ap3j55wn4ib6wfqx@4yxoly5zrucx>
+References: <20260220-bat-temp-adc-v2-0-fe34ed4ea851@fairphone.com>
+ <20260220-bat-temp-adc-v2-5-fe34ed4ea851@fairphone.com>
+ <85ce1f2c-f5cf-4e97-9611-4aed03f69cd7@oss.qualcomm.com>
+ <DGJQ4WLIML3H.GAO7T4L3MCJM@fairphone.com>
+ <a422e087-a91c-4bb2-9d95-e1cefc9a91bf@oss.qualcomm.com>
+ <DGJR40B5R6MB.1V4ZK5SW1PXAV@fairphone.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <DGJR40B5R6MB.1V4ZK5SW1PXAV@fairphone.com>
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjIxMDAyOCBTYWx0ZWRfXylf6vAccXgmR
+ Pj7fJohjgbQ935luUfvoOoTQ0kld5mxxPgX4jkFaFgRyX7r94BuXvwteeKqMo3UDtlasNYEBAwG
+ +NF7bA51XeU1/LrWfdwB9s+KMu2ollUF4l0bKMvIl+hrbf4K9m/f3YB8HQ7vGAv2mawqIsZLdnC
+ NbbtjjTFDSH7jHJ0Ci+exUisJVVJ9ZlgqZV+OlQHdXTK7R80/YqLv84Plkm1IS+pUkMh7w7vu3T
+ wJxS9qs7uOsLLUlFuSJvf6+a+ySA3j6/lO0wBe7YvnZ65aJnFAbrF/tNOCgIQGSXbpvvnvQreUb
+ IX+ljgu2+fYeL42sAXdizINDmrG96ZQ5cRunqWQng4iDT9hrsJO7QLd9erlhHK4P3SnaKRr6KF4
+ Fvkx87eRjAI7nwa+XC2Lexnt5saAMh0sRE1WYrq3jNdkZr7p0jvC6cD4RHMU4VUNYoobtCyw3bE
+ VrIX+aKyJzLjQMFGoew==
+X-Proofpoint-ORIG-GUID: zY7nle6VL4IH6PEUQ9sBZWlJaSPfC5tI
+X-Authority-Analysis: v=2.4 cv=Vuouwu2n c=1 sm=1 tr=0 ts=69991d41 cx=c_pps
+ a=hnmNkyzTK/kJ09Xio7VxxA==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=HzLeVaNsDn8A:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=Mpw57Om8IfrbqaoTuvik:22 a=GgsMoib0sEa3-_RKJdDe:22 a=6H0WHjuAAAAA:8
+ a=Wrfmzfmk65d1CdvWbAUA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=PEH46H7Ffwr30OY-TuGO:22 a=Soq9LBFxuPC4vsCAQt-j:22
+X-Proofpoint-GUID: zY7nle6VL4IH6PEUQ9sBZWlJaSPfC5tI
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-02-21_01,2026-02-20_04,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 spamscore=0 adultscore=0 bulkscore=0 impostorscore=0
+ suspectscore=0 clxscore=1015 lowpriorityscore=0 malwarescore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2602210028
 
-Kairui, could you apply this patch on top of the vswap series and run it
-on your test suite? It runs fairly well on my system (I actually rerun
-the benchmark on a different host to double check as well), but I'd love
-to get some data from your ends as well.
+On Fri, Feb 20, 2026 at 12:26:48PM +0100, Luca Weiss wrote:
+> On Fri Feb 20, 2026 at 11:51 AM CET, Konrad Dybcio wrote:
+> > On 2/20/26 11:40 AM, Luca Weiss wrote:
+> >> On Fri Feb 20, 2026 at 11:00 AM CET, Konrad Dybcio wrote:
+> >>> On 2/20/26 10:19 AM, Luca Weiss wrote:
+> >>>> Add a generic-adc-thermal node to convert the voltage read by the
+> >>>> battery temperature ADC into degree Celsius using the provided lookup
+> >>>> table.
+> >>>>
+> >>>> This will later be used as input for the fuel gauge node (QGauge on the
+> >>>> PM7250B).
+> >>>>
+> >>>> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+> >>>> ---
+> >>>>  arch/arm64/boot/dts/qcom/sm7225-fairphone-fp4.dts | 83 +++++++++++++++++++++++
+> >>>>  1 file changed, 83 insertions(+)
+> >>>>
+> >>>> diff --git a/arch/arm64/boot/dts/qcom/sm7225-fairphone-fp4.dts b/arch/arm64/boot/dts/qcom/sm7225-fairphone-fp4.dts
+> >>>> index b697051a0aaa..7857003099a6 100644
+> >>>> --- a/arch/arm64/boot/dts/qcom/sm7225-fairphone-fp4.dts
+> >>>> +++ b/arch/arm64/boot/dts/qcom/sm7225-fairphone-fp4.dts
+> >>>> @@ -108,6 +108,89 @@ rear_cam_sensor: thermal-sensor-rear-cam {
+> >>>>  		io-channel-names = "sensor-channel";
+> >>>>  	};
+> >>>>  
+> >>>> +	bat_therm_sensor: thermal-sensor-bat-therm {
+> >>>
+> >>> nit: this should be a little higher
+> >> 
+> >> meh, it's surprisingly easy to miss this sorting stuff. Will fix in v3.
+> >> 
+> >>>
+> >>>> +		compatible = "generic-adc-thermal";
+> >>>> +		#thermal-sensor-cells = <0>;
+> >>>> +		#io-channel-cells = <0>;
+> >>>> +		io-channels = <&pm7250b_adc ADC5_BAT_THERM_30K_PU>;
+> >>>> +		io-channel-names = "sensor-channel";
+> >>>> +		/*
+> >>>> +		 * Voltage to temperature table for 10kΩ (B=3435K) NTC with a
+> >>>> +		 * 1.875V reference and 30kΩ pull-up.
+> >>>> +		 */
+> >>>
+> >>> I think this looks good. Is this data going to be correct for all/most
+> >>> devices (i.e. is there a single battery sku)?
+> >> 
+> >> Yes, from my info there's just a single battery SKU, so that makes it
+> >> easy here.
+> >> 
+> >> For Fairphone 3 there's two battery SKUs:
+> >> 
+> >> * (Fuji) F3AC with NTC 100kOhm B=4100, ID resistor 10kOhm
+> >> * (Kayo) F3AC1 with NTC 100kOhm B=4050, ID resistor 49.9kOhm
+> >> 
+> >> In reality, one can probably ignore the difference between the LUT for
+> >> either B value since it only differs by a marginal amount, but
+> >> conceptually I'm not sure how this should really be resolved.
+> >> 
+> >> We could have both battery definitions in the dtb, and then the charging
+> >> driver could determine the battery that's actually present in the
+> >> system (based on the BATT_ID measurement), but given the design here
+> >> now, I'm not sure how this temperature lookup table would be propagated
+> >> to the rest of the system...
+> >
+> > The path of least resistance (pun intended) would probably be to make
+> > generic-adc-thermal consume an ID channel and accept a number of LUTs..
+> 
+> Not the worst idea ;)
+> 
+> >
+> > That sounds sensible since most battery ID mechanisms are probably also
+> > ADC-based and one would hope (tm) that the values output by these ADC channels
+> > would then be distinct enough for the driver to have an easy time confidently
+> > selecting one of the options (or a fallback)
+> 
+> Charger / fuel guage and everything else battery-related would also need
+> to get the correct battery properties for the actual one present, not
+> just this generic-adc-thermal driver.
+> 
+> But I feel like soon DT maintainers will say that Linux shouldn't
+> dynamically detect hardware that's present and the DT should be the
+> absolute source of truth. That works fine in simple cases, but in case
+> of interchangeable batteries, display panels, camera sensors, this won't
+> work. *Something* needs to determine what's actually there.
 
-If there are serious discrepancies, could you also include your build
-config etc.? There might be differences in our setups, but since I
-managed to reproduce the free time regression on my first try I figured
-I should just fix it first :)
+How is it handled for the Android boots? I assume there are (at least)
+two DTBOs and the correct one is being selected somehow (via the msm-id
+/ board-id?). Or does ABL pass some kind of battery identifier to the
+kernel?
 
----------------
+> 
+> And for most of the ways to detect which of those are present in the
+> device that is booting, you need half a kernel to power up the various
+> hardware and do some basic communication to figure out what's there. Of
+> course you could say that's U-Boot's job for example but not sure you
+> want to add a CCI (I2C), ADC driver and much more...
 
-Fix two issues that make the swap free path inefficient:
-
-1. At the PTE zapping step, we are unnecessarily resolving the backends,
-   and fall back to batch size of 1, even though virtual swap
-   infrastructure now already supports freeing of mixed backend ranges
-   (as long the PTEs contain virtually contiguous swap slots).
-2. Optimize vswap_free() by batching consecutive free operations, and
-   avoid releasing locks unnecessarily (most notably, when we release
-   non-disk-swap backends).
-
-Per a report from Kairui Song ([1]), I have run the following benchmark:
-
-free -m
-               total        used        free      shared  buff/cache   available
-Mem:           31596        5094       11667          19       15302       26502
-Swap:          65535          33       65502
-
-Running the usemem benchmark with n = 1, 56G for 5 times, and average
-out the result:
-
-Baseline (6.19):
-
-real: mean: 190.93s, stdev: 5.09s
-user: mean: 46.62s, stdev: 0.27s
-sys: mean: 128.51s, stdev: 5.17s
-throughput: mean: 382093 KB/s, stdev: 11173.6 KB/s
-free time: mean: 7916690.2 usecs, stdev: 88923.0 usecs
-
-VSS without this patch:
-real: mean: 194.59s, stdev: 7.61s
-user: mean: 46.71s, stdev: 0.46s
-sys: mean: 131.97s, stdev: 7.93s
-throughput: mean: 379236.4 KB/s, stdev: 15912.26 KB/s
-free time: mean: 10115572.2 usecs, stdev: 108318.35 usecs
-
-VSS with this patch:
-real: mean: 187.66s, stdev: 5.67s
-user: mean: 46.5s, stdev: 0.16s
-sys: mean: 125.3s, stdev: 5.58s
-throughput: mean: 387506.4 KB/s, stdev: 12556.56 KB/s
-free time: mean: 7029733.8 usecs, stdev: 124661.34 usecs
-
-[1]: https://lore.kernel.org/linux-mm/CAMgjq7AQNGK-a=AOgvn4-V+zGO21QMbMTVbrYSW_R2oDSLoC+A@mail.gmail.com/
-
-Signed-off-by: Nhat Pham <nphamcs@gmail.com>
----
- include/linux/memcontrol.h |   6 +
- mm/internal.h              |  18 ++-
- mm/madvise.c               |   2 +-
- mm/memcontrol.c            |   2 +-
- mm/memory.c                |   8 +-
- mm/vswap.c                 | 294 ++++++++++++++++++-------------------
- 6 files changed, 165 insertions(+), 165 deletions(-)
-
-diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-index 0651865a4564f..0f7f5489e1675 100644
---- a/include/linux/memcontrol.h
-+++ b/include/linux/memcontrol.h
-@@ -827,6 +827,7 @@ static inline unsigned short mem_cgroup_id(struct mem_cgroup *memcg)
- 	return memcg->id.id;
- }
- struct mem_cgroup *mem_cgroup_from_id(unsigned short id);
-+void mem_cgroup_id_put_many(struct mem_cgroup *memcg, unsigned int n);
- 
- #ifdef CONFIG_SHRINKER_DEBUG
- static inline unsigned long mem_cgroup_ino(struct mem_cgroup *memcg)
-@@ -1289,6 +1290,11 @@ static inline struct mem_cgroup *mem_cgroup_from_id(unsigned short id)
- 	return NULL;
- }
- 
-+static inline void mem_cgroup_id_put_many(struct mem_cgroup *memcg,
-+					  unsigned int n)
-+{
-+}
-+
- #ifdef CONFIG_SHRINKER_DEBUG
- static inline unsigned long mem_cgroup_ino(struct mem_cgroup *memcg)
- {
-diff --git a/mm/internal.h b/mm/internal.h
-index cfe97501e4885..df991f601702c 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -327,8 +327,6 @@ static inline swp_entry_t swap_nth(swp_entry_t entry, long n)
- 	return (swp_entry_t) { entry.val + n };
- }
- 
--swp_entry_t swap_move(swp_entry_t entry, long delta);
--
- /**
-  * pte_move_swp_offset - Move the swap entry offset field of a swap pte
-  *	 forward or backward by delta
-@@ -342,7 +340,7 @@ swp_entry_t swap_move(swp_entry_t entry, long delta);
- static inline pte_t pte_move_swp_offset(pte_t pte, long delta)
- {
- 	softleaf_t entry = softleaf_from_pte(pte);
--	pte_t new = swp_entry_to_pte(swap_move(entry, delta));
-+	pte_t new = swp_entry_to_pte(swap_nth(entry, delta));
- 
- 	if (pte_swp_soft_dirty(pte))
- 		new = pte_swp_mksoft_dirty(new);
-@@ -372,6 +370,7 @@ static inline pte_t pte_next_swp_offset(pte_t pte)
-  * @start_ptep: Page table pointer for the first entry.
-  * @max_nr: The maximum number of table entries to consider.
-  * @pte: Page table entry for the first entry.
-+ * @free_batch: Whether the batch will be passed to free_swap_and_cache_nr().
-  *
-  * Detect a batch of contiguous swap entries: consecutive (non-present) PTEs
-  * containing swap entries all with consecutive offsets and targeting the same
-@@ -382,13 +381,15 @@ static inline pte_t pte_next_swp_offset(pte_t pte)
-  *
-  * Return: the number of table entries in the batch.
-  */
--static inline int swap_pte_batch(pte_t *start_ptep, int max_nr, pte_t pte)
-+static inline int swap_pte_batch(pte_t *start_ptep, int max_nr, pte_t pte,
-+				 bool free_batch)
- {
- 	pte_t expected_pte = pte_next_swp_offset(pte);
- 	const pte_t *end_ptep = start_ptep + max_nr;
- 	const softleaf_t entry = softleaf_from_pte(pte);
- 	pte_t *ptep = start_ptep + 1;
- 	unsigned short cgroup_id;
-+	int nr;
- 
- 	VM_WARN_ON(max_nr < 1);
- 	VM_WARN_ON(!softleaf_is_swap(entry));
-@@ -408,7 +409,14 @@ static inline int swap_pte_batch(pte_t *start_ptep, int max_nr, pte_t pte)
- 		ptep++;
- 	}
- 
--	return ptep - start_ptep;
-+	nr = ptep - start_ptep;
-+	/*
-+	 * free_swap_and_cache_nr can handle mixed backends, as long as virtual
-+	 * swap entries backing these PTEs are contiguous.
-+	 */
-+	if (!free_batch && !vswap_can_swapin_thp(entry, nr))
-+		return 1;
-+	return nr;
- }
- #endif /* CONFIG_MMU */
- 
-diff --git a/mm/madvise.c b/mm/madvise.c
-index b617b1be0f535..441da03c5d2b9 100644
---- a/mm/madvise.c
-+++ b/mm/madvise.c
-@@ -692,7 +692,7 @@ static int madvise_free_pte_range(pmd_t *pmd, unsigned long addr,
- 
- 			if (softleaf_is_swap(entry)) {
- 				max_nr = (end - addr) / PAGE_SIZE;
--				nr = swap_pte_batch(pte, max_nr, ptent);
-+				nr = swap_pte_batch(pte, max_nr, ptent, true);
- 				nr_swap -= nr;
- 				free_swap_and_cache_nr(entry, nr);
- 				clear_not_present_full_ptes(mm, addr, pte, nr, tlb->fullmm);
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 50be8066bebec..bfa25eaffa12a 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -3597,7 +3597,7 @@ void __maybe_unused mem_cgroup_id_get_many(struct mem_cgroup *memcg,
- 	refcount_add(n, &memcg->id.ref);
- }
- 
--static void mem_cgroup_id_put_many(struct mem_cgroup *memcg, unsigned int n)
-+void mem_cgroup_id_put_many(struct mem_cgroup *memcg, unsigned int n)
- {
- 	if (refcount_sub_and_test(n, &memcg->id.ref)) {
- 		mem_cgroup_id_remove(memcg);
-diff --git a/mm/memory.c b/mm/memory.c
-index a16bf84ebaaf9..59645ad238e22 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -1742,7 +1742,7 @@ static inline int zap_nonpresent_ptes(struct mmu_gather *tlb,
- 		if (!should_zap_cows(details))
- 			return 1;
- 
--		nr = swap_pte_batch(pte, max_nr, ptent);
-+		nr = swap_pte_batch(pte, max_nr, ptent, true);
- 		rss[MM_SWAPENTS] -= nr;
- 		free_swap_and_cache_nr(entry, nr);
- 	} else if (softleaf_is_migration(entry)) {
-@@ -4491,7 +4491,7 @@ static bool can_swapin_thp(struct vm_fault *vmf, pte_t *ptep, int nr_pages)
- 	if (!pte_same(pte, pte_move_swp_offset(vmf->orig_pte, -idx)))
- 		return false;
- 	entry = softleaf_from_pte(pte);
--	if (swap_pte_batch(ptep, nr_pages, pte) != nr_pages)
-+	if (swap_pte_batch(ptep, nr_pages, pte, false) != nr_pages)
- 		return false;
- 
- 	/*
-@@ -4877,7 +4877,7 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)
- 		pte_t folio_pte = ptep_get(folio_ptep);
- 
- 		if (!pte_same(folio_pte, pte_move_swp_offset(vmf->orig_pte, -idx)) ||
--		    swap_pte_batch(folio_ptep, nr, folio_pte) != nr)
-+		    swap_pte_batch(folio_ptep, nr, folio_pte, false) != nr)
- 			goto out_nomap;
- 
- 		page_idx = idx;
-@@ -4906,7 +4906,7 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)
- 		folio_ptep = vmf->pte - idx;
- 		folio_pte = ptep_get(folio_ptep);
- 		if (!pte_same(folio_pte, pte_move_swp_offset(vmf->orig_pte, -idx)) ||
--		    swap_pte_batch(folio_ptep, nr, folio_pte) != nr)
-+		    swap_pte_batch(folio_ptep, nr, folio_pte, false) != nr)
- 			goto check_folio;
- 
- 		page_idx = idx;
-diff --git a/mm/vswap.c b/mm/vswap.c
-index 2a071d5ae173c..047c6476ef23c 100644
---- a/mm/vswap.c
-+++ b/mm/vswap.c
-@@ -481,18 +481,18 @@ static void vswap_cluster_free(struct vswap_cluster *cluster)
- 	kvfree_rcu(cluster, rcu);
- }
- 
--static inline void release_vswap_slot(struct vswap_cluster *cluster,
--		unsigned long index)
-+static inline void release_vswap_slot_nr(struct vswap_cluster *cluster,
-+		unsigned long index, int nr)
- {
- 	unsigned long slot_index = VSWAP_IDX_WITHIN_CLUSTER_VAL(index);
- 
- 	VM_WARN_ON(!spin_is_locked(&cluster->lock));
--	cluster->count--;
-+	cluster->count -= nr;
- 
--	bitmap_clear(cluster->bitmap, slot_index, 1);
-+	bitmap_clear(cluster->bitmap, slot_index, nr);
- 
- 	/* we only free uncached empty clusters */
--	if (refcount_dec_and_test(&cluster->refcnt))
-+	if (refcount_sub_and_test(nr, &cluster->refcnt))
- 		vswap_cluster_free(cluster);
- 	else if (cluster->full && cluster_is_alloc_candidate(cluster)) {
- 		cluster->full = false;
-@@ -505,7 +505,7 @@ static inline void release_vswap_slot(struct vswap_cluster *cluster,
- 		}
- 	}
- 
--	atomic_dec(&vswap_used);
-+	atomic_sub(nr, &vswap_used);
- }
- 
- /*
-@@ -527,23 +527,29 @@ void vswap_rmap_set(struct swap_cluster_info *ci, swp_slot_t slot,
- }
- 
- /*
-- * Caller needs to handle races with other operations themselves.
-+ * release_backing - release the backend storage for a given range of virtual
-+ * swap slots.
-+ *
-+ * Entered with the cluster locked, but might drop the lock in between.
-+ * This is because several operations, such as releasing physical swap slots
-+ * (i.e swap_slot_free_nr()) require the cluster to be unlocked to avoid
-+ * deadlocks.
-  *
-- * Specifically, this function is safe to be called in contexts where the swap
-- * entry has been added to the swap cache and the associated folio is locked.
-- * We cannot race with other accessors, and the swap entry is guaranteed to be
-- * valid the whole time (since swap cache implies one refcount).
-+ * This is safe, because:
-+ *
-+ * 1. The swap entry to be freed has refcnt (swap count and swapcache pin)
-+ *    down to 0, so no one can change its internal state
-  *
-- * We cannot assume that the backends will be of the same type,
-- * contiguous, etc. We might have a large folio coalesced from subpages with
-- * mixed backend, which is only rectified when it is reclaimed.
-+ * 2. The swap entry to be freed still holds a refcnt to the cluster, keeping
-+ *    the cluster itself valid.
-+ *
-+ * We will exit the function with the cluster re-locked.
-  */
-- static void release_backing(swp_entry_t entry, int nr)
-+static void release_backing(struct vswap_cluster *cluster, swp_entry_t entry,
-+		int nr)
- {
--	struct vswap_cluster *cluster = NULL;
- 	struct swp_desc *desc;
- 	unsigned long flush_nr, phys_swap_start = 0, phys_swap_end = 0;
--	unsigned long phys_swap_released = 0;
- 	unsigned int phys_swap_type = 0;
- 	bool need_flushing_phys_swap = false;
- 	swp_slot_t flush_slot;
-@@ -551,9 +557,8 @@ void vswap_rmap_set(struct swap_cluster_info *ci, swp_slot_t slot,
- 
- 	VM_WARN_ON(!entry.val);
- 
--	rcu_read_lock();
- 	for (i = 0; i < nr; i++) {
--		desc = vswap_iter(&cluster, entry.val + i);
-+		desc = __vswap_iter(cluster, entry.val + i);
- 		VM_WARN_ON(!desc);
- 
- 		/*
-@@ -573,7 +578,6 @@ void vswap_rmap_set(struct swap_cluster_info *ci, swp_slot_t slot,
- 		if (desc->type == VSWAP_ZSWAP && desc->zswap_entry) {
- 			zswap_entry_free(desc->zswap_entry);
- 		} else if (desc->type == VSWAP_SWAPFILE) {
--			phys_swap_released++;
- 			if (!phys_swap_start) {
- 				/* start a new contiguous range of phys swap */
- 				phys_swap_start = swp_slot_offset(desc->slot);
-@@ -589,56 +593,49 @@ void vswap_rmap_set(struct swap_cluster_info *ci, swp_slot_t slot,
- 
- 		if (need_flushing_phys_swap) {
- 			spin_unlock(&cluster->lock);
--			cluster = NULL;
- 			swap_slot_free_nr(flush_slot, flush_nr);
-+			mem_cgroup_uncharge_swap(entry, flush_nr);
-+			spin_lock(&cluster->lock);
- 			need_flushing_phys_swap = false;
- 		}
- 	}
--	if (cluster)
--		spin_unlock(&cluster->lock);
--	rcu_read_unlock();
- 
- 	/* Flush any remaining physical swap range */
- 	if (phys_swap_start) {
- 		flush_slot = swp_slot(phys_swap_type, phys_swap_start);
- 		flush_nr = phys_swap_end - phys_swap_start;
-+		spin_unlock(&cluster->lock);
- 		swap_slot_free_nr(flush_slot, flush_nr);
-+		mem_cgroup_uncharge_swap(entry, flush_nr);
-+		spin_lock(&cluster->lock);
- 	}
-+}
- 
--	if (phys_swap_released)
--		mem_cgroup_uncharge_swap(entry, phys_swap_released);
-- }
-+static void __vswap_swap_cgroup_clear(struct vswap_cluster *cluster,
-+		swp_entry_t entry, unsigned int nr_ents);
- 
- /*
-- * Entered with the cluster locked, but might unlock the cluster.
-- * This is because several operations, such as releasing physical swap slots
-- * (i.e swap_slot_free_nr()) require the cluster to be unlocked to avoid
-- * deadlocks.
-- *
-- * This is safe, because:
-- *
-- * 1. The swap entry to be freed has refcnt (swap count and swapcache pin)
-- *    down to 0, so no one can change its internal state
-- *
-- * 2. The swap entry to be freed still holds a refcnt to the cluster, keeping
-- *    the cluster itself valid.
-- *
-- * We will exit the function with the cluster re-locked.
-+ * Entered with the cluster locked. We will exit the function with the cluster
-+ * still locked.
-  */
--static void vswap_free(struct vswap_cluster *cluster, struct swp_desc *desc,
--	swp_entry_t entry)
-+static void vswap_free_nr(struct vswap_cluster *cluster, swp_entry_t entry,
-+		int nr)
- {
--	/* Clear shadow if present */
--	if (xa_is_value(desc->shadow))
--		desc->shadow = NULL;
--	spin_unlock(&cluster->lock);
-+	struct swp_desc *desc;
-+	int i;
- 
--	release_backing(entry, 1);
--	mem_cgroup_clear_swap(entry, 1);
-+	for (i = 0; i < nr; i++) {
-+		desc = __vswap_iter(cluster, entry.val + i);
-+		/* Clear shadow if present */
-+		if (xa_is_value(desc->shadow))
-+			desc->shadow = NULL;
-+	}
- 
--	/* erase forward mapping and release the virtual slot for reallocation */
--	spin_lock(&cluster->lock);
--	release_vswap_slot(cluster, entry.val);
-+	release_backing(cluster, entry, nr);
-+	__vswap_swap_cgroup_clear(cluster, entry, nr);
-+
-+	/* erase forward mapping and release the virtual slots for reallocation */
-+	release_vswap_slot_nr(cluster, entry.val, nr);
- }
- 
- /**
-@@ -820,18 +817,32 @@ static bool vswap_free_nr_any_cache_only(swp_entry_t entry, int nr)
- 	struct vswap_cluster *cluster = NULL;
- 	struct swp_desc *desc;
- 	bool ret = false;
--	int i;
-+	swp_entry_t free_start;
-+	int i, free_nr = 0;
- 
-+	free_start.val = 0;
- 	rcu_read_lock();
- 	for (i = 0; i < nr; i++) {
-+		/* flush pending free batch at cluster boundary */
-+		if (free_nr && !VSWAP_IDX_WITHIN_CLUSTER_VAL(entry.val)) {
-+			vswap_free_nr(cluster, free_start, free_nr);
-+			free_nr = 0;
-+		}
- 		desc = vswap_iter(&cluster, entry.val);
- 		VM_WARN_ON(!desc);
- 		ret |= (desc->swap_count == 1 && desc->in_swapcache);
- 		desc->swap_count--;
--		if (!desc->swap_count && !desc->in_swapcache)
--			vswap_free(cluster, desc, entry);
-+		if (!desc->swap_count && !desc->in_swapcache) {
-+			if (!free_nr++)
-+				free_start = entry;
-+		} else if (free_nr) {
-+			vswap_free_nr(cluster, free_start, free_nr);
-+			free_nr = 0;
-+		}
- 		entry.val++;
- 	}
-+	if (free_nr)
-+		vswap_free_nr(cluster, free_start, free_nr);
- 	if (cluster)
- 		spin_unlock(&cluster->lock);
- 	rcu_read_unlock();
-@@ -954,19 +965,33 @@ void swapcache_clear(swp_entry_t entry, int nr)
- {
- 	struct vswap_cluster *cluster = NULL;
- 	struct swp_desc *desc;
--	int i;
-+	swp_entry_t free_start;
-+	int i, free_nr = 0;
- 
- 	if (!nr)
- 		return;
- 
-+	free_start.val = 0;
- 	rcu_read_lock();
- 	for (i = 0; i < nr; i++) {
-+		/* flush pending free batch at cluster boundary */
-+		if (free_nr && !VSWAP_IDX_WITHIN_CLUSTER_VAL(entry.val)) {
-+			vswap_free_nr(cluster, free_start, free_nr);
-+			free_nr = 0;
-+		}
- 		desc = vswap_iter(&cluster, entry.val);
- 		desc->in_swapcache = false;
--		if (!desc->swap_count)
--			vswap_free(cluster, desc, entry);
-+		if (!desc->swap_count) {
-+			if (!free_nr++)
-+				free_start = entry;
-+		} else if (free_nr) {
-+			vswap_free_nr(cluster, free_start, free_nr);
-+			free_nr = 0;
-+		}
- 		entry.val++;
- 	}
-+	if (free_nr)
-+		vswap_free_nr(cluster, free_start, free_nr);
- 	if (cluster)
- 		spin_unlock(&cluster->lock);
- 	rcu_read_unlock();
-@@ -1107,11 +1132,13 @@ void vswap_store_folio(swp_entry_t entry, struct folio *folio)
- 	VM_BUG_ON(!folio_test_locked(folio));
- 	VM_BUG_ON(folio->swap.val != entry.val);
- 
--	release_backing(entry, nr);
--
- 	rcu_read_lock();
-+	desc = vswap_iter(&cluster, entry.val);
-+	VM_WARN_ON(!desc);
-+	release_backing(cluster, entry, nr);
-+
- 	for (i = 0; i < nr; i++) {
--		desc = vswap_iter(&cluster, entry.val + i);
-+		desc = __vswap_iter(cluster, entry.val + i);
- 		VM_WARN_ON(!desc);
- 		desc->type = VSWAP_FOLIO;
- 		desc->swap_cache = folio;
-@@ -1136,11 +1163,13 @@ void swap_zeromap_folio_set(struct folio *folio)
- 	VM_BUG_ON(!folio_test_locked(folio));
- 	VM_BUG_ON(!entry.val);
- 
--	release_backing(entry, nr);
--
- 	rcu_read_lock();
-+	desc = vswap_iter(&cluster, entry.val);
-+	VM_WARN_ON(!desc);
-+	release_backing(cluster, entry, nr);
-+
- 	for (i = 0; i < nr; i++) {
--		desc = vswap_iter(&cluster, entry.val + i);
-+		desc = __vswap_iter(cluster, entry.val + i);
- 		VM_WARN_ON(!desc);
- 		desc->type = VSWAP_ZERO;
- 	}
-@@ -1261,89 +1290,6 @@ bool vswap_can_swapin_thp(swp_entry_t entry, int nr)
- 		(type == VSWAP_ZERO || type == VSWAP_SWAPFILE);
- }
- 
--/**
-- * swap_move - increment the swap slot by delta, checking the backing state and
-- *             return 0 if the backing state does not match (i.e wrong backing
-- *             state type, or wrong offset on the backing stores).
-- * @entry: the original virtual swap slot.
-- * @delta: the offset to increment the original slot.
-- *
-- * Note that this function is racy unless we can pin the backing state of these
-- * swap slots down with swapcache_prepare().
-- *
-- * Caller should only rely on this function as a best-effort hint otherwise,
-- * and should double-check after ensuring the whole range is pinned down.
-- *
-- * Return: the incremented virtual swap slot if the backing state matches, or
-- *         0 if the backing state does not match.
-- */
--swp_entry_t swap_move(swp_entry_t entry, long delta)
--{
--	struct vswap_cluster *cluster = NULL;
--	struct swp_desc *desc, *next_desc;
--	swp_entry_t next_entry;
--	struct folio *folio = NULL, *next_folio = NULL;
--	enum swap_type type, next_type;
--	swp_slot_t slot = {0}, next_slot = {0};
--
--	next_entry.val = entry.val + delta;
--
--	rcu_read_lock();
--
--	/* Look up first descriptor and get its type and backing store */
--	desc = vswap_iter(&cluster, entry.val);
--	if (!desc) {
--		rcu_read_unlock();
--		return (swp_entry_t){0};
--	}
--
--	type = desc->type;
--	if (type == VSWAP_ZSWAP) {
--		/* zswap not supported for move */
--		spin_unlock(&cluster->lock);
--		rcu_read_unlock();
--		return (swp_entry_t){0};
--	}
--	if (type == VSWAP_FOLIO)
--		folio = desc->swap_cache;
--	else if (type == VSWAP_SWAPFILE)
--		slot = desc->slot;
--
--	/* Look up second descriptor and get its type and backing store */
--	next_desc = vswap_iter(&cluster, next_entry.val);
--	if (!next_desc) {
--		rcu_read_unlock();
--		return (swp_entry_t){0};
--	}
--
--	next_type = next_desc->type;
--	if (next_type == VSWAP_FOLIO)
--		next_folio = next_desc->swap_cache;
--	else if (next_type == VSWAP_SWAPFILE)
--		next_slot = next_desc->slot;
--
--	if (cluster)
--		spin_unlock(&cluster->lock);
--
--	rcu_read_unlock();
--
--	/* Check if types match */
--	if (next_type != type)
--		return (swp_entry_t){0};
--
--	/* Check backing state consistency */
--	if (type == VSWAP_SWAPFILE &&
--			(swp_slot_type(next_slot) != swp_slot_type(slot) ||
--				swp_slot_offset(next_slot) !=
--							swp_slot_offset(slot) + delta))
--		return (swp_entry_t){0};
--
--	if (type == VSWAP_FOLIO && next_folio != folio)
--		return (swp_entry_t){0};
--
--	return next_entry;
--}
--
- /*
-  * Return the count of contiguous swap entries that share the same
-  * VSWAP_ZERO status as the starting entry. If is_zeromap is not NULL,
-@@ -1863,11 +1809,10 @@ void zswap_entry_store(swp_entry_t swpentry, struct zswap_entry *entry)
- 	struct vswap_cluster *cluster = NULL;
- 	struct swp_desc *desc;
- 
--	release_backing(swpentry, 1);
--
- 	rcu_read_lock();
- 	desc = vswap_iter(&cluster, swpentry.val);
- 	VM_WARN_ON(!desc);
-+	release_backing(cluster, swpentry, 1);
- 	desc->zswap_entry = entry;
- 	desc->type = VSWAP_ZSWAP;
- 	spin_unlock(&cluster->lock);
-@@ -1914,17 +1859,22 @@ bool zswap_empty(swp_entry_t swpentry)
- #endif /* CONFIG_ZSWAP */
- 
- #ifdef CONFIG_MEMCG
--static unsigned short vswap_cgroup_record(swp_entry_t entry,
--				unsigned short memcgid, unsigned int nr_ents)
-+/*
-+ * __vswap_cgroup_record - record mem_cgroup for a set of swap entries
-+ *
-+ * Entered with the cluster locked. We will exit the function with the cluster
-+ * still locked.
-+ */
-+static unsigned short __vswap_cgroup_record(struct vswap_cluster *cluster,
-+				swp_entry_t entry, unsigned short memcgid,
-+				unsigned int nr_ents)
- {
--	struct vswap_cluster *cluster = NULL;
- 	struct swp_desc *desc;
- 	unsigned short oldid, iter = 0;
- 	int i;
- 
--	rcu_read_lock();
- 	for (i = 0; i < nr_ents; i++) {
--		desc = vswap_iter(&cluster, entry.val + i);
-+		desc = __vswap_iter(cluster, entry.val + i);
- 		VM_WARN_ON(!desc);
- 		oldid = desc->memcgid;
- 		desc->memcgid = memcgid;
-@@ -1932,6 +1882,37 @@ static unsigned short vswap_cgroup_record(swp_entry_t entry,
- 			iter = oldid;
- 		VM_WARN_ON(iter != oldid);
- 	}
-+
-+	return oldid;
-+}
-+
-+/*
-+ * Clear swap cgroup for a range of swap entries.
-+ * Entered with the cluster locked. Caller must be under rcu_read_lock().
-+ */
-+static void __vswap_swap_cgroup_clear(struct vswap_cluster *cluster,
-+				      swp_entry_t entry, unsigned int nr_ents)
-+{
-+	unsigned short id;
-+	struct mem_cgroup *memcg;
-+
-+	id = __vswap_cgroup_record(cluster, entry, 0, nr_ents);
-+	memcg = mem_cgroup_from_id(id);
-+	if (memcg)
-+		mem_cgroup_id_put_many(memcg, nr_ents);
-+}
-+
-+static unsigned short vswap_cgroup_record(swp_entry_t entry,
-+				unsigned short memcgid, unsigned int nr_ents)
-+{
-+	struct vswap_cluster *cluster = NULL;
-+	struct swp_desc *desc;
-+	unsigned short oldid;
-+
-+	rcu_read_lock();
-+	desc = vswap_iter(&cluster, entry.val);
-+	VM_WARN_ON(!desc);
-+	oldid = __vswap_cgroup_record(cluster, entry, memcgid, nr_ents);
- 	spin_unlock(&cluster->lock);
- 	rcu_read_unlock();
- 
-@@ -1999,6 +1980,11 @@ unsigned short lookup_swap_cgroup_id(swp_entry_t entry)
- 	rcu_read_unlock();
- 	return ret;
- }
-+#else /* !CONFIG_MEMCG */
-+static void __vswap_swap_cgroup_clear(struct vswap_cluster *cluster,
-+				      swp_entry_t entry, unsigned int nr_ents)
-+{
-+}
- #endif /* CONFIG_MEMCG */
- 
- int vswap_init(void)
 -- 
-2.47.3
-
+With best wishes
+Dmitry
