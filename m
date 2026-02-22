@@ -1,109 +1,135 @@
-Received: from srv01.abscue.de (abscue.de [89.58.28.240])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f179.google.com (mail-pf1-f179.google.com [209.85.210.179])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FEF3261B8F;
-	Sun, 22 Feb 2026 13:17:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.58.28.240
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7366E23AB8D
+	for <linux-pm@vger.kernel.org>; Sun, 22 Feb 2026 17:32:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771766228; cv=none; b=JJvu2b6alF8BDLt2OppWeXLWJNre+0pGCtiYwtEaRp41qWbEqnnjNfDy6tzULLoV3/w4xdDTTM4Alz7qVXuJNYl0rUR2c4927x/srWZ0XGxBRSQj+0FdXR452tx14p6pRhOgSspCPj0WQHPuCW84VKW0yW2/47kod7yGB/y+gF4=
+	t=1771781562; cv=none; b=c8RiRY00tVzpx/TfGEyRWY3ZWAwTbP9QyYQONiAKjxjEsbFVmypUGZf+9KZzjuFzmC3nl3PIxiPw4qXkOunXRFk7EgRLlyJO8XgdGNHGLU6tA0HXgHdHCUHPo53Z9Xx7ev1+21XuJqqTzM/vf7bF1hYdYlJRlJCrlruc70din0o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771766228; c=relaxed/simple;
-	bh=rl1o85olwtyeKiJ3a29MjyFoNpl95KpuhJbSkCQ0s98=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=kbQd6lNvO1AKx08QtgmTLOQh6SgIixF57Z4zHoFwBwx14VnsyHeqRdKF4zyzHAqAqCYqXpKOlyBC0KrJiDXTceJwQtpa8z1IdIwgnCmGztc4L7IpB6kKylMedIxII7kgdiJXPNph2Qpzg3/KN68Sm7f4xVI/sU++yNZZ9UecpX8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=abscue.de; spf=pass smtp.mailfrom=abscue.de; dkim=fail (0-bit key) header.d=abscue.de header.i=@abscue.de header.b=ISn0kRq1 reason="key not found in DNS"; arc=none smtp.client-ip=89.58.28.240
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=abscue.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=abscue.de
+	s=arc-20240116; t=1771781562; c=relaxed/simple;
+	bh=84RpaymkYjedYJkOTZPTM2j0/+tI4Ix62BDTCGBRBsE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Wswvt/gq/j6vwDC5a+jfhpF2//Cq+hYsIJzPzTu5BTuGUukioY0meEWi3E7/O3mdehRkmjJpqsVUSw06/JGLl5nlxBzv196xWVM/ZUVwWvOoOZt0FZ2OK4EbhdYCxVFSyQv2k1BtE8Vw9jnY4LDE9fDLvfaPCKOpmHtyAqgrWzs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=SmDQuE2U; arc=none smtp.client-ip=209.85.210.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=abscue.de header.i=@abscue.de header.b="ISn0kRq1"
-Received: from fluffy-mammal.metal.fwg-cag.de (unknown [IPv6:2001:9e8:cde0:3300:edee:770f:8e03:a80])
-	by srv01.abscue.de (Postfix) with ESMTPSA id 8FA611C01BB;
-	Sun, 22 Feb 2026 14:16:57 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=abscue.de; s=dkim;
-	t=1771766218;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Thr0KRft/tWkuxu4K0+Lc8O1rk4lpDG7j9bc8bU5PYs=;
-	b=ISn0kRq1cp7ntNPh3GoWBYisx6jhyBfsAQEFuAX8dk4wmMry2bwM0lg/4lrX8CFv44u+gq
-	cJ84O0hUk/HdFtA3ktdwGLe/E7DTMrDAvPJieDnM3FwwNbvwQ9p6V0kIubi8Ij2acQzF1P
-	Df0uUbef2AwhJEQlZNT3GEKnJ1CjDx9SGb+W4jUrfj8WqDR+TQ1BcJ4TIS2LGjWUKJ3Wx6
-	HWNTRkQxz7ArKwO18X9O4vKH6h7XHLrIwiTl6DcQAsp8UYmdKaz4wT5CyZ4wEO2cjJhSKS
-	dvZtKNbL7L9ArpGc5yQHJmqpPV72dcdYKS95nqmXIWcMNlJPuqs4ks9tiy5x+g==
-From: =?utf-8?q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>
-Date: Sun, 22 Feb 2026 14:16:49 +0100
-Subject: [PATCH 5/6] power: reset: sc27xx: Add platform_device_id table
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SmDQuE2U"
+Received: by mail-pf1-f179.google.com with SMTP id d2e1a72fcca58-824b5f015bcso3518136b3a.1
+        for <linux-pm@vger.kernel.org>; Sun, 22 Feb 2026 09:32:41 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1771781561; x=1772386361; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=0C5225Erxu+gYNOcbLKnNHNXfo0Dpl+lzsBtZrdkm/8=;
+        b=SmDQuE2UVw2NML8XELMybI7XwqNpcqvEKKHxeJEt0tohG2lpe6+fiuG10te8a8GE+U
+         oqjyk6jpj9kFtk1j3gy8Cv3quNG56hs22Ul974Owbirjzdvn9iHv+1ESCgQNk07HfxR4
+         Hf6KwqhlGpk6Gfm7hpvfvss8w2JrKTtpVFD9adsMy5hAdB9HHt4f1YyyVtoYAT3lWPu3
+         j7OijO+w/iXsaXA7OYeKigzcgasBgTgj4nkef+dTVLsrVdjMNE6NLaRy4DafDAq4TPDH
+         pWdxiXLiOQFbnfM33HEd5W9wijGNfFBKwme8gzmaemtkm/7BKjQjYdps9voe/IHzoosX
+         JYTg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1771781561; x=1772386361;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=0C5225Erxu+gYNOcbLKnNHNXfo0Dpl+lzsBtZrdkm/8=;
+        b=LPhtq9CUI1HGhZaGP/r2HtdHqXRHXrfNcf0migIpFbCK3nGjWwdJPXQm6jhGxDQPh5
+         CepCm9Be59qbH8e29cKkcr4Xbj1l38+whQlmei3+i0HWwPfsZJQup+P5d63l85reH7Kc
+         u11IFE7KL4uHxyt8XA+161sxYjlAJeRhmGw/oP2B1yp6PIpkdqAO42LKcxtMAMWbeiCY
+         a0qTc3kLJIQoNOPmG2JSEPKVVHP38TbJpZ+iK5Sb/eS3+BZ1IH+YMCI0usGvaCebgtih
+         kqrbK8X6Jo+jmyYHQEDuJUfoD080K4eJCoodWNiwlnmQC0yFhpkrwbCrlddGEJpB9Rfo
+         P9Eg==
+X-Forwarded-Encrypted: i=1; AJvYcCWRwOx7mdKxQ/7n/xAAJRtnoncS4fWBKrdkdhvBSpxAkmFl1wDsdJwGdyC4gyjS7k5Tp86nZAcgAg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxt2k/cgpIjVQumN9/hAQitaKoGRmDb1c5j9BVIwpL9NMa+C9uH
+	Ze5MS9RcX4krRqT2Q1sRpytkLltGN9L3UdzbTpP6vIWIevd0wxvEmr6U
+X-Gm-Gg: AZuq6aJRiqw5mNycdHOcTpVySNFY/DUxg6e7wPu1jLuaTW14o2YNmg+HaD1uXQ69qcv
+	oXuI+2K6mLgQBBVfQrXPEz06eVarUNGlLL/fOB7pMfYKy/DWNsnw9aT30VZ7T7NA80UbcllrqG5
+	ADJQV+i2055XK4tp83ZywlRdY9cEOHIwMTJbBJmQPFPJpb0UZkvA4+QXCVcRAxeXiFoRLzftnH+
+	iviswc3XDTD+zI51z5/aoZ3ilx72d0e9Qvv10ddmIP6XpLF2ujkS3B0plSSmyRv+4jlKStc2Zv1
+	EIaWuDgOWsrs2IKepZVoxSB0wfRuV9cbKyYzRSyV8HKNSKE9iPnC0I4E6HNZ4CkmifO2UI6CA7A
+	22ILaP2IR+XQkIaG4IShZjgVC2mDvSnpUQfSXNwQgS/xAGQWV5ulu4q6oC5a78oEckVAeZJ97Qx
+	3sB7N601fIbIFjgVrlDx5563OC54dRFGUZtktevtjmOxqEfsCcYRMtDxngUHMLdK2Ei0MoZe+Yy
+	40VGOJYS/XdEdaEBP120HGAt1I5FMe4fP9Q
+X-Received: by 2002:a05:6a21:3389:b0:35f:46d3:f28e with SMTP id adf61e73a8af0-39545f8d743mr5588261637.43.1771781560668;
+        Sun, 22 Feb 2026 09:32:40 -0800 (PST)
+Received: from visitorckw-work01.c.googlers.com.com (7.162.199.104.bc.googleusercontent.com. [104.199.162.7])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c70b726cbf2sm5275750a12.34.2026.02.22.09.32.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 22 Feb 2026 09:32:39 -0800 (PST)
+From: Kuan-Wei Chiu <visitorckw@gmail.com>
+To: geert@linux-m68k.org,
+	sre@kernel.org
+Cc: jserv@ccns.ncku.edu.tw,
+	eleanor15x@gmail.com,
+	daniel@0x0f.com,
+	laurent@vivier.eu,
+	linux-kernel@vger.kernel.org,
+	linux-m68k@lists.linux-m68k.org,
+	linux-pm@vger.kernel.org,
+	Kuan-Wei Chiu <visitorckw@gmail.com>
+Subject: [PATCH v3 0/2] Add QEMU virt-ctrl driver and update m68k virt
+Date: Sun, 22 Feb 2026 17:32:23 +0000
+Message-ID: <20260222173225.1105572-1-visitorckw@gmail.com>
+X-Mailer: git-send-email 2.53.0.345.g96ddfc5eaa-goog
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260222-sc27xx-mfd-cells-v1-5-69526fe74c77@abscue.de>
-References: <20260222-sc27xx-mfd-cells-v1-0-69526fe74c77@abscue.de>
-In-Reply-To: <20260222-sc27xx-mfd-cells-v1-0-69526fe74c77@abscue.de>
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Orson Zhai <orsonzhai@gmail.com>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, 
- Chunyan Zhang <zhang.lyra@gmail.com>, Lee Jones <lee@kernel.org>, 
- Pavel Machek <pavel@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
- Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-rtc@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org, 
- linux-pm@vger.kernel.org, 
- =?utf-8?q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>
-X-Mailer: b4 0.14.3
 
-Make the poweroff driver for SC27xx-series PMICs probe automatically.
-Since the device representing the poweroff functionality of the SC27xx
-PMIC is not supposed to have a dedicated device tree node without any
-corresponding DT resources [1], an of_device_id table cannot be used
-here. Instead, use a platform_device_id table to match the poweroff
-sub-device instantiated by the parent MFD driver.
+Introduce a generic platform driver for the QEMU 'virt-ctrl' device [1]
+and transitions the m68k 'virt' machine to use it, replacing
+architecture-specific hooks.
 
-Signed-off-by: Otto Pflüger <otto.pflueger@abscue.de>
+The new driver ('qemu-virt-ctrl') registers a restart handler and
+populates the global 'pm_power_off' callback.
 
-[1]: https://lore.kernel.org/all/20251002025344.GA2958334-robh@kernel.org/
+On the m68k side, the platform initialization is updated to register
+the 'qemu-virt-ctrl' platform device. Additionally, the 'mach_reset'
+hook is bridged to 'do_kernel_restart()' to ensure the kernel's restart
+handler chain is correctly invoked.
+
+Verified on QEMU m68k virt. Both system reset and power-off were
+confirmed functional by invoking 'reboot(LINUX_REBOOT_CMD_RESTART)',
+'reboot(LINUX_REBOOT_CMD_POWER_OFF)', and
+'reboot(LINUX_REBOOT_CMD_HALT)' from userspace.
+
+Link: https://gitlab.com/qemu-project/qemu/-/blob/v10.2.0/hw/misc/virt_ctrl.c [1]
 ---
- drivers/power/reset/sc27xx-poweroff.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+Changes in v3:
+- Add a reboot notifier in the driver to handle LINUX_REBOOT_CMD_HALT.
+- Handle native endianness in the driver instead of hardcoding
+  big-endian I/O writes.
+- Select POWER_RESET and POWER_RESET_QEMU_VIRT_CTRL in m68k
+  Kconfig.machine.
 
-diff --git a/drivers/power/reset/sc27xx-poweroff.c b/drivers/power/reset/sc27xx-poweroff.c
-index 393bd1c33b73..6376706bf561 100644
---- a/drivers/power/reset/sc27xx-poweroff.c
-+++ b/drivers/power/reset/sc27xx-poweroff.c
-@@ -6,6 +6,7 @@
- 
- #include <linux/cpu.h>
- #include <linux/kernel.h>
-+#include <linux/mod_devicetable.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/pm.h>
-@@ -70,11 +71,18 @@ static int sc27xx_poweroff_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct platform_device_id sc27xx_poweroff_id_table[] = {
-+	{ "sc2731-poweroff" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(platform, sc27xx_poweroff_id_table);
-+
- static struct platform_driver sc27xx_poweroff_driver = {
- 	.probe = sc27xx_poweroff_probe,
- 	.driver = {
- 		.name = "sc27xx-poweroff",
- 	},
-+	.id_table = sc27xx_poweroff_id_table,
- };
- module_platform_driver(sc27xx_poweroff_driver);
- 
+Changes in v2:
+- Use devm_register_sys_off_handler() instead of register_restart_handler()
+  and global pm_power_off.
+- Switch Kconfig to tristate to support modular build.
+- Add .id_table to platform_driver and use MODULE_DEVICE_TABLE() to correct
+  module auto-loading.
+
+v2: https://lore.kernel.org/lkml/20260203170824.2968045-1-visitorckw@gmail.com/
+v1: https://lore.kernel.org/lkml/20260112182258.1851769-1-visitorckw@gmail.com/
+
+Kuan-Wei Chiu (2):
+  power: reset: Add QEMU virt-ctrl driver
+  m68k: virt: Switch to qemu-virt-ctrl driver
+
+ MAINTAINERS                          |   6 ++
+ arch/m68k/Kconfig.machine            |   2 +
+ arch/m68k/virt/config.c              |  42 +--------
+ arch/m68k/virt/platform.c            |  20 ++++-
+ drivers/power/reset/Kconfig          |  10 +++
+ drivers/power/reset/Makefile         |   1 +
+ drivers/power/reset/qemu-virt-ctrl.c | 122 +++++++++++++++++++++++++++
+ 7 files changed, 159 insertions(+), 44 deletions(-)
+ create mode 100644 drivers/power/reset/qemu-virt-ctrl.c
 
 -- 
-2.51.0
+2.53.0.345.g96ddfc5eaa-goog
 
