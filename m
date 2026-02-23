@@ -1,82 +1,83 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DE8C2EDD6C;
-	Mon, 23 Feb 2026 15:40:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CE652EBBA4;
+	Mon, 23 Feb 2026 15:42:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771861247; cv=none; b=SHagQ+HID1QNWjx4VxHkia90XnzFKj4r1CIc2D5u7m/xPTn0nnsvncdZrBmaEB8kK9wYKt12Jjri8+3IpqmEVlDDW6yrt/e0s8quAr1SBCjsV6scpoSaCLuNUHcsAyOgyglZsyq2DPL7K16pgSUwAhjU6xo1qJMEcElCzR6wZ/U=
+	t=1771861331; cv=none; b=W1pgNbitVY1QsiSC7DftZ1PNxJhKBtVkDsVGv7oEjCfiRCeW6nnTsWVmihNbm9QkQ3hSp8IKumVexhytFEM32S34qtfPWosZj1vgVULmNOU/1vl7hKWXq0vd29RXFr+AqxdHtuV8uxtuUGEuJF5zHeN2siuTcKY2hRYr/NaDaFY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771861247; c=relaxed/simple;
-	bh=6KqK3Kokr9PTuL04N6S7S6pbl18j/jJvBjYqEnLsud8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=BwegTMWV//75yggGIxHZZ5wbE5HNOGh7reF4Vy5aDU7f5+FPvvN4M0yeZPeO/KqA4AltL9V+seKr4n8KTsq86vQfKcfo260F0tRqoVTbof3cdSwEgbWJE1y/jlUKERnE4dQVeGXwzwC6LJOUwwd60i5b/k2AH4zMJBCkTw3JAsQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TX9ARNsI; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1771861331; c=relaxed/simple;
+	bh=yurSs7VYMIRx+Jmbg9pFFMOien12/FbdH7HI65YtUAA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=dwNxj0HbIxQ/a1J++I2/OkuxKBJL4TRT96sqBz1XoqIZT3MQr7yo/cU5IEr/ychoM3WRjVv8Wh7NXZL65+288bb+LWrw+Ptqg0hJM2BrXu7wqCYyxzCplisiT3kJsPloaUA8NR1ofgQjgIq+pncmtvj1WhzbpVe8i+4M60Zsm9s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=T4XEVoLj; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TX9ARNsI"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9DBD1C116C6;
-	Mon, 23 Feb 2026 15:40:45 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="T4XEVoLj"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 13CECC116C6;
+	Mon, 23 Feb 2026 15:42:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771861247;
-	bh=6KqK3Kokr9PTuL04N6S7S6pbl18j/jJvBjYqEnLsud8=;
-	h=From:To:Cc:Subject:Date:From;
-	b=TX9ARNsIiS/emThJRBXxir+ijCCjmUPfXaP9HgVa7dE7FsfCet83+B8CygA9sUAxw
-	 nagjmmuoKL5ukFee1FNWIbgoZKTAras4y5BIiIrS/hoJtnCGU05GNOZ7aXxV1uNhuT
-	 g4sXEDho1EqCAhEb57nBPn5jreehBa40q8gI/GlEyFyDqpx0nvhFRehunNzVAvCWrS
-	 WpeSNtDP+UWcVAgUAnize11c0fcZevDStQ0MGCUsOsf2/9EIgSKhCfs2V+QipZo9E2
-	 weUz7CQ3c+CO4U62SdrUBMntfKdsBlg0atB0NCB9VYnb0C6174IRtvoWgFUGfn+dL0
-	 MF3cLTmgqUkhw==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Christian Loehle <christian.loehle@arm.com>,
- Doug Smythies <dsmythies@telus.net>,
- Aboorva Devarajan <aboorvad@linux.ibm.com>,
- "Ionut Nechita (Sunlight Linux)" <sunlightlinux@gmail.com>
-Subject: [PATCH v2 0/2] cpuidle: governor: Modify the handling of stopped tick
-Date: Mon, 23 Feb 2026 16:37:21 +0100
-Message-ID: <3693525.iIbC2pHGDl@rafael.j.wysocki>
-Organization: Linux Kernel Development
+	s=k20201202; t=1771861331;
+	bh=yurSs7VYMIRx+Jmbg9pFFMOien12/FbdH7HI65YtUAA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=T4XEVoLjwgsQ7ovKA7xtbUTIVcHWVCyV6pn7LOJ292tti18smMR8wnG77SxgalbDg
+	 RfgNRI6zvKs/8cXZyOMCiLBb0YqaZH9xuRDx2MY4NeupnNbZFjJqhMaJ8YeAvg7B5v
+	 VBYPz9rOAI/WFv0qLsSJzaRmANj4Tm0r0GykuOYk2PjjD3h+49jCkt2p5FSw0rNbk5
+	 z3KuS76ScNLrjShfi32YBoHfRV9eG09CMT3drMUaizPybn/yJnzaV8C4ege2Vjb7v4
+	 wPmK9fQ3opNtBptr+RX6VE2r07joRxsro9c4TFt4tqOEhoN/+cg4n1U/D5sWlOyEsE
+	 hV1PcbRbJs2aw==
+Date: Mon, 23 Feb 2026 05:42:10 -1000
+From: Tejun Heo <tj@kernel.org>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Lai Jiangshan <jiangshanlai@gmail.com>,
+	Tobias Schrammm <t.schramm@manjaro.org>,
+	Sebastian Reichel <sre@kernel.org>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Dan Carpenter <dan.carpenter@linaro.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>, Lee Jones <lee@kernel.org>,
+	Dzmitry Sankouski <dsankouski@gmail.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Benson Leung <bleung@chromium.org>,
+	Tzung-Bi Shih <tzungbi@kernel.org>, driver-core@lists.linux.dev,
+	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
+	linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-mediatek@lists.infradead.org, chrome-platform@lists.linux.dev
+Subject: Re: [PATCH 1/9] workqueue: devres: Add device-managed allocate
+ workqueue
+Message-ID: <aZx1UpYSNmapYBpU@slm.duckdns.org>
+References: <20260223-workqueue-devm-v1-0-10b3a6087586@oss.qualcomm.com>
+ <20260223-workqueue-devm-v1-1-10b3a6087586@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260223-workqueue-devm-v1-1-10b3a6087586@oss.qualcomm.com>
 
-Hi All,
+Hello,
 
-This is an update of
+On Mon, Feb 23, 2026 at 08:27:29AM +0100, Krzysztof Kozlowski wrote:
+> @@ -568,19 +588,31 @@ alloc_workqueue_lockdep_map(const char *fmt, unsigned int flags, int max_active,
+>   */
+>  #define alloc_ordered_workqueue(fmt, flags, args...)			\
+>  	alloc_workqueue(fmt, WQ_UNBOUND | __WQ_ORDERED | (flags), 1, ##args)
+> +#define devm_alloc_ordered_workqueue(dev, fmt, flags, args...)		\
+> +	devm_alloc_workqueue(dev, fmt, WQ_UNBOUND | __WQ_ORDERED | (flags), 1, ##args)
 
-https://lore.kernel.org/linux-pm/1953482.tdWV9SEqCh@rafael.j.wysocki/
+Let's just add devm_alloc_workqueue() and devm_alloc_ordered_workqueue() and
+skip the legacy wrappers.
 
-that fixes an issue in the second patch.  The first patch does not change and
-the changelog below still applies.
+Thanks.
 
-When I was thinking about possible ways to address high CPU wakeup latency on
-isolated CPUs resulting from the selection of deep idle states by cpuidle
-governors, it occurred to me that it is not always necessary to select a
-deep idle state if the scheduler tick has been stopped.  Namely, if a timer
-is going to trigger (relatively) shortly, a shallow state may as well be
-selected because the timer will kick the CPU out of that state anyway and
-getting stuck in it for a long time is not a concern.
-
-Changing the menu governor to take that observation into account is a 2-line
-patch, modulo a comment update (patch [1/2]).  Of course, the SAFE_TIMER_RANGE_NS
-value is somewhat arbitrary.
-
-Updating the teo governor accordingly is a bit more challenging, but overall it
-is a major simplification of the stopped tick handling there, so IMV it is very
-much worth doing (patch [2/2]).
-
-By itself, this is not going to help workloads running on isolated CPUs too
-much, but if SAFE_TIMER_RANGE_NS were replaced with a per-CPU tunable, that
-could help people to configure their systems to avoid the latency issue
-mentioned above.
-
-Thanks,
-Rafael
-
-
-
+-- 
+tejun
