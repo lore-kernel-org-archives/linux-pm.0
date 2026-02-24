@@ -1,118 +1,112 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from lgeamrelo07.lge.com (lgeamrelo07.lge.com [156.147.51.103])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA95E2D6E6F;
-	Tue, 24 Feb 2026 11:20:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C189B3803CF
+	for <linux-pm@vger.kernel.org>; Tue, 24 Feb 2026 11:42:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.103
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771932043; cv=none; b=Ct1P7UQa6ZPqeRNb0r6QYxcS4MWU2f9RodNsE/+Ku9+YIWM0vNuRcZb21BrLVwmgsiR+8DjUUAtnQ9xK3Le6q0C6y5AqdShfZscxFURMGXU4t2rS6Kj+AqTNT3A0nH75AH2PdIJ7zXGml0mxNfJyWNjRwTK+Xwwxtk7KUE1Ocd0=
+	t=1771933335; cv=none; b=Xfn4c5hayMHnnmAbV+Wk74f1BaflxZVpX1Fw9eyEnrKRWMmxGI7OGlcq9sb9bFwzuMMOUGFftBfOS+W4TSbAAtRzcEyIAAierAi4WlzDXxZ1YCTpisf4+b5zQTYaNEMR9UpbHpqzXtNCOoEO552Hzt4fOkf1Oor2n24kHsJEbnk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771932043; c=relaxed/simple;
-	bh=jLcwJmCU6NuD58W2dvDRqr7xKpNKXDGKLW9pDqZ3mBg=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=COfBpdq5jhItWAO4F7BjY6RXEVp4L7Vs+AZnCEs4gA3PlKMgl+cllL2ZFwWicMGnj7oURi2DvI3aTunEE5D4hW5HTbd5WJPAUYGFDqBIGQYTrhg67HCtpYNJZo0/WtlRiKGFMBEG2TynKbj+v0es2tcKGhvQjLVwLCRoe2marg0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FnD6iV9K; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FnD6iV9K"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A8595C2BC86;
-	Tue, 24 Feb 2026 11:20:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771932043;
-	bh=jLcwJmCU6NuD58W2dvDRqr7xKpNKXDGKLW9pDqZ3mBg=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=FnD6iV9K9NZ7mJJSAL00XOjIPTg6UsieDGlm3jaXgSc4Rc9rMU8mCbbe0Ub0QU04s
-	 j+XA7mBrzuVEuqRfQI92KsNlua/cpKJgCXIE8vr6AZo0jhnoNhVLUoWlWaAfplH4CX
-	 T5sAiTOh3WoLzwRvaEg5Hlr+AzFOgVnxNtBg8DyOwJeF38TDShZKCUIt4HUXRybDpW
-	 R/l7zwbU3DLkv6fDnzGUcBYSBRH3Eu5wt2beNLcG/kisJ4dWaJfnvuLRpJeRdFTgfv
-	 ylStit7gCo0yNJCiejtjQZi34htmpdrmCKcOiapJ3ywb88WPPGD50uHtZIJnTb+Acb
-	 HTH87pF60sZqQ==
-From: Andreas Hindborg <a.hindborg@kernel.org>
-Date: Tue, 24 Feb 2026 12:17:56 +0100
-Subject: [PATCH v16 01/10] rust: alloc: add `KBox::into_nonnull`
+	s=arc-20240116; t=1771933335; c=relaxed/simple;
+	bh=mV7jxebzJNVb+5lsUW2VQ5ClZ8zp8PK1uGUOtrrIR3I=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Qr+J3F6WpS7aisnRuvBeUWw22s4P17gyZyr+t6xRWGqRxO7gBMmhMKL/hPkt8YZnxnqWzZxH9DwhAzwqiXw/6VNWIwCLzWfzTLMwJ00wiuJpsI74SZN/C2EJY99duzQucwz1pyVbVqdV4Po8SFZTG30ZLcHgQyVDKnk2WkXm3A4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.103
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
+Received: from unknown (HELO yjaykim-PowerEdge-T330) (10.177.112.156)
+	by 156.147.51.103 with ESMTP; 24 Feb 2026 20:42:06 +0900
+X-Original-SENDERIP: 10.177.112.156
+X-Original-MAILFROM: youngjun.park@lge.com
+Date: Tue, 24 Feb 2026 20:42:06 +0900
+From: YoungJun Park <youngjun.park@lge.com>
+To: Kairui Song <ryncsn@gmail.com>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+	Chris Li <chrisl@kernel.org>,
+	Kemeng Shi <shikemeng@huaweicloud.com>,
+	Nhat Pham <nphamcs@gmail.com>, Baoquan He <bhe@redhat.com>,
+	Barry Song <baohua@kernel.org>,
+	Carsten Grohmann <mail@carstengrohmann.de>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	linux-kernel@vger.kernel.org,
+	"open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>,
+	taejoon.song@lge.com,
+	"hyungjun.cho@lge.com Carsten Grohmann" <carstengrohmann@gmx.de>,
+	stable@vger.kernel.org
+Subject: Re: [PATCH v4 1/3] mm, swap: speed up hibernation allocation and
+ writeout
+Message-ID: <aZ2Ojp5aSREwIaFB@yjaykim-PowerEdge-T330>
+References: <20260216-hibernate-perf-v4-0-1ba9f0bf1ec9@tencent.com>
+ <20260216-hibernate-perf-v4-1-1ba9f0bf1ec9@tencent.com>
+ <aZ1X1OwbAUq1k+C6@yjaykim-PowerEdge-T330>
+ <CAMgjq7BeA4cr5DSjpdaTVRRmcb_Pq+68yGZiiDg21fNPfGUQNg@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260224-unique-ref-v16-1-c21afcb118d3@kernel.org>
-References: <20260224-unique-ref-v16-0-c21afcb118d3@kernel.org>
-In-Reply-To: <20260224-unique-ref-v16-0-c21afcb118d3@kernel.org>
-To: Miguel Ojeda <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>, 
- =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
- Benno Lossin <lossin@kernel.org>, Alice Ryhl <aliceryhl@google.com>, 
- Trevor Gross <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Dave Ertman <david.m.ertman@intel.com>, Ira Weiny <ira.weiny@intel.com>, 
- Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, 
- Serge Hallyn <sergeh@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Alexander Viro <viro@zeniv.linux.org.uk>, 
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
- Igor Korotin <igor.korotin.linux@gmail.com>, 
- Daniel Almeida <daniel.almeida@collabora.com>, 
- Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, 
- "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
- Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, 
- Stephen Boyd <sboyd@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
- =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
- Boqun Feng <boqun@kernel.org>, Vlastimil Babka <vbabka@suse.cz>, 
- Uladzislau Rezki <urezki@gmail.com>, Boqun Feng <boqun@kernel.org>
-Cc: linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org, 
- linux-block@vger.kernel.org, linux-security-module@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org, 
- linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, 
- Andreas Hindborg <a.hindborg@kernel.org>
-X-Mailer: b4 0.15-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1062; i=a.hindborg@kernel.org;
- h=from:subject:message-id; bh=jLcwJmCU6NuD58W2dvDRqr7xKpNKXDGKLW9pDqZ3mBg=;
- b=owEBbQKS/ZANAwAKAeG4Gj55KGN3AcsmYgBpnYj0TV4DAv2lVFJSr3recsWpK7mpdMvf0fOO4
- GsqOYqcl7SJAjMEAAEKAB0WIQQSwflHVr98KhXWwBLhuBo+eShjdwUCaZ2I9AAKCRDhuBo+eShj
- dxXvD/4uTFSqjCY3iWHRTIEAh2NylxI+XqsaQVjNHfa55ZJJLgTNfYUvcse4RyQozv7pvyVWd9X
- RTV+xLwmBnbBtZhV/uwmF8F2kvjU113KJpO3sMatO2yNc358Ve7JZhap3nzmvf689b+moR9KW8U
- 8ifp9shwqd9GxSnUqYmJQww4ytW7n6vmrS9fdCG0VpncaoHbclEqKrb8kHlDpPWubp6c+Qu+ywV
- ZSm0AOEF5voLr6yFpDRkglqwU7L54LiXgfITkIb6UbNJrDRXOO57QGjUnybgV9oIPGKKkwQwRZQ
- uZX42y2zKXJNwE7e0PtSQh/G9iJSeO6OlIl3XlsH9/nwxhmAe99bikE2XWCyvXsybp6xdn8BHKc
- r54RW+VeOtJ8HA3/xoWs07B2k0WCCDEs5APzVEAOAAzVtB0PabBsu+U6ama860OueMRxHOILlcZ
- +Xf+pOsN30kSX9dsaxnpoC6hcm2hPWPJL/HaytSlHURknmIo6ZknstZlgrOJ6sPfuOgZPJ9KatI
- nzNP0Z3U5LkY0BatvObNNaHXd8Ke66SruMP3igQJaaJm0DeDpUNWuOdkv9+3giycXGQXpdPIHCt
- lQVZzP3lDsyullj2okwbZRVi01SEBePzKduMTuRLyTs6JjpW7tCsxzzCAC0M5H7le096T5lOwCQ
- cYxZVgcHcuck6nQ==
-X-Developer-Key: i=a.hindborg@kernel.org; a=openpgp;
- fpr=3108C10F46872E248D1FB221376EB100563EF7A7
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAMgjq7BeA4cr5DSjpdaTVRRmcb_Pq+68yGZiiDg21fNPfGUQNg@mail.gmail.com>
 
-Add a method to consume a `Box<T, A>` and return a `NonNull<T>`. This
-is a convenience wrapper around `Self::into_raw` for callers that need
-a `NonNull` pointer rather than a raw pointer.
+Thanks for the quick feedback :)
 
-Signed-off-by: Andreas Hindborg <a.hindborg@kernel.org>
----
- rust/kernel/alloc/kbox.rs | 8 ++++++++
- 1 file changed, 8 insertions(+)
+> Yes, that's definitely doable, but requires the hibernation side
+> to change how it uses the API, which could be a long term
+> workitem.
 
-diff --git a/rust/kernel/alloc/kbox.rs b/rust/kernel/alloc/kbox.rs
-index 622b3529edfcb..e6efdd572aeea 100644
---- a/rust/kernel/alloc/kbox.rs
-+++ b/rust/kernel/alloc/kbox.rs
-@@ -213,6 +213,14 @@ pub fn leak<'a>(b: Self) -> &'a mut T {
-         // which points to an initialized instance of `T`.
-         unsafe { &mut *Box::into_raw(b) }
-     }
-+
-+    /// Consumes the `Box<T,A>` and returns a `NonNull<T>`.
-+    ///
-+    /// Like [`Self::into_raw`], but returns a `NonNull`.
-+    pub fn into_nonnull(b: Self) -> NonNull<T> {
-+        // SAFETY: `KBox::into_raw` returns a valid pointer.
-+        unsafe { NonNull::new_unchecked(Self::into_raw(b)) }
-+    }
- }
- 
- impl<T, A> Box<MaybeUninit<T>, A>
+I can't claim to know the hibernation code inside out either,
+but I think the picture would come together if we grab the
+reference at find_first_swap / swap_type_of and just set the
+put at the right place.
 
--- 
-2.51.2
+Let me look into this a bit more and bring it up if it turns
+out to be worthwhile.
 
+> I think you got this part wrong here. We need the lock because
+> it will call this_cpu_xxx operations later. And GFP_KERNEL
+> doesn't assume a lock locked context. Instead it needs to
+> release the lock for a sleep alloc if the ATOMIC alloc fails,
+> and that could happen here.
 
+Ah right, sorry for the confusing wording. What I meant was
+exactly what you described — the locks need to be released for
+the GFP_KERNEL allocation, and the current code assumes the
+local lock is always held at that point.
+
+> But I agree we can definitely simplify this with some
+> abstraction or wrapper.
+
+What comes to mind right away is hoisting the alloc table
+routine and distinguishing the path via the folio param. I'll
+think about how to make it a clean design and propose a patch
+if it makes sense :)
+
+> I'm not sure how much code change it will involve and is it
+> worth it.
+>
+> Hibernation is supposed to stop every process, so concurrent
+> memory
+
+I was thinking it might be possible with the ioctl-based
+uswsusp path, but as you said, it probably wouldn't give us
+a meaningful benefit.
+
+> Definitely! I have a patch that introduced a hibernation /
+> exclusive type in the swap table. Remember the is_countable
+> macro you commented about previously? That's reserved for this.
+> For hibernation type, it's not countable (exclusive to
+> hibernation, maybe I need a better name though) so readahead or
+> any accidental IO will always skip it. By then this ugly
+> try_to_reclaim will be gone.
+
+Nice!
+
+> > Thanks for your work!
+>
+> And thanks for your review :)
+
+Thanks 
+Youngjun Park
