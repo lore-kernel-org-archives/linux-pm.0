@@ -1,118 +1,129 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 961A737B3F0
-	for <linux-pm@vger.kernel.org>; Tue, 24 Feb 2026 10:54:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CFCC737BE83;
+	Tue, 24 Feb 2026 11:19:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771930477; cv=none; b=Jgc+PJrU4XXnvunoURznwozn7XFWymzqyXwqFF5waKNkYeyd1LvsO9Zt5ZO2S5rRujMziSgOwMYDMi6et4CEWLObNlX7Zogx2s6ZhQOos6bSMWUSQJ0fIoqanlh2n72pXSu9VqTMC6EXY3PcfSJ8kRfNMSA+BAAscslWZCNo+5s=
+	t=1771931941; cv=none; b=t5o8OaIDKMXLEBCMp1wNSkRy6kzU11k4Xg8hL8gpeYAlowMjfmfk1DZYiA6RsFiHrBkgTj8Ly4AANeKNG77YKQ0kes2CjNdrz2vIqNEEHZjQHiOsVAWDSQ1lGihpO0uZ8IpxThapQ3BaP34iN07CZMtbU2AMBMDA4Gxu6Op3H3s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771930477; c=relaxed/simple;
-	bh=Ar8h4pwA1NDtg967Id6YIJ0hbFJ+kyEH685q68t02QU=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Hje48D6xkvNCiaVmSmOrMg/mBvLD/0SJCVHfXKFefscADm7HAcmRB1H2F3AqN+pS15RczMfHrDmdJ8N7ppOtZNpfUbO8q+C/C/MIyCyqQm4c7zobM9QtfUdNtpFPCuTR02RYlxlRGAaSrYVupIAJr7xrke1caMI8Ut2J9fjt2pc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=M6pgoeDG; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1771931941; c=relaxed/simple;
+	bh=TzCUGpEDUTKD6tcoKokHDlQAGVLw4XXksTwjbV99rHQ=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=SC4xSsnQLuZhNraIQxkolHaQLFuNCzjK462fNet7Fck8P6tBY6Q9uOzOh26IlOss5jBtGbI7O3n0/LXCdDiPVS9m/FXSQKMveSuggMofcN1kOdq/qtC8os+11cmG0O1Y9cbMIi9vlewaJdWJBpetGnDvPu4UxkCF30y8ndgfPsU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MOu8qMmm; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="M6pgoeDG"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 79E46C2BC9E
-	for <linux-pm@vger.kernel.org>; Tue, 24 Feb 2026 10:54:37 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MOu8qMmm"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EB733C116D0;
+	Tue, 24 Feb 2026 11:18:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771930477;
-	bh=Ar8h4pwA1NDtg967Id6YIJ0hbFJ+kyEH685q68t02QU=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc:From;
-	b=M6pgoeDGL67rxGCyufC4jL6jDjmdisqXHbWqNCPcw6GOAHDURfGTlBlbEMGfJPoiT
-	 VybiFBRSJIoDHfXqPhzQ/0+quhEKQ9qk58BiOCZ8L/4dHMv8XjxpQNOyT6sp+KwcMg
-	 QJBbn2plHMVRDm7Pbiu4U7Y5NblmauZOc6xZnKZmlcp/lKkDCNOQOqSGG4NaoGrIoJ
-	 iahNexx6alWPwSLgdrsL0m/jVM3hbim8HvEnKVAE2pWTYJAOCzzInR545iXunE5ofm
-	 OmtWVGhSeIzxg2vyv+VqQoZCeYhs1meV02dKq8b4pja1URbLNhaMBGxWGpinv1/ei/
-	 JOQlA32OyuS8w==
-Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-3870d178a9aso43315171fa.0
-        for <linux-pm@vger.kernel.org>; Tue, 24 Feb 2026 02:54:37 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCVAYia6bOCD+TT8YrPFk4e0xuSrFIt48BEiG1/M3KAw37D5C4qLxx/pEZ2fmWFwhrrzqEhBarrnKA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz8d0KU16AMZ2YreBvfduAks1YnLzJaCkPMwDOirpar4icuucZc
-	CBHBia2nXpUa/EOoXuC7qLCMfhaN6aElzZM/xPkkE7oUD49ePVFXaiZ6ziYKwxcSYCeGijYTLB0
-	xUynQ1yzsi2BU7G7N2RHVr0uxRHeTLMlpeWgyniHnUQ==
-X-Received: by 2002:a05:651c:1602:b0:385:beca:f6d2 with SMTP id
- 38308e7fff4ca-389a5c92b9bmr38250061fa.1.1771930475771; Tue, 24 Feb 2026
- 02:54:35 -0800 (PST)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 24 Feb 2026 04:54:34 -0600
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 24 Feb 2026 04:54:34 -0600
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <aZ19kFCv_3QUkvPL@smile.fi.intel.com>
+	s=k20201202; t=1771931941;
+	bh=TzCUGpEDUTKD6tcoKokHDlQAGVLw4XXksTwjbV99rHQ=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=MOu8qMmmrykyBB4CVhwqsAo8Gs8bS7U6AafB15auu2pLImpGtcvmUXOPslyfKs2el
+	 cA6Tgr0KiCNDlclglU7X5nBYMurMj/c4b5jgIPllHvoz8I5zv55L8nL/QYuioiqNz0
+	 bFHwNBCzqEwNzza99Dotcw3hy2WSMt1k4v0Nu1ObFnuzzPCJTaZJR09VKnQPVNu0Ie
+	 YiaCR0DXwqb5L1MTAH33VJOtane4KNMsI/15XTFxxb0XWg50vHeumHbafF+RW87C0o
+	 zS7G0Yc9SFTSe1i5chVbdD//SENR7XS47MSpwMtFs06smyoMu66VTyAuEoDPiztBuc
+	 FG8EIBIcIDBog==
+From: Andreas Hindborg <a.hindborg@kernel.org>
+Date: Tue, 24 Feb 2026 12:18:02 +0100
+Subject: [PATCH v16 07/10] rust: page: update formatting of `use`
+ statements
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260224-pci-m2-e-v5-0-dd9b9501d33c@oss.qualcomm.com>
- <20260224-pci-m2-e-v5-2-dd9b9501d33c@oss.qualcomm.com> <CAMRc=MethnZu_GrujadpBZwj4SpgdNXEnTfEikSvPkO2f9MJjg@mail.gmail.com>
- <aZ19kFCv_3QUkvPL@smile.fi.intel.com>
-Date: Tue, 24 Feb 2026 04:54:34 -0600
-X-Gmail-Original-Message-ID: <CAMRc=Md5K=qPbbjSX6eX7EUwgPHpPkUhOPF7RsqD5gejXK2rnQ@mail.gmail.com>
-X-Gm-Features: AaiRm50PZNtQU10kvSbt1uPfme98Sm6BHfpF2pr5K4ZzyNi38Xb-W4BKtnbBLf4
-Message-ID: <CAMRc=Md5K=qPbbjSX6eX7EUwgPHpPkUhOPF7RsqD5gejXK2rnQ@mail.gmail.com>
-Subject: Re: [PATCH v5 2/9] serdev: Add an API to find the serdev controller
- associated with the devicetree node
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: manivannan.sadhasivam@oss.qualcomm.com, 
-	Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>, 
-	linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-kbuild@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
-	linux-pci@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
-	linux-pm@vger.kernel.org, Stephan Gerhold <stephan.gerhold@linaro.org>, 
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, linux-acpi@vger.kernel.org, 
-	Hans de Goede <johannes.goede@oss.qualcomm.com>, Rob Herring <robh@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
-	Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nicolas.schier@linux.dev>, 
-	Hans de Goede <hansg@kernel.org>, =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
-	Mark Pearson <mpearson-lenovo@squebb.ca>, "Derek J. Clark" <derekjohn.clark@gmail.com>, 
-	Manivannan Sadhasivam <mani@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Marcel Holtmann <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
-	Bartosz Golaszewski <brgl@bgdev.pl>, Bartosz Golaszewski <brgl@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260224-unique-ref-v16-7-c21afcb118d3@kernel.org>
+References: <20260224-unique-ref-v16-0-c21afcb118d3@kernel.org>
+In-Reply-To: <20260224-unique-ref-v16-0-c21afcb118d3@kernel.org>
+To: Miguel Ojeda <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>, 
+ =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+ Benno Lossin <lossin@kernel.org>, Alice Ryhl <aliceryhl@google.com>, 
+ Trevor Gross <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Dave Ertman <david.m.ertman@intel.com>, Ira Weiny <ira.weiny@intel.com>, 
+ Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, 
+ Serge Hallyn <sergeh@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Alexander Viro <viro@zeniv.linux.org.uk>, 
+ Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
+ Igor Korotin <igor.korotin.linux@gmail.com>, 
+ Daniel Almeida <daniel.almeida@collabora.com>, 
+ Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, 
+ "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
+ Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, 
+ Stephen Boyd <sboyd@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
+ =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
+ Boqun Feng <boqun@kernel.org>, Vlastimil Babka <vbabka@suse.cz>, 
+ Uladzislau Rezki <urezki@gmail.com>, Boqun Feng <boqun@kernel.org>
+Cc: linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org, 
+ linux-block@vger.kernel.org, linux-security-module@vger.kernel.org, 
+ dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org, 
+ linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, 
+ Andreas Hindborg <a.hindborg@kernel.org>
+X-Mailer: b4 0.15-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=910; i=a.hindborg@kernel.org;
+ h=from:subject:message-id; bh=TzCUGpEDUTKD6tcoKokHDlQAGVLw4XXksTwjbV99rHQ=;
+ b=owEBbQKS/ZANAwAKAeG4Gj55KGN3AcsmYgBpnYj5ytywbjKxCmfhmUDrIuCRIXch3CamTuuGv
+ j824oj6dJyJAjMEAAEKAB0WIQQSwflHVr98KhXWwBLhuBo+eShjdwUCaZ2I+QAKCRDhuBo+eShj
+ d33LD/4tIWyZ+fNIywG0iGTvb2DorpPWbOHBNN9ywRijqdgN4kCYPMclfyWq5jb0IYw6fO5XvGS
+ n3w8ZMsfLfCWPUxLJdLXezRidEemIyeulj0g1sXIMUJtJCTE5KGLt1cF2TlmAqfIGDb1Hxva9+n
+ a17hvt6TxHT6vtxd6YhnJcIRECoOoIi6t163hqhNU+3Hy46/GrL+c+nTkA/ZlnfxLgaXP1+VGB7
+ I5d4mn9T5xF6HdI3RAI44jmR25J4E5AypWhSJtFg83rD1WbnwAcDa+Ow11Emd7UpvLdl7IYKorJ
+ VNJ5BCcmWvA7Uv5SbU6NqZ46lpaYD0303kqPl4SzHPc9ZgGpj1itJTcAZZg+7N11zMJ6N5UNtgL
+ 55lUMrNsD4c2ho5ywzGrZm+g8TjNVjqpCx+CcfiRj100RVyVJxpUoJsKKhElKn7CNCCvKJQk37C
+ ckI1Utyd486+FYBxr0xjySMGhSl+kuUkGVSs7o4WGXtaGlBup26dnSeAkV0hwb7PIJTnVEqhNG9
+ kkzffHhBC7rgSMVm/7JPpUvyMDnshDU2+oBO08eew7B5Exm7GXhrbIxkwxtnS8isIL6D8vMXvdR
+ 1M7UgSTMkNpZejv8PvjASBdsv1PFNoFB4h/GbJw5gpvV2ud0ebXXQu7h+wVO6KP4Jt9TmyvfoVj
+ JnTkk1uh31vgExw==
+X-Developer-Key: i=a.hindborg@kernel.org; a=openpgp;
+ fpr=3108C10F46872E248D1FB221376EB100563EF7A7
 
-On Tue, 24 Feb 2026 11:29:36 +0100, Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> said:
-> On Tue, Feb 24, 2026 at 02:16:17AM -0800, Bartosz Golaszewski wrote:
->> On Tue, 24 Feb 2026 06:30:48 +0100, Manivannan Sadhasivam via B4 Relay
->> <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org> said:
->> >
->> > Add of_find_serdev_controller_by_node() API to find the serdev controller
->> > device associated with the devicetree node.
->
-> ...
->
->> > +struct serdev_controller *of_find_serdev_controller_by_node(struct device_node *node)
->> > +{
->> > +	struct device *dev = bus_find_device_by_of_node(&serdev_bus_type, node);
->> > +
->> > +	return (dev && dev->type == &serdev_ctrl_type) ? to_serdev_controller(dev) : NULL;
->> > +}
->> > +EXPORT_SYMBOL_GPL(of_find_serdev_controller_by_node);
->>
->> I'm not sure if I commented on it before but there's no reason for this to be
->> OF-centric. It would work equally well as (I think the same should keep the
->> "serdev" prefix too for correct namespacing):
->>
->> struct serdev_controller *serdev_find_controller_by_fwnode(struct
->> fwnode_handle *fwnode)
->> {
->> 	struct device *dev = bus_find_device_by_fwnode();
->>
->> 	...
->> }
->>
->> It would be more flexible and users can always use to_of_node().
->
-> IIRC it was discussed already and the fact of use only in DT overlays and
-> absence of the user for all this time makes it feel like solving non-existing
-> problem. So OF-centric in this case seems to be fine.
->
+Update formatting in preparation for next patch
 
-Ok then.
+Signed-off-by: Andreas Hindborg <a.hindborg@kernel.org>
+---
+ rust/kernel/page.rs | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+diff --git a/rust/kernel/page.rs b/rust/kernel/page.rs
+index 432fc0297d4a8..bf3bed7e2d3fe 100644
+--- a/rust/kernel/page.rs
++++ b/rust/kernel/page.rs
+@@ -3,17 +3,23 @@
+ //! Kernel page allocation and management.
+ 
+ use crate::{
+-    alloc::{AllocError, Flags},
++    alloc::{
++        AllocError,
++        Flags, //
++    },
+     bindings,
+     error::code::*,
+     error::Result,
+-    uaccess::UserSliceReader,
++    uaccess::UserSliceReader, //
+ };
+ use core::{
+     marker::PhantomData,
+     mem::ManuallyDrop,
+     ops::Deref,
+-    ptr::{self, NonNull},
++    ptr::{
++        self,
++        NonNull, //
++    }, //
+ };
+ 
+ /// A bitwise shift for the page size.
+
+-- 
+2.51.2
+
+
