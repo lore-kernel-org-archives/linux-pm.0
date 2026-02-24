@@ -1,288 +1,135 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from out30-110.freemail.mail.aliyun.com (out30-110.freemail.mail.aliyun.com [115.124.30.110])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76AE22C11CD;
-	Tue, 24 Feb 2026 05:30:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7842C2D7393;
+	Tue, 24 Feb 2026 06:15:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=115.124.30.110
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771911053; cv=none; b=LpnouZ5oovrg3m0zbkvot1QHuOuiDBdtfVIbo9fARFiTOiwco3ZcTnzEp9u8KIRKwSCIdUsEFMEBtMq8F9NzG5R89i6B4mdclx+6svUAt3tCxoVoIDrO20H8oWK6/gOdfQL2qmqeuuFyjjLwTJUnbNEhtg7jJkXtkJ2fKZrRSEs=
+	t=1771913705; cv=none; b=rkvZhQC36TrOjRR51xfAH4r0KqpvMZeJIXylkLOsw2sZL+KasPconsV6U59Dgqw+jID77jDYPJikUwY620tpfn5+mJmKG6xg9u5V5lWBhuewkpkvtHW1h59L5Th0+49j9KeA+Y5Q17nSoSF21lMTHZ9bKayDFryyGX156Wy/p34=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771911053; c=relaxed/simple;
-	bh=QPg5ucT2J9JR6E3rS7caTqzm372tAM2YlgwRdg7/hwg=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=VAlPnk6mqqhy77o2lPtZnahn8Jr4qnQ9SPPPPnSqysSOWp3R3EPkYDvJbWQgOB7k4TQRUEPqyi8rK+kCJIaVEoB7jZVM9nr6YIdrBvaBIDzSxG5CjmgkWG7Lm9pySwr1oIfQCujU/l2l9DxJSTU2OtLk0cUN71gE+7+5vBXH3FI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=gGOSD87k; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1771913705; c=relaxed/simple;
+	bh=QcDufn3xlhbj1Rq1Nue63w7MTTSihoBn50RUpChiWhE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=l4BVxmdpja8bRbUJXWJW7rE0Pq+oI3osNkBVU3PA+Erv35ZZnB5nWxs+U8aHGTp1dKoX1hobRJ0RAwmdMPyDRKror2tUbwDJLheJhvRBqwiCvHkFjBR5x+5dXZN4L5ALaRqQnHMxQv56Qg7iRBJ7WSrxQ4PVqremsn/IPBXPzNo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; spf=pass smtp.mailfrom=linux.alibaba.com; dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b=LuuMuITQ; arc=none smtp.client-ip=115.124.30.110
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.alibaba.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="gGOSD87k"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 4018EC2BCB7;
-	Tue, 24 Feb 2026 05:30:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771911053;
-	bh=QPg5ucT2J9JR6E3rS7caTqzm372tAM2YlgwRdg7/hwg=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=gGOSD87kmjgj/DMgg9IC79SFDxvfsMj6anIsTW3UTfT6yXg4NROB0yMZgrNwpB+rF
-	 LTnABVeyQxHm5jEow88K8FlUoL9owmQcb9d8T8jtcXXJUUoZqyRcs+Gtb7Qi+xzduf
-	 G79nrhFTJYc+h8DizDOVMx1V4u0ylTRERO0lRo3uJMxmy1A+g0r+0g8I67hnA0Itvk
-	 Ai+YMZ8fx13z2IgOWQOTKus6urQfreU+NaoIpZ/s21Mqk2P0TiclqMeR6ifSuoBge/
-	 XXZp8MKFMEQ5guCUbKNzkh3J2CGhwXRQqMnA2PN8fK4RXyzxrspOyTFiENHt1sFWG7
-	 Lj0eJgqglsGqA==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2409EEFB800;
-	Tue, 24 Feb 2026 05:30:53 +0000 (UTC)
-From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Date: Tue, 24 Feb 2026 11:00:54 +0530
-Subject: [PATCH v5 8/9] power: sequencing: pcie-m2: Add support for PCIe
- M.2 Key E connectors
+	dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b="LuuMuITQ"
+DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1771913699; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
+	bh=QIJPzazOaalW7MX0aO4WtXqvM1VyjkLHNZ9TsbV6ckQ=;
+	b=LuuMuITQdG5vcEmuB/nWfIU6LAmsYOBDHJtUM6hfj1eJdMgMMqxaQLiegUxyjDh/7lS94IhAJY8nRQ6qin+KqKlpcZlSWoIlJtKXI4UEJh7jqUNVCwvmvw5TMPLijxpM+lFysJselHRBFcgJncR3XV8PSp2obHIA8PW/lGkQej4=
+Received: from 30.178.67.43(mailfrom:qinyuntan@linux.alibaba.com fp:SMTPD_---0WziWPiN_1771913694 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Tue, 24 Feb 2026 14:14:58 +0800
+Message-ID: <fddaeb19-31f6-4b87-81d2-b12c072917ef@linux.alibaba.com>
+Date: Tue, 24 Feb 2026 14:14:52 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260224-pci-m2-e-v5-8-dd9b9501d33c@oss.qualcomm.com>
-References: <20260224-pci-m2-e-v5-0-dd9b9501d33c@oss.qualcomm.com>
-In-Reply-To: <20260224-pci-m2-e-v5-0-dd9b9501d33c@oss.qualcomm.com>
-To: Rob Herring <robh@kernel.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Jiri Slaby <jirislaby@kernel.org>, Nathan Chancellor <nathan@kernel.org>, 
- Nicolas Schier <nicolas.schier@linux.dev>, Hans de Goede <hansg@kernel.org>, 
- =?utf-8?q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
- Mark Pearson <mpearson-lenovo@squebb.ca>, 
- "Derek J. Clark" <derekjohn.clark@gmail.com>, 
- Manivannan Sadhasivam <mani@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
- Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
- Bartosz Golaszewski <brgl@bgdev.pl>, 
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
- Bartosz Golaszewski <brgl@kernel.org>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-kbuild@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
- linux-pci@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
- linux-pm@vger.kernel.org, Stephan Gerhold <stephan.gerhold@linaro.org>, 
- Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
- linux-acpi@vger.kernel.org, 
- Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
- Hans de Goede <johannes.goede@oss.qualcomm.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6901;
- i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=HRGptE1JIyA395dlxkM3raRO8gPG2oSfeqDUBhjL6YY=;
- b=owEBbAGT/pANAwAKAVWfEeb+kc71AcsmYgBpnTeItvqqUYlI77jr1d50XlgHPzuXBe67DzZVK
- P+f6NZxPmyJATIEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaZ03iAAKCRBVnxHm/pHO
- 9YDFB/iDOYQLM8wTzHJ09bYyH2+5hIcEt9ZXbw1+VABhHFVw0OhHOj4DSQEVkqudUucAEXfNOB1
- H1tyiKxRFelDbG0MUQ597KkeErAh3uzenKEUYihryAuk+V2IKdfm4M0H3+bKT7EQSHeXm+YY/Wy
- vfji1zMNgsV9ls+Ozsms8YkuF46uWOU7To1nZWvXMw6ZPRSiYeIi+JwJnhhX3Ajr7nhvNuoBuus
- zSy6iHTcgDdYjmNU1u5G1MSZwtq5Qm2qy8Gbh1lgpsjRtwGUKDTdyQXaaTiHP2ilmWoB+PonejY
- BuWWz8X2JjoBEsFXMmSo/JhIAYMiulCadZ4Oap7EAE1yRnE=
-X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
- fpr=C668AEC3C3188E4C611465E7488550E901166008
-X-Endpoint-Received: by B4 Relay for
- manivannan.sadhasivam@oss.qualcomm.com/default with auth_id=461
-X-Original-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-Reply-To: manivannan.sadhasivam@oss.qualcomm.com
+User-Agent: =?UTF-8?B?TW96aWxsYSBUaHVuZGVyYmlyZCDmtYvor5XniYg=?=
+Subject: Re: [PATCH V1] tools/power turbostat: Fix RAPL MSR address selection
+ on AMD platforms
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Xunlei Pang <xlpang@linux.alibaba.com>, oliver.yang@linux.alibaba.com
+References: <20260130025358.4136660-1-qinyuntan@linux.alibaba.com>
+ <CAJvTdK=RmwGqLkuZNYPck4f+tJStE0tZVeWX6qTASYa5b1FOFA@mail.gmail.com>
+From: qinyuntan <qinyuntan@linux.alibaba.com>
+In-Reply-To: <CAJvTdK=RmwGqLkuZNYPck4f+tJStE0tZVeWX6qTASYa5b1FOFA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+Hi Len,
 
-Add support for handling the power sequence of the PCIe M.2 Key E
-connectors. These connectors are used to attach the Wireless Connectivity
-devices to the host machine including combinations of WiFi, BT, NFC using
-interfaces such as PCIe/SDIO for WiFi, USB/UART for BT and I2C for NFC.
+Thank you for the quick response and for applying the fix to your tree.
 
-Currently, this driver supports only the PCIe interface for WiFi and UART
-interface for BT. The driver also only supports driving the 3.3v/1.8v power
-supplies and W_DISABLE{1/2}# GPIOs. The optional signals of the Key E
-connectors are not currently supported.
+I have tested the commit (16cc8f249c70) on our AMD platforms, and this 
+issue is resolved. The turbostat tool now works correctly without the 
+"msr offset 0x611 read failed" error.
 
-Tested-by: Hans de Goede <johannes.goede@oss.qualcomm.com> # ThinkPad T14s gen6 (arm64)
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
----
- drivers/power/sequencing/pwrseq-pcie-m2.c | 107 ++++++++++++++++++++++++++++--
- 1 file changed, 101 insertions(+), 6 deletions(-)
+Best regards,
+Qinyun Tan
 
-diff --git a/drivers/power/sequencing/pwrseq-pcie-m2.c b/drivers/power/sequencing/pwrseq-pcie-m2.c
-index d31a7dd8b35c..3507cdcb1e7b 100644
---- a/drivers/power/sequencing/pwrseq-pcie-m2.c
-+++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
-@@ -5,10 +5,13 @@
-  */
- 
- #include <linux/device.h>
-+#include <linux/delay.h>
-+#include <linux/gpio/consumer.h>
- #include <linux/mod_devicetable.h>
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/of_graph.h>
-+#include <linux/of_platform.h>
- #include <linux/platform_device.h>
- #include <linux/pwrseq/provider.h>
- #include <linux/regulator/consumer.h>
-@@ -25,16 +28,18 @@ struct pwrseq_pcie_m2_ctx {
- 	struct regulator_bulk_data *regs;
- 	size_t num_vregs;
- 	struct notifier_block nb;
-+	struct gpio_desc *w_disable1_gpio;
-+	struct gpio_desc *w_disable2_gpio;
- };
- 
--static int pwrseq_pcie_m2_m_vregs_enable(struct pwrseq_device *pwrseq)
-+static int pwrseq_pcie_m2_vregs_enable(struct pwrseq_device *pwrseq)
- {
- 	struct pwrseq_pcie_m2_ctx *ctx = pwrseq_device_get_drvdata(pwrseq);
- 
- 	return regulator_bulk_enable(ctx->num_vregs, ctx->regs);
- }
- 
--static int pwrseq_pcie_m2_m_vregs_disable(struct pwrseq_device *pwrseq)
-+static int pwrseq_pcie_m2_vregs_disable(struct pwrseq_device *pwrseq)
- {
- 	struct pwrseq_pcie_m2_ctx *ctx = pwrseq_device_get_drvdata(pwrseq);
- 
-@@ -43,18 +48,84 @@ static int pwrseq_pcie_m2_m_vregs_disable(struct pwrseq_device *pwrseq)
- 
- static const struct pwrseq_unit_data pwrseq_pcie_m2_vregs_unit_data = {
- 	.name = "regulators-enable",
--	.enable = pwrseq_pcie_m2_m_vregs_enable,
--	.disable = pwrseq_pcie_m2_m_vregs_disable,
-+	.enable = pwrseq_pcie_m2_vregs_enable,
-+	.disable = pwrseq_pcie_m2_vregs_disable,
- };
- 
--static const struct pwrseq_unit_data *pwrseq_pcie_m2_m_unit_deps[] = {
-+static const struct pwrseq_unit_data *pwrseq_pcie_m2_unit_deps[] = {
- 	&pwrseq_pcie_m2_vregs_unit_data,
- 	NULL
- };
- 
-+static int pwrseq_pci_m2_e_uart_enable(struct pwrseq_device *pwrseq)
-+{
-+	struct pwrseq_pcie_m2_ctx *ctx = pwrseq_device_get_drvdata(pwrseq);
-+
-+	return gpiod_set_value_cansleep(ctx->w_disable2_gpio, 0);
-+}
-+
-+static int pwrseq_pci_m2_e_uart_disable(struct pwrseq_device *pwrseq)
-+{
-+	struct pwrseq_pcie_m2_ctx *ctx = pwrseq_device_get_drvdata(pwrseq);
-+
-+	return gpiod_set_value_cansleep(ctx->w_disable2_gpio, 1);
-+}
-+
-+static const struct pwrseq_unit_data pwrseq_pcie_m2_e_uart_unit_data = {
-+	.name = "uart-enable",
-+	.deps = pwrseq_pcie_m2_unit_deps,
-+	.enable = pwrseq_pci_m2_e_uart_enable,
-+	.disable = pwrseq_pci_m2_e_uart_disable,
-+};
-+
-+static int pwrseq_pci_m2_e_pcie_enable(struct pwrseq_device *pwrseq)
-+{
-+	struct pwrseq_pcie_m2_ctx *ctx = pwrseq_device_get_drvdata(pwrseq);
-+
-+	return gpiod_set_value_cansleep(ctx->w_disable1_gpio, 0);
-+}
-+
-+static int pwrseq_pci_m2_e_pcie_disable(struct pwrseq_device *pwrseq)
-+{
-+	struct pwrseq_pcie_m2_ctx *ctx = pwrseq_device_get_drvdata(pwrseq);
-+
-+	return gpiod_set_value_cansleep(ctx->w_disable1_gpio, 1);
-+}
-+
-+static const struct pwrseq_unit_data pwrseq_pcie_m2_e_pcie_unit_data = {
-+	.name = "pcie-enable",
-+	.deps = pwrseq_pcie_m2_unit_deps,
-+	.enable = pwrseq_pci_m2_e_pcie_enable,
-+	.disable = pwrseq_pci_m2_e_pcie_disable,
-+};
-+
- static const struct pwrseq_unit_data pwrseq_pcie_m2_m_pcie_unit_data = {
- 	.name = "pcie-enable",
--	.deps = pwrseq_pcie_m2_m_unit_deps,
-+	.deps = pwrseq_pcie_m2_unit_deps,
-+};
-+
-+static int pwrseq_pcie_m2_e_pwup_delay(struct pwrseq_device *pwrseq)
-+{
-+	/*
-+	 * FIXME: This delay is only required for some Qcom WLAN/BT cards like
-+	 * WCN7850 and not for all devices. But currently, there is no way to
-+	 * identify the device model before enumeration.
-+	 */
-+	msleep(50);
-+
-+	return 0;
-+}
-+
-+static const struct pwrseq_target_data pwrseq_pcie_m2_e_uart_target_data = {
-+	.name = "uart",
-+	.unit = &pwrseq_pcie_m2_e_uart_unit_data,
-+	.post_enable = pwrseq_pcie_m2_e_pwup_delay,
-+};
-+
-+static const struct pwrseq_target_data pwrseq_pcie_m2_e_pcie_target_data = {
-+	.name = "pcie",
-+	.unit = &pwrseq_pcie_m2_e_pcie_unit_data,
-+	.post_enable = pwrseq_pcie_m2_e_pwup_delay,
- };
- 
- static const struct pwrseq_target_data pwrseq_pcie_m2_m_pcie_target_data = {
-@@ -62,11 +133,21 @@ static const struct pwrseq_target_data pwrseq_pcie_m2_m_pcie_target_data = {
- 	.unit = &pwrseq_pcie_m2_m_pcie_unit_data,
- };
- 
-+static const struct pwrseq_target_data *pwrseq_pcie_m2_e_targets[] = {
-+	&pwrseq_pcie_m2_e_pcie_target_data,
-+	&pwrseq_pcie_m2_e_uart_target_data,
-+	NULL
-+};
-+
- static const struct pwrseq_target_data *pwrseq_pcie_m2_m_targets[] = {
- 	&pwrseq_pcie_m2_m_pcie_target_data,
- 	NULL
- };
- 
-+static const struct pwrseq_pcie_m2_pdata pwrseq_pcie_m2_e_of_data = {
-+	.targets = pwrseq_pcie_m2_e_targets,
-+};
-+
- static const struct pwrseq_pcie_m2_pdata pwrseq_pcie_m2_m_of_data = {
- 	.targets = pwrseq_pcie_m2_m_targets,
- };
-@@ -125,6 +206,16 @@ static int pwrseq_pcie_m2_probe(struct platform_device *pdev)
- 		return dev_err_probe(dev, ret,
- 				     "Failed to get all regulators\n");
- 
-+	ctx->w_disable1_gpio = devm_gpiod_get_optional(dev, "w-disable1", GPIOD_OUT_HIGH);
-+	if (IS_ERR(ctx->w_disable1_gpio))
-+		return dev_err_probe(dev, PTR_ERR(ctx->w_disable1_gpio),
-+				     "Failed to get the W_DISABLE_1# GPIO\n");
-+
-+	ctx->w_disable2_gpio = devm_gpiod_get_optional(dev, "w-disable2", GPIOD_OUT_HIGH);
-+	if (IS_ERR(ctx->w_disable2_gpio))
-+		return dev_err_probe(dev, PTR_ERR(ctx->w_disable2_gpio),
-+				     "Failed to get the W_DISABLE_2# GPIO\n");
-+
- 	ctx->num_vregs = ret;
- 
- 	ret = devm_add_action_or_reset(dev, pwrseq_pcie_m2_free_regulators, ctx);
-@@ -150,6 +241,10 @@ static const struct of_device_id pwrseq_pcie_m2_of_match[] = {
- 		.compatible = "pcie-m2-m-connector",
- 		.data = &pwrseq_pcie_m2_m_of_data,
- 	},
-+	{
-+		.compatible = "pcie-m2-e-connector",
-+		.data = &pwrseq_pcie_m2_e_of_data,
-+	},
- 	{ }
- };
- MODULE_DEVICE_TABLE(of, pwrseq_pcie_m2_of_match);
-
--- 
-2.51.0
-
+On 2/14/26 2:11 AM, Len Brown wrote:
+> Thanks for noticing, reporting, and suggesting a fix!
+> 
+> Please let me know if this fix already in my tree does not address the
+> issue for you.
+> 
+> https://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git/commit/? 
+> h=turbostat&id=16cc8f249c702b7cbb4c2c2be7cd8f4fdd5d1d0c
+> 
+> -Len
+> 
+> On Thu, Jan 29, 2026 at 8:54 PM Qinyun Tan<qinyuntan@linux.alibaba.com> wrote:
+>> idx_to_offset() uses valid_rapl_msrs to determine which MSR address to
+>> return for RAPL counters (Intel's MSR_PKG_ENERGY_STATUS at 0x611 vs AMD's
+>> MSR_PKG_ENERGY_STAT at 0xc001029b).
+>>
+>> However, probe_rapl_msrs() calls idx_to_offset() before valid_rapl_msrs
+>> has been set - it's only assigned at the end of probe_rapl_msrs() after
+>> successful MSR validation. This causes idx_to_offset() to always return
+>> the Intel MSR address (0x611) during the probe phase, even on AMD systems.
+>>
+>> On Intel platforms this works by coincidence since the default (else
+>> branch) returns the correct Intel address. On AMD platforms, this causes
+>> turbostat to fail with:
+>>
+>>    turbostat: cpu0: msr offset 0x611 read failed: Input/output error
+>>
+>> Fix this by:
+>> 1. Falling back to platform->plat_rapl_msrs when valid_rapl_msrs is zero
+>>     (not yet validated). This ensures the correct platform-specific MSR
+>>     address is used during the initial probe.
+>> 2. Changing valid_rapl_msrs type from 'unsigned int' to 'int' to match
+>>     plat_rapl_msrs type and avoid sign comparison warnings.
+>>
+>> Fixes: 19476a592bf2 ("tools/power turbostat: Validate RAPL MSRs for AWS Nitro Hypervisor")
+>> Signed-off-by: Qinyun Tan<qinyuntan@linux.alibaba.com>
+>> ---
+>>   tools/power/x86/turbostat/turbostat.c | 12 ++++++++++--
+>>   1 file changed, 10 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+>> index 5ad45c2ac5bd..449492d5e043 100644
+>> --- a/tools/power/x86/turbostat/turbostat.c
+>> +++ b/tools/power/x86/turbostat/turbostat.c
+>> @@ -492,7 +492,7 @@ unsigned int quiet;
+>>   unsigned int shown;
+>>   unsigned int sums_need_wide_columns;
+>>   unsigned int rapl_joules;
+>> -unsigned int valid_rapl_msrs;
+>> +int valid_rapl_msrs;
+>>   unsigned int summary_only;
+>>   unsigned int list_header_only;
+>>   unsigned int dump_only;
+>> @@ -2132,10 +2132,18 @@ struct msr_sum_array *per_cpu_msr_sum;
+>>   off_t idx_to_offset(int idx)
+>>   {
+>>          off_t offset;
+>> +       int rapl_msrs;
+>> +
+>> +       /*
+>> +        * Use valid_rapl_msrs if available (non-zero), otherwise fall back
+>> +        * to platform->plat_rapl_msrs. This allows probe_rapl_msrs() to call
+>> +        * this function before valid_rapl_msrs has been set.
+>> +        */
+>> +       rapl_msrs = valid_rapl_msrs ? valid_rapl_msrs : platform->plat_rapl_msrs;
+>>
+>>          switch (idx) {
+>>          case IDX_PKG_ENERGY:
+>> -               if (valid_rapl_msrs & RAPL_AMD_F17H)
+>> +               if (rapl_msrs & RAPL_AMD_F17H)
+>>                          offset = MSR_PKG_ENERGY_STAT;
+>>                  else
+>>                          offset = MSR_PKG_ENERGY_STATUS;
+>> --
+>> 2.43.5
+>>
 
