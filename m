@@ -1,84 +1,111 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB361389E17;
-	Thu, 26 Feb 2026 18:24:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B4E7393DE3
+	for <linux-pm@vger.kernel.org>; Thu, 26 Feb 2026 21:09:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772130254; cv=none; b=OD2hHpY0oDNclkT9r+JekT+xExg4GV7Yowly3yagJ0dw1NFEOpmEqNjeeYNKHRr/cspd20S6B87NCSbYa9EzdyNNt63Q0quywidDUSDeEqRNp36eAAcBScHGbeldK8rd7MCy13EP9/uHlHg8LYHniGtaY72bXFStbDKa6Qv2e24=
+	t=1772140193; cv=none; b=alUrFv9YAMRjFp1aC1SR1/wF9Z9tEVC4Kyw5GhSZNxvGjHuJ/GWH5KZ92F3WB1szyjNtZfbMgr25vqM7mQvrkvN/d+stf4ie/4FRFKY4AtJY9oGM2pSqZ3gVSAPS+tS0TNtEwIKX6Tt1RjQ5etBQUmlFVLXfCFPTCI07np36kvo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772130254; c=relaxed/simple;
-	bh=k4x6Z48xzF/dV2/cT3V3wABHH6+zjo6WJHix8CU51Y8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=n/FtSjHsKFD92hkQPt0Gx6znPcz1h+w2UK2EmEqki8bQ0luVUj9kpOXdzeIqjoC1Q/gt2NG5CV7j2f8bVP1Wm+nI7WyhdSikv1xICyhHxXCXxzXWt1rIo/10KgSYszISxvX4kw24Ayu0g8++kMT1CRkfnpeQMiM45BwiSAETQeM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lchl6h57; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1772140193; c=relaxed/simple;
+	bh=RGvNNOtR2S1WHt3kT8TPaMPVN6bCqxnzOyx/V3S/eE0=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=UeofFp1nDPmIZahvVGtxOaGLMJZTz9a/kGZYp0NBmA20epleCIPsXU9HTO+6PVdm7C5Lk3wpA7MUKxXotNf4CrhSVqM9IWWTK3ZU7a/uZmLLFxsiDLvKJRWBRpCHW5qKInttxz2x+6Q0V1/X2Or/k67KcROVyjaiYcmwZRWrOUs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hUXn2nE/; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lchl6h57"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A241C116C6;
-	Thu, 26 Feb 2026 18:24:11 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hUXn2nE/"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C65ECC116C6
+	for <linux-pm@vger.kernel.org>; Thu, 26 Feb 2026 21:09:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772130254;
-	bh=k4x6Z48xzF/dV2/cT3V3wABHH6+zjo6WJHix8CU51Y8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=lchl6h579PjTlVx42QI3hNgmYN9p1UNid6l9UrbAt/1N4PMGDOndVcIw5zVww0b2G
-	 Nx5W5vhDCLs44pMA+kjn/UQftur2LQpuH9vMwQq0Xb4hZ85bnjJ6KjDHjxUbbyFi6R
-	 3J2u+2Bma52RXrNU03+VbTDYNyV+fa0bAIzrtN/5u3PJocBSP3SbGYOAZt6VInHWGC
-	 TXCzG2PwFlSLFbSZtUpo6pPh3QY8LGXqELM3vJ1AwbkucMbVu0+4SCYytySVk/76oA
-	 25bnq7cyHAOaMn7bHLa2GYG9kW2r2gLR3NmW1QhN3Y9Sq4qMx8ryIRZQ1wrytoXDtR
-	 s212HROfmblcA==
-Date: Thu, 26 Feb 2026 18:24:09 +0000
-From: Conor Dooley <conor@kernel.org>
-To: =?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>
-Cc: Hans de Goede <hansg@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
-	Purism Kernel Team <kernel@puri.sm>,
-	Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Peter Griffin <peter.griffin@linaro.org>,
-	Tudor Ambarus <tudor.ambarus@linaro.org>,
-	Juan Yescas <jyescas@google.com>,
-	Amit Sunil Dhamne <amitsd@google.com>, kernel-team@android.com,
-	linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/11] power: supply: max17042: support Maxim MAX77759
- fuel gauge
-Message-ID: <20260226-qualify-spearman-7741366b58ac@spud>
-References: <20260226-max77759-fg-v1-0-ff0a08a70a9f@linaro.org>
+	s=k20201202; t=1772140192;
+	bh=RGvNNOtR2S1WHt3kT8TPaMPVN6bCqxnzOyx/V3S/eE0=;
+	h=From:Date:Subject:To:Cc:From;
+	b=hUXn2nE/aTDueLxd/2XMwD2JDKAUsPTOjnqR05a8mCwzXo5FqQBgdl5dRMl8Gp0ZU
+	 LaLTytPIs86mKtqVP990cu9X0PB2eifNEyKJSrdmdJWVLBxa7zzYT85yoGyFEp4DUQ
+	 NZTN6C/SKRAL/aewJUrkljMpXVcY/D9w3fzvDCwx1bmP1SkJWzIkp94yv4ZuyNz8eK
+	 diM2eJQEjf4dq8vRjE0TtYtRafZTnQNv+0Vj2uj8jTFRHHJG0LFTDndqif44IBkZmp
+	 MxPMZ4W2HIKlF+oSsc0ZED4+Wp8EKdSzqAdajC/r6tBobMtjq1ygx7/x2mpzSY/0Mu
+	 CQ7TEvqHlYYpQ==
+Received: by mail-ot1-f50.google.com with SMTP id 46e09a7af769-7d4c85307b2so880967a34.0
+        for <linux-pm@vger.kernel.org>; Thu, 26 Feb 2026 13:09:52 -0800 (PST)
+X-Gm-Message-State: AOJu0YxRr/Lcd2so55eLbSlHaNxwqCDqp8giYG4126xj6kl7e+QacO0B
+	03RyeVqLEgp+ljJcniyjLEq0ih/gZt83JjUYb7TwECqWtiPIwX9phQhPmQiIkjokGhxByp9fc6l
+	vLLkFxkoXK+osw2+O2i/XdkVYin+hszk=
+X-Received: by 2002:a05:6820:450f:b0:679:e889:dde1 with SMTP id
+ 006d021491bc7-679fadbb77dmr406802eaf.6.1772140191933; Thu, 26 Feb 2026
+ 13:09:51 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="oda9qLIMzkgF0K8p"
-Content-Disposition: inline
-In-Reply-To: <20260226-max77759-fg-v1-0-ff0a08a70a9f@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 26 Feb 2026 22:09:41 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0iDdCnCYAfQVut_uFnzc46EifhRVBns2cT04M_xw-eo9w@mail.gmail.com>
+X-Gm-Features: AaiRm52Dh8exBQ4gcmVPAOatynjqvgfQb1kRkdYo-VZ7Li6JzrcdrY8qYVY43Sc
+Message-ID: <CAJZ5v0iDdCnCYAfQVut_uFnzc46EifhRVBns2cT04M_xw-eo9w@mail.gmail.com>
+Subject: [GIT PULL] Power management updates for v7.0-rc2
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, 
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+
+Hi Linus,
+
+Please pull from the tag
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-7.0-rc2
+
+with top-most commit b78030d0f10570845568153637c5831e27d9871f
+
+ Merge branches 'pm-cpufreq' and 'pm-runtime'
+
+on top of commit 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f
+
+ Linux 7.0-rc1
+
+to receive power management updates for 7.0-rc2.
+
+These fix two intel_pstate driver issues causing it to crash on
+sysfs attribute accesses when some CPUs in the system are offline,
+finalize changes related to turning pm_runtime_put() into a void
+function, and update Daniel Lezcano's contact information:
+
+ - Fix two issues in the intel_pstate driver causing it to crash when
+   its sysfs interface is used on a system with some offline CPUs (David
+   Arcari, Srinivas Pandruvada)
+
+ - Update the last user of the pm_runtime_put() return value to discard
+   it and turn pm_runtime_put() into a void function (Rafael Wysocki)
+
+ - Update Daniel Lezcano's contact information in MAINTAINERS and
+   .mailmap (Daniel Lezcano)
+
+Thanks!
 
 
---oda9qLIMzkgF0K8p
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+---------------
 
-On Thu, Feb 26, 2026 at 01:11:34PM +0000, Andr=E9 Draszik wrote:
->       dt-bindings: power: supply: max17042: add support for max77759
->       dt-bindings: power: supply: max17042: support shunt-resistor-micro-=
-ohms
->       dt-bindings: power: supply: max17042: drop formatting specifier |
+Daniel Lezcano (1):
+      MAINTAINERS: Update contact with the kernel.org address
 
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
+David Arcari (1):
+      cpufreq: intel_pstate: Fix NULL pointer dereference in
+update_cpu_qos_request()
 
---oda9qLIMzkgF0K8p
-Content-Type: application/pgp-signature; name="signature.asc"
+Rafael J. Wysocki (2):
+      pmdomain: imx: gpcv2: Discard pm_runtime_put() return value
+      PM: runtime: Change pm_runtime_put() return type to void
 
------BEGIN PGP SIGNATURE-----
+Srinivas Pandruvada (1):
+      cpufreq: intel_pstate: Fix crash during turbo disable
 
-iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaaCPyAAKCRB4tDGHoIJi
-0jpUAP9Zppf7acAo4CSV+04+ovg36wKjPF5F9zaxo+PPgQiVYQEArucCX74458Mt
-6czH8AoktNoXxEisV1VHkkpKlV2Pvww=
-=iLcK
------END PGP SIGNATURE-----
+---------------
 
---oda9qLIMzkgF0K8p--
+ .mailmap                       |  4 ++++
+ MAINTAINERS                    | 12 ++++++------
+ drivers/cpufreq/intel_pstate.c | 14 ++++++++------
+ drivers/pmdomain/imx/gpcv2.c   |  4 +++-
+ include/linux/pm_runtime.h     | 16 ++--------------
+ 5 files changed, 23 insertions(+), 27 deletions(-)
