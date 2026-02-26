@@ -1,23 +1,23 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id C27AD3D522A;
-	Thu, 26 Feb 2026 14:19:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id D817F3D5256;
+	Thu, 26 Feb 2026 14:19:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772115544; cv=none; b=adFFdVn14R7D9jGtD0dT2eGryEvmOpfrc4yejRtg7QsbVgnJhUk9/0+4j3/wjf/AQiR4M9YS4ZiUWjHzh902skxJ7tETDr/coKxmyrJRS4FTc/1XiF8qPH01/b6LcDy2Iw90uElxHMmxtiQ3umB/5v0OOW+8wLqCqS2Mmj6a2Ds=
+	t=1772115547; cv=none; b=BR6BJHbwCe/oNIKVMMAXRSYRJnfiFauHAdVdnPClwSZYwa9409ihkH8zpn9XQEKkSVHu8I/i8YWAt9iZyRSGgQEr3OkWHItNccPDqL2EK58DeTrBLr0GBF9KCkbGrNTJxGueXCDuhV1BqV3HqMlz/j7eAdaUqRLsLWbSd4ekD/I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772115544; c=relaxed/simple;
-	bh=+XGXQsESB+GlAd9bKgx9d2lbyi/pfENvsagBBgEdo8M=;
+	s=arc-20240116; t=1772115547; c=relaxed/simple;
+	bh=8lUyUOq00JGsWx3czpAN4XQFBIjun29IuQSs3tMDFHI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=KogbVCiPNEp5CKVtpehO7aGJo2Pvf1EtX7454d4FJwEx04q2YDH/nPxtde0gjDQsRQnwG7sDM1KrK7Ivn5MD45234LRhxqRhId1aZNRls+UG0rYLNNgoF9xlJ5ofWdG5SxLxJE/z4TfvkpjcUScG7nrXcp9tdi3SOqRx07dIA+c=
+	 MIME-Version; b=Ce7tAI2C+G35iGIbG8A8FDOLUMOB8Q5DDpEDmbQ0rL4VTmdLmbZ3erKiwKtKYPbgduLXgaJ+cnmVcJs44RZcVLvF/Tc3jLhbSEwS2yux/sywKfViERsOyCHrx7xTnKuISwmaZDzkcCBJ62ub5MpjU04I7wykMVfhMvL6iF8ElrY=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2647415A1;
-	Thu, 26 Feb 2026 06:18:56 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id F2329497;
+	Thu, 26 Feb 2026 06:18:58 -0800 (PST)
 Received: from donnerap.manchester.arm.com (donnerap.manchester.arm.com [10.33.8.81])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0A2973F73B;
-	Thu, 26 Feb 2026 06:18:59 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B76AF3F73B;
+	Thu, 26 Feb 2026 06:19:02 -0800 (PST)
 From: Philip Radford <philip.radford@arm.com>
 To: linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
@@ -35,10 +35,11 @@ Cc: sudeep.holla@arm.com,
 	d-gole@ti.com,
 	souvik.chakravarty@arm.com,
 	Cristian Marussi <cristian.marussi@arm.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
 	Philip Radford <philip.radford@arm.com>
-Subject: [PATCH v3 7/9] include: trace: Add new parameter to trace_scmi_fc_call
-Date: Thu, 26 Feb 2026 14:18:28 +0000
-Message-ID: <20260226141830.3400924-8-philip.radford@arm.com>
+Subject: [PATCH v3 8/9] powercap: arm_scmi: Enable multiple constraints support
+Date: Thu, 26 Feb 2026 14:18:29 +0000
+Message-ID: <20260226141830.3400924-9-philip.radford@arm.com>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260226141830.3400924-1-philip.radford@arm.com>
 References: <20260226141830.3400924-1-philip.radford@arm.com>
@@ -52,152 +53,41 @@ Content-Transfer-Encoding: 8bit
 
 From: Cristian Marussi <cristian.marussi@arm.com>
 
-Since SCMIv4.0 some of the supported Fastchannels can be configured using
-an additional parameter like CPL_ID or Capability_ID.
+Initialize the domains with all the discovered available constraints,
+making available multiple per-domain constraints when the platform has
+advertised support for multiple concurrent power limits.
 
-Add equivalent support in the SCMI fastchannel traces to printout also such
-parameter and fix all the existent call sites.
-
-When such parameter is not used, it will simply show up as zero.
-
+CC: "Rafael J. Wysocki" <rafael@kernel.org>
+CC: linux-pm@vger.kernel.org
 Signed-off-by: Cristian Marussi <cristian.marussi@arm.com>
+[Philip: Amended Copyright]
 Signed-off-by: Philip Radford <philip.radford@arm.com>
 ---
- drivers/firmware/arm_scmi/perf.c     |  8 ++++----
- drivers/firmware/arm_scmi/powercap.c | 12 +++++++-----
- include/trace/events/scmi.h          | 12 +++++++-----
- 3 files changed, 18 insertions(+), 14 deletions(-)
+ drivers/powercap/arm_scmi_powercap.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/firmware/arm_scmi/perf.c b/drivers/firmware/arm_scmi/perf.c
-index 7f283f457e02..88d614e3184b 100644
---- a/drivers/firmware/arm_scmi/perf.c
-+++ b/drivers/firmware/arm_scmi/perf.c
-@@ -552,7 +552,7 @@ static int __scmi_perf_limits_set(const struct scmi_protocol_handle *ph,
- 		struct scmi_fc_info *fci = &dom->fc_info[PERF_FC_LIMIT];
+diff --git a/drivers/powercap/arm_scmi_powercap.c b/drivers/powercap/arm_scmi_powercap.c
+index be3007206a74..7f2bb162f96c 100644
+--- a/drivers/powercap/arm_scmi_powercap.c
++++ b/drivers/powercap/arm_scmi_powercap.c
+@@ -2,7 +2,7 @@
+ /*
+  * SCMI Powercap support.
+  *
+- * Copyright (C) 2022 ARM Ltd.
++ * Copyright (C) 2022-2026 ARM Ltd.
+  */
  
- 		trace_scmi_fc_call(SCMI_PROTOCOL_PERF, PERF_LIMITS_SET,
--				   dom->id, min_perf, max_perf);
-+				   dom->id, 0, min_perf, max_perf);
- 		iowrite32(max_perf, fci->set_addr);
- 		iowrite32(min_perf, fci->set_addr + 4);
- 		ph->hops->fastchannel_db_ring(fci->set_db);
-@@ -636,7 +636,7 @@ static int __scmi_perf_limits_get(const struct scmi_protocol_handle *ph,
- 		*max_perf = ioread32(fci->get_addr);
- 		*min_perf = ioread32(fci->get_addr + 4);
- 		trace_scmi_fc_call(SCMI_PROTOCOL_PERF, PERF_LIMITS_GET,
--				   dom->id, *min_perf, *max_perf);
-+				   dom->id, 0, *min_perf, *max_perf);
- 		return 0;
- 	}
+ #include <linux/device.h>
+@@ -311,7 +311,7 @@ static int scmi_powercap_register_zone(struct scmi_powercap_root *pr,
  
-@@ -706,7 +706,7 @@ static int __scmi_perf_level_set(const struct scmi_protocol_handle *ph,
- 		struct scmi_fc_info *fci = &dom->fc_info[PERF_FC_LEVEL];
- 
- 		trace_scmi_fc_call(SCMI_PROTOCOL_PERF, PERF_LEVEL_SET,
--				   dom->id, level, 0);
-+				   dom->id, 0, level, 0);
- 		iowrite32(level, fci->set_addr);
- 		ph->hops->fastchannel_db_ring(fci->set_db);
- 		return 0;
-@@ -769,7 +769,7 @@ static int __scmi_perf_level_get(const struct scmi_protocol_handle *ph,
- 	if (dom->fc_info && dom->fc_info[PERF_FC_LEVEL].get_addr) {
- 		*level = ioread32(dom->fc_info[PERF_FC_LEVEL].get_addr);
- 		trace_scmi_fc_call(SCMI_PROTOCOL_PERF, PERF_LEVEL_GET,
--				   dom->id, *level, 0);
-+				   dom->id, 0, *level, 0);
- 		return 0;
- 	}
- 
-diff --git a/drivers/firmware/arm_scmi/powercap.c b/drivers/firmware/arm_scmi/powercap.c
-index daa7c6d5d485..1087d59ac873 100644
---- a/drivers/firmware/arm_scmi/powercap.c
-+++ b/drivers/firmware/arm_scmi/powercap.c
-@@ -597,7 +597,7 @@ static int __scmi_powercap_cap_get(const struct scmi_protocol_handle *ph,
- 	    dom->cpli[cpl_id].fc_info[POWERCAP_FC_CAP].get_addr) {
- 		*power_cap = ioread32(dom->cpli[cpl_id].fc_info[POWERCAP_FC_CAP].get_addr);
- 		trace_scmi_fc_call(SCMI_PROTOCOL_POWERCAP, POWERCAP_CAP_GET,
--				   dom->id, *power_cap, 0);
-+				   dom->id, cpl_id, *power_cap, 0);
- 		return 0;
- 	}
- 
-@@ -730,7 +730,7 @@ static int __scmi_powercap_cap_set(const struct scmi_protocol_handle *ph,
- 		iowrite32(power_cap, fci->set_addr);
- 		ph->hops->fastchannel_db_ring(fci->set_db);
- 		trace_scmi_fc_call(SCMI_PROTOCOL_POWERCAP, POWERCAP_CAP_SET,
--				   domain_id, power_cap, 0);
-+				   domain_id, cpl_id, power_cap, 0);
- 		ret = 0;
- 	} else {
- 		ret = pi->xfer_cap_set(ph, pc, cpl_id, power_cap, ignore_dresp);
-@@ -835,7 +835,8 @@ static int scmi_powercap_avg_interval_get(const struct scmi_protocol_handle *ph,
- 			POWERCAP_PAI_GET : POWERCAP_CAI_GET;
- 
- 		*val = ioread32(dom->cpli[cpl_id].fc_info[POWERCAP_FC_XAI].get_addr);
--		trace_scmi_fc_call(SCMI_PROTOCOL_POWERCAP, trace_cmd, domain_id, *val, 0);
-+		trace_scmi_fc_call(SCMI_PROTOCOL_POWERCAP, trace_cmd, domain_id,
-+				   cpl_id, *val, 0);
- 		return 0;
- 	}
- 
-@@ -908,7 +909,8 @@ static int scmi_powercap_avg_interval_set(const struct scmi_protocol_handle *ph,
- 			POWERCAP_PAI_SET : POWERCAP_CAI_SET;
- 		struct scmi_fc_info *fci = &pc->cpli[cpl_id].fc_info[POWERCAP_FC_XAI];
- 
--		trace_scmi_fc_call(SCMI_PROTOCOL_POWERCAP, trace_cmd, domain_id, ivl, 0);
-+		trace_scmi_fc_call(SCMI_PROTOCOL_POWERCAP, trace_cmd, domain_id,
-+				   cpl_id, ivl, 0);
- 		iowrite32(ivl, fci->set_addr);
- 		ph->hops->fastchannel_db_ring(fci->set_db);
- 		return 0;
-@@ -961,7 +963,7 @@ static int scmi_powercap_measurements_get(const struct scmi_protocol_handle *ph,
- 		/* See SCMIv4.0 3.10.2 - Payload is 32bit ONLY avg_power */
- 		*avg_ivl = 0;
- 		trace_scmi_fc_call(SCMI_PROTOCOL_POWERCAP, POWERCAP_MEASUREMENTS_GET,
--				   pc->id, *avg_power, *avg_ivl);
-+				   pc->id, 0, *avg_power, *avg_ivl);
- 		return 0;
- 	}
- 
-diff --git a/include/trace/events/scmi.h b/include/trace/events/scmi.h
-index 703b7bb68e44..b03da7323d04 100644
---- a/include/trace/events/scmi.h
-+++ b/include/trace/events/scmi.h
-@@ -10,13 +10,14 @@
- #define TRACE_SCMI_MAX_TAG_LEN	6
- 
- TRACE_EVENT(scmi_fc_call,
--	TP_PROTO(u8 protocol_id, u8 msg_id, u32 res_id, u32 val1, u32 val2),
--	TP_ARGS(protocol_id, msg_id, res_id, val1, val2),
-+	TP_PROTO(u8 protocol_id, u8 msg_id, u32 res_id, u32 sub_id, u32 val1, u32 val2),
-+	TP_ARGS(protocol_id, msg_id, res_id, sub_id, val1, val2),
- 
- 	TP_STRUCT__entry(
- 		__field(u8, protocol_id)
- 		__field(u8, msg_id)
- 		__field(u32, res_id)
-+		__field(u32, sub_id)
- 		__field(u32, val1)
- 		__field(u32, val2)
- 	),
-@@ -25,13 +26,14 @@ TRACE_EVENT(scmi_fc_call,
- 		__entry->protocol_id = protocol_id;
- 		__entry->msg_id = msg_id;
- 		__entry->res_id = res_id;
-+		__entry->sub_id = sub_id;
- 		__entry->val1 = val1;
- 		__entry->val2 = val2;
- 	),
- 
--	TP_printk("pt=%02X msg_id=%02X res_id:%u vals=%u:%u",
--		__entry->protocol_id, __entry->msg_id,
--		__entry->res_id, __entry->val1, __entry->val2)
-+	TP_printk("pt=%02X msg_id=%02X res_id:%u sub_id:%u vals=%u:%u",
-+		  __entry->protocol_id, __entry->msg_id,
-+		  __entry->res_id, __entry->sub_id, __entry->val1, __entry->val2)
- );
- 
- TRACE_EVENT(scmi_xfer_begin,
+ 	z = powercap_register_zone(&spz->zone, scmi_top_pcntrl, spz->info->name,
+ 				   parent ? &parent->zone : NULL,
+-				   &zone_ops, 1, &constraint_ops);
++				   &zone_ops, spz->info->num_cpli, &constraint_ops);
+ 	if (!IS_ERR(z)) {
+ 		spz->height = scmi_powercap_get_zone_height(spz);
+ 		spz->registered = true;
 -- 
 2.47.3
 
