@@ -1,68 +1,68 @@
-Received: from mail-ej1-f50.google.com (mail-ej1-f50.google.com [209.85.218.50])
+Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com [209.85.218.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C51CA3161A2
-	for <linux-pm@vger.kernel.org>; Thu, 26 Feb 2026 13:11:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E881D31812F
+	for <linux-pm@vger.kernel.org>; Thu, 26 Feb 2026 13:11:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772111502; cv=none; b=SS0b/5FEKvcHRn4wSyMQu7f/o506Yf9cPk3fKOzotQw/7FNjl3y+YumSdFmnszZwFr2yZQISlgklflkcTU4ARaWgzZ8V6EsgRCHTVl1O2EqZ+WAqmZodBYUM8PjK3EimlyofYpGREgH3laZ/1125AVgp+5/um7Civb602NEe98E=
+	t=1772111503; cv=none; b=BXmbsdTbtYTDLSDHxonSJIFhvfPkIIlaBGQV9yojBR+gFm/Cv6e2p+4b8So/7l00BKqcuLr4gxFdU7zDsAoMxkzzTyWFbd71v7A18IaJxbWCSaDLjCBfXbdDmX57mhOnykhVFbm6WIJ+fMsVivN+7uiouynlKEevjGgURyFp5AE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772111502; c=relaxed/simple;
-	bh=CV8yI1R1vxaepaMKQg2pU15I1IQGq4B2d1c5Q8TyfT8=;
+	s=arc-20240116; t=1772111503; c=relaxed/simple;
+	bh=dpB7vybHvYaNtOG9GSlOptAD2SNLEmw7Ly6KU3/DX4w=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=YYFRhYrWy69XQku0WFtDsd12822Uz4WUdyCbQ/T3Y9L+0jzgfLTV6vDAbBHGRTV5+Cml+6dVYVmfe2SYUcROYLQnnLnPuMU8yqikUTJz8MVaxLE091HBx2IEij/nSdcg+xC2BS66LotUKNq1e3mafjO7T7vEfJs8h+aNduHc2vI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=z0Q6RFkn; arc=none smtp.client-ip=209.85.218.50
+	 In-Reply-To:To:Cc; b=TAln7APuX2WpTK4Z6+JhIWK/b5iKrNnOGFNDpKokm9c5PIh6wNggAWm9zi1VbsGzZyL9gN2K0b1Ex1wOqmgGOXUoNYOZ3UgOqoNV/P42kDcTSJTUpr/6JBPTwRJhZlgcGzzCMqFungUfevmV8VGE5f1G0olVztwTX4/8PyoGvlU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=PkM9zRLi; arc=none smtp.client-ip=209.85.218.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="z0Q6RFkn"
-Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-b884d5c787bso120964366b.0
-        for <linux-pm@vger.kernel.org>; Thu, 26 Feb 2026 05:11:39 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="PkM9zRLi"
+Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-b8f92f3db6fso132532566b.0
+        for <linux-pm@vger.kernel.org>; Thu, 26 Feb 2026 05:11:40 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1772111498; x=1772716298; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1772111499; x=1772716299; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=7dxIGuour1z+2vBwoz711z9H7XQ3u+zJtn7J7jgmZus=;
-        b=z0Q6RFknwVQTzky8yekM0kmYficmX6Okzh06jDL6iPQOCqbaDqitDg6B8wR6qp49xU
-         +Cx0zYwcTHowe4Qi3tjldRqsJ5msDpSMQlYjyf/v/LQB9RtqHdpnHMbidYi8HYYxgTC4
-         +sNc0fZyGDCs8A1mpPUWAN6+V/TyjkTxfUQlZUYBMvf/r6bbuY04laHVuu+U3jnJ6TGR
-         MJf0en4q1kEw+hLC/fZvOFfuLVVynyyW6CeG9nqJs8agotBqgl8SC20o/LBW/Z1b2IoQ
-         NNVp9i8K5heFGYsL8M/vcKZD5MimBf/DWfZgUtrMmJkjo8sirQ/JDhfDio1UfVZu7DAn
-         rjRw==
+        bh=MekPWwkWKFvLogZKhB0/TS01+mJvLYjH2vhAYXNAKWE=;
+        b=PkM9zRLiAtgHknPed1anzYkhPyN16ZhWDuLO6YvR99zno6pRQWQg5mbFyZd0ICh9Os
+         Z1Il9DpcajaddvBuNuX+rMz0EtqI5jq7oENGRVgcCSfvzRNsd/yafWAOrHhNTb9XavJ5
+         777dks2fqFI4ZCeQzVAgnVPgfe/EpXmZtUhSIvIFfLaH4fjD29TYxxcLU49qI3J4UARs
+         NlrqAFAYwxG+yDFan+J8kLGXQ+ejlMszxUVPr2T6B4jrVOzpRyUs+16KZmTTzwYVSv7L
+         GltH5Qewost/H5IqHJjsNX4ev91Cr+jySFbFwnwAbfFSwWXUuaeDHbzduzfzGiHky/iw
+         aHhw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772111498; x=1772716298;
+        d=1e100.net; s=20230601; t=1772111499; x=1772716299;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=7dxIGuour1z+2vBwoz711z9H7XQ3u+zJtn7J7jgmZus=;
-        b=cvn3vNlY7xgtqb++Wx5qQ7Mc0GYZGf2vWVuu7bN3GILT3eetrRjH8vNjiZOnSQVnro
-         HhzAsN4ULxWykv2pjH6QcefZfVARtcGGv48x1Kj2+3/Bg+AQbkG3kVfGjv4ZwQl3kvCZ
-         AM2IDY+mEcbWdQJR834MJB2Rir++dLQORo6B3onaLdNv3L0k+xgbvPzHUq5Dj9GCg76y
-         J9L4ukopYqRNJCU1Gvr61NuZbshwgXtD8lUfEp4TTzyMfi1stkycNkAh2CyUD/fCMNR7
-         npjsZmBBhB/FN6LBmyiqVtLBkq3x6vdVd5ks03bbr8+evs+HLt0B4SXI1raJ1Wz236JH
-         vDyA==
-X-Forwarded-Encrypted: i=1; AJvYcCVn3sqUPg1NduGxGdzUJqa0ffG3Z998wATCeVgTmDqoW27Iyg5vp3r6eTPipA5jXEl63+9/TyyBFQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyQUN8uQfX5nLdu9EqjzL+kKCX37zfJByrTsfYy50FINMOjfAQL
-	NXzxecBI+h9/AwvKGM4+vClyOyYk0wSJUL8GzhzgaQRpEIsfE3cdY+DqoiJHhbbnOaE=
-X-Gm-Gg: ATEYQzxObkm6RcPNGYgPDQ+PRApLNWcBzs8O//HY0IyllulNT5UOtumWlBLqrUX29JD
-	fgz9UKvJ83vhU7FDrRqNYztW2xeC/odcON8ggfnVFQVXd5LVzEt8nK3xPOg4EOoKmoTSGeSyFSf
-	IBobIh37yAxnHOGA1Ri4alBlREsQq0+knEt3PtWpTvVRf7vqHI999QA9hD6VVInNcjBNu1G7JFb
-	T22Dqh0e1qhYYuanTqLKUb3zx7/ZFtakEoMJGnCdIekz1y4SN9084p51k0z4pw78Oy+ubIS74tg
-	xWM+4HIMkNog5kndjBTdhKLFx5n1xxmi2mmK5t3yqZdxNBnQRiyM3KKmrju3bj2e0QU5wHVoRjA
-	9GwgaeZ5QlXYQmLvxFxw7arQV8f+S0rZFXXpnpXuCOXgH8YZttoSspiUu2XxlkFhD/eNOE1CKiC
-	hNzgP8BzGdTmVwp5Fp5TQ+Ic5yBxlfkcpHs97OLDSOCoglWhYW5aZtKJxLWWbWRAixOPaHqjM+p
-	oghyIk32D48grg2fA==
-X-Received: by 2002:a17:907:a09:b0:b87:117f:b6f9 with SMTP id a640c23a62f3a-b9351466c1cmr242535766b.8.1772111497969;
-        Thu, 26 Feb 2026 05:11:37 -0800 (PST)
+        bh=MekPWwkWKFvLogZKhB0/TS01+mJvLYjH2vhAYXNAKWE=;
+        b=EYSIr0KyNTx4ua4DLxgNONrGuOTlw//qkO5HsCsVNjkTf2Suo27Lf/+LkGzVSmFQ3Z
+         3T1NTixWHL3AQUUarmcJv5ltAkvUb73VYwIkKgcqaWEjcqZu0O92n/nZejOtjRQ9raaZ
+         fc81SSO2zMXhI+0EYFRqzEMq5w6EEjB59tu/iFs4Q3KPcTyJJD+WaIpP5cjsutCFZEuZ
+         wAR7qSgams8ywV3yemhfftwpVeoXwNluXmDrDGxzh1onhLyBrQkU2qACZKc2cG8QHcV9
+         Tqaa6kaSSbKQ1IPl9uwqlQUG6Wp+i9i1qbnRm/YgVuLOBqGuWINkq7Qu5qTysB8hDK5i
+         +afA==
+X-Forwarded-Encrypted: i=1; AJvYcCVwRw5OH1LHzEsaNZFz6Lzjxu85qNYwnuNhqnIG/b1GQFry8tw5EET8lFOvJ6DM7NHT6LVVAsnAcg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxOJTN6Cz1KOwoYa4NfJ4t9li3Y8q/pFFT9/OtAnEkiLVddv1jM
+	ijhvpn3ndvid+rJy00Hg4cJMwO+yw1oHWJeGYu1pWMYoDhfA1ywY6RHKHt29UQmY2Pg=
+X-Gm-Gg: ATEYQzzaHc4nxjIarlqQifRGMLAdgS4I/8tsEY/BCHtjrAb0uSB0SUHoYfL5TN1TSWl
+	gwkD0ZN3ch5QU5JXzA5YOX1Qad6hobpQ/BwimzCpc2ucUXgYOKTtMVA0C3a6Qg5e5GlcONgEGZs
+	PjQezjG4da1P2lCwb3OG6Hs+pr+UUO6XxQE+VPARl3gaWuZMygyAvjwPPeePhHsYgks3ltGyw9I
+	hHfe+oP516plNHzqW+YARAGV8sW3PenkBr3OfWjL+C8uYaHcy/EMw2BAuCnh9ZGtfUfsktrewG1
+	rKidc67M2ij6O4dt406qE2DWYuuXR5cGwpD1L0MS+E/jqxMpsRfzcb/NH+ysfXkikd/1tZfKHii
+	+ZAB/wvqiGLSGtzf8nrsbiLZVkaHGCK0PQeDFRiCY35rW/LTId/DatAZSn1CFt8+h06XvmR2DbT
+	WeNKl3QthnJeDL+oBygcjMAv3h8C/burKErJxZP8NwVg8pWNiXJOtXJU8h4lYNRdcHUmzfn48oV
+	b5f/oaJNGsTbsI42Q==
+X-Received: by 2002:a17:907:3e21:b0:b87:15a7:85f7 with SMTP id a640c23a62f3a-b90819c0881mr1458659466b.15.1772111499094;
+        Thu, 26 Feb 2026 05:11:39 -0800 (PST)
 Received: from puffmais2.c.googlers.com (244.175.141.34.bc.googleusercontent.com. [34.141.175.244])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b935ac73d2asm55125866b.26.2026.02.26.05.11.37
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b935ac73d2asm55125866b.26.2026.02.26.05.11.38
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 26 Feb 2026 05:11:37 -0800 (PST)
+        Thu, 26 Feb 2026 05:11:38 -0800 (PST)
 From: =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
-Date: Thu, 26 Feb 2026 13:11:35 +0000
-Subject: [PATCH 01/11] dt-bindings: power: supply: max17042: add support
- for max77759
+Date: Thu, 26 Feb 2026 13:11:37 +0000
+Subject: [PATCH 03/11] dt-bindings: power: supply: max17042: drop
+ formatting specifier |
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -71,7 +71,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260226-max77759-fg-v1-1-ff0a08a70a9f@linaro.org>
+Message-Id: <20260226-max77759-fg-v1-3-ff0a08a70a9f@linaro.org>
 References: <20260226-max77759-fg-v1-0-ff0a08a70a9f@linaro.org>
 In-Reply-To: <20260226-max77759-fg-v1-0-ff0a08a70a9f@linaro.org>
 To: Hans de Goede <hansg@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
@@ -87,41 +87,65 @@ Cc: Peter Griffin <peter.griffin@linaro.org>,
  =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
 X-Mailer: b4 0.14.3
 
-The Maxim MAX77759 is a companion PMIC intended for use in mobile
-phones and tablets. It is used on Google Pixel 6 and 6 Pro (oriole and
-raven). Amongst others, it contains a fuel gauge that is similar to the
-ones supported by this binding.
+| denotes a literal (preformatted) block and is not necessary here.
 
-The fuel gauge can measure battery charge and discharge current,
-battery voltage, battery temperature, and the Type C connector's
-temperature.
+Drop them from this file.
 
 Signed-off-by: André Draszik <andre.draszik@linaro.org>
 ---
- Documentation/devicetree/bindings/power/supply/maxim,max17042.yaml | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ .../devicetree/bindings/power/supply/maxim,max17042.yaml     | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/Documentation/devicetree/bindings/power/supply/maxim,max17042.yaml b/Documentation/devicetree/bindings/power/supply/maxim,max17042.yaml
-index 14242de7fc08..055d1f2ee0ba 100644
+index 25ea8e19b980..242b33f2bcba 100644
 --- a/Documentation/devicetree/bindings/power/supply/maxim,max17042.yaml
 +++ b/Documentation/devicetree/bindings/power/supply/maxim,max17042.yaml
-@@ -20,6 +20,7 @@ properties:
-       - maxim,max17050
-       - maxim,max17055
-       - maxim,max77705-battery
-+      - maxim,max77759-fg
-       - maxim,max77849-battery
+@@ -28,7 +28,7 @@ properties:
  
-   reg:
-@@ -28,7 +29,7 @@ properties:
    interrupts:
      maxItems: 1
-     description: |
--      The ALRT pin, an open-drain interrupt.
-+      The ALRT pin (or FG_INTB pin on MAX77759), an open-drain interrupt.
+-    description: |
++    description:
+       The ALRT pin (or FG_INTB pin on MAX77759), an open-drain interrupt.
  
+   shunt-resistor-micro-ohms:
+@@ -39,31 +39,31 @@ properties:
    maxim,rsns-microohm:
+     deprecated: true
      $ref: /schemas/types.yaml#/definitions/uint32
+-    description: |
++    description:
+       Resistance of rsns resistor in micro Ohms (datasheet-recommended value is 10000).
+       Defining this property enables current-sense functionality.
+ 
+   maxim,cold-temp:
+     $ref: /schemas/types.yaml#/definitions/uint32
+-    description: |
++    description:
+       Temperature threshold to report battery as cold (in tenths of degree Celsius).
+       Default is not to report cold events.
+ 
+   maxim,over-heat-temp:
+     $ref: /schemas/types.yaml#/definitions/uint32
+-    description: |
++    description:
+       Temperature threshold to report battery as over heated (in tenths of degree Celsius).
+       Default is not to report over heating events.
+ 
+   maxim,dead-volt:
+     $ref: /schemas/types.yaml#/definitions/uint32
+-    description: |
++    description:
+       Voltage threshold to report battery as dead (in mV).
+       Default is not to report dead battery events.
+ 
+   maxim,over-volt:
+     $ref: /schemas/types.yaml#/definitions/uint32
+-    description: |
++    description:
+       Voltage threshold to report battery as over voltage (in mV).
+       Default is not to report over-voltage events.
+ 
 
 -- 
 2.53.0.414.gf7e9f6c205-goog
