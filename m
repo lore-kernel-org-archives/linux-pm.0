@@ -1,37 +1,37 @@
 Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0208822B8C5;
-	Fri, 27 Feb 2026 14:27:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7B65E2472A6;
+	Fri, 27 Feb 2026 15:11:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772202439; cv=none; b=hqQ6IQbQujyXeiiZTRdZRiwv4PJGzS5HiJf2P5M8ozPiGipJ2w7YfPyJuR+3ryCidvpi3qqImWSnmdPjMF9va3PT3TK6O44H6Zd23qoKUdP9Uo1Oghs5v7CFFsht2o+VZCqfVmKwA/brKDVsbei9yOhW1V33DpqFO3QNxtbcnU8=
+	t=1772205121; cv=none; b=Fv7wiYEbyz6/4eGg6Gpl3kP52RYMRGwmYYg0wG0WIgJwHUMwwe9ybNdq8A3UuIIKIgf2b5XfPbwknDYyqyEsxKEHR7LvH8IKJnevcgVAR9rlbzV8icq31Rj6aL06ZO8NIlbhqnsK+RPE5Wvii6TGFMqh761rLxVpXaL4Jb6piQA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772202439; c=relaxed/simple;
-	bh=1tXm+TnS2G3rRfI9XAxUYTYh0E2cTN52tteBOP81uiY=;
+	s=arc-20240116; t=1772205121; c=relaxed/simple;
+	bh=irR3JYp0TTVgm0qtqdE0bAHioGjEPqy0Cdw4ZxZ7UnM=;
 	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
-	 References:In-Reply-To; b=B3rWSAECJUd5j7WQB9bc7lP9UP5p2odbLiF1s8BhqUKlG/dg15sl/A0K1O6yFuoWdI/E0bfNHTmjqsJuSSL2Wfdtjawju09e2utBbNMfZ7eq1SeNpq+NGkWLWfA9FVmmOzeVbiVV1lhEvjNSzoTaRQzhtaUsN7CS8yBFlrzl+50=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=fnN4P0+D; arc=none smtp.client-ip=178.21.23.139
+	 References:In-Reply-To; b=FtGSH1TVYface7A/yCF9clfqoaolje0qfFQXPLvA2i7egYrsCFJY6hNqgcOaxIgrcy7UtXcsWM+XH9MgIKkoiODAoMlkcwVSAspzqznGWhxuHZOJmRuYmz40yBy6vqbRQ+0qTDNFGJsFArb5Ztjewrqb3QDeAQ0ElHFBYRe3F48=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=hJCuxZJy; arc=none smtp.client-ip=178.21.23.139
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="fnN4P0+D"
+	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="hJCuxZJy"
 Received: from [127.0.0.1] (localhost [127.0.0.1])
-	by disroot.org (Postfix) with ESMTP id 130E0261CE;
-	Fri, 27 Feb 2026 15:27:15 +0100 (CET)
+	by disroot.org (Postfix) with ESMTP id 529272602D;
+	Fri, 27 Feb 2026 16:11:57 +0100 (CET)
 X-Virus-Scanned: SPAM Filter at disroot.org
 Received: from layka.disroot.org ([127.0.0.1])
  by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id A3OePZrBMocl; Fri, 27 Feb 2026 15:27:14 +0100 (CET)
+ id XAbdgqFAuMAv; Fri, 27 Feb 2026 16:11:56 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
-	t=1772202434; bh=1tXm+TnS2G3rRfI9XAxUYTYh0E2cTN52tteBOP81uiY=;
+	t=1772205116; bh=irR3JYp0TTVgm0qtqdE0bAHioGjEPqy0Cdw4ZxZ7UnM=;
 	h=Date:Cc:Subject:From:To:References:In-Reply-To;
-	b=fnN4P0+D+u62BEqExLXqBcaNbpfI/VaJMhGMi61wnTGHyG3cdRMb2mUOMG/4DJP1c
-	 WdUPi38kY2bGSlxdqKC9wf+7pqZftfPm0z5gl7HPEFhtQvmL9Lum8Ufn6yL1i/8wpY
-	 Z15rrsKnd5RcIEmuzH+RzH5uatixCatJ/36V/E6Ehb4+wf8wO8hMD1tCSO88T9QSb1
-	 iZhfeXsY7clss9mFtiIDQ9jYcNJePjZ5L6HCsyzEW7MlJr/89k4jtNT74gLDJClhTh
-	 ELoYopHFIKpOuylC7VJFDcWYPheTb1NbOW8YCRtd9qGYJYtlJk3GJ16ISi37e4WvLo
-	 zS7uehygjp1qQ==
+	b=hJCuxZJy3yGznOny6+ryfErku1V5Gb/V0QeuXGfywmX/YoPpk5knFFIT8TZB9J0+T
+	 1lpQ8pwsj+oDBTs57WoVXZubcl5g7Ssj6nOeqynazyRPA/5Ewan7VJWgpOzjmW3TXs
+	 gB+OhlSsOf7UsxO9JrjfH1bTXpCTkE3x+DRowE7qXe1+13bAgK9+t+DcTx4fSIBCbK
+	 9g4K9looklH1bJdN/fHMTp9OlrtMqJYrC+Oh12eS43O/2gt1y7JcsNU6LeQOpWG8Np
+	 Vuv6yxDDZ9TD9FSaAcGlY3l2l10Sqm395aAVxnpuThBaIJW9bUe/hOsIPnwBPzU3OY
+	 OH7lhkLshI/hQ==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,62 +40,94 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Date: Fri, 27 Feb 2026 19:56:58 +0530
-Message-Id: <DGPTBRX09EU5.1D1ZSR7EUV7AT@disroot.org>
-Cc: "Lee Jones" <lee@kernel.org>, "Pavel Machek" <pavel@kernel.org>, "Rob
- Herring" <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>,
- "Conor Dooley" <conor+dt@kernel.org>, "MyungJoo Ham"
- <myungjoo.ham@samsung.com>, "Chanwoo Choi" <cw00.choi@samsung.com>,
- "Sebastian Reichel" <sre@kernel.org>, =?utf-8?q?Andr=C3=A9_Draszik?=
- <andre.draszik@linaro.org>, "Alexandre Belloni"
- <alexandre.belloni@bootlin.com>, "Jonathan Corbet" <corbet@lwn.net>, "Shuah
- Khan" <skhan@linuxfoundation.org>, "Nam Tran" <trannamatk@gmail.com>,
- <linux-leds@vger.kernel.org>, <devicetree@vger.kernel.org>,
+Date: Fri, 27 Feb 2026 20:41:46 +0530
+Message-Id: <DGPUA2NC5ZJI.O10VWM5D15B3@disroot.org>
+Cc: <linux-leds@vger.kernel.org>, <devicetree@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
  <linux-samsung-soc@vger.kernel.org>, <linux-rtc@vger.kernel.org>,
  <linux-doc@vger.kernel.org>
-Subject: Re: [PATCH v3 04/13] dt-bindings: power: supply: document Samsung
- S2M series PMIC charger device
+Subject: Re: [PATCH v3 03/13] dt-bindings: extcon: document Samsung S2M
+ series PMIC extcon device
 From: "Kaustabh Chakraborty" <kauschluss@disroot.org>
-To: "Krzysztof Kozlowski" <krzk@kernel.org>, "Kaustabh Chakraborty"
- <kauschluss@disroot.org>
+To: "Kaustabh Chakraborty" <kauschluss@disroot.org>, "Lee Jones"
+ <lee@kernel.org>, "Pavel Machek" <pavel@kernel.org>, "Rob Herring"
+ <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>, "Conor
+ Dooley" <conor+dt@kernel.org>, "MyungJoo Ham" <myungjoo.ham@samsung.com>,
+ "Chanwoo Choi" <cw00.choi@samsung.com>, "Sebastian Reichel"
+ <sre@kernel.org>, "Krzysztof Kozlowski" <krzk@kernel.org>,
+ =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, "Alexandre
+ Belloni" <alexandre.belloni@bootlin.com>, "Jonathan Corbet"
+ <corbet@lwn.net>, "Shuah Khan" <skhan@linuxfoundation.org>, "Nam Tran"
+ <trannamatk@gmail.com>
 References: <20260225-s2mu005-pmic-v3-0-b4afee947603@disroot.org>
- <20260225-s2mu005-pmic-v3-4-b4afee947603@disroot.org>
- <20260225-secret-amusing-cuttlefish-d3bee5@quoll>
-In-Reply-To: <20260225-secret-amusing-cuttlefish-d3bee5@quoll>
+ <20260225-s2mu005-pmic-v3-3-b4afee947603@disroot.org>
+In-Reply-To: <20260225-s2mu005-pmic-v3-3-b4afee947603@disroot.org>
 
-On 2026-02-25 11:44 +01:00, Krzysztof Kozlowski wrote:
-> On Wed, Feb 25, 2026 at 12:45:06AM +0530, Kaustabh Chakraborty wrote:
->> +
->> +  This is a part of device tree bindings for S2M and S5M family of Powe=
+On 2026-02-25 00:45 +05:30, Kaustabh Chakraborty wrote:
+> Certain Samsung S2M series PMICs have a MUIC device which reports
+> various cable states by measuring the ID-GND resistance with an internal
+> ADC. Document the devicetree schema for this device.
+>
+> Signed-off-by: Kaustabh Chakraborty <kauschluss@disroot.org>
+> ---
+>  .../bindings/extcon/samsung,s2mu005-muic.yaml      | 39 ++++++++++++++++=
+++++++
+>  1 file changed, 39 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/extcon/samsung,s2mu005-mui=
+c.yaml b/Documentation/devicetree/bindings/extcon/samsung,s2mu005-muic.yaml
+> new file mode 100644
+> index 0000000000000..e047e8cbc264e
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/extcon/samsung,s2mu005-muic.yaml
+> @@ -0,0 +1,39 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/extcon/samsung,s2mu005-muic.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: MUIC Device for Samsung S2M series PMICs
+> +
+> +maintainers:
+> +  - Kaustabh Chakraborty <kauschluss@disroot.org>
+> +
+> +description: |
+> +  The Samsung S2M series PMIC MUIC device is a USB port accessory
+> +  detector. It reports multiple states depending on the ID-GND
+> +  resistance measured by an internal ADC.
+> +
+> +  This is a part of device tree bindings for S2M and S5M family of Power
+> +  Management IC (PMIC).
+> +
+> +  See also Documentation/devicetree/bindings/mfd/samsung,s2mps11.yaml fo=
 r
->> +  Management IC (PMIC).
->> +
->> +  See also Documentation/devicetree/bindings/mfd/samsung,s2mps11.yaml f=
-or
->> +  additional information and example.
->> +
->> +allOf:
->> +  - $ref: power-supply.yaml#
->> +
->> +properties:
->> +  compatible:
->> +    enum:
->> +      - samsung,s2mu005-charger
->
-> Review from v1 still applies. I think you ignored several reviews, so I
-> will mark entire patchset as changes requested.
+> +  additional information and example.
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - samsung,s2mu005-muic
+> +
+> +  connector:
+> +    $ref: /schemas/connector/usb-connector.yaml#
+> +
+> +  port:
+> +    $ref: /schemas/graph.yaml#/properties/port
 
-Somehow I missed this one... anyways I address them here:
+A v1 review from Conor says:
 
-  Why do you need a dedicated child node for this? It's got one property,
-  other than the compatible, that you're using. It could easily just go
-  in the parent without a dedicated node etc.
+  Why does this need a dedicated child node for just a port property?
 
-The dt node also references a simple-battery node, that's why it's
-required.
+In v3, connector is added. This now has the same properties as
+maxim,max14526. If this still applies, it would be nice to have more
+insight...
 
->
-> Best regards,
-> Krzysztof
+> +
+> +required:
+> +  - compatible
+> +  - connector
+> +  - port
+> +
+> +additionalProperties: false
 
