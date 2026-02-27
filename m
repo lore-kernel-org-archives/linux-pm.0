@@ -1,248 +1,331 @@
-Received: from mail-pl1-f174.google.com (mail-pl1-f174.google.com [209.85.214.174])
+Received: from mail-ed1-f44.google.com (mail-ed1-f44.google.com [209.85.208.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50A7733A71C
-	for <linux-pm@vger.kernel.org>; Fri, 27 Feb 2026 16:55:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.174
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772211355; cv=none; b=g58ze7k5fQP29/Yvt2l3lY26dF1buV63NoGIqpRpWtA/PAHK4IXanRjSbpRhix69ERT9wCvFCB/wn9EEeoVEgsGX4CABdiIlGzJWN4yHqUNjzJj/ae543wIIBfIUslG3LkyH78MZWdQCxQmweHpsXQtZ+wqQ0MSQMkHVVxmJ59A=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772211355; c=relaxed/simple;
-	bh=8QooufOo4pPMQ94Tm+1S+IKUXQJzBKWDChzX4qil09A=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B85B035A39F
+	for <linux-pm@vger.kernel.org>; Fri, 27 Feb 2026 17:00:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.44
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1772211633; cv=pass; b=b5bDVIFyMY85BffWB2oIkbgcH77dD1Y+kXFsqWUiRsrJDXdjv57WUYFv6iJN+eNj+VNLtVNpXGUAVRBWghcn6Pt+fpqx4Lv2e1hYI1YB3z76WSW4igZn3aAzQTu/nidy9ZJcQbPt4YgcK3a2PmtFpNXMlX6qO+Db9pNH3/6/UGY=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1772211633; c=relaxed/simple;
+	bh=I4x6DOk2cPSVl5wi5wU4uIp+LHt0Dmmaq3gwfuy85kU=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=he2u/+XPJdDkdj/WFjdql5cCDgwRvvwbjqaDqPMYtreXzcKTKg1hOB8+5hAapsFtaFte0freIjH/jWA9VyBt/tcJdPOYrqRZjfdUZ6J05crhcDNS5OCph3YEo7RkgJbI813rp6zhSEEeuzinxU72Tgae83Q5X1tuxIYHFLwXY+Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.214.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-pl1-f174.google.com with SMTP id d9443c01a7336-2adc1d9ec56so15813645ad.0
-        for <linux-pm@vger.kernel.org>; Fri, 27 Feb 2026 08:55:54 -0800 (PST)
+	 To:Cc:Content-Type; b=FViLZueldSwE9aNvwUJztAcWwcwRtWcwKWSqADMePrtRdD1Y+1FGWdH3EQHE2r2mfa3VVRU0FgdzBkyNXvd8D6/H9dBQoSwnRtSAxcwtsMhthxvX1c7/D7Z9lNRhnl+EvWmQU4YIE/wQbGQMsbBFOVR2qFXhORdMMvV7Xahxv1o=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=HpsN0kU0; arc=pass smtp.client-ip=209.85.208.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="HpsN0kU0"
+Received: by mail-ed1-f44.google.com with SMTP id 4fb4d7f45d1cf-65f73d68faeso3692950a12.3
+        for <linux-pm@vger.kernel.org>; Fri, 27 Feb 2026 09:00:30 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1772211629; cv=none;
+        d=google.com; s=arc-20240605;
+        b=feiZtihoDnTpP4u4wijaB3qdezXEqo6XlGoQjywv1lt9h8xExFL8sDrYb6N0zMjeaf
+         YzJiPyVPlm/exoQU3B6DThFwHg7wgWuNJOUCyuOl4gZipKisCkCYbmG8eB/tPdyaldvq
+         UKe39owoqu7NwURxIsEGNcsbmcHo9rsq7MHNOTX9fPWl6m5ESbaxjFxwFn0JYvLJb+6j
+         lHJjqgFAfXN9fxBr5RavRiTzpiyToQApiX+yO9ItDYKgBFQUPYpJ4lqTa1a2VJEDKkdR
+         9FSvYc/84tbu3iFgAXHfzpyMfaMo/XBpmo9HhUBp0IS20we4MYjQsiqsBB7tP36ZeCdk
+         bo8w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=hLWMlnv2U7TOk00daGoljagYqYJc1c1eO9SPI/R+a/4=;
+        fh=frow23kIK1P/MFK1ehRNCkqvqetsB73Ms1jWHOSgoJY=;
+        b=cTG6GAqaHf/zJid0uW75LnTCvzSgl4qlb28KDiKb/juNaS8VJRTuyQmFDkz7AGenAw
+         haITeOIrK9ZZlvpxMKGGQc+gatjhhzHtQt/FE8olxfA/o5rmoNBRJ5SgllK/S4QgO2Do
+         VC1sItkDWc4naM0AGrVJe9LWiUwLuZB2H0RiJLOx/xO3xkCTVrAINoTCsHaXrqOqmMgB
+         mCwmtTWg4SFgniweiF3b+NAyZpo9Pgyb+TU//rt1f7Mkj1CfKK93eMJr7Y2F9BBsC1YG
+         25YOdybVqUeePjJh8Vvs7R0+Y0vCuArgFn0MPNkSEG7Q2EXW0Imeudn7Gtxu2pMOzWVk
+         rhmQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1772211629; x=1772816429; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=hLWMlnv2U7TOk00daGoljagYqYJc1c1eO9SPI/R+a/4=;
+        b=HpsN0kU087m9Xadit0IMPsvIRTD6UWJvZPU+dlPVDgfpBRZ/A/R0RaCwbXxqrQbSxM
+         m16n3bo+1Z+JYz8XXNDHta0PFMc5k0gcS909oCpz757jm9Pr8OHeXmXVnyXj7r9yP7Us
+         1SlYwZnVw9eIrRXdmIKtckn9siLharOJsyCrPpmZhvGpjI0oj4IHse8bRawlM20GAfDS
+         4wTt5HcMrB4uXYAZODMKAo8uyZF9QkdMcUn1pQN0bZ5rpUWMrbDkolik0hKTaiMGPlVD
+         R+60z2o1lJtcbrBZcOh1BAXJ5sVRZaw5DpQImCqxe1+6rwS2mU04KmnFHQ+DHvZN3zOJ
+         gB1A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772211354; x=1772816154;
+        d=1e100.net; s=20230601; t=1772211629; x=1772816429;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=AIGPgG8NajjCLfKfqfkEsLDhUiGu4xrfbhUgqAmvE/8=;
-        b=Aiwq/37AEjw1JUgj3/aY3sPmPRJdsfuK0nZnfcPP7gaCYg1KlDD5AoLlHCQ5K6iWuz
-         N5r4MmWjCYXfKYFiecRrLJc+L0VJSlOo0QqUTCLedEwrjgK7JPJC4BpvX9T4ukKkLraU
-         7Hsy0Mp1mz3TDMk4ygVbynhlnO+jdS1jttblSiBn6ZUwDRC4noFFL9iFv9OdpklikVsZ
-         IJd1J03Mxk0MxoPet8yfYw29QdxeLnd2y/4toqLobCPl5A31CuHx8N4FT1nxc0wL7v5V
-         hK/6Z1U8HA1rADr6j6TpnCQZgyaUBPRqr/zoyOni7HCV1TNyZTRUJaTLxzk5SLdkMQH8
-         fuBA==
-X-Forwarded-Encrypted: i=1; AJvYcCVPEuSJOMvDNjZ8EaGQa4YcdTBIkRZPItCryDEthjWSuGRVhrl+509dfsR2cQE7m+RWhvYATERqAQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz5JvrHLxNse9EiGt0taymZKwSh9LYRibD4pAe9YJ8dBEHpwFso
-	OcfX5vY3EQQ/vbADuDZT9b30KMpYfFHer3AsK/6w/vInXrlO87BR4oKgs1h/ROCbWGo=
-X-Gm-Gg: ATEYQzxMzJYdPb7ag5tzvvftP70eqUyltTsswJtHUmmFQt2hKkiHA6N5Cg64T3wNFJV
-	WyJULsOODeEXIZDcR6bjNTjnbFzbp3rHoGd8lT6WimQoz+sMtJDB9VzyGzu+uNlZt4R/CZXZKrD
-	YfAzVeCzPAaoUFF9B3rr8NDtSBE8mIKNAkgIhuYiZRD0a+uqc6Eqsh7wp5tJi6ziwA22KHbbFU3
-	PnjOtp711PpegG6oTMPdMXzOmpmUWglGLvS1YsDdR55yQv05eX/bGEAF0Ozlbxa62Y8vBRQnevN
-	IZ3i433VIRxu54C3Wx2ggS4OT5JdaW6sjre8yHxjjjAfXzFPW2EwJi/GQ9HArHxxDaCsUc9SQab
-	pEqxYI4LF3e/v0Igpn78zxzF03PVnEoHv48nnnh5j5QQ8lYt2KHCqy/3QAtj1NyVVulYzKcG8Z/
-	pYKEG0Vaq5oLTv7nk+j6ffHExZ+GHcL09HhrXhZRczhnb/NI3DE7SohqeQx6Vg1KfJyxQYoQ==
-X-Received: by 2002:a17:903:38cc:b0:2ad:e02b:4629 with SMTP id d9443c01a7336-2ae2e4da166mr36008035ad.50.1772211353457;
-        Fri, 27 Feb 2026 08:55:53 -0800 (PST)
-Received: from mail-dl1-f44.google.com (mail-dl1-f44.google.com. [74.125.82.44])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2adfb6c4dd0sm61927455ad.70.2026.02.27.08.55.53
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 27 Feb 2026 08:55:53 -0800 (PST)
-Received: by mail-dl1-f44.google.com with SMTP id a92af1059eb24-12732e6a123so344959c88.1
-        for <linux-pm@vger.kernel.org>; Fri, 27 Feb 2026 08:55:53 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCU7Oem6fK9nVI5StlSoRRj0y94mnL/k9iFXgAu1LS5CrwfmIBbX8HF6CpSRddTHV43WBf0y4D/9DQ==@vger.kernel.org
-X-Received: by 2002:a05:6102:c01:b0:5f5:33c9:c9b3 with SMTP id
- ada2fe7eead31-5ff32536408mr1676835137.29.1772211026292; Fri, 27 Feb 2026
- 08:50:26 -0800 (PST)
+        bh=hLWMlnv2U7TOk00daGoljagYqYJc1c1eO9SPI/R+a/4=;
+        b=bOvVtapdd5z61ZOYuuvbmk326yFx7XoDWFr6kG8EdFkTwX/vH0eycN/WiN9FssXGlH
+         UXw5jC3Ap6UV8KZwV4nDFQObGD7O4YQzdlZBLm5cFq9Q+BxBfzXMjTnAbPoEOtDtE/4b
+         5e0nNNHij2X6uL5BIGuUXa9Z833kRyYR724xqW/4dcVXSiuAnWrRL2JrFLLaim7lUSM8
+         LdMcHSgk87KiQdadNaoxJFdSUHiOYl6R7E702etKTpCxMgjv/DBf6srKaG3yM3jOGIZW
+         /C78VPjdxaBIaJslrYCj60Q9XTv1AAuER3DHHNkRDcAwT52qaGBg39bgJM22hvtz3KTd
+         /2ZA==
+X-Forwarded-Encrypted: i=1; AJvYcCUMnmd+d9jSXfaLnGkhuur8jRTm3qrWU01tl24SfUfuYw7AvEzUkPN/MMbMSDWNtuUwRrc8ofDLuA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxKPYVvj1UteDO6KLevzv1IV/0llWXebQbNSIoEJ6LHB14/M9DH
+	rClevrzdH5zp139EhQl4KIONsZdBLphKdws2U5DjsuTBzoMGGXLQBr1iEqHF4V1Vj4prw73lp3Y
+	aC59SB1H0JUUumnuiZWco8MesA8p4XqM0uZ5UjHY89w==
+X-Gm-Gg: ATEYQzwz3gOMCasExE9DvWW9/gju/e2Moyza0KIMZObS8YTZNpefHzGfDWQIVlA+2pR
+	BwdOqSB8Gxieg+qVECjzzNau017ZCmaPmuaOwjfFkwiXVD6PFbs6Dg1aB1Caehkd20mDOt4VrOm
+	DI1EqY7PwzuU2IBDLfiUsoap9z+m3BDRXVxONSbBc/LVc/FLD8PiF7w1FDZR09aRL/jAFJcAYvi
+	mbzsu5J1vVNXGDorQf1sGNMFYkVTU22cm8EShAS03g1KWSwu4nJvSF38KGCkal08V2CeFfU65z+
+	gSb6D2zZfndL7ZMvhf9hAGohtrSiGXyr
+X-Received: by 2002:a05:6402:1e8e:b0:658:d18e:e8 with SMTP id
+ 4fb4d7f45d1cf-65fde4c92e6mr2188556a12.27.1772211628966; Fri, 27 Feb 2026
+ 09:00:28 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260227135428.783983-1-herve.codina@bootlin.com> <20260227135428.783983-4-herve.codina@bootlin.com>
-In-Reply-To: <20260227135428.783983-4-herve.codina@bootlin.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 27 Feb 2026 17:50:14 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdUAHXNbGfJFcUMQbzPqRS0S_RErU8u7t=AdmX0ZFQMjhQ@mail.gmail.com>
-X-Gm-Features: AaiRm53ZqgozcqNHytSHwR_CUbVuY8sQSeRMANHqThlNEOeyZsxQir9SPbAYLBo
-Message-ID: <CAMuHMdUAHXNbGfJFcUMQbzPqRS0S_RErU8u7t=AdmX0ZFQMjhQ@mail.gmail.com>
-Subject: Re: [PATCH v5 03/28] of: dynamic: Fix overlayed devices not probing
- because of fw_devlink
-To: Herve Codina <herve.codina@bootlin.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Kalle Niemi <kaleposti@gmail.com>, Matti Vaittinen <mazziesaccount@gmail.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, Michael Turquette <mturquette@baylibre.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
-	Wolfram Sang <wsa+renesas@sang-engineering.com>, Peter Rosin <peda@axentia.se>, 
-	Arnd Bergmann <arnd@arndb.de>, Saravana Kannan <saravanak@kernel.org>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Charles Keepax <ckeepax@opensource.cirrus.com>, 
-	Richard Fitzgerald <rf@opensource.cirrus.com>, David Rhodes <david.rhodes@cirrus.com>, 
-	Linus Walleij <linusw@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, 
-	Mark Brown <broonie@kernel.org>, Len Brown <lenb@kernel.org>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Daniel Scally <djrscally@gmail.com>, 
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
-	Sakari Ailus <sakari.ailus@linux.intel.com>, Davidlohr Bueso <dave@stgolabs.net>, 
-	Jonathan Cameron <jonathan.cameron@huawei.com>, Dave Jiang <dave.jiang@intel.com>, 
-	Alison Schofield <alison.schofield@intel.com>, Vishal Verma <vishal.l.verma@intel.com>, 
-	Ira Weiny <ira.weiny@intel.com>, Dan Williams <dan.j.williams@intel.com>, 
-	Shawn Guo <shawnguo@kernel.org>, Wolfram Sang <wsa@kernel.org>, linux-kernel@vger.kernel.org, 
-	driver-core@lists.linux.dev, imx@lists.linux.dev, 
-	linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org, 
-	linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-pci@vger.kernel.org, linux-sound@vger.kernel.org, 
-	patches@opensource.cirrus.com, linux-gpio@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-spi@vger.kernel.org, 
-	linux-acpi@vger.kernel.org, linux-cxl@vger.kernel.org, 
-	Allan Nielsen <allan.nielsen@microchip.com>, Horatiu Vultur <horatiu.vultur@microchip.com>, 
-	Steen Hegelund <steen.hegelund@microchip.com>, Luca Ceresoli <luca.ceresoli@bootlin.com>, 
-	Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Saravana Kannan <saravanak@google.com>
+References: <20260227-max77759-fg-v2-0-e50be5f191f0@linaro.org> <20260227-max77759-fg-v2-9-e50be5f191f0@linaro.org>
+In-Reply-To: <20260227-max77759-fg-v2-9-e50be5f191f0@linaro.org>
+From: Peter Griffin <peter.griffin@linaro.org>
+Date: Fri, 27 Feb 2026 17:00:17 +0000
+X-Gm-Features: AaiRm51_hTA37XjdCfno31Y5GnQDl6D_8iR_DXyKyfcVXTMh4GcfcDJcYSRKYgY
+Message-ID: <CADrjBPqo0+=GrVSxv_sg5=sCGXZiK9uHjr1FgwXuy-g8FzhJKg@mail.gmail.com>
+Subject: Re: [PATCH v2 09/11] power: supply: max17042: initial support for
+ Maxim MAX77759
+To: =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
+Cc: Hans de Goede <hansg@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
+	Marek Szyprowski <m.szyprowski@samsung.com>, 
+	Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, Purism Kernel Team <kernel@puri.sm>, 
+	Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Tudor Ambarus <tudor.ambarus@linaro.org>, Juan Yescas <jyescas@google.com>, 
+	Amit Sunil Dhamne <amitsd@google.com>, kernel-team@android.com, linux-pm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Herv=C3=A9,
-
-On Fri, 27 Feb 2026 at 14:56, Herve Codina <herve.codina@bootlin.com> wrote=
-:
-> From: Saravana Kannan <saravanak@google.com>
+On Fri, 27 Feb 2026 at 07:15, Andr=C3=A9 Draszik <andre.draszik@linaro.org>=
+ wrote:
 >
-> When an overlay is applied, if the target device has already probed
-> successfully and bound to a device, then some of the fw_devlink logic
-> that ran when the device was probed needs to be rerun. This allows newly
-> created dangling consumers of the overlayed device tree nodes to be
-> moved to become consumers of the target device.
+> The Maxim MAX77759 is a companion PMIC intended for use in mobile
+> phones and tablets. It is used on Google Pixel 6 and 6 Pro (oriole and
+> raven). Amongst others, it contains a fuel gauge that is similar to the
+> ones supported by this driver.
 >
-> Fixes: 1a50d9403fb9 ("treewide: Fix probing of devices in DT overlays")
-> Reported-by: Herve Codina <herve.codina@bootlin.com>
-> Closes: https://lore.kernel.org/lkml/CAMuHMdXEnSD4rRJ-o90x4OprUacN_rJgyo8=
-x6=3D9F9rZ+-KzjOg@mail.gmail.com/
-> Closes: https://lore.kernel.org/all/20240221095137.616d2aaa@bootlin.com/
-> Closes: https://lore.kernel.org/lkml/20240312151835.29ef62a0@bootlin.com/
-> Signed-off-by: Saravana Kannan <saravanak@google.com>
-> Link: https://lore.kernel.org/lkml/20240411235623.1260061-3-saravanak@goo=
-gle.com/
-> [Herve: Rebase on top of recent kernel and use get_device_from_fwnode()]
-> [Herve: Add the call to driver_deferred_probe_trigger()]
+> The fuel gauge can measure battery charge and discharge current,
+> battery voltage, battery temperature, and the Type C connector's
+> temperature.
+>
+> The MAX77759 incorporates the Maxim ModelGauge m5 algorithm. It, as
+> well as previous generations like m3 on max17047/max17050, requires
+> the host to save/restore some register values across power cycles to
+> maintain full accuracy. Extending the driver for such support is out of
+> scope in this initial commit.
+>
+> Signed-off-by: Andr=C3=A9 Draszik <andre.draszik@linaro.org>
+>
+> ---
 
-Thanks, that last change did the trick, finally!
+Reviewed-by: Peter Griffin <peter.griffin@linaro.org>
 
-> Signed-off-by: Herve Codina <herve.codina@bootlin.com>
-
-Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
-
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -235,6 +235,79 @@ static void __fw_devlink_pickup_dangling_consumers(s=
-truct fwnode_handle *fwnode,
->                 __fw_devlink_pickup_dangling_consumers(child, new_sup);
+> v2: fix typo MAX77759_T_convert -> MAX77759_Tconvert
+> ---
+>  drivers/power/supply/max17042_battery.c | 59 +++++++++++++++++++++++++++=
++++---
+>  include/linux/power/max17042_battery.h  | 24 ++++++++++++--
+>  2 files changed, 77 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supp=
+ly/max17042_battery.c
+> index 823533ea5a17..44626abdab34 100644
+> --- a/drivers/power/supply/max17042_battery.c
+> +++ b/drivers/power/supply/max17042_battery.c
+> @@ -654,7 +654,8 @@ static void max17042_write_config_regs(struct max1704=
+2_chip *chip)
+>         regmap_write(map, MAX17042_RelaxCFG, config->relax_cfg);
+>         if (chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX17047 ||
+>                         chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX17050=
+ ||
+> -                       chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX17055=
+)
+> +                       chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX17055=
+ ||
+> +                       chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX77759=
+)
+>                 regmap_write(map, MAX17047_FullSOCThr,
+>                                                 config->full_soc_thresh);
 >  }
+> @@ -791,7 +792,8 @@ static inline void max17042_override_por_values(struc=
+t max17042_chip *chip)
 >
-> +static void fw_devlink_pickup_dangling_consumers(struct device *dev)
-> +{
-> +       struct fwnode_handle *child;
-> +
-> +       guard(mutex)(&fwnode_link_lock);
-> +
-> +       fwnode_for_each_available_child_node(dev->fwnode, child)
-> +               __fw_devlink_pickup_dangling_consumers(child, dev->fwnode=
-);
-> +       __fw_devlink_link_to_consumers(dev);
-> +}
-> +
-> +/**
-> + * fw_devlink_refresh_fwnode - Recheck the tree under this firmware node
-> + * @fwnode: The fwnode under which the fwnode tree has changed
-> + *
-> + * This function is mainly meant to adjust the supplier/consumer depende=
-ncies
-> + * after a fwnode tree overlay has occurred.
-> + */
-> +void fw_devlink_refresh_fwnode(struct fwnode_handle *fwnode)
-> +{
-> +       struct device *dev;
-> +
-> +       /*
-> +        * Find the closest ancestor fwnode that has been converted to a =
-device
-> +        * that can bind to a driver (bus device).
-> +        */
-> +       fwnode_handle_get(fwnode);
-> +       do {
-> +               if (fwnode->flags & FWNODE_FLAG_NOT_DEVICE)
-> +                       continue;
-> +
-> +               dev =3D get_device_from_fwnode(fwnode);
-> +               if (!dev)
-> +                       continue;
-> +
-> +               if (dev->bus)
-> +                       break;
-> +
-> +               put_device(dev);
-> +       } while ((fwnode =3D fwnode_get_next_parent(fwnode)));
-> +
-> +       /*
-> +        * If none of the ancestor fwnodes have (yet) been converted to a=
- device
-> +        * that can bind to a driver, there's nothing to fix up.
-> +        */
-> +       if (!fwnode)
-> +               return;
-> +
-> +       WARN(device_is_bound(dev) && dev->links.status !=3D DL_DEV_DRIVER=
-_BOUND,
-> +            "Don't multithread overlaying and probing the same device!\n=
-");
-> +
-> +       /*
-> +        * If the device has already bound to a driver, then we need to r=
-edo
-> +        * some of the work that was done after the device was bound to a
-> +        * driver. If the device hasn't bound to a driver, running thing =
-too
-
-things
-
-> +        * soon would incorrectly pick up consumers that it shouldn't.
-> +        */
-> +       if (dev->links.status =3D=3D DL_DEV_DRIVER_BOUND) {
-> +               fw_devlink_pickup_dangling_consumers(dev);
-> +               /*
-> +                * Some of dangling consumers could have been put previou=
-sly in
-> +                * the deferred probe list due to the unavailability of t=
-heir
-> +                * suppliers. Those consumers have been picked up and som=
-e of
-> +                * their suppliers links have been update. Time to re-try=
- their
-
-updated
-
-> +                * probe sequence.
-> +                */
-> +               driver_deferred_probe_trigger();
-> +       }
-> +
-> +       put_device(dev);
-> +       fwnode_handle_put(fwnode);
-> +}
-> +
->  static DEFINE_MUTEX(device_links_lock);
->  DEFINE_STATIC_SRCU(device_links_srcu);
+>         if ((chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX17042) ||
+>             (chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX17047) ||
+> -           (chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX17050)) {
+> +           (chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX17050) ||
+> +           (chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX77759)) {
+>                 max17042_override_por(map, MAX17042_IAvg_empty, config->i=
+avg_empty);
+>                 max17042_override_por(map, MAX17042_TempNom, config->temp=
+_nom);
+>                 max17042_override_por(map, MAX17042_TempLim, config->temp=
+_lim);
+> @@ -800,7 +802,8 @@ static inline void max17042_override_por_values(struc=
+t max17042_chip *chip)
 >
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+>         if ((chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX17047) ||
+>             (chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX17050) ||
+> -           (chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX17055)) {
+> +           (chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX17055) ||
+> +           (chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX77759)) {
+>                 max17042_override_por(map, MAX17047_V_empty, config->vemp=
+ty);
+>         }
+>  }
+> @@ -1023,6 +1026,45 @@ static const struct regmap_config max17042_regmap_=
+config =3D {
+>         .val_format_endian =3D REGMAP_ENDIAN_NATIVE,
+>  };
+>
+> +static const struct regmap_range max77759_fg_registers[] =3D {
+> +       regmap_reg_range(MAX17042_STATUS, MAX77759_MixAtFull),
+> +       regmap_reg_range(MAX17042_VFSOC0Enable, MAX17042_VFSOC0Enable),
+> +       regmap_reg_range(MAX17042_MLOCKReg1, MAX17042_MLOCKReg2),
+> +       regmap_reg_range(MAX17042_MODELChrTbl, MAX17055_TimerH),
+> +       regmap_reg_range(MAX77759_IIn, MAX77759_IIn),
+> +       regmap_reg_range(MAX17055_AtQResidual, MAX17055_AtAvCap),
+> +       regmap_reg_range(MAX17042_OCVInternal, MAX17042_OCVInternal),
+> +       regmap_reg_range(MAX17042_VFSOC, MAX17042_VFSOC),
+> +};
+> +
+> +static const struct regmap_range max77759_fg_ro_registers[] =3D {
+> +       regmap_reg_range(MAX17042_FSTAT, MAX17042_FSTAT),
+> +       regmap_reg_range(MAX17042_OCVInternal, MAX17042_OCVInternal),
+> +       regmap_reg_range(MAX17042_VFSOC, MAX17042_VFSOC),
+> +};
+> +
+> +static const struct regmap_access_table max77759_fg_write_table =3D {
+> +       .yes_ranges =3D max77759_fg_registers,
+> +       .n_yes_ranges =3D ARRAY_SIZE(max77759_fg_registers),
+> +       .no_ranges =3D max77759_fg_ro_registers,
+> +       .n_no_ranges =3D ARRAY_SIZE(max77759_fg_ro_registers),
+> +};
+> +
+> +static const struct regmap_access_table max77759_fg_rd_table =3D {
+> +       .yes_ranges =3D max77759_fg_registers,
+> +       .n_yes_ranges =3D ARRAY_SIZE(max77759_fg_registers),
+> +};
+> +
+> +static const struct regmap_config max77759_fg_regmap_cfg =3D {
+> +       .reg_bits =3D 8,
+> +       .val_bits =3D 16,
+> +       .max_register =3D 0xff,
+> +       .wr_table =3D &max77759_fg_write_table,
+> +       .rd_table =3D &max77759_fg_rd_table,
+> +       .val_format_endian =3D REGMAP_ENDIAN_NATIVE,
+> +       .cache_type =3D REGCACHE_NONE,
+> +};
+> +
+>  static const struct power_supply_desc max17042_psy_desc =3D {
+>         .name           =3D "max170xx_battery",
+>         .type           =3D POWER_SUPPLY_TYPE_BATTERY,
+> @@ -1049,6 +1091,7 @@ static int max17042_probe(struct i2c_client *client=
+, struct device *dev, int irq
+>  {
+>         struct i2c_adapter *adapter =3D client->adapter;
+>         const struct power_supply_desc *max17042_desc =3D &max17042_psy_d=
+esc;
+> +       const struct regmap_config *regmap_config;
+>         struct power_supply_config psy_cfg =3D {};
+>         struct max17042_chip *chip;
+>         int ret;
+> @@ -1064,7 +1107,12 @@ static int max17042_probe(struct i2c_client *clien=
+t, struct device *dev, int irq
+>
+>         chip->dev =3D dev;
+>         chip->chip_type =3D chip_type;
+> -       chip->regmap =3D devm_regmap_init_i2c(client, &max17042_regmap_co=
+nfig);
+> +
+> +       if (chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX77759)
+> +               regmap_config =3D &max77759_fg_regmap_cfg;
+> +       else
+> +               regmap_config =3D &max17042_regmap_config;
+> +       chip->regmap =3D devm_regmap_init_i2c(client, regmap_config);
+>         if (IS_ERR(chip->regmap))
+>                 return dev_err_probe(dev, PTR_ERR(chip->regmap),
+>                                      "Failed to initialize regmap\n");
+> @@ -1245,6 +1293,8 @@ static const struct of_device_id max17042_dt_match[=
+] __used =3D {
+>                 .data =3D (void *) MAXIM_DEVICE_TYPE_MAX17055 },
+>         { .compatible =3D "maxim,max77705-battery",
+>                 .data =3D (void *) MAXIM_DEVICE_TYPE_MAX17047 },
+> +       { .compatible =3D "maxim,max77759-fg",
+> +               .data =3D (void *) MAXIM_DEVICE_TYPE_MAX77759 },
+>         { .compatible =3D "maxim,max77849-battery",
+>                 .data =3D (void *) MAXIM_DEVICE_TYPE_MAX17047 },
+>         { },
+> @@ -1257,6 +1307,7 @@ static const struct i2c_device_id max17042_id[] =3D=
+ {
+>         { "max17047", MAXIM_DEVICE_TYPE_MAX17047 },
+>         { "max17050", MAXIM_DEVICE_TYPE_MAX17050 },
+>         { "max17055", MAXIM_DEVICE_TYPE_MAX17055 },
+> +       { "max77759-fg", MAXIM_DEVICE_TYPE_MAX77759 },
+>         { "max77849-battery", MAXIM_DEVICE_TYPE_MAX17047 },
+>         { }
+>  };
+> diff --git a/include/linux/power/max17042_battery.h b/include/linux/power=
+/max17042_battery.h
+> index c417abd2ab70..05097f08ea36 100644
+> --- a/include/linux/power/max17042_battery.h
+> +++ b/include/linux/power/max17042_battery.h
+> @@ -105,7 +105,7 @@ enum max17042_register {
+>
+>         MAX17042_OCV            =3D 0xEE,
+>
+> -       MAX17042_OCVInternal    =3D 0xFB,  /* MAX17055 VFOCV */
+> +       MAX17042_OCVInternal    =3D 0xFB, /* MAX17055/77759 VFOCV */
+>
+>         MAX17042_VFSOC          =3D 0xFF,
+>  };
+> @@ -156,7 +156,7 @@ enum max17055_register {
+>         MAX17055_AtAvCap        =3D 0xDF,
+>  };
+>
+> -/* Registers specific to max17047/50/55 */
+> +/* Registers specific to max17047/50/55/77759 */
+>  enum max17047_register {
+>         MAX17047_QRTbl00        =3D 0x12,
+>         MAX17047_FullSOCThr     =3D 0x13,
+> @@ -167,12 +167,32 @@ enum max17047_register {
+>         MAX17047_QRTbl30        =3D 0x42,
+>  };
+>
+> +enum max77759_register {
+> +       MAX77759_AvgTA0         =3D 0x26,
+> +       MAX77759_AtTTF          =3D 0x33,
+> +       MAX77759_Tconvert       =3D 0x34,
+> +       MAX77759_AvgCurrent0    =3D 0x3B,
+> +       MAX77759_THMHOT         =3D 0x40,
+> +       MAX77759_CTESample      =3D 0x41,
+> +       MAX77759_ISys           =3D 0x43,
+> +       MAX77759_AvgVCell0      =3D 0x44,
+> +       MAX77759_RlxSOC         =3D 0x47,
+> +       MAX77759_AvgISys        =3D 0x4B,
+> +       MAX77759_QH0            =3D 0x4C,
+> +       MAX77759_MixAtFull      =3D 0x4F,
+> +       MAX77759_VSys           =3D 0xB1,
+> +       MAX77759_TAlrtTh2       =3D 0xB2,
+> +       MAX77759_VByp           =3D 0xB3,
+> +       MAX77759_IIn            =3D 0xD0,
+> +};
+> +
+>  enum max170xx_chip_type {
+>         MAXIM_DEVICE_TYPE_UNKNOWN       =3D 0,
+>         MAXIM_DEVICE_TYPE_MAX17042,
+>         MAXIM_DEVICE_TYPE_MAX17047,
+>         MAXIM_DEVICE_TYPE_MAX17050,
+>         MAXIM_DEVICE_TYPE_MAX17055,
+> +       MAXIM_DEVICE_TYPE_MAX77759,
+>
+>         MAXIM_DEVICE_TYPE_NUM
+>  };
+>
+> --
+> 2.53.0.473.g4a7958ca14-goog
+>
