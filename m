@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40D49453493;
-	Fri, 27 Feb 2026 20:39:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 245E94779BB;
+	Fri, 27 Feb 2026 20:39:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772224760; cv=none; b=QjHrO73ZwRys7ROMInR023KYWRED8QNR3F1nV7aY7Ztw248INU2MEHVFmb4F0nRxbL8bhlvK2R36lkNW6kEeCHz8V3qKXRmMrJInpD1Su16GTZmY1ahCofaJnpjIU65t2Z1sNhe0qy8DmL21Lm/yMZj+PdMisTLJ5Ua6wyDfuv0=
+	t=1772224792; cv=none; b=LCgOkomt2JQP7pCkrY6X9SRJ9XWgRGr9wONYfRYKs+fxSpRMTAGosFO6XQIs5LZ85qxkCKhFT+csOqvrHMIo+QOTPIWNO/biidAuMH2LqRUniXRttbVh5St1Q0mThSZaMD+46ptB3KoX1JPT2WQG/G88FyXZbw7bwxnd/fVIjDI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772224760; c=relaxed/simple;
-	bh=C0JYE9g4fNlb54nOcYXLDnmpOOfKqRtc3+52X6TvFkI=;
+	s=arc-20240116; t=1772224792; c=relaxed/simple;
+	bh=6KccSK+/RNVKVO6WapQi1OO/X6L6RhvwEhhnUVSuMAk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Oh5Cxqo39UzA5asqu/MOnBZh96Et0HZ9szNKYsbjsXuSZvDEDWIr52htbqEheqtT+jtuNAYLfm2+2sDsKGfX27MRJ1Mf0tsgPIDhAWLJW+bpl1/a22TqtXZC0eBOriRFKTsc4wiPsrewFlRYXKmkvmqIvuZXy6NHH0lRZwzzqZ0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CesjGCgp; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:Content-Type; b=YQLfNZV4u2QO5q8qOKDri4/6LGRDyEUMRm1U4Wxs+0ffppEfhaHFwA5uImek/IjZGSk/UQDhop1UoPZMxV93rZxUMA9Oq9o62PerQqQ0ZQQxObmSXvUOnr6LdOeNAqeSQ7S1gajvOnyTToif5AB52hKZZXt4zV83/vwnUnkpnxw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RxJ5UGqT; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CesjGCgp"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D3D0C116C6;
-	Fri, 27 Feb 2026 20:39:12 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RxJ5UGqT"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A931CC2BC87;
+	Fri, 27 Feb 2026 20:39:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772224759;
-	bh=C0JYE9g4fNlb54nOcYXLDnmpOOfKqRtc3+52X6TvFkI=;
+	s=k20201202; t=1772224791;
+	bh=6KccSK+/RNVKVO6WapQi1OO/X6L6RhvwEhhnUVSuMAk=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=CesjGCgpHbnBs+6sVaZ1GtPvtTHPtngBOYi0yU7cJOzflnqlkNKD1zRkmSQtRHvuf
-	 6RzAWIzv+oglcgdELZAMMmLzdYi0OniFpNcJ7DvoeUrxBveINOzXB19noW0WPaJNxm
-	 7smt+degjri7ytTbnFLOLsDx03xtp2ABokJlba8Ifr1d1lWv2GatQUS2NJxcy5WIQl
-	 MG3ZmSXyib5rydb/zPJc7Zy+vvDD+K7hXdh6GjT59/YHHwXwPUWqhqOSjaVkNWnmu8
-	 33uOroiy7FwbgRu2ld9UOJHpsY/sIMZ3aSL9CQY7NjHhlsf/w4SnwmaQVVhWLc+beN
-	 Q+UM5TNtP5H8A==
-Message-ID: <7e93021d-53dd-4162-97e6-3bca1f46a0c6@kernel.org>
-Date: Fri, 27 Feb 2026 21:39:11 +0100
+	b=RxJ5UGqTMhNKcz3e5zUuS7yqBpKIKGYKnFYDUOtnD5ZGQYiDfsCs3wCJeST9JFUvq
+	 sHSPFQSEqskEEwbbJoyQ88m8jLoOqmfJfyN1omaSGxymfsx8E/0r9sYdLTnB1Hw0Cu
+	 5JpRAAhg7lQtSdbScJWLdwmqVjf4LuXHQFaFbHzrA3dG5b2kmC7Mb2pnvgsCAIDTv1
+	 cowpF/r/IiyD25YGy6faI6nHyxgGfu3ZQkrjKakFTJYana7ctcU0BXfvDurL0DwtTC
+	 JqWRfL6dzb9UhizOZkPWHGkGcxraV9ms7id1GN/HxwvK+TWTMu45VPdiY4/OgRIude
+	 EwKBgaQ0Od9lw==
+Message-ID: <d95ec932-fbbc-48b0-9ab0-f16eea8a6172@kernel.org>
+Date: Fri, 27 Feb 2026 21:39:43 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,7 +35,7 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 2/5] mm: convert zone lock users to wrappers
+Subject: Re: [PATCH v4 3/5] mm: convert compaction to zone lock wrappers
 To: Dmitry Ilvokhin <d@ilvokhin.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
@@ -53,10 +53,9 @@ To: Dmitry Ilvokhin <d@ilvokhin.com>,
  Shakeel Butt <shakeel.butt@linux.dev>
 Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
  linux-trace-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- "linux-cxl@vger.kernel.orgkernel-team"@meta.com,
- SeongJae Park <sj@kernel.org>
+ "linux-cxl@vger.kernel.orgkernel-team"@meta.com
 References: <cover.1772206930.git.d@ilvokhin.com>
- <d26a43ebed2f0f1edb9cfe4fbed16dd31c7a069c.1772206930.git.d@ilvokhin.com>
+ <3a09e46f52cf9f709b0725bc2b648cc5212843b2.1772206930.git.d@ilvokhin.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -103,46 +102,47 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <d26a43ebed2f0f1edb9cfe4fbed16dd31c7a069c.1772206930.git.d@ilvokhin.com>
+In-Reply-To: <3a09e46f52cf9f709b0725bc2b648cc5212843b2.1772206930.git.d@ilvokhin.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 2/27/26 17:00, Dmitry Ilvokhin wrote:
-> Replace direct zone lock acquire/release operations with the
-> newly introduced wrappers.
+> Compaction uses compact_lock_irqsave(), which currently operates
+> on a raw spinlock_t pointer so it can be used for both zone->lock
+> and lruvec->lru_lock. Since zone lock operations are now wrapped,
+> compact_lock_irqsave() can no longer directly operate on a
+> spinlock_t when the lock belongs to a zone.
 > 
-> The changes are purely mechanical substitutions. No functional change
-> intended. Locking semantics and ordering remain unchanged.
+> Split the helper into compact_zone_lock_irqsave() and
+> compact_lruvec_lock_irqsave(), duplicating the small amount of
+> shared logic. As there are only two call sites and both statically
+> know the lock type, this avoids introducing additional abstraction
+> or runtime dispatch in the compaction path.
 > 
-> The compaction path is left unchanged for now and will be
-> handled separately in the following patch due to additional
-> non-trivial modifications.
+> No functional change intended.
 > 
 > Signed-off-by: Dmitry Ilvokhin <d@ilvokhin.com>
 > Acked-by: Shakeel Butt <shakeel.butt@linux.dev>
-> Reviewed-by: SeongJae Park <sj@kernel.org>
 > ---
-
-[...]
-
->  #ifdef CONFIG_COMPACTION
-> @@ -530,11 +531,14 @@ static bool compact_lock_irqsave(spinlock_t *lock, unsigned long *flags,
->   * Returns true if compaction should abort due to fatal signal pending.
->   * Returns false when compaction can continue.
+>  mm/compaction.c | 33 ++++++++++++++++++++++++---------
+>  1 file changed, 24 insertions(+), 9 deletions(-)
+> 
+> diff --git a/mm/compaction.c b/mm/compaction.c
+> index fa0e332a8a92..c68fcc416fc7 100644
+> --- a/mm/compaction.c
+> +++ b/mm/compaction.c
+> @@ -503,19 +503,36 @@ static bool test_and_set_skip(struct compact_control *cc, struct page *page)
+>   *
+>   * Always returns true which makes it easier to track lock state in callers.
 >   */
-> -static bool compact_unlock_should_abort(spinlock_t *lock,
-> -		unsigned long flags, bool *locked, struct compact_control *cc)
-> +
-> +static bool compact_unlock_should_abort(struct zone *zone,
-> +					unsigned long flags,
-> +					bool *locked,
-> +					struct compact_control *cc)
+> -static bool compact_lock_irqsave(spinlock_t *lock, unsigned long *flags,
+> -						struct compact_control *cc)
+> -	__acquires(lock)
+> +static bool compact_zone_lock_irqsave(struct zone *zone,
+> +				      unsigned long *flags,
+> +				      struct compact_control *cc)
 
-We tend to use two-tabs on second parameter line; like the existing code
-did.
-
-
-Besides that
+... two tabs :)
 
 Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
