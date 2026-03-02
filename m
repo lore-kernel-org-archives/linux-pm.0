@@ -1,29 +1,34 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59F2B33CEA7;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67A3133EAE6;
 	Mon,  2 Mar 2026 23:42:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772494920; cv=none; b=U+g11jHEbXUkl+QN79eIU7priseXTtpnv1wwmM6dRBKkSoJSYcrTGWdJffqpbJbMaGCct5Eo0u/LScdh0B02tkDUDS9tjq4aYZ0EUWlnrOFq2uTtlsHp000XDivavT6klhlhQwKFb2sFzMLkXfCxlbJwE5lLGfbiCAhZhFdlhv8=
+	t=1772494920; cv=none; b=ixk33t/qLXbSJU6+zdWlAzDRqOPtb7x06A54zv8S9TOYP7cQsfYlDIgpoxTyCaF3K7TFxJ4BGV5qsq0aRjIRL0u8rnzaGLDhmPdtZvoT9/m0AqzMrQJQKy4yVoxnRBJGRRVZuEls3jeaQI8oJnnvReuOhjUJk5ZgpNhGPJwOELE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1772494920; c=relaxed/simple;
-	bh=4zHGyQPVsoBJd3grC9Pvjo/np6QeDvcXiqyuRWMBKA4=;
+	bh=Ibo6q6J6wq9fOgEmwGoItS/j8Y9Vsc5d5uUEb5j+FR8=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=rqCGGxF9tlg8Dl+MPMDlT0BpYcQHM6skB0VX5vEgB8KTtEOL4ntFAlxTrYxuO9gdJab7liE55NtrlsnHq9ZQJlQlSAxavPBAoIOA50loF/qy0LJIOpRBH5fhfFPyTL05l0fQD8HAKTAZ9BYapvYZNLGX3vaHvvaugeeZKGcX+8k=
+	 MIME-Version:Content-Type; b=ff6p3XZL/oQbvoRAMqmC+GZ6saaj3hKR4YyuHPObtOTu3z9c3f1xbrZdQJ1tKie6i7BsIZdXldbSeKjS2yYKFan6XJVVkbU0rXecGFG/CajSV1CnvPHlJ88dRbclZijWIXwORydUNqFkHk4X9Vvv5vEcQrkYRYSqRHp/BH2Ft6s=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E14A7C19423;
-	Mon,  2 Mar 2026 23:41:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2AA6AC2BC9E;
+	Mon,  2 Mar 2026 23:42:00 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 247D2180D08; Tue, 03 Mar 2026 00:41:58 +0100 (CET)
+	id 40B7918125A; Tue, 03 Mar 2026 00:41:58 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, 
- Jaime Saguillo Revilla <jaime.saguillo@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20260219212353.49416-1-jaime.saguillo@gmail.com>
-References: <20260219212353.49416-1-jaime.saguillo@gmail.com>
-Subject: Re: [PATCH] power: supply: cpcap-battery: fix typo in config name
-Message-Id: <177249491813.606802.6689179976776460463.b4-ty@collabora.com>
+To: andersson@kernel.org, konradybcio@kernel.org, robh@kernel.org, 
+ krzk+dt@kernel.org, conor+dt@kernel.org, sre@kernel.org, 
+ heikki.krogerus@linux.intel.com, gregkh@linuxfoundation.org, 
+ Anjelique Melendez <anjelique.melendez@oss.qualcomm.com>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-usb@vger.kernel.org
+In-Reply-To: <20260209204915.1983997-1-anjelique.melendez@oss.qualcomm.com>
+References: <20260209204915.1983997-1-anjelique.melendez@oss.qualcomm.com>
+Subject: Re: (subset) [PATCH v5 0/5] soc: qcom: pmic_glink: Add support for
+ battery management running on SOCCP
+Message-Id: <177249491825.606802.14539050804408850588.b4-ty@collabora.com>
 Date: Tue, 03 Mar 2026 00:41:58 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -36,20 +41,42 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.3
 
 
-On Thu, 19 Feb 2026 21:23:53 +0000, Jaime Saguillo Revilla wrote:
-> Rename cpcap_battery_unkown_data to
-> cpcap_battery_unknown_data to correct a spelling mistake
-> in the identifier.
+On Mon, 09 Feb 2026 12:49:10 -0800, Anjelique Melendez wrote:
+> System On Chip Control Processor (SOCCP) is a subsystem that can have
+> battery management firmware running on it to support Type-C/PD and
+> battery charging. Add support for devices, such as Kaanpali and Glymur,
+> which are running battery management on SOCCP.
 > 
-> No functional change.
-> 
+> Changes since v4:
+>   - Defined Glymur and Kaanapali compatible strings as "base" compatibles
+>   - Split v4 p4/4 into 2 separate patches (v5 p2/5 and v5 p3/5)
+>   - Added Glymur and Kaanapali compatible strings for pmic_glink auxiliary
+>     drivers
+>   - Link: https://lore.kernel.org/all/20260114211759.2740309-1-anjelique.melendez@oss.qualcomm.com/
+> Changes since v3:
+>   - Added "dt-bindings: soc: qcom: qcom,pmic-glink: Update X1E80100 compatible string"
+>     and "usb: typec: ucsi: ucsi_glink: Add support for X1E80100" to series
+>   - Corrected bindings dependencies
+>   - Renamed pmic_glink_data structs
+>   - Link: https://lore.kernel.org/all/20251217055655.638594-1-anjelique.melendez@oss.qualcomm.com/
+> Changes since v2:
+>   - Updated bindings dependencies
+>   - Removed qcom,glymur-pmic-glink compatible string from pmic_glink driver list
+>   - Link: https://lore.kernel.org/all/20251027212250.3847537-1-anjelique.melendez@oss.qualcomm.com/
+> Changes since V1:
+>   - Corrected bindings dependencies
+>   - Renamed pmic_glink_data variables
+>   - Dropped "soc: qcom: pmic_glink: Add support for SOCCP remoteproc channels"
+>     since it was applied from its original series:
+>     https://lore.kernel.org/all/176157405464.8818.5887965202916918883.b4-ty@kernel.org/
+>   - Link: https://lore.kernel.org/all/20251017003033.268567-1-anjelique.melendez@oss.qualcomm.com/
 > 
 > [...]
 
 Applied, thanks!
 
-[1/1] power: supply: cpcap-battery: fix typo in config name
-      commit: 3feb95a8e9e54fa9f0cf01652d0edc3a7def0857
+[5/5] power: supply: qcom_battmgr: Add support for Glymur and Kaanapali
+      commit: 1590225fca255d2380c0888608719012fd283436
 
 Best regards,
 -- 
