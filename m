@@ -1,197 +1,154 @@
-Received: from mail-ej1-f45.google.com (mail-ej1-f45.google.com [209.85.218.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19B5F3FB05C
-	for <linux-pm@vger.kernel.org>; Mon,  2 Mar 2026 13:32:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6912136C5A2;
+	Mon,  2 Mar 2026 13:34:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772458346; cv=none; b=CLm+WyeKwF2w4tSRmtqopOPwK1TjTm+l+Gf2hULyeS1NUDu1H9uUz0bBFJvNjyHY7QmAPTOdYtuKGM/D4q/kIANwFUGUARjSenKjU501Ylfj5Va6yhMTwWlFXk2LQyuKyKepWcKwpfWf7CcYfaFIJc8Cl8+z2zIsbajTGjLNVDE=
+	t=1772458486; cv=none; b=C+DdRId+VvDkvIuph4XHUYtSHX+oJG11KTSlAjVaE+xH6zUcaH3vZn/GpwHVtsNTHfRpI0aaptOkJncLlDrLclDg3vqPef87xOrSdeQP9HylKWHo90Lo1omXWAg5GXFBL2UdcZG85B+1s1gMl4FND1tSnC6p2UFTcD1RYJEB+bI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772458346; c=relaxed/simple;
-	bh=RljhWrFUV2Vr3KF+ktWVi6/U6PhZYUjyI1YmlGYnvwc=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=LrE67v3PtcsUGYPZ1tiEO+x9OPG/Z5oUH6iAXOB/WwOCXyXydyyTowiM40zU2jzjOR6oZtz/oF0HJSpfmMgp3Jml8YawCDAdKtH2rgq/ElLsdOz1zZnTA4hsultlhWdnr8dnZn37zuCPsr0KeYJeYPfDbzId3GylJlnndEwx9eA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=iOn9HMwb; arc=none smtp.client-ip=209.85.218.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1772458486; c=relaxed/simple;
+	bh=7f9Gcp4+1LkfzXFPCa7PcQqPFKqy4PcM0mCYaMby60g=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=E5m4ltsgQXCeRA3fZ+/QZg2Z0B8n+kqte4VEv4jYoR6XyZQH5qQYNC37PZ07uTBHxvQ0aEbgj89b/tiq92Okk7rj1+gzSOIDatlv7s7g1I+67KtsJskV0NrLN+Pg8JaZg17H5ZU5Ab9Jbgklo2nBKqeJ50uCISQbCRlSSgtwHGs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cJzFxhlE; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iOn9HMwb"
-Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-b936b85cc71so507395066b.2
-        for <linux-pm@vger.kernel.org>; Mon, 02 Mar 2026 05:32:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1772458342; x=1773063142; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Sgo1gAmw/LJ8DgBY5wJQL6t/OWotxqWFL7Li6v+WLyI=;
-        b=iOn9HMwbiBqMcjLKeKTH8XqkpIF8B6LQLG8j/YgdaExakJxoWnhq67MstNSEVZtzrQ
-         syuvaVn8LVQa5fAqu4Ly7Evn6MXGlmv3XxUVj3iIQTijacmiBQ7sjDzuZbJMRo2cTzKR
-         tSZ1+Xkkp94eUMpzhdlqP8JXjjzAlN3CkPDB6vOf2hM3aA8p2GbJ65vYxOb+sjWi3fkR
-         9dBSzC3s1Q40nj1rEPXDInI/DkfdnK7a4IK522kOAKo3aJYlDphuFsmrGLQBy8eZTA54
-         NergyIngFkSEXjggqZACURvH+ToBADl6+RlOy2C3OtQSvpnQ+pmCB8+Hod4dElV8EB6L
-         jPMw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772458342; x=1773063142;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=Sgo1gAmw/LJ8DgBY5wJQL6t/OWotxqWFL7Li6v+WLyI=;
-        b=BeW6mOYWJM3vfwqwV8MzUwJKk9lmG88DkBsrspajqkdiqHAAe71/oLv8GgE4KQFcWS
-         7cS6qFR+aW/2RHMK+A0dIogdfAi0Vvgb/f0fpOqSICN1fpqCpyRA8nNAl/Re5xi8FYVT
-         prspJ/Rtbs3mk9598b+OsvqFgw/BTsiLoR0UVi//9hJBzboEJlV+aD7U99FiuJFfN9bK
-         5vWzAgaHNAy+sds7lV7j5IGIiR/GF46dI6KIYwboqhrcIHMLfkco28jLO48cEptAIF+1
-         MUG54qJmgGW3NB62ZD/QfawFZPtQTDWNNkCrZFFo7GsQZ3+RQ0FNqwbt4Hsc1n0fdI/Y
-         lbcg==
-X-Forwarded-Encrypted: i=1; AJvYcCUbMvpHv9CUgrjxLJS+17U5uwAnQbSah/5uw+XGdiWcmZgRuVI2i8DoTzIc32SyG7c7mderu9xLCg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyESiVsjmzrb6VulPNea7Mnf1K7Uk2oz/d/ZEpxb3ugwYNRtlwa
-	R/0vvTkkfBTR66kZZe2l1UljSP0itksOPwwKldHjeKbDdVtFJIlRD4L28MiyAMxXNsg=
-X-Gm-Gg: ATEYQzxOLnAxnZXTVEye5m/qxE80+KQAzd0geP0FC8aoxpPj2AChfDVhirEyeyTixqu
-	W2NNNgDLC2FAwrQ4h82+sOmbFM+n2SYlgSOWNdqEzKkGA5U7K/U4V1frVc+XAWZU9jPDZJCeuxq
-	7xvkybQneEi1SZs5Xxvtlv3XoBwZNcy9ZqoG2fgvD9cOM7eaK9L2XWQJj9+cxdNYFnXPGDbXqfb
-	Cb9WWBsfc6cviJJWd3NtYkti8VB76eyrv1kUI5ybulJwKljTelSMqYLuPkie/Qv5UCJA7bd3fHn
-	1WxSOK/6tcmMZzSh1lu7DrfGqZlt8T9Al5bKmui3LqYJJoQ7kBkjWVMroerb+nxzjnyDWyDioRL
-	o44IxzI/sIUxYZG1OimhQdDEs1F08iCR2QAdwjeR4kzPD3C0FG8W/q1dbe4MMtNiIgrP8fH3SJk
-	wJBP/TwPOvDcXvgBB3F8fv4eR7TXeuhHlHKjnTX9j6YdhIUFQF5Iz2JSvfRBeQpNOGoltAmOP/M
-	Pu8H0Af3bLT/yk=
-X-Received: by 2002:a17:906:46d7:b0:b8a:fae9:5c60 with SMTP id a640c23a62f3a-b937654862emr537345266b.51.1772458342220;
-        Mon, 02 Mar 2026 05:32:22 -0800 (PST)
-Received: from puffmais2.c.googlers.com (221.210.91.34.bc.googleusercontent.com. [34.91.210.221])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-65fabf6d1c6sm3282988a12.17.2026.03.02.05.32.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Mar 2026 05:32:21 -0800 (PST)
-From: =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
-Date: Mon, 02 Mar 2026 13:32:09 +0000
-Subject: [PATCH v3 10/11] power: supply: max17042: consider task period
- (max77759)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cJzFxhlE"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 85061C19423;
+	Mon,  2 Mar 2026 13:34:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1772458486;
+	bh=7f9Gcp4+1LkfzXFPCa7PcQqPFKqy4PcM0mCYaMby60g=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=cJzFxhlE4FbWzbo5g/MSsO88667jBeaaySLaLoBd1bxFWGi77nyUK3rvGNE5eZ6FS
+	 OvQoFyJcHhWifxV97kZV86n/hrxIAwuPOywLDum7x+i2buY4ipn0S/kYasF0ykquWo
+	 MqP4Pt7NdGDVxT7awVmTEDXGPnTxD3fJ92vd2DIk/1t0qCZniFUQYMFmzuYvTb2xB1
+	 uk5T6zUHG6+PXx6wYCCtaXWGxbqfIdwEcbqt2MsLYkNE63m6ccC2X3Y58rxrEegEUA
+	 z5mqdciGCt7Ldwv/T7JBKY/c2pYkt1omagB+CrCX3Nr6XSO0kWDu0k976LiWpBDgVJ
+	 6gmvj29jmeaKg==
+Message-ID: <303e86f9-f86c-4dc9-bfc8-d32c8eeb91b3@kernel.org>
+Date: Mon, 2 Mar 2026 14:34:38 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20260302-max77759-fg-v3-10-3c5f01dbda23@linaro.org>
-References: <20260302-max77759-fg-v3-0-3c5f01dbda23@linaro.org>
-In-Reply-To: <20260302-max77759-fg-v3-0-3c5f01dbda23@linaro.org>
-To: Hans de Goede <hansg@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
- Marek Szyprowski <m.szyprowski@samsung.com>, 
- Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, 
- Purism Kernel Team <kernel@puri.sm>, Sebastian Reichel <sre@kernel.org>, 
- Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
- Ramakrishna Pallala <ramakrishna.pallala@intel.com>
-Cc: Peter Griffin <peter.griffin@linaro.org>, 
- Tudor Ambarus <tudor.ambarus@linaro.org>, Juan Yescas <jyescas@google.com>, 
- Amit Sunil Dhamne <amitsd@google.com>, kernel-team@android.com, 
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, 
- =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
-X-Mailer: b4 0.14.3
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 1/5] mm: introduce zone lock wrappers
+Content-Language: en-US
+To: Dmitry Ilvokhin <d@ilvokhin.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>,
+ Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ "Liam R. Howlett" <Liam.Howlett@oracle.com>, Vlastimil Babka
+ <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>,
+ Wei Xu <weixugc@google.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>,
+ Len Brown <lenb@kernel.org>, Brendan Jackman <jackmanb@google.com>,
+ Johannes Weiner <hannes@cmpxchg.org>, Zi Yan <ziy@nvidia.com>,
+ Oscar Salvador <osalvador@suse.de>, Qi Zheng <zhengqi.arch@bytedance.com>,
+ Shakeel Butt <shakeel.butt@linux.dev>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linux-trace-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ "linux-cxl@vger.kernel.orgkernel-team"@meta.com
+References: <cover.1772206930.git.d@ilvokhin.com>
+ <849dee9c47df1e6fba97c9933af0d5a08b8e15d3.1772206930.git.d@ilvokhin.com>
+From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
+In-Reply-To: <849dee9c47df1e6fba97c9933af0d5a08b8e15d3.1772206930.git.d@ilvokhin.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Several (register) values reported by the fuel gauge depend on its
-internal task period and it needs to be taken into account when
-calculating results. All relevant example formulas in the data sheet
-assume the default task period (of 5760) and final results need to be
-adjusted based on the task period in effect.
+On 2/27/26 17:00, Dmitry Ilvokhin wrote:
+> Add thin wrappers around zone lock acquire/release operations. This
+> prepares the code for future tracepoint instrumentation without
+> modifying individual call sites.
+> 
+> Centralizing zone lock operations behind wrappers allows future
+> instrumentation or debugging hooks to be added without touching
+> all users.
+> 
+> No functional change intended. The wrappers are introduced in
+> preparation for subsequent patches and are not yet used.
+> 
+> Signed-off-by: Dmitry Ilvokhin <d@ilvokhin.com>
+> Acked-by: Shakeel Butt <shakeel.butt@linux.dev>
 
-Update the code as and where necessary.
+*checks patch 2 diffstat*
 
-Reviewed-by: Peter Griffin <peter.griffin@linaro.org>
-Signed-off-by: André Draszik <andre.draszik@linaro.org>
----
-While I do believe this should apply to all devices supported by this
-driver, given the register description in max17042_battery.h, I've made
-this change specific to max77759, as I have no way to confirm this
-works as expected on those. I've found a data sheet for
-max17047/max17050 online, which does describe the relevant register
-0x3c as 'reserved', hence I'm a bit hesitant to enable this for all.
+I think we could do it as mm/zone_lock.h even and not pollute include/linux/
+Even kernel/power/snapshot.c could include it in a somewhat ugly way.
+However we should also later look at moving that particular code somewhere
+under mm/ really...
 
-v2:
-* update commit message subject prefix
----
- drivers/power/supply/max17042_battery.c | 20 ++++++++++++++++++++
- include/linux/power/max17042_battery.h  |  1 +
- 2 files changed, 21 insertions(+)
+Anyway,
 
-diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-index b9a21cef2cc6..bafbf8706055 100644
---- a/drivers/power/supply/max17042_battery.c
-+++ b/drivers/power/supply/max17042_battery.c
-@@ -61,6 +61,7 @@ struct max17042_chip {
- 	struct work_struct work;
- 	int    init_complete;
- 	int    irq;
-+	int    task_period;
- };
- 
- static enum power_supply_property max17042_battery_props[] = {
-@@ -331,6 +332,8 @@ static int max17042_get_property(struct power_supply *psy,
- 			return ret;
- 
- 		data64 = data * 5000000ll;
-+		data64 *= chip->task_period;
-+		do_div(data64, MAX17042_DEFAULT_TASK_PERIOD);
- 		do_div(data64, chip->pdata->r_sns);
- 		val->intval = data64;
- 		break;
-@@ -340,6 +343,8 @@ static int max17042_get_property(struct power_supply *psy,
- 			return ret;
- 
- 		data64 = data * 5000000ll;
-+		data64 *= chip->task_period;
-+		do_div(data64, MAX17042_DEFAULT_TASK_PERIOD);
- 		do_div(data64, chip->pdata->r_sns);
- 		val->intval = data64;
- 		break;
-@@ -349,6 +354,8 @@ static int max17042_get_property(struct power_supply *psy,
- 			return ret;
- 
- 		data64 = data * 5000000ll;
-+		data64 *= chip->task_period;
-+		do_div(data64, MAX17042_DEFAULT_TASK_PERIOD);
- 		do_div(data64, chip->pdata->r_sns);
- 		val->intval = data64;
- 		break;
-@@ -358,6 +365,8 @@ static int max17042_get_property(struct power_supply *psy,
- 			return ret;
- 
- 		data64 = sign_extend64(data, 15) * 5000000ll;
-+		data64 *= chip->task_period;
-+		data64 = div_s64(data64, MAX17042_DEFAULT_TASK_PERIOD);
- 		val->intval = div_s64(data64, chip->pdata->r_sns);
- 		break;
- 	case POWER_SUPPLY_PROP_TEMP:
-@@ -1142,6 +1151,17 @@ static int max17042_probe(struct i2c_client *client, struct device *dev, int irq
- 		regmap_write(chip->regmap, MAX17042_LearnCFG, 0x0007);
- 	}
- 
-+	chip->task_period = MAX17042_DEFAULT_TASK_PERIOD;
-+	if (chip->chip_type == MAXIM_DEVICE_TYPE_MAX77759) {
-+		ret = regmap_read(chip->regmap, MAX17042_TaskPeriod, &val);
-+		if (ret)
-+			return dev_err_probe(dev, ret,
-+					     "failed to read task period\n");
-+		chip->task_period = val;
-+	}
-+	dev_dbg(dev, "task period: %#.4x (%d)\n", chip->task_period,
-+		chip->task_period);
-+
- 	chip->battery = devm_power_supply_register(dev, max17042_desc,
- 						   &psy_cfg);
- 	if (IS_ERR(chip->battery))
-diff --git a/include/linux/power/max17042_battery.h b/include/linux/power/max17042_battery.h
-index 05097f08ea36..d5b08313cf11 100644
---- a/include/linux/power/max17042_battery.h
-+++ b/include/linux/power/max17042_battery.h
-@@ -17,6 +17,7 @@
- #define MAX17042_DEFAULT_VMAX		(4500) /* LiHV cell max */
- #define MAX17042_DEFAULT_TEMP_MIN	(0)    /* For sys without temp sensor */
- #define MAX17042_DEFAULT_TEMP_MAX	(700)  /* 70 degrees Celcius */
-+#define MAX17042_DEFAULT_TASK_PERIOD	(5760)
- 
- /* Consider RepCap which is less then 10 units below FullCAP full */
- #define MAX17042_FULL_THRESHOLD		10
+Reviewed-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
 
--- 
-2.53.0.473.g4a7958ca14-goog
+> ---
+>  MAINTAINERS                 |  1 +
+>  include/linux/mmzone_lock.h | 38 +++++++++++++++++++++++++++++++++++++
+>  2 files changed, 39 insertions(+)
+>  create mode 100644 include/linux/mmzone_lock.h
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 55af015174a5..947298ecb111 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -16672,6 +16672,7 @@ F:	include/linux/memory.h
+>  F:	include/linux/mm.h
+>  F:	include/linux/mm_*.h
+>  F:	include/linux/mmzone.h
+> +F:	include/linux/mmzone_lock.h
+>  F:	include/linux/mmdebug.h
+>  F:	include/linux/mmu_notifier.h
+>  F:	include/linux/pagewalk.h
+> diff --git a/include/linux/mmzone_lock.h b/include/linux/mmzone_lock.h
+> new file mode 100644
+> index 000000000000..a1cfba8408d6
+> --- /dev/null
+> +++ b/include/linux/mmzone_lock.h
+> @@ -0,0 +1,38 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _LINUX_MMZONE_LOCK_H
+> +#define _LINUX_MMZONE_LOCK_H
+> +
+> +#include <linux/mmzone.h>
+> +#include <linux/spinlock.h>
+> +
+> +static inline void zone_lock_init(struct zone *zone)
+> +{
+> +	spin_lock_init(&zone->lock);
+> +}
+> +
+> +#define zone_lock_irqsave(zone, flags)				\
+> +do {								\
+> +	spin_lock_irqsave(&(zone)->lock, flags);		\
+> +} while (0)
+> +
+> +#define zone_trylock_irqsave(zone, flags)			\
+> +({								\
+> +	spin_trylock_irqsave(&(zone)->lock, flags);		\
+> +})
+> +
+> +static inline void zone_unlock_irqrestore(struct zone *zone, unsigned long flags)
+> +{
+> +	spin_unlock_irqrestore(&zone->lock, flags);
+> +}
+> +
+> +static inline void zone_lock_irq(struct zone *zone)
+> +{
+> +	spin_lock_irq(&zone->lock);
+> +}
+> +
+> +static inline void zone_unlock_irq(struct zone *zone)
+> +{
+> +	spin_unlock_irq(&zone->lock);
+> +}
+> +
+> +#endif /* _LINUX_MMZONE_LOCK_H */
 
