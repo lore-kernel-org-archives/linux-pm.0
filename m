@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 311983F23DD;
-	Mon,  2 Mar 2026 14:10:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E67923FFAB7;
+	Mon,  2 Mar 2026 14:16:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772460611; cv=none; b=WaZd8YxSV3CxiEuFevMvEDas1t48htME5te4AhOqe5Gnnwtx9MEjfuD00sSZfexMabVXUw2UFCBIENSHTLqxNcYNs7geoFFRX65+GcBBojc3Qylksl6dWmjLdm5u5wGXo7W+J43z6kIq9hCwM+acCKdTEOVtrvXhv9jT4HoB0ms=
+	t=1772461019; cv=none; b=s6pD1OBTdc+75j0b93SUu5XvURRCW/+LFpxujJJRM7FEkDzajZocudKJvNirhpqeQah3jJ5BYBYaQlqFIWM5t6Dk4UWzUdrxtKXnqJkW0ACDxTssZ440Qhl0a/zbfkxof4HovUZ2TJzyVitp4SENK8xFdD/HxLUH7Bv8hepCLKQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772460611; c=relaxed/simple;
-	bh=Iw7aUP2S7mWahuhzCJO/BUcWFftOh4Nm7vHQ0zIqiJY=;
+	s=arc-20240116; t=1772461019; c=relaxed/simple;
+	bh=eOi621zBxOkJY1UKHW4ZO6+feq9RArS0Wq0cDsH50hg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=NKEoAfS7JeDPjFYKwUOuAIC2I5FFRQ1SJiCSlXIN0yzW+C8TaWoBu/i1MjliKL7KfgIFX99ZmvjLBxj8CtrAwtaIsD+2vg805HDbWCrVVFF+L7+sorgtJr1RLlKnlPDL0HMSjo1NnlDnl+rXZKPWupcH3R7GKZh/etV+fnqc2NE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XC26fhYW; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:Content-Type; b=Gfd9Umt3mi9e+/ShDVxQ6R5OdOUMZFD6C2qXP6122li4TyoLiJagJUuCfvGluIuOkUYe6+Q96KBtjac/wz23MYmyTSCve+rATEV35C2arurPIeZyE+y9K66nGNtKC4csi9BvzpbK8qsUqcGL9VDYWAVm0fzbAZ/nN7QQ1e5RVCQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Y2223cUk; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XC26fhYW"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2039AC2BC87;
-	Mon,  2 Mar 2026 14:10:04 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Y2223cUk"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40ECDC19423;
+	Mon,  2 Mar 2026 14:16:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772460610;
-	bh=Iw7aUP2S7mWahuhzCJO/BUcWFftOh4Nm7vHQ0zIqiJY=;
+	s=k20201202; t=1772461018;
+	bh=eOi621zBxOkJY1UKHW4ZO6+feq9RArS0Wq0cDsH50hg=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=XC26fhYWvpCZWb4IyVpvt4Oen+imcRPCYbXTeuSc1MLlCUVRgZc5v3AQ4m82UcGUX
-	 /J8tyC2i62wPJE9f2KQeG9fs5nPTejtD+H/hMq3v7rst6nBeN1ODJCRZRR51tNy7Et
-	 JA4yuGwd/7yzIxU3CFW5yUHMty4FxLR94ARGLlXdTSPM/bQlHoL5ZEPokxwStEWYFW
-	 V7ebXMDn9zkqFfMb0FW2qZOtiDsDH+uin4ubx7X8NfFN4Y4Gh5IQEQFSpsZ1R6ACE2
-	 N/xRfzgEZMD3s/djPCWs+RIbSAfQhxV/2Y4iOcJ+Zk9ZPFy7TgynrP/LmhqHoW7jqO
-	 OnzfcZeYpd+3g==
-Message-ID: <0f340324-502b-4719-b3e7-c7ccd4378385@kernel.org>
-Date: Mon, 2 Mar 2026 15:10:03 +0100
+	b=Y2223cUkvjYf8lYJZDxKuyv8L0iTzBaH3j6FhQOjgs5aA+bbaXbTF1IxZkZV9Al3C
+	 Lo/KTxpqgArklPvabIdDAElOmALZG3jaHCo1ZVAshHi2SaPPvhl48Fjffx6p11UKGa
+	 a6pyqPdjAPbd8lb9rg0HhBJurH3FFmMB6zSa0NG3mroIECbWt6m88JmfasymxL0PLW
+	 2GM+f5yDLwg+NyrNWmqhK5rYUqt4Z7hONlA0bmg/ZlamYi1huD1U+DabiPVzOQnlD2
+	 U1H6jkDOW6gfpm9hXavn1QO1rNkcFlI/Ixm0BDH+Uu5ilSfACUbRoe+WhdFScYxNuS
+	 szdsnJ1D5LMRA==
+Message-ID: <502e0f7c-cdf7-4a2d-b038-cfd4b993c9bc@kernel.org>
+Date: Mon, 2 Mar 2026 15:16:51 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,7 +35,7 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 4/5] mm: rename zone->lock to zone->_lock
+Subject: Re: [PATCH v4 5/5] mm: add tracepoints for zone lock
 Content-Language: en-US
 To: Dmitry Ilvokhin <d@ilvokhin.com>,
  Andrew Morton <akpm@linux-foundation.org>,
@@ -55,31 +55,29 @@ To: Dmitry Ilvokhin <d@ilvokhin.com>,
  Shakeel Butt <shakeel.butt@linux.dev>
 Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
  linux-trace-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- "linux-cxl@vger.kernel.orgkernel-team"@meta.com,
- SeongJae Park <sj@kernel.org>
+ "linux-cxl@vger.kernel.orgkernel-team"@meta.com
 References: <cover.1772206930.git.d@ilvokhin.com>
- <d61500c5784c64e971f4d328c57639303c475f81.1772206930.git.d@ilvokhin.com>
+ <ae145fe890f028409f727b4921904b547346fa0b.1772206930.git.d@ilvokhin.com>
 From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
-In-Reply-To: <d61500c5784c64e971f4d328c57639303c475f81.1772206930.git.d@ilvokhin.com>
+In-Reply-To: <ae145fe890f028409f727b4921904b547346fa0b.1772206930.git.d@ilvokhin.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 2/27/26 17:00, Dmitry Ilvokhin wrote:
-> This intentionally breaks direct users of zone->lock at compile time so
-> all call sites are converted to the zone lock wrappers. Without the
-> rename, present and future out-of-tree code could continue using
-> spin_lock(&zone->lock) and bypass the wrappers and tracing
-> infrastructure.
+> Add tracepoint instrumentation to zone lock acquire/release operations
+> via the previously introduced wrappers.
 > 
-> No functional change intended.
+> The implementation follows the mmap_lock tracepoint pattern: a
+> lightweight inline helper checks whether the tracepoint is enabled and
+> calls into an out-of-line helper when tracing is active. When
+> CONFIG_TRACING is disabled, helpers compile to empty inline stubs.
 > 
-> Suggested-by: Andrew Morton <akpm@linux-foundation.org>
+> The fast path is unaffected when tracing is disabled.
+> 
 > Signed-off-by: Dmitry Ilvokhin <d@ilvokhin.com>
 > Acked-by: Shakeel Butt <shakeel.butt@linux.dev>
-> Acked-by: SeongJae Park <sj@kernel.org>
 
-I see some more instances of 'zone->lock' in comments in
-include/linux/mmzone.h and under Documentation/ but otherwise LGTM.
+Agree with Steven; otherwise
 
 Reviewed-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
 
