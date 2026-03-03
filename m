@@ -1,158 +1,97 @@
-Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+Received: from mail-m3298.qiye.163.com (mail-m3298.qiye.163.com [220.197.32.98])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 11267342C88;
-	Tue,  3 Mar 2026 00:01:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772496079; cv=pass; b=pSR00D76DxWZJS9Cj5TLafeoo4Zj+TFJvbYinLO4j33j8MMvY5NwMdbQDDlec73Hzt6675fRCHLyluf01K75Nn4PdkDvDGB1OcipzVfMkXosEqqEV6vmIr1iFjjRmLZGbgPFh/gNSr8FrdFn5lDi9NadmfmPd6YjdMfcuChI8TE=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772496079; c=relaxed/simple;
-	bh=ioGr+nk8fi9NYjdV0OIUJe4BpGL8TdYgG41Pew4uTmU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HmZcdWbDONH5oqyT9/VyDO/KgdUUZLNNYjxd6XuQ9XpLBB+ngGzyUgiAACFejCOFVTg140CMW0tdmrdR5vXwRQ58V3eUODgcGEtnehUtfTNBpXlACL1pskbsfUk1ERm5SbTAYx2rC2Iks3sO9LfVfoNd9JMJXIk/4H6jZlcRA64=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=R7Sc3mME; arc=pass smtp.client-ip=136.143.188.112
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2EB61F192E
+	for <linux-pm@vger.kernel.org>; Tue,  3 Mar 2026 00:49:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.32.98
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1772498984; cv=none; b=te3+aJacDGJpUqmDFGN/3he+5j8WWD4EkxqAolOartnCHHWKvc21B2mbliiVhsFT67efGVZVtsbuYnqADlb2C9Aoq/Bnt23zUL1K3G+XNlfZ5SgMYYpSQnq0Tj+F/NK4sIAO6RuJQeqtzqlekv7rTYUt/WtOMyuBmPpqrcrImao=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1772498984; c=relaxed/simple;
+	bh=jcDxGBWPgH+4px9W9zIUW9QrG9LullPjfU94SIsaDg0=;
+	h=Cc:Subject:To:References:From:Message-ID:Date:MIME-Version:
+	 In-Reply-To:Content-Type; b=O1Fd6aH2ryFzQYPo7gwe5XHOur+GGkmhtE824xFrv+1HlTqaYONPR3MSLlkA2EPbJwgayL4t2FwEww2B+99jkCCKwUcV9OczIkvl0h9gvztAkDnK/fSJKM81ugr+00R4k50l3R1lEsGnPELvoyM9Fu4OypF+7oHQitXcjn+cwiE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=FZRA8lxd; arc=none smtp.client-ip=220.197.32.98
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="R7Sc3mME"
-ARC-Seal: i=1; a=rsa-sha256; t=1772496053; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=SZAENPhpCVc5KCiFdrk/pr+sWKRZl+95DN9q+hnlsBwaN0wOumWDKLa1JIgwZXc5xf2tYoRVq43oILVW7srDICw46NvMpIxrxAfL4TTX5gJ4SdMzEe5A9/joogroTH1P19ViVfZML8HA7Kl473KqNjNuSusteT5Q6mx4dDHSjNk=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1772496053; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=l3PYFCVcWjGQaSSZj39sm1aZzw9LlSKfmhEhHtoI7MY=; 
-	b=RGVfAtl7QXtEdlOV89ZYwG1zqyY/yt291EyWsC2qmDEauoE7Sk53CwHAv00TBGCIqYO4aiID27ew2SfkFYAtZ6WTrkLTRkh3JOLLA4R/jgM6abT6sh14HIPUG1oWoKPaC/OAZdZkZrwGEiI06L4kEuW7ZPtmeunL1x5M/LeYEiU=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
-	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1772496052;
-	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
-	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:References:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=l3PYFCVcWjGQaSSZj39sm1aZzw9LlSKfmhEhHtoI7MY=;
-	b=R7Sc3mME6oQ9arKfbh/G4lQNo6DTFlUSvKAaPdsCDMw1w97KKSxv7X9sIT/F1IL+
-	MeO6JkQn9Wt1+pqAwJiRF0SQ/2UPHe+tZCxE8yI9LiEwXa2kWFGyPgeATdv0E5lOrjm
-	pvw3kbKAUdiMUjOepHr06zsnwro3H/5AlEdzKoIM=
-Received: by mx.zohomail.com with SMTPS id 1772496050787810.127324350416;
-	Mon, 2 Mar 2026 16:00:50 -0800 (PST)
-Received: by venus (Postfix, from userid 1000)
-	id 062E9180D08; Tue, 03 Mar 2026 01:00:45 +0100 (CET)
-Date: Tue, 3 Mar 2026 01:00:45 +0100
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Otto =?utf-8?Q?Pfl=C3=BCger?= <otto.pflueger@abscue.de>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Orson Zhai <orsonzhai@gmail.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, Chunyan Zhang <zhang.lyra@gmail.com>, Lee Jones <lee@kernel.org>, 
-	Pavel Machek <pavel@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
-	Mark Brown <broonie@kernel.org>, linux-rtc@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 5/6] power: reset: sc27xx: Add platform_device_id table
-Message-ID: <aaYkhIGP2pexbxt7@venus>
-References: <20260222-sc27xx-mfd-cells-v1-0-69526fe74c77@abscue.de>
- <20260222-sc27xx-mfd-cells-v1-5-69526fe74c77@abscue.de>
+	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="FZRA8lxd"
+Received: from [172.16.12.14] (unknown [58.22.7.114])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 3581a66a6;
+	Tue, 3 Mar 2026 08:49:30 +0800 (GMT+08:00)
+Cc: shawn.lin@rock-chips.com, linux-pm@vger.kernel.org, jonas@kwiboo.se,
+ pgwipeout@gmail.com, finley.xiao@rock-chips.com, kever.yang@rock-chips.com,
+ sebastian.reichel@collabora.com, heiko@sntech.de, ulf.hansson@linaro.org,
+ Chris Morgan <macromorgan@hotmail.com>,
+ Diederik de Haas <diederik@cknow-tech.com>,
+ linux-rockchip@lists.infradead.org
+Subject: Re: [PATCH V2] pmdomain: rockchip: quiet regulator error on
+ -EPROBE_DEFER
+To: Chris Morgan <macroalpha82@gmail.com>
+References: <20260130163102.51757-1-macroalpha82@gmail.com>
+From: Shawn Lin <shawn.lin@rock-chips.com>
+Message-ID: <a1e98f19-2c68-d59e-07bd-57bbcbc742c6@rock-chips.com>
+Date: Tue, 3 Mar 2026 08:49:30 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.11.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="adszrmxnyvdyek6f"
-Content-Disposition: inline
-In-Reply-To: <20260222-sc27xx-mfd-cells-v1-5-69526fe74c77@abscue.de>
-X-Zoho-Virus-Status: 1
-X-Zoho-AV-Stamp: zmail-av-0.2.1.1.4.3/272.480.55
-X-ZohoMailClient: External
+In-Reply-To: <20260130163102.51757-1-macroalpha82@gmail.com>
+Content-Type: text/plain; charset=gbk; format=flowed
+Content-Transfer-Encoding: 8bit
+X-HM-Tid: 0a9cb12be8a409cckunm83dbe4c510455dd
+X-HM-MType: 1
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZQxpOQ1YYSUMfGk1CTxkaTxlWFRQJFh
+	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
+	hVSktLVUpCS0tZBg++
+DKIM-Signature: a=rsa-sha256;
+	b=FZRA8lxdP09fxkkMLLfh54R6dP08hfZSKemdHFTpAj0YO8h5Rtj3Ov2Yvu7aQA2BkFzQy3Udf8pEUsuiSZOoxpQgLCqyS9YB2NEibtl1V2BbM6nom598xRQIbpNbj4uG4sF1uptiWTUkdRTK2zw7ibJ7N8bKmxeNL6a3PPmm9nA=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
+	bh=qgc2EI+SrAhln7tyy6J5i4dEecxK8IQ9XGIqONjIZWo=;
+	h=date:mime-version:subject:message-id:from;
 
+ÔÚ 2026/01/31 ÐÇÆÚÁù 0:31, Chris Morgan Ð´µÀ:
+> From: Chris Morgan <macromorgan@hotmail.com>
+> 
+> Change the dev_err() to dev_err_probe() under rockchip_pd_power_on()
+> to prevent errors early in the boot process when the requested
+> regulator is not yet available. This converts errors like the following
+> to debug messages:
+> 
 
---adszrmxnyvdyek6f
-Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH 5/6] power: reset: sc27xx: Add platform_device_id table
-MIME-Version: 1.0
+Reviewed-by: Shawn Lin <shawn.lin@rock-chips.com>
 
-Hi,
-
-On Sun, Feb 22, 2026 at 02:16:49PM +0100, Otto Pfl=FCger wrote:
-> Make the poweroff driver for SC27xx-series PMICs probe automatically.
-> Since the device representing the poweroff functionality of the SC27xx
-> PMIC is not supposed to have a dedicated device tree node without any
-> corresponding DT resources [1], an of_device_id table cannot be used
-> here. Instead, use a platform_device_id table to match the poweroff
-> sub-device instantiated by the parent MFD driver.
->=20
-> Signed-off-by: Otto Pfl=FCger <otto.pflueger@abscue.de>
->=20
-> [1]: https://lore.kernel.org/all/20251002025344.GA2958334-robh@kernel.org/
+> rockchip-pm-domain fd8d8000.power-management:power-controller: Failed to enable supply: -517
+> 
+> Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
+> Tested-by: Diederik de Haas <diederik@cknow-tech.com>
 > ---
-
-Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-
--- Sebastian
-
->  drivers/power/reset/sc27xx-poweroff.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
->=20
-> diff --git a/drivers/power/reset/sc27xx-poweroff.c b/drivers/power/reset/=
-sc27xx-poweroff.c
-> index 393bd1c33b73..6376706bf561 100644
-> --- a/drivers/power/reset/sc27xx-poweroff.c
-> +++ b/drivers/power/reset/sc27xx-poweroff.c
-> @@ -6,6 +6,7 @@
-> =20
->  #include <linux/cpu.h>
->  #include <linux/kernel.h>
-> +#include <linux/mod_devicetable.h>
->  #include <linux/module.h>
->  #include <linux/platform_device.h>
->  #include <linux/pm.h>
-> @@ -70,11 +71,18 @@ static int sc27xx_poweroff_probe(struct platform_devi=
-ce *pdev)
->  	return 0;
->  }
-> =20
-> +static const struct platform_device_id sc27xx_poweroff_id_table[] =3D {
-> +	{ "sc2731-poweroff" },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(platform, sc27xx_poweroff_id_table);
-> +
->  static struct platform_driver sc27xx_poweroff_driver =3D {
->  	.probe =3D sc27xx_poweroff_probe,
->  	.driver =3D {
->  		.name =3D "sc27xx-poweroff",
->  	},
-> +	.id_table =3D sc27xx_poweroff_id_table,
->  };
->  module_platform_driver(sc27xx_poweroff_driver);
-> =20
->=20
-> --=20
-> 2.51.0
->=20
->=20
-
---adszrmxnyvdyek6f
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmmmJKkACgkQ2O7X88g7
-+pqKDA/5AV136yvRe7RqNNIT156QrAc+9gAeOqzQ6oPlahmYFlPYeIeqFAdyRbFP
-CUks1Q7xZp4kcIlL9Qi0tdHM/em2QpHpx2Grh4nk3ZCv6oSp+ENj8xblRua85aPJ
-DQAM/xfskwuVATHFfRc6Aus6wSJpbmlXwGelvP2/Sxiq9FSmmn4CSPP7b8Lw41iA
-/tp6p3UuXPY8B8PkLApLBwECZ757Y/DZPTbfHkdUunt25qHvr5gOM0cUJ42kadVG
-WbmXtd4GRzkdT+IOgYhbWKhbbtjLIFkE1F3OLuJF/JfnpHs9WLuvgdnfyTy2kEc1
-D/ogyBvec9PqAFHpgymYgTRVcLHw3Lp7Yfane9f6PtTjsn5/A5vZmr8vi9xG2RuS
-UMThn+0OKwURaABK90z6udRR66+EDT3TClJLyK8P7tqmFNJ7YGtAa6K5r/VQikJi
-qzdHpJLRR2h0OVHJN/zyfitZHiJrE7EPwGd6p4w7EfuuG9emNRSDXZetZX+45dLA
-f/scfcVGxOB3KYpoB6r2rrF9yCQBJV/M9G3tgShq65WLLIfedUaM2NbcOEk7KYrn
-Dkb8c64EzMPOA/i4TWeZKpw2xpr6DSLl4VEC+1BApiux86+rsfw21bjASWq/2gX/
-KgibKzWdkv0HXK7/QU5g7gNPPnRNZPA3PhPEQE6PAr9TGtHSJNY=
-=U7O7
------END PGP SIGNATURE-----
-
---adszrmxnyvdyek6f--
+> Changes since v1:
+>   - Simplified return to single line
+> ---
+>   drivers/pmdomain/rockchip/pm-domains.c | 7 +++----
+>   1 file changed, 3 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
+> index 997e93c12951..6d3fb18f4ab3 100644
+> --- a/drivers/pmdomain/rockchip/pm-domains.c
+> +++ b/drivers/pmdomain/rockchip/pm-domains.c
+> @@ -705,10 +705,9 @@ static int rockchip_pd_power_on(struct generic_pm_domain *domain)
+>   	int ret;
+>   
+>   	ret = rockchip_pd_regulator_enable(pd);
+> -	if (ret) {
+> -		dev_err(pd->pmu->dev, "Failed to enable supply: %d\n", ret);
+> -		return ret;
+> -	}
+> +	if (ret)
+> +		return dev_err_probe(pd->pmu->dev, ret,
+> +				     "Failed to enable supply: %d\n", ret);
+>   
+>   	ret = rockchip_pd_power(pd, true);
+>   	if (ret)
+> 
