@@ -1,119 +1,120 @@
-Received: from mail-lj1-f176.google.com (mail-lj1-f176.google.com [209.85.208.176])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtpout-02.galae.net (smtpout-02.galae.net [185.246.84.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E0964301A5
-	for <linux-pm@vger.kernel.org>; Tue,  3 Mar 2026 13:23:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 843043B8936;
+	Tue,  3 Mar 2026 14:12:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.84.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772544219; cv=none; b=tHTOsy+uqriTfbDzbVHQRA0Xpjv+l9oUPLvGP+EXLW6ppxgTqY6eqScsTjpJKVKEF+lKTHvsBkaBH/ScvPNyr9pxM+h702ts50lNIqymYbzraQcQhFRoIgXf5eNLfCBuizBb3B9Lu5NgDNFa9kzmHdhEPl/buVP/up8sjT5KxtI=
+	t=1772547163; cv=none; b=AdUGQpVlROL+Z14INEJ8seuKhTb5bRHdBQQaW+vzQ4c4ejOEw+rqrx0x0Km9e2uIpBAAy4WtOpd+AzSaq7RU6gu9Ek/d5f9OAUH7828g5InHAfu9YvqS+E4IFcWsRt7f+fugz0ZjMBKraw6ag9RyjdWU8BN5rJbVjVnP4g4qZVU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772544219; c=relaxed/simple;
-	bh=HKlFck/FAja/HueIxvm1gVErLwG96G8TBeIZBi+S8vM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=lBCb6hmtKQF15TcAbompojTWFu6OHot78FC+Qrs8+S2/UwNqV5VmzbvKeLpp8LGnnsv/2pzmm+hx+4PcwxoDabp2cjF/PS+gZzvlY9+gZJafOP7Ku8OM95Z30zVQFkNTBBRQOJWBf3mFkvLtynsaN5KD2nyJKXWfeO+N3Phj+J8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Ag312Kro; arc=none smtp.client-ip=209.85.208.176
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1772547163; c=relaxed/simple;
+	bh=dPGInr9bJSJ4aaTC8V6Vfs27BwEv/iSgsWjWG9xQ8Pk=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=VgGNSRa/nRW5IUISlBVLbf+ovl5eEyjETSImOEm7ZHdN6xbs09HGwUiqCOD9N5rkwRvh5+5wy0VtvRYM6iNiW8ozPXwpeLp2AzAzmdgZ0XA7900RLSh2scJtePmNbDrAurC4XHdAOjg4ge0m18Xp2EONxBKsdHQmhZQHwKW0PJo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=PKXnJBTJ; arc=none smtp.client-ip=185.246.84.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Ag312Kro"
-Received: by mail-lj1-f176.google.com with SMTP id 38308e7fff4ca-389f200c26eso82746491fa.0
-        for <linux-pm@vger.kernel.org>; Tue, 03 Mar 2026 05:23:36 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1772544215; x=1773149015; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=MjWtw97EefBuIXKvc4rM905LfmUWExWCySCPbaqXUa0=;
-        b=Ag312KroB+f5X0noKX7ECecqjY0P3rL2RKtIV4SOijx0BYmenXg1fmiy7SjEq7opCK
-         d+YzlBZHFIds8hl+4kMFVVPvQsu9u0MVaHBym+yTAFjwXMS1LIczSajPCzQ0VZjNvW03
-         4kTTUpOzuNarawrdznHRC6SAEAuRUTmKiULlojqxDhljQmtjXEfkwfYb2PfCSflqO2Bf
-         nyNo0qRfj3j/j8gBclrnboI43FVZKbA2vbKEPm3SDbfVcL9U3mjoJz2ZliicUkUHPO19
-         uT5dZllaMmv+neEP9m1SykI3vSIsjirOPdiRGRTqv3kRuhel/YKOfnz9kzg0Pw1caa4m
-         +HYw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772544215; x=1773149015;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=MjWtw97EefBuIXKvc4rM905LfmUWExWCySCPbaqXUa0=;
-        b=uAQn/0PmkPKkhfx7mEI6T4vdJWIfS6tAhYBhs4F1O3Lsh/PQUR40Umx8rQCpISJJVu
-         Bci2e8G6kEz3+hIG6vtokQL5CUdvuu8FfOqLMOaBrwwhM1zdMZdsH9aOsV5PujdUSRce
-         QEOaR6kLMil0M6bYUMdx4mlHeI136VH7u6MIirQqiy40+TBWZSguC3WGRI4FXb/taDJm
-         F9wlFApFa6l5LV+2/VcRvctWcMR1fYUL+YDbWH9iqkWLaMnEHj/aD/q6WjyzjrACFDyE
-         QOeIHGrcFtEgzVTc0WL9wYncSitsCdJWhlPRULQRBFpuAUdSzc012OeTlv+sItRHLDk7
-         bDNQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVgT49Dy868a9Yizs7ZHU+AmO0Z4+DGYDO0bJb8ottsRJqzqhey8BKq1/sSSpQrHoOJBgXmyhhxjg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyKsy9E4iEiuDz+hXA2Lexoqyf5UpcqLTZ2O/0sbyP3PWco11/a
-	wI/qK5k90+25QDImgOvZ/4HVZFGDbra40Lp3Wyv4LBmsEiJ5uUqcwqk857SkLNY8Kyg=
-X-Gm-Gg: ATEYQzwRlynfS/Izr3ujRABcElXCzBXVkVcVcBkBHswrNPEXr45jZHfDwpcVXJN8qQ6
-	i+wiPismt8IGDLmjATG1b2g/gyYRyuiNNqWVeAv2I9ZBRgGtBI2HTVoLA8e5A0urC0UNfa0o8FB
-	9QGAiWiJvUBjyDjtx8azwW6SPhB3AeyrBIJ2nB4jGFXw/rvJNeCTVyKbfjUmF5Pb9BpRDe87zv9
-	eErHQA8zfYCrP1MAQOsRUJGGXs/Lpmb/utK0D4larzJq5+HZ237d78+d2eaad7stIEPUuZwCjSL
-	puBswUgGA09pyl5a/3fs+42a8bWGCoCfFdG677KYf1zyOQ2g08dnNmyzg4ioEBdfNrJEZYfN9Y0
-	/kPE0NVQFDaoa7vYPtptSXa1nVMEWUH1rSnKX1sh73Fn/SdnuFg5XW5QeKjW2/8lzFIL/YQdaRM
-	JkOEa754AApnxeLjy0+1+DoYZt4R7cb2/XihM03H5lN9J2u5j5TmxE9DuNCK0y0ikr/9OQ3VZ7
-X-Received: by 2002:a05:651c:1507:b0:38a:203:be8d with SMTP id 38308e7fff4ca-38a0203c336mr90018001fa.31.1772544214722;
-        Tue, 03 Mar 2026 05:23:34 -0800 (PST)
-Received: from uffe-tuxpro14.. (h-178-174-189-39.A498.priv.bahnhof.se. [178.174.189.39])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5a1235811e3sm587866e87.29.2026.03.03.05.23.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 Mar 2026 05:23:34 -0800 (PST)
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Saravana Kannan <saravanak@kernel.org>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	linux-pm@vger.kernel.org
-Cc: Kevin Hilman <khilman@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Abel Vesa <abel.vesa@oss.qualcomm.com>,
-	Peng Fan <peng.fan@oss.nxp.com>,
-	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
-	Maulik Shah <maulik.shah@oss.qualcomm.com>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Thierry Reding <thierry.reding@gmail.com>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 8/9] pmdomain: renesas: rcar-sysc: Drop GENPD_FLAG_NO_STAY_ON
-Date: Tue,  3 Mar 2026 14:22:54 +0100
-Message-ID: <20260303132305.438657-9-ulf.hansson@linaro.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260303132305.438657-1-ulf.hansson@linaro.org>
-References: <20260303132305.438657-1-ulf.hansson@linaro.org>
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="PKXnJBTJ"
+Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
+	by smtpout-02.galae.net (Postfix) with ESMTPS id F0B891A2358;
+	Tue,  3 Mar 2026 14:12:38 +0000 (UTC)
+Received: from mail.galae.net (mail.galae.net [212.83.136.155])
+	by smtpout-01.galae.net (Postfix) with ESMTPS id B0FF95FF87;
+	Tue,  3 Mar 2026 14:12:38 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 29A51102F19D0;
+	Tue,  3 Mar 2026 15:12:11 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
+	t=1772547155; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 content-transfer-encoding:in-reply-to:references;
+	bh=NDntnEFk19MkiUVyHnkpMvjEQ0xuOComNTKHqxzRgtY=;
+	b=PKXnJBTJeOSAhEFdsakoatz9eZVQJsYsja7QCQMQzgMh/5rn1PRNYjh0Y43mXfXGOsBQe3
+	ylbpcNlkEYOZJgf5w2TjuKlN6BoKRqaUv2T7NSWnft4+R5CB1JRZXmzrvE9foIFtljC0dX
+	9lnks0jyXkMRsFdgc/AIne583SVg0IBmmZGSlbX4ZFFiZoIRIMxN3ep1XEp5lG3ykQNMTV
+	2MMAGU53bJevHap0Qjn6XIWdND7dFzJBZWAWKL1cGUcMwe1FByNjIm1aDXdWkatlTF4u4d
+	eRAAosIijuZ77ayzdkxgCV3s0AjnR8VvyjdUbgJKG2IeDC3gKeA+0ZFLN444JQ==
+Date: Tue, 3 Mar 2026 15:12:10 +0100
+From: Herve Codina <herve.codina@bootlin.com>
+To: Jonathan Cameron <jonathan.cameron@huawei.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, Rob Herring <robh@kernel.org>, "Krzysztof
+ Kozlowski" <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, "Geert
+ Uytterhoeven" <geert+renesas@glider.be>, Kalle Niemi <kaleposti@gmail.com>,
+ Matti Vaittinen <mazziesaccount@gmail.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Danilo Krummrich <dakr@kernel.org>, Frank Li <Frank.Li@nxp.com>, "Sascha
+ Hauer" <s.hauer@pengutronix.de>, Pengutronix Kernel Team
+ <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, "Michael
+ Turquette" <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>,
+ "Andi Shyti" <andi.shyti@kernel.org>, Wolfram Sang
+ <wsa+renesas@sang-engineering.com>, Peter Rosin <peda@axentia.se>, "Arnd
+ Bergmann" <arnd@arndb.de>, Saravana Kannan <saravanak@kernel.org>, "Bjorn
+ Helgaas" <bhelgaas@google.com>, Charles Keepax
+ <ckeepax@opensource.cirrus.com>, Richard Fitzgerald
+ <rf@opensource.cirrus.com>, David Rhodes <david.rhodes@cirrus.com>, "Linus
+ Walleij" <linusw@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Mark
+ Brown" <broonie@kernel.org>, Len Brown <lenb@kernel.org>, Andy Shevchenko
+ <andriy.shevchenko@linux.intel.com>, Daniel Scally <djrscally@gmail.com>,
+ Heikki Krogerus <heikki.krogerus@linux.intel.com>, Sakari Ailus
+ <sakari.ailus@linux.intel.com>, Davidlohr Bueso <dave@stgolabs.net>, "Dave
+ Jiang" <dave.jiang@intel.com>, Alison Schofield
+ <alison.schofield@intel.com>, Vishal Verma <vishal.l.verma@intel.com>, "Ira
+ Weiny" <ira.weiny@intel.com>, Dan Williams <dan.j.williams@intel.com>,
+ "Shawn Guo" <shawnguo@kernel.org>, Wolfram Sang <wsa@kernel.org>,
+ <linux-kernel@vger.kernel.org>, <driver-core@lists.linux.dev>,
+ <imx@lists.linux.dev>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-clk@vger.kernel.org>, <linux-i2c@vger.kernel.org>,
+ <devicetree@vger.kernel.org>, <linux-pci@vger.kernel.org>,
+ <linux-sound@vger.kernel.org>, <patches@opensource.cirrus.com>,
+ <linux-gpio@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+ <linux-spi@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
+ <linux-cxl@vger.kernel.org>, Allan Nielsen <allan.nielsen@microchip.com>,
+ Horatiu Vultur <horatiu.vultur@microchip.com>, Steen Hegelund
+ <steen.hegelund@microchip.com>, Luca Ceresoli <luca.ceresoli@bootlin.com>,
+ Thomas Petazzoni <thomas.petazzoni@bootlin.com>
+Subject: Re: [PATCH v5 07/28] driver core: fw_devlink: Introduce
+ fw_devlink_set_device()
+Message-ID: <20260303151210.6e8462b8@bootlin.com>
+In-Reply-To: <20260302122336.00006bd8@huawei.com>
+References: <20260227135428.783983-1-herve.codina@bootlin.com>
+	<20260227135428.783983-8-herve.codina@bootlin.com>
+	<20260302122336.00006bd8@huawei.com>
+Organization: Bootlin
+X-Mailer: Claws Mail 4.3.1 (GTK 3.24.49; x86_64-redhat-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-Last-TLS-Session-Version: TLSv1.3
 
-Due to the new fine grained sync_state support for onecell genpd provider
-drivers, we should no longer need use the legacy behaviour. Therefore,
-let's drop GENPD_FLAG_NO_STAY_ON.
+Hi Jonathan,
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/pmdomain/renesas/rcar-sysc.c | 1 -
- 1 file changed, 1 deletion(-)
+On Mon, 2 Mar 2026 12:23:36 +0000
+Jonathan Cameron <jonathan.cameron@huawei.com> wrote:
 
-diff --git a/drivers/pmdomain/renesas/rcar-sysc.c b/drivers/pmdomain/renesas/rcar-sysc.c
-index bd7bb9cbd9da..e4608c657629 100644
---- a/drivers/pmdomain/renesas/rcar-sysc.c
-+++ b/drivers/pmdomain/renesas/rcar-sysc.c
-@@ -241,7 +241,6 @@ static int __init rcar_sysc_pd_setup(struct rcar_sysc_pd *pd)
- 		}
- 	}
- 
--	genpd->flags |= GENPD_FLAG_NO_STAY_ON;
- 	genpd->power_off = rcar_sysc_pd_power_off;
- 	genpd->power_on = rcar_sysc_pd_power_on;
- 
--- 
-2.43.0
+> On Fri, 27 Feb 2026 14:54:04 +0100
+> Herve Codina <herve.codina@bootlin.com> wrote:
+> 
+> > Setting fwnode->dev is specific to fw_devlink.
+> > 
+> > In order to avoid having a direct 'fwnode->dev = dev;' in several
+> > place in the kernel, introduce fw_devlink_set_device() helper to perform
+> > this operation.
+> >   
+> I don't mind the helper, but the description could do with a little
+> detail on why.  Is it just to avoid visibility of internal details, or
+> is there a stronger reason?
+
+I think the idea was to avoid visibility.
+
+It cames from feedback received on my first iteration
+  https://lore.kernel.org/all/20250408145139.293c79a2@bootlin.com/
+
+I found the idea relevant and so I did the patch.
+
+Best regards,
+Hervé
 
