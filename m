@@ -1,39 +1,39 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B45E3D6CD0;
-	Wed,  4 Mar 2026 18:17:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0D4D3DA5A0;
+	Wed,  4 Mar 2026 18:17:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772648233; cv=none; b=sw6ltA+TsVbbHvH0y6y/ua9d+WJpcEP6sozCANe6esGmaoeRo/TzvvHHbLuUpnq6xewuyOO/L5wznZj/PPgWZzWtUmBz8Dh2m0cGld8MuMJeOjC6IIc3kWT8/1DputJIfHfYBhzp+clN1NUVQmC/siLO+6cdcLyTC9Cl1kDjJic=
+	t=1772648236; cv=none; b=tZnJNd5OxFlIxOOIVg9KbpPfIoscqXx9iKpuIPWhwXKgasT+rLQen1HCcapBSs7F6uZc8MDOq3ZkqNyPAIMsxQ6BpMdtucLLJuavzsAn2mHsmFgZ2qQdZEmX/nkVOXOtMFIoEy2X7es8MmQMGhLTUodZ+4JhrqEbjhnJTIn4JGQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772648233; c=relaxed/simple;
-	bh=MZx+NJBG9GYPs79COSdZaD+MCMhkJPIJL4OlAsjT/UU=;
+	s=arc-20240116; t=1772648236; c=relaxed/simple;
+	bh=9GoprUYSUZssZ1PQaBB39NYf3vii5X9keDoAbe8U6Nk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=POlJgnqJxgAcNqLEaJSVUys8PiAMlVhA1pIWI1rqdraJ4GEI6z/xZejOtUpODTtBv79f7h0UBzN1aboUluKKJV7JIsKviGusu5cm+RuyfOUetLAFVonq46TJSqYGzwhpgADZkIjxXt98QttnYx206He5yqoj6/kBkxMStp8KeqY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=rK0VriBM; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=i+IVfWicohIGPoeZvXCKvPkQn+xtuG7OGTsamZE1CXCILt69Y6b/K1Kwq4ZNcX+q5RX06hUbnHfuNszxIoX92rPJSe9Qm2bTxceBYkJlE25flF3srD75j2OcKTy2UjA2i7z7gQllLJGD/twWrBn6+IuPkeBMIu6S27VIQxiGXDo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DGS+T7jE; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="rK0VriBM"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C693DC4CEF7;
-	Wed,  4 Mar 2026 18:17:11 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DGS+T7jE"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 41AA2C19425;
+	Wed,  4 Mar 2026 18:17:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772648233;
-	bh=MZx+NJBG9GYPs79COSdZaD+MCMhkJPIJL4OlAsjT/UU=;
+	s=k20201202; t=1772648236;
+	bh=9GoprUYSUZssZ1PQaBB39NYf3vii5X9keDoAbe8U6Nk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=rK0VriBM2/ZYSI6eTs2xrKAOlzmZ01cxAD40WqmNqaujUMtmPBzuol6wtfVOsqVL4
-	 OP2+mgEHfF6skXNM1RfQ8CgMz9zVUamUv8kF9r1kXNiuiRqKCFxO4ZhlASZEgFt+rC
-	 vR9RHnyIGjb3K5Tz0Oxw4HY74EQ5JMijzTN3xUTYpNCrxM3198AIsXUs7n0ShfyM4h
-	 6GCnWaMq/ajbbk8SZcAYxTRULCSSb1lcywE9txn3X0K39rYiV9T6h5QdR6zFyCBjRe
-	 uWoZ9WK99tuaM5nm6z9BhWlOedP6YKpqmqRyn7zyKuqfUx+QooEvHDBTydgpOrZ7a/
-	 Tzed/0MQj4ATw==
+	b=DGS+T7jEcTI8Be2G2lD/3RTtYDyJSp3vsWY7cU6obHXHU3W9sEA4r3xkZhijR4mEX
+	 gtGxDuZ7Cz2Di8+7XdHJlp7eLhP8dtKn4n9Um374xMTfJgbeMo6sAc3V+1YNUt9TiI
+	 lgVvmBPi6jPXKeJ5j0C/kCSUuxXPFggtSKsb+ywM/EmM5oTaA+cMkjDxvpOQqvb8a/
+	 uwYiMVRgM4R4pvLNpqFFBqTjw2OSDx8hCa12qUGoIExhiOtyzvUU+mrw6aXdK3+pTR
+	 FLot7dtIMpr5wlLT8r1OR+q1o5MUkDvkb3xyleXy02VteaGVPruNtZo3VFX6JvSQKz
+	 i709I89LSKhPQ==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux ACPI <linux-acpi@vger.kernel.org>
 Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>,
  LKML <linux-kernel@vger.kernel.org>, linux-rtc@vger.kernel.org,
  Linux PM <linux-pm@vger.kernel.org>
-Subject: [PATCH v1 4/7] ACPI: TAD: Rearrange RT data validation checking
-Date: Wed, 04 Mar 2026 19:14:44 +0100
-Message-ID: <3409319.aeNJFYEL58@rafael.j.wysocki>
+Subject: [PATCH v1 3/7] ACPI: TAD: Use __free() for cleanup in time_store()
+Date: Wed, 04 Mar 2026 19:14:01 +0100
+Message-ID: <13971300.uLZWGnKmhe@rafael.j.wysocki>
 Organization: Linux Kernel Development
 In-Reply-To: <5092662.31r3eYUQgx@rafael.j.wysocki>
 References: <5092662.31r3eYUQgx@rafael.j.wysocki>
@@ -48,75 +48,102 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Move RT data validation checks from acpi_tad_set_real_time() to
-a separate function called acpi_tad_rt_is_invalid() and use it
-also in acpi_tad_get_real_time() to validate data coming from
-the platform firmware.
+Use __free() for the automatic freeing of memory pointed to by local
+variable str in time_store() which allows the code to become somewhat
+easier to follow.
 
-Also make acpi_tad_set_real_time() return -EINVAL when the RT data
-passed to it is invalid (instead of -ERANGE which is somewhat
-confusing) and introduce ACPI_TAD_TZ_UNSPEC to represent the
-"unspecified timezone" value.
+No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/acpi_tad.c |   24 ++++++++++++++++++------
- 1 file changed, 18 insertions(+), 6 deletions(-)
+ drivers/acpi/acpi_tad.c |   28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
 
 --- a/drivers/acpi/acpi_tad.c
 +++ b/drivers/acpi/acpi_tad.c
-@@ -49,6 +49,9 @@ MODULE_AUTHOR("Rafael J. Wysocki");
- /* Special value for disabled timer or expired timer wake policy. */
- #define ACPI_TAD_WAKE_DISABLED	(~(u32)0)
- 
-+/* ACPI TAD RTC */
-+#define ACPI_TAD_TZ_UNSPEC	2047
-+
- struct acpi_tad_driver_data {
- 	u32 capabilities;
- };
-@@ -67,6 +70,16 @@ struct acpi_tad_rt {
- 	u8 padding[3]; /* must be 0 */
- } __packed;
- 
-+static bool acpi_tad_rt_is_invalid(struct acpi_tad_rt *rt)
-+{
-+	return rt->year < 1900 || rt->year > 9999 ||
-+	    rt->month < 1 || rt->month > 12 ||
-+	    rt->hour > 23 || rt->minute > 59 || rt->second > 59 ||
-+	    rt->tz < -1440 ||
-+	    (rt->tz > 1440 && rt->tz != ACPI_TAD_TZ_UNSPEC) ||
-+	    rt->daylight > 3;
-+}
-+
- static int acpi_tad_set_real_time(struct device *dev, struct acpi_tad_rt *rt)
+@@ -167,57 +167,57 @@ static ssize_t time_store(struct device
+ 			  const char *buf, size_t count)
  {
- 	acpi_handle handle = ACPI_HANDLE(dev);
-@@ -80,12 +93,8 @@ static int acpi_tad_set_real_time(struct
- 	unsigned long long retval;
- 	acpi_status status;
+ 	struct acpi_tad_rt rt;
+-	char *str, *s;
+-	int val, ret = -ENODATA;
++	int val, ret;
++	char *s;
  
--	if (rt->year < 1900 || rt->year > 9999 ||
--	    rt->month < 1 || rt->month > 12 ||
--	    rt->hour > 23 || rt->minute > 59 || rt->second > 59 ||
--	    rt->tz < -1440 || (rt->tz > 1440 && rt->tz != 2047) ||
--	    rt->daylight > 3)
--		return -ERANGE;
-+	if (acpi_tad_rt_is_invalid(rt))
-+		return -EINVAL;
+-	str = kmemdup_nul(buf, count, GFP_KERNEL);
++	char *str __free(kfree) = kmemdup_nul(buf, count, GFP_KERNEL);
+ 	if (!str)
+ 		return -ENOMEM;
  
- 	args[0].buffer.pointer = (u8 *)rt;
- 	args[0].buffer.length = sizeof(*rt);
-@@ -145,6 +154,9 @@ static int acpi_tad_get_real_time(struct
- 	if (ret)
- 		return ret;
- 
-+	if (acpi_tad_rt_is_invalid(rt))
+ 	s = acpi_tad_rt_next_field(str, &val);
+ 	if (!s)
+-		goto out_free;
 +		return -ENODATA;
-+
- 	return 0;
+ 
+ 	rt.year = val;
+ 
+ 	s = acpi_tad_rt_next_field(s, &val);
+ 	if (!s)
+-		goto out_free;
++		return -ENODATA;
+ 
+ 	rt.month = val;
+ 
+ 	s = acpi_tad_rt_next_field(s, &val);
+ 	if (!s)
+-		goto out_free;
++		return -ENODATA;
+ 
+ 	rt.day = val;
+ 
+ 	s = acpi_tad_rt_next_field(s, &val);
+ 	if (!s)
+-		goto out_free;
++		return -ENODATA;
+ 
+ 	rt.hour = val;
+ 
+ 	s = acpi_tad_rt_next_field(s, &val);
+ 	if (!s)
+-		goto out_free;
++		return -ENODATA;
+ 
+ 	rt.minute = val;
+ 
+ 	s = acpi_tad_rt_next_field(s, &val);
+ 	if (!s)
+-		goto out_free;
++		return -ENODATA;
+ 
+ 	rt.second = val;
+ 
+ 	s = acpi_tad_rt_next_field(s, &val);
+ 	if (!s)
+-		goto out_free;
++		return -ENODATA;
+ 
+ 	rt.tz = val;
+ 
+ 	if (kstrtoint(s, 10, &val))
+-		goto out_free;
++		return -ENODATA;
+ 
+ 	rt.daylight = val;
+ 
+@@ -226,10 +226,10 @@ static ssize_t time_store(struct device
+ 	memset(rt.padding, 0, 3);
+ 
+ 	ret = acpi_tad_set_real_time(dev, &rt);
++	if (ret)
++		return ret;
+ 
+-out_free:
+-	kfree(str);
+-	return ret ? ret : count;
++	return count;
  }
  
+ static ssize_t time_show(struct device *dev, struct device_attribute *attr,
 
 
 
