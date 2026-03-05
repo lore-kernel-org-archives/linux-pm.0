@@ -1,198 +1,91 @@
-Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazon11011070.outbound.protection.outlook.com [40.107.130.70])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FD7337CD40;
-	Thu,  5 Mar 2026 10:02:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.130.70
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772704954; cv=fail; b=Ieiw2r5b2WfzkXJFZm1vP4U/cW0D0j20vqy/nSDw+nnLNgig6y1vEAfaUcjqnJ6/HKBVJqzOn3Bnu651NUSxMhboRSNaXDdO/BEGpitaxqS1mDIZMXWZ7E93YlDieQK6CTrokLAXzZ8rjP/QG+CYYQmj9h9uK8DNqMFSj66srD0=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772704954; c=relaxed/simple;
-	bh=MDBsyEtM8OlONxnNmxyHJU6z1qFmcveHZflsGaGUvbI=;
-	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=V2tKZLW+zw5AFHNghP4FivxeFqyf5XvVa0tQAoICZ3g46GgTJnqxlGGqi2JDsunbw6cMAHBZ9KZfAmQZRPt5KadgsxDVaMn56uPwmHjmVjsAY5VBusaHJuROqjSc/lTk9STgekGm1KjaMImIboHpEhPyL0BVARAUbU+Hk+D+Roc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=GYU207FK; arc=fail smtp.client-ip=40.107.130.70
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6EF7E375F62
+	for <linux-pm@vger.kernel.org>; Thu,  5 Mar 2026 10:05:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1772705124; cv=none; b=QjpniLbju05jebPDCtPiXmgY9qHdiU8i/uWMjEhVaMFb8Vr20O2nZ7Yx8vcaplfD1XA0pJHaxV7w6E1H/1ppBzxZEK6QIctGy2ayf2qhRu39YnvbuZ6FmD/SMRLkAV/lIEaiS+pymukVD1jd4A5TKzzUBh5Ur1dtoNLQGtvDalA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1772705124; c=relaxed/simple;
+	bh=lQ0T9bUE9C/9y8Vs6pywRcQ3tiB0ev9f4VxMdnV+hAk=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Ar40oasfXA+WChFV41r2dg/I3HCbmK11OiplqRmFlf5CThE0AvpybztMdpB7EXet+tm8fRztqBH1a/IDEvODAqAUTUIWvsBQbs5BSiLHSl+1tbnX8DPJjtdZebQOlXWv932lo0IH1tU3X6MaSm25pWPIpuqSYsHP+7IqFkohvfw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Rrk1MOcb; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="GYU207FK"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=OgUi76d4zCuBOSCX4cZQVawoMFuoUWhSsDk3iLuGUunlMaYIr4ENIXFCXH+jjyQgHeQoInGYPj9RodOMI25vqvIBvLCQXxGOLPkDFyWOt260xIYJtuu28jQdoHIVsKjv9IW2xCbJVFZ9vaeKYp1c2gFO8eRrg7tya9uNzcxhH5Kbar8Rml8mcZXIUxkny9xXjnySy+ftS9y+x8q6uk2eJit1pJ75kud4zxmwwoVb6OId3cAFtEzw7gACB1RWPQ8eA+EJSbSDejfOOmPKq7pTBlVM3YxPPmTM+fnSqLHWUqF3/jm2MhZsXj5LMOWrNkZD+ISgoPYnUb3U4eS1fuqL3Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=xhLI8nUAaEAPVC5o5dn95EO8aPRidblJeZgYVfyjJEk=;
- b=gEh0zUJJ/dy1mP7Btol0xpkfR2n7+Cdvw1fcnVdVXtN+9C2YOWOw4Vphi6btj3T8VVLe1HR1FWpZtMGbVjGsjrJ6GwwBgWd0ZJnttgBbnk9XZWgXQF6k59bHBW6qGaUcyP40bKUJGKjAp/8uyJk7JGmBEtpj20ip0fmm41j62jKRSjH53M4cI3AKfgs6gg1uVcoabNmhmpkdJZCDLNAKLrrki76TyAEMr7RM0fDlMeTuFX7BnER92w0Dofs9WWITfOxZwwcQm/kc5ZWsgsqxvHw4oXUdV+AuVrBh9QARGN5SPbRX2sImGHiBPqaYBTyGeFz3SG9o0JqlpxK4spCahA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=xhLI8nUAaEAPVC5o5dn95EO8aPRidblJeZgYVfyjJEk=;
- b=GYU207FKrZhSBTGDmOhpn0Kd4I8dqiEIPDabxMb4emjgpNytTV3p5xwRqWZDK60P9V3ppA6vv90QOM3v+dmMGMFMOQQ3dqRhSEZwEDhRMHDAd74VkYNjfqYCU/pl6CaxihagOFsxBbCRqlu00ULjB2nxIdSzUUxd0aa+hGjSo9EePkWew5K0sO/lAihJGePoEJwV6zu1TWmuKZvcezi3UFt6bbFUOikGn8itTIgGLZvz0pblb8uDRNTSu47SR0tT5nG1q31AOmyVr2C55IxOJJDMrn3i4g8olUloKN+YDJ3RAh11cAhHrEaPjysbX6DrCNJsT9USPoF+q+ZL4gPRRw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from PAXPR04MB8254.eurprd04.prod.outlook.com (2603:10a6:102:1cd::24)
- by AS8PR04MB9128.eurprd04.prod.outlook.com (2603:10a6:20b:44b::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9678.18; Thu, 5 Mar
- 2026 10:02:28 +0000
-Received: from PAXPR04MB8254.eurprd04.prod.outlook.com
- ([fe80::20db:4017:28ea:911b]) by PAXPR04MB8254.eurprd04.prod.outlook.com
- ([fe80::20db:4017:28ea:911b%4]) with mapi id 15.20.9678.017; Thu, 5 Mar 2026
- 10:02:28 +0000
-From: ming.qian@oss.nxp.com
-To: linux-media@vger.kernel.org
-Cc: mchehab@kernel.org,
-	hverkuil-cisco@xs4all.nl,
-	nicolas@ndufresne.ca,
-	benjamin.gaignard@collabora.com,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	p.zabel@pengutronix.de,
-	sebastian.fricke@collabora.com,
-	shawnguo@kernel.org,
-	ulf.hansson@linaro.org,
-	s.hauer@pengutronix.de,
-	kernel@pengutronix.de,
-	festevam@gmail.com,
-	m.felsch@pengutronix.de,
-	fra.schnyder@gmail.com,
-	linux-imx@nxp.com,
-	l.stach@pengutronix.de,
-	Frank.li@nxp.com,
-	peng.fan@nxp.com,
-	eagle.zhou@nxp.com,
-	devicetree@vger.kernel.org,
-	imx@lists.linux.dev,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v2] media: verisilicon: Fix kernel panic due to __initconst misuse
-Date: Thu,  5 Mar 2026 18:01:48 +0800
-Message-ID: <20260305100149.722-1-ming.qian@oss.nxp.com>
-X-Mailer: git-send-email 2.48.1.windows.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: MA5P287CA0015.INDP287.PROD.OUTLOOK.COM
- (2603:1096:a01:179::15) To PAXPR04MB8254.eurprd04.prod.outlook.com
- (2603:10a6:102:1cd::24)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Rrk1MOcb"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 47F8EC19423
+	for <linux-pm@vger.kernel.org>; Thu,  5 Mar 2026 10:05:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1772705124;
+	bh=lQ0T9bUE9C/9y8Vs6pywRcQ3tiB0ev9f4VxMdnV+hAk=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc:From;
+	b=Rrk1MOcbJC7diGpkgHuAM97vXMc8P/tAN1MFcvPsz7M8WIioAvB9XmrQqu5l+dSOg
+	 aqOzcPXh6wSPUm4OVtyZxFCi+cRg9dF2mhjO7HfmL6gRHmrm4l6E+qtIfIiBx3RM8d
+	 dkaAfVCb4KCX0Q53zYLrv8P7wUElGWhYZn9npg6tk4bytkPMfj/oDiiZoqr9PVQNyZ
+	 XrwRcUKB0ctZvgOj+MPTqa6r76dEWwCKo97NqFJlBdWXE4eLOzRIGpzVIrspHKuzwN
+	 +UsuV5+xp7XgdQWqMORe8SoS+IHXb9l30Aw1JZGDBSl0dJkLjmhcnKw+1mfgfnpvhQ
+	 y7sT9ETdlhkPQ==
+Received: by mail-lj1-f171.google.com with SMTP id 38308e7fff4ca-38a2a59baa6so20323001fa.2
+        for <linux-pm@vger.kernel.org>; Thu, 05 Mar 2026 02:05:24 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCVMedbV/D3MQDYtfvLJ22fAktWlpz6hRawq1oF5dFtIXE+5LHSUPV9uuYt4QjnteslHG6JqpaxIHQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwqkcqIUvoDf+gPnc2KHGsrWzEcOMYmDJRefQor0AauQ7D9Ds2Q
+	Aoi0KTMZIy9aoLvdp98rk1ARv/zHRULPIjLGKcbbBA9CvD/88dkYgfyuZ19mMg213+YyKKiDzlF
+	wxGHtFSneD/bUp36nFH04Q016p3XiqHviuSd78FB4/g==
+X-Received: by 2002:a05:651c:41d6:b0:387:4ee2:1cbe with SMTP id
+ 38308e7fff4ca-38a2c564d92mr31840641fa.2.1772705122833; Thu, 05 Mar 2026
+ 02:05:22 -0800 (PST)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 5 Mar 2026 05:05:20 -0500
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 5 Mar 2026 05:05:20 -0500
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20260304-arm-psci-system_reset2-vendor-reboots-v20-1-cf7d346b8372@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PAXPR04MB8254:EE_|AS8PR04MB9128:EE_
-X-MS-Office365-Filtering-Correlation-Id: b3efc4fb-7e00-442c-d8a0-08de7a9e4eaa
-X-MS-Exchange-SharedMailbox-RoutingAgent-Processed: True
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|366016|19092799006|7416014|52116014|376014|38350700014;
-X-Microsoft-Antispam-Message-Info:
-	8uuzn7jfqaoiBZn2InAnGq/UKEvCvPF+hlNyQsD8p/WRZTvpqJUaH+dQoo7ds+3ebYjoz4xDWZkKOiaQteMS/ZFt3uDSkto2GKe9D5UH2BPm920450iacQSenCWw6MSCq11+1r9+OhEmYKtHCphwctFdoyX2tKmjBNH6aLnlIh6gTqVt21EEpEsmBuTykbLxbQ+fSaZoPhikLg8LZWKlcbJt2oG0ZNt5Syv9Hq0vpbhwS5hPPnAMmoVGtjbpnb7ET4XTCl2p+/RJ1+ug6qqQP4Hw7on8dMn2KIdBImCKNh3gkjF6IymRmCVgNXxRwW/nNMrLkwMZPAcRU2zgxU9iwcoKLRZ3qwi5EMr1g4nrjedy5HVOtoh3YmS60R5MeOeTIIE9EoWU8miUmzRDMkvg4ATkbvfSsJm11QUS+XnOs2cFjTtDkRnZdRhv4Q11DXS3vFOgnRy9hWD/v5FmNCKLKC6EN0vBQCOxG9v6dOUzk9V36HwGIouZmJ8XmKRlR+Ex0iUW/IDAnN9a+4SypYDXlQzx9cAIv4g/pMGy8h5ScaqMb1RSitY8obOdG++N5OhazCLEAeRKcjl57PImMvQQi3qdxAmMd8xKGil0Ov4HsvseLBaGh962o5HKlRyKuLgsJ2QaXEHii0waZXPN91Ca95s4/z5FGx2f9Xn9WQzf+0i7HwIMDTqSzM1XwXaaLDS0pKGNl0b1p1iNrAWahxuDONkgccP6FY+oUq990/bSyWh+iZkDYFgoOQ/6PI3ZCY7rGbW+XT6g9rskubGHsIpPEu8CTavS0XVJIszsE3kthM8=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB8254.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(19092799006)(7416014)(52116014)(376014)(38350700014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?U+QVKa+j8T5XLIKEBOjO1c+sYSLRaNZThXsxG8j6XsCYeFKCB4iFroiwZbUT?=
- =?us-ascii?Q?CjSKqtbia+VjzXWLRitQOK3+79dboQpxhPE+wuJgGJ68WcwOy93LzXZCw3jM?=
- =?us-ascii?Q?T6TTHNwCuAOyCIwIAdaEjdhdNRPe/VBnimJtjlvqFz8OoilFTZ0Va1u9JB/o?=
- =?us-ascii?Q?gi1Sjd2m1nWkG4H36eN7ATnRaXeDGWWVBBFqjZruftIK0vB2waIfzWF40aA+?=
- =?us-ascii?Q?BXA0mvOkhmWogjwZGrWXfYagDVSOR0ff3wx6Qj73K4806XrHatuRsgS1qOgB?=
- =?us-ascii?Q?fCHAGpUR4e/UOfWLArHkuSLqYCAyCe9erT5rDfXAwCqWSGmB3YO5p7z4vb5W?=
- =?us-ascii?Q?ZXvUSjaFvh+7mQxou9B6o4NTD95W/BgSwGMeNN+rcodAdcel1rw1pGuElL9I?=
- =?us-ascii?Q?vIq2UVDGY9+xkSHQHsTq7LcfkRy9+XeeRg+3EFZQSJWU+VRxb2X5wAmnfG50?=
- =?us-ascii?Q?Hcw3lhQvtkUFmluEeXMUkO5bFvpuJcj+aLdCBocdb2aI9nerakck+tj3svwg?=
- =?us-ascii?Q?TEJocCTf72qmSGxFXYYwWut5RmOaZUksCcqpQ9J35CaNYU3P5Eoxny35jWBq?=
- =?us-ascii?Q?xKnPqaBDZGquIquUMiha7Xpn7pp8B0p4hQ3k49oChqgPQPyteJYUUnOJY01u?=
- =?us-ascii?Q?T/Ob18JHbqxpl3L2DcJ4EPo3gyuRg9PQ/p9pkBDxBuAZ118KJP3Ph5toNPzg?=
- =?us-ascii?Q?ebLqnJLyhokQ+P60F2MheTdTfLrRZ9x88ml9wcuswBRoAp/FZgMuylPKV7k+?=
- =?us-ascii?Q?LKZdaUyrim2cJDg+s56QLToNrz9ARg0yfjAQu5uDBGrAxygTiqYnsjSlo5lx?=
- =?us-ascii?Q?v6GyDuohOcNXQYf+fTI1//O+1MK1r4g17UX46QuwECJWxOTwvc4KDFYMKSJJ?=
- =?us-ascii?Q?Comlr1UVhsK6HajS4mzTLjO5ctRF+HqYd8qtiFmxIl4Iz1m4FSVWZKCjI7du?=
- =?us-ascii?Q?G/kjnIacoDbrhOLL8sQKCrKldKDW89VZSKS1qhTjUNEIu7JV4GBHfyDeAGri?=
- =?us-ascii?Q?MOVGyIQiDDRAOrwq18U+No2ic4uEaLvPl8ScRXFeipg76N3RlxGDNUs5LbVj?=
- =?us-ascii?Q?dLvxkNXOU5R0odfJ4QS22pTTSKXt3+0Ds8q3D6ESaoUspAKs3GwC+wnxa4JR?=
- =?us-ascii?Q?99EHyCqTCIvO5grixrqmqUtJaHKrasHAgrVBxB4zvb2bvt4B64pYTVdD22dk?=
- =?us-ascii?Q?f6jToxHFyZSHtCVHxUOn6Qyty/B1KekyNmLTS5B6aMrp5l33Kvgul12hliQB?=
- =?us-ascii?Q?/ZZBnhiAZGWO3Cil7GJxSaVHP8BIEQ7JEDuHXeTyayjq7QBnzgTdoHigti0w?=
- =?us-ascii?Q?Yjo8fPfKivDFmBWv/7UiuAu2LWJklbhT76s+ENfWH6gKTvwNHKRDLwPWkdCK?=
- =?us-ascii?Q?TAhsGJ7iSBNtP6XEbQLoy713W5hBvlL8FgCInqER0Z2zByZfXPh7IxzXCSXK?=
- =?us-ascii?Q?xDucB3EFrqjOO5rDX8TrDBdh8qLR7HD+0J3MwWma5N2+GfN5mcf4miI2gncT?=
- =?us-ascii?Q?KDE2vO+VXiPqkYgF+64QFm2FYdL8oIGlv80rZ6UXn4TCf4Ommj/w+6voPMK7?=
- =?us-ascii?Q?+MakKJANNkEUGlwOZWPXXDpt6Q6tiNAofqt/7x1knW1yiEqoj8H4SlHuwa0e?=
- =?us-ascii?Q?pac86EhhY4OdTw8c4d5W0va54Rd86HOU2DCmxh8I4jLjHwgBT94fxWD3Ka2D?=
- =?us-ascii?Q?r29xDq3aRJ19wkijqON0WXdtqIYFtm0tCXlne3e6UmKK8Wlt0YRYU7EXj21o?=
- =?us-ascii?Q?aLWYDNvG+g=3D=3D?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: b3efc4fb-7e00-442c-d8a0-08de7a9e4eaa
-X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB8254.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Mar 2026 10:02:28.0097
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: NPMQCLI+E1Q5SMGH0+2vJlwoDMIQ3XPb/vmmCQL4WJnBOfvuvZjBhIwkYL1Y1sYXk1gu5qOuVFl4hvY663OPHQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB9128
+References: <20260304-arm-psci-system_reset2-vendor-reboots-v20-0-cf7d346b8372@oss.qualcomm.com>
+ <20260304-arm-psci-system_reset2-vendor-reboots-v20-1-cf7d346b8372@oss.qualcomm.com>
+Date: Thu, 5 Mar 2026 05:05:20 -0500
+X-Gmail-Original-Message-ID: <CAMRc=Mdnf_F2JtSOaz4AkZT6EErYhMcVT8HZ+bf_zO+FCH+OUA@mail.gmail.com>
+X-Gm-Features: AaiRm52_Ghl_cyrpx4-PLseenakv1wMTEmeY_ZbSCiMyp4qVQG4KYHqTiXWk5K0
+Message-ID: <CAMRc=Mdnf_F2JtSOaz4AkZT6EErYhMcVT8HZ+bf_zO+FCH+OUA@mail.gmail.com>
+Subject: Re: [PATCH v20 01/10] power: reset: reboot-mode: Remove devres based allocations
+To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+Cc: Florian Fainelli <florian.fainelli@broadcom.com>, Krzysztof Kozlowski <krzk@kernel.org>, 
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Andre Draszik <andre.draszik@linaro.org>, 
+	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+	Srinivas Kandagatla <srini@kernel.org>, Lorenzo Pieralisi <lpieralisi@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
+	Bjorn Andersson <andersson@kernel.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Souvik Chakravarty <Souvik.Chakravarty@arm.com>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Andy Yan <andy.yan@rock-chips.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	Mark Rutland <mark.rutland@arm.com>, Conor Dooley <conor+dt@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, John Stultz <john.stultz@linaro.org>, 
+	Moritz Fischer <moritz.fischer@ettus.com>, Bartosz Golaszewski <brgl@kernel.org>, 
+	Sudeep Holla <sudeep.holla@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-From: Ming Qian <ming.qian@oss.nxp.com>
+On Wed, 4 Mar 2026 19:03:01 +0100, Shivendra Pratap
+<shivendra.pratap@oss.qualcomm.com> said:
+> Devres APIs are intended for use in drivers, where the managed lifetime
+> of resources is tied directly to the driver attach/detach cycle. In
+> shared subsystem code, there is no guarantee that the subsystem
+> functions will only be called after a driver has been attached, nor that
+> they will not be referenced after the managed resources have been
+> released during driver detach.
+>
+> To ensure correct lifetime handling, avoid using devres-based
+> allocations in the reboot-mode and explicitly handle allocation and
+> cleanup of resources.
+>
+> Fixes: 4fcd504edbf7 ("power: reset: add reboot mode driver")
+> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+> ---
 
-Fix a kernel panic when probing the driver as a module:
-
-  Unable to handle kernel paging request at virtual address
-  ffffd9c18eb05000
-  of_find_matching_node_and_match+0x5c/0x1a0
-  hantro_probe+0x2f4/0x7d0 [hantro_vpu]
-
-The imx8mq_vpu_shared_resources array is referenced by variant
-structures through their shared_devices field. When built as a
-module, __initconst causes this data to be freed after module
-init, but it's later accessed during probe, causing a page fault.
-
-The imx8mq_vpu_shared_resources is referenced from non-init code,
-so keeping __initconst or __initconst_or_module here is wrong.
-
-Drop the __initconst annotation and let it live in the normal .rodata
-section.
-
-Fixes: e0203ddf9af7 ("media: verisilicon: Avoid G2 bus error while decoding H.264 and HEVC")
-Reported-by: Franz Schnyder <franz.schnyder@toradex.com>
-Closes: https://lore.kernel.org/all/n3qmcb62tepxltoskpf7ws6yiirc2so62ia23b42rj3wlmpl67@rvkbuirx7kkp/
-Suggested-by: Marco Felsch <m.felsch@pengutronix.de>
-Signed-off-by: Ming Qian <ming.qian@oss.nxp.com>
----
-v2
-- Remove __initconst
-- Add missing Reported-by tag
-- Add missing Suggested-by tag
-- Remove comments of sentinel to pass checkpatch.pl
-
- drivers/media/platform/verisilicon/imx8m_vpu_hw.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/media/platform/verisilicon/imx8m_vpu_hw.c b/drivers/media/platform/verisilicon/imx8m_vpu_hw.c
-index 6f8e43b7f157..6fbe3c581032 100644
---- a/drivers/media/platform/verisilicon/imx8m_vpu_hw.c
-+++ b/drivers/media/platform/verisilicon/imx8m_vpu_hw.c
-@@ -343,10 +343,10 @@ const struct hantro_variant imx8mq_vpu_variant = {
- 	.num_regs = ARRAY_SIZE(imx8mq_reg_names)
- };
- 
--static const struct of_device_id imx8mq_vpu_shared_resources[] __initconst = {
-+static const struct of_device_id imx8mq_vpu_shared_resources[] = {
- 	{ .compatible = "nxp,imx8mq-vpu-g1", },
- 	{ .compatible = "nxp,imx8mq-vpu-g2", },
--	{ /* sentinel */ }
-+	{}
- };
- 
- const struct hantro_variant imx8mq_vpu_g1_variant = {
--- 
-2.52.0
-
+Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
