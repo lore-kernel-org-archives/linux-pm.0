@@ -1,58 +1,62 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 46EFE18DF80;
-	Fri,  6 Mar 2026 00:29:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E6D8C2D6E5A;
+	Fri,  6 Mar 2026 00:37:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772756972; cv=none; b=jcwdK7hpmtSdWIwj9gZ781a/9SSh16dbHKuc+5Z3G5w3gCOLNq53Fku/ECM8qmDnXxEzgAq8hluzHd5t3aj1BnTNP427qnzQg8+4GI7IvcqHHyJS8Qqrij5bcPocWZo0hK1PmrX9nj+pfuCZs8OHegdJTNJlgP74GOA5BIcf8GE=
+	t=1772757436; cv=none; b=n/OXa4CoX3alSOsoy9q0X5/YXXiHv/hWk0xa7R9OGlEXNOcwNNmutE6sxX1URps/qPuJdaIlV9ZTUKXFe6aw/8ol7L+2UG26JsNjqb5FC22CIIZB4lDykG+TDtiBqtOgq9ONeheHEWz1Rzs2mN04IvQkiqQF9RgTOGqSPSo11pM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772756972; c=relaxed/simple;
-	bh=H/ApE2Ifn1Gwf6HdI5rD2qg2A1C36R8oMsoc12fiRtE=;
+	s=arc-20240116; t=1772757436; c=relaxed/simple;
+	bh=oC0WG6ItKUCSxYMHU2SvjasflD+xGQ+gzl/C4UFO9rY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=M6coe2u1Ol3DVp5lLDdAco73wxfese0/OHiPgFJgNGiHZ2u0FhD7yTU9MuumXfQfjTDnO9PYsD56fH0t2+0iFtcyi8hgiLNzh08B3aYaVJ1H9Zeru7hD0tUw6lopTuJqPuSW3QbN+/EXuMJ61QFD5VL1gHPh/s0lBEkzoyLo9oE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LhRsuBQa; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=ZHVp8zAyYtiVBqgogwC4HKv1gtAJy9VOCVARPdKD8bNZFpZ++8kLlTjg4CJHenBtlJU9gMM5p+tiy+k35+bl1ii7gY7gbeyB9Vh8vBJGoOAvCw0l65MCTPlzn3GJ8iAyCkmx7oGuefLscDYBOi3zFeZw+zQYYQYdoikZ1kGiNfY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=D4XY3rKd; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LhRsuBQa"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AC8D2C116C6;
-	Fri,  6 Mar 2026 00:29:31 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="D4XY3rKd"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 62593C116C6;
+	Fri,  6 Mar 2026 00:37:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772756971;
-	bh=H/ApE2Ifn1Gwf6HdI5rD2qg2A1C36R8oMsoc12fiRtE=;
+	s=k20201202; t=1772757435;
+	bh=oC0WG6ItKUCSxYMHU2SvjasflD+xGQ+gzl/C4UFO9rY=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=LhRsuBQa2HW1msxsnJ1GDnVDwGgwkTtwysMZq4+woC0ocQdwWhGlzNU+N0+B5vfTl
-	 ovmzsoIiOGaNz3xniEY6aKgIntgyaCPQAnRlGd1Jfh2DEGL4/1++9E0+4dSVYt4nSy
-	 quDtjQhfegKASaFRSUXp1XBF3qyGZ0WNSgbN+AlRsRK3xefJMGMdowu1DmMrAJ/lh0
-	 Eg53SZTvSty8k2hpkMkJqdG65oP2uTAM+bUx3h72S6PKHjKd4UrlvpJqTa1wuQ+4vD
-	 RCohdrq5kYeD/Om8A01/jFs3Y5uitjN69tr4n4Wpoa3gAzvL84BNwm5xXNi3Jy0zrX
-	 C1sz/TvvAvvqA==
-Date: Thu, 5 Mar 2026 18:29:31 -0600
+	b=D4XY3rKdpaWXGYVvXVy2J7kf45PK9Zk/WeZDdRFTqG0Ypi1WrzCsv396e28n6QAnR
+	 szI2MH2+RO7ICkFUsmJwLsWJQQ4DW5UlluU44Adx0cfDMoo8Y5TnF35O1166ffFrGp
+	 axw4VWvMDaZsttVeWUJYLZIWboclRv6Lu6XLm2EQIz8zViHtXqdZWo+kAwsqBHj7Ye
+	 t/V+RPCy6GCfKVnWduwPSzzgs92RUiARceA3QUPrMFdB14L5gJ0Or9/GGXsA8iyRkU
+	 25ZE9HRFuLsK+d1zSBztQ0hAMGIWNiNxKeBB1m0ga1wIBDaRA0RGzfMv5uTnA9GQz2
+	 olcrQsw2oLANw==
+Date: Thu, 5 Mar 2026 18:37:14 -0600
 From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Luca Leonardo Scorcia <l.scorcia@gmail.com>
-Cc: Louis-Alexis Eyraud <louisalexis.eyraud@collabora.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	linux-input@vger.kernel.org,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	Sen Chu <sen.chu@mediatek.com>, Liam Girdwood <lgirdwood@gmail.com>,
-	Sean Wang <sean.wang@mediatek.com>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Julien Massot <julien.massot@collabora.com>,
-	linux-arm-kernel@lists.infradead.org,
-	Eddie Huang <eddie.huang@mediatek.com>,
-	linux-kernel@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>,
-	Gary Bisson <bisson.gary@gmail.com>, Lee Jones <lee@kernel.org>,
+To: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+Cc: linux-kernel@vger.kernel.org, Hans de Goede <hansg@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+	Mark Pearson <mpearson-lenovo@squebb.ca>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+	Nicolas Schier <nicolas.schier@linux.dev>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Marcel Holtmann <marcel@holtmann.org>,
+	linux-bluetooth@vger.kernel.org,
+	Hans de Goede <johannes.goede@oss.qualcomm.com>,
+	linux-kbuild@vger.kernel.org, linux-acpi@vger.kernel.org,
+	Nathan Chancellor <nathan@kernel.org>, linux-serial@vger.kernel.org,
+	linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+	Stephan Gerhold <stephan.gerhold@linaro.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Fabien Parent <parent.f@gmail.com>, Val Packett <val@packett.cool>,
-	Macpaul Lin <macpaul.lin@mediatek.com>, linux-rtc@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	linux-mediatek@lists.infradead.org, Mark Brown <broonie@kernel.org>,
-	linux-pm@vger.kernel.org, Chen Zhong <chen.zhong@mediatek.com>
-Subject: Re: [PATCH 3/9] dt-bindings: input: mtk-pmic-keys: add MT6392
- binding definition
-Message-ID: <177275697060.854738.6493014317679593134.robh@kernel.org>
-References: <cover.1771865014.git.l.scorcia@gmail.com>
- <056cbc09fcbb4a2845cece69209a2a564d993ac5.1771865015.git.l.scorcia@gmail.com>
+	"Derek J. Clark" <derekjohn.clark@gmail.com>,
+	Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	linux-arm-msm@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>
+Subject: Re: [PATCH v5 5/9] dt-bindings: connector: Add PCIe M.2 Mechanical
+ Key E connector
+Message-ID: <177275743363.863482.4907350402954584802.robh@kernel.org>
+References: <20260224-pci-m2-e-v5-0-dd9b9501d33c@oss.qualcomm.com>
+ <20260224-pci-m2-e-v5-5-dd9b9501d33c@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -61,21 +65,31 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <056cbc09fcbb4a2845cece69209a2a564d993ac5.1771865015.git.l.scorcia@gmail.com>
+In-Reply-To: <20260224-pci-m2-e-v5-5-dd9b9501d33c@oss.qualcomm.com>
 
 
-On Mon, 23 Feb 2026 17:12:42 +0000, Luca Leonardo Scorcia wrote:
-> From: Fabien Parent <parent.f@gmail.com>
+On Tue, 24 Feb 2026 11:00:51 +0530, Manivannan Sadhasivam wrote:
+> Add the devicetree binding for PCIe M.2 Mechanical Key E connector defined
+> in the PCI Express M.2 Specification, r4.0, sec 5.1.2. This connector
+> provides interfaces like PCIe or SDIO to attach the WiFi devices to the
+> host machine, USB or UART+PCM interfaces to attach the Bluetooth (BT)
+> devices. Spec also provides an optional interface to connect the UIM card,
+> but that is not covered in this binding.
 > 
-> Add the binding documentation of the mtk-pmic-keys for the MT6392 PMICs.
+> The connector provides a primary power supply of 3.3v, along with an
+> optional 1.8v VIO supply for the Adapter I/O buffer circuitry operating at
+> 1.8v sideband signaling.
 > 
-> Signed-off-by: Fabien Parent <parent.f@gmail.com>
-> Signed-off-by: Val Packett <val@packett.cool>
-> Signed-off-by: Luca Leonardo Scorcia <l.scorcia@gmail.com>
+> The connector also supplies optional signals in the form of GPIOs for fine
+> grained power management.
+> 
+> Tested-by: Hans de Goede <johannes.goede@oss.qualcomm.com> # ThinkPad T14s gen6 (arm64)
+> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 > ---
->  Documentation/devicetree/bindings/input/mediatek,pmic-keys.yaml | 1 +
->  1 file changed, 1 insertion(+)
+>  .../bindings/connector/pcie-m2-e-connector.yaml    | 184 +++++++++++++++++++++
+>  MAINTAINERS                                        |   1 +
+>  2 files changed, 185 insertions(+)
 > 
 
-Acked-by: Rob Herring (Arm) <robh@kernel.org>
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 
