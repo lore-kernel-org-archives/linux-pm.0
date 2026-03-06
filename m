@@ -1,34 +1,34 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3562823D2AB;
-	Fri,  6 Mar 2026 19:33:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 540EA2253A1;
+	Fri,  6 Mar 2026 19:33:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772825608; cv=none; b=kmsTq+xeqhDCx+IwfCtoigszzheDaLCpKbXjwFtvEstGqb/rSlhPB+Ce6KyEDkArhFpdazVwjI9Le/E/Zu1IX5khRyZCDfc6y+9jjho4TrX93x4ptHO5wlm4jvw9hjw7pKNIfnvIRDHuJBv5542rmrRQwQNbGYvJWcJeatwvkLs=
+	t=1772825630; cv=none; b=f2VgBThBA/pUYv+IpvjeHMoR39OytBq1uqLaHoVl1BtS1evEjDCS4I24q6iWBPuBlaDe6DrOwuunY6GQi4tGTeRr9liUp1UdrvK9heSr+xX2OmpQOknYuHagpiUb6c2I/ldqr+2e/TzbCwNU01JL8C7CLB4/1BB+4dyLgjWAtrE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772825608; c=relaxed/simple;
-	bh=F0tcM+0aLtyu9+sy+4raX3Cn0ZsSeO8j8SqZmuvw1uU=;
+	s=arc-20240116; t=1772825630; c=relaxed/simple;
+	bh=MZYR8UjO1La/uOwjFhABrV8pmfgmFz8BISXIR0unh0U=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=WJXqZ8cGsF1X/LsvtjLqRta7iKHf4JAmvdT32zcbh3IXcTufTIlIhIDGUyMXs4j7OFKTi2EObzM8x35jzlHzNkFOZdneU8aARgXdNwrPb8Tt35F4kQFXHihTNX9jeqSfy2hwUPOql9sX5j7+IEz9H8Yb2L0s2Afmt9WwHjw6JWw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bTOjsbKg; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=rtSQ70v4yFrUAxlZFFrGFnrF9vySxk3y/9TpByTVPg6kNrb/DdgIzzfOkbEsQRDXJEDjvoOPJRHbzBuEejxJCftbRuS/hb7sRR32vgTYYZ3DiUl5uFnt11S0Ogew3IzqMNnuUaGVq1N2+QSx6aO/SGayP5DVkg5FlUeO+fcVbUg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=l5PoroOr; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bTOjsbKg"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E51AC4CEF7;
-	Fri,  6 Mar 2026 19:33:25 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="l5PoroOr"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0E1B2C4CEF7;
+	Fri,  6 Mar 2026 19:33:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772825607;
-	bh=F0tcM+0aLtyu9+sy+4raX3Cn0ZsSeO8j8SqZmuvw1uU=;
+	s=k20201202; t=1772825630;
+	bh=MZYR8UjO1La/uOwjFhABrV8pmfgmFz8BISXIR0unh0U=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=bTOjsbKgBgOw9uUr54vBA4E5HBdfPYtwFOZNctHClWMTzUryPUoD91QnCIBXGig0h
-	 M78ldaSAWi93zFGxwhzJm5cl5Fd7aggnXGYij8ho+2RsK+z6nMaoUY1qPtjSj6P31q
-	 Fbgc8zFRQdN3t+/H6wwnOYQraPBvumcBUuHtLJtnapGl5evH+NOtYw4c86dsn9x3Hv
-	 l0c9snZCyBSxx35jOxiLK4IfHupcIzAS3Lh1j0pvUaDx40gc3vlDFAjiuHuwkIHc6H
-	 uYyLTeA/We0gw/DQiFJ5F65Qo5gwUqXwF2cY9c2nMixAbjXQ2jxU9ZRly0Nk2KxZbH
-	 1xE7atDy5yCDw==
+	b=l5PoroOrf8PSKKSfeRDJLJwzBcKqrmtpw66+rADFEj8mFz18aD5kInLOGgqwWl6yQ
+	 p+2gBmM8LEwDDlnEGcRrqxQtObr7EWvH2vse3P/4cShCygNF+nEPlNzS8xWDrdPIip
+	 IF861GA6+iepIqsaEjZPrQbMpHbDX/NR0qUSwKrPbO1+X46aR2Vw43j5iQGNJ+JAWA
+	 b4bS7GdDuqsS5ndIUEhy5xVUpSQq8NY1GyoLQJxSTlzDVnlQbLl74GzmTEeV4jBBFu
+	 iiYdSGw28xj6au5tKuWow/Tt5NU0LokFsOo9Q1snx0CGKbPaDKyip/clLGIaywB1tb
+	 ra05TUHmn3qfQ==
 Received: by finisterre.sirena.org.uk (Postfix, from userid 1000)
-	id 8C0971AC52D4; Fri, 06 Mar 2026 19:33:14 +0000 (GMT)
-Date: Fri, 6 Mar 2026 19:33:14 +0000
+	id CBA901AC52D4; Fri, 06 Mar 2026 19:33:40 +0000 (GMT)
+Date: Fri, 6 Mar 2026 19:33:40 +0000
 From: Mark Brown <broonie@kernel.org>
 To: Alexey Charkov <alchark@flipper.net>
 Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
@@ -40,11 +40,11 @@ Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
 	linux-kernel@vger.kernel.org,
 	Sebastian Reichel <sebastian.reichel@collabora.com>,
 	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 02/11] regulator: bq257xx: Remove reference to the
- parent MFD's dev
-Message-ID: <aasr-tgjMg1bZfe6@sirena.co.uk>
+Subject: Re: [PATCH v2 03/11] regulator: bq257xx: Drop the regulator_dev from
+ the driver data
+Message-ID: <aassFFJ6-dlvwaqS@sirena.co.uk>
 References: <20260306-bq25792-v2-0-6595249d6e6f@flipper.net>
- <20260306-bq25792-v2-2-6595249d6e6f@flipper.net>
+ <20260306-bq25792-v2-3-6595249d6e6f@flipper.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -52,36 +52,35 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="VpFhgN6x+jAiy75m"
+	protocol="application/pgp-signature"; boundary="JBm7Cga1uIFwkQ+t"
 Content-Disposition: inline
-In-Reply-To: <20260306-bq25792-v2-2-6595249d6e6f@flipper.net>
+In-Reply-To: <20260306-bq25792-v2-3-6595249d6e6f@flipper.net>
 X-Cookie: Think big.  Pollute the Mississippi.
 
 
---VpFhgN6x+jAiy75m
+--JBm7Cga1uIFwkQ+t
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Fri, Mar 06, 2026 at 06:33:02PM +0400, Alexey Charkov wrote:
-> Drop the ->bq field from the platform data of the bq257xx regulator driver,
-> which was only used to get the regmap of the parent MFD device, and use the
-> regmap from the regulator_dev instead, slimming down the code a bit.
+On Fri, Mar 06, 2026 at 06:33:03PM +0400, Alexey Charkov wrote:
+> The field was not used anywhere in the driver, so just drop it. This helps
+> further slim down the platform data structure.
 
 Acked-by: Mark Brown <broonie@kernel.org>
 
---VpFhgN6x+jAiy75m
+--JBm7Cga1uIFwkQ+t
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmmrK/kACgkQJNaLcl1U
-h9AHgwf/QpvfnzNs9Gq4PTDZoePPZUCcfU+/w6q8CtE8ci9Ii4+mP1eR73TQG+R/
-M5jTgaP+8g4cwAF5ZxpRSfhJyeCj5OqQsbwPjgu+5yRWdm29z5OBWsDjwmJIoeTU
-mTfkoOFbdnymcDxSgsW5qKvIkbyNuD9TDjwfqVEUEk6nddxKYmIkD8v9UUBzWbeQ
-81HJot+TdEbgw3Ev1kNo/5FNgB/iJSdf+hNsLO2E5kyilEfIMFuZgX6AFJazGhRp
-IWmGM0EIpdeIkZqwq+FHMZXhrL3vg/T/F1aolnV0yBTL9HyDdaKRt39NSjNhQnjO
-jAKZ3RlFkbxhe/+vj9R8skALL+vJ1A==
-=7ziW
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmmrLBQACgkQJNaLcl1U
+h9B2PAgAhaetfKvXEytptcp9/87wybVarYpmQ6hBHa6DV5DBc9VqQwI3Pv3LTI33
+csl4wmhZKCMCEetk2p2o4LLKhmPfqelFy2zngGm5nEYN8Idi3G6SEgqD0C+TLmA9
+d7wKeT2Vl/exX9crYBXauRSF70eWXS2/1iwRyvGkXfaB6PQCRNSzLXWYfOfCyHNQ
+SkIh2w9+WkY3VycLsdJXNSsGHk66dTRjs5WWYDZ1yt7d/mej88JCVtVcT7IRpHyG
+/N4DBjcJ4IpldaoDL1LEN5wtlRa82QkK3cx0GVPAkDIVTlrBh+o7zgUOtO2h0qrl
+foGw3J8725eAA1znMJNWbN5uDvDTlg==
+=yOsW
 -----END PGP SIGNATURE-----
 
---VpFhgN6x+jAiy75m--
+--JBm7Cga1uIFwkQ+t--
