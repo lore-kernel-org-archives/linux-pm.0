@@ -1,208 +1,360 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mail-m32124.qiye.163.com (mail-m32124.qiye.163.com [220.197.32.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F7F2313558;
-	Fri,  6 Mar 2026 08:06:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 136E8EEBA;
+	Fri,  6 Mar 2026 08:16:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.32.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772784362; cv=none; b=rH3skYcbp8pBkJv7ER5j96DHPMn/0OTa0g1gsD8yMEJDEaFOa1qyZ5EOI/dCUqLr+iloioCxoXof8gp7thoelSYe2Pes6P/tG8sQqgbz/4H2haX2Apqm898iK9qDKpVMIGFwC9OEDMDxz+ViOi2c2vZApNev/4pr6H3uVgkoNW4=
+	t=1772785000; cv=none; b=OpQl1SQxsBUY90KObqKHV+lWbErScUHfQHVVvWng/IP1xyPt7liEW48TqoyQWMlGUvKHJJ0lFRJ/AjS1R/feD3bSQZoku/fJMsvCwPJ9rhW+TygEt6N+1ww11i0qT7hZQKHPvBA27Yx3bVTxiK4vTc/6MD0+Jnv6/2c7n/2ZldU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772784362; c=relaxed/simple;
-	bh=LBnLAIcGHsesTcn5+nCMswocvTfZ7iqXSC/2rWKf6mo=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=l9r5ARc5PtedPIU9thEAk5GlOr3zWarbO/7JPgdbu6Xcx4EaJva7adES6YAgZjtLO88HIgZEt/FOijSygGw6IBQuFKha0XXvlgEPHeQjT7iHuD3YfpL6aGPQ4Eg/AZZOaMRuJ85tEW3PGSzcIAMcOV82PNEEPFwFxzKJ6z6JuxE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=e7IawFCH; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1772785000; c=relaxed/simple;
+	bh=WisLN+Ri98OqYGx4PFUs2+x4l34ln/mr7UTeDo8d1g8=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=M5CEqKqhid5ANQU/p8fV9csSIkXNU0qXiLVsCvb8J2tAcicUVVW6xG4Iy4oG2oWy8cFOmWaSOqXPrTrUXS9y+0PRe8r3vg58Ryp4Wrhyvf6Defp41xfcfIvqwY0zWkD07Jt7nynFJ8Ex9WcbjOD0wBRfigjX0iF8K8tTwWIeieU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=iNOeAPWk; arc=none smtp.client-ip=220.197.32.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="e7IawFCH"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D07EEC4CEF7;
-	Fri,  6 Mar 2026 08:05:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772784362;
-	bh=LBnLAIcGHsesTcn5+nCMswocvTfZ7iqXSC/2rWKf6mo=;
-	h=Date:From:Subject:To:Cc:References:In-Reply-To:From;
-	b=e7IawFCHAhTtgO2GugIeECwEAMAUwS7CAhKdLOxCNwho2wzUPrFmxuX0/LHIKh4Kw
-	 qraeumJ9ZyUL57jNsPz2RIDPJu/e0skvhJsg7SPOAgHZWcL4wA41gYL6zd+LS3tapH
-	 b4Pd4tRflwrRsgHHdIQkUGAAYYcHq41rSp3OsLdy8ARqGbWLeGLMs999tv6BBhu+cy
-	 10G0W/9KMXIiaWZrXgag1vJzwIY6HCA+8DjBbKyU5wuZhatlvNDmiV4zOTYa6PxYIJ
-	 Ex+l2q4U7fRWA3kjpxzxDE2jrt1NzEyabYTyDqMGKONV5Peg3xCTHd/3B6baFYUWXF
-	 W6t1hx5WKLGqQ==
-Message-ID: <3b0b7f7f-c1b0-4f1c-bece-ce0cae130cb5@kernel.org>
-Date: Fri, 6 Mar 2026 09:05:54 +0100
+	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="iNOeAPWk"
+Received: from localhost.localdomain (unknown [58.22.7.114])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 35fcf4202;
+	Fri, 6 Mar 2026 15:41:00 +0800 (GMT+08:00)
+From: Shawn Lin <shawn.lin@rock-chips.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Heiko Stuebner <heiko@sntech.de>
+Cc: linux-pm@vger.kernel.org,
+	linux-rockchip@lists.infradead.org,
+	devicetree@vger.kernel.org,
+	Shawn Lin <shawn.lin@rock-chips.com>
+Subject: [PATCH 3/3] arm64: dts: rockchip: Add shaping nodes for rk3576
+Date: Fri,  6 Mar 2026 15:40:32 +0800
+Message-Id: <1772782832-216867-4-git-send-email-shawn.lin@rock-chips.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1772782832-216867-1-git-send-email-shawn.lin@rock-chips.com>
+References: <1772782832-216867-1-git-send-email-shawn.lin@rock-chips.com>
+X-HM-Tid: 0a9cc217b78d09cckunm7894a4e01405c0d
+X-HM-MType: 1
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZQhlJTFYfSx9CGksaSU9OHkhWFRQJFh
+	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
+	hVSktLVUpCS0tZBg++
+DKIM-Signature: a=rsa-sha256;
+	b=iNOeAPWkxZX7N28p0FUnFBKYs40CYdDO0vu8fnTnswaoUAxwOxYGiKiruG77EKHCH/i9guJHrwmo4h6tNWIqICgTgZeD9q7DTvoxiicKnRN+2A0nzlHWlkoK7wZWwU0yUjtAE1SACtPZ0+osdQHV6Zv4w2Iax8HXMvSaD3R+N20=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
+	bh=bK2vSgJMIv/+ZiGEOmk6/o8nvWh39k+i8nePQ6JW820=;
+	h=date:mime-version:subject:message-id:from;
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
-Subject: Re: [PATCH v4 4/5] mm: rename zone->lock to zone->_lock
-Content-Language: en-US
-To: Dmitry Ilvokhin <d@ilvokhin.com>
-Cc: SeongJae Park <sj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>,
- Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
- "Liam R. Howlett" <Liam.Howlett@oracle.com>, Vlastimil Babka
- <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>,
- Wei Xu <weixugc@google.com>, Steven Rostedt <rostedt@goodmis.org>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>,
- Len Brown <lenb@kernel.org>, Brendan Jackman <jackmanb@google.com>,
- Johannes Weiner <hannes@cmpxchg.org>, Zi Yan <ziy@nvidia.com>,
- Oscar Salvador <osalvador@suse.de>, Qi Zheng <zhengqi.arch@bytedance.com>,
- Shakeel Butt <shakeel.butt@linux.dev>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, linux-trace-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
-References: <20260304151335.172572-1-sj@kernel.org>
- <ebd994ca-eb04-4dff-a0a8-47aef0934c2c@kernel.org>
- <aanIdk2i-Eo9M967@shell.ilvokhin.com> <aanSnywUXTVPaYUj@shell.ilvokhin.com>
-In-Reply-To: <aanSnywUXTVPaYUj@shell.ilvokhin.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 
-On 3/5/26 19:59, Dmitry Ilvokhin wrote:
-> On Thu, Mar 05, 2026 at 06:16:26PM +0000, Dmitry Ilvokhin wrote:
->> On Thu, Mar 05, 2026 at 10:27:07AM +0100, Vlastimil Babka (SUSE) wrote:
->> > On 3/4/26 16:13, SeongJae Park wrote:
->> > > On Wed, 4 Mar 2026 13:01:45 +0000 Dmitry Ilvokhin <d@ilvokhin.com> wrote:
->> > > 
->> > >> On Tue, Mar 03, 2026 at 05:50:34PM -0800, SeongJae Park wrote:
->> > >> > On Tue, 3 Mar 2026 14:25:55 +0000 Dmitry Ilvokhin <d@ilvokhin.com> wrote:
->> > >> > 
->> > >> > > On Mon, Mar 02, 2026 at 02:37:43PM -0800, Andrew Morton wrote:
->> > >> > > > On Mon, 2 Mar 2026 15:10:03 +0100 "Vlastimil Babka (SUSE)" <vbabka@kernel.org> wrote:
->> > >> > > > 
->> > >> > > > > On 2/27/26 17:00, Dmitry Ilvokhin wrote:
->> > >> > > > > > This intentionally breaks direct users of zone->lock at compile time so
->> > >> > > > > > all call sites are converted to the zone lock wrappers. Without the
->> > >> > > > > > rename, present and future out-of-tree code could continue using
->> > >> > > > > > spin_lock(&zone->lock) and bypass the wrappers and tracing
->> > >> > > > > > infrastructure.
->> > >> > > > > > 
->> > >> > > > > > No functional change intended.
->> > >> > > > > > 
->> > >> > > > > > Suggested-by: Andrew Morton <akpm@linux-foundation.org>
->> > >> > > > > > Signed-off-by: Dmitry Ilvokhin <d@ilvokhin.com>
->> > >> > > > > > Acked-by: Shakeel Butt <shakeel.butt@linux.dev>
->> > >> > > > > > Acked-by: SeongJae Park <sj@kernel.org>
->> > >> > > > > 
->> > >> > > > > I see some more instances of 'zone->lock' in comments in
->> > >> > > > > include/linux/mmzone.h and under Documentation/ but otherwise LGTM.
->> > >> > > > > 
->> > >> > > > 
->> > >> > > > I fixed (most of) that in the previous version but my fix was lost.
->> > >> > > 
->> > >> > > Thanks for the fixups, Andrew.
->> > >> > > 
->> > >> > > I still see a few 'zone->lock' references in Documentation remain on
->> > >> > > mm-new. This patch cleans them up, as noted by Vlastimil.
->> > >> > > 
->> > >> > > I'm happy to adjust this patch if anything else needs attention.
->> > >> > > 
->> > >> > > From 9142d5a8b60038fa424a6033253960682e5a51f4 Mon Sep 17 00:00:00 2001
->> > >> > > From: Dmitry Ilvokhin <d@ilvokhin.com>
->> > >> > > Date: Tue, 3 Mar 2026 06:13:13 -0800
->> > >> > > Subject: [PATCH] mm: fix remaining zone->lock references
->> > >> > > 
->> > >> > > Signed-off-by: Dmitry Ilvokhin <d@ilvokhin.com>
->> > >> > > ---
->> > >> > >  Documentation/mm/physical_memory.rst | 4 ++--
->> > >> > >  Documentation/trace/events-kmem.rst  | 8 ++++----
->> > >> > >  2 files changed, 6 insertions(+), 6 deletions(-)
->> > >> > > 
->> > >> > > diff --git a/Documentation/mm/physical_memory.rst b/Documentation/mm/physical_memory.rst
->> > >> > > index b76183545e5b..e344f93515b6 100644
->> > >> > > --- a/Documentation/mm/physical_memory.rst
->> > >> > > +++ b/Documentation/mm/physical_memory.rst
->> > >> > > @@ -500,11 +500,11 @@ General
->> > >> > >  ``nr_isolate_pageblock``
->> > >> > >    Number of isolated pageblocks. It is used to solve incorrect freepage counting
->> > >> > >    problem due to racy retrieving migratetype of pageblock. Protected by
->> > >> > > -  ``zone->lock``. Defined only when ``CONFIG_MEMORY_ISOLATION`` is enabled.
->> > >> > > +  ``zone_lock``. Defined only when ``CONFIG_MEMORY_ISOLATION`` is enabled.
->> > >> > 
->> > >> > Dmitry's original patch [1] was doing 's/zone->lock/zone->_lock/', which aligns
->> > >> > to my expectation.  But this patch is doing 's/zone->lock/zone_lock/'.  Same
->> > >> > for the rest of this patch.
->> > >> > 
->> > >> > I was initially thinking this is just a mistake, but I also found Andrew is
->> > >> > doing same change [2], so I'm bit confused.  Is this an intentional change?
->> > >> > 
->> > >> > [1] https://lore.kernel.org/d61500c5784c64e971f4d328c57639303c475f81.1772206930.git.d@ilvokhin.com
->> > >> > [2] https://lore.kernel.org/20260302143743.220eed4feb36d7572fe726cc@linux-foundation.org
->> > >> > 
->> > >> 
->> > >> Good catch, thanks for pointing this out, SJ.
->> > >> 
->> > >> Originally the mechanical rename was indeed zone->lock -> zone->_lock.
->> > >> However, in Documentation I intentionally switched references to
->> > >> zone_lock instead of zone->_lock. The reasoning is that _lock is now an
->> > >> internal implementation detail, and direct access is discouraged. The
->> > >> intended interface is via the zone_lock_*() / zone_unlock_*() wrappers,
->> > >> so referencing zone_lock in documentation felt more appropriate than
->> > >> mentioning the private struct field (zone->_lock).
->> > > 
->> > > Thank you for this nice and kind clarification, Dmitry!  I agree mentioning
->> > > zone_[un]lock_*() helpers instead of the hidden member (zone->_lock) can be
->> > > better.
->> > > 
->> > > But, I'm concerned if people like me might not aware the intention under
->> > > 'zone_lock'.  If there is a well-known convention that allows people to know it
->> > > is for 'zone_[un]lock_*()' helpers, making it more clear would be nice, in my
->> > > humble opinion.  If there is such a convention but I'm just missing it, please
->> > > ignore.  If I'm not, for eaxmaple,
->> > > 
->> > > "protected by ``zone->lock``" could be re-wrote to
->> > > "protected by ``zone_[un]lock_*()`` locking helpers" or,
->> > > "protected by zone lock helper functions (``zone_[un]lock_*()``)" ?
->> > > 
->> > >> 
->> > >> That said, I agree this creates inconsistency with the mechanical
->> > >> rename, and I'm happy to adjust either way: either consistently refer
->> > >> to the wrapper API, or keep documentation aligned with zone->_lock.
->> > >> 
->> > >> I slightly prefer referring to the wrapper API, but don't have a strong
->> > >> preference as long as we're consistent.
->> > > 
->> > > I also think both approaches are good.  But for the wrapper approach, I think
->> > > giving more contexts rather than just ``zone_lock`` to readers would be nice.
->> > 
->> > Grep tells me that we also have comments mentioning simply "zone lock", btw.
->> > And it's also a term used often in informal conversations. Maybe we could
->> > just standardize on that in comments/documentations as it's easier to read.
->> > Discovering that the field is called _lock and that wrappers should be used,
->> > is hopefully not that difficult.
->> 
->> Thanks for the suggestion, Vlastimil. That sounds reasonable to me as
->> well. I'll update the comments and documentation to consistently use
->> "zone lock".
-> 
-> Following the suggestion from SJ and Vlastimil, I prepared fixup to
-> standardize documentation and comments on the term "zone lock".
-> 
-> The patch is based on top of the current mm-new.
-> 
-> Andrew, please let me know if you would prefer a respin of the series
-> instead.
-> 
-> From 267cda3e0e160f97b346009bc48819bfeed92e52 Mon Sep 17 00:00:00 2001
-> From: Dmitry Ilvokhin <d@ilvokhin.com>
-> Date: Thu, 5 Mar 2026 10:36:17 -0800
-> Subject: [PATCH] mm: documentation: standardize on "zone lock" terminology
-> 
-> During review of the zone lock tracing series it was suggested to
-> standardize documentation and comments on the term "zone lock"
-> instead of using zone_lock or referring to the internal field
-> zone->_lock.
-> 
-> Update references accordingly.
-> 
-> Signed-off-by: Dmitry Ilvokhin <d@ilvokhin.com>
+RK3576 has shaping settings which need to be saved and restored
+along with the on/off of pmdomain, so add them in the rk3576.dtsi.
 
-Acked-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
+Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
+---
 
-Thanks!
+ arch/arm64/boot/dts/rockchip/rk3576.dtsi | 139 +++++++++++++++++++++++++++++++
+ 1 file changed, 139 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3576.dtsi b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
+index 53ff6bd..9c28769 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3576.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3576.dtsi
+@@ -1063,6 +1063,10 @@
+ 							 <&qos_npu_nsp1>,
+ 							 <&qos_npu_m0ro>,
+ 							 <&qos_npu_m1ro>;
++						pm_shaping = <&shaping_npu_nsp0>,
++							     <&shaping_npu_nsp1>,
++							     <&shaping_npu_m0ro>,
++							     <&shaping_npu_m1ro>;
+ 						#power-domain-cells = <1>;
+ 						#address-cells = <1>;
+ 						#size-cells = <0>;
+@@ -1072,6 +1076,7 @@
+ 							clocks = <&cru HCLK_RKNN_ROOT>,
+ 								 <&cru ACLK_RKNN0>;
+ 							pm_qos = <&qos_npu_m0>;
++							pm_shaping = <&shaping_npu_m0>;
+ 							#power-domain-cells = <0>;
+ 						};
+ 						power-domain@RK3576_PD_NPU1 {
+@@ -1079,6 +1084,7 @@
+ 							clocks = <&cru HCLK_RKNN_ROOT>,
+ 								 <&cru ACLK_RKNN1>;
+ 							pm_qos = <&qos_npu_m1>;
++							pm_shaping = <&shaping_npu_m1>;
+ 							#power-domain-cells = <0>;
+ 						};
+ 					};
+@@ -1088,6 +1094,7 @@
+ 					reg = <RK3576_PD_GPU>;
+ 					clocks = <&cru CLK_GPU>, <&cru PCLK_GPU_ROOT>;
+ 					pm_qos = <&qos_gpu>;
++					pm_shaping = <&shaping_gpu>;
+ 					#power-domain-cells = <0>;
+ 				};
+ 
+@@ -1129,6 +1136,9 @@
+ 						 <&cru ACLK_MMU1>;
+ 					pm_qos = <&qos_mmu0>,
+ 						 <&qos_mmu1>;
++					pm_shaping = <&shaping_mmu0>,
++						     <&shaping_mmu1>;
++
+ 					#power-domain-cells = <1>;
+ 					#address-cells = <1>;
+ 					#size-cells = <0>;
+@@ -1149,6 +1159,7 @@
+ 					clocks = <&cru ACLK_VEPU1>,
+ 						 <&cru HCLK_VEPU1>;
+ 					pm_qos = <&qos_vepu1>;
++					pm_shaping = <&shaping_vepu1>;
+ 					#power-domain-cells = <0>;
+ 				};
+ 
+@@ -1169,6 +1180,10 @@
+ 						 <&qos_rga0>,
+ 						 <&qos_rga1>,
+ 						 <&qos_vdpp>;
++					pm_shaping = <&shaping_rga0>,
++						     <&shaping_rga1>,
++						     <&shaping_jpeg>,
++						     <&shaping_vdpp>;
+ 					#power-domain-cells = <0>;
+ 				};
+ 
+@@ -1177,6 +1192,7 @@
+ 					clocks = <&cru ACLK_RKVDEC_ROOT>,
+ 						 <&cru HCLK_RKVDEC>;
+ 					pm_qos = <&qos_rkvdec>;
++					pm_shaping = <&shaping_rkvdec>;
+ 					#power-domain-cells = <0>;
+ 				};
+ 
+@@ -1199,6 +1215,11 @@
+ 						 <&qos_vicap_m0>,
+ 						 <&qos_vpss_mro>,
+ 						 <&qos_vpss_mwo>;
++					pm_shaping = <&shaping_isp_mro>,
++						     <&shaping_isp_mwo>,
++						     <&shaping_vicap_m0>,
++						     <&shaping_vpss_mro>,
++						     <&shaping_vpss_mwo>;
+ 					#power-domain-cells = <1>;
+ 					#address-cells = <1>;
+ 					#size-cells = <0>;
+@@ -1208,6 +1229,7 @@
+ 						clocks = <&cru ACLK_VEPU0>,
+ 							 <&cru HCLK_VEPU0>;
+ 						pm_qos = <&qos_vepu0>;
++						pm_shaping = <&shaping_vepu0>;
+ 						#power-domain-cells = <0>;
+ 					};
+ 				};
+@@ -1220,6 +1242,8 @@
+ 						 <&cru PCLK_VOP_ROOT>;
+ 					pm_qos = <&qos_vop_m0>,
+ 						 <&qos_vop_m1ro>;
++					pm_shaping = <&shaping_vop_m0>,
++						     <&shaping_vop_m1ro>;
+ 					#power-domain-cells = <1>;
+ 					#address-cells = <1>;
+ 					#size-cells = <0>;
+@@ -1602,11 +1626,21 @@
+ 			reg = <0x0 0x27f05000 0x0 0x20>;
+ 		};
+ 
++		shaping_gpu: shaping@27f05088 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f05088 0x0 0x4>;
++		};
++
+ 		qos_vepu1: qos@27f06000 {
+ 			compatible = "rockchip,rk3576-qos", "syscon";
+ 			reg = <0x0 0x27f06000 0x0 0x20>;
+ 		};
+ 
++		shaping_vepu1: shaping@27f06088 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f06088 0x0 0x4>;
++		};
++
+ 		qos_npu_mcu: qos@27f08000 {
+ 			compatible = "rockchip,rk3576-qos", "syscon";
+ 			reg = <0x0 0x27f08000 0x0 0x20>;
+@@ -1622,6 +1656,16 @@
+ 			reg = <0x0 0x27f08100 0x0 0x20>;
+ 		};
+ 
++		shaping_npu_nsp0: shaping@27f08188 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f08188 0x0 0x4>;
++		};
++
++		shaping_npu_nsp1: shaping@27f08208 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f08208 0x0 0x4>;
++		};
++
+ 		qos_emmc: qos@27f09000 {
+ 			compatible = "rockchip,rk3576-qos", "syscon";
+ 			reg = <0x0 0x27f09000 0x0 0x20>;
+@@ -1642,11 +1686,26 @@
+ 			reg = <0x0 0x27f0a080 0x0 0x20>;
+ 		};
+ 
++		shaping_mmu0: shaping@27f0a108 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f0a108 0x0 0x4>;
++		};
++
++		shaping_mmu1: shaping@27f0a188 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f0a188 0x0 0x4>;
++		};
++
+ 		qos_rkvdec: qos@27f0c000 {
+ 			compatible = "rockchip,rk3576-qos", "syscon";
+ 			reg = <0x0 0x27f0c000 0x0 0x20>;
+ 		};
+ 
++		shaping_rkvdec: shaping@27f0c088 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f0c088 0x0 0x4>;
++		};
++
+ 		qos_crypto: qos@27f0d000 {
+ 			compatible = "rockchip,rk3576-qos", "syscon";
+ 			reg = <0x0 0x27f0d000 0x0 0x20>;
+@@ -1667,6 +1726,11 @@
+ 			reg = <0x0 0x27f0f000 0x0 0x20>;
+ 		};
+ 
++		shaping_vepu0: shaping@27f0f088 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f0f088 0x0 0x4>;
++		};
++
+ 		qos_isp_mro: qos@27f10000 {
+ 			compatible = "rockchip,rk3576-qos", "syscon";
+ 			reg = <0x0 0x27f10000 0x0 0x20>;
+@@ -1692,6 +1756,31 @@
+ 			reg = <0x0 0x27f10200 0x0 0x20>;
+ 		};
+ 
++		shaping_isp_mro: shaping@27f10288 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f10288 0x0 0x4>;
++		};
++
++		shaping_isp_mwo: shaping@27f10308 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f10308 0x0 0x4>;
++		};
++
++		shaping_vicap_m0: shaping@27f10388 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f10388 0x0 0x4>;
++		};
++
++		shaping_vpss_mro: shaping@27f10408 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f10408 0x0 0x4>;
++		};
++
++		shaping_vpss_mwo: shaping@27f10488 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f10488 0x0 0x4>;
++		};
++
+ 		qos_hdcp0: qos@27f11000 {
+ 			compatible = "rockchip,rk3576-qos", "syscon";
+ 			reg = <0x0 0x27f11000 0x0 0x20>;
+@@ -1707,6 +1796,16 @@
+ 			reg = <0x0 0x27f12880 0x0 0x20>;
+ 		};
+ 
++		shaping_vop_m0: shaping@27f12908 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f12908 0x0 0x4>;
++		};
++
++		shaping_vop_m1ro: shaping@27f12988 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f12988 0x0 0x4>;
++		};
++
+ 		qos_ebc: qos@27f13000 {
+ 			compatible = "rockchip,rk3576-qos", "syscon";
+ 			reg = <0x0 0x27f13000 0x0 0x20>;
+@@ -1732,16 +1831,46 @@
+ 			reg = <0x0 0x27f13200 0x0 0x20>;
+ 		};
+ 
++		shaping_rga0: shaping@27f13288 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f13288 0x0 0x4>;
++		};
++
++		shaping_rga1: shaping@27f13308 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f13308 0x0 0x4>;
++		};
++
++		shaping_jpeg: shaping@27f13388 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f13388 0x0 0x4>;
++		};
++
++		shaping_vdpp: shaping@27f13408 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f13408 0x0 0x4>;
++		};
++
+ 		qos_npu_m0: qos@27f20000 {
+ 			compatible = "rockchip,rk3576-qos", "syscon";
+ 			reg = <0x0 0x27f20000 0x0 0x20>;
+ 		};
+ 
++		shaping_npu_m0: shaping@27f20088 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f20088 0x0 0x4>;
++		};
++
+ 		qos_npu_m1: qos@27f21000 {
+ 			compatible = "rockchip,rk3576-qos", "syscon";
+ 			reg = <0x0 0x27f21000 0x0 0x20>;
+ 		};
+ 
++		shaping_npu_m1: shaping@27f21088 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f21088 0x0 0x4>;
++		};
++
+ 		qos_npu_m0ro: qos@27f22080 {
+ 			compatible = "rockchip,rk3576-qos", "syscon";
+ 			reg = <0x0 0x27f22080 0x0 0x20>;
+@@ -1752,6 +1881,16 @@
+ 			reg = <0x0 0x27f22100 0x0 0x20>;
+ 		};
+ 
++		shaping_npu_m0ro: shaping@27f22188 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f22188 0x0 0x4>;
++		};
++
++		shaping_npu_m1ro: shaping@27f22208 {
++			compatible = "rockchip,rk3576-shaping", "syscon";
++			reg = <0x0 0x27f22208 0x0 0x4>;
++		};
++
+ 		gmac0: ethernet@2a220000 {
+ 			compatible = "rockchip,rk3576-gmac", "snps,dwmac-4.20a";
+ 			reg = <0x0 0x2a220000 0x0 0x10000>;
+-- 
+2.7.4
 
