@@ -1,71 +1,123 @@
-Received: from mail-m3285.qiye.163.com (mail-m3285.qiye.163.com [220.197.32.85])
+Received: from lgeamrelo07.lge.com (lgeamrelo07.lge.com [156.147.51.103])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3331F298CAF;
-	Fri,  6 Mar 2026 07:46:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.32.85
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69CE631AA94
+	for <linux-pm@vger.kernel.org>; Fri,  6 Mar 2026 08:02:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.103
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772783169; cv=none; b=BXS9w0uFce3QRCgfgsJ8MeXkt5iOoCetPD4vY56a5Oest8cB1nD01vze1CLbrkZqCZEB3ZZm+KgP0zH8NGZ3apeagBh5pL832W3UHN03Yqs8yuZvZF9Ch8OCCR2obOjzUlZJaby6U/eDGT3fHNm21qvSAz1IqH5NGq9LgQDiinY=
+	t=1772784172; cv=none; b=f1I/oZyf/pkCpe/oCy4TFz4H1QIxhm8S7p6Sagxi87Rwibxxi/Bryud8er19nyxHuh2NioGRpxjEh+1+Ey9OUzbr5Wyl/2OvF1ClGNiIR+zbacmgUiNF/ftStsdNM+ANlYKjsJRspEi0MDWsdVA9Vjt+5dJDnxJEfMwncZbP/ig=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772783169; c=relaxed/simple;
-	bh=tY5u6ew4aK14yFkd46sg2namrulm71QthpYyuZqu1XE=;
-	h=From:To:Cc:Subject:Date:Message-Id; b=c7F/8wsvYf4y7asx6xNMxt/5km7td/epMLptzLjanNLOKL6SMxSJGZTRE7BzN0Yq2Zw7JAIkz49my0Q35R4dMiCaPjiShPs3KdbFlXbYNqe9ok2PDKqGQ7DdfDFMgFWbQ8dYTZuEYUXeKQftndi26tkDklc4cBcj5ENDfyxeQJY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=hMxMq6NT; arc=none smtp.client-ip=220.197.32.85
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="hMxMq6NT"
-Received: from localhost.localdomain (unknown [58.22.7.114])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 35fcf41c7;
-	Fri, 6 Mar 2026 15:40:48 +0800 (GMT+08:00)
-From: Shawn Lin <shawn.lin@rock-chips.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Heiko Stuebner <heiko@sntech.de>
-Cc: linux-pm@vger.kernel.org,
-	linux-rockchip@lists.infradead.org,
-	devicetree@vger.kernel.org,
-	Shawn Lin <shawn.lin@rock-chips.com>
-Subject: [PATCH 0/3] Add shaping support for Rockchip platforms
-Date: Fri,  6 Mar 2026 15:40:29 +0800
-Message-Id: <1772782832-216867-1-git-send-email-shawn.lin@rock-chips.com>
-X-Mailer: git-send-email 2.7.4
-X-HM-Tid: 0a9cc21786a709cckunm7894a4e01405b5c
-X-HM-MType: 1
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZGkJLS1YdSRlLQk0aTh1JSUhWFRQJFh
-	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
-	hVSktLVUpCS0tZBg++
-DKIM-Signature: a=rsa-sha256;
-	b=hMxMq6NTdtGQXcm34cBu1ZOamzPkNApDLENLq0mCf7Czd+PoegEtWivxlmnF9HjmcbNCyMZDvWEKS6TCD2c3S9Ogz9eYIfkimmvszD8zYL7DBsuOG2uRBS9Vzo5O09FBFtKgNpCj8LxUfwqborBMPsRzA+MLfM88dRbAqTSMijE=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
-	bh=qACK77M8imd6tMfzuiqSbpPVRZC5FMb2GQ7Svv8vO/M=;
-	h=date:mime-version:subject:message-id:from;
+	s=arc-20240116; t=1772784172; c=relaxed/simple;
+	bh=0j105S5AlXMqI3YyPRVJcY4f1L6wxq7Jkqet4Hhax0Y=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=CnkS552pdBINStXiDH2lKuBhVPCAuQOzdOnNOQoUKBW3BCUnZIWefdSI2tKO+L9tyaUYpluxNiXwbfRvTIGo97vmBdHlSlB856BahuGF0Wv1Tyc08rgi5WrzXw4uaYvQyLgZL/KqLZ7HoTu+xD1derB//BLDxs2RYFz90fCIv+s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.103
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
+Received: from unknown (HELO yjaykim-PowerEdge-T330) (10.177.112.156)
+	by 156.147.51.103 with ESMTP; 6 Mar 2026 17:02:45 +0900
+X-Original-SENDERIP: 10.177.112.156
+X-Original-MAILFROM: youngjun.park@lge.com
+Date: Fri, 6 Mar 2026 17:02:45 +0900
+From: YoungJun Park <youngjun.park@lge.com>
+To: Chris Li <chrisl@kernel.org>
+Cc: rafael@kernel.org, akpm@linux-foundation.org, kasong@tencent.com,
+	pavel@kernel.org, shikemeng@huaweicloud.com, nphamcs@gmail.com,
+	bhe@redhat.com, baohua@kernel.org, usama.arif@linux.dev,
+	linux-pm@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [RFC PATCH v2] mm/swap, PM: hibernate: hold swap device
+ reference across swap operation
+Message-ID: <aaqKJQeO8wLQL7Zn@yjaykim-PowerEdge-T330>
+References: <20260306024608.1720991-1-youngjun.park@lge.com>
+ <CACePvbXVvPp_a89UFztZo5nGawpFea9t=NRisf468VcxHgkX7A@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CACePvbXVvPp_a89UFztZo5nGawpFea9t=NRisf468VcxHgkX7A@mail.gmail.com>
 
+On Thu, Mar 05, 2026 at 10:55:15PM -0800, Chris Li wrote:
+> On Thu, Mar 5, 2026 at 6:46 PM Youngjun Park <youngjun.park@lge.com> wrote:
+> >
+> > Currently, in the uswsusp path, only the swap type value is retrieved at
+> > lookup time without holding a reference. If swapoff races after the type
+> > is acquired, subsequent slot allocations operate on a stale swap device.
+> 
+> Just from you above description, I am not sure how the bug is actually
+> triggered yet. That sounds possible. I want more detail.
 
-pm_shaping is introduced for some platforms to throttle the outstanding
-burst requests of each IP to prevent bus monopolization. It should be
-saved and restored along with the on/off of pmdomain, the same as pm_qos.
-This patchset adds support for it.
+To be honest, I am not deeply familiar with the snapshot code, which is why
+I submitted this as an RFC. However, I believe the race is theoretically
+possible and I was able to trigger it with a simple PoC user program.
 
+(not in-kernel swsusp as I think, cuz every user thread freezed
+before creating snapshot, only on uswsusp)
 
+The race occurs in `power/user.c`
 
-Shawn Lin (3):
-  dt-bindings: power: rockchip: Add pm_shaping support
-  pmdomain: rockchip: Add pm_shaping support
-  arm64: dts: rockchip: Add shaping nodes for rk3576
+1. snapshot_open() calls swap_type_of() to find the swap device.
+2. We get the swap type, but hold no reference at this point.
+3. [Race Window]: Another thread triggers swapoff() and swapon()
+4. snapshot_ioctl(SNAPSHOT_ALLOC_SWAP_PAGE) is called.
+   -> The swap device is gone or the type ID is reused by another device or 
+      swap device is missing.
 
- .../bindings/power/rockchip,power-controller.yaml  |   8 ++
- arch/arm64/boot/dts/rockchip/rk3576.dtsi           | 139 +++++++++++++++++++++
- drivers/pmdomain/rockchip/pm-domains.c             |  97 ++++++++++++++
- 3 files changed, 244 insertions(+)
+> Can you show me which code path triggered this bug?
+> e.g. Thread A wants to suspend, with this back trace call graph.
+> Then in this function foo() A grabs the swap device without holding a reference.
+> Meanwhile, thread B is performing a swap off while A is at function foo().
+> 
+> > Additionally, grabbing and releasing the swap device reference on every
+> > slot allocation is inefficient across the entire hibernation swap path.
+> 
+> If the swap entry is already allocated by the suspend code on that
+> swap device, the follow up allocation does not need to grab the
+> reference again because the swap device's swapped count will not drop
+> to zero until resume.
 
--- 
-2.7.4
+You are right. Since the swap device is pinned once a swap entry is
+allocated, we could indeed rely on that pinning mechanism to ensure safety
+for subsequent allocations (instead of doing get/put every time).
 
+However, relying on that pinning alone does not protect the window between
+the initial lookup (step 1) and the *first* allocation.
+
+My proposal is to grab the reference at the lookup point to close this
+initial race. If we do that, I believe we can remove the per-slot
+get/put calls entirely, as the initial reference is sufficient to keep the
+device alive until the operation completes.
+
+Regarding the reference release strategy in this patch:
+
+1. uswsusp: The reference is released when the snapshot device file
+   is closed(snapshot_release) and error paths.
+2. not uswsusp`: I only added reference release in the error paths.
+
+About 2.. I conclude that on a successful resume, the system state reverts to
+the snapshot point, making an explicit release unnecessary. However,
+I am not 100% certain if this holds true for the swap reference
+context.
+
+This part is the primary reason I submitted this as an RFC. I
+would appreciate it if you could review this part specifically to
+confirm whether my understanding is correct.
+
+> > Address these issues by holding the swap device reference from the point
+> > the swap device is looked up, and releasing it once at each exit path.
+> > This ensures the device remains valid throughout the operation and
+> > removes the overhead of per-slot reference counting.
+> 
+> I want to understand how to trigger the buggy code path first. It
+> might be obvious to you. It is not obvious to me yet.
+
+I hope the explanation above clarifies the trace. Please let me know if
+there are still parts that are not obvious, and I will explain further or
+investigate more.
+
+Thank you for the review
+Youngjun Park
