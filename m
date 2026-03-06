@@ -1,100 +1,123 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16E031339A4;
-	Fri,  6 Mar 2026 19:45:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 838FC202C29;
+	Fri,  6 Mar 2026 19:50:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772826342; cv=none; b=D00OG/NP22Oa4z3kuNnowExmw8HrLpslbNOPAguD2Yb1LnRQAopzXiwk5tJiHOoPkqgncDK0Tb+ZARVB8pfX94eJgMSzb6I9H1VoIwp05HInGrs8n5HgGsYFOxeerdsvPaR+8h/REOBvFKFGoG6U8DlNsoDbyNjOg0p2fTZt53Y=
+	t=1772826603; cv=none; b=pFShTLXJ6NAq1YgGvTGhiA+WBu652p5qL0AlW7+gosZw8RFQAt32A1VyA/DerqzaiCvno4vbtvRuJlu4wq59J+HwfZ2S8pD42DhzDwBhw466PCbJghS2P4xRHSdm0ekkoihBxG5g3knHmzIAnjWpa3BrGUtN/dkVu2UuYtNV7Sc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772826342; c=relaxed/simple;
-	bh=x+3NTRRRtkgOTvh5mtd+iKhL1Y2otrgIc1JfWN0MOUI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RU39GiyDJ1aMmfkI0tBIlUffmeKBN5N+IUHL+s2E68AAebpnb9XDOJAafOa6cXV435I2IJp2AWyp64i0ntn4FUQnpuyAOwSfeNel0g936AuP3dOHNJsVUobr5HoYVRjuIJk15tLTSzcKyIfE+WJ2n/sm3DQxYOo4jH1JNikmLNw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lugK7+sc; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1772826603; c=relaxed/simple;
+	bh=qEC3d26M345uE6JM1i9big7iGpyiCRc94YB/FPYP8pY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=UfdYBK9uczwgkAyynNfrgv+xVXf8uRt9FVtEcN/QUXzYtQboaC75iBp1zgTQ1QhNKakj37n2FqmmNCsV0cvxmwKGe28pxBE1nsCA/KyEi0eAIa2hG9txCgW1E5N8/LfRLHAMgkDwJl6hI1vM1F9NYHyO1fdzkDtzCL/e2qvJZEw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=I/fEYVgb; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lugK7+sc"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 778D4C4CEF7;
-	Fri,  6 Mar 2026 19:45:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772826341;
-	bh=x+3NTRRRtkgOTvh5mtd+iKhL1Y2otrgIc1JfWN0MOUI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=lugK7+scdJBBhiZq7oTAcGs9SAzNLQGkGinHM39UgUtCk37lQ0ue0jJ/93NWH5iXI
-	 Mi3hAHfVtTzu/EjCt7gi4SoixNl6t6yMT6Y7zQT8TAihU1LndL/eRi5SxceE/KY/1m
-	 hVE89Rs002u3eU5o1zpiQ8PPtTxkQnB4B1Y93gSRb5He2kfrUkzqHmKRxSLAogWlgx
-	 0rrmNp9pEmD5wIv7bjK6kO2DzxVFP8qhuPNleJRNLZLXItsDKyAy89CuwyxMFTSt8P
-	 O+DXLMzAI1QBJ/ZMH26MYd0gkCwBLj4KNng4lGSdrrR1Z/9zp21HsGVf+oQ+hxjfSP
-	 DtO+WQlht1LLA==
-Received: by finisterre.sirena.org.uk (Postfix, from userid 1000)
-	id A0A0C1AC52D4; Fri, 06 Mar 2026 19:45:37 +0000 (GMT)
-Date: Fri, 6 Mar 2026 19:45:37 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Luca Leonardo Scorcia <l.scorcia@gmail.com>
-Cc: linux-mediatek@lists.infradead.org, Fabien Parent <parent.f@gmail.com>,
-	Val Packett <val@packett.cool>, Rob Herring <robh@kernel.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Sen Chu <sen.chu@mediatek.com>,
-	Sean Wang <sean.wang@mediatek.com>,
-	Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Gary Bisson <bisson.gary@gmail.com>,
-	Julien Massot <julien.massot@collabora.com>,
-	Louis-Alexis Eyraud <louisalexis.eyraud@collabora.com>,
-	Chen Zhong <chen.zhong@mediatek.com>, linux-input@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v2 2/7] dt-bindings: regulator: add support for MT6392
-Message-ID: <aasu4UqZv7HMXX6V@sirena.co.uk>
-References: <20260306120521.163654-1-l.scorcia@gmail.com>
- <20260306120521.163654-3-l.scorcia@gmail.com>
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="I/fEYVgb"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=0qO9+QY++umfUmJGfFEVkr4r1pi/XXeRYwIJwqEAYoQ=; b=I/fEYVgbEogCcZuuWCTLQ5PMc7
+	i9pIR7xPwEF5nv2+y7U3q7WsPpRQjwGiiuK+pdSx07OScwZtxXyVTaPHPySpQrVF7RKdeUkaLZR6v
+	70jHUVL7P9AaJ2FHi9gWdaLZ0vIIgT5f07r3qQyHfcASOh5GRH1hNf3AYhdn0AQhQMw3sXp7EC3h5
+	8GQAKsgEvOPGrTIOmZBUkkMeLYWvlAlbrj9uBI3MFzMAyeGBHiI3noab4LMVhZHZdGm7zwWvtNwV8
+	YPsj2GbFXpbp8XiQSHx6VGipFCK/EIwMQRuFQsds9mQzDd2wa2DOurMLD/FWtZe5rEWSOPmGBb5aV
+	NKatr0lw==;
+Received: from [50.53.43.113] (helo=[192.168.254.34])
+	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1vybBK-00000004QLS-20Q4;
+	Fri, 06 Mar 2026 19:49:54 +0000
+Message-ID: <934ca1e6-dfee-411e-890a-083dcfc9f6b1@infradead.org>
+Date: Fri, 6 Mar 2026 11:49:53 -0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="/GMRHJnvF89z60eQ"
-Content-Disposition: inline
-In-Reply-To: <20260306120521.163654-3-l.scorcia@gmail.com>
-X-Cookie: Think big.  Pollute the Mississippi.
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/4] serdev: add private data to serdev_device
+To: Markus Probst <markus.probst@posteo.de>, Rob Herring <robh@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jirislaby@kernel.org>, Miguel Ojeda <ojeda@kernel.org>,
+ Gary Guo <gary@garyguo.net>, =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?=
+ <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>,
+ Andreas Hindborg <a.hindborg@kernel.org>, Alice Ryhl <aliceryhl@google.com>,
+ Trevor Gross <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>,
+ Kari Argillander <kari.argillander@gmail.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Boqun Feng <boqun@kernel.org>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>
+Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
+ rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org,
+ driver-core@lists.linux.dev, dri-devel@lists.freedesktop.org
+References: <20260306-rust_serdev-v2-0-e9b23b42b255@posteo.de>
+ <20260306-rust_serdev-v2-2-e9b23b42b255@posteo.de>
+Content-Language: en-US
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20260306-rust_serdev-v2-2-e9b23b42b255@posteo.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
+Hi--
 
---/GMRHJnvF89z60eQ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 3/6/26 11:35 AM, Markus Probst wrote:
+> Add private data to `struct serdev_device`, as it is required by the
+> rust abstraction added in the following commit
+> (rust: add basic serial device bus abstractions).
+> 
+> Signed-off-by: Markus Probst <markus.probst@posteo.de>
+> ---
+>  include/linux/serdev.h | 14 ++++++++------
+>  1 file changed, 8 insertions(+), 6 deletions(-)
+> 
+> diff --git a/include/linux/serdev.h b/include/linux/serdev.h
+> index 5654c58eb73c..b591af23faf0 100644
+> --- a/include/linux/serdev.h
+> +++ b/include/linux/serdev.h
+> @@ -33,12 +33,13 @@ struct serdev_device_ops {
+>  
+>  /**
+>   * struct serdev_device - Basic representation of an serdev device
+> - * @dev:	Driver model representation of the device.
+> - * @nr:		Device number on serdev bus.
+> - * @ctrl:	serdev controller managing this device.
+> - * @ops:	Device operations.
+> - * @write_comp	Completion used by serdev_device_write() internally
+> - * @write_lock	Lock to serialize access when writing data
+> + * @dev:	 Driver model representation of the device.
+> + * @nr:		 Device number on serdev bus.
+> + * @ctrl:	 serdev controller managing this device.
+> + * @ops:	 Device operations.
+> + * @write_comp	 Completion used by serdev_device_write() internally
+> + * @write_lock	 Lock to serialize access when writing data
+> + * @private_data Private data for the device driver.
+>   */
 
-On Fri, Mar 06, 2026 at 12:03:06PM +0000, Luca Leonardo Scorcia wrote:
-> From: Fabien Parent <parent.f@gmail.com>
->=20
-> Add binding documentation of the regulator for MT6392 SoCs.
+I don't quite get why each changed line has an extra tab added to it. ?
+Also, struct member names in kernel-doc should with a colon  (':'), e.g.,
 
-Please submit patches using subject lines reflecting the style for the
-subsystem, this makes it easier for people to identify relevant patches.
-Look at what existing commits in the area you're changing are doing and
-make sure your subject lines visually resemble what they're doing.
-There's no need to resubmit to fix this alone.
+ * @private_data: Private data for the device driver.
 
-Acked-by: Mark Brown <broonie@kernel.org>
+Please correct that and the 2 lines above it also.
+And maybe test it to check for warnings.
 
---/GMRHJnvF89z60eQ
-Content-Type: application/pgp-signature; name="signature.asc"
+>  struct serdev_device {
+>  	struct device dev;
+> @@ -47,6 +48,7 @@ struct serdev_device {
+>  	const struct serdev_device_ops *ops;
+>  	struct completion write_comp;
+>  	struct mutex write_lock;
+> +	void *private_data;
+>  };
+>  
+>  static inline struct serdev_device *to_serdev_device(struct device *d)
+> 
 
------BEGIN PGP SIGNATURE-----
+thanks.
+-- 
+~Randy
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmmrLuAACgkQJNaLcl1U
-h9AXeAf+PIlXpslfrQ8vsFtLhhUNWSZSG2c6ukWLzTxJvTlhYNpKzP2XF//6/nvm
-nLOsknmi8T7cornx+o6miEp6e88p5JtEiAaYeupKHrUi+GbOhFf364SiHG6U7TF+
-eG1zvzep5B0vPGc2GqKWOcHAG4+3xIVxYbF3rnG0gHct/qXK7S1J7RQxaA4DAdNv
-OfxEIGzD5qR/yJCjtYioMDnBibUnj9vPyrt0G3Ekcgiptn4gWziw5HnhjKacbECL
-dwlH2HrVrEB2VocQGishwscx+TftyqSSm1NiAWRtOuroXq5/a6GLX9lYvqTMlWVJ
-EtubtKoks2gAKmRLIP67uKQgfyPzww==
-=inXS
------END PGP SIGNATURE-----
-
---/GMRHJnvF89z60eQ--
