@@ -1,47 +1,48 @@
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9AC04221540;
-	Fri,  6 Mar 2026 08:53:53 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2F4A23D7FF;
+	Fri,  6 Mar 2026 08:53:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.8
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772787238; cv=none; b=lXJcccVDB3HZhndAOfZqhr0Z00tmqR5C0Z6hILEtjwGuzHhtGMrwd5SFYXn5Ai6bTCIeDM0LaqmNMxILYBznQGOMB044YyhYGXmuOczVWB4PQ5e2ACcfirhFMRMA6FS99/giNnyS9lMfaN4ItRXTMH5/2PUR2zNOyIsnsgA7Uf8=
+	t=1772787241; cv=none; b=uaQ9bWs1Kdxdor/hSA9LXxodNgmdJBVQzWHecPYrnRzB6lPC7jA3U1jhkyv0OwsE6oL5dBI7YssR2kG8ws1rokYlP/g1G/KOpdewJYWfT8MuxHHWiKTKHWGXaJ4J2mK9jgM3tsBC6DXPl2Q9+qPq2/D3Cm15ALBXJZy3ioljTKU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772787238; c=relaxed/simple;
-	bh=/i85oLSnCj5qMGi6p222uU20/vuUbnPx0CH1tfyzfPQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=fZZxdwo62chPrq3trrSKoOBxwFslXbDinBIAtH/wvGxNTLz7ChGqdlBn4mATES1q5U7fKRkNvXjFy2U7L++uvzIOQelVy9Ot9+eDvkwOvQbK5XuxzTQU00CCw6WxIqNYN6Vb8K6tloIfqsrktAf9ckdiUBgWMZC2Wc4oyFupIpE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=mGnMerkv; arc=none smtp.client-ip=192.198.163.8
+	s=arc-20240116; t=1772787241; c=relaxed/simple;
+	bh=qwDmbRV1xi7au7cFclTiYrS/8ARsycp12Je+jrPCUPM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=LkdEZCgC3Ce558IsDNXihpWVBiHXNac6fSuzb2yF6kztZWvcS2PX0WWydpoXnpE7XTj6E03ayzyokGx7s5Pzi3Oaoudvv94XQWcpDd9g7312iOdtDduYw9oSzEi8xHajcqqn7685jfos3ykq7UtL4dSAKZkU9dBU9rP3ZZPjKOI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=XejZQ8yC; arc=none smtp.client-ip=192.198.163.8
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="mGnMerkv"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="XejZQ8yC"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1772787233; x=1804323233;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=/i85oLSnCj5qMGi6p222uU20/vuUbnPx0CH1tfyzfPQ=;
-  b=mGnMerkvE9y3aRcDoFES0rODY5ODlPKa9vd/tHd+tq1wGEb6TQ8XsEow
-   ewmr7e27oYAB2pO9WEosvOCdBpchonbbiIz2odxrRHgJlYXI0+hnzh2ww
-   mK5Ebpka5c3wyiBX5deK2EQ+8TTItw6aC7VOn5KHrCOrs0iZtU/icd98z
-   hDBy781klyQ+/HAdmu71qnQ9Zo3z1XAoydwA0unj8uHTNSTwNzfmjpsX3
-   4l47sb77WLvzk/GOCgs4PwtbVUDRSRZAUvYOVsPaiG56tSMlpEpRKlB8Z
-   7uvL9qVtNXkL6ZdGcGKdqzwNNmK5a1GG77ud++PA9wBgm857aR47p8AlU
-   g==;
-X-CSE-ConnectionGUID: Jhcj141DT1KKMIQZ3RZ5Ew==
-X-CSE-MsgGUID: sf3J42j1TZeD6xHLByu9Hg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11720"; a="91467202"
+  t=1772787238; x=1804323238;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=qwDmbRV1xi7au7cFclTiYrS/8ARsycp12Je+jrPCUPM=;
+  b=XejZQ8yCJzsBBpoEBvPb1ak80+xKkdn1+VT8jqaJOYLvqIoLHhbTSL1p
+   iZMqPlyN28nMUcM1A8ilijrI4evAylbqdhTuOJUQ4OgmkG1RIkuo3/gKd
+   e7GRb30K1n5HIuvfAF1ubp8D20l92NBX9X+Q5nJXWFxvGY78sd99qFg4Y
+   SwY8ExjopeOeS/LL0/nSavabqdXW/IIp77O6N2ADY8z9IIibREEi++u+v
+   BleUY5xnMhKdnPNA63lICcJzqO+6co1cUPLjCjMkcHzX89r65GZMDnBtR
+   IjjrTxoQNUW4AQubM3r7cCPeJdcKzjyEwhU5dFY6+yJM4Ofnqa6xeVZbg
+   Q==;
+X-CSE-ConnectionGUID: RDrtjYyKSqKpE6Qitwksfg==
+X-CSE-MsgGUID: m+wfKzJvSKukq4Dj9mjt9A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11720"; a="91467227"
 X-IronPort-AV: E=Sophos;i="6.23,104,1770624000"; 
-   d="scan'208";a="91467202"
+   d="scan'208";a="91467227"
 Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Mar 2026 00:53:52 -0800
-X-CSE-ConnectionGUID: /2+tIvBWQWakgOLOGX7Oxg==
-X-CSE-MsgGUID: hwsKx16sRymtXFP8XZoAMw==
+  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Mar 2026 00:53:56 -0800
+X-CSE-ConnectionGUID: aoJ3nbkBSd2dUGyoZQnc+g==
+X-CSE-MsgGUID: C/Le+UoHQDeLLnnOnrqBrQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.23,104,1770624000"; 
-   d="scan'208";a="223641463"
+   d="scan'208";a="223641479"
 Received: from dhhellew-desk2.ger.corp.intel.com (HELO ahunter6-desk) ([10.245.244.171])
-  by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Mar 2026 00:53:50 -0800
+  by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Mar 2026 00:53:54 -0800
 From: Adrian Hunter <adrian.hunter@intel.com>
 To: alexandre.belloni@bootlin.com
 Cc: Frank.Li@nxp.com,
@@ -49,10 +50,12 @@ Cc: Frank.Li@nxp.com,
 	linux-i3c@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org
-Subject: [PATCH V5 0/5] i3c: mipi-i3c-hci-pci: Enable IBI while runtime suspended for Intel controllers
-Date: Fri,  6 Mar 2026 10:53:33 +0200
-Message-ID: <20260306085338.62955-1-adrian.hunter@intel.com>
+Subject: [PATCH V5 2/5] i3c: mipi-i3c-hci: Add quirk to allow IBI while runtime suspended
+Date: Fri,  6 Mar 2026 10:53:35 +0200
+Message-ID: <20260306085338.62955-3-adrian.hunter@intel.com>
 X-Mailer: git-send-email 2.51.0
+In-Reply-To: <20260306085338.62955-1-adrian.hunter@intel.com>
+References: <20260306085338.62955-1-adrian.hunter@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -62,96 +65,67 @@ MIME-Version: 1.0
 Organization: Intel Finland Oy, Registered Address: c/o Alberga Business Park, 6 krs, Bertel Jungin Aukio 5, 02600 Espoo, Business Identity Code: 0357606 - 4, Domiciled in Helsinki
 Content-Transfer-Encoding: 8bit
 
-Hi
+Some I3C controllers can be automatically runtime-resumed in order to
+handle in-band interrupts (IBIs), meaning that runtime suspend does not
+need to be blocked when IBIs are enabled.
+
+For example, a PCI-attached controller in a low-power state may generate
+a Power Management Event (PME) when the SDA line is pulled low to signal
+the START condition of an IBI. The PCI subsystem will then runtime-resume
+the device, allowing the IBI to be received without requiring the
+controller to remain active.
+
+Introduce a new quirk, HCI_QUIRK_RPM_IBI_ALLOWED, so that drivers can
+opt-in to this capability via driver data.
+
+Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
+Reviewed-by: Frank Li <Frank.Li@nxp.com>
+---
 
 
-	Please note all patches have Frank's Rev'd-by.
+Changes in V4 and V5:
 
-
-Changes in V5:
-
-	Re-base on top of v7.0 fixes series:
-		https://lore.kernel.org/linux-i3c/20260306072451.11131-1-adrian.hunter@intel.com/T
-
-Changes in V4:
-
-    i3c: mipi-i3c-hci: Allow parent to manage runtime PM
-	Add Frank's Rev'd-by
-
-    i3c: mipi-i3c-hci-pci: Add optional ability to manage child runtime PM
-	Add Frank's Rev'd-by
-
+	None
 
 Changes in V3:
 
-    i3c: master: Mark last_busy on IBI when runtime PM is allowed
-	Patch dropped
-
-    i3c: mipi-i3c-hci: Add quirk to allow IBI while runtime suspended
 	Add Frank's Rev'd-by
-
-    i3c: mipi-i3c-hci-pci: Add optional ability to manage child runtime PM
-	Remove unnecessary pm_runtime_mark_last_busy()
-
-    i3c: mipi-i3c-hci-pci: Enable IBI while runtime suspended for Intel controllers
-	Add Frank's Rev'd-by
-
 
 Changes in V2:
 
-    i3c: mipi-i3c-hci-pci: Set d3hot_delay to 0 for Intel controllers
-	Add Frank's Rev'd-by
-
-    i3c: master: Allow controller drivers to select runtime PM device
-	Patch dropped
-
-    i3c: master: Mark last_busy on IBI when runtime PM is allowed
-	Adjusted slightly for earlier changes
-
-    i3c: mipi-i3c-hci: Allow parent to manage runtime PM
-	For HCI_QUIRK_RPM_PARENT_MANAGED case, change from
-	disabling runtime PM to instead causing the runtime PM
-	callbacks to do nothing
-
-    i3c: mipi-i3c-hci-pci: Add optional ability to manage child runtime PM
-	Do not enable autosuspend.
-	Callbacks for parent-managed invocation were renamed
-	from i3c_hci_runtime_suspend to i3c_hci_rpm_suspend and
-	from i3c_hci_runtime_resume to i3c_hci_rpm_resume.
-	Amend commit message slightly.
-
-    i3c: mipi-i3c-hci-pci: Enable IBI while runtime suspended for Intel controllers
-	Retain HCI_QUIRK_RPM_ALLOWED
-	Amend commit message accordingly
+	None
 
 
-Here are patches related to enabling IBI while runtime suspended for Intel
-controllers.
+ drivers/i3c/master/mipi-i3c-hci/core.c | 3 +++
+ drivers/i3c/master/mipi-i3c-hci/hci.h  | 1 +
+ 2 files changed, 4 insertions(+)
 
-Intel LPSS I3C controllers can wake from runtime suspend to receive
-in-band interrupts (IBIs).
+diff --git a/drivers/i3c/master/mipi-i3c-hci/core.c b/drivers/i3c/master/mipi-i3c-hci/core.c
+index 284f3ed7af8c..54d5492545ef 100644
+--- a/drivers/i3c/master/mipi-i3c-hci/core.c
++++ b/drivers/i3c/master/mipi-i3c-hci/core.c
+@@ -996,6 +996,9 @@ static int i3c_hci_probe(struct platform_device *pdev)
+ 	if (hci->quirks & HCI_QUIRK_RPM_ALLOWED)
+ 		i3c_hci_rpm_enable(&pdev->dev);
+ 
++	if (hci->quirks & HCI_QUIRK_RPM_IBI_ALLOWED)
++		hci->master.rpm_ibi_allowed = true;
++
+ 	return i3c_master_register(&hci->master, &pdev->dev, &i3c_hci_ops, false);
+ }
+ 
+diff --git a/drivers/i3c/master/mipi-i3c-hci/hci.h b/drivers/i3c/master/mipi-i3c-hci/hci.h
+index 9ac9d0e342f4..02cab3b3bc6f 100644
+--- a/drivers/i3c/master/mipi-i3c-hci/hci.h
++++ b/drivers/i3c/master/mipi-i3c-hci/hci.h
+@@ -150,6 +150,7 @@ struct i3c_hci_dev_data {
+ #define HCI_QUIRK_OD_PP_TIMING		BIT(3)  /* Set OD and PP timings for AMD platforms */
+ #define HCI_QUIRK_RESP_BUF_THLD		BIT(4)  /* Set resp buf thld to 0 for AMD platforms */
+ #define HCI_QUIRK_RPM_ALLOWED		BIT(5)  /* Runtime PM allowed */
++#define HCI_QUIRK_RPM_IBI_ALLOWED	BIT(6)  /* IBI and Hot-Join allowed while runtime suspended */
+ 
+ /* global functions */
+ void mipi_i3c_hci_resume(struct i3c_hci *hci);
+-- 
+2.51.0
 
-It is non-trivial to implement because the parent PCI device has 2 I3C bus
-instances (MIPI I3C HCI Multi-Bus Instance capability) represented by
-platform devices with a separate driver, but the IBI-wakeup is shared by
-both, which means runtime PM has to be managed by the parent PCI driver.
-
-To make that work, the PCI driver handles runtime PM, but leverages the
-mipi-i3c-hci platform driver's functionality for saving and restoring
-controller state.
-
-
-Adrian Hunter (5):
-      i3c: mipi-i3c-hci-pci: Set d3hot_delay to 0 for Intel controllers
-      i3c: mipi-i3c-hci: Add quirk to allow IBI while runtime suspended
-      i3c: mipi-i3c-hci: Allow parent to manage runtime PM
-      i3c: mipi-i3c-hci-pci: Add optional ability to manage child runtime PM
-      i3c: mipi-i3c-hci-pci: Enable IBI while runtime suspended for Intel controllers
-
- drivers/i3c/master/mipi-i3c-hci/core.c             |  35 +++++-
- drivers/i3c/master/mipi-i3c-hci/hci.h              |   7 ++
- drivers/i3c/master/mipi-i3c-hci/mipi-i3c-hci-pci.c | 135 +++++++++++++++++++++
- 3 files changed, 172 insertions(+), 5 deletions(-)
-
-Regards
-Adrian
