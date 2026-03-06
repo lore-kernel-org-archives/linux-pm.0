@@ -1,129 +1,84 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mail-m19731113.qiye.163.com (mail-m19731113.qiye.163.com [220.197.31.113])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1161E221540;
-	Fri,  6 Mar 2026 07:36:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44E2137757D;
+	Fri,  6 Mar 2026 07:40:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.113
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772782613; cv=none; b=KtS21G8brkDPmRd4FjbpW4nxggRyag1P0ZFOi2TvaFAkj3pMtSlFTgBGskTtEZ+Rb1oCpiAzeNbj0rW0hCZn7a6e/OlmkGSLwvPJRCys06sEzLX+yW+9S/OlWQe4zRTFPSD5QgKOZv38poQAk2ZXNrOlX47x2ftoPl4H1ATU884=
+	t=1772782866; cv=none; b=GynlBJ8/QfiCe17x7aRygLx93blV4eoh4OWgncf69H2zhOjiq5JZpQJNaUJAHzk+XKUts1lh0ifwaeuTNublw9+NXIzAXVcKEk3dQEbcCH4RlaFLMPnF8m3Yt90PxA2dzMjhRZnOsUcpO72tkFzH629xJNoWqNmNzfS4PzVy1J4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772782613; c=relaxed/simple;
-	bh=ODvio30d2U39SOyQE9o3r70lLsCN1rTtdRiiHLywxLg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=meqO7yZhl8K051qAO31v3brH0XpR0vdewesG8o+HArEo9+kLWBWNPWZm/w94kZvq70JVFdNTFj3AG4A6Tw53USnoT4MByBpA3bWpWfH4jYtBd0LwvEcwnuMAWWU5DO2z5NjaEE2NT2Bm6OF0J8myEsbEi5PVkF1rZt46FdIZp98=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HkFDc5bM; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1772782866; c=relaxed/simple;
+	bh=/Zx5NSkX3NRNUg+5Dv1UgnflpXo0uGtK62/ZMZKXRTQ=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=NJhGjOZIaqO4U0xcm6z13ToRce7Hq2vAWeYf2s0uHQ9hTf4hhMZHH3/kyv7sBT4+XY75amdlAhKlSgrX3LrqvDsEPDACKJi2M/Nlzf+JlTThvcqnoPuEVOq/X6jX8bbPM2CIr/ZVmLUz54zSD2M/3wdjggcnS/WT44uZ9SfC1d4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=M5Va1dFz; arc=none smtp.client-ip=220.197.31.113
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HkFDc5bM"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1943AC4CEF7;
-	Fri,  6 Mar 2026 07:36:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772782612;
-	bh=ODvio30d2U39SOyQE9o3r70lLsCN1rTtdRiiHLywxLg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=HkFDc5bMXNYfmBMwQaaWuqd0OKTasExEF96N5g5MPImBTRBZfbKnC7a93tBaV/kTJ
-	 uLoOANJ2eldrtDywnk0Hq0mrDL7JLveGXWRrpwRf2i+QLheux5xswai6e+6aJHNOtM
-	 pUQd/sp8g5L/kxNhwLfzlHKY1XM0Zam9sBaXyviFYO6oX21Vb14VFzxl62KEAya62l
-	 WuCKcXC88+yKXPjZcv0mOC8Xr+AUCczmgVdhvCQGhnCnn6UzohFPLh5d+CshHclIub
-	 LlMkK3KGAzw4rwa07LbV3tQ6NDkGivS/6/vHfVlHJo7n9rM4IFvzsTgdmMNHMHeCwS
-	 nxqd+L3/aQxzA==
-Date: Fri, 6 Mar 2026 08:36:50 +0100
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: =?utf-8?B?QW5kcsOp?= Draszik <andre.draszik@linaro.org>
-Cc: Alim Akhtar <alim.akhtar@samsung.com>, Rob Herring <robh@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Ulf Hansson <ulf.hansson@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, 
-	Mark Brown <broonie@kernel.org>, Peter Griffin <peter.griffin@linaro.org>, 
-	Tudor Ambarus <tudor.ambarus@linaro.org>, Juan Yescas <jyescas@google.com>, 
-	Will McVicker <willmcvicker@google.com>, kernel-team@android.com, linux-arm-kernel@lists.infradead.org, 
-	linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH v6 04/10] dt-bindings: soc: google: gs101-pmu: allow
- power domains as children
-Message-ID: <20260306-hopeful-amusing-sawfly-e60c6d@quoll>
-References: <20260305-gs101-pd-v6-0-8cb953c1a723@linaro.org>
- <20260305-gs101-pd-v6-4-8cb953c1a723@linaro.org>
+	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="M5Va1dFz"
+Received: from localhost.localdomain (unknown [58.22.7.114])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 35fcf41e0;
+	Fri, 6 Mar 2026 15:40:53 +0800 (GMT+08:00)
+From: Shawn Lin <shawn.lin@rock-chips.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Heiko Stuebner <heiko@sntech.de>
+Cc: linux-pm@vger.kernel.org,
+	linux-rockchip@lists.infradead.org,
+	devicetree@vger.kernel.org,
+	Shawn Lin <shawn.lin@rock-chips.com>
+Subject: [PATCH 1/3] dt-bindings: power: rockchip: Add pm_shaping support
+Date: Fri,  6 Mar 2026 15:40:30 +0800
+Message-Id: <1772782832-216867-2-git-send-email-shawn.lin@rock-chips.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1772782832-216867-1-git-send-email-shawn.lin@rock-chips.com>
+References: <1772782832-216867-1-git-send-email-shawn.lin@rock-chips.com>
+X-HM-Tid: 0a9cc2179bc509cckunm7894a4e01405bae
+X-HM-MType: 1
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZGh8fQlZPGk8YGhpMSk4YQx9WFRQJFh
+	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
+	hVSktLVUpCS0tZBg++
+DKIM-Signature: a=rsa-sha256;
+	b=M5Va1dFz3mu/y6ZmZEf1wX2ciJ/Kp0ID7vuoLAZBWbwZA/pz8456FJi1M2KS4IKK0kKM7bNEbMQmvkEMKUMmg+AEh5hQ5VkjyToeaG2HF38pRe2i7TFp+YK6HUWqMvCBgfeKiGgibvyir5PUEiWc6G+FKcjizpQcawEGp/3MwJQ=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
+	bh=38mHrnKAJ0MkRyoXR99jAy7rm6c8iWvbAfXMlBLrGfY=;
+	h=date:mime-version:subject:message-id:from;
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20260305-gs101-pd-v6-4-8cb953c1a723@linaro.org>
 
-On Thu, Mar 05, 2026 at 06:11:53AM +0000, Andr=C3=A9 Draszik wrote:
-> The power domains are a property of / implemented in the PMU. As such,
-> they should be modelled as child nodes of the PMU.
->=20
-> Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
+pm_shaping is introduced for some platforms to throttle the outstanding
+burst requests of each IP to prevent bus monopolization. Add a discription
+of it.
 
-It is impossible to test a binding in a meaning of "tests", thus you
-should not add Marek's tags to bindings patches.
+Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
+---
 
-> Signed-off-by: Andr=C3=A9 Draszik <andre.draszik@linaro.org>
-> ---
-> v4:
-> - consistent quoting using " (Krzysztof)
-> - add samsung,dtzpc to example
->=20
-> Note:
-> Because the properties added are 'required', this commit breaks DT
-> validation of the existing DT for Pixel 6, but a) that's simply because
-> the DT is incomplete and b) a DT update will be posted once the binding
-> is accepted.
-> It is not possible to write the binding such that it supports old
-> (incomplete) DTs in addition to the full version, but as per above
-> it's not required to keep supporting old DTs.
-> ---
->  .../bindings/soc/google/google,gs101-pmu.yaml      | 41 ++++++++++++++++=
-++++++
->  1 file changed, 41 insertions(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/soc/google/google,gs101-pm=
-u.yaml b/Documentation/devicetree/bindings/soc/google/google,gs101-pmu.yaml
-> index a06bd8ec3c20..c1ee9575092a 100644
-> --- a/Documentation/devicetree/bindings/soc/google/google,gs101-pmu.yaml
-> +++ b/Documentation/devicetree/bindings/soc/google/google,gs101-pmu.yaml
-> @@ -16,6 +16,14 @@ properties:
->    reg:
->      maxItems: 1
-> =20
-> +  "#address-cells":
-> +    const: 1
-> +
-> +  "#size-cells":
-> +    const: 1
-> +
-> +  ranges: true
-> +
->    reboot-mode:
->      $ref: /schemas/power/reset/syscon-reboot-mode.yaml
->      type: object
-> @@ -39,9 +47,23 @@ properties:
->      description:
->        Phandle to PMU interrupt generation interface.
-> =20
-> +patternProperties:
-> +  "^power-domain@[0-9a-f]+$":
-> +    type: object
-> +    description: Child node describing one power domain within the PMU
-> +
-> +    additionalProperties: true
-> +
-> +    properties:
-> +      compatible:
-> +        const: google,gs101-pd
-> +
->  required:
->    - compatible
->    - reg
-> +  - '#address-cells'
-> +  - '#size-cells'
+ .../devicetree/bindings/power/rockchip,power-controller.yaml      | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-I don't see improvements about quotes.
-
-Best regards,
-Krzysztof
+diff --git a/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml b/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml
+index b41db57..4af6c30 100644
+--- a/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml
++++ b/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml
+@@ -147,6 +147,14 @@ $defs:
+           A number of phandles to qos blocks which need to be saved and restored
+           while power domain switches state.
+ 
++      pm_shaping:
++        $ref: /schemas/types.yaml#/definitions/phandle-array
++        items:
++          maxItems: 1
++        description: |
++          A number of phandles to shaping blocks which need to be saved and restored
++          while power domain switches state.
++
+       "#power-domain-cells":
+         enum: [0, 1]
+         description:
+-- 
+2.7.4
 
