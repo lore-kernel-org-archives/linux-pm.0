@@ -1,45 +1,42 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8463F1A9F93;
-	Sat,  7 Mar 2026 15:06:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 731D82F690F;
+	Sat,  7 Mar 2026 15:17:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772896014; cv=none; b=ZK4uCMLSc3Aou7vo9KsR5hspP8f/ydn2q6OuuZ5a56DFHKZh3mAlr2A3IT0Yk89152n4GImKpmK6PzFiFpQUDBN2Vs3OJxOCVTFwI4mNtOiRb40IIG671RdSMT2Zz1gT0Ex2zq3Cf88rDVZUcv2H3LdWmgcvJ54swJJnUdVtEWk=
+	t=1772896623; cv=none; b=HxjGyZmd8mfxuKtdGSTrcRG+iSCOlubAckXF8KcwOHSKDaapJZNe6tyM4LWHi6cWHE32QtU6yUHz8wgPD0JRf3Ig7cGxTz1vPyCVrOn6GJXlwQIPnn9a2uj/qXwSioJCgYf1BFyNWXDbPn6zBpZ6D8hCVTbo5qvdPOJrejJs85A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772896014; c=relaxed/simple;
-	bh=3RWqiR/mC38WLnP0x0wZe6B+f7mQm4ypzGLFZ6do8fQ=;
+	s=arc-20240116; t=1772896623; c=relaxed/simple;
+	bh=0UnT+075J08xFSw5ayjMg4ookTNNmPK5kNEOX3Bba1s=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=OB1t/uzcsprmEJiR2XOdfwgBx2OERBRZ5PPHCAkkVXgMjZHLAPjGF7io8Z/0FnA0222ShtbeNdl4FRNYjXmPIRhZjNliosCSlp0XmoHRu2/0WXHKGQCrl+BptDhxzoru7BOm0h5CKP+67CYWoBbpf6zgv97v9LqBOLBkpwqoLAU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JAjx6vgl; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=O+WzFtzRpiHngF1DrVlrRKWFTZgmtgEiBgAkksfCTMgXfkbJTOt6ccVuj3dKlf3jVe0z7dRL1QM8wbb+DhbxTi7/0WURAcnVm1BEODyTP1J6LaJ05PE6GZj+6vUonQCT/ZpKCTD20pZ5NDwju87waVwFB11AwO0UYuOCfOchnjs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Civrm1ki; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JAjx6vgl"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A64DC19422;
-	Sat,  7 Mar 2026 15:06:53 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Civrm1ki"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8610EC19422;
+	Sat,  7 Mar 2026 15:17:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772896014;
-	bh=3RWqiR/mC38WLnP0x0wZe6B+f7mQm4ypzGLFZ6do8fQ=;
+	s=k20201202; t=1772896623;
+	bh=0UnT+075J08xFSw5ayjMg4ookTNNmPK5kNEOX3Bba1s=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=JAjx6vglkmhCf5wN1irFrsQ+0wiNNhSXdWbDWkbOfvkJ+jtPdSCKPL8YEfEraYyuz
-	 UW9ZdBpuGnhWD/9ELVWiDqNEB69wPJ6XUxRqh9rCPBryuq853j1QqLxyoaWjt4r6c5
-	 nJMJhNJMIzlBhLJk1crPiBtZ3qISUszdlFMgtRlD5e67tJKCoMvCWXcF0NqDy1ZYmr
-	 e6rUSI/SHGBCCKcpmZCuIjdsCUo0OHtk+/ojsxpY9pfJmlNhEHsfNbsPXg+u7O/Uqd
-	 OgwwqJXMSZ6NKl50OyC7GdjP0V/abWmHTblySZH0ayjvqBCSPy4rO+diY/1dOnp/Mc
-	 8CcoQHB8HJRJw==
-Date: Sat, 7 Mar 2026 16:06:51 +0100
+	b=Civrm1ki07KOZoF+DAaXctutesxEyo26q81HghJOpSHL2BKdvpIlmBfwuQpFamBd2
+	 yVrpUj9M6xD/KZT/su4uRMbymopzKXjr01YdoygFIcLEVWCRGvmjeJRv+xiw1cmEVx
+	 zzY0HWWE2rg6X5uajzbnItF7+h/WggLROWibSbf+8kB0PD6oQF8XBxmn83eR7feYZt
+	 TbkN3ovSQofGYZfM+5CkuNhiwCFl9yt7rcKNHibSnY1YD2X1e4/XJw0I/WEoTix/uf
+	 FrGDBBR/agAFHMIECAfby95z4fIMu95zT1hxiHvzTD7ClyvXjBi7PLuGB7SsiBpon7
+	 +ZyCGYDlUCbdg==
+Date: Sat, 7 Mar 2026 16:17:00 +0100
 From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Alexey Charkov <alchark@flipper.net>
-Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+To: Shawn Lin <shawn.lin@rock-chips.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh@kernel.org>, 
 	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Chris Morgan <macromorgan@hotmail.com>, Liam Girdwood <lgirdwood@gmail.com>, 
-	Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.com>, 
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 01/11] dt-bindings: mfd: ti,bq25703a: Expand to
- include BQ25792
-Message-ID: <20260307-elegant-cherubic-caracara-dc494d@quoll>
-References: <20260306-bq25792-v2-0-6595249d6e6f@flipper.net>
- <20260306-bq25792-v2-1-6595249d6e6f@flipper.net>
+	Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, 
+	devicetree@vger.kernel.org
+Subject: Re: [PATCH 1/3] dt-bindings: power: rockchip: Add pm_shaping support
+Message-ID: <20260307-original-shrewd-mouflon-1eb07b@quoll>
+References: <1772782832-216867-1-git-send-email-shawn.lin@rock-chips.com>
+ <1772782832-216867-2-git-send-email-shawn.lin@rock-chips.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,21 +45,59 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260306-bq25792-v2-1-6595249d6e6f@flipper.net>
+In-Reply-To: <1772782832-216867-2-git-send-email-shawn.lin@rock-chips.com>
 
-On Fri, Mar 06, 2026 at 06:33:01PM +0400, Alexey Charkov wrote:
-> TI BQ25792 is similar in operation to BQ25703A, but has a different
-> register layout and different current/voltage capabilities.
+On Fri, Mar 06, 2026 at 03:40:30PM +0800, Shawn Lin wrote:
+> pm_shaping is introduced for some platforms to throttle the outstanding
+> burst requests of each IP to prevent bus monopolization. Add a discription
+> of it.
+
+Isn't that interconnects?
+
+Also which platforms? We don't add it for your downstream code. Why
+there is no property restriction per variant in the binding?
+
+
 > 
-> Expand the existing BQ25703A binding to include BQ25792, and move the
-> voltage and current limits into per-variant conditional statements.
-> 
-> Signed-off-by: Alexey Charkov <alchark@flipper.net>
+> Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
 > ---
->  .../devicetree/bindings/mfd/ti,bq25703a.yaml       | 73 +++++++++++++++++++---
->  1 file changed, 63 insertions(+), 10 deletions(-)
+> 
+>  .../devicetree/bindings/power/rockchip,power-controller.yaml      | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml b/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml
+> index b41db57..4af6c30 100644
+> --- a/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml
+> +++ b/Documentation/devicetree/bindings/power/rockchip,power-controller.yaml
+> @@ -147,6 +147,14 @@ $defs:
+>            A number of phandles to qos blocks which need to be saved and restored
+>            while power domain switches state.
+>  
+> +      pm_shaping:
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Read DTS coding style. Build your code with W=2 so you will see here
+warnings.
+
+Also, read writing bindings or any docs for beginners. Missing prefix.
+
+
+> +        $ref: /schemas/types.yaml#/definitions/phandle-array
+
+so phandle? Or array? Decide...
+
+> +        items:
+> +          maxItems: 1
+
+So how many items?
+
+> +        description: |
+
+Drop |
+
+> +          A number of phandles to shaping blocks which need to be saved and restored
+> +          while power domain switches state.
+
+Wrap code according to Linux coding style.
 
 Best regards,
 Krzysztof
