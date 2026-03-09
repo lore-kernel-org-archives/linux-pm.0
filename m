@@ -1,144 +1,87 @@
-Received: from mail-qt1-f180.google.com (mail-qt1-f180.google.com [209.85.160.180])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6346C3B8BD2
-	for <linux-pm@vger.kernel.org>; Mon,  9 Mar 2026 16:08:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.160.180
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773072523; cv=pass; b=o4Up2Q/SCtM0248P2ru0ZQz986Tmf61i7BmeSPH/de/kqrBiSHHrwhuS9cMubpdaOIbSTA7C7sMYtEnt90JcTaoftr1zOxjFO5MnB5UGfItTCq2JmEuewl9s4EIkSrHt1OBWCOWHDex3qL74jLER+op69c2jirQRIdoRHKc1GYQ=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773072523; c=relaxed/simple;
-	bh=Yot0xbyHJsj7QAQS3vNY/dGwb6uIyCI/vA1cs4XLkGc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ZGHl2aHN4xHL9TDRanjrFo613WaU+l7E8WD4Knq+GKJzcoC1EIVb6mO+ketIR9Yx+vFa/0UgV2HsTwdhNlhBcX+5QM5UaktHz0b1VELdXXigEGTx9F7DPKL9+W8MCYWr4GHTTwe+R2pWlMV23qBPkj9Co9S5CaBnsnGmD9JpCLc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=russ3RdD; arc=pass smtp.client-ip=209.85.160.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CCE12D592F
+	for <linux-pm@vger.kernel.org>; Mon,  9 Mar 2026 17:40:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.97.179.56
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773078008; cv=none; b=jaU4ZzH4x9P97EwqfPaRHsxYu+HjMVvECxgXLrUNf7/i8DFtR8qTT0OvOsB9F3OXzkk6upQVtdE//DKGkzXqJ0sCI0jjXStWFN6nUbWaa4qpcA4wc0SngeLrh69bnR82IqkEjvpfKM/DDENZ5fXLMa9i32zyz5BX7vwGoKgNGXc=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773078008; c=relaxed/simple;
+	bh=4of+esMVwsHs7EZ6T3Gqq0jbZOi8pJA6uhU/GzYviJE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=iP7928qSQIFKkuSrKlE2HacLSYp57BFCCdABFDrmPknl4rIh6GW8kcagwE/sOWCzDSsZKERtz1V51jIRPhp8ioxwDSioxQs2YGunQPP0ZFSuLC2NHL9chgxZCWCckbtbP5zE4YQlNdHdOU5uKCt/3BUff2GluZKHL4I/emZmvMA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com; spf=pass smtp.mailfrom=igalia.com; dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b=inWiGtRw; arc=none smtp.client-ip=213.97.179.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=igalia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="russ3RdD"
-Received: by mail-qt1-f180.google.com with SMTP id d75a77b69052e-50906a98ffeso953411cf.0
-        for <linux-pm@vger.kernel.org>; Mon, 09 Mar 2026 09:08:42 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1773072521; cv=none;
-        d=google.com; s=arc-20240605;
-        b=b1XUNRhDdW4zZrIXql+7Fa1+u0F2T3qGQRDzXGfuzlp7alyandsYQD6I8vynz2r3F9
-         fRQAYVlB2F1AbGnxruN28Qq6d3mjeUawjWrmzBc69kEPw0gUs/y4WwhIWOTwInu1Pewa
-         OP5bHzKWRZmCeSsUWmsnZb3G1PloiShddUIhXmJpftLKrbCCvp+cXQnaFitMCWE5LH+/
-         SQmz7iFfxVd3FJA0rO4ZTn7aTlXulVmt0EMUy4+1r9iH0njCuUMDq/ZwF+h6fJ37nOr8
-         DWpW1XeRBPp35U6SLjS8bFU8KpD3/6f6QzTAK4pQl/tv3XoR+Eit0g9tm6mNPBzVwwBW
-         alww==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=dJZjcWqdTMUm135cItrOwLK6G6oxwB/Ydqo2W3I/EPo=;
-        fh=4E5Qud9CgVNuDe4a9qar+lvZfD5JXgCK84lPzMltXGs=;
-        b=DeSKSNdaCQwmXQ/ay2CXiC3PmefRCDVaVb7FivEJX/LPyV0lVgCcS17ZiExwyr+99m
-         qxhc7hejGSOefHLoiI3JZuiFW+xd4ppeLOPnNRbh0Q2Rs1RfKSbvB1Ux1Zgo2nCVEuG8
-         xEgyZzTaSVHDBJTCdzj+liNAKVbXZL+UlnGMqMK822rmu2SMOZeKty+D7a0moapuyV2b
-         okbAxWAwVisW0AT55JQT6gyPiIdQ2bSK6CSMnyA14gg7jMP0G6FF+qAhFo/7869drZ1N
-         zKZk0N5yvWiw8gCmP1Q4bPg0fumI+OqXZqcQ+BgkxMV069DkmKwVmHkI/uGNtaX6hC8v
-         PjLQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1773072521; x=1773677321; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=dJZjcWqdTMUm135cItrOwLK6G6oxwB/Ydqo2W3I/EPo=;
-        b=russ3RdDmRqNGkjlVdjkxLsK1aUe3+2pNSACBA4jzXTfTs/pd74w4jjU901WJ3jJct
-         phiGfSUPgn9tfnI/xR6wsBGnSH/EsopoaFH8EF/FZrYAFGbnRYyzDJukCEPKkmPyC921
-         i683+bPX4lemfxBAp941ndG7IbqR+jD/+SbQcaGSADpf4QVUMVUIQV0LXOeufxKkxx6H
-         21GJRaOkyrBQ+0or7Xn/DWfTR2PNsV49F6r/wIkxl3c6QhlYWoia56GvRNANlU+G16ex
-         Zw+uSwXet/knypz+fiXGfyTTpA4HFjgRfyPkAr8tWQXhwURbL+LS2msFKiAZVZ6cUWwn
-         mqJw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773072521; x=1773677321;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=dJZjcWqdTMUm135cItrOwLK6G6oxwB/Ydqo2W3I/EPo=;
-        b=d1niLqpqGjEjVvQQZCE87eXVCYqvdEi1IsAa47SXz7hk7vt9uK5+I6klnRewq+hduJ
-         CIP36h1RzUYKvR1AD2ilOwu/bp7ALV3sOLBIZu6p9xA8BlrTu8NvXr7Sc+2vvrrIwtQ/
-         yTD8vC5g5JMSMFcOj58rVJd3qecfiQTUwucQ7yb6FpKdvB2nN723yD0/0Fdb1QbpvIlZ
-         2MIBfweV2pkZCK4NCetjmwgq2b7vHYozWO9KylYgaDn7dZiw7QGq9+RTp7n4fEYG1bck
-         8yytnaAAuHIH+iXmtOBOYlCtZgqAwyN9HvVRiDIBD2u7WcpO65WD1cL8ffg5jE9c+hAD
-         /wbQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVWeeSLKB9TcyNHmbmAHjfuC9ibtSrCEYTDcO6on9Qw/VmMd73jureVsqmPuxAV9ahSnJiDgIE9zg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywwal+ShzxeXBESUXbjGWQLUCB32xRE91NpolLjpRymRnjygIUi
-	6SPujGFBx8T80WuFcCb5GEDTkiGQ8JqjwgEpWnfnDEkgPVLUdSeOnzuEZKvKvy2mqR4yap6Pnuw
-	KHoT7/KDjYm5t8pZLv1S1XZGSpCEGhWoQgIlvBeKC
-X-Gm-Gg: ATEYQzxjQLXN54t5xJRE+2dbZv27VUY/DLCDL8MSwAP/RQNe6gcdyxSnYw5TC6ZT7QQ
-	hwhOEl+s4ol7apctPozhy5exKyoWNkMntDd+ooILFAiMrYdTMwy+0qXq4YJRUhAQ6eaJWOKxi54
-	Ry2ZvX9xNWIRt62b/eNggrHziA2oxFBIK0H3oLkWxNE021BF8+Zz5BsjC5b2ADNnV56j3kbxkjz
-	/RJdRwdJ8JY0k7hjQopTUzTiWPklyXJwooXsGU/MyPUHaGsRr7nUWEkUs8oe/l5Gv/xnaMykyH1
-	Zp8P45mQbFhVWiBt8NNrnDDGEECZBeRBnIP3yssxsjdLgxyBIYkNB6qG6eqJ7iIjzDBnaDSsXZ7
-	zFMHx3A82dKW23woECwaHtDI8
-X-Received: by 2002:a05:622a:251:b0:4f3:54eb:f26e with SMTP id
- d75a77b69052e-50902abee95mr23991441cf.1.1773072520504; Mon, 09 Mar 2026
- 09:08:40 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b="inWiGtRw"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
+	s=20170329; h=Content-Transfer-Encoding:MIME-Version:Message-ID:Date:Subject:
+	Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=kEiLvmpYmEETqxz0fvpkS+CaWS9KTMfrZBkdWOGWtIY=; b=inWiGtRwSdbOruWP2Qvek2rV8J
+	PzRdheLsM1G85vmPwkeJvzD48teNs5tC9k1f75V9IHlU40+C3+0zXGaizuGMSY1Ty9rBEjoHrBiTU
+	NXzF8X2euepAbNP1DKUsVlKLPlmQsQr9qLkhdGDxM1JCQTuL1t4KDliHuHkRd5HOOOyfIZEufCkXH
+	wMyNJqhfJhCVycWyC0s3RAwQ7x5wpFUBrS+7YawwMFH4na0FYFc5pSErsq8e8mUCvmGzEFyE2Djd0
+	p5nt1bbhnHSDpPRuXh2dmTllhwFyDI9n/nXu1oJkxi59hyCukPLx40sbNlZcQtkUJuA5EtJzPqPi/
+	Hgm6misg==;
+Received: from ip40.wifi.igalia.com ([192.168.12.40] helo=zeus.local)
+	by fanzine2.igalia.com with esmtpsa 
+	(Cipher TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim)
+	id 1vzeaI-00CA1M-MF; Mon, 09 Mar 2026 18:40:02 +0100
+Received: from berto by zeus.local with local (Exim 4.98.2)
+	(envelope-from <berto@igalia.com>)
+	id 1vzeaI-000000009Lf-2Jud;
+	Mon, 09 Mar 2026 18:40:02 +0100
+From: Alberto Garcia <berto@igalia.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>
+Cc: Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	Brian Geffon <bgeffon@google.com>,
+	linux-pm@vger.kernel.org,
+	Alberto Garcia <berto@igalia.com>
+Subject: [PATCH v2 0/2] PM: hibernate: Drain trailing zero pages on userspace restore
+Date: Mon,  9 Mar 2026 18:39:40 +0100
+Message-ID: <cover.1773075892.git.berto@igalia.com>
+X-Mailer: git-send-email 2.47.3
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260309001250.192841-1-berto@igalia.com> <aa6uYoVKegcac2Kq@igalia.com>
- <CADyq12z_mhjY9S1_jawX8UuviyYf-ozXn6Q6yB4dHxopD7JmTg@mail.gmail.com> <aa7uBMrSII5l-Ofl@igalia.com>
-In-Reply-To: <aa7uBMrSII5l-Ofl@igalia.com>
-From: Brian Geffon <bgeffon@google.com>
-Date: Mon, 9 Mar 2026 12:08:04 -0400
-X-Gm-Features: AaiRm52ASV7dzyShi1mBohYTHILYRm6S75s307c8okWIrQo3eHDFWTbzZFQ-n2U
-Message-ID: <CADyq12zULXjnvikfXn1zPUNzqZGPSbx4LcR56BUOzJD6O8vPDA@mail.gmail.com>
-Subject: Re: [PATCH] PM: hibernate: Drain trailing zero pages on userspace restore
-To: Alberto Garcia <berto@igalia.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, 
-	linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Mon, Mar 9, 2026 at 11:57=E2=80=AFAM Alberto Garcia <berto@igalia.com> w=
-rote:
->
-> On Mon, Mar 09, 2026 at 11:01:15AM -0400, Brian Geffon wrote:
-> > > An alternative solution would be to do it at the beginning of
-> > > snapshot_write_finalize() if handle->cur > nr_meta_pages + 1.
-> >
-> > I think this makes sense, but if snapshot_write_next() returns
-> > PAGE_SIZE then we need to indicate some error (eg. -ENODATA) in that
-> > the kernel was still expecting another copy page.
->
-> This would fail anyway in snapshot_image_loaded() because of this
-> condition:
->
->    handle->cur <=3D nr_meta_pages + nr_copy_pages + nr_zero_pages
+Hi,
 
-A subtle bug exists where if you had exactly 1 page remaining (which
-was to be copied) handle->cur would have been incremented in
-snapshot_write_next(), however, no data would have been copied into
-that page.
+Here's v2 of the patch.
 
->
-> But I think it make sense to return an error directly from
-> snapshot_write_finalize() as you suggest, I can use -ENODATA.
+Changes from v1:
 
-Yes, I think the safest option is if you call
-snapshot_write_finalize() and snapshot_write_next() returns a positive
-value you return -ENODATA.
+- The extra snapshot_write_next() call happens now at the beginning of
+  snapshot_write_finalize(), but only when handle->cur is in the data
+  page region.
 
->
-> > Also it appears that the kernel restore path and the userspace restore
-> > path return two different error codes for !snapshot_image_loaded(),
-> > the former does -ENODATA and the latter -EPERM.
->
-> Yes, -EPERM is the one that I hit in my tests.
->
-> Does this need to be corrected?
+- We return -ENODATA if snapshot_write_next() returns > 0 (indicating
+  that the kernel was expecting another page).
 
-Yes, I think we should change that code to check if
-!snapshot_image_loaded() and explicitly return -ENODATA rather than
--EPERM which is meant for cases where the operation is neither
-write-only nor ready. This new explicit check should happen after
-that.
+- A second patch changes the userspace restore code to return -ENODATA
+  when snapshot_image_loaded() fails.
 
->
-> Berto
+Regards,
+
+Berto
+
+Alberto Garcia (2):
+  PM: hibernate: Drain trailing zero pages on userspace restore
+  PM: hibernate: return -ENODATA if the snapshot image is not loaded
+
+ kernel/power/snapshot.c | 11 +++++++++++
+ kernel/power/user.c     |  7 +++++--
+ 2 files changed, 16 insertions(+), 2 deletions(-)
+
+-- 
+2.47.3
+
