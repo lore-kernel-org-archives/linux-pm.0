@@ -1,52 +1,52 @@
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4AFED344056;
-	Mon,  9 Mar 2026 22:20:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4382B38E5C6;
+	Mon,  9 Mar 2026 22:20:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773094840; cv=none; b=q3mL6jIrplQBFYXVS5//ffmsNgcL2VJ9pw2Vda3AXhT9zqoNd5TeYmQdpHmrF+ooI/h3twfu5TiLmVxXAurBYdYkZ1x3ODzG1UCOLoB9AbXxIBXqQabB7RMeXT+KZ/cfmvU37qq5ewX15SqHPlXks8DeY3ZGPo2ndbzE3fsTaL0=
+	t=1773094841; cv=none; b=W8qiKw+vke4dgnU5RYjrJuBR8tJ5lFgpIkk1xLiAiTU++zS6L/PJEsjxfyv6z4Yod5wpVxptIUvUy/Vj7WftWGucgTVCn2sVC976EVonatswmLpZNWEMr4LjK2wS5pztApvGoQnIa7YLOF3Oe6qPNHpxCQJErxNYLK5foJ0YH9s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773094840; c=relaxed/simple;
-	bh=EDdGFDPMjPJeXpzZfHj7rGFIrb+heEvPRYiArFUSnm8=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=mu+5p6bHQ704HqfzoKLMEhUmXep9WHNljyrjsfY+f4JVo7NAeAcxSd+ODc1hPapseI4mJ+rtpTA9M8caLak6XFkEyQMYDRzE2bJ9Y4cN7owS5pW+CbUO74e0J+LtUPHF/ibpb5nQGuVW9T+U6IvDJFWw8RdEMZcFED/xIIjY3bk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=YWHsPSC6; arc=none smtp.client-ip=192.198.163.17
+	s=arc-20240116; t=1773094841; c=relaxed/simple;
+	bh=F1AQED94e08k0SWL58HdTlp1BKL2Y2eWIRKWsUfiHsM=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=A/xK/32SefQ7Zgn4ju0p+m4FpedrKgSbsS8J0p48/jjfZp88Pzmbx/+j+WRneTKUr8qDz4ggbKG6VGSU1lMiZZx+TieOdjZlkTSIPMA+397XwwnoyIMUzSHCaJ40wrGgwvDFPmSsisx7WN5ITrAs5DHch16qPjtLW8R9PM6mGYE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=mJmNNcmj; arc=none smtp.client-ip=192.198.163.17
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="YWHsPSC6"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="mJmNNcmj"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1773094838; x=1804630838;
-  h=from:subject:date:message-id:mime-version:
-   content-transfer-encoding:to:cc;
-  bh=EDdGFDPMjPJeXpzZfHj7rGFIrb+heEvPRYiArFUSnm8=;
-  b=YWHsPSC6ONCHndtan82t515Q/DjopyWzaY80WnHdj/Z6f83Uo3fBbZRe
-   awIs/C/fA9jf+iHLEUWXlau/eZMu38gb4S+oMIBye6TCPhI8tzdzF6ewN
-   H9XeMTDlz9yjLwaEV/P2g+cmw0ly9loMHOlYCYeamZjvNoejfWd6f7J6b
-   X4pTCRqGRU/8vYNZNRpRnZ/XMWWOZOTEdtH40GWSF653kozyf71Cuuwcl
-   0D5M5jVg72i4NLjT0UaISN96ETRFhM2tFkx+l8qE7I2pC/wBaQR0kQlK0
-   8r3byA3txiJXE9ytnHjtssTyaE53d6IPF+pTUsEVQlFWRfHjaCaJqYd5C
+  t=1773094839; x=1804630839;
+  h=from:date:subject:mime-version:content-transfer-encoding:
+   message-id:references:in-reply-to:to:cc;
+  bh=F1AQED94e08k0SWL58HdTlp1BKL2Y2eWIRKWsUfiHsM=;
+  b=mJmNNcmjn9sOSuEc5j/4uf79fLqqlLdRS0eg+8rjVEIwuRrSUXJXsOy3
+   DEtc4xlZsNa2uE6wtlfwLS2/vf5zjFNyBwV/Cd0iBbjxgsEqEalrV2wvc
+   xQ3QJ7gdq00+jiPop2eNadypgZioB9FHVZp0ay5esyU21UFFW6A+Qvgdv
+   YCrfXXuSmTxRdJzIdodoQFwMno9fqq4IAw8tk+0o14BXvqi/7iZm+qlzT
+   cyKzFAMDvNwsXwKAOYMGtrq0ZtkyiabJSaTmAvXQh88hixypDdo3dG6GY
+   5bQap2EHHsXokQfSmhicZhne8vOtB6i9ebAdu2RG7gxGupU0JaMSkOmKd
    w==;
-X-CSE-ConnectionGUID: iia1f+zoRzCscGmurUb71w==
-X-CSE-MsgGUID: NHO/JQAdShiPusBwdzh6XA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11724"; a="74050651"
+X-CSE-ConnectionGUID: pQQNaFotR4u7U/A3BOJl1g==
+X-CSE-MsgGUID: 5HGXUJY0RISI7QAEItEiZA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11724"; a="74050652"
 X-IronPort-AV: E=Sophos;i="6.23,111,1770624000"; 
-   d="scan'208";a="74050651"
+   d="scan'208";a="74050652"
 Received: from orviesa003.jf.intel.com ([10.64.159.143])
   by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Mar 2026 15:20:37 -0700
-X-CSE-ConnectionGUID: GljfEYSwTqi30ch+iHAbmA==
-X-CSE-MsgGUID: jYPkrT+GRDamvD1FAaQUpQ==
+X-CSE-ConnectionGUID: oS8gFM29RE+/D9HXkweZuw==
+X-CSE-MsgGUID: zclN2n5gRMORG4UuEMICdg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.23,111,1770624000"; 
-   d="scan'208";a="224004282"
+   d="scan'208";a="224004285"
 Received: from unknown (HELO [172.25.112.21]) ([172.25.112.21])
-  by orviesa003.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Mar 2026 15:20:37 -0700
+  by orviesa003.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Mar 2026 15:20:38 -0700
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Subject: [PATCH 0/4] thermal: intel: Add support for Directed Package
- Thermal Interrupts
-Date: Mon, 09 Mar 2026 15:19:23 -0700
-Message-Id: <20260309-rneri-directed-therm-intr-v1-0-2956e3000950@linux.intel.com>
+Date: Mon, 09 Mar 2026 15:19:24 -0700
+Subject: [PATCH 1/4] x86/thermal: Add bit definitions for Intel Directed
+ Package Thermal Interrupt
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -55,9 +55,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAGxHr2kC/x2MMQqAMAwAvyKZDVQLon5FHKxNbQarpEUE8e8Gb
- 7vh7oFMwpRhrB4QujjzkVSauoI1LmkjZK8OrWk7Y02HkjRAz0JrIY8lkuzIqQgOwYZecc4G0P4
- UCnz/72l+3w9YCAltawAAAA==
+Message-Id: <20260309-rneri-directed-therm-intr-v1-1-2956e3000950@linux.intel.com>
+References: <20260309-rneri-directed-therm-intr-v1-0-2956e3000950@linux.intel.com>
+In-Reply-To: <20260309-rneri-directed-therm-intr-v1-0-2956e3000950@linux.intel.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>, 
  Daniel Lezcano <daniel.lezcano@kernel.org>, 
  Lukasz Luba <lukasz.luba@arm.com>
@@ -67,57 +67,62 @@ Cc: x86@kernel.org,
  linux-pm@vger.kernel.org, Ricardo Neri <ricardo.neri@intel.com>, 
  Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1773094782; l=2119;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1773094782; l=2125;
  i=ricardo.neri-calderon@linux.intel.com; s=20250602;
- h=from:subject:message-id; bh=EDdGFDPMjPJeXpzZfHj7rGFIrb+heEvPRYiArFUSnm8=;
- b=buTowQ3HMsPl9JM5rOsSC1/t//wI9u2j/j0C+I6SE9sOS1ReBwg5IzgpsYnp1BrYStIwI4fL4
- 0o584gKiVDWCHwVc3uHVZzzWOP7eP26LVQuYSJi/GQvs7HO3QRkwBzY
+ h=from:subject:message-id; bh=F1AQED94e08k0SWL58HdTlp1BKL2Y2eWIRKWsUfiHsM=;
+ b=H6Vj51EcgCI5yd90HGMxoxN57Vr7ICr4pOi3BDKA+E39ht382WGajio8ieeYCbR9gBBGahUEh
+ gKwhWzrr/w7Dl3GldYyHlh8jCXfSYdwHjkW0DAhrvACsGoTPDXOFNGt
 X-Developer-Key: i=ricardo.neri-calderon@linux.intel.com; a=ed25519;
  pk=NfZw5SyQ2lxVfmNMaMR6KUj3+0OhcwDPyRzFDH9gY2w=
 
-Hi,
+Add CPUID and MSR bit definitions required to support Intel Directed
+Package Thermal Interrupts.
 
-Package-level thermal interrupts are currently broadcast to all CPUs in a
-package. Only one CPU is needed to service package-wide events. Moreover,
-broadcasting may create resource contention. An example of this are thermal
-interrupts posted for Hardware Feedback Interface[1] updates: all CPUs in
-the package receive the interrupt and then race to grab a lock to update a
-data structure common to all CPUs. Idle CPUs were needlessly woken up.
-
-Newer Intel processors allow directing package-level thermal interrupts
-only to CPUs that explicitly request them. A CPU opts in by setting bit 25
-in IA32_THERM_INTERRUPT. Hardware acknowledges the request by setting bit 25
-in IA32_PACKAGE_THERM_STATUS.
-
-This series enables directed package thermal interrupts and designates one
-handler CPU per package using the CPU hotplug infrastructure. A new CPU is
-selected if the handler CPU goes offline.
-
-Because CPU0's hotplug callbacks are not invoked during suspend and resume,
-syscore callbacks are added to restore the handler for the boot package.
-The series also disables directed delivery during kexec reboot, avoiding
-stale interrupt routing when rebooting into a kernel that does not support
-the feature.
-
-[1]. Intel Software Developer's Manual Vol. 3, Section 17.6, Feb 2026
+A CPU requests directed package-level thermal interrupts by setting bit 25
+in IA32_THERM_INTERRUPT. Hardware acknowledges by setting bit 25 in
+IA32_PACKAGE_THERM_STATUS, indicating that only CPUs that opted in will
+receive the interrupt. If no CPU in the package requests it, delivery
+falls back to broadcast.
 
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
-Ricardo Neri (4):
-      x86/thermal: Add bit definitions for Intel Directed Package Thermal Interrupt
-      thermal: intel: Enable Directed Package-level Thermal Interrupts
-      thermal: intel: Add syscore callbacks for suspend and resume
-      thermal: intel: Add a syscore shutdown callback for kexec reboot
+ arch/x86/include/asm/cpufeatures.h | 1 +
+ arch/x86/include/asm/msr-index.h   | 2 ++
+ 2 files changed, 3 insertions(+)
 
- arch/x86/include/asm/cpufeatures.h  |   1 +
- arch/x86/include/asm/msr-index.h    |   2 +
- drivers/thermal/intel/therm_throt.c | 223 +++++++++++++++++++++++++++++++++++-
- 3 files changed, 225 insertions(+), 1 deletion(-)
----
-base-commit: 1f318b96cc84d7c2ab792fcc0bfd42a7ca890681
-change-id: 20260306-rneri-directed-therm-intr-9f3f8888bb3f
+diff --git a/arch/x86/include/asm/cpufeatures.h b/arch/x86/include/asm/cpufeatures.h
+index dbe104df339b..487bf9da0cef 100644
+--- a/arch/x86/include/asm/cpufeatures.h
++++ b/arch/x86/include/asm/cpufeatures.h
+@@ -364,6 +364,7 @@
+ #define X86_FEATURE_HWP_PKG_REQ		(14*32+11) /* "hwp_pkg_req" HWP Package Level Request */
+ #define X86_FEATURE_HWP_HIGHEST_PERF_CHANGE (14*32+15) /* HWP Highest perf change */
+ #define X86_FEATURE_HFI			(14*32+19) /* "hfi" Hardware Feedback Interface */
++#define X86_FEATURE_DIRECTED_PKG_THRM_INTR (14*32+24) /* Intel Directed Package Thermal Interrupt */
+ 
+ /* AMD SVM Feature Identification, CPUID level 0x8000000a (EDX), word 15 */
+ #define X86_FEATURE_NPT			(15*32+ 0) /* "npt" Nested Page Table support */
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index 6673601246b3..aa1c652a9581 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -995,6 +995,7 @@
+ #define THERM_INT_HIGH_ENABLE		(1 << 0)
+ #define THERM_INT_LOW_ENABLE		(1 << 1)
+ #define THERM_INT_PLN_ENABLE		(1 << 24)
++#define THERM_DIRECTED_INTR_ENABLE	(1 << 25)
+ 
+ #define MSR_IA32_THERM_STATUS		0x0000019c
+ 
+@@ -1024,6 +1025,7 @@
+ 
+ #define PACKAGE_THERM_STATUS_PROCHOT		(1 << 0)
+ #define PACKAGE_THERM_STATUS_POWER_LIMIT	(1 << 10)
++#define PACKAGE_THERM_STATUS_DIRECTED_INTR_ACK	(1 << 25)
+ #define PACKAGE_THERM_STATUS_HFI_UPDATED	(1 << 26)
+ 
+ #define MSR_IA32_PACKAGE_THERM_INTERRUPT	0x000001b2
 
-Best regards,
 -- 
-Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+2.43.0
 
