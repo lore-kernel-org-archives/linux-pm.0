@@ -1,52 +1,52 @@
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22B7138E5FF;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59D7938F245;
 	Mon,  9 Mar 2026 22:20:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773094842; cv=none; b=VOOYLRB7dM/7Wbbnd6LQ40y94c19cGudqohovM3hjsKGzFcbBxRa4Dt+ozpc2ZVL136k6z75BxKAHGGoFbesUAo69J2mlT797oDix5jHdh80VVjicQ+2Ad6yepMCmyY8TB9gB5C7YkZ7Q+3nljAseyQ3jUs78NJJHkWtWm1Edc4=
+	t=1773094842; cv=none; b=tZBfykazDVHOlJ15XYc/qoTjrMZkl02MVk2+RzYa5W/JKtIlHKS6TMd2cM0kJzIrSYjgQ52AttVWkspRMjFiE5sM0m1QRWfwkryrqih2HCfx8mb/7y1Tlz0PLnux+lcnEZSyn8TNNkMVLNBQooAuDssdXDtFn3dF263QzLTic/Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1773094842; c=relaxed/simple;
-	bh=xkX6/r3jlEdr7Ws/dG9NtH+OFdxbALWEmLOIVpaykP4=;
+	bh=8Zw0uqU/tIweMW1edd8EIH+/9emWZlcM4cagIgjN+qo=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=e9C76Imf/9yQu8m7et1RxV1imm4pWzpNL1OMbZbI4LzfS4b0MA64k8mlSJwNEx7WBxUA/qEUilKwpx9nwOdkJkWGU3SYbPBsX/i5jAPo7vSqJt/PyDNikDnPwv+Ryo2gBfbLCwh0yPPJI8lUvzJ9LJgqpyNQsAcMyQD/yWnPRwU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=FxoMBlcp; arc=none smtp.client-ip=192.198.163.17
+	 In-Reply-To:To:Cc; b=G/jw0Pd8/sRhHZEMrgnHwuSWjPjbME7oZLgcE1suztE+7+ZmFeJhEorWVN+lLHLEEbs5C/RuC8h6gnpdFzRSiNFvJWqJFXMelwVReHUxoVcTRAbypM/MnuKkBgOOTJvT1nYnJeUMwW+ZliO8PBcZ1c/j1RPr9mB9dcj1RQGnzmU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=bXlY/nyw; arc=none smtp.client-ip=192.198.163.17
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="FxoMBlcp"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="bXlY/nyw"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
   t=1773094841; x=1804630841;
   h=from:date:subject:mime-version:content-transfer-encoding:
    message-id:references:in-reply-to:to:cc;
-  bh=xkX6/r3jlEdr7Ws/dG9NtH+OFdxbALWEmLOIVpaykP4=;
-  b=FxoMBlcp1nhIrR8iBB9lyOcU+Om2h9p2MIeiQCHbbEhxhC7gDdEqHhJ8
-   U1foLiksrqrxLY+rw6pq5720Bf+XhQ3nS1jFJ+neYQafqyOL7vjVQxPKm
-   W4fKs51wKuRrRB1Dc8FbcQeX/XOsnusrYbRpRNiaNG01P7EOPSBCfWb2R
-   qByJFw9YNGSOvfsSSIoEBaRGP1D0/Ma7OS9AwL1/h+XA2l7tKnNYTfWOE
-   NoqDwgFfg0r50q4Z8aSygM0W0T0r6vw1Uol/ej2tMFn+pqNi5Hi9Owl2V
-   bEI1IPaKQeQss7ydonRRXBd/caVIKKiY/c10KgLMB8PuIEVmLhDHmIz6S
-   g==;
-X-CSE-ConnectionGUID: vwYfCHd5TQOEp0unBV/dcA==
-X-CSE-MsgGUID: kQupOvCHRS68AorsrPIG2Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11724"; a="74050658"
+  bh=8Zw0uqU/tIweMW1edd8EIH+/9emWZlcM4cagIgjN+qo=;
+  b=bXlY/nywE2HpopqB9fdhzIibgWCReEKDriMXjevgsFHo3uKYsEEKXcxO
+   ZwIavsZ3Qz93L3Qi054ym3DytPq7W9WkigZpgg8lJGcE20+PTAoBOEXw1
+   Aofjee6ibGT8Qn4+wQGM5xfeE2hVSV/ZPcXOUNgboMWkAPc1bLFl1h2lY
+   SxmP2WUaO0pjr6cVGbtRXeG1yI1zmEk7DtkKWIWByULpg3VhNJFf+4XEE
+   AOv8TzBFNmIUGetseHrPhEmPbQabVH2qIREM8pDw1lUjrDKC1ClVHOf7f
+   PcxH5iEXjW09vAO7Pj+tgU48fp+VlxyQ199QnrHF1L1URkvKgcSIHeZmB
+   w==;
+X-CSE-ConnectionGUID: /kJTXgPDQeaRBuBpec130g==
+X-CSE-MsgGUID: rD0ikFCoQt26KBkDuGRIww==
+X-IronPort-AV: E=McAfee;i="6800,10657,11724"; a="74050662"
 X-IronPort-AV: E=Sophos;i="6.23,111,1770624000"; 
-   d="scan'208";a="74050658"
+   d="scan'208";a="74050662"
 Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Mar 2026 15:20:38 -0700
-X-CSE-ConnectionGUID: IgDh7SA2RI+mIDra/ZyvVQ==
-X-CSE-MsgGUID: aje8LJsSRlWiPiJpaqstlQ==
+  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Mar 2026 15:20:39 -0700
+X-CSE-ConnectionGUID: 7NodZ/QXQSWwNs9zDoobpA==
+X-CSE-MsgGUID: dH8nbJkDR4GQtDi2CkNWQw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.23,111,1770624000"; 
-   d="scan'208";a="224004293"
+   d="scan'208";a="224004297"
 Received: from unknown (HELO [172.25.112.21]) ([172.25.112.21])
   by orviesa003.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Mar 2026 15:20:39 -0700
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Date: Mon, 09 Mar 2026 15:19:26 -0700
-Subject: [PATCH 3/4] thermal: intel: Add syscore callbacks for suspend and
- resume
+Date: Mon, 09 Mar 2026 15:19:27 -0700
+Subject: [PATCH 4/4] thermal: intel: Add a syscore shutdown callback for
+ kexec reboot
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -55,7 +55,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260309-rneri-directed-therm-intr-v1-3-2956e3000950@linux.intel.com>
+Message-Id: <20260309-rneri-directed-therm-intr-v1-4-2956e3000950@linux.intel.com>
 References: <20260309-rneri-directed-therm-intr-v1-0-2956e3000950@linux.intel.com>
 In-Reply-To: <20260309-rneri-directed-therm-intr-v1-0-2956e3000950@linux.intel.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>, 
@@ -67,88 +67,61 @@ Cc: x86@kernel.org,
  linux-pm@vger.kernel.org, Ricardo Neri <ricardo.neri@intel.com>, 
  Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1773094783; l=2660;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1773094783; l=1750;
  i=ricardo.neri-calderon@linux.intel.com; s=20250602;
- h=from:subject:message-id; bh=xkX6/r3jlEdr7Ws/dG9NtH+OFdxbALWEmLOIVpaykP4=;
- b=RCifaQc3sZs2aCjV+CM02cR5JeAxqgY+1wc6eaOA1skx8ikMnTUrf7IdLzgFHY/5IN4mKhitT
- iMljg24LwDXAx6eggCAFZ/Oin4GtYHEmmR8WiCVUsSPhRACTihajNiO
+ h=from:subject:message-id; bh=8Zw0uqU/tIweMW1edd8EIH+/9emWZlcM4cagIgjN+qo=;
+ b=sRbJ10ATjqwaVboZbC++6lG1z5fJpS+1qlVyttnONBCT6PhszigFAHsrovMHhiuurA5J5gqpn
+ NzS4FzzYTExAaUMzHHccSG+HpfM+rnrwh7aJySKsBPYSpBcwD4/eh+j
 X-Developer-Key: i=ricardo.neri-calderon@linux.intel.com; a=ed25519;
  pk=NfZw5SyQ2lxVfmNMaMR6KUj3+0OhcwDPyRzFDH9gY2w=
 
-Directed package-level thermal interrupts are serviced by a single CPU per
-package. These handler CPUs are selected at boot through the CPU hotplug
-infrastructure. This mechanism is sufficient to restore the directed
-interrupt configuration when resuming from suspend.
+A kexec reboot may load a kernel that does not support directed package-
+level thermal interrupts. Without a shutdown callback, the directed
+interrupt configuration remains enabled across kexec but will not be
+handled correctly. In particular, if the CPU designated to receive the
+directed interrupt goes offline, no other CPU in the package will receive
+it.
 
-For the boot package, CPU0 is chosen during boot because its CPU hotplug
-online callback runs first. However, this callback is not invoked on
-resume. The directed package-level interrupt configuration for the boot
-package is not restored automatically. Add a syscore .resume callback to
-re-enable directed package-level interrupts for this package.
-
-Disabling directed interrupts during suspend is not strictly required, but
-doing so keeps the handler-tracking array in a consistent state. It allows
-the correct configuration to be restored on resume.
+Add a syscore .shutdown callback to disable directed package-level thermal
+interrupts on all packages before a kexec reboot. If the post-kexec kernel
+does not enable directed interrupts, they will fall back to being broadcast
+to all CPUs in the package.
 
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
- drivers/thermal/intel/therm_throt.c | 29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
+ drivers/thermal/intel/therm_throt.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
 diff --git a/drivers/thermal/intel/therm_throt.c b/drivers/thermal/intel/therm_throt.c
-index 456f2ac10e0c..c89485a8cda0 100644
+index c89485a8cda0..33b0c90cfe41 100644
 --- a/drivers/thermal/intel/therm_throt.c
 +++ b/drivers/thermal/intel/therm_throt.c
-@@ -14,6 +14,7 @@
-  * Credits: Adapted from Zwane Mwaikambo's original code in mce_intel.c.
-  *          Inspired by Ross Biro's and Al Borchers' counter code.
-  */
-+#include <linux/syscore_ops.h>
- #include <linux/interrupt.h>
- #include <linux/notifier.h>
- #include <linux/jiffies.h>
-@@ -730,6 +731,32 @@ static int thermal_throttle_offline(unsigned int cpu)
+@@ -748,9 +748,25 @@ static int directed_pkg_intr_syscore_suspend(void *data)
  	return 0;
  }
  
-+static void directed_pkg_intr_syscore_resume(void *data)
++static void directed_pkg_intr_syscore_shutdown(void *data)
 +{
-+	/* We resume from the suspend on CPU0. */
-+	enable_directed_thermal_pkg_intr(0);
++	bool enable = false;
++	int i;
++
++	for (i = 0; i < topology_max_packages(); i++) {
++		if (directed_intr_handler_cpus[i] == nr_cpu_ids)
++			continue;
++
++		smp_call_function_single(directed_intr_handler_cpus[i],
++					 config_directed_thermal_pkg_intr,
++					 &enable, true);
++	}
 +}
 +
-+static int directed_pkg_intr_syscore_suspend(void *data)
-+{
-+	/*
-+	 * We suspend from CPU0. The interrupt will not be redirected since all
-+	 * CPUs in the package are offline at this point.
-+	 */
-+	disable_directed_thermal_pkg_intr(0);
-+
-+	return 0;
-+}
-+
-+static struct syscore_ops directed_pkg_intr_pm_ops = {
-+	.resume = directed_pkg_intr_syscore_resume,
-+	.suspend = directed_pkg_intr_syscore_suspend,
-+};
-+
-+static struct syscore directed_pkg_intr_pm = {
-+	.ops = &directed_pkg_intr_pm_ops,
-+};
-+
- static __init void init_directed_pkg_intr(void)
- {
- 	int i;
-@@ -745,6 +772,8 @@ static __init void init_directed_pkg_intr(void)
+ static struct syscore_ops directed_pkg_intr_pm_ops = {
+ 	.resume = directed_pkg_intr_syscore_resume,
+ 	.suspend = directed_pkg_intr_syscore_suspend,
++	.shutdown = directed_pkg_intr_syscore_shutdown,
+ };
  
- 	for (i = 0; i < topology_max_packages(); i++)
- 		directed_intr_handler_cpus[i] = nr_cpu_ids;
-+
-+	register_syscore(&directed_pkg_intr_pm);
- }
- 
- static __init int thermal_throttle_init_device(void)
+ static struct syscore directed_pkg_intr_pm = {
 
 -- 
 2.43.0
