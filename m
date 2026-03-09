@@ -1,347 +1,209 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 03BFF38E5D5;
-	Mon,  9 Mar 2026 22:20:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6633C38E5D5
+	for <linux-pm@vger.kernel.org>; Mon,  9 Mar 2026 22:24:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.175
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773094843; cv=none; b=XHl2VgKiuXyMCMreioKqXCkeRok5DhoHlOXVRnTpXibRUwMwOuh1vb2R+Dhdz6yGI4v8qLyqing4dR04hAFEK4Kb99zi/xS1jbcEm6tuc0S9iQGAUNJONjImw2QaRWFoVeDvi0GjtFpdHGvWuh2bCb59olfA58RW9a5iWH4DOzI=
+	t=1773095065; cv=none; b=G/kG75qldMy71m1sGRNYGDdpXIF/Iw5ky8AP7ej7m9yWj3dV3ENdiEoh+Ds6EvTC/1gL5rAs66X4r/Y7J3OobTU3zGx3oRAJM65ndmkOppoY9Z49OxLwJFezog8T9lOhhNWG5e20smtRY5ekGv5u9p07hBrluliYZOvX78nhuCc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773094843; c=relaxed/simple;
-	bh=dGtxAS7nxtT0bG87r2Bb7PJl0WYrAo7+sx542XvvFpA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=mIEheZG3gvgy4DV6mCNcJh+nT28Lvuek6zcbFwbgiGgqhiC8ziv43N4emh6NUwWYxxJ+edJf1+YT3Hl9mskjPkP6P612MxsGRMqarmE23NhCLdU11aSgh3mcVKeBCGWl4IB5CDk7PHEsOtbh3P0idXXOR+DJOJqtQMwPnHS4P34=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=auzjWCDg; arc=none smtp.client-ip=192.198.163.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1773095065; c=relaxed/simple;
+	bh=Cko55lCeKXrZHbjiIu641PYW/o6VsGwurcqaGD8aeKU=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=kfj2Ny2Ea15MZX4QLriLrvEUkUS7/LCUFpqqVhtebpuMySQ8K6ZZJjrQnfru4P90Z02Rx2DVgERWkfTWuOaiwKufOhlw5hbYQ8ygd2nmeBnmoCsTaEQ/+mxQnX0ZKBdyrcLxHvAJNfzYfyGj89yUuCeXVQB/d7OiF3nhFcECiyU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=jVF5okI6; arc=none smtp.client-ip=209.85.214.175
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="auzjWCDg"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1773094841; x=1804630841;
-  h=from:date:subject:mime-version:content-transfer-encoding:
-   message-id:references:in-reply-to:to:cc;
-  bh=dGtxAS7nxtT0bG87r2Bb7PJl0WYrAo7+sx542XvvFpA=;
-  b=auzjWCDgyuXGK7bNPcY4AlhKOwKI/aWA7yVTP7HWZwTrrWaslwO0iVUF
-   e0rMKpG5o2uPXlffhkr4z8BTIkdOLeFxSP7M3ao4Ho0XdcakHE15INyjL
-   /oy9jozOVJp4ZcIpEOyPpK/SQemGEITYqSOPkncN7UQpqfWmSurSnvkqb
-   3drprtfuIaeZn3wuudW6YAIN8ouzxRnJond9yMY9AWOIprvUoFHdespuV
-   JDvolRQuxOTwUQlkzD/91CYZ/Bm3gaYHn261Ova8JNlLlzevYFC1cUtIP
-   izIHqC7fcU+9BIKXHJqx2anLOV2FQTCInhSBaO5JLchu7Z/didaVSr43p
-   g==;
-X-CSE-ConnectionGUID: a0Dg7BWIQzitOxNUf+KZyA==
-X-CSE-MsgGUID: aREHnR2mTVKerm1z5klyQA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11724"; a="74050655"
-X-IronPort-AV: E=Sophos;i="6.23,111,1770624000"; 
-   d="scan'208";a="74050655"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Mar 2026 15:20:38 -0700
-X-CSE-ConnectionGUID: QUj/PMltRDCCgv3Hup0zrA==
-X-CSE-MsgGUID: Vw5EreVaT2anHHjL8bhZ7w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,111,1770624000"; 
-   d="scan'208";a="224004289"
-Received: from unknown (HELO [172.25.112.21]) ([172.25.112.21])
-  by orviesa003.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Mar 2026 15:20:38 -0700
-From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Date: Mon, 09 Mar 2026 15:19:25 -0700
-Subject: [PATCH 2/4] thermal: intel: Enable Directed Package-level Thermal
- Interrupts
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="jVF5okI6"
+Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-2addb31945aso87896405ad.1
+        for <linux-pm@vger.kernel.org>; Mon, 09 Mar 2026 15:24:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1773095063; x=1773699863; darn=vger.kernel.org;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=hrSbyZBA5Px2iidq6W57qtYbXFOmMx8uhJF7gt5CJ8A=;
+        b=jVF5okI6grO3WmYQmX7ieTSbpXd7nFlp0AdRF12AxZtiXqh5Gd9Y915QWbCXNM9YgS
+         y71SjSgVb7qQPJJwOgIzm+mTk0TvDUEuzWPdCR0KLzQ1+OMfJB0qLlGT+SpKjTJKKGpN
+         XhZpG3UwwoJR6nvdyufAcfNWZo8TCb2GY2t2cbhSZNMdZPWWlQt1FUMKgQhzhIP/GmYV
+         /PhwLjSgCbFzWQDL3rstliKTJRC8Nr5GIYmwI6taLvhTJ5jXQMrX97lHYGvrcVKvw5Mh
+         WwtxPRoTpvWwHA02z4F1zhd8tjNoy8Bs9IRKfZxwy06WZQec7hsufnL8xiG3qP3V2YjR
+         YZUw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773095063; x=1773699863;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=hrSbyZBA5Px2iidq6W57qtYbXFOmMx8uhJF7gt5CJ8A=;
+        b=NQ9vTSrvj85BGaoj8wg4lvVnDjGJf/FnZ7FaBigCeZjHf0xGrJ3eOE0I5e8kawNBN2
+         bkwIT6UqTKagf0eXfFrNPRd+KoL8tp84iMvSTu0eMicQ035JYfa1PBmNTF/SXqmc0T/N
+         3FtEZAJ6tnHMCC/kaW2VRO93hH/aWz7EcOE7nvUJcTMSQrBLetmDuv/WCDP5uoGSmdcB
+         PwAbcSqyQKF0qboJHgmmyg6P9gwW14eXesT/KIZvS6JpxKKIhCPjy6JEVZb29qce2lEU
+         djLw8IgZd870IQlCE5yN9r3h/Mlu8VsJKpACV3mIOxoPwHBwFAXkSXvehL+DqoXzNp7S
+         UA0A==
+X-Forwarded-Encrypted: i=1; AJvYcCVqcZnPc5a/uj/8S3XeqR9pxRDXbfuHGpcUlx0PmvxN1dxE1gpOot+fq82IdqaHgwmEOje7U9lHgA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyG0MQp/0B24KljbvE6cRSYlkzsEE7BhK1eHr9+EOwfygjlkthb
+	wzbexNvBRUMEbXB2beQCfPBH4dyTnYBBZa6oT9HZPJ907XVrJMbc+Mpz71U9iOji6S8=
+X-Gm-Gg: ATEYQzyX44gfUHHL921yXiXg7EvaRFg5zC1f4msvzlnfwN5rVvn4WLul+umEMp2OYbB
+	/v/ofr5TJxrK2ct503IRoYPk7acngQzZCOZyX7rlcRif/3jj53JV/AzNEY5ffW/V5Pun9taQnXs
+	KtLzoG90EOEisnqkOxm05bKxFz9YhfXe4w9jTGGVL/1fJjqzu2Dlh7rJs6f508NtuY25KWrQmEF
+	VcVnf2tbdtYIfENl47LwYKFN/Net4uN0N9LcYMPmnebNjD0/K5znPUoe8TGUh4mFilTa+EigBNt
+	SBwDBjVSJCGgJcvIaaEDRgzw+160XZovBbsAwtS6IbmI3sd3dzngcJ8GInqoi3TDN/LsLUBsYd2
+	pGOxARz49MWkDJMKoRrWNk0odyCijrGQatCwIm9ivADS9HmKujLU0HGczfq2dv34fQg8HDYu9wE
+	qy5OZ7CH6OfxTHACIh5njd
+X-Received: by 2002:a17:902:f78b:b0:2ae:55c1:ba8a with SMTP id d9443c01a7336-2ae823851bamr116227635ad.14.1773095062734;
+        Mon, 09 Mar 2026 15:24:22 -0700 (PDT)
+Received: from localhost ([71.212.200.220])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ae83fa2fa5sm130946135ad.70.2026.03.09.15.24.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 09 Mar 2026 15:24:22 -0700 (PDT)
+From: Kevin Hilman <khilman@baylibre.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Rob Herring
+ <robh@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Sudeep Holla
+ <sudeep.holla@arm.com>, Cristian Marussi <cristian.marussi@arm.com>,
+ devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+ arm-scmi@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH RFC v5 1/2] pmdomain: core: support domain hierarchy via
+ power-domain-map
+In-Reply-To: <CAPDyKFq0JAKc693d+RrPEBCAH--r+gobf822dQ5Ao6f2gnjRrw@mail.gmail.com>
+References: <20260122-pmdomain-hierarchy-onecell-v5-0-76855ec856bd@baylibre.com>
+ <20260122-pmdomain-hierarchy-onecell-v5-1-76855ec856bd@baylibre.com>
+ <20260127151735.GA1699112-robh@kernel.org> <7hjywtzaiy.fsf@baylibre.com>
+ <CAMuHMdURxN=kBQHJKnsTVEQPeuB41r5kZy4sgFNqg=U2ynuZMw@mail.gmail.com>
+ <7hv7flrb36.fsf@baylibre.com>
+ <CAPDyKFq0JAKc693d+RrPEBCAH--r+gobf822dQ5Ao6f2gnjRrw@mail.gmail.com>
+Date: Mon, 09 Mar 2026 15:24:21 -0700
+Message-ID: <7hqzpszlnu.fsf@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260309-rneri-directed-therm-intr-v1-2-2956e3000950@linux.intel.com>
-References: <20260309-rneri-directed-therm-intr-v1-0-2956e3000950@linux.intel.com>
-In-Reply-To: <20260309-rneri-directed-therm-intr-v1-0-2956e3000950@linux.intel.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, 
- Lukasz Luba <lukasz.luba@arm.com>
-Cc: x86@kernel.org, 
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
- Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, 
- linux-pm@vger.kernel.org, Ricardo Neri <ricardo.neri@intel.com>, 
- Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1773094782; l=8462;
- i=ricardo.neri-calderon@linux.intel.com; s=20250602;
- h=from:subject:message-id; bh=dGtxAS7nxtT0bG87r2Bb7PJl0WYrAo7+sx542XvvFpA=;
- b=DBoNoQ6ndihlFMYo4/VyWW2Z9wCieLl8CtfIBqmybsTEtLJxf7Mip8QVfivWakNZjdq5fer+J
- iJ1w7vNbev9C3EdP0FSDGjHkldV6/rsIpOVCZWvxVU3XuKk5z+zwGZG
-X-Developer-Key: i=ricardo.neri-calderon@linux.intel.com; a=ed25519;
- pk=NfZw5SyQ2lxVfmNMaMR6KUj3+0OhcwDPyRzFDH9gY2w=
+Content-Type: text/plain
 
-Package-level thermal interrupts are broadcast to all online CPUs within a
-package, even though only one CPU needs to service them. This results in
-unnecessary wakeups, lock contention, and corresponding performance and
-power-efficiency penalties.
+Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-When supported by hardware, a CPU requests to receive directed package-
-level thermal interrupts by setting bit 25 in IA32_THERM_INTERRUPT. The
-operating system must then verify that hardware has acknowledged this
-request by checking bit 25 in IA32_PACKAGE_THERM_STATUS.
+> On Wed, 25 Feb 2026 at 00:11, Kevin Hilman <khilman@baylibre.com> wrote:
+>>
+>> Geert Uytterhoeven <geert@linux-m68k.org> writes:
+>>
+>> > Hi Kevin,
+>> >
+>> > Thanks for your series! I became aware of it only recently, and read
+>> > it and its history with great interest...
+>> >
+>> > On Wed, 4 Feb 2026 at 00:13, Kevin Hilman <khilman@baylibre.com> wrote:
+>> >> Rob Herring <robh@kernel.org> writes:
+>> >> > On Thu, Jan 22, 2026 at 05:14:00PM -0800, Kevin Hilman (TI) wrote:
+>> >> >> Add of_genpd_[add|remove]_subdomain_map() helper functions to support
+>> >> >> hierarchical PM domains defined by using power-domains-map
+>> >> >
+>> >> > power-domain-map. No 's'.
+>> >> >
+>> >> >> property (c.f. nexus node maps in DT spec, section 2.5.1).
+>> >> >>
+>> >> >> This enables PM domain providers with #power-domain-cells > 0 to
+>> >> >> establish subdomain relationships via the power-domain-map property,
+>> >> >> which was not previously possible.
+>> >> >>
+>> >> >> These new helper functions:
+>> >> >> - uses an OF helper to iterate to over entries in power-domain-map
+>> >> >> - For each mapped entry: extracts child specifier, resolves parent phandle,
+>> >> >>   extracts parent specifier args, and establishes subdomain relationship
+>> >> >> - Calls genpd_[add|remove]_subdomain() with proper gpd_list_lock mutex protection
+>> >> >>
+>> >> >> Example from k3-am62l.dtsi:
+>> >> >>
+>> >> >>   scmi_pds: protocol@11 {
+>> >> >>       #power-domain-cells = <1>;
+>> >> >>       power-domain-map = <15 &MAIN_PD>,  /* TIMER0 */
+>> >> >>                          <19 &WKUP_PD>;  /* WKUP_TIMER0 */
+>> >> >>   };
+>> >> >>
+>> >> >>   MAIN_PD: power-controller-main {
+>> >> >>       #power-domain-cells = <0>;
+>> >> >>   };
+>> >> >>
+>> >> >>   WKUP_PD: power-controller-main {
+>> >> >>       #power-domain-cells = <0>;
+>> >> >>   };
+>> >> >>
+>> >> >> This allows SCMI power domain 15 to become a subdomain of MAIN_PD, and
+>> >> >> domain 19 to become a subdomain of WKUP_PD.
+>> >> >
+>> >> > One concern I have here is generally *-map is transparent meaning when
+>> >> > you lookup <&scmi_pds 15>, &MAIN_PD is returned as the provider. It's
+>> >> > also possible to have a map point to another map until you get to the
+>> >> > final provider. The only way we have to support both behaviors is the
+>> >> > consumer has to specify (i.e. with of_parse_phandle_with_args_map() vs.
+>> >> > of_parse_phandle_with_args()), but the consumer shouldn't really know
+>> >> > this detail.
+>> >
+>> > This is also the first thing I was worried about, when I noticed you are
+>> > not doing transparent mapping, but add an explicit hierarchy instead,
+>> > based on the map.
+>>
+>> Yeah, the map wasn't my original idea, and TBH, I had never really even
+>> heard of nexus node maps before it was suggested by Rob[1] that I could
+>> use it to describe hierarchy.
+>>
+>> But... I'm gathering from Rob's and your recent feedback that my current
+>> approach to using a map is an abuse/misuse of the map because it's just
+>> being used to describe hierarchy, and because it's not transparent.
+>>
+>> I'm still waiting to hear from Rob to see if I understood that right,
+>> but your feedback is making me think that's the case.
+>>
+>> If so, I'm honestly not sure where to go next.
+>>
+>> >> > Maybe a transparent map of power-domains would never make sense. IDK. If
+>> >> > so, then there's not really any issue since the pmdomain core handles
+>> >> > everyone the same way.
+>> >
+>> > AFAIUI, SCMI is not limited to the SoC, but may be used for the whole
+>> > hardware platform, so it could control power to external devices, too.
+>> > Once we need to map a power domain through a connector, we need
+>> > support for transparent mapping through a nexus node.
+>> >
+>> >> I don't really know enough about potential usage of maps to know if
+>> >> there's ever a usecase for transparent maps.  However, the problem I'm
+>> >> trying to solve is less about transparent maps, and more about
+>> >> describing hierarchy in a situation where "leaf" domains of the same
+>> >> type (e.g. SCMI) can have different parent domains.
+>> >
+>> > Hierarchy is indeed something that cannot be described with the current
+>> > SCMI power domain management protocol.  This includes external hierarchy
+>> > (your use case), and internal hierarchy: AFAIK, Linux cannot be made
+>> > aware of the hierarchical relationship among the different power
+>> > domains controlled through SCMI either.
+>>
+>> Yes, the limitations of SCMI (both the protocol, and the Linux
+>> implementation) are the root cause here.  In case you didn't see it,
+>> before I posted the original version of this series, I started a thread
+>> on the arm-scmi list to discuss implementation options[2]
+>>
+>> So since this is primarily and SCMI limitation, maybe I should just go
+>> back to the original proposal of using power-domains-child-ids[3]?
+>>
+>> I'm definitely open to suggestions here as I'm a bit out of my depth
+>> here.
+>
+> FWIW, I favor re-trying the "power-domains-child-ids" [3] approach.
+>
+> The main reason is that we already have the "power-domains" property,
+> which allows us to describe parents using a list of phandles.
+>
+> To me, it seems more sensible to extend this with a new
+> "power-domains-child-ids" property, which can be used when needed,
+> rather than inventing an entirely new property, that would replace the
+> existing one.
 
-Enable directed package-level thermal interrupts on one CPU per package.
-Use the CPU hotplug infrastructure. Keep track of the CPUs handling
-package-level interrupts with an array.
+OK, in the absence of any feedback from the DT maintainers, I'll go back
+to the original approach of using `power-domain-child-ids`.
 
-If the handling CPU goes offline, select a new CPU. Temporarily enable
-directed interrupts on both the current and new CPU until hardware
-acknowledges the new selection, then disable them on the outgoing CPU.
+Kevin
 
-Systems without directed-interrupt support retain the current behavior:
-all online CPUs in a package receive the interrupt and existing handlers
-manage any resulting contention. Also fall back to this behavior if the
-directed-interrupt acknowledgment fails during boot.
-
-Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
----
- drivers/thermal/intel/therm_throt.c | 178 +++++++++++++++++++++++++++++++++++-
- 1 file changed, 177 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/intel/therm_throt.c b/drivers/thermal/intel/therm_throt.c
-index 44fa4dd15dd1..456f2ac10e0c 100644
---- a/drivers/thermal/intel/therm_throt.c
-+++ b/drivers/thermal/intel/therm_throt.c
-@@ -20,6 +20,7 @@
- #include <linux/kernel.h>
- #include <linux/percpu.h>
- #include <linux/export.h>
-+#include <linux/delay.h>
- #include <linux/types.h>
- #include <linux/init.h>
- #include <linux/smp.h>
-@@ -244,7 +245,7 @@ static void thermal_intr_init_pkg_clear_mask(void)
- 	 * IA32_PACKAGE_THERM_STATUS.
- 	 */
- 
--	/* All bits except BIT 26 depend on CPUID.06H: EAX[6] = 1 */
-+	/* All bits except BITs 25 and 26 depend on CPUID.06H: EAX[6] = 1 */
- 	if (boot_cpu_has(X86_FEATURE_PTS))
- 		therm_intr_pkg_clear_mask = (BIT(1) | BIT(3) | BIT(5) | BIT(7) | BIT(9) | BIT(11));
- 
-@@ -254,6 +255,13 @@ static void thermal_intr_init_pkg_clear_mask(void)
- 	 */
- 	if (boot_cpu_has(X86_FEATURE_HFI))
- 		therm_intr_pkg_clear_mask |= BIT(26);
-+
-+	/*
-+	 * Intel SDM Volume 2A: Thermal and Power Management Leaf
-+	 * Bit 25: CPUID.06H: EAX[24] = 1
-+	 */
-+	if (boot_cpu_has(X86_FEATURE_DIRECTED_PKG_THRM_INTR))
-+		therm_intr_pkg_clear_mask |= BIT(25);
- }
- 
- /*
-@@ -524,6 +532,151 @@ static void thermal_throttle_remove_dev(struct device *dev)
- 	sysfs_remove_group(&dev->kobj, &thermal_attr_group);
- }
- 
-+static int check_directed_thermal_pkg_intr_ack(void)
-+{
-+	unsigned int count = 15000;
-+	u64 msr_val;
-+
-+	/*
-+	 * Hardware is known to acknowledge the setting of the directed
-+	 * interrupt in 10ms or less. Wait for 15ms.
-+	 */
-+	do {
-+		rdmsrl(MSR_IA32_PACKAGE_THERM_STATUS, msr_val);
-+		udelay(1);
-+	} while (!(msr_val & PACKAGE_THERM_STATUS_DIRECTED_INTR_ACK) && --count);
-+
-+	if (!count)
-+		return -ETIMEDOUT;
-+
-+	thermal_clear_package_intr_status(PACKAGE_LEVEL,
-+					  PACKAGE_THERM_STATUS_DIRECTED_INTR_ACK);
-+
-+	return 0;
-+}
-+
-+static void config_directed_thermal_pkg_intr(void *info)
-+{
-+	bool enable = *((bool *)info);
-+	u64 msr_val;
-+
-+	rdmsrl(MSR_IA32_THERM_INTERRUPT, msr_val);
-+
-+	if (enable)
-+		msr_val |= THERM_DIRECTED_INTR_ENABLE;
-+	else
-+		msr_val &= ~THERM_DIRECTED_INTR_ENABLE;
-+
-+	wrmsrl(MSR_IA32_THERM_INTERRUPT, msr_val);
-+}
-+
-+/* Only accessed from CPU hotplug operations. No extra locking needed. */
-+static unsigned int *directed_intr_handler_cpus;
-+
-+static bool directed_thermal_pkg_intr_supported(unsigned int cpu)
-+{
-+	if (!boot_cpu_has(X86_FEATURE_DIRECTED_PKG_THRM_INTR))
-+		return false;
-+
-+	if (!directed_intr_handler_cpus)
-+		return false;
-+
-+	return true;
-+}
-+
-+static void enable_directed_thermal_pkg_intr(unsigned int cpu)
-+{
-+	bool enable = true;
-+	u16 pkg_id;
-+
-+	if (!directed_thermal_pkg_intr_supported(cpu))
-+		return;
-+
-+	pkg_id = topology_logical_package_id(cpu);
-+	if (pkg_id >= topology_max_packages())
-+		return;
-+
-+	/* Another CPU in this package already handles the directed interrupt. */
-+	if (directed_intr_handler_cpus[pkg_id] != nr_cpu_ids)
-+		return;
-+
-+	thermal_clear_package_intr_status(PACKAGE_LEVEL,
-+					  PACKAGE_THERM_STATUS_DIRECTED_INTR_ACK);
-+
-+	config_directed_thermal_pkg_intr(&enable);
-+	if (!check_directed_thermal_pkg_intr_ack()) {
-+		directed_intr_handler_cpus[pkg_id] = cpu;
-+		return;
-+	}
-+
-+	/* Failed to enable the directed package interrupt. Roll back. */
-+	enable = false;
-+	config_directed_thermal_pkg_intr(&enable);
-+
-+	/*
-+	 * This function is first called from the CPU0 hotplug callback during
-+	 * boot. Disable the directed package interrupt. All CPUs in a package
-+	 * will receive the package-level interrupt.
-+	 */
-+	if (cpu)
-+		return;
-+
-+	pr_info_once("CPU0: Failed to enable directed package-level thermal interrupt\n");
-+	kfree(directed_intr_handler_cpus);
-+	directed_intr_handler_cpus = NULL;
-+}
-+
-+static void disable_directed_thermal_pkg_intr(unsigned int cpu)
-+{
-+	unsigned int new_cpu;
-+	bool enable;
-+	u16 pkg_id;
-+
-+	if (!directed_thermal_pkg_intr_supported(cpu))
-+		return;
-+
-+	pkg_id = topology_logical_package_id(cpu);
-+	if (pkg_id >= topology_max_packages())
-+		return;
-+
-+	/* Not the CPU handling the directed interrupt */
-+	if (directed_intr_handler_cpus[pkg_id] != cpu)
-+		return;
-+
-+	/* Redirect the interrupt to another online CPU in the package. */
-+	new_cpu = cpumask_any_but(topology_core_cpumask(cpu), cpu);
-+	if (new_cpu < nr_cpu_ids) {
-+		enable = true;
-+		thermal_clear_package_intr_status(PACKAGE_LEVEL,
-+						  PACKAGE_THERM_STATUS_DIRECTED_INTR_ACK);
-+
-+		smp_call_function_single(new_cpu, config_directed_thermal_pkg_intr,
-+					 &enable, true);
-+	}
-+
-+	/*
-+	 * If a new CPU was found, check for acknowledgment. If hardware did not
-+	 * acknowledge it, disable the redirection of the interrupt on the new CPU.
-+	 * Since no other CPU is configured to receive the package-level interrupt,
-+	 * all CPUs in the package will receive it.
-+	 */
-+	enable = false;
-+	if (new_cpu < nr_cpu_ids && check_directed_thermal_pkg_intr_ack()) {
-+		smp_call_function_single(new_cpu, config_directed_thermal_pkg_intr,
-+					 &enable, true);
-+		new_cpu = nr_cpu_ids;
-+	}
-+
-+	/*
-+	 * Disable the interrupt on this CPU. Hardware may acknowledge the
-+	 * request, but we do not care in this case. We do need to clear the
-+	 * ack bit when enabling the interrupt in another CPU.
-+	 */
-+	config_directed_thermal_pkg_intr(&enable);
-+
-+	directed_intr_handler_cpus[pkg_id] = new_cpu;
-+}
-+
- /* Get notified when a cpu comes on/off. Be hotplug friendly. */
- static int thermal_throttle_online(unsigned int cpu)
- {
-@@ -548,6 +701,8 @@ static int thermal_throttle_online(unsigned int cpu)
- 	l = apic_read(APIC_LVTTHMR);
- 	apic_write(APIC_LVTTHMR, l & ~APIC_LVT_MASKED);
- 
-+	enable_directed_thermal_pkg_intr(cpu);
-+
- 	return thermal_throttle_add_dev(dev, cpu);
- }
- 
-@@ -557,6 +712,8 @@ static int thermal_throttle_offline(unsigned int cpu)
- 	struct device *dev = get_cpu_device(cpu);
- 	u32 l;
- 
-+	disable_directed_thermal_pkg_intr(cpu);
-+
- 	/* Mask the thermal vector before draining evtl. pending work */
- 	l = apic_read(APIC_LVTTHMR);
- 	apic_write(APIC_LVTTHMR, l | APIC_LVT_MASKED);
-@@ -573,6 +730,23 @@ static int thermal_throttle_offline(unsigned int cpu)
- 	return 0;
- }
- 
-+static __init void init_directed_pkg_intr(void)
-+{
-+	int i;
-+
-+	if (!boot_cpu_has(X86_FEATURE_DIRECTED_PKG_THRM_INTR))
-+		return;
-+
-+	directed_intr_handler_cpus = kmalloc_array(topology_max_packages(),
-+						   sizeof(*directed_intr_handler_cpus),
-+						   GFP_KERNEL);
-+	if (!directed_intr_handler_cpus)
-+		return;
-+
-+	for (i = 0; i < topology_max_packages(); i++)
-+		directed_intr_handler_cpus[i] = nr_cpu_ids;
-+}
-+
- static __init int thermal_throttle_init_device(void)
- {
- 	int ret;
-@@ -580,6 +754,8 @@ static __init int thermal_throttle_init_device(void)
- 	if (!atomic_read(&therm_throt_en))
- 		return 0;
- 
-+	init_directed_pkg_intr();
-+
- 	intel_hfi_init();
- 
- 	ret = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "x86/therm:online",
-
--- 
-2.43.0
 
