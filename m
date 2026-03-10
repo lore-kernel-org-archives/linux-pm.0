@@ -1,201 +1,106 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from canpmsgout04.his.huawei.com (canpmsgout04.his.huawei.com [113.46.200.219])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A0DC328B56;
-	Tue, 10 Mar 2026 13:03:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 571CD38B143;
+	Tue, 10 Mar 2026 13:11:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.219
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773147800; cv=none; b=R73FoJL1YDPMNREWlAM2s10bNsyVXHkzXMv7TZiuVB07j+VU05UCrM4MzfGPaYKlbzhe97dbXJ0TtxNr5xSh5eMBtjKR6s5dagBS8+Zt6dcRrrA4rXmHUedS5N8BTxqrq9X5b4kjLTXfGEdvawiOFf4jVbbjkN7PrrwTtwW2DpI=
+	t=1773148319; cv=none; b=thuq4IKDDbOrPRmVmGHGP8GUpNmUYkTVd9RhXs1hk8za29x4KjThKv6jMbVdyO1SUQVS3H/sWv6Arv8QMM+HeS0X1pGs5v7ltmLi58PjLrXgtdn6RF87/jKX0MujIUxTIhCalg7+yNyd5rCjBHfGqvNCKxLkaMkeDdSBO3/p7As=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773147800; c=relaxed/simple;
-	bh=o1LWvNwWPHg9SCrFAE8Um9VpEsqInCgeI1zE3tb2NhU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=n8fUn+r82/qrEMcP5T2Dc1sHX5dylLq5QzMqZkxtu/5CELYO4DTg66FJIeSCXpsJ6QQp7rJw47LVPOIxoqxQ0tcXOtvoC35EZrHy65jC25DcIntdxQrVcxlZhK6u/r+q5ifRMqKhIIUCaXEdg+ImUad7fMLldXrSJnAtL8mEHpM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WvnITmIw; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1773148319; c=relaxed/simple;
+	bh=eda1JSclU1+4S1CmEs+PQHUhUGVZBhex1Mx+AgvRf+0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=hKjl4akKO4nYYMjfJ45tQrTEV5/BhqHT3C8bN9r9a748CmZNtzBR6GjDbimBOSvs0NKno4HqErovgn0BZ3uIQja818BHYoMOornrqKMBchtZ3wBrvTyAhynrc5wCGFnGu6AdnFSd8AKFuoocsHtbter+dYa45ekJw0XjdX4yD2s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=IQpyUEsp; arc=none smtp.client-ip=113.46.200.219
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WvnITmIw"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF497C19423;
-	Tue, 10 Mar 2026 13:03:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773147800;
-	bh=o1LWvNwWPHg9SCrFAE8Um9VpEsqInCgeI1zE3tb2NhU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=WvnITmIwmdkyx5P0ENj8ioYxqZMTGSCybErySCKGwPyyXB4wMFudMGsfVZeFGQfxD
-	 5PetJDGKXFv5fSxjF26VIBez8JDpumdLW3RZedwJFaJDUjRQA/icJ5N9Va4/cOoi35
-	 hcM+qAL6Fdj/u6/O9l8hyEnihBL+jgeFLA+WIiuO6zGC/InJDuyWX0Yq4/Tk+CALTu
-	 Xozcb4GCGavFuO6Q1D3W+XFNZZc1a9RSRVj6Y0ilMMW/9p8CTuatS2dgrNZTuO3GvE
-	 c/FLrWSN4Vmwg9/KTLfGj/KmrrgZ6Vei67Iz9EZfc02mjY0venZbU+TpIVpc59X7ET
-	 nfULy+1VLUB5w==
-Date: Tue, 10 Mar 2026 13:03:15 +0000
-From: Lee Jones <lee@kernel.org>
-To: Alexey Charkov <alchark@flipper.net>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Chris Morgan <macromorgan@hotmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Sebastian Reichel <sebastian.reichel@collabora.com>,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3 09/11] mfd: bq257xx: Add BQ25792 support
-Message-ID: <20260310130315.GK183676@google.com>
-References: <20260310-bq25792-v3-0-02f8e232d63b@flipper.net>
- <20260310-bq25792-v3-9-02f8e232d63b@flipper.net>
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="IQpyUEsp"
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=INCZIp7uHJrFTEvf8TXTlJxijgbp7/SECIYD7QtUcbU=;
+	b=IQpyUEspln5WmQol2Rl1BY5hqdhVhijOw/DAZHBFMxvRcwkomqfwOtT9XjhdM+9n2SltXMDk0
+	QKOw5fizRwILAs4oKVpGXSwHbApUc0paDyUQmRPsFmhkrLOxpvnMBZzdMA4uZYAU+dPQwWx9Hqn
+	cVBUUcya1sU/AB1B2FD9la0=
+Received: from mail.maildlp.com (unknown [172.19.162.197])
+	by canpmsgout04.his.huawei.com (SkyGuard) with ESMTPS id 4fVZ095KSmz1prKT;
+	Tue, 10 Mar 2026 21:06:49 +0800 (CST)
+Received: from kwepemf200001.china.huawei.com (unknown [7.202.181.227])
+	by mail.maildlp.com (Postfix) with ESMTPS id D22D540363;
+	Tue, 10 Mar 2026 21:11:46 +0800 (CST)
+Received: from [10.67.121.90] (10.67.121.90) by kwepemf200001.china.huawei.com
+ (7.202.181.227) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 10 Mar
+ 2026 21:11:46 +0800
+Message-ID: <b7d3819f-168a-48f7-99f2-2ba04dec77e6@huawei.com>
+Date: Tue, 10 Mar 2026 21:11:45 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260310-bq25792-v3-9-02f8e232d63b@flipper.net>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/2] cpufreq: governor: Apply limits with target_freq
+ instead of policy->cur
+To: Viresh Kumar <viresh.kumar@linaro.org>
+CC: "Rafael J. Wysocki" <rafael@kernel.org>, <mingo@redhat.com>,
+	<peterz@infradead.org>, <juri.lelli@redhat.com>,
+	<vincent.guittot@linaro.org>, <dietmar.eggemann@arm.com>,
+	<rostedt@goodmis.org>, <bsegall@google.com>, <mgorman@suse.de>,
+	<vschneid@redhat.com>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linuxarm@huawei.com>,
+	<jonathan.cameron@huawei.com>, <zhanjie9@hisilicon.com>,
+	<lihuisong@huawei.com>, <yubowen8@huawei.com>, <zhangpengjie2@huawei.com>,
+	<wangzhi12@huawei.com>, <linhongye@h-partners.com>
+References: <20260210115458.3493646-1-zhenglifeng1@huawei.com>
+ <javy6tllyw7pcnri3s6s2gnpv3kewe2b4zkyoz3vj3jzmfu6c5@nikhlydadvcc>
+ <CAJZ5v0h1FHH0Cvn0CQ8gMk9Zzt=bcA-RUfya4hYH4Em3nDzm7w@mail.gmail.com>
+ <d21b9ad3-72d9-44b2-b194-4e2a24077eab@huawei.com>
+ <utvxk3rn6icadx4llmzfu32auqk4ql7rckh7kxtgdgmtoyovqz@vo2lmhip5vk7>
+From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
+In-Reply-To: <utvxk3rn6icadx4llmzfu32auqk4ql7rckh7kxtgdgmtoyovqz@vo2lmhip5vk7>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
+ kwepemf200001.china.huawei.com (7.202.181.227)
 
-On Tue, 10 Mar 2026, Alexey Charkov wrote:
-
-> Add register definitions and a new 'type' enum to be passed in MFD
-> platform data to support the BQ25792, which is a newer variant of the
-> BQ257xx family.
+On 3/10/2026 12:29 PM, Viresh Kumar wrote:
+> On 10-03-26, 10:22, zhenglifeng (A) wrote:
+>> In the example I showed above, policy->cur will become 1GHz when someone
+>> query cpuinfo_cur_freq, because the real freq is 500MHz. After that,
+>> conservative governor has to take some time to get to the max freq again
+>> step by step in your code.
 > 
-> BQ25792 shares similar logic of operation with the already supported
-> BQ25703A but has a completely different register map and different
-> electrical constraints.
+> The problem is that your platform is doing some tricky stuff (by
+> changing the frequency for some reason) and it expects the governor to
+> still work the same. The software is trying to get a target frequency
+> based on an algorithm and you are ending up breaking it. If this is
+> software controlled (instead of hardware), I think a better solution
+> is to play with QoS requests and limit the policy->max frequency, so
+> the cpufreq core remains in sync instead of reducing the underlying
+> frequency without informing the software. All cpufreq core can do now
+> is go adjust based on what you are doing. Yes, conservative governor
+> will start again from scratch here but this is what you are doing
+> anyways. Either, don't change the underlying freq or use a different
+> governor. I don't know how this can be fixed otherwise.
 > 
-> Tested-by: Chris Morgan <macromorgan@hotmail.com>
-> Signed-off-by: Alexey Charkov <alchark@flipper.net>
-> ---
->  drivers/mfd/bq257xx.c       |  64 ++++++-
->  include/linux/mfd/bq257xx.h | 417 ++++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 477 insertions(+), 4 deletions(-)
+>> I still believe using policy->cur to update target in
+>> cpufreq_policy_apply_limits() is not very reasonable, because OS never
+>> knows what the platform will do to affect the final frequency.
 > 
-> diff --git a/drivers/mfd/bq257xx.c b/drivers/mfd/bq257xx.c
-> index e9d49dac0a16..7516e2ec00e6 100644
-> --- a/drivers/mfd/bq257xx.c
-> +++ b/drivers/mfd/bq257xx.c
-> @@ -10,6 +10,11 @@
->  #include <linux/mfd/core.h>
->  #include <linux/regmap.h>
->  
-> +struct bq257xx_match_data {
-> +	const struct bq257xx_plat plat;
-> +	const struct regmap_config *regmap_config;
-> +};
-> +
->  static const struct regmap_range bq25703_readonly_reg_ranges[] = {
->  	regmap_reg_range(BQ25703_CHARGER_STATUS, BQ25703_MANUFACT_DEV_ID),
->  };
-> @@ -39,15 +44,64 @@ static const struct regmap_config bq25703_regmap_config = {
->  	.val_format_endian = REGMAP_ENDIAN_LITTLE,
->  };
->  
-> -static const struct mfd_cell cells[] = {
-> +static const struct bq257xx_match_data bq25703a_match_data = {
-> +	.plat = { .type = BQ25703A },
-> +	.regmap_config = &bq25703_regmap_config,
-> +};
-> +
-> +static const struct regmap_range bq25792_writeable_reg_ranges[] = {
-> +	regmap_reg_range(BQ25792_REG00_MIN_SYS_VOLTAGE,
-> +			 BQ25792_REG18_NTC_CONTROL_1),
-> +	regmap_reg_range(BQ25792_REG28_CHARGER_MASK_0,
-> +			 BQ25792_REG30_ADC_FUNCTION_DISABLE_1),
-> +};
-> +
-> +static const struct regmap_access_table bq25792_writeable_regs = {
-> +	.yes_ranges = bq25792_writeable_reg_ranges,
-> +	.n_yes_ranges = ARRAY_SIZE(bq25792_writeable_reg_ranges),
-> +};
-> +
-> +static const struct regmap_range bq25792_volatile_reg_ranges[] = {
-> +	regmap_reg_range(BQ25792_REG19_ICO_CURRENT_LIMIT,
-> +			 BQ25792_REG27_FAULT_FLAG_1),
-> +	regmap_reg_range(BQ25792_REG31_IBUS_ADC,
-> +			 BQ25792_REG47_DPDM_DRIVER),
-> +};
-> +
-> +static const struct regmap_access_table bq25792_volatile_regs = {
-> +	.yes_ranges = bq25792_volatile_reg_ranges,
-> +	.n_yes_ranges = ARRAY_SIZE(bq25792_volatile_reg_ranges),
-> +};
-> +
-> +static const struct regmap_config bq25792_regmap_config = {
-> +	.reg_bits = 8,
-> +	.val_bits = 8,
-> +	.max_register = BQ25792_REG48_PART_INFORMATION,
-> +	.cache_type = REGCACHE_MAPLE,
-> +	.wr_table = &bq25792_writeable_regs,
-> +	.volatile_table = &bq25792_volatile_regs,
-> +};
-> +
-> +static const struct bq257xx_match_data bq25792_match_data = {
-> +	.plat = { .type = BQ25792 },
-> +	.regmap_config = &bq25792_regmap_config,
-> +};
-> +
-> +static struct mfd_cell cells[] = {
->  	MFD_CELL_NAME("bq257xx-regulator"),
->  	MFD_CELL_NAME("bq257xx-charger"),
->  };
->  
->  static int bq257xx_probe(struct i2c_client *client)
->  {
-> +	const struct bq257xx_match_data *md = device_get_match_data(&client->dev);
->  	struct bq257xx_device *ddata;
-> -	int ret;
-> +	int i, ret;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(cells); i++) {
-> +		cells[i].platform_data = &md->plat;
-> +		cells[i].pdata_size = sizeof(md->plat);
-> +	}
->  
->  	ddata = devm_kzalloc(&client->dev, sizeof(*ddata), GFP_KERNEL);
->  	if (!ddata)
-> @@ -55,7 +109,7 @@ static int bq257xx_probe(struct i2c_client *client)
->  
->  	ddata->client = client;
->  
-> -	ddata->regmap = devm_regmap_init_i2c(client, &bq25703_regmap_config);
-> +	ddata->regmap = devm_regmap_init_i2c(client, md->regmap_config);
->  	if (IS_ERR(ddata->regmap)) {
->  		return dev_err_probe(&client->dev, PTR_ERR(ddata->regmap),
->  				     "Failed to allocate register map\n");
-> @@ -74,12 +128,14 @@ static int bq257xx_probe(struct i2c_client *client)
->  
->  static const struct i2c_device_id bq257xx_i2c_ids[] = {
->  	{ "bq25703a" },
-> +	{ "bq25792" },
->  	{}
->  };
->  MODULE_DEVICE_TABLE(i2c, bq257xx_i2c_ids);
->  
->  static const struct of_device_id bq257xx_of_match[] = {
-> -	{ .compatible = "ti,bq25703a" },
-> +	{ .compatible = "ti,bq25703a", .data = &bq25703a_match_data },
-> +	{ .compatible = "ti,bq25792", .data = &bq25792_match_data },
+> The software is doing the right thing by using the cached current
+> frequency (best known to it).
+> 
+> We are using policy->cur at too many places and we will not be able to
+> change all of them assuming the hardware is not in sync with the
+> request made earlier. The change you propose may fix your issue for
+> time being, but it is just a band-aid which I don't want to apply.
+> When the hardware changes underlying freq, there are far too many
+> things broken elsewhere too.
+> 
 
-Instead of passing through the data structure, pass an identifier to
-match on, like:
-
-	 { .compatible = "ti,bq25703a", .data = (void *)BQ25703A },
-
-Then add the ID to ddata which is already obtainable from the child
-devices via i2c_set_clientdata().  This saves passing it as separate
-platform data.
-
-	ddata->type = device_get_match_data(&client->dev);
-
-Then use that to initialise a local 'struct regmap_config'.
-
-	switch(ddata->type) {
-	case BQ25703A:
-		regmap_config = &bq25703_regmap_config
-		break;
-	[...]
-
-By doing so, you save on a lot of additional complexity and mitigate the
-introduction of some unnecessary data structures.
-
--- 
-Lee Jones [李琼斯]
+I basically agree with what you said. But I have a little question. Do you
+think the target freq should be updated when querying cpuinfo_cur_freq? I
+think it should only be updated by governor or when limits changed.
