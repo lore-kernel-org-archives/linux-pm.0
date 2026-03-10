@@ -1,150 +1,230 @@
-Received: from mail.alien8.de (mail.alien8.de [65.109.113.108])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48A3143CECD;
-	Tue, 10 Mar 2026 09:35:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.109.113.108
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EEE4B42847B
+	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 09:59:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773135360; cv=none; b=uJe1pFd+j28xVcVIYQcDRlADyNLjlS/7JlctTxavoPeayz3I7vcdJGckY5cX7AVDI0ZwZ+6ZtOeutaJK3EhEuzX0hZXfkxN93N9qPyKivaMT28OQmOFEyVS8iUVtD9Qr53Lp9ooIMvV09w1iBHMAOUVvbuQfQb+48wpxd9qsHNY=
+	t=1773136789; cv=none; b=FPAhg8eZcqpStWkw4w8J8R4FSNb70Ddm4oIQKsxr/NG1VuvQZu+7byEnbQbxu6rYqo3GJqASvmf73BssYANk+DU75yTtINn07uqFeGSobgX/jH4zncfL3vGrfpiIw4uMzswBWuOEK/8ZyXIo63ssLtnhXTVNvkVHPjRMl3ArxkI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773135360; c=relaxed/simple;
-	bh=utJK9+4LgqnSu3SSGlMH1Ib5e/nF7vBLE1VZv8YUy6o=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ngm+mjCwahPkufgj+LH6AxgiPpKzxFPd/hbqx0/e4vHfriRfA/TqLhi8kgF06xWKuk0cVSAORhuvayh7QhNoJuE59NzBtytp+vXeGHY05iMnyEvFXYAHHF1Zxd4Pi5yocxtfuM9VeT2pd6M/pv4lYGhfcew18fFm8g33d5JqpOM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=alien8.de; spf=pass smtp.mailfrom=alien8.de; dkim=pass (4096-bit key) header.d=alien8.de header.i=@alien8.de header.b=JyOWUJPn; arc=none smtp.client-ip=65.109.113.108
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=alien8.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=alien8.de
+	s=arc-20240116; t=1773136789; c=relaxed/simple;
+	bh=TDPfe7m1zO4HOHLA+mRXSmC65oJJ46//jYUxV1a9kdc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=UzkA16fV523dJ040VwU7VfsXbkzcud/93TyGgsFQ9M0yMdJxHAm/jLcQwvK1i7HY6XVLiaYWg5D09Zuk9qRh+2Vw36buwHER4L17efKY9bWYVMnDoZryD6VTmkYkFslyr2VqZV3EemWYykSA4iH+k5//2uX9GiXj2pMuWfk3qjI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Xs8tsJIa; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=CkVfiZi2; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (4096-bit key) header.d=alien8.de header.i=@alien8.de header.b="JyOWUJPn"
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTP id 87F8D40E01D5;
-	Tue, 10 Mar 2026 09:35:53 +0000 (UTC)
-X-Virus-Scanned: Debian amavisd-new at mail.alien8.de
-Authentication-Results: mail.alien8.de (amavisd-new); dkim=pass (4096-bit key)
-	header.d=alien8.de
-Received: from mail.alien8.de ([127.0.0.1])
-	by localhost (mail.alien8.de [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id 2EyzAfmaJ8nH; Tue, 10 Mar 2026 09:35:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=alien8;
-	t=1773135348; bh=g+bExdJiu/wp/hnE2AJ8jSjgsLggH720+baR2keRc6E=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=JyOWUJPnoPjyCir8SfZA/zuVwQ1/hFSMw/Gri0lBWLiSj4tPNrYpIS5xc4hA1ICyf
-	 F5kXDhnOnYQRQXyWfwpnYEMN7FzjaRnymcS/sh0FuRtSd2tXlWGFOF8hBK8EysdMK+
-	 zMetGzxYsWO6tvvLKuT76tuXcIuH+WWOsmdIYLvrKMUUiavdTbrmDK3deYssYcBnjr
-	 19p4ju1fYIiBVKbFg/uu295ZWSZ0zry05Fa2ijEYE7hFdP/eIQ7/PAjA45brMbH9vj
-	 UJB1PkUA3DCX9wNaLPqrkrvSTrJCe9ZXV2Dro0GcnTKDgLxd9cJh/ZBgrSauA12KXX
-	 yiqfFZmzvBCoAIkiB/IiIJqz6dLXDqmEPIdC2YxSlDc573+1Hi5AJr9XjbFxpVJquR
-	 NhIIy9OpEfG263sav0FFtuEwPMHPqzhkJSDeHCYE9We+tOKQk7puiFlO0gFdv43D06
-	 iqTh+1v9J9BVaOWD6A5Jm7KuIXwDNoWG453jYWDmwKa/LVwTrqlSRCO1kJhsFv1yZr
-	 oODiqwGyjyK6YdESVBGXIZLLVgCPM6DjtbUCAMkYEi5VF/eq1ISU/4Uqokb5tIWFNO
-	 3hdux9l6ms3Ld2yyNNra4RhiKyVcNinJgUwtE38jVsvTCaeIdQK9JUZbqsqDCbiyja
-	 mXKutQc6uME6JKaqEzPmiffE=
-Received: from zn.tnic (pd9530d5e.dip0.t-ipconnect.de [217.83.13.94])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature ECDSA (P-256) server-digest SHA256)
-	(No client certificate requested)
-	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with UTF8SMTPSA id E5AE340E0174;
-	Tue, 10 Mar 2026 09:35:37 +0000 (UTC)
-Date: Tue, 10 Mar 2026 10:35:30 +0100
-From: Borislav Petkov <bp@alien8.de>
-To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Lukasz Luba <lukasz.luba@arm.com>, x86@kernel.org,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, Ricardo Neri <ricardo.neri@intel.com>
-Subject: Re: [PATCH 1/4] x86/thermal: Add bit definitions for Intel Directed
- Package Thermal Interrupt
-Message-ID: <20260310093530.GAaa_l4ij2mAgKEFbb@fat_crate.local>
-References: <20260309-rneri-directed-therm-intr-v1-0-2956e3000950@linux.intel.com>
- <20260309-rneri-directed-therm-intr-v1-1-2956e3000950@linux.intel.com>
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Xs8tsJIa";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="CkVfiZi2"
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62A8plmp3690891
+	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 09:59:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	lgUe0TFn6d0vjPmbLxKtIohMDX7uiKOUBiGY0vO4PaI=; b=Xs8tsJIaHuFREk0D
+	X0/b6Es/83vmE0IH6BgNgd5sda9mPkmieLyMsDF91whgiJgXQNXYiRb9QkHR88TD
+	xoFPVRMob0nwQEJZYcIlCSkPjptYkjXDDlNmqPdsbk5H+Hxasl+ROILF1FMEJZ1j
+	OxYjgdH8cK+LX09gX42fk04Fkk5YoGJOsmdYW/Jqngt1old/BEWmTec/7GpG9emm
+	YEC4IebUlfSG/DzZlTLx+gNgmlVm6iUjcSNnYpC2cDKWHCjZUK6Yy6FjEXRRf+fz
+	xF8VV3ASO7vKPZkyGumge0dPKpyzsutqg2gW/2O1rrH8wWoghWSNZdORS0lPZCv/
+	Uc3+aw==
+Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com [209.85.219.70])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ctg5ng8v5-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 09:59:36 +0000 (GMT)
+Received: by mail-qv1-f70.google.com with SMTP id 6a1803df08f44-89a174bd442so473503026d6.2
+        for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 02:59:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1773136776; x=1773741576; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
+         :from:references:cc:to:subject:user-agent:mime-version:date
+         :message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=lgUe0TFn6d0vjPmbLxKtIohMDX7uiKOUBiGY0vO4PaI=;
+        b=CkVfiZi2gPTHvbr3XH37zf6fiddNWx88BEzeh0Uq98+F4JkoA4W/XdV2lYU2imziks
+         Gh0ZGkXIlWE0f/Qmvn4n/I5JinUCvjZJXJ56km5Hsq6Df2M7I/J5Ys/CrSIj/gG7A9p7
+         8CqMkxWBKFUk3ku4PpiLVVLm+0C7920mT/gAw4zXqwJlIkemzYERLPZNZXb6KXDp5/mM
+         RubqBxFBuyZQxw67+OwkRtDHc02NMJF05uBk466y0ZXILVNGwrXCc3nPFAi35wdE2ejP
+         ra76Frxi8fuPCMW7oDR+UV/jeDlPfIy7H7LLJ1TpGc/VW8vr7mhuSadG8yuwQ+mKCZ5n
+         YcZA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773136776; x=1773741576;
+        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
+         :from:references:cc:to:subject:user-agent:mime-version:date
+         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=lgUe0TFn6d0vjPmbLxKtIohMDX7uiKOUBiGY0vO4PaI=;
+        b=BIU0mJ7n9IEw2utJXvSCA1jRLmEwsi9EzL2pkxFup9i1UT9iuVXtM/owg2mrns2/e6
+         +J5eVBvDQAsGdY/P40uid1iohrOo4m8D61pIu6yzJJ8FJAJP/LitLrJT2rN0L5DECzpi
+         AiP75+qIFFzoNJDgGOJl3324Z2eppNIKD5GkZdSNNXvrDC1tMnJECtxRN+f1Sr5PIWSp
+         Ldn491tGOCZ9k8gl8fdR40vMfWT3mdrfz10aQ/13IO9W5muHNZG+psjeZqJUUJyss9H7
+         zbo/OXsyyft2npz/dLj54sRm++3NEwIe4P12jP4ktFH0rJTkqlKV5Z7SRKDuz2rY0ias
+         PiCA==
+X-Forwarded-Encrypted: i=1; AJvYcCV1Cyxx+aounZKjKo4CHnlAs36IQ20HAE/qlDpC7W8RWBmd6HJxnP3JZdlNWBwNYOssZxBQHhucqg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzUitMHLJuhM+hv1wFO3+undsBCUmPp+/UA9jzOrJmbjMsYy++1
+	04zG2EgJhKQ/3+uhARJ/l9OpmJ0jFcBRxBrk4npRh/TOb+D7U7I3+eHDWLLB/xA4ZruOCyMpBfa
+	DWZJdtwDN+HiQ/mxzE0F67NPKlwFpFCQSxr0HmJVBcqpLwiWOb8gf6boF2Ivh8w==
+X-Gm-Gg: ATEYQzxEpq5UQl6CayObCjK3kinHYYzTq7oREAV1/cnFsEEG0K2d/J/wRCDLn29JsDE
+	U5JSIDpfv+t0K0rtNzeehCJY53h5gROWTyThLOyHBhYmoTlN6C0zsk5XrKntnwAE+A1Jhs86nT3
+	fCntpoG7prLEwOiMOlf1QwVIeprqsa4dhT8MXazPZZoa0sjKe4yV/53fKBR6ILW1UrDlq/11RrJ
+	kJqAHQFx3S1AHDlJJLGTQlp+XBzgUk46WXa+dm5GcBrXWFNRMK8AFQWbHuduGu1PHVn0GBBm8Te
+	5eMFDWAw73zHHoNOl/oPcYGbpWgHot0acKxmzPXwuYVUsa6cHcxtm+P98mJnqKZHr7ibRrbIO09
+	99wmpjSndJOPLZriYd6yerSDsqgHTF/5zNGEx9jOsEM+gUNA+
+X-Received: by 2002:ad4:5de1:0:b0:89a:258:c1d5 with SMTP id 6a1803df08f44-89a30ad59bemr219718206d6.50.1773136776367;
+        Tue, 10 Mar 2026 02:59:36 -0700 (PDT)
+X-Received: by 2002:ad4:5de1:0:b0:89a:258:c1d5 with SMTP id 6a1803df08f44-89a30ad59bemr219717766d6.50.1773136775932;
+        Tue, 10 Mar 2026 02:59:35 -0700 (PDT)
+Received: from [192.168.1.29] ([178.197.219.94])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-485419b8526sm68327405e9.0.2026.03.10.02.59.33
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 10 Mar 2026 02:59:35 -0700 (PDT)
+Message-ID: <9a9cb7f8-54cc-4c43-a5a0-f022394351eb@oss.qualcomm.com>
+Date: Tue, 10 Mar 2026 10:59:32 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260309-rneri-directed-therm-intr-v1-1-2956e3000950@linux.intel.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 01/10] workqueue: devres: Add device-managed allocate
+ workqueue
+To: Tejun Heo <tj@kernel.org>, Sebastian Reichel <sre@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Danilo Krummrich <dakr@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+        Shuah Khan <skhan@linuxfoundation.org>,
+        Lai Jiangshan <jiangshanlai@gmail.com>,
+        Tobias Schrammm <t.schramm@manjaro.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Dan Carpenter <dan.carpenter@linaro.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>, Lee Jones <lee@kernel.org>,
+        Dzmitry Sankouski <dsankouski@gmail.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+        Benson Leung <bleung@chromium.org>, Tzung-Bi Shih <tzungbi@kernel.org>,
+        Matti Vaittinen <mazziesaccount@gmail.com>,
+        driver-core@lists.linux.dev, linux-doc@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Sebastian Reichel <sebastian.reichel@collabora.com>,
+        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, chrome-platform@lists.linux.dev
+References: <20260305-workqueue-devm-v2-0-66a38741c652@oss.qualcomm.com>
+ <20260305-workqueue-devm-v2-1-66a38741c652@oss.qualcomm.com>
+ <aapTSyrkqqZ8j_XL@slm.duckdns.org>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Content-Language: en-US
+Autocrypt: addr=krzysztof.kozlowski@oss.qualcomm.com; keydata=
+ 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
+ cwzYbmi/Et7T2+47PN9NZAOyb771QoVr8A==
+In-Reply-To: <aapTSyrkqqZ8j_XL@slm.duckdns.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-GUID: XE8nbXpSA0alNWIYqwWXdPQmfbTbsRdv
+X-Authority-Analysis: v=2.4 cv=ervSD4pX c=1 sm=1 tr=0 ts=69afeb88 cx=c_pps
+ a=oc9J++0uMp73DTRD5QyR2A==:117 a=gOEeR9iKwsj33Yj5oN/cWg==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22
+ a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8 a=f4WQo65-w8K6TlvLPnkA:9 a=QEXdDO2ut3YA:10
+ a=iYH6xdkBrDN1Jqds4HTS:22
+X-Proofpoint-ORIG-GUID: XE8nbXpSA0alNWIYqwWXdPQmfbTbsRdv
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzEwMDA4NSBTYWx0ZWRfX5WDRKR01YJ4C
+ mjPrZSH+eix9MdVEOa/szkkdn6eJkWSENr6WuISwtKP2QRaN/5wcMtHPQZtP2i6gGKTR00Q/QaK
+ YG9yPSZEKRlE79++bs4uJpD+LnqRMz9ioz2BUPvC7AQEFOwoqq3I/nK+eIreX/apaCZsNWiERvj
+ c6mMS6N/2PELBVfM09VoXnANA8631khADiWw21kf/2Q4LiiLBuRcvqSE/G3NF1qIGfIk8D9iq8z
+ y4X9iJrXupAwMsRVplxtKrKVfgkAA3awh8cOtQRiiZaAxVTaT6hJ/rpQJalPadKv4I8GAsA8sIa
+ L86gJPhc3ldXwzkv4ElB17QmmxF5JutykGiZ69VZwT6LiCT74yo/c26nOATc+1WtDUUHakz1VFq
+ blPsXIvQxRlGi8K2Jw28+q16ths1gqmKg36JddhYmyfgoBYBmHiNUjTPtv6sisotFVQ6hvfnzBh
+ o+Jlt3Mw26wYptwdoPQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-10_01,2026-03-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 spamscore=0 bulkscore=0 impostorscore=0 lowpriorityscore=0
+ malwarescore=0 phishscore=0 adultscore=0 priorityscore=1501 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603100085
 
-On Mon, Mar 09, 2026 at 03:19:24PM -0700, Ricardo Neri wrote:
-> Add CPUID and MSR bit definitions required to support Intel Directed
-> Package Thermal Interrupts.
+On 06/03/2026 05:08, Tejun Heo wrote:
+> On Thu, Mar 05, 2026 at 10:45:40PM +0100, Krzysztof Kozlowski wrote:
+>> Add a Resource-managed version of alloc_workqueue() to fix common
+>> problem of drivers mixing devm() calls with destroy_workqueue.  Such
+>> naive and discouraged driver approach leads to difficult to debug bugs
+>> when the driver:
+>>
+>> 1. Allocates workqueue in standard way and destroys it in driver
+>>    remove() callback,
+>> 2. Sets work struct with devm_work_autocancel(),
+>> 3. Registers interrupt handler with devm_request_threaded_irq().
+>>
+>> Which leads to following unbind/removal path:
+>>
+>> 1. destroy_workqueue() via driver remove(),
+>>    Any interrupt coming now would still execute the interrupt handler,
+>>    which queues work on destroyed workqueue.
+>> 2. devm_irq_release(),
+>> 3. devm_work_drop() -> cancel_work_sync() on destroyed workqueue.
+>>
+>> devm_alloc_workqueue() has two benefits:
+>> 1. Solves above problem of mix-and-match devres and non-devres code in
+>>    driver,
+>> 2. Simplify any sane drivers which were correctly using
+>>    alloc_workqueue() + devm_add_action_or_reset().
+>>
+>> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 > 
-> A CPU requests directed package-level thermal interrupts by setting bit 25
-> in IA32_THERM_INTERRUPT. Hardware acknowledges by setting bit 25 in
-> IA32_PACKAGE_THERM_STATUS, indicating that only CPUs that opted in will
-> receive the interrupt. If no CPU in the package requests it, delivery
-> falls back to broadcast.
+> Acked-by: Tejun Heo <tj@kernel.org>
 > 
-> Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-> ---
->  arch/x86/include/asm/cpufeatures.h | 1 +
->  arch/x86/include/asm/msr-index.h   | 2 ++
->  2 files changed, 3 insertions(+)
-> 
-> diff --git a/arch/x86/include/asm/cpufeatures.h b/arch/x86/include/asm/cpufeatures.h
-> index dbe104df339b..487bf9da0cef 100644
-> --- a/arch/x86/include/asm/cpufeatures.h
-> +++ b/arch/x86/include/asm/cpufeatures.h
-> @@ -364,6 +364,7 @@
->  #define X86_FEATURE_HWP_PKG_REQ		(14*32+11) /* "hwp_pkg_req" HWP Package Level Request */
->  #define X86_FEATURE_HWP_HIGHEST_PERF_CHANGE (14*32+15) /* HWP Highest perf change */
->  #define X86_FEATURE_HFI			(14*32+19) /* "hfi" Hardware Feedback Interface */
+> Please let me know how you wanna route the patch.
 
-Leave a space here to denote there's a hole
+Like I described in cover letter, so I propose this going via one tree,
+e.g. power supply. The first patch might be needed for other trees as
+well, e.g. if more drivers are discovered, so the best if it is on
+dedicated branch in case it has to be shared just in case.
 
-> +#define X86_FEATURE_DIRECTED_PKG_THRM_INTR (14*32+24) /* Intel Directed Package Thermal Interrupt */
+Does this look reasonable @Tejun, @Sebastian?
 
-Also, can we agree on one naming and stick to it?
-
-What you have there basically screams "OMG, I am trying to say *everything*
-in that single define name but there's no room." :)
-
-Also, the defines you have here are all a little bit different and good luck
-matching what is what in a couple of months.
-
-So, how about
-
-#define X86_FEATURE_DPTI	 (14*32+24) /* Intel Directed Package Thermal Interrupt */
-
-and the comment explains what the acronym is?
-
->  /* AMD SVM Feature Identification, CPUID level 0x8000000a (EDX), word 15 */
->  #define X86_FEATURE_NPT			(15*32+ 0) /* "npt" Nested Page Table support */
-> diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-> index 6673601246b3..aa1c652a9581 100644
-> --- a/arch/x86/include/asm/msr-index.h
-> +++ b/arch/x86/include/asm/msr-index.h
-> @@ -995,6 +995,7 @@
->  #define THERM_INT_HIGH_ENABLE		(1 << 0)
->  #define THERM_INT_LOW_ENABLE		(1 << 1)
->  #define THERM_INT_PLN_ENABLE		(1 << 24)
-> +#define THERM_DIRECTED_INTR_ENABLE	(1 << 25)
-
-And then you can do:
-
-#define DPTI_ENABLE	(1 << 25)
-
->  
->  #define MSR_IA32_THERM_STATUS		0x0000019c
->  
-> @@ -1024,6 +1025,7 @@
->  
->  #define PACKAGE_THERM_STATUS_PROCHOT		(1 << 0)
->  #define PACKAGE_THERM_STATUS_POWER_LIMIT	(1 << 10)
-> +#define PACKAGE_THERM_STATUS_DIRECTED_INTR_ACK	(1 << 25)
-
-Ditto here:
-
-	DPTI_ACK
-
-And you can always add comments explaining the acronym...
-
--- 
-Regards/Gruss,
-    Boris.
-
-https://people.kernel.org/tglx/notes-about-netiquette
+Best regards,
+Krzysztof
