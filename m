@@ -1,141 +1,201 @@
-Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9FA46399363
-	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 12:54:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A0DC328B56;
+	Tue, 10 Mar 2026 13:03:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773147251; cv=none; b=Iq4BP/77OjkuKOIITSKqvNOjbMnuJ4aq6WAdQlOUge3WJ/JQVbUkSaLhqARDmvi2ffPC87dga438oFhZvgXM6fF55JBCqLAI6/y64IZ+k6a4W8DB3ohSHiVe5awBUpWpbuoBZ/bgt8qATLX5E/OX1XmjT2LMVIYTrp2WRaklZLI=
+	t=1773147800; cv=none; b=R73FoJL1YDPMNREWlAM2s10bNsyVXHkzXMv7TZiuVB07j+VU05UCrM4MzfGPaYKlbzhe97dbXJ0TtxNr5xSh5eMBtjKR6s5dagBS8+Zt6dcRrrA4rXmHUedS5N8BTxqrq9X5b4kjLTXfGEdvawiOFf4jVbbjkN7PrrwTtwW2DpI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773147251; c=relaxed/simple;
-	bh=TgoJchP8+G/BTHDKgmEWupOwORUqE0/FZPIUEYu9Z9g=;
+	s=arc-20240116; t=1773147800; c=relaxed/simple;
+	bh=o1LWvNwWPHg9SCrFAE8Um9VpEsqInCgeI1zE3tb2NhU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=O8aG2LM7VCS7Wz/IwNrBrr/g2hJpOCimE/HhTxau7hSPVSkC1fpjczhL9EllTL9PKpyYJNgCILnKCg3iPRfyJNrS9GCFhQ0fhXSXLhGoKANeN99o6QGg/s0sEAT48CQM94OlDa/v2z9SZxY7+XSsgauHZI6rUq241V13ubvDBzw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=0+cOK+VW; arc=none smtp.client-ip=209.85.214.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=n8fUn+r82/qrEMcP5T2Dc1sHX5dylLq5QzMqZkxtu/5CELYO4DTg66FJIeSCXpsJ6QQp7rJw47LVPOIxoqxQ0tcXOtvoC35EZrHy65jC25DcIntdxQrVcxlZhK6u/r+q5ifRMqKhIIUCaXEdg+ImUad7fMLldXrSJnAtL8mEHpM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WvnITmIw; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="0+cOK+VW"
-Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2aeab6ff148so1365ad.1
-        for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 05:54:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1773147248; x=1773752048; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=mm6hm+LHoMGo5Ew01sq1dP9YSITnoqIDxYFDqmtgvh0=;
-        b=0+cOK+VWVXA7uE31Sh5y2bmP9hRSr0LFsM2f3kDgfCZ6lyHaVbAytIQCv+2vF+eTEx
-         oUic6e9ZAVnZqnGzIPB8kHUyMA2zwpMw5U/9RUdKEhoG2/xX9/VKIHC9XNEBOVXeDKo9
-         mU/QEMBf02iFKn4H5erDKYU3pW/pqjbI7j+6ZcB0Qt9z/KGqBlkshVJTzzKx2oXtAxlL
-         E18h73O/s3dn+xBEwK308w7agQS5m2RYZzHNrLUdhfdZKeG/e+Dr27X21QpoIwd1KCAl
-         PxttLdZl6PZf2goM/cRw6Bbw12/00xnTFdgSr8ytAWjU88JMxI5kTd4reOjRdKpNjh+N
-         Ix/w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773147248; x=1773752048;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=mm6hm+LHoMGo5Ew01sq1dP9YSITnoqIDxYFDqmtgvh0=;
-        b=AoPq8OXHYSu/K8G9ApZZBi0uJv5Hx4K4M6VN2XbRPw5vBc08VHya4RRMec7q7FBdWt
-         T8oUzy5jcFrm1EbOUQ5xieojRm/TcFtu860izf1LwRyTGWCojhU0wAJEMnYjQAw2hgyI
-         jpC0/P+d9WCksYcLXXUfaOlMLqee0wmAUGsLIlRTtKF2Kv8PXKuMov1aj9dcH8GUKq9A
-         2ruterzRio67mr6IXCWTYUoiQOygf0E8SD+g2QIJey8CVrLQPi4iLhDCZ88S/fPX9v5N
-         MZ6QZeHo3S+p85vlykp9SQ7NKOJHQLqgswgwTWQUCtc1CyrG1K6bZclBmkHYxtHfI6AF
-         JsIw==
-X-Forwarded-Encrypted: i=1; AJvYcCWfzkekVCOiuDElY1PUyLsBwdSVJ80H1HlX6CLbytBwmQlFrfNqeG5BeuRU5hHBjvuwrDnFLg1IgA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyApPiv15AnL4eGujDePv+YaS4fvCqMMqk5nuNi1r6ZOB5S31VI
-	1nkymHuvDLKTWEHorI4Kd3EKsh2UzgrwN2D/3fY62JC2C1s2+DEAKg92OC+FmVUBVA==
-X-Gm-Gg: ATEYQzx+1Ftg8MEJsLYDmsIE8QEs5X86x2Hpf8hJteIFfdtIU68IbOqs0+mpzDbsbwr
-	jDZp0Z4u+SzkP7VMDW/NZcqGha0kACahfGX1os90J2efWDcTLDi3INaNwTu0ZWNIV+iFYPXE/85
-	Cjw5kHFF3pllWKuVuDbR9nd/w3QuYftXEWlZ3YnG58uYDMk2KmmsyPB4JuiD/H+EIGar7iLRKDR
-	ftzJGVIKORK4R0hcTgfMt62gJAwQGY09IH3hs0t4oW3STDbCyB78ZL/cvl/qAa7/s0agE2Qj7j8
-	xjYr/lhGyfMewApmkLt59ZVB5Njv2TwXzKOxazdLKasd+2FJ0jnvOtx896TBuEYb090511nXcN/
-	WB/kNE+hz7rzq3Xh2n6UMU45N7t0wOZHRhVc2Bb1zNmT6rcYWtjue11DXtqwaOssT6HH1pgTMNx
-	8APfLW1L6oizrZ37libiR1Moa+lt9iulsEQIE44FyM2PEcE1CgezLpVzygKw==
-X-Received: by 2002:a17:902:ebd2:b0:2ae:45bb:bc4e with SMTP id d9443c01a7336-2aea30ebe48mr3008685ad.24.1773147247400;
-        Tue, 10 Mar 2026 05:54:07 -0700 (PDT)
-Received: from google.com (10.129.124.34.bc.googleusercontent.com. [34.124.129.10])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c739e0cb73dsm12445679a12.11.2026.03.10.05.53.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Mar 2026 05:54:06 -0700 (PDT)
-Date: Tue, 10 Mar 2026 12:53:54 +0000
-From: Pranjal Shrivastava <praan@google.com>
-To: Philipp Hahn <phahn-oss@avm.de>
-Cc: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
-	bpf@vger.kernel.org, ceph-devel@vger.kernel.org, cocci@inria.fr,
-	dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org,
-	gfs2@lists.linux.dev, intel-gfx@lists.freedesktop.org,
-	intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev,
-	kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-block@vger.kernel.org, linux-bluetooth@vger.kernel.org,
-	linux-btrfs@vger.kernel.org, linux-cifs@vger.kernel.org,
-	linux-clk@vger.kernel.org, linux-erofs@lists.ozlabs.org,
-	linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-	linux-gpio@vger.kernel.org, linux-hyperv@vger.kernel.org,
-	linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
-	linux-mips@vger.kernel.org, linux-mm@kvack.org,
-	linux-modules@vger.kernel.org, linux-mtd@lists.infradead.org,
-	linux-nfs@vger.kernel.org, linux-omap@vger.kernel.org,
-	linux-phy@lists.infradead.org, linux-pm@vger.kernel.org,
-	linux-rockchip@lists.infradead.org, linux-s390@vger.kernel.org,
-	linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org,
-	linux-security-module@vger.kernel.org, linux-sh@vger.kernel.org,
-	linux-sound@vger.kernel.org,
-	linux-stm32@st-md-mailman.stormreply.com,
-	linux-trace-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-	linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-	ntfs3@lists.linux.dev, samba-technical@lists.samba.org,
-	sched-ext@lists.linux.dev, target-devel@vger.kernel.org,
-	tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev,
-	Alex Williamson <alex@shazbot.org>
-Subject: Re: [PATCH 46/61] vfio: Prefer IS_ERR_OR_NULL over manual NULL check
-Message-ID: <abAUYvx6VEdSmInm@google.com>
-References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
- <20260310-b4-is_err_or_null-v1-46-bd63b656022d@avm.de>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WvnITmIw"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF497C19423;
+	Tue, 10 Mar 2026 13:03:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773147800;
+	bh=o1LWvNwWPHg9SCrFAE8Um9VpEsqInCgeI1zE3tb2NhU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=WvnITmIwmdkyx5P0ENj8ioYxqZMTGSCybErySCKGwPyyXB4wMFudMGsfVZeFGQfxD
+	 5PetJDGKXFv5fSxjF26VIBez8JDpumdLW3RZedwJFaJDUjRQA/icJ5N9Va4/cOoi35
+	 hcM+qAL6Fdj/u6/O9l8hyEnihBL+jgeFLA+WIiuO6zGC/InJDuyWX0Yq4/Tk+CALTu
+	 Xozcb4GCGavFuO6Q1D3W+XFNZZc1a9RSRVj6Y0ilMMW/9p8CTuatS2dgrNZTuO3GvE
+	 c/FLrWSN4Vmwg9/KTLfGj/KmrrgZ6Vei67Iz9EZfc02mjY0venZbU+TpIVpc59X7ET
+	 nfULy+1VLUB5w==
+Date: Tue, 10 Mar 2026 13:03:15 +0000
+From: Lee Jones <lee@kernel.org>
+To: Alexey Charkov <alchark@flipper.net>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Chris Morgan <macromorgan@hotmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH v3 09/11] mfd: bq257xx: Add BQ25792 support
+Message-ID: <20260310130315.GK183676@google.com>
+References: <20260310-bq25792-v3-0-02f8e232d63b@flipper.net>
+ <20260310-bq25792-v3-9-02f8e232d63b@flipper.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260310-b4-is_err_or_null-v1-46-bd63b656022d@avm.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260310-bq25792-v3-9-02f8e232d63b@flipper.net>
 
-On Tue, Mar 10, 2026 at 12:49:12PM +0100, Philipp Hahn wrote:
-> Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
-> check.
+On Tue, 10 Mar 2026, Alexey Charkov wrote:
+
+> Add register definitions and a new 'type' enum to be passed in MFD
+> platform data to support the BQ25792, which is a newer variant of the
+> BQ257xx family.
 > 
-> Change generated with coccinelle.
+> BQ25792 shares similar logic of operation with the already supported
+> BQ25703A but has a completely different register map and different
+> electrical constraints.
 > 
-> To: Alex Williamson <alex@shazbot.org>
-> Cc: kvm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
+> Tested-by: Chris Morgan <macromorgan@hotmail.com>
+> Signed-off-by: Alexey Charkov <alchark@flipper.net>
 > ---
->  drivers/vfio/vfio_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/mfd/bq257xx.c       |  64 ++++++-
+>  include/linux/mfd/bq257xx.h | 417 ++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 477 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/vfio/vfio_main.c b/drivers/vfio/vfio_main.c
-> index 742477546b15d4dbaf9ebcfb2e67627db71521e0..d71922dfde5885967398deddec3e9e04b05adfec 100644
-> --- a/drivers/vfio/vfio_main.c
-> +++ b/drivers/vfio/vfio_main.c
-> @@ -923,7 +923,7 @@ vfio_ioctl_device_feature_mig_device_state(struct vfio_device *device,
+> diff --git a/drivers/mfd/bq257xx.c b/drivers/mfd/bq257xx.c
+> index e9d49dac0a16..7516e2ec00e6 100644
+> --- a/drivers/mfd/bq257xx.c
+> +++ b/drivers/mfd/bq257xx.c
+> @@ -10,6 +10,11 @@
+>  #include <linux/mfd/core.h>
+>  #include <linux/regmap.h>
 >  
->  	/* Handle the VFIO_DEVICE_FEATURE_SET */
->  	filp = device->mig_ops->migration_set_state(device, mig.device_state);
-> -	if (IS_ERR(filp) || !filp)
-> +	if (IS_ERR_OR_NULL(filp))
->  		goto out_copy;
+> +struct bq257xx_match_data {
+> +	const struct bq257xx_plat plat;
+> +	const struct regmap_config *regmap_config;
+> +};
+> +
+>  static const struct regmap_range bq25703_readonly_reg_ranges[] = {
+>  	regmap_reg_range(BQ25703_CHARGER_STATUS, BQ25703_MANUFACT_DEV_ID),
+>  };
+> @@ -39,15 +44,64 @@ static const struct regmap_config bq25703_regmap_config = {
+>  	.val_format_endian = REGMAP_ENDIAN_LITTLE,
+>  };
 >  
->  	return vfio_ioct_mig_return_fd(filp, arg, &mig);
-> 
+> -static const struct mfd_cell cells[] = {
+> +static const struct bq257xx_match_data bq25703a_match_data = {
+> +	.plat = { .type = BQ25703A },
+> +	.regmap_config = &bq25703_regmap_config,
+> +};
+> +
+> +static const struct regmap_range bq25792_writeable_reg_ranges[] = {
+> +	regmap_reg_range(BQ25792_REG00_MIN_SYS_VOLTAGE,
+> +			 BQ25792_REG18_NTC_CONTROL_1),
+> +	regmap_reg_range(BQ25792_REG28_CHARGER_MASK_0,
+> +			 BQ25792_REG30_ADC_FUNCTION_DISABLE_1),
+> +};
+> +
+> +static const struct regmap_access_table bq25792_writeable_regs = {
+> +	.yes_ranges = bq25792_writeable_reg_ranges,
+> +	.n_yes_ranges = ARRAY_SIZE(bq25792_writeable_reg_ranges),
+> +};
+> +
+> +static const struct regmap_range bq25792_volatile_reg_ranges[] = {
+> +	regmap_reg_range(BQ25792_REG19_ICO_CURRENT_LIMIT,
+> +			 BQ25792_REG27_FAULT_FLAG_1),
+> +	regmap_reg_range(BQ25792_REG31_IBUS_ADC,
+> +			 BQ25792_REG47_DPDM_DRIVER),
+> +};
+> +
+> +static const struct regmap_access_table bq25792_volatile_regs = {
+> +	.yes_ranges = bq25792_volatile_reg_ranges,
+> +	.n_yes_ranges = ARRAY_SIZE(bq25792_volatile_reg_ranges),
+> +};
+> +
+> +static const struct regmap_config bq25792_regmap_config = {
+> +	.reg_bits = 8,
+> +	.val_bits = 8,
+> +	.max_register = BQ25792_REG48_PART_INFORMATION,
+> +	.cache_type = REGCACHE_MAPLE,
+> +	.wr_table = &bq25792_writeable_regs,
+> +	.volatile_table = &bq25792_volatile_regs,
+> +};
+> +
+> +static const struct bq257xx_match_data bq25792_match_data = {
+> +	.plat = { .type = BQ25792 },
+> +	.regmap_config = &bq25792_regmap_config,
+> +};
+> +
+> +static struct mfd_cell cells[] = {
+>  	MFD_CELL_NAME("bq257xx-regulator"),
+>  	MFD_CELL_NAME("bq257xx-charger"),
+>  };
+>  
+>  static int bq257xx_probe(struct i2c_client *client)
+>  {
+> +	const struct bq257xx_match_data *md = device_get_match_data(&client->dev);
+>  	struct bq257xx_device *ddata;
+> -	int ret;
+> +	int i, ret;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(cells); i++) {
+> +		cells[i].platform_data = &md->plat;
+> +		cells[i].pdata_size = sizeof(md->plat);
+> +	}
+>  
+>  	ddata = devm_kzalloc(&client->dev, sizeof(*ddata), GFP_KERNEL);
+>  	if (!ddata)
+> @@ -55,7 +109,7 @@ static int bq257xx_probe(struct i2c_client *client)
+>  
+>  	ddata->client = client;
+>  
+> -	ddata->regmap = devm_regmap_init_i2c(client, &bq25703_regmap_config);
+> +	ddata->regmap = devm_regmap_init_i2c(client, md->regmap_config);
+>  	if (IS_ERR(ddata->regmap)) {
+>  		return dev_err_probe(&client->dev, PTR_ERR(ddata->regmap),
+>  				     "Failed to allocate register map\n");
+> @@ -74,12 +128,14 @@ static int bq257xx_probe(struct i2c_client *client)
+>  
+>  static const struct i2c_device_id bq257xx_i2c_ids[] = {
+>  	{ "bq25703a" },
+> +	{ "bq25792" },
+>  	{}
+>  };
+>  MODULE_DEVICE_TABLE(i2c, bq257xx_i2c_ids);
+>  
+>  static const struct of_device_id bq257xx_of_match[] = {
+> -	{ .compatible = "ti,bq25703a" },
+> +	{ .compatible = "ti,bq25703a", .data = &bq25703a_match_data },
+> +	{ .compatible = "ti,bq25792", .data = &bq25792_match_data },
 
-Reviewed-by: Pranjal Shrivastava <praan@google.com>
+Instead of passing through the data structure, pass an identifier to
+match on, like:
 
-The cleanup alone looks fine, but I'm not sure if the maintainers would
-be happy about the tree-wide spam, since each patch might go through a
-different tree. I'd wait for Alex's preference/ack on that.
+	 { .compatible = "ti,bq25703a", .data = (void *)BQ25703A },
 
-Thanks,
-Praan
+Then add the ID to ddata which is already obtainable from the child
+devices via i2c_set_clientdata().  This saves passing it as separate
+platform data.
+
+	ddata->type = device_get_match_data(&client->dev);
+
+Then use that to initialise a local 'struct regmap_config'.
+
+	switch(ddata->type) {
+	case BQ25703A:
+		regmap_config = &bq25703_regmap_config
+		break;
+	[...]
+
+By doing so, you save on a lot of additional complexity and mitigate the
+introduction of some unnecessary data structures.
+
+-- 
+Lee Jones [李琼斯]
