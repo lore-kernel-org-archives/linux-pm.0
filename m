@@ -1,110 +1,86 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id BA43843C049;
-	Tue, 10 Mar 2026 09:18:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12AB23ECBD5;
+	Tue, 10 Mar 2026 09:19:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773134304; cv=none; b=jlX4r5tXaYtp9YQ9ddUBdT9/pD8/fYLDNl74p/hAHk78W3qG3S9IVwtC1efUiDH1f8DU07iBO9E9z8vjH5ZE1EZNsubyR2mLjwryRFEbotGhoO/qFHa8CKc35E/3S8IJY45LTZGse/wyeebsnKCgRoIRylqKlfVUIPOIqjIPKJk=
+	t=1773134356; cv=none; b=lmoacRzA2CkP1CCsy0XkXajFtdVC7dM4gRYlP+IcU4xojzJ/WpbrCrIrsfiwS9zKTcUmqwP6HDSEkRgLkk129DO/d8GfdMjlUAMDsmzbpXvcRYaxp4U96Wkv1yS/D+Yh295AykU/A/iLiBw9ZRUelVvpRz80C9BX/aPyaCxb5hc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773134304; c=relaxed/simple;
-	bh=vTlaRU0b4aNb04oP52gkoCgBBRi5bR5hbOyQbtmIaQo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PZk0ul0MgbyJoPA8XYfoXV4uyQEPOyZvvgwyZnMGCYzDCrJ4t2Ljf10vkg09CFM51ZTuNRsDasWxAhx5e6L1BB7tFnvFxRj+qKNDRDf1EL2QePHZcKvfK9dLVIbI7PLvhyGX4m60CFh8OM0OVjLlB9+8Ng47DtoFxWW2Jaeaxb0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EF49916A3;
-	Tue, 10 Mar 2026 02:18:16 -0700 (PDT)
-Received: from [10.1.27.17] (e127648.arm.com [10.1.27.17])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BDA213F73B;
-	Tue, 10 Mar 2026 02:18:21 -0700 (PDT)
-Message-ID: <f11fc45d-314a-4e2d-bcd1-9d8b1a49c87a@arm.com>
-Date: Tue, 10 Mar 2026 09:18:19 +0000
+	s=arc-20240116; t=1773134356; c=relaxed/simple;
+	bh=MdGM23490cqwr2/sVTI1UyMMRt8MzyxBUeK645TbW84=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=mRoDSZ24ii8cSDcZb5h4Av5wGEwYHo3Gjrlv0YuJBkKBi4jnXyZTVEUzyjPckNiU0hWj2GxepGOUswyiZGhQJ971Y6lurbeBcsjTzXg4iA9MLJkBppmkfh9lXe0Wkd5155zarrPv2OPV89mBIQZ8EdzbqWBHBEW1EolSPJpq3q4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nI4X5lgJ; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nI4X5lgJ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10355C19423;
+	Tue, 10 Mar 2026 09:19:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773134355;
+	bh=MdGM23490cqwr2/sVTI1UyMMRt8MzyxBUeK645TbW84=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=nI4X5lgJD+ZMqfSPdJitPsghjQWL7MRXycU3UFIhEjLS7y6A8pB4gylEG5KtaLJYl
+	 RZG6/eEQX9bE8cH8zQ0mXdC5YjKVfACbhoHNP5SzDVpJ/HsQsHkEY/Nrz5p9JqOCoe
+	 V1BDC2Va0wPuvGEd79XCQUCg54McGizNLAUBbG2/mI0hpy+W1rbQWCwSay8bhOvux0
+	 4nJWkgfMtBdJg4QDgX8E0P6KCfmrLAGkF0CPICDOB+Sanudy9KR7JOUDI4wk7XrXDH
+	 CVEVSmFpzSsgzhFwT4rcKXJAEP18FlXsEp0TkEO8efISnDzQKuy6eNveqW97qCzOeq
+	 uNukP/XEKzZzw==
+Date: Tue, 10 Mar 2026 09:19:06 +0000
+From: Lee Jones <lee@kernel.org>
+To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+Cc: jic23@kernel.org, robh@kernel.org, krzk+dt@kernel.org,
+	conor+dt@kernel.org, agross@kernel.org, andersson@kernel.org,
+	lumag@kernel.org, dmitry.baryshkov@oss.qualcomm.com,
+	konradybcio@kernel.org, daniel.lezcano@linaro.org, sboyd@kernel.org,
+	amitk@kernel.org, thara.gopinath@gmail.com, rafael@kernel.org,
+	subbaraman.narayanamurthy@oss.qualcomm.com,
+	david.collins@oss.qualcomm.com, anjelique.melendez@oss.qualcomm.com,
+	kamal.wadhwa@oss.qualcomm.com, rui.zhang@intel.com,
+	lukasz.luba@arm.com, devicetree@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	cros-qcom-dts-watchers@chromium.org, quic_kotarake@quicinc.com,
+	neil.armstrong@linaro.org, stephan.gerhold@linaro.org,
+	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Subject: Re: [PATCH V11 2/4] dt-bindings: iio: adc: Add support for QCOM
+ PMIC5 Gen3 ADC
+Message-ID: <20260310091906.GD183676@google.com>
+References: <20260209105438.596339-1-jishnu.prakash@oss.qualcomm.com>
+ <20260209105438.596339-3-jishnu.prakash@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [patch 2/2] sched/idle: Make default_idle_call() NOHZ aware
-To: Qais Yousef <qyousef@layalina.io>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Thomas Gleixner <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Frederic Weisbecker <frederic@kernel.org>,
- Linux PM <linux-pm@vger.kernel.org>
-References: <20260301191959.406218221@kernel.org>
- <6250711.lOV4Wx5bFT@rafael.j.wysocki>
- <CAJZ5v0jb7wJFQEfP_-JRv4mwh3qveq+VPoy8k9dmtmigoSyKhg@mail.gmail.com>
- <2409653.ElGaqSPkdT@rafael.j.wysocki>
- <20260310035406.xnu3nlqp4ldshxww@airbuntu>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <20260310035406.xnu3nlqp4ldshxww@airbuntu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260209105438.596339-3-jishnu.prakash@oss.qualcomm.com>
 
-On 3/10/26 03:54, Qais Yousef wrote:
-> On 03/07/26 17:25, Rafael J. Wysocki wrote:
+On Mon, 09 Feb 2026, Jishnu Prakash wrote:
+
+> For the PMIC5-Gen3 type PMICs, ADC peripheral is present in HW for the
+> following PMICs: PMK8550, PM8550, PM8550B and PM8550VX PMICs.
 > 
->> In the meantime I realized that if the .select() governor
->> callback is skipped, its .reflect() callback should be skipped
->> either, so I've posted this:
->>
->> https://lkml.org/lkml/2026/3/7/569
->>
->> and here's a fixed version of the last patch on top of the above (for
->> completeness):
->>
->> ---
->>  kernel/sched/idle.c |   25 ++++++++++++++++---------
->>  1 file changed, 16 insertions(+), 9 deletions(-)
->>
->> --- a/kernel/sched/idle.c
->> +++ b/kernel/sched/idle.c
->> @@ -161,6 +161,14 @@ static int call_cpuidle(struct cpuidle_d
->>  	return cpuidle_enter(drv, dev, next_state);
->>  }
->>  
->> +static void idle_call_stop_or_retain_tick(bool stop_tick)
->> +{
->> +	if (stop_tick || tick_nohz_tick_stopped())
->> +		tick_nohz_idle_stop_tick();
->> +	else
->> +		tick_nohz_idle_retain_tick();
->> +}
->> +
->>  /**
->>   * cpuidle_idle_call - the main idle function
->>   *
->> @@ -170,7 +178,7 @@ static int call_cpuidle(struct cpuidle_d
->>   * set, and it returns with polling set.  If it ever stops polling, it
->>   * must clear the polling bit.
->>   */
->> -static void cpuidle_idle_call(void)
->> +static void cpuidle_idle_call(bool stop_tick)
->>  {
->>  	struct cpuidle_device *dev = cpuidle_get_device();
->>  	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
->> @@ -186,7 +194,7 @@ static void cpuidle_idle_call(void)
->>  	}
->>  
->>  	if (cpuidle_not_available(drv, dev)) {
->> -		tick_nohz_idle_stop_tick();
->> +		idle_call_stop_or_retain_tick(stop_tick);
->>  
->>  		default_idle_call();
->>  		goto exit_idle;
->> @@ -222,17 +230,14 @@ static void cpuidle_idle_call(void)
->>  		next_state = cpuidle_find_deepest_state(drv, dev, max_latency_ns);
->>  		call_cpuidle(drv, dev, next_state);
->>  	} else if (drv->state_count > 1) {
->> -		bool stop_tick = true;
->> +		stop_tick = true;
+> It is similar to PMIC5-Gen2, with SW communication to ADCs on all PMICs
+> going through PBS(Programmable Boot Sequence) firmware through a single
+> register interface. This interface is implemented on SDAM (Shared
+> Direct Access Memory) peripherals on the master PMIC PMK8550 rather
+> than a dedicated ADC peripheral.
 > 
-> Silly question, but wouldn't this benefit the normal path too to delay for one
-> tick? This will only matter for the cases where the governor doesn't explicitly
-> set stop_tick to either true or false - which I am not sure what they are :)
+> Add documentation for PMIC5 Gen3 ADC and update SPMI PMIC bindings to
+> allow ADC5 Gen3 as adc@ subnode.
 > 
-Right now the governors will always set stop_tick explicitly (and overriding
-that might confuse the governor-internal state).
+> Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> Signed-off-by: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+
+For the MFD change:
+
+Acked-by: Lee Jones <lee@kernel.org>
+
+-- 
+Lee Jones [李琼斯]
