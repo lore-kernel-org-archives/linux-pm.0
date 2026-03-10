@@ -1,216 +1,146 @@
-Received: from canpmsgout05.his.huawei.com (canpmsgout05.his.huawei.com [113.46.200.220])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9999D38550D;
-	Tue, 10 Mar 2026 02:22:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.220
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B441D3B895F
+	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 02:56:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773109371; cv=none; b=PQYGQWaXUCukovg5GtZdXUj/odE7yI0TmQGbQ66cmieVYj3i3nMlVWH6zmP9CQZeQcL6LgexM6yaJgJOPGBkULlZOsmA/EFev4RD/yL1Q6WnbQsKY6TSILbbRw+ePS6uxds0yzBhtOknuH/YtrNCrdqqBrB3Xph9AuybP8b8BNw=
+	t=1773111389; cv=none; b=SohXDdjaLLLPLMYzkVYYogBQIpzSvEQ0VlGLb9MeoEGljw+HCxfHaL0xcQK9Rl9U2HzBAplECgKsjVHldcWgPT9TgqLK6Q+YyQumiLr7a1celTkp2CsdW7Di+x4vSNL7X5hyPkx7U3FFLRtoJoyRbvksdkYE8L4UhM09K2dTOy0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773109371; c=relaxed/simple;
-	bh=Cx2jZDKd8GFI6DJrRFgL8C5sjCqiCQFGXHUFzTX7jaM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=Kxw25dIB4fe4gLKLalgUzOZuTr4Csf8MlvOzG8HJ119/gyTY1O4KZUdX+r4HuXUYiDQpgzH5XD2NsYWh/xJrmbv+tHl3+8ekO8I3EcbVk6qR9iMJ877TIKIZqzvMPhthn5DTROPpVGn7eEFnxcKTXc5wOXZdO9jD72RIPI1ACzY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=jSBSTwvd; arc=none smtp.client-ip=113.46.200.220
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+	s=arc-20240116; t=1773111389; c=relaxed/simple;
+	bh=xOlmWHElZ0RirDwGPesTb+6FfflbyfzMF26FQgLD2eo=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=Ee5KfKQKmshWY68BYYVwuX27Cfqe8Y8zfejZxXlfyhqNAQ6zsDJxHhMrsfiXNYFh+ZQGZHIHzrbECTVBem+49zxVe2Ss/mmgV2k6NW8+p+5jEjgpd1bbE4v1PUmz9pH8I6er9jPKysQjHLTNHiN3ee9AikiYCKFkVtAHZ2h8qIE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=v+8Mo90A; arc=none smtp.client-ip=209.85.128.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="jSBSTwvd"
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=pa/zscm76YjIf6T4rKbeqXiqHfsOf/gheff7EQRPqKQ=;
-	b=jSBSTwvdCvq3RjK9mafj9wTkQmI4He1QDSDnc/qo9YIMaZMBS4YC/aj9+y5oiKLMNx4AEEyP2
-	MQ+Gn9svqxKILlKQONsnYojUWOLa47yyrUFeDfx91TpiiUww/QQoG5AfcruC0KIWxVCXp0UwLoD
-	Ph7Ep6PekWzynaZz7S0RhFc=
-Received: from mail.maildlp.com (unknown [172.19.162.144])
-	by canpmsgout05.his.huawei.com (SkyGuard) with ESMTPS id 4fVHZY043xz12LCw;
-	Tue, 10 Mar 2026 10:17:09 +0800 (CST)
-Received: from kwepemf200001.china.huawei.com (unknown [7.202.181.227])
-	by mail.maildlp.com (Postfix) with ESMTPS id 36F9740538;
-	Tue, 10 Mar 2026 10:22:45 +0800 (CST)
-Received: from [10.67.121.90] (10.67.121.90) by kwepemf200001.china.huawei.com
- (7.202.181.227) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 10 Mar
- 2026 10:22:44 +0800
-Message-ID: <d21b9ad3-72d9-44b2-b194-4e2a24077eab@huawei.com>
-Date: Tue, 10 Mar 2026 10:22:43 +0800
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="v+8Mo90A"
+Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-4853f2826f7so13716615e9.1
+        for <linux-pm@vger.kernel.org>; Mon, 09 Mar 2026 19:56:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1773111385; x=1773716185; darn=vger.kernel.org;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=IPeNaI7yJ6rN7QDAg6cmHZUEk/n4Ga/qldWclJyzUAo=;
+        b=v+8Mo90AU8QuIIbTN38TdolQQV7OdXys2Nt9KOY0xdwM2RCIm7mAL/Ot0nwZ2G0qhn
+         879DZzTwgV8ZB3ejEqajk/J7P1zCk6HOvYm4jMXPIOySnfqsLLAzl7qIkFu0rUo7yNrd
+         hf0AR4AQvr7nYlSupQ45odasBDBGT//VCnsSg0a0jRRkLSpyCHfivvPNGyzfSxROJUe7
+         CKrchZq4JLj+I/kJzSMz26gAm9NstbA2W607JKLoXIqTtY/dUmM7mtQ9vgdSIUuXcW68
+         +s5tqWfgOUnOiMx7wW5o+ZDaQHvzjtUdA7y3E+tXNLWIkJRCLZQytq91rlAkyOJxYBZK
+         ulJw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773111385; x=1773716185;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-gg:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=IPeNaI7yJ6rN7QDAg6cmHZUEk/n4Ga/qldWclJyzUAo=;
+        b=NImi3wfbCn91wQ3qhvedaXy2LLCjb8zBrrOjVQg2WEJo6UOGlu7i77kWrYRT9d+N+Z
+         vC9UqcDXtukZlzdBJ2+WjdSNmAqaRxZt/RPVumYOsUmJSZNwmH7YVPI4G+s/ERE34HKD
+         FP6WhrHsvgqHMW1+rtt3kv1n4huLtXHh/v/q+MoV1NbtXe7lhxan64lyimYC0DvqB0yx
+         P3vBjnggx5sZDie839Hc1Y2X3rf/MaNxD3K+3V2LAOQLxpsc5JzCu56dNtcMUFCajxTZ
+         Ap9v914WYNwkQDSMIAsp0ByULyN3NqSwSzALHKoQCtQ738/wmuHiSf7xI8LknvRMXppE
+         giKw==
+X-Forwarded-Encrypted: i=1; AJvYcCW7cI7LRv6KSs76HiSsyKiodkIbBDJaajRPDwNqQt6fhFjCZHFxwkpv2pgErm0wyD1L//VBvMUMNw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyzHRrdsdXApUcA08nfxKs19wlpFw0D0ae1ratP74YvIXAHqOuI
+	v/vdF8r0EyDXJZRj1OyBZfQR4acjzS31NPz5+oj0t5e5aAuX3JsRUNycz/glokdGdTo=
+X-Gm-Gg: ATEYQzxFnmdYRMWfnu3gWoEtvn+VDEVotENJU92v7YqJ8ugtcNwNYNvSh2alhQYfRlG
+	QBisLLeJGMmuy9U+Tf/8cjdeCKcGOZvkph6C8t6nVhEqw4KzKGVo2Qs9e+ocMZG0jBzl4jenvpv
+	26miQ+arX3oVeqT/EEOLn/UjbT2BjhJIM6+39rJT9rkN3bzpq5M0Oi1VYbQkBqFA4RV6pl8tKnj
+	bbwlSr593eM7dN8dCM5uQDnJqOpdrlc8LXrLFXpPGSMkEZC09gA5qF26/mDr1fjVyIttm0awwg5
+	nqO5TBjQD+25VVqaaxNqtCUTu19r+6qULgzbdeckkVeFti5jbhzgBhRLVQJVHXZYmpYMIzWU3XI
+	Zlks4xECpCZn0fKYvKCgGKibJrvdrzONI29Q8VSk8VvunX4EhXksLk7oTeYG1OeT3FLtHxn/a+5
+	HkfzER2iO4mUjYU/EDBfnwygsu26KgIsLB9OD+HJSxT2YJ1IU8bFMkcTnAAi2T/bLbq96eccE9R
+	OEikZIFRys7JVy9
+X-Received: by 2002:a05:600c:a0d:b0:485:1878:7b8c with SMTP id 5b1f17b1804b1-4852695b6fcmr215782145e9.18.1773111384919;
+        Mon, 09 Mar 2026 19:56:24 -0700 (PDT)
+Received: from localhost ([2a02:c7c:5e34:8000:7b62:c11f:db20:9ab])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48541b8d4easm38369165e9.15.2026.03.09.19.56.23
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 09 Mar 2026 19:56:24 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/2] cpufreq: governor: Apply limits with target_freq
- instead of policy->cur
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki"
-	<rafael@kernel.org>
-CC: <mingo@redhat.com>, <peterz@infradead.org>, <juri.lelli@redhat.com>,
-	<vincent.guittot@linaro.org>, <dietmar.eggemann@arm.com>,
-	<rostedt@goodmis.org>, <bsegall@google.com>, <mgorman@suse.de>,
-	<vschneid@redhat.com>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linuxarm@huawei.com>,
-	<jonathan.cameron@huawei.com>, <zhanjie9@hisilicon.com>,
-	<lihuisong@huawei.com>, <yubowen8@huawei.com>, <zhangpengjie2@huawei.com>,
-	<wangzhi12@huawei.com>, <linhongye@h-partners.com>
-References: <20260210115458.3493646-1-zhenglifeng1@huawei.com>
- <javy6tllyw7pcnri3s6s2gnpv3kewe2b4zkyoz3vj3jzmfu6c5@nikhlydadvcc>
- <CAJZ5v0h1FHH0Cvn0CQ8gMk9Zzt=bcA-RUfya4hYH4Em3nDzm7w@mail.gmail.com>
-From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
-In-Reply-To: <CAJZ5v0h1FHH0Cvn0CQ8gMk9Zzt=bcA-RUfya4hYH4Em3nDzm7w@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
- kwepemf200001.china.huawei.com (7.202.181.227)
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 10 Mar 2026 02:56:23 +0000
+Message-Id: <DGYRJ0FUBJIB.3HUS30VW280A4@linaro.org>
+Cc: <linux-samsung-soc@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+ <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-kernel@vger.kernel.org>, "Bartlomiej Zolnierkiewicz"
+ <bzolnier@gmail.com>, "Krzysztof Kozlowski" <krzk@kernel.org>, "Rafael J.
+ Wysocki" <rafael@kernel.org>, "Daniel Lezcano" <daniel.lezcano@linaro.org>,
+ "Zhang Rui" <rui.zhang@intel.com>, "Lukasz Luba" <lukasz.luba@arm.com>,
+ "Rob Herring" <robh@kernel.org>, "Conor Dooley" <conor+dt@kernel.org>,
+ "Alim Akhtar" <alim.akhtar@samsung.com>, "Sam Protsenko"
+ <semen.protsenko@linaro.org>, "Anand Moon" <linux.amoon@gmail.com>, "Marek
+ Szyprowski" <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v4 0/7] Add initial Exynos850 support to the thermal
+ driver
+From: "Alexey Klimov" <alexey.klimov@linaro.org>
+To: "Mateusz Majewski" <m.majewski2@samsung.com>
+X-Mailer: aerc 0.20.0
+References: <CGME20260303090219eucas1p1711b5b0f0e8ae56bc421ad8f6e5bf365@eucas1p1.samsung.com> <20260303090211.673143-1-m.majewski2@samsung.com>
+In-Reply-To: <20260303090211.673143-1-m.majewski2@samsung.com>
 
-On 3/9/2026 8:32 PM, Rafael J. Wysocki wrote:
-> On Mon, Mar 9, 2026 at 9:27 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>
->> On 10-02-26, 19:54, Lifeng Zheng wrote:
->>> The motivation for this patchset cames from a test on our platform:
->>>
->>> With conservative governor and some pressure on CPU, the frequency rapidly
->>> reach the max supported frequency, such as 2GHz.
->>>
->>> Later, some frequency division strategies on our platform were triggered
->>> and the actual frequency become 500MHz -- 1/4 of the OS distribution
->>> frequency.
->>>
->>> At that time, if someone excecutes 'cat cpuinfo_cur_freq', the actual
->>> frequency will become 250MHz -- 1/4 of the min supported frequency.
->>>
->>> After the platform recovering from the frequency division, the frequency
->>> will stay on 1GHz, until the pressure disappear.
->>>
->>> The reason this happens is that in cpufreq_verify_current_freq(), if
->>> policy->cur != new_freq, policy->update will be queued, which will
->>> ultimately lead to a call to cpufreq_policy_apply_limits(), and update the
->>> target frequency to policy->min. And then in cs_dbs_update(), since the
->>> pressure never vanish, it will always hit the following branches:
->>>
->>>       if (load > dbs_data->up_threshold) {
->>>               dbs_info->down_skip = 0;
->>>
->>>               /* if we are already at full speed then break out early */
->>>               if (requested_freq == policy->max)
->>>                       goto out;
->>>
->>> Therefore, the target frequency will always remain at the lowest frequency.
->>>
->>> The branching conditions in cs_dbs_update() may not be strict enough, but
->>> the root cause of this problem is that the target frequency was updated
->>> when querying cpuinfo_cur_freq. For ondemand and schedutil governor,
->>> although the frequency will not always remain at the lowest level without
->>> rising, will still be min_freq in a short period of time when the query
->>> action occurs.
->>>
->>> Using the freq requested by the governor to decide whether to update the
->>> target frequency is more reasonable in cpufreq_policy_apply_limits().
->>
->> I think I understand the problem now. We are tracking the current
->> frequency state via two cached values, policy->cur and requested_freq
->> and a mismatch (because of your hardware specific quirks/features)
->> between them is making things tricky.
->>
->> Rafael, will this break anything we can think about ?
-> 
-> I can't recall, but the new code is simpler, so unless anyone has a
-> particular heartburn with it, go for it.
+Hello Mateusz,
 
-Hi Viresh,
+Sorry for delayed response too.
 
-Sorry, I don't think the new code can totally solve the problem I met.
+On Tue Mar 3, 2026 at 9:02 AM GMT, Mateusz Majewski wrote:
+> Hello and sorry for missing your mail, thankfully Marek pointed it out
+> to me.
+>
+>> I applied the whole series locally, it applies fine on 6.19 but I didn't
+>> check linux-next; and tested it on Exynos850 E850-96 board with the
+>> following DT node:
+>>=20
+>> tmuctrl_0: tmu@10070000 {
+>>     compatible =3D "samsung,exynos850-tmu";
+>>     reg =3D <0x10070000 0x800>;
+>>     interrupts =3D <GIC_SPI 226 IRQ_TYPE_LEVEL_HIGH>;
+>>     clocks =3D <&cmu_peri CLK_GOUT_BUSIF_TMU_PCLK>;
+>>     clock-names =3D "tmu_apbif";
+>>     #thermal-sensor-cells =3D <0>;
+>> };
+>>=20
+>> and thermal zones as you mentioned way back. It works just fine.
+>> Temp goes up to 48 C with a loaded CPUs and settles at 36-37C when idle.
+>>=20
+>> So for the whole series:
+>> Tested-by: Alexey Klimov <alexey.klimov@linaro.org>
+>
+> Thank you!
+>
+>> However, do you have plans to update it or re-submit?
+>> Or any other plans working on it?
+>
+> Honestly not sure. If any other patches are merged that conflict with
+> this series, I definitely can resolve the commits (for now it applies
+> just fine to next-20260227, though I haven't compiled the result yet).
+> Correct me if I am wrong, but I don't recall anything to be done in this
+> series otherwise. If there is interest in this series, I can retest this
+> on the other boards and re-submit this later this week.
 
-In the example I showed above, policy->cur will become 1GHz when someone
-query cpuinfo_cur_freq, because the real freq is 500MHz. After that,
-conservative governor has to take some time to get to the max freq again
-step by step in your code. This means the real freq will shake whenever
-cpuinfo_cur_freq is queried. This situation also occurs with ondemand and
-schedutil governor, but they don't need to increase the frequency step by
-step.
+So, I bumped into the same issue you described in your other email.
+Other sensors seems to be not initialised and always return some weird
+temp (minus 29 or smth like that). Only first sensors works.
 
-I still believe using policy->cur to update target in
-cpufreq_policy_apply_limits() is not very reasonable, because OS never
-knows what the platform will do to affect the final frequency. OS should
-determine the new target frequency based on the previous decision.
+I initially started to look at this after enabling idle states on E850-96
+(they work with only some un-upstreamable change). Having at least one
+sensor is better than nothing.
 
-> 
->> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
->> index e0e847764511..c69577e4f941 100644
->> --- a/drivers/cpufreq/cpufreq_conservative.c
->> +++ b/drivers/cpufreq/cpufreq_conservative.c
->> @@ -14,7 +14,6 @@
->>  struct cs_policy_dbs_info {
->>         struct policy_dbs_info policy_dbs;
->>         unsigned int down_skip;
->> -       unsigned int requested_freq;
->>  };
->>
->>  static inline struct cs_policy_dbs_info *to_dbs_info(struct policy_dbs_info *policy_dbs)
->> @@ -59,10 +58,10 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
->>  {
->>         struct policy_dbs_info *policy_dbs = policy->governor_data;
->>         struct cs_policy_dbs_info *dbs_info = to_dbs_info(policy_dbs);
->> -       unsigned int requested_freq = dbs_info->requested_freq;
->>         struct dbs_data *dbs_data = policy_dbs->dbs_data;
->>         struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
->>         unsigned int load = dbs_update(policy);
->> +       unsigned int requested_freq = policy->cur;
->>         unsigned int freq_step;
->>
->>         /*
->> @@ -72,16 +71,6 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
->>         if (cs_tuners->freq_step == 0)
->>                 goto out;
->>
->> -       /*
->> -        * If requested_freq is out of range, it is likely that the limits
->> -        * changed in the meantime, so fall back to current frequency in that
->> -        * case.
->> -        */
->> -       if (requested_freq > policy->max || requested_freq < policy->min) {
->> -               requested_freq = policy->cur;
->> -               dbs_info->requested_freq = requested_freq;
->> -       }
->> -
->>         freq_step = get_freq_step(cs_tuners, policy);
->>
->>         /*
->> @@ -113,7 +102,6 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
->>
->>                 __cpufreq_driver_target(policy, requested_freq,
->>                                         CPUFREQ_RELATION_HE);
->> -               dbs_info->requested_freq = requested_freq;
->>                 goto out;
->>         }
->>
->> @@ -137,7 +125,6 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
->>
->>                 __cpufreq_driver_target(policy, requested_freq,
->>                                         CPUFREQ_RELATION_LE);
->> -               dbs_info->requested_freq = requested_freq;
->>         }
->>
->>   out:
->> @@ -310,7 +297,6 @@ static void cs_start(struct cpufreq_policy *policy)
->>         struct cs_policy_dbs_info *dbs_info = to_dbs_info(policy->governor_data);
->>
->>         dbs_info->down_skip = 0;
->> -       dbs_info->requested_freq = policy->cur;
->>  }
->>
->>  static struct dbs_governor cs_governor = {
->>
->> -------------------------8<-------------------------
->>
->> This always pick the next freq based on policy->cur instead of the
->> real last request. The two can differ if:
->> - the hardware plays with current frequency, as is the case here.
->> - or the limits change and that changes the current frequency (in
->>   which case we will be at policy->min/max anyway).
->>
->> --
->> viresh
-> 
+I am looking at enabling ACPM thermal thingy but so far I see similar
+issue that temp of all sensors is reported as 10 C regardless via ACPM.
 
+Having said that I am not going to oppose this series moving forward if
+you wish.
+
+Thank you.
+
+Best regards,
+Alexey
