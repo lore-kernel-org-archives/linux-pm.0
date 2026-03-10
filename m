@@ -1,174 +1,245 @@
-Received: from mail-ej1-f46.google.com (mail-ej1-f46.google.com [209.85.218.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.web.de (mout.web.de [212.227.17.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F22830E836
-	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 15:14:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5A743A7855;
+	Tue, 10 Mar 2026 15:47:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773155649; cv=none; b=nZX8KhnXVsqWTVwzlO7WFO3S4BXvaF410+uVf7Xi4+W5WOdLnPIYd+TGUh50lmt7h01A8HrTJHET1zmDDOAq3xd3urTRMB+UwfoS0Zzs6JOJU9SofPW8zzhovSAwHqIQiPdCUK+BV2ldNvjIu5v6E+ppTUl6ViD2YkZpVdmqhYk=
+	t=1773157673; cv=none; b=DlxFjJ4y2tA3BLQQzXRINZ7hR9advuDjTcK2YuZY1s21SghLya3PSHkzW5B1rcEIrcOJvM8M43OwswZSVZXO/h2sTPO5/tP3bacCWDRkf6fTZt1xivbhU+r+mWN/fv8mZDRmKf1zFQu3fBwOlYR6hiEr9FAwcQXj3/3M5q2RbPo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773155649; c=relaxed/simple;
-	bh=DnzFg0mcg7DWKinkKUIecJ/4ipRlMZ4tbWqodWV0Qe8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=W84XOXw31nifCns2vmY70lBaWBWEuw1RNC/K6hYYYARwcwCjKur6DhHa/kuKvXrMS4bIBnhW0UADoY9KtfxfHsJX4x7AMjXWIgs7S/gk/CnqzVlIFbw8jjOmtpMFq3H+Y2TWNWDBMQELqTtCnGzjmyjP8mdM4z8tTziIfOFWMrI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io; spf=pass smtp.mailfrom=layalina.io; dkim=pass (2048-bit key) header.d=layalina-io.20230601.gappssmtp.com header.i=@layalina-io.20230601.gappssmtp.com header.b=2CEUx+uR; arc=none smtp.client-ip=209.85.218.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=layalina.io
+	s=arc-20240116; t=1773157673; c=relaxed/simple;
+	bh=nIfgenJGac4O6CqM8mWCtdayOts9dS1D2FhHmYYRcn4=;
+	h=Message-ID:Date:MIME-Version:To:Cc:References:Subject:From:
+	 In-Reply-To:Content-Type; b=VmRzxWdtuxNUzcu8Umc2r6Uugq/ZVDmaj8JBIGmk+Ej5oBT4gwyYtVSXybj5bv6fzSXl/iURGHDousF5kwWAWMv22/4RhcZgP3/P0Se+dYOZB+irCRKbMCUUAZ3mSTZDCGaGKu4PXV9su4KRCFQgGnUXPTOkw9vBdv/J1M6yD6I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=h7K0qFC8; arc=none smtp.client-ip=212.227.17.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=layalina-io.20230601.gappssmtp.com header.i=@layalina-io.20230601.gappssmtp.com header.b="2CEUx+uR"
-Received: by mail-ej1-f46.google.com with SMTP id a640c23a62f3a-b932fe2e1a7so1690515766b.1
-        for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 08:14:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20230601.gappssmtp.com; s=20230601; t=1773155646; x=1773760446; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=I6YPqDvPQifSPNHeTQ6UX3rfZJZJOabaUyayiVVNw7c=;
-        b=2CEUx+uRM6ViQq6lTBcmaw7h/RHtLpcjhgrxpdAfo8XTWUfZ9UC6FRZ4l8W9ScHlMb
-         eiF47B8bQzcLgVfEsx5a3PHk52z6RnPhvjVmL7kqr8v7oIpZNJ0/DC6n2OPo7iXajTZq
-         gf49jMaqqrvFw6Ac6QuJNy2wZ/sABd2kyT34L5YspZwlQOGxIcPwZZX2yXh8a1/Qkr6C
-         9ftbGwNVF6WtoGW2tm7ONBFQqpUoi5OE3dTZHwZjpSZH+FMhcWT1d7SPWwPP1CXRiJRl
-         8voAZMWdgzMQed7JJ+XuSvudbUL8QdLzjtiPoWPJ3NhZp/uQcadO1ffYTDJyTAVnPXte
-         f//g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773155646; x=1773760446;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=I6YPqDvPQifSPNHeTQ6UX3rfZJZJOabaUyayiVVNw7c=;
-        b=sYgM1lxObDwZfNtspTQqPbCJ5XkCtjaP1guntAClVjj2g+dkijbo8Qwz/f6RCmn4Ed
-         d2027Xz7qmQz/LcNmWzOXXI4XFEaVebgzBc5TeifJkpNBZGCxok3GhD8JVtJqFLaaRJi
-         KVI4Hz2COVTl0ctySNqtviLQex/BqiujP5WiyxxFOrRp674viq+MGTWHQWqhvQYDJNYc
-         Fy3WMtkhBct3eF1kqOlij5ICrpB8GV0M2OMdCjHISySXzWQ1MSjLRpVaTPIPPzLyO3sz
-         8P6MtZnDSrXZgJj0AmI7bOAkhZNLrWFlmYC6xUlYJbB5bP7vvnZcHh2QUb85I86JTq1x
-         B0aw==
-X-Forwarded-Encrypted: i=1; AJvYcCVzP2GaR+qdAg6fvEEXqN2kh3Kr1Bdji4gUYTK3LitFFJibtyZ6kbZ50uW8Z+6pejnAfXCjKuYwKg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzBaECBCYmRsDk7ZhohZaJ1OyMcIlJc4MR03yq6+oTbYFgWLj4w
-	inzkvx8fPX1jcI0cSN194loNLXUbiMpdAYvfEWQY22hK77bfLCvFuqz6tu3uWI3vhHQ=
-X-Gm-Gg: ATEYQzy1psLGTrZtnsz90eYISeVl8N0BFiqf4gIy9QX+gswmv3mc3qEg49idaZekXyX
-	+riMtddO0gFAVDAw39KrrbMduivRMIMXGlED7cvJWcMFNuoc/JXwkad4IS81xLEU/FoVaoHNaP6
-	jErfTZVfnw+mjhSql0Xfr1uDemRLMCu9hlXdF+YSK1B87q1mfPov8Koe+nHVilIs/Vy8uWNIt3R
-	448FOWgbsz2Zxvh6ZdGx3mKTs70+Uz6H46vYwgScW6YbqpXHFhaR2OFW/pF+846q7qmQxkGjeME
-	LoyeR3G0M+UwMzymA/cwRusbAqkzrZhPwxUjZvzaDxGCwwLoFdKlFEKIuAsxeVbJQoZTnRLxllh
-	7sfxQAj4ALkuTvBcJ2PqsD3HJ3PSPNqbTmHrfS9WYyL6WcOJuBeW/bcJpDgLyn19rJc8R9+so71
-	bq9y5qJ7k6hkZ7jrlZ
-X-Received: by 2002:a17:907:96ac:b0:b8f:9fe5:fd62 with SMTP id a640c23a62f3a-b942e027afcmr793960066b.42.1773155645650;
-        Tue, 10 Mar 2026 08:14:05 -0700 (PDT)
-Received: from airbuntu ([146.70.179.26])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b942f15d51fsm501611366b.53.2026.03.10.08.14.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Mar 2026 08:14:05 -0700 (PDT)
-Date: Tue, 10 Mar 2026 15:14:01 +0000
-From: Qais Yousef <qyousef@layalina.io>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Christian Loehle <christian.loehle@arm.com>,
-	Thomas Gleixner <tglx@kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Frederic Weisbecker <frederic@kernel.org>,
-	Linux PM <linux-pm@vger.kernel.org>
-Subject: Re: [patch 2/2] sched/idle: Make default_idle_call() NOHZ aware
-Message-ID: <20260310151401.r4ty2scfyyxxnyhl@airbuntu>
-References: <20260301191959.406218221@kernel.org>
- <6250711.lOV4Wx5bFT@rafael.j.wysocki>
- <CAJZ5v0jb7wJFQEfP_-JRv4mwh3qveq+VPoy8k9dmtmigoSyKhg@mail.gmail.com>
- <2409653.ElGaqSPkdT@rafael.j.wysocki>
- <20260310035406.xnu3nlqp4ldshxww@airbuntu>
- <f11fc45d-314a-4e2d-bcd1-9d8b1a49c87a@arm.com>
- <20260310150347.ji2fdpdvw6txspc4@airbuntu>
- <CAJZ5v0gDxG5XoV6P+be84gfFjqLc2pmuJJpbtZOY=2_fOpQbwg@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="h7K0qFC8"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
+	s=s29768273; t=1773157662; x=1773762462; i=markus.elfring@web.de;
+	bh=ViIdeWt5br4rBsrGxHUMEkJDkD/ERSvSv/UV5SzvttY=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:References:
+	 Subject:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
+	 cc:content-transfer-encoding:content-type:date:from:message-id:
+	 mime-version:reply-to:subject:to;
+	b=h7K0qFC8lui0M3aEG2yhHOptmzLeK24S79cZCRktla9iVPsdh7MMZY9IQ+0fNsjy
+	 1Jmj8tPDjUYGV0N31jChpPIbrmEGAAiLmOFKWubyE3NTttjDE8UYZYzPrHWHwqRbT
+	 ZmJLoNHR6+mwIgea1XMDsroKD1VkpdbtDpYP5RQOlLeXbFM1sGNyCjcqO4VGv6oH0
+	 or7WNvOJCD7wct+ITkk6hEn2pz09hvl0HnH1IXkz/NhmxM4+GPG6PRDdXRWJwhNqD
+	 E/CyuUCmqvUAopwe+bMtAzI3unk/5Tnu7dsxuDhsN1+B/BFgi6IvYkOUfIHgIX1fz
+	 IDA+/KUXvW7fGiboiQ==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from client.hidden.invalid by smtp.web.de (mrweb106
+ [213.165.67.124]) with ESMTPSA (Nemesis) id 1N5lj7-1vYM6w3zfn-012TrV; Tue, 10
+ Mar 2026 16:41:18 +0100
+Message-ID: <924acf71-45df-4ea2-9bbd-b6f5ff262b2b@web.de>
+Date: Tue, 10 Mar 2026 16:41:12 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAJZ5v0gDxG5XoV6P+be84gfFjqLc2pmuJJpbtZOY=2_fOpQbwg@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
+To: Philipp Hahn <phahn-oss@avm.de>, cocci@inria.fr,
+ Julia Lawall <Julia.Lawall@inria.fr>
+Cc: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
+ bpf@vger.kernel.org, ceph-devel@vger.kernel.org, dm-devel@lists.linux.dev,
+ dri-devel@lists.freedesktop.org, gfs2@lists.linux.dev,
+ intel-gfx@lists.freedesktop.org, intel-wired-lan@lists.osuosl.org,
+ iommu@lists.linux.dev, kvm@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org,
+ linux-bluetooth@vger.kernel.org, linux-btrfs@vger.kernel.org,
+ linux-cifs@vger.kernel.org, linux-clk@vger.kernel.org,
+ linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-gpio@vger.kernel.org,
+ linux-hyperv@vger.kernel.org, linux-input@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org,
+ linux-media@vger.kernel.org, linux-mips@vger.kernel.org, linux-mm@kvack.org,
+ linux-modules@vger.kernel.org, linux-mtd@lists.infradead.org,
+ linux-nfs@vger.kernel.org, linux-omap@vger.kernel.org,
+ linux-phy@lists.infradead.org, linux-pm@vger.kernel.org,
+ linux-rockchip@lists.infradead.org, linux-s390@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org,
+ linux-security-module@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-sound@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com,
+ linux-trace-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+ nicolas.palix@imag.fr, ntfs3@lists.linux.dev,
+ samba-technical@lists.samba.org, sched-ext@lists.linux.dev,
+ target-devel@vger.kernel.org, tipc-discussion@lists.sourceforge.net,
+ v9fs@lists.linux.dev
+References: <20260310-b4-is_err_or_null-v1-1-bd63b656022d@avm.de>
+Subject: Re: [PATCH 01/61] Coccinelle: Prefer IS_ERR_OR_NULL over manual NULL
+ check
+Content-Language: en-GB, de-DE
+From: Markus Elfring <Markus.Elfring@web.de>
+In-Reply-To: <20260310-b4-is_err_or_null-v1-1-bd63b656022d@avm.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:I49ufsxpBKiFBze+2Qm04f+elx94DZSymOaZcQTAnyd9Dy18WSZ
+ l5PlqGBdCeQJnqXYHB7LM8JEThQzWaqt46DhF3JOnbIEKCtwYJeZnzJMAXhMu3h78zedo+b
+ 2MDr9yfDF5xiOPbOsnoVg9HvEpZouoV7eAA1AasOX+/8mAaWp7eICgl3FZXuUGMMgTPEUmo
+ 9zEXJmftCILFnPJ5epBUQ==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:04WXpfHKV24=;XM8484Tl0Gel7LmfPFVAhD+GUiz
+ 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
+ WH56U++o=
 
-On 03/10/26 16:09, Rafael J. Wysocki wrote:
-> On Tue, Mar 10, 2026 at 4:03 PM Qais Yousef <qyousef@layalina.io> wrote:
-> >
-> > On 03/10/26 09:18, Christian Loehle wrote:
-> > > On 3/10/26 03:54, Qais Yousef wrote:
-> > > > On 03/07/26 17:25, Rafael J. Wysocki wrote:
-> > > >
-> > > >> In the meantime I realized that if the .select() governor
-> > > >> callback is skipped, its .reflect() callback should be skipped
-> > > >> either, so I've posted this:
-> > > >>
-> > > >> https://lkml.org/lkml/2026/3/7/569
-> > > >>
-> > > >> and here's a fixed version of the last patch on top of the above (for
-> > > >> completeness):
-> > > >>
-> > > >> ---
-> > > >>  kernel/sched/idle.c |   25 ++++++++++++++++---------
-> > > >>  1 file changed, 16 insertions(+), 9 deletions(-)
-> > > >>
-> > > >> --- a/kernel/sched/idle.c
-> > > >> +++ b/kernel/sched/idle.c
-> > > >> @@ -161,6 +161,14 @@ static int call_cpuidle(struct cpuidle_d
-> > > >>    return cpuidle_enter(drv, dev, next_state);
-> > > >>  }
-> > > >>
-> > > >> +static void idle_call_stop_or_retain_tick(bool stop_tick)
-> > > >> +{
-> > > >> +  if (stop_tick || tick_nohz_tick_stopped())
-> > > >> +          tick_nohz_idle_stop_tick();
-> > > >> +  else
-> > > >> +          tick_nohz_idle_retain_tick();
-> > > >> +}
-> > > >> +
-> > > >>  /**
-> > > >>   * cpuidle_idle_call - the main idle function
-> > > >>   *
-> > > >> @@ -170,7 +178,7 @@ static int call_cpuidle(struct cpuidle_d
-> > > >>   * set, and it returns with polling set.  If it ever stops polling, it
-> > > >>   * must clear the polling bit.
-> > > >>   */
-> > > >> -static void cpuidle_idle_call(void)
-> > > >> +static void cpuidle_idle_call(bool stop_tick)
-> > > >>  {
-> > > >>    struct cpuidle_device *dev = cpuidle_get_device();
-> > > >>    struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
-> > > >> @@ -186,7 +194,7 @@ static void cpuidle_idle_call(void)
-> > > >>    }
-> > > >>
-> > > >>    if (cpuidle_not_available(drv, dev)) {
-> > > >> -          tick_nohz_idle_stop_tick();
-> > > >> +          idle_call_stop_or_retain_tick(stop_tick);
-> > > >>
-> > > >>            default_idle_call();
-> > > >>            goto exit_idle;
-> > > >> @@ -222,17 +230,14 @@ static void cpuidle_idle_call(void)
-> > > >>            next_state = cpuidle_find_deepest_state(drv, dev, max_latency_ns);
-> > > >>            call_cpuidle(drv, dev, next_state);
-> > > >>    } else if (drv->state_count > 1) {
-> > > >> -          bool stop_tick = true;
-> > > >> +          stop_tick = true;
-> > > >
-> > > > Silly question, but wouldn't this benefit the normal path too to delay for one
-> > > > tick? This will only matter for the cases where the governor doesn't explicitly
-> > > > set stop_tick to either true or false - which I am not sure what they are :)
-> > > >
-> > > Right now the governors will always set stop_tick explicitly (and overriding
-> > > that might confuse the governor-internal state).
-> >
-> > So we can drop this hunk then
-> 
-> Not really.
-> 
-> The governors expect that stop_tick is true by default and they clear
-> it if needed/desired.  They may be confused if it is false to start
-> with (theoretically, a governor may select an idle state with target
-> residency beyond the tick period length then which won't make sense).
+> Find and convert uses of IS_ERR() plus NULL check to IS_ERR_OR_NULL().
+=E2=80=A6
 
-I see, thanks for the explanation. It could be me, but if you think a comment
-is worthwhile to document this expectation, would be nice to have.
+Can this information trigger any more consequences on corresponding summar=
+y phrases?
 
-LGTM anyway.
 
-Cheers
+=E2=80=A6
+> +++ b/scripts/coccinelle/api/is_err_or_null.cocci
+> @@ -0,0 +1,125 @@
+=E2=80=A6
+> +virtual patch
+> +virtual report
+> +virtual org
+
+How will interests evolve further for the support of the operation mode =
+=E2=80=9Ccontext=E2=80=9D?
+
+
+> +@p1 depends on patch@
+> +expression E;
+> +@@
+> +(
+> +-	E !=3D NULL && !IS_ERR(E)
+> ++	!IS_ERR_OR_NULL(E)
+> +|
+> +-	E =3D=3D NULL || IS_ERR(E)
+> ++	IS_ERR_OR_NULL(E)
+> +|
+> +-	!IS_ERR(E) && E !=3D NULL
+> ++	!IS_ERR_OR_NULL(E)
+> +|
+> +-	IS_ERR(E) || E =3D=3D NULL
+> ++	IS_ERR_OR_NULL(E)
+> +)
+
+Did you eventually check probabilities for the occurrence of mentioned cas=
+e distinctions?
+
+
+> +@p2 depends on patch@
+=E2=80=A6
+
+I suggest to reconsider =E2=80=9Cside effects=E2=80=9D according to the sp=
+litting of these SmPL rules
+once more.
+
+
+=E2=80=A6
+> +@r2 depends on report || org@
+> +identifier I;
+> +expression E;
+> +position p;
+> +@@
+> +(
+> +*	(I =3D E) !=3D NULL && ... && !IS_ERR@p(I)
+> +|
+> +*	(I =3D E) =3D=3D NULL || ... || IS_ERR@p(I)
+> +)
+
+I doubt that the usage of SmPL asterisks fits to these two operation modes=
+.
+
+
+=E2=80=A6
+> +@p5 depends on patch disable unlikely @
+> +expression E;
+> +@@
+> +-\( likely \| unlikely \)(
+> +(
+> + IS_ERR_OR_NULL(E)
+> +|
+> + !IS_ERR_OR_NULL(E)
+> +)
+> +-)
+
+* Would it be nicer to move such SmPL code to the end of the patch rule li=
+sting?
+
+* Can this source code search pattern matter also for further operation mo=
+des?
+
+
+Regards,
+Markus
