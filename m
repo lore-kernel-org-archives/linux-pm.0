@@ -1,146 +1,140 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qk1-f179.google.com (mail-qk1-f179.google.com [209.85.222.179])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1922730F7FA
-	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 15:09:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7F872D948D
+	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 15:09:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773155358; cv=none; b=C3Hu5dnW4CuaUx8wP2a/gOW7nF0k1otaoCFTWqJyBUeYdaMA+WAngbk8ivQkWUli2xEp7grU0dseM3emwtAhN5t+tgXQM0Yh8AxIiafnYgIyeI0Ijt3dSZKdnM5hVkUNZi6A7/1Z7q0NzIGswELrwXb5pNP01oRB04BTNrEZ8XU=
+	t=1773155369; cv=none; b=l6oNIT6NW4lyJnqdpZEvqfMSbEovPxR0ERHPL4rZZz+uyLdhLlLfQYb8yrWJhVXQL0xTcwfKpvmX6TyR5rvJqHoORp0faUqHkC9xPXdbqP1j0V4hXKF4tag3E10gdLM6hEt/13FHq/efEXSYl+pAMtohBLkuBGXhd56NL5WY3iU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773155358; c=relaxed/simple;
-	bh=XWsG/yW6pBBfo8YMNyyup5gw2NfDh7ISoPoFsLY3kUk=;
+	s=arc-20240116; t=1773155369; c=relaxed/simple;
+	bh=QEW3lhhJANPdrCVBmAIqH1dXUDPD23689ylzZ5dnJco=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=myV8TxkrA4J2WqhwhYRINXeDmXTCTuNd1xPp6/rWz/td0UXoEm9Eq11RUL/N1bFKFmVMQKK5i67Wc3dPBBSktPf8kLhjkiu4mG933ymkQSP9y6zM8LKEbd+Q+U9SCYnhGngWxsseL0m8uPX/BMe2HxDr7/k1MbMRypzelaEgIN8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Mkhms5pN; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Mkhms5pN"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C8446C2BC9E
-	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 15:09:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773155357;
-	bh=XWsG/yW6pBBfo8YMNyyup5gw2NfDh7ISoPoFsLY3kUk=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=Mkhms5pN2S0joMeA0PTqCl2UlP0JxMfkd3u9f6vLxLLeF1kcDhhctT4XZlLNAQMqC
-	 F8QMRvrO24aE3gCLuwBzZedSXJZoJ4R0NldNQQQ2aHptpRpQs32xKlxPLRZQo9KQYC
-	 1gsw1VMTh5jSjeuIOE2czWigi6zXFPRP9v5vM4uA4ZUAlA2+Zt1ziwnkwqmRESYJfU
-	 Ot2JOf+kWSmkyHmogWY7+4gqElYu5vt2mCtcubvn6IAdWW6DdnO0iCKRMXc4qF2Nc3
-	 DfkN5E8ph0arfNA9iZuP+KEJ0vljZG2BKSayChXugamnmCSLtjt2ib7Zb4uw3BUTkE
-	 VxKhpWy41G4eA==
-Received: by mail-oo1-f50.google.com with SMTP id 006d021491bc7-67ba5921b84so1566721eaf.3
-        for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 08:09:17 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCW6pYkZe0lbs8W5EEajD/f1wVMp/mAjMQHWlDKxRLYs0KXMunWuzuCLQcvIvGX3+xMWPHS5+bwfmw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YycpG16XLQkG/GtXpiy+T25okGVw4P6kUfeq4hlFmfY/tI0zZrn
-	4zK0RtwfUIHLcs56kFrDu95SGAYZFiHhamGS7w4Ex1lN7fX2+JIS1CylkK4CzNs0aKLWQcojNnu
-	o6qaeqmlDB+K8/4rUuLWnIKaHS8tFqOU=
-X-Received: by 2002:a05:6820:c82:b0:67b:aec3:f4a5 with SMTP id
- 006d021491bc7-67baec3f7c0mr6068166eaf.0.1773155356899; Tue, 10 Mar 2026
- 08:09:16 -0700 (PDT)
+	 To:Cc:Content-Type; b=OxZw4aIK60rxUUgOeIjwljrFRsNzPddpmTzP/BVMArPmtT2hOeFvqjw4o4+pWYF0BERGnOUGMa9RFVo+pwcryGcu/ksQEKnA6eMmmFDNeQfvZ002DYZdTOznYiUUilsHePCLXPfCxEzQ+YLz7S9tZREM+e+XoSs9delMgxK7R1c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.222.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-qk1-f179.google.com with SMTP id af79cd13be357-8cd80f56b27so285449785a.1
+        for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 08:09:28 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773155368; x=1773760168;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=Ru18n38/qbgrYN5XhGLEd0K3IukQ/mw6D37X8x0z/qo=;
+        b=DcrWEIj0vdLSnmUAYZ8iUMhIycNF+l/HV/NZ5zN+yZulwPmnH1MWBJRoWAsjo3RQWH
+         eN91aU4JHLDIGLyhzhWUPpOX81k/k5VjmbBmt1zDmeRXyCMFgQP60cykEeW4O9UmBXKJ
+         mLoFGVBJJcLfgDG9fk9IJtghecvGG5OjC4d7EAmTK3laNiVmohjJqBYkrQUTackYEa44
+         XHzZBmYNpk6yGu1jy52nr3fTbH53BwF6cAXf//nm1+khFdkmhy3DesC6qjyTVcZFIEvw
+         tH4se9TS1et+OfQJ1nBjonuc4sK9U/SpAzoLVTF7WSWzeNLcBYr1W3VSnuf8VKig1Ixr
+         AfEg==
+X-Forwarded-Encrypted: i=1; AJvYcCVGWLl6n9kCXoEOfAvteIuSytxaeD7lEcV+Bt/zeL6OABV2wOS3XVk2FsdYvKAY5QuDcY1d8HOqfA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwXE26lrnCJ4P1Isl8OEaEXY0Fs/OfWeO8hIL/4Eu17NLwuLOEJ
+	pKMIiIyJraxOlvmbFTQ21+EcIZwNSGAMbDyNJkRySL1Mg8AufVB2xy9CLclvGPt3
+X-Gm-Gg: ATEYQzzflemZjzjTnF6/Q3Pyz2m3+ie40Haq3og4Nyn2kpFtmV9WMBwRyyUa25yqsrD
+	pJNzQTnSYr7euSRCq+LSTZ/HbUGi9HJQTVGOVVpWIDHHpTnYEuTo44J6OPS2lYBpO3z9kHXheXZ
+	sMDAX1bOOpOIlOUF7sS8Wqoxgz5GfpvJJlYUUj9zRlOilthdJoMyIb1ncIrJ0eerZgcydb0edmL
+	vqcIrDHWA2S4QdN21R7hRolftynK2p6rRbSNXNHx6ursUvL8DLS9eRcdKB6/Uq9BZZO1GUjHCId
+	HP9L+0edNgGCON4CDHP2TtSwJpO/MJ1ae+8+nkKaCtZuB7MDXqiIfNDo2ZsOVZ7E2H75O90k/Mj
+	HqUfqa5Gpeod1+6/+h/GSNoBMfRBCANBeMTRFiS04bxhRfhkEkWJEb7G7KQ4c8/mdxiGZV/BULG
+	6Ue+yDhnRh08rqUKEe3ODEDa0DPLW8nZ4poXIHpB3x4Js5AHxyc2SDAtOZuKyz9/9M
+X-Received: by 2002:a05:620a:318f:b0:8c9:f8e5:9f12 with SMTP id af79cd13be357-8cd6d4fe93bmr1846337985a.57.1773155367465;
+        Tue, 10 Mar 2026 08:09:27 -0700 (PDT)
+Received: from mail-qk1-f179.google.com (mail-qk1-f179.google.com. [209.85.222.179])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-8cd9a637f18sm80993885a.35.2026.03.10.08.09.26
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 10 Mar 2026 08:09:26 -0700 (PDT)
+Received: by mail-qk1-f179.google.com with SMTP id af79cd13be357-8cb40149037so1385409585a.2
+        for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 08:09:26 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCX8ygk3T/55sg8+6XVTkX/1zF2Bc1Gpxg+DHmc3vF42QuLxQl/8nqE0OdLSiW5UbUden8gM8ifhDQ==@vger.kernel.org
+X-Received: by 2002:a05:6102:c8f:b0:5f1:70fe:3027 with SMTP id
+ ada2fe7eead31-5ffe6121c90mr5181206137.24.1773155033187; Tue, 10 Mar 2026
+ 08:03:53 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260301191959.406218221@kernel.org> <6250711.lOV4Wx5bFT@rafael.j.wysocki>
- <CAJZ5v0jb7wJFQEfP_-JRv4mwh3qveq+VPoy8k9dmtmigoSyKhg@mail.gmail.com>
- <2409653.ElGaqSPkdT@rafael.j.wysocki> <20260310035406.xnu3nlqp4ldshxww@airbuntu>
- <f11fc45d-314a-4e2d-bcd1-9d8b1a49c87a@arm.com> <20260310150347.ji2fdpdvw6txspc4@airbuntu>
-In-Reply-To: <20260310150347.ji2fdpdvw6txspc4@airbuntu>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 10 Mar 2026 16:09:05 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0gDxG5XoV6P+be84gfFjqLc2pmuJJpbtZOY=2_fOpQbwg@mail.gmail.com>
-X-Gm-Features: AaiRm51xCG3OFbmMJ4E6TvBmVs2yPLp5R8z0YrIucwU4ULALoRYT6R-lG17ap6w
-Message-ID: <CAJZ5v0gDxG5XoV6P+be84gfFjqLc2pmuJJpbtZOY=2_fOpQbwg@mail.gmail.com>
-Subject: Re: [patch 2/2] sched/idle: Make default_idle_call() NOHZ aware
-To: Qais Yousef <qyousef@layalina.io>
-Cc: Christian Loehle <christian.loehle@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Thomas Gleixner <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>, 
-	Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, 
-	Linux PM <linux-pm@vger.kernel.org>
+References: <20260227135428.783983-1-herve.codina@bootlin.com> <20260227135428.783983-3-herve.codina@bootlin.com>
+In-Reply-To: <20260227135428.783983-3-herve.codina@bootlin.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 10 Mar 2026 16:03:42 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVVsEB-xb8Jz4ujBam2NxtxAOb7byYa3VR_eHsbTD5rXw@mail.gmail.com>
+X-Gm-Features: AaiRm53b7liJL7XJhyMA-JPl81LkjhC0Orfn04kAcG7__Cf3-wDY5cIOlphhcC4
+Message-ID: <CAMuHMdVVsEB-xb8Jz4ujBam2NxtxAOb7byYa3VR_eHsbTD5rXw@mail.gmail.com>
+Subject: Re: [PATCH v5 02/28] driver core: Rename get_dev_from_fwnode()
+ wrapper to get_device_from_fwnode()
+To: Herve Codina <herve.codina@bootlin.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Kalle Niemi <kaleposti@gmail.com>, Matti Vaittinen <mazziesaccount@gmail.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
+	Wolfram Sang <wsa+renesas@sang-engineering.com>, Peter Rosin <peda@axentia.se>, 
+	Arnd Bergmann <arnd@arndb.de>, Saravana Kannan <saravanak@kernel.org>, 
+	Bjorn Helgaas <bhelgaas@google.com>, Charles Keepax <ckeepax@opensource.cirrus.com>, 
+	Richard Fitzgerald <rf@opensource.cirrus.com>, David Rhodes <david.rhodes@cirrus.com>, 
+	Linus Walleij <linusw@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, 
+	Mark Brown <broonie@kernel.org>, Len Brown <lenb@kernel.org>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Daniel Scally <djrscally@gmail.com>, 
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, Davidlohr Bueso <dave@stgolabs.net>, 
+	Jonathan Cameron <jonathan.cameron@huawei.com>, Dave Jiang <dave.jiang@intel.com>, 
+	Alison Schofield <alison.schofield@intel.com>, Vishal Verma <vishal.l.verma@intel.com>, 
+	Ira Weiny <ira.weiny@intel.com>, Dan Williams <dan.j.williams@intel.com>, 
+	Shawn Guo <shawnguo@kernel.org>, Wolfram Sang <wsa@kernel.org>, linux-kernel@vger.kernel.org, 
+	driver-core@lists.linux.dev, imx@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org, 
+	linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-pci@vger.kernel.org, linux-sound@vger.kernel.org, 
+	patches@opensource.cirrus.com, linux-gpio@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-spi@vger.kernel.org, 
+	linux-acpi@vger.kernel.org, linux-cxl@vger.kernel.org, 
+	Allan Nielsen <allan.nielsen@microchip.com>, Horatiu Vultur <horatiu.vultur@microchip.com>, 
+	Steen Hegelund <steen.hegelund@microchip.com>, Luca Ceresoli <luca.ceresoli@bootlin.com>, 
+	Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Saravana Kannan <saravanak@google.com>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Mar 10, 2026 at 4:03=E2=80=AFPM Qais Yousef <qyousef@layalina.io> w=
-rote:
->
-> On 03/10/26 09:18, Christian Loehle wrote:
-> > On 3/10/26 03:54, Qais Yousef wrote:
-> > > On 03/07/26 17:25, Rafael J. Wysocki wrote:
-> > >
-> > >> In the meantime I realized that if the .select() governor
-> > >> callback is skipped, its .reflect() callback should be skipped
-> > >> either, so I've posted this:
-> > >>
-> > >> https://lkml.org/lkml/2026/3/7/569
-> > >>
-> > >> and here's a fixed version of the last patch on top of the above (fo=
-r
-> > >> completeness):
-> > >>
-> > >> ---
-> > >>  kernel/sched/idle.c |   25 ++++++++++++++++---------
-> > >>  1 file changed, 16 insertions(+), 9 deletions(-)
-> > >>
-> > >> --- a/kernel/sched/idle.c
-> > >> +++ b/kernel/sched/idle.c
-> > >> @@ -161,6 +161,14 @@ static int call_cpuidle(struct cpuidle_d
-> > >>    return cpuidle_enter(drv, dev, next_state);
-> > >>  }
-> > >>
-> > >> +static void idle_call_stop_or_retain_tick(bool stop_tick)
-> > >> +{
-> > >> +  if (stop_tick || tick_nohz_tick_stopped())
-> > >> +          tick_nohz_idle_stop_tick();
-> > >> +  else
-> > >> +          tick_nohz_idle_retain_tick();
-> > >> +}
-> > >> +
-> > >>  /**
-> > >>   * cpuidle_idle_call - the main idle function
-> > >>   *
-> > >> @@ -170,7 +178,7 @@ static int call_cpuidle(struct cpuidle_d
-> > >>   * set, and it returns with polling set.  If it ever stops polling,=
- it
-> > >>   * must clear the polling bit.
-> > >>   */
-> > >> -static void cpuidle_idle_call(void)
-> > >> +static void cpuidle_idle_call(bool stop_tick)
-> > >>  {
-> > >>    struct cpuidle_device *dev =3D cpuidle_get_device();
-> > >>    struct cpuidle_driver *drv =3D cpuidle_get_cpu_driver(dev);
-> > >> @@ -186,7 +194,7 @@ static void cpuidle_idle_call(void)
-> > >>    }
-> > >>
-> > >>    if (cpuidle_not_available(drv, dev)) {
-> > >> -          tick_nohz_idle_stop_tick();
-> > >> +          idle_call_stop_or_retain_tick(stop_tick);
-> > >>
-> > >>            default_idle_call();
-> > >>            goto exit_idle;
-> > >> @@ -222,17 +230,14 @@ static void cpuidle_idle_call(void)
-> > >>            next_state =3D cpuidle_find_deepest_state(drv, dev, max_l=
-atency_ns);
-> > >>            call_cpuidle(drv, dev, next_state);
-> > >>    } else if (drv->state_count > 1) {
-> > >> -          bool stop_tick =3D true;
-> > >> +          stop_tick =3D true;
-> > >
-> > > Silly question, but wouldn't this benefit the normal path too to dela=
-y for one
-> > > tick? This will only matter for the cases where the governor doesn't =
-explicitly
-> > > set stop_tick to either true or false - which I am not sure what they=
- are :)
-> > >
-> > Right now the governors will always set stop_tick explicitly (and overr=
-iding
-> > that might confuse the governor-internal state).
->
-> So we can drop this hunk then
+Hi Herv=C3=A9,
 
-Not really.
+On Fri, 27 Feb 2026 at 14:55, Herve Codina <herve.codina@bootlin.com> wrote=
+:
+> get_dev_from_fwnode() calls get_device() and so it acquires a reference
+> on the device returned.
+>
+> In order to be more obvious that this wrapper is a get_device() variant,
+> rename it to get_device_from_fwnode().
+>
+> Suggested-by: Mark Brown <broonie@kernel.org>
+> Link: https://lore.kernel.org/lkml/CAGETcx97QjnjVR8Z5g0ndLHpK96hLd4aYSV=
+=3DiEkKPNbNOccYmA@mail.gmail.com/
+> Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Reviewed-by: Saravana Kannan <saravanak@google.com>
+> Reviewed-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
+> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-The governors expect that stop_tick is true by default and they clear
-it if needed/desired.  They may be confused if it is false to start
-with (theoretically, a governor may select an idle state with target
-residency beyond the tick period length then which won't make sense).
+FTR, one more user of get_dev_from_fwnode() appeared in commit
+9035073d0ef1de81 ("reset: convert reset core to using firmware nodes")
+in reset/next.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
