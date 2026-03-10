@@ -1,224 +1,153 @@
-Received: from LO0P265CU003.outbound.protection.outlook.com (mail-uksouthazon11022090.outbound.protection.outlook.com [52.101.96.90])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 581262E5B09;
-	Tue, 10 Mar 2026 14:45:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.96.90
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773153944; cv=fail; b=uX9DUpxgWFknQA49k6b9M5zZqCnCCi9DxwgMsFRItTJeGDZbkVNopVAwgXgD34t6k+CFo9q+8Z0D5ElKaJAssrFPeSnyFOzLZZI8x7mGk5rSl383SezKxo42QGNEhouodeL6AoisJdMJnZ6Gxb8V6IYQhZp9GqQqo00ftYAHZ5M=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773153944; c=relaxed/simple;
-	bh=A9XlB1tUS0fux4kBO+UbAWsXGJ47ovKY4LzTVMEUK2g=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=OjSp9MJKJqX/IihlcL4wrSS+bbKkc7k8sTvCKfiwrM6OHexqB1bjwgM5N6xMWmhJHFjs6a6dygC+KEVsGs7dsOthDRiTS60DxtpkpYFqf2oBeVwWcGda1CndsIfKHMblgE/Y7/909e4Wji8JCI7CElFr0niQOktVD7W9r22TQAQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=atomlin.com; spf=pass smtp.mailfrom=atomlin.com; arc=fail smtp.client-ip=52.101.96.90
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=atomlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=atomlin.com
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=wB3Xfg8fFKEFvKlN8/Fj9g4pkeaVtXn0kkDv06O/WSlvfRmYmXzgWxSHv/glXmpgWjTZmDQlgN6XQtexxgcXW1W3VL/TLBetRYLY+B0ZV+vUVrCE48T2TIf40hP5rOs6WTQ7mys9HRZ+1AY1OvWdkf82/IykWL/OF4A+EYy6VjDR2OHgY9tSg7ChErbiQ3cYlgp7LRs1+gUG8oz3MmZ8f87tinkxAlWUEiyIEYKB0ncf/zELL6vWI41RbzVzDg2PiDOv7VyMNBtlJHN7zzrYdtM2wpxx31mXGg7KPaEOEKyIvGxE9pmt0WWUaZE4NxXaxmjdGfClh+8Ek0cFT+UH+A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=JAqErPuH8jvSz3S3uW1/upneO2POe6vZLbo48MwocK4=;
- b=W7tN4kfmd1B4jfJhRrUU6g4HsnWTQgFcjxfu8uf5dskX9ZbOcsBt430GAQhCKU8RgliHekyDzVdtGLYNkozrOO6SD2vWf4qf8y8niwVpCVoOOGsGHOzd80vtscok3K+fUCblknwTOHpHEiaywOV7qny2C0CogV32hxhE8dxV7Tq4Wq/YUNb2j9iwjREaJEIkKWo7nfWO/XYQXuJneWwzmE7r626rMP84ru1sLQzsKq7frVNFpBeZl8i8bshHULXeIkAad5lsnmOQcGAdgsVX9wqpjlsdXovsGplhJS5y8yvgeyXsiFIw0qc/e9C8Bq3IiywnSpp6TSnFye1QIK6rYA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=atomlin.com; dmarc=pass action=none header.from=atomlin.com;
- dkim=pass header.d=atomlin.com; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=atomlin.com;
-Received: from CWLP123MB3523.GBRP123.PROD.OUTLOOK.COM (2603:10a6:400:70::10)
- by CWXP123MB4117.GBRP123.PROD.OUTLOOK.COM (2603:10a6:400:b4::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9678.25; Tue, 10 Mar
- 2026 14:45:39 +0000
-Received: from CWLP123MB3523.GBRP123.PROD.OUTLOOK.COM
- ([fe80::de8e:2e4f:6c6:f3bf]) by CWLP123MB3523.GBRP123.PROD.OUTLOOK.COM
- ([fe80::de8e:2e4f:6c6:f3bf%2]) with mapi id 15.20.9678.017; Tue, 10 Mar 2026
- 14:45:39 +0000
-Date: Tue, 10 Mar 2026 10:45:35 -0400
-From: Aaron Tomlin <atomlin@atomlin.com>
-To: Philipp Hahn <phahn-oss@avm.de>
-Cc: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
-	bpf@vger.kernel.org, ceph-devel@vger.kernel.org, cocci@inria.fr, 
-	dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org, gfs2@lists.linux.dev, 
-	intel-gfx@lists.freedesktop.org, intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev, 
-	kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-block@vger.kernel.org, linux-bluetooth@vger.kernel.org, linux-btrfs@vger.kernel.org, 
-	linux-cifs@vger.kernel.org, linux-clk@vger.kernel.org, linux-erofs@lists.ozlabs.org, 
-	linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-gpio@vger.kernel.org, 
-	linux-hyperv@vger.kernel.org, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-leds@vger.kernel.org, linux-media@vger.kernel.org, linux-mips@vger.kernel.org, 
-	linux-mm@kvack.org, linux-modules@vger.kernel.org, linux-mtd@lists.infradead.org, 
-	linux-nfs@vger.kernel.org, linux-omap@vger.kernel.org, linux-phy@lists.infradead.org, 
-	linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-s390@vger.kernel.org, 
-	linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org, 
-	linux-security-module@vger.kernel.org, linux-sh@vger.kernel.org, linux-sound@vger.kernel.org, 
-	linux-stm32@st-md-mailman.stormreply.com, linux-trace-kernel@vger.kernel.org, linux-usb@vger.kernel.org, 
-	linux-wireless@vger.kernel.org, netdev@vger.kernel.org, ntfs3@lists.linux.dev, 
-	samba-technical@lists.samba.org, sched-ext@lists.linux.dev, target-devel@vger.kernel.org, 
-	tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev, Luis Chamberlain <mcgrof@kernel.org>, 
-	Petr Pavlu <petr.pavlu@suse.com>, Daniel Gomez <da.gomez@kernel.org>, 
-	Sami Tolvanen <samitolvanen@google.com>
-Subject: Re: [PATCH 17/61] module: Prefer IS_ERR_OR_NULL over manual NULL
- check
-Message-ID: <qtwmj2mcbokwa7gexs5oqasjuitoaajiawc4d6dwcc224lmvbo@syjg6j6jggwy>
-References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
- <20260310-b4-is_err_or_null-v1-17-bd63b656022d@avm.de>
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="iksijtbqwcym3dge"
-Content-Disposition: inline
-In-Reply-To: <20260310-b4-is_err_or_null-v1-17-bd63b656022d@avm.de>
-X-ClientProxiedBy: BN0PR04CA0148.namprd04.prod.outlook.com
- (2603:10b6:408:ed::33) To CWLP123MB3523.GBRP123.PROD.OUTLOOK.COM
- (2603:10a6:400:70::10)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28BB340DFA2
+	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 15:03:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773155036; cv=none; b=cwxUgbbWIckFresSXVi/ipaD1XFJyrXCow0zquuNIzGxUfBJEOOk4gCf66elNLvDbjhEgPu2XZYl2GwflppMkSQYwPZGTswvSWKprE9voxqRcx8xi82I97tNpxCQgBUEnHPq2I5Fd+aq4cHKqqDS2EGbM0hadn2vS7qByZeazdU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773155036; c=relaxed/simple;
+	bh=aj8LutELrRgFFanMshC5f8wHDa2FtBJ0U/1tKlzk+KU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=G+cV5JtW5UDYLvA1hAUnkMSYlDZOZpBqqu8rTen+7corCugYC0SzLRxJLk0psIVyJc5II+SJtguxjy8iC9En0yRTY0W5kh+ca5jVOyB319pQpZ55sx3kqA8QiC3DAPU4ECz/plSTf738pIqtZKLpHO7waonfXlsZM8pxUH+mJ3g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io; spf=pass smtp.mailfrom=layalina.io; dkim=pass (2048-bit key) header.d=layalina-io.20230601.gappssmtp.com header.i=@layalina-io.20230601.gappssmtp.com header.b=zNswpa6z; arc=none smtp.client-ip=209.85.221.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=layalina.io
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=layalina-io.20230601.gappssmtp.com header.i=@layalina-io.20230601.gappssmtp.com header.b="zNswpa6z"
+Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-439f59dfda2so396332f8f.2
+        for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 08:03:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=layalina-io.20230601.gappssmtp.com; s=20230601; t=1773155033; x=1773759833; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=oCccoqS3evK4HLf4A7FonBQX3DUGSE0/MG43OnHaf/A=;
+        b=zNswpa6zbwntSBOmGdg7AOdCkLqmZSDNuQ2lVHwf0g4BvSEalK3Zic7GKumxoT9MB/
+         ReA7RVco471kdQpc8sXPXF04MrraMtSO3LMarLa3BsCM5nYvmZNyw+PHlrItz82l7cDJ
+         VYUIcZBa2DMircp5vl4cXDXydZY3gD3slxsUawicQBrfaM/DUywB8IAYFezM9mJ4W/2t
+         9k6nQzTpyifRNnYh5Wxv0CoXmhDOA1AvafdInOT1VWxWVl3BHyYHS2ILsfo3Q+jwyGea
+         b0pKatYcrlaxSF4STo6ONINjjkEY/NuXO8S3HGrK+GtY/zZfh4xO223bTBfXzdjKw6Qr
+         hF9g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773155033; x=1773759833;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=oCccoqS3evK4HLf4A7FonBQX3DUGSE0/MG43OnHaf/A=;
+        b=oZL5X80AhlM05rBGDEXPXQY94PCt4VzJW+b7rRoQzQUMXztwTOUF4JwoAuHxQewsV7
+         mdsWD5UI/pbUrnw6tePrRFfw3Yki8PnbCCBxkcrOue0qHnAA2AnrvbrtIn9y5QcdRU0t
+         1Snvj4wdoEuB0AXdSxJPeXM719QnQBxjeOHkDuA1hczk7yQy+LrIZvBxFXmZ5nUo1s6p
+         H+qoFIAz2BS6tajitA3MqcWMg8H6kzIR/ddMCDUXKw2upFGdqIPrVahLO8gptrpZktAO
+         amCJOCk6C14NeCIiMcKbWEvUe6yC/5mPPcyBy8UGpdBzp8E/ZE0WLD5MnjfchqRBelxK
+         MIZg==
+X-Forwarded-Encrypted: i=1; AJvYcCVq2S0toAZyUbYyVCP92Ps8QW353LYOCzMgqN5nXb0XvFGtemuVbBx/BToyEcDL5QBwYnS9bGq7hA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzVWTJwpyKFTfWqMvyvzPpSISy/JIqTWdgarTFTh64v20XNKnKn
+	bd5yvvP6c4/TJxJQe4AM6bvRa1LupoSWFNPDHrgAQrKNqUb/yB9goV2q3hsG515PQHc=
+X-Gm-Gg: ATEYQzzNpmI3TRypCR7jB1330/lFx598pCbcJuXHkvtb4v1lhWdGEG/KOQy9F+G7j9K
+	yiMuUmr8MLZsp+yu5+jAhW1So2BhhYm1Ogs2PIS6cFdOZsCasbM96t7Ggf13ejvseK8KS7fvla0
+	zjEIBxJf2R/mP5+8i5shi4t0ah6Z+OmQNrZGWTEjSt7Gs/uCxmS3d/HOpBwL3EryQ3hYSo6ZxJB
+	RjDRHGOgmG7NlneDlGu4Bec3jn3K5vR1sATtcW6gKJU54T0ZBuodQKipmiZxT97pqzZs5OBiGE/
+	QyBaJa2zyN3TuLQEefF5zeldd5x2K+R8Z+6k8Q3tRKMsyXGfYDVkrwrQo1TYvLt/74qFAaR+o0i
+	vkkQJwRBieRECqJfOjDhPb7PuxOZGRIYgw9Ff+X3BHIInAAiRNYPF7XCD918LsX/vT2ZbLy4en5
+	PSsTiBmFPV+JHJWWzk2yIZiBFqV6s=
+X-Received: by 2002:a05:6000:18a7:b0:435:e3bd:5838 with SMTP id ffacd0b85a97d-439da33af85mr27508575f8f.25.1773155032597;
+        Tue, 10 Mar 2026 08:03:52 -0700 (PDT)
+Received: from airbuntu ([146.70.179.26])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-439dae3a20fsm36265514f8f.28.2026.03.10.08.03.50
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 10 Mar 2026 08:03:52 -0700 (PDT)
+Date: Tue, 10 Mar 2026 15:03:47 +0000
+From: Qais Yousef <qyousef@layalina.io>
+To: Christian Loehle <christian.loehle@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Thomas Gleixner <tglx@kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Frederic Weisbecker <frederic@kernel.org>,
+	Linux PM <linux-pm@vger.kernel.org>
+Subject: Re: [patch 2/2] sched/idle: Make default_idle_call() NOHZ aware
+Message-ID: <20260310150347.ji2fdpdvw6txspc4@airbuntu>
+References: <20260301191959.406218221@kernel.org>
+ <6250711.lOV4Wx5bFT@rafael.j.wysocki>
+ <CAJZ5v0jb7wJFQEfP_-JRv4mwh3qveq+VPoy8k9dmtmigoSyKhg@mail.gmail.com>
+ <2409653.ElGaqSPkdT@rafael.j.wysocki>
+ <20260310035406.xnu3nlqp4ldshxww@airbuntu>
+ <f11fc45d-314a-4e2d-bcd1-9d8b1a49c87a@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CWLP123MB3523:EE_|CWXP123MB4117:EE_
-X-MS-Office365-Filtering-Correlation-Id: 13b40275-3529-4e12-fb2e-08de7eb3b274
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|366016|1800799024|7053199007|18002099003|22082099003|56012099003;
-X-Microsoft-Antispam-Message-Info:
-	eS8vfNxIlcveoUfBbC1f0b/7XDyt042g0NrOSeRHjPQz8SGF8XhnduWnhSq6w/jRCubBJWCQ0em9JSqFUpfcMToM52skjTdNeFfaYr/iVSsKAWiaW3DO/bcnqdcpaQuiI02eS0+aO+CkNT1YH1QQ6E7Q57u6/qaWaQ20N+1FIBcJZS1mBzIioruuLmthEo0gpbRvPUw85MZ4BuTbyxgwfUdq297KnZNKBcxR51k+1QwxfVuZq9j/tn2i89QI1rer6MizYsOjruF/dbbHjCey+BSjf4ODjERjtTz7wyRciY2SWDagpg72iLn9KVmzZVKExW68zMr/l9NtJWoTedOYUByiSKXbyY/3JV9xRnX1MzB9BgBZzT1xIV+5HlUy2YjMHl/3dJLaD2oBPxNWLURA8Z08rKBhZiJO2xeSiCI4mtWcnPeq3oEWmmY/WeHCI/B3o7JWziYbmH0QC8uqLAo/mQeRtn2TDgHIlkcKjGfALzMiD8xYPzjGT5P2vIR5K1BknKS+wJWav08f2MBfPRpwDPe50D0F6uw8UO3X9XH+2FvKXluY6iP9bBIpwnIhpFLltJGAWJ97kBcunctHO08msp59QGCLa7B9KyIGa5ySuwKbRsiH6EO7wMRDJH8WU49ueWwW1LGly9m6jhK5/yiuwnls2+tKU53my80py9Z/IAQ4MsIkAQLyj3EYcQb0F1EbNzlO4n0fZQx8QozYXcKQrvPpY9dpMBAU9AUK3jolnXE=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CWLP123MB3523.GBRP123.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(366016)(1800799024)(7053199007)(18002099003)(22082099003)(56012099003);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?RjlvdnlwWk1CSFZIUGxWVloyKzB5bUNjN2lRU1ZhM1hLSHQ0V2Flc3Iwd0VL?=
- =?utf-8?B?bXArd0JIN2tZVzZLUGpqcHBUbWNFZzAwc2o1TmRuYkFRMnBERWo0OVk4L2JH?=
- =?utf-8?B?M01qcWhaNDU3SDMxYnZDcThyUkNHMjYrZ0dtR1F3V0ZIVTVrUnRKN1dOOHR2?=
- =?utf-8?B?RHpPcTI5V3R6azVuanpHZmg3U3dOd3lZRk94MUpZd2N2UFZnMitFcXdwbGtM?=
- =?utf-8?B?MVBDd0xUODEzK21Ma2FQSnZNQVNYMnNGU2xJbmhqOHdmb3RhYm82alo0MVlQ?=
- =?utf-8?B?VzEweHRPTGZxV25GM0ZwQ1BUcytpRGJIY3hVVk5KR0ZBbzhrUHd0YnJVMjdy?=
- =?utf-8?B?T3JWUFFPdzZJVitQVWE1b0RnRkNLbHlmVCtkS295eVFOa1FyMTB4aVFPTzli?=
- =?utf-8?B?V2hUMW52U2ZGa0N6TTF4UWZqejVMc0RPa05rbHluMUFBUVJQRTJZRGM3clEr?=
- =?utf-8?B?Vmc2aGVzb01QenlhdGlYc0NLMWY5WUVJQ1JIUHFYcWs1a1pEN2JORDVjTlFN?=
- =?utf-8?B?YjRTRUkwcitrUHM4blJac05MdDY3VXJTSStuZUhpcDZsV1EvazZkMGRYME1q?=
- =?utf-8?B?ZFI3eWtGN3NEc0RCcGNhQTErRXB2cjRXWnRzbVpTcWtISDh4Y213SVhnMU01?=
- =?utf-8?B?QjlCaTltWWgwUFFmb3VuaGQ3dDVKMkVwdVphRTNMR1hvVDkrbXBSMFNMUlVa?=
- =?utf-8?B?M0JHVmRmaHdxcFg5QlgxaXNtckQ2SGIzRWJzYnZuTzViVWsxQlZHQmlDNExl?=
- =?utf-8?B?Z1ptTVlDVVE2ZWQwMGdDZEk5Y0Q3NnFyWVltd0N0cDRUa2lXZ2h1R09tTGNT?=
- =?utf-8?B?T0owTUk0UFc2SkljekM3QlZsVzJiWVBpVkZtaHFMK0FBOEg2aEovOGd6RnBW?=
- =?utf-8?B?LzNsZkJmUU92bC9XUU5jZ05SbWNXZ3B5VXRzRVUzTm4vQWtVWFFqRnRYekY3?=
- =?utf-8?B?L2E4TXpUV1ZCZGxZbitRS1RPYlBZVU9Yb0NDQUNEQnMvcTllUGltK1MyN2tZ?=
- =?utf-8?B?WXNuc2hBelVVbVNtWUtYSi9SYzhWa095dy9RS1F6bHdibjNQYUpITTlhVTNo?=
- =?utf-8?B?SFhldlpnYjYza082ZmFKRjZKd0h4LzJkTXRpclQxazNrQm9zTG5ReEQ0anhT?=
- =?utf-8?B?S2s2L3ZiYUZzZU8rMHFEQkczZElUeW5KcEFRWnFHMVV1RXNsTzUvR1hNaG1Z?=
- =?utf-8?B?T052eUI1MlpyTUNiWkNHbFI2dFBOQ29rNS9hcjltTStCVVUveDZTNHFtVXlK?=
- =?utf-8?B?Smc3cmFlakdnVmtTak8zOHo4VHhzT0x6WmEwK29HckR1b1VPNUtiYlQ2SHIy?=
- =?utf-8?B?a2VCRGJzM0IrZUJnSlVVNSs2Z1ozTWdJTEc2TWg0dklnenRxbHBVNkRiS2Q1?=
- =?utf-8?B?VWdRbWlCTVRVZDZtQ0txNW1pYzVLVVd2L21mSElOMUhvUk90VWNYR3JFNUFy?=
- =?utf-8?B?VkdFOTRTUTlrN2c3T3dpMUhhWVJOYnNZR3UydnU1UEpUMlAwdTczT1FyS2NI?=
- =?utf-8?B?NUVlYVJ5R3R2K2tyYSt0RGdaVlZDSUJjVmNlYS8zZm1PWDQ4K3ZOT1BrQ1Ay?=
- =?utf-8?B?MHRNaUswa2thTDR3cGZuN1R4ZzBUVHI0ZkdpM2F0N0dGWHJ6bGt6T3hyU2NH?=
- =?utf-8?B?U1hJWHdweVpZcXU0RmRkejFLQXo4OGRNa0NiNmwwMzlFbGk4UklOaWtLSkRF?=
- =?utf-8?B?UkpkRklXeHFRUzNxRFcrWWtGRXVuYXR3ZFloTkR5YUtSeWUzUjJhMGF0UktE?=
- =?utf-8?B?RytHVTR5ODNjL2dpQjNMUkxMRm1QZmluWVJCWkt5VTZ3VW5vSXE0MitqU1k4?=
- =?utf-8?B?aGJxc2hOZEsxdnJXMVg4N0lYZE0yalpJS3hYR25lQUw4VlBUWVpkWExhRGND?=
- =?utf-8?B?UE5BQlkrajhVRWk1REJvWTBoeXdIRnJyQVl5ZDlTeEwyWWJrWEhGR2cvTG9N?=
- =?utf-8?B?UktDRDM3dXhLWGlLL3pCcWp4UVNrSEN5clNLYmNLUFp4NjlxTldpUWppRXVi?=
- =?utf-8?B?bERrcGUwdmR1K1AzUEVOdzYwaUgraVBkRUtUdEVIeEYweVQ3WnpKcHFsUjhp?=
- =?utf-8?B?ck9wYlVlS1FGNUtINUxaMzZSUTdBZkhkdHEzOC9jNUg4WWRHUTEzZ1VEc1hn?=
- =?utf-8?B?R0JxTFNOZ3VMMldjamx0Wll2MnJ1M2dzSjVNTlVUSnV4ZXh2b3prY0d4bzVK?=
- =?utf-8?B?alRna2ROMW0zdzVCZWxoQXpqSXplVUpINE9jbFdpOTRMT2l6bDBFWGxpTVBD?=
- =?utf-8?B?NkVGRWlFYXVZdEI2SEZsdmJpa253N0NYMlNVeVd4UmZVVlJLUWIyUk5BaFdn?=
- =?utf-8?B?elM3bSs1cmluUGdxWTRDdEVRU1JVNm1PR0llU1djMEZsdGdRb0hWUT09?=
-X-OriginatorOrg: atomlin.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 13b40275-3529-4e12-fb2e-08de7eb3b274
-X-MS-Exchange-CrossTenant-AuthSource: CWLP123MB3523.GBRP123.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Mar 2026 14:45:39.3587
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: e6a32402-7d7b-4830-9a2b-76945bbbcb57
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: HwFautavIbFqmN5YwHCFfTVUxc9gxa3cpwndmicLa0FlANQgRiCX3WWVzDmT9lbq0RC4/eZ8BgFQOpVQW1fLOw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CWXP123MB4117
-
---iksijtbqwcym3dge
-Content-Type: text/plain; protected-headers=v1; charset=utf-8
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH 17/61] module: Prefer IS_ERR_OR_NULL over manual NULL
- check
-MIME-Version: 1.0
+In-Reply-To: <f11fc45d-314a-4e2d-bcd1-9d8b1a49c87a@arm.com>
 
-On Tue, Mar 10, 2026 at 12:48:43PM +0100, Philipp Hahn wrote:
-> Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
-> check.
->=20
-> Change generated with coccinelle.
->=20
-> To: Luis Chamberlain <mcgrof@kernel.org>
-> To: Petr Pavlu <petr.pavlu@suse.com>
-> To: Daniel Gomez <da.gomez@kernel.org>
-> To: Sami Tolvanen <samitolvanen@google.com>
-> To: Aaron Tomlin <atomlin@atomlin.com>
-> Cc: linux-modules@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
-> ---
->  kernel/module/main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/kernel/module/main.c b/kernel/module/main.c
-> index c3ce106c70af165e2dc1a3c79f5a074a5c3e3d34..7f62f0620dcd75960e431f7af=
-3d1cadf4cc41e4b 100644
-> --- a/kernel/module/main.c
-> +++ b/kernel/module/main.c
-> @@ -1551,7 +1551,7 @@ static int simplify_symbols(struct module *mod, con=
-st struct load_info *info)
->  		case SHN_UNDEF:
->  			ksym =3D resolve_symbol_wait(mod, info, name);
->  			/* Ok if resolved.  */
-> -			if (ksym && !IS_ERR(ksym)) {
-> +			if (!IS_ERR_OR_NULL(ksym)) {
->  				sym[i].st_value =3D kernel_symbol_value(ksym);
->  				break;
->  			}
->=20
-> --=20
-> 2.43.0
->=20
+On 03/10/26 09:18, Christian Loehle wrote:
+> On 3/10/26 03:54, Qais Yousef wrote:
+> > On 03/07/26 17:25, Rafael J. Wysocki wrote:
+> > 
+> >> In the meantime I realized that if the .select() governor
+> >> callback is skipped, its .reflect() callback should be skipped
+> >> either, so I've posted this:
+> >>
+> >> https://lkml.org/lkml/2026/3/7/569
+> >>
+> >> and here's a fixed version of the last patch on top of the above (for
+> >> completeness):
+> >>
+> >> ---
+> >>  kernel/sched/idle.c |   25 ++++++++++++++++---------
+> >>  1 file changed, 16 insertions(+), 9 deletions(-)
+> >>
+> >> --- a/kernel/sched/idle.c
+> >> +++ b/kernel/sched/idle.c
+> >> @@ -161,6 +161,14 @@ static int call_cpuidle(struct cpuidle_d
+> >>  	return cpuidle_enter(drv, dev, next_state);
+> >>  }
+> >>  
+> >> +static void idle_call_stop_or_retain_tick(bool stop_tick)
+> >> +{
+> >> +	if (stop_tick || tick_nohz_tick_stopped())
+> >> +		tick_nohz_idle_stop_tick();
+> >> +	else
+> >> +		tick_nohz_idle_retain_tick();
+> >> +}
+> >> +
+> >>  /**
+> >>   * cpuidle_idle_call - the main idle function
+> >>   *
+> >> @@ -170,7 +178,7 @@ static int call_cpuidle(struct cpuidle_d
+> >>   * set, and it returns with polling set.  If it ever stops polling, it
+> >>   * must clear the polling bit.
+> >>   */
+> >> -static void cpuidle_idle_call(void)
+> >> +static void cpuidle_idle_call(bool stop_tick)
+> >>  {
+> >>  	struct cpuidle_device *dev = cpuidle_get_device();
+> >>  	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+> >> @@ -186,7 +194,7 @@ static void cpuidle_idle_call(void)
+> >>  	}
+> >>  
+> >>  	if (cpuidle_not_available(drv, dev)) {
+> >> -		tick_nohz_idle_stop_tick();
+> >> +		idle_call_stop_or_retain_tick(stop_tick);
+> >>  
+> >>  		default_idle_call();
+> >>  		goto exit_idle;
+> >> @@ -222,17 +230,14 @@ static void cpuidle_idle_call(void)
+> >>  		next_state = cpuidle_find_deepest_state(drv, dev, max_latency_ns);
+> >>  		call_cpuidle(drv, dev, next_state);
+> >>  	} else if (drv->state_count > 1) {
+> >> -		bool stop_tick = true;
+> >> +		stop_tick = true;
+> > 
+> > Silly question, but wouldn't this benefit the normal path too to delay for one
+> > tick? This will only matter for the cases where the governor doesn't explicitly
+> > set stop_tick to either true or false - which I am not sure what they are :)
+> > 
+> Right now the governors will always set stop_tick explicitly (and overriding
+> that might confuse the governor-internal state).
 
-Hi Philipp,
-
-Thank you.
-
-Have you considered other users of IS_ERR() in kernel/module/main.c too?
-
-Perhaps it might be best to prepare a clean up for each applicable
-subsystem in isolation.
-
-
-Kind regards,
---=20
-Aaron Tomlin
-
---iksijtbqwcym3dge
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEEeQaE6/qKljiNHm6b4t6WWBnMd9YFAmmwLosACgkQ4t6WWBnM
-d9aU9xAAqqgNT5SoU+VYtTZ80wOUwEE2OMdLBYzCI0mjnqJPXnb4U+JQX0SteStv
-Wd+zDAGE5Me5p/CfEt/+aiyKOuiZL7yQucXzvUMGKxqLMQFwqPvA3WtSoTVFL+rF
-LkaH0u5Q5L3fR1LqaiKYIZuzVEvau4J1yxwpr3TSOVVjsiNOir78WKYMWkbywt9w
-2ZGJmWlqCHaicR+MbDxwYxmj6A8vWK4lMNrf9/bSNlRcevwMRBi5MEVCXNAmi8/K
-HL+Lff4iFQayNqX+KHvqO+d71PuZJ6uRoZtmn2TOsqPFvRhSEwOCORUQRwprUwHK
-1AXthzlvxw54scM7jH/H7EVz4b/StJaeHqfZLJ4y6QJv7HWYccOTXqVPj5yDF4AS
-LNEe/UEO2rZOSVwqm8USG03ipXDhoZ7is3ump24r9vmbuJ4Ut/UkZnPPM2f1V8YS
-AiWpOQ5tGWd+85RvZUyJfbagqS9XcCxV1Ec+y4MXwaab2ddu81t86xc5nbRANS/k
-juKrG81J7nYvlpvQajkCU6tK/ZZsalYBs/BCg2IAYhG1V5SqGHR6o/a3KjVtmdwP
-5t9pTp1q1bD8/UPf4bSgjULpyVSusQkcdm6aoNJD80Jqi8vPQSuZUDFw9gdbbWdT
-6f5kQv0sOH33oz8IDL0pTNDmWbOF3HKDQCX5nbTnNtfG048XNxo=
-=x/q5
------END PGP SIGNATURE-----
-
---iksijtbqwcym3dge--
+So we can drop this hunk then
