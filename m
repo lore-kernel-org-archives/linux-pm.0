@@ -1,118 +1,146 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f180.google.com (mail-pf1-f180.google.com [209.85.210.180])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D7FF19E97B;
-	Tue, 10 Mar 2026 06:04:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.20
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4355A12CDBE
+	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 06:16:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773122673; cv=none; b=nAGMMCS4PKzhSCYj+Wrc+tOoQSrJfcWpgAdjboh4HGbYF9888X0HJM1oPDibNPLx3XmSp0Ip/bI+BdOR98e38N9OzyvTlUACrpuvrvMK2MzXm54w+ls4HtViotsIfeCv7nelMC9ftC9ytctFaYeZbEfMO6wb4MKeXc1RTXNgJhA=
+	t=1773123385; cv=none; b=fklfli82JNIMYeLBPYziUMwXNOI1vW7lGwBmTn7w9RUcpTq0z4wcOdDkm6Z8k/GMU6GhqYuQc1hfVWeKUaIx/LVHlJY/aPSJ/aUwWqxFENjl5u1THR0GSLwplrggnUNjT6kNQYOzILs1YND8mz6caIJiNm5IFteR17fP4MZbhns=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773122673; c=relaxed/simple;
-	bh=jqD+QcEfBenklTnE2I/r27JVde741C3sBEAO55rNOH8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=l6eiLvLby+AZNwwB+k992i7KSc3NVyhk6EcNFJLpuLbctxa+qXFQVLp5OkeHtac5gB+iEPdVn/s8NHfwrLeXcKYC/U+LEQV49gHrmbkNyug3ISmJa3xUChzlOaAbuwi9hffVfAA5CQiAWNZp0roWRDlLZXZG2+uRapWTVlG0Lj4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Q56zx9z4; arc=none smtp.client-ip=198.175.65.20
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1773123385; c=relaxed/simple;
+	bh=nR69aaPS9yVCcLKfaP+AetapE4H0B9qnq39XbFXIvm0=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=VOntMKXib8D5wW0unqXhplmXlfnj0n4GVEso1Pb6HiYbPgbfzWLAq3KyAtDv2zY3I6zFDdBAJC9zds0IpqtpYEPtAQvP5mtHL9fFt1AMz/oL3VChBA/yjopmj2xWd2K+J7CcuH1I3LHjbWmvTcz9+HfxGelyIju2d3KEgKhXKxE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=IS/pEVRq; arc=none smtp.client-ip=209.85.210.180
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Q56zx9z4"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1773122672; x=1804658672;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=jqD+QcEfBenklTnE2I/r27JVde741C3sBEAO55rNOH8=;
-  b=Q56zx9z4lPSIiTFXPbsokXnhDSVQkDT9oCisGjm3kJ6F6NOc5zkz0UP9
-   6JKh86ZHyYulS1zr9mrclGZdmrMRLZbpSgukt9DLQkY1DQ4wSDLEKSDw1
-   jMJXAGBXBiTXvd5VNH03XxSXhB392nOYIGHUZt6rxadNEWPZzDwSAfC+C
-   pOc6FE9moveqWVv8XScVjJ+4aoGWZYfPJr8FWrV4NpPGyoQRUQIoy9G/W
-   pGd22Tak9D0Ve+IBReCPF6Q8I1OSW+ptcyGDOsWpbb0OpcwZEH0k065Va
-   snnqsafzwi+uXG2Yl9T89zT4RdDb5DYBQ6WTnsv7i1/nICO0wi16bggK2
-   Q==;
-X-CSE-ConnectionGUID: 3GQANL2ETQKYiBA7KBxsYQ==
-X-CSE-MsgGUID: L0gk7PnMRZaqrGBjAQp/1Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11724"; a="73859066"
-X-IronPort-AV: E=Sophos;i="6.23,111,1770624000"; 
-   d="scan'208";a="73859066"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Mar 2026 23:04:32 -0700
-X-CSE-ConnectionGUID: nUSCxDACRrapotUUvgLzGg==
-X-CSE-MsgGUID: t+c5y+U9Rd+A/oWMg61cvA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,111,1770624000"; 
-   d="scan'208";a="224680600"
-Received: from rzhang1-mobl.sh.intel.com ([10.239.158.35])
-  by fmviesa005.fm.intel.com with ESMTP; 09 Mar 2026 23:04:30 -0700
-From: Zhang Rui <rui.zhang@intel.com>
-To: rafael.j.wysocki@intel.com,
-	lenb@kernel.org
-Cc: linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH 2/2] tools/power turbostat: Optimize core count calculation and fix naming inconsistency
-Date: Tue, 10 Mar 2026 14:02:01 +0800
-Message-ID: <20260310060201.660773-2-rui.zhang@intel.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260310060201.660773-1-rui.zhang@intel.com>
-References: <20260310060201.660773-1-rui.zhang@intel.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="IS/pEVRq"
+Received: by mail-pf1-f180.google.com with SMTP id d2e1a72fcca58-8299c75f730so2290670b3a.0
+        for <linux-pm@vger.kernel.org>; Mon, 09 Mar 2026 23:16:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1773123384; x=1773728184; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=/BwIIg5Iwvx2GTLZg0LGSdSidB1IAUOBncBMVs3N9v4=;
+        b=IS/pEVRqcCSanSwI0++Nv7apjl04wYoLF0wH00ofTsttF3XHijZnc34BBZsLC+oonk
+         8ifyvRhy0/GGeBg+FrNe+XrPMylTeM/Z+wz6vXh6ILwRypFylchaOouoWzFf3kQs1dNE
+         MjZGEgu8BYqd9GDLsd/PW2qfQ4LTD9iDxLYtEhyTO8ojLPWLjsq/rNixhJ3qdsoJT3g6
+         cbq1FhfojOgnLS5wizsDnu6zdBBAZiFcaIBZui2vqBhZ1xGK/gL+IagP35+GRaaspDmP
+         YT7kRplcj8+dtqobNYmTSQ3hbwc8s9K6EVswG4xa/P+qeN2TXr4RKTdQwuU2hgH/OqC3
+         ZkeQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773123384; x=1773728184;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=/BwIIg5Iwvx2GTLZg0LGSdSidB1IAUOBncBMVs3N9v4=;
+        b=ez9KfHWiDCxRJkcSxdViCsJA6JuDUZEVHoyd0lUIwdFjK+/5ToKR3NADbcPVYuFWjj
+         cDahaqXpRdSHTAv0nGYe43v1EyoKXhpkvwONg8PpChRyE6tbKv0xMgnv0Mq482yAMm7J
+         DI5rIblfDd8GOjOn834TmoTvsti9a/ExYPQgNKXgKi4vplAs39dGm+rcyxRfIhYfIDSy
+         VW82lqhWkCxF79CO441+va+yvcwZgN9jWO8N0KBk5mXwQ8Z7mIiN7lttFaCAoO252Dwj
+         9v3jwiJORcfQCtfLPaKKwlODqBnqFKwUFAodMJmRQqPxqaIty8nChsCFRZXTTasi80is
+         UBOw==
+X-Forwarded-Encrypted: i=1; AJvYcCUTd/wvrAw7nyqAnLhSFkrWW7jabQgoMNGWkUCYBS5+L9FPlAXr/i6gTKWpflRCj8TycyzRubnqgA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzpzA77ZZmEk74ff4AJV0B5PaLoaEvaoIyZf6+oDm0hCAlu3NQ5
+	6ACO0GlXSX2/DWOSiWeAvyDEVybZiETm5KNqnToPMihl5dpjJ3W3JE6Uy3ti11/WF1s=
+X-Gm-Gg: ATEYQzxHecxD+DryEDCfgDb1OW0KiPkDH4OZaa8GQcnRFCZYDieC3ADrHdXepaE6HmO
+	Fkva0S1L77hppdVSKBJhRLFKdoPy6hre3yCT1kluOidyU+d0GvexhC7czXCuC74WNWJVwidAFu6
+	8DMuriWPOvVQY6wEBIiRjy2NfMXCwRKXWbmS4QiirlKKxybE6JS2M4vyJ6UqBpjl37PP/JPimm2
+	hpF1Ny9QsD6NH3mgUIvsWuo8KuHJBvLM/u7V4G3aE7/P73MABL2UD04RpZjQSAiIIdC7e7iZfGH
+	8JRK/sSw9t/ADmNqL6xj3GzaGjhDwX7zxoFhZ/LTr8Ubxm8ul3k3vbenC9/TFFFUT1io7079+ME
+	RFLv4gSnZOhfGxaiqq14ly0uqOckyBwi5vT4Rpx0MpFCvvQQ0ZlSvkGr7Y2TXQHM9TxMbnUJ2Ko
+	Yme2ys8oRqz6sYWWI+n+sdqnzL
+X-Received: by 2002:a05:6a00:2d14:b0:7e8:3fcb:9b03 with SMTP id d2e1a72fcca58-829e4077415mr2127413b3a.25.1773123383382;
+        Mon, 09 Mar 2026 23:16:23 -0700 (PDT)
+Received: from localhost ([122.172.81.200])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-829aeea8644sm12926924b3a.33.2026.03.09.23.16.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 09 Mar 2026 23:16:22 -0700 (PDT)
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>,
+	linux-pm@vger.kernel.org,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Jie Zhan <zhanjie9@hisilicon.com>,
+	Lifeng Zheng <zhenglifeng1@huawei.com>,
+	Pierre Gondois <pierre.gondois@arm.com>,
+	Sumit Gupta <sumitg@nvidia.com>,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] cpufreq: Add MAINTAINERS entry for CPPC driver
+Date: Tue, 10 Mar 2026 11:46:18 +0530
+Message-Id: <db5e64651a1b3ddf33a25ccfc1d28da1c427780b.1773123282.git.viresh.kumar@linaro.org>
+X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-The current core counting logic has both naming and efficiency issues.
-The variable topo.cores_per_node is misleadingly named since it actually
-represents the maximum number of cores per package, not per node. And
-the core count calculation is suboptimal and wastes memory.
+Add a MAINTAINERS entry for the CPPC driver, with a list of reviewers
+from multiple organizations.
 
-Rename topo.cores_per_node to topo.cores_per_pkg and improve the system
-core count calculation algorithm to avoid memory over-allocation.
+Also sort the list alphabetically while doing so.
 
-Validated on multiple Intel platforms (ICX/SPR/SRF/EMR/GNR/CWF) with
-various CPU online/offline configurations and SMT enabled/disabled
-scenarios. No functional changes found.
-
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- tools/power/x86/turbostat/turbostat.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Rafael,
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index ae827485950d..ef3059ba07cd 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -2409,7 +2409,7 @@ struct topo_params {
- 	int max_l3_id;
- 	int max_node_num;
- 	int nodes_per_pkg;
--	int cores_per_node;
-+	int cores_per_pkg;
- 	int threads_per_core;
- } topo;
+I will apply this to the ARM cpufreq tree.
+
+ MAINTAINERS | 23 +++++++++++++++++------
+ 1 file changed, 17 insertions(+), 6 deletions(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 55af015174a5..7622601a36f8 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -6620,6 +6620,17 @@ M:	Bence Csókás <bence98@sch.bme.hu>
+ S:	Maintained
+ F:	drivers/i2c/busses/i2c-cp2615.c
  
-@@ -9634,9 +9634,9 @@ void topology_probe(bool startup)
- 	topo.max_core_id = max_core_id;	/* within a package */
- 	topo.max_package_id = max_package_id;
++CPU FREQUENCY DRIVERS - CPPC CPUFREQ
++M:	"Rafael J. Wysocki" <rafael@kernel.org>
++M:	Viresh Kumar <viresh.kumar@linaro.org>
++R:	Jie Zhan <zhanjie9@hisilicon.com>
++R:	Lifeng Zheng <zhenglifeng1@huawei.com>
++R:	Pierre Gondois <pierre.gondois@arm.com>
++R:	Sumit Gupta <sumitg@nvidia.com>
++L:	linux-pm@vger.kernel.org
++S:	Maintained
++F:	drivers/cpufreq/cppc_cpufreq.c
++
+ CPU FREQUENCY DRIVERS - VEXPRESS SPC ARM BIG LITTLE
+ M:	Viresh Kumar <viresh.kumar@linaro.org>
+ M:	Sudeep Holla <sudeep.holla@kernel.org>
+@@ -6628,6 +6639,12 @@ S:	Maintained
+ W:	http://www.arm.com/products/processors/technologies/biglittleprocessing.php
+ F:	drivers/cpufreq/vexpress-spc-cpufreq.c
  
--	topo.cores_per_node = max_core_id + 1;
-+	topo.cores_per_pkg = max_core_id + 1;
- 	if (debug > 1)
--		fprintf(outf, "max_core_id %d, sizing for %d cores per package\n", max_core_id, topo.cores_per_node);
-+		fprintf(outf, "max_core_id %d, sizing for %d cores per package\n", max_core_id, topo.cores_per_pkg);
- 	if (!summary_only)
- 		BIC_PRESENT(BIC_Core);
++CPU FREQUENCY DRIVERS - VIRTUAL MACHINE CPUFREQ
++M:	Saravana Kannan <saravanak@kernel.org>
++L:	linux-pm@vger.kernel.org
++S:	Maintained
++F:	drivers/cpufreq/virtual-cpufreq.c
++
+ CPU FREQUENCY SCALING FRAMEWORK
+ M:	"Rafael J. Wysocki" <rafael@kernel.org>
+ M:	Viresh Kumar <viresh.kumar@linaro.org>
+@@ -6647,12 +6664,6 @@ F:	kernel/sched/cpufreq*.c
+ F:	rust/kernel/cpufreq.rs
+ F:	tools/testing/selftests/cpufreq/
  
-@@ -9701,7 +9701,7 @@ void allocate_counters_1(struct counters *counters)
- void allocate_counters(struct counters *counters)
- {
- 	int i;
--	int num_cores = topo.cores_per_node * topo.nodes_per_pkg * topo.num_packages;
-+	int num_cores = topo.cores_per_pkg * topo.num_packages;
- 
- 	counters->threads = calloc(topo.max_cpu_num + 1, sizeof(struct thread_data));
- 	if (counters->threads == NULL)
+-CPU FREQUENCY DRIVERS - VIRTUAL MACHINE CPUFREQ
+-M:	Saravana Kannan <saravanak@kernel.org>
+-L:	linux-pm@vger.kernel.org
+-S:	Maintained
+-F:	drivers/cpufreq/virtual-cpufreq.c
+-
+ CPU HOTPLUG
+ M:	Thomas Gleixner <tglx@kernel.org>
+ M:	Peter Zijlstra <peterz@infradead.org>
 -- 
-2.43.0
+2.31.1.272.g89b43f80a514
 
