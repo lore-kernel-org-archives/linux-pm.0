@@ -1,209 +1,109 @@
-Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
+Received: from mail-qv1-f44.google.com (mail-qv1-f44.google.com [209.85.219.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6633C38E5D5
-	for <linux-pm@vger.kernel.org>; Mon,  9 Mar 2026 22:24:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C0421EF09B
+	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 00:20:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773095065; cv=none; b=G/kG75qldMy71m1sGRNYGDdpXIF/Iw5ky8AP7ej7m9yWj3dV3ENdiEoh+Ds6EvTC/1gL5rAs66X4r/Y7J3OobTU3zGx3oRAJM65ndmkOppoY9Z49OxLwJFezog8T9lOhhNWG5e20smtRY5ekGv5u9p07hBrluliYZOvX78nhuCc=
+	t=1773102009; cv=none; b=EecqhzMlttdVnbWmfvci7X6Ya/UEbn2raHnVvAkzDi4vBpGkAfyMXaU5Ch3ScaOxJjzWbraoyVitqmv6SxCZyfdPRkkYHf70Nq11x7gNUnz9FHD9RLdFKmi+PgiFU6pdnfBTBHnkwsR2HLqqDxaFozOIjhh6Y6ZAf1yqXbQEQF0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773095065; c=relaxed/simple;
-	bh=Cko55lCeKXrZHbjiIu641PYW/o6VsGwurcqaGD8aeKU=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=kfj2Ny2Ea15MZX4QLriLrvEUkUS7/LCUFpqqVhtebpuMySQ8K6ZZJjrQnfru4P90Z02Rx2DVgERWkfTWuOaiwKufOhlw5hbYQ8ygd2nmeBnmoCsTaEQ/+mxQnX0ZKBdyrcLxHvAJNfzYfyGj89yUuCeXVQB/d7OiF3nhFcECiyU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=jVF5okI6; arc=none smtp.client-ip=209.85.214.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1773102009; c=relaxed/simple;
+	bh=pQS3+oY8uNxbqu4m+QxhwxvnOL2GT6e9/8qi7PByaVk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=AnDUl3viPREWHqoGNP9psylzsaoTyyzchS3YqHKDARNx5rDGVUMokWfFQIYyNmA2+rAHDIxzYJqoxmVnO6usc+uM10nE1E9zNwr4/USs8VHPD/XlEizSy8JPVoIzrwEBOk7SOh1OUZlj7kfIRhrxTbaELv+CvTTJbwksnLXmXh0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=nXnJ6NyY; arc=none smtp.client-ip=209.85.219.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="jVF5okI6"
-Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-2addb31945aso87896405ad.1
-        for <linux-pm@vger.kernel.org>; Mon, 09 Mar 2026 15:24:23 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nXnJ6NyY"
+Received: by mail-qv1-f44.google.com with SMTP id 6a1803df08f44-89a0ecbc713so90551776d6.1
+        for <linux-pm@vger.kernel.org>; Mon, 09 Mar 2026 17:20:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1773095063; x=1773699863; darn=vger.kernel.org;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=hrSbyZBA5Px2iidq6W57qtYbXFOmMx8uhJF7gt5CJ8A=;
-        b=jVF5okI6grO3WmYQmX7ieTSbpXd7nFlp0AdRF12AxZtiXqh5Gd9Y915QWbCXNM9YgS
-         y71SjSgVb7qQPJJwOgIzm+mTk0TvDUEuzWPdCR0KLzQ1+OMfJB0qLlGT+SpKjTJKKGpN
-         XhZpG3UwwoJR6nvdyufAcfNWZo8TCb2GY2t2cbhSZNMdZPWWlQt1FUMKgQhzhIP/GmYV
-         /PhwLjSgCbFzWQDL3rstliKTJRC8Nr5GIYmwI6taLvhTJ5jXQMrX97lHYGvrcVKvw5Mh
-         WwtxPRoTpvWwHA02z4F1zhd8tjNoy8Bs9IRKfZxwy06WZQec7hsufnL8xiG3qP3V2YjR
-         YZUw==
+        d=gmail.com; s=20230601; t=1773102006; x=1773706806; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=R7YDg569U8MvXHa3jpNDu2jY2nnLQu1AklXEVajo+6o=;
+        b=nXnJ6NyYMAQfj0ew3WW7lOn9GjYTK4YmJWCZMWBQHwhkdqIKiuWv8Bg6GMyTBDj+Kl
+         bCJsRmD/d1YWRpyetD+qm31bx0RQvf4siJGpJl9HxjyAH6yDVe0san3m+wmCSY4Ydydk
+         ixBV58WswuYjfzi+PLsl1yIrgksYswzi8r27me+QrSPIpx0S4Qh/hSPng0WLSrmIicxq
+         QtQ+PWIoOPgshv0bP85NJFxhjt4sAvt50mVNqJJ5H52sXPTCL38m/Fz4PMuRBAiZwy8m
+         l4QXVPgafnmiL4zH8GOujmD4BD2pK2UYsDoJv9bqKuprSeiesKZpAyWfSR1M9LWGl2ra
+         BARg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773095063; x=1773699863;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=hrSbyZBA5Px2iidq6W57qtYbXFOmMx8uhJF7gt5CJ8A=;
-        b=NQ9vTSrvj85BGaoj8wg4lvVnDjGJf/FnZ7FaBigCeZjHf0xGrJ3eOE0I5e8kawNBN2
-         bkwIT6UqTKagf0eXfFrNPRd+KoL8tp84iMvSTu0eMicQ035JYfa1PBmNTF/SXqmc0T/N
-         3FtEZAJ6tnHMCC/kaW2VRO93hH/aWz7EcOE7nvUJcTMSQrBLetmDuv/WCDP5uoGSmdcB
-         PwAbcSqyQKF0qboJHgmmyg6P9gwW14eXesT/KIZvS6JpxKKIhCPjy6JEVZb29qce2lEU
-         djLw8IgZd870IQlCE5yN9r3h/Mlu8VsJKpACV3mIOxoPwHBwFAXkSXvehL+DqoXzNp7S
-         UA0A==
-X-Forwarded-Encrypted: i=1; AJvYcCVqcZnPc5a/uj/8S3XeqR9pxRDXbfuHGpcUlx0PmvxN1dxE1gpOot+fq82IdqaHgwmEOje7U9lHgA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyG0MQp/0B24KljbvE6cRSYlkzsEE7BhK1eHr9+EOwfygjlkthb
-	wzbexNvBRUMEbXB2beQCfPBH4dyTnYBBZa6oT9HZPJ907XVrJMbc+Mpz71U9iOji6S8=
-X-Gm-Gg: ATEYQzyX44gfUHHL921yXiXg7EvaRFg5zC1f4msvzlnfwN5rVvn4WLul+umEMp2OYbB
-	/v/ofr5TJxrK2ct503IRoYPk7acngQzZCOZyX7rlcRif/3jj53JV/AzNEY5ffW/V5Pun9taQnXs
-	KtLzoG90EOEisnqkOxm05bKxFz9YhfXe4w9jTGGVL/1fJjqzu2Dlh7rJs6f508NtuY25KWrQmEF
-	VcVnf2tbdtYIfENl47LwYKFN/Net4uN0N9LcYMPmnebNjD0/K5znPUoe8TGUh4mFilTa+EigBNt
-	SBwDBjVSJCGgJcvIaaEDRgzw+160XZovBbsAwtS6IbmI3sd3dzngcJ8GInqoi3TDN/LsLUBsYd2
-	pGOxARz49MWkDJMKoRrWNk0odyCijrGQatCwIm9ivADS9HmKujLU0HGczfq2dv34fQg8HDYu9wE
-	qy5OZ7CH6OfxTHACIh5njd
-X-Received: by 2002:a17:902:f78b:b0:2ae:55c1:ba8a with SMTP id d9443c01a7336-2ae823851bamr116227635ad.14.1773095062734;
-        Mon, 09 Mar 2026 15:24:22 -0700 (PDT)
-Received: from localhost ([71.212.200.220])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ae83fa2fa5sm130946135ad.70.2026.03.09.15.24.21
+        d=1e100.net; s=20230601; t=1773102006; x=1773706806;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=R7YDg569U8MvXHa3jpNDu2jY2nnLQu1AklXEVajo+6o=;
+        b=NEbYiPLmUlu6SB31MKaghZLALqA7sPv8LCMFbYPceIAcePTqm5frsLQvodcGPRskJy
+         aRS/4V07lurD0lzKRTmjW9Ig14rt6XJJsHK8m3D+d6Iq8E8Xfn4rN9RK7mZBVVZH3D5T
+         D+3jbYnwWJ5hKaJRbTSiwcCRHdEsiFX9MB0GArg7IlfW8KrWkhvDDgTt0UtnJNevgAlI
+         P1l/uMtT8ALwMbwco4sN3BN4Dp4eEha8p6hywKHyvhoPogqFx/X3sQAdEbgSUpCMK5kd
+         8bL740w5mV9G2qt0Zxn1mIZ9x+37jk6Y/Rv9Eg+LQ0/VDSzJlEm1RNlGggZhifdFpbmh
+         ADUA==
+X-Forwarded-Encrypted: i=1; AJvYcCVg5HcOHJI4adP1ZNkRzcYKdgO/QTOpnkrl8JcSgD5JsHIzRuLQa1iH6ZwM+Q1E+MDAlaTKg3hUeA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwLhy02ftEzuIgh8Qn8Thn8qGjY0DFyYMJFIoGj4fjqBKeVL72+
+	bG1YXyuiPMJCkcvWhHcQ4tQj5etYgn6b/xlHjolgmqxqHFnniCePnAh3
+X-Gm-Gg: ATEYQzwXV9gNbBXrkfCXI2V7oQP1Gl9/muDJ5lMZ86JcEkNrR8c0TldwlEP9lpG20XB
+	Vt2Uz1dpb9bqkkThcQ0LTnOaE3RFOTYRR0LhQC/DKlgG42WhQE9NAI/foPU1DLYOwtwsX3hywV7
+	2FCJVzDGE5pZxv02tbbrd83HgqIn8wPYPziYvzVz7jyrrGmwBbqm2AR8OvOVMq98QQUUgIEfKj+
+	unSTw6o2fsQ5rB9HO002a8lxjs0n95/iC8ARjYT9B19LRZxdB9/M6btiAtv3+FMYec+MRr4zsNG
+	ucBcM0khwRTrY3rVulyEPM4GVtzcD7YjISmtckk6syuTMcQ3JkWtErY+cv7/FTAqxsHvckjZDHC
+	K9p/qmhVOKwKXeJgRGrPXkfojuqCwQbjHq7ZG2nZCgk1xS5um+CRRJ1lfoKyzL70jw2H5yI70HX
+	uz9mjxt3KKs2N83068e4XfxueTzQ==
+X-Received: by 2002:a05:6214:40c:b0:899:ef7a:2425 with SMTP id 6a1803df08f44-89a57c8e7f3mr22310986d6.22.1773102006171;
+        Mon, 09 Mar 2026 17:20:06 -0700 (PDT)
+Received: from localhost ([184.144.58.243])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-89a57a3a9a2sm8380336d6.15.2026.03.09.17.20.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Mar 2026 15:24:22 -0700 (PDT)
-From: Kevin Hilman <khilman@baylibre.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Rob Herring
- <robh@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Sudeep Holla
- <sudeep.holla@arm.com>, Cristian Marussi <cristian.marussi@arm.com>,
- devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
- arm-scmi@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH RFC v5 1/2] pmdomain: core: support domain hierarchy via
- power-domain-map
-In-Reply-To: <CAPDyKFq0JAKc693d+RrPEBCAH--r+gobf822dQ5Ao6f2gnjRrw@mail.gmail.com>
-References: <20260122-pmdomain-hierarchy-onecell-v5-0-76855ec856bd@baylibre.com>
- <20260122-pmdomain-hierarchy-onecell-v5-1-76855ec856bd@baylibre.com>
- <20260127151735.GA1699112-robh@kernel.org> <7hjywtzaiy.fsf@baylibre.com>
- <CAMuHMdURxN=kBQHJKnsTVEQPeuB41r5kZy4sgFNqg=U2ynuZMw@mail.gmail.com>
- <7hv7flrb36.fsf@baylibre.com>
- <CAPDyKFq0JAKc693d+RrPEBCAH--r+gobf822dQ5Ao6f2gnjRrw@mail.gmail.com>
-Date: Mon, 09 Mar 2026 15:24:21 -0700
-Message-ID: <7hqzpszlnu.fsf@baylibre.com>
+        Mon, 09 Mar 2026 17:20:05 -0700 (PDT)
+From: Richard Acayan <mailingradian@gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Amit Kucheria <amitk@kernel.org>,
+	Thara Gopinath <thara.gopinath@gmail.com>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	linux-arm-msm@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org
+Cc: Richard Acayan <mailingradian@gmail.com>
+Subject: [PATCH v3 0/3] SDM670 Basic SoC thermal zones
+Date: Mon,  9 Mar 2026 20:20:34 -0400
+Message-ID: <20260310002037.1863-1-mailingradian@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 
-Ulf Hansson <ulf.hansson@linaro.org> writes:
+This adds support for the thermal sensor, for thermal-based CPU
+throttling via LMh, and for thermal zones.
 
-> On Wed, 25 Feb 2026 at 00:11, Kevin Hilman <khilman@baylibre.com> wrote:
->>
->> Geert Uytterhoeven <geert@linux-m68k.org> writes:
->>
->> > Hi Kevin,
->> >
->> > Thanks for your series! I became aware of it only recently, and read
->> > it and its history with great interest...
->> >
->> > On Wed, 4 Feb 2026 at 00:13, Kevin Hilman <khilman@baylibre.com> wrote:
->> >> Rob Herring <robh@kernel.org> writes:
->> >> > On Thu, Jan 22, 2026 at 05:14:00PM -0800, Kevin Hilman (TI) wrote:
->> >> >> Add of_genpd_[add|remove]_subdomain_map() helper functions to support
->> >> >> hierarchical PM domains defined by using power-domains-map
->> >> >
->> >> > power-domain-map. No 's'.
->> >> >
->> >> >> property (c.f. nexus node maps in DT spec, section 2.5.1).
->> >> >>
->> >> >> This enables PM domain providers with #power-domain-cells > 0 to
->> >> >> establish subdomain relationships via the power-domain-map property,
->> >> >> which was not previously possible.
->> >> >>
->> >> >> These new helper functions:
->> >> >> - uses an OF helper to iterate to over entries in power-domain-map
->> >> >> - For each mapped entry: extracts child specifier, resolves parent phandle,
->> >> >>   extracts parent specifier args, and establishes subdomain relationship
->> >> >> - Calls genpd_[add|remove]_subdomain() with proper gpd_list_lock mutex protection
->> >> >>
->> >> >> Example from k3-am62l.dtsi:
->> >> >>
->> >> >>   scmi_pds: protocol@11 {
->> >> >>       #power-domain-cells = <1>;
->> >> >>       power-domain-map = <15 &MAIN_PD>,  /* TIMER0 */
->> >> >>                          <19 &WKUP_PD>;  /* WKUP_TIMER0 */
->> >> >>   };
->> >> >>
->> >> >>   MAIN_PD: power-controller-main {
->> >> >>       #power-domain-cells = <0>;
->> >> >>   };
->> >> >>
->> >> >>   WKUP_PD: power-controller-main {
->> >> >>       #power-domain-cells = <0>;
->> >> >>   };
->> >> >>
->> >> >> This allows SCMI power domain 15 to become a subdomain of MAIN_PD, and
->> >> >> domain 19 to become a subdomain of WKUP_PD.
->> >> >
->> >> > One concern I have here is generally *-map is transparent meaning when
->> >> > you lookup <&scmi_pds 15>, &MAIN_PD is returned as the provider. It's
->> >> > also possible to have a map point to another map until you get to the
->> >> > final provider. The only way we have to support both behaviors is the
->> >> > consumer has to specify (i.e. with of_parse_phandle_with_args_map() vs.
->> >> > of_parse_phandle_with_args()), but the consumer shouldn't really know
->> >> > this detail.
->> >
->> > This is also the first thing I was worried about, when I noticed you are
->> > not doing transparent mapping, but add an explicit hierarchy instead,
->> > based on the map.
->>
->> Yeah, the map wasn't my original idea, and TBH, I had never really even
->> heard of nexus node maps before it was suggested by Rob[1] that I could
->> use it to describe hierarchy.
->>
->> But... I'm gathering from Rob's and your recent feedback that my current
->> approach to using a map is an abuse/misuse of the map because it's just
->> being used to describe hierarchy, and because it's not transparent.
->>
->> I'm still waiting to hear from Rob to see if I understood that right,
->> but your feedback is making me think that's the case.
->>
->> If so, I'm honestly not sure where to go next.
->>
->> >> > Maybe a transparent map of power-domains would never make sense. IDK. If
->> >> > so, then there's not really any issue since the pmdomain core handles
->> >> > everyone the same way.
->> >
->> > AFAIUI, SCMI is not limited to the SoC, but may be used for the whole
->> > hardware platform, so it could control power to external devices, too.
->> > Once we need to map a power domain through a connector, we need
->> > support for transparent mapping through a nexus node.
->> >
->> >> I don't really know enough about potential usage of maps to know if
->> >> there's ever a usecase for transparent maps.  However, the problem I'm
->> >> trying to solve is less about transparent maps, and more about
->> >> describing hierarchy in a situation where "leaf" domains of the same
->> >> type (e.g. SCMI) can have different parent domains.
->> >
->> > Hierarchy is indeed something that cannot be described with the current
->> > SCMI power domain management protocol.  This includes external hierarchy
->> > (your use case), and internal hierarchy: AFAIK, Linux cannot be made
->> > aware of the hierarchical relationship among the different power
->> > domains controlled through SCMI either.
->>
->> Yes, the limitations of SCMI (both the protocol, and the Linux
->> implementation) are the root cause here.  In case you didn't see it,
->> before I posted the original version of this series, I started a thread
->> on the arm-scmi list to discuss implementation options[2]
->>
->> So since this is primarily and SCMI limitation, maybe I should just go
->> back to the original proposal of using power-domains-child-ids[3]?
->>
->> I'm definitely open to suggestions here as I'm a bit out of my depth
->> here.
->
-> FWIW, I favor re-trying the "power-domains-child-ids" [3] approach.
->
-> The main reason is that we already have the "power-domains" property,
-> which allows us to describe parents using a list of phandles.
->
-> To me, it seems more sensible to extend this with a new
-> "power-domains-child-ids" property, which can be used when needed,
-> rather than inventing an entirely new property, that would replace the
-> existing one.
+Changes since v2 (https://lore.kernel.org/r/20260304014530.27775-1-mailingradian@gmail.com):
+- remove cooling from memory thermal zone (3/3)
 
-OK, in the absence of any feedback from the DT maintainers, I'll go back
-to the original approach of using `power-domain-child-ids`.
+Changes since v1 (https://lore.kernel.org/r/20260210021607.12576-1-mailingradian@gmail.com):
+- add review tag from Krzysztof (1/3)
+- replace CPU thermal zones with lmh (2/3, 3/3)
 
-Kevin
+Richard Acayan (3):
+  dt-bindings: thermal: tsens: add SDM670 compatible
+  dt-bindings: thermal: lmh: Add SDM670 compatible
+  arm64: dts: qcom: sdm670: add thermal zones and thermal devices
 
+ .../devicetree/bindings/thermal/qcom-lmh.yaml |   3 +
+ .../bindings/thermal/qcom-tsens.yaml          |   1 +
+ arch/arm64/boot/dts/qcom/sdm670.dtsi          | 400 ++++++++++++++++++
+ 3 files changed, 404 insertions(+)
+
+-- 
+2.53.0
 
