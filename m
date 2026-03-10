@@ -1,135 +1,79 @@
-Received: from canpmsgout01.his.huawei.com (canpmsgout01.his.huawei.com [113.46.200.216])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E8FE1386C9;
-	Tue, 10 Mar 2026 03:14:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.216
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D73713AE191;
+	Tue, 10 Mar 2026 03:26:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773112501; cv=none; b=Y51YcP8tucucy6Zj5VZ/GeMo2kYZFNmzzEXSTw6UxWZR26MU+0qM6XLl6zd+OhmsNDEagK7YvMYGYTdnsQLrD05c7HZEiu+uZJF01wOfH6VuaUom+TO16ttAYFh1WdJGrH5K7PYgTHj/FDV/pYPImApinyM9b40/UPq8brdxgvU=
+	t=1773113181; cv=none; b=iVCUkrGyQa3/S1yf9NR3idFv2BXvsqKYES1tKhNOjrXJMU7C/Zld09GgYgHGZq86JIhnkDEN8B8I0qTkC4+O/mirKVJdgwPaqjRtMNLTzTvwXG1Mk4th/LGwlOXOgFXwyiux2lupfCPY263whuh1Fg070s+t/l8XHU8TTCcWL/I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773112501; c=relaxed/simple;
-	bh=Uskka569QBSSXaiNnOlJRRYau5eVAyuazHZ7IbTF3LE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=PSFqx6V8UMQNMFrxnUdYiG9YfVJHDsikB169x19sCIg4BxnhxqLAGLDINnC5nurrcbLv6GZBxcJ2aM6qDRI0C1UzT3/zabsL6R8Bli9gZltTbTpNDWH+x/ZKLuJ9Rkffk50KsADGfOfF8gHcv+MLPkEM0trDhl93yHxRmSBn85w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.216
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.162.140])
-	by canpmsgout01.his.huawei.com (SkyGuard) with ESMTPS id 4fVJlF3FH3z1T4Fs;
-	Tue, 10 Mar 2026 11:09:45 +0800 (CST)
-Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
-	by mail.maildlp.com (Postfix) with ESMTPS id 23AAB20104;
-	Tue, 10 Mar 2026 11:14:55 +0800 (CST)
-Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
- (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 10 Mar
- 2026 11:14:54 +0800
-Message-ID: <93bff819-b232-4047-93fd-7ec02ec417ef@hisilicon.com>
-Date: Tue, 10 Mar 2026 11:14:53 +0800
+	s=arc-20240116; t=1773113181; c=relaxed/simple;
+	bh=CGUraFSadO6xwK8hyPzW2nYZizEbPRWyDuSeFqHRTi8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=noORVqIFLpl1/xleDTGFDa57LPvRZX5iUA6Qh572SkiQZ0Zt6/+WPk1n+3UgOBdVdH34MAKPscFtRr+1fsh7WCudZ0l6tAgomJMuUPXZtIw8jwbm1fKRuc50WvtkYmuzI4JZbNpRnm0/LPERNdpvZQRCnuZv3DmQeQk15/aNFyw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=G9f+oybQ; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="G9f+oybQ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63FEAC4CEF7;
+	Tue, 10 Mar 2026 03:26:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773113180;
+	bh=CGUraFSadO6xwK8hyPzW2nYZizEbPRWyDuSeFqHRTi8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=G9f+oybQ39xBTyHNnSSDheYXZsp8GFVDPYcsxsfvYUkmJAY3jmrxUmGkMAnGRLmxj
+	 F4emLXKKU0sgpNy+zSHKXDvyMmmZJ0KtYP84ceCrFU+85OMgjmCk1WgZEcwm4/cjSS
+	 XaumY3JY1DVAPL9VGuQZa8IAPP/U8OoqtKDmN9C2OE3HqhQQEwP1KQjqiMnHUWakRA
+	 y7NrWrWv4CfaDy/cUAcqt/D8DsRdRw40FvVXSKkH3lPuBPUsWg+2eKatLJrZZn/UNs
+	 QsGtZ3DQCc2xcAC/DWLQ62n6e3OcJl3FPKPFoawsV147xwy1ba8qrStY6iNDV2eEhp
+	 +UJ1MboPrYxHg==
+Date: Tue, 10 Mar 2026 03:26:14 +0000
+From: Tzung-Bi Shih <tzungbi@kernel.org>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Shuah Khan <skhan@linuxfoundation.org>, Tejun Heo <tj@kernel.org>,
+	Lai Jiangshan <jiangshanlai@gmail.com>,
+	Tobias Schrammm <t.schramm@manjaro.org>,
+	Sebastian Reichel <sre@kernel.org>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Dan Carpenter <dan.carpenter@linaro.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>, Lee Jones <lee@kernel.org>,
+	Dzmitry Sankouski <dsankouski@gmail.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Benson Leung <bleung@chromium.org>,
+	Matti Vaittinen <mazziesaccount@gmail.com>,
+	driver-core@lists.linux.dev, linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
+	linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-mediatek@lists.infradead.org, chrome-platform@lists.linux.dev
+Subject: Re: [PATCH v2 10/10] platform/chrome: cros_usbpd_logger: Simplify
+ with devm
+Message-ID: <aa-PViGyA2CTVxHv@google.com>
+References: <20260305-workqueue-devm-v2-0-66a38741c652@oss.qualcomm.com>
+ <20260305-workqueue-devm-v2-10-66a38741c652@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/2] cpufreq: governor: Apply limits with target_freq
- instead of policy->cur
-To: "zhenglifeng (A)" <zhenglifeng1@huawei.com>, <rafael@kernel.org>,
-	<viresh.kumar@linaro.org>, <mingo@redhat.com>, <peterz@infradead.org>,
-	<juri.lelli@redhat.com>, <vincent.guittot@linaro.org>
-CC: <dietmar.eggemann@arm.com>, <rostedt@goodmis.org>, <bsegall@google.com>,
-	<mgorman@suse.de>, <vschneid@redhat.com>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linuxarm@huawei.com>,
-	<jonathan.cameron@huawei.com>, <lihuisong@huawei.com>, <yubowen8@huawei.com>,
-	<zhangpengjie2@huawei.com>, <wangzhi12@huawei.com>,
-	<linhongye@h-partners.com>
-References: <20260210115458.3493646-1-zhenglifeng1@huawei.com>
- <8f50fe29-c2f6-465a-b04a-6eac79ed49dd@hisilicon.com>
- <541a8677-7482-4463-9463-21d7410f65b1@huawei.com>
-Content-Language: en-US
-From: Jie Zhan <zhanjie9@hisilicon.com>
-In-Reply-To: <541a8677-7482-4463-9463-21d7410f65b1@huawei.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
- kwepemf200017.china.huawei.com (7.202.181.10)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260305-workqueue-devm-v2-10-66a38741c652@oss.qualcomm.com>
 
-
-
-On 3/6/2026 5:21 PM, zhenglifeng (A) wrote:
-> On 3/5/2026 8:19 PM, Jie Zhan wrote:
->>
->> On 2/10/2026 7:54 PM, Lifeng Zheng wrote:
->>> The motivation for this patchset cames from a test on our platform:
->>>
->>> With conservative governor and some pressure on CPU, the frequency rapidly
->>> reach the max supported frequency, such as 2GHz.
->>>
->>> Later, some frequency division strategies on our platform were triggered
->>> and the actual frequency become 500MHz -- 1/4 of the OS distribution
->>> frequency.
->>>
->>> At that time, if someone excecutes 'cat cpuinfo_cur_freq', the actual
->>> frequency will become 250MHz -- 1/4 of the min supported frequency.
->>>
->>> After the platform recovering from the frequency division, the frequency
->>> will stay on 1GHz, until the pressure disappear.
->>>
->>> The reason this happens is that in cpufreq_verify_current_freq(), if
->>> policy->cur != new_freq, policy->update will be queued, which will
->>> ultimately lead to a call to cpufreq_policy_apply_limits(), and update the
->>> target frequency to policy->min. And then in cs_dbs_update(), since the
->>> pressure never vanish, it will always hit the following branches:
->>>
->>> 	if (load > dbs_data->up_threshold) {
->>> 		dbs_info->down_skip = 0;
->>>
->>> 		/* if we are already at full speed then break out early */
->>> 		if (requested_freq == policy->max)
->>> 			goto out;
->>>
->>> Therefore, the target frequency will always remain at the lowest frequency.
->> I feel like this is a common issue that some special handling in the
->> governor should happen when the frequency limits changes, i.e.
->> governor->limits() gets called.  See 'limits_changed' or 'need_freq_update'
->> in the schedutil governor.
->>
->> Do you think it's reasonable to mark such a flag in 'cpufreq_policy' when
->> its limits changes, and any governor can use that for their own code?
+On Thu, Mar 05, 2026 at 10:45:49PM +0100, Krzysztof Kozlowski wrote:
+> Simplify the driver by using devm interfaces, which allow to drop
+> probe() error paths and the remove() callback.
 > 
-> Yes. This is why I said 'The branching conditions in cs_dbs_update() may
-> not be strict enough'. However, using policy->cur to decide the target freq
-> is unreasonable to me. So this patch set is still meaningful I think.
+> Change is not equivalent in the workqueue itself: use non-legacy API
+> which does not set (__WQ_LEGACY | WQ_MEM_RECLAIM).  The workqueue is
+> used to update logs, thus there is no point to run it for memory
+> reclaim.
 > 
-Ok, ignore this.  I was thinking of extracting such a flag/variable to a
-common struct shared among ondemand, conservative, and scheduitl.  But this
-is unrealistic at the moment, considering the governor data between DBS
-(ondemand, conservative) and schedutil is totally different.
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
->>
->> Jie
->>>
->>> The branching conditions in cs_dbs_update() may not be strict enough, but
->>> the root cause of this problem is that the target frequency was updated
->>> when querying cpuinfo_cur_freq. For ondemand and schedutil governor,
->>> although the frequency will not always remain at the lowest level without
->>> rising, will still be min_freq in a short period of time when the query
->>> action occurs.
->>>
->>> Using the freq requested by the governor to decide whether to update the
->>> target frequency is more reasonable in cpufreq_policy_apply_limits().
->>>
->>> Lifeng Zheng (2):
->>>   cpufreq: governor: Move requested_freq to policy_dbs_info
->>>   cpufreq: governor: Apply limits with requested_freq or next_freq
->>>
->>>  drivers/cpufreq/cpufreq_conservative.c | 14 ++++----------
->>>  drivers/cpufreq/cpufreq_governor.c     |  3 ++-
->>>  drivers/cpufreq/cpufreq_governor.h     | 12 ++++++++++++
->>>  drivers/cpufreq/cpufreq_ondemand.c     | 10 +++++-----
->>>  include/linux/cpufreq.h                |  7 ++++---
->>>  kernel/sched/cpufreq_schedutil.c       |  4 ++--
->>>  6 files changed, 29 insertions(+), 21 deletions(-)
->>>
-> 
+Acked-by: Tzung-Bi Shih <tzungbi@kernel.org>
