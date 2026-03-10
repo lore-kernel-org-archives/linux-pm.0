@@ -1,61 +1,63 @@
-Received: from mail-qv1-f44.google.com (mail-qv1-f44.google.com [209.85.219.44])
+Received: from mail-qt1-f180.google.com (mail-qt1-f180.google.com [209.85.160.180])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C0421EF09B
-	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 00:20:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 416491DE2D8
+	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 00:20:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773102009; cv=none; b=EecqhzMlttdVnbWmfvci7X6Ya/UEbn2raHnVvAkzDi4vBpGkAfyMXaU5Ch3ScaOxJjzWbraoyVitqmv6SxCZyfdPRkkYHf70Nq11x7gNUnz9FHD9RLdFKmi+PgiFU6pdnfBTBHnkwsR2HLqqDxaFozOIjhh6Y6ZAf1yqXbQEQF0=
+	t=1773102020; cv=none; b=nYJSgihzHZVmUw6+px24rfffRAbGGXW5O75MMjME0Brnw29ayuGC1faqqo2ZK11IvjcAzKw1lB029FomEsFWCL27GteQqZCTYSG0fLQF+RzarL27UUDLKFqB+wNz50BDAOFvIAlhmJDPKZ6y/QAyXl8jhzAoARI5M1asmMuO5Go=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773102009; c=relaxed/simple;
-	bh=pQS3+oY8uNxbqu4m+QxhwxvnOL2GT6e9/8qi7PByaVk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=AnDUl3viPREWHqoGNP9psylzsaoTyyzchS3YqHKDARNx5rDGVUMokWfFQIYyNmA2+rAHDIxzYJqoxmVnO6usc+uM10nE1E9zNwr4/USs8VHPD/XlEizSy8JPVoIzrwEBOk7SOh1OUZlj7kfIRhrxTbaELv+CvTTJbwksnLXmXh0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=nXnJ6NyY; arc=none smtp.client-ip=209.85.219.44
+	s=arc-20240116; t=1773102020; c=relaxed/simple;
+	bh=zT7VHqFCzDwH7dsnqHKBT6R20zasdavK49rOXk8BcyE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=DZ5IyIBeZXYslVoqmAOw4P557GJD4aB33JYG3RPeS1qUrVHDML+/ep5+clugR1jLxr/FWADjhR9b5JOdH+sVWqCBi5yBVm6ysFx8wx8BE4O7hMixmEU6XxGPP/Wsu/OZRNeNmk7XTduA36b5QfWsbltXx59F4lHaLzkdV31hiCE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=L0enkBRS; arc=none smtp.client-ip=209.85.160.180
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nXnJ6NyY"
-Received: by mail-qv1-f44.google.com with SMTP id 6a1803df08f44-89a0ecbc713so90551776d6.1
-        for <linux-pm@vger.kernel.org>; Mon, 09 Mar 2026 17:20:07 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="L0enkBRS"
+Received: by mail-qt1-f180.google.com with SMTP id d75a77b69052e-509046c5c7fso29609621cf.1
+        for <linux-pm@vger.kernel.org>; Mon, 09 Mar 2026 17:20:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773102006; x=1773706806; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=R7YDg569U8MvXHa3jpNDu2jY2nnLQu1AklXEVajo+6o=;
-        b=nXnJ6NyYMAQfj0ew3WW7lOn9GjYTK4YmJWCZMWBQHwhkdqIKiuWv8Bg6GMyTBDj+Kl
-         bCJsRmD/d1YWRpyetD+qm31bx0RQvf4siJGpJl9HxjyAH6yDVe0san3m+wmCSY4Ydydk
-         ixBV58WswuYjfzi+PLsl1yIrgksYswzi8r27me+QrSPIpx0S4Qh/hSPng0WLSrmIicxq
-         QtQ+PWIoOPgshv0bP85NJFxhjt4sAvt50mVNqJJ5H52sXPTCL38m/Fz4PMuRBAiZwy8m
-         l4QXVPgafnmiL4zH8GOujmD4BD2pK2UYsDoJv9bqKuprSeiesKZpAyWfSR1M9LWGl2ra
-         BARg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773102006; x=1773706806;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20230601; t=1773102018; x=1773706818; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=R7YDg569U8MvXHa3jpNDu2jY2nnLQu1AklXEVajo+6o=;
-        b=NEbYiPLmUlu6SB31MKaghZLALqA7sPv8LCMFbYPceIAcePTqm5frsLQvodcGPRskJy
-         aRS/4V07lurD0lzKRTmjW9Ig14rt6XJJsHK8m3D+d6Iq8E8Xfn4rN9RK7mZBVVZH3D5T
-         D+3jbYnwWJ5hKaJRbTSiwcCRHdEsiFX9MB0GArg7IlfW8KrWkhvDDgTt0UtnJNevgAlI
-         P1l/uMtT8ALwMbwco4sN3BN4Dp4eEha8p6hywKHyvhoPogqFx/X3sQAdEbgSUpCMK5kd
-         8bL740w5mV9G2qt0Zxn1mIZ9x+37jk6Y/Rv9Eg+LQ0/VDSzJlEm1RNlGggZhifdFpbmh
-         ADUA==
-X-Forwarded-Encrypted: i=1; AJvYcCVg5HcOHJI4adP1ZNkRzcYKdgO/QTOpnkrl8JcSgD5JsHIzRuLQa1iH6ZwM+Q1E+MDAlaTKg3hUeA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwLhy02ftEzuIgh8Qn8Thn8qGjY0DFyYMJFIoGj4fjqBKeVL72+
-	bG1YXyuiPMJCkcvWhHcQ4tQj5etYgn6b/xlHjolgmqxqHFnniCePnAh3
-X-Gm-Gg: ATEYQzwXV9gNbBXrkfCXI2V7oQP1Gl9/muDJ5lMZ86JcEkNrR8c0TldwlEP9lpG20XB
-	Vt2Uz1dpb9bqkkThcQ0LTnOaE3RFOTYRR0LhQC/DKlgG42WhQE9NAI/foPU1DLYOwtwsX3hywV7
-	2FCJVzDGE5pZxv02tbbrd83HgqIn8wPYPziYvzVz7jyrrGmwBbqm2AR8OvOVMq98QQUUgIEfKj+
-	unSTw6o2fsQ5rB9HO002a8lxjs0n95/iC8ARjYT9B19LRZxdB9/M6btiAtv3+FMYec+MRr4zsNG
-	ucBcM0khwRTrY3rVulyEPM4GVtzcD7YjISmtckk6syuTMcQ3JkWtErY+cv7/FTAqxsHvckjZDHC
-	K9p/qmhVOKwKXeJgRGrPXkfojuqCwQbjHq7ZG2nZCgk1xS5um+CRRJ1lfoKyzL70jw2H5yI70HX
-	uz9mjxt3KKs2N83068e4XfxueTzQ==
-X-Received: by 2002:a05:6214:40c:b0:899:ef7a:2425 with SMTP id 6a1803df08f44-89a57c8e7f3mr22310986d6.22.1773102006171;
-        Mon, 09 Mar 2026 17:20:06 -0700 (PDT)
+        bh=yqMq09LrRUJ7Y1qu+vRwg7gsZM0+ELiCGik6jbn1EcI=;
+        b=L0enkBRSntbBxvpcK3E5rFUtDs3tB6Xrq1rhI4zRfMGY/V+xRT/EvX4qbhUPLEQkaX
+         lzX/aZZJl1YxAyCE/M2GL74Yqt46wbviJohIRk0GfMZbbrch0UR8pT1T1VrH5BbIBZTb
+         /Rrj1sZENrzHFWoYOaPnkmmvwN8RvxZIzxu6aquQYg5+C22NIcdLYXrg/pzRaAKt9AEu
+         hmpeqR9KZXWBWcqRxehkQYmKqCkFoXm6W2dqI/sfJRIQ3NZcj+rE4xC2YUKUGkAB0MVZ
+         Sdx/x7hJW2ZLrBIhb2hrGSrbRfIVi4lFjkB5x6jKf+dUZOzCh4T8x18AOoLfHQAcbAej
+         i2qw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773102018; x=1773706818;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=yqMq09LrRUJ7Y1qu+vRwg7gsZM0+ELiCGik6jbn1EcI=;
+        b=TEh9UBXtej2CbMJ7iUKbIr21Q+37yrrgOY7FY8XnFGIPVini8wKAw0LRxe8pwOVMCc
+         BTHBptvQpE6GfOx56BWZDUX01+vmcX2cwj7Jk47BfTNmrI0v/5B/5Txv6N+bVk+58XYL
+         NpryM6Ssix1LWHV1QTNKFTQcGrcouSLtfsuTd7gfXPwm3quLL1ulWZIyRoEaesfDwwct
+         eJowUWLQvWdikFMa9S6Ew16OvrjWcSb0y17DvXLKE1XQ/w7iSCw8Qe4CewDvwZkJrN3C
+         fkYleuSogauC5BJq+OMKgjFpoJCG+rjU0G/GbN1hAHaO2QR31xDF23btKYSvLAfdejbU
+         HVFQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXwX4bHC+sxtVmV7PaaWfvuwf9VdspdFOul8vswQ1tHFUdcmC5ZNzPK2Z6b1COXG3uJ61krevwA2w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxJyrCPgG3DaPMRLdB5P63N4WChvxwRKz6G9M10k9NNvRnHDE1J
+	7YZrunzsjNhVwfAADiSQpPhxCKrn1AkkUIqvIqhwTMhsev/D1WcU66Av
+X-Gm-Gg: ATEYQzzoZRh/3dI+V6cONd1MhRYG2XDQlQeDaBQu8bNBtW5FagiknrBrtJA7oWUMi5d
+	+25e89Np/Da5vfB2fkNgiLWprTEy8N9ozI72QDHwtqySwslV4fslgG0LzkryTzuC7rhJ6jbdgyg
+	vEbUQ1iEXYO/sORVex48T6S6FIrM/jtkdu99uj872Yxr7wZYXZ/FtnujYzPxzigcCkP6GkFuWvB
+	c/UyxZubQWf9N5MYCr9bomAYorGCKWUGg2svnCJQfnnnojo40g/DoOYfJ3+MKThaz1OVxKbWddY
+	bC9I0WfwOV3MsAmUsXII3o8NS6pBe1wNn5PdqVCsUU5c3maU6Iw2gtH7K2PYW4qn3N5SMzAHgiw
+	9gqwjXYNgygcEnarDM9kYBTO9yFbx/1QpnUxHBZAulUAqHKfo+jWNBpBydG/l99eCqY8WmiIowq
+	pY+TdZfYKproSkYzpk4GV302O1zw==
+X-Received: by 2002:a05:622a:1998:b0:509:1dc8:e9e5 with SMTP id d75a77b69052e-5091dc8ed37mr53525151cf.34.1773102018043;
+        Mon, 09 Mar 2026 17:20:18 -0700 (PDT)
 Received: from localhost ([184.144.58.243])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-89a57a3a9a2sm8380336d6.15.2026.03.09.17.20.05
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-89a57a1afabsm8615926d6.9.2026.03.09.17.20.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Mar 2026 17:20:05 -0700 (PDT)
+        Mon, 09 Mar 2026 17:20:17 -0700 (PDT)
 From: Richard Acayan <mailingradian@gmail.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@kernel.org>,
@@ -72,10 +74,12 @@ To: "Rafael J. Wysocki" <rafael@kernel.org>,
 	linux-pm@vger.kernel.org,
 	devicetree@vger.kernel.org
 Cc: Richard Acayan <mailingradian@gmail.com>
-Subject: [PATCH v3 0/3] SDM670 Basic SoC thermal zones
-Date: Mon,  9 Mar 2026 20:20:34 -0400
-Message-ID: <20260310002037.1863-1-mailingradian@gmail.com>
+Subject: [PATCH v3 1/3] dt-bindings: thermal: tsens: add SDM670 compatible
+Date: Mon,  9 Mar 2026 20:20:35 -0400
+Message-ID: <20260310002037.1863-2-mailingradian@gmail.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260310002037.1863-1-mailingradian@gmail.com>
+References: <20260310002037.1863-1-mailingradian@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -84,26 +88,26 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This adds support for the thermal sensor, for thermal-based CPU
-throttling via LMh, and for thermal zones.
+Add the compatible for the thermal sensors on the SDM670.
 
-Changes since v2 (https://lore.kernel.org/r/20260304014530.27775-1-mailingradian@gmail.com):
-- remove cooling from memory thermal zone (3/3)
+Signed-off-by: Richard Acayan <mailingradian@gmail.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+---
+ Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-Changes since v1 (https://lore.kernel.org/r/20260210021607.12576-1-mailingradian@gmail.com):
-- add review tag from Krzysztof (1/3)
-- replace CPU thermal zones with lmh (2/3, 3/3)
-
-Richard Acayan (3):
-  dt-bindings: thermal: tsens: add SDM670 compatible
-  dt-bindings: thermal: lmh: Add SDM670 compatible
-  arm64: dts: qcom: sdm670: add thermal zones and thermal devices
-
- .../devicetree/bindings/thermal/qcom-lmh.yaml |   3 +
- .../bindings/thermal/qcom-tsens.yaml          |   1 +
- arch/arm64/boot/dts/qcom/sdm670.dtsi          | 400 ++++++++++++++++++
- 3 files changed, 404 insertions(+)
-
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index 3c5256b0cd9f..6c84f22ae322 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -71,6 +71,7 @@ properties:
+               - qcom,sc8180x-tsens
+               - qcom,sc8280xp-tsens
+               - qcom,sdm630-tsens
++              - qcom,sdm670-tsens
+               - qcom,sdm845-tsens
+               - qcom,sm6115-tsens
+               - qcom,sm6350-tsens
 -- 
 2.53.0
 
