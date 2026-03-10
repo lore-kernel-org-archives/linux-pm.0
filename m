@@ -1,230 +1,217 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-f169.google.com (mail-lj1-f169.google.com [209.85.208.169])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EEE4B42847B
-	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 09:59:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773136789; cv=none; b=FPAhg8eZcqpStWkw4w8J8R4FSNb70Ddm4oIQKsxr/NG1VuvQZu+7byEnbQbxu6rYqo3GJqASvmf73BssYANk+DU75yTtINn07uqFeGSobgX/jH4zncfL3vGrfpiIw4uMzswBWuOEK/8ZyXIo63ssLtnhXTVNvkVHPjRMl3ArxkI=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773136789; c=relaxed/simple;
-	bh=TDPfe7m1zO4HOHLA+mRXSmC65oJJ46//jYUxV1a9kdc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UzkA16fV523dJ040VwU7VfsXbkzcud/93TyGgsFQ9M0yMdJxHAm/jLcQwvK1i7HY6XVLiaYWg5D09Zuk9qRh+2Vw36buwHER4L17efKY9bWYVMnDoZryD6VTmkYkFslyr2VqZV3EemWYykSA4iH+k5//2uX9GiXj2pMuWfk3qjI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Xs8tsJIa; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=CkVfiZi2; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 03EAB2AD3D
+	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 10:09:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.169
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773137394; cv=pass; b=qbvc7zj04pjcNw0Sxv6WyrXbzi2OQR2Qe3xped3f/g5bYPskxBWa5zJta9zmbvpFC4//xl4EODt8kEJj1FGYCGF7Xe13A3q1Jm8Ez4qeAWXXwCZpoZULBuSEhlWPyp84B8VAV5ebZP5ubKlYfIqMsLZ+Ehnzg5E0A0/Hm98/yaE=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773137394; c=relaxed/simple;
+	bh=ef7494GHPVnuwouKcTUUpqp3TuY1Ebz0YzpEao9k4yU=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=YH2xDapUiuYfqCAdIcZX/F1vh4WMTwI8xmcNGaNbcF1fUEBEOdRGiKExLl9fIg19lWYcxjqKfuPLcaQhep4VemkpQ7E3jnKLoX+JVTS9Qztwy1W8d9CbedFKCi3tgkaJdup+qHPRx7hQvkCeZzk2G46sI7KcSEV4VLHZ6TGpSu8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=ZYfH/24A; arc=pass smtp.client-ip=209.85.208.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Xs8tsJIa";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="CkVfiZi2"
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62A8plmp3690891
-	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 09:59:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	lgUe0TFn6d0vjPmbLxKtIohMDX7uiKOUBiGY0vO4PaI=; b=Xs8tsJIaHuFREk0D
-	X0/b6Es/83vmE0IH6BgNgd5sda9mPkmieLyMsDF91whgiJgXQNXYiRb9QkHR88TD
-	xoFPVRMob0nwQEJZYcIlCSkPjptYkjXDDlNmqPdsbk5H+Hxasl+ROILF1FMEJZ1j
-	OxYjgdH8cK+LX09gX42fk04Fkk5YoGJOsmdYW/Jqngt1old/BEWmTec/7GpG9emm
-	YEC4IebUlfSG/DzZlTLx+gNgmlVm6iUjcSNnYpC2cDKWHCjZUK6Yy6FjEXRRf+fz
-	xF8VV3ASO7vKPZkyGumge0dPKpyzsutqg2gW/2O1rrH8wWoghWSNZdORS0lPZCv/
-	Uc3+aw==
-Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com [209.85.219.70])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ctg5ng8v5-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 09:59:36 +0000 (GMT)
-Received: by mail-qv1-f70.google.com with SMTP id 6a1803df08f44-89a174bd442so473503026d6.2
-        for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 02:59:36 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ZYfH/24A"
+Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-38a4a8421b0so22392461fa.1
+        for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 03:09:51 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1773137390; cv=none;
+        d=google.com; s=arc-20240605;
+        b=FuNimh9VjKxXjzoYGYV4EFYZzXtjrqIyeKeZOTguxYbhkOd0BOq0Mq9q/nbSiDgjje
+         4iZaJI1WXTzqtfiOhba6432s4GLAuOMWFECRzqtVO5XYuLrGjiH1TZCIrBVDXAad+VYM
+         Fx8lXUwtVu6TYlVPbLHTNWPfjY1s9etMNJRbAji+Bo/ilTYCxhsyaPMj/mo14mKqBQvi
+         cbUzJ7riAcS2aG1pLqhj2HXPDF/rNwCGEwRQU2foG0Xijvy7b1UAonVM4C6NqVmrTlQF
+         zHs5y+1eNJ/vgaWoRnLUzB4T0CnjPBVdXS2nW5qaJ3IfSh7eWHXJETAt/CPZ8oCmQqc6
+         bNZA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=SbLNOepkKQDiOlPCygfK9diUY9EsFK1MZ4US030AgvM=;
+        fh=UJGuBUrCzaOYAY8lWuAlo5ls29IV+Ne3FvPzouOuYKU=;
+        b=jvo8i2D6o9JSec81HNSI33PRhWqVTSdPHgJhUn1lwBziRSMYtZZGM6JRmqYNZLfLAg
+         eKY2UQNRwKq7D7gjfht52bVEDnqmeR/cBNkB1pt0YIqErchf4Zr0e61/MWQrkoEpJfzb
+         FdzZOJjfEZxFx0wAuuGlCGCvF8dV6XdA8x//IM/T0cehW6nvtgS8i5ixtTll6Iq7FwCP
+         uLhcj19KzUdl13772oisRkWsYgLqYkRlY8L2UqkQwpxGvvbk+hevAOEutly0MaPden3+
+         C4VBx3nlxcGJPiIE1DN4g9U8TLsfv7ybOAjpIEHQQVAHu5tmysd93H6gH9bgOlY/HPbX
+         1EfA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1773136776; x=1773741576; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
-         :from:references:cc:to:subject:user-agent:mime-version:date
-         :message-id:from:to:cc:subject:date:message-id:reply-to;
-        bh=lgUe0TFn6d0vjPmbLxKtIohMDX7uiKOUBiGY0vO4PaI=;
-        b=CkVfiZi2gPTHvbr3XH37zf6fiddNWx88BEzeh0Uq98+F4JkoA4W/XdV2lYU2imziks
-         Gh0ZGkXIlWE0f/Qmvn4n/I5JinUCvjZJXJ56km5Hsq6Df2M7I/J5Ys/CrSIj/gG7A9p7
-         8CqMkxWBKFUk3ku4PpiLVVLm+0C7920mT/gAw4zXqwJlIkemzYERLPZNZXb6KXDp5/mM
-         RubqBxFBuyZQxw67+OwkRtDHc02NMJF05uBk466y0ZXILVNGwrXCc3nPFAi35wdE2ejP
-         ra76Frxi8fuPCMW7oDR+UV/jeDlPfIy7H7LLJ1TpGc/VW8vr7mhuSadG8yuwQ+mKCZ5n
-         YcZA==
+        d=linaro.org; s=google; t=1773137390; x=1773742190; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=SbLNOepkKQDiOlPCygfK9diUY9EsFK1MZ4US030AgvM=;
+        b=ZYfH/24ARk7u6epvkO6h5bzlMY/u2tIDF8eax/CvUZQla+wXVNJwugNfAd4IG+sW80
+         R4jYFVNJV5YsXIfLT4FNgJ08tSs3yjn0089sWp18t0tLUwZZZiqmyOR68c+/UUN8pJjh
+         QlA8cwx5NlqKyOmp5CqsUkZPWEhfyzByfcFexD4WGrMaRkUvfXPAcw7mG87Yh5kcX7cC
+         P1foMRmG1nbzy8ZlWRGnDW4U9cO0M1wIf/YYxV828LmRqpeC3yN2YkRiw/eGINiB5XpV
+         CSPxn5/JV9c7ZKDRf4JdFWoekexv5PdKYgwuExY7XQbiWvbJSvHplRg/Zg5WijcQeNVy
+         txeA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773136776; x=1773741576;
-        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
-         :from:references:cc:to:subject:user-agent:mime-version:date
-         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20230601; t=1773137390; x=1773742190;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=lgUe0TFn6d0vjPmbLxKtIohMDX7uiKOUBiGY0vO4PaI=;
-        b=BIU0mJ7n9IEw2utJXvSCA1jRLmEwsi9EzL2pkxFup9i1UT9iuVXtM/owg2mrns2/e6
-         +J5eVBvDQAsGdY/P40uid1iohrOo4m8D61pIu6yzJJ8FJAJP/LitLrJT2rN0L5DECzpi
-         AiP75+qIFFzoNJDgGOJl3324Z2eppNIKD5GkZdSNNXvrDC1tMnJECtxRN+f1Sr5PIWSp
-         Ldn491tGOCZ9k8gl8fdR40vMfWT3mdrfz10aQ/13IO9W5muHNZG+psjeZqJUUJyss9H7
-         zbo/OXsyyft2npz/dLj54sRm++3NEwIe4P12jP4ktFH0rJTkqlKV5Z7SRKDuz2rY0ias
-         PiCA==
-X-Forwarded-Encrypted: i=1; AJvYcCV1Cyxx+aounZKjKo4CHnlAs36IQ20HAE/qlDpC7W8RWBmd6HJxnP3JZdlNWBwNYOssZxBQHhucqg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzUitMHLJuhM+hv1wFO3+undsBCUmPp+/UA9jzOrJmbjMsYy++1
-	04zG2EgJhKQ/3+uhARJ/l9OpmJ0jFcBRxBrk4npRh/TOb+D7U7I3+eHDWLLB/xA4ZruOCyMpBfa
-	DWZJdtwDN+HiQ/mxzE0F67NPKlwFpFCQSxr0HmJVBcqpLwiWOb8gf6boF2Ivh8w==
-X-Gm-Gg: ATEYQzxEpq5UQl6CayObCjK3kinHYYzTq7oREAV1/cnFsEEG0K2d/J/wRCDLn29JsDE
-	U5JSIDpfv+t0K0rtNzeehCJY53h5gROWTyThLOyHBhYmoTlN6C0zsk5XrKntnwAE+A1Jhs86nT3
-	fCntpoG7prLEwOiMOlf1QwVIeprqsa4dhT8MXazPZZoa0sjKe4yV/53fKBR6ILW1UrDlq/11RrJ
-	kJqAHQFx3S1AHDlJJLGTQlp+XBzgUk46WXa+dm5GcBrXWFNRMK8AFQWbHuduGu1PHVn0GBBm8Te
-	5eMFDWAw73zHHoNOl/oPcYGbpWgHot0acKxmzPXwuYVUsa6cHcxtm+P98mJnqKZHr7ibRrbIO09
-	99wmpjSndJOPLZriYd6yerSDsqgHTF/5zNGEx9jOsEM+gUNA+
-X-Received: by 2002:ad4:5de1:0:b0:89a:258:c1d5 with SMTP id 6a1803df08f44-89a30ad59bemr219718206d6.50.1773136776367;
-        Tue, 10 Mar 2026 02:59:36 -0700 (PDT)
-X-Received: by 2002:ad4:5de1:0:b0:89a:258:c1d5 with SMTP id 6a1803df08f44-89a30ad59bemr219717766d6.50.1773136775932;
-        Tue, 10 Mar 2026 02:59:35 -0700 (PDT)
-Received: from [192.168.1.29] ([178.197.219.94])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-485419b8526sm68327405e9.0.2026.03.10.02.59.33
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 10 Mar 2026 02:59:35 -0700 (PDT)
-Message-ID: <9a9cb7f8-54cc-4c43-a5a0-f022394351eb@oss.qualcomm.com>
-Date: Tue, 10 Mar 2026 10:59:32 +0100
+        bh=SbLNOepkKQDiOlPCygfK9diUY9EsFK1MZ4US030AgvM=;
+        b=rbAtUeP3wHXJKBCjMNQi+1MDHWa/RcZR0IrGOVtSzbN96d2Wr8pCI5cVk8UTLKlHOa
+         06K40R0YLyq2EAC1CIh02FGzOJn7tMFK/trAXRSL1Mctgfti4vYWTdfRciONaOjKLsIT
+         CklHX8wPmX0AV33Ge2Bkg/wbvNB+Rt7vgeuEabk43KgmozaPkyeWdN+QW6DFhPxeazxs
+         0e9jv/QFYfuiKbbSrAfBkG/ObjVx2P/EvCu5llOufegPM5H2zvl26Tyltt2odKc06FUY
+         ivvi38fPdrjxzHaxMMsjBY07FoW+He1lffx9iywile+34K3RYD5tuV+CV2d4DEgaOMXP
+         Bg6w==
+X-Forwarded-Encrypted: i=1; AJvYcCXGkmb8ZbeCc5YEF7jqHKLUUx80xW56nFrdpDXmox3vsAOgZxpKngndXlNpfYWkI3H1wPA4Nk9KpQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzS1N4rXFjUAyQtnrEEZ27jelWquYchXCBCwKzcXtYWmg1HWQMv
+	lL4DWKv/1Iqrm1ytawxU2pYFgFt5y3WZGGtLI/e24rl0gRscmln77NkYS/cd9KMfgA0NQrA9W7M
+	9aZLWejk/yL/H0D6TmthlpCVMcrisawsyLZ9ZPGoZcw==
+X-Gm-Gg: ATEYQzxg32jVSioomQx57tTlak7bAvRqXZQvHKPXQHAsinpys5VNnQK1Fofhe0EvE3A
+	2uRKwopiaHpH6FvelIEx/e/VwTYQaEMd6xpmPL64sTYv+OsQCNN73uG0S4r7V+V0Dibky1O1qez
+	J2XMCkc8LuW9If4LiyvvdtxMO+XsUMDU8+8A6lzJ7SHeNkPYZYNzpHYxOkFAOJQ2LyTY1zRCfox
+	zGXeynaVJUwr/2DeHotWWT6hI3phMcTkUrUCKUmAA724/w+7jxSRQhMUDrgZszTw4XbDY7YY64k
+	xonL2Lni
+X-Received: by 2002:a05:651c:908:b0:386:8e44:5d3b with SMTP id
+ 38308e7fff4ca-38a40d76344mr40489171fa.19.1773137390036; Tue, 10 Mar 2026
+ 03:09:50 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 01/10] workqueue: devres: Add device-managed allocate
- workqueue
-To: Tejun Heo <tj@kernel.org>, Sebastian Reichel <sre@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Danilo Krummrich <dakr@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
-        Shuah Khan <skhan@linuxfoundation.org>,
-        Lai Jiangshan <jiangshanlai@gmail.com>,
-        Tobias Schrammm <t.schramm@manjaro.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Dan Carpenter <dan.carpenter@linaro.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>, Lee Jones <lee@kernel.org>,
-        Dzmitry Sankouski <dsankouski@gmail.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-        Benson Leung <bleung@chromium.org>, Tzung-Bi Shih <tzungbi@kernel.org>,
-        Matti Vaittinen <mazziesaccount@gmail.com>,
-        driver-core@lists.linux.dev, linux-doc@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, chrome-platform@lists.linux.dev
-References: <20260305-workqueue-devm-v2-0-66a38741c652@oss.qualcomm.com>
- <20260305-workqueue-devm-v2-1-66a38741c652@oss.qualcomm.com>
- <aapTSyrkqqZ8j_XL@slm.duckdns.org>
-From: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Content-Language: en-US
-Autocrypt: addr=krzysztof.kozlowski@oss.qualcomm.com; keydata=
- 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
- cwzYbmi/Et7T2+47PN9NZAOyb771QoVr8A==
-In-Reply-To: <aapTSyrkqqZ8j_XL@slm.duckdns.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-GUID: XE8nbXpSA0alNWIYqwWXdPQmfbTbsRdv
-X-Authority-Analysis: v=2.4 cv=ervSD4pX c=1 sm=1 tr=0 ts=69afeb88 cx=c_pps
- a=oc9J++0uMp73DTRD5QyR2A==:117 a=gOEeR9iKwsj33Yj5oN/cWg==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22
- a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8 a=f4WQo65-w8K6TlvLPnkA:9 a=QEXdDO2ut3YA:10
- a=iYH6xdkBrDN1Jqds4HTS:22
-X-Proofpoint-ORIG-GUID: XE8nbXpSA0alNWIYqwWXdPQmfbTbsRdv
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzEwMDA4NSBTYWx0ZWRfX5WDRKR01YJ4C
- mjPrZSH+eix9MdVEOa/szkkdn6eJkWSENr6WuISwtKP2QRaN/5wcMtHPQZtP2i6gGKTR00Q/QaK
- YG9yPSZEKRlE79++bs4uJpD+LnqRMz9ioz2BUPvC7AQEFOwoqq3I/nK+eIreX/apaCZsNWiERvj
- c6mMS6N/2PELBVfM09VoXnANA8631khADiWw21kf/2Q4LiiLBuRcvqSE/G3NF1qIGfIk8D9iq8z
- y4X9iJrXupAwMsRVplxtKrKVfgkAA3awh8cOtQRiiZaAxVTaT6hJ/rpQJalPadKv4I8GAsA8sIa
- L86gJPhc3ldXwzkv4ElB17QmmxF5JutykGiZ69VZwT6LiCT74yo/c26nOATc+1WtDUUHakz1VFq
- blPsXIvQxRlGi8K2Jw28+q16ths1gqmKg36JddhYmyfgoBYBmHiNUjTPtv6sisotFVQ6hvfnzBh
- o+Jlt3Mw26wYptwdoPQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-10_01,2026-03-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 spamscore=0 bulkscore=0 impostorscore=0 lowpriorityscore=0
- malwarescore=0 phishscore=0 adultscore=0 priorityscore=1501 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603100085
+References: <20260205-topic-lpm-pmdomain-device-constraints-v2-0-61f7be7d35ac@baylibre.com>
+ <20260205-topic-lpm-pmdomain-device-constraints-v2-2-61f7be7d35ac@baylibre.com>
+In-Reply-To: <20260205-topic-lpm-pmdomain-device-constraints-v2-2-61f7be7d35ac@baylibre.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Tue, 10 Mar 2026 11:09:12 +0100
+X-Gm-Features: AaiRm53U5UxEWgdkFhCp5FpsW0sui0McRfHP-pSGkH6NdGtcQfHHXSpdbQUebbw
+Message-ID: <CAPDyKFoJ_fSpnJ9O0K=RYOQUbXm6hNu+mWJVvT8EZsgTHABfcQ@mail.gmail.com>
+Subject: Re: [PATCH v2 2/3] pmdomain: core: add genpd_for_each_child() helper
+To: "Kevin Hilman (TI)" <khilman@baylibre.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, 
+	Dhruva Gole <d-gole@ti.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On 06/03/2026 05:08, Tejun Heo wrote:
-> On Thu, Mar 05, 2026 at 10:45:40PM +0100, Krzysztof Kozlowski wrote:
->> Add a Resource-managed version of alloc_workqueue() to fix common
->> problem of drivers mixing devm() calls with destroy_workqueue.  Such
->> naive and discouraged driver approach leads to difficult to debug bugs
->> when the driver:
->>
->> 1. Allocates workqueue in standard way and destroys it in driver
->>    remove() callback,
->> 2. Sets work struct with devm_work_autocancel(),
->> 3. Registers interrupt handler with devm_request_threaded_irq().
->>
->> Which leads to following unbind/removal path:
->>
->> 1. destroy_workqueue() via driver remove(),
->>    Any interrupt coming now would still execute the interrupt handler,
->>    which queues work on destroyed workqueue.
->> 2. devm_irq_release(),
->> 3. devm_work_drop() -> cancel_work_sync() on destroyed workqueue.
->>
->> devm_alloc_workqueue() has two benefits:
->> 1. Solves above problem of mix-and-match devres and non-devres code in
->>    driver,
->> 2. Simplify any sane drivers which were correctly using
->>    alloc_workqueue() + devm_add_action_or_reset().
->>
->> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-> 
-> Acked-by: Tejun Heo <tj@kernel.org>
-> 
-> Please let me know how you wanna route the patch.
+On Fri, 6 Feb 2026 at 01:30, Kevin Hilman (TI) <khilman@baylibre.com> wrote:
+>
+> Add a new internal helper function genpd_for_each_child() that recursively
+> iterates over all devices in a PM domain and its child domains (subdomains).
+> This helper is useful for governors and other core PM domain code that needs
+> to examine or apply operations to all devices within a domain hierarchy.
+>
+> The function takes a callback that is invoked for each device, and supports
+> early termination if the callback returns a non-zero value.
+>
+> The helper is defined in a new internal header drivers/pmdomain/core.h and
+> implemented in drivers/pmdomain/core.c, making it available to other PM
+> domain subsystem components.
 
-Like I described in cover letter, so I propose this going via one tree,
-e.g. power supply. The first patch might be needed for other trees as
-well, e.g. if more drivers are discovered, so the best if it is on
-dedicated branch in case it has to be shared just in case.
+I think it's important to state that this isn't for pmdomain providers
+to use, but only for the core and the governor. Perhaps add a comment
+about that too in the function description.
 
-Does this look reasonable @Tejun, @Sebastian?
+That said, if there is only one user, perhaps adding a helper isn't
+worth it after all?
 
-Best regards,
-Krzysztof
+>
+> The first user of this helper is the cpu_system_power_down_ok() governor
+> function, which uses it to check device QoS latency constraints across the
+> entire domain hierarchy.
+>
+> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
+> ---
+>  drivers/pmdomain/core.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+>  drivers/pmdomain/core.h | 17 +++++++++++++++++
+>  2 files changed, 59 insertions(+)
+>
+> diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+> index bf82775f6a67..41c987fc5c5a 100644
+> --- a/drivers/pmdomain/core.c
+> +++ b/drivers/pmdomain/core.c
+> @@ -24,6 +24,8 @@
+>  #include <linux/cpu.h>
+>  #include <linux/debugfs.h>
+>
+> +#include "core.h"
+> +
+>  /* Provides a unique ID for each genpd device */
+>  static DEFINE_IDA(genpd_ida);
+>
+> @@ -281,6 +283,46 @@ static void genpd_sd_counter_inc(struct generic_pm_domain *genpd)
+>         smp_mb__after_atomic();
+>  }
+>
+> +/**
+> + * genpd_for_each_child - Recursively iterate over all devices
+> + *                        in a PM domain and its subdomains.
+> + * @genpd: PM domain to iterate over.
+> + * @fn: Callback function to invoke for each device.
+> + * @data: Data to pass to the callback function.
+> + *
+> + * This function recursively walks through all devices in the given PM domain
+> + * and all devices in its child PM domains (subdomains). For each device found,
+> + * the callback function @fn is invoked with the device and @data as arguments.
+> + *
+> + * Returns: 0 on success, or the first non-zero value returned by @fn.
+> + */
+> +int genpd_for_each_child(struct generic_pm_domain *genpd,
+> +                        int (*fn)(struct device *dev, void *data),
+> +                        void *data)
+> +{
+> +       struct pm_domain_data *pdd;
+> +       struct gpd_link *link;
+> +       int ret;
+> +
+> +       /* First, iterate over all devices in this domain */
+> +       list_for_each_entry(pdd, &genpd->dev_list, list_node) {
+> +               ret = fn(pdd->dev, data);
+> +               if (ret)
+> +                       return ret;
+> +       }
+> +
+> +       /* Then, recursively iterate over all child domains (subdomains) */
+> +       list_for_each_entry(link, &genpd->parent_links, parent_node) {
+> +               struct generic_pm_domain *child_pd = link->child;
+> +
+> +               ret = genpd_for_each_child(child_pd, fn, data);
+> +               if (ret)
+> +                       return ret;
+> +       }
+> +
+> +       return 0;
+> +}
+> +
+>  #ifdef CONFIG_DEBUG_FS
+>  static struct dentry *genpd_debugfs_dir;
+>
+> diff --git a/drivers/pmdomain/core.h b/drivers/pmdomain/core.h
+> new file mode 100644
+> index 000000000000..7061891d31fb
+> --- /dev/null
+> +++ b/drivers/pmdomain/core.h
+> @@ -0,0 +1,17 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/*
+> + * Internal header for PM domain core
+> + *
+> + * Copyright (C) 2011 Rafael J. Wysocki <rjw@sisk.pl>, Renesas Electronics Corp.
+> + */
+> +
+> +#ifndef __PM_DOMAIN_CORE_H__
+> +#define __PM_DOMAIN_CORE_H__
+> +
+> +#include <linux/pm_domain.h>
+> +
+> +int genpd_for_each_child(struct generic_pm_domain *genpd,
+> +                        int (*fn)(struct device *dev, void *data),
+> +                        void *data);
+> +
+> +#endif /* __PM_DOMAIN_CORE_H__ */
+>
+> --
+> 2.51.0
+>
+
+Kind regards
+Uffe
