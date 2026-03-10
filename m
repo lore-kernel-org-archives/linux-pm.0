@@ -1,176 +1,180 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0DE82391E60;
-	Tue, 10 Mar 2026 12:20:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA31C3BD231;
+	Tue, 10 Mar 2026 12:23:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773145252; cv=none; b=Jo+SleydBoTw5YWpcbLbIBwFICypkTXBDnFlIAmRKcoHVc7c/bBYD1PzNdFBNFuGNE24AdccpRfSwR4DmPuSUR/6YlbGwv3Gcj9Yaky1tQE9sg2EP9PHplCFxjZsu+lNO60eCG72HfVc4Doxt2+1NiPnlSUkKwBoKTAajw/S3us=
+	t=1773145389; cv=none; b=i5eB2nZCPYrf28XlM/gWKg7DIIzAzgB537xGOSPzrwDstO8p/IDDFpTfPOpqP3fxCxHcpFdq/nFmzpS09V3ReaQ0X1tW9E50iSI56hJcW2cUySmQwAxKVBNn7CNrfNEaqaCs7SsqrMX73n8KQg1cG9jQ0bCetD9nJ+9xIGUprgI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773145252; c=relaxed/simple;
-	bh=Lk6puEmsAx7/PJwNRRqKTDXOXwSlI12+e9eGZmU2mZE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=t3RMZ3dRDsf4sS1iGTc41C8ahgryzdHKJ2M+xyGQnGVDZsSfsguiUdgdsyilb7/yh3G5/2dHUXLKLkhfLMlrz/rkmeVkaljqy2RlPUAhvl64rVaTZS9HnZPfce88IztP16hp7MtN6l42WOSaKJG7zmYpES162AL5uQvR6cUrS3s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=WZBaOefR; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qualcomm.com
+	s=arc-20240116; t=1773145389; c=relaxed/simple;
+	bh=GC3Sg9J7xD8kIPv5UD36basFOlkNvWWf+dL0gpcN4gs=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=MyQWJkFdrlXY7mgKMSQn0Zdt/fEPoBa4dTtSAhU5H0clPTVmyjoXXYhbvz6L/vDXSP3+nnsWvFjfLxRI5U5jPe4r3huaXasjutyVgWNWwt0/lbRcOmUyKFIKAoo5zOnyhEhIyQUUNu2P5cJ6sVtFjHxx6uM3K+ieMcJ0v9doe9U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=USBW0I5R; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="WZBaOefR"
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62A9GLiH3587427;
-	Tue, 10 Mar 2026 12:20:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=z3i2WdpTSAYFIcgQFN3QtJlt
-	3rK5FH7UUKIraiyNCLk=; b=WZBaOefRDzRRvJviDjUAAHEvaqcAgaju3Er1KJKD
-	SKd4fA8XH/D3YBV9qJVPukfWsOVqolWlT61HH502aJOhd6kr6MALpDJMZSzdvGH6
-	HtO+zpH7hw5X3Dpn1449Ta4MiHAr+ANGf3wtxjfUWrsJC9G1rBnhuLhp0rJ4yQDW
-	LidR85M8lHVWWgLrO2CBHV44YGSrwSA/PJEP9HjpHh3RQo3ft2GPMgsvI/y7JQA5
-	Qa/BRUzMfR6lZrKOB1sE/xJZxUy6Ea9TmQCYgKhHQ/OA8aXn8Z3mCG/jKimfrnDF
-	ycJUd0ls/2GTbBpFt8okVP3wyVIjuQ/2mbZ+77AVf9qWsQ==
-Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ct1ekuth8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 10 Mar 2026 12:20:47 +0000 (GMT)
-Received: from pps.filterd (APBLRPPMTA01.qualcomm.com [127.0.0.1])
-	by APBLRPPMTA01.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTP id 62ACKh6h007445;
-	Tue, 10 Mar 2026 12:20:43 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 4crd3m9s5u-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 10 Mar 2026 12:20:43 +0000
-Received: from APBLRPPMTA01.qualcomm.com (APBLRPPMTA01.qualcomm.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 62ACKhkl007283;
-	Tue, 10 Mar 2026 12:20:43 GMT
-Received: from hu-devc-hyd-u22-c.qualcomm.com (hu-kotarake-hyd.qualcomm.com [10.213.97.140])
-	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 62ACKgrE007195
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 10 Mar 2026 12:20:43 +0000
-Received: by hu-devc-hyd-u22-c.qualcomm.com (Postfix, from userid 2389607)
-	id 251BDB02; Tue, 10 Mar 2026 17:50:42 +0530 (+0530)
-Date: Tue, 10 Mar 2026 17:50:42 +0530
-From: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>, Vinod Koul <vkoul@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Rakesh Kota <rakesh.kota@oss.qualcomm.com>
-Subject: Re: [PATCH v3 1/2] dt-bindings: power: reset: qcom-pon: Add new
- compatible PMM8654AU
-Message-ID: <20260310122042.n7qwyylbwgodtr4q@hu-kotarake-hyd.qualcomm.com>
-References: <20260227-b4-add_pwrkey_and_resin-v3-0-61c5bb2cdda9@oss.qualcomm.com>
- <20260227-b4-add_pwrkey_and_resin-v3-1-61c5bb2cdda9@oss.qualcomm.com>
- <20260228-polite-swine-of-potency-56e61a@quoll>
- <6a304d0d-61b1-422f-bb65-8f8055095c39@oss.qualcomm.com>
- <7118ad44-5a56-4523-baff-9afa8030aff0@kernel.org>
- <ef5a0e22-2f12-4584-9abb-0d3202a58b41@oss.qualcomm.com>
- <a9bbff27-28b4-4ec4-91e7-481eac0c5479@kernel.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="USBW0I5R"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 72C6FC19423;
+	Tue, 10 Mar 2026 12:23:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773145389;
+	bh=GC3Sg9J7xD8kIPv5UD36basFOlkNvWWf+dL0gpcN4gs=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
+	b=USBW0I5R1IRmIxXZQ4igYISdfUhrLNnzBamW3ly9QC3INE+BegS2zslKhDKzhXDG7
+	 fKMU7RIbXNpol1PHCzCb5aV7jzNo2emhRzvTpOYCvay1rk9VpMjF/PBmugESDxkXYL
+	 S0eTx6lMzIbdUYaaQJ7wmSE0g/aO76gzcuT07juTvznRsdelMLPOv9tAcL33MuZDV4
+	 MJfe/XfyamWxe2yqSYGMcVQ926M3F363GVs0b2nOXa4FFqyaQNv/s+Jdn7Lo043fzU
+	 f7A0IS8nsfHXq1XpvhuTTXROF4mFHi4SpARL1EaftIE0z7e8v+uGDZL5stw1zyUhEs
+	 3V3NLgotla0yg==
+Message-ID: <2ff39929dad06ca7d009ccd6dfe873da22a07c8a.camel@kernel.org>
+Subject: Re: [PATCH 61/61] file: Drop unlikely() around IS_ERR_OR_NULL()
+From: Jeff Layton <jlayton@kernel.org>
+To: Philipp Hahn <phahn-oss@avm.de>, amd-gfx@lists.freedesktop.org, 
+	apparmor@lists.ubuntu.com, bpf@vger.kernel.org, ceph-devel@vger.kernel.org,
+ 	cocci@inria.fr, dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org,
+ 	gfs2@lists.linux.dev, intel-gfx@lists.freedesktop.org, 
+	intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev,
+ kvm@vger.kernel.org, 	linux-arm-kernel@lists.infradead.org,
+ linux-block@vger.kernel.org, 	linux-bluetooth@vger.kernel.org,
+ linux-btrfs@vger.kernel.org, 	linux-cifs@vger.kernel.org,
+ linux-clk@vger.kernel.org, 	linux-erofs@lists.ozlabs.org,
+ linux-ext4@vger.kernel.org, 	linux-fsdevel@vger.kernel.org,
+ linux-gpio@vger.kernel.org, 	linux-hyperv@vger.kernel.org,
+ linux-input@vger.kernel.org, 	linux-kernel@vger.kernel.org,
+ linux-leds@vger.kernel.org, 	linux-media@vger.kernel.org,
+ linux-mips@vger.kernel.org, linux-mm@kvack.org, 
+	linux-modules@vger.kernel.org, linux-mtd@lists.infradead.org, 
+	linux-nfs@vger.kernel.org, linux-omap@vger.kernel.org, 
+	linux-phy@lists.infradead.org, linux-pm@vger.kernel.org, 
+	linux-rockchip@lists.infradead.org, linux-s390@vger.kernel.org, 
+	linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org, 
+	linux-security-module@vger.kernel.org, linux-sh@vger.kernel.org, 
+	linux-sound@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, 
+	linux-trace-kernel@vger.kernel.org, linux-usb@vger.kernel.org, 
+	linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+ ntfs3@lists.linux.dev, 	samba-technical@lists.samba.org,
+ sched-ext@lists.linux.dev, 	target-devel@vger.kernel.org,
+ tipc-discussion@lists.sourceforge.net, 	v9fs@lists.linux.dev
+Cc: Christian Brauner <brauner@kernel.org>
+Date: Tue, 10 Mar 2026 08:23:01 -0400
+In-Reply-To: <20260310-b4-is_err_or_null-v1-61-bd63b656022d@avm.de>
+References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
+	 <20260310-b4-is_err_or_null-v1-61-bd63b656022d@avm.de>
+Autocrypt: addr=jlayton@kernel.org; prefer-encrypt=mutual;
+ keydata=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
+ QZIQXVeAA+smfTT0tDrisj1U5x6ZB9b3nBg65kc=
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a9bbff27-28b4-4ec4-91e7-481eac0c5479@kernel.org>
-X-QCInternal: smtphost
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: ur5ge7JAZLZHxCoMRXZzyqvbkp4g-ujn
-X-Proofpoint-ORIG-GUID: ur5ge7JAZLZHxCoMRXZzyqvbkp4g-ujn
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzEwMDEwNyBTYWx0ZWRfX+lnvjyu4rEfX
- L/K3NbeiTtyccO4MugwnEnJ+U0qEHca+8CsjtNo+IHDupA6HeRckJt/rrIWAZRQ9thyuYkq/zSp
- 284qykev4XSCiXNi57picCyAtlhnpsiJnHCtr50A6Yr1b2dWz9Q81tBifiwxZgBqJGMk7qkZfcC
- rc4tD5j4sNNbJJMBHCmCwdOylqP4SA2PvgeXvyA5xND7MVs4lNdTRHfbRFIkSiL92Exk9xZGpn3
- 92o2iyI6+KcvdGio3gNyvKMLvZF7QzwmsmCfYLpIz4Az+QRek3t//dyOnf825f51GKPzd6IaAHv
- VDPvYH4Sonl8R1qFumpkcicOxvH27/N009ke7HE+xQqADyCE2ilobgdh9cSamDBUQTb+H3xrSsH
- RTaz0tu+h/TY3Z/FsVtAxsuBk44N5boPgh5pYB80fr5Kddl2wkjUp/ipi/Cqfz0u1Iaix393R2p
- 7Okok69PHXpsfMOTcwg==
-X-Authority-Analysis: v=2.4 cv=eIEeTXp1 c=1 sm=1 tr=0 ts=69b00ca0 cx=c_pps
- a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
- a=kj9zAlcOel0A:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22 a=HR6y0i53xRgZs_vXoO8A:9
- a=CjuIK1q_8ugA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-10_02,2026-03-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 bulkscore=0 lowpriorityscore=0 adultscore=0 suspectscore=0
- spamscore=0 priorityscore=1501 malwarescore=0 clxscore=1015 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603100107
 
-On Wed, Mar 04, 2026 at 11:11:38AM +0100, Krzysztof Kozlowski wrote:
-> On 04/03/2026 11:08, Konrad Dybcio wrote:
-> > On 3/2/26 11:28 AM, Krzysztof Kozlowski wrote:
-> >> On 02/03/2026 11:20, Konrad Dybcio wrote:
-> >>> On 2/28/26 11:17 AM, Krzysztof Kozlowski wrote:
-> >>>> On Fri, Feb 27, 2026 at 06:02:28PM +0530, Rakesh Kota wrote:
-> >>>>> PMM8654AU is a different PMIC from PMM8650AU, even though both share
-> >>>>> the same PMIC subtype. Add PON compatible string for PMM8654AU PMIC
-> >>>>> variant.
-> >>>>>
-> >>>>> The PMM8654AU PON block is compatible with the PMK8350 PON
-> >>>>> implementation, but PMM8654AU also implements additional PON registers
-> >>>>
-> >>>> So does that mean that PMM8654AU has 2 address spaces and PMK8350 has
-> >>>> only one? At least it looks, so I expect fixing the last if:then: - you
-> >>>> need to drop contains from PMK8350 if clause and add new if:then: for
-> >>>> PMM8654AU.
-> >>>
-> >>> The delta between them is such that within the already-described reg
-> >>> ranges, there is some additional bits and/or registers (can't remember
-> >>> but it doesn't matter for this point)
-> >>>
-> >>> This doesn't impact the described size, as all QC PMIC peripherals are
-> >>> by design allocated 0x100-wide windows
-> >>
-> >> I still expect that fixed.
-> > 
-> > that = commit message?
-> 
-> No, what I wrote in my first reply what has to be fixed.
->
-Should i need to add something like below: (removing the contain for
-PMK8350 and new if:then for PMM8654AU)
+On Tue, 2026-03-10 at 12:49 +0100, Philipp Hahn wrote:
+> IS_ERR_OR_NULL() already uses likely(!ptr) internally. checkpatch does
+> not like nesting it:
+> > WARNING: nested (un)?likely() calls, IS_ERR_OR_NULL already uses
+> > unlikely() internally
+> Remove the explicit use of unlikely().
+>=20
+> Change generated with coccinelle.
+>=20
+> To: Christian Brauner <brauner@kernel.org>
+> To: Jeff Layton <jlayton@kernel.org>
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
+> ---
+>  include/linux/file.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/include/linux/file.h b/include/linux/file.h
+> index 27484b444d3155685cdbb89f546f26ef66e3e1b4..007b9b9d365a052c1c056e125=
+71eaf4f8ef5a45c 100644
+> --- a/include/linux/file.h
+> +++ b/include/linux/file.h
+> @@ -163,7 +163,7 @@ static inline void class_fd_prepare_destructor(const =
+struct fd_prepare *fdf)
+>  {
+>  	if (unlikely(fdf->__fd >=3D 0))
+>  		put_unused_fd(fdf->__fd);
+> -	if (unlikely(!IS_ERR_OR_NULL(fdf->__file)))
+> +	if (!IS_ERR_OR_NULL(fdf->__file))
+>  		fput(fdf->__file);
+>  }
+> =20
 
-+  - if:
-+      properties:
-+        compatible:
-+          const: qcom,pmk8350-pon
-+    then:
-+      properties:
-+        reg:
-+          minItems: 1
-+          maxItems: 2
-+        reg-names:
-+          minItems: 1
-+          items:
-+            - const: hlos
-+            - const: pbs
-+
-   - if:
-      properties:
-	 compatible:
-	   contains:
--            const: qcom,pmk8350-pon
-+            const: qcom,pmm8654au-pon
-
-Note: PMM8654AU uses the same PON register regions as PMK8350. hlos and
-pbs togater called PON module and there are no additional reg ranges/properties
-needed for PMM8654AU, While PMM8654AU updates some register
-definitions (offsets/bits added/removed). 
-
-Best regards
-Rakesh kota
-
-> Best regards,
-> Krzysztof
+Reviewed-by: Jeff Layton <jlayton@kernel.org>
