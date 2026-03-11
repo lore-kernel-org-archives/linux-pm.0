@@ -1,34 +1,45 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA6BE38BF67;
-	Wed, 11 Mar 2026 07:10:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1ABE138D016;
+	Wed, 11 Mar 2026 07:10:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773213051; cv=none; b=PIpyrSrkM9QwQg5mS18aUuOfMGKvnui4tEbpwH5Wty+cEoM7AajMvO8oBOCEdjmA+9F77v7GUj91/rErN1vYBy7hZvnTY3WlN4wo6xHpk/7x3gH/ERp+RbYNDsdipEGwWXk+oGaLinWxeXz5JElTe2hqvczNST2GFxzpF+KtkEM=
+	t=1773213054; cv=none; b=BYJ0eM2I5+6aK131/dg+uHD8vK/H5LTTRUf15lnNFt2TnSMqZdmL4vTuBECce/xx1k8XaAX2RGsD5H9DDNJCT8rVM+oSV9ZwRmVoVXJXheN8saIVflXU2xWus8AjCRbeDPfr41Q8iTitfYx84WQUU/d+c9C8d7mjorxBAWN0+DI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773213051; c=relaxed/simple;
-	bh=R2vomvG0JHBvkdHo8dd+Ba8sEqe81Ibe2B2jhQZdt0E=;
+	s=arc-20240116; t=1773213054; c=relaxed/simple;
+	bh=nG5QpDl0WwXxxEUbvogAjWfL4X9xBVWgNKIGnVanW5k=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=M++WSwRv8cdKOmXj0+sWjhkJq4Z8iqQRZYzlOmwD+PGwtXnW4DbXmuOfJEByMdzkpw9wAtRrO87O21bbb0/kbgy5wfXXbUTFSkCJgwbxt+cKr5xWL6Ea6xetVDcKchSQvvub20FYlMHCVVzG87eZ4AHvPClbOMwbeMp1RIj1trM=
+	 MIME-Version:Content-Type; b=pqWVdk65oZGxfL9ZZMbTpM6XAOqVNTe5z23vzLWmM5iBNydIn1cho1sVStt/Vv9v3ZJ3eLR9cPoQ9zLpMUZdn5aD3uIwlH6eTfeQlSld1rMFn5hh97we7iTZJvSiIkTri6GgIT7Ez5M6vDs7aNtY3LOou9crCSSlf63tQA8aEjQ=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E9823C2BC9E;
-	Wed, 11 Mar 2026 07:10:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4469EC4CEF7;
+	Wed, 11 Mar 2026 07:10:53 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 81E681808EB; Wed, 11 Mar 2026 08:10:45 +0100 (CET)
+	id 7A22B180696; Wed, 11 Mar 2026 08:10:45 +0100 (CET)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, 
- Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
- Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>, 
- Arnd Bergmann <arnd@kernel.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, 
- =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20260306150738.497978-1-arnd@kernel.org>
-References: <20260306150738.497978-1-arnd@kernel.org>
-Subject: Re: [PATCH] power: reset: reboot-mode: fix -Wformat-security
- warning
-Message-Id: <177321304551.505649.14538200747062900965.b4-ty@collabora.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
+ Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
+ Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, 
+ Tobias Schrammm <t.schramm@manjaro.org>, Sebastian Reichel <sre@kernel.org>, 
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+ Dan Carpenter <dan.carpenter@linaro.org>, 
+ Krzysztof Kozlowski <krzk@kernel.org>, Lee Jones <lee@kernel.org>, 
+ Dzmitry Sankouski <dsankouski@gmail.com>, 
+ Matthias Brugger <matthias.bgg@gmail.com>, 
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ Benson Leung <bleung@chromium.org>, Tzung-Bi Shih <tzungbi@kernel.org>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Cc: Matti Vaittinen <mazziesaccount@gmail.com>, driver-core@lists.linux.dev, 
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-mediatek@lists.infradead.org, chrome-platform@lists.linux.dev, 
+ stable@vger.kernel.org
+In-Reply-To: <20260305-workqueue-devm-v2-0-66a38741c652@oss.qualcomm.com>
+References: <20260305-workqueue-devm-v2-0-66a38741c652@oss.qualcomm.com>
+Subject: Re: (subset) [PATCH v2 00/10] workqueue / drivers: Add
+ device-managed allocate workqueue
+Message-Id: <177321304548.505649.413926339032568347.b4-ty@collabora.com>
 Date: Wed, 11 Mar 2026 08:10:45 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -41,21 +52,28 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.3
 
 
-On Fri, 06 Mar 2026 16:07:34 +0100, Arnd Bergmann wrote:
-> The device_create() function expects a format string to construct a device
-> name, so passing a variable here introduces a possible vulnerability in
-> case the string can contain '%' characters:
-> 
-> drivers/power/reset/reboot-mode.c:148:22: error: format string is not a string literal (potentially insecure) [-Werror,-Wformat-security]
-> drivers/power/reset/reboot-mode.c:148:22: note: treat the string as an argument to avoid this
->   148 |                                                  (void *)priv, reboot->dev->driver->name);
+On Thu, 05 Mar 2026 22:45:39 +0100, Krzysztof Kozlowski wrote:
+> Merging / Dependency
+> ====================
+> All further patches depend on the first one, thus this probably should
+> go via one tree, e.g. power supply.  The first patch might be needed for
+> other trees as well, e.g. if more drivers are discovered, so the best if
+> it is on dedicated branch in case it has to be shared.
 > 
 > [...]
 
 Applied, thanks!
 
-[1/1] power: reset: reboot-mode: fix -Wformat-security warning
-      commit: c7e05ab38adc44d0cae4888016829359dcbba7b2
+[02/10] power: supply: cw2015: Free allocated workqueue
+        commit: db254b0b232358ab1aeadebe8d147c99a3569559
+[03/10] power: supply: max77705: Drop duplicated IRQ error message
+        commit: 2064c64ceb1996ee02a6bbb1de05fd6e8028e3e4
+[04/10] power: supply: max77705: Free allocated workqueue and fix removal order
+        commit: 1e668baadefb16e81269dbfebf3ffc2672e3a3bb
+[05/10] power: supply: mt6370: Simplify with devm_alloc_ordered_workqueue()
+        commit: f23afa01040a41882a048e4957a7acac1426da6f
+[06/10] power: supply: ipaq_micro: Simplify with devm
+        commit: 2cfc7cac68e19c4acb236b8db6065bbaff5deee8
 
 Best regards,
 -- 
