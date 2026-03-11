@@ -1,158 +1,158 @@
-Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 053BD38838B;
-	Wed, 11 Mar 2026 07:08:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773212920; cv=pass; b=ltCiaioG5NeCmUWpRMy+b4zaLJwp46wqyi/Pdl/9iYOz2zg1bzenIV4pJHDi5qoJhA3y1HBQPN7+1NNkqfY7i/pPAc0gylKSaemhV4+SV4YwykvSnuNxSu/vi7hfFwxnOnk5Di2/77f+S36Yx/+Wo6B9wSCBksTKNxyvrvc6p0o=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773212920; c=relaxed/simple;
-	bh=b19OJUdc+peetZN8MrZd6KnNEJM5xBFPAsQwDYPC/Ao=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XsMWy/w5CzPeOBSwIWVcDzREFzppAU7zn4R9B9F5fsFSfVijC5c9UWPhgQrDbyKqXZQY9yPh4HNSeAWSpO24e6y+flcqc06BtY/vjfMDbGvKUeSYlRyDkZ8piAfFjikQbws97/9EU7JfQAl4aKpsi7PKB2OQwvGlzZqo7LvCdoo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=X8KVSVaB; arc=pass smtp.client-ip=136.143.188.112
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="X8KVSVaB"
-ARC-Seal: i=1; a=rsa-sha256; t=1773212907; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=aCXTokr4EDNW8u2al7QG22pupcRkju8K3QP/a3ByOSYHd60dlGEuG8vfRJTgLWr3GELNlKuVzD7MqmDwJyjsUmyriEBOEMIOcwAeK4z5x+CyNU1RrgMW3D1UgXOJgkaFEdvJzifBWIIxAHEN5AgyiuiQNApXGXWYvYS9CA/9GA0=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1773212907; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=RTdR+D4GhGsibmGnpvqFGWz9IA1zBW5Nj3eCi1PCPgY=; 
-	b=BkXR2EDoBoPKgPzX02QnyyehNXLfommNtQyuRoslyl9aldDyz1xqesUYvB7tQUijAaPCAx+WF8YX4d7axhTHoHmsT/o/ttwl5wuRF666XBWNSQMBvWvJiaBezIZ8EIUIz3+jzvulrEkeS9QomdHCqVf00CLjo9YIEM38XdPX4bI=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
-	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1773212907;
-	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
-	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:References:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=RTdR+D4GhGsibmGnpvqFGWz9IA1zBW5Nj3eCi1PCPgY=;
-	b=X8KVSVaBpAc3edEKGOVetX50QJ7q4x7XfdjCr4n5a6VOGhEX7T3I1Ibf3PzpbbCw
-	nkRKSkOexU6+Ww5J9J8OL2OATlvvwOHfiH2OdxD98mcwnqkz5pbMZM78/rm+fBP/hhp
-	NNiNQ+uozUBSelOY2fXicar1CP8+DjUMTO612d1I=
-Received: by mx.zohomail.com with SMTPS id 1773212904531201.5143077785866;
-	Wed, 11 Mar 2026 00:08:24 -0700 (PDT)
-Received: by venus (Postfix, from userid 1000)
-	id 850C2180598; Wed, 11 Mar 2026 08:08:17 +0100 (CET)
-Date: Wed, 11 Mar 2026 08:08:17 +0100
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Alexey Charkov <alchark@flipper.net>
-Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Chris Morgan <macromorgan@hotmail.com>, Liam Girdwood <lgirdwood@gmail.com>, 
-	Mark Brown <broonie@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH v3 05/11] power: supply: bq257xx: Fix VSYSMIN clamping
- logic
-Message-ID: <abEUxeKLiowObPyL@venus>
-References: <20260310-bq25792-v3-0-02f8e232d63b@flipper.net>
- <20260310-bq25792-v3-5-02f8e232d63b@flipper.net>
+Received: from mail.bix.bg (mail.bix.bg [193.105.196.21])
+	by smtp.subspace.kernel.org (Postfix) with SMTP id 8649A38656D
+	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 07:09:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.105.196.21
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773212950; cv=none; b=nw44xwE0J9e9Vqv4D6/aR6reRUHi9DGoqlwsvQO6pgD98G/a5AoL/NV7LJXTpOfDLkezdr2r+zAW/+1kjAXuNipYJXimi+wAWSg404ZkT0Iz9CsybasiFKbZ5BctJ83WalgmyUDQrviQSEpsyvnheKdw7XZ1/9N3oDrn87ZKBPQ=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773212950; c=relaxed/simple;
+	bh=VcLpa26hYcS9UGElZjB9GZ4pCB6wExx3iF5Cdw2AeTo=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=I0BI67tmYnlRjx0oIcJuPxtMkvW07r533Q1wQ1zduIcP2WMn0QaZbzV2RiSKzMo+qT0pFCm4erIcKqNcsq4O6Fag2rn8NlWcbgNMfFfKP020wk51jfA/u9JYzEbqmPJnjMDReKjGn4Qcx0smh1btG30syOv49Va+D+xsRucvqlo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=declera.com; spf=pass smtp.mailfrom=declera.com; arc=none smtp.client-ip=193.105.196.21
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=declera.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=declera.com
+Received: (qmail 8542 invoked from network); 11 Mar 2026 07:08:54 -0000
+Received: from d2.declera.com (HELO ?212.116.131.122?) (212.116.131.122)
+  by indigo.declera.com with SMTP; 11 Mar 2026 07:08:54 -0000
+Message-ID: <4ab8430161252ec778fabf7e9b68acf3645ed4c7.camel@declera.com>
+Subject: Re: [PATCH v5 2/2] mfd: simple-mfd-i2c: add a reboot cell for the
+ SpacemiT P1 chip
+From: Yanko Kaneti <yaneti@declera.com>
+To: Troy Mitchell <troy.mitchell@linux.spacemit.com>, Aurelien Jarno
+	 <aurelien@aurel32.net>
+Cc: linux-kernel@vger.kernel.org, Lee Jones <lee@kernel.org>, Sebastian
+ Reichel	 <sre@kernel.org>, Yixun Lan <dlan@gentoo.org>, Paul Walmsley
+ <pjw@kernel.org>,  Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
+ <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, "open list:RISC-V
+ ARCHITECTURE:Keyword:riscv"	 <linux-riscv@lists.infradead.org>, "open
+ list:RISC-V SPACEMIT SoC Support:Keyword:spacemit"	
+ <spacemit@lists.linux.dev>, "open list:SYSTEM RESET/SHUTDOWN DRIVERS"	
+ <linux-pm@vger.kernel.org>
+Date: Wed, 11 Mar 2026 09:08:54 +0200
+In-Reply-To: <DGZM6WUAVPPS.20Y0NIZYI4572@linux.spacemit.com>
+References: <20251102230352.914421-1-aurelien@aurel32.net>
+	 <20251102230352.914421-3-aurelien@aurel32.net>
+	 <b51a62513daa9d2390031ec350e0b33bdb7e54aa.camel@declera.com>
+	 <aaC78FTN31QYaVg0@aurel32.net>
+	 <990bc03ed2baa05e619f0aa9cc6a23acadd66ea6.camel@declera.com>
+	 <aaS6xeKFZz06fb1_@aurel32.net> <aaXuWwyA5NzBZzlW@aurel32.net>
+	 <36f8df695463e5ff3eaaffbac357fc73026f7373.camel@declera.com>
+	 <aadGw1fIlJyNNoum@aurel32.net>
+	 <DGZM6WUAVPPS.20Y0NIZYI4572@linux.spacemit.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.59.3 (3.59.3-1.fc45) 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="qrjbboz7ivwrdkum"
-Content-Disposition: inline
-In-Reply-To: <20260310-bq25792-v3-5-02f8e232d63b@flipper.net>
-X-Zoho-Virus-Status: 1
-X-Zoho-AV-Stamp: zmail-av-0.1.0.1.4.3/273.195.15
-X-ZohoMailClient: External
 
-
---qrjbboz7ivwrdkum
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v3 05/11] power: supply: bq257xx: Fix VSYSMIN clamping
- logic
-MIME-Version: 1.0
-
-Hi,
-
-On Tue, Mar 10, 2026 at 01:28:29PM +0400, Alexey Charkov wrote:
-> The minimal system voltage (VSYSMIN) is meant to protect the battery from
-> dangerous over-discharge. When the device tree provides a value for the
-> minimum design voltage of the battery, the user should not be allowed to
-> set a lower VSYSMIN, as that would defeat the purpose of this protection.
+On Wed, 2026-03-11 at 10:58 +0800, Troy Mitchell wrote:
+> On Wed Mar 4, 2026 at 4:38 AM CST, Aurelien Jarno wrote:
+>  Hi, Aurelien and Yanko,
+> > Hi,
+> >=20
+> > On 2026-03-02 22:34, Yanko Kaneti wrote:
+> > > Hello,
+> > >=20
+> > > On Mon, 2026-03-02 at 21:08 +0100, Aurelien Jarno wrote:
+> > > > On 2026-03-01 23:16, Aurelien Jarno wrote:
+> > > > > On 2026-02-27 13:29, Yanko Kaneti wrote:
+> > > > > > On Thu, 2026-02-26 at 22:32 +0100, Aurelien Jarno wrote:
+> > > > > > > Hi,
+> > > > > > >=20
+> > > > > > > On 2026-02-26 16:32, Yanko Kaneti wrote:
+> > > > > > > > Hello,
+> > > > > > > >=20
+> > > > > > > > On Mon, 2025-11-03 at 00:02 +0100, Aurelien Jarno wrote:
+> > > > > > > > > Add a "spacemit-p1-reboot" cell for the SpacemiT P1 chip.
+> > > > > > > > >=20
+> > > > > > > > > Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
+> > > > > > > > > ---
+> > > > > > > > > v5: no changes
+> > > > > > > > >=20
+> > > > > > > > >  drivers/mfd/simple-mfd-i2c.c | 1 +
+> > > > > > > > >  1 file changed, 1 insertion(+)
+> > > > > > > > >=20
+> > > > > > > > > diff --git a/drivers/mfd/simple-mfd-i2c.c b/drivers/mfd/s=
+imple-mfd-i2c.c
+> > > > > > > > > index 0a607a1e3ca1d..542d378cdcd1f 100644
+> > > > > > > > > --- a/drivers/mfd/simple-mfd-i2c.c
+> > > > > > > > > +++ b/drivers/mfd/simple-mfd-i2c.c
+> > > > > > > > > @@ -99,6 +99,7 @@ static const struct regmap_config space=
+mit_p1_regmap_config =3D {
+> > > > > > > > >  };
+> > > > > > > > > =20
+> > > > > > > > >  static const struct mfd_cell spacemit_p1_cells[] =3D {
+> > > > > > > > > +	{ .name =3D "spacemit-p1-reboot", },
+> > > > > > > > >  	{ .name =3D "spacemit-p1-regulator", },
+> > > > > > > > >  	{ .name =3D "spacemit-p1-rtc", },
+> > > > > > > > >  };
+> > > > > > > >=20
+> > > > > > > > Perhaps its safe to merge this one now that everything P1 a=
+nd I2C is
+> > > > > > > > already in linus tip ?
+> > > > > > >=20
+> > > > > > > Unfortunately, this patchset is still missing:
+> > > > > > > https://lore.kernel.org/all/20260207-b4-k3-i2c-pio-v7-0-62694=
+2d94d91@linux.spacemit.com/
+> > > > > > >=20
+> > > > > > > This means the reboots work most of the time, but are not 100=
+% reliable,=20
+> > > > > > > and that's the reason why this patch got blocked from merging=
+.
+> > > > > >=20
+> > > > > > I see. Thanks. Sounds to me like sometimes working compared to =
+never
+> > > > > > working is better , but anyway..
+> > > > >=20
+> > > > > I agree with that, but the decision was to hold on this patch unt=
+il the=20
+> > > > > I2C PIO part got merged.
+> > > > >=20
+> > > > > > FWIW  with this patch and the pio patcheset I get this rcu spla=
+t on
+> > > > > > reboot (which is still working). Similar splat is there without=
+ the pio
+> > > > > > patcheset.
+> > > > >=20
+> > > > > I haven't been able to reproduce the issue here after 10+ reboots=
+ on a=20
+> > > > > BPI-F3 board, but I tried the patch on top of 6.19. I'll try to b=
+uild a=20
+> > > > > 7.0.0-rc2 kernel and report back.
+> > > >=20
+> > > > I have tried that, and I am still unable to reproduce the issue wit=
+h a=20
+> > > > 7.0.0-rc2 kernel and a BPI-F3 board.
+> > >=20
+> > > I can still see it on every reboot (with the patches that allow reboo=
+t
+> > > to work). Do you have CONFIG_PREEMPT_RCU in your config ? its default=
+ on
+> > > when anything PREEMPT is selected. In Fedora its CONFIG_PREEMPT_DYNAM=
+IC
+> > > that flips it.
+> >=20
+> > Thanks for the hint, that option was not activated here, it's not the=
+=20
+> > riscv64 defconfig. With it I am also able to reproduce the issue. I'll=
+=20
+> > try to debug that and report back.
+> I have sent a patch to address this issue here[1].
 >=20
-> Flip the clamping logic when setting VSYSMIN to ensure that battery design
-> voltage is respected.
+> Could you please test it on your hardware when you have a chance?
 >=20
-> Cc: stable@vger.kernel.org
-> Fixes: 1cc017b7f9c7 ("power: supply: bq257xx: Add support for BQ257XX cha=
-rger")
-> Tested-by: Chris Morgan <macromorgan@hotmail.com>
-> Signed-off-by: Alexey Charkov <alchark@flipper.net>
-> ---
-
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-
--- Sebastian
-
->  drivers/power/supply/bq257xx_charger.c | 7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
+>                         - Troy
 >=20
-> diff --git a/drivers/power/supply/bq257xx_charger.c b/drivers/power/suppl=
-y/bq257xx_charger.c
-> index 02c7d8b61e82..7ca4ae610902 100644
-> --- a/drivers/power/supply/bq257xx_charger.c
-> +++ b/drivers/power/supply/bq257xx_charger.c
-> @@ -128,9 +128,8 @@ static int bq25703_get_min_vsys(struct bq257xx_chg *p=
-data, int *intval)
->   * @vsys: voltage value to set in uV.
->   *
->   * This function takes a requested minimum system voltage value, clamps
-> - * it between the minimum supported value by the charger and a user
-> - * defined minimum system value, and then writes the value to the
-> - * appropriate register.
-> + * it between the user defined minimum system value and the maximum supp=
-orted
-> + * value by the charger, and then writes the value to the appropriate re=
-gister.
->   *
->   * Return: Returns 0 on success or error if an error occurs.
->   */
-> @@ -139,7 +138,7 @@ static int bq25703_set_min_vsys(struct bq257xx_chg *p=
-data, int vsys)
->  	unsigned int reg;
->  	int vsys_min =3D pdata->vsys_min;
-> =20
-> -	vsys =3D clamp(vsys, BQ25703_MINVSYS_MIN_UV, vsys_min);
-> +	vsys =3D clamp(vsys, vsys_min, BQ25703_MINVSYS_MAX_UV);
->  	reg =3D ((vsys - BQ25703_MINVSYS_MIN_UV) / BQ25703_MINVSYS_STEP_UV);
->  	reg =3D FIELD_PREP(BQ25703_MINVSYS_MASK, reg);
-> =20
->=20
-> --=20
-> 2.52.0
->=20
->=20
+> Link:
+> https://lore.kernel.org/all/20260311-v7-0-rc1-rv-dis-int-before-restart-v=
+1-1-bc46b4351cac@linux.dev/ [1]
 
---qrjbboz7ivwrdkum
-Content-Type: application/pgp-signature; name="signature.asc"
+Thanks Troy.=C2=A0Seem to fix the issue here.
+No splat and reboot still works OK on the R2S
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmmxFN4ACgkQ2O7X88g7
-+pqvcQ/7BxTt3z3BJknB92Gdrat2mFE2vC4Anuc74X+sB2PGI0UE+H0ygDJZt0NO
-wheMwR26VfxzfBY58YHzbBmWBIzxsJ0JjjjGulCQEqpo6qkXfuC6zrX4yrgjgtp+
-PzDQ7awxcSz8KAx63ZQUpGYxp/ZVeORBpeQpj9fTKZvOfyY4/oJ42OLn6M+IqC2b
-l9wYybG9kk/zEHb+wwuKuOvP7Gk6RmfrkovYpkk5eojKHbbWJYvPorW4+YJkfOv7
-lKQom+aRLokE7tF9c6ABuPip6ZikVEtDTjOGIMt3pfMHbVj6Lc83QXQqlQM9f07+
-UNKQllrjMeBqYv42oy+1L3t5VDv9dfHj9SxgTehjtIrlwY6p0gajEAdgghaI6Fiv
-je23WMSVgaTBdcYUu3lkXcEHhU2HUhjYlhD8yBS7BZs2uMYlauSr9I9Y0RwwqvY4
-crYWu0MiK9eLf2TPU+TIXJrVpBYxWuq3TCvSeid3FgTRc44/HELNognkF3HGeja6
-Q9OTsEfzg/oIrE1kbRh2AtX8e9BTdR6oeaumPTTaPnqdG4pKCa6Ez8xjhgUrRhsk
-Mbaw8nfxBAdeEIK6oSg6ygcX/CHzcVzlWxHH25cc9zRVm1PKWfAYC7sGoPgaIhA2
-R3sC52LNxWG8cx6lm1XNg7n4qzn965oLQGhOe5aTfiFEZqYHE0Q=
-=ZmPz
------END PGP SIGNATURE-----
-
---qrjbboz7ivwrdkum--
+- Yanko
