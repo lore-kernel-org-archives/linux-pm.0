@@ -1,68 +1,68 @@
 Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B98D13DE448
-	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 11:56:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 462943DEAED
+	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 11:56:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773230185; cv=none; b=kDcjEgu9O7dawj33kx23wI0GMb/jvNGaRYkb2XQUmBGQVBaOKD//b4ud6V/euecTyA3oiVqzg5ax2FFuBbzeMEh3k4f8TIKW8BxhxaDQ0HxTyHzR1ZqtHcUkYRLFKmcC0TZHqkABQMmVkJJ4q7jg76A3dP5uy4ZRwWvVu/oekSQ=
+	t=1773230188; cv=none; b=tnwnYI31Qb3huzafyvbeuZnRFs8keOQmm1Amon/VZcBn+USPGvkSuXMb1Zb0XsMhAkWFplDeKVAqYhSfkpis7mPGiFzSvxRZ8BFaIQk2TgBCEU3oIEQIMKDu8q1HeQUn+xLxC+pGZaEwsPGV3nE/YBktFb8ycQoKy/5ectS8F2k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773230185; c=relaxed/simple;
-	bh=Kch86XWLNpsoWXsiUYScxG9+qZq2PDWJ+mVUNiuprdY=;
+	s=arc-20240116; t=1773230188; c=relaxed/simple;
+	bh=DcG8KW5Fnk3rc/f7uk3dyHKO5i3tnn1nAb2IeSenCzU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=boxD8vMSwZbTAdZ9XeCpHZVBcCqAjMbqm17dnp5maQg2nC+AVkHOEgRt6zl6vF0mN1KNiVTHWP+5IoB+fClM9BjcQu1o98fq0xp8BNnKGk3dhdMYeOxpQ20kOytw7/QleB4K5DnGgLwbgvWS9E4ZcgxhFZqSDrtXrLoaNSNYYRM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=ZoPfvd7u; arc=none smtp.client-ip=209.85.128.49
+	 In-Reply-To:To:Cc; b=qMNIGARAorpxfqggJVfjtxgGSsNUA4p28BxOyx/gbmJv/n1nWG4+cdap8Ek0cJOU8g4tgiOH5yY3khLygEdgzW5flB4FY0Mf2IesimSBytYwIeNFM/1diCaqONMIbf0IERFb5dICQKVWDk2inEpdhgQbVEjxdgCAWH3jh9ag+pQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=Ei9hMQlq; arc=none smtp.client-ip=209.85.128.49
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="ZoPfvd7u"
-Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-4852fdb36a8so49615765e9.2
-        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 04:56:23 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="Ei9hMQlq"
+Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-48535a0ef86so30370015e9.1
+        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 04:56:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=flipper.net; s=google; t=1773230182; x=1773834982; darn=vger.kernel.org;
+        d=flipper.net; s=google; t=1773230185; x=1773834985; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=a3tePfAp0V+6zfOlKlirFvJa8IZ0hYoxL5FVcQEbR28=;
-        b=ZoPfvd7uwgmLH8bnvkCOkEOOkiu0xTsr0qCkebF1drwbWDVQ9zNslBrc5yT//loPu/
-         6DwI2gzbfZRHyrqyO0mM8/rNB/szh6Kn7MurAgwd8NOvEeC3Y0wN/WEEOHyYNTm7FmyU
-         Feq7dHtUv6FjpCev68pbU/qZMBLql/E7LtvyytmgILfedooeQ+8HZllaElNMer9xAwuZ
-         42Tvnj9tSgTQODQqBWu8yoHERClJrNWRMQrV1/1Devq36/gJAXEJufM8zHoNL25TynJ5
-         cgKYvfnqsTePT+YwCTe89wvw8ZdzbVXwdr74jZIh6Dw1FmFeD5Syh1YxroSAWTaon77/
-         os2Q==
+        bh=jCpuZJNVNsInRc1C9w8uAr8XhXxWVpiElBj6DPaFINQ=;
+        b=Ei9hMQlq8Nf7iuEp4tS8ip3qh/DvXtJxM/OP8WSdNqjeq246T6ehXK+t4O19755PRh
+         lQx8YCEQSX6AJSrzdlK6t3myvJdHkjwfbMmwxQ1t61g/2H6bC90aNhOlUTXepu1n2naD
+         RTvccZU/Tdhwss60qRAviwyBSdtrCOLKWWHvkE30cI2CYDw+pZdDQ+6QTAOXQvhI8z2R
+         LVNPnFuvSKsuh2Wfw83gVq93V9KGIa6YAM0J0lVJkCAlsqvj7mEpWBu4WOpm5jBXy0Jc
+         kTG3rYmCbxKCxBy9bhWC7JzD0jb2RNy0xDvM6XwHkJkzueYCOZpo57JLfupkJ7zHG3Wg
+         kt3A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773230182; x=1773834982;
+        d=1e100.net; s=20230601; t=1773230185; x=1773834985;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=a3tePfAp0V+6zfOlKlirFvJa8IZ0hYoxL5FVcQEbR28=;
-        b=rgcwtZBYFMneA+f3VByWdmW2ksOGRz3tHKxOxMkHZbmN9B6CBY/4sCG1yCdgpr6MEp
-         mKSbmg3zMyCUNWuGixF/r/uyp3C+q3BASg0zcsgZjh5qzT8wpdup+iCmAjkLoT5GD5yM
-         YCpjtYsStqGq6sYGEU0FTic+bjcexKt3vE+BjAfhPm+z87U/klJqWX42gM27jk1dJKL5
-         QN4ShAehsQuHwPEr1vBGBrHRaQXtshcPmcgHjT9cTa5yBvFlqCutIN77QX/rD8zTq6rH
-         VZULKOb0+XYyUS39CZvc6Pmm0a+eXLl2JnBRezf2+diIJqkkG9HMlF610i8zeLg9kO/Y
-         +lUA==
-X-Forwarded-Encrypted: i=1; AJvYcCXYKx5Xxl6sxe3PlqlIt+D1J5ULpToHZNUvj5uuaJsU+2LziB/yKtv0o5AhvgwSaXLiWwBQFXGR9Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwJu2NvzrQa6xokf/R8qDOkXkx0wN8Et332nmyZrf855wosnD/m
-	HZQCQNsboaWL7K3VnCtfiNqYpNDbM2/4ipg2ztuThxa4egObhE8ZfmH1r4J+yqNV4X8=
-X-Gm-Gg: ATEYQzzgytaZLnwu658/2ZBnmSSas5ycgqAxuo7wcm9+NjyBswIIMtddk/ZCz9udu8u
-	JjlwAraU0HK5QnUpGF9uo92JNYLoTH9Sed2pNmJ1VztNLMe9ynkGWckBMxIBKl9mFSTQmDklih+
-	Y7fo99RSXoZLvJiqy1tXLBdBw/ICdOjkuTE29IxJpu9xCfS4aajIRw+JIW/QwR6CdLn8AwMxvVf
-	hOdGZ7dg5XrILP5masMfyYiP2ywvQvjXR5IZjAJvm6jwA1AV8KQeHd6D2MfRFWDCgrh6qutYWqe
-	1KCNPSEU7QxVGcoDsjqYFYlnkbtmaU0ky63SGS6owh7hZ1dfdkVUkX3wvfd2TkXBIkfXap4hQ03
-	NCJRJuCcmmwqH/yUnj+lgU1mSA+K2kbjwUNF9SlBhVaeVhFKEYiavUAcMfa2O90mQs9cfJzgiW/
-	H0OtYqWCLGwMg/Sn15+aMFBPYHqPIRjp+Hi8nIQQv6edwJsxnjCu64KU8nG1ry0yxyEDXBejlz8
-	32SNhbsuN2Xyz2K
-X-Received: by 2002:a05:600c:4fd5:b0:485:379b:57be with SMTP id 5b1f17b1804b1-4854b0cb6c7mr36459495e9.1.1773230182091;
-        Wed, 11 Mar 2026 04:56:22 -0700 (PDT)
+        bh=jCpuZJNVNsInRc1C9w8uAr8XhXxWVpiElBj6DPaFINQ=;
+        b=HkIjoVqQSZUxlYlOpqKchPXSxIosjXY1JlnDVTfAgmkrWxKrAp0QiJbrsrnb1hkt7i
+         DKVbax+3dgRmVd1WjISs9an0vUmOdWg+E0Mu3c6mxS6DzHx0kWr0vJO4Iy73WNk7IYsz
+         e+VQaglx8JsL65SD8Hlv6PltztkGHx05Ic9ts5NUylE7L1qTZLwprnlIQRGfX0r5ZKdg
+         Ixvu/gNWvCjIcnRErm212Uq1iD59PRp8xdP4pnL06nrsekQb6QflbRklVt4xDq+5sjbW
+         SIKd4sSfXynmAztDTf59nVN2nCSpORG2xd53dejlgtcD7trbIrw1ng14kb/d5Fegk1EG
+         bRig==
+X-Forwarded-Encrypted: i=1; AJvYcCU8NvkXM3D6C3xqMtOp7P/X1ymZ542HR/9x47L3cukHwXCr1oS80oDAHYL85McyeMWIZEfg1g8WDQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywc9gUkdcyebtgbVhsGAv6puldqBuogFqtgPjst/gaJSqh8QU4i
+	1Ib9Auisl57cbVrmJK66dd6rNGCnpmPnth6nd6CT/3Ro9waHDnZjXcDH0zxGIGH8bps=
+X-Gm-Gg: ATEYQzy/luqCE3d+ro2yBCVYyZdg4jKjyvJpjf9Ee+WH8QH27fV4pSU97pancPaMJMm
+	6ph8kzAseURUme7C4Cxtxazt9tZtd3lrqr9iIcIQPvSgePFZAaZ5u+tqb4m8orAhshq6aUaPMHE
+	Vcq9JGdO2hkqkebtN7YrbyEkpEGxdujQs4LowQK3RetsNzXPi4vOEgXQXeFD92Cg3O06neK4yAY
+	1oH+7Kb5Z0DubLf8+vhDKTZIJ1Hd7+AP+GK7srPHI+88L+tqkO95nx30oATC2vC4RUV9gLGaWoR
+	YA1lNnIvp9gXuuUklk6EOOGMkA+UxBvH1LLFxzmcmi1uP7HpQ6JCN7WAZOFXEm+LLTYHxv2tuT5
+	H3TzgAE4ikbCDC73zPzjDmMpqIgQMtGUSp2dnt0rfySI+oTDO/ygn+JuUnhVpJWYEu569mA/zou
+	+3xT8uz/nLdt380idSrSafvtuYOgTzo8W631huCthb9EDt3GsoJAmIX0uDjQs+tQ1+OBijixDqW
+	+YIyA==
+X-Received: by 2002:a05:600c:1f96:b0:485:3bb0:194 with SMTP id 5b1f17b1804b1-4854b129e5dmr37492555e9.35.1773230184632;
+        Wed, 11 Mar 2026 04:56:24 -0700 (PDT)
 Received: from alchark-surface.localdomain (bba-86-98-192-109.alshamil.net.ae. [86.98.192.109])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4854ad5416bsm39586485e9.1.2026.03.11.04.56.19
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4854ad5416bsm39586485e9.1.2026.03.11.04.56.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Mar 2026 04:56:21 -0700 (PDT)
+        Wed, 11 Mar 2026 04:56:24 -0700 (PDT)
 From: Alexey Charkov <alchark@flipper.net>
-Date: Wed, 11 Mar 2026 15:56:14 +0400
-Subject: [PATCH v4 01/11] dt-bindings: mfd: ti,bq25703a: Expand to include
- BQ25792
+Date: Wed, 11 Mar 2026 15:56:15 +0400
+Subject: [PATCH v4 02/11] regulator: bq257xx: Remove reference to the
+ parent MFD's dev
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -71,7 +71,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260311-bq25792-v4-1-7213415d9eec@flipper.net>
+Message-Id: <20260311-bq25792-v4-2-7213415d9eec@flipper.net>
 References: <20260311-bq25792-v4-0-7213415d9eec@flipper.net>
 In-Reply-To: <20260311-bq25792-v4-0-7213415d9eec@flipper.net>
 To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -81,143 +81,88 @@ To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
  Sebastian Reichel <sre@kernel.org>
 Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
  Sebastian Reichel <sebastian.reichel@collabora.com>, 
- linux-pm@vger.kernel.org, Alexey Charkov <alchark@flipper.net>, 
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+ linux-pm@vger.kernel.org, Alexey Charkov <alchark@flipper.net>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3922; i=alchark@flipper.net;
- h=from:subject:message-id; bh=Kch86XWLNpsoWXsiUYScxG9+qZq2PDWJ+mVUNiuprdY=;
- b=owGbwMvMwCW2adGNfoHIK0sZT6slMWRujEg6a9bvJP2Bu9fpQktK45xGg9KtpzUvs/5hF1FlZ
- jUKOJHdMZGFQYyLwVJMkWXutyW2U434Zu3y8PgKM4eVCWSItEgDAxCwMPDlJuaVGukY6ZlqG+oZ
- GuoY6xgxcHEKwFSfesnwP0N3QQg7w6XjyUyf5JMPVaw+lyCutkOwN5+D4XvqOgvTHYwM789/evh
- JS7i3TWLOd5bnk9I6oh/9eK0pUbbu86PytTNNOAA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2756; i=alchark@flipper.net;
+ h=from:subject:message-id; bh=DcG8KW5Fnk3rc/f7uk3dyHKO5i3tnn1nAb2IeSenCzU=;
+ b=owGbwMvMwCW2adGNfoHIK0sZT6slMWRujEgqE1l3VMZ7r6holfnSL1seO+7elP1aSGLHTfNFN
+ bWTpp2b2TGRhUGMi8FSTJFl7rcltlON+Gbt8vD4CjOHlQlkiLRIAwMQsDDw5SbmlRrpGOmZahvq
+ GRrqGOsYMXBxCsBUr25j+M3608PeLFf/6bNHZwu3mL8UuTr9T1i0wrrbk8Wki/u/W3cw/LM6MO8
+ e52KFK6L5XzkPFFpZz3By7ebk/P77ltqF1D/LljECAA==
 X-Developer-Key: i=alchark@flipper.net; a=openpgp;
  fpr=9DF6A43D95320E9ABA4848F5B2A2D88F1059D4A5
 
-TI BQ25792 is similar in operation to BQ25703A, but has a different
-register layout and different current/voltage capabilities.
+Drop the ->bq field from the platform data of the bq257xx regulator driver,
+which was only used to get the regmap of the parent MFD device, and use the
+regmap from the regulator_dev instead, slimming down the code a bit.
 
-Expand the existing BQ25703A binding to include BQ25792, and move the
-voltage and current limits into per-variant conditional statements.
-
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Acked-by: Mark Brown <broonie@kernel.org>
 Tested-by: Chris Morgan <macromorgan@hotmail.com>
 Signed-off-by: Alexey Charkov <alchark@flipper.net>
 ---
- .../devicetree/bindings/mfd/ti,bq25703a.yaml       | 73 +++++++++++++++++++---
- 1 file changed, 63 insertions(+), 10 deletions(-)
+ drivers/regulator/bq257xx-regulator.c | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/mfd/ti,bq25703a.yaml b/Documentation/devicetree/bindings/mfd/ti,bq25703a.yaml
-index ba14663c9266..cdce83f05804 100644
---- a/Documentation/devicetree/bindings/mfd/ti,bq25703a.yaml
-+++ b/Documentation/devicetree/bindings/mfd/ti,bq25703a.yaml
-@@ -4,17 +4,16 @@
- $id: http://devicetree.org/schemas/mfd/ti,bq25703a.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/drivers/regulator/bq257xx-regulator.c b/drivers/regulator/bq257xx-regulator.c
+index dab8f1ab4450..812938e565e3 100644
+--- a/drivers/regulator/bq257xx-regulator.c
++++ b/drivers/regulator/bq257xx-regulator.c
+@@ -15,7 +15,6 @@
+ #include <linux/regulator/of_regulator.h>
  
--title: BQ25703A Charger Manager/Buck/Boost Converter
-+title: BQ257xx Charger Manager/Buck/Boost Converter
+ struct bq257xx_reg_data {
+-	struct bq257xx_device *bq;
+ 	struct regulator_dev *bq257xx_reg;
+ 	struct gpio_desc *otg_en_gpio;
+ 	struct regulator_desc desc;
+@@ -23,11 +22,11 @@ struct bq257xx_reg_data {
  
- maintainers:
-   - Chris Morgan <macromorgan@hotmail.com>
+ static int bq25703_vbus_get_cur_limit(struct regulator_dev *rdev)
+ {
+-	struct bq257xx_reg_data *pdata = rdev_get_drvdata(rdev);
++	struct regmap *regmap = rdev_get_regmap(rdev);
+ 	int ret;
+ 	unsigned int reg;
  
--allOf:
--  - $ref: /schemas/power/supply/power-supply.yaml#
--
- properties:
-   compatible:
--    const: ti,bq25703a
-+    enum:
-+      - ti,bq25703a
-+      - ti,bq25792
+-	ret = regmap_read(pdata->bq->regmap, BQ25703_OTG_CURRENT, &reg);
++	ret = regmap_read(regmap, BQ25703_OTG_CURRENT, &reg);
+ 	if (ret)
+ 		return ret;
+ 	return FIELD_GET(BQ25703_OTG_CUR_MASK, reg) * BQ25703_OTG_CUR_STEP_UA;
+@@ -40,7 +39,7 @@ static int bq25703_vbus_get_cur_limit(struct regulator_dev *rdev)
+ static int bq25703_vbus_set_cur_limit(struct regulator_dev *rdev,
+ 				      int min_uA, int max_uA)
+ {
+-	struct bq257xx_reg_data *pdata = rdev_get_drvdata(rdev);
++	struct regmap *regmap = rdev_get_regmap(rdev);
+ 	unsigned int reg;
  
-   reg:
-     const: 0x6b
-@@ -25,7 +24,6 @@ properties:
-       powering the device.
-     minimum: 50000
-     maximum: 6400000
--    default: 3250000
+ 	if ((min_uA > BQ25703_OTG_CUR_MAX_UA) || (max_uA < 0))
+@@ -52,7 +51,7 @@ static int bq25703_vbus_set_cur_limit(struct regulator_dev *rdev,
+ 	if ((reg * BQ25703_OTG_CUR_STEP_UA) < min_uA)
+ 		return -EINVAL;
  
-   interrupts:
-     maxItems: 1
-@@ -57,11 +55,11 @@ properties:
-             minimum: 0
-             maximum: 6350000
-           regulator-min-microvolt:
--            minimum: 4480000
--            maximum: 20800000
-+            minimum: 2800000
-+            maximum: 22000000
-           regulator-max-microvolt:
--            minimum: 4480000
--            maximum: 20800000
-+            minimum: 2800000
-+            maximum: 22000000
-           enable-gpios:
-             description:
-               The BQ25703 may require both a register write and a GPIO
-@@ -74,6 +72,61 @@ properties:
-           - regulator-min-microvolt
-           - regulator-max-microvolt
+-	return regmap_write(pdata->bq->regmap, BQ25703_OTG_CURRENT,
++	return regmap_write(regmap, BQ25703_OTG_CURRENT,
+ 			    FIELD_PREP(BQ25703_OTG_CUR_MASK, reg));
+ }
  
-+allOf:
-+  - $ref: /schemas/power/supply/power-supply.yaml#
-+  - if:
-+      properties:
-+        compatible:
-+          const: ti,bq25703a
-+    then:
-+      properties:
-+        input-current-limit-microamp:
-+          minimum: 50000
-+          maximum: 6400000
-+          default: 3250000
-+        regulators:
-+          properties:
-+            vbus:
-+              properties:
-+                regulator-min-microamp:
-+                  minimum: 0
-+                  maximum: 6350000
-+                regulator-max-microamp:
-+                  minimum: 0
-+                  maximum: 6350000
-+                regulator-min-microvolt:
-+                  minimum: 4480000
-+                  maximum: 20800000
-+                regulator-max-microvolt:
-+                  minimum: 4480000
-+                  maximum: 20800000
-+  - if:
-+      properties:
-+        compatible:
-+          const: ti,bq25792
-+    then:
-+      properties:
-+        input-current-limit-microamp:
-+          minimum: 100000
-+          maximum: 3300000
-+          default: 3000000
-+        regulators:
-+          properties:
-+            vbus:
-+              properties:
-+                regulator-min-microamp:
-+                  minimum: 0
-+                  maximum: 3320000
-+                regulator-max-microamp:
-+                  minimum: 0
-+                  maximum: 3320000
-+                regulator-min-microvolt:
-+                  minimum: 2800000
-+                  maximum: 22000000
-+                regulator-max-microvolt:
-+                  minimum: 2800000
-+                  maximum: 22000000
-+
- unevaluatedProperties: false
+@@ -137,7 +136,6 @@ static void bq257xx_reg_dt_parse_gpio(struct platform_device *pdev)
+ static int bq257xx_regulator_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+-	struct bq257xx_device *bq = dev_get_drvdata(pdev->dev.parent);
+ 	struct bq257xx_reg_data *pdata;
+ 	struct device_node *np = dev->of_node;
+ 	struct regulator_config cfg = {};
+@@ -149,7 +147,6 @@ static int bq257xx_regulator_probe(struct platform_device *pdev)
+ 	if (!pdata)
+ 		return -ENOMEM;
  
- required:
+-	pdata->bq = bq;
+ 	pdata->desc = bq25703_vbus_desc;
+ 
+ 	platform_set_drvdata(pdev, pdata);
 
 -- 
 2.52.0
