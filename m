@@ -1,97 +1,197 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f54.google.com (mail-lf1-f54.google.com [209.85.167.54])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F9C731A061;
-	Wed, 11 Mar 2026 01:38:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773193101; cv=none; b=hNTr4t2Pa5LzUrZugmxjcnuMKzi0JX4lNjlFVR7TLHU6gjCf2ZBspTjEu/fapMsHv77gYCoOxM5koh2k7Q3wkb+pTok01mF321vA8UhtGD70yulrrShJsLHc7Cxb+9hF7IzSzTdkZrEHyQ524/ePpM1f2vA9l7RbXWElk34WMVk=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773193101; c=relaxed/simple;
-	bh=UBeBF6mzG/vlU5u+j5s0y+zmS6JjgSgmbq5KzdOAAvU=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=ECcBKCehsXAHyFnsukt+gdVt3LqMrX8rST4f9xhaRWSyE2FbHz9YE5DhYCJPqak3vS7pztccB7A4VlyLlTMmvBif37h+EdFjthk2FLCgXf+icl53E5J7vtY7/3jmcH+SkVoJDSfh6+GOPzv87yJeDCZC92/clVmaFsVZqFnP9Ec=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aYk6EcFB; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5458D33C197
+	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 02:07:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.54
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773194859; cv=pass; b=UjtkkRyCD9IqW/dTGaDyZroBm6UARpV0voRLMDl8xtfcM11cuiqMyvzNKbRIumiMQHN8GUKY3qg9oxT9GQDtgE00rEbPYBY+6+qaWFUNNgY2LaKXqMt8q2pa3QSzzCI+LG/CyhBsdLH6MZvo7eq8t1sniuCqzIZJWqLyea+SN/Y=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773194859; c=relaxed/simple;
+	bh=8UJnLa/DDQ+b65RDSHa97nR/Rm6zetnRjswOkVb13wc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=l2g2yzZ4Dybh6kuhvcBULVguDYhdrEOCm8tFVHG5HxZiMK4r1ieV3XC7DvFbBP/+LmMwsbfu65u9ArSpCtaVdbPZteok84/rVMReHCYXmpmbYEy9zrdrliUY8eD89Ecnaq3KiIRSp5NcaBqhT+HUD7Ww+h1VR8ou9i4C8J9QSO4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=SqpOgAb4; arc=pass smtp.client-ip=209.85.167.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aYk6EcFB"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 993F9C19423;
-	Wed, 11 Mar 2026 01:38:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773193100;
-	bh=UBeBF6mzG/vlU5u+j5s0y+zmS6JjgSgmbq5KzdOAAvU=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
-	b=aYk6EcFBs6HpNfDb/WTBzLlsewnnduPZguJm5+6dG7Bh7thlqMy2Yt+cYSzxuiNph
-	 KnXcOtra2ZSKRl+ZRzpOWcLoY8j/KdpNqumpKLEs3MA4ONJMoo1wqez4cMKvX4k0qi
-	 saf+5/xRQz0zM/ZHiXhm3yewhUMEpJgXtpf/3BPRIc+56N+IVf1t4Z/Bps3c0+nQwT
-	 X/QOWL9OKuuGeGUGe2Cryq+DlmqkET1Czouu41EEzzLUb/vYo+PGJAzpwDN/e2cIVU
-	 GE2E8tYMwRh4yGUyspJfiQs0VqJKtZ6O8bzTSmgcMMlktfKBRITDTkNpXhbyHA5mx4
-	 5LRKu52aTmvhg==
-Date: Tue, 10 Mar 2026 20:38:19 -0500
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="SqpOgAb4"
+Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-5a0fc5e2c59so9992846e87.1
+        for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 19:07:34 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1773194852; cv=none;
+        d=google.com; s=arc-20240605;
+        b=MbMHuLNExgSW6gUoQ3z87l1Ugd9KawxG0NI8h/CFu3XiECTe90OikXAbIAsOp4hCAg
+         HdrquXIadkgmpkWiNg1CxtRGhDEYQLw7FwUJ3e0/t/Q9KYaG8O77bQtgr/BpPJBhyKsV
+         5L/Yx4Pb5QPsdWYrzeRUnCH7t2J19qOEyPcSOru5rsIh9lrzo1GCtEPD2Fvcmla87jxl
+         klHub0HFSsMt0+E9apeReEaREWR6YCR+824/Rcsw0ivpVnTctlLtj1I7OWkafoAUxrE5
+         d4u49mdpWGRJYqIiqNyqSispSJk2clVQQbgvJFRtVUawEyOX13pN8WafC+u+RlEDU07Z
+         YhKg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=+zLBLQzKjcztDlxJqoLP6w+B6xnZmfHibV4jlBQCebA=;
+        fh=oLi0yh3HyXSjX7W+4cGY85ZI7kPqa7/7bUQeReWRGKo=;
+        b=lhXdvwmqUOngCxYu1aFvKYEolOFTtXppg+dBWTDkU3Afub9LEPDuH/chqxgH1rH1HU
+         AFYvLSs9SCKQJwI/HfCLuWf6WAA9z7dA6XDzmJQmsrzt3y58ad5DZ055+eqkUVKRifjR
+         CTkvMXonaJNJkPaVNscnsqM3wgnZt01LRudUZrwIEIwKyS0vhNEse5Bfm2gNd/ZciO+q
+         NCWqWuvMDCwjsYO+KDoZeqx7n4DP4dUbpL1A9K0BI1OQjEgeFSnm3uW/OmtrJieNcJmh
+         /qE29T4PZ4v5UJFXOYafArLw8jKTAqgPdXGvJSFtPtKRGLadwNYfLpW1SspaPXpvGr9S
+         IC1g==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1773194852; x=1773799652; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=+zLBLQzKjcztDlxJqoLP6w+B6xnZmfHibV4jlBQCebA=;
+        b=SqpOgAb4CQOCp6QT1IhDiJXNOENCCAthmmQiQ2Xm1LqdH6AuNnr9pWEOxoaM6J2EHp
+         TaZvrNsWvEAAdeAh3rGZCGLrxzU767HUy57VJt43+079ae3+2kuAr2+JBVbU8T9+l/BT
+         vjjO+GANIyds0bGFgUhdgNG0FnF3NJi/nWQH4=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773194852; x=1773799652;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=+zLBLQzKjcztDlxJqoLP6w+B6xnZmfHibV4jlBQCebA=;
+        b=eD8FX+XkeurS0OJm7rH7GoIcaEwkodMLXxy0wzlnthn00GPwX7uHLTZiQcT6ka3pJq
+         8rNJ+6WkhmT6bzRv5RUYg/HfBGPW3uMs0AcMILYcDaFPbPAufMRZFxmK9RKT0vwBl+XF
+         g1xwWVbt1WJGGQ9spAhtPScLCOzn0B5kvmOs7zd6wIPRc9EFhe/qhVQK8eaK7vFwZpRU
+         xWO3XU0HAD4qlTNny1HTZ2ikCSBWxvcep4QI3wtjRSvBZf2syvNASxn/eV+yxgALOf7y
+         9nYMmS3lsWf2Opyfon8FEaQ6qzBklARJYKDzBSxPd/spWmpebvHR+gLXjK7inFWHAT3p
+         /AuA==
+X-Forwarded-Encrypted: i=1; AJvYcCVm7Yz3MtypqnrT9hjayjY2IUFiznEoi4i5a5Irr8old3Wg/kaasVlR1l/kuZEPYQn6Yi2hVwLEGw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwLLV/0iz6x6S9i37zcAg3Xaa5UM9t/mjj7D9OdhJFREtYZnMFY
+	/4YeBl/l+OQgFQ0Y2Oon52fbcryn6FGKFvtYUagebpxjFuzI7mr5Ojiw9RvdYOXToWGn4XXJKwM
+	VEWR9U9008JyR54aAAq1jfp83VNbmNjAKeyXGEdYB
+X-Gm-Gg: ATEYQzzXMENvfIA8ZVu8IoGF/aj0Dcbj85Bf7U9S9ABlvOq4QvBiy23kdcq7ePAMIi9
+	hZG/52Hwz3j3cAWahqaVqRtvFIswqwAd38K62HoxeaugwFE6OeM9kPek6XGWBIeD7WyRz8ckEaD
+	gY7mryxxR+uH11EQW2KRpBv1j2Y+F3Gtr5xVg/DM5qCkKHBiDFsq4x2o3hOwc87iqnG979xZLci
+	Il3A41TC0cfVFEubXgyA86KwsUTs7fGce3qlUwb9OqhMY1UrAmwUtp0LQBfkidak0hxO2mXL1l9
+	ne2xCZ6I4Q==
+X-Received: by 2002:ac2:4427:0:b0:5a1:3134:9bac with SMTP id
+ 2adb3069b0e04-5a156cbd1bbmr169453e87.28.1773194852284; Tue, 10 Mar 2026
+ 19:07:32 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, 
- Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org, 
- arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- devicetree@vger.kernel.org
-To: "Kevin Hilman (TI)" <khilman@baylibre.com>
-In-Reply-To: <20260310-topic-lpm-pmdomain-child-ids-v1-1-5361687a18ff@baylibre.com>
-References: <20260310-topic-lpm-pmdomain-child-ids-v1-0-5361687a18ff@baylibre.com>
- <20260310-topic-lpm-pmdomain-child-ids-v1-1-5361687a18ff@baylibre.com>
-Message-Id: <177319309976.1426147.15580608651927678828.robh@kernel.org>
-Subject: Re: [PATCH 1/3] dt-bindings: power: Add power-domains-child-ids
- property
+References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de> <20260310-b4-is_err_or_null-v1-56-bd63b656022d@avm.de>
+In-Reply-To: <20260310-b4-is_err_or_null-v1-56-bd63b656022d@avm.de>
+From: Chen-Yu Tsai <wenst@chromium.org>
+Date: Wed, 11 Mar 2026 11:07:21 +0900
+X-Gm-Features: AaiRm5028PWt8n-JnveiRgn8oYMksdR_-_nk4JOkvxMfplWs-GDr7RRk-OxICyw
+Message-ID: <CAGXv+5FQAVaJjqhv+Xq-ysOc4SHQn2mCNTgCAp8XocmWBWGGoA@mail.gmail.com>
+Subject: Re: [PATCH 56/61] clk: Prefer IS_ERR_OR_NULL over manual NULL check
+To: Philipp Hahn <phahn-oss@avm.de>
+Cc: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
+	bpf@vger.kernel.org, ceph-devel@vger.kernel.org, cocci@inria.fr, 
+	dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org, 
+	gfs2@lists.linux.dev, intel-gfx@lists.freedesktop.org, 
+	intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev, kvm@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, 
+	linux-bluetooth@vger.kernel.org, linux-btrfs@vger.kernel.org, 
+	linux-cifs@vger.kernel.org, linux-clk@vger.kernel.org, 
+	linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org, 
+	linux-fsdevel@vger.kernel.org, linux-gpio@vger.kernel.org, 
+	linux-hyperv@vger.kernel.org, linux-input@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org, 
+	linux-media@vger.kernel.org, linux-mips@vger.kernel.org, linux-mm@kvack.org, 
+	linux-modules@vger.kernel.org, linux-mtd@lists.infradead.org, 
+	linux-nfs@vger.kernel.org, linux-omap@vger.kernel.org, 
+	linux-phy@lists.infradead.org, linux-pm@vger.kernel.org, 
+	linux-rockchip@lists.infradead.org, linux-s390@vger.kernel.org, 
+	linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org, 
+	linux-security-module@vger.kernel.org, linux-sh@vger.kernel.org, 
+	linux-sound@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, 
+	linux-trace-kernel@vger.kernel.org, linux-usb@vger.kernel.org, 
+	linux-wireless@vger.kernel.org, netdev@vger.kernel.org, ntfs3@lists.linux.dev, 
+	samba-technical@lists.samba.org, sched-ext@lists.linux.dev, 
+	target-devel@vger.kernel.org, tipc-discussion@lists.sourceforge.net, 
+	v9fs@lists.linux.dev, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Thomas Gleixner <tglx@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-
-On Tue, 10 Mar 2026 17:19:23 -0700, Kevin Hilman (TI) wrote:
-> Add binding documentation for the new power-domains-child-ids property,
-> which works in conjunction with the existing power-domains property to
-> establish parent-child relationships between a multi-domain power domain
-> provider and external parent domains.
-> 
-> Each element in the uint32 array identifies the child domain
-> ID (index) within the provider that should be made a child domain of
-> the corresponding phandle entry in power-domains. The two arrays must
-> have the same number of elements.
-> 
-> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
+On Tue, Mar 10, 2026 at 9:57=E2=80=AFPM Philipp Hahn <phahn-oss@avm.de> wro=
+te:
+>
+> Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
+> check.
+>
+> Semantich change: Previously the code only printed the warning on error,
+> but not when the pointer was NULL. Now the warning is printed in both
+> cases!
+>
+> Change found with coccinelle.
+>
+> To: Michael Turquette <mturquette@baylibre.com>
+> To: Stephen Boyd <sboyd@kernel.org>
+> To: Daniel Lezcano <daniel.lezcano@kernel.org>
+> To: Thomas Gleixner <tglx@kernel.org>
+> Cc: linux-clk@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
 > ---
->  Documentation/devicetree/bindings/power/power-domain.yaml | 35 +++++++++++++++++++++++++++++++++++
->  1 file changed, 35 insertions(+)
-> 
+>  drivers/clk/clk.c               | 4 ++--
+>  drivers/clocksource/timer-pxa.c | 2 +-
+>  2 files changed, 3 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+> index 47093cda9df32223c1120c3710261296027c4cd3..35146e3869a7dd93741d10b72=
+23d4488a9216ed1 100644
+> --- a/drivers/clk/clk.c
+> +++ b/drivers/clk/clk.c
+> @@ -4558,7 +4558,7 @@ void clk_unregister(struct clk *clk)
+>         unsigned long flags;
+>         const struct clk_ops *ops;
+>
+> -       if (!clk || WARN_ON_ONCE(IS_ERR(clk)))
+> +       if (WARN_ON_ONCE(IS_ERR_OR_NULL(clk)))
+>                 return;
+>
+>         clk_debug_unregister(clk->core);
+> @@ -4744,7 +4744,7 @@ void __clk_put(struct clk *clk)
+>  {
+>         struct module *owner;
+>
+> -       if (!clk || WARN_ON_ONCE(IS_ERR(clk)))
+> +       if (WARN_ON_ONCE(IS_ERR_OR_NULL(clk)))
 
-My bot found errors running 'make dt_binding_check' on your patch:
+clk_get_optional() returns NULL if the clk isn't present.
 
-yamllint warnings/errors:
+Drivers would just pass this to clk_put(). Your change here would cause
+this pattern to emit a very big warning.
 
-dtschema/dtc warnings/errors:
-Documentation/devicetree/bindings/power/power-domain.example.dts:136.13-26: Warning (reg_format): /example-3/protocol@11:reg: property has invalid length (4 bytes) (#address-cells == 1, #size-cells == 1)
-Documentation/devicetree/bindings/power/power-domain.example.dtb: Warning (pci_device_reg): Failed prerequisite 'reg_format'
-Documentation/devicetree/bindings/power/power-domain.example.dtb: Warning (pci_device_bus_num): Failed prerequisite 'reg_format'
-Documentation/devicetree/bindings/power/power-domain.example.dtb: Warning (simple_bus_reg): Failed prerequisite 'reg_format'
-Documentation/devicetree/bindings/power/power-domain.example.dtb: Warning (i2c_bus_reg): Failed prerequisite 'reg_format'
-Documentation/devicetree/bindings/power/power-domain.example.dtb: Warning (spi_bus_reg): Failed prerequisite 'reg_format'
+I don't think this change should be landed.
 
-doc reference errors (make refcheckdocs):
 
-See https://patchwork.kernel.org/project/devicetree/patch/20260310-topic-lpm-pmdomain-child-ids-v1-1-5361687a18ff@baylibre.com
+ChenYu
 
-The base for the series is generally the latest rc1. A different dependency
-should be noted in *this* patch.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command yourself. Note
-that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-your schema. However, it must be unset to test all examples with your schema.
-
+>                 return;
+>
+>         clk_prepare_lock();
+> diff --git a/drivers/clocksource/timer-pxa.c b/drivers/clocksource/timer-=
+pxa.c
+> index 7ad0e5adb2ffac4125c34710fc67f4b45f30331d..f65fb0b7fc318b766227e5e7a=
+4c0fb08ba11c8f9 100644
+> --- a/drivers/clocksource/timer-pxa.c
+> +++ b/drivers/clocksource/timer-pxa.c
+> @@ -218,7 +218,7 @@ void __init pxa_timer_nodt_init(int irq, void __iomem=
+ *base)
+>
+>         timer_base =3D base;
+>         clk =3D clk_get(NULL, "OSTIMER0");
+> -       if (clk && !IS_ERR(clk)) {
+> +       if (!IS_ERR_OR_NULL(clk)) {
+>                 clk_prepare_enable(clk);
+>                 pxa_timer_common_init(irq, clk_get_rate(clk));
+>         } else {
+>
+> --
+> 2.43.0
+>
+>
