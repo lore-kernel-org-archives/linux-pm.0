@@ -1,169 +1,158 @@
-Received: from PH0PR06CU001.outbound.protection.outlook.com (mail-westus3azon11011016.outbound.protection.outlook.com [40.107.208.16])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D45713BC67B;
-	Wed, 11 Mar 2026 10:33:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.208.16
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773225182; cv=fail; b=Tph+u6FpGaLskvYczHNN0f3nrFU8r64Ch9iw0hV+2X8KHx6LdlSfaIJ5PZMdt9FeW3SuRBLhEwJup2a/ec2GFU6rxs9mpCette5exMd3+VR3nkN5dlRjA99upRXk2lF9QTYlrEY2LOvbbGed+W0HF/QALGk6UUVEdZ61hPfl6dw=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773225182; c=relaxed/simple;
-	bh=3KbjRGt4OOXvhUGDIh5437uU04UiukaOQX/n0FL4lRo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=a3gQUhT1GhJaa2sv7cL+pPKhXjDyex08xipuvPEEiT0fDrAoc7ZEys8MsCl5A18zLYlzzurJcNrwT9hzSjd46YUtzK3Z6p+TjczmasMSRjk2X2AudEbNcjjngeUhBaNcAC+UK7Jpd8Nff/YDylTLTjd9IqPGVMKzJcwhYEDztxI=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=eC0ZpYQ0; arc=fail smtp.client-ip=40.107.208.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 324A63CF037
+	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 10:36:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773225376; cv=none; b=XZbfl+9rZXMcGB+fCDvSmu3Jon3GPGpBZxdrqVxxwgKjdbJrjBLUoXU9I8WEJAkVe6o+NxA0l9WgxAlnz7h4n5brs6LTxAEnNTwMbZUUolwn+Ql1+aXcwesjVQRyuDqe/2TI/LL41vdf1DNDqc5t1xJO9qSRo0ikTIqjY3h9cTU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773225376; c=relaxed/simple;
+	bh=V4X7SQOiKwWP/Pa3MnE0/qdRZc1SxulGZjvcaX8/aAg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=l/LSGt/zcUiT1z5Rnux2d//cM1Idhj8VkdgEEV8UaEXWilEV4A6M/K5aRtxZkD1xLhTi1S+FZbEwdEdY6Fmg7x/oqOpgZwayadBhgyP+U5Zhpj7KQsyi+coY9jGV/DXvFHU2slt897Y6hRQIv5/HFqtWunND/KcB9JyxzYGB90A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=XCif0+eq; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=hIDyn8hL; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="eC0ZpYQ0"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=llSXZONj8/CjbO+pJauOxIv1BDvCWuXob/qJ8mx+AT0GbvvZfNMOTYI/vu3JcZ2qh9+7cAnH1avph56+dUM/qKP/0B3Jd3Vg6ft1oKGggsHLxDTn+BzAaT8P4iSAoD0QSJ3GN/f/+viU8ldSFykjtD//QorgUo0FctS9K+0V23khjKp6mmfRBYNi4h45thn8j/t+atSZcxuDJPD8rKdzCMBRAAHOnODB9X4ZzrxV+9csbvvHycxXssQHj7Dfj3elzN4/O/Ugvj3sag53/GANPDy5Y6AmtCFa9EeIg8PQGO8QuNV5qvc1PP3hpxwaluPk4S9hIAR1rCcazINTKracFw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=koGsT0ukSaIJ5D+NK3mKBKmyATBgX8sukI9xcAcOoiY=;
- b=Ehtrlggbfz9ys55OQ4bW9H1eszlVAbpTCWGAIWl22fNu33eVmTocgPTgS6G/WiSSIgaB1Z7iKn9cVl3JWqKOwkPI+xKy7GkojrtRUMOKMehsm5O25fVLsvBXomUiSfvEB2rxM8sqfEDDIPJBSAcxGrWFxh55QmYEdYCu9105Vd8k3DVXcqyG5AjIYoLx7OWNIjeVQMYqhx3EzKFW3TvZOzcOtNtkZYBX+A3FqCFTOI28/Hw7JwcI0Pies9BWGfp6mILer5BaPif7TRW+bwvQGeoRMjbqEAP+XtA2HDbnUO7m44JT6ezHfwlItUSERgKC40eYC0MPaMJpSYJbUdiCwQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=koGsT0ukSaIJ5D+NK3mKBKmyATBgX8sukI9xcAcOoiY=;
- b=eC0ZpYQ0AJcoq6lKjHsNQt7LV5wjsuD1sqzLsCuDu+oHBT9OBOJN24a6Q5d85oJPz3QLcM4x/wWH/UkK1u/3w5JypQWqYQEn1SlgW+RTgUvVyZ0+6v8RSZuM4jxuT9lXTOoG3F+XBw2yBoX4zg9PGqdNEZJj5QnfTW1Uyt/mkv8=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from DS7PR12MB8252.namprd12.prod.outlook.com (2603:10b6:8:ee::7) by
- SA1PR12MB9248.namprd12.prod.outlook.com (2603:10b6:806:3a3::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9700.11; Wed, 11 Mar
- 2026 10:32:58 +0000
-Received: from DS7PR12MB8252.namprd12.prod.outlook.com
- ([fe80::e5e2:6cab:5755:bc1a]) by DS7PR12MB8252.namprd12.prod.outlook.com
- ([fe80::e5e2:6cab:5755:bc1a%3]) with mapi id 15.20.9700.010; Wed, 11 Mar 2026
- 10:32:58 +0000
-Date: Wed, 11 Mar 2026 16:02:48 +0530
-From: "Gautham R. Shenoy" <gautham.shenoy@amd.com>
-To: K Prateek Nayak <kprateek.nayak@amd.com>
-Cc: Mario Limonciello <mario.limonciello@amd.com>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>
-Subject: Re: [PATCH 9/9] Documentation/amd-pstate: Add documentation for
- amd_pstate_floor_{freq,count}
-Message-ID: <abFE0G/7IqJEazX7@BLRRASHENOY1.amd.com>
-References: <20260306095753.17155-1-gautham.shenoy@amd.com>
- <20260306095753.17155-10-gautham.shenoy@amd.com>
- <aed4a704-6043-4741-ad0b-d98b3aed7666@amd.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aed4a704-6043-4741-ad0b-d98b3aed7666@amd.com>
-X-ClientProxiedBy: MA5PR01CA0211.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:a01:1b0::12) To DS7PR12MB8252.namprd12.prod.outlook.com
- (2603:10b6:8:ee::7)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="XCif0+eq";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="hIDyn8hL"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62BA34SQ2038153
+	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 10:36:13 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=qcppdkim1; bh=tpHlvfxHMXkkRB+NxUG0hcSQhE/rKGHsEhV
+	os89NpKQ=; b=XCif0+eqM2oNx02Y1VJxOBs5OCZ28od8dKuytWK0Dieo9Ggq480
+	mznpFLMNYUabdFGnEZ6Pj0q70O/EMgdbdPdPW5WJpEymTT64Er+XH7fZrzTO0AKt
+	tayaIZrifKaBkOMGLVnskvrmZTqxJX2W9WPf5jbsIo9qdhlpunuHzDjr2qMtw/le
+	HRjyR8BBDqurcLPRz8Z8dMDNWpe6jR5dj4kHmGr+rbI77LijC5XZWOUMRGO2CaGb
+	ijrA08AQpi6fW9orwpYvfQnu7WolfPe3tbQNOY5FbhPkvlhm0BdLn+O/YMn3Y8Um
+	AR60ovqbxlT9oTysmyPXSPYY/WUW7+J2NTQ==
+Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com [209.85.214.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cu6a5g4p0-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 10:36:12 +0000 (GMT)
+Received: by mail-pl1-f197.google.com with SMTP id d9443c01a7336-2ae4a6bb316so107312285ad.1
+        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 03:36:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1773225372; x=1773830172; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=tpHlvfxHMXkkRB+NxUG0hcSQhE/rKGHsEhVos89NpKQ=;
+        b=hIDyn8hLvv7MFFcaUUDJdeIpGXlJX4aE62ysJvt3j8a1WQ+31MHSEsYQ1svPSN3rw1
+         Ww7qCC9rVV5jCC+Ak8tOVNTtvnk/wO2GVh4zXU4UezpquXbZeAPECpxG9+ke9Uh0DGJS
+         +lTz5mx2zzz5tO3UdKgW1OxH2wDn0jZTdZ/DF1NnUOsz1N156sNCaMy0/XXmJOaXcFs/
+         WLheANabRVXEA8nXsvPJpc1XMpc1KOZRyjzZM2dRBqINh4ooYVLAql0T9hh51awe0gGF
+         qH1WXYhJZ5T1jVJXjHwv//z8yVqrts0BMGzXdpqe2ELPE8jEvkamtB1kF+ld1jqRyQJO
+         S9Cw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773225372; x=1773830172;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=tpHlvfxHMXkkRB+NxUG0hcSQhE/rKGHsEhVos89NpKQ=;
+        b=hKugsD46bnW6Y1tkDMMaP9D2C8AL7gucx7k7A/8IsnJlQdMSMFYLJeLoodvatDlVxd
+         PmyOravMTc+1cOwOwcDLUR956gALJ7VqALvSjLMzVJpUwGahGjRSIDhNje8MURF6UbqK
+         Wdq9M7qLrLNeOF8KG1JOdOvi12ZDll+fcN8XMPA7ulzCiep6Fh847NwbPLArQfGF4FnS
+         I00EL4WaBETlIhyg4xBn5VDVtyNZY0GxUGd1MzWmG+ypkb85Ec3NmQkTNWOl1mDQxA0u
+         cxnGGiwKIOvke3K8sjZJaGvVqxEw8CFt69S57gxbltnWimXm5E13pjCRD3H2mNOW7Msu
+         YDNA==
+X-Forwarded-Encrypted: i=1; AJvYcCUBUpx/YADtn/jde8lcXQtLQUzmnX97LQnEQOOv5hNly07oRtMFu072O+InQZxFRbjwycKOR6cy3g==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy3obe1fQU9HePswg8+5ONnaMIhBc/pzWFPX29a8wvO6M6VRvyK
+	cJk5w+k+F59LAX1YoZejUMZWEjN2yiLwkkXuaj7RWcdk3cSOVh5+pgG5pZMbFMvQUt11KoiQEP7
+	IW8kj1BeCVvTsgPznvXYE1jVpufYg2crcIu859FyJDixDP5kMfUOYZaJsh59Glg==
+X-Gm-Gg: ATEYQzwNfFQjLSqQWUagHYEemRWaK3C7Kms3IY5+Rm1XHph8tFLw+QqF6Ee/lBvBFRO
+	oeO9WeiPX4IzzezIhBwpMeHi00OtwxzQ6SnPMYHedcqVDFKcfAS+oSBO+WCg81d4ckFlhk/dcke
+	YEFm+YGPvCkBX5Qs+F5AHs2+2yZAIxeD3nE/KCEIRxOOyhll4rthT+h9XdwutNLhVgnOoutu4fO
+	jJPfXkjcVhmQtnMk4AxOzoISVvwT/mtuB16Ql+82PzT3f0gCtvXDDA506gdxeglomAzbo/C0saX
+	zoybTzvzBwiMdXY2H/yEAXVNVFye3dT1t92o0dXTI1o+gyB3Of9ZGd8lI+nb31p0PEWXWTLUftB
+	/oiZVjGTnFlGHRACll/ji9DgZe8uR/6DGN1fu+jJhNh2x3wzL1JgiyxY=
+X-Received: by 2002:a17:902:ec89:b0:2ae:55bd:1473 with SMTP id d9443c01a7336-2aeae876b3dmr19743125ad.31.1773225371996;
+        Wed, 11 Mar 2026 03:36:11 -0700 (PDT)
+X-Received: by 2002:a17:902:ec89:b0:2ae:55bd:1473 with SMTP id d9443c01a7336-2aeae876b3dmr19742895ad.31.1773225371465;
+        Wed, 11 Mar 2026 03:36:11 -0700 (PDT)
+Received: from hu-okukatla-hyd.qualcomm.com ([202.46.22.19])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2aeae378a28sm21042925ad.88.2026.03.11.03.36.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 11 Mar 2026 03:36:11 -0700 (PDT)
+From: Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>
+To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>
+Cc: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>,
+        Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Mike Tipton <mike.tipton@oss.qualcomm.com>
+Subject: [PATCH v3 0/3] Enable QoS configuration on QCS615
+Date: Wed, 11 Mar 2026 16:05:45 +0530
+Message-ID: <20260311103548.1823044-1-odelu.kukatla@oss.qualcomm.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS7PR12MB8252:EE_|SA1PR12MB9248:EE_
-X-MS-Office365-Filtering-Correlation-Id: 5897e87b-4bb7-445f-201c-08de7f598fdc
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|376014|366016|56012099003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	Dg7GSG2NTn7gnRDQIvzZk/8m8NbCRrG0AIywI2F3/pRrwmlfDG52L2Hq/QeAEqPKbhzyK/1x1Wky7gaOV78KrzfsUQJNJiJQn9mn+38lJkBlapaw5dUczovheK7ezjweOoHrr0SQ7Tm+QiDse/ub1n9ohDemjqHypDO1cwuEIkkXCU2iwK/5x6LSzJ56S8aJbl1zoaJpm4SHnMBDsCXLK/kZJi0Onin6Vpgh28V1J0JGI7jV/odVq9TPWuUqD8wrLQH4+ImSoDUtUZ1JYImm72uYTE79RpvIdA9FTBvK8RAPKlF6+oteUBfP5fKHeN9EsfZpCvQ/Bh3+pLGf0CZb3RE5hCuoZQIksUtwR6xZzDcyrVgRHljIYlgYn+twFd3JNygeaJJV4DKyVRbrfmtwLIHYiL6FainMBE9w5q7YOBfl05zQPAHy2BTs7v2pPwnkpAaN2NevAYifLpebFU42vN0iHG5kImgwWxZ4o5Unw+i4tbJEWe8TGwxarU586qvDjlIvPKD+xEBnfG9OCkDXjWcPrl5a26tpN5vPoiul07RZKQQeB3EDX9OMIUejfyVRtJyS5HMr3ZeUAaf8H+A+6AtM86JVAP5eFFXzQ2ikfjAF0/feqyrusMF4RykR09zfBGlT47OQ8jqYwpVeoSu07/MnyA93MfV4OuxdYDsykyFvAzODc8f6fSKgMUqLK9A9IaPsYhzFQs6tgUN22rNaIgzKSlMTrQU8Z1P5qMS+Mj4=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR12MB8252.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(366016)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?8ZRo/j5U9YY5M2d7KMTi4e3/QVXjqYLTTqMi6Q8OdeduGU/IajJD7uV+vsCD?=
- =?us-ascii?Q?fP6fFcDbSErzL2kZOgaxkGrrYCkG+TXgqIfpcx/flCHnkt/tIhO92MVaJh5P?=
- =?us-ascii?Q?4zQCdRVDnqdZc/CVOQYpWlRf9i7d9nO9+gL784jKFU4CaqQI3jN2P11j+HCq?=
- =?us-ascii?Q?/ciiy/VxC/aNmYJf1aywHe31Szi1KzzBoAbm5BmsxRKVuslZE327gY81GZMB?=
- =?us-ascii?Q?RKkjnaFH2DsIxfShvMq9f9DEk3bplnnWU3kJft+oxkERMRP/ph7CnpJgIno4?=
- =?us-ascii?Q?O3Rk5Ug8FmG0VKakTWSQJD18jPoCmg+O6wPkAjmP1hBx6o7bSEq9BDZP4nGQ?=
- =?us-ascii?Q?JfpbsFxo6rUEJyFWT/YsM+amud7xZ5Ii/l2hgIhvuhf2BKiJ1x/HGkjguEcz?=
- =?us-ascii?Q?91+lqHuItVUsU2DdJb3lez+KqaCsYwT8m81fRFltiCgt/DwklsTUtP31rGVs?=
- =?us-ascii?Q?HaMiHig1KCX2nJohOtAxNTsV+HhFRddcZsa+anY8KULwmAeLhK28e4CUXwlp?=
- =?us-ascii?Q?IuxSjez9PcqLgxoDE2ecBPgjLGuh6HgDUCEUes/cb1Nvgra7a2n6KpfW9TBc?=
- =?us-ascii?Q?Xz1mhRPvrSelw51UlZ3LiaLM9QgjgESHDTw2B8Zpfsnh1XZZ3s7IaAjuG5WQ?=
- =?us-ascii?Q?iN+LJ3kBp7oJDeH0+yo0GfUII3w/81PlzLDq6I1Mo/CEQC54eHPGxMMj4rEP?=
- =?us-ascii?Q?bNbH7U8Omkf+IpOxPEfWFQh2LLva3pDCuq4tHwVV0bzM35kYqQFT5ZJgr2ot?=
- =?us-ascii?Q?TM8yuPDdOp2xEZ48lb0+xmvy9BqnQW/WCkjAeft6tRQ5YXP8Hrt3IOBFIaUT?=
- =?us-ascii?Q?2BPjsuEqm0UIBmEqWPSzTBKOAT0IIe/fIjtJmQmxwTToSCbknzGzmIRNLDxe?=
- =?us-ascii?Q?82Fp/i9zGIH5gL3A8vb9+IJHnHooBwWixcbvK9q2pj9tJ0RImu9Thp4JUa56?=
- =?us-ascii?Q?xSyG5IJnm1A6yGMHsOEjCoFBeAhDS34oXE+RaKemeaGZgbT2IHd3i/EWqlZi?=
- =?us-ascii?Q?tce1UUBvZxQWKlrMr0vxfGmuxxOXBg2smsKP9RBmt/gGsBGx9I3m8B6oQ+Cw?=
- =?us-ascii?Q?tPI8FFT3F8sPMPINxA1pp0F7gZZuD7OsKdFW0XnaZ7FGbRE/YuFPIkupTmCM?=
- =?us-ascii?Q?4OhWiZ39C90LPXFW156IdEoGAcsAlRID6qblgNEXcnL67nirdqcYWfrwAdrF?=
- =?us-ascii?Q?wqowx3lRNXS5iJmRKNYWEfNhAhicjnoNnssmMqBVP6H9Mipp3Z6qCAmy0YWl?=
- =?us-ascii?Q?nADfUFXw67QfxhaW6uqcjVPJ+slQZTpkXjftONfo9FehFl9l79dZUggmatyU?=
- =?us-ascii?Q?cOr5Re9dDt3tvODYW+gxPHlrzmHT+GXDFglS8dfWWco8xFQGafJXHPkYChqr?=
- =?us-ascii?Q?lr/H9M8zBIltBgcFOIunDXTBKCuNCen5VTMmUrRmXdUdC04qQUj2B98Lo6ha?=
- =?us-ascii?Q?T8s7bXi9jIzzNFqEssKtZmmmqeplkz/1uSFG17vi+A6JWQf6wnZvj2CDOe24?=
- =?us-ascii?Q?aIZ2/UcGf5+Wq0A4ORNezplXCjroAFb53X6km+SQcwB1e/ncW2NVBUpf+bX/?=
- =?us-ascii?Q?K4i8nbOBBS047UFMTBLrTsmY6CZXKM6fRDwEYry2l3nj3rZyW0JjWXIkHYUK?=
- =?us-ascii?Q?ervPkEODcEJxIWjRqGRHHw7JpL9NpXdHNH9p59LchVKGYtUCe1DoGqJdhvja?=
- =?us-ascii?Q?L5ksX2qxY2fryh18u1sxtrqS4W/ja826HJhp0zfC2wkZlXYfhoaCwkTcnc+X?=
- =?us-ascii?Q?dQGgKOe34A=3D=3D?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5897e87b-4bb7-445f-201c-08de7f598fdc
-X-MS-Exchange-CrossTenant-AuthSource: DS7PR12MB8252.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Mar 2026 10:32:57.9219
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: wUFj93omEFSKiSVp5cqgom4L+5msVFF2wphqpgswAe5Ur6JUriqcB9g/E5itizklZRwSkT649ybOC3m2CvKgQA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB9248
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-GUID: GiimPQYAah5B7yXVE25ijWFM7K5DwscC
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzExMDA4OCBTYWx0ZWRfX5vos2WLHUx2J
+ 5EYqudm7jVnzPshkFyqIwp3stL34UKB492ot0KbOjf2GQIvb28zm2yEzXUpbnYIEzkStN4Csv2P
+ QBEa4iuqSvd8YuTAnu+vrqQSeGdl95ggQCXhSkgmKSL22hylTu3AECuVXD42b1vUmJ5rpMqd12M
+ SCQDSHHAYRvWwqAD13ZCQKJiUzt6CkdzpzwmLAe50MVI00bUi5Eoq173YD39vAduAWnwog5a9Tn
+ 5R2KKu69HRRus8dSBOuLbPD+XnzL//7BCptJhk+Sb4CLZAYkT6rzOru8EZzspP7veaNMbcBKL3U
+ VnUBp58rz30M7Ctc/xgNgb0tOpYRDOUACH4Ruk/4DtUQcyKeevsZY16Bhi5Y2nxw2ezHvfFNyHI
+ 5gP/ryoLUKsvWJXNl8H+FaUaFKkQIhA9wVYtiMUe/abh1QPT/JeLH/tAJagNrKvdz87A8qgxY1J
+ lVJUQFZUmLb0B7nS66Q==
+X-Proofpoint-ORIG-GUID: GiimPQYAah5B7yXVE25ijWFM7K5DwscC
+X-Authority-Analysis: v=2.4 cv=TtLrRTXh c=1 sm=1 tr=0 ts=69b1459c cx=c_pps
+ a=cmESyDAEBpBGqyK7t0alAg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+ a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22 a=hqR9uRmBdb12yu0oCjwA:9
+ a=1OuFwYUASf3TG4hYMiVC:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-11_01,2026-03-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 priorityscore=1501 bulkscore=0 adultscore=0 impostorscore=0
+ lowpriorityscore=0 malwarescore=0 clxscore=1015 suspectscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603110088
 
-Hello Prateek,
+This series enables QoS configuration for QNOC type device which
+can be found on QCS615 platform. It enables QoS configuration
+for master ports with predefined priority and urgency forwarding.
+This helps in prioritizing the traffic originating from different
+interconnect masters at NOC (Network On Chip).
 
-On Tue, Mar 10, 2026 at 09:15:03AM +0530, K Prateek Nayak wrote:
-> Hello Gautham,
-> 
-> On 3/6/2026 3:27 PM, Gautham R. Shenoy wrote:
-> > +``amd_pstate_floor_freq``
-> > +
-> > +The floor frequency associated with each CPU. Userspace can write any
-> > +value between ``cpuinfo_min_freq`` and ``scaling_max_freq`` into this
-> > +file. When the system is under power or thermal constraints, the
-> > +platform firmware will attempt to throttle the CPU frequency to the
-> > +value specified in ``amd_pstate_floor_freq`` before throttling it
-> > +further. This allows userspace to specify different floor frequencies
-> > +to different CPUs. For optimal results, threads of the same core
-> > +should have the same floor frequency value. This file is only visible
-> > +on platforms that support the CPPC Performance Priority feature.
-> 
-> nit. Should we note that the driver caches the closes perf value and the
-> read of the file will output the corresponding frequency of the perf
-> level?
-> 
-> Otherwise, it might come as a surprise to the user that the read of file
-> returns a value very close to what was written but not exactly equal to
-> it all the times.
-> 
-> Or should we just cache the raw frequency value when user modifies it
-> and keep the perf translation bits opaque to the user?
+The system may function normally without this feature. However,
+enabling QoS helps optimize latency and bandwidth across subsystems
+like CPU, GPU, and multimedia engines, which becomes important in
+high-throughput scenarios. This is a feature aimed at performance
+enhancement to improve system performance under concurrent workloads.
 
-I think it is better to cache the user requested value of
-amd_pstate_floor_freq in cpudata and report the same when the user
-reads the sysfs file.
+Changes in v3:
+ - Refactored the schema to define 'clocks' in the top-level
+   properties block as suggested by Krzysztof Kozlowski.
+ - Removed the conditional logic that strictly checked for
+   'qcom,qcs615-aggre1-noc' to define 'clocks'. Instead, the property
+   is now defined globally but explicitly forbidden for all other
+   interconnect nodes except aggre1-noc node.
 
-I will change this in v2. Thanks for the feedback.
+Odelu Kukatla (3):
+  dt-bindings: interconnect: qcom,qcs615-rpmh: add clocks property to
+    enable QoS
+  interconnect: qcom: qcs615: enable QoS configuration
+  arm64: dts: qcom: talos: Add clocks for QoS configuration
 
-> 
-> -- 
-> Thanks and Regards,
-> Prateek
-> 
+ .../interconnect/qcom,qcs615-rpmh.yaml        |  34 +++
+ arch/arm64/boot/dts/qcom/talos.dtsi           |   4 +
+ drivers/interconnect/qcom/qcs615.c            | 247 ++++++++++++++++++
+ 3 files changed, 285 insertions(+)
 
 -- 
-Thanks and Regards
-gautham.
+2.43.0
+
