@@ -1,69 +1,69 @@
-Received: from mail-lf1-f45.google.com (mail-lf1-f45.google.com [209.85.167.45])
+Received: from mail-lf1-f43.google.com (mail-lf1-f43.google.com [209.85.167.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29982363C58
-	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 09:00:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF25B3C65E7
+	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 09:00:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773219657; cv=none; b=RDlwNTtLSa7Sxll0xhg68cjITmg2A/UDisBdlNisigVnlHkm1Gdl5YrAsowP50kPi135JAw4lbprL8d0Tic+++QUH+dAdEJv8BzUXT+Eer3Z8VxFhK80axv7T8WIk88ooqaIpsJQo6pYPcLotgn8QW7Bz+v9EzjqLWM/s9QJY4g=
+	t=1773219660; cv=none; b=Zhc6CP4kXgwJi58y2sogI2TUkz5sda6WghTRqau4u+VdXmQ/qziLeIbhWmq9DMhrOZ6WGuus7KTQMC0oCLUVyo24Bf1DrBhjcpjr/fIVvEueAuh+liniV/y+yVc+v3P/c1ADOR4eCHB0cn7S9J2iTvJ8ggxhxqwT3wgsDTTo3vM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773219657; c=relaxed/simple;
-	bh=4v1lEV9xXsTgcEeh8R4BcvxX1nuGs5GkX0EMN8Kpscc=;
+	s=arc-20240116; t=1773219660; c=relaxed/simple;
+	bh=cJ+d+rOQKudOiBAOEOI1nYCIBWOeOZZ4xvBEf0Gbt/M=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=o4dYHGjzdIHb92NBGa8uB0dlY9AGSZKV6NVa5mQTvAdOK2/sOzBePJY4iZCnt242vMaVgUgsC6nL8Tm0sctonrnhanB1BrhNhO2IfdQuYVy7YxU6IHdSYEXvXLHkPhAbW8zOjlXtgBmhvGfKKedWdpY3Sf5GSbaVv+Tnj1ZS3z8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mxVmKsIS; arc=none smtp.client-ip=209.85.167.45
+	 MIME-Version; b=FwKsxSrIoV9FQGkU2zHwW4TDR8a0qzM7fo0cvYzLHw5Rhm7jLP5MaL8/3mnvAa+T5/UkEqTDIaqphqfhox8ViGqhuk2UQxT25undphXqLpoz1Yo5QbvpS/cuRRzkNyWusaJMtlbFabd3/7QKdW05s4GLY6FgY8vfow11/lRjp5A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=O2E8LZ8K; arc=none smtp.client-ip=209.85.167.43
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mxVmKsIS"
-Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5a13d40c760so5197102e87.0
-        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 02:00:50 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="O2E8LZ8K"
+Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-5a1307438ddso6231957e87.1
+        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 02:00:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773219649; x=1773824449; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1773219652; x=1773824452; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=NRNgKSI7ydLCuhdZvY9Xb7SBeWpK8lBYWhWys08F2PI=;
-        b=mxVmKsISZSko/AYhL5C26gandi21QEDJQ9s6l0/VKw2I9Ueh7eCaCT8ckQ6w/X5Zci
-         hYu4McjqIZ8XGhm2q2Yh9LHsqGq2fQbw8C+ny5zkvvzi7nVg3UCzFyvPJaDOlsk1nUwd
-         F8lkb7dVP/vIHgqoqK3KdetpqFIHCWzvRCoM1plvIWk75xp6nQly/rfkCXu3hVw4PUeB
-         CGmL7hd0+/v3YpcTWVx4gEbTtnp78ELRIs7/31b9fuefRBQsNYRtU1lvhkApgaRToj+G
-         oq9z2gVdLX2P5XeqB6sqP/ntyj+MbSP7DAiWQGmTtOI01Y38BTSlNjecW0M0/55i3L+T
-         RpnQ==
+        bh=qXVrsdYNIT957wfoBPJi/IwRZHNLbulJouNlvCmnfp0=;
+        b=O2E8LZ8KTaLoerBKVI6Ff+B7hZ4su3hjJidfmtEgHPc3vllUqSe92F0woMTY1F/hn9
+         Y55RX2/FN5M2Orh0jaePYBlhYK9cTuTGENwmv7q/UO1SgU4RaK2e8HeNqx1IA5bhWIP7
+         ztyuHHaaLFeZMBGmomat66aT9KXGPh0cnrzFzM314bzxn1jQEmD5FwZHJYSstWD2wlWY
+         tcvqam6RNhLjxrzK0Vm/Ro83McUnnpAbEgYDgUYFFQcRnuBdJAF7ub9GSP/+hflswsPc
+         yIZpp7OdIxEvOXwhYAQF4/uOkTz0Zio6ifiejVuqIXTKSaQ7+QV+Y3oP47I4cHr+XGFG
+         6o1A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773219649; x=1773824449;
+        d=1e100.net; s=20230601; t=1773219652; x=1773824452;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=NRNgKSI7ydLCuhdZvY9Xb7SBeWpK8lBYWhWys08F2PI=;
-        b=W4dmbx0g5a0SISXuoWVUp5dtcWkESIEWIa2mq4bCdyb0e9dtMA7NakrD4gPQ4ZZs3O
-         Nl6bX+tX1ibIpuC3Y5i4K8MOCpht8YvNVYg7K3KXjg+nOJXO687GdC6WrY3gsqRfNV0i
-         ZswFQ5unBY4IFG/dqCWc6qf4EqrMx7HGSao4EQcEUGh6b9l6PIlAxD4KQLbOAkFJBr7l
-         DtMpvXceEZizmz4R1hJG/tGyj/XSNT4xIIX3nEIImdBYIm3rIjcgh6fAbSk0FDJlHmk0
-         jxmszjfd+CvMMxTa7LAzmsf1v0zuEVvGKaVDRPEnX3/VUUpcCjfVXu+t2XqpdcTyocuv
-         l3Gw==
-X-Gm-Message-State: AOJu0YxWcFePsezou3EowlxRjv1skS166fWE6R1Z865JBNWT8U6lDZla
-	9L04cfxGtbyDP7PuJWKxljImG+w671Jh+owlyYRSnPN7CEAlNKM0FVg/eD4qllcQ
-X-Gm-Gg: ATEYQzxyPjWT/5ojHFgZoGJG894mtG8Nbs89wmEuGBJCeO+6Vte72l/jtPbCmy+Zy3a
-	tjcl82xS4fF6lk+IUSazKRqA8yCdIqDJ4tXE3JXflVtJpJ2IFlt24ur0NBybebFqUF49J01D/+J
-	rxU11j/ErtTFmX1m7uGtNcUMKVmw5iu7E5rjsOjAQ51fMGdF/DqVN087KBaRos1WfYek31fYaKb
-	VwwTk61498d71DZQ39OnaKK68OYsgCORJIr9PZZjuYjVhafV2kG+xcG+IFaaiU/I7phgMKg0pcE
-	n3SxE205jLOfqXjb3HMTQtK4apY8kh9GsyyVc4CKQ181PzdQ1Q3zWN6yBO/xquifstoprv2dxmo
-	KwbcCaamLDaoLRR/f5vKXiCnsCUq2QGbNbena64Y/j3onj6H2vSVrXafBB6gWuIMo0uXatrlaP7
-	pU3bDfkwNW/+dmbZ+yY4Dc5B1cMNjakJXz0FmghDOPZwTLZsbopfW7Re1d4JQT
-X-Received: by 2002:a05:6512:40c4:20b0:5a1:3aa8:1e27 with SMTP id 2adb3069b0e04-5a156b9e87bmr445651e87.1.1773219648751;
-        Wed, 11 Mar 2026 02:00:48 -0700 (PDT)
+        bh=qXVrsdYNIT957wfoBPJi/IwRZHNLbulJouNlvCmnfp0=;
+        b=s+QBBzdgzzAqOzHgshgSFbXY0ThfCVL4nSER2Ay59+rYTg0Ghdl1Re/R5LNusPvpbY
+         niDqXCTm9TzMiD7uSzj276V+fz34gwSEYSfp5kquFNN0uE9d6tf2TgykonVrDAlVIL+h
+         unJJw4v7961RdEcEq8zkVQqC3nSF/w7rd2cmzMiCPfUq1rMNljdMmolS9EsMdalsNixr
+         C30m26/tDQ+mh/gE5jQcbn1I3OiqbTVF0xhK/Ja3+mhq8oH5bGuKVc67EEixd2XcOsq4
+         UHuRxxsxexACQM0wb3zNP7rew/nBr6NCdoFIwDMW9j/GGxeie6nGp/9A5Oz/G6o/niGx
+         RW4Q==
+X-Gm-Message-State: AOJu0YzDp1Pfy5ZNdQIMXxx6ZdJ08J3RdUV+yKnXFLEVSpsAgodGcybv
+	hjh7LVgu1RgCOQ/DVpTCGI2QknHCvqx+P5ATExplaUAivtCZ1c8ZoDn/
+X-Gm-Gg: ATEYQzwajQnWhdTvNtUMwjsSDa45wiiLU6JaOQdDAYJ37NM4KeNphSGXCliXl3I1RCh
+	ViOomTH92tBzfeeXU1kINGqTW7N+WzBMQojBR/eFIEg5ifYZb7+dKm5biCx84NSJQk21Zt/uDc0
+	m4IzQnfl29eiDhZ9IfRxFjw7GR5GYl8Lwtu9kE9W1Pfbe1YU2fK20HUCwgCXb7vAlISOjIhz6Ee
+	fyrIwt272gl8hKAxkgfNGBmvBiaHiVlety9azrBHCf5nJJxsjhABNLmmZornBhjITt0C9gM/7Ax
+	C4lux3+3RgSydz8xnjMuGiCpp4ud80G/teLHNv+cS91yM0tbPSLp8OFbbEfmYyU/LUqIqsuapic
+	GmOIv+qR+0e7lZj5467pyTlgSja6SAG3XszKwSyY3OcLm4iVAxe1dvJNwN0NvP11FYSsDZBiNQQ
+	3Fz7Z/TQn83o3DBpXT5iLLhIy0Si5KBWUTcyR0yNMAr9EWdNRe4m100U1mBTxj
+X-Received: by 2002:a05:651c:1584:b0:38a:254a:e026 with SMTP id 38308e7fff4ca-38a67e70a67mr5767191fa.35.1773219650977;
+        Wed, 11 Mar 2026 02:00:50 -0700 (PDT)
 Received: from abityuts-desk (176-93-227-108.bb.dnainternet.fi. [176.93.227.108])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-38a67e5ed41sm2645041fa.25.2026.03.11.02.00.47
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-38a67e5ed41sm2645041fa.25.2026.03.11.02.00.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Mar 2026 02:00:48 -0700 (PDT)
+        Wed, 11 Mar 2026 02:00:49 -0700 (PDT)
 From: Artem Bityutskiy <dedekind1@gmail.com>
 To: Len Brown <lenb@kernel.org>
 Cc: Linux PM Mailing List <linux-pm@vger.kernel.org>,
 	Artem Bityutskiy <dedekind1@gmail.com>
-Subject: [PATCH 2/5] tools/power turbostat: fix incorrect format variable
-Date: Wed, 11 Mar 2026 11:00:32 +0200
-Message-ID: <20260311090035.169539-3-dedekind1@gmail.com>
+Subject: [PATCH 3/5] tools/power turbostat: fix --show/--hide for individual cpuidle counters
+Date: Wed, 11 Mar 2026 11:00:33 +0200
+Message-ID: <20260311090035.169539-4-dedekind1@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260311090035.169539-1-dedekind1@gmail.com>
 References: <20260311090035.169539-1-dedekind1@gmail.com>
@@ -77,51 +77,109 @@ Content-Transfer-Encoding: 8bit
 
 From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 
-In the perf thread, core, and package counter loops, an incorrect
-'mp->format' variable is used instead of 'pp->format'. This looks
-like a copy-paste error from the adjacent MSR counter loops, which
-use 'mp'.
+Problem: individual swidle counter names (C1, C1+, C1-, etc.) cannot be
+selected via --show/--hide due to two bugs in probe_cpuidle_counts():
+1. The function returns immediately when BIC_cpuidle is not enabled,
+   without checking deferred_add_index.
+2. The deferred name check runs against name_buf before the trailing
+   newline is stripped, so is_deferred_add("C1\n") never matches "C1".
 
-I did not see an actual problem related to this, but this does look
-like a bug that could result in the wrong format being used.
+Fix:
+1. Relax the early return to pass through when deferred names are
+   queued.
+2. Strip the trailing newline from name_buf before performing deferred
+   name checks.
+3. Check each suffixed variant (C1+, C1, C1-) individually so that
+   e.g. "--show C1+" enables only the requested metric.
 
-Fixes: 696d15cbd8c2 ("tools/power turbostat: Refactor floating point printout code")
+In addition, introduce a helper function to avoid repeating the
+condition (readability cleanup).
+
+Fixes: ec4acd3166d8 ("tools/power turbostat: disable "cpuidle" invocation counters, by default")
 Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 35 ++++++++++++++++-----------
+ 1 file changed, 21 insertions(+), 14 deletions(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 9744f9caac9af..4d954533c71de 100644
+index 4d954533c71de..3487548841e1d 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -3468,7 +3468,7 @@ int format_counters(PER_THREAD_PARAMS)
- 	for (i = 0, pp = sys.perf_tp; pp; ++i, pp = pp->next) {
- 		if (pp->format == FORMAT_RAW)
- 			outp += print_hex_value(pp->width, &printed, delim, t->perf_counter[i]);
--		else if (pp->format == FORMAT_DELTA || mp->format == FORMAT_AVERAGE)
-+		else if (pp->format == FORMAT_DELTA || pp->format == FORMAT_AVERAGE)
- 			outp += print_decimal_value(pp->width, &printed, delim, t->perf_counter[i]);
- 		else if (pp->format == FORMAT_PERCENT) {
- 			if (pp->type == COUNTER_USEC)
-@@ -3538,7 +3538,7 @@ int format_counters(PER_THREAD_PARAMS)
- 	for (i = 0, pp = sys.perf_cp; pp; i++, pp = pp->next) {
- 		if (pp->format == FORMAT_RAW)
- 			outp += print_hex_value(pp->width, &printed, delim, c->perf_counter[i]);
--		else if (pp->format == FORMAT_DELTA || mp->format == FORMAT_AVERAGE)
-+		else if (pp->format == FORMAT_DELTA || pp->format == FORMAT_AVERAGE)
- 			outp += print_decimal_value(pp->width, &printed, delim, c->perf_counter[i]);
- 		else if (pp->format == FORMAT_PERCENT)
- 			outp += print_float_value(&printed, delim, pct(c->perf_counter[i], tsc));
-@@ -3694,7 +3694,7 @@ int format_counters(PER_THREAD_PARAMS)
- 			outp += print_hex_value(pp->width, &printed, delim, p->perf_counter[i]);
- 		else if (pp->type == COUNTER_K2M)
- 			outp += sprintf(outp, "%s%d", (printed++ ? delim : ""), (unsigned int)p->perf_counter[i] / 1000);
--		else if (pp->format == FORMAT_DELTA || mp->format == FORMAT_AVERAGE)
-+		else if (pp->format == FORMAT_DELTA || pp->format == FORMAT_AVERAGE)
- 			outp += print_decimal_value(pp->width, &printed, delim, p->perf_counter[i]);
- 		else if (pp->format == FORMAT_PERCENT)
- 			outp += print_float_value(&printed, delim, pct(p->perf_counter[i], tsc));
+@@ -11285,6 +11285,14 @@ void probe_cpuidle_residency(void)
+ 	}
+ }
+ 
++static bool cpuidle_counter_wanted(char *name)
++{
++	if (is_deferred_skip(name))
++		return false;
++
++	return DO_BIC(BIC_cpuidle) || is_deferred_add(name);
++}
++
+ void probe_cpuidle_counts(void)
+ {
+ 	char path[64];
+@@ -11294,7 +11302,7 @@ void probe_cpuidle_counts(void)
+ 	int min_state = 1024, max_state = 0;
+ 	char *sp;
+ 
+-	if (!DO_BIC(BIC_cpuidle))
++	if (!DO_BIC(BIC_cpuidle) && !deferred_add_index)
+ 		return;
+ 
+ 	for (state = 10; state >= 0; --state) {
+@@ -11309,12 +11317,6 @@ void probe_cpuidle_counts(void)
+ 
+ 		remove_underbar(name_buf);
+ 
+-		if (!DO_BIC(BIC_cpuidle) && !is_deferred_add(name_buf))
+-			continue;
+-
+-		if (is_deferred_skip(name_buf))
+-			continue;
+-
+ 		/* truncate "C1-HSW\n" to "C1", or truncate "C1\n" to "C1" */
+ 		sp = strchr(name_buf, '-');
+ 		if (!sp)
+@@ -11329,16 +11331,19 @@ void probe_cpuidle_counts(void)
+ 			 * Add 'C1+' for C1, and so on. The 'below' sysfs file always contains 0 for
+ 			 * the last state, so do not add it.
+ 			 */
+-
+ 			*sp = '+';
+ 			*(sp + 1) = '\0';
+-			sprintf(path, "cpuidle/state%d/below", state);
+-			add_counter(0, path, name_buf, 64, SCOPE_CPU, COUNTER_ITEMS, FORMAT_DELTA, SYSFS_PERCPU, 0);
++			if (cpuidle_counter_wanted(name_buf)) {
++				sprintf(path, "cpuidle/state%d/below", state);
++				add_counter(0, path, name_buf, 64, SCOPE_CPU, COUNTER_ITEMS, FORMAT_DELTA, SYSFS_PERCPU, 0);
++			}
+ 		}
+ 
+ 		*sp = '\0';
+-		sprintf(path, "cpuidle/state%d/usage", state);
+-		add_counter(0, path, name_buf, 64, SCOPE_CPU, COUNTER_ITEMS, FORMAT_DELTA, SYSFS_PERCPU, 0);
++		if (cpuidle_counter_wanted(name_buf)) {
++			sprintf(path, "cpuidle/state%d/usage", state);
++			add_counter(0, path, name_buf, 64, SCOPE_CPU, COUNTER_ITEMS, FORMAT_DELTA, SYSFS_PERCPU, 0);
++		}
+ 
+ 		/*
+ 		 * The 'above' sysfs file always contains 0 for the shallowest state (smallest
+@@ -11347,8 +11352,10 @@ void probe_cpuidle_counts(void)
+ 		if (state != min_state) {
+ 			*sp = '-';
+ 			*(sp + 1) = '\0';
+-			sprintf(path, "cpuidle/state%d/above", state);
+-			add_counter(0, path, name_buf, 64, SCOPE_CPU, COUNTER_ITEMS, FORMAT_DELTA, SYSFS_PERCPU, 0);
++			if (cpuidle_counter_wanted(name_buf)) {
++				sprintf(path, "cpuidle/state%d/above", state);
++				add_counter(0, path, name_buf, 64, SCOPE_CPU, COUNTER_ITEMS, FORMAT_DELTA, SYSFS_PERCPU, 0);
++			}
+ 		}
+ 	}
+ }
 -- 
 2.53.0
 
