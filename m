@@ -1,158 +1,155 @@
-Received: from mail.bix.bg (mail.bix.bg [193.105.196.21])
-	by smtp.subspace.kernel.org (Postfix) with SMTP id 8649A38656D
-	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 07:09:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.105.196.21
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773212950; cv=none; b=nw44xwE0J9e9Vqv4D6/aR6reRUHi9DGoqlwsvQO6pgD98G/a5AoL/NV7LJXTpOfDLkezdr2r+zAW/+1kjAXuNipYJXimi+wAWSg404ZkT0Iz9CsybasiFKbZ5BctJ83WalgmyUDQrviQSEpsyvnheKdw7XZ1/9N3oDrn87ZKBPQ=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773212950; c=relaxed/simple;
-	bh=VcLpa26hYcS9UGElZjB9GZ4pCB6wExx3iF5Cdw2AeTo=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=I0BI67tmYnlRjx0oIcJuPxtMkvW07r533Q1wQ1zduIcP2WMn0QaZbzV2RiSKzMo+qT0pFCm4erIcKqNcsq4O6Fag2rn8NlWcbgNMfFfKP020wk51jfA/u9JYzEbqmPJnjMDReKjGn4Qcx0smh1btG30syOv49Va+D+xsRucvqlo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=declera.com; spf=pass smtp.mailfrom=declera.com; arc=none smtp.client-ip=193.105.196.21
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=declera.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=declera.com
-Received: (qmail 8542 invoked from network); 11 Mar 2026 07:08:54 -0000
-Received: from d2.declera.com (HELO ?212.116.131.122?) (212.116.131.122)
-  by indigo.declera.com with SMTP; 11 Mar 2026 07:08:54 -0000
-Message-ID: <4ab8430161252ec778fabf7e9b68acf3645ed4c7.camel@declera.com>
-Subject: Re: [PATCH v5 2/2] mfd: simple-mfd-i2c: add a reboot cell for the
- SpacemiT P1 chip
-From: Yanko Kaneti <yaneti@declera.com>
-To: Troy Mitchell <troy.mitchell@linux.spacemit.com>, Aurelien Jarno
-	 <aurelien@aurel32.net>
-Cc: linux-kernel@vger.kernel.org, Lee Jones <lee@kernel.org>, Sebastian
- Reichel	 <sre@kernel.org>, Yixun Lan <dlan@gentoo.org>, Paul Walmsley
- <pjw@kernel.org>,  Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
- <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, "open list:RISC-V
- ARCHITECTURE:Keyword:riscv"	 <linux-riscv@lists.infradead.org>, "open
- list:RISC-V SPACEMIT SoC Support:Keyword:spacemit"	
- <spacemit@lists.linux.dev>, "open list:SYSTEM RESET/SHUTDOWN DRIVERS"	
- <linux-pm@vger.kernel.org>
-Date: Wed, 11 Mar 2026 09:08:54 +0200
-In-Reply-To: <DGZM6WUAVPPS.20Y0NIZYI4572@linux.spacemit.com>
-References: <20251102230352.914421-1-aurelien@aurel32.net>
-	 <20251102230352.914421-3-aurelien@aurel32.net>
-	 <b51a62513daa9d2390031ec350e0b33bdb7e54aa.camel@declera.com>
-	 <aaC78FTN31QYaVg0@aurel32.net>
-	 <990bc03ed2baa05e619f0aa9cc6a23acadd66ea6.camel@declera.com>
-	 <aaS6xeKFZz06fb1_@aurel32.net> <aaXuWwyA5NzBZzlW@aurel32.net>
-	 <36f8df695463e5ff3eaaffbac357fc73026f7373.camel@declera.com>
-	 <aadGw1fIlJyNNoum@aurel32.net>
-	 <DGZM6WUAVPPS.20Y0NIZYI4572@linux.spacemit.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.59.3 (3.59.3-1.fc45) 
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77F7F38B150;
+	Wed, 11 Mar 2026 07:09:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773212955; cv=pass; b=jy5QjoUSBiECK5YrLtmH0YDNDWUszP4pShkjQytOpG9uwT8joz5O0K3lFgBzyN8KRtAdLjzMH3uvve1u1adkxmaKnZBtQBhTI247swDvWUirvMGyRy4/zXiRHJIY1NhwoDrNl/sM+gwMd2I0s6M/Oljn5FeLg3mG1aOXv7zwRBs=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773212955; c=relaxed/simple;
+	bh=hEuAy+6uPnEv6CenFLePXlMngUsWbU6iSfZGwptrqhk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=hncnZKTAfvYa+Io9nkHIx84uDKvQS83oof9zqm3B7cKahLEV3ICXc7DU16rjfdOAf2Q1GSsyhdSHCKGidZl9+Upbl+bysv54I8ENUlPqvVWYw/ofxaS3dvfcHPNOAxJOXIb4TDMaqe5rtMJrQoOXLj+iGQ4nw/a8Qc7l8ACTRM8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=CLteU38F; arc=pass smtp.client-ip=136.143.188.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="CLteU38F"
+ARC-Seal: i=1; a=rsa-sha256; t=1773212937; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=EKkQ63WcZdFoc4cSm1mo5FOUrx5FEA0/7XP5lGP9MrZfsbVEBI4+mhXtTTaLEhYVyvnnxfwVrMkRYS7nWtvu/PHE/kIrp2QewalG1j6GRQvA5aF6c7PqTStAPht+x9gfaMvIjxykogFDlHOdl9QrsKKKRqNO8OsxXIenN/AVXbs=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1773212937; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=cmlOI7djcSL6lb3xz9b+q0jqYhA5pGPPF6F0qUM1pnc=; 
+	b=flh4YIZ64tfaGzRSoiBvfx+ycyNZcmwdBzWQHX16mSurFe9SmCU4WCEo7Hg88GbwCreovM27DgF1qw8DbuPqB/BHL3M7ictV1xCXK7jvzCNIdOhcxYAyBTiiCD/f4qAfGKeJi+/7wOmi/4zW3GyU4esMTANX7LWjnIPSHl0Etl4=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
+	dmarc=pass header.from=<sebastian.reichel@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1773212937;
+	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
+	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:References:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
+	bh=cmlOI7djcSL6lb3xz9b+q0jqYhA5pGPPF6F0qUM1pnc=;
+	b=CLteU38FOZiReffIm50QudreSQpk5qsb0wC9xpp2fI9jkuDUGExcCbL1AuWvdRKi
+	yifytjV6QCrAM314wVDkS5fYMdpCaOgisWXEmsuff3YDKGYBC6s4H6VjfO3qIo9ZLOj
+	zebZAB3Rofsncm0lJulXu8wAagmPPZ74iIPZaoNk=
+Received: by mx.zohomail.com with SMTPS id 1773212935077604.5115313097302;
+	Wed, 11 Mar 2026 00:08:55 -0700 (PDT)
+Received: by venus (Postfix, from userid 1000)
+	id F16D0180598; Wed, 11 Mar 2026 08:08:46 +0100 (CET)
+Date: Wed, 11 Mar 2026 08:08:46 +0100
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+To: Alexey Charkov <alchark@flipper.net>
+Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Chris Morgan <macromorgan@hotmail.com>, Liam Girdwood <lgirdwood@gmail.com>, 
+	Mark Brown <broonie@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH v3 06/11] power: supply: bq257xx: Make the default
+ current limit a per-chip attribute
+Message-ID: <abEU4z8pdttLkyVe@venus>
+References: <20260310-bq25792-v3-0-02f8e232d63b@flipper.net>
+ <20260310-bq25792-v3-6-02f8e232d63b@flipper.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="reifdht5cktlc2j3"
+Content-Disposition: inline
+In-Reply-To: <20260310-bq25792-v3-6-02f8e232d63b@flipper.net>
+X-Zoho-Virus-Status: 1
+X-Zoho-AV-Stamp: zmail-av-0.2.1.1.4.3/273.195.15
+X-ZohoMailClient: External
 
-On Wed, 2026-03-11 at 10:58 +0800, Troy Mitchell wrote:
-> On Wed Mar 4, 2026 at 4:38 AM CST, Aurelien Jarno wrote:
->  Hi, Aurelien and Yanko,
-> > Hi,
-> >=20
-> > On 2026-03-02 22:34, Yanko Kaneti wrote:
-> > > Hello,
-> > >=20
-> > > On Mon, 2026-03-02 at 21:08 +0100, Aurelien Jarno wrote:
-> > > > On 2026-03-01 23:16, Aurelien Jarno wrote:
-> > > > > On 2026-02-27 13:29, Yanko Kaneti wrote:
-> > > > > > On Thu, 2026-02-26 at 22:32 +0100, Aurelien Jarno wrote:
-> > > > > > > Hi,
-> > > > > > >=20
-> > > > > > > On 2026-02-26 16:32, Yanko Kaneti wrote:
-> > > > > > > > Hello,
-> > > > > > > >=20
-> > > > > > > > On Mon, 2025-11-03 at 00:02 +0100, Aurelien Jarno wrote:
-> > > > > > > > > Add a "spacemit-p1-reboot" cell for the SpacemiT P1 chip.
-> > > > > > > > >=20
-> > > > > > > > > Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
-> > > > > > > > > ---
-> > > > > > > > > v5: no changes
-> > > > > > > > >=20
-> > > > > > > > >  drivers/mfd/simple-mfd-i2c.c | 1 +
-> > > > > > > > >  1 file changed, 1 insertion(+)
-> > > > > > > > >=20
-> > > > > > > > > diff --git a/drivers/mfd/simple-mfd-i2c.c b/drivers/mfd/s=
-imple-mfd-i2c.c
-> > > > > > > > > index 0a607a1e3ca1d..542d378cdcd1f 100644
-> > > > > > > > > --- a/drivers/mfd/simple-mfd-i2c.c
-> > > > > > > > > +++ b/drivers/mfd/simple-mfd-i2c.c
-> > > > > > > > > @@ -99,6 +99,7 @@ static const struct regmap_config space=
-mit_p1_regmap_config =3D {
-> > > > > > > > >  };
-> > > > > > > > > =20
-> > > > > > > > >  static const struct mfd_cell spacemit_p1_cells[] =3D {
-> > > > > > > > > +	{ .name =3D "spacemit-p1-reboot", },
-> > > > > > > > >  	{ .name =3D "spacemit-p1-regulator", },
-> > > > > > > > >  	{ .name =3D "spacemit-p1-rtc", },
-> > > > > > > > >  };
-> > > > > > > >=20
-> > > > > > > > Perhaps its safe to merge this one now that everything P1 a=
-nd I2C is
-> > > > > > > > already in linus tip ?
-> > > > > > >=20
-> > > > > > > Unfortunately, this patchset is still missing:
-> > > > > > > https://lore.kernel.org/all/20260207-b4-k3-i2c-pio-v7-0-62694=
-2d94d91@linux.spacemit.com/
-> > > > > > >=20
-> > > > > > > This means the reboots work most of the time, but are not 100=
-% reliable,=20
-> > > > > > > and that's the reason why this patch got blocked from merging=
-.
-> > > > > >=20
-> > > > > > I see. Thanks. Sounds to me like sometimes working compared to =
-never
-> > > > > > working is better , but anyway..
-> > > > >=20
-> > > > > I agree with that, but the decision was to hold on this patch unt=
-il the=20
-> > > > > I2C PIO part got merged.
-> > > > >=20
-> > > > > > FWIW  with this patch and the pio patcheset I get this rcu spla=
-t on
-> > > > > > reboot (which is still working). Similar splat is there without=
- the pio
-> > > > > > patcheset.
-> > > > >=20
-> > > > > I haven't been able to reproduce the issue here after 10+ reboots=
- on a=20
-> > > > > BPI-F3 board, but I tried the patch on top of 6.19. I'll try to b=
-uild a=20
-> > > > > 7.0.0-rc2 kernel and report back.
-> > > >=20
-> > > > I have tried that, and I am still unable to reproduce the issue wit=
-h a=20
-> > > > 7.0.0-rc2 kernel and a BPI-F3 board.
-> > >=20
-> > > I can still see it on every reboot (with the patches that allow reboo=
-t
-> > > to work). Do you have CONFIG_PREEMPT_RCU in your config ? its default=
- on
-> > > when anything PREEMPT is selected. In Fedora its CONFIG_PREEMPT_DYNAM=
-IC
-> > > that flips it.
-> >=20
-> > Thanks for the hint, that option was not activated here, it's not the=
-=20
-> > riscv64 defconfig. With it I am also able to reproduce the issue. I'll=
-=20
-> > try to debug that and report back.
-> I have sent a patch to address this issue here[1].
->=20
-> Could you please test it on your hardware when you have a chance?
->=20
->                         - Troy
->=20
-> Link:
-> https://lore.kernel.org/all/20260311-v7-0-rc1-rv-dis-int-before-restart-v=
-1-1-bc46b4351cac@linux.dev/ [1]
 
-Thanks Troy.=C2=A0Seem to fix the issue here.
-No splat and reboot still works OK on the R2S
+--reifdht5cktlc2j3
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH v3 06/11] power: supply: bq257xx: Make the default
+ current limit a per-chip attribute
+MIME-Version: 1.0
 
-- Yanko
+Hi,
+
+On Tue, Mar 10, 2026 at 01:28:30PM +0400, Alexey Charkov wrote:
+> Add a field for the default current limit to the bq257xx_info structure a=
+nd
+> use it instead of the hardcoded value in the probe function.
+>=20
+> This prepares the driver for allowing different electrical constraints for
+> different chip variants.
+>=20
+> Tested-by: Chris Morgan <macromorgan@hotmail.com>
+> Signed-off-by: Alexey Charkov <alchark@flipper.net>
+> ---
+
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+
+-- Sebastian
+
+>  drivers/power/supply/bq257xx_charger.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/power/supply/bq257xx_charger.c b/drivers/power/suppl=
+y/bq257xx_charger.c
+> index 7ca4ae610902..e14dd16f9d08 100644
+> --- a/drivers/power/supply/bq257xx_charger.c
+> +++ b/drivers/power/supply/bq257xx_charger.c
+> @@ -26,6 +26,7 @@ struct bq257xx_chg;
+>   * @bq257xx_set_iindpm: set maximum input current (in uA)
+>   */
+>  struct bq257xx_chip_info {
+> +	int default_iindpm_uA;
+>  	int (*bq257xx_hw_init)(struct bq257xx_chg *pdata);
+>  	void (*bq257xx_hw_shutdown)(struct bq257xx_chg *pdata);
+>  	int (*bq257xx_get_state)(struct bq257xx_chg *pdata);
+> @@ -627,6 +628,7 @@ static const struct power_supply_desc bq257xx_power_s=
+upply_desc =3D {
+>  };
+> =20
+>  static const struct bq257xx_chip_info bq25703_chip_info =3D {
+> +		.default_iindpm_uA =3D BQ25703_IINDPM_DEFAULT_UA,
+>  		.bq257xx_hw_init =3D &bq25703_hw_init,
+>  		.bq257xx_hw_shutdown =3D &bq25703_hw_shutdown,
+>  		.bq257xx_get_state =3D &bq25703_get_state,
+> @@ -675,7 +677,7 @@ static int bq257xx_parse_dt(struct bq257xx_chg *pdata,
+>  				       "input-current-limit-microamp",
+>  				       &pdata->iindpm_max);
+>  	if (ret)
+> -		pdata->iindpm_max =3D BQ25703_IINDPM_DEFAULT_UA;
+> +		pdata->iindpm_max =3D pdata->chip->default_iindpm_uA;
+> =20
+>  	return 0;
+>  }
+>=20
+> --=20
+> 2.52.0
+>=20
+>=20
+
+--reifdht5cktlc2j3
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmmxFP4ACgkQ2O7X88g7
++poVshAAnXzYI6V9uZTnGhackdsLYcIzYBzV4S2UblpvgsjBEDRbg8hS/8Y5Uk/G
+rx6QjiEW1/pmj8VKkoHbU3X/oD1WxT2M1Safnlev6s1mvKor7Ccop15nuLZzMwvs
+xc47h900ZWCQyLc7Q2w7Xb7kRrcIitpBhLgYNSb98657rjGXYYBtx92xuuSvnxgl
+u4Xsz6EQfwbsh6UOZV0+9EzDiWbLPA466TXv39R9rOMFQJQEAqZZi4zum6IVyWoT
+6vsbmODK1GkX6Bf4Fx9tGVIYS8KHrMym3N/P+APYXZavZwe/n6zoUqmVuQYyNDNE
+RVWYjRjrMfqHuLayxVv0zHGZh16JMoJkSVUpxXQIWQ2npWxWZ2ZJStVuIL9kZPzj
+Uii6iAOSHBd8LzDqQjBj0N1lnPq785/F4TahKWZRLoMci+2EQFA49R7Y1YPJePby
+QnJPfo3DuA6H6O72f4L7pH/fSP+Qi94MqyreIr8yFtf0+7qNQrt9SgoeSReIE01E
+RSjk4RnNS2Bo0483Em39OQjforCHn7V6DAzHPOAmJcAuqjCCqIQd+QiTgFmJhPyC
+Js7gYmMLcVBhEUADhpZtTOz0X4C/zxc6BGv1aBiplohxyupiNpIos5E2+zacLTvY
+FZ7GN6XlFtvIgSlCZ93UX3jMv51EFqcDtR6bdVAq3+GLaFLw8Cc=
+=lQvk
+-----END PGP SIGNATURE-----
+
+--reifdht5cktlc2j3--
