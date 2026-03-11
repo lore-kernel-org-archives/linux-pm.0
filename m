@@ -1,69 +1,69 @@
-Received: from mail-lj1-f169.google.com (mail-lj1-f169.google.com [209.85.208.169])
+Received: from mail-lf1-f45.google.com (mail-lf1-f45.google.com [209.85.167.45])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 704383C455A
-	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 09:00:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.169
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29982363C58
+	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 09:00:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773219656; cv=none; b=b0hKsYJckspOz4bNyzfHs82RfPp8jY29SDokEJ6oOqVQPbJq/3nv0krfcTQB1JrIg6nPdV4ccwkiGAfgIki7xzxeTSciWeFl7FVh1grRx3cbltyQEeQGfPNuwDa4zlmg9yUrP3vLbFph2nNGVNyv1i8cUFGk1G187Ctfk4JIRLE=
+	t=1773219657; cv=none; b=RDlwNTtLSa7Sxll0xhg68cjITmg2A/UDisBdlNisigVnlHkm1Gdl5YrAsowP50kPi135JAw4lbprL8d0Tic+++QUH+dAdEJv8BzUXT+Eer3Z8VxFhK80axv7T8WIk88ooqaIpsJQo6pYPcLotgn8QW7Bz+v9EzjqLWM/s9QJY4g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773219656; c=relaxed/simple;
-	bh=fZ8tdTeizGt02LP+rR+XyURRvk5T1uFqQj5y81ICip8=;
+	s=arc-20240116; t=1773219657; c=relaxed/simple;
+	bh=4v1lEV9xXsTgcEeh8R4BcvxX1nuGs5GkX0EMN8Kpscc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=sJ7c2vBnHBBgjLEygMiL9ljRMbj/tff/lxTilRIpPE6eFt3mx3fMGpu3Dx3eHai05BH8aq15M7LCj9Agw27fdOIw73HO86k86a729jA0QPQ3G7Vxw0RFgKOzL5Q7dcq7hMkEYu6YpTcRZxgQcpP/xgwRQJiKtOaWtpbbOCh0fSc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KcIRjExS; arc=none smtp.client-ip=209.85.208.169
+	 MIME-Version; b=o4dYHGjzdIHb92NBGa8uB0dlY9AGSZKV6NVa5mQTvAdOK2/sOzBePJY4iZCnt242vMaVgUgsC6nL8Tm0sctonrnhanB1BrhNhO2IfdQuYVy7YxU6IHdSYEXvXLHkPhAbW8zOjlXtgBmhvGfKKedWdpY3Sf5GSbaVv+Tnj1ZS3z8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mxVmKsIS; arc=none smtp.client-ip=209.85.167.45
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KcIRjExS"
-Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-38a3f6da741so39974861fa.1
-        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 02:00:49 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mxVmKsIS"
+Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5a13d40c760so5197102e87.0
+        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 02:00:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773219647; x=1773824447; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1773219649; x=1773824449; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=B26x9D4rmMI9CX49m9y1XNTPxPFBFXUEgtS3/Xb4L7Y=;
-        b=KcIRjExSOlCAj9RUifMoj5gisq3G4Fk6I6yLqcMNYBBUuOS/mcQnlLjM/VQSFlzP5d
-         zXLpyJLTaCvpuPzZk6+Jjfu6Yk1o7b/pbVueMyC7UVTn6D2alhUr4t344z61bSHakwRX
-         NJ3zAWoFiQFjXdGnGY4+n8yxsy9QgtX//KJRORkcaMT64NkMxijT8atJAPzS1yjaL1E6
-         fY/XR2epoIL6WpXtF3zlIFuUFsxTBbjKtqA1ZnYoIFuUXdz4d45d+fxwoQU2pSk3nORy
-         /+VWcRwqDRDWwCPcygaEdVsmTisIBDEgVcn9OOBvixkAsPFZzjop+X3JMWmx+i7dhWEG
-         9iaw==
+        bh=NRNgKSI7ydLCuhdZvY9Xb7SBeWpK8lBYWhWys08F2PI=;
+        b=mxVmKsISZSko/AYhL5C26gandi21QEDJQ9s6l0/VKw2I9Ueh7eCaCT8ckQ6w/X5Zci
+         hYu4McjqIZ8XGhm2q2Yh9LHsqGq2fQbw8C+ny5zkvvzi7nVg3UCzFyvPJaDOlsk1nUwd
+         F8lkb7dVP/vIHgqoqK3KdetpqFIHCWzvRCoM1plvIWk75xp6nQly/rfkCXu3hVw4PUeB
+         CGmL7hd0+/v3YpcTWVx4gEbTtnp78ELRIs7/31b9fuefRBQsNYRtU1lvhkApgaRToj+G
+         oq9z2gVdLX2P5XeqB6sqP/ntyj+MbSP7DAiWQGmTtOI01Y38BTSlNjecW0M0/55i3L+T
+         RpnQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773219647; x=1773824447;
+        d=1e100.net; s=20230601; t=1773219649; x=1773824449;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=B26x9D4rmMI9CX49m9y1XNTPxPFBFXUEgtS3/Xb4L7Y=;
-        b=LSCCOCBHj8ryL9yoX6vzk8W6DzxWXRa2wrabpwnTI1l5xZBxp3hK7MXyn+LehFII+f
-         uAxokKJlfDTRTU7QAJ0QSo8y+7uOqJAXsZRughs8f4G9ciVN2dYAFyKbAch9oCZL0Ren
-         0rq0lOaHTx+FbBxpaHt2T2gdRJn46WRiv/SUnIMC12dpRMUn6xXib84547fKdJMaEf2E
-         74fPqwgT2eDQFfKSLiZxNVbh8/KRIcGweJJ+g6fb9uJ7NBX3rxECZdVDzgHhdXsIb47K
-         Ivsi5VqnVzkK/qlLWoC5BwsikDPyKX8j+qyivIU+P0KFhpY3WgM58uGkqoh2dJwWBWJz
-         aRGg==
-X-Gm-Message-State: AOJu0Yz6rQC/zhk/aPLfgrQsx+d8MNTUGgAVwL0RRnqZkFUR2nRdc9IH
-	FvPRAzzEoR/YO+XeTT8BW3bQCuAC2O+y0qy64Y68/e2aasTep0+J/OD1lEDI4769
-X-Gm-Gg: ATEYQzw1Der9m/wgaQ2Yg/rgvcxNYEwYdo/CMlLlFodRVpabDmzyC4SpazkB+qQL1ny
-	PNhU5iJo8q0dOfXxecos6yGkcUuOw4M3dspQ4mb6bXobaAunkirL2/f0HApe4gwT34ebnv6Js6B
-	zBxgFjrQH307NmxUKTod1gP1GVvJneCH0i94TiNxNCfwnl4QaermJVcmE20vaMzbVbodnSHoIt0
-	/aiBnm61lPF0M666AsaqnkjJXpnuTL1g6qlCRPXjHpTXX6CoyQgVPhqUTz+tENI+QIL5hMEhBae
-	L5pEx0v3O/AZwAynRp2yvxLhP3FAXDz/i90QrbxDbJSiVzkqENjLUfTh1MTvBN3YnfTlyv4P2ul
-	tvDD0v7DpIdNl3L95s6srD1SYyRr/YSEvf8jQNmYVWLHFjyCE2Ev3Q0AtboAzesp85BNb2KoZXi
-	C28kQavKMsjAaF/JAUwICJvbHIwIyzWUQJ068Y5vcR7bw/elpcJtZq8FGuVy27
-X-Received: by 2002:a05:651c:210a:b0:383:213c:fc41 with SMTP id 38308e7fff4ca-38a67d6353emr7769441fa.7.1773219646959;
-        Wed, 11 Mar 2026 02:00:46 -0700 (PDT)
+        bh=NRNgKSI7ydLCuhdZvY9Xb7SBeWpK8lBYWhWys08F2PI=;
+        b=W4dmbx0g5a0SISXuoWVUp5dtcWkESIEWIa2mq4bCdyb0e9dtMA7NakrD4gPQ4ZZs3O
+         Nl6bX+tX1ibIpuC3Y5i4K8MOCpht8YvNVYg7K3KXjg+nOJXO687GdC6WrY3gsqRfNV0i
+         ZswFQ5unBY4IFG/dqCWc6qf4EqrMx7HGSao4EQcEUGh6b9l6PIlAxD4KQLbOAkFJBr7l
+         DtMpvXceEZizmz4R1hJG/tGyj/XSNT4xIIX3nEIImdBYIm3rIjcgh6fAbSk0FDJlHmk0
+         jxmszjfd+CvMMxTa7LAzmsf1v0zuEVvGKaVDRPEnX3/VUUpcCjfVXu+t2XqpdcTyocuv
+         l3Gw==
+X-Gm-Message-State: AOJu0YxWcFePsezou3EowlxRjv1skS166fWE6R1Z865JBNWT8U6lDZla
+	9L04cfxGtbyDP7PuJWKxljImG+w671Jh+owlyYRSnPN7CEAlNKM0FVg/eD4qllcQ
+X-Gm-Gg: ATEYQzxyPjWT/5ojHFgZoGJG894mtG8Nbs89wmEuGBJCeO+6Vte72l/jtPbCmy+Zy3a
+	tjcl82xS4fF6lk+IUSazKRqA8yCdIqDJ4tXE3JXflVtJpJ2IFlt24ur0NBybebFqUF49J01D/+J
+	rxU11j/ErtTFmX1m7uGtNcUMKVmw5iu7E5rjsOjAQ51fMGdF/DqVN087KBaRos1WfYek31fYaKb
+	VwwTk61498d71DZQ39OnaKK68OYsgCORJIr9PZZjuYjVhafV2kG+xcG+IFaaiU/I7phgMKg0pcE
+	n3SxE205jLOfqXjb3HMTQtK4apY8kh9GsyyVc4CKQ181PzdQ1Q3zWN6yBO/xquifstoprv2dxmo
+	KwbcCaamLDaoLRR/f5vKXiCnsCUq2QGbNbena64Y/j3onj6H2vSVrXafBB6gWuIMo0uXatrlaP7
+	pU3bDfkwNW/+dmbZ+yY4Dc5B1cMNjakJXz0FmghDOPZwTLZsbopfW7Re1d4JQT
+X-Received: by 2002:a05:6512:40c4:20b0:5a1:3aa8:1e27 with SMTP id 2adb3069b0e04-5a156b9e87bmr445651e87.1.1773219648751;
+        Wed, 11 Mar 2026 02:00:48 -0700 (PDT)
 Received: from abityuts-desk (176-93-227-108.bb.dnainternet.fi. [176.93.227.108])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-38a67e5ed41sm2645041fa.25.2026.03.11.02.00.45
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-38a67e5ed41sm2645041fa.25.2026.03.11.02.00.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Mar 2026 02:00:46 -0700 (PDT)
+        Wed, 11 Mar 2026 02:00:48 -0700 (PDT)
 From: Artem Bityutskiy <dedekind1@gmail.com>
 To: Len Brown <lenb@kernel.org>
 Cc: Linux PM Mailing List <linux-pm@vger.kernel.org>,
 	Artem Bityutskiy <dedekind1@gmail.com>
-Subject: [PATCH 1/5] tools/power turbostat: add missing print_float_value()
-Date: Wed, 11 Mar 2026 11:00:31 +0200
-Message-ID: <20260311090035.169539-2-dedekind1@gmail.com>
+Subject: [PATCH 2/5] tools/power turbostat: fix incorrect format variable
+Date: Wed, 11 Mar 2026 11:00:32 +0200
+Message-ID: <20260311090035.169539-3-dedekind1@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260311090035.169539-1-dedekind1@gmail.com>
 References: <20260311090035.169539-1-dedekind1@gmail.com>
@@ -77,37 +77,51 @@ Content-Transfer-Encoding: 8bit
 
 From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 
-In the core and package cases, all PMT counter prints use
-print_float_value(). But the thread case uses sprintf(), which is not
-a bug, but inconsistent. Most probably just an oversight.
+In the perf thread, core, and package counter loops, an incorrect
+'mp->format' variable is used instead of 'pp->format'. This looks
+like a copy-paste error from the adjacent MSR counter loops, which
+use 'mp'.
 
-Address the inconsistency by using print_float_value() in the thread
-case too.
+I did not see an actual problem related to this, but this does look
+like a bug that could result in the wrong format being used.
 
+Fixes: 696d15cbd8c2 ("tools/power turbostat: Refactor floating point printout code")
 Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index b985bce69142f..9744f9caac9af 100644
+index 9744f9caac9af..4d954533c71de 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -3489,12 +3489,12 @@ int format_counters(PER_THREAD_PARAMS)
- 
- 		case PMT_TYPE_XTAL_TIME:
- 			value_converted = pct(value_raw / crystal_hz, interval_float);
--			outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), value_converted);
-+			outp += print_float_value(&printed, delim, value_converted);
- 			break;
- 
- 		case PMT_TYPE_TCORE_CLOCK:
- 			value_converted = pct(value_raw / tcore_clock_freq_hz, interval_float);
--			outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), value_converted);
-+			outp += print_float_value(&printed, delim, value_converted);
- 		}
- 	}
- 
+@@ -3468,7 +3468,7 @@ int format_counters(PER_THREAD_PARAMS)
+ 	for (i = 0, pp = sys.perf_tp; pp; ++i, pp = pp->next) {
+ 		if (pp->format == FORMAT_RAW)
+ 			outp += print_hex_value(pp->width, &printed, delim, t->perf_counter[i]);
+-		else if (pp->format == FORMAT_DELTA || mp->format == FORMAT_AVERAGE)
++		else if (pp->format == FORMAT_DELTA || pp->format == FORMAT_AVERAGE)
+ 			outp += print_decimal_value(pp->width, &printed, delim, t->perf_counter[i]);
+ 		else if (pp->format == FORMAT_PERCENT) {
+ 			if (pp->type == COUNTER_USEC)
+@@ -3538,7 +3538,7 @@ int format_counters(PER_THREAD_PARAMS)
+ 	for (i = 0, pp = sys.perf_cp; pp; i++, pp = pp->next) {
+ 		if (pp->format == FORMAT_RAW)
+ 			outp += print_hex_value(pp->width, &printed, delim, c->perf_counter[i]);
+-		else if (pp->format == FORMAT_DELTA || mp->format == FORMAT_AVERAGE)
++		else if (pp->format == FORMAT_DELTA || pp->format == FORMAT_AVERAGE)
+ 			outp += print_decimal_value(pp->width, &printed, delim, c->perf_counter[i]);
+ 		else if (pp->format == FORMAT_PERCENT)
+ 			outp += print_float_value(&printed, delim, pct(c->perf_counter[i], tsc));
+@@ -3694,7 +3694,7 @@ int format_counters(PER_THREAD_PARAMS)
+ 			outp += print_hex_value(pp->width, &printed, delim, p->perf_counter[i]);
+ 		else if (pp->type == COUNTER_K2M)
+ 			outp += sprintf(outp, "%s%d", (printed++ ? delim : ""), (unsigned int)p->perf_counter[i] / 1000);
+-		else if (pp->format == FORMAT_DELTA || mp->format == FORMAT_AVERAGE)
++		else if (pp->format == FORMAT_DELTA || pp->format == FORMAT_AVERAGE)
+ 			outp += print_decimal_value(pp->width, &printed, delim, p->perf_counter[i]);
+ 		else if (pp->format == FORMAT_PERCENT)
+ 			outp += print_float_value(&printed, delim, pct(p->perf_counter[i], tsc));
 -- 
 2.53.0
 
