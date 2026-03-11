@@ -1,216 +1,267 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk [78.32.30.218])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6823C374175
-	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 23:03:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38A9C4400;
+	Wed, 11 Mar 2026 00:11:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=78.32.30.218
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773183791; cv=none; b=lcO9ZsmyRcRsjv2PC0GpcHhgT5y353EGuKNjdJBYncYGrs2mWRsZ1GBXPRewHG7goUM+cj7ysp/7sD97dQkljUy5RsZoVsEehi6N202ClnCdY3KhB+HAuNkN+2bGqtWOIpOh7vmkDrjInNMT6e0tw+ozcx7Eqa3+PmrEj4H//Kc=
+	t=1773187883; cv=none; b=qI6hO86AElmdCjmkDn6KhM5nibnJbBhfYrJsZ159om5en3tK40lWSwcCdLao+1FG2I2eLRjJrDQj++0RdciH6R9xITjgKYM/Q4O74eSQva3o9YN9IuHkSSaMTKpv0qkPr4ZVhrb35ienObItNGXA5/iy8jn785DwARpwt9ei9jg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773183791; c=relaxed/simple;
-	bh=NCr7CWtfAODxD26EjaDhYPub6MJelC/d4IOGonNL63Y=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=bMd+nrF4jl0vVfe2EO/Wnt7DAn45RAZY7oAV7c8HiUt4y4fNbNYp1BzcPSYQKhHo8NarIWZJOUIH1t6/Bot7TqKnse2JYPIjJ3IocVBk30scOWE8lzijMNdREl6VGM/0Ez/1CMwELjYL7B6w4HfKP+JloexmoWEBfppXPO7t0R0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=e3k9xC2t; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=W8YhtFCx; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1773187883; c=relaxed/simple;
+	bh=XpDMGeR0ckXhnjZNV3rQSz9hEyE7UO3BupLy8x1A3Rg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Q2POjgaCc+AcpHOvtoSW0BrwfDR6QSIaRWYrlhmIi5YchnMnzJGxBQBrDm4HCFsYxnlXMA5Sng+MQRaNhqgV1L5AnhxRPsjW+YMQMMg6/jdRE4JtYt2gHHQNmGeWidYA+j00BOPNr6N6a+sZ1JmnCJvtRYYXuShKFRjBCekoAlM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=armlinux.org.uk; spf=none smtp.mailfrom=armlinux.org.uk; dkim=pass (2048-bit key) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.b=rsZWNNzp; arc=none smtp.client-ip=78.32.30.218
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=armlinux.org.uk
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=armlinux.org.uk
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="e3k9xC2t";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="W8YhtFCx"
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62AHD1nG1573154
-	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 23:03:07 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	11UQng+3pfL2wZggMDKPKaPFC6vPCY5zu9oF2jTjjxA=; b=e3k9xC2tPkfrMkBT
-	SUM1ORpLnMa5V02VqCYi+ZX9j5MID3z3LDX9VRHLOD1j2fh0eGxjX0QgYv0tyhLW
-	ErvS42rI7z485cXDk3PvwwP6hxvVLWkME2cQh00lC7VuH+LkO1eaRJSQa329sKkp
-	cw8s/F+9vSjnhimePc+S9AplkofhC4ZbcRSSy5NmBJMcgcYVjlqn4UeqsudUn+Ra
-	+8pYxNEvcEd150/l4fcSk9zoex69zJN2yvHjlM+MbRbee2dRfZxXB3kp4tca0QLh
-	ehX0rvAYEinRDnPncpDNpDhlq7/SdduvMGvS5dJAD97O3f56K3bzTAVFhvjXL4I+
-	xqEXSg==
-Received: from mail-vs1-f69.google.com (mail-vs1-f69.google.com [209.85.217.69])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ctqgk94fc-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 23:03:07 +0000 (GMT)
-Received: by mail-vs1-f69.google.com with SMTP id ada2fe7eead31-5ffa63f874aso42346975137.0
-        for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 16:03:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1773183787; x=1773788587; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=11UQng+3pfL2wZggMDKPKaPFC6vPCY5zu9oF2jTjjxA=;
-        b=W8YhtFCx3I9XXN9ZhDAPOmcLAgOnFtAkJBcy2PzJbR/PSruXOKyJUNPSs38iBScZHw
-         bWsPctuyc8jEO3E3QGQAIZFcuKeNhdSYNf93B7KM5RZiJOdU1U3RgggHH45Y6+dee8Qd
-         45GYvOF/OtwW+TV8eqmsro1hNLHZMsC4ZBqihFYefayaZN4cs/qzCpQJyrIwYMNr4HJM
-         qcnLoT8HfGK6UpO2p5Dh7/AH/P2B7xbXaN6eutrjXnWCO7EXTyf1VoyHV90ymJ7I7lNf
-         qtsqVrGkMbvELn2BD8w3J4n7x8d6z8zCJQU0/X15NrIXDS9RVmNHuapRA6KhmP0jMUvp
-         CxGQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773183787; x=1773788587;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=11UQng+3pfL2wZggMDKPKaPFC6vPCY5zu9oF2jTjjxA=;
-        b=mA1zAYxlMH7kzCfGGJzdWzhQwtER88HO1gY/l0uTSSuuPfNAK8GHOg5niScdGDVwsk
-         9SLPngbStV4qUzIifK7SCYOa0WWXF0JGSykefx6y/rD+99ojpI+t4powgHG0MaAagqyx
-         2iWQODCfZzVrue02MlJvwn/DNvaYcUldjE3f7w6Ct/Wwq7BbNnOY047l1Yeh9REz9wpl
-         vMf599dX19oirLertbIc9CNRVqsyQH/Z+SkBYJa9RxlChm0ewVoGHbe15ve6+B8vJVZC
-         qmmE0F6JBLq65Bn0VFG3iGA3N17lPmFysrCpPRGOP9bg7oYQmhWdtP/pyMYE7DThJwh7
-         GHHw==
-X-Forwarded-Encrypted: i=1; AJvYcCUgkx6gJDIEq5WBxIhiQnv07JMtRS4beMMhM1nThET6JyqmLN/rD73nMx6o4cBfTPiw/dYni58KDg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzy22WLr5nOyazyH+bTCMckumO/+OaDT8iu4cEoYTnOnxKlPund
-	CX6nbOJwLhh2iJYouyJ4nuK1hGF/SP28xOiGJgLj7jXQpvr2tCDeyLHOWChH6MVcnuXM43cjRay
-	1H0NVhpoGOlZ9By2uMampSJm2lg8y8yQu4blj1ndNHwS1CTOQod8ynCtndiYFWQ==
-X-Gm-Gg: ATEYQzxUrs0CjktztHRjCMdkWz6YysdgzyyDile10Eg1xI+mp3DNGkpIRxrzFfhxI7D
-	zpu8Ytq3AnwvXhuzNjaiNydfxL9pAjiogd2kpdm0zZDe4zFSz+Qo83OA9xg2lwuIgn7pAPoz/jp
-	40xVmiGQFra2oMkRsBEQ4B1GFoYJH3hPKhD8GZmIGU5knPQWVOJBZXiNrND1EFOw+1DiO9+ZzUG
-	cIoFrJUJoDbb7+fdVJ32HDK+PXSx/j59Tm4LB3ARk6tqQxyrC8OD/NOc7L+iPS5zJDhth4B9KnQ
-	nvG+EKuCHdu2FDlFiJn1wWZ7fv8adP0+ukQAg0NnsEmmSdnnmP1NRVQsfVSA5sgNEdoXBkbReVg
-	0ez1kQs1NwDc4zTkHdVJ9OnwmTJj1o3o+JInZzXTSw6yLC0DWcbYQKzDBFisLx87XPYaDUzLiJR
-	p5UY+OLUZ4YIdUl/sP7JGWVEnZjTuz5gah2jc=
-X-Received: by 2002:a05:6102:26cb:b0:5ff:b8d8:b40d with SMTP id ada2fe7eead31-601def30d0dmr216630137.21.1773183786719;
-        Tue, 10 Mar 2026 16:03:06 -0700 (PDT)
-X-Received: by 2002:a05:6102:26cb:b0:5ff:b8d8:b40d with SMTP id ada2fe7eead31-601def30d0dmr216611137.21.1773183786338;
-        Tue, 10 Mar 2026 16:03:06 -0700 (PDT)
-Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5a156366a74sm80743e87.75.2026.03.10.16.03.04
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Mar 2026 16:03:05 -0700 (PDT)
-From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Date: Wed, 11 Mar 2026 01:02:58 +0200
-Subject: [PATCH v4 2/2] Bluetooth: qca: enable pwrseq support for WCN39xx
- devices
+	dkim=pass (2048-bit key) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.b="rsZWNNzp"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
+	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+	bh=7hV5LSkoaULvfWpcA92IONFe2jiU8FtnTFTGMKYHxiU=; b=rsZWNNzpN6nJksHTEkajq/n1Fi
+	36oPDej5oPfE2xw7j/8liweJ40O8Y0rBYAawwkQr0/sJRg1ts8hN1ZWdPPuu/S+9wTI5BZjFWFDn/
+	6VM0HaPK6l/WG/KwNwIc0bS6+oKrv1v0dTQCkIL4TyM4C1voCXZuHAyDW2/Bgql9xoNiDgpnuxFbm
+	Bc71fMVSzRm+pq3372pS1Xq8Ouufm8Njzwja33Sc4G+rmZ9dNuCAJtMq0TJedL4OAoV/4ImwmK35b
+	TUHQq3VDfaWDfmQ6l7uWAqtoP6Cr7hJRMUWJfb9Rs80koZ5DcRmLK8FvDMNhR9mVwMAz/6MWBcbRm
+	dCGRuMnQ==;
+Received: from shell.armlinux.org.uk ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:57602)
+	by pandora.armlinux.org.uk with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.98.2)
+	(envelope-from <linux@armlinux.org.uk>)
+	id 1w079p-000000005ZQ-1adR;
+	Wed, 11 Mar 2026 00:10:37 +0000
+Received: from linux by shell.armlinux.org.uk with local (Exim 4.98.2)
+	(envelope-from <linux@shell.armlinux.org.uk>)
+	id 1w079B-000000005hV-0rNO;
+	Wed, 11 Mar 2026 00:09:57 +0000
+Date: Wed, 11 Mar 2026 00:09:57 +0000
+From: "Russell King (Oracle)" <linux@armlinux.org.uk>
+To: Philipp Hahn <phahn-oss@avm.de>
+Cc: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
+	bpf@vger.kernel.org, ceph-devel@vger.kernel.org, cocci@inria.fr,
+	dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org,
+	gfs2@lists.linux.dev, intel-gfx@lists.freedesktop.org,
+	intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev,
+	kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-block@vger.kernel.org, linux-bluetooth@vger.kernel.org,
+	linux-btrfs@vger.kernel.org, linux-cifs@vger.kernel.org,
+	linux-clk@vger.kernel.org, linux-erofs@lists.ozlabs.org,
+	linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	linux-gpio@vger.kernel.org, linux-hyperv@vger.kernel.org,
+	linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
+	linux-mips@vger.kernel.org, linux-mm@kvack.org,
+	linux-modules@vger.kernel.org, linux-mtd@lists.infradead.org,
+	linux-nfs@vger.kernel.org, linux-omap@vger.kernel.org,
+	linux-phy@lists.infradead.org, linux-pm@vger.kernel.org,
+	linux-rockchip@lists.infradead.org, linux-s390@vger.kernel.org,
+	linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org,
+	linux-security-module@vger.kernel.org, linux-sh@vger.kernel.org,
+	linux-sound@vger.kernel.org,
+	linux-stm32@st-md-mailman.stormreply.com,
+	linux-trace-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+	linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+	ntfs3@lists.linux.dev, samba-technical@lists.samba.org,
+	sched-ext@lists.linux.dev, target-devel@vger.kernel.org,
+	tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev,
+	Julia Lawall <Julia.Lawall@inria.fr>,
+	Nicolas Palix <nicolas.palix@imag.fr>, Chris Mason <clm@fb.com>,
+	David Sterba <dsterba@suse.com>, Ilya Dryomov <idryomov@gmail.com>,
+	Alex Markuze <amarkuze@redhat.com>,
+	Viacheslav Dubeyko <slava@dubeyko.com>,
+	Theodore Ts'o <tytso@mit.edu>,
+	Andreas Dilger <adilger.kernel@dilger.ca>,
+	Steve French <sfrench@samba.org>,
+	Paulo Alcantara <pc@manguebit.org>,
+	Ronnie Sahlberg <ronniesahlberg@gmail.com>,
+	Shyam Prasad N <sprasad@microsoft.com>, Tom Talpey <tom@talpey.com>,
+	Bharath SM <bharathsm@microsoft.com>,
+	Eric Van Hensbergen <ericvh@kernel.org>,
+	Latchesar Ionkov <lucho@ionkov.net>,
+	Dominique Martinet <asmadeus@codewreck.org>,
+	Christian Schoenebeck <linux_oss@crudebyte.com>,
+	Gao Xiang <xiang@kernel.org>, Chao Yu <chao@kernel.org>,
+	Yue Hu <zbestahu@gmail.com>, Jeffle Xu <jefflexu@linux.alibaba.com>,
+	Sandeep Dhavale <dhavale@google.com>,
+	Hongbo Li <lihongbo22@huawei.com>,
+	Chunhai Guo <guochunhai@vivo.com>,
+	Miklos Szeredi <miklos@szeredi.hu>,
+	Konstantin Komarov <almaz.alexandrovich@paragon-software.com>,
+	Andreas Gruenbacher <agruenba@redhat.com>,
+	Kees Cook <kees@kernel.org>, Tony Luck <tony.luck@intel.com>,
+	"Guilherme G. Piccoli" <gpiccoli@igalia.com>,
+	Jan Kara <jack@suse.com>, Phillip Lougher <phillip@squashfs.org.uk>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+	Tejun Heo <tj@kernel.org>, David Vernet <void@manifault.com>,
+	Andrea Righi <arighi@nvidia.com>,
+	Changwoo Min <changwoo@igalia.com>, Ingo Molnar <mingo@redhat.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
+	Valentin Schneider <vschneid@redhat.com>,
+	Luis Chamberlain <mcgrof@kernel.org>,
+	Petr Pavlu <petr.pavlu@suse.com>,
+	Daniel Gomez <da.gomez@kernel.org>,
+	Sami Tolvanen <samitolvanen@google.com>,
+	Aaron Tomlin <atomlin@atomlin.com>,
+	Sylwester Nawrocki <s.nawrocki@samsung.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>, Max Filippov <jcmvbkbc@gmail.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	John Johansen <john.johansen@canonical.com>,
+	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Alasdair Kergon <agk@redhat.com>, Mike Snitzer <snitzer@kernel.org>,
+	Mikulas Patocka <mpatocka@redhat.com>,
+	Benjamin Marzinski <bmarzins@redhat.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	David Ahern <dsahern@kernel.org>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Simon Horman <horms@kernel.org>,
+	Marcel Holtmann <marcel@holtmann.org>,
+	Johan Hedberg <johan.hedberg@gmail.com>,
+	Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+	Alexei Starovoitov <ast@kernel.org>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Jesper Dangaard Brouer <hawk@kernel.org>,
+	John Fastabend <john.fastabend@gmail.com>,
+	Stanislav Fomichev <sdf@fomichev.me>,
+	Jamal Hadi Salim <jhs@mojatatu.com>, Jiri Pirko <jiri@resnulli.us>,
+	Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>,
+	Xin Long <lucien.xin@gmail.com>,
+	Trond Myklebust <trondmy@kernel.org>,
+	Anna Schumaker <anna@kernel.org>,
+	Chuck Lever <chuck.lever@oracle.com>,
+	Jeff Layton <jlayton@kernel.org>, NeilBrown <neil@brown.name>,
+	Olga Kornievskaia <okorniev@redhat.com>,
+	Dai Ngo <Dai.Ngo@oracle.com>, Jon Maloy <jmaloy@redhat.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	John Crispin <john@phrozen.org>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Andrzej Hajda <andrzej.hajda@intel.com>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Robert Foss <rfoss@kernel.org>,
+	Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
+	Jonas Karlman <jonas@kwiboo.se>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Zhenyu Wang <zhenyuw.linux@gmail.com>,
+	Zhi Wang <zhi.wang.linux@gmail.com>,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Tvrtko Ursulin <tursulin@ursulin.net>,
+	Alex Deucher <alexander.deucher@amd.com>,
+	Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
+	Sandy Huang <hjc@rock-chips.com>,
+	Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>,
+	Andy Yan <andy.yan@rock-chips.com>,
+	Igor Russkikh <irusskikh@marvell.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	Pavan Chebbi <pavan.chebbi@broadcom.com>,
+	Michael Chan <mchan@broadcom.com>,
+	Potnuri Bharat Teja <bharat@chelsio.com>,
+	Tony Nguyen <anthony.l.nguyen@intel.com>,
+	Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+	Taras Chornyi <taras.chornyi@plvision.eu>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	Iyappan Subramanian <iyappan@os.amperecomputing.com>,
+	Keyur Chudgar <keyur@os.amperecomputing.com>,
+	Quan Nguyen <quan@os.amperecomputing.com>,
+	Heiner Kallweit <hkallweit1@gmail.com>,
+	Marc Zyngier <maz@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Gregory Clement <gregory.clement@bootlin.com>,
+	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+	Vinod Koul <vkoul@kernel.org>, Linus Walleij <linusw@kernel.org>,
+	Ulf Hansson <ulf.hansson@linaro.org>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Alex Williamson <alex@shazbot.org>,
+	Mark Greer <mgreer@animalcreek.com>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	Richard Weinberger <richard@nod.at>,
+	Vignesh Raghavendra <vigneshr@ti.com>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Kieran Bingham <kieran.bingham@ideasonboard.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
+	Robin Murphy <robin.murphy@arm.com>, Lee Jones <lee@kernel.org>,
+	Pavel Machek <pavel@kernel.org>, Dave Penkler <dpenkler@gmail.com>,
+	"K. Y. Srinivasan" <kys@microsoft.com>,
+	Haiyang Zhang <haiyangz@microsoft.com>,
+	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
+	Long Li <longli@microsoft.com>, Justin Sanders <justin@coraid.com>,
+	Jens Axboe <axboe@kernel.dk>, Georgi Djakov <djakov@kernel.org>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Pali =?iso-8859-1?Q?Roh=E1r?= <pali@kernel.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH 00/61] treewide: Use IS_ERR_OR_NULL over manual NULL
+ check - refactor
+Message-ID: <abCy1Xs9yQx0Sjbn@shell.armlinux.org.uk>
+References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260311-wcn3990-pwrctl-v4-2-70e571a18e40@oss.qualcomm.com>
-References: <20260311-wcn3990-pwrctl-v4-0-70e571a18e40@oss.qualcomm.com>
-In-Reply-To: <20260311-wcn3990-pwrctl-v4-0-70e571a18e40@oss.qualcomm.com>
-To: Bartosz Golaszewski <brgl@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Marcel Holtmann <marcel@holtmann.org>,
-        Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-        Matthias Kaehlcke <mka@chromium.org>,
-        Balakrishna Godavarthi <quic_bgodavar@quicinc.com>,
-        Harish Bandi <c-hbandi@codeaurora.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2065;
- i=dmitry.baryshkov@oss.qualcomm.com; h=from:subject:message-id;
- bh=NCr7CWtfAODxD26EjaDhYPub6MJelC/d4IOGonNL63Y=;
- b=owEBbQGS/pANAwAKAYs8ij4CKSjVAcsmYgBpsKMjTeIHDIuYj4EJzWHo0r9XJi2oSJhP2xur5
- ikqas8iuDKJATMEAAEKAB0WIQRMcISVXLJjVvC4lX+LPIo+Aiko1QUCabCjIwAKCRCLPIo+Aiko
- 1WayB/9BC25wqOSbwMnpowA25Lvof1XPsWrH0PhtoZwzgc9ikZVapmH2m6k/MeSwVKnTlw/IXXs
- i5iXH03VkT0KQi2c7uu7yBWMmfIN1BYbAgsA21hONjqQHGZYolwoAfUPciWv3DbDH/05JMLs8te
- JOI1KHOX021NHbZ0zdtHqasKVStyr5Cu/kU5prF5uVy4P6F1ZW3cr4L+KQIlVT2l+pPQ0YUqpB+
- 6c/sLth+Pln44q2x5QyUHWMYGFsMdFNWT6tg1bLgbifH6srluGefFjDjcxFtw9zqexxelqDOouP
- 4r87Bb1tA0zi1Xq1yn/v3TCC2XH59UYFu+Lje+3f5IdkBBAl
-X-Developer-Key: i=dmitry.baryshkov@oss.qualcomm.com; a=openpgp;
- fpr=8F88381DD5C873E4AE487DA5199BF1243632046A
-X-Proofpoint-GUID: qLPXS8oVrwdpsZNrkwI9LsBe3x8jWyGM
-X-Proofpoint-ORIG-GUID: qLPXS8oVrwdpsZNrkwI9LsBe3x8jWyGM
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzEwMDE5NyBTYWx0ZWRfXz4azUU9QfCFX
- GfK8QBHhWAF4m+prkQbe9o+hV9K0JefDj50jlKylJiODUlQCkGqYTbwNMarGtCXFeGETGmCd0jJ
- o7b98/48W/mGUNgBtgVmfqswD2WuLC9M/rx/88yn1KAE6GyVP/j6pc3gz75Wedy+4/Tmlrvb1Vf
- T+cLzn7jBHYOoAcQKntsEpcfQlBzxfG3Oi5BqqzM72dWhhGuXhc4IJNzUmJWtv0v8WqoBJXW4ZH
- sOp1HG9vS33dulMlcxBOeTEqHrOIj1/lrAPVebRXGHmpBtdRUamZhQeahtbfpf0GM4pIkPf7pYn
- HJ1INgVAZlUrMVXMMAg3WOeoQN/zVxRaD0YPSFUXwsf57fGtnTvMl/zX3a48ag6chhFpXJwqFNk
- Gd3F3k5PlCSkqRxLTTUuvA3jpVL9xdnMY+eFZ476HW249kO1ek6yxuHZQA471cxYfK1bmExJBvp
- +0L5zNU5I60ycuEmQAA==
-X-Authority-Analysis: v=2.4 cv=M4JA6iws c=1 sm=1 tr=0 ts=69b0a32b cx=c_pps
- a=5HAIKLe1ejAbszaTRHs9Ug==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22 a=EUspDBNiAAAA:8
- a=rVzinPZZyXf-EJmd2kAA:9 a=QEXdDO2ut3YA:10 a=gYDTvv6II1OnSo0itH1n:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-10_04,2026-03-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 priorityscore=1501 adultscore=0 lowpriorityscore=0 phishscore=0
- impostorscore=0 spamscore=0 suspectscore=0 bulkscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603100197
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
+Sender: Russell King (Oracle) <linux@armlinux.org.uk>
 
-The WCN39xx family of WiFi/BT chips incorporates a simple PMU, spreading
-voltages over internal rails. Implement support for using powersequencer
-for this family of QCA devices in addition to using regulators.
+On Tue, Mar 10, 2026 at 12:48:26PM +0100, Philipp Hahn wrote:
+> While doing some static code analysis I stumbled over a common pattern,
+> where IS_ERR() is combined with a NULL check. For that there is
+> IS_ERR_OR_NULL().
 
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
----
- drivers/bluetooth/hci_qca.c | 26 ++++++++++++++++++--------
- 1 file changed, 18 insertions(+), 8 deletions(-)
+One thing you need to check for each of these cases is whether the tests
+are actually correct.
 
-diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
-index d6e78201a675..c17a462aef55 100644
---- a/drivers/bluetooth/hci_qca.c
-+++ b/drivers/bluetooth/hci_qca.c
-@@ -2241,6 +2241,18 @@ static void qca_power_off(struct hci_uart *hu)
- 	qcadev = serdev_device_get_drvdata(hu->serdev);
- 	power = qcadev->bt_power;
- 
-+	switch (soc_type) {
-+	case QCA_WCN3988:
-+	case QCA_WCN3990:
-+	case QCA_WCN3991:
-+	case QCA_WCN3998:
-+		host_set_baudrate(hu, 2400);
-+		qca_send_power_pulse(hu, false);
-+		break;
-+	default:
-+		break;
-+	}
-+
- 	if (power && power->pwrseq) {
- 		pwrseq_power_off(power->pwrseq);
- 		set_bit(QCA_BT_OFF, &qca->flags);
-@@ -2252,8 +2264,6 @@ static void qca_power_off(struct hci_uart *hu)
- 	case QCA_WCN3990:
- 	case QCA_WCN3991:
- 	case QCA_WCN3998:
--		host_set_baudrate(hu, 2400);
--		qca_send_power_pulse(hu, false);
- 		qca_regulator_disable(qcadev);
- 		break;
- 
-@@ -2425,6 +2435,11 @@ static int qca_serdev_probe(struct serdev_device *serdev)
- 	}
- 
- 	switch (qcadev->btsoc_type) {
-+	case QCA_WCN3950:
-+	case QCA_WCN3988:
-+	case QCA_WCN3990:
-+	case QCA_WCN3991:
-+	case QCA_WCN3998:
- 	case QCA_WCN6750:
- 	case QCA_WCN6855:
- 	case QCA_WCN7850:
-@@ -2449,12 +2464,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
- 			else
- 				break;
- 		}
--		fallthrough;
--	case QCA_WCN3950:
--	case QCA_WCN3988:
--	case QCA_WCN3990:
--	case QCA_WCN3991:
--	case QCA_WCN3998:
-+
- 		qcadev->bt_power->dev = &serdev->dev;
- 		err = qca_init_regulators(qcadev->bt_power, data->vregs,
- 					  data->num_vregs);
+There are certainly cases amongst those that you have identified where
+the check for NULL is redundant.
+
+For example, get_phy_device() never returns NULL, yet in your netdev
+patch, you have at least one instance where the return value of
+get_phy_device() is checked for NULL and IS_ERR() which you then
+turn into IS_ERR_OR_NULL(). Instead, the NULL check should be dropped
+(as a separate patch.)
 
 -- 
-2.47.3
-
+RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
+FTTP is here! 80Mbps down 10Mbps up. Decent connectivity at last!
