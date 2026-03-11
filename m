@@ -1,149 +1,167 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CDEAC3D2FE0
-	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 11:55:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2955D3D9035
+	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 11:56:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773230147; cv=none; b=h5wkB3ehVxzJpWoxUTjyfyhDqh8H6DemrF9zFcvEhr11MoLL+CeO2n2qLFhi4Am0TMdoRfv82A22WStx2jBj2vQ6TijohsUbyUE+bgBPwwLzskYc59IENje3jodMFECQBzMEeWJziNpZ87PUaSSWrafH2puBLwvCjxz5YXXbnlw=
+	t=1773230183; cv=none; b=rD3pfdAxAlLqLKed7PteDFIjDbIuKtxjf21vKLh5yWUU3N+r7Tex5e2n+qpPtEjETOGmTMi3j4Nbuuv2Z4wRmp9rSIhXFZ88gfpv85/2reV2XAzyDexjIJ6KZTAP4EFD8ZeqTxI13FNLUXF4Nlzqlf0QgTD041xQcNDqEuoqogE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773230147; c=relaxed/simple;
-	bh=rFc7/PufrqVMIl7fpn46NnUuRbYojYuNgylZ4fkLAak=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=WT5Hc73Ak6Pz3kuI/HXCLUX+qWcjlSsNtNux+0QHqabuvjLfHArXk19sZopYFC15tAbb3Kpz27d9jjjgA5sjkXpMD3smgYRlZNlPeoRVvlw4heBoPrD9fYJuSRnmvNfLvhubAByIhkfW59ggyCDh1V0qay24BmLAVLN+gJTZyqk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hdLBAlqZ; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1773230183; c=relaxed/simple;
+	bh=x5H+Ty35z/JQ0YvCd3YuUitbcY1C+rVXjfO5WNFbeIo=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=ktdo5q4FXvfIxq0gZ1l86jrLShKViTqIJ1eoemmq09L/Ih9skEUA2ZNq5MedmwkUeAvZJyhCnIKDpny++QLowR1kPesa/r1e0liEOqlRfBsMr59DbKi4EL9560hA4M1sw5uk9Dl8nV8m6gCXJSmtd9axTXeRsnih8NvYP8L3m7k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=1sdouiJE; arc=none smtp.client-ip=209.85.128.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hdLBAlqZ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 70437C4CEF7
-	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 11:55:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773230147;
-	bh=rFc7/PufrqVMIl7fpn46NnUuRbYojYuNgylZ4fkLAak=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=hdLBAlqZuM0s6+/gaG3i6VZhsSb6msx0hmK9POntt/bp+gZxWU3m2XfNi2kK3gpME
-	 kWN8qXQfQL9WtJXwVJeUP/b5qSMAGqpkDQtFkE9+H715eOq6NunfQXgqI1k1mG8z9b
-	 g1BEpepDv/X7ldV3r1xhYl5oIHJ0ADbPA8UhK18jKba70nMO2+mPK9Dp1ah6j1PzcI
-	 pqiC2Wfe6I1tydw4fdMxoP1ok0wx5DrR2T+ZRvVxKNO1OnRqOGsJQ8uY5YOAUT4OBa
-	 W5T0bhZCWVarF57g6pFeWu2MFn1uIPEHI0jPbnRbXcZvXx0hpE7lloL0sMx59LWK8q
-	 u8Evb0Re0+gfg==
-Received: by mail-oo1-f46.google.com with SMTP id 006d021491bc7-673ee2a98b1so8586752eaf.0
-        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 04:55:47 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCXcMHIXhNROu/rfUBXQFTwtZkKm3HF1VUDT/eg2uHrT25rWepk2dLKUkW/6JiLSsIZCJJoQR+zfyQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwTNqHS523g4nF0GjScAt9ovm2lXuyeDp04xWA6emNymNDGtLRG
-	Kl1/DVKRUp5Wd45qIKnlcaDw1q/hpIDtbnvMArPDwxvCvBsqTAd66dzfKf9FSEV91GPVVYUIyfL
-	Z6g56JgIqNVfy+BgkOhC61cv6ujEqP28=
-X-Received: by 2002:a05:6820:4b98:b0:67b:c122:d29d with SMTP id
- 006d021491bc7-67bc8a25d3cmr1557251eaf.60.1773230146597; Wed, 11 Mar 2026
- 04:55:46 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="1sdouiJE"
+Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-4853f2826f7so31063565e9.1
+        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 04:56:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=flipper.net; s=google; t=1773230179; x=1773834979; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=x1Cht8uRSf2FyMM2VofwaPUErjVTJDATYO+ETNMehnE=;
+        b=1sdouiJE1eKBSrVKSE48EIViGrek6TmeSJC6W+4e/TarbFJDlrdt4RaeIQOgIqFHlm
+         WzIustyfC6xg4ve8R1qYcWprncv2nXy6CF+uVT6s97hMfejyyofkuK0UnlQbiXo0NbgS
+         PG6Bjzwty4NUU+CwsjV/qrXchlgINrGgTyW3Kml/kjMRnKkX+ZnZEuxZ0MWnqvt2OpNB
+         R3G0XonVw75WMZeL48EdtuXlGKNWjlZZzSPIVBH0lM+X2HAxwBMeUH6Ism3ipzZhKJB6
+         rbmeRW/H3W2b/VeA2xV0KChZ4cQSdrm3LW4E0SVZzmY9JjU/JD3oskYuyrW9Y/Y4nlKx
+         vYaA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773230179; x=1773834979;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=x1Cht8uRSf2FyMM2VofwaPUErjVTJDATYO+ETNMehnE=;
+        b=nrt6EF5c73wbQxUx+ATdJ5ylIeuw3iLKSFit4C8iHFB3ri/xjdiqfw6hDgQSCJEtdB
+         mCouw8FmNBS3AkJRKlSd4WPnMFqYfcOPcsBBvnW9A4lUbo+PqVrfohz9nUFBj7KCJyu+
+         2ziJBa+3sAMHjvZuNIcvwO7270mUEUxfKZzU5nkoTW7h88DDzviAZtpVS1TIseN/36La
+         CYF2uRVCtKuKe6qdKsAYI5FgUId5s4E/oQV8StNlHPr0DHlO17gYtO/b6una77TEIeA7
+         PQYdri5t8LC7tAHSYWIEdTC1nnM9qBRvCwFamcB+0y/HDIGvjFGTX+1tiDm2Z/ufmGDh
+         OL9A==
+X-Forwarded-Encrypted: i=1; AJvYcCWN+nXt63IWwumV3S8s3HmP4z8PjdAOOCh8KZ2c1qeVG/YGVJN7lffs9NkNurBXM46BDB+fF1KkZQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz1v+exQWzPoYvhObAsN0hpHdGVQR6oMFnesal0imZ/o7AZ0xKE
+	6H4gD7Urp0SEhYClPtxlsroU/SCM8FtI2XVOwxYiLyIePo0GfFJ7S5grkowBS4bSSHE=
+X-Gm-Gg: ATEYQzw5Q1OTTNYYxL8fUqKPlhRghOUYaMZ0U1GXP+bJiklbzDRvJ9Xj2jwAbOaTKAj
+	Qo8YY91uf1OfHr2az07nPqarlFH8k56aWd/Qa73Q/Mc7CObsJxh4AMk9oizJmeklKbln3tg5SEJ
+	LQpdqJ2AVPYgRf2L66AVsGRBHiQSLuA+8D7Ayp6jYUl6USV+z4cvVbmj82KjuBKybHiJ3nHozUQ
+	GFAYYBCfn5wZwYN3kPDvgFqsUP29AduNpUkrcOJcR1mFItTPkVUYzva4HmBxF4uVAlZdyCzhnBp
+	/+MgBOjigrx9aJ9cX2B6zG6HM2dkIs6092bKJ9oelP+S1EQb613HVaCiXtUOBSWViZEvxrI1MsV
+	C5+zqtjN0s/Q+zbw48b5EZMaLnummQHMSs+cgml6KnsIqBFnKrVE1sPrm5nzvpyXY/BlbNcxGdD
+	DcWBqvZxQLUJ4EkFelkyn9g/SMtw/pSEbW+mwlHFJ1sX1zAZVnX4c59p0F3vZOY7ve/o/P2RSuK
+	tfMLg==
+X-Received: by 2002:a05:600c:314e:b0:485:3e00:9452 with SMTP id 5b1f17b1804b1-4854b10f5cbmr41854135e9.24.1773230179285;
+        Wed, 11 Mar 2026 04:56:19 -0700 (PDT)
+Received: from alchark-surface.localdomain (bba-86-98-192-109.alshamil.net.ae. [86.98.192.109])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4854ad5416bsm39586485e9.1.2026.03.11.04.56.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 11 Mar 2026 04:56:18 -0700 (PDT)
+From: Alexey Charkov <alchark@flipper.net>
+Subject: [PATCH v4 00/11] Add support for the TI BQ25792 battery charger
+Date: Wed, 11 Mar 2026 15:56:13 +0400
+Message-Id: <20260311-bq25792-v4-0-7213415d9eec@flipper.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260309083818.79588-1-dedekind1@gmail.com>
-In-Reply-To: <20260309083818.79588-1-dedekind1@gmail.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 11 Mar 2026 12:55:33 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0i+T-GV=BcwWyBU5aTq1RiHVRqbx0F7SN5t7Bpj19_S7g@mail.gmail.com>
-X-Gm-Features: AaiRm52ZxzWZnfyNxI09e6z8THXjScj6tmBUL-W_arBlSSVNJ-GFCVJyC6Uv2FI
-Message-ID: <CAJZ5v0i+T-GV=BcwWyBU5aTq1RiHVRqbx0F7SN5t7Bpj19_S7g@mail.gmail.com>
-Subject: Re: [PATCH] intel_idle: Add Panther Lake C-states table
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM Mailing List <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAF1YsWkC/2XOTQ6CMBCG4auQrq0ZZugIrryHccHPIE0MYEuIh
+ nB3CxswLL9JnzedlBdnxatrNCkno/W2a8NITpEqm7x9irZV2AoBGQhIF280lww1xIR5mXKacKX
+ C695JbT9r6f4Iu7F+6Nx3DY/xcj02xliDFhYjAESJSW/1y/a9uHMrg1oqI+4lbzJ8QLPJDCZZx
+ cL1UdJOxrBJChKwTgUJK6biX87z/AOmK6RgFAEAAA==
+X-Change-ID: 20260303-bq25792-0132ac86846d
+To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Chris Morgan <macromorgan@hotmail.com>, 
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+ Sebastian Reichel <sre@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ linux-pm@vger.kernel.org, Alexey Charkov <alchark@flipper.net>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
+ stable@vger.kernel.org
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3497; i=alchark@flipper.net;
+ h=from:subject:message-id; bh=x5H+Ty35z/JQ0YvCd3YuUitbcY1C+rVXjfO5WNFbeIo=;
+ b=owGbwMvMwCW2adGNfoHIK0sZT6slMWRujEjqfM3wiP3Fxf09MWLbZrH+WfnldYrMpaIdvufUQ
+ xzmWLOqdExkYRDjYrAUU2SZ+22J7VQjvlm7PDy+wsxhZQIZIi3SwAAELAx8uYl5pUY6Rnqm2oZ6
+ hoY6xjpGDFycAjDVvayMDB3aJtejja8dttf36vbQkFqkfWN2hfTOqUUWWfvyjFj2BjD8r/8ZumV
+ Kh6tT7w+71oUfhM3W/DsvtfDlnO7/bI+2zDn0jBsA
+X-Developer-Key: i=alchark@flipper.net; a=openpgp;
+ fpr=9DF6A43D95320E9ABA4848F5B2A2D88F1059D4A5
 
-On Mon, Mar 9, 2026 at 9:38=E2=80=AFAM Artem Bityutskiy <dedekind1@gmail.co=
-m> wrote:
->
-> From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
->
-> Panther Lake supports the following requestable C-states: C1, C1E, C6S, C=
-10.
-> Add a custom table for them.
->
-> Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
-> ---
->  drivers/idle/intel_idle.c | 42 +++++++++++++++++++++++++++++++++++++++
->  1 file changed, 42 insertions(+)
->
-> Based on latency analysis using the 'wult' tool, and power break even
-> analysis using the 'pbe' tool.
->
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index 167eb72105baf..36f5766381172 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -994,6 +994,43 @@ static struct cpuidle_state mtl_l_cstates[] __initda=
-ta =3D {
->                 .enter =3D NULL }
->  };
->
-> +static struct cpuidle_state ptl_cstates[] __initdata =3D {
-> +       {
-> +               .name =3D "C1",
-> +               .desc =3D "MWAIT 0x00",
-> +               .flags =3D MWAIT2flg(0x00),
-> +               .exit_latency =3D 1,
-> +               .target_residency =3D 1,
-> +               .enter =3D &intel_idle,
-> +               .enter_s2idle =3D intel_idle_s2idle, },
-> +       {
-> +               .name =3D "C1E",
-> +               .desc =3D "MWAIT 0x01",
-> +               .flags =3D MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE,
-> +               .exit_latency =3D 10,
-> +               .target_residency =3D 10,
-> +               .enter =3D &intel_idle,
-> +               .enter_s2idle =3D intel_idle_s2idle, },
-> +       {
-> +               .name =3D "C6S",
-> +               .desc =3D "MWAIT 0x21",
-> +               .flags =3D MWAIT2flg(0x21) | CPUIDLE_FLAG_TLB_FLUSHED,
-> +               .exit_latency =3D 300,
-> +               .target_residency =3D 300,
-> +               .enter =3D &intel_idle,
-> +               .enter_s2idle =3D intel_idle_s2idle, },
-> +       {
-> +               .name =3D "C10",
-> +               .desc =3D "MWAIT 0x60",
-> +               .flags =3D MWAIT2flg(0x60) | CPUIDLE_FLAG_TLB_FLUSHED,
-> +               .exit_latency =3D 370,
-> +               .target_residency =3D 2500,
-> +               .enter =3D &intel_idle,
-> +               .enter_s2idle =3D intel_idle_s2idle, },
-> +       {
-> +               .enter =3D NULL }
-> +};
-> +
->  static struct cpuidle_state gmt_cstates[] __initdata =3D {
->         {
->                 .name =3D "C1",
-> @@ -1623,6 +1660,10 @@ static const struct idle_cpu idle_cpu_mtl_l __init=
-const =3D {
->         .state_table =3D mtl_l_cstates,
->  };
->
-> +static const struct idle_cpu idle_cpu_ptl __initconst =3D {
-> +       .state_table =3D ptl_cstates,
-> +};
-> +
->  static const struct idle_cpu idle_cpu_gmt __initconst =3D {
->         .state_table =3D gmt_cstates,
->  };
-> @@ -1737,6 +1778,7 @@ static const struct x86_cpu_id intel_idle_ids[] __i=
-nitconst =3D {
->         X86_MATCH_VFM(INTEL_ALDERLAKE,          &idle_cpu_adl),
->         X86_MATCH_VFM(INTEL_ALDERLAKE_L,        &idle_cpu_adl_l),
->         X86_MATCH_VFM(INTEL_METEORLAKE_L,       &idle_cpu_mtl_l),
-> +       X86_MATCH_VFM(INTEL_PANTHERLAKE_L,      &idle_cpu_ptl),
->         X86_MATCH_VFM(INTEL_ATOM_GRACEMONT,     &idle_cpu_gmt),
->         X86_MATCH_VFM(INTEL_SAPPHIRERAPIDS_X,   &idle_cpu_spr),
->         X86_MATCH_VFM(INTEL_EMERALDRAPIDS_X,    &idle_cpu_spr),
-> --
+This adds support for the TI BQ25792 battery charger, which is similar in
+overall logic to the BQ25703A, but has a different register layout and
+slightly different lower-level programming logic.
 
-Applied as 7.1 material, but I've added some motivation explanation to
-the changelog, see:
-https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/patch/?=
-id=3Dd51de21b4c3a34a2cc592319df63864e14b18b29
+The series is organized as follows:
+- Patch 1 adds the new variant to the existing DT binding, including the
+  changes in electrical characteristics
+- Patches 2-4 are minor cleanups to the existing BQ25703A OTG regulator
+  driver, slimming down the code and making it more reusable for the new
+  BQ25792 variant
+- Patch 5 is a logical fix to the BQ25703A clamping logic for VSYSMIN
+  (this is a standalone fix which can be applied independently and may be
+  backported to stable)
+- Patches 6-8 are slight refactoring of the existing BQ25703A charger
+  driver to make it more reusable for the new BQ25792 variant
+- Patch 9 adds platform data to distinguish between the two variants in
+  the parent MFD driver, and binds it to the new compatible string
+- Patches 10-11 add variant-specific code to support the new BQ25792
+  variant in the regulator part and the charger part respectively,
+  selected by the platform data added in patch 9
+
+Signed-off-by: Alexey Charkov <alchark@flipper.net>
+---
+Changes in v4:
+- Avoid additional data structures and pass 'type' within the existing
+  struct bq257xx_device instead (Lee Jones)
+- Move comments for new struct fields to the patches where those fields
+  are added (Sebastian Reichel)
+- Collect tags from Sebastian Reichel (thanks!)
+- Link to v3: https://lore.kernel.org/r/20260310-bq25792-v3-0-02f8e232d63b@flipper.net
+
+Changes in v3:
+- Move MFD cell definitions back out of the probe function (Lee Jones)
+- Collect tags from Mark Brown, Krzysztof Kozlowski and Chris Morgan (thanks!)
+- Enable ship FET functionality at init for BQ25792
+- Link to v2: https://lore.kernel.org/r/20260306-bq25792-v2-0-6595249d6e6f@flipper.net
+
+Changes in v2:
+- Fix an error in DT schema (thanks Rob's bot)
+- Ensure the broadest constraints for all variants remain in the common
+  part of the schema, per writing-schema doc (thanks Krzysztof)
+- Link to v1: https://lore.kernel.org/r/20260303-bq25792-v1-0-e6e5e0033458@flipper.net
+
+---
+Alexey Charkov (11):
+      dt-bindings: mfd: ti,bq25703a: Expand to include BQ25792
+      regulator: bq257xx: Remove reference to the parent MFD's dev
+      regulator: bq257xx: Drop the regulator_dev from the driver data
+      regulator: bq257xx: Make OTG enable GPIO really optional
+      power: supply: bq257xx: Fix VSYSMIN clamping logic
+      power: supply: bq257xx: Make the default current limit a per-chip attribute
+      power: supply: bq257xx: Consistently use indirect get/set helpers
+      power: supply: bq257xx: Add fields for 'charging' and 'overvoltage' states
+      mfd: bq257xx: Add BQ25792 support
+      regulator: bq257xx: Add support for BQ25792
+      power: supply: bq257xx: Add support for BQ25792
+
+ .../devicetree/bindings/mfd/ti,bq25703a.yaml       |  73 ++-
+ drivers/mfd/bq257xx.c                              |  54 ++-
+ drivers/power/supply/bq257xx_charger.c             | 534 ++++++++++++++++++++-
+ drivers/regulator/bq257xx-regulator.c              | 121 ++++-
+ include/linux/mfd/bq257xx.h                        | 412 ++++++++++++++++
+ 5 files changed, 1156 insertions(+), 38 deletions(-)
+---
+base-commit: 343f51842f4ed7143872f3aa116a214a5619a4b9
+change-id: 20260303-bq25792-0132ac86846d
+
+Best regards,
+-- 
+Alexey Charkov <alchark@flipper.net>
+
