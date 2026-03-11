@@ -1,155 +1,447 @@
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5EABF1A6805;
-	Wed, 11 Mar 2026 06:17:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.158.5
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773209864; cv=none; b=pIUgYgABg415V8fJ9qB/fUUPcNlD9R9YbXwuM3ozkfadSOmQPaM+sQAQN/dMySFxTApR4ORWRjpa32bAsSwVZtU7rbgqfKD5o3V9Gsi4MtWZ44XHP3lSPiPZR8SMAv2kaKI84NtXTJc3s6VoX0DShgkYLsY4m9GV4VmWItQMvOY=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773209864; c=relaxed/simple;
-	bh=y64Mh80p5X3MO1QUjCXAWOrQXqmOOP3HwN7I9HE04WY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=pMZhmzN6H7xb4XFD8UfxynMmNDOnJnQLoTGtJjvg29SBv+IMYdGk4ZcX7YWKNlnn7z8ns+66OFf0BjSi3hGv3Y7RBfk2l6CQlQf/zYjfRiHkjy4KsDXncV1AWOE/JjIVJAdflKAaGwE46RFhAjcP+qUFoeOtsPH/mrUbnRSd7Go=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; spf=pass smtp.mailfrom=linux.ibm.com; dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b=WdfUPqE2; arc=none smtp.client-ip=148.163.158.5
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.ibm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9793A59;
+	Wed, 11 Mar 2026 06:31:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773210686; cv=pass; b=Q7R0FzHsptOiT2G/RBMQeuX8dLX0P6n9VOVFo6F7To9QtGB7eompiFE30uiVGHSMFTAvgCJ/PS+E6oOcpTvupcPnMG1TkCFxZcwyGlRHbdWLkwhyjgXK/QyG4EMGPKot3Qhm0j2vC3sWkmxh+63V5x3jGAL2nlR0Aae2/6RxM+0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773210686; c=relaxed/simple;
+	bh=cX9vwpU5PeeQtHDidcZ25pt1kuEfySRZaLwd3/yp6bE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=IQLdIG5+eGqrE+EZqcLq6dvMdaB4OENFpB40InLgqgDLts5oQ3e8fKNe/CHntD5HI9rPCMCZKw770stOn42JQTFQ8dhmp7/FMeLBgF96v8oHEsqy90tkyRyqI5LrfZv8Ce2UkYkkJkcsmbZLFivqH7UnOE3QTIaIhL9KQ8Hfryo=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=Pwz8FQLM; arc=pass smtp.client-ip=136.143.188.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="WdfUPqE2"
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62AHN4NH153178;
-	Wed, 11 Mar 2026 06:17:32 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=7F7of/pioiEzfSaxmZRMCX3Fg2mJoOP4EB0Z/kFfv
-	fc=; b=WdfUPqE23fcAEdtiEj9iapy3pSScU4VjAghhrcdwmt2X3SgVFXSkSEPxb
-	/VdlRUx5esipp+8IUMIRl4aUCLmX3jhaz/ikAy5y5yycHMc0YRD4UFd7B2VcCUPD
-	4/eZIrhw+SS+Raw0DHXxD4vMa1g5ZFFqEm2YIPXg2j5fkXbg8vkQbMkEV0xY+Ui/
-	NdqZTXn3v7YhyKEfkdR6FCNMuKj8DXh7CZ7jZLk0inEv24Fs38mt/amH4zn9ZrfT
-	fS0D5+DeiaGwfqL+L28rTB44DqTDo58lUGc366pfyUbfS9zgA5goUge1y8A1yh8H
-	/jt11qcdMv7nBz9kVPCmQ5LhAehbw==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4crd1mnywj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 11 Mar 2026 06:17:32 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62B12Xvn015653;
-	Wed, 11 Mar 2026 06:17:31 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4crybncady-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 11 Mar 2026 06:17:31 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62B6HR6N12255660
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 11 Mar 2026 06:17:27 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 585B02005A;
-	Wed, 11 Mar 2026 06:17:27 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B30A42004E;
-	Wed, 11 Mar 2026 06:17:24 +0000 (GMT)
-Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.39.22.168])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 11 Mar 2026 06:17:24 +0000 (GMT)
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
-Cc: sshegde@linux.ibm.com, chleroy@kernel.org, nysal@linux.ibm.com,
-        mkchauras@linux.ibm.com, rafael@kernel.org, daniel.lezcano@kernel.org,
-        christian.loehle@arm.com, mkchauras@gmail.com, npiggin@gmail.com,
-        linux-pm@vger.kernel.org, stable@vger.kernel.org
-Subject: [PATCH v2] cpuidle: powerpc: avoid double clear when breaking snooze
-Date: Wed, 11 Mar 2026 11:47:09 +0530
-Message-ID: <20260311061709.1230440-1-sshegde@linux.ibm.com>
-X-Mailer: git-send-email 2.51.0
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="Pwz8FQLM"
+ARC-Seal: i=1; a=rsa-sha256; t=1773210649; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=aeiaEx9TKMBLZ92qEhV2Js2+p0/lYJ9Ck52znS3bo5phrVLBT2UYcgB9kv+HBgzqOUyJLnzkjLnbIOrMkbH19YfwccV/IsxeAzu3SNJEOUAZmUG4g+FPkb2Ki82j+kQEnkPhqvjvw60xwDEohTstX3HF269q9uVglB6djFni0ic=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1773210649; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=P/zpN74k6VvKPUOQ7RN1eUbbSimS09Syfy1Ya/YYk78=; 
+	b=lKRzEYD8kbNA8IafJkwhHS03DIn3GHqq/JaeVSKOcouL0ktU628WLtgtlrD2Xvmq/7FN2qcZ5thbfUt9zH2CI35LlknT0oA8PulgyCvU/UGCcU8vt0cLWesFxERPU89ClB3U9Tj3a9DeLezqfBaAvpjOtPpWS9RndKVRzdsVm+s=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
+	dmarc=pass header.from=<sebastian.reichel@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1773210649;
+	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
+	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:References:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
+	bh=P/zpN74k6VvKPUOQ7RN1eUbbSimS09Syfy1Ya/YYk78=;
+	b=Pwz8FQLM8XsvnGkxoq6CRqlAN7yoGA4styIUlAnhemhcYcu+A5r6DbZxZ3r7ja6b
+	EuMZeIENI99Vg2/Nk0zznmwm0iEYQUaoaFnFzysLDpHd2ZrH1aoKFKKhhFM4fcKrL8T
+	rPUDVtgQ3ZYbImWS/ryzXxiEwe23UIf4aQR1HoOY=
+Received: by mx.zohomail.com with SMTPS id 1773210646764431.928200045445;
+	Tue, 10 Mar 2026 23:30:46 -0700 (PDT)
+Received: by venus (Postfix, from userid 1000)
+	id CE291180598; Wed, 11 Mar 2026 07:30:33 +0100 (CET)
+Date: Wed, 11 Mar 2026 07:30:33 +0100
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	Ion Agorria <ion@agorria.com>, =?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, 
+	linux-leds@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v5 6/7] power: supply: Add driver for ASUS Transformer
+ battery
+Message-ID: <abELVIzUrWmno8cX@venus>
+References: <20260304185751.83494-1-clamor95@gmail.com>
+ <20260304185751.83494-7-clamor95@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=ds3Wylg4 c=1 sm=1 tr=0 ts=69b108fc cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8
- a=cVrzkdVh9Pqr8fURmIoA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzExMDA0OSBTYWx0ZWRfX5OlTuLCxBycs
- bsoQQt2MYTPFxkbG+pgCJpHm6FfnYhFm7WQ2aE4LrjClRvwwvtcE+XTQJyLAieMDac4/2tqAJiH
- KLoVPhxvV5WcI/S2qBVPVyEIr5bvDC5oiDkcq6sJNZdpERMHxXib4rdDSwxWkz5z9jilH1Pdi+e
- Mf3XiBpkV4Ha+e6N3w2bc4ZtQHugpGFnM5+IaXqnjDQsZ6cHizwXJoVawQkxIIWOH2QaOwteQ/K
- 2LTKxDDvND7F5d4lNvU31db5x0DUv+6khf5TJMEjGxB7O4QWnyfYCV9yboD2QCG4w1M/06Obf9V
- fJ7rOJqJct2fNJAkTaEBvOePpWCirvJddfYO+9G7R3S0XRYz0hn/u3tKiq7F/f29cEywnjp/Jl0
- qEgxf1CjR+9BoXrOt6LlKs4b9PeQfDVxW3LJe1NjgEd6WXhIiF2lH0hE/gLVTZmP5hPlRyrplIz
- kbVhZoMlQm2qrbkir9w==
-X-Proofpoint-GUID: IwXrcu66crhxX1fWNSOJmNmD6fEejyAe
-X-Proofpoint-ORIG-GUID: KUkcok53n_Viifrr4RsG4gVX4qwPZMwN
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-10_05,2026-03-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 phishscore=0 clxscore=1011 impostorscore=0 suspectscore=0
- priorityscore=1501 lowpriorityscore=0 malwarescore=0 adultscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603110049
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="dajxxrhcax5ezbff"
+Content-Disposition: inline
+In-Reply-To: <20260304185751.83494-7-clamor95@gmail.com>
+X-Zoho-Virus-Status: 1
+X-Zoho-AV-Stamp: zmail-av-0.2.1.1.4.3/273.195.15
+X-ZohoMailClient: External
 
-snooze_loop is done often in any system which has fair bit of
-idle time. So it qualifies for even micro-optimizations. 
 
-When breaking the snooze due to timeout, TIF_POLLING_NRFLAG is cleared
-twice. Clearing the bit invokes atomics. Avoid double clear and thereby
-avoid one atomic write.
+--dajxxrhcax5ezbff
+Content-Type: text/plain; protected-headers=v1; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH v5 6/7] power: supply: Add driver for ASUS Transformer
+ battery
+MIME-Version: 1.0
 
-dev->poll_time_limit indicates whether the loop was broken due to
-timeout. Use that instead of defining a new variable.
+Hi,
 
-Fixes: 7ded429152e8 ("cpuidle: powerpc: no memory barrier after break from idle")
-Cc: stable@vger.kernel.org
-Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
----
-v1->v2:
-- Added rwb tag - Thanks to Mukesh Kumar Chaurasiya
-- Added fixes tag
-v1: https://lore.kernel.org/all/20260310152811.1131119-1-sshegde@linux.ibm.com/
+On Wed, Mar 04, 2026 at 08:57:50PM +0200, Svyatoslav Ryhel wrote:
+> From: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
+>=20
+> Driver implements one battery cell per EC controller and supports reading
+> of battery status for ASUS Transformer's pad and mobile dock.
+>=20
+> Co-developed-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> Signed-off-by: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
+> ---
+>  drivers/power/supply/Kconfig                  |  11 +
+>  drivers/power/supply/Makefile                 |   1 +
+>  .../supply/asus-transformer-ec-battery.c      | 272 ++++++++++++++++++
+>  3 files changed, 284 insertions(+)
+>  create mode 100644 drivers/power/supply/asus-transformer-ec-battery.c
+>=20
+> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+> index 81fadb0695a9..3c46b412632d 100644
+> --- a/drivers/power/supply/Kconfig
+> +++ b/drivers/power/supply/Kconfig
+> @@ -122,6 +122,17 @@ config BATTERY_CHAGALL
+>  	  This driver can also be built as a module. If so, the module will be
+>  	  called chagall-battery.
+> =20
+> +config BATTERY_ASUS_TRANSFORMER_EC
+> +	tristate "Asus Transformer's battery driver"
+> +	depends on MFD_ASUS_TRANSFORMER_EC
+> +	help
+> +	  Say Y here to enable support APM status emulation using
+> +	  battery class devices.
 
- drivers/cpuidle/cpuidle-powernv.c | 5 ++++-
- drivers/cpuidle/cpuidle-pseries.c | 5 ++++-
- 2 files changed, 8 insertions(+), 2 deletions(-)
+^^^
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 9ebedd972df0..b89e7111e7b8 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -95,7 +95,10 @@ static int snooze_loop(struct cpuidle_device *dev,
- 
- 	HMT_medium();
- 	ppc64_runlatch_on();
--	clear_thread_flag(TIF_POLLING_NRFLAG);
-+
-+	/* Avoid double clear when breaking */
-+	if (!dev->poll_time_limit)
-+		clear_thread_flag(TIF_POLLING_NRFLAG);
- 
- 	local_irq_disable();
- 
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index f68c65f1d023..864dd5d6e627 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -64,7 +64,10 @@ int snooze_loop(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 	}
- 
- 	HMT_medium();
--	clear_thread_flag(TIF_POLLING_NRFLAG);
-+
-+       /* Avoid double clear when breaking */
-+	if (!dev->poll_time_limit)
-+		clear_thread_flag(TIF_POLLING_NRFLAG);
- 
- 	raw_local_irq_disable();
- 
--- 
-2.43.0
+You forgot to drop that when you used the APM_POWER config entry as
+template. Otherwise the driver LGTM:
 
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+
+Greetings,
+
+-- Sebastian
+
+> +	  This sub-driver supports battery cells found in Asus Transformer
+> +	  tablets and mobile docks and controlled by special embedded
+> +	  controller.
+> +
+>  config BATTERY_CPCAP
+>  	tristate "Motorola CPCAP PMIC battery driver"
+>  	depends on MFD_CPCAP && IIO
+> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+> index 41c400bbf022..aa5e6b05b018 100644
+> --- a/drivers/power/supply/Makefile
+> +++ b/drivers/power/supply/Makefile
+> @@ -22,6 +22,7 @@ obj-$(CONFIG_TEST_POWER)	+=3D test_power.o
+>  obj-$(CONFIG_BATTERY_88PM860X)	+=3D 88pm860x_battery.o
+>  obj-$(CONFIG_CHARGER_ADP5061)	+=3D adp5061.o
+>  obj-$(CONFIG_BATTERY_ACT8945A)	+=3D act8945a_charger.o
+> +obj-$(CONFIG_BATTERY_ASUS_TRANSFORMER_EC)	+=3D asus-transformer-ec-batte=
+ry.o
+>  obj-$(CONFIG_BATTERY_AXP20X)	+=3D axp20x_battery.o
+>  obj-$(CONFIG_CHARGER_AXP20X)	+=3D axp20x_ac_power.o
+>  obj-$(CONFIG_BATTERY_CHAGALL)	+=3D chagall-battery.o
+> diff --git a/drivers/power/supply/asus-transformer-ec-battery.c b/drivers=
+/power/supply/asus-transformer-ec-battery.c
+> new file mode 100644
+> index 000000000000..aefcd3fed6fe
+> --- /dev/null
+> +++ b/drivers/power/supply/asus-transformer-ec-battery.c
+> @@ -0,0 +1,272 @@
+> +// SPDX-License-Identifier: GPL-2.0-or-later
+> +
+> +#include <linux/array_size.h>
+> +#include <linux/devm-helpers.h>
+> +#include <linux/err.h>
+> +#include <linux/mfd/asus-transformer-ec.h>
+> +#include <linux/module.h>
+> +#include <linux/mutex.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/power_supply.h>
+> +#include <linux/property.h>
+> +#include <linux/unaligned.h>
+> +
+> +#define ASUSEC_BATTERY_DATA_FRESH_MSEC		5000
+> +
+> +#define ASUSEC_BATTERY_DISCHARGING		0x40
+> +#define ASUSEC_BATTERY_FULL_CHARGED		0x20
+> +#define ASUSEC_BATTERY_NOT_CHARGING		0x10
+> +
+> +#define TEMP_CELSIUS_OFFSET			2731
+> +
+> +struct asus_ec_battery_data {
+> +	const struct asusec_info *ec;
+> +	struct power_supply *battery;
+> +	struct power_supply_desc psy_desc;
+> +	struct delayed_work poll_work;
+> +	struct mutex battery_lock; /* for data refresh */
+> +	unsigned long batt_data_ts;
+> +	int last_state;
+> +	u8 batt_data[DOCKRAM_ENTRY_BUFSIZE];
+> +};
+> +
+> +static int asus_ec_battery_refresh(struct asus_ec_battery_data *priv)
+> +{
+> +	int ret =3D 0;
+> +
+> +	guard(mutex)(&priv->battery_lock);
+> +
+> +	if (time_before(jiffies, priv->batt_data_ts))
+> +		return ret;
+> +
+> +	ret =3D asus_dockram_read(priv->ec->dockram, ASUSEC_DOCKRAM_BATT_CTL,
+> +				priv->batt_data);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	priv->batt_data_ts =3D jiffies +
+> +		msecs_to_jiffies(ASUSEC_BATTERY_DATA_FRESH_MSEC);
+> +
+> +	return ret;
+> +}
+> +
+> +static enum power_supply_property asus_ec_battery_properties[] =3D {
+> +	POWER_SUPPLY_PROP_STATUS,
+> +	POWER_SUPPLY_PROP_VOLTAGE_MAX,
+> +	POWER_SUPPLY_PROP_CURRENT_MAX,
+> +	POWER_SUPPLY_PROP_TEMP,
+> +	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+> +	POWER_SUPPLY_PROP_CURRENT_NOW,
+> +	POWER_SUPPLY_PROP_CAPACITY,
+> +	POWER_SUPPLY_PROP_CHARGE_NOW,
+> +	POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
+> +	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
+> +	POWER_SUPPLY_PROP_PRESENT,
+> +};
+> +
+> +static const unsigned int asus_ec_battery_prop_offs[] =3D {
+> +	[POWER_SUPPLY_PROP_STATUS] =3D 1,
+> +	[POWER_SUPPLY_PROP_VOLTAGE_MAX] =3D 3,
+> +	[POWER_SUPPLY_PROP_CURRENT_MAX] =3D 5,
+> +	[POWER_SUPPLY_PROP_TEMP] =3D 7,
+> +	[POWER_SUPPLY_PROP_VOLTAGE_NOW] =3D 9,
+> +	[POWER_SUPPLY_PROP_CURRENT_NOW] =3D 11,
+> +	[POWER_SUPPLY_PROP_CAPACITY] =3D 13,
+> +	[POWER_SUPPLY_PROP_CHARGE_NOW] =3D 15,
+> +	[POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW] =3D 17,
+> +	[POWER_SUPPLY_PROP_TIME_TO_FULL_NOW] =3D 19,
+> +};
+> +
+> +static int asus_ec_battery_get_value(struct asus_ec_battery_data *priv,
+> +				     enum power_supply_property psp)
+> +{
+> +	int ret, offs;
+> +
+> +	if (psp >=3D ARRAY_SIZE(asus_ec_battery_prop_offs))
+> +		return -EINVAL;
+> +
+> +	offs =3D asus_ec_battery_prop_offs[psp];
+> +	if (!offs)
+> +		return -EINVAL;
+> +
+> +	ret =3D asus_ec_battery_refresh(priv);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	if (offs >=3D priv->batt_data[0])
+> +		return -ENODATA;
+> +
+> +	return get_unaligned_le16(priv->batt_data + offs);
+> +}
+> +
+> +static int asus_ec_battery_get_property(struct power_supply *psy,
+> +					enum power_supply_property psp,
+> +					union power_supply_propval *val)
+> +{
+> +	struct asus_ec_battery_data *priv =3D power_supply_get_drvdata(psy);
+> +	int ret;
+> +
+> +	switch (psp) {
+> +	case POWER_SUPPLY_PROP_PRESENT:
+> +		val->intval =3D 1;
+> +		break;
+> +
+> +	default:
+> +		ret =3D asus_ec_battery_get_value(priv, psp);
+> +		if (ret < 0)
+> +			return ret;
+> +
+> +		val->intval =3D (s16)ret;
+> +
+> +		switch (psp) {
+> +		case POWER_SUPPLY_PROP_STATUS:
+> +			if (ret & ASUSEC_BATTERY_FULL_CHARGED)
+> +				val->intval =3D POWER_SUPPLY_STATUS_FULL;
+> +			else if (ret & ASUSEC_BATTERY_NOT_CHARGING)
+> +				val->intval =3D POWER_SUPPLY_STATUS_NOT_CHARGING;
+> +			else if (ret & ASUSEC_BATTERY_DISCHARGING)
+> +				val->intval =3D POWER_SUPPLY_STATUS_DISCHARGING;
+> +			else
+> +				val->intval =3D POWER_SUPPLY_STATUS_CHARGING;
+> +			break;
+> +
+> +		case POWER_SUPPLY_PROP_TEMP:
+> +			val->intval -=3D TEMP_CELSIUS_OFFSET;
+> +			break;
+> +
+> +		case POWER_SUPPLY_PROP_CHARGE_NOW:
+> +		case POWER_SUPPLY_PROP_CURRENT_NOW:
+> +		case POWER_SUPPLY_PROP_CURRENT_MAX:
+> +		case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+> +		case POWER_SUPPLY_PROP_VOLTAGE_MAX:
+> +			val->intval *=3D 1000;
+> +			break;
+> +
+> +		case POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW:
+> +		case POWER_SUPPLY_PROP_TIME_TO_FULL_NOW:
+> +			val->intval *=3D 60;
+> +			break;
+> +
+> +		default:
+> +			break;
+> +		}
+> +
+> +		break;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static void asus_ec_battery_poll_work(struct work_struct *work)
+> +{
+> +	struct asus_ec_battery_data *priv =3D
+> +		container_of(work, struct asus_ec_battery_data, poll_work.work);
+> +	int state;
+> +
+> +	state =3D asus_ec_battery_get_value(priv, POWER_SUPPLY_PROP_STATUS);
+> +	if (state < 0)
+> +		return;
+> +
+> +	if (state & ASUSEC_BATTERY_FULL_CHARGED)
+> +		state =3D POWER_SUPPLY_STATUS_FULL;
+> +	else if (state & ASUSEC_BATTERY_DISCHARGING)
+> +		state =3D POWER_SUPPLY_STATUS_DISCHARGING;
+> +	else
+> +		state =3D POWER_SUPPLY_STATUS_CHARGING;
+> +
+> +	if (priv->last_state !=3D state) {
+> +		priv->last_state =3D state;
+> +		power_supply_changed(priv->battery);
+> +	}
+> +
+> +	/* continuously send uevent notification */
+> +	schedule_delayed_work(&priv->poll_work,
+> +			      msecs_to_jiffies(ASUSEC_BATTERY_DATA_FRESH_MSEC));
+> +}
+> +
+> +static const struct power_supply_desc asus_ec_battery_desc =3D {
+> +	.name =3D "asus-ec-battery",
+> +	.type =3D POWER_SUPPLY_TYPE_BATTERY,
+> +	.properties =3D asus_ec_battery_properties,
+> +	.num_properties =3D ARRAY_SIZE(asus_ec_battery_properties),
+> +	.get_property =3D asus_ec_battery_get_property,
+> +	.external_power_changed =3D power_supply_changed,
+> +};
+> +
+> +static int asus_ec_battery_probe(struct platform_device *pdev)
+> +{
+> +	struct asus_ec_battery_data *priv;
+> +	struct device *dev =3D &pdev->dev;
+> +	struct power_supply_config cfg =3D { };
+> +	int ret;
+> +
+> +	priv =3D devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+> +	if (!priv)
+> +		return -ENOMEM;
+> +
+> +	platform_set_drvdata(pdev, priv);
+> +
+> +	mutex_init(&priv->battery_lock);
+> +
+> +	priv->ec =3D cell_to_ec(pdev);
+> +	priv->batt_data_ts =3D jiffies - 1;
+> +	priv->last_state =3D POWER_SUPPLY_STATUS_UNKNOWN;
+> +
+> +	cfg.fwnode =3D dev_fwnode(dev->parent);
+> +	cfg.drv_data =3D priv;
+> +
+> +	memcpy(&priv->psy_desc, &asus_ec_battery_desc, sizeof(priv->psy_desc));
+> +	priv->psy_desc.name =3D devm_kasprintf(dev, GFP_KERNEL, "%s-battery",
+> +					     priv->ec->name);
+> +
+> +	priv->battery =3D devm_power_supply_register(dev, &priv->psy_desc, &cfg=
+);
+> +	if (IS_ERR(priv->battery))
+> +		return dev_err_probe(dev, PTR_ERR(priv->battery),
+> +				     "Failed to register power supply\n");
+> +
+> +	ret =3D devm_delayed_work_autocancel(dev, &priv->poll_work,
+> +					   asus_ec_battery_poll_work);
+> +	if (ret)
+> +		return ret;
+> +
+> +	schedule_delayed_work(&priv->poll_work,
+> +			      msecs_to_jiffies(ASUSEC_BATTERY_DATA_FRESH_MSEC));
+> +
+> +	return 0;
+> +}
+> +
+> +static int __maybe_unused asus_ec_battery_suspend(struct device *dev)
+> +{
+> +	struct asus_ec_battery_data *priv =3D dev_get_drvdata(dev);
+> +
+> +	cancel_delayed_work_sync(&priv->poll_work);
+> +
+> +	return 0;
+> +}
+> +
+> +static int __maybe_unused asus_ec_battery_resume(struct device *dev)
+> +{
+> +	struct asus_ec_battery_data *priv =3D dev_get_drvdata(dev);
+> +
+> +	schedule_delayed_work(&priv->poll_work,
+> +			      msecs_to_jiffies(ASUSEC_BATTERY_DATA_FRESH_MSEC));
+> +
+> +	return 0;
+> +}
+> +
+> +static SIMPLE_DEV_PM_OPS(asus_ec_battery_pm_ops,
+> +			 asus_ec_battery_suspend, asus_ec_battery_resume);
+> +
+> +static struct platform_driver asus_ec_battery_driver =3D {
+> +	.driver =3D {
+> +		.name =3D "asus-transformer-ec-battery",
+> +		.pm =3D &asus_ec_battery_pm_ops,
+> +	},
+> +	.probe =3D asus_ec_battery_probe,
+> +};
+> +module_platform_driver(asus_ec_battery_driver);
+> +
+> +MODULE_AUTHOR("Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>");
+> +MODULE_AUTHOR("Svyatoslav Ryhel <clamor95@gmail.com>");
+> +MODULE_DESCRIPTION("ASUS Transformer's battery driver");
+> +MODULE_LICENSE("GPL");
+> --=20
+> 2.51.0
+>=20
+>=20
+
+--dajxxrhcax5ezbff
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmmxDAYACgkQ2O7X88g7
++po+cxAApJP60xFP4lgJWpzfcXQ68AKAfCI7lBpMGY5r3AhjzldDsngMGup8mXhc
+KLlIQKqNr37fovYYoFeuhwayhsf8E6pbpgnkIPpTGHyo5ycv4TFEv/YMSEN5mN+x
+x/ztm3/5Ph6klEpiBxfnIykplq5wwGQLa+LN+/QuMrcDCTv6r5nAakctRuQn46dg
+upYxr2MsJZ3HAjmm1H9kSQM7TdQKAMkARfLHx4P4zsMs8Ybt9QFQa7T10tbKGo6M
+lovOopMQemQO9YNyaEUgK90TQpp/ND0WN1RX4Z2/dcZ4aqNeMu2lnaHyzDp8UO3C
+tajCmIVgUPP2k2nq24Zzx0VWLakAzYEeH0xd26pE5EOmCg2KfbjT88oDibSewOAB
+0NLpipGczQMbx/rBJxMl56F50RcC3eCFqN5smh/BkhRLvjDBYAz6MKJtIVu7tkL7
+UTbmBGNRESjdJezg3pRfiVaVeCfpXsT95NTvqgPNy/du77gv3xdDLgV2zIIG5pDF
+ZkE7TukLm6ibJzDX+XAcGsJqh7bNwmBlbErguEWcLm1pzEFnWsRkAWt8NogaWAFy
+alRztM2pyvhp6fyW8cQMFLXHWNsI/mij66FML3TYH/GjncsllD91WtDW3I2gqh1a
+8NXLkzMjTYEVm/dnBGWEi6JqpRJLLCICuj7bq/uL+86bVZvOBeQ=
+=XnEF
+-----END PGP SIGNATURE-----
+
+--dajxxrhcax5ezbff--
