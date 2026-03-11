@@ -1,119 +1,114 @@
-Received: from mail-ot1-f41.google.com (mail-ot1-f41.google.com [209.85.210.41])
+Received: from mail-pf1-f182.google.com (mail-pf1-f182.google.com [209.85.210.182])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3FD22DE6E3
-	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 20:42:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 285342010EE
+	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 21:34:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773261769; cv=none; b=F1gAm4cPnMabEa9ipNs+dUPB1tk5RZLHp1x12dGCRcYiHYR8fmpDWcPbHowWu3LzaCegdnmLDvsrRU1zEVcyGOdO8EqTIwPeB78QLnTF0u92SShqdBX/KuPj1Y5D5gaa7QEm/FPaVaPis7WEmcdFVHAsTCjTs2JJqBXJhGaP2Ss=
+	t=1773264852; cv=none; b=dCwMKfsKTlZVWax432N6jFMWRcsSSqxitfSh/7HqKLH+h1QkxaTlNxHe1qGESEnnjgFz4xouSfWh43lPW0LL4jIlXOr5LgaMdJ3cp2cj5TSrghcvj0Xeq81htiTTI8nlZWYdqsqH9RQcKXiikn4y9BDEqMXDHeiccIqM8vAK0XY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773261769; c=relaxed/simple;
-	bh=cI8XbGn/+q3tX6OBcqZh3pIXmBuU7peStEJSyW20e78=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=OUSTdrkUawVnH/9SfhVBBzdTtn6X3UhibjLBPHk8MekTWGihBBxUrFqmhStZvhEOXFV6a5sfOTj1CYBKTacFttGbukICzTDyAMBEdp33T/zZXSFu+H75sikiDCa08JHcN++RG8SD6Xpj8ydhpGgp16AE7geyGLegCF+NlbWBxnk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=JaGgqXlt; arc=none smtp.client-ip=209.85.210.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
+	s=arc-20240116; t=1773264852; c=relaxed/simple;
+	bh=MzEyGSpOEQTPXhyx29xRDaWjW9jMTuWE29zrMeXP5A0=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=oIC4QSAm7UOqIPl+Ao6R5NnIS7icJdbCbVb0crLrn7eeUMxDrIGl/LAyWQMACgTLh/VyKkj7w50CyuiR8FO6KTwwwTImaEvA4ArJmF2MDIDfoeI49kw3EdY2oCypgLN0qZB6Vc0IcFuleomyF/XewKB2EwvWUvVS19ZZbnYREps=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=vhcInlkV; arc=none smtp.client-ip=209.85.210.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="JaGgqXlt"
-Received: by mail-ot1-f41.google.com with SMTP id 46e09a7af769-7d75e74f5adso368067a34.3
-        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 13:42:47 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="vhcInlkV"
+Received: by mail-pf1-f182.google.com with SMTP id d2e1a72fcca58-82748257f5fso841999b3a.1
+        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 14:34:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google; t=1773261767; x=1773866567; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:to:subject:user-agent:mime-version:date:message-id:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=o7w462wds+DZabh287SleelbIwQ7Egd65dgh42R1XRY=;
-        b=JaGgqXltS/Uhx3UJCyTX8pR0hyY9zPRhoRorNSPYO9Hb8CnBCTwwS+mmg2FtPKwowV
-         EoJgGweBfy8vtEsnH3Z3e3jaxN/s9Oz4C07yDw8uDCaEKRS4jkXFH/L47dAt9+86DT6I
-         y9wnFwOK2GcmBOal9+gC2kTPh7VvjzzGTxnQo=
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1773264848; x=1773869648; darn=vger.kernel.org;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=7T6BzAyZ6zvZPDDyyrSv8iqVUUqxy8QrR8kmFoTvh3E=;
+        b=vhcInlkVa42qc4szL3ZcFG87p3GQjuTTCjvr4AGT58FdxOZ5c2RCow045cr8qkbSUK
+         YQYZi2JE7o7P6/FjVSGS02EcEIL+xseR45Nueuf8mJEliF1gaEgQdCU0WhEWFgM3QLY1
+         DAUOX9RDbWXcvCZ7esYb7sk1yOoMfR2braWqO1WoeUC7eVJDn1kI17rlw70zc3RgqRA8
+         vgBplWT1srEKc7fMbjD8+C8iAo+oh/zN38qqtQ6ezFW9N796Jy5e7H3rhsyR2S7fRx1w
+         UeGJYtS+YDybJtJDd/OLoi7vREBBNodSs1OID735udGoQIHMX7hDFBmqpnFWNxmGq1xb
+         UKdw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773261767; x=1773866567;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=1e100.net; s=20230601; t=1773264848; x=1773869648;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=o7w462wds+DZabh287SleelbIwQ7Egd65dgh42R1XRY=;
-        b=KVAxsZ8KUSG1QgfaKXD0GM3pMjHp9ENPM2jecrp8aWsKNMBNA1x0GoCFywD63DmmIz
-         M87pgCCmw12NDQo2fN5U2L7aLD9Wj6t8f7NRYcbtxOLkijgzMB5pmWXScpVqCilvvoXe
-         dXhFctz5oMK4jk2FmzRYjPY/8iYVH3nj0VpolpgUS7c6eiqYH2JZvQ39UOewsFwZAy6B
-         gEKuZ8hcZMwAJUOIY9LgU5Q3dGjPC89G9hwuHi8QeB7bmfQMW4sL2OacsiXhAIVjK7II
-         vgrPsjHjWXWggvgkISnrytMpWEPRWMsK5+cr9vvbH2AXbeQN+py76jk9DqFUAV25+aNm
-         zlRw==
-X-Forwarded-Encrypted: i=1; AJvYcCVGMrWiQnnggAWg1oX2xIwpa9wWlZZm2y3nA3bVv+p/yCR2m1cYv3hS3EntGo0s4BseqS1vDm+phg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxs43cVSVTcFv2X3jxO4mbzFqcpIBJzjIgcvPulWO56TA5yJcIo
-	tsafh9TBJPd6+ibO8UMLxDHoZhHvEnFwWNnksOlUKWKxR+VlyuEk8W9fcgFlhn6uR4E=
-X-Gm-Gg: ATEYQzzM/Zaw6rex7RalaaJJ9rnpPIw1sbY7cHSZ73BMojTDcRABdu60tm7k4QmQfZm
-	WISE7nEKSt8ZAAw4QlwN6ecBWTqKafoJhJ5I/94DfMHdOKEFsoruOSWyyegMPhChLbXq12G/8aT
-	mA8Igc1GkcK/vI8eAZoZvHEjZSt0zyjeFdvCv8V66wAQKfePSA/MyD0ASRidDBJtomVWVfEuFIf
-	NodVj3P43jTTAbYesfQKfA29wt3fg46uZFcQeO48tAp3Bgh+mXjKKY76G5uVHybacmW6xu477xO
-	JTH9botbZY3cP+3UuQbJrl/PjQofY3XwfJlp93sqdcu1DmrvaQJmRt13k9SZpBa0wU7PsIvFj/Z
-	RdC+Txb8/uVEi1pnPtpGpLTnfsnjCjNkXsP3KTjMXNsw0Bttbn7gPnNs3W11lpw5ZjSom+y0Kci
-	YoTbNgnbiVCDdFyqisf0hZxeOJ+3G+7fcK/wo=
-X-Received: by 2002:a05:6830:3745:b0:7d7:4ab4:ff2c with SMTP id 46e09a7af769-7d76a64cb8cmr2548275a34.4.1773261766826;
-        Wed, 11 Mar 2026 13:42:46 -0700 (PDT)
-Received: from [192.168.1.14] ([38.175.187.108])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7d76aeccd73sm2615018a34.27.2026.03.11.13.42.45
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 11 Mar 2026 13:42:46 -0700 (PDT)
-Message-ID: <b86a7991-3919-4efd-b366-5a8652c0b8a3@linuxfoundation.org>
-Date: Wed, 11 Mar 2026 14:42:45 -0600
+        bh=7T6BzAyZ6zvZPDDyyrSv8iqVUUqxy8QrR8kmFoTvh3E=;
+        b=Cy/6AGo24VWbStLM7YLtCvd3ymp/DhrYWX0hYEsbtMzI1ZiHdtxm8lGEtjDxjcibt/
+         fwN7wAN7cneGg0gFHIpgHqya0BIH1WHSGiwsW62+8CbfZbK0smojasZA2bGwFSyukQPb
+         Z+pEoqT9t/XxR5eL9/N1S1XFrFv+7ITKbdnsJBPtDw8T6jN06dZiY2KrnfWguoQVhlDa
+         zyOoMW3sAdSnqqvBG+YsFkJQidk0TDUucxA/w5NLPaZ+yRlblPjbDc0+J2cuXDLU7qk5
+         Dpg4vKKWb0qfS7MIar9WbFfPt8iULClINUFtUPTQaoRu8bNdSPSij7lW2EfVvaQIDCky
+         6jpg==
+X-Gm-Message-State: AOJu0Yy7IxeIJOW5bYv3CORLgOV0OUQ/8HRw/wrUopb4Rom3DqYhzUuJ
+	kZ4naYPPtmyea+9Is1wvERF5ecjCn176O2P2FR9LRk6VS/OSe89ZEgu6JrnKA2sd8f4=
+X-Gm-Gg: ATEYQzxyC/h/WjckNVFz4AJsHlczvf2I8OcSl32RjSeH7cd7yOxapzPnuufjp6NLiAa
+	VVauvj6mbynWlelu9oQN9Djm4b9le28Miowdjh0tzXse1ofxdQma+ZVXWqmIQx+CdrPCxlY4jGn
+	2Bh8/sETg/9R7eZzDGyMZquT/OIXDJkkwMvPioEUsy9D9oNf950TEJEAHd5YafVe3DQYxh+mOJe
+	7WXkov09aTHiDm9HL3IxZ/LZzDbwLPBn0Act6YnNiM5GlRK+kELCs9rXh24z6ZtZ7e/YScqZf9V
+	1jyOLnpA92M5yEPyBmt6l/xZxA4aN22YxIIEyhXHdLuNAzXcvx0XdN20VpWTg90+AXtVaZlamw3
+	TC0YgW2vkHq635zFtP8MUpQGC2QlQfeNdWc/C2Cos/GvBavc7wF+8Yp9EMSLKo9zxMZmV6nbHu2
+	XDIdhyP7sjs/yYx5R2IcA/2e8kbA1rdUM=
+X-Received: by 2002:a05:6a00:9501:b0:81f:be27:8d16 with SMTP id d2e1a72fcca58-82a0722304fmr941796b3a.21.1773264848531;
+        Wed, 11 Mar 2026 14:34:08 -0700 (PDT)
+Received: from localhost ([71.212.200.220])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82a0738422esm595730b3a.55.2026.03.11.14.34.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 11 Mar 2026 14:34:07 -0700 (PDT)
+From: Kevin Hilman <khilman@baylibre.com>
+To: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Geert
+ Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
+ arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ devicetree@vger.kernel.org
+Subject: Re: [PATCH 1/3] dt-bindings: power: Add power-domains-child-ids
+ property
+In-Reply-To: <177319309976.1426147.15580608651927678828.robh@kernel.org>
+References: <20260310-topic-lpm-pmdomain-child-ids-v1-0-5361687a18ff@baylibre.com>
+ <20260310-topic-lpm-pmdomain-child-ids-v1-1-5361687a18ff@baylibre.com>
+ <177319309976.1426147.15580608651927678828.robh@kernel.org>
+Date: Wed, 11 Mar 2026 14:34:07 -0700
+Message-ID: <7hms0eyrsg.fsf@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 4/4] cpupower-info.1: describe the --perf-bias option
-To: Roberto Ricci <io@r-ricci.it>, Thomas Renninger <trenn@suse.com>,
- Shuah Khan <shuah@kernel.org>, "John B. Wyatt IV" <jwyatt@redhat.com>,
- John Kacur <jkacur@redhat.com>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, Shuah Khan <skhan@linuxfoundation.org>
-References: <abHAkgiPg8VDpDoV@desktop0a>
-Content-Language: en-US
-From: Shuah Khan <skhan@linuxfoundation.org>
-In-Reply-To: <abHAkgiPg8VDpDoV@desktop0a>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 
-On 3/11/26 13:20, Roberto Ricci wrote:
+"Rob Herring (Arm)" <robh@kernel.org> writes:
 
-Missing change log.
+> On Tue, 10 Mar 2026 17:19:23 -0700, Kevin Hilman (TI) wrote:
+>> Add binding documentation for the new power-domains-child-ids property,
+>> which works in conjunction with the existing power-domains property to
+>> establish parent-child relationships between a multi-domain power domain
+>> provider and external parent domains.
+>> 
+>> Each element in the uint32 array identifies the child domain
+>> ID (index) within the provider that should be made a child domain of
+>> the corresponding phandle entry in power-domains. The two arrays must
+>> have the same number of elements.
+>> 
+>> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
+>> ---
+>>  Documentation/devicetree/bindings/power/power-domain.yaml | 35 +++++++++++++++++++++++++++++++++++
+>>  1 file changed, 35 insertions(+)
+>> 
+>
+> My bot found errors running 'make dt_binding_check' on your patch:
+>
+> yamllint warnings/errors:
+>
+> dtschema/dtc warnings/errors:
+> Documentation/devicetree/bindings/power/power-domain.example.dts:136.13-26: Warning (reg_format): /example-3/protocol@11:reg: property has invalid length (4 bytes) (#address-cells == 1, #size-cells == 1)
+> Documentation/devicetree/bindings/power/power-domain.example.dtb: Warning (pci_device_reg): Failed prerequisite 'reg_format'
+> Documentation/devicetree/bindings/power/power-domain.example.dtb: Warning (pci_device_bus_num): Failed prerequisite 'reg_format'
+> Documentation/devicetree/bindings/power/power-domain.example.dtb: Warning (simple_bus_reg): Failed prerequisite 'reg_format'
+> Documentation/devicetree/bindings/power/power-domain.example.dtb: Warning (i2c_bus_reg): Failed prerequisite 'reg_format'
+> Documentation/devicetree/bindings/power/power-domain.example.dtb: Warning (spi_bus_reg): Failed prerequisite 'reg_format'
 
-> Signed-off-by: Roberto Ricci <io@r-ricci.it>
-> ---
->   tools/power/cpupower/man/cpupower-info.1 | 9 ++++++++-
->   1 file changed, 8 insertions(+), 1 deletion(-)
-> 
-> diff --git a/tools/power/cpupower/man/cpupower-info.1 b/tools/power/cpupower/man/cpupower-info.1
-> index 340bcd0be7de..a8d5aee4381c 100644
-> --- a/tools/power/cpupower/man/cpupower-info.1
-> +++ b/tools/power/cpupower/man/cpupower-info.1
-> @@ -3,7 +3,7 @@
->   cpupower\-info \- Shows processor power related kernel or hardware configurations
->   .SH SYNOPSIS
->   .ft B
-> -.B cpupower info [ \-b ]
-> +.B cpupower info [\fIoptions\fP]
->   
->   .SH DESCRIPTION
->   \fBcpupower info \fP shows kernel configurations or processor hardware
-> @@ -13,6 +13,13 @@ Some options are platform wide, some affect single cores. By default values
->   of core zero are displayed only. cpupower --cpu all cpuinfo will show the
->   settings of all cores, see cpupower(1) how to choose specific cores.
->   
-> +.SH "OPTIONS"
-> +.LP
-> +.TP
-> +\fB\-b\fR \fB\-\-perf-bias\fR
-> +Gets the current performance bias value.
-> +.TP
-> +
->   .SH "SEE ALSO"
->   Options are described in detail in:
->   
+Noted, and fix will be included in next rev.
 
-thanks,
--- Shuah
-
+Kevin
