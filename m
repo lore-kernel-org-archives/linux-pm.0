@@ -1,154 +1,149 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F4303C4544
-	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 10:36:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CDEAC3D2FE0
+	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 11:55:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773225390; cv=none; b=lxCyWCbfzhaK80GzUtf4rWZhukMeFmZbkwZVqujRxmA8EIAwlhWfa/32UZij1mpPwi6Rz2OXnZl7qXYk7X3YHC4YiKv2hW91XB7dAzbIHnaBK5JATogonMnUfEPQ0Ocw1OTTCaF8wOACLpYJ6yO/pS5MgTtWsX5YP/N+sHxmiQY=
+	t=1773230147; cv=none; b=h5wkB3ehVxzJpWoxUTjyfyhDqh8H6DemrF9zFcvEhr11MoLL+CeO2n2qLFhi4Am0TMdoRfv82A22WStx2jBj2vQ6TijohsUbyUE+bgBPwwLzskYc59IENje3jodMFECQBzMEeWJziNpZ87PUaSSWrafH2puBLwvCjxz5YXXbnlw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773225390; c=relaxed/simple;
-	bh=kxZo7ioQhvtoHjeZPVYY3GMaH9CaQ1h9s3DRTXP5qow=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=oFN7j8D9SsThLPGvVveZm2fBkhHWemybnQ++ezb13f0APyu6rbpIgEkgsKC6yOVOleWXY4lI3uHgLjyUz85lho+X9MA//pm5cHgj7xfBYivSw9B7H/dAkbJ8MSBkSoJj8Z2V/XMsOdAyxfQ+TAqiuqO9EIe/IZTV0h3QhdSoVKI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=H4h2wrrJ; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Baa7Zr8W; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1773230147; c=relaxed/simple;
+	bh=rFc7/PufrqVMIl7fpn46NnUuRbYojYuNgylZ4fkLAak=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=WT5Hc73Ak6Pz3kuI/HXCLUX+qWcjlSsNtNux+0QHqabuvjLfHArXk19sZopYFC15tAbb3Kpz27d9jjjgA5sjkXpMD3smgYRlZNlPeoRVvlw4heBoPrD9fYJuSRnmvNfLvhubAByIhkfW59ggyCDh1V0qay24BmLAVLN+gJTZyqk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hdLBAlqZ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="H4h2wrrJ";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Baa7Zr8W"
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62B9nmm53893470
-	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 10:36:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=HbZj9tv7s1K
-	+qsnLUWbHvi8x21FiaRRcwrvvVvQVwKE=; b=H4h2wrrJSgSGdDWebATTwGoBugs
-	Kpjh3zOo29TjEHhlxwhhslr7/QBVwCrCDxJuJ1kQVbf8VudB+u/wauVHodm06zcW
-	2u3VY8SA3UuXAZIcGp8vsnybLrApluh9QJJcesQtOVFynvhhWZjoU1EC9CkA7Zsp
-	JE0uDXvFu3L017iK0fqY1V0OLaOa9hcVnoyKzqsTDQhHQUXgdI8qNta2xMqftlUb
-	UjVzuVDrqv3tFZDVyfVqNkKAyqij6dHERcgta8MMLIZK5/RXJ158CmfjZbxx885Q
-	M0s38x8/nnfkws4H4WsnUwpOl6xUoFaFqBV109Qdn4EjULKcLDCSjc48sOQ==
-Received: from mail-pl1-f199.google.com (mail-pl1-f199.google.com [209.85.214.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ctkmyvbwq-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 10:36:27 +0000 (GMT)
-Received: by mail-pl1-f199.google.com with SMTP id d9443c01a7336-2ae47b3adacso100084785ad.3
-        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 03:36:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1773225387; x=1773830187; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=HbZj9tv7s1K+qsnLUWbHvi8x21FiaRRcwrvvVvQVwKE=;
-        b=Baa7Zr8WqQkpbcDatk2f0pMRMHT7AeslpYl5RTo0Iut5uHHIqk2a+YaQJJRUIKyowV
-         Y/Itsc9sB5YhPycJAEWCA4AIIUseuKoC4JK0+wTtSZqk4AVP/yetiAPXIbuDgjDILVg2
-         9XVVxdN8Y7NO21YqMEeA1ORZII5S6ViUDKuwkeA+sgmmaBGBxczeNuJpN769MN0urLCh
-         NOyCQVHq2iPvdIkOkAHgsWXn4qWeKtRv1J8FuRyerz6MjXybzI1e4xo3/ueXaJBnFBxI
-         vgsqNhHeInC2LvWcvwNd3MOjyczcc5e0J4Px+skMO3LlEN7m/GvkHYcM1jRnCrvjRXC4
-         KouA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773225387; x=1773830187;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=HbZj9tv7s1K+qsnLUWbHvi8x21FiaRRcwrvvVvQVwKE=;
-        b=HlRYkK8ermi8oJ4a3EBXEQ9b4R1GyaUZqaGCDuFQHhpGZ+kyPzkzqRhRJfyF9F/DYz
-         Bm5U4xdMSyw5MrWg9awaRLkuOKboI6hOAYAAETL87mt7Muj09rNNi8bCBuJb/89lkksM
-         uerx5PPVddgXDMR5vulmoK82V3au1xvKPAFIe9c+62e7euO0LjFS6jmKo2My4QI3Kfy9
-         iQK/Nhhf8bC/H1MDNqszU9I6Zcb0pmq2k2JJLljLf/1+cm7PCYK6zTmBw0B9vpaYSOYi
-         o3jkOHLFr9wwYg8nb3+F3SuLp17OJHS1TVubG/MsshWFuNVk/isDwIhjZMpECFoGnmH2
-         pomA==
-X-Forwarded-Encrypted: i=1; AJvYcCXV7iEgpTLJYvtn5qxHuz+VY4kMbJs0+rV7acO/jZ/ZHU6nlNCXacQ/rrxaYuNTWBvSV/dK+dQRUQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzSf5TD5Dm1FaSaKgw6vH/3qSY1qaWX6CYRQRb8ShezEk4zgyW0
-	Ufci2UofuJI+Fh+NoZexG0hKkxU6QVzPDFHalZhuID/dkwfRbHvPkXAu5gdqwYc75aK/+Tj6RBS
-	gZ4Ej3170Wf2+tpAskqk0Ej/Ss2WV6XLwvFb6EEdBVdi5w8YXYpM0xLaSNjIX1Q==
-X-Gm-Gg: ATEYQzy+N3aftXJ/QDjl6qjhIQMhU7wg52+N3ysMtvxXqh8UYNiX+V72ICVqrX71ZfS
-	g9wNigEovTgazhS3YukPpcLh5uWyff0Z0Pv/k3gR6dprmXgoz0qBr+qNzqpivqHacnUGAcXBf5s
-	kZ+7aoRWHj23cBwfcoajFwED6dAQoITFnNs9MKo0zv16/FTKU65WuekvUwnWnxZBr7iZ8qBalZt
-	itJpnR8fpct7jNkLulYxWPzLcW85ZbEo+9j3i4sbwo45j1AnpM5weSNuoG4By2YJpSjFiHBHpUi
-	dCXjETh7GZlxgZyKioJtKrlWbTpQVCfMsqs3kuycaK2rgXTdu6j2am1jBQ6NEjfovm65xrff6tv
-	9rAKfCddtdy8IuiZdctFULxvprV1Eudc4m+mphomb+Htu4bxdfgsJQJY=
-X-Received: by 2002:a17:903:1a4d:b0:2ae:48e9:8c89 with SMTP id d9443c01a7336-2aeae8d244amr21270945ad.48.1773225386552;
-        Wed, 11 Mar 2026 03:36:26 -0700 (PDT)
-X-Received: by 2002:a17:903:1a4d:b0:2ae:48e9:8c89 with SMTP id d9443c01a7336-2aeae8d244amr21270685ad.48.1773225386085;
-        Wed, 11 Mar 2026 03:36:26 -0700 (PDT)
-Received: from hu-okukatla-hyd.qualcomm.com ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2aeae378a28sm21042925ad.88.2026.03.11.03.36.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Mar 2026 03:36:25 -0700 (PDT)
-From: Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>
-To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>
-Cc: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>,
-        Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Mike Tipton <mike.tipton@oss.qualcomm.com>
-Subject: [PATCH v3 3/3] arm64: dts: qcom: talos: Add clocks for QoS configuration
-Date: Wed, 11 Mar 2026 16:05:48 +0530
-Message-ID: <20260311103548.1823044-4-odelu.kukatla@oss.qualcomm.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260311103548.1823044-1-odelu.kukatla@oss.qualcomm.com>
-References: <20260311103548.1823044-1-odelu.kukatla@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hdLBAlqZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 70437C4CEF7
+	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 11:55:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773230147;
+	bh=rFc7/PufrqVMIl7fpn46NnUuRbYojYuNgylZ4fkLAak=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=hdLBAlqZuM0s6+/gaG3i6VZhsSb6msx0hmK9POntt/bp+gZxWU3m2XfNi2kK3gpME
+	 kWN8qXQfQL9WtJXwVJeUP/b5qSMAGqpkDQtFkE9+H715eOq6NunfQXgqI1k1mG8z9b
+	 g1BEpepDv/X7ldV3r1xhYl5oIHJ0ADbPA8UhK18jKba70nMO2+mPK9Dp1ah6j1PzcI
+	 pqiC2Wfe6I1tydw4fdMxoP1ok0wx5DrR2T+ZRvVxKNO1OnRqOGsJQ8uY5YOAUT4OBa
+	 W5T0bhZCWVarF57g6pFeWu2MFn1uIPEHI0jPbnRbXcZvXx0hpE7lloL0sMx59LWK8q
+	 u8Evb0Re0+gfg==
+Received: by mail-oo1-f46.google.com with SMTP id 006d021491bc7-673ee2a98b1so8586752eaf.0
+        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 04:55:47 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCXcMHIXhNROu/rfUBXQFTwtZkKm3HF1VUDT/eg2uHrT25rWepk2dLKUkW/6JiLSsIZCJJoQR+zfyQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwTNqHS523g4nF0GjScAt9ovm2lXuyeDp04xWA6emNymNDGtLRG
+	Kl1/DVKRUp5Wd45qIKnlcaDw1q/hpIDtbnvMArPDwxvCvBsqTAd66dzfKf9FSEV91GPVVYUIyfL
+	Z6g56JgIqNVfy+BgkOhC61cv6ujEqP28=
+X-Received: by 2002:a05:6820:4b98:b0:67b:c122:d29d with SMTP id
+ 006d021491bc7-67bc8a25d3cmr1557251eaf.60.1773230146597; Wed, 11 Mar 2026
+ 04:55:46 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Authority-Analysis: v=2.4 cv=RYudyltv c=1 sm=1 tr=0 ts=69b145ab cx=c_pps
- a=JL+w9abYAAE89/QcEU+0QA==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22 a=EUspDBNiAAAA:8
- a=7s_9-EB0MOrke_GCL94A:9 a=324X-CrmTo6CU4MGRt3R:22
-X-Proofpoint-GUID: CQ-38covyQ3RfYIYaJVe1z3RiQPb0Un3
-X-Proofpoint-ORIG-GUID: CQ-38covyQ3RfYIYaJVe1z3RiQPb0Un3
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzExMDA4OCBTYWx0ZWRfX/YrXUyOzAvaL
- xiHCZKbBeJ9b7ejblNQ9DWDjz3ovlVPsYa1pKkkN2XfRHgA3R4yv04e1uVA3feeQYGv8u5dhT2w
- C5mH5kXGWvX7DEUusFeTAE45dXlACfMM6mHKM4Os+LxEFhdfi/X40CDnatdRlorjHVFODjYAk1w
- BayN2sZhHvZgtqVKsz1bw4BzZiRE3Q3bslIptCTwVf/x9Wb+FX0jtBZ0fukgVSPvVflbSQ+vdo3
- VclylV0k5N0klCBbwXpW8FpmHbwGMq+aQFbDtGvfo7ZRmPnZt5nobNxIn/sKkpktBNFHFPtOZRP
- LbOUCHbmpfCuRhDHClYfnVHgeWzHbKi8BUc7lmn/hZKRNEZolzh/ZrkUTQY9O2HyXh5H8LK4SLJ
- VtHUvgqBmPhPSUihWCPNpTaWyB8sq4SthTRq8XOxk4NGyewxWrVufwPA8Ie5SP1swjgujHkFw5Y
- 14dL57E+1Ko34gfhIdw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-11_01,2026-03-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 bulkscore=0 impostorscore=0 malwarescore=0 spamscore=0
- phishscore=0 lowpriorityscore=0 clxscore=1015 adultscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603110088
+References: <20260309083818.79588-1-dedekind1@gmail.com>
+In-Reply-To: <20260309083818.79588-1-dedekind1@gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 11 Mar 2026 12:55:33 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0i+T-GV=BcwWyBU5aTq1RiHVRqbx0F7SN5t7Bpj19_S7g@mail.gmail.com>
+X-Gm-Features: AaiRm52ZxzWZnfyNxI09e6z8THXjScj6tmBUL-W_arBlSSVNJ-GFCVJyC6Uv2FI
+Message-ID: <CAJZ5v0i+T-GV=BcwWyBU5aTq1RiHVRqbx0F7SN5t7Bpj19_S7g@mail.gmail.com>
+Subject: Re: [PATCH] intel_idle: Add Panther Lake C-states table
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM Mailing List <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Add clocks which need to be enabled for configuring QoS on
-talos SoC.
+On Mon, Mar 9, 2026 at 9:38=E2=80=AFAM Artem Bityutskiy <dedekind1@gmail.co=
+m> wrote:
+>
+> From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+>
+> Panther Lake supports the following requestable C-states: C1, C1E, C6S, C=
+10.
+> Add a custom table for them.
+>
+> Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+> ---
+>  drivers/idle/intel_idle.c | 42 +++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 42 insertions(+)
+>
+> Based on latency analysis using the 'wult' tool, and power break even
+> analysis using the 'pbe' tool.
+>
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index 167eb72105baf..36f5766381172 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -994,6 +994,43 @@ static struct cpuidle_state mtl_l_cstates[] __initda=
+ta =3D {
+>                 .enter =3D NULL }
+>  };
+>
+> +static struct cpuidle_state ptl_cstates[] __initdata =3D {
+> +       {
+> +               .name =3D "C1",
+> +               .desc =3D "MWAIT 0x00",
+> +               .flags =3D MWAIT2flg(0x00),
+> +               .exit_latency =3D 1,
+> +               .target_residency =3D 1,
+> +               .enter =3D &intel_idle,
+> +               .enter_s2idle =3D intel_idle_s2idle, },
+> +       {
+> +               .name =3D "C1E",
+> +               .desc =3D "MWAIT 0x01",
+> +               .flags =3D MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE,
+> +               .exit_latency =3D 10,
+> +               .target_residency =3D 10,
+> +               .enter =3D &intel_idle,
+> +               .enter_s2idle =3D intel_idle_s2idle, },
+> +       {
+> +               .name =3D "C6S",
+> +               .desc =3D "MWAIT 0x21",
+> +               .flags =3D MWAIT2flg(0x21) | CPUIDLE_FLAG_TLB_FLUSHED,
+> +               .exit_latency =3D 300,
+> +               .target_residency =3D 300,
+> +               .enter =3D &intel_idle,
+> +               .enter_s2idle =3D intel_idle_s2idle, },
+> +       {
+> +               .name =3D "C10",
+> +               .desc =3D "MWAIT 0x60",
+> +               .flags =3D MWAIT2flg(0x60) | CPUIDLE_FLAG_TLB_FLUSHED,
+> +               .exit_latency =3D 370,
+> +               .target_residency =3D 2500,
+> +               .enter =3D &intel_idle,
+> +               .enter_s2idle =3D intel_idle_s2idle, },
+> +       {
+> +               .enter =3D NULL }
+> +};
+> +
+>  static struct cpuidle_state gmt_cstates[] __initdata =3D {
+>         {
+>                 .name =3D "C1",
+> @@ -1623,6 +1660,10 @@ static const struct idle_cpu idle_cpu_mtl_l __init=
+const =3D {
+>         .state_table =3D mtl_l_cstates,
+>  };
+>
+> +static const struct idle_cpu idle_cpu_ptl __initconst =3D {
+> +       .state_table =3D ptl_cstates,
+> +};
+> +
+>  static const struct idle_cpu idle_cpu_gmt __initconst =3D {
+>         .state_table =3D gmt_cstates,
+>  };
+> @@ -1737,6 +1778,7 @@ static const struct x86_cpu_id intel_idle_ids[] __i=
+nitconst =3D {
+>         X86_MATCH_VFM(INTEL_ALDERLAKE,          &idle_cpu_adl),
+>         X86_MATCH_VFM(INTEL_ALDERLAKE_L,        &idle_cpu_adl_l),
+>         X86_MATCH_VFM(INTEL_METEORLAKE_L,       &idle_cpu_mtl_l),
+> +       X86_MATCH_VFM(INTEL_PANTHERLAKE_L,      &idle_cpu_ptl),
+>         X86_MATCH_VFM(INTEL_ATOM_GRACEMONT,     &idle_cpu_gmt),
+>         X86_MATCH_VFM(INTEL_SAPPHIRERAPIDS_X,   &idle_cpu_spr),
+>         X86_MATCH_VFM(INTEL_EMERALDRAPIDS_X,    &idle_cpu_spr),
+> --
 
-Signed-off-by: Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>
----
- arch/arm64/boot/dts/qcom/talos.dtsi | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/qcom/talos.dtsi b/arch/arm64/boot/dts/qcom/talos.dtsi
-index e0282a5f9a6a..73a7544d8283 100644
---- a/arch/arm64/boot/dts/qcom/talos.dtsi
-+++ b/arch/arm64/boot/dts/qcom/talos.dtsi
-@@ -1237,6 +1237,10 @@ aggre1_noc: interconnect@1700000 {
- 			compatible = "qcom,qcs615-aggre1-noc";
- 			#interconnect-cells = <2>;
- 			qcom,bcm-voters = <&apps_bcm_voter>;
-+			clocks = <&gcc GCC_AGGRE_UFS_PHY_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_USB2_SEC_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_USB3_PRIM_AXI_CLK>,
-+				 <&rpmhcc RPMH_IPA_CLK>;
- 		};
- 
- 		mmss_noc: interconnect@1740000 {
--- 
-2.43.0
-
+Applied as 7.1 material, but I've added some motivation explanation to
+the changelog, see:
+https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/patch/?=
+id=3Dd51de21b4c3a34a2cc592319df63864e14b18b29
