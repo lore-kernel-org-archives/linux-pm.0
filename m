@@ -1,210 +1,789 @@
-Received: from smtpbgeu2.qq.com (smtpbgeu2.qq.com [18.194.254.142])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F1DA3AEF57;
-	Wed, 11 Mar 2026 07:51:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=18.194.254.142
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773215509; cv=none; b=LdQJaFo9z/ZpTKKz55F9dIMSQH3vYCzH1nn4PDhMnbW4njMDC+CCcA0dc371vH/AeuNCNu8LGxKAB6hKuXAYxlWskxtZYuP9qm3N7J6K012blyTkrymMwP0WNV1cPrK3ZuPOJYz7V105QJwnUi5QzTs2woeVJENAl/1b26oiksw=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773215509; c=relaxed/simple;
-	bh=e36jCuwQ2QXfz9PniRclSf5MCBQDfIokoAxRq3nPoAM=;
-	h=Mime-Version:Content-Type:Date:Message-Id:From:To:Cc:Subject:
-	 References:In-Reply-To; b=aMsXIwSJSBqG2J8pbs4wQ6a2/a0Fj0Hnp2l3j27TNVl4bp9/5a29TERHb7xhB1UhGtR2Ej8pOWwwoMbTyE0JI2VPvKj1w6PUWhSeKVi0jwse4ghzJfqtlLfbrLYyw6LbZ9m6rPnotBeduxhCBZ1xOgK2hnyflCc9kXA/QtufL6I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux.spacemit.com; spf=none smtp.mailfrom=linux.spacemit.com; dkim=pass (1024-bit key) header.d=linux.spacemit.com header.i=@linux.spacemit.com header.b=g64JORYz; arc=none smtp.client-ip=18.194.254.142
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux.spacemit.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.spacemit.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 346193AC0D0;
+	Wed, 11 Mar 2026 08:08:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=192.198.163.15
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773216504; cv=fail; b=GDkAURWylt6hRFC+LZVjC+S862QuDsn8dCtwduME7haZ66g8c/MCdoCydIMaPdXIX8EyendxM4Nh9mBXbDOLhfx11QqGCv+8zeo1mjraP1pZq83d2YE0kC12F8G53hio3p/ct4rrckZr2l9G0mx3baJ3v7rq4Gmk1Q//CiAO8WI=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773216504; c=relaxed/simple;
+	bh=vsxJvRWqCZnR2e+n9D43m2PSUDv3c3JBgTXbvgEu5G4=;
+	h=Date:From:To:CC:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=YHWZViN4AIXgVEWYIWuDFO1O50TQD8l+KoqlKi+N/YtHrzIrEcbi7B6q7ViGEZwm4f9On9dWZtaQzgdhUjNVr7JcoI+Nnekc/B7ECK4mh5SGLi66xtyZh2dROOcDbm7I7sWztS6VCXINL9ct5G8J2nQhR7G7N9bMso4ls27jHo4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=DdTjIcCq; arc=fail smtp.client-ip=192.198.163.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.spacemit.com header.i=@linux.spacemit.com header.b="g64JORYz"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.spacemit.com;
-	s=mxsw2412; t=1773215493;
-	bh=qWgwB8j/M+E4gmyyhynMGAfBcceSPDvi0TFbAOKm01s=;
-	h=Mime-Version:Date:Message-Id:From:To:Subject;
-	b=g64JORYz11/jmKOrVM0VEKIWELWeDPJ9eUd4VhaMkiLj1NdCTrB7vX+jxsdoF9t8d
-	 VcnoWrqAfFfgaaoGaWFJ7vPucrlcU1G1JXihz6OF55XhhdJj5+XnDQB2c1vAuQSM5G
-	 gftJH+HVOfYjMr2z/1aFw91Jacudn3nnVcEyjEJE=
-X-QQ-mid: zesmtpsz9t1773215295tb12a1a0e
-X-QQ-Originating-IP: ldkFeB95AQ/Pqp2XqD3PI0/pyB/6365kIn1OTkLhfkU=
-Received: from = ( [120.237.158.181])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Wed, 11 Mar 2026 15:48:13 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 0
-X-BIZMAIL-ID: 5492583855199653968
-EX-QQ-RecipientCnt: 14
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="DdTjIcCq"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1773216495; x=1804752495;
+  h=date:from:to:cc:subject:message-id:references:
+   content-transfer-encoding:in-reply-to:mime-version;
+  bh=vsxJvRWqCZnR2e+n9D43m2PSUDv3c3JBgTXbvgEu5G4=;
+  b=DdTjIcCqK7MQTDssRANQRlDN4eaFK9ZwIAwXumhBZwcW/+qnwSAwrGya
+   N7bYzkm2PEWF0+aKRpXWuiPw6pSSVfEZA11B4+Ze+/z9xMZJIutXKXzwX
+   ypQ8r7aNRdv6b4wCzF7SNj6XZl5SYqCip5qmJMVNpcp8fjKQb4yT+bSJ/
+   BXB+kGRYjfGO8Kmc+QFo7j8a4njE9afrzcgaUPCkARpnNAlW8dZLv2W1f
+   3hPA3tHyWQNKot47Sg+qkg0Fxi/6OehSgU4j2CgrwYGom9O/kR8Ovbp+q
+   wDn0nBZjV7wURbXCeckiNhZ+jw5XmgLOlM6QUNJhj9IV+Y7kQL8pONXx/
+   A==;
+X-CSE-ConnectionGUID: h+q6fH/0Rwm3GZaglihQQQ==
+X-CSE-MsgGUID: ziq0av9XRbyVgi47aNYnFg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11725"; a="74396743"
+X-IronPort-AV: E=Sophos;i="6.23,113,1770624000"; 
+   d="scan'208";a="74396743"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Mar 2026 01:08:14 -0700
+X-CSE-ConnectionGUID: MAKz1ekNQfWwLViC7FOypw==
+X-CSE-MsgGUID: OYFTJLjTSKCyTjSMBNLpHQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,113,1770624000"; 
+   d="scan'208";a="243397312"
+Received: from fmsmsx902.amr.corp.intel.com ([10.18.126.91])
+  by fmviesa002.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Mar 2026 01:08:14 -0700
+Received: from FMSMSX902.amr.corp.intel.com (10.18.126.91) by
+ fmsmsx902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Wed, 11 Mar 2026 01:08:13 -0700
+Received: from fmsedg902.ED.cps.intel.com (10.1.192.144) by
+ FMSMSX902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37 via Frontend Transport; Wed, 11 Mar 2026 01:08:13 -0700
+Received: from PH0PR06CU001.outbound.protection.outlook.com (40.107.208.23) by
+ edgegateway.intel.com (192.55.55.82) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Wed, 11 Mar 2026 01:08:13 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=nWdS2jb+36mgv+YGWUfeHWpKcAfHuJFC7Ncd8IP6yPwIpOVVppEMGgMyJx3/pkCK+qpAMdsQBaowUDKJNt/P+gw+kC3vJsg3Tsivz2qHwADV2u4gts/w+WguDsXbT++9ejOsLMta0aaJQmJkymhFin5EFebGgFBK+6AjnX5PzLQqmKsmOl4LL2JEBhIAsNHIFQYGGGTjf8Q0xDTuZMXELAvw1c5tS3oD2JIrMD7qXcMsCZq+ITlOwy7R2lmkAdgYspA+lbNqtupPCWPRfx0PiN0guI2ZJBfA3p2C9o+xkNXHHXkF4ePMGOE7F0TVQetYOgp8+/NDOkIdonq+7+bVug==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=fbmh2rau2wXv+uBQsBkE58YKWvGCyTUxbZbbRB/WadA=;
+ b=b3kTwmhtuLBm1A91seVMlJYq6+l7AMvr6T1mfzcMt0xGOCPgIOp85KRmph7o8XyCl6FT5rVKXTvHWhlmioCeH5nGRdMQHUBI4hYyoYuGHsqty6cxT55wbCBG9hhlpJYoY4O0wE7DZ5q1bd8r/nJROcXMIyFEcpDQ5KxZEFKZpWgHON0BCSz3ZXnxx+NuHgkLLUZR5LV9HQ/P7oIcIWqavkX9ZbhguV8+9i/Q21TZtY3gjZ4LMxY4p6ZnQKfovGmU3lhpqalhfclrZZY4tcp3mV3YU+EsDqoUnm2aba/PLKNvT514TUOWVLcD2k7xoTAujtOAsOA5JdDaUdnuri3i1g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from PH0PR11MB5832.namprd11.prod.outlook.com (2603:10b6:510:141::7)
+ by SA0PR11MB4576.namprd11.prod.outlook.com (2603:10b6:806:97::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9700.11; Wed, 11 Mar
+ 2026 08:08:11 +0000
+Received: from PH0PR11MB5832.namprd11.prod.outlook.com
+ ([fe80::106e:78dd:4c96:d707]) by PH0PR11MB5832.namprd11.prod.outlook.com
+ ([fe80::106e:78dd:4c96:d707%3]) with mapi id 15.20.9700.010; Wed, 11 Mar 2026
+ 08:08:11 +0000
+Date: Wed, 11 Mar 2026 16:08:04 +0800
+From: Oliver Sang <oliver.sang@intel.com>
+To: Len Brown <lenb@kernel.org>
+CC: Len Brown <len.brown@intel.com>, <oe-lkp@lists.linux.dev>,
+	<lkp@intel.com>, <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+	<oliver.sang@intel.com>
+Subject: Re: [linus:master] [tools/power turbostat] 28a3ad1fd2:
+ lkvs.powermgr_cstate_tests.sh_-t_verify_server_perf_pkg_cstat_update.fail
+Message-ID: <abEi5IEsgV5cRKrm@xsang-OptiPlex-9020>
+References: <202602241622.7b8af145-lkp@intel.com>
+ <CAJvTdKmS1Nc6KUqrJvX_HX3+pi5zN3PedS4mJvvWgz-=oF+XjQ@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAJvTdKmS1Nc6KUqrJvX_HX3+pi5zN3PedS4mJvvWgz-=oF+XjQ@mail.gmail.com>
+X-ClientProxiedBy: TP0P295CA0012.TWNP295.PROD.OUTLOOK.COM
+ (2603:1096:910:2::16) To PH0PR11MB5832.namprd11.prod.outlook.com
+ (2603:10b6:510:141::7)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 11 Mar 2026 15:48:13 +0800
-Message-Id: <DGZSCZZTZXMI.15QP3KJ8LB61V@linux.spacemit.com>
-From: "Troy Mitchell" <troy.mitchell@linux.spacemit.com>
-To: "Yanko Kaneti" <yaneti@declera.com>, "Troy Mitchell"
- <troy.mitchell@linux.spacemit.com>, "Aurelien Jarno" <aurelien@aurel32.net>
-Cc: <linux-kernel@vger.kernel.org>, "Lee Jones" <lee@kernel.org>, "Sebastian
- Reichel" <sre@kernel.org>, "Yixun Lan" <dlan@gentoo.org>, "Paul Walmsley"
- <pjw@kernel.org>, "Palmer Dabbelt" <palmer@dabbelt.com>, "Albert Ou"
- <aou@eecs.berkeley.edu>, "Alexandre Ghiti" <alex@ghiti.fr>, "open
- list:RISC-V ARCHITECTURE:Keyword:riscv" <linux-riscv@lists.infradead.org>,
- "open list:RISC-V SPACEMIT SoC Support:Keyword:spacemit"
- <spacemit@lists.linux.dev>, "open list:SYSTEM RESET/SHUTDOWN DRIVERS"
- <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v5 2/2] mfd: simple-mfd-i2c: add a reboot cell for the
- SpacemiT P1 chip
-X-Mailer: aerc 0.21.0-0-g5549850facc2
-References: <20251102230352.914421-1-aurelien@aurel32.net>
- <20251102230352.914421-3-aurelien@aurel32.net>
- <b51a62513daa9d2390031ec350e0b33bdb7e54aa.camel@declera.com>
- <aaC78FTN31QYaVg0@aurel32.net>
- <990bc03ed2baa05e619f0aa9cc6a23acadd66ea6.camel@declera.com>
- <aaS6xeKFZz06fb1_@aurel32.net> <aaXuWwyA5NzBZzlW@aurel32.net>
- <36f8df695463e5ff3eaaffbac357fc73026f7373.camel@declera.com>
- <aadGw1fIlJyNNoum@aurel32.net>
- <DGZM6WUAVPPS.20Y0NIZYI4572@linux.spacemit.com>
- <4ab8430161252ec778fabf7e9b68acf3645ed4c7.camel@declera.com>
-In-Reply-To: <4ab8430161252ec778fabf7e9b68acf3645ed4c7.camel@declera.com>
-X-QQ-SENDSIZE: 520
-Feedback-ID: zesmtpsz:linux.spacemit.com:qybglogicsvrgz:qybglogicsvrgz3a-0
-X-QQ-XMAILINFO: MAX2iJCxWiMT4XKxma7qkE+1PbPsWs9IKHZP500BclgvkEiMQkDHXV9e
-	4WYaniypeZ+SNsALrZg56hqlWw1JWv5Sd+9WNYMZltNF1eKyK8BA0q2nbx+15kozYTUOKRc
-	V8TOez4mj5slWBA4H6FuAQWkgNqqCyMjateDnrhedJ6zhTcb6auJd9jPFSIVK+L+VVrsPng
-	wI8s/qqKiRqRES2kL4ob0sSEl+cPiVsRidW7bsLnv3abBWCMAlNNW5451Fqd/ES1mr838I/
-	k+Lv7SPPkzAJXaRvHMFWXLXRZqbnvcD6TIZwwYKq7Wad3MhJK2gSa/R2FQI3Bbp1seUWUU6
-	W9CrYJTt23mZJ/mpK/7/nnTGdz8M3U0o3DvGfNECLoMzAC5FEOOMjwx96F/TnK6tZ5h6oXQ
-	PCllTI6D/J8g+pOB+7jitoJhLKtozpnLoHyapCGQeE3WsZSVjdWSacXFr/4Eh+Rqw4MeozW
-	CTrNr49C6yc8jH2FXzo2xGc9JbqzTCZ8+T+GIKrGe3FjOllFwb5UgPnKgQa2MS2dQFQFIoX
-	iM5vVuNi5D1mi+pnLoEpzYjwThQa0GjO5aot2T0+Igtf/CtA5UEzkjZFBWL4g+eh21ACrKp
-	XrGSX33gIeqRyDak7PoCurxKmOIbAtD2yAD9IjsRixYodx1xoBmehVbjRzOwcbyIgKfP5Ii
-	+w3Xq7F2VItUAgHQ2qig4xaxkQEIQkB2bnU7CbHUX4noGXzBZG4ctMV3JeUtye93YCZ3Q7g
-	nfmAsZ4WIKtQnK7CICMu9WVc2TQarObtuPUOD0Dd4HxvOb0yZGe2qxV34I7+2/3kvGWmGIo
-	/UmXnOlCb5WbluaHwMKhIMRIKBC8EmEAG8+D5QJri7n8166gW8Z9iO28NqRm+QNeZiyLy9Z
-	LaQ27AnkzV+ZjSfOkE1GGlM/gQo8x9LyPQBJxKo1KC/yULLOA3YRfpYChcSUxUoJHQ/Gzs2
-	EcpsKqaEXBHyFwj+Bt7UD864tmJtcB8PWkxsXsqIEY6ApxckXLSkeb3sWUqpHGSaLnET8tj
-	UZHeKNB7IAX2Kvey1efh7vnDBTUP+txGM/wfcVGuapq1Y90l22ut0Yz+GWmuFUDw7ILbm09
-	XYWQGLYa201hKs4r4ajaR+t1teLEhEvALOkJ1DH84R0jJGPeV6V3Y1xGpAcSR411A==
-X-QQ-XMRINFO: OD9hHCdaPRBwH5bRRRw8tsiH4UAatJqXfg==
-X-QQ-RECHKSPAM: 0
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH0PR11MB5832:EE_|SA0PR11MB4576:EE_
+X-MS-Office365-Filtering-Correlation-Id: da19d129-e800-4212-3f28-08de7f455607
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|1800799024|366016|56012099003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info: R/TnquGBLipnbExw7sNvAQOU9ldfSAQxWiJtq9k/5+VezaDk6c1w9ielPvmd0NWFHyPpzjfb2nYwW8EV0/kDP98103ir4+tXLGldGLKlgQuaS4J9P9xqXoMm1HMixv9hIh3KpyNZ8M5a6AWLeZ/K1uNCpW4apy0HtnT7/Odh9iDAf9G9HmZtPQgZXv87biy5OlO+Xv7VHMpfuuAfnHyieWRmkJL97tlbqCWOZw0PH8rsXrPWS98rf5n7JLLVjMwFcQ3uKyYWpCOngfPKF4/tQRBqnNulc13u3qoW+B46wK3IEFAqW/YZsxOW9izq2f2NGzpVgPkdoL9Dsy7BhHdNRwqviwdEqTWCl0BbSgvCOKQwFQpKdQPrw7mb5C8K9lWH46Z62nLQZ7tXr32T43SjfBeqNvCyJjaPYHH4dUyUIatZi9QlIsz8Swpez/KsjUUvPNnUzRnIW4co+DJ36Zj9k0UjEE4T1n9vg4LaZU38eTDoPOdlg3hqSV+qbLOqs2MxOrfmNP7n0tXr8UmXe8rCxDEvfTA/aZlfTiYldd278uAY6HDHFEPPEaCgTttNq1OZ8RIRxMx70sf5ItZpaq9T3KgR53J56OuzdwJnVfT3yGGX3y48RQG3hcWq45YFiCtiWnJsTYdFOIJagIGmH1pCbbn1fzJ2agn7IVx3m/nRYKBfKFjAzf5fYgeeVF1+af3/
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR11MB5832.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(1800799024)(366016)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?VTZRLy9mNkFCZ2JtTEZEaHNEVk1vRlFNZlN1Qm9lOXVFTGxiYVRTbkJxTkt6?=
+ =?utf-8?B?SXV1TUdqeEl3Rm5SdUlvTkNoN2ZFYjAyT1ZTbjAwRjJibERLYkZmWU9NT3pJ?=
+ =?utf-8?B?THRJdnhmY3lOV0Z2RnRBOTFRNzJjUkFlcllZQ2d4NzVldnYybi9LS2o2a1RB?=
+ =?utf-8?B?T1RsdmFLdWkzVjViUGFOVXd4VWpXTjErUU5EbTNZTkxoSlNMUDlXZTNzVG5l?=
+ =?utf-8?B?SThpSjhDWDBjaDRqdmpmNmxweHdVY1ZUSFRkaTRsTkZrL1V3RmtzdytKd2h3?=
+ =?utf-8?B?U1Q5cTFZYTh5ZGRhclgvZHo2TU9pNW8zMEk0MU9xRG1Gc1pXd01vaWVSZmVM?=
+ =?utf-8?B?VG5jZTBCNnZiT1N4b0NveWd2dWh0emtidFIxby9aT1lFL25QQUZUZTIzR3dx?=
+ =?utf-8?B?N3VZZWp0dHhmczlWY0lsQzVKV3YxL2wwTUJ5blF5NW8wbWZEVHhSRDRSVU1K?=
+ =?utf-8?B?T3JmaG5ORGthczg5enkzampaeVRBanNyTkxWaWVJeG9RbWtNTDVENCtiZ09P?=
+ =?utf-8?B?RSt4cUpnZis4cDJCdmlhRlJldlVVQllialQwNnI2MzdNMzQwTVVDWVRiU1ZJ?=
+ =?utf-8?B?TjdDeG1oRXNTT1YvV0c2RkN2Vk1ZTWxrVHJTYXoyc3FCakxGTGkyZ3VuV0FV?=
+ =?utf-8?B?ZDRFbUxRNVdOaUtaQnpaZmxmb2pBb3drY1RjekJScG9vU2RZeG40NC9PeFkx?=
+ =?utf-8?B?eHZEMml5T3o3bDBzVjJoRkx6V0Urd1ZHYjNnL2xrUTdCTjhBdXVkMlNxMWZ0?=
+ =?utf-8?B?aW9NdkxRM091VkUycnR2OG5DcDFtR0loanI5MTU4OG9GQXJXd1UzZTRscnZ6?=
+ =?utf-8?B?TFYxWStoeitVdmFHRlY3L240M3Z3MVpVWng4T25rMDhRZmFKMndjVVZEM3ZY?=
+ =?utf-8?B?cEVJWDYvVnNCV096dzFZQVNGV0J5cTJiSitWZUFWQllTRUNHMDduMmtUcVM2?=
+ =?utf-8?B?aWtFaC9KanNldDJJaHpVTmlQczFydktIZnFsanVRdTJFRUsxRlJnM2VkYVdy?=
+ =?utf-8?B?ck1LZ2lLQ2h0RWgwVGlmZnI4aUN0WDFtN1FycTNUUzhZbWlGRWdtZWNOU0RC?=
+ =?utf-8?B?VkxRT2E2YlVBVWZGbE5FZFR2NStWVms4eC84NmFPOUtOcmVBWHZueWFoMmZy?=
+ =?utf-8?B?VDMwMFJkZGZFWXhvUUlBRE90VEt5YTFOSmZYNW16K1FyYVFhUnp6bWJ0eThk?=
+ =?utf-8?B?a2NGT3pkVTJ4c003MGtveWJxd0xnVXllUEhFZU9Sci9JWFRGdk1NaUh0N0xT?=
+ =?utf-8?B?RU4wdWF3OUtGVVZQMmtOM3ZrQWFxdEd5bHE1ek45RkNaK0ZrczlMNEtLbVZH?=
+ =?utf-8?B?MVNENURsdDRIQkN3MDFnVWsrQ0dUU3Z3dUViZ0xsS1hFWFk0UHEyTDRFZzVn?=
+ =?utf-8?B?N2Jmb0lmZmdUT0J2eU5ZeUJYcEljcmNPaFN6WXNOVHBZWXJPek0rQXRQbnB3?=
+ =?utf-8?B?WE5YbTM4cHUvVXVLWDhlSFFFczB0Q0pwdlNRNDB6eDRKTm1OYnhnKzVsdld4?=
+ =?utf-8?B?YXJPVm16QUF6SGwyTXdKM091eDJqU05aSm83NEZ1YVVJMDJaYjRnSVNPVHZt?=
+ =?utf-8?B?NWVCY3RYLzZJMmZiM1EyL0JRN3BHL1NUa2Z0Y3J4TGJlYllQWFRUSS9qVnFQ?=
+ =?utf-8?B?bCtLQlkrMEcyMVY2MmZpSVhLdGZxMytUUVovbmZaTFZ5MG5kN2h3S3AzcnRx?=
+ =?utf-8?B?RDBqbHhXYTI3Y0dPQWViTUJoejZGejMwNXpDaGtvN3E1MmNHaFZzK0FSR3dP?=
+ =?utf-8?B?eURzOVd3SkVvUVl0UVNib2dPWWs5bjJmVmRXM0pTWWRUSW9tdFRNK08ybDBW?=
+ =?utf-8?B?MHIyTkNSSnlnMktmSTBNVVpycFNoRENvRDZIeFFjcXZCQmg4cnZqTnRxbTUx?=
+ =?utf-8?B?TEl2aFBEdVNoWkY2cHV6WHVjRmx5cmdnQlVIand1YXJyQlFxYnpTdmRiZmZR?=
+ =?utf-8?B?Nm1UNlZhS1BkcDFJTmN4Z3FNY0F4bEF2dlFkbFBSS1NDVGNRbUhjNmVpb05X?=
+ =?utf-8?B?VkR1MFdsclpTdWdxSWloL255UitUbmtqcTgyajVRVFBncHVncTg2ZzYyTlhU?=
+ =?utf-8?B?UkVWNGg3NXNxcURYU1NFdURpTDU0UzZNSWVaSTRUN2J6Q2JCMDRTYlAzcFVr?=
+ =?utf-8?B?bWVscmxGK2Z2QnIrQUUzZGUrOGlLVU9TMDkwckhPRHBPWHpkVEZ3NkdERVJQ?=
+ =?utf-8?B?VXJVWk9XVFd2ZXJ6Ym9aVU1CUzU1aVduVWVrNFBkbGdDVEc4SFRlNE9BbkJF?=
+ =?utf-8?B?UkdkaGlvenU0WUcxM1VETVRVKzd3YWtBRzc5TUlrNEhDN0dHbm84eVFRZUZT?=
+ =?utf-8?B?anF0TldrK3FBR2RLZXVxZmxjQmg5ZjAya3ZGVmJ1TUQvUzlKKzE0QT09?=
+X-Exchange-RoutingPolicyChecked: YsQlEChqiEPpzzNYehw6hITk2BSMWa5T30rpFm8YC7TwUFu4uZ1Z7StNif6iGw3GqesubzSXoGuY68l41/0lqjIoIkOqaYvxNfimMFSsHCZ283leV3UPM9uD0HBoKOOekT0P0CMhu/FKmw9aq3VQBeXS59cVLiazHunG9AXDncAPHJb95Ew1frWGobRTkMoHGh2d0+xrUgDkPT65SqeK6aZgvV9VqjGSk0Rj39u6N22fxR28Omqb9YAzTexzayjnWCTjbYME0qk+b6xJMynFFf6njWu69z97H4NmnYNnDP7k4krb0K4BxWY+xYUPogUqP2nFA72VcoV/4+QxrUNqxg==
+X-MS-Exchange-CrossTenant-Network-Message-Id: da19d129-e800-4212-3f28-08de7f455607
+X-MS-Exchange-CrossTenant-AuthSource: PH0PR11MB5832.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Mar 2026 08:08:11.0489
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: Ar8jhvQkChHh0EtbM3sPgqr6TWl6tHbW3tqelpDdXRSYxngSo7SyVtIR1Qb+F1jtsQlI5YQFP30dIN3Rxiqp6g==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA0PR11MB4576
+X-OriginatorOrg: intel.com
 
-On Wed Mar 11, 2026 at 3:08 PM CST, Yanko Kaneti wrote:
-> On Wed, 2026-03-11 at 10:58 +0800, Troy Mitchell wrote:
->> On Wed Mar 4, 2026 at 4:38 AM CST, Aurelien Jarno wrote:
->>  Hi, Aurelien and Yanko,
->> > Hi,
->> >=20
->> > On 2026-03-02 22:34, Yanko Kaneti wrote:
->> > > Hello,
->> > >=20
->> > > On Mon, 2026-03-02 at 21:08 +0100, Aurelien Jarno wrote:
->> > > > On 2026-03-01 23:16, Aurelien Jarno wrote:
->> > > > > On 2026-02-27 13:29, Yanko Kaneti wrote:
->> > > > > > On Thu, 2026-02-26 at 22:32 +0100, Aurelien Jarno wrote:
->> > > > > > > Hi,
->> > > > > > >=20
->> > > > > > > On 2026-02-26 16:32, Yanko Kaneti wrote:
->> > > > > > > > Hello,
->> > > > > > > >=20
->> > > > > > > > On Mon, 2025-11-03 at 00:02 +0100, Aurelien Jarno wrote:
->> > > > > > > > > Add a "spacemit-p1-reboot" cell for the SpacemiT P1 chip=
-.
->> > > > > > > > >=20
->> > > > > > > > > Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
->> > > > > > > > > ---
->> > > > > > > > > v5: no changes
->> > > > > > > > >=20
->> > > > > > > > >  drivers/mfd/simple-mfd-i2c.c | 1 +
->> > > > > > > > >  1 file changed, 1 insertion(+)
->> > > > > > > > >=20
->> > > > > > > > > diff --git a/drivers/mfd/simple-mfd-i2c.c b/drivers/mfd/=
-simple-mfd-i2c.c
->> > > > > > > > > index 0a607a1e3ca1d..542d378cdcd1f 100644
->> > > > > > > > > --- a/drivers/mfd/simple-mfd-i2c.c
->> > > > > > > > > +++ b/drivers/mfd/simple-mfd-i2c.c
->> > > > > > > > > @@ -99,6 +99,7 @@ static const struct regmap_config spac=
-emit_p1_regmap_config =3D {
->> > > > > > > > >  };
->> > > > > > > > > =20
->> > > > > > > > >  static const struct mfd_cell spacemit_p1_cells[] =3D {
->> > > > > > > > > +	{ .name =3D "spacemit-p1-reboot", },
->> > > > > > > > >  	{ .name =3D "spacemit-p1-regulator", },
->> > > > > > > > >  	{ .name =3D "spacemit-p1-rtc", },
->> > > > > > > > >  };
->> > > > > > > >=20
->> > > > > > > > Perhaps its safe to merge this one now that everything P1 =
-and I2C is
->> > > > > > > > already in linus tip ?
->> > > > > > >=20
->> > > > > > > Unfortunately, this patchset is still missing:
->> > > > > > > https://lore.kernel.org/all/20260207-b4-k3-i2c-pio-v7-0-6269=
-42d94d91@linux.spacemit.com/
->> > > > > > >=20
->> > > > > > > This means the reboots work most of the time, but are not 10=
-0% reliable,=20
->> > > > > > > and that's the reason why this patch got blocked from mergin=
-g.
->> > > > > >=20
->> > > > > > I see. Thanks. Sounds to me like sometimes working compared to=
- never
->> > > > > > working is better , but anyway..
->> > > > >=20
->> > > > > I agree with that, but the decision was to hold on this patch un=
-til the=20
->> > > > > I2C PIO part got merged.
->> > > > >=20
->> > > > > > FWIW  with this patch and the pio patcheset I get this rcu spl=
-at on
->> > > > > > reboot (which is still working). Similar splat is there withou=
-t the pio
->> > > > > > patcheset.
->> > > > >=20
->> > > > > I haven't been able to reproduce the issue here after 10+ reboot=
-s on a=20
->> > > > > BPI-F3 board, but I tried the patch on top of 6.19. I'll try to =
-build a=20
->> > > > > 7.0.0-rc2 kernel and report back.
->> > > >=20
->> > > > I have tried that, and I am still unable to reproduce the issue wi=
-th a=20
->> > > > 7.0.0-rc2 kernel and a BPI-F3 board.
->> > >=20
->> > > I can still see it on every reboot (with the patches that allow rebo=
-ot
->> > > to work). Do you have CONFIG_PREEMPT_RCU in your config ? its defaul=
-t on
->> > > when anything PREEMPT is selected. In Fedora its CONFIG_PREEMPT_DYNA=
-MIC
->> > > that flips it.
->> >=20
->> > Thanks for the hint, that option was not activated here, it's not the=
-=20
->> > riscv64 defconfig. With it I am also able to reproduce the issue. I'll=
-=20
->> > try to debug that and report back.
->> I have sent a patch to address this issue here[1].
->>=20
->> Could you please test it on your hardware when you have a chance?
->>=20
->>                         - Troy
->>=20
->> Link:
->> https://lore.kernel.org/all/20260311-v7-0-rc1-rv-dis-int-before-restart-=
-v1-1-bc46b4351cac@linux.dev/ [1]
->
-> Thanks Troy.=C2=A0Seem to fix the issue here.
-> No splat and reboot still works OK on the R2S
-Thank you and Aurelien for the test.
+hi, Len,
 
-To be honest, I'm still not entirely sure if this is the right fix.
-I=E2=80=99m curious why RISC-V doesn't disable interrupts during this task,
-as ARM and PowerPC do.
+sorry that we cannot do further investigation about this.
 
-I've sent this out with an RFC prefix and am looking forward to getting
-some feedback from the community.
+we just integrated lkvs test from https://github.com/intel/lkvs.git and do some
+basic enabling. we run/bisect this 'cstate-server' until we found it seems the
+case fail on 28a3ad1fd2 but pass on parent consistently.
 
-                                            - Troy
->
-> - Yanko
+but, unfortunately, we are not familiar with the detail logic.
 
+we will try to ping author to consult.
+
+(BTW, regarding current situation, we will hold lkvs power-related report for
+now.)
+
+
+On Tue, Mar 10, 2026 at 03:41:16PM -0400, Len Brown wrote:
+> Thank you for testing and reporting, Oliver!
+> 
+> This result is unexpected.
+> perf stat ran for 20-seconds, which is a reasonable duration to seek
+> deep C-states.
+> However, turbostat ran for only just over a second???
+> During that interval, turbostat reported that cpu0 is 25% busy (which
+> would prevent deep package C-states).
+> What is running?
+> 
+> Thanks
+> -Len
+> 
+> On Thu, Feb 26, 2026 at 2:12 AM kernel test robot <oliver.sang@intel.com> wrote:
+> >
+> >
+> >
+> > Hello,
+> >
+> > kernel test robot noticed "lkvs.powermgr_cstate_tests.sh_-t_verify_server_perf_pkg_cstat_update.fail" on:
+> >
+> > commit: 28a3ad1fd2abdf45357ffd46614a6129cd395ca3 ("tools/power turbostat: Add LLC stats")
+> > https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git master
+> >
+> > [test failed on linus/master      d79526b89571ae447c1a5cfd3d627efa07098348]
+> > [test failed on linux-next/master d4906ae14a5f136ceb671bb14cedbf13fa560da6]
+> >
+> > in testcase: lkvs
+> > version: lkvs-x86_64-6bdeccd-1_20260126
+> > with following parameters:
+> >
+> >         test: cstate-server
+> >
+> >
+> > config: x86_64-rhel-9.4-func
+> > compiler: gcc-14
+> > test machine: 512 threads 4 sockets Intel(R) Xeon(R) 6768P  CPU @ 2.4GHz (Granite Rapids) with 128G memory
+> >
+> > (please refer to attached dmesg/kmsg for entire log/backtrace)
+> >
+> >
+> >
+> > If you fix the issue in a separate patch/commit (i.e. not just a new version of
+> > the same patch/commit), kindly add following tags
+> > | Reported-by: kernel test robot <oliver.sang@intel.com>
+> > | Closes: https://lore.kernel.org/oe-lkp/202602241622.7b8af145-lkp@intel.com
+> >
+> >
+> > The kernel config and materials to reproduce are available at:
+> > https://download.01.org/0day-ci/archive/20260224/202602241622.7b8af145-lkp@intel.com
+> >
+> >
+> > <<<test start - 'powermgr_cstate_tests.sh -t verify_server_perf_pkg_cstat_update'>>
+> > 1.247632 sec
+> > Package Die     L3      Core    CPU     Avg_MHz Busy%   Bzy_MHz TSC_MHz IPC     IRQ     NMI     SMI     LLCkRPS LLC%hit POLL%           C1%             C1E%            C6%             C6P%            CPU%c1  CPU%c6  CoreTmp CoreThr PkgTmp  Pkg%pc2 Pkg%pc6 PkgWatt RAMWatt PKG_%   RAM_%   UMHz0.0 UMHz1.0 UMHz3.0 UMHz4.0 SysWatt
+> > -       -       -       -       -       17      0.43    3849    2426    0.45    19806   1       0       63846   95.91   0.00    0.00    0.09    2.23    98.31   0.14    99.07   52      0       57      33.05   0.00    253.54  6.97    0.00    0.00    1225    1225    800     800     359.08
+> > 0       0       0       0       0       979     25.15   3891    2400    0.38    588     0       0       13474   95.42   0.00    0.00    1.44    10.87   62.69   1.52    72.67   41      0       45      34.01   0.00    63.27   1.97    0.00    0.00    1300    1300    800     800
+> > 0       0       0       0       256     4       0.11    3738    2400    0.44    34      0       0       52      94.07   0.00    0.00    0.02    2.31    97.57   1.52
+> > 0       0       0       1       1       342     8.79    3891    2400    0.40    177     0       0       5067    95.64   0.00    0.00    0.21    2.39    88.65   0.20    90.78   39      0
+> > 0       0       0       1       257     4       0.10    3723    2400    0.53    32      0       0       77      97.17   0.00    0.00    0.02    2.15    97.75   0.20
+> > 0       0       0       2       2       18      0.47    3846    2400    0.41    37      0       0       230     94.07   0.00    0.00    0.11    2.02    97.42   0.10    99.36   40      0
+> > 0       0       0       2       258     3       0.09    3713    2400    0.56    31      0       0       77      97.14   0.00    0.00    0.03    2.07    97.81   0.10
+> > 0       0       0       3       3       31      0.82    3803    2400    0.51    39      0       0       327     92.97   0.00    0.00    1.34    0.16    97.69   1.32    97.83   40      0
+> > 0       0       0       3       259     2       0.06    3399    2400    0.81    31      0       0       18      94.68   0.00    0.00    0.00    2.09    97.86   1.32
+> > 0       0       0       4       4       4       0.11    3738    2400    0.50    32      0       0       64      97.49   0.00    0.00    0.01    2.00    97.89   0.01    99.84   38      0
+> > 0       0       0       4       260     3       0.09    3730    2400    0.56    30      0       0       49      98.39   0.00    0.00    0.00    2.00    97.92   0.01
+> > 0       0       0       5       5       4       0.10    3681    2400    0.50    32      0       0       64      98.18   0.00    0.00    0.04    2.00    97.87   0.03    99.81   38      0
+> > 0       0       0       5       261     3       0.08    3665    2400    0.55    29      0       0       44      98.23   0.00    0.00    0.02    1.93    97.98   0.03
+> > 0       0       0       6       6       4       0.10    3675    2400    0.53    31      0       0       59      98.65   0.00    0.00    0.00    1.91    98.00   0.05    99.79   38      0
+> > 0       0       0       6       262     3       0.09    3684    2400    0.60    29      0       0       52      98.39   0.00    0.00    0.05    1.92    97.96   0.05
+> > 0       0       0       7       7       4       0.11    3723    2400    0.55    30      0       0       68      98.39   0.00    0.00    0.01    1.84    98.05   0.01    99.84   40      0
+> > 0       0       0       7       263     3       0.08    3697    2400    0.57    28      0       0       43      97.71   0.00    0.00    0.00    1.84    98.09   0.01
+> > 0       0       0       8       8       4       0.10    3682    2400    0.55    31      0       0       61      98.47   0.00    0.00    0.03    1.85    98.04   0.01    99.84   38      0
+> > 0       0       0       8       264     3       0.08    3686    2400    0.64    28      0       0       47      98.22   0.00    0.00    0.01    1.85    98.07   0.01
+> > 0       0       0       9       9       4       0.10    3703    2400    0.57    30      0       0       66      98.35   0.00    0.00    0.05    1.78    98.09   0.04    99.81   40      0
+> > 0       0       0       9       265     3       0.07    3675    2400    0.62    26      0       0       42      98.15   0.00    0.00    0.04    1.70    98.20   0.04
+> > 0       0       0       10      10      3       0.09    3687    2400    0.58    28      0       0       56      98.30   0.00    0.00    0.00    1.70    98.23   0.14    98.93   38      0
+> > 0       0       0       10      266     31      0.82    3850    2400    0.45    29      0       0       673     96.14   0.00    0.00    0.14    1.59    97.48   0.14
+> > 0       0       0       11      11      3       0.09    3693    2400    0.58    27      0       0       55      98.16   0.00    0.00    0.02    1.62    98.28   0.13    99.47   39      0
+> > 0       0       0       11      267     10      0.27    3733    2400    0.30    120     0       0       248     99.25   0.00    0.00    0.06    8.62    91.11   0.13
+> > 0       0       0       12      12      3       0.08    3694    2400    0.60    26      0       0       53      97.80   0.00    0.00    0.03    1.55    98.35   0.03    99.85   39      0
+> > 0       0       0       12      268     2       0.07    3684    2400    0.64    24      0       0       38      98.11   0.00    0.00    0.02    1.55    98.38   0.03
+> > 0       0       0       13      13      4       0.11    3702    2400    0.48    40      0       0       87      98.79   0.00    0.00    0.00    2.60    97.30   0.05    99.79   40      0
+> > 0       0       0       13      269     2       0.06    3686    2400    0.68    23      0       0       38      98.19   0.00    0.00    0.04    1.47    98.43   0.05
+> > 0       0       0       14      14      5       0.13    3718    2400    0.46    40      0       0       85      97.06   0.00    0.00    0.00    2.54    97.35   0.05    99.76   38      0
+> > 0       0       0       14      270     3       0.08    3721    2400    0.65    22      0       0       44      97.00   0.00    0.00    0.04    1.38    98.51   0.05
+> > 0       0       0       15      15      3       0.09    3733    2400    0.62    25      0       0       60      98.72   0.00    0.00    0.01    1.46    98.45   0.01    99.86   39      0
+> > 0       0       0       15      271     2       0.06    3705    2400    0.63    22      0       0       33      97.41   0.00    0.00    0.00    1.39    98.56   0.01
+> > 0       0       0       16      16      3       0.09    3725    2400    0.59    24      0       0       53      98.25   0.00    0.00    0.02    1.39    98.52   0.01    99.86   37      0
+> > 0       0       0       16      272     2       0.07    3721    2400    0.67    21      0       0       37      97.47   0.00    0.00    0.00    1.31    98.63   0.01
+> > 0       0       0       17      17      3       0.08    3699    2400    0.61    22      0       0       53      98.65   0.00    0.00    0.04    1.24    98.65   0.01    99.85   39      0
+> > 0       0       0       17      273     3       0.08    3738    2400    0.52    20      0       0       36      93.56   0.00    0.00    0.00    1.24    98.69   0.01
+> > 0       0       0       18      18      4       0.10    3677    2400    0.50    37      0       0       77      98.70   0.00    0.00    0.04    2.23    97.63   0.03    99.82   39      0
+> > 0       0       0       18      274     2       0.06    3704    2400    0.68    19      0       0       33      97.22   0.00    0.00    0.02    1.16    98.76   0.03
+> > 0       0       0       19      19      5       0.12    3708    2400    0.48    35      0       0       88      98.65   0.00    0.00    0.00    2.21    97.68   0.05    99.78   39      0
+> > 0       0       0       19      275     2       0.06    3668    2400    0.69    18      0       0       35      97.34   0.00    0.00    0.04    1.08    98.82   0.05
+> > 0       0       0       20      20      3       0.09    3733    2400    0.58    21      0       0       49      98.06   0.00    0.00    0.00    1.15    98.77   0.02    99.83   40      0
+> > 0       0       0       20      276     3       0.09    3698    2400    0.51    32      0       0       61      98.49   0.00    0.00    0.00    2.14    97.78   0.02
+> > 0       0       0       21      21      3       0.08    3737    2400    0.65    20      0       0       47      98.44   0.00    0.00    0.01    1.08    98.84   0.01    99.88   39      0
+> > 0       0       0       21      277     2       0.06    3722    2400    0.70    18      0       0       35      97.95   0.00    0.00    0.00    1.08    98.86   0.01
+> > 0       0       0       22      22      7       0.18    3747    2400    0.36    59      0       0       148     98.66   0.00    0.00    0.02    3.59    96.23   0.05    99.71   39      0
+> > 0       0       0       22      278     2       0.06    3703    2400    0.71    16      0       0       30      97.55   0.00    0.00    0.01    0.93    99.00   0.05
+> > 0       0       0       23      23      4       0.10    3699    2400    0.51    33      0       0       64      98.51   0.00    0.00    0.05    2.00    97.85   0.04    99.80   39      0
+> > 0       0       0       23      279     3       0.09    3714    2400    0.60    30      0       0       52      98.12   0.00    0.00    0.04    2.00    97.89   0.04
+> > 0       0       0       24      24      6       0.16    3753    2400    0.49    49      0       0       120     98.72   0.00    0.00    0.00    3.11    96.75   0.07    99.70   39      0
+> > 0       0       0       24      280     3       0.08    3705    2400    0.53    29      0       0       46      97.28   0.00    0.00    0.05    1.85    98.03   0.07
+> > 0       0       0       25      25      4       0.11    3740    2400    0.50    29      0       0       66      97.98   0.00    0.00    0.00    1.93    97.98   0.05    99.78   40      0
+> > 0       0       0       25      281     4       0.10    3738    2400    0.48    28      0       0       48      94.29   0.00    0.00    0.04    1.77    98.09   0.05
+> > 0       0       0       26      26      4       0.10    3735    2400    0.60    29      0       0       66      98.43   0.00    0.00    0.01    1.77    98.14   0.02    99.84   37      0
+> > 0       0       0       26      282     3       0.07    3709    2400    0.61    27      0       0       41      98.00   0.00    0.00    0.00    1.76    98.17   0.02
+> > 0       0       0       27      27      4       0.09    3737    2400    0.54    29      0       0       61      98.19   0.00    0.00    0.01    1.77    98.13   0.00    99.86   38      0
+> > 0       0       0       27      283     3       0.07    3736    2400    0.59    27      0       0       42      98.33   0.00    0.00    0.00    1.77    98.17   0.00
+> > 0       0       0       28      28      3       0.09    3680    2400    0.57    28      0       0       60      98.32   0.00    0.00    0.03    1.70    98.19   0.02    99.84   39      0
+> > 0       0       0       28      284     3       0.07    3728    2400    0.67    25      0       0       46      98.48   0.00    0.00    0.02    1.61    98.30   0.02
+> > 0       0       0       29      29      4       0.10    3679    2400    0.54    27      0       0       55      97.76   0.00    0.00    0.05    1.54    98.33   0.04    99.82   40      0
+> > 0       0       0       29      285     3       0.08    3711    2400    0.60    25      0       0       44      98.30   0.00    0.00    0.04    1.62    98.28   0.04
+> > 0       0       0       30      30      3       0.09    3730    2400    0.56    26      0       0       52      98.07   0.00    0.00    0.00    1.54    98.38   0.06    99.80   39      0
+> > 0       0       0       30      286     3       0.08    3672    2400    0.60    26      0       0       43      97.89   0.00    0.00    0.05    1.62    98.26   0.06
+> > 0       0       0       31      31      3       0.08    3746    2400    0.59    26      0       0       53      98.41   0.00    0.00    0.01    1.54    98.37   0.01    99.86   39      0
+> > 0       0       0       31      287     3       0.07    3745    2400    0.58    24      0       0       39      97.08   0.00    0.00    0.00    1.53    98.40   0.01
+> > 0       0       0       64      32      5       0.13    3724    2400    0.46    40      0       0       77      98.52   0.00    0.00    0.03    2.61    97.24   0.05    99.73   38      0
+> > 0       0       0       64      288     6       0.15    3782    2400    0.36    38      0       0       60      92.38   0.00    0.00    0.04    2.55    97.28   0.05
+> > 0       0       0       65      33      5       0.12    3731    2400    0.51    39      0       0       79      98.52   0.00    0.00    0.00    2.54    97.35   0.07    99.76   37      0
+> > 0       0       0       65      289     4       0.10    3714    2400    0.48    37      0       0       52      98.24   0.00    0.00    0.06    2.47    97.39   0.07
+> > 0       0       0       66      34      4       0.11    3720    2400    0.51    39      0       0       72      98.71   0.00    0.00    0.01    2.54    97.35   0.01    99.83   38      0
+> > 0       0       0       66      290     3       0.09    3717    2400    0.52    38      0       0       53      98.45   0.00    0.00    0.00    2.55    97.38   0.01
+> > 0       0       0       67      35      5       0.14    3754    2400    0.45    37      0       0       75      95.41   0.00    0.00    0.02    2.40    97.47   0.00    99.81   36      0
+> > 0       0       0       67      291     3       0.09    3709    2400    0.52    35      0       0       51      98.59   0.00    0.00    0.00    2.40    97.53   0.00
+> > 0       0       0       68      36      4       0.11    3702    2400    0.47    36      0       0       65      98.50   0.00    0.00    0.03    2.32    97.55   0.02    99.82   38      0
+> > 0       0       0       68      292     3       0.09    3701    2400    0.51    34      0       0       51      98.11   0.00    0.00    0.02    2.32    97.59   0.02
+> > 0       0       0       69      37      4       0.11    3703    2400    0.49    36      0       0       69      98.97   0.00    0.00    0.05    2.24    97.61   0.05    99.79   37      0
+> > 0       0       0       69      293     3       0.09    3694    2400    0.52    36      0       0       53      98.48   0.00    0.00    0.04    2.24    97.65   0.05
+> > 0       0       0       70      38      4       0.12    3720    2400    0.45    36      0       0       69      98.53   0.00    0.00    0.00    2.31    97.59   0.07    99.77   36      0
+> > 0       0       0       70      294     3       0.09    3728    2400    0.51    34      0       0       51      97.10   0.00    0.00    0.05    2.24    97.63   0.07
+> > 0       0       0       71      39      4       0.11    3718    2400    0.49    34      0       0       67      98.34   0.00    0.00    0.01    2.17    97.73   0.01    99.83   37      0
+> > 0       0       0       71      295     3       0.09    3723    2400    0.50    32      0       0       49      97.61   0.00    0.00    0.00    2.16    97.76   0.01
+> > 0       0       0       72      40      4       0.10    3703    2400    0.52    33      0       0       62      98.59   0.00    0.00    0.04    2.09    97.79   0.02    99.82   36      0
+> > 0       0       0       72      296     3       0.09    3698    2400    0.53    31      0       0       47      97.93   0.00    0.00    0.02    2.09    97.82   0.02
+> > 0       0       0       73      41      5       0.14    3704    2400    0.38    47      0       0       90      97.10   0.00    0.00    0.05    3.08    96.75   0.03    99.76   37      0
+> > 0       0       0       73      297     3       0.09    3712    2400    0.57    31      0       0       55      98.10   0.00    0.00    0.02    2.08    97.82   0.03
+> > 0       0       0       74      42      5       0.13    3685    2400    0.45    46      0       0       92      98.64   0.00    0.00    0.00    3.08    96.82   0.05    99.76   38      0
+> > 0       0       0       74      298     3       0.08    3689    2400    0.57    29      0       0       46      98.19   0.00    0.00    0.04    1.93    97.95   0.05
+> > 0       0       0       75      43      4       0.10    3710    2400    0.54    31      0       0       62      98.44   0.00    0.00    0.01    1.93    97.98   0.02    99.80   37      0
+> > 0       0       0       75      299     4       0.11    3695    2400    0.45    47      0       0       77      98.98   0.00    0.00    0.00    3.00    96.91   0.02
+> > 0       0       0       76      44      4       0.11    3713    2400    0.52    31      0       0       72      98.28   0.00    0.00    0.02    1.93    97.95   0.01    99.83   37      0
+> > 0       0       0       76      300     3       0.08    3690    2400    0.56    28      0       0       43      97.91   0.00    0.00    0.00    1.86    98.07   0.01
+> > 0       0       0       77      45      4       0.10    3713    2400    0.49    29      0       0       58      97.11   0.00    0.00    0.03    1.78    98.10   0.01    99.82   38      0
+> > 0       0       0       77      301     4       0.10    3730    2400    0.48    28      0       0       50      94.68   0.00    0.00    0.00    1.78    98.13   0.01
+> > 0       0       0       78      46      3       0.09    3697    2400    0.55    29      0       0       56      98.40   0.00    0.00    0.04    1.78    98.10   0.03    99.82   38      0
+> > 0       0       0       78      302     3       0.08    3702    2400    0.63    27      0       0       49      98.01   0.00    0.00    0.02    1.77    98.13   0.03
+> > 0       0       0       79      47      4       0.12    3689    2400    0.46    42      0       0       88      98.62   0.00    0.00    0.00    2.76    97.14   0.05    99.77   38      0
+> > 0       0       0       79      303     3       0.08    3693    2400    0.67    25      0       0       46      97.63   0.00    0.00    0.04    1.62    98.27   0.05
+> > 0       0       0       80      48      4       0.10    3717    2400    0.57    28      0       0       63      98.16   0.00    0.00    0.01    1.69    98.21   0.01    99.81   38      0
+> > 0       0       0       80      304     4       0.11    3691    2400    0.46    41      0       0       74      98.53   0.00    0.00    0.00    2.76    97.15   0.01
+> > 0       0       0       81      49      4       0.11    3717    2400    0.48    40      0       0       71      98.43   0.00    0.00    0.08    2.55    97.27   0.08    99.75   39      0
+> > 0       0       0       81      305     4       0.10    3707    2400    0.47    40      0       0       58      98.03   0.00    0.00    0.00    2.77    97.14   0.08
+> > 0       0       0       82      50      4       0.11    3692    2400    0.54    39      0       0       74      98.77   0.00    0.00    0.04    2.54    97.32   0.01    99.80   37      0
+> > 0       0       0       82      306     4       0.11    3739    2400    0.45    40      0       0       58      94.19   0.00    0.00    0.00    2.55    97.35   0.01
+> > 0       0       0       83      51      4       0.12    3687    2400    0.50    40      0       0       75      98.26   0.00    0.00    0.04    2.55    97.31   0.03    99.79   36      0
+> > 0       0       0       83      307     4       0.10    3692    2400    0.56    37      0       0       60      98.31   0.00    0.00    0.03    2.54    97.35   0.03
+> > 0       0       0       84      52      4       0.11    3690    2400    0.47    38      0       0       69      98.59   0.00    0.00    0.00    2.45    97.45   0.06    99.78   39      0
+> > 0       0       0       84      308     4       0.10    3671    2400    0.57    35      0       0       58      98.55   0.00    0.00    0.05    2.39    97.48   0.06
+> > 0       0       0       85      53      4       0.12    3715    2400    0.50    37      0       0       71      98.64   0.00    0.00    0.01    2.38    97.51   0.01    99.83   39      0
+> > 0       0       0       85      309     3       0.09    3696    2400    0.51    35      0       0       51      98.25   0.00    0.00    0.00    2.38    97.54   0.01
+> > 0       0       0       86      54      4       0.11    3695    2400    0.49    37      0       0       65      98.74   0.00    0.00    0.02    2.39    97.49   0.01    99.82   38      0
+> > 0       0       0       86      310     4       0.10    3699    2400    0.48    37      0       0       60      98.59   0.00    0.00    0.01    2.47    97.44   0.01
+> > 0       0       0       87      55      5       0.13    3721    2400    0.40    36      0       0       72      96.61   0.00    0.00    0.02    2.24    97.62   0.02    99.80   37      0
+> > 0       0       0       87      311     3       0.09    3698    2400    0.57    33      0       0       53      98.47   0.00    0.00    0.01    2.23    97.67   0.02
+> > 0       0       0       88      56      4       0.11    3684    2400    0.50    35      0       0       66      98.31   0.00    0.00    0.05    2.16    97.69   0.05    99.80   36      0
+> > 0       0       0       88      312     3       0.09    3679    2400    0.60    32      0       0       55      98.04   0.00    0.00    0.04    2.16    97.72   0.05
+> > 0       0       0       89      57      5       0.14    3719    2400    0.40    48      0       0       94      96.69   0.00    0.00    0.00    3.23    96.65   0.05    99.74   38      0
+> > 0       0       0       89      313     3       0.08    3671    2400    0.57    31      0       0       49      98.19   0.00    0.00    0.04    2.09    97.80   0.05
+> > 0       0       0       90      58      4       0.11    3722    2400    0.53    34      0       0       70      98.37   0.00    0.00    0.00    2.09    97.82   0.01    99.79   37      0
+> > 0       0       0       90      314     4       0.11    3685    2400    0.44    45      0       0       78      98.83   0.00    0.00    0.00    3.15    96.76   0.01
+> > 0       0       0       91      59      4       0.11    3729    2400    0.48    32      0       0       63      98.04   0.00    0.00    0.00    2.01    97.89   0.04    99.76   38      0
+> > 0       0       0       91      315     4       0.11    3700    2400    0.44    44      0       0       80      98.84   0.00    0.00    0.03    2.96    96.90   0.04
+> > 0       0       0       92      60      4       0.10    3687    2400    0.52    33      0       0       59      98.30   0.00    0.00    0.03    1.93    97.96   0.02    99.83   38      0
+> > 0       0       0       92      316     3       0.09    3689    2400    0.57    29      0       0       50      98.03   0.00    0.00    0.01    1.92    97.99   0.02
+> > 0       0       0       93      61      5       0.13    3648    2400    0.45    45      0       0       89      98.90   0.00    0.00    0.04    2.86    96.99   0.04    99.77   39      0
+> > 0       0       0       93      317     3       0.09    3700    2400    0.57    29      0       0       50      97.74   0.00    0.00    0.03    1.93    97.97   0.04
+> > 0       0       0       94      62      3       0.09    3705    2400    0.56    30      0       0       57      98.39   0.00    0.00    0.00    1.85    98.07   0.06    99.80   39      0
+> > 0       0       0       94      318     3       0.08    3624    2400    0.57    29      0       0       44      98.01   0.00    0.00    0.05    1.85    98.02   0.06
+> > 0       0       0       95      63      4       0.10    3734    2400    0.53    30      0       0       58      98.34   0.00    0.00    0.00    1.85    98.06   0.07    99.74   39      0
+> > 0       0       0       95      319     4       0.11    3694    2400    0.44    41      0       0       71      97.84   0.00    0.00    0.06    2.78    97.07   0.07
+> > 1       1       1       0       64      5       0.13    3803    2400    0.57    29      0       0       63      93.08   0.00    0.00    0.00    1.77    98.12   0.01    99.79   51      0       57      0.00    0.00    70.36   2.25    0.00    0.00    1200    1200    800     800
+> > 1       1       1       0       320     4       0.11    3737    2400    0.42    39      0       0       69      98.05   0.00    0.00    0.00    2.69    97.22   0.01
+> > 1       1       1       1       65      300     7.70    3898    2400    0.36    58      0       0       306     98.40   0.00    0.00    0.01    1.63    90.66   0.00    90.26   50      0
+> > 1       1       1       1       321     120     3.09    3897    2400    0.38    40      0       0       138     97.88   0.00    0.00    0.00    1.62    95.29   0.00
+> > 1       1       1       2       66      59      1.53    3891    2400    0.42    32      0       0       131     97.33   0.00    0.00    0.03    1.62    96.83   0.02    98.40   50      0
+> > 1       1       1       2       322     3       0.09    3788    2400    0.54    26      0       0       44      96.78   0.00    0.00    0.02    1.63    98.28   0.02
+> > 1       1       1       3       67      5       0.13    3704    2400    0.45    40      0       0       88      97.99   0.00    0.00    0.05    2.46    97.37   0.04    99.78   50      0
+> > 1       1       1       3       323     3       0.07    3762    2400    0.58    26      0       0       38      97.23   0.00    0.00    0.03    1.63    98.28   0.04
+> > 1       1       1       4       68      5       0.13    3695    2400    0.46    39      0       0       70      97.23   0.00    0.00    0.16    2.30    97.43   0.24    99.58   50      0
+> > 1       1       1       4       324     4       0.10    3695    2400    0.48    37      0       0       52      97.48   0.00    0.00    0.08    2.36    97.47   0.24
+> > 1       1       1       5       69      59      1.53    3881    2400    0.41    44      0       0       131     97.55   0.00    0.00    0.01    2.47    96.00   0.03    98.36   50      0
+> > 1       1       1       5       325     4       0.10    3661    2400    0.49    37      0       0       58      97.96   0.00    0.00    0.03    2.43    97.45   0.03
+> > 1       1       1       6       70      59      1.51    3882    2400    0.41    42      0       0       124     98.11   0.00    0.00    0.06    2.29    96.15   0.05    98.38   49      0
+> > 1       1       1       6       326     3       0.09    3654    2400    0.50    34      0       0       49      97.48   0.00    0.00    0.01    2.32    97.59   0.05
+> > 1       1       1       7       71      70      1.81    3884    2400    0.57    47      0       0       168     97.90   0.00    0.00    0.04    2.31    95.84   0.04    97.04   49      0
+> > 1       1       1       7       327     62      1.60    3885    2400    0.39    43      0       0       94      95.96   0.00    0.00    0.04    2.28    96.09   0.04
+> > 1       1       1       8       72      4       0.11    3682    2400    0.46    35      0       0       64      97.73   0.00    0.00    0.04    2.17    97.69   0.03    99.80   49      0
+> > 1       1       1       8       328     4       0.10    3689    2400    0.53    33      0       0       53      97.18   0.00    0.00    0.03    2.16    97.72   0.03
+> > 1       1       1       9       73      59      1.52    3882    2400    0.42    42      0       0       133     98.31   0.00    0.00    0.00    2.22    96.27   0.05    98.37   49      0
+> > 1       1       1       9       329     3       0.09    3664    2400    0.54    33      0       0       49      97.38   0.00    0.00    0.05    2.16    97.71   0.05
+> > 1       1       1       10      74      59      1.52    3885    2400    0.41    38      0       0       128     98.38   0.00    0.00    0.01    2.09    96.40   0.00    97.10   49      0
+> > 1       1       1       10      330     65      1.67    3889    2400    0.40    44      0       0       87      97.87   0.00    0.00    0.00    2.15    96.19   0.00
+> > 1       1       1       11      75      4       0.11    3674    2400    0.50    33      0       0       69      97.66   0.00    0.00    0.05    2.05    97.80   0.04    99.80   48      0
+> > 1       1       1       11      331     3       0.08    3653    2400    0.56    30      0       0       46      97.60   0.00    0.00    0.00    2.02    97.91   0.04
+> > 1       1       1       12      76      4       0.12    3697    2400    0.45    32      0       0       63      97.24   0.00    0.00    0.02    2.01    97.87   0.02    99.82   48      0
+> > 1       1       1       12      332     3       0.09    3671    2400    0.53    30      0       0       46      97.44   0.00    0.00    0.01    2.01    97.90   0.02
+> > 1       1       1       13      77      5       0.14    3740    2400    0.38    31      0       0       66      93.51   0.00    0.00    0.02    1.86    98.00   0.02    99.79   49      0
+> > 1       1       1       13      333     4       0.10    3702    2400    0.55    31      0       0       55      97.02   0.00    0.00    0.01    2.00    97.90   0.02
+> > 1       1       1       14      78      6       0.16    3734    2400    0.41    52      0       0       119     98.47   0.00    0.00    0.04    3.40    96.42   0.04    99.73   49      0
+> > 1       1       1       14      334     3       0.09    3703    2400    0.57    28      0       0       47      96.79   0.00    0.00    0.03    1.77    98.12   0.04
+> > 1       1       1       15      79      4       0.10    3674    2400    0.54    31      0       0       62      97.88   0.00    0.00    0.00    1.92    97.99   0.08    99.76   48      0
+> > 1       1       1       15      335     3       0.08    3657    2400    0.56    28      0       0       49      97.38   0.00    0.00    0.08    1.75    98.10   0.08
+> > 1       1       1       16      80      4       0.10    3694    2400    0.57    30      0       0       63      97.92   0.00    0.00    0.04    1.82    98.05   0.04    99.76   50      0
+> > 1       1       1       16      336     4       0.12    3691    2400    0.43    49      0       0       88      98.46   0.00    0.00    0.03    3.29    96.59   0.04
+> > 1       1       1       17      81      4       0.10    3673    2400    0.56    27      0       0       58      97.86   0.00    0.00    0.05    1.59    98.27   0.04    99.82   50      0
+> > 1       1       1       17      337     3       0.08    3680    2400    0.56    27      0       0       43      97.51   0.00    0.00    0.03    1.59    98.30   0.04
+> > 1       1       1       18      82      5       0.14    3668    2400    0.43    49      0       0       104     98.50   0.00    0.00    0.07    3.13    96.68   0.06    99.74   50      0
+> > 1       1       1       18      338     3       0.08    3674    2400    0.58    25      0       0       42      97.31   0.00    0.00    0.05    1.52    98.36   0.06
+> > 1       1       1       19      83      7       0.19    3725    2400    0.38    48      0       0       114     95.60   0.00    0.00    0.07    3.05    96.71   0.06    99.70   51      0
+> > 1       1       1       19      339     3       0.08    3684    2400    0.58    23      0       0       38      97.18   0.00    0.00    0.02    1.47    98.44   0.06
+> > 1       1       1       20      84      60      1.56    3881    2400    0.41    51      0       0       149     98.50   0.00    0.00    0.05    3.09    95.33   0.09    98.26   52      0
+> > 1       1       1       20      340     4       0.10    3741    2400    0.52    24      0       0       44      91.79   0.00    0.00    0.09    1.39    98.43   0.09
+> > 1       1       1       21      85      5       0.15    3705    2400    0.44    45      0       0       89      97.85   0.00    0.00    0.08    2.90    96.89   0.08    99.72   49      0
+> > 1       1       1       21      341     4       0.11    3709    2400    0.50    42      0       0       64      97.96   0.00    0.00    0.04    2.94    96.93   0.08
+> > 1       1       1       22      86      63      1.62    3885    2400    0.42    50      0       0       139     98.17   0.00    0.00    0.03    2.90    95.46   0.04    98.26   50      0
+> > 1       1       1       22      342     4       0.11    3699    2400    0.46    44      0       0       65      98.46   0.00    0.00    0.00    3.00    96.91   0.04
+> > 1       1       1       23      87      7       0.19    3750    2400    0.34    43      0       0       83      92.86   0.00    0.00    0.06    2.75    97.03   0.05    99.71   50      0
+> > 1       1       1       23      343     4       0.11    3720    2400    0.45    40      0       0       58      98.01   0.00    0.00    0.02    2.78    97.11   0.05
+> > 1       1       1       24      88      5       0.12    3681    2400    0.45    42      0       0       76      97.78   0.00    0.00    0.08    2.67    97.14   0.07    99.74   49      0
+> > 1       1       1       24      344     4       0.11    3710    2400    0.45    41      0       0       62      97.66   0.00    0.00    0.06    2.75    97.09   0.07
+> > 1       1       1       25      89      5       0.13    3713    2400    0.46    42      0       0       76      98.17   0.00    0.00    0.00    2.77    97.12   0.01    99.81   49      0
+> > 1       1       1       25      345     3       0.09    3709    2400    0.44    39      0       0       53      98.26   0.00    0.00    0.00    2.69    97.23   0.01
+> > 1       1       1       26      90      5       0.13    3738    2400    0.44    40      0       0       75      97.36   0.00    0.00    0.00    2.62    97.26   0.02    99.80   50      0
+> > 1       1       1       26      346     4       0.10    3709    2400    0.45    40      0       0       54      97.93   0.00    0.00    0.00    2.70    97.22   0.02
+> > 1       1       1       27      91      5       0.13    3717    2400    0.48    39      0       0       77      98.00   0.00    0.00    0.01    2.54    97.34   0.01    99.81   49      0
+> > 1       1       1       27      347     4       0.10    3719    2400    0.46    37      0       0       55      97.90   0.00    0.00    0.00    2.54    97.37   0.01
+> > 1       1       1       28      92      5       0.14    3728    2400    0.45    40      0       0       79      97.31   0.00    0.00    0.03    2.60    97.25   0.06    99.72   48      0
+> > 1       1       1       28      348     4       0.12    3717    2400    0.42    51      0       0       83      98.64   0.00    0.00    0.00    3.62    96.27   0.06
+> > 1       1       1       29      93      4       0.11    3707    2400    0.48    38      0       0       67      98.05   0.00    0.00    0.04    2.45    97.41   0.10    99.68   50      0
+> > 1       1       1       29      349     5       0.14    3721    2400    0.40    51      0       0       88      95.92   0.00    0.00    0.09    3.37    96.42   0.10
+> > 1       1       1       30      94      4       0.12    3719    2400    0.47    36      0       0       67      97.74   0.00    0.00    0.00    2.32    97.58   0.11    99.67   49      0
+> > 1       1       1       30      350     5       0.14    3723    2400    0.42    52      0       0       95      98.49   0.00    0.00    0.08    3.46    96.35   0.11
+> > 1       1       1       31      95      5       0.12    3740    2400    0.47    37      0       0       71      97.29   0.00    0.00    0.00    2.39    97.50   0.06    99.72   51      0
+> > 1       1       1       31      351     5       0.13    3716    2400    0.36    51      0       0       83      95.56   0.00    0.00    0.04    3.26    96.58   0.06
+> > 1       1       1       64      96      59      1.51    3890    2400    0.41    38      0       0       125     98.48   0.00    0.00    0.04    2.12    96.33   0.04    98.29   50      0
+> > 1       1       1       64      352     7       0.18    3790    2400    0.40    49      0       0       116     98.40   0.00    0.00    0.04    3.35    96.46   0.04
+> > 1       1       1       65      97      5       0.12    3766    2400    0.47    35      0       0       73      97.58   0.00    0.00    0.02    2.25    97.62   0.02    99.80   50      0
+> > 1       1       1       65      353     3       0.09    3761    2400    0.53    32      0       0       51      97.64   0.00    0.00    0.01    2.17    97.74   0.02
+> > 1       1       1       66      98      5       0.14    3726    2400    0.40    48      0       0       96      98.44   0.00    0.00    0.05    3.17    96.66   0.04    99.76   49      0
+> > 1       1       1       66      354     3       0.09    3763    2400    0.52    30      0       0       46      96.88   0.00    0.00    0.03    2.01    97.88   0.04
+> > 1       1       1       67      99      5       0.14    3714    2400    0.40    48      0       0       78      97.56   0.00    0.00    0.46    2.78    96.64   0.52    99.29   49      0
+> > 1       1       1       67      355     4       0.11    3716    2400    0.45    45      0       0       57      97.81   0.00    0.00    0.05    3.10    96.75   0.52
+> > 1       1       1       68      100     6       0.15    3745    2400    0.41    45      0       0       84      98.03   0.00    0.00    0.12    2.89    96.86   0.12    99.67   49      0
+> > 1       1       1       68      356     4       0.12    3736    2400    0.42    44      0       0       61      98.32   0.00    0.00    0.00    3.01    96.89   0.12
+> > 1       1       1       69      101     5       0.14    3721    2400    0.40    45      0       0       75      97.68   0.00    0.00    0.44    2.59    96.84   0.44    99.37   48      0
+> > 1       1       1       69      357     4       0.11    3715    2400    0.49    44      0       0       60      98.34   0.00    0.00    0.01    3.02    96.88   0.44
+> > 1       1       1       70      102     5       0.14    3739    2400    0.42    45      0       0       77      98.42   0.00    0.00    0.04    2.94    96.90   0.03    99.76   50      0
+> > 1       1       1       70      358     4       0.12    3751    2400    0.46    43      0       0       70      98.10   0.00    0.00    0.02    3.02    96.85   0.03
+> > 1       1       1       71      103     5       0.12    3725    2400    0.45    43      0       0       75      98.57   0.00    0.00    0.00    2.86    97.04   0.05    99.76   47      0
+> > 1       1       1       71      359     4       0.11    3753    2400    0.47    40      0       0       62      97.19   0.00    0.00    0.04    2.79    97.08   0.05
+> > 1       1       1       72      104     6       0.15    3774    2400    0.41    43      0       0       84      94.78   0.00    0.00    0.00    2.86    97.01   0.05    99.73   49      0
+> > 1       1       1       72      360     4       0.11    3748    2400    0.51    41      0       0       63      98.04   0.00    0.00    0.04    2.79    97.08   0.05
+> > 1       1       1       73      105     5       0.13    3744    2400    0.46    43      0       0       81      98.51   0.00    0.00    0.00    2.86    97.03   0.02    99.80   49      0
+> > 1       1       1       73      361     4       0.10    3754    2400    0.46    42      0       0       60      97.99   0.00    0.00    0.00    2.85    97.06   0.02
+> > 1       1       1       74      106     59      1.53    3888    2400    0.41    40      0       0       139     98.26   0.00    0.00    0.01    2.62    95.85   0.00    98.42   51      0
+> > 1       1       1       74      362     66      1.69    3892    2400    0.39    38      0       0       117     98.29   0.00    0.00    0.00    2.59    95.74   0.00
+> > 1       1       1       75      107     5       0.15    3768    2400    0.43    39      0       0       83      96.04   0.00    0.00    0.02    2.52    97.33   0.02    99.78   49      0
+> > 1       1       1       75      363     3       0.09    3739    2400    0.49    37      0       0       53      97.82   0.00    0.00    0.01    2.52    97.39   0.02
+> > 1       1       1       76      108     6       0.16    3755    2400    0.41    52      0       0       109     98.62   0.00    0.00    0.04    3.43    96.38   0.03    99.74   48      0
+> > 1       1       1       76      364     4       0.11    3761    2400    0.46    38      0       0       58      97.47   0.00    0.00    0.03    2.59    97.28   0.03
+> > 1       1       1       77      109     5       0.14    3761    2400    0.44    39      0       0       82      98.17   0.00    0.00    0.00    2.43    97.45   0.06    99.74   49      0
+> > 1       1       1       77      365     4       0.10    3730    2400    0.46    37      0       0       53      97.63   0.00    0.00    0.05    2.43    97.43   0.06
+> > 1       1       1       78      110     63      1.62    3889    2400    0.42    42      0       0       143     98.38   0.00    0.00    0.00    2.43    95.96   0.01    98.27   48      0
+> > 1       1       1       78      366     5       0.13    3747    2400    0.39    49      0       0       85      98.17   0.00    0.00    0.00    3.33    96.56   0.01
+> > 1       1       1       79      111     5       0.13    3733    2400    0.43    36      0       0       71      97.47   0.00    0.00    0.25    2.06    97.58   0.24    99.58   49      0
+> > 1       1       1       79      367     4       0.11    3744    2400    0.49    34      0       0       53      97.49   0.00    0.00    0.23    2.06    97.61   0.24
+> > 1       1       1       80      112     6       0.15    3719    2400    0.40    49      0       0       97      98.33   0.00    0.00    0.27    2.97    96.62   0.26    99.53   49      0
+> > 1       1       1       80      368     4       0.10    3737    2400    0.53    33      0       0       52      97.21   0.00    0.00    0.26    1.99    97.67   0.26
+> > 1       1       1       81      113     228     5.85    3896    2400    0.40    77      0       0       311     98.38   0.00    0.00    0.13    3.05    90.97   0.35    91.31   51      0
+> > 1       1       1       81      369     126     3.24    3896    2400    0.39    50      0       0       135     97.96   0.00    0.00    0.27    1.91    94.58   0.35
+> > 1       1       1       82      114     5       0.13    3743    2400    0.43    35      0       0       59      93.81   0.00    0.00    0.48    1.70    97.70   0.63    99.20   48      0
+> > 1       1       1       82      370     3       0.08    3696    2400    0.54    32      0       0       36      97.11   0.00    0.00    0.27    1.91    97.75   0.63
+> > 1       1       1       83      115     6       0.17    3776    2400    0.40    48      0       0       95      97.79   0.00    0.00    0.00    3.11    96.74   0.01    99.76   48      0
+> > 1       1       1       83      371     5       0.13    3765    2400    0.42    44      0       0       66      98.02   0.00    0.00    0.00    3.03    96.86   0.01
+> > 1       1       1       84      116     63      1.62    3889    2400    0.41    38      0       0       154     95.72   0.00    0.00    0.54    1.46    96.41   0.65    96.45   48      0
+> > 1       1       1       84      372     48      1.24    3865    2400    0.43    68      0       0       1160    95.02   0.00    0.00    0.27    2.64    95.89   0.65
+> > 1       1       1       85      117     58      1.48    3889    2400    0.41    37      0       0       110     98.25   0.00    0.00    0.01    1.98    96.54   0.00    98.45   48      0
+> > 1       1       1       85      373     4       0.10    3767    2400    0.52    31      0       0       55      97.91   0.00    0.00    0.00    1.98    97.94   0.00
+> > 1       1       1       86      118     727     18.67   3896    2400    0.38    133     1       0       548     98.18   0.00    0.00    0.10    1.15    80.09   0.07    61.30   49      0
+> > 1       1       1       86      374     923     23.68   3898    2400    0.39    166     0       0       1968    94.15   0.00    0.00    0.09    1.39    74.78   0.07
+> > 1       1       1       87      119     544     13.96   3898    2400    0.39    120     0       0       437     97.71   0.00    0.00    0.19    1.93    83.94   0.26    66.34   49      0
+> > 1       1       1       87      375     868     22.27   3898    2400    0.40    160     0       0       1800    94.29   0.00    0.00    0.10    1.88    75.74   0.26
+> > 1       1       1       88      120     8       0.22    3795    2400    0.33    66      0       0       137     96.20   0.00    0.00    0.02    2.14    95.87   0.04    97.95   47      0
+> > 1       1       1       88      376     4       0.11    3822    2400    0.46    41      0       0       53      97.18   0.00    0.00    0.02    2.19    97.69   0.03
+> > 1       1       1       89      121     4       0.11    3784    2400    0.47    35      0       0       68      97.83   0.00    0.00    0.00    2.25    97.65   0.03    99.78   49      0
+> > 1       1       1       89      377     4       0.12    3825    2400    0.48    33      0       0       57      94.04   0.00    0.00    0.02    2.18    97.69   0.03
+> > 1       1       1       90      122     5       0.13    3809    2400    0.44    35      0       0       72      97.36   0.00    0.00    0.06    2.18    97.64   0.05    99.77   48      0
+> > 1       1       1       90      378     4       0.09    3807    2400    0.48    32      0       0       49      97.49   0.00    0.00    0.04    2.19    97.69   0.05
+> > 1       1       1       91      123     4       0.12    3800    2400    0.48    31      0       0       66      97.53   0.00    0.00    0.00    2.03    97.87   0.07    99.76   48      0
+> > 1       1       1       91      379     3       0.09    3812    2400    0.51    31      0       0       46      97.24   0.00    0.00    0.06    1.95    97.91   0.07
+> > 1       1       1       92      124     5       0.13    3816    2400    0.47    32      0       0       70      97.50   0.00    0.00    0.01    2.02    97.86   0.01    99.82   49      0
+> > 1       1       1       92      380     4       0.10    3835    2400    0.50    30      0       0       52      96.91   0.00    0.00    0.00    1.94    97.97   0.01
+> > 1       1       1       93      125     4       0.10    3757    2400    0.55    30      0       0       58      97.89   0.00    0.00    0.30    1.61    98.00   0.33    99.51   47      0
+> > 1       1       1       93      381     3       0.09    3776    2400    0.56    29      0       0       52      97.17   0.00    0.00    0.25    1.72    97.94   0.33
+> > 1       1       1       94      126     5       0.13    3767    2400    0.42    43      0       0       89      98.06   0.00    0.00    0.01    2.86    97.02   0.14    99.67   48      0
+> > 1       1       1       94      382     3       0.08    3792    2400    0.55    28      0       0       44      97.07   0.00    0.00    0.12    1.72    98.09   0.14
+> > 1       1       1       95      127     4       0.11    3802    2400    0.47    32      0       0       58      97.21   0.00    0.00    0.00    1.88    98.03   0.02    99.79   49      0
+> > 1       1       1       95      383     4       0.12    3815    2400    0.41    40      0       0       73      98.13   0.00    0.00    0.00    2.80    97.10   0.02
+> > 2       2       2       0       128     10      0.26    3688    2400    0.41    81      0       0       200     96.03   0.00    0.00    0.36    5.32    94.09   0.40    99.27   32      0       40      50.77   0.00    57.06   1.02    0.00    0.00    1200    1200    800     800
+> > 2       2       2       0       384     3       0.08    3667    2400    0.53    26      0       0       37      93.96   0.00    0.00    0.24    1.49    98.20   0.40
+> > 2       2       2       1       129     6       0.15    3788    2400    0.42    27      0       0       58      91.73   0.00    0.00    0.24    1.47    98.15   0.24    99.54   32      0
+> > 2       2       2       1       385     4       0.11    3677    2400    0.40    39      0       0       64      97.78   0.00    0.00    0.00    2.73    97.18   0.24
+> > 2       2       2       2       130     4       0.10    3689    2400    0.51    28      0       0       53      96.74   0.00    0.00    0.26    1.49    98.16   0.25    99.61   31      0
+> > 2       2       2       2       386     3       0.07    3693    2400    0.61    25      0       0       38      96.91   0.00    0.00    0.25    1.42    98.27   0.25
+> > 2       2       2       3       131     3       0.09    3674    2400    0.56    28      0       0       54      97.18   0.00    0.00    0.27    1.50    98.14   0.25    99.59   31      0
+> > 2       2       2       3       387     3       0.09    3727    2400    0.68    26      0       0       45      96.55   0.00    0.00    0.25    1.42    98.25   0.25
+> > 2       2       2       4       132     4       0.11    3774    2400    0.51    25      0       0       59      96.64   0.00    0.00    0.00    1.49    98.41   0.06    99.74   33      0
+> > 2       2       2       4       388     4       0.10    3686    2400    0.47    37      0       0       68      98.05   0.00    0.00    0.05    2.51    97.35   0.06
+> > 2       2       2       5       133     6       0.16    3699    2400    0.40    41      0       0       67      89.31   0.00    0.00    0.53    1.96    97.37   0.66    99.13   32      0
+> > 2       2       2       5       389     3       0.09    3619    2400    0.54    36      0       0       47      96.37   0.00    0.00    0.27    2.28    97.37   0.66
+> > 2       2       2       6       134     4       0.11    3621    2400    0.50    37      0       0       61      97.49   0.00    0.00    0.24    2.27    97.39   0.29    99.52   31      0
+> > 2       2       2       6       390     4       0.12    3684    2400    0.47    36      0       0       64      96.59   0.00    0.00    0.29    2.19    97.41   0.29
+> > 2       2       2       7       135     4       0.12    3677    2400    0.47    34      0       0       62      97.26   0.00    0.00    0.00    2.27    97.62   0.00    99.82   32      0
+> > 2       2       2       7       391     4       0.10    3688    2400    0.51    33      0       0       59      97.58   0.00    0.00    0.00    2.27    97.64   0.00
+> > 2       2       2       8       136     4       0.11    3633    2400    0.50    34      0       0       63      97.57   0.00    0.00    0.03    2.27    97.60   0.02    99.82   32      0
+> > 2       2       2       8       392     3       0.09    3623    2400    0.53    34      0       0       51      97.66   0.00    0.00    0.02    2.27    97.63   0.02
+> > 2       2       2       9       137     5       0.14    3715    2400    0.44    34      0       0       73      94.68   0.00    0.00    0.03    2.12    97.72   0.00    99.79   31      0
+> > 2       2       2       9       393     4       0.11    3694    2400    0.43    31      0       0       50      93.32   0.00    0.00    0.00    2.12    97.79   0.00
+> > 2       2       2       10      138     4       0.11    3602    2400    0.51    33      0       0       58      97.37   0.00    0.00    0.28    1.89    97.74   0.27    99.59   32      0
+> > 2       2       2       10      394     3       0.08    3588    2400    0.57    31      0       0       43      97.49   0.00    0.00    0.27    1.89    97.78   0.27
+> > 2       2       2       11      139     4       0.10    3621    2400    0.53    32      0       0       74      93.30   0.00    0.00    0.26    1.85    97.80   0.29    99.56   32      0
+> > 2       2       2       11      395     3       0.09    3617    2400    0.55    30      0       0       59      91.98   0.00    0.00    0.29    1.73    97.91   0.29
+> > 2       2       2       12      140     5       0.13    3737    2400    0.47    31      0       0       60      94.55   0.00    0.00    0.24    1.71    97.94   0.37    99.47   31      0
+> > 2       2       2       12      396     3       0.07    3647    2400    0.62    30      0       0       37      97.25   0.00    0.00    0.29    1.65    97.99   0.37
+> > 2       2       2       13      141     4       0.10    3731    2400    0.57    30      0       0       60      97.62   0.00    0.00    0.02    1.96    97.93   0.23    99.62   31      0
+> > 2       2       2       13      397     3       0.09    3724    2400    0.61    29      0       0       46      97.04   0.00    0.00    0.23    1.73    97.96   0.23
+> > 2       2       2       14      142     5       0.12    3660    2400    0.45    42      0       0       68      97.87   0.00    0.00    0.04    2.75    97.11   0.03    99.80   31      0
+> > 2       2       2       14      398     4       0.10    3639    2400    0.51    43      0       0       52      97.37   0.00    0.00    0.03    2.75    97.14   0.03
+> > 2       2       2       15      143     4       0.10    3671    2400    0.52    30      0       0       56      97.15   0.00    0.00    0.00    1.88    98.03   0.06    99.76   32      0
+> > 2       2       2       15      399     4       0.11    3658    2400    0.46    39      0       0       66      97.49   0.00    0.00    0.05    2.67    97.19   0.06
+> > 2       2       2       16      144     4       0.12    3698    2400    0.50    29      0       0       64      97.24   0.00    0.00    0.00    1.87    98.02   0.02    99.80   32      0
+> > 2       2       2       16      400     4       0.11    3655    2400    0.45    41      0       0       72      97.89   0.00    0.00    0.00    2.80    97.10   0.02
+> > 2       2       2       17      145     4       0.11    3674    2400    0.53    27      0       0       55      96.49   0.00    0.00    0.32    1.40    98.18   0.37    99.44   33      0
+> > 2       2       2       17      401     4       0.12    3664    2400    0.45    37      0       0       62      95.63   0.00    0.00    0.29    2.28    97.33   0.37
+> > 2       2       2       18      146     4       0.11    3702    2400    0.53    26      0       0       59      97.37   0.00    0.00    0.00    1.64    98.26   0.01    99.81   32      0
+> > 2       2       2       18      402     4       0.10    3656    2400    0.47    36      0       0       64      98.04   0.00    0.00    0.00    2.49    97.42   0.01
+> > 2       2       2       19      147     4       0.11    3725    2400    0.56    25      0       0       66      97.36   0.00    0.00    0.01    1.50    98.39   0.00    99.84   32      0
+> > 2       2       2       19      403     3       0.07    3663    2400    0.64    23      0       0       39      97.04   0.00    0.00    0.00    1.49    98.45   0.00
+> > 2       2       2       20      148     4       0.11    3672    2400    0.56    24      0       0       57      96.21   0.00    0.00    0.28    1.24    98.38   0.32    99.53   31      0
+> > 2       2       2       20      404     3       0.08    3648    2400    0.67    23      0       0       41      96.46   0.00    0.00    0.24    1.26    98.43   0.32
+> > 2       2       2       21      149     4       0.12    3675    2400    0.47    36      0       0       84      94.10   0.00    0.00    0.43    1.97    97.49   0.42    99.40   32      0
+> > 2       2       2       21      405     4       0.11    3696    2400    0.50    35      0       0       74      94.45   0.00    0.00    0.04    2.43    97.43   0.42
+> > 2       2       2       22      150     5       0.13    3710    2400    0.46    36      0       0       71      97.18   0.00    0.00    0.00    2.27    97.62   0.01    99.81   30      0
+> > 2       2       2       22      406     4       0.10    3672    2400    0.53    33      0       0       53      97.64   0.00    0.00    0.00    2.26    97.65   0.01
+> > 2       2       2       23      151     4       0.11    3673    2400    0.51    35      0       0       66      98.04   0.00    0.00    0.00    2.35    97.55   0.01    99.83   30      0
+> > 2       2       2       23      407     3       0.09    3662    2400    0.52    34      0       0       51      97.90   0.00    0.00    0.00    2.34    97.58   0.01
+> > 2       2       2       24      152     4       0.11    3700    2400    0.46    32      0       0       60      97.32   0.00    0.00    0.00    2.12    97.78   0.00    99.79   29      0
+> > 2       2       2       24      408     5       0.14    3741    2400    0.41    33      0       0       75      96.44   0.00    0.00    0.00    2.11    97.77   0.00
+> > 2       2       2       25      153     6       0.17    3668    2400    0.38    31      0       0       100     97.75   0.00    0.00    0.26    1.81    97.81   0.29    95.46   30      0
+> > 2       2       2       25      409     154     3.96    3880    2400    0.33    82      0       0       3088    90.63   0.00    0.00    0.28    1.73    94.09   0.29
+> > 2       2       2       26      154     5       0.13    3694    2400    0.44    31      0       0       65      94.08   0.00    0.00    0.03    2.04    97.81   0.02    99.75   30      0
+> > 2       2       2       26      410     5       0.14    3735    2400    0.47    31      0       0       71      95.20   0.00    0.00    0.02    2.03    97.83   0.02
+> > 2       2       2       27      155     6       0.17    3726    2400    0.73    33      0       0       112     83.06   0.00    0.00    0.04    1.81    97.99   0.20    99.59   31      0
+> > 2       2       2       27      411     4       0.12    3724    2400    0.46    29      0       0       81      90.44   0.00    0.00    0.17    1.71    98.01   0.20
+> > 2       2       2       28      156     4       0.11    3673    2400    0.50    29      0       0       60      98.06   0.00    0.00    0.06    1.88    97.97   0.05    99.80   31      0
+> > 2       2       2       28      412     3       0.08    3657    2400    0.56    28      0       0       44      97.33   0.00    0.00    0.04    1.88    98.00   0.05
+> > 2       2       2       29      157     4       0.12    3723    2400    0.48    30      0       0       64      95.14   0.00    0.00    0.00    1.95    97.94   0.05    99.77   31      0
+> > 2       2       2       29      413     3       0.08    3601    2400    0.67    27      0       0       47      97.35   0.00    0.00    0.05    1.72    98.16   0.05
+> > 2       2       2       30      158     4       0.10    3711    2400    0.59    26      0       0       59      98.06   0.00    0.00    0.00    1.72    98.19   0.03    99.80   31      0
+> > 2       2       2       30      414     4       0.10    3689    2400    0.48    41      0       0       74      98.53   0.00    0.00    0.00    2.81    97.10   0.03
+> > 2       2       2       31      159     4       0.10    3726    2400    0.60    25      0       0       56      97.64   0.00    0.00    0.29    1.36    98.26   0.31    99.52   31      0
+> > 2       2       2       31      415     4       0.10    3705    2400    0.50    38      0       0       65      98.35   0.00    0.00    0.00    2.66    97.26   0.31
+> > 2       2       2       64      160     3       0.09    3748    2400    0.57    24      0       0       48      96.98   0.00    0.00    0.30    1.31    98.31   0.41    99.46   30      0
+> > 2       2       2       64      416     3       0.07    3745    2400    0.61    25      0       0       36      96.31   0.00    0.00    0.25    1.42    98.26   0.41
+> > 2       2       2       65      161     4       0.11    3762    2400    0.45    25      0       0       53      94.71   0.00    0.00    0.27    1.35    98.28   0.26    99.59   30      0
+> > 2       2       2       65      417     3       0.08    3758    2400    0.66    25      0       0       41      97.13   0.00    0.00    0.26    1.34    98.33   0.26
+> > 2       2       2       66      162     4       0.11    3770    2400    0.53    24      0       0       54      97.01   0.00    0.00    0.29    1.26    98.35   0.30    99.54   32      0
+> > 2       2       2       66      418     4       0.10    3687    2400    0.48    36      0       0       61      98.30   0.00    0.00    0.05    2.44    97.42   0.30
+> > 2       2       2       67      163     4       0.09    3794    2400    0.58    22      0       0       53      97.48   0.00    0.00    0.02    1.41    98.49   0.01    99.85   30      0
+> > 2       2       2       67      419     3       0.08    3791    2400    0.63    23      0       0       39      96.85   0.00    0.00    0.01    1.41    98.52   0.01
+> > 2       2       2       68      164     4       0.11    3657    2400    0.49    35      0       0       77      98.08   0.00    0.00    0.26    2.14    97.50   0.27    99.57   29      0
+> > 2       2       2       68      420     2       0.06    3717    2400    0.69    21      0       0       33      96.96   0.00    0.00    0.27    1.10    98.57   0.27
+> > 2       2       2       69      165     3       0.09    3718    2400    0.57    22      0       0       48      96.99   0.00    0.00    0.24    1.17    98.52   0.28    99.56   29      0
+> > 2       2       2       69      421     3       0.09    3655    2400    0.53    33      0       0       60      97.57   0.00    0.00    0.28    2.05    97.59   0.28
+> > 2       2       2       70      166     6       0.15    3731    2400    0.43    33      0       0       75      95.20   0.00    0.00    0.24    2.05    97.58   0.24    99.57   30      0
+> > 2       2       2       70      422     3       0.09    3633    2400    0.48    34      0       0       46      97.33   0.00    0.00    0.00    2.35    97.57   0.24
+> > 2       2       2       71      167     4       0.11    3651    2400    0.49    33      0       0       62      97.43   0.00    0.00    0.11    2.20    97.59   0.27    99.57   30      0
+> > 2       2       2       71      423     3       0.09    3619    2400    0.53    35      0       0       49      97.38   0.00    0.00    0.25    2.12    97.55   0.27
+> > 2       2       2       72      168     4       0.11    3653    2400    0.48    34      0       0       67      97.99   0.00    0.00    0.05    2.28    97.57   0.04    99.79   30      0
+> > 2       2       2       72      424     3       0.09    3631    2400    0.53    34      0       0       53      97.71   0.00    0.00    0.04    2.36    97.53   0.04
+> > 2       2       2       73      169     4       0.10    3639    2400    0.54    32      0       0       58      97.72   0.00    0.00    0.16    2.04    97.71   0.30    99.55   29      0
+> > 2       2       2       73      425     3       0.08    3626    2400    0.57    32      0       0       44      97.13   0.00    0.14    0.08    1.97    97.74   0.30
+> > 2       2       2       74      170     4       0.12    3698    2400    0.50    33      0       0       68      97.66   0.00    0.00    0.01    2.11    97.77   0.01    99.83   29      0
+> > 2       2       2       74      426     3       0.10    3673    2400    0.49    31      0       0       49      97.51   0.00    0.00    0.00    2.11    97.80   0.01
+> > 2       2       2       75      171     5       0.13    3728    2400    0.46    31      0       0       70      96.16   0.00    0.00    0.01    2.11    97.76   0.02    99.81   30      0
+> > 2       2       2       75      427     3       0.09    3678    2400    0.51    31      0       0       46      96.96   0.00    0.00    0.00    2.11    97.81   0.02
+> > 2       2       2       76      172     4       0.11    3635    2400    0.51    29      0       0       56      97.23   0.00    0.00    0.33    1.65    97.92   0.32    99.52   29      0
+> > 2       2       2       76      428     3       0.10    3647    2400    0.56    31      0       0       53      97.00   0.00    0.00    0.24    1.89    97.79   0.32
+> > 2       2       2       77      173     4       0.11    3664    2400    0.52    28      0       0       53      96.79   0.00    0.00    0.40    1.44    98.06   0.41    99.43   30      0
+> > 2       2       2       77      429     3       0.09    3655    2400    0.59    28      0       0       43      96.63   0.00    0.00    0.25    1.58    98.09   0.41
+> > 2       2       2       78      174     5       0.12    3679    2400    0.48    40      0       0       83      98.25   0.00    0.00    0.15    2.66    97.08   0.28    99.54   32      0
+> > 2       2       2       78      430     3       0.08    3657    2400    0.63    29      0       0       57      93.82   0.00    0.00    0.28    1.57    98.07   0.28
+> > 2       2       2       79      175     4       0.11    3721    2400    0.54    28      0       0       62      97.41   0.00    0.00    0.01    1.80    98.09   0.01    99.85   31      0
+> > 2       2       2       79      431     3       0.08    3691    2400    0.56    27      0       0       42      97.15   0.00    0.00    0.00    1.72    98.21   0.01
+> > 2       2       2       80      176     5       0.14    3714    2400    0.44    40      0       0       80      95.68   0.00    0.00    0.22    2.55    97.11   0.40    99.41   29      0
+> > 2       2       2       80      432     2       0.07    3645    2400    0.68    26      0       0       35      96.94   0.00    0.00    0.24    1.42    98.28   0.40
+> > 2       2       2       81      177     4       0.11    3656    2400    0.49    38      0       0       72      98.11   0.00    0.00    0.28    2.36    97.27   0.26    99.57   30      0
+> > 2       2       2       81      433     3       0.07    3653    2400    0.62    24      0       0       37      96.25   0.00    0.00    0.26    1.34    98.33   0.26
+> > 2       2       2       82      178     3       0.09    3672    2400    0.55    28      0       0       50      97.07   0.00    0.00    0.13    1.58    98.20   0.17    99.70   29      0
+> > 2       2       2       82      434     3       0.07    3625    2400    0.62    26      0       0       38      97.12   0.00    0.00    0.05    1.65    98.23   0.17
+> > 2       2       2       83      179     7       0.18    3764    2400    0.29    40      0       0       87      93.48   0.00    0.00    0.03    2.59    97.21   0.03    99.75   30      0
+> > 2       2       2       83      435     3       0.07    3682    2400    0.63    23      0       0       36      97.07   0.00    0.00    0.02    1.42    98.50   0.03
+> > 2       2       2       84      180     5       0.13    3711    2400    0.40    36      0       0       65      95.49   0.00    0.00    0.13    2.36    97.40   0.27    99.55   30      0
+> > 2       2       2       84      436     3       0.09    3702    2400    0.52    36      0       0       49      97.65   0.00    0.00    0.27    2.20    97.45   0.27
+> > 2       2       2       85      181     4       0.10    3703    2400    0.53    34      0       0       60      97.95   0.00    0.00    0.00    2.36    97.56   0.06    99.78   28      0
+> > 2       2       2       85      437     3       0.09    3682    2400    0.53    34      0       0       51      97.63   0.00    0.00    0.06    2.28    97.58   0.06
+> > 2       2       2       86      182     4       0.11    3684    2400    0.47    35      0       0       61      97.78   0.00    0.00    0.01    2.36    97.53   0.01    99.84   31      0
+> > 2       2       2       86      438     3       0.09    3657    2400    0.47    34      0       0       48      97.67   0.00    0.00    0.00    2.28    97.64   0.01
+> > 2       2       2       87      183     3       0.09    3576    2400    0.53    35      0       0       54      97.75   0.00    0.00    0.21    2.20    97.51   0.25    99.59   28      0
+> > 2       2       2       87      439     3       0.10    3654    2400    0.59    33      0       0       54      97.26   0.00    0.00    0.25    2.05    97.62   0.25
+> > 2       2       2       88      184     4       0.10    3661    2400    0.53    34      0       0       58      97.51   0.00    0.00    0.07    2.12    97.72   0.33    99.49   29      0
+> > 2       2       2       88      440     4       0.11    3706    2400    0.50    33      0       0       55      94.37   0.00    0.00    0.26    2.05    97.60   0.33
+> > 2       2       2       89      185     4       0.10    3610    2400    0.53    32      0       0       57      97.73   0.00    0.00    0.26    1.93    97.72   0.36    99.49   29      0
+> > 2       2       2       89      441     3       0.09    3607    2400    0.62    30      0       0       50      97.55   0.00    0.00    0.28    1.81    97.83   0.36
+> > 2       2       2       90      186     4       0.11    3688    2400    0.51    32      0       0       63      97.95   0.00    0.00    0.01    2.03    97.86   0.00    99.84   28      0
+> > 2       2       2       90      442     3       0.09    3664    2400    0.51    30      0       0       48      97.67   0.00    0.00    0.00    2.03    97.89   0.00
+> > 2       2       2       91      187     4       0.11    3696    2400    0.48    30      0       0       58      97.10   0.00    0.00    0.02    2.04    97.85   0.01    99.83   29      0
+> > 2       2       2       91      443     4       0.10    3697    2400    0.54    31      0       0       51      97.40   0.00    0.00    0.00    2.04    97.88   0.01
+> > 2       2       2       92      188     4       0.10    3637    2400    0.53    29      0       0       66      94.01   0.00    0.00    0.26    1.67    97.98   0.25    99.54   31      0
+> > 2       2       2       92      444     5       0.13    3734    2400    0.44    41      0       0       96      92.26   0.00    0.00    0.25    2.67    96.97   0.25
+> > 2       2       2       93      189     5       0.14    3706    2400    0.39    42      0       0       83      97.89   0.00    0.00    0.05    2.82    97.01   0.04    99.77   30      0
+> > 2       2       2       93      445     3       0.09    3691    2400    0.52    28      0       0       43      96.91   0.00    0.00    0.03    1.81    98.08   0.04
+> > 2       2       2       94      190     4       0.11    3722    2400    0.54    30      0       0       60      97.31   0.00    0.00    0.07    1.81    98.03   0.14    99.67   31      0
+> > 2       2       2       94      446     4       0.11    3701    2400    0.46    40      0       0       71      97.71   0.00    0.00    0.06    2.75    97.10   0.14
+> > 2       2       2       95      191     4       0.10    3752    2400    0.51    26      0       0       51      97.08   0.00    0.00    0.00    1.73    98.18   0.08    99.74   31      0
+> > 2       2       2       95      447     4       0.11    3736    2400    0.43    41      0       0       73      98.25   0.00    0.00    0.07    2.74    97.09   0.08
+> > 3       3       3       0       192     3       0.09    3671    2400    0.80    26      0       0       56      95.82   0.00    0.00    0.03    1.74    98.15   0.13    99.06   32      0       39      47.78   0.00    59.74   1.64    0.00    0.00    1200    1200    800     800
+> > 3       3       3       0       448     26      0.67    3847    2400    1.03    95      0       0       344     90.64   0.00    0.00    0.05    7.56    91.76   0.13
+> > 3       3       3       1       193     4       0.10    3598    2400    0.56    38      0       0       77      97.69   0.00    0.00    0.19    2.47    97.25   0.28    99.57   31      0
+> > 3       3       3       1       449     3       0.07    3664    2400    0.74    24      0       0       44      96.01   0.00    0.00    0.28    1.43    98.23   0.28
+> > 3       3       3       2       194     3       0.08    3690    2400    0.72    24      0       0       50      96.01   0.00    0.00    0.31    1.28    98.34   0.31    99.58   31      0
+> > 3       3       3       2       450     2       0.06    3688    2400    0.72    24      0       0       36      95.74   0.00    0.00    0.00    1.58    98.36   0.31
+> > 3       3       3       3       195     3       0.07    3596    2400    0.73    24      0       0       45      96.57   0.00    0.00    0.27    1.35    98.32   0.26    99.60   31      0
+> > 3       3       3       3       451     3       0.09    3705    2400    0.58    23      0       0       48      91.50   0.00    0.00    0.26    1.35    98.31   0.26
+> > 3       3       3       4       196     3       0.09    3556    2400    0.62    36      0       0       72      97.76   0.00    0.00    0.29    2.23    97.41   0.42    99.45   31      0
+> > 3       3       3       4       452     2       0.05    3614    2400    0.84    23      0       0       33      95.30   0.00    0.00    0.29    1.19    98.47   0.42
+> > 3       3       3       5       197     3       0.10    3605    2400    0.56    37      0       0       75      97.92   0.00    0.00    0.01    2.45    97.46   0.00    99.85   33      0
+> > 3       3       3       5       453     2       0.06    3664    2400    0.72    22      0       0       39      96.28   0.00    0.00    0.00    1.42    98.52   0.00
+> > 3       3       3       6       198     3       0.09    3569    2400    0.59    34      0       0       59      97.26   0.00    0.00    0.04    2.37    97.51   0.03    99.84   31      0
+> > 3       3       3       6       454     3       0.08    3561    2400    0.60    34      0       0       52      97.12   0.00    0.00    0.02    2.37    97.54   0.03
+> > 3       3       3       7       199     3       0.09    3530    2400    0.61    35      0       0       63      97.42   0.00    0.00    0.00    2.43    97.49   0.05    99.81   30      0
+> > 3       3       3       7       455     3       0.09    3546    2400    0.59    34      0       0       51      96.78   0.00    0.00    0.05    2.37    97.51   0.05
+> > 3       3       3       8       200     3       0.10    3603    2400    0.58    33      0       0       62      97.25   0.00    0.00    0.01    2.29    97.62   0.02    99.84   32      0
+> > 3       3       3       8       456     3       0.08    3596    2400    0.61    34      0       0       48      96.72   0.00    0.00    0.00    2.29    97.64   0.02
+> > 3       3       3       9       201     4       0.10    3624    2400    0.59    34      0       0       66      97.22   0.00    0.00    0.04    2.36    97.52   0.02    99.83   30      0
+> > 3       3       3       9       457     3       0.09    3623    2400    0.61    34      0       0       56      97.06   0.00    0.00    0.02    2.36    97.54   0.02
+> > 3       3       3       10      202     3       0.08    3587    2400    0.67    32      0       0       62      97.52   0.00    0.00    0.00    2.20    97.72   0.05    99.81   30      0
+> > 3       3       3       10      458     3       0.08    3625    2400    0.58    35      0       0       53      95.36   0.00    0.00    0.05    2.21    97.67   0.05
+> > 3       3       3       11      203     3       0.09    3639    2400    0.67    32      0       0       69      97.42   0.00    0.00    0.01    2.21    97.71   0.00    99.83   30      0
+> > 3       3       3       11      459     4       0.10    3704    2400    0.55    32      0       0       68      95.92   0.00    0.00    0.00    2.13    97.78   0.00
+> > 3       3       3       12      204     3       0.09    3646    2400    0.62    30      0       0       57      97.06   0.00    0.00    0.04    2.05    97.83   0.03    99.84   29      0
+> > 3       3       3       12      460     3       0.08    3644    2400    0.61    31      0       0       50      96.79   0.00    0.00    0.02    2.13    97.78   0.03
+> > 3       3       3       13      205     4       0.10    3706    2400    0.56    31      0       0       61      95.88   0.00    0.00    0.47    1.74    97.71   0.51    99.33   31      0
+> > 3       3       3       13      461     3       0.08    3681    2400    0.73    29      0       0       60      95.14   0.00    0.00    0.05    1.97    97.91   0.51
+> > 3       3       3       14      206     4       0.10    3685    2400    0.60    28      0       0       79      93.38   0.00    0.00    0.02    1.98    97.91   0.01    99.84   30      0
+> > 3       3       3       14      462     3       0.07    3632    2400    0.65    30      0       0       64      93.66   0.00    0.00    0.01    2.05    97.88   0.01
+> > 3       3       3       15      207     3       0.08    3610    2400    0.69    29      0       0       54      96.96   0.00    0.00    0.21    1.74    97.99   0.19    99.68   30      0
+> > 3       3       3       15      463     3       0.07    3625    2400    0.72    28      0       0       58      95.63   0.00    0.00    0.04    1.89    98.01   0.19
+> > 3       3       3       16      208     4       0.10    3677    2400    0.62    28      0       0       65      95.13   0.00    0.00    0.06    1.92    97.94   0.28    99.53   31      0
+> > 3       3       3       16      464     4       0.10    3673    2400    0.50    47      0       0       81      98.12   0.00    0.00    0.28    3.09    96.54   0.28
+> > 3       3       3       17      209     3       0.09    3645    2400    0.61    27      0       0       58      96.15   0.00    0.00    0.26    1.58    98.08   0.25    99.62   31      0
+> > 3       3       3       17      465     2       0.07    3599    2400    0.68    27      0       0       40      96.63   0.00    0.00    0.25    1.58    98.11   0.25
+> > 3       3       3       18      210     4       0.12    3630    2400    0.49    45      0       0       88      98.07   0.00    0.00    0.33    2.86    96.70   0.40    99.42   31      0
+> > 3       3       3       18      466     3       0.08    3649    2400    0.69    26      0       0       44      96.17   0.00    0.00    0.27    1.50    98.16   0.40
+> > 3       3       3       19      211     3       0.08    3659    2400    0.66    28      0       0       53      97.38   0.00    0.00    0.01    1.73    98.18   0.02    99.86   33      0
+> > 3       3       3       19      467     3       0.07    3642    2400    0.67    27      0       0       41      96.90   0.00    0.00    0.00    1.73    98.21   0.02
+> > 3       3       3       20      212     3       0.08    3654    2400    0.64    26      0       0       54      96.74   0.00    0.00    0.03    1.73    98.16   0.02    99.86   31      0
+> > 3       3       3       20      468     3       0.07    3655    2400    0.64    25      0       0       43      96.75   0.00    0.00    0.01    1.66    98.27   0.02
+> > 3       3       3       21      213     5       0.13    3677    2400    0.51    42      0       0       91      97.61   0.00    0.00    0.17    2.88    96.85   0.38    99.43   32      0
+> > 3       3       3       21      469     3       0.08    3660    2400    0.69    25      0       0       43      96.05   0.00    0.00    0.27    1.42    98.24   0.38
+> > 3       3       3       22      214     3       0.08    3666    2400    0.65    24      0       0       65      94.10   0.00    0.00    0.08    1.51    98.34   0.08    99.79   32      0
+> > 3       3       3       22      470     3       0.07    3656    2400    0.65    27      0       0       60      93.11   0.00    0.00    0.00    1.65    98.29   0.08
+> > 3       3       3       23      215     3       0.08    3529    2400    0.67    23      0       0       47      96.30   0.00    0.00    0.28    1.26    98.39   0.26    98.99   30      0
+> > 3       3       3       23      471     27      0.69    3862    2400    0.83    29      0       0       222     84.47   0.00    0.00    0.03    1.50    97.79   0.26
+> > 3       3       3       24      216     3       0.07    3627    2400    0.71    26      0       0       68      95.31   0.00    0.00    0.00    1.58    98.36   0.05    99.79   30      0
+> > 3       3       3       24      472     3       0.09    3643    2400    0.53    41      0       0       83      96.54   0.00    0.00    0.04    2.85    97.02   0.05
+> > 3       3       3       25      217     3       0.09    3631    2400    0.68    24      0       0       52      96.72   0.00    0.00    0.03    1.41    98.48   0.02    99.85   30      0
+> > 3       3       3       25      473     3       0.08    3621    2400    0.70    24      0       0       47      96.68   0.00    0.00    0.02    1.57    98.35   0.02
+> > 3       3       3       26      218     3       0.07    3616    2400    0.69    24      0       0       48      96.16   0.00    0.00    0.00    1.41    98.52   0.10    99.74   31      0
+> > 3       3       3       26      474     3       0.09    3626    2400    0.52    41      0       0       71      97.93   0.00    0.00    0.10    2.79    97.03   0.10
+> > 3       3       3       27      219     4       0.10    3676    2400    0.53    40      0       0       66      97.60   0.00    0.00    0.06    2.71    97.14   0.05    99.79   32      0
+> > 3       3       3       27      475     3       0.09    3688    2400    0.53    39      0       0       59      97.42   0.00    0.00    0.05    2.70    97.17   0.05
+> > 3       3       3       28      220     4       0.11    3620    2400    0.57    38      0       0       69      97.09   0.00    0.00    0.09    2.62    97.20   0.36    99.48   30      0
+> > 3       3       3       28      476     4       0.10    3665    2400    0.57    43      0       0       62      97.36   0.00    0.00    0.34    2.70    96.87   0.36
+> > 3       3       3       29      221     4       0.10    3662    2400    0.53    40      0       0       63      97.47   0.00    0.00    0.09    2.59    97.24   0.15    99.69   32      0
+> > 3       3       3       29      477     3       0.09    3644    2400    0.53    38      0       0       55      96.94   0.00    0.00    0.10    2.55    97.27   0.15
+> > 3       3       3       30      222     4       0.10    3711    2400    0.54    38      0       0       65      95.36   0.00    0.00    0.52    2.17    97.23   0.51    99.34   31      0
+> > 3       3       3       30      478     3       0.09    3736    2400    0.54    37      0       0       49      96.74   0.00    0.00    0.05    2.63    97.25   0.51
+> > 3       3       3       31      223     4       0.10    3646    2400    0.54    36      0       0       63      97.35   0.00    0.00    0.08    2.47    97.36   0.07    99.77   31      0
+> > 3       3       3       31      479     4       0.09    3715    2400    0.56    36      0       0       60      97.31   0.00    0.00    0.07    2.47    97.38   0.07
+> > 3       3       3       64      224     4       0.10    3687    2400    0.55    36      0       0       61      97.32   0.00    0.00    0.04    2.47    97.40   0.16    99.68   33      0
+> > 3       3       3       64      480     4       0.10    3705    2400    0.46    37      0       0       54      94.22   0.00    0.00    0.16    2.40    97.35   0.16
+> > 3       3       3       65      225     4       0.11    3693    2400    0.51    36      0       0       82      94.36   0.00    0.00    0.28    2.25    97.39   0.28    99.57   32      0
+> > 3       3       3       65      481     3       0.08    3679    2400    0.57    35      0       0       53      94.13   0.00    0.00    0.04    2.40    97.49   0.28
+> > 3       3       3       66      226     5       0.13    3736    2400    0.49    34      0       0       101     92.70   0.00    0.00    0.13    2.23    97.53   0.12    99.66   33      0
+> > 3       3       3       66      482     5       0.13    3710    2400    0.41    49      0       0       95      90.84   0.00    0.00    0.04    3.48    96.36   0.12
+> > 3       3       3       67      227     4       0.10    3693    2400    0.50    33      0       0       57      97.10   0.00    0.00    0.05    2.25    97.61   0.04    99.81   32      0
+> > 3       3       3       67      483     3       0.09    3685    2400    0.50    33      0       0       50      97.31   0.00    0.00    0.04    2.24    97.64   0.04
+> > 3       3       3       68      228     5       0.13    3668    2400    0.44    48      0       0       94      94.02   0.00    0.00    0.32    3.10    96.47   0.29    99.50   31      0
+> > 3       3       3       68      484     3       0.09    3683    2400    0.59    32      0       0       69      93.77   0.00    0.00    0.06    2.25    97.61   0.29
+> > 3       3       3       69      229     5       0.12    3678    2400    0.45    47      0       0       88      97.99   0.00    0.00    0.04    3.33    96.53   0.33    99.50   31      0
+> > 3       3       3       69      485     3       0.08    3674    2400    0.57    34      0       0       49      97.09   0.00    0.00    0.33    2.01    97.60   0.33
+> > 3       3       3       70      230     4       0.10    3665    2400    0.59    31      0       0       60      97.31   0.00    0.00    0.28    1.85    97.78   0.27    99.59   31      0
+> > 3       3       3       70      486     3       0.08    3654    2400    0.56    31      0       0       43      96.86   0.00    0.00    0.04    2.08    97.81   0.27
+> > 3       3       3       71      231     4       0.11    3738    2400    0.53    30      0       0       62      94.53   0.00    0.00    0.42    1.74    97.74   0.39    99.44   31      0
+> > 3       3       3       71      487     4       0.10    3726    2400    0.59    29      0       0       48      93.08   0.00    0.00    0.04    2.01    97.86   0.39
+> > 3       3       3       72      232     3       0.09    3654    2400    0.63    29      0       0       76      95.57   0.00    0.00    0.30    1.71    97.91   0.31    99.55   32      0
+> > 3       3       3       72      488     3       0.07    3644    2400    0.63    29      0       0       56      94.72   0.00    0.00    0.15    1.86    97.93   0.31
+> > 3       3       3       73      233     3       0.09    3673    2400    0.58    31      0       0       57      97.66   0.00    0.00    0.04    2.08    97.80   0.10    99.77   32      0
+> > 3       3       3       73      489     3       0.08    3656    2400    0.62    30      0       0       45      97.38   0.00    0.00    0.09    1.94    97.91   0.10
+> > 3       3       3       74      234     4       0.11    3716    2400    0.55    29      0       0       60      97.01   0.00    0.00    0.04    1.92    97.94   0.05    99.77   30      0
+> > 3       3       3       74      490     4       0.10    3685    2400    0.44    44      0       0       69      97.83   0.00    0.00    0.04    3.02    96.85   0.05
+> > 3       3       3       75      235     4       0.11    3688    2400    0.54    26      0       0       77      95.10   0.00    0.00    0.29    1.55    98.07   0.28    99.57   33      0
+> > 3       3       3       75      491     3       0.08    3650    2400    0.63    28      0       0       73      94.91   0.00    0.00    0.27    1.54    98.11   0.28
+> > 3       3       3       76      236     5       0.12    3662    2400    0.44    42      0       0       67      97.58   0.00    0.00    0.22    2.73    96.94   0.29    99.52   32      0
+> > 3       3       3       76      492     4       0.12    3680    2400    0.49    42      0       0       62      97.25   0.00    0.00    0.29    2.63    96.97   0.29
+> > 3       3       3       77      237     4       0.11    3647    2400    0.48    41      0       0       61      97.67   0.00    0.00    0.04    2.87    97.01   0.32    99.52   30      0
+> > 3       3       3       77      493     4       0.10    3653    2400    0.50    42      0       0       57      97.63   0.00    0.00    0.31    2.56    97.04   0.32
+> > 3       3       3       78      238     5       0.14    3709    2400    0.42    40      0       0       95      89.55   0.00    0.00    0.07    2.75    97.06   0.09    99.71   33      0
+> > 3       3       3       78      494     4       0.11    3687    2400    0.46    41      0       0       76      95.15   0.00    0.00    0.08    2.79    97.04   0.09
+> > 3       3       3       79      239     5       0.13    3689    2400    0.46    40      0       0       73      97.34   0.00    0.00    0.26    2.56    97.06   0.26    99.57   32      0
+> > 3       3       3       79      495     4       0.11    3666    2400    0.46    41      0       0       57      97.58   0.00    0.00    0.04    2.78    97.09   0.26
+> > 3       3       3       80      240     4       0.12    3677    2400    0.45    41      0       0       88      95.21   0.00    0.00    0.27    2.67    96.96   0.26    99.57   31      0
+> > 3       3       3       80      496     4       0.10    3673    2400    0.49    41      0       0       75      94.77   0.00    0.00    0.06    2.80    97.06   0.26
+> > 3       3       3       81      241     5       0.12    3694    2400    0.51    38      0       0       87      91.90   0.00    0.00    0.55    2.10    97.23   0.53    99.29   32      0
+> > 3       3       3       81      497     4       0.10    3672    2400    0.54    38      0       0       68      94.53   0.00    0.00    0.08    2.55    97.28   0.53
+> > 3       3       3       82      242     5       0.12    3702    2400    0.43    37      0       0       65      95.40   0.00    0.00    0.04    2.54    97.31   0.09    99.74   33      0
+> > 3       3       3       82      498     3       0.09    3658    2400    0.51    39      0       0       50      97.30   0.00    0.00    0.09    2.48    97.35   0.09
+> > 3       3       3       83      243     4       0.11    3701    2400    0.46    37      0       0       63      97.44   0.00    0.00    0.05    2.55    97.30   0.04    99.80   32      0
+> > 3       3       3       83      499     4       0.10    3694    2400    0.46    38      0       0       54      97.71   0.00    0.00    0.04    2.55    97.32   0.04
+> > 3       3       3       84      244     4       0.11    3635    2400    0.49    38      0       0       66      91.95   0.00    0.00    0.32    2.32    97.27   0.27    99.54   32      0
+> > 3       3       3       84      500     4       0.11    3691    2400    0.50    38      0       0       57      94.08   0.00    0.00    0.27    2.16    97.46   0.27
+> > 3       3       3       85      245     4       0.12    3677    2400    0.48    36      0       0       67      97.38   0.00    0.00    0.08    2.39    97.42   0.07    99.76   31      0
+> > 3       3       3       85      501     4       0.10    3682    2400    0.51    37      0       0       55      97.18   0.00    0.00    0.07    2.39    97.46   0.07
+> > 3       3       3       86      246     4       0.10    3673    2400    0.53    35      0       0       61      97.57   0.00    0.00    0.04    2.31    97.56   0.09    99.75   31      0
+> > 3       3       3       86      502     3       0.09    3665    2400    0.52    37      0       0       55      97.64   0.00    0.00    0.09    2.40    97.43   0.09
+> > 3       3       3       87      247     4       0.10    3700    2400    0.53    33      0       0       60      97.61   0.00    0.00    0.05    2.25    97.61   0.04    99.81   31      0
+> > 3       3       3       87      503     3       0.09    3699    2400    0.53    33      0       0       51      96.89   0.00    0.00    0.04    2.25    97.64   0.04
+> > 3       3       3       88      248     4       0.10    3682    2400    0.53    33      0       0       54      97.27   0.00    0.00    0.29    1.95    97.67   0.45    99.40   32      0
+> > 3       3       3       88      504     3       0.08    3724    2400    0.54    34      0       0       45      96.36   0.00    0.00    0.31    2.00    97.62   0.45
+> > 3       3       3       89      249     4       0.10    3650    2400    0.53    32      0       0       59      97.27   0.00    0.00    0.09    2.09    97.73   0.08    99.77   31      0
+> > 3       3       3       89      505     3       0.09    3652    2400    0.58    32      0       0       52      97.12   0.00    0.00    0.08    2.08    97.76   0.08
+> > 3       3       3       90      250     4       0.11    3692    2400    0.50    31      0       0       57      97.15   0.00    0.00    0.04    2.08    97.79   0.05    99.80   32      0
+> > 3       3       3       90      506     3       0.09    3651    2400    0.53    33      0       0       51      97.18   0.00    0.00    0.04    2.14    97.74   0.05
+> > 3       3       3       91      251     3       0.09    3698    2400    0.58    32      0       0       56      97.55   0.00    0.00    0.05    2.09    97.78   0.04    99.82   31      0
+> > 3       3       3       91      507     3       0.08    3700    2400    0.57    33      0       0       49      97.51   0.00    0.00    0.04    2.17    97.73   0.04
+> > 3       3       3       92      252     4       0.11    3689    2400    0.54    28      0       0       61      97.20   0.00    0.00    0.07    1.93    97.90   0.06    99.78   31      0
+> > 3       3       3       92      508     3       0.09    3687    2400    0.61    30      0       0       51      97.32   0.00    0.00    0.06    1.92    97.94   0.06
+> > 3       3       3       93      253     4       0.10    3665    2400    0.56    33      0       0       54      95.94   0.00    0.00    0.13    1.89    97.89   0.34    99.51   32      0
+> > 3       3       3       93      509     3       0.09    3647    2400    0.61    33      0       0       54      94.09   0.00    0.00    0.27    1.73    97.92   0.34
+> > 3       3       3       94      254     4       0.11    3701    2400    0.55    33      0       0       57      97.25   0.00    0.00    0.22    1.82    97.87   0.33    99.50   32      0
+> > 3       3       3       94      510     4       0.10    3695    2400    0.49    42      0       0       63      97.32   0.00    0.00    0.23    2.58    97.10   0.33
+> > 3       3       3       95      255     4       0.12    3741    2400    0.47    42      0       0       57      96.91   0.00    0.00    0.19    2.60    97.12   0.52    96.00   31      0
+> > 3       3       3       95      511     128     3.31    3876    2400    2.33    971     0       0       919     93.16   0.00    0.00    0.39    11.55   84.81   0.52
+> > |0223_170144.125|TRACE|rdmsr tool is available.|
+> > |0223_170144.746|TRACE|perf event name: cstate_pkg/c2-residency/|
+> > |0223_170144.750|TRACE|option name:  -e cstate_pkg/c2-residency/|
+> > |0223_170144.762|TRACE|perf event name: cstate_pkg/c6-residency/|
+> > |0223_170144.766|TRACE|option name:  -e cstate_pkg/c2-residency/ -e cstate_pkg/c6-residency/|
+> > |0223_170144.770|TRACE|do_cmd() is called by powermgr_cstate_tests.sh:501:perf_server_cstat_update()|
+> > |0223_170144.773|TRACE|CMD=perf stat -o out.txt --per-socket  -e cstate_pkg/c2-residency/ -e cstate_pkg/c6-residency/ sleep 20|
+> > |0223_170204.948|TRACE|cstate_pkg perf events log:|
+> > |0223_170204.952|TRACE|do_cmd() is called by powermgr_cstate_tests.sh:503:perf_server_cstat_update()|
+> > |0223_170204.956|TRACE|CMD=cat out.txt|
+> > # started on Mon Feb 23 17:01:44 2026
+> >
+> >
+> >  Performance counter stats for 'system wide':
+> >
+> > S0        1        20846383584      cstate_pkg/c2-residency/
+> > S0        1                  0      cstate_pkg/c6-residency/
+> > S1        1                  0      cstate_pkg/c2-residency/
+> > S1        1                  0      cstate_pkg/c6-residency/
+> > S2        1        25742939424      cstate_pkg/c2-residency/
+> > S2        1                  0      cstate_pkg/c6-residency/
+> > S3        1        28505615232      cstate_pkg/c2-residency/
+> > S3        1                  0      cstate_pkg/c6-residency/
+> >
+> >       20.007865801 seconds time elapsed
+> >
+> > |0223_170204.996|TRACE|cstate_pkg/c2-residency/ event counter is updated|
+> > |0223_170205.019|ERROR| common.sh:142:die() - FATAL: die() is called by powermgr_cstate_tests.sh:513:perf_server_cstat_update()|
+> > |0223_170205.022|ERROR| common.sh:143:die() - FATAL: cstate_pkg/c6-residency/ event counter shows 0|
+> > <<<test end, result: FAIL, duration: 26.394s>>
+> >
+> >
+> > --
+> > 0-DAY CI Kernel Test Service
+> > https://github.com/intel/lkp-tests/wiki
+> >
+> >
+> 
+> 
+> -- 
+> Len Brown, Intel Open Source Technology Center
