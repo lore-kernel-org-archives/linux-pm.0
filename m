@@ -1,66 +1,68 @@
-Received: from mail-pl1-f174.google.com (mail-pl1-f174.google.com [209.85.214.174])
+Received: from mail-pj1-f54.google.com (mail-pj1-f54.google.com [209.85.216.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8981B31714A
-	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 00:19:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83A32317143
+	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 00:19:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773188391; cv=none; b=hko5FePK098wbJWpwfyoHV1Bbzo5Z3QJ8KsbCWZP61jzBXaoNF2Ie00U4CmM81KLyWyVgZnGdvb94LsTjXcroxIjGjcxYQo4lMs/ZthbE4td1fFMVUygnkmK5kKxkFLsLUeQOWcTWQTqcPEwb8AWDoiid6TS1tCZvBBy340fYdw=
+	t=1773188392; cv=none; b=OBX5c9XptvpofJc2YzmSOVO1sowYuf6WodEaSNVrzI06rWJXXIaP1YdWXRenLoXwCNXHufa/OcHfP86JileepO9dKS6FRpZ1On2ZaF5bvSOedXOxWz0pHya2bmkUfmWBlhrJiMOR8atdxp4ScuIaPpYfi48OkCbFutG/eTQz7UY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773188391; c=relaxed/simple;
-	bh=6Ortp2qq9rULdDJuVn66N0Ei8iDpZMGkkqjcAu1CgyQ=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=lzAunAPhmWBzcjfnwzDGfYV+EJahOZAzYQXpGPyfw/2de8lKb3HPOcCON2QmybdXz1nfrrxBGxRxBHgsve+1fWZNXihcWcR06pVnz+qS30RUfC8WsGIzusd9U2DU1TzroguJZW5U9rgstiYReT6HXzNwTR5coiaHnKpTU5CIEjU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=owUGBEXJ; arc=none smtp.client-ip=209.85.214.174
+	s=arc-20240116; t=1773188392; c=relaxed/simple;
+	bh=W4xSkkVIycg+yElDAfB07bsC758UPlh9LzCrHeiEG6A=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=Z0sykmf5KYaRQPZf7p9JbpYZW4eeQWaFUc13sUPGQsiiy/eVDYkPlNZz55eudrbKsrdcrohquZbtfpu9or5KcCyqbVPGJTTDtjykPR9s8Q0Qsugy/DgeJ4ioQE2/lcSofpqxcvvsXtuXD4lfYWj3ifOoTFLQqUGdVJc+hoiyNYk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=HjETSn+l; arc=none smtp.client-ip=209.85.216.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="owUGBEXJ"
-Received: by mail-pl1-f174.google.com with SMTP id d9443c01a7336-2ae82df847bso31367185ad.2
-        for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 17:19:48 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="HjETSn+l"
+Received: by mail-pj1-f54.google.com with SMTP id 98e67ed59e1d1-3599126be32so5953679a91.1
+        for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2026 17:19:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1773188388; x=1773793188; darn=vger.kernel.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=Q4gbKDbPXbOL00FNYZLFnwugvEIUZemApaFjbSsjN8o=;
-        b=owUGBEXJqZcL0qqkMwBpibLyCafIpP+U4nu9A6qeI/SL625HZ7fpiQDyrJq1IMuRRZ
-         DGJDaxHZ07FjDmwZ7XFnZ7UVKJXpCzd5hfXJIzc8rdcIdWWlf+bTmOIYzPvGVt1riOSZ
-         Yg20/uL3JXH/6LWwdVHqFsPwPI7DhzyciXmQACbSFdMUIWDj3NcIBoodDdWcPXH7UlTp
-         gETzpVUp6yw2TVpV6soCpfGf6JKc+IYpadNWtY5Q25TaLNstN0/m1BlvfdSJblhz98Le
-         o9quglNuwznvhzfoo39WfvJUxrCkwr6V5vH+TpC83d3Vvvi7ox39n11LkC1197+3Z2Wh
-         j9/g==
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1773188389; x=1773793189; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=wRPHMWr3RYeq2LdlKWsQydyKI1DDcq+bxSSt+FcIkkg=;
+        b=HjETSn+l9Y2pMksal9A4mPHKvr0YGzYlTh5OfX5qPjsJYuQU/h2WafvzK/b0oXVYlP
+         xX8nizJD4v9r1uSLPVNePh7cquSGNLnf3Bu78+qoxPh49wS4emBSSxP+p9BTFrTq0/do
+         gfqA0AXmm7hi2wqCn6JmIQ+ojy2MYCTO+7APpaDDQvwcnG2PDuXrXRbcrLph8XiFy9sa
+         xcZZOeU4cJrE6wvVnxEKh9jaz1WdTMkT/k0svZspmGaqklsWvFcw3zOkzu2suA9Zai68
+         PPg6+xcftZ2qz4KMLASVAuhETWIuj2WtcrS+lQqS9ZJem/vL2uhZ6V4tAIJjjNYac6t8
+         IoDA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773188388; x=1773793188;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Q4gbKDbPXbOL00FNYZLFnwugvEIUZemApaFjbSsjN8o=;
-        b=LpikbuLhAdcmqJiMq1um2KweOp6qBs6veM9peNSP1jOIQLPAEb1sp7h4D7PDHAlCjg
-         RH5+xixG3csXVf30kLsqO+y5rBsOI3oPSdwsWYjoVk5SfLBwDRgghwHipFAHEBmbA+gg
-         c8spjI1/i6vyTEE7IDGHGcZqFY+CBUZB7BuJ4mW5ZuU7DOUFDDJolDf+h4FF9VhKne62
-         qWELPiiUwaCB2rvpz9jC33bRaloLzjSz347H+0TOBcNCdx7SZVemkOMYPT/JQco3pWpo
-         ingOOR+W8prPGH4hT+B0BaLrw82/g45BhWcmPeTYuA2GllqPHftnPjolPwrif4dfhvad
-         XRiw==
-X-Forwarded-Encrypted: i=1; AJvYcCVU/Hn5jZFEoIJB9mUHm1F8VwJguDGBj3qaT6kV5kOYdPPCmUAkCvXq37eAG8106NB6Ca+mrULlkw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywhzn+RTg0kBi0oEkg99dXxe0/MY1/4Ldamw287eUQ7+dg/wuOD
-	KZ7m3AamkFGPVNso/lQrmOkFP3e0gtaLjVuzXASORzoc/crDK5ueTorr1tAEW1v3COg=
-X-Gm-Gg: ATEYQzzibo5mZC3KY4BA3nEI4+Kn8lMK5Zwxtgbpy6oaSKxo6boB4FRiZIftWHuOQPo
-	JmLgbiXuNBCNp+NAxgRz34dpv/qvoPC7O5efP6Q8eaN+v/iDLi83qCD3ZQxLobwufJTSxWLuIdf
-	GwTbxKDzbG4+2Rk1m+kVmOqIwH2w1RiVLt8VQuSIc8KOZMXP+zCXsmUm9Er2G182sXKPq5WLnkQ
-	JSab6xhTMO/9LzmT7GaDlNEm1A5gId/vhsHa6OwopnG/kLlwlSTa+Y4q866Ngj/ltyU6DNjG4Zn
-	T+BAtP0gtPQklvRO+l+LM5q7NxzlT1/rGFqVKFx8TqDj+O9CLa4X1NumM6hDun5ipi+Dlybyl/m
-	8TRGohadUOwInpRoBNJKUHbs3N0U0hKq/fJDgLS4HtpEkOBYGDLc7Iup3UKLIuG5CNHgEvSAZt7
-	v3OWiU2ETzxZ58pTdBD2AegrcKfgMBMuc=
-X-Received: by 2002:a17:903:1249:b0:2ae:4409:5993 with SMTP id d9443c01a7336-2aeae90f919mr5730215ad.55.1773188387884;
-        Tue, 10 Mar 2026 17:19:47 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1773188389; x=1773793189;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=wRPHMWr3RYeq2LdlKWsQydyKI1DDcq+bxSSt+FcIkkg=;
+        b=WGuYb8c8mTt7Epk3lOOQW20rdLl1Fh/5LkQ6IFZ/Ia10m1WVCkpOM8h8Mmh/qPI2Mr
+         VfxP7By/vDI1dQ6Udx7/LrdSjEjaZiuXiFKRf0IpNaRuCY0MuiBm8BGc1bCm497jpKmr
+         hVRGCpWCFiSqlB4/EPFFb+AhP0sp2K1fQ/XM13upAR00XbEG2DXGmk5Xv+9uTdokbvzg
+         WBb95+O9rry0v6sJjurvFL30fStStQmvE6AWAO2YXbDmVU1tx7BG+p6lMO4nso7jNCj6
+         TB76y/FJ6xYp1DOXpLAWoHKT8OjCdtxNuFklp/gGGuRGtut0V8NVrDBCPOSLbWRFfSnc
+         1eGw==
+X-Forwarded-Encrypted: i=1; AJvYcCVhjAnOj2YhIUKLVlDDs0Efn0VtULQAgdjm73RM2/jIko0kilM2/x3aqoPIXVlwC1Q42trWuuplmA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yyfs1KqT3ONR6V3p/mMmUUSY7xWu+Cob7rxpixmFgctFridJ9JT
+	pqQCz1E6scvokO154MYG91dBPFt4nIWYhUYSdVshT2YIq2p0J82gmu/0+W72rI4YuO+z/5sswKS
+	ysWUS3wo=
+X-Gm-Gg: ATEYQzxur6bm920y6jpLxXWdLYu19S9Jobbu3/UT940IUcM1ODaGQVsgFB/YMyRHjVv
+	SWCP0H8kzB2q2x1015HwzeNgu9pkq1/L+YaPEuRrHCJJ3FLfyEL4nvmxyLZZ7vaMaRO1saDCIbG
+	53IlFJZzLyMYDn7DdVzRwVjrm35Cpjtzlue3WjZUTBW2IRTQFCQvGm0P1Mdlp+lK9WoZjIgMdVw
+	ZJvRVG2TOI3OCjWLV84gHnUye0iTGJDRPes0xHcuipTky2bxjshan9E7t5X8VYTo7vbEMsWibz7
+	e88ddQ14AZ8N2v+4tBJGX9wgK2iqOV5UEc0ai+FP1CX235EP9iWvIXqaCaKMuzp/moorhIccu7N
+	ws2mVmvaF62c8vXlUZRh7/jsQYDWtCeqIz6eaWO6ttn4k6eWaTta75HhvQjMy11o8gZEP2TL5q9
+	2PnGoEFATjlPal3zdykRTY
+X-Received: by 2002:a17:90a:ec85:b0:359:f8c3:dada with SMTP id 98e67ed59e1d1-35a012cabc9mr688568a91.13.1773188388912;
+        Tue, 10 Mar 2026 17:19:48 -0700 (PDT)
 Received: from localhost ([71.212.200.220])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2aeae361a00sm4023795ad.76.2026.03.10.17.19.47
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35a01b174ebsm174134a91.1.2026.03.10.17.19.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Mar 2026 17:19:47 -0700 (PDT)
+        Tue, 10 Mar 2026 17:19:48 -0700 (PDT)
 From: "Kevin Hilman (TI)" <khilman@baylibre.com>
-Subject: [PATCH 0/3] pmdomain: core: add support for domain hierarchies in
- DT
-Date: Tue, 10 Mar 2026 17:19:22 -0700
-Message-Id: <20260310-topic-lpm-pmdomain-child-ids-v1-0-5361687a18ff@baylibre.com>
+Date: Tue, 10 Mar 2026 17:19:23 -0700
+Subject: [PATCH 1/3] dt-bindings: power: Add power-domains-child-ids
+ property
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -69,77 +71,97 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAq1sGkC/y2NQQ6CMBAAv0L27JoWBAxfMRxKu8oaSmtbiAnh7
- 1bxOMlkZoNIgSlCV2wQaOXIbs4gTwXoUc0PQjaZoRRlIyopMDnPGidv0VvjrOIZ9ciTyV5Eqkz
- dKqpbcRGQEz7Qnd+//K0/OC7Dk3T6Nv9GoNeSv+nQYFCRUDtrOXXF2pzlFfp9/wAeN1H/qQAAA
- A==
-X-Change-ID: 20260310-topic-lpm-pmdomain-child-ids-e3d57ae57040
+Message-Id: <20260310-topic-lpm-pmdomain-child-ids-v1-1-5361687a18ff@baylibre.com>
+References: <20260310-topic-lpm-pmdomain-child-ids-v1-0-5361687a18ff@baylibre.com>
+In-Reply-To: <20260310-topic-lpm-pmdomain-child-ids-v1-0-5361687a18ff@baylibre.com>
 To: Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh@kernel.org>
 Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-pm@vger.kernel.org, 
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
  arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 X-Mailer: b4 0.15-dev-53144
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2366; i=khilman@baylibre.com;
- h=from:subject:message-id; bh=6Ortp2qq9rULdDJuVn66N0Ei8iDpZMGkkqjcAu1CgyQ=;
- b=owEBbQKS/ZANAwAIAVk3GJrT+8ZlAcsmYgBpsLUiM05+PR9pR5YLqjfw9+cFI+c5ucZfyQF5p
- p+lPCd72oaJAjMEAAEIAB0WIQR7h0YOFpJ/qfW/8QxZNxia0/vGZQUCabC1IgAKCRBZNxia0/vG
- ZS1oD/4x2mqWfLt1MAFIqsfziojPD3xLYTRrYeJyPAT3KCbqlFVTfIM+6+Xy4IJrB8w0JvadZR0
- Vqwd0ukODb2BJo3AIFTiw1NAQQG9yXNSq0JTbohmEXaEEa9Q2Do0neOaeaxUnwQ1nkhPg8X9zjM
- SW0or1GABD/q4bR1HWDcgAGynbTiQbnB/tsR1jd9IfrMUjI7rQ5UyA2CMq5oLFTXOIgd1d0rsQy
- NjIftYUFNHL7g4oUTLAg6IKrM5CiAm7V4STroOqyR3E5t4hA+nIswqoi0+epBeG9Eg5vBl/o8XX
- csibD+sW0GefgcHfAMU+EjMu6xq9d53fC5uFJMU6Mfku88ZudHWiO85hCh7K7l5d+pSzhFPQ+PO
- uV4mV7CjNqF5optte9B61Vi/2007ep6sLMtbz4VA314IDmWbVH+FECnpGdkLkuc1n3kku7GuZQO
- nlH6RC32zOzjyfxFmSv4zXGqA4w98NnMNgnkggXxxYmSUn3Ez92baszynk+FtzTweDCB+2sBsKG
- Z0K3qET3l8OOjN4aiG4XhBxDe1Znz1hk2cuyCE4yMoSI5uruPY9/XFiAdNWZ5n0h4SLV8Gl1LRH
- OYxbcRqvAoCydhb/2iMn2ne+cqQYc8+VSVuzV0K6Gp+YaqeMiVonRB1ga4RgtmoOa3EIQOJRYOv
- 1qnWae3pQguJVSg==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2801; i=khilman@baylibre.com;
+ h=from:subject:message-id; bh=W4xSkkVIycg+yElDAfB07bsC758UPlh9LzCrHeiEG6A=;
+ b=owEBbQKS/ZANAwAIAVk3GJrT+8ZlAcsmYgBpsLUi4DwekAQDifoz6ARcFx1D9uf8ysPKH/4U6
+ vky1ASsKDaJAjMEAAEIAB0WIQR7h0YOFpJ/qfW/8QxZNxia0/vGZQUCabC1IgAKCRBZNxia0/vG
+ ZYGFEACckVcCs/uQxZ/ASYWG2Okj24RX8PZGa/Q2bO9XBt+1kSdS0YnC1imfvCon3WKPZ+5/lX8
+ K/h0jB3AX23jBP0sbB9ihDlFHl8NSt79A4R/Fj+RHLkHwqr6I3wJCBApPbhRbm51OWvPVocCUk7
+ BdUpZaFVX/YZ2mlmedt6g1t6uOA9GRgwMbn9vSXYCjrEa7fdf+/eojIBzgJGYstukKyehLvPvUR
+ t1ULjrmjCBPrVdZqEb9NyKnX7vMjRqyZZ3qEJt/JqxrMHH89v49u9MVH1WoRvU7Yl2lrzpnAHhQ
+ wwfvo1Avopvsy4jgjxfCUEEuo+SAwauxQ0PCM/TWNKZ7/xBYcoKgA25cy76nWua/oHzbpoBHJpV
+ zbj6gF0AstTdZNcdiNXkLtZtHIJjBf9hA5Oz7C/9qpec+1lobL0fQLzrWfUYBFkqPXzdHLkpXBb
+ xn4SyFKvv76YymCTBlQgHN+9+aa6SJs6XM37pa7Cl60LcddnLIyp57NwJlP3d78zjGDfYfTLSyF
+ 3zxi0VrF4XO58kCZG6D+GxBSNfpeZPP8OLlugM2ftq1gzpDx3tSjHHcCUqpFSc8/IOsbVKACQgY
+ /g7/SLGeKw1gZYKaSU4ZWi1Rxnn2ya8xY1KO5ioZ79wlrkBRuE7hx3GJ6w4HdXaG/4EakIz4O1S
+ Em9fX2MDKctxdag==
 X-Developer-Key: i=khilman@baylibre.com; a=openpgp;
  fpr=7B87460E16927FA9F5BFF10C5937189AD3FBC665
 
-Currently, PM domains can only support hierarchy for simple
-providers (e.g. ones with #power-domain-cells = 0).
+Add binding documentation for the new power-domains-child-ids property,
+which works in conjunction with the existing power-domains property to
+establish parent-child relationships between a multi-domain power domain
+provider and external parent domains.
 
-Add support for oncell providers as well by adding a new property
-`power-domains-child-ids` to describe the parent/child relationship.
-
-This idea was previously discussed on the arm-scmi mailing list[1]
-where this approach was proposed by Ulf, and then an initial RFC[2]
-implementation was made.  From there, it was suggested by Rob[3] to
-use a nexus node map instead, which led to several more versions
-attempting to implement that, culminating in v5[4], where Rob and
-Geert then had second thoughts about the power-domain-map approach.
-
-Therefore, I've gone back to the approach in the initial RFC[2] to use
-the child-ids approach.
-
-Changes compared to initial RFC[2]
-- dropped RFC
-- rewrote the parse/add function to use iterators/helpers from of.h
-- add a remove function for cleanup
-- use child domain language instead of subdomain
-
-[1] https://lore.kernel.org/arm-scmi/CAPDyKFo_P129sVirHHYjOQT+QUmpymcRJme9obzKJeRgO7B-1A@mail.gmail.com/
-[2] https://lore.kernel.org/all/20250528-pmdomain-hierarchy-onecell-v1-1-851780700c68@baylibre.com/
-[3] https://lore.kernel.org/all/20250528203532.GA704342-robh@kernel.org/
-[4] https://lore.kernel.org/r/20260122-pmdomain-hierarchy-onecell-v5-0-76855ec856bd@baylibre.com
+Each element in the uint32 array identifies the child domain
+ID (index) within the provider that should be made a child domain of
+the corresponding phandle entry in power-domains. The two arrays must
+have the same number of elements.
 
 Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
 ---
-Kevin Hilman (TI) (3):
-      dt-bindings: power: Add power-domains-child-ids property
-      pmdomain: core: add support for power-domains-child-ids
-      pmdomain: arm_scmi: add support for domain hierarchies
+ Documentation/devicetree/bindings/power/power-domain.yaml | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
 
- Documentation/devicetree/bindings/power/power-domain.yaml |  35 ++++++++++++++++++++++++++++++++++
- drivers/pmdomain/arm/scmi_pm_domain.c                     |  14 +++++++++++++-
- drivers/pmdomain/core.c                                   | 169 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_domain.h                                 |  16 ++++++++++++++++
- 4 files changed, 233 insertions(+), 1 deletion(-)
----
-base-commit: f7b88edb52c8dd01b7e576390d658ae6eef0e134
-change-id: 20260310-topic-lpm-pmdomain-child-ids-e3d57ae57040
+diff --git a/Documentation/devicetree/bindings/power/power-domain.yaml b/Documentation/devicetree/bindings/power/power-domain.yaml
+index b1147dbf2e73..a3d2af124d37 100644
+--- a/Documentation/devicetree/bindings/power/power-domain.yaml
++++ b/Documentation/devicetree/bindings/power/power-domain.yaml
+@@ -68,6 +68,21 @@ properties:
+       by the given provider should be subdomains of the domain specified
+       by this binding.
+ 
++  power-domains-child-ids:
++    $ref: /schemas/types.yaml#/definitions/uint32-array
++    description:
++      An array of child domain IDs that correspond to the power-domains
++      property. This property is only applicable to power domain providers
++      with "#power-domain-cells" > 0 (i.e., providers that supply multiple
++      power domains). It specifies which of the provider's child domains
++      should be associated with each parent domain listed in the power-domains
++      property. The number of elements in this array must match the number of
++      phandles in the power-domains property. Each element specifies the child
++      domain ID (index) that should be made a child domain of the corresponding
++      parent domain. This enables hierarchical power domain structures where
++      different child domains from the same provider can have different
++      parent domains.
++
+ required:
+   - "#power-domain-cells"
+ 
+@@ -133,3 +148,23 @@ examples:
+             min-residency-us = <7000>;
+         };
+     };
++
++  - |
++    // Example: SCMI domain 15 -> MAIN_PD, SCMI domain 19 -> WKUP_PD
++    MAIN_PD: power-controller-main {
++        compatible = "foo,power-controller";
++        #power-domain-cells = <0>;
++    };
++
++    WKUP_PD: power-controller-wkup {
++        compatible = "foo,power-controller";
++        #power-domain-cells = <0>;
++    };
++
++    scmi_pds: protocol@11 {
++        compatible = "foo,power-controller";
++        reg = <0x11>;
++        #power-domain-cells = <1>;
++        power-domains = <&MAIN_PD>, <&WKUP_PD>;
++        power-domains-child-ids = <15>, <19>;
++    };
 
-Best regards,
---  
-Kevin Hilman (TI) <khilman@baylibre.com>
+-- 
+2.51.0
 
