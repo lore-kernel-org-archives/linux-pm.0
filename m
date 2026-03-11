@@ -1,63 +1,63 @@
-Received: from mail-oi1-f175.google.com (mail-oi1-f175.google.com [209.85.167.175])
+Received: from mail-oa1-f50.google.com (mail-oa1-f50.google.com [209.85.160.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2056379EF4
-	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 20:36:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64FC0375AA1
+	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 20:41:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773261403; cv=none; b=krRxdcgFsBXKVQU1X6sgI7TYeb/SMmVmhUDP4P2tUB/0K8f7GgJiN//VcBwrcZSJyB79d+emq2qVb9mVLlv749ObSpLoqd5odVf5mhrJqL00jk4pUwQVy+rxS/rFSx5H3B+6EIxkNIgNvtUCdjgZtGQCFxdrUZKMY2zxzuJJHlk=
+	t=1773261719; cv=none; b=kW1xnibsWyZX+nYkJ2Jlzjlh8ARhA2tg/YGJXGqh8QI07l3cZpzVSDrK9e5ZFbyyFTanMYH4IwNQbH5KmD8ahlQLd1vL7wLY8vg1f7wBf7sloS7jYgMVXrtFU+od+iPxVWutG+hxYbnqmPbDNE7hRAapm690FryvvZQ2HPCwg7A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773261403; c=relaxed/simple;
-	bh=gsP7Gsx6btJxMkMe4O1lZQkpsqIZNlBsakt2DOBcP/8=;
+	s=arc-20240116; t=1773261719; c=relaxed/simple;
+	bh=Y1vKAPuE/IB0Y3E5OB8ChN0GwGXHq8OepjvbL9+uKfg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=J1Kx5gmUZD7xaqjEjM8hyJ77hXgVAqDuTdKdiaTrtA58dbNnZnLKj9nWmuyGSJ0CD8qggSOiYVjYgoa7UT1QYp1gCIzYSDIAJbZuym/MBIKs0uf/hGrXCNqT/lyP8YjBP2V4kr3Q8t8EX4NXTE7IjVGrODs3fKA2/yayn8QXcE4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=KDAIPKJp; arc=none smtp.client-ip=209.85.167.175
+	 In-Reply-To:Content-Type; b=a7Nj+0J23EU57DnqfQcwgsWSH2bdzPtUUvpdIxpBjlGh+ylXAhxRigA9+v233EUuZG8G33sr2tzwarVjSKko8CdnBfw/01eZ8pEsVyzQr9R3AjdOPhedxKw8EO5yPNfNwWLANPriijnTK01yt5VagoMqwer+csiEgHuvFiNg54M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=NRUuLw3v; arc=none smtp.client-ip=209.85.160.50
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="KDAIPKJp"
-Received: by mail-oi1-f175.google.com with SMTP id 5614622812f47-463f00cda04so218048b6e.2
-        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 13:36:41 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="NRUuLw3v"
+Received: by mail-oa1-f50.google.com with SMTP id 586e51a60fabf-4171ff4cb2cso225865fac.1
+        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 13:41:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google; t=1773261401; x=1773866201; darn=vger.kernel.org;
+        d=linuxfoundation.org; s=google; t=1773261716; x=1773866516; darn=vger.kernel.org;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:to:subject:user-agent:mime-version:date:message-id:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=Ndq0lQu+nDh4kufSje4/c+DgjvXSnUyfukdkIkqbYGI=;
-        b=KDAIPKJpzmmUNTjY60i2H5zIW3566Oqbwwkly246wo1vwCQj2ZhOcjpyOGMvSpkPlZ
-         kquVpFXpTEbTnqK6YDRuDUz1B2N1PMg6nWL73RU01wNJwBDLH4CdGUvVf1ojvbtFmR/S
-         YY3gcAMQWQlnmA0ay72Vflnm/2DURAdzGdlS0=
+        bh=y/5Jsu2i2fmiejQAevfGimVw1tBx8RleHeL/cLTqygM=;
+        b=NRUuLw3vej+9XHeW0eoRCTEzGeFzSxYLPbx+qsuplobhZcQtPjseePTU/mAGTZUDT3
+         UWjNvdM5TQh2hYJTQm5E0rtDMvYEZz+rw0zN/djZu0TfzOPJ/3wSDR21Cdz/tVlKFmIm
+         d+RBagQ6FXTj2q/ai3ZyG+Pb1m5v2LuYEg9CE=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773261401; x=1773866201;
+        d=1e100.net; s=20230601; t=1773261716; x=1773866516;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:to:subject:user-agent:mime-version:date:message-id
          :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=Ndq0lQu+nDh4kufSje4/c+DgjvXSnUyfukdkIkqbYGI=;
-        b=wWkCR7w0wjug9eMD8FccnVxt7A907rI3HwxWNcCXtxvQm/SQQuzKiSYpuC2r47z6oQ
-         2bnaTypNerbl+WSVmF5ajdXnLkVKn/2lEwWhPKCSfj6k0Y5OkMhwfA9pcRl9UKBxInTb
-         3XQg/sub/ZROCOI22S7QJEz4Cm187pFwnNpceTSCnRnshq0pKhX+7rBdFSYf+LoxZtLy
-         kqQUZiq7GyGRU0wD7suDnR95malj9zCZm/U6S+snHjZllEzE/s1yZggWjT/YnkNRfNDp
-         YTGjohvnEHQKxMi0Q3E+MzFkpB6yQA4fa24nIm03uYD2cfa+GQRVa1zuO1UsHFLui8yo
-         8h9g==
-X-Forwarded-Encrypted: i=1; AJvYcCXeZPDeDUiNLe++Wv8EA3V6qok5hKGb/uhGfEUs16cJhgYbKpTfcTW7XDjXp+CSb5h377LPS/d7YQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzH6YNQ3uMWkIOqP3+c6n4M19WKIxDZxFvETa7ihdyakVhfSztO
-	lccEtRX6LlGI+Pn0ZEg6XWPi29pzvL7Wbrm0eOAEZHiU3/r7XYvyI2yGObVXgTrfTw4=
-X-Gm-Gg: ATEYQzwsbjwpz/5BTGh9yxJ+HSLOr8tZoWYl7U/8FUWjxTNd0JyA9KJK3JX4bW1zQim
-	Ea6oa/lyJyGEsDTTTJG3jaNv1a+qG0tAPw4GSGHZdpMnx06TOUZ5wUacfAKyyJ3Pz+RQ3ivBz1t
-	iEn78IXFlMJXvDDm4SrTCihrGzzWaOlnJWePQ3slVhxWgiIJAKGjFKVehk9QhDWOImqFbFGh+iv
-	jdvo1/pBVSDACftG7rXM6+1ebycXnw7WtOwg3O55KMRAqesA7jlB6j2e/OaeQPcDWPfK4WKMfsR
-	e6ZobA0vMv/QXqD7CQ3UjLScAlv+tYEzoVOnMOqqZetaXKWJeHVU3iA0lTXzxtfFdke23Ugl+NH
-	rrFc3L2CGjYAQ6uD1WmjHnUBgSTT8nn7b+h8bhoMgB6Q8ldKWymR4GyRr31BWk03pmpCrENSx/C
-	rnFTdEKgeF/hVKSGxXrEd8gWhasTf1Nmy/slIdKK/HxPEpug==
-X-Received: by 2002:a05:6808:4f54:b0:45c:881c:e0c0 with SMTP id 5614622812f47-4673359c4a7mr2197588b6e.47.1773261400715;
-        Wed, 11 Mar 2026 13:36:40 -0700 (PDT)
+        bh=y/5Jsu2i2fmiejQAevfGimVw1tBx8RleHeL/cLTqygM=;
+        b=CZAFOCypzzuTwfYOaV449xas50alqIJSnImzUsUb9eMUVWCKX7SpeWLsNAvbkqC2ad
+         PNGKFRogZ92WlKAaSNiIt4mG+Z+YePTGGvrxA2E3iLNBZAb7ABkw6fcW6AeqjqTtCyg/
+         qI6GcppcwVspzO0jFxfyirKg8UB+4tEV9xAVq3v+VKns4GbS/hTWj+zKzGOV7wkV+vmS
+         nXpDq6GZTSVtV9BV/rXO1MVn1+KAkExzrYvLD7YzB+cKy6p8tFVvLjyy897s/5tCVJ1t
+         JW50rJdAEpmJ3be4tMVnCeygYvXcslVVHvi47OZRUWjR9sTdJMD661vYIzVNwd350wfX
+         yY0Q==
+X-Forwarded-Encrypted: i=1; AJvYcCU7EUBmdmGyGYgGuL9SGvT11uqtUmKIDMaTkBzO4XDBhU7nFdD3rDYaloqVzlk05avNW+vrfevKXw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw+oXncwtMD81K+mx2ZW7k06tmoV02bomo/oIcxOhfXvMBQ3STL
+	hwZGtObYb8ckdW7wXFQ4HkvGYwDSztLk62OrrVuL8HBHf+Z9vJWrIob2pRaXmFQ6V5A=
+X-Gm-Gg: ATEYQzzgB3PhbaDaojWI6iX9ra72XIN6sARtxO21kzO3d1WnoWR1/m5Ec8kWDDeVY+Z
+	7mnUu0B3CZeEwH1sf+oubhOBlw41DCPjlgUxz4r5weQ3w5jm9rAHO8EPJYLVJfgzJ1YofYbFkwJ
+	jn096f8pY9vDyqJ1uj+v88Nr9Iaqas5kiKdnemZyZs8/oc4VSJSQTLdOQsuSI66U19MVIgFrbnu
+	53SZjlDBJJC0+e97mdF+BjS4cJ18SoSCP7md9YwHe4dUBZUiBQ5YMxh08Z/o+0QlRE2g/MEdYr7
+	jq/vLGB/A1yNie1SIjz8/qigCbD51xGPWSK9lLQHQhW9KpV94tEDC6QMvYNLogivOTtGITQO89c
+	WbACoT511AHyg/oR3SbU9fp41iI4z44D0MeF90g0zeq60aX+q9P4At85l7ndkHIiokmCrluD+X2
+	vSHJr5VzxlpVn3SD54jKr/wKG3kMQkGIkokV4=
+X-Received: by 2002:a05:6870:2c91:b0:417:3e10:7480 with SMTP id 586e51a60fabf-4177c80cf87mr2390969fac.4.1773261716278;
+        Wed, 11 Mar 2026 13:41:56 -0700 (PDT)
 Received: from [192.168.1.14] ([38.175.187.108])
-        by smtp.gmail.com with ESMTPSA id 5614622812f47-46743aca62fsm362985b6e.2.2026.03.11.13.36.39
+        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-4177e2a17f1sm3301158fac.8.2026.03.11.13.41.55
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 11 Mar 2026 13:36:39 -0700 (PDT)
-Message-ID: <c3fd1b01-0184-43ef-9739-f523650cb6fb@linuxfoundation.org>
-Date: Wed, 11 Mar 2026 14:36:38 -0600
+        Wed, 11 Mar 2026 13:41:55 -0700 (PDT)
+Message-ID: <2d96ad0e-4341-4085-b2ed-1ef23e7b8949@linuxfoundation.org>
+Date: Wed, 11 Mar 2026 14:41:54 -0600
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -65,45 +65,48 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/4] cpupower-frequency-info.1: document --boost and --epp
- options
+Subject: Re: [PATCH 1/4] cpupower-idle-info.1: fix short option names
 To: Roberto Ricci <io@r-ricci.it>, Thomas Renninger <trenn@suse.com>,
  Shuah Khan <shuah@kernel.org>, "John B. Wyatt IV" <jwyatt@redhat.com>,
  John Kacur <jkacur@redhat.com>, linux-pm@vger.kernel.org,
  linux-kernel@vger.kernel.org, Shuah Khan <skhan@linuxfoundation.org>
-References: <abHAhAg-6gaK0Qn7@desktop0a>
+References: <abHAZj9xwfDf5JVZ@desktop0a>
 Content-Language: en-US
 From: Shuah Khan <skhan@linuxfoundation.org>
-In-Reply-To: <abHAhAg-6gaK0Qn7@desktop0a>
+In-Reply-To: <abHAZj9xwfDf5JVZ@desktop0a>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 On 3/11/26 13:20, Roberto Ricci wrote:
+> The short version of --silent is -s, not -f.
+> The short version of --proc is -o, not -e.
 
-Missing change log
+Okay - I need more than this than the cryptic change log
+Include options running the command
 
+> 
 > Signed-off-by: Roberto Ricci <io@r-ricci.it>
 > ---
->   tools/power/cpupower/man/cpupower-frequency-info.1 | 6 ++++++
->   1 file changed, 6 insertions(+)
+>   tools/power/cpupower/man/cpupower-idle-info.1 | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/tools/power/cpupower/man/cpupower-frequency-info.1 b/tools/power/cpupower/man/cpupower-frequency-info.1
-> index 1173d4f31e69..1dc7536e13ab 100644
-> --- a/tools/power/cpupower/man/cpupower-frequency-info.1
-> +++ b/tools/power/cpupower/man/cpupower-frequency-info.1
-> @@ -32,6 +32,12 @@ Gets the currently used cpufreq policy.
->   \fB\-g\fR \fB\-\-governors\fR
->   Determines available cpufreq governors.
+> diff --git a/tools/power/cpupower/man/cpupower-idle-info.1 b/tools/power/cpupower/man/cpupower-idle-info.1
+> index 20b6345c53ad..b2f92aba5f5b 100644
+> --- a/tools/power/cpupower/man/cpupower-idle-info.1
+> +++ b/tools/power/cpupower/man/cpupower-idle-info.1
+> @@ -11,10 +11,10 @@ A tool which prints out per cpu idle information helpful to developers and inter
+>   .SH "OPTIONS"
+>   .LP
 >   .TP
-> +\fB\-b\fR \fB\-\-boost\fR
-> +Gets the current boost state support.
-> +.TP
-> +\fB\-z\fR \fB\-\-epp\fR
-> +Gets the current EPP (energy performance preference).
-> +.TP
->   \fB\-r\fR \fB\-\-related\-cpus\fR
->   Determines which CPUs run at the same hardware frequency.
+> -\fB\-f\fR \fB\-\-silent\fR
+> +\fB\-s\fR \fB\-\-silent\fR
+>   Only print a summary of all available C-states in the system.
 >   .TP
+> -\fB\-e\fR \fB\-\-proc\fR
+> +\fB\-o\fR \fB\-\-proc\fR
+>   deprecated.
+>   Prints out idle information in old /proc/acpi/processor/*/power format. This
+>   interface has been removed from the kernel for quite some time, do not let
 
 thanks,
 -- Shuah
