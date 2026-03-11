@@ -1,81 +1,171 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from hall.aurel32.net (hall.aurel32.net [195.154.119.183])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1ABE138D016;
-	Wed, 11 Mar 2026 07:10:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A758E346760;
+	Wed, 11 Mar 2026 07:20:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.154.119.183
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773213054; cv=none; b=BYJ0eM2I5+6aK131/dg+uHD8vK/H5LTTRUf15lnNFt2TnSMqZdmL4vTuBECce/xx1k8XaAX2RGsD5H9DDNJCT8rVM+oSV9ZwRmVoVXJXheN8saIVflXU2xWus8AjCRbeDPfr41Q8iTitfYx84WQUU/d+c9C8d7mjorxBAWN0+DI=
+	t=1773213635; cv=none; b=pt/Gz9tq91KwkY0mia6LYgWu6dl/duQccrAuBWwuQnAhaFKu3zuMySsWyP9gLvNmJINzCOfRyz4TPK+98CffSR94xG6YWIyJmbk758udx4crBaSWRSdVD2X2kVJ9ET27mjVoYkCaJyVlU8UbCdXNXYbUkqNveZNkwrZaExceQTI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773213054; c=relaxed/simple;
-	bh=nG5QpDl0WwXxxEUbvogAjWfL4X9xBVWgNKIGnVanW5k=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=pqWVdk65oZGxfL9ZZMbTpM6XAOqVNTe5z23vzLWmM5iBNydIn1cho1sVStt/Vv9v3ZJ3eLR9cPoQ9zLpMUZdn5aD3uIwlH6eTfeQlSld1rMFn5hh97we7iTZJvSiIkTri6GgIT7Ez5M6vDs7aNtY3LOou9crCSSlf63tQA8aEjQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4469EC4CEF7;
-	Wed, 11 Mar 2026 07:10:53 +0000 (UTC)
-Received: by venus (Postfix, from userid 1000)
-	id 7A22B180696; Wed, 11 Mar 2026 08:10:45 +0100 (CET)
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
- Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
- Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, 
- Tobias Schrammm <t.schramm@manjaro.org>, Sebastian Reichel <sre@kernel.org>, 
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
- Dan Carpenter <dan.carpenter@linaro.org>, 
- Krzysztof Kozlowski <krzk@kernel.org>, Lee Jones <lee@kernel.org>, 
- Dzmitry Sankouski <dsankouski@gmail.com>, 
- Matthias Brugger <matthias.bgg@gmail.com>, 
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
- Benson Leung <bleung@chromium.org>, Tzung-Bi Shih <tzungbi@kernel.org>, 
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Cc: Matti Vaittinen <mazziesaccount@gmail.com>, driver-core@lists.linux.dev, 
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-mediatek@lists.infradead.org, chrome-platform@lists.linux.dev, 
- stable@vger.kernel.org
-In-Reply-To: <20260305-workqueue-devm-v2-0-66a38741c652@oss.qualcomm.com>
-References: <20260305-workqueue-devm-v2-0-66a38741c652@oss.qualcomm.com>
-Subject: Re: (subset) [PATCH v2 00/10] workqueue / drivers: Add
- device-managed allocate workqueue
-Message-Id: <177321304548.505649.413926339032568347.b4-ty@collabora.com>
-Date: Wed, 11 Mar 2026 08:10:45 +0100
+	s=arc-20240116; t=1773213635; c=relaxed/simple;
+	bh=sjTLoFSzoxavBPvZXmlaXgf/l5O6aCdgT9F58NXmKNg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=bFm1TlrUFUO6kr1GdwIsPdi/Qnqw97ZNXNzYt3WRMczDgBfg8sqLwD3KmaYb4LohggPWlXxnMbZ6N1k6c601eHlILOc3ZpfdC28L71RADTaamgENdX8A5bS3d+2BfcR3GOGxzvNka71dbfx0aVoWCcY4rig1ZaR+6xot44A4nDU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net; spf=pass smtp.mailfrom=aurel32.net; dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b=ETuMtQDJ; arc=none smtp.client-ip=195.154.119.183
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aurel32.net
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b="ETuMtQDJ"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=aurel32.net
+	; s=202004.hall; h=In-Reply-To:Content-Type:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Content-Transfer-Encoding:From:Reply-To:
+	Subject:Content-ID:Content-Description:X-Debbugs-Cc;
+	bh=zMDCp80wXcZlLIgcMelPeXG51rHfM/JmcuxJr30FfrI=; b=ETuMtQDJY2vKLj6uIgdJBYJEYM
+	IEPDBl9cBc/VI5eOShAEWs+TcADvt/4WIraBsH+PplPd/frmUrUNPQpKyJA/GKeMEfHL2ogFBCxSO
+	nweLqxHjG5mwOhp+FPQdFy5lRhAkWzhWJfiqQUaLNUScVTI4QvpGsfHSOPapX2sxKkIg0TUNWS+2Z
+	ZIHgP1CwEhEM29wN780LxlJWL+F5cp4dfd6zXwC2Y//7r0WqdL0ocAIVfA4nKeYVdt6BAF/Bxqylz
+	j+/CpCFYpo+p/oswbdaCP9YJbXknwXvy14AYjtO6hjXaVmO03F/25exOwnpqjxVzS9KqxAuVTOZ/3
+	4AphON0w==;
+Received: from authenticated user
+	by hall.aurel32.net with esmtpsa  (TLS1.3)  tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.98.2)
+	(envelope-from <aurelien@aurel32.net>)
+	id 1w0DKx-0000000709L-3xln;
+	Wed, 11 Mar 2026 07:46:31 +0100
+Date: Wed, 11 Mar 2026 07:46:31 +0100
+From: Aurelien Jarno <aurelien@aurel32.net>
+To: Troy Mitchell <troy.mitchell@linux.spacemit.com>
+Cc: Yanko Kaneti <yaneti@declera.com>, linux-kernel@vger.kernel.org,
+	Lee Jones <lee@kernel.org>, Sebastian Reichel <sre@kernel.org>,
+	Yixun Lan <dlan@gentoo.org>, Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	"open list:RISC-V ARCHITECTURE:Keyword:riscv" <linux-riscv@lists.infradead.org>,
+	"open list:RISC-V SPACEMIT SoC Support:Keyword:spacemit" <spacemit@lists.linux.dev>,
+	"open list:SYSTEM RESET/SHUTDOWN DRIVERS" <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH v5 2/2] mfd: simple-mfd-i2c: add a reboot cell for the
+ SpacemiT P1 chip
+Message-ID: <abEPxzhpQSzkfbaI@aurel32.net>
+Mail-Followup-To: Troy Mitchell <troy.mitchell@linux.spacemit.com>,
+	Yanko Kaneti <yaneti@declera.com>, linux-kernel@vger.kernel.org,
+	Lee Jones <lee@kernel.org>, Sebastian Reichel <sre@kernel.org>,
+	Yixun Lan <dlan@gentoo.org>, Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	"open list:RISC-V ARCHITECTURE:Keyword:riscv" <linux-riscv@lists.infradead.org>,
+	"open list:RISC-V SPACEMIT SoC Support:Keyword:spacemit" <spacemit@lists.linux.dev>,
+	"open list:SYSTEM RESET/SHUTDOWN DRIVERS" <linux-pm@vger.kernel.org>
+References: <20251102230352.914421-1-aurelien@aurel32.net>
+ <20251102230352.914421-3-aurelien@aurel32.net>
+ <b51a62513daa9d2390031ec350e0b33bdb7e54aa.camel@declera.com>
+ <aaC78FTN31QYaVg0@aurel32.net>
+ <990bc03ed2baa05e619f0aa9cc6a23acadd66ea6.camel@declera.com>
+ <aaS6xeKFZz06fb1_@aurel32.net>
+ <aaXuWwyA5NzBZzlW@aurel32.net>
+ <36f8df695463e5ff3eaaffbac357fc73026f7373.camel@declera.com>
+ <aadGw1fIlJyNNoum@aurel32.net>
+ <DGZM6WUAVPPS.20Y0NIZYI4572@linux.spacemit.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.14.3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <DGZM6WUAVPPS.20Y0NIZYI4572@linux.spacemit.com>
+User-Agent: Mutt/2.2.13 (2024-03-09)
 
+Hi,
 
-On Thu, 05 Mar 2026 22:45:39 +0100, Krzysztof Kozlowski wrote:
-> Merging / Dependency
-> ====================
-> All further patches depend on the first one, thus this probably should
-> go via one tree, e.g. power supply.  The first patch might be needed for
-> other trees as well, e.g. if more drivers are discovered, so the best if
-> it is on dedicated branch in case it has to be shared.
+On 2026-03-11 10:58, Troy Mitchell wrote:
+> On Wed Mar 4, 2026 at 4:38 AM CST, Aurelien Jarno wrote:
+>  Hi, Aurelien and Yanko,
+> > Hi,
+> >
+> > On 2026-03-02 22:34, Yanko Kaneti wrote:
+> >> Hello,
+> >> 
+> >> On Mon, 2026-03-02 at 21:08 +0100, Aurelien Jarno wrote:
+> >> > On 2026-03-01 23:16, Aurelien Jarno wrote:
+> >> > > On 2026-02-27 13:29, Yanko Kaneti wrote:
+> >> > > > On Thu, 2026-02-26 at 22:32 +0100, Aurelien Jarno wrote:
+> >> > > > > Hi,
+> >> > > > > 
+> >> > > > > On 2026-02-26 16:32, Yanko Kaneti wrote:
+> >> > > > > > Hello,
+> >> > > > > > 
+> >> > > > > > On Mon, 2025-11-03 at 00:02 +0100, Aurelien Jarno wrote:
+> >> > > > > > > Add a "spacemit-p1-reboot" cell for the SpacemiT P1 chip.
+> >> > > > > > > 
+> >> > > > > > > Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
+> >> > > > > > > ---
+> >> > > > > > > v5: no changes
+> >> > > > > > > 
+> >> > > > > > >  drivers/mfd/simple-mfd-i2c.c | 1 +
+> >> > > > > > >  1 file changed, 1 insertion(+)
+> >> > > > > > > 
+> >> > > > > > > diff --git a/drivers/mfd/simple-mfd-i2c.c b/drivers/mfd/simple-mfd-i2c.c
+> >> > > > > > > index 0a607a1e3ca1d..542d378cdcd1f 100644
+> >> > > > > > > --- a/drivers/mfd/simple-mfd-i2c.c
+> >> > > > > > > +++ b/drivers/mfd/simple-mfd-i2c.c
+> >> > > > > > > @@ -99,6 +99,7 @@ static const struct regmap_config spacemit_p1_regmap_config = {
+> >> > > > > > >  };
+> >> > > > > > >  
+> >> > > > > > >  static const struct mfd_cell spacemit_p1_cells[] = {
+> >> > > > > > > +	{ .name = "spacemit-p1-reboot", },
+> >> > > > > > >  	{ .name = "spacemit-p1-regulator", },
+> >> > > > > > >  	{ .name = "spacemit-p1-rtc", },
+> >> > > > > > >  };
+> >> > > > > > 
+> >> > > > > > Perhaps its safe to merge this one now that everything P1 and I2C is
+> >> > > > > > already in linus tip ?
+> >> > > > > 
+> >> > > > > Unfortunately, this patchset is still missing:
+> >> > > > > https://lore.kernel.org/all/20260207-b4-k3-i2c-pio-v7-0-626942d94d91@linux.spacemit.com/
+> >> > > > > 
+> >> > > > > This means the reboots work most of the time, but are not 100% reliable, 
+> >> > > > > and that's the reason why this patch got blocked from merging.
+> >> > > > 
+> >> > > > I see. Thanks. Sounds to me like sometimes working compared to never
+> >> > > > working is better , but anyway..
+> >> > > 
+> >> > > I agree with that, but the decision was to hold on this patch until the 
+> >> > > I2C PIO part got merged.
+> >> > > 
+> >> > > > FWIW  with this patch and the pio patcheset I get this rcu splat on
+> >> > > > reboot (which is still working). Similar splat is there without the pio
+> >> > > > patcheset.
+> >> > > 
+> >> > > I haven't been able to reproduce the issue here after 10+ reboots on a 
+> >> > > BPI-F3 board, but I tried the patch on top of 6.19. I'll try to build a 
+> >> > > 7.0.0-rc2 kernel and report back.
+> >> > 
+> >> > I have tried that, and I am still unable to reproduce the issue with a 
+> >> > 7.0.0-rc2 kernel and a BPI-F3 board.
+> >> 
+> >> I can still see it on every reboot (with the patches that allow reboot
+> >> to work). Do you have CONFIG_PREEMPT_RCU in your config ? its default on
+> >> when anything PREEMPT is selected. In Fedora its CONFIG_PREEMPT_DYNAMIC
+> >> that flips it.
+> >
+> > Thanks for the hint, that option was not activated here, it's not the 
+> > riscv64 defconfig. With it I am also able to reproduce the issue. I'll 
+> > try to debug that and report back.
+> I have sent a patch to address this issue here[1].
 > 
-> [...]
+> Could you please test it on your hardware when you have a chance?
+> 
+>                         - Troy
+> 
+> Link:
+> https://lore.kernel.org/all/20260311-v7-0-rc1-rv-dis-int-before-restart-v1-1-bc46b4351cac@linux.dev/ [1]
 
-Applied, thanks!
+Thanks, I confirm it fixes the issue \o/.
 
-[02/10] power: supply: cw2015: Free allocated workqueue
-        commit: db254b0b232358ab1aeadebe8d147c99a3569559
-[03/10] power: supply: max77705: Drop duplicated IRQ error message
-        commit: 2064c64ceb1996ee02a6bbb1de05fd6e8028e3e4
-[04/10] power: supply: max77705: Free allocated workqueue and fix removal order
-        commit: 1e668baadefb16e81269dbfebf3ffc2672e3a3bb
-[05/10] power: supply: mt6370: Simplify with devm_alloc_ordered_workqueue()
-        commit: f23afa01040a41882a048e4957a7acac1426da6f
-[06/10] power: supply: ipaq_micro: Simplify with devm
-        commit: 2cfc7cac68e19c4acb236b8db6065bbaff5deee8
+Regards
+Aurelien
 
-Best regards,
 -- 
-Sebastian Reichel <sebastian.reichel@collabora.com>
-
+Aurelien Jarno                          GPG: 4096R/1DDD8C9B
+aurelien@aurel32.net                     http://aurel32.net
