@@ -1,128 +1,139 @@
-Received: from mail-ed1-f48.google.com (mail-ed1-f48.google.com [209.85.208.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from PH8PR06CU001.outbound.protection.outlook.com (mail-westus3azon11012035.outbound.protection.outlook.com [40.107.209.35])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 39625367F4A
-	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 14:06:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.48
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773237990; cv=none; b=gLHlsYRo2IxJ/YqY6FVOO3vMIPRHKMvAjXq3CDWIukes64JqazUDwMKPdbMRgx8rHhncjKvgsfKTRFoV+we/I4v7LiMHa3dHMGEgfOICqbQsg517HR6SfnvytkzRe6g6P66u8yaufcKpVrWZyouCCNaLz58N3F+1M/Ap3iQ2OVU=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773237990; c=relaxed/simple;
-	bh=POUJjzeRhBIXfPGojdZfC417KH92loTKx1KmDpRcfoc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=BS+F+zpHQ0DfODoAr3SoNvPqUpOHjogKF8jrQkb5WG19UClroEgFDUDrJcuXGfyNXVSdKgcXFoGSpnkqNj++/+cpwHFaC9o/gTJ11GaM7OP8vKLds8WZnlilPnjJFc+xNeTRgtDn9x2W846qmPlS6ZUBC9S/D2z/zwIF5ww4Rrw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.208.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-ed1-f48.google.com with SMTP id 4fb4d7f45d1cf-660ea6ceb5aso1628107a12.0
-        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 07:06:29 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773237987; x=1773842787;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=wIz9Fr5w5J45ZN4rxwvT/0kjXMGfLP1VpB2aKPOax7k=;
-        b=fJbWBnsLL2pq1p6haw5gN6B/d44h6jnOOJnx186QC+KBAXqy0fKoVTvkTgudupky/V
-         0Tz2Njg6wnxyA1KwsUuyMzheQcjs+BnwbwwXrb6H/GdOkMDnKtKGw7aynhCZ0dTYbdoT
-         3mJUyOHpMgqq03qRjcpdp7p89+mu8mfKR6ksh4glFVQJE+luB5EpJII6b4TK0dodailx
-         mZsXHmIel4tmwRXFz/kBbd08H5TmyAABNp75P+E69/LG9t4MC106Lpu90QuhbiZvk+uy
-         MCunDYUV/81KxMVGUenUiwGt0R6jtQb0dKTwN+dj13zDJSnPCDWcV9zdCA7xjYXa+h+I
-         1+Rw==
-X-Forwarded-Encrypted: i=1; AJvYcCU1ql4w8IKltMq6L4Qy2Z3V8J4WmmTfYlz9O1gCpjO4gY3CrHsjo5MWV+9+PloaCd68FMhyruRP9g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzV1hvC0DtWqw4v8ackBG0QtfVm3zEyzorpVGcXCA3w+svesSXx
-	wIr+F+RkEa3IuAThTF9Gbxsd067wsz5KIdp7ORSfd2HjeKwK9gsJysiRuAdNROpnnXWVeA==
-X-Gm-Gg: ATEYQzwURTKIA3Laih5srzDS4FA42DBK0zbPg6jN65tnAfp81Na23qnqmHd7ptOCuYU
-	ma0zK9l8PplNwwha5KHULaZ6ik2k8Qr9PRmxaC/nOLuScWKxHhr24btA6tNx2CbZqymaLe2M+1A
-	SXYSK8dNbZSklgftdIRC/21t3LqjZlWrePgvHv0jM/gbFD2cppYJr5eu0/xx6A6HgyxVz969OW5
-	S8qlsozzDqb3ESp/c1/x70ww/SfKskNOknVkv/jpoojR6ejeI+u8jj+cSuxKRoY5KE4zBqpYVyD
-	9M66SsQO6qOFQiD2lIN4U+f5joRVgKCEEa2MwPHp099pmEmmPAbNie3a3VOc/RFZ5rB9mrQlvRe
-	IQnqSLjn4UA1L8CZ/rfThlLLBLNJ9h28aUJelHMOQuw/vinqAlWGww0zq1ffiJ26qI9aFSJ8u8G
-	/HfqLnJAzGH1dNdE45c/X0HJQBLUYdJz5dpQsttu07xknCtW1jtPrJoGHGs/6E
-X-Received: by 2002:a17:906:6a02:b0:b94:2bb4:c5d8 with SMTP id a640c23a62f3a-b972d7bc636mr165778666b.19.1773237987293;
-        Wed, 11 Mar 2026 07:06:27 -0700 (PDT)
-Received: from mail-ej1-f45.google.com (mail-ej1-f45.google.com. [209.85.218.45])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b97307dde54sm49298266b.11.2026.03.11.07.06.21
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 11 Mar 2026 07:06:23 -0700 (PDT)
-Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-b93698bb57aso169025866b.0
-        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 07:06:21 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCWVL424gOB7bnIEFEdlAZysPEKiOcJjBPD6fyH96dXDZFtOp/Yz3MfQyC10NRjO7iv0noxW2hIMpg==@vger.kernel.org
-X-Received: by 2002:a17:907:6d16:b0:b88:4f25:81da with SMTP id
- a640c23a62f3a-b97113ff0b9mr462021166b.0.1773237981235; Wed, 11 Mar 2026
- 07:06:21 -0700 (PDT)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7DE3936492D;
+	Wed, 11 Mar 2026 14:11:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.209.35
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773238310; cv=fail; b=rtviDu8XPidSSJo4qZMQrLP47Dczc/OUv4oz6jEN8mvFfFscNWdP1OjbfauKBpgf1LNIBNF0P+9k9uipEkh7mBOkTDLA9AZKEkAS4dd8eWslMR4q5TwDPJ1yrXd8OzgW/QoiztxHZcYG+Ns5X4A8SEkQ4+HNhGkHOhfY2/OlbIU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773238310; c=relaxed/simple;
+	bh=TolGaAjP+hdGIKlApaDjQYDyC7YRz09x4VAJmANDTWM=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=N1vpN3Y7lApu5snY2gqvhl7xaSLd/O1IfWLrTW32oSvOZihe1vWEQWrhUgnvA3hweALzzxwj4WVRMipydDSmVeCSRjcjq1JPkGmT8C8x81i0YVgZrF3b0Y9TcdTm6LgKzeiiAiOPvXdaFcbJI5n7QQX6ngQI86ToH9II6sx80QU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=0Yf4OWzb; arc=fail smtp.client-ip=40.107.209.35
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="0Yf4OWzb"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=hYI0EKW47dy5VP7MPdP/IH74mdydKpgL40qwnLES/MCkPI1DSpYyAu2GlAu2Wo7R6Bs7mz6Db2sgrm3UgTsVh0zVHcyxZ2T74xUcuopqy8F4T4H1U6CHc47FPNNEZCelLVH8DvrCILmmMObCL4oaIUBU6vZo8I5yHazbAosdhwx9RO137CIG9Hf1mOg7dJgqpW66cZYQGbkWaBD302Cp49BuG5iHQpdVAoaLr9r38n/SnhxPoL46M6kHA1in8qjjcHQJlxdJ4lJULJ465SUxqnPta06dpiiuzM1UYURX7iPXO4mZ34ZNNknZxu30Lf97sdP6o13d9mpHe5XgPBTqkw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=7pzlpzA8yGLtPHZ5le54owSJpjZDHrFVUWKfr3ILc4U=;
+ b=VD9L5GEt082VhkA5UdBt5FI4BupxrG44XNbloQWinUD7aTpAJwjrLRpD79gUE3NhyChXyY/l4W+Kj9IPKkC3MGaJims19wgHoCKavkQaSnBPTT8HD+rXDHO2+p3y2qMAbstlRvKeRiqppAnkGNojKVrztQa31k811+fLUVbBoxmLpktE24WWK+rNAj3zHyccn56UzhRtEkUyVAYBhDe5BypMkggdjT0SKIfzt6dtahRc+LURUHnexIglDs76U46w/pg3PmBq/wRtnKk79P2iSoPnEHQkS66iO2M6RJ/0Ckb5W3dtp0uelMV2lXEPSv4py4wCX6ctgJfU7n5cmWB8gQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=7pzlpzA8yGLtPHZ5le54owSJpjZDHrFVUWKfr3ILc4U=;
+ b=0Yf4OWzbIGXXIyjsOAJfOCLBJF/aHMrYYb8U0Aug3j+rEH/QJFQvU8g1nFevNRB6UoGroiV7TSUW5E2TBz4TLIaNrJOZbdq/bSoUg+FH+Xp6fXnhjfUVRHd62g/jQiMuo+C7sgsB/G3kdauUy68qGYiILFOaFxcbrYDE1UnJY3g=
+Received: from BLAPR03CA0129.namprd03.prod.outlook.com (2603:10b6:208:32e::14)
+ by IA1PR12MB7543.namprd12.prod.outlook.com (2603:10b6:208:42d::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.3; Wed, 11 Mar
+ 2026 14:11:46 +0000
+Received: from BL02EPF00021F6C.namprd02.prod.outlook.com
+ (2603:10b6:208:32e:cafe::50) by BLAPR03CA0129.outlook.office365.com
+ (2603:10b6:208:32e::14) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9678.27 via Frontend Transport; Wed,
+ 11 Mar 2026 14:11:23 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ BL02EPF00021F6C.mail.protection.outlook.com (10.167.249.8) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9678.18 via Frontend Transport; Wed, 11 Mar 2026 14:11:46 +0000
+Received: from BLRRASHENOY1.amd.com (10.180.168.240) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.17; Wed, 11 Mar
+ 2026 09:01:43 -0500
+From: "Gautham R. Shenoy" <gautham.shenoy@amd.com>
+To: Mario Limonciello <mario.limonciello@amd.com>, "Rafael J . Wysocki"
+	<rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, K Prateek Nayak
+	<kprateek.nayak@amd.com>
+CC: <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>, "Gautham R.
+ Shenoy" <gautham.shenoy@amd.com>
+Subject: [PATCH v2 2/9] amd-pstate: Update cppc_req_cached in fast_switch case
+Date: Wed, 11 Mar 2026 19:31:09 +0530
+Message-ID: <20260311140116.19604-3-gautham.shenoy@amd.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260311140116.19604-1-gautham.shenoy@amd.com>
+References: <20260311140116.19604-1-gautham.shenoy@amd.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
- <20260310-b4-is_err_or_null-v1-15-bd63b656022d@avm.de> <20260310100750.303af303@gandalf.local.home>
- <20260311141332.b611237d36b61b2409e66cb3@kernel.org> <20260311100332.6a2ce4b1@gandalf.local.home>
-In-Reply-To: <20260311100332.6a2ce4b1@gandalf.local.home>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 11 Mar 2026 15:06:07 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdX4kRGLaKMzPuhS1Pmxh609eiqQW-cAS_jWBBbt-vE6SA@mail.gmail.com>
-X-Gm-Features: AaiRm53WEGMMLW4z34e7P-lM1qFvsCJGZ_o4JNL5NPWbhJPKmcqz6k9bJcyL--8
-Message-ID: <CAMuHMdX4kRGLaKMzPuhS1Pmxh609eiqQW-cAS_jWBBbt-vE6SA@mail.gmail.com>
-Subject: Re: [PATCH 15/61] trace: Prefer IS_ERR_OR_NULL over manual NULL check
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "Masami Hiramatsu (Google)" <mhiramat@kernel.org>, Philipp Hahn <phahn-oss@avm.de>, amd-gfx@lists.freedesktop.org, 
-	apparmor@lists.ubuntu.com, bpf@vger.kernel.org, ceph-devel@vger.kernel.org, 
-	cocci@inria.fr, dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org, 
-	gfs2@lists.linux.dev, intel-gfx@lists.freedesktop.org, 
-	intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev, kvm@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, 
-	linux-bluetooth@vger.kernel.org, linux-btrfs@vger.kernel.org, 
-	linux-cifs@vger.kernel.org, linux-clk@vger.kernel.org, 
-	linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org, 
-	linux-fsdevel@vger.kernel.org, linux-gpio@vger.kernel.org, 
-	linux-hyperv@vger.kernel.org, linux-input@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org, 
-	linux-media@vger.kernel.org, linux-mips@vger.kernel.org, linux-mm@kvack.org, 
-	linux-modules@vger.kernel.org, linux-mtd@lists.infradead.org, 
-	linux-nfs@vger.kernel.org, linux-omap@vger.kernel.org, 
-	linux-phy@lists.infradead.org, linux-pm@vger.kernel.org, 
-	linux-rockchip@lists.infradead.org, linux-s390@vger.kernel.org, 
-	linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org, 
-	linux-security-module@vger.kernel.org, linux-sh@vger.kernel.org, 
-	linux-sound@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, 
-	linux-trace-kernel@vger.kernel.org, linux-usb@vger.kernel.org, 
-	linux-wireless@vger.kernel.org, netdev@vger.kernel.org, ntfs3@lists.linux.dev, 
-	samba-technical@lists.samba.org, sched-ext@lists.linux.dev, 
-	target-devel@vger.kernel.org, tipc-discussion@lists.sourceforge.net, 
-	v9fs@lists.linux.dev, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: satlexmb07.amd.com (10.181.42.216) To satlexmb07.amd.com
+ (10.181.42.216)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BL02EPF00021F6C:EE_|IA1PR12MB7543:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7e424499-e16d-46da-ec38-08de7f78215d
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|82310400026|36860700016|1800799024|376014|22082099003|56012099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	2eIRjRSk9x3GMfulsxQcUPqZkkxuBOoCseTvjqmS0/qxWnEgrF4g5GLMJXFazvVfjdgUu5ma/VQexK+4ytYG/9pyj+PnicNTOeImnFxiOfoLz4dZRik4rRDbhQTJwb2SeIo0actT/fJVU1tYWC+zVR98cnhO0ZJfq3R3V0WmztalQnfj+YmcPdrJub9AwR1j0QbF4js0SYS1TaEAidHAA8Zx7+cdIKBFEWmrf4ERR+JCZXE3Jeug+2SrxEnWbTTpEB5b+2P9r/5Wguq2dI2GKudg13qGLwk4y6a0A2SY6Tndtzr8YY6bSutqsJPpI/Pkxj5VjjKx6jNjDPsS1ZUYWT7HIxnu21FtnipBsNICADsBqL7zMisd2QaGzN31H5H87lrUPDxECodF5mtbaYg6cfiBEQrEubjoQGFy0D7Nj7oVJkNPmWF89e9co4UfPXKt5ujZVnsIbVIu+niwE3PO99iKuUqzbi+JKXPbsOrSW1R0LCZIkWnWO0oGPolIWXDoze/2hcCoz2hjswePkVrCy0/Bjjo55dmOhjgW7lLbHsLwRCbTM+RjpJ8HbFD6X4a/Ss8uxoIg9ItwU3LTTetiWgyBwyTEFfLQfnxkwOs7MkeFWKKuU+UYazflTxibcxRESjWqMdv/epzIxkMXE5O1Fl3BqRDuetgUeiBJThZN0mNPVwX++N5rnX8vbs33UEhqyAX/0ZWa6iAyQ5cIeimerxkn+rJReJcHhFxyyiLiJv4=
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(36860700016)(1800799024)(376014)(22082099003)(56012099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	Mfo+Jf2sQnnoQSJMo0UueGDJYnxfAU/agfMwWUoLEdNxgORiajcdvxNeCV8st0/ZPr4e0sDmzVIZ8MIsILEyncYbohrtKS+rWf2Mvg1wQzTJFGSe1vzX11rzEJbA0ps0/oKRO4TcTA70qZpCW8i+b1Oudy4R+V6Vb2CKR8aT91ZMpsaOlrYhBP3zw9PMhPSOiftOzDDJ5wLTG6FUD+txl/jjwSnwO4fBixzD4JCLr6ObpPharRB2HEPhIu5v/MZ6LXjigWNNIUwQGDpuu2NnKy/XW3+vxMPR69sN3fKCeiAU33BUwYhmni6SybKpNTBVFP1k//phtqrHRMY7rXwOEO/LFB6rVeCEnho2TvdApTmGsyNA3zv6K84w8utJOuI+4AjaqZzcBks3THJkaTm6YU7SyCFkV21Wuef0MFbsYLEf4rX3PQdqeM16hxb0kruc
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Mar 2026 14:11:46.5359
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7e424499-e16d-46da-ec38-08de7f78215d
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	BL02EPF00021F6C.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB7543
 
-Hi Steven,
+The function msr_update_perf() does not cache the new value that is
+written to MSR_AMD_CPPC_REQ into the variable cpudata->cppc_req_cached
+when the update is happening from the fast path.
 
-On Wed, 11 Mar 2026 at 15:03, Steven Rostedt <rostedt@goodmis.org> wrote:
-> On Wed, 11 Mar 2026 14:13:32 +0900
-> Masami Hiramatsu (Google) <mhiramat@kernel.org> wrote:
->
-> > Hmm, now IS_ERR_OR_NULL() is an inline function, so it is safe.
-> > But if you want to use IS_ERR_OR_NULL() here, it will be better something like
-> >
-> > node = rhashtable_walk_next(&iter);
-> > while (!IS_ERR_OR_NULL(node)) {
-> >       fprobe_remove_node_in_module(mod, node, &alist);
-> >       node = rhashtable_walk_next(&iter);
-> > }
->
-> But now you need to have a duplicate code in order to acquire "node"
->
-> I think the patch just makes the code worse.
+Fix that by caching the value everytime the MSR_AMD_CPPC_REQ gets
+updated.
 
-Obviously we need a new for_each_*() helper hiding all the gory internals?
+This issue was discovered by Claude Opus 4.6 with the aid of Chris
+Mason's AI review-prompts
+(https://github.com/masoncl/review-prompts/tree/main/kernel).
 
-Gr{oetje,eeting}s,
+Assisted-by: Claude:claude-opus-4.6 review-prompts/linux
+Fixes: fff395796917 ("cpufreq/amd-pstate: Always write EPP value when updating perf")
+Signed-off-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
+---
+ drivers/cpufreq/amd-pstate.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-                        Geert
-
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index d57969c72c9dc..24cdeffbcd40e 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -261,7 +261,6 @@ static int msr_update_perf(struct cpufreq_policy *policy, u8 min_perf,
+ 
+ 	if (fast_switch) {
+ 		wrmsrq(MSR_AMD_CPPC_REQ, value);
+-		return 0;
+ 	} else {
+ 		int ret = wrmsrq_on_cpu(cpudata->cpu, MSR_AMD_CPPC_REQ, value);
+ 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.34.1
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
