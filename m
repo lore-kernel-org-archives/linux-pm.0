@@ -1,45 +1,46 @@
-Received: from MW6PR02CU001.outbound.protection.outlook.com (mail-westus2azon11012001.outbound.protection.outlook.com [52.101.48.1])
+Received: from CY3PR05CU001.outbound.protection.outlook.com (mail-westcentralusazon11013054.outbound.protection.outlook.com [40.93.201.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FF41363C6C;
-	Wed, 11 Mar 2026 14:01:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.48.1
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A352D364029;
+	Wed, 11 Mar 2026 14:01:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.201.54
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773237705; cv=fail; b=t7YiumM1nRWg1N9oEXT2INC1yJscFG4W1clWG95SbsoTkHJGj2Eai/JFEK3HhELRqX2yx6gW3gO6IaK4/vKKvDP16SAsWlkyWGmg+Z3iWsJ9obosCIKmGGZYoPpHwwFJZhqTl8Rq4nbD6zhAX1Kj9ju3q0kmtwQcK6oYvKaL13E=
+	t=1773237709; cv=fail; b=KtEFbGbnipzX0L4/Lv7kRnbycI2iQVLqB05L9Hk4knhGIzZHTrBtgKiKHYpn1LTMvQWfrgO+ok8reEqwWYVYRdCSRhNl0hp8oyUdH00pYFsO/AfFlki+HgB9bK5QApXT4puJiv96tanD7cdraKkPU9vnTMXAACuQA6b3a0y/QL8=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773237705; c=relaxed/simple;
-	bh=wd6X9iuN+/aN/dhdwGqvxTEae/gGQhn+GPNbnJrmnSY=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=DrZWp+xliUNRFoFsRPFUcLK5LPSMo+9tnGVwoEwlCRqDGqMctpvt2cPIG8id202JK6hYUbzcSmnVUsNewDtnudKSKD1D0EH2K9b7KU5h5SKsQRdl/q9WWiCN+WKY3VE9S8pUfgR7SZtMYaOCc3Ex7NB6YjCzeJEUudAIQt59iFI=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=3xK1D6d6; arc=fail smtp.client-ip=52.101.48.1
+	s=arc-20240116; t=1773237709; c=relaxed/simple;
+	bh=XuTIV0n+oRXw9VTDjTtp3eqDdIbXA6Y5/lckxC4Rr58=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=SiECjX+uO1UwUu/MpPtvAFlcSFXHmpE+B2BdMYHxuFI2GH3DVMr+x8OX7bb2f+EKESidSPKfI+7ncQTGwwQ7x/LY7Gxd6hNCygeywUGpI+0IvSQofp7gbgHmzf1xcm1SajUSVV+9vRSiPW8qUu0/2hGAx8qIJppzTwd5cPpRrA0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=Ny4RFLgj; arc=fail smtp.client-ip=40.93.201.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="3xK1D6d6"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="Ny4RFLgj"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=JXjtAdezw/WRsiHI7XqzeS6W9JMS2y6EwB87gHtOLRoStg/xMj2oD9BDsI7UrIbRre5TKwRYE1cYqJpLcbj0BcSHXWw6NvmPFH0BTKLY7r9IGLQ5Qp5gB+kps6dHtscRG0l2B3BL/01Cd88lIaoF5JDYuz3xl5kDVfSzBRGnZAPJJqMhj8t7jwJSZ48TUaqnOusZs7iyLnomqs1nOH25PnoLqKSnjP7+Xn0VPRiYSO0NItz8GIGgQBXmGk4YTrbruSv/INzfInbJZ9ulHUH+J/VIAPPcikILHlMW7r6Y4S1lsGSKqBjG2YSawQPXPCmbwXwzK1m0ipdw+p2iYQqNIw==
+ b=cny99ioOVMGldLSuUMd+WNvA+oZWW/7TwCsyLFgT8FwX6qNvNJFM+HjKbW8l5zSwLLExkoRJeQamrDdaLEQVojFTrsDjw7YemmGHPh9LE54UaCZvueSScuxjNlqmEMrTH+WS3y3hpxzDYrFdMZR/qh2zSIem+O5IA46/3r9gWn0U4I0xYPRenZBCKwzCooPd60uGnvES6tO3pv8TgO9oUpJU+KG7uS4+ops8ybXbIZPXQhUOjBu/iifiFpb+rjMwtPQbCxZCFgkv76LW4cAhT9AHVKuDA3QIjaIO0NJgy73b6WBN12PINyvam1Vaos5wTUeb3zV/p7+UW2Ys+O/IbA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=VSKdvU13hcRHlIXkNl3i3lCQNxf0VcaKSf827EYTbxk=;
- b=HOC2mbPs8l6QUZ9z2bmkqhCY0vJ8DuwS78ROZw2r4JzZ75Yl1keGdJ6+xQEn0xSemVl5iVh9MdcQawLNpBITqA2DzsnlYMMq/nhukETEd1y/lDtqXjw/XhO4+tCqPcZzn9aPlUn2Pc8dyVQAMkbiHMy/iXO8+CR03gwNBP8wvlOnzOx0D55E3dV+wx09a/6Iivjp6E07R1L0c35c/nb1ptDt3rCH1FfQVuH4JDMPCmY1R9kSWAy6CXCSyQOcYAlsEBtI/Yj7U6jQXmbEyo4T+642bk0Twiusq2rLYAx4B/F0++rtNhR3EQVPuz8dSFLbFYXgH7CQcp/wvuodpmYnSw==
+ bh=nFOf6e8Ya+iEhlhvsOYlnIG5vNdJ9JjF27Lv0KmAHUU=;
+ b=RxBPnKjddB57YlmuqzArwnsbsU5g60romfJu6OXYUvb5/HE40NYvR5uKM9hjL3P7x/lnNVs8yNvsJvvP7hqWjZo3/Ro0xh4hEORx6UffZcEvleLItAsDUNFxiMLM2f1a54ftpf3u2kP7oY14d6uCgpa2TUDdZPHe3HNX4/8Obo85EyBYcR9sLlFktonjRlX+7uRWnZ+hDhiDBjCw9WUpTV70fGarf8SlG+bT5rptIIFfRpODAv1kLam0aZ5MgoW/S6jy1Nr93sMGvUfjNEwi/HdotaeKEns2GD8nJ//4ydJlzmcUiDnlKyBynPLzqL8sIzghepsNP+4YA4rp9yE+kg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=VSKdvU13hcRHlIXkNl3i3lCQNxf0VcaKSf827EYTbxk=;
- b=3xK1D6d6wzaJ2f6DHizMREGZhgc+PwBZaX8KSUMPE5RHSlWlgxAqPOlVml6Pf25xIsMP4b5YkgwJ1Wm+D+upAVgWKy66163rKDKil0V0p7bduzDv078RHV60x/ytPEU6ltBZ+SkD1N7XEmOFFzRNP47GG1BQAV6jLzuCVLOplpk=
-Received: from SJ0PR13CA0037.namprd13.prod.outlook.com (2603:10b6:a03:2c2::12)
- by MN2PR12MB4221.namprd12.prod.outlook.com (2603:10b6:208:1d2::23) with
+ bh=nFOf6e8Ya+iEhlhvsOYlnIG5vNdJ9JjF27Lv0KmAHUU=;
+ b=Ny4RFLgjZn1txw7gPkHEGR61giTnCSqGiXyHiM8kPYrzNBjyfI220byt/Cc5wDSbQyh5G0BL4S4dxiVko2UeGNE1LKp1uxGYMTR6LhlZMju8jHT4xvbRbn+/g/kn8XBPC4gLESPPT9DfM7LuRO0kL3cPNmQfV3DjfGA89SApvpA=
+Received: from BYAPR02CA0039.namprd02.prod.outlook.com (2603:10b6:a03:54::16)
+ by IA0PR12MB9045.namprd12.prod.outlook.com (2603:10b6:208:406::18) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.4; Wed, 11 Mar
- 2026 14:01:41 +0000
-Received: from SJ1PEPF000023CE.namprd02.prod.outlook.com
- (2603:10b6:a03:2c2:cafe::cf) by SJ0PR13CA0037.outlook.office365.com
- (2603:10b6:a03:2c2::12) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9678.22 via Frontend Transport; Wed,
- 11 Mar 2026 14:01:41 +0000
+ 2026 14:01:44 +0000
+Received: from SJ1PEPF000023D1.namprd02.prod.outlook.com
+ (2603:10b6:a03:54:cafe::65) by BYAPR02CA0039.outlook.office365.com
+ (2603:10b6:a03:54::16) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9678.26 via Frontend Transport; Wed,
+ 11 Mar 2026 14:01:46 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -47,23 +48,25 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
  165.204.84.17 as permitted sender) receiver=protection.outlook.com;
  client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
 Received: from satlexmb07.amd.com (165.204.84.17) by
- SJ1PEPF000023CE.mail.protection.outlook.com (10.167.244.10) with Microsoft
+ SJ1PEPF000023D1.mail.protection.outlook.com (10.167.244.7) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9678.18 via Frontend Transport; Wed, 11 Mar 2026 14:01:40 +0000
+ 15.20.9678.18 via Frontend Transport; Wed, 11 Mar 2026 14:01:43 +0000
 Received: from BLRRASHENOY1.amd.com (10.180.168.240) by satlexmb07.amd.com
  (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.17; Wed, 11 Mar
- 2026 09:01:38 -0500
+ 2026 09:01:40 -0500
 From: "Gautham R. Shenoy" <gautham.shenoy@amd.com>
 To: Mario Limonciello <mario.limonciello@amd.com>, "Rafael J . Wysocki"
 	<rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, K Prateek Nayak
 	<kprateek.nayak@amd.com>
 CC: <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>, "Gautham R.
- Shenoy" <gautham.shenoy@amd.com>
-Subject: [PATCH v2 0/9] amd-pstate: Introduce AMD CPPC Performance Priority
-Date: Wed, 11 Mar 2026 19:31:07 +0530
-Message-ID: <20260311140116.19604-1-gautham.shenoy@amd.com>
+ Shenoy" <gautham.shenoy@amd.com>, Mario Limonciello <superm1@kernel.org>
+Subject: [PATCH v2 1/9] amd-pstate: Fix memory leak in amd_pstate_epp_cpu_init()
+Date: Wed, 11 Mar 2026 19:31:08 +0530
+Message-ID: <20260311140116.19604-2-gautham.shenoy@amd.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260311140116.19604-1-gautham.shenoy@amd.com>
+References: <20260311140116.19604-1-gautham.shenoy@amd.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -76,114 +79,63 @@ X-ClientProxiedBy: satlexmb07.amd.com (10.181.42.216) To satlexmb07.amd.com
  (10.181.42.216)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ1PEPF000023CE:EE_|MN2PR12MB4221:EE_
-X-MS-Office365-Filtering-Correlation-Id: f53ab761-6413-44e1-2bd0-08de7f76b872
+X-MS-TrafficTypeDiagnostic: SJ1PEPF000023D1:EE_|IA0PR12MB9045:EE_
+X-MS-Office365-Filtering-Correlation-Id: 8cf1d5f8-9ba1-435b-5892-08de7f76b9b9
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|1800799024|36860700016|82310400026|18002099003|56012099003;
+	BCL:0;ARA:13230040|1800799024|376014|36860700016|82310400026|18002099003|56012099003|22082099003;
 X-Microsoft-Antispam-Message-Info:
-	YvLPEEUN6Ah/hyW4t/K5EzmD31bBA9AAe6RpIyaGIYnYorfkwzGmlrODRXFcB1lOSKoRDoPCubvVvRvRdPw4qkK6XlnnaFEZFlkc0HjY5AwxAUznmbttVc+hxsvIyh5tFte6n9k6RFK0dau9G0+kYbomBnH1ZVLjMNgToLdmvLYRAKzxsKlNh7Qhw5I7fA/WowExoVCvbEhfoTzNd45qZI6jMH4r1HdCX9NiajF8p2E1hlB45i8G8plP54YGQL0VvlTvZ8JlFEwHVBWGtNB6ZrrVg9Vcj3ui3kiWyZAW6xM4x4JlDTAsDUB5aYtw3MRxGv1xoExfmn8xm4ibojqJtRxN2ZLGCHqtRE2pf0einKAWlQRvJUgfhabdpTUggKRpCDwWyT7H860ZLijSJu1NPkV2xrDw+NT80svkMB+NArer8h/h298mAbTqBJkIflRaCRM/yYRI6ujoLxY55jhwXUkRM4ACeblb560NwIAI99x4P2T9Xl3NXgOK5B7dS6ySk1noQnVOtsPmz5wolstBUIrzU1VR2E8H7vRA/sgqExTJsYz/UnRPn3N4m1rP6cVU8NJcogv1keYmI+hTpfzwfEotxaK0mhTUJtoratTUxXqr+XWHKLCc4ePO8G3bWR5CFBvTEQMcSw84Ul0ClgqLpGujfogBZ2hikLwbfZKkHYNPnR0LzWYjo9/C3xdPxlNKCpUycNZNghi/n72k6fS22D4ydlDNJBWBuUvFkuj9zGo=
+	CyF0xrvaKBAw8s2qBcGJE3A4g4SyXaS1yJE3UnO3goLdvGxuRkEhHWsxDsIEDZHm745yj5+x/2cxFkbvBrDsuc+zhuiE7Du5C2E37D4sIRv1RET8GxsDeq2yWflmh/L92R/PvaVxtjnYEsAJpfVYJTmlRWbj/DBGrw0UftsTORGHfkfhnB5ZLBaiGKPjCV4poaBKwxFJA29sTzyrwU2+n+lSXYuUoo7XWz6FgKCmcDhyNmEHP3ezgrHYiq0IyRjg16M+atSMcXsxbCgjlPOOAP/NNPgC7nLeKhfp61G0UXCBR+wUbVgYpOQ3KbPzeVkh9t1IIRnE2ztjPJj3PRZH+mXX8Vs9LrJEkgEOL5jldjMzYchiBou0b3yC4bmdEMXTLPvYFwhih2g7A6X1sS8DGiIoX4if5Ef1f32FoYQ/Rajo/99e6VmZVq5SpkT8o4w4A2rgeOPBgG/1OPFfE/UhMeRyHCjeh/XDRFLH18TUyLhWJpqIwf/aMosaYFGrlOh/PhTRt2zU8WTY92zKW4a9yryMu+7aQk2IA8NKcRJjifwWQ6vkcBy8z82BXqlKXjy30N7qAOcUMmGwhxGuelw2jLJP3MW9QRuijf2xEk9H/DYGdgNh1suQibZAvaKFhXT83fMuH/r9p1bdJ8vQIEiVXV8upevfLhfY27K9kggZzvwgxs2jaonOqD3clV1cHF/ITcHMEzOmVdlDccJAkIuzY49ndnTAM5usXs8QJdIgaRQ=
 X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(1800799024)(36860700016)(82310400026)(18002099003)(56012099003);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(376014)(36860700016)(82310400026)(18002099003)(56012099003)(22082099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	MCrqIQidf2k9seh2WGFE8dh2JJKgO7YtBEcdf5abvbNmm+enzUaf0Bq58baDp1JDCln9zvMCCsRti+2H3gtqIV5l06Z4c+ZajTLIXZ4h6Q8DzdKpzIsrEpadOQgQXAiQga8KENDbWSPGN2v0e0PrbpXlCAGEQPKUgiVtFzY3OWaopK1HNAc1CA+M6WQAAMkJnhPKqhtKHZHj1EvEqN3M8mXyUoVqidztRVqvQxyKeC1Xl8D+JGNYwaJl0Stbi0JSj1Mf2YkBIE+NjPTzHMVkcEdny/XsHrqfmwNeVtEu/cn7bVi/bZ9l0SytKvDCT0t24HHB+0vkS3x8i2szczmH/7dylgh+UJHuQsqWwug3cI1UZxy/LZOsjEYFnsZoKOKs5UyIsR9rU+FdIwBuI+OIGqPtdup9iOkfKnSBfUWfWxN8/7BfYtCYfC7qSxDFfmoE
+	ya20P+Q8Roq6vRmsF3/8vnx5LtroWcGIUsH9YlQtEB2YEzVFSszwk9wnpyt0LAzvcHkW6Zu/smiAdiooPdYdHs3reJzwW9CFRY7Z5gWJUcLzoHOKmtHjM40D+BeATuKWgsoed6h1k9QjdiDB9AbohZoeJVm9t6WmUaZiOX4rt4TSQcbfUjWiNo0MDbHghXksd4LH3soOsWpPOwXOQDWSC9Aais0Y/MAmDw0qtp0skJE8bGMY970I3v6H+48WS6mdXdlzwneJ+gZALO8VwOF8OZKR5vnYfNcfzZnLKzbu7VFcMKFrkGRJv9R5OKU+8dkOeKsq612wDhXVcD4lkV9wokFn/sC1K/pvznOpwAdSV9qz11pcO8RLzrHxwocoxq1RFjxqNoDGyVYKXnrvNSGERfuBJujR12HIj0RHQLZMqn3d5beK3lxxlJCb8nZ2EzQG
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Mar 2026 14:01:40.9193
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Mar 2026 14:01:43.0862
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: f53ab761-6413-44e1-2bd0-08de7f76b872
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8cf1d5f8-9ba1-435b-5892-08de7f76b9b9
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	SJ1PEPF000023CE.namprd02.prod.outlook.com
+	SJ1PEPF000023D1.namprd02.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN2PR12MB4221
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB9045
 
-Hello,
+On failure to set the epp, the function amd_pstate_epp_cpu_init()
+returns with an error code without freeing the cpudata object that was
+allocated at the beginning of the function.
 
-This is the v2 of the patchset to add support to the amd-pstate driver
-for a new feature named "CPPC Performance Priority" that will be
-available on some of the future AMD processors.
+Ensure that the cpudata object is freed before returning from the
+function.
 
-Details of the feature can be found in the AMD Publication titled
-"AMD64 Collaborative Processor Performance Control (CPPC) Performance
-Priority" (https://docs.amd.com/v/u/en-US/69206_1.10_AMD64_CPPC_PUB)
+This memory leak was discovered by Claude Opus 4.6 with the aid of
+Chris Mason's AI review-prompts
+(https://github.com/masoncl/review-prompts/tree/main/kernel).
 
-v1 --> v2 Changes:
- * Picked up the Reviewed-by: tags from Boris and Mario for a couple of patches.
+Assisted-by: Claude:claude-opus-4.6 review-prompts/linux
+Fixes: f9a378ff6443 ("cpufreq/amd-pstate: Set different default EPP policy for Epyc and Ryzen")
+Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
+Signed-off-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
+---
+ drivers/cpufreq/amd-pstate.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index 5aa9fcd80cf51..d57969c72c9dc 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -1533,7 +1533,7 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
  
- * Defined AMD_CPPC_FLOOR_PERF_CNT_MASK via GENMASK_ULL() instead of
-   GENMASK() to fix the build errors reported by the kernel test robot
-   (https://lore.kernel.org/lkml/202603070431.ykswVnpp-lkp@intel.com/)
-
- * Moved the code from amd_pstate_cache_cppc_req2() into
-   amd_pstate_init_floor_perf() since there are no other callers of
-   amd_pstate_cache_cppc_req2().
-
- * Cached the user requested amd_pstate_floor_freq into
-   cpudata->floor_freq [Prateek] and return the same when the user
-   reads the syfs file.
-
-Description:
-
-This feature allows userspace to specify different floor performance
-levels for different CPUs. The platform firmware takes these different
-floor performance levels into consideration while throttling the CPUs
-under power/thermal constraints.
-    
-The presence of this feature is advertised through bit 16 of EDX
-register for CPUID leaf 0x80000007. The number of distinct floor
-performance levels supported on the platform will be advertised
-through the bits 32:39 of the MSR_AMD_CPPC_CAP1. Bits 0:7 of a new MSR
-MSR_AMD_CPPC_REQ2 (0xc00102b5) will be used to specify the desired
-floor performance level for that CPU.
-    
-Key changes made by this patchset:
-
-   * Fix a memory leak bug and a control-flow bug.
-   
-   * Plumb in proper visibility controls for the freq_attr attributes
-     so that only relevant attributes can be made visible depending on
-     the underlying platform and the current amd-pstate driver mode.
-
-   * Add support for the new CPUID bits, the new MSR and parsing bits
-     32:39 of MSR_AMD_CPPC_CAP1.
-
-   * Set the default value for MSR_AMD_CPPC_REQ2[0:7] (Floor perf) to
-     CPPC.nominal_perf when the value at boot-time is lower than
-     CPPC.lowest_perf
-
-   * Add sysfs support for floor_freq and floor_count
-
-   * Introduce a tracepoint trace_amd_pstate_cppc_req2 for tracking
-     the updates to MSR_AMD_CPPC_REQ2.
-
-   * Add documentation for amd_pstate_floor_{freq,count}
-
-
-Gautham R. Shenoy (9):
-  amd-pstate: Fix memory leak in amd_pstate_epp_cpu_init()
-  amd-pstate: Update cppc_req_cached in fast_switch case
-  amd-pstate: Make certain freq_attrs conditionally visible
-  x86/cpufeatures: Add AMD CPPC Performance Priority feature.
-  amd-pstate: Add support for CPPC_REQ2 and FLOOR_PERF
-  amd-pstate: Add sysfs support for floor_freq and floor_count
-  amd-pstate: Introduce a tracepoint trace_amd_pstate_cppc_req2()
-  Documentation/amd-pstate: List prefcore related sysfs files
-  Documentation/amd-pstate: Add documentation for amd_pstate_floor_{freq,count}
-
- Documentation/admin-guide/pm/amd-pstate.rst |  47 +++-
- arch/x86/include/asm/cpufeatures.h          |   2 +-
- arch/x86/include/asm/msr-index.h            |   5 +
- arch/x86/kernel/cpu/scattered.c             |   1 +
- drivers/cpufreq/amd-pstate-trace.h          |  35 +++
- drivers/cpufreq/amd-pstate.c                | 254 +++++++++++++++++---
- drivers/cpufreq/amd-pstate.h                |   7 +
- tools/arch/x86/include/asm/cpufeatures.h    |   2 +-
- 8 files changed, 313 insertions(+), 40 deletions(-)
-
+ 	ret = amd_pstate_set_epp(policy, cpudata->epp_default);
+ 	if (ret)
+-		return ret;
++		goto free_cpudata1;
+ 
+ 	current_pstate_driver->adjust_perf = NULL;
+ 
 -- 
 2.34.1
 
