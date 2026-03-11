@@ -1,226 +1,97 @@
-Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-f177.google.com (mail-lj1-f177.google.com [209.85.208.177])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2DB83C1412;
-	Wed, 11 Mar 2026 08:53:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773219191; cv=pass; b=lkOSLVvCbkgrnjWLrVj/OzXO1k/8X9zMmTJMvixr3jcW6R3k3do5iahpfIRgmvM0mpZBQfOLTvFcWQZYICzFhcUpfx5dixmPVOyVdcSdQQ/skm08fvZeyls1xDcEkD1pPmVlC+HfksLWrcdvFIsplLObp6MRHgONham3wWDaqcc=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773219191; c=relaxed/simple;
-	bh=PDgo+D272zISHNjuyBYbcxfvB5jHMRggnQzNt4V8Mf0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=oqp1un6dvS7GuXi5Ifljbk1YRup5/N0nQxstoBsLy5fZnDp7lYJSGTG7L5cqbGH3ONlVaylVeBahkm8IUyzYbCl0xXbiEmQJYOwNvXTAcIg4v0+o6Z5cG7myxr3CBJZFU9R4M93GSD/vA11WmQYP76I1rLmIDo4nhGjONmLDGCw=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=PNi3utUE; arc=pass smtp.client-ip=136.143.188.112
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABD713BD658
+	for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 09:00:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.177
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773219654; cv=none; b=PT31RXWdu7d5twryWxHNhLTGeXXcvoi3CUz18HObtCbGuiOdB7dX9E3Fc9SmETxWvQp2pqpSQ1PBfXeZCi5s+0TJXujI2HHwtKVuL8KzFahJFmScHK1Yi+KFssieCUg702eIrVpiSjfmHDdE1akp+AGkN9HLrah4KqbT6aHPV7o=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773219654; c=relaxed/simple;
+	bh=6HsPxrCY7egdIWe+0rl0iMBC5KKZb48lefsD5AZVvUw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BOkx3T6o0oEZdyNuhYR0MEcAHR4fiVNZfKL+FyZV296kfwXRcGqhOd2Q/JW8AtcRzsgu9l4MOuowMQE3nX3V4Gl+ooTsq1TG4M8BVxUQ+IAyorFpEl2a/rQORlxXHM05ZS7l1KPPW3slgrRSKlWD/smIo6kgTpadNDHhsGtI7fo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=dqQbIErx; arc=none smtp.client-ip=209.85.208.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="PNi3utUE"
-ARC-Seal: i=1; a=rsa-sha256; t=1773219178; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=n8BhVQQSwXNyHLAgZPel+0zQ97F5zndubEciYQWZt4jULw2TGUUntRWr915xir4TRzrj4PbftL5nBksUGSJ3q/FLEc1u9HTIjA0C3fJMYHVsmqTGLAAP6QMJDcs50CrtRsdtL7XDYSGDLp2q+ZlLNdTozQkjWIA4nWjtMyPA7qA=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1773219178; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=TISMxi5550xm/R43KixZOtkNQOnj1hmuaRGypHDqkU4=; 
-	b=f2KkMmNkVM3BlMrkjn5cXE7mOLTInfiGWtTRxAON2ae/3uTI5FWwAHIZWGcVkx65clNhyttfLwGIE5CFzHH+eABYwVWrzl1WotIk8B3nzuGBQwKI2E5SUjaB+ta9dN3M+UxDWx+5CFrnOF4WIYs/3ygDVUjQSpBMEqGPUvyMxDM=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
-	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1773219178;
-	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
-	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:References:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=TISMxi5550xm/R43KixZOtkNQOnj1hmuaRGypHDqkU4=;
-	b=PNi3utUEJNfqgkTleSQ86+jI4h5HL37wiGQP8gch2ZAwJEq2dDpbGTWokYh9kKsO
-	oAcIDBcaBLxsmWf9/4qpFFOATuLH84Y5PPyauLz1qbvCejqjBt5k1R9ncm7vOvtGiel
-	Fw/nwvFoOe4/YTvqw85e/tYlW5PLU0DOMjcyYNPA=
-Received: by mx.zohomail.com with SMTPS id 1773219175080121.91265362976719;
-	Wed, 11 Mar 2026 01:52:55 -0700 (PDT)
-Received: by venus (Postfix, from userid 1000)
-	id B88AC180598; Wed, 11 Mar 2026 09:52:42 +0100 (CET)
-Date: Wed, 11 Mar 2026 09:52:42 +0100
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Alexey Charkov <alchark@flipper.net>
-Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Chris Morgan <macromorgan@hotmail.com>, Liam Girdwood <lgirdwood@gmail.com>, 
-	Mark Brown <broonie@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3 11/11] power: supply: bq257xx: Add support for BQ25792
-Message-ID: <abEpAs5O1a3HqFTJ@venus>
-References: <20260310-bq25792-v3-0-02f8e232d63b@flipper.net>
- <20260310-bq25792-v3-11-02f8e232d63b@flipper.net>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dqQbIErx"
+Received: by mail-lj1-f177.google.com with SMTP id 38308e7fff4ca-38a2f92fab4so68832821fa.2
+        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 02:00:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1773219646; x=1773824446; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=3XpW3VggzjAQK5uftzOhf8IhiEOSo+b7VbPq0oxkQKU=;
+        b=dqQbIErxt7NOGxtFfFLeGPS/eQxl+ak+l066w8Bw6G7uk8+xnDbkInifbDP/wKntuY
+         E1m7LSAHF2ZSQJQh8mXNKhusbP+CNVwW3gwpj9kWTHFL0nbhdL2IKDYuNjEwOJBB/+iw
+         3PWjk9ss0l4cmXgAlT3ziyhmZ1d3s0CeIwUj0jqWUfe+mJM4BQlyG1pssr1kanazMThh
+         yLLUoYh7RyS+3pkEXmHWMgu5htV4SyaKcqE0GR6C8+Nb9FE3nzbup3C46vIs6zjlci25
+         gOFmPHoaZNrwqAZIy9zOi3bMoPkKEeDKT1QOvnXC3YHsCq2FvESO+mMActNjuH8PyWN4
+         zSgQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773219646; x=1773824446;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=3XpW3VggzjAQK5uftzOhf8IhiEOSo+b7VbPq0oxkQKU=;
+        b=LwTME0hpri1FjImXFG4ib+Z14tZ11ggFAqkqQZ4gOdOZY58lDpmqU/quZalJJtB/Cj
+         ZMEfpFQfiWEOSsv3ZpCyIbtjydH5dNWo3opEngGnGvY108HKnhghN9ZH1Hzdjeflzhq3
+         2WD7Nh3V4QKEj9UvYzN41yJk4Kz6deqayxvmNnqneflie3OlAsTDSyPfURyAYyhAcLan
+         bL6T6kIur5Gt/G5eQEIMUIyjSi55Wu8e+Ey1mfgCzqDGkVBbcq9JBvBVPhftp86n49Z7
+         dd+lz5TxMo2Wz5h2u6ijWwPAHx+yHLOqX5FINLhbd6i3OmEU7iC8NvxLrnPtw1KTu2z4
+         pT5A==
+X-Gm-Message-State: AOJu0YxtlDwlhNSmhsTxbag+4UcW7AruleYxYjvIeBah9XSw0b4hTyj0
+	zQylaMngRnMoLrFEldpJL7QwqmFlm54ZO0JxJTliWq8ndnngLCjDYG09CvOL3P9i
+X-Gm-Gg: ATEYQzy1Z34onw+vtJoRlLjxtkmF0Wnmp4KzzXal6HmjvIhrJug/MS8pgXMr9sfaNrM
+	MaXosfckQR9carVYmOqFPUcoOskjXIP6VG9FUoUp5E++/Q2W6QSgnzW1+HOCX1lVBH/Y7BYRhLo
+	6aDgISqGTHbOxZvkeGoLBzGmhKNn9VYjn/4E2aaEQ/wLDIM9wvbf0L4T746yDj5rF7qkCj77Stm
+	un3ob/7HtcRXJvbQ++TPwotjKJ3VuNOmR2JTxOUy9zA+YdUzdyt4O3Zv1IQoV/bPQBwyhG+5iEE
+	o2Y4MRKYcUMgqcxXcQivOlkb4D2ENprjYcQUkxiNsfJCPm/MVsHFyR4BjhfBgB7r2/6M48O8zJC
+	kswSpxXGXMab2NeaBuRQJ5xAyzrUtLBv7W1NMOQ6Hf3iQAnJjIaWNFd5XhJHISU1QRaatddJ7Dx
+	jBytUyBqHCfS9DSLns8R1e1VlvaXAt9SivlLwmgrMFXL21pV3D/0VRWJzCd2jf
+X-Received: by 2002:a2e:b8d0:0:b0:383:2663:eb5f with SMTP id 38308e7fff4ca-38a67e7b894mr7381011fa.35.1773219645102;
+        Wed, 11 Mar 2026 02:00:45 -0700 (PDT)
+Received: from abityuts-desk (176-93-227-108.bb.dnainternet.fi. [176.93.227.108])
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-38a67e5ed41sm2645041fa.25.2026.03.11.02.00.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 11 Mar 2026 02:00:44 -0700 (PDT)
+From: Artem Bityutskiy <dedekind1@gmail.com>
+To: Len Brown <lenb@kernel.org>
+Cc: Linux PM Mailing List <linux-pm@vger.kernel.org>,
+	Artem Bityutskiy <dedekind1@gmail.com>
+Subject: [PATCH 0/6] tools/power turbostat: Fixes and cleanups
+Date: Wed, 11 Mar 2026 11:00:30 +0200
+Message-ID: <20260311090035.169539-1-dedekind1@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="bypi6vmkhx5pxro7"
-Content-Disposition: inline
-In-Reply-To: <20260310-bq25792-v3-11-02f8e232d63b@flipper.net>
-X-Zoho-Virus-Status: 1
-X-Zoho-AV-Stamp: zmail-av-0.2.1.1.4.3/273.195.15
-X-ZohoMailClient: External
+Content-Transfer-Encoding: 8bit
 
+From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 
---bypi6vmkhx5pxro7
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v3 11/11] power: supply: bq257xx: Add support for BQ25792
-MIME-Version: 1.0
+This series fixes the following bugs:
+- Using incorrect format variable for perf counters.
+- --show/--hide not working with individual cpuidle counters
+- Missing delimiters causing columns to merge together
 
-Hello Alexey,
+There are also consistency improvements and cleanups.
 
-On Tue, Mar 10, 2026 at 01:28:35PM +0400, Alexey Charkov wrote:
-> Add support for TI BQ25792 integrated battery charger and buck-boost
-> converter.
->=20
-> It shares high-level logic of operation with the already supported
-> BQ25703A, but has a different register map, bit definitions and some of
-> the lower-level hardware states.
->=20
-> Tested-by: Chris Morgan <macromorgan@hotmail.com>
-> Signed-off-by: Alexey Charkov <alchark@flipper.net>
-> ---
->  drivers/power/supply/bq257xx_charger.c | 492 +++++++++++++++++++++++++++=
-+++++-
->  include/linux/mfd/bq257xx.h            |   6 +-
->  2 files changed, 493 insertions(+), 5 deletions(-)
->=20
-> diff --git a/drivers/power/supply/bq257xx_charger.c b/drivers/power/suppl=
-y/bq257xx_charger.c
-> index 951abd035fc5..0bbb0a8b5f55 100644
-> --- a/drivers/power/supply/bq257xx_charger.c
-> +++ b/drivers/power/supply/bq257xx_charger.c
-> @@ -5,6 +5,7 @@
->   */
-> =20
->  #include <linux/bitfield.h>
-> +#include <linux/byteorder/generic.h>
->  #include <linux/i2c.h>
->  #include <linux/interrupt.h>
->  #include <linux/mfd/bq257xx.h>
-> @@ -18,12 +19,19 @@ struct bq257xx_chg;
-> =20
->  /**
->   * struct bq257xx_chip_info - chip specific routines
-> + * @default_iindpm_uA: default input current limit in microamps
->   * @bq257xx_hw_init: init function for hw
->   * @bq257xx_hw_shutdown: shutdown function for hw
->   * @bq257xx_get_state: get and update state of hardware
-> + * @bq257xx_get_ichg: get maximum charge current (in uA)
->   * @bq257xx_set_ichg: set maximum charge current (in uA)
-> + * @bq257xx_get_vbatreg: get maximum charge voltage (in uV)
->   * @bq257xx_set_vbatreg: set maximum charge voltage (in uV)
-> + * @bq257xx_get_iindpm: get maximum input current (in uA)
->   * @bq257xx_set_iindpm: set maximum input current (in uA)
-> + * @bq257xx_get_cur: get battery current from ADC (in uA)
-> + * @bq257xx_get_vbat: get battery voltage from ADC (in uV)
-> + * @bq257xx_get_min_vsys: get minimum system voltage (in uV)
->   */
->  struct bq257xx_chip_info {
->  	int default_iindpm_uA;
-> @@ -47,8 +55,10 @@ struct bq257xx_chip_info {
->   * @bq: parent MFD device
->   * @charger: power supply device
->   * @online: charger input is present
-> + * @charging: charger is actively charging the battery
->   * @fast_charge: charger is in fast charge mode
->   * @pre_charge: charger is in pre-charge mode
-> + * @overvoltage: overvoltage fault detected
->   * @ov_fault: charger reports over voltage fault
->   * @batoc_fault: charger reports battery over current fault
->   * @oc_fault: charger reports over current fault
-> @@ -79,6 +89,53 @@ struct bq257xx_chg {
->  	u32 vsys_min;
->  };
+Based on commit
+867ea3a786e19 ("tools/power/turbostat: Fix microcode patch level output for AMD/Hygon")
+in Len Brown's tree:
+https://github.com/lenb/linux.git turbostat
 
-The above belong into the previous patches that actually added the
-fields to the structs :)
+Artem Bityutskiy (5):
+  tools/power turbostat: add missing print_float_value()
+  tools/power turbostat: fix incorrect format variable
+  tools/power turbostat: fix --show/--hide for individual cpuidle
+    counters
+  tools/power turbostat: fix delimiter bug in print functions
+  tools/power turbostat: cleanup print helper functions
 
-> +/**
-> + * bq25792_read16() - Read a 16-bit value from device register
-> + * @pdata: driver platform data
-> + * @reg: register address to read from
-> + * @val: pointer to store the register value
-> + *
-> + * Read a 16-bit big-endian value from the BQ25792 device via regmap
-> + * and convert to CPU byte order.
-> + *
-> + * Return: Returns 0 on success or error on failure to read.
-> + */
-> +static int bq25792_read16(struct bq257xx_chg *pdata, unsigned int reg, u=
-16 *val)
-> +{
-> +	__be16 regval;
-> +	int ret;
-> +
-> +	ret =3D regmap_raw_read(pdata->bq->regmap, reg, &regval, sizeof(regval)=
-);
-> +	if (ret)
-> +		return ret;
-> +
-> +	*val =3D be16_to_cpu(regval);
-> +	return 0;
-> +}
-> +
-> +/**
-> + * bq25792_write16() - Write a 16-bit value to device register
-> + * @pdata: driver platform data
-> + * @reg: register address to write to
-> + * @val: 16-bit value to write in CPU byte order
-> + *
-> + * Convert the value to big-endian and write a 16-bit value to the
-> + * BQ25792 device via regmap.
-> + *
-> + * Return: Returns 0 on success or error on failure to write.
-> + */
-> +static int bq25792_write16(struct bq257xx_chg *pdata, unsigned int reg, =
-u16 val)
-> +{
-> +	__be16 regval =3D cpu_to_be16(val);
-> +	int ret;
-> +
-> +	ret =3D regmap_raw_write(pdata->bq->regmap, reg, &regval, sizeof(regval=
-));
-> +	if (ret)
-> +		return ret;
-> +
-> +	return 0;
-> +}
-
-Are there big _and_ little endian registers on the bq25792? Otherwise I
-would expect this to be done by properly configuring regmap.
-
-> [...]
-
-The remaining part looks fine.
-
-Greetings,
-
--- Sebastian
-
---bypi6vmkhx5pxro7
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmmxLVYACgkQ2O7X88g7
-+poLoBAAqeSDKtvgAr4fXoOWhkiLXT3b+x3VL0buVVUaxkY0YLQHXW0WMMO3hrvZ
-qN0hOlVGNIZ44iVmVl7OVFUxkybDkSXVfnvqWulKP7FzWAl9WYZki2uQjgYxr4Cw
-bO1hPolJEEavIsriqqLSyuuyK7namT3VZ0eli64xopwVpGZxaKJCqKuDSoiH4uAJ
-4JMt+nt+jOzdfTxUYGQ4GV7r2JoJYyHGfpy91b4YJIkOz5ijpcxWarv/R+Skuwiw
-dmJ0I1cbUJQKbtrBZqcz5fAWdva9aQXM+3f5lHVhc8kYvc3UYMTD207By0ipDsBw
-B8XUOx2IW+iJq+jJPoRox3ShutXbNeE4SZq54iEbFMDK6+VY55z+HgnwiYowT1bs
-YdSsWzU0j09w9hZASrVCzluoLN9ts0tsH9jMJYKN3QnqxnGwy44hZrGtrXPm5pVE
-ovq7y3WbLfkHmTIChorI59e1BsXTgAg4y3JuDVOznzWRJ/Nmx6y+zuZeYsvIPzy2
-kJeto7lsQXr8yHWNUCArn0vvd/L7YOiFIacPZB1qilnF2oIEnux7R4q28zvOCIwj
-+F3p0N/k8Dbsz1BquJTXTBmMg583Bb9oxZ0KmtKGMYHS4RvqGwZvcT+nW58kgNrO
-HfSQBbgHsUH5gogR1iTka5DDO1zEAcG/HBQy9/CrP8kNeWcoWV4=
-=/YrQ
------END PGP SIGNATURE-----
-
---bypi6vmkhx5pxro7--
+ tools/power/x86/turbostat/turbostat.c | 64 ++++++++++++++++-----------
+ 1 file changed, 39 insertions(+), 25 deletions(-)
