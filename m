@@ -1,221 +1,104 @@
-Received: from YT6PR01CU002.outbound.protection.outlook.com (mail-canadacentralazon11022092.outbound.protection.outlook.com [40.107.193.92])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f171.google.com (mail-pf1-f171.google.com [209.85.210.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5554D375AD1;
-	Thu, 12 Mar 2026 15:57:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.193.92
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773331046; cv=fail; b=NQX8efcCXcSYrZMTbvnnZDR5V2r0jvMoRcB09MCiS0xHDOBV6lBFNvrhXn/ndJoNyJVsmvBJoSOzlCGSHgEO0wxMKWz2wjAovv4++IQM9qV+LX4xdP3/yl9KmyA4GjgXRYer9A3W1kGWGnrpJubxhjNgQ288rAG0memY2A70ow8=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773331046; c=relaxed/simple;
-	bh=w8RzDv7BzuKN8s8cgRCGntm9SMCvU25P1a5St6YP7Zg=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=GRJadYdlIHGcmr8IVXZjHHq6/zUpQDckKz6K3t3eWLBhsWxViV23SUj/tazhlHXSIFfQ7m9wzqsfGJWobZFh7cGwndUMJx8p2WRBj458o1smJ4O8vwcmGmPEXulajJnR7eHv8lNld1Tf4u3d9npAN7rqK71GFrh3M2vsx7CTxaE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=efficios.com; spf=pass smtp.mailfrom=efficios.com; dkim=pass (2048-bit key) header.d=efficios.com header.i=@efficios.com header.b=GmE/XUVZ; arc=fail smtp.client-ip=40.107.193.92
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=efficios.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=efficios.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9503C1D5CF2
+	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 15:59:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.171
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773331171; cv=none; b=dSo7W4UyVLcK0XEykq9uosS8/yKyq5YgBqJpod/6IBgoK6PPdZoiiWeUXz9NXYk4lOTWnrMx9EDyCniAoKekZgOK05xtfFjNEVBSL/N2vx9XY6iGNOAb/G1pKWHotQV2LlXEWwMridOwDTUWcSS+W0hbgXoEu/ZIG22r5UdkmXk=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773331171; c=relaxed/simple;
+	bh=yKoI+mP86Kfvx2YpuIGgq2DlSLMeopQ9VeCMh5+SQt0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Chko/MyOSCHzL4o6WXpgwF8415SQxb0WvYlBfOj0Mmdgya8fzqpw3WLfJ3vl92zl+EK9OgLeXC14HOrQlH5EtKCkav/LTmy0dWZPDAS6ZOfhetoG8JRF74oecXFxnkI3P7wruHEmS+aecuuNBDV4Eb5BNV0Y7P/RjWNOPjwgCVs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=rxnH/DTi; arc=none smtp.client-ip=209.85.210.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=efficios.com header.i=@efficios.com header.b="GmE/XUVZ"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=GaMGwmHHjQQePAHMs5ijOduQ0xwWGKm18m1T0G9TqJLmAe3eIZ9nCG3PJlwDRwapDVPY59DggmaWeudeqdTeYGGe//OUIEPzG8KsJ5bxKAJ2VYTMn0szTSKBjLb9Y9f32XEtetkR/V/9Gv1TWDDebKvOWoMLPVv37m/nFtsBJzvrgRb6R9conQLD0eWLJFJ+TDBEvQ3dw4qUnO2qrZOcRSQ2QIpGvou1NDnZ4gDsOiVwBlQuFtZ3/NPs9dyKXmRrn45R1yuHEOt7+OtIoQPsYZ4bXREXIEAsR2z8xcuMDxMKWC8ZU/XowNNJNAX44PIVvY16fcOElTndi5f5W/vAJw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Jkqc7rcxY/K0RJfKNVqeImmYE24S7ANYYImzjvUHDHA=;
- b=lmCrGOIs9dctDGSvbmogHMrjYBkph9F3ou9IIkMOWryXsQ5mP9ecZd0PVSS3UqgXxj0uzf8Ck5Zcqol7H1++fPMt+TgLtaTYYR9y8Jw4D0SY+yFoaMMjK1fUkUK6xoNHX6Y2e9MfNu+FkKN+vP7Dyf2FWhgSZ9cBs8HstPy+eYJCEo4tJfzy5b265BBa8JRmSsOok7W74CJsIqLVC8enXMH+IXHRPpD7opd5MexQGycNYUsbpxo43iWkXk3+PmRUQTjy6O3BmZ3dJJlx/FA3jJvpC0zKk+QBP0swZdQCH2FqiEIxuCeVknq57G/6OwdkS8xd9fbN0UUleLqqkjJIfg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=efficios.com; dmarc=pass action=none header.from=efficios.com;
- dkim=pass header.d=efficios.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=efficios.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Jkqc7rcxY/K0RJfKNVqeImmYE24S7ANYYImzjvUHDHA=;
- b=GmE/XUVZYMlesL2VBsYq4FkQA+mqDEd2OBpdNuuv2sBRtZNB5KPlEe+fzI91Ezkz71AypVVcjIeiS+UUvU9PAXlsyvvbl1gz+wuHi78HOEXeXXA1YZmtTvgLfzBlRLDr0+eXW/Vjr6PkRgZfnKczWLFsdwNspfFqxfCDbxUs2NX7m/ySPRYTOSqB6AsTszocoUE1d1MvHRjJfxZEfN3EBBEHx7kvQE6rlI/h00NCNK5ZS+urv49HLw+iMF2kEpj8iD4gD0O1au+pprOH2KeVFNYxHsezV+GXwlGQsx3PP4DZsLXure05RiBmn3buplyY2rQZ7zvow2XtMK6JPNPIzw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=efficios.com;
-Received: from YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:b01:be::5)
- by YT2PR01MB6497.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:b01:6c::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9700.15; Thu, 12 Mar
- 2026 15:57:21 +0000
-Received: from YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM
- ([fe80::6004:a862:d45d:90c1]) by YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM
- ([fe80::6004:a862:d45d:90c1%3]) with mapi id 15.20.9700.015; Thu, 12 Mar 2026
- 15:57:18 +0000
-Message-ID: <d32e2250-6fac-4e2e-a010-1c1d21e39ac5@efficios.com>
-Date: Thu, 12 Mar 2026 11:57:17 -0400
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 00/15] tracepoint: Avoid double static_branch evaluation
- at guarded call sites
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
- "Vineeth Pillai (Google)" <vineeth@bitbyteword.org>,
- Dmitry Ilvokhin <d@ilvokhin.com>, Masami Hiramatsu <mhiramat@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Jens Axboe <axboe@kernel.dk>,
- io-uring@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>,
- Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>,
- Xin Long <lucien.xin@gmail.com>, Jon Maloy <jmaloy@redhat.com>,
- Aaron Conole <aconole@redhat.com>, Eelco Chaudron <echaudro@redhat.com>,
- Ilya Maximets <i.maximets@ovn.org>, netdev@vger.kernel.org,
- bpf@vger.kernel.org, linux-sctp@vger.kernel.org,
- tipc-discussion@lists.sourceforge.net, dev@openvswitch.org,
- Oded Gabbay <ogabbay@kernel.org>, Koby Elbaz <koby.elbaz@intel.com>,
- dri-devel@lists.freedesktop.org, "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "Gautham R. Shenoy" <gautham.shenoy@amd.com>, Huang Rui <ray.huang@amd.com>,
- Mario Limonciello <mario.limonciello@amd.com>, Len Brown <lenb@kernel.org>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>,
- Kyungmin Park <kyungmin.park@samsung.com>,
- Chanwoo Choi <cw00.choi@samsung.com>,
- =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
- Sumit Semwal <sumit.semwal@linaro.org>, linaro-mm-sig@lists.linaro.org,
- Eddie James <eajames@linux.ibm.com>,
- Andrew Jeffery <andrew@codeconstruct.com.au>, Joel Stanley <joel@jms.id.au>,
- linux-fsi@lists.ozlabs.org, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Alex Deucher <alexander.deucher@amd.com>,
- Danilo Krummrich <dakr@kernel.org>, Matthew Brost <matthew.brost@intel.com>,
- Philipp Stanner <phasta@kernel.org>, Harry Wentland
- <harry.wentland@amd.com>, Leo Li <sunpeng.li@amd.com>,
- amd-gfx@lists.freedesktop.org, Jiri Kosina <jikos@kernel.org>,
- Benjamin Tissoires <bentiss@kernel.org>, linux-input@vger.kernel.org,
- Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org,
- Mark Brown <broonie@kernel.org>,
- Michael Hennerich <michael.hennerich@analog.com>,
- =?UTF-8?Q?Nuno_S=C3=A1?= <nuno.sa@analog.com>, linux-spi@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- linux-scsi@vger.kernel.org, Chris Mason <clm@fb.com>,
- David Sterba <dsterba@suse.com>, linux-btrfs@vger.kernel.org,
- linux-trace-kernel@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260312150523.2054552-1-vineeth@bitbyteword.org>
- <1e3c2830-765e-4271-89f7-0b6784b37597@efficios.com>
- <20260312112354.3dd99e36@gandalf.local.home>
- <219d015d-076b-4c80-8f63-88569115fdad@efficios.com>
- <20260312114041.5193c729@gandalf.local.home>
- <1becdbce-2c01-468a-bbab-42b5dea9fdf8@efficios.com>
- <20260312155429.GC1282955@noisy.programming.kicks-ass.net>
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Content-Language: en-US
-In-Reply-To: <20260312155429.GC1282955@noisy.programming.kicks-ass.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: YT4PR01CA0408.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:b01:108::13) To YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:b01:be::5)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="rxnH/DTi"
+Received: by mail-pf1-f171.google.com with SMTP id d2e1a72fcca58-829abaaa92bso786292b3a.1
+        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 08:59:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1773331168; x=1773935968; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=7aq8O/L1syaz49vyMOtdSoKm2czgPlHZpnJOAbgPdnM=;
+        b=rxnH/DTiqqPh4rU6Jc7qVEAf10HqobDDnzjZFExAMjegUk6PbPQp+ReKfGCXSNTB/P
+         ji8XpLFCG8+XzcWWkP/Zq2ohPN4U+LLzNzyBnGQe+Zg8Jgw/tClgxM0MQNzX1vZfxIu9
+         +mf7MaCHZnxlL59dyzfU90qnfrFacvgSGs03U/1Hkb8bIFPRjW93K9fASFQJfz+kg4qf
+         219v4yJt1bHr4R9deMz0KgvGdSSufYUiL8fPkw9rmuLuIYxJVdYDQaYZ0Ej5PngycEdU
+         75x3yFpNGKoyU9PLovuAVW7qqmAkc5YChdM7VOmS1iLk0xiQ3sxrM6jnX/dn2x0Tqnp5
+         gNww==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773331168; x=1773935968;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=7aq8O/L1syaz49vyMOtdSoKm2czgPlHZpnJOAbgPdnM=;
+        b=JgAumC4XJmytLuOaeSQoOxq74I8AO3CuSMQEcYikpkG7GICvly6U0KykQWTUxDX9wb
+         oaB/VNWB/pSm17PMcRmlA+9GWZJbQ2oUFbSRazZHf3iURYH5gU6Xju6Q+B5jaAzbg9Ie
+         xLfnPlgZhnceE5DPsAi474vEzXbDXeOREXaykarTKbpGZcRoNqC9FoIdLgFjLREzwtEj
+         adQdz08C8C9qOtnDr7+G6HT4uYJfhFEpzs18e3A7+0aq8Y9DR3xlk8114u2Y7cy+h5yw
+         az1U/eE7rVESQTSCTfniqFW5QsHcjeTMnoH2ciptHzWwwOA5Lx6+muDJKpv7SAx2q4qJ
+         F9pg==
+X-Forwarded-Encrypted: i=1; AJvYcCWmnJQbQKF7cGFdslQ4+xq2/3yCsOKNSmseIU8KeLjz29St3v+xQZtYjDzTzhM53xD9xDu47qz8cw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzN9/IA95F7aSmTbVG/HliTb6/dDkiL8eW4+wlwmb43gvqlma6n
+	cnYiDdhZKr71hIjtNeLiSvqhiut7j4/HhIQRIN5W0luUSbaXvkkJGiJF4yi0P5YlglU=
+X-Gm-Gg: ATEYQzxgfmx3dhNSxduIoxLIJscjpJmUHj5oQ8m7mrFq0oVHvrEsqS4hkT+z7dl4q/Y
+	dc4WeXrx5yxhE9Mqtb4sszEiyAVE3ZjecuJi39upoeo4R6DExFbVnEIVdCce8d2hAanvbQKC6/4
+	Iwc8BdRe3qyl697qnyJWHlrWPWfaYIz4ICkLPBgQfutA7YAQw+Tgd8nIu5b6PY6o7NYL1QfrvX0
+	ITCl1S3wrWwLXjYpYdRo+4PnsoHnp+E9M+5ZuUcK4YRMI5jobP6B30JSifStaB6wPRNkVSabPFE
+	BfEEUOVXZ80M6ewZpGomj50/DjvRm79fyUwG1Tr9q9ENovm/VlgDOIdgmQodFGYMvyLjRsUtja0
+	GCoRss457aNl0s6Hg9E7MKLdNbn+75tAJTEZyfa83wdIQhZzyw+zNqHjoF3Fcc3kUpUfkxRKZ54
+	HtIs/O18yERnKEAIs0mMSSyGrv5eKmtIOAkFM=
+X-Received: by 2002:a05:6a00:2e90:b0:823:b1f:892e with SMTP id d2e1a72fcca58-82a198fca43mr47749b3a.43.1773331167500;
+        Thu, 12 Mar 2026 08:59:27 -0700 (PDT)
+Received: from localhost ([122.172.81.200])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82a073419a9sm3449809b3a.42.2026.03.12.08.59.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 12 Mar 2026 08:59:26 -0700 (PDT)
+Date: Thu, 12 Mar 2026 21:29:24 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, linux-pm@vger.kernel.org, 
+	Vincent Guittot <vincent.guittot@linaro.org>, Lifeng Zheng <zhenglifeng1@huawei.com>, 
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: conservative: Drop cached requested_freq
+Message-ID: <laiiguxeqjrxk36txx3g2ij3yzz7aldzcnnqoxdv3m6pjo42vz@e6a3mvnusqrx>
+References: <c3e22128e6619d24f3fc6ac07d1c854c664a7f1e.1773124395.git.viresh.kumar@linaro.org>
+ <05feb9ed-3257-452e-98e9-89637431a347@oss.qualcomm.com>
+ <u4k5z6yilgjqajy6a4zxyt23tgmtp5hxqm6jlc55y2ize4rs46@3czv7uoybqbz>
+ <CAJZ5v0jvVNd3v_LcsM9Q2tZRavx0OQwZ-R4vWSzYr6edinRk4A@mail.gmail.com>
+ <z33jb5vwatwba24f2ftz5zb75qzqv7h4tljq72bwbvgphuvuds@jtxtl7geedtb>
+ <CAJZ5v0htdQqaQT+-FJ-Agt4aAONXH36Qg2htoo+onLmst0ZoZg@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: YT2PR01MB9175:EE_|YT2PR01MB6497:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6fd00cd6-b151-4a90-5e3c-08de80500992
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|376014|7416014|1800799024|56012099003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	UUGLab4+BeT04517YTgHOP8N2GpWt3KxXbtxDj4683LL8N07RhseGgfxvZTZrBcnihjdyKQYlgL4EyeRgy0yT2+v83JfPt9yOjiBZJntt/R7OQuMty/Y0jANmULqnJRA7KMgBMlMY4GEeYewN4InwEprlYIm9kxECy0G6XalJM+EkWeNxwX/RAbtGigptmnMIjkqAIY3MqEpoPfkTkZrf8GM0QhCEnfZzshQ1gHwMSr7QaUkh1MVAQvZJULcfqgsja559UCY8Kej3VJiNZvN1y0K5LmYE8mOlN1IBAQ6j0wlxJqdkeFeuHqmxlDDlE+bmVagN3aebmYi36VXaKdEKDmEFVPyOvXAo2MvX46JNZyw9x1B5+QfyEBMhxX4rsr4py9K4IfSg2R6htc3p1LGyaul1PGgl15BD+tFLYxttXI4Mavn9+k7MTxvIpjghU3fqaBxo5jgH+VTO7HwjORBNwgGWTS7geH5psPjsG4YEyHi7bh1J5iebKD+LDuELaX9211ltBfWJ2jAG4o7jtMeJwQJwXxZVmhBPUcYXjBYIPsXu3Aa97RPsy7ZaLHuSpaniJT70+g/PToKprCCxBCCpTAA4FrWoGXnWYXsJ3eQBR0K7rEXE9k4jJuW5U0PsDn1ayvmqFclkMQqS0sMDllFAT0/MuhIPeQTLj0IAdRcaxtC+iK0bFg7Jui0mi8Z5a4M
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(7416014)(1800799024)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?R3NhVFYxR0FyYURMRmZacUt6YmFMallpenlJamhCeUNsemVIY3pKRFBEbWQ3?=
- =?utf-8?B?eTdWRE5Kc0o2N2JBb2JEdzVkWGxnT1BONGtseGpiRlRKNk5TeXFJc2pZczB3?=
- =?utf-8?B?bnpwRm5vR1NhRUlRcUdMd1dSMlJoTHZYOVlaa1UxaXorL3BtUnRHTG1GTmRO?=
- =?utf-8?B?Q0IzRTBsRXR3QVhPMWF4cFY0NFVZb285MGV4ZDlUcFU3c1JYZzl6UlZYc01Y?=
- =?utf-8?B?bHc2NjBVS3NLeFMvd0g3c0pYd3F3V0JrZ2l2dkVWTnMvNGRleEk1Y29YaTQ4?=
- =?utf-8?B?S0ZxZitsZlVtbEk4Si9rSU1wbGtTZ2xJdUJoUE0waTFxN0poN1J1Q2ZSSDBH?=
- =?utf-8?B?KzI3eUNlY1kzdHJGT1hDNGFza0RCT29FTFE1RVlEUElRMHZGN3BEK2txZDNT?=
- =?utf-8?B?a1RwNVYyWGl3WUREeHdSUEp1QlFtQ1gwaVJFY1p3dVhnOUJBQzZGQmhWK09X?=
- =?utf-8?B?OVg2ZFJoQlE1MjFDeERGa2dhZ3oyZU1RcEZiMzd2eHdsQ0VJUTR6MkRJUEdP?=
- =?utf-8?B?UjVCRWpDODVkTk11LzdzZ1BrTWkwOGtzSTNlUExudHBtTnhCODE2NnViUWtY?=
- =?utf-8?B?TGFYYkJmZFdqZlBTc3FFQjY5K0d6MXpjN3pZYTR4aFYrUDgyNkxIRGZQclRS?=
- =?utf-8?B?ZTR1MTVjajdDamppSVBIbjBLMHFLcDhnMkRGNlVyZ2hHRkZlV2pRK0xpOThY?=
- =?utf-8?B?clBwQ1VKQnBYTVY4aGE2aUoxcEF2MTJSalRTU0FuTGthSDZPWCtJQmsvM2gx?=
- =?utf-8?B?Q0piUWNzYVRwSFk5SnlYM0ttWWROMUZGV3UyUkhETCsybnRuWWdoVGpmSllV?=
- =?utf-8?B?R2dMc2M3WlRpYTVET09QdkRqekRnK2lLQm9ZNk9zcjRNeXBHWE15R1NLQ0hK?=
- =?utf-8?B?MDF3elFSRmFJazVaV0NFZUorcTlzMngvd0VMYXVxZm1rTm4zZFZaMTZoNlRu?=
- =?utf-8?B?dkMzNE96c3IveTd2cXZHODJVMjNuSGFaU0xqWThmdGtuOVlhOGRNdW0zT1Qy?=
- =?utf-8?B?dVg0aW1VUkxiUy93bFo2SGMrYS9tbldpNjdOOVJYSXY5NmhyNWQ1R3NacTZY?=
- =?utf-8?B?NmFnYjRnY2NKbThkUXd2MnR2MXN5MEhTbFFOZk1kWWhYd0UreFV0VWhxWXg0?=
- =?utf-8?B?WXA5ZHJBWFdCSEFMRUFpdldsTm4yRmxXQ2k0bWo1SXRaWjNxQUN0RWZ2ajNt?=
- =?utf-8?B?UjNkWDY1cUo3N1BQd1JMaFdUNGVGb1RWbisvNUNSMjAxUlZPdEEycWxMZTdt?=
- =?utf-8?B?MUwrMVNjeS9XbTJCN2JxWWEyaVVBdDBKSEhOcS9ZajhGTzBuL1ZyN1lHaDll?=
- =?utf-8?B?SUZ5YTdtVnB3dDBKNUFRUTdScHoyQVBDUDdZektuK0x1MDdZay9ycFlQNTVr?=
- =?utf-8?B?dStGbGdsNytiWjJZZFpxcXFOcGt6T041dWFZTWlGaGNOZ1F2OUJubmp3Sm8r?=
- =?utf-8?B?Mk9LUlRHaFBWdUpwQlJlMTFHejRhdmx4TVlFTzhkb2x1RkpPU1c3dG53VmNh?=
- =?utf-8?B?elJzWTY0Um0xcnRlaTFKQituMHJDdDJqNDNEamlablc5V0xjeDlIUjM2MlZY?=
- =?utf-8?B?K0dyb3dZK1hybFdxOE1aS3ZObW5IQUp5QnFYQS8xeWNNUVB2K09tNDhMOVlR?=
- =?utf-8?B?OWtJUE9wTXZyV29hclJYUEJQTDlUdy9MSHExR043cTlVRFZxMWxWNEhwcVlw?=
- =?utf-8?B?RVViaFNMZlBObi9WYkZGTzdaZEN3Q2dnZGxiSDEvaTdLQnVuM0Z4bHNhcFhN?=
- =?utf-8?B?Si9sODJqbUVzT3Rzd1ZMUUVOS0V4QU5vV2NUdXhVdE04QkRqcnJlM0I1YWUr?=
- =?utf-8?B?Tk1qZXZLQ1BhREJVSEVuR2szQWpBUUNIelhqYmxESGlJbFlSbkY1ZEkwbkJX?=
- =?utf-8?B?TDJGN3R2WU4wRUJVTk5tbkxNVFdQVEdCTFZXeEtNZUJNa0xYMHF3cGlXRGhX?=
- =?utf-8?B?bm1wSTZLZy9qWUNLMk41V1lwZk42MWtGMXZMWGQrLzVOTkVFQ1BRR2I5L1lC?=
- =?utf-8?B?VDQyUG4zbWd0YjJsdHAvSUNUZngzMlZ4RVZJN1dFaHFTYURRaWxwYlBsRVNt?=
- =?utf-8?B?TDdIb05QWHNQYWxMelhUTjRjU3JRS2gvUkY4VkRiWFZvY3hQZUhnNlpFL2NE?=
- =?utf-8?B?eTBQRXhYSjhKYlJqTVlNNXRqRnlmQ0ZCano2UC9mRDhHNEp4T0hRQ1ZlTjJ6?=
- =?utf-8?B?VXU3TXRkVGZtZUxNVzFDQk5EV3pqTWwreDVtZWRuZnM1M1Y3RlArWnFkSUV4?=
- =?utf-8?B?Q2hCRDhYa04vSDc3S1BabFFRL0JINVFLNVVXZklxQkMxKzRFeUtuVkZneHVI?=
- =?utf-8?B?YTZyY0JMcmRrcnVqSGp0TnE3eEUzcHpaUlFsNjh4WHNCZE9sckY0VzRKbndi?=
- =?utf-8?Q?PBD4F2pFUgupWCIk=3D?=
-X-OriginatorOrg: efficios.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6fd00cd6-b151-4a90-5e3c-08de80500992
-X-MS-Exchange-CrossTenant-AuthSource: YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Mar 2026 15:57:18.1806
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4f278736-4ab6-415c-957e-1f55336bd31e
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: QKjm5x9qhHbT4H0LLd/HDfhoHan/mNvC5X/CbgM07M26Mtw1QKPjBob+uwM1iJUuel03OtM+YXGXIdTxO32K37vGF7miN2DsM/wnfw+M8Jg=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: YT2PR01MB6497
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0htdQqaQT+-FJ-Agt4aAONXH36Qg2htoo+onLmst0ZoZg@mail.gmail.com>
 
-On 2026-03-12 11:54, Peter Zijlstra wrote:
-> On Thu, Mar 12, 2026 at 11:49:23AM -0400, Mathieu Desnoyers wrote:
->> On 2026-03-12 11:40, Steven Rostedt wrote:
->>> On Thu, 12 Mar 2026 11:28:07 -0400
->>> Mathieu Desnoyers <mathieu.desnoyers@efficios.com> wrote:
->>>
->>>>> Note, Vineeth came up with the naming. I would have done "do" but when I
->>>>> saw "invoke" I thought it sounded better.
->>>>
->>>> It works as long as you don't have a tracing subsystem called
->>>> "invoke", then you get into identifier clash territory.
->>>
->>> True. Perhaps we should do the double underscore trick.
->>>
->>> Instead of:  trace_invoke_foo()
->>>
->>> use:  trace_invoke__foo()
->>>
->>>
->>> Which will make it more visible to what the trace event is.
->>>
->>> Hmm, we probably should have used: trace__foo() for all tracepoints, as
->>> there's still functions that are called trace_foo() that are not
->>> tracepoints :-p
->>
->> One certain way to eliminate identifier clash would be to go for a
->> prefix to "trace_", e.g.
-> 
-> Oh, I know!, call them __do_trace_##foo().
-> 
-> /me runs like hell
+On 12-03-26, 16:43, Rafael J. Wysocki wrote:
+> But how exactly does policy->cur get out the limits?
 
-So s/__do_trace_/do_trace_/g and call it a day ?
+From the first email:
 
-Thanks,
+"Later, some frequency division strategies on our platform were triggered
+and the actual frequency become 500MHz -- 1/4 of the OS distribution
+frequency."
 
-Mathieu
+
+> I guess there's some notification from the firmware or similar that
+> causes the limits to be updated, but the only way policy->cur can
+> change is to still fall between the new limits AFAICS.
+
+AFAIU, the limits (in the view of cpufreq core) doesn't change, just
+the end hardware frequency changes without informing the cpufreq core.
+And if someone tries to read cpuinfo_cur_freq, cpufreq core tries to
+get everything in sync.
 
 -- 
-Mathieu Desnoyers
-EfficiOS Inc.
-https://www.efficios.com
+viresh
