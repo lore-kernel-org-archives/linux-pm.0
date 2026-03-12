@@ -1,105 +1,123 @@
-Received: from relay.hostedemail.com (smtprelay0013.hostedemail.com [216.40.44.13])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 600A73218DD;
-	Thu, 12 Mar 2026 15:24:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=216.40.44.13
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77DB4375F88;
+	Thu, 12 Mar 2026 15:27:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773329053; cv=none; b=cb8qOq67rqiZQxV578I8pkQv7tZBnWuklLo5tEDEOcRnEUwJgf6/uQerlEFg2dKwsA23nxP2jhH0o/JWRMP1P+WsZawOjdXG2dt0lT2Bc04gTEAmj47LuOkpJLxWL1+Zy7XvD3k+BhtRqFmjrF75v+IXHpwBt6PUx4iirNwNov8=
+	t=1773329239; cv=none; b=VhY9aUeSXBmsNXFmR+5Q4zRrPnR90RKGGV+EAmLkhpyOwQ+2kGcnztzwHdahjArPovFekJrHGjly6w4eEQqoAxRRIq0jYYZtPy+0Rmm/elToZSg8aNY4Qq6F45TeHhcLD5Gzfgzb3eayc4UfAjxyu22HrEa5rlnxvIBrVAendV4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773329053; c=relaxed/simple;
-	bh=sytxWOkyDIIeHX5CMaw9a1LerCjjFeV5ZrZULOHHkHE=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=eM1BHZwlq502mCNheCYMt1io97d/3/dKuHq3cMGA2MrcfkyQFTBCbreDEdyzXifHxLU4NJIYVQPFZN9x0AKM5PbSUJSomDrtQjEPU+8mU5G7nKVrtAq8gNBp9DitkYe3TNI5ikysoJmdpuj68NzV0sbY2wmFdGmsA/y6/eBRYBs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org; spf=pass smtp.mailfrom=goodmis.org; arc=none smtp.client-ip=216.40.44.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=goodmis.org
-Received: from omf01.hostedemail.com (a10.router.float.18 [10.200.18.1])
-	by unirelay04.hostedemail.com (Postfix) with ESMTP id 37E651A01EF;
-	Thu, 12 Mar 2026 15:24:06 +0000 (UTC)
-Received: from [HIDDEN] (Authenticated sender: rostedt@goodmis.org) by omf01.hostedemail.com (Postfix) with ESMTPA id 087CE60010;
-	Thu, 12 Mar 2026 15:23:39 +0000 (UTC)
-Date: Thu, 12 Mar 2026 11:23:54 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Cc: "Vineeth Pillai (Google)" <vineeth@bitbyteword.org>, Peter Zijlstra
- <peterz@infradead.org>, Dmitry Ilvokhin <d@ilvokhin.com>, Masami Hiramatsu
- <mhiramat@kernel.org>, Ingo Molnar <mingo@redhat.com>, Jens Axboe
- <axboe@kernel.dk>, io-uring@vger.kernel.org, "David S. Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
- <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov
- <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Marcelo Ricardo
- Leitner <marcelo.leitner@gmail.com>, Xin Long <lucien.xin@gmail.com>, Jon
- Maloy <jmaloy@redhat.com>, Aaron Conole <aconole@redhat.com>, Eelco
- Chaudron <echaudro@redhat.com>, Ilya Maximets <i.maximets@ovn.org>,
- netdev@vger.kernel.org, bpf@vger.kernel.org, linux-sctp@vger.kernel.org,
- tipc-discussion@lists.sourceforge.net, dev@openvswitch.org, Oded Gabbay
- <ogabbay@kernel.org>, Koby Elbaz <koby.elbaz@intel.com>,
- dri-devel@lists.freedesktop.org, "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, "Gautham R. Shenoy"
- <gautham.shenoy@amd.com>, Huang Rui <ray.huang@amd.com>, Mario Limonciello
- <mario.limonciello@amd.com>, Len Brown <lenb@kernel.org>, Srinivas
- Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-pm@vger.kernel.org,
- MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park
- <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>,
- Christian =?UTF-8?B?S8O2bmln?= <christian.koenig@amd.com>, Sumit Semwal
- <sumit.semwal@linaro.org>, linaro-mm-sig@lists.linaro.org, Eddie James
- <eajames@linux.ibm.com>, Andrew Jeffery <andrew@codeconstruct.com.au>, Joel
- Stanley <joel@jms.id.au>, linux-fsi@lists.ozlabs.org, David Airlie
- <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Alex Deucher
- <alexander.deucher@amd.com>, Danilo Krummrich <dakr@kernel.org>, Matthew
- Brost <matthew.brost@intel.com>, Philipp Stanner <phasta@kernel.org>, Harry
- Wentland <harry.wentland@amd.com>, Leo Li <sunpeng.li@amd.com>,
- amd-gfx@lists.freedesktop.org, Jiri Kosina <jikos@kernel.org>, Benjamin
- Tissoires <bentiss@kernel.org>, linux-input@vger.kernel.org, Wolfram Sang
- <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, Mark Brown
- <broonie@kernel.org>, Michael Hennerich <michael.hennerich@analog.com>,
- Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, linux-spi@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K.
- Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, Chris
- Mason <clm@fb.com>, David Sterba <dsterba@suse.com>,
- linux-btrfs@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/15] tracepoint: Avoid double static_branch evaluation
- at guarded call sites
-Message-ID: <20260312112354.3dd99e36@gandalf.local.home>
-In-Reply-To: <1e3c2830-765e-4271-89f7-0b6784b37597@efficios.com>
-References: <20260312150523.2054552-1-vineeth@bitbyteword.org>
-	<1e3c2830-765e-4271-89f7-0b6784b37597@efficios.com>
-X-Mailer: Claws Mail 3.20.0git84 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	s=arc-20240116; t=1773329239; c=relaxed/simple;
+	bh=3gNgYTTVULTKANJUJ/9Pi3V8zjzLXODn4zDu8DouePU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=CDnkaJjtI7/uS6gnJpKts2PayWJr/Jx0EowyggnWArpZf46fFcYPV11cYFLPrSDvKlRylbUAwoD90tiNPOZ15PZE5A30IjuAlQTHgw1pe6qWtZ82f0q65EbY/IpIDSxTJXudc0sPhVvyt/r+Z0JO4RtQ/JkWuwowOtuvf1kQ4DA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=kM8HjATG; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="kM8HjATG"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8FAE7C4CEF7;
+	Thu, 12 Mar 2026 15:27:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1773329239;
+	bh=3gNgYTTVULTKANJUJ/9Pi3V8zjzLXODn4zDu8DouePU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=kM8HjATG79tRKUGkuqfgkwFddma+9QRl1vjcNBOKPetSajqw1znNWVuws9HsU0mq/
+	 DHMjUSFr0wmKflSkf5i/6IO5CBWS3kHWFN/QrdZwXyWaOZbpLFdbaZBac7Tt/w/ov8
+	 pz30LFNoTFHMP1XgPK2joLFiKrlfolOA88SuJ2QA=
+Date: Thu, 12 Mar 2026 16:27:07 +0100
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Herve Codina <herve.codina@bootlin.com>, Andrew Lunn <andrew@lunn.ch>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Kalle Niemi <kaleposti@gmail.com>,
+	Matti Vaittinen <mazziesaccount@gmail.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>, Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>, Andi Shyti <andi.shyti@kernel.org>,
+	Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Peter Rosin <peda@axentia.se>, Arnd Bergmann <arnd@arndb.de>,
+	Saravana Kannan <saravanak@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Charles Keepax <ckeepax@opensource.cirrus.com>,
+	Richard Fitzgerald <rf@opensource.cirrus.com>,
+	David Rhodes <david.rhodes@cirrus.com>,
+	Linus Walleij <linusw@kernel.org>,
+	Ulf Hansson <ulf.hansson@linaro.org>,
+	Mark Brown <broonie@kernel.org>, Len Brown <lenb@kernel.org>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Daniel Scally <djrscally@gmail.com>,
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+	Sakari Ailus <sakari.ailus@linux.intel.com>,
+	Davidlohr Bueso <dave@stgolabs.net>,
+	Jonathan Cameron <jonathan.cameron@huawei.com>,
+	Dave Jiang <dave.jiang@intel.com>,
+	Alison Schofield <alison.schofield@intel.com>,
+	Vishal Verma <vishal.l.verma@intel.com>,
+	Ira Weiny <ira.weiny@intel.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Shawn Guo <shawnguo@kernel.org>, Wolfram Sang <wsa@kernel.org>,
+	linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-clk@vger.kernel.org, linux-i2c@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-pci@vger.kernel.org,
+	linux-sound@vger.kernel.org, patches@opensource.cirrus.com,
+	linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-spi@vger.kernel.org, linux-acpi@vger.kernel.org,
+	linux-cxl@vger.kernel.org,
+	Allan Nielsen <allan.nielsen@microchip.com>,
+	Horatiu Vultur <horatiu.vultur@microchip.com>,
+	Steen Hegelund <steen.hegelund@microchip.com>,
+	Luca Ceresoli <luca.ceresoli@bootlin.com>,
+	Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+	Saravana Kannan <saravanak@google.com>,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Subject: Re: [PATCH v5 02/28] driver core: Rename get_dev_from_fwnode()
+ wrapper to get_device_from_fwnode()
+Message-ID: <2026031242-debug-aviation-19b8@gregkh>
+References: <20260227135428.783983-1-herve.codina@bootlin.com>
+ <20260227135428.783983-3-herve.codina@bootlin.com>
+ <CAMuHMdVVsEB-xb8Jz4ujBam2NxtxAOb7byYa3VR_eHsbTD5rXw@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Stat-Signature: h3739pmr1eu9bg7iohjao1rrs3tokc6z
-X-Rspamd-Server: rspamout08
-X-Rspamd-Queue-Id: 087CE60010
-X-Session-Marker: 726F737465647440676F6F646D69732E6F7267
-X-Session-ID: U2FsdGVkX18y4imWQ5s/jJLRD+ifAQxkW+/MJIrfF8g=
-X-HE-Tag: 1773329019-951038
-X-HE-Meta: U2FsdGVkX19VCvtnyeXLm8RYcE/0528Of+u4uh+xWXIoIUAMDgzoBtHgAKGT8nAF/MB27RV3F/HBU7N8Yq3nctz4CjyozsdN+JtQpjXgcPgQ91Udi/zn6KJIrxNJApkTGgQNfwjA1AIJPhvzXyH3aMyWbdyoGtBKFOnq4RRJYVOvsob0d/ffWToVP4J5RUsRMz0qpdmi3Iljf9FrVu7POde112UEVgFi8OQXvPdVYuTecw25DZQQ5ipeWXW6Kr0xXH7b2TXafPsVNaEyw+eNEKMINQbygT33slpoLqfF/VxxC3FTWBQ/CxruNZ4auDV5bvilUFV4TL+gv3A/9X1r2mUEs0jEp6JnA2gRI3WDauIvML8TIfmFKXYkIboJC7/W
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAMuHMdVVsEB-xb8Jz4ujBam2NxtxAOb7byYa3VR_eHsbTD5rXw@mail.gmail.com>
 
-On Thu, 12 Mar 2026 11:12:41 -0400
-Mathieu Desnoyers <mathieu.desnoyers@efficios.com> wrote:
-
-> >    if (trace_foo_enabled() && cond)
-> >        trace_invoke_foo(args);   /* calls __do_trace_foo() directly */  
+On Tue, Mar 10, 2026 at 04:03:42PM +0100, Geert Uytterhoeven wrote:
+> Hi Hervé,
 > 
-> FYI, we have a similar concept in LTTng-UST for userspace
-> instrumentation already:
+> On Fri, 27 Feb 2026 at 14:55, Herve Codina <herve.codina@bootlin.com> wrote:
+> > get_dev_from_fwnode() calls get_device() and so it acquires a reference
+> > on the device returned.
+> >
+> > In order to be more obvious that this wrapper is a get_device() variant,
+> > rename it to get_device_from_fwnode().
+> >
+> > Suggested-by: Mark Brown <broonie@kernel.org>
+> > Link: https://lore.kernel.org/lkml/CAGETcx97QjnjVR8Z5g0ndLHpK96hLd4aYSV=iEkKPNbNOccYmA@mail.gmail.com/
+> > Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+> > Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> > Reviewed-by: Saravana Kannan <saravanak@google.com>
+> > Reviewed-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
+> > Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 > 
-> if (lttng_ust_tracepoint_enabled(provider, name))
->          lttng_ust_do_tracepoint(provider, name, ...);
-> 
-> Perhaps it can provide some ideas about API naming.
+> FTR, one more user of get_dev_from_fwnode() appeared in commit
+> 9035073d0ef1de81 ("reset: convert reset core to using firmware nodes")
+> in reset/next.
 
-I find the word "invoke" sounding more official than "do" ;-)
+Ick, that's going to make this hard to land anywhere.  This is a rough
+series, perhaps it should be split up to make it easier somehow?
 
-Note, Vineeth came up with the naming. I would have done "do" but when I
-saw "invoke" I thought it sounded better.
+thanks,
 
--- Steve
+greg k-h
