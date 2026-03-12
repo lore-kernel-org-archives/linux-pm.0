@@ -1,128 +1,191 @@
-Received: from mxout2.routing.net (mxout2.routing.net [134.0.28.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 93873282F0E;
-	Thu, 12 Mar 2026 07:45:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.12
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773301533; cv=none; b=FWg+mQvOqPEP2RaeoUihM+A+kGPXI7IJWB8wRCmETlOmeFXk79FChNigob3PK7hEhyZ96KAwvvWWM1zrgD5DYFiNXaeHhz0gj8v1p5eqALG1jgacHYh1sXqSzUMjKQ9Guy2TyM9QzNzrIruUDPmEbU5o/MZKoVhivM/IPeWWl7c=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773301533; c=relaxed/simple;
-	bh=XjIyWo6sBf1wtax11firRqMIhml5w8X1N2yeZP5dL48=;
-	h=Date:From:To:CC:Subject:In-Reply-To:References:Message-ID:
-	 MIME-Version:Content-Type; b=LAq3hQhRyBvEKojGT3xVGh+PeCBPk8Ns9Pwvet1/6zlgx5RO1JpfijaRo5Z/Nabz93Trsd3J/IJ8JUkJ+4XlkkXZhq92KoVhO4TG+8GJfUcKVqEHn9zIcVmFPEkYRo9anCK4BBmlsL+Fq4XHMsgZR6+xNd6i0y/4TzxLHB6Jhp0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=WwL+dAsj; arc=none smtp.client-ip=134.0.28.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64EA52E88BB
+	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 08:03:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.46
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773302586; cv=pass; b=Pr0BSYv7AVh8i+yyyUJI7LxQ6SnIfD5F3iArjqnOZE3ijVpI/SodgxIvrYNW4DxSBUF+RM8cFY7+qCrqfWaOxYxHCQyrGIxKACsLx5jXE2gDXj1X9XeddGDVL3JphPH2Q2tJy3Z+skg6bNuKKRI46mJnL3Usox/7my7u/jUlQdU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773302586; c=relaxed/simple;
+	bh=cTzeAB37F6kJZZPNQk3PO+7uyQzPvuQGhnO4B+D7ZFY=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Vk2L4F3wds0ZpXEMn+upoS64ibH6GBzx5Zc3XaLdyE4qIMqHFQ+L+D7er4auaMam9yxx0ZDYyhO0CwHdOEhcf56SWb5xFB4fkRIs60r4xAWjcaCJ/zUiQCnnVxIX+l5ARClzOfBvmBSw+UiSM7CW3IhhmESSxZtKtVZXIBGKcvA=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=JeOb9bJl; arc=pass smtp.client-ip=209.85.128.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="WwL+dAsj"
-Received: from mxbox4.masterlogin.de (unknown [192.168.10.79])
-	by mxout2.routing.net (Postfix) with ESMTP id F0A8060244;
-	Thu, 12 Mar 2026 07:39:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=routing; t=1773301168;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=NGQFtN65jqZPHApCqR8fT1iH+UK6PY6v44zsFoBO/rU=;
-	b=WwL+dAsjvDAwGuZnVMJgvw+33+ocdTXcPGYqWKyxtPC9CadFv0zPwLqzVKS/bB3ZOlOMKe
-	BOfF0YtZEc+oTSCdBlCB4sqONtWFuk2NhKRDzkCtiyCun1BQOSsPf7F+AnWeb2uxhh8AE5
-	Iyoh/UEenaJm83mHOngDw9ZmtPzgZj0=
-Received: from ehlo.thunderbird.net (fttx-pool-217.61.148.188.bambit.de [217.61.148.188])
-	by mxbox4.masterlogin.de (Postfix) with ESMTPSA id 542F08007E;
-	Thu, 12 Mar 2026 07:39:27 +0000 (UTC)
-Date: Thu, 12 Mar 2026 08:39:26 +0100
-From: Frank Wunderlich <linux@fw-web.de>
-To: Laura Nao <laura.nao@collabora.com>
-CC: angelogioacchino.delregno@collabora.com, daniel.lezcano@linaro.org,
- daniel@makrotopia.org, frank-w@public-files.de, laura.nao@collabora.com,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
- lukasz.luba@arm.com, matthias.bgg@gmail.com, rafael@kernel.org,
- rui.zhang@intel.com
-Subject: Re: [PATCH] thermal/drivers/mediatek/lvts: fix mt7987 thermal crash
-User-Agent: K-9 Mail for Android
-In-Reply-To: <20260311093519.15810-1-laura.nao@collabora.com>
-References: <20260309064439.4296-1-linux@fw-web.de> <20260311093519.15810-1-laura.nao@collabora.com>
-Message-ID: <8B371D2A-3C7E-4514-B495-9ED58FB60A80@fw-web.de>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JeOb9bJl"
+Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-4852f8ac7e9so7721725e9.1
+        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 01:03:04 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1773302583; cv=none;
+        d=google.com; s=arc-20240605;
+        b=CTMZuB8gM0db4BbaJBrbwvQbw8ercRLAc2k7xmuDtp0yk69Lk7Rg1dflx/AJXXjYU+
+         rzs9WLZSG/1fgLxyIgWgAHYkXqm9hVxJDrNUXwa8FwmAr+FACNdv+hC2FeY9MPoeEq8k
+         Rng2FLsa5QAuCP3vv+XnN7AZdT7Z5pqm2SSvdhvXI0tHXaM9HJ1StUqGk405lnmrsCOL
+         ARl7TysZTksrRF5BjShFN2DNWTreZP233MFoqtEvALXguwOlFNvG9hrtsLZXiEr60Iuh
+         vISs/2aCH9sorYbtjkEVeMw/8JXfS5pUZe7dR3kONO44DrbBvgMmYGYgbHU8P9D1brKp
+         DFgA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=BbjJ+SQCghaY61mjkEDxh0STs+H8xDE7U50HeqsZzCU=;
+        fh=uF7MPrYaOZtwNnXId0cFbMsbfvZ957HPZFrhiPCzo+g=;
+        b=Uf3ZHeAYLzeeJTS//3rAuhfEeiALMGUIRJoJs1SEbzgMlJdNKpKpgz4ico8KtIIFEz
+         TjT2SfPi/zMiv4k6u1MmA23ExULBTtzAClWeXPETCOxLAhR5Y+8nIsMLYA8nIAJ9vZs+
+         U4XdHmcQmQyqThsTeLyuMyZ3JdX0PWf0poRfChlsktK8Sx1QXb8OgeqvXH/LqGXaUTsx
+         SkA1Ihnt4e0WdqZ38qG/EPy+IQVrkSXrJajx/dqjZB3ZQn7CP4dpBppf8F/CHpy3vS+B
+         ftUiWL+LY/M7rfylKmG+OxbC5GSIVwA6MxGy8NgZgIiQwMUipNhPOTOlD8U4aHoPIH6y
+         NdOw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1773302583; x=1773907383; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=BbjJ+SQCghaY61mjkEDxh0STs+H8xDE7U50HeqsZzCU=;
+        b=JeOb9bJl7R4Nw7fBOtqp42jO8+A23nm4z+KCV7CrJA1w8dvfd0sbGTtTtzUFCWxZ/j
+         79zlX21vEln7wZpd4ukmmfdlYZ7Ql2m/M2PLyVo7cQammvkkP+WN3D/mJEsewzNZHaZm
+         9ayg9+tBlT/6Wvvma/ey81v3MU0c0dlczjkxBCP4MNIMXKy5epu0wqj8NKkZf3B4FmEo
+         xsvW8zgL+dP8JIkWaldZQpSKfC+1xKuq3f29lJymfwQmLJNsR6SIyTDLUArkHqLVSH+U
+         T0TbW1OZ0Yl2mGYTISq/I6hN0aDxYUJxHUFUzqtqnlhDLoy7LBlxn3osgynLiIZgrh50
+         wCYg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773302583; x=1773907383;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=BbjJ+SQCghaY61mjkEDxh0STs+H8xDE7U50HeqsZzCU=;
+        b=fUyCFISL37GuNChREEQOD9lbPjNSQOQf9bJGir4TTlkW3yBTN+/ojhWVAORaQSdcYJ
+         JTut5nef7yHy4cxx7+iBPAMaOIzS7v8JLRJ2MHpY14CY13iyvXhwcdbHAY4F3YONQt8A
+         d+WHIOO+qoegZFHBblg3rrwzYEI0mCBN4NO4WtSMNszuojNtu+Qmd3Do9HC2X40Jxlga
+         SNz4MFDTv/Hf+cXJherT8BeSXd6OUyzMF7QvxIKe/XMxft2wpZoj9nfTabK++u8I9jid
+         wmiRSgKYP8XJTd7ydirm8CT2E7RE4Cjfw2+cQOkX3edgZ5c/xZH1u+z+qDZZP7mPZrmZ
+         aLkg==
+X-Forwarded-Encrypted: i=1; AJvYcCXViNncNCh15m0UwM2mAPFxQU2fmPEJ09zPCCOLpT+YJsOp4oiLAv/CN2RW46EUHX+FUf76NmJA/g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzU9jSNLU+/q3Bai3YPBDXSkcM8PpX7g71a4BatffUW9ZNKWmQI
+	A996ESnfKUhLyQhxntBC3aYiVoNd6yiMQZMvQjJLbGQLoDBlzogQQsE08sLrb23mrZgwJ2/9I/f
+	80x0aMW3CYKkG98M5P/5AABzS0ChEFUc=
+X-Gm-Gg: ATEYQzxXPu3Myyth/1Is9mlwAMJ+lYqclr4o2o+d8lnGdqfMunJtHvOvw8G9yLcE0J7
+	0GqMjMj7pX/EcscVRZaCIF9xc6xB8mwfVYVOKJQcKvUeVpc+L8AORfabwubnDXAkMTNX8O6MhHQ
+	HOEuh988WjN81vjbPH8ml8K91/hkCxADyLhf09wgeJypxfBI2DgUgLqY5255OPI3UU/LUw38Icq
+	r17xlPZi9eoWqF8nrnbMh73//F+vmAVwM9q+mC5CY/qadXKDIVvF8+7ShQjuBsJK0oig/w1WzC1
+	TBK/mb9e
+X-Received: by 2002:a05:600c:3551:b0:485:3f1c:d8a4 with SMTP id
+ 5b1f17b1804b1-4854b0d6c1amr95772455e9.9.1773302582414; Thu, 12 Mar 2026
+ 01:03:02 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
+References: <20260306133351.31589-1-clamor95@gmail.com> <20260306133351.31589-3-clamor95@gmail.com>
+ <20260307-smiling-coyote-of-economy-317afe@quoll> <CAPVz0n2QXSFnrkLPFVDbUjNAkp2_dTumeXh4EsB11ca0jHEC-g@mail.gmail.com>
+ <20260311221115.GA775894-robh@kernel.org>
+In-Reply-To: <20260311221115.GA775894-robh@kernel.org>
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+Date: Thu, 12 Mar 2026 10:02:51 +0200
+X-Gm-Features: AaiRm50s9En6lGf1tMoouVyxB599AhlUh5nfjiGhsXtzzsxYNq4Fz7mN4wRsVQQ
+Message-ID: <CAPVz0n3pFzWUV7g_AcigRDSQJP4Hr6Ya=M_Zi+538XczR4ahtQ@mail.gmail.com>
+Subject: Re: [PATCH v3 2/6] dt-binding: pinctrl: pinctrl-max77620: convert to
+ DT schema
+To: Rob Herring <robh@kernel.org>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linusw@kernel.org>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Lee Jones <lee@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Chanwoo Choi <cw00.choi@samsung.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+	linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-rtc@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Mail-ID: 63a00dde-0e31-408d-98f9-570225501692
 
-Am 11=2E M=C3=A4rz 2026 10:35:19 MEZ schrieb Laura Nao <laura=2Enao@collabo=
-ra=2Ecom>:
->Hi!
+=D1=87=D1=82, 12 =D0=B1=D0=B5=D1=80. 2026=E2=80=AF=D1=80. =D0=BE 00:11 Rob =
+Herring <robh@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
 >
->On 3/9/26 07:44, Frank Wunderlich wrote:
->> From: Frank Wunderlich <frank-w@public-files=2Ede>
->>
->> On mt7987 we see a crash due to missing ops entry=2E
->>
->> [    1=2E518540] Internal error: Oops: 0000000096000005 [#1]  SMP
->> =2E=2E=2E
->> [    1=2E564481] pc : lvts_get_temp+0x84/0xc4
->> [    1=2E564492] lr : lvts_get_temp+0x60/0xc4
->> =2E=2E=2E
->> [    1=2E620900] Call trace:
->> [    1=2E631753]  lvts_get_temp+0x84/0xc4 (P)
->> [    1=2E645471]  __thermal_zone_get_temp+0x24/0x11c
->> [    1=2E656502]  __thermal_zone_device_update+0x9c/0x52c
->>
->> Add the new ops member added in 7=2E0-rc1 for mt7987 too=2E
->>
->> Fixes: a4c40559499f ("thermal/drivers/mediatek/lvts: Add platform ops t=
-o support alternative conversion logic")
+> On Sat, Mar 07, 2026 at 03:30:21PM +0200, Svyatoslav Ryhel wrote:
+> > =D1=81=D0=B1, 7 =D0=B1=D0=B5=D1=80. 2026=E2=80=AF=D1=80. =D0=BE 14:48 K=
+rzysztof Kozlowski <krzk@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
+> > >
+> > > On Fri, Mar 06, 2026 at 03:33:47PM +0200, Svyatoslav Ryhel wrote:
+> > > > Convert pinctrl-max77620 devicetree bindings for the MAX77620 PMIC =
+from
+> > > > TXT to YAML format. This patch does not change any functionality; t=
+he
+> > > > bindings remain the same.
+> > > >
+> > > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> > > > ---
+> > > >  .../pinctrl/maxim,max77620-pinctrl.yaml       |  97 +++++++++++++
+> > > >  .../bindings/pinctrl/pinctrl-max77620.txt     | 127 --------------=
+----
+> > > >  2 files changed, 97 insertions(+), 127 deletions(-)
+> > > >  create mode 100644 Documentation/devicetree/bindings/pinctrl/maxim=
+,max77620-pinctrl.yaml
+> > > >  delete mode 100644 Documentation/devicetree/bindings/pinctrl/pinct=
+rl-max77620.txt
+> > > >
+> > > > diff --git a/Documentation/devicetree/bindings/pinctrl/maxim,max776=
+20-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/maxim,max77620-=
+pinctrl.yaml
+> > > > new file mode 100644
+> > > > index 000000000000..7364a8bdd7d3
+> > > > --- /dev/null
+> > > > +++ b/Documentation/devicetree/bindings/pinctrl/maxim,max77620-pinc=
+trl.yaml
+> > > > @@ -0,0 +1,97 @@
+> > > > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> > > > +%YAML 1.2
+> > > > +---
+> > > > +$id: http://devicetree.org/schemas/pinctrl/maxim,max77620-pinctrl.=
+yaml#
+> > > > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > > > +
+> > > > +title: Pinmux controller function for Maxim MAX77620 Power managem=
+ent IC
+> > > > +
+> > > > +maintainers:
+> > > > +  - Svyatoslav Ryhel <clamor95@gmail.com>
+> > > > +
+> > > > +description:
+> > > > +  Device has 8 GPIO pins which can be configured as GPIO as well a=
+s the
+> > > > +  special IO functions.
+> > > > +
+> > > > +allOf:
+> > > > +  - $ref: /schemas/pinctrl/pincfg-node.yaml
+> > > > +  - $ref: /schemas/pinctrl/pinmux-node.yaml
+> > > > +
+> > > > +patternProperties:
+> > > > +  "^(pin_gpio|gpio)[0-7_]+$":
+> > >
+> > > Underscores are not allowed in general, so pattern needs fixes. Does
+> > > anything actually rely on this name? Is this ABI? I don't see old
+> > > binding and driver using the name, thus this should be just ^pin-[0-7=
+]$
+> > > (+ is also not correct if you have max 8 gpios)
+> > >
+> >
+> > Old txt schema uses pin_gpio[0-7] hence it is here, but greping trees
+> > did not reveal use of pin_gpio so it may be dropped.
+> >
+> > No this is not ABI, name may be any. Including gpio0-1-2-3, gpio2-4
+> > etc which is why + is there. or maybe you know better way to cover
+> > those names?
+> >
+> > There are device trees which use gpio5_6 with the underscore
+> > (tegra210-smaug.dts; tegra210-p2894.dtsi for example). Should the
+> > schema account for those?
 >
->I think the Fixes tag should reference=20
->"thermal/drivers/mediatek/lvts_thermal: Add mt7987 support", as the=20
->commit introducing the ops also updated all existing data structs (seems=
-=20
->like mt7987 support landed right after)=2E
-
-Ok, i will change this=2E Have not looked on order how commits
-are applied=2E Both commits were new in 7=2E0=2E
-
->> Signed-off-by: Frank Wunderlich <frank-w@public-files=2Ede>
->> ---
->>  drivers/thermal/mediatek/lvts_thermal=2Ec | 1 +
->>  1 file changed, 1 insertion(+)
->>
->> diff --git a/drivers/thermal/mediatek/lvts_thermal=2Ec b/drivers/therma=
-l/mediatek/lvts_thermal=2Ec
->> index a9617d5e0077=2E=2E5671531d4c23 100644
->> --- a/drivers/thermal/mediatek/lvts_thermal=2Ec
->> +++ b/drivers/thermal/mediatek/lvts_thermal=2Ec
->> @@ -2026,6 +2026,7 @@ static const struct lvts_data mt7987_lvts_ap_data=
- =3D {
->>  	=2Etemp_offset	=3D LVTS_COEFF_B_MT7987,
->>  	=2Egt_calib_bit_offset =3D 32,
->>  	=2Edef_calibration =3D 19380,
+> Defining a specific pattern looks like an endorsement of the name. I
+> would just do the minimum you need. Something like '^(pin|gpio).' unless
+> you have a pinctrl-* property.
 >
->You'll probably need to define num_cal_offsets too, since the number of=
-=20
->calibration bytes was also made configurable (not sure if this is=20
->already addressed by a separate patch)=2E
 
-Thanks for pointing to this=2E
-Should i change in same patch or in separate one?
+It does fit nicely. Thank you!
 
->> +	=2Eops =3D &lvts_platform_ops_mt7988,
->>  };
->> =20
->>  static const struct lvts_data mt7988_lvts_ap_data =3D {
->
->Best,
->
->Laura
-
-
-
-regards Frank
+> Rob
