@@ -1,116 +1,103 @@
-Received: from relay.hostedemail.com (smtprelay0015.hostedemail.com [216.40.44.15])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail11.truemail.it (mail11.truemail.it [217.194.8.81])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FC483CAE8E;
-	Thu, 12 Mar 2026 17:03:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=216.40.44.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E2BDE3F87E4;
+	Thu, 12 Mar 2026 17:34:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.194.8.81
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773334994; cv=none; b=Z1Eq/3mfRpiSpvWNOYoUQ8ZKK1P8HvXTz2NtP+Xv1zsJkMcofw7flwCwoi0FM/kRyNsQfMU6wn9om8HDP6aC9z2wxkkQcsGJ2juDTjr+KWckbhLzGPcYZxvq3z2C7z1QqPtXwoVYUbQtphtxcrrz1cJa+8genGi/8y4RunMBzZg=
+	t=1773336875; cv=none; b=FBdfW8/jWo2bPVmu3mvxVbTcQ59YP6+KaYaOmMqZP1CHYrqtTxV+Z0lVCWLly5hk8CX3u6SeWJewFiWadyp7Ja+6waVmqfvF39JfGZf9tY3/cq5rvLDprqpsRMOqJitihImfDDrvK8Yg64uYrqtIT04tLmwu+Ct4bNUWQujd4V8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773334994; c=relaxed/simple;
-	bh=gymGM9n7wddVYvwk2Iyj0H5MpRVhidPG4DavbVCxGds=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=bG5ihaMsPFngmAGcyqHMa3B9ZoapeLoaVI2NFNAQrywHYRSIQxXK47QHdcQ7aNptbfaYdg3o3iPRxnbGyhW4Jtq3/QdpzYQLXJ3DmNV7BcMAx6gQ8z3wJv7sNV9ikDehbn+CiygWxQx652HzkVxH970Jv5kCIYI+467JO4fstnA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org; spf=pass smtp.mailfrom=goodmis.org; arc=none smtp.client-ip=216.40.44.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=goodmis.org
-Received: from omf03.hostedemail.com (a10.router.float.18 [10.200.18.1])
-	by unirelay09.hostedemail.com (Postfix) with ESMTP id B37CD8B479;
-	Thu, 12 Mar 2026 17:03:07 +0000 (UTC)
-Received: from [HIDDEN] (Authenticated sender: rostedt@goodmis.org) by omf03.hostedemail.com (Postfix) with ESMTPA id 1BAFA6000C;
-	Thu, 12 Mar 2026 17:02:41 +0000 (UTC)
-Date: Thu, 12 Mar 2026 13:02:55 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Andrii Nakryiko <andrii.nakryiko@gmail.com>
-Cc: Vineeth Remanan Pillai <vineeth@bitbyteword.org>, Mathieu Desnoyers
- <mathieu.desnoyers@efficios.com>, Peter Zijlstra <peterz@infradead.org>,
- Dmitry Ilvokhin <d@ilvokhin.com>, Masami Hiramatsu <mhiramat@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Jens Axboe <axboe@kernel.dk>,
- io-uring@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, Eric
- Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo
- Abeni <pabeni@redhat.com>, Alexei Starovoitov <ast@kernel.org>, Daniel
- Borkmann <daniel@iogearbox.net>, Marcelo Ricardo Leitner
- <marcelo.leitner@gmail.com>, Xin Long <lucien.xin@gmail.com>, Jon Maloy
- <jmaloy@redhat.com>, Aaron Conole <aconole@redhat.com>, Eelco Chaudron
- <echaudro@redhat.com>, Ilya Maximets <i.maximets@ovn.org>,
- netdev@vger.kernel.org, bpf@vger.kernel.org, linux-sctp@vger.kernel.org,
- tipc-discussion@lists.sourceforge.net, dev@openvswitch.org, Oded Gabbay
- <ogabbay@kernel.org>, Koby Elbaz <koby.elbaz@intel.com>,
- dri-devel@lists.freedesktop.org, "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, "Gautham R. Shenoy"
- <gautham.shenoy@amd.com>, Huang Rui <ray.huang@amd.com>, Mario Limonciello
- <mario.limonciello@amd.com>, Len Brown <lenb@kernel.org>, Srinivas
- Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-pm@vger.kernel.org,
- MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park
- <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>,
- Christian =?UTF-8?B?S8O2bmln?= <christian.koenig@amd.com>, Sumit Semwal
- <sumit.semwal@linaro.org>, linaro-mm-sig@lists.linaro.org, Eddie James
- <eajames@linux.ibm.com>, Andrew Jeffery <andrew@codeconstruct.com.au>, Joel
- Stanley <joel@jms.id.au>, linux-fsi@lists.ozlabs.org, David Airlie
- <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Alex Deucher
- <alexander.deucher@amd.com>, Danilo Krummrich <dakr@kernel.org>, Matthew
- Brost <matthew.brost@intel.com>, Philipp Stanner <phasta@kernel.org>, Harry
- Wentland <harry.wentland@amd.com>, Leo Li <sunpeng.li@amd.com>,
- amd-gfx@lists.freedesktop.org, Jiri Kosina <jikos@kernel.org>, Benjamin
- Tissoires <bentiss@kernel.org>, linux-input@vger.kernel.org, Wolfram Sang
- <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, Mark Brown
- <broonie@kernel.org>, Michael Hennerich <michael.hennerich@analog.com>,
- Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, linux-spi@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K.
- Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, Chris
- Mason <clm@fb.com>, David Sterba <dsterba@suse.com>,
- linux-btrfs@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/15] tracepoint: Avoid double static_branch evaluation
- at guarded call sites
-Message-ID: <20260312130255.6476e560@gandalf.local.home>
-In-Reply-To: <CAEf4BzbnfyhCqp0ne=2gRnVxp-mdGmuZwDeFRyhRYH+eDcz2-w@mail.gmail.com>
-References: <20260312150523.2054552-1-vineeth@bitbyteword.org>
-	<1e3c2830-765e-4271-89f7-0b6784b37597@efficios.com>
-	<20260312112354.3dd99e36@gandalf.local.home>
-	<219d015d-076b-4c80-8f63-88569115fdad@efficios.com>
-	<20260312114041.5193c729@gandalf.local.home>
-	<1becdbce-2c01-468a-bbab-42b5dea9fdf8@efficios.com>
-	<CAO7JXPjnnruhM5oC6xMgnYaQ9efzYFqMCFiJLNM3HCQ+ZeCiJw@mail.gmail.com>
-	<CAEf4BzbnfyhCqp0ne=2gRnVxp-mdGmuZwDeFRyhRYH+eDcz2-w@mail.gmail.com>
-X-Mailer: Claws Mail 3.20.0git84 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	s=arc-20240116; t=1773336875; c=relaxed/simple;
+	bh=VGtXHilX3UlaPfPfilvV8r1wHZFmWNithjQkgVtRITw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=LMCVdYMz8Y1YwfwFhMOMg2Bib/xMAekzEkoBWkbrJU1Cr+V6PNJTwda5WwqALO8Yxn8+blR3giGbt8rafNgeTzYOq7rIr+Gl7bgApVWP15u9+/zRE49GeV2URZ6CAdpPW/orr4WLSmplnY+RmuGgpr965AwLSsN606HA2F0eLBQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=dolcini.it; spf=pass smtp.mailfrom=dolcini.it; dkim=pass (2048-bit key) header.d=dolcini.it header.i=@dolcini.it header.b=Z+0B417l; arc=none smtp.client-ip=217.194.8.81
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=dolcini.it
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=dolcini.it
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=dolcini.it header.i=@dolcini.it header.b="Z+0B417l"
+Received: from francesco-nb (93-49-2-63.ip317.fastwebnet.it [93.49.2.63])
+	by mail11.truemail.it (Postfix) with ESMTPA id 5909322831;
+	Thu, 12 Mar 2026 18:34:22 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dolcini.it;
+	s=default; t=1773336863;
+	bh=fmtlnhSTjgOoQaF3XdzpaQYVg6I7U+e/byYCHILShjg=; h=From:To:Subject;
+	b=Z+0B417l9p71c9g2467dWy9UgcuD70ES35DaANtN0imwURTZU/GPr25LH+b5eQ6ym
+	 0hVsZhSnAJUU+RVHvGSUx+CMOWrr9b2F4DVMWTVphdX0DP/GRwUn61FTHAp9jUl6tC
+	 oCNGIxNG1N0CODjGoX0qFYW4Q+SeYau8/Ta3jzwoE9eiOyI0Ggn54oBoF9nA2/5qCQ
+	 zyNIj16+riOjZYIm70/XvM2xZAF6ZIW67O49FwbCDgCphk2melEEoB9awSAIKjGRIM
+	 yMc9HpZiPhvaMcw5R9TguGnDUDO2I3fUxmwPrQil1l7fnVLrsiN7+2OySDqguMHfTM
+	 zACt1/KiYryLg==
+Date: Thu, 12 Mar 2026 18:34:18 +0100
+From: Francesco Dolcini <francesco@dolcini.it>
+To: ming.qian@oss.nxp.com
+Cc: linux-media@vger.kernel.org, mchehab@kernel.org,
+	hverkuil-cisco@xs4all.nl, nicolas@ndufresne.ca,
+	benjamin.gaignard@collabora.com, robh@kernel.org,
+	krzk+dt@kernel.org, conor+dt@kernel.org, p.zabel@pengutronix.de,
+	sebastian.fricke@collabora.com, shawnguo@kernel.org,
+	ulf.hansson@linaro.org, s.hauer@pengutronix.de,
+	kernel@pengutronix.de, festevam@gmail.com, m.felsch@pengutronix.de,
+	fra.schnyder@gmail.com, linux-imx@nxp.com, l.stach@pengutronix.de,
+	Frank.li@nxp.com, peng.fan@nxp.com, eagle.zhou@nxp.com,
+	devicetree@vger.kernel.org, imx@lists.linux.dev,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, regressions@lists.linux.dev
+Subject: Re: [PATCH v4] media: verisilicon: Fix kernel panic due to
+ __initconst misuse
+Message-ID: <20260312173349.GA137045@francesco-nb>
+References: <20260306031059.801-1-ming.qian@oss.nxp.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Rspamd-Queue-Id: 1BAFA6000C
-X-Stat-Signature: kfs6qijpbuferuuhtorb6b835ny66tin
-X-Rspamd-Server: rspamout03
-X-Session-Marker: 726F737465647440676F6F646D69732E6F7267
-X-Session-ID: U2FsdGVkX18gNtqVqUvpV9OuqznTYLgQxysBeUr1V4g=
-X-HE-Tag: 1773334961-101407
-X-HE-Meta: U2FsdGVkX18nBBc/wjwt+Uq/UDhPM+TvyqJ3PzJ7XTdg8zJwcAeVzhmYzxHLf7pqvroMwwz3w+ZMve24FXDlwN4Al9l18e+sIMsly59QHs1WIGUGFWD+n9vC0YFBju5YF4U2cW8usaKA9ACod/DJfkWwChqILC7YI5fjo0jn+MDRzWgSUtcRWc+1ACqufST8GE1+cVaguSIGVLtHO49AgMgvbvjSqwoHR4+HUaDb14GsztIWWkzSI6t3CvJZWLJ62JKH4l1NZ0cseEdgq33l48qG8hnnyAiEMhQWmONsALjOWujHAfplawqsGy97HetKzPQbnSWVIVPTZt4F/YmoVmEIzpjR6X9B
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260306031059.801-1-ming.qian@oss.nxp.com>
 
-On Thu, 12 Mar 2026 09:54:29 -0700
-Andrii Nakryiko <andrii.nakryiko@gmail.com> wrote:
+Hello,
 
-> > > emit_trace_foo()
-> > > __trace_foo()  
+On Fri, Mar 06, 2026 at 11:10:57AM +0800, ming.qian@oss.nxp.com wrote:
+> From: Ming Qian <ming.qian@oss.nxp.com>
 > 
-> this seems like the best approach, IMO. double-underscored variants
-> are usually used for some specialized/internal version of a function
-> when we know that some conditions are correct (e.g., lock is already
-> taken, or something like that). Which fits here: trace_xxx() will
-> check if tracepoint is enabled, while __trace_xxx() will not check and
-> just invoke the tracepoint? It's short, it's distinct, and it says "I
-> know what I am doing".
+> Fix a kernel panic when probing the driver as a module:
+> 
+>   Unable to handle kernel paging request at virtual address
+>   ffffd9c18eb05000
+>   of_find_matching_node_and_match+0x5c/0x1a0
+>   hantro_probe+0x2f4/0x7d0 [hantro_vpu]
+> 
+> The imx8mq_vpu_shared_resources array is referenced by variant
+> structures through their shared_devices field. When built as a
+> module, __initconst causes this data to be freed after module
+> init, but it's later accessed during probe, causing a page fault.
+> 
+> The imx8mq_vpu_shared_resources is referenced from non-init code,
+> so keeping __initconst or __initconst_or_module here is wrong.
+> 
+> Drop the __initconst annotation and let it live in the normal .rodata
+> section.
+> 
+> A bug of __initconst called from regular non-init probe code
+> leading to bugs during probe deferrals or during unbind-bind cycles.
+> 
+> Reported-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> Closes: https://lore.kernel.org/all/68ef934f-baa0-4bf6-93d8-834bbc441e66@kernel.org/
+> Reported-by: Franz Schnyder <franz.schnyder@toradex.com>
+> Closes: https://lore.kernel.org/all/n3qmcb62tepxltoskpf7ws6yiirc2so62ia23b42rj3wlmpl67@rvkbuirx7kkp/
+> Fixes: e0203ddf9af7 ("media: verisilicon: Avoid G2 bus error while decoding H.264 and HEVC")
+> Suggested-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> Suggested-by: Marco Felsch <m.felsch@pengutronix.de>
+> Reviewed-by: Marco Felsch <m.felsch@pengutronix.de>
+> Signed-off-by: Ming Qian <ming.qian@oss.nxp.com>
 
-Honestly, I consider double underscore as internal only and not something
-anyone but the subsystem maintainers use.
+What's the plan to merge this? It fixes a quite severe regression,
+a boot failure.
 
-This, is a normal function where it's just saying: If you have it already
-enabled, then you can use this. Thus, I don't think it qualifies as a "you
-know what you are doing".
+#regzbot introduced: e0203ddf9af7
 
-Perhaps: call_trace_foo() ?
+Thanks,
+Francesco
 
--- Steve
