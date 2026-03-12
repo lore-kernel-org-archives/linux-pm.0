@@ -1,103 +1,84 @@
-Received: from mail11.truemail.it (mail11.truemail.it [217.194.8.81])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E2BDE3F87E4;
-	Thu, 12 Mar 2026 17:34:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.194.8.81
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68E4422A4F1;
+	Thu, 12 Mar 2026 17:50:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773336875; cv=none; b=FBdfW8/jWo2bPVmu3mvxVbTcQ59YP6+KaYaOmMqZP1CHYrqtTxV+Z0lVCWLly5hk8CX3u6SeWJewFiWadyp7Ja+6waVmqfvF39JfGZf9tY3/cq5rvLDprqpsRMOqJitihImfDDrvK8Yg64uYrqtIT04tLmwu+Ct4bNUWQujd4V8=
+	t=1773337813; cv=none; b=pQUqQpvJNoncR4jqI6UFqfRvusQ8yCbsJn2AWdH2+7evhXKGw2pUudyrmk7jo9DzdNyDPmJnug6MIhVBP6FDb0mAvXlQE/jmZTzat0SecSBJdXWLtuWjLVXycdpBXU6cYnwyWoTMXkNY8hBeHpqDoqoOhr+3lGcRQTduxCzONzg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773336875; c=relaxed/simple;
-	bh=VGtXHilX3UlaPfPfilvV8r1wHZFmWNithjQkgVtRITw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LMCVdYMz8Y1YwfwFhMOMg2Bib/xMAekzEkoBWkbrJU1Cr+V6PNJTwda5WwqALO8Yxn8+blR3giGbt8rafNgeTzYOq7rIr+Gl7bgApVWP15u9+/zRE49GeV2URZ6CAdpPW/orr4WLSmplnY+RmuGgpr965AwLSsN606HA2F0eLBQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=dolcini.it; spf=pass smtp.mailfrom=dolcini.it; dkim=pass (2048-bit key) header.d=dolcini.it header.i=@dolcini.it header.b=Z+0B417l; arc=none smtp.client-ip=217.194.8.81
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=dolcini.it
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=dolcini.it
+	s=arc-20240116; t=1773337813; c=relaxed/simple;
+	bh=TD54IZlH1Y0ImBCJDVtOWWnfNCKfC9SghmImji/+c+w=;
+	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
+	 In-Reply-To:To:Cc; b=qIIRLWm7SWgF5753kc7RWgroDAwyNZqhPDHjVEqXXKJeuAHPk4WmS5Oo87VO9u+7MPkciUdDFSvp7vqTX67hWAO1wtidIctPoMYaZVCGB1mZTQcwMldkbrLyz19B3S3xPScWLG45DEqVHcCeTTZp+sQB8IX6mztJwbzh580J7eg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Qs8EYWHc; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=dolcini.it header.i=@dolcini.it header.b="Z+0B417l"
-Received: from francesco-nb (93-49-2-63.ip317.fastwebnet.it [93.49.2.63])
-	by mail11.truemail.it (Postfix) with ESMTPA id 5909322831;
-	Thu, 12 Mar 2026 18:34:22 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dolcini.it;
-	s=default; t=1773336863;
-	bh=fmtlnhSTjgOoQaF3XdzpaQYVg6I7U+e/byYCHILShjg=; h=From:To:Subject;
-	b=Z+0B417l9p71c9g2467dWy9UgcuD70ES35DaANtN0imwURTZU/GPr25LH+b5eQ6ym
-	 0hVsZhSnAJUU+RVHvGSUx+CMOWrr9b2F4DVMWTVphdX0DP/GRwUn61FTHAp9jUl6tC
-	 oCNGIxNG1N0CODjGoX0qFYW4Q+SeYau8/Ta3jzwoE9eiOyI0Ggn54oBoF9nA2/5qCQ
-	 zyNIj16+riOjZYIm70/XvM2xZAF6ZIW67O49FwbCDgCphk2melEEoB9awSAIKjGRIM
-	 yMc9HpZiPhvaMcw5R9TguGnDUDO2I3fUxmwPrQil1l7fnVLrsiN7+2OySDqguMHfTM
-	 zACt1/KiYryLg==
-Date: Thu, 12 Mar 2026 18:34:18 +0100
-From: Francesco Dolcini <francesco@dolcini.it>
-To: ming.qian@oss.nxp.com
-Cc: linux-media@vger.kernel.org, mchehab@kernel.org,
-	hverkuil-cisco@xs4all.nl, nicolas@ndufresne.ca,
-	benjamin.gaignard@collabora.com, robh@kernel.org,
-	krzk+dt@kernel.org, conor+dt@kernel.org, p.zabel@pengutronix.de,
-	sebastian.fricke@collabora.com, shawnguo@kernel.org,
-	ulf.hansson@linaro.org, s.hauer@pengutronix.de,
-	kernel@pengutronix.de, festevam@gmail.com, m.felsch@pengutronix.de,
-	fra.schnyder@gmail.com, linux-imx@nxp.com, l.stach@pengutronix.de,
-	Frank.li@nxp.com, peng.fan@nxp.com, eagle.zhou@nxp.com,
-	devicetree@vger.kernel.org, imx@lists.linux.dev,
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, regressions@lists.linux.dev
-Subject: Re: [PATCH v4] media: verisilicon: Fix kernel panic due to
- __initconst misuse
-Message-ID: <20260312173349.GA137045@francesco-nb>
-References: <20260306031059.801-1-ming.qian@oss.nxp.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Qs8EYWHc"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D8709C4CEF7;
+	Thu, 12 Mar 2026 17:50:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773337812;
+	bh=TD54IZlH1Y0ImBCJDVtOWWnfNCKfC9SghmImji/+c+w=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=Qs8EYWHc0SzLOhqEQO1tQ2w6I4Km8bJ/CzFsBMdJl6wROuAP4QhDLoREAGjq1jMeV
+	 VldxuXm7k3Bw85Vpa6uMIyIXKj0+60G+UHsgoWbub/SjtIddzQ5abQqMajvNeArAmi
+	 YO0l0i0doE444V7M9WKvJb820zsgc9Ah/qhBclAjypqA2yTeQQEJmZs2X0YskA+ibo
+	 UfRywAKmC5TX+XWaFQVqPyVNXVvzMIMC8zFCAT593tkE3eIbXhHipbQlvCh+tZtFKa
+	 gVpZioPeWECGMTVYhU4dKwKhUFNCLYAsaLZZav9gckcWWcI+svOEGtGqn/fQPBhhI2
+	 22eQnOAteSj2A==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 7D4003808200;
+	Thu, 12 Mar 2026 17:50:09 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260306031059.801-1-ming.qian@oss.nxp.com>
+Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH v4 0/2] Bluetooth: extend WCN driver to support WCN399x
+ device
+From: patchwork-bot+bluetooth@kernel.org
+Message-Id: 
+ <177333780829.19812.5577536348668835963.git-patchwork-notify@kernel.org>
+Date: Thu, 12 Mar 2026 17:50:08 +0000
+References: <20260311-wcn3990-pwrctl-v4-0-70e571a18e40@oss.qualcomm.com>
+In-Reply-To: <20260311-wcn3990-pwrctl-v4-0-70e571a18e40@oss.qualcomm.com>
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: brgl@kernel.org, andersson@kernel.org, konradybcio@kernel.org,
+ marcel@holtmann.org, luiz.dentz@gmail.com, mka@chromium.org,
+ quic_bgodavar@quicinc.com, c-hbandi@codeaurora.org,
+ linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ bartosz.golaszewski@oss.qualcomm.com
 
-Hello,
+Hello:
 
-On Fri, Mar 06, 2026 at 11:10:57AM +0800, ming.qian@oss.nxp.com wrote:
-> From: Ming Qian <ming.qian@oss.nxp.com>
-> 
-> Fix a kernel panic when probing the driver as a module:
-> 
->   Unable to handle kernel paging request at virtual address
->   ffffd9c18eb05000
->   of_find_matching_node_and_match+0x5c/0x1a0
->   hantro_probe+0x2f4/0x7d0 [hantro_vpu]
-> 
-> The imx8mq_vpu_shared_resources array is referenced by variant
-> structures through their shared_devices field. When built as a
-> module, __initconst causes this data to be freed after module
-> init, but it's later accessed during probe, causing a page fault.
-> 
-> The imx8mq_vpu_shared_resources is referenced from non-init code,
-> so keeping __initconst or __initconst_or_module here is wrong.
-> 
-> Drop the __initconst annotation and let it live in the normal .rodata
-> section.
-> 
-> A bug of __initconst called from regular non-init probe code
-> leading to bugs during probe deferrals or during unbind-bind cycles.
-> 
-> Reported-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-> Closes: https://lore.kernel.org/all/68ef934f-baa0-4bf6-93d8-834bbc441e66@kernel.org/
-> Reported-by: Franz Schnyder <franz.schnyder@toradex.com>
-> Closes: https://lore.kernel.org/all/n3qmcb62tepxltoskpf7ws6yiirc2so62ia23b42rj3wlmpl67@rvkbuirx7kkp/
-> Fixes: e0203ddf9af7 ("media: verisilicon: Avoid G2 bus error while decoding H.264 and HEVC")
-> Suggested-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-> Suggested-by: Marco Felsch <m.felsch@pengutronix.de>
-> Reviewed-by: Marco Felsch <m.felsch@pengutronix.de>
-> Signed-off-by: Ming Qian <ming.qian@oss.nxp.com>
+This series was applied to bluetooth/bluetooth-next.git (master)
+by Luiz Augusto von Dentz <luiz.von.dentz@intel.com>:
 
-What's the plan to merge this? It fixes a quite severe regression,
-a boot failure.
+On Wed, 11 Mar 2026 01:02:56 +0200 you wrote:
+> Qualcomm WCN3950, WCN3988 and WCN399x families of WiFi/BT chips preceed
+> the later WCN / QCA devices, but they still incorporate a very simple
+> PMU on die. It controls internal on-chip power networks, but, most
+> importantly, it also requires a certain start-up procedure (first bring
+> up VDD_IO, then bring up other voltages). In order to further unify code
+> supporting different families of QCA / WCN chips and in order to
+> maintain the required power up sequence, properly represent these chips
+> in DTs and modify drivers to use power sequencing for these chips.
+> 
+> [...]
 
-#regzbot introduced: e0203ddf9af7
+Here is the summary with links:
+  - [v4,1/2] Bluetooth: qca: fix ROM version reading on WCN3998 chips
+    https://git.kernel.org/bluetooth/bluetooth-next/c/77a65e88b9b8
+  - [v4,2/2] Bluetooth: qca: enable pwrseq support for WCN39xx devices
+    https://git.kernel.org/bluetooth/bluetooth-next/c/a529ecf9f12c
 
-Thanks,
-Francesco
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
