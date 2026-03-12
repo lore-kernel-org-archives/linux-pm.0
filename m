@@ -1,141 +1,110 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from relay.hostedemail.com (smtprelay0012.hostedemail.com [216.40.44.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CDEB13D8907
-	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 15:39:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A977257824;
+	Thu, 12 Mar 2026 15:40:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=216.40.44.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773329965; cv=none; b=KkSzcJqUkha1+UaaaGO5esX+UT5JcAx6fTXku6GLnaM2lAvqjndFQR2JSeDT7t5+QI1A8wcEw5rbdxqrbdFIB+iH0iD7LltUwua7KYTPek7XWJoZOYlUQ8VmIFWm4olK5ZR85Evc7DQDkRXdQBi3CDNZl3Bjwsa48EaVAtmahPo=
+	t=1773330056; cv=none; b=Y6UZxc2Usnurr3H2kvIxEeqMakntKygUasQqwmHy3I3/DLMX0f9mvm6vhmtqcDUKjzo1YnIJa7ZIqCMwVNBnFeHwhESvAgY849aeh9+AklFfPIWi4Kt8N10WK+HpqLdA8wTN1j7GQUTGw8QtQotrIXa+6nEbY7nfoBYmCoc/Flo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773329965; c=relaxed/simple;
-	bh=XXvLl1JMNQ39aGONuxM9Xyq2A8SuZ0XcrOSi1495jRg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=XcPl/BsJCffFC/vT3x0iAnbnu43zjK+6lNvyauyCXIe7RmbiLqldTG9mpkNV+ewEOmDH1xcbs1HVR74//lKsrqG+n8+UKm159wxcUR8PVHV82n4deeGuRpx4n+P1asIQz2KMkoY9mSYBNzznx1uDiosIYahcXDN5Q7iEbAtdQTU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ue+sCaJP; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ue+sCaJP"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C2E5C2BCB5
-	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 15:39:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773329965;
-	bh=XXvLl1JMNQ39aGONuxM9Xyq2A8SuZ0XcrOSi1495jRg=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=Ue+sCaJPdbhAEOWzvPHVLaPyvnzg01KwD4B65c+aw9s0Ei1P05V43wUb8rSXgLrmZ
-	 fByCIylTYRTwsBtN5hfdzNl5ApMZ/CocaUe9QQp+ffto1cRZs32yr1u560PXqDG8ZU
-	 bCvG4zTCPlz32wpkblyaHWhuJxAe50WyULlXONm2UrSxfpobZ9dwlqStnEi26EucZN
-	 5WOHNLa10CRqkhRhJwQbHuuOZLx+PA7keeoZyfGZAOU8Pj4JC3d09OANr4JferUpkj
-	 ZnJgukMQhS8i32W0HAxUr0g2Yy3umDBSMfrYAolJISlf9lGI+o6eP+hDtjNny6nWbw
-	 CSV/MYpp1YWjg==
-Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-b9358bc9c50so150849266b.1
-        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 08:39:25 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCWT1HZj+3KNY+OzfoWrK+0vWCa/xLHPd/LvNYbCOnbZak+Cn3Fbzz70Z8UKh/rbUeb8UCHbDRF/TQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzP/kZyzMnOSszkUWttDXHyVkpmeCJ+EidVNzQFehDC8Cm4szCN
-	zFe/JCFa0an4tZYkbudNAOah72D9ngKuerZx54oQ69hfbrnB1V6Z+oE3I+0iw5aYkc5EMgGe1YE
-	H/7+DyfyH8RbW3DwRvDsbd6oSf/xElA==
-X-Received: by 2002:a17:907:3ea8:b0:b97:3bbe:e432 with SMTP id
- a640c23a62f3a-b973bbef8d2mr287604066b.23.1773329964022; Thu, 12 Mar 2026
- 08:39:24 -0700 (PDT)
+	s=arc-20240116; t=1773330056; c=relaxed/simple;
+	bh=OxRg7tA8kXUHRx+mx/a3uzYLf94/OiyMz274Pyh6DSY=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=qQ+Dq/qZw9ICMtISiU3Fr6+xOz1M9Ihosfe9Cxr+JMjFTOEN5/gedINxmEvCfOzcb2elG1BNGk4pNR18oNwGtN1fS8qgMBnEicS0FjP4zRF6ZOA6zF31zGFsOGmkOPGvxgdwm6Xvz9aKuuXGA668mHjwRQLtThMauNdUgiFFS6U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org; spf=pass smtp.mailfrom=goodmis.org; arc=none smtp.client-ip=216.40.44.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=goodmis.org
+Received: from omf02.hostedemail.com (a10.router.float.18 [10.200.18.1])
+	by unirelay10.hostedemail.com (Postfix) with ESMTP id EEB99C17C4;
+	Thu, 12 Mar 2026 15:40:52 +0000 (UTC)
+Received: from [HIDDEN] (Authenticated sender: rostedt@goodmis.org) by omf02.hostedemail.com (Postfix) with ESMTPA id 3AE588000E;
+	Thu, 12 Mar 2026 15:40:27 +0000 (UTC)
+Date: Thu, 12 Mar 2026 11:40:41 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: "Vineeth Pillai (Google)" <vineeth@bitbyteword.org>, Peter Zijlstra
+ <peterz@infradead.org>, Dmitry Ilvokhin <d@ilvokhin.com>, Masami Hiramatsu
+ <mhiramat@kernel.org>, Ingo Molnar <mingo@redhat.com>, Jens Axboe
+ <axboe@kernel.dk>, io-uring@vger.kernel.org, "David S. Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
+ <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov
+ <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Marcelo Ricardo
+ Leitner <marcelo.leitner@gmail.com>, Xin Long <lucien.xin@gmail.com>, Jon
+ Maloy <jmaloy@redhat.com>, Aaron Conole <aconole@redhat.com>, Eelco
+ Chaudron <echaudro@redhat.com>, Ilya Maximets <i.maximets@ovn.org>,
+ netdev@vger.kernel.org, bpf@vger.kernel.org, linux-sctp@vger.kernel.org,
+ tipc-discussion@lists.sourceforge.net, dev@openvswitch.org, Oded Gabbay
+ <ogabbay@kernel.org>, Koby Elbaz <koby.elbaz@intel.com>,
+ dri-devel@lists.freedesktop.org, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, "Gautham R. Shenoy"
+ <gautham.shenoy@amd.com>, Huang Rui <ray.huang@amd.com>, Mario Limonciello
+ <mario.limonciello@amd.com>, Len Brown <lenb@kernel.org>, Srinivas
+ Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-pm@vger.kernel.org,
+ MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park
+ <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>,
+ Christian =?UTF-8?B?S8O2bmln?= <christian.koenig@amd.com>, Sumit Semwal
+ <sumit.semwal@linaro.org>, linaro-mm-sig@lists.linaro.org, Eddie James
+ <eajames@linux.ibm.com>, Andrew Jeffery <andrew@codeconstruct.com.au>, Joel
+ Stanley <joel@jms.id.au>, linux-fsi@lists.ozlabs.org, David Airlie
+ <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Alex Deucher
+ <alexander.deucher@amd.com>, Danilo Krummrich <dakr@kernel.org>, Matthew
+ Brost <matthew.brost@intel.com>, Philipp Stanner <phasta@kernel.org>, Harry
+ Wentland <harry.wentland@amd.com>, Leo Li <sunpeng.li@amd.com>,
+ amd-gfx@lists.freedesktop.org, Jiri Kosina <jikos@kernel.org>, Benjamin
+ Tissoires <bentiss@kernel.org>, linux-input@vger.kernel.org, Wolfram Sang
+ <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, Mark Brown
+ <broonie@kernel.org>, Michael Hennerich <michael.hennerich@analog.com>,
+ Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, linux-spi@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K.
+ Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, Chris
+ Mason <clm@fb.com>, David Sterba <dsterba@suse.com>,
+ linux-btrfs@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/15] tracepoint: Avoid double static_branch evaluation
+ at guarded call sites
+Message-ID: <20260312114041.5193c729@gandalf.local.home>
+In-Reply-To: <219d015d-076b-4c80-8f63-88569115fdad@efficios.com>
+References: <20260312150523.2054552-1-vineeth@bitbyteword.org>
+	<1e3c2830-765e-4271-89f7-0b6784b37597@efficios.com>
+	<20260312112354.3dd99e36@gandalf.local.home>
+	<219d015d-076b-4c80-8f63-88569115fdad@efficios.com>
+X-Mailer: Claws Mail 3.20.0git84 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260312085258.11431-1-clamor95@gmail.com> <20260312085258.11431-3-clamor95@gmail.com>
- <20260312152057.GA3156966-robh@kernel.org> <CAPVz0n2GFgsrqo4_MkvNwd9t=DMU4ZGQzrpNjU+PZ4_Ysx_jcg@mail.gmail.com>
-In-Reply-To: <CAPVz0n2GFgsrqo4_MkvNwd9t=DMU4ZGQzrpNjU+PZ4_Ysx_jcg@mail.gmail.com>
-From: Rob Herring <robh@kernel.org>
-Date: Thu, 12 Mar 2026 10:39:11 -0500
-X-Gmail-Original-Message-ID: <CAL_JsqKP-uYZf3MLFd5JrrsZ1+pxj-y+te_3uiM9N+5Xu4phUQ@mail.gmail.com>
-X-Gm-Features: AaiRm53TzVm_dQOjnoVm3K-wLtXfqwBBSfOhKn3tw-hQAbmwJ_qep65WpVUysIo
-Message-ID: <CAL_JsqKP-uYZf3MLFd5JrrsZ1+pxj-y+te_3uiM9N+5Xu4phUQ@mail.gmail.com>
-Subject: Re: [PATCH v4 2/5] dt-bindings: pinctrl: pinctrl-max77620: convert to
- DT schema
-To: Svyatoslav Ryhel <clamor95@gmail.com>
-Cc: Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>, 
-	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Chanwoo Choi <cw00.choi@samsung.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, 
-	linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-rtc@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Stat-Signature: dizt9eoph1r46hcc7akmrtw69qmbfetk
+X-Rspamd-Server: rspamout02
+X-Rspamd-Queue-Id: 3AE588000E
+X-Session-Marker: 726F737465647440676F6F646D69732E6F7267
+X-Session-ID: U2FsdGVkX1/ZXXm4w5C9U5+099b/PvZQ7eUGtYiH+vY=
+X-HE-Tag: 1773330027-687590
+X-HE-Meta: U2FsdGVkX19Y0BxKc9hfd6/oWlCbD7knRVU4HNig4rSlbKfyoeUNxe0xLyOxKy2jHEKNmwC/SBnntITQ/gcP4GV84MGrzwGO/jSnmxSVU90QW1UewwurfqZf/IccLcQyMpO0NVm7ICOGECdjfFMFxxfbyCK2b8HRZTmFiNSnZRhQ3v2UxaLgnk4IGz6tQzClK6n9/8XrtKTpdPEXN08WeqXofu0CM6mgHZtypBJf2bNTx3bZ6VgbT/vGoPrjz+ku8bbQ/05BjCRjqyBZ8chjnNTTV2DkdRZQ/aDGM8chdSripiOGF3zSwSXCsldB5u/XfRMFDIioWgHfx7JpJLp63e8jmL0gMnugNLpYx40Y3FDqgXh+0wGRwMvubNhu5lNM
 
-On Thu, Mar 12, 2026 at 10:34=E2=80=AFAM Svyatoslav Ryhel <clamor95@gmail.c=
-om> wrote:
->
-> =D1=87=D1=82, 12 =D0=B1=D0=B5=D1=80. 2026=E2=80=AF=D1=80. =D0=BE 17:20 Ro=
-b Herring <robh@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
-> >
-> > On Thu, Mar 12, 2026 at 10:52:55AM +0200, Svyatoslav Ryhel wrote:
-> > > Convert pinctrl-max77620 devicetree bindings for the MAX77620 PMIC fr=
-om
-> > > TXT to YAML format. This patch does not change any functionality; the
-> > > bindings remain the same.
-> > >
-> > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> > > ---
-> > >  .../pinctrl/maxim,max77620-pinctrl.yaml       |  97 +++++++++++++
-> > >  .../bindings/pinctrl/pinctrl-max77620.txt     | 127 ----------------=
---
-> > >  2 files changed, 97 insertions(+), 127 deletions(-)
-> > >  create mode 100644 Documentation/devicetree/bindings/pinctrl/maxim,m=
-ax77620-pinctrl.yaml
-> > >  delete mode 100644 Documentation/devicetree/bindings/pinctrl/pinctrl=
--max77620.txt
-> > >
-> > > diff --git a/Documentation/devicetree/bindings/pinctrl/maxim,max77620=
--pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/maxim,max77620-pi=
-nctrl.yaml
-> > > new file mode 100644
-> > > index 000000000000..4e5f997317ca
-> > > --- /dev/null
-> > > +++ b/Documentation/devicetree/bindings/pinctrl/maxim,max77620-pinctr=
-l.yaml
-> > > @@ -0,0 +1,97 @@
-> > > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > > +%YAML 1.2
-> > > +---
-> > > +$id: http://devicetree.org/schemas/pinctrl/maxim,max77620-pinctrl.ya=
-ml#
-> > > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > > +
-> > > +title: Pinmux controller function for Maxim MAX77620 Power managemen=
-t IC
-> > > +
-> > > +maintainers:
-> > > +  - Svyatoslav Ryhel <clamor95@gmail.com>
-> > > +
-> > > +description:
-> > > +  Device has 8 GPIO pins which can be configured as GPIO as well as =
-the
-> > > +  special IO functions.
-> > > +
-> > > +allOf:
-> > > +  - $ref: /schemas/pinctrl/pincfg-node.yaml
-> > > +  - $ref: /schemas/pinctrl/pinmux-node.yaml
-> >
-> > Don't these properties apply to the child nodes?
-> >
->
-> They do, but not all properties defined in those schema files are
-> applicable for this binding. I have marked those which can be applied
-> in the node patterns.
+On Thu, 12 Mar 2026 11:28:07 -0400
+Mathieu Desnoyers <mathieu.desnoyers@efficios.com> wrote:
 
-Then additionalProperties is appropriate.
+> > Note, Vineeth came up with the naming. I would have done "do" but when I
+> > saw "invoke" I thought it sounded better.  
+> 
+> It works as long as you don't have a tracing subsystem called
+> "invoke", then you get into identifier clash territory.
 
-> > > +
-> > > +patternProperties:
-> > > +  "^(pin|gpio).":
-> > > +    type: object
-> >
-> >        additionalProperties: false
->
-> I will move additionalProperties here then.
+True. Perhaps we should do the double underscore trick.
 
-No, moving it is wrong. You need it here AND in the parent node.
+Instead of:  trace_invoke_foo()
 
-Rob
+use:  trace_invoke__foo()
+
+
+Which will make it more visible to what the trace event is.
+
+Hmm, we probably should have used: trace__foo() for all tracepoints, as
+there's still functions that are called trace_foo() that are not
+tracepoints :-p
+
+-- Steve
