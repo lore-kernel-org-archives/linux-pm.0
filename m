@@ -1,99 +1,116 @@
-Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
+Received: from relay.hostedemail.com (smtprelay0015.hostedemail.com [216.40.44.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B913F389102;
-	Thu, 12 Mar 2026 16:57:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.85.4
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FC483CAE8E;
+	Thu, 12 Mar 2026 17:03:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=216.40.44.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773334673; cv=none; b=HLBsb5XX/AP1FNl60uY/Cc8Ott+x8kg0WeRh3rJkcNfg357h3n+pSKaTkWLKeHxc6J9exR4kjCQ7aepPoXjLHTMQVZZCHYX0CDgM96EJlHeuT+TPNr9j/hn9vmQk+bK/O87imuJaE6ihYkrwgnUm0J2WiaCMHrD1ENperQFVQQI=
+	t=1773334994; cv=none; b=Z1Eq/3mfRpiSpvWNOYoUQ8ZKK1P8HvXTz2NtP+Xv1zsJkMcofw7flwCwoi0FM/kRyNsQfMU6wn9om8HDP6aC9z2wxkkQcsGJ2juDTjr+KWckbhLzGPcYZxvq3z2C7z1QqPtXwoVYUbQtphtxcrrz1cJa+8genGi/8y4RunMBzZg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773334673; c=relaxed/simple;
-	bh=quULCrgaVy74ulCzOnaMVUemMcBZcD8XT8fz8+dZQ+M=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=Jpt2pI9LPiHcWqIdZNvS7Vq3CAiXGrL1FJm4G9Zhl58YzEb59ZZLP3FYTMYNXOjM3SKovETsMO9Z7xJ8bo1I/CdD8A3jORE81KMQGUyCoLRiwk3AKVYps3RKL06coOkToQeMU5PJ+GgSDWWdDpbyb4gpD9V8x59r7cyJgtfhssA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=SQ1v4f52; arc=none smtp.client-ip=185.246.85.4
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="SQ1v4f52"
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-03.galae.net (Postfix) with ESMTPS id 2B5364E42654;
-	Thu, 12 Mar 2026 16:57:49 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id CCEA76001B;
-	Thu, 12 Mar 2026 16:57:48 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id D3F8F10369E47;
-	Thu, 12 Mar 2026 17:57:43 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1773334667; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:in-reply-to:references;
-	bh=vS8X2riZtgrHyxWXASjNfEHibRP7mKkHwfCf+Jt/BxA=;
-	b=SQ1v4f52iXK3NEXVc/weoa4K/Lr9SChaeUnBKEpBC/kH3hVXJM5zdDVDOrsjhINrxX7w22
-	xIqsp/HFai81vs5xKVxVDaluGoO7zHD6Vxc40WcwFkf14ZaJrxT1mTisZkvdkWd1LVtfeh
-	KSuTGht3b4Du67wkimH2z8F6dF8BgSLGMnMR9P6yySITBdlgEOIqDlvx0nv4ats8RCCpHe
-	QwqgaDv6CdMhm6Ls9KeSGkU9FcEEP7ewq8kwfSDJKjG5ckmeho5Z19ikuPVB/HpzmCnJZ/
-	OSgRaWLsipqEAYw4DBjuQ3dLQ1jz8MHXYNYzpaeZhVlTXd5N6lg59dJGvO1GvA==
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-To: Linus Walleij <linusw@kernel.org>, 
- Bartosz Golaszewski <brgl@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>, 
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Chanwoo Choi <cw00.choi@samsung.com>, 
- Svyatoslav Ryhel <clamor95@gmail.com>
-Cc: linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-rtc@vger.kernel.org
-In-Reply-To: <20260312085258.11431-1-clamor95@gmail.com>
-References: <20260312085258.11431-1-clamor95@gmail.com>
-Subject: Re: (subset) [PATCH v4 0/5] rtc: max77686: convert to
- i2c_new_ancillary_device
-Message-Id: <177333461371.2685487.13502330713409047469.b4-ty@bootlin.com>
-Date: Thu, 12 Mar 2026 17:56:53 +0100
+	s=arc-20240116; t=1773334994; c=relaxed/simple;
+	bh=gymGM9n7wddVYvwk2Iyj0H5MpRVhidPG4DavbVCxGds=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=bG5ihaMsPFngmAGcyqHMa3B9ZoapeLoaVI2NFNAQrywHYRSIQxXK47QHdcQ7aNptbfaYdg3o3iPRxnbGyhW4Jtq3/QdpzYQLXJ3DmNV7BcMAx6gQ8z3wJv7sNV9ikDehbn+CiygWxQx652HzkVxH970Jv5kCIYI+467JO4fstnA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org; spf=pass smtp.mailfrom=goodmis.org; arc=none smtp.client-ip=216.40.44.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=goodmis.org
+Received: from omf03.hostedemail.com (a10.router.float.18 [10.200.18.1])
+	by unirelay09.hostedemail.com (Postfix) with ESMTP id B37CD8B479;
+	Thu, 12 Mar 2026 17:03:07 +0000 (UTC)
+Received: from [HIDDEN] (Authenticated sender: rostedt@goodmis.org) by omf03.hostedemail.com (Postfix) with ESMTPA id 1BAFA6000C;
+	Thu, 12 Mar 2026 17:02:41 +0000 (UTC)
+Date: Thu, 12 Mar 2026 13:02:55 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Andrii Nakryiko <andrii.nakryiko@gmail.com>
+Cc: Vineeth Remanan Pillai <vineeth@bitbyteword.org>, Mathieu Desnoyers
+ <mathieu.desnoyers@efficios.com>, Peter Zijlstra <peterz@infradead.org>,
+ Dmitry Ilvokhin <d@ilvokhin.com>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Jens Axboe <axboe@kernel.dk>,
+ io-uring@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, Eric
+ Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo
+ Abeni <pabeni@redhat.com>, Alexei Starovoitov <ast@kernel.org>, Daniel
+ Borkmann <daniel@iogearbox.net>, Marcelo Ricardo Leitner
+ <marcelo.leitner@gmail.com>, Xin Long <lucien.xin@gmail.com>, Jon Maloy
+ <jmaloy@redhat.com>, Aaron Conole <aconole@redhat.com>, Eelco Chaudron
+ <echaudro@redhat.com>, Ilya Maximets <i.maximets@ovn.org>,
+ netdev@vger.kernel.org, bpf@vger.kernel.org, linux-sctp@vger.kernel.org,
+ tipc-discussion@lists.sourceforge.net, dev@openvswitch.org, Oded Gabbay
+ <ogabbay@kernel.org>, Koby Elbaz <koby.elbaz@intel.com>,
+ dri-devel@lists.freedesktop.org, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, "Gautham R. Shenoy"
+ <gautham.shenoy@amd.com>, Huang Rui <ray.huang@amd.com>, Mario Limonciello
+ <mario.limonciello@amd.com>, Len Brown <lenb@kernel.org>, Srinivas
+ Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-pm@vger.kernel.org,
+ MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park
+ <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>,
+ Christian =?UTF-8?B?S8O2bmln?= <christian.koenig@amd.com>, Sumit Semwal
+ <sumit.semwal@linaro.org>, linaro-mm-sig@lists.linaro.org, Eddie James
+ <eajames@linux.ibm.com>, Andrew Jeffery <andrew@codeconstruct.com.au>, Joel
+ Stanley <joel@jms.id.au>, linux-fsi@lists.ozlabs.org, David Airlie
+ <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Alex Deucher
+ <alexander.deucher@amd.com>, Danilo Krummrich <dakr@kernel.org>, Matthew
+ Brost <matthew.brost@intel.com>, Philipp Stanner <phasta@kernel.org>, Harry
+ Wentland <harry.wentland@amd.com>, Leo Li <sunpeng.li@amd.com>,
+ amd-gfx@lists.freedesktop.org, Jiri Kosina <jikos@kernel.org>, Benjamin
+ Tissoires <bentiss@kernel.org>, linux-input@vger.kernel.org, Wolfram Sang
+ <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, Mark Brown
+ <broonie@kernel.org>, Michael Hennerich <michael.hennerich@analog.com>,
+ Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, linux-spi@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K.
+ Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, Chris
+ Mason <clm@fb.com>, David Sterba <dsterba@suse.com>,
+ linux-btrfs@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/15] tracepoint: Avoid double static_branch evaluation
+ at guarded call sites
+Message-ID: <20260312130255.6476e560@gandalf.local.home>
+In-Reply-To: <CAEf4BzbnfyhCqp0ne=2gRnVxp-mdGmuZwDeFRyhRYH+eDcz2-w@mail.gmail.com>
+References: <20260312150523.2054552-1-vineeth@bitbyteword.org>
+	<1e3c2830-765e-4271-89f7-0b6784b37597@efficios.com>
+	<20260312112354.3dd99e36@gandalf.local.home>
+	<219d015d-076b-4c80-8f63-88569115fdad@efficios.com>
+	<20260312114041.5193c729@gandalf.local.home>
+	<1becdbce-2c01-468a-bbab-42b5dea9fdf8@efficios.com>
+	<CAO7JXPjnnruhM5oC6xMgnYaQ9efzYFqMCFiJLNM3HCQ+ZeCiJw@mail.gmail.com>
+	<CAEf4BzbnfyhCqp0ne=2gRnVxp-mdGmuZwDeFRyhRYH+eDcz2-w@mail.gmail.com>
+X-Mailer: Claws Mail 3.20.0git84 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.15-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=561;
- i=alexandre.belloni@bootlin.com; h=from:subject:message-id;
- bh=quULCrgaVy74ulCzOnaMVUemMcBZcD8XT8fz8+dZQ+M=;
- b=owEBbQKS/ZANAwAKAWOk3DBscDoyAcsmYgBpsvB4mskbF2LyV9MzarnuQhANCw4BF51L7RVBw
- BcBQ7Z1wmaJAjMEAAEKAB0WIQQGqwVVleHyz/Q7kmJjpNwwbHA6MgUCabLweAAKCRBjpNwwbHA6
- MqlwD/9qPfYJep66aTUNrqvSHobgG4YcpdbC1g6fiQDoIw3RB/56cOzEtrUZSuk3CIwQ3ufOsLT
- TvV7497LLMCqQnuYRzXjrH5o03gfkuLP6A2YfIJZXXrnsR3LpMeXAm//MMoblaagBf976UUxkNU
- bdaLi+PkihpjFiQSGdM4uofJlOuLvGw91vrRLtwUGdMaaTmV64la0wYd4G3ZNHaR5UsMDf7HKOa
- IDKtGsQyiidUYBZmqn2c3kmj8adOjNZcSnMrmvvrkaRphClZFsl8qAsPGjYw+EBr3LHuRKJpybm
- wpbcW+i7LQWpXVWXvE5sly174hxhWnTC5smFlkZcLVGnYO81WcEOgaQ8zfq23W0GoMeIzG6hEFU
- UShG+xkh9xdLjwL4z4JVhUYrVBr3iqEBlYJgXmCjF2MEDxrEUTvnR59w0wEPLZ9hPM5Bu3bNuJW
- vaTsvUCSywRSJSLTEHzJXtzU+ikO6RZ54c6RSkRWG77S1EQZL88iYMsB37jsC6GOlgTUrJtpInu
- IwkwisYrmqXvZ/plY/zFn4rBsuUUJcKhiP4+qrgHz2fEOzT2OwQ3HLpnqKAYXAoh6pzwOAmPAfg
- 7y0xZdLz7XB346yiTsK3VHJmmqa14GF9874Zjna09nx6MuH9wzQ+wCov3vuQxzcLtrFjOhNpUFW
- 4iueO5LOEJqZtVw==
-X-Developer-Key: i=alexandre.belloni@bootlin.com; a=openpgp;
- fpr=D42657F65BEB9D45A004FCFAA6CD9F096F642CB3
-X-Last-TLS-Session-Version: TLSv1.3
+X-Rspamd-Queue-Id: 1BAFA6000C
+X-Stat-Signature: kfs6qijpbuferuuhtorb6b835ny66tin
+X-Rspamd-Server: rspamout03
+X-Session-Marker: 726F737465647440676F6F646D69732E6F7267
+X-Session-ID: U2FsdGVkX18gNtqVqUvpV9OuqznTYLgQxysBeUr1V4g=
+X-HE-Tag: 1773334961-101407
+X-HE-Meta: U2FsdGVkX18nBBc/wjwt+Uq/UDhPM+TvyqJ3PzJ7XTdg8zJwcAeVzhmYzxHLf7pqvroMwwz3w+ZMve24FXDlwN4Al9l18e+sIMsly59QHs1WIGUGFWD+n9vC0YFBju5YF4U2cW8usaKA9ACod/DJfkWwChqILC7YI5fjo0jn+MDRzWgSUtcRWc+1ACqufST8GE1+cVaguSIGVLtHO49AgMgvbvjSqwoHR4+HUaDb14GsztIWWkzSI6t3CvJZWLJ62JKH4l1NZ0cseEdgq33l48qG8hnnyAiEMhQWmONsALjOWujHAfplawqsGy97HetKzPQbnSWVIVPTZt4F/YmoVmEIzpjR6X9B
 
-On Thu, 12 Mar 2026 10:52:53 +0200, Svyatoslav Ryhel wrote:
-> rtc: max77686: convert to i2c_new_ancillary_device
+On Thu, 12 Mar 2026 09:54:29 -0700
+Andrii Nakryiko <andrii.nakryiko@gmail.com> wrote:
+
+> > > emit_trace_foo()
+> > > __trace_foo()  
 > 
-> Convert RTC I2C device creation from devm_i2c_new_dummy_device() to
-> i2c_new_ancillary_device() to enable the use of a device tree-specified
-> RTC address instead of a hardcoded value. If the device tree does not
-> provide an address, use hardcoded values as a fallback.
-> 
-> [...]
+> this seems like the best approach, IMO. double-underscored variants
+> are usually used for some specialized/internal version of a function
+> when we know that some conditions are correct (e.g., lock is already
+> taken, or something like that). Which fits here: trace_xxx() will
+> check if tracepoint is enabled, while __trace_xxx() will not check and
+> just invoke the tracepoint? It's short, it's distinct, and it says "I
+> know what I am doing".
 
-Applied, thanks!
+Honestly, I consider double underscore as internal only and not something
+anyone but the subsystem maintainers use.
 
-[5/5] rtc: max77686: convert to i2c_new_ancillary_device
-      https://git.kernel.org/abelloni/c/0d65a9d93d87
+This, is a normal function where it's just saying: If you have it already
+enabled, then you can use this. Thus, I don't think it qualifies as a "you
+know what you are doing".
 
-Best regards,
+Perhaps: call_trace_foo() ?
 
+-- Steve
