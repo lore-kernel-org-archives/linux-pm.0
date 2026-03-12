@@ -1,169 +1,251 @@
-Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazon11013022.outbound.protection.outlook.com [40.107.159.22])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 719BF38AC87;
-	Thu, 12 Mar 2026 08:55:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.159.22
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773305705; cv=fail; b=WzK5dC/+vl50FdeY41Mo7ZFlKkiJHQ96WwZSGY7AQm4Z+ueeXa4oogAVagGQALojppPcxiwdGXDg6Owmq/kEnmFGVdNSYAJc2oMUND2jUnc+0iyt8CL/44THIkkuugvi9rMPG7sjSqfajIsiQX5/8khZuDjz8NFZhRD0UssEK+c=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773305705; c=relaxed/simple;
-	bh=3XEBbCb9OieLRQFXyFnGiUhcK/OCRhGmflI/lBToLls=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=XF62cBRRdINRrJTVaRAHqNXXDHg7bKtBjqcuhCGXOGuiiAteiLs/GK+if+qfkWOWO7xhQ/VBSvO4dA8f6WAK9BSjOoIcPGjY0nXADbvOvj3cuuXLtJWZFiYmLN4ernxIh+47i1oe5bfS7jhx2OtXfJCCxwxmuRTf67ZcpCrMO8o=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=To79ECfu; arc=fail smtp.client-ip=40.107.159.22
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="To79ECfu"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=gzeTy/pGqANj7dSUnaue6aIsSfKx0JzmtWScVfXRKeG6wHSNfsfuR/5ufYQU7NUDg0OnRPPLRo63mS9dNK87ZzlIWQ1efY8zVr/s8BHpFlBuR12Cym98niCcRC7Wf3ot+esPW7pw1SH8NPNKfJgD+entBplv6X+vU73oVRPdYkBpBBqTLVYvS8pyqes4twuyW4HE+4gsKMiv/CXvBu7+OB5EnIieV+582EAAdG8gMVMEQZZLes4H64o86j++NZj6NBF5iMAVCXvFuNSVgASoOMcHdwKXw5YLsyQE3Oc6PywkCQaGqgsGfoTYxpSNWSZnSUax+uE7hRQaMWPGaDs47w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=3XEBbCb9OieLRQFXyFnGiUhcK/OCRhGmflI/lBToLls=;
- b=Yi1IahF1uDiNrQMYWXDVs+7Ez2ePLMxkEtxQt12tvXzZgIPjLPbBmTWXXfp8w3o4JGPhLvGYxAGh/73LIpOeI9M1OXNfhNXGsRB9cXWxsUa6iIv5Z+QLDGuGDJfw71H2b+1FAuvF+lc2S4Wud0pscTzmPb6p4uzJWpL6TmAObObcD0NTKsM7va6wYOJzU/HSZicK6OGptMm+Kp/KG8eJyuo0oy4hleKoNp2MJh6t/Is5msgGs7Fp/tUeDf9SNsWtD7Hhlw0caEoICoYouAunIZhQvpOWAsVOfoA5xr/FZ0Sk8LiMW2azmndwsNHNY5oKhLxTGNuqhlYcNchJ86TD6A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=3XEBbCb9OieLRQFXyFnGiUhcK/OCRhGmflI/lBToLls=;
- b=To79ECfuPdPoQq3MCtJ8GU7CdbS+WQLl+ki+tizD/3h0ffWHQ78fj9tkT9ZMPAOW2xaYc+Rz2xoBE7Ul6JVfo9SGsKIeLDrd8e6SeZh2m8Ckk7qCm882KUoiwpReS0KR10LDUPnejHqDpF8a3t9Sv/2w0zTjt1VyHiGXgj0qjnMkZTaoXcvqkZugTEdizkJ0VUA+Dvn7WB1Tsej6lnw9A+XSSnpjabVXEyjn3Qo9eu0CtsMcia9iPAOiKXDP0P6CPxHte8EZrRkIcV8VkNDS6draxpIBSYMZBE412pkszlAws/tXZZ+5UZlAGtqa8/ygd7PHrpP597NhIHfEoG0iEg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from AS8PR04MB8247.eurprd04.prod.outlook.com (2603:10a6:20b:3f2::13)
- by GVUPR04MB12196.eurprd04.prod.outlook.com (2603:10a6:150:33b::6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9700.12; Thu, 12 Mar
- 2026 08:54:54 +0000
-Received: from AS8PR04MB8247.eurprd04.prod.outlook.com
- ([fe80::e99:f504:ce75:9bed]) by AS8PR04MB8247.eurprd04.prod.outlook.com
- ([fe80::e99:f504:ce75:9bed%3]) with mapi id 15.20.9700.010; Thu, 12 Mar 2026
- 08:54:58 +0000
-Message-ID: <603a09c7-1b08-4d49-92a0-58e6c1b9a003@oss.nxp.com>
-Date: Thu, 12 Mar 2026 10:58:01 +0200
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] pmdomain: imx: Fix i.MX8MP VC8000E power up sequence
-To: "Peng Fan (OSS)" <peng.fan@oss.nxp.com>,
- Ulf Hansson <ulf.hansson@linaro.org>, Sascha Hauer <s.hauer@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>, Lucas Stach <l.stach@pengutronix.de>,
- Jacky Bai <ping.bai@nxp.com>, Frank Li <frank.li@nxp.com>
-Cc: linux-pm@vger.kernel.org, imx@lists.linux.dev,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- Peng Fan <peng.fan@nxp.com>, stable@vger.kernel.org
-References: <20260228-imx8mp-vc8000e-pm-v2-1-fd255a0d5958@nxp.com>
-Content-Language: en-US
-From: Daniel Baluta <daniel.baluta@oss.nxp.com>
-In-Reply-To: <20260228-imx8mp-vc8000e-pm-v2-1-fd255a0d5958@nxp.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: FRYP281CA0016.DEUP281.PROD.OUTLOOK.COM (2603:10a6:d10::26)
- To AS8PR04MB8247.eurprd04.prod.outlook.com (2603:10a6:20b:3f2::13)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73DC73AD51B;
+	Thu, 12 Mar 2026 09:54:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773309244; cv=none; b=ghdcvLKx29s/zD0F39bK3YqaDFUIMgkHin237+xSpYpKfPEJjPi9v15uifubMMG1Z4vdGk5VUcViU99A0U6n0+PjclDoWTtwTqBsGSqKKZSmk92dn1dhn1moHqfxoFX/jpnnTPugPNBMGeGoXFqv0BBsAKDLbums9MsG/7jL2/o=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773309244; c=relaxed/simple;
+	bh=lHZVhCzulzdzkAtiVdpksnpGYjt4BLJ/buQ/uz/EETg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lqxv4fV6N/Z8+LDMDjExn12QOPw4UjXjkEcvu7tgmc/VhOaGWb1YlUwwWDh7R/SaAZXfxWPoQjfGEFwkCJL7PeqJOJooNypCZMwM/rlmjPxCSt+sDmB3sFHpWn9iULwuXnA8prtcYHfSHt0xktkX2Z4uVlJ31+//ryEZZSD2i0M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 27515C19424;
+	Thu, 12 Mar 2026 09:54:00 +0000 (UTC)
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Ulf Hansson <ulf.hansson@linaro.org>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Frank Binns <frank.binns@imgtec.com>,
+	Matt Coster <matt.coster@imgtec.com>,
+	Marek Vasut <marek.vasut@mailbox.org>
+Cc: linux-pm@vger.kernel.org,
+	driver-core@lists.linux.dev,
+	linux-renesas-soc@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH/RFC] PM: domains: Call pm_runtime_barrier() before dev_pm_domain_{attach*,detach}()
+Date: Thu, 12 Mar 2026 10:53:39 +0100
+Message-ID: <15510cee649959281d9554965cacd0c06531c1f3.1773308898.git.geert+renesas@glider.be>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AS8PR04MB8247:EE_|GVUPR04MB12196:EE_
-X-MS-Office365-Filtering-Correlation-Id: 84a7b9b3-807b-4903-8776-08de801509ed
-X-MS-Exchange-SharedMailbox-RoutingAgent-Processed: True
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|376014|7416014|366016|19092799006|22082099003|18002099003|56012099003;
-X-Microsoft-Antispam-Message-Info:
-	uOsjoPeixQaFc7jc+GN6Rm8PohKFA3U6Yp3N8wGPxnA5BBvE75q0ZSgK0vhkSog4RKQmmv8LNtikNC7SZyfO6WhgTAHN+qOgxBrei+U4+ER+krlF15lg7uwk8+yCQcaiXOaSftVRDsLcNJi6bIXSINZKhaYLYlf28SRwnFJwJZwBI8iv5bXyun3l8BYP3xrHKAv9qtJ/Hok7wkfJRTNF/UdaTtgsjsOIsp4yaWveUOEEUWL+bXTm26Ks7qchRT8DbZoRRvN+FnkTkEmZzpkFyRoVvmE23gg1IRi18HVjzCvAStk7Bq9vuwZz9UFNPX/RVX56LS3Sc2v6/LkMNNwhqA4OB1JDb9fW+cc9IYh5mUTpHydZKLoqblDHsVBNGB1qb7a2eCb9DBG/7xeHR7cn3LEfBnpQHhN7NUJFVFNdNfeheGRbs9YrGCjkiyjihHO7C18DdkM+HGEIXAMKFFB7680URpfL2Pdy2M6s9uB2YMhYz/n9JIm4xxbDuA2N7pWD72c7rELcRUSvClfsdyNc/na+f6qMasYwlXDHzP9Y5twH8Pu9/zxU3zdRJ+MovoS/kYKQSq42X5qIU3/gPYtHwut1zKimi61e/oljuC5VD5fjhC8fPlDeoiSnfmnPEO0zLxiUBSLnH03HEWC/IoYcGshiVSL7UU4RTaT/sd9XuGgHHZu7tA45X41LnottWKM98S32/wzuqChPRyCA2tW8TIy94l9RgUO0XF4/hi6iOBgC36ALScOAkI6DaEbzGqsc
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR04MB8247.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(7416014)(366016)(19092799006)(22082099003)(18002099003)(56012099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?Y1Y2cXJBNzRMVXVBSUFWb3NORVZsWTZsRlhWbHo3ZzZVTWEyQ29YamNOYUVZ?=
- =?utf-8?B?OU5DcUVXUG92TUVSQ3Byd2xYNUI4T1pnbTZjZUxtOUZwbUJZUFJvQ3F5UWts?=
- =?utf-8?B?TXUyWnpFN0VSWEpES2hkSGZnZ0d1VTV2RWZFWHVNenQxOWVXcy9tVFJoYTB1?=
- =?utf-8?B?WkowdGo0cDNWQStJTjczUEpleGoxM3FSVUREcGt6UHVhZWRmMHBBdVk0dXI0?=
- =?utf-8?B?aitlZ09uR3JOK01YekhRelRYT2FmTnJtMVRPMWFYVnhjL1UxZ2VWOXNVNUNl?=
- =?utf-8?B?Q0QvazNqRFVjZ1dZUzQ4clU0bzZrMVcrUkgrR3lubko4ajQybXF0SlVKK2VT?=
- =?utf-8?B?M25RUE10YmMyU01sa2Q3aGtXZ1NFYzVRK1kveFRnZXdyUGowTE94N1RHd2xt?=
- =?utf-8?B?UDVCQU10R0xhVzVyRGlVZlFaQXlzUHNNOGU5S2kwK3E2bmN4VVpZZGtxeXM1?=
- =?utf-8?B?RGdNZ0ZMUU51TTlpbVhnWHR5YUczVGxJbkVTM2FYTWhwd0d6Ymk0ZDNhQ2oy?=
- =?utf-8?B?dUQrRk5leEZRcDVZTGp1bjNlRjRsTVRFSlhrY2JqSFhSRjVBRm1yQTZXTFky?=
- =?utf-8?B?c2YwWG1jTDh0VXh6NTFiU2w3d0tiODBuM01qN2lqMG1qSUtva25WRTZ2Z1Mr?=
- =?utf-8?B?azRwOTZYZzB5SmMvcGFzOUpudndNZEdxcWJ3S3RveWc2aGVFem5tblVpQUNz?=
- =?utf-8?B?NXorOVAvcUhsM0ljSXkxK04rN1JDenNmZCs5TzIvdUlsSGpTSHhvTkhEalpK?=
- =?utf-8?B?SjdnR0dTZ2ZWaHA3UHgwaUR2bkFtVzNtYm5JMDc2SHU0aTFvYWQ4YzZNSlJG?=
- =?utf-8?B?ZWt3bFFqaW1JYzMza1crNzMwaDcyVGtlckpLQy90bzA4R3pjQm5Rc29YWXhs?=
- =?utf-8?B?Ky9NaXFjVGJXRnNrZmJJZWVvMFFuNmJvVkg0dlhJcTdZZUdkU203OGhLNURK?=
- =?utf-8?B?R0dPd0Y2RWJWY0N0RWh6Z0daQ0ZjTDZvUU1Tc01mNVArb0d6aytLeGwyYXBT?=
- =?utf-8?B?TkFjeW0rUHA5QVdUU2NlOEE4akNlaVk3MW9NVHlFcmp6ZFp5MUVJbGUxY3FF?=
- =?utf-8?B?SFQvZ1NIdUZ5WklkcjN3V2kycFdTNTRpbnZEaGtXaTNyVk02ZVJML09MRFdD?=
- =?utf-8?B?TmJQTVNkU0R0eGxmK3owbGlFbCtxUjkyeFlFanhGcFFyWmRMelVnbU5WRWZX?=
- =?utf-8?B?a3h6TE1mOUVoeFdUbkhqZnRvUFg5enRxbWRQRXZzeW05RHdxWGhVVnN3RjUr?=
- =?utf-8?B?dXFCQlBFSkNPNlhNVWdUemxlaTFrYWFkYmlFVnVpWUxMTks1VDZEVVBwYktT?=
- =?utf-8?B?SXpaMnNpdGhwdXdvN2xuTk8va2MyS0RRQStzOXRwRmN2TEFJK2I4RWovM3dI?=
- =?utf-8?B?THFhaC82a3VCMTVzN2VYbVNFRnB2ZHVLT3p4RFRBM0hoeGRVT0wwbElMTHIz?=
- =?utf-8?B?ZXl5aWszeUczMkM0dXRsY2JiVk9hNi9JQVdESnQ5VWk4OC9mK213dEg0Mity?=
- =?utf-8?B?SEt5NUIzbk95WjhFQUtVTjhNYTMvTDdKL2hidmJ1NzlYaHI0Vy8rYjZ3RkJI?=
- =?utf-8?B?bWIyZlMrb3ZUTG5wVklCUVdWd1BhekVTNTJnazhleDIxTmxTVHRqL1pEN1BZ?=
- =?utf-8?B?ZVQ1ZENWbzFZZFNpbENCWGxzajJxYjlVa0pGOGJWTStMdWVuVEN6dnorS3lV?=
- =?utf-8?B?N0pLc2NMcHdmVUxHMlNCQ2JDYmJ2OUIvTXpYaHFsZ1Rtd2VrY0FXR1JJdXJJ?=
- =?utf-8?B?OXZCd01JcDZSZmg2SEMvaHBEMHNSenE0eTBVRW96RE83QWVNZ0hOSnA4OGgy?=
- =?utf-8?B?Z0pLMWZEK0RiMC85aG5HU2VDaXpaQjl3ZGhHNUpLYm9tV0xhSThla2ZKMW9h?=
- =?utf-8?B?eENPQ2tEenZUc2M1WUlTZjJBRkF5TEk1bUE2enlwRjNVa3Zqcjh1c2ptd1Fk?=
- =?utf-8?B?ZlNVOFhkb05BNzlPd2JKMlNqeHdsb0tvcDRhM3dRcHM4UG9xaHE3citBdFAy?=
- =?utf-8?B?bGFzNHBqeENhZjVDMXlSSGpqd3dLZUNqblkydStJeTNxemdrcWVlNjkxeG13?=
- =?utf-8?B?VFZJT3lWSmkyNlZ3cjBWWER1WTdHYTl4WDRPcExJSFp1Yis3RzdBMHhCRCsv?=
- =?utf-8?B?czZvb3N1WCtSYWdOWER6WkdYT1JkNVJvUTI4bkwwN09yVzNaOUI0M3J1UXdo?=
- =?utf-8?B?RzNvUG1lMEs3VXJKWVI2SDU1NjZ6OWFHU3p4VXhwaEEvYnRYYmFlZFQ2T2lr?=
- =?utf-8?B?bmtFRkNFNWUxK0xhV3RhcTJndEg5bUZuWkFsYStyVXdQRnl4cXYxdHNwZ1VC?=
- =?utf-8?B?aUI2MDhkSFNDdTNpZkhtMUwzaHZBc1d5VVRCWDhhMTc5WHpsaGJOUT09?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 84a7b9b3-807b-4903-8776-08de801509ed
-X-MS-Exchange-CrossTenant-AuthSource: AS8PR04MB8247.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Mar 2026 08:54:58.7111
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: tzBeK38NBP9maxR7w1uJY3k1vpscMKYj5UJ+ghxFbX0FTKATBbcuhfvAQE9SqFpbjcUYBGWFRjFs7cZIdz09Kg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVUPR04MB12196
+Content-Transfer-Encoding: 8bit
 
-On 2/28/26 03:12, Peng Fan (OSS) wrote:
-> From: Peng Fan <peng.fan@nxp.com>
->
-> Per errata[1]:
-> ERR050531: VPU_NOC power down handshake may hang during VC8000E/VPUMIX
-> power up/down cycling.
-> Description: VC8000E reset de-assertion edge and AXI clock may have a
-> timing issue.
-> Workaround: Set bit2 (vc8000e_clk_en) of BLK_CLK_EN_CSR to 0 to gate off
-> both AXI clock and VC8000E clock sent to VC8000E and AXI clock sent to
-> VPU_NOC m_v_2 interface during VC8000E power up(VC8000E reset is
-> de-asserted by HW)
->
-> Add a bool variable is_errata_err050531 in
-> 'struct imx8m_blk_ctrl_domain_data' to represent whether the workaround
-> is needed. If is_errata_err050531 is true, first clear the clk before
-> powering up gpc, then enable the clk after powering up gpc.
->
-> While at here, using imx8mm_vpu_power_notifier() is wrong, as it ungates
-> the VPU clocks to provide the ADB clock, which is necessary on i.MX8MM,
-> but on i.MX8MP there is a separate gate (bit 3) for the NoC. So add
-> imx8mp_vpu_power_notifier() for i.MX8MP.
->
-> [1] https://www.nxp.com/webapp/Download?colCode=IMX8MP_1P33A
->
-Peng,
+If a device has multiple PM Domains, dev_pm_domain_detach() is called
+multiple times on unbind or probe failure.  If the PM Domain is also a
+Clock Domain, and thus calls pm_clk_destroy() from its .detach()
+callback, dev_pm_put_subsys_data() will set dev->power.subsys_data to
+NULL when psd->refcount reaches zero.
 
-Is using imx8mm_vpu_power_notifier wrong no matter on the errata? If so, I think you should fix
+Later/in parallel, default_suspend_ok() calls dev_gpd_data():
 
-that problem first, e.g create a separate patch that fixes the notifier and then add support for the errata. In the future, if the chips with the errata are deprecated we could only revert that given patch. thanks,
+    static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
+    {
+	    return to_gpd_data(dev->power.subsys_data->domain_data);
+    }
 
-Daniel.
+which may trigger a NULL pointer dereference.
+
+All dev_pm_domain_{at,de}tach*() functions document that callers must
+ensure proper synchronization of these functions with power management
+callbacks.  Unfortunately no callers seem to actually do so.  This
+includes dev_pm_domain_attach_list() and dev_pm_domain_detach_list():
+they call dev_pm_domain_{attach*,detach}() internally, which means they
+should take care of this synchronization themselves.
+
+Add synchronization to dev_pm_domain_{at,de}tach_list() by calling
+pm_runtime_barrier() before dev_pm_domain_{attach*,detach}(), and drop
+the now obsolete comments.
+
+Suggested-by: Marek Vasut <marek.vasut@mailbox.org>
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+This issue was reported first in "drm/imagination:
+genpd_runtime_suspend() crash"[1] and "Re: [PATCH 2/5] arm64: dts:
+renesas: r8a77960-salvator-x: Enable GPU support"[2].
+Unfortunately this patch does not fix the issue for good, it just
+becomes much harder to trigger (like needing tens of thousands of
+tries).
+
+How to trigger:
+
+  1. Check out drm-next[3]
+
+  2. Enable the gpu node in one of the following DTS files, depending on
+     your board (Salvator-X(S), ULCB, or Falcon):
+
+	 arch/arm64/boot/dts/renesas/r8a77960.dtsi
+	 arch/arm64/boot/dts/renesas/r8a77961.dtsi
+	 arch/arm64/boot/dts/renesas/r8a77965.dtsi
+	 arch/arm64/boot/dts/renesas/r8a779a0.dtsi
+
+     These nodes are not yet enabled in any board DTS because of this
+     crash.
+
+  3. Build and boot a kernel using renesas_defconfig[4]
+
+  4. The PowerVR driver will fail to probe (since [5], which is IMHO a
+     regression):
+
+	 powervr fd000000.gpu: [drm] *ERROR* Unknown GPU! Set 'exp_hw_support' to bypass this check.
+
+  5. Try to bind the driver again:
+
+      $ for i in $(seq 1000000); do echo $i; echo fd000000.gpu > /sys/bus/platform/drivers/powervr/bind; done
+
+     Eventually, the kernel will crash:
+
+         [...]
+         powervr fd000000.gpu: [drm] *ERROR* Unknown GPU! Set 'exp_hw_support' to bypass this check.
+         Unable to handle kernel NULL pointer dereference at virtual address 0000000000000040
+         Mem abort info:
+           ESR = 0x0000000096000004
+           EC = 0x25: DABT (current EL), IL = 32 bits
+           SET = 0, FnV = 0
+           EA = 0, S1PTW = 0
+           FSC = 0x04: level 0 translation fault
+         Data abort info:
+           ISV = 0, ISS = 0x00000004, ISS2 = 0x00000000
+           CM = 0, WnR = 0, TnD = 0, TagAccess = 0
+           GCS = 0, Overlay = 0, DirtyBit = 0, Xs = 0
+         user pgtable: 4k pages, 48-bit VAs, pgdp=0000000049993000
+         [0000000000000040] pgd=0000000000000000, p4d=0000000000000000
+         Internal error: Oops: 0000000096000004 [#1]  SMP
+         CPU: 1 UID: 0 PID: 12 Comm: kworker/u8:0 Not tainted 7.0.0-rc2-arm64-renesas-00540-g5f0a63f81a02-dirty #3502 PREEMPT
+         Hardware name: Renesas Salvator-X 2nd version board based on r8a77965 (DT)
+         Workqueue: pm pm_runtime_work
+         pstate: 60000005 (nZCv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+         pc : genpd_runtime_suspend+0x134/0x28c
+         lr : genpd_runtime_suspend+0x124/0x28c
+         sp : ffff80008174bc50
+         x29: ffff80008174bc50 x28: 0000000000000000 x27: 0000000000000000
+         x26: 0000003ca1f7104b x25: ffff0000090ba580 x24: ffff00000e7d92a0
+         x23: ffff0000081612f8 x22: 0000000000000001 x21: ffff000008161000
+         x20: 0000000000000000 x19: ffff00000b6ef400 x18: 0000000000000000
+         x17: 0000000000000000 x16: 0000000000000000 x15: ffff000008065600
+         x14: 0000000000000058 x13: ffff0000080254e0 x12: 0000000000000000
+         x11: ffff000008065608 x10: 00000000001343d0 x9 : ffff0000080656c0
+         x8 : ffff000008161800 x7 : 000001f3fffffc18 x6 : 0000000000000000
+         x5 : ffff000008161c10 x4 : 0000000000000000 x3 : 0000000000000000
+         x2 : 0000000000000000 x1 : 0000000000000000 x0 : 0000000000000000
+         Call trace:
+          genpd_runtime_suspend+0x134/0x28c (P)
+          __rpm_callback+0x44/0x1cc
+          rpm_callback+0x6c/0x78
+          rpm_suspend+0x108/0x564
+          pm_runtime_work+0xb8/0xbc
+          process_one_work+0x144/0x280
+          worker_thread+0x180/0x2f8
+          kthread+0x114/0x120
+          ret_from_fork+0x10/0x20
+         Code: d503201f f940fe60 52800002 f9410e61 (f9402003)
+         ---[ end trace 0000000000000000 ]---
+
+The issue is easier to trigger, and may prevent the kernel from booting
+at all, by adding extra debug prints like:
+
+    diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+    index 52ea84e548ff6d27..2fe666c2170194ab 100644
+    --- a/drivers/pmdomain/core.c
+    +++ b/drivers/pmdomain/core.c
+    @@ -256,12 +256,14 @@ struct device *dev_to_genpd_dev(struct device *dev)
+     static int genpd_stop_dev(const struct generic_pm_domain *genpd,
+			      struct device *dev)
+     {
+    +pr_info("==== %s/%s: stop\n", genpd->name, dev_name(dev));
+	    return GENPD_DEV_CALLBACK(genpd, int, stop, dev);
+     }
+
+     static int genpd_start_dev(const struct generic_pm_domain *genpd,
+			       struct device *dev)
+     {
+    +pr_info("==== %s/%s: start\n", genpd->name, dev_name(dev));
+	    return GENPD_DEV_CALLBACK(genpd, int, start, dev);
+     }
+
+Thanks for your comments and suggestions!
+
+[1] https://lore.kernel.org/CAMuHMdWapT40hV3c+CSBqFOW05aWcV1a6v_NiJYgoYi0i9_PDQ@mail.gmail.com
+[2] https://lore.kernel.org/CAMuHMdWyKeQq31GEK+-y4BoaZFcCxJNac63S7NoocMj1cYKniw@mail.gmail.com/
+[3] commit 5f0a63f81a027bec ("Merge tag 'drm-misc-next-2026-03-05' of https://gitlab.freedesktop.org/drm/misc/kernel into drm-next")
+[4] https://web.git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-devel.git/tree/arch/arm64/configs/renesas_defconfig?h=topic/renesas-defconfig
+[5] commit 1c21f240fbc1e47b ("drm/imagination: Warn or error on unsupported hardware") in v7.0-rc1
+---
+ drivers/base/power/common.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+index 9bef9248a70529bf..af690ce38ac3a086 100644
+--- a/drivers/base/power/common.c
++++ b/drivers/base/power/common.c
+@@ -12,6 +12,7 @@
+ #include <linux/acpi.h>
+ #include <linux/pm_domain.h>
+ #include <linux/pm_opp.h>
++#include <linux/pm_runtime.h>
+ 
+ #include "power.h"
+ 
+@@ -183,9 +184,6 @@ EXPORT_SYMBOL_GPL(dev_pm_domain_attach_by_name);
+  * may also provide an empty list, in case the attach should be done for all of
+  * the available PM domains.
+  *
+- * Callers must ensure proper synchronization of this function with power
+- * management callbacks.
+- *
+  * Returns the number of attached PM domains or a negative error code in case of
+  * a failure. Note that, to detach the list of PM domains, the driver shall call
+  * dev_pm_domain_detach_list(), typically during the remove phase.
+@@ -240,6 +238,7 @@ int dev_pm_domain_attach_list(struct device *dev,
+ 		link_flags |= DL_FLAG_RPM_ACTIVE;
+ 
+ 	for (i = 0; i < num_pds; i++) {
++		pm_runtime_barrier(dev);
+ 		if (by_id)
+ 			pd_dev = dev_pm_domain_attach_by_id(dev, i);
+ 		else
+@@ -284,12 +283,14 @@ int dev_pm_domain_attach_list(struct device *dev,
+ 
+ err_link:
+ 	dev_pm_opp_clear_config(pds->opp_tokens[i]);
++	pm_runtime_barrier(pd_dev);
+ 	dev_pm_domain_detach(pd_dev, true);
+ err_attach:
+ 	while (--i >= 0) {
+ 		dev_pm_opp_clear_config(pds->opp_tokens[i]);
+ 		if (pds->pd_links[i])
+ 			device_link_del(pds->pd_links[i]);
++		pm_runtime_barrier(pds->pd_devs[i]);
+ 		dev_pm_domain_detach(pds->pd_devs[i], true);
+ 	}
+ 	kfree(pds->pd_devs);
+@@ -370,9 +371,6 @@ EXPORT_SYMBOL_GPL(dev_pm_domain_detach);
+  *
+  * This function reverse the actions from dev_pm_domain_attach_list().
+  * Typically it should be invoked during the remove phase from drivers.
+- *
+- * Callers must ensure proper synchronization of this function with power
+- * management callbacks.
+  */
+ void dev_pm_domain_detach_list(struct dev_pm_domain_list *list)
+ {
+@@ -385,6 +383,7 @@ void dev_pm_domain_detach_list(struct dev_pm_domain_list *list)
+ 		dev_pm_opp_clear_config(list->opp_tokens[i]);
+ 		if (list->pd_links[i])
+ 			device_link_del(list->pd_links[i]);
++		pm_runtime_barrier(list->pd_devs[i]);
+ 		dev_pm_domain_detach(list->pd_devs[i], true);
+ 	}
+ 
+-- 
+2.43.0
 
