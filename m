@@ -1,21 +1,21 @@
 Received: from lgeamrelo03.lge.com (lgeamrelo03.lge.com [156.147.51.102])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C7093BE653
-	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 11:25:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 616D93B6365
+	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 11:25:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.102
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773314725; cv=none; b=j9Pa6nuSy0HRydDmNfEG2RjRmW/pu8VYgTeZc3fT/mcsig9pUqAWvs8elybeE1yqEGUeGZVZCPSiRyIVbmL68rNDNXV8YzL8cWQbgaoVJMjCus3VFWNM2ffzc+1Av1S9Z4tsF9RRygVtK0W84EkFA/8dc1uhekFOXB8aUT4T090=
+	t=1773314725; cv=none; b=mrBJ2qx75XqwrhaPAcRWk1XheBwLXHE1jnw1ZCg4D8wFzq9sNkcegZv5G52DCWQYpzZwhy8BV9fKE7e9cs//Ycr04EDvCmf4UAaACtZNwdGNO/6yRFYseiZVe5ZRcS3aEGXmMsi07uLDWrV14GtRycbfkJ/GUSiLxDHdHjej8Sg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1773314725; c=relaxed/simple;
-	bh=8sNTsTwdS2Ia7CLuaGAijuhstmMpeoWQ+Y10LgmmdoE=;
+	bh=e7FmwC3vUtQOJtO1io1aLsVcirfL4u47oqZf6ml43PA=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=nGtbMLSWEw+1pJB87rIXPk3ed3pMI2DoRA5zTld6BlSD64gL097kcwpe8lORe8Klh1w1GrucmmkjCFiptl02idIEkoJo4UKX5HUZSe+UOEz3D4G9i144+ig26epbN02fyVYqtEmAs2catYQ+pH8JtG7NI+di9jzTGVU2iqP2xS4=
+	 MIME-Version; b=RwC9bFpfzUO3BGaG40emxkFfX4l1OqhIxTfKIW3AHrdWwTqet4LtUZf8D9ykyRwFlG04s45YSeA2fQRfY7U4KeQ+v8PfoXjQV89+7aTTd0qtnb01xZUrBn9TIysRmixJSX30Dr+Rrg5CCawaf7E+oO+/CfnkiJIUw0JaTLid/YA=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.102
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
 Received: from unknown (HELO yjaykim-PowerEdge-T330.lge.net) (10.177.112.156)
-	by 156.147.51.102 with ESMTP; 12 Mar 2026 20:25:14 +0900
+	by 156.147.51.102 with ESMTP; 12 Mar 2026 20:25:13 +0900
 X-Original-SENDERIP: 10.177.112.156
 X-Original-MAILFROM: youngjun.park@lge.com
 From: Youngjun Park <youngjun.park@lge.com>
@@ -32,9 +32,9 @@ Cc: chrisl@kernel.org,
 	usama.arif@linux.dev,
 	linux-pm@vger.kernel.org,
 	linux-mm@kvack.org
-Subject: [RESEND RFC PATCH v3 2/2] mm/swap: remove redundant swap device reference in alloc/free
-Date: Thu, 12 Mar 2026 20:25:11 +0900
-Message-Id: <20260312112511.3596781-3-youngjun.park@lge.com>
+Subject: [RESEND RFC PATCH v3 1/2] mm/swap, PM: hibernate: fix swapoff race in uswsusp by getting swap reference
+Date: Thu, 12 Mar 2026 20:25:10 +0900
+Message-Id: <20260312112511.3596781-2-youngjun.park@lge.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260312112511.3596781-1-youngjun.park@lge.com>
 References: <20260312112511.3596781-1-youngjun.park@lge.com>
@@ -46,108 +46,161 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-In the previous commit, uswsusp was modified to acquire the swap device
-reference at the time of determining the swap type. As a result, it is
-no longer necessary to repeatedly acquire and release the reference to
-protect against swapoff every time a swap slot is allocated.
+Hibernation can be triggered either via the sysfs interface or via the
+uswsusp utility using /dev/snapshot ioctls.
 
-For hibernation via the sysfs interface, user-space processes are already
-frozen, making swapoff inherently impossible. Thus, acquiring and
-releasing the reference during allocation is unnecessary. Furthermore,
-even after returning from suspend, processes are not yet thawed when
-swap slots are freed, meaning reference management is not required at
-that stage either.
+In the case of uswsusp, the resume device is configured either by the
+boot parameter during snapshot_open() or via the SNAPSHOT_SET_SWAP_AREA
+ioctl. However, a race condition exists between setting this swap area
+and actually allocating a swap slot via the SNAPSHOT_ALLOC_SWAP_PAGE
+ioctl. For instance, if swapoff is executed and a different swap device
+is enabled during this window, an incorrect swap slot might be allocated.
 
-Therefore, remove the redundant swap device reference acquire and release
-operations from the hibernation swap allocation and free functions.
+Hibernation via the sysfs interface does not suffer from this race
+condition because user-space processes are frozen before proceeding,
+making it impossible to execute swapoff.
 
-Additionally, remove the SWP_WRITEOK check before allocation. This check
-is redundant because the cluster allocation logic already handles it.
+To resolve this race in uswsusp, modify swap_type_of() to properly
+acquire a reference to the swap device using get_swap_device().
 
 Signed-off-by: Youngjun Park <youngjun.park@lge.com>
 ---
- mm/swapfile.c | 50 ++++++++++++++++++++------------------------------
- 1 file changed, 20 insertions(+), 30 deletions(-)
+ include/linux/swap.h |  3 ++-
+ kernel/power/swap.c  |  2 +-
+ kernel/power/user.c  | 11 ++++++++---
+ mm/swapfile.c        | 28 +++++++++++++++++++++-------
+ 4 files changed, 32 insertions(+), 12 deletions(-)
 
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index 7a09df6977a5..ecf19a581fc7 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -433,8 +433,9 @@ static inline long get_nr_swap_pages(void)
+ }
+ 
+ extern void si_swapinfo(struct sysinfo *);
+-int swap_type_of(dev_t device, sector_t offset);
++int swap_type_of(dev_t device, sector_t offset, bool ref);
+ int find_first_swap(dev_t *device);
++void put_swap_device_by_type(int type);
+ extern unsigned int count_swap_pages(int, int);
+ extern sector_t swapdev_block(int, pgoff_t);
+ extern int __swap_count(swp_entry_t entry);
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 2e64869bb5a0..3a477914a7c4 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -341,7 +341,7 @@ static int swsusp_swap_check(void)
+ 	 * This is called before saving the image.
+ 	 */
+ 	if (swsusp_resume_device)
+-		res = swap_type_of(swsusp_resume_device, swsusp_resume_block);
++		res = swap_type_of(swsusp_resume_device, swsusp_resume_block, false);
+ 	else
+ 		res = find_first_swap(&swsusp_resume_device);
+ 	if (res < 0)
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index 4401cfe26e5c..7ade4d0aa846 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -71,7 +71,7 @@ static int snapshot_open(struct inode *inode, struct file *filp)
+ 	memset(&data->handle, 0, sizeof(struct snapshot_handle));
+ 	if ((filp->f_flags & O_ACCMODE) == O_RDONLY) {
+ 		/* Hibernating.  The image device should be accessible. */
+-		data->swap = swap_type_of(swsusp_resume_device, 0);
++		data->swap = swap_type_of(swsusp_resume_device, 0, true);
+ 		data->mode = O_RDONLY;
+ 		data->free_bitmaps = false;
+ 		error = pm_notifier_call_chain_robust(PM_HIBERNATION_PREPARE, PM_POST_HIBERNATION);
+@@ -90,8 +90,10 @@ static int snapshot_open(struct inode *inode, struct file *filp)
+ 			data->free_bitmaps = !error;
+ 		}
+ 	}
+-	if (error)
++	if (error) {
++		put_swap_device_by_type(data->swap);
+ 		hibernate_release();
++	}
+ 
+ 	data->frozen = false;
+ 	data->ready = false;
+@@ -115,6 +117,7 @@ static int snapshot_release(struct inode *inode, struct file *filp)
+ 	data = filp->private_data;
+ 	data->dev = 0;
+ 	free_all_swap_pages(data->swap);
++	put_swap_device_by_type(data->swap);
+ 	if (data->frozen) {
+ 		pm_restore_gfp_mask();
+ 		free_basic_memory_bitmaps();
+@@ -235,11 +238,13 @@ static int snapshot_set_swap_area(struct snapshot_data *data,
+ 		offset = swap_area.offset;
+ 	}
+ 
++	put_swap_device_by_type(data->swap);
++
+ 	/*
+ 	 * User space encodes device types as two-byte values,
+ 	 * so we need to recode them
+ 	 */
+-	data->swap = swap_type_of(swdev, offset);
++	data->swap = swap_type_of(swdev, offset, true);
+ 	if (data->swap < 0)
+ 		return swdev ? -ENODEV : -EINVAL;
+ 	data->dev = swdev;
 diff --git a/mm/swapfile.c b/mm/swapfile.c
-index 5a3d5c1e1f81..8467c3511870 100644
+index d864866a35ea..5a3d5c1e1f81 100644
 --- a/mm/swapfile.c
 +++ b/mm/swapfile.c
-@@ -2091,31 +2091,26 @@ swp_entry_t swap_alloc_hibernation_slot(int type)
- 	if (!si)
- 		goto fail;
- 
--	/* This is called for allocating swap entry, not cache */
--	if (get_swap_device_info(si)) {
--		if (si->flags & SWP_WRITEOK) {
--			/*
--			 * Try the local cluster first if it matches the device. If
--			 * not, try grab a new cluster and override local cluster.
--			 */
--			local_lock(&percpu_swap_cluster.lock);
--			pcp_si = this_cpu_read(percpu_swap_cluster.si[0]);
--			pcp_offset = this_cpu_read(percpu_swap_cluster.offset[0]);
--			if (pcp_si == si && pcp_offset) {
--				ci = swap_cluster_lock(si, pcp_offset);
--				if (cluster_is_usable(ci, 0))
--					offset = alloc_swap_scan_cluster(si, ci, NULL, pcp_offset);
--				else
--					swap_cluster_unlock(ci);
--			}
--			if (!offset)
--				offset = cluster_alloc_swap_entry(si, NULL);
--			local_unlock(&percpu_swap_cluster.lock);
--			if (offset)
--				entry = swp_entry(si->type, offset);
--		}
--		put_swap_device(si);
-+	/*
-+	 * Try the local cluster first if it matches the device. If
-+	 * not, try grab a new cluster and override local cluster.
-+	 */
-+	local_lock(&percpu_swap_cluster.lock);
-+	pcp_si = this_cpu_read(percpu_swap_cluster.si[0]);
-+	pcp_offset = this_cpu_read(percpu_swap_cluster.offset[0]);
-+	if (pcp_si == si && pcp_offset) {
-+		ci = swap_cluster_lock(si, pcp_offset);
-+		if (cluster_is_usable(ci, 0))
-+			offset = alloc_swap_scan_cluster(si, ci, NULL, pcp_offset);
-+		else
-+			swap_cluster_unlock(ci);
- 	}
-+	if (!offset)
-+		offset = cluster_alloc_swap_entry(si, NULL);
-+	local_unlock(&percpu_swap_cluster.lock);
-+	if (offset)
-+		entry = swp_entry(si->type, offset);
-+
- fail:
- 	return entry;
- }
-@@ -2123,14 +2118,10 @@ swp_entry_t swap_alloc_hibernation_slot(int type)
- /* Free a slot allocated by swap_alloc_hibernation_slot */
- void swap_free_hibernation_slot(swp_entry_t entry)
+@@ -2149,7 +2149,7 @@ void swap_free_hibernation_slot(swp_entry_t entry)
+  *
+  * This is needed for the suspend to disk (aka swsusp).
+  */
+-int swap_type_of(dev_t device, sector_t offset)
++int swap_type_of(dev_t device, sector_t offset, bool ref)
  {
--	struct swap_info_struct *si;
-+	struct swap_info_struct *si = __swap_entry_to_info(entry);
- 	struct swap_cluster_info *ci;
- 	pgoff_t offset = swp_offset(entry);
+ 	int type;
  
--	si = get_swap_device(entry);
--	if (WARN_ON(!si))
--		return;
--
- 	ci = swap_cluster_lock(si, offset);
- 	__swap_cluster_put_entry(ci, offset % SWAPFILE_CLUSTER);
- 	__swap_cluster_free_entries(si, ci, offset % SWAPFILE_CLUSTER, 1);
-@@ -2138,7 +2129,6 @@ void swap_free_hibernation_slot(swp_entry_t entry)
+@@ -2163,13 +2163,16 @@ int swap_type_of(dev_t device, sector_t offset)
+ 		if (!(sis->flags & SWP_WRITEOK))
+ 			continue;
  
- 	/* In theory readahead might add it to the swap cache by accident */
- 	__try_to_reclaim_swap(si, offset, TTRS_ANYWAY);
--	put_swap_device(si);
+-		if (device == sis->bdev->bd_dev) {
+-			struct swap_extent *se = first_se(sis);
++		if (device != sis->bdev->bd_dev)
++			continue;
+ 
+-			if (se->start_block == offset) {
+-				spin_unlock(&swap_lock);
+-				return type;
+-			}
++		struct swap_extent *se = first_se(sis);
++		if (se->start_block != offset)
++			continue;
++
++		if (ref && get_swap_device_info(sis)) {
++			spin_unlock(&swap_lock);
++			return type;
+ 		}
+ 	}
+ 	spin_unlock(&swap_lock);
+@@ -2194,6 +2197,17 @@ int find_first_swap(dev_t *device)
+ 	return -ENODEV;
  }
  
++void put_swap_device_by_type(int type)
++{
++	struct swap_info_struct *sis;
++
++	if (type < 0 || type >= MAX_SWAPFILES)
++		return;
++
++	sis = swap_info[type];
++	put_swap_device(sis);
++}
++
  /*
+  * Get the (PAGE_SIZE) block corresponding to given offset on the swapdev
+  * corresponding to given index in swap_info (swap type).
 -- 
 2.34.1
 
