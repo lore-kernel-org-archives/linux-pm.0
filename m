@@ -1,37 +1,43 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from out-184.mta0.migadu.com (out-184.mta0.migadu.com [91.218.175.184])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73DC73AD51B;
-	Thu, 12 Mar 2026 09:54:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ADE6C3B3BE8
+	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 10:21:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.184
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773309244; cv=none; b=ghdcvLKx29s/zD0F39bK3YqaDFUIMgkHin237+xSpYpKfPEJjPi9v15uifubMMG1Z4vdGk5VUcViU99A0U6n0+PjclDoWTtwTqBsGSqKKZSmk92dn1dhn1moHqfxoFX/jpnnTPugPNBMGeGoXFqv0BBsAKDLbums9MsG/7jL2/o=
+	t=1773310870; cv=none; b=ZCslKVTeVymR1n/N1ZiMEbn1vPRK0Pz3p3b+ANdvcoJq1YEMjO6EYRkX/4N8aa2gzPtW5v2EuFzGzGQsNzmIxYebArHc7uDrYbPM034SJ6Lcg8Olj1Aq1S7EBItOdxvg8P7LaeSu4VqkLRwb6T8BX/MT1cZgff+nSNFUbVqrmNM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773309244; c=relaxed/simple;
-	bh=lHZVhCzulzdzkAtiVdpksnpGYjt4BLJ/buQ/uz/EETg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lqxv4fV6N/Z8+LDMDjExn12QOPw4UjXjkEcvu7tgmc/VhOaGWb1YlUwwWDh7R/SaAZXfxWPoQjfGEFwkCJL7PeqJOJooNypCZMwM/rlmjPxCSt+sDmB3sFHpWn9iULwuXnA8prtcYHfSHt0xktkX2Z4uVlJ31+//ryEZZSD2i0M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 27515C19424;
-	Thu, 12 Mar 2026 09:54:00 +0000 (UTC)
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-To: Ulf Hansson <ulf.hansson@linaro.org>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Frank Binns <frank.binns@imgtec.com>,
-	Matt Coster <matt.coster@imgtec.com>,
-	Marek Vasut <marek.vasut@mailbox.org>
-Cc: linux-pm@vger.kernel.org,
-	driver-core@lists.linux.dev,
-	linux-renesas-soc@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC] PM: domains: Call pm_runtime_barrier() before dev_pm_domain_{attach*,detach}()
-Date: Thu, 12 Mar 2026 10:53:39 +0100
-Message-ID: <15510cee649959281d9554965cacd0c06531c1f3.1773308898.git.geert+renesas@glider.be>
-X-Mailer: git-send-email 2.43.0
+	s=arc-20240116; t=1773310870; c=relaxed/simple;
+	bh=aXNRHjcOVXgRT0K7PfK4yvp1OeOX9o+YTRURoNYpO+4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=S6+Y2Fiu9UrARFJ48QQYroEVou8UCqyms5LvzCTRSsRqe+j3VVt3iEKwCf7A30IzQuJK2JnPPWo5Z9tvejYOrWHToNCEFtK43eBygk/xq4Iq+a9QmWSn2Kj7qPbKu1BRY7fcVGwYus4Uz8H5vFtYboVuaftg0YsLHHMfbwQ1NeU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=r-ricci.it; spf=pass smtp.mailfrom=r-ricci.it; dkim=pass (2048-bit key) header.d=r-ricci.it header.i=@r-ricci.it header.b=uJ9NyMV4; arc=none smtp.client-ip=91.218.175.184
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=r-ricci.it
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=r-ricci.it
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=r-ricci.it header.i=@r-ricci.it header.b="uJ9NyMV4"
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=r-ricci.it; s=key1;
+	t=1773310854;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=1pG9UtdnlOkgqfg3fGcfSFG2vulGiGfyzkeYJgqeor8=;
+	b=uJ9NyMV4YMmRBmEXN0r9xkZzw6r3s5e+7uS1nHQjIcebV/4a4ZwcQrC0yzYalDhEbZOVne
+	RAs3s63qk11eJ2+Mv0kGCQCGgjMRMnbLHvCCrSTk4/1EoxvxLfQN8m0gjPb1NW6UagHyoH
+	hjdfhpObPgaS7OWSmvc4RG2S8cXb0VFjuBs0iM+NetHMk89CswNbMiVwYuKXQtbBd8tqnn
+	lUxxQGd5fGk135+s2okgidyySPofEGyl/HTOpfhnNnNSXTCF4nWUOGH5gM6MhvCFFD7eHT
+	10Lfk2i97/rDaH9qnZyPL6qu+nxX6M+Ok9oNtKg/ek7Er5R/TGEaFslX/XhNBw==
+From: Roberto Ricci <io@r-ricci.it>
+To: Thomas Renninger <trenn@suse.com>,
+	Shuah Khan <shuah@kernel.org>,
+	"John B. Wyatt IV" <jwyatt@redhat.com>,
+	John Kacur <jkacur@redhat.com>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Roberto Ricci <io@r-ricci.it>
+Subject: [PATCH v3 1/4] cpupower-idle-info.1: fix short option names
+Date: Thu, 12 Mar 2026 11:20:26 +0100
+Message-ID: <20260312102029.14980-1-io@r-ricci.it>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -39,213 +45,50 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-If a device has multiple PM Domains, dev_pm_domain_detach() is called
-multiple times on unbind or probe failure.  If the PM Domain is also a
-Clock Domain, and thus calls pm_clk_destroy() from its .detach()
-callback, dev_pm_put_subsys_data() will set dev->power.subsys_data to
-NULL when psd->refcount reaches zero.
+The cpupower-idle-info(1) man page describes '-f' as the short form of
+the '--silent' option and '-e' as the short form of the '--proc' option.
+But they are not correct:
 
-Later/in parallel, default_suspend_ok() calls dev_gpd_data():
+$ cpupower idle-info -f
+idle-info: invalid option -- 'f'
+invalid or unknown argument
+$ cpupower idle-info -e
+idle-info: invalid option -- 'e'
+invalid or unknown argument
 
-    static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
-    {
-	    return to_gpd_data(dev->power.subsys_data->domain_data);
-    }
+The short form of '--silent' is actually '-s' and the short form of
+'--proc' is actually 'o':
 
-which may trigger a NULL pointer dereference.
+cpuidle-info.c:
+	{"silent", no_argument, NULL, 's'},
+	{"proc", no_argument, NULL, 'o'},
 
-All dev_pm_domain_{at,de}tach*() functions document that callers must
-ensure proper synchronization of these functions with power management
-callbacks.  Unfortunately no callers seem to actually do so.  This
-includes dev_pm_domain_attach_list() and dev_pm_domain_detach_list():
-they call dev_pm_domain_{attach*,detach}() internally, which means they
-should take care of this synchronization themselves.
+Fixes e7d85a934182d5bde1eea865169fbf2e0637a3ed ("cpupower: Add cpupower-idle-info manpage")
 
-Add synchronization to dev_pm_domain_{at,de}tach_list() by calling
-pm_runtime_barrier() before dev_pm_domain_{attach*,detach}(), and drop
-the now obsolete comments.
-
-Suggested-by: Marek Vasut <marek.vasut@mailbox.org>
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Signed-off-by: Roberto Ricci <io@r-ricci.it>
 ---
-This issue was reported first in "drm/imagination:
-genpd_runtime_suspend() crash"[1] and "Re: [PATCH 2/5] arm64: dts:
-renesas: r8a77960-salvator-x: Enable GPU support"[2].
-Unfortunately this patch does not fix the issue for good, it just
-becomes much harder to trigger (like needing tens of thousands of
-tries).
+ tools/power/cpupower/man/cpupower-idle-info.1 | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-How to trigger:
-
-  1. Check out drm-next[3]
-
-  2. Enable the gpu node in one of the following DTS files, depending on
-     your board (Salvator-X(S), ULCB, or Falcon):
-
-	 arch/arm64/boot/dts/renesas/r8a77960.dtsi
-	 arch/arm64/boot/dts/renesas/r8a77961.dtsi
-	 arch/arm64/boot/dts/renesas/r8a77965.dtsi
-	 arch/arm64/boot/dts/renesas/r8a779a0.dtsi
-
-     These nodes are not yet enabled in any board DTS because of this
-     crash.
-
-  3. Build and boot a kernel using renesas_defconfig[4]
-
-  4. The PowerVR driver will fail to probe (since [5], which is IMHO a
-     regression):
-
-	 powervr fd000000.gpu: [drm] *ERROR* Unknown GPU! Set 'exp_hw_support' to bypass this check.
-
-  5. Try to bind the driver again:
-
-      $ for i in $(seq 1000000); do echo $i; echo fd000000.gpu > /sys/bus/platform/drivers/powervr/bind; done
-
-     Eventually, the kernel will crash:
-
-         [...]
-         powervr fd000000.gpu: [drm] *ERROR* Unknown GPU! Set 'exp_hw_support' to bypass this check.
-         Unable to handle kernel NULL pointer dereference at virtual address 0000000000000040
-         Mem abort info:
-           ESR = 0x0000000096000004
-           EC = 0x25: DABT (current EL), IL = 32 bits
-           SET = 0, FnV = 0
-           EA = 0, S1PTW = 0
-           FSC = 0x04: level 0 translation fault
-         Data abort info:
-           ISV = 0, ISS = 0x00000004, ISS2 = 0x00000000
-           CM = 0, WnR = 0, TnD = 0, TagAccess = 0
-           GCS = 0, Overlay = 0, DirtyBit = 0, Xs = 0
-         user pgtable: 4k pages, 48-bit VAs, pgdp=0000000049993000
-         [0000000000000040] pgd=0000000000000000, p4d=0000000000000000
-         Internal error: Oops: 0000000096000004 [#1]  SMP
-         CPU: 1 UID: 0 PID: 12 Comm: kworker/u8:0 Not tainted 7.0.0-rc2-arm64-renesas-00540-g5f0a63f81a02-dirty #3502 PREEMPT
-         Hardware name: Renesas Salvator-X 2nd version board based on r8a77965 (DT)
-         Workqueue: pm pm_runtime_work
-         pstate: 60000005 (nZCv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
-         pc : genpd_runtime_suspend+0x134/0x28c
-         lr : genpd_runtime_suspend+0x124/0x28c
-         sp : ffff80008174bc50
-         x29: ffff80008174bc50 x28: 0000000000000000 x27: 0000000000000000
-         x26: 0000003ca1f7104b x25: ffff0000090ba580 x24: ffff00000e7d92a0
-         x23: ffff0000081612f8 x22: 0000000000000001 x21: ffff000008161000
-         x20: 0000000000000000 x19: ffff00000b6ef400 x18: 0000000000000000
-         x17: 0000000000000000 x16: 0000000000000000 x15: ffff000008065600
-         x14: 0000000000000058 x13: ffff0000080254e0 x12: 0000000000000000
-         x11: ffff000008065608 x10: 00000000001343d0 x9 : ffff0000080656c0
-         x8 : ffff000008161800 x7 : 000001f3fffffc18 x6 : 0000000000000000
-         x5 : ffff000008161c10 x4 : 0000000000000000 x3 : 0000000000000000
-         x2 : 0000000000000000 x1 : 0000000000000000 x0 : 0000000000000000
-         Call trace:
-          genpd_runtime_suspend+0x134/0x28c (P)
-          __rpm_callback+0x44/0x1cc
-          rpm_callback+0x6c/0x78
-          rpm_suspend+0x108/0x564
-          pm_runtime_work+0xb8/0xbc
-          process_one_work+0x144/0x280
-          worker_thread+0x180/0x2f8
-          kthread+0x114/0x120
-          ret_from_fork+0x10/0x20
-         Code: d503201f f940fe60 52800002 f9410e61 (f9402003)
-         ---[ end trace 0000000000000000 ]---
-
-The issue is easier to trigger, and may prevent the kernel from booting
-at all, by adding extra debug prints like:
-
-    diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
-    index 52ea84e548ff6d27..2fe666c2170194ab 100644
-    --- a/drivers/pmdomain/core.c
-    +++ b/drivers/pmdomain/core.c
-    @@ -256,12 +256,14 @@ struct device *dev_to_genpd_dev(struct device *dev)
-     static int genpd_stop_dev(const struct generic_pm_domain *genpd,
-			      struct device *dev)
-     {
-    +pr_info("==== %s/%s: stop\n", genpd->name, dev_name(dev));
-	    return GENPD_DEV_CALLBACK(genpd, int, stop, dev);
-     }
-
-     static int genpd_start_dev(const struct generic_pm_domain *genpd,
-			       struct device *dev)
-     {
-    +pr_info("==== %s/%s: start\n", genpd->name, dev_name(dev));
-	    return GENPD_DEV_CALLBACK(genpd, int, start, dev);
-     }
-
-Thanks for your comments and suggestions!
-
-[1] https://lore.kernel.org/CAMuHMdWapT40hV3c+CSBqFOW05aWcV1a6v_NiJYgoYi0i9_PDQ@mail.gmail.com
-[2] https://lore.kernel.org/CAMuHMdWyKeQq31GEK+-y4BoaZFcCxJNac63S7NoocMj1cYKniw@mail.gmail.com/
-[3] commit 5f0a63f81a027bec ("Merge tag 'drm-misc-next-2026-03-05' of https://gitlab.freedesktop.org/drm/misc/kernel into drm-next")
-[4] https://web.git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-devel.git/tree/arch/arm64/configs/renesas_defconfig?h=topic/renesas-defconfig
-[5] commit 1c21f240fbc1e47b ("drm/imagination: Warn or error on unsupported hardware") in v7.0-rc1
----
- drivers/base/power/common.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
-index 9bef9248a70529bf..af690ce38ac3a086 100644
---- a/drivers/base/power/common.c
-+++ b/drivers/base/power/common.c
-@@ -12,6 +12,7 @@
- #include <linux/acpi.h>
- #include <linux/pm_domain.h>
- #include <linux/pm_opp.h>
-+#include <linux/pm_runtime.h>
- 
- #include "power.h"
- 
-@@ -183,9 +184,6 @@ EXPORT_SYMBOL_GPL(dev_pm_domain_attach_by_name);
-  * may also provide an empty list, in case the attach should be done for all of
-  * the available PM domains.
-  *
-- * Callers must ensure proper synchronization of this function with power
-- * management callbacks.
-- *
-  * Returns the number of attached PM domains or a negative error code in case of
-  * a failure. Note that, to detach the list of PM domains, the driver shall call
-  * dev_pm_domain_detach_list(), typically during the remove phase.
-@@ -240,6 +238,7 @@ int dev_pm_domain_attach_list(struct device *dev,
- 		link_flags |= DL_FLAG_RPM_ACTIVE;
- 
- 	for (i = 0; i < num_pds; i++) {
-+		pm_runtime_barrier(dev);
- 		if (by_id)
- 			pd_dev = dev_pm_domain_attach_by_id(dev, i);
- 		else
-@@ -284,12 +283,14 @@ int dev_pm_domain_attach_list(struct device *dev,
- 
- err_link:
- 	dev_pm_opp_clear_config(pds->opp_tokens[i]);
-+	pm_runtime_barrier(pd_dev);
- 	dev_pm_domain_detach(pd_dev, true);
- err_attach:
- 	while (--i >= 0) {
- 		dev_pm_opp_clear_config(pds->opp_tokens[i]);
- 		if (pds->pd_links[i])
- 			device_link_del(pds->pd_links[i]);
-+		pm_runtime_barrier(pds->pd_devs[i]);
- 		dev_pm_domain_detach(pds->pd_devs[i], true);
- 	}
- 	kfree(pds->pd_devs);
-@@ -370,9 +371,6 @@ EXPORT_SYMBOL_GPL(dev_pm_domain_detach);
-  *
-  * This function reverse the actions from dev_pm_domain_attach_list().
-  * Typically it should be invoked during the remove phase from drivers.
-- *
-- * Callers must ensure proper synchronization of this function with power
-- * management callbacks.
-  */
- void dev_pm_domain_detach_list(struct dev_pm_domain_list *list)
- {
-@@ -385,6 +383,7 @@ void dev_pm_domain_detach_list(struct dev_pm_domain_list *list)
- 		dev_pm_opp_clear_config(list->opp_tokens[i]);
- 		if (list->pd_links[i])
- 			device_link_del(list->pd_links[i]);
-+		pm_runtime_barrier(list->pd_devs[i]);
- 		dev_pm_domain_detach(list->pd_devs[i], true);
- 	}
- 
+diff --git a/tools/power/cpupower/man/cpupower-idle-info.1 b/tools/power/cpupower/man/cpupower-idle-info.1
+index 20b6345c53ad..b2f92aba5f5b 100644
+--- a/tools/power/cpupower/man/cpupower-idle-info.1
++++ b/tools/power/cpupower/man/cpupower-idle-info.1
+@@ -11,10 +11,10 @@ A tool which prints out per cpu idle information helpful to developers and inter
+ .SH "OPTIONS"
+ .LP
+ .TP
+-\fB\-f\fR \fB\-\-silent\fR
++\fB\-s\fR \fB\-\-silent\fR
+ Only print a summary of all available C-states in the system.
+ .TP
+-\fB\-e\fR \fB\-\-proc\fR
++\fB\-o\fR \fB\-\-proc\fR
+ deprecated.
+ Prints out idle information in old /proc/acpi/processor/*/power format. This
+ interface has been removed from the kernel for quite some time, do not let
 -- 
-2.43.0
+2.53.0
 
