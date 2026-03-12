@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CE15374E44;
-	Thu, 12 Mar 2026 20:59:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E811B3AF645;
+	Thu, 12 Mar 2026 21:24:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773349179; cv=none; b=dbRl3sXWLHhoCMftOeYg/z3Rq6/XapExZXZ61Et7PTvV388v2Zd46rNbBsRqGRtYHBQMwRtvCD8MV5EwfTIt0E8bxD3+3LfEldbSEy5NUxbXlWLcw4ppPwd/4X4DqtoATIAtpl55muH6Tt7IOELcNT5XV6KYfFdPE6Aij3Gbkzg=
+	t=1773350666; cv=none; b=kRnVmgiuyIpz0xqGaY9gt+vGfQqBJM5iahP2lEMDqU/mwiqT20nrvk0QNCZyYNcGD8iueSYDUq1duQbfYXNTMlle6hwcirdANHtXFn4Tyz+259VyEjRcygkCbU/Wv88H7tLcLuNI2W7EeEM3iwSlMe8eCJBPHysVDL+vGaBgS0k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773349179; c=relaxed/simple;
-	bh=S8oc0n+2PMcBiWyh2gjTmlNW28t+05cG4Lqv5HRCox8=;
+	s=arc-20240116; t=1773350666; c=relaxed/simple;
+	bh=5vR3ktOGqEIKGj7f5nOCs4WwrzE0eVcI6p58vYED3EE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KJqwY7dPn3I2QdL0RL7c5ggNAJP7rXZgkuzwH0DxAAyffmKvuOcOWuNnibJtGq5IguniKx1BTjsYG5x00l52D/r46hvSwt7anGz5QSJTbBu/6er02vf1U7PANGnWALfH8ydUruG47c/1ejKa1snF4jQo68Cnzm2Mk/zr6w+LFjo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=s6ncqTab; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:Content-Type; b=BEVtrjNc4aCbfzfrNgtjCKSkebdO0ynT5avuzwqiHo7mgK1SwAbn3D90GVpbByuGjpF+dkHD4lNUKcmkeSS4qQdAoZ1RRbxsuprnzsEiWuSg7S4e4CMROAnnjhkwQ5SkgDxSl+Ko/idv0Zwn9Fn4h8ErIynd3su8K63hQIBucVE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YLx7hLGe; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="s6ncqTab"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7269BC4CEF7;
-	Thu, 12 Mar 2026 20:59:38 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YLx7hLGe"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 93D0DC4CEF7;
+	Thu, 12 Mar 2026 21:24:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773349179;
-	bh=S8oc0n+2PMcBiWyh2gjTmlNW28t+05cG4Lqv5HRCox8=;
+	s=k20201202; t=1773350665;
+	bh=5vR3ktOGqEIKGj7f5nOCs4WwrzE0eVcI6p58vYED3EE=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=s6ncqTabD8QpUoXiuEsR68wI3wQ/gd2qONWUW/F0gjDqvlwV7DSYWIBmule24OVgD
-	 YTJcWm807VvYwaI0du844Naa7px/3t8NmWsbTKtcjBb37sPIJPVUx6bPuYq5WO7LAp
-	 Q6lnWUnjBVrxxzInoxtBTli4qlM+505y2IicDRXvlqLhnmWNIUhLIREO5sSzGCkglS
-	 iBpepnaR0GltQTdBeJfnFbq1CCwzGzNd3NUQxSsLGm5CQT8kDwLGwaLn3AET0Q4J9u
-	 Mb0Jv/MEub15aWDKXXFNHvtPh2Z0pJVbhW/h7Ripb4E+v/QvVdKlwUcKKJIlepor8U
-	 ANC9bQ7qycFVg==
-Message-ID: <0afb773d-e971-4129-8246-790ec840699e@kernel.org>
-Date: Thu, 12 Mar 2026 15:59:37 -0500
+	b=YLx7hLGe6cvlAZD8snKFEE/DCB196nV0Gy8Jx71MogXBWXFtkvzLI72Vao36teAB2
+	 pvwv0U03TA7oC6cVoPYgDTipODbZjQrSGM8H/yA0cQGRYfD4ww0e3g8qbbGNEntY5j
+	 iyEper4ZLBDyuHViQsBlvJRIeJQNdSQd9ZVVgtFEEHBh72PgMpJcchh9+dllixEreW
+	 vkk01cJLDVVlMJm8HOH56RjpUgQOZ6oB0EHJGerDU1aIfqIcqKOgH9OCmHsDKrLw1t
+	 o+wZ/CFHleDlNAiiOsFm1W8OKMjgeIXHVM3p7s9R3mGjlVwANi8lpXpeJORP03DDTf
+	 8TCTAqrRbmFng==
+Message-ID: <a0898a65-1f58-43d4-b73a-c72c1669478e@kernel.org>
+Date: Thu, 12 Mar 2026 16:24:23 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,84 +35,152 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 9/9] Documentation/amd-pstate: Add documentation for
- amd_pstate_floor_{freq,count}
+Subject: Re: [PATCH v2 6/9] amd-pstate: Add sysfs support for floor_freq and
+ floor_count
 To: "Gautham R. Shenoy" <gautham.shenoy@amd.com>,
  "Rafael J . Wysocki" <rafael@kernel.org>,
  Viresh Kumar <viresh.kumar@linaro.org>,
  K Prateek Nayak <kprateek.nayak@amd.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 References: <20260311140116.19604-1-gautham.shenoy@amd.com>
- <20260311140116.19604-10-gautham.shenoy@amd.com>
+ <20260311140116.19604-7-gautham.shenoy@amd.com>
 Content-Language: en-US
 From: "Mario Limonciello (AMD) (kernel.org)" <superm1@kernel.org>
-In-Reply-To: <20260311140116.19604-10-gautham.shenoy@amd.com>
+In-Reply-To: <20260311140116.19604-7-gautham.shenoy@amd.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 
 
 On 3/11/2026 9:01 AM, Gautham R. Shenoy wrote:
-> Add documentation for the sysfs files
-> /sys/devices/system/cpu/cpufreq/policy*/amd_pstate_floor_freq
-> and
-> /sys/devices/system/cpu/cpufreq/policy*/amd_pstate_floor_count.
+> When Floor Performance feature is supported by the platform, expose
+> two sysfs files:
+> 
+>     * amd_pstate_floor_freq to allow userspace to request the floor
+>       frequency for each CPU.
+> 
+>     * amd_pstate_floor_count which advertises the number of distinct
+>       levels of floor frequencies supported on this platform.
 > 
 > Signed-off-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
+One nit below.
+
 Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
 > ---
->   Documentation/admin-guide/pm/amd-pstate.rst | 32 +++++++++++++++++++++
->   1 file changed, 32 insertions(+)
+>   drivers/cpufreq/amd-pstate.c | 50 ++++++++++++++++++++++++++++++++++++
+>   drivers/cpufreq/amd-pstate.h |  2 ++
+>   2 files changed, 52 insertions(+)
 > 
-> diff --git a/Documentation/admin-guide/pm/amd-pstate.rst b/Documentation/admin-guide/pm/amd-pstate.rst
-> index f566fea6613e6..5fd2a36f8a4b8 100644
-> --- a/Documentation/admin-guide/pm/amd-pstate.rst
-> +++ b/Documentation/admin-guide/pm/amd-pstate.rst
-> @@ -242,6 +242,8 @@ control its functionality at the system level. They are located in the
->    /sys/devices/system/cpu/cpufreq/policy0/amd_pstate_hw_prefcore
->    /sys/devices/system/cpu/cpufreq/policy0/amd_pstate_lowest_nonlinear_freq
->    /sys/devices/system/cpu/cpufreq/policy0/amd_pstate_max_freq
-> + /sys/devices/system/cpu/cpufreq/policy0/amd_pstate_floor_freq
-> + /sys/devices/system/cpu/cpufreq/policy0/amd_pstate_floor_count
->    /sys/devices/system/cpu/cpufreq/policy0/amd_pstate_prefcore_ranking
+> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+> index 3122ad5af6f47..54b650f3b4e78 100644
+> --- a/drivers/cpufreq/amd-pstate.c
+> +++ b/drivers/cpufreq/amd-pstate.c
+> @@ -383,6 +383,8 @@ static int amd_pstate_init_floor_perf(struct cpufreq_policy *policy)
+>   			return ret;
+>   	}
 >   
+> +	cpudata->floor_freq = perf_to_freq(cpudata->perf, cpudata->nominal_freq,
+> +					   floor_perf);
+>   	return 0;
+>   }
 >   
-> @@ -278,6 +280,36 @@ can change at runtime based on platform conditions. This attribute is
->   read-only.  This file is only visible on platforms which support the
->   preferred core feature.
+> @@ -1284,6 +1286,44 @@ static ssize_t show_energy_performance_preference(
+>   	return sysfs_emit(buf, "%s\n", energy_perf_strings[preference]);
+>   }
 >   
-> +``amd_pstate_floor_freq``
+> +static ssize_t store_amd_pstate_floor_freq(struct cpufreq_policy *policy,
+> +					   const char *buf, size_t count)
+> +{
+> +	struct amd_cpudata *cpudata = policy->driver_data;
+> +	union perf_cached perf = READ_ONCE(cpudata->perf);
+> +	unsigned int freq;
+> +	u8 floor_perf;
+> +	int ret;
 > +
-> +The floor frequency associated with each CPU. Userspace can write any
-> +value between ``cpuinfo_min_freq`` and ``scaling_max_freq`` into this
-> +file. When the system is under power or thermal constraints, the
-> +platform firmware will attempt to throttle the CPU frequency to the
-> +value specified in ``amd_pstate_floor_freq`` before throttling it
-> +further. This allows userspace to specify different floor frequencies
-> +to different CPUs. For optimal results, threads of the same core
-> +should have the same floor frequency value. This file is only visible
-> +on platforms that support the CPPC Performance Priority feature.
+> +	ret = kstrtouint(buf, 0, &freq);
+> +	if (ret)
+> +		return ret;
+> +
+> +	floor_perf = freq_to_perf(perf, cpudata->nominal_freq, freq);
+> +	ret = amd_pstate_set_floor_perf(policy, floor_perf);
+> +
+> +	if (!ret)
+> +		cpudata->floor_freq = freq;
+> +
+> +	return ret ?: count;
+> +}
+> +
+> +static ssize_t show_amd_pstate_floor_freq(struct cpufreq_policy *policy, char *buf)
+> +{
+> +	struct amd_cpudata *cpudata = policy->driver_data;
+> +
+> +	return sysfs_emit(buf, "%u\n", cpudata->floor_freq);
+> +}
 > +
 > +
-> +``amd_pstate_floor_count``
+
+Extra whitespace here
+
+> +static ssize_t show_amd_pstate_floor_count(struct cpufreq_policy *policy, char *buf)
+> +{
+> +	struct amd_cpudata *cpudata = policy->driver_data;
+> +	u8 count = cpudata->floor_perf_cnt;
 > +
-> +The number of distinct Floor Performance levels supported by the
-> +platform. For example, if this value is 2, then the number of unique
-> +values obtained from the command ``cat
-> +/sys/devices/system/cpu/cpufreq/policy*/amd_pstate_floor_freq |
-> +sort -n | uniq`` should be at most this number for the behavior
-> +described in ``amd_pstate_floor_freq`` to take effect. A zero value
-> +implies that the platform supports unlimited floor performance levels.
-> +This file is only visible on platforms that support the CPPC
-> +Performance Priority feature.
+> +	return sysfs_emit(buf, "%u\n", count);
+> +}
 > +
-> +**Note**: When ``amd_pstate_floor_count`` is non-zero, the frequency to
-> +which the CPU is throttled under power or thermal constraints is
-> +undefined when the number of unique values of ``amd_pstate_floor_freq``
-> +across all CPUs in the system exceeds ``amd_pstate_floor_count``.
-> +
->   ``energy_performance_available_preferences``
+>   cpufreq_freq_attr_ro(amd_pstate_max_freq);
+>   cpufreq_freq_attr_ro(amd_pstate_lowest_nonlinear_freq);
 >   
->   A list of all the supported EPP preferences that could be used for
+> @@ -1292,6 +1332,8 @@ cpufreq_freq_attr_ro(amd_pstate_prefcore_ranking);
+>   cpufreq_freq_attr_ro(amd_pstate_hw_prefcore);
+>   cpufreq_freq_attr_rw(energy_performance_preference);
+>   cpufreq_freq_attr_ro(energy_performance_available_preferences);
+> +cpufreq_freq_attr_rw(amd_pstate_floor_freq);
+> +cpufreq_freq_attr_ro(amd_pstate_floor_count);
+>   
+>   struct freq_attr_visibility {
+>   	struct freq_attr *attr;
+> @@ -1316,6 +1358,12 @@ static bool epp_visibility(void)
+>   	return cppc_state == AMD_PSTATE_ACTIVE;
+>   }
+>   
+> +/* Determines whether amd_pstate_floor_freq related attributes should be visible */
+> +static bool floor_freq_visibility(void)
+> +{
+> +	return cpu_feature_enabled(X86_FEATURE_CPPC_PERF_PRIO);
+> +}
+> +
+>   static struct freq_attr_visibility amd_pstate_attr_visibility[] = {
+>   	{&amd_pstate_max_freq, always_visible},
+>   	{&amd_pstate_lowest_nonlinear_freq, always_visible},
+> @@ -1324,6 +1372,8 @@ static struct freq_attr_visibility amd_pstate_attr_visibility[] = {
+>   	{&amd_pstate_hw_prefcore, prefcore_visibility},
+>   	{&energy_performance_preference, epp_visibility},
+>   	{&energy_performance_available_preferences, epp_visibility},
+> +	{&amd_pstate_floor_freq, floor_freq_visibility},
+> +	{&amd_pstate_floor_count, floor_freq_visibility},
+>   };
+>   
+>   static struct freq_attr **get_freq_attrs(void)
+> diff --git a/drivers/cpufreq/amd-pstate.h b/drivers/cpufreq/amd-pstate.h
+> index 0c587ca200199..ab4caea39f0e8 100644
+> --- a/drivers/cpufreq/amd-pstate.h
+> +++ b/drivers/cpufreq/amd-pstate.h
+> @@ -72,6 +72,7 @@ struct amd_aperf_mperf {
+>    * @max_limit_freq: Cached value of policy->max (in khz)
+>    * @nominal_freq: the frequency (in khz) that mapped to nominal_perf
+>    * @lowest_nonlinear_freq: the frequency (in khz) that mapped to lowest_nonlinear_perf
+> + * @floor_freq: Cached value of the user requested floor_freq
+>    * @cur: Difference of Aperf/Mperf/tsc count between last and current sample
+>    * @prev: Last Aperf/Mperf/tsc count value read from register
+>    * @freq: current cpu frequency value (in khz)
+> @@ -100,6 +101,7 @@ struct amd_cpudata {
+>   	u32	max_limit_freq;
+>   	u32	nominal_freq;
+>   	u32	lowest_nonlinear_freq;
+> +	u32	floor_freq;
+>   
+>   	struct amd_aperf_mperf cur;
+>   	struct amd_aperf_mperf prev;
 
