@@ -1,129 +1,115 @@
-Received: from mail-dy1-f177.google.com (mail-dy1-f177.google.com [74.125.82.177])
+Received: from mail-pj1-f54.google.com (mail-pj1-f54.google.com [209.85.216.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97AE4331A7B
-	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 06:03:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.177
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773295396; cv=pass; b=utFZ7sa2RZB/QEY3OiQvzIu2AsDVKHFNNAG1VYcBrDLt4crlZ2EIw3HvVdj5Sz1uJ4GheccD432cCvUFDFZZM6H8qnZ9bH9QVqbz5FBOpLf1Z+4HeDpni/c3hsMTmE14ua2KEfxnsa/IcjLTph97chq00nCwGqDgufFfIzcBeRo=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773295396; c=relaxed/simple;
-	bh=+oBB7oSL3gu76ZFznOdzZrgvR1lE4r0/R5vjiHzyszc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Zd9zu7OTGrQe12DpO7hwys1EQt4ff8iir5c7nWN/yFSHfwoIMpHsmN7qjBPpo9KFLEblJ6P1DDCjx/kxaE6cvS/Sogij0i7chR4EuawJWcmJz4V+T7JQrDwMmd6KqYdlj1xYOBWqxKXvkGygS/nqO5p3QRWIrUBcAN74l9SGieE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=GA/WBfiw; arc=pass smtp.client-ip=74.125.82.177
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D794369223
+	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 06:07:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.54
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773295656; cv=none; b=f0bn+nmRPZBRC8WxI5AiMZg8phiApsf9phFZ4V0FCpId74z3GV984Ve+SHtWFaoI5AaeO5WehVLEgvESpBjUs7bAG47E2SB+bqHJwaInsuKBV1nq1s7IrVxEUmZ7VFWIRtpd7hur/AuDvf44/IIyHdW++CjMxKCiJsRXsslpdTo=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773295656; c=relaxed/simple;
+	bh=PgPblJNLZrzJZjn2cQnf0HWXc2ZV1HQ+FWe2DQWRbXk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=X6F7mdNqYQP9YgPPp+GbXCH053TbvoViQPvprRIS03b7i9H9Z31+6WG2SLmUzoTs8maNcPRs+1Do3PjrsIwSXbISSRLFr8nTs3xDOcNrcm9+cUiqn4wGUSIFovqVsEOZQt5ny5SbzKHsXaX7jZINm4KUo9gd7VI8M2NZLeeieMg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=NSTB/rNi; arc=none smtp.client-ip=209.85.216.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GA/WBfiw"
-Received: by mail-dy1-f177.google.com with SMTP id 5a478bee46e88-2be22d699c9so12173eec.0
-        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 23:03:15 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1773295395; cv=none;
-        d=google.com; s=arc-20240605;
-        b=H1KUNSHqVtSS2KruSKbf6JtURo8AoXdFXv7zKlX4iGeAdrKYXmni/RjSbsRDZvx2OS
-         Wd0EYrS9XgWUq+v+lH3JmnN0Kt/ic8ACRNNFxKl6vP4GFrmaSEwCYYYH7CLtS/wyp9u2
-         KTwRnyQB4BI85Ko0u8xpc/tWnmIt4WvZRN8XyKWpO5YWvJyY21vIlZdMBJJnmc2tceYm
-         2tKJwybipfIDZkUq3A6/XNE05ZlAYVJIU5fAIbBPnh1c+J9tkFI/+gfneV5HXM2R8TQA
-         Re37iL9rQqzS+ehfrV55sz1Z62jxylADTAEWdsGWu14j95xVFtNRI7Z+jXmEhUQgViQx
-         laNg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=+oBB7oSL3gu76ZFznOdzZrgvR1lE4r0/R5vjiHzyszc=;
-        fh=HUZbAA2YDHgL74K6l1QqxgELtAVmPD2b7cguaNFxKVU=;
-        b=NtzNR60LNr3yulbvv52dy8tL10HB8LHr8d9gSPMlG7exNMKWZltByT/7/crYoO4mXa
-         5br3VzpTrHurA2fKUuFOlvbammk9YdWTzabZPWRbBNwtWEp/gI1QjqpuTnBOYZfEFRg5
-         G/wsiOZZ2iPP/DVAHBx/iekRY/E7ioswJY6pnDvks///bqj7O+Sq0XE2JMdcqY2RZFwW
-         Liyc+aPM+dZhO3vjxpCnlBJ6uoR0bG+JVxUNhx+7dJVg4JaO7e+PjfsulS41y2DhyVXS
-         zWnaqifX2vkIiJl1rU284HomtG+nCjW9gmSNTEdqf5wNfA/8MdmBHPZFK3ZQWLAmrexM
-         z+Mg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="NSTB/rNi"
+Received: by mail-pj1-f54.google.com with SMTP id 98e67ed59e1d1-3591cc98871so304196a91.3
+        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 23:07:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773295395; x=1773900195; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=+oBB7oSL3gu76ZFznOdzZrgvR1lE4r0/R5vjiHzyszc=;
-        b=GA/WBfiw9Mlc/fVaefVKQ5oTphsypv22kwPp9XeUkOTlRJqB/qCRwQVJAmhsHS8Y3W
-         Kzwo6HisCZRnqhfpwHiu1TE4lkt6IebV0Q0VmzIHSgRsIfOVk2PxThOIqCoDoco8wEHG
-         XE5ezRxKGxiFJpvd/yS2gtyEZjpCif29p4/5k4rPP6vbrZQJDz4DsVkWvXvVTCPuwFIl
-         VPEuhCRaHDgZjd5yMXTYi1jQ6WSJAU6OPZHZZdP97tL/f3R8/+irIqikwvD8OX3QSLen
-         vEtc7RY4psSMRofCRbCV/IOBnpc0StlEnrRDjhSexlFSjy0Jvi7TxFNEW/ZeSJJRBrYY
-         VrwQ==
+        d=linaro.org; s=google; t=1773295655; x=1773900455; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=dhb8K5s9CLHqxHft0Tbe/+oQhEwOQxy4aX8an2pkM18=;
+        b=NSTB/rNi4Z+T1jyggc76BziEab5ZdmYBB35/tc9tZOwgtTLD2aC4Wv/vTwX3GKxW/6
+         4vNvd4OLAfiX3bluWyC9QseZleHcYUdkm6Z5PxcdyLUuGojrsa6N0S+LG0FZ+CkZcLPC
+         GlCnrskyO+ludyu+RjyiUeIW44+1pWZAd9k/GMohdzXlZ375BJMFI3jSQQrECX3HWXwc
+         uj4Nd7LjNKRv3Dfik80SaCOAcDJrBf2ab3S1RvJiIw0OlrhsBcClZIDkZ/eJKyxlE23s
+         7nGq/6v/5jCxy4/ZB6trarGvax1TxfIJYPFtpB5bFaRea6Uu69h2vAcg9LolSacImyLC
+         RjjA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773295395; x=1773900195;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=+oBB7oSL3gu76ZFznOdzZrgvR1lE4r0/R5vjiHzyszc=;
-        b=ilbGbpF4Mdto3V/MdJ5t8Bf8fkUmOFptdz/iE6miThqkFst1gYrhqCcvEojaAE8bRl
-         T4Ve52px/w/YalKJKnF4QHr70Ki05u2FENMn9TUjwQ9+VwLZMCjfp++mCa+NOolaS+bz
-         eNubiJx4JRlH3fmVY2viGnVjXRtCOxUzqNsm9B+fv6uIUvyVgBedl8cQ9161EAEUPoyO
-         DGSghxZW/hHPKMm2gfURrYfcHuOUfxT6357QDQgOzjm/4wsG2jg9ghhIMVxGHg7CjTVK
-         /gOanuWt0n3avCvugp7btJZvxVvs5iQLaMe2yZaE64uFi0+rAE3R1q5IJtEmXjBlWpZV
-         SUJA==
-X-Forwarded-Encrypted: i=1; AJvYcCXdyYVpPH+WdBm+zuI1C9kFyoVP+d71FD+XjWxWA8sde6y7S+iX+nBF7gim79JyCBQexmPf5twTsA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyq4N3/LykQaHDzMhhonjzdu9WqeIQ8jrg1bMtjYBdaUGEK94BT
-	xESTPDz0TtagGSkAk22imn+zMVw1qkiR0suPrOVfvKDE2e5gdeNqpmMTmC6gv4DKElrFWrDFjiF
-	RIAr39mO/5I6tqxmpLZN12MJ4Vn048gA=
-X-Gm-Gg: ATEYQzxSHWrsgvhYVJBsPC/t+iFpBr1IvFrpAWpDd3217Le49nQiDGh11IHKL8FrwQC
-	/fgpKmxdYxtDPYvbIPNtg7Ol/1NWgtUUp9lsRwPlY7ceu04A/CsMZf1H3rvu8P3U0rTQKrs2ILH
-	/b+6dynshlmyaQIWR8iAjuohf4fHTbMdkjrVjUvdWK/RYqiZuQFy7kfRNM0ZDVB8jpt9iSNjjvj
-	rEaI8hUxB+idJXO0M3twTvE776/9cE12w/mpWtVaAvc46xzkyUd29rXKYbcHsNWiLONYsrZwGHu
-	YJVSzdHVxk0DyDhbiV7UnD7inu9O1fMRax7f1bs18nkxLuaqER+YH4LYTBLB4gFR0EXXWq29FPB
-	ZSg91AMol0M+6cPrwSJsAupY=
-X-Received: by 2002:a05:7300:cb0f:b0:2b9:ddef:2c13 with SMTP id
- 5a478bee46e88-2be8a5690dfmr1190215eec.5.1773295394675; Wed, 11 Mar 2026
- 23:03:14 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1773295655; x=1773900455;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=dhb8K5s9CLHqxHft0Tbe/+oQhEwOQxy4aX8an2pkM18=;
+        b=TwrolyQ9LZ31kDOTHTPrv4fRMZS84FVW8fH7vr5o8W4LOHT0gJJL6fXQI3A47Ypxqs
+         25ssF8R1xkGin10MiXmMCFCD8VQgn/1oGYhSgdmr1MGCraMYmTY7DWwx+gBgUPYUDeFW
+         DTeNAU/fmc40Lz2gD924+33DGFqCOQTwlpRRotcHZHN2ErqLaeKOGH/5Cgynl62DVRba
+         56Gh6Rm/0hqFay0sXFw9evbeOIzobFq/oGf175dOqXJuVh++0MPR/cs25ZQZ9sK+DWxC
+         MNmNa5t1loJ07C5gN3xXIXhF/anWwsO0xzvdqmEsy+sqa+C0wwcozznP1sgWqHMRoKCR
+         dFMw==
+X-Forwarded-Encrypted: i=1; AJvYcCWpjqHwcZc/jhw/lm8dfsW5Ctgp3Lb1wND9YI2H3UIdLwKMP8kTsZXKM/26phE/A02cRy6vdg+Y/Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywl2Hblo06AF7fPGIhdzbsO1yP70znDx0khaUTxjcSPPMT7yNau
+	ujTyaSMIQPCuKl7vRSU0/HlAEg3r7q8CbVftoAHagl91cEvMbHU1UW/9yIYLO+ZZZn0=
+X-Gm-Gg: ATEYQzzN2xS/gbv5haJFwZX9AIpis7bXsfxmoA503RT9QKQLGpXYIzPq6ZHjBZ/VRDu
+	JnL8Xq7IM+RFZ8hbt0ZbVK7QDVgWix49QM6wMHY7nk+HGd5Pdw+PLwAynmcdVhTRc/B7y2q5ekT
+	q+uYOg/C99cRajPWlDCQgXRWt1Pf5EQYhsOwRLM5DczRdVTMotlHM+ST0XItFp5E28ufQHiaNSf
+	PFcmewvN4yjugkzJRv537Jp3AZmb8aP5F7B1aEJ3iysgaUEdiSdYCWTPgNb736Nez1j0/v1fGrY
+	+Aoc+zm0vOKRBRzdcC/BBOMsx8cXCC3lJ94I/mwQcfBXTy71q+YRNQ8+308oW4+FuWEKFQaxipZ
+	O4oZ3I036ZDLOwmRxYMdWy6Nmtm8/6DN5BesdbWWMGxIudWcJBj6ZYLp7qR1RBAcpRg0rGz5Ft4
+	uGnsLK6FbLyws/wfhF9MMcIDbb
+X-Received: by 2002:a17:90b:1642:b0:359:8f84:ad8a with SMTP id 98e67ed59e1d1-35a01367c7bmr4396129a91.33.1773295654603;
+        Wed, 11 Mar 2026 23:07:34 -0700 (PDT)
+Received: from localhost ([122.172.81.200])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35a02e18f0asm4012099a91.1.2026.03.11.23.07.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 11 Mar 2026 23:07:33 -0700 (PDT)
+Date: Thu, 12 Mar 2026 11:37:31 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Cc: John Hubbard <jhubbard@nvidia.com>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, 
+	"open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Alexandre Courbot <acourbot@nvidia.com>, Joel Fernandes <joelagnelf@nvidia.com>, 
+	Timur Tabi <ttabi@nvidia.com>, Alistair Popple <apopple@nvidia.com>, 
+	Eliot Courtney <ecourtney@nvidia.com>, Shashank Sharma <shashanks@nvidia.com>, 
+	Zhi Wang <zhiw@nvidia.com>, David Airlie <airlied@gmail.com>, 
+	Simona Vetter <simona@ffwll.ch>, Bjorn Helgaas <bhelgaas@google.com>, 
+	Miguel Ojeda <ojeda@kernel.org>, Alex Gaynor <alex.gaynor@gmail.com>, 
+	Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>, 
+	=?utf-8?B?QmrDtnJu?= Roy Baron <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, 
+	Andreas Hindborg <a.hindborg@kernel.org>, Alice Ryhl <aliceryhl@google.com>, 
+	Trevor Gross <tmgross@umich.edu>, rust-for-linux@vger.kernel.org, 
+	LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 0/1] rust: cpufreq: suppress clippy::double_parens in
+ Policy doctest
+Message-ID: <6nswew4stvp3574nrwnppt7lxxp2zmijg62qdku2jqmkhdaaw7@qdesr4fe73fl>
+References: <20260312041934.362840-1-jhubbard@nvidia.com>
+ <CANiq72kYpm5xZ+ppWuSg1O8zFQYgmbuJHBYh4dpgp2c7=zJJiQ@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260312041934.362840-1-jhubbard@nvidia.com>
-In-Reply-To: <20260312041934.362840-1-jhubbard@nvidia.com>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Thu, 12 Mar 2026 07:03:02 +0100
-X-Gm-Features: AaiRm525bmoStQ4ctXWsBGXCIjznlgr7HjlOAbhdTiG5pl2QJtyapP-xC8G6bPQ
-Message-ID: <CANiq72kYpm5xZ+ppWuSg1O8zFQYgmbuJHBYh4dpgp2c7=zJJiQ@mail.gmail.com>
-Subject: Re: [PATCH v2 0/1] rust: cpufreq: suppress clippy::double_parens in
- Policy doctest
-To: John Hubbard <jhubbard@nvidia.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Viresh Kumar <viresh.kumar@linaro.org>, 
-	"open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
-Cc: Danilo Krummrich <dakr@kernel.org>, Alexandre Courbot <acourbot@nvidia.com>, 
-	Joel Fernandes <joelagnelf@nvidia.com>, Timur Tabi <ttabi@nvidia.com>, 
-	Alistair Popple <apopple@nvidia.com>, Eliot Courtney <ecourtney@nvidia.com>, 
-	Shashank Sharma <shashanks@nvidia.com>, Zhi Wang <zhiw@nvidia.com>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, Bjorn Helgaas <bhelgaas@google.com>, Miguel Ojeda <ojeda@kernel.org>, 
-	Alex Gaynor <alex.gaynor@gmail.com>, Boqun Feng <boqun.feng@gmail.com>, 
-	Gary Guo <gary@garyguo.net>, =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
-	Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
-	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, rust-for-linux@vger.kernel.org, 
-	LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CANiq72kYpm5xZ+ppWuSg1O8zFQYgmbuJHBYh4dpgp2c7=zJJiQ@mail.gmail.com>
 
-On Thu, Mar 12, 2026 at 5:19=E2=80=AFAM John Hubbard <jhubbard@nvidia.com> =
-wrote:
->
-> The kernel fmt! proc macro wraps each format argument as &(arg).
-> Passing a tuple like (a, b) produces &((a, b)) after expansion,
-> which Clippy flags as double_parens. This is a false positive,
-> fixed in Clippy 1.92 (rust-lang/rust-clippy#15939), but the
-> minimum toolchain (1.78) still triggers it.
->
-> Add a local #[allow] with a reason attribute on the affected
-> doctest function so it can be removed once the minimum toolchain
-> moves past 1.92.
+On 12-03-26, 07:03, Miguel Ojeda wrote:
+> On Thu, Mar 12, 2026 at 5:19 AM John Hubbard <jhubbard@nvidia.com> wrote:
+> >
+> > The kernel fmt! proc macro wraps each format argument as &(arg).
+> > Passing a tuple like (a, b) produces &((a, b)) after expansion,
+> > which Clippy flags as double_parens. This is a false positive,
+> > fixed in Clippy 1.92 (rust-lang/rust-clippy#15939), but the
+> > minimum toolchain (1.78) still triggers it.
+> >
+> > Add a local #[allow] with a reason attribute on the affected
+> > doctest function so it can be removed once the minimum toolchain
+> > moves past 1.92.
+> 
+> Cc'ing Rafael and Viresh -- do you want me to take this via rust-fixes
+> to clean the build log? I am planning to send a PR to Linus for this
 
-Cc'ing Rafael and Viresh -- do you want me to take this via rust-fixes
-to clean the build log? I am planning to send a PR to Linus for this
--rc.
+Thanks for cc'ing us. Yeah, please take it.
 
-Thanks!
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Cheers,
-Miguel
+-- 
+viresh
