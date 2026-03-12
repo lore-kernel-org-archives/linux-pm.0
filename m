@@ -1,198 +1,177 @@
-Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010009.outbound.protection.outlook.com [40.93.198.9])
+Received: from 013.lax.mailroute.net (013.lax.mailroute.net [199.89.1.16])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C94234753C;
-	Thu, 12 Mar 2026 18:25:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.9
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773339915; cv=fail; b=upWE4jn+/wbhWhH4TlBTVtn9bxlWfsCUt8fPUi2sPgTOZ00wIQjob5Hi489zvAOTsN/scxCQOJA1Aj+mW16TcXiffJ1MOznqQcMTX422q/vXkQ4NHygbVLsNarE/kFEpDcXndoEk7fRHqTJb8hSj6zfx/7W+hA3haSrr4rrue30=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773339915; c=relaxed/simple;
-	bh=xK2AAs5D+6nFe96Nf3V+1qjGL5OnxpIvCqs6zvmUeEg=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=W+esBSLFWPCH5g564voJwnIRAEn5KiOb39T+zCUBjVWMLr99I3ssRjSPP2qJWmDlnRL8RQt+wcI7JbuWyk1LDnVy8Ui20uKtywCLK/3A9x65Nys2cfocezDPBTwL3XAIsZbfXE8McnuuPGvyuZNPUPgZ4IdrKpRMRGcjRcSmvvE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=BWuMjHIO; arc=fail smtp.client-ip=40.93.198.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8471937DE84
+	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 18:27:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=199.89.1.16
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773340063; cv=none; b=j+xeOL6/MUV8de+ofRZXqrfP2Z8Fx5vY698b1BFNumhAZJ/KgKArMLFk3SAdhFAqjOM37nqE5uRsUF/LpAVzveRPtnFJFECpO3FDHu3zDhm+wS30EacfkwsoH0aYrcFi3TDuiDTxj9Rvlb1XPSDdMObSQ2GQvqHj/tURSr06fZM=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773340063; c=relaxed/simple;
+	bh=spkX+HkkukkLQoaaiDs7C2UpPPlSNmShuwtcKgfHKpE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ZIcG3V9R4Pkdiw8jCBhUe/7u1SAUsk2cywEdiP8LI2caMId5zNNlSEJxB4vlRWnwmCWvo9hHM2AsUTxoGaGEFhM6KvfJ9RnK26Y6mI+vOjffrvF2cIlcpuu2x8D/eUHlxpclJU8IJyqZBUDd7oqmneso9dVweqpado4IDdNHnaA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org; spf=pass smtp.mailfrom=acm.org; dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b=0gHogtNr; arc=none smtp.client-ip=199.89.1.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=acm.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="BWuMjHIO"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=NvloYaxO13VkOe4/TxgSpD+aQIx2XCpjumygD0ZQFq0LQKedWhOF1ox7fhBSZTCCFZzASdggRn56EfY8bhOHQe+hqxuGhBkPn/O1DXb8UNAPEB1UuENyf8O1hztL7SLEiMNYWgSaD8VDA/8ljJlmWy5abptbD4BT7qLPq0ly5sUQOvAhloi7ne5vzrTfWbBBHlmn9QCjlP3Y8v7HJNOhuZkXkCw2amfNeIpAP3+3YROcs9SRmXwat7pFy7dgeBN65/FdBciVarEX5hreDmkSQXdE46tZBIHaQfdPfecH/iunwTTwim7u951zavP8ZoR8fm12fEm0cNUrOA2y2wcvCw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=3F0lisDMQ8ZIENSDt01/oN1/h6LhjC42S4JXHwy3/Ns=;
- b=K8Pp7XCYGi+cS24Bdc8S4cjUWO4/TPxr7QqCwIvAaQJKQJKVT0QOFw5eSOHtFHIqkX9KYFT1ZpQHeBKOwAHUnxQK2svXUBuHApPZw80vi5epurWndXTpi+cvmc7vf35vPH2PCDjaGJMHxuHIkGB2k/ly9OJ2v1O/uQjoyJ9Pg+AKGoTRmAY8JVNUFgHHS+5JH0F676WoA3BlZLuaqJ5R3JxKGqhvLJyoogg/wSx0h8TgAE701HOGsvh4pzW5jaCt25eLg/qbfZq+M3k0a1NafQ/c4Md8HhWEA0ATGOaFuM+ld3Uj+JMtkcaUMnBL1/GVFxedHAdZG9Y7fu2IjNwASA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=3F0lisDMQ8ZIENSDt01/oN1/h6LhjC42S4JXHwy3/Ns=;
- b=BWuMjHIOej+eEzFNGqd63cB0vv1397gtxWomQ3t6CBSO+OIbr2rCvl0uZH9YqE3GY9M2mP5E5BrwTmxavoHBvAttF5dGYGXnb6e/5sRKsV7I5wDRkzPVX0Y4GOu0WxlH2T2Ntfk9Wy1plZZ/zRE6r4q6udjeY2wGXPn+Gi7hw5c=
-Received: from SJ0PR03CA0363.namprd03.prod.outlook.com (2603:10b6:a03:3a1::8)
- by PH7PR12MB8777.namprd12.prod.outlook.com (2603:10b6:510:26b::7) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.4; Thu, 12 Mar
- 2026 18:25:10 +0000
-Received: from BY1PEPF0001AE18.namprd04.prod.outlook.com
- (2603:10b6:a03:3a1:cafe::7c) by SJ0PR03CA0363.outlook.office365.com
- (2603:10b6:a03:3a1::8) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9678.27 via Frontend Transport; Thu,
- 12 Mar 2026 18:25:03 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
-Received: from satlexmb07.amd.com (165.204.84.17) by
- BY1PEPF0001AE18.mail.protection.outlook.com (10.167.242.100) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9678.18 via Frontend Transport; Thu, 12 Mar 2026 18:25:10 +0000
-Received: from dogwood-dvt-marlim.amd.com (10.180.168.240) by
- satlexmb07.amd.com (10.181.42.216) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.17; Thu, 12 Mar 2026 13:25:08 -0500
-From: Mario Limonciello <mario.limonciello@amd.com>
-To: "Gautham R . Shenoy" <gautham.shenoy@amd.com>
-CC: Perry Yuan <perry.yuan@amd.com>, "open list:X86 ARCHITECTURE (32-BIT AND
- 64-BIT)" <linux-kernel@vger.kernel.org>, "open list:CPU FREQUENCY SCALING
- FRAMEWORK" <linux-pm@vger.kernel.org>, Mario Limonciello
-	<mario.limonciello@amd.com>
-Subject: [PATCH] cpufreq/amd-pstate: Cache the max frequency in cpudata
-Date: Thu, 12 Mar 2026 13:24:42 -0500
-Message-ID: <20260312182442.3236386-1-mario.limonciello@amd.com>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b="0gHogtNr"
+Received: from localhost (localhost [127.0.0.1])
+	by 013.lax.mailroute.net (Postfix) with ESMTP id 4fWx1M5vcJzlfl5V;
+	Thu, 12 Mar 2026 18:27:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
+	content-transfer-encoding:mime-version:x-mailer:message-id:date
+	:date:subject:subject:from:from:received:received; s=mr01; t=
+	1773340050; x=1775932051; bh=10RPo9K9hQ1mW9VTvhBwrf2sfDery9skhJm
+	JdgSpe4I=; b=0gHogtNrZ2G6/GQ1yfALuV0TFWXrvepuTYWlq+F7DzJD1MY3u0W
+	0UtxzYhI+lFPiTASW3AWN/KtgHgEv3Y2YgPFLkSqV1dj2Mmk7OVxPIP/vT+DIpgd
+	XvGimkO5WDZb7Y7ZCEpviDsOGc0xTHRjqgs03Wg6m42QkWZuL3aZp4+cPKyuK6nq
+	T7lPiPCBr6k++ClOY9udFeS2XqIG9mHNC5rZUby2kGps3Lzyadu8eC3MtWFln2a7
+	xZjUs2WyICuu+gMkGWjIpYcjFElcV7xckxs8SH5dEae+9UPD8+T7s08zxS+ot3BB
+	y7tALd+gsgXhds27SkTmpHuvzqOuMx74Bhw==
+X-Virus-Scanned: by MailRoute
+Received: from 013.lax.mailroute.net ([127.0.0.1])
+ by localhost (013.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
+ id ErrShLL5t0c6; Thu, 12 Mar 2026 18:27:30 +0000 (UTC)
+Received: from bvanassche.mtv.corp.google.com (unknown [104.135.180.219])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: bvanassche@acm.org)
+	by 013.lax.mailroute.net (Postfix) with ESMTPSA id 4fWx1D6GLCzlfl8L;
+	Thu, 12 Mar 2026 18:27:28 +0000 (UTC)
+From: Bart Van Assche <bvanassche@acm.org>
+To: "Rafael J . Wysocki" <rafael@kernel.org>
+Cc: Pavel Machek <pavel@kernel.org>,
+	linux-pm@vger.kernel.org,
+	Bart Van Assche <bvanassche@acm.org>,
+	Deepak Sharma <deepak.sharma.472935@gmail.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Ming Lei <ming.lei@redhat.com>,
+	syzbot+6c905ab800f20cf4086c@syzkaller.appspotmail.com
+Subject: [PATCH] PM: runtime: Fix a race condition related to device removal
+Date: Thu, 12 Mar 2026 11:27:20 -0700
+Message-ID: <20260312182720.2776083-1-bvanassche@acm.org>
+X-Mailer: git-send-email 2.53.0.851.ga537e3e6e9-goog
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: satlexmb07.amd.com (10.181.42.216) To satlexmb07.amd.com
- (10.181.42.216)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BY1PEPF0001AE18:EE_|PH7PR12MB8777:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6a7eccac-6a20-4588-f3cf-08de8064b207
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|82310400026|376014|36860700016|18002099003|56012099003;
-X-Microsoft-Antispam-Message-Info:
-	cZgW8YmGn7t1WXIbtSjWmVVrBfoGKBPjERLFZ0sNWK1O671cA5J/XNTMHQ2g5wmFVrsZIR9sxPPaUBKVbnvllkpSfHYEbGIBnnlpaKVqR7s/wv4wgVcqfC5dgbphEaH9V5GU39dTJ9XDsIGs9Lg/Grj7ngeqgCFyb0r6vePQe9xmVWsN3Hl72J11GdMRrzKYIZD0TsaMZw948xoo1KrlpUPdKDs3b7oQw/e0ATNJ9yFvZ0t9Fvbev4c5ivV57gZvMopos6qNxUCdGmGTu96p6WgAhmVdercmjM30gN6KY4KfxDcYZkHUiPM9EEm2BYZHd+BTE8oZS3K50nqZ7blDH2E8tLvFhus94ynqWYEd34cSjxXeK0rfu6wESPLqXd4t+ySRz8FXQ0c65xhmKV+FqtUO/n0Ikhc2uc63Hvbo45Q7IGWtSZ816rJzWZLemBTqZV/sdvECm2EeIh089h2ns0ev8+EyOjAlb27KQCVtBi7qSFiaD9rnlZDHjgt3kyBKtwicCF9bgwcMCOyj2X8l1GNV7LdyNpmUlcorh75kXUkNA0Fz+3UgQk1CpuwTFOP/I9CRaV6e9lI8rXm23ZfoVrXJVoP9JiCZJkn/VPTl+ynB3cFbzKRNxIIXZotmal/JdAJh31mm05CH6xKxu4nRzX1S5oCTg+CXvGSFkGjCn6uNxg4XOXa3NEmxCnjesdr7DP1+MLJ8FM7WQJStfyhgnPWh1nmzIPVBvM9R5Gr8Bcc/tHmzwtQBl9mvwlHRg5UclFrRoNaKe3ZhURkbf0OhFQ==
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(82310400026)(376014)(36860700016)(18002099003)(56012099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	l4FMGLGXfzVm92+QKt5zrwPmybmd1HIPFIwmaRykEFLeLhAtKyvKWocxe7QafmOWAtbM7bkQR0xKFbA0L++HJQurvRBBRWcnt+/dtl5TkuIFe1eZblEsPj7PoH2nh4FxgcSZJ+eQqVvnh6BWspPuKGMV05M8VwApag4W0xPyH0nCdeLt5+Q/nSUfmKsyRkXgyUZw7SbTxLE3x9wxiFHcxOL+KnMwd5wdVBRyIUZNpMG++syJtlgFvQQPD0c8HqoQHC34QpJR82+TE7qls8akIpMOa7z9CbqfLIlZ0bJY+6deBZP8mU6Qtjpm7nD4HSqU/Mv1MYnkMo3Aqz8HvqADGPJisgmABdoVdLHHnrVDW2ldOMF/PuwG5qRr8DWNGEc7tLk5tWP4ldM/Ofe8UTn94Get8aPscpqGCWq4iSrvuEYGHKyIJiLihJuItGjUBu13
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Mar 2026 18:25:10.4335
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6a7eccac-6a20-4588-f3cf-08de8064b207
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	BY1PEPF0001AE18.namprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB8777
+Content-Transfer-Encoding: quoted-printable
 
-The value of maximum frequency is fixed and never changes. Doing
-calculations every time based off of perf is unnecessary.
+The following code in pm_runtime_work() may dereference the dev->parent
+pointer after the parent device has been freed:
 
-Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+	/* Maybe the parent is now able to suspend. */
+	if (parent && !parent->power.ignore_children) {
+		spin_unlock(&dev->power.lock);
+
+		spin_lock(&parent->power.lock);
+		rpm_idle(parent, RPM_ASYNC);
+		spin_unlock(&parent->power.lock);
+
+		spin_lock(&dev->power.lock);
+	}
+
+Fix this by inserting a flush_work() call in pm_runtime_remove().
+
+Without this patch blktest block/001 triggers the following complaint
+sporadically:
+
+BUG: KASAN: slab-use-after-free in lock_acquire+0x70/0x160
+Read of size 1 at addr ffff88812bef7198 by task kworker/u553:1/3081
+Workqueue: pm pm_runtime_work
+Call Trace:
+ <TASK>
+ dump_stack_lvl+0x61/0x80
+ print_address_description.constprop.0+0x8b/0x310
+ print_report+0xfd/0x1d7
+ kasan_report+0xd8/0x1d0
+ __kasan_check_byte+0x42/0x60
+ lock_acquire.part.0+0x38/0x230
+ lock_acquire+0x70/0x160
+ _raw_spin_lock+0x36/0x50
+ rpm_suspend+0xc6a/0xfe0
+ rpm_idle+0x578/0x770
+ pm_runtime_work+0xee/0x120
+ process_one_work+0xde3/0x1410
+ worker_thread+0x5eb/0xfe0
+ kthread+0x37b/0x480
+ ret_from_fork+0x6cb/0x920
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+
+Allocated by task 4314:
+ kasan_save_stack+0x2a/0x50
+ kasan_save_track+0x18/0x40
+ kasan_save_alloc_info+0x3d/0x50
+ __kasan_kmalloc+0xa0/0xb0
+ __kmalloc_noprof+0x311/0x990
+ scsi_alloc_target+0x122/0xb60 [scsi_mod]
+ __scsi_scan_target+0x101/0x460 [scsi_mod]
+ scsi_scan_channel+0x179/0x1c0 [scsi_mod]
+ scsi_scan_host_selected+0x259/0x2d0 [scsi_mod]
+ store_scan+0x2d2/0x390 [scsi_mod]
+ dev_attr_store+0x43/0x80
+ sysfs_kf_write+0xde/0x140
+ kernfs_fop_write_iter+0x3ef/0x670
+ vfs_write+0x506/0x1470
+ ksys_write+0xfd/0x230
+ __x64_sys_write+0x76/0xc0
+ x64_sys_call+0x213/0x1810
+ do_syscall_64+0xee/0xfc0
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+
+Freed by task 4314:
+ kasan_save_stack+0x2a/0x50
+ kasan_save_track+0x18/0x40
+ kasan_save_free_info+0x3f/0x50
+ __kasan_slab_free+0x67/0x80
+ kfree+0x225/0x6c0
+ scsi_target_dev_release+0x3d/0x60 [scsi_mod]
+ device_release+0xa3/0x220
+ kobject_cleanup+0x105/0x3a0
+ kobject_put+0x72/0xd0
+ put_device+0x17/0x20
+ scsi_device_dev_release+0xacf/0x12c0 [scsi_mod]
+ device_release+0xa3/0x220
+ kobject_cleanup+0x105/0x3a0
+ kobject_put+0x72/0xd0
+ put_device+0x17/0x20
+ scsi_device_put+0x7f/0xc0 [scsi_mod]
+ sdev_store_delete+0xa5/0x120 [scsi_mod]
+ dev_attr_store+0x43/0x80
+ sysfs_kf_write+0xde/0x140
+ kernfs_fop_write_iter+0x3ef/0x670
+ vfs_write+0x506/0x1470
+ ksys_write+0xfd/0x230
+ __x64_sys_write+0x76/0xc0
+ x64_sys_call+0x213/0x1810
+
+Cc: Deepak Sharma <deepak.sharma.472935@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Reported-by: Ming Lei <ming.lei@redhat.com>
+Closes: https://lore.kernel.org/all/ZxdNvLNI8QaOfD2d@fedora/
+Reported-by: syzbot+6c905ab800f20cf4086c@syzkaller.appspotmail.com
+Closes: https://lore.kernel.org/all/68c13942.050a0220.2ff435.000b.GAE@goo=
+gle.com/
+Fixes: 5e928f77a09a ("PM: Introduce core framework for run-time PM of I/O=
+ devices (rev. 17)")
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
 ---
- drivers/cpufreq/amd-pstate.c | 21 ++++++++-------------
- drivers/cpufreq/amd-pstate.h |  1 +
- 2 files changed, 9 insertions(+), 13 deletions(-)
+ drivers/base/power/runtime.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 5aa9fcd80cf51..787aa3ba87b33 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -757,15 +757,13 @@ static void amd_pstate_adjust_perf(unsigned int cpu,
- static int amd_pstate_cpu_boost_update(struct cpufreq_policy *policy, bool on)
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 0ee8ea971aa4..335288e8b5b3 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -1895,6 +1895,7 @@ void pm_runtime_reinit(struct device *dev)
+ void pm_runtime_remove(struct device *dev)
  {
- 	struct amd_cpudata *cpudata = policy->driver_data;
--	union perf_cached perf = READ_ONCE(cpudata->perf);
--	u32 nominal_freq, max_freq;
-+	u32 nominal_freq;
- 	int ret = 0;
- 
- 	nominal_freq = READ_ONCE(cpudata->nominal_freq);
--	max_freq = perf_to_freq(perf, cpudata->nominal_freq, perf.highest_perf);
- 
- 	if (on)
--		policy->cpuinfo.max_freq = max_freq;
-+		policy->cpuinfo.max_freq = cpudata->max_freq;
- 	else if (policy->cpuinfo.max_freq > nominal_freq)
- 		policy->cpuinfo.max_freq = nominal_freq;
- 
-@@ -952,13 +950,15 @@ static int amd_pstate_init_freq(struct amd_cpudata *cpudata)
- 
- 	WRITE_ONCE(cpudata->nominal_freq, nominal_freq);
- 
-+	/* max_freq is calculated according to (nominal_freq * highest_perf)/nominal_perf */
- 	max_freq = perf_to_freq(perf, nominal_freq, perf.highest_perf);
-+	WRITE_ONCE(cpudata->max_freq, max_freq);
-+
- 	lowest_nonlinear_freq = perf_to_freq(perf, nominal_freq, perf.lowest_nonlinear_perf);
- 	WRITE_ONCE(cpudata->lowest_nonlinear_freq, lowest_nonlinear_freq);
- 
- 	/**
- 	 * Below values need to be initialized correctly, otherwise driver will fail to load
--	 * max_freq is calculated according to (nominal_freq * highest_perf)/nominal_perf
- 	 * lowest_nonlinear_freq is a value between [min_freq, nominal_freq]
- 	 * Check _CPC in ACPI table objects if any values are incorrect
- 	 */
-@@ -1021,9 +1021,7 @@ static int amd_pstate_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.min_freq = policy->min = perf_to_freq(perf,
- 							      cpudata->nominal_freq,
- 							      perf.lowest_perf);
--	policy->cpuinfo.max_freq = policy->max = perf_to_freq(perf,
--							      cpudata->nominal_freq,
--							      perf.highest_perf);
-+	policy->cpuinfo.max_freq = policy->max = cpudata->max_freq;
- 
- 	ret = amd_pstate_cppc_enable(policy);
- 	if (ret)
-@@ -1096,8 +1094,7 @@ static ssize_t show_amd_pstate_max_freq(struct cpufreq_policy *policy,
- 	cpudata = policy->driver_data;
- 	perf = READ_ONCE(cpudata->perf);
- 
--	return sysfs_emit(buf, "%u\n",
--			  perf_to_freq(perf, cpudata->nominal_freq, perf.highest_perf));
-+	return sysfs_emit(buf, "%u\n", cpudata->max_freq);
+ 	__pm_runtime_disable(dev, false);
++	flush_work(&dev->power.work);
+ 	pm_runtime_reinit(dev);
  }
- 
- static ssize_t show_amd_pstate_lowest_nonlinear_freq(struct cpufreq_policy *policy,
-@@ -1503,9 +1500,7 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.min_freq = policy->min = perf_to_freq(perf,
- 							      cpudata->nominal_freq,
- 							      perf.lowest_perf);
--	policy->cpuinfo.max_freq = policy->max = perf_to_freq(perf,
--							      cpudata->nominal_freq,
--							      perf.highest_perf);
-+	policy->cpuinfo.max_freq = policy->max = cpudata->max_freq;
- 	policy->driver_data = cpudata;
- 
- 	ret = amd_pstate_cppc_enable(policy);
-diff --git a/drivers/cpufreq/amd-pstate.h b/drivers/cpufreq/amd-pstate.h
-index cb45fdca27a6c..485ee023d79c5 100644
---- a/drivers/cpufreq/amd-pstate.h
-+++ b/drivers/cpufreq/amd-pstate.h
-@@ -94,6 +94,7 @@ struct amd_cpudata {
- 	u32	min_limit_freq;
- 	u32	max_limit_freq;
- 	u32	nominal_freq;
-+	u32	max_freq;
- 	u32	lowest_nonlinear_freq;
- 
- 	struct amd_aperf_mperf cur;
--- 
-2.53.0
-
+=20
