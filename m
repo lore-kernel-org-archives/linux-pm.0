@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5BA6E3491C2;
-	Thu, 12 Mar 2026 20:49:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0604729D27D;
+	Thu, 12 Mar 2026 20:57:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773348595; cv=none; b=LHZsP89HxxV8rlB+xlZld/kcHzqLwsCB0dhU44VfTACPIEyQ6Qu6fZ/Rqb/qXWZOH0Vy4FXn2CC4REeNddS3CefeDcW9BAzT7tVPRLP0M8tyopo7mYWvjEW7scy85oykN6U4uctT9DKB6iVNf61kRDKH0bIZr+VZlWtkeNdYEc4=
+	t=1773349040; cv=none; b=aYs0rNT5z7IWkG/BqtWYmpR4rJJ/Va1kjsWC9dkJmRwWWVbemHDU76oABNasGtVwACVg8Yka/LMLDMko2hrTFmQiU/Xox2txxNb1fJYEINuyGRemZZ//eRMPqpD6S0rrT84ZHbSEeicISZHN9rnB9sNTHJlZZTWcSSI/veql4fg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773348595; c=relaxed/simple;
-	bh=DWy2AlzLrfa1YegxIQycssgMSkonK3OEezXTI4ofuH0=;
+	s=arc-20240116; t=1773349040; c=relaxed/simple;
+	bh=sXtTdTBnoNqOUAMOwOpIGkLlhT4EE0QKLpHkQh5KWAI=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jFR+ElhS8AvjzcXc6Qf++G5Ym8FZfEWh5lSVbg/kQ5uaklq/pbcjqLrivB0d6scOWwLoODHIYkrheel1f/eKEOvOfQX4EmFqteCOGUGlxerqjfp1ahaomkwaPAvH70BGjB3AC/4uIE63LT1l4u1TKFu6E/LB6Y+9GF2/72cpYgc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qtffXoNz; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:Content-Type; b=NwnPLtKLTBdBlclJLg4ljfi6+lYBdUzQ0NJxBG/vrTAC6ecFedN8PY6SCip+VH8yuJk+By3bxD9aigA/BZ8F6DwBsN+XyRQHyln98vUkCfo+TpbSZwlrjx6rLLX/cxOtzpYZKN0IOFPoteLZLNtycDRb7sE29qo+EX4aMvC0y68=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PSW0kHgk; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qtffXoNz"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3E7FBC4CEF7;
-	Thu, 12 Mar 2026 20:49:54 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PSW0kHgk"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1D0E9C4CEF7;
+	Thu, 12 Mar 2026 20:57:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773348594;
-	bh=DWy2AlzLrfa1YegxIQycssgMSkonK3OEezXTI4ofuH0=;
+	s=k20201202; t=1773349039;
+	bh=sXtTdTBnoNqOUAMOwOpIGkLlhT4EE0QKLpHkQh5KWAI=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=qtffXoNzhy6J9Vn2yoJuxPLgs/Jeabk2W5K1f0X+NFur2DlGShAizlKK+RXy9rEPY
-	 tx1909oQLxCM3wa5SoY2Dw0Mi+7ma8onf5JeDsqE1k5MGFt0xfOO2gpbGOJivgFm0P
-	 uRJLVaqd5RQJdXJyO5zexZP9XiP13e9Qhsci3aHWCnFDGvqkRhhhgEkl9S1zVeECqh
-	 alKvvKyyASV+fVRm3qGmMmVyByKXXnypQ3szheJy24SYvLZIOts+W69RsrmoinYLvI
-	 jFwGKeafP94Ak/57l/g/lTaybYTwcGGM3xuE78Fq+RtSxvJS4/PO2tSrWb4E56vxY9
-	 44+Tj3PProGJQ==
-Message-ID: <42f23b7e-9022-432e-b690-a223a3825b59@kernel.org>
-Date: Thu, 12 Mar 2026 15:49:53 -0500
+	b=PSW0kHgkv+Z48F5lfDwRq6s7hcN7l77qocoknDPoZx4Zo9pfyIwr3RX0EAeN2rJLU
+	 qVCTYCtaIxvAO75MFGn4/mDY05IhrT5YYRpfdCwmGtkSjoI5PCVo68CNVEUgzRGs+W
+	 fUqtJFdAqr4MsTtLHJHCZRDWP9DfiN4Ug265tKmwc4UeXxswgPaPEpoivtXi/2nJKR
+	 6Y26ktsVqv/niSPobKj1Q0i+iy0z3+J2NVavlhkJf0FqCrSewRc+zpwfolegmhtQ6E
+	 oCOOTOgSt3H+YtbziqCYzBfYeM0+qhdw1uoQZCDfrYgv2RPFltHhRzZ5RsGIrihBCQ
+	 M/CDMyxRsd0gA==
+Message-ID: <61627830-9ce8-4df5-a894-7e5fed419df5@kernel.org>
+Date: Thu, 12 Mar 2026 15:57:18 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,226 +35,153 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 5/9] amd-pstate: Add support for CPPC_REQ2 and
- FLOOR_PERF
+Subject: Re: [PATCH v2 6/9] amd-pstate: Add sysfs support for floor_freq and
+ floor_count
 To: "Gautham R. Shenoy" <gautham.shenoy@amd.com>,
  "Rafael J . Wysocki" <rafael@kernel.org>,
  Viresh Kumar <viresh.kumar@linaro.org>,
  K Prateek Nayak <kprateek.nayak@amd.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 References: <20260311140116.19604-1-gautham.shenoy@amd.com>
- <20260311140116.19604-6-gautham.shenoy@amd.com>
+ <20260311140116.19604-7-gautham.shenoy@amd.com>
 Content-Language: en-US
 From: "Mario Limonciello (AMD) (kernel.org)" <superm1@kernel.org>
-In-Reply-To: <20260311140116.19604-6-gautham.shenoy@amd.com>
+In-Reply-To: <20260311140116.19604-7-gautham.shenoy@amd.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 
 
 On 3/11/2026 9:01 AM, Gautham R. Shenoy wrote:
-> Some future AMD processors have feature named "CPPC Performance
-
-Don't need to include something like timing, it doesn't really age well 
-in a commit message.
-
-> Priority" which lets userspace specify different floor performance
-> levels for different CPUs. The platform firmware takes these different
-> floor performance levels into consideration while throttling the CPUs
-> under power/thermal constraints. The presence of this feature is
-> indicated by bit 16 of the EDX register for CPUID leaf
-> 0x80000007. More details can be found in AMD Publication titled "AMD64
-> Collaborative Processor Performance Control (CPPC) Performance
-> Priority" Revision 1.10.
+> When Floor Performance feature is supported by the platform, expose
+> two sysfs files:
 > 
-> The number of distinct floor performance levels supported on the
-> platform will be advertised through the bits 32:39 of the
-> MSR_AMD_CPPC_CAP1. Bits 0:7 of a new MSR MSR_AMD_CPPC_REQ2
-> (0xc00102b5) will be used to specify the desired floor performance
-> level for that CPU.
+>     * amd_pstate_floor_freq to allow userspace to request the floor
+>       frequency for each CPU.
 > 
-> Add support for the aforementioned MSR_AMD_CPPC_REQ2, and macros for
-> parsing and updating the relevant bits from MSR_AMD_CPPC_CAP1 and
-> MSR_AMD_CPPC_REQ2.
-> 
-> On boot if the default value of the MSR_AMD_CPPC_REQ2[7:0] (Floor
-> Perf) is lower than CPPC.lowest_perf, and thus invalid, initialize it
-> to MSR_AMD_CPPC_CAP1.nominal_perf which is a sane default value.
+>     * amd_pstate_floor_count which advertises the number of distinct
+>       levels of floor frequencies supported on this platform.
 > 
 > Signed-off-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
-> ---
-> Link to AMD publication describing this feature: https://docs.amd.com/v/u/en-US/69206_1.10_AMD64_CPPC_PUB
 
-I think this can be in the commit message rather as Link: rather than 
-below cutlist.
+One nit below.
 
 Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
-
+> ---
+>   drivers/cpufreq/amd-pstate.c | 50 ++++++++++++++++++++++++++++++++++++
+>   drivers/cpufreq/amd-pstate.h |  2 ++
+>   2 files changed, 52 insertions(+)
 > 
->   arch/x86/include/asm/msr-index.h |  5 +++
->   drivers/cpufreq/amd-pstate.c     | 70 ++++++++++++++++++++++++++++++++
->   drivers/cpufreq/amd-pstate.h     |  5 +++
->   3 files changed, 80 insertions(+)
-> 
-> diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-> index 6673601246b38..e126c7fb69cf6 100644
-> --- a/arch/x86/include/asm/msr-index.h
-> +++ b/arch/x86/include/asm/msr-index.h
-> @@ -765,12 +765,14 @@
->   #define MSR_AMD_CPPC_CAP2		0xc00102b2
->   #define MSR_AMD_CPPC_REQ		0xc00102b3
->   #define MSR_AMD_CPPC_STATUS		0xc00102b4
-> +#define MSR_AMD_CPPC_REQ2		0xc00102b5
->   
->   /* Masks for use with MSR_AMD_CPPC_CAP1 */
->   #define AMD_CPPC_LOWEST_PERF_MASK	GENMASK(7, 0)
->   #define AMD_CPPC_LOWNONLIN_PERF_MASK	GENMASK(15, 8)
->   #define AMD_CPPC_NOMINAL_PERF_MASK	GENMASK(23, 16)
->   #define AMD_CPPC_HIGHEST_PERF_MASK	GENMASK(31, 24)
-> +#define AMD_CPPC_FLOOR_PERF_CNT_MASK	GENMASK_ULL(39, 32)
->   
->   /* Masks for use with MSR_AMD_CPPC_REQ */
->   #define AMD_CPPC_MAX_PERF_MASK		GENMASK(7, 0)
-> @@ -778,6 +780,9 @@
->   #define AMD_CPPC_DES_PERF_MASK		GENMASK(23, 16)
->   #define AMD_CPPC_EPP_PERF_MASK		GENMASK(31, 24)
->   
-> +/* Masks for use with MSR_AMD_CPPC_REQ2 */
-> +#define AMD_CPPC_FLOOR_PERF_MASK	GENMASK(7, 0)
-> +
->   /* AMD Performance Counter Global Status and Control MSRs */
->   #define MSR_AMD64_PERF_CNTR_GLOBAL_STATUS	0xc0000300
->   #define MSR_AMD64_PERF_CNTR_GLOBAL_CTL		0xc0000301
 > diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-> index fb5d7bb320c15..3122ad5af6f47 100644
+> index 3122ad5af6f47..54b650f3b4e78 100644
 > --- a/drivers/cpufreq/amd-pstate.c
 > +++ b/drivers/cpufreq/amd-pstate.c
-> @@ -329,6 +329,63 @@ static inline int amd_pstate_set_epp(struct cpufreq_policy *policy, u8 epp)
->   	return static_call(amd_pstate_set_epp)(policy, epp);
+> @@ -383,6 +383,8 @@ static int amd_pstate_init_floor_perf(struct cpufreq_policy *policy)
+>   			return ret;
+>   	}
+>   
+> +	cpudata->floor_freq = perf_to_freq(cpudata->perf, cpudata->nominal_freq,
+> +					   floor_perf);
+>   	return 0;
 >   }
 >   
-> +static int amd_pstate_set_floor_perf(struct cpufreq_policy *policy, u8 perf)
+> @@ -1284,6 +1286,44 @@ static ssize_t show_energy_performance_preference(
+>   	return sysfs_emit(buf, "%s\n", energy_perf_strings[preference]);
+>   }
+>   
+> +static ssize_t store_amd_pstate_floor_freq(struct cpufreq_policy *policy,
+> +					   const char *buf, size_t count)
 > +{
 > +	struct amd_cpudata *cpudata = policy->driver_data;
-> +	u64 value, prev;
-> +	int ret;
-> +
-> +	if (!cpu_feature_enabled(X86_FEATURE_CPPC_PERF_PRIO))
-> +		return 0;
-> +
-> +	value = prev = READ_ONCE(cpudata->cppc_req2_cached);
-> +	FIELD_MODIFY(AMD_CPPC_FLOOR_PERF_MASK, &value, perf);
-> +
-> +	if (value == prev)
-> +		return 0;
-> +
-> +	ret = wrmsrq_on_cpu(cpudata->cpu, MSR_AMD_CPPC_REQ2, value);
-> +	if (ret) {
-> +		pr_err("failed to set CPPC REQ2 value. Error (%d)\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	WRITE_ONCE(cpudata->cppc_req2_cached, value);
-> +
-> +	return ret;
-> +}
-> +
-> +static int amd_pstate_init_floor_perf(struct cpufreq_policy *policy)
-> +{
-> +	struct amd_cpudata *cpudata = policy->driver_data;
+> +	union perf_cached perf = READ_ONCE(cpudata->perf);
+> +	unsigned int freq;
 > +	u8 floor_perf;
-> +	u64 value;
 > +	int ret;
 > +
-> +	if (!cpu_feature_enabled(X86_FEATURE_CPPC_PERF_PRIO))
-> +		return 0;
-> +
-> +	ret = rdmsrq_on_cpu(cpudata->cpu, MSR_AMD_CPPC_REQ2, &value);
-> +	if (ret) {
-> +		pr_err("failed to read CPPC REQ2 value. Error (%d)\n", ret);
+> +	ret = kstrtouint(buf, 0, &freq);
+> +	if (ret)
 > +		return ret;
-> +	}
 > +
-> +	WRITE_ONCE(cpudata->cppc_req2_cached, value);
-> +	floor_perf = FIELD_GET(AMD_CPPC_FLOOR_PERF_MASK,
-> +			       cpudata->cppc_req2_cached);
+> +	floor_perf = freq_to_perf(perf, cpudata->nominal_freq, freq);
+> +	ret = amd_pstate_set_floor_perf(policy, floor_perf);
 > +
-> +	/* Set a sane value for floor_perf if the default value is invalid */
-> +	if (floor_perf < cpudata->perf.lowest_perf) {
-> +		floor_perf = cpudata->perf.nominal_perf;
-> +		ret = amd_pstate_set_floor_perf(policy, floor_perf);
-> +		if (ret)
-> +			return ret;
-> +	}
+> +	if (!ret)
+> +		cpudata->floor_freq = freq;
 > +
-> +	return 0;
+> +	return ret ?: count;
 > +}
 > +
->   static int shmem_set_epp(struct cpufreq_policy *policy, u8 epp)
->   {
->   	struct amd_cpudata *cpudata = policy->driver_data;
-> @@ -426,6 +483,7 @@ static int msr_init_perf(struct amd_cpudata *cpudata)
->   	perf.lowest_perf = FIELD_GET(AMD_CPPC_LOWEST_PERF_MASK, cap1);
->   	WRITE_ONCE(cpudata->perf, perf);
->   	WRITE_ONCE(cpudata->prefcore_ranking, FIELD_GET(AMD_CPPC_HIGHEST_PERF_MASK, cap1));
-> +	WRITE_ONCE(cpudata->floor_perf_cnt, FIELD_GET(AMD_CPPC_FLOOR_PERF_CNT_MASK, cap1));
+> +static ssize_t show_amd_pstate_floor_freq(struct cpufreq_policy *policy, char *buf)
+> +{
+> +	struct amd_cpudata *cpudata = policy->driver_data;
+> +
+> +	return sysfs_emit(buf, "%u\n", cpudata->floor_freq);
+> +}
+> +
+> +
+> +static ssize_t show_amd_pstate_floor_count(struct cpufreq_policy *policy, char *buf)
+> +{
+> +	struct amd_cpudata *cpudata = policy->driver_data;
+> +	u8 count = cpudata->floor_perf_cnt;
+> +
+> +	return sysfs_emit(buf, "%u\n", count);
+
+just return cpudata->floor_perf_cnt instead of having a local variable.
+
+> +}
+> +
+>   cpufreq_freq_attr_ro(amd_pstate_max_freq);
+>   cpufreq_freq_attr_ro(amd_pstate_lowest_nonlinear_freq);
 >   
->   	return 0;
+> @@ -1292,6 +1332,8 @@ cpufreq_freq_attr_ro(amd_pstate_prefcore_ranking);
+>   cpufreq_freq_attr_ro(amd_pstate_hw_prefcore);
+>   cpufreq_freq_attr_rw(energy_performance_preference);
+>   cpufreq_freq_attr_ro(energy_performance_available_preferences);
+> +cpufreq_freq_attr_rw(amd_pstate_floor_freq);
+> +cpufreq_freq_attr_ro(amd_pstate_floor_count);
+>   
+>   struct freq_attr_visibility {
+>   	struct freq_attr *attr;
+> @@ -1316,6 +1358,12 @@ static bool epp_visibility(void)
+>   	return cppc_state == AMD_PSTATE_ACTIVE;
 >   }
-> @@ -1036,6 +1094,12 @@ static int amd_pstate_cpu_init(struct cpufreq_policy *policy)
->   	if (cpu_feature_enabled(X86_FEATURE_CPPC))
->   		policy->fast_switch_possible = true;
 >   
-> +	ret = amd_pstate_init_floor_perf(policy);
-> +	if (ret) {
-> +		dev_err(dev, "Failed to initialize Floor Perf (%d)\n", ret);
-> +		goto free_cpudata1;
-> +	}
+> +/* Determines whether amd_pstate_floor_freq related attributes should be visible */
+> +static bool floor_freq_visibility(void)
+> +{
+> +	return cpu_feature_enabled(X86_FEATURE_CPPC_PERF_PRIO);
+> +}
 > +
->   	ret = freq_qos_add_request(&policy->constraints, &cpudata->req[0],
->   				   FREQ_QOS_MIN, FREQ_QOS_MIN_DEFAULT_VALUE);
->   	if (ret < 0) {
-> @@ -1597,6 +1661,12 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
->   	if (ret)
->   		goto free_cpudata1;
+>   static struct freq_attr_visibility amd_pstate_attr_visibility[] = {
+>   	{&amd_pstate_max_freq, always_visible},
+>   	{&amd_pstate_lowest_nonlinear_freq, always_visible},
+> @@ -1324,6 +1372,8 @@ static struct freq_attr_visibility amd_pstate_attr_visibility[] = {
+>   	{&amd_pstate_hw_prefcore, prefcore_visibility},
+>   	{&energy_performance_preference, epp_visibility},
+>   	{&energy_performance_available_preferences, epp_visibility},
+> +	{&amd_pstate_floor_freq, floor_freq_visibility},
+> +	{&amd_pstate_floor_count, floor_freq_visibility},
+>   };
 >   
-> +	ret = amd_pstate_init_floor_perf(policy);
-> +	if (ret) {
-> +		dev_err(dev, "Failed to initialize Floor Perf (%d)\n", ret);
-> +		goto free_cpudata1;
-> +	}
-> +
->   	current_pstate_driver->adjust_perf = NULL;
->   
->   	return 0;
+>   static struct freq_attr **get_freq_attrs(void)
 > diff --git a/drivers/cpufreq/amd-pstate.h b/drivers/cpufreq/amd-pstate.h
-> index cb45fdca27a6c..0c587ca200199 100644
+> index 0c587ca200199..ab4caea39f0e8 100644
 > --- a/drivers/cpufreq/amd-pstate.h
 > +++ b/drivers/cpufreq/amd-pstate.h
-> @@ -62,9 +62,12 @@ struct amd_aperf_mperf {
->    * @cpu: CPU number
->    * @req: constraint request to apply
->    * @cppc_req_cached: cached performance request hints
-> + * @cppc_req2_cached: cached value of MSR_AMD_CPPC_REQ2
->    * @perf: cached performance-related data
->    * @prefcore_ranking: the preferred core ranking, the higher value indicates a higher
->    * 		  priority.
-> + * @floor_perf_cnt: Cached value of the number of distinct floor
-> + *                  performance levels supported
->    * @min_limit_freq: Cached value of policy->min (in khz)
+> @@ -72,6 +72,7 @@ struct amd_aperf_mperf {
 >    * @max_limit_freq: Cached value of policy->max (in khz)
 >    * @nominal_freq: the frequency (in khz) that mapped to nominal_perf
-> @@ -87,10 +90,12 @@ struct amd_cpudata {
->   
->   	struct	freq_qos_request req[2];
->   	u64	cppc_req_cached;
-> +	u64	cppc_req2_cached;
->   
->   	union perf_cached perf;
->   
->   	u8	prefcore_ranking;
-> +	u8	floor_perf_cnt;
->   	u32	min_limit_freq;
+>    * @lowest_nonlinear_freq: the frequency (in khz) that mapped to lowest_nonlinear_perf
+> + * @floor_freq: Cached value of the user requested floor_freq
+>    * @cur: Difference of Aperf/Mperf/tsc count between last and current sample
+>    * @prev: Last Aperf/Mperf/tsc count value read from register
+>    * @freq: current cpu frequency value (in khz)
+> @@ -100,6 +101,7 @@ struct amd_cpudata {
 >   	u32	max_limit_freq;
 >   	u32	nominal_freq;
+>   	u32	lowest_nonlinear_freq;
+> +	u32	floor_freq;
+>   
+>   	struct amd_aperf_mperf cur;
+>   	struct amd_aperf_mperf prev;
 
