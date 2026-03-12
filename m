@@ -1,185 +1,106 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from lithops.sigma-star.at (mailout.nod.at [116.203.167.152])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69E593C6604
-	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 18:58:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45EED3AC0E2;
+	Thu, 12 Mar 2026 19:33:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=116.203.167.152
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773341900; cv=none; b=KUhiqzJslX768nK1BU0YtQ0WKWY/43F0cAJmsiVllB9FWDPUPmsQ4DNYFxXK55YouVkIxG9CP0GAeoAXIlqCuZZfb1BcDwYpzo5GMAcSOHduOtl/TFzC2oZ1KJ9lfH3B/wBMecDYYCWq3EN5xoVBMKycxKLhWUjalqHyzyUKkyE=
+	t=1773344034; cv=none; b=j33607n42e689OLFpqcE53xFh+mXzT0DHyFuURweRJDCnHcwW3FtYJuTwAwE7ZtTqn92an8BownNrtmHLhnnlR6hLvKAuI+SoVXShgoz/FNRyMB49rWOhUxMnrt0E5LHZZe0uYfRusDdVxUM+4AJvAJQujoLYUQ8fY7Cwp76ZKA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773341900; c=relaxed/simple;
-	bh=Q8IVoWCsmkWJyLd6RKA73QX4Rhsp3c6MdOvH0moGQ6c=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=U7XItcLXHT11HQST9AqgQe/eZtpN/aKpL3wGoAqx5mdAEC5hFAHl5JeARWN2o/mGEgjyDAvN7Gd+vCnt/S6mSPwel2njGRO+x6gEIrmIEyqrgFIK8n7GZc8YoijrMSLfI97Rtp2KqISFTBBkK01T4by6Ellta3sKJPlo8/QRY0g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=sCtJUBxb; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="sCtJUBxb"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A6FBC2BCB2
-	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 18:58:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773341900;
-	bh=Q8IVoWCsmkWJyLd6RKA73QX4Rhsp3c6MdOvH0moGQ6c=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=sCtJUBxb3+9J3t9Iw+kTliggxtN54o/pmpFjUJlz5sLvROyyLvn2gtjXbisUKKmn4
-	 JdBvt2hswsaROuBh9bXye6cakfOIF/hr2NJJSiiAPKDzWX4pD67FJcXMk8b2+Nvad0
-	 NhubGvPxWuBGePduwZjC8VruXOXfbQtM60kD0qHLJQoRo2GDUdttBJKF1LXgYNHzD1
-	 zkqsIQMqBW0aN2hP5L4NO9iaX48RlGjmr8ZjJRmjBaZd/s2Gzi/ofgIsSjH6kYGKI4
-	 TvRhVfDoCIbM8VRM1l7h601LP5MbHlSWk99Ug/bCbhLUVT60MmWWV3iaEnwcWx3UiG
-	 kkufejGrRoE6Q==
-Received: by mail-oo1-f50.google.com with SMTP id 006d021491bc7-679f6ee3fb0so625069eaf.2
-        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 11:58:20 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCVFEvy9Q96bIYaWYGzjmZW9FsR7ObGdoLGeTj5c2UeDhDIiFR5clxMshyOuM4GX8JKNTeUZgMDU/A==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxt3NXVsrg93bp3+g2tCBD+7AWKSHsJp/OUGIEkhWQm20+XYr0Z
-	VYfPSmBxAhs1s0eYfq3Ta8kCRSuX1CTWSGJoLbj9PmJXNbMOrL+JSykQ6JisbAYucAHx/mxL6Up
-	FO2vckD/KuygD88T1SLc76h2kO1tzANg=
-X-Received: by 2002:a05:6820:2b12:b0:67b:db23:4f73 with SMTP id
- 006d021491bc7-67bdb234fdemr109330eaf.51.1773341899301; Thu, 12 Mar 2026
- 11:58:19 -0700 (PDT)
+	s=arc-20240116; t=1773344034; c=relaxed/simple;
+	bh=VQ4I1//oujMg/wMbvtHZ1fNg62i5rEhIWcPKRohhj4U=;
+	h=Date:From:To:Cc:Message-ID:In-Reply-To:References:Subject:
+	 MIME-Version:Content-Type; b=ddy2a7nze40y2XOq6AzX5P+yK/YAMZEsZCu4is1ZBhMnJKS9vFgMZWqpirXNxVgz6pZsokw/214XhfsoPaQlvyfIqpgQ2GBgjj20XFkl4eJeH0Ugf3RmPz5wDBJf3rAKd+aMd7liJ/M4aSZTOFN9EXdHYYjti5z0jySqd1deAiM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=nod.at; spf=fail smtp.mailfrom=nod.at; arc=none smtp.client-ip=116.203.167.152
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=nod.at
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nod.at
+Received: from localhost (localhost [127.0.0.1])
+	by lithops.sigma-star.at (Postfix) with ESMTP id 4DE582C14A8;
+	Thu, 12 Mar 2026 20:33:44 +0100 (CET)
+Received: from lithops.sigma-star.at ([127.0.0.1])
+	by localhost (lithops.sigma-star.at [127.0.0.1]) (amavisd-new, port 10032)
+	with ESMTP id yCwNT8mwVvHB; Thu, 12 Mar 2026 20:33:43 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by lithops.sigma-star.at (Postfix) with ESMTP id 8A34D2C14AA;
+	Thu, 12 Mar 2026 20:33:43 +0100 (CET)
+Received: from lithops.sigma-star.at ([127.0.0.1])
+	by localhost (lithops.sigma-star.at [127.0.0.1]) (amavisd-new, port 10026)
+	with ESMTP id 3HN7guaAFMsE; Thu, 12 Mar 2026 20:33:43 +0100 (CET)
+Received: from lithops.sigma-star.at (lithops.sigma-star.at [195.201.40.130])
+	by lithops.sigma-star.at (Postfix) with ESMTP id ABF4A2C14A6;
+	Thu, 12 Mar 2026 20:33:42 +0100 (CET)
+Date: Thu, 12 Mar 2026 20:33:42 +0100 (CET)
+From: Richard Weinberger <richard@nod.at>
+To: Philipp Hahn <phahn-oss@avm.de>
+Cc: amd-gfx <amd-gfx@lists.freedesktop.org>, 
+	apparmor <apparmor@lists.ubuntu.com>, bpf <bpf@vger.kernel.org>, 
+	ceph-devel <ceph-devel@vger.kernel.org>, cocci <cocci@inria.fr>, 
+	dm-devel@lists.linux.dev, 
+	DRI mailing list <dri-devel@lists.freedesktop.org>, 
+	gfs2 <gfs2@lists.linux.dev>, 
+	intel-gfx <intel-gfx@lists.freedesktop.org>, 
+	intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev, 
+	kvm@vger.kernel.org, 
+	linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, 
+	linux-block <linux-block@vger.kernel.org>, 
+	linux-bluetooth@vger.kernel.org, 
+	linux-btrfs <linux-btrfs@vger.kernel.org>, 
+	linux-cifs <linux-cifs@vger.kernel.org>, linux-clk@vger.kernel.org, 
+	linux-erofs <linux-erofs@lists.ozlabs.org>, 
+	linux-ext4 <linux-ext4@vger.kernel.org>, 
+	linux-fsdevel <linux-fsdevel@vger.kernel.org>, 
+	linux-gpio@vger.kernel.org, 
+	linux-hyperv <linux-hyperv@vger.kernel.org>, 
+	linux-input@vger.kernel.org, 
+	linux-kernel <linux-kernel@vger.kernel.org>, 
+	linux-leds@vger.kernel.org, 
+	linux-media <linux-media@vger.kernel.org>, 
+	linux-mips <linux-mips@vger.kernel.org>, 
+	linux-mm <linux-mm@kvack.org>, linux-modules@vger.kernel.org, 
+	linux-mtd <linux-mtd@lists.infradead.org>, 
+	linux-nfs <linux-nfs@vger.kernel.org>, 
+	linux-omap <linux-omap@vger.kernel.org>, 
+	linux-phy@lists.infradead.org, linux-pm <linux-pm@vger.kernel.org>, 
+	linux-rockchip <linux-rockchip@lists.infradead.org>, 
+	linux-s390 <linux-s390@vger.kernel.org>, 
+	linux-scsi <linux-scsi@vger.kernel.org>, linux-sctp@vger.kernel.org, 
+	LSM <linux-security-module@vger.kernel.org>, 
+	linux-sh <linux-sh@vger.kernel.org>, 
+	linux-sound <linux-sound@vger.kernel.org>, 
+	linux-stm32 <linux-stm32@st-md-mailman.stormreply.com>, 
+	linux-trace-kernel <linux-trace-kernel@vger.kernel.org>, 
+	linux-usb@vger.kernel.org, 
+	linux-wireless <linux-wireless@vger.kernel.org>, 
+	netdev <netdev@vger.kernel.org>, ntfs3 <ntfs3@lists.linux.dev>, 
+	samba-technical <samba-technical@lists.samba.org>, 
+	sched-ext@lists.linux.dev, target-devel@vger.kernel.org, 
+	tipc-discussion@lists.sourceforge.net, v9fs <v9fs@lists.linux.dev>, 
+	Miquel Raynal <miquel.raynal@bootlin.com>, 
+	Vignesh Raghavendra <vigneshr@ti.com>
+Message-ID: <1584421372.26258.1773344022512.JavaMail.zimbra@nod.at>
+In-Reply-To: <20260310-b4-is_err_or_null-v1-48-bd63b656022d@avm.de>
+References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de> <20260310-b4-is_err_or_null-v1-48-bd63b656022d@avm.de>
+Subject: Re: [PATCH 48/61] mtd: Prefer IS_ERR_OR_NULL over manual NULL check
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260312150523.2054552-1-vineeth@bitbyteword.org> <20260312150523.2054552-7-vineeth@bitbyteword.org>
-In-Reply-To: <20260312150523.2054552-7-vineeth@bitbyteword.org>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 12 Mar 2026 19:58:06 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0huw1TabNsO30RRWMez1XM1NGXQ_zRhXV_psSWS+s2rRQ@mail.gmail.com>
-X-Gm-Features: AaiRm53ivx2mW0g_aq6AqhGUYmn4K1fNwjagiHIJ_z30Df6_oL0YOub2aqsehFw
-Message-ID: <CAJZ5v0huw1TabNsO30RRWMez1XM1NGXQ_zRhXV_psSWS+s2rRQ@mail.gmail.com>
-Subject: Re: [PATCH 06/15] cpufreq: Use trace_invoke_##name() at guarded
- tracepoint call sites
-To: vineeth@bitbyteword.org
-Cc: Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, 
-	Huang Rui <ray.huang@amd.com>, "Gautham R. Shenoy" <gautham.shenoy@amd.com>, 
-	Mario Limonciello <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-trace-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
+X-Mailer: Zimbra 8.8.12_GA_3807 (ZimbraWebClient - FF148 (Linux)/8.8.12_GA_3809)
+Thread-Topic: Prefer IS_ERR_OR_NULL over manual NULL check
+Thread-Index: 0l8CyewQmrWlgaG6N3QgQFfukutRbA==
 
-On Thu, Mar 12, 2026 at 4:05=E2=80=AFPM Vineeth Pillai (Google)
-<vineeth@bitbyteword.org> wrote:
->
-> Replace trace_foo() with the new trace_invoke_foo() at sites already
-> guarded by trace_foo_enabled(), avoiding a redundant
-> static_branch_unlikely() re-evaluation inside the tracepoint.
-> trace_invoke_foo() calls the tracepoint callbacks directly without
-> utilizing the static branch again.
->
-> Suggested-by: Steven Rostedt <rostedt@goodmis.org>
-> Suggested-by: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Vineeth Pillai (Google) <vineeth@bitbyteword.org>
-> Assisted-by: Claude:claude-sonnet-4-6
+----- Urspr=C3=BCngliche Mail -----
+> Von: "Philipp Hahn" <phahn-oss@avm.de>
+> -=09if (gpiomtd->nwp && !IS_ERR(gpiomtd->nwp))
+> +=09if (!IS_ERR_OR_NULL(gpiomtd->nwp))
 
-Fine with me, so
+No, please don't.
 
-Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org> # cpufreq
+This makes reading the code not easier.
 
-> ---
->  drivers/cpufreq/amd-pstate.c   | 10 +++++-----
->  drivers/cpufreq/cpufreq.c      |  2 +-
->  drivers/cpufreq/intel_pstate.c |  2 +-
->  3 files changed, 7 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-> index 5aa9fcd80cf51..3fa40a32ef6b5 100644
-> --- a/drivers/cpufreq/amd-pstate.c
-> +++ b/drivers/cpufreq/amd-pstate.c
-> @@ -247,7 +247,7 @@ static int msr_update_perf(struct cpufreq_policy *pol=
-icy, u8 min_perf,
->         if (trace_amd_pstate_epp_perf_enabled()) {
->                 union perf_cached perf =3D READ_ONCE(cpudata->perf);
->
-> -               trace_amd_pstate_epp_perf(cpudata->cpu,
-> +               trace_invoke_amd_pstate_epp_perf(cpudata->cpu,
->                                           perf.highest_perf,
->                                           epp,
->                                           min_perf,
-> @@ -298,7 +298,7 @@ static int msr_set_epp(struct cpufreq_policy *policy,=
- u8 epp)
->         if (trace_amd_pstate_epp_perf_enabled()) {
->                 union perf_cached perf =3D cpudata->perf;
->
-> -               trace_amd_pstate_epp_perf(cpudata->cpu, perf.highest_perf=
-,
-> +               trace_invoke_amd_pstate_epp_perf(cpudata->cpu, perf.highe=
-st_perf,
->                                           epp,
->                                           FIELD_GET(AMD_CPPC_MIN_PERF_MAS=
-K,
->                                                     cpudata->cppc_req_cac=
-hed),
-> @@ -343,7 +343,7 @@ static int shmem_set_epp(struct cpufreq_policy *polic=
-y, u8 epp)
->         if (trace_amd_pstate_epp_perf_enabled()) {
->                 union perf_cached perf =3D cpudata->perf;
->
-> -               trace_amd_pstate_epp_perf(cpudata->cpu, perf.highest_perf=
-,
-> +               trace_invoke_amd_pstate_epp_perf(cpudata->cpu, perf.highe=
-st_perf,
->                                           epp,
->                                           FIELD_GET(AMD_CPPC_MIN_PERF_MAS=
-K,
->                                                     cpudata->cppc_req_cac=
-hed),
-> @@ -507,7 +507,7 @@ static int shmem_update_perf(struct cpufreq_policy *p=
-olicy, u8 min_perf,
->         if (trace_amd_pstate_epp_perf_enabled()) {
->                 union perf_cached perf =3D READ_ONCE(cpudata->perf);
->
-> -               trace_amd_pstate_epp_perf(cpudata->cpu,
-> +               trace_invoke_amd_pstate_epp_perf(cpudata->cpu,
->                                           perf.highest_perf,
->                                           epp,
->                                           min_perf,
-> @@ -588,7 +588,7 @@ static void amd_pstate_update(struct amd_cpudata *cpu=
-data, u8 min_perf,
->         }
->
->         if (trace_amd_pstate_perf_enabled() && amd_pstate_sample(cpudata)=
-) {
-> -               trace_amd_pstate_perf(min_perf, des_perf, max_perf, cpuda=
-ta->freq,
-> +               trace_invoke_amd_pstate_perf(min_perf, des_perf, max_perf=
-, cpudata->freq,
->                         cpudata->cur.mperf, cpudata->cur.aperf, cpudata->=
-cur.tsc,
->                                 cpudata->cpu, fast_switch);
->         }
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 277884d91913c..cf57aeb503790 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2222,7 +2222,7 @@ unsigned int cpufreq_driver_fast_switch(struct cpuf=
-req_policy *policy,
->
->         if (trace_cpu_frequency_enabled()) {
->                 for_each_cpu(cpu, policy->cpus)
-> -                       trace_cpu_frequency(freq, cpu);
-> +                       trace_invoke_cpu_frequency(freq, cpu);
->         }
->
->         return freq;
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstat=
-e.c
-> index 11c58af419006..a0da9b31c4ffe 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -3132,7 +3132,7 @@ static void intel_cpufreq_trace(struct cpudata *cpu=
-, unsigned int trace_type, in
->                 return;
->
->         sample =3D &cpu->sample;
-> -       trace_pstate_sample(trace_type,
-> +       trace_invoke_pstate_sample(trace_type,
->                 0,
->                 old_pstate,
->                 cpu->pstate.current_pstate,
-> --
-> 2.53.0
->
+Thanks,
+//richard
