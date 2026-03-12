@@ -1,105 +1,120 @@
-Received: from mail-pg1-f169.google.com (mail-pg1-f169.google.com [209.85.215.169])
+Received: from mail-dl1-f42.google.com (mail-dl1-f42.google.com [74.125.82.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 450B9238D54
-	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 06:16:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.169
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773296166; cv=none; b=gOvwKeYers34c63z2AlQ16adgLwfWlAsLiD27/kHXpLkpRtcBf6g1HE2zHw2HOSaVpoxz2h7gzFrV9WbqhlC3Vj/FHN3Cm+SktEwF+BoZnCAM1GLKpv1iWMyM0mSEDzGJqrY1s2gDSHVYP5oUiYj+wGNPyIxEdXGjqoEfyzlKQ8=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773296166; c=relaxed/simple;
-	bh=ZWbAx2KHSKmHn7nF1/nawKIbLe1chB1vOtyDsnRU5F4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=rFZ1XqJAktzuNJJ36yEVTFBTRIGlzDXMthUjxZqbMPpROJq1wiohKFAOMNSLFqQ5uVjzcneAxtbfPwn1WAc1HpKM4Y8fC1y8nd0MkYubSOxYw5TSkae796BiYvD259xgRl2cc/1viZ1kxfcEtFF76JuehCc3t9Eae0+8t1NI72g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=RNICT/44; arc=none smtp.client-ip=209.85.215.169
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4736D31F9BE
+	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 06:17:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.42
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773296254; cv=pass; b=fSjrvm+s0J2tk7+v/ULKEVIHXk6JyTgYh/zCaCXH7XWExzy+8rj3Wb3kSp8ZRoe1/oncR+uJ+2GVI/xONaGw/paYSmfE6KmRIxanNYuZ9SSo61zaZRwRacLaKjqRLeACzhplpPQX+ZxHI6Qz6eK5T4nky+gNtM67nP4Y5xsJ2SM=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773296254; c=relaxed/simple;
+	bh=RX7N24y863oYJrl9zA7NFk/TZvcg7d7M/s+gfvk/o/Q=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=VSrHSJOcDU47LoNQMUDp2CBmiQi5foLxNCTWLGMaqNZhnqybt0GEwP8iBZx7ETha6JmbGeyokIIsurrej2ATKVxOvAp9ljQ4AOO4Y7m2GwrGqpd2bkEmMrr4jDVzH6DTs3/AgwLPzTYFhYhG5QE+v1rDGUjWTMXeppbceiakqyA=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=HMVSLFnp; arc=pass smtp.client-ip=74.125.82.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="RNICT/44"
-Received: by mail-pg1-f169.google.com with SMTP id 41be03b00d2f7-c738fecf349so657879a12.0
-        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 23:16:04 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HMVSLFnp"
+Received: by mail-dl1-f42.google.com with SMTP id a92af1059eb24-12714f01940so15228c88.0
+        for <linux-pm@vger.kernel.org>; Wed, 11 Mar 2026 23:17:33 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1773296252; cv=none;
+        d=google.com; s=arc-20240605;
+        b=jp5cqJ6h23Iu53ryIU3gKy1utuB5saCm7J2KQ1juDwl6tJDNWQgJOA0p60iL1zgfq7
+         AprGLSTRm0cOW1cZymN2WIaNdzKnzcTdm8948xFr+W6nhtlZ4wIHgaUv7VEpFO+59XN7
+         8rt+l4jkO+dw/Q8KjBjxShzGuPU9GMgkNgTLmq7keA8eTFY+Gr+fNWoBKoS5omy1Szfy
+         8XjOb/fvVNkPv+fi/tIc5Vu7rnxwpq6uAzF+kVaQX1R7OtXYtyb4bq0GVwv0kLcaNQGP
+         mdgoiXsB4S3+BUKM/7gi20+8uq8xLsNogjhm3VHAQGJa2HC71VZ0vmUd5O2mAQZQrDoW
+         qkww==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=RX7N24y863oYJrl9zA7NFk/TZvcg7d7M/s+gfvk/o/Q=;
+        fh=2k3ZaPENfn7h9a/2kyvmWf0z8E8WF98k6s7Bn0GjVd8=;
+        b=SPy6dOb6j3nVmGs2Mz8/tGg/6OubEDDgJK0pQc/tS4VfU6pgEqseyfdrGDsnv1BAqZ
+         bJViqSUXnRBGaCXBTHBaWH80WurPBbahiStgcCGcIuNc7PC0YsZVK0T4fa0i/9hhKMLt
+         q+gffTxAURJud8EYMZSteiKHzgEfUkjNL7GoZsv3zdlxsY2bSAQceyevilndQWIcVSgI
+         vhVefx7bkND6LLzYa1sEQH06rh/13rH19NUE0wEnhcT/sZDM9g3FGx2oxGjfVLHu4mcE
+         eMdDRGVXOGpcCeEkuzoyWq+QrXNwIsjamqsyCJ2gEJ2TW7etQBeP0Vqyi8vFgAEaFLrC
+         XClQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1773296164; x=1773900964; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=0HzKw6/yVq/gHZlCWPT+wXsGdn+6VywTNwhTWXlYTYM=;
-        b=RNICT/44FTHCDzTXJJk/wdxQGJ7Gx/eKVc6tFwPhC4X0TvOpaN9gMjxdzvaX2ZCuS3
-         ibeUQKFdn8se+SQzOVpTSyZ2+qQ39gZuxAVMXLei8nVzSsr6y+0oi/vfOfXnGMpeZKPF
-         ouy24/ibMbI135XvnOkatHji0i+nlR3+r/98jihVOJW/Al0jhvELuqQDlvB3XvNWmBmJ
-         ojRfMa/W2ytNFJllBQoL4pYp1r2wKpbokQJ/CKrHL3cCzx6VOLKTErgmoEc5al9wFtnl
-         OjHQjAfq3xRn9mg/szDlCTfATLJHylHE9c4F/SIY9Ej+/GozH6apJdyds8ooPHjHU/9L
-         5QjA==
+        d=gmail.com; s=20230601; t=1773296252; x=1773901052; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=RX7N24y863oYJrl9zA7NFk/TZvcg7d7M/s+gfvk/o/Q=;
+        b=HMVSLFnpCEVMIM2ixJyHtQbjoDF1+CvR9ANPoh8pc9d7wbuMX0XlX36gk5MTPaZr8d
+         7L6UxUN/InZNyud/8LCmB+h+OGSEFFJ1h0aEmI3H6YMDgvSaCJyJI/jIs+zENefTQt57
+         wj+ysc0NYIy1CgMj/tDjX5Pp5sA/1oxW8qITg02/Y053oN1fDA+IIdekt0s/QVbtdxj7
+         TwAIMpQa29d2SMgG3OcOeJkL/X6OIRWs0v6SjfxiixjVraKgUy02eaLZliBq6og/3uZ+
+         J0VbcZL29f/JU92cw41mk95y80tYvZ7cUzyQITynYsNzaa6/wscsM7dMkacT4UzMCpyT
+         +1cQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773296164; x=1773900964;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=0HzKw6/yVq/gHZlCWPT+wXsGdn+6VywTNwhTWXlYTYM=;
-        b=HAnCBflSvpr1dAojCndCUTtagDhtR+F8ogdj+HhCLkHfTUsrXSmhiA9ArVxF+GlDe5
-         34NDQOCg5njbUrxo2WGVT0YeL9OP5tWGOvnAtNj47CDH71cKOG7o6eyJRe+kFEgVJj2U
-         tG2LrCbWrxpxTv8Jjk/Z2BCzBNHl/wSJs52y++GrJ1psI2wUMP+J3tE9Uh8O8q6qwe5d
-         M/Z/6xZf1XoqOII9jOyW66ytNstvJJFlwEPfGVdOZUBEj6NEMcREDI2Vjz4fdwtLo5lf
-         GcEgN7f5pJKSxW0OD4Va8JghMK1j6D6jmRgfAzy4h6FZ+YS5i7a61bnI5CB7bitScrMM
-         L1HQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUqZju6gQ++PH3yvY3lAogg03jlLFFEN8FLsWcrQWI7pzg+0T1me2bjxCHiBBeJoRlthtkQf5TVGg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwtRJjP9cOnwfvsU0OqTn/N7fCN6kWydBubupEC/aNiwTWO43Dg
-	0xUmVUCPudiq2adBGH8dmF7UBgefO6Iz+cYkF+rz0G7w4Dac+ifamvw7EnHCB18q4bY=
-X-Gm-Gg: ATEYQzyWmCdMJ7f2PWABdD16+7oT7x90V7JiZaWNbqRyP55S5hiB5B11D8xB5X3UzHd
-	znQvx8cxJU5BjvL0eV+yVYQcRj4RrbeTIzk5wrT+LHanZ+45urYoE0Nfr38zJET/21tuzC3F7J/
-	41sRiMzetGt40c+uF8ILWuAP5frZrzU9RF1u+yQZFAE+w21rKH7B/vB/N1BC972pRJDEu39i3Yc
-	b67zSklUSG9933X8nneuIdG83HJyIhiQbJhftcgBONl3/5ept9sTyLKNkvvf2gOoFDbpwRCAjN2
-	ZLptPLm0e2Hz/K1m3+VZsGZUQ4qGWOoBF9MxBm4ztIGm+QITknlTES4gkZzeT/KfDrEix+EwwRi
-	UvhA0wqXEK5KEbZMIK9wEzdKW1yPjjVkuOSALFcFcRmxcYSd8Be9bG6lGR4DahiEYvrjmoUCEFy
-	eBozfZa+a2EFz0OGq4es1iMSy3
-X-Received: by 2002:a05:6a21:1f84:b0:398:87a9:fe2 with SMTP id adf61e73a8af0-398d78c5773mr1879375637.25.1773296164119;
-        Wed, 11 Mar 2026 23:16:04 -0700 (PDT)
-Received: from localhost ([122.172.81.200])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82a0734199csm1647640b3a.36.2026.03.11.23.16.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Mar 2026 23:16:03 -0700 (PDT)
-Date: Thu, 12 Mar 2026 11:46:00 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, mingo@redhat.com, 
-	peterz@infradead.org, juri.lelli@redhat.com, vincent.guittot@linaro.org, 
-	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de, 
-	vschneid@redhat.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linuxarm@huawei.com, jonathan.cameron@huawei.com, zhanjie9@hisilicon.com, 
-	lihuisong@huawei.com, yubowen8@huawei.com, zhangpengjie2@huawei.com, 
-	wangzhi12@huawei.com, linhongye@h-partners.com
-Subject: Re: [PATCH 0/2] cpufreq: governor: Apply limits with target_freq
- instead of policy->cur
-Message-ID: <dqyn4dv3ecbzzmqr4l3jxfctuxpehstjhean5gi2iqfllwso4g@i4nodkyrhwpb>
-References: <20260210115458.3493646-1-zhenglifeng1@huawei.com>
- <javy6tllyw7pcnri3s6s2gnpv3kewe2b4zkyoz3vj3jzmfu6c5@nikhlydadvcc>
- <CAJZ5v0h1FHH0Cvn0CQ8gMk9Zzt=bcA-RUfya4hYH4Em3nDzm7w@mail.gmail.com>
- <d21b9ad3-72d9-44b2-b194-4e2a24077eab@huawei.com>
- <utvxk3rn6icadx4llmzfu32auqk4ql7rckh7kxtgdgmtoyovqz@vo2lmhip5vk7>
- <b7d3819f-168a-48f7-99f2-2ba04dec77e6@huawei.com>
+        d=1e100.net; s=20230601; t=1773296252; x=1773901052;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=RX7N24y863oYJrl9zA7NFk/TZvcg7d7M/s+gfvk/o/Q=;
+        b=hcTZcG2Kglu9mm4aHg6sw04ftJV7PepW755lpEHLIu0VioAmtr7V4GmOxMdwzOhscP
+         1sHFVGtpcGapcfj6SNa3rWAaUfyrgrfAkloatO4JKM87QBNkKTKlGr2i+soHf12uR7qJ
+         UR/RiBsUxtMmDZ2aJWllhqFwk8GdCMhT4OdVbmLo/VbvHBgQZ+Isk7VfXxVFIJOsvUfC
+         W0KqX5q57nFPou95F4/1TIVPytFIcwFIjajzjh590Q3oY2O2Ns/nka5OeV4Zubza7Jry
+         MJJeD5XdW8FoB/AhWZdyyfTYlJEzT4aHocd1cRnFUOle6TwsSGBVLRpg6Ye56EQAa6oN
+         yO2Q==
+X-Forwarded-Encrypted: i=1; AJvYcCVyfajWY6AFn+qRe14xniUnUaBMIcpSznlGDLrAEWJPb9oEXu/gHpMBhWg2srTU01BiOZX6dSpc8A==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzj9UozRFxvaCgsUQtyxCshoApD4UqJOtOv9hFhM+doIULd5YJO
+	Yn4Cn/RagLIdVqkbikIesx1vX6tosZnLDy7TfUHra931PSqoFOKyPp6ggg73fSJXQ/gDj09YU74
+	Y71j3ZDQm5+hlml0MWsbb1L+eTTG/Px4=
+X-Gm-Gg: ATEYQzzCbdXpkoZMhWHN3Tvhc2IaoaZRByaCxKQp70ndCFq9r5MKa78tzRi92epj6ao
+	wmobXWtAW6yzOiZuZl9P07gnW6q+r21viRhz0OI4jnc8X5lB16Fs2nz5816Gdqa0Znpo33dl8Ny
+	PNKawMHJNGuaAjQjn8feL1NmItbHTJAoSfiYDvR9Hu/h++SJRtrgwF7mJqvzeXhdKxMPphAPCMR
+	TVurfzOQpPhvhqhZJhKZcrXVKC9SB1vv8+TZZmKtS22tpbHnlWJJkvqGIkj9LYflBFCuTMZFir9
+	2g7MqHk+lB/9QFncfYJQLofKHDRHSczCWW595VIqx+pvfA9UniYs63cUbUD/0xUyQYx9vC0FJWy
+	bjQEAwTKGkJKati/3RdRPwY/EWXKYAkFzWA==
+X-Received: by 2002:a05:7300:fd05:b0:2b6:f2d5:2923 with SMTP id
+ 5a478bee46e88-2be8a586527mr1139072eec.7.1773296252320; Wed, 11 Mar 2026
+ 23:17:32 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b7d3819f-168a-48f7-99f2-2ba04dec77e6@huawei.com>
+References: <20260312041934.362840-1-jhubbard@nvidia.com> <CANiq72kYpm5xZ+ppWuSg1O8zFQYgmbuJHBYh4dpgp2c7=zJJiQ@mail.gmail.com>
+ <6nswew4stvp3574nrwnppt7lxxp2zmijg62qdku2jqmkhdaaw7@qdesr4fe73fl>
+In-Reply-To: <6nswew4stvp3574nrwnppt7lxxp2zmijg62qdku2jqmkhdaaw7@qdesr4fe73fl>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Thu, 12 Mar 2026 07:17:19 +0100
+X-Gm-Features: AaiRm51Qa2FudyCou76Rapscpqw4S6II41HBPf-45BcYzbFSWmhD2xbEu1s-GAM
+Message-ID: <CANiq72nCNcdQSQ4GYSWU5Zdv8SKguM7bnq8xhoQ4YubFAyy7Lg@mail.gmail.com>
+Subject: Re: [PATCH v2 0/1] rust: cpufreq: suppress clippy::double_parens in
+ Policy doctest
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: John Hubbard <jhubbard@nvidia.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	"open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Alexandre Courbot <acourbot@nvidia.com>, Joel Fernandes <joelagnelf@nvidia.com>, 
+	Timur Tabi <ttabi@nvidia.com>, Alistair Popple <apopple@nvidia.com>, 
+	Eliot Courtney <ecourtney@nvidia.com>, Shashank Sharma <shashanks@nvidia.com>, Zhi Wang <zhiw@nvidia.com>, 
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Bjorn Helgaas <bhelgaas@google.com>, 
+	Miguel Ojeda <ojeda@kernel.org>, Alex Gaynor <alex.gaynor@gmail.com>, 
+	Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>, 
+	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+	Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, rust-for-linux@vger.kernel.org, 
+	LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 10-03-26, 21:11, zhenglifeng (A) wrote:
-> I basically agree with what you said. But I have a little question. Do you
-> think the target freq should be updated when querying cpuinfo_cur_freq? I
-> think it should only be updated by governor or when limits changed.
+On Thu, Mar 12, 2026 at 7:07=E2=80=AFAM Viresh Kumar <viresh.kumar@linaro.o=
+rg> wrote:
+>
+> Thanks for cc'ing us. Yeah, please take it.
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-I am not sure I understand the question. Where are we updating
-target-freq ? As far as cpuinfo_cur_freq goes, there is no need to
-make any changes when that is queried but..
-- cpufreq core caches the currently known freq as policy->cur and uses
-  it everywhere.
-- When cpuinfo_cur_freq is queried, we go and check with the hardware,
-  what the frequency is.
-- If a difference is found, we align policy->cur with that, given it
-  is still withing policy limits. That's all.
+Thanks for the very quick reply! Will do.
 
--- 
-viresh
+Cheers,
+Miguel
