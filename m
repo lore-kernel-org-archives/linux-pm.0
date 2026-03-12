@@ -1,189 +1,108 @@
-Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 636783F7ABD
-	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 16:27:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.221.43
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773332838; cv=pass; b=Z9KOpITRqg85KzOOB3H8gD5fUeyamCJ3g3bO1XCAxqmwLg1V+MZ8SDLSyZgwPv1yBRtFrXb3XCUqu1CEy1xY5iq3CF2Rgxo8eUXiFaYwMB8jHyMOgCa6rbWsQg3RuMbl8CzroDvo6VbeDbNmZBaPfonCAiYj+9y+x3l63MwwYGU=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773332838; c=relaxed/simple;
-	bh=uJhH0lI1sVgit2CkGLU8u1v8dwsbJYGM2kBA3mKuxJ4=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91A2E3F87F8
+	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 16:27:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773332847; cv=none; b=fsEGxKxDWHgJXCuwyLeOCg2dNd5Tk6e3b3fAkJS2tl4N4VUSa5C7hHUwyOukw/xPYCWiLaknmtiT82NtywxFDtuj0bGv918hPZ1XPRiL0hs8udeRogq/CL3XKng3VEMk0Z4XYwy+empYxJAkz2nq4oW393f77IWk9sJqGRTnVuU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773332847; c=relaxed/simple;
+	bh=klIjtGnnq8IH6AVCLjoMYDQV8qbk0J4MOywm/oNOznM=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ZV4o89mIY3X9wNn0eZavA4+RKbidrFoDYGcBWFZO2I/OW0Ji1M63E7uUU9OVl1+clpHD7sDSSo2+EGrDrS+rbsEVgZf/lXI93EUKpOyJYb33jDRY8VSMG+zdL2HzGiaXYI7Z8h3r0+q1PSE2UdazQtcQCuACA9I3sbQY7ouPXXU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NPxyPH1U; arc=pass smtp.client-ip=209.85.221.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=uVaz4vDg6qa8atiJGKCY3OxuIqZdfKN4Y4cAbc1DzBDIlTTUvzkFeCNa8/gD7m755znIM3YyZwqlQcrxApI2y+ZXdZo9y41ypGA7gFwh5dEcGc5bJgJQoSrH+jitBx/r+rYQT4A/QVBJepro4unxbZLeEmWuiFPuQtJp5iJmBC0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RLW+XA7A; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NPxyPH1U"
-Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-439b78b638eso1368128f8f.2
-        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 09:27:11 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1773332830; cv=none;
-        d=google.com; s=arc-20240605;
-        b=h5r3PxohJ3O9oO0TGCDys2ETeoO4sffo1C3zU9J+Y9+Zd+mhgTwXqQ4j7vQ77Almz/
-         QsAg0iL4lRKVaHqLXGF04vjw2PJ2p44tUYjmYwgaP9P/b+62aOv8RDZInBjYtmjxcvT8
-         K0w0HVDfzbMVw0+ETaIRQN9tgGbUP/lwhMqKBLdLk3kjBsrLUZKcRL9xxe/LVi0B2Ahl
-         G0aKom7ngT+Zy3RqoVN0ACpJ4wWWSWBBtLtO8nhNa7hczomgam7f4OUnuapfT+MAv9ZJ
-         Js9YQpDoJSa90/rBJR76JivUvROdKPtlk60gKucx1oYHlOECmdJeNTB0edtkhktphJFz
-         oLdw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=I7Vb1PKX3Lf9CJi8XSxHNY/kA1vBSZWZueHJy5RvI9M=;
-        fh=owOaV7JuZ7+INr7XWJ5TInvoYRcvulhpz53Lym04ImE=;
-        b=WNdzV3mEZOzUsCge89If0awe31bl8DqL41bj8WnegHl5aucsXUCojBi5EnIFczMfh6
-         Wdldhf2eXxCACHQgrI4i+uWjkyBjVdCW5QEymCOIIUGVsJapBnh7tB05fncpTvOlvvNK
-         XN8ZeJaZiSfyoutGOPICJkgohrf4A44ENT4+q9kpSjLAuvN4X3889Pj9AB2kBVGIOhq+
-         xigpplsVKxwjFB5/sFU1P5iHSMfFC7Ubfgep9fP4pStF2jJmffuLd8M41vyr50V5R1//
-         yIYwgoEWQx4R0cumjcuXt53cSyminmUP61UjNvWr+4GsN/+GP54KpSk2EsnKjfxpKB6n
-         SOBQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773332830; x=1773937630; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=I7Vb1PKX3Lf9CJi8XSxHNY/kA1vBSZWZueHJy5RvI9M=;
-        b=NPxyPH1UQiE56iO1J+Krg8QUq3kWeZN7ewAXlAKDSXLmD9rc8hiJXV6zw0tU7/4eTb
-         7K2JV4eNu1HVViAEQvcpPHamtWMW9R/RN8dUfZRT/xFaWFh9ziB0R5y2vk9d81IG3Wql
-         edW3lf6vaRoQETYACb7EsiIPOLgLy+DXqMWa/ba0Ly/gq0fFrd4Fe251t/u+qF2R0qAx
-         WlxFEbxFqV3HI7hNcrpjKS/KmbHQAInOSmxq7YsBwBCt9UwCRd33E91N2vZYjjCu+I2n
-         vM/xSlfa1htcXHU0nvfP4y6p4mEtMIFjElfxdykA5Ty1zJkkklrZKn+EyInyIw2oLdX5
-         IGUA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773332830; x=1773937630;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=I7Vb1PKX3Lf9CJi8XSxHNY/kA1vBSZWZueHJy5RvI9M=;
-        b=giNpHYxr688PGnl9igFCI+kst333wjwn8ZcdTFMdtt8E9K8h2C0c6FPNBnc/XQhnDw
-         pIGymryziKiv4LwNkvCI1FvKtjYGbX/1zhWs2ffNA70CZbvMtqEBUHcmVHj6/nEOnpdj
-         GaW7rlwtAkCszNGhapocLwKc6NzMphV9SEx724e27+btaFdKNOji2WF1/hSbYhayVP4h
-         ENK2C8qUZlk2QdB47jy9U0o076U+O+Eec/tvqM7FtAWA8C7O45rmUyd0xKGrcWsf+pMD
-         NEyJ/eLrG74omqzZAbDuycDXWO2McT5uMARpNFW8mIy2WvjH2+FZmVuBHB9A/5LXelE3
-         /8oQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVzVouP00ua/qh9ApXCgQdoHI6GRJZYlJfei/GtP8VmpYZjTeXzlqyF8IkeY4DoOdgDqv0Y5JvyQA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx8M07ScOuLebId+9HfnjTsmKlaHH5z07iKNtqGo3pAaNIcaA38
-	fu6kbyupTeRFAS7MJo8kNFw2zKg+Bdz7ILXQcEgFvOeYcuW+EqX7UMm2Tm8Yu6FeryplNHaUP73
-	lXlUD2GafNWnbCrMzQ5t/0KKXyp6XKC0=
-X-Gm-Gg: ATEYQzxxnn18aBYSvA+WnrkAskyKmtBVuYRv4jv6kP9zGQvhCo1KsjhvhvSFfbtLCOp
-	PowWbBI1I9WkPvqe0qTKc8yHSGws/ut6uPuwSSsH8dSwWzf3Ow25QFRIt8AYtK98FiK9w7zYs5I
-	1tZjbH+Pu/al9R6f8X8mbqKNjayuP9kUE+sVwCd59P8qpUP5OYat40tHrnUj7U7DtWrEOtk2zrW
-	9r2WIu5iFlbU1RmSPXrmwXKPHXB58vQYVuAgn3qRJZNDHSsC8pVKRnyiZ3DWlXrOjeFDh/6wCKc
-	frxrV02z
-X-Received: by 2002:a5d:5f88:0:b0:439:b671:1d8f with SMTP id
- ffacd0b85a97d-43a04dc0ba5mr539681f8f.45.1773332829453; Thu, 12 Mar 2026
- 09:27:09 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RLW+XA7A"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7FF9C2BC87
+	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 16:27:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773332846;
+	bh=klIjtGnnq8IH6AVCLjoMYDQV8qbk0J4MOywm/oNOznM=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=RLW+XA7A9j9Ma5L6EdbLiC24jJQI5/DnkpXeeUwJ1zCwbUeXywvWqj8KY/r2yYici
+	 L7s6gyZtkTfUvZ/Q/lclS16IPW/T/QKbcnzQw4FZqnbrtG5L2DecRf1NNohkVgXDgn
+	 UtjkbXiPaKctlmssI7UsQTI+jTQ0gocqgdaQFiWtf2xqd8om2ZRPNqDNPAFI3/5DnJ
+	 5GE+SSFidsP9PNRf5hcHdZUUIt7Yjj+182TkIo364oC+Zm/pzMplLq7uy64eF7aESC
+	 9aYcAf6Vjpha4QfEJx790T142+xpMT7plxlbeInPY/NWKGPN5UhRgggNkxqltsOje4
+	 nAqZMzJtNd4sw==
+Received: by mail-oo1-f53.google.com with SMTP id 006d021491bc7-67bb3fe55a5so487607eaf.2
+        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 09:27:26 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWCulO1ObtGBLKzU+sQAGBvtXOobL9RzrAk3YgI28E0z1nJOQA1FPb1ownEsGLSas2RYu5Vi5EaIQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywdpc9ys6Wazx5IOKcp8hLQ4Ce4SlVVzh12TPwC7CRqcjrAJTcR
+	RaS7+w/hFPuTwLhxOJ15iSQbicMuMNTgHeEa9KXI5MYE+qUMHbH76DK1yW2b7Fr0PeMn/4dXFWm
+	7m/t87EMWx2bVyVgR2bDqmUReQxP57D0=
+X-Received: by 2002:a05:6820:7083:10b0:67b:c8c4:43bd with SMTP id
+ 006d021491bc7-67bc8c44adamr2893023eaf.72.1773332846009; Thu, 12 Mar 2026
+ 09:27:26 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260312085258.11431-1-clamor95@gmail.com> <20260312085258.11431-3-clamor95@gmail.com>
- <20260312152057.GA3156966-robh@kernel.org> <CAPVz0n2GFgsrqo4_MkvNwd9t=DMU4ZGQzrpNjU+PZ4_Ysx_jcg@mail.gmail.com>
- <CAL_JsqKP-uYZf3MLFd5JrrsZ1+pxj-y+te_3uiM9N+5Xu4phUQ@mail.gmail.com>
-In-Reply-To: <CAL_JsqKP-uYZf3MLFd5JrrsZ1+pxj-y+te_3uiM9N+5Xu4phUQ@mail.gmail.com>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Thu, 12 Mar 2026 18:26:57 +0200
-X-Gm-Features: AaiRm51Esg3lleAiftngJqOtXTsbfFUPZvmyUsPO32KC3v38pJrGNn7u4Fa_N7g
-Message-ID: <CAPVz0n0aTEkmb6tFn72f7O=BvJzvkJ6ri+_TmQbnroNrWQppzQ@mail.gmail.com>
-Subject: Re: [PATCH v4 2/5] dt-bindings: pinctrl: pinctrl-max77620: convert to
- DT schema
-To: Rob Herring <robh@kernel.org>
-Cc: Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>, 
-	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Chanwoo Choi <cw00.choi@samsung.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, 
-	linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-rtc@vger.kernel.org
+References: <c3e22128e6619d24f3fc6ac07d1c854c664a7f1e.1773124395.git.viresh.kumar@linaro.org>
+ <05feb9ed-3257-452e-98e9-89637431a347@oss.qualcomm.com> <u4k5z6yilgjqajy6a4zxyt23tgmtp5hxqm6jlc55y2ize4rs46@3czv7uoybqbz>
+ <CAJZ5v0jvVNd3v_LcsM9Q2tZRavx0OQwZ-R4vWSzYr6edinRk4A@mail.gmail.com>
+ <z33jb5vwatwba24f2ftz5zb75qzqv7h4tljq72bwbvgphuvuds@jtxtl7geedtb>
+ <CAJZ5v0htdQqaQT+-FJ-Agt4aAONXH36Qg2htoo+onLmst0ZoZg@mail.gmail.com> <laiiguxeqjrxk36txx3g2ij3yzz7aldzcnnqoxdv3m6pjo42vz@e6a3mvnusqrx>
+In-Reply-To: <laiiguxeqjrxk36txx3g2ij3yzz7aldzcnnqoxdv3m6pjo42vz@e6a3mvnusqrx>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 12 Mar 2026 17:27:12 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0hM8wdug1xJ7j0sdVG+=xr3WcJ8OpfRDnmSOt6Zs=h36Q@mail.gmail.com>
+X-Gm-Features: AaiRm51RQ-Z4VM7kQSw9d7a7MrA9k3ez03k-HOc7aKaYqBceAUKrChNSto1Tyug
+Message-ID: <CAJZ5v0hM8wdug1xJ7j0sdVG+=xr3WcJ8OpfRDnmSOt6Zs=h36Q@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: conservative: Drop cached requested_freq
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, 
+	linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, 
+	Lifeng Zheng <zhenglifeng1@huawei.com>, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-=D1=87=D1=82, 12 =D0=B1=D0=B5=D1=80. 2026=E2=80=AF=D1=80. =D0=BE 17:39 Rob =
-Herring <robh@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
+On Thu, Mar 12, 2026 at 4:59=E2=80=AFPM Viresh Kumar <viresh.kumar@linaro.o=
+rg> wrote:
 >
-> On Thu, Mar 12, 2026 at 10:34=E2=80=AFAM Svyatoslav Ryhel <clamor95@gmail=
-.com> wrote:
-> >
-> > =D1=87=D1=82, 12 =D0=B1=D0=B5=D1=80. 2026=E2=80=AF=D1=80. =D0=BE 17:20 =
-Rob Herring <robh@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
-> > >
-> > > On Thu, Mar 12, 2026 at 10:52:55AM +0200, Svyatoslav Ryhel wrote:
-> > > > Convert pinctrl-max77620 devicetree bindings for the MAX77620 PMIC =
-from
-> > > > TXT to YAML format. This patch does not change any functionality; t=
-he
-> > > > bindings remain the same.
-> > > >
-> > > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> > > > ---
-> > > >  .../pinctrl/maxim,max77620-pinctrl.yaml       |  97 +++++++++++++
-> > > >  .../bindings/pinctrl/pinctrl-max77620.txt     | 127 --------------=
-----
-> > > >  2 files changed, 97 insertions(+), 127 deletions(-)
-> > > >  create mode 100644 Documentation/devicetree/bindings/pinctrl/maxim=
-,max77620-pinctrl.yaml
-> > > >  delete mode 100644 Documentation/devicetree/bindings/pinctrl/pinct=
-rl-max77620.txt
-> > > >
-> > > > diff --git a/Documentation/devicetree/bindings/pinctrl/maxim,max776=
-20-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/maxim,max77620-=
-pinctrl.yaml
-> > > > new file mode 100644
-> > > > index 000000000000..4e5f997317ca
-> > > > --- /dev/null
-> > > > +++ b/Documentation/devicetree/bindings/pinctrl/maxim,max77620-pinc=
-trl.yaml
-> > > > @@ -0,0 +1,97 @@
-> > > > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > > > +%YAML 1.2
-> > > > +---
-> > > > +$id: http://devicetree.org/schemas/pinctrl/maxim,max77620-pinctrl.=
-yaml#
-> > > > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > > > +
-> > > > +title: Pinmux controller function for Maxim MAX77620 Power managem=
-ent IC
-> > > > +
-> > > > +maintainers:
-> > > > +  - Svyatoslav Ryhel <clamor95@gmail.com>
-> > > > +
-> > > > +description:
-> > > > +  Device has 8 GPIO pins which can be configured as GPIO as well a=
-s the
-> > > > +  special IO functions.
-> > > > +
-> > > > +allOf:
-> > > > +  - $ref: /schemas/pinctrl/pincfg-node.yaml
-> > > > +  - $ref: /schemas/pinctrl/pinmux-node.yaml
-> > >
-> > > Don't these properties apply to the child nodes?
-> > >
-> >
-> > They do, but not all properties defined in those schema files are
-> > applicable for this binding. I have marked those which can be applied
-> > in the node patterns.
+> On 12-03-26, 16:43, Rafael J. Wysocki wrote:
+> > But how exactly does policy->cur get out the limits?
 >
-> Then additionalProperties is appropriate.
+> From the first email:
 >
-> > > > +
-> > > > +patternProperties:
-> > > > +  "^(pin|gpio).":
-> > > > +    type: object
-> > >
-> > >        additionalProperties: false
-> >
-> > I will move additionalProperties here then.
->
-> No, moving it is wrong. You need it here AND in the parent node.
->
+> "Later, some frequency division strategies on our platform were triggered
+> and the actual frequency become 500MHz -- 1/4 of the OS distribution
+> frequency."
 
-Oh, yes, you are right, it seems that I did not notice while
-converting from txt. Thanks!
+Maybe it's too late into the day, but I have problems with parsing this.
 
-> Rob
+IIUC, the platform drops the frequency to something small without
+giving a notice to the OS.
+
+> > I guess there's some notification from the firmware or similar that
+> > causes the limits to be updated, but the only way policy->cur can
+> > change is to still fall between the new limits AFAICS.
+>
+> AFAIU, the limits (in the view of cpufreq core) doesn't change, just
+> the end hardware frequency changes without informing the cpufreq core.
+> And if someone tries to read cpuinfo_cur_freq, cpufreq core tries to
+> get everything in sync.
+
+In that path it ends up calling cpufreq_verify_current_freq() which
+invokes the driver's ->get() callback, so I guess that's the one
+providing the "real" frequency.
+
+Next, policy->cur changes via cpufreq_out_of_sync() and
+handle_update() is scheduled which ends up calling
+cpufreq_set_policy() via refresh_frequency_limits().
+
+Say the limits are not updated, so we end up in
+cpufreq_governor_limits(), which calls cpufreq_dbs_governor_limits()
+in this particular case.
+
+Next, cpufreq_policy_apply_limits() which should squash policy->cur
+between the existing limits.  Effectively, this means that policy->cur
+will become equal to one of the limits after that.
+
+Now, IIUC the problem is that a change of the limits may not be the
+only reason why requested_freq may need to be updated and adding a
+.limits() callback to the conservative governor like in your patch
+should address that.
