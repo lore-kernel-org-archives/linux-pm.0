@@ -1,94 +1,176 @@
-Received: from out-170.mta0.migadu.com (out-170.mta0.migadu.com [91.218.175.170])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f174.google.com (mail-pl1-f174.google.com [209.85.214.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 574663B47D4
-	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 10:21:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1DCC931717C
+	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 10:27:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773310884; cv=none; b=J7OOQwy4fweKRgjN1h6hXwq4Hajshj0f/F34FUYJBk6mfk4AVGGAgWgS3V3T61e2p3pD48nQGkvhTJ+y9Kwl5Zk2WbPOrXHdj+MICtm/rFKDx3MZOW7L5OSAA0wLHVuaeOoaz7KlWghfy+FstgKP/cMAZ8ikaCuKKCUuN2We2d8=
+	t=1773311274; cv=none; b=VUGnki0ZXn7lPxqv1rVwmvcjZLhMIX4p8gfMWYNwZD4wGD/GOv70gyPQxJTFUlk/HBN1tUPOVfSOLSRrcHreYx0yT/4ZPdPtX1N1Ap7PUb4Xb0uyp/bKbcu6B/yEtuVsKHgnOXGnAXKeTZ8rindyu522pGnjes30pjiPLvSw6FI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773310884; c=relaxed/simple;
-	bh=lLmmJSbUK6nuG3qsXKOyCV63CZJ1OXF4FFrempg0NM0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=qJhSCldMH+SzKYBzt2LsKrXQZGU1oQIqXZokEoJ9FdDdG4nahUAsYvZGFR9UaIhUKJ5WFZDxeD7CUVSqEQxrUYgUJGgq4nYeLaV8VtvW+ko/aRbSnnz0i182eRE5dtLv/zeMtCkVsjuKlWx0a6Qe3pvc4Hy1sTZo1AcAhODnN9Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=r-ricci.it; spf=pass smtp.mailfrom=r-ricci.it; dkim=pass (2048-bit key) header.d=r-ricci.it header.i=@r-ricci.it header.b=q/OI7cSv; arc=none smtp.client-ip=91.218.175.170
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=r-ricci.it
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=r-ricci.it
+	s=arc-20240116; t=1773311274; c=relaxed/simple;
+	bh=J1xyOkEmiOAjdiWjT1Vd3Vh/fiDoVKIED4h5yAZ2DWg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Pi8lW2O+1im7MMG0P6nDXBeeDjSgGAf1Yhy0ybDYIpEAJK6pYpMFoUUsYWC/ANyi1oVZ/J6YMWWRz499SsmfLq8VA9NoJt0jDLIZp16LCfm/04ohcb4PM7TYwSb0TxRHEyxeevr0extaxDYTo8svOsAm1/ZvxbPTwaB4SiD0kUY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=VY8mQmta; arc=none smtp.client-ip=209.85.214.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=r-ricci.it header.i=@r-ricci.it header.b="q/OI7cSv"
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=r-ricci.it; s=key1;
-	t=1773310880;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=6e8pNrFlDGhwkWaf4KLIsoEGiaACWnfCT7kPz/obJPE=;
-	b=q/OI7cSvpxxaAK4W8I915aiDtIFVsMn/vt+izOlpln5zazWvaGfAnk0S7rZ9umVfPnXMM7
-	fYH8m4QrWBIR4JazNvpArE7fjhs/mPULYhokyBm2yp9NZ5VB/EJ+fsQs8ayJD4Mmn5ysnQ
-	jmXuEyWunTq+pg2Ml+gqsPbCnSYILNa/cjGDfeE9cRYpR8nWykAsJFMOvvS5bayURducyC
-	lUs96pxtkMH53sJ3v9Zzgy7FEgLVg8T5Ry647m69fXwnRd2Q5oPqiqyqLlWpiUpXM5jQtL
-	QuJB6/DxxfP8NSlgomE4YctPMTJZjOfeBuiSozMwc0oGznqeZTH3snHuY0PcWQ==
-From: Roberto Ricci <io@r-ricci.it>
-To: Thomas Renninger <trenn@suse.com>,
-	Shuah Khan <shuah@kernel.org>,
-	"John B. Wyatt IV" <jwyatt@redhat.com>,
-	John Kacur <jkacur@redhat.com>,
-	linux-pm@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="VY8mQmta"
+Received: by mail-pl1-f174.google.com with SMTP id d9443c01a7336-2ae43042ea7so11028485ad.0
+        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 03:27:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1773311272; x=1773916072; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=rEV4nPJqXpdGF5L8MbJx/3cKslIIA/yVZckWmA+Jr1U=;
+        b=VY8mQmtaKO6DYeSyYBu+obhQccAySNYLfhaiC9NkMF6rTUFgnrhQgBokNTLKsMxQUV
+         sJrWYPOUo2XeWW77hym9WjVEbvK5fFzolTNKRIGutPF6LXqh1pL5L5c4jprkpVC+oCYj
+         nEjU1QXCcFLqv1ZPJdUjuuLcZkSM0vY8MQS2VDh/awAeWzXpHxt9CW38DG5sL8YMKGUM
+         NHpHYK2x79ol2wSpDcoM6GKthVSeNp5HtY/lx7epXF3T99V3mEQTkaOc7GkRcRDaV7rg
+         v1X3HSXxAxJwmpD9IElccU+kjRmVJSOJo1E0oD3a/0/ug/iWjre4RXr6CCt0jPoiEu3a
+         7PYQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773311272; x=1773916072;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=rEV4nPJqXpdGF5L8MbJx/3cKslIIA/yVZckWmA+Jr1U=;
+        b=KFDnll2YDFjK+3vTMwfru1CEeRgDUnr+4dlal2d2p0AFL082FmVUxxAJsyO15tUEZc
+         flrTq8S9HsSCpGh56Jop4s86D+ljXSVF5rBRy0FF8zpJhtqY1mzryjU5U8ub0ZZv3x5J
+         LEb/1XEBtDSkvNyxXizN3MpnnwxT+J9wenSApFhAD+fH/1tlCh8BmggG7RXfLemnNwLn
+         623HuHfrZExIW3g0p+Ejy0E5ESCij5MkIT4Q7/BaK3pRVsrmp58AjHk6OzweFKSdxe3t
+         4oo9woqdIcH5uFvMzUn1M6kp6K341u8vIFXlPi9vYazyF4mAfM1QBuU5l1IfiuIKdCUE
+         cLjQ==
+X-Forwarded-Encrypted: i=1; AJvYcCV6HqsMIZlVCrDlCHHzzrrMukw0XrvdVFhugs6JRBi4+jHCrBuGJBMo0+HJn63iCvYB+UcP17zNiw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzACYMggpdpBDkdvYd5+thY4xPImhrwZ2THxGHV8r33BMpfXUyQ
+	oWG4RWNmhbvBKSSg8hVDqJDvo5/RJrjpSK2pFd7rK+lybasOas2qJ3pFXCdvfLAzmLQ=
+X-Gm-Gg: ATEYQzy3aNbphorfrorj7DewAh2Ael1yv2oZHQazrpBovZnvKX5/LZpn8hmElRNq6XB
+	fHJM3QtnqzQeCFrjh8TahN11dzLaUZ2Sxl32a2TETyz5Cwlzx+DH46ohQmdVYae9J7zYqcCyyiQ
+	IblULj50bj0jBjTPXsdsmzZvgIsTOWxwaNcNeDS//JHzCXDlDrw7FwzArgNovOGaP2uUj5xSGJD
+	HPOvzR9P9ppvzxvjWAeVHWhwQ6xgwR9ttCLvnM94xWXi1U7b8O0L1Atz/CkXfXl7AkjryuXch6a
+	TBHqp3XtbwSRaVdLNfYV2e2VR6sNK7GQZCQ84pdKvdqgyGV1WwxQS4dNZqq2WG6cR0fdNz0EpR/
+	SDoF9j+4w0noPm4smopmJH76ht83unCtBFhwp+eN5EoTgXUeM5RMECng5lHw6XEwIHulylfGdqE
+	xOCkN4gZ4Ch3ESTtk5OA+MtRdn
+X-Received: by 2002:a17:902:e892:b0:2ae:483f:b23c with SMTP id d9443c01a7336-2aeae85b1f6mr61731285ad.36.1773311272182;
+        Thu, 12 Mar 2026 03:27:52 -0700 (PDT)
+Received: from localhost ([122.172.81.200])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2aeae222900sm54831785ad.6.2026.03.12.03.27.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 12 Mar 2026 03:27:51 -0700 (PDT)
+Date: Thu, 12 Mar 2026 15:57:49 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, 
+	Vincent Guittot <vincent.guittot@linaro.org>, Lifeng Zheng <zhenglifeng1@huawei.com>, 
 	linux-kernel@vger.kernel.org
-Cc: Roberto Ricci <io@r-ricci.it>
-Subject: [PATCH v3 4/4] cpupower-info.1: describe the --perf-bias option
-Date: Thu, 12 Mar 2026 11:20:29 +0100
-Message-ID: <20260312102029.14980-4-io@r-ricci.it>
-In-Reply-To: <20260312102029.14980-1-io@r-ricci.it>
-References: <20260312102029.14980-1-io@r-ricci.it>
+Subject: Re: [PATCH] cpufreq: conservative: Drop cached requested_freq
+Message-ID: <u4k5z6yilgjqajy6a4zxyt23tgmtp5hxqm6jlc55y2ize4rs46@3czv7uoybqbz>
+References: <c3e22128e6619d24f3fc6ac07d1c854c664a7f1e.1773124395.git.viresh.kumar@linaro.org>
+ <05feb9ed-3257-452e-98e9-89637431a347@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <05feb9ed-3257-452e-98e9-89637431a347@oss.qualcomm.com>
 
-The cpupower-info(1) man page only mentions the short form of the
-'--perf-bias' option in the synopsys, but the long form is not
-documented and its effect is not explained.
+On 10-03-26, 21:17, Zhongqiu Han wrote:
+> Thanks for the patch. The fix looks correct to me for the reported
+> issue. I do have one question though - should we also consider the
+> interaction with commit abb6627910a1 ("cpufreq: conservative: Fix
+> next frequency selection")?
 
-Fixes 7fe2f6399a84760a9af8896ac152728250f82adb ("cpupowerutils - cpufrequtils extended with quite some features")
+Thanks for pointing this, I missed this change.
 
-Signed-off-by: Roberto Ricci <io@r-ricci.it>
----
- tools/power/cpupower/man/cpupower-info.1 | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+> However, that change was subsequently reverted by commit abb6627910a1
+> ("cpufreq: conservative: Fix next frequency selection"), which noted
+> that using policy->cur directly broke the algorithm when freq_step is
+> small relative to the distances between available frequencies. In that
+> case, the governor may not be able to stay within a narrow range
+> between two consecutive available frequencies and instead jumps through
+> steps faster than intended.
 
-diff --git a/tools/power/cpupower/man/cpupower-info.1 b/tools/power/cpupower/man/cpupower-info.1
-index 340bcd0be7de..a8d5aee4381c 100644
---- a/tools/power/cpupower/man/cpupower-info.1
-+++ b/tools/power/cpupower/man/cpupower-info.1
-@@ -3,7 +3,7 @@
- cpupower\-info \- Shows processor power related kernel or hardware configurations
- .SH SYNOPSIS
- .ft B
--.B cpupower info [ \-b ]
-+.B cpupower info [\fIoptions\fP]
- 
- .SH DESCRIPTION
- \fBcpupower info \fP shows kernel configurations or processor hardware
-@@ -13,6 +13,13 @@ Some options are platform wide, some affect single cores. By default values
- of core zero are displayed only. cpupower --cpu all cpuinfo will show the
- settings of all cores, see cpupower(1) how to choose specific cores.
- 
-+.SH "OPTIONS"
-+.LP 
-+.TP  
-+\fB\-b\fR \fB\-\-perf-bias\fR
-+Gets the current performance bias value.
-+.TP  
+Its the opposite I think. The governor stays within a range and never
+goes to a higher or lower frequency. This is how I think this happens:
+- Lets say frequencies are from 1GHz to 2GHz with a gap of 200 MHz.
+- Lets say the frequency is 1 GHz now and the step size is 100 MHz.
+- conservative governor will try to change the freq to 1.1 GHz and end
+  up selecting 1 GHz only (due to CPUFREQ_RELATION_H, highest freq
+  below 1.1 GHz).
+- With my patch, we will keep resetting to 1 GHz (cur freq) and never
+  change freq.
+- With a recorded requested_freq, we will move to 1.1 GHz (actual 1
+  GHz), but a subsequent call will go for 1.2 GHz.
+
+Here is another idea, once everyone agrees I can send this formally:
+
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index e0e847764511..df01d33993d8 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -313,6 +313,17 @@ static void cs_start(struct cpufreq_policy *policy)
+        dbs_info->requested_freq = policy->cur;
+ }
+
++static void cs_limits(struct cpufreq_policy *policy)
++{
++       struct cs_policy_dbs_info *dbs_info = to_dbs_info(policy->governor_data);
 +
- .SH "SEE ALSO"
- Options are described in detail in:
- 
--- 
-2.53.0
++       /*
++        * The limits have changed, so may have the current frequency. Reset
++        * requested_freq to avoid any unintended outcomes due to the mismatch.
++        */
++       dbs_info->requested_freq = policy->cur;
++}
++
+ static struct dbs_governor cs_governor = {
+        .gov = CPUFREQ_DBS_GOVERNOR_INITIALIZER("conservative"),
+        .kobj_type = { .default_groups = cs_groups },
+@@ -322,6 +333,7 @@ static struct dbs_governor cs_governor = {
+        .init = cs_init,
+        .exit = cs_exit,
+        .start = cs_start,
++       .limits = cs_limits,
+ };
 
+ #define CPU_FREQ_GOV_CONSERVATIVE      (cs_governor.gov)
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 36eb7aee4bcd..acf101878733 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -563,6 +563,7 @@ EXPORT_SYMBOL_GPL(cpufreq_dbs_governor_stop);
+
+ void cpufreq_dbs_governor_limits(struct cpufreq_policy *policy)
+ {
++       struct dbs_governor *gov = dbs_governor_of(policy);
+        struct policy_dbs_info *policy_dbs;
+
+        /* Protect gov->gdbs_data against cpufreq_dbs_governor_exit() */
+@@ -574,6 +575,8 @@ void cpufreq_dbs_governor_limits(struct cpufreq_policy *policy)
+        mutex_lock(&policy_dbs->update_mutex);
+        cpufreq_policy_apply_limits(policy);
+        gov_update_sample_delay(policy_dbs, 0);
++       if (gov->limits)
++               gov->limits(policy);
+        mutex_unlock(&policy_dbs->update_mutex);
+
+ out:
+diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+index 168c23fd7fca..1462d59277bd 100644
+--- a/drivers/cpufreq/cpufreq_governor.h
++++ b/drivers/cpufreq/cpufreq_governor.h
+@@ -138,6 +138,7 @@ struct dbs_governor {
+        int (*init)(struct dbs_data *dbs_data);
+        void (*exit)(struct dbs_data *dbs_data);
+        void (*start)(struct cpufreq_policy *policy);
++       void (*limits)(struct cpufreq_policy *policy);
+ };
+
+ static inline struct dbs_governor *dbs_governor_of(struct cpufreq_policy *policy)
+
+
+-- 
+viresh
