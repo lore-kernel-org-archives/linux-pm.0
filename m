@@ -1,211 +1,193 @@
-Received: from SJ2PR03CU001.outbound.protection.outlook.com (mail-westusazon11012030.outbound.protection.outlook.com [52.101.43.30])
+Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C57D24A076;
-	Thu, 12 Mar 2026 21:31:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.43.30
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773351113; cv=fail; b=cgQWc6dvmSJ5lJuAdWSypbdNNMs6kx8RTjuwBkgkGI5BGlni/zSUocke+4Pr6nBxK3RMQ3fK8Mu580LVQF9cJhyMm/xM10XNmmSA3h3UrjgcGpnZMiH4w6QWOE/Lb35zY/PysbEkxDsNeRmvk9IjB5hYiGHe3tJFKJsRAvv6WMY=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773351113; c=relaxed/simple;
-	bh=tIBCYf81aKRnTXRYop3ezYqDgjUSAFTqPBHwFocvCiU=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=achtAc3UxySuWHEyIjKlGJ+ydYT+cX4b6rSOZo3E+REvpJmgqZDPXYW1chj8ixKZhcevfo/yr2GUfIvcHTD6eiE794BzRF5idpjF6kxpuPOcE+Azu+LTRYCD7vnBnEj5Z8goraMBDt8kvXBQfCkpuJm5WFJHM3p6FHARXB5YObo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=MI4DccNw; arc=fail smtp.client-ip=52.101.43.30
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 730851B4F0A;
+	Thu, 12 Mar 2026 21:35:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.97.179.56
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773351304; cv=none; b=HrE0Zx2F0/45jQP4cW8wQsoWRi/1TU80F2ZrdqK2yWMv9TF4U7HO3D4234VrDWtKQUEEGAYdBw3OBWKYs+9CXDCiObeOD85zHuXmfNLy2acrj+60GyT+h5DLbPgJbCI7RjTOSHPNU16MznzAqJOUrAuC0UUCGsjb2FxuPeKWeB4=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773351304; c=relaxed/simple;
+	bh=hMV8b2zX+MF3vz/Lexi8nix/0TRXQp0tGvL+/FqMPR8=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=V54LAXQiifGmiYOtFOIFg+vJ1nBRyRjLL6WzcumwjpPNcOMRjlO3LGksIYdUyZqyXR57MElnRxAbKKAQxVpY8/3gSwlof2WJbFTf26vxNwWRWk9ftNxT1JB0aWAf7cl5PcrHS2ME7OdqjDjRB0LB5eX+je6gcmNZFLC7f1pbitY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com; spf=pass smtp.mailfrom=igalia.com; dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b=JcTYpUWp; arc=none smtp.client-ip=213.97.179.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=igalia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="MI4DccNw"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=ONfyhBLlCTuuGBnZFr+aaPe1fjwJ4wGqTXpX6Dax+yCsDig3NGjIYxzICgd5SFRW4nRBhTXim3YBGoJ03DkSHR60BeTnWfoRxKU4Uy63WTBi6CuAKUWFrn9iyZZDDBiUNkn6mYW9pbENBIiUDhWCHoqxCaM6007g9ZR9ILADdvxUeJke0Qj7+4mTAnYyf9mX+UzWjiCBwPWusXQPvY2FTWsJqxZIfecs3Wxp4igvV3+9fmr5gbinFezes2umJEHcFdYHklYB6VhKvsw0ZT8bs5sIJyGBu5Fn2E49QRUUcSeqR9OS25RBx3wcjh995CFOtoDAf0Y8WiIC6eKcTkzS9Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=E2dBEBc0YATwXLivOwngGwphTh6bIpdIPot4oKdwj3s=;
- b=QXTEk+iGM16SANpbomssPBpwKNw+v8XjaJP5WvbYa/JXVJsXObHObZph3abxzV0bz5gV7c4hvzJe02PcrfgA20csiuLCA8Op9ZYkK+F8azgkq7O1zKiabr7jolt2XdwRq04W4vB77g7C+rvF2xmqikP2VavJ2n4d9JUdAENlKHKIyfVyhkpUjoe+pVuXjhT5NxGk/EKRu2pp/e5eXa4nljbF89vULp4u6RKF8LX8/Rx9KnPtpzdGY+GXWDq2YR3fquGa0KUySetstwBUbt6CBkKSuhHtYjwgV7vlwP0lqk0vn+w9grr2tNVf+WRa+fWjnxQ54zsGe5IlrfkKYX/M/A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=E2dBEBc0YATwXLivOwngGwphTh6bIpdIPot4oKdwj3s=;
- b=MI4DccNwJNlAIJ6vQXowk0NUYvHCdxQQYJQmcN6LjgnyELQjEd9L5HRQ6tcd/hnQnvEHntz5LlIU/+iRVi/vDseXnlBu89ww0TLRNo5vQjMGjiw5SWz+vFmsTdViLrK63EZcoF0ndug0Y7AACfPhaEBE2MMTD+mY9PHBQWvGD74=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from LV8PR12MB9714.namprd12.prod.outlook.com (2603:10b6:408:2a0::5)
- by CY8PR12MB8410.namprd12.prod.outlook.com (2603:10b6:930:6d::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.4; Thu, 12 Mar
- 2026 21:31:49 +0000
-Received: from LV8PR12MB9714.namprd12.prod.outlook.com
- ([fe80::8c9f:3a5b:974b:99c6]) by LV8PR12MB9714.namprd12.prod.outlook.com
- ([fe80::8c9f:3a5b:974b:99c6%6]) with mapi id 15.20.9723.006; Thu, 12 Mar 2026
- 21:31:49 +0000
-Message-ID: <e812f955-c696-4474-8dec-1b4654286876@amd.com>
-Date: Thu, 12 Mar 2026 14:31:44 -0700
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 5/9] dax: Track all dax_region allocations under a
- global resource tree
-To: Dan Williams <dan.j.williams@intel.com>,
- Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>,
- linux-cxl@vger.kernel.org, linux-kernel@vger.kernel.org,
- nvdimm@lists.linux.dev, linux-fsdevel@vger.kernel.org,
- linux-pm@vger.kernel.org
-Cc: Ard Biesheuvel <ardb@kernel.org>,
- Alison Schofield <alison.schofield@intel.com>,
- Vishal Verma <vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>,
- Jonathan Cameron <jonathan.cameron@huawei.com>,
- Yazen Ghannam <yazen.ghannam@amd.com>, Dave Jiang <dave.jiang@intel.com>,
- Davidlohr Bueso <dave@stgolabs.net>, Matthew Wilcox <willy@infradead.org>,
- Jan Kara <jack@suse.cz>, "Rafael J . Wysocki" <rafael@kernel.org>,
- Len Brown <len.brown@intel.com>, Pavel Machek <pavel@kernel.org>,
- Li Ming <ming.li@zohomail.com>, Jeff Johnson
- <jeff.johnson@oss.qualcomm.com>, Ying Huang <huang.ying.caritas@gmail.com>,
- Yao Xingtao <yaoxt.fnst@fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Nathan Fontenot <nathan.fontenot@amd.com>,
- Terry Bowman <terry.bowman@amd.com>, Robert Richter <rrichter@amd.com>,
- Benjamin Cheatham <benjamin.cheatham@amd.com>,
- Zhijian Li <lizhijian@fujitsu.com>, Borislav Petkov <bp@alien8.de>,
- Tomasz Wolski <tomasz.wolski@fujitsu.com>
-References: <20260210064501.157591-1-Smita.KoralahalliChannabasappa@amd.com>
- <20260210064501.157591-6-Smita.KoralahalliChannabasappa@amd.com>
- <69b2087cb0cb7_2132100c2@dwillia2-mobl4.notmuch>
-Content-Language: en-US
-From: "Koralahalli Channabasappa, Smita" <skoralah@amd.com>
-In-Reply-To: <69b2087cb0cb7_2132100c2@dwillia2-mobl4.notmuch>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: BY5PR20CA0031.namprd20.prod.outlook.com
- (2603:10b6:a03:1f4::44) To LV8PR12MB9714.namprd12.prod.outlook.com
- (2603:10b6:408:2a0::5)
+	dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b="JcTYpUWp"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
+	s=20170329; h=Cc:To:Content-Transfer-Encoding:Content-Type:MIME-Version:
+	Message-Id:Date:Subject:From:Sender:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=VGnkNRbRIEFHMah1+akqFhtLH6g58Zk2y++AAOv+YdQ=; b=JcTYpUWpKsT87x8t8maCHWrVl2
+	iiDgVs7oxAxrgH8T/lzBgDAsjOrIUXPimx82x6BiwB5lI37BJfhc2dKoIBNMWpkRwxDh/6akGFR3/
+	RMfy62dcd+Y6hv9IdwpS+H2uhjFP6IPllzelrMU0voGT3W5J/IUicx9AttbtcKfk0/nJafcchbUr2
+	B88Zmj+GxUuenVVg+IP+2r1d9oPr3IzYyPiapPA5HqeZa2BeakADYgH1h37N9JVlWG9dsjHM5sbVv
+	dn1t21EreEcj3exSnXT03ur/2l1dH8hN+DDUEhptRT9Bw9VbULQG9xn7gUI0X7MDXvgOGwn4yM+7i
+	y7uvj/7Q==;
+Received: from [189.7.87.203] (helo=[10.0.0.1])
+	by fanzine2.igalia.com with esmtpsa 
+	(Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim)
+	id 1w0ng3-00ElyQ-So; Thu, 12 Mar 2026 22:34:44 +0100
+From: =?utf-8?q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>
+Subject: [PATCH v7 0/5] Power Management for Raspberry Pi V3D GPU
+Date: Thu, 12 Mar 2026 18:34:22 -0300
+Message-Id: <20260312-v3d-power-management-v7-0-9f006a1d4c55@igalia.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LV8PR12MB9714:EE_|CY8PR12MB8410:EE_
-X-MS-Office365-Filtering-Correlation-Id: bbc90ad5-3738-4731-d97b-08de807ec4ed
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|376014|7416014|56012099003|22082099003|18002099003|7053199007;
-X-Microsoft-Antispam-Message-Info:
-	YF5qpkqAA5YPC75mal8G/GWJ2Joe5eVLbdP0/gR5I+gdsPzhDFA8q5iIJ2vib5tBqL3g7lHnQaBJr3cGQB/EA54rhmBxag1EyL0ab7m8AWkuxn0IjR3R1H0RqyBhqWgNMI1+fs0VzNslMZTcPeRg5HwgBw7H5N76yH4ae58jPVgTxwu5dFvPzdDRbOvuuV83aLBhP3uAqw5FXVlYqA7HOTNHwxKctXL8uvCaWUrvCVlI7nTpe5bNnljzMUcZGiPcMEXCFwz8sYNBEXoQLb5NZrIcn9OOUc/5FWx5W8qU1OmvtEOt0HOXJBU8jclr9v1YjA09iwIs5efmO+F0W7TtLCXATNvIDbdXQX0uEJse9dWPQfO0uBg7G3yzkj+P9pEws/ymVjRCYLUT2ox9TvvICiIcKv7ndBl5a0yQ3ksiKEyTlJRQ7f4VAMIiaud9o7qbbV5nz0PlaVhJyBeKK0AVq3Zb7VZSObiUzUvnHeDAOUhQniSSzPwEelUACHzYrQIobWJhW1+JaXCzFTm1MS1bpe8yNqaPIBcpaWQeUPH7d6BQAxx4LpNjhJigCwcd40uj58dxZRDl1fS3Vu7z300visukFf1rBt44kMe1hGqLdh1MVay+C2ja+De1cp00U6j3I9HxaDqlpNpOLH5b53rHcSqctLzfrIr6eKlNc35LoEK4tI8oxGagVnyAoTY815n5aKn3qxW3vsNbfwmweWR6h01SrME2k7X54aTYB6Rjlig=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV8PR12MB9714.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(7416014)(56012099003)(22082099003)(18002099003)(7053199007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?azQrc05jQmVZVENwYVFnK2pJOXJUM1U5RENTdyt0a0dNcCtSQWxHcmtGaUh2?=
- =?utf-8?B?amtuTGxTUVhZd1ZlT2Z4aFliRVNDeEJwY1N4ZUtjSXFQM0hUMHRsd3FjbGl1?=
- =?utf-8?B?YkJzZ0M4T2tzRWFlYUgwK2hMSTZSSjZaVTVKN3hubkZucW1LdUJueUpCR1Vl?=
- =?utf-8?B?OWNvTUZ1RnlORG1wN0pSYlp5bEdpN3ZqTjN6M2lmYjl2OFN2TktHSDdQY1Q4?=
- =?utf-8?B?NE1RbTB5OUo1aU1iVHh0S3I4aitiUnhVWWsyOVB0aThyWFl4NXc4bXFuYnlR?=
- =?utf-8?B?MFoxWlpQb3NJUzdwa3Q1VWVEZHovSy9YaVVCL0lVQ0g0TUdDaWhoZDRnZ3NG?=
- =?utf-8?B?OHJuSHh4WDllM1Q5cVVRTmsrSVpwcVdrTVloa1hXRXJQTXlXZTRFK0lKcnM3?=
- =?utf-8?B?TWwzbnBqbG03K0xoNUs5Y28rNjZSZEZ2NTB1bGJTS2EvWDFWMm1SdmsrdThi?=
- =?utf-8?B?eTV4dGpVd052bTcyT1pXK2RtREkzcjVvZFFCdVQwaVo1cUpMWnd6bC9Ramk4?=
- =?utf-8?B?Zm1nL3BTc2k0YmNrd05lSlhuVWFvcEtWeVVLa0Z6ampCMnRZZWlTaldoMDBy?=
- =?utf-8?B?Sk9Ramx3ZVhiYldmTXp3ci92bVFVbDljbUhYZ0RBZG0xclQ0NnNsQmlaWHpq?=
- =?utf-8?B?UXpad2tDVUtxLzJNcFl0YkVxc3g0RTUxVHdTdEdvbTdpTHIzd1ZCeDlIYnZR?=
- =?utf-8?B?ZUhodUNFZXZ3R1lKTVRub0lWVUhRbGV1TEh4N2tGT1dEekk1ZUI4ZHdLWGw5?=
- =?utf-8?B?d0sxTWJvQ05KMWprdm1Vem05RGZFL3JaUExGMlMzSmVGQTIyb3V1VHZWMVJR?=
- =?utf-8?B?YUtGUmpackRMS1hyc242SjNnQm5PcHp5R054SUdSQ0tZQmp2dG9uaGYzNlNl?=
- =?utf-8?B?bGtuVlFVK2dEY2NFK05OV3lGYWtybU5OVEhPdXlkaWQxN3hqOUlSa2ZEcGZv?=
- =?utf-8?B?QUo2ekQ5bytSSXlvNmsyLzZZbEE1cEE3N0RWaU1IZ3RDU1duNmNDWTQ3OWNy?=
- =?utf-8?B?Y1llYU1ueW5sZkpkZ1ZkSmNyS203L3FRUmxWT2Iwei9CNU5ib1RlU2Zjditk?=
- =?utf-8?B?b2lPR3dTV1l2VTBxRm1FOUUxSVRReU5naEZvOU1GQ1J6TnNCVDlnZkgyeXZs?=
- =?utf-8?B?TTNoMjI0M1kyM0R3N0pwKzR6RjdobkQwWlRiSFhRZjNDRndxS2RSR2U2RjNJ?=
- =?utf-8?B?dUc1N1dPdGkxQi8xMkxKN0MwUG9tVVg2Z2pSSTFlZVQ3cllyWHMreVc2U0ZC?=
- =?utf-8?B?Q1ltNmxKUG0xeW9kTEtXdWtKV3FJWjE2SytJUFpQdjdOc25qdFJ2cGtpMmhX?=
- =?utf-8?B?RzQxT2R5emx2ZXYzcGVYS09LVHBlelkyQVl4VTRTUm1XS3dsc2tOVTFwaGdn?=
- =?utf-8?B?d3VVK2RjSUxiWXgvd0M3amZpbUpMNEM2Si9IVURCWUFjZ2oyaXZYd1ArNk1q?=
- =?utf-8?B?RU9GY1lOeUFhdStZc0V1OXdETm5IdFNzdlI1YkpKYjV4YXVURzVISS9qWmtU?=
- =?utf-8?B?c1BLWTU1K3VSUUtNVW9iR2d4UFI3Vjh3c0xmOUJIQWNzdzNPRTJwUENDN0ZU?=
- =?utf-8?B?ZHprZFdNTkdtd2lsSDNnRld1Y2NUdnhmNEdMNUJ0SldRZnFFZEtKNllGcGxW?=
- =?utf-8?B?aG9FTGtyMlN2ZmhMK0RzeDB1MmxFd0hpcEdUbXlScjlPUDJPV3JxaUZNTHh6?=
- =?utf-8?B?VDdQbkt4Ti9mNVZPMjlvM2ZwdExZZEYzU3NKVTlzTHdBUzlPTUtUWUw2a3Uv?=
- =?utf-8?B?ODI4T3cyemtqWDRYKzBKcHBqSlZJK3RYNVdMQTNCdFY4U0srZUFvOXEwaFNP?=
- =?utf-8?B?ZDFQbDFJcllwcmlDOUcwZlk0MjhhQ2RxbGQ3ZHJUR2JFVlFXT0NMZGFuWVU2?=
- =?utf-8?B?UHdnUDVISjI1Nkd0eXF5dzJ6T0RUR2hrV1FiWXdOZmNOVWZqRXNRb3BPNU1X?=
- =?utf-8?B?S1MwdXNKQkZSaEdMWWFVQ0FZNEJoYlZuWTR4ZEZXUnNqczkweld5YnVXSWti?=
- =?utf-8?B?YjA5ckl4WlJNQTBkU3dDM3JBeXpmaU9TMnpUZE9yT2lVd2FCckwwYWVpNDlW?=
- =?utf-8?B?djZzUXhTdk1Lamk4NEpWbnloUitQSGJWNVB0WlVWK0dUSVlKYWRoQ0JwZnVW?=
- =?utf-8?B?UmFYc2FFUzJsV3hRWWxHaTF6cFl3bHpTVzlYelo5OC9GRng5aitubkpyTWpa?=
- =?utf-8?B?TmZvdEFCRGRWWGF3ejlmSXovemdrcWRLa0xITnpLbmFKUjZqSVNTNTh3dmpH?=
- =?utf-8?B?MVBFT3J0YmpCVkpYZGpLZWEwajFCd0lsdEU0ajkyTG1tVDJyd3k2WnBQVmhF?=
- =?utf-8?B?bndhbEhYQUM0aDJHQXp3eExIYk5ZYmdIM0RXbUovL1NqcUxrdDFkUT09?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: bbc90ad5-3738-4731-d97b-08de807ec4ed
-X-MS-Exchange-CrossTenant-AuthSource: LV8PR12MB9714.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Mar 2026 21:31:49.2679
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: XBuW0uwN48xY3zQRWzwTBnQtinY3XxWCZD+/++4uwFBtdNeYb5vFI78w/FH1i8ixE5myZ7s6YKGzWBzmOxmIZQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY8PR12MB8410
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/4XQwWrDMAwG4FcpPs/Dkm3F6WnvMXawYyU1LElJS
+ rZR8u5zCmMZwez4C+kT0l3MPCWexfl0FxMvaU7jkEP1dBLNxQ8dyxRzFqjQqgqdXHSU1/GDJ9n
+ 7wXfc83CTzCHkDhObmkQevU7cps8H+/qW8yXNt3H6emxZYKv+Ay4glaycamvEAMq4l9T59+Sfm
+ 7EXm7jgTtFQUDArSmO0FBTUZA6K/lFIAVBB0VkxDK4y7CBGOihmp2BJMVlpfIuxBYqG8aDYXwV
+ BFxS7/cW7oB1w0FV9UGivlL5L20WKnG6jrh3ZP8q6rt9ohgtEFwIAAA==
+X-Change-ID: 20250728-v3d-power-management-eebb2024dc96
+To: Michael Turquette <mturquette@baylibre.com>, 
+ Stephen Boyd <sboyd@kernel.org>, Nicolas Saenz Julienne <nsaenz@kernel.org>, 
+ Florian Fainelli <florian.fainelli@broadcom.com>, 
+ Stefan Wahren <wahrenst@gmx.net>, Maxime Ripard <mripard@kernel.org>, 
+ Melissa Wen <mwen@igalia.com>, Iago Toral Quiroga <itoral@igalia.com>, 
+ Chema Casanova <jmcasanova@igalia.com>, 
+ Dave Stevenson <dave.stevenson@raspberrypi.com>, 
+ Philipp Zabel <p.zabel@pengutronix.de>
+Cc: linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+ Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
+ kernel-dev@igalia.com, =?utf-8?q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>, 
+ stable@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, 
+ Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, 
+ linux-pm@vger.kernel.org
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5519; i=mcanal@igalia.com;
+ h=from:subject:message-id; bh=hMV8b2zX+MF3vz/Lexi8nix/0TRXQp0tGvL+/FqMPR8=;
+ b=owEBbQGS/pANAwAKAT/zDop2iPqqAcsmYgBpszFrEGGWyOVcQm7udLKS1zmPWmwoOU9YViVjW
+ 7PoQukmHcKJATMEAAEKAB0WIQT45F19ARZ3Bymmd9E/8w6Kdoj6qgUCabMxawAKCRA/8w6Kdoj6
+ qgWdCACjr0YreuHpelFvJIcCxNHwOB1hbj0qDzl289Ol4tsiSyYNtVRfbluX8HWhhcW4+TFoBY0
+ m28eUDwyO4+UWQTWa+jVnwGyMWQ3qxXA05tCIbI7JLybqUPtrcb1V+vhn+ZLQYbv3J3RTbNKs+0
+ 4R+kpxyk7ShC4eivqobVVV8YYxWpXoxdfUv7+KhG2hmgganhsbWPDgu+Rc01bzFYKoWTd06KfI2
+ cneUalofeGnv8OsvTBA4QQnGx7EMPs2adhYqeG8hJA0u9c8SMJrGT5NBiAU9IugVaaXb1Ohwa8Z
+ uT+DuFNGsOggJi96C5Dg8x1ni2G7laEqQDyndq7WbU0+9Ubk
+X-Developer-Key: i=mcanal@igalia.com; a=openpgp;
+ fpr=F8E45D7D0116770729A677D13FF30E8A7688FAAA
 
-On 3/11/2026 5:27 PM, Dan Williams wrote:
-> Smita Koralahalli wrote:
->> Introduce a global "DAX Regions" resource root and register each
->> dax_region->res under it via request_resource(). Release the resource on
->> dax_region teardown.
->>
->> By enforcing a single global namespace for dax_region allocations, this
->> ensures only one of dax_hmem or dax_cxl can successfully register a
->> dax_region for a given range.
->>
->> Co-developed-by: Dan Williams <dan.j.williams@intel.com>
-> 
-> Did I send any code for this? If I suggested the locking below,
-> apologies, otherwise Suggested-by is expected unless code is adopted
-> from another patch.
+This series introduces Runtime Power Management (PM) support for the
+Raspberry Pi V3D GPU.
 
-No sorry the locking was added by me. I will make the changes and drop 
-the locking.
+Currently, the V3D clock remains enabled for the entire system uptime,
+even when the GPU is idle. With the introduction of Runtime PM, the
+clock can now be disabled during idle periods. For example, with this
+series applied to a Raspberry Pi 5, if we check `vcgencmd measure_clock
+v3d`, we get:
 
-> 
->> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
->> Signed-off-by: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
->> ---
->>   drivers/dax/bus.c | 23 ++++++++++++++++++++---
->>   1 file changed, 20 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/dax/bus.c b/drivers/dax/bus.c
->> index fde29e0ad68b..5f387feb95f0 100644
->> --- a/drivers/dax/bus.c
->> +++ b/drivers/dax/bus.c
->> @@ -10,6 +10,7 @@
->>   #include "dax-private.h"
->>   #include "bus.h"
->>   
->> +static struct resource dax_regions = DEFINE_RES_MEM_NAMED(0, -1, "DAX Regions");
->>   static DEFINE_MUTEX(dax_bus_lock);
->>   
->>   /*
->> @@ -625,6 +626,8 @@ static void dax_region_unregister(void *region)
->>   {
->>   	struct dax_region *dax_region = region;
->>   
->> +	scoped_guard(rwsem_write, &dax_region_rwsem)
->> +		release_resource(&dax_region->res);
-> 
-> I continue to dislike what scoped_guard() does to indentation. Often
-> scoped_guard() usage can just be replaced by "helper that uses guard()"
-> 
-> However, dax_region_rwsem protects subdivision of a dax_region, not
-> coordination across regions.
-> 
-> Also, release_resource() and request_resource() are already protected by
-> the resource_lock, why is a new lock needed?
+(idle)
 
-You are right. I will remove
+$ vcgencmd measure_clock v3d
+frequency(0)=0
 
-Thanks
-Smita
-> 
+(running glmark2)
+
+$ vcgencmd measure_clock v3d
+frequency(0)=960016128
+
+Best regards,
+- Maíra
+
+v1 -> v2: https://lore.kernel.org/r/20250728-v3d-power-management-v1-0-780f922b1048@igalia.com
+
+- [1/5] NEW PATCH: "clk: bcm: rpi: Add missing logs if firmware fails" (Stefan Wahren)
+- [2/5] Remove the "Fixes:" tag (Stefan Wahren)
+- [2/5] dev_err_ratelimited() instead of dev_err() (Stefan Wahren)
+- [2/5] Instead of logging the clock ID, use clk_hw_get_name(hw) to log the name (Stefan Wahren)
+- [2/5] Add a newline character at the end of the log message (Stefan Wahren)
+- [2/5] Use CLK_IS_CRITICAL for all clocks that can't be disabled (Maxime Ripard)
+- [3/5] NEW PATCH: "clk: bcm: rpi: Maximize V3D clock"
+- [4/5] Use devm_reset_control_get_optional_exclusive() (Philipp Zabel)
+- [4/5] Make sure that resources are cleaned in the inverse order of allocation (Philipp Zabel)
+
+v2 -> v3: https://lore.kernel.org/r/20250731-v3d-power-management-v2-0-032d56b01964@igalia.com
+
+- Rebased on top of drm-misc-next
+- Patches "[PATCH v2 1/5] clk: bcm: rpi: Add missing logs if firmware
+  fails", "[PATCH v2 2/5] clk: bcm: rpi: Turn firmware clock on/off when
+  preparing/unpreparing", and "[PATCH v2 3/5] clk: bcm: rpi: Maximize
+  V3D clock" were applied to clk-next.
+- [1/4] NEW PATCH: "clk: bcm: rpi: Let V3D consumers manage clock rate"
+- [2/4] NEW PATCH: "clk: bcm: rpi: Mark PIXEL_CLK and HEVC_CLK as CLK_IGNORE_UNUSED"
+- [3/4] Add Philipp's R-b (Philipp Zabel)
+- [4/4] s/DRM_ERROR/drm_err
+- [4/4] Set the clock rate to 0 during suspend and to the maximum rate during resume
+
+v3 -> v4: https://lore.kernel.org/r/20260116-v3d-power-management-v3-0-4e1874e81dd6@igalia.com
+
+- Rebased on top of drm-misc-next
+- [1/6, 3/6] Add Melissa's A-b (Melissa Wen)
+- [2/6] NEW PATCH: "clk: bcm: rpi: Add a comment about RPI_FIRMWARE_SET_CLOCK_STATE
+  behavior" (Stefan Wahren)
+- [4/6] NEW PATCH: "drm/v3d: Use devm_reset_control_get_optional_exclusive()" (Melissa Wen)
+- [5/6] Include more context in the commit message (Melissa Wen)
+- [5/6, 6/6] Instead of creating the function v3d_gem_allocate(), use v3d_gem_init()
+  and move HW initialization out of it (Melissa Wen)
+
+v4 -> v5: https://lore.kernel.org/r/20260126-v3d-power-management-v4-0-caf2df16d4e2@igalia.com
+
+- [2/7] Add Stefan's A-b (Stefan Wahren)
+- [2/7, 5/7, 6/7] Add Melissa's R-b (Melissa Wen)
+- [4/7] NEW PATCH: "pmdomain: bcm: bcm2835-power: Increase ASB control timeout"
+- [7/7] Remove redundant pm_runtime_mark_last_busy() from v3d_pm_runtime_put()
+- [7/7] Use pm_runtime_get_if_active() in v3d_mmu_flush_all() instead of
+  pm_runtime_get_noresume() + pm_runtime_active()
+- [7/7] Add missing PM runtime calls to v3d_perfmon_start() and v3d_perfmon_stop()
+
+v5 -> v6: https://lore.kernel.org/r/20260213-v3d-power-management-v5-0-7a8b381eb379@igalia.com
+
+- [1/6] NEW PATCH: "clk: bcm: rpi: Manage clock rate in prepare/unprepare
+  callbacks" (Maxime Ripard)
+    - Replaces "clk: bcm: rpi: Let V3D consumers manage clock rate" and
+      "clk: bcm: rpi: Add a comment about RPI_FIRMWARE_SET_CLOCK_STATE
+      behavior" 
+- [6/6] Stop setting min and max clock rates directly in v3d (Maxime Ripard)
+
+v6 -> v7: https://lore.kernel.org/r/20260218-v3d-power-management-v6-0-40683fd39865@igalia.com
+
+- Drop commit "[PATCH v6 2/6] clk: bcm: rpi: Mark PIXEL_CLK and HEVC_CLK as CLK_IGNORE_UNUSED"
+- [1/5] Add comment about why is okay to set the clock's rate at prepare/unprepare (Maxime Ripard)
+- [1/5] Use clk_hw_get_rate_range() (Maxime Ripard)
+- [2/5] Add Stefan's R-b and stable tag (Stefan Wahren)
+- [3/5] Add Philipp's R-b (Philipp Zabel)
+- [5/5] Keep the alphabetical order in the Makefile (Stefan Wahren)
+- [5/5] Propagate `reset_control_assert()` error (Stefan Wahren)
+- [5/5] Add v3d_init_hw_state() before v3d_mmu_set_page_table()
+- [5/5] Stop any active perfmon during suspend
+
+---
+Maíra Canal (5):
+      clk: bcm: rpi: Manage clock rate in prepare/unprepare callbacks
+      pmdomain: bcm: bcm2835-power: Increase ASB control timeout
+      drm/v3d: Use devm_reset_control_get_optional_exclusive()
+      drm/v3d: Allocate all resources before enabling the clock
+      drm/v3d: Introduce Runtime Power Management
+
+ drivers/clk/bcm/clk-raspberrypi.c    |  38 ++++++++-
+ drivers/gpu/drm/v3d/Makefile         |   1 +
+ drivers/gpu/drm/v3d/v3d_debugfs.c    |  23 ++++-
+ drivers/gpu/drm/v3d/v3d_drv.c        | 160 +++++++++++++++++------------------
+ drivers/gpu/drm/v3d/v3d_drv.h        |  18 ++++
+ drivers/gpu/drm/v3d/v3d_gem.c        |  18 ++--
+ drivers/gpu/drm/v3d/v3d_irq.c        |  15 ++--
+ drivers/gpu/drm/v3d/v3d_mmu.c        |  10 ++-
+ drivers/gpu/drm/v3d/v3d_perfmon.c    |  18 +++-
+ drivers/gpu/drm/v3d/v3d_power.c      |  88 +++++++++++++++++++
+ drivers/gpu/drm/v3d/v3d_submit.c     |  19 ++++-
+ drivers/pmdomain/bcm/bcm2835-power.c |   5 +-
+ 12 files changed, 291 insertions(+), 122 deletions(-)
+---
+base-commit: ece3e8980907818c72dc9faa7bbaf40488ef1824
+change-id: 20250728-v3d-power-management-eebb2024dc96
 
