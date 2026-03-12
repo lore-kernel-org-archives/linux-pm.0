@@ -1,176 +1,231 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f48.google.com (mail-lf1-f48.google.com [209.85.167.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C4BC261586
-	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 14:04:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773324248; cv=none; b=UzztsfxEPU+jv/xGTadAeFkdpJgd3yhAZu8cpp3msu7FfThiew8yFVEHE0d5STBJAfJ1dfieS1g/3t1GRjUz0lhKBRTZe3fR6xPx5uG1K4J5+fNfQQ3JypB2WXP5QGMereOmPCoAUTqjdqVusjbCwMhf8IICowdiaZtJ7vj8urM=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773324248; c=relaxed/simple;
-	bh=RT8BkGvOp2IDnZsS+sTiDyQeYaSg8a2MxOzmD5SKElQ=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E992E3C2762
+	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 14:42:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.48
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773326569; cv=pass; b=KpFKceGsmKoT0uNFCSsMNENK7gDuKluyVwfCU0vEnTTTPtMTXbPKRDLg0k/+XdVxMWmIlsJOOor3jKpIYhi0nsTtntLhoMadXL3lOXBk4Ob7HsiYZaGa+Ihl5dSFdypLx/o5v3lxJuIPZnApejGSvmvSNbZBBQlZi+wM017KifY=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773326569; c=relaxed/simple;
+	bh=O9LcIYrKm3IMRU3Xcbw5ao9vnQL7OMM6Hl0piZRl6B0=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=VkU+duUZ3w4gDZ8foqEu8fRURK0V8DrkDRZx5No1VoNuEMN9+TEgDVRX/eg1nEVonNnwVk6alAyR3o+yjipMxbq0ojIMqTweJtFbZ8NWdSstdSVs603aE+AimpCaGJM0fVrMXRP435p63XY4I6a/F3TJ8OLuSj/Wtv6FbTqGwR4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=vCrkr+dJ; arc=none smtp.client-ip=10.30.226.201
+	 To:Cc:Content-Type; b=UBtuPX71PEp9yuJEirE+LpSKaGLVf5tGp13n7fZbw5HEsi1JyWNpJg2+00g2/lzbzapuvqLUD0HJtrbAYGloYwlw69i7qFOZXKxFD6TGhLsVz0sC22gE+Q2pnj4OY8EmJEJ7+rJn7RmA2KCbmO5JBF/bEQKQtowL/dy8oQmKCwc=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=OweVSTHQ; arc=pass smtp.client-ip=209.85.167.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="vCrkr+dJ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EC48AC2BCB0
-	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 14:04:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773324248;
-	bh=RT8BkGvOp2IDnZsS+sTiDyQeYaSg8a2MxOzmD5SKElQ=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=vCrkr+dJ7q/NUoDAoQ8bP1Gp7zwb3suPtjbNMoiWhgtYZdC3h8T90TAcM+aFp4aqv
-	 1DlTPsGW4w7E5Kl9tZ7mrXx7/6BKvBWDNjK8ghPCSC2rSh7Z7DT98ktA/NnejbMdYJ
-	 X6rVMymJ3cYZ7t5OKcAru0HnyLCs9ziWGsiKFghtc+P3PmcjPKfv4/udUxFGQMxaNp
-	 cwDe6wrupF1MomnHaGxuJoG6Y0/AZ/mkma5WT/UJ4XTpinkL2emfF/MPIaK8j5Wi+2
-	 ATWxZZFMjuVEwjhIzlqswzl+0s1dmkW0lUlM45BsdTMyaIqBELxQjQiUQ3pBOy72HK
-	 3+sK8IpVtfpbw==
-Received: by mail-ot1-f43.google.com with SMTP id 46e09a7af769-7d738fe814cso880827a34.3
-        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 07:04:07 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUixatdR9VMXJI5UE4omMimp2O3dG1x21Jn6h+rQL5a+ihb+kHpYFWcby+FOgKVF0q0a6CZEKG6Dw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxysMOE4F/syJiDJOtH0LPRM3KFoMSSTazh05IAI08AL2vfO1vj
-	MrWNmp/BKxeoBoiwXv4g4qAFn5sQnbZGvsZ51NlzVPpEOfyG8uRQrD/F9kFz7jGBkDu4nnu9kZl
-	zqUQxvynbkDckzByRhjauu8GqQITYFOo=
-X-Received: by 2002:a4a:d805:0:b0:67b:cc71:c4fc with SMTP id
- 006d021491bc7-67bcc71c6aemr2404755eaf.23.1773324246938; Thu, 12 Mar 2026
- 07:04:06 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="OweVSTHQ"
+Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-5a126c8aab9so1598089e87.0
+        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 07:42:45 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1773326564; cv=none;
+        d=google.com; s=arc-20240605;
+        b=ZEry9mGTELrp9htcmI5X+Y1Ovh/MqMDlUlEB4I8HbXouE99TNnNsDafsCV2TjZdXwD
+         c9cytxnhifzyRFVBspcaUyDEqLRDAX5Q2cHmygFyaoZAnHic7jeRO2YV/LLC4Pxgf2Nw
+         KIjrzaEds6p1MBDN8JXSxmaa3AwSreGvERx8yszmc405UHcsxirHLsxl2w/y9lJL8AOk
+         5STbmKMm56JwS1lHQBln11yo0Bdzrv9uUcX2UU1+5xtk0NvMYYOsjItwf7hNy6WPTf6I
+         6hu+N1KImGmzpaGqYPioV5+X8INjX5EjmbbGcUrgTY2o+OY0oTXqjZBraZG3d7IYlK9p
+         MddA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=0R6OZluBmRNxZl/w5NAcbeDBTecdzejm214xvTMZFOU=;
+        fh=DeqsVaCpk/a1sdcaj3RApHjLqvl1qDZr42VgbPYpOPU=;
+        b=Ex4kGZlUoyLv38Xsc/rx2ASHASQrJA8h9jn3vxN4iIYXYwS74Sk4FjNZdNhb4XUj1p
+         PvXhlFugAE1q7p7SfY40fwFNq9Syb/JrWeIonIBBJUViZTou674aN67tdBfn7EBum8I0
+         CMeuSDeTZ/4Y1br4FdhpHDUaeVRBJXh2ZZ5W5pq85Mvww18CTs0FgqA3dRSqosGk92Li
+         QkdlhLA7MSEKgL2WcCB7JDcLvQsK24zzwKyvPEAeAhT2CsWi+7C3kBIEPzWdt91ct7TV
+         YdbUlZnp6SPlhiZxa6Mq2HGDDELcEL64NoIQIVBQ2Hq9qAhMET1U5bMPxXhaPAnT5mFV
+         VYww==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1773326564; x=1773931364; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=0R6OZluBmRNxZl/w5NAcbeDBTecdzejm214xvTMZFOU=;
+        b=OweVSTHQkJIYH+xVrlXrb3YCzjZ5K2VKCMnH5dcKqOZ9zGfvDjxgAtmXHaYB8u6trC
+         83V0/jQD7Oat5Yu530vLOyQZAPUL0Fo7sKMu9CWrS7/0DbqR1mMnWvA+lSByg/fnMbqY
+         Y/UGENCV4fWA2D9CA+z2Jhr/J+HvoaEZzXXwpLZ8G6sqK6LtY6XB3jymPT4+CdmboX89
+         Aok6X7JuOlNMFeG3n8R0P2j24vnm8LSywkSF3e7cx/fSYKeo0kIZmOu9M7tpqcvhkj63
+         kfx0LahHrlkYeLZW7iXt/uJWaYHrB+lcZHK4OgYA15WAd/jdLn6bWFsObRqCkDg+97R0
+         OeqA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773326564; x=1773931364;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=0R6OZluBmRNxZl/w5NAcbeDBTecdzejm214xvTMZFOU=;
+        b=OSzEH2hwRNcTm7U4NWnX854VlJ/qISwMJg/XcM78yfbt/FtG2CadFDNpL9quw3rnwj
+         JtK5chR1FYJxHuqPsbE3CAevmeFUkXQaZNeEsxqWTQDSRgzvwdq3XUwmySl9855XJGeJ
+         AFUfBpCrHgZENkgiP8+/l91XEICY57glEXgNSHcVGznayht1ZKi15yQE11mW5VwZiFUt
+         ETAXdjlK8bpChAHED9WXGryPQN1TgxzFvz1Vx1XuolFwEGZEc6oHisMfamMWBzaWds+d
+         tWgPOc9KZGIV3oNEwXIy/d93RzVB2Knix0dKUabjCUdJqUnKCKsEzU1ceueIAgefo5uq
+         73sg==
+X-Forwarded-Encrypted: i=1; AJvYcCU5fRF2o+BMp1M/hoaEQ1DMQI1XFOH7shdCO9sde7327p0+cxyU/YkIKjG3SLZDeqpGbJnXQdZ1SA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxPtilWJr9EnXrzry5tXcp1YSMj+RFWln2ZwSdy2BqbOUOLV8Ef
+	VgFg6svVOAF8T713BMmnHkjUbYEx9NuU0nEf2Wj1QEpfNZfgLm4WAxVOxZiQ7+Wi7uSJVs4oWku
+	y1pJ7a7TX6fAuzp10KV0a+/eClNqYIw+xykqfwkE81g==
+X-Gm-Gg: ATEYQzypNyeyaPkHHedityPynkC1O8qBaQ874ocASrXji2hMHEg34/wryusfAdcHvG3
+	BJYq+IcBoU1DpLSPXtzzadENtIs0uYi3dB1a1B2y35T6Y5x7B/NB4Cu5/vd371ljqjpwkP89hZs
+	PtVz2fddwRy6zVNo0Qf8I1W6AHfvX283+O0VdARdFw5XSqh73Lmf54/t1VnpfUmXSoxj0KC4ig8
+	D2xf4xpFExlQmtM6qkaLAsa5WGr4vg3inbdbUxwPzhe9UuYSqk/H6kK8RqDUkpw91TNFTpPluHo
+	98poKUo=
+X-Received: by 2002:a05:6512:3405:b0:5a1:2ea2:3683 with SMTP id
+ 2adb3069b0e04-5a156ddd92cmr2624715e87.44.1773326563685; Thu, 12 Mar 2026
+ 07:42:43 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <c3e22128e6619d24f3fc6ac07d1c854c664a7f1e.1773124395.git.viresh.kumar@linaro.org>
- <05feb9ed-3257-452e-98e9-89637431a347@oss.qualcomm.com> <u4k5z6yilgjqajy6a4zxyt23tgmtp5hxqm6jlc55y2ize4rs46@3czv7uoybqbz>
-In-Reply-To: <u4k5z6yilgjqajy6a4zxyt23tgmtp5hxqm6jlc55y2ize4rs46@3czv7uoybqbz>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 12 Mar 2026 15:03:54 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0jvVNd3v_LcsM9Q2tZRavx0OQwZ-R4vWSzYr6edinRk4A@mail.gmail.com>
-X-Gm-Features: AaiRm52cA4yitJ2OIv6evDDcwc_8iYoqGwObGNR-lTQ8izl1b_bWFh_w5Yuzqq0
-Message-ID: <CAJZ5v0jvVNd3v_LcsM9Q2tZRavx0OQwZ-R4vWSzYr6edinRk4A@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: conservative: Drop cached requested_freq
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, 
-	Lifeng Zheng <zhenglifeng1@huawei.com>, linux-kernel@vger.kernel.org
+References: <20260210053708.17239-1-aford173@gmail.com> <CAPDyKFrsMY8q+rvrbOdppYnefX6TA1-EhF+e+pGG6k49KpeTRA@mail.gmail.com>
+ <7fd891b7-b1ff-4668-ac99-8f8ac244d90c@collabora.com> <CAPDyKFqbS+PUkLXkjoHjbiVFCYM4FxQeHdJk_LVVfLA5nGEZ-A@mail.gmail.com>
+ <108e6fad-401c-427a-bc30-8ddd00bd93a5@collabora.com>
+In-Reply-To: <108e6fad-401c-427a-bc30-8ddd00bd93a5@collabora.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Thu, 12 Mar 2026 15:42:07 +0100
+X-Gm-Features: AaiRm53Syf4tONBWunUd9bjmXw_xdyFjtpRQ2mt1ntlqT4z8S3DYLkSeLVjeLKo
+Message-ID: <CAPDyKFoY+pdSh-h_=Ko9L7QaFo4V4iA2_A0jA3BfnuKmiCyzCA@mail.gmail.com>
+Subject: Re: [PATCH 1/5] pmdomain: mediatek: Fix power domain count
+To: Adam Ford <aford173@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Cc: linux-mediatek@lists.infradead.org, 
+	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, 
+	Mark Brown <broonie@kernel.org>, Laura Nao <laura.nao@collabora.com>, 
+	=?UTF-8?B?TsOtY29sYXMgRi4gUi4gQS4gUHJhZG8=?= <nfraprado@collabora.com>, 
+	linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, Mar 12, 2026 at 11:27=E2=80=AFAM Viresh Kumar <viresh.kumar@linaro.=
-org> wrote:
+On Thu, 12 Mar 2026 at 13:46, AngeloGioacchino Del Regno
+<angelogioacchino.delregno@collabora.com> wrote:
 >
-> On 10-03-26, 21:17, Zhongqiu Han wrote:
-> > Thanks for the patch. The fix looks correct to me for the reported
-> > issue. I do have one question though - should we also consider the
-> > interaction with commit abb6627910a1 ("cpufreq: conservative: Fix
-> > next frequency selection")?
+> Il 11/03/26 18:29, Ulf Hansson ha scritto:
+> > On Fri, 6 Mar 2026 at 10:50, AngeloGioacchino Del Regno
+> > <angelogioacchino.delregno@collabora.com> wrote:
+> >>
+> >> Il 12/02/26 12:34, Ulf Hansson ha scritto:
+> >>> On Tue, 10 Feb 2026 at 06:40, Adam Ford <aford173@gmail.com> wrote:
+> >>>>
+> >>>> The wrong value of the number of domains is wrong which leads to
+> >>>> failures when trying to enumerate nested power domains.
+> >>>>
+> >>>>    PM: genpd_xlate_onecell: invalid domain index 0
+> >>>>    PM: genpd_xlate_onecell: invalid domain index 1
+> >>>>    PM: genpd_xlate_onecell: invalid domain index 3
+> >>>>    PM: genpd_xlate_onecell: invalid domain index 4
+> >>>>    PM: genpd_xlate_onecell: invalid domain index 5
+> >>>>    PM: genpd_xlate_onecell: invalid domain index 13
+> >>>>    PM: genpd_xlate_onecell: invalid domain index 14
+> >>>>
+> >>>> Attempts to use these power domains fail, so fix this by
+> >>>> using the correct value of calculated power domains.
+> >>>>
+> >>>> Signed-off-by: Adam Ford <aford173@gmail.com>
+> >>>
+> >>> We should have a fixes tag for this too I think:
+> >>>
+> >>> Fixes: 88914db077b6 ("pmdomain: mediatek: Add support for Hardware
+> >>> Voter power domains")
+> >>>
+> >>>
+> >>>> ---
+> >>>>    drivers/pmdomain/mediatek/mtk-pm-domains.c | 2 +-
+> >>>>    1 file changed, 1 insertion(+), 1 deletion(-)
+> >>>>
+> >>>> diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+> >>>> index 58648f4f689b..d2b8d0332951 100644
+> >>>> --- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
+> >>>> +++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+> >>>> @@ -1228,7 +1228,7 @@ static int scpsys_probe(struct platform_device *pdev)
+> >>>>           scpsys->soc_data = soc;
+> >>>>
+> >>>>           scpsys->pd_data.domains = scpsys->domains;
+> >>>> -       scpsys->pd_data.num_domains = soc->num_domains;
+> >>>> +       scpsys->pd_data.num_domains = num_domains;
+> >>>
+> >>> Not sure this is the complete fix, as scpsys_add_one_domain() seems to
+> >>> be using the wrong value of "num_domains" too, no?
+> >>>
+> >>
+> >> No, scpsys_add_one_domain() uses num_domains from the soc_data for DIRECT_CTL,
+> >> which is expected. Maybe that can be improved, but it's how it is supposed to work.
+> >>
+> >> So yeah, this patch is resolving an issue, and it is a complete fix.
+> >
+> > I had a closer look and unfortunately, it still looks weird to me.
+> >
+> > More precisely, we are allocating and registering a number of genpds,
+> > that corresponds to the sum of "soc->num_domains +
+> > soc->num_hwv_domains". The index each genpd gets in the array (struct
+> > genpd_onecell_data) must correspond to the index specified in DT, for
+> > both a consumer-node and a child-domain-node, right?
+> >
+> > It seems like adding them dynamically changes the index. In other
+> > words, the index specified using the "reg" property in a
+> > child-domain-node, may not match what a consumer-node should specify
+> > in its "power-domains" property. Isn't that a problem? Perhaps not,
+> > because we never have both "scpsys_domain_data" and
+> > "scpsys_hwv_domain_data", but then why are we adding them in ->probe()
+> > with "soc->num_domains + soc->num_hwv_domains"?
+> >
 >
-> Thanks for pointing this, I missed this change.
->
-> > However, that change was subsequently reverted by commit abb6627910a1
-> > ("cpufreq: conservative: Fix next frequency selection"), which noted
-> > that using policy->cur directly broke the algorithm when freq_step is
-> > small relative to the distances between available frequencies. In that
-> > case, the governor may not be able to stay within a narrow range
-> > between two consecutive available frequencies and instead jumps through
-> > steps faster than intended.
->
-> Its the opposite I think. The governor stays within a range and never
-> goes to a higher or lower frequency. This is how I think this happens:
-> - Lets say frequencies are from 1GHz to 2GHz with a gap of 200 MHz.
-> - Lets say the frequency is 1 GHz now and the step size is 100 MHz.
-> - conservative governor will try to change the freq to 1.1 GHz and end
->   up selecting 1 GHz only (due to CPUFREQ_RELATION_H, highest freq
->   below 1.1 GHz).
-> - With my patch, we will keep resetting to 1 GHz (cur freq) and never
->   change freq.
-> - With a recorded requested_freq, we will move to 1.1 GHz (actual 1
->   GHz), but a subsequent call will go for 1.2 GHz.
->
-> Here is another idea, once everyone agrees I can send this formally:
+> As you understood, having both is not really supported right now, and the
+> intention there was to have the flexibility to do so without restructuring
+> the entire thing in the future.
 
-So cs_dbs_update() does this:
+Thanks for clarifying!
 
-if (requested_freq > policy->max || requested_freq < policy->min) {
-        requested_freq =3D policy->cur;
-        dbs_info->requested_freq =3D requested_freq;
-}
+Although, having both seems problematic for the reasons I pointed out
+above. At least, it looks like some more re-work will be needed to
+support that case.
 
-Why is it not sufficient?
+>
+> Though, from what I understand, the confusion comes from a single line (and
+> reading it again, I do agree, because I got confused myself for a moment as
+> well, and I'm the one who wrote this, so that's bad bad bad):
+>
+>         num_domains = soc->num_domains + soc->num_hwv_domains;
+>
+> where, to avoid confusion, this should've been:
+>
+>         num_domains = soc->num_domains ?
+>                       soc->num_domains : soc->num_hwv_domains;
 
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpu=
-freq_conservative.c
-> index e0e847764511..df01d33993d8 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -313,6 +313,17 @@ static void cs_start(struct cpufreq_policy *policy)
->         dbs_info->requested_freq =3D policy->cur;
->  }
+Agreed.
+
 >
-> +static void cs_limits(struct cpufreq_policy *policy)
-> +{
-> +       struct cs_policy_dbs_info *dbs_info =3D to_dbs_info(policy->gover=
-nor_data);
-> +
-> +       /*
-> +        * The limits have changed, so may have the current frequency. Re=
-set
-> +        * requested_freq to avoid any unintended outcomes due to the mis=
-match.
-> +        */
-> +       dbs_info->requested_freq =3D policy->cur;
-> +}
-> +
->  static struct dbs_governor cs_governor =3D {
->         .gov =3D CPUFREQ_DBS_GOVERNOR_INITIALIZER("conservative"),
->         .kobj_type =3D { .default_groups =3D cs_groups },
-> @@ -322,6 +333,7 @@ static struct dbs_governor cs_governor =3D {
->         .init =3D cs_init,
->         .exit =3D cs_exit,
->         .start =3D cs_start,
-> +       .limits =3D cs_limits,
->  };
+> (perhaps with a check `if (num_domains && num_hwv_domains) dev_err(only one
+>   supported)` but being this taken from hardcoded data, I'm not really for it)
+
+Agreed, a print would be superfluous.
+
 >
->  #define CPU_FREQ_GOV_CONSERVATIVE      (cs_governor.gov)
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq=
-_governor.c
-> index 36eb7aee4bcd..acf101878733 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -563,6 +563,7 @@ EXPORT_SYMBOL_GPL(cpufreq_dbs_governor_stop);
+> ...and still, like the proposed fix does:
 >
->  void cpufreq_dbs_governor_limits(struct cpufreq_policy *policy)
->  {
-> +       struct dbs_governor *gov =3D dbs_governor_of(policy);
->         struct policy_dbs_info *policy_dbs;
->
->         /* Protect gov->gdbs_data against cpufreq_dbs_governor_exit() */
-> @@ -574,6 +575,8 @@ void cpufreq_dbs_governor_limits(struct cpufreq_polic=
-y *policy)
->         mutex_lock(&policy_dbs->update_mutex);
->         cpufreq_policy_apply_limits(policy);
->         gov_update_sample_delay(policy_dbs, 0);
-> +       if (gov->limits)
-> +               gov->limits(policy);
->         mutex_unlock(&policy_dbs->update_mutex);
->
->  out:
-> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq=
-_governor.h
-> index 168c23fd7fca..1462d59277bd 100644
-> --- a/drivers/cpufreq/cpufreq_governor.h
-> +++ b/drivers/cpufreq/cpufreq_governor.h
-> @@ -138,6 +138,7 @@ struct dbs_governor {
->         int (*init)(struct dbs_data *dbs_data);
->         void (*exit)(struct dbs_data *dbs_data);
->         void (*start)(struct cpufreq_policy *policy);
-> +       void (*limits)(struct cpufreq_policy *policy);
->  };
->
->  static inline struct dbs_governor *dbs_governor_of(struct cpufreq_policy=
- *policy)
+>         scpsys->pd_data.num_domains = num_domains;
 >
 >
-> --
-> viresh
+> While I agree, again, in that the code could be improved (and it shall be),
+> how the logic behaves, right now, with the proposed fix, still looks good to me.
+
+Okay, I'm queuing the $subject patch as a fix and by adding a stable/fixes-tag.
+
+>
+> I can eventually just send a patch that clarifies the `num_domains` if you prefer.
+
+Well, actually, I would suggest splitting the driver into two drivers
+(each handling its own type of match data) and adding some shared
+helper functions, that both drivers can use.
+
+It's more work, but we should end up with more maintainable code, I think.
+
+What do you think?
+
+[...]
+
+Kind regards
+Uffe
