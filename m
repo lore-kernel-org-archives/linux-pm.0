@@ -1,110 +1,83 @@
-Received: from relay.hostedemail.com (smtprelay0012.hostedemail.com [216.40.44.12])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A977257824;
-	Thu, 12 Mar 2026 15:40:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=216.40.44.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A23473D4121
+	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 15:44:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773330056; cv=none; b=Y6UZxc2Usnurr3H2kvIxEeqMakntKygUasQqwmHy3I3/DLMX0f9mvm6vhmtqcDUKjzo1YnIJa7ZIqCMwVNBnFeHwhESvAgY849aeh9+AklFfPIWi4Kt8N10WK+HpqLdA8wTN1j7GQUTGw8QtQotrIXa+6nEbY7nfoBYmCoc/Flo=
+	t=1773330251; cv=none; b=dxDs6D9dhwp7F0PaJDjE2iXE1p1p5Qy6R8qn1LwDAOIA2txsae6cMf14/UbCHzXKG3cgvSVRuAIfK1pvQK++nD46LQL5ogTHbS1jfUkNdbbRvHdBSsJ8veXUhlhv3lh+CVG0WUDEmU1OBF0JuBHhQjUzQGYAmuP+fvNc1uue2Ok=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773330056; c=relaxed/simple;
-	bh=OxRg7tA8kXUHRx+mx/a3uzYLf94/OiyMz274Pyh6DSY=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=qQ+Dq/qZw9ICMtISiU3Fr6+xOz1M9Ihosfe9Cxr+JMjFTOEN5/gedINxmEvCfOzcb2elG1BNGk4pNR18oNwGtN1fS8qgMBnEicS0FjP4zRF6ZOA6zF31zGFsOGmkOPGvxgdwm6Xvz9aKuuXGA668mHjwRQLtThMauNdUgiFFS6U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org; spf=pass smtp.mailfrom=goodmis.org; arc=none smtp.client-ip=216.40.44.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=goodmis.org
-Received: from omf02.hostedemail.com (a10.router.float.18 [10.200.18.1])
-	by unirelay10.hostedemail.com (Postfix) with ESMTP id EEB99C17C4;
-	Thu, 12 Mar 2026 15:40:52 +0000 (UTC)
-Received: from [HIDDEN] (Authenticated sender: rostedt@goodmis.org) by omf02.hostedemail.com (Postfix) with ESMTPA id 3AE588000E;
-	Thu, 12 Mar 2026 15:40:27 +0000 (UTC)
-Date: Thu, 12 Mar 2026 11:40:41 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Cc: "Vineeth Pillai (Google)" <vineeth@bitbyteword.org>, Peter Zijlstra
- <peterz@infradead.org>, Dmitry Ilvokhin <d@ilvokhin.com>, Masami Hiramatsu
- <mhiramat@kernel.org>, Ingo Molnar <mingo@redhat.com>, Jens Axboe
- <axboe@kernel.dk>, io-uring@vger.kernel.org, "David S. Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
- <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov
- <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Marcelo Ricardo
- Leitner <marcelo.leitner@gmail.com>, Xin Long <lucien.xin@gmail.com>, Jon
- Maloy <jmaloy@redhat.com>, Aaron Conole <aconole@redhat.com>, Eelco
- Chaudron <echaudro@redhat.com>, Ilya Maximets <i.maximets@ovn.org>,
- netdev@vger.kernel.org, bpf@vger.kernel.org, linux-sctp@vger.kernel.org,
- tipc-discussion@lists.sourceforge.net, dev@openvswitch.org, Oded Gabbay
- <ogabbay@kernel.org>, Koby Elbaz <koby.elbaz@intel.com>,
- dri-devel@lists.freedesktop.org, "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, "Gautham R. Shenoy"
- <gautham.shenoy@amd.com>, Huang Rui <ray.huang@amd.com>, Mario Limonciello
- <mario.limonciello@amd.com>, Len Brown <lenb@kernel.org>, Srinivas
- Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-pm@vger.kernel.org,
- MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park
- <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>,
- Christian =?UTF-8?B?S8O2bmln?= <christian.koenig@amd.com>, Sumit Semwal
- <sumit.semwal@linaro.org>, linaro-mm-sig@lists.linaro.org, Eddie James
- <eajames@linux.ibm.com>, Andrew Jeffery <andrew@codeconstruct.com.au>, Joel
- Stanley <joel@jms.id.au>, linux-fsi@lists.ozlabs.org, David Airlie
- <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Alex Deucher
- <alexander.deucher@amd.com>, Danilo Krummrich <dakr@kernel.org>, Matthew
- Brost <matthew.brost@intel.com>, Philipp Stanner <phasta@kernel.org>, Harry
- Wentland <harry.wentland@amd.com>, Leo Li <sunpeng.li@amd.com>,
- amd-gfx@lists.freedesktop.org, Jiri Kosina <jikos@kernel.org>, Benjamin
- Tissoires <bentiss@kernel.org>, linux-input@vger.kernel.org, Wolfram Sang
- <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, Mark Brown
- <broonie@kernel.org>, Michael Hennerich <michael.hennerich@analog.com>,
- Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, linux-spi@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K.
- Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, Chris
- Mason <clm@fb.com>, David Sterba <dsterba@suse.com>,
- linux-btrfs@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/15] tracepoint: Avoid double static_branch evaluation
- at guarded call sites
-Message-ID: <20260312114041.5193c729@gandalf.local.home>
-In-Reply-To: <219d015d-076b-4c80-8f63-88569115fdad@efficios.com>
-References: <20260312150523.2054552-1-vineeth@bitbyteword.org>
-	<1e3c2830-765e-4271-89f7-0b6784b37597@efficios.com>
-	<20260312112354.3dd99e36@gandalf.local.home>
-	<219d015d-076b-4c80-8f63-88569115fdad@efficios.com>
-X-Mailer: Claws Mail 3.20.0git84 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	s=arc-20240116; t=1773330251; c=relaxed/simple;
+	bh=0G2+6AojQC4x+k4NLI1RBY0tQq7WMqzclJ9ZLh+3LUg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ZzmR6JRiaUVRnzBKlLX5lGoj81TwFbgBBxbwXoYJ+gqzCuxkrvDIZysMsUBFAjAoaAO5dIrgwCrPaXfymj+o8FOuRtABz2MZvjRuSyI9xG1+O/qrt93lNQ5OL6Ak38myPNOKwJkeRdL7KHVGoMg6kG58/hzqhWqeZ8QNbHTxQdI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FLdqFIWS; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FLdqFIWS"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 20CF6C4AF0B
+	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 15:44:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773330251;
+	bh=0G2+6AojQC4x+k4NLI1RBY0tQq7WMqzclJ9ZLh+3LUg=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=FLdqFIWS9rN8C5Koc3rM0CQEo86eeGqI1kJMzpUD7N6ZwhMRRyV9MV2dpUeXWCZuO
+	 wb2legl2iemxHcPhspbFeWeaF6ZXps7zCWyjAH+J68Or98U3nU5MsPNds5zO73cZyA
+	 uh4tKZPF+OWnqBWaNyuvDZcwbPkT86dA7gRNEjJ8glvdFgTAQ5TJTE0ql3Fv5El8H9
+	 xaM5fiOjr2hTWNNHzOoksPTfLDO582/5gF91jg99iW+4yzBGFzqo8mIs9PDqMTW4Bc
+	 QDoENBu+AXSoOmc3ksPGxEr62L5R1ZoK3pco8U4ePd9tnLgW6+MaA1XdtHgliJE4cF
+	 2ZLpn7GXfsA4g==
+Received: by mail-ot1-f48.google.com with SMTP id 46e09a7af769-7d741f61ee5so1029927a34.1
+        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 08:44:11 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCVH4Nuup/lH59Aol+VTMZW15BD2nIUxzgww/6wlmAR6tiD8EAIDukEIsMyKbFjZpCMlswuJhFOeyQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx3ri5eF9hALP0XHo/ykTOtj+rWUjugzCXpg64bJP6X8mfT56pU
+	A99FuYJY99Uk2GwAcihHK2jID9Z/IQcb18Bp1xsJIROZCl5l6iY1o7OLnI+VMnwAEVG6q66WQZP
+	YyLn1F9ZVlREvpzz1XsKGX5QcKz6mdVU=
+X-Received: by 2002:a05:6820:162b:b0:67b:b1a2:b4d3 with SMTP id
+ 006d021491bc7-67bc8a5ab32mr4081223eaf.72.1773330250228; Thu, 12 Mar 2026
+ 08:44:10 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Stat-Signature: dizt9eoph1r46hcc7akmrtw69qmbfetk
-X-Rspamd-Server: rspamout02
-X-Rspamd-Queue-Id: 3AE588000E
-X-Session-Marker: 726F737465647440676F6F646D69732E6F7267
-X-Session-ID: U2FsdGVkX1/ZXXm4w5C9U5+099b/PvZQ7eUGtYiH+vY=
-X-HE-Tag: 1773330027-687590
-X-HE-Meta: U2FsdGVkX19Y0BxKc9hfd6/oWlCbD7knRVU4HNig4rSlbKfyoeUNxe0xLyOxKy2jHEKNmwC/SBnntITQ/gcP4GV84MGrzwGO/jSnmxSVU90QW1UewwurfqZf/IccLcQyMpO0NVm7ICOGECdjfFMFxxfbyCK2b8HRZTmFiNSnZRhQ3v2UxaLgnk4IGz6tQzClK6n9/8XrtKTpdPEXN08WeqXofu0CM6mgHZtypBJf2bNTx3bZ6VgbT/vGoPrjz+ku8bbQ/05BjCRjqyBZ8chjnNTTV2DkdRZQ/aDGM8chdSripiOGF3zSwSXCsldB5u/XfRMFDIioWgHfx7JpJLp63e8jmL0gMnugNLpYx40Y3FDqgXh+0wGRwMvubNhu5lNM
+References: <c3e22128e6619d24f3fc6ac07d1c854c664a7f1e.1773124395.git.viresh.kumar@linaro.org>
+ <05feb9ed-3257-452e-98e9-89637431a347@oss.qualcomm.com> <u4k5z6yilgjqajy6a4zxyt23tgmtp5hxqm6jlc55y2ize4rs46@3czv7uoybqbz>
+ <CAJZ5v0jvVNd3v_LcsM9Q2tZRavx0OQwZ-R4vWSzYr6edinRk4A@mail.gmail.com> <z33jb5vwatwba24f2ftz5zb75qzqv7h4tljq72bwbvgphuvuds@jtxtl7geedtb>
+In-Reply-To: <z33jb5vwatwba24f2ftz5zb75qzqv7h4tljq72bwbvgphuvuds@jtxtl7geedtb>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 12 Mar 2026 16:43:58 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0htdQqaQT+-FJ-Agt4aAONXH36Qg2htoo+onLmst0ZoZg@mail.gmail.com>
+X-Gm-Features: AaiRm51YTj0w_LkFuys_h6pVNzSe4ZIpJEViRJtxmFBkW7pAZo6AyXqM4JSOCvo
+Message-ID: <CAJZ5v0htdQqaQT+-FJ-Agt4aAONXH36Qg2htoo+onLmst0ZoZg@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: conservative: Drop cached requested_freq
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, 
+	linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, 
+	Lifeng Zheng <zhenglifeng1@huawei.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, 12 Mar 2026 11:28:07 -0400
-Mathieu Desnoyers <mathieu.desnoyers@efficios.com> wrote:
+On Thu, Mar 12, 2026 at 3:48=E2=80=AFPM Viresh Kumar <viresh.kumar@linaro.o=
+rg> wrote:
+>
+> On 12-03-26, 15:03, Rafael J. Wysocki wrote:
+> > So cs_dbs_update() does this:
+> >
+> > if (requested_freq > policy->max || requested_freq < policy->min) {
+> >         requested_freq =3D policy->cur;
+> >         dbs_info->requested_freq =3D requested_freq;
+> > }
+> >
+> > Why is it not sufficient?
+>
+> Because requested_freq is within those limits, it was policy->cur
+> which wasn't within these limits, but that too came within that by the
+> time cs_dbs_update() gets called after the readjustment.
 
-> > Note, Vineeth came up with the naming. I would have done "do" but when I
-> > saw "invoke" I thought it sounded better.  
-> 
-> It works as long as you don't have a tracing subsystem called
-> "invoke", then you get into identifier clash territory.
+But how exactly does policy->cur get out the limits?
 
-True. Perhaps we should do the double underscore trick.
-
-Instead of:  trace_invoke_foo()
-
-use:  trace_invoke__foo()
-
-
-Which will make it more visible to what the trace event is.
-
-Hmm, we probably should have used: trace__foo() for all tracepoints, as
-there's still functions that are called trace_foo() that are not
-tracepoints :-p
-
--- Steve
+I guess there's some notification from the firmware or similar that
+causes the limits to be updated, but the only way policy->cur can
+change is to still fall between the new limits AFAICS.  Or if it is
+not the case, there is a bug somewhere in the core.
