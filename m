@@ -1,102 +1,87 @@
-Received: from mxout1.routing.net (mxout1.routing.net [134.0.28.11])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19E4A35A3BA;
-	Thu, 12 Mar 2026 20:31:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=134.0.28.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9A1A26C3BD;
+	Thu, 12 Mar 2026 20:41:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773347510; cv=none; b=Q7X5Vgg+LUI+7ZpT5QijZR+vETNpbXqdaD71zcWeAbO9WMZviEvx0ooMTN/FXscUgBsUqpTFEAEantxryPqKo2LyAyhu3ukNlzzy8DFQwg0x1W3WPZAb07/+M0DNSECbFiZVYWiLSbBYAFMgh7baWNTwxfBIolwEyzKz1dkqFjI=
+	t=1773348070; cv=none; b=omdEqAoov7l+kUOiuRJhNjUXQhFceD0t4LcGclgSCOcUExT0JVpCikejFVKI3x07+D4JbxGbB4mu55Ql3TFJnmg5AZ5dxq2a+SV8Zz6h6cLsJaFKhkL9U/LBTQTbxtJchB9ehBQ5JWl6VJW/n/wHaH55C2hIon7gu0DpE24gPzk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773347510; c=relaxed/simple;
-	bh=HOVxutGi4Nn6Bjd8udqFAwrlfi64Wn0LYOV5YekigEs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=HAYOQjoA5IXiaPT7vSjPxKSqv3yQaE9wA9TuM7njoXK80Rfew0cVDL0+jFkLuMg7ZI1TJdDNYCUv7S8GAE4DRC4tvWP/jI29WqcvnUa2M6Jd2K6sT1oUD+JQu69XGkRSuFJgsmAP/9BzHzDHfbtFz1FlilrxF4qBUA1neENNpg0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de; spf=pass smtp.mailfrom=fw-web.de; dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b=h7QOH/3k; arc=none smtp.client-ip=134.0.28.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fw-web.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fw-web.de
+	s=arc-20240116; t=1773348070; c=relaxed/simple;
+	bh=Gb4LVB9Fx1wvu/Fr99C7YP376NEyE1vUn7CNWw+bGFA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=oiRL2VqA80tCyGP4itATQZcsLi5Pcs1ClFDIkHq2GZcGj1bgBWLwABDv543DH1l5NMKnKvsGD3dmohUEQBl2YO1TEUdn32L5UtWv6hTeg+V4EiQDFNNG3jDyRfvElg1VEkrlf0xAhZXXwMbpLcCtmcoTLhKchKS6npUbetgzQNM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TuH6psX9; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mailerdienst.de header.i=@mailerdienst.de header.b="h7QOH/3k"
-Received: from mxbulk.masterlogin.de (unknown [192.168.10.85])
-	by mxout1.routing.net (Postfix) with ESMTP id B171140288;
-	Thu, 12 Mar 2026 20:24:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-	s=routing; t=1773347080;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=4QtKqKrKXA9mINSd6Rhs9VqIBwngxO4PNYOuvXQmlPU=;
-	b=h7QOH/3kOksmM3xBpdfa3Z+KmgGvA09uoldDw407O3IuE3YKf2t61zwpP8tjwsUmijYXjX
-	CAxLS80gpKblSFZS5eE6j6YY13MlithH2blXzjDqnZ4N9i+eWDJSTgleIM37edcbqLM33P
-	RLqwccn/sRnGhHksz8bzf1emPSuIkX0=
-Received: from frank-u24.. (fttx-pool-217.61.148.188.bambit.de [217.61.148.188])
-	by mxbulk.masterlogin.de (Postfix) with ESMTPSA id 78AC71226B7;
-	Thu, 12 Mar 2026 20:24:40 +0000 (UTC)
-From: Frank Wunderlich <linux@fw-web.de>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Cc: Frank Wunderlich <frank-w@public-files.de>,
-	Laura Nao <laura.nao@collabora.com>,
-	Daniel Golle <daniel@makrotopia.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-mediatek@lists.infradead.org
-Subject: [PATCH v2] thermal/drivers/mediatek/lvts: add missing fields for mt7987
-Date: Thu, 12 Mar 2026 21:24:32 +0100
-Message-ID: <20260312202433.39092-1-linux@fw-web.de>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TuH6psX9"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40EA5C2BC87;
+	Thu, 12 Mar 2026 20:41:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773348070;
+	bh=Gb4LVB9Fx1wvu/Fr99C7YP376NEyE1vUn7CNWw+bGFA=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=TuH6psX9E2oD7/7tXD9A8DaQ3qUrOhHyLxsgZm8n8p2W2uQXYC4vXrD+0rmh1TRM2
+	 +Ts07/mmvyKsr5gjJ/myLY50XSu/DMTqBbauRN6E/OK1P/RK3UnWn0ZOwlCOn/ot37
+	 z6/DHuvosT/aU/reCtHvuMjFKdo0xy+I+e3iOJw0EibyxXQcUCSefawlK1bPx+cGkP
+	 rvYnLeHjvMYW7VHgPWiIYxf+rr+9yIaPM6JxG3cDKQocNacXoMzsnGakIPQosLmMUm
+	 yl9Zmj0bvGLFhOb3tv7A/xoDQwm2rZ2lKA5J220K0Td7cztI86W/8tsY3QIj8AMBwx
+	 jVw2RdUpFRhTA==
+Message-ID: <d38cfe28-6934-4ebf-9241-ba043d4c7771@kernel.org>
+Date: Thu, 12 Mar 2026 15:41:08 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/9] amd-pstate: Update cppc_req_cached in fast_switch
+ case
+To: "Gautham R. Shenoy" <gautham.shenoy@amd.com>,
+ "Rafael J . Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ K Prateek Nayak <kprateek.nayak@amd.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20260311140116.19604-1-gautham.shenoy@amd.com>
+ <20260311140116.19604-3-gautham.shenoy@amd.com>
+Content-Language: en-US
+From: "Mario Limonciello (AMD) (kernel.org)" <superm1@kernel.org>
+In-Reply-To: <20260311140116.19604-3-gautham.shenoy@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-From: Frank Wunderlich <frank-w@public-files.de>
 
-Commit a4c40559499f ("thermal/drivers/mediatek/lvts: Add platform ops to
-support alternative conversion logic") added new ops field which causes
-crash on mt7987.
 
-[    1.518540] Internal error: Oops: 0000000096000005 [#1]  SMP
-...
-[    1.564481] pc : lvts_get_temp+0x84/0xc4
-[    1.564492] lr : lvts_get_temp+0x60/0xc4
-...
-[    1.620900] Call trace:
-[    1.631753]  lvts_get_temp+0x84/0xc4 (P)
-[    1.645471]  __thermal_zone_get_temp+0x24/0x11c
-[    1.656502]  __thermal_zone_device_update+0x9c/0x52c
-
-Add the new ops member added in 7.0-rc1 for mt7987 too.
-
-Commit 6931d597c5ef ("thermal/drivers/mediatek/lvts: Make number of
-calibration offsets configurable") introduced field num_cal_offsets
-in lvts_data. Add this for mt7987 too.
-
-Fixes: 78c24e67d6f8 ("thermal/drivers/mediatek/lvts_thermal: Add mt7987 support")
-Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
----
- drivers/thermal/mediatek/lvts_thermal.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
-index a9617d5e0077..1224ce0c1507 100644
---- a/drivers/thermal/mediatek/lvts_thermal.c
-+++ b/drivers/thermal/mediatek/lvts_thermal.c
-@@ -2026,6 +2026,8 @@ static const struct lvts_data mt7987_lvts_ap_data = {
- 	.temp_offset	= LVTS_COEFF_B_MT7987,
- 	.gt_calib_bit_offset = 32,
- 	.def_calibration = 19380,
-+	.num_cal_offsets = LVTS_NUM_CAL_OFFSETS_MT7988,
-+	.ops = &lvts_platform_ops_mt7988,
- };
- 
- static const struct lvts_data mt7988_lvts_ap_data = {
--- 
-2.43.0
+On 3/11/2026 9:01 AM, Gautham R. Shenoy wrote:
+> The function msr_update_perf() does not cache the new value that is
+> written to MSR_AMD_CPPC_REQ into the variable cpudata->cppc_req_cached
+> when the update is happening from the fast path.
+> 
+> Fix that by caching the value everytime the MSR_AMD_CPPC_REQ gets
+> updated.
+> 
+> This issue was discovered by Claude Opus 4.6 with the aid of Chris
+> Mason's AI review-prompts
+> (https://github.com/masoncl/review-prompts/tree/main/kernel).
+> 
+> Assisted-by: Claude:claude-opus-4.6 review-prompts/linux
+> Fixes: fff395796917 ("cpufreq/amd-pstate: Always write EPP value when updating perf")
+> Signed-off-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
+Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
+> ---
+>   drivers/cpufreq/amd-pstate.c | 1 -
+>   1 file changed, 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+> index d57969c72c9dc..24cdeffbcd40e 100644
+> --- a/drivers/cpufreq/amd-pstate.c
+> +++ b/drivers/cpufreq/amd-pstate.c
+> @@ -261,7 +261,6 @@ static int msr_update_perf(struct cpufreq_policy *policy, u8 min_perf,
+>   
+>   	if (fast_switch) {
+>   		wrmsrq(MSR_AMD_CPPC_REQ, value);
+> -		return 0;
+>   	} else {
+>   		int ret = wrmsrq_on_cpu(cpudata->cpu, MSR_AMD_CPPC_REQ, value);
+>   
 
