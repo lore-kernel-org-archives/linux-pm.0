@@ -1,176 +1,141 @@
-Received: from mail-yx1-f44.google.com (mail-yx1-f44.google.com [74.125.224.44])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D7333D1707
-	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 15:39:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.44
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773329961; cv=pass; b=TG2bnhFPBIzwxd4UvkU+GORgtilWMqlbHdEbMMymoGH1h/7bovKVFW7p8zBCXLNkAmsRH0segQWtWHbf1iuI7yjJ4DhXcFC2K1RL2lnylobPLsI7Mm50mx6gAhpyuvYQIgiBleCTwPdSSJU1pRTLVSvMiMNfh2lIYZI4hJ2bzp4=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773329961; c=relaxed/simple;
-	bh=4tNFTOMSBZ1/Qp5RW7o3J5ezE7GBWsXKNJ/prrgOmk0=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CDEB13D8907
+	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 15:39:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773329965; cv=none; b=KkSzcJqUkha1+UaaaGO5esX+UT5JcAx6fTXku6GLnaM2lAvqjndFQR2JSeDT7t5+QI1A8wcEw5rbdxqrbdFIB+iH0iD7LltUwua7KYTPek7XWJoZOYlUQ8VmIFWm4olK5ZR85Evc7DQDkRXdQBi3CDNZl3Bjwsa48EaVAtmahPo=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773329965; c=relaxed/simple;
+	bh=XXvLl1JMNQ39aGONuxM9Xyq2A8SuZ0XcrOSi1495jRg=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=oGXssz+S0EM/nbr52H6Rr4B5lpOitvjOFPBOeCfkmJi19vBZbfy9rPSjRlxt41IkI03o4nzzS4Pfx86bDA7HK1zU31WSDGcyGJji3j87RTmUAQL/GpfHDu/laEf1wLJkmkLnNUa2fiR+CzgNMWo5LJX3v0619qbdVzjxBV/WTe0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bitbyteword.org; spf=pass smtp.mailfrom=bitbyteword.org; dkim=pass (2048-bit key) header.d=bitbyteword.org header.i=@bitbyteword.org header.b=e3vaIiIY; arc=pass smtp.client-ip=74.125.224.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bitbyteword.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bitbyteword.org
+	 To:Cc:Content-Type; b=XcPl/BsJCffFC/vT3x0iAnbnu43zjK+6lNvyauyCXIe7RmbiLqldTG9mpkNV+ewEOmDH1xcbs1HVR74//lKsrqG+n8+UKm159wxcUR8PVHV82n4deeGuRpx4n+P1asIQz2KMkoY9mSYBNzznx1uDiosIYahcXDN5Q7iEbAtdQTU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ue+sCaJP; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bitbyteword.org header.i=@bitbyteword.org header.b="e3vaIiIY"
-Received: by mail-yx1-f44.google.com with SMTP id 956f58d0204a3-64937edbc9eso1229201d50.2
-        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 08:39:19 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1773329958; cv=none;
-        d=google.com; s=arc-20240605;
-        b=E0xTu5SlkLoDpcHBo/XXE9VgOQvm3Q3rM2RZ58vO7Z/QAYCvOaEsSKvGyqzqceivn+
-         skJLfMmCBjhSHS5Vv9Iaf7WkIfoGEMdOCHyGyqIV0hqCXsvc9/GiSjljT8OjVY4zHX5m
-         TndrMz1n7GoGNP7tXtULsjIeawdGn4flSOGwgf5ryl7xLBumuOOeQ6yQcXjes9NtzKiy
-         49IzrjC2JKlExsSBoDCW6bRt6LLu3PHxeQM8dGNlzrfsbHQ3d4CoOGZjnYXkr7sprygB
-         ec/ifayKjyaiuwPA59rWk0mkH69HFOeQn0Hj4oqUIE//aE1kzcMdvhk1idzAgmM2Eozv
-         qQlQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=xV1lSatIeQOkkUeHEjEALGO2gUG7BopBUXrJE33ZDos=;
-        fh=mz9y03SW2a+Rr9K0t7a09oxH7uH7DCTetp/nJ5I402k=;
-        b=lbuvP5y33WAj028uZesPqk45BI8OYu44cclWDryy2WF3N49lEIKDTAMV4s7yI9Xvxr
-         lg4RbxZFtA+9WA2YQQMWLB/2XcX55HXvO3gKNCZJjAKlBGNwZ8jBW11F5asdbzry12vK
-         qfRuVCyNCE9YkwQ100JBvajrfLcp7apwW7Hw70arGPqG7+4umgVtX9nSHNLC1GexOdg/
-         d0NsTsM7SY1fOCZpILNXJWaIFxT6Lqn2fVL1yXGVTz396XKGYwnuspHAsi1HIqkXhNoZ
-         uupJqfRghTGEuqEygcKg+N/jJ9LWoDs4TLv/GbNnIPWWnW9jxQTfAI2lJGyjuYy9s+pO
-         6G1A==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bitbyteword.org; s=google; t=1773329958; x=1773934758; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=xV1lSatIeQOkkUeHEjEALGO2gUG7BopBUXrJE33ZDos=;
-        b=e3vaIiIYGWUOtCfN3v0i0XwlQU8iKw5tKJiDxrs5BpZgUFpI7tsKG3ZooWaPnqOdPC
-         Z8SAY5DTLTvpjaOB6s9bQ3ZxX+LcGGgsdf6NZnIPHM+cPfYf7mdvQUxOUB0MAZatRAPX
-         OPlQ6GS038tCrg8KJ4MGW9OOzjznHa++hyHmoFietr8QqWOe5FW8fUSSVZIetM87CB5M
-         jIZEMQ7uYMS4Ig4PCqqRV43UmxiY9EVL0EW92WOQZ4YI2E2FPpEUlNbyASWYFFksXS3t
-         9mACIIHPFuYoU4rBir3aqJDHbJg+APFP1wB7a8eG0Ml1cARiYuzc0pJgDxzADpeGYDNg
-         MfFg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773329958; x=1773934758;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=xV1lSatIeQOkkUeHEjEALGO2gUG7BopBUXrJE33ZDos=;
-        b=g1fsQ+SeHC5Gs6xPCDWi56BeQqgYzNKw8vEKnA0/8/EyrKR4uaatywQMubm9ZSRAis
-         zsuNODqJkoNjO7rk3vVizuX3L1ycRvM6liZg1vTRkY1akvq4WanQ3ZqhIOsYtO/O5wz2
-         oCH5WpaNYozQehQycSKOwZF5eFcnSx7kYAlZG3q8CJG2u4/oUkCKl34yah9WMExuVZFy
-         //DVITAzO+DS0gQhik7rxOaNZ9OEFzCudThSzUxv93Bxg6yVmtUWm3K/9N5P+CGjbTik
-         dEgw8Uhd7qAZfsyB11KaL07z4tX3dSLXGEgCAaF73tSD3yCOg6sp06hRw/HrwWJ2Z1Lb
-         z65A==
-X-Forwarded-Encrypted: i=1; AJvYcCX12s3gGYYaLxnn8hIZF019GTVwSbUm6kv8odPHlkbRyIYgc1CDlQ5U+EA9iirLEbf0Fu+NyxUsXg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwAd4TddUxGThNF5xSl812mz7iuz5rR34dXhMLGflGWikKfIvYH
-	GlPbQ0VVP3tGDVHuFgu+etm1O8QBcpBzTXBkcPUYX+Atv1S8VpYSnw1np3KOdkf3pvKT5Fm9yak
-	m4Ne8vNyGI62VeXX/GrZCwEB6i+l0nWHkxCncTPtzEA==
-X-Gm-Gg: ATEYQzy7QJVTgXQQj2WMGkgBnaCzaR8nf8I8D2UPqjvSsaUg5Ly5aVz4qGX35RJTlxv
-	A3m0YuXe3g2m/CCOyWIvYF1gg+ABz7z8U5dpp5gCEWlxZn8ejGHhrv7pXHB9dql8LCjDBSl6Gys
-	ZKDctwcaf09i/8vRswa9lnin44SWk+QIwgrGI1fxuK2ByOjUuR04jMM8f012beOXjMqCnK4fnxm
-	UHkbTjF1/gLkFvPvz0aOTnRUOeObMFNmf70ehSRvRSlOadEeuIDyFBiZ0hYLGDVX0AdRrRV4GOr
-	GGyq3D+4czPXMd93pQ==
-X-Received: by 2002:a53:bb8d:0:b0:64d:5742:5ab0 with SMTP id
- 956f58d0204a3-64d6577eb37mr4463263d50.43.1773329958142; Thu, 12 Mar 2026
- 08:39:18 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ue+sCaJP"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C2E5C2BCB5
+	for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 15:39:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773329965;
+	bh=XXvLl1JMNQ39aGONuxM9Xyq2A8SuZ0XcrOSi1495jRg=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=Ue+sCaJPdbhAEOWzvPHVLaPyvnzg01KwD4B65c+aw9s0Ei1P05V43wUb8rSXgLrmZ
+	 fByCIylTYRTwsBtN5hfdzNl5ApMZ/CocaUe9QQp+ffto1cRZs32yr1u560PXqDG8ZU
+	 bCvG4zTCPlz32wpkblyaHWhuJxAe50WyULlXONm2UrSxfpobZ9dwlqStnEi26EucZN
+	 5WOHNLa10CRqkhRhJwQbHuuOZLx+PA7keeoZyfGZAOU8Pj4JC3d09OANr4JferUpkj
+	 ZnJgukMQhS8i32W0HAxUr0g2Yy3umDBSMfrYAolJISlf9lGI+o6eP+hDtjNny6nWbw
+	 CSV/MYpp1YWjg==
+Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-b9358bc9c50so150849266b.1
+        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 08:39:25 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWT1HZj+3KNY+OzfoWrK+0vWCa/xLHPd/LvNYbCOnbZak+Cn3Fbzz70Z8UKh/rbUeb8UCHbDRF/TQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzP/kZyzMnOSszkUWttDXHyVkpmeCJ+EidVNzQFehDC8Cm4szCN
+	zFe/JCFa0an4tZYkbudNAOah72D9ngKuerZx54oQ69hfbrnB1V6Z+oE3I+0iw5aYkc5EMgGe1YE
+	H/7+DyfyH8RbW3DwRvDsbd6oSf/xElA==
+X-Received: by 2002:a17:907:3ea8:b0:b97:3bbe:e432 with SMTP id
+ a640c23a62f3a-b973bbef8d2mr287604066b.23.1773329964022; Thu, 12 Mar 2026
+ 08:39:24 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260312150523.2054552-1-vineeth@bitbyteword.org>
- <20260312150523.2054552-2-vineeth@bitbyteword.org> <20260312111255.7925b4e2@gandalf.local.home>
-In-Reply-To: <20260312111255.7925b4e2@gandalf.local.home>
-From: Vineeth Remanan Pillai <vineeth@bitbyteword.org>
-Date: Thu, 12 Mar 2026 11:39:06 -0400
-X-Gm-Features: AaiRm53MQsKCFNMcydaZ5MLANW9ImopAkQThe-DUzJ0WQT8Ah4MCG48E4vTQfog
-Message-ID: <CAO7JXPhg-Etspj9YahZrq8cmZ2K6AGWDrMnHO+oD96P_SmOLBw@mail.gmail.com>
-Subject: Re: [PATCH 01/15] tracepoint: Add trace_invoke_##name() API
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Dmitry Ilvokhin <d@ilvokhin.com>, 
-	Masami Hiramatsu <mhiramat@kernel.org>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, 
-	Ingo Molnar <mingo@redhat.com>, Jens Axboe <axboe@kernel.dk>, io-uring@vger.kernel.org, 
-	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov <ast@kernel.org>, 
-	Daniel Borkmann <daniel@iogearbox.net>, Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, 
-	Xin Long <lucien.xin@gmail.com>, Jon Maloy <jmaloy@redhat.com>, 
-	Aaron Conole <aconole@redhat.com>, Eelco Chaudron <echaudro@redhat.com>, 
-	Ilya Maximets <i.maximets@ovn.org>, netdev@vger.kernel.org, bpf@vger.kernel.org, 
-	linux-sctp@vger.kernel.org, tipc-discussion@lists.sourceforge.net, 
-	dev@openvswitch.org, Oded Gabbay <ogabbay@kernel.org>, Koby Elbaz <koby.elbaz@intel.com>, 
-	dri-devel@lists.freedesktop.org, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Viresh Kumar <viresh.kumar@linaro.org>, "Gautham R. Shenoy" <gautham.shenoy@amd.com>, 
-	Huang Rui <ray.huang@amd.com>, Mario Limonciello <mario.limonciello@amd.com>, 
-	Len Brown <lenb@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
-	linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, 
-	Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, 
-	=?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, 
-	Sumit Semwal <sumit.semwal@linaro.org>, linaro-mm-sig@lists.linaro.org, 
-	Eddie James <eajames@linux.ibm.com>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
-	Joel Stanley <joel@jms.id.au>, linux-fsi@lists.ozlabs.org, 
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Alex Deucher <alexander.deucher@amd.com>, Danilo Krummrich <dakr@kernel.org>, 
-	Matthew Brost <matthew.brost@intel.com>, Philipp Stanner <phasta@kernel.org>, 
-	Harry Wentland <harry.wentland@amd.com>, Leo Li <sunpeng.li@amd.com>, 
-	amd-gfx@lists.freedesktop.org, Jiri Kosina <jikos@kernel.org>, 
-	Benjamin Tissoires <bentiss@kernel.org>, linux-input@vger.kernel.org, 
-	Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, 
-	Mark Brown <broonie@kernel.org>, Michael Hennerich <michael.hennerich@analog.com>, 
-	=?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, linux-spi@vger.kernel.org, 
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	"Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, 
-	Chris Mason <clm@fb.com>, David Sterba <dsterba@suse.com>, linux-btrfs@vger.kernel.org, 
-	linux-trace-kernel@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260312085258.11431-1-clamor95@gmail.com> <20260312085258.11431-3-clamor95@gmail.com>
+ <20260312152057.GA3156966-robh@kernel.org> <CAPVz0n2GFgsrqo4_MkvNwd9t=DMU4ZGQzrpNjU+PZ4_Ysx_jcg@mail.gmail.com>
+In-Reply-To: <CAPVz0n2GFgsrqo4_MkvNwd9t=DMU4ZGQzrpNjU+PZ4_Ysx_jcg@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 12 Mar 2026 10:39:11 -0500
+X-Gmail-Original-Message-ID: <CAL_JsqKP-uYZf3MLFd5JrrsZ1+pxj-y+te_3uiM9N+5Xu4phUQ@mail.gmail.com>
+X-Gm-Features: AaiRm53TzVm_dQOjnoVm3K-wLtXfqwBBSfOhKn3tw-hQAbmwJ_qep65WpVUysIo
+Message-ID: <CAL_JsqKP-uYZf3MLFd5JrrsZ1+pxj-y+te_3uiM9N+5Xu4phUQ@mail.gmail.com>
+Subject: Re: [PATCH v4 2/5] dt-bindings: pinctrl: pinctrl-max77620: convert to
+ DT schema
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Chanwoo Choi <cw00.choi@samsung.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+	linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-rtc@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Mar 12, 2026 at 11:13=E2=80=AFAM Steven Rostedt <rostedt@goodmis.or=
-g> wrote:
+On Thu, Mar 12, 2026 at 10:34=E2=80=AFAM Svyatoslav Ryhel <clamor95@gmail.c=
+om> wrote:
 >
-> On Thu, 12 Mar 2026 11:04:56 -0400
-> "Vineeth Pillai (Google)" <vineeth@bitbyteword.org> wrote:
+> =D1=87=D1=82, 12 =D0=B1=D0=B5=D1=80. 2026=E2=80=AF=D1=80. =D0=BE 17:20 Ro=
+b Herring <robh@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
+> >
+> > On Thu, Mar 12, 2026 at 10:52:55AM +0200, Svyatoslav Ryhel wrote:
+> > > Convert pinctrl-max77620 devicetree bindings for the MAX77620 PMIC fr=
+om
+> > > TXT to YAML format. This patch does not change any functionality; the
+> > > bindings remain the same.
+> > >
+> > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> > > ---
+> > >  .../pinctrl/maxim,max77620-pinctrl.yaml       |  97 +++++++++++++
+> > >  .../bindings/pinctrl/pinctrl-max77620.txt     | 127 ----------------=
+--
+> > >  2 files changed, 97 insertions(+), 127 deletions(-)
+> > >  create mode 100644 Documentation/devicetree/bindings/pinctrl/maxim,m=
+ax77620-pinctrl.yaml
+> > >  delete mode 100644 Documentation/devicetree/bindings/pinctrl/pinctrl=
+-max77620.txt
+> > >
+> > > diff --git a/Documentation/devicetree/bindings/pinctrl/maxim,max77620=
+-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/maxim,max77620-pi=
+nctrl.yaml
+> > > new file mode 100644
+> > > index 000000000000..4e5f997317ca
+> > > --- /dev/null
+> > > +++ b/Documentation/devicetree/bindings/pinctrl/maxim,max77620-pinctr=
+l.yaml
+> > > @@ -0,0 +1,97 @@
+> > > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> > > +%YAML 1.2
+> > > +---
+> > > +$id: http://devicetree.org/schemas/pinctrl/maxim,max77620-pinctrl.ya=
+ml#
+> > > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > > +
+> > > +title: Pinmux controller function for Maxim MAX77620 Power managemen=
+t IC
+> > > +
+> > > +maintainers:
+> > > +  - Svyatoslav Ryhel <clamor95@gmail.com>
+> > > +
+> > > +description:
+> > > +  Device has 8 GPIO pins which can be configured as GPIO as well as =
+the
+> > > +  special IO functions.
+> > > +
+> > > +allOf:
+> > > +  - $ref: /schemas/pinctrl/pincfg-node.yaml
+> > > +  - $ref: /schemas/pinctrl/pinmux-node.yaml
+> >
+> > Don't these properties apply to the child nodes?
+> >
 >
-> > Add trace_invoke_##name() as a companion to trace_##name().  When a
-> > caller already guards a tracepoint with an explicit enabled check:
-> >
-> >   if (trace_foo_enabled() && cond)
-> >       trace_foo(args);
-> >
-> > trace_foo() internally repeats the static_branch_unlikely() test, which
-> > the compiler cannot fold since static branches are patched binary
-> > instructions.  This results in two static-branch evaluations for every
-> > guarded call site.
-> >
-> > trace_invoke_##name() calls __do_trace_##name() directly, skipping the
-> > redundant static-branch re-check.  This avoids leaking the internal
-> > __do_trace_##name() symbol into call sites while still eliminating the
-> > double evaluation:
-> >
-> >   if (trace_foo_enabled() && cond)
-> >       trace_invoke_foo(args);   /* calls __do_trace_foo() directly */
-> >
-> > Three locations are updated:
-> > - __DECLARE_TRACE: invoke form omits static_branch_unlikely, retains
-> >   the LOCKDEP RCU-watching assertion.
-> > - __DECLARE_TRACE_SYSCALL: same, plus retains might_fault().
-> > - !TRACEPOINTS_ENABLED stub: empty no-op so callers compile cleanly
-> >   when tracepoints are compiled out.
-> >
-> > Suggested-by: Steven Rostedt <rostedt@goodmis.org>
-> > Suggested-by: Peter Zijlstra <peterz@infradead.org>
-> > Signed-off-by: Vineeth Pillai (Google) <vineeth@bitbyteword.org>
-> > Assisted-by: Claude:claude-sonnet-4-6
->
-> I'm guessing Claude helped with the other patches. Did it really help wit=
-h this one?
->
+> They do, but not all properties defined in those schema files are
+> applicable for this binding. I have marked those which can be applied
+> in the node patterns.
 
-Claude wrote and build tested the whole series based on my guidance
-and prompt :-). I verified the series before sending it out, but
-claude did the initial work.
+Then additionalProperties is appropriate.
 
-Thanks,
-Vineeth
+> > > +
+> > > +patternProperties:
+> > > +  "^(pin|gpio).":
+> > > +    type: object
+> >
+> >        additionalProperties: false
+>
+> I will move additionalProperties here then.
+
+No, moving it is wrong. You need it here AND in the parent node.
+
+Rob
